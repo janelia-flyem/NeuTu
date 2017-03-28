@@ -516,6 +516,7 @@ void ZStackMvc::changeEvent(QEvent *event)
 }
 #endif
 
+#if 0
 void ZStackMvc::zoomWithWidthAligned(int x0, int x1, int cy)
 {
 //  getView()->blockSignals(true);
@@ -531,29 +532,36 @@ void ZStackMvc::zoomWithWidthAligned(const QRect &viewPort, int z, double pw)
         viewPort.left(), viewPort.right(), pw, viewPort.center().y(), z);
 }
 
-void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
+
+void ZStackMvc::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz)
 {
-  ZIntPoint center = view->getViewCenter();
-
-  center.shiftSliceAxis(getView()->getSliceAxis());
-
-//  bool depthChanged = (center.getZ() == getView()->getCurrentZ());
-
-  QRect refViewPort = view->getViewPort(NeuTube::COORD_STACK);
-
-  zoomWithHeightAligned(refViewPort.top(), refViewPort.bottom(),
-                        view->getProjRegion().height(),
-                        center.getX(), center.getZ());
+  getView()->zoomWithHeightAligned(y0, y1, ph, cx, cz);
 }
+
+void ZStackMvc::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
+{
+  getView()->zoomWithWidthAligned(x0, x1, pw, cy, cz);
+}
+#endif
 
 void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 {
   ZStackViewParam param = view->getViewParameter();
+  ZViewProj viewProj = param.getViewProj();
 
-  ZIntPoint center = view->getViewCenter();
-  center.shiftSliceAxis(getView()->getSliceAxis());
+  double zoom = viewProj.getZoom();
 
-  view->setViewProj(param.getViewProj().getOffsetX(), center.getY(), param.getZ());
+  if (zoom > 0.0) {
+    ZIntPoint center = view->getViewCenter();
+    center.shiftSliceAxis(getView()->getSliceAxis());
+
+    int x0 = viewProj.getX0();
+    int cy = center.getZ();
+    int y0 = cy - iround(
+          double(getView()->getViewProj().getWidgetCenter().y()) / zoom);
+
+    getView()->setViewProj(x0, y0, viewProj.getZoom());
+  }
 
 #if 0
   ZIntPoint center = view->getViewCenter();
@@ -570,14 +578,41 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 #endif
 }
 
-void ZStackMvc::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz)
+void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 {
-  getView()->zoomWithHeightAligned(y0, y1, ph, cx, cz);
-}
+  ZStackViewParam param = view->getViewParameter();
+  ZViewProj viewProj = param.getViewProj();
 
-void ZStackMvc::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
-{
-  getView()->zoomWithWidthAligned(x0, x1, pw, cy, cz);
+  double zoom = viewProj.getZoom();
+
+  if (zoom > 0.0) {
+    ZIntPoint center = view->getViewCenter();
+    center.shiftSliceAxis(getView()->getSliceAxis());
+
+    int y0 = viewProj.getY0();
+    int cx = center.getZ();
+    int x0 = cx - iround(
+          double(getView()->getViewProj().getWidgetCenter().x()) / zoom);
+
+    getView()->setViewProj(x0, y0, viewProj.getZoom());
+  }
+
+#if 0
+  ZIntPoint center = view->getViewCenter();
+
+//  center.shiftSliceAxis(getView()->getSliceAxis());
+
+//  bool depthChanged = (center.getZ() == getView()->getCurrentZ());
+
+  QRect refViewPort = view->getViewPort(NeuTube::COORD_STACK);
+
+  getView()->setView();
+
+  zoomWithHeightAligned(refViewPort.top(), refViewPort.bottom(),
+                        view->getProjRegion().height(),
+                        center.getX(), center.getZ());
+#endif
+
 }
 
 void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)

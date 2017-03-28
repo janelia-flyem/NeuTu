@@ -157,6 +157,11 @@ ZPoint ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
 void ZMouseEventProcessor::mapPositionFromWidgetToRawStack(double *x, double *y)
 const
 {
+  ZViewProj viewProj = m_imageWidget->getViewProj();
+
+  viewProj.mapPointBack(x, y);
+
+#if 0
   QSizeF csize = m_imageWidget->projectSize();
 
   if (csize.width() > 0 && csize.height() > 0) {
@@ -167,6 +172,7 @@ const
         m_imageWidget->viewPort().top() -
         m_imageWidget->canvasRegion().top() - 0.5;
   }
+#endif
 }
 
 const ZMouseEvent& ZMouseEventProcessor::getLatestMouseEvent() const

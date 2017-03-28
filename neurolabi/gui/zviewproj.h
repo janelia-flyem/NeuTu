@@ -27,10 +27,15 @@ public:
 
   QRect getCanvasRect() const;
   QRect getWidgetRect() const;
+  QPoint getOffset() const;
+  int getX0() const;
+  int getY0() const;
   double getZoom() const;
 
   QRectF getProjRect() const;
   QRect getViewPort() const;
+
+  QPoint getWidgetCenter() const;
 
   bool isValid() const;
   bool isSourceValid() const;
@@ -43,8 +48,12 @@ public:
       double zoom, QPoint viewPoint, QPointF projPoint);
   void setZoomWithFixedPoint(double zoom, QPoint viewPoint);
 
+  void move(int srcX, int srcY, double dstX, double dstY);
+  void move(const QPoint &src, const QPointF &dst);
+
   QPointF mapPoint(const QPoint &p);
   QPoint mapPointBack(const QPointF &p);
+  void mapPointBack(double *x, double *y);
 
   double getMaxZoomRatio() const;
   double getMinZoomRatio() const;

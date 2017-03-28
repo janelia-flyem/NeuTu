@@ -351,6 +351,9 @@ public:
   void setViewPortCenter(int x, int y, int z, NeuTube::EAxisSystem system);
   void setViewPortCenter(const ZIntPoint &center, NeuTube::EAxisSystem system);
 
+  void setViewProj(int x0, int y0, double zoom);
+  void setViewProj(const QPoint &pt, double zoom);
+
   ZIntPoint getViewCenter() const;
 
   void paintMultiresImageTest(int resLevel);
@@ -373,6 +376,8 @@ public:
 
 
 public: //Change view parameters
+  void move(const QPoint& src, const QPointF &dst);
+
   void increaseZoomRatio();
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);

@@ -80,6 +80,21 @@ QRect ZViewProj::getWidgetRect() const
   return m_widgetRect;
 }
 
+QPoint ZViewProj::getOffset() const
+{
+  return QPoint(m_x0, m_y0);
+}
+
+int ZViewProj::getX0() const
+{
+  return m_x0;
+}
+
+int ZViewProj::getY0() const
+{
+  return m_y0;
+}
+
 double ZViewProj::getZoom() const
 {
   return m_zoom;
@@ -140,6 +155,11 @@ QRect ZViewProj::getViewPort() const
   }
 
   return m_viewPort;
+}
+
+QPoint ZViewProj::getWidgetCenter() const
+{
+  return m_widgetRect.center();
 }
 
 bool ZViewProj::isSourceValid() const
@@ -245,6 +265,18 @@ void ZViewProj::increaseZoom(int rx, int ry)
   setZoomWithFixedPoint(zoom, QPoint(rx, ry));
 }
 
+void ZViewProj::decreaseZoom(int rx, int ry)
+{
+  double zoom = m_zoom / 1.1;
+
+  double maxZoom = getMaxZoomRatio();
+
+  if (zoom > maxZoom) {
+    zoom = maxZoom;
+  }
+  setZoomWithFixedPoint(zoom, QPoint(rx, ry));
+}
+
 void ZViewProj::setZoomWithFixedPoint(
     double zoom, QPoint viewPoint, QPointF projPoint)
 {
@@ -263,12 +295,38 @@ void ZViewProj::setZoomWithFixedPoint(double zoom, QPoint viewPoint)
   setZoomWithFixedPoint(zoom, viewPoint, mapPoint(viewPoint));
 }
 
+void ZViewProj::move(int srcX, int srcY, double dstX, double dstY)
+{
+  if (m_zoom > 0.0) {
+    int x0 = srcX - iround(dstX / m_zoom);
+    int y0 = srcY - iround(dstY / m_zoom);
+
+    setOffset(x0, y0);
+  }
+}
+
+void ZViewProj::move(const QPoint &src, const QPointF &dst)
+{
+  move(src.x(), src.y(), dst.x(), dst.y());
+}
+
 QPointF ZViewProj::mapPoint(const QPoint &p)
 {
   double x = (p.x() - m_x0) * m_zoom;
   double y = (p.y() - m_y0) * m_zoom;
 
   return QPointF(x, y);
+}
+
+void ZViewProj::mapPointBack(double *x, double *y)
+{
+  if (m_zoom > 0.0) {
+    *x = *x / m_zoom + m_x0;
+    *y = *y / m_zoom + m_y0;
+  } else {
+    *x = 0.0;
+    *y = 0.0;
+  }
 }
 
 QPoint ZViewProj::mapPointBack(const QPointF &p)
@@ -295,7 +353,7 @@ void ZViewProj::update() const
     m_viewPort.setSize(QSize(iround(m_widgetRect.width() / m_zoom),
                              iround(m_widgetRect.height() / m_zoom)));
 
-    if (!m_viewPort.intersects(m_widgetRect)) {
+    if (!m_viewPort.intersects(m_canvasRect)) {
       m_viewPort = QRect();
     } else {
       //Set initial proj region to the whole widget

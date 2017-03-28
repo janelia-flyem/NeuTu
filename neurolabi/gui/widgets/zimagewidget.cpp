@@ -36,7 +36,7 @@ ZImageWidget::~ZImageWidget()
 void ZImageWidget::init()
 {
   m_isViewHintVisible = true;
-  m_freeMoving = false;
+  m_freeMoving = true;
   m_hoverFocus = false;
   m_smoothDisplay = false;
 
@@ -236,6 +236,16 @@ void ZImageWidget::setDynamicObjectCanvas(ZPixmap *canvas)
 void ZImageWidget::setActiveDecorationCanvas(ZPixmap *canvas)
 {
   m_activeDecorationCanvas = canvas;
+}
+
+void ZImageWidget::setViewProj(int x0, int y0, double zoom)
+{
+  m_viewProj.set(x0, y0, zoom);
+}
+
+void ZImageWidget::setViewProj(const QPoint &pt, double zoom)
+{
+  m_viewProj.set(pt, zoom);
 }
 
 #if 0
@@ -775,7 +785,8 @@ QRect ZImageWidget::canvasRegion() const
 void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
 {
   if (usingRef) {
-    m_viewProj.increaseZoom(x, y);
+    QPointF viewPoint = m_viewProj.mapPointBack(QPointF(x, y));
+    m_viewProj.increaseZoom(viewPoint.x(), viewPoint.y());
   } else {
     m_viewProj.increaseZoom();
   }
@@ -808,7 +819,8 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
 void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
 {
   if (usingRef) {
-    m_viewProj.decreaseZoom(x, y);
+    QPointF viewPoint = m_viewProj.mapPointBack(QPointF(x, y));
+    m_viewProj.decreaseZoom(viewPoint.x(), viewPoint.y());
   } else {
     m_viewProj.decreaseZoom();
   }
@@ -924,6 +936,11 @@ void ZImageWidget::decreaseZoomRatio()
   }
 #endif
 */
+}
+
+void ZImageWidget::moveViewPort(const QPoint &src, const QPointF &dst)
+{
+  m_viewProj.move(src, dst);
 }
 
 void ZImageWidget::moveViewPort(int x, int y)

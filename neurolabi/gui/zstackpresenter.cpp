@@ -1292,6 +1292,7 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 void ZStackPresenter::moveImageToMouse(
     double srcX, double srcY, int mouseX, int mouseY)
 {
+#if 0
 //  QPointF targetPosition =
 //      buddyView()->imageWidget()->canvasCoordinate(QPoint(mouseX, mouseY));
 
@@ -1313,6 +1314,9 @@ void ZStackPresenter::moveImageToMouse(
 //  QPointF newOffset = oldViewportOffset + targetPosition - QPointF(srcX, srcY);
 
   moveViewPortTo(iround(x), iround(y));
+#endif
+
+  buddyView()->move(QPoint(iround(srcX), iround(srcY)), QPointF(mouseX, mouseY));
 
   /*
   int x, y;

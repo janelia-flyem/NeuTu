@@ -51,6 +51,10 @@ public:
   void removeCanvas(ZPixmap *canvas);
   void removeCanvas(ZImage *canvas);
 
+  bool freeMoving() const {
+    return m_freeMoving;
+  }
+
   /*!
    * \brief Reset the image widget by removing all canvases and view information.
    */
@@ -81,6 +85,9 @@ public:
     m_viewProj = viewProj;
   }
 
+  void setViewProj(int x0, int y0, double zoom);
+  void setViewProj(const QPoint &pt, double zoom);
+
   /*!
    * \brief Move viewport.
    *
@@ -88,6 +95,8 @@ public:
    * the first corner of the canvas is (\a x, \a y).
    */
   void moveViewPort(int x, int y);
+
+  void moveViewPort(const QPoint &src, const QPointF &dst);
 
   void setZoomRatio(double zoomRatio);
   //inline int zoomRatio() const { return m_zoomRatio; }

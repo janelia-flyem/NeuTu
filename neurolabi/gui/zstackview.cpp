@@ -2422,6 +2422,16 @@ ZViewProj ZStackView::getViewProj() const
   return m_imageWidget->getViewProj();
 }
 
+void ZStackView::setViewProj(int x0, int y0, double zoom)
+{
+  m_imageWidget->setViewProj(x0, y0, zoom);
+}
+
+void ZStackView::setViewProj(const QPoint &pt, double zoom)
+{
+  m_imageWidget->setViewProj(pt, zoom);
+}
+
 ZStackViewParam ZStackView::getViewParameter(
     NeuTube::ECoordinateSystem coordSys, NeuTube::View::EExploreAction action) const
 {
@@ -2453,6 +2463,15 @@ void ZStackView::setViewPortOffset(int x, int y)
   processViewChange(false, false);
   redraw(UPDATE_DIRECT);
 //  notifyViewChanged(NeuTube::View::EXPLORE_MOVE);
+}
+
+void ZStackView::move(const QPoint &src, const QPointF &dst)
+{
+  imageWidget()->blockPaint(true);
+  imageWidget()->moveViewPort(src, dst);
+  imageWidget()->blockPaint(false);
+  processViewChange(false, false);
+  redraw(UPDATE_DIRECT);
 }
 
 void ZStackView::setViewPortCenter(
@@ -2701,6 +2720,10 @@ void ZStackView::notifyViewPortChanged()
 
 bool ZStackView::isImageMovable() const
 {
+  if (imageWidget()->freeMoving()) {
+    return true;
+  }
+
   return (imageWidget()->viewPort() != imageWidget()->canvasRegion());
 //  return (imageWidget()->viewPort().top() != 0 ||
 //      imageWidget()->viewPort().left() != 0 ||
