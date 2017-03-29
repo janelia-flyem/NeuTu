@@ -2834,7 +2834,7 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
     ZDvidLabelSlice *slice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     if (slice != NULL) {
-      slice->setMaxSize(width, height);
+      slice->setMaxSize(getView()->getViewParameter(), width, height);
       getView()->paintObject();
     }
   }
