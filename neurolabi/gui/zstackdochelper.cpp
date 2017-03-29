@@ -74,7 +74,7 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
       if (!objList.isEmpty()) {
         ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(objList.first());
         if (obj->isVisible()) {
-          m_currentZ = obj->getViewParam().getZ();
+          m_currentZ = obj->getCurrentZ();
           m_hasCurrentZ = true;
         }
       }

@@ -1011,8 +1011,8 @@ void ZImageWidget::paintObject()
     painter.setRenderHints(QPainter::Antialiasing/* | QPainter::HighQualityAntialiasing*/);
 
     QTransform transform;
-    transform.translate((0.5 - viewPort().left())*zoomRatio,
-                        (0.5 - viewPort().top())*zoomRatio);
+    transform.translate((0.5 - m_viewProj.getX0())*zoomRatio,
+                        (0.5 - m_viewProj.getY0())*zoomRatio);
     transform.scale(zoomRatio, zoomRatio);
 //    transform.translate(-m_paintBundle->getStackOffset().getX(),
 //                        -m_paintBundle->getStackOffset().getY());
