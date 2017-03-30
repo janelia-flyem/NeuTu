@@ -164,12 +164,12 @@ void Z3DVolumeSource::readVolumes()
         }
         if (width > maxTextureSize) {
           double widthScale2 = (double)maxTextureSize / width;
-          width = std::floor(width * widthScale);
+          width = std::floor(width * widthScale2);
           widthScale *= widthScale2;
         }
         if (depth > maxTextureSize) {
           double depthScale2 = (double)maxTextureSize / depth;
-          depth = std::floor(depth * depthScale);
+          depth = std::floor(depth * depthScale2);
           depthScale *= depthScale2;
         }
 
