@@ -87,7 +87,7 @@ public:
   size_t getNumVoxels() const;
   bool is1DData() const { return m_dimensions.z == 1 && (m_dimensions.x == 1 || m_dimensions.y == 1); }
   bool is2DData() const { return m_dimensions.z == 1 && m_dimensions.x > 1 && m_dimensions.y > 1; }
-  bool is3DData() const { return m_dimensions.z > 1 && m_dimensions.x > 1 && m_dimensions.y > 1; }
+  bool is3DData() const { return m_dimensions.z > 1 /*&& m_dimensions.x > 1 && m_dimensions.y > 1*/; }
 
   // Returns a string representation of the sampler type: "sampler2D" for 2D image, "sampler3D" for 3D volume
   QString getSamplerType() const;
@@ -124,7 +124,7 @@ public:
 
   glm::vec3 getCubeSize() const { return glm::vec3(getDimensions()) * getSpacing(); }
   glm::vec3 getPhysicalLUF() const { return getOffset(); }
-  glm::vec3 getPhysicalRDB() const { return getOffset() + getCubeSize() - getSpacing(); }
+  glm::vec3 getPhysicalRDB() const;
   glm::vec3 getPhysicalLDF() const { return glm::vec3(getPhysicalLUF().x, getPhysicalRDB().y, getPhysicalLUF().z); }
   glm::vec3 getPhysicalRDF() const { return glm::vec3(getPhysicalRDB().x, getPhysicalRDB().y, getPhysicalLUF().z); }
   glm::vec3 getPhysicalRUF() const { return glm::vec3(getPhysicalRDB().x, getPhysicalLUF().y, getPhysicalLUF().z); }

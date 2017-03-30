@@ -125,12 +125,28 @@ void Z3DVolumeSource::readVolumes()
         m_isVolumeDownsampled.set(true);
         double scale = std::sqrt((m_maxVoxelNumber*1.0) /
                                  (m_doc->getStack()->getVoxelNumber() * nchannel));
-        int height = (int)(stack->height * scale);
-        int width = (int)(stack->width * scale);
+        int height = stack->height;
+        int width = stack->width;
         int depth = stack->depth;
+
         double widthScale = 1.0;
         double heightScale = 1.0;
         double depthScale = 1.0;
+        if (width > height || width > depth) {
+          width *= scale;
+          widthScale = scale;
+        }
+
+        if (height > width || height > depth) {
+          height *= scale;
+          heightScale = scale;
+        }
+
+        if (depth > width || depth > height) {
+          depth *= scale;
+          depthScale = scale;
+        }
+
         int maxTextureSize = 100;
         if (stack->depth > 1)
           maxTextureSize = Z3DGpuInfoInstance.getMax3DTextureSize();
@@ -142,20 +158,32 @@ void Z3DVolumeSource::readVolumes()
         }
 
         if (height > maxTextureSize) {
-          heightScale = (double)maxTextureSize / height;
-          height = std::floor(height * heightScale);
+          double heightScale2 = (double)maxTextureSize / height;
+          height = std::floor(height * heightScale2);
+          heightScale *= heightScale2;
         }
         if (width > maxTextureSize) {
-          widthScale = (double)maxTextureSize / width;
+          double widthScale2 = (double)maxTextureSize / width;
           width = std::floor(width * widthScale);
+          widthScale *= widthScale2;
         }
         if (depth > maxTextureSize) {
-          depthScale = (double)maxTextureSize / depth;
+          double depthScale2 = (double)maxTextureSize / depth;
           depth = std::floor(depth * depthScale);
+          depthScale *= depthScale2;
         }
 
-        widthScale *= scale;
-        heightScale *= scale;
+        if (width == 0) {
+          width = 1;
+        }
+
+        if (height == 0) {
+          height = 1;
+        }
+
+        if (depth == 0) {
+          depth = 1;
+        }
 
         Stack *stack2 = C_Stack::resize(stack, width, height, depth);
         C_Stack::translate(stack2, GREY, 1);
