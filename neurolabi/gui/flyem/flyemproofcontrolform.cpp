@@ -208,6 +208,12 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(skeletonizeSelectedBody()));
   bodyMenu->addAction(skeletonizeAction);
 
+  QMenu *grayscaleMenu = m_mainMenu->addMenu("Grayscale");
+  QAction *exportGrayScaleAction = new QAction("Export Grayscale", this);
+  connect(exportGrayScaleAction, SIGNAL(triggered()),
+          this, SLOT(exportGrayscale()));
+  grayscaleMenu->addAction(exportGrayScaleAction);
+
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");
   QAction *clearMergeAction = new QAction("Clear All Merges", this);
@@ -236,6 +242,11 @@ void FlyEmProofControlForm::exportSelectedBody()
 void FlyEmProofControlForm::skeletonizeSelectedBody()
 {
   emit skeletonizingSelectedBody();
+}
+
+void FlyEmProofControlForm::exportGrayscale()
+{
+  emit exportingGrayscale();
 }
 
 void FlyEmProofControlForm::enableNameColorMap(bool on)

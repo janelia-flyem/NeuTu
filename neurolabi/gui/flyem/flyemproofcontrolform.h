@@ -53,6 +53,7 @@ signals:
   void changingColorMap(QString);
   void clearingBodyMergeStage();
   void exportingSelectedBody();
+  void exportingGrayscale();
   void exportingSelectedBodyStack();
   void skeletonizingSelectedBody();
   void showingInfo();
@@ -85,6 +86,7 @@ private slots:
   void exportSelectedBody();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
+  void exportGrayscale();
 
 private:
   void createMenu();

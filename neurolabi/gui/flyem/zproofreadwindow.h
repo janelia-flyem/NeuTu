@@ -22,6 +22,7 @@ class FlyEmProofControlForm;
 class FlyEmSplitControlForm;
 class ZStressTestOptionDialog;
 class ZFlyEmBodyScreenshotDialog;
+class ZFlyEmGrayscaleDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -40,6 +41,8 @@ public:
   }
 
   void setDvidDialog(ZDvidDialog *dvidDlg);
+
+  ZFlyEmProofMvc* getMainMvc() const;
 
 public:
   void stressTest();
@@ -78,6 +81,7 @@ public slots:
   void exploreBody();
 
   void exportNeuronScreenshot();
+  void exportGrayscale();
 
   void stressTestSlot();
   void diagnose();
@@ -155,6 +159,7 @@ private:
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
   ZStressTestOptionDialog *m_stressTestOptionDlg;
   ZFlyEmBodyScreenshotDialog *m_bodyScreenshotDlg;
+  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
 };
 
 

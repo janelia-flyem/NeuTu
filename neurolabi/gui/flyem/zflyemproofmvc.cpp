@@ -386,6 +386,19 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
           this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
 }
 
+void ZFlyEmProofMvc::exportGrayscale(
+    const ZIntCuboid &box, const QString &fileName)
+{
+  ZStack *stack =
+      getCompleteDocument()->getDvidReader().readGrayScale(box);
+
+  if (stack != NULL) {
+    stack->save(fileName.toStdString());
+  }
+
+  delete stack;
+}
+
 void ZFlyEmProofMvc::exportNeuronScreenshot(
     const std::vector<uint64_t> &bodyIdArray, int width, int height,
     const QString &outDir)

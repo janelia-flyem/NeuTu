@@ -733,7 +733,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidgrayscale.h \
     zscrollslicestrategy.h \
     dvid/zdvidgrayslicescrollstrategy.h \
-    zviewproj.h
+    zviewproj.h \
+    dialogs/zflyemgrayscaledialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -828,7 +829,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyembodyscreenshotdialog.ui \
     dialogs/zdvidadvanceddialog.ui \
     dialogs/zflyemskeletonupdatedialog.ui \
-    widgets/zdvidsourcewidget.ui
+    widgets/zdvidsourcewidget.ui \
+    dialogs/zflyemgrayscaledialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1272,7 +1274,8 @@ SOURCES += main.cpp \
     dvid/zdvidgrayscale.cpp \
     zscrollslicestrategy.cpp \
     dvid/zdvidgrayslicescrollstrategy.cpp \
-    zviewproj.cpp
+    zviewproj.cpp \
+    dialogs/zflyemgrayscaledialog.cpp
 
 OTHER_FILES += \
     extlib.pri \

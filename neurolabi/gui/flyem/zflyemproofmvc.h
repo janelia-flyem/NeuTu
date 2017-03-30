@@ -123,6 +123,8 @@ public:
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
+  void exportGrayscale(const ZIntCuboid &box, const QString &fileName);
+
   //exploratory code
   void exportNeuronScreenshot(
       const std::vector<uint64_t> &bodyIdArray, int width, int height,
