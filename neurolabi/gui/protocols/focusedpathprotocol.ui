@@ -105,7 +105,7 @@
        <item>
         <widget class="QPushButton" name="finishButton">
          <property name="text">
-          <string>Finish edge/upload results</string>
+          <string>Finish path/upload results</string>
          </property>
         </widget>
        </item>
@@ -126,13 +126,6 @@
         <widget class="QPushButton" name="skipPathButton">
          <property name="text">
           <string>Skip this path</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="nextBodyButton">
-         <property name="text">
-          <string>Next body</string>
          </property>
         </widget>
        </item>

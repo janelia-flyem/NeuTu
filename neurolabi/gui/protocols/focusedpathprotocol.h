@@ -40,9 +40,9 @@ public slots:
 private slots:
     void onExitButton();
     void onCompleteButton();
+    void onSkipPathButton();
     void onBodyListsLoaded();
-    void onCurrentBodyPathsLoaded();    
-    void onEdgeSelectionChanged(QItemSelection oldItem, QItemSelection newItem);
+    void onEdgeSelectionChanged(QItemSelection oldItem, QItemSelection newItem);    
 
 private:
     static const std::string KEY_VERSION;
@@ -67,6 +67,8 @@ private:
     static const QColor COLOR_OTHER;
     static const QColor COLOR_DEFAULT;
 
+    static const uint64_t INVALID_BODY;
+
 public:
     // keys for DVID stuff
     static const std::string KEY_ASSIGNMENT_BODIES;
@@ -89,6 +91,8 @@ private:
     QList<uint64_t> m_bodies;
     uint64_t m_currentBody;
     QList<FocusedPath> m_currentBodyPaths;
+    QMap<uint64_t, bool> m_bodyDone;
+    QMap<uint64_t, int> m_bodySkippedPathCount;
     QMap<ZIntPoint, uint64_t> m_currentPathBodyIDs;
     FocusedPath m_currentPath;
     QStandardItemModel * m_edgeModel;
@@ -96,8 +100,9 @@ private:
     void saveState();
     void variationError(std::string variation);
     void loadBodiesFromBookmarks();
-    void loadCurrentBodyPaths(uint64_t bodyID);
+    void loadCurrentBodyPaths();
     FocusedPath findNextPath();
+    void loadNextBodyAndPath();
     void displayCurrentPath();
     void deletePath(FocusedPath path);
     void updateConnectionLabel();
@@ -108,6 +113,10 @@ private:
     void printEdge(FocusedEdge edge);
     void printPath(FocusedPath path);
     std::string getPropertyKey(std::string prefix, ZIntPoint point);
+    bool allBodiesDone();
+    uint64_t getNextBody();
+    bool loadFirstPath();
+    bool loadNextPath();
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H

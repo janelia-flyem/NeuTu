@@ -36,13 +36,13 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
 
     // data load connections
     connect(this, SIGNAL(bodyListLoaded()), this, SLOT(onBodyListsLoaded()));
-    connect(this, SIGNAL(currentBodyPathsLoaded()), this, SLOT(onCurrentBodyPathsLoaded()));
 
 
     // UI connections
     // buttons
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
+    connect(ui->skipPathButton, SIGNAL(clicked(bool)), this, SLOT(onSkipPathButton()));
 
     // tables
     connect(ui->edgesTableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
@@ -86,6 +86,10 @@ const QColor FocusedPathProtocol::COLOR_EDGE2 = QColor(0, 255, 0);
 const QColor FocusedPathProtocol::COLOR_PATH = QColor(100, 200, 255);
 const QColor FocusedPathProtocol::COLOR_OTHER = QColor(128, 0, 64);
 const QColor FocusedPathProtocol::COLOR_DEFAULT = QColor(0, 0, 0);
+
+// other
+// best I can do...probably safe...
+const uint64_t FocusedPathProtocol::INVALID_BODY = UINT64_MAX;
 
 bool FocusedPathProtocol::initialize() {
 
@@ -193,6 +197,18 @@ void FocusedPathProtocol::onCompleteButton() {
     }
 }
 
+void FocusedPathProtocol::onSkipPathButton() {
+
+    std::cout << "onSkipPathButton" << std::endl;
+
+    m_currentBodyPaths.removeAll(m_currentPath);
+    m_bodySkippedPathCount[m_currentBody] += 1;
+
+    if (!loadNextPath()) {
+        loadNextBodyAndPath();
+    }
+}
+
 void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
 
     // check version of saved data here, once we have a second version
@@ -291,12 +307,12 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
     emit bodyListLoaded();
 }
 
-void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
+void FocusedPathProtocol::loadCurrentBodyPaths() {
 
     m_currentBodyPaths.clear();
 
     // each point annotation has lists of path and edge IDs originating from its position
-    ZJsonArray annotations = m_reader.readAnnotation(m_pointDataInstance, bodyID,
+    ZJsonArray annotations = m_reader.readAnnotation(m_pointDataInstance, m_currentBody,
         FlyEM::LOAD_NO_PARTNER);
 
     for (size_t i=0; i<annotations.size(); i++) {
@@ -318,8 +334,6 @@ void FocusedPathProtocol::loadCurrentBodyPaths(uint64_t bodyID) {
             m_currentBodyPaths << FocusedPath(pathID.trimmed().toStdString(), pathData);
         }
     }
-
-    emit currentBodyPathsLoaded();
 }
 
 std::string FocusedPathProtocol::getPropertyKey(std::string prefix, ZIntPoint point) {
@@ -344,12 +358,83 @@ void FocusedPathProtocol::onBodyListsLoaded() {
             "No bodies were loaded!", QMessageBox::Ok);
         return;
     }
-    m_currentBody = m_bodies.first();
-    // this could be started in a thread if it turns out to be slow
-    loadCurrentBodyPaths(m_currentBody);
+    // initialize state before loading body and path
+    m_currentBody = INVALID_BODY;
+    m_bodyDone.clear();
+    m_bodySkippedPathCount.clear();
+    foreach (uint64_t bodyID, m_bodies) {
+        m_bodyDone[bodyID] = false;
+        m_bodySkippedPathCount[bodyID] = 0;
+    }
+
+    loadNextBodyAndPath();
 }
 
-void FocusedPathProtocol::onCurrentBodyPathsLoaded() {
+void FocusedPathProtocol::loadNextBodyAndPath() {
+    bool pathLoaded = false;
+    while(!allBodiesDone() && !pathLoaded) {
+
+        m_currentBody = getNextBody();
+        if (m_bodyDone[m_currentBody]) {
+            continue;
+        }
+
+        if (loadFirstPath()) {
+            pathLoaded = true;
+            break;
+        } else {
+            m_bodyDone[m_currentBody] = true;
+            // (not needed but intended)
+            // continue;
+        }
+    }
+
+    if (pathLoaded) {
+
+
+
+        // update UI for path
+
+
+
+    } else {
+
+
+
+        // (we're done): dialog, clear UI, return (call on finished all paths?)
+        std::cout << "all bodies done" << std::endl;
+
+
+
+    }
+}
+
+bool FocusedPathProtocol::allBodiesDone() {
+    foreach(bool status, m_bodyDone) {
+        if (!status) {
+            return false;
+        }
+    }
+    return true;
+}
+
+uint64_t FocusedPathProtocol::getNextBody() {
+    if (m_currentBody == INVALID_BODY || m_currentBody == m_bodies.last()) {
+        return m_bodies.first();
+    } else {
+        return m_bodies[m_bodies.indexOf(m_currentBody) + 1];
+    }
+}
+
+bool FocusedPathProtocol::loadFirstPath() {
+    // this is the "start over" point for the current body;
+    //  load all paths, load bodyIDs at path endpoints,
+    //  reset skips, get next (first) path
+    loadCurrentBodyPaths();
+    if (m_currentBodyPaths.size() == 0) {
+        m_bodyDone[m_currentBody] = true;
+        return false;
+    }
 
     // load the body IDs at all endpoints of all paths;
     //  save for later reuse
@@ -365,20 +450,35 @@ void FocusedPathProtocol::onCurrentBodyPathsLoaded() {
         m_currentPathBodyIDs[points[i]] = bodyIDs[i];
     }
 
+    m_bodySkippedPathCount[m_currentBody] = 0;
+    return loadNextPath();
+}
 
-    // get to work:
-    m_currentPath = findNextPath();
-    m_currentPath.loadEdges(m_reader, m_edgeDataInstance);
-    while (m_currentPath.isConnected()) {
-        // if a path is connected, it shouldn't be in our
-        //  list, nor should it be in DVID
-        m_currentBodyPaths.removeOne(m_currentPath);
-        deletePath(m_currentPath);
+bool FocusedPathProtocol::loadNextPath() {
+    while (m_currentBodyPaths.size() > 0) {
         m_currentPath = findNextPath();
         m_currentPath.loadEdges(m_reader, m_edgeDataInstance);
-    }
 
-    displayCurrentPath();
+        if (!m_currentPath.isConnected()) {
+
+
+            // update UI
+            return true;
+
+
+        } else {
+            // if a path is connected, it shouldn't be in our
+            //  list, nor should it be in DVID; basically, after
+            //  you link a path, this is how other potential (and now
+            //  invalid) paths between the same two bodies get cleaned up
+            m_currentBodyPaths.removeOne(m_currentPath);
+            deletePath(m_currentPath);
+            // (not needed but intended)
+            // continue;
+        }
+    }
+    // can't find unconnected path
+    return false;
 }
 
 FocusedPath FocusedPathProtocol::findNextPath() {
