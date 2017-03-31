@@ -398,6 +398,25 @@ TEST(ZStack, BorderShrink)
   Print_Stack_Value(stack->c_stack());
 }
 
+TEST(ZStack, equal)
+{
+  ZStack *stack1 = ZStackFactory::makeOneStack(3, 3, 3);
+  ZStack *stack2 = ZStackFactory::makeOneStack(3, 3, 3);
+
+  ASSERT_TRUE(stack1->equals(*stack2));
+
+  stack1->setValue(0, 0, 0);
+  ASSERT_FALSE(stack1->equals(*stack2));
+
+  ZStack *stack3 = ZStackFactory::makeOneStack(2, 3, 4);
+  ASSERT_FALSE(stack1->equals(*stack3));
+
+  ZStack stack4;
+  stack4.load(GET_TEST_DATA_DIR + "/benchmark/block.tif");
+
+  ASSERT_TRUE(stack4.equals(stack4));
+}
+
 #endif
 
 #endif // ZSTACKTEST_H

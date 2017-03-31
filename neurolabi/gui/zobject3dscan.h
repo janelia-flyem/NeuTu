@@ -180,6 +180,9 @@ public:
       const T *array, int start, int y, int z, int stride, int dim);
 
 
+  void addStack(Stack *stack, int v, const int *offset = NULL) const;
+  void addStack(ZStack *stack, int v) const;
+
   /*!
    * \brief Draw a stack
    * \param stack

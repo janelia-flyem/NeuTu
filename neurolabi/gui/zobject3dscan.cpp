@@ -750,12 +750,30 @@ size_t ZObject3dScan::countForegroundOverlap(Stack *stack, const int *offset)
   return count;
 }
 
+void ZObject3dScan::addStack(Stack *stack, int v, const int *offset) const
+{
+  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+       iter != m_stripeArray.end(); ++iter) {
+    iter->addStackValue(stack, v, offset);
+  }
+}
+
 void ZObject3dScan::drawStack(Stack *stack, int v, const int *offset) const
 {
   for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     iter->drawStack(stack, v, offset);
   }
+}
+
+void ZObject3dScan::addStack(ZStack *stack, int v) const
+{
+  int offset[3];
+  offset[0] = -stack->getOffset().getX();
+  offset[1] = -stack->getOffset().getY();
+  offset[2] = -stack->getOffset().getZ();
+
+  addStack(stack->c_stack(0), v, offset);
 }
 
 void ZObject3dScan::drawStack(ZStack *stack, int v) const

@@ -368,6 +368,72 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 }
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
+    const ZStack &stack, NeuTube::EAxis axis, bool foreground,
+    ZObject3dScanArray *out)
+{
+  if (stack.kind() != GREY && stack.kind() != GREY16) {
+    return NULL;
+  }
+
+  if (out == NULL) {
+    out = new ZObject3dScanArray;
+  }
+
+  std::map<uint64_t, ZObject3dScan*> *bodySet = NULL;
+
+  switch (stack.kind()) {
+  case GREY:
+    if (foreground) {
+      bodySet = ZObject3dScan::extractAllForegroundObject(
+            stack.array8(), stack.width(), stack.height(), stack.depth(), axis);
+    } else {
+      bodySet = ZObject3dScan::extractAllObject(
+            stack.array8(), stack.width(), stack.height(), stack.depth(), axis);
+    }
+    break;
+  case GREY16:
+    if (foreground) {
+      bodySet = ZObject3dScan::extractAllForegroundObject(
+            stack.array16(), stack.width(), stack.height(), stack.depth(), axis);
+    } else {
+      bodySet = ZObject3dScan::extractAllObject(
+            stack.array16(), stack.width(), stack.height(), stack.depth(), axis);
+    }
+    break;
+  default:
+    break;
+  }
+
+
+  out->resize(bodySet->size());
+
+  if (bodySet != NULL) {
+    size_t index = 0;
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter, ++index) {
+      ZObject3dScan *obj = iter->second;
+      obj->setLabel(iter->first);
+
+      ZObject3dScan &outObj = (*out)[index];
+
+      std::swap(outObj.getStripeArray(), obj->getStripeArray());
+      outObj.setLabel(obj->getLabel());
+      outObj.setSliceAxis(axis);
+//      out->push_back(*obj);
+
+      delete obj;
+    }
+
+    delete bodySet;
+  } else {
+    out = NULL;
+  }
+
+  return out;
+}
+
+
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
     const ZArray &array, NeuTube::EAxis axis, bool foreground,
     ZObject3dScanArray *out)
 {

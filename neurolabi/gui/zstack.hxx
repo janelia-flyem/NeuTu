@@ -469,6 +469,8 @@ public: /* data operation */
   void* rawChannelData(int c);
   //Stack* channelData(int c);
 
+  bool equals(const ZStack &stack2) const;
+
 public: /* operations */
 
   void* projection(ZSingleChannelStack::Proj_Mode mode,
