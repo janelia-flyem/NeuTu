@@ -22713,7 +22713,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/benchmark/rice_label.tif");
   ZObject3dScanArray *objArray =
@@ -22733,8 +22733,38 @@ void ZTest::test(MainWindow *host)
   std::cout << stack.equals(*stack2) << std::endl;
   delete stack2;
   delete objArray;
+#endif
 
+#if 1
+  ZObject3dScan obj1;
+  ZObject3dScan obj2;
 
+//  obj1.addSegment(0, 0, 0, 2);
+//  obj2.addSegment(0, 0, 1, 3);
+
+  obj1.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  obj2 = obj1.getSlice(100, 500);
+
+  std::vector<ZSwcTree*> treeArray =
+      ZSwcFactory::CreateDiffSurfaceSwc(obj1, obj2);
+
+  ZSwcTree *tree = new ZSwcTree;
+
+  int index = 1;
+  for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+       iter != treeArray.end(); ++iter) {
+    ZSwcTree *subtree = *iter;
+    if (subtree != NULL) {
+      subtree->setType(index);
+      QString output = QString("%1/test%2.swc").
+          arg(GET_TEST_DATA_DIR.c_str()).arg(index);
+      subtree->save(output.toStdString());
+//      tree->merge(subtree, true);
+    }
+    ++index;
+  }
+
+//  tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

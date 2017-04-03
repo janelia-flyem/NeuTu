@@ -29,6 +29,8 @@
 #endif
 #include "zstring.h"
 #include "zstackfactory.h"
+#include "zpoint.h"
+#include "zintcuboid.h"
 
 using namespace std;
 

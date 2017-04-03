@@ -97,7 +97,7 @@ void ZViewProj::update()
     m_viewPort.setSize(QSize(iround(m_widgetRect.width() / m_zoom),
                              iround(m_widgetRect.height() / m_zoom)));
 
-    if (m_viewPort.intersect(m_widgetRect).isEmpty()) {
+    if (!m_viewPort.intersects(m_widgetRect)) {
       m_viewPort = QRect();
     } else {
       //Set initial proj region to the whole widget

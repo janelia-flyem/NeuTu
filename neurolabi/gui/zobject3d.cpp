@@ -16,6 +16,7 @@
 #include "zstack.hxx"
 #include "zpainter.h"
 #include "zcuboid.h"
+#include "zintcuboid.h"
 
 using namespace std;
 

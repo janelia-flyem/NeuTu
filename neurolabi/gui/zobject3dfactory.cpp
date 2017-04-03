@@ -10,6 +10,7 @@
 #include "zclosedcurve.h"
 #include "zarray.h"
 #include "zrandomgenerator.h"
+#include "zintcuboid.h"
 
 #if defined(_QT_GUI_USED_)
 #  include "zstroke2d.h"

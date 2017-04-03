@@ -227,7 +227,7 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
         emit selectingSwcNodeTreeInRoi(false);
       } else if (event->modifiers() == Qt::ControlModifier) {
         emit selectingTerminalBranchInRoi(false);
-      } else if (event->modifiers() == Qt::ControlModifier | Qt::ShiftModifier) {
+      } else if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier)) {
         emit selectingTerminalBranchInRoi(true);
       }
       processed = true;

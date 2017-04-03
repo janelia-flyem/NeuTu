@@ -13,7 +13,6 @@
 
 #include "zqtheader.h"
 #include "c_stack.h"
-#include "zintcuboid.h"
 #include "zstackobject.h"
 #include "tz_cuboid_i.h"
 #include "zhistogram.h"

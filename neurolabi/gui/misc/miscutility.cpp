@@ -13,7 +13,7 @@
 #include "tz_utilities.h"
 #include "zswctree.h"
 #include "zclosedcurve.h"
-
+#include "zintcuboid.h"
 
 using namespace std;
 

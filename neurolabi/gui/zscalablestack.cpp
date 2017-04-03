@@ -1,5 +1,6 @@
 #include "zscalablestack.h"
 #include "zstack.hxx"
+#include "zpoint.h"
 
 ZScalableStack::ZScalableStack() : m_stack(NULL)
 {

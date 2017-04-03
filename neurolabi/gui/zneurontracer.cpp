@@ -24,6 +24,7 @@
 #include "zneurontracerconfig.h"
 #include "swc/zswcpruner.h"
 #include "tz_stack_threshold.h"
+#include "zintcuboid.h"
 
 ZNeuronTraceSeeder::ZNeuronTraceSeeder()
 {

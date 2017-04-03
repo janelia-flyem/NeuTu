@@ -18,6 +18,7 @@
 #include "tz_math.h"
 #include "zclosedcurve.h"
 #include "tz_stack_neighborhood.h"
+#include "zintcuboid.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {

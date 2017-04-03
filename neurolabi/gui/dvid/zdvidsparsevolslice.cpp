@@ -2,6 +2,7 @@
 
 #include "neutubeconfig.h"
 #include "zpainter.h"
+#include "zintcuboid.h"
 
 ZDvidSparsevolSlice::ZDvidSparsevolSlice() : ZObject3dScan()/*, m_currentZ(-1)*/
 {

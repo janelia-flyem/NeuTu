@@ -130,6 +130,19 @@ void ZIntCuboid::expandY(int dy)
   m_lastCorner.setY(m_lastCorner.getY() + dy);
 }
 
+void ZIntCuboid::expandZ(int dz)
+{
+  m_firstCorner.setZ(m_firstCorner.getZ() - dz);
+  m_lastCorner.setZ(m_lastCorner.getZ() + dz);
+}
+
+void ZIntCuboid::expand(int dx, int dy, int dz)
+{
+  expandX(dx);
+  expandY(dy);
+  expandZ(dz);
+}
+
 void ZIntCuboid::joinY(int y)
 {
   if (y < m_firstCorner.getY()) {

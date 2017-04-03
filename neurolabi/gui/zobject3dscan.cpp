@@ -37,6 +37,7 @@
 #include "zpainter.h"
 #include "tz_stack_bwmorph.h"
 #include "geometry/zgeometry.h"
+#include "zintcuboid.h"
 
 using namespace std;
 

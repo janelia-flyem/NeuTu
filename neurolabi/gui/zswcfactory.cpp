@@ -19,7 +19,8 @@
 #include "tz_math.h"
 #include "zclosedcurve.h"
 #include "tz_stack_neighborhood.h"
-
+#include "zstackfactory.h"
+#include "zintcuboid.h"
 
 ZSwcFactory::ZSwcFactory()
 {
@@ -637,6 +638,28 @@ std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
   ZObject3dScan obj3 = obj1;
   obj3.downsampleMax(intv, intv, intv);
 
+  ZObject3dScan obj4 = obj2;
+  obj4.downsampleMax(intv, intv, intv);
+
+  box = obj3.getBoundBox();
+  box.join(obj4.getBoundBox());
+  box.expand(1, 1, 1);
+
+  ZStack *stack = ZStackFactory::makeZeroStack(GREY, box);
+
+  obj3.drawStack(stack, 1);
+  obj4.addStack(stack, 2);
+
+#ifdef _DEBUG_2
+  C_Stack::printValue(stack->data());
+#endif
+
+  std::vector<ZSwcTree*> treeArray = CreateLevelSurfaceSwc(
+        *stack, 1, ZIntPoint(intv + 1, intv + 1, intv + 1));
+
+  delete stack;
+
+  return treeArray;
 }
 
 int ZSwcFactory::GetIntv(int segNumber, const ZIntCuboid &box)
@@ -648,12 +671,9 @@ int ZSwcFactory::GetIntv(int segNumber, const ZIntCuboid &box)
 
   if (volume > MAX_INT32) {
     intv = (iround(Cube_Root(double(volume) / MAX_INT32)) + 1) * (intv + 1) - 1;
-    /*
-    if (intv < 0) {
-      intv = 0;
-    }
-    */
   }
+
+  return intv;
 }
 
 ZSwcTree* ZSwcFactory::CreateSurfaceSwc(const ZStack &stack, int sparseLevel)

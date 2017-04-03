@@ -13,7 +13,6 @@
 #include "zstack.hxx"
 #include "zdvidclient.h"
 #include "flyem/zflyem.h"
-#include "zintcuboid.h"
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"

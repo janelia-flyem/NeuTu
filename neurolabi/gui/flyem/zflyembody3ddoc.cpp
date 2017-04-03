@@ -1074,6 +1074,59 @@ ZSwcTree* ZFlyEmBody3dDoc::recoverFullBodyFromGarbage(uint64_t bodyId, int resLe
   return tree;
 }
 
+std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
+    uint64_t bodyId1, uint64_t bodyId2, const ZDvidTarget &diffTarget, int zoom,
+    FlyEM::EBodyType bodyType)
+{
+  std::vector<ZSwcTree*> treeArray;
+
+  if (bodyType == FlyEM::BODY_COARSE || bodyType == FlyEM::BODY_SKELETON) {
+    zoom = 0;
+  }
+
+  ZDvidReader newReader;
+  newReader.open(diffTarget);
+
+  if (bodyType == FlyEM::BODY_COARSE) {
+    ZObject3dScan obj1 = m_dvidReader.readCoarseBody(bodyId1);
+    ZObject3dScan obj2 = newReader.readCoarseBody(bodyId2);
+    treeArray = ZSwcFactory::CreateDiffSurfaceSwc(obj1, obj2);
+    for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+         iter != treeArray.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->translate(-getDvidInfo().getStartBlockIndex());
+      tree->rescale(getDvidInfo().getBlockSize().getX(),
+                    getDvidInfo().getBlockSize().getY(),
+                    getDvidInfo().getBlockSize().getZ());
+      tree->translate(getDvidInfo().getStartCoordinates() +
+                      getDvidInfo().getBlockSize() / 2);
+    }
+  } else {
+    ZObject3dScan obj1;
+    ZObject3dScan obj2;
+    m_dvidReader.readMultiscaleBody(bodyId1, zoom, true, &obj1);
+    newReader.readMultiscaleBody(bodyId2, zoom, true, &obj2);
+    treeArray = ZSwcFactory::CreateDiffSurfaceSwc(obj1, obj2);
+#if 0
+      if (tree != NULL) {
+        tree->setTimeStamp(t);
+        if (tree->getSource() == "oversize" || zoom <= 2) {
+          zoom = 0;
+        }
+        tree->setSource(
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(
+                bodyId, zoom, bodyType));
+        tree->setObjectClass(
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+        tree->setLabel(bodyId);
+      }
+#endif
+  }
+
+  return treeArray;
+}
+
+
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
     uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
 {

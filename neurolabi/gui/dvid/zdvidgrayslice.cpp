@@ -6,6 +6,7 @@
 #include "zstackviewparam.h"
 #include "misc/miscutility.h"
 #include "imgproc/zstackprocessor.h"
+#include "zintcuboid.h"
 
 ZDvidGraySlice::ZDvidGraySlice()
 {

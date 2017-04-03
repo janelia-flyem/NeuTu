@@ -16,6 +16,8 @@
 #include "tz_stack_neighborhood.h"
 #include "tz_objdetect.h"
 #include "tz_int_histogram.h"
+#include "zintcuboid.h"
+#include "zpoint.h"
 
 ZStackProcessor::ZStackProcessor()
 {

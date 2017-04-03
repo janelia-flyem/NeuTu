@@ -208,6 +208,11 @@ private:
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+
+  std::vector<ZSwcTree*> makeDiffBodyModel(
+      uint64_t bodyId1, uint64_t bodyId2, const ZDvidTarget &diffTarget, int zoom,
+      FlyEM::EBodyType bodyType);
+
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);

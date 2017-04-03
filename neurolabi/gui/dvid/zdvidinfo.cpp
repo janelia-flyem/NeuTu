@@ -6,6 +6,7 @@
 #include "tz_math.h"
 #include "zobject3dfactory.h"
 #include "zintcuboidarray.h"
+#include "zintcuboid.h"
 
 const int ZDvidInfo::m_defaultBlockSize = 32;
 

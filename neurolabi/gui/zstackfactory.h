@@ -5,7 +5,6 @@
 #include "zstack.hxx"
 #include "tz_math.h"
 #include "tz_stack_lib.h"
-#include "zintcuboid.h"
 
 class ZClosedCurve;
 class ZStroke2d;
