@@ -37,6 +37,16 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(uint64_t bodyId)
   return source;
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmBodyDiffSource(
+    uint64_t bodyId, const std::string &tag)
+{
+  ZString source = "#.FlyEm.Body.Diff#";
+  source.appendNumber(bodyId);
+  source += "." + tag;
+
+  return source;
+}
+
 std::string ZStackObjectSourceFactory::GetBodyTypeName(
     FlyEM::EBodyType bodyType)
 {

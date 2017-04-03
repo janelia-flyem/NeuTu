@@ -624,6 +624,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Update Bodies", parent);
     action->setToolTip("Update bodies from DVID");
     break;
+  case ACTION_FLYEM_COMPARE_BODY:
+    action = new QAction("Compare Body", parent);
+    action->setToolTip("Compare the body with one from another version");
+    break;
   case ACTION_SAVE_STACK:
     action = new QAction("Save Stack", parent);
     action->setIcon(QIcon(":/images/save.png"));

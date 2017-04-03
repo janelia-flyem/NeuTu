@@ -22748,7 +22748,7 @@ void ZTest::test(MainWindow *host)
   std::vector<ZSwcTree*> treeArray =
       ZSwcFactory::CreateDiffSurfaceSwc(obj1, obj2);
 
-  ZSwcTree *tree = new ZSwcTree;
+//  ZSwcTree *tree = new ZSwcTree;
 
   int index = 1;
   for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();

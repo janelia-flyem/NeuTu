@@ -21,6 +21,8 @@ public:
   static std::string MakeFlyEmBodySource(
       uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
   static std::string GetBodyTypeName(FlyEM::EBodyType bodyType);
+  static std::string MakeFlyEmBodyDiffSource(
+      uint64_t bodyId, const std::string &tag);
 
   static std::string ExtractBodyStrFromFlyEmBodySource(const std::string &source);
   static uint64_t ExtractIdFromFlyEmBodySource(const std::string &source);

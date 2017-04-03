@@ -657,6 +657,22 @@ std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
   std::vector<ZSwcTree*> treeArray = CreateLevelSurfaceSwc(
         *stack, 1, ZIntPoint(intv + 1, intv + 1, intv + 1));
 
+  for (size_t i = 0; i < treeArray.size(); ++i) {
+    ZSwcTree *tree = treeArray[i];
+    if (tree != NULL) {
+      if (i == 1) { //deleted
+        tree->setSource("split");
+        tree->setColor(255, 0, 0);
+      } else if (i == 2) { //unchanged
+        tree->setSource("same");
+        tree->setColor(128, 128, 128);
+      } else if (i == 0) { //added
+        tree->setSource("merge");
+        tree->setColor(0, 255, 0);
+      }
+    }
+  }
+
   delete stack;
 
   return treeArray;
