@@ -198,9 +198,6 @@ void FocusedPathProtocol::onCompleteButton() {
 }
 
 void FocusedPathProtocol::onSkipPathButton() {
-
-    std::cout << "onSkipPathButton" << std::endl;
-
     m_currentBodyPaths.removeAll(m_currentPath);
     m_bodySkippedPathCount[m_currentBody] += 1;
 
@@ -389,20 +386,25 @@ void FocusedPathProtocol::loadNextBodyAndPath() {
         }
     }
 
-    if (pathLoaded) {
+    if (!pathLoaded) {
 
 
-
-        // update UI for path
-
+        // if we arrive here, we're done
 
 
-    } else {
-
-
-
-        // (we're done): dialog, clear UI, return (call on finished all paths?)
         std::cout << "all bodies done" << std::endl;
+
+        // maybe split this off into a slot that we can signal?  but not
+        //  sure you can get here any other way
+        QMessageBox mb;
+        mb.setText("Done!");
+        mb.setInformativeText("All paths have been reviewed!  The protocol can now be completed.");
+        mb.setStandardButtons(QMessageBox::Ok);
+        mb.setDefaultButton(QMessageBox::Ok);
+        mb.exec();
+
+
+        // clear the edge display UI and update the progress UI
 
 
 
@@ -460,12 +462,8 @@ bool FocusedPathProtocol::loadNextPath() {
         m_currentPath.loadEdges(m_reader, m_edgeDataInstance);
 
         if (!m_currentPath.isConnected()) {
-
-
-            // update UI
+            displayCurrentPath();
             return true;
-
-
         } else {
             // if a path is connected, it shouldn't be in our
             //  list, nor should it be in DVID; basically, after
@@ -622,26 +620,33 @@ void FocusedPathProtocol::updateConnectionLabel() {
 
 void FocusedPathProtocol::updateProgressLabel() {
 
-    std::ostringstream outputStream;
-
-    // probably something like this:
-    // Progress: 1/3 edges; 1/17 (6%) paths; 1/3 (%) bodies
-
-    // that's going to be a pain to track...defer for now
-
-    // edges:
-    // (m_currentPath.getNumEdges() - m_currentPath.getNumUnexaminedEdges()) / m_currentPath.getNumEdges()
-
-    // paths:
+    // not displaying anything involving edges at this time;
+    //  it's evident by looking at the table
 
 
-    // bodies:
+    // paths for current body:
+    std::ostringstream outputStream1;
+
+    // unhandled paths = current + skipped
+    outputStream1 << m_currentBodyPaths.size() + m_bodySkippedPathCount[m_currentBody];
+    outputStream1 << " paths for current body";
+    ui->progressLabel1->setText(QString::fromStdString(outputStream1.str()));
 
 
-    outputStream << "Progress: (coming soon)";
+    // bodies done:
+    std::ostringstream outputStream2;
+    int nBodiesDone = 0;
+    foreach(bool status, m_bodyDone) {
+        if (status) {
+            nBodiesDone += 1;
+        }
+    }
+    outputStream2 << nBodiesDone;
+    outputStream2 << "/";
+    outputStream2 << m_bodies.size();
+    outputStream2 << " bodies done";
 
-
-    ui->progressLabel->setText(QString::fromStdString(outputStream.str()));
+    ui->progressLabel2->setText(QString::fromStdString(outputStream2.str()));
 
 }
 
