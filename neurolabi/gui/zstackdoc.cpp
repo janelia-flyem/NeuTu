@@ -5364,6 +5364,7 @@ void ZStackDoc::notifySparseObjectModified()
 void ZStackDoc::notifyStackModified()
 {
   emit stackModified();
+  emit stackBoundBoxChanged();
 }
 
 void ZStackDoc::notifySparseStackModified()

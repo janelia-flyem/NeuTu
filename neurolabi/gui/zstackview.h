@@ -305,6 +305,7 @@ public slots:
   void hideThresholdControl();
 
   void setDynamicObjectAlpha(int alpha);
+  void resetViewProj();
 
 
 signals:

@@ -79,6 +79,11 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
     ZPainter painter;
 
+    if (!m_isReady) {
+      m_viewProj.maximizeViewPort();
+      m_isReady = true;
+    }
+
     if (!painter.begin(this)) {
       std::cout << "......failed to begin painter" << std::endl;
     }
@@ -90,15 +95,6 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
       painter.setRenderHint(QPainter::Antialiasing, true);
     }
 
-    //Compute real viewport and projregion
-//#ifdef _DEBUG_
-    //setView(m_zoomRatio, m_viewPort.topLeft());
-#if 0
-    if (!m_viewProj.isValid()) {
-      setView(1, QPoint(0, 0));
-    }
-#endif
-//#endif
 
     /* draw gray regions */
     painter.fillRect(QRect(0, 0, screenSize().width(), screenSize().height()),
@@ -1142,28 +1138,17 @@ QSize ZImageWidget::sizeHint() const
   }
 }
 
+
+void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
+{
+  setCanvasRegion(x0, y0, w, h);
+  m_viewProj.setWidgetRect(rect());
+  m_isReady = false;
+}
+
 void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
 {
   m_viewProj.setCanvasRect(QRect(x0, y0, w, h));
-#if 0
-  if ((m_canvasRegion.left() != x0) || (m_canvasRegion.top() != y0) ||
-      (m_canvasRegion.width() != w) || (m_canvasRegion.height() != h)) {
-    m_canvasRegion.setLeft(x0);
-    m_canvasRegion.setTop(y0);
-    m_canvasRegion.setWidth(w);
-    m_canvasRegion.setHeight(h);
-    setView(1, QPoint(0, 0));
-
-//    m_viewPort.setSize(QSize(0, 0));
-//    m_projRegion.setSize(QSize(0, 0));
-  }
-#endif
-  /*
-  if (m_viewPort.width() == 0) {
-    m_viewPort = m_canvasRegion;
-    setValidViewPort(m_viewPort);
-  }
-  */
 }
 
 bool ZImageWidget::isColorTableRequired()
@@ -1304,11 +1289,6 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
 void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
   m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
-
-  if (!m_isReady) {
-    m_viewProj.maximizeViewPort();
-    m_isReady = true;
-  }
 //  setValidViewPort(m_viewPort);
 }
 

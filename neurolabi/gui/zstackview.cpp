@@ -249,6 +249,14 @@ void ZStackView::setDynamicObjectAlpha(int alpha)
   }
 }
 
+void ZStackView::resetViewProj()
+{
+  ZIntCuboid box = buddyDocument()->getStack()->getBoundBox();
+  m_imageWidget->resetViewProj(
+        box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+        box.getWidth(), box.getHeight());
+}
+
 void ZStackView::setInfo(QString info)
 {
   if (m_infoLabel != NULL) {
