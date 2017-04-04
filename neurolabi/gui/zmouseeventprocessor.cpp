@@ -161,6 +161,9 @@ const
 
   viewProj.mapPointBack(x, y);
 
+  (*x) -= viewProj.getCanvasRect().left();
+  (*y) -= viewProj.getCanvasRect().top();
+
 #if 0
   QSizeF csize = m_imageWidget->projectSize();
 

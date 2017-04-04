@@ -39,6 +39,7 @@ void ZImageWidget::init()
   m_freeMoving = true;
   m_hoverFocus = false;
   m_smoothDisplay = false;
+  m_isReady = false;
 
 #if 0
   if (image != NULL) {
@@ -788,7 +789,8 @@ void ZImageWidget::increaseZoomRatio(int x, int y, bool usingRef)
     QPointF viewPoint = m_viewProj.mapPointBack(QPointF(x, y));
     m_viewProj.increaseZoom(viewPoint.x(), viewPoint.y());
   } else {
-    m_viewProj.increaseZoom();
+    QPoint viewPoint = m_viewProj.getViewPort().center();
+    m_viewProj.increaseZoom(viewPoint.x(), viewPoint.y());
   }
 #if 0
   double zoomRatio = std::max(
@@ -822,7 +824,8 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
     QPointF viewPoint = m_viewProj.mapPointBack(QPointF(x, y));
     m_viewProj.decreaseZoom(viewPoint.x(), viewPoint.y());
   } else {
-    m_viewProj.decreaseZoom();
+    QPoint viewPoint = m_viewProj.getViewPort().center();
+    m_viewProj.decreaseZoom(viewPoint.x(), viewPoint.y());
   }
 
 //  m_viewProj.recoverViewPort();
@@ -1094,17 +1097,23 @@ void ZImageWidget::paintZoomHint()
   }
 
   painter.setRenderHint(QPainter::Antialiasing, false);
-  //if (m_zoomRatio > 1 && m_isViewHintVisible) {
+
   if ((viewPort().size().width() < canvasSize().width()
        || viewPort().size().height() < canvasSize().height()) &&
       m_isViewHintVisible) {
     painter.setPen(QPen(QColor(0, 0, 255, 128)));
-    double ratio = (double) projectSize().width() /
-        canvasSize().width() / 5.0;
-    painter.drawRect(0, 0, ratio * canvasSize().width(),
-                     ratio * canvasSize().height());
+
+    double ratio = std::min(
+          m_viewProj.getWidgetRect().width() * 0.2 / canvasSize().width(),
+          m_viewProj.getWidgetRect().height() * 0.2 / canvasSize().height());
+
+    //Canvas hint
+    painter.drawRect(
+          0, 0, ratio * canvasSize().width(), ratio * canvasSize().height());
+
     painter.setPen(QPen(QColor(0, 255, 0, 128)));
 
+    //Viewport hint
     painter.drawRect(ratio * (viewPort().left() - canvasRegion().left()),
                      ratio * (viewPort().top() - canvasRegion().top()),
                      ratio * viewPort().width(), ratio * viewPort().height());
@@ -1295,6 +1304,11 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
 void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
   m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
+
+  if (!m_isReady) {
+    m_viewProj.maximizeViewPort();
+    m_isReady = true;
+  }
 //  setValidViewPort(m_viewPort);
 }
 

@@ -304,6 +304,7 @@ private:
   bool m_hoverFocus;
   bool m_smoothDisplay;
   bool m_showingCrossHair;
+  bool m_isReady;
   QPoint m_hairCenter;
 };
 
