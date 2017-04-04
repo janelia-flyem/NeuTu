@@ -15,15 +15,15 @@
 #include "zxmldoc.h"
 #include "zstring.h"
 #include "zlogmessagereporter.h"
-#include "neutube.h"
+#include "neutube_def.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
 using namespace std;
 
-NeutubeConfig::NeutubeConfig() :
+NeutubeConfig::NeutubeConfig()
   #ifdef _QT_GUI_USED_
-    m_settings(QSettings::UserScope, "NeuTu-be")
+    : m_settings(QSettings::UserScope, "NeuTu-be")
   #endif
 {
   init();
@@ -720,7 +720,7 @@ void NeutubeConfig::setVerboseLevel(int level)
 #ifdef _QT_GUI_USED_
   m_settings.setValue("verbose", level);
 #else
-  m_verboseLevel = on;
+  m_verboseLevel = level;
 #endif
 }
 

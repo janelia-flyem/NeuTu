@@ -109,9 +109,13 @@ ZStack::ZStack(const ZStack &/*src*/)
 ZStack::~ZStack()
 {
 //  ZOUT(LTRACE(), 5) << "Deleting stack: " << this;
+  #ifdef _QT_GUI_USED_
   tic();
+  #endif
   clear();
+  #ifdef _QT_GUI_USED_
   ZOUT(LTRACE(), 5) << "Stack deleted" << this << toc() << "ms";
+  #endif
 }
 
 size_t ZStack::getByteNumber(EStackUnit unit) const

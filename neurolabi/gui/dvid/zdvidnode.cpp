@@ -207,8 +207,6 @@ void ZDvidNode::setFromSourceString(const std::string &sourceString)
   if (tokens.size() < 4 || tokens[0] != "http") {
 #if defined(_QT_APPLICATION_)
     LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
-#else
-    RECORD_WARNING_UNCOND("Invalid source string");
 #endif
   } else {
     int port = -1;
