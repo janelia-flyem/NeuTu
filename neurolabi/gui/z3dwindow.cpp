@@ -590,6 +590,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
     break;
+  case ZActionFactory::ACTION_FLYEM_COMPARE_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(compareBody()));
+    break;
   default:
     break;
   }
@@ -2382,6 +2385,14 @@ void Z3DWindow::updateBody()
   }
 }
 
+void Z3DWindow::compareBody()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->compareBody();
+  }
+}
+
 void Z3DWindow::deselectBody()
 {
   std::set<uint64_t> bodySet;
@@ -3090,7 +3101,23 @@ void Z3DWindow::updateOverallBoundBox()
   m_boundBox[0] = m_boundBox[2] = m_boundBox[4] = std::numeric_limits<double>::max();
   m_boundBox[1] = m_boundBox[3] = m_boundBox[5] = -std::numeric_limits<double>::max();
   if (hasVolume()) {
-    updateOverallBoundBox(m_volumeBoundBox);
+    std::vector<double> adjustedBoundbox = m_volumeBoundBox;
+    if (adjustedBoundbox[1] > adjustedBoundbox[0] ||
+        adjustedBoundbox[3] > adjustedBoundbox[2] ||
+        adjustedBoundbox[5] > adjustedBoundbox[4]) {
+      if (adjustedBoundbox[0] == adjustedBoundbox[1]) {
+        adjustedBoundbox[1] += 1.0;
+      }
+
+      if (adjustedBoundbox[3] == adjustedBoundbox[2]) {
+        adjustedBoundbox[3] += 1.0;
+      }
+
+      if (adjustedBoundbox[5] == adjustedBoundbox[4]) {
+        adjustedBoundbox[5] += 1.0;
+      }
+    }
+    updateOverallBoundBox(adjustedBoundbox);
   }
   updateOverallBoundBox(m_swcBoundBox);
   updateOverallBoundBox(m_punctaBoundBox);

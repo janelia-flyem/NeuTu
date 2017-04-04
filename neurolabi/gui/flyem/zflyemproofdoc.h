@@ -49,6 +49,10 @@ public:
 
 //  void makeAction(ZActionFactory::EAction item);
 
+  const ZDvidVersionDag& getVersionDag() const {
+    return m_versionDag;
+  }
+
   void mergeSelected(ZFlyEmSupervisor *supervisor);
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();

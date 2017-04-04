@@ -17,6 +17,7 @@
 #include "neutubeconfig.h"
 #include "zpixmap.h"
 #include "zstring.h"
+#include "zintcuboid.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {

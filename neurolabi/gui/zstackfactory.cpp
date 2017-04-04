@@ -18,6 +18,7 @@
 #include "zobject3dscanarray.h"
 #include "tz_stack_bwmorph.h"
 #include "c_stack.h"
+#include "zintcuboid.h"
 
 ZStackFactory::ZStackFactory()
 {

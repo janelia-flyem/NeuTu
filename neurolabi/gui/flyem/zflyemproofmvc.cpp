@@ -386,6 +386,19 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
           this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
 }
 
+void ZFlyEmProofMvc::exportGrayscale(
+    const ZIntCuboid &box, const QString &fileName)
+{
+  ZStack *stack =
+      getCompleteDocument()->getDvidReader().readGrayScale(box);
+
+  if (stack != NULL) {
+    stack->save(fileName.toStdString());
+  }
+
+  delete stack;
+}
+
 void ZFlyEmProofMvc::exportNeuronScreenshot(
     const std::vector<uint64_t> &bodyIdArray, int width, int height,
     const QString &outDir)
@@ -2427,6 +2440,41 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
 
       sparseStack->getStack()->save(fileName.toStdString());
       delete sparseStack;
+    }
+  }
+}
+
+void ZFlyEmProofMvc::exportSelectedBodyLevel()
+{
+  QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
+  if (!fileName.isEmpty()) {
+    ZDvidLabelSlice *slice =
+        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+    if (slice != NULL) {
+      std::set<uint64_t> idSet =
+          slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+//      std::set<uint64_t> idSet =
+//          m_mergeProject.getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+
+      ZObject3dScanArray objArray;
+      objArray.resize(idSet.size());
+
+      ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+      if (reader.isReady()) {
+        int index = 0;
+        for (std::set<uint64_t>::const_iterator iter = idSet.begin();
+             iter != idSet.end(); ++iter) {
+          ZObject3dScan &obj = objArray[index];
+          reader.readBody(*iter, false, &obj);
+          index++;
+        }
+      }
+
+      ZStack *stack = objArray.toLabelField();
+      if (stack != NULL) {
+        stack->save(fileName.toStdString());
+      }
+      delete stack;
     }
   }
 }

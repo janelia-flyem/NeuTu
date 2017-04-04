@@ -11,6 +11,7 @@
 #include "zdvidtile.h"
 #include "zdvidreader.h"
 #include "zsharedpointer.h"
+#include "zintcuboid.h"
 
 class ZStackView;
 class ZDvidPatchDataFetcher;

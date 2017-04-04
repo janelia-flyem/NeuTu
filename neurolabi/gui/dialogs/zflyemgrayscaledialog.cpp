@@ -1,0 +1,163 @@
+#include "zflyemgrayscaledialog.h"
+#include "ui_zflyemgrayscaledialog.h"
+#include "flyem/zproofreadwindow.h"
+#include "flyem/zflyemproofmvc.h"
+#include "zstackview.h"
+#include "zintpoint.h"
+#include "zintcuboid.h"
+
+ZFlyEmGrayscaleDialog::ZFlyEmGrayscaleDialog(QWidget *parent) :
+  QDialog(parent),
+  ui(new Ui::ZFlyEmGrayscaleDialog)
+{
+  ui->setupUi(this);
+
+  connectSignalSlot();
+}
+
+ZFlyEmGrayscaleDialog::~ZFlyEmGrayscaleDialog()
+{
+  delete ui;
+}
+
+void ZFlyEmGrayscaleDialog::connectSignalSlot()
+{
+  connect(ui->offsetPushButton, SIGNAL(clicked()), SLOT(useCurrentOffset()));
+  connect(ui->centerPushButton, SIGNAL(clicked()), SLOT(useViewCenter()));
+  connect(ui->viewPortPushButton, SIGNAL(clicked()), SLOT(useViewPort()));
+}
+
+ZProofreadWindow* ZFlyEmGrayscaleDialog::getMainWindow() const
+{
+  return qobject_cast<ZProofreadWindow*>(parentWidget());
+}
+
+ZIntPoint ZFlyEmGrayscaleDialog::getOffset() const
+{
+  return ZIntPoint(getOffsetX(), getOffsetY(), getOffsetZ());
+}
+
+ZIntPoint ZFlyEmGrayscaleDialog::getSize() const
+{
+  return ZIntPoint(getWidth(), getHeight(), getDepth());
+}
+
+ZIntPoint ZFlyEmGrayscaleDialog::getFirstCorner() const
+{
+  return getOffset();
+}
+
+ZIntPoint ZFlyEmGrayscaleDialog::getLastCorner() const
+{
+  return getOffset() + getSize() - 1;
+}
+
+ZIntCuboid ZFlyEmGrayscaleDialog::getBoundBox() const
+{
+  ZIntCuboid box;
+
+  box.setFirstCorner(getFirstCorner());
+  box.setLastCorner(getLastCorner());
+
+  return box;
+}
+
+int ZFlyEmGrayscaleDialog::getOffsetX() const
+{
+  return ui->xSpinBox->value();
+}
+
+int ZFlyEmGrayscaleDialog::getOffsetY() const
+{
+  return ui->ySpinBox->value();
+}
+
+int ZFlyEmGrayscaleDialog::getOffsetZ() const
+{
+  return ui->zSpinBox->value();
+}
+
+int ZFlyEmGrayscaleDialog::getWidth() const
+{
+  return ui->widthSpinBox->value();
+}
+
+int ZFlyEmGrayscaleDialog::getHeight() const
+{
+  return ui->heightSpinBox->value();
+}
+
+int ZFlyEmGrayscaleDialog::getDepth() const
+{
+  return ui->depthSpinBox->value();
+}
+
+void ZFlyEmGrayscaleDialog::setOffset(int x, int y, int z)
+{
+  ui->xSpinBox->setValue(x);
+  ui->ySpinBox->setValue(y);
+  ui->zSpinBox->setValue(z);
+}
+
+void ZFlyEmGrayscaleDialog::setWidth(int width)
+{
+  ui->widthSpinBox->setValue(width);
+}
+
+void ZFlyEmGrayscaleDialog::setHeight(int height)
+{
+  ui->heightSpinBox->setValue(height);
+}
+
+void ZFlyEmGrayscaleDialog::setDepth(int depth)
+{
+  ui->depthSpinBox->setValue(depth);
+}
+
+ZStackViewParam ZFlyEmGrayscaleDialog::getViewParam() const
+{
+  ZProofreadWindow *window = getMainWindow();
+  ZStackViewParam viewParam;
+  if (window != NULL) {
+    viewParam = window->getMainMvc()->getView()->getViewParameter();
+  }
+
+  return viewParam;
+}
+
+void ZFlyEmGrayscaleDialog::useViewCenter()
+{
+  ZStackViewParam viewParam = getViewParam();
+  QRect viewPort = viewParam.getViewPort();
+  if (viewPort.isValid()) {
+    QPoint center = viewPort.center();
+    setOffset(center.x() - getWidth() / 2, center.y() - getHeight() / 2,
+              viewParam.getZ() - getDepth() / 2);
+  }
+}
+
+void ZFlyEmGrayscaleDialog::useViewPort()
+{
+  ZStackViewParam viewParam = getViewParam();
+  QRect viewPort = viewParam.getViewPort();
+  if (viewPort.isValid()) {
+    setOffset(viewPort.left(), viewPort.top(), viewParam.getZ());
+    setWidth(viewPort.width());
+    setHeight(viewPort.height());
+    setDepth(1);
+  }
+}
+
+void ZFlyEmGrayscaleDialog::useCurrentOffset()
+{
+  ZStackViewParam viewParam = getViewParam();
+  QRect viewPort = viewParam.getViewPort();
+  if (viewPort.isValid()) {
+    setOffset(viewPort.left(), viewPort.top(), viewParam.getZ());
+  }
+}
+
+
+
+
+

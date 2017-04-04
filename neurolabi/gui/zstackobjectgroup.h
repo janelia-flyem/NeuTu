@@ -112,6 +112,8 @@ public:
   TStackObjectList takeSelected(ZStackObject::EType type);
   TStackObjectList takeSameSource(
       ZStackObject::EType type, const std::string &source);
+  TStackObjectList takeSameClass(
+      ZStackObject::EType type, const std::string &objClass);
 
   template <typename InputIterator>
   TStackObjectList take(const InputIterator &first, const InputIterator &last);
@@ -221,6 +223,8 @@ public:
   TStackObjectList takeSelectedUnsync(ZStackObject::EType type);
   TStackObjectList takeSameSourceUnsync(
       ZStackObject::EType type, const std::string &source);
+  TStackObjectList takeSameClassUnsync(
+      ZStackObject::EType type, const std::string &objClass);
 
   template <typename InputIterator>
   TStackObjectList takeUnsync(

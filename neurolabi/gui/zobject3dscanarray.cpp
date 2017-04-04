@@ -54,6 +54,10 @@ ZIntCuboid ZObject3dScanArray::getBoundBox() const
     cuboid.join(obj.getBoundBox());
   }
 
+#ifdef _DEBUG_
+  std::cout << cuboid.toJsonArray().dumpString() << std::endl;
+#endif
+
   return cuboid;
 }
 

@@ -13,7 +13,6 @@
 
 #include "zqtheader.h"
 #include "c_stack.h"
-#include "zintcuboid.h"
 #include "zstackobject.h"
 #include "tz_cuboid_i.h"
 #include "zhistogram.h"
@@ -179,6 +178,9 @@ public:
   int scanArrayShift(
       const T *array, int start, int y, int z, int stride, int dim);
 
+
+  void addStack(Stack *stack, int v, const int *offset = NULL) const;
+  void addStack(ZStack *stack, int v) const;
 
   /*!
    * \brief Draw a stack

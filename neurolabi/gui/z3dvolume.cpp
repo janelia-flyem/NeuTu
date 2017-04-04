@@ -216,6 +216,19 @@ void Z3DVolume::setUniform(Z3DShaderProgram &shader, const QString &uniform, con
   shader.setLogUniformLocationError(true);
 }
 
+glm::vec3 Z3DVolume::getPhysicalRDB() const
+{
+  glm::vec3 rdb = getOffset() + getCubeSize() - getSpacing();
+  for (int i = 0; i < 3; ++i) {
+    if (m_dimensions[i] == 1) {
+      rdb[i] = getOffset()[i];
+    }
+  }
+
+  return rdb;
+}
+
+
 std::vector<double> Z3DVolume::getPhysicalBoundBox() const
 {
   glm::vec3 luf = getPhysicalLUF();

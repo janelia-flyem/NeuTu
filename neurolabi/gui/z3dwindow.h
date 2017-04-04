@@ -333,6 +333,7 @@ public slots:
   void addToSplitMarker();
   void addDoneMarker();
   void updateBody();
+  void compareBody();
   void deselectBody();
   void setNormalTodoVisible(bool visible);
 

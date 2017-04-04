@@ -29,6 +29,8 @@
 #endif
 #include "zstring.h"
 #include "zstackfactory.h"
+#include "zpoint.h"
+#include "zintcuboid.h"
 
 using namespace std;
 
@@ -2214,4 +2216,37 @@ void ZStack::swapData(ZStack *stack)
 
   deprecateDependent(MC_STACK);
   stack->deprecateDependent(MC_STACK);
+}
+
+bool ZStack::equals(const ZStack &stack2) const
+{
+  if (isVirtual() != stack2.isVirtual()) {
+    return false;
+  }
+
+  if (!getBoundBox().equals(stack2.getBoundBox())) {
+    return false;
+  }
+
+  if (kind() != stack2.kind()) {
+    return false;
+  }
+
+  if (channelNumber() != stack2.channelNumber()) {
+    return false;
+  }
+
+  const uint8_t *array1 = array8();
+  const uint8_t *array2 = stack2.array8();
+
+  if (array1 != NULL && array2 != NULL) {
+    size_t byteNumber = getByteNumber();
+    for (size_t i = 0; i < byteNumber; ++i) {
+      if (array1[i] != array2[i]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }

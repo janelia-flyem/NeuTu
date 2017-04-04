@@ -74,6 +74,8 @@ public:
 
   void move(int dx, int dy);
 
+  void recoverViewPort();
+
 private:
   void init();
   double adjustProj(int vx, int cx, double px, double zoom) const;
@@ -82,6 +84,7 @@ private:
   void deprecateViewPort() const;
   void update() const;
   void setZoomCapped(double zoom);
+  double getValidZoom(double zoom) const;
 
 private:
   int m_x0;

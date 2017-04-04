@@ -1,5 +1,6 @@
 #include "zviewproj.h"
 
+#include <cmath>
 #include "tz_math.h"
 
 ZViewProj::ZViewProj()
@@ -185,11 +186,32 @@ void ZViewProj::setZoom(double zoom)
 }
 */
 
+void ZViewProj::recoverViewPort()
+{
+  if (getViewPort().contains(m_canvasRect)) {
+    maximizeViewPort();
+  }
+}
 
 void ZViewProj::move(int dx, int dy)
 {
   m_x0 += dx;
   m_y0 += dy;
+}
+
+double ZViewProj::getValidZoom(double zoom) const
+{
+  double maxZoom = getMaxZoomRatio();
+  if (zoom > maxZoom) {
+    zoom = maxZoom;
+  } else {
+    double minZoom = getMinZoomRatio();
+    if (zoom < minZoom) {
+      zoom = minZoom;
+    }
+  }
+
+  return zoom;
 }
 
 void ZViewProj::setZoom(double zoom, EReference ref)
@@ -255,25 +277,15 @@ void ZViewProj::decreaseZoom()
 
 void ZViewProj::increaseZoom(int rx, int ry)
 {
-  double zoom = m_zoom * 1.1;
+  double zoom = getValidZoom(m_zoom * 1.1);
 
-  double maxZoom = getMaxZoomRatio();
-
-  if (zoom > maxZoom) {
-    zoom = maxZoom;
-  }
   setZoomWithFixedPoint(zoom, QPoint(rx, ry));
 }
 
 void ZViewProj::decreaseZoom(int rx, int ry)
 {
-  double zoom = m_zoom / 1.1;
+  double zoom = getValidZoom(m_zoom / 1.1);
 
-  double maxZoom = getMaxZoomRatio();
-
-  if (zoom > maxZoom) {
-    zoom = maxZoom;
-  }
   setZoomWithFixedPoint(zoom, QPoint(rx, ry));
 }
 
@@ -350,14 +362,17 @@ void ZViewProj::update() const
     //Compute the corresponding view port:
     //  lefttop -> (0,0), (wv, hv) -> (ww, hw)
     m_viewPort.setTopLeft(QPoint(m_x0, m_y0));
-    m_viewPort.setSize(QSize(iround(m_widgetRect.width() / m_zoom),
-                             iround(m_widgetRect.height() / m_zoom)));
+
+    m_viewPort.setSize(QSize(std::ceil(m_widgetRect.width() / m_zoom),
+                             std::ceil(m_widgetRect.height() / m_zoom)));
 
     if (!m_viewPort.intersects(m_canvasRect)) {
       m_viewPort = QRect();
     } else {
       //Set initial proj region to the whole widget
-      m_projRegion = m_widgetRect;
+//      m_projRegion = m_widgetRect;
+      m_projRegion = QRectF(
+            0, 0, m_viewPort.width() * m_zoom, m_viewPort.height() * m_zoom);
 
       //Adjust projection region to remove empty regions in view port
       if (m_viewPort.left() < m_canvasRect.left()) {

@@ -20,10 +20,11 @@
 #include "zstackfile.h"
 #include "tz_image_io.h"
 #include "zresolution.h"
-#include "zpoint.h"
-#include "zintcuboid.h"
 #include "neutube_def.h"
+#include "zintpoint.h"
 
+class ZPoint;
+class ZIntCuboid;
 
 //! Stack class
 /*!
@@ -468,6 +469,8 @@ public: /* data operation */
   const void *rawChannelData(int c) const;
   void* rawChannelData(int c);
   //Stack* channelData(int c);
+
+  bool equals(const ZStack &stack2) const;
 
 public: /* operations */
 

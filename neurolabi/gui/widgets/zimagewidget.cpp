@@ -825,6 +825,8 @@ void ZImageWidget::decreaseZoomRatio(int x, int y, bool usingRef)
     m_viewProj.decreaseZoom();
   }
 
+//  m_viewProj.recoverViewPort();
+
 #if 0
 //  int oldWidth = m_viewPort.width();
 //  int oldHeight = m_viewPort.height();

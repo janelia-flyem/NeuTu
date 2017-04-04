@@ -351,6 +351,19 @@ int ZFlyEmBody3dDoc::getMinResLevel() const
   return resLevel;
 }
 
+void ZFlyEmBody3dDoc::removeDiffBody()
+{
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    if (ZStackObjectSourceFactory::IsBodyDiffSource(tree->getSource())) {
+      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_KILL);
+    }
+  }
+  getDataBuffer()->deliver();
+}
+
 void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
 {
   switch (event.getAction()) {
@@ -706,6 +719,8 @@ ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
 void ZFlyEmBody3dDoc::addBodyFunc(
     uint64_t bodyId, const QColor &color, int resLevel)
 {
+  removeDiffBody();
+
   bool loaded =
       !(getObjectGroup().findSameClass(
           ZStackObject::TYPE_SWC,
@@ -1074,6 +1089,79 @@ ZSwcTree* ZFlyEmBody3dDoc::recoverFullBodyFromGarbage(uint64_t bodyId, int resLe
   return tree;
 }
 
+std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
+    uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
+    FlyEM::EBodyType bodyType)
+{
+  if (!m_bodyReader.isReady()) {
+    m_bodyReader.open(m_dvidReader.getDvidTarget());
+  }
+
+  ZIntPoint pt = m_bodyReader.readBodyPosition(bodyId1);
+  uint64_t bodyId2 = diffReader.readBodyIdAt(pt);
+
+  std::vector<ZSwcTree*> treeArray =
+      makeDiffBodyModel(bodyId1, bodyId2, diffReader, zoom, bodyType);
+
+  for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+       iter != treeArray.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    if (tree != NULL) {
+      tree->setSource(
+            ZStackObjectSourceFactory::MakeFlyEmBodyDiffSource(
+              bodyId1, tree->getSource()));
+    }
+  }
+
+  return treeArray;
+
+}
+
+
+std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
+    uint64_t bodyId1, uint64_t bodyId2, ZDvidReader &diffReader, int zoom,
+    FlyEM::EBodyType bodyType)
+{ 
+  std::vector<ZSwcTree*> treeArray;
+
+  if (bodyId1 > 0 && bodyId2 > 0) {
+    if (bodyType == FlyEM::BODY_COARSE || bodyType == FlyEM::BODY_SKELETON) {
+      zoom = 0;
+    }
+
+    if (!m_bodyReader.isReady()) {
+      m_bodyReader.open(m_dvidReader.getDvidTarget());
+    }
+
+    if (bodyType == FlyEM::BODY_COARSE) {
+      ZObject3dScan obj1 = m_bodyReader.readCoarseBody(bodyId1);
+      ZObject3dScan obj2 = diffReader.readCoarseBody(bodyId2);
+      treeArray = ZSwcFactory::CreateDiffSurfaceSwc(obj1, obj2);
+      for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+           iter != treeArray.end(); ++iter) {
+        ZSwcTree *tree = *iter;
+        if (tree != NULL) {
+          tree->translate(-getDvidInfo().getStartBlockIndex());
+          tree->rescale(getDvidInfo().getBlockSize().getX(),
+                        getDvidInfo().getBlockSize().getY(),
+                        getDvidInfo().getBlockSize().getZ());
+          tree->translate(getDvidInfo().getStartCoordinates() +
+                          getDvidInfo().getBlockSize() / 2);
+        }
+      }
+    } else {
+      ZObject3dScan obj1;
+      ZObject3dScan obj2;
+      m_bodyReader.readMultiscaleBody(bodyId1, zoom, true, &obj1);
+      diffReader.readMultiscaleBody(bodyId2, zoom, true, &obj2);
+      treeArray = ZSwcFactory::CreateDiffSurfaceSwc(obj1, obj2);
+    }
+  }
+
+  return treeArray;
+}
+
+
 ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
     uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
 {
@@ -1206,6 +1294,48 @@ void ZFlyEmBody3dDoc::forceBodyUpdate()
   QSet<uint64_t> bodySet = m_bodySet;
   dumpAllBody(false);
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
+}
+
+void ZFlyEmBody3dDoc::compareBody()
+{
+  ZFlyEmProofDoc *doc = getDataDocument();
+
+
+  if (doc != NULL) {
+    std::set<uint64_t> bodySet = doc->getSelectedBodySet(
+          NeuTube::BODY_LABEL_ORIGINAL);
+    if (bodySet.size() == 1) {
+      const ZDvidVersionDag &dag = doc->getVersionDag();
+
+      if (!m_bodyReader.isReady()) {
+        m_bodyReader.open(m_dvidReader.getDvidTarget());
+      }
+
+      ZDvidTarget target = m_bodyReader.getDvidTarget();
+      std::vector<std::string> versionList =
+          dag.getParentList(target.getUuid());
+      if (!versionList.empty()) {
+        std::string uuid = versionList.front();
+        target.setUuid(uuid);
+        ZDvidReader diffReader;
+        if (diffReader.open(target)) {
+          dumpAllBody(false);
+          uint64_t bodyId = *(bodySet.begin());
+          std::vector<ZSwcTree*> treeArray = makeDiffBodyModel(
+                bodyId, diffReader, 0, getBodyType());
+          for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+               iter != treeArray.end(); ++iter) {
+            ZSwcTree *tree = *iter;
+            if (tree != NULL) {
+              getDataBuffer()->addUpdate(
+                    tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+            }
+          }
+          getDataBuffer()->deliver();
+        }
+      }
+    }
+  }
 }
 
 #if 0

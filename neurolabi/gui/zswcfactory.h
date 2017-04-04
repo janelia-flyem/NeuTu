@@ -61,6 +61,9 @@ public:
 
   static ZSwcTree* CreateSwc(const ZObject3dScan &obj);
 
+  static std::vector<ZSwcTree *> CreateLevelSurfaceSwc(
+      const ZStack &stack, int sparseLevel, const ZIntPoint &scale);
+
   static ZSwcTree* CreateSurfaceSwc(
       const ZStack &stack, int sparseLevel, const ZIntPoint &scale, ZSwcTree *tree);
   static ZSwcTree* CreateSurfaceSwc(const ZStack &stack, int sparseLevel = 1);
@@ -73,11 +76,15 @@ public:
   static ZSwcTree* CreateSwc(const ZObject3dScan &blockObj, int z,
                              const ZDvidInfo &dvidInfo);
 
+  static std::vector<ZSwcTree*> CreateDiffSurfaceSwc(
+      const ZObject3dScan &obj1, const ZObject3dScan &obj2);
+
 private:
   static ZSwcTree* CreateSwcByRegionSampling(const ZVoxelArray &voxelArray,
                                              double radiusAdjustment = 0.0);
   static ZSwcTree* CreateSurfaceSwcFast(
       const ZStack &stack, int sparseLevel = 1);
+  static int GetIntv(int segNumber, const ZIntCuboid &box);
 };
 
 #endif // ZSWCFACTORY_H

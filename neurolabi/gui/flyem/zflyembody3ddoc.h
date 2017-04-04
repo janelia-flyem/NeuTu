@@ -185,6 +185,8 @@ public:
   ZFlyEmToDoItem* getOneSelectedTodoItem() const;
 
   void forceBodyUpdate();
+  void compareBody();
+
   void waitForAllEvent();
 
 public slots:
@@ -208,6 +210,15 @@ private:
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+
+  std::vector<ZSwcTree*> makeDiffBodyModel(
+      uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
+      FlyEM::EBodyType bodyType);
+
+  std::vector<ZSwcTree*> makeDiffBodyModel(
+      uint64_t bodyId1, uint64_t bodyId2, ZDvidReader &diffReader, int zoom,
+      FlyEM::EBodyType bodyType);
+
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
@@ -252,6 +263,7 @@ private:
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
+  void removeDiffBody();
 
 private:
   QSet<uint64_t> m_bodySet;
@@ -265,6 +277,8 @@ private:
 
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidReader m_bodyReader;
+
   ZDvidInfo m_dvidInfo;
 
   ZThreadFutureMap m_futureMap;

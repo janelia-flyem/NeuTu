@@ -33,6 +33,8 @@
 #include "zflyemdataloader.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
+#include "dialogs/zflyemgrayscaledialog.h"
+
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -190,11 +192,17 @@ void ZProofreadWindow::createDialog()
   m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
   m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
   m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
+  m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
 {
   m_mainMvc->setDvidDialog(dvidDlg);
+}
+
+ZFlyEmProofMvc* ZProofreadWindow::getMainMvc() const
+{
+  return m_mainMvc;
 }
 
 void ZProofreadWindow::stressTestSlot()
@@ -246,6 +254,12 @@ void ZProofreadWindow::createMenu()
   connect(exportScreenshotAction, SIGNAL(triggered()),
           this, SLOT(exportNeuronScreenshot()));
   exportMenu->addAction(exportScreenshotAction);
+
+  QAction *exportGrayscaleAction = new QAction("Grayscale", this);
+  connect(exportGrayscaleAction, SIGNAL(triggered()),
+          this, SLOT(exportGrayscale()));
+  exportMenu->addAction(exportGrayscaleAction);
+
 
   m_viewMenu = new QMenu("View", this);
 
@@ -733,6 +747,17 @@ void ZProofreadWindow::exploreBody()
     ZDvidFilter dvidFilter = m_bodyFilterDlg->getDvidFilter();
     dvidFilter.setDvidTarget(target);
     m_flyemDataLoader->loadDataBundle(dvidFilter);
+  }
+}
+
+void ZProofreadWindow::exportGrayscale()
+{
+  if (m_grayscaleDlg->exec()) {
+    QString fileName =
+        ZDialogFactory::GetSaveFileName("Save Grayscale", "", this);
+    if (!fileName.isEmpty()) {
+      m_mainMvc->exportGrayscale(m_grayscaleDlg->getBoundBox(), fileName);
+    }
   }
 }
 

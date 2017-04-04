@@ -1,5 +1,6 @@
 #include "zstackarray.h"
 #include "zstack.hxx"
+#include "zintcuboid.h"
 
 ZStackArray::ZStackArray()
 {

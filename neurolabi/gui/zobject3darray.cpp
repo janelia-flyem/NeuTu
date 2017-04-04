@@ -10,6 +10,7 @@
 #include "c_stack.h"
 #include "tz_darray.h"
 #include "zstackfactory.h"
+#include "zintcuboid.h"
 
 using namespace std;
 

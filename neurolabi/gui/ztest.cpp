@@ -6430,6 +6430,7 @@ void ZTest::test(MainWindow *host)
 
   C_Stack::write(dataPath + "/test.tif", stack);
 
+  C_Stack::kill(stack);
 #endif
 
 #if 0
@@ -22536,7 +22537,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
 #  if defined(_ENABLE_LOWTIS_)
   lowtis::DVIDGrayblkConfig lowtisConfigGray;
 
@@ -22683,7 +22684,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZViewProj viewProj;
 
   viewProj.setCanvasRect(QRect(0, 0, 100, 200));
@@ -22700,6 +22701,84 @@ void ZTest::test(MainWindow *host)
   qDebug() << pt;
 
 
+#endif
+
+#if 0
+
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/block.tif");
+
+  std::vector<ZSwcTree*> treeArray = ZSwcFactory::CreateLevelSurfaceSwc(
+        stack, 1, ZIntPoint(1, 1, 1));
+
+  ZSwcTree *tree = new ZSwcTree;
+  int index = 1;
+  for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+       iter != treeArray.end(); ++iter) {
+    ZSwcTree *subtree = *iter;
+    if (subtree != NULL) {
+      subtree->setType(index);
+      tree->merge(subtree, true);
+    }
+    ++index;
+  }
+
+  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/rice_label.tif");
+  ZObject3dScanArray *objArray =
+      ZObject3dFactory::MakeObject3dScanArray(stack, NeuTube::Z_AXIS, true, NULL);
+
+  ZStack *stack2 =
+      ZStackFactory::makeZeroStack(GREY8, stack.getBoundBox());
+
+  for (ZObject3dScanArray::const_iterator iter = objArray->begin();
+       iter !=  objArray->end(); ++iter) {
+    const ZObject3dScan &obj = *iter;
+    obj.addStack(stack2, obj.getLabel());
+//    obj.addStack(stack2, obj.getLabel());
+  }
+
+  stack2->save(GET_TEST_DATA_DIR + "/test.tif");
+  std::cout << stack.equals(*stack2) << std::endl;
+  delete stack2;
+  delete objArray;
+#endif
+
+#if 1
+  ZObject3dScan obj1;
+  ZObject3dScan obj2;
+
+//  obj1.addSegment(0, 0, 0, 2);
+//  obj2.addSegment(0, 0, 1, 3);
+
+  obj1.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  obj2 = obj1.getSlice(100, 500);
+
+  std::vector<ZSwcTree*> treeArray =
+      ZSwcFactory::CreateDiffSurfaceSwc(obj1, obj2);
+
+//  ZSwcTree *tree = new ZSwcTree;
+
+  int index = 1;
+  for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+       iter != treeArray.end(); ++iter) {
+    ZSwcTree *subtree = *iter;
+    if (subtree != NULL) {
+      subtree->setType(index);
+      QString output = QString("%1/test%2.swc").
+          arg(GET_TEST_DATA_DIR.c_str()).arg(index);
+      subtree->save(output.toStdString());
+//      tree->merge(subtree, true);
+    }
+    ++index;
+  }
+
+//  tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

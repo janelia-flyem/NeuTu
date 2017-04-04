@@ -203,10 +203,22 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(exportSelectedBody()));
   bodyMenu->addAction(exportBodyAction);
 
+  QAction *exportBodyLevelAction = new QAction("Export Selected Bodies (leveled)", this);
+  connect(exportBodyLevelAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBodyLevel()));
+  bodyMenu->addAction(exportBodyLevelAction);
+
+
   QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
   connect(skeletonizeAction, SIGNAL(triggered()),
           this, SLOT(skeletonizeSelectedBody()));
   bodyMenu->addAction(skeletonizeAction);
+
+  QMenu *grayscaleMenu = m_mainMenu->addMenu("Grayscale");
+  QAction *exportGrayScaleAction = new QAction("Export Grayscale", this);
+  connect(exportGrayScaleAction, SIGNAL(triggered()),
+          this, SLOT(exportGrayscale()));
+  grayscaleMenu->addAction(exportGrayScaleAction);
 
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");
@@ -233,9 +245,19 @@ void FlyEmProofControlForm::exportSelectedBody()
   emit exportingSelectedBody();
 }
 
+void FlyEmProofControlForm::exportSelectedBodyLevel()
+{
+  emit exportingSelectedBodyLevel();
+}
+
 void FlyEmProofControlForm::skeletonizeSelectedBody()
 {
   emit skeletonizingSelectedBody();
+}
+
+void FlyEmProofControlForm::exportGrayscale()
+{
+  emit exportingGrayscale();
 }
 
 void FlyEmProofControlForm::enableNameColorMap(bool on)
