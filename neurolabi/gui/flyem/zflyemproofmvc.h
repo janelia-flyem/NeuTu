@@ -330,6 +330,7 @@ protected slots:
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
   void processSynapseVerification(int x, int y, int z, bool verified);
@@ -519,6 +520,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(clearBodyMergeStage()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
+  connect(panel, SIGNAL(exportingSelectedBodyLevel()),
+          this, SLOT(exportSelectedBodyLevel()));
   connect(panel, SIGNAL(exportingSelectedBodyStack()),
           this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),

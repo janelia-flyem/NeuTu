@@ -203,6 +203,12 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(exportSelectedBody()));
   bodyMenu->addAction(exportBodyAction);
 
+  QAction *exportBodyLevelAction = new QAction("Export Selected Bodies (leveled)", this);
+  connect(exportBodyLevelAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBodyLevel()));
+  bodyMenu->addAction(exportBodyLevelAction);
+
+
   QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
   connect(skeletonizeAction, SIGNAL(triggered()),
           this, SLOT(skeletonizeSelectedBody()));
@@ -237,6 +243,11 @@ void FlyEmProofControlForm::exportSelectedBodyStack()
 void FlyEmProofControlForm::exportSelectedBody()
 {
   emit exportingSelectedBody();
+}
+
+void FlyEmProofControlForm::exportSelectedBodyLevel()
+{
+  emit exportingSelectedBodyLevel();
 }
 
 void FlyEmProofControlForm::skeletonizeSelectedBody()

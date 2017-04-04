@@ -351,6 +351,19 @@ int ZFlyEmBody3dDoc::getMinResLevel() const
   return resLevel;
 }
 
+void ZFlyEmBody3dDoc::removeDiffBody()
+{
+  QList<ZSwcTree*> treeList = getSwcList();
+  for (QList<ZSwcTree*>::iterator iter = treeList.begin();
+       iter != treeList.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    if (ZStackObjectSourceFactory::IsBodyDiffSource(tree->getSource())) {
+      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_KILL);
+    }
+  }
+  getDataBuffer()->deliver();
+}
+
 void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
 {
   switch (event.getAction()) {
@@ -706,6 +719,8 @@ ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
 void ZFlyEmBody3dDoc::addBodyFunc(
     uint64_t bodyId, const QColor &color, int resLevel)
 {
+  removeDiffBody();
+
   bool loaded =
       !(getObjectGroup().findSameClass(
           ZStackObject::TYPE_SWC,

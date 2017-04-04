@@ -263,6 +263,7 @@ private:
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
+  void removeDiffBody();
 
 private:
   QSet<uint64_t> m_bodySet;
