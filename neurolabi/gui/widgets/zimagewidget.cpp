@@ -1050,8 +1050,15 @@ void ZImageWidget::paintObject()
 #ifdef _DEBUG_2
       std::cout << obj << std::endl;
 #endif
-      paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
-                        m_paintBundle->displayStyle(), m_sliceAxis);
+      if (obj->getType() == ZStackObject::TYPE_CROSS_HAIR) {
+        ZPainter rawPainter(this);
+        rawPainter.setCanvasRange(QRectF(0, 0, width(), height()));
+        obj->display(rawPainter, m_paintBundle->sliceIndex(),
+                     ZStackObject::NORMAL, m_sliceAxis);
+      } else {
+        paintHelper.paint(obj, painter, m_paintBundle->sliceIndex(),
+                          m_paintBundle->displayStyle(), m_sliceAxis);
+      }
       /*
       obj->display(painter, m_paintBundle->sliceIndex(),
                    m_paintBundle->displayStyle());
