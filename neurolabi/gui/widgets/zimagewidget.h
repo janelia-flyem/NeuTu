@@ -110,6 +110,10 @@ public:
   void zoom(double zoomRatio);
   void zoom(double zoomRatio, EViewPortAdjust option);
 
+  void zoomTo(const QPoint &center, int width);
+
+  void setViewPort(const QRect &rect);
+
   /*!
    * \brief Zoom an image at a fixed point
    *

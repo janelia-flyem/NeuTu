@@ -496,6 +496,16 @@ void ZImageWidget::zoom(
 }
 #endif
 
+void ZImageWidget::zoomTo(const QPoint &center, int width)
+{
+  m_viewProj.zoomTo(center, width);
+}
+
+void ZImageWidget::setViewPort(const QRect &rect)
+{
+  m_viewProj.setViewPort(rect);
+}
+
 void ZImageWidget::zoom(double zoomRatio, const QPointF &ref)
 {
   m_viewProj.setZoomWithFixedPoint(zoomRatio, m_viewProj.mapPointBack(ref));

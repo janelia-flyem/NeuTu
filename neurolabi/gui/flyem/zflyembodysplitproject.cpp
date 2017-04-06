@@ -297,11 +297,13 @@ void ZFlyEmBodySplitProject::quickViewFunc()
     connect(m_quickViewWindow, SIGNAL(destroyed()),
             this, SLOT(shallowClearQuickViewWindow()));
     if (m_dataFrame != NULL) {
-      connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-              m_dataFrame, SLOT(setView(ZStackViewParam)));
+      connect(
+            m_quickViewWindow, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+            m_dataFrame, SLOT(setView(int, int, int, int)));
     }
-    connect(m_quickViewWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-            this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
+    connect(
+          m_quickViewWindow, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
 
     if (m_dvidInfo.isValid()) {
       //      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
@@ -589,11 +591,11 @@ void ZFlyEmBodySplitProject::result3dQuickFunc()
       connect(mainDoc, SIGNAL(labelFieldModified()),
               this, SLOT(updateResult3dQuick()));
       if (m_dataFrame != NULL) {
-        connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-                m_dataFrame, SLOT(setView(ZStackViewParam)));
+        connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+                m_dataFrame, SLOT(setView(int, int, int, int)));
       }
-      connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-              this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
+      connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+              this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
 
       emit result3dQuickViewReady();
       getProgressSignal()->endProgress();
@@ -623,32 +625,6 @@ void ZFlyEmBodySplitProject::showResultQuickView()
             QtConcurrent::run(this, &ZFlyEmBodySplitProject::result3dQuickFunc);
         m_futureMap[threadId] = future;
       }
-//      result3dQuickFunc();
-/*
-      loadResult3dQuick(doc);
-
-      m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
-      m_quickResultWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-      m_quickResultWindow->setYZView();
-
-      ZDvidReader reader;
-      if (reader.open(getDvidTarget())) {
-//        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
-        doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
-      }
-
-      connect(m_quickResultWindow, SIGNAL(destroyed()),
-              this, SLOT(shallowClearQuickResultWindow()));
-      connect(mainDoc, SIGNAL(labelFieldModified()),
-              this, SLOT(updateResult3dQuick()));
-      if (m_dataFrame != NULL) {
-        connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-                m_dataFrame, SLOT(setView(ZStackViewParam)));
-      }
-      connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-              this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
-              */
     } else {
       showQuickView(m_quickResultWindow);
 //      showResultQuickView();

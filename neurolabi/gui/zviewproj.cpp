@@ -149,6 +149,19 @@ void ZViewProj::setViewPort(const QRect &rect)
   }
 }
 
+void ZViewProj::zoomTo(int x, int y, int width)
+{
+  int radius = width / 2;
+
+  QRect rect(x - radius, y - radius, width, width);
+  setViewPort(rect);
+}
+
+void ZViewProj::zoomTo(const QPoint &pt, int width)
+{
+  zoomTo(pt.x(), pt.y(), width);
+}
+
 QRect ZViewProj::getViewPort() const
 {
   if (m_viewPort.isEmpty()) {

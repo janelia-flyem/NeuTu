@@ -475,8 +475,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
     } else if (window == m_roiWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachRoiWindow()));
     }
-    connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-            this, SLOT(zoomTo(ZStackViewParam)));
+    connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+            this, SLOT(zoomTo(int, int, int, int)));
   }
 }
 
@@ -1352,8 +1352,8 @@ void ZFlyEmProofMvc::customInit()
 
 
   m_splitProject.setDocument(getDocument());
-  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(const ZStackViewParam&)),
-          this->getView(), SLOT(setView(const ZStackViewParam&)));
+  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
           this, SLOT(updateSplitBody()));
   /*

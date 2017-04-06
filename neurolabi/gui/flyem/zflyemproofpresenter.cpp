@@ -158,13 +158,8 @@ void ZFlyEmProofPresenter::zoomInRectRoi()
   ZRect2d rect = buddyDocument()->getRect2dRoi();
 
   if (rect.isValid()) {
-    ZStackViewParam param(NeuTube::COORD_STACK);
-
-    param.setViewPort(rect.getFirstX(), rect.getFirstY(),
-                      rect.getLastX(), rect.getLastY());
-    param.fixZ(true);
-
-    buddyView()->setView(param);
+    buddyView()->setViewPort(QRect(rect.getFirstX(), rect.getFirstY(),
+                               rect.getWidth(), rect.getHeight()));
     buddyDocument()->executeRemoveRectRoiCommand();
   }
 }

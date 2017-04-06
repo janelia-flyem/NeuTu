@@ -63,6 +63,10 @@ public:
 
   void setViewPort(const QRect &rect);
 
+  void zoomTo(int x, int y, int width);
+  void zoomTo(const QPoint &pt, int width);
+
+
 
   /*!
    * \brief Zooming with reference point

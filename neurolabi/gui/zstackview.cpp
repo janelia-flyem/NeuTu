@@ -2272,20 +2272,8 @@ void ZStackView::zoomTo(int x, int y, int z, int w)
 
   ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
 
-  ZStackViewLocator locator;
-  locator.setCanvasSize(imageWidget()->canvasSize().width(),
-                        imageWidget()->canvasSize().height());
-
-  QRect newViewPort = locator.getRectViewPort(x, y, width);
-
-  if (newViewPort.width() < viewPort.width() &&
-      newViewPort.height() < viewPort.height()) {
-    double zoomRatio =
-        locator.getZoomRatio(newViewPort.width(), newViewPort.height());
-    imageWidget()->setZoomRatio(zoomRatio);
-  }
-
-  setViewPortCenter(x, y, z, NeuTube::AXIS_SHIFTED);
+  imageWidget()->zoomTo(QPoint(x, y), width);
+  updateSliceFromZ(z);
 }
 
 void ZStackView::zoomTo(int x, int y, int z)
@@ -2488,11 +2476,24 @@ void ZStackView::setViewPortCenter(
   setViewPortCenter(center.getX(), center.getY(), center.getZ(), system);
 }
 
+void ZStackView::updateSliceFromZ(int z)
+{
+  bool depthChanged = false;
+  int slice =
+      z - buddyDocument()->getStackOffset().getSliceCoord(getSliceAxis());
+  if (slice != m_depthControl->value()) {
+    setSliceIndexQuietly(slice);
+    depthChanged = true;
+  }
+//    setSliceIndex(
+//          z - buddyDocument()->getStackOffset().getSliceCoord(getSliceAxis()));
+  updateImageScreen(ZStackView::UPDATE_QUEUED);
+  processViewChange(true, depthChanged);
+}
+
 void ZStackView::setViewPortCenter(
     int x, int y, int z, NeuTube::EAxisSystem system)
 {
-  bool depthChanged = false;
-
   switch (system) {
   case NeuTube::AXIS_NORMAL:
     ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
@@ -2505,20 +2506,10 @@ void ZStackView::setViewPortCenter(
           x - (imageWidget()->viewPort().width() - 1) / 2,
           y - (imageWidget()->viewPort().height() - 1) / 2);
 
-    int slice =
-        z - buddyDocument()->getStackOffset().getSliceCoord(getSliceAxis());
-    if (slice != m_depthControl->value()) {
-      setSliceIndexQuietly(slice);
-      depthChanged = true;
-    }
-//    setSliceIndex(
-//          z - buddyDocument()->getStackOffset().getSliceCoord(getSliceAxis()));
-    updateImageScreen(ZStackView::UPDATE_QUEUED);
+    updateSliceFromZ(z);
   }
     break;
   }
-
-  processViewChange(true, depthChanged);
 }
 
 ZIntPoint ZStackView::getViewCenter() const
@@ -2539,6 +2530,17 @@ void ZStackView::reloadCanvas()
 {
   reloadObjectCanvas();
   reloadTileCanvas();
+}
+
+void ZStackView::setViewPort(const QRect &rect)
+{
+  imageWidget()->setViewPort(rect);
+
+  reloadCanvas();
+
+  processViewChange(false, false);
+
+  redraw();
 }
 
 void ZStackView::setView(const ZStackViewParam &param)

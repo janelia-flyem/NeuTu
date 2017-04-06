@@ -212,7 +212,8 @@ public: //external signal call
 
 signals:
   void closed();
-  void locating2DViewTriggered(const ZStackViewParam &param);
+//  void locating2DViewTriggered(const ZStackViewParam &param);
+  void locating2DViewTriggered(int x, int y, int z, int width);
   void croppingSwcInRoi();
 
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);

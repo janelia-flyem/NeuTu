@@ -294,6 +294,7 @@ public slots:
 
 
   void setView(const ZStackViewParam &param);
+  void setViewPort(const QRect &rect);
 
   void updateZSpinBoxValue();
 
@@ -444,6 +445,9 @@ protected:
   void setSliceRange(int minSlice, int maxSlice);
 
   bool event(QEvent *event);
+
+private:
+  void updateSliceFromZ(int z);
 
 protected:
   //ZStackFrame *m_parent;

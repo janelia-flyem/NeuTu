@@ -3308,32 +3308,26 @@ void Z3DWindow::locateSwcNodeIn2DView()
       }
       int width = radius * 2 + 1;
 
-      ZStackViewParam param(NeuTube::COORD_STACK);
-      param.setViewPort(QRect(cx - radius, cy - radius, width, width));
-      param.setZ(iround(cz));
-      emit locating2DViewTriggered(param);
+      emit locating2DViewTriggered(cx, cy, cz, width);
     }
   }
 }
 
 void Z3DWindow::locate2DView(const ZPoint &center, double radius)
 {
-  const int minRadius = 400;
-  if (radius < minRadius) {
-    radius = minRadius;
-  }
-  int width = radius * 2 + 1;
+  int width = iround(radius * 2 + 1);
 
-  ZStackViewParam param(NeuTube::COORD_STACK);
+  const int minWidth = 800;
+
+  if (width < minWidth) {
+    width = minWidth;
+  }
 
   double cx = center.getX();
   double cy = center.getY();
   double cz = center.getZ();
-  param.setViewPort(
-        QRect(iround(cx - radius), iround(cy - radius), width, width));
-  param.setZ(iround(cz));
 
-  emit locating2DViewTriggered(param);
+  emit locating2DViewTriggered(iround(cx), iround(cy), iround(cz), width);
 }
 
 void Z3DWindow::locatePunctumIn2DView()
@@ -3344,26 +3338,6 @@ void Z3DWindow::locatePunctumIn2DView()
     ZPunctum* punc = *(punctumList.begin());
 
     locate2DView(punc->getCenter(), punc->radius());
-#if 0
-    ZStackViewParam param(NeuTube::COORD_STACK);
-
-    double radius = punc->radius();
-    const int minRadius = 400;
-    if (radius < minRadius) {
-      radius = minRadius;
-    }
-
-    double cx = punc->x();
-    double cy = punc->y();
-    double cz = punc->z();
-    param.setViewPort(iround(cx - radius), iround(cy - radius),
-                      iround(cx + radius), iround(cy + radius));
-    param.setZ(iround(cz));
-
-    emit locating2DViewTriggered(param);
-    //      m_doc->getParentFrame()->viewRoi(
-    //            punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
-#endif
   }
 }
 

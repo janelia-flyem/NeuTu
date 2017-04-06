@@ -133,7 +133,7 @@ signals:
   void bodyMerged(QList<uint64_t> objLabelList);
   void mergeUploaded();
   void splitSent(ZDvidTarget target, uint64_t bodyId);
-  void locating2DViewTriggered(ZStackViewParam);
+  void locating2DViewTriggered(int, int, int, int);
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
   void coarseBodyWindowCreatedInThread();
