@@ -28,6 +28,7 @@ requirements:
     - libxml2 2.9*
     - libpng  1.6.*
     - hdf5    1.8.16 # Ting's build script uses 1.8.12, but that's not available from conda
+    - pango 1.36.8 # [linux64]
 
   run:
     - qt       4.8.6.99   # [osx]
@@ -38,6 +39,7 @@ requirements:
     - libxml2 2.9*
     - libpng  1.6.*
     - hdf5    1.8.16
+    - pango 1.36.8 # [linux64]
     
 
 about:

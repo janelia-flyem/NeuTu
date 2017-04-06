@@ -19,4 +19,7 @@ if [ $(uname) == 'Darwin' ]; then
     mv neurolabi/build/neutu.app ${PREFIX}/bin/
 else
     mv neurolabi/build/neutu ${PREFIX}/bin/
+    mv neurolabi/build/config.xml ${PREFIX}/bin/
+    mv neurolabi/build/doc ${PREFIX}/bin/
+    mv neurolabi/build/json ${PREFIX}/bin/
 fi
