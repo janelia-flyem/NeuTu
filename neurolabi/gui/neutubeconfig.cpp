@@ -9,13 +9,15 @@
 #include <QFileInfo>
 #include <QFileInfoList>
 #include <QString>
+#include "neutube.h"
+#else
+#include "neutube_def.h"
 #endif
 
 #include "tz_cdefs.h"
 #include "zxmldoc.h"
 #include "zstring.h"
 #include "zlogmessagereporter.h"
-#include "neutube_def.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
