@@ -117,20 +117,8 @@ bool FocusedPathProtocol::initialize() {
 
 
     } else if (m_variation == VARIATION_BOOKMARK) {
-
-        // read appropriate bookmarks for this user; the bodies they
-        //  are on are the bodies to proofread
-
-        QMessageBox mb;
-        mb.setText("Not implemented!");
-        mb.setInformativeText("Not implemented--dummy bodies added to list!");
-        mb.setStandardButtons(QMessageBox::Ok);
-        mb.setDefaultButton(QMessageBox::Ok);
-        mb.exec();
-
-
+        // read assignment bookmark that contains the body list
         loadBodiesFromBookmarks();
-
 
     } else {
         variationError(m_variation);
@@ -244,10 +232,7 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
 }
 
 void FocusedPathProtocol::loadBodiesFromBookmarks() {
-
-    // look for bookmarks of the appropriate type for this
-    //  user; the bodies under those bookmarks are the bodies we want
-
+    // list of bodies to review are encoded in a specific user bookmark;
     // identify the focused bookmark; look for "edgedata" in props;
     // take the first one you find
     ZJsonArray bookmarks = m_reader.readTaggedBookmark("user:" + NeuTube::GetCurrentUserName());
@@ -261,45 +246,24 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
          }
     }
 
-    // for testing: skip the parsing that can'at happen yet and
-    //  put some dummy values in
-    /*
     if (!found) {
-        // we'll deal with the error in the calling routine
+        QMessageBox::warning(m_parent, "No bodies!",
+            "Error retrieving bodies from assignment bookmark!", QMessageBox::Ok);
         return;
     }
 
     // get the values out of the bookmark
     m_edgeDataInstance = ZJsonParser::stringValue(bookmark.getPropertyJson()[(KEY_ASSIGNMENT_EDGE_INSTANCE.c_str())]);
     m_pathDataInstance = ZJsonParser::stringValue(bookmark.getPropertyJson()[(KEY_ASSIGNMENT_PATH_INSTANCE.c_str())]);
-    m_pointDataInstance = ZJsonParser::stringValue(bookmark.getPropertyJson()[(KEY_ASSIGNMENT_POINT_INSTANCE.c_str());
-    ZJsonArray bodies = ((ZJsonArray) bookmark.getPropertyJson().value(KEY_ASSIGNMENT_BODIES.c_str()));
+    m_pointDataInstance = ZJsonParser::stringValue(bookmark.getPropertyJson()[(KEY_ASSIGNMENT_POINT_INSTANCE.c_str())]);
+
+    std::string bodyListString = ZJsonParser::stringValue(bookmark.getPropertyJson()[(KEY_ASSIGNMENT_BODIES.c_str())]);
+    ZJsonArray bodies;
+    bodies.decodeString(bodyListString.c_str());
+
     for (size_t i=0; i<bodies.size(); i++) {
         m_bodies.append(ZJsonParser::integerValue(bodies.at(i)));
     }
-    */
-
-
-    // debug
-    std::cout << "edge data instance = " << m_edgeDataInstance << std::endl;
-    std::cout << "path data instance = " << m_pathDataInstance << std::endl;
-    std::cout << "point data instance = " << m_pointDataInstance << std::endl;
-    std::cout << "# bodies loaded = " << m_bodies.size() << std::endl;
-
-
-
-    // dummy values for testing:
-    m_bodies.clear();
-    m_bodies.append(2345);
-    m_bodies.append(3456);
-
-
-    // this isn't an edge data instance, but it does exist,
-    //  thus keeping everything happy
-    m_edgeDataInstance = "focused_edges";
-    m_pathDataInstance = "focused_paths";
-    m_pointDataInstance = "test";
-
 
     emit bodyListLoaded();
 }
