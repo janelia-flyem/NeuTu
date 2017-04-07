@@ -444,7 +444,7 @@ void Z3DVolumeRaycaster::process(Z3DEye eye)
   bool renderSlice = m_showZSlice.get() || m_showXSlice.get() || m_showYSlice.get()
       || m_showXSlice2.get() || m_showYSlice2.get() || m_showZSlice2.get();
   if (renderSlice) {
-    glm::uvec3 volDim = volume->getOriginalDimensions();
+    glm::uvec3 volDim = glm::max(glm::uvec3(2,2,2), volume->getOriginalDimensions());
     glm::vec3 coordLuf = volume->getPhysicalLUF();
     glm::vec3 coordRdb = volume->getPhysicalRDB();
 
@@ -986,7 +986,7 @@ void Z3DVolumeRaycaster::prepareDataForRaycaster(Z3DVolume *volume, Z3DEye eye)
 
   glm::vec3 coordLuf = volume->getPhysicalLUF();
   glm::vec3 coordRdb = volume->getPhysicalRDB();
-  glm::uvec3 volDim = volume->getOriginalDimensions();
+  glm::uvec3 volDim = glm::max(glm::uvec3(2,2,2), volume->getOriginalDimensions());
 
   float xTexCoordStart = m_xCut.lowerValue() / static_cast<float>(volDim.x-1);
   float xTexCoordEnd = m_xCut.upperValue() / static_cast<float>(volDim.x-1);
@@ -1192,16 +1192,16 @@ void Z3DVolumeRaycaster::updateCubeSerieSlices()
   glm::uvec3 volDim = volume->getOriginalDimensions();
   glm::uvec3 dim = volume->getDimensions();
 
-  float xTexCoordStart = m_xCut.lowerValue() / static_cast<float>(volDim.x-1);
-  float xTexCoordEnd = m_xCut.upperValue() / static_cast<float>(volDim.x-1);
+  float xTexCoordStart = m_xCut.lowerValue() / std::max(1.f, static_cast<float>(volDim.x-1));
+  float xTexCoordEnd = m_xCut.upperValue() / std::max(1.f, static_cast<float>(volDim.x-1));
   float xCoordStart = glm::mix(coordLuf.x, coordRdb.x, xTexCoordStart);
   float xCoordEnd = glm::mix(coordLuf.x, coordRdb.x, xTexCoordEnd);
-  float yTexCoordStart = m_yCut.lowerValue() / static_cast<float>(volDim.y-1);
-  float yTexCoordEnd = m_yCut.upperValue() / static_cast<float>(volDim.y-1);
+  float yTexCoordStart = m_yCut.lowerValue() / std::max(1.f, static_cast<float>(volDim.y-1));
+  float yTexCoordEnd = m_yCut.upperValue() / std::max(1.f, static_cast<float>(volDim.y-1));
   float yCoordStart = glm::mix(coordLuf.y, coordRdb.y, yTexCoordStart);
   float yCoordEnd = glm::mix(coordLuf.y, coordRdb.y, yTexCoordEnd);
-  float zTexCoordStart = m_zCut.lowerValue() / static_cast<float>(volDim.z-1);
-  float zTexCoordEnd = m_zCut.upperValue() / static_cast<float>(volDim.z-1);
+  float zTexCoordStart = m_zCut.lowerValue() / std::max(1.f, static_cast<float>(volDim.z-1));
+  float zTexCoordEnd = m_zCut.upperValue() / std::max(1.f, static_cast<float>(volDim.z-1));
   float zCoordStart = glm::mix(coordLuf.z, coordRdb.z, zTexCoordStart);
   float zCoordEnd = glm::mix(coordLuf.z, coordRdb.z, zTexCoordEnd);
 
