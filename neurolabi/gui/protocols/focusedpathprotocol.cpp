@@ -43,6 +43,9 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->skipPathButton, SIGNAL(clicked(bool)), this, SLOT(onSkipPathButton()));
+    connect(ui->mergeButton, SIGNAL(clicked(bool)), this, SLOT(onMergeButton()));
+    connect(ui->dontMergeButton, SIGNAL(clicked(bool)), this, SLOT(onDontMergeButton()));
+    connect(ui->finishButton, SIGNAL(clicked(bool)), this, SLOT(onFinishPathButton()));
 
     // tables
     connect(ui->edgesTableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
@@ -192,6 +195,24 @@ void FocusedPathProtocol::onSkipPathButton() {
     if (!loadNextPath()) {
         loadNextBodyAndPath();
     }
+}
+
+void FocusedPathProtocol::onMergeButton() {
+
+    std::cout << "onMergeButton()" << std::endl;
+
+}
+
+void FocusedPathProtocol::onDontMergeButton() {
+
+    std::cout << "onDontMergeButton()" << std::endl;
+
+}
+
+void FocusedPathProtocol::onFinishPathButton() {
+
+    std::cout << "onFinishPathButton()" << std::endl;
+
 }
 
 void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
@@ -362,7 +383,7 @@ void FocusedPathProtocol::loadNextBodyAndPath() {
         //  sure you can get here any other way
         QMessageBox mb;
         mb.setText("Done!");
-        mb.setInformativeText("All paths have been reviewed!  The protocol can now be completed.");
+        mb.setInformativeText("All paths have been reviewed!  The protocol may now be completed.");
         mb.setStandardButtons(QMessageBox::Ok);
         mb.setDefaultButton(QMessageBox::Ok);
         mb.exec();

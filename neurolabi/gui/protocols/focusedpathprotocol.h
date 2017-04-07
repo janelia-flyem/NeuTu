@@ -41,6 +41,9 @@ private slots:
     void onExitButton();
     void onCompleteButton();
     void onSkipPathButton();
+    void onMergeButton();
+    void onDontMergeButton();
+    void onFinishPathButton();
     void onBodyListsLoaded();
     void onEdgeSelectionChanged(QItemSelection oldItem, QItemSelection newItem);    
 

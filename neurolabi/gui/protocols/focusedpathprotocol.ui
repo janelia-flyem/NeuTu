@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Focused protocol</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -21,6 +21,16 @@
      </property>
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Connecting bodies:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QLabel" name="connectionLabel">
          <property name="text">
@@ -34,7 +44,7 @@
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Edges</string>
+          <string>Edges in this path</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -122,13 +132,6 @@
         <widget class="QPushButton" name="dontMergeButton">
          <property name="text">
           <string>Mark edge as broken</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="mergeAllButton">
-         <property name="text">
-          <string>Merge all edges</string>
          </property>
         </widget>
        </item>
