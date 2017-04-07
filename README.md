@@ -1,7 +1,7 @@
 NeuTu (a.k.a. neuTube)
 =====
 
-[![Build Status](https://drone.io/github.com/janelia-flyem/NeuTu/status.png)](https://drone.io/github.com/janelia-flyem/NeuTu/latest)
+<!--[![Build Status](https://drone.io/github.com/janelia-flyem/NeuTu/status.png)](https://drone.io/github.com/janelia-flyem/NeuTu/latest)-->
 
 Software package for neuron reconstruction and visualization
 
