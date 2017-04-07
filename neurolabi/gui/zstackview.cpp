@@ -2264,8 +2264,9 @@ void ZStackView::zoomTo(const ZIntPoint &pt)
 
 void ZStackView::zoomTo(int x, int y, int z, int w)
 {
-  QRect viewPort = getViewPort(NeuTube::COORD_STACK);
-  int width = imin3(w, viewPort.width(), viewPort.height());
+//  QRect viewPort = getViewPort(NeuTube::COORD_STACK);
+//  int width = imin3(w, viewPort.width(), viewPort.height());
+  int width = w;
   if (width < 10) {
     width = 200;
   }
@@ -2537,9 +2538,16 @@ void ZStackView::setViewPort(const QRect &rect)
   imageWidget()->setViewPort(rect);
 
   reloadCanvas();
-
   processViewChange(false, false);
+  redraw();
+}
 
+void ZStackView::maximizeViewPort()
+{
+  imageWidget()->maximizeViewPort();
+
+  reloadCanvas();
+  processViewChange(false, false);
   redraw();
 }
 

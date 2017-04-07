@@ -143,9 +143,10 @@ QRectF ZViewProj::getProjRect() const
 void ZViewProj::setViewPort(const QRect &rect)
 {
   if (rect.isValid()) {
-  setOffset(rect.topLeft());
-  setZoom(std::min((double) (m_canvasRect.width()) / rect.width(),
-                   (double) (m_canvasRect.height()) / rect.height()));
+//    setOffset(rect.topLeft());
+    setZoom(std::min((double) (m_widgetRect.width()) / rect.width(),
+                     (double) (m_widgetRect.height()) / rect.height()));
+    setViewCenter(rect.center());
   }
 }
 
@@ -153,8 +154,19 @@ void ZViewProj::zoomTo(int x, int y, int width)
 {
   int radius = width / 2;
 
-  QRect rect(x - radius, y - radius, width, width);
-  setViewPort(rect);
+  double zoom = std::min((double) (m_widgetRect.width()) / width,
+                         (double) (m_widgetRect.height()) / width);
+
+  if (zoom > getZoom()) {
+    setOffset(x - radius, y - radius);
+    setZoom(zoom);
+  } else {
+    setViewCenter(x, y);
+  }
+
+
+//  QRect rect(x - radius, y - radius, width, width);
+//  setViewPort(rect);
 }
 
 void ZViewProj::zoomTo(const QPoint &pt, int width)
@@ -184,10 +196,26 @@ bool ZViewProj::isSourceValid() const
 void ZViewProj::maximizeViewPort()
 {
   if (isSourceValid()) {
-    double xZoom = (double) m_widgetRect.width() / m_canvasRect.width();
-    double yZoom = (double) m_widgetRect.height() / m_canvasRect.height();
+    double xZoom = double(m_widgetRect.width()) / m_canvasRect.width();
+    double yZoom = double(m_widgetRect.height()) / m_canvasRect.height();
+
     setZoom(std::min(xZoom, yZoom));
-    setOffset(m_canvasRect.left(), m_canvasRect.top());
+
+    if (xZoom == yZoom) {
+      m_x0 = m_canvasRect.left();
+      m_y0 = m_canvasRect.top();
+    } else {
+      QPoint widgetCenter = m_widgetRect.center();
+      QPoint canvasCenter = m_canvasRect.center();
+
+      if (xZoom > yZoom) {
+        move(canvasCenter.x(), m_canvasRect.top(),
+             widgetCenter.x(), m_widgetRect.top());
+      } else {
+        move(m_canvasRect.left(), canvasCenter.y(),
+             m_widgetRect.left(), widgetCenter.y());
+      }
+    }
   }
 }
 
@@ -257,7 +285,7 @@ double ZViewProj::getMinZoomRatio() const
 {
   if (isSourceValid()) {
     return std::min(double(m_widgetRect.width()) * 0.5 / m_canvasRect.width(),
-                    double(m_widgetRect.height()) * 0.5 / m_widgetRect.height());
+                    double(m_widgetRect.height()) * 0.5 / m_canvasRect.height());
   }
 
   return 0.0;
@@ -333,6 +361,21 @@ void ZViewProj::move(int srcX, int srcY, double dstX, double dstY)
 void ZViewProj::move(const QPoint &src, const QPointF &dst)
 {
   move(src.x(), src.y(), dst.x(), dst.y());
+}
+
+void ZViewProj::move(const QPoint &src, const QPoint &dst)
+{
+  move(src.x(), src.y(), dst.x(), dst.y());
+}
+
+void ZViewProj::setViewCenter(int x, int y)
+{
+  move(QPoint(x, y), getWidgetCenter());
+}
+
+void ZViewProj::setViewCenter(const QPoint &pt)
+{
+  setViewCenter(pt.x(), pt.y());
 }
 
 QPointF ZViewProj::mapPoint(const QPoint &p)

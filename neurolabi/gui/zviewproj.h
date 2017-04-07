@@ -50,6 +50,10 @@ public:
 
   void move(int srcX, int srcY, double dstX, double dstY);
   void move(const QPoint &src, const QPointF &dst);
+  void move(const QPoint &src, const QPoint &dst);
+  void setViewCenter(int x, int y);
+  void setViewCenter(const QPoint &pt);
+//  void setViewCenter(const QPointF &pt);
 
   QPointF mapPoint(const QPoint &p);
   QPoint mapPointBack(const QPointF &p);

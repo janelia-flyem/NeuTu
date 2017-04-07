@@ -68,6 +68,11 @@ void ZImageWidget::init()
   m_sliceAxis = NeuTube::Z_AXIS;
 }
 
+void ZImageWidget::maximizeViewPort()
+{
+  m_viewProj.maximizeViewPort();
+}
+
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
   QWidget::paintEvent(event);

@@ -1849,6 +1849,9 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
         buddyDocument()->getAction(ZActionFactory::ACTION_UNDO)->trigger();
 //        buddyDocument()->undoStack()->undo();
         processed = true;
+      } else if (event->modifiers() == Qt::ShiftModifier) {
+        buddyView()->maximizeViewPort();
+        processed = true;
       }
     }
     break;

@@ -219,6 +219,8 @@ public:
 
   void updateWidgetCanvas();
 
+  void maximizeViewPort();
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -264,7 +266,6 @@ private:
 
   void alignProjRegion(double ratio);
 
-  void maximizeViewPort();
 
   QRect adjustViewPort(const QRect &viewPort, EViewPortAdjust option);
   void adjustViewPort(EViewPortAdjust option);
