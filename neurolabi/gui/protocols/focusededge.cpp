@@ -3,12 +3,15 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <QDateTime>
+
 # include "zintpoint.h"
 
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
 #include "dvid/zdvidannotation.h"
+#include "dvid/zdvidwriter.h"
 
 /*
  * this class holds the info for an edge in the focused protocol
@@ -46,6 +49,17 @@ FocusedEdge::FocusedEdge(std::string edgeID, ZJsonObject edge)
 const std::string FocusedEdge::GLYPH_CONNECTED = "-----";
 const std::string FocusedEdge::GLYPH_UNCONNECTED = "--X--";
 const std::string FocusedEdge::GLYPH_UNKNOWN = "--?--";
+
+// format used in "time examined" field
+const std::string FocusedEdge::DATETIME_FORMAT = "yyyyMMddhhmmss";
+
+// keys for DVID object
+const std::string KEY_POINT1 = "point1";
+const std::string KEY_POINT2 = "point2";
+const std::string KEY_WEIGHT = "weight";
+const std::string KEY_EXAMINER = "examiner";
+const std::string KEY_TIME_EXAMINED = "time-examined";
+
 
 std::string FocusedEdge::getEdgeID() const {
     return m_edgeID;
@@ -92,6 +106,11 @@ std::string FocusedEdge::getTimeExamined() const
     return m_timeExamined;
 }
 
+void FocusedEdge::setTimeExaminedNow() {
+    // sets the time examined to the current time
+    m_timeExamined = QDateTime.currentDateTime().toString(DATETIME_FORMAT);
+}
+
 uint64_t FocusedEdge::getFirstBodyID() const
 {
     return m_firstBodyID;
@@ -132,4 +151,24 @@ std::string FocusedEdge::getConnectionTextIcon() {
     }
 }
 
+void FocusedEdge::writeEdge(ZDvidWriter& writer, std::string instance) {
+    ZJsonObject ann;
 
+    ZJsonArray point1;
+    point1.append(getFirstPoint().getX());
+    point1.append(getFirstPoint().getY());
+    point1.append(getFirstPoint().getZ());
+    ann.setEntry(KEY_POINT1, point1);
+
+    ZJsonArray point2;
+    point2.append(getLastPoint().getX());
+    point2.append(getLastPoint().getY());
+    point2.append(getLastPoint().getZ());
+    ann.setEntry(KEY_POINT2, point2);
+
+    ann.setEntry(KEY_WEIGHT, getWeight());
+    ann.setEntry(KEY_EXAMINER, getExaminer());
+    ann.setEntry(KEY_TIME_EXAMINED, getTimeExamined());
+
+    writer.writePointAnnotation(instance, ann);
+}

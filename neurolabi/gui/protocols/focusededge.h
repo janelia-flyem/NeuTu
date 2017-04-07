@@ -16,6 +16,14 @@ public:
     static const std::string GLYPH_UNCONNECTED;
     static const std::string GLYPH_UNKNOWN;
 
+    static const std::string DATETIME_FORMAT;
+
+    static const std::string KEY_POINT1;
+    static const std::string KEY_POINT2;
+    static const std::string KEY_WEIGHT;
+    static const std::string KEY_EXAMINER;
+    static const std::string KEY_TIME_EXAMINED;
+
     std::string getEdgeID() const;
     ZIntPoint getFirstPoint() const;
     ZIntPoint getLastPoint() const;
@@ -24,6 +32,7 @@ public:
     std::string getExaminer() const;
     void setExaminer(const std::string &examiner);
     std::string getTimeExamined() const;
+    void setTimeExaminedNow();
     uint64_t getFirstBodyID() const;
     void setFirstBodyID(const uint64_t &firstBodyID);
     uint64_t getLastBodyID() const;
