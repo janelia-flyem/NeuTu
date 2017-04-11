@@ -5,6 +5,8 @@
 
 #include "zjsonobject.h"
 
+#include "dvid/zdvidwriter.h"
+
 
 class FocusedEdge
 {
@@ -40,6 +42,7 @@ public:
     bool isConnected();
     bool isExamined();
     std::string getConnectionTextIcon();
+    void writeEdge(ZDvidWriter &writer, std::string instance);
 
 private:
     std::string m_edgeID;

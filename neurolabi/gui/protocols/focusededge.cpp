@@ -54,11 +54,11 @@ const std::string FocusedEdge::GLYPH_UNKNOWN = "--?--";
 const std::string FocusedEdge::DATETIME_FORMAT = "yyyyMMddhhmmss";
 
 // keys for DVID object
-const std::string KEY_POINT1 = "point1";
-const std::string KEY_POINT2 = "point2";
-const std::string KEY_WEIGHT = "weight";
-const std::string KEY_EXAMINER = "examiner";
-const std::string KEY_TIME_EXAMINED = "time-examined";
+const std::string FocusedEdge::KEY_POINT1 = "point1";
+const std::string FocusedEdge::KEY_POINT2 = "point2";
+const std::string FocusedEdge::KEY_WEIGHT = "weight";
+const std::string FocusedEdge::KEY_EXAMINER = "examiner";
+const std::string FocusedEdge::KEY_TIME_EXAMINED = "time-examined";
 
 
 std::string FocusedEdge::getEdgeID() const {
@@ -108,7 +108,7 @@ std::string FocusedEdge::getTimeExamined() const
 
 void FocusedEdge::setTimeExaminedNow() {
     // sets the time examined to the current time
-    m_timeExamined = QDateTime.currentDateTime().toString(DATETIME_FORMAT);
+    m_timeExamined = QDateTime::currentDateTime().toString(QString::fromStdString(DATETIME_FORMAT)).toStdString();
 }
 
 uint64_t FocusedEdge::getFirstBodyID() const
@@ -158,17 +158,17 @@ void FocusedEdge::writeEdge(ZDvidWriter& writer, std::string instance) {
     point1.append(getFirstPoint().getX());
     point1.append(getFirstPoint().getY());
     point1.append(getFirstPoint().getZ());
-    ann.setEntry(KEY_POINT1, point1);
+    ann.setEntry(KEY_POINT1.c_str(), point1);
 
     ZJsonArray point2;
     point2.append(getLastPoint().getX());
     point2.append(getLastPoint().getY());
     point2.append(getLastPoint().getZ());
-    ann.setEntry(KEY_POINT2, point2);
+    ann.setEntry(KEY_POINT2.c_str(), point2);
 
-    ann.setEntry(KEY_WEIGHT, getWeight());
-    ann.setEntry(KEY_EXAMINER, getExaminer());
-    ann.setEntry(KEY_TIME_EXAMINED, getTimeExamined());
+    ann.setEntry(KEY_WEIGHT.c_str(), getWeight());
+    ann.setEntry(KEY_EXAMINER.c_str(), getExaminer());
+    ann.setEntry(KEY_TIME_EXAMINED.c_str(), getTimeExamined());
 
     writer.writePointAnnotation(instance, ann);
 }
