@@ -319,6 +319,8 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
           mvc->m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
   connect(mvc->getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
           mvc->m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
+  connect(mvc->getCompleteDocument(), SIGNAL(bodyMerged()),
+          mvc->m_protocolSwitcher, SLOT(processBodyMerged()));
   connect(mvc->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           mvc, SLOT(syncBodySelectionToOrthoWindow()));
 

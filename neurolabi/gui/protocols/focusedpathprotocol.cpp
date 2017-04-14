@@ -8,6 +8,8 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include "neutube.h"
+
 #include "focusedpathbodyinputdialog.h"
 #include "flyem/zflyembookmark.h"
 
@@ -43,7 +45,6 @@ FocusedPathProtocol::FocusedPathProtocol(QWidget *parent, std::string variation)
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->skipPathButton, SIGNAL(clicked(bool)), this, SLOT(onSkipPathButton()));
-    connect(ui->mergeButton, SIGNAL(clicked(bool)), this, SLOT(onMergeButton()));
     connect(ui->dontMergeButton, SIGNAL(clicked(bool)), this, SLOT(onDontMergeButton()));
     connect(ui->finishButton, SIGNAL(clicked(bool)), this, SLOT(onFinishPathButton()));
 
@@ -82,13 +83,13 @@ const std::string FocusedPathProtocol::PROPERTY_EDGES = "edges";
 const std::string FocusedPathProtocol::PROPERTY_PATHS = "paths";
 
 // colors
-const QColor FocusedPathProtocol::COLOR_BODY1 = QColor(0, 0, 255);
-const QColor FocusedPathProtocol::COLOR_BODY2 = QColor(0, 128, 64);
-const QColor FocusedPathProtocol::COLOR_EDGE1 = QColor(128, 0, 255);
-const QColor FocusedPathProtocol::COLOR_EDGE2 = QColor(0, 255, 0);
-const QColor FocusedPathProtocol::COLOR_PATH = QColor(100, 200, 255);
-const QColor FocusedPathProtocol::COLOR_OTHER = QColor(128, 0, 64);
-const QColor FocusedPathProtocol::COLOR_DEFAULT = QColor(0, 0, 0);
+const QColor FocusedPathProtocol::COLOR_BODY1 = QColor(0, 0, 255);      // blue
+const QColor FocusedPathProtocol::COLOR_BODY2 = QColor(0, 128, 64);     // moss
+const QColor FocusedPathProtocol::COLOR_EDGE1 = QColor(128, 0, 255);    // grape
+const QColor FocusedPathProtocol::COLOR_EDGE2 = QColor(0, 255, 0);      // green
+const QColor FocusedPathProtocol::COLOR_PATH = QColor(100, 200, 255);   // sky
+const QColor FocusedPathProtocol::COLOR_OTHER = QColor(128, 0, 64);     // brick
+const QColor FocusedPathProtocol::COLOR_DEFAULT = QColor(0, 0, 0);      // none
 
 // other
 // best I can do...probably safe...
@@ -197,22 +198,60 @@ void FocusedPathProtocol::onSkipPathButton() {
     }
 }
 
-void FocusedPathProtocol::onMergeButton() {
-
-    std::cout << "onMergeButton()" << std::endl;
-
-}
-
 void FocusedPathProtocol::onDontMergeButton() {
 
     std::cout << "onDontMergeButton()" << std::endl;
 
+    // user has decided that the selected edge is not connected;
+    //  update edge and write it out
+    FocusedEdge selectedEdge = getSelectedEdge();
+    selectedEdge.setExaminer(NeuTube::GetCurrentUserName());
+    selectedEdge.setTimeExaminedNow();
+    ZDvidWriter writer;
+    if (writer.open(m_dvidTarget)) {
+        selectedEdge.writeEdge(writer, m_edgeDataInstance);
+    }
+
+    displayCurrentPath();
 }
 
 void FocusedPathProtocol::onFinishPathButton() {
 
     std::cout << "onFinishPathButton()" << std::endl;
 
+    // user wants to finalize this path and move to the next;
+    // refresh body IDs and check that end criteria is met
+    //  (at least one broken or all connected (else dialog))
+    m_currentPath.updateBodyIDs(m_reader);
+    if (!m_currentPath.isConnected() && !m_currentPath.anyBrokenEdges()) {
+        QMessageBox::warning(m_parent, "Path isn't finished!",
+            "The path must be connected, or one edge must be marked broken, before finishing path!",
+            QMessageBox::Ok);
+        return;
+    }
+
+    // can we disable finish button until criteria is met?  would need
+    //  to run the above check after all merges/splits
+
+    // don't need to write edge information here; should already be up to date
+
+    // remove path from current path list; delete path
+    //  other competing paths: leave as-is (they will be removed when they come up next)
+    m_currentBodyPaths.removeOne(m_currentPath);
+    deletePath(m_currentPath);
+
+
+    // try to load next path for body
+    bool status = loadNextPath();
+    if (!status) {
+        // no more paths on this body; if there aren't any skips,
+        //  mark the body as done; either way, move to next body
+        //  and path
+        if (m_bodySkippedPathCount[m_currentBody] == 0) {
+            m_bodyDone[m_currentBody] = true;
+        }
+        loadNextBodyAndPath();
+    }
 }
 
 void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
@@ -448,6 +487,13 @@ bool FocusedPathProtocol::loadNextPath() {
 
         if (!m_currentPath.isConnected()) {
             displayCurrentPath();
+
+            // set/go to first unknown edge
+            int index = m_currentPath.getFirstUnexaminedEdgeIndex();
+            if (index >= 0) {
+                gotoEdgePoint(m_currentPath.getEdge(index));
+                updateColorMap();
+            }
             return true;
         } else {
             // if a path is connected, it shouldn't be in our
@@ -497,10 +543,6 @@ void FocusedPathProtocol::deletePath(FocusedPath path) {
     }
 
 
-    return;
-
-
-
     ZDvidWriter writer;
     if (writer.open(m_dvidTarget)) {
 
@@ -532,10 +574,20 @@ void FocusedPathProtocol::deletePath(FocusedPath path) {
 }
 
 void FocusedPathProtocol::displayCurrentPath() {
-    // edges already loaded in path, and  path known to be unconnected;
+    // edges already loaded in path, and path known to be unconnected;
     // load edges into UI and update labels
-    FocusedEdge firstEdge = m_currentPath.getEdge(0);
 
+    // edge table (from scratch)
+    loadEdgeTable();
+
+    // top label: overall connection, body IDs
+    updateConnectionLabel();
+
+    // bottom label: edges, paths, bodies
+    updateProgressLabel();
+}
+
+void FocusedPathProtocol::loadEdgeTable() {
     // load data into model
     m_edgeModel->clear();
     // reset headers?
@@ -569,29 +621,6 @@ void FocusedPathProtocol::displayCurrentPath() {
     ui->edgesTableView->horizontalHeader()->setResizeMode(CONNECTION_COLUMN, QHeaderView::ResizeToContents);
     ui->edgesTableView->horizontalHeader()->setResizeMode(BODYID2_COLUMN, QHeaderView::Stretch);
 #endif
-
-
-    // top label: overall connection, body IDs
-    updateConnectionLabel();
-
-    // bottom label: edges, paths, bodies
-    updateProgressLabel();
-
-
-    // set/go to first unknown edge
-    int index = m_currentPath.getFirstUnexaminedEdgeIndex();
-    if (index >= 0) {
-
-
-        gotoEdgePoint(m_currentPath.getEdge(index));
-
-
-        updateColorMap();
-        emit requestActivateColorMap();
-
-    }
-
-
 
 }
 
@@ -666,6 +695,25 @@ void FocusedPathProtocol::updateColorMap() {
 
     m_colorScheme.buildColorTable();
     emit requestColorMapChange(m_colorScheme);
+    emit requestActivateColorMap();
+}
+
+void FocusedPathProtocol::processBodyMerged() {
+    
+    std::cout << "in fpp::processBodyMerged() " << std::endl;
+
+    // we're not getting the exact bodies merged; just refresh
+    //  body IDs for the path and update the UI
+    // note: that means we can't update edge examiner and time,
+    //  unless we scan for un-updated edges?
+
+    m_currentPath.updateBodyIDs(m_reader);
+
+    // note that this does not maintain edge selection, which
+    //  we probably have to adjust
+
+    displayCurrentPath();
+
 }
 
 void FocusedPathProtocol::onEdgeSelectionChanged(QItemSelection newItem, QItemSelection oldItem) {

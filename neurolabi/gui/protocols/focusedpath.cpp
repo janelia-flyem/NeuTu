@@ -167,6 +167,18 @@ bool FocusedPath::isConnected() {
     return true;
 }
 
+bool FocusedPath::anyBrokenEdges() {
+    // an edge is broken if it's unconnected and examined (meaning
+    //  someone explicitly said it's not connected); do we have any?
+    foreach(ZIntPoint point, m_edgePoints) {
+        FocusedEdge edge = getEdge(point);
+        if (!edge.isConnected() && edge.isExamined()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::string FocusedPath::getConnectionTextIcon() {
     if (isConnected()) {
         return FocusedEdge::GLYPH_CONNECTED;

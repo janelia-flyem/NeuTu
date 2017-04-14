@@ -34,6 +34,7 @@ public:
     int getNumUnexaminedEdges();
     int getFirstUnexaminedEdgeIndex();    
     void updateBodyIDs(ZDvidReader &reader);
+    bool anyBrokenEdges();
 
 private:
     std::string m_pathID;

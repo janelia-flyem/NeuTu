@@ -35,6 +35,7 @@ public slots:
 
     void processSynapseVerification(int x, int y, int z, bool verified);
     void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
+    void processBodyMerged();
 
 private slots:
     void startProtocolRequested(QString protocolName);

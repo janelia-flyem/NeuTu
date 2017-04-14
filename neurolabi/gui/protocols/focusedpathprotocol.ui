@@ -122,13 +122,6 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="mergeButton">
-         <property name="text">
-          <string>Merge selected edge</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QPushButton" name="dontMergeButton">
          <property name="text">
           <string>Mark edge as broken</string>
@@ -136,9 +129,22 @@
         </widget>
        </item>
        <item>
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="finishButton">
          <property name="text">
-          <string>Finish path/upload results</string>
+          <string>Finish path/go to next</string>
          </property>
         </widget>
        </item>

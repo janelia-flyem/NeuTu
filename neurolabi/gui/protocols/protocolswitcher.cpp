@@ -545,7 +545,13 @@ void ProtocolSwitcher::processSynapseMoving(
   }
 }
 
+void ProtocolSwitcher::processBodyMerged() {
 
+
+    std::cout << "in ProSwi::processBodyMerged()" << std::endl;
+
+
+}
 
 
 

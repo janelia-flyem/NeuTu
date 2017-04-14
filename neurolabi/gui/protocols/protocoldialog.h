@@ -25,10 +25,11 @@ public:
     virtual void setDvidTarget(ZDvidTarget target);
 
 public:
-    //Special behaviors
+    // optional: implement these calls to connect to signals sent by ZFlyEmProofDoc
     virtual void processSynapseVerification(int x, int y, int z, bool verified);
     virtual void processSynapseMoving(
         const ZIntPoint &from, const ZIntPoint &to);
+    virtual void processBodyMerged();
 
 signals:
     void protocolCompleting();

@@ -26,6 +26,7 @@ public:
     static const std::string VARIATION_BODY;
     static const std::string VARIATION_BOOKMARK;
     void setDvidTarget(ZDvidTarget target);
+    void processBodyMerged();
 
 signals:
     void protocolCompleting();
@@ -41,7 +42,6 @@ private slots:
     void onExitButton();
     void onCompleteButton();
     void onSkipPathButton();
-    void onMergeButton();
     void onDontMergeButton();
     void onFinishPathButton();
     void onBodyListsLoaded();
@@ -120,6 +120,7 @@ private:
     uint64_t getNextBody();
     bool loadFirstPath();
     bool loadNextPath();
+    void loadEdgeTable();
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H

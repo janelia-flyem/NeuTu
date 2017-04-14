@@ -92,3 +92,7 @@ void ProtocolDialog::processSynapseVerification(
 {
 
 }
+
+void ProtocolDialog::processBodyMerged() {
+    
+}
