@@ -4,6 +4,7 @@
 #include <QDialog>
 
 class ZProofreadWindow;
+class ZFlyEmProofMvc;
 class ZIntPoint;
 class ZIntCuboid;
 class QRect;
@@ -22,6 +23,7 @@ public:
   ~ZFlyEmGrayscaleDialog();
 
   ZProofreadWindow* getMainWindow() const;
+  ZFlyEmProofMvc* getFlyEmProofMvc() const;
 
   ZIntPoint getOffset() const;
   ZIntPoint getSize() const;
@@ -40,6 +42,8 @@ public:
   void setWidth(int width);
   void setHeight(int height);
   void setDepth(int depth);
+
+  bool isFullRange() const;
 
 private slots:
   void useCurrentOffset();
