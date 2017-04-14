@@ -28,8 +28,34 @@ public:
   const std::string& className() const;
 
   ZStack *getSlice(int z) const;
+
+  /*!
+   * \brief Get the dense representation of the sparse stack
+   *
+   * \return The returned stack is owned by the object.
+   */
   ZStack* getStack();
+
+  /*!
+   * \brief Get the dense representation of the sparse stack after
+   *        updating a certain region.
+   *
+   * \param updateBox The box region to update
+   * \return The returned stack is owned by the object.
+   */
   ZStack* getStack(const ZIntCuboid &updateBox);
+
+  /*!
+   * \brief Make a stack from the sparse representation.
+   *
+   * Other than the behavior of \a getStack, this function makes a new stack and
+   * returns it. So the caller is responsible for deleting the returned object.
+   * It returns NULL if the range is invalid.
+   *
+   * \param range Range of the produced stack.
+   * \return A new stack in the range.
+   */
+  ZStack* makeStack(const ZIntCuboid &range);
 
   bool stackDownsampleRequired();
 
@@ -77,7 +103,7 @@ public:
   int getReadStatusCode() const;
 
   void runFillValueFunc();
-  void runFillValueFunc(const ZIntCuboid &box, bool syncing);
+  void runFillValueFunc(const ZIntCuboid &box, bool syncing, bool cont = true);
 
   void setCancelFillValue(bool flag);
   void cancelFillValueSync();

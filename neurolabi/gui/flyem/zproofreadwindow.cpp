@@ -33,7 +33,6 @@
 #include "zflyemdataloader.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
-#include "dialogs/zflyemgrayscaledialog.h"
 
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
@@ -192,7 +191,6 @@ void ZProofreadWindow::createDialog()
   m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
   m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
   m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
-  m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -752,13 +750,7 @@ void ZProofreadWindow::exploreBody()
 
 void ZProofreadWindow::exportGrayscale()
 {
-  if (m_grayscaleDlg->exec()) {
-    QString fileName =
-        ZDialogFactory::GetSaveFileName("Save Grayscale", "", this);
-    if (!fileName.isEmpty()) {
-      m_mainMvc->exportGrayscale(m_grayscaleDlg->getBoundBox(), fileName);
-    }
-  }
+  m_mainMvc->exportGrayscale();
 }
 
 void ZProofreadWindow::exportNeuronScreenshot()

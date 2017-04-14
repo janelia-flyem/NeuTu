@@ -22,6 +22,7 @@ public:
 
   ZStack* toStackObject() const;
   ZStack* toLabelField() const;
+  ZStack* toLabelField(const ZIntCuboid &box) const;
 
 };
 

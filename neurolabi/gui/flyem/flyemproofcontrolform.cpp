@@ -214,11 +214,13 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(skeletonizeSelectedBody()));
   bodyMenu->addAction(skeletonizeAction);
 
+#if 0
   QMenu *grayscaleMenu = m_mainMenu->addMenu("Grayscale");
   QAction *exportGrayScaleAction = new QAction("Export Grayscale", this);
   connect(exportGrayScaleAction, SIGNAL(triggered()),
           this, SLOT(exportGrayscale()));
   grayscaleMenu->addAction(exportGrayScaleAction);
+#endif
 
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");

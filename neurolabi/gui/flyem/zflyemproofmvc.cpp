@@ -77,6 +77,8 @@
 #include "dialogs/zflyemskeletonupdatedialog.h"
 #include "z3dmainwindow.h"
 #include "dvid/zdvidgrayslicescrollstrategy.h"
+#include "dialogs/zflyemgrayscaledialog.h"
+
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -115,6 +117,7 @@ void ZFlyEmProofMvc::init()
   m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
   m_infoDlg = new ZInfoDialog(this);
   m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
+  m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
 
 
   connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
@@ -384,6 +387,17 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
           this, SLOT(removeBookmark(ZFlyEmBookmark*)));
   connect(view, SIGNAL(removingBookmark(QList<ZFlyEmBookmark*>)),
           this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
+}
+
+void ZFlyEmProofMvc::exportGrayscale()
+{
+  if (m_grayscaleDlg->exec()) {
+    QString fileName =
+        ZDialogFactory::GetSaveFileName("Save Grayscale", "", this);
+    if (!fileName.isEmpty()) {
+      exportGrayscale(m_grayscaleDlg->getBoundBox(), fileName);
+    }
+  }
 }
 
 void ZFlyEmProofMvc::exportGrayscale(
@@ -2414,67 +2428,81 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 
 void ZFlyEmProofMvc::exportSelectedBodyStack()
 {
-  QString fileName =
-      ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
-  if (!fileName.isEmpty()) {
-    ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
-    if (slice != NULL) {
-      std::set<uint64_t> idSet =
-          slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+  if (m_grayscaleDlg->exec()) {
+    QString fileName =
+        ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
+    if (!fileName.isEmpty()) {
+      ZDvidLabelSlice *slice =
+          getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+      if (slice != NULL) {
+        std::set<uint64_t> idSet =
+            slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
 
+        ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+        ZDvidSparseStack *sparseStack = NULL;
+        if (reader.isReady()) {
+          std::set<uint64_t>::const_iterator iter = idSet.begin();
+          sparseStack = reader.readDvidSparseStack(*iter);
+          ++iter;
+          for (; iter != idSet.end(); ++iter) {
+            ZDvidSparseStack *sparseStack2 = reader.readDvidSparseStack(*iter);
+            sparseStack->getSparseStack()->merge(*(sparseStack2->getSparseStack()));
 
-      ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-      ZDvidSparseStack *sparseStack = NULL;
-      if (reader.isReady()) {
-        std::set<uint64_t>::const_iterator iter = idSet.begin();
-        sparseStack = reader.readDvidSparseStack(*iter);
-        ++iter;
-        for (; iter != idSet.end(); ++iter) {
-          ZDvidSparseStack *sparseStack2 = reader.readDvidSparseStack(*iter);
-          sparseStack->getSparseStack()->merge(*(sparseStack2->getSparseStack()));
-
-          delete sparseStack2;
+            delete sparseStack2;
+          }
         }
-      }
 
-      sparseStack->getStack()->save(fileName.toStdString());
-      delete sparseStack;
+        if (m_grayscaleDlg->isFullRange()) {
+          sparseStack->getStack()->save(fileName.toStdString());
+        } else {
+          ZStack *stack = sparseStack->makeStack(m_grayscaleDlg->getBoundBox());
+          stack->save(fileName.toStdString());
+          delete stack;
+        }
+        delete sparseStack;
+      }
     }
   }
 }
 
 void ZFlyEmProofMvc::exportSelectedBodyLevel()
 {
-  QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
-  if (!fileName.isEmpty()) {
-    ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
-    if (slice != NULL) {
-      std::set<uint64_t> idSet =
-          slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
-//      std::set<uint64_t> idSet =
-//          m_mergeProject.getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+  if (m_grayscaleDlg->exec()) {
+    QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
+    if (!fileName.isEmpty()) {
+      ZDvidLabelSlice *slice =
+          getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+      if (slice != NULL) {
+        std::set<uint64_t> idSet =
+            slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+        //      std::set<uint64_t> idSet =
+        //          m_mergeProject.getSelection(NeuTube::BODY_LABEL_ORIGINAL);
 
-      ZObject3dScanArray objArray;
-      objArray.resize(idSet.size());
+        ZObject3dScanArray objArray;
+        objArray.resize(idSet.size());
 
-      ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-      if (reader.isReady()) {
-        int index = 0;
-        for (std::set<uint64_t>::const_iterator iter = idSet.begin();
-             iter != idSet.end(); ++iter) {
-          ZObject3dScan &obj = objArray[index];
-          reader.readBody(*iter, false, &obj);
-          index++;
+        ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+        if (reader.isReady()) {
+          int index = 0;
+          for (std::set<uint64_t>::const_iterator iter = idSet.begin();
+               iter != idSet.end(); ++iter) {
+            ZObject3dScan &obj = objArray[index];
+            reader.readBody(*iter, false, &obj);
+            index++;
+          }
+        }
+
+        ZStack *stack = NULL;
+        if (m_grayscaleDlg->isFullRange()) {
+          stack = objArray.toLabelField();
+        } else {
+          stack = objArray.toLabelField(m_grayscaleDlg->getBoundBox());
+        }
+        if (stack != NULL) {
+          stack->save(fileName.toStdString());
+          delete stack;
         }
       }
-
-      ZStack *stack = objArray.toLabelField();
-      if (stack != NULL) {
-        stack->save(fileName.toStdString());
-      }
-      delete stack;
     }
   }
 }
