@@ -16,6 +16,7 @@
 #include "zcrosshair.h"
 #include "zflyemproofpresenter.h"
 #include "neutubeconfig.h"
+#include "flyem/zflyemorthoviewhelper.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -345,32 +346,36 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
   disconnect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
   disconnect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
 
+  ZFlyEmOrthoViewHelper helper;
+  helper.attach(mvc);
+
   switch (mvc->getView()->getSliceAxis()) {
   case NeuTube::Z_AXIS:
-    m_yzMvc->zoomWithHeightAligned(mvc->getView());
-//    m_yzMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
-    m_xzMvc->zoomWithWidthAligned(mvc->getView());
-//    m_xzMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
+    helper.syncViewPort(m_yzMvc);
+    helper.syncViewPort(m_xzMvc);
+
+//    m_yzMvc->zoomWithHeightAligned(mvc->getView());
+//    m_xzMvc->zoomWithWidthAligned(mvc->getView());
     break;
   case NeuTube::X_AXIS:
-    m_xyMvc->zoomWithHeightAligned(mvc->getView());
-    m_xzMvc->zoomWithWidthAligned(m_xyMvc->getView());
-//    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getHeightZoomRatio());
-//    m_xzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getWidthZoomRatio());
+    helper.syncViewPort(m_xyMvc);
+    helper.syncViewPort(m_xzMvc);
+//    m_xyMvc->zoomWithHeightAligned(mvc->getView());
+//    m_xzMvc->zoomWithWidthAligned(m_xyMvc->getView());
     break;
   case NeuTube::Y_AXIS:
-    m_xyMvc->zoomWithWidthAligned(mvc->getView());
-    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
-//    m_xyMvc->zoomTo(mvc->getViewCenter(), mvc->getWidthZoomRatio());
-//    m_yzMvc->zoomTo(m_xyMvc->getViewCenter(), m_xyMvc->getHeightZoomRatio());
+    helper.syncViewPort(m_xyMvc);
+    helper.syncViewPort(m_yzMvc);
+//    m_xyMvc->zoomWithWidthAligned(mvc->getView());
+//    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
     break;
   }
 
-  int z = m_xyMvc->getView()->getZ(NeuTube::COORD_STACK);
-  int y = m_xzMvc->getView()->getZ(NeuTube::COORD_STACK);
-  int x = m_yzMvc->getView()->getZ(NeuTube::COORD_STACK);
+//  int z = m_xyMvc->getView()->getZ(NeuTube::COORD_STACK);
+//  int y = m_xzMvc->getView()->getZ(NeuTube::COORD_STACK);
+//  int x = m_yzMvc->getView()->getZ(NeuTube::COORD_STACK);
 
-  getDocument()->getCrossHair()->setCenter(x, y, z);
+//  getDocument()->getCrossHair()->setCenter(x, y, z);
 
   /*
   m_xyMvc->updateCrossHair(m_xzMvc->getView()->getZ(NeuTube::COORD_STACK),

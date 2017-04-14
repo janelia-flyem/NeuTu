@@ -2429,6 +2429,11 @@ void ZStackView::setViewProj(const QPoint &pt, double zoom)
   m_imageWidget->setViewProj(pt, zoom);
 }
 
+void ZStackView::setViewProj(const ZViewProj &vp)
+{
+  m_imageWidget->setViewProj(vp);
+}
+
 ZStackViewParam ZStackView::getViewParameter(
     NeuTube::ECoordinateSystem coordSys, NeuTube::View::EExploreAction action) const
 {

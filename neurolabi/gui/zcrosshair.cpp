@@ -67,6 +67,22 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
 
 }
 
+void ZCrossHair::setX(double x)
+{
+  m_center.setX(x);
+}
+
+void ZCrossHair::setY(double y)
+{
+  m_center.setY(y);
+}
+
+void ZCrossHair::setCenter(double x, double y)
+{
+  m_center.setX(x);
+  m_center.setY(y);
+}
+
 void ZCrossHair::setCenter(double x, double y, double z)
 {
   m_center.set(x, y, z);

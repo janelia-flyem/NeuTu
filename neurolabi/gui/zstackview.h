@@ -356,6 +356,7 @@ public:
 
   void setViewProj(int x0, int y0, double zoom);
   void setViewProj(const QPoint &pt, double zoom);
+  void setViewProj(const ZViewProj &vp);
 
   ZIntPoint getViewCenter() const;
 

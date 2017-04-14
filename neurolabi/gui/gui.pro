@@ -735,7 +735,9 @@ HEADERS += mainwindow.h \
     dvid/zdvidgrayslicescrollstrategy.h \
     zviewproj.h \
     dialogs/zflyemgrayscaledialog.h \
-    dvid/zdvidneurontracer.h
+    dvid/zdvidneurontracer.h \
+    zorthoviewhelper.h \
+    flyem/zflyemorthoviewhelper.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1277,7 +1279,9 @@ SOURCES += main.cpp \
     dvid/zdvidgrayslicescrollstrategy.cpp \
     zviewproj.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
-    dvid/zdvidneurontracer.cpp
+    dvid/zdvidneurontracer.cpp \
+    zorthoviewhelper.cpp \
+    flyem/zflyemorthoviewhelper.cpp
 
 OTHER_FILES += \
     extlib.pri \

@@ -24,6 +24,10 @@ public:
   }
 
   void setCenter(double x, double y, double z);
+  void setCenter(double x, double y);
+  void setX(double x);
+  void setY(double y);
+
 
 private:
   void init();

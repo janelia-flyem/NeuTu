@@ -24,6 +24,8 @@ public:
   void setOffset(int x0, int y0);
   void setOffset(const QPoint &offset);
   void setZoom(double zoom);
+  void setX0(int x);
+  void setY0(int y);
 
   QRect getCanvasRect() const;
   QRect getWidgetRect() const;
@@ -56,7 +58,9 @@ public:
 //  void setViewCenter(const QPointF &pt);
 
   QPointF mapPoint(const QPoint &p);
+  QPointF mapPoint(const QPointF &p);
   QPoint mapPointBack(const QPointF &p);
+  QPointF mapPointBackF(const QPointF &p);
   void mapPointBack(double *x, double *y);
 
   double getMaxZoomRatio() const;
