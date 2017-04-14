@@ -28,11 +28,12 @@ public:
     FocusedEdge getEdge(ZIntPoint point);
     FocusedEdge getEdge(int i);
     bool hasEdges() const;
-    void loadEdges(ZDvidReader& reader, std::string instance);
+    void loadEdges(ZDvidReader& reader, std::string edgeInstance);
     bool isConnected();
     std::string getConnectionTextIcon();
     int getNumUnexaminedEdges();
-    int getFirstUnexaminedEdgeIndex();
+    int getFirstUnexaminedEdgeIndex();    
+    void updateBodyIDs(ZDvidReader &reader);
 
 private:
     std::string m_pathID;

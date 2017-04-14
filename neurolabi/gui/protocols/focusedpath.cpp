@@ -100,15 +100,14 @@ int FocusedPath::getNumEdges() const {
     return m_edgePoints.size();
 }
 
-void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
+void FocusedPath::loadEdges(ZDvidReader& reader, std::string edgeInstance) {
     // unfortunately, no way to bulk load key-value right now
 
     m_edgeMap.clear();
     m_edgePoints.clear();
 
-    std::vector<ZIntPoint> points;
     foreach(QString edgeID, m_edgeIDs) {
-        const QByteArray &temp = reader.readKeyValue(QString::fromStdString(instance), edgeID);
+        const QByteArray &temp = reader.readKeyValue(QString::fromStdString(edgeInstance), edgeID);
         ZJsonObject edgeData;
         edgeData.decodeString(temp.data());
 
@@ -116,9 +115,16 @@ void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
         m_edgePoints.append(edge.getFirstPoint());
         m_edgeMap[edge.getFirstPoint()] = edge;
         m_edgeMap[edge.getLastPoint()] = edge;
+    }
 
-        points.push_back(edge.getFirstPoint());
-        points.push_back(edge.getLastPoint());
+    updateBodyIDs(reader);
+}
+
+void FocusedPath::updateBodyIDs(ZDvidReader& reader) {
+    std::vector<ZIntPoint> points;
+    foreach(ZIntPoint point, m_edgePoints) {
+        points.push_back(point);
+        points.push_back(m_edgeMap[point].getOtherPoint(point));
     }
 
     // load all the body IDs at the points
@@ -128,8 +134,7 @@ void FocusedPath::loadEdges(ZDvidReader& reader, std::string instance) {
         m_bodyIDs[points[i]] = bodyIDs[i];
     }
 
-    // one more loop...fill in body IDs in edges; can't do earlier
-    //  because we need 2 body IDs for each edge
+    // fill in body IDs in edges
     foreach(ZIntPoint point, m_edgePoints) {
         m_edgeMap[point].setFirstBodyID(m_bodyIDs[point]);
         ZIntPoint otherPoint = m_edgeMap[point].getOtherPoint(point);
