@@ -22,7 +22,6 @@ class FlyEmProofControlForm;
 class FlyEmSplitControlForm;
 class ZStressTestOptionDialog;
 class ZFlyEmBodyScreenshotDialog;
-class ZFlyEmGrayscaleDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -159,7 +158,6 @@ private:
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
   ZStressTestOptionDialog *m_stressTestOptionDlg;
   ZFlyEmBodyScreenshotDialog *m_bodyScreenshotDlg;
-  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
 };
 
 
