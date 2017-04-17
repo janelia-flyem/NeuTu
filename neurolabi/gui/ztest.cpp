@@ -22763,7 +22763,6 @@ void ZTest::test(MainWindow *host)
     }
     ++index;
   }
-
 //  tree->save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 

@@ -6,6 +6,7 @@
 
 class ZSwcTree;
 class ZDvidTarget;
+class ZIntCuboid;
 
 class ZDvidNeuronTracer
 {
@@ -16,10 +17,12 @@ public:
 
   ZSwcTree *getResult() const;
 
-  void trace(int x, int y, int z);
+  void trace(double x, double y, double z, double r);
 
 private:
   void init();
+
+  ZStack* readStack(const ZIntCuboid &box);
 
 
 private:

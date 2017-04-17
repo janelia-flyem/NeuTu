@@ -99,10 +99,12 @@ exists($$DVIDCPP_PATH) {
 } else:exists($${CONDA_ENV}) {
     INCLUDEPATH +=  $${CONDA_ENV}/include
     LIBS += -L$${CONDA_ENV}/lib
-    unix: QMAKE_RPATHDIR += $${CONDA_ENV}/lib
+    unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
     DEFINES += _ENABLE_LIBDVIDCPP_
 }
 
+message("rpath")
+message($$QMAKE_RPATHDIR)
 
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp -lboost_system #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg

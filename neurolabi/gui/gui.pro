@@ -1279,6 +1279,6 @@ SOURCES += main.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
     dvid/zdvidneurontracer.cpp
 
-OTHER_FILES += \
-    extlib.pri \
-    extratarget.pri
+#OTHER_FILES += \
+##    extlib.pri \
+#    extratarget.pri
