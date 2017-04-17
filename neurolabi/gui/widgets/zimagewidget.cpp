@@ -89,6 +89,11 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
       m_isReady = true;
     }
 
+#ifdef _DEBUG_
+    std::cout << "Axis: " << m_sliceAxis << std::endl;
+    m_viewProj.print();
+#endif
+
     if (!painter.begin(this)) {
       std::cout << "......failed to begin painter" << std::endl;
     }
@@ -243,6 +248,11 @@ void ZImageWidget::setActiveDecorationCanvas(ZPixmap *canvas)
 void ZImageWidget::setViewProj(int x0, int y0, double zoom)
 {
   m_viewProj.set(x0, y0, zoom);
+
+#ifdef _DEBUG_
+  std::cout << "ZImageWidget::setViewProj: ";
+  m_viewProj.print();
+#endif
 }
 
 void ZImageWidget::setViewProj(const QPoint &pt, double zoom)
@@ -1163,6 +1173,9 @@ QSize ZImageWidget::sizeHint() const
 
 void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
 {
+#ifdef _DEBUG_
+  std::cout << "ZImageWidget::resetViewProj" << std::endl;
+#endif
   setCanvasRegion(x0, y0, w, h);
   m_viewProj.setWidgetRect(rect());
   m_isReady = false;
@@ -1170,6 +1183,11 @@ void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
 
 void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
 {
+#ifdef _DEBUG_
+  std::cout << "ZImageWidget::setCanvasRegion: " << m_sliceAxis << std::endl;
+  std::cout << "  " << x0 << " " << y0 << " " << w << " " << h << std::endl;
+#endif
+
   m_viewProj.setCanvasRect(QRect(x0, y0, w, h));
 }
 

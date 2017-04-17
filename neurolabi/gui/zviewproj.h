@@ -88,6 +88,8 @@ public:
 
   void recoverViewPort();
 
+  void print() const;
+
 private:
   void init();
   double adjustProj(int vx, int cx, double px, double zoom) const;

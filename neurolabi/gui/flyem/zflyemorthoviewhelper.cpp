@@ -91,6 +91,10 @@ ZPoint ZFlyEmOrthoViewHelper::getCrossCenter() const
 void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
 {
   if (getMasterMvc() != NULL) {
+#ifdef _DEBUG_
+    std::cout << "Sync crosshair from " << getMasterView()->getSliceAxis()
+              << " to " << mvc->getView()->getSliceAxis() << std::endl;
+#endif
     ZCrossHair *crossHair = mvc->getCompleteDocument()->getCrossHair();
     ZPoint crossCenter = getMasterDoc()->getCrossHair()->getCenter();
     ZPoint mappedCrossCenter = getCrossCenter();
@@ -116,12 +120,22 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
       }
       break;
     }
+
+#ifdef _DEBUG_
+    getMasterMvc()->getView()->printViewParam();
+    mvc->getView()->printViewParam();
+#endif
   }
 }
 
 void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
 {
   if (getMasterMvc() != NULL) {
+#ifdef _DEBUG_
+    std::cout << "Sync viewport from " << getMasterView()->getSliceAxis()
+              << " to " << mvc->getView()->getSliceAxis() << std::endl;
+#endif
+
     ZViewProj viewProj = getMasterView()->getViewProj();
     ZViewProj newViewProj = mvc->getView()->getViewProj();
     ZPoint mappedCrossCenter = getCrossCenter();
@@ -147,18 +161,23 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
         newViewProj.setZoomWithFixedPoint(
               viewProj.getZoom(),
               QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()));
-        newViewProj.setY0(viewProj.getX0());
+//        newViewProj.setY0(viewProj.getX0());
         mvc->getView()->setZ(mappedCrossCenter.getX());
       } else {
         newViewProj.setZoomWithFixedPoint(
               viewProj.getZoom(),
               QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()));
-        newViewProj.setX0(viewProj.getY0());
+//        newViewProj.setX0(viewProj.getY0());
         mvc->getView()->setZ(mappedCrossCenter.getY());
       }
       break;
     }
     mvc->getView()->setViewProj(newViewProj);
+
+#ifdef _DEBUG_
+    getMasterMvc()->getView()->printViewParam();
+    mvc->getView()->printViewParam();
+#endif
   }
 }
 

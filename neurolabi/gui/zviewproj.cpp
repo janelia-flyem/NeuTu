@@ -1,5 +1,6 @@
 #include "zviewproj.h"
 
+#include <iostream>
 #include <cmath>
 #include "tz_math.h"
 
@@ -10,7 +11,10 @@ ZViewProj::ZViewProj()
 
 void ZViewProj::init()
 {
-  set(0, 0, 1.0);
+  m_x0 = 0;
+  m_y0 = 0;
+  m_zoom = 1.0;
+//  set(0, 0, 1.0);
 }
 
 bool ZViewProj::isValid() const
@@ -58,6 +62,9 @@ void ZViewProj::setOffset(int x0, int y0)
   m_x0 = x0;
   m_y0 = y0;
   deprecateViewPort();
+#ifdef _DEBUG_
+  std::cout << "setOffset: " << m_x0 << " " << m_y0 << std::endl;
+#endif
 }
 
 void ZViewProj::setOffset(const QPoint &offset)
@@ -74,11 +81,13 @@ void ZViewProj::setZoom(double zoom)
 void ZViewProj::setX0(int x)
 {
   m_x0 = x;
+  deprecateViewPort();
 }
 
 void ZViewProj::setY0(int y)
 {
   m_y0 = y;
+  deprecateViewPort();
 }
 
 QRect ZViewProj::getCanvasRect() const
@@ -212,8 +221,7 @@ void ZViewProj::maximizeViewPort()
     setZoom(std::min(xZoom, yZoom));
 
     if (xZoom == yZoom) {
-      m_x0 = m_canvasRect.left();
-      m_y0 = m_canvasRect.top();
+      setOffset(m_canvasRect.left(), m_canvasRect.top());
     } else {
       QPoint widgetCenter = m_widgetRect.center();
       QPoint canvasCenter = m_canvasRect.center();
@@ -246,8 +254,7 @@ void ZViewProj::recoverViewPort()
 
 void ZViewProj::move(int dx, int dy)
 {
-  m_x0 += dx;
-  m_y0 += dy;
+  setOffset(m_x0 + dx, m_y0 + dy);
 }
 
 double ZViewProj::getValidZoom(double zoom) const
@@ -490,4 +497,9 @@ void ZViewProj::update() const
       }
     }
   }
+}
+
+void ZViewProj::print() const
+{
+  std::cout << "View proj: (" << m_x0 << "," << m_y0 << ") x " << m_zoom << std::endl;
 }

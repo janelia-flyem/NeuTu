@@ -251,7 +251,7 @@ void ZStackView::setDynamicObjectAlpha(int alpha)
 
 void ZStackView::resetViewProj()
 {
-  ZIntCuboid box = buddyDocument()->getStack()->getBoundBox();
+  ZIntCuboid box = getViewBoundBox();
   m_imageWidget->resetViewProj(
         box.getFirstCorner().getX(), box.getFirstCorner().getY(),
         box.getWidth(), box.getHeight());
@@ -879,6 +879,11 @@ void ZStackView::redraw(EUpdateOption option)
   timer.start();
 
   ZIntCuboid box = getViewBoundBox();
+
+#ifdef _DEBUG_
+  std::cout << "View box: " << m_sliceAxis << std::endl;
+  std::cout << "  " << box.toJsonArray().dumpString(0) << std::endl;;
+#endif
 
   m_imageWidget->setCanvasRegion(
         box.getFirstCorner().getX(),
@@ -2255,6 +2260,14 @@ void ZStackView::exportObjectMask(
       delete stack;
     }
   }
+}
+
+void ZStackView::printViewParam() const
+{
+#ifdef _DEBUG_
+    std::cout << "Axis: " << m_sliceAxis << std::endl;
+    getViewProj().print();
+#endif
 }
 
 void ZStackView::zoomTo(const ZIntPoint &pt)

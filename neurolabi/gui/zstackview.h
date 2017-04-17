@@ -235,6 +235,8 @@ public:
 
   void zoomTo(int x, int y, int z, int w);
 
+  void printViewParam() const;
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
