@@ -1283,6 +1283,6 @@ SOURCES += main.cpp \
     zorthoviewhelper.cpp \
     flyem/zflyemorthoviewhelper.cpp
 
-OTHER_FILES += \
-    extlib.pri \
-    extratarget.pri
+#OTHER_FILES += \
+##    extlib.pri \
+#    extratarget.pri

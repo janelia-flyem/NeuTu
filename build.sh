@@ -145,7 +145,8 @@ echo $qmake_args | xargs $QMAKE
 echo "qmake done"
 
 
-make -j3
+THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
+make -j${THREAD_COUNT}
 
 bin_dir=.
 app_name=neuTube

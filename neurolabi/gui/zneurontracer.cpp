@@ -371,7 +371,7 @@ ZSwcPath ZNeuronTracer::trace(double x, double y, double z)
   Trace_Workspace_Set_Trace_Status(m_traceWorkspace, TRACE_NORMAL,
                                    TRACE_NORMAL);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   if (m_traceWorkspace->trace_mask != NULL) {
     C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", m_traceWorkspace->trace_mask);
   }
