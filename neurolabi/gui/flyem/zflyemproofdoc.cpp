@@ -762,8 +762,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
                 QString("WARNING: Some data for proofreading are missing in "
                         "the database. "
                         "Please do NOT proofread segmentation "
-                        "until you fix the problem.").
-                arg(getSupervisor()->getMainUrl().c_str()),
+                        "until you fix the problem."),
                 NeuTube::MSG_WARNING));
       }
     }

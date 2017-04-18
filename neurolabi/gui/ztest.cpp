@@ -304,6 +304,7 @@ using namespace std;
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
 #include "dvid/zdvidgrayslice.h"
+#include "dialogs/zcomboeditdialog.h"
 
 using namespace std;
 
@@ -22735,7 +22736,7 @@ void ZTest::test(MainWindow *host)
   delete objArray;
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj1;
   ZObject3dScan obj2;
 
@@ -22764,6 +22765,16 @@ void ZTest::test(MainWindow *host)
     ++index;
   }
 //  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 1
+  ZComboEditDialog *dlg = new ZComboEditDialog(host);
+
+  std::vector<std::string> strList;
+  strList.push_back("test1");
+  strList.push_back("test2");
+  dlg->setStringList(strList);
+  dlg->exec();
 #endif
 
   std::cout << "Done." << std::endl;

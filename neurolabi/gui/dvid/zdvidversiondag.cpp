@@ -80,6 +80,29 @@ ZDvidVersionDag::getParentList(const std::string &uuid) const
   return uuidList;
 }
 
+std::vector<std::string>
+ZDvidVersionDag::getAncestorList(const std::string &uuid) const
+{
+  std::vector<std::string> uuidList;
+  std::queue<std::string> uuidQueue;
+  uuidQueue.push(uuid);
+
+  while (!uuidQueue.empty()) {
+    std::string currentUuid = uuidQueue.front();
+    uuidQueue.pop();
+    if (getParentMap().count(currentUuid) > 0) {
+      std::list<std::string> parentList = getParentMap().at(currentUuid);
+      uuidList.insert(uuidList.end(), parentList.begin(), parentList.end());
+      for (std::list<std::string>::iterator iter = parentList.begin();
+           iter != parentList.end(); ++iter) {
+        uuidQueue.push(*iter);
+      }
+    }
+  }
+
+  return uuidList;
+}
+
 std::string ZDvidVersionDag::getFirstParent(const std::string &uuid) const
 {
   std::string parentUuid;
