@@ -21615,7 +21615,6 @@ void ZTest::test(MainWindow *host)
        iter != seedList.end(); ++iter) {
     frame->document()->addObject(*iter);
   }
-
 #endif
 
 #if 0
