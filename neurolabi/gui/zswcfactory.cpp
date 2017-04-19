@@ -616,8 +616,10 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
 //                    dsIntv.getY() + 1,
 //                    dsIntv.getZ() + 1);
     } else {
+#ifdef _QT_GUI_USED_
       LWARN() << "Failed to generate body surface for sparsevol: "
               << obj.getVoxelNumber() << " voxels";
+#endif
     }
     delete stack;
   }
@@ -849,7 +851,9 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
     std::cout << "Surface extracting time:" << toc() << std::endl;
 
   } else {
+#ifdef _QT_GUI_USED_
     LWARN() << "Failed to generate surface for empty stack";
+#endif
   }
 
   return tree;

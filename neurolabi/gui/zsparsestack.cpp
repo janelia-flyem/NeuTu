@@ -129,7 +129,7 @@ bool ZSparseStack::downsampleRequired() const
   return false;
 }
 
-ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
+ZStack* ZSparseStack::makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
 {
   ZStack *out = NULL;
   if (m_objectMask != NULL && m_stackGrid != NULL) {
@@ -156,6 +156,7 @@ ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
         if (dsIntv != NULL) {
           *dsIntv = tmpDsIntv;
         }
+        out->setDsIntv(tmpDsIntv);
         delete dsGrid;
         delete obj;
       } else {
@@ -194,7 +195,7 @@ ZStack* ZSparseStack::getStack()
         ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
               m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
 #ifdef _DEBUG_2
-  return NULL;
+        return NULL;
 #endif
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
         m_stack->setZero();

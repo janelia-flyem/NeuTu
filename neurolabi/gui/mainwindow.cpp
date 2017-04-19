@@ -5,6 +5,7 @@
 #else
 #include <QtGui>
 #endif
+
 //#include <QtSvg>
 #include <QDir>
 #include <QtConcurrentRun>
@@ -2808,7 +2809,30 @@ void MainWindow::dropEvent(QDropEvent *event)
     else
       fileList.append(url.path());
 #else
+    QString localFile = url.toLocalFile();
+#if defined(__APPLE__)
+    if ( localFile.startsWith("/.file/id=") ) {
+      QProcess process;
+      QStringList argList =
+          QStringList() << "-e get posix path of my posix file \"" +
+                           localFile + "\" -- kthx. bai";
+      process.start("osascript", argList);
+      process.waitForFinished();
+//      QTextCodec::setCodecForCStrings(QTextCodec::codecForName("GBK"));
+      QByteArray byteArray = process.readAllStandardOutput().trimmed();
+      localFile = QString::fromUtf8(byteArray);
+//      qDebug() << localFile;
+      QFileInfo fileInfo(localFile);
+      if (!localFile.isEmpty() && fileInfo.exists()) {
+        fileList.append(localFile);
+      }
+    } else {
+      fileList.append(url.path());
+    }
+#else
     fileList.append(url.path());
+#endif
+
 #endif
   }
 

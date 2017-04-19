@@ -335,11 +335,11 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
     z += offset[2];
   }
 
-  if (y >= C_Stack::height(stack)) {
+  if (y < 0 || y >= C_Stack::height(stack)) {
     return;
   }
 
-  if (z >= C_Stack::depth(stack)) {
+  if (z < 0 || z >= C_Stack::depth(stack)) {
     return;
   }
 

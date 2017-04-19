@@ -4850,7 +4850,9 @@ bool ZStackDoc::loadFile(const QString &filePath)
   bool succ = true;
 
   m_changingSaveState = false;
-  switch (ZFileType::FileType(filePath.toStdString())) {
+
+  const char *filePathStr = filePath.toLocal8Bit().constData();
+  switch (ZFileType::FileType(filePathStr)) {
   case ZFileType::SWC_FILE:
 #ifdef _FLYEM_2
     removeAllObject();
@@ -4881,7 +4883,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
       executeAddObjectCommand(obj);
     } else {
       ZSparseObject *sobj = new ZSparseObject;
-      sobj->load(filePath.toStdString().c_str());
+      sobj->load(filePathStr);
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
@@ -4899,7 +4901,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     setTag(NeuTube::Document::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
-      obj->importDvidObject(filePath.toStdString());
+      obj->importDvidObject(filePathStr);
       int index = m_objectGroup.getObjectList(
             ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
       QColor color = m_objColorSheme.getColor(index);
@@ -4908,7 +4910,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
       executeAddObjectCommand(obj);
     } else {
       ZSparseObject *sobj = new ZSparseObject;
-      sobj->importDvidObject(filePath.toStdString());
+      sobj->importDvidObject(filePathStr);
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
@@ -4925,21 +4927,21 @@ bool ZStackDoc::loadFile(const QString &filePath)
   case ZFileType::V3D_RAW_FILE:
   case ZFileType::PNG_FILE:
   case ZFileType::V3D_PBD_FILE:
-    readStack(filePath.toStdString().c_str(), false);
+    readStack(filePathStr, false);
     break;
   case ZFileType::FLYEM_NETWORK_FILE:
-    importFlyEmNetwork(filePath.toStdString().c_str());
+    importFlyEmNetwork(filePathStr);
     break;
   case ZFileType::JSON_FILE:
   case ZFileType::SYNAPSE_ANNOTATON_FILE:
-    if (!importSynapseAnnotation(filePath.toStdString())) {
+    if (!importSynapseAnnotation(filePathStr)) {
       succ = false;
     }
     break;
   case ZFileType::V3D_APO_FILE:
   case ZFileType::V3D_MARKER_FILE:
   case ZFileType::RAVELER_BOOKMARK:
-    if (!importPuncta(filePath.toStdString().c_str())) {
+    if (!importPuncta(filePathStr)) {
       succ = false;
     }
     break;

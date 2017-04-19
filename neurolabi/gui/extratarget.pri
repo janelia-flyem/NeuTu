@@ -43,11 +43,15 @@ QMAKE_EXTRA_TARGETS += neurolabi
 #}
 #SourceJson = $${PWD}/../json
 
-#unix {
-#    OutputDir = $${OUT_PWD}
-#    macx {
-#        OutputDir = $${OutputDir}/$${TARGET}.app/Contents/MacOS
-#    }
+unix {
+  OutputDir = $${OUT_PWD}
+  macx {
+    OutputDir = $${OutputDir}/$${TARGET}.app/Contents/MacOS
+    exists($${CONDA_ENV}) {
+      QMAKE_POST_LINK += install_name_tool -add_rpath $${CONDA_ENV}/lib $${OutputDir}/$$TARGET
+    }
+  }
+
 
 #    ConfigTarget.target = ConfigTarget
 #    ConfigTarget.commands = echo "copying config"; cp $${SourceConfig} $${OutputDir}/config.xml
@@ -65,8 +69,4 @@ QMAKE_EXTRA_TARGETS += neurolabi
 
 #    QMAKE_EXTRA_TARGETS += JsonConfig
 #    QMAKE_POST_LINK += $$quote(echo "making json"; make JsonConfig;)
-#}
-
-
-
-
+}

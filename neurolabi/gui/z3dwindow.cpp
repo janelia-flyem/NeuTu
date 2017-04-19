@@ -87,6 +87,7 @@
 #include "dialogs/zswcisolationdialog.h"
 #include "dialogs/helpdialog.h"
 #include "z3dinteractionhandler.h"
+#include "dialogs/zcomboeditdialog.h"
 
 /*
 class Sleeper : public QThread
@@ -152,6 +153,7 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
 
   m_cuttingStackBound = false;
 
+  m_dvidDlg = NULL;
 }
 
 Z3DWindow::~Z3DWindow()
@@ -2389,7 +2391,18 @@ void Z3DWindow::compareBody()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->compareBody();
+    if (m_dvidDlg == NULL) {
+      m_dvidDlg = new ZComboEditDialog(this);
+      m_dvidDlg->setWindowTitle("DVID Setting");
+
+      std::vector<std::string> uuidList = doc->getAncestorUuidList();
+      m_dvidDlg->setStringList(uuidList);
+      m_dvidDlg->setCurrentIndex(1);
+    }
+
+    if (m_dvidDlg->exec()) {
+      doc->compareBody(m_dvidDlg->getText().toStdString());
+    }
   }
 }
 

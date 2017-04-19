@@ -255,7 +255,8 @@ void ZDvidSparseStack::cancelFillValueSync()
   }
 }
 
-void ZDvidSparseStack::runFillValueFunc(const ZIntCuboid &box, bool syncing)
+void ZDvidSparseStack::runFillValueFunc(
+    const ZIntCuboid &box, bool syncing, bool cont)
 {
   if (!m_isValueFilled) {
     QString threadId = getFillValueThreadId();
@@ -276,7 +277,7 @@ void ZDvidSparseStack::runFillValueFunc(const ZIntCuboid &box, bool syncing)
         QFuture<void> future = QtConcurrent::run(
               this, &ZDvidSparseStack::fillValue, box, true, false);
         future.waitForFinished();
-        if (!m_isValueFilled) {
+        if (!m_isValueFilled && cont) {
           runFillValueFunc();
         }
       } else {
@@ -528,6 +529,25 @@ ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
   m_sparseStack.deprecate(ZSparseStack::STACK);
 
   return m_sparseStack.getStack();
+}
+
+ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range)
+{
+  ZStack *stack = NULL;
+
+  if (range.isEmpty()) {
+    return NULL;
+  }
+
+  if (range.contains(getBoundBox())) {
+    stack = getStack()->clone();
+  } else {
+    runFillValueFunc(range, true, false);
+    m_sparseStack.deprecate(ZSparseStack::STACK);
+    stack = m_sparseStack.makeStack(range);
+  }
+
+  return stack;
 }
 
 bool ZDvidSparseStack::stackDownsampleRequired()

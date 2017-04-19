@@ -32,6 +32,11 @@ ZProofreadWindow* ZFlyEmGrayscaleDialog::getMainWindow() const
   return qobject_cast<ZProofreadWindow*>(parentWidget());
 }
 
+ZFlyEmProofMvc* ZFlyEmGrayscaleDialog::getFlyEmProofMvc() const
+{
+  return qobject_cast<ZFlyEmProofMvc*>(parentWidget());
+}
+
 ZIntPoint ZFlyEmGrayscaleDialog::getOffset() const
 {
   return ZIntPoint(getOffsetX(), getOffsetY(), getOffsetZ());
@@ -116,10 +121,10 @@ void ZFlyEmGrayscaleDialog::setDepth(int depth)
 
 ZStackViewParam ZFlyEmGrayscaleDialog::getViewParam() const
 {
-  ZProofreadWindow *window = getMainWindow();
+  ZFlyEmProofMvc *mvc = getFlyEmProofMvc();
   ZStackViewParam viewParam;
-  if (window != NULL) {
-    viewParam = window->getMainMvc()->getView()->getViewParameter();
+  if (mvc != NULL) {
+    viewParam = mvc->getView()->getViewParameter();
   }
 
   return viewParam;
@@ -155,6 +160,11 @@ void ZFlyEmGrayscaleDialog::useCurrentOffset()
   if (viewPort.isValid()) {
     setOffset(viewPort.left(), viewPort.top(), viewParam.getZ());
   }
+}
+
+bool ZFlyEmGrayscaleDialog::isFullRange() const
+{
+  return ui->fullRangeCheckBox->isChecked();
 }
 
 

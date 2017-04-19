@@ -734,7 +734,10 @@ HEADERS += mainwindow.h \
     zscrollslicestrategy.h \
     dvid/zdvidgrayslicescrollstrategy.h \
     zviewproj.h \
-    dialogs/zflyemgrayscaledialog.h
+    dialogs/zflyemgrayscaledialog.h \
+    dvid/zdvidneurontracer.h \
+    widgets/zcomboeditwidget.h \
+    dialogs/zcomboeditdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -830,7 +833,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zdvidadvanceddialog.ui \
     dialogs/zflyemskeletonupdatedialog.ui \
     widgets/zdvidsourcewidget.ui \
-    dialogs/zflyemgrayscaledialog.ui
+    dialogs/zflyemgrayscaledialog.ui \
+    dialogs/zcomboeditdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1275,8 +1279,11 @@ SOURCES += main.cpp \
     zscrollslicestrategy.cpp \
     dvid/zdvidgrayslicescrollstrategy.cpp \
     zviewproj.cpp \
-    dialogs/zflyemgrayscaledialog.cpp
+    dialogs/zflyemgrayscaledialog.cpp \
+    dvid/zdvidneurontracer.cpp \
+    widgets/zcomboeditwidget.cpp \
+    dialogs/zcomboeditdialog.cpp
 
-OTHER_FILES += \
-    extlib.pri \
-    extratarget.pri
+#OTHER_FILES += \
+##    extlib.pri \
+#    extratarget.pri

@@ -61,6 +61,7 @@ class ZActionLibrary;
 class ZMenuFactory;
 class ZJsonObject;
 class Z3DGeometryFilter;
+class ZComboEditDialog;
 
 
 class Z3DWindow : public QMainWindow
@@ -568,6 +569,7 @@ private:
   mutable QMutex m_filterMutex;
   ZSwcIsolationDialog *m_swcIsolationDlg;
   HelpDialog *m_helpDlg;
+  ZComboEditDialog *m_dvidDlg;
 };
 
 #endif // Z3DWINDOW_H

@@ -46,6 +46,7 @@ class ZRandomGenerator;
 class ZFlyEmSkeletonUpdateDialog;
 class ZFlyEmBody3dDoc;
 class ZDvidLabelSlice;
+class ZFlyEmGrayscaleDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -123,6 +124,7 @@ public:
 
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
+  void exportGrayscale();
   void exportGrayscale(const ZIntCuboid &box, const QString &fileName);
 
   //exploratory code
@@ -330,6 +332,7 @@ protected slots:
   void prepareBodyMap(const ZJsonValue &bodyInfoObj);
   void clearBodyMergeStage();
   void exportSelectedBody();
+  void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
   void processSynapseVerification(int x, int y, int z, bool verified);
@@ -431,7 +434,7 @@ protected:
   ZFlyEmBodyChopDialog *m_bodyChopDlg;
   ZInfoDialog *m_infoDlg;
   ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
-
+  ZFlyEmGrayscaleDialog *m_grayscaleDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -519,6 +522,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(clearBodyMergeStage()));
   connect(panel, SIGNAL(exportingSelectedBody()),
           this, SLOT(exportSelectedBody()));
+  connect(panel, SIGNAL(exportingSelectedBodyLevel()),
+          this, SLOT(exportSelectedBodyLevel()));
   connect(panel, SIGNAL(exportingSelectedBodyStack()),
           this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),

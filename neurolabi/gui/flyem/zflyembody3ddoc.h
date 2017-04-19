@@ -186,6 +186,11 @@ public:
 
   void forceBodyUpdate();
   void compareBody();
+  void compareBody(const std::string &uuid);
+  void compareBody(ZDvidReader &diffReader);
+
+  std::vector<std::string> getParentUuidList() const;
+  std::vector<std::string> getAncestorUuidList() const;
 
   void waitForAllEvent();
 
@@ -247,6 +252,8 @@ private:
   BodyEvent makeMultresBodyEvent(
       uint64_t bodyId, int resLevel, const QColor &color);
 
+  ZDvidReader& getBodyReader();
+
 signals:
   void todoVisibleChanged();
 
@@ -263,6 +270,7 @@ private:
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
+  void removeDiffBody();
 
 private:
   QSet<uint64_t> m_bodySet;

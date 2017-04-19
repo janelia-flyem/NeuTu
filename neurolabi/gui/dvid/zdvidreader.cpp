@@ -32,6 +32,7 @@
 #include "zdvidutil.h"
 #include "dvid/zdvidroi.h"
 #include "zflyemutilities.h"
+#include "zobject3dscanarray.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -607,6 +608,24 @@ ZObject3dScan *ZDvidReader::readBody(
 #endif
 
   return result;
+}
+
+ZObject3dScanArray* ZDvidReader::readBody(const std::set<uint64_t> &bodySet)
+{
+  ZObject3dScanArray *objArray = NULL;
+
+  if (!bodySet.empty()) {
+    objArray = new ZObject3dScanArray[bodySet.size()];
+
+    int index = 0;
+    for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+         iter != bodySet.end(); ++iter) {
+      ZObject3dScan &obj = (*objArray)[index++];
+      readBody(*iter, false, &obj);
+    }
+  }
+
+  return objArray;
 }
 
 ZObject3dScan* ZDvidReader::readMultiscaleBody(
