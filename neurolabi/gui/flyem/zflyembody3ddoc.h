@@ -186,6 +186,11 @@ public:
 
   void forceBodyUpdate();
   void compareBody();
+  void compareBody(const std::string &uuid);
+  void compareBody(ZDvidReader &diffReader);
+
+  std::vector<std::string> getParentUuidList() const;
+  std::vector<std::string> getAncestorUuidList() const;
 
   void waitForAllEvent();
 
@@ -246,6 +251,8 @@ private:
   ZSwcTree *getBodyQuickly(uint64_t bodyId);
   BodyEvent makeMultresBodyEvent(
       uint64_t bodyId, int resLevel, const QColor &color);
+
+  ZDvidReader& getBodyReader();
 
 signals:
   void todoVisibleChanged();

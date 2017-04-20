@@ -304,6 +304,9 @@ using namespace std;
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
 #include "dvid/zdvidgrayslice.h"
+#include "dialogs/zcomboeditdialog.h"
+#include "dvid/zdvidneurontracer.h"
+#include "zlocalneuroseg.h"
 
 using namespace std;
 
@@ -22749,7 +22752,7 @@ void ZTest::test(MainWindow *host)
   delete objArray;
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj1;
   ZObject3dScan obj2;
 
@@ -22778,6 +22781,69 @@ void ZTest::test(MainWindow *host)
     ++index;
   }
 //  tree->save(GET_TEST_DATA_DIR + "/test.swc");
+#endif
+
+#if 0
+  ZComboEditDialog *dlg = new ZComboEditDialog(host);
+
+  std::vector<std::string> strList;
+  strList.push_back("test1");
+  strList.push_back("test2");
+  dlg->setStringList(strList);
+  dlg->exec();
+#endif
+
+#if 1
+#ifdef _ENABLE_LIBDVIDCPP_
+  ZDvidNeuronTracer tracer;
+
+  ZDvidTarget target;
+  target.set("localhost", "ae53", 8000);
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+//  ZStack *stack = reader.readGrayScale(484, 1060, 60, 128, 128, 64);
+//  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//  delete stack;
+
+  tracer.setDvidTarget(target);
+  int x = 478;
+  int y = 1113;
+  int z = 60;
+  ZStack *stack = tracer.readStack(x, y, z, 32);
+//  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//  delete stack;
+
+  Local_Neuroseg *locseg = New_Local_Neuroseg();
+  double r = 2.0;
+  Set_Local_Neuroseg(
+        locseg,  r + r, 0.0, NEUROSEG_DEFAULT_H, 0.0, 0.0, 0.0, 0.0, 1.0,
+        x, y, z);
+
+  double score = tracer.optimize(locseg);
+
+  std::cout << score << std::endl;
+
+  Print_Local_Neuroseg(locseg);
+
+  ZLocalNeuroseg *segObj = new ZLocalNeuroseg(locseg);
+  segObj->setColor(Qt::red);
+
+  tracer.trace(x, y, z, 2.0);
+  ZSwcTree *tree = tracer.getResult();
+
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->loadStack(stack);
+  frame->document()->addObject(segObj);
+  frame->document()->addObject(tree);
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+#endif
+
 #endif
 
   std::cout << "Done." << std::endl;

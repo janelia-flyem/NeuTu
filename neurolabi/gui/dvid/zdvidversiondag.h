@@ -32,6 +32,7 @@ public:
   bool hasNode(const std::string &uuid) const;
 
   std::vector<std::string> getParentList(const std::string &uuid) const;
+  std::vector<std::string> getAncestorList(const std::string &uuid) const;
   std::vector<std::string> getChildList(const std::string &uuid) const;
   std::string getFirstParent(const std::string &uuid) const;
   int getSiblingIndex(const std::string &uuid) const;

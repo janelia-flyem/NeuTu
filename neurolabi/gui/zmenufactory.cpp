@@ -257,9 +257,7 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
       actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
 
-#ifdef _DEBUG_
       actionList.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
-#endif
     }
 
     addAction(actionList, window, menu);

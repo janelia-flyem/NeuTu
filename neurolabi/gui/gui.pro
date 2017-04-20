@@ -737,7 +737,9 @@ HEADERS += mainwindow.h \
     dialogs/zflyemgrayscaledialog.h \
     dvid/zdvidneurontracer.h \
     zorthoviewhelper.h \
-    flyem/zflyemorthoviewhelper.h
+    flyem/zflyemorthoviewhelper.h \
+    widgets/zcomboeditwidget.h \
+    dialogs/zcomboeditdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -833,7 +835,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zdvidadvanceddialog.ui \
     dialogs/zflyemskeletonupdatedialog.ui \
     widgets/zdvidsourcewidget.ui \
-    dialogs/zflyemgrayscaledialog.ui
+    dialogs/zflyemgrayscaledialog.ui \
+    dialogs/zcomboeditdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1281,7 +1284,9 @@ SOURCES += main.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
     dvid/zdvidneurontracer.cpp \
     zorthoviewhelper.cpp \
-    flyem/zflyemorthoviewhelper.cpp
+    flyem/zflyemorthoviewhelper.cpp \
+    widgets/zcomboeditwidget.cpp \
+    dialogs/zcomboeditdialog.cpp
 
 #OTHER_FILES += \
 ##    extlib.pri \
