@@ -140,35 +140,16 @@ void ZStackMvc::connectSignalSlot()
 
 void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 {
-//  connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
-//  connectAction(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)),
-//          this, SIGNAL(messageGenerated(ZWidgetMessage)));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateChannelControl()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateThresholdSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateSlider()));
-  /*
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_presenter, SLOT(updateStackBc()));
-          */
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(redraw()));
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
+          m_view, SLOT(processStackChange(bool)));
   connectAction(m_doc.get(), SIGNAL(objectModified()),
                 m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
           m_view, SLOT(paintObject(ZStackObject::ETarget)));
-  connectAction(m_doc.get(), SIGNAL(objectModified()),
-                m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
           m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));
-//  connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
-//                this, SLOT(changeWindowTitle(bool)));
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
                 m_view, SLOT(paintObject()));
-//  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged()),
-//          this, SLOT(updateSwcExtensionHint()));
   connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
                 m_view, SLOT(paintObject()));
@@ -185,16 +166,18 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
           m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
           m_view, SLOT(paintObject()));
-//  connectAction(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
-//          this, SLOT(notifyUser(QString)));
   connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
                 m_view, SLOT(paintStack()));
   connectAction(m_doc.get(), SIGNAL(zoomingTo(int, int, int)),
                 this, SLOT(zoomTo(int,int,int)));
   connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(processViewChange(ZStackViewParam)));
+  /*
   connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
                 m_view, SLOT(resetViewProj()));
+                */
+  connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
+                m_view, SLOT(updateViewBox()));
 }
 
 void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
@@ -203,64 +186,6 @@ void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
 //  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
 //                m_presenter, SLOT(processSliceChangeEvent(int)));
 }
-
-#if 0
-#define UPDATE_DOC_SIGNAL_SLOT(connect) \
-  connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));\
-  connect(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)), \
-          this, SIGNAL(messageGenerated(ZWidgetMessage)));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateChannelControl()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateThresholdSlider()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateSlider()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_presenter, SLOT(updateStackBc()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateView()));\
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)), \
-          m_view, SLOT(paintObject(ZStackObject::ETarget)));\
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)), \
-          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));\
-  connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
-          this, SLOT(changeWindowTitle(bool)));\
-  connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,\
-          QList<ZLocsegChain*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged()),\
-          this, SLOT(updateSwcExtensionHint()));\
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(\
-                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectSelectionChanged(\
-                                QList<ZStackObject*>,QList<ZStackObject*>)),\
-          m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)));\
-  connect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
-          this, SLOT(notifyUser(QString)));\
-  connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));\
-  connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));\
-  connect(m_view, SIGNAL(viewChanged(ZStackViewParam)), \
-          this, SLOT(processViewChange(ZStackViewParam)));
-
-#define UPDATE_SIGNAL_SLOT(connect) \
-  UPDATE_DOC_SIGNAL_SLOT(connect) \
-  connect(m_view, SIGNAL(currentSliceChanged(int)),\
-          m_presenter, SLOT(processSliceChangeEvent(int)));
-#endif
-  //connect(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
-
 
 void ZStackMvc::disconnectAll()
 {

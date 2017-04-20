@@ -217,8 +217,6 @@ public:
   void showCrossHair(bool on);
   void updateCrossHair(int x, int y);
 
-  void updateWidgetCanvas();
-
   void maximizeViewPort();
 
 public:

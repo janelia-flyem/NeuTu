@@ -140,33 +140,42 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     ZViewProj newViewProj = mvc->getView()->getViewProj();
     ZPoint mappedCrossCenter = getCrossCenter();
 
+    ZCrossHair *refCross = mvc->getCompleteDocument()->getCrossHair();
+    QPointF refCrossPos = QPointF(refCross->getCenter().getX(),
+                                  refCross->getCenter().getY());
+
     NeuTube::EAxis axis = getAlignAxis(mvc);
     switch (axis) {
     case NeuTube::X_AXIS:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
-            QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()));
+            QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()),
+            refCrossPos);
       newViewProj.setX0(viewProj.getX0());
       mvc->getView()->setZ(mappedCrossCenter.getY());
       break;
     case NeuTube::Y_AXIS:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
-            QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()));
+            QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()),
+            refCrossPos);
       newViewProj.setY0(viewProj.getY0());
       mvc->getView()->setZ(mappedCrossCenter.getX());
       break;
     case NeuTube::Z_AXIS:
+      mappedCrossCenter.shiftSliceAxisInverse(getMasterView()->getSliceAxis());
       if (mvc->getView()->getSliceAxis() == NeuTube::X_AXIS) {
         newViewProj.setZoomWithFixedPoint(
               viewProj.getZoom(),
-              QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()));
+              QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()),
+              refCrossPos);
 //        newViewProj.setY0(viewProj.getX0());
         mvc->getView()->setZ(mappedCrossCenter.getX());
       } else {
         newViewProj.setZoomWithFixedPoint(
               viewProj.getZoom(),
-              QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()));
+              QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()),
+              refCrossPos);
 //        newViewProj.setX0(viewProj.getY0());
         mvc->getView()->setZ(mappedCrossCenter.getY());
       }

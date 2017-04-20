@@ -381,6 +381,9 @@ public:
 
   virtual ZStack* getStack() const;
   virtual ZStack *stackMask() const;
+
+  ZIntCuboid getDataRange() const;
+
   void setStackSource(const char *filePath);
   void setStackSource(const ZStackFile &stackFile);
   void loadSwcNetwork(const QString &filePath);
@@ -884,7 +887,7 @@ public:
   void notifyObject3dScanModified();
   void notifyStackPatchModified();
   void notifySparseObjectModified();
-  void notifyStackModified();
+  void notifyStackModified(bool rangeChanged);
   void notifySparseStackModified();
   void notifyVolumeModified();
   void notifyStrokeModified();
@@ -1155,7 +1158,7 @@ signals:
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
-  void stackModified();
+  void stackModified(bool rangeChanged);
   void sparseStackModified();
   void labelFieldModified();
   void stackReadDone();

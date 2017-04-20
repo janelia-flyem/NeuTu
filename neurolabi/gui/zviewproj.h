@@ -47,8 +47,9 @@ public:
 //  void updateZoom(double zoom);
   void setZoom(double zoom, EReference ref);
   void setZoomWithFixedPoint(
-      double zoom, QPoint viewPoint, QPointF projPoint);
-  void setZoomWithFixedPoint(double zoom, QPoint viewPoint);
+      double zoom, const QPoint &viewPoint, const QPointF &projPoint);
+  void setZoomWithFixedPoint(double zoom, const QPoint &viewPoint);
+//  void setZoomWithFixedPoint(double zoom, const QPointF &viewPoint);
 
   void move(int srcX, int srcY, double dstX, double dstY);
   void move(const QPoint &src, const QPointF &dst);
@@ -74,8 +75,6 @@ public:
   void zoomTo(int x, int y, int width);
   void zoomTo(const QPoint &pt, int width);
 
-
-
   /*!
    * \brief Zooming with reference point
    * \param rx
@@ -89,6 +88,9 @@ public:
   void recoverViewPort();
 
   void print() const;
+
+  bool operator ==(const ZViewProj &viewProj) const;
+  bool operator !=(const ZViewProj &viewProj) const;
 
 private:
   void init();

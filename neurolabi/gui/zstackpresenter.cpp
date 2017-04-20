@@ -1334,7 +1334,7 @@ void ZStackPresenter::moveImageToMouse(
 
 void ZStackPresenter::moveViewPort(int dx, int dy)
 {
-  buddyView()->imageWidget()->moveViewPort(dx, dy);
+  buddyView()->moveViewPort(dx, dy);
   buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
 

@@ -348,7 +348,7 @@ void ZViewProj::decreaseZoom(int rx, int ry)
 }
 
 void ZViewProj::setZoomWithFixedPoint(
-    double zoom, QPoint viewPoint, QPointF projPoint)
+    double zoom, const QPoint &viewPoint, const QPointF &projPoint)
 {
   if (zoom > 0) {
     int cx = iround(projPoint.x() / zoom);
@@ -360,7 +360,7 @@ void ZViewProj::setZoomWithFixedPoint(
   setZoom(zoom);
 }
 
-void ZViewProj::setZoomWithFixedPoint(double zoom, QPoint viewPoint)
+void ZViewProj::setZoomWithFixedPoint(double zoom, const QPoint &viewPoint)
 {
   setZoomWithFixedPoint(zoom, viewPoint, mapPoint(viewPoint));
 }
@@ -497,6 +497,20 @@ void ZViewProj::update() const
       }
     }
   }
+}
+
+bool ZViewProj::operator ==(const ZViewProj &viewProj) const
+{
+  return m_x0 == viewProj.m_x0 && m_y0 == viewProj.m_y0 &&
+      m_canvasRect == viewProj.m_canvasRect &&
+      m_widgetRect == viewProj.m_widgetRect;
+}
+
+bool ZViewProj::operator !=(const ZViewProj &viewProj) const
+{
+  return m_x0 != viewProj.m_x0 || m_y0 != viewProj.m_y0 ||
+      m_canvasRect != viewProj.m_canvasRect ||
+      m_widgetRect != viewProj.m_widgetRect;
 }
 
 void ZViewProj::print() const

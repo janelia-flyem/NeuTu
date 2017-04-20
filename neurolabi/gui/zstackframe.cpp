@@ -309,15 +309,15 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   }
 
   connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateChannelControl()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateThresholdSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_presenter, SLOT(updateStackBc()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(redraw()));
   connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),

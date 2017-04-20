@@ -1698,7 +1698,7 @@ void MainWindow::addStackFrame(ZStackFrame *frame, bool /*isReady*/)
       this, SLOT(addStackFrame(Stack*, bool)));
   connect(frame->document().get(), SIGNAL(frameDelivered(ZStackFrame*)),
       this, SLOT(addStackFrame(ZStackFrame*)));
-  connect(frame->document().get(), SIGNAL(stackModified()),
+  connect(frame->document().get(), SIGNAL(stackModified(bool)),
           this, SLOT(updateBcDlg()));
   connect(frame->presenter(), SIGNAL(viewModeChanged()),
           this, SLOT(updateMenu()));
@@ -3145,7 +3145,7 @@ void MainWindow::on_actionDistance_Map_triggered()
         ZStack *stack = frame->document()->getStack();
         proc.distanceTransform(stack,
                                dlg.isSquared(), dlg.isSliceWise());
-        currentStackFrame()->document()->notifyStackModified();
+        currentStackFrame()->document()->notifyStackModified(false);
 //          currentStackFrame()->updateView();
       }
     }
@@ -3159,7 +3159,7 @@ void MainWindow::on_actionShortest_Path_Flow_triggered()
 
     if (currentStackFrame()->document()->getStack()->isBinary()) {
       proc.shortestPathFlow(currentStackFrame()->document()->getStack());
-      currentStackFrame()->document()->notifyStackModified();
+      currentStackFrame()->document()->notifyStackModified(false);
       currentStackFrame()->updateView();
     }
   }
@@ -3175,8 +3175,8 @@ void MainWindow::on_actionExpand_Region_triggered()
       if (currentStackFrame()->document()->getStack()->isBinary()) {
         proc.expandRegion(currentStackFrame()->document()->getStack(),
                           dlg.getRadius());
-        currentStackFrame()->document()->notifyStackModified();
-        currentStackFrame()->updateView();
+        currentStackFrame()->document()->notifyStackModified(false);
+//        currentStackFrame()->updateView();
       }
     }
   }

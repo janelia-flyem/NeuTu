@@ -288,6 +288,15 @@ ZStack* ZStackDoc::stackMask() const
   return NULL;
 }
 
+ZIntCuboid ZStackDoc::getDataRange() const
+{
+  if (getStack() == NULL) {
+    return ZIntCuboid();
+  }
+
+  return getStack()->getBoundBox();
+}
+
 void ZStackDoc::setStackBackground(NeuTube::EImageBackground bg)
 {
     m_stackBackground = bg;
@@ -343,7 +352,7 @@ void ZStackDoc::connectSignalSlot()
 
   connect(&m_reader, SIGNAL(finished()), this, SIGNAL(stackReadDone()));
   connect(this, SIGNAL(stackReadDone()), this, SLOT(loadReaderResult()));
-  connect(this, SIGNAL(stackModified()), this, SIGNAL(volumeModified()));
+  connect(this, SIGNAL(stackModified(bool)), this, SIGNAL(volumeModified()));
 
   connect(this, SIGNAL(progressAdvanced(double)),
           this, SLOT(advanceProgressSlot(double)));
@@ -1464,9 +1473,12 @@ void ZStackDoc::loadStack(Stack *stack, bool isOwner)
   mainStack = new ZStack;
 
   if (mainStack != NULL) {
+    ZIntCuboid oldBox = getDataRange();
+
     mainStack->load(stack, isOwner);
     initNeuronTracer();
-    notifyStackModified();
+
+    notifyStackModified(!oldBox.equals(getDataRange()));
   }
 }
 
@@ -1479,13 +1491,15 @@ void ZStackDoc::loadStack(ZStack *zstack)
   ZStack* &mainStack = stackRef();
 
   if (zstack != mainStack) {
+    ZIntCuboid oldBox = getDataRange();
+
     deprecate(STACK);
     mainStack = zstack;
     initNeuronTracer();
 
 //    emit stackBoundBoxChanged();
 
-    notifyStackModified();
+    notifyStackModified(!oldBox.equals(getDataRange()));
   }
 }
 
@@ -4609,7 +4623,7 @@ bool ZStackDoc::binarize(int threshold)
     }
 
     if (mainStack->binarize(threshold)) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -4622,7 +4636,7 @@ bool ZStackDoc::bwsolid()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->bwsolid()) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -4635,7 +4649,7 @@ bool ZStackDoc::bwperim()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->bwperim()) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -4648,7 +4662,7 @@ bool ZStackDoc::invert()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     ZStackProcessor::invert(mainStack);
-    notifyStackModified();
+    notifyStackModified(false);
     return true;
   }
 
@@ -4660,7 +4674,7 @@ bool ZStackDoc::subtractBackground()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     ZStackProcessor::SubtractBackground(mainStack, 0.5, 3);
-    notifyStackModified();
+    notifyStackModified(false);
     return true;
   }
 
@@ -4672,7 +4686,7 @@ bool ZStackDoc::enhanceLine()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->enhanceLine()) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -5224,7 +5238,7 @@ void ZStackDoc::reloadStack()
 {
   if (m_stackFactory != NULL) {
     if (m_stackFactory->makeStack(getStack())) {
-      notifyStackModified();
+      notifyStackModified(false);
     }
   } else {
     updateStackFromSource();
@@ -5235,12 +5249,13 @@ void ZStackDoc::updateStackFromSource()
 {
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
+    ZIntCuboid oldBox = getDataRange();
     if (mainStack->isSwc()) {
       readSwc(mainStack->sourcePath().c_str());
-      notifyStackModified();
+      notifyStackModified(!oldBox.equals(getDataRange()));
     } else {
       if (mainStack->updateFromSource()) {
-        notifyStackModified();
+        notifyStackModified(!oldBox.equals(getDataRange()));
       }
     }
   }
@@ -5363,10 +5378,10 @@ void ZStackDoc::notifySparseObjectModified()
 }
 
 
-void ZStackDoc::notifyStackModified()
+void ZStackDoc::notifyStackModified(bool rangeChanged)
 {
-  emit stackModified();
-  emit stackBoundBoxChanged();
+  emit stackModified(rangeChanged);
+//  emit stackBoundBoxChanged();
 }
 
 void ZStackDoc::notifySparseStackModified()
@@ -5679,7 +5694,7 @@ bool ZStackDoc::watershed()
   m_progressReporter->advance(0.5);
   if (mainStack != NULL) {
     if (mainStack->watershed()) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -5785,7 +5800,7 @@ void ZStackDoc::bwthin()
       C_Stack::kill(out);
       m_progressReporter->advance(0.3);
       getStack()->deprecateSingleChannelView(0);
-      notifyStackModified();
+      notifyStackModified(false);
     }
 
     m_progressReporter->end();
@@ -8946,6 +8961,8 @@ void ZStackDoc::mapToStackCoord(double *x, double *y, double *z)
 
 void ZStackDoc::setSparseStack(ZSparseStack *spStack)
 {
+  ZIntCuboid oldBox = getDataRange();
+
   if (m_sparseStack != NULL) {
     delete m_sparseStack;
   }
@@ -8957,7 +8974,7 @@ void ZStackDoc::setSparseStack(ZSparseStack *spStack)
     }
 
     m_stack = ZStackFactory::makeVirtualStack(spStack->getBoundBox());
-    notifyStackModified();
+    notifyStackModified(!oldBox.equals(getDataRange()));
   }
 
   notifySparseStackModified();
@@ -8965,6 +8982,8 @@ void ZStackDoc::setSparseStack(ZSparseStack *spStack)
 
 void ZStackDoc::addData(ZStackDocReader &reader)
 {
+  ZIntCuboid oldBox = getDataRange();
+
   reader.getObjectGroup().moveTo(m_objectGroup);
 
   if (m_objectGroup.hasObject(ZStackObject::TYPE_SWC)) {
@@ -8975,7 +8994,7 @@ void ZStackDoc::addData(ZStackDocReader &reader)
     loadStack(reader.getStack());
     setStackSource(reader.getStackSource());
     initNeuronTracer();
-    notifyStackModified();
+    notifyStackModified(!oldBox.equals(getDataRange()));
   }
 
   if (reader.getSparseStack() != NULL) {

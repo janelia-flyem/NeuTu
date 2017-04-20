@@ -479,6 +479,7 @@ void ZStackView::updateSlider()
 
 void ZStackView::updateViewBox()
 {
+  resetViewProj();
   updateSlider();
   updateImageCanvas();
   updateObjectCanvas();
@@ -699,7 +700,7 @@ void ZStackView::updateImageScreen(EUpdateOption option)
 
     switch (option) {
     case UPDATE_QUEUED:
-      m_imageWidget->update(QRect(QPoint(0, 0), m_imageWidget->screenSize()));
+      m_imageWidget->update();
       break;
     case UPDATE_DIRECT:
       m_imageWidget->repaint();
@@ -862,6 +863,23 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 
   updateActiveDecorationCanvas();
   //buddyPresenter()->updateInteractiveContext();
+}
+
+void ZStackView::processStackChange(bool rangeChanged)
+{
+  updateChannelControl();
+
+  if (rangeChanged) {
+    resetViewProj();
+    updateSlider();
+    setSliceIndexQuietly(m_depthControl->maximum() / 2);
+    updateObjectCanvas();
+    updateTileCanvas();
+    updateActiveDecorationCanvas();
+    updateImageCanvas();
+  }
+
+  processViewChange(true, true);
 }
 
 void ZStackView::redrawObject()
@@ -2309,6 +2327,7 @@ void ZStackView::decreaseZoomRatio()
 void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
 {
   if (!isViewPortFronzen()) {
+    recordViewParam();
 //    setViewPortFrozen(true);
     imageWidget()->blockPaint(true);
     imageWidget()->increaseZoomRatio(x, y, usingRef);
@@ -2317,15 +2336,17 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
         ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE) {
       reloadTileCanvas();
       reloadObjectCanvas(true);
-
-      processViewChange(true, false);
+      processViewChange();
+//      processViewChange(true, false);
     }
 
 //    notifyViewChanged(NeuTube::View::EXPLORE_ZOOM);
 //    notifyViewPortChanged();
 
     imageWidget()->blockPaint(false);
-    imageWidget()->update();
+
+    updateImageScreen(UPDATE_QUEUED);
+//    imageWidget()->update();
   }
 }
 
@@ -2435,16 +2456,18 @@ ZViewProj ZStackView::getViewProj() const
 void ZStackView::setViewProj(int x0, int y0, double zoom)
 {
   m_imageWidget->setViewProj(x0, y0, zoom);
+  processViewChange(true, false);
 }
 
 void ZStackView::setViewProj(const QPoint &pt, double zoom)
 {
-  m_imageWidget->setViewProj(pt, zoom);
+  setViewProj(pt.x(), pt.y(), zoom);
 }
 
 void ZStackView::setViewProj(const ZViewProj &vp)
 {
   m_imageWidget->setViewProj(vp);
+  processViewChange(true, false);
 }
 
 ZStackViewParam ZStackView::getViewParameter(
@@ -2489,10 +2512,22 @@ void ZStackView::move(const QPoint &src, const QPointF &dst)
   redraw(UPDATE_DIRECT);
 }
 
+void ZStackView::moveViewPort(int dx, int dy)
+{
+  imageWidget()->moveViewPort(dx, dy);
+  processViewChange(false, false);
+  redraw(UPDATE_DIRECT);
+}
+
 void ZStackView::setViewPortCenter(
     const ZIntPoint &center, NeuTube::EAxisSystem system)
 {
   setViewPortCenter(center.getX(), center.getY(), center.getZ(), system);
+}
+
+void ZStackView::recordViewParam()
+{
+  m_oldViewParam = getViewParameter();
 }
 
 void ZStackView::updateSliceFromZ(int z)
@@ -2684,6 +2719,15 @@ bool ZStackView::isViewChanged(const ZStackViewParam &param) const
   ZStackViewParam currentParam = getViewParameter(NeuTube::COORD_STACK);
 
   return (currentParam != param);
+}
+
+void ZStackView::processViewChange()
+{
+  ZStackViewParam param = getViewParameter();
+
+  if (param != m_oldViewParam) {
+    processViewChange(true, param.getZ() != m_oldViewParam.getZ());
+  }
 }
 
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)

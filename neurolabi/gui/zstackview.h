@@ -249,6 +249,7 @@ public slots:
 //  void updateView();
   void redraw(EUpdateOption option = UPDATE_QUEUED);
   void redrawObject();
+  void processStackChange(bool rangeChanged);
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
   //void updateSlice(int nslide);
@@ -372,6 +373,7 @@ public:
 
   bool isViewChanged(const ZStackViewParam &param) const;
   void processViewChange(bool redrawing, bool depthChanged);
+  void processViewChange();
 //  void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);
@@ -383,6 +385,7 @@ public:
 
 public: //Change view parameters
   void move(const QPoint& src, const QPointF &dst);
+  void moveViewPort(int dx, int dy);
 
   void increaseZoomRatio();
   void decreaseZoomRatio();
@@ -452,6 +455,7 @@ protected:
 
 private:
   void updateSliceFromZ(int z);
+  void recordViewParam();
 
 protected:
   //ZStackFrame *m_parent;
@@ -499,7 +503,7 @@ protected:
 
   ZPaintBundle m_paintBundle;
   bool m_isRedrawBlocked;
-  QMutex m_mutex;
+//  QMutex m_mutex;
 
   ZBodySplitButton *m_splitButton;
   ZMessageManager *m_messageManager;
@@ -509,6 +513,8 @@ protected:
   bool m_viewChangeEventBlocked;
 
   ZScrollSliceStrategy *m_sliceStrategy;
+
+  ZStackViewParam m_oldViewParam;
 //  ZStackDoc::ActiveViewObjectUpdater m_objectUpdater;
 };
 
