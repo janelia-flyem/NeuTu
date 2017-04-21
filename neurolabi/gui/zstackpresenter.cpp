@@ -34,6 +34,8 @@
 #include "zkeyoperationconfig.h"
 #include "zstackfactory.h"
 #include "zstackdocselector.h"
+#include "zglobal.h"
+
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
@@ -400,6 +402,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_SHOW_ORTHO:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyOrthoViewTriggered()));
+      break;
+    case ZActionFactory::ACTION_COPY_POSITION:
+      connect(action, SIGNAL(triggered()), this, SLOT(copyCurrentPosition()));
       break;
     default:
       connected = false;
@@ -2678,6 +2683,15 @@ void ZStackPresenter::notifyOrthoViewTriggered()
 //  ZPoint pt = getLastMousePosInStack();
 
   emit orthoViewTriggered(pt.x(), pt.y(), pt.z());
+}
+
+void ZStackPresenter::copyCurrentPosition()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+
+  ZGlobal::GetInstance().setStackPosition(pt.x(), pt.y(), pt.z());
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()

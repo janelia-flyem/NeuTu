@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>179</height>
+    <height>212</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <zorder>frame</zorder>
       </widget>
      </item>
     </layout>
@@ -80,6 +79,27 @@
    </item>
    <item>
     <widget class="QLineEdit" name="segLineEdit"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Position</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="positionLineEdit"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pastePushButton">
+       <property name="text">
+        <string>Paste</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <spacer name="verticalSpacer">

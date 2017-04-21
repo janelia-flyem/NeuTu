@@ -190,6 +190,7 @@ public:
   void compareBody(const std::string &uuid);
   void compareBody(const ZFlyEmBodyComparisonDialog *dlg);
   void compareBody(ZDvidReader &diffReader);
+  void compareBody(ZDvidReader &diffReader, const ZIntPoint &pt);
 
   std::vector<std::string> getParentUuidList() const;
   std::vector<std::string> getAncestorUuidList() const;
@@ -225,6 +226,10 @@ private:
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, uint64_t bodyId2, ZDvidReader &diffReader, int zoom,
       FlyEM::EBodyType bodyType);
+
+  std::vector<ZSwcTree*> makeDiffBodyModel(
+      const ZIntPoint &pt, ZDvidReader &diffReader,
+      int zoom, FlyEM::EBodyType bodyType);
 
   void updateDvidInfo();
 

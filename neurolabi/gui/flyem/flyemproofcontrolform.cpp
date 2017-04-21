@@ -15,6 +15,7 @@
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
 #include "flyem/zflyembodycoloroption.h"
+#include "zglobal.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -319,9 +320,17 @@ void FlyEmProofControlForm::goToPosition()
 {
   bool ok;
 
-  QString text = QInputDialog::getText(this, tr("Go To"),
-                                       tr("Coordinates:"), QLineEdit::Normal,
-                                       "", &ok);
+  QString defaultText;
+
+  ZIntPoint pt = ZGlobal::GetInstance().getStackPosition();
+  if (pt.isValid()) {
+    defaultText = pt.toString().c_str();
+  }
+
+  QString text = QInputDialog::getText(
+        this, tr("Go To"), tr("Coordinates:"), QLineEdit::Normal, defaultText,
+        &ok);
+
   if (ok) {
     if (!text.isEmpty()) {
       ZString str = text.toStdString();

@@ -1,5 +1,8 @@
 #include "zflyembodycomparisondialog.h"
 #include "ui_zflyembodycomparisondialog.h"
+#include "zintpoint.h"
+#include "zglobal.h"
+#include "zstring.h"
 
 ZFlyEmBodyComparisonDialog::ZFlyEmBodyComparisonDialog(QWidget *parent) :
   QDialog(parent),
@@ -23,13 +26,15 @@ void ZFlyEmBodyComparisonDialog::connectSignalSlot()
           this, SLOT(updateSegInfo()));
   connect(ui->customRadioButton, SIGNAL(toggled(bool)),
           this, SLOT(updateSegInfo()));
+  connect(ui->pastePushButton, SIGNAL(clicked()),
+          this, SLOT(pastePosition()));
 }
 
 void ZFlyEmBodyComparisonDialog::updateSegInfo()
 {
   QString info;
   if (ui->defaultRadioButton->isChecked()) {
-    info = "Use default segmentaion name.";
+    info = "Use the default segmentaion name specified in DVID.";
   } else if (ui->sameRadioButton->isChecked()) {
     info = "Use the same segmentation name.";
   } else if (ui->customRadioButton) {
@@ -78,4 +83,31 @@ bool ZFlyEmBodyComparisonDialog::usingDefaultSegmentation() const
 bool ZFlyEmBodyComparisonDialog::usingSameSegmentation() const
 {
   return ui->sameRadioButton->isChecked();
+}
+
+void ZFlyEmBodyComparisonDialog::clearPosition()
+{
+  ui->positionLineEdit->clear();
+}
+
+void ZFlyEmBodyComparisonDialog::pastePosition()
+{
+  ZIntPoint pt = ZGlobal::GetInstance().getStackPosition();
+  if (pt.isValid()) {
+    ui->positionLineEdit->setText(pt.toString().c_str());
+  }
+}
+
+ZIntPoint ZFlyEmBodyComparisonDialog::getPosition() const
+{
+  ZIntPoint pt;
+  pt.invalidate();
+
+  ZString str = ui->positionLineEdit->text().toStdString();
+  std::vector<int> coords = str.toIntegerArray();
+  if (coords.size() == 3) {
+    pt.set(coords[0], coords[1], coords[2]);
+  }
+
+  return pt;
 }
