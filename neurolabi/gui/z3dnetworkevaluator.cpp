@@ -89,7 +89,7 @@ QString Z3DNetworkEvaluator::process(bool stereo)
   for (size_t i = 0; i < m_renderingOrder.size(); ++i) {
     Z3DProcessor* currentProcessor = m_renderingOrder[i];
 
-    qDebug() << "3D Processor: " << currentProcessor->getClassName();
+//    qDebug() << "3D Processor: " << currentProcessor->getClassName();
 
 
     // all processors should have been initialized at this point
@@ -102,7 +102,7 @@ QString Z3DNetworkEvaluator::process(bool stereo)
 
 
     // run the processor, if it needs processing and is ready
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (currentProcessor->getClassName() == "Z3DSwcFilter") {
       qDebug() << "Valid:" << currentProcessor->isValid(eye);
       qDebug() << "Ready:" << currentProcessor->isReady(eye);

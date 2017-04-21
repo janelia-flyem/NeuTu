@@ -23,6 +23,7 @@ public:
    * \param str Input json string.
    */
   void setFromJsonString(const std::string &str);
+  void set(const ZJsonObject &obj);
 
   void print() const;
 

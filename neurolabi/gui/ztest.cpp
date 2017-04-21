@@ -307,6 +307,7 @@ using namespace std;
 #include "dialogs/zcomboeditdialog.h"
 #include "dvid/zdvidneurontracer.h"
 #include "zlocalneuroseg.h"
+#include "dialogs/zflyembodycomparisondialog.h"
 
 using namespace std;
 
@@ -22779,7 +22780,24 @@ void ZTest::test(MainWindow *host)
   dlg->exec();
 #endif
 
+#if 0
+  ZComboEditDialog *dlg = new ZComboEditDialog(host);
+
+  std::vector<std::string> strList;
+  strList.push_back("test1");
+  strList.push_back("test2");
+  dlg->setStringList(strList);
+  dlg->exec();
+#endif
+
 #if 1
+  ZFlyEmBodyComparisonDialog *dlg = new ZFlyEmBodyComparisonDialog(host);
+  dlg->exec();
+
+  std::cout << dlg->getSegmentation() << std::endl;
+#endif
+
+#if 0
 #ifdef _ENABLE_LIBDVIDCPP_
   ZDvidNeuronTracer tracer;
 

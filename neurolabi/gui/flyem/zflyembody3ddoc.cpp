@@ -17,6 +17,7 @@
 #include "neutubeconfig.h"
 #include "z3dwindow.h"
 #include "zstackdocdatabuffer.h"
+#include "dialogs/zflyembodycomparisondialog.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1305,6 +1306,12 @@ void ZFlyEmBody3dDoc::compareBody(ZDvidReader &diffReader)
   ZFlyEmProofDoc *doc = getDataDocument();
 
   if (doc != NULL && diffReader.isReady()) {
+#ifdef _DEBUG_
+    std::cout << "Diff body target: " << std::endl;
+    diffReader.getDvidTarget().print();
+    std::cout << diffReader.getDvidTarget().getLabelBlockName() << std::endl;
+#endif
+
     std::set<uint64_t> bodySet = doc->getSelectedBodySet(
           NeuTube::BODY_LABEL_ORIGINAL);
     if (bodySet.size() == 1) {
@@ -1385,6 +1392,36 @@ void ZFlyEmBody3dDoc::compareBody()
   }
 }
 
+void ZFlyEmBody3dDoc::compareBody(const ZFlyEmBodyComparisonDialog *dlg)
+{
+  ZFlyEmProofDoc *doc = getDataDocument();
+
+  if (doc != NULL) {
+    std::set<uint64_t> bodySet = doc->getSelectedBodySet(
+          NeuTube::BODY_LABEL_ORIGINAL);
+    if (bodySet.size() == 1) {
+      ZDvidTarget target = getBodyReader().getDvidTarget();
+      target.setUuid(dlg->getUuid());
+      if (dlg->usingCustomSegmentation()) {
+        target.useDefaultDataSetting(false);
+        target.setLabelBlockName(dlg->getSegmentation());
+      } else if (dlg->usingSameSegmentation()) {
+        target.useDefaultDataSetting(false);
+      } else if (dlg->usingDefaultSegmentation()) {
+        target.useDefaultDataSetting(true);
+      }
+
+      ZDvidReader diffReader;
+      if (diffReader.open(target)) {
+        if (dlg->usingCustomSegmentation()) {
+          diffReader.syncBodyLabelName();
+        }
+        compareBody(diffReader);
+      }
+    }
+  }
+}
+
 void ZFlyEmBody3dDoc::compareBody(const std::string &uuid)
 {
   ZFlyEmProofDoc *doc = getDataDocument();
@@ -1395,6 +1432,12 @@ void ZFlyEmBody3dDoc::compareBody(const std::string &uuid)
     if (bodySet.size() == 1) {
       ZDvidTarget target = getBodyReader().getDvidTarget();
       target.setUuid(uuid);
+
+#ifdef _DEBUG_
+    std::cout << "Diff body target: " << std::endl;
+    std::cout << target.getLabelBlockName() << std::endl;
+#endif
+
       ZDvidReader diffReader;
       if (diffReader.open(target)) {
         compareBody(diffReader);

@@ -3,6 +3,7 @@
 
 #include "dvid/libdvidheader.h"
 #include "zsharedpointer.h"
+#include "dvid/zdviddef.h"
 
 class ZJsonValue;
 class ZDvidTarget;
@@ -67,8 +68,11 @@ ZJsonObject GetDag(const ZJsonObject &obj);
 ZJsonObject GetDataInstances(const ZJsonObject &obj);
 ZJsonObject GetDataInstances(const std::string &uuid);
 ZJsonObject GetDataInstances(const std::string &type);
-
 #endif
+
+ZDvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
+ZDvid::EDataType GetDataType(const std::string &typeName);
+
 
 /*!
  * \brief Test if two UUIDs they point to the same DVID node

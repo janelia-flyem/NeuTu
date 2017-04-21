@@ -224,6 +224,10 @@ bool ZDvidReader::open(const ZDvidTarget &target)
     if (getDvidTarget().usingDefaultDataSetting()) {
       loadDefaultDataSetting();
     }
+
+    if (getDvidTarget().getBodyLabelName().empty()) {
+      m_dvidTarget.setBodyLabelName(readBodyLabelName());
+    }
   }
 
   return succ;
@@ -951,9 +955,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
     spStack = new ZSparseStack;
     spStack->setObjectMask(body);
 
-    ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(
-          readInfo(getDvidTarget().getGrayScaleName().c_str()).toStdString());
+    ZDvidInfo dvidInfo = readDataInfo(getDvidTarget().getGrayScaleName());
     ZObject3dScan blockObj = dvidInfo.getBlockIndex(*body);;
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     spStack->setGreyScale(grid);
@@ -1197,6 +1199,29 @@ ZJsonObject ZDvidReader::readInfo() const
   return readJsonObject(url.getInfoUrl());
 }
 
+ZJsonObject ZDvidReader::readInfo(const std::string &dataName) const
+{
+ std::string url = ZDvidUrl(getDvidTarget()).getInfoUrl(dataName);
+
+ return readJsonObject(url);
+}
+
+ZDvidInfo ZDvidReader::readDataInfo(const std::string &dataName) const
+{
+  ZJsonObject obj = readInfo(dataName);
+
+  ZDvidInfo dvidInfo;
+
+  if (!obj.isEmpty()) {
+    dvidInfo.set(obj);
+    dvidInfo.setDvidNode(getDvidTarget().getAddress(), getDvidTarget().getPort(),
+                         getDvidTarget().getUuid());
+  }
+
+  return dvidInfo;
+}
+
+#if 0
 QString ZDvidReader::readInfo(const QString &dataName) const
 {
   ZDvidBufferReader &reader = m_bufferReader;
@@ -1234,6 +1259,36 @@ QString ZDvidReader::readInfo(const QString &dataName) const
 
   return info;
   */
+}
+#endif
+
+std::string ZDvidReader::readBodyLabelName() const
+{
+  std::string name;
+  if (getDvidTarget().hasLabelBlock()) {
+    ZJsonObject dataInfo = readInfo(getDvidTarget().getLabelBlockName());
+    if (dataInfo.hasKey("Base")) {
+      ZJsonObject baseObj(dataInfo.value("Base"));
+      if (baseObj.hasKey("Syncs")) {
+        ZJsonArray syncArray(baseObj.value("Syncs"));
+        for (size_t i = 0; i < syncArray.size(); ++i) {
+          std::string dataName =
+              ZJsonParser::stringValue(syncArray.getData(), i);
+          if (ZDvid::GetDataType(getType(dataName)) == ZDvid::TYPE_LABELVOL) {
+            name = dataName;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return name;
+}
+
+void ZDvidReader::syncBodyLabelName()
+{
+  m_dvidTarget.setBodyLabelName(readBodyLabelName());
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(
@@ -1701,10 +1756,7 @@ ZIntCuboid ZDvidReader::readBoundBox(int z)
 
 ZIntPoint ZDvidReader::readRoiBlockSize(const std::string &dataName) const
 {
-  QString info = readInfo(dataName.c_str());
-  ZJsonObject obj;
-  obj.decodeString(info.toStdString().c_str());
-
+  ZJsonObject obj = readInfo(dataName);
   ZIntPoint pt;
   if (obj.hasKey("Extended")) {
     ZJsonObject extJson(obj.value("Extended"));
@@ -1723,28 +1775,12 @@ ZIntPoint ZDvidReader::readRoiBlockSize(const std::string &dataName) const
 
 ZDvidInfo ZDvidReader::readGrayScaleInfo() const
 {
-  QString infoString = readInfo(getDvidTarget().getGrayScaleName().c_str());
-  ZDvidInfo dvidInfo;
-  if (!infoString.isEmpty()) {
-    dvidInfo.setFromJsonString(infoString.toStdString());
-    dvidInfo.setDvidNode(getDvidTarget().getAddress(), getDvidTarget().getPort(),
-                         getDvidTarget().getUuid());
-  }
-
-  return dvidInfo;
+  return readDataInfo(getDvidTarget().getGrayScaleName());
 }
 
 ZDvidInfo ZDvidReader::readLabelInfo() const
 {
-  QString infoString = readInfo(getDvidTarget().getLabelBlockName().c_str());
-  ZDvidInfo dvidInfo;
-  if (!infoString.isEmpty()) {
-    dvidInfo.setFromJsonString(infoString.toStdString());
-    dvidInfo.setDvidNode(getDvidTarget().getAddress(), getDvidTarget().getPort(),
-                         getDvidTarget().getUuid());
-  }
-
-  return dvidInfo;
+  return readDataInfo(getDvidTarget().getLabelBlockName());
 }
 
 bool ZDvidReader::hasData(const std::string &dataName) const

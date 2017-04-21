@@ -88,6 +88,7 @@
 #include "dialogs/helpdialog.h"
 #include "z3dinteractionhandler.h"
 #include "dialogs/zcomboeditdialog.h"
+#include "dialogs/zflyembodycomparisondialog.h"
 
 /*
 class Sleeper : public QThread
@@ -154,6 +155,7 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   m_cuttingStackBound = false;
 
   m_dvidDlg = NULL;
+  m_bodyCmpDlg = NULL;
 }
 
 Z3DWindow::~Z3DWindow()
@@ -2391,6 +2393,21 @@ void Z3DWindow::compareBody()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
+    if (m_bodyCmpDlg == NULL) {
+      m_bodyCmpDlg = new ZFlyEmBodyComparisonDialog(this);
+      std::vector<std::string> uuidList = doc->getAncestorUuidList();
+      m_bodyCmpDlg->setUuidList(uuidList);
+      m_bodyCmpDlg->setCurrentUuidIndex(1);
+    }
+
+    if (m_bodyCmpDlg->exec()) {
+      doc->compareBody(m_bodyCmpDlg);
+    }
+  }
+
+#if 0
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
     if (m_dvidDlg == NULL) {
       m_dvidDlg = new ZComboEditDialog(this);
       m_dvidDlg->setWindowTitle("DVID Setting");
@@ -2404,6 +2421,7 @@ void Z3DWindow::compareBody()
       doc->compareBody(m_dvidDlg->getText().toStdString());
     }
   }
+#endif
 }
 
 void Z3DWindow::deselectBody()

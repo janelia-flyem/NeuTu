@@ -95,12 +95,13 @@ void DvidImageDialog::setSinglePlane()
   if (m_singlePlaneDialog->exec()) {
     ZDvidReader reader;
     if (reader.open(m_dvidTarget)) {
-      QString infoString = reader.readInfo("grayscale");
+//      QString infoString = reader.readInfo("grayscale");
 
-      qDebug() << infoString;
+//      qDebug() << infoString;
 
       ZDvidInfo dvidInfo;
-      dvidInfo.setFromJsonString(infoString.toStdString());
+      dvidInfo.set(reader.readInfo("grayscale"));
+//      dvidInfo.setFromJsonString(infoString.toStdString());
 
       int z = m_singlePlaneDialog->getValue();
 
