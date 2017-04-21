@@ -48,7 +48,7 @@ public slots:
 protected:
     ZDvidTarget m_dvidTarget;    
     ZFlyEmProofMvc *getParentFrame() const;
-    ZFlyEmProofDoc *getDocument() const;
+    ZFlyEmProofDoc *getFlyEmProofDoc() const;
 
 private:
     Ui::ProtocolDialog *ui;

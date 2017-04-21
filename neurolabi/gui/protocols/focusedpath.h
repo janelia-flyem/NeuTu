@@ -4,6 +4,7 @@
 #include "focusededge.h"
 #include "zintpoint.h"
 
+#include "flyem/zflyemproofdoc.h"
 #include "dvid/zdvidannotation.h"
 #include "dvid/zdvidreader.h"
 
@@ -28,12 +29,12 @@ public:
     FocusedEdge getEdge(ZIntPoint point);
     FocusedEdge getEdge(int i);
     bool hasEdges() const;
-    void loadEdges(ZDvidReader& reader, std::string edgeInstance);
+    void loadEdges(ZDvidReader& reader, ZFlyEmProofDoc * doc, std::string edgeInstance);
     bool isConnected();
     std::string getConnectionTextIcon();
     int getNumUnexaminedEdges();
     int getFirstUnexaminedEdgeIndex();    
-    void updateBodyIDs(ZDvidReader &reader);
+    void updateBodyIDs(ZFlyEmProofDoc *doc);
     bool anyBrokenEdges();
 
 private:

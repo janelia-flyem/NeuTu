@@ -91,7 +91,7 @@ ZFlyEmProofMvc* ProtocolDialog::getParentFrame() const
   return qobject_cast<ZFlyEmProofMvc*>(parentWidget());
 }
 
-ZFlyEmProofDoc* ProtocolDialog::getDocument() const
+ZFlyEmProofDoc* ProtocolDialog::getFlyEmProofDoc() const
 {
   ZFlyEmProofMvc *mvc = getParentFrame();
   if (mvc != NULL) {

@@ -5,6 +5,7 @@
 #include "zintpoint.h"
 #include "zjsonparser.h"
 
+#include "flyem/zflyemproofdoc.h"
 #include "dvid/zdvidannotation.h"
 #include "dvid/zdvidreader.h"
 
@@ -100,7 +101,7 @@ int FocusedPath::getNumEdges() const {
     return m_edgePoints.size();
 }
 
-void FocusedPath::loadEdges(ZDvidReader& reader, std::string edgeInstance) {
+void FocusedPath::loadEdges(ZDvidReader& reader, ZFlyEmProofDoc * doc, std::string edgeInstance) {
     // unfortunately, no way to bulk load key-value right now
 
     m_edgeMap.clear();
@@ -117,10 +118,10 @@ void FocusedPath::loadEdges(ZDvidReader& reader, std::string edgeInstance) {
         m_edgeMap[edge.getLastPoint()] = edge;
     }
 
-    updateBodyIDs(reader);
+    updateBodyIDs(doc);
 }
 
-void FocusedPath::updateBodyIDs(ZDvidReader& reader) {
+void FocusedPath::updateBodyIDs(ZFlyEmProofDoc * doc) {
     std::vector<ZIntPoint> points;
     foreach(ZIntPoint point, m_edgePoints) {
         points.push_back(point);
@@ -129,7 +130,7 @@ void FocusedPath::updateBodyIDs(ZDvidReader& reader) {
 
     // load all the body IDs at the points
     m_bodyIDs.clear();
-    std::vector<uint64_t> bodyIDs = reader.readBodyIdAt(points);
+    std::vector<uint64_t> bodyIDs = doc->getBodyId(points);
     for (size_t i=0; i<points.size(); i++) {
         m_bodyIDs[points[i]] = bodyIDs[i];
     }

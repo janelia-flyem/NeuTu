@@ -222,7 +222,7 @@ void FocusedPathProtocol::onFinishPathButton() {
     // user wants to finalize this path and move to the next;
     // refresh body IDs and check that end criteria is met
     //  (at least one broken or all connected (else dialog))
-    m_currentPath.updateBodyIDs(m_reader);
+    m_currentPath.updateBodyIDs(getFlyEmProofDoc());
     if (!m_currentPath.isConnected() && !m_currentPath.anyBrokenEdges()) {
         QMessageBox::warning(m_parent, "Path isn't finished!",
             "The path must be connected, or one edge must be marked broken, before finishing path!",
@@ -469,7 +469,10 @@ bool FocusedPathProtocol::loadFirstPath() {
         points.push_back(path.getFirstPoint());
         points.push_back(path.getLastPoint());
     }
-    std::vector<uint64_t> bodyIDs = m_reader.readBodyIdAt(points);
+    // check body IDs through the proof doc, which takes
+    //  account of merges done but not uploaded (which are
+    //  invisible if you go directly to DVID)
+    std::vector<uint64_t> bodyIDs = getFlyEmProofDoc()->getBodyId(points);
 
     m_currentPathBodyIDs.clear();
     for (size_t i=0; i<points.size(); i++) {
@@ -483,7 +486,7 @@ bool FocusedPathProtocol::loadFirstPath() {
 bool FocusedPathProtocol::loadNextPath() {
     while (m_currentBodyPaths.size() > 0) {
         m_currentPath = findNextPath();
-        m_currentPath.loadEdges(m_reader, m_edgeDataInstance);
+        m_currentPath.loadEdges(m_reader, getFlyEmProofDoc(), m_edgeDataInstance);
 
         if (!m_currentPath.isConnected()) {
             displayCurrentPath();
@@ -707,11 +710,15 @@ void FocusedPathProtocol::processBodyMerged() {
     // note: that means we can't update edge examiner and time,
     //  unless we scan for un-updated edges?
 
-    m_currentPath.updateBodyIDs(m_reader);
+    m_currentPath.updateBodyIDs(getFlyEmProofDoc());
+
+    // we have the body IDs at paths endpoints saved locally, too,
+    //  so update them:
+    m_currentPathBodyIDs[m_currentPath.getFirstPoint()] = m_currentPath.getFirstBodyID();
+    m_currentPathBodyIDs[m_currentPath.getLastPoint()] = m_currentPath.getLastBodyID();
 
     // note that this does not maintain edge selection, which
     //  we probably have to adjust
-
     displayCurrentPath();
 
 }
