@@ -2537,6 +2537,19 @@ void ZFlyEmProofDoc::autoSave()
   backupMergeOperation();
 }
 
+std::vector<uint64_t> ZFlyEmProofDoc::getBodyId(const std::vector<ZIntPoint> &points) {
+    std::vector<uint64_t> bodies;
+
+    ZDvidReader &reader = getDvidReader();
+    if (reader.open(getDvidTarget())) {
+        bodies = reader.readBodyIdAt(points);
+        for (size_t i=0; i<bodies.size(); i++) {
+            bodies[i] = m_bodyMerger.getFinalLabel(bodies[i]);
+        }
+    }
+    return bodies;
+}
+
 #if 0
 void ZFlyEmProofDoc::saveCustomBookmarkSlot()
 {

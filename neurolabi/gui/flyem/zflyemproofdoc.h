@@ -91,6 +91,7 @@ public:
    */
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
+  std::vector<uint64_t> getBodyId(const std::vector<ZIntPoint> &points);
 
   bool hasBodySelected() const;
 
