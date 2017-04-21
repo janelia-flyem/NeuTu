@@ -32,7 +32,7 @@ public:
                NeuTube::EAxis axis) const;
   void display(QImage *image, int n, Palette_Color color,
                EDisplayStyle style = NORMAL, int label = 0) const;
-  void display(ZPainter &painter, int z, EDisplayStyle option,
+  void display(ZPainter &painter, int sliceIndex, EDisplayStyle option,
                const QColor &color) const;
   using ZStackObject::display; // fix warning -Woverloaded-virtual
 

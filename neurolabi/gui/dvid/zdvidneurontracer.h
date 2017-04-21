@@ -26,11 +26,11 @@ public:
 
   double optimize(Local_Neuroseg *locseg);
 
-private:
-  void init();
-
   ZStack* readStack(const ZIntCuboid &box);
   ZStack* readStack(double x, double y, double z, double r);
+
+private:
+  void init();
 
   double getFitScore() const;
 

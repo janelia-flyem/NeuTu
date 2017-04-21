@@ -25,6 +25,9 @@ void ZDvidNeuronTracer::init()
 //  m_resultTree = NULL;
 
   m_fitWorkspace = New_Locseg_Fit_Workspace();
+  m_fitWorkspace->sws->fs.n = 2;
+  m_fitWorkspace->sws->fs.options[0] = STACK_FIT_DOT;
+  m_fitWorkspace->sws->fs.options[1] = STACK_FIT_CORRCOEF;
 
   m_traceMinScore = 0.3;
   m_seedMinScore = 0.3;
@@ -98,7 +101,7 @@ ZStack* ZDvidNeuronTracer::readStack(
 
   ZIntCuboid box;
   box.setFirstCorner(std::floor(x - r), std::floor(y - r), std::floor(z - r));
-  box.setLastCorner(std::ceil(x + r), std::ceil(z + r), std::ceil(y + r));
+  box.setLastCorner(std::ceil(x + r), std::ceil(y + r), std::ceil(z + r));
 
   return readStack(box);
 }
@@ -178,9 +181,14 @@ double ZDvidNeuronTracer::optimize(Local_Neuroseg *locseg)
 
     registerToRawStack(stack->getOffset(), locseg);
     Local_Neuroseg_Optimize_W(locseg, stack->c_stack(), 1.0, 0, fws);
-    registerToStack(stack->getOffset(), locseg);
+    fws->pos_adjust = 0;
+    Flip_Local_Neuroseg(locseg);
+    Fit_Local_Neuroseg_W(locseg, stack->c_stack(), 1.0, fws);
+    Flip_Local_Neuroseg(locseg);
+    Fit_Local_Neuroseg_W(locseg, stack->c_stack(), 1.0, fws);
 
-    score = fws->sws->fs.options[1];
+    registerToStack(stack->getOffset(), locseg);
+    score = fws->sws->fs.scores[1];
 
     Kill_Locseg_Fit_Workspace(fws);
   }

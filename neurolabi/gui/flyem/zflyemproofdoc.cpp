@@ -3176,10 +3176,10 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) cons
 
         originalStack->runFillValueFunc(roi, true);
 
-        ZDvidInfo dvidInfo;
-        dvidInfo.setFromJsonString(
-              m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
-              toStdString());
+        ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+//        dvidInfo.setFromJsonString(
+//              m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
+//              toStdString());
 
         ZObject3dScan *objMask = m_splitSource->getObjectMask();
 

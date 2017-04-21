@@ -135,7 +135,7 @@ public:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
 
-  QString readInfo(const QString &dataName) const;
+//  QString readInfo(const QString &dataName) const;
 
   std::set<uint64_t> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth,
@@ -164,6 +164,9 @@ public:
   ZIntPoint readRoiBlockSize(const std::string &dataName) const;
 
   ZJsonObject readInfo() const;
+  ZJsonObject readInfo(const std::string &dataName) const;
+
+  ZDvidInfo readDataInfo(const std::string &dataName) const;
 
   bool hasData(const std::string &dataName) const;
   std::string getType(const std::string &dataName) const;
@@ -352,6 +355,9 @@ public:
       EReadOption option = ZDvidReader::READ_CURRENT) const;
 
   ZJsonObject readDataMap() const;
+
+  std::string readBodyLabelName() const;
+  void syncBodyLabelName();
 
 //  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);

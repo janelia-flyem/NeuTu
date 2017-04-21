@@ -62,6 +62,7 @@ class ZMenuFactory;
 class ZJsonObject;
 class Z3DGeometryFilter;
 class ZComboEditDialog;
+class ZFlyEmBodyComparisonDialog;
 
 
 class Z3DWindow : public QMainWindow
@@ -570,6 +571,7 @@ private:
   ZSwcIsolationDialog *m_swcIsolationDlg;
   HelpDialog *m_helpDlg;
   ZComboEditDialog *m_dvidDlg;
+  ZFlyEmBodyComparisonDialog *m_bodyCmpDlg;
 };
 
 #endif // Z3DWINDOW_H

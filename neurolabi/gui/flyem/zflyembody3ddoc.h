@@ -21,6 +21,7 @@
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
+class ZFlyEmBodyComparisonDialog;
 //class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
@@ -187,6 +188,7 @@ public:
   void forceBodyUpdate();
   void compareBody();
   void compareBody(const std::string &uuid);
+  void compareBody(const ZFlyEmBodyComparisonDialog *dlg);
   void compareBody(ZDvidReader &diffReader);
 
   std::vector<std::string> getParentUuidList() const;

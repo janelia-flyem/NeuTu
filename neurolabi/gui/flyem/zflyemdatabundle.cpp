@@ -108,14 +108,14 @@ void ZFlyEmDataBundle::deprecateDependent(EComponent comp)
   }
 }
 
-
+#if 1
 bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 {
   ZDvidReader reader;
   reader.open(dvidFilter.getDvidTarget());
-  QString info = reader.readInfo("superpixels");
+//  QString info = reader.readInfo("superpixels");
 
-  qDebug() << info;
+//  qDebug() << info;
 
   const ZDvidTarget &dvidTarget = dvidFilter.getDvidTarget();
 
@@ -124,8 +124,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
         //"http:" + dvidFilter.getDvidAddress() + ":" +
       //ZString::num2str(dvidFilter.getPort()) + ":" + dvidFilter.getUuid();
 
-  ZDvidInfo dvidInfo;
-  dvidInfo.setFromJsonString(info.toStdString());
+  ZDvidInfo dvidInfo = reader.readDataInfo(dvidTarget.getBodyLabelName());
+//  dvidInfo.setFromJsonString(info.toStdString());
   dvidInfo.print();
 
   const ZResolution &voxelResolution = dvidInfo.getVoxelResolution();
@@ -269,6 +269,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
   return true;
 }
+#endif
 
 bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 {
