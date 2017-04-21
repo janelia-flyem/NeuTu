@@ -4,6 +4,8 @@
 #include <QDialog>
 
 #include "flyem/zflyemsequencercolorscheme.h"
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemproofdoc.h"
 
 #include "zjsonobject.h"
 #include "dvid/zdvidtarget.h"
@@ -44,7 +46,9 @@ public slots:
     virtual void loadDataRequested(ZJsonObject data) = 0;
 
 protected:
-    ZDvidTarget m_dvidTarget;
+    ZDvidTarget m_dvidTarget;    
+    ZFlyEmProofMvc *getParentFrame() const;
+    ZFlyEmProofDoc *getDocument() const;
 
 private:
     Ui::ProtocolDialog *ui;

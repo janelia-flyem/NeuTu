@@ -7,6 +7,8 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemproofdoc.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -80,6 +82,26 @@ ProtocolDialog::~ProtocolDialog()
 {
     delete ui;
 }
+
+// these methods retrieve the ZFlyEmProofDoc object, which is very useful
+// copied from ZFlyEmRoiToolDialog
+
+ZFlyEmProofMvc* ProtocolDialog::getParentFrame() const
+{
+  return qobject_cast<ZFlyEmProofMvc*>(parentWidget());
+}
+
+ZFlyEmProofDoc* ProtocolDialog::getDocument() const
+{
+  ZFlyEmProofMvc *mvc = getParentFrame();
+  if (mvc != NULL) {
+    return mvc->getCompleteDocument();
+  }
+
+  return NULL;
+}
+
+// these methods are called when certain proofreading events occur
 
 void ProtocolDialog::processSynapseMoving(
     const ZIntPoint &/*from*/, const ZIntPoint &/*to*/)
