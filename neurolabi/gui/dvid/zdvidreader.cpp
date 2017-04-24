@@ -2179,9 +2179,11 @@ bool ZDvidReader::refreshLabelBuffer()
 ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     int width, int height, int zoom, int cx, int cy) const
 {
-  if (!getDvidTarget().hasLabelBlock()) {
+#if 0
+  if (!getDvidTarget().hasGray()) {
     return NULL;
   }
+#endif
 
   int scale = 1;
   if (zoom > 0) {
@@ -2202,6 +2204,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
       m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
+      m_lowtisConfigGray.enableprefetch = true;
 
       m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
