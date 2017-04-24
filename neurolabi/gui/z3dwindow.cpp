@@ -2400,28 +2400,12 @@ void Z3DWindow::compareBody()
       m_bodyCmpDlg->setCurrentUuidIndex(1);
     }
 
+    m_bodyCmpDlg->clearPosition();
+
     if (m_bodyCmpDlg->exec()) {
       doc->compareBody(m_bodyCmpDlg);
     }
   }
-
-#if 0
-  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
-  if (doc != NULL) {
-    if (m_dvidDlg == NULL) {
-      m_dvidDlg = new ZComboEditDialog(this);
-      m_dvidDlg->setWindowTitle("DVID Setting");
-
-      std::vector<std::string> uuidList = doc->getAncestorUuidList();
-      m_dvidDlg->setStringList(uuidList);
-      m_dvidDlg->setCurrentIndex(1);
-    }
-
-    if (m_dvidDlg->exec()) {
-      doc->compareBody(m_dvidDlg->getText().toStdString());
-    }
-  }
-#endif
 }
 
 void Z3DWindow::deselectBody()

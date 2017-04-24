@@ -1118,6 +1118,34 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
 
 }
 
+std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
+    const ZIntPoint &pt, ZDvidReader &diffReader, int zoom,
+    FlyEM::EBodyType bodyType)
+{
+  if (!m_bodyReader.isReady()) {
+    m_bodyReader.open(m_dvidReader.getDvidTarget());
+  }
+
+  uint64_t bodyId1 = m_bodyReader.readBodyIdAt(pt);
+  uint64_t bodyId2 = diffReader.readBodyIdAt(pt);
+
+  std::vector<ZSwcTree*> treeArray =
+      makeDiffBodyModel(bodyId1, bodyId2, diffReader, zoom, bodyType);
+
+  for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+       iter != treeArray.end(); ++iter) {
+    ZSwcTree *tree = *iter;
+    if (tree != NULL) {
+      tree->setSource(
+            ZStackObjectSourceFactory::MakeFlyEmBodyDiffSource(
+              bodyId1, tree->getSource()));
+    }
+  }
+
+  return treeArray;
+
+}
+
 ZDvidReader& ZFlyEmBody3dDoc::getBodyReader()
 {
   if (!m_bodyReader.isReady()) {
@@ -1303,6 +1331,13 @@ void ZFlyEmBody3dDoc::forceBodyUpdate()
 
 void ZFlyEmBody3dDoc::compareBody(ZDvidReader &diffReader)
 {
+  ZIntPoint pt;
+  pt.invalidate();
+  compareBody(diffReader, pt);
+}
+
+void ZFlyEmBody3dDoc::compareBody(ZDvidReader &diffReader, const ZIntPoint &pt)
+{
   ZFlyEmProofDoc *doc = getDataDocument();
 
   if (doc != NULL && diffReader.isReady()) {
@@ -1312,26 +1347,35 @@ void ZFlyEmBody3dDoc::compareBody(ZDvidReader &diffReader)
     std::cout << diffReader.getDvidTarget().getLabelBlockName() << std::endl;
 #endif
 
-    std::set<uint64_t> bodySet = doc->getSelectedBodySet(
-          NeuTube::BODY_LABEL_ORIGINAL);
-    if (bodySet.size() == 1) {
-      dumpAllBody(false);
-      uint64_t bodyId = *(bodySet.begin());
-      std::vector<ZSwcTree*> treeArray = makeDiffBodyModel(
-            bodyId, diffReader, 0, getBodyType());
-      bool bodyAdded = false;
-      for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
-           iter != treeArray.end(); ++iter) {
-        ZSwcTree *tree = *iter;
-        if (tree != NULL) {
-          getDataBuffer()->addUpdate(
-                tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-        }
-        bodyAdded = true;
+    dumpAllBody(false);
+
+    std::vector<ZSwcTree*> treeArray;
+    if (pt.isValid()) {
+      treeArray = makeDiffBodyModel(pt, diffReader, 0, getBodyType());
+    } else {
+      std::set<uint64_t> bodySet = doc->getSelectedBodySet(
+            NeuTube::BODY_LABEL_ORIGINAL);
+      for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
+           iter != bodySet.end(); ++iter) {
+        uint64_t bodyId = *iter;
+        std::vector<ZSwcTree*> tmpArray = makeDiffBodyModel(
+              bodyId, diffReader, 0, getBodyType());
+        treeArray.insert(treeArray.end(), tmpArray.begin(), tmpArray.end());
       }
-      if (bodyAdded) {
-        getDataBuffer()->deliver();
+    }
+
+    bool bodyAdded = false;
+    for (std::vector<ZSwcTree*>::iterator iter = treeArray.begin();
+         iter != treeArray.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      if (tree != NULL) {
+        getDataBuffer()->addUpdate(
+              tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
       }
+      bodyAdded = true;
+    }
+    if (bodyAdded) {
+      getDataBuffer()->deliver();
     }
   }
 }
@@ -1397,27 +1441,25 @@ void ZFlyEmBody3dDoc::compareBody(const ZFlyEmBodyComparisonDialog *dlg)
   ZFlyEmProofDoc *doc = getDataDocument();
 
   if (doc != NULL) {
-    std::set<uint64_t> bodySet = doc->getSelectedBodySet(
-          NeuTube::BODY_LABEL_ORIGINAL);
-    if (bodySet.size() == 1) {
-      ZDvidTarget target = getBodyReader().getDvidTarget();
-      target.setUuid(dlg->getUuid());
+    ZDvidTarget target = getBodyReader().getDvidTarget();
+    target.setUuid(dlg->getUuid());
+    if (dlg->usingCustomSegmentation()) {
+      target.useDefaultDataSetting(false);
+      target.setLabelBlockName(dlg->getSegmentation());
+    } else if (dlg->usingSameSegmentation()) {
+      target.useDefaultDataSetting(false);
+    } else if (dlg->usingDefaultSegmentation()) {
+      target.useDefaultDataSetting(true);
+    }
+
+    ZDvidReader diffReader;
+    if (diffReader.open(target)) {
       if (dlg->usingCustomSegmentation()) {
-        target.useDefaultDataSetting(false);
-        target.setLabelBlockName(dlg->getSegmentation());
-      } else if (dlg->usingSameSegmentation()) {
-        target.useDefaultDataSetting(false);
-      } else if (dlg->usingDefaultSegmentation()) {
-        target.useDefaultDataSetting(true);
+        diffReader.syncBodyLabelName();
       }
 
-      ZDvidReader diffReader;
-      if (diffReader.open(target)) {
-        if (dlg->usingCustomSegmentation()) {
-          diffReader.syncBodyLabelName();
-        }
-        compareBody(diffReader);
-      }
+      ZIntPoint pt = dlg->getPosition();
+      compareBody(diffReader, pt);
     }
   }
 }

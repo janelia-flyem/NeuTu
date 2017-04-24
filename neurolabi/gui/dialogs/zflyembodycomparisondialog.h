@@ -7,6 +7,8 @@ namespace Ui {
 class ZFlyEmBodyComparisonDialog;
 }
 
+class ZIntPoint;
+
 class ZFlyEmBodyComparisonDialog : public QDialog
 {
   Q_OBJECT
@@ -29,9 +31,14 @@ public:
   bool usingDefaultSegmentation() const;
   bool usingSameSegmentation() const;
 
+  ZIntPoint getPosition() const;
+
+  void clearPosition();
+
 private slots:
   void updateSegInfo();
   void connectSignalSlot();
+  void pastePosition();
 
 private:
   Ui::ZFlyEmBodyComparisonDialog *ui;
