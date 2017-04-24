@@ -93,8 +93,14 @@ protected slots:
 
 private:
   bool hasCameraParameter(Z3DProcessor *processor) const;
+  void beginProcess();
+  void endProcess();
+  void beginProcess(Z3DProcessor *processor);
+  void endProcess(Z3DProcessor *processor);
+  QString process(Z3DProcessor *processor, const Z3DEye eye);
 
-  std::vector<Z3DProcessor*> m_renderingOrder;
+private:
+  std::vector<Z3DProcessor*> m_sortedProcessor;
 
   std::vector<Z3DProcessWrapper*> m_processWrappers;
 

@@ -10,7 +10,7 @@
 
 TEST(ZObject3dFactory, makeObject)
 {
-  ZStack *stack = ZStackFactory::makeZeroStack(3, 3, 3);
+  ZStack *stack = ZStackFactory::MakeZeroStack(3, 3, 3);
   ZObject3dArray *out = ZObject3dFactory::MakeRegionBoundary(
         *stack, ZObject3dFactory::OUTPUT_COMPACT);
 

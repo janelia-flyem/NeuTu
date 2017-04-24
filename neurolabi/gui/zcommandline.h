@@ -69,6 +69,9 @@ private:
   std::vector<uint64_t> getSkeletonBodyList(ZDvidReader &reader) const;
   ZJsonObject getSkeletonizeConfig(ZDvidReader &reader);
 
+  ZSwcTree* traceFile();
+  ZSwcTree* traceDvid();
+
 private:
   std::vector<std::string> m_input;
   std::string m_output;

@@ -904,7 +904,7 @@ ZStack* ZDvidReader::readGrayScaleBlock(
 
     if (!data.isEmpty() && realBlockNumber == 1) {
       ZIntCuboid box = dvidInfo.getBlockBox(blockIndex);
-      stack = ZStackFactory::makeZeroStack(GREY, box);
+      stack = ZStackFactory::MakeZeroStack(GREY, box);
 #ifdef _DEBUG_2
       std::cout << data.length() << " " << stack->getVoxelNumber() << std::endl;
 #endif

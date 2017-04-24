@@ -7576,7 +7576,7 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
       frame->document()->addObject(obj);
 
       ZIntCuboid cuboid = obj->getBoundBox();
-      ZStack *stack = ZStackFactory::makeVirtualStack(
+      ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       stack->setOffset(cuboid.getFirstCorner());
       frame->document()->loadStack(stack);

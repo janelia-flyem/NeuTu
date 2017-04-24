@@ -2004,7 +2004,7 @@ ZStack* ZStack::makeCrop(const ZIntCuboid &cuboid) const
   ZStack *cropped = NULL;
 
   if (isVirtual()) {
-    cropped = ZStackFactory::makeVirtualStack(cuboid);
+    cropped = ZStackFactory::MakeVirtualStack(cuboid);
   } else {
     if (!cuboid.isEmpty()) {
       int nchannel = channelNumber();

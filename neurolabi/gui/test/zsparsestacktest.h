@@ -21,10 +21,10 @@ TEST(ZSparseStack, basic)
   stackGrid->setBlockSize(2, 2, 2);
   stackGrid->setGridSize(3, 3, 3);
 
-  ZStack *stack = ZStackFactory::makeOneStack(2, 2, 2);
+  ZStack *stack = ZStackFactory::MakeOneStack(2, 2, 2);
   stackGrid->consumeStack(ZIntPoint(0, 0, 0), stack);
 
-  stack = ZStackFactory::makeOneStack(2, 2, 2);
+  stack = ZStackFactory::MakeOneStack(2, 2, 2);
   stack->setOffset(2, 2, 2);
   stackGrid->consumeStack(ZIntPoint(1, 1, 1), stack);
 

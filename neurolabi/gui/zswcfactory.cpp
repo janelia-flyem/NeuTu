@@ -647,7 +647,7 @@ std::vector<ZSwcTree*> ZSwcFactory::CreateDiffSurfaceSwc(
   box.join(obj4.getBoundBox());
   box.expand(1, 1, 1);
 
-  ZStack *stack = ZStackFactory::makeZeroStack(GREY, box);
+  ZStack *stack = ZStackFactory::MakeZeroStack(GREY, box);
 
   obj3.drawStack(stack, 1);
   obj4.addStack(stack, 2);

@@ -879,7 +879,7 @@ void ZFlyEmProofDoc::prepareDvidData()
       boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
     }
 
-    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
     loadStack(stack);
 
     //Download ROI
@@ -922,7 +922,7 @@ void ZFlyEmProofDoc::updateTileData()
       boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
     }
 
-    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
     loadStack(stack);
 
     ZDvidTileEnsemble *ensemble = getDvidTileEnsemble();

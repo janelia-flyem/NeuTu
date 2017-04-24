@@ -8,6 +8,7 @@
 #include "zjsonarray.h"
 #include "zdviddata.h"
 #include "zdvidnode.h"
+#include "zdviddef.h"
 
 /*!
  * \brief The class of representing a dvid node.
@@ -35,6 +36,9 @@ public:
    * \param sourceString Must start with "http:".
    */
   void setFromSourceString(const std::string &sourceString);
+
+  void setFromSourceString(
+      const std::string &sourceString, ZDvid::EDataType dataType);
 
   void setFromUrl(const std::string &url);
 

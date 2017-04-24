@@ -4888,7 +4888,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
       sobj->setColor(255, 255, 255, 255);
 
       ZIntCuboid cuboid = sobj->getBoundBox();
-      ZStack *stack = ZStackFactory::makeVirtualStack(
+      ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
         stack->setSource(filePath.toStdString());
@@ -4915,7 +4915,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
       sobj->setColor(255, 255, 255, 255);
 
       ZIntCuboid cuboid = sobj->getBoundBox();
-      ZStack *stack = ZStackFactory::makeVirtualStack(
+      ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       stack->setSource(filePath.toStdString());
       stack->setOffset(cuboid.getFirstCorner());
@@ -8955,7 +8955,7 @@ void ZStackDoc::setSparseStack(ZSparseStack *spStack)
       deprecate(STACK);
     }
 
-    m_stack = ZStackFactory::makeVirtualStack(spStack->getBoundBox());
+    m_stack = ZStackFactory::MakeVirtualStack(spStack->getBoundBox());
     notifyStackModified();
   }
 
