@@ -67,7 +67,7 @@ ZStack* ZObject3dScanArray::toLabelField() const
 
   if (!empty()) {
     ZIntCuboid cuboid = getBoundBox();
-    stack = ZStackFactory::makeZeroStack(GREY, cuboid);
+    stack = ZStackFactory::MakeZeroStack(GREY, cuboid);
     int offset[3];
     offset[0] = -stack->getOffset().getX();
     offset[1] = -stack->getOffset().getY();
@@ -90,7 +90,7 @@ ZStack* ZObject3dScanArray::toLabelField(const ZIntCuboid &box) const
   if (!empty()) {
     ZIntCuboid cuboid = getBoundBox();
     cuboid.intersect(box);
-    stack = ZStackFactory::makeZeroStack(GREY, cuboid);
+    stack = ZStackFactory::MakeZeroStack(GREY, cuboid);
     int offset[3];
     offset[0] = -stack->getOffset().getX();
     offset[1] = -stack->getOffset().getY();

@@ -109,6 +109,15 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
   }
 }
 
+void ZFlyEmOrthoMvc::setCrossHairCenter(double x, double y)
+{
+  ZFlyEmOrthoDoc *doc = getCompleteDocument();
+  if (doc != NULL) {
+    doc->setCrossHairCenter(x, y);
+    emit crossHairChanged();
+  }
+}
+
 ZDvidTarget ZFlyEmOrthoMvc::getDvidTarget() const
 {
   return getCompleteDocument()->getDvidTarget();

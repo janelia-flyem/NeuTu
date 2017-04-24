@@ -875,7 +875,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
                  ZInteractiveContext::SYNAPSE_MOVE) {
         updateActiveObjectForSynapseMove(currentStackPos);
       }
-      stroke->setLast(currentStackPos.x(), currentStackPos.y());
+      ZPoint pos = currentStackPos;
+      pos.shiftSliceAxis(buddyView()->getSliceAxis());
+      stroke->setLast(pos.x(), pos.y());
       if (e != NULL) {
         e->setEvent(
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
@@ -1050,7 +1052,12 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
         stroke->setColor(synapse.getColor());
         stroke->setWidth(synapse.getRadius() * 2.0);
         stroke->set(pt.getX(), pt.getY());
-        stroke->append(currentStackPos.x(), currentStackPos.y());
+
+        ZPoint pos = currentStackPos;
+        pos.shiftSliceAxis(buddyView()->getSliceAxis());
+        stroke->set(pos.x(), pos.y());
+
+        stroke->append(pos.x(), pos.y());
 
         return true;
       }
@@ -1071,7 +1078,10 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
     const ZPoint &currentStackPos)
 {
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
-  stroke->set(currentStackPos.x(), currentStackPos.y());
+
+  ZPoint pos = currentStackPos;
+  pos.shiftSliceAxis(buddyView()->getSliceAxis());
+  stroke->set(pos.x(), pos.y());
 
   ZDvidSynapse::EKind kind  = ZDvidSynapse::KIND_UNKNOWN;
   switch (interactiveContext().synapseEditMode()) {

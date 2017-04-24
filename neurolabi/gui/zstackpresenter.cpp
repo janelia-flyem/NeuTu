@@ -34,6 +34,8 @@
 #include "zkeyoperationconfig.h"
 #include "zstackfactory.h"
 #include "zstackdocselector.h"
+#include "zglobal.h"
+
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
 {
@@ -400,6 +402,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_SHOW_ORTHO:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyOrthoViewTriggered()));
+      break;
+    case ZActionFactory::ACTION_COPY_POSITION:
+      connect(action, SIGNAL(triggered()), this, SLOT(copyCurrentPosition()));
       break;
     default:
       connected = false;
@@ -2687,6 +2692,15 @@ void ZStackPresenter::notifyOrthoViewTriggered()
   emit orthoViewTriggered(pt.x(), pt.y(), pt.z());
 }
 
+void ZStackPresenter::copyCurrentPosition()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+
+  ZGlobal::GetInstance().setStackPosition(pt.x(), pt.y(), pt.z());
+}
+
 void ZStackPresenter::notifyBodyDecomposeTriggered()
 {
   emit bodyDecomposeTriggered();
@@ -3135,9 +3149,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
     buddyView()->processViewChange(false, false);
-//    buddyView()->notifyViewChanged();
     buddyView()->redraw();
-//    buddyView()->notifyViewPortChanged();
     break;
   case ZStackOperator::OP_SHOW_CONTEXT_MENU:
     buddyView()->showContextMenu(getContextMenu(), currentWidgetPos);
@@ -3416,17 +3428,16 @@ bool ZStackPresenter::process(ZStackOperator &op)
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::RightButton, ZMouseEvent::ACTION_PRESS,
           NeuTube::COORD_WIDGET);
-    m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE);
-//    buddyView()->blockViewChangeEvent(true);
+    m_interactiveContext.setExploreMode(
+          ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE);
     decreaseZoomRatio(grabPosition.x(), grabPosition.y());
-//    buddyView()->blockViewChangeEvent(false);
   }
     break;
   case ZStackOperator::OP_EXIT_ZOOM_MODE:
     m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_OFF);
+    buddyView()->restoreFromBadView();
     buddyView()->processViewChange(true, false);
-    buddyView()->imageWidget()->update();
-//    buddyView()->notifyViewChanged();
+    buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
     break;
   case ZStackOperator::OP_PAINT_STROKE:
   {

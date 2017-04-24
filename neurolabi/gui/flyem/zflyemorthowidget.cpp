@@ -74,6 +74,12 @@ void ZFlyEmOrthoWidget::syncView()
   syncViewWith(qobject_cast<ZFlyEmOrthoMvc*>(obj));
 }
 
+void ZFlyEmOrthoWidget::syncCrossHair()
+{
+  QObject *obj = sender();
+  syncCrossHairWith(qobject_cast<ZFlyEmOrthoMvc*>(obj));
+}
+
 ZFlyEmOrthoDoc* ZFlyEmOrthoWidget::getDocument() const
 {
   return m_xyMvc->getCompleteDocument();
@@ -81,9 +87,10 @@ ZFlyEmOrthoDoc* ZFlyEmOrthoWidget::getDocument() const
 
 void ZFlyEmOrthoWidget::connectSignalSlot()
 {
-  connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  connect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
+    connect(mvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+    connect(mvc, SIGNAL(crossHairChanged()), this, SLOT(syncCrossHair()));
+  }
 
   ZWidgetMessage::ConnectMessagePipe(getDocument(), this);
 
@@ -128,32 +135,6 @@ void ZFlyEmOrthoWidget::connectSignalSlot()
     connect(mvc, SIGNAL(highlightModeChanged()),
             this, SLOT(syncHighlightMode()));
   }
-#if 0
-  connect(m_xyMvc->getPresenter(),
-          SIGNAL(orthoViewTriggered(double,double,double)),
-          this, SLOT(moveTo(double, double, double)));
-  connect(m_xzMvc->getPresenter(),
-          SIGNAL(orthoViewTriggered(double,double,double)),
-          this, SLOT(moveTo(double, double, double)));
-  connect(m_yzMvc->getPresenter(),
-          SIGNAL(orthoViewTriggered(double,double,double)),
-          this, SLOT(moveTo(double, double, double)));
-  connect(m_xyMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
-          this, SLOT(toggleSegmentation()));
-  connect(m_xzMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
-          this, SLOT(toggleSegmentation()));
-  connect(m_yzMvc->getCompletePresenter(), SIGNAL(togglingSegmentation()),
-          this, SLOT(toggleSegmentation()));
-
-  connect(m_xyMvc->getCompletePresenter(), SIGNAL(togglingData()),
-          this, SLOT(toggleData()));
-  connect(m_xzMvc->getCompletePresenter(), SIGNAL(togglingData()),
-          this, SLOT(toggleData()));
-  connect(m_yzMvc->getCompletePresenter(), SIGNAL(togglingData()),
-          this, SLOT(toggleData()));
-#endif
-
-//  connect(m_xyMvc, SIGNAL(widgetGlyphChanged()))
 }
 
 void ZFlyEmOrthoWidget::notifyBodyMergeEdited()
@@ -340,11 +321,64 @@ void ZFlyEmOrthoWidget::syncImageScreen()
   syncImageScreenWith(qobject_cast<ZFlyEmOrthoMvc*>(obj));
 }
 
+void ZFlyEmOrthoWidget::beginViewSync()
+{
+  foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
+    disconnect(mvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  }
+}
+
+void ZFlyEmOrthoWidget::endViewSync()
+{
+  foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
+    connect(mvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  }
+}
+
+void ZFlyEmOrthoWidget::beginCrossHairSync()
+{
+  beginViewSync();
+  foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
+    disconnect(mvc, SIGNAL(crossHairChanged()), this, SLOT(syncCrossHair()));
+  }
+}
+
+void ZFlyEmOrthoWidget::endCrossHairSync()
+{
+  endViewSync();
+  foreach (ZFlyEmOrthoMvc *mvc, m_mvcArray) {
+    connect(mvc, SIGNAL(crossHairChanged()), this, SLOT(syncCrossHair()));
+  }
+}
+
+void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
+{
+  beginCrossHairSync();
+
+  ZFlyEmOrthoViewHelper helper;
+  helper.attach(mvc);
+
+  switch (mvc->getView()->getSliceAxis()) {
+  case NeuTube::Z_AXIS:
+    helper.syncCrossHair(m_yzMvc);
+    helper.syncCrossHair(m_xzMvc);
+    break;
+  case NeuTube::X_AXIS:
+    helper.syncCrossHair(m_xyMvc);
+    helper.syncCrossHair(m_xzMvc);
+    break;
+  case NeuTube::Y_AXIS:
+    helper.syncCrossHair(m_xyMvc);
+    helper.syncCrossHair(m_yzMvc);
+    break;
+  }
+
+  endCrossHairSync();
+}
+
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 {
-  disconnect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  disconnect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  disconnect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  beginViewSync();
 
   ZFlyEmOrthoViewHelper helper;
   helper.attach(mvc);
@@ -371,18 +405,5 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
     break;
   }
 
-//  int z = m_xyMvc->getView()->getZ(NeuTube::COORD_STACK);
-//  int y = m_xzMvc->getView()->getZ(NeuTube::COORD_STACK);
-//  int x = m_yzMvc->getView()->getZ(NeuTube::COORD_STACK);
-
-//  getDocument()->getCrossHair()->setCenter(x, y, z);
-
-  /*
-  m_xyMvc->updateCrossHair(m_xzMvc->getView()->getZ(NeuTube::COORD_STACK),
-                           m_yzMvc->getView()->getZ(NeuTube::COORD_STACK));
-                           */
-
-  connect(m_xyMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  connect(m_yzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
-  connect(m_xzMvc, SIGNAL(viewChanged()), this, SLOT(syncView()));
+  endViewSync();
 }

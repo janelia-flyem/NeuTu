@@ -178,7 +178,6 @@ contains(CONFIG, static_gtest) { # gtest from ext folder
 }
 
 unix {
-
     QMAKE_CXXFLAGS += -Wno-deprecated
 
     macx {
@@ -739,7 +738,9 @@ HEADERS += mainwindow.h \
     zorthoviewhelper.h \
     flyem/zflyemorthoviewhelper.h \
     widgets/zcomboeditwidget.h \
-    dialogs/zcomboeditdialog.h
+    dialogs/zcomboeditdialog.h \
+    dialogs/zflyembodycomparisondialog.h \
+    dvid/zdvidstore.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -836,7 +837,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemskeletonupdatedialog.ui \
     widgets/zdvidsourcewidget.ui \
     dialogs/zflyemgrayscaledialog.ui \
-    dialogs/zcomboeditdialog.ui
+    dialogs/zcomboeditdialog.ui \
+    dialogs/zflyembodycomparisondialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1286,7 +1288,9 @@ SOURCES += main.cpp \
     zorthoviewhelper.cpp \
     flyem/zflyemorthoviewhelper.cpp \
     widgets/zcomboeditwidget.cpp \
-    dialogs/zcomboeditdialog.cpp
+    dialogs/zcomboeditdialog.cpp \
+    dialogs/zflyembodycomparisondialog.cpp \
+    dvid/zdvidstore.cpp
 
 #OTHER_FILES += \
 ##    extlib.pri \

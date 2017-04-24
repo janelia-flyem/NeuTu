@@ -879,7 +879,7 @@ void ZFlyEmProofDoc::prepareDvidData()
       boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
     }
 
-    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
     loadStack(stack);
 
     //Download ROI
@@ -922,7 +922,7 @@ void ZFlyEmProofDoc::updateTileData()
       boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
     }
 
-    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
     loadStack(stack);
 
     ZDvidTileEnsemble *ensemble = getDvidTileEnsemble();
@@ -3176,10 +3176,10 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) cons
 
         originalStack->runFillValueFunc(roi, true);
 
-        ZDvidInfo dvidInfo;
-        dvidInfo.setFromJsonString(
-              m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
-              toStdString());
+        ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+//        dvidInfo.setFromJsonString(
+//              m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
+//              toStdString());
 
         ZObject3dScan *objMask = m_splitSource->getObjectMask();
 

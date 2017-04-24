@@ -383,6 +383,8 @@ public slots:
 
   void slotTest();
 
+  void copyCurrentPosition();
+
 
   void notifyUser(const QString &msg);
 

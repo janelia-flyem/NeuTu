@@ -6080,7 +6080,7 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   //addStackFrame(frame);
   //presentStackFrame(frame);
 }
-
+#if 0
 ZStackDocReader* MainWindow::readDvidGrayScale(
     const QString &dvidAddress, const QString &dvidUuid,
     int x, int y, int z, int width, int height, int depth)
@@ -6095,6 +6095,7 @@ ZStackDocReader* MainWindow::readDvidGrayScale(
 
   return docReader;
 }
+#endif
 
 ZStackDocReader *MainWindow::hotSpotDemoFs(
     uint64_t bodyId, const QString &dvidAddress, const QString &dvidUuid)
@@ -6108,9 +6109,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   pruner.prune(tree);
   */
 
-  ZDvidInfo dvidInfo;
-  QString info = reader.readInfo("superpixels");
-  dvidInfo.setFromJsonString(info.toStdString());
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+//  QString info = reader.readInfo("superpixels");
+//  dvidInfo.setFromJsonString(info.toStdString());
 
   uint64_t sourceBodyId = bodyId;
   ZSwcTree *tree = reader.readSwc(sourceBodyId);
@@ -7575,7 +7576,7 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
       frame->document()->addObject(obj);
 
       ZIntCuboid cuboid = obj->getBoundBox();
-      ZStack *stack = ZStackFactory::makeVirtualStack(
+      ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       stack->setOffset(cuboid.getFirstCorner());
       frame->document()->loadStack(stack);

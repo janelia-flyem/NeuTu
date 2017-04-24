@@ -23,7 +23,7 @@ ZObject3dFactory::ZObject3dFactory()
 ZStack* ZObject3dFactory::MakeBoundaryStack(const ZStack &stack)
 {
   const Stack *originalStack = stack.c_stack();
-  ZStack *mask = ZStackFactory::makeZeroStack(
+  ZStack *mask = ZStackFactory::MakeZeroStack(
         stack.width(), stack.height(), stack.depth());
   Stack *maskStack = mask->c_stack();
 
@@ -102,7 +102,7 @@ ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(
   }
 
   const Stack *originalStack = stack.c_stack();
-  ZStack *mask = ZStackFactory::makeZeroStack(
+  ZStack *mask = ZStackFactory::MakeZeroStack(
         stack.width(), stack.height(), stack.depth());
   Stack *maskStack = mask->c_stack();
 

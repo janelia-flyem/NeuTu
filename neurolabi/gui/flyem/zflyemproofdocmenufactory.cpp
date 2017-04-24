@@ -207,6 +207,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
         actionList.append(ZActionFactory::ACTION_SEPARATOR);
       }
       actionList.append(ZActionFactory::ACTION_SHOW_ORTHO);
+      actionList.append(ZActionFactory::ACTION_COPY_POSITION);
 
       if (doc->hasStackData()) {
         actionList.append(ZActionFactory::ACTION_SAVE_STACK);

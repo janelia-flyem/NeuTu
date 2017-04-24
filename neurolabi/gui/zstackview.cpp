@@ -683,6 +683,11 @@ void ZStackView::updatePaintBundle()
 
 }
 
+void ZStackView::restoreFromBadView()
+{
+  imageWidget()->restoreFromBadView();
+}
+
 void ZStackView::updateImageScreen(EUpdateOption option)
 {
   ZOUT(LTRACE(), 5) << "ZStackView::updateImageScreen: index="
@@ -1537,40 +1542,45 @@ ZPixmap *ZStackView::updateViewPortCanvas(ZPixmap *canvas)
 #if 1
 ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 {
-  ZStTransform transform = getViewTransform();
+  QRectF projRect = getProjRegion();
+  QSize newCanvasSize = projRect.size().toSize();
 
-  QSize newSize = getProjRegion().size().toSize();
   bool usingProjSize = true;
 
   QRect viewPort = getViewPort(NeuTube::COORD_STACK);
 
+  //Get transform from viewport to projection region
+  ZStTransform transform = getViewTransform();
+
   //When the projection region is not much smaller or even bigger than viewport,
-  //use viewport instead for precise painting.
+  //use viewport instead for precise painting. It means that the canvas size
+  //will be the same as the viewport size, and as a result, the scale is 1 for
+  //painting world objects to the canvas.
   if (transform.getSx() > 1.1) {
-    newSize = viewPort.size();
+    newCanvasSize = viewPort.size();
     usingProjSize = false;
   }
 
 //  qDebug() << "  Canvas size" << newSize;
 
   if (canvas != NULL) {
-    if (canvas->size() != newSize) {
+    if (canvas->size() != newCanvasSize) {
       delete canvas;
       canvas = NULL;
     }
   }
 
   if (canvas == NULL) {
-    canvas = new ZPixmap(newSize);
+    canvas = new ZPixmap(newCanvasSize);
   }
 
-  if (usingProjSize == false) {
+  if (usingProjSize) {
+    canvas->getProjTransform().setScale(1.0, 1.0);
+  } else {
     canvas->getProjTransform().estimate(
-          QRectF(QPointF(0, 0), QSizeF(newSize)), getProjRegion());
+          QRectF(QPointF(0, 0), QSizeF(newCanvasSize)), getProjRegion());
     transform.setScale(1.0, 1.0);
     transform.setOffset(-viewPort.left(), -viewPort.top());
-  } else {
-    canvas->getProjTransform().setScale(1.0, 1.0);
   }
 
   canvas->setTransform(transform);
@@ -2336,12 +2346,9 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
         ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE) {
       reloadTileCanvas();
       reloadObjectCanvas(true);
-      processViewChange();
-//      processViewChange(true, false);
+      processViewChange(true);
     }
 
-//    notifyViewChanged(NeuTube::View::EXPLORE_ZOOM);
-//    notifyViewPortChanged();
 
     imageWidget()->blockPaint(false);
 
@@ -2374,36 +2381,6 @@ void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
 //    notifyViewPortChanged();
   }
 }
-
-#if 0
-void ZStackView::zoomWithWidthAligned(int x0, int x1, int cy)
-{
-  imageWidget()->zoomWithWidthAligned(x0, x1, cy);
-  processViewChange(true, false);
-}
-
-void ZStackView::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
-{
-  bool depthChanged = (cz == getCurrentZ());
-
-  blockSignals(true);
-  setZ(cz);
-  imageWidget()->zoomWithWidthAligned(x0, x1, pw, cy);
-  blockSignals(false);
-  processViewChange(true, depthChanged);
-}
-
-void ZStackView::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz)
-{
-  bool depthChanged = (cz == getCurrentZ());
-
-  blockSignals(true);
-  setZ(cz);
-  imageWidget()->zoomWithHeightAligned(y0, y1, ph, cx);
-  blockSignals(false);
-  processViewChange(true, depthChanged);
-}
-#endif
 
 ZIntPoint ZStackView::getCenter(NeuTube::ECoordinateSystem coordSys) const
 {
@@ -2466,8 +2443,9 @@ void ZStackView::setViewProj(const QPoint &pt, double zoom)
 
 void ZStackView::setViewProj(const ZViewProj &vp)
 {
+  recordViewParam();
   m_imageWidget->setViewProj(vp);
-  processViewChange(true, false);
+  processViewChange(true);
 }
 
 ZStackViewParam ZStackView::getViewParameter(
@@ -2488,7 +2466,10 @@ ZStackViewParam ZStackView::getViewParameter(
 ZStTransform ZStackView::getViewTransform() const
 {
   ZStTransform transform;
-  transform.estimate(getViewPort(NeuTube::COORD_STACK), getProjRegion());
+  QRectF projRegion = getProjRegion();
+  projRegion.moveTopLeft(QPointF(0, 0));
+
+  transform.estimate(getViewPort(NeuTube::COORD_STACK), projRegion);
 
   return transform;
 }
@@ -2721,12 +2702,12 @@ bool ZStackView::isViewChanged(const ZStackViewParam &param) const
   return (currentParam != param);
 }
 
-void ZStackView::processViewChange()
+void ZStackView::processViewChange(bool redrawing)
 {
   ZStackViewParam param = getViewParameter();
 
   if (param != m_oldViewParam) {
-    processViewChange(true, param.getZ() != m_oldViewParam.getZ());
+    processViewChange(redrawing, param.getZ() != m_oldViewParam.getZ());
   }
 }
 

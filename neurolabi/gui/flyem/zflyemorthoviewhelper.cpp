@@ -182,6 +182,7 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
       break;
     }
     mvc->getView()->setViewProj(newViewProj);
+    mvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 
 #ifdef _DEBUG_
     getMasterMvc()->getView()->printViewParam();

@@ -40,7 +40,7 @@ ZStack* getEdgeMap(const ZStack& stack)
   uchar index_map[256][256]={0};
 
   const Stack *originalStack = stack.c_stack();
-  ZStack *mask = ZStackFactory::makeZeroStack(
+  ZStack *mask = ZStackFactory::MakeZeroStack(
         stack.width(), stack.height(), stack.depth());
   Stack *maskStack = mask->c_stack();
 

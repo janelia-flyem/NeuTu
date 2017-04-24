@@ -28,27 +28,27 @@ public:
    *
    * \return It returns NULL if any dimension is not positive.
    */
-  static ZStack* makeVirtualStack(int width, int height, int depth);
+  static ZStack* MakeVirtualStack(int width, int height, int depth);
 
 
-  static ZStack* makeVirtualStack(const ZIntCuboid &box);
+  static ZStack* MakeVirtualStack(const ZIntCuboid &box);
 
 public:
   template<class InputIterator>
   static ZStack* composite(InputIterator begin, InputIterator end);
 
-  static ZStack* makeOneStack(int width, int height, int depth,
+  static ZStack* MakeOneStack(int width, int height, int depth,
                               int nchannel = 1);
-  static ZStack* makeZeroStack(int width, int height, int depth,
+  static ZStack* MakeZeroStack(int width, int height, int depth,
                                int nchannel = 1);
 
-  static ZStack* makeZeroStack(int kind, int width, int height, int depth,
+  static ZStack* MakeZeroStack(int kind, int width, int height, int depth,
                                int nchannel);
   static ZStack* makeSlice(const ZStack& stack, int z);
 
 
-  static ZStack* makeZeroStack(const ZIntCuboid box, int nchannel = 1);
-  static ZStack* makeZeroStack(int kind, const ZIntCuboid box, int nchannel = 1);
+  static ZStack* MakeZeroStack(const ZIntCuboid box, int nchannel = 1);
+  static ZStack* MakeZeroStack(int kind, const ZIntCuboid box, int nchannel = 1);
 
   static ZStack* makeIndexStack(int width, int height, int depth);
   static ZStack* makeUniformStack(int width, int height, int depth, int v);

@@ -37,6 +37,7 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcfactory.h"
+#include "dvid/zdvidneurontracer.h"
 //#include "mylib/utilities.h"
 
 using namespace std;
@@ -552,6 +553,36 @@ void ZCommandLine::loadTraceConfig()
   }
 }
 
+ZSwcTree* ZCommandLine::traceFile()
+{
+  ZStack signal;
+  signal.load(m_input[0]);
+
+  ZNeuronTracer tracer;
+  tracer.setIntensityField(&signal);
+
+  tracer.setTraceLevel(m_level);
+
+  ZSwcTree *tree = tracer.trace(&signal);
+
+  return tree;
+}
+
+ZSwcTree* ZCommandLine::traceDvid()
+{
+  ZDvidNeuronTracer tracer;
+
+  ZDvidTarget target;
+  target.setFromSourceString(m_input[0], ZDvid::TYPE_UINT8BLK);
+
+  tracer.setDvidTarget(target);
+  tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
+
+  ZSwcTree *tree = tracer.getResult();
+
+  return tree;
+}
+
 int ZCommandLine::runTraceNeuron()
 {
   if (m_input.empty()) {
@@ -564,31 +595,26 @@ int ZCommandLine::runTraceNeuron()
     return 1;
   }
 
+  int stat = 1;
+
   loadTraceConfig();
 
-  ZStack signal;
-  signal.load(m_input[0]);
-
-  ZNeuronTracer tracer;
-  tracer.setIntensityField(&signal);
-//  tracer.initTraceWorkspace(&signal);
-//  tracer.initConnectionTestWorkspace();
-
-#if 0
-  if (m_configJson.hasKey("trace")) {
-    tracer.loadJsonObject(
-          ZJsonObject(
-            m_configJson["trace"], ZJsonValue::SET_INCREASE_REF_COUNT));
+  ZSwcTree *tree = NULL;
+  if (ZDvidTarget::isDvidTarget(m_input[0])) {
+    tree = traceDvid();
+  } else {
+    tree = traceFile();
   }
-#endif
 
-  tracer.setTraceLevel(m_level);
+  if (tree != NULL) {
+    tree->save(m_output);
+    delete tree;
 
-  ZSwcTree *tree = tracer.trace(&signal);
+    stat = 0;
+  }
 
-  tree->save(m_output);
 
-  return 0;
+  return stat;
 }
 
 int ZCommandLine::runImageSeparation()

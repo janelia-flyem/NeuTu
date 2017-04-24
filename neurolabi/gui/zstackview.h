@@ -85,6 +85,8 @@ public:
    */
   void updateImageScreen(EUpdateOption option);
 
+  void restoreFromBadView();
+
   //void updateScrollControl();
 
   /*!
@@ -373,7 +375,7 @@ public:
 
   bool isViewChanged(const ZStackViewParam &param) const;
   void processViewChange(bool redrawing, bool depthChanged);
-  void processViewChange();
+  void processViewChange(bool redrawing);
 //  void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);

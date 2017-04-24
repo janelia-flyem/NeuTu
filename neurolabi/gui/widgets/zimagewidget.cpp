@@ -89,7 +89,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
       m_isReady = true;
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Axis: " << m_sliceAxis << std::endl;
     m_viewProj.print();
 #endif
@@ -141,6 +141,9 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     if (m_dynamicObjectCanvas != NULL) {
       if (m_dynamicObjectCanvas->isVisible()) {
         m_dynamicObjectCanvas->updateProjTransform(viewPort(), projectRegion());
+#ifdef _DEBUG_2
+    m_dynamicObjectCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
         painter.drawPixmap(*m_dynamicObjectCanvas);
       }
     }
@@ -238,7 +241,7 @@ void ZImageWidget::setViewProj(int x0, int y0, double zoom)
     m_viewProj.set(x0, y0, zoom);
     updateView();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "ZImageWidget::setViewProj: ";
     m_viewProj.print();
 #endif
@@ -255,6 +258,19 @@ void ZImageWidget::zoomTo(const QPoint &center, int width)
 {
   m_viewProj.zoomTo(center, width);
   updateView();
+}
+
+void ZImageWidget::restoreFromBadView()
+{
+  QRectF projRect = projectRegion();
+
+  if (projRect.isEmpty() || !projRect.intersects(m_viewProj.getWidgetRect())) {
+    maximizeViewPort();
+  } else {
+    if (m_viewProj.getZoom() < m_viewProj.getMinZoomRatio() * 1.1) {
+      maximizeViewPort();
+    }
+  }
 }
 
 void ZImageWidget::setViewPort(const QRect &rect)
@@ -521,7 +537,7 @@ QSize ZImageWidget::sizeHint() const
 
 void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "ZImageWidget::resetViewProj" << std::endl;
 #endif
   setCanvasRegion(x0, y0, w, h);
@@ -533,7 +549,7 @@ void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
 
 void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "ZImageWidget::setCanvasRegion: " << m_sliceAxis << std::endl;
   std::cout << "  " << x0 << " " << y0 << " " << w << " " << h << std::endl;
 #endif

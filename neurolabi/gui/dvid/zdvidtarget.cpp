@@ -16,7 +16,7 @@ const char* ZDvidTarget::m_nameKey = "name";
 const char* ZDvidTarget::m_localKey = "local";
 const char* ZDvidTarget::m_debugKey = "debug";
 const char* ZDvidTarget::m_bgValueKey = "background";
-const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
+const char* ZDvidTarget::m_bodyLabelNameKey = "";
 const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
@@ -184,6 +184,44 @@ void ZDvidTarget::setFromSourceString(const std::string &sourceString)
     }
   }
 }
+
+void ZDvidTarget::setFromSourceString(
+    const std::string &sourceString, ZDvid::EDataType dataType)
+{
+  set("", "", -1);
+
+  std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
+
+  if (tokens.size() < 4 || tokens[0] != "http") {
+#if defined(_QT_APPLICATION_)
+    LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
+#else
+    RECORD_WARNING_UNCOND("Invalid source string");
+#endif
+  } else {
+    int port = -1;
+    if (!tokens[2].empty()) {
+      port = ZString::firstInteger(tokens[2]);
+      if (tokens[2][0] == '-') {
+        port = -port;
+      }
+    }
+    set(tokens[1], tokens[3], port);
+    if (tokens.size() >= 5) {
+      switch (dataType) {
+      case ZDvid::TYPE_LABELVOL:
+        setBodyLabelName(tokens[4]);
+        break;
+      case ZDvid::TYPE_UINT8BLK:
+        setGrayScaleName(tokens[4]);
+        break;
+      default:
+        break;
+      }
+    }
+  }
+}
+
 
 bool ZDvidTarget::hasPort() const
 {

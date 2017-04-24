@@ -18,6 +18,8 @@ public:
 
   ZCrossHair* getCrossHair() const;
 
+  void setCrossHairCenter(double x, double y);
+
 signals:
 
 public slots:

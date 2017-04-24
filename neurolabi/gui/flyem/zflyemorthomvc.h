@@ -26,7 +26,10 @@ public:
 
 //  void syncView(const ZIntPoint &center, double zoomRatio);
 
+  void setCrossHairCenter(double x, double y);
+
 signals:
+  void crossHairChanged();
 
 public slots:
 

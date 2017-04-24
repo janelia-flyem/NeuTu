@@ -114,6 +114,8 @@ public:
 
   void setViewPort(const QRect &rect);
 
+  void restoreFromBadView();
+
   /*!
    * \brief Zoom an image at a fixed point
    *

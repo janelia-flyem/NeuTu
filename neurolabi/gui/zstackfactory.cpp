@@ -64,7 +64,7 @@ ZStack* ZStackFactory::makeStack(ZStack *stack) const
   return stack;
 }
 
-ZStack* ZStackFactory::makeVirtualStack(int width, int height, int depth)
+ZStack* ZStackFactory::MakeVirtualStack(int width, int height, int depth)
 {
   if (width <= 0 || height <= 0 || depth <= 0) {
     return NULL;
@@ -73,10 +73,10 @@ ZStack* ZStackFactory::makeVirtualStack(int width, int height, int depth)
   return new ZStack(GREY, width, height, depth, 1, true);
 }
 
-ZStack* ZStackFactory::makeVirtualStack(const ZIntCuboid &box)
+ZStack* ZStackFactory::MakeVirtualStack(const ZIntCuboid &box)
 {
   ZStack *stack =
-      makeVirtualStack(box.getWidth(), box.getHeight(), box.getDepth());
+      MakeVirtualStack(box.getWidth(), box.getHeight(), box.getDepth());
   if (stack != NULL) {
     stack->setOffset(box.getFirstCorner());
   }
@@ -84,7 +84,7 @@ ZStack* ZStackFactory::makeVirtualStack(const ZIntCuboid &box)
   return stack;
 }
 
-ZStack* ZStackFactory::makeOneStack(
+ZStack* ZStackFactory::MakeOneStack(
     int width, int height, int depth, int nchannel)
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, nchannel);
@@ -93,7 +93,7 @@ ZStack* ZStackFactory::makeOneStack(
   return stack;
 }
 
-ZStack* ZStackFactory::makeZeroStack(
+ZStack* ZStackFactory::MakeZeroStack(
     int width, int height, int depth, int nchannel)
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, nchannel);
@@ -102,7 +102,7 @@ ZStack* ZStackFactory::makeZeroStack(
   return stack;
 }
 
-ZStack* ZStackFactory::makeZeroStack(
+ZStack* ZStackFactory::MakeZeroStack(
     int kind, int width, int height, int depth, int nchannel)
 {
   ZStack *stack = new ZStack(kind, width, height, depth, nchannel);
@@ -121,7 +121,7 @@ ZStack* ZStackFactory::makeSlice(const ZStack &stack, int z)
     out = new ZStack;
     out->consume(C_Stack::clone(&sliceView));
   } else if (stack.channelNumber() > 1) {
-    out = makeZeroStack(stack.kind(), stack.width(), stack.height(), 1,
+    out = MakeZeroStack(stack.kind(), stack.width(), stack.height(), 1,
                         stack.channelNumber());
     for (int c = 0; c < stack.channelNumber(); ++c) {
       Stack sliceView = C_Stack::sliceView(stack.data(), slice, c);
@@ -136,19 +136,19 @@ ZStack* ZStackFactory::makeSlice(const ZStack &stack, int z)
   return out;
 }
 
-ZStack* ZStackFactory::makeZeroStack(const ZIntCuboid box, int nchannel)
+ZStack* ZStackFactory::MakeZeroStack(const ZIntCuboid box, int nchannel)
 {
-  ZStack *stack = makeZeroStack(
+  ZStack *stack = MakeZeroStack(
         box.getWidth(), box.getHeight(), box.getDepth(), nchannel);
   stack->setOffset(box.getFirstCorner());
 
   return stack;
 }
 
-ZStack* ZStackFactory::makeZeroStack(
+ZStack* ZStackFactory::MakeZeroStack(
     int kind, const ZIntCuboid box, int nchannel)
 {
-  ZStack *stack = makeZeroStack(
+  ZStack *stack = MakeZeroStack(
         kind, box.getWidth(), box.getHeight(), box.getDepth(), nchannel);
   stack->setOffset(box.getFirstCorner());
 
@@ -280,7 +280,7 @@ ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
   ZStack *stack = NULL;
 
   if (ptArray.size() < 1000) {
-    stack = makeZeroStack(FLOAT64, stackBox);
+    stack = MakeZeroStack(FLOAT64, stackBox);
     ZPointArray tmpPtArray = ptArray;
     std::sort(tmpPtArray.begin(), tmpPtArray.end(), ZPoint::ZCompare());
 
@@ -341,7 +341,7 @@ ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
       }
     }
   } else {
-    stack = makeZeroStack(GREY, stackBox);
+    stack = MakeZeroStack(GREY, stackBox);
     Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
 
     for (ZPointArray::const_iterator iter = ptArray.begin();
@@ -381,7 +381,7 @@ ZStack* ZStackFactory::makeDensityMap(
   ZStack *stack = NULL;
 
   if (ptArray.size() < 1000) {
-    stack = makeZeroStack(FLOAT64, stackBox);
+    stack = MakeZeroStack(FLOAT64, stackBox);
     ZWeightedPointArray tmpPtArray = ptArray;
     std::sort(tmpPtArray.begin(), tmpPtArray.end(), ZPoint::ZCompare());
 
@@ -442,7 +442,7 @@ ZStack* ZStackFactory::makeDensityMap(
       }
     }
   } else {
-    stack = makeZeroStack(GREY, stackBox);
+    stack = MakeZeroStack(GREY, stackBox);
 
     for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
@@ -482,7 +482,7 @@ ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
   ZPoint pt2 = boundBox.lastCorner();
 
   ZIntCuboid stackBox(pt1.toIntPoint(), pt2.toIntPoint());
-  ZStack *stack = makeZeroStack(GREY, stackBox);
+  ZStack *stack = MakeZeroStack(GREY, stackBox);
 
   for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
        iter != ptArray.end(); ++iter) {
@@ -506,7 +506,7 @@ ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
 
 ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, double h, double s)
 {
-  ZStack *colorStack = makeZeroStack(COLOR, stack.getBoundBox(), 1);
+  ZStack *colorStack = MakeZeroStack(COLOR, stack.getBoundBox(), 1);
 
   Rgb_Color color;
 
@@ -531,7 +531,7 @@ ZStack* ZStackFactory::MakeColorStack(
     const ZStack &stack, const ZStack &mask, double h, double s)
 {
   ZIntCuboid boundBox = stack.getBoundBox();
-  ZStack *colorStack = makeZeroStack(COLOR, boundBox, 1);
+  ZStack *colorStack = MakeZeroStack(COLOR, boundBox, 1);
 
   Rgb_Color color;
 
@@ -576,7 +576,7 @@ ZStack* ZStackFactory::MakeColorStack(
 ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, const ZStack &labelField)
 {
   ZIntCuboid boundBox = stack.getBoundBox();
-  ZStack *colorStack = makeZeroStack(COLOR, boundBox, 1);
+  ZStack *colorStack = MakeZeroStack(COLOR, boundBox, 1);
 
   Rgb_Color color;
 
@@ -650,18 +650,18 @@ ZStack* ZStackFactory::MakeRgbStack(
     return NULL;
   }
 
-  ZStack *output = ZStackFactory::makeZeroStack(COLOR, boundBox, 1);
+  ZStack *output = ZStackFactory::MakeZeroStack(COLOR, boundBox, 1);
 
   ZStack* channels[3];
 
   //Paste all stacks into the bound box
-  channels[0] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  channels[0] = ZStackFactory::MakeZeroStack(GREY, boundBox, 1);
   redStack.paste(channels[0]);
 
-  channels[1] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  channels[1] = ZStackFactory::MakeZeroStack(GREY, boundBox, 1);
   greenStack.paste(channels[1]);
 
-  channels[2] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  channels[2] = ZStackFactory::MakeZeroStack(GREY, boundBox, 1);
   blueStack.paste(channels[2]);
 
   size_t voxelNumber = output->getVoxelNumber();
@@ -687,7 +687,7 @@ ZStack* ZStackFactory::CompositeForeground(
   ZIntCuboid boundBox = stack1.getBoundBox();
   boundBox.join(stack2.getBoundBox());
 
-  ZStack *stack = ZStackFactory::makeZeroStack(stack1.kind(), boundBox, 1);
+  ZStack *stack = ZStackFactory::MakeZeroStack(stack1.kind(), boundBox, 1);
   stack1.paste(stack, 0);
   stack2.paste(stack, 0);
 
@@ -700,7 +700,7 @@ ZStack* ZStackFactory::MakeBinaryStack(
   ZStack *stack = NULL;
   if (!objArray.empty()) {
     ZIntCuboid boundBox = objArray.getBoundBox();
-    stack = makeZeroStack(GREY, boundBox);
+    stack = MakeZeroStack(GREY, boundBox);
 
     int offset[3];
     offset[0] = -stack->getOffset().getX();
@@ -724,7 +724,7 @@ ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 #if defined(_QT_GUI_USED_)
   if (!objArray.empty()) {
     ZIntCuboid boundBox = objArray.getBoundBox();
-    stack = makeZeroStack(GREY, boundBox, 3);
+    stack = MakeZeroStack(GREY, boundBox, 3);
 
     int offset[3];
     offset[0] = -stack->getOffset().getX();

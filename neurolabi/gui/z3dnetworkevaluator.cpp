@@ -31,7 +31,7 @@
 
 Z3DNetworkEvaluator::Z3DNetworkEvaluator(QObject *parent)
   : QObject(parent)
-  , m_renderingOrder()
+  , m_sortedProcessor()
   , m_processWrappers()
   , m_openGLContext(NULL)
   , m_locked(false)
@@ -64,6 +64,43 @@ void Z3DNetworkEvaluator::setNetworkSink(Z3DCanvasRenderer *canvasRenderer)
   buildNetwork();
 }
 
+QString Z3DNetworkEvaluator::process(
+    Z3DProcessor *currentProcessor, const Z3DEye eye)
+{
+  QString error;
+
+  if (!currentProcessor->isValid(eye) && currentProcessor->isReady(eye)) {
+    beginProcess(currentProcessor);
+    CHECK_GL_ERROR;
+
+    try {
+      getGLFocus();
+      currentProcessor->process(eye);
+      currentProcessor->setValid(eye);
+      CHECK_GL_ERROR;
+    }
+    catch (Exception& e) {
+      LERROR() << "Exception from"
+               << currentProcessor->getClassName() << ":" << e.what();
+      error += e.what();
+      return error;
+    }
+    catch (std::exception& e) {
+      LERROR() << "std exception from"
+               << currentProcessor->getClassName() << ":" << e.what();
+      error += e.what();
+      return error;
+    }
+
+    // notify process wrappers
+    getGLFocus();
+    endProcess(currentProcessor);
+    CHECK_GL_ERROR;
+  }
+
+  return error;
+}
+
 QString Z3DNetworkEvaluator::process(bool stereo)
 {
   CHECK_GL_ERROR;
@@ -81,102 +118,49 @@ QString Z3DNetworkEvaluator::process(bool stereo)
   QString error;
 
   // notify process wrappers
-  for (size_t j = 0; j < m_processWrappers.size(); ++j)
-    m_processWrappers[j]->beforeNetworkProcess();
+  beginProcess();
   CHECK_GL_ERROR;
 
   // Iterate over processing in rendering order
-  for (size_t i = 0; i < m_renderingOrder.size(); ++i) {
-    Z3DProcessor* currentProcessor = m_renderingOrder[i];
+  for (size_t i = 0; i < m_sortedProcessor.size(); ++i) {
+    Z3DProcessor* currentProcessor = m_sortedProcessor[i];
 
-    qDebug() << "3D Processor: " << currentProcessor->getClassName();
+//    qDebug() << "3D Processor: " << currentProcessor->getClassName();
 
 
     // all processors should have been initialized at this point
     if (!currentProcessor->isInitialized()) {
-      LWARN() << "Skipping uninitialized processor" << currentProcessor->getClassName();
+      LWARN() << "Skipping uninitialized processor"
+              << currentProcessor->getClassName();
       continue;
     }
 
     Z3DEye eye = stereo ? LeftEye : CenterEye;
 
-
     // run the processor, if it needs processing and is ready
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     if (currentProcessor->getClassName() == "Z3DSwcFilter") {
       qDebug() << "Valid:" << currentProcessor->isValid(eye);
       qDebug() << "Ready:" << currentProcessor->isReady(eye);
     }
 #endif
 
-    if (!currentProcessor->isValid(eye) && currentProcessor->isReady(eye)) {
-      // notify process wrappers
-      for (size_t j=0; j < m_processWrappers.size(); ++j)
-        m_processWrappers[j]->beforeProcess(currentProcessor);
-      CHECK_GL_ERROR;
-
-      try {
-        getGLFocus();
-        currentProcessor->process(eye);
-        currentProcessor->setValid(eye);
-        CHECK_GL_ERROR;
-      }
-      catch (Exception& e) {
-        LERROR() << "Exception from"
-                 << currentProcessor->getClassName() << ":" << e.what();
-        error += e.what();
-        break;
-      }
-      catch (std::exception& e) {
-        LERROR() << "std exception from"
-                 << currentProcessor->getClassName() << ":" << e.what();
-        error += e.what();
-        break;
-      }
-
-      // notify process wrappers
-      getGLFocus();
-      for (size_t j = 0; j < m_processWrappers.size(); ++j)
-        m_processWrappers[j]->afterProcess(currentProcessor);
-      CHECK_GL_ERROR;
+    QString currentError = process(currentProcessor, eye);
+    if (!currentError.isEmpty()) {
+      error += currentError;
+      break;
     }
 
-    if (stereo && !currentProcessor->isValid(RightEye) && currentProcessor->isReady(RightEye)) {
-      // notify process wrappers
-      for (size_t j=0; j < m_processWrappers.size(); ++j)
-        m_processWrappers[j]->beforeProcess(currentProcessor);
-      CHECK_GL_ERROR;
-
-      try {
-        getGLFocus();
-        currentProcessor->process(RightEye);
-        currentProcessor->setValid(RightEye);
-        CHECK_GL_ERROR;
-      }
-      catch (Exception& e) {
-        LERROR() << "Exception from"
-                 << currentProcessor->getClassName() << ":" << e.what();
-        error += e.what();
+    if (stereo) {
+      QString currentError = process(currentProcessor, RightEye);
+      if (!currentError.isEmpty()) {
+        error += currentError;
         break;
       }
-      catch (std::exception& e) {
-        LERROR() << "std exception from"
-                 << currentProcessor->getClassName() << ":" << e.what();
-        error += e.what();
-        break;
-      }
-
-      // notify process wrappers
-      getGLFocus();
-      for (size_t j = 0; j < m_processWrappers.size(); ++j)
-        m_processWrappers[j]->afterProcess(currentProcessor);
-      CHECK_GL_ERROR;
     }
   }
 
-  // notify process wrappers
-  for (size_t j = 0; j < m_processWrappers.size(); ++j)
-    m_processWrappers[j]->afterNetworkProcess();
+  endProcess();
   CHECK_GL_ERROR;
 
   unlock();
@@ -201,8 +185,8 @@ bool Z3DNetworkEvaluator::initializeNetwork()
   lock();
 
   bool failed = false;
-  for (size_t i = 0; i < m_renderingOrder.size(); ++i) {
-    Z3DProcessor* processor = m_renderingOrder[i];
+  for (size_t i = 0; i < m_sortedProcessor.size(); ++i) {
+    Z3DProcessor* processor = m_sortedProcessor[i];
     if (!processor->isInitialized()) {
       try {
         getGLFocus();
@@ -256,8 +240,8 @@ bool Z3DNetworkEvaluator::deinitializeNetwork()
   lock();
 
   bool failed = false;
-  for (size_t i = 0; i < m_renderingOrder.size(); ++i) {
-    Z3DProcessor* processor = m_renderingOrder[i];
+  for (size_t i = 0; i < m_sortedProcessor.size(); ++i) {
+    Z3DProcessor* processor = m_sortedProcessor[i];
     if (processor->isInitialized()) {
       try {
         getGLFocus();
@@ -309,9 +293,9 @@ void Z3DNetworkEvaluator::updateNetwork()
 void Z3DNetworkEvaluator::buildNetwork()
 {
   std::set<Z3DProcessor*> prevProcessors(
-        m_renderingOrder.begin(), m_renderingOrder.end());
+        m_sortedProcessor.begin(), m_sortedProcessor.end());
 
-  m_renderingOrder.clear();
+  m_sortedProcessor.clear();
   m_processorToVertexMapper.clear();
   m_processorGraph.clear();
   m_reverseSortedRenderProcessors.clear();
@@ -357,19 +341,19 @@ void Z3DNetworkEvaluator::buildNetwork()
   boost::topological_sort(m_processorGraph, std::back_inserter(sorted));
   for (std::vector<Vertex>::reverse_iterator rit = sorted.rbegin();
        rit != sorted.rend(); rit++) {
-    m_renderingOrder.push_back(m_processorGraph[*rit].processor);
+    m_sortedProcessor.push_back(m_processorGraph[*rit].processor);
   }
 
 #ifdef _DEBUG_
   LINFO() << "Rendering Order: ";
-  for (size_t i=0; i<m_renderingOrder.size(); i++) {
-    LINFO() << "  " << i << ": " << m_renderingOrder[i]->getClassName();
+  for (size_t i=0; i<m_sortedProcessor.size(); i++) {
+    LINFO() << "  " << i << ": " << m_sortedProcessor[i]->getClassName();
   }
   LINFO() << "";
 #endif
 
   // compare processors in network before and after updating, deinitialize removed processors
-  std::set<Z3DProcessor*> currProcessors(m_renderingOrder.begin(), m_renderingOrder.end());
+  std::set<Z3DProcessor*> currProcessors(m_sortedProcessor.begin(), m_sortedProcessor.end());
   std::set<Z3DProcessor*> removedProcessors;
   std::set_difference(prevProcessors.begin(), prevProcessors.end(),
                       currProcessors.begin(), currProcessors.end(),
@@ -400,8 +384,8 @@ void Z3DNetworkEvaluator::buildNetwork()
   }
 
   // update reverse sorted renderprocessors
-  for (std::vector<Z3DProcessor*>::reverse_iterator rit = m_renderingOrder.rbegin();
-       rit != m_renderingOrder.rend(); rit++) {
+  for (std::vector<Z3DProcessor*>::reverse_iterator rit = m_sortedProcessor.rbegin();
+       rit != m_sortedProcessor.rend(); rit++) {
     if (qobject_cast<Z3DRenderProcessor*>(*rit) == 0)
       continue;
     m_reverseSortedRenderProcessors.push_back(qobject_cast<Z3DRenderProcessor*>(*rit));
@@ -426,6 +410,36 @@ void Z3DNetworkEvaluator::sizeChangedFromProcessor(Z3DRenderProcessor *rp)
     }
   }
 }
+
+void Z3DNetworkEvaluator::beginProcess()
+{
+  for (size_t j = 0; j < m_processWrappers.size(); ++j) {
+    m_processWrappers[j]->beforeNetworkProcess();
+  }
+}
+
+void Z3DNetworkEvaluator::endProcess()
+{
+  // notify process wrappers
+  for (size_t j = 0; j < m_processWrappers.size(); ++j) {
+    m_processWrappers[j]->afterNetworkProcess();
+  }
+}
+
+void Z3DNetworkEvaluator::beginProcess(Z3DProcessor *processor)
+{
+  for (size_t j = 0; j < m_processWrappers.size(); ++j) {
+    m_processWrappers[j]->beforeProcess(processor);
+  }
+}
+
+void Z3DNetworkEvaluator::endProcess(Z3DProcessor *processor)
+{
+  for (size_t j = 0; j < m_processWrappers.size(); ++j) {
+    m_processWrappers[j]->afterProcess(processor);
+  }
+}
+
 
 bool Z3DNetworkEvaluator::hasCameraParameter(Z3DProcessor *processor) const
 {

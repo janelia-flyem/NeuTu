@@ -561,12 +561,12 @@ private:
   ZStackDoc* importHdf5BodyM(const std::vector<int> &bodyIdArray,
                              const QString &hdf5Path,
                              const std::vector<int> &downsampleInterval);
-
+#if 0
   ZStackDocReader* readDvidGrayScale(const QString &dvidAddress,
                                        const QString &dvidUuid,
                                        int x, int y, int z,
                                        int width, int height, int depth);
-
+#endif
   void autoTrace(ZStackFrame *frame);
 
   void setSkeletonizer(

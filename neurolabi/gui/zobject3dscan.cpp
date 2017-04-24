@@ -122,7 +122,7 @@ void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
 
 void ZObject3dScan::maskStack(ZStack *stack)
 {
-  ZStack *mask = ZStackFactory::makeZeroStack(
+  ZStack *mask = ZStackFactory::MakeZeroStack(
         stack->kind(), stack->getBoundBox());
   drawStack(mask->c_stack(), 1);
   for (int c = 0; c < stack->channelNumber(); ++c) {
@@ -2118,12 +2118,12 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
 //        box.setFirstX(box.getFirstCorner().getX() - 1);
 //        box.setLastX(box.getLastCorner().getX() + 1);
 
-        ZStack *stack1 = ZStackFactory::makeZeroStack(GREY, box);
-        ZStack *stack2 = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *stack1 = ZStackFactory::MakeZeroStack(GREY, box);
+        ZStack *stack2 = ZStackFactory::MakeZeroStack(GREY, box);
 
-        ZStack *negStack1 = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *negStack1 = ZStackFactory::MakeZeroStack(GREY, box);
         negStack1->setOne();
-        ZStack *negStack2 = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *negStack2 = ZStackFactory::MakeZeroStack(GREY, box);
         negStack2->setOne();
 
 
@@ -2151,7 +2151,7 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         float alpha = 1.0 - beta;
 
 
-        ZStack *newStack = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *newStack = ZStackFactory::MakeZeroStack(GREY, box);
         uint8_t *outArray = newStack->array8(0);
 
         for (size_t i = 0; i < voxelNumber; ++i) {

@@ -138,6 +138,10 @@ void ZDvidLabelSlice::display(
         pixmap.setTransform(m_paintBuffer->getTransform());
 
         pixmap.matchProj();
+
+#ifdef _DEBUG_2
+        pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
 //        painter.save();
 //        painter.setOpacity(getColor().alphaF());
         painter.drawPixmap(pixmap);
@@ -419,6 +423,10 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
       transform.setScale(1.0 / zoomRatio, 1.0 / zoomRatio);
       transform.setOffset(-x0, -y0);;
       m_paintBuffer->setTransform(transform);
+
+#ifdef _DEBUG_2
+      m_paintBuffer->save("/Users/zhaot/Work/neutube/neurolabi/data/test.tif");
+#endif
     }
   }
 }
@@ -841,9 +849,11 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
     int ny = iround(y);
     int nz = iround(z);
 
+    ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
     if (m_currentDataRect.contains(nx, ny) && nz == m_currentZ) {
 //      ZDvidReader reader;
       if (m_reader.isReady()) {
+        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
         m_hitLabel = getMappedLabel(m_reader.readBodyIdAt(nx, ny, nz),
                                     NeuTube::BODY_LABEL_ORIGINAL);
       }
