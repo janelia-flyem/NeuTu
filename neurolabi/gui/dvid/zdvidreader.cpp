@@ -226,7 +226,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
     }
 
     if (getDvidTarget().getBodyLabelName().empty()) {
-      m_dvidTarget.setBodyLabelName(readBodyLabelName());
+      syncBodyLabelName();
     }
   }
 
@@ -1313,21 +1313,6 @@ std::set<uint64_t> ZDvidReader::readBodyId(
       bodySet.insert(dataArray[i]);
     }
   }
-#if 0
-  ZStack *stack = readBodyLabel(x0, y0, z0, width, height, depth);
-
-  std::set<int> bodySet;
-
-  size_t voxelNumber = stack->getVoxelNumber();
-
-  FlyEm::TBodyLabel *labelArray =
-      (FlyEm::TBodyLabel*) (stack->array8());
-  for (size_t i = 0; i < voxelNumber; ++i) {
-    bodySet.insert((int) labelArray[i]);
-  }
-
-  delete stack;
-#endif
 
   return bodySet;
 }

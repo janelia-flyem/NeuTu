@@ -737,7 +737,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidneurontracer.h \
     widgets/zcomboeditwidget.h \
     dialogs/zcomboeditdialog.h \
-    dialogs/zflyembodycomparisondialog.h
+    dialogs/zflyembodycomparisondialog.h \
+    dvid/zdvidstore.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1284,7 +1285,8 @@ SOURCES += main.cpp \
     dvid/zdvidneurontracer.cpp \
     widgets/zcomboeditwidget.cpp \
     dialogs/zcomboeditdialog.cpp \
-    dialogs/zflyembodycomparisondialog.cpp
+    dialogs/zflyembodycomparisondialog.cpp \
+    dvid/zdvidstore.cpp
 
 #OTHER_FILES += \
 ##    extlib.pri \
