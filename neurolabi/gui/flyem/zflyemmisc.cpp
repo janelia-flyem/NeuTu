@@ -508,8 +508,9 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
     ZCuboid box;
     box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
     box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-    double lineWidth = box.depth() / 2000.0;
-    Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
+//    double lineWidth = box.depth() / 2000.0;
+    double lineWidth = 4.0;
+    Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 50, lineWidth);
 
     if (viewParam.getViewPort().isValid()) {
       Z3DGraphNode node1;
@@ -521,7 +522,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
       double x = viewParam.getViewPort().center().x();
       double y = viewParam.getViewPort().center().y();
 
-      double width = lineWidth * 0.3;
+      double width = lineWidth * 0.5;
       node1.set(x, rect.getFirstY(), rect.getZ(), width);
       node2.set(x, rect.getLastY(), rect.getZ(), width);
 

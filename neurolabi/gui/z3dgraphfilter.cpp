@@ -1,4 +1,6 @@
 #include "z3dgraphfilter.h"
+
+#include <algorithm>
 #include "z3dlinerenderer.h"
 #include "z3dsphererenderer.h"
 #include "z3dconerenderer.h"
@@ -144,7 +146,11 @@ void Z3DGraphFilter::prepareData()
     } else if (m_graph.getEdge(i).shape() == GRAPH_LINE) {
       m_lines.push_back(glm::vec3(n1.x(), n1.y(), n1.z()));
       m_lines.push_back(glm::vec3(n2.x(), n2.y(), n2.z()));
-      edgeWidth.push_back(m_graph.getEdge(i).getWidth());
+      float width = m_graph.getEdge(i).getWidth();
+      if (width < 1.0) {
+        width = 1.0;
+      }
+      edgeWidth.push_back(width);
     }
 
 #if 0
@@ -197,7 +203,7 @@ void Z3DGraphFilter::prepareData()
   m_coneRenderer->setData(&m_baseAndBaseRadius, &m_axisAndTopRadius);
 //  m_arrowRenderer->setData(&m_arrowBaseAndBaseRadius, &m_arrowAxisAndTopRadius);
   m_lineRenderer->setData(&m_lines);
-  m_lineRenderer->setLineWidth(3.0);
+//  m_lineRenderer->setLineWidth(2.0);
   m_lineRenderer->setLineWidth(edgeWidth);
   m_sphereRenderer->setData(&m_pointAndRadius);
 

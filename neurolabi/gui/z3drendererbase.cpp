@@ -295,11 +295,8 @@ void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram &shader, Z3DEye
     shader.setUniformValue(QString("clip_planes[%1]").arg(i), glm::vec4(m_clipPlanes[i]));
   }
 
-#ifdef _DEBUG_
   shader.setLogUniformLocationError(true);
-#else
-  shader.setLogUniformLocationError(false);
-#endif
+
   CHECK_GL_ERROR;
 }
 
