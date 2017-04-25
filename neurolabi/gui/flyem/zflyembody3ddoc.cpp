@@ -69,6 +69,12 @@ void ZFlyEmBody3dDoc::waitForAllEvent()
   m_futureMap.waitForFinished();
 }
 
+bool ZFlyEmBody3dDoc::updating() const
+{
+  QString threadId = QString("processEvent()");
+  return m_futureMap.isAlive(threadId);
+}
+
 void ZFlyEmBody3dDoc::connectSignalSlot()
 {
   connect(m_timer, SIGNAL(timeout()), this, SLOT(processEvent()));
@@ -1345,6 +1351,13 @@ void ZFlyEmBody3dDoc::compareBody(ZDvidReader &diffReader, const ZIntPoint &pt)
     std::cout << "Diff body target: " << std::endl;
     diffReader.getDvidTarget().print();
     std::cout << diffReader.getDvidTarget().getLabelBlockName() << std::endl;
+#endif
+
+#if 0
+    QString threadId = QString("processEvent()");
+    if (m_futureMap.isAlive(threadId)) {
+      m_futureMap[threadId].waitForFinished();
+    }
 #endif
 
     dumpAllBody(false);

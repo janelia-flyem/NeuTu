@@ -201,6 +201,8 @@ public: //controls
 public:
   void setROIs(size_t n);
 
+  bool readyForAction(ZActionFactory::EAction action) const;
+
 public:
   //Control panel setup
 

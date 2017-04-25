@@ -1619,6 +1619,21 @@ void Z3DWindow::update3DCubeDisplay()
   resetCameraClippingRange();
 }
 
+bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
+{
+#if defined(_FLYEM_)
+  if (action == ZActionFactory::ACTION_FLYEM_COMPARE_BODY) {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc != NULL) {
+      if (doc->updating()) {
+        return false;
+      }
+    }
+  }
+#endif
+  return true;
+}
+
 void Z3DWindow::updateTodoList()
 {
 #if defined(_FLYEM_)

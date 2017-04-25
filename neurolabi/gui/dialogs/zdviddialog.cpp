@@ -328,7 +328,8 @@ void ZDvidDialog::saveCurrentTarget(bool cloning)
     }
 
 #ifdef _DEBUG_
-    std::cout << dvidJson.dumpString(0) << std::endl;
+    std::cout << "Saving DVID target:" << std::endl;
+    std::cout << target.toJsonObject().dumpString(0) << std::endl;
 #endif
     settings.setValue("DVID", QString(dvidJson.dumpString(0).c_str()));
   }

@@ -197,6 +197,8 @@ public:
 
   void waitForAllEvent();
 
+  bool updating() const;
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   void addSynapse(bool on);

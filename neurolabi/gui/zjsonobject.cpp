@@ -240,6 +240,13 @@ void ZJsonObject::consumeEntry(const char *key, json_t *obj)
   setEntryWithoutKeyCheck(key, obj, true);
 }
 
+void ZJsonObject::setNonEmptyEntry(const char *key, const string &value)
+{
+  if (!value.empty()) {
+    setEntry(key, value);
+  }
+}
+
 void ZJsonObject::setEntry(const char *key, const string &value)
 {
   if (!isValidKey(key)) {

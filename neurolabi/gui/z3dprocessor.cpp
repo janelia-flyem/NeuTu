@@ -167,7 +167,9 @@ void Z3DProcessor::removeParameter(ZParameter *para)
 {
   assert(para);
   if (!getParameter(para->getName())) {
+#ifdef _DEBUG_
     LERROR() << getClassName() << "parameter" << para->getName() << "cannot be removed, it does not exist";
+#endif
   } else {
     para->disconnect(this);
     m_parameters.erase(std::find(m_parameters.begin(), m_parameters.end(), para));
