@@ -296,6 +296,7 @@ void Z3DRendererBase::setGlobalShaderParameters(Z3DShaderProgram &shader, Z3DEye
   }
 
   shader.setLogUniformLocationError(true);
+
   CHECK_GL_ERROR;
 }
 

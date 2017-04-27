@@ -63,7 +63,7 @@ QMenu* ZMenuFactory::makeSwcNodeContextMenu(
 
   menu->addAction(doc->getAction(ZActionFactory::ACTION_INSERT_SWC_NODE));
 
-  QMenu *submenu = new QMenu("Intepolate", menu);
+  QMenu *submenu = new QMenu("Interpolate", menu);
   submenu->addAction(doc->getAction(ZActionFactory::ACTION_SWC_INTERPOLATION));
   submenu->addAction(doc->getAction(ZActionFactory::ACTION_SWC_Z_INTERPOLATION));
   submenu->addAction(doc->getAction(
@@ -257,8 +257,15 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
       actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
 
-      actionList.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
+      if (window->readyForAction(ZActionFactory::ACTION_FLYEM_COMPARE_BODY)) {
+        actionList.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
+      }
     }
+
+    if (window->readyForAction(ZActionFactory::ACTION_COPY_POSITION)) {
+      actionList.append(ZActionFactory::ACTION_COPY_POSITION);
+    }
+
 
     addAction(actionList, window, menu);
   }

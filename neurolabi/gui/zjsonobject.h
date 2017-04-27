@@ -78,6 +78,8 @@ public:
   void setEntry(const char *key, const char *value);
   void setEntry(const std::string &key, const std::string &value);
 
+  void setNonEmptyEntry(const char *key, const std::string &value);
+
   /*!
    * \brief Set an entry of the object with an array
    *

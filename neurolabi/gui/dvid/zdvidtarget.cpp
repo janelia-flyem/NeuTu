@@ -16,7 +16,7 @@ const char* ZDvidTarget::m_nameKey = "name";
 const char* ZDvidTarget::m_localKey = "local";
 const char* ZDvidTarget::m_debugKey = "debug";
 const char* ZDvidTarget::m_bgValueKey = "background";
-const char* ZDvidTarget::m_bodyLabelNameKey = "";
+const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
@@ -260,19 +260,18 @@ std::string ZDvidTarget::getBodyPath(uint64_t bodyId) const
 ZJsonObject ZDvidTarget::toJsonObject() const
 {
   ZJsonObject obj = m_node.toJsonObject();
-  obj.setEntry(m_commentKey, m_comment);
-  obj.setEntry(m_nameKey, m_name);
-  obj.setEntry(m_localKey, m_localFolder);
+  obj.setNonEmptyEntry(m_commentKey, m_comment);
+  obj.setNonEmptyEntry(m_nameKey, m_name);
+  obj.setNonEmptyEntry(m_localKey, m_localFolder);
   obj.setEntry(m_bgValueKey, m_bgValue);
-  obj.setEntry(m_bodyLabelNameKey, m_bodyLabelName);
-  obj.setEntry(m_labelBlockNameKey, m_labelBlockName);
+  obj.setNonEmptyEntry(m_bodyLabelNameKey, m_bodyLabelName);
+  obj.setNonEmptyEntry(m_labelBlockNameKey, m_labelBlockName);
   obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
-  obj.setEntry(m_grayScaleNameKey, m_grayScaleName);
-  obj.setEntry(m_synapseLabelszKey, m_synapseLabelszName);
-  obj.setEntry(m_roiNameKey, m_roiName);
-  if (!m_todoListName.empty()) {
-    obj.setEntry(m_todoListNameKey, m_todoListName);
-  }
+  obj.setNonEmptyEntry(m_grayScaleNameKey, m_grayScaleName);
+  obj.setNonEmptyEntry(m_synapseLabelszKey, m_synapseLabelszName);
+  obj.setNonEmptyEntry(m_roiNameKey, m_roiName);
+  obj.setNonEmptyEntry(m_todoListNameKey, m_todoListName);
+
   ZJsonArray jsonArray;
   for (std::vector<std::string>::const_iterator iter = m_roiList.begin();
        iter != m_roiList.end(); ++iter) {

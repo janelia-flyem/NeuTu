@@ -2,6 +2,7 @@
 #define ZGLOBAL_H
 
 class ZIntPoint;
+class ZPoint;
 class ZGlobalData;
 
 class ZGlobal
@@ -18,6 +19,8 @@ public:
 
   void setStackPosition(int x, int y, int z);
   void setStackPosition(const ZIntPoint &pt);
+  void setStackPosition(const ZPoint &pt);
+  void clearStackPosition();
   ZIntPoint getStackPosition() const;
 
 private:

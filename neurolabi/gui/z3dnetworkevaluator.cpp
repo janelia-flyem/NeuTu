@@ -139,6 +139,10 @@ QString Z3DNetworkEvaluator::process(bool stereo)
 
     // run the processor, if it needs processing and is ready
 #ifdef _DEBUG_2
+    qDebug() << "Processor:" << currentProcessor->getClassName();
+#endif
+
+#ifdef _DEBUG_2
     if (currentProcessor->getClassName() == "Z3DSwcFilter") {
       qDebug() << "Valid:" << currentProcessor->isValid(eye);
       qDebug() << "Ready:" << currentProcessor->isReady(eye);
@@ -174,6 +178,122 @@ QString Z3DNetworkEvaluator::process(bool stereo)
   CHECK_GL_ERROR;
   return error;
 }
+
+#if 0
+QString Z3DNetworkEvaluator::process(bool stereo)
+{
+  if (!m_canvasRenderer)
+    return "No Network";
+
+  if (m_locked) {
+    LDEBUG() << "locked. Scheduling.";
+    m_processPending = true;
+    return "";
+  }
+
+  lock();
+
+  QString error;
+
+  // notify process wrappers
+  for (size_t j = 0; j < m_processWrappers.size(); ++j)
+    m_processWrappers[j]->beforeNetworkProcess();
+  CHECK_GL_ERROR;
+
+  // Iterate over processing in rendering order
+  for (size_t i = 0; i < m_sortedProcessor.size(); ++i) {
+    Z3DProcessor* currentProcessor = m_sortedProcessor[i];
+
+    // all processors should have been initialized at this point
+    if (!currentProcessor->isInitialized()) {
+      LWARN() << "Skipping uninitialized processor" << currentProcessor->getClassName();
+      continue;
+    }
+
+    Z3DEye eye = stereo ? LeftEye : CenterEye;
+
+    // run the processor, if it needs processing and is ready
+    if (!currentProcessor->isValid(eye) && currentProcessor->isReady(eye)) {
+      // notify process wrappers
+      for (size_t j=0; j < m_processWrappers.size(); ++j)
+        m_processWrappers[j]->beforeProcess(currentProcessor);
+      CHECK_GL_ERROR;
+
+      try {
+        getGLFocus();
+        currentProcessor->process(eye);
+        currentProcessor->setValid(eye);
+        CHECK_GL_ERROR;
+      }
+      catch (Exception& e) {
+        LERROR() << "Exception from"
+                 << currentProcessor->getClassName() << ":" << e.what();
+        error += e.what();
+        break;
+      }
+      catch (std::exception& e) {
+        LERROR() << "std exception from"
+                 << currentProcessor->getClassName() << ":" << e.what();
+        error += e.what();
+        break;
+      }
+
+      // notify process wrappers
+      getGLFocus();
+      for (size_t j = 0; j < m_processWrappers.size(); ++j)
+        m_processWrappers[j]->afterProcess(currentProcessor);
+      CHECK_GL_ERROR;
+    }
+
+    if (stereo && !currentProcessor->isValid(RightEye) && currentProcessor->isReady(RightEye)) {
+      // notify process wrappers
+      for (size_t j=0; j < m_processWrappers.size(); ++j)
+        m_processWrappers[j]->beforeProcess(currentProcessor);
+      CHECK_GL_ERROR;
+
+      try {
+        getGLFocus();
+        currentProcessor->process(RightEye);
+        currentProcessor->setValid(RightEye);
+        CHECK_GL_ERROR;
+      }
+      catch (Exception& e) {
+        LERROR() << "Exception from"
+                 << currentProcessor->getClassName() << ":" << e.what();
+        error += e.what();
+        break;
+      }
+      catch (std::exception& e) {
+        LERROR() << "std exception from"
+                 << currentProcessor->getClassName() << ":" << e.what();
+        error += e.what();
+        break;
+      }
+
+      // notify process wrappers
+      getGLFocus();
+      for (size_t j = 0; j < m_processWrappers.size(); ++j)
+        m_processWrappers[j]->afterProcess(currentProcessor);
+      CHECK_GL_ERROR;
+    }
+  }
+
+  // notify process wrappers
+  for (size_t j = 0; j < m_processWrappers.size(); ++j)
+    m_processWrappers[j]->afterNetworkProcess();
+  CHECK_GL_ERROR;
+
+  unlock();
+
+  // make sure that canvases are repainted, if their update has been blocked by the locked evaluator
+  if (m_processPending) {
+    m_processPending = false;
+    m_canvasRenderer->invalidate();
+  }
+
+  return error;
+}
+#endif
 
 bool Z3DNetworkEvaluator::initializeNetwork()
 {

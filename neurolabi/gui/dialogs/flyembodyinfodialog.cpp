@@ -309,7 +309,11 @@ void FlyEmBodyInfoDialog::updateRoi()
   ZJsonObject obj = m_reader.readDataMap();
   ZJsonObject labelszObj = obj.value("roi_synapse_labelsz");
   std::vector<std::string> keyList = labelszObj.getAllKey();
+  disconnect(ui->roiComboBox, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(onRoiChanged(int)));
   updateRoi(keyList);
+  connect(ui->roiComboBox, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(onRoiChanged(int)));
 }
 
 void FlyEmBodyInfoDialog::updateRoi(const std::vector<std::string> &roiList)
