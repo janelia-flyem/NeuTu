@@ -1,6 +1,7 @@
 #include "zglobal.h"
 
 #include "zintpoint.h"
+#include "zpoint.h"
 
 class ZGlobalData {
 
@@ -42,5 +43,14 @@ void ZGlobal::setStackPosition(const ZIntPoint &pt)
   m_data->m_stackPosition = pt;
 }
 
+void ZGlobal::setStackPosition(const ZPoint &pt)
+{
+  setStackPosition(pt.toIntPoint());
+}
+
+void ZGlobal::clearStackPosition()
+{
+  m_data->m_stackPosition.invalidate();
+}
 
 

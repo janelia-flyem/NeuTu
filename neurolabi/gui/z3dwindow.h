@@ -339,6 +339,7 @@ public slots:
   void updateBody();
   void compareBody();
   void deselectBody();
+  void copyPosition();
   void setNormalTodoVisible(bool visible);
 
 

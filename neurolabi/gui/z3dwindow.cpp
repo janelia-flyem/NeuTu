@@ -16,6 +16,7 @@
 #include "zstackframe.h"
 
 #include "neutubeconfig.h"
+#include "zglobal.h"
 #include "z3dapplication.h"
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvasrenderer.h"
@@ -596,6 +597,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_FLYEM_COMPARE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(compareBody()));
+    break;
+  case ZActionFactory::ACTION_COPY_POSITION:
+    action = m_actionLibrary->getAction(item, this, SLOT(copyPosition()));
     break;
   default:
     break;
@@ -1625,12 +1629,24 @@ bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
   if (action == ZActionFactory::ACTION_FLYEM_COMPARE_BODY) {
     ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
     if (doc != NULL) {
-      if (doc->updating()) {
-        return false;
+      if (action == ZActionFactory::ACTION_FLYEM_COMPARE_BODY) {
+        if (doc->updating()) {
+          return false;
+        }
       }
+    } else {
+      return false;
     }
   }
 #endif
+
+  if (action == ZActionFactory::ACTION_COPY_POSITION) {
+    ZStackDoc *doc = getDocument();
+    if (doc->getSelectedSwcNodeNumber() != 1) {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -2401,6 +2417,18 @@ void Z3DWindow::updateBody()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     doc->forceBodyUpdate();
+  }
+}
+
+void Z3DWindow::copyPosition()
+{
+  ZStackDoc *doc = getDocument();
+  std::set<Swc_Tree_Node*> nodeSet = doc->getSelectedSwcNodeSet();
+  if (nodeSet.size() == 1) {
+    ZPoint pos = SwcTreeNode::center(*(nodeSet.begin()));
+    ZGlobal::GetInstance().setStackPosition(pos);
+  } else {
+    ZGlobal::GetInstance().clearStackPosition();
   }
 }
 
