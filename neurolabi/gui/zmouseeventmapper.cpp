@@ -247,7 +247,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
                                  m_context->getSliceAxis());
             } else {
               hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                                 stackPosition);
+                                 stackPosition.x(), stackPosition.y(), stackPosition.z());
             }
             op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
@@ -345,7 +345,8 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
                          getDocument()), stackPosition.x(), stackPosition.y(),
                        m_context->getSliceAxis());
   } else {
-    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
+    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition,
+                       event.getPosition());
   }
   //op.setHitSwcNode(hitManager.getHitObject<Swc_Tree_Node>());
   op.setHitObject(hitManager.getHitObject<ZStackObject>());
@@ -418,6 +419,13 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     default:
       break;
     }
+  }
+
+  if (op.isNull()) {
+    ZStackDocHitTest hitManager;
+    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
+                       event.getStackPosition(), event.getPosition());
+    op.setHitObject(hitManager.getHitObject<ZStackObject>());
   }
 
   return op;
@@ -561,9 +569,10 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
         }
         canMoveImage = true;
       } else {
-//        if (m_context->getUniqueMode() ==
-//            ZInteractiveContext::INTERACT_SWC_EXTEND) {
-        if (1) {
+        if (m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_MOVE_CROSSHAIR) {
+          op.setOperation(ZStackOperator::OP_MOVE_CROSSHAIR);
+        } else {
           ZIntPoint pressPos =
               getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
           int dx = pressPos.getX() - event.getX();
@@ -571,8 +580,6 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
             canMoveImage = true;
           }
-        } else {
-          canMoveImage = true;
         }
       }
     } else if (event.getButtons() == (Qt::LeftButton | Qt::RightButton) ||

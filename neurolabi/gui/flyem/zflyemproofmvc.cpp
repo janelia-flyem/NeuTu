@@ -2280,7 +2280,8 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
   body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);
   body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-  body->setHittable(false);
+//  body->setHittable(false);
+  body->setHitProtocal(ZStackObject::HIT_NONE);
   body->setSelectable(false);
   ZOUT(LINFO(), 3) << "Adding body:" << body;
   getDocument()->addObject(body, true);
@@ -2314,7 +2315,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
           getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
       ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
-      labelSlice->setHittable(false);
+//      labelSlice->setHittable(false);
+      labelSlice->setHitProtocal(ZStackObject::HIT_NONE);
 
       body->setColor(labelSlice->getLabelColor(
                        bodyId, NeuTube::BODY_LABEL_ORIGINAL));
@@ -2631,8 +2633,8 @@ void ZFlyEmProofMvc::exitSplit()
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
-
-    labelSlice->setHittable(true);
+    labelSlice->setHitProtocal(ZStackObject::HIT_NONE);
+//    labelSlice->setHittable(true);
 
     //m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
@@ -4126,7 +4128,8 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
         ZSwcTree *tree = new ZSwcTree;
         tree->load(url.path().toStdString());
         tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
-        tree->setHittable(false);
+//        tree->setHittable(false);
+        tree->setHitProtocal(ZStackObject::HIT_NONE);
         tree->setColor(QColor(255, 0, 0));
         getDocument()->addObject(tree);
       }

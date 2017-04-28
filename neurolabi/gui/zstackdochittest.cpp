@@ -37,9 +37,13 @@ bool ZStackDocHitTest::hitTest(
   */
 }
 
-bool ZStackDocHitTest::hitTest(ZStackDoc *doc, const ZPoint &pt)
+bool ZStackDocHitTest::hitTest(
+    ZStackDoc *doc, const ZPoint &pt, const ZIntPoint &widgetPosition)
 {
-  return hitTest(doc, pt.x(), pt.y(), pt.z());
+  m_hitObject = doc->hitTest(pt.toIntPoint(), widgetPosition);
+  return m_hitObject != NULL;
+
+//  return hitTest(doc, pt.x(), pt.y(), pt.z());
 }
 
 bool ZStackDocHitTest::hitTest(ZStackDoc *doc, double x, double y, double z)

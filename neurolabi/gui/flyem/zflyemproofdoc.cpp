@@ -847,7 +847,8 @@ void ZFlyEmProofDoc::loadRoiFunc()
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
         //          obj->setDsIntv(31, 31, 31);
         obj->addVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
-        obj->setHittable(false);
+//        obj->setHittable(false);
+        obj->setHitProtocal(ZStackObject::HIT_NONE);
         //      addObject(obj);
         m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
         m_dataBuffer->deliver();
@@ -2654,7 +2655,8 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           bookmark->setBodyId(bodyId);
           bookmark->setRadius(5.0);
           bookmark->setColor(255, 0, 0);
-          bookmark->setHittable(false);
+          bookmark->setHitProtocal(ZStackObject::HIT_NONE);
+//          bookmark->setHittable(false);
           if (text.startsWith("split") || text.startsWith("small split")) {
             bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
           } else if (text.startsWith("merge")) {

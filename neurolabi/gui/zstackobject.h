@@ -104,6 +104,10 @@ public:
     DISPLAY_SLICE_SINGLE      //Display a cross section of the object
   };
 
+  enum EHitProtocal {
+    HIT_NONE, HIT_WIDGET_POS, HIT_STACK_POS
+  };
+
   /*!
    * \brief Name of the class
    *
@@ -165,7 +169,10 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
+  virtual bool hit(const ZIntPoint &stackPos, const ZIntPoint &widgetPos);
   virtual bool hit(double x, double y, NeuTube::EAxis axis);
+  virtual bool hitWidgetPos(const ZIntPoint &widgetPos);
+
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
   /*!
@@ -317,11 +324,11 @@ public:
   }
 
   inline bool isHittable() const {
-    return m_isHittable && isVisible();
+    return m_hitProtocal != HIT_NONE && isVisible();
   }
 
-  inline void setHittable(bool state) {
-    m_isHittable = state;
+  inline void setHitProtocal(EHitProtocal protocal) {
+    m_hitProtocal = protocal;
   }
 
   void setHitPoint(const ZIntPoint &pt);
@@ -354,7 +361,8 @@ protected:
   bool m_selected;
   bool m_isSelectable;
   bool m_isVisible;
-  bool m_isHittable;
+//  bool m_isHittable;
+  EHitProtocal m_hitProtocal;
   bool m_projectionVisible;
   EDisplayStyle m_style;
   QColor m_color;

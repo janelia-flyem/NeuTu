@@ -599,6 +599,9 @@ public:
 
   ZStackObject *hitTest(double x, double y, double z);
   ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);
+//  ZStackObject *hitTestWidget(int x, int y);
+
+  ZStackObject *hitTest(const ZIntPoint &stackPos, const ZIntPoint &widgetPos);
 
 //  Swc_Tree_Node *swcHitTest(double x, double y) const;
 //  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;

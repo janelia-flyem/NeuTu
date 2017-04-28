@@ -1256,6 +1256,8 @@ int ZStackPresenter::getSliceIndex() const {
 
 void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 {
+  interactiveContext().setUniqueMode(ZInteractiveContext::INTERACT_FREE);
+
 #ifdef _DEBUG_
   std::cout << event->button() << " released: " << event->buttons() << std::endl;
 #endif
@@ -1292,6 +1294,11 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
   if (isContextMenuOn()) {
     m_interactiveContext.blockContextMenu();
   }
+}
+
+void ZStackPresenter::moveCrossHairToMouse(int mouseX, int mouseY)
+{
+  emit movingCrossHairTo(mouseX, mouseY);
 }
 
 void ZStackPresenter::moveImageToMouse(
@@ -1447,6 +1454,13 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
   }
 
   ZStackOperator op = m_mouseEventProcessor.getOperator();
+
+  if (op.getHitObject() != NULL) {
+    if (op.getHitObject()->getType() == ZStackObject::TYPE_CROSS_HAIR) {
+      op.setOperation(ZStackOperator::OP_GRAB_CROSSHAIR);
+    }
+  }
+
   process(op);
 
   m_interactiveContext.setExitingEdit(false);
@@ -3402,6 +3416,12 @@ bool ZStackPresenter::process(ZStackOperator &op)
           grabPosition.x(), grabPosition.y(),
           currentWidgetPos.x(), currentWidgetPos.y());
   }
+    break;
+  case ZStackOperator::OP_MOVE_CROSSHAIR:
+    moveCrossHairToMouse(currentWidgetPos.x(), currentWidgetPos.y());
+    break;
+  case ZStackOperator::OP_GRAB_CROSSHAIR:
+    m_interactiveContext.setUniqueMode(ZInteractiveContext::INTERACT_MOVE_CROSSHAIR);
     break;
   case ZStackOperator::OP_ZOOM_IN:
     increaseZoomRatio();

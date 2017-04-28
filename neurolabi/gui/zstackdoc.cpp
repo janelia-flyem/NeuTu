@@ -5011,6 +5011,34 @@ bool ZStackDoc::isDeprecated(EComponent component)
   return false;
 }
 
+/*
+ZStackObject* ZStackDoc::hitTestWidget(int x, int y)
+{
+
+}
+*/
+
+ZStackObject* ZStackDoc::hitTest(
+    const ZIntPoint &stackPos, const ZIntPoint &widgetPos)
+{
+  QMutexLocker locker(m_objectGroup.getMutex());
+
+  ZOUT(LTRACE(), 5) << "Hit test";
+  QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
+  sort(sortedObjList.begin(), sortedObjList.end(),
+       ZStackObject::ZOrderBiggerThan());
+
+  for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
+       iter != sortedObjList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->hit(stackPos, widgetPos)) {
+      return obj;
+    }
+  }
+
+  return NULL;
+}
+
 ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
@@ -5033,7 +5061,8 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
   return NULL;
 }
 
-ZStackObject* ZStackDoc::hitTest(double x, double y, NeuTube::EAxis sliceAxis)
+ZStackObject* ZStackDoc::hitTest(
+    double x, double y, NeuTube::EAxis sliceAxis)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
@@ -9180,7 +9209,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
               obj->setSource(
                     ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                       player->getLabel()));
-              obj->setHittable(false);
+              obj->setHitProtocal(ZStackObject::HIT_NONE);
               obj->setProjectionVisible(false);
               obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
               LINFO() << "Adding" << obj << obj->getSource();

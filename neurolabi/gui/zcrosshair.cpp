@@ -13,6 +13,7 @@ void ZCrossHair::init()
   setZOrder(5);
   useCosmeticPen(true);
   setColor(QColor(255, 255, 255, 128));
+  setHitProtocal(HIT_WIDGET_POS);
 }
 
 
@@ -65,6 +66,18 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
                    QPointF(shiftedCenter.x(), shiftedCenter.y() + 0.2));
                    */
 
+}
+
+bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos)
+{
+  if (widgetPos.getX() > m_center.x() - 5.0 &&
+      widgetPos.getX() < m_center.x() + 5.0 &&
+      widgetPos.getY() > m_center.y() - 5.0 &&
+      widgetPos.getY() < m_center.y() + 5.0) {
+    return true;
+  }
+
+  return false;
 }
 
 void ZCrossHair::setX(double x)
