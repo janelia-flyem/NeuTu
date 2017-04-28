@@ -22,7 +22,8 @@ requirements:
   build:
     - qt      4.8.6.99   # [osx]
     - qt      4.8.7      # [linux]
-    - libdvid-cpp 0.2.post55
+    - libdvid-cpp 0.2.post61
+    - lowtis  0.1.0.post17 # [linux]
     - fftw    3.3*
     - jansson 2.5
     - libxml2 2.9*
@@ -32,7 +33,8 @@ requirements:
   run:
     - qt       4.8.6.99   # [osx]
     - qt       4.8.7      # [linux]
-    - libdvid-cpp 0.2.post55
+    - libdvid-cpp 0.2.post61
+    - lowtis  0.1.0.post17 # [linux]
     - fftw    3.3*
     - jansson 2.5
     - libxml2 2.9*
