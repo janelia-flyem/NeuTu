@@ -8,6 +8,7 @@
 #include "zpainter.h"
 #include "zimage.h"
 #include "neutubeconfig.h"
+#include "c_stack.h"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
@@ -33,6 +34,30 @@ void ZDvidSparseStack::init()
   m_label = 0;
   setCancelFillValue(false);
 //  m_cancelingValueFill = false;
+}
+
+ZStack* ZDvidSparseStack::getSlice(
+    int z, int x0, int y0, int width, int height) const
+{
+  ZStack *slice  = getSlice(z);
+
+  ZStack *newSlice = NULL;
+
+  if (slice != NULL) {
+    Stack *newSliceData = NULL;
+
+    newSliceData = C_Stack::crop(
+          slice->c_stack(), x0 - slice->getOffset().getX(),
+          y0 - slice->getOffset().getY(), 0, width, height, 1, NULL);
+
+    newSlice = new ZStack;
+    newSlice->consume(newSliceData);
+    newSlice->setOffset(x0, y0, z);
+
+    delete slice;
+  }
+
+  return newSlice;
 }
 
 ZStack* ZDvidSparseStack::getSlice(int z) const
@@ -530,6 +555,7 @@ ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
 
   return m_sparseStack.getStack();
 }
+
 
 ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range)
 {

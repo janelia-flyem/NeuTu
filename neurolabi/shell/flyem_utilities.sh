@@ -159,7 +159,7 @@ function update_neutu {
       /opt/bin/git clone $source_dir/.git $target_dir
     else
       cd $target_dir
-      /usr/bin/git pull
+      /usr/bin/git pull origin $(git rev-parse --abbrev-ref HEAD)
     fi
   fi
 

@@ -575,6 +575,7 @@ ZSwcTree* ZCommandLine::traceDvid()
   ZDvidTarget target;
   target.setFromSourceString(m_input[0], ZDvid::TYPE_UINT8BLK);
 
+  target.setNullLabelBlockName();
   tracer.setDvidTarget(target);
   tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
 
@@ -1179,7 +1180,10 @@ int ZCommandLine::run(int argc, char *argv[])
 
   Process_Arguments(argc, argv, const_cast<char**>(Spec), 1);
 
-  std::string applicationDir = ZString::dirPath(argv[0]);
+  QCoreApplication app(argc, argv, false);
+  std::string applicationDir = app.applicationDirPath().toStdString();
+
+//  std::string applicationDir = ZString::dirPath(argv[0]);
   std::cout << applicationDir << std::endl;
   m_configDir = applicationDir + "/json";
   std::string configPath = m_configDir + "/command_config.json";

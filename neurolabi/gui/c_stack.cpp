@@ -896,9 +896,6 @@ int C_Stack::neighborTest(int conn, int width, int height, int depth,
   return nnbr;
 }
 
-
-#define MRAW_MAGIC_NUMBER 1836212599
-
 void C_Stack::write(
     const std::string &filePath, const Mc_Stack *stack, const char *meta)
 {
@@ -929,14 +926,14 @@ void C_Stack::write(
   }
     break;
   default:
-    Write_Mc_Stack(filePath.c_str(), stack, meta);
+    Write_Mc_Stack(filePath.c_str(), stack, meta, 0);
     break;
   }
 }
 
 void C_Stack::write(const std::string &filePath, const Stack *stack)
 {
-  Write_Stack_U(filePath.c_str(), stack, NULL);
+  Write_Stack_U(filePath.c_str(), stack, NULL, 0);
 }
 
 void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)

@@ -308,6 +308,8 @@ using namespace std;
 #include "dvid/zdvidneurontracer.h"
 #include "zlocalneuroseg.h"
 #include "dialogs/zflyembodycomparisondialog.h"
+#include "dvid/zdvidsparsestack.h"
+#include "zstackwriter.h"
 
 using namespace std;
 
@@ -21746,7 +21748,6 @@ void ZTest::test(MainWindow *host)
        iter != seedList.end(); ++iter) {
     frame->document()->addObject(*iter);
   }
-
 #endif
 
 #if 0
@@ -22804,7 +22805,7 @@ void ZTest::test(MainWindow *host)
   dlg->exec();
 #endif
 
-#if 1
+#if 0
   ZFlyEmBodyComparisonDialog *dlg = new ZFlyEmBodyComparisonDialog(host);
   dlg->exec();
 
@@ -22862,6 +22863,44 @@ void ZTest::test(MainWindow *host)
   host->presentStackFrame(frame);
 #endif
 
+#endif
+
+#if 1
+  ZDvidTarget target;
+//  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+//  target.setLabelBlockName("segmentation2");
+
+  target.set("emdata1.int.janelia.org", "89ec", 8700);
+  target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(683808);
+
+  ZIntCuboid box = spStack->getBoundBox();
+
+  int minZ = box.getFirstCorner().getZ();
+  int maxZ = box.getLastCorner().getZ();
+  int x0 = box.getFirstCorner().getX();
+  int y0 = box.getFirstCorner().getY();
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_DEFAULT);
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    ZStack *stack = spStack->getSlice(z, x0, y0, box.getWidth(), box.getHeight());
+    if (stack != NULL) {
+      std::cout << z << "/" << maxZ << std::endl;
+      ZString numStr;
+      numStr.appendNumber(z, 5);
+
+      writer.write(GET_TEST_DATA_DIR + "/test/series/" + numStr + ".tif", stack);
+//      stack->save(GET_TEST_DATA_DIR + "/test/series/" + numStr + ".tif");
+      delete stack;
+    }
+  }
+//  stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
   std::cout << "Done." << std::endl;

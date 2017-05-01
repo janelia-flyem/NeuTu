@@ -78,7 +78,7 @@
 #include "z3dmainwindow.h"
 #include "dvid/zdvidgrayslicescrollstrategy.h"
 #include "dialogs/zflyemgrayscaledialog.h"
-
+#include "zstackwriter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -2454,11 +2454,14 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
           }
         }
 
+        ZStackWriter stackWriter;
         if (m_grayscaleDlg->isFullRange()) {
-          sparseStack->getStack()->save(fileName.toStdString());
+          stackWriter.write(fileName.toStdString(), sparseStack->getStack());
+//          sparseStack->getStack()->save(fileName.toStdString());
         } else {
           ZStack *stack = sparseStack->makeStack(m_grayscaleDlg->getBoundBox());
-          stack->save(fileName.toStdString());
+//          stack->save(fileName.toStdString());
+          stackWriter.write(fileName.toStdString(), stack);
           delete stack;
         }
         delete sparseStack;
