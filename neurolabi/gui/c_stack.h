@@ -455,4 +455,6 @@ Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws);
 
 }
 
+#define MRAW_MAGIC_NUMBER 1836212599
+
 #endif // C_STACK_H

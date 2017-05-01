@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "tz_image_io.h"
 #include "tz_file_list.h"
+#include "c_stack.h"
 
 using namespace std;
 
@@ -151,7 +152,7 @@ void ZStackAccessor::exportBuffer(std::string filePath)
     stack.kind = m_byteNumberPerVoxel;
     stack.text = const_cast<char*>("");
 
-    Write_Stack_U(filePath.c_str(), &stack, NULL);
+    C_Stack::write(filePath, &stack);
   }
 }
 

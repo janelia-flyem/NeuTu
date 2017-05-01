@@ -4482,7 +4482,8 @@ void MainWindow::on_actionTem_Paper_Neuron_Type_Figure_triggered()
       stream << dataPath + "/" + dataDir + "/row/" + neuronType
              << "_row" << row + 1 << ".tif";
 
-      Write_Stack_U(stream.str().c_str(), out, NULL);
+      C_Stack::write(stream.str(), out);
+//      Write_Stack_U(stream.str().c_str(), out, NULL);
       C_Stack::kill(out);
     }
   }
