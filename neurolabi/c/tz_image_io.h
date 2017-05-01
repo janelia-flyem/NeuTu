@@ -217,6 +217,8 @@ void Fix_Lsm_File(const char *filepath);
 Stack* Read_Lsm_Stack(const char *filepath, int channel);
 void Write_Lsm_Stack(const char *filepath, const Stack *stack, Tiff_IFD *ifd);
 
+void Write_Compress_Stack(char *file_name, Stack *a_stack);
+
 Stack* Read_Raw_Stack(const char *filepath);
 Stack* Read_Raw_Stack_C(const char *filepath, int channel);
 /**@brief Read a slice from a raw stack.

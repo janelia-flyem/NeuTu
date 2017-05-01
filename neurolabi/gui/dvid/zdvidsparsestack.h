@@ -29,6 +29,8 @@ public:
 
   ZStack *getSlice(int z) const;
 
+  ZStack* getSlice(int z, int x0, int y0, int width, int height) const;
+
   /*!
    * \brief Get the dense representation of the sparse stack
    *

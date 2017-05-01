@@ -1070,6 +1070,7 @@ int Lsm_Pixel_Type(const char *filepath)
   return type;
 }
 
+
 void Write_Lsm_Stack(const char *filepath, const Stack *stack,
 		     Tiff_IFD *templat)
 {
@@ -1616,11 +1617,11 @@ void Write_Tiff_With_Offset(Tiff *etif, Image *a_image,
   ifd = Make_IFD_For_Image(img,0);
 
   Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
-      sizeof(int), &x);
+      1, &x);
   Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
-      sizeof(int), &y);
+      1, &y);
   Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
-      sizeof(int), &z);
+      1, &z);
 
   if (a_image->text[0] != '\0')
     Set_Tiff_Tag(ifd,TIFF_JF_TAGGER,TIFF_BYTE,strlen(a_image->text),a_image->text);
@@ -1649,6 +1650,7 @@ void Write_Stack_With_Offset(
 
   if (tif != NULL) {
     Write_Tiff_With_Offset(tif, Select_Plane((Stack*) a_stack, 0), x, y, z);
+
 
     for (i = 1; i < a_stack->depth; i++)
       Write_Tiff(tif,Select_Plane((Stack*)a_stack,i));
@@ -3322,18 +3324,20 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
                 int n = 0;
                 int *offset = String_To_Integer_Array(metafile, NULL, &n);
                 if (n >= 3) {
-                  Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset);
-                  Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset + 1);
-                  Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset + 2);
+                  Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
+                      1, offset);
+                  Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
+                      1, offset + 1);
+                  Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
+                      1, offset + 2);
                 }
+                free(offset);
               }
             }
           }
         }
-
+//        uint16 compressValue = TIFF_VALUE_LZW;
+//        Set_Tiff_Tag(ifd, TIFF_COMPRESSION, TIFF_SHORT, 1, &compressValue);
 
 	Write_Tiff_IFD(tif, ifd);
 	Free_Tiff_IFD(ifd);
