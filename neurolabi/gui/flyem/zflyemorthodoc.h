@@ -18,7 +18,7 @@ public:
 
   ZCrossHair* getCrossHair() const;
 
-  void setCrossHairCenter(double x, double y);
+  void setCrossHairCenter(double x, double y, NeuTube::EAxis axis);
 
 signals:
 

@@ -49,12 +49,12 @@ NeuTube::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(
     if (a2 == NeuTube::Y_AXIS) {
       return NeuTube::Z_AXIS;
     } else if (a2 == NeuTube::Z_AXIS) {
-      return NeuTube::Y_AXIS;
+      return NeuTube::X_AXIS;
     }
     break;
   case NeuTube::Y_AXIS:
     if (a2 == NeuTube::Z_AXIS) {
-      return NeuTube::X_AXIS;
+      return NeuTube::Y_AXIS;
     }
     break;
   default:
@@ -75,6 +75,7 @@ ZPoint ZFlyEmOrthoViewHelper::getCrossCenter() const
   ZPoint center;
   if (getMasterMvc() != NULL) {
     center = getMasterDoc()->getCrossHair()->getCenter();
+    center.shiftSliceAxis(getMasterView()->getSliceAxis());
 #ifdef _DEBUG_
     std::cout << "Cross hair center: " << center.toString() << std::endl;
 #endif
@@ -83,6 +84,7 @@ ZPoint ZFlyEmOrthoViewHelper::getCrossCenter() const
     center.setX(pt.x());
     center.setY(pt.y());
     center.setZ(getMasterView()->getCurrentZ());
+    center.shiftSliceAxisInverse(getMasterView()->getSliceAxis());
   }
 
   return center;
@@ -95,33 +97,38 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
     std::cout << "Sync crosshair from " << getMasterView()->getSliceAxis()
               << " to " << mvc->getView()->getSliceAxis() << std::endl;
 #endif
-    ZCrossHair *crossHair = mvc->getCompleteDocument()->getCrossHair();
-    ZPoint crossCenter = getMasterDoc()->getCrossHair()->getCenter();
+//    ZCrossHair *crossHair = mvc->getCompleteDocument()->getCrossHair();
+//    ZPoint crossCenter = getMasterDoc()->getCrossHair()->getCenter();
     ZPoint mappedCrossCenter = getCrossCenter();
+//    mappedCrossCenter.shiftSliceAxisInverse(getMasterMvc);
+    mvc->getView()->setZ(
+          mappedCrossCenter.getSliceCoord(mvc->getView()->getSliceAxis()));
+    mvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 
-
+#if 0
     NeuTube::EAxis axis = getAlignAxis(mvc);
     switch (axis) {
     case NeuTube::X_AXIS:
-      crossHair->setX(crossCenter.getX());
-      mvc->getView()->setZ(mappedCrossCenter.getY());
+//      crossHair->setX(crossCenter.getX());
+      mvc->getView()->setZ(mappedCrossCenter.getX());
       break;
     case NeuTube::Y_AXIS:
-      crossHair->setY(crossCenter.getY());
-      mvc->getView()->setZ(mappedCrossCenter.getX());
+//      crossHair->setY(crossCenter.getY());
+      mvc->getView()->setZ(mappedCrossCenter.getY());
       break;
     case NeuTube::Z_AXIS:
       if (mvc->getView()->getSliceAxis() == NeuTube::X_AXIS) {
-        crossHair->setX(crossCenter.getY());
+//        crossHair->setZ(crossCenter.getY());
         mvc->getView()->setZ(mappedCrossCenter.getX());
       } else {
-        crossHair->setY(crossCenter.getX());
+//        crossHair->setZ(crossCenter.getX());
         mvc->getView()->setZ(mappedCrossCenter.getY());
       }
       break;
     }
+#endif
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     getMasterMvc()->getView()->printViewParam();
     mvc->getView()->printViewParam();
 #endif
@@ -131,7 +138,7 @@ void ZFlyEmOrthoViewHelper::syncCrossHair(ZFlyEmOrthoMvc *mvc)
 void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
 {
   if (getMasterMvc() != NULL) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Sync viewport from " << getMasterView()->getSliceAxis()
               << " to " << mvc->getView()->getSliceAxis() << std::endl;
 #endif
@@ -139,52 +146,57 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     ZViewProj viewProj = getMasterView()->getViewProj();
     ZViewProj newViewProj = mvc->getView()->getViewProj();
     ZPoint mappedCrossCenter = getCrossCenter();
+    NeuTube::EAxis slaveAxis = mvc->getView()->getSliceAxis();
 
     ZCrossHair *refCross = mvc->getCompleteDocument()->getCrossHair();
-    QPointF refCrossPos = QPointF(refCross->getCenter().getX(),
-                                  refCross->getCenter().getY());
 
-    NeuTube::EAxis axis = getAlignAxis(mvc);
-    switch (axis) {
-    case NeuTube::X_AXIS:
+    ZPoint refCenter = refCross->getCenter();
+    refCenter.shiftSliceAxis(slaveAxis);
+
+    QPointF refCrossPos = QPointF(refCenter.getX(), refCenter.getY());
+
+    switch (slaveAxis) {
+    case NeuTube::Z_AXIS:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
-            QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()),
+            QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getY()),
             refCrossPos);
-      newViewProj.setX0(viewProj.getX0());
-      mvc->getView()->setZ(mappedCrossCenter.getY());
+//      mvc->getView()->setZ(mappedCrossCenter.getZ());
       break;
-    case NeuTube::Y_AXIS:
+    case NeuTube::X_AXIS:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
             QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()),
             refCrossPos);
-      newViewProj.setY0(viewProj.getY0());
-      mvc->getView()->setZ(mappedCrossCenter.getX());
+//      mvc->getView()->setZ(mappedCrossCenter.getX());
       break;
-    case NeuTube::Z_AXIS:
-      mappedCrossCenter.shiftSliceAxisInverse(getMasterView()->getSliceAxis());
-      if (mvc->getView()->getSliceAxis() == NeuTube::X_AXIS) {
-        newViewProj.setZoomWithFixedPoint(
-              viewProj.getZoom(),
-              QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()),
-              refCrossPos);
-//        newViewProj.setY0(viewProj.getX0());
-        mvc->getView()->setZ(mappedCrossCenter.getX());
-      } else {
-        newViewProj.setZoomWithFixedPoint(
-              viewProj.getZoom(),
-              QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()),
-              refCrossPos);
-//        newViewProj.setX0(viewProj.getY0());
-        mvc->getView()->setZ(mappedCrossCenter.getY());
-      }
+    case NeuTube::Y_AXIS:
+      newViewProj.setZoomWithFixedPoint(
+            viewProj.getZoom(),
+            QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()),
+            refCrossPos);
+//      mvc->getView()->setZ(mappedCrossCenter.getY());
       break;
     }
+
+    //To avoid misalignment caused by rounding error
+    NeuTube::EAxis axis = getAlignAxis(mvc);
+    switch (axis) {
+    case NeuTube::Y_AXIS:
+      newViewProj.setX0(viewProj.getX0());
+      break;
+    case NeuTube::X_AXIS:
+      newViewProj.setY0(viewProj.getY0());
+      break;
+    default:
+      break;
+    }
+
+    mvc->getView()->setZ(mappedCrossCenter.getSliceCoord(slaveAxis));
     mvc->getView()->setViewProj(newViewProj);
     mvc->getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     getMasterMvc()->getView()->printViewParam();
     mvc->getView()->printViewParam();
 #endif

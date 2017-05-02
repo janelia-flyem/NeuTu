@@ -32,6 +32,8 @@ signals:
   void crossHairChanged();
 
 public slots:
+  void moveCrossHairTo(int x, int y);
+
 
 private:
   void init();

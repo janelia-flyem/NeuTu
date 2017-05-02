@@ -1256,7 +1256,7 @@ int ZStackPresenter::getSliceIndex() const {
 
 void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 {
-  interactiveContext().setUniqueMode(ZInteractiveContext::INTERACT_FREE);
+//  interactiveContext().setUniqueMode(ZInteractiveContext::INTERACT_FREE);
 
 #ifdef _DEBUG_
   std::cout << event->button() << " released: " << event->buttons() << std::endl;
@@ -1457,7 +1457,7 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 
   if (op.getHitObject() != NULL) {
     if (op.getHitObject()->getType() == ZStackObject::TYPE_CROSS_HAIR) {
-      op.setOperation(ZStackOperator::OP_GRAB_CROSSHAIR);
+      op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
     }
   }
 
@@ -2674,6 +2674,9 @@ void ZStackPresenter::updateCursor()
              interactiveContext().todoEditMode() ==
              ZInteractiveContext::TODO_ADD_ITEM){
     buddyView()->setScreenCursor(Qt::PointingHandCursor);
+  } else if (interactiveContext().getUniqueMode()
+             == ZInteractiveContext::INTERACT_MOVE_CROSSHAIR) {
+    buddyView()->setScreenCursor(Qt::ClosedHandCursor);
   } else {
     buddyView()->setScreenCursor(Qt::CrossCursor);
   }
@@ -2898,8 +2901,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
 
   ZInteractionEvent interactionEvent;
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  QPoint currentWidgetPos(event.getPosition().getX(),
-             event.getPosition().getY());
+  ZIntPoint widgetPos = event.getPosition();
+  QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
   ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(NeuTube::COORD_RAW_STACK);
 
@@ -3417,11 +3420,16 @@ bool ZStackPresenter::process(ZStackOperator &op)
           currentWidgetPos.x(), currentWidgetPos.y());
   }
     break;
-  case ZStackOperator::OP_MOVE_CROSSHAIR:
+  case ZStackOperator::OP_CROSSHAIR_MOVE:
     moveCrossHairToMouse(currentWidgetPos.x(), currentWidgetPos.y());
     break;
-  case ZStackOperator::OP_GRAB_CROSSHAIR:
+  case ZStackOperator::OP_CROSSHAIR_GRAB:
     m_interactiveContext.setUniqueMode(ZInteractiveContext::INTERACT_MOVE_CROSSHAIR);
+    updateCursor();
+    break;
+  case ZStackOperator::OP_CROSSHAIR_RELEASE:
+    m_interactiveContext.setUniqueMode(ZInteractiveContext::INTERACT_FREE);
+    updateCursor();
     break;
   case ZStackOperator::OP_ZOOM_IN:
     increaseZoomRatio();
@@ -3547,8 +3555,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     buddyView()->setInfo(
           buddyDocument()->rawDataInfo(
-            currentRawStackPos.x(), currentRawStackPos.y(),
-            currentRawStackPos.z()));
+            widgetPos.getX(), widgetPos.getY(), widgetPos.getZ(),
+            buddyView()->getSliceAxis()));
 
     if (m_interactiveContext.synapseEditMode() ==
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {

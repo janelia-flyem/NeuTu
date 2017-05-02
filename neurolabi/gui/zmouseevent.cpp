@@ -5,6 +5,7 @@ ZMouseEvent::ZMouseEvent() : m_buttons(Qt::NoButton),
   m_action(ZMouseEvent::ACTION_NONE), m_modifiers(Qt::NoModifier),
   m_isInStack(false)
 {
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
 ZPoint ZMouseEvent::getPosition(NeuTube::ECoordinateSystem cs) const
@@ -58,6 +59,16 @@ void ZMouseEvent::set(QMouseEvent *event, EAction action, int z)
   if (action == ACTION_RELEASE) {
     m_buttons = event->button();
   }
+}
+
+NeuTube::EAxis ZMouseEvent::getSliceAxis() const
+{
+  return m_sliceAxis;
+}
+
+void ZMouseEvent::setSliceAxis(NeuTube::EAxis axis)
+{
+  m_sliceAxis = axis;
 }
 
 void ZMouseEvent::setPressEvent(QMouseEvent *event, int z)

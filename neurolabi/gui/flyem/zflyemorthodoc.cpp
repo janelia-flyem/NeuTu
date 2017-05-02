@@ -34,9 +34,17 @@ ZCrossHair* ZFlyEmOrthoDoc::getCrossHair() const
   return getObject<ZCrossHair>(ZStackObjectSourceFactory::MakeCrossHairSource());
 }
 
-void ZFlyEmOrthoDoc::setCrossHairCenter(double x, double y)
+void ZFlyEmOrthoDoc::setCrossHairCenter(double x, double y, NeuTube::EAxis axis)
 {
-  getCrossHair()->setCenter(x, y);
+  ZPoint center = getCrossHair()->getCenter();
+  //Transform to the view space
+  center.shiftSliceAxis(axis);
+  center.setX(x);
+  center.setY(y);
+  //Transform back to the world space
+  center.shiftSliceAxisInverse(axis);
+
+  getCrossHair()->setCenter(center);
 }
 
 void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)

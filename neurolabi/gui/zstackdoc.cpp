@@ -4448,8 +4448,7 @@ void ZStackDoc::mergeAllChain()
    }
 }
 
-QString ZStackDoc::rawDataInfo(
-    double cx, double cy, int z) const
+QString ZStackDoc::rawDataInfo(double cx, double cy, int z, NeuTube::EAxis axis) const
 {
   QString info;
 
@@ -4460,20 +4459,20 @@ QString ZStackDoc::rawDataInfo(
   int wy = y;
   int wz = z;
 
-//  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
+  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
 
   if (x >= 0 && y >= 0) {
     std::ostringstream stream;
 
     stream << "(";
-    if (wx >= 0) {
-      stream << wx << ", ";
+    if (x >= 0) {
+      stream << x << ", ";
     }
-    if (wy >= 0) {
-      stream << wy;
+    if (y >= 0) {
+      stream << y;
     }
-    if (wz >= 0) {
-      stream << " , " << wz;
+    if (z >= 0) {
+      stream << " , " << z;
     }
 
     stream << ")";
@@ -5019,7 +5018,7 @@ ZStackObject* ZStackDoc::hitTestWidget(int x, int y)
 */
 
 ZStackObject* ZStackDoc::hitTest(
-    const ZIntPoint &stackPos, const ZIntPoint &widgetPos)
+    const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
@@ -5031,7 +5030,7 @@ ZStackObject* ZStackDoc::hitTest(
   for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
        iter != sortedObjList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    if (obj->hit(stackPos, widgetPos)) {
+    if (obj->hit(stackPos, widgetPos, axis)) {
       return obj;
     }
   }

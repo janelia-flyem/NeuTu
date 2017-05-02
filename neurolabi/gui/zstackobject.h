@@ -169,9 +169,10 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
-  virtual bool hit(const ZIntPoint &stackPos, const ZIntPoint &widgetPos);
+  virtual bool hit(
+      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis);
   virtual bool hit(double x, double y, NeuTube::EAxis axis);
-  virtual bool hitWidgetPos(const ZIntPoint &widgetPos);
+  virtual bool hitWidgetPos(const ZIntPoint &widgetPos, NeuTube::EAxis axis);
 
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 

@@ -68,17 +68,22 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
 
 }
 
-bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos)
+bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos, NeuTube::EAxis axis)
 {
-  if (widgetPos.getX() > m_center.x() - 5.0 &&
-      widgetPos.getX() < m_center.x() + 5.0 &&
-      widgetPos.getY() > m_center.y() - 5.0 &&
-      widgetPos.getY() < m_center.y() + 5.0) {
+  ZPoint shiftedCenter = m_center;
+  shiftedCenter.shiftSliceAxis(axis);
+
+  double margin = 5.0;
+  if (widgetPos.getX() > shiftedCenter.x() - margin &&
+      widgetPos.getX() < shiftedCenter.x() + margin &&
+      widgetPos.getY() > shiftedCenter.y() - margin &&
+      widgetPos.getY() < shiftedCenter.y() + margin) {
     return true;
   }
 
   return false;
 }
+
 
 void ZCrossHair::setX(double x)
 {
@@ -90,10 +95,22 @@ void ZCrossHair::setY(double y)
   m_center.setY(y);
 }
 
+void ZCrossHair::setZ(double z)
+{
+  m_center.setZ(z);
+}
+
+/*
 void ZCrossHair::setCenter(double x, double y)
 {
   m_center.setX(x);
   m_center.setY(y);
+}
+*/
+
+void ZCrossHair::setCenter(const ZPoint &center)
+{
+  m_center = center;
 }
 
 void ZCrossHair::setCenter(double x, double y, double z)

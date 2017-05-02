@@ -7,12 +7,22 @@
 
 ZStackDocHitTest::ZStackDocHitTest() : m_hitObject(NULL)
 {
+  m_sliceAxis = NeuTube::Z_AXIS;
 }
 
-bool ZStackDocHitTest::hitTest(
-    ZStackDoc *doc, double x, double y, NeuTube::EAxis axis)
+NeuTube::EAxis ZStackDocHitTest::getSliceAxis() const
 {
-  m_hitObject = doc->hitTest(x, y, axis);
+  return m_sliceAxis;
+}
+
+void ZStackDocHitTest::setSliceAxis(NeuTube::EAxis axis)
+{
+  m_sliceAxis = axis;
+}
+
+bool ZStackDocHitTest::hitTest(ZStackDoc *doc, double x, double y)
+{
+  m_hitObject = doc->hitTest(x, y, getSliceAxis());
   return m_hitObject != NULL;
 
 
@@ -40,7 +50,7 @@ bool ZStackDocHitTest::hitTest(
 bool ZStackDocHitTest::hitTest(
     ZStackDoc *doc, const ZPoint &pt, const ZIntPoint &widgetPosition)
 {
-  m_hitObject = doc->hitTest(pt.toIntPoint(), widgetPosition);
+  m_hitObject = doc->hitTest(pt.toIntPoint(), widgetPosition, getSliceAxis());
   return m_hitObject != NULL;
 
 //  return hitTest(doc, pt.x(), pt.y(), pt.z());

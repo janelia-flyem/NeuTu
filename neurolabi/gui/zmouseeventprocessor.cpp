@@ -49,6 +49,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 
   ZMouseEvent zevent;
   zevent.set(event, action, z);
+  zevent.setSliceAxis(m_imageWidget->getSliceAxis());
   const ZIntPoint &pt = zevent.getPosition();
   zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt));
 

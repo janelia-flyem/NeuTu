@@ -155,13 +155,14 @@ bool ZStackObject::hit(const ZIntPoint &pt)
   return hit(pt.getX(), pt.getY(), pt.getZ());
 }
 
-bool ZStackObject::hit(const ZIntPoint &stackPos, const ZIntPoint &widgetPos)
+bool ZStackObject::hit(
+    const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis)
 {
   switch (m_hitProtocal) {
   case HIT_STACK_POS:
     return hit(stackPos);
   case HIT_WIDGET_POS:
-    return hitWidgetPos(widgetPos);
+    return hitWidgetPos(widgetPos, axis);
   default:
     break;
   }
@@ -169,7 +170,8 @@ bool ZStackObject::hit(const ZIntPoint &stackPos, const ZIntPoint &widgetPos)
   return false;
 }
 
-bool ZStackObject::hitWidgetPos(const ZIntPoint &/*widgetPos*/)
+bool ZStackObject::hitWidgetPos(
+    const ZIntPoint &/*widgetPos*/, NeuTube::EAxis /*axis*/)
 {
   return false;
 }

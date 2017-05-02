@@ -59,9 +59,9 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
   }
 }
 
-QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z) const
+QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, NeuTube::EAxis axis) const
 {
-  QString info = ZStackDoc::rawDataInfo(x, y, z);
+  QString info = ZStackDoc::rawDataInfo(x, y, z, axis);
 
   ZStack *segmentation = getSegmentation();
 
@@ -72,6 +72,7 @@ QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z) const
     int wx = iround(x);
     int wy = iround(y);
     int wz = z;
+    ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
 //    ZGeometry::shiftSliceAxis(wx, wy, wz, axis);
     uint64_t bodyId = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
           segmentation->color(wx, wy, wz));

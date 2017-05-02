@@ -195,6 +195,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
 
     if (op.isNull()) {
       switch (m_context->getUniqueMode()) {
+      case ZInteractiveContext::INTERACT_MOVE_CROSSHAIR:
+        op.setOperation(ZStackOperator::OP_CROSSHAIR_RELEASE);
+        break;
       case ZInteractiveContext::INTERACT_STROKE_DRAW:
         op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
         break;
@@ -240,6 +243,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
               m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
           if (hitTestOn) {
             ZStackDocHitTest hitManager;
+            hitManager.setSliceAxis(event.getSliceAxis());
 
             if (m_context->isObjectProjectView()) {
               hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
@@ -340,6 +344,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
 //    op.setHitSwcNode(m_doc->swcHitTest(stackPosition.x(), stackPosition.y()));
 //  }
   ZStackDocHitTest hitManager;
+  hitManager.setSliceAxis(event.getSliceAxis());
   if (event.getRawStackPosition().z() < 0) {
     hitManager.hitTest(const_cast<ZStackDoc*>(
                          getDocument()), stackPosition.x(), stackPosition.y(),
@@ -423,6 +428,7 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
 
   if (op.isNull()) {
     ZStackDocHitTest hitManager;
+    hitManager.setSliceAxis(event.getSliceAxis());
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
                        event.getStackPosition(), event.getPosition());
     op.setHitObject(hitManager.getHitObject<ZStackObject>());
@@ -571,7 +577,7 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
       } else {
         if (m_context->getUniqueMode() ==
             ZInteractiveContext::INTERACT_MOVE_CROSSHAIR) {
-          op.setOperation(ZStackOperator::OP_MOVE_CROSSHAIR);
+          op.setOperation(ZStackOperator::OP_CROSSHAIR_MOVE);
         } else {
           ZIntPoint pressPos =
               getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);

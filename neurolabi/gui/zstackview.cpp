@@ -847,8 +847,9 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
           }
 
           ZPoint pt = ZPoint(pos.x(), pos.y(), z);
-          pt.shiftSliceAxisInverse(getSliceAxis());
-          setInfo(buddyDocument()->rawDataInfo(pt.x(), pt.y(), pt.z()));
+//          pt.shiftSliceAxisInverse(getSliceAxis());
+          setInfo(buddyDocument()->rawDataInfo(
+                    pt.x(), pt.y(), pt.z(), getSliceAxis()));
         }
       }
     }

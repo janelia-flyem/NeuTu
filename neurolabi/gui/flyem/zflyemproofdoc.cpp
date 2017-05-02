@@ -707,7 +707,7 @@ void ZFlyEmProofDoc::initData(
 
 void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
 {
-  if (m_dvidReader.isReady()) {
+  if (m_dvidReader.isReady() && !getDvidTarget().readOnly()) {
     initData("annotation", target.getBookmarkName());
     initData("annotation", target.getTodoListName());
     initData("keyvalue", target.getSkeletonName());
