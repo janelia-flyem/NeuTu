@@ -8,6 +8,8 @@
 
 namespace NeuTube {
 
+static const uint64_t ONEGIGA = 1073741824;
+
 enum ESyncOption {
   SYNC, NO_SYNC
 };
@@ -153,7 +155,6 @@ enum EBodyType {
 
 static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
-
 }
 
 

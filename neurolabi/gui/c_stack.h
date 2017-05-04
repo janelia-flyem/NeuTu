@@ -252,6 +252,10 @@ Stack* downsampleMinIgnoreZero(const Stack *stack, int xintv, int yintv, int zin
                      Stack *result = NULL);
 void print(const Stack *stack);
 
+
+Stack* downsampleMean(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
+
 /*!
  * \brief Print the voxel values of a stack
  */

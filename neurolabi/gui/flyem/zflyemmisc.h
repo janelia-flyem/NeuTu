@@ -60,6 +60,10 @@ QString ReadLastLines(const QString &filePath, int maxCount);
 ZStroke2d* MakeSplitSeed(const ZObject3dScan &slice, int label);
 std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
 
+namespace MB6Paper {
+ZDvidTarget MakeDvidTarget();
+}
+
 class HackathonEvaluator {
 public:
   HackathonEvaluator(const std::string &sourceDir,

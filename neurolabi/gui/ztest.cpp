@@ -22865,18 +22865,18 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
 //  target.set("emdata2.int.janelia.org", "e2f0", 7000);
 //  target.setLabelBlockName("segmentation2");
 
-  target.set("emdata1.int.janelia.org", "89ec", 8700);
+  target.set("emdata1.int.janelia.org", "d693", 8700);
   target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
 
   ZDvidReader reader;
   reader.open(target);
 
-  ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(683808);
+  ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(157976);
 
   ZIntCuboid box = spStack->getBoundBox();
 
@@ -22888,8 +22888,15 @@ void ZTest::test(MainWindow *host)
   ZStackWriter writer;
   writer.setCompressHint(ZStackWriter::COMPRESS_DEFAULT);
 
+  minZ = 1500;
+  maxZ = 2500;
+  x0 = 3700;
+  y0 = 2200;
+  int width = 800;
+  int height = 800;
+//  box.getWidth(), box.getHeight()
   for (int z = minZ; z <= maxZ; ++z) {
-    ZStack *stack = spStack->getSlice(z, x0, y0, box.getWidth(), box.getHeight());
+    ZStack *stack = spStack->getSlice(z, x0, y0, width, height);
     if (stack != NULL) {
       std::cout << z << "/" << maxZ << std::endl;
       ZString numStr;
@@ -22901,6 +22908,120 @@ void ZTest::test(MainWindow *host)
     }
   }
 //  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+
+#if 0
+  ZFileList fileList;
+  fileList.load(
+        "/Users/zhaot/Work/neutube/neurolabi/data/test/goodseg", "tif");
+  for (int i = 0; i < fileList.size(); ++i) {
+    const char *filePath = fileList.getFilePath(i);
+    Stack *stack = C_Stack::readSc(filePath);
+    C_Stack::write(std::string(filePath) + ".tif", stack);
+    C_Stack::kill(stack);
+  }
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "d693", 8700);
+  target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyIdArray;
+//  bodyIdArray << 4595099 << 4616071 << 4902587 << 4951619 << 4954921 << 5256538
+//              << 5286415 << 5615875 << 5616186 << 5950178;
+  bodyIdArray << 4283540 << 4595099 << 4616071 << 4902587 << 4945695 << 4951619
+              << 4954921 << 5256538 << 5280102 << 5286415 << 5305549 << 5305950
+              << 5615875 << 5616186 << 5950178;
+
+  ZObject3dScanArray objArray;
+  objArray.resize(bodyIdArray.size());
+  int index = 0;
+  foreach (uint64_t bodyId, bodyIdArray) {
+    ZObject3dScan &obj = objArray[index];
+    reader.readBody(bodyId, false, &obj);
+    index++;
+  }
+
+  ZIntCuboid box = objArray.getBoundBox();
+  int dsIntv = misc::getIsoDsIntvFor3DVolume(box, NeuTube::ONEGIGA, false);
+  std::cout << "Downsampling:" << dsIntv << std::endl;
+  objArray.downsample(dsIntv, dsIntv, dsIntv);
+  ZStack *stack = objArray.toLabelField();
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+  writer.write(GET_TEST_DATA_DIR + "/test/d693/merge2.tif", stack);
+
+  delete stack;
+#endif
+
+#if 0
+  ZDvidTarget target;
+//  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+//  target.setLabelBlockName("segmentation2");
+
+  target.set("emdata1.int.janelia.org", "d693", 8700);
+  target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyIdArray;
+  bodyIdArray << 159860 << 156067;
+
+//  bodyIdArray << 401430 << 157909 << 157976
+//              << 180022;
+//  bodyIdArray << 468892 << 156107 << 11334 << 181790 << 181594 << 112963
+//              << 516025;
+//  bodyIdArray << 87679;
+//  bodyIdArray << 111928 << 184586;
+
+//  bodyIdArray << 1887367;
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+
+  foreach (uint64_t bodyId, bodyIdArray) {
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(bodyId);
+
+    //  ZIntCuboid box = spStack->getBoundBox();
+
+    ZStack *stack = spStack->makeIsoDsStack(NeuTube::ONEGIGA);
+
+//    ZStack *stack = spStack->makeStack(ZIntCuboid());
+//    ZStack *stack = spStack->getStack();
+
+    ZString numStr;
+    numStr.appendNumber(bodyId);
+    writer.write(GET_TEST_DATA_DIR + "/test/d693/" + numStr + ".tif", stack);
+
+//    delete stack;
+    delete spStack;
+  }
+
+#endif
+
+#if 0
+  ZIntCuboid box;
+  box.setWidth(1024);
+  box.setHeight(1024);
+  box.setDepth(1024);
+  int dsIntv = misc::getIsoDsIntvFor3DVolume(box, NeuTube::ONEGIGA);
+
+  std::cout << "Ds intv:" << dsIntv << std::endl;
+
+  box.setWidth(box.getWidth() / (dsIntv + 1));
+  box.setHeight(box.getHeight() / (dsIntv + 1));
+  box.setDepth(box.getDepth() / (dsIntv + 1));
+
+  std::cout << "Volume:" << box.getVolume() << std::endl;
+
 #endif
 
   std::cout << "Done." << std::endl;

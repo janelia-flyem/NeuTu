@@ -551,6 +551,36 @@ double misc::GetExpansionScale(size_t currentVol, size_t maxVol)
   return Cube_Root(ratio);
 }
 
+int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
+{
+  if (dsRatio <= 1) {
+    return 0;
+  }
+
+  int s = int(std::ceil(Cube_Root(dsRatio)));
+
+  if (powed) {
+    int k, m;
+    pow2decomp(s, &k, &m);
+    s = iround(std::pow((double) 2, k + 1));
+  }
+
+  s -= 1;
+
+  return s;
+}
+
+int misc::getIsoDsIntvFor3DVolume(const ZIntCuboid &box, size_t maxVolume, bool powed)
+{
+  if (box.getVolume() <= maxVolume) {
+    return 0;
+  }
+
+  double dsRatio = (double) box.getVolume() / maxVolume;
+
+  return getIsoDsIntvFor3DVolume(dsRatio, powed);
+}
+
 ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
 {
   ZIntPoint dsIntv;
