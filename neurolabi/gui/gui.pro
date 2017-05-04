@@ -1292,6 +1292,4 @@ SOURCES += main.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
     dvid/zdvidstore.cpp
 
-#OTHER_FILES += \
-##    extlib.pri \
-#    extratarget.pri
+
