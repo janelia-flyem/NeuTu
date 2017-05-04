@@ -59,6 +59,10 @@ public:
    */
   ZStack* makeStack(const ZIntCuboid &range);
 
+  ZStack* makeIsoDsStack(size_t maxVolume);
+
+  ZStack* makeDsStack(int xintv, int yintv, int zintv);
+
   bool stackDownsampleRequired();
 
   const ZDvidTarget& getDvidTarget() const {

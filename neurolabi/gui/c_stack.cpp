@@ -626,6 +626,12 @@ Stack* C_Stack::downsampleMinIgnoreZero(
   return out;
 }
 
+Stack* C_Stack::downsampleMean(
+    const Stack *stack, int xintv, int yintv, int zintv, Stack *result)
+{
+  return Downsample_Stack_Mean(
+        const_cast<Stack*>(stack), xintv, yintv, zintv, result);
+}
 
 /*
 Stack* C_Stack::copy(const Stack *stack)

@@ -928,3 +928,15 @@ QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
 
   return str;
 }
+
+ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
+{
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses_10062016");
+  target.setBodyLabelName("bodies3");
+  target.setLabelBlockName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  return target;
+}
