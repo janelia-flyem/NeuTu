@@ -2692,6 +2692,9 @@ void ZStackPresenter::copyCurrentPosition()
   ZPoint pt = event.getStackPosition();
 
   ZGlobal::GetInstance().setStackPosition(pt.x(), pt.y(), pt.z());
+
+  buddyDocument()->notify(
+        QString("%1 copied").arg(pt.toIntPoint().toString().c_str()));
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()
