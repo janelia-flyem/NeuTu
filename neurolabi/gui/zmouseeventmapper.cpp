@@ -253,11 +253,11 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
 
             if (m_context->isObjectProjectView()) {
               hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                                 stackPosition.x(), stackPosition.y(),
-                                 m_context->getSliceAxis());
+                                 stackPosition.x(), stackPosition.y());
             } else {
-              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                                 stackPosition.x(), stackPosition.y(), stackPosition.z());
+              hitManager.hitTest(
+                    const_cast<ZStackDoc*>(getDocument()),
+                    stackPosition.x(), stackPosition.y(), stackPosition.z());
             }
             op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
@@ -353,8 +353,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
   hitManager.setSliceAxis(event.getSliceAxis());
   if (event.getRawStackPosition().z() < 0) {
     hitManager.hitTest(const_cast<ZStackDoc*>(
-                         getDocument()), stackPosition.x(), stackPosition.y(),
-                       m_context->getSliceAxis());
+                         getDocument()), stackPosition.x(), stackPosition.y());
   } else {
     hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition,
                        event.getPosition());

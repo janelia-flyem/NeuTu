@@ -22972,6 +22972,7 @@ void ZTest::test(MainWindow *host)
   ZDvidSparseStack *spStack = reader.readDvidSparseStack(
         401430, ZIntCuboid(ZIntPoint(2807, 202, 3240),
                            ZIntPoint(3214, 605, 3540)));
+  spStack->shakeOff();
 
   ZStack *stack = spStack->getStack();
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
