@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <QMetaType>
 #include <iostream>
+#include <QProcess>
 
 #include "neutubeconfig.h"
 #include "zlogmessagereporter.h"
@@ -102,4 +103,44 @@ QFileDialog::Options NeuTube::GetFileDialogOption()
 QString NeuTube::GetLastFilePath()
 {
   return NeutubeConfig::GetSettings().value("lastPath").toString();
+}
+
+QString NeuTube::GetFilePath(const QUrl &url)
+{
+  QString filePath;
+
+#ifdef _WIN32
+  // remove leading slash
+  if (url.path().at(0) == QChar('/')) {
+    filePath = url.path().mid(1)
+  } else {
+    filePath = url.path();
+  }
+#else
+#  if defined(__APPLE__)
+  QString localFile = url.toLocalFile();
+  if ( localFile.startsWith("/.file/id=") ) {
+    QProcess process;
+    QStringList argList =
+        QStringList() << "-e get posix path of my posix file \"" +
+                         localFile + "\" -- kthx. bai";
+    process.start("osascript", argList);
+    process.waitForFinished();
+//      QTextCodec::setCodecForCStrings(QTextCodec::codecForName("GBK"));
+    QByteArray byteArray = process.readAllStandardOutput().trimmed();
+    localFile = QString::fromUtf8(byteArray);
+//      qDebug() << localFile;
+    QFileInfo fileInfo(localFile);
+    if (!localFile.isEmpty() && fileInfo.exists()) {
+      filePath = localFile;
+    }
+  } else {
+    filePath = url.path();
+  }
+#  else
+ filePath = url.path();
+#  endif
+#endif
+
+  return filePath;
 }

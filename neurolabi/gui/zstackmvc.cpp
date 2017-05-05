@@ -376,7 +376,7 @@ void ZStackMvc::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(url.path().toStdString())) {
+    if (ZFileType::isImageFile(NeuTube::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
