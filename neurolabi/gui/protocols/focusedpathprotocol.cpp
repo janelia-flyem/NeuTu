@@ -68,6 +68,7 @@ const int FocusedPathProtocol::m_fileVersion = 1;
 const std::string FocusedPathProtocol::KEY_VERSION = "version";
 const std::string FocusedPathProtocol::KEY_VARIATION = "variation";
 const std::string FocusedPathProtocol::KEY_BODYID = "bodyID";
+const std::string FocusedPathProtocol::KEY_PATH_ID_LIST = "path-id-list";
 const std::string FocusedPathProtocol::KEY_EDGE_INSTANCE = "edge-instance";
 const std::string FocusedPathProtocol::KEY_PATH_INSTANCE = "path-instance";
 const std::string FocusedPathProtocol::KEY_POINT_INSTANCE = "point-instance";
@@ -150,6 +151,16 @@ bool FocusedPathProtocol::initialize() {
         return false;
     }
 
+    // given the body IDs, now find the paths; we do it up front because we need
+    //  to grab them before any merges are done, which could change body IDs, which
+    //  would make us unable to find the paths
+    // NOTE: if we had body annotations that persisted across merges and splits, it
+    //  would be *much* better to store them and retrieve paths dynamically later
+
+    m_paths.clear();
+    foreach (uint64_t bodyID, m_bodies) {
+        m_paths.append(loadPathsForBody(bodyID));
+    }
 
     // everything OK; save and return
     saveState();
@@ -256,7 +267,12 @@ void FocusedPathProtocol::onFinishPathButton() {
 
 void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
 
-    // check version of saved data here, once we have a second version
+
+    std::cout << "in loadDataRequested()" << std::endl;
+
+
+
+    // check version of saved data
     if (!data.hasKey(KEY_VERSION.c_str())) {
         QMessageBox::warning(m_parent, "No version!",
             "No version info in saved data; data not loaded!",
@@ -274,11 +290,42 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
     // convert to newer version here if needed
 
     // do actual load
-    m_bodies.clear();
     m_edgeDataInstance = ZJsonParser::stringValue(data[KEY_EDGE_INSTANCE.c_str()]);
     m_pathDataInstance = ZJsonParser::stringValue(data[KEY_PATH_INSTANCE.c_str()]);
-    m_pointDataInstance= ZJsonParser::stringValue(data[KEY_POINT_INSTANCE.c_str()]);
+    m_pointDataInstance = ZJsonParser::stringValue(data[KEY_POINT_INSTANCE.c_str()]);
 
+
+
+    m_paths.clear();
+
+    // currently we need to load all paths here, and their endpoint body IDs;
+    //  note that path IDs are strings
+
+
+    std::string pathListString = ZJsonParser::stringValue(data[KEY_PATH_ID_LIST.c_str()]);
+
+
+
+    // it's easiest to parse that list in Qt; strip off the [], split on comma,
+    //  then strip whitespace
+    QString tempString = QString::fromStdString(pathListString);
+    QStringList pathIDList = tempString.mid(1, tempString.size() - 2).split(",");
+    foreach (QString pathID, pathIDList) {
+        const QByteArray &temp = m_reader.readKeyValue(QString::fromStdString(m_pathDataInstance), pathID.trimmed());
+        ZJsonObject pathData;
+        pathData.decodeString(temp.data());
+
+        m_paths << FocusedPath(pathID.trimmed().toStdString(), pathData);
+    }
+
+
+    std::cout << "loadDataRequested(): #paths loaded = " << m_paths.size() << std::endl;
+
+    // emit path list loaded
+    // which means, replace on bodies loaded with on paths loaded
+
+    // old:
+    /*
     if (m_variation == VARIATION_BODY) {
         m_bodies.append(ZJsonParser::integerValue(data[KEY_BODYID.c_str()]));
         emit bodyListLoaded();
@@ -289,6 +336,8 @@ void FocusedPathProtocol::loadDataRequested(ZJsonObject data) {
     } else {
         variationError(m_variation);
     }
+    */
+
 }
 
 void FocusedPathProtocol::loadBodiesFromBookmarks() {
@@ -326,6 +375,44 @@ void FocusedPathProtocol::loadBodiesFromBookmarks() {
     }
 
     emit bodyListLoaded();
+}
+
+QList<FocusedPath> FocusedPathProtocol::loadPathsForBody(uint64_t bodyID) {
+    QList<FocusedPath> paths;
+
+    // each point annotation has lists of path and edge IDs originating from its position
+    ZJsonArray annotations = m_reader.readAnnotation(m_pointDataInstance, bodyID,
+        FlyEM::LOAD_NO_PARTNER);
+
+    for (size_t i=0; i<annotations.size(); i++) {
+
+        // get path list at each point (if it exists) and parse it
+        ZDvidAnnotation ann;
+        ann.loadJsonObject(annotations.value(i), FlyEM::LOAD_NO_PARTNER);
+        std::string pathListString = ann.getProperty<std::string>(FocusedPathProtocol::PROPERTY_PATHS);
+
+        // it's easiest to parse that list in Qt; strip off the [], split on comma,
+        //  then strip whitespace
+        QString tempString = QString::fromStdString(pathListString);
+        QStringList pathIDList = tempString.mid(1, tempString.size() - 2).split(",");
+        foreach (QString pathID, pathIDList) {
+            const QByteArray &temp = m_reader.readKeyValue(QString::fromStdString(m_pathDataInstance), pathID.trimmed());
+            ZJsonObject pathData;
+            pathData.decodeString(temp.data());
+
+            paths << FocusedPath(pathID.trimmed().toStdString(), pathData);
+        }
+    }
+
+    return paths;
+}
+
+FocusedPath FocusedPathProtocol::loadPathFromID(std::string pathID) {
+    const QByteArray &temp = m_reader.readKeyValue(QString::fromStdString(m_pathDataInstance),
+        QString::fromStdString(pathID));
+    ZJsonObject pathData;
+    pathData.decodeString(temp.data());
+    return FocusedPath(pathID, pathData);
 }
 
 void FocusedPathProtocol::loadCurrentBodyPaths() {
@@ -813,14 +900,12 @@ void FocusedPathProtocol::saveState() {
     data.setEntry(KEY_PATH_INSTANCE.c_str(), m_pathDataInstance);
     data.setEntry(KEY_POINT_INSTANCE.c_str(), m_pointDataInstance);
 
-    if (m_variation == VARIATION_BODY) {
-        // in this variation, there's only one body ID; save it
-        data.setEntry(KEY_BODYID.c_str(), m_bodies.first());
-    } else if (m_variation == VARIATION_BOOKMARK) {
-        // nothing saved right now; we examine DVID for the data
-    } else {
-        variationError(m_variation);
+    // path ID list is the most robust thing to save
+    ZJsonArray array;
+    foreach (FocusedPath path, m_paths) {
+        array.append(path.getPathID());
     }
+    data.setEntry(KEY_PATH_ID_LIST.c_str(), array);
 
     emit requestSaveProtocol(data);
 }

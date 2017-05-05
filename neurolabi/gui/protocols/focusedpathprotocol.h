@@ -53,6 +53,7 @@ private:
     // load/save protocol keys
     static const std::string KEY_VARIATION;
     static const std::string KEY_BODYID;
+    static const std::string KEY_PATH_ID_LIST;
     static const std::string KEY_EDGE_INSTANCE;
     static const std::string KEY_PATH_INSTANCE;
     static const std::string KEY_POINT_INSTANCE;
@@ -94,6 +95,7 @@ private:
     QList<uint64_t> m_bodies;
     uint64_t m_currentBody;
     QList<FocusedPath> m_currentBodyPaths;
+    QList<FocusedPath> m_paths;
     QMap<uint64_t, bool> m_bodyDone;
     QMap<uint64_t, int> m_bodySkippedPathCount;
     QMap<ZIntPoint, uint64_t> m_currentPathBodyIDs;
@@ -121,6 +123,8 @@ private:
     bool loadFirstPath();
     bool loadNextPath();
     void loadEdgeTable();
+    QList<FocusedPath> loadPathsForBody(uint64_t bodyID);
+    FocusedPath loadPathFromID(std::string pathID);
 };
 
 #endif // FOCUSEDPATHPROTOCOL_H
