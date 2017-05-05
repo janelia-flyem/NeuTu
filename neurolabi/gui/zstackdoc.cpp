@@ -4730,7 +4730,8 @@ void ZStackDoc::loadFileList(const QList<QUrl> &urlList)
   for (QList<QUrl>::const_iterator iter = urlList.begin();
        iter != urlList.end(); ++iter) {
     // load files inside if is folder
-    QFileInfo dirCheck(iter->toLocalFile());
+    QString filePath = NeuTube::GetFilePath(*iter);
+    QFileInfo dirCheck(filePath);
     if (dirCheck.isDir()) {
       QDir dir = dirCheck.absoluteDir();
       QFileInfoList list = dir.entryInfoList(QDir::Files | QDir::NoSymLinks);

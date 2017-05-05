@@ -699,7 +699,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(url.path().toStdString())) {
+    if (ZFileType::isImageFile(NeuTube::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
@@ -711,7 +711,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
     if (mainWindow != NULL) {
       QStringList fileList;
       foreach (QUrl url, imageUrls) {
-        fileList.append(url.path());
+        fileList.append(NeuTube::GetFilePath(url));
       }
       mainWindow->openFile(fileList);
     }

@@ -4114,17 +4114,18 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   bool processed = false;
   if (urls.size() == 1) {
     const QUrl &url = urls[0];
-    if (ZFileType::FileType(url.path().toStdString()) == ZFileType::JSON_FILE) {
+    QString filePath = NeuTube::GetFilePath(url);
+    if (ZFileType::FileType(filePath.toStdString()) == ZFileType::JSON_FILE) {
       processed = true; //todo
     }
   }
 
   if (!processed) {
     foreach (const QUrl &url, urls) {
-      if (ZFileType::FileType(url.path().toStdString()) ==
-          ZFileType::SWC_FILE) {
+      QString filePath = NeuTube::GetFilePath(url);
+      if (ZFileType::FileType(filePath.toStdString()) == ZFileType::SWC_FILE) {
         ZSwcTree *tree = new ZSwcTree;
-        tree->load(url.path().toStdString());
+        tree->load(filePath.toStdString());
         tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
         tree->setHittable(false);
         tree->setColor(QColor(255, 0, 0));
