@@ -22923,7 +22923,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "d693", 8700);
   target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
@@ -22958,6 +22958,25 @@ void ZTest::test(MainWindow *host)
   writer.write(GET_TEST_DATA_DIR + "/test/d693/merge2.tif", stack);
 
   delete stack;
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "d693", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *spStack = reader.readDvidSparseStack(
+        401430, ZIntCuboid(ZIntPoint(2807, 202, 3240),
+                           ZIntPoint(3214, 605, 3540)));
+
+  ZStack *stack = spStack->getStack();
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete spStack;
+
 #endif
 
 #if 0

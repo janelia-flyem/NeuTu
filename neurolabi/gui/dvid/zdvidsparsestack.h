@@ -84,6 +84,8 @@ public:
   void setMaskColor(const QColor &color);
   void setLabel(uint64_t bodyId);
 
+  void loadBody(uint64_t bodyId, const ZIntCuboid &range, bool canonizing = false);
+
   uint64_t getLabel() const;
 
 //  const ZObject3dScan *getObjectMask() const;
@@ -114,6 +116,11 @@ public:
   void setCancelFillValue(bool flag);
   void cancelFillValueSync();
 //  void cancelFillValueFunc();
+
+  /*!
+   * \brief Only keep the largest component.
+   */
+  void shakeOff();
 
 private:
   void init();

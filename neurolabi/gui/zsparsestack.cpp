@@ -354,6 +354,27 @@ size_t ZSparseStack::getObjectVolume() const
   return m_objectMask->getVoxelNumber();
 }
 
+void ZSparseStack::shakeOff()
+{
+  if (m_objectMask != NULL) {
+    std::vector<ZObject3dScan> objArray =
+        m_objectMask->getConnectedComponent(ZObject3dScan::ACTION_NONE);
+    if (objArray.size() > 1) {
+      size_t maxV = objArray[0].getVoxelNumber();
+      size_t selected = 0;
+      for (size_t i = 1; i < objArray.size(); ++i) {
+        const ZObject3dScan &obj = objArray[i];
+        size_t v = obj.getVoxelNumber();
+        if (v > maxV) {
+          maxV = v;
+          selected = i;
+        }
+      }
+      *m_objectMask = objArray[selected];
+    }
+  }
+}
+
 ZStack* ZSparseStack::getSlice(int z) const
 {
   ZObject3dScan slice = m_objectMask->getSlice(z);

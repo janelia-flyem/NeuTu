@@ -53,6 +53,26 @@ TEST(ZSparseStack, basic)
   ASSERT_EQ(0, stack2->getIntValue(2, 3, 2));
 }
 
+TEST(ZSparseStack, process)
+{
+  ZSparseStack spStack;
+
+  ZObject3dScan *obj = new ZObject3dScan;
+  obj->addStripe(0, 0);
+  obj->addSegment(0, 1);
+  spStack.setObjectMask(obj);
+
+  spStack.shakeOff();
+
+  ASSERT_EQ(2, spStack.getObjectVolume());
+
+  obj->addStripe(2, 2);
+  obj->addSegment(0, 5);
+  ASSERT_EQ(8, spStack.getObjectVolume());
+  spStack.shakeOff();
+  ASSERT_EQ(6, spStack.getObjectVolume());
+}
+
 TEST(ZSparseStack, downsample)
 {
   ZStackBlockGrid *stackGrid = new ZStackBlockGrid;

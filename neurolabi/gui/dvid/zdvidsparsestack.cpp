@@ -211,6 +211,18 @@ ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
   return m_grayScaleReader;
 }
 
+void ZDvidSparseStack::loadBody(uint64_t bodyId, const ZIntCuboid &range, bool canonizing)
+{
+  m_isValueFilled = false;
+
+  ZObject3dScan *obj = new ZObject3dScan;
+
+  getMaskReader().readBody(bodyId, range, canonizing, obj);
+
+  m_sparseStack.setObjectMask(obj);
+  setLabel(bodyId);
+}
+
 void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 {
   m_isValueFilled = false;
@@ -633,6 +645,12 @@ void ZDvidSparseStack::syncObjectMask()
 {
   finishObjectMaskLoading();
   pushAttribute();
+}
+
+void ZDvidSparseStack::shakeOff()
+{
+  syncObjectMask();
+  m_sparseStack.shakeOff();
 }
 
 /*

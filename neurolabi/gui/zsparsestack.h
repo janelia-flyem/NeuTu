@@ -108,6 +108,8 @@ public:
 
   void merge(ZSparseStack &sparseStack);
 
+  void shakeOff();
+
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid,
