@@ -16,11 +16,11 @@ public:
   ZStack* run(ZStack *src,QList<ZSwcTree*>& trees,int scale);
   void test();
 private:
-  void getSeeds(std::vector<ZStack*>& seeds,QList<ZSwcTree*>& trees);
+  void fillSeed(ZStack* seed,QList<ZSwcTree*>& trees);
   ZStack* upSampleAndRecoverEdge(ZStack* sampled_watershed,ZStack* src);
 
 private:
-  int _scale;
+  double _scale;
 };
 
 #endif // ZSTACKMULTISCALEWATERSHED_H

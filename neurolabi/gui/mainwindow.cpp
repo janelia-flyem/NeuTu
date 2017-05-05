@@ -3342,6 +3342,7 @@ void MainWindow::on_actionSkeletonization_triggered()
       }
 
       if (wholeTree != NULL) {
+        wholeTree->addComment("skeleton");
         frame->executeAddObjectCommand(wholeTree);
         ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);

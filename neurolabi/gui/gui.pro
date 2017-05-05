@@ -3,7 +3,6 @@
 # #####################################################################
 TEMPLATE = app
 
-QMAKE_CXXFLAGS+=-O3
 contains(TEMPLATE, app) {
     DEFINES += _QT_APPLICATION_
 } else {
