@@ -593,18 +593,38 @@ void FocusedPathProtocol::displayCurrentPath() {
 void FocusedPathProtocol::loadEdgeTable() {
     // load data into model
     m_edgeModel->clear();
-    // reset headers?
-
     m_edgeModel->setRowCount(m_currentPath.getNumEdges());
+    // reset headers here?
+
+    // load edges so that the current body is on the left; thus,
+    //  figure out the direction, and do all edges the same direction
+    // (top to bottom, too)
+    bool reverseDirection = false;
+    if (m_currentPath.getLastBodyID() == m_currentBody) {
+        reverseDirection = true;
+    }
+
     for (int i=0; i<m_currentPath.getNumEdges(); i++) {
-        FocusedEdge edge = m_currentPath.getEdge(i);
+        int index = i;
+        if (reverseDirection) {
+            index = m_currentPath.getNumEdges() - i;
+        }
+        FocusedEdge edge = m_currentPath.getEdge(index);
+
+        uint64_t bodyID1 = edge.getFirstBodyID();
+        uint64_t bodyID2 = edge.getLastBodyID();
+        if (reverseDirection) {
+            uint64_t temp = bodyID1;
+            bodyID1 = bodyID2;
+            bodyID2 = temp;
+        }
 
         QStandardItem * bodyID1Item = new QStandardItem();
-        bodyID1Item->setData(QVariant(edge.getFirstBodyID()), Qt::DisplayRole);
+        bodyID1Item->setData(QVariant(bodyID1), Qt::DisplayRole);
         m_edgeModel->setItem(i, BODYID1_COLUMN, bodyID1Item);
 
         QStandardItem * bodyID2Item = new QStandardItem();
-        bodyID2Item->setData(QVariant(edge.getLastBodyID()), Qt::DisplayRole);
+        bodyID2Item->setData(QVariant(bodyID2), Qt::DisplayRole);
         m_edgeModel->setItem(i, BODYID2_COLUMN, bodyID2Item);
 
         // connection status in text form, eg, --X-- or --?--
@@ -628,10 +648,25 @@ void FocusedPathProtocol::loadEdgeTable() {
 }
 
 void FocusedPathProtocol::updateConnectionLabel() {
+    // order the labels so current body is on the left:
+
+    std::cout << "updateConnectionLabel(): " << std::endl;
+    std::cout << "  curr body: " << m_currentBody << std::endl;
+    m_currentPath.printInfo();
+
+    uint64_t bodyID1, bodyID2;
+    if (m_currentPath.getFirstBodyID() == m_currentBody) {
+        bodyID1 = m_currentBody;
+        bodyID2 = m_currentPath.getLastBodyID();
+    } else {
+        bodyID2 = m_currentBody;
+        bodyID1 = m_currentPath.getLastBodyID();
+    }
+
     std::ostringstream outputStream;
-    outputStream << m_currentPathBodyIDs[m_currentPath.getFirstPoint()];
+    outputStream << bodyID1;
     outputStream << " " << m_currentPath.getConnectionTextIcon() << " ";
-    outputStream << m_currentPathBodyIDs[m_currentPath.getLastPoint()];
+    outputStream << bodyID2;
     ui->connectionLabel->setText(QString::fromStdString(outputStream.str()));
 }
 
@@ -703,8 +738,6 @@ void FocusedPathProtocol::updateColorMap() {
 
 void FocusedPathProtocol::processBodyMerged() {
     
-    std::cout << "in fpp::processBodyMerged() " << std::endl;
-
     // we're not getting the exact bodies merged; just refresh
     //  body IDs for the path and update the UI
     // note: that means we can't update edge examiner and time,

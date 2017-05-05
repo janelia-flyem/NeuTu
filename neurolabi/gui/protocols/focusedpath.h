@@ -36,6 +36,7 @@ public:
     int getFirstUnexaminedEdgeIndex();    
     void updateBodyIDs(ZFlyEmProofDoc *doc);
     bool anyBrokenEdges();
+    void printInfo();
 
 private:
     std::string m_pathID;

@@ -209,7 +209,12 @@ int FocusedPath::getFirstUnexaminedEdgeIndex() {
     return -1;
 }
 
-
+void FocusedPath::printInfo() {
+    std::cout << "FocusedPath from " << getFirstPoint().toString() << " to " << getLastPoint().toString() << std::endl;
+    std::cout << "  body IDs: " << getFirstBodyID() << " to " << getLastBodyID() << std::endl;
+    std::cout << "  #edges: " << getNumEdges() << std::endl;
+    std::cout << "  connected: " << isConnected() << std::endl;
+}
 
 
 
