@@ -93,6 +93,20 @@ static void syncLogDir(const std::string &srcDir, const std::string &destDir)
   }
 }
 
+#ifdef _CLI_VERSION
+int main(int argc, char *argv[])
+{
+  if (argc > 1 && strcmp(argv[1], "--command") == 0)
+  {
+    return ZCommandLine().run(argc,argv);
+  }
+  else
+  {
+    std::cout<<"This is CLI version of neutu,please use --command option."<<std::endl;
+    return 1;
+  }
+}
+#else
 int main(int argc, char *argv[])
 {
 #if 0 //Disable redirect for explicit logging
@@ -397,3 +411,4 @@ int main(int argc, char *argv[])
     return 1;
   }
 }
+#endif

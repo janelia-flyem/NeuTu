@@ -8,7 +8,7 @@ contains(TEMPLATE, app) {
 } else {
     CONFIG += staticlib
 }
-
+#DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
     #QMAKE_LFLAGS += /LTCG # Link-time Code Generation
