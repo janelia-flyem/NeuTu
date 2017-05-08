@@ -10,7 +10,9 @@
 #include "zimageinfomodule.h"
 #include "zmultiscalewatershedmodule.h"
 #include "zgradientmagnitudemodule.h"
+#if defined(_ENABLE_SURFRECON_)
 #include "zsurfreconmodule.h"
+#endif
 /*************************************/
 
 
@@ -31,5 +33,7 @@ void ZSandboxProject::InitSandbox()
   RegisterModule<ZImageInfoModule>();
   RegisterModule<ZMultiscaleWaterShedModule>();
   RegisterModule<ZGradientMagnitudeModule>();
+#if defined(_ENABLE_SURFRECON_)
   RegisterModule<ZSurfReconModule>();
+#endif
 }

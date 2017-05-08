@@ -65,6 +65,7 @@ CONFIG(debug, debug|release) {
 }
 
 message("Target: $$TARGET")
+message("Defines: $$DEFINES")
 
 unix {
 include(extratarget.pri)

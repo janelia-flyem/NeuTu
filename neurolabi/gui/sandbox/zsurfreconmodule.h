@@ -1,6 +1,5 @@
 #ifndef ZSURFRECONMODULE_H
 #define ZSURFRECONMODULE_H
-#include <tuple>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -10,7 +9,9 @@
 #undef BOOL
 #undef TRUE
 #undef FALSE
+
 #include "imgproc/surfrecon.h"
+
 class ZStack;
 class QCheckBox;
 class QLineEdit;
@@ -32,7 +33,7 @@ private:
   void updateStack(bool* surf_map,const VoxelSet& surf);
   void pruneSkeleton(bool* surf_map);
   void getPostData(const VoxelSet& points,QByteArray& data);
-  std::tuple<QString,QString> getResultUrlAndMd5(const QByteArray& reply);
+  std::pair<QString,QString> getResultUrlAndMd5(const QByteArray& reply);
   void getResult(QString url);
 private:
   QPushButton*  ok;
