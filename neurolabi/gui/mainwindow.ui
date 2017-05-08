@@ -411,6 +411,8 @@
       <addaction name="actionGenerate_PAM_Actor"/>
       <addaction name="actionGenerate_MB_Actor"/>
       <addaction name="actionGenerate_MB_Conn_Actor"/>
+      <addaction name="actionGenerate_MB_SynapseT_Actor"/>
+      <addaction name="actionGenerate_MB_SynapseS_Actor"/>
       <addaction name="separator"/>
       <addaction name="actionMake_Movie_MB"/>
      </widget>
@@ -1526,6 +1528,16 @@
   <action name="actionSeed_Mask">
    <property name="text">
     <string>Foreground Mask</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_SynapseT_Actor">
+   <property name="text">
+    <string>Generate MB-SynapseT Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_SynapseS_Actor">
+   <property name="text">
+    <string>Generate MB-SynapseS Actor</string>
    </property>
   </action>
  </widget>

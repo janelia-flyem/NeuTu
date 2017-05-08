@@ -64,7 +64,7 @@ TEST(ZSparseStack, process)
 
   spStack.shakeOff();
 
-  ASSERT_EQ(2, spStack.getObjectVolume());
+  ASSERT_EQ(2, (int) spStack.getObjectVolume());
 
   obj->addStripe(2, 2);
   obj->addSegment(0, 5);

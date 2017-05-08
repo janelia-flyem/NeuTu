@@ -120,7 +120,7 @@ void Z3DSurfaceFilter::render(Z3DEye eye)
     if(m_sourceList.size()<=0)
         return;
 
-    if (!m_showCube.get())
+    if (!isVisible())
         return;
 
     //m_rendererBase->activateRenderer(m_cubeRenderer);
@@ -348,7 +348,7 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 
 bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
 {
-    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_sourceList.empty();
+    return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_sourceList.empty();
 }
 
 void Z3DSurfaceFilter::updateSurfaceVisibleState()

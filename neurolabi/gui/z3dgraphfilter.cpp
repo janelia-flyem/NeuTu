@@ -392,3 +392,8 @@ void Z3DGraphFilter::updateGraphVisibleState()
   m_dataIsInvalid = true;
   invalidateResult();
 }
+
+void Z3DGraphFilter::configure(const ZJsonObject &obj)
+{
+  Z3DGeometryFilter::configure(obj);
+}

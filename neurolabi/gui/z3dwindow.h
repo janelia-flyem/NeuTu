@@ -198,6 +198,11 @@ public: //controls
   QDockWidget * getObjectsDockWidget();
   ZROIWidget * getROIsDockWidget();
 
+  //Configuration
+  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(ERendererLayer layer) const;
+
+
 public:
   void setROIs(size_t n);
 
@@ -401,11 +406,6 @@ private:
   void createDockWindows();
   void customizeDockWindows(QTabWidget *m_settingTab);
   void setWindowSize();
-
-  //Configuration
-  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
-  ZJsonObject getConfigJson(ERendererLayer layer) const;
-
   // init 3D view
   void init(EInitMode mode = INIT_NORMAL);
 

@@ -1,4 +1,7 @@
 #include "z3dgeometryfilter.h"
+#include "zjsonobject.h"
+#include "z3dfiltersetting.h"
+#include "zjsonparser.h"
 
 Z3DGeometryFilter::Z3DGeometryFilter()
   : Z3DProcessor()
@@ -62,4 +65,15 @@ void Z3DGeometryFilter::get3DRayUnderScreenPoint(
   v1 = glm::unProject(glm::dvec3(x, height-y, 0.f), modelview, projection, viewport);
   v2 = glm::unProject(glm::dvec3(x, height-y, 1.f), modelview, projection, viewport);
   v2 = glm::normalize(v2-v1) + v1;
+}
+
+void Z3DGeometryFilter::configure(const ZJsonObject &obj)
+{
+  if (obj.hasKey(Z3DFilterSetting::FRONT_KEY)) {
+    setStayOnTop(ZJsonParser::booleanValue(obj[Z3DFilterSetting::FRONT_KEY]));
+  }
+
+  if (obj.hasKey(Z3DFilterSetting::SIZE_SCALE_KEY)) {
+    setSizeScale(ZJsonParser::numberValue(obj[Z3DFilterSetting::SIZE_SCALE_KEY]));
+  }
 }

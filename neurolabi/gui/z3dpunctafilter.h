@@ -46,6 +46,8 @@ public:
   void setVisible(bool v);
   bool isVisible() const;
 
+  void configure(const ZJsonObject &obj);
+
 signals:
   void punctumSelected(ZPunctum*, bool append);
   void visibleChanged(bool);

@@ -10,6 +10,7 @@
 #include "z3dlinewithfixedwidthcolorrenderer.h"
 #include "zeventlistenerparameter.h"
 #include "zpunctumcolorscheme.h"
+#include "z3dfiltersetting.h"
 
 Z3DPunctaFilter::Z3DPunctaFilter()
   : Z3DGeometryFilter()
@@ -116,6 +117,18 @@ void Z3DPunctaFilter::setVisible(bool v)
 bool Z3DPunctaFilter::isVisible() const
 {
   return m_showPuncta.get();
+}
+
+void Z3DPunctaFilter::configure(const ZJsonObject &obj)
+{
+  Z3DGeometryFilter::configure(obj);
+  if (obj.hasKey(Z3DFilterSetting::COLOR_MODE_KEY)) {
+    setColorMode(ZJsonParser::stringValue(obj[Z3DFilterSetting::COLOR_MODE_KEY]));
+  }
+
+  if (obj.hasKey(Z3DFilterSetting::VISIBLE_KEY)) {
+    setVisible(ZJsonParser::booleanValue(obj[Z3DFilterSetting::VISIBLE_KEY]));
+  }
 }
 
 void Z3DPunctaFilter::setData(const std::vector<ZPunctum *> &punctaList)

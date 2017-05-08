@@ -57,4 +57,5 @@ HEADERS += \
     test/zstackskeletonizertest.h \
     test/zdvidroitest.h \
     test/zflyembodyannotationtest.h \
-    test/zviewprojtest.h
+    test/zviewprojtest.h \
+    $$PWD/z3dfiltersettingtest.h

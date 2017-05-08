@@ -21,6 +21,8 @@
 #include "tz_geometry.h"
 #include "neutubeconfig.h"
 #include "zintcuboid.h"
+#include "z3dswcfilter.h"
+#include "z3dfiltersetting.h"
 
 Z3DSwcFilter::Z3DSwcFilter()
   : Z3DGeometryFilter()
@@ -364,6 +366,24 @@ void Z3DSwcFilter::setVisible(bool v)
 bool Z3DSwcFilter::isVisible() const
 {
   return m_showSwcs.get();
+}
+
+void Z3DSwcFilter::configure(const ZJsonObject &obj)
+{
+  Z3DGeometryFilter::configure(obj);
+
+  if (obj.hasKey(Z3DFilterSetting::COLOR_MODE_KEY)) {
+    setColorMode(ZJsonParser::stringValue(obj[Z3DFilterSetting::COLOR_MODE_KEY]));
+  }
+
+  if (obj.hasKey(Z3DFilterSetting::SHAPE_MODE_KEY)) {
+    setRenderingPrimitive(
+          ZJsonParser::stringValue(obj[Z3DFilterSetting::SHAPE_MODE_KEY]));
+  }
+
+  if (obj.hasKey(Z3DFilterSetting::VISIBLE_KEY)) {
+    setVisible(ZJsonParser::booleanValue(obj[Z3DFilterSetting::VISIBLE_KEY]));
+  }
 }
 
 

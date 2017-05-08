@@ -96,6 +96,8 @@ public:
   void setVisible(bool v);
   bool isVisible() const;
 
+  virtual void configure(const ZJsonObject &obj);
+
 signals:
   void treeSelected(ZSwcTree*, bool append);
   void treeNodeSelected(Swc_Tree_Node*, bool append);

@@ -740,7 +740,8 @@ HEADERS += mainwindow.h \
     widgets/zcomboeditwidget.h \
     dialogs/zcomboeditdialog.h \
     dialogs/zflyembodycomparisondialog.h \
-    dvid/zdvidstore.h
+    dvid/zdvidstore.h \
+    z3dfiltersetting.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1290,6 +1291,7 @@ SOURCES += main.cpp \
     widgets/zcomboeditwidget.cpp \
     dialogs/zcomboeditdialog.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
-    dvid/zdvidstore.cpp
+    dvid/zdvidstore.cpp \
+    z3dfiltersetting.cpp
 
 

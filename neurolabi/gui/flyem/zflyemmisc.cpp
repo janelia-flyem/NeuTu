@@ -929,6 +929,55 @@ QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
   return str;
 }
 
+QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
+{
+  QStringList fileList;
+  fileList << filePath;
+
+  return ReadBodyFromSequencer(fileList);
+}
+
+QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+    const QDir &dir, const QStringList &fileList)
+{
+  QStringList fullFilePathList;
+  foreach (const QString &filePath, fileList) {
+    fullFilePathList << dir.absoluteFilePath(filePath);
+  }
+
+  return ReadBodyFromSequencer(fullFilePathList);
+}
+
+QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+    const QDir &dir, const QString &filePath)
+{
+  return ReadBodyFromSequencer(dir.absoluteFilePath(filePath));
+}
+
+QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+    const QStringList &fileList)
+{
+  QSet<uint64_t> bodySet;
+  foreach (const QString &filePath, fileList) {
+    FILE *fp = fopen(filePath.toStdString().c_str(), "r");
+    if (fp != NULL) {
+      ZString str;
+      while (str.readLine(fp)) {
+        if (!str.startsWith("Body")) {
+          std::vector<uint64_t> numArray = str.toUint64Array();
+          if (!numArray.empty()) {
+            bodySet.insert(numArray[0]);
+          }
+        }
+      }
+
+      fclose(fp);
+    }
+  }
+
+  return bodySet;
+}
+
 ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
 {
   ZDvidTarget target;

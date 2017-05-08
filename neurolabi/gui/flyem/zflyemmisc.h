@@ -20,6 +20,7 @@ class ZObject3dScan;
 class QPointF;
 class QComboBox;
 class ZStroke2d;
+class QDir;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -62,6 +63,12 @@ std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
+QSet<uint64_t> ReadBodyFromSequencer(const QString &filePath);
+QSet<uint64_t> ReadBodyFromSequencer(const QStringList &fileList);
+QSet<uint64_t> ReadBodyFromSequencer(
+    const QDir &dir, const QStringList &fileList);
+QSet<uint64_t> ReadBodyFromSequencer(
+    const QDir &dir, const QString &filePath);
 }
 
 class HackathonEvaluator {

@@ -251,6 +251,8 @@ public:
   uint64_t readBodyIdAt(const ZIntPoint &pt) const;
   std::vector<uint64_t> readBodyIdAt(
       const std::vector<ZIntPoint> &ptArray) const;
+  std::vector<std::vector<uint64_t> > readBodyIdAt(
+      const std::vector<std::vector<ZIntPoint> > &ptArray) const;
   template <typename InputIterator>
   std::vector<uint64_t> readBodyIdAt(
       const InputIterator &first, const InputIterator &last) const;

@@ -1293,6 +1293,8 @@ void Z3DWindow::configureLayer(ERendererLayer layer, const ZJsonObject &obj)
 {
   Z3DGeometryFilter *filter = getFilter(layer);
   if (filter != NULL) {
+    filter->configure(obj);
+    /*
     if (obj.hasKey("visible")) {
       setLayerVisible(layer, ZJsonParser::booleanValue(obj["visible"]));
     }
@@ -1302,6 +1304,7 @@ void Z3DWindow::configureLayer(ERendererLayer layer, const ZJsonObject &obj)
     if (obj.hasKey("size_scale")) {
       filter->setSizeScale(ZJsonParser::numberValue(obj["size_scale"]));
     }
+    */
   }
 }
 

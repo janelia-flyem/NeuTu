@@ -68,6 +68,11 @@ bool ZMovieScene::isTransitTag(const char *tag)
   return eqstr(tag, "transit") || eqstr(tag, "Transit");
 }
 
+bool ZMovieScene::isRenderSettingTag(const char *tag)
+{
+  return eqstr(tag, "rendering") || eqstr(tag, "rendering");
+}
+
 bool ZMovieScene::isMovingToTag(const char *tag)
 {
   return strcmp(tag, "movingTo") == 0 || strcmp(tag, "MovingTo") == 0 ||
@@ -183,6 +188,9 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
         clipper.loadJsonObject(clipperObject);
         m_clipperArray.push_back(clipper);
       }
+    } else if (isRenderSettingTag(iter->first.c_str())) {
+       m_renderSetting = ZJsonObject(
+             iter->second, ZJsonValue::SET_INCREASE_REF_COUNT);
     }
   }
 }
@@ -211,6 +219,15 @@ void ZMovieScene::updateStage(Z3DWindow *stage)
   } else if (m_showingAxis == 1) {
     stage->getAxis()->setVisible(true);
   }
+
+  stage->configure(m_renderSetting);
+
+//  for (std::map<Z3DWindow::ERendererLayer, ZJsonObject>::const_iterator
+//       iter = m_renderSetting.begin(); iter != m_renderSetting.end(); ++iter) {
+//    const ZJsonObject &obj = iter->second;
+//    stage->configureLayer(iter->first, obj);
+//  }
+
 }
 
 void ZMovieScene::updateCamera(Z3DWindow *stage, double t)

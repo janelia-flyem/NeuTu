@@ -213,6 +213,7 @@ using namespace std;
 #include "test/zstackskeletonizertest.h"
 #include "test/zflyembodycoloroptiontest.h"
 #include "test/zflyembodyannotationtest.h"
+#include "test/z3dfiltersettingtest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "test/zswcgeneratortest.h"

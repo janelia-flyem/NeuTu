@@ -2775,6 +2775,37 @@ uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z) const
   return bodyId;
 }
 
+std::vector<std::vector<uint64_t> > ZDvidReader::readBodyIdAt(
+    const std::vector<std::vector<ZIntPoint> > &ptArray) const
+{
+  //Flatten the point array
+  std::vector<ZIntPoint> flatPtArray;
+  for (std::vector<std::vector<ZIntPoint> >::const_iterator iter = ptArray.begin();
+       iter != ptArray.end(); ++iter) {
+    const std::vector<ZIntPoint>& intPtArray = *iter;
+    flatPtArray.insert(flatPtArray.end(), intPtArray.begin(), intPtArray.end());
+  }
+
+  std::vector<uint64_t> bodyIdArray = readBodyIdAt(flatPtArray);
+
+  //Fold back
+  std::vector<std::vector<uint64_t> > result;
+  size_t index = 0;
+  if (flatPtArray.size() == bodyIdArray.size()) {
+    for (std::vector<std::vector<ZIntPoint> >::const_iterator iter = ptArray.begin();
+         iter != ptArray.end(); ++iter) {
+      const std::vector<ZIntPoint>& intPtArray = *iter;
+      std::vector<uint64_t> intIdArray;
+      for (size_t i = 0; i < intPtArray.size(); ++i) {
+        intIdArray.push_back(bodyIdArray[index++]);
+      }
+      result.push_back(intIdArray);
+    }
+  }
+
+  return result;
+}
+
 std::vector<uint64_t> ZDvidReader::readBodyIdAt(
     const std::vector<ZIntPoint> &ptArray) const
 {

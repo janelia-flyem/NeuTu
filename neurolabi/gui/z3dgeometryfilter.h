@@ -67,6 +67,8 @@ public:
   void setFilterName(QString s) { m_filterName = s;}
   QString getFilterName() {return m_filterName;}
 
+  virtual void configure(const ZJsonObject &obj);
+
 protected:
   virtual void process(Z3DEye) {}
 

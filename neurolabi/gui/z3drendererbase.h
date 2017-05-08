@@ -120,6 +120,8 @@ public:
   void setMaterialAmbient(const glm::vec4 &color);
   void setLightAmbient(const glm::vec4 &color);
 
+//  virtual void configure(const ZJsonObject &obj);
+
 protected:
 
   void generateDisplayList();
