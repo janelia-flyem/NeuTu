@@ -1346,9 +1346,10 @@ ZJsonObject Z3DWindow::getConfigJson(ERendererLayer layer) const
   ZJsonObject configJson;
   Z3DGeometryFilter *filter = getFilter(layer);
   if (filter != NULL) {
-    configJson.setEntry("visible", isLayerVisible(layer));
-    configJson.setEntry("front", filter->isStayOnTop());
-    configJson.setEntry("size_scale", filter->getSizeScale());
+    configJson = filter->getConfigJson();
+//    configJson.setEntry("visible", isLayerVisible(layer));
+//    configJson.setEntry("front", filter->isStayOnTop());
+//    configJson.setEntry("size_scale", filter->getSizeScale());
   }
 
   return configJson;
@@ -4174,6 +4175,12 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
       ZCuboid rbox(m_volumeBoundBox[0], m_volumeBoundBox[2], m_volumeBoundBox[4],
           m_volumeBoundBox[1], m_volumeBoundBox[3], m_volumeBoundBox[5]);
 
+      if (m_volumeSource->isSubvolume()) {
+        std::vector<double> zoomInBound = m_volumeSource->getZoomInBound();
+        rbox.setFirstCorner(zoomInBound[0], zoomInBound[2], zoomInBound[4]);
+        rbox.setLastCorner(zoomInBound[1], zoomInBound[3], zoomInBound[5]);
+      }
+
       ZLineSegment stackSeg;
       if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
         ZObject3d *scanLine = ZVoxelGraphics::createLineObject(stackSeg);
@@ -4216,6 +4223,31 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 #endif
     ZCuboid rbox(m_volumeBoundBox[0], m_volumeBoundBox[2], m_volumeBoundBox[4],
         m_volumeBoundBox[1], m_volumeBoundBox[3], m_volumeBoundBox[5]);
+    if (m_volumeSource->isSubvolume()) {
+      std::vector<double> zoomInBound = m_volumeSource->getZoomInBound();
+      rbox.setFirstCorner(zoomInBound[0], zoomInBound[2], zoomInBound[4]);
+      rbox.setLastCorner(zoomInBound[1], zoomInBound[3], zoomInBound[5]);
+    } else {
+      if (rbox.firstCorner().getX() < m_volumeRaycaster->xCutLowerValue()) {
+        rbox.firstCorner().setX(m_volumeRaycaster->xCutLowerValue());
+      }
+      if (rbox.lastCorner().getX() > m_volumeRaycaster->xCutUpperValue()) {
+        rbox.lastCorner().setX(m_volumeRaycaster->xCutUpperValue());
+      }
+      if (rbox.firstCorner().getY() < m_volumeRaycaster->yCutLowerValue()) {
+        rbox.firstCorner().setY(m_volumeRaycaster->yCutLowerValue());
+      }
+      if (rbox.lastCorner().getY() > m_volumeRaycaster->yCutUpperValue()) {
+        rbox.lastCorner().setY(m_volumeRaycaster->yCutUpperValue());
+      }
+      if (rbox.firstCorner().getZ() < m_volumeRaycaster->zCutLowerValue()) {
+        rbox.firstCorner().setZ(m_volumeRaycaster->zCutLowerValue());
+      }
+      if (rbox.lastCorner().getZ() > m_volumeRaycaster->zCutUpperValue()) {
+        rbox.lastCorner().setZ(m_volumeRaycaster->zCutUpperValue());
+      }
+    }
+
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
       double x = 0.0;
       double y = 0.0;

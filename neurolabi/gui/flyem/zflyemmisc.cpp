@@ -28,6 +28,7 @@
 #include "tz_stack_bwmorph.h"
 #include "tz_stack_neighborhood.h"
 #include "zstroke2d.h"
+#include "dvid/zdvidsparsestack.h"
 
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
@@ -929,6 +930,35 @@ QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
   return str;
 }
 
+ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
+{
+  ZDvidTarget target;
+  target.loadJsonObject(ZJsonObject(obj.value("dvid")));
+
+  ZStack *stack = NULL;
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZString bodyStr = ZJsonParser::stringValue(obj["body"]);
+    std::vector<uint64_t> bodyIdArray = bodyStr.toUint64Array();
+    uint64_t bodyId = bodyIdArray.front();
+
+    ZIntCuboid box;
+    if (obj.hasKey("range")) {
+      box.loadJson(ZJsonArray(obj.value("range")));
+    }
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStack(bodyId, box);
+    spStack->shakeOff();
+    stack = spStack->makeIsoDsStack(MAX_INT32);
+
+    delete spStack;
+  }
+
+  return stack;
+}
+
+
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {
   QStringList fileList;
@@ -989,3 +1019,4 @@ ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
 
   return target;
 }
+

@@ -93,10 +93,11 @@ public:
     m_enablePicking = picking;
   }
 
-  void setVisible(bool v);
-  bool isVisible() const;
+//  void setVisible(bool v);
+//  bool isVisible() const;
 
   virtual void configure(const ZJsonObject &obj);
+  ZJsonObject getConfigJson() const;
 
 signals:
   void treeSelected(ZSwcTree*, bool append);
@@ -169,7 +170,7 @@ private:
   Z3DSphereRenderer *m_sphereRendererForCone;
   Z3DLineWithFixedWidthColorRenderer *m_boundBoxRenderer;
 
-  ZBoolParameter m_showSwcs;
+//  ZBoolParameter m_showSwcs;
 
   ZOptionParameter<QString> m_renderingPrimitive;
   ZOptionParameter<QString> m_colorMode;

@@ -10,7 +10,7 @@ using namespace std;
 
 
 Z3DGraphFilter::Z3DGraphFilter() :
-  m_showGraph("Visible", true),
+//  m_showGraph("Visible", true),
   m_lineRenderer(NULL),
   m_coneRenderer(NULL), m_arrowRenderer(NULL), m_sphereRenderer(NULL),
   m_dataIsInvalid(false)
@@ -19,11 +19,11 @@ Z3DGraphFilter::Z3DGraphFilter() :
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
   , m_widgetsGroup(NULL)
 {
-  addParameter(m_showGraph);
+//  addParameter(m_showGraph);
 
   const NeutubeConfig::Z3DWindowConfig::GraphTabConfig &config =
       NeutubeConfig::getInstance().getZ3DWindowConfig().getGraphTabConfig();
-  m_showGraph.set(config.isVisible());
+  setVisible(config.isVisible());
 //  m_rendererBase->setRenderMethod("Old openGL");
 //  adjustWidgets();
 
@@ -64,6 +64,7 @@ void Z3DGraphFilter::deinitialize()
   Z3DGeometryFilter::deinitialize();
 }
 
+/*
 void Z3DGraphFilter::setVisible(bool v)
 {
   m_showGraph.set(v);
@@ -73,6 +74,7 @@ bool Z3DGraphFilter::isVisible() const
 {
   return m_showGraph.get();
 }
+*/
 
 void Z3DGraphFilter::render(Z3DEye eye)
 {
@@ -80,7 +82,7 @@ void Z3DGraphFilter::render(Z3DEye eye)
     return;
   }
 
-  if (!m_showGraph.get())
+  if (!isVisible())
     return;
 
   m_rendererBase->activateRenderer(m_sphereRenderer);
@@ -355,7 +357,7 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Graph", NULL, 1);
-    new ZWidgetsGroup(&m_showGraph, m_widgetsGroup, 1);
+    new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
 
     new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     std::vector<ZParameter*> paras = m_rendererBase->getParameters();
@@ -382,7 +384,7 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
 
 bool Z3DGraphFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && m_showGraph.get() &&
+  return Z3DGeometryFilter::isReady(eye) && isVisible() &&
       !m_graph.isEmpty();
 }
 

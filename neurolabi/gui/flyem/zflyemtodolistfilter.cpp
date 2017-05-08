@@ -11,7 +11,7 @@
 #include "zeventlistenerparameter.h"
 #include "neutubeconfig.h"
 
-ZFlyEmTodoListFilter::ZFlyEmTodoListFilter() : m_showGraph("Visible", true),
+ZFlyEmTodoListFilter::ZFlyEmTodoListFilter() :
   m_xCut("X Cut", glm::ivec2(0,0), 0, 0),
   m_yCut("Y Cut", glm::ivec2(0,0), 0, 0),
   m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
@@ -28,9 +28,9 @@ void ZFlyEmTodoListFilter::init()
 
   m_widgetsGroup = NULL;
 
-  addParameter(m_showGraph);
+//  addParameter(m_showGraph);
 
-  connect(&m_showGraph, SIGNAL(valueChanged(bool)),
+  connect(&m_visible, SIGNAL(valueChanged(bool)),
           this, SIGNAL(visibleChanged(bool)));
 
   m_selectItemEvent = new ZEventListenerParameter(
@@ -92,6 +92,7 @@ void ZFlyEmTodoListFilter::deinitialize()
   Z3DGeometryFilter::deinitialize();
 }
 
+/*
 void ZFlyEmTodoListFilter::setVisible(bool v)
 {
   m_showGraph.set(v);
@@ -101,6 +102,7 @@ bool ZFlyEmTodoListFilter::isVisible() const
 {
   return m_showGraph.get();
 }
+*/
 
 void ZFlyEmTodoListFilter::render(Z3DEye eye)
 {
@@ -108,7 +110,7 @@ void ZFlyEmTodoListFilter::render(Z3DEye eye)
     return;
   }
 
-  if (!m_showGraph.get())
+  if (!isVisible())
     return;
 
   m_rendererBase->activateRenderer(m_sphereRenderer);
@@ -123,7 +125,7 @@ void ZFlyEmTodoListFilter::renderPicking(Z3DEye eye)
       return;
   if (m_graph.isEmpty())
     return;
-  if (!m_showGraph.get())
+  if (!isVisible())
     return;
 
   if (!m_pickingObjectsRegistered) {
@@ -527,7 +529,7 @@ ZWidgetsGroup *ZFlyEmTodoListFilter::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("To Do", NULL, 1);
-    new ZWidgetsGroup(&m_showGraph, m_widgetsGroup, 1);
+    new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
 
     new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     std::vector<ZParameter*> paras = m_rendererBase->getParameters();
@@ -554,7 +556,7 @@ ZWidgetsGroup *ZFlyEmTodoListFilter::getWidgetsGroup()
 
 bool ZFlyEmTodoListFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && m_showGraph.get() &&
+  return Z3DGeometryFilter::isReady(eye) && isVisible() &&
       !m_graph.isEmpty();
 }
 

@@ -21,6 +21,7 @@ class QPointF;
 class QComboBox;
 class ZStroke2d;
 class QDir;
+class ZStack;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -60,6 +61,8 @@ QString ReadLastLines(const QString &filePath, int maxCount);
 
 ZStroke2d* MakeSplitSeed(const ZObject3dScan &slice, int label);
 std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
+
+ZStack* GenerateExampleStack(const ZJsonObject &obj);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();

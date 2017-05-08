@@ -211,7 +211,8 @@ ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
   return m_grayScaleReader;
 }
 
-void ZDvidSparseStack::loadBody(uint64_t bodyId, const ZIntCuboid &range, bool canonizing)
+void ZDvidSparseStack::loadBody(
+    uint64_t bodyId, const ZIntCuboid &range, bool canonizing)
 {
   m_isValueFilled = false;
 

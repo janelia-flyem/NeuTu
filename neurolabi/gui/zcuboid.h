@@ -92,6 +92,9 @@ public:
   inline const ZPoint& firstCorner() const { return m_firstCorner; }
   inline const ZPoint& lastCorner() const { return m_lastCorner; }
 
+  ZPoint& firstCorner() { return m_firstCorner; }
+  ZPoint& lastCorner() { return m_lastCorner; }
+
   double computeDistance(const ZCuboid &box) const;
 
   void translate(const ZPoint &pt);

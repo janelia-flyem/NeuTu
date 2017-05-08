@@ -931,7 +931,12 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId, const ZIntCu
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
   spStack->setDvidTarget(getDvidTarget());
-  spStack->loadBody(bodyId, range);
+
+  if (range.isEmpty()) {
+    spStack->loadBody(bodyId);
+  } else {
+    spStack->loadBody(bodyId, range);
+  }
   m_statusCode = spStack->getReadStatusCode();
 
   return spStack;

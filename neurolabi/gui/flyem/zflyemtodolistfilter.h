@@ -33,8 +33,8 @@ public:
 
   bool isReady(Z3DEye eye) const;
 
-  void setVisible(bool v);
-  bool isVisible() const;
+//  void setVisible(bool v);
+//  bool isVisible() const;
 
     void updateGraph();
 
@@ -76,7 +76,7 @@ private:
   ZFlyEmToDoItem *m_pressedItem;
   std::set<ZFlyEmToDoItem*> m_selected;
 
-  ZBoolParameter m_showGraph;
+//  ZBoolParameter m_showGraph;
 
   Z3DLineRenderer *m_lineRenderer;
   Z3DSphereRenderer *m_sphereRenderer;

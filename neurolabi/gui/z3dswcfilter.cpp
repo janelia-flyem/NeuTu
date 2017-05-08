@@ -31,7 +31,7 @@ Z3DSwcFilter::Z3DSwcFilter()
   , m_sphereRenderer(NULL)
   , m_sphereRendererForCone(NULL)
   , m_boundBoxRenderer(NULL)
-  , m_showSwcs("Visible", true)
+//  , m_showSwcs("Visible", true)
   , m_renderingPrimitive("Geometry")
   , m_colorMode("Color Mode")
   , m_pressedSwc(NULL)
@@ -53,7 +53,7 @@ Z3DSwcFilter::Z3DSwcFilter()
   initSubclassTypeColor();
 
 
-  addParameter(m_showSwcs);
+//  addParameter(m_showSwcs);
 
 
   // rendering primitive
@@ -354,10 +354,11 @@ void Z3DSwcFilter::initSubclassTypeColor()
         new ZVec4Parameter(name, glm::vec4(0xcc/255.f, 0xcc/255.f, 0xcc/255.f, 1.f)));
   for (size_t i=0; i<m_colorsForSubclassType.size(); i++) {
     m_colorsForSubclassType[i]->setStyle("COLOR");
-    connect(m_colorsForSubclassType[i], SIGNAL(valueChanged()), this, SLOT(prepareColor()));
+    connect(m_colorsForSubclassType[i], SIGNAL(valueChanged()),
+            this, SLOT(prepareColor()));
   }
 }
-
+/*
 void Z3DSwcFilter::setVisible(bool v)
 {
   m_showSwcs.set(v);
@@ -367,7 +368,7 @@ bool Z3DSwcFilter::isVisible() const
 {
   return m_showSwcs.get();
 }
-
+*/
 void Z3DSwcFilter::configure(const ZJsonObject &obj)
 {
   Z3DGeometryFilter::configure(obj);
@@ -380,10 +381,18 @@ void Z3DSwcFilter::configure(const ZJsonObject &obj)
     setRenderingPrimitive(
           ZJsonParser::stringValue(obj[Z3DFilterSetting::SHAPE_MODE_KEY]));
   }
+}
 
-  if (obj.hasKey(Z3DFilterSetting::VISIBLE_KEY)) {
-    setVisible(ZJsonParser::booleanValue(obj[Z3DFilterSetting::VISIBLE_KEY]));
-  }
+ZJsonObject Z3DSwcFilter::getConfigJson() const
+{
+  ZJsonObject obj = Z3DGeometryFilter::getConfigJson();
+
+  obj.setEntry(
+        Z3DFilterSetting::COLOR_MODE_KEY, m_colorMode.get().toStdString());
+  obj.setEntry(
+        Z3DFilterSetting::SHAPE_MODE_KEY, m_renderingPrimitive.get().toStdString());
+
+  return obj;
 }
 
 
@@ -624,7 +633,7 @@ void Z3DSwcFilter::getTreeNodeBound(Swc_Tree_Node *tn,
 
 bool Z3DSwcFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && m_showSwcs.get() && !m_origSwcList.empty();
+  return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_origSwcList.empty();
 }
 
 namespace {
@@ -644,7 +653,7 @@ ZWidgetsGroup *Z3DSwcFilter::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Neurons", NULL, 1);
-    new ZWidgetsGroup(&m_showSwcs, m_widgetsGroup, 1);
+    new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_renderingPrimitive, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_colorMode, m_widgetsGroup, 1);
@@ -727,7 +736,7 @@ void Z3DSwcFilter::clearDecorateSwcList()
 
 void Z3DSwcFilter::render(Z3DEye eye)
 {
-  if (!m_showSwcs.get())
+  if (!isVisible())
       return;
   if (m_swcList.empty())
     return;
@@ -755,7 +764,7 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
   }
 
   if (m_enablePicking) {
-    if (!m_showSwcs.get())
+    if (!isVisible())
       return;
     if (!getPickingManager())
       return;

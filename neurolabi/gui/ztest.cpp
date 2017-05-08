@@ -22961,7 +22961,7 @@ void ZTest::test(MainWindow *host)
   delete stack;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "d693", 8700);
   target.setLabelBlockName(
@@ -22970,15 +22970,44 @@ void ZTest::test(MainWindow *host)
   ZDvidReader reader;
   reader.open(target);
 
+  /*
   ZDvidSparseStack *spStack = reader.readDvidSparseStack(
         401430, ZIntCuboid(ZIntPoint(2807, 202, 3240),
                            ZIntPoint(3214, 605, 3540)));
+                           */
+  ZDvidSparseStack *spStack = reader.readDvidSparseStack(401430);
   spStack->shakeOff();
 
-  ZStack *stack = spStack->getStack();
+  ZStack *stack = spStack->makeIsoDsStack(NeuTube::ONEGIGA + NeuTube::ONEGIGA / 2);
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
   delete spStack;
+  delete stack;
 
+#endif
+
+#if 1
+  std::string dataDir = "/Users/zhaot/Work/neutube/neurolabi/data/system/split/data8";
+  ZJsonObject obj;
+  obj.load(dataDir + "/" + "data.json");
+  ZStack *stack = ZFlyEmMisc::GenerateExampleStack(obj);
+  stack->setOffset(0, 0, 0);
+  stack->save(dataDir + "/test.tif");
+
+  delete stack;
+
+#endif
+
+#if 0
+  std::string dataDir = "/Users/zhaot/Work/neutube/neurolabi/data/system/split/data7";
+  ZStack stack;
+  stack.load(dataDir + "/test.tif");
+  stack.setOffset(0, 0, 0);
+  stack.save(dataDir + "/test.tif");
+
+  ZStack stack2;
+  stack2.load(dataDir + "/seg.tif");
+  stack2.setOffset(0, 0, 0);
+  stack2.save(dataDir + "/seg.tif");
 #endif
 
 #if 0
