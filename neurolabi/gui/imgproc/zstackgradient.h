@@ -10,7 +10,7 @@ class GradientStrategy
 public:
   GradientStrategy();
   //virtual ~GradientStrategy();
-  void run(const T* in,T* out,uint width,uint height,uint depth);
+  void run(const T* in,T* out,uint width,uint height,uint depth,bool ignore_background);
   void reverse(T* begin,T* end);
   void edgeEnhance(const T* in,T* out,double alpha);
 protected:
@@ -19,6 +19,7 @@ protected:
   double _max;
   uint _width,_height,_depth;
   size_t _slice,_total;
+  bool _ignore_background;
 };
 
 
@@ -46,6 +47,7 @@ public:
   ~GradientStrategyContext();
   void run(const ZStack* in,ZStack* out,
            bool reverse=false,
+           bool ignore_background=false,
            double edge_enhance_alpha=0.0,
            double gaussin_smooth_sigma_x=0.0,
            double gaussin_smooth_sigma_y=0.0,
@@ -71,7 +73,8 @@ private:
             double gaussin_smooth_sigma_x=0.0,
             double gaussin_smooth_sigma_y=0.0,
             double gaussin_smooth_sigma_z=0.0,
-            bool reverse=false);
+            bool reverse=false,
+            bool ignore_background=false);
 private:
   StrategyType _type;
 };

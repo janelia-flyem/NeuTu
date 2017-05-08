@@ -55,6 +55,7 @@ ZSelectGradientStrategyWindow::ZSelectGradientStrategyWindow(QWidget *parent)
   strategies=new QComboBox;
   strategies->addItem("simple");
   reverse=new QCheckBox("inverse gradient");
+  ignore_background=new QCheckBox("ignore background");
 
   gaussin_use_same_sigma=new QCheckBox("XYZ use same standard deviation sigma");
   gaussin_sigma_x=new QDoubleSpinBox();
@@ -98,7 +99,10 @@ ZSelectGradientStrategyWindow::ZSelectGradientStrategyWindow(QWidget *parent)
   lay->addLayout(lay_gs);
   lay->addSpacing(15);
 
-  lay->addWidget(reverse);
+  QHBoxLayout* lay_gg=new QHBoxLayout;
+  lay_gg->addWidget(reverse);
+  lay_gg->addWidget(ignore_background);
+  lay->addLayout(lay_gg);
   lay->addStretch();
 
   QHBoxLayout* lay_e=new QHBoxLayout;
@@ -180,7 +184,7 @@ void ZSelectGradientStrategyWindow::onStart()
 
   QString s=strategies->currentText();
   GradientStrategyContext context(strategy_map[s]);
-  context.run(input_stack,out,reverse->isChecked(),
+  context.run(input_stack,out,reverse->isChecked(),ignore_background->isChecked(),
               edge_enhance->value(),sigma_x,sigma_y,sigma_z);
 
   ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(out);
