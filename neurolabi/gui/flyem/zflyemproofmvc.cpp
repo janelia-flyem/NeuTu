@@ -4070,7 +4070,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
                                  arg(m_splitProject.getBodyId()),
                                  NeuTube::MSG_ERROR));
           } else {
-            ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+            ZDvidInfo dvidInfo = reader.readLabelInfo();
             ZObject3dScan bodyInRoi;
             ZObject3dScan::ConstSegmentIterator iter(&body);
             while (iter.hasNext()) {
