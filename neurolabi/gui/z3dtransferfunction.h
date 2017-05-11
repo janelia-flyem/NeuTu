@@ -74,9 +74,11 @@ private:
 class Z3DTransferFunctionParameter : public ZSingleValueParameter<Z3DTransferFunction>
 {
 public:
-  Z3DTransferFunctionParameter(const QString& name, double min = 0.0, double max = 1.0, const glm::col4 &minColor = glm::col4(0,0,0,0),
-                               const glm::col4 &maxColor = glm::col4(255,255,255,255), int width = 256,
-                               QObject *parent = 0);
+  Z3DTransferFunctionParameter(
+      const QString& name, double min = 0.0, double max = 1.0,
+      const glm::col4 &minColor = glm::col4(0,0,0,0),
+      const glm::col4 &maxColor = glm::col4(255,255,255,255), int width = 256,
+      QObject *parent = 0);
 
   void setVolume(Z3DVolume* volume);
 

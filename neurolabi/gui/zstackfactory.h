@@ -11,6 +11,9 @@ class ZStroke2d;
 class ZPointArray;
 class ZWeightedPointArray;
 class ZObject3dScanArray;
+class ZStackObject;
+class ZSwcTree;
+class ZObject3dScan;
 
 /*!
  * \brief The class of creating a stack
@@ -63,6 +66,8 @@ public:
   static ZStack* makeSeedStack(const ZObject3dScanArray &objArray);
   static ZStack* MakeBinaryStack(const ZObject3dScanArray &objArray, int v = 1);
   static ZStack* MakeColorStack(const ZObject3dScanArray &objArray);
+
+  static ZStack* MakeLabelStack(ZSwcTree *obj, int v);
 
   /*!
    * \brief Only support GREY data

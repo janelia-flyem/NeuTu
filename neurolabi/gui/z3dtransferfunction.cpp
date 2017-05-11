@@ -79,7 +79,8 @@ void Z3DTransferFunction::createTexture()
 {
   delete m_texture;
 
-  m_texture = new Z3DTexture(m_dimensions, m_textureFormat, GL_RGBA8, m_textureDataType);
+  m_texture = new Z3DTexture(
+        m_dimensions, m_textureFormat, GL_RGBA8, m_textureDataType);
   CHECK_GL_ERROR;
 }
 
@@ -162,8 +163,9 @@ bool Z3DTransferFunction::isValidDomainMax(double max) const
     return false;
 }
 
-Z3DTransferFunctionParameter::Z3DTransferFunctionParameter(const QString &name, double min, double max, const glm::col4 &minColor,
-                                                           const glm::col4 &maxColor, int width, QObject *parent)
+Z3DTransferFunctionParameter::Z3DTransferFunctionParameter(
+    const QString &name, double min, double max, const glm::col4 &minColor,
+    const glm::col4 &maxColor, int width, QObject *parent)
   : ZSingleValueParameter<Z3DTransferFunction>(name, parent)
   , m_volume(NULL)
 {

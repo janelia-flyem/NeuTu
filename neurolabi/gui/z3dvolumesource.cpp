@@ -23,6 +23,17 @@ Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc, size_t maxVoxelNumber)
   , m_doc(doc)
   , m_widgetsGroup(NULL)
 {
+  _init(maxVoxelNumber);
+}
+
+Z3DVolumeSource::~Z3DVolumeSource()
+{
+  for (size_t i=0; i<m_outputPorts.size(); i++)
+    delete m_outputPorts[i];
+}
+
+void Z3DVolumeSource::_init(size_t maxVoxelNumber)
+{
   if (maxVoxelNumber == 0) {
     int currentAvailableTexMem = Z3DGpuInfoInstance.getAvailableTextureMemory();
     if (currentAvailableTexMem != -1 && currentAvailableTexMem <= 256000)
@@ -56,12 +67,6 @@ Z3DVolumeSource::Z3DVolumeSource(ZStackDoc *doc, size_t maxVoxelNumber)
   connect(&m_yScale, SIGNAL(valueChanged()), this, SLOT(changeYScale()));
   connect(&m_zScale, SIGNAL(valueChanged()), this, SLOT(changeZScale()));
   connect(&m_zoomInViewSize, SIGNAL(valueChanged()), this, SLOT(changeZoomInViewSize()));
-}
-
-Z3DVolumeSource::~Z3DVolumeSource()
-{
-  for (size_t i=0; i<m_outputPorts.size(); i++)
-    delete m_outputPorts[i];
 }
 
 void Z3DVolumeSource::loadData()

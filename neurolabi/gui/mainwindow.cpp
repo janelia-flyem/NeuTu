@@ -8189,7 +8189,12 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
 
 void MainWindow::generateMBONConvCast(const std::string &movieFolder)
 {
+  QString errMsg = ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(
+        (GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder).c_str());
 
+  if (!errMsg.isEmpty()) {
+    report("Failed to generate cast", errMsg.toStdString(), NeuTube::MSG_WARNING);
+  }
 }
 
 void MainWindow::generateMBONPartnerCast(const std::string &movieFolder)

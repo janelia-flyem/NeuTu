@@ -19,6 +19,7 @@
 #include "tz_stack_bwmorph.h"
 #include "c_stack.h"
 #include "zintcuboid.h"
+#include "zswctree.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -715,6 +716,13 @@ ZStack* ZStackFactory::MakeBinaryStack(
   }
 
   return stack;
+}
+
+ZStack* ZStackFactory::MakeLabelStack(ZSwcTree *obj, int v)
+{
+  ZIntCuboid box = obj->getBoundBox().toIntCuboid();
+
+//  ZStack *stack = MakeStack()
 }
 
 ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)

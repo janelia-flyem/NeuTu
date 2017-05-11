@@ -82,6 +82,8 @@ private:
 
   void loadData();
 
+  void _init(size_t maxVoxelNumber);
+
   std::vector<Z3DVolume*> m_volumes;
   std::vector<Z3DVolume*> m_zoomInVolumes;
   std::vector<Z3DOutputPort<Z3DVolume>*> m_outputPorts;

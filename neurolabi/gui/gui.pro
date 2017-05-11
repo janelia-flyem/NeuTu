@@ -95,17 +95,17 @@ GIT = $$system(which git)
 
 #message($$GIT)
 contains(GIT, .*git) {
-    COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
-    DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
-    message($$COMMIT_HASH)
+  COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
+  DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
+  message($$COMMIT_HASH)
 }
 
 include(add_itk.pri)
 
 #Qt4
 isEqual(QT_MAJOR_VERSION,4) {
-    QT += opengl xml network
-    message("Qt 4")
+  QT += opengl xml network
+  message("Qt 4")
 }
 
 #Qt5
@@ -248,6 +248,7 @@ include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
+include(command/command.pri)
 
 message("Config: $$CONFIG")
 

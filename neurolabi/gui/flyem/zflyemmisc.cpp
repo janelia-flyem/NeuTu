@@ -29,6 +29,7 @@
 #include "tz_stack_neighborhood.h"
 #include "zstroke2d.h"
 #include "dvid/zdvidsparsestack.h"
+#include "zfileparser.h"
 
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
@@ -1020,3 +1021,102 @@ ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
   return target;
 }
 
+QString ZFlyEmMisc::MB6Paper::GenerateNeuronCast(
+    const ZDvidTarget &target, const QString &movieDir,
+    QVector<uint64_t> neuronArray)
+{
+  QString errMsg;
+
+  QDir outDir(movieDir + "/cast");
+
+  if (neuronArray.isEmpty()) {
+    QFile neuronListFile(movieDir + "/neuron_list.csv");
+    if (!neuronListFile.open(QIODevice::ReadOnly)) {
+      errMsg = "Failed to read " + neuronListFile.fileName() + ":" +
+          neuronListFile.errorString();
+      return errMsg;
+    }
+
+    while (!neuronListFile.atEnd()) {
+      QString line = QString(neuronListFile.readLine());
+      QStringList wordList = line.split(',');
+
+      if (!wordList.isEmpty()) {
+        ZString str(wordList[0].toStdString());
+        std::vector<uint64_t> idArray = str.toUint64Array();
+        if (!idArray.empty()) {
+          neuronArray.append(idArray.front());
+        }
+      }
+    }
+  }
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+      delete tree;
+    }
+  }
+
+  return errMsg;
+}
+
+std::vector<ZVaa3dMarker> ZFlyEmMisc::MB6Paper::GetLocationMarker(
+    const ZJsonArray &json)
+{
+  std::vector<ZVaa3dMarker> markerArray;
+
+  for (size_t i = 0; i < json.size(); ++i) {
+    ZJsonObject locationJson(json.value(i));
+    ZJsonArray infoJson(locationJson.value("location"));
+    std::string neuron = ZJsonParser::stringValue(infoJson.at(0));
+    if (neuron == "MBON-14-A") {
+      ZVaa3dMarker marker;
+      marker.setCenter(ZJsonParser::integerValue(infoJson.at(1)),
+                       ZJsonParser::integerValue(infoJson.at(2)),
+                       ZJsonParser::integerValue(infoJson.at(3)));
+      marker.setRadius(30.0);
+      markerArray.push_back(marker);
+    }
+  }
+
+  return markerArray;
+}
+
+QString ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
+{
+  ZDvidTarget target = MakeDvidTarget();
+
+  QString errMsg = GenerateNeuronCast(
+        target, movieDir, QVector<uint64_t>() << 54977);
+
+  if (!errMsg.isEmpty()) {
+    return errMsg;
+  }
+
+  QString synapseFile = movieDir + "/Shinya.json";
+
+  ZJsonObject json;
+  json.load(synapseFile.toStdString());
+
+
+
+  ZJsonArray singleJson(json.value("single"));
+  std::vector<ZVaa3dMarker> singleMarkerArray = GetLocationMarker(singleJson);
+  FlyEm::ZFileParser::writeVaa3dMakerFile(
+        (movieDir + "/cast/single.marker").toStdString(), singleMarkerArray);
+
+  ZJsonArray multipleJson(json.value("multiple"));
+  std::vector<ZVaa3dMarker> multileMarkerArray = GetLocationMarker(multipleJson);
+  FlyEm::ZFileParser::writeVaa3dMakerFile(
+        (movieDir + "/cast/multiple.marker").toStdString(), multileMarkerArray);
+
+
+
+  return errMsg;
+}

@@ -39,12 +39,24 @@
 #include "zswcfactory.h"
 #include "dvid/zdvidneurontracer.h"
 //#include "mylib/utilities.h"
+#include "command/zcommandmodule.h"
+#include "command/zstackdownsamplecommand.h"
+#include "command/zbodysplitcommand.h"
 
 using namespace std;
 
 ZCommandLine::ZCommandLine()
 {
   init();
+}
+
+ZCommandLine::~ZCommandLine()
+{
+  for (std::map<std::string, ZCommandModule*>::iterator
+       iter = m_commandMap.begin(); iter != m_commandMap.end(); ++iter) {
+    delete iter->second;
+  }
+  m_commandMap.clear();
 }
 
 void ZCommandLine::init()
@@ -65,7 +77,35 @@ void ZCommandLine::init()
   m_forceUpdate = false;
   m_namedOnly = false;
   m_intvSpecified = false;
+
+  registerModule();
 }
+
+void ZCommandLine::registerModule()
+{
+  registerModule<ZStackDownsampleCommand>("downsample_stack");
+  registerModule<ZBodySplitCommand>("split_body");
+}
+
+template <typename T>
+void ZCommandLine::registerModule(const std::string &name)
+{
+  registerModule(name, new T);
+}
+
+void ZCommandLine::registerModule(
+    const std::string &name, ZCommandModule *module)
+{
+  if (!name.empty() && module != NULL) {
+    if (m_commandMap.count(name) > 0) {
+      std::cout << "WARNING: Cannot overwrite a registered module: " << name
+                << std::endl;
+    } else {
+      m_commandMap[name] = module;
+    }
+  }
+}
+
 
 ZCommandLine::ECommand ZCommandLine::getCommand(const char *cmd)
 {
@@ -696,6 +736,44 @@ std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input) const
   return bodySet;
 }
 
+ZCommandModule* ZCommandLine::getModule(const std::string &name)
+{
+  ZCommandModule *module = NULL;
+  if (m_commandMap.count(name) > 0) {
+    module = m_commandMap[name];
+  }
+
+  return module;
+}
+
+int ZCommandLine::runGeneral()
+{
+  if (!m_generalConfig.empty()) {
+#ifdef _DEBUG_
+    std::cout << "Config: " << m_generalConfig << std::endl;
+#endif
+
+    ZJsonObject config;
+    if (ZFileType::FileType(m_generalConfig) == ZFileType::JSON_FILE) {
+      config.load(m_generalConfig);
+    } else {
+      config.decode(m_generalConfig);
+    }
+
+    ZCommandModule *module =
+        getModule(ZJsonParser::stringValue(config["command"]));
+    if (module != NULL) {
+      return module->run(m_input, m_output, config);
+    } else {
+      std::cerr << "Invalid command module." << std::endl;
+
+      return 1;
+    }
+  }
+
+  return 1;
+}
+
 int ZCommandLine::runTest()
 {
 #if 0
@@ -1168,6 +1246,7 @@ int ZCommandLine::run(int argc, char *argv[])
     "[-o <string>]",
     "[--config <string>]", "[--intv <int> <int> <int>]",
     "[--skeletonize] [--force] [--bodyid <string>] [--named_only]",
+    "[--general <string>]",
     "[--compare_swc] [--scale <double>]",
     "[--trace] [--level <int>]","[--separate <string>]", "[--foutput <string>]",
     "[--compute_seed]",
@@ -1177,6 +1256,12 @@ int ZCommandLine::run(int argc, char *argv[])
     "[--test]", "[--verbose]",
     0
   };
+
+#ifdef _DEBUG_2
+  for (int i = 0; i < argc; ++i) {
+    std::cout << argv[i] << std::endl;
+  }
+#endif
 
   Process_Arguments(argc, argv, const_cast<char**>(Spec), 1);
 
@@ -1312,6 +1397,9 @@ int ZCommandLine::run(int argc, char *argv[])
       command = COMPARE_SWC;
     } else if (Is_Arg_Matched(const_cast<char*>("--compute_seed"))) {
       command = COMPUTE_SEED;
+    } else if (Is_Arg_Matched(const_cast<char*>("--general"))) {
+      command = GENERAL_COMMAND;
+      m_generalConfig = Get_String_Arg(const_cast<char*>("--general"));
     }
   }
 
@@ -1340,6 +1428,9 @@ int ZCommandLine::run(int argc, char *argv[])
     return runComputeSeed();
   case TEST_SELF:
     return runTest();
+  case GENERAL_COMMAND:
+    return runGeneral();
+    break;
   default:
     std::cout << "Unknown command" << std::endl;
     return 1;

@@ -22985,7 +22985,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   std::string dataDir = "/Users/zhaot/Work/neutube/neurolabi/data/system/split/data8";
   ZJsonObject obj;
   obj.load(dataDir + "/" + "data.json");
@@ -22995,6 +22995,20 @@ void ZTest::test(MainWindow *host)
 
   delete stack;
 
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/benchmark/binary/3d/diadem_e1.tif");
+
+  size_t voxelCount = stack.getVoxelNumber();
+  for (size_t i = 0; i < voxelCount; ++i) {
+    if (stack.value8(i) == 1) {
+      stack.setValue(i, 0, 8);
+    }
+  }
+
+  stack.save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
 #if 0

@@ -29,8 +29,10 @@
 #include <QtGui>
 #endif
 
-Z3DTransferFunctionWidget::Z3DTransferFunctionWidget(Z3DTransferFunctionParameter *tf, bool showHistogram, const QString &histogramNormalizeMethod,
-                                                     QString xAxisText, QString yAxisText, QWidget* parent)
+Z3DTransferFunctionWidget::Z3DTransferFunctionWidget(
+    Z3DTransferFunctionParameter *tf, bool showHistogram,
+    const QString &histogramNormalizeMethod,
+    QString xAxisText, QString yAxisText, QWidget* parent)
   : QWidget(parent)
   , m_transferFunction(tf)
   , m_histogramCache(NULL)
@@ -70,8 +72,9 @@ Z3DTransferFunctionWidget::Z3DTransferFunctionWidget(Z3DTransferFunctionParamete
   m_keyContextMenu.addAction(m_deleteKeyAction);
   connect(m_deleteKeyAction, SIGNAL(triggered()), this, SLOT(deleteKey()));
 
-  if (m_volume)
+  if (m_volume) {
     connect(m_volume, SIGNAL(histogramFinished()), this, SLOT(update()));
+  }
   connect(m_transferFunction, SIGNAL(valueChanged()), this, SLOT(update()));
 }
 
@@ -146,8 +149,10 @@ void Z3DTransferFunctionWidget::paintEvent(QPaintEvent* event)
             value = m_volume->getLogNormalizedHistogramValue(x);
           else
             value = m_volume->getNormalizedHistogramValue(x);
-          glm::dvec2 p1 = relativeToPixelCoordinates(glm::dvec2(sxpos, value * (m_yRange[1] - m_yRange[0]) + m_yRange[0]));
-          glm::dvec2 p2 = relativeToPixelCoordinates(glm::dvec2(expos, m_yRange[0]));
+          glm::dvec2 p1 = relativeToPixelCoordinates(
+                glm::dvec2(sxpos, value * (m_yRange[1] - m_yRange[0]) + m_yRange[0]));
+          glm::dvec2 p2 = relativeToPixelCoordinates(
+                glm::dvec2(expos, m_yRange[0]));
           QPointF topLeft(p1.x, p1.y);
           QPointF bottomRight(p2.x, p2.y);
           cachePaint.drawRect(QRectF(topLeft, bottomRight));
@@ -876,9 +881,11 @@ void Z3DTransferFunctionEditor::updateFromTransferFunction()
 void Z3DTransferFunctionEditor::fitDomainToData()
 {
   if(m_volume) {
-    m_transferFunction->get().setDomain(glm::dvec2(m_volume->getFloatMinValue(),
-                                                   std::max(m_volume->getFloatMaxValue(), m_volume->getFloatMinValue()+0.001)),
-                                        m_rescaleKeys->isChecked());
+    m_transferFunction->get().setDomain(
+          glm::dvec2(
+            m_volume->getFloatMinValue(),
+            std::max(m_volume->getFloatMaxValue(), m_volume->getFloatMinValue()+0.001)),
+          m_rescaleKeys->isChecked());
   }
 }
 
