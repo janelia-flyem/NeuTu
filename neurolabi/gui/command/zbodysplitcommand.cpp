@@ -6,6 +6,7 @@
 #include "zstack.hxx"
 #include "imgproc/zstackwatershed.h"
 #include "zstackwriter.h"
+#include "zstring.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {
@@ -21,7 +22,10 @@ int ZBodySplitCommand::run(
   ZJsonObject inputJson;
   inputJson.load(input.front());
 
+  std::string dataDir = ZString(input.front()).dirPath();
+
   std::string signalUrl = ZJsonParser::stringValue(inputJson["signal"]);
+  signalUrl = ZString(signalUrl).absolutePath(dataDir);
 
   ZStack signalStack;
   signalStack.load(signalUrl);
@@ -35,6 +39,8 @@ int ZBodySplitCommand::run(
       if (seedJson.hasKey("label") && seedJson.hasKey("url")) {
         int label = ZJsonParser::integerValue(seedJson["label"]);
         std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
+        seedUrl = ZString(seedUrl).absolutePath(dataDir);
+
         ZObject3dScan obj;
         obj.load(seedUrl);
         ZStack *seedStack = obj.toStackObject(label);

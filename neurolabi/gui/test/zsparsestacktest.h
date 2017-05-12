@@ -68,9 +68,9 @@ TEST(ZSparseStack, process)
 
   obj->addStripe(2, 2);
   obj->addSegment(0, 5);
-  ASSERT_EQ(8, spStack.getObjectVolume());
+  ASSERT_EQ(8, (int) spStack.getObjectVolume());
   spStack.shakeOff();
-  ASSERT_EQ(6, spStack.getObjectVolume());
+  ASSERT_EQ(6, (int) spStack.getObjectVolume());
 }
 
 TEST(ZSparseStack, downsample)

@@ -4452,8 +4452,8 @@ QString ZStackDoc::rawDataInfo(double cx, double cy, int z, NeuTube::EAxis axis)
 {
   QString info;
 
-  int x = iround(cx);
-  int y = iround(cy);
+  int x = std::floor(cx);
+  int y = std::floor(cy);
 
   int wx = x;
   int wy = y;

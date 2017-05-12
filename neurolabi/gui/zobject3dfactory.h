@@ -14,6 +14,7 @@ class ZObject3dScanArray;
 class ZClosedCurve;
 class ZArray;
 class ZIntCuboid;
+class ZStroke2d;
 
 class ZObject3dFactory
 {
@@ -58,6 +59,8 @@ public:
   static ZStack* MakeBoundaryStack(const ZStack &stack);
 
   static ZObject3dScan MakeRandomObject3dScan(const ZIntCuboid &box);
+
+  static ZObject3dScan MakeObject3dScan(const ZStroke2d &stroke);
 };
 
 #endif // ZOBJECT3DFACTORY_H

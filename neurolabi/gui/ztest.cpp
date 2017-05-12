@@ -311,6 +311,7 @@ using namespace std;
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "dvid/zdvidsparsestack.h"
 #include "zstackwriter.h"
+#include "zstackreader.h"
 
 using namespace std;
 
@@ -23085,6 +23086,45 @@ void ZTest::test(MainWindow *host)
   box.setDepth(box.getDepth() / (dsIntv + 1));
 
   std::cout << "Volume:" << box.getVolume() << std::endl;
+
+#endif
+
+#if 0
+//  QUrl url("dvid://emdata1.int.janelia.org:8000/uuid/dataname?x1=1&y1=1&z1=1");
+  QUrl url("/test/test");
+  qDebug() << url.scheme();
+  qDebug() << url.path();
+  qDebug() << url.allQueryItemValues("x1");
+  qDebug() << url.host();
+  qDebug() << url.port();
+  qDebug() << url.toLocalFile();
+#endif
+
+#if 0
+  ZStackReader reader;
+  ZStack *stack = reader.read(
+        "dvid://emdata1.int.janelia.org:8700/186a/"
+        "grayscale?x0=2606&y0=2248&z0=3200&width=512&height=512&depth=1");
+  ZStackWriter writer;
+  writer.write(GET_TEST_DATA_DIR + "/test.tif", stack);
+#endif
+
+
+#if 0
+  ZStroke2d stroke1;
+  stroke1.setZ(3200);
+  stroke1.append(2681, 2593);
+  stroke1.append(2688, 2677);
+  ZObject3dScan obj1 = ZObject3dFactory::MakeObject3dScan(stroke1);
+  obj1.save(GET_TEST_DATA_DIR + "/system/command_test/body_split/seed1.sobj");
+
+
+  ZStroke2d stroke2;
+  stroke2.setZ(3200);
+  stroke2.append(2977, 2399);
+  stroke2.append(3015, 2462);
+  ZObject3dScan obj2 = ZObject3dFactory::MakeObject3dScan(stroke2);
+  obj2.save(GET_TEST_DATA_DIR + "/system/command_test/body_split/seed2.sobj");
 
 #endif
 

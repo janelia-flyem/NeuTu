@@ -3558,7 +3558,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     buddyView()->setInfo(
           buddyDocument()->rawDataInfo(
-            widgetPos.getX(), widgetPos.getY(), widgetPos.getZ(),
+            currentRawStackPos.getX(),
+            currentRawStackPos.getY(),
+            currentRawStackPos.getZ(),
             buddyView()->getSliceAxis()));
 
     if (m_interactiveContext.synapseEditMode() ==

@@ -39,6 +39,8 @@
 #include "zswcfactory.h"
 #include "dvid/zdvidneurontracer.h"
 //#include "mylib/utilities.h"
+
+//Incude your module headers here
 #include "command/zcommandmodule.h"
 #include "command/zstackdownsamplecommand.h"
 #include "command/zbodysplitcommand.h"
