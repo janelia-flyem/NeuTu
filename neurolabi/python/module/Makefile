@@ -7,9 +7,18 @@ ifeq ($(UNAME), Darwin)
 endif
 
 all: _neutube.so
+debug: _neutube_d.so
+
+define compile_so
+	g++ -$(SHARE_FLAG) neutube_wrap.o -o $@ -L$(PREFIX)/lib -L../../cpp/lib/build -l$(1) -L../../c/lib -l$(2) -lfftw3 -lfftw3f -lpng -lxml2 -ljansson -lhdf5 -lm -lz `python-config --ldflags | sed 's/-u [^ ]* [^ ]*//'`
+endef
 
 _neutube.so: neutube_wrap.o
-	g++ -$(SHARE_FLAG) neutube_wrap.o -o $@ -L$(PREFIX)/lib -L../../cpp/lib/build -lneutube -L../../c/lib -lneurolabi -lfftw3 -lfftw3f -lpng -lxml2 -ljansson -lhdf5 -lm -lz `python-config --ldflags | sed 's/-u [^ ]* [^ ]*//'`
+	$(call compile_so,neutube,neurolabi)
+
+_neutube_d.so: neutube_wrap.o
+	$(call compile_so,neutube,neurolabi_debug)
+	mv $@ _neutube.so
 
 neutube_wrap.o: neutube_wrap.cxx
 	g++ -c $< -I../../c -I../../lib/genelib/src -I../../c/include -I../../gui -I../../lib/jansson/include -I../../lib/fftw3/include -fPIC `python-config --cflags`
