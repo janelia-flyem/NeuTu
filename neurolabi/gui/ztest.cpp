@@ -22688,11 +22688,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZViewProj viewProj;
-
-#endif
-
-#if 0
 
   ZStack stack;
   stack.load(GET_TEST_DATA_DIR + "/benchmark/block.tif");
