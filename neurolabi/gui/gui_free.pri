@@ -233,7 +233,7 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/dvid/zdviddef.h \
    $${PWD}/zswcutil.h \
    $${PWD}/dvid/zdvidnode.h \
-   $$PWD/zglobal.h
+   $${PWD}/zglobal.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
@@ -446,5 +446,5 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zneurontracerconfig.cpp \
    $${PWD}/zswcutil.cpp \
    $${PWD}/dvid/zdvidnode.cpp \
-   $$PWD/zglobal.cpp
+   $${PWD}/zglobal.cpp
 

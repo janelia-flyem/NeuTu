@@ -254,7 +254,6 @@ void ZLocalNeuroseg::display(
   }
 #else
   UNUSED_PARAMETER(&painter);
-  UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
   UNUSED_PARAMETER(&color);
 #endif

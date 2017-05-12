@@ -1,17 +1,12 @@
 #ifndef ZDVIDWRITER_H
 #define ZDVIDWRITER_H
 
-#include <QObject>
-#include <QEventLoop>
-#include <QTimer>
-#include <QMap>
-#include <QString>
+#include "zqtheader.h"
 
 #include <string>
 #include <vector>
 #include "zobject3dscan.h"
 #include "zstack.hxx"
-#include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"

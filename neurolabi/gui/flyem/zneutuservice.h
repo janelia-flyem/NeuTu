@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 #include <stdint.h>
+#include <set>
 
 #include "tz_stdint.h"
-#include "dvid/zdvidwriter.h"
 
 class ZDvidTarget;
 

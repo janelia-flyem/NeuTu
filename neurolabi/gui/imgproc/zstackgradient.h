@@ -1,6 +1,7 @@
 #ifndef ZSTACKGRADIENT_H
 #define ZSTACKGRADIENT_H
-#include "zstackdoc.h"
+#include "zstack.hxx"
+
 /* GradientStrategy
  * abstract base class of computing gradient
  * and subclasses should override _run method*/

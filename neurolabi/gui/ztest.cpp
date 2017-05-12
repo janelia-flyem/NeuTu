@@ -22789,7 +22789,7 @@ void ZTest::test(MainWindow *host)
   dlg->exec();
 #endif
 
-#if 1
+#if 0
   ZFlyEmBodyComparisonDialog *dlg = new ZFlyEmBodyComparisonDialog(host);
   dlg->exec();
 

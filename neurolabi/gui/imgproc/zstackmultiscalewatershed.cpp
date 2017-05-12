@@ -1,9 +1,12 @@
 #include "zstackmultiscalewatershed.h"
 #include "zstackwatershed.h"
-#include "zstackdoc.h"
+//#include "zstackdoc.h"
 #include "zobject3dfactory.h"
 #include "zobject3darray.h"
 #include "zstackfactory.h"
+#include "zintcuboid.h"
+#include "zcuboid.h"
+#include "zswctree.h"
 
 ZStack* upSample(int width,int height,int depth,int scale,ZStack* sampled)
 {
@@ -37,7 +40,7 @@ ZStack* upSample(int width,int height,int depth,int scale,ZStack* sampled)
 ZStack* getEdgeMap(const ZStack& stack)
 {
   int index=1;
-  uchar index_map[256][256]={0};
+  unsigned char index_map[256][256]={0};
 
   const Stack *originalStack = stack.c_stack();
   ZStack *mask = ZStackFactory::MakeZeroStack(
@@ -505,7 +508,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_waters
 
 }
 
-
+#if defined(_QT_GUI_USED_)
 ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int scale)
 {
   _scale=scale;
@@ -575,3 +578,4 @@ void ZStackMultiScaleWatershed::getSeeds(std::vector<ZStack*>& seeds,QList<ZSwcT
     seeds.push_back(seed);
   }
 }
+#endif
