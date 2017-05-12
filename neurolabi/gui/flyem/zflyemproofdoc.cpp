@@ -58,7 +58,7 @@ void ZFlyEmProofDoc::init()
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
 
   m_loadingAssignedBookmark = false;
-  m_analyzer.setDvidReader(&m_dvidReader);
+  m_analyzer.setDvidReader(&m_synapseReader);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_mergeProject = new ZFlyEmBodyMergeProject(this);
 
