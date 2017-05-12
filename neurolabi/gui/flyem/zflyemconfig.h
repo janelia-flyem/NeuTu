@@ -5,7 +5,9 @@
 #include <map>
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidtarget.h"
+#ifdef _QT_GUI_USED_
 #include "flyem/zneutuservice.h"
+#endif
 
 class ZFlyEmConfig
 {

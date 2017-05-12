@@ -11,6 +11,7 @@
 #include "zeventlistenerparameter.h"
 #include "zpunctumcolorscheme.h"
 #include "z3dfiltersetting.h"
+#include "zjsonparser.h"
 
 Z3DPunctaFilter::Z3DPunctaFilter()
   : Z3DGeometryFilter()

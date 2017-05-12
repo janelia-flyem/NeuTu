@@ -450,5 +450,5 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/dvid/zdvidnode.cpp \
    $$PWD/zglobal.cpp \
    $$PWD/zstackwriter.cpp \
-    $$PWD/zstackreader.cpp
+   $$PWD/zstackreader.cpp
 

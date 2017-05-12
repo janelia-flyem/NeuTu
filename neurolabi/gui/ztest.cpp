@@ -22706,8 +22706,6 @@ void ZTest::test(MainWindow *host)
   pt = viewProj.mapPointBack(QPointF(50, 80));
   qDebug() << pt2;
   qDebug() << pt;
-
-
 #endif
 
 #if 0

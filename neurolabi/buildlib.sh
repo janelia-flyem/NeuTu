@@ -9,4 +9,4 @@ cd ..
 ./update_library --release 
 
 cd cpp/lib
-sh build.sh
+sh build.sh $*

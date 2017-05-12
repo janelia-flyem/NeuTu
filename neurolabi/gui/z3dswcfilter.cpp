@@ -23,6 +23,7 @@
 #include "zintcuboid.h"
 #include "z3dswcfilter.h"
 #include "z3dfiltersetting.h"
+#include "zjsonparser.h"
 
 Z3DSwcFilter::Z3DSwcFilter()
   : Z3DGeometryFilter()
