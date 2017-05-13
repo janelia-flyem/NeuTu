@@ -4,7 +4,7 @@ from bottle import run,template,get,post,request,static_file
 from subprocess import Popen,PIPE
 import json
 
-neutu=r"/home/deli/NeuTu_CLI/neurolabi/build-gui-Desktop_Qt_5_6_2_GCC_64bit-flyem/neutu"
+neutu=r"/home/deli/NeuTu/neurolabi/build-gui-Desktop_Qt_5_6_2_GCC_64bit-flyem/neutu"
 
 
 @get('/surfrecon/result/<fid:path>')
@@ -27,13 +27,12 @@ def surfrecon_get():
 @post('/surfrecon')
 def surfrecon_post():
     points=request.forms.get('points')
-    cmd=neutu+" --command"
-    cmd+=" --surfrecon"
-    cmd+=" --npoints"
-    cmd+=" {0}".format(points.count(')'))
+    cmd=neutu+" --command --general "
+    config={"command":"surfrecon"}
+    config["npoints"]=points.count('(')
+    cmd+=r"'"+json.dumps(config)+r"'"
     print cmd
     p=Popen(cmd,shell=True,stdout=PIPE,stderr=PIPE,stdin=PIPE)
-    #cmd+="(42,171,0)(157,116,0)(40,171,5)(159,115,0)"
     for a in points.split(')')[:-1]:
         a=a[1:]
         x,y,z=a.split(',')

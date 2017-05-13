@@ -44,7 +44,7 @@
 #include "command/zcommandmodule.h"
 #include "command/zstackdownsamplecommand.h"
 #include "command/zbodysplitcommand.h"
-
+#include "command/zsurfreconcommand.h"
 using namespace std;
 
 ZCommandLine::ZCommandLine()
@@ -87,6 +87,7 @@ void ZCommandLine::registerModule()
 {
   registerModule<ZStackDownsampleCommand>("downsample_stack");
   registerModule<ZBodySplitCommand>("split_body");
+  registerModule<ZSurfreconCommand>("surfrecon");
 }
 
 template <typename T>

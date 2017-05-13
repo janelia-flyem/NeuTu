@@ -33,7 +33,7 @@ private:
   void updateStack(bool* surf_map,const VoxelSet& surf);
   void pruneSkeleton(bool* surf_map);
   void getPostData(const VoxelSet& points,QByteArray& data);
-  std::pair<QString,QString> getResultUrlAndMd5(const QByteArray& reply);
+  void getResultUrlAndMd5(const QByteArray& reply,QString& result_url,QString& md5);
   void getResult(QString url);
 private:
   QPushButton*  ok;

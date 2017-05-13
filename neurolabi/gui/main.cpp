@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 #ifdef _DEBUG_
   config.print();
 #endif
-/*
+
   // init the logging mechanism
   QsLogging::Logger& logger = QsLogging::Logger::instance();
   const QString sLogPath(
@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
   if (NeutubeConfig::GetVerboseLevel() >= 5) {
     logger.setLoggingLevel(QsLogging::TraceLevel);
   }
-*/
+
   RECORD_INFORMATION("************* Start ******************");
 
   if (guiEnabled) {

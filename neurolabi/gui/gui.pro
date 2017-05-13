@@ -8,6 +8,8 @@ contains(TEMPLATE, app) {
 } else {
     CONFIG += staticlib
 }
+DEFINES+=_ENABLE_SURFRECON_
+LIBS+= -lCGAL
 #DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
