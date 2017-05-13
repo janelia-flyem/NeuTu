@@ -1,6 +1,7 @@
 #include "zdvidutil.h"
 
 #include <QUrl>
+#include <cmath>
 
 #include "neutubeconfig.h"
 #include "zjsonvalue.h"
@@ -8,6 +9,7 @@
 #include "dvid/zdvidtarget.h"
 #include "zjsonparser.h"
 #include "dvid/zdvidversiondag.h"
+#include "zintcuboid.h"
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 
@@ -260,6 +262,33 @@ libdvid::BinaryDataPtr ZDvid::Post(
 
 #endif
 
+#if defined(_ENABLE_LIBDVIDCPP_)
+ZIntCuboid ZDvid::GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo)
+{
+  ZIntCuboid alignedBox;
+  alignedBox.setFirstCorner(
+        dvidInfo.getBlockBox(
+          dvidInfo.getBlockIndex(box.getFirstCorner())).getFirstCorner());
+  alignedBox.setLastCorner(
+        dvidInfo.getBlockBox(
+          dvidInfo.getBlockIndex(box.getLastCorner())).getLastCorner());
+
+  return alignedBox;
+}
+#endif
+
+ZIntCuboid ZDvid::GetZoomBox(const ZIntCuboid &box, int zoom)
+{
+  ZIntCuboid zoomBox;
+
+  int zoomRatio = pow(2, zoom);
+  zoomBox.setFirstCorner(box.getFirstCorner() / zoomRatio);
+  zoomBox.setWidth(box.getWidth() / zoomRatio);
+  zoomBox.setHeight(box.getHeight() / zoomRatio);
+
+  return zoomBox;
+}
+
 bool ZDvid::IsDataValid(const std::string &data, const ZDvidTarget &target,
                         const ZJsonObject &infoJson, const ZDvidVersionDag &dag)
 {
@@ -301,4 +330,68 @@ bool ZDvid::IsUuidMatched(const std::string &uuid1, const std::string &uuid2)
 
   return matched;
 }
+
+struct _DataTypeMap {
+  static std::map<std::string, ZDvid::EDataType> CreateMap()
+  {
+    std::map<std::string, ZDvid::EDataType> m;
+
+    m["labelblk"] = ZDvid::TYPE_LABELBLK;
+    m["annotation"] = ZDvid::TYPE_ANNOTATION;
+    m["imagetile"] = ZDvid::TYPE_IMAGETILE;
+    m["keyvalue"] = ZDvid::TYPE_KEYVALUE;
+    m["labelgraph"] = ZDvid::TYPE_LABELGRAPH;
+    m["labelsz"] = ZDvid::TYPE_LABELSZ;
+    m["labelvol"] = ZDvid::TYPE_LABELVOL;
+    m["roi"] = ZDvid::TYPE_ROI;
+    m["uint8blk"] = ZDvid::TYPE_UINT8BLK;
+
+    return m;
+  }
+
+  static const std::map<std::string, ZDvid::EDataType> M;
+};
+
+const std::map<std::string, ZDvid::EDataType> _DataTypeMap::M =
+    _DataTypeMap::CreateMap();
+
+ZDvid::EDataType ZDvid::GetDataType(const std::string &typeName)
+{
+  ZDvid::EDataType type = ZDvid::TYPE_UNKNOWN;
+
+  std::map<std::string, ZDvid::EDataType>::const_iterator iter =
+      _DataTypeMap::M.find(typeName);
+  if (iter != _DataTypeMap::M.end()) {
+    type = iter->second;
+  }
+
+  return type;
+}
+
+ZDvid::EDataType ZDvid::GetDataTypeFromInfo(const ZJsonObject &obj)
+{
+  ZDvid::EDataType type = ZDvid::TYPE_UNKNOWN;
+
+  if (obj.hasKey("Base")) {
+    ZJsonObject baseObj(obj.value("Base"));
+    std::string typeName = ZJsonParser::stringValue(baseObj["TypeName"]);
+    type = GetDataType(typeName);
+  }
+
+  return type;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

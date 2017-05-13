@@ -4,7 +4,7 @@
 #include <qnamespace.h>
 #include "zintpoint.h"
 #include "zpoint.h"
-#include "neutube.h"
+#include "neutube_def.h"
 
 class QMouseEvent;
 
@@ -25,6 +25,8 @@ public:
 
   void set(QMouseEvent *event, int z);
   void set(QMouseEvent *event, EAction action, int z);
+  void setSliceAxis(NeuTube::EAxis axis);
+  NeuTube::EAxis getSliceAxis() const;
 
   //void setStackPosition(const ZPoint &pt);
   //void setStackPosition(double x, double y, double z);
@@ -113,6 +115,7 @@ private:
   ZPoint m_rawStackPosition; //If z is negative, it means a projection
   ZPoint m_stackPosition;
   bool m_isInStack;
+  NeuTube::EAxis m_sliceAxis;
 };
 
 #endif // ZMOUSEEVENT_H

@@ -34,6 +34,7 @@
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
 
+
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
 {
@@ -197,6 +198,11 @@ void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
   m_mainMvc->setDvidDialog(dvidDlg);
 }
 
+ZFlyEmProofMvc* ZProofreadWindow::getMainMvc() const
+{
+  return m_mainMvc;
+}
+
 void ZProofreadWindow::stressTestSlot()
 {
   if (m_stressTestOptionDlg->exec()) {
@@ -246,6 +252,12 @@ void ZProofreadWindow::createMenu()
   connect(exportScreenshotAction, SIGNAL(triggered()),
           this, SLOT(exportNeuronScreenshot()));
   exportMenu->addAction(exportScreenshotAction);
+
+  QAction *exportGrayscaleAction = new QAction("Grayscale", this);
+  connect(exportGrayscaleAction, SIGNAL(triggered()),
+          this, SLOT(exportGrayscale()));
+  exportMenu->addAction(exportGrayscaleAction);
+
 
   m_viewMenu = new QMenu("View", this);
 
@@ -734,6 +746,11 @@ void ZProofreadWindow::exploreBody()
     dvidFilter.setDvidTarget(target);
     m_flyemDataLoader->loadDataBundle(dvidFilter);
   }
+}
+
+void ZProofreadWindow::exportGrayscale()
+{
+  m_mainMvc->exportGrayscale();
 }
 
 void ZProofreadWindow::exportNeuronScreenshot()

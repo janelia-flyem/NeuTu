@@ -1,8 +1,12 @@
 #include "z3dgeometryfilter.h"
+#include "zjsonobject.h"
+#include "z3dfiltersetting.h"
+#include "zjsonparser.h"
 
 Z3DGeometryFilter::Z3DGeometryFilter()
   : Z3DProcessor()
   , m_outPort("GeometryFilter")
+  , m_visible("Visible", true)
   , m_stayOnTop("Always in Front", true)
   , m_pickingManager(NULL)
   , m_pickingObjectsRegistered(false)
@@ -12,6 +16,7 @@ Z3DGeometryFilter::Z3DGeometryFilter()
   addPort(m_outPort);
   m_rendererBase = new Z3DRendererBase();
   addParameter(m_stayOnTop);
+  addParameter(m_visible);
 
   setFilterName("geometryfilter");
 }
@@ -19,6 +24,16 @@ Z3DGeometryFilter::Z3DGeometryFilter()
 Z3DGeometryFilter::~Z3DGeometryFilter()
 {
   delete m_rendererBase;
+}
+
+void Z3DGeometryFilter::setVisible(bool v)
+{
+  m_visible.set(v);
+}
+
+bool Z3DGeometryFilter::isVisible() const
+{
+  return m_visible.get();
 }
 
 void Z3DGeometryFilter::setPickingManager(Z3DPickingManager *pm)
@@ -62,4 +77,30 @@ void Z3DGeometryFilter::get3DRayUnderScreenPoint(
   v1 = glm::unProject(glm::dvec3(x, height-y, 0.f), modelview, projection, viewport);
   v2 = glm::unProject(glm::dvec3(x, height-y, 1.f), modelview, projection, viewport);
   v2 = glm::normalize(v2-v1) + v1;
+}
+
+ZJsonObject Z3DGeometryFilter::getConfigJson() const
+{
+  ZJsonObject obj;
+
+  obj.setEntry(Z3DFilterSetting::FRONT_KEY, isStayOnTop());
+  obj.setEntry(Z3DFilterSetting::VISIBLE_KEY, isVisible());
+  obj.setEntry(Z3DFilterSetting::SIZE_SCALE_KEY, getSizeScale());
+
+  return obj;
+}
+
+void Z3DGeometryFilter::configure(const ZJsonObject &obj)
+{
+  if (obj.hasKey(Z3DFilterSetting::FRONT_KEY)) {
+    setStayOnTop(ZJsonParser::booleanValue(obj[Z3DFilterSetting::FRONT_KEY]));
+  }
+
+  if (obj.hasKey(Z3DFilterSetting::SIZE_SCALE_KEY)) {
+    setSizeScale(ZJsonParser::numberValue(obj[Z3DFilterSetting::SIZE_SCALE_KEY]));
+  }
+
+  if (obj.hasKey(Z3DFilterSetting::VISIBLE_KEY)) {
+    setVisible(ZJsonParser::booleanValue(obj[Z3DFilterSetting::VISIBLE_KEY]));
+  }
 }

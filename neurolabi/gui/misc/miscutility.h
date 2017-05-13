@@ -9,7 +9,7 @@
 #include "zhistogram.h"
 #include "zstack.hxx"
 #include "zobject3dscan.h"
-#include "neutube.h"
+#include "neutube_def.h"
 #include "zintcuboidarray.h"
 #include "zpointarray.h"
 #include "ztree.h"
@@ -40,6 +40,11 @@ ZGraph* makeCoOccurGraph(const Stack *stack, int nnbr);
 ZIntPoint getDsIntvFor3DVolume(const ZIntCuboid &box);
 
 ZIntPoint getDsIntvFor3DVolume(double dsRatio);
+int getIsoDsIntvFor3DVolume(double dsRatio, bool powed);
+int getIsoDsIntvFor3DVolume(
+    const ZIntCuboid &box, size_t maxVolume, bool powed);
+
+int GetZoomScale(int zoom);
 
 double GetExpansionScale(size_t currentVol, size_t maxVol);
 

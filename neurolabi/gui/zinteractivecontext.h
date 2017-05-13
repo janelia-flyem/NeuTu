@@ -99,7 +99,7 @@ public:
     INTERACT_RECT_DRAW, INTERACT_PUNCTA_MARK, INTERACT_IMAGE_MOVE,
     INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT,
     INTERACT_ADD_BOOKMARK, INTERACT_ADD_SYNAPSE, INTERACT_MOVE_SYNAPSE,
-    INTERACT_ADD_TODO_ITEM
+    INTERACT_ADD_TODO_ITEM, INTERACT_MOVE_CROSSHAIR
   };
 
 public:
@@ -167,6 +167,7 @@ public:
   inline bool isExitingEdit() const { return m_exitingEdit; }
 
   EUniqueMode getUniqueMode() const;
+  void setUniqueMode(EUniqueMode mode);
   //void setView(const QRect &projRegion, const QRect &viewPort);
 
   NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
@@ -190,6 +191,7 @@ private:
   BookmarkEditMode m_bookmarkEditMode;
   SynapseEditMode m_synapseEditMode;
   TodoEditMode m_todoEditMode;
+  EUniqueMode m_uniqueMode;
   bool m_exitingEdit;
   bool m_blockingContextMenu;
   bool m_acceptingRect;

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>470</width>
-    <height>290</height>
+    <height>351</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,6 +57,13 @@
      <item>
       <widget class="QLineEdit" name="todoLineEdit"/>
      </item>
+     <item>
+      <widget class="QLabel" name="todoHintLabel">
+       <property name="text">
+        <string>Leave it empty to use default name</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -67,11 +74,25 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Grayscale Source:</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Grayscale Source:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="grayscaleMainCheckBox">
+       <property name="text">
+        <string>Same as the main source</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="ZDvidSourceWidget" name="grayscaleSourceWidget" native="true"/>
@@ -84,11 +105,25 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Tile Source:</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Tile Source:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="tileMainCheckBox">
+       <property name="text">
+        <string>Same as the main source</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="ZDvidSourceWidget" name="tileSourceWidget" native="true"/>

@@ -229,7 +229,30 @@ size_t ZObject3dStripe::countForegroundOverlap(
   return count;
 }
 
-void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
+
+template<typename T>
+void ZObject3dStripe::addArray(
+    T *array, int v, int minV, int maxV, int width, const int *offset) const
+{
+//  v = (v < minV) ? minV : ((v > maxV) ? maxV : v);
+  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    int x0 = m_segmentArray[i];
+    int x1 = m_segmentArray[i + 1];
+    if (offset != NULL) {
+      x0 += offset[0];
+      x1 += offset[0];
+    }
+    if (x0 < width) {
+      x1 = std::min(x1, width - 1);
+      for (int x = x0; x <= x1; ++x) {
+        int tmpV = v + array[x];
+        array[x] = (tmpV < minV) ? minV : ((tmpV > maxV) ? maxV : tmpV);
+      }
+    }
+  }
+}
+
+void ZObject3dStripe::addStackValue(Stack *stack, int v, const int *offset) const
 {
   if (C_Stack::kind(stack) != GREY && C_Stack::kind(stack) != GREY16) {
     RECORD_ERROR(true, "Unsupported kind");
@@ -261,39 +284,76 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
   switch (C_Stack::kind(stack)) {
   case GREY:
     ima.array8 += arrayOffset;
-    v = (v < 0) ? 0 : ((v > 255) ? 255 : v);
-    for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
-      int x0 = m_segmentArray[i];
-      int x1 = m_segmentArray[i + 1];
-      if (offset != NULL) {
-        x0 += offset[0];
-        x1 += offset[0];
-      }
-      if (x0 < C_Stack::width(stack)) {
-        x1 = std::min(x1, C_Stack::width(stack) - 1);
-        for (int x = x0; x <= x1; ++x) {
-          ima.array8[x] = v;
-        }
-      }
-    }
+    addArray(ima.array8, v, 0, 255, C_Stack::width(stack), offset);
     break;
   case GREY16:
     ima.array16 += arrayOffset;
-    v = (v < 0) ? 0 : ((v > 65535) ? 65535 : v);
-    for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
-      int x0 = m_segmentArray[i];
-      int x1 = m_segmentArray[i + 1];
-      if (offset != NULL) {
-        x0 += offset[0];
-        x1 += offset[0];
-      }
-      if (x0 < C_Stack::width(stack)) {
-        x1 = std::min(x1, C_Stack::width(stack) - 1);
-        for (int x = x0; x <= x1; ++x) {
-          ima.array16[x] = v;
-        }
+    addArray(ima.array16, v, 0, 65535, C_Stack::width(stack), offset);
+    break;
+  default:
+    break;
+  }
+}
+
+template<typename T>
+void ZObject3dStripe::drawArray(
+    T *array, int v, int minV, int maxV, int width, const int *offset) const
+{
+  v = (v < minV) ? minV : ((v > maxV) ? maxV : v);
+  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    int x0 = m_segmentArray[i];
+    int x1 = m_segmentArray[i + 1];
+    if (offset != NULL) {
+      x0 += offset[0];
+      x1 += offset[0];
+    }
+    if (x0 < width) {
+      x1 = std::min(x1, width - 1);
+      for (int x = x0; x <= x1; ++x) {
+        array[x] = v;
       }
     }
+  }
+}
+
+
+void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
+{
+  if (C_Stack::kind(stack) != GREY && C_Stack::kind(stack) != GREY16) {
+    RECORD_ERROR(true, "Unsupported kind");
+    return;
+  }
+
+  Image_Array ima;
+  ima.array = stack->array;
+
+  int y = getY();
+  int z = getZ();
+
+  if (offset != NULL) {
+    y += offset[1];
+    z += offset[2];
+  }
+
+  if (y < 0 || y >= C_Stack::height(stack)) {
+    return;
+  }
+
+  if (z < 0 || z >= C_Stack::depth(stack)) {
+    return;
+  }
+
+  size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+  size_t arrayOffset = area * z + C_Stack::width(stack) * y;
+
+  switch (C_Stack::kind(stack)) {
+  case GREY:
+    ima.array8 += arrayOffset;
+    drawArray(ima.array8, v, 0, 255, C_Stack::width(stack), offset);
+    break;
+  case GREY16:
+    ima.array16 += arrayOffset;
+    drawArray(ima.array16, v, 0, 65535, C_Stack::width(stack), offset);
     break;
   default:
     break;

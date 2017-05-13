@@ -66,6 +66,11 @@ void ZIntCuboid::setWidth(int width)
   m_lastCorner.setX(m_firstCorner.getX() + width - 1);
 }
 
+void ZIntCuboid::setHeight(int height)
+{
+  m_lastCorner.setY(m_firstCorner.getY() + height - 1);
+}
+
 void ZIntCuboid::set(int x1, int y1, int z1, int x2, int y2, int z2)
 {
   setFirstCorner(x1, y1, z1);
@@ -123,6 +128,19 @@ void ZIntCuboid::expandY(int dy)
 {
   m_firstCorner.setY(m_firstCorner.getY() - dy);
   m_lastCorner.setY(m_lastCorner.getY() + dy);
+}
+
+void ZIntCuboid::expandZ(int dz)
+{
+  m_firstCorner.setZ(m_firstCorner.getZ() - dz);
+  m_lastCorner.setZ(m_lastCorner.getZ() + dz);
+}
+
+void ZIntCuboid::expand(int dx, int dy, int dz)
+{
+  expandX(dx);
+  expandY(dy);
+  expandZ(dz);
 }
 
 void ZIntCuboid::joinY(int y)

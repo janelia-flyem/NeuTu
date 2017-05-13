@@ -1,7 +1,10 @@
 #include "zdvidadvanceddialog.h"
 #include "ui_zdvidadvanceddialog.h"
+
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "dvid/zdvidtarget.h"
+#include "neutubeconfig.h"
 
 ZDvidAdvancedDialog::ZDvidAdvancedDialog(QWidget *parent) :
   QDialog(parent),
@@ -9,11 +12,62 @@ ZDvidAdvancedDialog::ZDvidAdvancedDialog(QWidget *parent) :
 {
   ui->setupUi(this);
   m_oldSupervised = true;
+
+  if (ui->grayscaleMainCheckBox->isChecked()) {
+    ui->grayscaleSourceWidget->setEnabled(false);
+  }
+  if (ui->tileMainCheckBox->isChecked()) {
+    ui->tileSourceWidget->setEnabled(false);
+  }
+
+  connect(ui->grayscaleMainCheckBox, SIGNAL(toggled(bool)),
+          ui->grayscaleSourceWidget, SLOT(setDisabled(bool)));
+  connect(ui->tileMainCheckBox, SIGNAL(toggled(bool)),
+          ui->tileSourceWidget, SLOT(setDisabled(bool)));
 }
 
 ZDvidAdvancedDialog::~ZDvidAdvancedDialog()
 {
   delete ui;
+}
+
+void ZDvidAdvancedDialog::update(const ZDvidTarget &dvidTarget)
+{
+  setSupervised(dvidTarget.isSupervised());
+#if defined(_FLYEM_)
+  setSupervisorServer(
+        dvidTarget.getSupervisor().empty() ?
+          GET_FLYEM_CONFIG.getDefaultLibrarian().c_str() :
+          dvidTarget.getSupervisor().c_str());
+#endif
+
+  if (dvidTarget.isDefaultTodoListName()) {
+    setTodoName("");
+  } else {
+    setTodoName(dvidTarget.getTodoListName());
+  }
+  setDvidServer(dvidTarget.getAddressWithPort().c_str());
+
+  ZDvidNode node = dvidTarget.getGrayScaleSource();
+  setGrayscaleSource(node, node == dvidTarget.getNode());
+
+  node = dvidTarget.getTileSource();
+  setTileSource(
+        dvidTarget.getTileSource(), node == dvidTarget.getNode());
+
+  updateWidgetForEdit(dvidTarget.isEditable());
+//  updateWidgetForDefaultSetting(dvidTarget.usingDefaultDataSetting());
+}
+
+void ZDvidAdvancedDialog::configure(ZDvidTarget *target)
+{
+  if (target != NULL) {
+    target->enableSupervisor(isSupervised());
+    target->setSupervisorServer(getSupervisorServer());
+    target->setTodoListName(getTodoName());
+    target->setGrayScaleSource(getGrayscaleSource());
+    target->setTileSource(getTileSource());
+  }
 }
 
 void ZDvidAdvancedDialog::backup()
@@ -23,6 +77,9 @@ void ZDvidAdvancedDialog::backup()
   m_oldTodoName = getTodoName();
   m_oldGrayscaleSource = ui->grayscaleSourceWidget->getNode();
   m_oldTileSource = ui->tileSourceWidget->getNode();
+  m_oldMainGrayscale = ui->grayscaleMainCheckBox->isChecked();
+  m_oldMainTile = ui->tileMainCheckBox->isChecked();
+//  m_oldDefaultTodo = ui->defaultTodoCheckBox->isChecked();
 }
 
 void ZDvidAdvancedDialog::recover()
@@ -30,8 +87,9 @@ void ZDvidAdvancedDialog::recover()
   setSupervised(m_oldSupervised);
   setSupervisorServer(m_oldSupervisorServer);
   setTodoName(m_oldTodoName);
-  setGrayscaleSource(m_oldGrayscaleSource);
-  setTileSource(m_oldTileSource);
+  setGrayscaleSource(m_oldGrayscaleSource, m_oldMainGrayscale);
+  setTileSource(m_oldTileSource, m_oldMainTile);
+//  ui->defaultTodoCheckBox->setChecked(m_oldDefaultTodo);
 }
 
 void ZDvidAdvancedDialog::setDvidServer(const QString &str)
@@ -46,52 +104,87 @@ void ZDvidAdvancedDialog::updateWidgetForEdit(bool editable)
   ui->todoLineEdit->setEnabled(editable);
 }
 
-void ZDvidAdvancedDialog::UpdateWidget(
-    QLabel *label, QLineEdit *lineEdit,
-    const QString &labelText, const QString &dataText)
+void ZDvidAdvancedDialog::UpdateWidget(QLabel *label, QLineEdit *lineEdit,
+    const QString &labelText, const QString &dataText, QWidget *hintWidget)
 {
   if (!dataText.isEmpty()) {
     lineEdit->setVisible(false);
     label->setText(labelText + ": " + dataText);
+    if (hintWidget != NULL) {
+      hintWidget->setVisible(false);
+    }
   } else {
     lineEdit->setVisible(true);
     label->setText(labelText);
+    if (hintWidget != NULL) {
+      hintWidget->setVisible(true);
+    }
   }
 }
 
 void ZDvidAdvancedDialog::UpdateWidget(
     QLabel *label, QLineEdit *lineEdit, const QString &labelText,
-    const ZJsonObject &obj, const char *key)
+    const ZJsonObject &obj, const char *key, QWidget *hintWidget)
 {
   if (obj.hasKey(key)) {
-    UpdateWidget(label, lineEdit, labelText, ZJsonParser::stringValue(obj[key]));
+    UpdateWidget(
+          label, lineEdit, labelText, ZJsonParser::stringValue(obj[key]),
+          hintWidget);
   } else {
-    UpdateWidget(label, lineEdit, labelText, "");
+    UpdateWidget(label, lineEdit, labelText, "", hintWidget);
   }
 }
 
 void ZDvidAdvancedDialog::updateWidgetForDefaultSetting(const ZJsonObject &obj)
 {
-  UpdateWidget(ui->todoLabel, ui->todoLineEdit, "Todo Name", obj, "todos");
+  UpdateWidget(ui->todoLabel, ui->todoLineEdit, "Todo Name", obj, "todos",
+               ui->todoHintLabel);
+//  ui->todoHintLabel->setVisible(ui->todoLineEdit->isVisible());
 }
 
-void ZDvidAdvancedDialog::setGrayscaleSource(const ZDvidNode &node)
+
+void ZDvidAdvancedDialog::setGrayscaleSource(
+    const ZDvidNode &node)
 {
   ui->grayscaleSourceWidget->setNode(node);
 }
 
-void ZDvidAdvancedDialog::setTileSource(const ZDvidNode &node)
+void ZDvidAdvancedDialog::setTileSource(
+    const ZDvidNode &node)
 {
   ui->tileSourceWidget->setNode(node);
 }
 
+
+void ZDvidAdvancedDialog::setGrayscaleSource(
+    const ZDvidNode &node, bool sameMainSource)
+{
+  ui->grayscaleSourceWidget->setNode(node);
+  ui->grayscaleMainCheckBox->setChecked(sameMainSource);
+}
+
+void ZDvidAdvancedDialog::setTileSource(
+    const ZDvidNode &node, bool sameMainSource)
+{
+  ui->tileSourceWidget->setNode(node);
+  ui->tileMainCheckBox->setChecked(sameMainSource);
+}
+
 ZDvidNode ZDvidAdvancedDialog::getGrayscaleSource() const
 {
+  if (ui->grayscaleMainCheckBox->isChecked()) {
+    return ZDvidNode();
+  }
+
   return ui->grayscaleSourceWidget->getNode();
 }
 
 ZDvidNode ZDvidAdvancedDialog::getTileSource() const
 {
+  if (ui->tileMainCheckBox->isChecked()) {
+    return ZDvidNode();
+  }
+
   return ui->tileSourceWidget->getNode();
 }
 
@@ -102,7 +195,13 @@ void ZDvidAdvancedDialog::setTodoName(const std::string &name)
 
 std::string ZDvidAdvancedDialog::getTodoName() const
 {
-  return ui->todoLineEdit->text().toStdString();
+  /*
+  if (ui->defaultTodoCheckBox->isChecked()) {
+    return "";
+  }
+  */
+
+  return ui->todoLineEdit->text().trimmed().toStdString();
 }
 
 bool ZDvidAdvancedDialog::isSupervised() const

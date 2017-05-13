@@ -288,6 +288,15 @@ ZStack* ZStackDoc::stackMask() const
   return NULL;
 }
 
+ZIntCuboid ZStackDoc::getDataRange() const
+{
+  if (getStack() == NULL) {
+    return ZIntCuboid();
+  }
+
+  return getStack()->getBoundBox();
+}
+
 void ZStackDoc::setStackBackground(NeuTube::EImageBackground bg)
 {
     m_stackBackground = bg;
@@ -343,7 +352,7 @@ void ZStackDoc::connectSignalSlot()
 
   connect(&m_reader, SIGNAL(finished()), this, SIGNAL(stackReadDone()));
   connect(this, SIGNAL(stackReadDone()), this, SLOT(loadReaderResult()));
-  connect(this, SIGNAL(stackModified()), this, SIGNAL(volumeModified()));
+  connect(this, SIGNAL(stackModified(bool)), this, SIGNAL(volumeModified()));
 
   connect(this, SIGNAL(progressAdvanced(double)),
           this, SLOT(advanceProgressSlot(double)));
@@ -435,7 +444,9 @@ void ZStackDoc::autoSave()
           qDebug() << autoSavePath.c_str();
 
           delete tree;
-        }
+
+//          ZSwcFileListModel::LoadDir(autoSaveDir.c_str(), true);
+        } 
       }
     }
   }
@@ -561,6 +572,11 @@ bool ZStackDoc::hasObject(ZStackObject::EType type) const
 bool ZStackDoc::hasObject(ZStackObject::EType type, const string &source) const
 {
     return m_objectGroup.findFirstSameSource(type, source) != NULL;
+}
+
+bool ZStackDoc::hasObject(ZStackObject::ETarget target) const
+{
+  return m_objectGroup.hasObject(target);
 }
 
 ZStackObject* ZStackDoc::getObject(ZStackObject::EType type, const std::string &source) const
@@ -1457,9 +1473,12 @@ void ZStackDoc::loadStack(Stack *stack, bool isOwner)
   mainStack = new ZStack;
 
   if (mainStack != NULL) {
+    ZIntCuboid oldBox = getDataRange();
+
     mainStack->load(stack, isOwner);
     initNeuronTracer();
-    notifyStackModified();
+
+    notifyStackModified(!oldBox.equals(getDataRange()));
   }
 }
 
@@ -1472,13 +1491,15 @@ void ZStackDoc::loadStack(ZStack *zstack)
   ZStack* &mainStack = stackRef();
 
   if (zstack != mainStack) {
+    ZIntCuboid oldBox = getDataRange();
+
     deprecate(STACK);
     mainStack = zstack;
     initNeuronTracer();
 
 //    emit stackBoundBoxChanged();
 
-    notifyStackModified();
+    notifyStackModified(!oldBox.equals(getDataRange()));
   }
 }
 
@@ -4427,32 +4448,31 @@ void ZStackDoc::mergeAllChain()
    }
 }
 
-QString ZStackDoc::rawDataInfo(
-    double cx, double cy, int z) const
+QString ZStackDoc::rawDataInfo(double cx, double cy, int z, NeuTube::EAxis axis) const
 {
   QString info;
 
-  int x = iround(cx);
-  int y = iround(cy);
+  int x = std::floor(cx);
+  int y = std::floor(cy);
 
   int wx = x;
   int wy = y;
   int wz = z;
 
-//  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
+  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
 
   if (x >= 0 && y >= 0) {
     std::ostringstream stream;
 
     stream << "(";
-    if (wx >= 0) {
-      stream << wx << ", ";
+    if (x >= 0) {
+      stream << x << ", ";
     }
-    if (wy >= 0) {
-      stream << wy;
+    if (y >= 0) {
+      stream << y;
     }
-    if (wz >= 0) {
-      stream << " , " << wz;
+    if (z >= 0) {
+      stream << " , " << z;
     }
 
     stream << ")";
@@ -4602,7 +4622,7 @@ bool ZStackDoc::binarize(int threshold)
     }
 
     if (mainStack->binarize(threshold)) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -4615,7 +4635,7 @@ bool ZStackDoc::bwsolid()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->bwsolid()) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -4628,7 +4648,7 @@ bool ZStackDoc::bwperim()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->bwperim()) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -4641,7 +4661,7 @@ bool ZStackDoc::invert()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     ZStackProcessor::invert(mainStack);
-    notifyStackModified();
+    notifyStackModified(false);
     return true;
   }
 
@@ -4653,7 +4673,7 @@ bool ZStackDoc::subtractBackground()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     ZStackProcessor::SubtractBackground(mainStack, 0.5, 3);
-    notifyStackModified();
+    notifyStackModified(false);
     return true;
   }
 
@@ -4665,7 +4685,7 @@ bool ZStackDoc::enhanceLine()
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
     if (mainStack->enhanceLine()) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -4723,7 +4743,8 @@ void ZStackDoc::loadFileList(const QList<QUrl> &urlList)
   for (QList<QUrl>::const_iterator iter = urlList.begin();
        iter != urlList.end(); ++iter) {
     // load files inside if is folder
-    QFileInfo dirCheck(iter->toLocalFile());
+    QString filePath = NeuTube::GetFilePath(*iter);
+    QFileInfo dirCheck(filePath);
     if (dirCheck.isDir()) {
       QDir dir = dirCheck.absoluteDir();
       QFileInfoList list = dir.entryInfoList(QDir::Files | QDir::NoSymLinks);
@@ -4843,7 +4864,9 @@ bool ZStackDoc::loadFile(const QString &filePath)
   bool succ = true;
 
   m_changingSaveState = false;
-  switch (ZFileType::FileType(filePath.toStdString())) {
+
+  const char *filePathStr = filePath.toLocal8Bit().constData();
+  switch (ZFileType::FileType(filePathStr)) {
   case ZFileType::SWC_FILE:
 #ifdef _FLYEM_2
     removeAllObject();
@@ -4874,12 +4897,12 @@ bool ZStackDoc::loadFile(const QString &filePath)
       executeAddObjectCommand(obj);
     } else {
       ZSparseObject *sobj = new ZSparseObject;
-      sobj->load(filePath.toStdString().c_str());
+      sobj->load(filePathStr);
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
       ZIntCuboid cuboid = sobj->getBoundBox();
-      ZStack *stack = ZStackFactory::makeVirtualStack(
+      ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       if (stack != NULL) {
         stack->setSource(filePath.toStdString());
@@ -4892,7 +4915,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
     setTag(NeuTube::Document::FLYEM_BODY);
     if (hasStackData()){
       ZObject3dScan *obj = new ZObject3dScan;
-      obj->importDvidObject(filePath.toStdString());
+      obj->importDvidObject(filePathStr);
       int index = m_objectGroup.getObjectList(
             ZStackObject::TYPE_OBJECT3D_SCAN).size() + 1;
       QColor color = m_objColorSheme.getColor(index);
@@ -4901,12 +4924,12 @@ bool ZStackDoc::loadFile(const QString &filePath)
       executeAddObjectCommand(obj);
     } else {
       ZSparseObject *sobj = new ZSparseObject;
-      sobj->importDvidObject(filePath.toStdString());
+      sobj->importDvidObject(filePathStr);
       addObject(sobj);
       sobj->setColor(255, 255, 255, 255);
 
       ZIntCuboid cuboid = sobj->getBoundBox();
-      ZStack *stack = ZStackFactory::makeVirtualStack(
+      ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       stack->setSource(filePath.toStdString());
       stack->setOffset(cuboid.getFirstCorner());
@@ -4918,21 +4941,21 @@ bool ZStackDoc::loadFile(const QString &filePath)
   case ZFileType::V3D_RAW_FILE:
   case ZFileType::PNG_FILE:
   case ZFileType::V3D_PBD_FILE:
-    readStack(filePath.toStdString().c_str(), false);
+    readStack(filePathStr, false);
     break;
   case ZFileType::FLYEM_NETWORK_FILE:
-    importFlyEmNetwork(filePath.toStdString().c_str());
+    importFlyEmNetwork(filePathStr);
     break;
   case ZFileType::JSON_FILE:
   case ZFileType::SYNAPSE_ANNOTATON_FILE:
-    if (!importSynapseAnnotation(filePath.toStdString())) {
+    if (!importSynapseAnnotation(filePathStr)) {
       succ = false;
     }
     break;
   case ZFileType::V3D_APO_FILE:
   case ZFileType::V3D_MARKER_FILE:
   case ZFileType::RAVELER_BOOKMARK:
-    if (!importPuncta(filePath.toStdString().c_str())) {
+    if (!importPuncta(filePathStr)) {
       succ = false;
     }
     break;
@@ -4988,6 +5011,34 @@ bool ZStackDoc::isDeprecated(EComponent component)
   return false;
 }
 
+/*
+ZStackObject* ZStackDoc::hitTestWidget(int x, int y)
+{
+
+}
+*/
+
+ZStackObject* ZStackDoc::hitTest(
+    const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis)
+{
+  QMutexLocker locker(m_objectGroup.getMutex());
+
+  ZOUT(LTRACE(), 5) << "Hit test";
+  QList<ZStackObject*> sortedObjList = m_objectGroup.getObjectList();
+  sort(sortedObjList.begin(), sortedObjList.end(),
+       ZStackObject::ZOrderBiggerThan());
+
+  for (QList<ZStackObject*>::iterator iter = sortedObjList.begin();
+       iter != sortedObjList.end(); ++iter) {
+    ZStackObject *obj = *iter;
+    if (obj->hit(stackPos, widgetPos, axis)) {
+      return obj;
+    }
+  }
+
+  return NULL;
+}
+
 ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
@@ -5010,7 +5061,8 @@ ZStackObject* ZStackDoc::hitTest(double x, double y, double z)
   return NULL;
 }
 
-ZStackObject* ZStackDoc::hitTest(double x, double y, NeuTube::EAxis sliceAxis)
+ZStackObject* ZStackDoc::hitTest(
+    double x, double y, NeuTube::EAxis sliceAxis)
 {
   QMutexLocker locker(m_objectGroup.getMutex());
 
@@ -5215,7 +5267,7 @@ void ZStackDoc::reloadStack()
 {
   if (m_stackFactory != NULL) {
     if (m_stackFactory->makeStack(getStack())) {
-      notifyStackModified();
+      notifyStackModified(false);
     }
   } else {
     updateStackFromSource();
@@ -5226,12 +5278,13 @@ void ZStackDoc::updateStackFromSource()
 {
   ZStack *mainStack = getStack();
   if (mainStack != NULL) {
+    ZIntCuboid oldBox = getDataRange();
     if (mainStack->isSwc()) {
       readSwc(mainStack->sourcePath().c_str());
-      notifyStackModified();
+      notifyStackModified(!oldBox.equals(getDataRange()));
     } else {
       if (mainStack->updateFromSource()) {
-        notifyStackModified();
+        notifyStackModified(!oldBox.equals(getDataRange()));
       }
     }
   }
@@ -5354,9 +5407,10 @@ void ZStackDoc::notifySparseObjectModified()
 }
 
 
-void ZStackDoc::notifyStackModified()
+void ZStackDoc::notifyStackModified(bool rangeChanged)
 {
-  emit stackModified();
+  emit stackModified(rangeChanged);
+//  emit stackBoundBoxChanged();
 }
 
 void ZStackDoc::notifySparseStackModified()
@@ -5669,7 +5723,7 @@ bool ZStackDoc::watershed()
   m_progressReporter->advance(0.5);
   if (mainStack != NULL) {
     if (mainStack->watershed()) {
-      notifyStackModified();
+      notifyStackModified(false);
       return true;
     }
   }
@@ -5775,7 +5829,7 @@ void ZStackDoc::bwthin()
       C_Stack::kill(out);
       m_progressReporter->advance(0.3);
       getStack()->deprecateSingleChannelView(0);
-      notifyStackModified();
+      notifyStackModified(false);
     }
 
     m_progressReporter->end();
@@ -7730,6 +7784,12 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       case ZStackObject::TYPE_DVID_LABEL_SLICE:
         player = new ZDvidLabelSlicePlayer(obj);
         break;
+      case ZStackObject::TYPE_DVID_GRAY_SLICE:
+        player = new ZDvidGraySlicePlayer(obj);
+        break;
+      case ZStackObject::TYPE_DVID_SPARSEVOL_SLICE:
+        player = new ZDvidSparsevolSlicePlayer(obj);
+        break;
       default:
         player = new ZDocPlayer(obj);
         break;
@@ -8930,6 +8990,8 @@ void ZStackDoc::mapToStackCoord(double *x, double *y, double *z)
 
 void ZStackDoc::setSparseStack(ZSparseStack *spStack)
 {
+  ZIntCuboid oldBox = getDataRange();
+
   if (m_sparseStack != NULL) {
     delete m_sparseStack;
   }
@@ -8940,8 +9002,8 @@ void ZStackDoc::setSparseStack(ZSparseStack *spStack)
       deprecate(STACK);
     }
 
-    m_stack = ZStackFactory::makeVirtualStack(spStack->getBoundBox());
-    notifyStackModified();
+    m_stack = ZStackFactory::MakeVirtualStack(spStack->getBoundBox());
+    notifyStackModified(!oldBox.equals(getDataRange()));
   }
 
   notifySparseStackModified();
@@ -8949,6 +9011,8 @@ void ZStackDoc::setSparseStack(ZSparseStack *spStack)
 
 void ZStackDoc::addData(ZStackDocReader &reader)
 {
+  ZIntCuboid oldBox = getDataRange();
+
   reader.getObjectGroup().moveTo(m_objectGroup);
 
   if (m_objectGroup.hasObject(ZStackObject::TYPE_SWC)) {
@@ -8959,7 +9023,7 @@ void ZStackDoc::addData(ZStackDocReader &reader)
     loadStack(reader.getStack());
     setStackSource(reader.getStackSource());
     initNeuronTracer();
-    notifyStackModified();
+    notifyStackModified(!oldBox.equals(getDataRange()));
   }
 
   if (reader.getSparseStack() != NULL) {
@@ -9145,7 +9209,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
               obj->setSource(
                     ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                       player->getLabel()));
-              obj->setHittable(false);
+              obj->setHitProtocal(ZStackObject::HIT_NONE);
               obj->setProjectionVisible(false);
               obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
               LINFO() << "Adding" << obj << obj->getSource();

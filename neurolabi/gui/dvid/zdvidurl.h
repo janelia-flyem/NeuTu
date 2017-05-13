@@ -72,6 +72,7 @@ public:
   std::string getSparsevolUrl(
       uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const;
   std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
+  std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom);
 
 
 
@@ -203,6 +204,8 @@ public:
   std::string getAnnotationUrl(
       const std::string &dataName, const ZIntCuboid &box) const;
 
+  std::string getDataSyncUrl(
+      const std::string &dataName, const std::string &queryString) const;
   std::string getAnnotationSyncUrl(const std::string &dataName) const;
   std::string getAnnotationSyncUrl(
       const std::string &dataName, const std::string &queryString) const;
@@ -238,9 +241,12 @@ public:
 
 
   std::string getSynapseLabelszUrl(int n) const;
+  std::string getSynapseLabelszBodyUrl(uint64_t bodyId) const;
 
   static std::string GetLabelszIndexTypeStr(ZDvid::ELabelIndexType type);
   std::string getSynapseLabelszUrl(int n, ZDvid::ELabelIndexType indexType) const;
+  std::string getSynapseLabelszBodyUrl(
+      uint64_t bodyId, ZDvid::ELabelIndexType indexType) const;
 
   std::string getSynapseLabelszThresholdUrl(int threshold) const;
   std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType) const;

@@ -142,9 +142,11 @@ void ZSurfReconWindow::onServiceDone()
   QNetworkReply* reply=(QNetworkReply*)sender();
   if(reply->objectName()=="post")//here comes the result url and md5
   {
-    std::tuple<QString,QString> x=getResultUrlAndMd5(reply->readAll());
-    QString url=std::get<0>(x);
-    QString md5=std::get<1>(x);
+    std::pair<QString,QString> x=getResultUrlAndMd5(reply->readAll());
+//    QString url=std::get<0>(x);
+//    QString md5=std::get<1>(x);
+    url = x.first;
+    md5 = x.second;
     if(url=="" || md5=="")
     {
       QMessageBox::information(0,"service error","no result or md5 createad");
@@ -260,7 +262,7 @@ void ZSurfReconWindow::onOk()
 }
 
 
-std::tuple<QString,QString> ZSurfReconWindow::getResultUrlAndMd5(const QByteArray& reply)
+std::pair<QString,QString> ZSurfReconWindow::getResultUrlAndMd5(const QByteArray& reply)
 {
   QJsonParseError json_error;
   QJsonDocument doucment = QJsonDocument::fromJson(reply, &json_error);
@@ -278,7 +280,7 @@ std::tuple<QString,QString> ZSurfReconWindow::getResultUrlAndMd5(const QByteArra
         result_url=obj.take("result url").toString();
     }
   }
-  return std::tie(result_url,md5);
+  return std::pair(result_url,md5);
 }
 
 

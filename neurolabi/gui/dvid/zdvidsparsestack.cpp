@@ -8,6 +8,7 @@
 #include "zpainter.h"
 #include "zimage.h"
 #include "neutubeconfig.h"
+#include "c_stack.h"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
@@ -33,6 +34,30 @@ void ZDvidSparseStack::init()
   m_label = 0;
   setCancelFillValue(false);
 //  m_cancelingValueFill = false;
+}
+
+ZStack* ZDvidSparseStack::getSlice(
+    int z, int x0, int y0, int width, int height) const
+{
+  ZStack *slice  = getSlice(z);
+
+  ZStack *newSlice = NULL;
+
+  if (slice != NULL) {
+    Stack *newSliceData = NULL;
+
+    newSliceData = C_Stack::crop(
+          slice->c_stack(), x0 - slice->getOffset().getX(),
+          y0 - slice->getOffset().getY(), 0, width, height, 1, NULL);
+
+    newSlice = new ZStack;
+    newSlice->consume(newSliceData);
+    newSlice->setOffset(x0, y0, z);
+
+    delete slice;
+  }
+
+  return newSlice;
 }
 
 ZStack* ZDvidSparseStack::getSlice(int z) const
@@ -186,6 +211,19 @@ ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
   return m_grayScaleReader;
 }
 
+void ZDvidSparseStack::loadBody(
+    uint64_t bodyId, const ZIntCuboid &range, bool canonizing)
+{
+  m_isValueFilled = false;
+
+  ZObject3dScan *obj = new ZObject3dScan;
+
+  getMaskReader().readBody(bodyId, range, canonizing, obj);
+
+  m_sparseStack.setObjectMask(obj);
+  setLabel(bodyId);
+}
+
 void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 {
   m_isValueFilled = false;
@@ -255,7 +293,8 @@ void ZDvidSparseStack::cancelFillValueSync()
   }
 }
 
-void ZDvidSparseStack::runFillValueFunc(const ZIntCuboid &box, bool syncing)
+void ZDvidSparseStack::runFillValueFunc(
+    const ZIntCuboid &box, bool syncing, bool cont)
 {
   if (!m_isValueFilled) {
     QString threadId = getFillValueThreadId();
@@ -276,7 +315,7 @@ void ZDvidSparseStack::runFillValueFunc(const ZIntCuboid &box, bool syncing)
         QFuture<void> future = QtConcurrent::run(
               this, &ZDvidSparseStack::fillValue, box, true, false);
         future.waitForFinished();
-        if (!m_isValueFilled) {
+        if (!m_isValueFilled && cont) {
           runFillValueFunc();
         }
       } else {
@@ -530,6 +569,45 @@ ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
   return m_sparseStack.getStack();
 }
 
+ZStack* ZDvidSparseStack::makeDsStack(int xintv, int yintv, int zintv)
+{
+  runFillValueFunc(ZIntCuboid(), true, false);
+  m_sparseStack.deprecate(ZSparseStack::STACK);
+
+  return m_sparseStack.makeDsStack(xintv, yintv, zintv);
+}
+
+ZStack* ZDvidSparseStack::makeIsoDsStack(size_t maxVolume)
+{
+  ZStack *stack = NULL;
+
+  if (maxVolume == 0) {
+    return NULL;
+  }
+
+  runFillValueFunc(ZIntCuboid(), true, false);
+  m_sparseStack.deprecate(ZSparseStack::STACK);
+  stack = m_sparseStack.makeIsoDsStack(maxVolume);
+
+  return stack;
+}
+
+
+ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range)
+{
+  ZStack *stack = NULL;
+
+  if (range.contains(getBoundBox()) || range.isEmpty()) {
+    stack = getStack()->clone();
+  } else {
+    runFillValueFunc(range, true, false);
+    m_sparseStack.deprecate(ZSparseStack::STACK);
+    stack = m_sparseStack.makeStack(range);
+  }
+
+  return stack;
+}
+
 bool ZDvidSparseStack::stackDownsampleRequired()
 {
   syncObjectMask();
@@ -568,6 +646,12 @@ void ZDvidSparseStack::syncObjectMask()
 {
   finishObjectMaskLoading();
   pushAttribute();
+}
+
+void ZDvidSparseStack::shakeOff()
+{
+  syncObjectMask();
+  m_sparseStack.shakeOff();
 }
 
 /*

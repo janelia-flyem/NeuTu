@@ -1,4 +1,6 @@
 #include "zstackobjectsourcefactory.h"
+
+#include <iostream>
 #include "zstring.h"
 #include "zstackobjectsource.h"
 
@@ -35,18 +37,89 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodyMaskSource(uint64_t bodyId)
   return source;
 }
 
-std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(uint64_t bodyId)
+std::string ZStackObjectSourceFactory::MakeFlyEmBodyDiffSource()
+{
+  return "#.FlyEm.Body.Diff#";
+}
+
+bool ZStackObjectSourceFactory::IsBodyDiffSource(const std::string &source)
+{
+  return ZString(source).startsWith(MakeFlyEmBodyDiffSource());
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmBodyDiffSource(
+    uint64_t bodyId, const std::string &tag)
+{
+  ZString source = MakeFlyEmBodyDiffSource();
+  source.appendNumber(bodyId);
+  source += "." + tag;
+
+  return source;
+}
+
+std::string ZStackObjectSourceFactory::GetBodyTypeName(
+    FlyEM::EBodyType bodyType)
+{
+  switch (bodyType) {
+  case FlyEM::BODY_FULL:
+    return "full";
+  case FlyEM::BODY_COARSE:
+    return "coarse";
+  case FlyEM::BODY_SKELETON:
+    return "skeleton";
+  case FlyEM::BODY_NULL:
+    break;
+  }
+
+  return "";
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(uint64_t bodyId)
+{
+  return MakeFlyEmBodySource(bodyId, 0, FlyEM::BODY_COARSE);
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
+    uint64_t bodyId, int zoom)
 {
   ZString source = "#.FlyEmBody#";
   source.appendNumber(bodyId);
+  if (zoom > 0) {
+    source += "_";
+    source.appendNumber(zoom);
+  }
 
   return source;
 }
 
 std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
-    uint64_t bodyId, const std::string &tag)
+    uint64_t bodyId, int zoom, const std::string &tag)
 {
-  return MakeFlyEmBodySource(bodyId) + "#." + tag;
+  return MakeFlyEmBodySource(bodyId, zoom) + "#." + tag;
+}
+
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
+    uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
+{
+  return MakeFlyEmBodySource(bodyId, zoom, GetBodyTypeName(bodyType));
+}
+
+std::string ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
+    const std::string &source)
+{
+  ZString substr;
+  ZString sourceBase = "#.FlyEmBody";
+  if (source.length() > sourceBase.length() + 1) {
+    ZString::size_type startPos = source.find('#', sourceBase.length()) + 1;
+    ZString::size_type tokenPos = source.find('#', startPos);
+    if (tokenPos == ZString::npos) {
+      substr = source.substr(startPos);
+    } else {
+      substr = source.substr(startPos, tokenPos - startPos);
+    }
+  }
+
+  return substr;
 }
 
 uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
@@ -54,16 +127,43 @@ uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
 {
   uint64_t id = 0;
 
-  ZString sourceBase = "#.FlyEmBody#";
-  if (source.length() > sourceBase.length()) {
-    ZString substr = source.substr(sourceBase.length() - 1);
-    std::vector<uint64_t> idArray = substr.toUint64Array();
-    if (idArray.size() == 1) {
-      id = idArray.front();
-    }
+  ZString substr = ExtractBodyStrFromFlyEmBodySource(source);
+  std::vector<uint64_t> idArray = substr.toUint64Array();
+  if (idArray.size() >= 1) {
+    id = idArray.front();
   }
 
   return id;
+}
+
+FlyEM::EBodyType ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
+      const std::string &source)
+{
+  ZString str(source);
+  FlyEM::EBodyType bodyType = FlyEM::BODY_NULL;
+  if (str.endsWith("#.full")) {
+    bodyType = FlyEM::BODY_FULL;
+  } else if (str.endsWith("#.coarse")) {
+    bodyType = FlyEM::BODY_COARSE;
+  } else if (str.endsWith("#.skeleton")) {
+    bodyType = FlyEM::BODY_SKELETON;
+  }
+
+  return bodyType;
+}
+
+int ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+    const std::string &source)
+{
+  int zoom = 0;
+
+  ZString substr = ExtractBodyStrFromFlyEmBodySource(source);
+  std::vector<uint64_t> idArray = substr.toUint64Array();
+  if (idArray.size() >= 2) {
+    zoom = idArray[1];
+  }
+
+  return zoom;
 }
 
 std::string ZStackObjectSourceFactory::MakeCurrentMsTileSource(int resLevel)

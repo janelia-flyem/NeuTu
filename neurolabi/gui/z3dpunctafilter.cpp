@@ -10,12 +10,14 @@
 #include "z3dlinewithfixedwidthcolorrenderer.h"
 #include "zeventlistenerparameter.h"
 #include "zpunctumcolorscheme.h"
+#include "z3dfiltersetting.h"
+#include "zjsonparser.h"
 
 Z3DPunctaFilter::Z3DPunctaFilter()
   : Z3DGeometryFilter()
   , m_sphereRenderer(NULL)
   , m_boundBoxRenderer(NULL)
-  , m_showPuncta("Visible", true)
+//  , m_showPuncta("Visible", true)
   , m_colorMode("Color Mode")
   , m_singleColorForAllPuncta("Puncta Color", glm::vec4(ZRandomInstance.randReal<float>(),
                                                        ZRandomInstance.randReal<float>(),
@@ -44,14 +46,14 @@ Z3DPunctaFilter::Z3DPunctaFilter()
   connect(&m_useSameSizeForAllPuncta, SIGNAL(valueChanged()), this, SLOT(changePunctaSize()));
 
 
-  addParameter(m_showPuncta);
+//  addParameter(m_showPuncta);
   addParameter(m_colorMode);
 
   addParameter(m_singleColorForAllPuncta);
 
   addParameter(m_useSameSizeForAllPuncta);
 
-  connect(&m_showPuncta, SIGNAL(valueChanged(bool)),
+  connect(&m_visible, SIGNAL(valueChanged(bool)),
           this, SIGNAL(visibleChanged(bool)));
 
   m_selectPunctumEvent = new ZEventListenerParameter(
@@ -108,6 +110,7 @@ void Z3DPunctaFilter::process(Z3DEye)
   }
 }
 
+/*
 void Z3DPunctaFilter::setVisible(bool v)
 {
   m_showPuncta.set(v);
@@ -116,6 +119,18 @@ void Z3DPunctaFilter::setVisible(bool v)
 bool Z3DPunctaFilter::isVisible() const
 {
   return m_showPuncta.get();
+}
+*/
+void Z3DPunctaFilter::configure(const ZJsonObject &obj)
+{
+  Z3DGeometryFilter::configure(obj);
+  if (obj.hasKey(Z3DFilterSetting::COLOR_MODE_KEY)) {
+    setColorMode(ZJsonParser::stringValue(obj[Z3DFilterSetting::COLOR_MODE_KEY]));
+  }
+
+  if (obj.hasKey(Z3DFilterSetting::VISIBLE_KEY)) {
+    setVisible(ZJsonParser::booleanValue(obj[Z3DFilterSetting::VISIBLE_KEY]));
+  }
 }
 
 void Z3DPunctaFilter::setData(const std::vector<ZPunctum *> &punctaList)
@@ -171,7 +186,7 @@ std::vector<double> Z3DPunctaFilter::getPunctumBound(ZPunctum *p) const
 
 bool Z3DPunctaFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && m_showPuncta.get() && !m_origPunctaList.empty();
+  return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_origPunctaList.empty();
 }
 
 namespace {
@@ -191,7 +206,7 @@ ZWidgetsGroup *Z3DPunctaFilter::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Puncta", NULL, 1);
-    new ZWidgetsGroup(&m_showPuncta, m_widgetsGroup, 1);
+    new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_colorMode, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_singleColorForAllPuncta, m_widgetsGroup, 1);
@@ -250,7 +265,7 @@ void Z3DPunctaFilter::render(Z3DEye eye)
 {
   if (m_punctaList.empty())
     return;
-  if (!m_showPuncta.get())
+  if (!isVisible())
     return;
 
   m_rendererBase->activateRenderer(m_sphereRenderer);
@@ -264,7 +279,7 @@ void Z3DPunctaFilter::renderPicking(Z3DEye eye)
       return;
   if (m_punctaList.empty())
     return;
-  if (!m_showPuncta.get())
+  if (!isVisible())
     return;
 
   if (!m_pickingObjectsRegistered)

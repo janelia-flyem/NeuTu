@@ -61,6 +61,8 @@ class ZActionLibrary;
 class ZMenuFactory;
 class ZJsonObject;
 class Z3DGeometryFilter;
+class ZComboEditDialog;
+class ZFlyEmBodyComparisonDialog;
 
 
 class Z3DWindow : public QMainWindow
@@ -196,8 +198,15 @@ public: //controls
   QDockWidget * getObjectsDockWidget();
   ZROIWidget * getROIsDockWidget();
 
+  //Configuration
+  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(ERendererLayer layer) const;
+
+
 public:
   void setROIs(size_t n);
+
+  bool readyForAction(ZActionFactory::EAction action) const;
 
 public:
   //Control panel setup
@@ -212,12 +221,15 @@ public: //external signal call
 
 signals:
   void closed();
-  void locating2DViewTriggered(const ZStackViewParam &param);
+//  void locating2DViewTriggered(const ZStackViewParam &param);
+  void locating2DViewTriggered(int x, int y, int z, int width);
   void croppingSwcInRoi();
+
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
   void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
   void addingToSplitMarker(int x, int y, int z, uint64_t bodyId);
   void deselectingBody(const std::set<uint64_t> bodyId);
+  void settingNormalTodoVisible(bool);
 
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -240,6 +252,7 @@ public slots:
   void update3DGraphDisplay();
   void update3DCubeDisplay();
   void updateTodoDisplay();
+  void updateTodoVisibility();
 //  void updateDecorationDisplay();
   void updateDisplay();
 
@@ -330,7 +343,11 @@ public slots:
   void addToSplitMarker();
   void addDoneMarker();
   void updateBody();
+  void compareBody();
   void deselectBody();
+  void copyPosition();
+  void setNormalTodoVisible(bool visible);
+
 
   void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
   void takeScreenShot(QString filename, Z3DScreenShotType sst);
@@ -389,11 +406,6 @@ private:
   void createDockWindows();
   void customizeDockWindows(QTabWidget *m_settingTab);
   void setWindowSize();
-
-  //Configuration
-  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
-  ZJsonObject getConfigJson(ERendererLayer layer) const;
-
   // init 3D view
   void init(EInitMode mode = INIT_NORMAL);
 
@@ -562,6 +574,8 @@ private:
   mutable QMutex m_filterMutex;
   ZSwcIsolationDialog *m_swcIsolationDlg;
   HelpDialog *m_helpDlg;
+  ZComboEditDialog *m_dvidDlg;
+  ZFlyEmBodyComparisonDialog *m_bodyCmpDlg;
 };
 
 #endif // Z3DWINDOW_H

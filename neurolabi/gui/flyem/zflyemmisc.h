@@ -20,6 +20,9 @@ class ZObject3dScan;
 class QPointF;
 class QComboBox;
 class ZStroke2d;
+class QDir;
+class ZStack;
+class ZVaa3dMarker;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -59,6 +62,23 @@ QString ReadLastLines(const QString &filePath, int maxCount);
 
 ZStroke2d* MakeSplitSeed(const ZObject3dScan &slice, int label);
 std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
+
+ZStack* GenerateExampleStack(const ZJsonObject &obj);
+
+namespace MB6Paper {
+ZDvidTarget MakeDvidTarget();
+QSet<uint64_t> ReadBodyFromSequencer(const QString &filePath);
+QSet<uint64_t> ReadBodyFromSequencer(const QStringList &fileList);
+QSet<uint64_t> ReadBodyFromSequencer(
+    const QDir &dir, const QStringList &fileList);
+QSet<uint64_t> ReadBodyFromSequencer(
+    const QDir &dir, const QString &filePath);
+QString GenerateMBONConvCast(const QString &movieDir);
+QString GenerateNeuronCast(
+    const ZDvidTarget &target, const QString &movieDir,
+    QVector<uint64_t> neuronArray = QVector<uint64_t>());
+std::vector<ZVaa3dMarker> GetLocationMarker(const ZJsonArray &json);
+}
 
 class HackathonEvaluator {
 public:

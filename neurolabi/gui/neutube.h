@@ -25,6 +25,8 @@ QFileDialog::Options GetFileDialogOption();
 QString GetLastFilePath();
 
 void RegisterMetaType();
+
+QString GetFilePath(const QUrl &url);
 }
 
 

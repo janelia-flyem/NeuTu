@@ -37,13 +37,28 @@
 #include "zswcglobalfeatureanalyzer.h"
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcfactory.h"
+#include "dvid/zdvidneurontracer.h"
 //#include "mylib/utilities.h"
+
+//Incude your module headers here
+#include "command/zcommandmodule.h"
+#include "command/zstackdownsamplecommand.h"
+#include "command/zbodysplitcommand.h"
 
 using namespace std;
 
 ZCommandLine::ZCommandLine()
 {
   init();
+}
+
+ZCommandLine::~ZCommandLine()
+{
+  for (std::map<std::string, ZCommandModule*>::iterator
+       iter = m_commandMap.begin(); iter != m_commandMap.end(); ++iter) {
+    delete iter->second;
+  }
+  m_commandMap.clear();
 }
 
 void ZCommandLine::init()
@@ -63,8 +78,36 @@ void ZCommandLine::init()
   m_fullOverlapScreen = false;
   m_forceUpdate = false;
   m_namedOnly = false;
+  m_intvSpecified = false;
 
+  registerModule();
 }
+
+void ZCommandLine::registerModule()
+{
+  registerModule<ZStackDownsampleCommand>("downsample_stack");
+  registerModule<ZBodySplitCommand>("split_body");
+}
+
+template <typename T>
+void ZCommandLine::registerModule(const std::string &name)
+{
+  registerModule(name, new T);
+}
+
+void ZCommandLine::registerModule(
+    const std::string &name, ZCommandModule *module)
+{
+  if (!name.empty() && module != NULL) {
+    if (m_commandMap.count(name) > 0) {
+      std::cout << "WARNING: Cannot overwrite a registered module: " << name
+                << std::endl;
+    } else {
+      m_commandMap[name] = module;
+    }
+  }
+}
+
 
 ZCommandLine::ECommand ZCommandLine::getCommand(const char *cmd)
 {
@@ -552,6 +595,37 @@ void ZCommandLine::loadTraceConfig()
   }
 }
 
+ZSwcTree* ZCommandLine::traceFile()
+{
+  ZStack signal;
+  signal.load(m_input[0]);
+
+  ZNeuronTracer tracer;
+  tracer.setIntensityField(&signal);
+
+  tracer.setTraceLevel(m_level);
+
+  ZSwcTree *tree = tracer.trace(&signal);
+
+  return tree;
+}
+
+ZSwcTree* ZCommandLine::traceDvid()
+{
+  ZDvidNeuronTracer tracer;
+
+  ZDvidTarget target;
+  target.setFromSourceString(m_input[0], ZDvid::TYPE_UINT8BLK);
+
+  target.setNullLabelBlockName();
+  tracer.setDvidTarget(target);
+  tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
+
+  ZSwcTree *tree = tracer.getResult();
+
+  return tree;
+}
+
 int ZCommandLine::runTraceNeuron()
 {
   if (m_input.empty()) {
@@ -564,31 +638,26 @@ int ZCommandLine::runTraceNeuron()
     return 1;
   }
 
+  int stat = 1;
+
   loadTraceConfig();
 
-  ZStack signal;
-  signal.load(m_input[0]);
-
-  ZNeuronTracer tracer;
-  tracer.setIntensityField(&signal);
-//  tracer.initTraceWorkspace(&signal);
-//  tracer.initConnectionTestWorkspace();
-
-#if 0
-  if (m_configJson.hasKey("trace")) {
-    tracer.loadJsonObject(
-          ZJsonObject(
-            m_configJson["trace"], ZJsonValue::SET_INCREASE_REF_COUNT));
+  ZSwcTree *tree = NULL;
+  if (ZDvidTarget::isDvidTarget(m_input[0])) {
+    tree = traceDvid();
+  } else {
+    tree = traceFile();
   }
-#endif
 
-  tracer.setTraceLevel(m_level);
+  if (tree != NULL) {
+    tree->save(m_output);
+    delete tree;
 
-  ZSwcTree *tree = tracer.trace(&signal);
+    stat = 0;
+  }
 
-  tree->save(m_output);
 
-  return 0;
+  return stat;
 }
 
 int ZCommandLine::runImageSeparation()
@@ -667,6 +736,44 @@ std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input) const
   }
 
   return bodySet;
+}
+
+ZCommandModule* ZCommandLine::getModule(const std::string &name)
+{
+  ZCommandModule *module = NULL;
+  if (m_commandMap.count(name) > 0) {
+    module = m_commandMap[name];
+  }
+
+  return module;
+}
+
+int ZCommandLine::runGeneral()
+{
+  if (!m_generalConfig.empty()) {
+#ifdef _DEBUG_
+    std::cout << "Config: " << m_generalConfig << std::endl;
+#endif
+
+    ZJsonObject config;
+    if (ZFileType::FileType(m_generalConfig) == ZFileType::JSON_FILE) {
+      config.load(m_generalConfig);
+    } else {
+      config.decode(m_generalConfig);
+    }
+
+    ZCommandModule *module =
+        getModule(ZJsonParser::stringValue(config["command"]));
+    if (module != NULL) {
+      return module->run(m_input, m_output, config);
+    } else {
+      std::cerr << "Invalid command module." << std::endl;
+
+      return 1;
+    }
+  }
+
+  return 1;
 }
 
 int ZCommandLine::runTest()
@@ -984,6 +1091,17 @@ int ZCommandLine::skeletonizeDvid()
     skeletonizer.configure(config);
   }
 
+  if (m_intvSpecified) {
+    skeletonizer.setDownsampleInterval(m_intv[0], m_intv[1], m_intv[2]);
+  }
+
+  std::ofstream stream;
+  if (!m_output.empty() && !m_outputFlag.empty()) {
+    if (m_outputFlag == "thickness") {
+      stream.open(m_output.c_str());
+    }
+  }
+
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {
     uint64_t bodyId = bodyIdArray[rank[i] - 1];
     if (excluded.count(bodyId) == 0) {
@@ -995,7 +1113,22 @@ int ZCommandLine::skeletonizeDvid()
         ZObject3dScan obj;
         reader.readBody(bodyId, true, &obj);
         tree = skeletonizer.makeSkeleton(obj);
-        writer.writeSwc(bodyId, tree);
+        if (tree != NULL) {
+          writer.writeSwc(bodyId, tree);
+        } else {
+          std::cout << "WARNING: skeletonization failed for "
+                    << bodyId << std::endl;
+        }
+      }
+
+      if (tree != NULL) {
+        if (stream.is_open()) {
+          if (m_outputFlag == "thickness") {
+            stream << bodyId << " "
+                   << SwcTreeNode::radius(tree->getThickestNode())
+                   << std::endl;
+          }
+        }
       }
       delete tree;
       std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
@@ -1049,6 +1182,10 @@ int ZCommandLine::skeletonizeFile()
     skeletonizer.configure(
           ZJsonObject(m_configJson["skeletonize"],
           ZJsonValue::SET_INCREASE_REF_COUNT));
+  }
+
+  if (m_intvSpecified) {
+    skeletonizer.setDownsampleInterval(m_intv[0], m_intv[1], m_intv[2]);
   }
 
   if (m_isVerbose) {
@@ -1111,8 +1248,9 @@ int ZCommandLine::run(int argc, char *argv[])
     "[-o <string>]",
     "[--config <string>]", "[--intv <int> <int> <int>]",
     "[--skeletonize] [--force] [--bodyid <string>] [--named_only]",
+    "[--general <string>]",
     "[--compare_swc] [--scale <double>]",
-    "[--trace] [--level <int>]","[--separate <string>]",
+    "[--trace] [--level <int>]","[--separate <string>]", "[--foutput <string>]",
     "[--compute_seed]",
     "[--position <int> <int> <int>]",
     "[--size <int> <int> <int>]",
@@ -1121,9 +1259,18 @@ int ZCommandLine::run(int argc, char *argv[])
     0
   };
 
+#ifdef _DEBUG_2
+  for (int i = 0; i < argc; ++i) {
+    std::cout << argv[i] << std::endl;
+  }
+#endif
+
   Process_Arguments(argc, argv, const_cast<char**>(Spec), 1);
 
-  std::string applicationDir = ZString::dirPath(argv[0]);
+  QCoreApplication app(argc, argv, false);
+  std::string applicationDir = app.applicationDirPath().toStdString();
+
+//  std::string applicationDir = ZString::dirPath(argv[0]);
   std::cout << applicationDir << std::endl;
   m_configDir = applicationDir + "/json";
   std::string configPath = m_configDir + "/command_config.json";
@@ -1171,6 +1318,10 @@ int ZCommandLine::run(int argc, char *argv[])
     m_namedOnly = true;
   }
 
+  if (Is_Arg_Matched(const_cast<char*>("--foutput"))) {
+    m_outputFlag = Get_String_Arg(const_cast<char*>("--foutput"));
+  }
+
   m_scale = 1.0;
   if (Is_Arg_Matched(const_cast<char*>("--scale"))) {
     m_scale = Get_Double_Arg(const_cast<char*>("--scale"));
@@ -1209,6 +1360,7 @@ int ZCommandLine::run(int argc, char *argv[])
     for (int i = 0; i < 3; ++i) {
       m_intv[i] = Get_Int_Arg(const_cast<char*>("--intv"), i + 1);
     }
+    m_intvSpecified = true;
   }
 
   if (Is_Arg_Matched(const_cast<char*>("--position"))) {
@@ -1247,6 +1399,9 @@ int ZCommandLine::run(int argc, char *argv[])
       command = COMPARE_SWC;
     } else if (Is_Arg_Matched(const_cast<char*>("--compute_seed"))) {
       command = COMPUTE_SEED;
+    } else if (Is_Arg_Matched(const_cast<char*>("--general"))) {
+      command = GENERAL_COMMAND;
+      m_generalConfig = Get_String_Arg(const_cast<char*>("--general"));
     }
   }
 
@@ -1275,6 +1430,9 @@ int ZCommandLine::run(int argc, char *argv[])
     return runComputeSeed();
   case TEST_SELF:
     return runTest();
+  case GENERAL_COMMAND:
+    return runGeneral();
+    break;
   default:
     std::cout << "Unknown command" << std::endl;
     return 1;

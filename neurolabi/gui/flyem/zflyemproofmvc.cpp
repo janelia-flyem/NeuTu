@@ -76,6 +76,9 @@
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyemskeletonupdatedialog.h"
 #include "z3dmainwindow.h"
+#include "dvid/zdvidgrayslicescrollstrategy.h"
+#include "dialogs/zflyemgrayscaledialog.h"
+#include "zstackwriter.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -114,6 +117,7 @@ void ZFlyEmProofMvc::init()
   m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
   m_infoDlg = new ZInfoDialog(this);
   m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
+  m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
 
 
   connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
@@ -385,6 +389,30 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
           this, SLOT(removeBookmark(QList<ZFlyEmBookmark*>)));
 }
 
+void ZFlyEmProofMvc::exportGrayscale()
+{
+  if (m_grayscaleDlg->exec()) {
+    QString fileName =
+        ZDialogFactory::GetSaveFileName("Save Grayscale", "", this);
+    if (!fileName.isEmpty()) {
+      exportGrayscale(m_grayscaleDlg->getBoundBox(), fileName);
+    }
+  }
+}
+
+void ZFlyEmProofMvc::exportGrayscale(
+    const ZIntCuboid &box, const QString &fileName)
+{
+  ZStack *stack =
+      getCompleteDocument()->getDvidReader().readGrayScale(box);
+
+  if (stack != NULL) {
+    stack->save(fileName.toStdString());
+  }
+
+  delete stack;
+}
+
 void ZFlyEmProofMvc::exportNeuronScreenshot(
     const std::vector<uint64_t> &bodyIdArray, int width, int height,
     const QString &outDir)
@@ -461,13 +489,12 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
     } else if (window == m_roiWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachRoiWindow()));
     }
-    connect(window, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-            this, SLOT(zoomTo(ZStackViewParam)));
+    connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+            this, SLOT(zoomTo(int, int, int, int)));
   }
 }
 
-ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(
-    ZFlyEmBody3dDoc::EBodyType bodyType)
+ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(FlyEM::EBodyType bodyType)
 {
   ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
   doc->setDvidTarget(getDvidTarget());
@@ -587,11 +614,16 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
   connect(window, SIGNAL(deselectingBody(std::set<uint64_t>)),
           getCompleteDocument(),
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
+  connect(m_bodyWindow, SIGNAL(settingNormalTodoVisible(bool)),
+          doc, SLOT(setNormalTodoVisible(bool)));
+  connect(doc, SIGNAL(todoVisibleChanged()),
+          m_bodyWindow, SLOT(updateTodoVisibility()));
+
 }
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_COARSE);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_COARSE);
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
@@ -620,13 +652,14 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 
 void ZFlyEmProofMvc::makeBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_FULL);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_bodyWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_bodyWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
 
 
   prepareBodyWindowSignalSlot(m_bodyWindow, doc);
+
   setWindowSignalSlot(m_bodyWindow);
 
   m_bodyWindow->setWindowType(NeuTube3D::TYPE_BODY);
@@ -645,7 +678,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(ZFlyEmBody3dDoc::BODY_SKELETON);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
@@ -844,7 +877,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
       currentBodySourceSet.insert(
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(*iter));
+            ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(*iter));
     }
 
     m_coarseBodyWindow->getDocument()->beginObjectModifiedMode(
@@ -872,7 +905,8 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
       for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
            iter != selectedMapped.end(); ++iter) {
         uint64_t label = *iter;
-        std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(label);
+        std::string source =
+            ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(label);
         if (oldBodySourceSet.count(source) == 0) {
           ZObject3dScan body;
 
@@ -1100,6 +1134,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   //    getCompleteDocument()->clearData();
   getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
 
+  ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
+  if (slice != NULL) {
+    ZDvidGraySliceScrollStrategy *scrollStrategy =
+        new ZDvidGraySliceScrollStrategy;
+    scrollStrategy->setGraySlice(slice);
+
+    getView()->setScrollStrategy(scrollStrategy);
+  }
+
   ZJsonObject contrastObj = reader.readContrastProtocal();
   getPresenter()->setHighContrastProtocal(contrastObj);
 
@@ -1215,7 +1258,7 @@ void ZFlyEmProofMvc::setDvidTarget()
 ZDvidTarget ZFlyEmProofMvc::getDvidTarget() const
 {
   if (m_dvidDlg != NULL) {
-    return getCompleteDocument()->getDvidReader().getDvidTarget();
+    return getCompleteDocument()->getDvidTarget();
 //    return m_dvidDlg->getDvidTarget();
   }
 
@@ -1323,8 +1366,8 @@ void ZFlyEmProofMvc::customInit()
 
 
   m_splitProject.setDocument(getDocument());
-  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(const ZStackViewParam&)),
-          this->getView(), SLOT(setView(const ZStackViewParam&)));
+  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
           this, SLOT(updateSplitBody()));
   /*
@@ -1598,6 +1641,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
              iter != selected.end(); ++iter) {
           uint64_t bodyId = *iter;
           ZDvidSparsevolSlice *obj = doc->makeDvidSparsevol(labelSlice, bodyId);
+          obj->update(getView()->getViewParameter());
           /*
           ZDvidSparsevolSlice *obj = new ZDvidSparsevolSlice;
           obj->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
@@ -1664,7 +1708,11 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
           if (!annotation.isEmpty()) {
             getCompleteDocument()->recordAnnotation(bodyId, annotation);
-            finalAnnotation.mergeAnnotation(annotation);
+            if (finalAnnotation.isEmpty()) {
+              finalAnnotation = annotation;
+            } else {
+              finalAnnotation.mergeAnnotation(annotation);
+            }
           }
         }
 
@@ -2232,7 +2280,8 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
   body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);
   body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-  body->setHittable(false);
+//  body->setHittable(false);
+  body->setHitProtocal(ZStackObject::HIT_NONE);
   body->setSelectable(false);
   ZOUT(LINFO(), 3) << "Adding body:" << body;
   getDocument()->addObject(body, true);
@@ -2266,7 +2315,8 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
           getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
       ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
-      labelSlice->setHittable(false);
+//      labelSlice->setHittable(false);
+      labelSlice->setHitProtocal(ZStackObject::HIT_NONE);
 
       body->setColor(labelSlice->getLabelColor(
                        bodyId, NeuTube::BODY_LABEL_ORIGINAL));
@@ -2380,32 +2430,84 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 
 void ZFlyEmProofMvc::exportSelectedBodyStack()
 {
-  QString fileName =
-      ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
-  if (!fileName.isEmpty()) {
-    ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
-    if (slice != NULL) {
-      std::set<uint64_t> idSet =
-          slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+  if (m_grayscaleDlg->exec()) {
+    QString fileName =
+        ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
+    if (!fileName.isEmpty()) {
+      ZDvidLabelSlice *slice =
+          getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+      if (slice != NULL) {
+        std::set<uint64_t> idSet =
+            slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
 
+        ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+        ZDvidSparseStack *sparseStack = NULL;
+        if (reader.isReady()) {
+          std::set<uint64_t>::const_iterator iter = idSet.begin();
+          sparseStack = reader.readDvidSparseStack(*iter);
+          ++iter;
+          for (; iter != idSet.end(); ++iter) {
+            ZDvidSparseStack *sparseStack2 = reader.readDvidSparseStack(*iter);
+            sparseStack->getSparseStack()->merge(*(sparseStack2->getSparseStack()));
 
-      ZDvidReader &reader = getCompleteDocument()->getDvidReader();
-      ZDvidSparseStack *sparseStack = NULL;
-      if (reader.isReady()) {
-        std::set<uint64_t>::const_iterator iter = idSet.begin();
-        sparseStack = reader.readDvidSparseStack(*iter);
-        ++iter;
-        for (; iter != idSet.end(); ++iter) {
-          ZDvidSparseStack *sparseStack2 = reader.readDvidSparseStack(*iter);
-          sparseStack->getSparseStack()->merge(*(sparseStack2->getSparseStack()));
+            delete sparseStack2;
+          }
+        }
 
-          delete sparseStack2;
+        ZStackWriter stackWriter;
+        if (m_grayscaleDlg->isFullRange()) {
+          stackWriter.write(fileName.toStdString(), sparseStack->getStack());
+//          sparseStack->getStack()->save(fileName.toStdString());
+        } else {
+          ZStack *stack = sparseStack->makeStack(m_grayscaleDlg->getBoundBox());
+//          stack->save(fileName.toStdString());
+          stackWriter.write(fileName.toStdString(), stack);
+          delete stack;
+        }
+        delete sparseStack;
+      }
+    }
+  }
+}
+
+void ZFlyEmProofMvc::exportSelectedBodyLevel()
+{
+  if (m_grayscaleDlg->exec()) {
+    QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
+    if (!fileName.isEmpty()) {
+      ZDvidLabelSlice *slice =
+          getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+      if (slice != NULL) {
+        std::set<uint64_t> idSet =
+            slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+        //      std::set<uint64_t> idSet =
+        //          m_mergeProject.getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+
+        ZObject3dScanArray objArray;
+        objArray.resize(idSet.size());
+
+        ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+        if (reader.isReady()) {
+          int index = 0;
+          for (std::set<uint64_t>::const_iterator iter = idSet.begin();
+               iter != idSet.end(); ++iter) {
+            ZObject3dScan &obj = objArray[index];
+            reader.readBody(*iter, false, &obj);
+            index++;
+          }
+        }
+
+        ZStack *stack = NULL;
+        if (m_grayscaleDlg->isFullRange()) {
+          stack = objArray.toLabelField();
+        } else {
+          stack = objArray.toLabelField(m_grayscaleDlg->getBoundBox());
+        }
+        if (stack != NULL) {
+          stack->save(fileName.toStdString());
+          delete stack;
         }
       }
-
-      sparseStack->getStack()->save(fileName.toStdString());
-      delete sparseStack;
     }
   }
 }
@@ -2534,8 +2636,8 @@ void ZFlyEmProofMvc::exitSplit()
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
-
-    labelSlice->setHittable(true);
+    labelSlice->setHitProtocal(ZStackObject::HIT_NONE);
+//    labelSlice->setHittable(true);
 
     //m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
@@ -2813,7 +2915,7 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
     ZDvidLabelSlice *slice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     if (slice != NULL) {
-      slice->setMaxSize(width, height);
+      slice->setMaxSize(getView()->getViewParameter(), width, height);
       getView()->paintObject();
     }
   }
@@ -3968,7 +4070,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
                                  arg(m_splitProject.getBodyId()),
                                  NeuTube::MSG_ERROR));
           } else {
-            ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+            ZDvidInfo dvidInfo = reader.readLabelInfo();
             ZObject3dScan bodyInRoi;
             ZObject3dScan::ConstSegmentIterator iter(&body);
             while (iter.hasNext()) {
@@ -4017,19 +4119,21 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   bool processed = false;
   if (urls.size() == 1) {
     const QUrl &url = urls[0];
-    if (ZFileType::FileType(url.path().toStdString()) == ZFileType::JSON_FILE) {
+    QString filePath = NeuTube::GetFilePath(url);
+    if (ZFileType::FileType(filePath.toStdString()) == ZFileType::JSON_FILE) {
       processed = true; //todo
     }
   }
 
   if (!processed) {
     foreach (const QUrl &url, urls) {
-      if (ZFileType::FileType(url.path().toStdString()) ==
-          ZFileType::SWC_FILE) {
+      QString filePath = NeuTube::GetFilePath(url);
+      if (ZFileType::FileType(filePath.toStdString()) == ZFileType::SWC_FILE) {
         ZSwcTree *tree = new ZSwcTree;
-        tree->load(url.path().toStdString());
+        tree->load(filePath.toStdString());
         tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
-        tree->setHittable(false);
+//        tree->setHittable(false);
+        tree->setHitProtocal(ZStackObject::HIT_NONE);
         tree->setColor(QColor(255, 0, 0));
         getDocument()->addObject(tree);
       }

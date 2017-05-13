@@ -330,12 +330,9 @@ void ZFlyEmRoiDialog::loadPartialGrayscaleFunc(
       m_project->downloadRoi(z);
     }
 
-    QString infoString = reader.readInfo("grayscale");
 
-    qDebug() << infoString;
-
-    ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(infoString.toStdString());
+//    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+//    dvidInfo.setFromJsonString(infoString.toStdString());
 
     ZStack *stack = NULL;
     stack = reader.readGrayScale(x0, y0, z,
@@ -368,9 +365,9 @@ void ZFlyEmRoiDialog::prepareQuickLoadFunc(
   //const ZDvidTarget &target = m_project->getDvidTarget();
   ZDvidReader reader;
   if (z >= 0 && reader.open(target)) {
-    QString infoString = reader.readInfo("grayscale");
-    ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(infoString.toStdString());
+//    QString infoString = reader.readInfo("grayscale");
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+//    dvidInfo.setFromJsonString(infoString.toStdString());
 
     /*
     std::string lowresPath =
@@ -489,12 +486,12 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       m_project->downloadRoi(z);
     }
 
-    QString infoString = reader.readInfo("grayscale");
+//    QString infoString = reader.readInfo("grayscale");
 
-    qDebug() << infoString;
+//    qDebug() << infoString;
 
-    ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(infoString.toStdString());
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+//    dvidInfo.setFromJsonString(infoString.toStdString());
 
     //int z = m_zDlg->getValue();
     //m_project->setZ(z);

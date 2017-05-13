@@ -15,10 +15,8 @@
 #include "zstack.hxx"
 #include "zdvidclient.h"
 #include "flyem/zflyem.h"
-#include "zintcuboid.h"
 #include "zclosedcurve.h"
 #include "dvid/zdvidinfo.h"
-#include "zintcuboid.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidsynapse.h"
 #include "dvid/zdvidbufferreader.h"
@@ -44,6 +42,7 @@ class ZFlyEmBodyAnnotation;
 class ZFlyEmBookmark;
 class ZFlyEmToDoItem;
 class ZDvidRoi;
+class ZObject3dScanArray;
 
 namespace libdvid{
 class DVIDNodeService;
@@ -104,19 +103,28 @@ public:
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
                           NeuTube::EAxis axis, ZObject3dScan *result);
-  ZObject3dScan* readBody(
-      uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
+  ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
 
   ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result);
+  ZObject3dScan* readMultiscaleBody(
+      uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result);
+
+  ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet);
 
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId);
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
+  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range);
   ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
+  ZStack* readGrayScale(
+      const std::string &dataName,
+      int x0, int y0, int z0, int width, int height, int depth) const;
+  ZStack* readGrayScale(
+      int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
 #if 0
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;
@@ -128,7 +136,7 @@ public:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
 
-  QString readInfo(const QString &dataName) const;
+//  QString readInfo(const QString &dataName) const;
 
   std::set<uint64_t> readBodyId(
       int x0, int y0, int z0, int width, int height, int depth,
@@ -157,6 +165,9 @@ public:
   ZIntPoint readRoiBlockSize(const std::string &dataName) const;
 
   ZJsonObject readInfo() const;
+  ZJsonObject readInfo(const std::string &dataName) const;
+
+  ZDvidInfo readDataInfo(const std::string &dataName) const;
 
   bool hasData(const std::string &dataName) const;
   std::string getType(const std::string &dataName) const;
@@ -189,15 +200,24 @@ public:
 #if defined(_ENABLE_LOWTIS_)
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
+  ZStack *readGrayScaleLowtis(int x0, int y0, int z0,
+                              int width, int height, int zoom = 0) const;
+  ZStack *readGrayScaleLowtis(
+      int x0, int y0, int z0,
+      int width, int height, int zoom, int cx, int cy) const;
 #endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
                          int dim1, int dim2, int width, int height);
                          */
 
+  int readSynapseLabelszBody(
+      uint64_t bodyId, ZDvid::ELabelIndexType index) const;
   ZJsonArray readSynapseLabelsz(int n, ZDvid::ELabelIndexType index) const;
-  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index) const;
-  ZJsonArray readSynapseLabelszThreshold(int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
+  ZJsonArray readSynapseLabelszThreshold(
+      int threshold, ZDvid::ELabelIndexType index) const;
+  ZJsonArray readSynapseLabelszThreshold(
+      int threshold, ZDvid::ELabelIndexType index, int offset, int number) const;
 
   bool hasSparseVolume() const;
   bool hasSparseVolume(uint64_t bodyId) const;
@@ -223,11 +243,16 @@ public:
   void updateMaxLabelZoom();
   void updateMaxLabelZoom(
       const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
+  void updateMaxGrayscaleZoom();
+  void updateMaxGrayscaleZoom(
+      const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
 
   uint64_t readBodyIdAt(int x, int y, int z) const;
   uint64_t readBodyIdAt(const ZIntPoint &pt) const;
   std::vector<uint64_t> readBodyIdAt(
       const std::vector<ZIntPoint> &ptArray) const;
+  std::vector<std::vector<uint64_t> > readBodyIdAt(
+      const std::vector<std::vector<ZIntPoint> > &ptArray) const;
   template <typename InputIterator>
   std::vector<uint64_t> readBodyIdAt(
       const InputIterator &first, const InputIterator &last) const;
@@ -334,6 +359,9 @@ public:
 
   ZJsonObject readDataMap() const;
 
+  std::string readBodyLabelName() const;
+  void syncBodyLabelName();
+
 //  std::vector<std::string> readMasterList() const;
   static std::string ReadMasterNode(const ZDvidTarget &target);
   static std::vector<std::string> ReadMasterList(const ZDvidTarget &target);
@@ -349,6 +377,8 @@ public:
   bool refreshLabelBuffer();
 
   void testApiLoad();
+
+  int checkProofreadingData() const;
 
 signals:
   void readingDone();
@@ -387,6 +417,8 @@ private:
   void loadDefaultDataSetting();
   void loadDvidDataSetting(const ZJsonObject obj);
 
+  bool reportMissingData(const std::string dataName) const;
+
 protected:
 //  QEventLoop *m_eventLoop;
 //  ZDvidClient *m_dvidClient;
@@ -407,6 +439,8 @@ protected:
 #if defined(_ENABLE_LOWTIS_)
   mutable lowtis::DVIDLabelblkConfig m_lowtisConfig;
   mutable ZSharedPointer<lowtis::ImageService> m_lowtisService;
+  mutable lowtis::DVIDGrayblkConfig m_lowtisConfigGray;
+  mutable ZSharedPointer<lowtis::ImageService> m_lowtisServiceGray;
 #endif
 
 };

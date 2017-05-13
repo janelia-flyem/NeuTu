@@ -21,6 +21,7 @@ class QPointF;
 class QRectF;
 class QRect;
 class QTransform;
+class ZViewProj;
 
 /*!
  * \brief The painter class using QPainter to draw objects with extended options
@@ -77,6 +78,7 @@ public:
 
   void drawImage(
       const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect);
+  void drawImage(const ZViewProj &viewProj, const ZImage &image);
 
   /*!
    * \brief Draw image.
@@ -94,6 +96,9 @@ public:
       const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);
 
   void drawPixmap(const QRectF &targetRect, const ZPixmap &image);
+
+  void drawPixmap(const ZViewProj &viewProj, const ZPixmap &image);
+
 
   /*!
    * \brief Draw image.

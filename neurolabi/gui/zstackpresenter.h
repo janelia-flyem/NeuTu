@@ -265,6 +265,8 @@ public:
    */
   void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
 
+  void moveCrossHairToMouse(int mouseX, int mouseY);
+
   void increaseZoomRatio();
   void decreaseZoomRatio();
 
@@ -383,6 +385,8 @@ public slots:
 
   void slotTest();
 
+  void copyCurrentPosition();
+
 
   void notifyUser(const QString &msg);
 
@@ -435,6 +439,7 @@ signals:
   void checkingBookmark();
   void uncheckingBookmark();
   void savingStack();
+  void movingCrossHairTo(int x, int y);
 
 protected:
   void init();

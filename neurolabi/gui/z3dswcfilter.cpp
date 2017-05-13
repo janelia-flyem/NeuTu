@@ -21,6 +21,9 @@
 #include "tz_geometry.h"
 #include "neutubeconfig.h"
 #include "zintcuboid.h"
+#include "z3dswcfilter.h"
+#include "z3dfiltersetting.h"
+#include "zjsonparser.h"
 
 Z3DSwcFilter::Z3DSwcFilter()
   : Z3DGeometryFilter()
@@ -29,7 +32,7 @@ Z3DSwcFilter::Z3DSwcFilter()
   , m_sphereRenderer(NULL)
   , m_sphereRendererForCone(NULL)
   , m_boundBoxRenderer(NULL)
-  , m_showSwcs("Visible", true)
+//  , m_showSwcs("Visible", true)
   , m_renderingPrimitive("Geometry")
   , m_colorMode("Color Mode")
   , m_pressedSwc(NULL)
@@ -51,7 +54,7 @@ Z3DSwcFilter::Z3DSwcFilter()
   initSubclassTypeColor();
 
 
-  addParameter(m_showSwcs);
+//  addParameter(m_showSwcs);
 
 
   // rendering primitive
@@ -352,10 +355,11 @@ void Z3DSwcFilter::initSubclassTypeColor()
         new ZVec4Parameter(name, glm::vec4(0xcc/255.f, 0xcc/255.f, 0xcc/255.f, 1.f)));
   for (size_t i=0; i<m_colorsForSubclassType.size(); i++) {
     m_colorsForSubclassType[i]->setStyle("COLOR");
-    connect(m_colorsForSubclassType[i], SIGNAL(valueChanged()), this, SLOT(prepareColor()));
+    connect(m_colorsForSubclassType[i], SIGNAL(valueChanged()),
+            this, SLOT(prepareColor()));
   }
 }
-
+/*
 void Z3DSwcFilter::setVisible(bool v)
 {
   m_showSwcs.set(v);
@@ -364,6 +368,32 @@ void Z3DSwcFilter::setVisible(bool v)
 bool Z3DSwcFilter::isVisible() const
 {
   return m_showSwcs.get();
+}
+*/
+void Z3DSwcFilter::configure(const ZJsonObject &obj)
+{
+  Z3DGeometryFilter::configure(obj);
+
+  if (obj.hasKey(Z3DFilterSetting::COLOR_MODE_KEY)) {
+    setColorMode(ZJsonParser::stringValue(obj[Z3DFilterSetting::COLOR_MODE_KEY]));
+  }
+
+  if (obj.hasKey(Z3DFilterSetting::SHAPE_MODE_KEY)) {
+    setRenderingPrimitive(
+          ZJsonParser::stringValue(obj[Z3DFilterSetting::SHAPE_MODE_KEY]));
+  }
+}
+
+ZJsonObject Z3DSwcFilter::getConfigJson() const
+{
+  ZJsonObject obj = Z3DGeometryFilter::getConfigJson();
+
+  obj.setEntry(
+        Z3DFilterSetting::COLOR_MODE_KEY, m_colorMode.get().toStdString());
+  obj.setEntry(
+        Z3DFilterSetting::SHAPE_MODE_KEY, m_renderingPrimitive.get().toStdString());
+
+  return obj;
 }
 
 
@@ -604,7 +634,7 @@ void Z3DSwcFilter::getTreeNodeBound(Swc_Tree_Node *tn,
 
 bool Z3DSwcFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && m_showSwcs.get() && !m_origSwcList.empty();
+  return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_origSwcList.empty();
 }
 
 namespace {
@@ -624,7 +654,7 @@ ZWidgetsGroup *Z3DSwcFilter::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Neurons", NULL, 1);
-    new ZWidgetsGroup(&m_showSwcs, m_widgetsGroup, 1);
+    new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_renderingPrimitive, m_widgetsGroup, 1);
     new ZWidgetsGroup(&m_colorMode, m_widgetsGroup, 1);
@@ -707,7 +737,7 @@ void Z3DSwcFilter::clearDecorateSwcList()
 
 void Z3DSwcFilter::render(Z3DEye eye)
 {
-  if (!m_showSwcs.get())
+  if (!isVisible())
       return;
   if (m_swcList.empty())
     return;
@@ -735,7 +765,7 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
   }
 
   if (m_enablePicking) {
-    if (!m_showSwcs.get())
+    if (!isVisible())
       return;
     if (!getPickingManager())
       return;
@@ -1023,25 +1053,27 @@ void Z3DSwcFilter::prepareData()
         type = 0;
       }
 
-      m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
-      QString guiname;
-      if (type >= m_guiNameList.size()) {
-        guiname = QString("Type %1 Color").arg(type);
-      } else {
-        guiname = m_guiNameList[type];
-      }
-      if (m_biocytinColorMapper.find(type) == m_biocytinColorMapper.end()) {
-        QColor color = m_colorScheme.getColor(type);
-        m_biocytinColorMapper[type] =
-            new ZVec4Parameter(guiname, glm::vec4(color.redF(), color.greenF(),
-                                                  color.blueF(), 1.f));
-        m_biocytinColorMapper[type]->setStyle("COLOR");
-        connect(m_biocytinColorMapper[type], SIGNAL(valueChanged()),
-            this, SLOT(prepareColor()));
-        addParameter(m_biocytinColorMapper[type]);
-        needUpdateWidget = true;
-      } else {
-        m_biocytinColorMapper[type]->setName(guiname);
+      if (GET_APPLICATION_NAME == "Biocytin") {
+        m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
+        QString guiname;
+        if (type >= m_guiNameList.size()) {
+          guiname = QString("Type %1 Color").arg(type);
+        } else {
+          guiname = m_guiNameList[type];
+        }
+        if (m_biocytinColorMapper.find(type) == m_biocytinColorMapper.end()) {
+          QColor color = m_colorScheme.getColor(type);
+          m_biocytinColorMapper[type] =
+              new ZVec4Parameter(guiname, glm::vec4(color.redF(), color.greenF(),
+                                                    color.blueF(), 1.f));
+          m_biocytinColorMapper[type]->setStyle("COLOR");
+          connect(m_biocytinColorMapper[type], SIGNAL(valueChanged()),
+                  this, SLOT(prepareColor()));
+          addParameter(m_biocytinColorMapper[type]);
+          needUpdateWidget = true;
+        } else {
+          m_biocytinColorMapper[type]->setName(guiname);
+        }
       }
     }
   }
@@ -1686,6 +1718,7 @@ void Z3DSwcFilter::decompseSwcTree()
   m_decompsedNodePairs.resize(m_swcList.size());
   m_decomposedNodes.resize(m_swcList.size());
 
+  int prevType = -1;
   for (size_t i=0; i<m_swcList.size(); i++) {
     if (m_swcList[i]->isVisible()) {
       std::vector<std::pair<Swc_Tree_Node*, Swc_Tree_Node*> > allPairs;
@@ -1695,9 +1728,12 @@ void Z3DSwcFilter::decompseSwcTree()
       for (Swc_Tree_Node *tn = swcTree->begin(); tn != swcTree->end(); tn = swcTree->next()) {
         if (!Swc_Tree_Node_Is_Virtual(tn)) {
           int type = SwcTreeNode::type(tn);
-          m_allNodeType.insert(type);
-          if (type > m_maxType) {
-            m_maxType = type;
+          if (type != prevType) {
+            m_allNodeType.insert(type);
+            if (type > m_maxType) {
+              m_maxType = type;
+            }
+            prevType = type;
           }
           allNodes.push_back(tn);
           m_sortedNodeList.push_back(tn);

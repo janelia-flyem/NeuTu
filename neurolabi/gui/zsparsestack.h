@@ -32,7 +32,9 @@ public:
   ZStack* getStack();
   const ZStack* getStack() const;
 
-  ZStack *getStack(const ZIntCuboid &box, ZIntPoint *dsIntv = NULL);
+  ZStack *makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv = NULL);
+  ZStack *makeIsoDsStack(size_t maxVolume);
+  ZStack* makeDsStack(int xintv, int yintv, int zintv);
 
   static bool DownsampleRequired(const ZIntCuboid &box);
   static size_t GetMaxStackVolume();
@@ -105,6 +107,8 @@ public:
   bool isEmpty() const;
 
   void merge(ZSparseStack &sparseStack);
+
+  void shakeOff();
 
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,

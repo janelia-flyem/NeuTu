@@ -6,6 +6,7 @@
 #include "tz_math.h"
 #include "zobject3dfactory.h"
 #include "zintcuboidarray.h"
+#include "zintcuboid.h"
 
 const int ZDvidInfo::m_defaultBlockSize = 32;
 
@@ -44,15 +45,13 @@ bool ZDvidInfo::isValid() const
   return (m_stackSize[0] > 0 && m_stackSize[1] > 0 && m_stackSize[2] > 0);
 }
 
-void ZDvidInfo::setFromJsonString(const std::string &str)
+void ZDvidInfo::set(const ZJsonObject &rootObj)
 {
   clear();
-
-  ZJsonObject rootObj;
-  if (rootObj.decode(str)) {
+  if (!rootObj.isEmpty()) {
     ZJsonObject obj;
     if (rootObj.hasKey("Extended")) {
-      obj.set(rootObj["Extended"], ZJsonValue::SET_INCREASE_REF_COUNT);
+      obj.set(rootObj.value("Extended"));
     } else {
       obj = rootObj;
     }
@@ -129,6 +128,13 @@ void ZDvidInfo::setFromJsonString(const std::string &str)
       }
     }
   }
+}
+
+void ZDvidInfo::setFromJsonString(const std::string &str)
+{
+  ZJsonObject rootObj;
+  rootObj.decode(str);
+  set(rootObj);
 }
 
 void ZDvidInfo::print() const
@@ -387,6 +393,12 @@ int ZDvidInfo::getMaxX() const
 int ZDvidInfo::getMaxY() const
 {
   return getMinY() + m_stackSize[1] - 1;
+}
+
+ZIntCuboid ZDvidInfo::getDataRange() const
+{
+  return ZIntCuboid(getMinX(), getMinY(), getMinZ(),
+                    getMaxX(), getMaxY(), getMaxZ());
 }
 
 ZIntCuboid ZDvidInfo::getBlockBox(int x, int y, int z) const

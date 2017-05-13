@@ -83,7 +83,7 @@ void ZStackDocLoader::processChanged(ZStackDoc *doc)
 
   if (m_isStackChanged) {
     //doc->initNeuronTracer();
-    doc->notifyStackModified();
+    doc->notifyStackModified(true);
   }
 }
 

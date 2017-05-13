@@ -552,6 +552,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;
+  case ACTION_COPY_POSITION:
+    action = new QAction("Copy position", parent);
+    break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
     break;
@@ -583,6 +586,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_UNCHECK_TODO_ITEM:
     action = new QAction("Set unchecked", parent);
+    break;
+  case ACTION_SHOW_NORMAL_TODO:
+    action = new QAction("Show Normal Todo", parent);
+    action->setCheckable(true);
+    action->setChecked(true);
     break;
   case ACTION_TODO_ITEM_ANNOT_NORMAL:
     action = new QAction("Normal todo", parent);
@@ -618,6 +626,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_FLYEM_UPDATE_BODY:
     action = new QAction("Update Bodies", parent);
     action->setToolTip("Update bodies from DVID");
+    break;
+  case ACTION_FLYEM_COMPARE_BODY:
+    action = new QAction("Compare Body", parent);
+    action->setToolTip("Compare the body with one from another version");
     break;
   case ACTION_SAVE_STACK:
     action = new QAction("Save Stack", parent);

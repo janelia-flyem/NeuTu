@@ -15,6 +15,7 @@
 #include "zwidgetfactory.h"
 #include "znormcolormap.h"
 #include "flyem/zflyembodycoloroption.h"
+#include "zglobal.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -203,10 +204,24 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(exportSelectedBody()));
   bodyMenu->addAction(exportBodyAction);
 
+  QAction *exportBodyLevelAction = new QAction("Export Selected Bodies (leveled)", this);
+  connect(exportBodyLevelAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBodyLevel()));
+  bodyMenu->addAction(exportBodyLevelAction);
+
+
   QAction *skeletonizeAction = new QAction("Skeletonize Selected Bodies", this);
   connect(skeletonizeAction, SIGNAL(triggered()),
           this, SLOT(skeletonizeSelectedBody()));
   bodyMenu->addAction(skeletonizeAction);
+
+#if 0
+  QMenu *grayscaleMenu = m_mainMenu->addMenu("Grayscale");
+  QAction *exportGrayScaleAction = new QAction("Export Grayscale", this);
+  connect(exportGrayScaleAction, SIGNAL(triggered()),
+          this, SLOT(exportGrayscale()));
+  grayscaleMenu->addAction(exportGrayScaleAction);
+#endif
 
 #ifdef _DEBUG_
   QMenu *developerMenu = m_mainMenu->addMenu("Developer");
@@ -233,9 +248,19 @@ void FlyEmProofControlForm::exportSelectedBody()
   emit exportingSelectedBody();
 }
 
+void FlyEmProofControlForm::exportSelectedBodyLevel()
+{
+  emit exportingSelectedBodyLevel();
+}
+
 void FlyEmProofControlForm::skeletonizeSelectedBody()
 {
   emit skeletonizingSelectedBody();
+}
+
+void FlyEmProofControlForm::exportGrayscale()
+{
+  emit exportingGrayscale();
 }
 
 void FlyEmProofControlForm::enableNameColorMap(bool on)
@@ -295,9 +320,17 @@ void FlyEmProofControlForm::goToPosition()
 {
   bool ok;
 
-  QString text = QInputDialog::getText(this, tr("Go To"),
-                                       tr("Coordinates:"), QLineEdit::Normal,
-                                       "", &ok);
+  QString defaultText;
+
+  ZIntPoint pt = ZGlobal::GetInstance().getStackPosition();
+  if (pt.isValid()) {
+    defaultText = pt.toString().c_str();
+  }
+
+  QString text = QInputDialog::getText(
+        this, tr("Go To"), tr("Coordinates:"), QLineEdit::Normal, defaultText,
+        &ok);
+
   if (ok) {
     if (!text.isEmpty()) {
       ZString str = text.toStdString();

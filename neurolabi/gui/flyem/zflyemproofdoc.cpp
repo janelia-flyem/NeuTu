@@ -37,6 +37,7 @@
 #include "dvid/zflyembookmarkcommand.h"
 #include "dvid/zdvidannotation.h"
 #include "dvid/zdvidannotationcommand.h"
+#include "dvid/zdvidgrayslice.h"
 #include "flyem/zflyemproofdoccommand.h"
 #include "dialogs/zflyemsynapseannotationdialog.h"
 #include "zprogresssignal.h"
@@ -57,7 +58,7 @@ void ZFlyEmProofDoc::init()
   setTag(NeuTube::Document::FLYEM_PROOFREAD);
 
   m_loadingAssignedBookmark = false;
-  m_analyzer.setDvidReader(&m_dvidReader);
+  m_analyzer.setDvidReader(&m_synapseReader);
   m_supervisor = new ZFlyEmSupervisor(this);
   m_mergeProject = new ZFlyEmBodyMergeProject(this);
 
@@ -510,28 +511,13 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
   }
 }
 
-void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
+QString ZFlyEmProofDoc::getAnnotationNameWarningDetail(
+    const QMap<uint64_t, QVector<QString> > &nameMap) const
 {
-  bool okToContinue = true;
+  QString detail;
 
-  cleanBodyAnnotationMap();
-
-  QMap<uint64_t, QVector<QString> > nameMap;
-  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
-       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
-    const ZFlyEmBodyAnnotation& anno = iter.value();
-    if (!anno.getName().empty()) {
-      uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
-
-      if (!nameMap.contains(mappedBodyId)) {
-        nameMap[mappedBodyId] = QVector<QString>();
-      }
-      nameMap[mappedBodyId].append(anno.getName().c_str());
-//      nameMap[iter.key()] = anno.getName().c_str();
-    }
-  }
   if (nameMap.size() > 1) {
-    QString detail = "<p>Details: </p>";
+    detail = "<p>Details: </p>";
     detail += "<ul>";
     for (QMap<uint64_t, QVector<QString> >::const_iterator iter = nameMap.begin();
          iter != nameMap.end(); ++iter) {
@@ -546,11 +532,73 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
       detail += "</li>";
     }
     detail += "</ul>";
+  }
+
+  return detail;
+}
+
+QString ZFlyEmProofDoc::getAnnotationFinalizedWarningDetail(
+    const std::vector<uint64_t> &finalizedBodyArray) const
+{
+  QString detail;
+
+  if (!finalizedBodyArray.empty()) {
+    detail = "<p>Finalized: </p>";
+    detail += "<ul>";
+    for (std::vector<uint64_t>::const_iterator iter = finalizedBodyArray.begin();
+         iter != finalizedBodyArray.end(); ++iter) {
+      uint64_t bodyId = *iter;
+      detail += QString("<li>%1</li>").arg(bodyId);
+    }
+    detail += "</ul>";
+  }
+
+  return detail;
+}
+
+void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
+{
+  bool okToContinue = true;
+
+  cleanBodyAnnotationMap();
+
+  QMap<uint64_t, QVector<QString> > nameMap;
+  std::vector<uint64_t> finalizedBodyArray;
+  for (QMap<uint64_t, ZFlyEmBodyAnnotation>::const_iterator
+       iter = m_annotationMap.begin(); iter != m_annotationMap.end(); ++iter) {
+    const ZFlyEmBodyAnnotation& anno = iter.value();
+    if (!anno.getName().empty()) {
+      uint64_t mappedBodyId = getBodyMerger()->getFinalLabel(iter.key());
+
+      if (!nameMap.contains(mappedBodyId)) {
+        nameMap[mappedBodyId] = QVector<QString>();
+      }
+      nameMap[mappedBodyId].append(anno.getName().c_str());
+//      nameMap[iter.key()] = anno.getName().c_str();
+    }
+    if (anno.getStatus() == "Finalized") {
+      finalizedBodyArray.push_back(iter.key());
+    }
+  }
+
+  if (!finalizedBodyArray.empty()) {
+    QString detail = getAnnotationFinalizedWarningDetail(finalizedBodyArray);
     okToContinue = ZDialogFactory::Ask(
-          "Conflict to Resolve",
-          "You are about to merge multiple names. Do you want to continue?" +
+          "Merging Finalized Body",
+          "At least one of the bodies to be merged is finalized. Do you want to continue?" +
           detail,
           NULL);
+  }
+
+  if (okToContinue) {
+    if (nameMap.size() > 1) {
+      QString detail = getAnnotationNameWarningDetail(nameMap);
+      okToContinue = ZDialogFactory::Ask(
+            "Conflict to Resolve",
+            "You are about to merge multiple names. Do you want to continue?" +
+            detail,
+            NULL);
+    }
   }
 
   if (okToContinue) {
@@ -659,7 +707,7 @@ void ZFlyEmProofDoc::initData(
 
 void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
 {
-  if (m_dvidReader.isReady()) {
+  if (m_dvidReader.isReady() && !getDvidTarget().readOnly()) {
     initData("annotation", target.getBookmarkName());
     initData("annotation", target.getTodoListName());
     initData("keyvalue", target.getSkeletonName());
@@ -669,6 +717,11 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
   }
 }
 
+const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
+{
+  return m_dvidReader.getDvidTarget();
+}
+
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
@@ -676,14 +729,14 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_synapseReader.open(m_dvidReader.getDvidTarget());
     m_todoReader.open(m_dvidReader.getDvidTarget());
     m_sparseVolReader.open(m_dvidReader.getDvidTarget());
-    m_dvidTarget = target;
+//    m_dvidTarget = target;
     m_activeBodyColorMap.reset();
-    m_mergeProject->setDvidTarget(target);
+    m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
     readInfo();
     initData(target);
     if (getSupervisor() != NULL) {
-      getSupervisor()->setDvidTarget(m_dvidTarget);
-      if (!getSupervisor()->isEmpty()) {
+      getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
+      if (!getSupervisor()->isEmpty() && !target.readOnly()) {
         int statusCode = getSupervisor()->testServer();
         if (statusCode != 200) {
           emit messageGenerated(
@@ -701,9 +754,23 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 
     updateDvidTargetForObject();
 
+    if (!target.readOnly()) {
+      int missing = m_dvidReader.checkProofreadingData();
+      if (missing > 0) {
+        emit messageGenerated(
+              ZWidgetMessage(
+                QString("WARNING: Some data for proofreading are missing in "
+                        "the database. "
+                        "Please do NOT proofread segmentation "
+                        "until you fix the problem."),
+                NeuTube::MSG_WARNING));
+      }
+    }
+
     startTimer();
   } else {
-    m_dvidTarget.clear();
+    m_dvidReader.clear();
+//    m_dvidTarget.clear();
     emit messageGenerated(
           ZWidgetMessage("Failed to open the node.", NeuTube::MSG_ERROR));
   }
@@ -723,6 +790,11 @@ void ZFlyEmProofDoc::notifyBodySelectionChanged()
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
   m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
+}
+
+void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
+{
+  m_dvidReader.updateMaxGrayscaleZoom(m_infoJson, m_versionDag);
 }
 
 void ZFlyEmProofDoc::readInfo()
@@ -750,6 +822,7 @@ void ZFlyEmProofDoc::readInfo()
   }
 
   updateMaxLabelZoom();
+  updateMaxGrayscaleZoom();
 
   LINFO() << startLog;
 }
@@ -774,7 +847,8 @@ void ZFlyEmProofDoc::loadRoiFunc()
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
         //          obj->setDsIntv(31, 31, 31);
         obj->addVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
-        obj->setHittable(false);
+//        obj->setHittable(false);
+        obj->setHitProtocal(ZStackObject::HIT_NONE);
         //      addObject(obj);
         m_dataBuffer->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
         m_dataBuffer->deliver();
@@ -784,6 +858,14 @@ void ZFlyEmProofDoc::loadRoiFunc()
       }
     }
   }
+}
+
+ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
+{
+  ZStackObject *obj = getObject(ZStackObject::TYPE_DVID_GRAY_SLICE,
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+
+  return dynamic_cast<ZDvidGraySlice*>(obj);
 }
 
 void ZFlyEmProofDoc::prepareDvidData()
@@ -798,47 +880,31 @@ void ZFlyEmProofDoc::prepareDvidData()
       boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
     }
 
-    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
     loadStack(stack);
 
     //Download ROI
     m_futureMap["loadRoiFunc"] =
         QtConcurrent::run(this, &ZFlyEmProofDoc::loadRoiFunc);
-#if 0
-    if (!getDvidTarget().getRoiName().empty()) {
-      ZObject3dScan *obj =
-          m_dvidReader.readRoi(getDvidTarget().getRoiName(), (ZObject3dScan*) NULL);
-      if (obj != NULL) {
-        if (!obj->isEmpty()) {
-#ifdef _DEBUG_
-          std::cout << "ROI Size:" << obj->getVoxelNumber() << std::endl;
-#endif
-          obj->setColor(0, 255, 0);
-          obj->setZOrder(2);
-          obj->setTarget(ZStackObject::TARGET_WIDGET);
-          obj->useCosmeticPen(true);
-          obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
-//          obj->setDsIntv(31, 31, 31);
-          obj->addVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
-          obj->setHittable(false);
-          addObject(obj);
-//          obj->setTarget(ZStackObject::TARGET_TILE_CANVAS);
-        } else {
-          delete obj;
-        }
-      }
-
-    }
-#endif
   }
 
 
-  ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-  ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-  ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-  addObject(ensemble, true);
+  if (getDvidTarget().hasTileData()) {
+    ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+    ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+    ensemble->setDvidTarget(getDvidTarget());
+    addObject(ensemble, true);
+  } else {
+    if (getDvidTarget().hasGrayScaleData()) {
+      ZDvidGraySlice *slice = new ZDvidGraySlice;
+      slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+      slice->setDvidTarget(getDvidTarget());
+      addObject(slice, true);
+    }
+  }
 
-  ensemble->setDvidTarget(getDvidTarget());
   addDvidLabelSlice(NeuTube::Z_AXIS);
 
 //    addDvidLabelSlice(NeuTube::Y_AXIS);
@@ -857,7 +923,7 @@ void ZFlyEmProofDoc::updateTileData()
       boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
     }
 
-    ZStack *stack = ZStackFactory::makeVirtualStack(boundBox);
+    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
     loadStack(stack);
 
     ZDvidTileEnsemble *ensemble = getDvidTileEnsemble();
@@ -1765,7 +1831,8 @@ void ZFlyEmProofDoc::clearData()
 {
   ZStackDoc::clearData();
   m_bodyMerger.clear();
-  m_dvidTarget.clear();
+  m_dvidReader.clear();
+//  m_dvidTarget.clear();
   m_grayScaleInfo.clear();
   m_labelInfo.clear();
   m_versionDag.clear();
@@ -2438,7 +2505,6 @@ std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId)
   return puncta;
 }
 
-
 std::vector<ZPunctum*> ZFlyEmProofDoc::getTodoPuncta(uint64_t bodyId)
 {
   std::vector<ZPunctum*> puncta;
@@ -2589,7 +2655,8 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
           bookmark->setBodyId(bodyId);
           bookmark->setRadius(5.0);
           bookmark->setColor(255, 0, 0);
-          bookmark->setHittable(false);
+          bookmark->setHitProtocal(ZStackObject::HIT_NONE);
+//          bookmark->setHittable(false);
           if (text.startsWith("split") || text.startsWith("small split")) {
             bookmark->setBookmarkType(ZFlyEmBookmark::TYPE_FALSE_MERGE);
           } else if (text.startsWith("merge")) {
@@ -3111,10 +3178,10 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) cons
 
         originalStack->runFillValueFunc(roi, true);
 
-        ZDvidInfo dvidInfo;
-        dvidInfo.setFromJsonString(
-              m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
-              toStdString());
+        ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+//        dvidInfo.setFromJsonString(
+//              m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
+//              toStdString());
 
         ZObject3dScan *objMask = m_splitSource->getObjectMask();
 

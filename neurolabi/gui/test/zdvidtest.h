@@ -139,6 +139,12 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2/sparsevol/1",
             dvidUrl2.getSparsevolUrl(1));
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2/sparsevol/1",
+            dvidUrl2.getMultiscaleSparsevolUrl(1, 0));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_1/sparsevol/1",
+            dvidUrl2.getMultiscaleSparsevolUrl(1, 1));
+
+
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies/sparsevol-coarse",
             dvidUrl.getCoarseSparsevolUrl("bodies"));
@@ -552,6 +558,28 @@ TEST(ZDvidTest, ZDvidTarget)
   ASSERT_EQ("hackathon2.janelia.org", node.getAddress());
   ASSERT_EQ(9800, node.getPort());
   ASSERT_EQ("1a3", node.getUuid());
+}
+
+TEST(ZDvidTest, DataType)
+{
+  ASSERT_EQ(ZDvid::TYPE_LABELBLK, ZDvid::GetDataType("labelblk"));
+  ASSERT_EQ(ZDvid::TYPE_ANNOTATION, ZDvid::GetDataType("annotation"));
+  ASSERT_EQ(ZDvid::TYPE_IMAGETILE, ZDvid::GetDataType("imagetile"));
+  ASSERT_EQ(ZDvid::TYPE_KEYVALUE, ZDvid::GetDataType("keyvalue"));
+  ASSERT_EQ(ZDvid::TYPE_LABELGRAPH, ZDvid::GetDataType("labelgraph"));
+  ASSERT_EQ(ZDvid::TYPE_LABELSZ, ZDvid::GetDataType("labelsz"));
+  ASSERT_EQ(ZDvid::TYPE_LABELVOL, ZDvid::GetDataType("labelvol"));
+  ASSERT_EQ(ZDvid::TYPE_ROI, ZDvid::GetDataType("roi"));
+  ASSERT_EQ(ZDvid::TYPE_UINT8BLK, ZDvid::GetDataType("uint8blk"));
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "e2f0", 7000);
+  target.setLabelBlockName("segmentation2");
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    reader.syncBodyLabelName();
+    ASSERT_EQ("segmentation-labelvol", reader.getDvidTarget().getBodyLabelName());
+  }
 }
 
 #endif

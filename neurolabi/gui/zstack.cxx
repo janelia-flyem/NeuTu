@@ -29,6 +29,8 @@
 #endif
 #include "zstring.h"
 #include "zstackfactory.h"
+#include "zpoint.h"
+#include "zintcuboid.h"
 
 using namespace std;
 
@@ -109,9 +111,13 @@ ZStack::ZStack(const ZStack &/*src*/)
 ZStack::~ZStack()
 {
 //  ZOUT(LTRACE(), 5) << "Deleting stack: " << this;
+  #ifdef _QT_GUI_USED_
   tic();
+  #endif
   clear();
+  #ifdef _QT_GUI_USED_
   ZOUT(LTRACE(), 5) << "Stack deleted" << this << toc() << "ms";
+  #endif
 }
 
 size_t ZStack::getByteNumber(EStackUnit unit) const
@@ -1998,7 +2004,7 @@ ZStack* ZStack::makeCrop(const ZIntCuboid &cuboid) const
   ZStack *cropped = NULL;
 
   if (isVirtual()) {
-    cropped = ZStackFactory::makeVirtualStack(cuboid);
+    cropped = ZStackFactory::MakeVirtualStack(cuboid);
   } else {
     if (!cuboid.isEmpty()) {
       int nchannel = channelNumber();
@@ -2155,6 +2161,43 @@ void ZStack::downsampleMin(int xintv, int yintv, int zintv)
   }
 }
 
+void ZStack::downsampleMean(int xintv, int yintv, int zintv)
+{
+  if (xintv == 0 && yintv == 0 && zintv == 0) {
+    return;
+  }
+
+  int w = width();
+  int h = height();
+  int d = depth();
+  int swidth = w / (xintv + 1) + (w % (xintv + 1) > 0);
+  int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
+  int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
+
+  m_offset.setX(m_offset.getX() / (xintv + 1));
+  m_offset.setY(m_offset.getY() / (yintv + 1));
+  m_offset.setZ(m_offset.getZ() / (zintv + 1));
+
+  if (isVirtual()) {
+    m_stack->width = swidth;
+    m_stack->height = sheight;
+    m_stack->depth = sdepth;
+  } else {
+    Stack dst;
+    Stack src;
+    Mc_Stack *result = C_Stack::make(GREY, swidth, sheight, sdepth, 1);
+    Mc_Stack *original = m_stack;
+
+    for (int c = 0; c < channelNumber(); ++c) {
+      C_Stack::view(result, &dst, c);
+      C_Stack::view(original, &src, c);
+      C_Stack::downsampleMean(&src, xintv, yintv, zintv, &dst);
+    }
+
+    setData(result);
+  }
+}
+
 
 void ZStack::downsampleMinIgnoreZero(int xintv, int yintv, int zintv)
 {
@@ -2214,4 +2257,37 @@ void ZStack::swapData(ZStack *stack)
 
   deprecateDependent(MC_STACK);
   stack->deprecateDependent(MC_STACK);
+}
+
+bool ZStack::equals(const ZStack &stack2) const
+{
+  if (isVirtual() != stack2.isVirtual()) {
+    return false;
+  }
+
+  if (!getBoundBox().equals(stack2.getBoundBox())) {
+    return false;
+  }
+
+  if (kind() != stack2.kind()) {
+    return false;
+  }
+
+  if (channelNumber() != stack2.channelNumber()) {
+    return false;
+  }
+
+  const uint8_t *array1 = array8();
+  const uint8_t *array2 = stack2.array8();
+
+  if (array1 != NULL && array2 != NULL) {
+    size_t byteNumber = getByteNumber();
+    for (size_t i = 0; i < byteNumber; ++i) {
+      if (array1[i] != array2[i]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }

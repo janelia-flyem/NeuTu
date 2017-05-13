@@ -12,6 +12,7 @@
 #include "tz_geometry.h"
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
+#include "zintcuboid.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
 const double ZStroke2d::m_maxWidth = 100.0;

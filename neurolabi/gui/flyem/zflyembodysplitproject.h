@@ -169,7 +169,7 @@ signals:
   void progressStarted(const QString &title, int nticks);
   void progressDone();
   void progressAdvanced(double dp);
-  void locating2DViewTriggered(const ZStackViewParam&);
+  void locating2DViewTriggered(int x, int y, int z, int width);
   void bodyQuickViewReady();
   void result3dQuickViewReady();
   void rasingResultQuickView();

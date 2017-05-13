@@ -129,12 +129,84 @@ bool ZSparseStack::downsampleRequired() const
   return false;
 }
 
-ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
+ZStack* ZSparseStack::makeDsStack(int xintv, int yintv, int zintv)
 {
   ZStack *out = NULL;
   if (m_objectMask != NULL && m_stackGrid != NULL) {
     ZIntCuboid cuboid = m_objectMask->getBoundBox();
-    cuboid.intersect(box);
+
+    if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
+      ZObject3dScan *obj = m_objectMask->subobject(cuboid, NULL, NULL);
+      ZIntPoint dsIntv(xintv, yintv, zintv);
+
+      if (!dsIntv.isZero()) {
+        obj->downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+
+        ZStackBlockGrid *dsGrid =
+            m_stackGrid->makeDownsample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+            out =  new ZStack(GREY, obj->getBoundBox(), 1);
+        out->setZero();
+        assignStackValue(out, *obj, *dsGrid, m_baseValue);
+        out->setDsIntv(dsIntv);
+            delete dsGrid;
+        delete obj;
+      } else {
+        out = new ZStack(GREY, cuboid, 1);
+        out->setZero();
+        assignStackValue(out, *obj, *m_stackGrid, m_baseValue);
+        delete obj;
+      }
+    }
+  }
+
+  return out;
+}
+
+ZStack* ZSparseStack::makeIsoDsStack(size_t maxVolume)
+{
+  ZStack *out = NULL;
+  if (m_objectMask != NULL && m_stackGrid != NULL) {
+    ZIntCuboid cuboid = m_objectMask->getBoundBox();
+
+    if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
+      ZObject3dScan *obj = m_objectMask->subobject(cuboid, NULL, NULL);
+      int dsIntv = misc::getIsoDsIntvFor3DVolume(cuboid, maxVolume, true);
+
+#ifdef _DEBUG_
+      std::cout << "Downsampling: " << dsIntv << std::endl;
+#endif
+
+      if (dsIntv > 0) {
+        obj->downsampleMax(dsIntv, dsIntv, dsIntv);
+
+        ZStackBlockGrid *dsGrid =
+            m_stackGrid->makeDownsample(dsIntv, dsIntv, dsIntv);
+        out =  new ZStack(GREY, obj->getBoundBox(), 1);
+        out->setZero();
+        assignStackValue(out, *obj, *dsGrid, m_baseValue);
+        out->setDsIntv(ZIntPoint(dsIntv, dsIntv, dsIntv));
+        delete dsGrid;
+        delete obj;
+      } else {
+        out = new ZStack(GREY, cuboid, 1);
+        out->setZero();
+        assignStackValue(out, *obj, *m_stackGrid, m_baseValue);
+        delete obj;
+      }
+    }
+  }
+
+  return out;
+}
+
+ZStack* ZSparseStack::makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
+{
+  ZStack *out = NULL;
+  if (m_objectMask != NULL && m_stackGrid != NULL) {
+    ZIntCuboid cuboid = m_objectMask->getBoundBox();
+    if (!box.isEmpty()) {
+      cuboid.intersect(box);
+    }
     if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
       size_t volume = cuboid.getVolume();
       double dsRatio = (double) volume / MAX_STACK_VOLUME;
@@ -156,6 +228,7 @@ ZStack* ZSparseStack::getStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
         if (dsIntv != NULL) {
           *dsIntv = tmpDsIntv;
         }
+        out->setDsIntv(tmpDsIntv);
         delete dsGrid;
         delete obj;
       } else {
@@ -188,13 +261,19 @@ ZStack* ZSparseStack::getStack()
       if (dsRatio > 1.0) {
         ZObject3dScan obj = *m_objectMask;
         m_dsIntv = misc::getDsIntvFor3DVolume(dsRatio);
+//        int intv = misc::getIsoDsIntvFor3DVolume(dsRatio);
+//        m_dsIntv.set(intv, intv, intv);
+
+#ifdef _DEBUG_
+        std::cout << "Downsampling:" << m_dsIntv.toString() << std::endl;
+#endif
 
         obj.downsampleMax(m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
 
         ZStackBlockGrid *dsGrid = m_stackGrid->makeDownsample(
               m_dsIntv.getX(), m_dsIntv.getY(), m_dsIntv.getZ());
 #ifdef _DEBUG_2
-  return NULL;
+        return NULL;
 #endif
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
         m_stack->setZero();
@@ -273,6 +352,27 @@ size_t ZSparseStack::getObjectVolume() const
   }
 
   return m_objectMask->getVoxelNumber();
+}
+
+void ZSparseStack::shakeOff()
+{
+  if (m_objectMask != NULL) {
+    std::vector<ZObject3dScan> objArray =
+        m_objectMask->getConnectedComponent(ZObject3dScan::ACTION_NONE);
+    if (objArray.size() > 1) {
+      size_t maxV = objArray[0].getVoxelNumber();
+      size_t selected = 0;
+      for (size_t i = 1; i < objArray.size(); ++i) {
+        const ZObject3dScan &obj = objArray[i];
+        size_t v = obj.getVoxelNumber();
+        if (v > maxV) {
+          maxV = v;
+          selected = i;
+        }
+      }
+      *m_objectMask = objArray[selected];
+    }
+  }
 }
 
 ZStack* ZSparseStack::getSlice(int z) const

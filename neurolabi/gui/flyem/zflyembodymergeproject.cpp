@@ -428,6 +428,10 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
       }
     }
 
+    if (annotation.getStatus().empty()) {
+      annotation.setStatus("Not examined");
+    }
+
     if (!annotation.isEmpty()) {
       ZDvidWriter writer;
       if (writer.open(getDvidTarget())) {
@@ -579,86 +583,6 @@ void ZFlyEmBodyMergeProject::detachBodyWindow()
 void ZFlyEmBodyMergeProject::detachCoarseBodyWindow()
 {
   m_coarseBodyWindow = NULL;
-}
-#endif
-
-#if 0
-void ZFlyEmBodyMergeProject::makeBodyWindow()
-{
-  ZWindowFactory factory;
-  factory.setControlPanelVisible(false);
-  factory.setObjectViewVisible(false);
-
-  ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
-  doc->setDvidTarget(getDvidTarget());
-//  doc->updateFrame();
-  doc->setDataDoc(getDocument());
-
-  m_bodyWindow = factory.make3DWindow(doc);
-  m_bodyWindow->getGraphFilter()->setStayOnTop(false);
-  //m_bodyWindow->setParent(m_dataFrame);
-
-
-  if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
-          m_bodyWindow, m_dvidInfo,
-          m_doc->getParentMvc()->getView()->getViewParameter());
-  }
-
-  m_bodyWindow->getSwcFilter()->setColorMode("Intrinsic");
-  m_bodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-  m_bodyWindow->getSwcFilter()->setStayOnTop(false);
-  m_bodyWindow->setYZView();
-
-  connect(m_bodyWindow, SIGNAL(closed()), this, SLOT(detachBodyWindow()));
-  connect(m_bodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-          this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
-}
-
-void ZFlyEmBodyMergeProject::makeCoarseBodyWindow(ZStackDoc *doc)
-{
-  getProgressSignal()->startProgress("Showing 3D coarse body ...");
-
-  ZWindowFactory factory;
-  factory.setControlPanelVisible(false);
-  factory.setObjectViewVisible(false);
-
-  QRect rect;
-  if (m_dataFrame != NULL) {
-    rect = m_dataFrame->getViewGeometry();
-  } else {
-    if (getDocument()->getParentMvc() != NULL) {
-      rect = getDocument()->getParentMvc()->getViewGeometry();
-    }
-  }
-  if (rect.isValid()) {
-    rect.moveTo(rect.right(), rect.top());
-    rect.setSize(rect.size() / 2);
-    factory.setWindowGeometry(rect);
-  }
-
-  getProgressSignal()->advanceProgress(0.1);
-
-  m_coarseBodyWindow = factory.make3DWindow(doc);
-  m_coarseBodyWindow->getGraphFilter()->setStayOnTop(false);
-  //m_bodyWindow->setParent(m_dataFrame);
-
-  m_coarseBodyWindow->getSwcFilter()->setColorMode("Intrinsic");
-  m_coarseBodyWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-  m_coarseBodyWindow->getSwcFilter()->setStayOnTop(false);
-  m_coarseBodyWindow->setYZView();
-
-  connect(m_coarseBodyWindow, SIGNAL(closed()), this, SLOT(detachCoarseBodyWindow()));
-  connect(m_coarseBodyWindow, SIGNAL(locating2DViewTriggered(ZStackViewParam)),
-          this, SIGNAL(locating2DViewTriggered(ZStackViewParam)));
-
-  getProgressSignal()->advanceProgress(0.4);
-
-  update3DBodyView(false, true);
-
-  getProgressSignal()->endProgress();
-
-  emit coarseBodyWindowCreatedInThread();
 }
 #endif
 

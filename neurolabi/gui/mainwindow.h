@@ -510,6 +510,10 @@ private slots:
   void on_actionSeed_Mask_triggered();
 
 
+  void on_actionGenerate_MB_SynapseT_Actor_triggered();
+
+  void on_actionGenerate_MB_SynapseS_Actor_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -561,12 +565,12 @@ private:
   ZStackDoc* importHdf5BodyM(const std::vector<int> &bodyIdArray,
                              const QString &hdf5Path,
                              const std::vector<int> &downsampleInterval);
-
+#if 0
   ZStackDocReader* readDvidGrayScale(const QString &dvidAddress,
                                        const QString &dvidUuid,
                                        int x, int y, int z,
                                        int width, int height, int depth);
-
+#endif
   void autoTrace(ZStackFrame *frame);
 
   void setSkeletonizer(
@@ -580,6 +584,8 @@ private:
   void generateMBPAMCast(const std::string &movieFolder);
   void generateMBONCast(const std::string &movieFolder);
   void generateMBONConnCast(const std::string &movieFolder);
+  void generateMBONPartnerCast(const std::string &movieFolder);
+  void generateMBONConvCast(const std::string &movieFolder);
 
 private:
   QMdiArea *mdiArea;

@@ -65,6 +65,7 @@ CONFIG(debug, debug|release) {
 }
 
 message("Target: $$TARGET")
+message("Defines: $$DEFINES")
 
 unix {
 include(extratarget.pri)
@@ -94,17 +95,17 @@ GIT = $$system(which git)
 
 #message($$GIT)
 contains(GIT, .*git) {
-    COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
-    DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
-    message($$COMMIT_HASH)
+  COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
+  DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
+  message($$COMMIT_HASH)
 }
 
 include(add_itk.pri)
 
 #Qt4
 isEqual(QT_MAJOR_VERSION,4) {
-    QT += opengl xml network
-    message("Qt 4")
+  QT += opengl xml network
+  message("Qt 4")
 }
 
 #Qt5
@@ -178,7 +179,6 @@ contains(CONFIG, static_gtest) { # gtest from ext folder
 }
 
 unix {
-
     QMAKE_CXXFLAGS += -Wno-deprecated
 
     macx {
@@ -248,12 +248,9 @@ include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
+include(command/command.pri)
 
 message("Config: $$CONFIG")
-
-#QMAKE_CXX = /usr/bin/g++
-#QMAKE_CC = /usr/bin/gcc
-#message($$QMAKE_CXX)
 
 # Input
 RESOURCES = gui.qrc
@@ -733,7 +730,20 @@ HEADERS += mainwindow.h \
     dialogs/zdvidadvanceddialog.h \
     dvid/zdvidroi.h \
     widgets/zdvidsourcewidget.h \
-    z3dmainwindow.h
+    z3dmainwindow.h \
+    dvid/zdvidgrayscale.h \
+    zscrollslicestrategy.h \
+    dvid/zdvidgrayslicescrollstrategy.h \
+    zviewproj.h \
+    dialogs/zflyemgrayscaledialog.h \
+    dvid/zdvidneurontracer.h \
+    zorthoviewhelper.h \
+    flyem/zflyemorthoviewhelper.h \
+    widgets/zcomboeditwidget.h \
+    dialogs/zcomboeditdialog.h \
+    dialogs/zflyembodycomparisondialog.h \
+    dvid/zdvidstore.h \
+    z3dfiltersetting.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -828,7 +838,10 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyembodyscreenshotdialog.ui \
     dialogs/zdvidadvanceddialog.ui \
     dialogs/zflyemskeletonupdatedialog.ui \
-    widgets/zdvidsourcewidget.ui
+    widgets/zdvidsourcewidget.ui \
+    dialogs/zflyemgrayscaledialog.ui \
+    dialogs/zcomboeditdialog.ui \
+    dialogs/zflyembodycomparisondialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1268,12 +1281,19 @@ SOURCES += main.cpp \
     dialogs/zdvidadvanceddialog.cpp \
     dvid/zdvidroi.cpp \
     widgets/zdvidsourcewidget.cpp \
-    z3dmainwindow.cpp
+    z3dmainwindow.cpp \
+    dvid/zdvidgrayscale.cpp \
+    zscrollslicestrategy.cpp \
+    dvid/zdvidgrayslicescrollstrategy.cpp \
+    zviewproj.cpp \
+    dialogs/zflyemgrayscaledialog.cpp \
+    dvid/zdvidneurontracer.cpp \
+    zorthoviewhelper.cpp \
+    flyem/zflyemorthoviewhelper.cpp \
+    widgets/zcomboeditwidget.cpp \
+    dialogs/zcomboeditdialog.cpp \
+    dialogs/zflyembodycomparisondialog.cpp \
+    dvid/zdvidstore.cpp \
+    z3dfiltersetting.cpp
 
-OTHER_FILES += \
-    extlib.pri \
-    extratarget.pri
 
-
-LIBS+=-lCGAL -lCGAL_Core -lCGAL_ImageIO -lsurfrecon
-QMAKE_CXXFLAGS+=-fext-numeric-literals

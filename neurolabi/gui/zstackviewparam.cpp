@@ -1,6 +1,9 @@
 #include "zstackviewparam.h"
 
+#include <cmath>
+
 #include "geometry/zgeometry.h"
+#include "tz_math.h"
 
 ZStackViewParam::ZStackViewParam()
 {
@@ -21,26 +24,47 @@ void ZStackViewParam::init(NeuTube::ECoordinateSystem coordSys)
   m_sliceAxis = NeuTube::Z_AXIS;
 }
 
+QRectF ZStackViewParam::getProjRect() const
+{
+  return m_viewProj.getProjRect();
+}
+
+QRect ZStackViewParam::getViewPort() const
+{
+  return m_viewProj.getViewPort();
+}
+
 void ZStackViewParam::setZ(int z)
 {
   m_z = z;
 }
 
+void ZStackViewParam::setViewProj(const ZViewProj &vp)
+{
+  m_viewProj = vp;
+}
+
+
 void ZStackViewParam::setViewPort(const QRect &rect)
 {
-  m_viewPort = rect;
+  m_viewProj.setViewPort(rect);
 }
 
 void ZStackViewParam::setViewPort(double x0, double y0, double x1, double y1)
 {
-  m_viewPort.setTopLeft(QPoint(x0, y0));
-  m_viewPort.setBottomRight(QPoint(x1, y1));
+  QRect viewPort;
+  viewPort.setTopLeft(QPoint(x0, y0));
+  viewPort.setBottomRight(QPoint(x1, y1));
+
+  setViewPort(viewPort);
 }
 
+#if 0
 void ZStackViewParam::setProjRect(const QRectF &rect)
 {
   m_projRect = rect;
 }
+#endif
 
 void ZStackViewParam::setExploreAction(NeuTube::View::EExploreAction action)
 {
@@ -50,22 +74,27 @@ void ZStackViewParam::setExploreAction(NeuTube::View::EExploreAction action)
 bool ZStackViewParam::operator ==(const ZStackViewParam &param) const
 {
   return m_z == param.m_z && m_coordSys == param.m_coordSys &&
-      m_viewPort == param.m_viewPort;
+      getViewPort() == param.getViewPort();
 }
 
 bool ZStackViewParam::operator !=(const ZStackViewParam &param) const
 {
   return m_z != param.m_z || m_coordSys != param.m_coordSys ||
-      m_viewPort != param.m_viewPort;
+      getViewPort() != param.getViewPort();
 }
 
 bool ZStackViewParam::contains(const ZStackViewParam &param) const
 {
   if (m_z == param.m_z) {
-    return m_viewPort.contains(param.m_viewPort);
+    return getViewPort().contains(param.getViewPort());
   }
 
   return false;
+}
+
+bool ZStackViewParam::containsViewport(const ZStackViewParam &param) const
+{
+  return getViewPort().contains(param.getViewPort());
 }
 
 bool ZStackViewParam::contains(int x, int y, int z)
@@ -79,25 +108,19 @@ bool ZStackViewParam::contains(int x, int y, int z)
   return false;
 }
 
+
 void ZStackViewParam::resize(int width, int height)
 {
-  QPoint oldCenter = m_viewPort.center();
-
-  double xScale = (double) width / m_viewPort.width();
-  double yScale = (double) height / m_viewPort.height();
-  QPointF projCenter = m_projRect.center();
-
-  m_viewPort.setSize(QSize(width, height));
-  m_viewPort.moveCenter(oldCenter);
-
-  m_projRect.setSize(QSizeF(m_projRect.width() * xScale,
-                            m_projRect.height() * yScale));
-  m_projRect.moveCenter(projCenter);
+  QRect viewPort = m_viewProj.getViewPort();
+  QPoint oldCenter = getViewPort().center();
+  viewPort.setSize(QSize(width, height));
+  viewPort.moveCenter(oldCenter);
+  m_viewProj.setViewPort(viewPort);
 }
 
 int ZStackViewParam::getArea() const
 {
-  return m_viewPort.width() * m_viewPort.height();
+  return getViewPort().width() * getViewPort().height();
 }
 
 void ZStackViewParam::setSliceAxis(NeuTube::EAxis sliceAxis)
@@ -110,11 +133,28 @@ NeuTube::EAxis ZStackViewParam::getSliceAxis() const
   return m_sliceAxis;
 }
 
-double ZStackViewParam::getZoomRatio() const
+int ZStackViewParam::getZoomLevel(int maxLevel) const
 {
-  if (m_viewPort.isEmpty()) {
-    return 0.0;
+  int zoom = iround(std::log(1.0 / getZoomRatio()) / std::log(2.0) );
+
+  if (zoom < 0) {
+    zoom = 0;
   }
 
-  return (double) m_projRect.width() / m_viewPort.width();
+  int scale = pow(2, zoom);
+  if (getViewPort().width() * getViewPort().height() /
+      scale / scale > 512 * 512) {
+    zoom += 1;
+  }
+
+  if (zoom > maxLevel) {
+    zoom = maxLevel;
+  }
+
+  return zoom;
+}
+
+double ZStackViewParam::getZoomRatio() const
+{
+  return m_viewProj.getZoom();
 }

@@ -46,6 +46,7 @@ class ZLabeledSpinBoxWidget;
 class QSpacerItem;
 class ZWidgetMessage;
 class ZStTransform;
+class ZScrollSliceStrategy;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -83,6 +84,8 @@ public:
    * Update the screen by assuming that all the canvas buffers are ready.
    */
   void updateImageScreen(EUpdateOption option);
+
+  void restoreFromBadView();
 
   //void updateScrollControl();
 
@@ -173,6 +176,8 @@ public:
    */
   void setScreenCursor(const QCursor &cursor);
 
+  void setScrollStrategy(ZScrollSliceStrategy *strategy);
+
   //void resetScreenCursor();
   int getIntensityThreshold();
 
@@ -232,6 +237,8 @@ public:
 
   void zoomTo(int x, int y, int z, int w);
 
+  void printViewParam() const;
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -244,6 +251,7 @@ public slots:
 //  void updateView();
   void redraw(EUpdateOption option = UPDATE_QUEUED);
   void redrawObject();
+  void processStackChange(bool rangeChanged);
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
   //void updateSlice(int nslide);
@@ -291,6 +299,8 @@ public slots:
 
 
   void setView(const ZStackViewParam &param);
+  void setViewPort(const QRect &rect);
+  void maximizeViewPort();
 
   void updateZSpinBoxValue();
 
@@ -302,6 +312,7 @@ public slots:
   void hideThresholdControl();
 
   void setDynamicObjectAlpha(int alpha);
+  void resetViewProj();
 
 
 signals:
@@ -332,6 +343,7 @@ public:
       NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
+  ZViewProj getViewProj() const;
 
   //Get transform from view port to proj region
   ZStTransform getViewTransform() const;
@@ -347,6 +359,10 @@ public:
   void setViewPortCenter(int x, int y, int z, NeuTube::EAxisSystem system);
   void setViewPortCenter(const ZIntPoint &center, NeuTube::EAxisSystem system);
 
+  void setViewProj(int x0, int y0, double zoom);
+  void setViewProj(const QPoint &pt, double zoom);
+  void setViewProj(const ZViewProj &vp);
+
   ZIntPoint getViewCenter() const;
 
   void paintMultiresImageTest(int resLevel);
@@ -359,7 +375,8 @@ public:
 
   bool isViewChanged(const ZStackViewParam &param) const;
   void processViewChange(bool redrawing, bool depthChanged);
-  void processViewChange(const ZStackViewParam &param);
+  void processViewChange(bool redrawing);
+//  void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);
   void setSmoothDisplay(bool on);
@@ -369,14 +386,17 @@ public:
 
 
 public: //Change view parameters
+  void move(const QPoint& src, const QPointF &dst);
+  void moveViewPort(int dx, int dy);
+
   void increaseZoomRatio();
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
 
-  void zoomWithWidthAligned(int x0, int x1, int cy);
-  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
-  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
+//  void zoomWithWidthAligned(int x0, int x1, int cy);
+//  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
+//  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
@@ -410,6 +430,7 @@ protected:
   void updatePaintBundle();
 
   ZPixmap* updateProjCanvas(ZPixmap *canvas);
+  ZPixmap* updateViewPortCanvas(ZPixmap *canvas);
 
   void connectSignalSlot();
 
@@ -428,9 +449,15 @@ protected:
   ZPainter* getPainter(ZStackObject::ETarget target);
   ZPixmap* getCanvas(ZStackObject::ETarget target);
   void setCanvasVisible(ZStackObject::ETarget target, bool visible);
-  void resetDepthControl();
+//  void resetDepthControl();
+
+  void setSliceRange(int minSlice, int maxSlice);
 
   bool event(QEvent *event);
+
+private:
+  void updateSliceFromZ(int z);
+  void recordViewParam();
 
 protected:
   //ZStackFrame *m_parent;
@@ -478,7 +505,7 @@ protected:
 
   ZPaintBundle m_paintBundle;
   bool m_isRedrawBlocked;
-  QMutex m_mutex;
+//  QMutex m_mutex;
 
   ZBodySplitButton *m_splitButton;
   ZMessageManager *m_messageManager;
@@ -487,6 +514,9 @@ protected:
   bool m_viewPortFrozen;
   bool m_viewChangeEventBlocked;
 
+  ZScrollSliceStrategy *m_sliceStrategy;
+
+  ZStackViewParam m_oldViewParam;
 //  ZStackDoc::ActiveViewObjectUpdater m_objectUpdater;
 };
 

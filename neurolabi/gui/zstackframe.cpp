@@ -49,6 +49,12 @@
 #include "zdialogfactory.h"
 #include "zobject3dfactory.h"
 
+#ifdef _DEBUG_2
+#include "dvid/zdvidgrayslicescrollstrategy.h"
+#include "dvid/zdvidgrayslice.h"
+#endif
+
+
 using namespace std;
 
 ZStackFrame::ZStackFrame(QWidget *parent, Qt::WindowFlags flags) :
@@ -204,6 +210,15 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   if (doc.get() != NULL) {
     customizeWidget();
   }
+
+#ifdef _DEBUG_2
+  ZDvidGraySlice *slice = new ZDvidGraySlice;
+  slice->setZoom(1);
+  ZDvidGraySliceScrollStrategy *scrollStrategy =
+      new ZDvidGraySliceScrollStrategy;
+  scrollStrategy->setGraySlice(slice);
+  view()->setScrollStrategy(scrollStrategy);
+#endif
 }
 
 
@@ -294,15 +309,15 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   }
 
   connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateChannelControl()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateThresholdSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_presenter, SLOT(updateStackBc()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(redraw()));
   connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
@@ -684,7 +699,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(url.path().toStdString())) {
+    if (ZFileType::isImageFile(NeuTube::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
@@ -696,7 +711,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
     if (mainWindow != NULL) {
       QStringList fileList;
       foreach (QUrl url, imageUrls) {
-        fileList.append(url.path());
+        fileList.append(NeuTube::GetFilePath(url));
       }
       mainWindow->openFile(fileList);
     }

@@ -382,7 +382,8 @@ port = 8080
 if len(sys.argv) > 1:
     port = sys.argv[1]
 
-run(host=socket.gethostname(), port=port, debug=True)
+#run(host=socket.gethostname(), port=port, debug=True)
+run(host="localhost", port=port, debug=True)
 
 # print getSchema('skeletonize', 'post')
 # try:

@@ -60,6 +60,9 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   connect(frame->getCompletePresenter(), SIGNAL(highlightModeChanged()),
           frame, SIGNAL(highlightModeChanged()));
 
+  connect(frame->getPresenter(), SIGNAL(movingCrossHairTo(int,int)),
+          frame, SLOT(moveCrossHairTo(int, int)));
+
   return frame;
 }
 
@@ -107,6 +110,21 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 //    m_mergeProject.setDvidTarget(doc->getDvidTarget());
 //    m_mergeProject.syncWithDvid();
   }
+}
+
+void ZFlyEmOrthoMvc::setCrossHairCenter(double x, double y)
+{
+  ZFlyEmOrthoDoc *doc = getCompleteDocument();
+  if (doc != NULL) {
+    doc->setCrossHairCenter(x, y, getView()->getSliceAxis());
+    emit crossHairChanged();
+  }
+}
+
+void ZFlyEmOrthoMvc::moveCrossHairTo(int x, int y)
+{
+  setCrossHairCenter(x, y);
+  getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
 
 ZDvidTarget ZFlyEmOrthoMvc::getDvidTarget() const

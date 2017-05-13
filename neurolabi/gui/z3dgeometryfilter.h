@@ -19,6 +19,9 @@ public:
   virtual bool isStayOnTop() const { return m_stayOnTop.get(); }
   virtual void setStayOnTop(bool s) { m_stayOnTop.set(s); }
 
+  void setVisible(bool v);
+  bool isVisible() const;
+
   inline void setCamera(const Z3DCamera& c) {
     m_rendererBase->setCamera(c);}
   inline void setViewport(glm::ivec2 viewport) {
@@ -67,6 +70,9 @@ public:
   void setFilterName(QString s) { m_filterName = s;}
   QString getFilterName() {return m_filterName;}
 
+  virtual void configure(const ZJsonObject &obj);
+  virtual ZJsonObject getConfigJson() const;
+
 protected:
   virtual void process(Z3DEye) {}
 
@@ -93,6 +99,7 @@ protected:
   Z3DProcessorOutputPort<Z3DGeometryFilter> m_outPort;
   Z3DRendererBase *m_rendererBase;
 
+  ZBoolParameter m_visible;
   ZBoolParameter m_stayOnTop;
 
   Z3DPickingManager *m_pickingManager;

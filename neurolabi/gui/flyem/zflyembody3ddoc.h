@@ -17,10 +17,12 @@
 #include "dvid/zdvidinfo.h"
 #include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
+//#include "flyem/zflyemtodoitem.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
-class ZFlyEmToDoItem;
+class ZFlyEmBodyComparisonDialog;
+//class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
@@ -109,10 +111,6 @@ public:
     int m_resLevel;
   };
 
-  enum EBodyType {
-    BODY_FULL, BODY_COARSE, BODY_SKELETON
-  };
-
   class ObjectStatus {
   public:
     explicit ObjectStatus(int timeStamp = 0);
@@ -133,13 +131,13 @@ public:
     int m_resLevel;
   };
 
-  void setBodyType(EBodyType type);
-  EBodyType getBodyType() { return m_bodyType; }
+  void setBodyType(FlyEM::EBodyType type);
+  FlyEM::EBodyType getBodyType() const { return m_bodyType; }
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
-  void updateBody(uint64_t bodyId, const QColor &color, EBodyType type);
+  void updateBody(uint64_t bodyId, const QColor &color, FlyEM::EBodyType type);
 
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
@@ -181,13 +179,25 @@ public:
   void cancelEventThread();
 
   void setTodoItemSelected(ZFlyEmToDoItem *item, bool select);
+//  void setTodoVisible(ZFlyEmToDoItem::EToDoAction action, bool visible);
 
   bool hasTodoItemSelected() const;
 
   ZFlyEmToDoItem* getOneSelectedTodoItem() const;
 
   void forceBodyUpdate();
+  void compareBody();
+  void compareBody(const std::string &uuid);
+  void compareBody(const ZFlyEmBodyComparisonDialog *dlg);
+  void compareBody(ZDvidReader &diffReader);
+  void compareBody(ZDvidReader &diffReader, const ZIntPoint &pt);
+
+  std::vector<std::string> getParentUuidList() const;
+  std::vector<std::string> getAncestorUuidList() const;
+
   void waitForAllEvent();
+
+  bool updating() const;
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
@@ -196,6 +206,7 @@ public slots:
   void addTodo(bool on);
   void updateTodo(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
+  void setNormalTodoVisible(bool visible);
 
   void recycleObject(ZStackObject *obj);
   void killObject(ZStackObject *obj);
@@ -204,11 +215,24 @@ protected:
   void autoSave() {}
 
 private:
-  ZSwcTree* retrieveBodyModel(uint64_t bodyId, EBodyType bodyType);
-  ZSwcTree* getBodyModel(uint64_t bodyId, EBodyType bodyType);
+  ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
 
-  ZSwcTree* makeBodyModel(uint64_t bodyId);
-  ZSwcTree* makeBodyModel(uint64_t bodyId, EBodyType bodyType);
+//  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
+  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+
+  std::vector<ZSwcTree*> makeDiffBodyModel(
+      uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
+      FlyEM::EBodyType bodyType);
+
+  std::vector<ZSwcTree*> makeDiffBodyModel(
+      uint64_t bodyId1, uint64_t bodyId2, ZDvidReader &diffReader, int zoom,
+      FlyEM::EBodyType bodyType);
+
+  std::vector<ZSwcTree*> makeDiffBodyModel(
+      const ZIntPoint &pt, ZDvidReader &diffReader,
+      int zoom, FlyEM::EBodyType bodyType);
+
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
@@ -224,12 +248,23 @@ private:
   QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
   QMap<uint64_t, BodyEvent> makeEventMapUnsync(QSet<uint64_t> &bodySet);
 
-  static std::string GetBodyTypeName(EBodyType bodyType);
+  bool synapseLoaded(uint64_t bodyId) const;
+  void addSynapse(
+      std::vector<ZPunctum*> &puncta,
+      uint64_t bodyId, const std::string &source, double radius,
+      const QColor &color);
 
   template<typename T>
   T* recoverFromGarbage(const std::string &source);
 
+  ZSwcTree *getBodyQuickly(uint64_t bodyId);
+  BodyEvent makeMultresBodyEvent(
+      uint64_t bodyId, int resLevel, const QColor &color);
+
+  ZDvidReader& getBodyReader();
+
 signals:
+  void todoVisibleChanged();
 
 public slots:
 
@@ -241,10 +276,14 @@ private slots:
 
 private:
   void processEventFunc(const BodyEvent &event);
+  ZSwcTree* recoverFullBodyFromGarbage(
+      uint64_t bodyId, int resLevel);
+  int getMinResLevel() const;
+  void removeDiffBody();
 
 private:
   QSet<uint64_t> m_bodySet;
-  EBodyType m_bodyType;
+  FlyEM::EBodyType m_bodyType;
 
   bool m_quitting;
   bool m_showingSynapse;
@@ -254,6 +293,8 @@ private:
 
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidReader m_bodyReader;
+
   ZDvidInfo m_dvidInfo;
 
   ZThreadFutureMap m_futureMap;
@@ -277,6 +318,7 @@ private:
 
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;
+  const static int MAX_RES_LEVEL;
 };
 
 template <typename InputIterator>

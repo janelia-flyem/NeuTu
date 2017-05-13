@@ -269,10 +269,17 @@ int main(int argc, char *argv[])
         NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
   const QString traceLogPath(
         NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_TRACE).c_str());
+
+#ifdef _FLYEM_
+  int maxLogCount = 100;
+#else
+  int maxLogCount = 10;
+#endif
+
   QsLogging::DestinationPtr fileDestination(
         QsLogging::DestinationFactory::MakeFileDestination(
           sLogPath, QsLogging::EnableLogRotation,
-          QsLogging::MaxSizeBytes(5e7), QsLogging::MaxOldLogCount(50)));
+          QsLogging::MaxSizeBytes(5e7), QsLogging::MaxOldLogCount(maxLogCount)));
   QsLogging::DestinationPtr traceFileDestination(
         QsLogging::DestinationFactory::MakeFileDestination(
           traceLogPath, QsLogging::EnableLogRotation,
@@ -313,6 +320,7 @@ int main(int argc, char *argv[])
 #endif
 
     MainWindow::createWorkDir();
+    NeutubeConfig::UpdateAutoSaveDir();
 
 #if (defined __APPLE__) && !(defined _QT5_)
     app.setGraphicsSystem("raster");

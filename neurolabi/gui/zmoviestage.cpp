@@ -27,7 +27,7 @@ void ZMovieStage::updateWindow()
   }
 
   if (isVolumeChanged()) {
-    getWindow()->getDocument()->notifyStackModified();
+    getWindow()->getDocument()->notifyStackModified(true);
     setVolumeChanged(false);
     changed = true;
   }
@@ -39,7 +39,7 @@ void ZMovieStage::updateWindow()
   }
 
   if (isVolumeChanged()) {
-    getWindow()->getDocument()->notifyStackModified();
+    getWindow()->getDocument()->notifyStackModified(true);
     setVolumeChanged(false);
     changed = true;
   }

@@ -34,6 +34,19 @@ ZCrossHair* ZFlyEmOrthoDoc::getCrossHair() const
   return getObject<ZCrossHair>(ZStackObjectSourceFactory::MakeCrossHairSource());
 }
 
+void ZFlyEmOrthoDoc::setCrossHairCenter(double x, double y, NeuTube::EAxis axis)
+{
+  ZPoint center = getCrossHair()->getCenter();
+  //Transform to the view space
+  center.shiftSliceAxis(axis);
+  center.setX(x);
+  center.setY(y);
+  //Transform back to the world space
+  center.shiftSliceAxisInverse(axis);
+
+  getCrossHair()->setCenter(center);
+}
+
 void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
 {
   ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
@@ -76,7 +89,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
     ZStack *stack = m_dvidReader.readGrayScale(box);
     loadStack(stack);
 
-    ZDvidUrl dvidUrl(m_dvidTarget);
+    ZDvidUrl dvidUrl(getDvidTarget());
     QElapsedTimer timer;
     timer.start();
     ZJsonArray obj = getDvidReader().readJsonArray(dvidUrl.getSynapseUrl(box));

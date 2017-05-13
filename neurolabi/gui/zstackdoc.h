@@ -156,6 +156,7 @@ public: //attributes
   bool hasObject(ZStackObjectRole::TRole role) const;
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
+  bool hasObject(ZStackObject::ETarget target) const;
 
   ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
 
@@ -380,6 +381,9 @@ public:
 
   virtual ZStack* getStack() const;
   virtual ZStack *stackMask() const;
+
+  ZIntCuboid getDataRange() const;
+
   void setStackSource(const char *filePath);
   void setStackSource(const ZStackFile &stackFile);
   void loadSwcNetwork(const QString &filePath);
@@ -438,7 +442,7 @@ public:
 
   //QString toString();
   QStringList toStringList() const;
-  virtual QString rawDataInfo(double cx, double cy, int z) const;
+  virtual QString rawDataInfo(double cx, double cy, int z, NeuTube::EAxis axis) const;
   QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;
@@ -595,6 +599,10 @@ public:
 
   ZStackObject *hitTest(double x, double y, double z);
   ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);
+//  ZStackObject *hitTestWidget(int x, int y);
+
+  ZStackObject *hitTest(
+      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis);
 
 //  Swc_Tree_Node *swcHitTest(double x, double y) const;
 //  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
@@ -883,7 +891,7 @@ public:
   void notifyObject3dScanModified();
   void notifyStackPatchModified();
   void notifySparseObjectModified();
-  void notifyStackModified();
+  void notifyStackModified(bool rangeChanged);
   void notifySparseStackModified();
   void notifyVolumeModified();
   void notifyStrokeModified();
@@ -1154,7 +1162,7 @@ signals:
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
-  void stackModified();
+  void stackModified(bool rangeChanged);
   void sparseStackModified();
   void labelFieldModified();
   void stackReadDone();

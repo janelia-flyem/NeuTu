@@ -252,6 +252,10 @@ Stack* downsampleMinIgnoreZero(const Stack *stack, int xintv, int yintv, int zin
                      Stack *result = NULL);
 void print(const Stack *stack);
 
+
+Stack* downsampleMean(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
+
 /*!
  * \brief Print the voxel values of a stack
  */
@@ -367,6 +371,13 @@ void setZero(Mc_Stack *stack);
  */
 void setOne(Mc_Stack *stack);
 
+/*!
+ * \brief Set all pixels to a constant value.
+ *
+ * The value is reset to the closest bound when it is out of range.
+ */
+void setConstant(Mc_Stack *stack, int value);
+
 std::vector<size_t> getNeighborIndices(
     const Stack *stack, const std::vector<size_t> &indexArray,
     int conn, double value);
@@ -447,5 +458,7 @@ void shrinkBorder(const Stack *stack, int r, int nnbr = 6);
 Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws);
 
 }
+
+#define MRAW_MAGIC_NUMBER 1836212599
 
 #endif // C_STACK_H

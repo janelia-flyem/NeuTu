@@ -1,4 +1,6 @@
 #include "z3dgraphfilter.h"
+
+#include <algorithm>
 #include "z3dlinerenderer.h"
 #include "z3dsphererenderer.h"
 #include "z3dconerenderer.h"
@@ -8,7 +10,7 @@ using namespace std;
 
 
 Z3DGraphFilter::Z3DGraphFilter() :
-  m_showGraph("Visible", true),
+//  m_showGraph("Visible", true),
   m_lineRenderer(NULL),
   m_coneRenderer(NULL), m_arrowRenderer(NULL), m_sphereRenderer(NULL),
   m_dataIsInvalid(false)
@@ -17,11 +19,11 @@ Z3DGraphFilter::Z3DGraphFilter() :
   , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
   , m_widgetsGroup(NULL)
 {
-  addParameter(m_showGraph);
+//  addParameter(m_showGraph);
 
   const NeutubeConfig::Z3DWindowConfig::GraphTabConfig &config =
       NeutubeConfig::getInstance().getZ3DWindowConfig().getGraphTabConfig();
-  m_showGraph.set(config.isVisible());
+  setVisible(config.isVisible());
 //  m_rendererBase->setRenderMethod("Old openGL");
 //  adjustWidgets();
 
@@ -62,6 +64,7 @@ void Z3DGraphFilter::deinitialize()
   Z3DGeometryFilter::deinitialize();
 }
 
+/*
 void Z3DGraphFilter::setVisible(bool v)
 {
   m_showGraph.set(v);
@@ -71,6 +74,7 @@ bool Z3DGraphFilter::isVisible() const
 {
   return m_showGraph.get();
 }
+*/
 
 void Z3DGraphFilter::render(Z3DEye eye)
 {
@@ -78,7 +82,7 @@ void Z3DGraphFilter::render(Z3DEye eye)
     return;
   }
 
-  if (!m_showGraph.get())
+  if (!isVisible())
     return;
 
   m_rendererBase->activateRenderer(m_sphereRenderer);
@@ -144,7 +148,11 @@ void Z3DGraphFilter::prepareData()
     } else if (m_graph.getEdge(i).shape() == GRAPH_LINE) {
       m_lines.push_back(glm::vec3(n1.x(), n1.y(), n1.z()));
       m_lines.push_back(glm::vec3(n2.x(), n2.y(), n2.z()));
-      edgeWidth.push_back(m_graph.getEdge(i).getWidth());
+      float width = m_graph.getEdge(i).getWidth();
+      if (width < 1.0) {
+        width = 1.0;
+      }
+      edgeWidth.push_back(width);
     }
 
 #if 0
@@ -197,7 +205,7 @@ void Z3DGraphFilter::prepareData()
   m_coneRenderer->setData(&m_baseAndBaseRadius, &m_axisAndTopRadius);
 //  m_arrowRenderer->setData(&m_arrowBaseAndBaseRadius, &m_arrowAxisAndTopRadius);
   m_lineRenderer->setData(&m_lines);
-  m_lineRenderer->setLineWidth(3.0);
+//  m_lineRenderer->setLineWidth(2.0);
   m_lineRenderer->setLineWidth(edgeWidth);
   m_sphereRenderer->setData(&m_pointAndRadius);
 
@@ -349,7 +357,7 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
 {
   if (!m_widgetsGroup) {
     m_widgetsGroup = new ZWidgetsGroup("Graph", NULL, 1);
-    new ZWidgetsGroup(&m_showGraph, m_widgetsGroup, 1);
+    new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
 
     new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
     std::vector<ZParameter*> paras = m_rendererBase->getParameters();
@@ -376,7 +384,7 @@ ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
 
 bool Z3DGraphFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && m_showGraph.get() &&
+  return Z3DGeometryFilter::isReady(eye) && isVisible() &&
       !m_graph.isEmpty();
 }
 
@@ -385,4 +393,9 @@ void Z3DGraphFilter::updateGraphVisibleState()
 //  getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
+}
+
+void Z3DGraphFilter::configure(const ZJsonObject &obj)
+{
+  Z3DGeometryFilter::configure(obj);
 }

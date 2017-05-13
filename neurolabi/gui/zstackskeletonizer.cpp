@@ -21,6 +21,7 @@
 #include "tz_math.h"
 #include "swc/zswcresampler.h"
 #include "tz_stack_threshold.h"
+#include "zintcuboid.h"
 
 using namespace std;
 
@@ -106,11 +107,17 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
         dsIntv[i] += 1;
       }
     }
-    std::cout << "Downsampling "
-              << dsIntv[0] + 1 << " x "
-              << dsIntv[1] + 1 << " x "
-              << dsIntv[2] + 1 << std::endl;
-    newObj.downsampleMax(dsIntv[0], dsIntv[1], dsIntv[2]);
+
+    if (dsIntv[0] == 0 && dsIntv[1] == 0 && dsIntv[2] == 0) {
+      std::cout << "No downsampling" << std::endl;
+    } else {
+      std::cout << "Downsampling "
+                << dsIntv[0] + 1 << " x "
+                << dsIntv[1] + 1 << " x "
+                << dsIntv[2] + 1 << std::endl;
+      newObj.downsampleMax(dsIntv[0], dsIntv[1], dsIntv[2]);
+    }
+
     int offset[3] = {0, 0, 0};
     Stack *stack = newObj.toStack(offset);
     tree = makeSkeletonWithoutDs(stack, dsIntv);
@@ -876,6 +883,18 @@ std::string ZStackSkeletonizer::toSwcComment(const int *intv) const
 std::string ZStackSkeletonizer::toSwcComment() const
 {
   return toSwcComment(m_downsampleInterval);
+}
+
+void ZStackSkeletonizer::setDownsampleInterval(const ZIntPoint &intv)
+{
+  setDownsampleInterval(intv.getX(), intv.getY(), intv.getZ());
+}
+
+void ZStackSkeletonizer::setDownsampleInterval(int xintv, int yintv, int zintv)
+{
+  m_downsampleInterval[0] = imax2(0, xintv);
+  m_downsampleInterval[1] = imax2(0, yintv);
+  m_downsampleInterval[2] = imax2(0, zintv);
 }
 
 ZSwcTree* ZStackSkeletonizer::makeSkeleton(const Stack *stack)

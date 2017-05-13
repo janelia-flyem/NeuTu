@@ -7,7 +7,7 @@
 double ZStackObject::m_defaultPenWidth = 0.5;
 
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
-  m_isVisible(true), m_isHittable(true), m_projectionVisible(true),
+  m_isVisible(true), m_hitProtocal(HIT_STACK_POS), m_projectionVisible(true),
   m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
   m_visualEffect(NeuTube::Display::VE_NONE), m_prevDisplaySlice(-1)
@@ -153,6 +153,27 @@ bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
 bool ZStackObject::hit(const ZIntPoint &pt)
 {
   return hit(pt.getX(), pt.getY(), pt.getZ());
+}
+
+bool ZStackObject::hit(
+    const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis)
+{
+  switch (m_hitProtocal) {
+  case HIT_STACK_POS:
+    return hit(stackPos);
+  case HIT_WIDGET_POS:
+    return hitWidgetPos(widgetPos, axis);
+  default:
+    break;
+  }
+
+  return false;
+}
+
+bool ZStackObject::hitWidgetPos(
+    const ZIntPoint &/*widgetPos*/, NeuTube::EAxis /*axis*/)
+{
+  return false;
 }
 
 void ZStackObject::setHitPoint(const ZIntPoint &pt)

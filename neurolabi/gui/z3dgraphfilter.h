@@ -43,8 +43,10 @@ public:
 
   bool isReady(Z3DEye eye) const;
 
-  void setVisible(bool v);
-  bool isVisible() const;
+//  void setVisible(bool v);
+//  bool isVisible() const;
+
+  void configure(const ZJsonObject &obj);
 
 public slots:
   void prepareColor();
@@ -53,7 +55,7 @@ public slots:
 private:
   Z3DGraph m_graph;
 
-  ZBoolParameter m_showGraph;
+//  ZBoolParameter m_showGraph;
 
   Z3DLineRenderer *m_lineRenderer;
   Z3DConeRenderer *m_coneRenderer;

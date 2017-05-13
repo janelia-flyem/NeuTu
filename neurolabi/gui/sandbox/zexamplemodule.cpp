@@ -27,7 +27,7 @@ void ZExampleModule::execute()
     ZStack *stack = doc->getStack();
     if (stack->hasData()) {
       ZStackProcessor::SubtractBackground(stack);
-      doc->notifyStackModified();
+      doc->notifyStackModified(false);
     }
   }
 }

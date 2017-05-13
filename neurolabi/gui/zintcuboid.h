@@ -69,6 +69,7 @@ public:
   void setSize(const ZIntPoint &size);
 
   void setWidth(int width);
+  void setHeight(int height);
 
   int getWidth() const;
   int getHeight() const;
@@ -91,6 +92,8 @@ public:
 
   void expandX(int dx);
   void expandY(int dy);
+  void expandZ(int dz);
+  void expand(int dx, int dy, int dz);
 
   //intersect
   ZIntCuboid& intersect(const ZIntCuboid &cuboid);

@@ -79,30 +79,62 @@ void Z3DSphereRenderer::setData(std::vector<glm::vec4> *pointAndRadiusInput,
   m_pickingDataChanged = true;
 }
 
+void Z3DSphereRenderer::SetDataColors(const std::vector<glm::vec4> *pointColorsInput,
+      std::vector<glm::vec4> &pointColors)
+{
+  pointColors.resize(pointColorsInput->size() * 4);
+  size_t index = 0;
+  for (size_t i=0; i<pointColorsInput->size(); i++) {
+    const glm::vec4 &color = pointColorsInput->at(i);
+    pointColors[index++] = color;
+    pointColors[index++] = color;
+    pointColors[index++] = color;
+    pointColors[index++] = color;
+  }
+}
+
 void Z3DSphereRenderer::setDataColors(std::vector<glm::vec4> *pointColorsInput)
 {
-  m_pointColors.clear();
+  SetDataColors(pointColorsInput, m_pointColors);
+#if 0
+//  m_pointColors.clear();
+  m_pointColors.resize(pointColorsInput->size() * 4);
+  size_t index = 0;
   for (size_t i=0; i<pointColorsInput->size(); i++) {
-    m_pointColors.push_back(pointColorsInput->at(i));
-    m_pointColors.push_back(pointColorsInput->at(i));
-    m_pointColors.push_back(pointColorsInput->at(i));
-    m_pointColors.push_back(pointColorsInput->at(i));
+    const glm::vec4 &color = pointColorsInput->at(i);
+    m_pointColors[index++] = color;
+    m_pointColors[index++] = color;
+    m_pointColors[index++] = color;
+    m_pointColors[index++] = color;
+//    m_pointColors.push_back(color);
+//    m_pointColors.push_back(pointColorsInput->at(i));
+//    m_pointColors.push_back(pointColorsInput->at(i));
+//    m_pointColors.push_back(pointColorsInput->at(i));
   }
+#endif
   invalidateOpenglRenderer();
   m_dataChanged = true;
 }
 
 void Z3DSphereRenderer::setDataPickingColors(std::vector<glm::vec4> *pointPickingColorsInput)
 {
-  m_pointPickingColors.clear();
-  if (pointPickingColorsInput == NULL)
+//  m_pointPickingColors.clear();
+  if (pointPickingColorsInput == NULL) {
+    m_pointPickingColors.clear();
     return;
+  }
+
+  SetDataColors(pointPickingColorsInput, m_pointPickingColors);
+
+#if 0
   for (size_t i=0; i<pointPickingColorsInput->size(); i++) {
     m_pointPickingColors.push_back(pointPickingColorsInput->at(i));
     m_pointPickingColors.push_back(pointPickingColorsInput->at(i));
     m_pointPickingColors.push_back(pointPickingColorsInput->at(i));
     m_pointPickingColors.push_back(pointPickingColorsInput->at(i));
   }
+#endif
+
   invalidateOpenglPickingRenderer();
   m_pickingDataChanged = true;
 }

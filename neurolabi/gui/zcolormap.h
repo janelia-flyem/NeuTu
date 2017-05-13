@@ -200,7 +200,9 @@ protected:
 };
 
 template<class ForwardIterator>
-ZColorMap::ZColorMap(const ForwardIterator first, const ForwardIterator last, const glm::col4 &minColor, const glm::col4 &maxColor, QObject *parent)
+ZColorMap::ZColorMap(
+    const ForwardIterator first, const ForwardIterator last,
+    const glm::col4 &minColor, const glm::col4 &maxColor, QObject *parent)
   : QObject(parent), m_hasDataRange(true)
 {
   m_dataMin = *(std::min_element(first, last));
@@ -211,7 +213,9 @@ ZColorMap::ZColorMap(const ForwardIterator first, const ForwardIterator last, co
 }
 
 template<class ForwardIterator>
-ZColorMap::ZColorMap(const ForwardIterator first, const ForwardIterator last, const glm::vec4 &minColor, const glm::vec4 &maxColor, QObject *parent)
+ZColorMap::ZColorMap(
+    const ForwardIterator first, const ForwardIterator last,
+    const glm::vec4 &minColor, const glm::vec4 &maxColor, QObject *parent)
   : QObject(parent), m_hasDataRange(true)
 {
   m_dataMin = *(std::min_element(first, last));
@@ -222,7 +226,9 @@ ZColorMap::ZColorMap(const ForwardIterator first, const ForwardIterator last, co
 }
 
 template<class ForwardIterator>
-ZColorMap::ZColorMap(const ForwardIterator first, const ForwardIterator last, const QColor &minColor, const QColor &maxColor, QObject *parent)
+ZColorMap::ZColorMap(
+    const ForwardIterator first, const ForwardIterator last,
+    const QColor &minColor, const QColor &maxColor, QObject *parent)
   : QObject(parent), m_hasDataRange(true)
 {
   m_dataMin = *(std::min_element(first, last));
@@ -233,7 +239,9 @@ ZColorMap::ZColorMap(const ForwardIterator first, const ForwardIterator last, co
 }
 
 template<class ForwardIterator>
-void ZColorMap::reset(const ForwardIterator first, const ForwardIterator last, const glm::col4 &minColor, const glm::col4 &maxColor)
+void ZColorMap::reset(
+    const ForwardIterator first, const ForwardIterator last,
+    const glm::col4 &minColor, const glm::col4 &maxColor)
 {
   m_hasDataRange = true;
   blockSignals(true);
@@ -248,7 +256,9 @@ void ZColorMap::reset(const ForwardIterator first, const ForwardIterator last, c
 }
 
 template<class ForwardIterator>
-void ZColorMap::reset(const ForwardIterator first, const ForwardIterator last, const glm::vec4 &minColor, const glm::vec4 &maxColor)
+void ZColorMap::reset(
+    const ForwardIterator first, const ForwardIterator last,
+    const glm::vec4 &minColor, const glm::vec4 &maxColor)
 {
   m_hasDataRange = true;
   blockSignals(true);
@@ -263,7 +273,9 @@ void ZColorMap::reset(const ForwardIterator first, const ForwardIterator last, c
 }
 
 template<class ForwardIterator>
-void ZColorMap::reset(const ForwardIterator first, const ForwardIterator last, const QColor &minColor, const QColor &maxColor)
+void ZColorMap::reset(
+    const ForwardIterator first, const ForwardIterator last,
+    const QColor &minColor, const QColor &maxColor)
 {
   m_hasDataRange = true;
   blockSignals(true);
@@ -285,8 +297,10 @@ public:
   ZColorMapParameter(const QString &name, const ZColorMap& cm);
 
   template<class ForwardIterator>
-  ZColorMapParameter(const QString& name, const ForwardIterator first, const ForwardIterator last, const glm::col4 &minColor = glm::col4(0,0,0,255),
-                     const glm::col4 &maxColor = glm::col4(255,255,255,255));
+  ZColorMapParameter(
+      const QString& name, const ForwardIterator first, const ForwardIterator last,
+      const glm::col4 &minColor = glm::col4(0,0,0,255),
+      const glm::col4 &maxColor = glm::col4(255,255,255,255));
 
   ZColorMapParameter(const QString& name, double min = 0.0, double max = 255.0, const glm::col4 &minColor = glm::col4(0,0,0,255),
                      const glm::col4 &maxColor = glm::col4(255,255,255,255));

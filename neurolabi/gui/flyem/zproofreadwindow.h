@@ -41,6 +41,8 @@ public:
 
   void setDvidDialog(ZDvidDialog *dvidDlg);
 
+  ZFlyEmProofMvc* getMainMvc() const;
+
 public:
   void stressTest();
 
@@ -78,6 +80,7 @@ public slots:
   void exploreBody();
 
   void exportNeuronScreenshot();
+  void exportGrayscale();
 
   void stressTestSlot();
   void diagnose();

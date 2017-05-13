@@ -43,8 +43,10 @@ public:
     m_colorMode.select(mode.c_str());
   }
 
-  void setVisible(bool v);
-  bool isVisible() const;
+//  void setVisible(bool v);
+//  bool isVisible() const;
+
+  void configure(const ZJsonObject &obj);
 
 signals:
   void punctumSelected(ZPunctum*, bool append);
@@ -84,7 +86,7 @@ private:
   Z3DSphereRenderer *m_sphereRenderer;
   Z3DLineWithFixedWidthColorRenderer *m_boundBoxRenderer;
 
-  ZBoolParameter m_showPuncta;
+//  ZBoolParameter m_showPuncta;
   ZOptionParameter<QString> m_colorMode;
   ZVec4Parameter m_singleColorForAllPuncta;
   //std::vector<ZVec4Parameter*> m_colorsForDifferentSource;

@@ -14,6 +14,7 @@ class ZObject3dScanArray;
 class ZClosedCurve;
 class ZArray;
 class ZIntCuboid;
+class ZStroke2d;
 
 class ZObject3dFactory
 {
@@ -36,7 +37,11 @@ public:
       const ZStack &stack, NeuTube::EAxis sliceAxis);
 
   static std::vector<ZObject3dScan*> MakeObject3dScanPointerArray(
-      const ZStack &stack, int yStep = 1);
+      const ZStack &stack, int yStep = 1, bool boundaryOnly = true);
+
+  static ZObject3dScanArray* MakeObject3dScanArray(
+      const ZStack &stack, NeuTube::EAxis axis, bool foreground,
+      ZObject3dScanArray *out);
 
   static ZObject3dScanArray* MakeObject3dScanArray(
       const ZArray &array, int yStep, ZObject3dScanArray *out,
@@ -54,6 +59,8 @@ public:
   static ZStack* MakeBoundaryStack(const ZStack &stack);
 
   static ZObject3dScan MakeRandomObject3dScan(const ZIntCuboid &box);
+
+  static ZObject3dScan MakeObject3dScan(const ZStroke2d &stroke);
 };
 
 #endif // ZOBJECT3DFACTORY_H

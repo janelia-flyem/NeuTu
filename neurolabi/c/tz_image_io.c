@@ -1070,6 +1070,7 @@ int Lsm_Pixel_Type(const char *filepath)
   return type;
 }
 
+
 void Write_Lsm_Stack(const char *filepath, const Stack *stack,
 		     Tiff_IFD *templat)
 {
@@ -1568,7 +1569,7 @@ Stack* Read_Xml_Stack(const char *filePath)
 }
 
 void Write_Tiff_With_Offset(Tiff *etif, Image *a_image,
-    int x, int y, int z)
+    int x, int y, int z, int compress)
 { Tio        *tif = (Tio *) etif;
   Tiff_IFD   *ifd;
   Tiff_Image *img;
@@ -1613,14 +1614,14 @@ void Write_Tiff_With_Offset(Tiff *etif, Image *a_image,
       break;
   }
 
-  ifd = Make_IFD_For_Image(img,0);
+  ifd = Make_IFD_For_Image(img,compress);
 
   Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
-      sizeof(int), &x);
+      1, &x);
   Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
-      sizeof(int), &y);
+      1, &y);
   Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
-      sizeof(int), &z);
+      1, &z);
 
   if (a_image->text[0] != '\0')
     Set_Tiff_Tag(ifd,TIFF_JF_TAGGER,TIFF_BYTE,strlen(a_image->text),a_image->text);
@@ -1632,7 +1633,7 @@ void Write_Tiff_With_Offset(Tiff *etif, Image *a_image,
 }
 
 void Write_Stack_With_Offset(
-    const char *file_name, const Stack *a_stack, int x, int y, int z)
+    const char *file_name, const Stack *a_stack, int x, int y, int z, int compress)
 {
   if (a_stack == NULL) {
     return;
@@ -1648,7 +1649,8 @@ void Write_Stack_With_Offset(
   tif = Open_Tiff((char*) file_name,"w");
 
   if (tif != NULL) {
-    Write_Tiff_With_Offset(tif, Select_Plane((Stack*) a_stack, 0), x, y, z);
+    Write_Tiff_With_Offset(tif, Select_Plane((Stack*) a_stack, 0), x, y, z, compress);
+
 
     for (i = 1; i < a_stack->depth; i++)
       Write_Tiff(tif,Select_Plane((Stack*)a_stack,i));
@@ -1657,7 +1659,7 @@ void Write_Stack_With_Offset(
 }
 
 void Write_Stack_U(const char *filepath, const Stack *stack,
-		   const char *metafile)
+		   const char *metafile, int compress)
 {
   if (Is_Raw(filepath)) {
     Write_Raw_Stack(filepath, stack);
@@ -1698,7 +1700,7 @@ void Write_Stack_U(const char *filepath, const Stack *stack,
           int *offset = String_To_Integer_Array(metafile, NULL, &n);
           if (n >= 3) {
             Write_Stack_With_Offset(filepath, &tmp_stack,
-                offset[0], offset[1], offset[2]);
+                offset[0], offset[1], offset[2], compress);
             is_written = TRUE;
           }
         }
@@ -3197,7 +3199,7 @@ Tiff_Image* Mc_Stack_Tiff_Image(const Mc_Stack *mc_stack, int s,
 }
 
 void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
-		    const char *metafile)
+		    const char *metafile, int compress)
 {
   if (Is_Raw(filepath)) {
     TZ_ASSERT((stack->kind != COLOR) || (stack->nchannel == 1),
@@ -3273,7 +3275,7 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
     if (stack->nchannel == 1) {
       Stack ss = Mc_Stack_Channel(stack, 0);
       ss.text = "\0";
-      Write_Stack_U(filepath, &ss, metafile);
+      Write_Stack_U(filepath, &ss, metafile, compress);
     } else {
       Tiff_Writer *tif = NULL;
       if (Is_Lsm(filepath)) { /* open it as an LSM file */
@@ -3301,14 +3303,14 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
 	      }
 	    }
 
-	    ifd = Make_IFD_For_Lsm_Image(image, 0, templat, stack->depth);
+	    ifd = Make_IFD_For_Lsm_Image(image, compress, templat, stack->depth);
 	    Kill_Tiff_IFD(templat);
 	    Kill_Tiff_Reader(reader);
 	  } else {
-	    ifd = Make_IFD_For_Lsm_Image(image, 0, NULL, stack->depth);
+	    ifd = Make_IFD_For_Lsm_Image(image, compress, NULL, stack->depth);
 	  }
 	} else {
-	  ifd = Make_IFD_For_Image(image, 0);
+	  ifd = Make_IFD_For_Image(image, compress);
 	}
         //int tagValue = 1;
         //Set_Tiff_Tag(ifd,TIFF_NEW_SUB_FILE_TYPE,TIFF_LONG,1,&(tagValue));
@@ -3322,18 +3324,20 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
                 int n = 0;
                 int *offset = String_To_Integer_Array(metafile, NULL, &n);
                 if (n >= 3) {
-                  Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset);
-                  Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset + 1);
-                  Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset + 2);
+                  Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
+                      1, offset);
+                  Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
+                      1, offset + 1);
+                  Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
+                      1, offset + 2);
                 }
+                free(offset);
               }
             }
           }
         }
-
+//        uint16 compressValue = TIFF_VALUE_LZW;
+//        Set_Tiff_Tag(ifd, TIFF_COMPRESSION, TIFF_SHORT, 1, &compressValue);
 
 	Write_Tiff_IFD(tif, ifd);
 	Free_Tiff_IFD(ifd);

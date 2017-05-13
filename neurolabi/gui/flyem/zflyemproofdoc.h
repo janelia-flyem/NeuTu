@@ -49,6 +49,10 @@ public:
 
 //  void makeAction(ZActionFactory::EAction item);
 
+  const ZDvidVersionDag& getVersionDag() const {
+    return m_versionDag;
+  }
+
   void mergeSelected(ZFlyEmSupervisor *supervisor);
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
@@ -57,9 +61,7 @@ public:
 
   virtual void updateTileData();
 
-  inline const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
-  }
+  const ZDvidTarget& getDvidTarget() const;
 
   const ZDvidInfo& getGrayScaleInfo() const {
     return m_grayScaleInfo;
@@ -71,6 +73,7 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(NeuTube::EAxis axis) const;
+  ZDvidGraySlice* getDvidGraySlice() const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
@@ -499,6 +502,7 @@ private:
 
   void readInfo();
   void updateMaxLabelZoom();
+  void updateMaxGrayscaleZoom();
 
   ZSharedPointer<ZFlyEmBodyColorScheme> getColorScheme(
       ZFlyEmBodyColorOption::EColorOption type);
@@ -514,15 +518,21 @@ private:
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
+
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,
       ZFlyEmBodyColorOption::EColorOption option);
 
   void activateBodyColorMap(ZFlyEmBodyColorOption::EColorOption option);
 
+  QString getAnnotationNameWarningDetail(
+      const QMap<uint64_t, QVector<QString> > &nameMap) const;
+  QString getAnnotationFinalizedWarningDetail(
+      const std::vector<uint64_t> &finalizedBodyArray) const;
+
 protected:
   ZFlyEmBodyMerger m_bodyMerger;
-  ZDvidTarget m_dvidTarget;
+//  ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
   ZDvidReader m_routineReader;
   ZDvidReader m_synapseReader;

@@ -8,6 +8,7 @@
 #include "zjsonarray.h"
 #include "zdviddata.h"
 #include "zdvidnode.h"
+#include "zdviddef.h"
 
 /*!
  * \brief The class of representing a dvid node.
@@ -35,6 +36,9 @@ public:
    * \param sourceString Must start with "http:".
    */
   void setFromSourceString(const std::string &sourceString);
+
+  void setFromSourceString(
+      const std::string &sourceString, ZDvid::EDataType dataType);
 
   void setFromUrl(const std::string &url);
 
@@ -150,12 +154,15 @@ public:
 //  std::string getName(ZDvidData::ERole role) const;
 
   std::string getBodyLabelName() const;
+  std::string getBodyLabelName(int zoom) const;
   void setBodyLabelName(const std::string &name);
 
   void setNullBodyLabelName();
 
   bool hasBodyLabel() const;
   bool hasLabelBlock() const;
+
+  static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
   std::string getLabelBlockName() const;
   std::string getLabelBlockName(int zoom) const;
@@ -164,8 +171,11 @@ public:
 
   void setNullLabelBlockName();
 
+  std::string getBodyInfoName() const;
+
   std::string getMultiscale2dName() const;
   bool isTileLowQuality() const;
+  bool hasTileData() const;
 
   void setMultiscale2dName(const std::string &name);
   void setDefaultMultiscale2dName();
@@ -175,7 +185,10 @@ public:
 //  std::string getLossTileName() const;
   bool isLowQualityTile(const std::string &name) const;
 
+  bool hasGrayScaleData() const;
   std::string getGrayScaleName() const;
+  std::string getGrayScaleName(int zoom) const;
+  std::string getValidGrayScaleName(int zoom) const;
   void setGrayScaleName(const std::string &name);
 
   std::string getRoiName() const;
@@ -202,8 +215,11 @@ public:
 
   std::string getTodoListName() const;
   void setTodoListName(const std::string &name);
+  bool isDefaultTodoListName() const;
 
   std::string getBodyAnnotationName() const;
+
+  std::string getSplitLabelName() const;
 
   const std::set<std::string>& getUserNameSet() const;
   //void setUserName(const std::string &name);
@@ -233,6 +249,14 @@ public:
 
   void setMaxLabelZoom(int zoom) {
     m_maxLabelZoom = zoom;
+  }
+
+  int getMaxGrayscaleZoom() const {
+    return m_maxGrayscaleZoom;
+  }
+
+  void setMaxGrayscaleZoom(int zoom) {
+    m_maxGrayscaleZoom = zoom;
   }
 
   bool usingMulitresBodylabel() const;
@@ -295,6 +319,7 @@ private:
   bool m_isSupervised;
   std::string m_supervisorServer;
   int m_maxLabelZoom;
+  int m_maxGrayscaleZoom;
   bool m_usingMultresBodyLabel;
   bool m_usingDefaultSetting;
 //  std::string m_userName;

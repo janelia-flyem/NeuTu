@@ -309,7 +309,11 @@ void FlyEmBodyInfoDialog::updateRoi()
   ZJsonObject obj = m_reader.readDataMap();
   ZJsonObject labelszObj = obj.value("roi_synapse_labelsz");
   std::vector<std::string> keyList = labelszObj.getAllKey();
+  disconnect(ui->roiComboBox, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(onRoiChanged(int)));
   updateRoi(keyList);
+  connect(ui->roiComboBox, SIGNAL(currentIndexChanged(int)),
+          this, SLOT(onRoiChanged(int)));
 }
 
 void FlyEmBodyInfoDialog::updateRoi(const std::vector<std::string> &roiList)
@@ -602,7 +606,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         // as it turns out, that's usually too many (and you would have to retrieve
         //  the lists in pages); so we let the user set the max number of bodies to get in the UI
         dvidTimer.start();
-        ZJsonArray thresholdData = reader.readSynapseLabelsz(m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
+        ZJsonArray thresholdData = reader.readSynapseLabelsz(
+              m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
         dvidTime += dvidTimer.elapsed();
 
         // first, get the list of bodies that actually have annotations,
@@ -669,6 +674,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
             // synapse info
             // LOAD_NO_PARTNER is enough; the kind field will be populated
             dvidTimer.restart();
+            int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_PRE_SYN);
+            int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_POST_SYN);
+            dvidTime += dvidTimer.elapsed();
+
+#if 0
             std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_NO_PARTNER);
             dvidTime += dvidTimer.elapsed();
             int npre = 0;
@@ -680,6 +690,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
                     npost++;
                 }
             }
+#endif
             entry.setEntry("body T-bars", npre);
             entry.setEntry("body PSDs", npost);
 
@@ -690,8 +701,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         fullTime = fullTimer.elapsed();
         // I left the timers active; I think we'll want them later, plus
         //  they should be very low overhead
-        // std::cout << "total time (ms) = " << fullTime << std::endl;
-        // std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
+         std::cout << "total time (ms) = " << fullTime << std::endl;
+         std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
 
 
         // no "loadCompleted()" here; it's emitted in updateModel(), when it's done

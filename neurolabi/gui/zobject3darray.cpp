@@ -10,6 +10,7 @@
 #include "c_stack.h"
 #include "tz_darray.h"
 #include "zstackfactory.h"
+#include "zintcuboid.h"
 
 using namespace std;
 
@@ -128,7 +129,7 @@ ZStack* ZObject3dArray::toStackObject()
   ZIntCuboid box;
   box.setFirstCorner(corner[0], corner[1], corner[2]);
   box.setLastCorner(corner[3], corner[4], corner[5]);
-  ZStack *stack = ZStackFactory::makeZeroStack(kind, box);
+  ZStack *stack = ZStackFactory::MakeZeroStack(kind, box);
 
   for (size_t i = 0; i < size(); ++i) {
     ZObject3d *obj = (*this)[i];

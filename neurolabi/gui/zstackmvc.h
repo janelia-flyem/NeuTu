@@ -99,13 +99,13 @@ public slots:
   void zoomTo(int x, int y, int z, int width);
   void zoomTo(const ZIntPoint &pt, double zoomRatio);
   void zoomTo(const ZStackViewParam &param);
-  void zoomWithWidthAligned(int x0, int x1, int cy);
-  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
-  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
+//  void zoomWithWidthAligned(int x0, int x1, int cy);
+//  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
+//  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
   void goToSlice(int z);
   void stepSlice(int dz);
 
-  void zoomWithWidthAligned(const QRect &viewPort, int z, double pw);
+//  void zoomWithWidthAligned(const QRect &viewPort, int z, double pw);
   void zoomWithWidthAligned(const ZStackView *view);
   void zoomWithHeightAligned(const ZStackView *view);
 

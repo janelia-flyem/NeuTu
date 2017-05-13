@@ -167,6 +167,19 @@ std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId) const
   return getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
+std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
+{
+  std::string url;
+
+  if (zoom == 0) {
+    url = getSparsevolUrl(bodyId);
+  } else {
+    url = getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName(zoom));
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int z, NeuTube::EAxis axis) const
 {
@@ -871,6 +884,18 @@ std::string ZDvidUrl::getAnnotationSyncUrl(
   return url;
 }
 
+std::string ZDvidUrl::getDataSyncUrl(
+    const std::string &dataName, const std::string &queryString) const
+{
+  std::string url = GetFullUrl(getDataUrl(dataName), "sync");
+
+  if (!queryString.empty()) {
+   url = GetFullUrl(url, "?" + queryString);
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
 {
   return GetFullUrl(getDataUrl(dataName), "sync");
@@ -1094,6 +1119,17 @@ std::string ZDvidUrl::getTodoListUrl(const ZIntCuboid &cuboid) const
                         cuboid.getDepth());
 }
 
+std::string ZDvidUrl::getSynapseLabelszBodyUrl(uint64_t bodyId) const
+{
+  std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
+
+  if (!url.empty()) {
+    url += "/count/" + ZString::num2str(bodyId);
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSynapseLabelszUrl(int n) const
 {
   std::string url = getDataUrl(m_dvidTarget.getSynapseLabelszName());
@@ -1136,6 +1172,13 @@ std::string ZDvidUrl::getSynapseLabelszUrl(
     int n, ZDvid::ELabelIndexType indexType) const
 {
   return GetFullUrl(getSynapseLabelszUrl(n), GetLabelszIndexTypeStr(indexType));
+}
+
+std::string ZDvidUrl::getSynapseLabelszBodyUrl(
+    uint64_t bodyId, ZDvid::ELabelIndexType indexType) const
+{
+  return GetFullUrl(getSynapseLabelszBodyUrl(bodyId),
+                    GetLabelszIndexTypeStr(indexType));
 }
 
 std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold) const {

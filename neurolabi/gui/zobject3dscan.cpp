@@ -37,6 +37,7 @@
 #include "zpainter.h"
 #include "tz_stack_bwmorph.h"
 #include "geometry/zgeometry.h"
+#include "zintcuboid.h"
 
 using namespace std;
 
@@ -121,7 +122,7 @@ void ZObject3dScan::labelStack(Stack *stack, int startLabel, const int *offset)
 
 void ZObject3dScan::maskStack(ZStack *stack)
 {
-  ZStack *mask = ZStackFactory::makeZeroStack(
+  ZStack *mask = ZStackFactory::MakeZeroStack(
         stack->kind(), stack->getBoundBox());
   drawStack(mask->c_stack(), 1);
   for (int c = 0; c < stack->channelNumber(); ++c) {
@@ -621,6 +622,14 @@ void ZObject3dScan::loadStack(const ZStack &stack)
   m_dsIntv = stack.getDsIntv();
 }
 
+void ZObject3dScan::printInfo() const
+{
+  std::cout << "Sparse object:" << getSource() << std::endl;
+  std::cout << "  Canonized: " << isCanonized() << std::endl;
+  std::cout << "  #Voxels: " << getVoxelNumber() << std::endl;
+  std::cout << "  Z Range: " << getMinZ() << "-" << getMaxZ() <<std::endl;
+}
+
 void ZObject3dScan::print() const
 {
   cout << getStripeNumber() << " stripes" << endl;
@@ -742,12 +751,30 @@ size_t ZObject3dScan::countForegroundOverlap(Stack *stack, const int *offset)
   return count;
 }
 
+void ZObject3dScan::addStack(Stack *stack, int v, const int *offset) const
+{
+  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+       iter != m_stripeArray.end(); ++iter) {
+    iter->addStackValue(stack, v, offset);
+  }
+}
+
 void ZObject3dScan::drawStack(Stack *stack, int v, const int *offset) const
 {
   for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     iter->drawStack(stack, v, offset);
   }
+}
+
+void ZObject3dScan::addStack(ZStack *stack, int v) const
+{
+  int offset[3];
+  offset[0] = -stack->getOffset().getX();
+  offset[1] = -stack->getOffset().getY();
+  offset[2] = -stack->getOffset().getZ();
+
+  addStack(stack->c_stack(0), v, offset);
 }
 
 void ZObject3dScan::drawStack(ZStack *stack, int v) const
@@ -1742,6 +1769,7 @@ void ZObject3dScan::displaySolid(
 //  return painted;
 }
 
+#ifdef _QT_GUI_USED_
 static QList<std::vector<QPoint> > extract_contour(
     Stack *stack, int dx, int dy, int sx, int sy)
 {
@@ -1802,6 +1830,7 @@ static QList<std::vector<QPoint> > extract_contour(
 
   return contourList;
 }
+#endif
 
 void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
                             NeuTube::EAxis sliceAxis) const
@@ -1952,6 +1981,11 @@ void ZObject3dScan::setDsIntv(const ZIntPoint &intv)
   m_dsIntv = intv;
 }
 
+void ZObject3dScan::setDsIntv(int intv)
+{
+  setDsIntv(intv, intv, intv);
+}
+
 void ZObject3dScan::pushDsIntv(int xintv, int yintv, int zintv)
 {
   m_dsIntv.set((m_dsIntv.getX() + 1) * (xintv + 1) - 1,
@@ -2084,12 +2118,12 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
 //        box.setFirstX(box.getFirstCorner().getX() - 1);
 //        box.setLastX(box.getLastCorner().getX() + 1);
 
-        ZStack *stack1 = ZStackFactory::makeZeroStack(GREY, box);
-        ZStack *stack2 = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *stack1 = ZStackFactory::MakeZeroStack(GREY, box);
+        ZStack *stack2 = ZStackFactory::MakeZeroStack(GREY, box);
 
-        ZStack *negStack1 = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *negStack1 = ZStackFactory::MakeZeroStack(GREY, box);
         negStack1->setOne();
-        ZStack *negStack2 = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *negStack2 = ZStackFactory::MakeZeroStack(GREY, box);
         negStack2->setOne();
 
 
@@ -2117,7 +2151,7 @@ ZObject3dScan ZObject3dScan::interpolateSlice(int z) const
         float alpha = 1.0 - beta;
 
 
-        ZStack *newStack = ZStackFactory::makeZeroStack(GREY, box);
+        ZStack *newStack = ZStackFactory::MakeZeroStack(GREY, box);
         uint8_t *outArray = newStack->array8(0);
 
         for (size_t i = 0; i < voxelNumber; ++i) {
@@ -3147,7 +3181,9 @@ bool ZObject3dScan::importDvidObjectBufferDs(
     intv = 0;
   }
 
+  #ifdef _QT_GUI_USED_
   LINFO() << "Downsample interval:" << intv;
+  #endif
 
   int xIntv = intv;
   int yIntv = intv;

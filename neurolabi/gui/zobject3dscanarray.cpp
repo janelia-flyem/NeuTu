@@ -54,6 +54,10 @@ ZIntCuboid ZObject3dScanArray::getBoundBox() const
     cuboid.join(obj.getBoundBox());
   }
 
+#ifdef _DEBUG_
+  std::cout << cuboid.toJsonArray().dumpString() << std::endl;
+#endif
+
   return cuboid;
 }
 
@@ -63,7 +67,30 @@ ZStack* ZObject3dScanArray::toLabelField() const
 
   if (!empty()) {
     ZIntCuboid cuboid = getBoundBox();
-    stack = ZStackFactory::makeZeroStack(GREY, cuboid);
+    stack = ZStackFactory::MakeZeroStack(GREY, cuboid);
+    int offset[3];
+    offset[0] = -stack->getOffset().getX();
+    offset[1] = -stack->getOffset().getY();
+    offset[2] = -stack->getOffset().getZ();
+    int label = 1;
+    for (ZObject3dScanArray::const_iterator iter = begin(); iter != end();
+         ++iter) {
+      const ZObject3dScan &obj = *iter;
+      obj.drawStack(stack->c_stack(), label++, offset);
+    }
+  }
+
+  return stack;
+}
+
+ZStack* ZObject3dScanArray::toLabelField(const ZIntCuboid &box) const
+{
+  ZStack *stack = NULL;
+
+  if (!empty()) {
+    ZIntCuboid cuboid = getBoundBox();
+    cuboid.intersect(box);
+    stack = ZStackFactory::MakeZeroStack(GREY, cuboid);
     int offset[3];
     offset[0] = -stack->getOffset().getX();
     offset[1] = -stack->getOffset().getY();

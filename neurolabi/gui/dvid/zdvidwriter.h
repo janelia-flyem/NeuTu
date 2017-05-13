@@ -1,26 +1,20 @@
 #ifndef ZDVIDWRITER_H
 #define ZDVIDWRITER_H
 
-#include <QObject>
-#include <QEventLoop>
-#include <QTimer>
-#include <QMap>
-#include <QString>
+#include "zqtheader.h"
 
 #include <string>
 #include <vector>
 #include "zobject3dscan.h"
 #include "zstack.hxx"
-#include "zdvidclient.h"
 #include "flyem/zflyem.h"
-#include "zintcuboid.h"
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
 #include "zflyembodyannotation.h"
 #include "zjsonobject.h"
 #include "zsharedpointer.h"
-
+#include "zdvidreader.h"
 
 namespace libdvid{
 class DVIDNodeService;
@@ -51,7 +45,7 @@ public:
   void clear();
 
   const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return m_reader.getDvidTarget();
   }
 
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
@@ -76,18 +70,23 @@ public:
   void writeJson(const std::string &url, const ZJsonValue &value,
                  const std::string &emptyValueString = "");
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
+  void writeRoi(const ZObject3dScan &roi, const std::string &roiName);
 
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
 
   void createData(
       const std::string &type, const std::string &name, bool versioned = true);
 
-  void syncAnnotation(
+  void syncAnnotationToLabel(
       const std::string &name, const std::string &queryString = "");
   void syncLabelsz(const std::string &dataName,
                    const std::string &annotationName);
   void syncSynapseLabelsz();
   void createSynapseLabelsz();
+
+  void syncData(
+      const std::string &dataName, const std::string &syncDataName,
+      const std::string &queryString = "");
 
   void writeBodyInfo(uint64_t bodyId, const ZJsonObject &obj);
   void writeBodyInfo(uint64_t bodyId);
@@ -102,6 +101,8 @@ public:
    * It does nothing if the data has already existed.
    */
   void createKeyvalue(const std::string &name);
+
+  void createSplitLabel();
 
   void deleteKey(const char *dataName, const char *key);
   void deleteKey(const std::string &dataName, const std::string &key);
@@ -181,7 +182,9 @@ public:
   void writeToDoItem(const ZFlyEmToDoItem &item);
 
   void writeLabel(const ZArray &label);
+  void writeLabel(const ZArray &label, int zoom);
   void refreshLabel(const ZIntCuboid &box, uint64_t bodyId);
+  void refreshLabel(const ZIntCuboid &box, uint64_t bodyId, int zoom);
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
   void writeMasterNode(const std::string &uuid);
@@ -246,7 +249,8 @@ private:
 //  QEventLoop *m_eventLoop;
 //  ZDvidClient *m_dvidClient;
 //  QTimer *m_timer;
-  ZDvidTarget m_dvidTarget;
+//  ZDvidTarget m_dvidTarget;
+  ZDvidReader m_reader;
   QString m_errorOutput;
   QString m_standardOutout;
   ZJsonObject m_jsonOutput;

@@ -43,11 +43,26 @@ public:
 
   static ZStack* Rgb2Gray(const ZStack *stack);
 
+  static ZStack* Intepolate(
+      const ZStack *stack1, const ZStack *stack2, double lambda,
+      ZStack *out = NULL);
+  static ZStack* IntepolatePri(
+      const ZStack *stack1, const ZStack *stack2, int scale, int cw, int ch,
+      double lambda, ZStack *out = NULL);
+  static ZStack* IntepolateFovia(
+      const ZStack *stack1, const ZStack *stack2, int cw, int ch,
+      double lambda, ZStack *out = NULL);
+  static ZStack* IntepolateFovia(
+      const ZStack *stack1, const ZStack *stack2, int cw, int ch,
+      int scale, int z1, int z2, int z, ZStack *out = NULL);
+
+
   // noiseModel: "GAUSSIAN" or "RICIAN" or "POISSON"
   //
-  void patchBasedDenoising(ZStack *stack, const int numIterations = 2, const int numThreads = 2,
-                           const int numToSample = 1000, const float sigmaMultiplicationFactor = 1.f,
-                           const std::string noiseModel = "POISSON", const float fidelityWeight = 0.1f);
+  void patchBasedDenoising(
+      ZStack *stack, const int numIterations = 2, const int numThreads = 2,
+      const int numToSample = 1000, const float sigmaMultiplicationFactor = 1.f,
+      const std::string noiseModel = "POISSON", const float fidelityWeight = 0.1f);
 
   static void RemoveBranchPoint(Stack *stack, int nnbr);
   static Stack* GaussianSmooth(Stack *stack, double sx, double sy, double sz);

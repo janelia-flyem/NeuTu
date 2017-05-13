@@ -32,6 +32,8 @@ public:
   void write(FILE *fp) const;
   void read(FILE *fp);
 
+  void addStackValue(Stack *stack, int v, const int *offset = NULL) const;
+
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
   void drawStack(Stack *stack, int v, NeuTube::EAxis axis,
                  const int *offset = NULL) const;
@@ -114,6 +116,15 @@ public:
 
   friend ZObject3dStripe operator - (
       const ZObject3dStripe &s1, const ZObject3dStripe &s2);
+
+private:
+  template<typename T>
+  void drawArray(
+      T *array, int v, int minV, int maxV, int width, const int *offset) const;
+
+  template<typename T>
+  void addArray(
+      T *array, int v, int minV, int maxV, int width, const int *offset) const;
 
 private:
   std::vector<int> m_segmentArray;

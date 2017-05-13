@@ -91,7 +91,8 @@ bool ZMovieScript::loadScript(const std::string &filePath)
 
     for (size_t i = 0; i < sceneArray.size(); ++i) {
       ZMovieScene scene;
-      scene.loadJsonObject(ZJsonObject(sceneArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT));
+      scene.loadJsonObject(
+            ZJsonObject(sceneArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT));
 #ifdef _DEBUG_
       scene.print();
 #endif

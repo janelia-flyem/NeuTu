@@ -302,15 +302,20 @@ bool ZJsonValue::load(const string &filePath)
   json_error_t error;
   m_data = json_load_file(filePath.c_str(), 0, &error);
   if (m_data) {
+    m_source = filePath;
     return true;
   }
-
 
   std::cout << filePath << "(" << error.line << ")" << ": "
             << error.text << std::endl;
 #endif
 
   return false;
+}
+
+std::string ZJsonValue::getSource() const
+{
+  return m_source;
 }
 
 ZJsonValue ZJsonValue::clone() const

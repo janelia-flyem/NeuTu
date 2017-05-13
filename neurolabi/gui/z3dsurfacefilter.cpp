@@ -6,16 +6,17 @@ using namespace std;
 //
 Z3DSurfaceFilter::Z3DSurfaceFilter() :
     Z3DGeometryFilter(),
-    m_showCube("Visible", true),
+//    m_showCube("Visible", true),
     m_cubeRenderer(NULL),
     m_dataIsInvalid(false),
     m_widgetsGroup(NULL)
 {
-    addParameter(m_showCube);
+//    addParameter(m_showCube);
 
     const NeutubeConfig::Z3DWindowConfig::GraphTabConfig &config =
             NeutubeConfig::getInstance().getZ3DWindowConfig().getGraphTabConfig();
-    m_showCube.set(config.isVisible());
+//    m_showCube.set(config.isVisible());
+    setVisible(config.isVisible());
     //  m_rendererBase->setRenderMethod("Old openGL");
     //  adjustWidgets();
 
@@ -100,6 +101,7 @@ void Z3DSurfaceFilter::deinitialize()
     m_initialized = false;
 }
 
+/*
 void Z3DSurfaceFilter::setVisible(bool v)
 {
     m_showCube.set(v);
@@ -109,6 +111,7 @@ bool Z3DSurfaceFilter::isVisible() const
 {
     return m_showCube.get();
 }
+*/
 
 void Z3DSurfaceFilter::render(Z3DEye eye)
 {
@@ -120,7 +123,7 @@ void Z3DSurfaceFilter::render(Z3DEye eye)
     if(m_sourceList.size()<=0)
         return;
 
-    if (!m_showCube.get())
+    if (!isVisible())
         return;
 
     //m_rendererBase->activateRenderer(m_cubeRenderer);
@@ -324,7 +327,7 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 {
     if (!m_widgetsGroup) {
         m_widgetsGroup = new ZWidgetsGroup("Surface", NULL, 1);
-        new ZWidgetsGroup(&m_showCube, m_widgetsGroup, 1);
+        new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
 
         new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
         std::vector<ZParameter*> paras = m_rendererBase->getParameters();
@@ -348,7 +351,7 @@ ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
 
 bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
 {
-    return Z3DGeometryFilter::isReady(eye) && m_showCube.get() && !m_sourceList.empty();
+    return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_sourceList.empty();
 }
 
 void Z3DSurfaceFilter::updateSurfaceVisibleState()

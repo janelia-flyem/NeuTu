@@ -317,12 +317,35 @@ TStackObjectList ZStackObjectGroup::takeSameSourceUnsync(
   return objList;
 }
 
+TStackObjectList ZStackObjectGroup::takeSameClassUnsync(
+    ZStackObject::EType type, const std::string &objClass)
+{
+  ZOUT(LTRACE(), 6) << "Taking object by class";
+
+  TStackObjectList objList;
+
+  if (!objClass.empty()) {
+    objList = findSameClassUnsync(type, objClass);
+    removeObjectUnsync(objList.begin(), objList.end(), false);
+  }
+
+  return objList;
+}
+
 TStackObjectList ZStackObjectGroup::takeSameSource(
     ZStackObject::EType type, const std::string &source)
 {
   QMutexLocker locker(&m_mutex);
 
   return takeSameSourceUnsync(type, source);
+}
+
+TStackObjectList ZStackObjectGroup::takeSameClass(
+    ZStackObject::EType type, const std::string &objClass)
+{
+  QMutexLocker locker(&m_mutex);
+
+  return takeSameClassUnsync(type, objClass);
 }
 
 TStackObjectList ZStackObjectGroup::takeUnsync(ZStackObject::EType type)

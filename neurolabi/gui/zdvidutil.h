@@ -3,11 +3,14 @@
 
 #include "dvid/libdvidheader.h"
 #include "zsharedpointer.h"
+#include "dvid/zdviddef.h"
 
 class ZJsonValue;
 class ZDvidTarget;
 class ZJsonObject;
 class ZDvidVersionDag;
+class ZDvidInfo;
+class ZIntCuboid;
 
 #define DVID_UUID_COMMON_LENGTH 4
 
@@ -65,8 +68,11 @@ ZJsonObject GetDag(const ZJsonObject &obj);
 ZJsonObject GetDataInstances(const ZJsonObject &obj);
 ZJsonObject GetDataInstances(const std::string &uuid);
 ZJsonObject GetDataInstances(const std::string &type);
-
 #endif
+
+ZDvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
+ZDvid::EDataType GetDataType(const std::string &typeName);
+
 
 /*!
  * \brief Test if two UUIDs they point to the same DVID node
@@ -82,6 +88,11 @@ bool IsUuidMatched(const std::string &uuid1, const std::string &uuid2);
 
 bool IsDataValid(const std::string &data, const ZDvidTarget &target,
                  const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
+
+ZIntCuboid GetZoomBox(const ZIntCuboid &box, int zoom);
+#if defined(_ENABLE_LIBDVIDCPP_)
+ZIntCuboid GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo);
+#endif
 }
 
 #endif // ZDVIDUTIL_H

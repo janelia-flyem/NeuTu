@@ -99,19 +99,22 @@ exists($$DVIDCPP_PATH) {
 } else:exists($${CONDA_ENV}) {
     INCLUDEPATH +=  $${CONDA_ENV}/include
     LIBS += -L$${CONDA_ENV}/lib
-    unix: QMAKE_RPATHDIR += $${CONDA_ENV}/lib
+    unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
     DEFINES += _ENABLE_LIBDVIDCPP_
 }
 
+message("rpath")
+message($$QMAKE_RPATHDIR)
 
 contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
     LIBS *= -ldvidcpp -lboost_system #-lboost_thread -ljsoncpp -llz4 -lcurl -lpng -ljpeg
     contains(DEFINES, _ENABLE_LOWTIS_) {
-        CONFIG(debug, debug|release) {
-            LIBS *= -llowtis-g
-        } else {
-            LIBS *= -llowtis
-        }
+        LIBS *= -llowtis
+#        CONFIG(debug, debug|release) {
+#            LIBS *= -llowtis-g
+#        } else {
+#            LIBS *= -llowtis
+#        }
     }
 
     !contains(DEFINES, _LIBDVIDCPP_OLD_) {
@@ -120,6 +123,11 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
 } else:exists($${EXTLIB_DIR}/png/lib) {
     LIBS += -L$${EXTLIB_DIR}/png/lib -lpng
 }
+}
+
+contains(DEFINES, _ENABLE_SURFRECON_) {
+  LIBS+=-lCGAL -lCGAL_Core -lCGAL_ImageIO -lsurfrecon
+  QMAKE_CXXFLAGS+=-fext-numeric-literals
 }
 
 

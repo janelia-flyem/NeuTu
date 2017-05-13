@@ -12,6 +12,7 @@
 #include <QKeyEvent>
 
 #include "neutube_def.h"
+#include "zviewproj.h"
 
 class QPaintEvent;
 class ZPaintBundle;
@@ -33,7 +34,7 @@ class ZImageWidget : public QWidget {
   Q_OBJECT
 
 public:
-  ZImageWidget(QWidget *parent, ZImage *image = NULL);
+  ZImageWidget(QWidget *parent);
   virtual ~ZImageWidget();
 
   inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
@@ -50,6 +51,10 @@ public:
   void removeCanvas(ZPixmap *canvas);
   void removeCanvas(ZImage *canvas);
 
+  bool freeMoving() const {
+    return m_freeMoving;
+  }
+
   /*!
    * \brief Reset the image widget by removing all canvases and view information.
    */
@@ -59,7 +64,7 @@ public:
     VIEWPORT_NO_ADJUST, VIEWPORT_EXPAND, VIEWPORT_SHRINK
   };
 
-  void setViewPort(const QRect &rect);
+//  void setViewPort(const QRect &rect);
   void setProjRegion(const QRectF &rect);
   void setView(double zoomRatio, const QPoint &zoomOffset);
   void setView(const QRect &viewPort, const QRectF &projRegion);
@@ -72,6 +77,18 @@ public:
    */
   void setViewPortOffset(int x, int y);
 
+  const ZViewProj& getViewProj() const {
+    return m_viewProj;
+  }
+
+  void setViewProj(const ZViewProj &viewProj) {
+    m_viewProj = viewProj;
+  }
+
+  void setViewProj(int x0, int y0, double zoom);
+  void setViewProj(const QPoint &pt, double zoom);
+  void resetViewProj(int x0, int y0, int w, int h);
+
   /*!
    * \brief Move viewport.
    *
@@ -79,6 +96,8 @@ public:
    * the first corner of the canvas is (\a x, \a y).
    */
   void moveViewPort(int x, int y);
+
+  void moveViewPort(const QPoint &src, const QPointF &dst);
 
   void setZoomRatio(double zoomRatio);
   //inline int zoomRatio() const { return m_zoomRatio; }
@@ -91,17 +110,23 @@ public:
   void zoom(double zoomRatio);
   void zoom(double zoomRatio, EViewPortAdjust option);
 
+  void zoomTo(const QPoint &center, int width);
+
+  void setViewPort(const QRect &rect);
+
+  void restoreFromBadView();
+
   /*!
    * \brief Zoom an image at a fixed point
    *
    * Zoom an image by keeping the screen point \a ref relatively constant.
    */
   void zoom(double zoomRatio, const QPointF &ref);
-  void zoom(double zoomRatio, const QPointF &ref, EViewPortAdjust option);
+//  void zoom(double zoomRatio, const QPointF &ref, EViewPortAdjust option);
 
-  void zoomWithWidthAligned(int x0, int x1, int cy);
-  void zoomWithWidthAligned(int x0, int x1, double pw, int cy);
-  void zoomWithHeightAligned(int y0, int y1, double ph, int cx);
+//  void zoomWithWidthAligned(int x0, int x1, int cy);
+//  void zoomWithWidthAligned(int x0, int x1, double pw, int cy);
+//  void zoomWithHeightAligned(int y0, int y1, double ph, int cx);
 
   void setCanvasRegion(int x0, int y0, int w, int h);
 
@@ -113,10 +138,14 @@ public:
 
   QSize canvasSize() const;
   QSize screenSize() const;
-  inline QSizeF projectSize() const { return m_projRegion.size(); }
-  inline const QRectF& projectRegion() const { return m_projRegion; }
-  inline const QRect& viewPort() const { return m_viewPort; }
-  inline const QRect& canvasRegion() const { return m_canvasRegion; }
+//  inline QSizeF projectSize() const { return m_projRegion.size(); }
+//  inline const QRectF& projectRegion() const { return m_projRegion; }
+//  inline const QRect& viewPort() const { return m_viewPort; }
+  QSizeF projectSize() const;
+  QRectF projectRegion() const;
+  QRect viewPort() const;
+  QRect canvasRegion() const;
+
 
   /*!
    * \brief Map the widget coordinates to world coordinates
@@ -190,7 +219,7 @@ public:
   void showCrossHair(bool on);
   void updateCrossHair(int x, int y);
 
-  void updateWidgetCanvas();
+  void maximizeViewPort();
 
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
@@ -219,6 +248,8 @@ protected:
   int getMaxZoomRatio() const;
 
 private:
+  void init();
+
   void setValidViewPortBackup(const QRect &viewPort);
   void setValidViewPort(const QRect &viewPort);
   /*!
@@ -235,7 +266,6 @@ private:
 
   void alignProjRegion(double ratio);
 
-  void maximizeViewPort();
 
   QRect adjustViewPort(const QRect &viewPort, EViewPortAdjust option);
   void adjustViewPort(EViewPortAdjust option);
@@ -260,8 +290,8 @@ private:
   ZPixmap *m_activeDecorationCanvas;
 //  ZPixmap *m_widgetCanvas;
 
-  QRect m_viewPort; /* viewport, in world coordinates */
-  QRectF m_projRegion; /* projection region */
+//  QRect m_viewPort; /* viewport, in world coordinates */
+//  QRectF m_projRegion; /* projection region */
   //int m_zoomRatio;
 //  bool m_isowner;
   QMenu *m_leftButtonMenu;
@@ -269,7 +299,9 @@ private:
   ZPaintBundle *m_paintBundle;
   bool m_isViewHintVisible;
   bool m_paintBlocked;
-  QRect m_canvasRegion; //Whole canvas region
+//  QRect m_canvasRegion; //Whole canvas region
+
+  ZViewProj m_viewProj;
 
   NeuTube::EAxis m_sliceAxis;
 //  QSize m_canvasSize;
@@ -278,6 +310,7 @@ private:
   bool m_hoverFocus;
   bool m_smoothDisplay;
   bool m_showingCrossHair;
+  bool m_isReady;
   QPoint m_hairCenter;
 };
 

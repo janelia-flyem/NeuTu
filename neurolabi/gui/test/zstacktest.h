@@ -392,10 +392,29 @@ TEST(ZStack, Gradient)
 
 TEST(ZStack, BorderShrink)
 {
-  ZStack *stack = ZStackFactory::makeOneStack(3, 3, 3);
+  ZStack *stack = ZStackFactory::MakeOneStack(3, 3, 3);
   C_Stack::shrinkBorder(stack->c_stack(), 1);
 
   Print_Stack_Value(stack->c_stack());
+}
+
+TEST(ZStack, equal)
+{
+  ZStack *stack1 = ZStackFactory::MakeOneStack(3, 3, 3);
+  ZStack *stack2 = ZStackFactory::MakeOneStack(3, 3, 3);
+
+  ASSERT_TRUE(stack1->equals(*stack2));
+
+  stack1->setValue(0, 0, 0);
+  ASSERT_FALSE(stack1->equals(*stack2));
+
+  ZStack *stack3 = ZStackFactory::MakeOneStack(2, 3, 4);
+  ASSERT_FALSE(stack1->equals(*stack3));
+
+  ZStack stack4;
+  stack4.load(GET_TEST_DATA_DIR + "/benchmark/block.tif");
+
+  ASSERT_TRUE(stack4.equals(stack4));
 }
 
 #endif

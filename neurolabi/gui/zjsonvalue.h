@@ -116,9 +116,12 @@ public:
 
   bool load(const std::string &filePath);
 
+  std::string getSource() const;
+
 protected:
 //  json_error_t m_error;
   json_t *m_data;
+  std::string m_source;
 };
 
 #endif

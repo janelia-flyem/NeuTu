@@ -1,5 +1,11 @@
 #include "zstackgradient.h"
+
+#include <cfloat>
+#include <cmath>
+#include <typeinfo>
+
 #include "imgproc/zstackprocessor.h"
+
 
 template<typename T>
 GradientStrategy<T>::GradientStrategy()

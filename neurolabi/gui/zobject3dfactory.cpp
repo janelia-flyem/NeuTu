@@ -10,6 +10,7 @@
 #include "zclosedcurve.h"
 #include "zarray.h"
 #include "zrandomgenerator.h"
+#include "zintcuboid.h"
 
 #if defined(_QT_GUI_USED_)
 #  include "zstroke2d.h"
@@ -22,7 +23,7 @@ ZObject3dFactory::ZObject3dFactory()
 ZStack* ZObject3dFactory::MakeBoundaryStack(const ZStack &stack)
 {
   const Stack *originalStack = stack.c_stack();
-  ZStack *mask = ZStackFactory::makeZeroStack(
+  ZStack *mask = ZStackFactory::MakeZeroStack(
         stack.width(), stack.height(), stack.depth());
   Stack *maskStack = mask->c_stack();
 
@@ -101,7 +102,7 @@ ZObject3dArray* ZObject3dFactory::MakeRegionBoundary(
   }
 
   const Stack *originalStack = stack.c_stack();
-  ZStack *mask = ZStackFactory::makeZeroStack(
+  ZStack *mask = ZStackFactory::MakeZeroStack(
         stack.width(), stack.height(), stack.depth());
   Stack *maskStack = mask->c_stack();
 
@@ -288,12 +289,15 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 }
 
 std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
-      const ZStack &stack, int yStep)
+    const ZStack &stack, int yStep, bool boundaryOnly)
 {
   std::vector<ZObject3dScan*> objArray;
 
   if (stack.hasData()) {
-    ZStack *mask = MakeBoundaryStack(stack);
+    const ZStack *mask = &stack;
+    if (boundaryOnly) {
+      mask = MakeBoundaryStack(stack);
+    }
 
     std::map<uint64_t, ZObject3dScan*> *bodySet =
         ZObject3dScan::extractAllObject(
@@ -311,7 +315,9 @@ std::vector<ZObject3dScan*> ZObject3dFactory::MakeObject3dScanPointerArray(
       }
     }
 
-    delete mask;
+    if (mask != &stack) {
+      delete mask;
+    }
   }
 
   return objArray;
@@ -361,6 +367,72 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 
   return out;
 }
+
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
+    const ZStack &stack, NeuTube::EAxis axis, bool foreground,
+    ZObject3dScanArray *out)
+{
+  if (stack.kind() != GREY && stack.kind() != GREY16) {
+    return NULL;
+  }
+
+  if (out == NULL) {
+    out = new ZObject3dScanArray;
+  }
+
+  std::map<uint64_t, ZObject3dScan*> *bodySet = NULL;
+
+  switch (stack.kind()) {
+  case GREY:
+    if (foreground) {
+      bodySet = ZObject3dScan::extractAllForegroundObject(
+            stack.array8(), stack.width(), stack.height(), stack.depth(), axis);
+    } else {
+      bodySet = ZObject3dScan::extractAllObject(
+            stack.array8(), stack.width(), stack.height(), stack.depth(), axis);
+    }
+    break;
+  case GREY16:
+    if (foreground) {
+      bodySet = ZObject3dScan::extractAllForegroundObject(
+            stack.array16(), stack.width(), stack.height(), stack.depth(), axis);
+    } else {
+      bodySet = ZObject3dScan::extractAllObject(
+            stack.array16(), stack.width(), stack.height(), stack.depth(), axis);
+    }
+    break;
+  default:
+    break;
+  }
+
+
+  out->resize(bodySet->size());
+
+  if (bodySet != NULL) {
+    size_t index = 0;
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter, ++index) {
+      ZObject3dScan *obj = iter->second;
+      obj->setLabel(iter->first);
+
+      ZObject3dScan &outObj = (*out)[index];
+
+      std::swap(outObj.getStripeArray(), obj->getStripeArray());
+      outObj.setLabel(obj->getLabel());
+      outObj.setSliceAxis(axis);
+//      out->push_back(*obj);
+
+      delete obj;
+    }
+
+    delete bodySet;
+  } else {
+    out = NULL;
+  }
+
+  return out;
+}
+
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
     const ZArray &array, NeuTube::EAxis axis, bool foreground,
@@ -480,6 +552,18 @@ ZObject3dScan ZObject3dFactory::MakeRandomObject3dScan(const ZIntCuboid &box)
   }
 
   obj.canonize();
+
+  return obj;
+}
+
+ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZStroke2d &stroke)
+{
+  ZStack *stack = stroke.toStack();
+  ZObject3dScan obj;
+  MakeObject3dScan(*stack, &obj);
+  delete stack;
+
+  obj.setLabel(stroke.getLabel());
 
   return obj;
 }

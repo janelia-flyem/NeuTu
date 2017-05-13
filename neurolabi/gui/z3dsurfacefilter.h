@@ -39,8 +39,8 @@ public:
 
     bool isReady(Z3DEye eye) const;
 
-    void setVisible(bool v);
-    bool isVisible() const;
+//    void setVisible(bool v);
+//    bool isVisible() const;
 
     void initRenderers(size_t n);
     void invalidateRenderer(const std::string &source);
@@ -54,7 +54,7 @@ public slots:
     void indicateOpacityChanged(double v);
 
 private:
-    ZBoolParameter m_showCube;
+//    ZBoolParameter m_showCube;
 
     std::vector<Z3DCube> m_cubeArray;
     std::vector<ZCubeArray> m_cubeArrayList;

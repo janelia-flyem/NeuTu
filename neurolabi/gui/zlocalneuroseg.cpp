@@ -18,6 +18,7 @@ ZLocalNeuroseg::ZLocalNeuroseg(Local_Neuroseg *locseg, bool isOwner)
   m_profile = NULL;
   m_filterStack = NULL;
   m_isOwner = isOwner;
+  setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
 }
 
 ZLocalNeuroseg::~ZLocalNeuroseg()
@@ -41,8 +42,9 @@ ZLocalNeuroseg::~ZLocalNeuroseg()
   }
 }
 
-void ZLocalNeuroseg::display(ZPainter &painter, int z, EDisplayStyle option,
-                             const QColor &color) const
+void ZLocalNeuroseg::display(
+    ZPainter &painter, int sliceIndex, EDisplayStyle option,
+    const QColor &color) const
 { //todo
 #if defined(_QT_GUI_USED_)
   if (option == ZStackObject::NORMAL) {
@@ -58,11 +60,12 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, EDisplayStyle option,
   double center_position[3];
   Local_Neuroseg_Center(m_locseg, center_position);
 
+  int z = painter.getZ(sliceIndex);
 
-  if (z >= 0) {
+  if (sliceIndex >= 0) {
     /* Estimation of z range */
     double r = Neuroseg_Z_Range(&(m_locseg->seg)) / 2.0 + 1.0;
-    if (!(IS_IN_CLOSE_RANGE(z, (center_position[2] - r) * m_zscale,
+    if (!(IS_IN_CLOSE_RANGE(painter.getZ(sliceIndex), (center_position[2] - r) * m_zscale,
                             (center_position[2] + r) * m_zscale))) {
       return;
     }
@@ -93,7 +96,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, EDisplayStyle option,
         region_corner[i] = m_fieldRange.first_corner[i] + c[i];
       }
 
-      if (z >= 0) {
+      if (sliceIndex >= 0) {
         if (!(IS_IN_CLOSE_RANGE(z, region_corner[2],
                                 region_corner[2] + m_fieldRange.size[2] - 1))) {
           return;
@@ -106,7 +109,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, EDisplayStyle option,
       int area = m_filterStack->height * m_filterStack->width;
       int j;
 
-      if (z >= 0) {
+      if (sliceIndex >= 0) {
         offset = (z - region_corner[2]) * area;
         for (j = 0; j < m_filterStack->height; j++) {
           point[1] = region_corner[1] + j;
@@ -120,7 +123,7 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, EDisplayStyle option,
                 */
             if (m_filterStack->array[offset] > 0) {
               if (option == ZStackObject::BOUNDARY) {
-                int k = z - region_corner[2];
+                int k = sliceIndex - region_corner[2];
                 if (IS_IN_OPEN_RANGE3(i, j, k, 0, m_filterStack->width-1,
                                       0, m_filterStack->height - 1,
                                       0, m_filterStack->depth - 1)) {
@@ -132,19 +135,6 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, EDisplayStyle option,
               }
 
               int v = m_filterStack->array[offset];
-#if 0
-              uchar *pixel = line + 4 * point[0];
-
-//              pixel[RED] = color.red() * v / 255;
-//              pixel[BLUE] = color.blue() * v / 255;
-//              pixel[GREEN] = color.green() * v / 255;
-              /* alpha blending */
-              pixel[RED] = color.red() * v / 255;
-              pixel[BLUE] = color.blue() * v / 255;
-              pixel[GREEN] = color.green() * v / 255;
-              pixel[3] = color.alpha();
-#endif
-
               painter.setPen(QColor(color.red() * v / 255, color.green() * v / 255,
                                     color.blue() * v / 255, color.alpha()));
               painter.drawPoint(QPointF(point[0], point[1]));
@@ -264,7 +254,6 @@ void ZLocalNeuroseg::display(ZPainter &painter, int z, EDisplayStyle option,
   }
 #else
   UNUSED_PARAMETER(&painter);
-  UNUSED_PARAMETER(z);
   UNUSED_PARAMETER(option);
   UNUSED_PARAMETER(&color);
 #endif
@@ -472,12 +461,10 @@ void ZLocalNeuroseg::display(QImage *image, int n, Palette_Color color,
 
 
 void ZLocalNeuroseg::display(
-    ZPainter &/*painter*/, int /*z*/, EDisplayStyle /*option*/,
+    ZPainter &painter, int z, EDisplayStyle option,
     NeuTube::EAxis /*axis*/) const
 {
-#if 0
-  display(painter, z, option, RED);
-#endif
+  display(painter, z, option, getColor());
 }
 
 void ZLocalNeuroseg::save(const char *filePath)
@@ -552,6 +539,10 @@ void ZLocalNeuroseg::generateFilterStack()
                                        m_fieldRange.size[1],
                                        m_fieldRange.size[2], GREY);
   free(filter);
+
+#ifdef _DEBUG_2
+  C_Stack::write("/Users/zhaot/Work/neutube/neurolabi/data/test.tif", m_filterStack);
+#endif
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZLocalNeuroseg)

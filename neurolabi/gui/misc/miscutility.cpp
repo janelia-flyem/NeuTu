@@ -13,7 +13,7 @@
 #include "tz_utilities.h"
 #include "zswctree.h"
 #include "zclosedcurve.h"
-
+#include "zintcuboid.h"
 
 using namespace std;
 
@@ -330,6 +330,35 @@ bool misc::exportPointList(
   return false;
 }
 
+int misc::GetZoomScale(int zoom)
+{
+  switch (zoom) {
+  case 0:
+    return 1;
+  case 1:
+    return 2;
+  case 2:
+    return 4;
+  case 3:
+    return 8;
+  case 4:
+    return 16;
+  case 5:
+    return 32;
+  case 6:
+    return 64;
+  default:
+    break;
+  }
+
+  int scale = 1;
+  while (zoom--) {
+    scale *= 2;
+  }
+
+  return scale;
+}
+
 double misc::computeConfidence(double v, double median, double p95)
 {
   double alpha = median;
@@ -520,6 +549,36 @@ double misc::GetExpansionScale(size_t currentVol, size_t maxVol)
   double ratio = (double) maxVol / currentVol;
 
   return Cube_Root(ratio);
+}
+
+int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
+{
+  if (dsRatio <= 1) {
+    return 0;
+  }
+
+  int s = int(std::ceil(Cube_Root(dsRatio)));
+
+  if (powed) {
+    int k, m;
+    pow2decomp(s, &k, &m);
+    s = iround(std::pow((double) 2, k + 1));
+  }
+
+  s -= 1;
+
+  return s;
+}
+
+int misc::getIsoDsIntvFor3DVolume(const ZIntCuboid &box, size_t maxVolume, bool powed)
+{
+  if (box.getVolume() <= maxVolume) {
+    return 0;
+  }
+
+  double dsRatio = (double) box.getVolume() / maxVolume;
+
+  return getIsoDsIntvFor3DVolume(dsRatio, powed);
 }
 
 ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)

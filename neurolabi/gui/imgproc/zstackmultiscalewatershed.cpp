@@ -1,17 +1,23 @@
 #include <fstream>
 #include "zstackmultiscalewatershed.h"
 #include "zstackwatershed.h"
-#include "zstackdoc.h"
+//#include "zstackdoc.h"
 #include "zobject3dfactory.h"
 #include "zobject3darray.h"
 #include "zstackfactory.h"
 #include "zswcforest.h"
+#include "zintcuboid.h"
+#include "zcuboid.h"
+#include "zswctree.h"
 
 #undef ASCII
 #undef BOOL
 #undef TRUE
 #undef FALSE
+
+#if defined(_ENABLE_SURFRECON_)
 #include "surfrecon.h"
+#endif
 
 /*
 void printStack(ZStack* s)//for test
@@ -113,10 +119,10 @@ ZStack* upSample(int width,int height,int depth,int scale,ZStack* sampled)
 ZStack* getEdgeMap(const ZStack& stack)
 {
   int index=1;
-  uchar index_map[256][256]={0};
+  unsigned char index_map[256][256]={0};
 
   const Stack *originalStack = stack.c_stack();
-  ZStack *mask = ZStackFactory::makeZeroStack(
+  ZStack *mask = ZStackFactory::MakeZeroStack(
         stack.width(), stack.height(), stack.depth());
   Stack *maskStack = mask->c_stack();
 
@@ -674,6 +680,7 @@ void ZStackMultiScaleWatershed::test()
     std::cout<<"sampled result:"<<std::endl;
     printStack(sampled_watershed);
 
+<<<<<<< HEAD
     _scale=2;
     if(sampled_watershed)
     {
@@ -736,6 +743,7 @@ void ZStackMultiScaleWatershed::test()
 }
 */
 
+#if defined(_QT_GUI_USED_)
 ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int scale)
 {
   _scale=scale;
@@ -789,12 +797,13 @@ void ZStackMultiScaleWatershed::fillSeed(ZStack* seed,QList<ZSwcTree*>& trees)
     ZSwcTree* tree=(*it)->clone();
     tree->rescale(1.0/_scale,1.0/_scale,1.0/_scale);
     ZSwcForest* forest=tree->toSwcTreeArray();
-    for(auto x =forest->begin();x!=forest->end();++x)
+    for(std::vector<ZSwcTree*>::iterator x =forest->begin();x!=forest->end();++x)
     {
       (*x)->labelStack(seed,seed_index++);
     }
-    std::cout<<"number of seeds area:"<<forest->size()<<endl;
+    std::cout<<"number of seeds area:"<<forest->size()<<std::endl;
     delete tree;
     delete forest;
   }
 }
+#endif

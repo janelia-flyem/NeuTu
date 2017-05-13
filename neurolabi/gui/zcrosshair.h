@@ -4,6 +4,12 @@
 #include "zstackobject.h"
 #include "zpoint.h"
 
+/*!
+ * \brief The class of crosshair for orthogonal view
+ *
+ * The main attribute of a crosshair object is its center, which is defined in
+ * the widget/view space.
+ */
 class ZCrossHair : public ZStackObject
 {
 public:
@@ -24,6 +30,14 @@ public:
   }
 
   void setCenter(double x, double y, double z);
+  void setCenter(const ZPoint &center);
+//  void setCenter(double x, double y);
+  void setX(double x);
+  void setY(double y);
+  void setZ(double z);
+
+  bool hitWidgetPos(const ZIntPoint &widgetPos, NeuTube::EAxis axis);
+
 
 private:
   void init();

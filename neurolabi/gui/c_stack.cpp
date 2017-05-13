@@ -221,6 +221,80 @@ void C_Stack::setOne(Mc_Stack *stack)
   }
 }
 
+template <typename T>
+static void SetConstant(Mc_Stack *stack, const T &value)
+{
+  Stack sstack;
+  for (int i = 0; i < C_Stack::channelNumber(stack); ++i) {
+    C_Stack::view(stack, &sstack, i);
+    Stack_Set_Constant(&sstack, &value);
+  }
+}
+
+static void SetConstant(Mc_Stack *stack, const color_t &value)
+{
+  Stack sstack;
+  for (int i = 0; i < C_Stack::channelNumber(stack); ++i) {
+    C_Stack::view(stack, &sstack, i);
+    Stack_Set_Constant(&sstack, value);
+  }
+}
+
+void C_Stack::setConstant(Mc_Stack *stack, int value)
+{
+  switch (kind(stack)) {
+  case GREY:
+  {
+    uint8_t v = value;
+    if (value < 0) {
+      v = 0;
+    } else if (value > 255) {
+      v = 255;
+    }
+    SetConstant(stack, v);
+  }
+    break;
+  case GREY16:
+  {
+    uint16_t v = value;
+    if (value < 0) {
+      v = 0;
+    } else if (value > 65535) {
+      v = 65535;
+    }
+    SetConstant(stack, v);
+  }
+    break;
+  case FLOAT32:
+  {
+    float v = value;
+    SetConstant(stack, v);
+  }
+    break;
+  case FLOAT64:
+  {
+    double v = value;
+    SetConstant(stack, v);
+  }
+    break;
+  case COLOR:
+  {
+    color_t v;
+
+    if (value < 0) {
+      value = 0;
+    } else if (value > 255) {
+      value = 255;
+    }
+    v[0] = value;
+    v[1] = value;
+    v[2] = value;
+
+    SetConstant(stack, v);
+  }
+    break;
+  }
+}
 
 
 ssize_t C_Stack::offset(int x, int y, int z, int width, int height, int depth)
@@ -552,6 +626,12 @@ Stack* C_Stack::downsampleMinIgnoreZero(
   return out;
 }
 
+Stack* C_Stack::downsampleMean(
+    const Stack *stack, int xintv, int yintv, int zintv, Stack *result)
+{
+  return Downsample_Stack_Mean(
+        const_cast<Stack*>(stack), xintv, yintv, zintv, result);
+}
 
 /*
 Stack* C_Stack::copy(const Stack *stack)
@@ -822,9 +902,6 @@ int C_Stack::neighborTest(int conn, int width, int height, int depth,
   return nnbr;
 }
 
-
-#define MRAW_MAGIC_NUMBER 1836212599
-
 void C_Stack::write(
     const std::string &filePath, const Mc_Stack *stack, const char *meta)
 {
@@ -855,14 +932,14 @@ void C_Stack::write(
   }
     break;
   default:
-    Write_Mc_Stack(filePath.c_str(), stack, meta);
+    Write_Mc_Stack(filePath.c_str(), stack, meta, 0);
     break;
   }
 }
 
 void C_Stack::write(const std::string &filePath, const Stack *stack)
 {
-  Write_Stack_U(filePath.c_str(), stack, NULL);
+  Write_Stack_U(filePath.c_str(), stack, NULL, 0);
 }
 
 void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)

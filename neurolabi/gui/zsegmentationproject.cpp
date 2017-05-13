@@ -313,7 +313,8 @@ void ZSegmentationProject::exportLabelField(const QString &fileName)
   }
 
   ZStack *stack = objArray.toStackObject();
-  stack->save(fileName.toStdString());
-
-  delete stack;
+  if (stack != NULL) {
+    stack->save(fileName.toStdString());
+    delete stack;
+  }
 }

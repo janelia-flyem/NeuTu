@@ -18,6 +18,7 @@ public:
   void setLabel(const QString &label);
   void setRange(int vmin, int vmax);
   void setValue(int v);
+  void setValueQuietly(int v);
   void setSkipValue(int v);
 
 

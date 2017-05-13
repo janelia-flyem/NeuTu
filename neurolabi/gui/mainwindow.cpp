@@ -5,6 +5,7 @@
 #else
 #include <QtGui>
 #endif
+
 //#include <QtSvg>
 #include <QDir>
 #include <QtConcurrentRun>
@@ -1697,7 +1698,7 @@ void MainWindow::addStackFrame(ZStackFrame *frame, bool /*isReady*/)
       this, SLOT(addStackFrame(Stack*, bool)));
   connect(frame->document().get(), SIGNAL(frameDelivered(ZStackFrame*)),
       this, SLOT(addStackFrame(ZStackFrame*)));
-  connect(frame->document().get(), SIGNAL(stackModified()),
+  connect(frame->document().get(), SIGNAL(stackModified(bool)),
           this, SLOT(updateBcDlg()));
   connect(frame->presenter(), SIGNAL(viewModeChanged()),
           this, SLOT(updateMenu()));
@@ -2801,15 +2802,11 @@ void MainWindow::dropEvent(QDropEvent *event)
 
   QStringList fileList;
   foreach (QUrl url, urls) {
-#ifdef _WIN32
-    // remove leading slash
-    if (url.path().at(0) == QChar('/'))
-      fileList.append(url.path().mid(1));
-    else
-      fileList.append(url.path());
-#else
-    fileList.append(url.path());
-#endif
+    QString filePath = NeuTube::GetFilePath(url);
+
+    if (!filePath.isEmpty()) {
+      fileList.append(filePath);
+    }
   }
 
   openFile(fileList);
@@ -3121,7 +3118,7 @@ void MainWindow::on_actionDistance_Map_triggered()
         ZStack *stack = frame->document()->getStack();
         proc.distanceTransform(stack,
                                dlg.isSquared(), dlg.isSliceWise());
-        currentStackFrame()->document()->notifyStackModified();
+        currentStackFrame()->document()->notifyStackModified(false);
 //          currentStackFrame()->updateView();
       }
     }
@@ -3135,7 +3132,7 @@ void MainWindow::on_actionShortest_Path_Flow_triggered()
 
     if (currentStackFrame()->document()->getStack()->isBinary()) {
       proc.shortestPathFlow(currentStackFrame()->document()->getStack());
-      currentStackFrame()->document()->notifyStackModified();
+      currentStackFrame()->document()->notifyStackModified(false);
       currentStackFrame()->updateView();
     }
   }
@@ -3151,8 +3148,8 @@ void MainWindow::on_actionExpand_Region_triggered()
       if (currentStackFrame()->document()->getStack()->isBinary()) {
         proc.expandRegion(currentStackFrame()->document()->getStack(),
                           dlg.getRadius());
-        currentStackFrame()->document()->notifyStackModified();
-        currentStackFrame()->updateView();
+        currentStackFrame()->document()->notifyStackModified(false);
+//        currentStackFrame()->updateView();
       }
     }
   }
@@ -4459,7 +4456,8 @@ void MainWindow::on_actionTem_Paper_Neuron_Type_Figure_triggered()
       stream << dataPath + "/" + dataDir + "/row/" + neuronType
              << "_row" << row + 1 << ".tif";
 
-      Write_Stack_U(stream.str().c_str(), out, NULL);
+      C_Stack::write(stream.str(), out);
+//      Write_Stack_U(stream.str().c_str(), out, NULL);
       C_Stack::kill(out);
     }
   }
@@ -6057,7 +6055,7 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   //addStackFrame(frame);
   //presentStackFrame(frame);
 }
-
+#if 0
 ZStackDocReader* MainWindow::readDvidGrayScale(
     const QString &dvidAddress, const QString &dvidUuid,
     int x, int y, int z, int width, int height, int depth)
@@ -6072,6 +6070,7 @@ ZStackDocReader* MainWindow::readDvidGrayScale(
 
   return docReader;
 }
+#endif
 
 ZStackDocReader *MainWindow::hotSpotDemoFs(
     uint64_t bodyId, const QString &dvidAddress, const QString &dvidUuid)
@@ -6085,9 +6084,9 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
   pruner.prune(tree);
   */
 
-  ZDvidInfo dvidInfo;
-  QString info = reader.readInfo("superpixels");
-  dvidInfo.setFromJsonString(info.toStdString());
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+//  QString info = reader.readInfo("superpixels");
+//  dvidInfo.setFromJsonString(info.toStdString());
 
   uint64_t sourceBodyId = bodyId;
   ZSwcTree *tree = reader.readSwc(sourceBodyId);
@@ -7552,7 +7551,7 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
       frame->document()->addObject(obj);
 
       ZIntCuboid cuboid = obj->getBoundBox();
-      ZStack *stack = ZStackFactory::makeVirtualStack(
+      ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
       stack->setOffset(cuboid.getFirstCorner());
       frame->document()->loadStack(stack);
@@ -8188,6 +8187,187 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
   }
 }
 
+void MainWindow::generateMBONConvCast(const std::string &movieFolder)
+{
+  QString errMsg = ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(
+        (GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder).c_str());
+
+  if (!errMsg.isEmpty()) {
+    report("Failed to generate cast", errMsg.toStdString(), NeuTube::MSG_WARNING);
+  }
+}
+
+void MainWindow::generateMBONPartnerCast(const std::string &movieFolder)
+{
+  QDir mainDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder).c_str());
+  QDir outDir(mainDir.absoluteFilePath("cast"));
+
+  if (!outDir.exists()) {
+    outDir.mkdir(".");
+  }
+
+  QStringList kcFileList;
+  kcFileList << "kc-c.txt" << "kc-p.txt" << "kc-s.txt" << "kc-any.txt";
+  QSet<uint64_t> kcSet =
+      ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(mainDir, kcFileList);
+
+  QSet<uint64_t> mbon11Set =
+      ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(mainDir, "mbon-11.txt");
+  QSet<uint64_t> mbon06Set =
+      ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(mainDir, "mbon-06.txt");
+  QSet<uint64_t> ppl106Set =
+      ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(mainDir, "ppl1-06.txt");
+
+  std::cout << "#bodies: " << kcSet.size() << std::endl;
+
+  ZDvidTarget target = ZFlyEmMisc::MB6Paper::MakeDvidTarget();
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    //Produce the main neuron
+    uint64_t bodyId = 54977;
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    QString outFileName = QString("%1.swc").arg(bodyId);
+    QString outPath = outDir.absoluteFilePath(outFileName);
+    tree->save(outPath.toStdString());
+    delete tree;
+
+    //Read synapses
+    std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+          bodyId, FlyEM::LOAD_PARTNER_LOCATION);
+
+    double radius = 30;
+
+    //Sort synapses
+    std::vector<ZVaa3dMarker> kcMarkerArray;
+    std::vector<ZVaa3dMarker> mbon11MarkerArray;
+    std::vector<ZVaa3dMarker> mbon06MarkerArray;
+    std::vector<ZVaa3dMarker> ppl106MarkerArray;
+
+    std::vector<std::vector<ZIntPoint> > ptArray;
+
+    for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+         iter != synapseArray.end(); ++iter) {
+      const ZDvidSynapse &synapse = *iter;
+
+      //For PSD only
+      if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+        std::vector<ZIntPoint> psdArray = synapse.getPartners();
+        ptArray.push_back(psdArray);
+      }
+    }
+
+    std::vector<std::vector<uint64_t> > bodyIdArray =
+        reader.readBodyIdAt(ptArray);
+
+    size_t index = 0;
+    for (std::vector<std::vector<uint64_t> >::const_iterator
+         iter = bodyIdArray.begin(); iter != bodyIdArray.end(); ++iter, ++index) {
+      const std::vector<uint64_t> &intBodyIdArray = *iter;
+      int tbarType = 0;
+      for (size_t i = 0; i < intBodyIdArray.size(); ++i) {
+        uint64_t bodyId = intBodyIdArray[i];
+        if (kcSet.contains(bodyId)) {
+          tbarType = 1;
+          break;
+        } else if (mbon11Set.contains(bodyId)) {
+          tbarType = 2;
+          break;
+        } else if (mbon06Set.contains(bodyId)) {
+          tbarType = 3;
+          break;
+        } else if (ppl106Set.contains(bodyId)) {
+          tbarType = 4;
+          break;
+        }
+      }
+
+      if (tbarType > 0) {
+        const ZDvidSynapse &synapse = synapseArray[index];
+        ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+        switch (tbarType) {
+        case 1:
+          marker.setColor(255, 255, 255);
+          kcMarkerArray.push_back(marker);
+          break;
+        case 2:
+          marker.setColor(0, 100, 255);
+          mbon11MarkerArray.push_back(marker);
+          break;
+        case 3:
+          marker.setColor(255, 0, 255);
+          mbon06MarkerArray.push_back(marker);
+          break;
+        case 4:
+          marker.setColor(0, 255, 0);
+          ppl106MarkerArray.push_back(marker);
+          break;
+        default:
+          break;
+        }
+      }
+    }
+
+    outPath = outDir.absoluteFilePath("kc.marker");
+    FlyEm::ZFileParser::writeVaa3dMakerFile(
+          outPath.toStdString(), kcMarkerArray);
+
+    outPath = outDir.absoluteFilePath("mbon11.marker");
+    FlyEm::ZFileParser::writeVaa3dMakerFile(
+          outPath.toStdString(), mbon11MarkerArray);
+
+    outPath = outDir.absoluteFilePath("mbon06.marker");
+    FlyEm::ZFileParser::writeVaa3dMakerFile(
+          outPath.toStdString(), mbon06MarkerArray);
+
+    outPath = outDir.absoluteFilePath("ppl106.marker");
+    FlyEm::ZFileParser::writeVaa3dMakerFile(
+          outPath.toStdString(), ppl106MarkerArray);
+  }
+#if 0
+
+    double radius = 80;
+    {
+      int bodyId = 1190582;
+      std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
+      std::vector<ZVaa3dMarker> markerArray;
+      for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+           iter != synapseArray.end(); ++iter) {
+        const ZDvidSynapse &synapse = *iter;
+
+        if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+          std::vector<ZIntPoint> psdArray = synapse.getPartners();
+          bool good = false;
+          std::vector<uint64_t> bodyIdArray = reader.readBodyIdAt(
+                psdArray.begin(), psdArray.end());
+          for (size_t i = 0; i < bodyIdArray.size(); ++i) {
+            if (bodyIdArray[i] == 8862577 || bodyIdArray[i] == 2089450) {
+              good = true;
+              break;
+            }
+          }
+          /*
+        for (std::vector<ZIntPoint>::const_iterator psdIter = psdArray.begin();
+             psdIter != psdArray.end(); ++psdIter) {
+          const ZIntPoint &pt = *psdIter;
+
+        }
+        */
+          if (good) {
+            ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+            markerArray.push_back(marker);
+          }
+        }
+      }
+
+      QString outFileName = QString("%1.marker").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      FlyEm::ZFileParser::writeVaa3dMakerFile(
+            outPath.toStdString(), markerArray);
+    }
+#endif
+}
+
 void MainWindow::on_actionGenerate_KC_c_Actor_triggered()
 {
   generateMBKcCast("movie1");
@@ -8237,4 +8417,14 @@ void MainWindow::on_actionGet_Body_Positions_triggered()
 void MainWindow::on_actionMake_Movie_2_triggered()
 {
   makeMovie();
+}
+
+void MainWindow::on_actionGenerate_MB_SynapseT_Actor_triggered()
+{
+  generateMBONPartnerCast("movie8");
+}
+
+void MainWindow::on_actionGenerate_MB_SynapseS_Actor_triggered()
+{
+  generateMBONConvCast("movie9");
 }

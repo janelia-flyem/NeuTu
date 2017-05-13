@@ -16,6 +16,7 @@
 #include "zstackframe.h"
 
 #include "neutubeconfig.h"
+#include "zglobal.h"
 #include "z3dapplication.h"
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvasrenderer.h"
@@ -87,6 +88,8 @@
 #include "dialogs/zswcisolationdialog.h"
 #include "dialogs/helpdialog.h"
 #include "z3dinteractionhandler.h"
+#include "dialogs/zcomboeditdialog.h"
+#include "dialogs/zflyembodycomparisondialog.h"
 
 /*
 class Sleeper : public QThread
@@ -152,6 +155,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
 
   m_cuttingStackBound = false;
 
+  m_dvidDlg = NULL;
+  m_bodyCmpDlg = NULL;
 }
 
 Z3DWindow::~Z3DWindow()
@@ -571,6 +576,10 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
             item, this, SLOT(deleteSelectedSwcNode()));
     }
     break;
+  case ZActionFactory::ACTION_SHOW_NORMAL_TODO:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(setNormalTodoVisible(bool)));
+    break;
   case ZActionFactory::ACTION_ADD_TODO_ITEM:
     action = m_actionLibrary->getAction(item, this, SLOT(addTodoMarker()));
     break;
@@ -585,6 +594,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
+    break;
+  case ZActionFactory::ACTION_FLYEM_COMPARE_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(compareBody()));
+    break;
+  case ZActionFactory::ACTION_COPY_POSITION:
+    action = m_actionLibrary->getAction(item, this, SLOT(copyPosition()));
     break;
   default:
     break;
@@ -1278,6 +1293,8 @@ void Z3DWindow::configureLayer(ERendererLayer layer, const ZJsonObject &obj)
 {
   Z3DGeometryFilter *filter = getFilter(layer);
   if (filter != NULL) {
+    filter->configure(obj);
+    /*
     if (obj.hasKey("visible")) {
       setLayerVisible(layer, ZJsonParser::booleanValue(obj["visible"]));
     }
@@ -1287,6 +1304,7 @@ void Z3DWindow::configureLayer(ERendererLayer layer, const ZJsonObject &obj)
     if (obj.hasKey("size_scale")) {
       filter->setSizeScale(ZJsonParser::numberValue(obj["size_scale"]));
     }
+    */
   }
 }
 
@@ -1328,9 +1346,10 @@ ZJsonObject Z3DWindow::getConfigJson(ERendererLayer layer) const
   ZJsonObject configJson;
   Z3DGeometryFilter *filter = getFilter(layer);
   if (filter != NULL) {
-    configJson.setEntry("visible", isLayerVisible(layer));
-    configJson.setEntry("front", filter->isStayOnTop());
-    configJson.setEntry("size_scale", filter->getSizeScale());
+    configJson = filter->getConfigJson();
+//    configJson.setEntry("visible", isLayerVisible(layer));
+//    configJson.setEntry("front", filter->isStayOnTop());
+//    configJson.setEntry("size_scale", filter->getSizeScale());
   }
 
   return configJson;
@@ -1608,6 +1627,33 @@ void Z3DWindow::update3DCubeDisplay()
   resetCameraClippingRange();
 }
 
+bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
+{
+#if defined(_FLYEM_)
+  if (action == ZActionFactory::ACTION_FLYEM_COMPARE_BODY) {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc != NULL) {
+      if (action == ZActionFactory::ACTION_FLYEM_COMPARE_BODY) {
+        if (doc->updating()) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+#endif
+
+  if (action == ZActionFactory::ACTION_COPY_POSITION) {
+    ZStackDoc *doc = getDocument();
+    if (doc->getSelectedSwcNodeNumber() != 1) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void Z3DWindow::updateTodoList()
 {
 #if defined(_FLYEM_)
@@ -1626,6 +1672,16 @@ void Z3DWindow::updateTodoList()
     */
   }
 #endif
+}
+
+void Z3DWindow::updateTodoVisibility()
+{
+  if (m_todoFilter != NULL) {
+    m_todoFilter->updateGraph();
+    updateTodoBoundBox();
+    updateOverallBoundBox();
+    resetCameraClippingRange();
+  }
 }
 
 void Z3DWindow::updateTodoDisplay()
@@ -2335,6 +2391,11 @@ static void AddTodoMarker(
   }
 }
 
+void Z3DWindow::setNormalTodoVisible(bool visible)
+{
+  emit settingNormalTodoVisible(visible);
+}
+
 void Z3DWindow::addTodoMarker()
 {
   AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, false);
@@ -2360,6 +2421,37 @@ void Z3DWindow::updateBody()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     doc->forceBodyUpdate();
+  }
+}
+
+void Z3DWindow::copyPosition()
+{
+  ZStackDoc *doc = getDocument();
+  std::set<Swc_Tree_Node*> nodeSet = doc->getSelectedSwcNodeSet();
+  if (nodeSet.size() == 1) {
+    ZPoint pos = SwcTreeNode::center(*(nodeSet.begin()));
+    ZGlobal::GetInstance().setStackPosition(pos);
+  } else {
+    ZGlobal::GetInstance().clearStackPosition();
+  }
+}
+
+void Z3DWindow::compareBody()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    if (m_bodyCmpDlg == NULL) {
+      m_bodyCmpDlg = new ZFlyEmBodyComparisonDialog(this);
+      std::vector<std::string> uuidList = doc->getAncestorUuidList();
+      m_bodyCmpDlg->setUuidList(uuidList);
+      m_bodyCmpDlg->setCurrentUuidIndex(1);
+    }
+
+    m_bodyCmpDlg->clearPosition();
+
+    if (m_bodyCmpDlg->exec()) {
+      doc->compareBody(m_bodyCmpDlg);
+    }
   }
 }
 
@@ -3071,7 +3163,23 @@ void Z3DWindow::updateOverallBoundBox()
   m_boundBox[0] = m_boundBox[2] = m_boundBox[4] = std::numeric_limits<double>::max();
   m_boundBox[1] = m_boundBox[3] = m_boundBox[5] = -std::numeric_limits<double>::max();
   if (hasVolume()) {
-    updateOverallBoundBox(m_volumeBoundBox);
+    std::vector<double> adjustedBoundbox = m_volumeBoundBox;
+    if (adjustedBoundbox[1] > adjustedBoundbox[0] ||
+        adjustedBoundbox[3] > adjustedBoundbox[2] ||
+        adjustedBoundbox[5] > adjustedBoundbox[4]) {
+      if (adjustedBoundbox[0] == adjustedBoundbox[1]) {
+        adjustedBoundbox[1] += 1.0;
+      }
+
+      if (adjustedBoundbox[3] == adjustedBoundbox[2]) {
+        adjustedBoundbox[3] += 1.0;
+      }
+
+      if (adjustedBoundbox[5] == adjustedBoundbox[4]) {
+        adjustedBoundbox[5] += 1.0;
+      }
+    }
+    updateOverallBoundBox(adjustedBoundbox);
   }
   updateOverallBoundBox(m_swcBoundBox);
   updateOverallBoundBox(m_punctaBoundBox);
@@ -3260,33 +3368,28 @@ void Z3DWindow::locateSwcNodeIn2DView()
       if (radius < minRadius) {
         radius = minRadius;
       }
+      int width = radius * 2 + 1;
 
-      ZStackViewParam param(NeuTube::COORD_STACK);
-      param.setViewPort(iround(cx - radius), iround(cy - radius),
-                        iround(cx + radius), iround(cy + radius));
-      param.setZ(iround(cz));
-      emit locating2DViewTriggered(param);
+      emit locating2DViewTriggered(cx, cy, cz, width);
     }
   }
 }
 
 void Z3DWindow::locate2DView(const ZPoint &center, double radius)
 {
-  const int minRadius = 400;
-  if (radius < minRadius) {
-    radius = minRadius;
-  }
+  int width = iround(radius * 2 + 1);
 
-  ZStackViewParam param(NeuTube::COORD_STACK);
+  const int minWidth = 800;
+
+  if (width < minWidth) {
+    width = minWidth;
+  }
 
   double cx = center.getX();
   double cy = center.getY();
   double cz = center.getZ();
-  param.setViewPort(iround(cx - radius), iround(cy - radius),
-                    iround(cx + radius), iround(cy + radius));
-  param.setZ(iround(cz));
 
-  emit locating2DViewTriggered(param);
+  emit locating2DViewTriggered(iround(cx), iround(cy), iround(cz), width);
 }
 
 void Z3DWindow::locatePunctumIn2DView()
@@ -3297,26 +3400,6 @@ void Z3DWindow::locatePunctumIn2DView()
     ZPunctum* punc = *(punctumList.begin());
 
     locate2DView(punc->getCenter(), punc->radius());
-#if 0
-    ZStackViewParam param(NeuTube::COORD_STACK);
-
-    double radius = punc->radius();
-    const int minRadius = 400;
-    if (radius < minRadius) {
-      radius = minRadius;
-    }
-
-    double cx = punc->x();
-    double cy = punc->y();
-    double cz = punc->z();
-    param.setViewPort(iround(cx - radius), iround(cy - radius),
-                      iround(cx + radius), iround(cy + radius));
-    param.setZ(iround(cz));
-
-    emit locating2DViewTriggered(param);
-    //      m_doc->getParentFrame()->viewRoi(
-    //            punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
-#endif
   }
 }
 
@@ -4092,6 +4175,12 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
       ZCuboid rbox(m_volumeBoundBox[0], m_volumeBoundBox[2], m_volumeBoundBox[4],
           m_volumeBoundBox[1], m_volumeBoundBox[3], m_volumeBoundBox[5]);
 
+      if (m_volumeSource->isSubvolume()) {
+        std::vector<double> zoomInBound = m_volumeSource->getZoomInBound();
+        rbox.setFirstCorner(zoomInBound[0], zoomInBound[2], zoomInBound[4]);
+        rbox.setLastCorner(zoomInBound[1], zoomInBound[3], zoomInBound[5]);
+      }
+
       ZLineSegment stackSeg;
       if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
         ZObject3d *scanLine = ZVoxelGraphics::createLineObject(stackSeg);
@@ -4134,6 +4223,31 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 #endif
     ZCuboid rbox(m_volumeBoundBox[0], m_volumeBoundBox[2], m_volumeBoundBox[4],
         m_volumeBoundBox[1], m_volumeBoundBox[3], m_volumeBoundBox[5]);
+    if (m_volumeSource->isSubvolume()) {
+      std::vector<double> zoomInBound = m_volumeSource->getZoomInBound();
+      rbox.setFirstCorner(zoomInBound[0], zoomInBound[2], zoomInBound[4]);
+      rbox.setLastCorner(zoomInBound[1], zoomInBound[3], zoomInBound[5]);
+    } else {
+      if (rbox.firstCorner().getX() < m_volumeRaycaster->xCutLowerValue()) {
+        rbox.firstCorner().setX(m_volumeRaycaster->xCutLowerValue());
+      }
+      if (rbox.lastCorner().getX() > m_volumeRaycaster->xCutUpperValue()) {
+        rbox.lastCorner().setX(m_volumeRaycaster->xCutUpperValue());
+      }
+      if (rbox.firstCorner().getY() < m_volumeRaycaster->yCutLowerValue()) {
+        rbox.firstCorner().setY(m_volumeRaycaster->yCutLowerValue());
+      }
+      if (rbox.lastCorner().getY() > m_volumeRaycaster->yCutUpperValue()) {
+        rbox.lastCorner().setY(m_volumeRaycaster->yCutUpperValue());
+      }
+      if (rbox.firstCorner().getZ() < m_volumeRaycaster->zCutLowerValue()) {
+        rbox.firstCorner().setZ(m_volumeRaycaster->zCutLowerValue());
+      }
+      if (rbox.lastCorner().getZ() > m_volumeRaycaster->zCutUpperValue()) {
+        rbox.lastCorner().setZ(m_volumeRaycaster->zCutUpperValue());
+      }
+    }
+
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
       double x = 0.0;
       double y = 0.0;
