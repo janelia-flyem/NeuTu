@@ -3,8 +3,8 @@ SOURCE = neutube.i $(shell ./parsedep)
 UNAME := $(shell uname)
 SHARE_FLAG = shared
 ifeq ($(UNAME), Darwin)
-  #SHARE_FLAG = bundle
-  SHARE_FLAG = dynamiclib
+  SHARE_FLAG = bundle
+  #SHARE_FLAG = dynamiclib
   HDF5_FLAG = $(PREFIX)/lib/libhdf5.10.dylib
   #RPATH_FLAG = -install_name @rpath/$(PREFIX)/lib/libhdf5.dylib
 else
