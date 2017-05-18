@@ -58,7 +58,7 @@ static void testTreeIterator(ZSwcTree &tree,
 
 TEST(TestSwcTree, TestTreeIterator) {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/breadth_first.swc");
   ZTestSwcTreeIteratorConfig config;
   config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
   {
@@ -322,7 +322,7 @@ TEST(SwcTree, Backtrace)
 {
   //test computeBackTraceLenth
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/length_test.swc");
   tree.forceVirtualRoot();
   tree.computeBackTraceLength();
   //tree.print();
@@ -343,7 +343,7 @@ TEST(SwcTree, Subtree)
 {
   //test labelSubtree
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/length_test.swc");
 
   Swc_Tree_Node *tn = tree.queryNode(3);
   tree.labelSubtree(tn, 1);

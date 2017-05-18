@@ -3,15 +3,25 @@ SOURCE = neutube.i $(shell ./parsedep)
 UNAME := $(shell uname)
 SHARE_FLAG = shared
 ifeq ($(UNAME), Darwin)
-  SHARE_FLAG = bundle
+  #SHARE_FLAG = bundle
+  SHARE_FLAG = dynamiclib
+  HDF5_FLAG = $(PREFIX)/lib/libhdf5.10.dylib
+  #RPATH_FLAG = -install_name @rpath/$(PREFIX)/lib/libhdf5.dylib
+else
+  HDF5_FLAG = -lhdf5
 endif
+
 
 all: _neutube.so
 debug: _neutube_d.so
 
 define compile_so
-	g++ -$(SHARE_FLAG) neutube_wrap.o -o $@ -L$(PREFIX)/lib -L../../cpp/lib/build -l$(1) -L../../c/lib -l$(2) -lfftw3 -lfftw3f -lpng -lxml2 -ljansson -lhdf5 -lm -lz `python-config --ldflags | sed 's/-u [^ ]* [^ ]*//'`
+        @echo $(PREFIX)
+	g++ -$(SHARE_FLAG) neutube_wrap.o $(RPATH_FLAG) -o $@ -L$(PREFIX)/lib -L../../cpp/lib/build -l$(1) -L../../c/lib -l$(2) -lfftw3 -lfftw3f -lxml2 $(HDF5_FLAG) -ljansson -lm -lz `python-config --ldflags | sed 's/-u [^ ]* [^ ]*//'`
 endef
+
+fix: _neutube.so
+	install_name_tool -change libhdf5.10.dylib '@rpath/libhdf5.dylib' _neutube.so
 
 _neutube.so: neutube_wrap.o
 	$(call compile_so,neutube,neurolabi)

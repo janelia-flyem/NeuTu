@@ -415,6 +415,9 @@ private:
 #  define GET_TEST_DATA_DIR GET_DATA_DIR
 #endif
 
+#define GET_BENCHMARK_DIR (GET_TEST_DATA_DIR + "/_benchmark")
+#define GET_FLYEM_DATA_DIR (GET_TEST_DATA_DIR + "/_flyem")
+
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
 #define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
 #define GET_APPLICATION_DIR (NeutubeConfig::getInstance().getApplicatinDir())

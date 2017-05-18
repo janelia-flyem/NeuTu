@@ -1,4 +1,7 @@
 #include "zstackwriter.h"
+
+#include <iostream>
+
 #include "zfiletype.h"
 #include "tz_image_io.h"
 #include "c_stack.h"

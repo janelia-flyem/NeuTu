@@ -8,6 +8,8 @@
 
 #if defined(_QT_GUI_USED_)
 #include <QUrl>
+#include <QFileInfo>
+#include <QDir>
 #endif
 
 ZStackReader::ZStackReader()
@@ -82,6 +84,42 @@ ZStack* ZStackReader::read(const std::string &path)
       if (reader.open(target)) {
         stack = reader.readGrayScale(range);
       }
+    }
+  } else if (url.scheme() == "file") {
+    //File scheme
+    //  file://<path>?<query>
+    //    query: prefix=<prefix>&suffix=<suffix>&numwidth=<suffix>
+    QString prefix = url.queryItemValue("prefix");
+    QString suffix = url.queryItemValue("suffix");
+    QDir dir(url.path());
+    QFileInfoList fileList =
+        dir.entryInfoList(QStringList() << prefix + "*" + suffix);
+
+    if (!fileList.isEmpty()) {
+      QString filePath = fileList[0].absoluteFilePath();
+      int nchannel = ZStack::getChannelNumber(filePath.toStdString());
+      Stack *slice = Read_Sc_Stack(filePath.toLocal8Bit(), 0);
+      int kind = C_Stack::kind(slice);
+      int width = C_Stack::width(slice);
+      int height = C_Stack::height(slice);
+      int depth = fileList.size();
+      Mc_Stack *stackData = C_Stack::make(kind, width, height, depth, nchannel);
+      C_Stack::kill(slice);
+      slice = NULL;
+
+      for (int i = 0; i < nchannel; i++) {
+        for (int j = 0; j < fileList.size(); j++) {
+          slice = Read_Sc_Stack(fileList[j].absoluteFilePath().toLocal8Bit(), i);
+          C_Stack::copyPlaneValue(stackData, slice->array, i, j);
+          C_Stack::kill(slice);
+          slice = NULL;
+        }
+      }
+
+      if (stack == NULL) {
+        stack = new ZStack;
+      }
+      stack->setData(stackData);
     }
   }
 #endif

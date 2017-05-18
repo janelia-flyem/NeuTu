@@ -8,6 +8,7 @@ const char* Z3DFilterSetting::COLOR_MODE_KEY = "color";
 const char* Z3DFilterSetting::SHAPE_MODE_KEY = "shape";
 const char* Z3DFilterSetting::SIZE_SCALE_KEY = "size_scale";
 const char* Z3DFilterSetting::VISIBLE_KEY = "visible";
+const char* Z3DFilterSetting::OPACITY_KEY = "opacity";
 
 Z3DFilterSetting::Z3DFilterSetting()
 {

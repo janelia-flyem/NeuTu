@@ -871,7 +871,14 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 void ZFlyEmProofDoc::prepareDvidData()
 {
   if (m_dvidReader.isReady()) {
-    ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+    ZDvidInfo dvidInfo;
+
+    if (getDvidTarget().hasGrayScaleData()) {
+      dvidInfo = m_dvidReader.readGrayScaleInfo();
+    } else {
+      dvidInfo = m_dvidReader.readLabelInfo();
+    }
+
     ZIntCuboid boundBox;
     if (dvidInfo.isValid()) {
       boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),

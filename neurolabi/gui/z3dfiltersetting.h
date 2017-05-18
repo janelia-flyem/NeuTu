@@ -29,6 +29,7 @@ public:
   static const char* FRONT_KEY;
   static const char* COLOR_MODE_KEY;
   static const char* SHAPE_MODE_KEY;
+  static const char* OPACITY_KEY;
 
 private:
   void init();

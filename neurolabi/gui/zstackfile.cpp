@@ -597,9 +597,10 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
         int depth = fileList.size();
         Mc_Stack *stack = C_Stack::make(kind, width, height, depth, nchannel);
         C_Stack::kill(slice);
+        slice = NULL;
 
         for (int i = 0; i < nchannel; i++) {
-          Stack *slice = Read_Sc_Stack(fileList.getFilePath(0), i);
+//          Stack *slice = Read_Sc_Stack(fileList.getFilePath(0), i);
 
           for (int j = 0; j < fileList.size(); j++) {
             slice = Read_Sc_Stack(fileList.getFilePath(j), i);

@@ -132,7 +132,7 @@ std::string ZDvidData::GetName(
 {
 
   std::string prefix = "";
-  if (!isDefaultName(prefixRole, prefixName)) {
+  if (!IsDefaultName(prefixRole, prefixName)) {
     prefix = prefixName;
   } else {
     return ZDvidData::GetName(role);
@@ -141,15 +141,14 @@ std::string ZDvidData::GetName(
   return GetName(role, prefix);
 }
 
-bool ZDvidData::isDefaultName(ERole role, const std::string &name)
+bool ZDvidData::IsDefaultName(ERole role, const std::string &name)
 {
-  /*
-  if (role == ZDvidData::ROLE_BODY_LABEL) {
-    if (name == m_sp2bodyName) {
+  if (role == ZDvidData::ROLE_BODY_LABEL) { //For backfward compability
+    if (name == "bodies") {
       return true;
     }
   }
-  */
+
 
   return ZDvidData::GetName(role) == name;
 }

@@ -56,11 +56,11 @@ public:
       const std::string &prefixName);
 //  static std::string GetName(ERole role, ERole prefixRole);
 
-  static bool isDefaultName(ERole role, const std::string &name);
   static bool IsNullName(const std::string &name);
 
 private:
   static std::string GetName(ERole role, const std::string &prefix);
+  static bool IsDefaultName(ERole role, const std::string &name);
 
 private:
   static const char *m_grayScaleName;

@@ -840,7 +840,7 @@ int ZCommandLine::runTest()
   ZDvidTarget target;
   target.setFromSourceString(m_input[0]);
 
-  m_input.push_back(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/bodylist.txt");
+  m_input.push_back(GET_FLYEM_DATA_DIR + "/FIB/FIB19/bodylist.txt");
 
   ZDvidReader reader;
   reader.open(target);

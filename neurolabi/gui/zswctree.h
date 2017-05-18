@@ -568,6 +568,14 @@ public:
   std::vector<double> computeAllContinuationAngle(bool rotating = false);
   std::vector<double> computeAllBranchingAngle();
 
+  /*!
+   * \brief Computer all terminal directions
+   * \return An array of terminal direction information. Each entry is an array
+   * with the following elements:
+   * (x, y, z, vx, vy, vz,
+   */
+  std::vector<std::vector<double> >computeAllTerminalDirection();
+
   void merge(Swc_Tree *tree, bool freeInput = false);
   void merge(ZSwcTree *tree, bool freeInput = false);
 

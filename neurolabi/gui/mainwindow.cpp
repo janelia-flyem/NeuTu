@@ -7270,8 +7270,7 @@ void MainWindow::on_actionOperateDvid_triggered()
 void MainWindow::on_actionGenerate_Local_Grayscale_triggered()
 {
   ZDvidTarget dvidTarget("emdata2.int.janelia.org", "134", -1);
-  dvidTarget.setLocalFolder(GET_TEST_DATA_DIR +
-                         "/Users/zhaot/Work/neutube/neurolabi/data/flyem/AL");
+  dvidTarget.setLocalFolder(GET_FLYEM_DATA_DIR + "/AL");
 
   ZDvidReader reader;
   if (reader.open(dvidTarget)) {
@@ -7565,7 +7564,7 @@ void MainWindow::on_actionImport_Sparsevol_Json_triggered()
 void MainWindow::on_actionNeuroMorpho_triggered()
 {
   std::string dataFolder =
-      GET_TEST_DATA_DIR + "/flyem/FIB/FIB25/20151104/neuromorpho";
+      GET_FLYEM_DATA_DIR + "/FIB/FIB25/20151104/neuromorpho";
 
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "e402", 7000);
@@ -7759,7 +7758,7 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
 
 void MainWindow::generateMBKcCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -7841,7 +7840,7 @@ void MainWindow::generateMBKcCast(const std::string &movieFolder)
 
 void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -7925,7 +7924,7 @@ void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
 
 void MainWindow::generateMBPAMCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -7973,7 +7972,7 @@ void MainWindow::generateMBPAMCast(const std::string &movieFolder)
 
 void MainWindow::generateMBONCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -8021,7 +8020,7 @@ void MainWindow::generateMBONCast(const std::string &movieFolder)
 
 void MainWindow::generateMBONConnCast(const std::string &movieFolder)
 {
-  QDir outDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder + "/cast").c_str());
+  QDir outDir((GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder + "/cast").c_str());
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
@@ -8190,7 +8189,17 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
 void MainWindow::generateMBONConvCast(const std::string &movieFolder)
 {
   QString errMsg = ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(
-        (GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder).c_str());
+        (GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder).c_str());
+
+  if (!errMsg.isEmpty()) {
+    report("Failed to generate cast", errMsg.toStdString(), NeuTube::MSG_WARNING);
+  }
+}
+
+void MainWindow::generateFIB19VsCast(const std::string &movieFolder)
+{
+  QString errMsg = ZFlyEmMisc::FIB19::GenerateFIB19VsCast(
+        ZFlyEmMisc::FIB19::GetMovieDir(movieFolder.c_str()));
 
   if (!errMsg.isEmpty()) {
     report("Failed to generate cast", errMsg.toStdString(), NeuTube::MSG_WARNING);
@@ -8199,7 +8208,7 @@ void MainWindow::generateMBONConvCast(const std::string &movieFolder)
 
 void MainWindow::generateMBONPartnerCast(const std::string &movieFolder)
 {
-  QDir mainDir((GET_DATA_DIR + "/flyem/MB/paper/" + movieFolder).c_str());
+  QDir mainDir((GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder).c_str());
   QDir outDir(mainDir.absoluteFilePath("cast"));
 
   if (!outDir.exists()) {
@@ -8427,4 +8436,23 @@ void MainWindow::on_actionGenerate_MB_SynapseT_Actor_triggered()
 void MainWindow::on_actionGenerate_MB_SynapseS_Actor_triggered()
 {
   generateMBONConvCast("movie9");
+}
+
+void MainWindow::on_actionGenerate_VS_Cast_triggered()
+{
+  generateFIB19VsCast("vs");
+}
+
+void MainWindow::on_actionMake_Movie_3_triggered()
+{
+  if (m_movieDlg->getScriptPath().isEmpty()) {
+    const NeutubeConfig &config = NeutubeConfig::getInstance();
+
+    m_movieDlg->setScriptPath((config.getPath(NeutubeConfig::DATA) +
+                               "/_flyem/FIB/FIB19/movies/vs/script.json").c_str());
+    m_movieDlg->setOutputPath((config.getPath(NeutubeConfig::DATA) +
+                               "/_flyem/FIB/FIB19/movies/vs/frame").c_str());
+  }
+
+  makeMovie();
 }

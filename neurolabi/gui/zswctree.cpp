@@ -27,6 +27,7 @@
 #include "swctreenode.h"
 #include "zswctrunkanalyzer.h"
 #include "zswcdisttrunkanalyzer.h"
+#include "zswcdirectionfeatureanalyzer.h"
 #include "zstring.h"
 #include "zfiletype.h"
 #include "zjsonobject.h"
@@ -2250,7 +2251,7 @@ vector<double> ZSwcTree::computeAllBranchingAngle()
   return angleArray;
 }
 
-vector<double> ZSwcTree::computeAllContinuationAngle(bool rotating)
+std::vector<double> ZSwcTree::computeAllContinuationAngle(bool rotating)
 {
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
 
@@ -2292,6 +2293,23 @@ vector<double> ZSwcTree::computeAllContinuationAngle(bool rotating)
 
   return angleArray;
 }
+
+std::vector<std::vector<double> > ZSwcTree::computeAllTerminalDirection()
+{
+  std::vector<std::vector<double> > result;
+
+  LeafIterator nodeIter(this);
+  while (nodeIter.hasNext()) {
+    Swc_Tree_Node *tn = nodeIter.next();
+    ZSwcDirectionFeatureAnalyzer analyzer;
+    std::vector<double> feature = analyzer.computeFeature(tn);
+    result.push_back(feature);
+  }
+
+  return result;
+}
+
+
 
 static void GenerateRandomPos(const double *targetVec, double theta,
                               const double *orgPos, const double *prevPos,

@@ -556,10 +556,12 @@ ZObject3dScan ZObject3dFactory::MakeRandomObject3dScan(const ZIntCuboid &box)
   return obj;
 }
 
+#if defined(_QT_GUI_USED_)
 ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZStroke2d &stroke)
 {
-  ZStack *stack = stroke.toStack();
   ZObject3dScan obj;
+
+  ZStack *stack = stroke.toStack();
   MakeObject3dScan(*stack, &obj);
   delete stack;
 
@@ -567,3 +569,4 @@ ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZStroke2d &stroke)
 
   return obj;
 }
+#endif

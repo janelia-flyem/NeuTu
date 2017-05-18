@@ -10,6 +10,7 @@
 #include <QDateTime>
 #include <QPainter>
 #include <QElapsedTimer>
+#include <QFileInfo>
 #include <QTime>
 #include <QProcess>
 #include <QtCore>
@@ -42,6 +43,7 @@ using namespace std;
 #endif
 
 #include "zopencv_header.h"
+#include "zglobal.h"
 #include "neutube.h"
 #include "imgproc/zstackprocessor.h"
 #include "zfilelist.h"
@@ -23123,6 +23125,91 @@ void ZTest::test(MainWindow *host)
   stroke2.append(3015, 2462);
   ZObject3dScan obj2 = ZObject3dFactory::MakeObject3dScan(stroke2);
   obj2.save(GET_TEST_DATA_DIR + "/system/command_test/body_split/seed2.sobj");
+
+#endif
+
+#if 0
+  QUrl url("file:///Users/dir/?prefix=test");
+  qDebug() << url.scheme();
+  qDebug() << url.path();
+  qDebug() << url.queryItems();
+#endif
+
+#if 0
+  std::string dirPath =
+      GET_TEST_DATA_DIR +
+      "/_misc/MHb Z-Stacks for neuTube Analysis/ZSeries-01102017-1158-024";
+  QDir dir(dirPath.c_str());
+  QFileInfoList fileList =
+      dir.entryInfoList(QStringList() << "ZSeries-01102017-1158-024_Cycle00001_Ch*.ome.tif");
+
+  foreach (const QFileInfo &fileInfo, fileList) {
+    qDebug() << fileInfo.absoluteFilePath();
+  }
+#endif
+
+#if 0
+  ZStackReader reader;
+  ZStack *stack =
+      reader.read("file://" + GET_BENCHMARK_DIR + "/series?prefix=image&suffix=.tif");
+  stack->printInfo();
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("MB_Test");
+
+  reader->getDvidTarget().print();
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("MB_Test");
+
+  writer->getDvidTarget().print();
+//  reader->readSwc(1);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("MB_Test");
+  ZSwcTree *tree = reader->readSwc(16827408);
+  tree->save(GET_TEST_DATA_DIR + "/+test.swc");
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("MB_Test");
+  writer->changeLabel(ZIntCuboid(4186, 5377, 7367, 4248, 5422, 7391),
+                      16433436, 164334367);
+#endif
+
+#if 0
+  ZIntCuboid box(1252, 3961, 3396, 1979, 4344, 3676);
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "1897", 8700);
+  target.useDefaultDataSetting(true);
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.getDvidTarget().print();
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo = reader.readLabelInfo();
+  ZIntCuboid blockCuboid;
+  blockCuboid.setFirstCorner(dvidInfo.getBlockIndex(box.getFirstCorner()));
+  blockCuboid.setLastCorner(dvidInfo.getBlockIndex(box.getLastCorner()));
+
+  for (int z = blockCuboid.getFirstCorner().getZ();
+       z <= blockCuboid.getLastCorner().getZ(); ++z) {
+    for (int y = blockCuboid.getFirstCorner().getY();
+          y<= blockCuboid.getLastCorner().getY(); ++y) {
+      for (int x = blockCuboid.getFirstCorner().getX();
+           x <= blockCuboid.getLastCorner().getX(); ++x) {
+        writer.refreshLabel(dvidInfo.getBlockBox(x, y, z), 2596484);
+      }
+    }
+  }
+#endif
+
+#if 1
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/swc/fork.swc");
 
 #endif
 

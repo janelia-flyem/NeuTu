@@ -71,7 +71,7 @@ void ZSegmentationProject::loadStack(const QString &fileName)
 void ZSegmentationProject::generateTestData()
 {
   m_stack = new ZStack;
-  m_stack->load("/Users/zhaot/Work/neutube/neurolabi/data/benchmark/em_stack_slice.tif");
+  m_stack->load("/Users/zhaot/Work/neutube/neurolabi/data/_benchmark/em_stack_slice.tif");
 
   m_dataFrame->document()->loadStack(m_stack->clone());
 

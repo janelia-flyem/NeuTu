@@ -31,16 +31,16 @@ ShapePaperDialog::ShapePaperDialog(QWidget *parent) :
   ui->setupUi(this);
   m_objectStackDir = new ZStringParameter(
         "Object stack directory",
-        (GET_DATA_DIR + "/flyem/TEM/skeletonization/session3").c_str(), this);
+        (GET_FLYEM_DATA_DIR + "/TEM/skeletonization/session3").c_str(), this);
   m_sparseObjectDir = new ZStringParameter(
         "Sparse object directory",
-        (GET_DATA_DIR + "/flyem/TEM/skeletonization/session3").c_str(), this);
+        (GET_FLYEM_DATA_DIR + "/TEM/skeletonization/session3").c_str(), this);
   m_bundleDir = new ZStringParameter(
         "Bundle directory",
-        (GET_DATA_DIR + "/flyem/TEM/data_release/bundle1").c_str(), this);
+        (GET_FLYEM_DATA_DIR + "/TEM/data_release/bundle1").c_str(), this);
   m_resultDir = new ZStringParameter(
         "Result directory",
-        (GET_DATA_DIR + "/flyem/shape_paper").c_str(), this);
+        (GET_FLYEM_DATA_DIR + "/shape_paper").c_str(), this);
 
   ui->sparseObjectPushButton->hide();
   updateButtonState();
@@ -777,14 +777,6 @@ void ShapePaperDialog::on_clusteringPushButton_clicked()
         } else {
           dump("No Matlab found. This function requires Matlab.");
         }
-        /*
-        QProcess::execute(
-              "/Applications/MATLAB.app/bin/matlab < "
-              "/Users/zhaot/Work/SLAT/matlab/SLAT/run/flyem/tz_run_flyem_clustering_command.m "
-              "-nodesktop -nosplash");
-
-        frame->assignClass(GET_DATA_DIR + "/tmp/labels.txt");
-        */
       } else {
         dump("Unable to generate similarity matrix");
       }

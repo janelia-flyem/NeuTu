@@ -103,4 +103,8 @@ void Z3DGeometryFilter::configure(const ZJsonObject &obj)
   if (obj.hasKey(Z3DFilterSetting::VISIBLE_KEY)) {
     setVisible(ZJsonParser::booleanValue(obj[Z3DFilterSetting::VISIBLE_KEY]));
   }
+
+  if (obj.hasKey(Z3DFilterSetting::OPACITY_KEY)) {
+    setOpacity(ZJsonParser::numberValue(obj[Z3DFilterSetting::OPACITY_KEY]));
+  }
 }

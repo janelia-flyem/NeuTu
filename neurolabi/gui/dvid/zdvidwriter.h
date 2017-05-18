@@ -184,6 +184,10 @@ public:
   void writeLabel(const ZArray &label);
   void writeLabel(const ZArray &label, int zoom);
   void refreshLabel(const ZIntCuboid &box, uint64_t bodyId);
+  void changeLabel(const ZIntCuboid &box, uint64_t oldId, uint64_t newId);
+  void refreshLabel(const std::vector<ZIntCuboid> &boxArray, uint64_t bodyId);
+  void changeLabel(
+      const std::vector<ZIntCuboid> &boxArray, uint64_t oldId, uint64_t newId);
   void refreshLabel(const ZIntCuboid &box, uint64_t bodyId, int zoom);
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 

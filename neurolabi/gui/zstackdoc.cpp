@@ -5319,7 +5319,7 @@ void ZStackDoc::test(QProgressBar *pb)
   if (mainStack != NULL) {
 //    mainStack->enhanceLine();
     ZStack *label = new ZStack;
-    label->load(GET_TEST_DATA_DIR + "/benchmark/binary/3d/diadem_e1.tif");
+    label->load(GET_TEST_DATA_DIR + "/_benchmark/binary/3d/diadem_e1.tif");
 
     ZObject3dScan *seed = new ZObject3dScan;
     seed->setLabel(1);
@@ -5334,7 +5334,7 @@ void ZStackDoc::test(QProgressBar *pb)
 
     for (int i = 0; i < 10; ++i) {
       ZSwcTree *tree = new ZSwcTree;
-      tree->load(GET_TEST_DATA_DIR + "/benchmark/swc/diadem_e1.swc");
+      tree->load(GET_TEST_DATA_DIR + "/_benchmark/swc/diadem_e1.swc");
       QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,
                         tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
 //      QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,

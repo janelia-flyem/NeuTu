@@ -30,6 +30,7 @@
 #include "zstroke2d.h"
 #include "dvid/zdvidsparsestack.h"
 #include "zfileparser.h"
+#include "zjsonfactory.h"
 
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
@@ -474,26 +475,6 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   return cubes;
 }
 
-
-/*
-void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo)
-{
-  if (window != NULL) {
-    ZStackDoc *doc = window->getDocument();
-    if (doc != NULL) {
-      doc->addObject(MakeBoundBoxGraph(dvidInfo), true);
-      doc->addObject(MakePlaneGraph(doc, dvidInfo), true);
-    }
-  }
-}
-
-void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader)
-{
-  if (window != NULL) {
-    Decorate3DWindow(window, reader.readGrayScaleInfo());
-  }
-}
-*/
 
 void ZFlyEmMisc::Decorate3dBodyWindowPlane(
     Z3DWindow *window, const ZDvidInfo &dvidInfo,
@@ -1009,6 +990,226 @@ QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
   return bodySet;
 }
 
+QString ZFlyEmMisc::FIB19::GetRootDir()
+{
+  return (GET_FLYEM_DATA_DIR + "/FIB/FIB19/movies").c_str();
+}
+
+QString ZFlyEmMisc::FIB19::GetMovieDir(const QString &folder)
+{
+  return QDir(GetRootDir()).absoluteFilePath(folder);
+}
+
+ZDvidTarget ZFlyEmMisc::FIB19::MakeDvidTarget()
+{
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+  return target;
+}
+
+QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
+    const QString &movieDir, const QString &neuronType)
+{
+  QString errMsg;
+
+  ZDvidReader reader;
+  if (reader.open(MakeDvidTarget())) {
+    QDir outDir(movieDir + "/cast");
+
+    ZJsonObject neuronJson;
+    neuronJson.load((movieDir + "/neuron_list.json").toStdString());
+
+    double radius = 30;
+
+    ZJsonArray neuronArrayJson(neuronJson.value(neuronType.toStdString().c_str()));
+    for (size_t i = 0; i < neuronArrayJson.size(); ++i) {
+      ZJsonObject obj(neuronArrayJson.value(i));
+      if (obj.hasKey("pos")) {
+        ZIntPoint pos = ZJsonParser::toIntPoint(obj["pos"]);
+        uint64_t bodyId = reader.readBodyIdAt(pos);
+        QString name = ZJsonParser::stringValue(obj["name"]);
+        std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+              bodyId, FlyEM::LOAD_NO_PARTNER);
+        std::vector<ZVaa3dMarker> preMarkerArray;
+        std::vector<ZVaa3dMarker> postMarkerArray;
+        for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+             iter != synapseArray.end(); ++iter) {
+          const ZDvidSynapse &synapse = *iter;
+          ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+          if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+            marker.setColor(255, 255, 255);
+            postMarkerArray.push_back(marker);
+          } else if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+            marker.setColor(255, 255, 0);
+            preMarkerArray.push_back(marker);
+          }
+        }
+        FlyEm::ZFileParser::writeVaa3dMakerFile(
+              outDir.absoluteFilePath(name + ".pre.marker").toStdString(),
+              preMarkerArray);
+        FlyEm::ZFileParser::writeVaa3dMakerFile(
+              outDir.absoluteFilePath(name + ".post.marker").toStdString(),
+              postMarkerArray);
+      }
+    }
+  }
+
+  return errMsg;
+}
+
+QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(const QString &movieDir)
+{
+  QString errMsg = GenerateFIB19VsSynapseCast(movieDir, "VS");
+  errMsg += GenerateFIB19VsSynapseCast(movieDir, "VS_branch");
+
+  return errMsg;
+}
+
+QString ZFlyEmMisc::FIB19::GenerateRoiCast(
+    const QVector<QString> &roiList, const QString &movieDir)
+{
+  QString errMsg;
+
+  ZDvidReader reader;
+  if (reader.open(MakeDvidTarget())) {
+    foreach (const QString &roi, roiList) {
+      ZJsonArray roiJson = reader.readRoiJson(roi.toStdString());
+      if (roiJson.isEmpty()) {
+        errMsg += "Failed to read " + roi;
+        return errMsg;
+      }
+      roiJson.dump((movieDir + "/cast/" + roi + ".json").toStdString());
+    }
+  }
+
+  return errMsg;
+}
+
+QString ZFlyEmMisc::FIB19::GenerateFIB19VsCast(const QString &movieDir)
+{
+  QString errMsg;
+  QDir outDir(movieDir + "/cast");
+
+  QString bodyListCsv = movieDir + "/bodylist_michael_170515_coord.csv";
+  QFile file(bodyListCsv);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    errMsg += "Failed to open " + bodyListCsv;
+    return errMsg;
+  }
+
+  QMap<QString, QString> nameTypeMap;
+  QMap<QString, ZIntPoint> namePosMap;
+  QList<QString> nameList;
+
+  QList<QString> typeList =
+      QList<QString>() << "VS" << "VS_branch" << "T4" << "T5" << "LPi";
+
+  QTextStream in(&file);
+  while (!in.atEnd()) {
+    QString line = in.readLine();
+    QStringList entryList = line.split(",");
+    ZIntPoint pos;
+    if (entryList.back() != "Z" && entryList.size() == 6) {
+      pos.setX(entryList[entryList.size() - 3].toInt());
+      pos.setY(entryList[entryList.size() - 2].toInt());
+      pos.setZ(entryList[entryList.size() - 1].toInt());
+      QString originalName = entryList[2];
+      QString name = QString("%1_i%2").arg(entryList[2].replace(" ", "_").
+          replace("-", "_")).arg(nameList.size());
+      nameList.append(name);
+
+      namePosMap[name] = pos;
+
+      if (originalName == "LOP tan VS 01 Lop4") {
+        nameTypeMap[name] = typeList[0];
+      } else if (originalName == "LOP tan VS 01 Lop4 branch") {
+        nameTypeMap[name] = typeList[1];
+      } else {
+        for (int i = 2; i < 5; ++i) {
+          if (originalName.startsWith(typeList[i])) {
+            nameTypeMap[name] = typeList[i];
+            break;
+          }
+        }
+      }
+    }
+  }
+
+
+  ZJsonObject neuronJson;
+
+  foreach(const QString &type, typeList) {
+    ZJsonArray array;
+    neuronJson.setEntry(type.toLocal8Bit(), array);
+  }
+
+  foreach (const QString &name, nameList) {
+    ZJsonArray array(neuronJson.value(nameTypeMap[name].toLocal8Bit()));
+    ZJsonObject infoJson;
+    infoJson.setEntry("name", name.toStdString());
+    ZJsonArray posJson = ZJsonFactory::MakeJsonArray(namePosMap[name]);
+    infoJson.setEntry("pos", posJson);
+    array.append(infoJson);
+  }
+
+  neuronJson.dump((movieDir + "/neuron_list.json").toStdString());
+
+  ZDvidReader reader;
+  if (reader.open(MakeDvidTarget())) {
+    QFile neuronListFile(movieDir + "/neuron_list.json");
+    ZJsonObject neuronJson;
+    if (!neuronJson.load(neuronListFile.fileName().toStdString())) {
+      errMsg += QString("Failed to load %1").arg(neuronListFile.fileName());
+      return errMsg;
+    }
+
+    const char *key;
+    json_t *value;
+    ZJsonObject_foreach(neuronJson, key, value) {
+      ZJsonArray neuronArray(neuronJson.value(key));
+      for (size_t i = 0; i < neuronArray.size(); ++i) {
+        uint64_t bodyId = 0;
+        QString name;
+        if (ZJsonParser::isInteger(neuronArray.at(i))) {
+          bodyId = ZJsonParser::integerValue(neuronArray.getData(), i);
+        } else {
+          ZJsonObject infoJson(neuronArray.value(i));
+          if (infoJson.hasKey("pos")) {
+            ZIntPoint pos = ZJsonParser::toIntPoint(infoJson["pos"]);
+            bodyId = reader.readBodyIdAt(pos);
+            name = ZJsonParser::stringValue(infoJson["name"]);
+          }
+        }
+
+        if (bodyId > 0) {
+          ZSwcTree *tree = reader.readSwc(bodyId);
+          if (tree == NULL) {
+            errMsg += QString("Failed to read skeleton of body %1").arg(bodyId);
+            return errMsg;
+          }
+          QString outFileName = QString("%1.swc").arg(bodyId);
+          if (!name.isEmpty()) {
+            outFileName = name + ".swc";
+          }
+          QString outPath = outDir.absoluteFilePath(outFileName);
+          tree->save(outPath.toStdString());
+          delete tree;
+        }
+      }
+    }
+  }
+
+  errMsg += GenerateRoiCast(
+        QVector<QString>() << "Layer_Lop1" << "Layer_Lop2" << "Layer_Lop3"
+        << "Layer_Lop4", movieDir);
+
+  errMsg += GenerateFIB19VsSynapseCast(movieDir);
+
+  return errMsg;
+}
+
 ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
 {
   ZDvidTarget target;
@@ -1103,7 +1304,6 @@ QString ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
 
   ZJsonObject json;
   json.load(synapseFile.toStdString());
-
 
 
   ZJsonArray singleJson(json.value("single"));

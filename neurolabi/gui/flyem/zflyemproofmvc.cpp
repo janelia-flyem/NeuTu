@@ -433,9 +433,6 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
       doc->waitForAllEvent();
       QApplication::processEvents();
 
-      //  m_skeletonWindow->getCamera()->setProjectionType(Z3DCamera::Orthographic);
-
-      //    QString outDir = (GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/screenshots").c_str();
       m_skeletonWindow->getCamera()->setEye(eye);
       m_skeletonWindow->getCamera()->setUpVector(upVector);
       m_skeletonWindow->getCamera()->setNearDist(nearDist);

@@ -224,6 +224,8 @@ public:
   bool hasBodyInfo(uint64_t bodyId) const;
   bool hasBody(uint64_t bodyId) const;
 
+  bool hasGrayscale() const;
+
   ZIntPoint readBodyLocation(uint64_t bodyId) const;
 
   bool hasCoarseSparseVolume(uint64_t bodyId) const;
@@ -271,6 +273,7 @@ public:
   ZObject3dScan readRoi(const std::string &dataName);
   ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result);
   ZDvidRoi* readRoi(const std::string &dataName, ZDvidRoi *roi);
+  ZJsonArray readRoiJson(const std::string &dataName);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;

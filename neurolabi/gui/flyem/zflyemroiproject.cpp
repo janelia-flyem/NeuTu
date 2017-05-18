@@ -1429,7 +1429,7 @@ void ZFlyEmRoiProject::printSummary() const
 
 void ZFlyEmRoiProject::test()
 {
-  std::ofstream stream((GET_TEST_DATA_DIR + "/flyem/AL/roi_area.txt").c_str());
+  std::ofstream stream((GET_FLYEM_DATA_DIR + "/AL/roi_area.txt").c_str());
   for (size_t z = 0; z < m_curveArray.size(); ++z) {
     const ZClosedCurve *curve = m_curveArray[z];
     if (curve != NULL) {

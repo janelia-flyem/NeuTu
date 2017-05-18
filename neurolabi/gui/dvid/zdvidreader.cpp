@@ -2360,6 +2360,11 @@ bool ZDvidReader::hasSparseVolume() const
   //return hasData(ZDvidData::getName(ZDvidData::ROLE_SP2BODY));
 }
 
+bool ZDvidReader::hasGrayscale() const
+{
+  return hasData(m_dvidTarget.getGrayScaleName());
+}
+
 bool ZDvidReader::hasBody(uint64_t bodyId) const
 {
 #if 0
@@ -2939,6 +2944,20 @@ bool ZDvidReader::isBookmarkChecked(int x, int y, int z) const
 bool ZDvidReader::isBookmarkChecked(const ZIntPoint &pt) const
 {
   return isBookmarkChecked(pt.getX(), pt.getY(), pt.getZ());
+}
+
+ZJsonArray ZDvidReader::readRoiJson(const std::string &dataName)
+{
+  ZDvidBufferReader &bufferReader = m_bufferReader;
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  bufferReader.read(dvidUrl.getRoiUrl(dataName).c_str());
+  const QByteArray &buffer = bufferReader.getBuffer();
+
+  ZJsonArray array;
+  array.decodeString(buffer.constData());
+
+  return array;
 }
 
 ZObject3dScan* ZDvidReader::readRoi(

@@ -1823,7 +1823,7 @@ void ZNeuronTracer::test()
 {
 #if 1
   ZStack stack;
-  stack.load(GET_TEST_DATA_DIR + "/benchmark/crash/Binary.tif");
+  stack.load(GET_TEST_DATA_DIR + "/_benchmark/crash/Binary.tif");
   Stack *out = binarize(stack.c_stack());
   C_Stack::write(GET_TEST_DATA_DIR + "/test.tif", out);
 #endif

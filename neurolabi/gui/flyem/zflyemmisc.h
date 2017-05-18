@@ -80,6 +80,18 @@ QString GenerateNeuronCast(
 std::vector<ZVaa3dMarker> GetLocationMarker(const ZJsonArray &json);
 }
 
+namespace FIB19 {
+ZDvidTarget MakeDvidTarget();
+QString GetRootDir();
+QString GetMovieDir(const QString &folder);
+QString GenerateFIB19VsCast(const QString &movieDir);
+QString GenerateRoiCast(
+    const QVector<QString> &roiList, const QString &movieDir);
+QString GenerateFIB19VsSynapseCast(
+    const QString &movieDir, const QString &neuronType);
+QString GenerateFIB19VsSynapseCast(const QString &movieDir);
+}
+
 class HackathonEvaluator {
 public:
   HackathonEvaluator(const std::string &sourceDir,
