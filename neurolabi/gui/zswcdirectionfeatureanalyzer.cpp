@@ -16,7 +16,7 @@ std::vector<double> ZSwcDirectionFeatureAnalyzer::computeFeature(Swc_Tree_Node *
   result.push_back(SwcTreeNode::z(tn));
 
   int traceBackCount = 5;
-  ZPoint direction = SwcTreeNode::upStreamDirection(tn, traceBackCount);
+  ZPoint direction = SwcTreeNode::weightedDirection(tn, traceBackCount);
 
   result.push_back(direction.getX());
   result.push_back(direction.getY());

@@ -508,6 +508,8 @@ furthestNode(Swc_Tree_Node *tn, EDistanceType distType = EUCLIDEAN);
 int labelDifference(Swc_Tree_Node *lhs, Swc_Tree_Node *rhs);
 ZPoint upStreamDirection(Swc_Tree_Node *tn, int n = 0);
 ZPoint localDirection(const Swc_Tree_Node *tn, int extend = 1);
+ZPoint weightedDirection(const Swc_Tree_Node *tn, int extend = 1);
+ZPoint weightedDirection(const ZWeightedPointArray &ptArray);
 double localRadius(const Swc_Tree_Node *tn, int extend = 1);
 ZWeightedPointArray localSegment(const Swc_Tree_Node *tn, int extend = 1);
 

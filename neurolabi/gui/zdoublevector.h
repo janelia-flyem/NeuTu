@@ -74,8 +74,8 @@ public:
                             const std::string &filePath);
 
   void print() const;
-  static void print(const std::vector<double> &vec);
-  static void print(const std::vector<std::vector<double> > &data);
+  static void Print(const std::vector<double> &vec);
+  static void Print(const std::vector<std::vector<double> > &data);
 };
 
 template <class T>

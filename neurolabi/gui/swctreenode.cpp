@@ -850,6 +850,48 @@ ZPoint SwcTreeNode::upStreamDirection(Swc_Tree_Node *tn, int n)
   return direction;
 }
 
+ZPoint SwcTreeNode::weightedDirection(const ZWeightedPointArray &ptArray)
+{
+  ZPoint direction;
+
+  double totalLength = 0.0;
+  for (size_t i = 0; i < ptArray.size() - 1; ++i) {
+    const ZWeightedPoint &pt = ptArray[i];
+    ZPoint v = pt - ptArray[i + 1];
+    v *= (pt.weight() + ptArray[i + 1].weight());
+    totalLength += v.length();
+    direction += v;
+  }
+
+  if (totalLength > 0) {
+    double ratio = direction.length() / totalLength;
+    direction.normalize();
+    direction *= ratio;
+  }
+
+  return direction;
+}
+
+ZPoint SwcTreeNode::weightedDirection(const Swc_Tree_Node *tn, int extend)
+{
+  ZWeightedPointArray ptArray;
+
+  const Swc_Tree_Node *start = tn;
+
+  for (int i = 0; i < extend; ++i) {
+    ptArray.append(SwcTreeNode::center(start), SwcTreeNode::radius(start));
+    if (SwcTreeNode::isRegular(start->parent)) {
+      start = start->parent;
+    } else {
+      break;
+    }
+  }
+
+  ZPoint direction = weightedDirection(ptArray);
+
+  return direction;
+}
+
 ZPoint SwcTreeNode::localDirection(const Swc_Tree_Node *tn, int extend)
 {
   const Swc_Tree_Node *start = tn;

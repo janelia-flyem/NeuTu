@@ -23209,8 +23209,24 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZSwcTree tree;
-  tree.load(GET_BENCHMARK_DIR + "/swc/fork.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/multi_branch.swc");
 
+  std::vector<std::vector<double> > allDirection =
+      tree.computeAllTerminalDirection();
+  ZDoubleVector::Print(allDirection);
+#endif
+
+#if 0
+  ZWeightedPointArray ptArray;
+  ptArray.append(ZPoint(0, 0, 0), 1.0);
+  ptArray.append(ZPoint(1, 0, 0), 1.0);
+  ptArray.append(ZPoint(2, 2, 0), 2.0);
+  ptArray.append(ZPoint(5, 2, 0), 3.0);
+
+  ZPoint direction = SwcTreeNode::weightedDirection(ptArray);
+
+  direction.print();
+  std::cout << direction.length() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
