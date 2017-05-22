@@ -1,4 +1,5 @@
 #include <fstream>
+#include <strstream>
 #include "zmultiscalewatershedcommand.h"
 #include "imgproc/zstackmultiscalewatershed.h"
 #include "imgproc/zstackwatershed.h"
@@ -62,23 +63,22 @@ int ZMultiscaleWatershedCommand::run(const std::vector<std::string> &/*input*/,
     return 1;
   }
   VoxelSet in;
-  while(!fin.eof())
+  std::string line;
+  while(getline(fin,line))
   {
-    double x,y,z;
-    fin>>x;
-    if(fin.eof())
+    if(strstr(line.c_str(),"#"))
     {
-      break;
     }
-    fin>>y;
-    if(fin.eof())
+    else
     {
-      break;
+       std::istringstream iss(line);
+       if(iss.fail() || iss.eof())
+       continue;
+       double n,t,x,y,z,r,p;
+       iss>>n>>t>>x>>y>>z>>r>>p;
+       in.push_back(VoxelType(x/scale,y/scale,z/scale));
     }
-    fin>>z;
-    in.push_back(VoxelType(x/scale,y/scale,z/scale));
   }
-
 //surfrecon and prune skeleton
   VoxelSet out;
   ZSurfRecon::SurfRecon(in,out);
