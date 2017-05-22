@@ -63,8 +63,9 @@ void loadStack(ZStack*& img,std::vector<ZStack*>& seeds)
 }
 */
 
-ZStack* upSample(int width,int height,int depth,int scale,ZStack* sampled)
+ZStack* ZStackMultiScaleWatershed::upSample(int width,int height,int depth,ZStack* sampled)
 {
+  int scale=_scale;
   int s_w=sampled->width(),s_h=sampled->height(),s_s=s_w*s_h;
   ZStack* recover=new ZStack(GREY,width,height,depth,1);
   uint8_t* src=sampled->array8(),*dst=recover->array8();
@@ -116,7 +117,7 @@ ZStack* upSample(int width,int height,int depth,int scale,ZStack* sampled)
 }
 
 
-ZStack* getEdgeMap(const ZStack& stack)
+ZStack* ZStackMultiScaleWatershed::getEdgeMap(const ZStack& stack)
 {
   int index=1;
   unsigned char index_map[256][256]={0};
@@ -312,9 +313,10 @@ ZStack* getBoundBoxes(ZStack* stack,std::vector<ZIntCuboid>&boxes)
 }*/
 
 
-void generateSeeds(ZStack* seed,ZStack* src,const ZStack* edge_map,const ZStack* stack,int step)
+void ZStackMultiScaleWatershed::generateSeeds(ZStack* seed,int width,int height,int depth,const ZStack* edge_map,const ZStack* stack)
 {
-  int width=src->width(),height=src->height(),depth=src->depth(),slice=width*height;
+  int step=_scale;
+  int slice=width*height;
   int s_w=stack->width(),s_h=stack->height(),s_d=stack->depth(),s_s=s_w*s_h;
 
   const uint8_t* ps=stack->array8();
@@ -455,13 +457,15 @@ void generateSeeds(ZStack* seed,ZStack* src,const ZStack* edge_map,const ZStack*
 }
 
 
-ZStack* extractNoneEdgeAndSeedPoints(ZStack* edge_map,ZStack* seed,ZStack* srcStack,int scale)
+ZStack* ZStackMultiScaleWatershed::labelAreaNeedUpdate(ZStack* edge_map,ZStack* seed,ZStack* srcStack)
 {
+  int scale=_scale;
   int width=seed->width(),height=seed->height(),depth=seed->depth();
   int s_w=edge_map->width(),s_h=edge_map->height(),s_s=s_w*s_h;
 
   ZStack* rv=new ZStack(GREY,width,height,depth,1);
-  uint8_t* map=edge_map->array8(),*dst=rv->array8(),*sd=seed->array8(),*src=srcStack->array8();
+  uint8_t* map=edge_map->array8(),*dst=rv->array8(),*sd=seed->array8();
+  uint8_t *src=srcStack?srcStack->array8():nullptr;
 
   int xcnt=0,ycnt=0,zcnt=0;
   double cnt=0;
@@ -474,7 +478,7 @@ ZStack* extractNoneEdgeAndSeedPoints(ZStack* edge_map,ZStack* seed,ZStack* srcSt
       {
         if(*map || *sd)
         {
-          *dst=*src;
+          *dst=srcStack?(*src):1;
           cnt+=1;
         }
         ++dst,++src,++sd;
@@ -586,7 +590,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_waters
 {
   clock_t start,end;
   start=clock();
-  ZStack* recovered=upSample(src->width(),src->height(),src->depth(),_scale,sampled_watershed);
+  ZStack* recovered=upSample(src->width(),src->height(),src->depth(),sampled_watershed);
   end=clock();
   std::cout<<"upsampling time:"<<double(end-start)/CLOCKS_PER_SEC<<std::endl;
   //std::cout<<"recovered:"<<std::endl;
@@ -603,14 +607,14 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverEdge(ZStack* sampled_waters
   //seed->setOffset(src->getOffset());
 
   start=clock();
-  generateSeeds(seed,src,edge_map,sampled_watershed,_scale);
+  generateSeeds(seed,src->width(),src->height(),src->depth(),edge_map,sampled_watershed);
   end=clock();
   std::cout<<"seeds generating time:"<<double(end-start)/CLOCKS_PER_SEC<<std::endl;
   //std::cout<<"seed:"<<std::endl;
   //std::cout<<seed->getOffset().m_x<<" "<<seed->getOffset().m_y<<std::endl;
   //printStack(seed);
   start=clock();
-  ZStack* src_clone=extractNoneEdgeAndSeedPoints(edge_map,seed,src,_scale);
+  ZStack* src_clone=labelAreaNeedUpdate(edge_map,seed,src);
   end=clock();
   std::cout<<"find rough edge points time:"<<double(end-start)/CLOCKS_PER_SEC<<std::endl;
 
@@ -751,8 +755,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int s
   //std::vector<ZStack*> seeds;
   ZStack* seed=new ZStack(GREY,std::max(1.0,src->width()/_scale),
                           std::max(1.0,src->height()/_scale),std::max(1.0,src->depth()/_scale),1);
-  seed->setOffset(src->getOffset().m_x/_scale,src->getOffset().m_y/_scale,src->getOffset().m_z/_scale);
-  fillSeed(seed,trees);
+  fillSeed(seed,trees,ZIntPoint(src->getOffset().m_x/_scale,src->getOffset().m_y/_scale,src->getOffset().m_z/_scale));
   //run watershed
 
   ZStackWatershed watershed;
@@ -789,8 +792,9 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,QList<ZSwcTree*>& trees,int s
 }
 
 
-void ZStackMultiScaleWatershed::fillSeed(ZStack* seed,QList<ZSwcTree*>& trees)
+void ZStackMultiScaleWatershed::fillSeed(ZStack* seed,QList<ZSwcTree*>& trees,const ZIntPoint& offset)
 {
+  seed->setOffset(offset.m_x,offset.m_y,offset.m_z);
   uint seed_index=1;
   for(QList<ZSwcTree*>::iterator it=trees.begin();it!=trees.end();++it)
   {

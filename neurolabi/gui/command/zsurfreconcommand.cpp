@@ -17,7 +17,7 @@ ZSurfreconCommand::ZSurfreconCommand()
 int ZSurfreconCommand::run(const std::vector<std::string> &/*input*/, const std::string &/*output*/,
                            const ZJsonObject &config)
 {
-  std::cout<<1<<std::endl;
+
 #if defined(_ENABLE_SURFRECON_)
   if(!config.hasKey("npoints"))
     return 1;
