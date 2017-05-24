@@ -217,6 +217,8 @@ public:
 
   bool good() const;
 
+  void writeServiceResult(const QByteArray &data);
+
 public:
   std::string post(const std::string &url);
   std::string post(const std::string &url, const QByteArray &payload, bool isJson);

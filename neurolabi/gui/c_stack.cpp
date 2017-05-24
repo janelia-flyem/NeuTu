@@ -336,6 +336,22 @@ float* C_Stack::guardedArrayFloat32(const Stack *stack)
   return array;
 }
 
+uint8_t* C_Stack::array8(const Stack *stack, int x, int y, int z)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
+  uint8_t *array = NULL;
+  ssize_t index = C_Stack::offset(
+        x, y, z, C_Stack::width(stack), C_Stack::height(stack), C_Stack::depth(stack));
+  if (index >= 0) {
+    array = C_Stack::array8(stack) + index;
+  }
+
+  return array;
+}
+
 double C_Stack::value(const Stack *stack, size_t index)
 {
   return Stack_Array_Value(stack, index);
@@ -1898,6 +1914,11 @@ Stack_Watershed_Workspace* C_Stack::MakeStackWatershedWorkspace(
   Stack_Watershed_Workspace *ws = Make_Stack_Watershed_Workspace(stack);
 
   return ws;
+}
+
+Stack_Watershed_Workspace* C_Stack::MakeStackWatershedWorkspace(size_t volume)
+{
+  return Make_Stack_Watershed_Workspace_S(volume);
 }
 
 void C_Stack::KillStackWatershedWorkspace(Stack_Watershed_Workspace *ws)

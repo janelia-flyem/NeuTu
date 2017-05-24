@@ -4100,54 +4100,6 @@ size_t ZObject3dScan::getSurfaceArea() const
   return area;
 }
 
-/////////////////////////Iterators/////////////////////////
-ZObject3dScan::ConstSegmentIterator::ConstSegmentIterator(
-    const ZObject3dScan *obj) : m_obj(obj), m_stripeIndex(0), m_segmentIndex(0)
-{
-}
-
-const ZObject3dScan::Segment& ZObject3dScan::ConstSegmentIterator::next()
-{
-  if (hasNext()) {
-    const ZObject3dStripe &stripe = m_obj->getStripe(m_stripeIndex);
-    m_seg.set(stripe.getZ(), stripe.getY(),
-              stripe.getSegmentStart(m_segmentIndex),
-              stripe.getSegmentEnd(m_segmentIndex));
-    advance();
-  }
-  return m_seg;
-}
-
-bool ZObject3dScan::ConstSegmentIterator::hasNext() const
-{
-  if (m_obj == NULL) {
-    return false;
-  }
-  if (m_stripeIndex >= m_obj->getStripeNumber()) {
-    return false;
-  }
-
-  const ZObject3dStripe &stripe = m_obj->getStripe(m_stripeIndex);
-  if (m_segmentIndex >= stripe.getSegmentNumber()) {
-    return false;
-  }
-
-  return true;
-}
-
-void ZObject3dScan::ConstSegmentIterator::advance()
-{
-  if (m_stripeIndex < m_obj->getStripeNumber()) {
-    const ZObject3dStripe &stripe = m_obj->getStripe(m_stripeIndex);
-    if (m_segmentIndex < stripe.getSegmentNumber() - 1) {
-      ++m_segmentIndex;
-    } else {
-      m_segmentIndex = 0;
-      ++m_stripeIndex;
-    }
-  }
-}
-
 std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(
     const ZStack &stack, int yStep)
 {
@@ -4225,6 +4177,144 @@ bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj)
   }
 
   return succ;
+}
+
+/////////////////////////Iterators/////////////////////////
+ZObject3dScan::ConstSegmentIterator::ConstSegmentIterator(
+    const ZObject3dScan *obj) :
+  m_obj(obj), m_nextStripeIndex(0), m_nextSegmentIndex(0)
+{
+  skipOverEmptyStripe();
+}
+
+const ZObject3dScan::Segment& ZObject3dScan::ConstSegmentIterator::next()
+{
+  if (hasNext()) {
+    const ZObject3dStripe &stripe = m_obj->getStripe(m_nextStripeIndex);
+    m_seg.set(stripe.getZ(), stripe.getY(),
+              stripe.getSegmentStart(m_nextSegmentIndex),
+              stripe.getSegmentEnd(m_nextSegmentIndex));
+    advance();
+  } else {
+    m_seg.set(0, 0, 0, -1);
+  }
+
+  return m_seg;
+}
+
+const ZObject3dScan::Segment& ZObject3dScan::ConstSegmentIterator::current() const
+{
+  return m_seg;
+}
+
+bool ZObject3dScan::ConstSegmentIterator::hasNext() const
+{
+  if (m_obj == NULL) {
+    return false;
+  }
+  if (m_nextStripeIndex >= m_obj->getStripeNumber()) {
+    return false;
+  }
+
+  const ZObject3dStripe &stripe = m_obj->getStripe(m_nextStripeIndex);
+  if (m_nextSegmentIndex >= stripe.getSegmentNumber()) {
+    return false;
+  }
+
+  return true;
+}
+
+void ZObject3dScan::ConstSegmentIterator::skipOverEmptyStripe()
+{
+  if (m_obj != NULL) {
+    while (m_nextStripeIndex < m_obj->getStripeNumber()) {
+      if (m_obj->getStripe(m_nextStripeIndex).isEmpty()) {
+        ++m_nextStripeIndex;
+      } else {
+        break;
+      }
+    }
+  }
+}
+
+void ZObject3dScan::ConstSegmentIterator::advance()
+{
+  if (m_nextStripeIndex < m_obj->getStripeNumber()) {
+    const ZObject3dStripe &stripe = m_obj->getStripe(m_nextStripeIndex);
+    if (m_nextSegmentIndex < stripe.getSegmentNumber() - 1) {
+      ++m_nextSegmentIndex;
+    } else {
+      m_nextSegmentIndex = 0;
+      ++m_nextStripeIndex;
+      skipOverEmptyStripe();
+    }
+  }
+}
+
+//////////////Voxel Iterator////////////////////////
+ZObject3dScan::ConstVoxelIterator::ConstVoxelIterator(
+    const ZObject3dScan *obj) : m_obj(obj), m_segIter(obj)
+{
+  m_nextX = MAX_INT32;
+  const ZObject3dScan::Segment &seg = m_segIter.next();
+  if (!seg.isEmpty()) {
+    m_nextX = seg.getStart();
+  }
+}
+
+const ZIntPoint ZObject3dScan::ConstVoxelIterator::next()
+{ //Assuming there is no empty entry
+
+  ZIntPoint pt;
+  pt.invalidate();
+
+  if (hasNext()) {
+    const ZObject3dScan::Segment &seg = m_segIter.current();
+    pt.set(m_nextX, seg.getY(), seg.getZ());
+    advance();
+  }
+
+  return pt;
+}
+
+bool ZObject3dScan::ConstVoxelIterator::hasNext() const
+{
+  if (m_obj == NULL) {
+    return false;
+  }
+
+  if (m_obj->isEmpty()) {
+    return false;
+  }
+
+  const ZObject3dScan::Segment &seg = m_segIter.current();
+  if (seg.isEmpty() && m_segIter.hasNext()) { //Start position
+    return true;
+  }
+
+  if (!seg.isEmpty()) {
+    if (m_nextX <= seg.getEnd()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void ZObject3dScan::ConstVoxelIterator::advance()
+{
+  const ZObject3dScan::Segment &currentSeg = m_segIter.current();
+  if (currentSeg.isEmpty() && hasNext()) { //Start position
+    const ZObject3dScan::Segment &seg = m_segIter.next();
+    m_nextX = seg.getStart();
+  } else {
+    if (m_nextX < currentSeg.getEnd()) {
+      ++m_nextX;
+    } else {
+      const ZObject3dScan::Segment &seg = m_segIter.next();
+      m_nextX = seg.getStart();
+    }
+  }
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZObject3dScan)

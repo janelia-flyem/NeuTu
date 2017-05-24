@@ -747,9 +747,13 @@ void Print_Stack_Watershed_Workspace(Stack_Watershed_Workspace *ws)
 
 Stack_Watershed_Workspace* Make_Stack_Watershed_Workspace(const Stack *stack)
 {
+  return Make_Stack_Watershed_Workspace_S(Stack_Voxel_Number(stack));
+}
+
+Stack_Watershed_Workspace* Make_Stack_Watershed_Workspace_S(size_t voxelCount)
+{
   Stack_Watershed_Workspace *ws = New_Stack_Watershed_Workspace();
-  size_t nvoxel = Stack_Voxel_Number(stack);
-  GUARDED_MALLOC_ARRAY(ws->array, nvoxel, int);
+  GUARDED_MALLOC_ARRAY(ws->array, voxelCount, int);
 
   return ws;
 }

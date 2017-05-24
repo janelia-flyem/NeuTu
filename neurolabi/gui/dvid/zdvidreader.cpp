@@ -537,7 +537,7 @@ ZObject3dScan *ZDvidReader::readBodyDs(
   return result;
 }
 
-QByteArray ZDvidReader::readBuffer(const std::string &url)
+QByteArray ZDvidReader::readBuffer(const std::string &url) const
 {
   m_bufferReader.read(url.c_str());
 
@@ -3418,6 +3418,13 @@ bool ZDvidReader::reportMissingData(const std::string dataName) const
   }
 
   return missing;
+}
+
+QByteArray ZDvidReader::readServiceResult(const std::string &key) const
+{
+  ZDvidUrl url(getDvidTarget());
+
+  return readBuffer(url.getKeyUrl("result", key));
 }
 
 int ZDvidReader::checkProofreadingData() const

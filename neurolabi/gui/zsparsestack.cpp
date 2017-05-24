@@ -278,6 +278,7 @@ ZStack* ZSparseStack::getStack()
         m_stack =  new ZStack(GREY, obj.getBoundBox(), 1);
         m_stack->setZero();
         assignStackValue(m_stack, obj, *dsGrid, m_baseValue);
+        m_stack->setDsIntv(m_dsIntv);
         delete dsGrid;
       } else {
         m_stack = new ZStack(GREY, cuboid, 1);

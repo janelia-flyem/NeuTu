@@ -280,8 +280,8 @@ void ZObject3d::labelStack(Stack *stack, int label) const
 
 void ZObject3d::labelStack(ZStack *stack, int label) const
 {
-  labelStack(stack->c_stack(), label, stack->getOffset().getX(),
-             stack->getOffset().getY(), stack->getOffset().getZ());
+  labelStack(stack->c_stack(), label, -stack->getOffset().getX(),
+             -stack->getOffset().getY(), -stack->getOffset().getZ());
 }
 void ZObject3d::labelStack(ZStack *stack) const
 {

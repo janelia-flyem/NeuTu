@@ -48,19 +48,21 @@ public:
   // otherwise don't use the returned value
   glm::vec3 get3DPosition(int x, int y, int width, int height, bool &success);
 
-  inline int xCutLowerValue() { return m_xCut.lowerValue(); }
-  inline int xCutUpperValue() { return m_xCut.upperValue(); }
-  inline int yCutLowerValue() { return m_yCut.lowerValue(); }
-  inline int yCutUpperValue() { return m_yCut.upperValue(); }
-  inline int zCutLowerValue() { return m_zCut.lowerValue(); }
-  inline int zCutUpperValue() { return m_zCut.upperValue(); }
+  inline int xCutLowerValue() const { return m_xCut.lowerValue(); }
+  inline int xCutUpperValue() const { return m_xCut.upperValue(); }
+  inline int yCutLowerValue() const { return m_yCut.lowerValue(); }
+  inline int yCutUpperValue() const { return m_yCut.upperValue(); }
+  inline int zCutLowerValue() const { return m_zCut.lowerValue(); }
+  inline int zCutUpperValue() const { return m_zCut.upperValue(); }
 
-  inline int xCutMin() { return m_xCut.minimum(); }
-  inline int xCutMax() { return m_xCut.maximum(); }
-  inline int yCutMin() { return m_yCut.minimum(); }
-  inline int yCutMax() { return m_yCut.maximum(); }
-  inline int zCutMin() { return m_zCut.minimum(); }
-  inline int zCutMax() { return m_zCut.maximum(); }
+  ZIntCuboid getCutBox() const;
+
+  inline int xCutMin() const { return m_xCut.minimum(); }
+  inline int xCutMax() const { return m_xCut.maximum(); }
+  inline int yCutMin() const { return m_yCut.minimum(); }
+  inline int yCutMax() const { return m_yCut.maximum(); }
+  inline int zCutMin() const { return m_zCut.minimum(); }
+  inline int zCutMax() const { return m_zCut.maximum(); }
 
 
   inline void setXCutLower(int v) { m_xCut.setLowerValue(v); }

@@ -62,6 +62,8 @@ public:
 
   void translateX(int dx);
 
+  void translate(const ZIntPoint &offset);
+
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
    */

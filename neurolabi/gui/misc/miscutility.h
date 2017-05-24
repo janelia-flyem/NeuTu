@@ -18,6 +18,8 @@ class ZGraph;
 class ZIntPoint;
 class ZSwcTree;
 class ZClosedCurve;
+class ZIntCuboid;
+class ZCuboid;
 
 namespace misc {
 
@@ -59,6 +61,9 @@ double computeConfidence(double v, double median, double p95);
 ZTree<int> *buildSegmentationTree(const Stack *stack);
 
 ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
+
+ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
+ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
 
 enum ESampleStackOption {
   SAMPLE_STACK_NN, SAMPLE_STACK_AVERAGE, SAMPLE_STACK_UNIFORM

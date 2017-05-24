@@ -971,7 +971,7 @@ Stack *Read_Lsm_Stack(const char *filepath, int channel)
 #ifdef _MSC_VER
   Reset_Tiff_Image();
 #else
-  Reset_Tiff_Image(image);
+  Reset_Tiff_Image(/*image*/);
 #endif
   Reset_Tiff_IFD();
   Kill_Tiff_Reader(tif);
@@ -2978,7 +2978,7 @@ Mc_Stack* Read_Mc_Stack(const char *filepath, int channel)
     free(mc_stack_array);
     Reset_Tiff_Image();
 #else
-    Reset_Tiff_Image(image);
+    Reset_Tiff_Image(/*image*/);
 #endif
     Reset_Tiff_IFD();
     Kill_Tiff_Reader(reader);
@@ -3145,7 +3145,7 @@ Stack* Read_Sc_Stack(const char *filepath, int channel)
   free(mc_stack_array);
   Reset_Tiff_Image();
 #else
-  Reset_Tiff_Image(image);
+  Reset_Tiff_Image(/*image*/);
 #endif
   Reset_Tiff_IFD();
   Kill_Tiff_Reader(reader);

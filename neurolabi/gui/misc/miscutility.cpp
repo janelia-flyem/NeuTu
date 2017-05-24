@@ -623,6 +623,31 @@ ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
   return curve;
 }
 
+ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)
+{
+  ZCuboid result;
+
+  result.setFirstCorner(box1.firstCorner().x() - box2.getFirstCorner().getX(),
+                        box1.firstCorner().y() - box2.getFirstCorner().getY(),
+                        box1.firstCorner().z() - box2.getFirstCorner().getZ());
+
+  result.setSize(box2.getWidth(), box2.getHeight(), box2.getDepth());
+
+  return result;
+}
+
+ZCuboid misc::Intersect(const ZCuboid &box1, const ZIntCuboid &box2)
+{
+  ZCuboid result = box1;
+
+  result.setFirstCorner(box2.getFirstCorner().toPoint());
+  result.setLastCorner(box2.getLastCorner().toPoint());
+
+  result.intersect(box1);
+
+  return result;
+}
+
 double misc::SampleStack(
     const Stack *stack, double x, double y, double z, ESampleStackOption option)
 {

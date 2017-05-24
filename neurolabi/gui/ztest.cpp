@@ -314,6 +314,8 @@ using namespace std;
 #include "dvid/zdvidsparsestack.h"
 #include "zstackwriter.h"
 #include "zstackreader.h"
+#include "dvid/zdvidendpoint.h"
+#include "flyem/zstackwatershedcontainer.h"
 
 using namespace std;
 
@@ -23207,7 +23209,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZSwcTree tree;
   tree.load(GET_BENCHMARK_DIR + "/swc/multi_branch.swc");
 
@@ -23227,6 +23229,140 @@ void ZTest::test(MainWindow *host)
 
   direction.print();
   std::cout << direction.length() << std::endl;
+#endif
+
+#if 0
+  const char *data = "this is a test";
+
+  ZDvidEndPoint endPoint;
+  qDebug() << endPoint.GetResultEndPoint(QByteArray(data));
+
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.setNullLabelBlockName();
+  target.set("localhost", "4d3e", 8000);
+  if (writer.open(target)) {
+    writer.writeServiceResult(QByteArray(data));
+  }
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("localhost", "4d3e", 8000);
+
+  if (reader.open(target)) {
+    QByteArray buffer = reader.readServiceResult(
+          "54b0c58c7ce9f2a8b551351102ee0938");
+    qDebug() << buffer;
+  }
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  QByteArray byteArray = obj.toDvidPayload();
+
+
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.setNullLabelBlockName();
+  target.set("localhost", "4d3e", 8000);
+  if (writer.open(target)) {
+    writer.writeServiceResult(byteArray);
+  }
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("localhost", "4d3e", 8000);
+
+  if (reader.open(target)) {
+    QByteArray buffer = reader.readServiceResult(
+          "79674142a7bf5bf37b217dedcb9437e7");
+//    qDebug() << buffer;
+    ZObject3dScan obj;
+    obj.importDvidObjectBuffer(buffer.data(), buffer.size());
+    obj.print();
+  }
+#endif
+
+#if 0
+  for (int i = 0; i < 1000; ++i) {
+//    Mc_Stack *stack = Read_Mc_Stack((GET_BENCHMARK_DIR + "/../_system/emstack2.tif").c_str(), 0);
+//    Mc_Stack *stack = C_Stack::read(GET_BENCHMARK_DIR + "/em_slice.tif");
+//    Mc_Stack *stack = C_Stack::make(GREY, 512, 512, 1, 1);
+//    C_Stack::kill(stack);
+
+    ZStack stack;
+    stack.load(GET_BENCHMARK_DIR + "/em_slice.tif");
+    ZStackWatershedContainer container(&stack);
+    ZObject3dScan obj;
+    obj.addSegment(3201, 4102, 2900, 2905);
+    obj.setLabel(1);
+
+    ZObject3dScan obj2;
+    obj2.addSegment(3201, 4114, 3010, 3015);
+    obj2.setLabel(2);
+
+    container.addSeed(obj);
+    container.addSeed(obj2);
+
+    ZStack *result = container.run();
+
+//    result->save(GET_TEST_DATA_DIR + "/test.tif");
+
+    delete result;
+  }
+
+  while (1) {}
+#endif
+
+#if 1
+
+  ZStack stack;
+  stack.load(GET_BENCHMARK_DIR + "/em_slice.tif");
+
+  ZStackWatershedContainer container(&stack);
+  ZObject3dScan obj;
+  obj.addSegment(3201, 4102, 2900, 2905);
+  obj.setLabel(1);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(3201, 4114, 3010, 3015);
+  obj2.setLabel(2);
+
+  ZObject3dScan obj3;
+  obj3.setLabel(3);
+  obj3.addSegment(3201, 4185, 2904, 3000);
+//  container.setRange(2890, 4095, 3201, 3100, 4173, 3201);
+  container.addSeed(obj);
+  container.addSeed(obj2);
+  container.addSeed(obj3);
+
+  ZStroke2d stroke;
+  stroke.append(3089, 4173);
+  stroke.setZ(3201);
+  stroke.setWidth(5);
+  stroke.setLabel(3);
+
+  container.addSeed(stroke);
+
+  ZObject3d obj4;
+  obj4.append(2938, 4143, 3201);
+  obj4.append(2939, 4144, 3201);
+  obj4.append(2940, 4146, 3201);
+  obj4.setLabel(5);
+  container.addSeed(obj4);
+
+  container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
+//  ZStack *result = container.run();
+
+//  result->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//  delete result;
+
 #endif
 
   std::cout << "Done." << std::endl;

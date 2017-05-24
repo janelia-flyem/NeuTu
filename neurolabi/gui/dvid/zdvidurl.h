@@ -249,8 +249,12 @@ public:
       uint64_t bodyId, ZDvid::ELabelIndexType indexType) const;
 
   std::string getSynapseLabelszThresholdUrl(int threshold) const;
-  std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType) const;
-  std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
+  std::string getSynapseLabelszThresholdUrl(
+      int threshold, ZDvid::ELabelIndexType indexType) const;
+  std::string getSynapseLabelszThresholdUrl(
+      int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
+
+  static std::string GetServiceResultEndPoint();
 
 private:
   std::string getSplitUrl(

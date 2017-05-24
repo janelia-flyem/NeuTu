@@ -4228,24 +4228,9 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
       rbox.setFirstCorner(zoomInBound[0], zoomInBound[2], zoomInBound[4]);
       rbox.setLastCorner(zoomInBound[1], zoomInBound[3], zoomInBound[5]);
     } else {
-      if (rbox.firstCorner().getX() < m_volumeRaycaster->xCutLowerValue()) {
-        rbox.firstCorner().setX(m_volumeRaycaster->xCutLowerValue());
-      }
-      if (rbox.lastCorner().getX() > m_volumeRaycaster->xCutUpperValue()) {
-        rbox.lastCorner().setX(m_volumeRaycaster->xCutUpperValue());
-      }
-      if (rbox.firstCorner().getY() < m_volumeRaycaster->yCutLowerValue()) {
-        rbox.firstCorner().setY(m_volumeRaycaster->yCutLowerValue());
-      }
-      if (rbox.lastCorner().getY() > m_volumeRaycaster->yCutUpperValue()) {
-        rbox.lastCorner().setY(m_volumeRaycaster->yCutUpperValue());
-      }
-      if (rbox.firstCorner().getZ() < m_volumeRaycaster->zCutLowerValue()) {
-        rbox.firstCorner().setZ(m_volumeRaycaster->zCutLowerValue());
-      }
-      if (rbox.lastCorner().getZ() > m_volumeRaycaster->zCutUpperValue()) {
-        rbox.lastCorner().setZ(m_volumeRaycaster->zCutUpperValue());
-      }
+      ZIntCuboid cutBox = m_volumeRaycaster->getCutBox();
+//      cutBox.translate(m_doc->getStackOffset());
+      rbox = misc::CutBox(rbox, cutBox);
     }
 
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
@@ -4280,7 +4265,8 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
       if (getDocument()->hasSparseStack()) {
         stack = getDocument()->getSparseStack()->getStack();
-        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+        ZIntPoint dsIntv = stack->getDsIntv();
+//        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
         xIntv = dsIntv.getX();
         yIntv = dsIntv.getY();
         zIntv = dsIntv.getZ();

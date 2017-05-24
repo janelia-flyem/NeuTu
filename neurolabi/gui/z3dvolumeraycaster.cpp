@@ -15,7 +15,7 @@
 #include "QsLog.h"
 #include "zbenchtimer.h"
 #include "z3dutils.h"
-
+#include "zintcuboid.h"
 
 const size_t Z3DVolumeRaycaster::m_maxNumOfFullResolutionVolumeSlice = 6;
 
@@ -977,6 +977,15 @@ void Z3DVolumeRaycaster::clearFRVolumeSlices()
     }
     m_FRVolumeSlices[i].clear();
   }
+}
+
+ZIntCuboid Z3DVolumeRaycaster::getCutBox() const
+{
+  ZIntCuboid box;
+  box.set(m_xCut.lowerValue(), m_yCut.lowerValue(), m_zCut.lowerValue(),
+          m_xCut.upperValue(), m_yCut.upperValue(), m_zCut.upperValue());
+
+  return box;
 }
 
 void Z3DVolumeRaycaster::prepareDataForRaycaster(Z3DVolume *volume, Z3DEye eye)

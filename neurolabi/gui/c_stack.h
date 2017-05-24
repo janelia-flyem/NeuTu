@@ -150,6 +150,7 @@ inline size_t allByteNumber(const Stack *stack) {
  * \brief Pointer to the raw data
  */
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
+uint8_t* array8(const Stack *stack, int x, int y, int z);
 
 uint16_t* guardedArray16(const Stack *stack);
 float* guardedArrayFloat32(const Stack *stack);
@@ -450,6 +451,7 @@ void drawInteger(Stack *canvas, int n, int dx, int dy, int dz, int interval = 10
 
 //Workspace APIs
 Stack_Watershed_Workspace *MakeStackWatershedWorkspace(const Stack *stack);
+Stack_Watershed_Workspace *MakeStackWatershedWorkspace(size_t volume);
 void KillStackWatershedWorkspace(Stack_Watershed_Workspace *ws);
 
 //Experimenting APIs

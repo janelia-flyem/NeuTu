@@ -584,17 +584,21 @@ public:
 
   class Segment {
   public:
-    Segment(int z = 0, int y = 0, int x0 = 0, int x1 = 0) :
+    Segment(int z = 0, int y = 0, int x0 = 0, int x1 = -1) :
       m_x0(x0), m_x1(x1), m_y(y), m_z(z) {}
     inline int getZ() const { return m_z; }
     inline int getY() const { return m_y; }
     inline int getStart() const { return m_x0; }
     inline int getEnd() const { return m_x1; }
-    inline void set(int z = 0, int y = 0, int x0 = 0, int x1 = 0) {
+    inline void set(int z, int y, int x0, int x1) {
       m_x0 = x0;
       m_x1 = x1;
       m_y = y;
       m_z = z;
+    }
+    inline bool isEmpty() const { return m_x0 > m_x1; }
+    void clear() {
+      set(0, 0, 0, -1);
     }
 
   private:
@@ -606,16 +610,34 @@ public:
 
   class ConstSegmentIterator {
   public:
+    //The iterator always starts from the position prior to the first element.
     ConstSegmentIterator(const ZObject3dScan *obj = NULL);
-    const Segment& next();
+    const Segment& next(); //Go to next and return the elment
+    const Segment& current() const;
+    bool hasNext() const;
+    void advance();
+
+  private:
+    void skipOverEmptyStripe();
+
+  private:
+    const ZObject3dScan *m_obj;
+    size_t m_nextStripeIndex;
+    int m_nextSegmentIndex;
+    Segment m_seg;
+  };
+
+  class ConstVoxelIterator {
+  public:
+    ConstVoxelIterator(const ZObject3dScan *obj = NULL);
+    const ZIntPoint next();
     bool hasNext() const;
     void advance();
 
   private:
     const ZObject3dScan *m_obj;
-    size_t m_stripeIndex;
-    int m_segmentIndex;
-    Segment m_seg;
+    ConstSegmentIterator m_segIter;
+    int m_nextX;
   };
 
   std::vector<ZObject3dStripe>& getStripeArray() {

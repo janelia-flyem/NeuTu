@@ -830,10 +830,17 @@ std::string ZDvidUrl::getBranchUrl() const
 std::string ZDvidUrl::GetEndPoint(const std::string &url)
 {
   std::string marker = "api/node/";
-  std::string::size_type markerPos = url.find(marker) + marker.size();
-  std::string::size_type uuidPos = url.find('/', markerPos);
 
-  return url.substr(uuidPos);
+
+  std::string::size_type markerPos = url.find(marker);
+
+  if (markerPos != std::string::npos) {
+    markerPos += marker.size();
+    std::string::size_type uuidPos = url.find('/', markerPos);
+    return url.substr(uuidPos);
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
@@ -1194,12 +1201,13 @@ std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold) const {
     return name;
 }
 
-std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType)  const {
-    return getSynapseLabelszThresholdUrl(threshold) + "/" + GetLabelszIndexTypeStr(indexType);
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(
+    int threshold, ZDvid::ELabelIndexType indexType)  const {
+  return getSynapseLabelszThresholdUrl(threshold) + "/" + GetLabelszIndexTypeStr(indexType);
 }
 
-std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType,
-        int offset, int number)  const {
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(
+    int threshold, ZDvid::ELabelIndexType indexType, int offset, int number)  const {
     std::string url = getSynapseLabelszThresholdUrl(threshold, indexType);
     url += "/?offset=";
     url += ZString::num2str(offset);
@@ -1219,4 +1227,9 @@ std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
   stream << bodyId << "_swc";
 
   return stream.str();
+}
+
+std::string ZDvidUrl::GetServiceResultEndPoint()
+{
+  return "result";
 }

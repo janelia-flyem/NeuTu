@@ -743,7 +743,9 @@ HEADERS += mainwindow.h \
     dialogs/zcomboeditdialog.h \
     dialogs/zflyembodycomparisondialog.h \
     dvid/zdvidstore.h \
-    z3dfiltersetting.h
+    z3dfiltersetting.h \
+    dvid/zdvidendpoint.h \
+    flyem/zstackwatershedcontainer.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1294,6 +1296,8 @@ SOURCES += main.cpp \
     dialogs/zcomboeditdialog.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
     dvid/zdvidstore.cpp \
-    z3dfiltersetting.cpp
+    z3dfiltersetting.cpp \
+    dvid/zdvidendpoint.cpp \
+    flyem/zstackwatershedcontainer.cpp
 
 

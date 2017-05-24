@@ -78,6 +78,8 @@ ZStack* ZStackReader::read(const std::string &path)
     if (parts.size() == 2 && !range.isEmpty()) {
       ZDvidTarget target;
       target.set(url.host().toStdString(), parts[0].toStdString(), url.port(-1));
+
+
       target.setGrayScaleName(parts[1].toStdString());
       target.setLabelBlockName("*");
       ZDvidReader reader;

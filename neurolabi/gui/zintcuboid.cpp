@@ -89,6 +89,12 @@ void ZIntCuboid::translateX(int dx)
   m_lastCorner.setX(m_lastCorner.getX() + dx);
 }
 
+void ZIntCuboid::translate(const ZIntPoint &offset)
+{
+  m_firstCorner += offset;
+  m_lastCorner += offset;
+}
+
 ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
   for (int i = 0; i < 3; i++) {

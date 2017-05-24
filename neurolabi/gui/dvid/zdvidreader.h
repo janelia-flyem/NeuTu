@@ -375,13 +375,15 @@ public:
   }
 #endif
 
-  QByteArray readBuffer(const std::string &url);
+  QByteArray readBuffer(const std::string &url) const;
 
   bool refreshLabelBuffer();
 
   void testApiLoad();
 
   int checkProofreadingData() const;
+
+  QByteArray readServiceResult(const std::string &key) const;
 
 signals:
   void readingDone();
