@@ -3140,14 +3140,16 @@ bool ZStackPresenter::process(ZStackOperator &op)
     buddyDocument()->executeInsertSwcNode();
     break;
   case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
-//    if (isStrokeOff()) {
       buddyDocument()->executeSwcNodeChangeSizeCommand(0.5);
-//    }
     break;
   case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
-//    if (isStrokeOff()) {
       buddyDocument()->executeSwcNodeChangeSizeCommand(-0.5);
-//    }
+    break;
+  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE_FAST:
+      buddyDocument()->executeSwcNodeChangeSizeCommand(5);
+    break;
+  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE_FAST:
+      buddyDocument()->executeSwcNodeChangeSizeCommand(-5);
     break;
   case ZStackOperator::OP_SWC_CONNECT_NODE:
     if (buddyDocument()->hasSelectedSwcNode()) {
