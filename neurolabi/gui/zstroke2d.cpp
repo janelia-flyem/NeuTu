@@ -15,7 +15,11 @@
 #include "zintcuboid.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
+#ifdef _FLYEM_
+const double ZStroke2d::m_maxWidth = 1000.0;
+#else
 const double ZStroke2d::m_maxWidth = 100.0;
+#endif
 //const QVector<QColor> ZStroke2d::m_colorTable = ZStroke2d::constructColorTable();
 //const QColor ZStroke2d::m_blackColor = Qt::black;
 const ZLabelColorTable ZStroke2d::m_colorTable;

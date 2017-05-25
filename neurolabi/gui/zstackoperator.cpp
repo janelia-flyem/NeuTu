@@ -97,6 +97,8 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
     break;
   case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
   case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
+  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE_FAST:
+  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE_FAST:
     if (!doc->hasSelectedSwcNode()) {
       opable = false;
     }
