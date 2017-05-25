@@ -7,6 +7,8 @@
 #include "imgproc/zstackwatershed.h"
 #include "zstackwriter.h"
 #include "zstring.h"
+#include "flyem/zstackwatershedcontainer.h"
+#include "zstroke2d.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {
@@ -31,35 +33,42 @@ int ZBodySplitCommand::run(
   signalStack.load(signalUrl);
 
   if (!signalStack.isEmpty()) {
-    std::vector<ZStack*> seedMask;
+    ZStackWatershedContainer container(&signalStack);
 
     ZJsonArray seedArrayJson(inputJson.value("seeds"));
     for (size_t i = 0; i < seedArrayJson.size(); ++i) {
       ZJsonObject seedJson(seedArrayJson.value(i));
-      if (seedJson.hasKey("label") && seedJson.hasKey("url")) {
-        int label = ZJsonParser::integerValue(seedJson["label"]);
+      if (seedJson.hasKey("type")) {
+
         std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
         seedUrl = ZString(seedUrl).absolutePath(dataDir);
 
-        ZObject3dScan obj;
-        obj.load(seedUrl);
-        ZStack *seedStack = obj.toStackObject(label);
-        seedMask.push_back(seedStack);
+        std::string type = ZJsonParser::stringValue(seedJson["type"]);
+        if (type == "ZObject3dScan" && !seedUrl.empty() && seedJson.hasKey("label")) {
+          int label = ZJsonParser::integerValue(seedJson["label"]);
+          ZObject3dScan obj;
+          obj.setLabel(label);
+          obj.load(seedUrl);
+          container.addSeed(obj);
+        } else if (type == "ZStroke2d") {
+          ZStroke2d stroke;
+          stroke.loadJsonObject(ZJsonObject(seedJson.value("data")));
+        }
+//        ZStack *seedStack = obj.toStackObject(label);
+//        seedMask.push_back(seedStack);
       }
     }
 
-    ZStackWatershed watershed;
-    watershed.setFloodingZero(false);
+    ZStack *result = container.run();
 
-    ZStack *result = watershed.run(&signalStack, seedMask);
+//    ZStackWatershed watershed;
+//    watershed.setFloodingZero(false);
+
+//    ZStack *result = watershed.run(&signalStack, seedMask);
     ZStackWriter writer;
     writer.write(output, result);
 
     delete result;
-    for (std::vector<ZStack*>::iterator iter = seedMask.begin();
-         iter != seedMask.end(); ++iter) {
-      delete *iter;
-    }
 
     status = 0;
   }
