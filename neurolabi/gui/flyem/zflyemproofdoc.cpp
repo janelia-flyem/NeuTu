@@ -2716,6 +2716,7 @@ uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
 
 void ZFlyEmProofDoc::autoSave()
 {
+  autoSaveSwc();
   backupMergeOperation();
 }
 

@@ -1222,6 +1222,7 @@ signals:
   void updatingLatency(int);
 
 protected:
+  void autoSaveSwc();
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();

@@ -390,17 +390,12 @@ void ZStackDoc::updateSwcNodeAction()
   m_singleSwcNodeActionActivator.update(this);
 }
 
-void ZStackDoc::autoSave()
+void ZStackDoc::autoSaveSwc()
 {
   if (isSwcSavingRequired()) {
     if (getTag() == NeuTube::Document::FLYEM_BODY_DISPLAY) {
       return;
     }
-    /*
-    if (NeutubeConfig::getInstance().getApplication() == "FlyEM") { //needs modification
-      return;
-    }
-    */
 
     ZOUT(LTRACE(), 5) << "Auto save triggered in" << this;
     if (hasSwc()) {
@@ -435,12 +430,15 @@ void ZStackDoc::autoSave()
           qDebug() << autoSavePath.c_str();
 
           delete tree;
-
-//          ZSwcFileListModel::LoadDir(autoSaveDir.c_str(), true);
-        } 
+        }
       }
     }
   }
+}
+
+void ZStackDoc::autoSave()
+{
+  autoSaveSwc();
 }
 
 void ZStackDoc::autoSaveSlot()

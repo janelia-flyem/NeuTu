@@ -4127,7 +4127,7 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
         ZSwcTree *tree = new ZSwcTree;
         tree->load(filePath.toStdString());
         tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
-        tree->setHittable(false);
+        tree->setHittable(true);
         tree->setColor(QColor(255, 0, 0));
         getDocument()->addObject(tree);
       }
