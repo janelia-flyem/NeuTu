@@ -38,6 +38,8 @@ void ZKeyEventSwcMapper::initKeyMap()
   m_shiftKeyMap[Qt::Key_S] = ZSwcTree::OPERATION_MOVE_NODE_DOWN_FAST;
   m_shiftKeyMap[Qt::Key_D] = ZSwcTree::OPERATION_MOVE_NODE_RIGHT_FAST;
   m_shiftKeyMap[Qt::Key_C] = ZSwcTree::OPERATION_CONNECT_NODE_SMART;
+  m_shiftKeyMap[Qt::Key_E] = ZSwcTree::OPERATION_INCREASE_NODE_SIZE_FAST;
+  m_shiftKeyMap[Qt::Key_R] = ZSwcTree::OPERATION_DECREASE_NODE_SIZE_FAST;
 
   m_controlKeyMap[Qt::Key_A] = ZSwcTree::OPERATION_SELECT_ALL_NODE;
   m_controlKeyMap[Qt::Key_R] = ZSwcTree::OPERATION_SET_AS_ROOT;
