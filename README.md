@@ -41,7 +41,7 @@ Here \<NAME\> is the conda environment name. If you don't know what it is, just 
 
 After successful installation, you can launch the program with the following commands
 
-    scource <CONDA_ROOT>/bin/activate <NAME>
+    source <CONDA_ROOT>/bin/activate <NAME>
     neutu 
 
 ## Build
