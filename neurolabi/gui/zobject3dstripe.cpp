@@ -155,6 +155,33 @@ void ZObject3dStripe::write(FILE *fp) const
   }
 }
 
+void ZObject3dStripe::write(std::ostream &stream) const
+{
+  stream.write((const char*)(&(m_z)), sizeof(int));
+  stream.write((const char*)(&(m_y)), sizeof(int));
+  int n = m_segmentArray.size();
+  stream.write((const char*)(&(n)), sizeof(int));
+  stream.write((const char*)(&(m_segmentArray[0])), sizeof(int) * n);
+}
+
+/*
+std::ostream& operator<<(
+      std::ostream &stream, const ZObject3dStripe &stripe)
+{
+  stripe.write(stream);
+
+  return stream;
+}
+
+std::istream& operator>>(
+    std::istream &stream, ZObject3dStripe &stripe)
+{
+  stripe.read(stream);
+
+  return stream;
+}
+*/
+
 void ZObject3dStripe::read(FILE *fp)
 {
   if (fp != NULL) {
@@ -166,6 +193,18 @@ void ZObject3dStripe::read(FILE *fp)
     m_segmentArray.resize(nseg * 2);
     fread(&(m_segmentArray[0]), sizeof(int), m_segmentArray.size(), fp);
     m_isCanonized = false;
+  }
+}
+
+void ZObject3dStripe::read(std::istream &stream)
+{
+  stream.read((char*)(&m_z), sizeof(int));
+  stream.read((char*)(&m_y), sizeof(int));
+  int n = 0;
+  stream.read((char*)(&n), sizeof(int));
+  if (n > 0) {
+    m_segmentArray.resize(n);
+    stream.read((char*)(&(m_segmentArray[0])), sizeof(int) * m_segmentArray.size());
   }
 }
 

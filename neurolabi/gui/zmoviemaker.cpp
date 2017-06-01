@@ -106,7 +106,7 @@ void ZMovieMaker::recruitCast()
   for (std::map<string, string>::const_iterator iter = cast.begin();
        iter != cast.end(); ++iter) {
     switch (ZFileType::FileType(iter->second)) {
-    case ZFileType::SWC_FILE:
+    case ZFileType::FILE_SWC:
     {
       ZSwcTree *tree = new ZSwcTree;
       tree->load(iter->second.c_str());
@@ -119,7 +119,7 @@ void ZMovieMaker::recruitCast()
       m_cast.push_back(actor);
     }
       break;
-    case ZFileType::OBJECT_SCAN_FILE:
+    case ZFileType::FILE_OBJECT_SCAN:
     {
       ZObject3dScan obj;
       obj.load(iter->second);
@@ -136,7 +136,7 @@ void ZMovieMaker::recruitCast()
       }
     }
       break;
-    case ZFileType::JSON_FILE:
+    case ZFileType::FILE_JSON:
     {
       ZObject3dScan obj;
       obj.importDvidRoi(iter->second);
@@ -153,7 +153,7 @@ void ZMovieMaker::recruitCast()
       }
     }
       break;
-    case ZFileType::TIFF_FILE:
+    case ZFileType::FILE_TIFF:
     {
       ZStack *stack = new ZStack();
       stack->load(iter->second);
@@ -171,7 +171,7 @@ void ZMovieMaker::recruitCast()
       m_cast.push_back(actor);
     }
       break;
-    case ZFileType::V3D_MARKER_FILE:
+    case ZFileType::FILE_V3D_MARKER:
     {
       QList<ZPunctum*> punctaList =
           ZPunctumIO::load(iter->second.c_str());

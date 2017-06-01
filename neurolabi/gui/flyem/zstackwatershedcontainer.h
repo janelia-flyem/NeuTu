@@ -8,11 +8,13 @@ class ZStack;
 class ZObject3dScan;
 class ZStroke2d;
 class ZObject3d;
+class ZSparseStack;
 
 class ZStackWatershedContainer
 {
 public:
   ZStackWatershedContainer(ZStack *stack);
+  ZStackWatershedContainer(ZSparseStack *stack);
   ~ZStackWatershedContainer();
 
   ZStack* run();
@@ -31,6 +33,8 @@ public:
   void exportMask(const std::string &filePath);
 
 private:
+  void init();
+
   Stack_Watershed_Workspace* getWorkspace();
   void clearWorkspace();
   void clearSource();
@@ -44,12 +48,15 @@ private:
 
   void makeMaskStack(ZStack &stack);
 
+  ZIntPoint getSourceDsIntv() const;
+
 private:
   ZStack *m_stack;
+  ZSparseStack *m_spStack;
   Stack_Watershed_Workspace *m_workspace;
   ZIntPoint m_sourceOffset;
   ZIntCuboid m_range;
-  Stack *m_source;
+  ZStack *m_source;
   bool m_floodingZero;
   int m_channel;
 };

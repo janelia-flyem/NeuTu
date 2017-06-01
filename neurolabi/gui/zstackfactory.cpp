@@ -168,7 +168,7 @@ ZStack* ZStackFactory::makeIndexStack(int width, int height, int depth)
   return stack;
 }
 
-ZStack* ZStackFactory::makeUniformStack(int width, int height, int depth, int v)
+ZStack* ZStackFactory::MakeUniformStack(int width, int height, int depth, int v)
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, 1);
   size_t voxelNumber = stack->getVoxelNumber();

@@ -217,7 +217,9 @@ public:
 
   bool good() const;
 
-  void writeServiceResult(const QByteArray &data);
+  void writeData(const std::string &dest, const QByteArray &data);
+
+  std::string writeServiceResult(const QByteArray &data);
 
 public:
   std::string post(const std::string &url);

@@ -53,6 +53,9 @@ namespace lowtis {
 class ImageService;
 }
 
+/*!
+ * \brief The class for reading data from DVID
+ */
 class ZDvidReader : public QObject
 {
   Q_OBJECT
@@ -60,9 +63,31 @@ public:
   explicit ZDvidReader(QObject *parent = 0);
   ~ZDvidReader();
 
+  /*!
+   * \brief Open a dvid node to read.
+   *
+   * It returns true iff the node is opened correctly. The user can also use
+   * \a good() or \a isReady() to check if the node is opened later.
+   *
+   * \param serverAddress Host name of the server.
+   * \param uuid UUID of the node
+   * \param port Port of the server.
+   *
+   * \return true iff the node is opened correctly
+   */
   bool open(const QString &serverAddress, const QString &uuid,
             int port = -1);
+
+  /*!
+   * \brief Open a dvid node to read.
+   */
   bool open(const ZDvidTarget &target);
+
+  /*!
+   * \brief Open a dvid node defined by a source string
+   *
+   * \param sourceString source string format: http:host:port:node:labelblk_name
+   */
   bool open(const QString &sourceString);
 
   void clear();
@@ -376,6 +401,8 @@ public:
 #endif
 
   QByteArray readBuffer(const std::string &url) const;
+  QByteArray readDataFromEndpoint(
+      const std::string &endPoint, bool tryingCompress = false);
 
   bool refreshLabelBuffer();
 

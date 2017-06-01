@@ -48,7 +48,7 @@ public:
   bool decode(const std::string &str);
 
   std::string summary();
-  std::map<std::string, json_t*> toEntryMap(bool recursive = true) const;
+  std::map<std::string, json_t*> toEntryMap(bool recursive) const;
 
   /*!
    * \brief Test if a key is valid

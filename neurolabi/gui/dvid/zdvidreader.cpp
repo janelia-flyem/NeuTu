@@ -544,6 +544,29 @@ QByteArray ZDvidReader::readBuffer(const std::string &url) const
   return m_bufferReader.getBuffer();
 }
 
+QByteArray ZDvidReader::readDataFromEndpoint(
+    const std::string &endPoint, bool tryingCompress)
+{
+  QByteArray buffer;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  try {
+    if (m_service.get() != NULL) {
+      libdvid::BinaryDataPtr data = m_service->custom_request(
+            endPoint, libdvid::BinaryDataPtr(), libdvid::GET, tryingCompress);
+      buffer.append(data->get_data().c_str(), data->length());
+      m_statusCode = 200;
+    } else {
+      m_statusCode = 0;
+    }
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    m_statusCode = e.getStatus();
+  }
+#endif
+
+  return buffer;
+}
+
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, bool canonizing, ZObject3dScan *result)
 {

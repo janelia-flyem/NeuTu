@@ -425,7 +425,7 @@ int ZCommandLine::runSynapseObjectList()
 
 int ZCommandLine::runOutputClassList()
 {
-  if (ZFileType::FileType(m_input[0]) == ZFileType::JSON_FILE) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_JSON) {
     ZFlyEmDataBundle bundle;
     bundle.loadJsonFile(m_input[0]);
     std::map<string, int> classMap = bundle.getClassIdMap();
@@ -559,7 +559,7 @@ int ZCommandLine::runComputeSeed()
                 << std::endl;
       return 1;
     }
-    if (ZFileType::FileType(m_output) == ZFileType::SWC_FILE) {
+    if (ZFileType::FileType(m_output) == ZFileType::FILE_SWC) {
       ZSwcTree *tree = ZSwcFactory::CreateSwc(ptArray);
 
       //Unfortunately ZSwcTree::save does not return any status, so we use this
@@ -756,7 +756,7 @@ int ZCommandLine::runGeneral()
 #endif
 
     ZJsonObject config;
-    if (ZFileType::FileType(m_generalConfig) == ZFileType::JSON_FILE) {
+    if (ZFileType::FileType(m_generalConfig) == ZFileType::FILE_JSON) {
       config.load(m_generalConfig);
     } else {
       config.decode(m_generalConfig);
@@ -1192,7 +1192,7 @@ int ZCommandLine::skeletonizeFile()
     skeletonizer.print();
   }
 
-  if (ZFileType::FileType(m_input[0]) == ZFileType::TIFF_FILE) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_TIFF) {
     if (m_output.empty()) {
       m_reporter.report("Skeletonization Failed",
                         "The input is not a binary image.",
@@ -1207,7 +1207,7 @@ int ZCommandLine::skeletonizeFile()
       stack.binarize();
     }
     tree = skeletonizer.makeSkeleton(stack);
-  } else if (ZFileType::FileType(m_input[0]) == ZFileType::OBJECT_SCAN_FILE) {
+  } else if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_OBJECT_SCAN) {
     ZObject3dScan obj;
     obj.load(m_input[0]);
     if (m_isVerbose) {

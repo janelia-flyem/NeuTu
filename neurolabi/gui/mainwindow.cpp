@@ -5230,12 +5230,12 @@ void MainWindow::expandCurrentFrame()
     if (!fileList.isEmpty()) {
       foreach (QString filePath, fileList) {
         switch (ZFileType::FileType(filePath.toStdString())) {
-        case ZFileType::SWC_FILE:
+        case ZFileType::FILE_SWC:
           frame->importSwc(filePath);
           swcLoaded = true;
           break;
-        case ZFileType::TIFF_FILE:
-        case ZFileType::PNG_FILE:
+        case ZFileType::FILE_TIFF:
+        case ZFileType::FILE_PNG:
           frame->importMask(filePath);
           break;
         default:
@@ -5343,14 +5343,14 @@ void MainWindow::on_actionSparse_objects_triggered()
     } else {
       foreach (QString file, fileList) {
         if (ZFileType::FileType(file.toStdString()) ==
-            ZFileType::OBJECT_SCAN_FILE) {
+            ZFileType::FILE_OBJECT_SCAN) {
           ZObject3dScan *obj = new ZObject3dScan;
           obj->setColor(QColor(0, 0, 255, 128));
           obj->load(file.toStdString());
           frame->document()->addObject(obj);
         } else {
           if (ZFileType::FileType(file.toStdString()) ==
-              ZFileType::TIFF_FILE) {
+              ZFileType::FILE_TIFF) {
             ZStack stack;
             stack.load(file.toStdString());
             ZObjectColorScheme colorScheme;
@@ -5898,10 +5898,10 @@ void MainWindow::showStackFrame(
     bool hasImageFile;
     bool hasSwcFile;
     foreach (QString file, fileList) {
-      if (ZFileType::FileType(file.toStdString()) == ZFileType::TIFF_FILE) {
+      if (ZFileType::FileType(file.toStdString()) == ZFileType::FILE_TIFF) {
         hasImageFile = true;
         frame->document()->readStack(file.toStdString().c_str(), false);
-      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::SWC_FILE) {
+      } else if (ZFileType::FileType(file.toStdString()) == ZFileType::FILE_SWC) {
         frame->document()->loadSwc(file);
         hasSwcFile = true;
       }
@@ -6699,7 +6699,7 @@ ZStackFrame* MainWindow::showStackDoc(ZStackDocPtr doc)
   if (!doc->isEmpty()) {
     frame = ZStackFrame::Make(NULL, doc);
 
-    if (frame->document()->hasStack()) {
+    if (frame->document()->hasStack() || frame->document()->hasSparseStack()) {
       addStackFrame(frame);
       presentStackFrame(frame);
       //QApplication::processEvents();

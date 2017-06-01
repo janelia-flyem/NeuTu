@@ -156,8 +156,6 @@ contains(CONFIG, sanitize) {
   }
 }
 
-#QT += webkit
-
 contains(CONFIG, static_glew) { # glew from ext folder
     include($$PWD/ext/glew.pri)
 } else { # use your own glew
@@ -745,7 +743,9 @@ HEADERS += mainwindow.h \
     dvid/zdvidstore.h \
     z3dfiltersetting.h \
     dvid/zdvidendpoint.h \
-    flyem/zstackwatershedcontainer.h
+    zglobal.h \
+    flyem/zstackwatershedcontainer.h \
+    dvid/zdvidresultservice.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1298,6 +1298,8 @@ SOURCES += main.cpp \
     dvid/zdvidstore.cpp \
     z3dfiltersetting.cpp \
     dvid/zdvidendpoint.cpp \
-    flyem/zstackwatershedcontainer.cpp
+    zglobal.cpp \
+    flyem/zstackwatershedcontainer.cpp \
+    dvid/zdvidresultservice.cpp
 
 

@@ -316,6 +316,7 @@ using namespace std;
 #include "zstackreader.h"
 #include "dvid/zdvidendpoint.h"
 #include "flyem/zstackwatershedcontainer.h"
+#include "dvid/zdvidresultservice.h"
 
 using namespace std;
 
@@ -23092,14 +23093,86 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-//  QUrl url("dvid://emdata1.int.janelia.org:8000/uuid/dataname?x1=1&y1=1&z1=1");
-  QUrl url("/test/test");
+  QUrl url("dvid://emdata1.int.janelia.org:8000/api/node/uuid/dataname?x1=1&y1=1&z1=1");
+//  QUrl url("/test/test");
   qDebug() << url.scheme();
   qDebug() << url.path();
   qDebug() << url.allQueryItemValues("x1");
   qDebug() << url.host();
   qDebug() << url.port();
   qDebug() << url.toLocalFile();
+
+  qDebug() << ZDvidUrl::GetEndPoint(url.path().toStdString());
+#endif
+
+#if 0
+  std::string path =
+      "dvid://emdata1.int.janelia.org:8100/api/node/ef20/dataname?x1=1&y1=1&z1=1";
+  ZDvidTarget target = ZDvid::MakeTargetFromUrl(path);
+
+  qDebug() << target.toJsonObject().dumpString(2);
+#endif
+
+#if 0
+  ZDvidResultService service;
+  QByteArray data = ZDvidResultService::ReadData(
+        "http://localhost:8000/api/node/4d3e3c206a314236b73800bc23a1f2d7/result/key/54b0c58c7ce9f2a8b551351102ee0938");
+  qDebug() << data;
+
+  ZDvidResultService::ReadData(
+          "http://localhost:8000/api/node/4d3e3c206a314236b73800bc23a1f2d7/result/key/54b0c58c7ce9f2a8b551351102ee0938");
+#endif
+
+#if 0
+  QByteArray data("this is a new test");
+  ZDvidResultService::WriteData(
+        "http://localhost:8000/api/node/4d3e3c206a314236b73800bc23a1f2d7/result/key/test",
+        data);
+
+  QByteArray data2("this is a new test2");
+  ZDvidResultService::WriteData(
+        "http://localhost:8000/api/node/4d3e3c206a314236b73800bc23a1f2d7/result/key/test",
+        data2);
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.addEntry("signal", GET_BENCHMARK_DIR + "/em_slice.tif");
+
+  ZJsonArray seedArrayJson;
+  obj.addEntry("seeds", seedArrayJson);
+
+  {
+    ZStroke2d stroke;
+    stroke.setLabel(1);
+    stroke.append(2901, 4085);
+    stroke.setWidth(6);
+    stroke.setZ(3201);
+
+    ZJsonObject seedJson;
+    seedJson.addEntry("type", "ZStroke2d");
+    ZJsonObject strokeJson = stroke.toJsonObject();
+    seedJson.addEntry("data", strokeJson);
+
+    seedArrayJson.append(seedJson);
+  }
+
+  {
+    ZStroke2d stroke;
+    stroke.setLabel(2);
+    stroke.append(3034, 4093);
+    stroke.setWidth(6);
+    stroke.setZ(3201);
+
+    ZJsonObject seedJson;
+    seedJson.addEntry("type", "ZStroke2d");
+    ZJsonObject strokeJson = stroke.toJsonObject();
+    seedJson.addEntry("data", strokeJson);
+
+    seedArrayJson.append(seedJson);
+  }
+
+  obj.dump(GET_TEST_DATA_DIR + "/test.json");
 #endif
 
 #if 0
@@ -23319,7 +23392,7 @@ void ZTest::test(MainWindow *host)
   while (1) {}
 #endif
 
-#if 1
+#if 0
 
   ZStack stack;
   stack.load(GET_BENCHMARK_DIR + "/em_slice.tif");
@@ -23364,6 +23437,155 @@ void ZTest::test(MainWindow *host)
 //  delete result;
 
 #endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(3201, 4102, 2900, 2905);
+  obj.exportHdf5(GET_TEST_DATA_DIR + "/test.hf5", "mask");
+
+  ZObject3dScan obj2;
+  obj2.importHdf5(GET_TEST_DATA_DIR + "/test.hf5", "mask");
+  obj2.print();
+#endif
+
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  QList<ZObject3dScan*> objList = ZDvidResultService::ReadSplitResult(
+        "http://localhost:8000/api/node/4d3e3c206a314236b73800bc23a1f2d7/"
+        "result/key/242ad92398d751344cfafbf1cc91e383");
+  qDebug() << objList.size();
+
+  ZColorScheme colorScheme;
+  colorScheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+  foreach(ZObject3dScan *obj, objList) {
+    obj->setColor(colorScheme.getColor(obj->getLabel()));
+    frame->document()->addObject(obj);
+    obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+  }
+  frame->document()->notifyObjectModified();
+#endif
+
+#if 0
+  ZObject3dStripe stripe;
+  stripe.setY(11);
+  stripe.setZ(20);
+  stripe.addSegment(1, 10);
+
+  std::ofstream stream((GET_TEST_DATA_DIR + "/test.bin").c_str(), std::ios_base::binary);
+  stripe.write(stream);
+  stream.close();
+
+  ZObject3dStripe stripe2;
+  std::ifstream stream2((GET_TEST_DATA_DIR + "/test.bin").c_str(), std::ios_base::binary);
+  stripe2.read(stream2);
+  stream2.close();
+
+  stripe2.print();
+#endif
+
+#if 0
+  ZIntPoint pt(1, 2, 3);
+  std::ofstream stream(
+        (GET_TEST_DATA_DIR + "/test.bin").c_str(), std::ios_base::binary);
+  pt.write(stream);
+  stream.close();
+
+  ZIntPoint pt2;
+  std::ifstream stream2(
+        (GET_TEST_DATA_DIR + "/test.bin").c_str(), std::ios_base::binary);
+  pt2.read(stream2);
+  stream2.close();
+
+  std::cout << pt2.toString() << std::endl;
+
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::makeIndexStack(2, 3, 4);
+  stack->setOffset(10, 20, 30);
+  std::ofstream stream(
+        (GET_TEST_DATA_DIR + "/test.bin").c_str(), std::ios_base::binary);
+  stack->write(stream);
+  stream.close();
+
+  ZStack stack2;
+  std::ifstream stream2(
+        (GET_TEST_DATA_DIR + "/test.bin").c_str(), std::ios_base::binary);
+  stack2.read(stream2);
+  stack2.printInfo();
+  C_Stack::printValue(stack2.data());
+#endif
+
+#if 0
+  ZSparseStack spStack;
+
+  ZObject3dScan *obj = new ZObject3dScan;
+  obj->addStripe(0, 0);
+  obj->addSegment(0, 1);
+  spStack.setObjectMask(obj);
+
+  ZStackBlockGrid *stackGrid = new ZStackBlockGrid;
+  stackGrid->setBlockSize(2, 2, 2);
+  stackGrid->setGridSize(3, 3, 3);
+
+  ZStack *stack = ZStackFactory::MakeUniformStack(2, 2, 2, 255);
+  stackGrid->consumeStack(ZIntPoint(0, 0, 0), stack);
+
+  stack = ZStackFactory::MakeUniformStack(2, 2, 2, 255);
+  stack->setOffset(2, 2, 2);
+  stackGrid->consumeStack(ZIntPoint(1, 1, 1), stack);
+
+  spStack.setGreyScale(stackGrid);
+  spStack.save(GET_TEST_DATA_DIR + "/test.zss");
+#endif
+
+#if 0
+  ZSparseStack *spStack = new ZSparseStack;
+  spStack->load(GET_TEST_DATA_DIR + "/test.zss");
+
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->document()->setSparseStack(spStack);
+//  frame->load(GET_TEST_DATA_DIR + "/benchmark/em_stack.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+//  frame->view()->highlightPosition(129, 120, 0);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "876d", 8700);
+//  target.set("emdata2.int.janelia.org", "d35f", 7000);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.getDvidTarget().toDvidDataSetting().print();
+
+  ZDvidWriter writer;
+  target = reader.getDvidTarget();
+  target.useDefaultDataSetting(false);
+  target.setLabelBlockName("pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+  target.setBodyLabelName("");
+  target.setTodoListName("");
+  target.toDvidDataSetting().print();
+
+  writer.open(target);
+
+  writer.writeDefaultDataSetting();
+#endif
+
+#if 1
+  ZSparseStack *spStack = new ZSparseStack;
+  spStack->load(GET_TEST_DATA_DIR + "/test.zss");
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

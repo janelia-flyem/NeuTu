@@ -1,13 +1,15 @@
 #include "zglobal.h"
 
+#include <QUrl>
 #include <map>
 
 #include "zintpoint.h"
 #include "zpoint.h"
-#if defined(_QT_GUI_USED_)
+#include "zstring.h"
+
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
-#endif
+#include "zdvidutil.h"
 
 #include "neutubeconfig.h"
 
@@ -69,7 +71,6 @@ T* ZGlobal::getIODevice(
 {
   T *io = NULL;
 
-#if defined(_QT_GUI_USED_)
   if (ioMap.count(name) == 0) {
     const std::vector<ZDvidTarget> &dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
     for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
@@ -86,13 +87,39 @@ T* ZGlobal::getIODevice(
       }
     }
 
+    if (io == NULL) {
+      ZDvidTarget target;
+      target.setFromSourceString(name);
+      if (target.isValid()) {
+        io = new T;
+        if (!io->open(target)) {
+          delete io;
+          io = NULL;
+        }
+      }
+    }
+
     ioMap[name] = io;
   } else {
     io = ioMap[name];
   }
-#endif
 
   return io;
+}
+
+template<typename T>
+T* ZGlobal::getIODeviceFromUrl(
+    const std::string &path, std::map<std::string, T*> &ioMap) const
+{
+  T *device = NULL;
+
+  QUrl url(path.c_str());
+  if (url.scheme() == "http" || url.scheme() == "dvid") {
+    ZDvidTarget target = ZDvid::MakeTargetFromUrl(path);
+    device = getIODevice(target.getSourceString(true), ioMap);
+  }
+
+  return device;
 }
 
 ZDvidReader* ZGlobal::getDvidReader(const std::string &name) const
@@ -104,3 +131,14 @@ ZDvidWriter* ZGlobal::getDvidWriter(const std::string &name) const
 {
   return getIODevice(name, m_data->m_dvidWriterMap);
 }
+
+ZDvidReader* ZGlobal::getDvidReaderFromUrl(const std::string &url) const
+{
+  return getIODeviceFromUrl(url, m_data->m_dvidReaderMap);
+}
+
+ZDvidWriter* ZGlobal::getDvidWriterFromUrl(const std::string &url) const
+{
+  return getIODeviceFromUrl(url, m_data->m_dvidWriterMap);
+}
+

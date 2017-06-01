@@ -6,6 +6,7 @@
 #include <set>
 #include <map>
 #include <utility>
+#include <fstream>
 
 #ifdef _QT_GUI_USED_
 #include <QByteArray>
@@ -121,6 +122,9 @@ public:
 
   void copyDataFrom(const ZObject3dScan &obj);
   void copyAttributeFrom(const ZObject3dScan &obj);
+
+  void write(std::ostream &stream) const;
+  void read(std::istream &stream);
 
   /*!
    * \brief Import a dvid object
@@ -288,6 +292,7 @@ public:
 
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
+  void downsampleMax(const ZIntPoint &dsIntv);
 
   void upSample(int xIntv, int yIntv, int zIntv);
 
@@ -559,7 +564,7 @@ public:
    *
    * \return true iff the object is saved successfully
    */
-  //bool exportHdf5(const std::string &filePath, const std::string &key) const;
+  bool exportHdf5(const std::string &filePath, const std::string &key) const;
 
   /*!
    * \brief Check if two objects have overlap

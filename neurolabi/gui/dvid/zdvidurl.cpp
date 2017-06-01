@@ -831,7 +831,6 @@ std::string ZDvidUrl::GetEndPoint(const std::string &url)
 {
   std::string marker = "api/node/";
 
-
   std::string::size_type markerPos = url.find(marker);
 
   if (markerPos != std::string::npos) {

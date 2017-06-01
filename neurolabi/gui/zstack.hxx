@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #ifdef _NEUTUBE_
 #include "zglmutils.h"
@@ -450,6 +451,9 @@ public: /* data operation */
 
   //Load stack from several single channel stack, stack can be null
   bool load(const Stack *ch1, const Stack *ch2, const Stack *ch3);
+
+  void read(std::istream &stream);
+  void write(std::ostream &stream) const;
 
   // return output file name, some image format might not support some data, so the real file name might be changed
   std::string save(const std::string &filepath) const;

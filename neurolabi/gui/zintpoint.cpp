@@ -8,6 +8,7 @@
 #include "tz_geo3d_utils.h"
 #include "geometry/zgeometry.h"
 #include "neutube_def.h"
+#include "misc/miscutility.h"
 
 ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 {
@@ -239,4 +240,18 @@ void ZIntPoint::invalidate()
 bool ZIntPoint::isValid() const
 {
   return m_x != INT_MIN || m_y != INT_MIN || m_z != INT_MIN;
+}
+
+void ZIntPoint::read(std::istream &stream)
+{
+  misc::read(stream, m_x);
+  misc::read(stream, m_y);
+  misc::read(stream, m_z);
+}
+
+void ZIntPoint::write(std::ostream &stream) const
+{
+  misc::write(stream, m_x);
+  misc::write(stream, m_y);
+  misc::write(stream, m_z);
 }

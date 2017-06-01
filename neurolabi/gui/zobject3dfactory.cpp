@@ -420,6 +420,10 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
       std::swap(outObj.getStripeArray(), obj->getStripeArray());
       outObj.setLabel(obj->getLabel());
       outObj.setSliceAxis(axis);
+
+      ZIntPoint offset = stack.getOffset();
+      offset.shiftSliceAxis(axis);
+      outObj.translate(offset);
 //      out->push_back(*obj);
 
       delete obj;

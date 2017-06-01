@@ -294,7 +294,7 @@ void Z3DWindow::init(EInitMode mode)
 
     delete network;
   } else if (ZFileType::FileType(m_doc->additionalSource()) ==
-             ZFileType::JSON_FILE) {
+             ZFileType::FILE_JSON) {
     Z3DGraph graph;
     graph.importJsonFile(m_doc->additionalSource());
     m_graphFilter->setData(graph);

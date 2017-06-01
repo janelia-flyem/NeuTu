@@ -2453,13 +2453,24 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
 
         ZStackWriter stackWriter;
         if (m_grayscaleDlg->isFullRange()) {
-          stackWriter.write(fileName.toStdString(), sparseStack->getStack());
+          if (m_grayscaleDlg->isSparse()) {
+             sparseStack->getSparseStack()->save(fileName.toStdString());
+             emit messageGenerated(fileName + " saved");
+          } else {
+            stackWriter.write(fileName.toStdString(), sparseStack->getStack());
+          }
 //          sparseStack->getStack()->save(fileName.toStdString());
         } else {
-          ZStack *stack = sparseStack->makeStack(m_grayscaleDlg->getBoundBox());
-//          stack->save(fileName.toStdString());
-          stackWriter.write(fileName.toStdString(), stack);
-          delete stack;
+          if (m_grayscaleDlg->isSparse()) {
+             sparseStack->getSparseStack()->save(fileName.toStdString());
+             emit messageGenerated(fileName + " saved");
+          } else {
+            ZStack *stack = sparseStack->makeStack(m_grayscaleDlg->getBoundBox());
+            //          stack->save(fileName.toStdString());
+            stackWriter.write(fileName.toStdString(), stack);
+            delete stack;
+            emit messageGenerated(fileName + " saved");
+          }
         }
         delete sparseStack;
       }
@@ -4117,7 +4128,7 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   if (urls.size() == 1) {
     const QUrl &url = urls[0];
     QString filePath = NeuTube::GetFilePath(url);
-    if (ZFileType::FileType(filePath.toStdString()) == ZFileType::JSON_FILE) {
+    if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_JSON) {
       processed = true; //todo
     }
   }
@@ -4125,12 +4136,10 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   if (!processed) {
     foreach (const QUrl &url, urls) {
       QString filePath = NeuTube::GetFilePath(url);
-      if (ZFileType::FileType(filePath.toStdString()) == ZFileType::SWC_FILE) {
+      if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_SWC) {
         ZSwcTree *tree = new ZSwcTree;
         tree->load(filePath.toStdString());
         tree->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmExtNeuronClass());
-//        tree->setHittable(false);
-        tree->setHitProtocal(ZStackObject::HIT_NONE);
         tree->setColor(QColor(255, 0, 0));
         getDocument()->addObject(tree);
       }

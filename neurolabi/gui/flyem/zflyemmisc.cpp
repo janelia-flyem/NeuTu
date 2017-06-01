@@ -1063,6 +1063,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(const QString &movieDir)
 {
   QString errMsg = GenerateFIB19VsSynapseCast(movieDir, "VS");
   errMsg += GenerateFIB19VsSynapseCast(movieDir, "VS_branch");
+  errMsg += GenerateFIB19VsSynapseCast(movieDir, "LPi");
 
   return errMsg;
 }

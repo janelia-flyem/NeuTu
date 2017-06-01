@@ -63,11 +63,12 @@ unix {
         -ljansson
 }
 
-exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
-    DEFINES += _ENABLE_HDF5_
-    INCLUDEPATH += $${EXTLIB_DIR}/hdf5/include
-    LIBS += -L$${EXTLIB_DIR}/hdf5/lib -lhdf5 -lhdf5_hl
-}
+#exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
+#    message("hdf5 enabled")
+#    DEFINES += _ENABLE_HDF5_
+#    INCLUDEPATH += $${EXTLIB_DIR}/hdf5/include
+##    LIBS += -L$${EXTLIB_DIR}/hdf5/lib -lhdf5 -lhdf5_hl
+#}
 
 #System libraries
 unix {
@@ -100,6 +101,9 @@ exists($$DVIDCPP_PATH) {
     LIBS += -L$${CONDA_ENV}/lib
     unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
     DEFINES += _ENABLE_LIBDVIDCPP_
+
+#    LIBS += $${CONDA_ENV}/lib/libhdf5.la $${CONDA_ENV}/lib/libhdf5_hl.la
+#    DEFINES += _ENABLE_HDF5_
 }
 
 message("rpath")

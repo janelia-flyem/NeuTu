@@ -893,7 +893,7 @@ Stack* FlyEmDataForm::loadThumbnailImage(ZFlyEmNeuron *neuron)
 {
   Stack *stack = NULL;
   if (ZFileType::FileType(neuron->getThumbnailPath()) ==
-      ZFileType::TIFF_FILE) {
+      ZFileType::FILE_TIFF) {
     stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
   } else {
     ZString str(neuron->getThumbnailPath());
@@ -1220,7 +1220,7 @@ void FlyEmDataForm::updateThumbnail(
       } else {
         Stack *stack = NULL;
         if (ZFileType::FileType(neuron->getThumbnailPath()) ==
-            ZFileType::TIFF_FILE) {
+            ZFileType::FILE_TIFF) {
           stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
         } else {
           ZString str(neuron->getThumbnailPath());

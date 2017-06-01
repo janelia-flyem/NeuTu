@@ -29,6 +29,7 @@
 #include "zstack.hxx"
 #include "zstring.h"
 #include "zhdf5reader.h"
+#include "zhdf5writer.h"
 #include "zstringarray.h"
 #include "tz_math.h"
 #include "tz_stack_bwmorph.h"
@@ -654,13 +655,13 @@ bool ZObject3dScan::load(const string &filePath)
   if (filePath2.contains(":")) {
     std::vector<std::string> strArray = filePath2.tokenize(':');
     if (strArray.size() >= 2) {
-      if (ZFileType::FileType(strArray[0]) == ZFileType::HDF5_FILE) {
+      if (ZFileType::FileType(strArray[0]) == ZFileType::FILE_HDF5) {
         succ = importHdf5(strArray[0], strArray[1]);
       }
     }
-  } else if (ZFileType::FileType(filePath) == ZFileType::DVID_OBJECT_FILE) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_DVID_OBJECT) {
     succ = importDvidObject(filePath);
-  } else if (ZFileType::FileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_OBJECT_SCAN) {
     FILE *fp = fopen(filePath.c_str(), "rb");
     if (fp != NULL) {
       int stripeNumber = 0;
@@ -715,6 +716,37 @@ bool ZObject3dScan::save(const char *filePath)
 bool ZObject3dScan::save(const char *filePath) const
 {
   return save(string(filePath));
+}
+
+void ZObject3dScan::write(std::ostream &stream) const
+{
+  int stripeNumber = (int) getStripeNumber();
+  stream.write((const char*)(&stripeNumber), sizeof(int));
+  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+       iter != m_stripeArray.end(); ++iter) {
+    const ZObject3dStripe &stripe = *iter;
+    stripe.write(stream);
+  }
+}
+
+void ZObject3dScan::read(std::istream &stream)
+{
+  int stripeNumber = 0;
+  stream.read((char*)(&stripeNumber), sizeof(int));
+
+  m_stripeArray.resize(stripeNumber);
+  for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+       iter != m_stripeArray.end(); ++iter) {
+    iter->read(stream);
+  }
+
+  if (isCanonizedActually()) {
+    m_isCanonized = true;
+  } else {
+    m_isCanonized = false;
+  }
+
+  deprecate(COMPONENT_ALL);
 }
 
 bool ZObject3dScan::save(const string &filePath) const
@@ -1009,6 +1041,11 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
                */
 
   processEvent(event);
+}
+
+void ZObject3dScan::downsampleMax(const ZIntPoint &dsIntv)
+{
+  downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 }
 
 void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
@@ -4066,6 +4103,17 @@ bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
     if (!array.empty()) {
       return load(&(array[0]), array.size());
     }
+  }
+
+  return false;
+}
+
+bool ZObject3dScan::exportHdf5(const string &filePath, const string &key) const
+{
+  ZHdf5Writer writer;
+  if (writer.open(filePath)) {
+    writer.writeIntArray(key, toIntArray());
+    return true;
   }
 
   return false;

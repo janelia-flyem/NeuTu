@@ -55,7 +55,7 @@ void ZSegmentationProject::loadStack(const QString &fileName)
   ZTreeNode<ZObject3dScan> *root = new ZTreeNode<ZObject3dScan>;
   m_labelTree.setRoot(root);
 
-  if (ZFileType::FileType(fileName.toStdString()) == ZFileType::JSON_FILE) {
+  if (ZFileType::FileType(fileName.toStdString()) == ZFileType::FILE_JSON) {
     ZJsonObject dataJson;
     dataJson.load(fileName.toStdString());
     if (dataJson.hasKey("segmentation")) {

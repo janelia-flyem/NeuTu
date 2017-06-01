@@ -59,6 +59,10 @@ public:
     m_tryingCompress = compress;
   }
 
+  bool tryingCompress() const {
+    return m_tryingCompress;
+  }
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   void setService(const ZSharedPointer<libdvid::DVIDNodeService> &service);
   void setService(const ZDvidTarget &target);

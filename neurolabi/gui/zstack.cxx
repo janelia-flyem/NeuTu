@@ -31,6 +31,7 @@
 #include "zstackfactory.h"
 #include "zpoint.h"
 #include "zintcuboid.h"
+#include "misc/miscutility.h"
 
 using namespace std;
 
@@ -647,6 +648,32 @@ bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
   return true;
 }
 
+void ZStack::read(std::istream &stream)
+{
+  clear();
+
+  int kind = GREY;
+  misc::read(stream, kind);
+  int channel = 0;
+  misc::read(stream, channel);
+
+  m_offset.read(stream);
+  ZIntPoint dim;
+  dim.read(stream);
+
+  m_stack = C_Stack::make(kind, dim.getX(), dim.getY(), dim.getZ(), channel);
+  stream.read((char*)(m_stack->array), C_Stack::allByteNumber(m_stack));
+}
+
+void ZStack::write(std::ostream &stream) const
+{
+  misc::write(stream, m_stack->kind);
+  misc::write(stream, m_stack->nchannel);
+  m_offset.write(stream);
+  ZIntPoint dim(width(), height(), depth());
+  dim.write(stream);
+  stream.write((const char*)(m_stack->array), C_Stack::allByteNumber(m_stack));
+}
 
 void ZStack::setSource(const string &filepath, int channel)
 {
@@ -677,10 +704,10 @@ int ZStack::getChannelNumber(const string &filepath)
   int nchannel = 0;
   ZFileType::EFileType type = ZFileType::FileType(filepath);
 
-  if (type == ZFileType::TIFF_FILE ||
-      type == ZFileType::LSM_FILE) {
+  if (type == ZFileType::FILE_TIFF ||
+      type == ZFileType::FILE_LSM) {
     Tiff_Reader *reader;
-    if (type == ZFileType::TIFF_FILE) {
+    if (type == ZFileType::FILE_TIFF) {
       reader = Open_Tiff_Reader((char*) filepath.c_str(), NULL, 0);
     } else {
       reader = Open_Tiff_Reader((char*) filepath.c_str(), NULL, 1);
@@ -725,7 +752,7 @@ int ZStack::getChannelNumber(const string &filepath)
     nchannel = image->number_channels;
     Kill_Tiff_Image(image);
     Free_Tiff_Reader(reader);
-  } else if (type == ZFileType::V3D_RAW_FILE) {
+  } else if (type == ZFileType::FILE_V3D_RAW) {
     FILE *fp = Guarded_Fopen(filepath.c_str(), "rb", "Read_Raw_Stack_C");
 
     char formatkey[] = "raw_image_stack_by_hpeng";
@@ -762,7 +789,7 @@ int ZStack::getChannelNumber(const string &filepath)
 
     nchannel = sz[3];
     fclose(fp);
-  } else if (type == ZFileType::PNG_FILE) {
+  } else if (type == ZFileType::FILE_PNG) {
     //No support for multi-channel png yet
     return 1;
   }
@@ -778,8 +805,8 @@ string ZStack::save(const string &filepath) const
     resultFilePath = filepath;
     if ((channelNumber() > 1 && kind() != GREY && kind() != GREY16) ||
         (getVoxelNumber() > 2147483648)) { //save as raw
-      if (ZFileType::FileType(filepath) != ZFileType::V3D_RAW_FILE ||
-          ZFileType::FileType(filepath) != ZFileType::MC_STACK_RAW_FILE) {
+      if (ZFileType::FileType(filepath) != ZFileType::FILE_V3D_RAW ||
+          ZFileType::FileType(filepath) != ZFileType::FILE_MC_STACK_RAW) {
         std::cout << "Unsupported data format for " << resultFilePath << endl;
         resultFilePath += ".raw";
         std::cout << resultFilePath << " saved instead." << endl;
@@ -1264,7 +1291,7 @@ bool ZStack::isTracable()
 bool ZStack::isSwc()
 {
   if (isVirtual()) {
-    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::SWC_FILE;
+    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::FILE_SWC;
     /*
     if (m_source != NULL) {
       if (m_source->type == STACK_DOC_SWC_FILE) {

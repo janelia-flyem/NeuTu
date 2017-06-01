@@ -58,6 +58,7 @@ void ZDvidTarget::init()
   m_usingDefaultSetting = false;
 
   setDefaultMultiscale2dName();
+  setLabelBlockName("*");
 //  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
 }
 

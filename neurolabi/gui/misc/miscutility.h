@@ -5,6 +5,7 @@
 #include <string>
 #include <set>
 #include <algorithm>
+#include <iostream>
 
 #include "zhistogram.h"
 #include "zstack.hxx"
@@ -71,6 +72,31 @@ enum ESampleStackOption {
 
 double SampleStack(const Stack *stack, double x, double y, double z,
                    ESampleStackOption option);
+
+template<typename T>
+void read(std::istream &stream, T &v)
+{
+  stream.read((char*)(&v), sizeof(T));
+}
+
+template<typename T>
+void read(std::istream &stream, T &v, size_t n)
+{
+  stream.read((char*)(&v), sizeof(T) * n);
+}
+
+template<typename T>
+void write(std::ostream &stream, const T &v)
+{
+  stream.write((const char*)(&v), sizeof(T));
+}
+
+template<typename T>
+void write(std::ostream &stream, const T &v, size_t n)
+{
+  stream.write((const char*)(&v), sizeof(T) * n);
+}
+
 
 /*!
  * \brief Parse hdf5 path

@@ -1,7 +1,12 @@
 #include "zsparsestack.h"
+
+#include <fstream>
+
 #include "zstack.hxx"
 #include "neutubeconfig.h"
 #include "misc/miscutility.h"
+#include "zhdf5reader.h"
+#include "zhdf5writer.h"
 
 //#define MAX_STACK_VOLUME 1847483647
 #define MAX_STACK_VOLUME 923741823
@@ -458,4 +463,47 @@ bool ZSparseStack::isEmpty() const
   }
 
   return true;
+}
+
+void ZSparseStack::read(std::istream &stream)
+{
+  deprecate(ALL_COMPONET);
+  m_objectMask = new ZObject3dScan;
+  m_objectMask->read(stream);
+  m_stackGrid = new ZStackBlockGrid;
+  m_stackGrid->read(stream);
+}
+
+void ZSparseStack::write(std::ostream &stream) const
+{
+  if (m_objectMask != NULL) {
+    if (stream.good()) {
+      m_objectMask->write(stream);
+      if (m_stackGrid != NULL) {
+        m_stackGrid->write(stream);
+      }
+    }
+  }
+}
+
+bool ZSparseStack::save(const std::string &filePath) const
+{
+  std::ofstream stream(filePath.c_str(), std::ios_base::binary);
+  if (stream.good()) {
+    write(stream);
+    return true;
+  }
+
+  return false;
+}
+
+bool ZSparseStack::load(const std::string &filePath)
+{
+  std::ifstream stream(filePath.c_str(), std::ios_base::binary);
+  if (stream.good()) {
+    read(stream);
+    return true;
+  }
+
+  return false;
 }

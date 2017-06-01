@@ -29,11 +29,17 @@ public:
   ZIntPoint getStackPosition() const;
   ZDvidReader* getDvidReader(const std::string &name) const;
   ZDvidWriter* getDvidWriter(const std::string &name) const;
+  ZDvidReader* getDvidReaderFromUrl(const std::string &url) const;
+  ZDvidWriter* getDvidWriterFromUrl(const std::string &url) const;
 
 private:
   template<typename T>
   T* getIODevice(
       const std::string &name, std::map<std::string, T*> &ioMap) const;
+
+  template<typename T>
+  T* getIODeviceFromUrl(
+      const std::string &path, std::map<std::string, T*> &ioMap) const;
 
 private:
   ZGlobalData *m_data;

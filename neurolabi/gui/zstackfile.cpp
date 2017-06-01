@@ -115,13 +115,13 @@ void ZStackFile::retrieveAttribute(
   std::string filePath = firstUrl();
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::TIFF_FILE:
+  case ZFileType::FILE_TIFF:
     Tiff_Attribute(filePath.c_str(), 0, kind, width, height, depth);
     break;
-  case ZFileType::LSM_FILE:
+  case ZFileType::FILE_LSM:
     Tiff_Attribute(filePath.c_str(), 1, kind, width, height, depth);
     break;
-  case ZFileType::PNG_FILE:
+  case ZFileType::FILE_PNG:
     Png_Attribute(filePath.c_str(), kind, width, height);
     *depth = 1;
     break;
@@ -158,16 +158,16 @@ void ZStackFile::import(const string &filePath)
   m_urlList.clear();
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::TIFF_FILE:
-  case ZFileType::LSM_FILE:
-  case ZFileType::V3D_RAW_FILE:
-  case ZFileType::PNG_FILE:
-  case ZFileType::V3D_PBD_FILE:
-  case ZFileType::MYERS_NSP_FILE:
-  case ZFileType::OBJECT_SCAN_FILE:
-  case ZFileType::DVID_OBJECT_FILE:
-  case ZFileType::JPG_FILE:
-  case ZFileType::MC_STACK_RAW_FILE:
+  case ZFileType::FILE_TIFF:
+  case ZFileType::FILE_LSM:
+  case ZFileType::FILE_V3D_RAW:
+  case ZFileType::FILE_PNG:
+  case ZFileType::FILE_V3D_PBD:
+  case ZFileType::FILE_MYERS_NSP:
+  case ZFileType::FILE_OBJECT_SCAN:
+  case ZFileType::FILE_DVID_OBJECT:
+  case ZFileType::FILE_JPG:
+  case ZFileType::FILE_MC_STACK_RAW:
 #ifdef _DEBUG_2
     cout << filePath << endl;
     cout << filePath.find("*") << endl;
@@ -179,10 +179,10 @@ void ZStackFile::import(const string &filePath)
     }
     m_urlList.push_back(filePath);
     break;
-  case ZFileType::XML_FILE:
+  case ZFileType::FILE_XML:
     importXmlFile(filePath);
     break;
-  case ZFileType::JSON_FILE:
+  case ZFileType::FILE_JSON:
     importJsonFile(filePath);
     break;
   default:
@@ -335,7 +335,7 @@ void ZStackFile::importJsonFile(const std::string &filePath)
   ZJsonObject jsonObject;
   jsonObject.load(filePath);
 
-  map<string, json_t*> entryMap = jsonObject.toEntryMap();
+  map<string, json_t*> entryMap = jsonObject.toEntryMap(true);
 
   bool stackFound = false;
   for (map<string, json_t*>::const_iterator iter = entryMap.begin();
@@ -505,9 +505,9 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
       Mc_Stack *stack = NULL;
       int offset[3] = {0, 0, 0};
       if (ZFileType::FileType(m_urlList[0].c_str()) ==
-          ZFileType::OBJECT_SCAN_FILE ||
+          ZFileType::FILE_OBJECT_SCAN ||
           ZFileType::FileType(m_urlList[0].c_str()) ==
-                    ZFileType::DVID_OBJECT_FILE) {
+                    ZFileType::FILE_DVID_OBJECT) {
         ZObject3dScan obj;
         if (obj.load(m_urlList[0])) {
           data = obj.toStackObject();

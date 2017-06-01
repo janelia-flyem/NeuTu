@@ -372,7 +372,7 @@ std::vector<std::string> misc::parseHdf5Path(const string &path)
   std::vector<std::string> tokens = ZString(path).tokenize(':');
   std::vector<std::string> pathArray;
   if (tokens.size() > 0) {
-    if (ZFileType::FileType(tokens[0]) == ZFileType::HDF5_FILE) {
+    if (ZFileType::FileType(tokens[0]) == ZFileType::FILE_HDF5) {
       pathArray = tokens;
     }
   }

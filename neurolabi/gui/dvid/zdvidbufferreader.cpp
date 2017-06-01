@@ -151,10 +151,6 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
         data = m_service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       } else {
-        /*
-        libdvid::DVIDNodeService service(
-              target.getAddressWithPort(), target.getUuid());
-              */
         ZSharedPointer<libdvid::DVIDNodeService> service =
             ZDvid::MakeDvidNodeService(target);
         data = service->custom_request(

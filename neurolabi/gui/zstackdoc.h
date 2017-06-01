@@ -362,6 +362,7 @@ public:
 
   void readStack(const char *filePath, bool newThread = true);
   void readSwc(const char *filePath);
+  void readSparseStack(const std::string &filePath);
 
   void saveSwc(QWidget *parentWidget);
 
@@ -1229,6 +1230,7 @@ signals:
   void updatingLatency(int);
 
 protected:
+  void autoSaveSwc();
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();

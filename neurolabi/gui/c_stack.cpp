@@ -928,7 +928,7 @@ void C_Stack::write(
   ZFileType::EFileType fileType = ZFileType::FileType(filePath) ;
 
   switch (fileType) {
-  case ZFileType::MC_STACK_RAW_FILE:
+  case ZFileType::FILE_MC_STACK_RAW:
   {
     FILE *fp = fopen(filePath.c_str(), "w");
     if (fp != NULL) {
@@ -1076,7 +1076,7 @@ Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
   ZFileType::EFileType fileType = ZFileType::FileType(filePath) ;
 
   switch (fileType) {
-  case ZFileType::OBJECT_SCAN_FILE:
+  case ZFileType::FILE_OBJECT_SCAN:
   {
     ZObject3dScan obj;
     if (obj.load(filePath)) {
@@ -1090,7 +1090,7 @@ Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
     }
   }
     break;
-  case ZFileType::MC_STACK_RAW_FILE:
+  case ZFileType::FILE_MC_STACK_RAW:
   {
     FILE *fp = fopen(filePath.c_str(), "r");
     if (fp != NULL) {
@@ -1182,7 +1182,7 @@ Stack* C_Stack::readSc(const string &filePath)
 {
   Stack *stack = NULL;
 
-  if (ZFileType::FileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+  if (ZFileType::FileType(filePath) == ZFileType::FILE_OBJECT_SCAN) {
     ZObject3dScan obj;
     if (obj.load(filePath)) {
       ZObject3d *obj3d = obj.toObject3d();

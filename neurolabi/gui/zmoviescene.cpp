@@ -109,7 +109,7 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
 {
   m_actionList.clear();
 
-  map<string, json_t*> entryMap = obj.toEntryMap();
+  map<string, json_t*> entryMap = obj.toEntryMap(false);
   for (map<string, json_t*>::const_iterator iter = entryMap.begin();
        iter != entryMap.end(); ++iter) {
 #ifdef _DEBUG_2
@@ -130,7 +130,7 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
       for (size_t index = 0; index < actionList.size(); ++index) {
         ZJsonObject actionObject(actionList.at(index),
                                  ZJsonValue::SET_INCREASE_REF_COUNT);
-        map<string, json_t*> actionEntry = actionObject.toEntryMap();
+        map<string, json_t*> actionEntry = actionObject.toEntryMap(false);
         MovieAction action;
 
         for (std::map<string, json_t*>::const_iterator actionIter = actionEntry.begin();

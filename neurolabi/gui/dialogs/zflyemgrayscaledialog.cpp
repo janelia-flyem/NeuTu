@@ -167,6 +167,11 @@ bool ZFlyEmGrayscaleDialog::isFullRange() const
   return ui->fullRangeCheckBox->isChecked();
 }
 
+bool ZFlyEmGrayscaleDialog::isSparse() const
+{
+  return ui->sparseCheckBox->isChecked();
+}
+
 
 
 

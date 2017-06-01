@@ -179,12 +179,6 @@ public:
 
   std::string getCustomBookmarkUrl(const std::string &userName) const;
 
-  static std::string GetEndPoint(const std::string &url);
-  /*!
-   * \brief Get entry point of getting key value entries
-   */
-  static std::string GetKeyCommandUrl(const std::string &dataUrl);
-
   std::string getBodyAnnotationName() const;
 
   std::string getAnnotationUrl(const std::string &dataName) const;
@@ -254,14 +248,22 @@ public:
   std::string getSynapseLabelszThresholdUrl(
       int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
 
+public:
+  static std::string GetEndPoint(const std::string &url);
+  static std::string GetFullUrl(
+      const std::string &prefix, const std::string &endpoint);
+  /*!
+   * \brief Get entry point of getting key value entries
+   */
+  static std::string GetKeyCommandUrl(const std::string &dataUrl);
+
   static std::string GetServiceResultEndPoint();
 
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
-  static std::string GetFullUrl(
-      const std::string &prefix, const std::string &endpoint);
+
 
 private:
   ZDvidTarget m_dvidTarget;

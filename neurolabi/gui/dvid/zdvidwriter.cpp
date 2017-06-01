@@ -30,6 +30,10 @@
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
 {
+#ifdef _DEBUG_
+  std::cout << "Creating dvid writer." << std::endl;
+#endif
+
   init();
 //  m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
@@ -250,6 +254,11 @@ void ZDvidWriter::writeJson(
     const std::string &dataName, const std::string &key, const ZJsonValue &obj)
 {
   writeJsonString(dataName, key, obj.dumpString(0));
+}
+
+void ZDvidWriter::writeData(const std::string &dest, const QByteArray &data)
+{
+  post(dest, data, false);
 }
 
 void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
@@ -942,11 +951,13 @@ std::string ZDvidWriter::put(const std::string &url)
   return put(url, NULL, 0, false);
 }
 
-void ZDvidWriter::writeServiceResult(const QByteArray &data)
+std::string ZDvidWriter::writeServiceResult(const QByteArray &data)
 {
   QString endPoint = ZDvidEndPoint::GetResultEndPoint(data);
 
   post(endPoint.toStdString(), data, false);
+
+  return endPoint.toStdString();
 }
 
 std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload,

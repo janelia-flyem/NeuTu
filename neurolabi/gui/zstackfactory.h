@@ -54,7 +54,7 @@ public:
   static ZStack* MakeZeroStack(int kind, const ZIntCuboid box, int nchannel = 1);
 
   static ZStack* makeIndexStack(int width, int height, int depth);
-  static ZStack* makeUniformStack(int width, int height, int depth, int v);
+  static ZStack* MakeUniformStack(int width, int height, int depth, int v);
 
   static ZStack* makePolygonPicture(const ZStroke2d &stroke);
 

@@ -2,6 +2,8 @@
 #define ZOBJECT3DSTRIPE_H
 
 #include <vector>
+#include <ostream>
+#include <istream>
 #include "c_stack.h"
 #include "neutube_def.h"
 
@@ -31,6 +33,13 @@ public:
 
   void write(FILE *fp) const;
   void read(FILE *fp);
+
+  void write(std::ostream &stream) const;
+  void read(std::istream &stream);
+//  friend std::ostream& operator<<(
+//      std::ostream &stream, const ZObject3dStripe &stripe);
+//  friend std::istream& operator>>(
+//      std::istream &stream, ZObject3dStripe &stripe);
 
   void addStackValue(Stack *stack, int v, const int *offset = NULL) const;
 

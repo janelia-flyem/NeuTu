@@ -73,6 +73,8 @@ ZJsonObject GetDataInstances(const std::string &type);
 ZDvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
 ZDvid::EDataType GetDataType(const std::string &typeName);
 
+ZDvidTarget MakeTargetFromUrl(const std::string path);
+
 
 /*!
  * \brief Test if two UUIDs they point to the same DVID node

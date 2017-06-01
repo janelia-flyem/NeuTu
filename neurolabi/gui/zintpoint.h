@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "neutube_def.h"
 
@@ -87,6 +88,9 @@ public:
   bool isValid() const;
 
   static bool IsNormalDimIndex(int index);
+
+  void read(std::istream &stream);
+  void write(std::ostream &stream) const;
 
 public:
   int m_x;

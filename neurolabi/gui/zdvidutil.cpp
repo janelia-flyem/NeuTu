@@ -10,6 +10,7 @@
 #include "zjsonparser.h"
 #include "dvid/zdvidversiondag.h"
 #include "zintcuboid.h"
+#include "dvid/zdvidurl.h"
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 
@@ -381,7 +382,27 @@ ZDvid::EDataType ZDvid::GetDataTypeFromInfo(const ZJsonObject &obj)
   return type;
 }
 
+ZDvidTarget ZDvid::MakeTargetFromUrl(const std::string path)
+{
+  QUrl url(path.c_str());
 
+  std::string uuid;
+
+  std::string marker = "api/node/";
+  std::string::size_type markerPos = path.find(marker);
+
+  if (markerPos != std::string::npos) {
+    markerPos += marker.size();
+    std::string::size_type uuidPos = path.find('/', markerPos);
+    uuid = path.substr(markerPos, uuidPos - markerPos);
+  }
+
+
+  ZDvidTarget target;
+  target.set(url.host().toStdString(), uuid, url.port());
+
+  return target;
+}
 
 
 

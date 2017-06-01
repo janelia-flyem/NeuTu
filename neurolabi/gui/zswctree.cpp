@@ -327,7 +327,7 @@ bool ZSwcTree::load(const char *filePath)
       }
     }
 
-    if (ZFileType::FileType(styleFilePath) == ZFileType::JSON_FILE) {
+    if (ZFileType::FileType(styleFilePath) == ZFileType::FILE_JSON) {
       if (!styleFilePath.isAbsolutePath()) {
         styleFilePath = styleFilePath.absolutePath(ZString::dirPath(m_source));
       }
@@ -3265,7 +3265,7 @@ const std::vector<Swc_Tree_Node *> &ZSwcTree::getSwcTreeNodeArray(
 
 bool ZSwcTree::hasGoodSourceName()
 {
-  if (ZFileType::FileType(getSource()) == ZFileType::SWC_FILE) {
+  if (ZFileType::FileType(getSource()) == ZFileType::FILE_SWC) {
     return true;
   }
 

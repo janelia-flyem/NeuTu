@@ -408,15 +408,15 @@ void ZStackFrame::updateDocument()
 {
   updateSignalSlot(connectFunc);
 
-  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
-                              xResolution(), yResolution(), zResolution());
-  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
-                                       zResolution(), unit(),
-                                       reconstructDistThre(),
-                                       reconstructSpTest(),
-                                       crossoverTest());
-
   if (m_doc->hasStackData()) {
+    m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
+                                xResolution(), yResolution(), zResolution());
+    m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
+                                         zResolution(), unit(),
+                                         reconstructDistThre(),
+                                         reconstructSpTest(),
+                                         crossoverTest());
+
     if (m_presenter != NULL && (m_doc->getStack()->kind() != GREY)) {
       m_presenter->optimizeStackBc();
     }
@@ -542,7 +542,7 @@ int ZStackFrame::readStack(const char *filePath)
   Q_ASSERT(m_doc.get() != NULL);
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::SWC_FILE:
+  case ZFileType::FILE_SWC:
     m_doc->readSwc(filePath);
     if (!m_doc->hasSwc()) {
       return ERROR_IO_READ;
@@ -553,15 +553,15 @@ int ZStackFrame::readStack(const char *filePath)
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::V3D_APO_FILE:
-  case ZFileType::V3D_MARKER_FILE:
+  case ZFileType::FILE_V3D_APO:
+  case ZFileType::FILE_V3D_MARKER:
     m_doc->importPuncta(filePath);
 #ifdef _DEBUG_
     cout << "emit stackLoaded()" << endl;
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::LOCSEG_CHAIN_FILE: {
+  case ZFileType::FILE_LOCSEG_CHAIN: {
     QStringList files;
     files.push_back(filePath);
     m_doc->importLocsegChain(files);
@@ -571,14 +571,14 @@ int ZStackFrame::readStack(const char *filePath)
     emit stackLoaded();
     break;
   }
-  case ZFileType::SWC_NETWORK_FILE:
+  case ZFileType::FILE_SWC_NETWORK:
     m_doc->loadSwcNetwork(filePath);
 #ifdef _DEBUG_
     cout << "emit stackLoaded()" << endl;
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::JSON_FILE:
+  case ZFileType::FILE_JSON:
     if (!m_doc->importSynapseAnnotation(filePath, 0)) {
       return ERROR_IO_READ;
     }
@@ -1527,7 +1527,7 @@ void ZStackFrame::importSeedMask(const QString &filePath)
 void ZStackFrame::importMask(const QString &filePath)
 {
   ZStack *stack = NULL;
-  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::PNG_FILE) {
+  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_PNG) {
     QImage image;
     image.load(filePath);
     stack = new ZStack(GREY, image.width(), image.height(), 1, 1);
