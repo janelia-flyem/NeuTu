@@ -14,8 +14,17 @@ class SynapseReviewInputDialog : public QDialog
 public:
     explicit SynapseReviewInputDialog(QWidget *parent = 0);
     ~SynapseReviewInputDialog();
+    SynapseReviewInputDialog::SynapseReviewInputOptions getInputOption();
+    QString getRoI();
 
 private:
+    enum SynapseReviewInputOptions {
+        BY_BODYID,
+        BY_ROI,
+        BY_VOLUME
+    };
+
+
     Ui::SynapseReviewInputDialog *ui;
 };
 

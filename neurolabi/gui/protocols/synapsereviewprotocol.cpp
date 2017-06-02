@@ -6,6 +6,8 @@
 
 #include <QMessageBox>
 
+#include "synapsereviewinputdialog.h"
+
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
@@ -20,6 +22,9 @@ SynapseReviewProtocol::SynapseReviewProtocol(QWidget *parent) :
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
+    // misc UI setup
+    ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
+
 }
 
 // constants
@@ -28,15 +33,17 @@ const int SynapseReviewProtocol::fileVersion = 1;
 
 bool SynapseReviewProtocol::initialize() {
 
-    // input dialog
+    // input dialog; not sure there are any initial
+    //  values that make sense to set
+    SynapseReviewInputDialog inputDialog;
+    int ans = inputDialog.exec();
+    if (ans == QDialog::Rejected) {
+        return false;
+    }
 
-    // multiple possibilities on how to specify the synapse list, but
-    //  it should come down to a synapse list; presumably we will generate,
-    //  at protocol start time, a list of x, y, z locations for T-bars
 
 
-
-    // get started
+    // get the value and get started
 
 
 
