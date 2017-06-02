@@ -29,8 +29,18 @@ signals:
 public slots:
     void loadDataRequested(ZJsonObject data);
 
+private slots:
+    void onExitButton();
+    void onCompleteButton();
+
 private:
+    static const std::string KEY_VERSION;
+    static const int fileVersion;
+
     Ui::SynapseReviewProtocol *ui;
+
+    void saveState();
+
 };
 
 #endif // SYNAPSEREVIEWPROTOCOL_H
