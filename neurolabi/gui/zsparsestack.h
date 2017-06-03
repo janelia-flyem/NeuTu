@@ -121,6 +121,8 @@ public:
   void read(std::istream &stream);
   void write(std::ostream &stream) const;
 
+  void printInfo() const;
+
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid,

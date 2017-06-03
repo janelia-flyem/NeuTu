@@ -67,7 +67,7 @@ Stack_Watershed_Workspace* ZStackWatershed::CreateWorkspace(
   ws->mask = mask;
   C_Stack::setZero(mask);
 
-  if (floodingZero) {
+  if (!floodingZero) {
     size_t voxelNumber = C_Stack::voxelNumber(stack);
     if (C_Stack::kind(stack) == GREY) {
       uint8_t *array = C_Stack::array8(stack);

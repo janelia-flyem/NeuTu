@@ -1,25 +1,56 @@
 #include "zdvidendpoint.h"
 
 #include <QCryptographicHash>
+#include "zjsonobject.h"
 
 ZDvidEndPoint::ZDvidEndPoint()
 {
 }
 
-QString ZDvidEndPoint::GetResultEndPoint()
+QString ZDvidEndPoint::GetResultEndPoint(const QString &group)
 {
-  return "result";
+  return "result_" + group;
 }
 
-QString ZDvidEndPoint::GetResultEndPoint(const QString &key)
+QString ZDvidEndPoint::GetTaskEndPoint(const QString &group)
 {
-  return GetResultEndPoint() + "/key/" + key;
+  return "task_" + group;
 }
 
-QString ZDvidEndPoint::GetResultEndPoint(const QByteArray &data)
+QString ZDvidEndPoint::GetHashKey(const QByteArray &data, bool head)
 {
-  return GetResultEndPoint(
-      QString(QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex()));
+  QString key(QCryptographicHash::hash(data, QCryptographicHash::Md5).toHex());
+  if (head) {
+    key = "head__" + key;
+  }
+
+  return key;
 }
 
+QString ZDvidEndPoint::GetKeyEndPoint(const QString &start, const QString &key)
+{
+  return start + "/key/" + key;
+}
 
+QString ZDvidEndPoint::GetResultEndPoint(
+    const QString &group, const QString &key)
+{
+  return GetKeyEndPoint(GetResultEndPoint(group), key);
+}
+
+QString ZDvidEndPoint::GetResultEndPoint(
+    const QString &group, const QByteArray &data, bool head)
+{
+  return GetResultEndPoint(group, GetHashKey(data, head));
+}
+
+QString ZDvidEndPoint::GetTaskEndPoint(const QString &group, const QString &key)
+{
+  return GetKeyEndPoint(GetTaskEndPoint(group), key);
+}
+
+QString ZDvidEndPoint::GetTaskEndPoint(
+    const QString &group, const QByteArray &data, bool head)
+{
+  return GetTaskEndPoint(group, GetHashKey(data, head));
+}

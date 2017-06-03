@@ -112,6 +112,8 @@ public:
    */
   void translate(const ZPoint &offset);
   void translate(const ZIntPoint &offset);
+  void scale(double sx, double sy, double sz);
+  void downsample(const ZIntPoint &dsIntv);
 
   /*!
    * \brief Convert the stroke to a stack.

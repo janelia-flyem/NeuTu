@@ -106,6 +106,17 @@ ZStack* ZObject3dScanArray::toLabelField(const ZIntCuboid &box) const
   return stack;
 }
 
+size_t ZObject3dScanArray::getVoxelNumber() const
+{
+  size_t v = 0;
+  for (ZObject3dScanArray::const_iterator iter = begin(); iter != end(); ++iter) {
+    const ZObject3dScan &obj = *iter;
+    v += obj.getVoxelNumber();
+  }
+
+  return v;
+}
+
 void ZObject3dScanArray::downsample(int xintv, int yintv, int zintv)
 {
   for (ZObject3dScanArray::iterator iter = begin(); iter != end(); ++iter) {

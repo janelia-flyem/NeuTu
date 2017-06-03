@@ -402,7 +402,7 @@ public:
 
   QByteArray readBuffer(const std::string &url) const;
   QByteArray readDataFromEndpoint(
-      const std::string &endPoint, bool tryingCompress = false);
+      const std::string &endPoint, bool tryingCompress = false) const;
 
   bool refreshLabelBuffer();
 
@@ -410,7 +410,10 @@ public:
 
   int checkProofreadingData() const;
 
-  QByteArray readServiceResult(const std::string &key) const;
+  QByteArray readServiceResult(
+      const std::string &group, const std::string &key) const;
+  ZJsonObject readServiceTask(
+      const std::string &group, const std::string &key) const;
 
 signals:
   void readingDone();

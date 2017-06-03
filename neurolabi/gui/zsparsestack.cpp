@@ -149,11 +149,11 @@ ZStack* ZSparseStack::makeDsStack(int xintv, int yintv, int zintv)
 
         ZStackBlockGrid *dsGrid =
             m_stackGrid->makeDownsample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
-            out =  new ZStack(GREY, obj->getBoundBox(), 1);
+        out =  new ZStack(GREY, obj->getBoundBox(), 1);
         out->setZero();
         assignStackValue(out, *obj, *dsGrid, m_baseValue);
         out->setDsIntv(dsIntv);
-            delete dsGrid;
+        delete dsGrid;
         delete obj;
       } else {
         out = new ZStack(GREY, cuboid, 1);
@@ -506,4 +506,15 @@ bool ZSparseStack::load(const std::string &filePath)
   }
 
   return false;
+}
+
+void ZSparseStack::printInfo() const
+{
+  if (isEmpty()) {
+    std::cout << "Empty sparse stack." << std::endl;
+  } else {
+    if (m_objectMask != NULL) {
+      m_objectMask->printInfo();
+    }
+  }
 }

@@ -9,6 +9,7 @@ class ZObject3dScan;
 class ZStroke2d;
 class ZObject3d;
 class ZSparseStack;
+class ZObject3dScanArray;
 
 class ZStackWatershedContainer
 {
@@ -17,7 +18,7 @@ public:
   ZStackWatershedContainer(ZSparseStack *stack);
   ~ZStackWatershedContainer();
 
-  ZStack* run();
+  void run();
 
   void addSeed(const ZStack &seed);
   void addSeed(const ZObject3dScan &seed);
@@ -31,6 +32,19 @@ public:
   void setRange(int x0, int y0, int z0, int x1, int y1, int z1);
 
   void exportMask(const std::string &filePath);
+  void exportSource(const std::string &filePath);
+
+  void setFloodFillingZero(bool on) {
+    m_floodingZero = on;
+  }
+
+  ZStack* getResultStack() const {
+    return m_result;
+  }
+
+  ZObject3dScanArray* makeSplitResult(ZObject3dScanArray *result = NULL);
+
+  void printInfo() const;
 
 private:
   void init();
@@ -38,7 +52,9 @@ private:
   Stack_Watershed_Workspace* getWorkspace();
   void clearWorkspace();
   void clearSource();
+  void clearResult();
   Stack* getSource();
+  ZStack* getSourceStack();
 
   ZIntPoint getSourceOffset() const;
 
@@ -48,11 +64,12 @@ private:
 
   void makeMaskStack(ZStack &stack);
 
-  ZIntPoint getSourceDsIntv() const;
+  ZIntPoint getSourceDsIntv();
 
 private:
   ZStack *m_stack;
   ZSparseStack *m_spStack;
+  ZStack *m_result;
   Stack_Watershed_Workspace *m_workspace;
   ZIntPoint m_sourceOffset;
   ZIntCuboid m_range;

@@ -1100,6 +1100,11 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
   //deprecate(ALL_COMPONENT);
 }
 
+void ZObject3dScan::upSample(const ZIntPoint &dsIntv)
+{
+  upSample(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+}
+
 void ZObject3dScan::upSample(int xIntv, int yIntv, int zIntv)
 {
   if (xIntv == 0 && yIntv == 0 && zIntv == 0) {

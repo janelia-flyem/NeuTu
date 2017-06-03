@@ -280,8 +280,12 @@ void ZObject3d::labelStack(Stack *stack, int label) const
 
 void ZObject3d::labelStack(ZStack *stack, int label) const
 {
-  labelStack(stack->c_stack(), label, -stack->getOffset().getX(),
-             -stack->getOffset().getY(), -stack->getOffset().getZ());
+  ZIntPoint offset = -stack->getOffset();
+  offset *= stack->getDsIntv() + 1;
+  labelStack(stack->c_stack(), label,
+             offset.getX(), offset.getY(), offset.getZ(),
+             stack->getDsIntv().getX(), stack->getDsIntv().getY(),
+             stack->getDsIntv().getZ());
 }
 void ZObject3d::labelStack(ZStack *stack) const
 {

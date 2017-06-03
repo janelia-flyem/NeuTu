@@ -33,6 +33,7 @@
 #include "dvid/zdvidroi.h"
 #include "zflyemutilities.h"
 #include "zobject3dscanarray.h"
+#include "zdvidendpoint.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -545,7 +546,7 @@ QByteArray ZDvidReader::readBuffer(const std::string &url) const
 }
 
 QByteArray ZDvidReader::readDataFromEndpoint(
-    const std::string &endPoint, bool tryingCompress)
+    const std::string &endPoint, bool tryingCompress) const
 {
   QByteArray buffer;
 #if defined(_ENABLE_LIBDVIDCPP_)
@@ -3443,11 +3444,27 @@ bool ZDvidReader::reportMissingData(const std::string dataName) const
   return missing;
 }
 
-QByteArray ZDvidReader::readServiceResult(const std::string &key) const
+QByteArray ZDvidReader::readServiceResult(
+    const std::string &group, const std::string &key) const
 {
-  ZDvidUrl url(getDvidTarget());
+//  ZDvidUrl url(getDvidTarget());
 
-  return readBuffer(url.getKeyUrl("result", key));
+  return readDataFromEndpoint(
+        ZDvidEndPoint::GetResultEndPoint(
+          QString(group.c_str()), QString(key.c_str())).toStdString());
+
+//  return readBuffer(url.getKeyUrl(ZDvidEndPoint, key));
+}
+
+ZJsonObject ZDvidReader::readServiceTask(
+    const std::string &group, const std::string &key) const
+{
+  QByteArray data = readDataFromEndpoint(
+        ZDvidEndPoint::GetTaskEndPoint(
+          QString(group.c_str()), QString(key.c_str())).toStdString());
+  ZJsonObject json;
+  json.load(data.constData());
+  return json;
 }
 
 int ZDvidReader::checkProofreadingData() const

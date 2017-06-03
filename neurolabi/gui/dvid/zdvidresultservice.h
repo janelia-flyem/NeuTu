@@ -19,6 +19,8 @@ public:
   static void WriteData(const QString &path, const QByteArray &data);
   static QList<ZObject3dScan*> ReadSplitResult(const QString &path);
 
+//  static void WriteTask(const QByteArray &data);
+
 private:
   static ZObject3dScan* ReadSplitObject(
       const ZJsonObject &objJson, ZDvidReader *reader);

@@ -31,12 +31,25 @@ int ZBodySplitCommand::run(
   int status = 1;
 
   ZJsonObject inputJson;
-  inputJson.load(input.front());
 
-  std::string dataDir = ZString(input.front()).dirPath();
+  QUrl inputUrl(input.front().c_str());
+
+  bool isFile = true;
+  if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
+    ZDvidReader *reader = ZGlobal::GetInstance().getDvidReaderFromUrl(input.front());
+    inputJson = reader->readJsonObject(input.front());
+    isFile = false;
+  } else {
+    inputJson.load(input.front());
+  }
 
   std::string signalUrl = ZJsonParser::stringValue(inputJson["signal"]);
-  signalUrl = ZString(signalUrl).absolutePath(dataDir);
+
+  std::string dataDir;
+  if (isFile) {
+    dataDir = ZString(input.front()).dirPath();
+    signalUrl = ZString(signalUrl).absolutePath(dataDir);
+  }
 
   ZStack signalStack;
   signalStack.load(signalUrl);
@@ -50,7 +63,9 @@ int ZBodySplitCommand::run(
       if (seedJson.hasKey("type")) {
 
         std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
-        seedUrl = ZString(seedUrl).absolutePath(dataDir);
+        if (isFile) {
+          seedUrl = ZString(seedUrl).absolutePath(dataDir);
+        }
 
         std::string type = ZJsonParser::stringValue(seedJson["type"]);
         if (type == "ZObject3dScan" && !seedUrl.empty() && seedJson.hasKey("label")) {
@@ -83,28 +98,30 @@ int ZBodySplitCommand::run(
     container.exportMask(GET_TEST_DATA_DIR + "/test2.tif");
 #endif
 
-    ZStack *result = container.run();
+    container.run();
+    ZStack *resultStack = container.getResultStack();
 
 //    ZStackWatershed watershed;
 //    watershed.setFloodingZero(false);
 
 //    ZStack *result = watershed.run(&signalStack, seedMask);
 
-    if (result != NULL) {
+    if (resultStack != NULL) {
       QUrl outputUrl(output.c_str());
+      ZObject3dScanArray *result = container.makeSplitResult();
 
       if (outputUrl.scheme() == "dvid" || outputUrl.scheme() == "http") {
         ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(output);
         ZJsonArray resultArray;
 
-        ZObject3dScanArray objArray;
-        ZObject3dFactory::MakeObject3dScanArray(
-              *result, NeuTube::Z_AXIS, true, &objArray);
-        for (ZObject3dScanArray::const_iterator iter = objArray.begin();
-             iter != objArray.end(); ++iter) {
+//        ZObject3dScanArray objArray;
+//        ZObject3dFactory::MakeObject3dScanArray(
+//              *result, NeuTube::Z_AXIS, true, &objArray);
+        for (ZObject3dScanArray::const_iterator iter = result->begin();
+             iter != result->end(); ++iter) {
           const ZObject3dScan &obj = *iter;
           std::string endPoint =
-              writer->writeServiceResult(obj.toDvidPayload());
+              writer->writeServiceResult("split", obj.toDvidPayload(), false);
           ZJsonObject regionJson;
           regionJson.setEntry("label", (int) obj.getLabel());
           regionJson.setEntry("ref", endPoint);
@@ -118,13 +135,13 @@ int ZBodySplitCommand::run(
           ZJsonObject resultJson;
           resultJson.addEntry("type", "split");
           resultJson.addEntry("result", resultArray);
-          std::string endPoint = writer->writeServiceResult(
-                QByteArray(resultJson.dumpString(0).c_str()));
+          std::string endPoint =
+              writer->writeServiceResult("split", resultJson);
           std::cout << "Result endpoint: " << endPoint << std::endl;
         }
       } else {
         ZStackWriter writer;
-        writer.write(output, result);
+        writer.write(output, resultStack);
       }
 
       delete result;

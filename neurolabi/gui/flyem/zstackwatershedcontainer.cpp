@@ -5,10 +5,14 @@
 #include "zobject3d.h"
 #include "zstroke2d.h"
 #include "zsparsestack.h"
+#include "zobject3dscanarray.h"
+#include "zobject3dfactory.h"
+#include "neutubeconfig.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
   init();
+  m_stack = stack;
   if (m_stack != NULL) {
     m_range = m_stack->getBoundBox();
     m_source = stack;
@@ -28,13 +32,16 @@ ZStackWatershedContainer::~ZStackWatershedContainer()
 {
   clearWorkspace();
   clearSource();
+  clearResult();
 }
 
 void ZStackWatershedContainer::init()
 {
   m_stack = NULL;
   m_spStack = NULL;
+  m_source = NULL;
   m_workspace = NULL;
+  m_result = NULL;
   m_channel = 0;
   m_floodingZero = false;
 }
@@ -57,11 +64,18 @@ void ZStackWatershedContainer::clearSource()
   }
 }
 
-ZIntPoint ZStackWatershedContainer::getSourceDsIntv() const
+void ZStackWatershedContainer::clearResult()
+{
+  delete m_result;
+  m_result = NULL;
+}
+
+ZIntPoint ZStackWatershedContainer::getSourceDsIntv()
 {
   ZIntPoint dsIntv(0, 0, 0);
-  if (m_source != NULL) {
-    dsIntv = m_source->getDsIntv();
+  ZStack *source = getSourceStack();
+  if (source != NULL) {
+    dsIntv = source->getDsIntv();
   }
 
   return dsIntv;
@@ -173,6 +187,11 @@ void ZStackWatershedContainer::exportMask(const std::string &filePath)
   }
 }
 
+void ZStackWatershedContainer::exportSource(const std::string &filePath)
+{
+  getSourceStack()->save(filePath);
+}
+
 Stack_Watershed_Workspace* ZStackWatershedContainer::getWorkspace()
 {
   if (m_workspace == NULL) {
@@ -230,28 +249,151 @@ void ZStackWatershedContainer::setRange(
   }
 }
 
-Stack* ZStackWatershedContainer::getSource()
+ZStack* ZStackWatershedContainer::getSourceStack()
 {
   if (m_source == NULL && m_spStack != NULL) {
     m_source = m_spStack->makeStack(m_range);
   }
 
-  return m_source->c_stack(m_channel);
+  return m_source;
 }
 
-ZStack* ZStackWatershedContainer::run()
+Stack* ZStackWatershedContainer::getSource()
 {
-  ZStack *result = NULL;
+  return getSourceStack()->c_stack(m_channel);
+}
+
+void ZStackWatershedContainer::run()
+{
+  m_result = NULL;
   Stack *source = getSource();
   if (source != NULL) {
     Stack *out = C_Stack::watershed(source, getWorkspace());
-    result = new ZStack;
-    result->consume(out);
-    result->setOffset(getSourceOffset());
+    m_result = new ZStack;
+    m_result->consume(out);
+    m_result->setOffset(getSourceOffset());
+  }
+}
+
+ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
+    ZObject3dScanArray *result)
+{
+  if (result == NULL) {
+    result = new ZObject3dScanArray;
+  }
+  //For sparse stack only for the current version
+  if (getResultStack() != NULL) {
+    if (m_spStack != NULL) {
+      ZObject3dScanArray *objArray = ZObject3dFactory::MakeObject3dScanArray(
+            *(getResultStack()), NeuTube::Z_AXIS, true, NULL);
+      ZIntPoint dsIntv = getSourceDsIntv();
+      const size_t minIsolationSize = 50;
+      ZObject3dScan mainBody;
+      ZObject3dScan *wholeBody = m_spStack->getObjectMask();
+      ZObject3dScan body = *wholeBody;
+      for (ZObject3dScanArray::iterator iter = objArray->begin();
+           iter != objArray->end(); ++iter) {
+        ZObject3dScan &obj = *iter;
+        if (obj.getLabel() > 1) {
+          obj.upSample(dsIntv);
+          std::cout << "Processing label " << obj.getLabel() << std::endl;
+#ifdef _DEBUG_2
+          if (obj.getLabel() == 128) {
+            obj.save(GET_TEST_DATA_DIR + "/test3.sobj");
+          }
+#endif
+          ZObject3dScan currentBody = body.subtract(obj);
+#ifdef _DEBUG_2
+          if (obj.getLabel() == 128) {
+            currentBody.save(GET_TEST_DATA_DIR + "/test4.sobj");
+          }
+#endif
+
+          if (!dsIntv.isZero()) {
+            std::vector<ZObject3dScan> ccArray =
+                currentBody.getConnectedComponent(ZObject3dScan::ACTION_NONE);
+            for (std::vector<ZObject3dScan>::iterator iter = ccArray.begin();
+                 iter != ccArray.end(); ++iter) {
+              ZObject3dScan &subobj = *iter;
+              bool isAdopted = false;
+              if (subobj.getVoxelNumber() < minIsolationSize &&
+                  currentBody.getVoxelNumber() / subobj.getVoxelNumber() > 10) {
+                if (body.isAdjacentTo(subobj)) {
+                  body.concat(subobj);
+                  isAdopted = true;
+                }
+              }
+#ifdef _DEBUG_2
+              std::cout << "Split size: " << subobj.getVoxelNumber() << std::endl;
+              std::cout << "Remain size: " << body.getVoxelNumber() << std::endl;
+              if (body.getVoxelNumber() == 1) {
+                body.print();
+              }
+#endif
+              if (!isAdopted) {//Treated as a split region
+                result->push_back(subobj);
+              }
+            }
+          } else {
+            result->push_back(currentBody);
+          }
+        } else {
+          mainBody.concat(obj);
+        }
+      }
+
+      mainBody.upSample(dsIntv);
+      std::vector<ZObject3dScan> partArray =
+          body.getConnectedComponent(ZObject3dScan::ACTION_NONE);
+
+      for (std::vector<ZObject3dScan>::iterator iter = partArray.begin();
+           iter != partArray.end(); ++iter) {
+        ZObject3dScan &obj = *iter;
+
+        //Check single connect for bound box split
+        //Any component only connected to one split part?
+        int count = 0;
+        int splitIndex = 0;
+
+        if (!obj.isAdjacentTo(mainBody)) {
+          for (size_t index = 0; index < result->size(); ++index) {
+            if (obj.isAdjacentTo((*result)[index])) {
+              ++count;
+              if (count > 1) {
+                break;
+              }
+              splitIndex = index;
+            }
+          }
+        }
+
+        if (count > 0) {
+          ZObject3dScan &split = (*result)[splitIndex];
+          split.concat(obj);
+        }
+      }
+
+      delete objArray;
+    } else if (m_stack != NULL) {
+      result = ZObject3dFactory::MakeObject3dScanArray(
+            *(getResultStack()), NeuTube::Z_AXIS, true, NULL);
+    }
   }
 
   return result;
 }
 
-
-
+void ZStackWatershedContainer::printInfo() const
+{
+  if (m_stack != NULL) {
+    m_stack->printInfo();
+  }
+  if (m_spStack != NULL) {
+    m_spStack->printInfo();
+  }
+  std::cout << "Range: " << m_range.toJsonArray().dumpString(0) << std::endl;
+  std::cout << "Flooding zero: " << m_floodingZero << std::endl;
+  if (m_source != NULL) {
+    std::cout << "Downsampling: " << m_source->getDsIntv().toString() << std::endl;
+  }
+}

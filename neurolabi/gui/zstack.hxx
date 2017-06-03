@@ -572,6 +572,9 @@ public: /* processing routines */
   void setDsIntv(const ZIntPoint &dsIntv) {
     m_dsIntv = dsIntv;
   }
+  void setDsIntv(int ix, int iy, int iz) {
+    m_dsIntv.set(ix, iy, iz);
+  }
 
   /*!
    * \brief Downsample the stack with maximum assignment.
@@ -642,7 +645,8 @@ private:
   Mc_Stack *m_stack; //Master data
   C_Stack::Mc_Stack_Deallocator *m_dealloc; //Dellocator of the master data
   ZIntPoint m_offset;
-  ZIntPoint m_dsIntv; //Downsampling ratio from original space
+  ZIntPoint m_dsIntv; //Downsampling ratio from original space;
+                      //note that the offset is also supposed to be downsampled
 
   ZStackFile m_source;
 

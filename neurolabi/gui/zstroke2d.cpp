@@ -550,6 +550,25 @@ void ZStroke2d::translate(const ZIntPoint &offset)
   m_z += iround(offset.getZ());
 }
 
+void ZStroke2d::scale(double sx, double sy, double sz)
+{
+  for (std::vector<QPointF>::iterator iter = m_pointArray.begin();
+       iter != m_pointArray.end(); ++iter) {
+    QPointF &pt = *iter;
+    pt.setX(pt.x() * sx);
+    pt.setY(pt.y() * sy);
+  }
+  m_z = iround(m_z * sz);
+  m_width *= std::sqrt(sx * sy);
+}
+
+void ZStroke2d::downsample(const ZIntPoint &dsIntv)
+{
+  if (!dsIntv.isZero()) {
+    scale(1.0 / (dsIntv.getX() + 1), 1.0 / (dsIntv.getY() + 1),
+          1.0 / (dsIntv.getZ() + 1));
+  }
+}
 
 ZObject3d* ZStroke2d::toObject3d() const
 {
@@ -650,6 +669,7 @@ void ZStroke2d::labelStack(ZStack *stack) const
 {
   if (stack != NULL) {
     ZStroke2d tmpStroke = *this;
+    tmpStroke.downsample(stack->getDsIntv());
     tmpStroke.translate(-stack->getOffset());
     tmpStroke.labelGrey(stack->c_stack());
   }

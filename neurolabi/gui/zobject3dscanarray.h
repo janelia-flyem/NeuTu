@@ -14,6 +14,7 @@ public:
   ZObject3dScanArray();
 
   ZIntCuboid getBoundBox() const;
+  size_t getVoxelNumber() const;
 
   void importDir(const std::string &dirPath);
   void downsample(int xintv, int yintv, int zintv);

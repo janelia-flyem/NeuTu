@@ -951,13 +951,41 @@ std::string ZDvidWriter::put(const std::string &url)
   return put(url, NULL, 0, false);
 }
 
-std::string ZDvidWriter::writeServiceResult(const QByteArray &data)
+std::string ZDvidWriter::writeServiceResult(
+    const QString &group, const QByteArray &data, bool head)
 {
-  QString endPoint = ZDvidEndPoint::GetResultEndPoint(data);
+  QString endPoint = ZDvidEndPoint::GetResultEndPoint(group, data, head);
 
   post(endPoint.toStdString(), data, false);
 
   return endPoint.toStdString();
+}
+
+std::string ZDvidWriter::writeServiceResult(
+    const QString &group, const ZJsonObject &result)
+{
+  return writeServiceResult(group, QByteArray(result.dumpString(0).c_str()), true);
+}
+
+std::string ZDvidWriter::writeServiceTask
+(const QString &group, const QByteArray &task, bool head)
+{
+  QString endPoint = ZDvidEndPoint::GetTaskEndPoint(group, task, head);
+
+  post(endPoint.toStdString(), task, false);
+
+  return endPoint.toStdString();
+}
+
+std::string ZDvidWriter::writeServiceTask(
+    const QString &group, const ZJsonObject &task)
+{
+  return writeServiceTask(group, QByteArray(task.dumpString(0).c_str()), true);
+}
+
+std::string ZDvidWriter::transferLocalSplitTaskToServer(const ZJsonObject &task)
+{
+
 }
 
 std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload,

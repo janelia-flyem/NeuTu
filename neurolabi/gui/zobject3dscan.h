@@ -295,6 +295,7 @@ public:
   void downsampleMax(const ZIntPoint &dsIntv);
 
   void upSample(int xIntv, int yIntv, int zIntv);
+  void upSample(const ZIntPoint &dsIntv);
 
   Stack* toStack(int *offset = NULL, int v = 1) const;
   Stack* toStackWithMargin(int *offset, int v, int margin) const;

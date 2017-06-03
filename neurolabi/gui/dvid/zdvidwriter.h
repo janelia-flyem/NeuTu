@@ -219,7 +219,15 @@ public:
 
   void writeData(const std::string &dest, const QByteArray &data);
 
-  std::string writeServiceResult(const QByteArray &data);
+  std::string writeServiceResult(
+      const QString &group, const QByteArray &data, bool head);
+  std::string writeServiceResult(
+      const QString &group, const ZJsonObject &result);
+
+  std::string writeServiceTask(
+      const QString &group, const QByteArray &task, bool head);
+  std::string writeServiceTask(const QString &group, const ZJsonObject &task);
+  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:
   std::string post(const std::string &url);

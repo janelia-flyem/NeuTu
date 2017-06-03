@@ -23347,6 +23347,32 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("localhost", "4d3e", 8000);
+  target.setLabelBlockName("*");
+
+  if (writer.open(target)) {
+    writer.createKeyvalue("task_split");
+    writer.createKeyvalue("result_split");
+  }
+#endif
+
+#if 0
+  ZDvidWriter writer;
+  ZDvidTarget target;
+  target.set("localhost", "4d3e", 8000);
+  target.setLabelBlockName("*");
+
+  ZJsonObject task;
+  task.load(GET_BENCHMARK_DIR + "/split.json");
+
+  if (writer.open(target)) {
+    writer.writeServiceTask("split", task);
+  }
+#endif
+
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("localhost", "4d3e", 8000);
@@ -23393,7 +23419,109 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZStack stack;
+  stack.load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  stack.setDsIntv(1, 1, 0);
 
+  ZStackWatershedContainer container(&stack);
+  ZObject3dScan obj;
+  obj.addSegment(3201, 4102 * 2, 2900 * 2, 2905 * 2);
+  obj.setLabel(1);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(3201, 4114 * 2, 3010 * 2, 3015 * 2);
+  obj2.setLabel(2);
+
+  ZObject3dScan obj3;
+  obj3.setLabel(3);
+  obj3.addSegment(3201, 4185 * 2, 2904 * 2, 3000 * 2);
+//  container.setRange(2890, 4095, 3201, 3100, 4173, 3201);
+  container.addSeed(obj);
+  container.addSeed(obj2);
+  container.addSeed(obj3);
+
+  ZStroke2d stroke;
+  stroke.append(3089 * 2, 4173 * 2);
+  stroke.setZ(3201);
+  stroke.setWidth(5);
+  stroke.setLabel(3);
+
+  container.addSeed(stroke);
+
+  ZObject3d obj4;
+  obj4.append(2938 * 2, 4143 * 2, 3201);
+  obj4.append(2939 * 2, 4144 * 2, 3201);
+  obj4.append(2940 * 2, 4146 * 2, 3201);
+  obj4.setLabel(5);
+  container.addSeed(obj4);
+
+  container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
+//  ZStack *result = container.run();
+
+//  result->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//  delete result;
+
+#endif
+
+#if 0
+  ZSparseStack stack;
+  stack.load(GET_TEST_DATA_DIR + "/_system/test.zss");
+  stack.getObjectMask()->canonize();
+  ZStackWatershedContainer container(&stack);
+  container.setFloodFillingZero(false);
+  container.setRange(3707, 4142, 4681, 4235, 5849, 9793);
+
+
+  ZObject3dScan obj1;
+  obj1.addSegment(9693, 4542, 3807, 3817);
+  obj1.setLabel(1);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(4781, 5749, 4035, 4046);
+  obj2.setLabel(200);
+
+  container.addSeed(obj1);
+  container.addSeed(obj2);
+
+//  container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
+//  container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
+  container.run();
+  container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
+
+  ZObject3dScanArray *split = container.makeSplitResult();
+  std::cout << split->size() << " splits" << std::endl;
+  std::cout << split->getVoxelNumber() << " voxels" << std::endl;
+
+  int index = 1;
+  for (ZObject3dScanArray::const_iterator iter = split->begin();
+       iter != split->end(); ++iter) {
+    const ZObject3dScan &obj = *iter;
+    ZString path = GET_TEST_DATA_DIR + "/test";
+    path.appendNumber(index++);
+    obj.save(path + ".sobj");
+
+    stack.getObjectMask()->subtractSliently(obj);
+  }
+
+//  stack.getObjectMask()->print();
+
+  delete split;
+
+  container.printInfo();
+
+
+//  delete result;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/test1.sobj");
+  obj.upSample(3, 3, 1);
+  obj.save(GET_TEST_DATA_DIR + "/test3.sobj");
+#endif
+
+#if 0
   ZStack stack;
   stack.load(GET_BENCHMARK_DIR + "/em_slice.tif");
 
@@ -23505,6 +23633,14 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZIntPoint pt(1, 2, 3);
+  std::stringstream stream;
+  pt.write(stream);
+
+  std::cout << stream << std::endl;
+#endif
+
 #if 0
   ZStack *stack = ZStackFactory::makeIndexStack(2, 3, 4);
   stack->setOffset(10, 20, 30);
@@ -23581,7 +23717,7 @@ void ZTest::test(MainWindow *host)
   writer.writeDefaultDataSetting();
 #endif
 
-#if 1
+#if 0
   ZSparseStack *spStack = new ZSparseStack;
   spStack->load(GET_TEST_DATA_DIR + "/test.zss");
 #endif
