@@ -26,6 +26,8 @@ const char* ZDvidData::m_todoListName = "todo";
 const char* ZDvidData::m_synapseName = ""; //No default
 const char* ZDvidData::m_neutuConfigName = "neutu_config";
 const char* ZDvidData::m_labelszName = "labelsz";
+const char* ZDvidData::m_splitResultKeyName = "result_split";
+const char* ZDvidData::m_splitTaskKeyName = "task_split";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -93,6 +95,10 @@ const char* ZDvidData::GetName(ERole role)
     return m_labelszName;
   case ROLE_NEUTU_CONFIG:
     return m_neutuConfigName;
+  case ROLE_SPLIT_RESULT_KEY:
+    return m_splitResultKeyName;
+  case ROLE_SPLIT_TASK_KEY:
+    return m_splitTaskKeyName;
   }
 
   return m_emptyName;
@@ -143,12 +149,15 @@ std::string ZDvidData::GetName(
 
 bool ZDvidData::IsDefaultName(ERole role, const std::string &name)
 {
+  if (name.empty()) {
+    return false;
+  }
+
   if (role == ZDvidData::ROLE_BODY_LABEL) { //For backfward compability
     if (name == "bodies") {
       return true;
     }
   }
-
 
   return ZDvidData::GetName(role) == name;
 }

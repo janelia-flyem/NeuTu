@@ -98,6 +98,8 @@ public:
   void loadSeed(const ZJsonObject &obj);
   void swapMainSeedLabel(int label);
 
+  std::string saveTask() const;
+
   void exportSplits();
   void commitResult();
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
@@ -223,6 +225,9 @@ private:
 
   int getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }
+
+  ZJsonArray getSeedJson() const;
+  ZJsonArray getRoiJson() const;
 
 private:
   ZDvidTarget m_dvidTarget;

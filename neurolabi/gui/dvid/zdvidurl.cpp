@@ -56,15 +56,15 @@ void ZDvidUrl::setDvidTarget(const ZDvidTarget &target, const std::string &uuid)
 }
 
 std::string ZDvidUrl::GetFullUrl(
-      const std::string &prefix, const std::string &endpoint)
+    const std::string &prefix, const std::string &path)
 {
   std::string url;
 
-  if (!prefix.empty() && !endpoint.empty()) {
-    if (endpoint[0] == '/' || endpoint[0] == '?') {
-      url = prefix + endpoint;
+  if (!prefix.empty() && !path.empty()) {
+    if (path[0] == '/' || path[0] == '?') {
+      url = prefix + path;
     } else {
-      url = prefix + "/" + endpoint;
+      url = prefix + "/" + path;
     }
   }
 
@@ -827,7 +827,7 @@ std::string ZDvidUrl::getBranchUrl() const
   return GetFullUrl(getNodeUrl(), "/branch");
 }
 
-std::string ZDvidUrl::GetEndPoint(const std::string &url)
+std::string ZDvidUrl::GetPath(const std::string &url)
 {
   std::string marker = "api/node/";
 
@@ -1231,4 +1231,60 @@ std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
 std::string ZDvidUrl::GetServiceResultEndPoint()
 {
   return "result";
+}
+
+std::string ZDvidUrl::GetResultKeyFromTaskKey(const std::string &key)
+{
+  ZString newKey = key;
+  if (newKey.startsWith("task__")) {
+//    newKey.replace("head__", "task__");
+    newKey = key;
+  } else {
+    newKey = "";
+  }
+
+  return newKey;
+}
+
+std::string ZDvidUrl::ExtractSplitTaskKey(const std::string &url)
+{
+  std::string w("task_split/key/");
+  std::string::size_type index = url.rfind(w);
+
+  if (index == std::string::npos) {
+    return "";
+  }
+
+  return url.substr(index + w.size());
+}
+
+std::string ZDvidUrl::getSplitTaskKey(const uint64_t bodyId) const
+{
+  std::string key;
+  std::string bodyUrl = getSparsevolUrl(bodyId);
+  if (!bodyUrl.empty()) {
+    key = "task__" + ZString(bodyUrl).replace(":", "-").replace("/", "+");
+  }
+
+  return key;
+}
+
+/*
+bool ZDvidUrl::IsSplitTask(const std::string &url)
+{
+  return ZString()
+}
+*/
+
+uint64_t ZDvidUrl::GetBodyId(const std::string &url)
+{
+  uint64_t id = 0;
+
+  ZString idWord = ZString(url).getLastWord('/');
+
+  if (idWord.isAllDigit()) {
+    id = idWord.firstUint64();
+  }
+
+  return id;
 }

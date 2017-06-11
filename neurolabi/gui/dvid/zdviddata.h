@@ -40,7 +40,9 @@ public:
     ROLE_LABELSZ,
     ROLE_SYNAPSE,
     ROLE_TODO_LIST,
-    ROLE_NEUTU_CONFIG
+    ROLE_NEUTU_CONFIG,
+    ROLE_SPLIT_TASK_KEY,
+    ROLE_SPLIT_RESULT_KEY
   };
 
   enum EType {
@@ -89,6 +91,8 @@ private:
   static const char *m_todoListName;
   static const char *m_neutuConfigName;
   static const char *m_labelszName;
+  static const char *m_splitResultKeyName;
+  static const char *m_splitTaskKeyName;
   //static const char *m_keyValueTypeName;
 
   static const char *m_nullName;

@@ -16,6 +16,7 @@ class ZStackWatershedContainer
 public:
   ZStackWatershedContainer(ZStack *stack);
   ZStackWatershedContainer(ZSparseStack *stack);
+  ZStackWatershedContainer(ZStack *stack, ZSparseStack *spStack);
   ~ZStackWatershedContainer();
 
   void run();

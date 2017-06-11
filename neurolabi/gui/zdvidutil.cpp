@@ -384,6 +384,11 @@ ZDvid::EDataType ZDvid::GetDataTypeFromInfo(const ZJsonObject &obj)
 
 ZDvidTarget ZDvid::MakeTargetFromUrl(const std::string path)
 {
+  ZDvidTarget target;
+  target.setFromUrl(path);
+  return target;
+
+#if 0
   QUrl url(path.c_str());
 
   std::string uuid;
@@ -402,6 +407,7 @@ ZDvidTarget ZDvid::MakeTargetFromUrl(const std::string path)
   target.set(url.host().toStdString(), uuid, url.port());
 
   return target;
+#endif
 }
 
 

@@ -26,6 +26,15 @@ TEST(ZString, extractWord) {
 
   str = "This \"\"is a test";
   EXPECT_EQ("", str.firstQuotedWord());
+
+  ASSERT_EQ("test", ZString("/this/is/a/test").getLastWord('/'));
+  ASSERT_EQ("12345", ZString("/this/is/a/test/12345").getLastWord('/'));
+  ASSERT_EQ("", ZString("/this/is/a/test/12345/").getLastWord('/'));
+}
+
+TEST(ZString, extractNumber)
+{
+  ASSERT_EQ(12345, ZString("/this/is/a/test/12345").lastInteger());
 }
 
 TEST(ZString, tokenize)
@@ -81,8 +90,8 @@ TEST(ZString, ParseFileName)
 {
   std::string str = "/Users/foo/test/DH070613-1-2.tif";
 
-  EXPECT_EQ("DH070613-1-2.tif", ZString::getBaseName(str));
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2.tif", ZString::getBaseName(str));
+  ASSERT_EQ("DH070613-1-2",
             ZString::removeFileExt(ZString::getBaseName(str)));
 }
 
@@ -90,41 +99,41 @@ TEST(ZBiocytinFileNameParser, Basic)
 {
   std::string str = "/Users/foo/test/DH070613-1-2.tif";
 
-  EXPECT_EQ("DH070613-1-2", ZBiocytinFileNameParser::getCoreName(str));
+  ASSERT_EQ("DH070613-1-2", ZBiocytinFileNameParser::getCoreName(str));
 
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2",
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.tif"));
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2",
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.Edit.tif"));
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2",
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.edit.tif"));
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2",
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.proj.tif"));
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2",
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.roi.tif"));
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2",
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.ROI.tif"));
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2",
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.mask.tif"));
-  EXPECT_EQ("DH070613-1-2",
+  ASSERT_EQ("DH070613-1-2",
             ZBiocytinFileNameParser::getCoreName("DH070613-1-2.Mask.tif"));
 
 
-  EXPECT_EQ(ZBiocytinFileNameParser::ORIGINAL,
+  ASSERT_EQ(ZBiocytinFileNameParser::ORIGINAL,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.tif"));
-  EXPECT_EQ(ZBiocytinFileNameParser::EDIT,
+  ASSERT_EQ(ZBiocytinFileNameParser::EDIT,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.Edit.tif"));
-  EXPECT_EQ(ZBiocytinFileNameParser::EDIT,
+  ASSERT_EQ(ZBiocytinFileNameParser::EDIT,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.edit.tif"));
-  EXPECT_EQ(ZBiocytinFileNameParser::PROJECTION,
+  ASSERT_EQ(ZBiocytinFileNameParser::PROJECTION,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.proj.tif"));
-  EXPECT_EQ(ZBiocytinFileNameParser::ROI,
+  ASSERT_EQ(ZBiocytinFileNameParser::ROI,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.roi.tif"));
-  EXPECT_EQ(ZBiocytinFileNameParser::ROI,
+  ASSERT_EQ(ZBiocytinFileNameParser::ROI,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.ROI.tif"));
-  EXPECT_EQ(ZBiocytinFileNameParser::MASK,
+  ASSERT_EQ(ZBiocytinFileNameParser::MASK,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.mask.tif"));
-  EXPECT_EQ(ZBiocytinFileNameParser::MASK,
+  ASSERT_EQ(ZBiocytinFileNameParser::MASK,
             ZBiocytinFileNameParser::getRole("DH070613-1-2.Mask.tif"));
 }
 

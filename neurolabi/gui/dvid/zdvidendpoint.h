@@ -16,11 +16,12 @@ public:
   static QString GetTaskEndPoint(
       const QString &group, const QByteArray &task, bool head);
 
+  static QString GetResultKeyEndPoint(const QString &group, const QString &key);
+  static QString GetTaskKeyEndPoint(const QString &group, const QString &key);
+
 private:
   static QString GetResultEndPoint(const QString &group);
   static QString GetTaskEndPoint(const QString &group);
-  static QString GetResultEndPoint(const QString &group, const QString &key);
-  static QString GetTaskEndPoint(const QString &group, const QString &key);
   static QString GetKeyEndPoint(const QString &start, const QString &key);
   static QString GetHashKey(const QByteArray &data, bool head);
 };

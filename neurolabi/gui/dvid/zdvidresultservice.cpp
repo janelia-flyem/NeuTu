@@ -9,6 +9,7 @@
 #include "zdvidutil.h"
 #include "zdvidreader.h"
 #include "zdvidwriter.h"
+#include "zjsonobject.h"
 
 ZDvidResultService::ZDvidResultService()
 {
@@ -26,7 +27,7 @@ QByteArray ZDvidResultService::ReadData(const QString &path)
       ZDvidReader *reader =
           ZGlobal::GetInstance().getDvidReader(target.getSourceString(true));
       data = reader->readDataFromEndpoint(
-            ZDvidUrl::GetEndPoint(url.path().toStdString()));
+            ZDvidUrl::GetPath(url.path().toStdString()));
     }
   }
 
@@ -69,6 +70,108 @@ ZObject3dScan* ZDvidResultService::ReadSplitObject(
   return obj;
 }
 
+bool ZDvidResultService::HasSplitResult(
+    const ZDvidReader &reader, const QString taskKey)
+{
+  return reader.hasKey(
+        ZDvidData::GetName(ZDvidData::ROLE_SPLIT_RESULT_KEY),
+        ZDvidUrl::GetResultKeyFromTaskKey(taskKey.toStdString()).c_str());
+}
+
+bool ZDvidResultService::HasSplitResult(
+    const ZDvidReader *reader, const QString taskKey)
+{
+  bool hasResult = false;
+  if (reader != NULL) {
+    hasResult = reader->hasKey(
+        ZDvidData::GetName(ZDvidData::ROLE_SPLIT_RESULT_KEY),
+        ZDvidUrl::GetResultKeyFromTaskKey(taskKey.toStdString()).c_str());
+  }
+  return hasResult;
+}
+
+bool ZDvidResultService::HasSplitResult(
+    const QString server, const QString taskKey)
+{
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(server.toStdString());
+
+  bool hasResult = false;
+  if (reader != NULL) {
+    hasResult = reader->hasKey(
+          ZDvidData::GetName(ZDvidData::ROLE_SPLIT_RESULT_KEY),
+          ZDvidUrl::GetResultKeyFromTaskKey(taskKey.toStdString()).c_str());
+  }
+
+  return hasResult;
+}
+
+QList<ZObject3dScan*> ZDvidResultService::ReadSplitResult(
+    const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId)
+{
+  QString resultKey = FindSplitResultKey(server, bodySource, bodyId);
+
+  QList<ZObject3dScan*> objList = ReadSplitResult(server, resultKey);
+
+  return objList;
+}
+
+ZJsonObject ZDvidResultService::ReadHeadObject(
+      const ZDvidReader &reader, const QString &dataName, const QString &key)
+{
+  ZJsonObject obj = reader.readJsonObjectFromKey(dataName, key);
+  if (obj.hasKey("ref")) {
+    obj = reader.readJsonObject(ZJsonParser::stringValue(obj["ref"]));
+  }
+
+  return obj;
+}
+
+QString ZDvidResultService::FindSplitResultKey(
+      const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId)
+{
+  QString resultKey;
+
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(server.toStdString());
+  if (reader != NULL) {
+    std::map<std::string, ZJsonObject> taskMap = reader->readSplitTaskMap();
+    for (std::map<std::string, ZJsonObject>::const_iterator iter = taskMap.begin();
+         iter != taskMap.end(); ++iter) {
+      const std::string key = iter->first;
+      const ZJsonObject &taskJson = iter->second;
+      if (taskJson.hasKey("signal")) {
+        std::string signalPath =
+            ZJsonParser::stringValue(taskJson["signal"]);
+
+#ifdef _DEBUG_
+        std::cout << signalPath << std::endl;
+#endif
+
+        ZDvidUrl dvidUrl(bodySource);
+        if (QUrl(dvidUrl.getSparsevolUrl(bodyId).c_str()) ==
+            QUrl(signalPath.c_str())) {
+          resultKey = ZDvidUrl::GetResultKeyFromTaskKey(key).c_str();
+          break;
+        }
+      }
+    }
+  }
+
+  return resultKey;
+}
+
+QList<ZObject3dScan*> ZDvidResultService::ReadSplitResult(
+    const QString &server, const QString &key)
+{
+  ZDvidTarget target;
+  target.setFromUrl(server.toStdString());
+  ZDvidUrl dvidUrl(target);
+  QString path(dvidUrl.getKeyUrl("result_split", key.toStdString()).c_str());
+
+  return ZDvidResultService::ReadSplitResult(path);
+}
+
 QList<ZObject3dScan*> ZDvidResultService::ReadSplitResult(const QString &path)
 {
   QList<ZObject3dScan*> objList;
@@ -82,9 +185,18 @@ QList<ZObject3dScan*> ZDvidResultService::ReadSplitResult(const QString &path)
     }
 
     if (!obj.isEmpty()) {
-      if (std::string(ZJsonParser::stringValue(obj["type"])) == "split") {
-        if (obj.hasKey("result")) {
-          ZJsonArray resultJson(obj.value("result"));
+      ZJsonObject headJson = obj;
+      if (obj.hasKey("ref")) {
+        std::string refPath = ZJsonParser::stringValue(obj["ref"]);
+        data = reader->readDataFromEndpoint(refPath);
+        if (data[0] == '{') {
+          headJson.decodeString(QString().fromAscii(data.data(), data.length()).toLocal8Bit());
+        }
+      }
+
+      if (std::string(ZJsonParser::stringValue(headJson["type"])) == "split") {
+        if (headJson.hasKey("result")) {
+          ZJsonArray resultJson(headJson.value("result"));
           for (size_t i = 0; i < resultJson.size(); ++i) {
             ZJsonObject objJson(resultJson.value(i));
             ZObject3dScan *obj = ReadSplitObject(objJson, reader);
@@ -99,3 +211,42 @@ QList<ZObject3dScan*> ZDvidResultService::ReadSplitResult(const QString &path)
 
   return objList;
 }
+
+QList<ZJsonObject> ZDvidResultService::ReadSplitTaskList(const QString &server)
+{
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(server.toStdString());
+  QStringList keyList = reader->readKeys("task_split", "task__0", "task__z");
+  QList<ZJsonObject> taskList;
+  foreach (const QString &key, keyList) {
+    ZJsonObject obj = ReadHeadObject(
+          *reader, ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY), key);
+    /*
+    QByteArray data = reader->readKeyValue("task_split", key);
+    ZJsonObject obj;
+    obj.decodeString(data.constData());
+    */
+    if (!obj.isEmpty()) {
+      taskList.append(obj);
+    }
+  }
+
+  return taskList;
+}
+
+/*
+QString ZDvidResultService::GetSplitTaskKey(const QString &url)
+{
+  QString w = "task_split/key/";
+  int index = url.lastIndexOf(w);
+
+  return QStringRef(url, index + w.size(), );
+}
+QString ZDvidResultService::GetEndPointKey(const QString &url)
+{
+  QString w = "/key/";
+  int index = url.lastIndexOf(w);
+
+  return QStringRef(url, index + w.size());
+}
+*/

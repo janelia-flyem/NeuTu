@@ -233,6 +233,8 @@ public slots:
   void importSeed();
   void runSplit();
   void runLocalSplit();
+  void saveSplitTask();
+  void loadSplitResult();
 
   void loadSynapse();
   void goToTBar();
@@ -565,6 +567,8 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(importingSeed()), this, SLOT(importSeed()));
   connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
           panel, SLOT(updateBodyWidget(uint64_t)));
+  connect(panel, SIGNAL(savingTask()), this, SLOT(saveSplitTask()));
+  connect(panel, SIGNAL(loadingSplitResult()), this, SLOT(loadSplitResult()));
   connect(panel, SIGNAL(loadingSynapse()), this, SLOT(loadSynapse()));
   connect(panel, SIGNAL(bookmarkChecked(QString, bool)),
           this, SLOT(recordCheckedBookmark(QString, bool)));

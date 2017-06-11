@@ -317,6 +317,7 @@ using namespace std;
 #include "dvid/zdvidendpoint.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "dvid/zdvidresultservice.h"
+#include "test/zdvidresultservicetest.h"
 
 using namespace std;
 
@@ -23633,12 +23634,49 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
+  std::cout << GET_FLYEM_CONFIG.getTaskServer() << std::endl;
+#endif
+
+#if 0
+  QList<ZJsonObject> taskList = ZDvidResultService::ReadSplitTaskList(
+        GET_FLYEM_CONFIG.getTaskServer().c_str());
+  foreach (const ZJsonObject &task, taskList) {
+    task.print();
+  }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setFromUrl("http://localhost:8000/api/node/uuid/segname/sparsevol/12345");
+  target.print();
+
+  std::cout << ZDvidUrl::GetBodyId(
+                 "http://localhost:8000/api/node/uuid/segname/sparsevol/12345")
+            << std::endl;
+#endif
+
+#if 0
   ZIntPoint pt(1, 2, 3);
   std::stringstream stream;
-  pt.write(stream);
 
-  std::cout << stream << std::endl;
+  pt.write(stream);
+//  stream.seekp(0);
+
+//  std::cout << std::hex << pt.getX() << std::endl;
+
+  QByteArray byteArray;
+  byteArray.setRawData(stream.str().data(), stream.str().size());
+//  std::cout << stream.str().data() << std::endl;
+
+  std::stringstream stream2;
+  stream2.write(byteArray.constData(), byteArray.size());
+//  stream2.seekp(0);
+
+  ZIntPoint pt2;
+  pt2.read(stream2);
+  std::cout << pt2.toString() << std::endl;
 #endif
 
 #if 0
@@ -23722,6 +23760,96 @@ void ZTest::test(MainWindow *host)
   spStack->load(GET_TEST_DATA_DIR + "/test.zss");
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyIdArray;
+  bodyIdArray << 851657 << 180022 << 181594 << 157909 << 156067 << 114452
+              << 87839 << 371523 << 401430 << 110180;
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+
+  foreach (uint64_t bodyId, bodyIdArray) {
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(bodyId);
+
+    //  ZIntCuboid box = spStack->getBoundBox();
+
+    ZStack *stack = spStack->makeIsoDsStack(NeuTube::ONEGIGA);
+
+//    ZStack *stack = spStack->makeStack(ZIntCuboid());
+//    ZStack *stack = spStack->getStack();
+
+    ZString numStr;
+    numStr.appendNumber(bodyId);
+    writer.write(GET_TEST_DATA_DIR + "/_test/93e8/" + numStr + ".tif", stack);
+
+//    delete stack;
+    delete spStack;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(851657);
+
+  ZIntCuboid box = spStack->getBoundBox();
+
+  int minZ = box.getFirstCorner().getZ();
+  int maxZ = box.getLastCorner().getZ();
+  int x0 = box.getFirstCorner().getX();
+  int y0 = box.getFirstCorner().getY();
+  int width = box.getWidth();
+  int height = box.getHeight();
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_DEFAULT);
+
+  for (int z = minZ; z <= maxZ; ++z) {
+    ZStack *stack = spStack->getSlice(z, x0, y0, width, height);
+    if (stack != NULL) {
+      std::cout << z << "/" << maxZ << std::endl;
+      ZString numStr;
+      numStr.appendNumber(z, 5);
+
+      writer.write(GET_TEST_DATA_DIR + "/_test/series/" + numStr + ".tif", stack);
+      delete stack;
+    }
+  }
+#endif
+
+#if 1
+  QList<ZJsonObject> objList = ZDvidResultService::ReadSplitTaskList(
+        GET_FLYEM_CONFIG.getTaskServer().c_str());
+
+  foreach (const ZJsonObject &obj, objList) {
+    obj.print();
+  }
+
+  /*
+  ZDvidTarget bodySource;
+  bodySource.setFromUrl("http://emdata1.int.janelia.org:8500/api/node/b6bc/bodies/sparsevol/13123419");
+  QList<ZObject3dScan*> segList = ZDvidResultService::ReadSplitResult(
+        GET_FLYEM_CONFIG.getTaskServer().c_str(), bodySource, 13123419);
+  std::cout << segList.size() << std::endl;
+  segList[0]->save(GET_TEST_DATA_DIR + "/test1.sobj");
+  segList[1]->save(GET_TEST_DATA_DIR + "/test2.sobj");
+*/
+#endif
 
   std::cout << "Done." << std::endl;
 }

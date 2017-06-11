@@ -44,6 +44,7 @@
 #include "zintcuboidobj.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "zneutuservice.h"
+#include "zglobal.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
@@ -1589,6 +1590,21 @@ int ZFlyEmBodySplitProject::selectSeed(int label)
   return nSelected;
 }
 
+ZJsonArray ZFlyEmBodySplitProject::getRoiJson() const
+{
+  ZJsonArray roiJson;
+
+  ZFlyEmProofDoc *proofDoc = getDocument<ZFlyEmProofDoc>();
+  if (proofDoc != NULL) {
+    ZIntCuboidObj *roi = proofDoc->getSplitRoi();
+    if (roi != NULL) {
+      roiJson = roi->getCuboid().toJsonArray();
+    }
+  }
+
+  return roiJson;
+}
+
 void ZFlyEmBodySplitProject::backupSeed()
 {
   if (getBodyId() == 0) {
@@ -1717,6 +1733,21 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
   }
 }
 
+ZJsonArray ZFlyEmBodySplitProject::getSeedJson() const
+{
+  QList<ZDocPlayer*> playerList =
+      getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+  ZJsonArray jsonArray;
+  foreach (const ZDocPlayer *player, playerList) {
+    ZJsonObject jsonObj = player->toJsonObject();
+    if (!jsonObj.isEmpty()) {
+      jsonArray.append(jsonObj);
+    }
+  }
+
+  return jsonArray;
+}
+
 void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
 {
   ZDvidReader reader;
@@ -1760,6 +1791,40 @@ void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
       emitMessage(ZWidgetMessage::appendTime("All seeds saved"));
     }
   }
+}
+
+std::string ZFlyEmBodySplitProject::saveTask() const
+{
+  std::string location;
+
+  if (getBodyId() > 0) {
+
+    ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+          GET_FLYEM_CONFIG.getTaskServer());
+    if (writer != NULL) {
+      ZJsonObject task;
+      ZDvidUrl dvidUrl(getDvidTarget());
+      std::string bodyUrl = dvidUrl.getSparsevolUrl(getBodyId());
+      task.setEntry("signal", bodyUrl);
+      ZJsonArray seedJson = getSeedJson();
+      task.setEntry("seeds", seedJson);
+      ZJsonArray roiJson = getRoiJson();
+      if (!roiJson.isEmpty()) {
+        task.setEntry("range", roiJson);
+      }
+      location = writer->writeServiceTask("split", task);
+      ZJsonObject taskJson;
+      taskJson.setEntry("ref", location);
+//      QUrl url(bodyUrl.c_str());
+      QString taskKey = dvidUrl.getSplitTaskKey(getBodyId()).c_str();
+//      QString("task__") + QUrl::toPercentEncoding(bodyUrl.c_str());
+      writer->writeSplitTask(taskKey, taskJson);
+
+      location = taskKey.toStdString();
+    }
+  }
+
+  return location;
 }
 
 void ZFlyEmBodySplitProject::recoverSeed()

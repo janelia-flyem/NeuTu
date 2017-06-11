@@ -9,6 +9,8 @@ class ZPoint;
 class ZGlobalData;
 class ZDvidReader;
 class ZDvidWriter;
+class ZDvidSparseStack;
+class ZDvidTarget;
 
 class ZGlobal
 {
@@ -29,13 +31,22 @@ public:
   ZIntPoint getStackPosition() const;
   ZDvidReader* getDvidReader(const std::string &name) const;
   ZDvidWriter* getDvidWriter(const std::string &name) const;
+  ZDvidReader* getDvidReader(const ZDvidTarget &target) const;
+  ZDvidWriter* getDvidWriter(const ZDvidTarget &target) const;
   ZDvidReader* getDvidReaderFromUrl(const std::string &url) const;
   ZDvidWriter* getDvidWriterFromUrl(const std::string &url) const;
+
+public:
+  ZDvidSparseStack* readDvidSparseStack(const std::string &url) const;
 
 private:
   template<typename T>
   T* getIODevice(
       const std::string &name, std::map<std::string, T*> &ioMap) const;
+
+  template<typename T>
+  T* getIODevice(
+      const ZDvidTarget &name, std::map<std::string, T*> &ioMap) const;
 
   template<typename T>
   T* getIODeviceFromUrl(

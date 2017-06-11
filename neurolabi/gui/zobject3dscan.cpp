@@ -1628,6 +1628,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
 //      TZ_ASSERT(subobj.isCanonizedActually(), "Inconsisten data assumption");
 //      subobj.canonize();
 
+      subobj.setLabel(getLabel());
       objArray.push_back(subobj);
     }
 
@@ -3524,6 +3525,7 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
   subtracted.copyAttributeFrom(*this);
 
   this->copyDataFrom(remained);
+  subtracted.setLabel(getLabel());
 
   return subtracted;
 }

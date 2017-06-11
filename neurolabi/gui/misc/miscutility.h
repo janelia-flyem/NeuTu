@@ -92,9 +92,9 @@ void write(std::ostream &stream, const T &v)
 }
 
 template<typename T>
-void write(std::ostream &stream, const T &v, size_t n)
+void write(std::ostream &stream, const T *v, size_t n)
 {
-  stream.write((const char*)(&v), sizeof(T) * n);
+  stream.write((const char*)(v), sizeof(T) * n);
 }
 
 

@@ -4,16 +4,18 @@
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "neutubeconfig.h"
+#include "dvid/zdvidurl.h"
 
 #ifdef _QT_GUI_USED_
 #include "neutube.h"
 #endif
 
-const char* ZFlyEmConfig::m_dvidRepoKey = "dvid repo";
-const char* ZFlyEmConfig::m_ipKey = "ip";
-const char* ZFlyEmConfig::m_librarianKey = "librarian";
-const char* ZFlyEmConfig::m_dvidRootKey = "dvid root";
-const char* ZFlyEmConfig::m_mb6Key = "mb6_paper";
+const char* ZFlyEmConfig::DVID_REPO_KEY = "dvid repo";
+const char* ZFlyEmConfig::IP_KEY = "ip";
+const char* ZFlyEmConfig::LIBRARIAN_KEY = "librarian";
+const char* ZFlyEmConfig::DVID_ROOT_KEY = "dvid root";
+const char* ZFlyEmConfig::MB6_KEY = "mb6_paper";
+const char* ZFlyEmConfig::TASK_SERVER_KEY = "task server";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
@@ -82,11 +84,11 @@ void ZFlyEmConfig::loadConfig()
   if (!filePath.empty()) {
     ZJsonObject obj;
     if (obj.load(filePath)) {
-      if (obj.hasKey(m_librarianKey)) {
-        m_defaultLibrarian = ZJsonParser::stringValue(obj[m_librarianKey]);
+      if (obj.hasKey(LIBRARIAN_KEY)) {
+        m_defaultLibrarian = ZJsonParser::stringValue(obj[LIBRARIAN_KEY]);
       }
-      if (obj.hasKey(m_ipKey)) {
-        ZJsonObject ipJson(obj.value(m_ipKey));
+      if (obj.hasKey(IP_KEY)) {
+        ZJsonObject ipJson(obj.value(IP_KEY));
         std::map<std::string, json_t*> entryMap = ipJson.toEntryMap(false);
         for (std::map<std::string, json_t*>::const_iterator
              iter = entryMap.begin(); iter != entryMap.end(); ++iter) {
@@ -99,12 +101,16 @@ void ZFlyEmConfig::loadConfig()
         }
       }
 
-      if (obj.hasKey(m_mb6Key)) {
-        setAnalyzingMb6(ZJsonParser::booleanValue(obj[m_mb6Key]));
+      if (obj.hasKey(MB6_KEY)) {
+        setAnalyzingMb6(ZJsonParser::booleanValue(obj[MB6_KEY]));
       }
 
-      if (obj.hasKey(m_dvidRootKey)) {
-        ZJsonObject rootJson(obj.value(m_dvidRootKey));
+      if (obj.hasKey(TASK_SERVER_KEY)) {
+        setTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
+      }
+
+      if (obj.hasKey(DVID_ROOT_KEY)) {
+        ZJsonObject rootJson(obj.value(DVID_ROOT_KEY));
 
         std::map<std::string, json_t*> entryMap = rootJson.toEntryMap(false);
         for (std::map<std::string, json_t*>::const_iterator
@@ -116,8 +122,8 @@ void ZFlyEmConfig::loadConfig()
         }
       }
 
-      if (obj.hasKey(m_dvidRepoKey)) {
-        ZJsonArray dvidArray(obj[m_dvidRepoKey], ZJsonValue::SET_INCREASE_REF_COUNT);
+      if (obj.hasKey(DVID_REPO_KEY)) {
+        ZJsonArray dvidArray(obj[DVID_REPO_KEY], ZJsonValue::SET_INCREASE_REF_COUNT);
         for (size_t i = 0; i < dvidArray.size(); ++i) {
           ZJsonObject dvidObj(dvidArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
           ZDvidTarget target;
@@ -155,6 +161,11 @@ std::string ZFlyEmConfig::mapAddress(const std::string &address) const
   return address;
 }
 
+void ZFlyEmConfig::setTaskServer(const std::string &taskServer)
+{
+  m_taskServer = taskServer;
+}
+
 std::string ZFlyEmConfig::getDvidRootNode(const std::string &name) const
 {
   if (m_rootMap.count(name) > 0) {
@@ -163,6 +174,13 @@ std::string ZFlyEmConfig::getDvidRootNode(const std::string &name) const
 
   return "";
 }
+
+/*
+std::string ZFlyEmConfig::getSplitResultUrl(
+    const ZDvidTarget &target, uint64_t bodyId)
+{
+}
+*/
 
 #ifdef _QT_GUI_USED_
 void ZFlyEmConfig::setServer(const std::string &server)

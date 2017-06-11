@@ -42,6 +42,9 @@ public:
   static int firstInteger(const std::string &str);
   int firstInteger();
   int lastInteger();
+
+  bool isAllDigit() const;
+
   /*!
    * \brief Extract the last integer in a string
    * \param Input string.
@@ -58,6 +61,7 @@ public:
   std::vector<uint64_t> toUint64Array();
   std::vector<double> toDoubleArray();
   std::vector<std::string> toWordArray(const std::string &delim = ", \n");
+  std::string getLastWord(char c);
   std::vector<std::string> tokenize(char c);
 
   static std::vector<std::string> ToWordArray(
@@ -68,8 +72,8 @@ public:
   bool readLine(FILE *fp);
   bool contains(const std::string &str);
   bool containsDigit();
-  std::string& replace(const std::string &from, const std::string &to);
-  std::string& replace(int from, const std::string &to);
+  ZString& replace(const std::string &from, const std::string &to);
+  ZString &replace(int from, const std::string &to);
   bool startsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
   bool endsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
   void trim();

@@ -79,8 +79,6 @@ void ZCommandLine::init()
   m_forceUpdate = false;
   m_namedOnly = false;
   m_intvSpecified = false;
-
-  registerModule();
 }
 
 void ZCommandLine::registerModule()
@@ -103,6 +101,7 @@ void ZCommandLine::registerModule(
       std::cout << "WARNING: Cannot overwrite a registered module: " << name
                 << std::endl;
     } else {
+      module->setForceUpdate(m_forceUpdate);
       m_commandMap[name] = module;
     }
   }
@@ -1404,6 +1403,8 @@ int ZCommandLine::run(int argc, char *argv[])
       m_generalConfig = Get_String_Arg(const_cast<char*>("--general"));
     }
   }
+
+  registerModule();
 
   switch (command) {
   case OBJECT_MARKER:

@@ -2644,7 +2644,7 @@ void ZFlyEmProofMvc::exitSplit()
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
-    labelSlice->setHitProtocal(ZStackObject::HIT_NONE);
+    labelSlice->setHitProtocal(ZStackObject::HIT_STACK_POS);
 //    labelSlice->setHittable(true);
 
     //m_splitProject.clearBookmarkDecoration();
@@ -3509,6 +3509,18 @@ void ZFlyEmProofMvc::exportSeed()
   if (!fileName.isEmpty()) {
     m_splitProject.exportSeed(fileName);
   }
+}
+
+void ZFlyEmProofMvc::saveSplitTask()
+{
+  std::string location = m_splitProject.saveTask();
+
+  emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
+}
+
+void ZFlyEmProofMvc::loadSplitResult()
+{
+  getCompleteDocument()->loadSplitFromService();
 }
 
 void ZFlyEmProofMvc::importSeed()

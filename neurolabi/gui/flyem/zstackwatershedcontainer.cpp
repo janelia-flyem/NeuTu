@@ -28,6 +28,22 @@ ZStackWatershedContainer::ZStackWatershedContainer(ZSparseStack *stack)
   }
 }
 
+ZStackWatershedContainer::ZStackWatershedContainer(
+    ZStack *stack, ZSparseStack *spStack)
+{
+  init();
+  m_stack = stack;
+  if (m_stack != NULL) {
+    m_range = m_stack->getBoundBox();
+    m_source = stack;
+  }
+
+  m_spStack = spStack;
+  if (m_spStack != NULL) {
+    m_range = m_spStack->getBoundBox();
+  }
+}
+
 ZStackWatershedContainer::~ZStackWatershedContainer()
 {
   clearWorkspace();
@@ -118,7 +134,7 @@ void ZStackWatershedContainer::addSeed(const ZStroke2d &seed)
 {
   ZStack stack;
   makeMaskStack(stack);
-  seed.labelStack(&stack);
+  seed.labelStack(&stack, STACK_WATERSHED_BARRIER);
 }
 
 void ZStackWatershedContainer::addSeed(const ZObject3d &seed)
@@ -295,6 +311,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
            iter != objArray->end(); ++iter) {
         ZObject3dScan &obj = *iter;
         if (obj.getLabel() > 1) {
+          uint64_t splitLabel = obj.getLabel();
+
           obj.upSample(dsIntv);
           std::cout << "Processing label " << obj.getLabel() << std::endl;
 #ifdef _DEBUG_2
@@ -303,6 +321,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
           }
 #endif
           ZObject3dScan currentBody = body.subtract(obj);
+          currentBody.setLabel(splitLabel);
 #ifdef _DEBUG_2
           if (obj.getLabel() == 128) {
             currentBody.save(GET_TEST_DATA_DIR + "/test4.sobj");
@@ -331,6 +350,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
               }
 #endif
               if (!isAdopted) {//Treated as a split region
+                subobj.setLabel(splitLabel);
                 result->push_back(subobj);
               }
             }

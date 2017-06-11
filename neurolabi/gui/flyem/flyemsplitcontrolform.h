@@ -38,6 +38,8 @@ signals:
   void committingResult();
   void zoomingTo(int x, int y, int z);
   void loadingBookmark(QString);
+  void savingTask();
+  void loadingSplitResult();
   void recoveringSeed();
   void exportingSeed();
   void importingSeed();
@@ -76,6 +78,8 @@ private slots:
   void checkCurrentBookmark();
   void uncheckCurrentBookmark();
   void checkCurrentBookmark(bool checking);
+  void saveTask();
+  void loadSplitResult();
 
 private:
   void setupWidgetBehavior();

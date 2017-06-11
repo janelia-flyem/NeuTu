@@ -1526,7 +1526,7 @@ QByteArray ZDvidReader::readKeyValue(const QString &dataName, const QString &key
 #endif
 }
 
-QStringList ZDvidReader::readKeys(const QString &dataName)
+QStringList ZDvidReader::readKeys(const QString &dataName) const
 {
   if (dataName.isEmpty()) {
     return QStringList();
@@ -1586,7 +1586,7 @@ QStringList ZDvidReader::readKeys(
 }
 
 QStringList ZDvidReader::readKeys(
-    const QString &dataName, const QString &minKey, const QString &maxKey)
+    const QString &dataName, const QString &minKey, const QString &maxKey) const
 {
   ZDvidUrl url(getDvidTarget());
 
@@ -3063,8 +3063,25 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
   ZJsonObject obj;
 
   ZDvidBufferReader &bufferReader = m_bufferReader;
-  bufferReader.read(url.c_str(), isVerbose());
+  if (ZString(url).startsWith("http:")) {
+    bufferReader.read(url.c_str(), isVerbose());
+  } else {
+    bufferReader.readFromPath(url.c_str(), isVerbose());
+  }
   const QByteArray &buffer = bufferReader.getBuffer();
+  if (!buffer.isEmpty()) {
+    obj.decodeString(buffer.constData());
+  }
+
+  return obj;
+}
+
+ZJsonObject ZDvidReader::readJsonObjectFromKey(
+    const QString &dataName, const QString &key) const
+{
+  ZJsonObject obj;
+  const QByteArray &buffer = readKeyValue(dataName, key);
+
   if (!buffer.isEmpty()) {
     obj.decodeString(buffer.constData());
   }
@@ -3450,7 +3467,7 @@ QByteArray ZDvidReader::readServiceResult(
 //  ZDvidUrl url(getDvidTarget());
 
   return readDataFromEndpoint(
-        ZDvidEndPoint::GetResultEndPoint(
+        ZDvidEndPoint::GetResultKeyEndPoint(
           QString(group.c_str()), QString(key.c_str())).toStdString());
 
 //  return readBuffer(url.getKeyUrl(ZDvidEndPoint, key));
@@ -3460,11 +3477,26 @@ ZJsonObject ZDvidReader::readServiceTask(
     const std::string &group, const std::string &key) const
 {
   QByteArray data = readDataFromEndpoint(
-        ZDvidEndPoint::GetTaskEndPoint(
+        ZDvidEndPoint::GetTaskKeyEndPoint(
           QString(group.c_str()), QString(key.c_str())).toStdString());
   ZJsonObject json;
   json.load(data.constData());
   return json;
+}
+
+std::map<std::string, ZJsonObject> ZDvidReader::readSplitTaskMap() const
+{
+  std::map<std::string, ZJsonObject> taskMap;
+  std::string dataName = ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY);
+  QStringList keyList = readKeys(dataName.c_str(), "head__0", "head__z");
+  foreach (const QString &key, keyList) {
+    ZJsonObject obj = readJsonObjectFromKey(dataName.c_str(), key);
+    if (!obj.isEmpty()) {
+      taskMap[key.toStdString()] = obj;
+    }
+  }
+
+  return taskMap;
 }
 
 int ZDvidReader::checkProofreadingData() const

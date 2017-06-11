@@ -65,6 +65,7 @@ public:
    * done.
    */
   void labelGrey(Stack *stack, int label) const;
+  void labelGrey(Stack *stack, int label, int ignoringValue) const;
 
   virtual const std::string& className() const;
 
@@ -128,6 +129,7 @@ public:
   ZObject3d* toObject3d() const;
 
   void labelStack(ZStack *stack) const;
+  void labelStack(ZStack *stack, int ignoringValue) const;
 
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);

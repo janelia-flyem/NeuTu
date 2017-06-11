@@ -111,6 +111,14 @@ void FlyEmSplitControlForm::createMenu()
   m_mainMenu->addAction(queryPixelAction);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
 
+  QAction *saveTaskAction = new QAction("Save Split Task", this);
+  m_mainMenu->addAction(saveTaskAction);
+  connect(saveTaskAction, SIGNAL(triggered()), this, SLOT(saveTask()));
+
+  QAction *loadSplitAction = new QAction("Load Split Result", this);
+  m_mainMenu->addAction(loadSplitAction);
+  connect(loadSplitAction, SIGNAL(triggered()), this, SLOT(loadSplitResult()));
+
   QMenu *seedMenu = m_mainMenu->addMenu("Seed");
   QAction *recoverSeedAction = new QAction("Recover", this);
   seedMenu->addAction(recoverSeedAction);
@@ -143,6 +151,16 @@ void FlyEmSplitControlForm::createMenu()
   QAction *body3DAction = new QAction("Show 3D Grayscale", this);
   m_mainMenu->addAction(body3DAction);
   connect(body3DAction, SIGNAL(triggered()), this, SLOT(showBodyGrayscale()));
+}
+
+void FlyEmSplitControlForm::saveTask()
+{
+  emit savingTask();
+}
+
+void FlyEmSplitControlForm::loadSplitResult()
+{
+  emit loadingSplitResult();
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)

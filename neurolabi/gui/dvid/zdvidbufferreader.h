@@ -32,6 +32,8 @@ public:
     READ_BAD_RESPONSE
   };
 
+  void readFromPath(const QString &path, bool outputingUrl = true);
+
   void read(const QString &url, bool outputingUrl = true);
   void readPartial(const QString &url, int maxSize, bool outputingUrl);
 

@@ -32,7 +32,7 @@ QString ZDvidEndPoint::GetKeyEndPoint(const QString &start, const QString &key)
   return start + "/key/" + key;
 }
 
-QString ZDvidEndPoint::GetResultEndPoint(
+QString ZDvidEndPoint::GetResultKeyEndPoint(
     const QString &group, const QString &key)
 {
   return GetKeyEndPoint(GetResultEndPoint(group), key);
@@ -41,10 +41,10 @@ QString ZDvidEndPoint::GetResultEndPoint(
 QString ZDvidEndPoint::GetResultEndPoint(
     const QString &group, const QByteArray &data, bool head)
 {
-  return GetResultEndPoint(group, GetHashKey(data, head));
+  return GetResultKeyEndPoint(group, GetHashKey(data, head));
 }
 
-QString ZDvidEndPoint::GetTaskEndPoint(const QString &group, const QString &key)
+QString ZDvidEndPoint::GetTaskKeyEndPoint(const QString &group, const QString &key)
 {
   return GetKeyEndPoint(GetTaskEndPoint(group), key);
 }
@@ -52,5 +52,5 @@ QString ZDvidEndPoint::GetTaskEndPoint(const QString &group, const QString &key)
 QString ZDvidEndPoint::GetTaskEndPoint(
     const QString &group, const QByteArray &data, bool head)
 {
-  return GetTaskEndPoint(group, GetHashKey(data, head));
+  return GetTaskKeyEndPoint(group, GetHashKey(data, head));
 }

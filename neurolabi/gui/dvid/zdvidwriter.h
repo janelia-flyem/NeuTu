@@ -227,7 +227,8 @@ public:
   std::string writeServiceTask(
       const QString &group, const QByteArray &task, bool head);
   std::string writeServiceTask(const QString &group, const ZJsonObject &task);
-  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
+  void writeSplitTask(const QString &key, const ZJsonObject &task);
+//  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:
   std::string post(const std::string &url);

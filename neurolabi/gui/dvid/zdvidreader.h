@@ -176,10 +176,12 @@ public:
 
   bool hasKey(const QString &dataName, const QString &key) const;
   QByteArray readKeyValue(const QString &dataName, const QString &key) const;
-  QStringList readKeys(const QString &dataName);
+  QStringList readKeys(const QString &dataName) const;
   QStringList readKeys(const QString &dataName, const QString &minKey);
   QStringList readKeys(const QString &dataName,
-                       const QString &minKey, const QString &maxKey);
+                       const QString &minKey, const QString &maxKey) const;
+  ZJsonObject readJsonObjectFromKey(
+      const QString &dataName, const QString &key) const;
 
   ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
   ZIntCuboid readBoundBox(int z);
@@ -414,6 +416,7 @@ public:
       const std::string &group, const std::string &key) const;
   ZJsonObject readServiceTask(
       const std::string &group, const std::string &key) const;
+  std::map<std::string, ZJsonObject> readSplitTaskMap() const;
 
 signals:
   void readingDone();

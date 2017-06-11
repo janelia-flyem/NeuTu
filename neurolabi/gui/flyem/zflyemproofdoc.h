@@ -363,6 +363,8 @@ public:
    */
   int removeDvidSparsevol(NeuTube::EAxis axis);
 
+  void loadSplitFromService();
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -474,6 +476,8 @@ protected:
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis);
   void setRoutineCheck(bool on);
+  uint64_t getBodyIdForSplit() const;
+  QColor getSeedColor(int label) const;
 
 private:
   void connectSignalSlot();

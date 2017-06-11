@@ -789,7 +789,7 @@ std::string ZDvidWriter::request(
     libdvid::BinaryDataPtr data;
     bool requested = false;
     if (m_service != NULL) {
-      std::string endPoint = ZDvidUrl::GetEndPoint(url);
+      std::string endPoint = ZDvidUrl::GetPath(url);
 
       if (!endPoint.empty()) {
         //    std::cout << libdvidPayload->get_data().size() << std::endl;
@@ -983,10 +983,18 @@ std::string ZDvidWriter::writeServiceTask(
   return writeServiceTask(group, QByteArray(task.dumpString(0).c_str()), true);
 }
 
+void ZDvidWriter::writeSplitTask(const QString &key, const ZJsonObject &task)
+{
+  writeJson(
+        ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY), key.toStdString(), task);
+}
+
+/*
 std::string ZDvidWriter::transferLocalSplitTaskToServer(const ZJsonObject &task)
 {
 
 }
+*/
 
 std::string ZDvidWriter::post(const std::string &url, const QByteArray &payload,
                               bool isJson)

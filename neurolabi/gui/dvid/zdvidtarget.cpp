@@ -93,8 +93,8 @@ void ZDvidTarget::clear()
   m_name = "";
   m_comment = "";
   m_localFolder = "";
-  m_bodyLabelName = "";
-  m_labelBlockName = "";
+  m_bodyLabelName = "*";
+  m_labelBlockName = "*";
 //  m_multiscale2dName = "";
 
   m_grayScaleName = "";
@@ -154,6 +154,11 @@ void ZDvidTarget::setFromUrl(const std::string &url)
   if (tokens.size() > 3) {
     if (tokens[1] == "api" && tokens[2] == "node") {
       uuid = tokens[3];
+    }
+    if (tokens.size() > 6) {
+      if (tokens[5] == "sparsevol") {
+        setBodyLabelName(tokens[4]);
+      }
     }
   }
   set(tokens2[0], uuid, port);

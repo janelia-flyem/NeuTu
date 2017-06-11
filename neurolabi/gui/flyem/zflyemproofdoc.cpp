@@ -46,6 +46,8 @@
 #include "zsleeper.h"
 #include "zdvidutil.h"
 #include "zstackdocdatabuffer.h"
+#include "dvid/zdvidresultservice.h"
+#include "zstroke2d.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -1261,6 +1263,24 @@ void ZFlyEmProofDoc::annotateSelectedSynapse(
   }
 }
 
+QColor ZFlyEmProofDoc::getSeedColor(int label) const
+{
+  return ZStroke2d::GetLabelColor(label);
+}
+
+uint64_t ZFlyEmProofDoc::getBodyIdForSplit() const
+{
+  uint64_t label = 0;
+
+  const ZDvidSparseStack *spStack = getBodyForSplit();
+
+  if (spStack != NULL) {
+    label = spStack->getLabel();
+  }
+
+  return label;
+}
+
 void ZFlyEmProofDoc::setRoutineCheck(bool on)
 {
   m_routineCheck = on;
@@ -2008,6 +2028,31 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(NeuTube::EAxis axis)
   }
   endObjectModifiedMode();
   notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::loadSplitFromService()
+{
+//  std::string path = GET_FLYEM_CONFIG.getSplitResultUrl(
+//        getDvidTarget(), getBodyIdForSplit());
+
+  QList<ZObject3dScan*> objList = ZDvidResultService::ReadSplitResult(
+        GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), getBodyIdForSplit());
+      //ZDvidResultService::ReadSplitResult(path);
+  int index = 1;
+  foreach (ZObject3dScan *obj, objList) {
+    obj->setColor(getSeedColor(obj->getLabel()));
+    obj->setSource(
+          ZStackObjectSourceFactory::MakeWatershedBoundarySource(
+            index++));
+    obj->setHitProtocal(ZStackObject::HIT_NONE);
+    obj->setProjectionVisible(false);
+    obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
+    LINFO() << "Adding" << obj << obj->getSource();
+    m_dataBuffer->addUpdate(
+          obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    m_dataBuffer->deliver();
+  }
+
 }
 
 int ZFlyEmProofDoc::removeDvidSparsevol(NeuTube::EAxis axis)

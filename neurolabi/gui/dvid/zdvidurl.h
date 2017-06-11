@@ -249,21 +249,28 @@ public:
       int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
 
 public:
-  static std::string GetEndPoint(const std::string &url);
+  static std::string GetPath(const std::string &url);
   static std::string GetFullUrl(
-      const std::string &prefix, const std::string &endpoint);
+      const std::string &prefix, const std::string &path);
   /*!
    * \brief Get entry point of getting key value entries
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
-  static std::string GetServiceResultEndPoint();
+  static uint64_t GetBodyId(const std::string &url);
+
+  static std::string ExtractSplitTaskKey(const std::string &url);
+  static std::string GetResultKeyFromTaskKey(const std::string &key);
+
+  std::string getSplitTaskKey(const uint64_t bodyId) const;
+
+//  static bool IsSplitTask(const std::string &url);
 
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
-
+  static std::string GetServiceResultEndPoint();
 
 private:
   ZDvidTarget m_dvidTarget;

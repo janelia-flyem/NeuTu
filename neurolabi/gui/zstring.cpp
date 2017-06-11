@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <cctype>
 
 #include "tz_error.h"
 #include "tz_utilities.h"
@@ -61,6 +62,24 @@ ZString::~ZString()
   if (m_workspace != NULL) {
     Kill_String_Workspace(m_workspace);
   }
+}
+
+bool ZString::isAllDigit() const
+{
+  bool succ = true;
+
+  if (empty()) {
+    succ = false;
+  } else {
+    for (size_type i = 0; i < size(); ++i) {
+      if (!isdigit(at(i))) {
+        succ = false;
+        break;
+      }
+    }
+  }
+
+  return succ;
 }
 
 int ZString::firstInteger(const string &str)
@@ -190,6 +209,13 @@ std::vector<std::string> ZString::ToWordArray(
   return wordArray;
 }
 
+std::string ZString::getLastWord(char c)
+{
+  size_t pos = find_last_of(c);
+
+  return substr(pos + 1, std::string::npos);
+}
+
 std::vector<std::string> ZString::Tokenize(const std::string &str, char c)
 {
   std::vector<size_t> tokenPos;
@@ -310,7 +336,7 @@ bool ZString::containsDigit()
 }
 
 
-string& ZString::replace(const string &from, const string &to)
+ZString &ZString::replace(const string &from, const string &to)
 {
   if (from.size() == 0) {
     return *this;
@@ -327,7 +353,7 @@ string& ZString::replace(const string &from, const string &to)
   return *this;
 }
 
-string& ZString::replace(int from, const string &to)
+ZString& ZString::replace(int from, const string &to)
 {
   ostringstream stream;
   stream << from;

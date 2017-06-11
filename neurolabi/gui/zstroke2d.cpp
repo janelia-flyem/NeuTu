@@ -353,6 +353,37 @@ void ZStroke2d::labelImage(QImage *image) const
   }
 }
 
+void ZStroke2d::labelGrey(Stack *stack, int label, int ignoringValue) const
+{
+  if (stack == NULL || C_Stack::kind(stack) != GREY ||
+      m_z < 0 || m_z >= C_Stack::depth(stack)) {
+    return;
+  }
+
+  CLIP_VALUE(label, 0, 255);
+
+  //QBitmap image(C_Stack::width(stack), C_Stack::height(stack));
+  QImage image(C_Stack::width(stack), C_Stack::height(stack),
+               QImage::Format_RGB16);
+  labelImage(&image);
+
+  uint8_t* array = C_Stack::array8(stack);
+  size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+  size_t offset = area * m_z;
+  for (int j = 0; j < image.height(); ++j) {
+    for (int i = 0; i < image.width(); ++i) {
+      QRgb color = image.pixel(i, j);
+      if (qRed(color) > 0 || qGreen(color) > 0 || qBlue(color) > 0) {
+        if (array[offset] != ignoringValue) {
+          array[offset] = label;
+        }
+      }
+      offset++;
+    }
+  }
+}
+
+
 void ZStroke2d::labelGrey(Stack *stack, int label) const
 {
   if (stack == NULL || C_Stack::kind(stack) != GREY ||
@@ -672,6 +703,16 @@ void ZStroke2d::labelStack(ZStack *stack) const
     tmpStroke.downsample(stack->getDsIntv());
     tmpStroke.translate(-stack->getOffset());
     tmpStroke.labelGrey(stack->c_stack());
+  }
+}
+
+void ZStroke2d::labelStack(ZStack *stack, int ignoringValue) const
+{
+  if (stack != NULL) {
+    ZStroke2d tmpStroke = *this;
+    tmpStroke.downsample(stack->getDsIntv());
+    tmpStroke.translate(-stack->getOffset());
+    tmpStroke.labelGrey(stack->c_stack(), getLabel(), ignoringValue);
   }
 }
 
