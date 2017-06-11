@@ -204,16 +204,18 @@ unix {
           message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
           greaterThan(OSX_MINOR_VERSION, 8) {
-          contains(CONFIG, libstdc++) {
-            message("Using libstdc++")
-          } else {
-            LIBS -= -lstdc++
-            QMAKE_CXXFLAGS += -stdlib=libc++
-          }
+            contains(CONFIG, libstdc++) {
+              message("Using libstdc++")
+            } else {
+              LIBS -= -lstdc++
+              QMAKE_CXXFLAGS += -stdlib=libc++
+            }
 
             QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
             message("SDK: $$QMAKE_MAC_SDK")
           }
+        } else {
+          message("No auto mac version check")
         }
 
         doc.files = doc
