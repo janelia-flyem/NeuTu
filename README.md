@@ -75,6 +75,11 @@ Not supported yet.
 
 ## Manual
 
+### Short manual
 https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
+
+### A detailed manual for exploring data in NeuTu
+
+https://www.dropbox.com/s/lxvvelfn16mhc60/NeuTu_Explorer_Manual_Mac.pdf?dl=0
 
 Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.
