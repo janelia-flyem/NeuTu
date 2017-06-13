@@ -1,5 +1,5 @@
-#ifndef ZDVIDRESULTSERVICE_H
-#define ZDVIDRESULTSERVICE_H
+#ifndef ZSERVICECONSUMER_H
+#define ZSERVICECONSUMER_H
 
 #include <QMutex>
 #include <QList>
@@ -11,10 +11,10 @@ class ZJsonObject;
 class ZDvidReader;
 class ZDvidTarget;
 
-class ZDvidResultService
+class ZServiceConsumer
 {
 public:
-  ZDvidResultService();
+  ZServiceConsumer();
 
   static QByteArray ReadData(const QString &path);
   static void WriteData(const QString &path, const QByteArray &data);
@@ -32,6 +32,10 @@ public:
   static bool HasSplitResult(const ZDvidReader &reader, const QString taskKey);
   static bool HasSplitResult(const ZDvidReader *reader, const QString taskKey);
 
+  static ZJsonObject ReadHeadObject(
+      const ZDvidReader &reader, const QString &dataName, const QString &key);
+
+//  static void DeleteSplitTask(const QString &path);
 //  static QString GetSplitTaskKey(const QString &url);
 //  static void WriteTask(const QByteArray &data);
 
@@ -41,11 +45,11 @@ private:
       const QString &server, const QString &key);
   static ZObject3dScan* ReadSplitObject(
       const ZJsonObject &objJson, ZDvidReader *reader);
-  static QString FindSplitResultKey(
-      const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId);
-  static ZJsonObject ReadHeadObject(
-      const ZDvidReader &reader, const QString &dataName, const QString &key);
+//  static QString FindSplitResultKey(
+//      const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId);
 
+//public:
+//  static const char* REF_KEY;
 };
 
-#endif // ZDVIDRESULTSERVICE_H
+#endif // ZSERVICECONSUMER_H

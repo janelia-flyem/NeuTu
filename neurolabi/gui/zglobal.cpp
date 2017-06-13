@@ -182,3 +182,33 @@ ZDvidSparseStack* ZGlobal::readDvidSparseStack(const std::string &url) const
 
   return spStack;
 }
+
+ZDvidReader* ZGlobal::GetDvidReader(const std::string &name)
+{
+  return GetInstance().getDvidReader(name);
+}
+
+ZDvidWriter* ZGlobal::GetDvidWriter(const std::string &name)
+{
+  return GetInstance().getDvidWriter(name);
+}
+
+ZDvidReader* ZGlobal::GetDvidReader(const ZDvidTarget &target)
+{
+  return GetInstance().getDvidReader(target);
+}
+
+ZDvidWriter* ZGlobal::GetDvidWriter(const ZDvidTarget &target)
+{
+  return GetInstance().getDvidWriter(target);
+}
+
+ZDvidReader* ZGlobal::GetDvidReaderFromUrl(const std::string &url)
+{
+  return GetInstance().getDvidReaderFromUrl(url);
+}
+
+ZDvidWriter* ZGlobal::GetDvidWriterFromUrl(const std::string &url)
+{
+  return GetInstance().getDvidWriterFromUrl(url);
+}

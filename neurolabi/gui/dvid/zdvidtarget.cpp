@@ -134,7 +134,7 @@ void ZDvidTarget::setFromUrl(const std::string &url)
   }
 
   ZString zurl(url);
-  if (zurl.startsWith("http:")) {
+  if (zurl.startsWith("http://")) {
     zurl.replace("http://", "");
   }
 

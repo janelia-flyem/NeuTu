@@ -34,6 +34,7 @@
 #include "zflyemutilities.h"
 #include "zobject3dscanarray.h"
 #include "zdvidendpoint.h"
+#include "flyem/zserviceconsumer.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -1327,7 +1328,9 @@ std::string ZDvidReader::readBodyLabelName() const
 
 void ZDvidReader::syncBodyLabelName()
 {
-  m_dvidTarget.setBodyLabelName(readBodyLabelName());
+  if (getDvidTarget().hasLabelBlock()) {
+    m_dvidTarget.setBodyLabelName(readBodyLabelName());
+  }
 }
 
 std::set<uint64_t> ZDvidReader::readBodyId(
@@ -3488,9 +3491,12 @@ std::map<std::string, ZJsonObject> ZDvidReader::readSplitTaskMap() const
 {
   std::map<std::string, ZJsonObject> taskMap;
   std::string dataName = ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY);
-  QStringList keyList = readKeys(dataName.c_str(), "head__0", "head__z");
+  QStringList keyList = readKeys(dataName.c_str(), "task__0", "task__z");
   foreach (const QString &key, keyList) {
     ZJsonObject obj = readJsonObjectFromKey(dataName.c_str(), key);
+    if (obj.hasKey(NeuTube::Json::REF_KEY)) {
+      obj = readJsonObject(ZJsonParser::stringValue(obj[NeuTube::Json::REF_KEY]));
+    }
     if (!obj.isEmpty()) {
       taskMap[key.toStdString()] = obj;
     }

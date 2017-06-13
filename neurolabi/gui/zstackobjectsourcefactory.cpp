@@ -207,6 +207,19 @@ std::string ZStackObjectSourceFactory::MakeSplitObjectSource()
   return "#.FlyEMSplitObject";
 }
 
+std::string ZStackObjectSourceFactory::MakeSplitResultSource()
+{
+  return "#.FlyEMSplitResult";
+}
+
+std::string ZStackObjectSourceFactory::MakeSplitResultSource(int label)
+{
+  ZString source = MakeSplitResultSource();
+  source.appendNumber(label);
+
+  return source;
+}
+
 std::string ZStackObjectSourceFactory::MakeNodeAdaptorSource()
 {
   return "#.NodeAdapter";

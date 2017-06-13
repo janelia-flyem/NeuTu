@@ -3523,6 +3523,11 @@ void ZFlyEmProofMvc::loadSplitResult()
   getCompleteDocument()->loadSplitFromService();
 }
 
+void ZFlyEmProofMvc::uploadSplitResult()
+{
+  getCompleteDocument()->commitSplitFromService();
+}
+
 void ZFlyEmProofMvc::importSeed()
 {
   if (ZDialogFactory::Ask("Import Seed",

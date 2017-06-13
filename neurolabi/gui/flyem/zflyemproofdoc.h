@@ -364,6 +364,7 @@ public:
   int removeDvidSparsevol(NeuTube::EAxis axis);
 
   void loadSplitFromService();
+  void commitSplitFromService();
 
 signals:
   void bodyMerged();

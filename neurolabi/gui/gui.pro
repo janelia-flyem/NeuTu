@@ -747,7 +747,8 @@ HEADERS += mainwindow.h \
     dvid/zdvidendpoint.h \
     zglobal.h \
     flyem/zstackwatershedcontainer.h \
-    dvid/zdvidresultservice.h
+    dvid/zdvidresultservice.h \
+    flyem/zserviceconsumer.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1302,6 +1303,7 @@ SOURCES += main.cpp \
     dvid/zdvidendpoint.cpp \
     zglobal.cpp \
     flyem/zstackwatershedcontainer.cpp \
-    dvid/zdvidresultservice.cpp
+    dvid/zdvidresultservice.cpp \
+    flyem/zserviceconsumer.cpp
 
 

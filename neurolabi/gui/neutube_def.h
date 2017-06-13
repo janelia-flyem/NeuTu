@@ -88,6 +88,10 @@ enum ECardinalDirection {
   CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
 };
 
+namespace Json {
+static const char* REF_KEY = "->";
+}
+
 namespace Display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;

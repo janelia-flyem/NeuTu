@@ -14,7 +14,7 @@
 #include "flyem/zstackwatershedcontainer.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
-#include "dvid/zdvidresultservice.h"
+#include "flyem/zserviceconsumer.h"
 #include "zglobal.h"
 #include "dvid/zdvidwriter.h"
 #include "zobject3dfactory.h"
@@ -39,27 +39,38 @@ int ZBodySplitCommand::run(
   QUrl inputUrl(inputPath.c_str());
 
   std::string splitTaskKey;
+  std::string splitResultKey;
   bool isFile = true;
   ZDvidReader *reader= NULL;
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
     reader = ZGlobal::GetInstance().getDvidReaderFromUrl(input.front());
     inputJson = reader->readJsonObject(input.front());
-    if (inputJson.hasKey("ref")) {
+    if (inputJson.hasKey(NeuTube::Json::REF_KEY)) {
       inputJson =
-          reader->readJsonObject(ZJsonParser::stringValue(inputJson["ref"]));
+          reader->readJsonObject(
+            ZJsonParser::stringValue(inputJson[NeuTube::Json::REF_KEY]));
     }
     isFile = false;
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
+    splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
     inputJson.load(input.front());
   }
 
-  if (!splitTaskKey.empty() && !forcingUpdate()) {
-    if (ZDvidResultService::HasSplitResult(reader, splitTaskKey.c_str())) {
-      std::cout << "The task has already been processed. Please find the result @"
-                << ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey) << "."
+  if (!splitTaskKey.empty()) {
+    if (!splitResultKey.empty()) {
+      if (!forcingUpdate()) {
+        if (ZServiceConsumer::HasSplitResult(reader, splitTaskKey.c_str())) {
+          std::cout << "The task has already been processed. Please find the result @"
+                    << splitResultKey << "."
+                    << std::endl;
+          return 0;
+        }
+      }
+    } else {
+      std::cout << "Invalid task key: " << splitTaskKey << "."
                 << std::endl;
-      return 0;
+      return 1;
     }
   }
 
@@ -117,7 +128,7 @@ int ZBodySplitCommand::run(
           obj.setLabel(label);
           QUrl url(seedUrl.c_str());
           if (url.scheme() == "http") {
-            QByteArray data = ZDvidResultService::ReadData(seedUrl.c_str());
+            QByteArray data = ZServiceConsumer::ReadData(seedUrl.c_str());
             obj.importDvidObjectBuffer(data.data(), data.length());
           } else {
             obj.load(seedUrl);
@@ -141,7 +152,7 @@ int ZBodySplitCommand::run(
       }
     }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     container.exportMask(GET_TEST_DATA_DIR + "/test2.tif");
     container.exportSource(GET_TEST_DATA_DIR + "/test3.tif");
 #endif
@@ -149,7 +160,7 @@ int ZBodySplitCommand::run(
     container.run();
     ZStack *resultStack = container.getResultStack();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     resultStack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
@@ -176,7 +187,7 @@ int ZBodySplitCommand::run(
               writer->writeServiceResult("split", obj.toDvidPayload(), false);
           ZJsonObject regionJson;
           regionJson.setEntry("label", (int) obj.getLabel());
-          regionJson.setEntry("ref", endPoint);
+          regionJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
           resultArray.append(regionJson);
 #ifdef _DEBUG_2
           obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -195,12 +206,16 @@ int ZBodySplitCommand::run(
                   "split",
                   ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
             ZJsonObject refJson;
-            refJson.setEntry("ref", endPoint);
+            refJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
             refJson.setEntry(
                   "timestamp", QDateTime::currentMSecsSinceEpoch() / 1000);
             writer->writeJson(refEndPoint.toStdString(), refJson);
           }
+        }
 
+        if (!splitTaskKey.empty()) {
+          writer->deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
+                            splitTaskKey);
         }
       } else {
         ZStackWriter writer;

@@ -119,6 +119,10 @@ void FlyEmSplitControlForm::createMenu()
   m_mainMenu->addAction(loadSplitAction);
   connect(loadSplitAction, SIGNAL(triggered()), this, SLOT(loadSplitResult()));
 
+  QAction *uploadSplitAction = new QAction("Upload Split Result", this);
+  m_mainMenu->addAction(uploadSplitAction);
+  connect(uploadSplitAction, SIGNAL(triggered()), this, SLOT(uploadSplitResult()));
+
   QMenu *seedMenu = m_mainMenu->addMenu("Seed");
   QAction *recoverSeedAction = new QAction("Recover", this);
   seedMenu->addAction(recoverSeedAction);
@@ -161,6 +165,11 @@ void FlyEmSplitControlForm::saveTask()
 void FlyEmSplitControlForm::loadSplitResult()
 {
   emit loadingSplitResult();
+}
+
+void FlyEmSplitControlForm::uploadSplitResult()
+{
+  emit uploadingSplitResult();
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)

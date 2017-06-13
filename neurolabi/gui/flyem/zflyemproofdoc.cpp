@@ -46,7 +46,7 @@
 #include "zsleeper.h"
 #include "zdvidutil.h"
 #include "zstackdocdatabuffer.h"
-#include "dvid/zdvidresultservice.h"
+#include "flyem/zserviceconsumer.h"
 #include "zstroke2d.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
@@ -2035,16 +2035,15 @@ void ZFlyEmProofDoc::loadSplitFromService()
 //  std::string path = GET_FLYEM_CONFIG.getSplitResultUrl(
 //        getDvidTarget(), getBodyIdForSplit());
 
-  QList<ZObject3dScan*> objList = ZDvidResultService::ReadSplitResult(
+  QList<ZObject3dScan*> objList = ZServiceConsumer::ReadSplitResult(
         GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), getBodyIdForSplit());
       //ZDvidResultService::ReadSplitResult(path);
-  int index = 1;
+//  int index = 1;
   foreach (ZObject3dScan *obj, objList) {
     obj->setColor(getSeedColor(obj->getLabel()));
-    obj->setSource(
-          ZStackObjectSourceFactory::MakeWatershedBoundarySource(
-            index++));
+    obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
     obj->setHitProtocal(ZStackObject::HIT_NONE);
+    obj->setVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
     obj->setProjectionVisible(false);
     obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
     LINFO() << "Adding" << obj << obj->getSource();
@@ -2053,6 +2052,18 @@ void ZFlyEmProofDoc::loadSplitFromService()
     m_dataBuffer->deliver();
   }
 
+}
+
+void ZFlyEmProofDoc::commitSplitFromService()
+{
+  uint64_t originalId = getBodyIdForSplit();
+
+  QList<ZObject3dScan*> objList = ZServiceConsumer::ReadSplitResult(
+        GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), originalId);
+  foreach (ZObject3dScan *obj, objList) {
+    uint64_t newBodyId = getDvidWriter().writeSplit(*obj, originalId, 0);
+    emit messageGenerated(QString("%d uploaded").arg(newBodyId));
+  }
 }
 
 int ZFlyEmProofDoc::removeDvidSparsevol(NeuTube::EAxis axis)

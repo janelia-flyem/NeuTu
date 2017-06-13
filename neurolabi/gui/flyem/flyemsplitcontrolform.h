@@ -40,6 +40,7 @@ signals:
   void loadingBookmark(QString);
   void savingTask();
   void loadingSplitResult();
+  void uploadingSplitResult();
   void recoveringSeed();
   void exportingSeed();
   void importingSeed();
@@ -80,6 +81,7 @@ private slots:
   void checkCurrentBookmark(bool checking);
   void saveTask();
   void loadSplitResult();
+  void uploadSplitResult();
 
 private:
   void setupWidgetBehavior();

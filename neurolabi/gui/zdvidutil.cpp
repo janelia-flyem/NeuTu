@@ -16,8 +16,6 @@
 
 #include "neutube.h"
 
-//const int ZDvid::DEFAULT_ROI_BLOCK_SIZE = 32;
-
 libdvid::BinaryDataPtr ZDvid::MakeRequest(
     libdvid::DVIDConnection &connection,
     const std::string &endpoint, const std::string &method,

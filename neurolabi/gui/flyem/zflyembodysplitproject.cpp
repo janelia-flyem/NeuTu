@@ -45,6 +45,7 @@
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "zneutuservice.h"
 #include "zglobal.h"
+#include "flyem/zserviceconsumer.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
@@ -1814,7 +1815,7 @@ std::string ZFlyEmBodySplitProject::saveTask() const
       }
       location = writer->writeServiceTask("split", task);
       ZJsonObject taskJson;
-      taskJson.setEntry("ref", location);
+      taskJson.setEntry(NeuTube::Json::REF_KEY, location);
 //      QUrl url(bodyUrl.c_str());
       QString taskKey = dvidUrl.getSplitTaskKey(getBodyId()).c_str();
 //      QString("task__") + QUrl::toPercentEncoding(bodyUrl.c_str());

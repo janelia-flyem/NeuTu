@@ -1269,6 +1269,13 @@ std::string ZDvidUrl::getSplitTaskKey(const uint64_t bodyId) const
   return key;
 }
 
+std::string ZDvidUrl::getSplitResultKey(const uint64_t bodyId) const
+{
+  std::string taskKey = getSplitTaskKey(bodyId);
+
+  return GetResultKeyFromTaskKey(taskKey);
+}
+
 /*
 bool ZDvidUrl::IsSplitTask(const std::string &url)
 {

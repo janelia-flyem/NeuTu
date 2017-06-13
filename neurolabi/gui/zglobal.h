@@ -37,6 +37,14 @@ public:
   ZDvidWriter* getDvidWriterFromUrl(const std::string &url) const;
 
 public:
+  static ZDvidReader* GetDvidReader(const std::string &name);
+  static ZDvidWriter* GetDvidWriter(const std::string &name);
+  static ZDvidReader* GetDvidReader(const ZDvidTarget &target);
+  static ZDvidWriter* GetDvidWriter(const ZDvidTarget &target);
+  static ZDvidReader* GetDvidReaderFromUrl(const std::string &url);
+  static ZDvidWriter* GetDvidWriterFromUrl(const std::string &url);
+
+public:
   ZDvidSparseStack* readDvidSparseStack(const std::string &url) const;
 
 private:

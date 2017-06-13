@@ -1280,11 +1280,6 @@ uint64_t ZDvidWriter::writePartition(
 
       std::cout << "Coarse processing time: " << timer.elapsed() << std::endl;
 
-#ifdef _DEBUG_
-
-#endif
-
-
       //Upload remaining part
       if (!bsr.isEmpty()) {
         newBodyId = writeSplit(bsr, oldLabel, 0, newBodyId);

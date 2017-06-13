@@ -316,7 +316,7 @@ using namespace std;
 #include "zstackreader.h"
 #include "dvid/zdvidendpoint.h"
 #include "flyem/zstackwatershedcontainer.h"
-#include "dvid/zdvidresultservice.h"
+#include "flyem/zserviceconsumer.h"
 #include "test/zdvidresultservicetest.h"
 
 using namespace std;
@@ -23832,7 +23832,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   QList<ZJsonObject> objList = ZDvidResultService::ReadSplitTaskList(
         GET_FLYEM_CONFIG.getTaskServer().c_str());
 
@@ -23840,15 +23840,32 @@ void ZTest::test(MainWindow *host)
     obj.print();
   }
 
-  /*
+
   ZDvidTarget bodySource;
   bodySource.setFromUrl("http://emdata1.int.janelia.org:8500/api/node/b6bc/bodies/sparsevol/13123419");
   QList<ZObject3dScan*> segList = ZDvidResultService::ReadSplitResult(
-        GET_FLYEM_CONFIG.getTaskServer().c_str(), bodySource, 13123419);
+        GET_FLYEM_CONFIG.getTaskServer().c_str(), bodySource, 11707760);
   std::cout << segList.size() << std::endl;
-  segList[0]->save(GET_TEST_DATA_DIR + "/test1.sobj");
-  segList[1]->save(GET_TEST_DATA_DIR + "/test2.sobj");
-*/
+//  segList[0]->save(GET_TEST_DATA_DIR + "/test1.sobj");
+//  segList[1]->save(GET_TEST_DATA_DIR + "/test2.sobj");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setFromUrl("http://localhost:8001/api/node/4d3e");
+  target.setBodyLabelName("*");
+  ZDvidReader *reader = ZGlobal::GetDvidReader(target);
+  std::cout << reader << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.setFromUrl("http://localhost:8000/api/node/4d3e");
+  target.setBodyLabelName("*");
+  std::cout << "Opening " << target.getSourceString() << std::endl;
+  std::cout << (reader.open(target) ? "Opened successfully." : "Cannot open to read.")
+            << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
