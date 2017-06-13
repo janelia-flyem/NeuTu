@@ -191,3 +191,6 @@ neutube_win64_*/
 /neurolabi/gui/Makefile
 /neurolabi/gui/ui_*
 /neurolabi/gui/qrc_gui.cpp
+
+#service result folder
+/neurolabi/python/service/surfrecon/result/*

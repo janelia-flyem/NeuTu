@@ -3,9 +3,11 @@ HEADERS += $${PWD}/zstackprocessor.h \
    $${PWD}/zstackwatershed.h \
     $$PWD/zstackmultiscalewatershed.h \
     $$PWD/zstackgradient.h \
-    $$PWD/surfrecon.h
+    $$PWD/surfrecon.h \
+    $$PWD/zsurfrecon.h
 
 SOURCES += $${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackwatershed.cpp \
     $$PWD/zstackmultiscalewatershed.cpp \
-    $$PWD/zstackgradient.cpp
+    $$PWD/zstackgradient.cpp \
+    $$PWD/zsurfrecon.cpp
