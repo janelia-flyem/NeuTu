@@ -1,6 +1,8 @@
 #include "synapsereviewinputdialog.h"
 #include "ui_synapsereviewinputdialog.h"
 
+#include "zintcuboid.h"
+
 SynapseReviewInputDialog::SynapseReviewInputDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SynapseReviewInputDialog)
@@ -13,16 +15,24 @@ SynapseReviewInputDialog::SynapseReviewInputDialog(QWidget *parent) :
 
 SynapseReviewInputDialog::SynapseReviewInputOptions SynapseReviewInputDialog::getInputOption() {
     if (ui->bodyIDRadioButton->isChecked()) {
-        return SynapseReviewInputOptions::BY_BODYID;
-    } else if (ui->roiRadioButton->isChecked()) {
-        return SynapseReviewInputOptions::BY_ROI;
+        return BY_BODYID;
     } else if (ui->volumeRadioButton->isChecked()) {
-        return SynapseReviewInputOptions::BY_VOLUME;
+        return BY_VOLUME;
     }
 }
 
-QString SynapseReviewInputDialog::getRoI() {
-    // didn't name the input boxes yet!
+QString SynapseReviewInputDialog::getBodyID() {
+    return ui->bodyIDInput->text();
+}
+
+ZIntCuboid SynapseReviewInputDialog::getVolume() {
+    ZIntCuboid box;
+    box.setFirstCorner(ui->xSpinBox->value(), ui->ySpinBox->value(),
+        ui->zSpinBox->value());
+    box.setSize(ui->widthSpinBox->value(), ui->heightSpinBox->value(),
+        ui->depthSpinBox->value());
+
+    return box;
 }
 
 SynapseReviewInputDialog::~SynapseReviewInputDialog()

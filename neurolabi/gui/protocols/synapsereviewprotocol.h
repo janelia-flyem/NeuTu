@@ -4,7 +4,7 @@
 #include <QDialog>
 
 #include "zjsonobject.h"
-
+#include "zintpoint.h"
 #include "protocoldialog.h"
 
 
@@ -35,11 +35,16 @@ private slots:
 
 private:
     static const std::string KEY_VERSION;
+    static const std::string KEY_PENDING_LIST;
+    static const std::string KEY_FINISHED_LIST;
     static const int fileVersion;
 
     Ui::SynapseReviewProtocol *ui;
+    QList<ZIntPoint> m_pendingList;
+    QList<ZIntPoint> m_finishedList;
 
-    void saveState();
+    void saveState();    
+    void inputErrorDialog(QString message);
 
 };
 
