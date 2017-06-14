@@ -3138,6 +3138,10 @@ ZDvidSynapse ZDvidReader::readSynapse(
   std::vector<ZDvidSynapse> synapseArray =
       readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
   if (!synapseArray.empty()) {
+    if (synapseArray.size() > 1) {
+      LWARN() << "Duplicated synapses at" << "(" << x << "" << y << "" << z << ")";
+      synapseArray[0].setStatus(ZDvidAnnotation::STATUS_DUPLICATED);
+    }
     return synapseArray[0];
   }
 

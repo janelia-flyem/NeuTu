@@ -23,6 +23,7 @@ void ZDvidAnnotation::init()
   m_projectionVisible = false;
   m_kind = KIND_INVALID;
   m_bodyId = 0;
+  m_status = STATUS_NORMAL;
   setDefaultRadius();
   setDefaultColor();
 }
@@ -428,6 +429,19 @@ void ZDvidAnnotation::clearPartner()
 void ZDvidAnnotation::addPartner(int x, int y, int z)
 {
   m_partnerHint.push_back(ZIntPoint(x, y, z));
+}
+
+bool ZDvidAnnotation::hasPartner(const ZIntPoint &pos)
+{
+  for (std::vector<ZIntPoint>::const_iterator iter = m_partnerHint.begin();
+       iter != m_partnerHint.end(); ++iter) {
+    const ZIntPoint &pt = *iter;
+    if (pt == pos) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void ZDvidAnnotation::addTag(const std::string &tag)

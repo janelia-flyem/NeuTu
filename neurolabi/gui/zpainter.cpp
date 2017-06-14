@@ -557,6 +557,14 @@ void ZPainter::drawArc(const QRectF &rectangle, int startAngle, int spanAngle)
   }
 }
 
+void ZPainter::drawCross(const QPointF &center, double radius)
+{
+  drawLine(QPointF(center.x(), center.y() + radius),
+                   QPointF(center.x() + radius, center.y()));
+  drawLine(QPointF(center.x(), center.y() + radius),
+                   QPointF(center.x() - radius, center.y()));
+}
+
 void ZPainter::drawEllipse(const QPoint & center, int rx, int ry)
 {
   if (isVisible(QRectF(center.x() - rx, center.y() - ry,

@@ -31,6 +31,8 @@ public:
   enum EKind { KIND_POST_SYN, KIND_PRE_SYN, KIND_NOTE, KIND_UNKNOWN,
                KIND_INVALID };
 
+  enum EStatus { STATUS_NORMAL, STATUS_DUPLICATED };
+
   static ZStackObject::EType GetType() {
     return ZStackObject::TYPE_DVID_ANNOTATION;
   }
@@ -64,6 +66,14 @@ public:
     m_bodyId = bodyId;
   }
 
+  void setStatus(EStatus status) {
+    m_status = status;
+  }
+
+  EStatus getStatus() const {
+    return m_status;
+  }
+
   void setDefaultColor();
 
   int getX() const;
@@ -82,6 +92,7 @@ public:
   void clearPartner();
   void addPartner(int x, int y, int z);
   void addTag(const std::string &tag);
+  bool hasPartner(const ZIntPoint &pos);
 
   void clear();
 
@@ -194,6 +205,7 @@ protected:
   EKind m_kind;
   double m_radius;
   uint64_t m_bodyId;
+  EStatus m_status;
 
   std::vector<ZIntPoint> m_partnerHint;
   std::vector<std::string> m_tagArray;
