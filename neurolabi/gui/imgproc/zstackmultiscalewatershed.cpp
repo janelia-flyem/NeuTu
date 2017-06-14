@@ -465,7 +465,7 @@ ZStack* ZStackMultiScaleWatershed::labelAreaNeedUpdate(ZStack* edge_map,ZStack* 
 
   ZStack* rv=new ZStack(GREY,width,height,depth,1);
   uint8_t* map=edge_map->array8(),*dst=rv->array8(),*sd=seed->array8();
-  uint8_t *src=srcStack?srcStack->array8():nullptr;
+  uint8_t *src=srcStack?srcStack->array8():NULL;
 
   int xcnt=0,ycnt=0,zcnt=0;
   double cnt=0;

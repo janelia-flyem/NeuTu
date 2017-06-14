@@ -25,7 +25,7 @@ public:
   void test();
 public:
   void setScale(int scale){_scale=scale;}
-  ZStack* labelAreaNeedUpdate(ZStack* edge_map,ZStack* seed,ZStack* src=nullptr);
+  ZStack* labelAreaNeedUpdate(ZStack* edge_map,ZStack* seed,ZStack* src=NULL);
   void generateSeeds(ZStack* seed,int width,int height,int depth,const ZStack* edge_map,const ZStack* stack);
   ZStack* getEdgeMap(const ZStack& stack);
   ZStack* upSample(int width,int height,int depth,ZStack* sampled);
