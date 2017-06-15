@@ -13,12 +13,22 @@
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
+/*
+ * protocol to review a group of synapses (T-bars)
+ *
+ * adapted heavily from SynapsePredictionProtocol
+ *
+ */
 SynapseReviewProtocol::SynapseReviewProtocol(QWidget *parent) :
     ProtocolDialog(parent),
     ui(new Ui::SynapseReviewProtocol)
 {
     ui->setupUi(this);
 
+    // sites table
+    m_sitesModel = new QStandardItemModel(0, 3, ui->sitesTableView);
+    setSitesHeaders(m_sitesModel);
+    ui->sitesTableView->setModel(m_sitesModel);
 
     // UI connections
     connect(ui->reviewFirstButton, SIGNAL(clicked(bool)), this, SLOT(onReviewFirstButton()));
@@ -199,15 +209,95 @@ void SynapseReviewProtocol::gotoCurrent() {
 }
 
 void SynapseReviewProtocol::updateUI() {
-
-    std::cout << "update()" << std::endl;
-
     updatePSDTable();
     updateLabels();
 }
 
 void SynapseReviewProtocol::updatePSDTable() {
     std::cout << "updatePSDTable()" << std::endl;
+
+    clearSitesTable();
+
+    if (m_currentSite.isValid()) {
+        // check if T-bar at site; this list will be empty if not,
+        //  will have only one element (T-bar) if no PSDs found for T-bar
+        std::vector<ZDvidSynapse> synapse = getWholeSynapse(m_currentSite);
+        if (synapse.size() > 1) {
+            populatePSDTable(synapse);
+        }
+    }
+}
+
+void SynapseReviewProtocol::populatePSDTable(std::vector<ZDvidSynapse> synapse) {
+
+    // note: post synaptic sites start at index 1, but the
+    //  table row still starts at 0
+    for (size_t i=1; i<synapse.size(); i++) {
+        ZDvidSynapse site = synapse[i];
+
+        // need to exclude other things that could be linked;
+        //  eg, other T-bars (in a multi- or convergent configuration)
+        if (site.getKind() != ZDvidAnnotation::KIND_POST_SYN) {
+            continue;
+        }
+
+        QStandardItem * xItem = new QStandardItem();
+        QStandardItem * yItem = new QStandardItem();
+        QStandardItem * zItem = new QStandardItem();
+        xItem->setData(QVariant(site.getX()), Qt::DisplayRole);
+        yItem->setData(QVariant(site.getY()), Qt::DisplayRole);
+        zItem->setData(QVariant(site.getZ()), Qt::DisplayRole);
+        m_sitesModel->setItem(i - 1, SITES_X_COLUMN, xItem);
+        m_sitesModel->setItem(i - 1, SITES_Y_COLUMN, yItem);
+        m_sitesModel->setItem(i - 1, SITES_Z_COLUMN, zItem);
+#if QT_VERSION >= 0x050000
+        ui->sitesTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+#else
+        ui->sitesTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+#endif
+    }
+
+}
+
+// input: point
+// output: array with first pre-synaptic site then all post-synaptic sites
+//  for the synapse; returns empty list on errors or if no T-bar at site
+std::vector<ZDvidSynapse> SynapseReviewProtocol::getWholeSynapse(ZIntPoint point) {
+
+    std::vector<ZDvidSynapse> result;
+
+    ZDvidReader reader;
+    if (reader.open(m_dvidTarget)) {
+        ZDvidSynapse synapse = reader.readSynapse(point, FlyEM::LOAD_PARTNER_LOCATION);
+
+        if (!synapse.isValid()) {
+            return result;
+        }
+
+        if (synapse.getKind() != ZDvidAnnotation::KIND_PRE_SYN) {
+            return result;
+        }
+        result.push_back(synapse);
+
+        // get all the post-synaptic sites
+        std::vector<ZIntPoint> psdArray = synapse.getPartners();
+        for (size_t i=0; i<psdArray.size(); i++) {
+            ZDvidSynapse post = reader.readSynapse(psdArray[i], FlyEM::LOAD_NO_PARTNER);
+            result.push_back(post);
+        }
+    }
+    return result;
+}
+
+void SynapseReviewProtocol::setSitesHeaders(QStandardItemModel * model) {
+    model->setHorizontalHeaderItem(SITES_X_COLUMN, new QStandardItem(QString("x")));
+    model->setHorizontalHeaderItem(SITES_Y_COLUMN, new QStandardItem(QString("y")));
+    model->setHorizontalHeaderItem(SITES_Z_COLUMN, new QStandardItem(QString("z")));
+}
+
+void SynapseReviewProtocol::clearSitesTable() {
+    m_sitesModel->clear();
+    setSitesHeaders(m_sitesModel);
 }
 
 void SynapseReviewProtocol::updateLabels() {

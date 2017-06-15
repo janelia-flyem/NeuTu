@@ -2,7 +2,9 @@
 #define SYNAPSEREVIEWPROTOCOL_H
 
 #include <QDialog>
+#include <QStandardItemModel>
 
+#include "dvid/zdvidsynapse.h"
 #include "zjsonobject.h"
 #include "zintpoint.h"
 #include "protocoldialog.h"
@@ -44,7 +46,14 @@ private:
     static const std::string KEY_FINISHED_LIST;
     static const int fileVersion;
 
+    enum SitesTableColumns {
+        SITES_X_COLUMN,
+        SITES_Y_COLUMN,
+        SITES_Z_COLUMN
+    };
+
     Ui::SynapseReviewProtocol *ui;
+    QStandardItemModel * m_sitesModel;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
     ZIntPoint m_currentSite;
@@ -55,6 +64,11 @@ private:
     void gotoCurrent();
     void saveState();    
     void inputErrorDialog(QString message);
+    void setSitesHeaders(QStandardItemModel * model);
+    void clearSitesTable();
+    void populatePSDTable(std::vector<ZDvidSynapse>);
+    std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
+
 
 };
 
