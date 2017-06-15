@@ -40,6 +40,8 @@ private slots:
     void onGotoCurrentButton();
     void onMarkReviewedButton();
 
+    void onDoubleClickSitesTable(QModelIndex index);
+
 private:
     static const std::string KEY_VERSION;
     static const std::string KEY_PENDING_LIST;
@@ -57,6 +59,8 @@ private:
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
     ZIntPoint m_currentSite;
+    int m_currentPendingIndex;
+    int m_currentFinishedIndex;
 
     void updateUI();
     void updatePSDTable();

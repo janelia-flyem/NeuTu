@@ -39,6 +39,9 @@ SynapseReviewProtocol::SynapseReviewProtocol(QWidget *parent) :
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
+    connect(ui->sitesTableView, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(onDoubleClickSitesTable(QModelIndex)));
+
     // misc UI setup
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
@@ -289,6 +292,19 @@ std::vector<ZDvidSynapse> SynapseReviewProtocol::getWholeSynapse(ZIntPoint point
     return result;
 }
 
+void SynapseReviewProtocol::onDoubleClickSitesTable(QModelIndex index) {
+    QStandardItem *itemX = m_sitesModel->item(index.row(), SITES_X_COLUMN);
+    int x = itemX->data(Qt::DisplayRole).toInt();
+
+    QStandardItem *itemY = m_sitesModel->item(index.row(), SITES_Y_COLUMN);
+    int y = itemY->data(Qt::DisplayRole).toInt();
+
+    QStandardItem *itemZ = m_sitesModel->item(index.row(), SITES_Z_COLUMN);
+    int z = itemZ->data(Qt::DisplayRole).toInt();
+
+    emit requestDisplayPoint(x, y, z);
+}
+
 void SynapseReviewProtocol::setSitesHeaders(QStandardItemModel * model) {
     model->setHorizontalHeaderItem(SITES_X_COLUMN, new QStandardItem(QString("x")));
     model->setHorizontalHeaderItem(SITES_Y_COLUMN, new QStandardItem(QString("y")));
@@ -345,8 +361,8 @@ void SynapseReviewProtocol::onReviewFirstButton() {
     if (m_pendingList.size() > 0) {
         m_currentSite = m_pendingList.first();
         gotoCurrent();
-        updateUI();
     }
+    updateUI();
 }
 
 void SynapseReviewProtocol::onReviewNextButton() {
