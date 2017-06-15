@@ -24,6 +24,7 @@ SynapseReviewProtocol::SynapseReviewProtocol(QWidget *parent) :
     connect(ui->reviewFirstButton, SIGNAL(clicked(bool)), this, SLOT(onReviewFirstButton()));
     connect(ui->reviewNextButton, SIGNAL(clicked(bool)), this, SLOT(onReviewNextButton()));
     connect(ui->reviewPrevButton, SIGNAL(clicked(bool)), this, SLOT(onReviewPreviousButton()));
+    connect(ui->gotoCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onGotoCurrentButton()));
     connect(ui->markReviewedButton, SIGNAL(clicked(bool)), this, SLOT(onMarkReviewedButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
@@ -191,6 +192,12 @@ void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
 
 }
 
+void SynapseReviewProtocol::gotoCurrent() {
+    if (m_currentSite.isValid()) {
+        emit requestDisplayPoint(m_currentSite.getX(), m_currentSite.getY(), m_currentSite.getZ());
+    }
+}
+
 void SynapseReviewProtocol::updateUI() {
 
     std::cout << "update()" << std::endl;
@@ -247,9 +254,9 @@ void SynapseReviewProtocol::saveState() {
 void SynapseReviewProtocol::onReviewFirstButton() {
     if (m_pendingList.size() > 0) {
         m_currentSite = m_pendingList.first();
+        gotoCurrent();
         updateUI();
     }
-
 }
 
 void SynapseReviewProtocol::onReviewNextButton() {
@@ -260,6 +267,10 @@ void SynapseReviewProtocol::onReviewNextButton() {
 void SynapseReviewProtocol::onReviewPreviousButton() {
 
     std::cout << "onReviewPrevButton()" << std::endl;
+}
+
+void SynapseReviewProtocol::onGotoCurrentButton() {
+    gotoCurrent();
 }
 
 void SynapseReviewProtocol::onMarkReviewedButton() {

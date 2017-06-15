@@ -35,6 +35,7 @@ private slots:
     void onReviewFirstButton();
     void onReviewNextButton();
     void onReviewPreviousButton();
+    void onGotoCurrentButton();
     void onMarkReviewedButton();
 
 private:
@@ -51,6 +52,7 @@ private:
     void updateUI();
     void updatePSDTable();
     void updateLabels();
+    void gotoCurrent();
     void saveState();    
     void inputErrorDialog(QString message);
 

@@ -126,6 +126,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="gotoCurrentButton">
+         <property name="text">
+          <string>Goto current</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="markReviewedButton">
          <property name="text">
           <string>Mark reviewed</string>
