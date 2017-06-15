@@ -21,6 +21,10 @@ SynapseReviewProtocol::SynapseReviewProtocol(QWidget *parent) :
 
 
     // UI connections
+    connect(ui->reviewFirstButton, SIGNAL(clicked(bool)), this, SLOT(onReviewFirstButton()));
+    connect(ui->reviewNextButton, SIGNAL(clicked(bool)), this, SLOT(onReviewNextButton()));
+    connect(ui->reviewPrevButton, SIGNAL(clicked(bool)), this, SLOT(onReviewPreviousButton()));
+    connect(ui->markReviewedButton, SIGNAL(clicked(bool)), this, SLOT(onMarkReviewedButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
@@ -182,9 +186,39 @@ void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
     //  remember to do a save here
 
 
-    // dispatch to whatever is next
+    // start work
+    onReviewFirstButton();
 
+}
 
+void SynapseReviewProtocol::updateUI() {
+
+    std::cout << "update()" << std::endl;
+
+    updatePSDTable();
+    updateLabels();
+}
+
+void SynapseReviewProtocol::updatePSDTable() {
+    std::cout << "updatePSDTable()" << std::endl;
+}
+
+void SynapseReviewProtocol::updateLabels() {
+    std::cout << "updateLabels()" << std::endl;
+
+    // current location
+    if (m_currentSite.isValid()) {
+        ui->currentLocLabel->setText(QString::fromStdString(m_currentSite.toString()));
+    } else {
+        ui->currentLocLabel->setText(QString("(--, --, --)"));
+    }
+
+    // progress
+    int nPending = m_pendingList.size();
+    int nFinished = m_finishedList.size();
+    int nTotal = nPending + nFinished;
+    float percent = (100.0 * nFinished) / nTotal;
+    ui->progressLabel->setText(QString("Progress:\n\n %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
 
 }
 
@@ -208,6 +242,40 @@ void SynapseReviewProtocol::saveState() {
     data.setEntry(KEY_FINISHED_LIST.c_str(), finished);
 
     emit requestSaveProtocol(data);
+}
+
+void SynapseReviewProtocol::onReviewFirstButton() {
+    if (m_pendingList.size() > 0) {
+        m_currentSite = m_pendingList.first();
+        updateUI();
+    }
+
+}
+
+void SynapseReviewProtocol::onReviewNextButton() {
+
+    std::cout << "onReviewNextButton()" << std::endl;
+}
+
+void SynapseReviewProtocol::onReviewPreviousButton() {
+
+    std::cout << "onReviewPrevButton()" << std::endl;
+}
+
+void SynapseReviewProtocol::onMarkReviewedButton() {
+
+    std::cout << "onMarkReviewedButton()" << std::endl;
+
+    // move site to finished
+
+    // save state!!
+
+    // update progress label
+
+    // if pending list empty: dialog
+
+
+
 }
 
 void SynapseReviewProtocol::onExitButton() {

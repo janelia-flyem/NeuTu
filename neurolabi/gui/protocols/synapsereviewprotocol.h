@@ -32,6 +32,10 @@ public slots:
 private slots:
     void onExitButton();
     void onCompleteButton();
+    void onReviewFirstButton();
+    void onReviewNextButton();
+    void onReviewPreviousButton();
+    void onMarkReviewedButton();
 
 private:
     static const std::string KEY_VERSION;
@@ -42,7 +46,11 @@ private:
     Ui::SynapseReviewProtocol *ui;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
+    ZIntPoint m_currentSite;
 
+    void updateUI();
+    void updatePSDTable();
+    void updateLabels();
     void saveState();    
     void inputErrorDialog(QString message);
 
