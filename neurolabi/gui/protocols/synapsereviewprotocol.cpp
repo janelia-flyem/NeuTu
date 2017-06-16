@@ -45,6 +45,10 @@ SynapseReviewProtocol::SynapseReviewProtocol(QWidget *parent) :
     // misc UI setup
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
+    // misc other
+    m_currentPendingIndex = -1;
+    m_currentFinishedIndex = -1;
+
 }
 
 // constants
@@ -206,8 +210,9 @@ void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
 }
 
 void SynapseReviewProtocol::gotoCurrent() {
-    if (m_currentSite.isValid()) {
-        emit requestDisplayPoint(m_currentSite.getX(), m_currentSite.getY(), m_currentSite.getZ());
+    if (m_currentPendingIndex >= 0) {
+        ZIntPoint currentSite = m_pendingList[m_currentPendingIndex];
+        emit requestDisplayPoint(currentSite.getX(), currentSite.getY(), currentSite.getZ());
     }
 }
 
@@ -221,10 +226,10 @@ void SynapseReviewProtocol::updatePSDTable() {
 
     clearSitesTable();
 
-    if (m_currentSite.isValid()) {
+    if (m_currentPendingIndex >= 0) {
         // check if T-bar at site; this list will be empty if not,
         //  will have only one element (T-bar) if no PSDs found for T-bar
-        std::vector<ZDvidSynapse> synapse = getWholeSynapse(m_currentSite);
+        std::vector<ZDvidSynapse> synapse = getWholeSynapse(m_pendingList[m_currentPendingIndex]);
         if (synapse.size() > 1) {
             populatePSDTable(synapse);
         }
@@ -320,8 +325,8 @@ void SynapseReviewProtocol::updateLabels() {
     std::cout << "updateLabels()" << std::endl;
 
     // current location
-    if (m_currentSite.isValid()) {
-        ui->currentLocLabel->setText(QString::fromStdString(m_currentSite.toString()));
+    if (m_currentPendingIndex >= 0) {
+        ui->currentLocLabel->setText(QString::fromStdString(m_pendingList[m_currentPendingIndex].toString()));
     } else {
         ui->currentLocLabel->setText(QString("(--, --, --)"));
     }
@@ -358,21 +363,39 @@ void SynapseReviewProtocol::saveState() {
 }
 
 void SynapseReviewProtocol::onReviewFirstButton() {
-    if (m_pendingList.size() > 0) {
-        m_currentSite = m_pendingList.first();
-        gotoCurrent();
+    if (!m_pendingList.isEmpty()) {
+        m_currentPendingIndex = 0;
+    } else {
+        m_currentPendingIndex = -1;
     }
+    gotoCurrent();
     updateUI();
 }
 
 void SynapseReviewProtocol::onReviewNextButton() {
-
-    std::cout << "onReviewNextButton()" << std::endl;
+    if (!m_pendingList.empty()) {
+        m_currentPendingIndex++;
+        if (m_currentPendingIndex >= m_pendingList.size()) {
+            m_currentPendingIndex = 0;
+        }
+    } else {
+        m_currentPendingIndex = -1;
+    }
+    gotoCurrent();
+    updateUI();
 }
 
 void SynapseReviewProtocol::onReviewPreviousButton() {
-
-    std::cout << "onReviewPrevButton()" << std::endl;
+    if (!m_pendingList.empty()) {
+        m_currentPendingIndex--;
+        if (m_currentPendingIndex < 0) {
+            m_currentPendingIndex = m_pendingList.size() - 1;
+        }
+    } else {
+        m_currentPendingIndex = -1;
+    }
+    gotoCurrent();
+    updateUI();
 }
 
 void SynapseReviewProtocol::onGotoCurrentButton() {

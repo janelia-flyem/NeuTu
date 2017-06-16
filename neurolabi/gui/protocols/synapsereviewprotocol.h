@@ -58,7 +58,6 @@ private:
     QStandardItemModel * m_sitesModel;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
-    ZIntPoint m_currentSite;
     int m_currentPendingIndex;
     int m_currentFinishedIndex;
 
