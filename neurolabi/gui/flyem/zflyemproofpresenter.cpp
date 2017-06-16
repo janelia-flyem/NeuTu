@@ -353,6 +353,10 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
     emit selectingBody();
     processed = true;
     break;
+//  case Qt::Key_F3:
+//    emit goingToPosition();
+//    processed = true;
+//    break;
   case Qt::Key_D:
     if (event->modifiers() == Qt::NoModifier) {
       emit togglingData();
