@@ -22633,18 +22633,36 @@ void ZTest::test(MainWindow *host)
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@CX", 8700);
+  target.useDefaultDataSetting(true);
 
   ZDvidReader reader;
   reader.open(target);
 
   ZObject3dScan roi = reader.readRoi("CXPB-ROI-2");
-  ZIntPoint pt = reader.readRoiBlockSize("CXPB-ROI-2");
+  ZIntPoint blockSize = reader.readRoiBlockSize("CXPB-ROI-2");
 
-  std::cout << "Volume: "
-            << (double) roi.getVoxelNumber() * pt.getX() * pt.getY() * pt.getZ()
+  size_t v = 0;
+
+  ZObject3dScan::ConstVoxelIterator iter(&roi);
+  while (iter.hasNext()) {
+    ZIntPoint pt = iter.next();
+    ZIntPoint corner = pt * blockSize;
+    uint64_t label = reader.readBodyIdAt(corner);
+    if (label == 0) {
+      ZIntPoint center = corner + blockSize / 2;
+      label = reader.readBodyIdAt(center);
+    }
+    if (label > 0) {
+      ++v;
+    }
+  }
+
+  std::cout << "Volume: " << double(v) *
+//            << (double) roi.getVoxelNumber() *
+               blockSize.getX() * blockSize.getY() * blockSize.getZ()
                * 0.008 * 0.008 *0.008 << std::endl;
 #endif
 
@@ -23866,6 +23884,17 @@ void ZTest::test(MainWindow *host)
   std::cout << "Opening " << target.getSourceString() << std::endl;
   std::cout << (reader.open(target) ? "Opened successfully." : "Cannot open to read.")
             << std::endl;
+#endif
+
+#if 0
+
+  std::string signalPath=
+        "http://emdata1.int.janelia.org:8500/api/node/b6bc/bodies/sparsevol/"
+        "13334275";
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
+  ZDvidSparseStack *spStack =
+      reader->readDvidSparseStackAsync(ZDvidUrl::GetBodyId(signalPath));
+
 #endif
 
   std::cout << "Done." << std::endl;

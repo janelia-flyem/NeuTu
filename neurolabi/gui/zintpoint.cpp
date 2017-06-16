@@ -107,6 +107,17 @@ ZIntPoint operator + (const ZIntPoint &pt1, int v)
   return ZIntPoint(pt1.getX() + v, pt1.getY() + v, pt1.getZ() + v);
 }
 
+ZIntPoint operator * (const ZIntPoint &pt1, const ZIntPoint &pt2)
+{
+  return ZIntPoint(pt1.getX() * pt2.getX(), pt1.getY() * pt2.getY(),
+                   pt1.getZ() * pt2.getZ());
+}
+
+ZIntPoint operator * (const ZIntPoint &pt1, int v)
+{
+  return ZIntPoint(pt1.getX() * v, pt1.getY() * v, pt1.getZ() * v);
+}
+
 ZIntPoint operator - (const ZIntPoint &pt1, int v)
 {
   return ZIntPoint(pt1.getX() - v, pt1.getY() - v, pt1.getZ() - v);

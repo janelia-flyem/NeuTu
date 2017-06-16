@@ -122,12 +122,13 @@ public:
    */
   void shakeOff();
 
-private:
-  void init();
-  void initBlockGrid();
   bool fillValue(bool cancelable = false);
   bool fillValue(const ZIntCuboid &box, bool cancelable = false);
   bool fillValue(const ZIntCuboid &box, bool cancelable, bool fillingAll);
+
+private:
+  void init();
+  void initBlockGrid();
   QString getLoadBodyThreadId() const;
   QString getFillValueThreadId() const;
   void pushMaskColor();

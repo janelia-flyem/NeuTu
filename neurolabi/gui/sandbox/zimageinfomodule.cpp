@@ -119,7 +119,7 @@ ZImageInfoModule::~ZImageInfoModule()
 void ZImageInfoModule::init()
 {
   m_paint_window=new ZImageShowWindow();
-  m_action = new QAction("ImageInfo", this);
+  m_action = new QAction("Statistics", this);
   connect(m_action, SIGNAL(triggered()), this, SLOT(execute()));
 }
 

@@ -2036,7 +2036,8 @@ void ZFlyEmProofDoc::loadSplitFromService()
 //        getDvidTarget(), getBodyIdForSplit());
 
   QList<ZObject3dScan*> objList = ZServiceConsumer::ReadSplitResult(
-        GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), getBodyIdForSplit());
+        GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(),
+        getBodyIdForSplit());
       //ZDvidResultService::ReadSplitResult(path);
 //  int index = 1;
   foreach (ZObject3dScan *obj, objList) {

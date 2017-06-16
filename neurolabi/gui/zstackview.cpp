@@ -1577,7 +1577,7 @@ ZPixmap *ZStackView::updateProjCanvas(ZPixmap *canvas)
 
   if (usingProjSize) {
     canvas->getProjTransform().setScale(1.0, 1.0);
-    canvas->getProjTransform().setOffset(projRect.left(), projRect.right());
+    canvas->getProjTransform().setOffset(projRect.left(), projRect.top());
   } else {
     canvas->getProjTransform().estimate(
           QRectF(QPointF(0, 0), QSizeF(newCanvasSize)), getProjRegion());

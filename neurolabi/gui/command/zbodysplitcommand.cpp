@@ -21,6 +21,8 @@
 #include "zobject3dscanarray.h"
 #include "zfiletype.h"
 #include "dvid/zdvidendpoint.h"
+#include "zstackgarbagecollector.h"
+#include "dvid/zdvidsparsestack.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {
@@ -74,21 +76,38 @@ int ZBodySplitCommand::run(
     }
   }
 
+  ZStackGarbageCollector gc;
+
   ZSparseStack *spStack = NULL;
   ZStack *signalStack = NULL;
 
   std::string signalPath = ZJsonParser::stringValue(inputJson["signal"]);
+  std::cout << "Signal: " << signalPath << std::endl;
 
   std::string dataDir;
   if (isFile) {
     dataDir = ZString(input.front()).dirPath();
   }
 
+  ZIntCuboid range;
+
+  if (inputJson.hasKey("range")) {
+    ZJsonArray rangeJson(inputJson.value("range"));
+
+    range.loadJson(rangeJson);
+  }
+
   QUrl signalUrl(signalPath.c_str());
   if (signalUrl.scheme() == "http") { //Sparse stack
-    ZDvidReader *reader = ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
+    ZDvidReader *reader =
+        ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
     if (reader != NULL) {
-      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
+      ZDvidSparseStack *dvidStack =
+          dvidStack = reader->readDvidSparseStack(ZDvidUrl::GetBodyId(signalPath));
+      spStack = dvidStack->getSparseStack(range);
+      gc.registerObject(dvidStack);
+//      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
+//      gc.registerObject(spStack);
     }
   } else {
     if (isFile) {
@@ -98,9 +117,11 @@ int ZBodySplitCommand::run(
     if (ZFileType::FileType(signalPath) == ZFileType::FILE_SPARSE_STACK) {
       spStack = new ZSparseStack;
       spStack->load(signalPath);
+      gc.registerObject(spStack);
     } else {
       signalStack = new ZStack;
       signalStack->load(signalPath);
+      gc.registerObject(signalStack);
     }
   }
 
@@ -111,6 +132,10 @@ int ZBodySplitCommand::run(
 
   if (signalStack != NULL || spStack != NULL) {
     ZStackWatershedContainer container(signalStack, spStack);
+
+    if (!range.isEmpty()) {
+      container.setRange(range);
+    }
 
     ZJsonArray seedArrayJson(inputJson.value("seeds"));
     for (size_t i = 0; i < seedArrayJson.size(); ++i) {
@@ -149,10 +174,14 @@ int ZBodySplitCommand::run(
         ZStroke2d stroke;
         stroke.loadJsonObject(seedJson);
         container.addSeed(stroke);
+      } else if (seedJson.hasKey("obj3d")) {
+        ZObject3d obj;
+        obj.loadJsonObject(seedJson);
+        container.addSeed(obj);
       }
     }
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     container.exportMask(GET_TEST_DATA_DIR + "/test2.tif");
     container.exportSource(GET_TEST_DATA_DIR + "/test3.tif");
 #endif
@@ -160,7 +189,7 @@ int ZBodySplitCommand::run(
     container.run();
     ZStack *resultStack = container.getResultStack();
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     resultStack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
@@ -214,15 +243,15 @@ int ZBodySplitCommand::run(
         }
 
         if (!splitTaskKey.empty()) {
-          writer->deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
-                            splitTaskKey);
+//          writer->deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
+//                            splitTaskKey);
         }
       } else {
         ZStackWriter writer;
         writer.write(output, resultStack);
       }
 
-      delete result;
+//      delete result;
     } else {
       std::cout << "WARNING: Failed to produce result." << std::endl;
     }

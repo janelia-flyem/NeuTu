@@ -198,12 +198,6 @@ void ZJsonValue::decodeString(const char *str, json_error_t *error)
   }
 
   m_data = json_loads(str, JSON_DECODE_ANY, error);
-  if (error->line > 0) {
-    std::cout << "JSON decoding error: " << std::endl;
-    std::cout << "  " << GetErrorString(*error) << std::endl;
-//    std::cout << error->source << std::endl;
-//    std::cout << error->text << std::endl;
-  }
 
   delete ownError;
 }
@@ -244,6 +238,14 @@ std::vector<ZJsonValue> ZJsonValue::toArray()
     }
   }
   return array;
+}
+
+void ZJsonValue::PrintError(const json_error_t &error)
+{
+  if (error.line > 0) {
+    std::cout << "JSON decoding error: " << std::endl;
+    std::cout << "  " << GetErrorString(error) << std::endl;
+  }
 }
 
 std::string ZJsonValue::GetErrorString(const json_error_t &error)

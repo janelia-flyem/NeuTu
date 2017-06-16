@@ -61,7 +61,6 @@ CONFIG(debug, debug|release) {
     contains(DEFINES, _FLYEM_) {
         TARGET = neutu
     }
-#    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
 message("Target: $$TARGET")
@@ -748,7 +747,8 @@ HEADERS += mainwindow.h \
     zglobal.h \
     flyem/zstackwatershedcontainer.h \
     dvid/zdvidresultservice.h \
-    flyem/zserviceconsumer.h
+    flyem/zserviceconsumer.h \
+    zstackgarbagecollector.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1304,6 +1304,7 @@ SOURCES += main.cpp \
     zglobal.cpp \
     flyem/zstackwatershedcontainer.cpp \
     dvid/zdvidresultservice.cpp \
-    flyem/zserviceconsumer.cpp
+    flyem/zserviceconsumer.cpp \
+    zstackgarbagecollector.cpp
 
 

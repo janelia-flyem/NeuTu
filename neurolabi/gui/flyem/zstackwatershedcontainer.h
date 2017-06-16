@@ -30,6 +30,8 @@ public:
   //It will remove old seeds
 
 
+  void setRange(const ZIntCuboid &range);
+  void setRange(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   void setRange(int x0, int y0, int z0, int x1, int y1, int z1);
 
   void exportMask(const std::string &filePath);

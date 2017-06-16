@@ -233,6 +233,18 @@ ZIntPoint ZStackWatershedContainer::getSourceOffset() const
 }
 
 void ZStackWatershedContainer::setRange(
+    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+{
+  setRange(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ(),
+           lastCorner.getX(), lastCorner.getY(), lastCorner.getZ());
+}
+
+void ZStackWatershedContainer::setRange(const ZIntCuboid &range)
+{
+  setRange(range.getFirstCorner(), range.getLastCorner());
+}
+
+void ZStackWatershedContainer::setRange(
     int x0, int y0, int z0, int x1, int y1, int z1)
 {
   ZIntCuboid newRange(x0, y0, z0, x1, y1, z1);
