@@ -36,6 +36,9 @@ SynapseReviewProtocol::SynapseReviewProtocol(QWidget *parent) :
     connect(ui->reviewPrevButton, SIGNAL(clicked(bool)), this, SLOT(onReviewPreviousButton()));
     connect(ui->gotoCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onGotoCurrentButton()));
     connect(ui->markReviewedButton, SIGNAL(clicked(bool)), this, SLOT(onMarkReviewedButton()));
+    connect(ui->finishedLastButton, SIGNAL(clicked(bool)), this, SLOT(onFinishedLastButton()));
+    connect(ui->finishedNextButton, SIGNAL(clicked(bool)), this, SLOT(onFinishedNextButton()));
+    connect(ui->finishedPrevButton, SIGNAL(clicked(bool)), this, SLOT(onFinishedPreviousButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
 
@@ -212,6 +215,13 @@ void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
 void SynapseReviewProtocol::gotoCurrent() {
     if (m_currentPendingIndex >= 0) {
         ZIntPoint currentSite = m_pendingList[m_currentPendingIndex];
+        emit requestDisplayPoint(currentSite.getX(), currentSite.getY(), currentSite.getZ());
+    }
+}
+
+void SynapseReviewProtocol::gotoCurrentFinished() {
+    if (m_currentFinishedIndex >= 0) {
+        ZIntPoint currentSite = m_finishedList[m_currentFinishedIndex];
         emit requestDisplayPoint(currentSite.getX(), currentSite.getY(), currentSite.getZ());
     }
 }
@@ -404,18 +414,70 @@ void SynapseReviewProtocol::onGotoCurrentButton() {
 
 void SynapseReviewProtocol::onMarkReviewedButton() {
 
-    std::cout << "onMarkReviewedButton()" << std::endl;
+    if (m_currentPendingIndex < 0) {
+        return;
+    }
 
-    // move site to finished
+    // move site to finished; save state
+    ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
+    m_pendingList.removeOne(currentPoint);
+    m_finishedList.append(currentPoint);
+    saveState();
 
-    // save state!!
+    // advance protocol and go to next point
+    if (m_pendingList.empty()) {
+        // we're done; dialog
+        m_currentPendingIndex = -1;
 
-    // update progress label
+        QMessageBox mb;
+        mb.setText("No more sites");
+        mb.setInformativeText("All sites have been reviewed. You may complete the protocol now.");
+        mb.setStandardButtons(QMessageBox::Ok);
+        mb.setDefaultButton(QMessageBox::Ok);
+        mb.exec();
+    } else {
+        // having removed the point at the current index, the current
+        //  index now points to the next point or past the end of
+        //  the list; if the latter, loop back to the top
+        if (m_currentPendingIndex >= m_pendingList.size()) {
+            m_currentPendingIndex = 0;
+        }
+    }
+    gotoCurrent();
+    updateLabels();
+}
 
-    // if pending list empty: dialog
+void SynapseReviewProtocol::onFinishedLastButton() {
+    if (!m_finishedList.isEmpty()) {
+        m_currentFinishedIndex = m_finishedList.size() - 1;
+    } else {
+        m_currentFinishedIndex = -1;
+    }
+    gotoCurrentFinished();
+}
 
+void SynapseReviewProtocol::onFinishedNextButton() {
+    if (!m_finishedList.empty()) {
+        m_currentFinishedIndex++;
+        if (m_currentFinishedIndex >= m_finishedList.size()) {
+            m_currentFinishedIndex = 0;
+        }
+    } else {
+        m_currentFinishedIndex = -1;
+    }
+    gotoCurrentFinished();
+}
 
-
+void SynapseReviewProtocol::onFinishedPreviousButton() {
+    if (!m_finishedList.empty()) {
+        m_currentFinishedIndex--;
+        if (m_currentFinishedIndex < 0) {
+            m_currentFinishedIndex = m_finishedList.size() - 1;
+        }
+    } else {
+        m_currentFinishedIndex = -1;
+    }
+    gotoCurrentFinished();
 }
 
 void SynapseReviewProtocol::onExitButton() {

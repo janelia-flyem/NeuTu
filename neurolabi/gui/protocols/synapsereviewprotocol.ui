@@ -85,9 +85,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="finishedFirstbutton">
+      <widget class="QPushButton" name="finishedLastButton">
        <property name="text">
-        <string>First</string>
+        <string>Last</string>
        </property>
       </widget>
      </item>

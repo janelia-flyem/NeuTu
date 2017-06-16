@@ -37,6 +37,9 @@ private slots:
     void onReviewFirstButton();
     void onReviewNextButton();
     void onReviewPreviousButton();
+    void onFinishedLastButton();
+    void onFinishedNextButton();
+    void onFinishedPreviousButton();
     void onGotoCurrentButton();
     void onMarkReviewedButton();
 
@@ -65,6 +68,7 @@ private:
     void updatePSDTable();
     void updateLabels();
     void gotoCurrent();
+    void gotoCurrentFinished();
     void saveState();    
     void inputErrorDialog(QString message);
     void setSitesHeaders(QStandardItemModel * model);
