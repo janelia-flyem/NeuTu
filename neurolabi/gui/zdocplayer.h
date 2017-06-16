@@ -25,7 +25,6 @@ class ZStackViewParam;
 class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
 class ZDvidGraySlice;
-
 /*!
  * \brief The basic class of manage roles to a stack object
  */
@@ -75,6 +74,8 @@ public:
   virtual Z3DGraph get3DGraph() const { return Z3DGraph(); }
 
   virtual ZJsonObject toJsonObject() const;
+
+  virtual ZIntCuboid getBoundBox() const;
 
   inline ZStackObject* getData() const {
     return m_data;

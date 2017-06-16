@@ -97,9 +97,15 @@ void ZIntCuboid::translate(const ZIntPoint &offset)
 
 ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
-  for (int i = 0; i < 3; i++) {
-    m_firstCorner[i] = imin2(m_firstCorner[i], cuboid.m_firstCorner[i]);
-    m_lastCorner[i] = imax2(m_lastCorner[i], cuboid.m_lastCorner[i]);
+  if (!cuboid.isEmpty()) {
+    if (isEmpty()) {
+      *this = cuboid;
+    } else  {
+      for (int i = 0; i < 3; i++) {
+        m_firstCorner[i] = imin2(m_firstCorner[i], cuboid.m_firstCorner[i]);
+        m_lastCorner[i] = imax2(m_lastCorner[i], cuboid.m_lastCorner[i]);
+      }
+    }
   }
 
   return *this;

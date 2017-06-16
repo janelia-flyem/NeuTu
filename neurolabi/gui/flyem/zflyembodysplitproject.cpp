@@ -1734,6 +1734,22 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
   }
 }
 
+ZIntCuboid ZFlyEmBodySplitProject::getSeedBoundBox() const
+{
+  ZIntCuboid box;
+
+  QList<ZDocPlayer*> playerList =
+      getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+  foreach (const ZDocPlayer *player, playerList) {
+    ZIntCuboid seedBox = player->getBoundBox();
+    if (!seedBox.isEmpty()) {
+      box.join(seedBox);
+    }
+  }
+
+  return box;
+}
+
 ZJsonArray ZFlyEmBodySplitProject::getSeedJson() const
 {
   QList<ZDocPlayer*> playerList =
@@ -1810,9 +1826,16 @@ std::string ZFlyEmBodySplitProject::saveTask() const
       ZJsonArray seedJson = getSeedJson();
       task.setEntry("seeds", seedJson);
       ZJsonArray roiJson = getRoiJson();
+      if (roiJson.isEmpty()) {
+        ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
+        if (!range.isEmpty()) {
+          roiJson = range.toJsonArray();
+        }
+      }
       if (!roiJson.isEmpty()) {
         task.setEntry("range", roiJson);
       }
+
       location = writer->writeServiceTask("split", task);
       ZJsonObject taskJson;
       taskJson.setEntry(NeuTube::Json::REF_KEY, location);

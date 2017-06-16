@@ -48,6 +48,7 @@
 #include "zstackdocdatabuffer.h"
 #include "flyem/zserviceconsumer.h"
 #include "zstroke2d.h"
+#include "flyem/zflyemmisc.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -2221,7 +2222,14 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
-      if (bookmark->getUserName().length() == (int) currentUserName.length()) {
+      bool good =
+          (bookmark->getUserName().length() == (int) currentUserName.length());
+      if (good) {
+        ZJsonObject checkJson =
+            m_dvidReader.readBookmarkJson(bookmark->getCenter().toIntPoint());
+        good = (!checkJson.isEmpty());
+      }
+      if (good) {
         if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
           bookmark->setChecked(true);
           ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
@@ -3191,7 +3199,8 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
         ZStackArray seedMask = createWatershedMask(true);
-
+        cuboid = ZFlyEmMisc::EstimateSplitRoi(seedMask.getBoundBox());
+        /*
         Cuboid_I box;
         seedMask.getBoundBox(&box);
 
@@ -3215,6 +3224,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
 
         cuboid.set(box.cb[0], box.cb[1], box.cb[2], box.ce[0], box.ce[1],
             box.ce[2]);
+            */
       }
     } else {
       cuboid = roi->getCuboid();

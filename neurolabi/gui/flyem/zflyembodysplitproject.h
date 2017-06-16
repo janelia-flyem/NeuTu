@@ -228,6 +228,7 @@ private:
 
   ZJsonArray getSeedJson() const;
   ZJsonArray getRoiJson() const;
+  ZIntCuboid getSeedBoundBox() const;
 
 private:
   ZDvidTarget m_dvidTarget;

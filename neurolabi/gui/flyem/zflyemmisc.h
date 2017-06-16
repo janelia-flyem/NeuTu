@@ -65,6 +65,8 @@ std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
 
 ZStack* GenerateExampleStack(const ZJsonObject &obj);
 
+ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
+
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
 QSet<uint64_t> ReadBodyFromSequencer(const QString &filePath);

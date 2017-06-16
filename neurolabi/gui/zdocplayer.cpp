@@ -51,6 +51,16 @@ ZJsonObject ZDocPlayer::toJsonObject() const
   return ZJsonObject();
 }
 
+ZIntCuboid ZDocPlayer::getBoundBox() const
+{
+  ZIntCuboid box;
+  if (getData() != NULL) {
+    getData()->boundBox(&box);
+  }
+
+  return box;
+}
+
 /*************************************/
 ZDocPlayerList::~ZDocPlayerList()
 {
