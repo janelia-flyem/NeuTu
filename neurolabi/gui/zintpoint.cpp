@@ -1,5 +1,7 @@
 #include "zintpoint.h"
 #include <iostream>
+#include <climits>
+
 #include "tz_stdint.h"
 
 #include "tz_error.h"

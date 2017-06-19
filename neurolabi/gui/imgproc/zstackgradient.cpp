@@ -3,6 +3,7 @@
 #include <cfloat>
 #include <cmath>
 #include <typeinfo>
+#include <string.h>
 
 #include "imgproc/zstackprocessor.h"
 

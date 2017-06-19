@@ -1,6 +1,8 @@
 #include "zdvidnode.h"
 
 #include <iostream>
+#include <cstdlib>
+
 #if _QT_APPLICATION_
 #include <QtDebug>
 #include "QsLog.h"
