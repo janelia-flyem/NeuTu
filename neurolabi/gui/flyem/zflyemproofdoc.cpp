@@ -128,8 +128,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
 
 //    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
 //            this, SLOT(updateDvidLabelObject()));
-    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t)),
-              this, SLOT(checkInBodyWithMessage(uint64_t)));
+    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, FlyEM::EBodySplitMode)),
+            this, SLOT(checkInBodyWithMessage(uint64_t, FlyEM::EBodySplitMode)));
     connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
             this, SLOT(updateDvidLabelObjectSliently()));
 
@@ -476,7 +476,7 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
         for (std::set<uint64_t>::const_iterator iter = selected.begin();
              iter != selected.end(); ++iter) {
           if (supervisor != NULL) {
-            if (supervisor->checkOut(*iter)) {
+            if (supervisor->checkOut(*iter, FlyEM::BODY_SPLIT_NONE)) {
               labelSet.insert(*iter);
             } else {
               labelSet.clear();
@@ -617,7 +617,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
         for (std::set<uint64_t>::const_iterator iter = selected.begin();
              iter != selected.end(); ++iter) {
           if (supervisor != NULL) {
-            if (supervisor->checkOut(*iter)) {
+            if (supervisor->checkOut(*iter, FlyEM::BODY_SPLIT_NONE)) {
               labelSet.insert(*iter);
             } else {
               labelSet.clear();
@@ -1563,6 +1563,7 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
   notifyObjectModified();
 }
 
+/*
 bool ZFlyEmProofDoc::checkInBody(uint64_t bodyId)
 {
   if (getSupervisor() != NULL) {
@@ -1571,26 +1572,28 @@ bool ZFlyEmProofDoc::checkInBody(uint64_t bodyId)
 
   return true;
 }
+*/
 
-
-bool ZFlyEmProofDoc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
+bool ZFlyEmProofDoc::checkBodyWithMessage(
+    uint64_t bodyId, bool checkingOut, FlyEM::EBodySplitMode mode)
 {
   bool succ = true;
 
   if (checkingOut) {
-    succ = checkOutBody(bodyId);
+    succ = checkOutBody(bodyId, mode);
   } else {
-    succ = checkInBodyWithMessage(bodyId);
+    succ = checkInBodyWithMessage(bodyId, mode);
   }
 
   return succ;
 }
 
-bool ZFlyEmProofDoc::checkInBodyWithMessage(uint64_t bodyId)
+bool ZFlyEmProofDoc::checkInBodyWithMessage(
+    uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     if (bodyId > 0) {
-      if (getSupervisor()->checkIn(bodyId)) {
+      if (getSupervisor()->checkIn(bodyId, mode)) {
         emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
         return true;
       } else {
@@ -1605,14 +1608,15 @@ bool ZFlyEmProofDoc::checkInBodyWithMessage(uint64_t bodyId)
   return true;
 }
 
-bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId)
+bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
-    return getSupervisor()->checkOut(bodyId);
+    return getSupervisor()->checkOut(bodyId, mode);
   }
 
   return true;
 }
+
 
 std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
     NeuTube::EBodyLabelType type) const
@@ -1646,7 +1650,7 @@ void ZFlyEmProofDoc::makeAction(ZActionFactory::EAction item)
 }
 */
 
-void ZFlyEmProofDoc::checkInSelectedBody()
+void ZFlyEmProofDoc::checkInSelectedBody(FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -1655,7 +1659,7 @@ void ZFlyEmProofDoc::checkInSelectedBody()
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (bodyId > 0) {
-        if (getSupervisor()->checkIn(bodyId)) {
+        if (getSupervisor()->checkIn(bodyId, mode)) {
           emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
         } else {
           emit messageGenerated(
@@ -1698,7 +1702,7 @@ void ZFlyEmProofDoc::checkInSelectedBodyAdmin()
   }
 }
 
-void ZFlyEmProofDoc::checkOutBody()
+void ZFlyEmProofDoc::checkOutBody(FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -1707,7 +1711,7 @@ void ZFlyEmProofDoc::checkOutBody()
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (bodyId > 0) {
-        if (getSupervisor()->checkOut(bodyId)) {
+        if (getSupervisor()->checkOut(bodyId, mode)) {
           emit messageGenerated(QString("Body %1 is locked.").arg(bodyId));
         } else {
           std::string owner = getSupervisor()->getOwner(bodyId);

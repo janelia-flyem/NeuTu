@@ -8,6 +8,7 @@ contains(TEMPLATE, app) {
 } else {
     CONFIG += staticlib
 }
+
 #DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
@@ -748,7 +749,8 @@ HEADERS += mainwindow.h \
     flyem/zstackwatershedcontainer.h \
     dvid/zdvidresultservice.h \
     flyem/zserviceconsumer.h \
-    zstackgarbagecollector.h
+    zstackgarbagecollector.h \
+    dialogs/zflyembodysplitdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -846,7 +848,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zdvidsourcewidget.ui \
     dialogs/zflyemgrayscaledialog.ui \
     dialogs/zcomboeditdialog.ui \
-    dialogs/zflyembodycomparisondialog.ui
+    dialogs/zflyembodycomparisondialog.ui \
+    dialogs/zflyembodysplitdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1305,6 +1308,7 @@ SOURCES += main.cpp \
     flyem/zstackwatershedcontainer.cpp \
     dvid/zdvidresultservice.cpp \
     flyem/zserviceconsumer.cpp \
-    zstackgarbagecollector.cpp
+    zstackgarbagecollector.cpp \
+    dialogs/zflyembodysplitdialog.cpp
 
 

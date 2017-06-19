@@ -33,7 +33,7 @@
 #include "zflyemdataloader.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
-
+#include "dialogs/zflyembodysplitdialog.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -131,7 +131,7 @@ void ZProofreadWindow::init()
   connectMessagePipe(m_mainMvc);
   connectMessagePipe(m_mainMvc->getDocument().get());
 
-  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t)),
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, FlyEM::EBodySplitMode)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
@@ -191,6 +191,7 @@ void ZProofreadWindow::createDialog()
   m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
   m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
   m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
+  m_bodySplitDlg = new ZFlyEmBodySplitDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -503,13 +504,13 @@ void ZProofreadWindow::operateDvid()
   m_dvidOpDlg->raise();
 }
 
-void ZProofreadWindow::launchSplit(uint64_t bodyId)
+void ZProofreadWindow::launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
 //  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
 //  m_progressSignal->advanceProgress(0.1);
 //  advanceProgress(0.1);
-  m_mainMvc->launchSplit(bodyId);
+  m_mainMvc->launchSplit(bodyId, mode);
 
   /*
   if (m_mainMvc->launchSplit(bodyId)) {
@@ -523,16 +524,29 @@ void ZProofreadWindow::launchSplit(uint64_t bodyId)
 
 void ZProofreadWindow::launchSplit()
 {
-  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
-  dlg->setValueLabel("Body ID");
-  if (dlg->exec()) {
-    if (dlg->isSkipped()) {
+//  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+
+//  ->setValueLabel("Body ID");
+  std::set<uint64_t> bodySet =
+      m_mainMvc->getCompleteDocument()->getSelectedBodySet(
+        NeuTube::BODY_LABEL_ORIGINAL);
+
+  if (!bodySet.empty()) {
+    m_bodySplitDlg->setBodyId(*(bodySet.begin()));
+  }
+
+  if (m_bodySplitDlg->exec()) {
+/*    if (m_bodySplitDlg->isSkipped()) {
       m_mainMvc->notifySplitTriggered();
-    } else {
-      if (dlg->getValue() > 0) {
-        launchSplit(dlg->getValue());
+    } else {*/
+      if (m_bodySplitDlg->getBodyId() > 0) {
+        FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_ONLINE;
+        if (m_bodySplitDlg->isOfflineSplit()) {
+          mode = FlyEM::BODY_SPLIT_OFFLINE;
+        }
+        launchSplit(m_bodySplitDlg->getBodyId(), mode);
       }
-    }
+//    }
   }
 }
 

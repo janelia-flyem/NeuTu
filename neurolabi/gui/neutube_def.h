@@ -157,6 +157,10 @@ enum EBodyType {
   BODY_FULL, BODY_COARSE, BODY_SKELETON, BODY_NULL
 };
 
+enum EBodySplitMode {
+  BODY_SPLIT_NONE, BODY_SPLIT_ONLINE, BODY_SPLIT_OFFLINE
+};
+
 static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
 }

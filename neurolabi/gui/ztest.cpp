@@ -22224,6 +22224,24 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::cout << "Updating ..." << std::endl;
+  reader.getDvidTarget().setSynapseName("annot_synapse_prod");
+  reader.getDvidTarget().toJsonObject().print();
+
+  ZDvidWriter writer;
+  reader.getDvidTarget().useDefaultDataSetting(false);
+  writer.open(reader.getDvidTarget());
+  writer.writeDefaultDataSetting();
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "7abe", 8500);
 
   ZDvidReader reader;
@@ -22633,7 +22651,7 @@ void ZTest::test(MainWindow *host)
   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@CX", 8700);
   target.useDefaultDataSetting(true);

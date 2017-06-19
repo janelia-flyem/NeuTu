@@ -451,13 +451,15 @@ public slots:
   void unverifySelectedSynapse();
 
   void deselectMappedBodyWithOriginalId(const std::set<uint64_t> &bodySet);
-  void checkInSelectedBody();
+  void checkInSelectedBody(FlyEM::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
-  void checkOutBody();
-  bool checkOutBody(uint64_t bodyId);
-  bool checkInBody(uint64_t bodyId);
-  bool checkInBodyWithMessage(uint64_t bodyId);
-  bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
+  void checkOutBody(FlyEM::EBodySplitMode mode);
+  bool checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+//  bool checkInBody(uint64_t bodyId);
+  bool checkInBodyWithMessage(
+      uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  bool checkBodyWithMessage(
+      uint64_t bodyId, bool checkingOut, FlyEM::EBodySplitMode mode);
 
   void downloadBookmark(int x, int y, int z);  
   void rewriteSegmentation();

@@ -230,8 +230,6 @@ public:
   void setDepthFrozen(bool state);
   void blockViewChangeEvent(bool state);
 
-  void updateViewBox();
-
   void zoomTo(int x, int y, int z);
   void zoomTo(const ZIntPoint &pt);
 
@@ -248,6 +246,7 @@ public: //Message system implementation
   void enableMessageManager();
 
 public slots:
+  void updateViewBox();
 //  void updateView();
   void redraw(EUpdateOption option = UPDATE_QUEUED);
   void redrawObject();

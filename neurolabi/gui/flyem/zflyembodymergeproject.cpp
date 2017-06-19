@@ -538,7 +538,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
 
         for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
              iter != bodySet.end(); ++iter) {
-          emit checkingInBody(*iter);
+          emit checkingInBody(*iter, FlyEM::BODY_SPLIT_NONE);
         }
 
         getProgressSignal()->advanceProgress(0.1);

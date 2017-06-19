@@ -55,14 +55,29 @@ void ZFlyEmSupervisor::setUserName(const std::string userName)
   m_userName = userName;
 }
 
-bool ZFlyEmSupervisor::checkIn(uint64_t bodyId)
+std::string ZFlyEmSupervisor::GetUserName(
+    const std::string &userName, FlyEM::EBodySplitMode mode)
+{
+  if (mode == FlyEM::BODY_SPLIT_ONLINE) {
+    return userName + "-offline";
+  }
+
+  return userName;
+}
+
+std::string ZFlyEmSupervisor::getUserName(FlyEM::EBodySplitMode mode) const
+{
+  return GetUserName(m_userName, mode);
+}
+
+bool ZFlyEmSupervisor::checkIn(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   if (m_server.empty()) {
     return false;
   }
 
   ZDvidWriter writer;
-  writer.put(getCheckinUrl(bodyId));
+  writer.put(getCheckinUrl(bodyId, mode));
 
 //  writer.writeUrl(getCheckinUrl(bodyId), "PUT");
 
@@ -82,7 +97,7 @@ bool ZFlyEmSupervisor::checkInAdmin(uint64_t bodyId)
   return writer.getStatusCode() == 200;
 }
 
-bool ZFlyEmSupervisor::checkOut(uint64_t bodyId)
+bool ZFlyEmSupervisor::checkOut(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   ZOUT(LINFO(), 3) << "Checking out body:" << bodyId;
 
@@ -91,7 +106,7 @@ bool ZFlyEmSupervisor::checkOut(uint64_t bodyId)
   }
 
   ZDvidWriter writer;
-  writer.put(getCheckoutUrl(bodyId));
+  writer.put(getCheckoutUrl(bodyId, mode));
 //  writer.writeUrl(getCheckoutUrl(bodyId), "PUT");
 
   return writer.getStatusCode() == 200;
@@ -162,27 +177,29 @@ std::string ZFlyEmSupervisor::getCheckinUrl(
 }
 
 std::string ZFlyEmSupervisor::getCheckinUrl(
-    const std::string &uuid, uint64_t bodyId) const
+    const std::string &uuid, uint64_t bodyId, FlyEM::EBodySplitMode mode) const
 {
   return QString("%1/%2/%3").arg(getCheckinUrl(uuid).c_str()).arg(bodyId).
-      arg(getUserName().c_str()).toStdString();
+      arg(getUserName(mode).c_str()).toStdString();
 }
 
 std::string ZFlyEmSupervisor::getCheckoutUrl(
-    const std::string &uuid, uint64_t bodyId) const
+    const std::string &uuid, uint64_t bodyId, FlyEM::EBodySplitMode mode) const
 {
   return QString("%1/%2/%3").arg(getCheckoutUrl(uuid).c_str()).arg(bodyId).
-      arg(getUserName().c_str()).toStdString();
+      arg(getUserName(mode).c_str()).toStdString();
 }
 
-std::string ZFlyEmSupervisor::getCheckinUrl(uint64_t bodyId) const
+std::string ZFlyEmSupervisor::getCheckinUrl(
+    uint64_t bodyId, FlyEM::EBodySplitMode mode) const
 {
-  return getCheckinUrl(getUuid(), bodyId);
+  return getCheckinUrl(getUuid(), bodyId, mode);
 }
 
-std::string ZFlyEmSupervisor::getCheckoutUrl(uint64_t bodyId) const
+std::string ZFlyEmSupervisor::getCheckoutUrl(
+    uint64_t bodyId, FlyEM::EBodySplitMode mode) const
 {
-  return getCheckoutUrl(getUuid(), bodyId);
+  return getCheckoutUrl(getUuid(), bodyId, mode);
 }
 
 std::string ZFlyEmSupervisor::getUuid() const

@@ -137,7 +137,7 @@ signals:
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
   void coarseBodyWindowCreatedInThread();
-  void checkingInBody(uint64_t bodyId);
+  void checkingInBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
 
   /*
   void messageGenerated(QString, bool appending = true);

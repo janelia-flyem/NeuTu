@@ -1275,12 +1275,12 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(notifySplitTriggered()));
   connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
           this, SLOT(annotateBody()));
-  connect(getPresenter(), SIGNAL(bodyCheckinTriggered()),
-          this, SLOT(checkInSelectedBody()));
+  connect(getPresenter(), SIGNAL(bodyCheckinTriggered(FlyEM::EBodySplitMode)),
+          this, SLOT(checkInSelectedBody(FlyEM::EBodySplitMode)));
   connect(getPresenter(), SIGNAL(bodyForceCheckinTriggered()),
           this, SLOT(checkInSelectedBodyAdmin()));
-  connect(getPresenter(), SIGNAL(bodyCheckoutTriggered()),
-          this, SLOT(checkOutBody()));
+  connect(getPresenter(), SIGNAL(bodyCheckoutTriggered(FlyEM::EBodySplitMode)),
+          this, SLOT(checkOutBody(FlyEM::EBodySplitMode)));
   connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
           this, SLOT(processViewChange()));
   connect(getCompletePresenter(), SIGNAL(goingToTBar()),
@@ -1344,11 +1344,6 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(checkInBodyWithMessage(uint64_t)));
   connect(getCompleteDocument(), SIGNAL(requestingBodyLock(uint64_t,bool)),
           this, SLOT(checkBodyWithMessage(uint64_t,bool)));
-  /*
-  connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
-          getCompleteDocument(), SLOT(deprecateSplitSource()));
-          */
-
 //  m_mergeProject.getProgressSignal()->connectProgress(getProgressSignal());
   m_splitProject.getProgressSignal()->connectProgress(getProgressSignal());
 
@@ -1363,8 +1358,8 @@ void ZFlyEmProofMvc::customInit()
 
 
   m_splitProject.setDocument(getDocument());
-  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
-          this->getView(), SLOT(setView(int, int, int, int)));
+//  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+//          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
           this, SLOT(updateSplitBody()));
   /*
@@ -1392,8 +1387,8 @@ void ZFlyEmProofMvc::customInit()
 //  ZWidgetMessage::ConnectMessagePipe(&getDocument().get(), this, false);
 
 
-  connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
-          this, SLOT(presentBodySplit(uint64_t)));
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t, FlyEM::EBodySplitMode)),
+          this, SLOT(presentBodySplit(uint64_t, FlyEM::EBodySplitMode)));
 
   connect(getCompletePresenter(), SIGNAL(selectingBodyAt(int,int,int)),
           this, SLOT(xorSelectionAt(int, int, int)));
@@ -1851,6 +1846,7 @@ void ZFlyEmProofMvc::updateBodySelection()
   }
 }
 
+/*
 bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
 {
   if (getSupervisor() != NULL) {
@@ -1859,7 +1855,7 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
 
   return true;
 }
-
+*/
 uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
 {
   uint64_t bodyId = 0;
@@ -1913,7 +1909,7 @@ void ZFlyEmProofMvc::testBodySplit()
       }
 
       if (getCompleteDocument()->isSplittable(bodyId)) {
-        launchSplit(bodyId);
+        launchSplit(bodyId, FlyEM::BODY_SPLIT_ONLINE);
       }
     }
   } else {
@@ -2008,24 +2004,26 @@ void ZFlyEmProofMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
 }
 
 
-bool ZFlyEmProofMvc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
+bool ZFlyEmProofMvc::checkBodyWithMessage(
+    uint64_t bodyId, bool checkingOut, FlyEM::EBodySplitMode mode)
 {
   bool succ = true;
 
   if (checkingOut) {
-    succ = checkOutBody(bodyId);
+    succ = checkOutBody(bodyId, mode);
   } else {
-    succ = checkInBodyWithMessage(bodyId);
+    succ = checkInBodyWithMessage(bodyId, mode);
   }
 
   return succ;
 }
 
-bool ZFlyEmProofMvc::checkInBodyWithMessage(uint64_t bodyId)
+bool ZFlyEmProofMvc::checkInBodyWithMessage(
+    uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     if (bodyId > 0) {
-      if (getSupervisor()->checkIn(bodyId)) {
+      if (getSupervisor()->checkIn(bodyId, mode)) {
         emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
         return true;
       } else {
@@ -2037,16 +2035,16 @@ bool ZFlyEmProofMvc::checkInBodyWithMessage(uint64_t bodyId)
   return true;
 }
 
-bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId)
+bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
-    return getSupervisor()->checkOut(bodyId);
+    return getSupervisor()->checkOut(bodyId, mode);
   }
 
   return true;
 }
 
-void ZFlyEmProofMvc::checkInSelectedBody()
+void ZFlyEmProofMvc::checkInSelectedBody(FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -2055,7 +2053,7 @@ void ZFlyEmProofMvc::checkInSelectedBody()
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (bodyId > 0) {
-        if (getSupervisor()->checkIn(bodyId)) {
+        if (getSupervisor()->checkIn(bodyId, mode)) {
           emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
         } else {
           emit errorGenerated(QString("Failed to unlock body %1.").arg(bodyId));
@@ -2092,7 +2090,7 @@ void ZFlyEmProofMvc::checkInSelectedBodyAdmin()
   }
 }
 
-void ZFlyEmProofMvc::checkOutBody()
+void ZFlyEmProofMvc::checkOutBody(FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -2101,7 +2099,7 @@ void ZFlyEmProofMvc::checkOutBody()
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (bodyId > 0) {
-        if (getSupervisor()->checkOut(bodyId)) {
+        if (getSupervisor()->checkOut(bodyId, mode)) {
           emit messageGenerated(QString("Body %1 is locked.").arg(bodyId));
         } else {
           std::string owner = getSupervisor()->getOwner(bodyId);
@@ -2148,7 +2146,7 @@ void ZFlyEmProofMvc::annotateBody()
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
-      if (checkOutBody(bodyId)) {
+      if (checkOutBody(bodyId, FlyEM::BODY_SPLIT_NONE)) {
         ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
@@ -2164,7 +2162,7 @@ void ZFlyEmProofMvc::annotateBody()
           getCompleteDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
         }
 
-        checkInBodyWithMessage(bodyId);
+        checkInBodyWithMessage(bodyId, FlyEM::BODY_SPLIT_NONE);
       } else {
         if (getSupervisor() != NULL) {
           std::string owner = getSupervisor()->getOwner(bodyId);
@@ -2286,7 +2284,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
   return body;
 }
 
-void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
+void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
@@ -2304,7 +2302,9 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
         body = updateBodyForSplit(bodyId, reader);
       }
 
-      body->runFillValueFunc();
+      if (mode == FlyEM::BODY_SPLIT_ONLINE) {
+        body->runFillValueFunc();
+      }
 
       m_splitProject.setBodyId(bodyId);
 
@@ -2324,7 +2324,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId)
 
       getCompleteDocument()->deprecateSplitSource();
 
-      emit splitBodyLoaded(bodyId);
+      emit splitBodyLoaded(bodyId, mode);
     } else {
       QString msg = QString("Invalid body id: %1").arg(bodyId);
       emit messageGenerated(
@@ -2351,20 +2351,7 @@ void ZFlyEmProofMvc::updateSplitBody()
     ZOUT(LINFO(), 3) << "Updating split body:" << m_splitProject.getBodyId();
     getCompleteDocument()->getBodyForSplit()->deprecateStackBuffer();
     getCompleteDocument()->deprecateSplitSource();
-    /*
-    QColor color =
-        getCompleteDocument()->getDvidSparseStack()->getObjectMask()->getColor();
-    getCompleteDocument()->getDvidSparseStack()->loadBody(
-          m_splitProject.getBodyId());
-    getCompleteDocument()->getDvidSparseStack()->setMaskColor(color);
-    */
-#if 0
-    uint64_t bodyId = m_splitProject.getBodyId();
-    getDocument()->removeObject(
-          ZStackObjectSourceFactory::MakeSplitObjectSource(), true);
-    m_splitProject.setBodyId(0);
-    launchSplit(bodyId);
-#endif
+
     if (m_coarseBodyWindow != NULL) {
       ZOUT(LINFO(), 3) << "Removing rect roi from coarse body window.";
       m_coarseBodyWindow->removeRectRoi();
@@ -2553,9 +2540,10 @@ void ZFlyEmProofMvc::clearBodyMergeStage()
   getCompleteDocument()->clearBodyMergeStage();
 }
 
-void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
+void ZFlyEmProofMvc::presentBodySplit(
+    uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
-  enableSplit();
+  enableSplit(mode);
 
   ZOUT(LINFO(), 3) << "Removing ROI";
   getDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
@@ -2575,10 +2563,10 @@ void ZFlyEmProofMvc::presentBodySplit(uint64_t bodyId)
   getView()->redrawObject();
 }
 
-void ZFlyEmProofMvc::enableSplit()
+void ZFlyEmProofMvc::enableSplit(FlyEM::EBodySplitMode mode)
 {
 //  m_splitOn = true;
-  getCompletePresenter()->enableSplit();
+  getCompletePresenter()->enableSplit(mode);
 }
 
 void ZFlyEmProofMvc::disableSplit()
@@ -2587,7 +2575,7 @@ void ZFlyEmProofMvc::disableSplit()
   getCompletePresenter()->disableSplit();
 }
 
-void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
+void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   if (bodyId > 0) {
     if (!getCompleteDocument()->isSplittable(bodyId)) {
@@ -2597,7 +2585,7 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
       emit messageGenerated(
             ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);
-    } else if (checkOutBody(bodyId)) {
+    } else if (checkOutBody(bodyId, mode)) {
 #ifdef _DEBUG_2
       bodyId = 14742253;
 #endif
@@ -2610,7 +2598,7 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId)
         ZOUT(LINFO(), 3) << "Launching split func:" << bodyId;
         QFuture<void> future =
             QtConcurrent::run(
-              this, &ZFlyEmProofMvc::launchSplitFunc, bodyId);
+              this, &ZFlyEmProofMvc::launchSplitFunc, bodyId, mode);
         m_futureMap[threadId] = future;
       }
     } else {
@@ -2655,7 +2643,8 @@ void ZFlyEmProofMvc::exitSplit()
 
     getDocument()->setVisible(ZStackObject::TYPE_DVID_SPARSE_STACK, false);
 
-    checkInBodyWithMessage(m_splitProject.getBodyId());
+    checkInBodyWithMessage(
+          m_splitProject.getBodyId(), getCompletePresenter()->getSplitMode());
 //    getDocument()->setVisible(ZStackObject::TYPE_PUNCTA, false);
 
 
@@ -2688,7 +2677,8 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
       QMessageBox msgBox;
        msgBox.setText("Changing to another body to split.");
        msgBox.setInformativeText("Do you want to save your seeds?");
-       msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+       msgBox.setStandardButtons(
+             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
        msgBox.setDefaultButton(QMessageBox::Save);
        int ret = msgBox.exec();
        if (ret != QMessageBox::Cancel) {
@@ -2699,7 +2689,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
          getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
          getCompleteDocument()->setSelectedBody(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
-         launchSplit(bodyId);
+         launchSplit(bodyId, getCompletePresenter()->getSplitMode());
        }
     }
   }

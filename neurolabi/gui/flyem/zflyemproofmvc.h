@@ -15,6 +15,7 @@
 #include "zthreadfuturemap.h"
 #include "flyem/zflyembookmark.h"
 #include "zwindowfactory.h"
+#include "neutube_def.h"
 
 class QWidget;
 class ZFlyEmProofDoc;
@@ -83,7 +84,7 @@ public:
 
   void exitCurrentDoc();
 
-  void enableSplit();
+  void enableSplit(FlyEM::EBodySplitMode mode);
   void disableSplit();
 
   void processViewChangeCustom(const ZStackViewParam &viewParam);
@@ -91,7 +92,7 @@ public:
   ZFlyEmSupervisor* getSupervisor() const;
 
 //  bool checkInBody(uint64_t bodyId);
-  bool checkOutBody(uint64_t bodyId);
+  bool checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
 
   virtual ZDvidTarget getDvidTarget() const;
 
@@ -141,7 +142,7 @@ signals:
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage &message);
-  void splitBodyLoaded(uint64_t bodyId);
+  void splitBodyLoaded(uint64_t bodyId, FlyEM::EBodySplitMode mode);
   void bookmarkUpdated(ZFlyEmBodyMergeProject *m_project);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void bookmarkDeleted(ZFlyEmBodyMergeProject *m_project);
@@ -164,22 +165,25 @@ public slots:
 
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
-  void launchSplit(uint64_t bodyId);
+  void launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void annotateBody();
   void annotateSynapse();
-  void checkInSelectedBody();
+  void checkInSelectedBody(FlyEM::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
-  void checkOutBody();
-  bool checkInBody(uint64_t bodyId);
-  bool checkInBodyWithMessage(uint64_t bodyId);
-  bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
+  void checkOutBody(FlyEM::EBodySplitMode mode);
+//  bool checkInBody(uint64_t bodyId);
+  bool checkInBodyWithMessage(
+      uint64_t bodyId, FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_NONE);
+  bool checkBodyWithMessage(
+      uint64_t bodyId, bool checkingOut,
+      FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_NONE);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
   void showSplitQuickView();
-  void presentBodySplit(uint64_t bodyId);
+  void presentBodySplit(uint64_t bodyId, FlyEM::EBodySplitMode mode);
   void updateBodySelection();
   void saveSeed();
   void saveMergeOperation();
@@ -359,7 +363,7 @@ private slots:
 private:
   void init();
   void initBodyWindow();
-  void launchSplitFunc(uint64_t bodyId);
+  void launchSplitFunc(uint64_t bodyId, FlyEM::EBodySplitMode mode);
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
@@ -566,7 +570,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));
   connect(panel, SIGNAL(exportingSeed()), this, SLOT(exportSeed()));
   connect(panel, SIGNAL(importingSeed()), this, SLOT(importSeed()));
-  connect(this, SIGNAL(splitBodyLoaded(uint64_t)),
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t, FlyEM::EBodySplitMode)),
           panel, SLOT(updateBodyWidget(uint64_t)));
   connect(panel, SIGNAL(savingTask()), this, SLOT(saveSplitTask()));
   connect(panel, SIGNAL(loadingSplitResult()), this, SLOT(loadSplitResult()));

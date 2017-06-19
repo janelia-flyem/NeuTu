@@ -39,7 +39,8 @@ ZFlyEmProofPresenter::ZFlyEmProofPresenter(QWidget *parent) :
 void ZFlyEmProofPresenter::init()
 {
   m_isHightlightMode = false;
-  m_splitWindowMode = false;
+//  m_splitWindowMode = false;
+  m_splitMode = FlyEM::BODY_SPLIT_NONE;
   m_highTileContrast = false;
   m_smoothTransform = false;
   m_showingData = false;
@@ -504,15 +505,19 @@ bool ZFlyEmProofPresenter::isSplitOn() const
   return getAction(ZActionFactory::ACTION_PAINT_STROKE)->isEnabled();
 }
 
-void ZFlyEmProofPresenter::enableSplit()
+void ZFlyEmProofPresenter::enableSplit(FlyEM::EBodySplitMode mode)
 {
-  setSplitWindow(true);
-  setSplitEnabled(true);
+  if (mode == FlyEM::BODY_SPLIT_NONE) {
+    disableSplit();
+  } else {
+    setSplitMode(mode);
+    setSplitEnabled(true);
+  }
 }
 
 void ZFlyEmProofPresenter::disableSplit()
 {
-  setSplitWindow(false);
+  setSplitMode(FlyEM::BODY_SPLIT_NONE);
   setSplitEnabled(false);
 }
 
