@@ -7,6 +7,7 @@
 #include "tz_math.h"
 #include "zstack.hxx"
 #include "zintcuboid.h"
+#include "zobject3dscan.h"
 
 ZStackWatershed::ZStackWatershed() : m_floodingZero(false)
 {

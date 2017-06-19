@@ -3513,9 +3513,25 @@ void ZFlyEmProofMvc::exportSeed()
 
 void ZFlyEmProofMvc::saveSplitTask()
 {
-  std::string location = m_splitProject.saveTask();
+  if (m_splitProject.getBodyId() > 0) {
+      std::string location = m_splitProject.saveTask();
 
-  emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
+      emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
+  }
+#if 0
+  if (m_splitProject.getBodyId() > 0) {
+    if (getSupervisor()->checkIn(m_splitProject.getBodyId())) {
+      std::string location = m_splitProject.saveTask();
+
+      emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage(
+              "Cannot save the task because the body has been locked"
+              " by someone else.", NeuTube::MSG_WARNING));
+    }
+  }
+#endif
 }
 
 void ZFlyEmProofMvc::loadSplitResult()

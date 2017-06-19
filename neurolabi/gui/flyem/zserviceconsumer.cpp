@@ -92,6 +92,22 @@ bool ZServiceConsumer::HasSplitResult(
   return hasResult;
 }
 
+bool ZServiceConsumer::HasSplitTask(
+    const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId)
+{
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(server.toStdString());
+
+  bool hasTask = false;
+  if (reader != NULL) {
+    hasTask = reader->hasKey(
+          ZDvidData::GetName(ZDvidData::ROLE_SPLIT_RESULT_KEY),
+          ZDvidUrl(bodySource).getSplitTaskKey(bodyId).c_str());
+  }
+
+  return hasTask;
+}
+
 bool ZServiceConsumer::HasSplitResult(
     const QString server, const QString taskKey)
 {

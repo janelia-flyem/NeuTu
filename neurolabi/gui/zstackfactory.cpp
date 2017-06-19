@@ -722,6 +722,7 @@ ZStack* ZStackFactory::MakeLabelStack(ZSwcTree *obj, int v)
 {
   ZIntCuboid box = obj->getBoundBox().toIntCuboid();
 
+  return NULL;
 //  ZStack *stack = MakeStack()
 }
 

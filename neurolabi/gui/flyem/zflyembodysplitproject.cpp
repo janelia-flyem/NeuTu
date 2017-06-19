@@ -1815,7 +1815,6 @@ std::string ZFlyEmBodySplitProject::saveTask() const
   std::string location;
 
   if (getBodyId() > 0) {
-
     ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
           GET_FLYEM_CONFIG.getTaskServer());
     if (writer != NULL) {
