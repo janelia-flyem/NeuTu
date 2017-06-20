@@ -136,7 +136,7 @@ bool SynapseReviewProtocol::initialize() {
 
 
     // poke the UI to get going
-    // something something goto first point something something
+    onReviewFirstButton();
 
     return true;
 }
@@ -356,6 +356,7 @@ void SynapseReviewProtocol::onReviewFirstButton() {
     } else {
         m_currentPendingIndex = -1;
     }
+    std::cout << "onReviewFirstButton; currIndex = " << m_currentPendingIndex << std::endl;
     gotoCurrent();
     updateUI();
 }
