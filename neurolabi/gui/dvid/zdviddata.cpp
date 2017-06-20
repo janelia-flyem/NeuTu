@@ -26,8 +26,6 @@ const char* ZDvidData::m_todoListName = "todo";
 const char* ZDvidData::m_synapseName = ""; //No default
 const char* ZDvidData::m_neutuConfigName = "neutu_config";
 const char* ZDvidData::m_labelszName = "labelsz";
-const char* ZDvidData::m_splitResultKeyName = "result_split";
-const char* ZDvidData::m_splitTaskKeyName = "task_split";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -38,7 +36,7 @@ ZDvidData::ZDvidData()
 {
 }
 
-const char* ZDvidData::GetName(ERole role)
+std::string ZDvidData::GetName(ERole role)
 {
   switch (role) {
   case ROLE_GRAY_SCALE:
@@ -95,10 +93,20 @@ const char* ZDvidData::GetName(ERole role)
     return m_labelszName;
   case ROLE_NEUTU_CONFIG:
     return m_neutuConfigName;
+  case ROLE_RESULT_KEY:
+    return "result";
+  case ROLE_TASK_KEY:
+    return "task";
+  case ROLE_SPLIT_GROUP:
+    return "split";
   case ROLE_SPLIT_RESULT_KEY:
-    return m_splitResultKeyName;
+    return GetName(ROLE_RESULT_KEY) + "_" + GetName(ROLE_SPLIT_GROUP);
   case ROLE_SPLIT_TASK_KEY:
-    return m_splitTaskKeyName;
+    return GetName(ROLE_TASK_KEY) + "_" + GetName(ROLE_SPLIT_GROUP);
+  case ROLE_SPLIT_RESULT_PROPERTY_KEY:
+    return GetName(ROLE_SPLIT_RESULT_KEY) + "_" + "property";
+  case ROLE_SPLIT_TASK_PROPERTY_KEY:
+    return GetName(ROLE_SPLIT_TASK_KEY) + "_" + "property";
   }
 
   return m_emptyName;
@@ -145,6 +153,16 @@ std::string ZDvidData::GetName(
   }
 
   return GetName(role, prefix);
+}
+
+std::string ZDvidData::GetResultName(const std::string &group)
+{
+  return GetName(ROLE_RESULT_KEY) + "_" + group;
+}
+
+std::string ZDvidData::GetTaskName(const std::string &group)
+{
+  return GetName(ROLE_TASK_KEY) + "_" + group;
 }
 
 bool ZDvidData::IsDefaultName(ERole role, const std::string &name)

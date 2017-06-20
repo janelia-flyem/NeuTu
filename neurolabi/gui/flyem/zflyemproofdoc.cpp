@@ -2916,7 +2916,7 @@ bool ZFlyEmProofDoc::isSplitRunning() const
   return m_futureMap.isAlive(threadId);
 }
 
-void ZFlyEmProofDoc::runSplit()
+void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
 {
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -2941,12 +2941,12 @@ void ZFlyEmProofDoc::runSplit()
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
     QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmProofDoc::runSplitFunc);
+        QtConcurrent::run(this, &ZFlyEmProofDoc::runSplitFunc, mode);
     m_futureMap[threadId] = future;
   }
 }
 
-void ZFlyEmProofDoc::runLocalSplit()
+void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
 {
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -2971,12 +2971,12 @@ void ZFlyEmProofDoc::runLocalSplit()
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
     QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmProofDoc::localSplitFunc);
+        QtConcurrent::run(this, &ZFlyEmProofDoc::localSplitFunc, mode);
     m_futureMap[threadId] = future;
   }
 }
 
-void ZFlyEmProofDoc::runSplitFunc()
+void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
 {
   getProgressSignal()->startProgress("Splitting ...");
 
@@ -3001,7 +3001,7 @@ void ZFlyEmProofDoc::runSplitFunc()
       signalStack = NULL;
       ZOUT(LINFO(), 3) << "Retrieving signal stack";
       ZIntCuboid cuboid = estimateSplitRoi();
-      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid);
+      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid, mode);
       if (sparseStack != NULL) {
         signalStack = sparseStack->getStack();
         dsIntv = sparseStack->getDownsampleInterval();
@@ -3046,7 +3046,7 @@ void ZFlyEmProofDoc::runSplitFunc()
   emit labelFieldModified();
 }
 
-void ZFlyEmProofDoc::localSplitFunc()
+void ZFlyEmProofDoc::localSplitFunc(FlyEM::EBodySplitMode mode)
 {
   getProgressSignal()->startProgress("Splitting ...");
 
@@ -3071,7 +3071,7 @@ void ZFlyEmProofDoc::localSplitFunc()
       signalStack = NULL;
       ZOUT(LINFO(), 3) << "Retrieving signal stack";
       ZIntCuboid cuboid = estimateLocalSplitRoi();
-      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid);
+      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid, mode);
       if (sparseStack != NULL) {
         signalStack = sparseStack->getStack();
         dsIntv = sparseStack->getDownsampleInterval();
@@ -3238,7 +3238,8 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
   return cuboid;
 }
 
-ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) const
+ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
+    const ZIntCuboid &roi, FlyEM::EBodySplitMode mode) const
 {
   ZDvidSparseStack *stack = NULL;
 
@@ -3255,7 +3256,12 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) cons
         m_splitSource = ZSharedPointer<ZDvidSparseStack>(
               originalStack->getCrop(roi));
 
-        originalStack->runFillValueFunc(roi, true);
+        bool cont = true;
+        if (mode == FlyEM::BODY_SPLIT_OFFLINE) {
+          cont = false;
+        }
+
+        originalStack->runFillValueFunc(roi, true, cont);
 
         ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
 //        dvidInfo.setFromJsonString(

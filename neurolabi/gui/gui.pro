@@ -68,10 +68,10 @@ message("Target: $$TARGET")
 message("Defines: $$DEFINES")
 
 unix {
-include(extratarget.pri)
+  include(extratarget.pri)
 
-# suppress warnings from 3rd party library, works for gcc and clang
-QMAKE_CXXFLAGS += -isystem ../gui/ext
+  # suppress warnings from 3rd party library, works for gcc and clang
+  QMAKE_CXXFLAGS += -isystem ../gui/ext
 } else {
   INCLUDEPATH += ../gui/ext
 }
@@ -744,7 +744,6 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodycomparisondialog.h \
     dvid/zdvidstore.h \
     z3dfiltersetting.h \
-    dvid/zdvidendpoint.h \
     zglobal.h \
     flyem/zstackwatershedcontainer.h \
     dvid/zdvidresultservice.h \
@@ -1303,7 +1302,6 @@ SOURCES += main.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
     dvid/zdvidstore.cpp \
     z3dfiltersetting.cpp \
-    dvid/zdvidendpoint.cpp \
     zglobal.cpp \
     flyem/zstackwatershedcontainer.cpp \
     dvid/zdvidresultservice.cpp \

@@ -57,6 +57,7 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_progressSignal = new ZProgressSignal(this);
 
   m_skelThre = 20;
+  m_splitMode = FlyEM::BODY_SPLIT_ONLINE;
 
   connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
   connect(this, SIGNAL(result3dQuickViewReady()),
@@ -2230,7 +2231,7 @@ void ZFlyEmBodySplitProject::runLocalSplit()
     backupSeed();
     ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
     if (proofdoc != NULL) {
-      proofdoc->runLocalSplit();
+      proofdoc->runLocalSplit(getSplitMode());
     } else {
       getDocument()->runLocalSeededWatershed();
     }
@@ -2243,7 +2244,7 @@ void ZFlyEmBodySplitProject::runSplit()
     backupSeed();
     ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
     if (proofdoc != NULL) {
-      proofdoc->runSplit();
+      proofdoc->runSplit(getSplitMode());
     } else {
       getDocument()->runSeededWatershed();
     }

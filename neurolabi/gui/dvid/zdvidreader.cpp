@@ -33,7 +33,7 @@
 #include "dvid/zdvidroi.h"
 #include "zflyemutilities.h"
 #include "zobject3dscanarray.h"
-#include "zdvidendpoint.h"
+#include "zdvidpath.h"
 #include "flyem/zserviceconsumer.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
@@ -1750,7 +1750,7 @@ ZClosedCurve* ZDvidReader::readRoiCurve(
 ZJsonObject ZDvidReader::readContrastProtocal() const
 {
   QByteArray byteArray = readKeyValue(
-        ZDvidData::GetName(ZDvidData::ROLE_NEUTU_CONFIG), "contrast");
+        ZDvidData::GetName<QString>(ZDvidData::ROLE_NEUTU_CONFIG), "contrast");
 
   ZJsonObject config;
   if (!byteArray.isEmpty()) {
@@ -2616,7 +2616,7 @@ uint64_t ZDvidReader::readMaxBodyId()
   ZJsonObject obj;
 
   QByteArray byteArray = readKeyValue(
-        ZDvidData::GetName(ZDvidData::ROLE_MAX_BODY_ID),
+        ZDvidData::GetName<QString>(ZDvidData::ROLE_MAX_BODY_ID),
         m_dvidTarget.getBodyLabelName().c_str());
   if (!byteArray.isEmpty()) {
     obj.decode(byteArray.constData());
@@ -3470,7 +3470,7 @@ QByteArray ZDvidReader::readServiceResult(
 //  ZDvidUrl url(getDvidTarget());
 
   return readDataFromEndpoint(
-        ZDvidEndPoint::GetResultKeyEndPoint(
+        ZDvidPath::GetResultKeyPath(
           QString(group.c_str()), QString(key.c_str())).toStdString());
 
 //  return readBuffer(url.getKeyUrl(ZDvidEndPoint, key));
@@ -3480,7 +3480,7 @@ ZJsonObject ZDvidReader::readServiceTask(
     const std::string &group, const std::string &key) const
 {
   QByteArray data = readDataFromEndpoint(
-        ZDvidEndPoint::GetTaskKeyEndPoint(
+        ZDvidPath::GetTaskKeyPath(
           QString(group.c_str()), QString(key.c_str())).toStdString());
   ZJsonObject json;
   json.load(data.constData());

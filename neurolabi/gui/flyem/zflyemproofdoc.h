@@ -151,7 +151,8 @@ public:
 //  }
 
   ZDvidSparseStack* getDvidSparseStack() const;
-  ZDvidSparseStack* getDvidSparseStack(const ZIntCuboid &roi) const;
+  ZDvidSparseStack* getDvidSparseStack(
+      const ZIntCuboid &roi, FlyEM::EBodySplitMode mode) const;
 
   void enhanceTileContrast(bool highContrast);
 
@@ -212,9 +213,12 @@ public:
   }
 
 public:
-  void runSplit();
+  //The split mode may affect some data loading behaviors, but the result should
+  //be the same.
+  void runSplit(FlyEM::EBodySplitMode mode);
+  void runLocalSplit(FlyEM::EBodySplitMode mode);
+
   bool isSplitRunning() const;
-  void runLocalSplit();
   void refreshDvidLabelBuffer(unsigned long delay);
 //  void setLabelSliceAlpha(int alpha);
 
@@ -518,8 +522,8 @@ private:
 
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
 
-  void runSplitFunc();
-  void localSplitFunc();
+  void runSplitFunc(FlyEM::EBodySplitMode mode);
+  void localSplitFunc(FlyEM::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateLocalSplitRoi();
 

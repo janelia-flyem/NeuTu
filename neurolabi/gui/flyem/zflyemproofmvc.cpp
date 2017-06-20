@@ -1768,6 +1768,7 @@ void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector
 void ZFlyEmProofMvc::runSplitFunc()
 {
   getProgressSignal()->startProgress(1.0);
+  m_splitProject.setSplitMode(getCompletePresenter()->getSplitMode());
   m_splitProject.runSplit();
   getProgressSignal()->endProgress();
 }
@@ -1775,6 +1776,7 @@ void ZFlyEmProofMvc::runSplitFunc()
 void ZFlyEmProofMvc::runLocalSplitFunc()
 {
   getProgressSignal()->startProgress(1.0);
+  m_splitProject.setSplitMode(getCompletePresenter()->getSplitMode());
   m_splitProject.runLocalSplit();
   getProgressSignal()->endProgress();
 }
@@ -3506,7 +3508,12 @@ void ZFlyEmProofMvc::saveSplitTask()
   if (m_splitProject.getBodyId() > 0) {
       std::string location = m_splitProject.saveTask();
 
-      emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
+      if (location.empty()) {
+        emit messageGenerated(
+              ZWidgetMessage("Failed to save the task.", NeuTube::MSG_WARNING));
+      } else {
+        emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
+      }
   }
 #if 0
   if (m_splitProject.getBodyId() > 0) {

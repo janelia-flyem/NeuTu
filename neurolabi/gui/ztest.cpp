@@ -314,7 +314,7 @@ using namespace std;
 #include "dvid/zdvidsparsestack.h"
 #include "zstackwriter.h"
 #include "zstackreader.h"
-#include "dvid/zdvidendpoint.h"
+#include "dvid/zdvidpath.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "flyem/zserviceconsumer.h"
 #include "test/zdvidresultservicetest.h"
@@ -23913,6 +23913,15 @@ void ZTest::test(MainWindow *host)
   ZDvidSparseStack *spStack =
       reader->readDvidSparseStackAsync(ZDvidUrl::GetBodyId(signalPath));
 
+#endif
+  
+#if 1
+  std::cout << ZDvidData::GetName(ZDvidData::ROLE_SPLIT_GROUP) << std::endl;
+  qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP);
+  qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY);
+
+  qDebug() << ZDvidPath::GetResultPath("test", "data", true);
+  qDebug() << ZDvidPath::GetResultKeyPath("test", "testkey");
 #endif
 
   std::cout << "Done." << std::endl;

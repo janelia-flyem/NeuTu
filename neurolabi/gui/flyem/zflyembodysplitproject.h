@@ -123,6 +123,14 @@ public:
     m_showingBodyMask = state;
   }
 
+  void setSplitMode(FlyEM::EBodySplitMode mode) {
+    m_splitMode = mode;
+  }
+
+  FlyEM::EBodySplitMode getSplitMode() const {
+    return m_splitMode;
+  }
+
   void setMinObjSize(size_t s) { m_minObjSize = s; }
   void keepMainSeed(bool keeping) { m_keepingMainSeed = keeping; }
   void enableCca(bool state) { m_runningCca = state; }
@@ -244,6 +252,7 @@ private:
   size_t m_minObjSize;
   bool m_keepingMainSeed;
   bool m_runningCca;
+  FlyEM::EBodySplitMode m_splitMode;
 
 //  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 

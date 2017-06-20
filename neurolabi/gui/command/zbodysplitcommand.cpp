@@ -20,7 +20,8 @@
 #include "zobject3dfactory.h"
 #include "zobject3dscanarray.h"
 #include "zfiletype.h"
-#include "dvid/zdvidendpoint.h"
+//#include "dvid/zdvidendpoint.h"
+#include "dvid/zdvidpath.h"
 #include "zstackgarbagecollector.h"
 #include "dvid/zdvidsparsestack.h"
 
@@ -258,29 +259,42 @@ void ZBodySplitCommand::ProcessResult(
 #endif
       }
 
+      ZJsonObject resultJson;
+      QString refPath;
+      ZJsonObject refJson;
+
+      if (!splitTaskKey.empty()) {
+        refPath = ZDvidPath::GetResultKeyPath(
+              ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
+              ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
+        refJson.setEntry(
+              "timestamp", QDateTime::currentMSecsSinceEpoch() / 1000);
+      }
+
       if (!resultArray.isEmpty()) {
-        ZJsonObject resultJson;
         resultJson.addEntry("type", "split");
         resultJson.addEntry("result", resultArray);
         std::string endPoint =
             writer->writeServiceResult("split", resultJson);
         std::cout << "Result endpoint: " << endPoint << std::endl;
+
         if (!splitTaskKey.empty()) {
-          QString refEndPoint = ZDvidEndPoint::GetResultKeyEndPoint(
-                "split",
-                ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
-          ZJsonObject refJson;
           refJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
-          refJson.setEntry(
-                "timestamp", QDateTime::currentMSecsSinceEpoch() / 1000);
-          writer->writeJson(refEndPoint.toStdString(), refJson);
+        }
+      } else {
+        if (!splitTaskKey.empty()) {
+          refJson.setEntry("message", "Split failed.");
         }
       }
 
-      if (!splitTaskKey.empty()) {
+      if (!refJson.isEmpty() && !refPath.isEmpty()) {
+        writer->writeJson(refPath.toStdString(), refJson);
+      }
+
+//      if (!splitTaskKey.empty()) {
 //          writer->deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
 //                            splitTaskKey);
-      }
+//      }
     } else {
       ZStackWriter writer;
       writer.write(output, resultStack);
