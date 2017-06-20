@@ -1,3 +1,4 @@
+#if defined(_ENABLE_SURFRECON_)
 #ifndef ZSURFRECON_H
 #define ZSURFRECON_H
 #undef ASCII
@@ -23,3 +24,4 @@ private:
 };
 
 #endif // ZSURFRECON_H
+#endif

@@ -19,6 +19,7 @@ int ZMultiscaleWatershedCommand::run(const std::vector<std::string> &/*input*/,
     const std::string &/*output*/,
     const ZJsonObject &config)
 {
+    #if defined(_ENABLE_SURFRECON_)
 //check params
   if(!config.hasKey("stack_file")
      || !config.hasKey("skeleton_file")
@@ -116,6 +117,10 @@ int ZMultiscaleWatershedCommand::run(const std::vector<std::string> &/*input*/,
   delete area_need_update;
   delete new_seeds;
   return 0;
+
+#else
+  return 1;
+#endif
 }
 
 

@@ -16,6 +16,7 @@
 #include <cstring>
 #include <algorithm>
 #include <functional>
+#if defined(_ENABLE_SURFRECON_)
 #include <vector>
 #include <cmath>
 #include <ctime>
@@ -116,6 +117,6 @@ public:
     PointSet points;
     FaceSet faces;
 };
-
+#endif
 
 #endif // __SURFRECON_H__
