@@ -78,8 +78,6 @@ bool SynapseReviewProtocol::initialize() {
         SynapseReviewInputDialog::SynapseReviewInputOptions option = inputDialog.getInputOption();
         if (option == SynapseReviewInputDialog::BY_BODYID) {
 
-            std::cout << "body ID input" << std::endl;
-
             // body ID not blank?  exists in dvid?
             QString bodyIDstring = inputDialog.getBodyID().trimmed();
             if (bodyIDstring.size() == 0) {
@@ -103,8 +101,6 @@ bool SynapseReviewProtocol::initialize() {
 
 
         } else if (option == SynapseReviewInputDialog::BY_VOLUME) {
-
-            std::cout << "volume input" << std::endl;
 
             // I think volume is foolproof given our widgets; I set minimum
             //  width, etc. to 1, so we'll never get an invalid volume
@@ -133,8 +129,6 @@ bool SynapseReviewProtocol::initialize() {
             m_pendingList.append(synapseList.at(i).getPosition());
         }
     }
-    std::cout << "# pending sites = " << m_pendingList.size() << std::endl;
-
 
 
     // save initial data
@@ -175,20 +169,12 @@ void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
     m_pendingList.clear();
     m_finishedList.clear();
 
-
-
-    // this statement is the issue, so pick it apart until it works
-    // ZJsonArray pending(data.value(KEY_PENDING_LIST.c_str()));
-    std::cout << "extracting pending list" << std::endl;
+    // there have been some crash issues in the vicinity of these
+    //  lines, but I was never able to run them down; this version
+    //  works, so leave it as-is
     ZJsonValue temp = data.value(KEY_PENDING_LIST.c_str());
-    std::cout << "temp.isarray(): " << temp.isArray() << std::endl;
     ZJsonArray pending(temp);
-    // ZJsonArray pending;
-    std::cout << "size of temp cast to ZJsonArray: " << ((ZJsonArray) temp).size() << std::endl;
 
-
-    std::cout << "pending array length = " << pending.size() << std::endl;
-    std::cout << "first parsed element = " << ZJsonParser::toIntPoint(pending.at(0)).toString() << std::endl;
 
     for (size_t i=0; i<pending.size(); i++) {
         m_pendingList.append(ZJsonParser::toIntPoint(pending.at(i)));
@@ -197,10 +183,6 @@ void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
     for (size_t i=0; i<finished.size(); i++) {
         m_finishedList.append(ZJsonParser::toIntPoint(finished.at(i)));
     }
-
-
-    std::cout << "loaded pending sites: " << m_pendingList.size() << std::endl;
-    std::cout << "loaded finished sites: " << m_finishedList.size() << std::endl;
 
 
     // if, in the future, you need to update to a new save version,
@@ -232,8 +214,6 @@ void SynapseReviewProtocol::updateUI() {
 }
 
 void SynapseReviewProtocol::updatePSDTable() {
-    std::cout << "updatePSDTable()" << std::endl;
-
     clearSitesTable();
 
     if (m_currentPendingIndex >= 0) {
@@ -332,8 +312,6 @@ void SynapseReviewProtocol::clearSitesTable() {
 }
 
 void SynapseReviewProtocol::updateLabels() {
-    std::cout << "updateLabels()" << std::endl;
-
     // current location
     if (m_currentPendingIndex >= 0) {
         ui->currentLocLabel->setText(QString::fromStdString(m_pendingList[m_currentPendingIndex].toString()));
