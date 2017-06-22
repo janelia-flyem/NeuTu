@@ -399,6 +399,7 @@ Stack* readSc(const std::string &filePath);
 Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
 char* toMrawBuffer(const Mc_Stack *stack, size_t *length);
 void readStackOffset(const std::string &filePath, int *x, int *y, int *z);
+void readStackIntv(const std::string &filePath, int *ix, int *iy, int *iz);
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);
 

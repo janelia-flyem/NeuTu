@@ -79,6 +79,7 @@
 #include "dvid/zdvidgrayslicescrollstrategy.h"
 #include "dialogs/zflyemgrayscaledialog.h"
 #include "zstackwriter.h"
+#include "dialogs/flyembodyiddialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -118,6 +119,7 @@ void ZFlyEmProofMvc::init()
   m_infoDlg = new ZInfoDialog(this);
   m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
   m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
+  m_bodyIdDialog = new FlyEmBodyIdDialog(this);
 
 
   connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
@@ -2414,6 +2416,32 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 #endif
 }
 
+void ZFlyEmProofMvc::exportBodyStack()
+{
+  ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+  if (reader.isReady()) {
+    if (m_bodyIdDialog->exec()) {
+      std::vector<uint64_t> bodyIdArray = m_bodyIdDialog->getBodyIdArray();
+      if (!bodyIdArray.empty()) {
+        QString dirName = ZDialogFactory::GetDirectory("Export Bodies", "", this);
+        for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
+             iter != bodyIdArray.end(); ++iter) {
+          uint64_t bodyId = *iter;
+          if (bodyId > 0) {
+            ZDvidSparseStack *sparseStack = NULL;
+            sparseStack = reader.readDvidSparseStack(bodyId);
+            ZStackWriter stackWriter;
+            ZStack *stack = sparseStack->makeIsoDsStack(NeuTube::ONEGIGA);
+            QString fileName = dirName + QString("/%1.tif").arg(bodyId);
+            stackWriter.write(fileName.toStdString(), stack);
+            delete stack;
+          }
+        }
+      }
+    }
+  }
+}
+
 void ZFlyEmProofMvc::exportSelectedBodyStack()
 {
   if (m_grayscaleDlg->exec()) {
@@ -2428,9 +2456,10 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
 
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
         ZDvidSparseStack *sparseStack = NULL;
-        if (reader.isReady()) {
+        if (reader.isReady() && !idSet.empty()) {
           std::set<uint64_t>::const_iterator iter = idSet.begin();
           sparseStack = reader.readDvidSparseStack(*iter);
+
           ++iter;
           for (; iter != idSet.end(); ++iter) {
             ZDvidSparseStack *sparseStack2 = reader.readDvidSparseStack(*iter);
@@ -2441,12 +2470,15 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
         }
 
         ZStackWriter stackWriter;
+//        stackWriter.setCompressHint(ZStackWriter::COMPRESS_NONE);
         if (m_grayscaleDlg->isFullRange()) {
           if (m_grayscaleDlg->isSparse()) {
              sparseStack->getSparseStack()->save(fileName.toStdString());
              emit messageGenerated(fileName + " saved");
           } else {
-            stackWriter.write(fileName.toStdString(), sparseStack->getStack());
+            ZStack *stack = sparseStack->makeIsoDsStack(NeuTube::ONEGIGA);
+            stackWriter.write(fileName.toStdString(), stack);
+            delete stack;
           }
 //          sparseStack->getStack()->save(fileName.toStdString());
         } else {

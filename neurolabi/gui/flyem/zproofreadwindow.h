@@ -84,6 +84,7 @@ public slots:
 
   void exportNeuronScreenshot();
   void exportGrayscale();
+  void exportBodyStack();
 
   void stressTestSlot();
   void diagnose();

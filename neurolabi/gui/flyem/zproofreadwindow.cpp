@@ -259,6 +259,9 @@ void ZProofreadWindow::createMenu()
           this, SLOT(exportGrayscale()));
   exportMenu->addAction(exportGrayscaleAction);
 
+  QAction *exportBodyStackAction = new QAction("Bodies with Grayscale", this);
+  connect(exportBodyStackAction, SIGNAL(triggered()), this, SLOT(exportBodyStack()));
+  exportMenu->addAction(exportBodyStackAction);
 
   m_viewMenu = new QMenu("View", this);
 
@@ -765,6 +768,11 @@ void ZProofreadWindow::exploreBody()
 void ZProofreadWindow::exportGrayscale()
 {
   m_mainMvc->exportGrayscale();
+}
+
+void ZProofreadWindow::exportBodyStack()
+{
+  m_mainMvc->exportBodyStack();
 }
 
 void ZProofreadWindow::exportNeuronScreenshot()

@@ -504,6 +504,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
     {
       Mc_Stack *stack = NULL;
       int offset[3] = {0, 0, 0};
+      int intv[3] = {0, 0, 0};
       if (ZFileType::FileType(m_urlList[0].c_str()) ==
           ZFileType::FILE_OBJECT_SCAN ||
           ZFileType::FileType(m_urlList[0].c_str()) ==
@@ -515,6 +516,8 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
       } else {
         C_Stack::readStackOffset(m_urlList[0].c_str(), offset, offset + 1,
             offset + 2);
+        C_Stack::readStackIntv(m_urlList[0].c_str(), intv, intv + 1,
+            intv + 2);
 
         stack = C_Stack::read(m_urlList[0].c_str(), m_channel);
 
@@ -527,6 +530,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
           }
           data->setData(stack);
           data->setOffset(offset[0], offset[1], offset[2]);
+          data->setDsIntv(intv[0], intv[1], intv[2]);
 #ifdef _NEUTUBE_
           if (initColor) {
             data->initChannelColors();

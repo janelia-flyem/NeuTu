@@ -215,6 +215,10 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(skeletonizeSelectedBody()));
   bodyMenu->addAction(skeletonizeAction);
 
+  QAction *exportBodyStackAction = new QAction("Export Body Stack", this);
+  connect(exportBodyStackAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBodyStack()));
+  bodyMenu->addAction(exportBodyStackAction);
 #if 0
   QMenu *grayscaleMenu = m_mainMenu->addMenu("Grayscale");
   QAction *exportGrayScaleAction = new QAction("Export Grayscale", this);
@@ -229,11 +233,6 @@ void FlyEmProofControlForm::createMenu()
   connect(clearMergeAction, SIGNAL(triggered()),
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
-
-  QAction *exportBodyStackAction = new QAction("Export Body Stack", this);
-  connect(exportBodyStackAction, SIGNAL(triggered()),
-          this, SLOT(exportSelectedBodyStack()));
-  developerMenu->addAction(exportBodyStackAction);
 #endif
 //  colorMenu->setEnabled(false);
 }

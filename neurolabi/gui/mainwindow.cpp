@@ -6582,9 +6582,9 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
 
       ZDvidReader reader;
       if (reader.open(dvidTarget)) {
-        std::vector<int> bodyIdArray = m_bodyDlg->getBodyIdArray();
+        std::vector<uint64_t> bodyIdArray = m_bodyDlg->getBodyIdArray();
         if (!bodyIdArray.empty()) {
-          int bodyId = bodyIdArray[0];
+          uint64_t bodyId = bodyIdArray[0];
           ZObject3dScan body;
           reader.readBody(bodyId, true, &body);
 

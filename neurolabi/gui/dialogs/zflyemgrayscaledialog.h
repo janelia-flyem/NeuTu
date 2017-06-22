@@ -50,6 +50,7 @@ private slots:
   void useCurrentOffset();
   void useViewCenter();
   void useViewPort();
+  void updateWidget();
 
 private:
   void connectSignalSlot();

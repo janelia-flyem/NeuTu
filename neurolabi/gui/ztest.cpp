@@ -23801,6 +23801,38 @@ void ZTest::test(MainWindow *host)
   target.set("emdata1.int.janelia.org", "93e8", 8700);
   target.setLabelBlockName(
         "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyIdArray;
+  bodyIdArray << 851657;
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+  foreach (uint64_t bodyId, bodyIdArray) {
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(bodyId);
+
+    //  ZIntCuboid box = spStack->getBoundBox();
+
+    ZStack *stack = spStack->makeIsoDsStack(NeuTube::ONEGIGA);
+
+//    ZStack *stack = spStack->makeStack(ZIntCuboid());
+//    ZStack *stack = spStack->getStack();
+
+    ZString numStr;
+    numStr.appendNumber(bodyId);
+    writer.write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+//    delete stack;
+    delete spStack;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
 
   ZDvidReader reader;
   reader.open(target);
@@ -23915,13 +23947,47 @@ void ZTest::test(MainWindow *host)
 
 #endif
   
-#if 1
+#if 0
   std::cout << ZDvidData::GetName(ZDvidData::ROLE_SPLIT_GROUP) << std::endl;
   qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP);
   qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY);
 
   qDebug() << ZDvidPath::GetResultPath("test", "data", true);
   qDebug() << ZDvidPath::GetResultKeyPath("test", "testkey");
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::makeIndexStack(3, 4, 5);
+  stack->setOffset(1, 2, 3);
+  stack->setDsIntv(0, 5, 7);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+  ZStack stack2;
+  stack2.load(GET_TEST_DATA_DIR + "/test.tif");
+  std::cout << stack2.getOffset().toString() << std::endl;
+  std::cout << stack2.getDsIntv().toString() << std::endl;
+#endif
+
+#if 0
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_DEFAULT);
+
+  ZStack *stack = ZStackFactory::makeIndexStack(3, 4, 5);
+  stack->setOffset(1, 0, 0);
+  stack->setDsIntv(0, 5, 7);
+  writer.write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+  ZStack stack2;
+  stack2.load(GET_TEST_DATA_DIR + "/test.tif");
+  std::cout << stack2.getOffset().toString() << std::endl;
+  std::cout << stack2.getDsIntv().toString() << std::endl;
+#endif
+
+#if 1
+  ZStack stack2;
+  stack2.load(GET_TEST_DATA_DIR + "/tmp/15363212.tif");
+  std::cout << stack2.getOffset().toString() << std::endl;
+  std::cout << stack2.getDsIntv().toString() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

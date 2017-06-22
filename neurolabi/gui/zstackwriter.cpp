@@ -116,12 +116,7 @@ void ZStackWriter::write(const std::string &filePath, const ZStack *stack)
 
   ZStackWriter writer;
   writer.setCompressHint(m_compressHint);
-  std::string meta;
-  ZIntPoint offset = stack->getOffset();
-  if (offset.getX() != 0 || offset.getY() != 0 || offset.getZ() != 0) {
-    meta = "@offset ";
-    meta += offset.toString();
-  }
+  std::string meta = stack->getTransformMeta();
   writer.setMeta(meta);
 
   writer.write(filePath, stack->data());

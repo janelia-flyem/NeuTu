@@ -545,6 +545,19 @@ void ZStack::initChannelColors()
 #endif
 }
 
+std::string ZStack::getTransformMeta() const
+{
+  std::string meta;
+  ZIntPoint offset = getOffset();
+  ZIntPoint dsIntv = getDsIntv();
+  if (!offset.isZero() || !dsIntv.isZero()) {
+    meta = "@transform ";
+    meta += offset.toString() + " " + dsIntv.toString();
+  }
+
+  return meta;
+}
+
 void ZStack::removeChannel(int c)
 {
   if (c >= 0 && c < channelNumber()) {
@@ -815,11 +828,7 @@ string ZStack::save(const string &filepath) const
   }
 
   if (!resultFilePath.empty()) {
-    ZString meta;
-    if (m_offset.getX() > 0 || m_offset.getY() > 0 || m_offset.getZ() > 0) {
-      meta = "@offset ";
-      meta += m_offset.toString();
-    }
+    ZString meta = getTransformMeta();
     C_Stack::write(resultFilePath.c_str(), m_stack, meta.c_str());
   }
 

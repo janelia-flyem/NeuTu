@@ -48,6 +48,7 @@ class ZFlyEmSkeletonUpdateDialog;
 class ZFlyEmBody3dDoc;
 class ZDvidLabelSlice;
 class ZFlyEmGrayscaleDialog;
+class FlyEmBodyIdDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -127,6 +128,7 @@ public:
 
   void exportGrayscale();
   void exportGrayscale(const ZIntCuboid &box, const QString &fileName);
+  void exportBodyStack();
 
   //exploratory code
   void exportNeuronScreenshot(
@@ -442,6 +444,7 @@ protected:
   ZInfoDialog *m_infoDlg;
   ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
   ZFlyEmGrayscaleDialog *m_grayscaleDlg;
+  FlyEmBodyIdDialog *m_bodyIdDialog;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
