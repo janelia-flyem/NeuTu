@@ -61,7 +61,6 @@ const std::string SynapseReviewProtocol::KEY_FINISHED_LIST= "finished";
 const int SynapseReviewProtocol::fileVersion = 1;
 
 bool SynapseReviewProtocol::initialize() {
-
     // input dialog; not sure there are any initial
     //  values that make sense to set
     SynapseReviewInputDialog inputDialog;
@@ -77,7 +76,6 @@ bool SynapseReviewProtocol::initialize() {
     if (reader.open(m_dvidTarget)) {
         SynapseReviewInputDialog::SynapseReviewInputOptions option = inputDialog.getInputOption();
         if (option == SynapseReviewInputDialog::BY_BODYID) {
-
             // body ID not blank?  exists in dvid?
             QString bodyIDstring = inputDialog.getBodyID().trimmed();
             if (bodyIDstring.size() == 0) {
@@ -99,21 +97,17 @@ bool SynapseReviewProtocol::initialize() {
             // get synapses
             synapseList = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
 
-
         } else if (option == SynapseReviewInputDialog::BY_VOLUME) {
-
             // I think volume is foolproof given our widgets; I set minimum
             //  width, etc. to 1, so we'll never get an invalid volume
             ZIntCuboid box = inputDialog.getVolume();
             synapseList = reader.readSynapse(box, FlyEM::LOAD_PARTNER_LOCATION);
-
         }
 
     } else {
         inputErrorDialog("Couldn't open DVID!");
         return false;
     }
-
 
     // given the list of synapses, extract the list of T-bar locations (which is
     //  all we need)
@@ -130,12 +124,8 @@ bool SynapseReviewProtocol::initialize() {
         }
     }
 
-
-    // save initial data
+    // save initial data and get going
     saveState();
-
-
-    // poke the UI to get going
     onReviewFirstButton();
 
     return true;
@@ -151,7 +141,6 @@ void SynapseReviewProtocol::inputErrorDialog(QString message) {
 }
 
 void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
-
     // check version of saved data here
     if (!data.hasKey(KEY_VERSION.c_str())) {
         ui->progressLabel->setText("No version info in saved data; data not loaded!");
@@ -163,18 +152,12 @@ void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
         return;
     }
 
-    // convert old versions when it becomes necessary
-
+    // convert old versions to current version here, when it becomes necessary
 
     m_pendingList.clear();
     m_finishedList.clear();
 
-    // there have been some crash issues in the vicinity of these
-    //  lines, but I was never able to run them down; this version
-    //  works, so leave it as-is
-    ZJsonValue temp = data.value(KEY_PENDING_LIST.c_str());
-    ZJsonArray pending(temp);
-
+    ZJsonArray pending(data.value(KEY_PENDING_LIST.c_str()));
 
     for (size_t i=0; i<pending.size(); i++) {
         m_pendingList.append(ZJsonParser::toIntPoint(pending.at(i)));
@@ -184,14 +167,11 @@ void SynapseReviewProtocol::loadDataRequested(ZJsonObject data) {
         m_finishedList.append(ZJsonParser::toIntPoint(finished.at(i)));
     }
 
-
     // if, in the future, you need to update to a new save version,
     //  remember to do a save here
 
-
     // start work
     onReviewFirstButton();
-
 }
 
 void SynapseReviewProtocol::gotoCurrent() {
@@ -227,7 +207,6 @@ void SynapseReviewProtocol::updatePSDTable() {
 }
 
 void SynapseReviewProtocol::populatePSDTable(std::vector<ZDvidSynapse> synapse) {
-
     // note: post synaptic sites start at index 1, but the
     //  table row still starts at 0
     for (size_t i=1; i<synapse.size(); i++) {
@@ -254,16 +233,13 @@ void SynapseReviewProtocol::populatePSDTable(std::vector<ZDvidSynapse> synapse) 
         ui->sitesTableView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 #endif
     }
-
 }
 
 // input: point
 // output: array with first pre-synaptic site then all post-synaptic sites
 //  for the synapse; returns empty list on errors or if no T-bar at site
 std::vector<ZDvidSynapse> SynapseReviewProtocol::getWholeSynapse(ZIntPoint point) {
-
     std::vector<ZDvidSynapse> result;
-
     ZDvidReader reader;
     if (reader.open(m_dvidTarget)) {
         ZDvidSynapse synapse = reader.readSynapse(point, FlyEM::LOAD_PARTNER_LOCATION);
@@ -325,7 +301,6 @@ void SynapseReviewProtocol::updateLabels() {
     int nTotal = nPending + nFinished;
     float percent = (100.0 * nFinished) / nTotal;
     ui->progressLabel->setText(QString("Progress:\n\n %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
-
 }
 
 void SynapseReviewProtocol::saveState() {
@@ -356,7 +331,6 @@ void SynapseReviewProtocol::onReviewFirstButton() {
     } else {
         m_currentPendingIndex = -1;
     }
-    std::cout << "onReviewFirstButton; currIndex = " << m_currentPendingIndex << std::endl;
     gotoCurrent();
     updateUI();
 }
@@ -392,7 +366,6 @@ void SynapseReviewProtocol::onGotoCurrentButton() {
 }
 
 void SynapseReviewProtocol::onMarkReviewedButton() {
-
     if (m_currentPendingIndex < 0) {
         return;
     }
