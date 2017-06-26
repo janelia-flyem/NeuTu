@@ -19,7 +19,7 @@ requirements:
   build:
     - python 2.7*
     - swig
-    - libdvid-cpp 0.2.post55
+    - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.5
     - libxml2 2.9*
@@ -28,7 +28,7 @@ requirements:
 
   run:
     - python 2.7*
-    - libdvid-cpp 0.2.post55
+    - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.5
     - libxml2 2.9*
