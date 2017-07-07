@@ -8,6 +8,7 @@
 #include "zobject3dscanarray.h"
 #include "zobject3dfactory.h"
 #include "neutubeconfig.h"
+#include "zswctree.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -150,6 +151,13 @@ void ZStackWatershedContainer::addSeed(const ZStroke2d &seed)
 }
 
 void ZStackWatershedContainer::addSeed(const ZObject3d &seed)
+{
+  ZStack stack;
+  makeMaskStack(stack);
+  seed.labelStack(&stack);
+}
+
+void ZStackWatershedContainer::addSeed(const ZSwcTree &seed)
 {
   ZStack stack;
   makeMaskStack(stack);

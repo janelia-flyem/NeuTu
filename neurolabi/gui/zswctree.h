@@ -678,9 +678,11 @@ public:
   const std::vector<Swc_Tree_Node*>& getSwcTreeNodeArray(
       EIteratorOption iteratorOption = DEPTH_FIRST_ITERATOR) const;
 
-  void labelStack(Stack *stack);
+  void labelStack(Stack *stack) const;
 
-  void labelStack(ZStack* stack,int v);
+  void labelStack(ZStack* stack,int v) const;
+  void labelStack(ZStack *stack) const;
+
   /*!
    * \brief Get the length of the longest segment
    * \return

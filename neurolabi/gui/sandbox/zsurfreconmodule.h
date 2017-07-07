@@ -1,3 +1,4 @@
+#if defined(_ENABLE_SURFRECON_)
 #ifndef ZSURFRECONMODULE_H
 #define ZSURFRECONMODULE_H
 #include <QNetworkAccessManager>
@@ -9,7 +10,6 @@
 #undef BOOL
 #undef TRUE
 #undef FALSE
-
 #include "imgproc/surfrecon.h"
 
 class ZStack;
@@ -65,3 +65,4 @@ private:
 
 };
 #endif // ZSURFRECONMODULE_H
+#endif

@@ -182,7 +182,9 @@ int ZBodySplitCommand::run(
   return status;
 }
 
-void ZBodySplitCommand::LoadSeeds(const ZJsonObject &inputJson, ZStackWatershedContainer &container, const std::string &dataDir, bool isFile)
+void ZBodySplitCommand::LoadSeeds(
+    const ZJsonObject &inputJson, ZStackWatershedContainer &container,
+    const std::string &dataDir, bool isFile)
 {
   ZJsonArray seedArrayJson(inputJson.value("seeds"));
   for (size_t i = 0; i < seedArrayJson.size(); ++i) {
@@ -214,6 +216,12 @@ void ZBodySplitCommand::LoadSeeds(const ZJsonObject &inputJson, ZStackWatershedC
         ZObject3d obj;
         obj.loadJsonObject(ZJsonObject(seedJson.value("data")));
         container.addSeed(obj);
+      } else if (type == "swc" && seedJson.hasKey("label")) {
+        ZSwcTree tree;
+        int label = ZJsonParser::integerValue(seedJson["label"]);
+        tree.setLabel(label);
+        tree.load(seedUrl);
+        container.addSeed(tree);
       }
 //        ZStack *seedStack = obj.toStackObject(label);
 //        seedMask.push_back(seedStack);

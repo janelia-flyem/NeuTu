@@ -13,6 +13,10 @@ contains(CONFIG, neu3) {
     DEFINES += _NEU3_ _FLYEM_
 }
 
+contains(DEFINES,_ENABLE_SURFRECON_){
+  LIBS+= -lCGAL
+}
+
 #DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.

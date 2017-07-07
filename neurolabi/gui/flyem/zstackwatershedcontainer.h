@@ -12,6 +12,7 @@ class ZStroke2d;
 class ZObject3d;
 class ZSparseStack;
 class ZObject3dScanArray;
+class ZSwcTree;
 
 class ZStackWatershedContainer
 {
@@ -31,7 +32,7 @@ public:
   void addSeed(const ZObject3dScan &seed);
   void addSeed(const ZStroke2d &seed);
   void addSeed(const ZObject3d &seed);
-
+  void addSeed(const ZSwcTree &seed);
 
   //It will remove old seeds
 

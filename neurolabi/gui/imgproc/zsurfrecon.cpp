@@ -1,3 +1,4 @@
+#if defined(_ENABLE_SURFRECON_)
 #include "zstackdoc.h"
 #include <set>
 #include "zsurfrecon.h"
@@ -203,3 +204,4 @@ void ZSurfRecon::PruneSkeleton(VoxelSet& surface,ZSwcTree* tree)
   }
 
 }
+#endif

@@ -48,6 +48,8 @@ int ZSurfreconCommand::run(const std::vector<std::string> &/*input*/, const std:
   f.close();
   std::cout<<(QString("result id:")+id).toStdString()<<std::endl;
   std::cout<<"md5:"<<ba.toHex().constData()<<std::endl;
-#endif
   return 0;
+#else
+  return 1;
+#endif
 }

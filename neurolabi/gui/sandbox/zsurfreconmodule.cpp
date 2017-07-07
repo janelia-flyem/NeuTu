@@ -1,3 +1,4 @@
+#if defined(_ENABLE_SURFRECON_)
 #include "zsurfreconmodule.h"
 #include <functional>
 #include <unordered_map>
@@ -15,6 +16,7 @@
 #include "mainwindow.h"
 #include "zswcforest.h"
 #include "imgproc/zsurfrecon.h"
+
 
 
 ZSurfReconWindow::ZSurfReconWindow(QWidget *parent):QWidget(parent)
@@ -269,4 +271,4 @@ void ZSurfReconModule::execute()
 {
   this->window->show();
 }
-
+#endif

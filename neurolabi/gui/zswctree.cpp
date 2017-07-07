@@ -3272,7 +3272,7 @@ bool ZSwcTree::hasGoodSourceName()
   return false;
 }
 
-void ZSwcTree::labelStack(Stack *stack)
+void ZSwcTree::labelStack(Stack *stack) const
 {
   Swc_Tree_Node_Label_Workspace workspace;
   Default_Swc_Tree_Node_Label_Workspace(&workspace);
@@ -3284,8 +3284,12 @@ void ZSwcTree::labelStack(Stack *stack)
   }
 }
 
+void ZSwcTree::labelStack(ZStack *stack) const
+{
+  labelStack(stack, getLabel());
+}
 
-void ZSwcTree::labelStack(ZStack* stack,int v)
+void ZSwcTree::labelStack(ZStack* stack,int v) const
 {
   Swc_Tree_Node_Label_Workspace ws;
   Stack* _stack=stack->c_stack();
