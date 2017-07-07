@@ -109,7 +109,8 @@ void ZFlyEmProofMvc::init()
 
   m_dvidDlg = NULL;
   m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
-    m_protocolSwitcher = new ProtocolSwitcher(this);
+
+  m_protocolSwitcher = new ProtocolSwitcher(this);
 //  m_supervisor = new ZFlyEmSupervisor(this);
   m_splitCommitDlg = new ZFlyEmSplitCommitDialog(this);
   m_todoDlg = new FlyEmTodoDialog(this);
@@ -295,9 +296,11 @@ void ZFlyEmProofMvc::initBodyWindow()
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
-    QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc, NeuTube::EAxis axis)
+    QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc, NeuTube::EAxis axis,
+    ERole role)
 {
   ZFlyEmProofMvc *frame = new ZFlyEmProofMvc(parent);
+  frame->setRole(role);
 
   BaseConstruct(frame, doc, axis);
 
@@ -306,12 +309,12 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
   return frame;
 }
 
-ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target)
+ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
 {
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
 //  doc->setTag(NeuTube::Document::FLYEM_DVID);
-  ZFlyEmProofMvc *mvc =
-      ZFlyEmProofMvc::Make(NULL, ZSharedPointer<ZFlyEmProofDoc>(doc));
+  ZFlyEmProofMvc *mvc = ZFlyEmProofMvc::Make(
+        NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), NeuTube::Z_AXIS, role);
   mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
   mvc->setDvidTarget(target);
 
@@ -673,6 +676,40 @@ void ZFlyEmProofMvc::makeBodyWindow()
               m_bodyWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
               m_roiSourceList);
   }
+}
+
+Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow()
+{
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
+
+  ZWindowFactory factory;
+  factory.setControlPanelVisible(false);
+  factory.setObjectViewVisible(false);
+  factory.setStatusBarVisible(false);
+  factory.setParentWidget(this);
+
+  m_skeletonWindow = factory.make3DWindow(doc);
+  m_skeletonWindow->getPunctaFilter()->setColorMode("Original Point Color");
+//  doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
+
+  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
+  setWindowSignalSlot(m_skeletonWindow);
+
+  m_skeletonWindow->setWindowType(NeuTube3D::TYPE_SKELETON);
+//  skeletonWindow->readSettings();
+
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_skeletonWindow, getGrayScaleInfo(),
+          m_doc->getParentMvc()->getView()->getViewParameter());
+//    if(m_ROILoaded)
+//        m_skeletonWindow->getROIsDockWidget()->getROIs(
+//              m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+//              m_roiSourceList);
+  }
+
+  return m_skeletonWindow;
 }
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
@@ -1133,17 +1170,19 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   //    getCompleteDocument()->clearData();
   getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
 
-  ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
-  if (slice != NULL) {
-    ZDvidGraySliceScrollStrategy *scrollStrategy =
-        new ZDvidGraySliceScrollStrategy;
-    scrollStrategy->setGraySlice(slice);
+  if (getRole() == ROLE_WIDGET) {
+    ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
+    if (slice != NULL) {
+      ZDvidGraySliceScrollStrategy *scrollStrategy =
+          new ZDvidGraySliceScrollStrategy;
+      scrollStrategy->setGraySlice(slice);
 
-    getView()->setScrollStrategy(scrollStrategy);
+      getView()->setScrollStrategy(scrollStrategy);
+    }
+
+    ZJsonObject contrastObj = reader.readContrastProtocal();
+    getPresenter()->setHighContrastProtocal(contrastObj);
   }
-
-  ZJsonObject contrastObj = reader.readContrastProtocal();
-  getPresenter()->setHighContrastProtocal(contrastObj);
 
   //    getCompleteDocument()->beginObjectModifiedMode(
   //          ZStackDoc::OBJECT_MODIFIED_CACHE);
@@ -1166,22 +1205,24 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   getProgressSignal()->advanceProgress(0.2);
 
-
-  if (getDvidTarget().isValid()) {
-    getCompleteDocument()->downloadSynapse();
-    enableSynapseFetcher();
-    getCompleteDocument()->downloadBookmark();
-    getCompleteDocument()->downloadTodoList();
+  if (getRole() == ROLE_WIDGET) {
+    if (getDvidTarget().isValid()) {
+      getCompleteDocument()->downloadSynapse();
+      enableSynapseFetcher();
+      getCompleteDocument()->downloadBookmark();
+      getCompleteDocument()->downloadTodoList();
+    }
   }
 
   getProgressSignal()->advanceProgress(0.5);
 
   emit dvidTargetChanged(getDvidTarget());
 
-
-  m_roiDlg->clear();
-  m_roiDlg->updateDvidTarget();
-  m_roiDlg->downloadAllProject();
+  if (getRole() == ROLE_WIDGET) {
+    m_roiDlg->clear();
+    m_roiDlg->updateDvidTarget();
+    m_roiDlg->downloadAllProject();
+  }
 
   getProgressSignal()->advanceProgress(0.1);
 
@@ -1433,30 +1474,13 @@ void ZFlyEmProofMvc::customInit()
             this, SLOT(zoomTo(int,int,int)));
   }
 
-  // connections to protocols
-  connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-          m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
-  connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
-          this, SLOT(zoomToL1(int,int,int)));
-
-  /*
-  QPushButton *button = new QPushButton(this);
-  button->setCheckable(true);
-  button->setChecked(true);
-  button->setIcon(QIcon(":/images/synapse.png"));
-  connect(button, SIGNAL(toggled(bool)),
-          this, SLOT(showSynapseAnnotation(bool)));
-          */
-
-//  getView()->addHorizontalWidget(button);
-
-//  getView()->addHorizontalWidget(ZWidgetFactory::makeHSpacerItem());
-  /*
-  m_latencyLabelWidget =
-      ZWidgetFactory::MakeColorLabel(Qt::gray, "Seg Latency", 100, false, this);
-  getView()->addHorizontalWidget(ZWidgetFactory::MakeHSpacerItem());
-  getView()->addHorizontalWidget(m_latencyLabelWidget);
-  */
+  if (getRole() == ROLE_WIDGET) {
+    // connections to protocols
+    connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+            m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
+    connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
+            this, SLOT(zoomToL1(int,int,int)));
+  }
 
   m_paintLabelWidget = new ZPaintLabelWidget();
 

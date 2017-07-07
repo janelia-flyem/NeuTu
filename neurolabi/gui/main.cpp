@@ -9,6 +9,7 @@
 #endif
 
 #include "mainwindow.h"
+#include "neu3window.h"
 #include "QsLog/QsLog.h"
 #include "QsLog/QsLogDest.h"
 #include "zcommandline.h"
@@ -335,7 +336,9 @@ int main(int argc, char *argv[])
     RECORD_INFORMATION("Initializing 3D ...");
     Z3DApplication z3dApp(QCoreApplication::applicationDirPath());
     z3dApp.initialize();
-
+#ifdef _NEU3_
+    Neu3Window *mainWin = new Neu3Window();
+#else
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
     mainWin->show();
@@ -354,14 +357,18 @@ int main(int argc, char *argv[])
 
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
+#endif
 
-#if defined(_FLYEM_) && !defined(_DEBUG_)
+#if defined(_FLYEM_) && !defined(_DEBUG_) && !defined(_NEU3_)
     mainWin->startProofread();
 #else
     mainWin->show();
     mainWin->raise();
 #endif
 
+#if defined(_NEU3_)
+    mainWin->showMaximized();
+#endif
 
     int result = 1;
 

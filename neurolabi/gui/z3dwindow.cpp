@@ -990,6 +990,13 @@ void Z3DWindow::hideObjectView()
   }
 }
 
+void Z3DWindow::hideStatusBar()
+{
+  if (statusBar() != NULL) {
+    statusBar()->hide();
+  }
+}
+
 void Z3DWindow::createDockWindows()
 {
   m_settingsDockWidget = new QDockWidget(tr("Control and Settings"), this);

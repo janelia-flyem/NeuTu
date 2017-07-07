@@ -23,8 +23,10 @@ class FlyEmBodyInfoDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FlyEmBodyInfoDialog(QWidget *parent = 0);
-    ~FlyEmBodyInfoDialog();
+  explicit FlyEmBodyInfoDialog(QWidget *parent = 0);
+  ~FlyEmBodyInfoDialog();
+
+  void simplify();
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);
