@@ -1,6 +1,8 @@
 #ifndef ZSTACKWATERSHEDCONTAINER_H
 #define ZSTACKWATERSHEDCONTAINER_H
 
+#include <utility>
+
 #include "tz_stack_watershed.h"
 #include "zintcuboid.h"
 
@@ -17,7 +19,11 @@ public:
   ZStackWatershedContainer(ZStack *stack);
   ZStackWatershedContainer(ZSparseStack *stack);
   ZStackWatershedContainer(ZStack *stack, ZSparseStack *spStack);
+  ZStackWatershedContainer(const std::pair<ZStack*, ZSparseStack*> &data);
+
   ~ZStackWatershedContainer();
+
+  bool isEmpty() const;
 
   void run();
 
@@ -30,6 +36,8 @@ public:
   //It will remove old seeds
 
 
+  void setRange(const ZIntCuboid &range);
+  void setRange(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   void setRange(int x0, int y0, int z0, int x1, int y1, int z1);
 
   void exportMask(const std::string &filePath);
@@ -49,6 +57,7 @@ public:
 
 private:
   void init();
+  void init(ZStack *stack, ZSparseStack *spStack);
 
   Stack_Watershed_Workspace* getWorkspace();
   void clearWorkspace();

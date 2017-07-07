@@ -2753,7 +2753,7 @@ void ZStackPresenter::notifyBodyAnnotationTriggered()
 
 void ZStackPresenter::notifyBodyCheckinTriggered()
 {
-  emit bodyCheckinTriggered();
+  emit bodyCheckinTriggered(FlyEM::BODY_SPLIT_NONE);
 }
 
 void ZStackPresenter::notifyBodyForceCheckinTriggered()
@@ -2763,7 +2763,7 @@ void ZStackPresenter::notifyBodyForceCheckinTriggered()
 
 void ZStackPresenter::notifyBodyCheckoutTriggered()
 {
-  emit bodyCheckoutTriggered();
+  emit bodyCheckoutTriggered(FlyEM::BODY_SPLIT_NONE);
 }
 
 void ZStackPresenter::selectDownstreamNode()

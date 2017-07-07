@@ -8,8 +8,11 @@ contains(TEMPLATE, app) {
 } else {
     CONFIG += staticlib
 }
-#DEFINES+=_ENABLE_SURFRECON_
-#LIBS+= -lCGAL
+
+contains(CONFIG, neu3) {
+    DEFINES += _NEU3_ _FLYEM_
+}
+
 #DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
@@ -54,8 +57,12 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
-    contains(DEFINES, _FLYEM_) {
-        TARGET = neutu_d
+    contains(CONFIG, neu3) {
+        TARGET = neu3_d
+    } else {
+      contains(DEFINES, _FLYEM_) {
+          TARGET = neutu_d
+      }
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
@@ -63,17 +70,16 @@ CONFIG(debug, debug|release) {
     contains(DEFINES, _FLYEM_) {
         TARGET = neutu
     }
-#    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
 message("Target: $$TARGET")
 message("Defines: $$DEFINES")
 
 unix {
-include(extratarget.pri)
+  include(extratarget.pri)
 
-# suppress warnings from 3rd party library, works for gcc and clang
-QMAKE_CXXFLAGS += -isystem ../gui/ext
+  # suppress warnings from 3rd party library, works for gcc and clang
+  QMAKE_CXXFLAGS += -isystem ../gui/ext
 } else {
   INCLUDEPATH += ../gui/ext
 }
@@ -132,18 +138,18 @@ contains(CONFIG, c++11) {
   }
 }
 
-contains(CONFIG, sanitize) {
-  message(Using sanitize)
-  unix {
-    macx {
-      QMAKE_CXXFLAGS += -fsanitize=address
-      QMAKE_LFLAGS += -fsanitize=address
-    } else {
-      QMAKE_CXXFLAGS += -fsanitize=address
-      QMAKE_LFLAGS += -fsanitize=address
-    }
-  }
-}
+#contains(CONFIG, sanitize) {
+#  message(Using sanitize)
+#  unix {
+#    macx {
+#      QMAKE_CXXFLAGS += -fsanitize=address
+#      QMAKE_LFLAGS += -fsanitize=address
+#    } else {
+#      QMAKE_CXXFLAGS += -fsanitize=address
+#      QMAKE_LFLAGS += -fsanitize=address
+#    }
+#  }
+#}
 
 contains(CONFIG, sanitize) {
   message(Using sanitize)
@@ -746,11 +752,15 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodycomparisondialog.h \
     dvid/zdvidstore.h \
     z3dfiltersetting.h \
-    dvid/zdvidendpoint.h \
     zglobal.h \
     flyem/zstackwatershedcontainer.h \
     dvid/zdvidresultservice.h \
-    flyem/zserviceconsumer.h
+    flyem/zserviceconsumer.h \
+    zstackgarbagecollector.h \
+    dialogs/zflyembodysplitdialog.h \
+    widgets/zbodylistwidget.h \
+    widgets/flyembodyinfowidget.h \
+    neu3window.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -848,7 +858,11 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zdvidsourcewidget.ui \
     dialogs/zflyemgrayscaledialog.ui \
     dialogs/zcomboeditdialog.ui \
-    dialogs/zflyembodycomparisondialog.ui
+    dialogs/zflyembodycomparisondialog.ui \
+    dialogs/zflyembodysplitdialog.ui \
+    widgets/zbodylistwidget.ui \
+    widgets/flyembodyinfowidget.ui \
+    neu3window.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1302,10 +1316,14 @@ SOURCES += main.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
     dvid/zdvidstore.cpp \
     z3dfiltersetting.cpp \
-    dvid/zdvidendpoint.cpp \
     zglobal.cpp \
     flyem/zstackwatershedcontainer.cpp \
     dvid/zdvidresultservice.cpp \
-    flyem/zserviceconsumer.cpp
+    flyem/zserviceconsumer.cpp \
+    zstackgarbagecollector.cpp \
+    dialogs/zflyembodysplitdialog.cpp \
+    widgets/zbodylistwidget.cpp \
+    widgets/flyembodyinfowidget.cpp \
+    neu3window.cpp
 
 

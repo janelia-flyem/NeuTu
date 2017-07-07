@@ -34,6 +34,10 @@ __BEGIN_DECLS
 #define TIFF_Y_POSITION_C  31233//LONG (1)
 #define TIFF_Z_POSITION_C  31234//LONG (1)
 
+#define TIFF_X_INTV_C  31235//LONG (1)
+#define TIFF_Y_INTV_C  31236//LONG (1)
+#define TIFF_Z_INTV_C  31237//LONG (1)
+
 /*
 typedef struct _Cz_Lsminfo {
   uint32_t u32MagicNumber;
@@ -239,8 +243,11 @@ void Write_Stack_U(const char *filepath, const Stack *stack,
 		   const char *metafile, int compress);
 void Write_Stack_With_Offset(const char *filePath, const Stack *stack,
     int x, int y, int z, int compress);
+void Write_Stack_With_Transform(const char *filePath, const Stack *stack,
+    int x, int y, int z, int ix, int iy, int iz, int compress);
 
 void Read_Stack_Offset(const char *filepath, int *x, int *y, int *z);
+void Read_Stack_Intv(const char *filepath, int *x, int *y, int *z);
 
 /**@brief read a multi-channel stack
  *

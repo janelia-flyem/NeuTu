@@ -74,7 +74,7 @@ bool ZDvidResultService::HasSplitResult(
     const ZDvidReader &reader, const QString taskKey)
 {
   return reader.hasKey(
-        ZDvidData::GetName(ZDvidData::ROLE_SPLIT_RESULT_KEY),
+        ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY),
         ZDvidUrl::GetResultKeyFromTaskKey(taskKey.toStdString()).c_str());
 }
 
@@ -84,7 +84,7 @@ bool ZDvidResultService::HasSplitResult(
   bool hasResult = false;
   if (reader != NULL) {
     hasResult = reader->hasKey(
-        ZDvidData::GetName(ZDvidData::ROLE_SPLIT_RESULT_KEY),
+        ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY),
         ZDvidUrl::GetResultKeyFromTaskKey(taskKey.toStdString()).c_str());
   }
   return hasResult;
@@ -99,7 +99,7 @@ bool ZDvidResultService::HasSplitResult(
   bool hasResult = false;
   if (reader != NULL) {
     hasResult = reader->hasKey(
-          ZDvidData::GetName(ZDvidData::ROLE_SPLIT_RESULT_KEY),
+          ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY),
           ZDvidUrl::GetResultKeyFromTaskKey(taskKey.toStdString()).c_str());
   }
 
@@ -123,7 +123,7 @@ void ZDvidResultService::RemoveSplitResult(
   ZDvidWriter *writer =
       ZGlobal::GetInstance().getDvidWriterFromUrl(server.toStdString());
   writer->deleteKey(
-        ZDvidData::GetName(ZDvidData::ROLE_SPLIT_RESULT_KEY), resultKey);
+        ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY), resultKey);
 }
 
 void ZDvidResultService::RemoveSplitTask(
@@ -240,7 +240,7 @@ QList<ZJsonObject> ZDvidResultService::ReadSplitTaskList(const QString &server)
   QList<ZJsonObject> taskList;
   foreach (const QString &key, keyList) {
     ZJsonObject obj = ReadHeadObject(
-          *reader, ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY), key);
+          *reader, ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_TASK_KEY), key);
     /*
     QByteArray data = reader->readKeyValue("task_split", key);
     ZJsonObject obj;

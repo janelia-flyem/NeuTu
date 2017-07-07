@@ -601,6 +601,8 @@ public: /* processing routines */
 public:
   void initChannelColors();
 
+  std::string getTransformMeta() const;
+
   struct LsmInfo {
     LsmInfo() {}
     Cz_Lsminfo m_basicInfo;

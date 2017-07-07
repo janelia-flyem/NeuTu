@@ -47,6 +47,8 @@
 #include "command/zsurfreconcommand.h"
 #include "command/zstackdiffcommand.h"
 #include "command/zmultiscalewatershedcommand.h"
+#include "command/zbodyexportcommand.h"
+
 using namespace std;
 
 ZCommandLine::ZCommandLine()
@@ -90,6 +92,7 @@ void ZCommandLine::registerModule()
   registerModule<ZSurfreconCommand>("surfrecon");
   registerModule<ZStackDiffCommand>("stack_diff");
   registerModule<ZMultiscaleWatershedCommand>("multiscale_watershed");
+  registerModule<ZBodyExportCommand>("export_body");
 }
 
 template <typename T>

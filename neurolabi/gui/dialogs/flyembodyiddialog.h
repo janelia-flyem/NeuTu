@@ -17,7 +17,7 @@ public:
   ~FlyEmBodyIdDialog();
 
   int getBodyId() const;
-  std::vector<int> getBodyIdArray() const;
+  std::vector<uint64_t> getBodyIdArray() const;
   std::vector<int> getDownsampleInterval() const;
 
 private:

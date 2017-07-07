@@ -28,9 +28,12 @@ public:
   static void RemoveSplitResult(
       const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId);
 
+  static bool HasSplitTask(
+      const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId);
   static bool HasSplitResult(const QString server, const QString taskKey);
   static bool HasSplitResult(const ZDvidReader &reader, const QString taskKey);
   static bool HasSplitResult(const ZDvidReader *reader, const QString taskKey);
+
 
   static ZJsonObject ReadHeadObject(
       const ZDvidReader &reader, const QString &dataName, const QString &key);

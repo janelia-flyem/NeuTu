@@ -314,7 +314,7 @@ using namespace std;
 #include "dvid/zdvidsparsestack.h"
 #include "zstackwriter.h"
 #include "zstackreader.h"
-#include "dvid/zdvidendpoint.h"
+#include "dvid/zdvidpath.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "flyem/zserviceconsumer.h"
 #include "test/zdvidresultservicetest.h"
@@ -22224,6 +22224,24 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::cout << "Updating ..." << std::endl;
+  reader.getDvidTarget().setSynapseName("annot_synapse_prod");
+  reader.getDvidTarget().toJsonObject().print();
+
+  ZDvidWriter writer;
+  reader.getDvidTarget().useDefaultDataSetting(false);
+  writer.open(reader.getDvidTarget());
+  writer.writeDefaultDataSetting();
+#endif
+
+#if 0
+  ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "7abe", 8500);
 
   ZDvidReader reader;
@@ -22636,15 +22654,33 @@ void ZTest::test(MainWindow *host)
 #if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "@CX", 8700);
+  target.useDefaultDataSetting(true);
 
   ZDvidReader reader;
   reader.open(target);
 
   ZObject3dScan roi = reader.readRoi("CXPB-ROI-2");
-  ZIntPoint pt = reader.readRoiBlockSize("CXPB-ROI-2");
+  ZIntPoint blockSize = reader.readRoiBlockSize("CXPB-ROI-2");
 
-  std::cout << "Volume: "
-            << (double) roi.getVoxelNumber() * pt.getX() * pt.getY() * pt.getZ()
+  size_t v = 0;
+
+  ZObject3dScan::ConstVoxelIterator iter(&roi);
+  while (iter.hasNext()) {
+    ZIntPoint pt = iter.next();
+    ZIntPoint corner = pt * blockSize;
+    uint64_t label = reader.readBodyIdAt(corner);
+    if (label == 0) {
+      ZIntPoint center = corner + blockSize / 2;
+      label = reader.readBodyIdAt(center);
+    }
+    if (label > 0) {
+      ++v;
+    }
+  }
+
+  std::cout << "Volume: " << double(v) *
+//            << (double) roi.getVoxelNumber() *
+               blockSize.getX() * blockSize.getY() * blockSize.getZ()
                * 0.008 * 0.008 *0.008 << std::endl;
 #endif
 
@@ -23765,6 +23801,38 @@ void ZTest::test(MainWindow *host)
   target.set("emdata1.int.janelia.org", "93e8", 8700);
   target.setLabelBlockName(
         "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyIdArray;
+  bodyIdArray << 851657;
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+  foreach (uint64_t bodyId, bodyIdArray) {
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(bodyId);
+
+    //  ZIntCuboid box = spStack->getBoundBox();
+
+    ZStack *stack = spStack->makeIsoDsStack(NeuTube::ONEGIGA);
+
+//    ZStack *stack = spStack->makeStack(ZIntCuboid());
+//    ZStack *stack = spStack->getStack();
+
+    ZString numStr;
+    numStr.appendNumber(bodyId);
+    writer.write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+//    delete stack;
+    delete spStack;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
 
   ZDvidReader reader;
   reader.open(target);
@@ -23866,6 +23934,60 @@ void ZTest::test(MainWindow *host)
   std::cout << "Opening " << target.getSourceString() << std::endl;
   std::cout << (reader.open(target) ? "Opened successfully." : "Cannot open to read.")
             << std::endl;
+#endif
+
+#if 0
+
+  std::string signalPath=
+        "http://emdata1.int.janelia.org:8500/api/node/b6bc/bodies/sparsevol/"
+        "13334275";
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
+  ZDvidSparseStack *spStack =
+      reader->readDvidSparseStackAsync(ZDvidUrl::GetBodyId(signalPath));
+
+#endif
+  
+#if 0
+  std::cout << ZDvidData::GetName(ZDvidData::ROLE_SPLIT_GROUP) << std::endl;
+  qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP);
+  qDebug() << ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY);
+
+  qDebug() << ZDvidPath::GetResultPath("test", "data", true);
+  qDebug() << ZDvidPath::GetResultKeyPath("test", "testkey");
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::makeIndexStack(3, 4, 5);
+  stack->setOffset(1, 2, 3);
+  stack->setDsIntv(0, 5, 7);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+  ZStack stack2;
+  stack2.load(GET_TEST_DATA_DIR + "/test.tif");
+  std::cout << stack2.getOffset().toString() << std::endl;
+  std::cout << stack2.getDsIntv().toString() << std::endl;
+#endif
+
+#if 0
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_DEFAULT);
+
+  ZStack *stack = ZStackFactory::makeIndexStack(3, 4, 5);
+  stack->setOffset(1, 0, 0);
+  stack->setDsIntv(0, 5, 7);
+  writer.write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+  ZStack stack2;
+  stack2.load(GET_TEST_DATA_DIR + "/test.tif");
+  std::cout << stack2.getOffset().toString() << std::endl;
+  std::cout << stack2.getDsIntv().toString() << std::endl;
+#endif
+
+#if 1
+  ZStack stack2;
+  stack2.load(GET_TEST_DATA_DIR + "/tmp/15363212.tif");
+  std::cout << stack2.getOffset().toString() << std::endl;
+  std::cout << stack2.getDsIntv().toString() << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

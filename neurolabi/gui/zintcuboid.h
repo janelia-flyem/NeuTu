@@ -87,6 +87,7 @@ public:
   void setDepth(int depth);
 
   //union
+  //Empty box does not add anything to join
   ZIntCuboid& join(const ZIntCuboid &cuboid);
   void joinX(int x);
   void joinY(int y);

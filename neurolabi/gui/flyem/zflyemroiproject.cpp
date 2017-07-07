@@ -153,7 +153,7 @@ void ZFlyEmRoiProject::downloadAllRoi()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QStringList roiIdArray = reader.readKeys(
-          ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE),
+          ZDvidData::GetName<QString>(ZDvidData::ROLE_ROI_CURVE),
           QString("%1").arg(getRoiKey(m_dvidInfo.getMinZ()).c_str()),
           QString("%1").arg(getRoiKey(m_dvidInfo.getMaxZ()).c_str()));
     foreach (const QString &roiKey, roiIdArray) {

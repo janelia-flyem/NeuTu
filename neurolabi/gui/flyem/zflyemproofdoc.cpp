@@ -48,6 +48,7 @@
 #include "zstackdocdatabuffer.h"
 #include "flyem/zserviceconsumer.h"
 #include "zstroke2d.h"
+#include "flyem/zflyemmisc.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -127,8 +128,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
 
 //    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
 //            this, SLOT(updateDvidLabelObject()));
-    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t)),
-              this, SLOT(checkInBodyWithMessage(uint64_t)));
+    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, FlyEM::EBodySplitMode)),
+            this, SLOT(checkInBodyWithMessage(uint64_t, FlyEM::EBodySplitMode)));
     connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
             this, SLOT(updateDvidLabelObjectSliently()));
 
@@ -475,7 +476,7 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
         for (std::set<uint64_t>::const_iterator iter = selected.begin();
              iter != selected.end(); ++iter) {
           if (supervisor != NULL) {
-            if (supervisor->checkOut(*iter)) {
+            if (supervisor->checkOut(*iter, FlyEM::BODY_SPLIT_NONE)) {
               labelSet.insert(*iter);
             } else {
               labelSet.clear();
@@ -616,7 +617,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
         for (std::set<uint64_t>::const_iterator iter = selected.begin();
              iter != selected.end(); ++iter) {
           if (supervisor != NULL) {
-            if (supervisor->checkOut(*iter)) {
+            if (supervisor->checkOut(*iter, FlyEM::BODY_SPLIT_NONE)) {
               labelSet.insert(*iter);
             } else {
               labelSet.clear();
@@ -1562,6 +1563,7 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
   notifyObjectModified();
 }
 
+/*
 bool ZFlyEmProofDoc::checkInBody(uint64_t bodyId)
 {
   if (getSupervisor() != NULL) {
@@ -1570,26 +1572,28 @@ bool ZFlyEmProofDoc::checkInBody(uint64_t bodyId)
 
   return true;
 }
+*/
 
-
-bool ZFlyEmProofDoc::checkBodyWithMessage(uint64_t bodyId, bool checkingOut)
+bool ZFlyEmProofDoc::checkBodyWithMessage(
+    uint64_t bodyId, bool checkingOut, FlyEM::EBodySplitMode mode)
 {
   bool succ = true;
 
   if (checkingOut) {
-    succ = checkOutBody(bodyId);
+    succ = checkOutBody(bodyId, mode);
   } else {
-    succ = checkInBodyWithMessage(bodyId);
+    succ = checkInBodyWithMessage(bodyId, mode);
   }
 
   return succ;
 }
 
-bool ZFlyEmProofDoc::checkInBodyWithMessage(uint64_t bodyId)
+bool ZFlyEmProofDoc::checkInBodyWithMessage(
+    uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     if (bodyId > 0) {
-      if (getSupervisor()->checkIn(bodyId)) {
+      if (getSupervisor()->checkIn(bodyId, mode)) {
         emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
         return true;
       } else {
@@ -1604,14 +1608,15 @@ bool ZFlyEmProofDoc::checkInBodyWithMessage(uint64_t bodyId)
   return true;
 }
 
-bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId)
+bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
-    return getSupervisor()->checkOut(bodyId);
+    return getSupervisor()->checkOut(bodyId, mode);
   }
 
   return true;
 }
+
 
 std::set<uint64_t> ZFlyEmProofDoc::getCurrentSelectedBodyId(
     NeuTube::EBodyLabelType type) const
@@ -1645,7 +1650,7 @@ void ZFlyEmProofDoc::makeAction(ZActionFactory::EAction item)
 }
 */
 
-void ZFlyEmProofDoc::checkInSelectedBody()
+void ZFlyEmProofDoc::checkInSelectedBody(FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -1654,7 +1659,7 @@ void ZFlyEmProofDoc::checkInSelectedBody()
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (bodyId > 0) {
-        if (getSupervisor()->checkIn(bodyId)) {
+        if (getSupervisor()->checkIn(bodyId, mode)) {
           emit messageGenerated(QString("Body %1 is unlocked.").arg(bodyId));
         } else {
           emit messageGenerated(
@@ -1697,7 +1702,7 @@ void ZFlyEmProofDoc::checkInSelectedBodyAdmin()
   }
 }
 
-void ZFlyEmProofDoc::checkOutBody()
+void ZFlyEmProofDoc::checkOutBody(FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -1706,7 +1711,7 @@ void ZFlyEmProofDoc::checkOutBody()
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
       if (bodyId > 0) {
-        if (getSupervisor()->checkOut(bodyId)) {
+        if (getSupervisor()->checkOut(bodyId, mode)) {
           emit messageGenerated(QString("Body %1 is locked.").arg(bodyId));
         } else {
           std::string owner = getSupervisor()->getOwner(bodyId);
@@ -2036,7 +2041,8 @@ void ZFlyEmProofDoc::loadSplitFromService()
 //        getDvidTarget(), getBodyIdForSplit());
 
   QList<ZObject3dScan*> objList = ZServiceConsumer::ReadSplitResult(
-        GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), getBodyIdForSplit());
+        GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(),
+        getBodyIdForSplit());
       //ZDvidResultService::ReadSplitResult(path);
 //  int index = 1;
   foreach (ZObject3dScan *obj, objList) {
@@ -2220,7 +2226,14 @@ void ZFlyEmProofDoc::downloadBookmark()
       ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
       ZJsonObject bookmarkObj = ZJsonObject(bookmarkJson.value(i));
       bookmark->loadDvidAnnotation(bookmarkObj);
-      if (bookmark->getUserName().length() == (int) currentUserName.length()) {
+      bool good =
+          (bookmark->getUserName().length() == (int) currentUserName.length());
+      if (good) {
+        ZJsonObject checkJson =
+            m_dvidReader.readBookmarkJson(bookmark->getCenter().toIntPoint());
+        good = (!checkJson.isEmpty());
+      }
+      if (good) {
         if (m_dvidReader.isBookmarkChecked(bookmark->getCenter().toIntPoint())) {
           bookmark->setChecked(true);
           ZDvidAnnotation::AddProperty(bookmarkObj, "checked", true);
@@ -2903,7 +2916,7 @@ bool ZFlyEmProofDoc::isSplitRunning() const
   return m_futureMap.isAlive(threadId);
 }
 
-void ZFlyEmProofDoc::runSplit()
+void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
 {
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -2928,12 +2941,12 @@ void ZFlyEmProofDoc::runSplit()
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
     QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmProofDoc::runSplitFunc);
+        QtConcurrent::run(this, &ZFlyEmProofDoc::runSplitFunc, mode);
     m_futureMap[threadId] = future;
   }
 }
 
-void ZFlyEmProofDoc::runLocalSplit()
+void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
 {
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -2958,12 +2971,12 @@ void ZFlyEmProofDoc::runLocalSplit()
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
     QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmProofDoc::localSplitFunc);
+        QtConcurrent::run(this, &ZFlyEmProofDoc::localSplitFunc, mode);
     m_futureMap[threadId] = future;
   }
 }
 
-void ZFlyEmProofDoc::runSplitFunc()
+void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
 {
   getProgressSignal()->startProgress("Splitting ...");
 
@@ -2988,7 +3001,7 @@ void ZFlyEmProofDoc::runSplitFunc()
       signalStack = NULL;
       ZOUT(LINFO(), 3) << "Retrieving signal stack";
       ZIntCuboid cuboid = estimateSplitRoi();
-      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid);
+      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid, mode);
       if (sparseStack != NULL) {
         signalStack = sparseStack->getStack();
         dsIntv = sparseStack->getDownsampleInterval();
@@ -3033,7 +3046,7 @@ void ZFlyEmProofDoc::runSplitFunc()
   emit labelFieldModified();
 }
 
-void ZFlyEmProofDoc::localSplitFunc()
+void ZFlyEmProofDoc::localSplitFunc(FlyEM::EBodySplitMode mode)
 {
   getProgressSignal()->startProgress("Splitting ...");
 
@@ -3058,7 +3071,7 @@ void ZFlyEmProofDoc::localSplitFunc()
       signalStack = NULL;
       ZOUT(LINFO(), 3) << "Retrieving signal stack";
       ZIntCuboid cuboid = estimateLocalSplitRoi();
-      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid);
+      ZDvidSparseStack *sparseStack = getDvidSparseStack(cuboid, mode);
       if (sparseStack != NULL) {
         signalStack = sparseStack->getStack();
         dsIntv = sparseStack->getDownsampleInterval();
@@ -3190,7 +3203,8 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
     if (roi == NULL) {
       if (originalStack->stackDownsampleRequired()) {
         ZStackArray seedMask = createWatershedMask(true);
-
+        cuboid = ZFlyEmMisc::EstimateSplitRoi(seedMask.getBoundBox());
+        /*
         Cuboid_I box;
         seedMask.getBoundBox(&box);
 
@@ -3214,6 +3228,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
 
         cuboid.set(box.cb[0], box.cb[1], box.cb[2], box.ce[0], box.ce[1],
             box.ce[2]);
+            */
       }
     } else {
       cuboid = roi->getCuboid();
@@ -3223,7 +3238,8 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
   return cuboid;
 }
 
-ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) const
+ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
+    const ZIntCuboid &roi, FlyEM::EBodySplitMode mode) const
 {
   ZDvidSparseStack *stack = NULL;
 
@@ -3240,7 +3256,12 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(const ZIntCuboid &roi) cons
         m_splitSource = ZSharedPointer<ZDvidSparseStack>(
               originalStack->getCrop(roi));
 
-        originalStack->runFillValueFunc(roi, true);
+        bool cont = true;
+        if (mode == FlyEM::BODY_SPLIT_OFFLINE) {
+          cont = false;
+        }
+
+        originalStack->runFillValueFunc(roi, true, cont);
 
         ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
 //        dvidInfo.setFromJsonString(

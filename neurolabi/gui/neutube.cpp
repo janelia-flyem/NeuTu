@@ -22,6 +22,7 @@ void NeuTube::RegisterMetaType()
   qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
+  qRegisterMetaType<FlyEM::EBodySplitMode>("FlyEM::EBodySplitMode");
 }
 
 ZMessageReporter* NeuTube::getMessageReporter()

@@ -57,6 +57,7 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_progressSignal = new ZProgressSignal(this);
 
   m_skelThre = 20;
+  m_splitMode = FlyEM::BODY_SPLIT_ONLINE;
 
   connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
   connect(this, SIGNAL(result3dQuickViewReady()),
@@ -1734,6 +1735,22 @@ void ZFlyEmBodySplitProject::swapMainSeedLabel(int label)
   }
 }
 
+ZIntCuboid ZFlyEmBodySplitProject::getSeedBoundBox() const
+{
+  ZIntCuboid box;
+
+  QList<ZDocPlayer*> playerList =
+      getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
+  foreach (const ZDocPlayer *player, playerList) {
+    ZIntCuboid seedBox = player->getBoundBox();
+    if (!seedBox.isEmpty()) {
+      box.join(seedBox);
+    }
+  }
+
+  return box;
+}
+
 ZJsonArray ZFlyEmBodySplitProject::getSeedJson() const
 {
   QList<ZDocPlayer*> playerList =
@@ -1799,7 +1816,6 @@ std::string ZFlyEmBodySplitProject::saveTask() const
   std::string location;
 
   if (getBodyId() > 0) {
-
     ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
           GET_FLYEM_CONFIG.getTaskServer());
     if (writer != NULL) {
@@ -1810,9 +1826,16 @@ std::string ZFlyEmBodySplitProject::saveTask() const
       ZJsonArray seedJson = getSeedJson();
       task.setEntry("seeds", seedJson);
       ZJsonArray roiJson = getRoiJson();
+      if (roiJson.isEmpty()) {
+        ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
+        if (!range.isEmpty()) {
+          roiJson = range.toJsonArray();
+        }
+      }
       if (!roiJson.isEmpty()) {
         task.setEntry("range", roiJson);
       }
+
       location = writer->writeServiceTask("split", task);
       ZJsonObject taskJson;
       taskJson.setEntry(NeuTube::Json::REF_KEY, location);
@@ -2208,7 +2231,7 @@ void ZFlyEmBodySplitProject::runLocalSplit()
     backupSeed();
     ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
     if (proofdoc != NULL) {
-      proofdoc->runLocalSplit();
+      proofdoc->runLocalSplit(getSplitMode());
     } else {
       getDocument()->runLocalSeededWatershed();
     }
@@ -2221,7 +2244,7 @@ void ZFlyEmBodySplitProject::runSplit()
     backupSeed();
     ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
     if (proofdoc != NULL) {
-      proofdoc->runSplit();
+      proofdoc->runSplit(getSplitMode());
     } else {
       getDocument()->runSeededWatershed();
     }

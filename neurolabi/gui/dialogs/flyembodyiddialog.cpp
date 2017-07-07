@@ -21,11 +21,11 @@ int FlyEmBodyIdDialog::getBodyId() const
   return str.firstInteger();
 }
 
-std::vector<int> FlyEmBodyIdDialog::getBodyIdArray() const
+std::vector<uint64_t> FlyEmBodyIdDialog::getBodyIdArray() const
 {
   ZString str(ui->bodyIdLineEdit->text().toStdString());
 
-  return str.toIntegerArray();
+  return str.toUint64Array();
 }
 
 std::vector<int> FlyEmBodyIdDialog::getDownsampleInterval() const

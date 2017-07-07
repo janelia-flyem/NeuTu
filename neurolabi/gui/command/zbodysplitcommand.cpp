@@ -20,31 +20,25 @@
 #include "zobject3dfactory.h"
 #include "zobject3dscanarray.h"
 #include "zfiletype.h"
-#include "dvid/zdvidendpoint.h"
+//#include "dvid/zdvidendpoint.h"
+#include "dvid/zdvidpath.h"
+#include "zstackgarbagecollector.h"
+#include "dvid/zdvidsparsestack.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {
 }
 
-int ZBodySplitCommand::run(
-    const std::vector<std::string> &input, const std::string &output,
-    const ZJsonObject &/*config*/)
+ZDvidReader *ZBodySplitCommand::ParseInputPath(
+    const std::string inputPath, ZJsonObject &inputJson, std::string &splitTaskKey,
+    std::string &splitResultKey, std::string &dataDir, bool &isFile)
 {
-  int status = 1;
-
-  ZJsonObject inputJson;
-
-  const std::string &inputPath = input.front();
-
   QUrl inputUrl(inputPath.c_str());
 
-  std::string splitTaskKey;
-  std::string splitResultKey;
-  bool isFile = true;
   ZDvidReader *reader= NULL;
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
-    reader = ZGlobal::GetInstance().getDvidReaderFromUrl(input.front());
-    inputJson = reader->readJsonObject(input.front());
+    reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
+    inputJson = reader->readJsonObject(inputPath);
     if (inputJson.hasKey(NeuTube::Json::REF_KEY)) {
       inputJson =
           reader->readJsonObject(
@@ -54,8 +48,72 @@ int ZBodySplitCommand::run(
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
     splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
-    inputJson.load(input.front());
+    inputJson.load(inputPath);
   }
+
+  if (isFile) {
+    dataDir = ZString(inputPath).dirPath();
+  }
+
+  return reader;
+}
+
+std::pair<ZStack*, ZSparseStack*>
+ZBodySplitCommand::ParseSignalPath(
+    std::string &signalPath, const std::string &dataDir, bool isFile,
+    const ZIntCuboid &range, ZStackGarbageCollector &gc)
+{
+  ZSparseStack *spStack = NULL;
+  ZStack *signalStack = NULL;
+
+  QUrl signalUrl(signalPath.c_str());
+  if (signalUrl.scheme() == "http") { //Sparse stack
+    ZDvidReader *reader =
+        ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
+    if (reader != NULL) {
+      ZDvidSparseStack *dvidStack =
+          dvidStack = reader->readDvidSparseStack(ZDvidUrl::GetBodyId(signalPath));
+      spStack = dvidStack->getSparseStack(range);
+      gc.registerObject(dvidStack);
+//      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
+//      gc.registerObject(spStack);
+    }
+  } else {
+    if (isFile) {
+      signalPath = ZString(signalPath).absolutePath(dataDir);
+    }
+
+    if (ZFileType::FileType(signalPath) == ZFileType::FILE_SPARSE_STACK) {
+      spStack = new ZSparseStack;
+      spStack->load(signalPath);
+      gc.registerObject(spStack);
+    } else {
+      signalStack = new ZStack;
+      signalStack->load(signalPath);
+      gc.registerObject(signalStack);
+    }
+  }
+
+  return std::pair<ZStack*, ZSparseStack*>(signalStack, spStack);
+}
+
+int ZBodySplitCommand::run(
+    const std::vector<std::string> &input, const std::string &output,
+    const ZJsonObject &/*config*/)
+{
+  int status = 1;
+
+
+  const std::string &inputPath = input.front();
+
+  std::string splitTaskKey;
+  std::string splitResultKey;
+  ZJsonObject inputJson;
+  bool isFile = true;
+  std::string dataDir;
+
+  ZDvidReader *reader = ParseInputPath(
+       inputPath, inputJson, splitTaskKey, splitResultKey, dataDir, isFile);
 
   if (!splitTaskKey.empty()) {
     if (!splitResultKey.empty()) {
@@ -74,91 +132,39 @@ int ZBodySplitCommand::run(
     }
   }
 
-  ZSparseStack *spStack = NULL;
-  ZStack *signalStack = NULL;
-
   std::string signalPath = ZJsonParser::stringValue(inputJson["signal"]);
+  std::cout << "Signal: " << signalPath << std::endl;
 
-  std::string dataDir;
-  if (isFile) {
-    dataDir = ZString(input.front()).dirPath();
+  ZIntCuboid range;
+
+  if (inputJson.hasKey("range")) {
+    ZJsonArray rangeJson(inputJson.value("range"));
+
+    range.loadJson(rangeJson);
   }
 
-  QUrl signalUrl(signalPath.c_str());
-  if (signalUrl.scheme() == "http") { //Sparse stack
-    ZDvidReader *reader = ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
-    if (reader != NULL) {
-      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
-    }
-  } else {
-    if (isFile) {
-      signalPath = ZString(signalPath).absolutePath(dataDir);
-    }
-
-    if (ZFileType::FileType(signalPath) == ZFileType::FILE_SPARSE_STACK) {
-      spStack = new ZSparseStack;
-      spStack->load(signalPath);
-    } else {
-      signalStack = new ZStack;
-      signalStack->load(signalPath);
-    }
-  }
+  ZStackGarbageCollector gc;
+  std::pair<ZStack*, ZSparseStack*> data =
+      ParseSignalPath(signalPath, dataDir, isFile, range, gc);
+//  ZSparseStack *spStack = data.second;
+//  ZStack *signalStack = data.first;
 
 
+  ZStackWatershedContainer container(data);
 
-//  ZStack signalStack;
-//  signalStack.load(signalUrl);
-
-  if (signalStack != NULL || spStack != NULL) {
-    ZStackWatershedContainer container(signalStack, spStack);
-
-    ZJsonArray seedArrayJson(inputJson.value("seeds"));
-    for (size_t i = 0; i < seedArrayJson.size(); ++i) {
-      ZJsonObject seedJson(seedArrayJson.value(i));
-      if (seedJson.hasKey("type")) {
-        std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
-        if (isFile) {
-          seedUrl = ZString(seedUrl).absolutePath(dataDir);
-        }
-
-        std::string type = ZJsonParser::stringValue(seedJson["type"]);
-        if (type == "ZObject3dScan" && !seedUrl.empty() && seedJson.hasKey("label")) {
-          int label = ZJsonParser::integerValue(seedJson["label"]);
-          ZObject3dScan obj;
-          obj.setLabel(label);
-          QUrl url(seedUrl.c_str());
-          if (url.scheme() == "http") {
-            QByteArray data = ZServiceConsumer::ReadData(seedUrl.c_str());
-            obj.importDvidObjectBuffer(data.data(), data.length());
-          } else {
-            obj.load(seedUrl);
-          }
-          container.addSeed(obj);
-        } else if (type == "ZStroke2d") {
-          ZStroke2d stroke;
-          stroke.loadJsonObject(ZJsonObject(seedJson.value("data")));
-          container.addSeed(stroke);
-        } else if (type == "ZObject3d") {
-          ZObject3d obj;
-          obj.loadJsonObject(ZJsonObject(seedJson.value("data")));
-          container.addSeed(obj);
-        }
-//        ZStack *seedStack = obj.toStackObject(label);
-//        seedMask.push_back(seedStack);
-      } else if (seedJson.hasKey("stroke")) {
-        ZStroke2d stroke;
-        stroke.loadJsonObject(seedJson);
-        container.addSeed(stroke);
-      }
+  if (!container.isEmpty()) {
+    if (!range.isEmpty()) {
+      container.setRange(range);
     }
 
+    LoadSeeds(inputJson, container, dataDir, isFile);
 #ifdef _DEBUG_2
     container.exportMask(GET_TEST_DATA_DIR + "/test2.tif");
     container.exportSource(GET_TEST_DATA_DIR + "/test3.tif");
 #endif
 
     container.run();
-    ZStack *resultStack = container.getResultStack();
+    ProcessResult(container, output, splitTaskKey);
 
 #ifdef _DEBUG_2
     resultStack->save(GET_TEST_DATA_DIR + "/test.tif");
@@ -169,66 +175,133 @@ int ZBodySplitCommand::run(
 
 //    ZStack *result = watershed.run(&signalStack, seedMask);
 
-    if (resultStack != NULL) {
-      QUrl outputUrl(output.c_str());
-      ZObject3dScanArray *result = container.makeSplitResult();
-
-      if (outputUrl.scheme() == "dvid" || outputUrl.scheme() == "http") {
-        ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(output);
-        ZJsonArray resultArray;
-
-//        ZObject3dScanArray objArray;
-//        ZObject3dFactory::MakeObject3dScanArray(
-//              *result, NeuTube::Z_AXIS, true, &objArray);
-        for (ZObject3dScanArray::const_iterator iter = result->begin();
-             iter != result->end(); ++iter) {
-          const ZObject3dScan &obj = *iter;
-          std::string endPoint =
-              writer->writeServiceResult("split", obj.toDvidPayload(), false);
-          ZJsonObject regionJson;
-          regionJson.setEntry("label", (int) obj.getLabel());
-          regionJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
-          resultArray.append(regionJson);
-#ifdef _DEBUG_2
-          obj.save(GET_TEST_DATA_DIR + "/test.sobj");
-#endif
-        }
-
-        if (!resultArray.isEmpty()) {
-          ZJsonObject resultJson;
-          resultJson.addEntry("type", "split");
-          resultJson.addEntry("result", resultArray);
-          std::string endPoint =
-              writer->writeServiceResult("split", resultJson);
-          std::cout << "Result endpoint: " << endPoint << std::endl;
-          if (!splitTaskKey.empty()) {
-            QString refEndPoint = ZDvidEndPoint::GetResultKeyEndPoint(
-                  "split",
-                  ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
-            ZJsonObject refJson;
-            refJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
-            refJson.setEntry(
-                  "timestamp", QDateTime::currentMSecsSinceEpoch() / 1000);
-            writer->writeJson(refEndPoint.toStdString(), refJson);
-          }
-        }
-
-        if (!splitTaskKey.empty()) {
-          writer->deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
-                            splitTaskKey);
-        }
-      } else {
-        ZStackWriter writer;
-        writer.write(output, resultStack);
-      }
-
-      delete result;
-    } else {
-      std::cout << "WARNING: Failed to produce result." << std::endl;
-    }
 
     status = 0;
   }
 
   return status;
+}
+
+void ZBodySplitCommand::LoadSeeds(const ZJsonObject &inputJson, ZStackWatershedContainer &container, const std::string &dataDir, bool isFile)
+{
+  ZJsonArray seedArrayJson(inputJson.value("seeds"));
+  for (size_t i = 0; i < seedArrayJson.size(); ++i) {
+    ZJsonObject seedJson(seedArrayJson.value(i));
+    if (seedJson.hasKey("type")) {
+      std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
+      if (isFile) {
+        seedUrl = ZString(seedUrl).absolutePath(dataDir);
+      }
+
+      std::string type = ZJsonParser::stringValue(seedJson["type"]);
+      if (type == "ZObject3dScan" && !seedUrl.empty() && seedJson.hasKey("label")) {
+        int label = ZJsonParser::integerValue(seedJson["label"]);
+        ZObject3dScan obj;
+        obj.setLabel(label);
+        QUrl url(seedUrl.c_str());
+        if (url.scheme() == "http") {
+          QByteArray data = ZServiceConsumer::ReadData(seedUrl.c_str());
+          obj.importDvidObjectBuffer(data.data(), data.length());
+        } else {
+          obj.load(seedUrl);
+        }
+        container.addSeed(obj);
+      } else if (type == "ZStroke2d") {
+        ZStroke2d stroke;
+        stroke.loadJsonObject(ZJsonObject(seedJson.value("data")));
+        container.addSeed(stroke);
+      } else if (type == "ZObject3d") {
+        ZObject3d obj;
+        obj.loadJsonObject(ZJsonObject(seedJson.value("data")));
+        container.addSeed(obj);
+      }
+//        ZStack *seedStack = obj.toStackObject(label);
+//        seedMask.push_back(seedStack);
+    } else if (seedJson.hasKey("stroke")) {
+      ZStroke2d stroke;
+      stroke.loadJsonObject(seedJson);
+      container.addSeed(stroke);
+    } else if (seedJson.hasKey("obj3d")) {
+      ZObject3d obj;
+      obj.loadJsonObject(seedJson);
+      container.addSeed(obj);
+    }
+  }
+}
+
+void ZBodySplitCommand::ProcessResult(
+    ZStackWatershedContainer &container, const std::string &output,
+    const std::string &splitTaskKey)
+{
+  ZStack *resultStack = container.getResultStack();
+  if (resultStack != NULL) {
+    QUrl outputUrl(output.c_str());
+    ZObject3dScanArray *result = container.makeSplitResult();
+
+    if (outputUrl.scheme() == "dvid" || outputUrl.scheme() == "http") {
+      ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(output);
+      ZJsonArray resultArray;
+
+//        ZObject3dScanArray objArray;
+//        ZObject3dFactory::MakeObject3dScanArray(
+//              *result, NeuTube::Z_AXIS, true, &objArray);
+      for (ZObject3dScanArray::const_iterator iter = result->begin();
+           iter != result->end(); ++iter) {
+        const ZObject3dScan &obj = *iter;
+        std::string endPoint =
+            writer->writeServiceResult("split", obj.toDvidPayload(), false);
+        ZJsonObject regionJson;
+        regionJson.setEntry("label", (int) obj.getLabel());
+        regionJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
+        resultArray.append(regionJson);
+#ifdef _DEBUG_2
+        obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+      }
+
+      ZJsonObject resultJson;
+      QString refPath;
+      ZJsonObject refJson;
+
+      if (!splitTaskKey.empty()) {
+        refPath = ZDvidPath::GetResultKeyPath(
+              ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
+              ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
+        refJson.setEntry(
+              "timestamp", QDateTime::currentMSecsSinceEpoch() / 1000);
+      }
+
+      if (!resultArray.isEmpty()) {
+        resultJson.addEntry("type", "split");
+        resultJson.addEntry("result", resultArray);
+        std::string endPoint =
+            writer->writeServiceResult("split", resultJson);
+        std::cout << "Result endpoint: " << endPoint << std::endl;
+
+        if (!splitTaskKey.empty()) {
+          refJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
+        }
+      } else {
+        if (!splitTaskKey.empty()) {
+          refJson.setEntry("message", "Split failed.");
+        }
+      }
+
+      if (!refJson.isEmpty() && !refPath.isEmpty()) {
+        writer->writeJson(refPath.toStdString(), refJson);
+      }
+
+//      if (!splitTaskKey.empty()) {
+//          writer->deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
+//                            splitTaskKey);
+//      }
+    } else {
+      ZStackWriter writer;
+      writer.write(output, resultStack);
+    }
+
+//      delete result;
+  } else {
+    std::cout << "WARNING: Failed to produce result." << std::endl;
+  }
 }

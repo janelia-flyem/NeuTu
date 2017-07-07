@@ -967,6 +967,15 @@ void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)
   Read_Stack_Offset(filePath.c_str(), x, y, z);
 }
 
+void C_Stack::readStackIntv(const string &filePath, int *ix, int *iy, int *iz)
+{
+  *ix = 0;
+  *iy = 0;
+  *iz = 0;
+
+  Read_Stack_Intv(filePath.c_str(), ix, iy, iz);
+}
+
 char *C_Stack::toMrawBuffer(const Mc_Stack *stack, size_t *length)
 {
   *length = 0;

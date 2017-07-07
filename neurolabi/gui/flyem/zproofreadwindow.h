@@ -5,6 +5,7 @@
 #include <QPalette>
 
 #include "tz_stdint.h"
+#include "neutube_def.h"
 
 class ZFlyEmProofMvc;
 class QStackedWidget;
@@ -22,6 +23,7 @@ class FlyEmProofControlForm;
 class FlyEmSplitControlForm;
 class ZStressTestOptionDialog;
 class ZFlyEmBodyScreenshotDialog;
+class ZFlyEmBodySplitDialog;
 
 /*!
  * \brief The mainwindow class of proofreading
@@ -59,7 +61,8 @@ signals:
   */
 
 public slots:
-  void launchSplit(uint64_t bodyId);
+  void launchSplit(
+      uint64_t bodyId, FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_ONLINE);
   void launchSplit();
   void exitSplit();
   void presentSplitInterface(uint64_t bodyId);
@@ -81,6 +84,7 @@ public slots:
 
   void exportNeuronScreenshot();
   void exportGrayscale();
+  void exportBodyStack();
 
   void stressTestSlot();
   void diagnose();
@@ -158,6 +162,7 @@ private:
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
   ZStressTestOptionDialog *m_stressTestOptionDlg;
   ZFlyEmBodyScreenshotDialog *m_bodyScreenshotDlg;
+  ZFlyEmBodySplitDialog *m_bodySplitDlg;
 };
 
 

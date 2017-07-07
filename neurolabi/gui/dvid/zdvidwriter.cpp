@@ -25,7 +25,7 @@
 #include "flyem/zflyemmisc.h"
 #include "dvid/zdvidbufferreader.h"
 #include "zdvidutil.h"
-#include "dvid/zdvidendpoint.h"
+#include "dvid/zdvidpath.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -954,7 +954,7 @@ std::string ZDvidWriter::put(const std::string &url)
 std::string ZDvidWriter::writeServiceResult(
     const QString &group, const QByteArray &data, bool head)
 {
-  QString endPoint = ZDvidEndPoint::GetResultEndPoint(group, data, head);
+  QString endPoint = ZDvidPath::GetResultPath(group, data, head);
 
   post(endPoint.toStdString(), data, false);
 
@@ -970,7 +970,7 @@ std::string ZDvidWriter::writeServiceResult(
 std::string ZDvidWriter::writeServiceTask
 (const QString &group, const QByteArray &task, bool head)
 {
-  QString endPoint = ZDvidEndPoint::GetTaskEndPoint(group, task, head);
+  QString endPoint = ZDvidPath::GetTaskPath(group, task, head);
 
   post(endPoint.toStdString(), task, false);
 

@@ -31,6 +31,28 @@ ZStackWatershedContainer::ZStackWatershedContainer(ZSparseStack *stack)
 ZStackWatershedContainer::ZStackWatershedContainer(
     ZStack *stack, ZSparseStack *spStack)
 {
+  init(stack, spStack);
+}
+
+ZStackWatershedContainer::ZStackWatershedContainer(
+    const std::pair<ZStack *, ZSparseStack *> &data)
+{
+  init(data.first, data.second);
+}
+
+void ZStackWatershedContainer::init()
+{
+  m_stack = NULL;
+  m_spStack = NULL;
+  m_source = NULL;
+  m_workspace = NULL;
+  m_result = NULL;
+  m_channel = 0;
+  m_floodingZero = false;
+}
+
+void ZStackWatershedContainer::init(ZStack *stack, ZSparseStack *spStack)
+{
   init();
   m_stack = stack;
   if (m_stack != NULL) {
@@ -51,16 +73,6 @@ ZStackWatershedContainer::~ZStackWatershedContainer()
   clearResult();
 }
 
-void ZStackWatershedContainer::init()
-{
-  m_stack = NULL;
-  m_spStack = NULL;
-  m_source = NULL;
-  m_workspace = NULL;
-  m_result = NULL;
-  m_channel = 0;
-  m_floodingZero = false;
-}
 
 void ZStackWatershedContainer::clearWorkspace()
 {
@@ -233,6 +245,18 @@ ZIntPoint ZStackWatershedContainer::getSourceOffset() const
 }
 
 void ZStackWatershedContainer::setRange(
+    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+{
+  setRange(firstCorner.getX(), firstCorner.getY(), firstCorner.getZ(),
+           lastCorner.getX(), lastCorner.getY(), lastCorner.getZ());
+}
+
+void ZStackWatershedContainer::setRange(const ZIntCuboid &range)
+{
+  setRange(range.getFirstCorner(), range.getLastCorner());
+}
+
+void ZStackWatershedContainer::setRange(
     int x0, int y0, int z0, int x1, int y1, int z1)
 {
   ZIntCuboid newRange(x0, y0, z0, x1, y1, z1);
@@ -277,6 +301,11 @@ ZStack* ZStackWatershedContainer::getSourceStack()
 Stack* ZStackWatershedContainer::getSource()
 {
   return getSourceStack()->c_stack(m_channel);
+}
+
+bool ZStackWatershedContainer::isEmpty() const
+{
+  return (m_stack == NULL) && (m_spStack ==NULL);
 }
 
 void ZStackWatershedContainer::run()

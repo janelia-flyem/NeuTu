@@ -8,7 +8,8 @@ then
 fi
 
 cd build
-if [ $1 == debug ]
+config=$1
+if [ ${config:-release} == debug ]
 then
   cmake -DCMAKE_BUILD_TYPE=Debug ..
 else

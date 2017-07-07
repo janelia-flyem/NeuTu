@@ -62,7 +62,6 @@ public:
 
   void printError() const;
 
-
 private:
   json_error_t m_error;
 

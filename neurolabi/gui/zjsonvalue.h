@@ -101,6 +101,7 @@ public:
    * \brief Get a string describing the current error
    */
   static std::string GetErrorString(const json_error_t &error);
+  static void PrintError(const json_error_t &error);
 
   /*!
    * \brief Dump the object to a string.
