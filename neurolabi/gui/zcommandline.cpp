@@ -44,6 +44,7 @@
 #include "command/zcommandmodule.h"
 #include "command/zstackdownsamplecommand.h"
 #include "command/zbodysplitcommand.h"
+#include "command/zbodyexportcommand.h"
 
 using namespace std;
 
@@ -85,6 +86,7 @@ void ZCommandLine::registerModule()
 {
   registerModule<ZStackDownsampleCommand>("downsample_stack");
   registerModule<ZBodySplitCommand>("split_body");
+  registerModule<ZBodyExportCommand>("export_body");
 }
 
 template <typename T>

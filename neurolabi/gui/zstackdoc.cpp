@@ -4277,6 +4277,8 @@ QStringList ZStackDoc::toStringList() const
                 .arg(mainStack->height()).arg(mainStack->depth()));
     list.append(QString("Stack offset: ") +
                 mainStack->getOffset().toString().c_str());
+    list.append(QString("Stack interval: %1").arg(
+                  mainStack->getDsIntv().toString().c_str()));
   }
 
   return list;

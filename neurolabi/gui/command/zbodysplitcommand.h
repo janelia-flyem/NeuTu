@@ -3,7 +3,6 @@
 
 #include "zcommandmodule.h"
 
-class ZJsonObject;
 class ZDvidReader;
 class ZStack;
 class ZSparseStack;
