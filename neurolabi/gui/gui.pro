@@ -9,6 +9,10 @@ contains(TEMPLATE, app) {
     CONFIG += staticlib
 }
 
+contains(CONFIG, neu3) {
+    DEFINES += _NEU3_ _FLYEM_
+}
+
 #DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
@@ -53,8 +57,12 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
-    contains(DEFINES, _FLYEM_) {
-        TARGET = neutu_d
+    contains(CONFIG, neu3) {
+        TARGET = neu3_d
+    } else {
+      contains(DEFINES, _FLYEM_) {
+          TARGET = neutu_d
+      }
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
@@ -749,7 +757,10 @@ HEADERS += mainwindow.h \
     dvid/zdvidresultservice.h \
     flyem/zserviceconsumer.h \
     zstackgarbagecollector.h \
-    dialogs/zflyembodysplitdialog.h
+    dialogs/zflyembodysplitdialog.h \
+    widgets/zbodylistwidget.h \
+    widgets/flyembodyinfowidget.h \
+    neu3window.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -848,7 +859,10 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyemgrayscaledialog.ui \
     dialogs/zcomboeditdialog.ui \
     dialogs/zflyembodycomparisondialog.ui \
-    dialogs/zflyembodysplitdialog.ui
+    dialogs/zflyembodysplitdialog.ui \
+    widgets/zbodylistwidget.ui \
+    widgets/flyembodyinfowidget.ui \
+    neu3window.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1307,6 +1321,9 @@ SOURCES += main.cpp \
     dvid/zdvidresultservice.cpp \
     flyem/zserviceconsumer.cpp \
     zstackgarbagecollector.cpp \
-    dialogs/zflyembodysplitdialog.cpp
+    dialogs/zflyembodysplitdialog.cpp \
+    widgets/zbodylistwidget.cpp \
+    widgets/flyembodyinfowidget.cpp \
+    neu3window.cpp
 
 

@@ -62,8 +62,9 @@ public:
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
-      NeuTube::EAxis axis = NeuTube::Z_AXIS);
-  static ZFlyEmProofMvc* Make(const ZDvidTarget &target);
+      NeuTube::EAxis axis = NeuTube::Z_AXIS, ERole role = ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(
+      const ZDvidTarget &target, ERole role = ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
@@ -135,7 +136,13 @@ public:
       const std::vector<uint64_t> &bodyIdArray, int width, int height,
       const QString &outDir);
 
+  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
+    return m_bodyInfoDlg;
+  }
+
   void diagnose();
+
+  Z3DWindow* makeExternalSkeletonWindow();
 
 signals:
   void launchingSplit(const QString &message);

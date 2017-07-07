@@ -54,12 +54,20 @@ public:
     m_showObjectView = visible;
   }
 
+  inline void setStatusBarVisible(bool visible) {
+    m_showStatusBar = visible;
+  }
+
   inline bool isControlPanelVisible() const {
     return m_showControlPanel;
   }
 
   inline bool isObjectViewVisible() const {
     return m_showObjectView;
+  }
+
+  inline bool isStatusBarVisible() const {
+    return m_showStatusBar;
   }
 
   inline void setVolumeRenderMode(NeuTube3D::EVolumeRenderingMode mode) {
@@ -82,6 +90,7 @@ private:
   bool m_showVolumeBoundBox;
   bool m_showControlPanel;
   bool m_showObjectView;
+  bool m_showStatusBar;
   NeuTube3D::EVolumeRenderingMode m_volumeMode;
 
   bool m_deleteOnClose;

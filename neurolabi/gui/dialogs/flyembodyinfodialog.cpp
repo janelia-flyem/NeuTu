@@ -130,8 +130,6 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     ui->connectionsTableView->setModel(m_connectionsProxy);
     // set col width here?
 
-
-
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
@@ -169,6 +167,28 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(ioBodyLoadFailed()), this, SLOT(onIOBodyLoadFailed()));
     connect(this, SIGNAL(ioNoBodiesLoaded()), this, SLOT(onIONoBodiesLoaded()));
 
+}
+
+void FlyEmBodyInfoDialog::simplify()
+{
+  ui->roiComboBox->hide();
+  ui->exportBodiesButton->hide();
+  ui->gotoBodiesButton->hide();
+  ui->colorTab->hide();
+  ui->saveColorFilterButton->hide();
+  ui->closeButton->hide();
+  ui->refreshButton->hide();
+  ui->clearFilterButton->hide();
+//  ui->connectionBodyLabel->hide();
+  ui->roiLabel->hide();
+  ui->tabWidget->removeTab(0);
+  ui->connectionsTableLabel->hide();
+  ui->connectionsTableView->hide();
+  ui->regexCheckBox->setChecked(true);
+  ui->regexCheckBox->hide();
+  ui->bodyFilterLabel->setText("Body filter (regular expression supported):");
+//  ui->regexCheckBox->setEnabled(false);
+//  ui->regexCheckBox->setText("Regular expression supported");
 }
 
 void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
@@ -209,7 +229,8 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
     // double-click = select and goto
     // shift-double-click = select and goto, but don't clear previous bodies from 3d views
     Qt::KeyboardModifiers modifiers  = QApplication::queryKeyboardModifiers();
-    if (modifiers.testFlag(Qt::ShiftModifier)) {
+    if (modifiers.testFlag(Qt::ShiftModifier) ||
+        modifiers.testFlag(Qt::ControlModifier)) {
         emit addBodyActivated(bodyId);
     } else {
         // technically also catches alt, ctrl double-click

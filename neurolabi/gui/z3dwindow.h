@@ -188,6 +188,7 @@ public: //controls
   void createToolBar();
   void hideControlPanel();
   void hideObjectView();
+  void hideStatusBar();
 
   void setButtonStatus(int index, bool v);
   bool getButtonStatus(int index);
@@ -561,6 +562,7 @@ private:
   QDockWidget *m_objectsDockWidget;
   QDockWidget *m_advancedSettingDockWidget;
   ZROIWidget *m_roiDockWidget;
+  QDockWidget *m_bodyWidget;
 
   bool m_isStereoView;
   bool m_cuttingStackBound;

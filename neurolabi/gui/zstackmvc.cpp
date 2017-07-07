@@ -33,6 +33,7 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 //  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
 
   m_testTimer = new QTimer(this);
+  m_role = ROLE_WIDGET;
 }
 
 ZStackMvc::~ZStackMvc()
@@ -322,6 +323,16 @@ void ZStackMvc::stressTest(ZStressTestOptionDialog *dlg)
 {
   setStressTestEnv(dlg);
   toggleStressTest();
+}
+
+ZStackMvc::ERole ZStackMvc::getRole() const
+{
+  return m_role;
+}
+
+void ZStackMvc::setRole(ZStackMvc::ERole role)
+{
+  m_role = role;
 }
 
 

@@ -42,6 +42,10 @@ public:
   static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc,
                          NeuTube::EAxis axis);
 
+  enum ERole {
+    ROLE_WIDGET, ROLE_DOCUMENT
+  };
+
   void attachDocument(ZStackDoc *doc);
   void attachDocument(ZSharedPointer<ZStackDoc> doc);
   void detachDocument();
@@ -80,6 +84,9 @@ public:
 
   void toggleStressTest();
   virtual void stressTest(ZStressTestOptionDialog *dlg);
+
+  ERole getRole() const;
+  void setRole(ERole role);
 
 signals:
   void stackChanged();
@@ -160,6 +167,7 @@ protected:
   QLayout *m_layout;
   ZProgressSignal *m_progressSignal;
   QTimer *m_testTimer;
+  ERole m_role;
 };
 
 #endif // ZSTACKMVC_H

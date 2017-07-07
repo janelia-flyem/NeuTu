@@ -36,6 +36,7 @@ void ZWindowFactory::init()
   m_showControlPanel = true;
   m_showObjectView = true;
   m_volumeMode = NeuTube3D::VR_AUTO;
+  m_showStatusBar = false;
 }
 
 Z3DWindow* ZWindowFactory::make3DWindow(
@@ -140,6 +141,10 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
 
     if (!isObjectViewVisible()) {
       window->hideObjectView();
+    }
+
+    if (!isStatusBarVisible()) {
+      window->hideStatusBar();
     }
 
     configure(window);
