@@ -625,6 +625,10 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
+        // show wait cursor
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        QApplication::processEvents();
+
         std::vector<ZDvidSynapse> synapseList;
         if (m_variation == VARIATION_REGION) {
             synapseList = reader.readSynapse(m_protocolRange, FlyEM::LOAD_PARTNER_LOCATION);
@@ -661,7 +665,11 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
         for (int i=0; i<pendingSynapses.size(); i++) {
             m_pendingList.append(pendingSynapses[i].getPosition());
         }
+        // restore original cursor
+        QApplication::restoreOverrideCursor();
+        QApplication::processEvents();
     }
+
 }
 
 bool SynapsePredictionProtocol::compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2) {
