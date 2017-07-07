@@ -12,6 +12,7 @@
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
+#include "QsLog/QsLog.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -802,7 +803,13 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
         std::vector<ZIntPoint> psdArray = synapse.getPartners();
         for (size_t i=0; i<psdArray.size(); i++) {
             ZDvidSynapse post = reader.readSynapse(psdArray[i], FlyEM::LOAD_NO_PARTNER);
-            result.push_back(post);
+            // we've been seeing some blank lines in the PSD table; I think
+            //  they might be due to unlinked PSDs, and this might catch them:
+            if (post.isValid()) {
+                result.push_back(post);
+            } else {
+                LINFO() << "found invalid PSD at " << psdArray[i].toString();
+            }
         }
     }
     return result;
