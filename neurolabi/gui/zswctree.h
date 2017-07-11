@@ -682,6 +682,7 @@ public:
 
   void labelStack(ZStack* stack,int v) const;
   void labelStack(ZStack *stack) const;
+  void labelStackByType(ZStack *stack) const;
 
   /*!
    * \brief Get the length of the longest segment

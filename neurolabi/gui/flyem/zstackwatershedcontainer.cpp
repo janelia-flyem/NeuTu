@@ -161,7 +161,8 @@ void ZStackWatershedContainer::addSeed(const ZSwcTree &seed)
 {
   ZStack stack;
   makeMaskStack(stack);
-  seed.labelStack(&stack);
+  seed.labelStackByType(&stack);
+//  seed.labelStack(&stack);
 }
 
 void ZStackWatershedContainer::prepareSeedMask(Stack *stack, Stack *mask)

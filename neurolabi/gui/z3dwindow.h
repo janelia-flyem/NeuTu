@@ -101,7 +101,7 @@ public: //properties
   void setZScale(double scale);
   void setScale(double sx, double sy, double sz);
   void setOpacity(ERendererLayer layer, double opacity);
-  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+//  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void setLayerVisible(ERendererLayer layer, bool visible);
   bool isLayerVisible(ERendererLayer layer) const;
 
@@ -231,6 +231,7 @@ signals:
   void addingToSplitMarker(int x, int y, int z, uint64_t bodyId);
   void deselectingBody(const std::set<uint64_t> bodyId);
   void settingNormalTodoVisible(bool);
+  void showingPuncta(bool);
 
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -297,6 +298,8 @@ public slots:
   void tranlateSelectedSwcNode();
   void changeSelectedSwcNodeSize();
   void showSeletedSwcNodeLength();
+
+  void showPuncta(bool on);
 
   void saveSelectedSwc();
   void changeSelectedSwcType();

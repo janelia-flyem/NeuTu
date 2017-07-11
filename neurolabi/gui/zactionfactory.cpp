@@ -636,6 +636,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/save.png"));
     action->setToolTip("Save the stack data into a file.");
     break;
+  case ACTION_SHOW_SYNAPSE:
+    action = new QAction("Synapses", parent);
+    action->setIcon(QIcon(":/images/synapse.png"));
+    action->setCheckable(true);
+    action->setChecked(true);
+    break;
   default:
     break;
   }

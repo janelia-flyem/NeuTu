@@ -157,6 +157,8 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     // data update connects
     // register our type so we can signal/slot it across threads:
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
+    connect(this, SIGNAL(appendingData(ZJsonValue, int)),
+            this, SLOT(appendModel(ZJsonValue, int)));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateStatusAfterLoading()));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateBodyFilterAfterLoading()));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateColorScheme()));
@@ -635,12 +637,12 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         //  so we don't try to retrieve annotations that aren't there
         dvidTimer.restart();
         QString bodyAnnotationName = QString::fromStdString(m_currentDvidTarget.getBodyAnnotationName());
-        QSet<QString> m_bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
+        QSet<QString> bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
 
         #ifdef _DEBUG_
             std::cout << "populating body info dialog:" << std::endl;
             std::cout << "    reading body annotations from " << bodyAnnotationName.toStdString() << std::endl;
-            std::cout << "    # body annotation keys = " << m_bodyAnnotationKeys.size() << std::endl;
+            std::cout << "    # body annotation keys = " << bodyAnnotationKeys.size() << std::endl;
             std::cout << "    # bodies read with synapses = " << thresholdData.size() << std::endl;
         #endif
 
@@ -648,7 +650,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         ZJsonArray bodies;
         m_bodyNames.clear();
         m_namelessBodies.clear();
+        int capacity = 20;
+        int batchState = 0;
         for (size_t i=0; i<thresholdData.size(); i++) {
+            --capacity;
             // if application is quitting, return = exit thread
             if (m_quitting || m_cancelLoading) {
 #ifdef _DEBUG_
@@ -665,7 +670,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
             entry.setEntry("body ID", bodyID);
 
             // body annotation info
-            if (m_bodyAnnotationKeys.contains(bodyIDstring)) {
+            if (bodyAnnotationKeys.contains(bodyIDstring)) {
                 // body annotations currently stored as another json string
                 dvidTimer.restart();
                 const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstring);
@@ -716,7 +721,23 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
             entry.setEntry("body PSDs", npost);
 
             bodies.append(entry);
+
+            if (capacity < 0) {
+              emit appendingData(bodies.clone(), batchState);
+              batchState++;
+              bodies.clear();
+              capacity = 20;
+            }
+
+            /*
+            if (capacity < 0 || i == thresholdData.size() - 1) {
+              emit dataChanged(bodies.clone());
+              capacity = 20;
+            }
+            */
         }
+
+        emit appendingData(bodies, -1);
 
 
         fullTime = fullTimer.elapsed();
@@ -727,7 +748,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
 
 
         // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
-        emit dataChanged(bodies);
+//        emit dataChanged(bodies);
     } else {
         // but we need to clear the loading message if we can't read from DVID
         emit loadCompleted();
@@ -741,6 +762,91 @@ void FlyEmBodyInfoDialog::onRefreshButton() {
 
 void FlyEmBodyInfoDialog::onCloseButton() {
     close();
+}
+
+void FlyEmBodyInfoDialog::appendModel(ZJsonValue data, int state)
+{
+#ifdef _DEBUG_
+  std::cout << "Batch: " << state << std::endl;
+#endif
+
+  if (state == 0) {
+    m_bodyModel->clear();
+    setBodyHeaders(m_bodyModel);
+    m_totalPre = 0;
+    m_totalPost = 0;
+  }
+
+  if (!data.isEmpty()) {
+    ZJsonArray bookmarks(data);
+    std::cout << "Count: " << bookmarks.size() << std::endl;
+    for (size_t i = 0; i < bookmarks.size(); ++i) {
+      ZJsonObject bkmk(bookmarks.value(i));
+      QList<QStandardItem*> itemList = getBodyItemList(bkmk);
+      m_bodyModel->appendRow(itemList);
+    }
+
+    if (state == 0) {
+      ui->bodyTableView->resizeColumnsToContents();
+      ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+    }
+    // currently initially sorting on # pre-synaptic sites
+//    ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
+  }
+
+  if (state == -1) {
+    ui->bodyTableView->resizeColumnsToContents();
+    ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+    ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
+    emit loadCompleted();
+  }
+}
+
+QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
+    const ZJsonObject &bkmk)
+{
+  QVector<QStandardItem*> itemArray;
+  itemArray.resize(BODY_TABLE_COLUMN_COUNT);
+
+  // carefully set data for column items so they will sort
+  //  properly (eg, IDs numerically, not lexically)
+  qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
+  QStandardItem * bodyIDItem = new QStandardItem();
+  bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
+  itemArray[BODY_ID_COLUMN] = bodyIDItem;
+
+  if (bkmk.hasKey("name")) {
+    const char* name = ZJsonParser::stringValue(bkmk["name"]);
+    itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString(name));
+  }
+
+  if (bkmk.hasKey("body T-bars")) {
+    int nPre = ZJsonParser::integerValue(bkmk["body T-bars"]);
+    m_totalPre += nPre;
+    QStandardItem * preSynapseItem = new QStandardItem();
+    preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
+    itemArray[BODY_NPRE_COLUMN] = preSynapseItem;
+//      m_bodyModel->setItem(i, BODY_NPRE_COLUMN, preSynapseItem);
+  }
+
+  if (bkmk.hasKey("body PSDs")) {
+    int nPost = ZJsonParser::integerValue(bkmk["body PSDs"]);
+    m_totalPost += nPost;
+    QStandardItem * postSynapseItem = new QStandardItem();
+    postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
+    itemArray[BODY_NPOST_COLUMN] = postSynapseItem;
+//      m_bodyModel->setItem(i, BODY_NPOST_COLUMN, postSynapseItem);
+  }
+
+  // note that this routine expects "body status", not "status";
+  //  historical side-effect of the original file format we read from
+  if (bkmk.hasKey("body status")) {
+    const char* status = ZJsonParser::stringValue(bkmk["body status"]);
+    itemArray[BODY_STATUS_COLUMN] = new QStandardItem(QString(status));
+    //      m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
+  }
+
+  return itemArray.toList();
 }
 
 /*
@@ -771,6 +877,11 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
+        QList<QStandardItem*> itemList = getBodyItemList(bkmk);
+        for (int j = 0; j < itemList.size(); ++j) {
+          m_bodyModel->setItem(i, j, itemList[j]);
+        }
+#if 0
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
         qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
@@ -805,6 +916,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             const char* status = ZJsonParser::stringValue(bkmk["body status"]);
             m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
         }
+#endif
     }
     // the resize isn't reliable, so set the name column wider by hand
     ui->bodyTableView->resizeColumnsToContents();

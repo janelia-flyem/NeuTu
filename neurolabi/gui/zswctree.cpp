@@ -3315,6 +3315,34 @@ void ZSwcTree::labelStack(ZStack* stack,int v) const
   }
 }
 
+void ZSwcTree::labelStackByType(ZStack *stack) const
+{
+  updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST);
+  Swc_Tree_Node_Label_Workspace workspace;
+  Default_Swc_Tree_Node_Label_Workspace(&workspace);
+  workspace.offset[0] = -stack->getOffset().getX();
+  workspace.offset[1] = -stack->getOffset().getY();
+  workspace.offset[2] = -stack->getOffset().getZ();
+
+  for (Swc_Tree_Node *iter = begin(); iter != NULL; iter = next()) {
+    if (SwcTreeNode::isRegular(iter)) {
+      //Label current node
+      workspace.label_mode = SWC_TREE_LABEL_NODE;
+      workspace.sdw.color.r = SwcTreeNode::type(iter);
+      Swc_Tree_Node_Label_Stack(iter, stack->c_stack(), &workspace);
+
+      //Label the parent link if the types are consistent
+      Swc_Tree_Node *parent = SwcTreeNode::parent(iter);
+      if (SwcTreeNode::isRegular(parent)) {
+        if (SwcTreeNode::type(iter) == SwcTreeNode::type(parent)) {
+          workspace.label_mode = SWC_TREE_LABEL_CONNECTION;
+          Swc_Tree_Node_Label_Stack(iter, stack->c_stack(), &workspace);
+        }
+      }
+    }
+  }
+}
+
 
 double ZSwcTree::computeBackTraceLength()
 {

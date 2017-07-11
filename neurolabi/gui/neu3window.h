@@ -29,6 +29,7 @@ private:
   void createDockWidget();
   void loadDvidTarget();
   void createToolBar();
+  void connectSignalSlot();
 
 private:
   Ui::Neu3Window *ui;

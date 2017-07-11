@@ -46,6 +46,12 @@ signals:
   void ioNoBodiesLoaded();
   void ioConnectionsLoaded();
   void pointDisplayRequested(int, int, int);
+  /*!
+   * \brief appendingData
+   * \param object
+   * \param state 0: first batch; -1: last batch
+   */
+  void appendingData(ZJsonValue object, int state);
 
 private slots:
     void onCloseButton();
@@ -53,6 +59,7 @@ private slots:
     void onDoubleClickBodyTable(QModelIndex modelIndex);
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
+    void appendModel(ZJsonValue object, int state);
     void onjsonLoadBookmarksError(QString message);
     void onjsonLoadColorMapError(QString message);
     void updateStatusLabel();
@@ -86,11 +93,12 @@ private:
         CONNECTIONS_TAB
         };
     enum BodyTableColumns {
-        BODY_ID_COLUMN,
+        BODY_ID_COLUMN = 0,
         BODY_NAME_COLUMN,
         BODY_NPRE_COLUMN,
         BODY_NPOST_COLUMN,
-        BODY_STATUS_COLUMN
+        BODY_STATUS_COLUMN,
+        BODY_TABLE_COLUMN_COUNT
     };
     enum FilterTableColumns {
         FILTER_NAME_COLUMN,
@@ -173,6 +181,7 @@ private:
     void updateRoi();
     void updateRoi(const std::vector<std::string> &roiList);
     ZDvidRoi* getRoi(const QString &name);
+    QList<QStandardItem*> getBodyItemList(const ZJsonObject &bkmk);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

@@ -158,7 +158,7 @@ int ZBodySplitCommand::run(
     }
 
     LoadSeeds(inputJson, container, dataDir, isFile);
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     container.exportMask(GET_TEST_DATA_DIR + "/test2.tif");
     container.exportSource(GET_TEST_DATA_DIR + "/test3.tif");
 #endif
@@ -216,10 +216,8 @@ void ZBodySplitCommand::LoadSeeds(
         ZObject3d obj;
         obj.loadJsonObject(ZJsonObject(seedJson.value("data")));
         container.addSeed(obj);
-      } else if (type == "swc" && seedJson.hasKey("label")) {
+      } else if (type == "swc") {
         ZSwcTree tree;
-        int label = ZJsonParser::integerValue(seedJson["label"]);
-        tree.setLabel(label);
         tree.load(seedUrl);
         container.addSeed(tree);
       }

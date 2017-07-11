@@ -23983,11 +23983,53 @@ void ZTest::test(MainWindow *host)
   std::cout << stack2.getDsIntv().toString() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZStack stack2;
   stack2.load(GET_TEST_DATA_DIR + "/tmp/15363212.tif");
   std::cout << stack2.getOffset().toString() << std::endl;
   std::cout << stack2.getDsIntv().toString() << std::endl;
+#endif
+
+#if 0
+  ZStack *stack = ZStackFactory::MakeZeroStack(GREY, 256, 256, 1, 1);
+//  stack->setOffset(100, 100, 0);
+  ZSwcTree tree;
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer(1, 1, ZPoint(127, 127, 0), 3, -1);
+  tree.addRegularRoot(tn);
+
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer(2, 1, ZPoint(100, 127, 0), 3, -1);
+  SwcTreeNode::setParent(tn2, tn);
+
+  Swc_Tree_Node *tn3 = SwcTreeNode::makePointer(2, 2, ZPoint(127, 100, 0), 3, -1);
+  SwcTreeNode::setParent(tn3, tn);
+
+  tree.labelStackByType(stack);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZJsonObject seedJson;
+  seedJson.load(
+        "/Users/zhaot/Work/neutube/neurolabi/data/_flyem/CX/test_061317.json");
+
+  ZSwcTree tree;
+
+  ZJsonArray pointArrayJson(
+        ZJsonObject(ZJsonArray(seedJson.value("meshReview")).value(0)).
+        value("pointMarkers"));
+  for (size_t i = 0; i < pointArrayJson.size(); ++i) {
+    ZJsonObject pointJson(pointArrayJson.value(i));
+    int label = ZJsonParser::integerValue(pointJson["color"]);
+    double x = ZJsonParser::numberValue(pointJson["x"]);
+    double y = ZJsonParser::numberValue(pointJson["y"]);
+    double z = ZJsonParser::numberValue(pointJson["z"]);
+    Swc_Tree_Node *tn =
+        SwcTreeNode::makePointer(1, label + 1, x + 376, y + 128, z + 16, 1.5, -1);
+    tree.addRegularRoot(tn);
+  }
+
+  tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
 
   std::cout << "Done." << std::endl;

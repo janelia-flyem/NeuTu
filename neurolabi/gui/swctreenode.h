@@ -12,6 +12,7 @@
 #include "zpoint.h"
 
 class ZWeightedPointArray;
+class ZStack;
 
 typedef int (*Swc_Tree_Node_Compare) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
 typedef bool (*Swc_Tree_Node_Compare_B) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
@@ -665,6 +666,10 @@ void average(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
              Swc_Tree_Node *out);
 void weightedAverage(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
              Swc_Tree_Node *out);
+
+//Paint
+void LabelStack(
+    const Swc_Tree_Node *tn, ZStack *stack, Swc_Tree_Node_Label_Workspace *ws);
 
 /*!
  * \brief interpolate

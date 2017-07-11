@@ -41,8 +41,8 @@ Neu3Window::Neu3Window(QWidget *parent) :
 
   initOpenglContext();
 
-  ZStackDoc *doc = new ZStackDoc;
-  doc->loadFile(GET_TEST_DATA_DIR + "/_system/slice15_L11.Edit.swc");
+//  ZStackDoc *doc = new ZStackDoc;
+//  doc->loadFile(GET_TEST_DATA_DIR + "/_system/slice15_L11.Edit.swc");
 
   QWidget *widget = new QWidget(this);
 
@@ -74,6 +74,8 @@ Neu3Window::Neu3Window(QWidget *parent) :
 
   createDockWidget();
   createToolBar();
+
+  connectSignalSlot();
 }
 
 Neu3Window::~Neu3Window()
@@ -81,6 +83,10 @@ Neu3Window::~Neu3Window()
   delete ui;
 }
 
+void Neu3Window::connectSignalSlot()
+{
+  connect(m_3dwin, SIGNAL(showingPuncta(bool)), this, SLOT(showSynapse(bool)));
+}
 
 void Neu3Window::initOpenglContext()
 {
@@ -137,6 +143,7 @@ void Neu3Window::createDockWidget()
 
 void Neu3Window::createToolBar()
 {
+  /*
   m_toolBar = new QToolBar;
   QAction *viewSynapseAction = new QAction("Synapses", this);
   viewSynapseAction->setIcon(QIcon(":/images/synapse.png"));
@@ -147,12 +154,13 @@ void Neu3Window::createToolBar()
   m_toolBar->addAction(viewSynapseAction);
 
   addToolBar(m_toolBar);
+  */
 }
 
 void Neu3Window::showSynapse(bool on)
 {
   if (m_3dwin != NULL) {
-    m_3dwin->getPunctaFilter()->setVisible(on);
+//    m_3dwin->getPunctaFilter()->setVisible(on);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
     doc->showSynapse(on);

@@ -22,6 +22,7 @@
 #include "zweightedpointarray.h"
 #include "tz_stack_objlabel.h"
 #include "imgproc/zstackprocessor.h"
+#include "zstack.hxx"
 
 using namespace std;
 
@@ -1452,6 +1453,14 @@ void SwcTreeNode::weightedAverage(const Swc_Tree_Node *tn1,
       setZ(out, (z(tn1) * w1 + z(tn2) * w2) / w);
     }
   }
+}
+
+void SwcTreeNode::LabelStack(
+    const Swc_Tree_Node *tn, ZStack *stack, Swc_Tree_Node_Label_Workspace *ws)
+{
+  Swc_Tree_Node tmpTn = *tn;
+  SwcTreeNode::translate(&tmpTn, -stack->getOffset());
+  Swc_Tree_Node_Label_Stack(&tmpTn, stack->c_stack(), ws);
 }
 
 void SwcTreeNode::interpolate(

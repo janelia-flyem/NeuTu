@@ -144,7 +144,7 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   }
 
   m_doc->registerUser(this);
-  //createToolBar();
+  createToolBar();
 
   m_buttonStatus[0] = true;  // showgraph
   m_buttonStatus[1] = false; // settings
@@ -172,10 +172,14 @@ void Z3DWindow::createStatusBar()
   statusBar()->showMessage("3D window ready.");
 }
 
-
 void Z3DWindow::createToolBar()
 {
-  m_toolBar = addToolBar("Interaction");
+  m_toolBar = addToolBar("View");
+  QAction *viewSynapseAction = ZActionFactory::MakeAction(
+        ZActionFactory::ACTION_SHOW_SYNAPSE, this);
+  connect(viewSynapseAction, SIGNAL(toggled(bool)),
+          this, SLOT(showPuncta(bool)));
+  m_toolBar->addAction(viewSynapseAction);
 }
 
 void Z3DWindow::gotoPosition(double x, double y, double z, double radius)
@@ -3780,6 +3784,13 @@ void Z3DWindow::groupSelectedSwc()
     m_doc->notifySwcModified();
   }
   */
+}
+
+void Z3DWindow::showPuncta(bool on)
+{
+  setLayerVisible(LAYER_PUNCTA, on);
+
+  emit showingPuncta(on);
 }
 
 void Z3DWindow::showSeletedSwcNodeLength()
