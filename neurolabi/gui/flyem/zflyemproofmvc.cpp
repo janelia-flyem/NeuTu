@@ -1465,7 +1465,7 @@ void ZFlyEmProofMvc::customInit()
             this, SLOT(selectBody(QList<uint64_t>)));
     connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
             m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
-    connect(m_bodyInfoDlg, SIGNAL(dataChanged(ZJsonValue)),
+    connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
             this, SLOT(prepareBodyMap(ZJsonValue)));
     connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
             getCompleteDocument(),

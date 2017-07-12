@@ -48,7 +48,7 @@ unix {
   macx {
     OutputDir = $${OutputDir}/$${TARGET}.app/Contents/MacOS
     exists($${CONDA_ENV}) {
-      QMAKE_POST_LINK += install_name_tool -add_rpath $${CONDA_ENV}/lib $${OutputDir}/$$TARGET
+#      QMAKE_POST_LINK += install_name_tool -add_rpath $${CONDA_ENV}/lib $${OutputDir}/$$TARGET
     }
   }
 

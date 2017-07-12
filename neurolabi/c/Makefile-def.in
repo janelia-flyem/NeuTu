@@ -1,6 +1,7 @@
 CC = @CC@
 MYERS_DIR = @GENELIB_DIR@
 MYERS_LIB = @GENELIB_TAG@
+EXT_INCLUDE = @EXT_INCLUDE@
 #../lib/genelib/src
 UNAME := $(shell uname)
 #ifeq ($(UNAME), MINGW32_NT-6.1) || ifeq ($(UNAME), MINGW32_NT-5.1)
@@ -10,7 +11,7 @@ QT_PATH = C:/Qt/2010.05
 CCI =  -I./include -I$(MYERS_DIR) -I/usr/include/libxml2  -Ic:/mingw/include -Ic:/mingw/include/libxml2 -D__USE_MINGW_ANSI_STDIO -I$(QT_PATH)/mingw/include -I$(QT_PATH)/mingw/include/libxml2
 else
 #CCI =  -I/usr/local/include -I./include -I$(MYERS_DIR) -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I$(HOME)/local/include
-CCI =  -I./include -I$(MYERS_DIR) -I../lib/fftw3/include -I../lib/jansson/include -I../lib/png/include -I ../lib/xml/include/libxml2
+CCI =  -I./include -I$(MYERS_DIR) $(EXT_INCLUDE) 
 endif
 #
 

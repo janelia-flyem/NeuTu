@@ -624,11 +624,13 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+EXT_INCLUDE
 SHARED_FLAG
 DYLIB_FILE
 LIB_FILE
 GENELIB_TAG
 GENELIB_DIR
+SANITIZE_DIR
 RELEASE_DIR
 DEBUG_DIR
 ARCH_FLAG
@@ -3182,6 +3184,22 @@ $as_echo "no" >&6; }
 fi
 
 
+#AC_ARG_VAR([CONDA_ENV], [Directory path for conda env. Default = ""])
+
+if test -z "$CONDA_ENV"; then
+  echo "No conda env specified"
+  LDFLAGS="-L../lib/fftw3/lib -L../lib/xml/lib -L../lib/png/lib -L../lib/jansson/lib -lm"
+  EXT_INCLUDE="-I../lib/fftw3/include -I../lib/jansson/include -I../lib/png/include -I../lib/xml/include/libxml2"
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: $CONDA_ENV" >&5
+$as_echo "$as_me: $CONDA_ENV" >&6;}
+  LDFLAGS="-L$CONDA_ENV -lm"
+  EXT_INCLUDE="-I$CONDA_ENV/include -I$CONDA_ENV/include/libxml2"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: $LDFLAGS" >&5
+$as_echo "$as_me: $LDFLAGS" >&6;}
+
 # Check whether --enable-z was given.
 if test "${enable_z+set}" = set; then :
   enableval=$enable_z; disable_z=$enablval
@@ -3284,7 +3302,6 @@ _ACEOF
 fi
 
 
-LDFLAGS="-L../lib/fftw3/lib -L../lib/xml/lib -L../lib/png/lib -L../lib/jansson/lib -lm"
 
 # checks for libraries
 # Check whether --enable-fftw was given.
@@ -4197,6 +4214,7 @@ else
 fi
 
 
+
 # Check whether --enable-shared was given.
 if test "${enable_shared+set}" = set; then :
   enableval=$enable_shared; enable_shared=$enableval
@@ -4259,6 +4277,8 @@ if test "$enable_progress" = "no"; then
 $as_echo "#define INTERFACE_PROGRESS_OFF 1" >>confdefs.h
 
 fi
+
+
 
 
 

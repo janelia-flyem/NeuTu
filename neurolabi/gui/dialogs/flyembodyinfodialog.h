@@ -36,6 +36,7 @@ signals:
   void bodiesActivated(QList<uint64_t> bodyIdList);
   void addBodyActivated(uint64_t bodyId);
   void dataChanged(ZJsonValue object);
+  void namedBodyChanged(ZJsonValue object);
   void jsonLoadBookmarksError(QString message);
   void jsonLoadColorMapError(QString message);
   void loadCompleted();

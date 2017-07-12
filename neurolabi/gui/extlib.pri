@@ -6,24 +6,53 @@ INCLUDEPATH += $${NEUROLABI_DIR}/gui \
     $${NEUROLABI_DIR}/c/include \
     $${EXTLIB_DIR}/genelib/src $${NEUROLABI_DIR}/gui/ext
 
+contains(TEMPLATE, app) {
+exists($$DVIDCPP_PATH) {
+    DEFINES += _ENABLE_LIBDVIDCPP_
+    INCLUDEPATH += $$DVIDCPP_PATH/include
+    LIBS += -L$$DVIDCPP_PATH/lib
+    DEFINES += _LIBDVIDCPP_OLD_
+} else:exists($${BUILDEM_DIR}) {
+    INCLUDEPATH +=  $${BUILDEM_DIR}/include
+    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
+    DEFINES += _ENABLE_LIBDVIDCPP_
+} else:exists($${CONDA_ENV}) {
+    INCLUDEPATH += $${CONDA_ENV}/include
+    LIBS += -L$${CONDA_ENV}/lib
+    unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
+    DEFINES += _ENABLE_LIBDVIDCPP_
 
-unix {
-#neurolabi
-LIBS += -L$${NEUROLABI_DIR}/c/lib
-CONFIG(debug, debug|release) {
-    contains(CONFIG, sanitize) {
-      LIBS += -lneurolabi_sanitize
-    } else {
-      LIBS += -lneurolabi_debug
-    }
-} else {
-    LIBS += -lneurolabi
+#    LIBS += $${CONDA_ENV}/lib/libhdf5.la $${CONDA_ENV}/lib/libhdf5_hl.la
+#    DEFINES += _ENABLE_HDF5_
 }
 
-    INCLUDEPATH += $${EXTLIB_DIR}/xml/include/libxml2 \
-        $${EXTLIB_DIR}/fftw3/include \
+exists($${CONDA_ENV}) {
+  LIBXML_DIR = $${CONDA_ENV}
+  LIBJANSSON_DIR = $${CONDA_ENV}
+  LIBFFTW_DIR = $${CONDA_ENV}
+} else {
+  LIBXML_DIR = $${EXTLIB_DIR}/xml
+  LIBJANSSON_DIR = $${EXTLIB_DIR}/jansson
+  LIBFFTW_DIR = $${EXTLIB_DIR}/fftw3
+}
+
+unix {
+  #neurolabi
+  LIBS += -L$${NEUROLABI_DIR}/c/lib
+  CONFIG(debug, debug|release) {
+      contains(CONFIG, sanitize) {
+        LIBS += -lneurolabi_sanitize
+      } else {
+        LIBS += -lneurolabi_debug
+      }
+  } else {
+      LIBS += -lneurolabi
+  }
+
+  INCLUDEPATH += $${LIBXML_DIR}/include/libxml2 \
+        $${LIBFFTW_DIR}/include \
 #        $${EXTLIB_DIR}/png/include \
-        $${EXTLIB_DIR}/jansson/include
+        $${LIBJANSSON_DIR}/include
 }
 
 win32 {
@@ -55,8 +84,8 @@ CONFIG(debug, debug|release) {
 
 #Self-contained libraries
 unix {
-    LIBS += -L$${EXTLIB_DIR}/xml/lib -L$${EXTLIB_DIR}/fftw3/lib \
-        -L$${EXTLIB_DIR}/jansson/lib \
+    LIBS += -L$${LIBXML_DIR}/lib -L$${LIBFFTW_DIR}/lib \
+        -L$${LIBJANSSON_DIR}/lib \
         -lfftw3 \
         -lfftw3f \
         -lxml2 \
@@ -84,26 +113,6 @@ CONFIG(debug, debug|release) {
         INCLUDEPATH += $${EXTLIB_DIR}/opencv/include $${EXTLIB_DIR}/opencv/include/opencv
         LIBS += -L$${EXTLIB_DIR}/opencv/lib -lopencv_core -lopencv_ml
     }
-}
-
-contains(TEMPLATE, app) {
-exists($$DVIDCPP_PATH) {
-    DEFINES += _ENABLE_LIBDVIDCPP_
-    INCLUDEPATH += $$DVIDCPP_PATH/include
-    LIBS += -L$$DVIDCPP_PATH/lib
-    DEFINES += _LIBDVIDCPP_OLD_
-} else:exists($${BUILDEM_DIR}) {
-    INCLUDEPATH +=  $${BUILDEM_DIR}/include
-    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
-    DEFINES += _ENABLE_LIBDVIDCPP_
-} else:exists($${CONDA_ENV}) {
-    INCLUDEPATH +=  $${CONDA_ENV}/include
-    LIBS += -L$${CONDA_ENV}/lib
-    unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
-    DEFINES += _ENABLE_LIBDVIDCPP_
-
-#    LIBS += $${CONDA_ENV}/lib/libhdf5.la $${CONDA_ENV}/lib/libhdf5_hl.la
-#    DEFINES += _ENABLE_HDF5_
 }
 
 message("rpath")

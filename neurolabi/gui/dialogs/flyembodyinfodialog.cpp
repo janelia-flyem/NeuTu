@@ -648,6 +648,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
 
         // build the data structure we pass along to the table
         ZJsonArray bodies;
+        ZJsonArray namedBodies;
         m_bodyNames.clear();
         m_namelessBodies.clear();
         int capacity = 20;
@@ -686,6 +687,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
                     } else {
                         m_namelessBodies.insert(bodyID);
                     }
+                    namedBodies.append(entry);
                 } else {
                     m_namelessBodies.insert(bodyID);
                 }
@@ -739,13 +741,13 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
 
         emit appendingData(bodies, -1);
 
-
         fullTime = fullTimer.elapsed();
         // I left the timers active; I think we'll want them later, plus
         //  they should be very low overhead
          std::cout << "total time (ms) = " << fullTime << std::endl;
          std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
 
+         emit namedBodyChanged(namedBodies);
 
         // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
 //        emit dataChanged(bodies);

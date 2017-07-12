@@ -68,7 +68,6 @@ public:
       const std::string &input, const std::string &delim = ", \n");
   static std::vector<std::string> Tokenize(const std::string &str, char c);
 
-
   bool readLine(FILE *fp);
   bool contains(const std::string &str);
   bool containsDigit();

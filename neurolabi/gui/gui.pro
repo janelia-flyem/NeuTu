@@ -139,6 +139,7 @@ contains(CONFIG, c++11) {
   DEFINES += _CPP11_
   unix {
     QMAKE_CXXFLAGS += -std=c++11
+    QMAKE_CXXFLAGS += -stdlib=libc++
   }
 }
 
@@ -228,12 +229,12 @@ unix {
           }
         } else {
           message("No auto mac version check")
+          QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
         }
 
         doc.files = doc
         doc.path = Contents/MacOS
         QMAKE_BUNDLE_DATA += doc
-
 #        config.files = config.xml
 #        config.path = Contents/MacOS
 #        QMAKE_BUNDLE_DATA += config
@@ -263,6 +264,8 @@ include(sandbox/sandbox.pri)
 include(command/command.pri)
 
 message("Config: $$CONFIG")
+
+message($$QMAKE_MACOSX_DEPLOYMENT_TARGET)
 
 # Input
 RESOURCES = gui.qrc
