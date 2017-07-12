@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <QVector>
 
+#include "tz_stdint.h"
+
 namespace Ui {
 class FlyEmBodyIdDialog;
 }

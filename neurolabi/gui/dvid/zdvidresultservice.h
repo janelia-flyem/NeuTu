@@ -4,6 +4,8 @@
 #include <QMutex>
 #include <QList>
 
+#include "tz_stdint.h"
+
 class QByteArray;
 class QString;
 class ZObject3dScan;

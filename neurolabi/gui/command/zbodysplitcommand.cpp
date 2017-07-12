@@ -274,7 +274,7 @@ void ZBodySplitCommand::ProcessResult(
               ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
               ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
         refJson.setEntry(
-              "timestamp", QDateTime::currentMSecsSinceEpoch() / 1000);
+              "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
       }
 
       if (!resultArray.isEmpty()) {
