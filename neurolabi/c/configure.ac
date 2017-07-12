@@ -15,7 +15,7 @@ if test -z "$CONDA_ENV"; then
   EXT_INCLUDE="-I../lib/fftw3/include -I../lib/jansson/include -I../lib/png/include -I../lib/xml/include/libxml2"
 else
   AC_MSG_NOTICE($CONDA_ENV)
-  LDFLAGS="-L$CONDA_ENV -lm"
+  LDFLAGS="-L$CONDA_ENV/lib -lm"
   EXT_INCLUDE="-I$CONDA_ENV/include -I$CONDA_ENV/include/libxml2"
 fi
 

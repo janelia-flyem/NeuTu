@@ -229,7 +229,9 @@ unix {
           }
         } else {
           message("No auto mac version check")
-          QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
+          contains(CONFIG, c++11) {
+            QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
+          }
         }
 
         doc.files = doc
