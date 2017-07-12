@@ -19,21 +19,21 @@ requirements:
   build:
     - python 2.7*
     - swig
-    - libdvid-cpp 0.2.post55
+    - libdvid-cpp >=0.2.post55
     - fftw    3.3*
-    - jansson 2.5
+    - jansson 2.7
     - libxml2 2.9*
-    - libpng  1.6.*
-    - hdf5    1.8.16 # Ting's build script uses 1.8.12, but that's not available from conda
+    - libpng  1.6*
+    - hdf5    1.8.18 # Ting's build script uses 1.8.12, but that's not available from conda
 
   run:
     - python 2.7*
-    - libdvid-cpp 0.2.post55
+    - libdvid-cpp >=0.2.post55
     - fftw    3.3*
-    - jansson 2.5
+    - jansson 2.7
     - libxml2 2.9*
-    - libpng  1.6.*
-    - hdf5    1.8.16
+    - libpng  1.6*
+    - hdf5    1.8.18
     
 
 about:
