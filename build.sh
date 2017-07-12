@@ -86,9 +86,14 @@ else
   fi
 fi
 
-if [ ! -z "QMAKE_SPEC" ]
+if [ ! -z "$QMAKE_SPEC" ]
 then
   qmake_args="-spec $QMAKE_SPEC"
+fi
+
+if [ ! -z "$CONDA_ENV" ]
+then
+  qmake_args="$qmake_args 'CONDA_ENV=${CONDA_ENV}'"
 fi
 
 qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"

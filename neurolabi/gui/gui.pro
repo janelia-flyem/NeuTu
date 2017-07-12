@@ -71,8 +71,12 @@ CONFIG(debug, debug|release) {
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
     TARGET = neuTube
-    contains(DEFINES, _FLYEM_) {
-        TARGET = neutu
+    contains(CONFIG, neu3) {
+      TARGET = neu3
+    } else {
+      contains(DEFINES, _FLYEM_) {
+          TARGET = neutu
+      }
     }
 }
 
