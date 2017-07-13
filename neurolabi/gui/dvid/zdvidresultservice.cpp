@@ -201,7 +201,8 @@ QList<ZObject3dScan*> ZDvidResultService::ReadSplitResult(const QString &path)
     QByteArray data = reader->readBuffer(path.toStdString());
     ZJsonObject obj;
     if (data[0] == '{') {
-      obj.decodeString(QString().fromAscii(data.data(), data.length()).toLocal8Bit());
+      obj.decodeString(
+            QString::fromLocal8Bit(data.data(), data.length()).toLocal8Bit());
     }
 
     if (!obj.isEmpty()) {
@@ -210,7 +211,8 @@ QList<ZObject3dScan*> ZDvidResultService::ReadSplitResult(const QString &path)
         std::string refPath = ZJsonParser::stringValue(obj["ref"]);
         data = reader->readDataFromEndpoint(refPath);
         if (data[0] == '{') {
-          headJson.decodeString(QString().fromAscii(data.data(), data.length()).toLocal8Bit());
+          headJson.decodeString(
+                QString::fromLocal8Bit(data.data(), data.length()).toLocal8Bit());
         }
       }
 

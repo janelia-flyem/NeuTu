@@ -165,5 +165,9 @@ static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
 }
 
+#if defined(_CPP11_)
+#  undef NULL
+#  define NULL nullptr
+#endif
 
 #endif // NEUTUBE_DEF_H

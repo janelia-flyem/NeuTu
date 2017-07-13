@@ -135,7 +135,7 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     message("Qt 5")
     QT += concurrent gui widgets network xml
     DEFINES += _QT5_
-    CONFIG *= c++11
+    CONFIG *= c++11 autotarget
 }
 
 contains(CONFIG, c++11) {
@@ -234,7 +234,10 @@ unix {
         } else {
           message("No auto mac version check")
           contains(CONFIG, c++11) {
-            QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
+            isEqual(QT_MAJOR_VERSION,4) {
+              message("Forcing deployment target: ")
+              QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
+            }
           }
         }
 

@@ -266,12 +266,10 @@ bool ZBiocytinProjectionDoc::executeAddSwcNodeCommand(
     const ZPoint &center, double radius)
 {
   if (m_parentDoc.get() != NULL) {
-    return m_parentDoc->executeAddSwcNodeCommand(
-          center, radius, ZStackObjectRole::ROLE_NONE);
+    return m_parentDoc->executeAddSwcNodeCommand(center, radius);
   }
 
-  return ZStackDoc::executeAddSwcNodeCommand(
-        center, radius, ZStackObjectRole::ROLE_NONE);
+  return ZStackDoc::executeAddSwcNodeCommand(center, radius);
 }
 
 bool ZBiocytinProjectionDoc::executeSwcNodeChangeSizeCommand(double dr)

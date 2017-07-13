@@ -28,20 +28,15 @@
 
 //#include <sys/time.h>
 //#include <sys/resource.h>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-using namespace std::tr1;
-#else
-#include <memory>
-using namespace std;
-#endif
 #include <string>
 #include <set>
+#include <unordered_set>
 
 #if defined(_ENABLE_LOWTIS_)
 #include <lowtis/LowtisConfig.h>
 #endif
 
+#include "tr1_header.h"
 #include "zopencv_header.h"
 #include "zglobal.h"
 #include "neutube.h"
@@ -449,17 +444,17 @@ void ZTest::test(MainWindow *host)
   Kill_Stack(stack);
 #endif
 
-#if 0
+#if 1
   //The minimum and maximum is the number of steps in the operation for which this progress dialog shows progress.
   //for example here 0 and 100.
   QProgressDialog* progress = new QProgressDialog("Fetching data...", "Cancel", 0, 100);
 
   //Set dialog as modal dialog, if you want.
   progress->setWindowModality(Qt::WindowModal);
-  progress->show();
+//  progress->show();
   for (int i = 0; i <= 100; i++) {
     progress->setValue(i);
-
+    ZSleeper::sleep(1);
   }
 //  delete progress;
 #endif
@@ -24031,6 +24026,66 @@ void ZTest::test(MainWindow *host)
 
   tree.save(GET_TEST_DATA_DIR + "/test.swc");
 #endif
+
+#if 0
+  std::shared_ptr<int> ptr;
+  if (ptr) {
+    std::cout << "*ptr=" << *ptr << "\n";
+  } else {
+    std::cout << "ptr is not a valid pointer.\n";
+  }
+
+  ptr = std::make_shared<int>(7);
+
+  if (ptr) {
+    std::cout << "*ptr=" << *ptr << "\n";
+  } else {
+    std::cout << "ptr is not a valid pointer.\n";
+  }
+#endif
+
+#if 0
+  struct Foo {
+    Foo() { std::cout << "Foo ...\n"; }
+    ~Foo() { std::cout << "~Foo...\n\n"; }
+  };
+
+  Foo *foo = new Foo();
+  std::unique_ptr<Foo> up(foo);
+  std::cout << "hash(up): " << std::hash<std::unique_ptr<Foo>>()(up) << '\n';
+  std::cout << "hash(foo): " << std::hash<Foo*>()(foo) << '\n';
+
+#endif
+
+#if 0
+  //lambda expression: [capture](parameters)->return-type {body}
+  char s[] = "Hello World!";
+  int uppercase = 0;
+  for_each(s, s + sizeof(s), [&uppercase](char c) {
+    if (isupper(c))
+      uppercase++;
+  });
+  cout << uppercase << " uppercase letters in: " << s << endl;
+
+#endif
+
+#if 0
+  auto x = 0;
+  typedef decltype(x) CIT;
+  CIT y = 1;
+  std::cout << y << std::endl;
+
+#endif
+
+#if 0
+  std::cout << (nullptr == 0) << std::endl;
+#endif
+
+#if 0
+  ZDoubleVector v = {1.0, 2.0, 3.0};
+  std::cout << v.mean() << std::endl;
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

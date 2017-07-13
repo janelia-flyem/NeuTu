@@ -644,8 +644,8 @@ private:
 
 
 private:
-  Mc_Stack *m_stack; //Master data
-  C_Stack::Mc_Stack_Deallocator *m_dealloc; //Dellocator of the master data
+  Mc_Stack *m_stack = nullptr; //Master data
+  C_Stack::Mc_Stack_Deallocator *m_dealloc = nullptr; //Dellocator of the master data
   ZIntPoint m_offset;
   ZIntPoint m_dsIntv; //Downsampling ratio from original space;
                       //note that the offset is also supposed to be downsampled
@@ -654,7 +654,7 @@ private:
 
   mutable std::vector<Stack> m_stackView;
   mutable std::vector<ZSingleChannelStack*> m_singleChannelStack;
-  mutable char m_buffer[1]; //Buffer of text field of temporary stack
+  mutable char m_buffer[1] = {'\0'}; //Buffer of text field of temporary stack
 
   //float color for each channel
 

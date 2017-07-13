@@ -1064,8 +1064,8 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNode::undo()
 ZStackDocCommand::SwcEdit::DeleteSwcNode::DeleteSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *root,
     QUndoCommand *parent) :
-  CompositeCommand(doc, parent), m_doc(doc), m_node(node), m_root(root),
-  m_prevSibling(NULL), m_lastChild(NULL), m_nodeInDoc(true)
+  CompositeCommand(doc, parent), m_node(node), m_root(root),
+  m_nodeInDoc(true)
 {
   TZ_ASSERT(m_root != NULL, "Null root");
   setText(QObject::tr("Delete swc node"));
@@ -1099,7 +1099,7 @@ ZStackDocCommand::SwcEdit::DeleteSwcNode::~DeleteSwcNode()
 ZStackDocCommand::SwcEdit::DeleteSwcNodeSet::DeleteSwcNodeSet(
     ZStackDoc *doc, std::set<Swc_Tree_Node*> &nodeSet,
     QUndoCommand *parent) :
-  CompositeCommand(doc, parent), m_doc(doc), m_nodeSet(nodeSet),
+  CompositeCommand(doc, parent), m_nodeSet(nodeSet),
   m_nodeInDoc(true)
 {
   //TZ_ASSERT(root != NULL, "Null root");

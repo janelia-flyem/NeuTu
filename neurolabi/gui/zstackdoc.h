@@ -1069,6 +1069,7 @@ public slots: //undoable commands
   virtual bool executeSmartConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
   virtual bool executeSmartConnectSwcNodeCommand();
   virtual bool executeBreakSwcConnectionCommand();
+  virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
   virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius,
                                         ZStackObjectRole::TRole role);
   virtual bool executeSwcNodeChangeSizeCommand(double dr);

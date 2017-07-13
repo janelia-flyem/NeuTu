@@ -37,9 +37,15 @@ ZDoubleVector::ZDoubleVector(const std::vector<double> &array)
   copy(array.begin(), array.end(), begin());
 }
 
+ZDoubleVector::ZDoubleVector(std::initializer_list<double> init) :
+  std::vector<double>(init)
+{
+
+}
+
 double ZDoubleVector::mean() const
 {
-  return darray_mean(dataArray(), size());
+  return darray_mean(data(), size());
 }
 
 double ZDoubleVector::sum() const

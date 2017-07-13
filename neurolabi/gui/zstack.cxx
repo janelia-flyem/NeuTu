@@ -84,8 +84,7 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
   setOffset(box.getFirstCorner());
 }
 
-ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/) :
-  m_stack(NULL)
+ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/)
 {
   init();
 
@@ -398,9 +397,9 @@ Stack *ZStack::averageOfAllChannels()
 
 void ZStack::init()
 {
-  m_stack = NULL;
-  m_dealloc = NULL;
-  m_buffer[0] = '\0';
+//  m_stack = NULL;
+//  m_dealloc = NULL;
+//  m_buffer[0] = '\0';
   //m_singleChannelStackVector.resize(nchannel);
 //  m_preferredZScale = 1.0;
   //m_source = NULL;

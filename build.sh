@@ -96,7 +96,7 @@ then
   qmake_args="$qmake_args 'CONDA_ENV=${CONDA_ENV}'"
 fi
 
-qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=c++11 CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
 
 if [ $debug_config = "sanitize" ]
 then

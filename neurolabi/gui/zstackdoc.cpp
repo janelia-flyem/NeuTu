@@ -7603,6 +7603,12 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree)
   return succ;
 }
 
+bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius)
+{
+  return m_parentDoc->executeAddSwcNodeCommand(
+        center, radius, ZStackObjectRole::ROLE_NONE);
+}
+
 bool ZStackDoc::executeAddSwcNodeCommand(const ZPoint &center, double radius,
                                          ZStackObjectRole::TRole role)
 {

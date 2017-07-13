@@ -1,6 +1,6 @@
-#if defined(_ENABLE_SURFRECON_)
 #ifndef ZSURFRECONMODULE_H
 #define ZSURFRECONMODULE_H
+#if defined(_ENABLE_SURFRECON_)
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
@@ -64,5 +64,5 @@ private:
   ZSurfReconWindow* window;
 
 };
-#endif // ZSURFRECONMODULE_H
 #endif
+#endif // ZSURFRECONMODULE_H

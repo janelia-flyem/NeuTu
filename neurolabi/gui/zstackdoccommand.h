@@ -385,12 +385,12 @@ public:
 #endif
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   Swc_Tree_Node *m_node;
   Swc_Tree_Node *m_root;
-  Swc_Tree_Node m_backup;
-  Swc_Tree_Node *m_prevSibling;
-  Swc_Tree_Node *m_lastChild;
+//  Swc_Tree_Node m_backup;
+//  Swc_Tree_Node *m_prevSibling;
+//  Swc_Tree_Node *m_lastChild;
   bool m_nodeInDoc;
 };
 
@@ -401,7 +401,7 @@ public:
                    QUndoCommand *parent = NULL);
   virtual ~DeleteSwcNodeSet();
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   std::set<Swc_Tree_Node*> m_nodeSet;
   bool m_nodeInDoc;
 };
@@ -455,7 +455,7 @@ public:
   virtual ~RemoveSubtree();
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   Swc_Tree_Node *m_node;
 };
 

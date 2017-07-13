@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <initializer_list>
 
 class ZDoubleVector : public std::vector<double>
 {
@@ -13,6 +14,7 @@ public:
   ZDoubleVector(const double *data, std::size_t start,
                 std::size_t end, std::size_t stride);
   ZDoubleVector(const std::vector<double> &array);
+  ZDoubleVector(std::initializer_list<double> init);
 
 public:
   inline double* dataArray() { return &((*this)[0]); }

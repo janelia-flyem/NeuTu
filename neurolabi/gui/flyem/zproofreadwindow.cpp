@@ -139,11 +139,13 @@ void ZProofreadWindow::init()
 
   setCentralWidget(widget);
 
+#if 1
   m_progressDlg = new QProgressDialog(this);
   m_progressDlg->setWindowModality(Qt::WindowModal);
   m_progressDlg->setAutoClose(true);
   m_progressDlg->setCancelButton(0);
-  m_progressDlg->setAutoClose(false);
+#endif
+//  m_progressDlg->setAutoClose(false);
 
   m_progressSignal = new ZProgressSignal(this);
   ZProgressSignal::ConnectProgress(m_mainMvc->getProgressSignal(),

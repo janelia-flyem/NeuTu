@@ -130,8 +130,14 @@ ZStack* ZStackReader::read(const std::string &path)
     //File scheme
     //  file://<path>?<query>
     //    query: prefix=<prefix>&suffix=<suffix>&numwidth=<suffix>
+#if defined(_QT5_)
+    QUrlQuery query(url);
+    QString prefix = query.queryItemValue("prefix");
+    QString suffix = query.queryItemValue("suffix");
+#else
     QString prefix = url.queryItemValue("prefix");
     QString suffix = url.queryItemValue("suffix");
+#endif
     QDir dir(url.path());
     QFileInfoList fileList =
         dir.entryInfoList(QStringList() << prefix + "*" + suffix);
