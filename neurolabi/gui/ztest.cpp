@@ -52,7 +52,7 @@
 #include "tz_stack_threshold.h"
 #include "zsuperpixelmaparray.h"
 #include "zsegmentmaparray.h"
-#include "tz_xml_utils.h"
+//#include "tz_xml_utils.h"
 #include "zswctree.h"
 #include "zswcforest.h"
 #include "znormcolormap.h"
@@ -241,6 +241,7 @@
 #include "test/zimagetest.h"
 #include "test/z3dgraphtest.h"
 #include "test/zvoxelarraytest.h"
+#include "test/zxmltest.h"
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "test/zflyemproofdoctest.h"
@@ -444,7 +445,7 @@ void ZTest::test(MainWindow *host)
   Kill_Stack(stack);
 #endif
 
-#if 1
+#if 0
   //The minimum and maximum is the number of steps in the operation for which this progress dialog shows progress.
   //for example here 0 and 100.
   QProgressDialog* progress = new QProgressDialog("Fetching data...", "Cancel", 0, 100);
@@ -7250,6 +7251,46 @@ void ZTest::test(MainWindow *host)
   cout << ZString::removeFileExt("testtest.tif/") << endl;
   cout << ZString::removeFileExt("test/test") << endl;
   cout << ZString::removeFileExt("testtest") << endl;
+#endif
+
+#if 0
+  QDomDocument doc("MyML");
+  QDomElement root = doc.createElement("MyML");
+  doc.appendChild(root);
+
+  QDomElement tag = doc.createElement("Greeting");
+  root.appendChild(tag);
+
+  QDomText t = doc.createTextNode("Hello World");
+  tag.appendChild(t);
+
+  QString xml = doc.toString();
+
+  qDebug() << xml;
+#endif
+
+
+#if 1
+  ZXmlDoc doc;
+  doc.parseFile(NeutubeConfig::getInstance().getApplicatinDir() + "/config.xml");
+  ZXmlNode root = doc.getRootElement();
+  std::cout << root.name() << std::endl;
+  std::cout << root.stringValue() << std::endl;
+  std::cout << "Element names:" << std::endl;
+  std::cout << root.empty() << std::endl;
+  std::cout << root.firstChild().stringValue() << std::endl;
+  root.printInfo(2);
+
+  ZXmlNode tracingNode = root.queryNode("tracing");
+  std::cout << "Status of <tracing>: "
+            << tracingNode.getAttribute("status") << std::endl;
+  ZXmlNode colorNode = root.queryNode("Color_Mode");
+  std::cout << "<Color_Mode>: "
+            << colorNode.stringValue() << std::endl;
+
+  ZXmlNode node = root.queryNode("Visible");
+  std::cout << "<Visible>: " << node.intValue() << std::endl;
+
 #endif
 
 #if 0

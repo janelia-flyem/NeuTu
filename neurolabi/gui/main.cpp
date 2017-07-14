@@ -184,9 +184,12 @@ int main(int argc, char *argv[])
   NeutubeConfig &config = NeutubeConfig::getInstance();
   std::cout << QApplication::applicationDirPath().toStdString() << std::endl;
   config.setApplicationDir(QApplication::applicationDirPath().toStdString());
-  if (config.load(config.getConfigPath()) == false) {
-    std::cout << "Unable to load configuration: "
-              << config.getConfigPath() << std::endl;
+
+  if (guiEnabled) {
+    if (config.load(config.getConfigPath()) == false) {
+      std::cout << "Unable to load configuration: "
+                << config.getConfigPath() << std::endl;
+    }
   }
 
   if (configPath.isEmpty()) {

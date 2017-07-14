@@ -15,7 +15,9 @@
 #endif
 
 #include "tz_cdefs.h"
+#ifdef _QT_GUI_USED_
 #include "zxmldoc.h"
+#endif
 #include "zstring.h"
 #include "zlogmessagereporter.h"
 #include "zjsonobject.h"
@@ -184,6 +186,7 @@ void NeutubeConfig::operator=(const NeutubeConfig& config)
 
 bool NeutubeConfig::load(const std::string &filePath)
 {
+#ifdef _QT_GUI_USED_
 #ifdef _DEBUG_
   cout << "Loading configuration ..." << endl;
 #endif
@@ -311,6 +314,7 @@ bool NeutubeConfig::load(const std::string &filePath)
 
     return true;
   }
+#endif
 
   return false;
 }

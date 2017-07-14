@@ -9,7 +9,9 @@
 #include "zfiletype.h"
 #include "zfilelist.h"
 #include "zstring.h"
+#if defined(_QT_GUI_USED_)
 #include "zxmldoc.h"
+#endif
 #include "tz_error.h"
 #include "zhdf5reader.h"
 #include "zobject3dscan.h"
@@ -355,6 +357,7 @@ void ZStackFile::importJsonFile(const std::string &filePath)
 
 void ZStackFile::importXmlFile(const string &filePath)
 {
+#if defined(_QT_GUI_USED_)
   if (!fexist(filePath.c_str())) {
     cout << filePath << " does not exist." << endl;
     return;
@@ -403,6 +406,7 @@ void ZStackFile::importXmlFile(const string &filePath)
     }
     node = node.nextSibling();
   }
+#endif
 }
 
 int ZStackFile::countImageSeries() const
