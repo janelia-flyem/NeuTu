@@ -20,7 +20,7 @@ build:
 
 requirements:
   build:
-    - qt      4.8.7
+    - qt      5*
     - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.7
@@ -29,7 +29,7 @@ requirements:
     - pango   1.40* # [linux64]
 
   run:
-    - qt      4.8.7
+    - qt      5*
     - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.7
