@@ -3,7 +3,7 @@
 
 #include <utility>
 
-#ifdef __GLIBCXX__
+#if defined(__GLIBCXX__) && !defined(_CPP11_)
 #include <tr1/memory>
 namespace ztr1 = std::tr1;
 #else

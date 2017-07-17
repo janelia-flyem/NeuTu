@@ -46,7 +46,7 @@ fi
 AC_ARG_ENABLE(xml, [AC_HELP_STRING([--disable-xml], [disable xml])],
     disable_xml=$enablval, disable_xml=no)
 if test "$disable_xml" = "no"; then
-  AC_CHECK_LIB(xml2, xmlFree)
+  AC_CHECK_LIB(xml2, xmlReaderForDoc)
 fi
 
 AC_ARG_ENABLE(png, [AC_HELP_STRING([--disable-png], [disable png])],
