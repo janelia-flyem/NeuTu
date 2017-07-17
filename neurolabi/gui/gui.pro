@@ -143,7 +143,9 @@ contains(CONFIG, c++11) {
   DEFINES += _CPP11_
   unix {
     QMAKE_CXXFLAGS += -std=c++11
-    QMAKE_CXXFLAGS += -stdlib=libc++
+    macx {
+      QMAKE_CXXFLAGS += -stdlib=libc++
+    }
   }
 }
 
