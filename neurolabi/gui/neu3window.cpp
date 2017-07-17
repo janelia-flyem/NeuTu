@@ -25,6 +25,7 @@ Neu3Window::Neu3Window(QWidget *parent) :
   ui->setupUi(this);
 
   m_toolBar = NULL;
+  m_dataContainer = NULL;
 
 #ifdef _QT5_
   m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
@@ -39,6 +40,16 @@ Neu3Window::Neu3Window(QWidget *parent) :
   m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, format, this);
 #endif
 
+//  initialize();
+}
+
+Neu3Window::~Neu3Window()
+{
+  delete ui;
+}
+
+void Neu3Window::initialize()
+{
   initOpenglContext();
 
 //  ZStackDoc *doc = new ZStackDoc;
@@ -62,9 +73,6 @@ Neu3Window::Neu3Window(QWidget *parent) :
 //  layout->addWidget(m_3dwin);
 //  setCentralWidget(widget);
 
-  m_dataContainer = NULL;
-  loadDvidTarget();
-
   m_3dwin = m_dataContainer->makeExternalSkeletonWindow();
   ZFlyEmBody3dDoc *bodydoc =
       qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
@@ -76,11 +84,6 @@ Neu3Window::Neu3Window(QWidget *parent) :
   createToolBar();
 
   connectSignalSlot();
-}
-
-Neu3Window::~Neu3Window()
-{
-  delete ui;
 }
 
 void Neu3Window::connectSignalSlot()

@@ -374,6 +374,9 @@ void Z3DApplication::detectOS()
   case QSysInfo::MV_10_11:
     m_osString = "Mac OS X El Capitan";
     break;
+  case QSysInfo::MV_10_12:
+    m_osString = "Mac OS X Sierra";
+    break;
 #endif
   default:
     m_osString = "unsupported mac os";
