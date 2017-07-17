@@ -1,7 +1,6 @@
 if [ $(uname) == 'Darwin' ]; then
-    # Unfortunately, this package must be built with the system gcc, not conda's gcc
     CC=/usr/bin/cc
-    CXX=/usr/bin/c++
+    CXX=/usr/bin/clang
 fi
 
 if [ $(uname) == 'Darwin' ]; then
@@ -12,7 +11,7 @@ fi
 
 export CONDA_ENV=${PREFIX}
 
-bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem -q "CONDA_ENV=${CONDA_ENV}"
+bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem 
 
 # Install to conda environment
 if [ $(uname) == 'Darwin' ]; then

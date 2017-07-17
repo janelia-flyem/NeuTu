@@ -117,10 +117,13 @@ fi
 
 cd neurolabi
 
-echo 'Building 3rd-party libraries ...'
-cd lib
-sh build.sh
-cd ..
+if [ -z "$CONDA_ENV" ]
+then
+  echo 'Building 3rd-party libraries ...'
+  cd lib
+  sh build.sh
+  cd ..
+fi
 
 echo 'Building libneurolabi ...'
 build_dir=build

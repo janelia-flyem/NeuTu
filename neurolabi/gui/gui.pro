@@ -382,7 +382,6 @@ HEADERS += mainwindow.h \
     zlocsegchain.h \
     zcurve.h \
     z3dvolumeslicerenderer.h \
-    zstackfile.h \
     zxmldoc.h \
     zintmap.h \
     flyem/zsegmentationanalyzer.h \
@@ -1342,6 +1341,7 @@ SOURCES += main.cpp \
     dialogs/zflyembodysplitdialog.cpp \
     widgets/zbodylistwidget.cpp \
     widgets/flyembodyinfowidget.cpp \
+    zxmldoc.cpp \
     neu3window.cpp
 
 

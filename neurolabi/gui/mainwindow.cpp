@@ -58,7 +58,7 @@
 #include "tz_stack_threshold.h"
 #include "zsuperpixelmaparray.h"
 #include "zsegmentmaparray.h"
-#include "tz_xml_utils.h"
+//#include "tz_xml_utils.h"
 #include "zswctree.h"
 #include "zswcforest.h"
 #include "tz_graph_defs.h"
@@ -3161,6 +3161,7 @@ void MainWindow::on_actionDilate_triggered()
 
 void MainWindow::on_actionExtract_Neuron_triggered()
 {
+#if 0
   NeuronIdDialog dlg;
   if (dlg.exec() == QDialog::Accepted) {
     ZSegmentMapArray segmentMapArray;
@@ -3267,6 +3268,7 @@ void MainWindow::on_actionExtract_Neuron_triggered()
       Write_Stack((char*) (outDirStream.str() + "_ds.tif").c_str(), stack);
     } //if (segments.size() > 1)
   }
+#endif
 }
 
 void MainWindow::on_actionSkeletonization_triggered()

@@ -27,11 +27,11 @@ exists($$DVIDCPP_PATH) {
 }
 
 exists($${CONDA_ENV}) {
-  LIBXML_DIR = $${CONDA_ENV}
+#  LIBXML_DIR = $${CONDA_ENV}
   LIBJANSSON_DIR = $${CONDA_ENV}
   LIBFFTW_DIR = $${CONDA_ENV}
 } else {
-  LIBXML_DIR = $${EXTLIB_DIR}/xml
+#  LIBXML_DIR = $${EXTLIB_DIR}/xml
   LIBJANSSON_DIR = $${EXTLIB_DIR}/jansson
   LIBFFTW_DIR = $${EXTLIB_DIR}/fftw3
 }
@@ -49,8 +49,7 @@ unix {
       LIBS += -lneurolabi
   }
 
-  INCLUDEPATH += $${LIBXML_DIR}/include/libxml2 \
-        $${LIBFFTW_DIR}/include \
+  INCLUDEPATH += $${LIBFFTW_DIR}/include \
 #        $${EXTLIB_DIR}/png/include \
         $${LIBJANSSON_DIR}/include
 }
@@ -84,11 +83,10 @@ CONFIG(debug, debug|release) {
 
 #Self-contained libraries
 unix {
-    LIBS += -L$${LIBXML_DIR}/lib -L$${LIBFFTW_DIR}/lib \
+    LIBS += -L$${LIBFFTW_DIR}/lib \
         -L$${LIBJANSSON_DIR}/lib \
         -lfftw3 \
         -lfftw3f \
-        -lxml2 \
         -ljansson
 }
 
@@ -145,13 +143,3 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 
 message($$DEFINES)
 message($$LIBS)
-
-#BUILDEM_DIR = /opt/Downloads/buildem
-#exists($${BUILDEM_DIR}/lib/libdvidcpp2.a) {
-#    DEFINES += _ENABLE_LIBDVID_
-#    INCLUDEPATH +=  $${BUILDEM_DIR}/include $${BUILDEM_DIR}/include/libdvid
-#    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64 -ldvidcpp \
-#        -ljsoncpp -lcppnetlib-uri \
-#        -lcppnetlib-client-connections -lcppnetlib-server-parsers  \
-#        -lboost_system -lboost_thread -lssl -lcrypto
-#}

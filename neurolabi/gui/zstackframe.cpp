@@ -11,7 +11,7 @@
 #include "widgets/zimagewidget.h"
 #include "dialogs/settingdialog.h"
 #include "zlocsegchain.h"
-#include "tz_xml_utils.h"
+//#include "tz_xml_utils.h"
 #include "tz_string.h"
 #include "ztraceproject.h"
 #include "zstack.hxx"

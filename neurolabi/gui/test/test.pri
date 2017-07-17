@@ -59,4 +59,5 @@ HEADERS += \
     test/zflyembodyannotationtest.h \
     test/zviewprojtest.h \
     test/z3dfiltersettingtest.h \
-    test/zdvidresultservicetest.h
+    test/zdvidresultservicetest.h \
+    $$PWD/zxmltest.h

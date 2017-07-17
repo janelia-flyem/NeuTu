@@ -75,7 +75,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zfiletype.h \
    $${PWD}/flyem/zsynapselocationmetric.h \
    $${PWD}/zstackfile.h \
-   $${PWD}/zxmldoc.h \
    $${PWD}/zintmap.h \
    $${PWD}/flyem/zsegmentationanalyzer.h \
    $${PWD}/flyem/zsegmentationbundle.h \
@@ -308,7 +307,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zfiletype.cpp \
    $${PWD}/flyem/zsynapselocationmetric.cpp \
    $${PWD}/zstackfile.cpp \
-   $${PWD}/zxmldoc.cpp \
    $${PWD}/zintmap.cpp \
    $${PWD}/flyem/zsegmentationanalyzer.cpp \
    $${PWD}/flyem/zsegmentationbundle.cpp \

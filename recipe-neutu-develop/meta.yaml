@@ -20,28 +20,22 @@ build:
 
 requirements:
   build:
-    - qt      4.8.6.99   # [osx]
-    - qt      4.8.7      # [linux]
-    - libdvid-cpp 0.2.post61
-    - lowtis  0.1.0.post17 # [linux]
+    - qt      5*
+    - libdvid-cpp >=0.2.post55
     - fftw    3.3*
-    - jansson 2.5
-    - libxml2 2.9*
-    - libpng  1.6.*
-    - hdf5    1.8.16 # Ting's build script uses 1.8.12, but that's not available from conda
-    - pango 1.36.8 # [linux64]
+    - jansson 2.7
+    - libpng  1.6*
+    - hdf5    1.8.18 # Ting's build script uses 1.8.12, but that's not available from conda
+    - pango   1.40* # [linux64]
 
   run:
-    - qt       4.8.6.99   # [osx]
-    - qt       4.8.7      # [linux]
-    - libdvid-cpp 0.2.post61
-    - lowtis  0.1.0.post17 # [linux]
+    - qt      5*
+    - libdvid-cpp >=0.2.post55
     - fftw    3.3*
-    - jansson 2.5
-    - libxml2 2.9*
-    - libpng  1.6.*
-    - hdf5    1.8.16
-    - pango 1.36.8 # [linux64]
+    - jansson 2.7
+    - libpng  1.6*
+    - hdf5    1.8.18
+    - pango   1.40* # [linux64]
     
 
 about:

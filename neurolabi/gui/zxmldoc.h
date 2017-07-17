@@ -2,17 +2,23 @@
 #define ZXMLDOC_H
 
 #include <string>
-
-#include "tz_cdefs.h"
-
-/*
-#if defined(HAVE_LIBXML2)
-#include <libxml/xmlreader.h>
-#endif
-*/
-#include "tz_xml_utils.h"
+#include "zsharedpointer.h"
 
 class ZXmlNode;
+class QDomDocument;
+class QDomElement;
+class QDomNode;
+class QString;
+
+typedef ZSharedPointer<QDomNode> xmlNodePtr;
+typedef ZSharedPointer<QDomDocument> xmlDocPtr;
+
+
+//#define XML_NODE_DEFINED 1
+
+//#include "tz_xml_utils.h"
+
+//#undef HAVE_LIBXML2
 
 class ZXmlDoc
 {
@@ -34,6 +40,7 @@ class ZXmlNode
 public:
   ZXmlNode();
   ZXmlNode(xmlNodePtr node, xmlDocPtr doc);
+  ZXmlNode(const QDomNode &node, xmlDocPtr doc);
 
   std::string stringValue();
   double doubleValue();
@@ -43,14 +50,19 @@ public:
   bool empty() const;
   ZXmlNode firstChild() const;
   ZXmlNode nextSibling();
-  ZXmlNode next();
+//  ZXmlNode next();
 
   std::string getAttribute(const char *attribute) const;
 
   int type() const;
+  bool isElement() const;
   ZXmlNode queryNode(const std::string &nodeName) const;
 
-  void printElementNames(int indent = 0);
+  void printElementNames(int indent = 0) const;
+  void printInfo(int indent = 0) const;
+
+private:
+  QString getText() const;
 
 private:
   xmlNodePtr m_node;

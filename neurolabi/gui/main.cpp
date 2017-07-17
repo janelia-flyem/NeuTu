@@ -184,9 +184,12 @@ int main(int argc, char *argv[])
   NeutubeConfig &config = NeutubeConfig::getInstance();
   std::cout << QApplication::applicationDirPath().toStdString() << std::endl;
   config.setApplicationDir(QApplication::applicationDirPath().toStdString());
-  if (config.load(config.getConfigPath()) == false) {
-    std::cout << "Unable to load configuration: "
-              << config.getConfigPath() << std::endl;
+
+  if (guiEnabled) {
+    if (config.load(config.getConfigPath()) == false) {
+      std::cout << "Unable to load configuration: "
+                << config.getConfigPath() << std::endl;
+    }
   }
 
   if (configPath.isEmpty()) {
@@ -338,6 +341,7 @@ int main(int argc, char *argv[])
     z3dApp.initialize();
 #ifdef _NEU3_
     Neu3Window *mainWin = new Neu3Window();
+    mainWin->loadDvidTarget();
 #else
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
@@ -363,10 +367,11 @@ int main(int argc, char *argv[])
     mainWin->startProofread();
 #else
     mainWin->show();
-    mainWin->raise();
 #endif
 
 #if defined(_NEU3_)
+    mainWin->initialize();
+    mainWin->raise();
     mainWin->showMaximized();
 #endif
 

@@ -20,21 +20,19 @@ build:
 
 requirements:
   build:
-    - qt      4.8.7
+    - qt      5*
     - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.7
-    - libxml2 2.9*
     - libpng  1.6*
     - hdf5    1.8.18 # Ting's build script uses 1.8.12, but that's not available from conda
     - pango   1.40* # [linux64]
 
   run:
-    - qt      4.8.7
+    - qt      5*
     - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.7
-    - libxml2 2.9*
     - libpng  1.6*
     - hdf5    1.8.18
     - pango   1.40* # [linux64]

@@ -14,7 +14,7 @@
 #include "tz_stack_lib.h"
 #include "zstack.hxx"
 #include "tz_fimage_lib.h"
-#include "tz_xml_utils.h"
+//#include "tz_xml_utils.h"
 #include "tz_stack_relation.h"
 #include "zfilelist.h"
 #include "c_stack.h"

@@ -8,7 +8,7 @@
 #include "tz_stack_threshold.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_fimage_lib.h"
-#include "tz_xml_utils.h"
+//#include "tz_xml_utils.h"
 #include "tz_stack_relation.h"
 #include "tz_stack_attribute.h"
 #include "tz_stack_watershed.h"

@@ -20,14 +20,15 @@ public:
   explicit Neu3Window(QWidget *parent = 0);
   ~Neu3Window();
 
+  void initialize();
   void initOpenglContext();
+  void loadDvidTarget();
 
 public slots:
   void showSynapse(bool on);
 
 private:
   void createDockWidget();
-  void loadDvidTarget();
   void createToolBar();
   void connectSignalSlot();
 

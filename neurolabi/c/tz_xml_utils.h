@@ -7,6 +7,7 @@
 #define _TZ_XML_UTILS_H_
 
 #include "tz_cdefs.h"
+
 #if defined(HAVE_LIBXML2)
 #include <libxml/xmlreader.h>
 #else
