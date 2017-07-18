@@ -445,7 +445,7 @@ void ZTest::test(MainWindow *host)
   Kill_Stack(stack);
 #endif
 
-#if 0
+#if 1
   //The minimum and maximum is the number of steps in the operation for which this progress dialog shows progress.
   //for example here 0 and 100.
   QProgressDialog* progress = new QProgressDialog("Fetching data...", "Cancel", 0, 100);
