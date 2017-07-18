@@ -50,6 +50,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
 
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->finishCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onFinishCurrentButton()));
+    connect(ui->detailsButton, SIGNAL(clicked(bool)), this, SLOT(onDetailsButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
@@ -333,6 +334,28 @@ void SynapsePredictionProtocol::onRefreshButton()
         }
     }
     updateLabels();
+}
+
+void SynapsePredictionProtocol::onDetailsButton() {
+    QString message = "Synapses come from ";
+    if (m_variation == VARIATION_REGION) {
+        message += "region between ";
+        message += QString::fromStdString(m_protocolRange.getFirstCorner().toString());
+        message += " and ";
+        message += QString::fromStdString(m_protocolRange.getLastCorner().toString());
+    } else if (m_variation == VARIATION_BODY) {
+        message += "body ";
+        message += QString::number(m_bodyID);
+    } else {
+        variationError(m_variation);
+    }
+
+    QMessageBox mb;
+    mb.setText("Protocol details");
+    mb.setInformativeText(message);
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Ok);
+    mb.exec();
 }
 
 void SynapsePredictionProtocol::onExitButton() {
