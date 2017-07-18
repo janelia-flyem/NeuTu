@@ -1,5 +1,5 @@
 package:
-  name: neutu
+    name: neutu
 
   {% if GIT_DESCRIBE_NUMBER|int == 0 %}
     version: "{{GIT_DESCRIBE_TAG}}"

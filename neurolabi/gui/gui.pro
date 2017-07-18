@@ -192,7 +192,7 @@ contains(CONFIG, static_glew) { # glew from ext folder
 } # static glew
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
-    include($$PWD/ext/gtest.pri)
+  include($$PWD/ext/gtest.pri)
 }
 
 unix {

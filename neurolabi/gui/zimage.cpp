@@ -76,6 +76,15 @@ bool ZImage::isVisible() const
   return m_visible;
 }
 
+bool ZImage::isIndexed8() const
+{
+#ifdef _QT5_
+  return format() == Format_Indexed8 || format() == Format_Grayscale8;
+#else
+  return format() == Format_Indexed8;
+#endif
+}
+
 void ZImage::clear()
 {
   uchar *line = scanLine(0);
@@ -340,7 +349,7 @@ void ZImage::setData(
   case NeuTube::Z_AXIS:
   {
     data += (size_t) area * slice;
-    if (format() == Format_Indexed8) {
+    if (isIndexed8()) {
       setDataIndexed8(data);
     } else if (isArgb32()) {
       setDataRgba(data);
@@ -1215,15 +1224,26 @@ void ZImage::enhanceContrast(bool highContrast)
         }
       }
     } else if (this->depth() == 8) {
+      uchar colorTable[256];
+      double s = m_grayScale / 255.0;
+      for (int i = 0; i < 255; ++i) {
+        double v = (i + m_grayOffset) * s;
+        if (m_nonlinear) {
+          v = sqrt(v) * i;
+        }
+
+        if (v < 0.0) {
+          v = 0.0;
+        } else if (v > 255.0) {
+          v = 1.0;
+        }
+        colorTable[i] = iround(v);
+      }
+
       for (j = 0; j < height(); j++) {
         uchar *line = scanLine(j);
         for (i = 0; i < width(); i++) {
-          if (line[0] <= 213) {
-            line[0] += line[0] / 5;
-          } else {
-            line[0] = 255;
-          }
-
+          line[0] = colorTable[line[0]];
           line++;
         }
       }

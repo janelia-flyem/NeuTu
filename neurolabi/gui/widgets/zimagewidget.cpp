@@ -560,6 +560,7 @@ void ZImageWidget::setCanvasRegion(int x0, int y0, int w, int h)
   }
 }
 
+#if 0
 bool ZImageWidget::isColorTableRequired()
 {
   if (m_image != NULL) {
@@ -570,6 +571,7 @@ bool ZImageWidget::isColorTableRequired()
 
   return false;
 }
+#endif
 
 void ZImageWidget::addColorTable()
 {

@@ -133,7 +133,7 @@ public:
   //void setData(const uchar *data, int width, int height, QImage::Format format);
   QSize minimumSizeHint() const;
   QSize sizeHint() const;
-  bool isColorTableRequired();
+//  bool isColorTableRequired();
   void addColorTable();
 
   QSize canvasSize() const;

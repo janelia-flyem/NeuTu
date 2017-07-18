@@ -139,7 +139,8 @@ void ZProofreadWindow::init()
 
   setCentralWidget(widget);
 
-#if 1
+  m_progressDlg = NULL;
+#if 0
   m_progressDlg = new QProgressDialog(this);
   m_progressDlg->setWindowModality(Qt::WindowModal);
   m_progressDlg->setAutoClose(true);
@@ -216,6 +217,18 @@ void ZProofreadWindow::stressTestSlot()
 void ZProofreadWindow::diagnose()
 {
   m_mainMvc->diagnose();
+}
+
+QProgressDialog* ZProofreadWindow::getProgressDialog()
+{
+  if (m_progressDlg == NULL) {
+    m_progressDlg = new QProgressDialog(this);
+    m_progressDlg->setWindowModality(Qt::WindowModal);
+    m_progressDlg->setAutoClose(true);
+    m_progressDlg->setCancelButton(0);
+  }
+
+  return m_progressDlg;
 }
 
 void ZProofreadWindow::stressTest()

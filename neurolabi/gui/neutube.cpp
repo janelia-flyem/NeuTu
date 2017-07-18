@@ -65,7 +65,7 @@ std::string NeuTube::getInfoFile()
 
 std::string NeuTube::GetCurrentUserName()
 {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   std::cout << qgetenv("USER").data() << std::endl;
 #endif
   std::string userName = qgetenv("USER").data();

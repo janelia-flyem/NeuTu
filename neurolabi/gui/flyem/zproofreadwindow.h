@@ -37,9 +37,7 @@ public:
   static ZProofreadWindow* Make(QWidget *parent = 0);
   static ZProofreadWindow* Make(QWidget *parent, ZDvidDialog *dvidDlg);
 
-  QProgressDialog* getProgressDialog() {
-    return m_progressDlg;
-  }
+  QProgressDialog* getProgressDialog();
 
   void setDvidDialog(ZDvidDialog *dvidDlg);
 

@@ -197,6 +197,8 @@ public:
   void setVisible(bool visible);
   bool isVisible() const;
 
+  bool isIndexed8() const;
+
 
 private:
   template<class T>
