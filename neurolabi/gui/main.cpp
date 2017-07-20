@@ -341,7 +341,10 @@ int main(int argc, char *argv[])
     z3dApp.initialize();
 #ifdef _NEU3_
     Neu3Window *mainWin = new Neu3Window();
-    mainWin->loadDvidTarget();
+    if (!mainWin->loadDvidTarget()) {
+      delete mainWin;
+      mainWin = NULL;
+    }
 #else
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
@@ -363,27 +366,29 @@ int main(int argc, char *argv[])
     ZSandboxProject::InitSandbox();
 #endif
 
+    int result = 1;
+
+    if (mainWin != NULL) {
 #if defined(_FLYEM_) && !defined(_DEBUG_) && !defined(_NEU3_)
-    mainWin->startProofread();
+      mainWin->startProofread();
 #else
-    mainWin->show();
+      mainWin->show();
 #endif
 
 #if defined(_NEU3_)
-    mainWin->initialize();
-    mainWin->raise();
-    mainWin->showMaximized();
+      mainWin->initialize();
+      mainWin->raise();
+      mainWin->showMaximized();
 #endif
 
-    int result = 1;
+      try {
+        result = app.exec();
+      } catch (std::exception &e) {
+        LERROR() << "Crashed by exception:" << e.what();
+      }
 
-    try {
-      result = app.exec();
-    } catch (std::exception &e) {
-      LERROR() << "Crashed by exception:" << e.what();
+      delete mainWin;
     }
-
-    delete mainWin;
     z3dApp.deinitializeGL();
     z3dApp.deinitialize();
 

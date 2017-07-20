@@ -23,13 +23,19 @@
 #include "zeventlistenerparameter.h"
 #include <cassert>
 
-Z3DProcessor::Z3DProcessor(const QString &name)
-  : QObject()
+Z3DProcessor::Z3DProcessor(const QString &name, QObject *parent)
+  : QObject(parent)
   , m_initialized(false)
   , m_invalidationState(InvalidAllResult)
   , m_name(name)
   , m_invalidationVisited(false)
 {
+}
+
+Z3DProcessor::Z3DProcessor(QObject *parent) :
+  Z3DProcessor("", parent)
+{
+
 }
 
 Z3DProcessor::~Z3DProcessor()
@@ -82,6 +88,11 @@ void Z3DProcessor::deinitialize()
     m_outputPorts[i]->deinitialize();
   }
   CHECK_GL_ERROR;
+}
+
+QWidget* Z3DProcessor::getParentWidget() const
+{
+  return qobject_cast<QWidget*>(parent());
 }
 
 void Z3DProcessor::addPort(Z3DInputPortBase *port)

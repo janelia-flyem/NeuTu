@@ -30,7 +30,7 @@ public:
     Select, AddSwcNode, ConnectSwcNode, SmartExtendSwcNode, PlainExtendSwcNode
   };
 
-  explicit Z3DSwcFilter();
+  explicit Z3DSwcFilter(QObject *parent = NULL);
   virtual ~Z3DSwcFilter();
 
   void setData(const std::vector<ZSwcTree*> &swcList);
@@ -195,6 +195,7 @@ private:
 
   ZEventListenerParameter* m_selectSwcEvent;
   glm::ivec2 m_startCoord;
+  glm::ivec3 m_pickingTexSize;
   ZSwcTree *m_pressedSwc;
   std::set<ZSwcTree*> m_selectedSwcs;   //point to all selected swcs, managed by other class
   Swc_Tree_Node *m_pressedSwcTreeNode;

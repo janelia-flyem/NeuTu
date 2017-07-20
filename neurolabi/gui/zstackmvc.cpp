@@ -224,11 +224,16 @@ void ZStackMvc::updateDocument()
   }
 }
 
-void ZStackMvc::keyPressEvent(QKeyEvent *event)
+void ZStackMvc::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
     m_presenter->processKeyPressEvent(event);
   }
+}
+
+void ZStackMvc::keyPressEvent(QKeyEvent *event)
+{
+  processKeyEvent(event);
 }
 
 bool ZStackMvc::event(QEvent *event)

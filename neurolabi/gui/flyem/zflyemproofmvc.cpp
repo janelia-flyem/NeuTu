@@ -80,6 +80,7 @@
 #include "dialogs/zflyemgrayscaledialog.h"
 #include "zstackwriter.h"
 #include "dialogs/flyembodyiddialog.h"
+#include "zstackdockeyprocessor.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -708,6 +709,21 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow()
 //              m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
 //              m_roiSourceList);
   }
+
+  return m_skeletonWindow;
+}
+
+Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
+{
+  makeExternalSkeletonWindow();
+  m_skeletonWindow->getSwcFilter()->setColorMode("Branch Type");
+  m_skeletonWindow->getSwcFilter()->setStayOnTop(false);
+  m_skeletonWindow->getPunctaFilter()->setStayOnTop(false);
+  ZFlyEmBody3dDoc *doc = m_skeletonWindow->getDocument<ZFlyEmBody3dDoc>();
+  doc->enableNodeSeeding(true);
+  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
+          doc->getKeyProcessor(), SLOT(processKeyEvent(QKeyEvent*)));
+  m_skeletonWindow->skipKeyEvent(true);
 
   return m_skeletonWindow;
 }

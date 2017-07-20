@@ -35,6 +35,7 @@
 #include "zstackfactory.h"
 #include "zstackdocselector.h"
 #include "zglobal.h"
+#include "zstackdockeyprocessor.h"
 
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
@@ -237,6 +238,7 @@ QAction* ZStackPresenter::getAction(ZActionFactory::EAction item) const
 
   return action;
 }
+
 bool ZStackPresenter::connectAction(
     QAction *action, ZActionFactory::EAction item)
 {
@@ -1888,7 +1890,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
 
 bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 {
-  bool processed = true;
+  bool processed = buddyDocument()->getKeyProcessor()->processKeyEvent(event);
 
   if (processKeyPressEventForActiveStroke(event)) {
     return processed;

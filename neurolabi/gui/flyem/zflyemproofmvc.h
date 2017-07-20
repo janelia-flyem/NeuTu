@@ -143,6 +143,7 @@ public:
   void diagnose();
 
   Z3DWindow* makeExternalSkeletonWindow();
+  Z3DWindow* makeNeu3Window();
 
 signals:
   void launchingSplit(const QString &message);

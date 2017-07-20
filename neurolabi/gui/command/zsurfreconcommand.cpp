@@ -32,6 +32,13 @@ int ZSurfreconCommand::run(const std::vector<std::string> &/*input*/, const std:
   std::cout<<"number of input points:"<<npoints<<std::endl;
   Surf surface;
   VoxelSet out;
+//  surface.setPoints(out);
+#ifdef _DEBUG_2
+  Vertex v1, v2, v3;
+  surface.add(&v1, &v2, &v3);
+#endif
+//  std::vector<int> a;
+//  surface.test(a);
   surface.surfrecon(in,out,26,1);
   std::cout<<"number of output points:"<<out.size()<<std::endl;
   std::srand(std::time(0));

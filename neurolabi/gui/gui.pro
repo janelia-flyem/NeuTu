@@ -4,17 +4,13 @@
 TEMPLATE = app
 
 contains(TEMPLATE, app) {
-    DEFINES += _QT_APPLICATION_
+  DEFINES += _QT_APPLICATION_
 } else {
-    CONFIG += staticlib
+  CONFIG += staticlib
 }
 
 contains(CONFIG, neu3) {
-    DEFINES += _NEU3_ _FLYEM_
-}
-
-contains(DEFINES,_ENABLE_SURFRECON_){
-  LIBS+= -lCGAL
+  DEFINES += _NEU3_ _FLYEM_
 }
 
 #DEFINES+=_CLI_VERSION
@@ -777,7 +773,9 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodysplitdialog.h \
     widgets/zbodylistwidget.h \
     widgets/flyembodyinfowidget.h \
-    neu3window.h
+    neu3window.h \
+    flyem/zflyembody3ddockeyprocessor.h \
+    zstackdockeyprocessor.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1342,6 +1340,8 @@ SOURCES += main.cpp \
     widgets/zbodylistwidget.cpp \
     widgets/flyembodyinfowidget.cpp \
     zxmldoc.cpp \
-    neu3window.cpp
+    neu3window.cpp \
+    flyem/zflyembody3ddockeyprocessor.cpp \
+    zstackdockeyprocessor.cpp
 
 

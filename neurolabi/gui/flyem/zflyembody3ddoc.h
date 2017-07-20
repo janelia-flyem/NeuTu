@@ -22,6 +22,7 @@
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
 class ZFlyEmBodyComparisonDialog;
+class ZFlyEmBody3dDocKeyProcessor;
 //class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
@@ -199,6 +200,8 @@ public:
 
   bool updating() const;
 
+  void enableNodeSeeding(bool on);
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   void addSynapse(bool on);
@@ -210,6 +213,8 @@ public slots:
 
   void recycleObject(ZStackObject *obj);
   void killObject(ZStackObject *obj);
+
+  void setSeedType(int type);
 
 protected:
   void autoSave() {}
@@ -266,8 +271,6 @@ private:
 signals:
   void todoVisibleChanged();
 
-public slots:
-
 private slots:
 //  void updateBody();
   void processEvent();
@@ -283,11 +286,12 @@ private:
 
 private:
   QSet<uint64_t> m_bodySet;
-  FlyEM::EBodyType m_bodyType;
+  FlyEM::EBodyType m_bodyType = FlyEM::BODY_FULL;
 
-  bool m_quitting;
-  bool m_showingSynapse;
-  bool m_showingTodo;
+  bool m_quitting = false;
+  bool m_showingSynapse = true;
+  bool m_showingTodo = true;
+  bool m_nodeSeeding = false;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
@@ -307,9 +311,10 @@ private:
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;
   QMap<uint64_t, int> m_bodyUpdateMap;
+  ZFlyEmBody3dDocKeyProcessor *m_keyProcessor;
 //  QSet<uint64_t> m_unrecycableSet;
 
-  bool m_garbageJustDumped;
+  bool m_garbageJustDumped = false;
 
   QQueue<BodyEvent> m_eventQueue;
 

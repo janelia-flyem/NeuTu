@@ -83,6 +83,7 @@ class ZProgressSignal;
 class ZWidgetMessage;
 class ZDvidSparseStack;
 class ZStackDocDataBuffer;
+class ZStackDocKeyProcessor;
 
 /*!
  * \brief The class of stack document
@@ -463,6 +464,9 @@ public:
   void setSparseStack(ZSparseStack *spStack);
 
   void importSeedMask(const QString &filePath);
+
+  ZStackDocKeyProcessor* getKeyProcessor();
+  void setKeyProcessor(ZStackDocKeyProcessor *processor);
 
   /*
   ZNeuronTracer &getNeuronTracer() {
@@ -1260,6 +1264,7 @@ private:
   const T* getFirstUserByType() const;
 
   void updateTraceMask();
+  virtual void makeKeyProcessor();
 
 private:
   //Main stack
@@ -1317,6 +1322,7 @@ private:
   ZStackFactory *m_stackFactory;
 
   ZActionFactory *m_actionFactory;
+  ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
 
   bool m_selectionSilent;

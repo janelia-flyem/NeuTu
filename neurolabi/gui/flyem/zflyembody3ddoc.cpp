@@ -18,14 +18,15 @@
 #include "z3dwindow.h"
 #include "zstackdocdatabuffer.h"
 #include "dialogs/zflyembodycomparisondialog.h"
+#include "zswcutil.h"
+#include "zflyembody3ddockeyprocessor.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
 const int ZFlyEmBody3dDoc::MAX_RES_LEVEL = 5;
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
-  ZStackDoc(parent), m_bodyType(FlyEM::BODY_FULL), m_quitting(false),
-  m_showingSynapse(true), m_showingTodo(true), m_garbageJustDumped(false)
+  ZStackDoc(parent)
 {
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
@@ -41,6 +42,8 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
 
   connectSignalSlot();
   disconnectSwcNodeModelUpdate();
+
+  m_keyProcessor = new ZFlyEmBody3dDocKeyProcessor(this);
 }
 
 ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
@@ -83,6 +86,11 @@ void ZFlyEmBody3dDoc::connectSignalSlot()
 
 void ZFlyEmBody3dDoc::updateBodyFunc()
 {
+}
+
+void ZFlyEmBody3dDoc::enableNodeSeeding(bool on)
+{
+  m_nodeSeeding = on;
 }
 
 template<typename T>
@@ -462,6 +470,12 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
   emit todoVisibleChanged();
 }
 
+void ZFlyEmBody3dDoc::setSeedType(int type)
+{
+  ZSwc::SetType(getSelectedSwcNodeSet(), type);
+  notifySwcModified();
+}
+
 bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
 {
   return !getObjectGroup().getSelectedSet(
@@ -774,6 +788,9 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 
   if (tree != NULL) {
     tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
+    if (m_nodeSeeding) {
+      tree->setType(1);
+    }
 
 #ifdef _DEBUG_
     std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(tree) << std::endl;

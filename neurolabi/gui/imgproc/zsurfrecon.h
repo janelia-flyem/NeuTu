@@ -1,11 +1,13 @@
-#if defined(_ENABLE_SURFRECON_)
 #ifndef ZSURFRECON_H
 #define ZSURFRECON_H
+
 #undef ASCII
 #undef BOOL
 #undef TRUE
 #undef FALSE
-#include "surfrecon.h"
+
+//#include <surfrecon.h>
+#include "imgproc/surfrecon.h"
 
 class ZStack;
 class ZSwcTree;
@@ -24,4 +26,4 @@ private:
 };
 
 #endif // ZSURFRECON_H
-#endif
+
