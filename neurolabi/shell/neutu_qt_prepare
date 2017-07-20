@@ -11,7 +11,7 @@ fi
 install_dir=$1
 
 ENV_NAME=neutu-env
-#./setup_conda_for_neutu $install_dir $ENV_NAME
+./setup_conda_for_neutu $install_dir $ENV_NAME
 
 CONDA_DIR=$install_dir/miniconda
 red=`tput setaf 1`
@@ -19,6 +19,7 @@ green=`tput setaf 2`
 reset=`tput sgr0`
 
 echo "===Instructions for configuring Debug version in QtCreator==="
+
 echo ""
 echo "1. Kit setup"
 echo "  * Add qt version: ${CONDA_DIR}/envs/$ENV_NAME${reset}/bin/qmake"
