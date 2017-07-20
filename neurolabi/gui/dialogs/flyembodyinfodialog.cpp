@@ -1217,6 +1217,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
     ZDvidReader reader;
     reader.setVerbose(false);
 
+    // testing
+    // reader.setVerbose(true);
+
 
     if (reader.open(m_currentDvidTarget)) {
         // std::cout << "open DVID reader: " << spottimer.restart() / 1000.0 << "s" << std::endl;
