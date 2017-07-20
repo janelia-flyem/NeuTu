@@ -73,8 +73,10 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
         // "doNthings" is a test protocol
         // << "doNthings"
         << "synapse_prediction_body"
-        << "synapse_prediction_region"
-        << "synapse_review";
+        << "synapse_prediction_region";
+
+        // implemented but never rolled out:
+        // << "synapse_review";
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
@@ -340,12 +342,12 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
         m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else if (protocolName == "synapse_prediction_body") {
         m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
-    } else if (protocolName == "synapse_review") {
-        m_activeProtocol = new SynapseReviewProtocol(m_parent);
-    }
+    // implemented, basically works, but never used
+    // } else if (protocolName == "synapse_review") {
+    //     m_activeProtocol = new SynapseReviewProtocol(m_parent);
     // below here: old protocols (renamed, deleted, etc.)
     // old synapse_prediction is always region:
-    else if (protocolName == "synapse_prediction") {
+    } else if (protocolName == "synapse_prediction") {
         m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else {
         // should never happen; the null will cause errors later
