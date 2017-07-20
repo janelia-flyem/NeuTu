@@ -180,6 +180,13 @@ void Z3DWindow::createToolBar()
   connect(viewSynapseAction, SIGNAL(toggled(bool)),
           this, SLOT(showPuncta(bool)));
   m_toolBar->addAction(viewSynapseAction);
+
+  if (m_todoFilter != NULL) {
+    QAction *viewTodoAction =
+        ZActionFactory::MakeAction(ZActionFactory::ACTION_SHOW_TODO, this);
+    connect(viewTodoAction, SIGNAL(toggled(bool)), this, SLOT(showTodo(bool)));
+    m_toolBar->addAction(viewTodoAction);
+  }
 }
 
 void Z3DWindow::gotoPosition(double x, double y, double z, double radius)
@@ -277,7 +284,7 @@ void Z3DWindow::init(EInitMode mode)
   m_punctaFilter = new Z3DPunctaFilter();
   m_layerList.append(LAYER_PUNCTA);
   m_punctaFilter->setData(m_doc->getPunctumList());
-  m_swcFilter = new Z3DSwcFilter();
+  m_swcFilter = new Z3DSwcFilter(this);
   m_layerList.append(LAYER_SWC);
   m_swcFilter->setData(m_doc->getSwcList());
   m_graphFilter = new Z3DGraphFilter();
@@ -1366,6 +1373,11 @@ ZJsonObject Z3DWindow::getConfigJson(ERendererLayer layer) const
   return configJson;
 }
 
+void Z3DWindow::skipKeyEvent(bool on)
+{
+  m_skippingKeyEvent = on;
+}
+
 void Z3DWindow::readSettings()
 {
   QString windowKey = NeuTube3D::GetWindowKeyString(getWindowType()).c_str();
@@ -1533,8 +1545,8 @@ void Z3DWindow::cleanup()
     m_volumeRaycaster = NULL;
     delete m_punctaFilter;
     m_punctaFilter = NULL;
-    delete m_swcFilter;
-    m_swcFilter = NULL;
+//    delete m_swcFilter;
+//    m_swcFilter = NULL;
     delete m_graphFilter;
     m_graphFilter = NULL;
     delete m_surfaceFilter;
@@ -2825,6 +2837,11 @@ void Z3DWindow::closeEvent(QCloseEvent * /*event*/)
 
 void Z3DWindow::keyPressEvent(QKeyEvent *event)
 {
+  if (m_skippingKeyEvent) {
+    emit keyPressed(event);
+    return;
+  }
+
   ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
   switch(event->key())
   {
@@ -3791,6 +3808,12 @@ void Z3DWindow::showPuncta(bool on)
   setLayerVisible(LAYER_PUNCTA, on);
 
   emit showingPuncta(on);
+}
+
+void Z3DWindow::showTodo(bool on)
+{
+  setLayerVisible(LAYER_TODO, on);
+  emit showingTodo(on);
 }
 
 void Z3DWindow::showSeletedSwcNodeLength()

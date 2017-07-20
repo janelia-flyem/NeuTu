@@ -8,7 +8,9 @@
 #include "zjsonobject.h"
 #include "zjsonvalue.h"
 #include "zswctree.h"
+#if defined(_ENABLE_SURFRECON_)
 #include "imgproc/zsurfrecon.h"
+#endif
 
 ZMultiscaleWatershedCommand::ZMultiscaleWatershedCommand()
 {

@@ -642,6 +642,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setCheckable(true);
     action->setChecked(true);
     break;
+  case ACTION_SHOW_TODO:
+    action = new QAction("To Do", parent);
+    action->setIcon((QIcon(":/images/view_todo.png")));
+    action->setCheckable(true);
+    action->setChecked(false);
+    break;
   default:
     break;
   }

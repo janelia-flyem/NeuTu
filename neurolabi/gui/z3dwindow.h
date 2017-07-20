@@ -203,6 +203,7 @@ public: //controls
   void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
   ZJsonObject getConfigJson(ERendererLayer layer) const;
 
+  void skipKeyEvent(bool on);
 
 public:
   void setROIs(size_t n);
@@ -232,6 +233,8 @@ signals:
   void deselectingBody(const std::set<uint64_t> bodyId);
   void settingNormalTodoVisible(bool);
   void showingPuncta(bool);
+  void showingTodo(bool);
+  void keyPressed(QKeyEvent *event);
 
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -300,6 +303,7 @@ public slots:
   void showSeletedSwcNodeLength();
 
   void showPuncta(bool on);
+  void showTodo(bool on);
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -554,6 +558,7 @@ private:
   bool m_isClean;   //already cleanup?
 
   bool m_blockingTraceMenu;
+  bool m_skippingKeyEvent = false;
 
   glm::ivec3 m_lastClickedPosInVolume;
 

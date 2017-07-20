@@ -120,6 +120,8 @@ public slots:
 
   void saveStack();
 
+  virtual void processKeyEvent(QKeyEvent *event);
+
   virtual void testSlot();
 
 protected: // Events

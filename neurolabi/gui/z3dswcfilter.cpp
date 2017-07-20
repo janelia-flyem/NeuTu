@@ -24,9 +24,10 @@
 #include "z3dswcfilter.h"
 #include "z3dfiltersetting.h"
 #include "zjsonparser.h"
+#include "z3drendertarget.h"
 
-Z3DSwcFilter::Z3DSwcFilter()
-  : Z3DGeometryFilter()
+Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
+  : Z3DGeometryFilter(parent)
   , m_lineRenderer(NULL)
   , m_coneRenderer(NULL)
   , m_sphereRenderer(NULL)
@@ -785,6 +786,8 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
       m_rendererBase->activateRenderer(m_lineRenderer, m_sphereRenderer);
     }
     m_rendererBase->renderPicking(eye);
+    m_pickingTexSize =  getPickingManager()->getRenderTarget()->getAttachment(
+          GL_COLOR_ATTACHMENT0)->getDimensions();
   }
 }
 
@@ -1532,15 +1535,28 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
   if (!getPickingManager())
     return;
 
+
   e->ignore();
   // Mouse button presend
   // can not accept the event in button press, because we don't know if it is a selection or interaction
   if (e->type() == QEvent::MouseButtonPress) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
+
+#ifdef _DEBUG_2
+    std::cout << "Picking swc at "
+              << m_startCoord.x << ", " << m_startCoord.y <<  std::endl;
+#endif
+
+    int dpr = getParentWidget()->devicePixelRatio();
+
     //const void* obj = getPickingManager()->getObjectAtPos(glm::ivec2(e->x(), h - e->y()));
     const void* obj = getPickingManager()->getObjectAtWidgetPos(
-          glm::ivec2(e->x(), e->y()));
+          glm::ivec2(e->x(), e->y()), m_pickingTexSize, dpr);
+
+#ifdef _DEBUG_2
+    std::cout << "Picked: " << obj << std::endl;
+#endif
 
     if (obj == NULL) {
       return;

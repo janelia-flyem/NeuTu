@@ -3,8 +3,8 @@
 #include "z3dfiltersetting.h"
 #include "zjsonparser.h"
 
-Z3DGeometryFilter::Z3DGeometryFilter()
-  : Z3DProcessor()
+Z3DGeometryFilter::Z3DGeometryFilter(QObject *parent)
+  : Z3DProcessor(parent)
   , m_outPort("GeometryFilter")
   , m_visible("Visible", true)
   , m_stayOnTop("Always in Front", true)

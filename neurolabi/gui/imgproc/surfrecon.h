@@ -5,6 +5,7 @@
 #ifndef __SURFRECON_H__
 #define __SURFRECON_H__
 
+#ifdef _ENABLE_SURFRECON_
 //
 #include <deque>
 #include <queue>
@@ -16,14 +17,13 @@
 #include <cstring>
 #include <algorithm>
 #include <functional>
-#if defined(_ENABLE_SURFRECON_)
 #include <vector>
 #include <cmath>
 #include <ctime>
 #include <limits>
 #include <complex>
 #include <float.h>
-#include <glm/vec3.hpp>
+#include "glm/vec3.hpp"
 #include <boost/foreach.hpp>
 
 #ifdef Use_OpenMP
@@ -62,15 +62,17 @@ typedef struct {
     Vertex *p1, *p2, *p3;
 } Face;
 
-typedef struct {
+namespace surfrecon {
+  typedef struct {
     unsigned int x, y, z;
-} SVoxel;
+  } Voxel;
+}
 
 typedef struct {
     Vertex start, end;
 } LineSegment;
 
-typedef std::vector<SVoxel>     FaceSet;
+typedef std::vector<surfrecon::Voxel>     FaceSet;
 
 // Surf
 class Surf
@@ -82,6 +84,7 @@ public:
 public:
     void setPoints(VoxelSet pointcloud);
     void surfrecon(VoxelSet pcIn, VoxelSet &voxelOut, int co = 26, int num_threads = 8);
+//    void test(std::vector<int> a);
     
 public:
     // Voxelization with Zlatanova's efficient implementation [1] of Laine's topological voxelization [2]
@@ -104,7 +107,7 @@ public:
     double distance(Vertex *v1, Vertex *v2);
     void getRBoundingBox(Vertex *vertices, unsigned int nVertices, Vertex *min, Vertex *max);
     void centerOfVoxel_(int x, int y, int z, Vertex *rMin, Vertex *vSize, Vertex *voxelCenter);
-    void centerOfVoxel(SVoxel *voxel, Vertex *rMin, Vertex *vSize, Vertex *voxelCenter);
+    void centerOfVoxel(surfrecon::Voxel *voxel, Vertex *rMin, Vertex *vSize, Vertex *voxelCenter);
     double distancePointSegment(LineSegment *l, Vertex *p);
     double distancePointTriangle(Face *f, Vertex *p);
     int isNear(int num_threads, Face **mesh, unsigned int nTriangles, Vertex *voxelCenter, Vertex *vSize);

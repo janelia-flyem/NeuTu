@@ -2,12 +2,19 @@
 HEADERS += $${PWD}/zstackprocessor.h \
    $${PWD}/zstackwatershed.h \
     $$PWD/zstackmultiscalewatershed.h \
-    $$PWD/zstackgradient.h \
-    $$PWD/surfrecon.h \
-    $$PWD/zsurfrecon.h
+    $$PWD/zstackgradient.h
 
 SOURCES += $${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackwatershed.cpp \
     $$PWD/zstackmultiscalewatershed.cpp \
-    $$PWD/zstackgradient.cpp \
-    $$PWD/zsurfrecon.cpp
+    $$PWD/zstackgradient.cpp
+
+contains(DEFINES, _ENABLE_SURFRECON_) {
+  HEADERS +=  \
+    $$PWD/zsurfrecon.h \
+    $$PWD/surfrecon.h
+
+  SOURCES += \
+    $$PWD/zsurfrecon.cpp \
+    $$PWD/surfrecon.cpp
+}

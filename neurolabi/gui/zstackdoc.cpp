@@ -112,6 +112,7 @@
 #include "zgraphobjsmodel.h"
 #include "zsurfaceobjsmodel.h"
 #include "zstackdocdatabuffer.h"
+#include "zstackdockeyprocessor.h"
 
 using namespace std;
 
@@ -9759,6 +9760,26 @@ ZRect2d ZStackDoc::getRect2dRoi() const
 
   return rect;
 }
+
+void ZStackDoc::setKeyProcessor(ZStackDocKeyProcessor *processor)
+{
+  m_keyProcessor = processor;
+}
+
+ZStackDocKeyProcessor* ZStackDoc::getKeyProcessor()
+{
+  if (m_keyProcessor == NULL) {
+    makeKeyProcessor();
+  }
+
+  return m_keyProcessor;
+}
+
+void ZStackDoc::makeKeyProcessor()
+{
+  m_keyProcessor = new ZStackDocKeyProcessor(this);
+}
+
 
 ZIntCuboid ZStackDoc::getCuboidRoi() const
 {

@@ -73,7 +73,7 @@ void Neu3Window::initialize()
 //  layout->addWidget(m_3dwin);
 //  setCentralWidget(widget);
 
-  m_3dwin = m_dataContainer->makeExternalSkeletonWindow();
+  m_3dwin = m_dataContainer->makeNeu3Window();
   ZFlyEmBody3dDoc *bodydoc =
       qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
   bodydoc->showTodo(false);
@@ -89,6 +89,7 @@ void Neu3Window::initialize()
 void Neu3Window::connectSignalSlot()
 {
   connect(m_3dwin, SIGNAL(showingPuncta(bool)), this, SLOT(showSynapse(bool)));
+  connect(m_3dwin, SIGNAL(showingTodo(bool)), this, SLOT(showTodo(bool)));
 }
 
 void Neu3Window::initOpenglContext()
@@ -118,13 +119,20 @@ void Neu3Window::initOpenglContext()
   }
 }
 
-void Neu3Window::loadDvidTarget()
+bool Neu3Window::loadDvidTarget()
 {
-  ZDvidDialog *dlg = new ZDvidDialog(this);
+  bool succ = false;
+
+  ZDvidDialog *dlg = new ZDvidDialog(NULL);
   if (dlg->exec()) {
     m_dataContainer = ZFlyEmProofMvc::Make(
           dlg->getDvidTarget(), ZStackMvc::ROLE_DOCUMENT);
+    succ = true;
   }
+
+  delete dlg;
+
+  return succ;
 }
 
 void Neu3Window::createDockWidget()
@@ -160,6 +168,13 @@ void Neu3Window::createToolBar()
   */
 }
 
+void Neu3Window::keyPressEvent(QKeyEvent *event)
+{
+  if (m_dataContainer != NULL) {
+    m_dataContainer->processKeyEvent(event);
+  }
+}
+
 void Neu3Window::showSynapse(bool on)
 {
   if (m_3dwin != NULL) {
@@ -167,5 +182,14 @@ void Neu3Window::showSynapse(bool on)
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
     doc->showSynapse(on);
+  }
+}
+
+void Neu3Window::showTodo(bool on)
+{
+  if (m_3dwin != NULL) {
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
+    doc->showTodo(on);
   }
 }

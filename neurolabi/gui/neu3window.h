@@ -22,10 +22,14 @@ public:
 
   void initialize();
   void initOpenglContext();
-  void loadDvidTarget();
+  bool loadDvidTarget();
 
 public slots:
   void showSynapse(bool on);
+  void showTodo(bool on);
+
+protected:
+  virtual void keyPressEvent(QKeyEvent *event);
 
 private:
   void createDockWidget();

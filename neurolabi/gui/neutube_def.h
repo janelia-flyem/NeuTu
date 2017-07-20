@@ -89,7 +89,10 @@ enum ECardinalDirection {
 };
 
 namespace Json {
+//To avoid compile warnings
+#if defined(_NEUTU_USE_REF_KEY_)
 static const char* REF_KEY = "->";
+#endif
 }
 
 namespace Display {

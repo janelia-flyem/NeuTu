@@ -3,6 +3,8 @@
 #include <QUrl>
 #include <QDateTime>
 
+#define _NEUTU_USE_REF_KEY_
+
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -218,7 +220,14 @@ void ZBodySplitCommand::LoadSeeds(
         container.addSeed(obj);
       } else if (type == "swc") {
         ZSwcTree tree;
-        tree.load(seedUrl);
+        if (isFile) {
+          tree.load(seedUrl);
+        } else {
+          QByteArray data = ZServiceConsumer::ReadData(seedUrl.c_str());
+          if (!data.isEmpty()) {
+            tree.loadFromBuffer(data.constData());
+          }
+        }
         container.addSeed(tree);
       }
 //        ZStack *seedStack = obj.toStackObject(label);

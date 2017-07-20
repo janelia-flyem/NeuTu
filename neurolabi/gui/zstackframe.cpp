@@ -958,13 +958,18 @@ void ZStackFrame::changeWindowTitle(bool clean)
   }
 }
 
-void ZStackFrame::keyPressEvent(QKeyEvent *event)
+void ZStackFrame::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
     if (!m_presenter->processKeyPressEvent(event)) {
       emit keyEventEmitted(event);
     }
   }
+}
+
+void ZStackFrame::keyPressEvent(QKeyEvent *event)
+{
+  processKeyEvent(event);
 }
 
 void ZStackFrame::updateInfo()
