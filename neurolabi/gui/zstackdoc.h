@@ -158,6 +158,7 @@ public: //attributes
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
   bool hasObject(ZStackObject::ETarget target) const;
+  bool hasObject(const ZStackObject *obj) const;
 
   ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
 

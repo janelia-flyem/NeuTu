@@ -314,6 +314,9 @@
 #include "flyem/zstackwatershedcontainer.h"
 #include "flyem/zserviceconsumer.h"
 #include "test/zdvidresultservicetest.h"
+#include "widgets/ztextedit.h"
+#include "dialogs/stringlistdialog.h"
+#include "widgets/zbodylistwidget.h"
 
 using namespace std;
 
@@ -24127,6 +24130,20 @@ void ZTest::test(MainWindow *host)
   std::cout << v.mean() << std::endl;
 #endif
 
+#if 0
+  ZTextEdit *widget = new ZTextEdit(NULL);
+  widget->show();
+#endif
+
+#if 0
+  StringListDialog *dlg = new StringListDialog(host);
+  dlg->exec();
+#endif
+
+#if 1
+  ZBodyListWidget *widget = new ZBodyListWidget(NULL);
+  widget->show();
+#endif
 
   std::cout << "Done." << std::endl;
 }

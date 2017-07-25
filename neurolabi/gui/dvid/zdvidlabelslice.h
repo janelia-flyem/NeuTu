@@ -67,6 +67,7 @@ public:
       const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
   void xorSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+  void removeSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
   template <typename InputIterator>
   void addSelection(const InputIterator &begin, const InputIterator &end,

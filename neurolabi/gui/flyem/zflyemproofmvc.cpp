@@ -1770,11 +1770,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 
     std::vector<uint64_t> deselected =
         labelSlice->getSelector().getDeselectedList();
-//    std::set<uint64_t> mappedSet;
-//    for (std::vector<uint64_t>::const_iterator iter = deselected.begin();
-//         iter != deselected.end(); ++iter) {
-//      mappedSet.insert(getMappedBodyId(*iter));
-//    }
+
     getCompleteDocument()->removeSelectedAnnotation(
           deselected.begin(), deselected.end());
   }
@@ -1870,20 +1866,7 @@ void ZFlyEmProofMvc::updateBodySelection()
       }
       getCompleteDocument()->processObjectModified(tmpSlice, true);
     }
-    /*
-    QList<ZDvidLabelSlice*> sliceList =
-        getCompleteDocument()->getDvidLabelSliceList();
-    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-         iter != sliceList.end(); ++iter) {
-      ZDvidLabelSlice *tmpSlice =*iter;
-      if (getCompletePresenter()->isHighlight()) {
-        highlightSelectedObject(tmpSlice, true);
-      } else {
-        tmpSlice->paintBuffer();
-      }
-      getCompleteDocument()->processObjectModified(tmpSlice, true);
-    }
-    */
+
     getCompleteDocument()->endObjectModifiedMode();
     getCompleteDocument()->notifyObjectModified();
     processLabelSliceSelectionChange();
@@ -3787,13 +3770,17 @@ void ZFlyEmProofMvc::addLocateBody(uint64_t bodyId)
 
 void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
 {
-  /*
-  ZDvidLabelSlice *slice = getCompleteDocument()->getDvidLabelSlice();
-  if (slice != NULL) {
-    slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
-  }
-  */
+  getCompleteDocument()->recordBodySelection();
   getCompleteDocument()->selectBody(bodyId);
+  getCompleteDocument()->processBodySelection();
+  updateBodySelection();
+}
+
+void ZFlyEmProofMvc::deselectBody(uint64_t bodyId)
+{
+  getCompleteDocument()->recordBodySelection();
+  getCompleteDocument()->deselectBody(bodyId);
+  getCompleteDocument()->processBodySelection();
   updateBodySelection();
 }
 

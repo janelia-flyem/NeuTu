@@ -61,7 +61,7 @@ public:
 
     void mergeEvent(const BodyEvent &event, NeuTube::EBiDirection direction);
 
-    void syncBodySelection();
+//    void syncBodySelection();
 
     bool updating(TUpdateFlag flag) const {
       return (m_updateFlag & flag) > 0;
@@ -216,6 +216,8 @@ public slots:
 
   void setSeedType(int type);
 
+  void setBodyModelSelected(const QSet<uint64_t> &bodySet);
+
 protected:
   void autoSave() {}
 
@@ -267,6 +269,7 @@ private:
       uint64_t bodyId, int resLevel, const QColor &color);
 
   ZDvidReader& getBodyReader();
+  void updateBodyModelSelection();
 
 signals:
   void todoVisibleChanged();
@@ -287,6 +290,7 @@ private:
 private:
   QSet<uint64_t> m_bodySet;
   FlyEM::EBodyType m_bodyType = FlyEM::BODY_FULL;
+  QSet<uint64_t> m_selectedBodySet;
 
   bool m_quitting = false;
   bool m_showingSynapse = true;

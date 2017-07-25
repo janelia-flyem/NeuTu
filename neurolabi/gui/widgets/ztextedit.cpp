@@ -1,6 +1,6 @@
 #include "ztextedit.h"
-
-ZTextEdit::ZTextEdit(QWidget *parent) : QWidget(parent)
+#include <QPainter>
+ZTextEdit::ZTextEdit(QWidget *parent) : QTextEdit(parent)
 {
-
+  setPlaceholderText("test");
 }

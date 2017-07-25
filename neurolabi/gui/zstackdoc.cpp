@@ -583,6 +583,11 @@ ZStackObject* ZStackDoc::getObject(ZStackObject::EType type, const std::string &
     return m_objectGroup.findFirstSameSource(type, source);
 }
 
+bool ZStackDoc::hasObject(const ZStackObject *obj) const
+{
+  return m_objectGroup.hasObject(obj);
+}
+
 bool ZStackDoc::hasSparseObject() const
 {
   ZOUT(LTRACE(), 5) << "Has sparse object?";
@@ -728,6 +733,14 @@ void ZStackDoc::processDataBuffer()
 {
   QList<ZStackDocObjectUpdate*> updateList = m_dataBuffer->take();
 
+  QList<ZStackObject*> selected;
+  QList<ZStackObject*> deselected;
+//  qSort(updateList.begin(), updateList.end(),
+//        [](const ZStackDocObjectUpdate* a, const ZStackDocObjectUpdate *b)
+//        -> bool { return a->getAction() < b->getAction(); });
+
+  ZStackDocObjectUpdate::MakeActionMap(updateList);
+
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
   for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
        iter != updateList.end(); ++iter) {
@@ -755,6 +768,22 @@ void ZStackDoc::processDataBuffer()
       case ZStackDocObjectUpdate::ACTION_UPDATE:
         processObjectModified(u->getObject());
         break;
+      case ZStackDocObjectUpdate::ACTION_SELECT:
+        if (hasObject(u->getObject())) {
+          if (!u->getObject()->isSelected()) {
+            setSelected(u->getObject(), true);
+            selected.append(u->getObject());
+          }
+        }
+        break;
+      case ZStackDocObjectUpdate::ACTION_DESELECT:
+        if (hasObject(u->getObject())) {
+          if (u->getObject()->isSelected()) {
+            setSelected(u->getObject(), false);
+            deselected.append(u->getObject());
+          }
+        }
+        break;
       default:
         break;
       }
@@ -764,6 +793,8 @@ void ZStackDoc::processDataBuffer()
   }
   endObjectModifiedMode();
   notifyObjectModified();
+
+  emit objectSelectionChanged(selected, deselected);
 }
 
 bool ZStackDoc::isSavingRequired() const
@@ -3900,7 +3931,7 @@ void ZStackDoc::setSwcSelected(ZSwcTree *tree, bool select)
 {
   if (tree != NULL) {
     if (tree->isSelected() != select) {
-      tree->setSelected(select);
+//      tree->setSelected(select);
       QList<ZSwcTree*> selected;
       QList<ZSwcTree*> deselected;
 

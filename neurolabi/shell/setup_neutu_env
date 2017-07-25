@@ -23,6 +23,7 @@ conda install --file neutu_conda_requirements.txt -y
 if [ `uname` == 'Linux' ]; then
   conda install pango=1.40* -y
 fi
+./fixqtdebug Qt5 $CONDA_DIR/envs/$ENV_NAME/lib
 
 
 

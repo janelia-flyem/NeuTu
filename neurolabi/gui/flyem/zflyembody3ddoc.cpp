@@ -476,6 +476,11 @@ void ZFlyEmBody3dDoc::setSeedType(int type)
   notifySwcModified();
 }
 
+void ZFlyEmBody3dDoc::setBodyModelSelected(const QSet<uint64_t> &bodySet)
+{
+  m_selectedBodySet = bodySet;
+}
+
 bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
 {
   return !getObjectGroup().getSelectedSet(
@@ -591,8 +596,23 @@ void ZFlyEmBody3dDoc::processEventFunc()
   std::cout << "====Processing done====" << std::endl;
 }
 
+void ZFlyEmBody3dDoc::updateBodyModelSelection()
+{
+  QList<ZSwcTree*> swcList = getSwcList();
+  foreach (ZSwcTree *tree, swcList) {
+    if (m_selectedBodySet.contains(tree->getLabel())) {
+      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_SELECT);
+    } else {
+      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_DESELECT);
+    }
+  }
+  getDataBuffer()->deliver();
+}
+
 void ZFlyEmBody3dDoc::processEvent()
 {
+  updateBodyModelSelection();
+
   if (m_eventQueue.empty()) {
     return;
   }

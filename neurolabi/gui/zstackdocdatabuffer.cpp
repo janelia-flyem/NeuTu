@@ -101,3 +101,28 @@ void ZStackDocDataBuffer::clearList()
 
   m_updateList.clear();
 }
+
+QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
+ZStackDocObjectUpdate::MakeActionMap(QList<ZStackDocObjectUpdate *> updateList)
+{
+  //Rules for processing actions of the same object:
+  //  If the last action is delete, then all the other actions
+  QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap;
+  for (QList<ZStackDocObjectUpdate*>::reverse_iterator iter = updateList.rbegin();
+       iter != updateList.rend(); ++iter) {
+    ZStackDocObjectUpdate *u = *iter;
+    if (!actionMap.contains(u->getObject())) {
+      actionMap[u->getObject()] = u->getAction();
+    } else {
+      ZStackDocObjectUpdate::EAction laterAction = actionMap[u->getObject()];
+      if (laterAction == ACTION_RECYCLE || laterAction == ACTION_EXPEL ||
+          laterAction == ACTION_KILL) {
+        if (laterAction > u->getAction()) {
+          u->setAction(ACTION_NULL);
+        }
+      }
+    }
+  }
+
+  return actionMap;
+}

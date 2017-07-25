@@ -145,19 +145,6 @@ contains(CONFIG, c++11) {
   }
 }
 
-#contains(CONFIG, sanitize) {
-#  message(Using sanitize)
-#  unix {
-#    macx {
-#      QMAKE_CXXFLAGS += -fsanitize=address
-#      QMAKE_LFLAGS += -fsanitize=address
-#    } else {
-#      QMAKE_CXXFLAGS += -fsanitize=address
-#      QMAKE_LFLAGS += -fsanitize=address
-#    }
-#  }
-#}
-
 contains(CONFIG, sanitize) {
   message(Using sanitize)
   unix {
@@ -775,7 +762,12 @@ HEADERS += mainwindow.h \
     widgets/flyembodyinfowidget.h \
     neu3window.h \
     flyem/zflyembody3ddockeyprocessor.h \
-    zstackdockeyprocessor.h
+    zstackdockeyprocessor.h \
+    widgets/ztextedit.h \
+    flyem/zflyembodylistmodel.h \
+    flyem/zflyembodylistview.h \
+    flyem/zflyembodylistdelegate.h \
+    flyem/zflyembodyideditor.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1342,6 +1334,11 @@ SOURCES += main.cpp \
     zxmldoc.cpp \
     neu3window.cpp \
     flyem/zflyembody3ddockeyprocessor.cpp \
-    zstackdockeyprocessor.cpp
+    zstackdockeyprocessor.cpp \
+    widgets/ztextedit.cpp \
+    flyem/zflyembodylistmodel.cpp \
+    flyem/zflyembodylistview.cpp \
+    flyem/zflyembodylistdelegate.cpp \
+    flyem/zflyembodyideditor.cpp
 
 

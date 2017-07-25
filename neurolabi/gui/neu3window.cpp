@@ -17,15 +17,16 @@
 #include "dialogs/zdviddialog.h"
 #include "z3dpunctafilter.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofdoc.h"
+#include "zstackdochelper.h"
+#include "dialogs/stringlistdialog.h"
+#include "widgets/zbodylistwidget.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::Neu3Window)
 {
   ui->setupUi(this);
-
-  m_toolBar = NULL;
-  m_dataContainer = NULL;
 
 #ifdef _QT5_
   m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
@@ -139,11 +140,20 @@ void Neu3Window::createDockWidget()
 {
   QDockWidget *dockWidget = new QDockWidget(this);
 
+#if 0
   FlyEmBodyInfoDialog *widget = m_dataContainer->getBodyInfoDlg();
   widget->simplify();
-//      new FlyEmBodyInfoDialog(this);
-//  ZDvidServerWidget *widget = new ZDvidServerWidget(this);
-//  FlyEmBodyInfoWidget *widget = new FlyEmBodyInfoWidget(this);
+#endif
+
+//  StringListDialog *widget = new StringListDialog(this);
+
+  ZBodyListWidget *widget = new ZBodyListWidget(this);
+
+  connect(widget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
+  connect(widget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
+  connect(widget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
+          this, SLOT(setBodySelection(QSet<uint64_t>)));
+
   dockWidget->setWidget(widget);
 
   dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
@@ -193,3 +203,46 @@ void Neu3Window::showTodo(bool on)
     doc->showTodo(on);
   }
 }
+
+ZFlyEmBody3dDoc* Neu3Window::getBodyDocument() const
+{
+  ZFlyEmBody3dDoc *doc = NULL;
+  if (m_3dwin != NULL) {
+    doc = qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
+  }
+
+  return doc;
+}
+
+ZFlyEmProofDoc* Neu3Window::getDataDocument() const
+{
+  ZFlyEmProofDoc *doc = NULL;
+  if (m_dataContainer != NULL) {
+    doc = m_dataContainer->getCompleteDocument();
+  }
+
+  return doc;
+}
+
+void Neu3Window::addBody(uint64_t bodyId)
+{
+  m_dataContainer->selectBody(bodyId);
+}
+
+void Neu3Window::removeBody(uint64_t bodyId)
+{
+  m_dataContainer->deselectBody(bodyId);
+}
+
+void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
+{
+  std::set<uint64_t> tmpBodySet;
+  tmpBodySet.insert(bodySet.begin(), bodySet.end());
+
+  getBodyDocument()->setBodyModelSelected(bodySet);
+
+//  m_dataContainer->getCompleteDocument()->setSelectedBody(
+//        tmpBodySet, NeuTube::BODY_LABEL_MAPPED);
+//  m_dataContainer->updateBodySelection();
+}
+

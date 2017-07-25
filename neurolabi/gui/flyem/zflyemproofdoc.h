@@ -163,6 +163,8 @@ public:
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
 
+  void deselectBody(uint64_t bodyId);
+
   void recordBodySelection();
   void processBodySelection();
   void syncBodySelection(ZDvidLabelSlice *labelSlice);

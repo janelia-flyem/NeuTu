@@ -890,6 +890,17 @@ void ZStackObjectGroup::add(ZStackObject *obj, int zOrder, bool uniqueSource)
   addUnsync(obj, zOrder, uniqueSource);
 }
 
+bool ZStackObjectGroup::hasObject(const ZStackObject *obj) const
+{
+  if (obj == NULL) {
+    return false;
+  }
+
+  QMutexLocker locker(&m_mutex);
+
+  return m_objectList.contains(const_cast<ZStackObject*>(obj));
+}
+
 bool ZStackObjectGroup::containsUnsync(const ZStackObject *obj) const
 {
   if (obj == NULL) {
