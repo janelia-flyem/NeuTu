@@ -13,6 +13,7 @@ class ZFlyEmProofMvc;
 class QToolBar;
 class ZFlyEmBody3dDoc;
 class ZFlyEmProofDoc;
+class ZSwcTree;
 
 class Neu3Window : public QMainWindow
 {
@@ -38,8 +39,15 @@ public slots:
 
   void setBodySelection(const QSet<uint64_t> &bodySet);
 
+signals:
+  void bodySelected(uint64_t bodyId);
+  void bodyDeselected(uint64_t bodyId);
+
 protected:
   virtual void keyPressEvent(QKeyEvent *event);
+
+private slots:
+  void processSwcChangeFrom3D(QList<ZSwcTree*> selected,QList<ZSwcTree*>deselected);
 
 private:
   void createDockWidget();

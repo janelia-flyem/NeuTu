@@ -63,9 +63,29 @@ void ZBodyListWidget::removeSelectedString()
   getModel()->removeRowList(rowList);
 }
 
-void ZBodyListWidget::processBodySelectionChange(const QSet<uint64_t> &selectedSet)
+void ZBodyListWidget::processBodySelectionChange(
+    const QSet<uint64_t> &selectedSet)
 {
   emit bodySelectionChanged(selectedSet);
 }
 
+void ZBodyListWidget::selectBody(uint64_t bodyId)
+{
+  ui->listView->setBodySelection(bodyId, true);
+}
+
+void ZBodyListWidget::deselectBody(uint64_t bodyId)
+{
+  ui->listView->setBodySelection(bodyId, false);
+}
+
+void ZBodyListWidget::selectBodySliently(uint64_t bodyId)
+{
+  ui->listView->setBodySelectionSliently(bodyId, true);
+}
+
+void ZBodyListWidget::deselectBodySliently(uint64_t bodyId)
+{
+  ui->listView->setBodySelectionSliently(bodyId, false);
+}
 

@@ -91,6 +91,8 @@ void Neu3Window::connectSignalSlot()
 {
   connect(m_3dwin, SIGNAL(showingPuncta(bool)), this, SLOT(showSynapse(bool)));
   connect(m_3dwin, SIGNAL(showingTodo(bool)), this, SLOT(showTodo(bool)));
+  connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
+          this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
 }
 
 void Neu3Window::initOpenglContext()
@@ -153,6 +155,10 @@ void Neu3Window::createDockWidget()
   connect(widget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
   connect(widget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
           this, SLOT(setBodySelection(QSet<uint64_t>)));
+  connect(this, SIGNAL(bodySelected(uint64_t)),
+          widget, SLOT(selectBodySliently(uint64_t)));
+  connect(this, SIGNAL(bodyDeselected(uint64_t)),
+          widget, SLOT(deselectBodySliently(uint64_t)));
 
   dockWidget->setWidget(widget);
 
@@ -244,5 +250,21 @@ void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
 //  m_dataContainer->getCompleteDocument()->setSelectedBody(
 //        tmpBodySet, NeuTube::BODY_LABEL_MAPPED);
 //  m_dataContainer->updateBodySelection();
+}
+
+void Neu3Window::processSwcChangeFrom3D(
+    QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
+{
+  foreach (ZSwcTree *tree, selected) {
+    if (tree->getLabel() > 0) {
+      emit bodySelected(tree->getLabel());
+    }
+  }
+
+  foreach (ZSwcTree *tree, deselected) {
+    if (tree->getLabel() > 0) {
+      emit bodyDeselected(tree->getLabel());
+    }
+  }
 }
 

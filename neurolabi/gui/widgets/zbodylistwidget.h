@@ -19,6 +19,13 @@ public:
 
   ZFlyEmBodyListModel *getModel() const;
 
+public slots:
+  void selectBody(uint64_t bodyId);
+  void deselectBody(uint64_t bodyId);
+
+  void selectBodySliently(uint64_t bodyId);
+  void deselectBodySliently(uint64_t bodyId);
+
 signals:
   void bodyAdded(uint64_t bodyId);
   void bodyRemoved(uint64_t bodyId);

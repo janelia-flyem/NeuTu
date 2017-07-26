@@ -49,6 +49,25 @@ uint64_t ZFlyEmBodyListModel::getBodyId(const QModelIndex &index) const
   return bodyId;
 }
 
+int ZFlyEmBodyListModel::getRow(uint64_t bodyId) const
+{
+  int row = -1;
+
+  for (int i = 0; i < rowCount(); ++i) {
+    if (getBodyId(i) == bodyId) {
+      row = i;
+      break;
+    }
+  }
+
+  return row;
+}
+
+QModelIndex ZFlyEmBodyListModel::getIndex(uint64_t bodyId) const
+{
+  return index(getRow(bodyId));
+}
+
 void ZFlyEmBodyListModel::removeRowList(const QList<int> &rowList)
 {
   QList<int> sortedList = rowList;

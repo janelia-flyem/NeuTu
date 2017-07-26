@@ -35,3 +35,34 @@ QSet<uint64_t> ZFlyEmBodyListView::getSelectedSet() const
 
   return selectedSet;
 }
+
+void ZFlyEmBodyListView::setBodySelection(
+    uint64_t bodyId, bool selected, bool silent)
+{
+  QItemSelectionModel *selModel = selectionModel();
+
+  QModelIndex index = getModel()->getIndex(bodyId);
+
+  if (index.isValid()) {
+    if (selected) {
+      selModel->select(index, QItemSelectionModel::Select);
+    } else {
+      selModel->select(index, QItemSelectionModel::Deselect);
+    }
+  }
+
+  if (silent) {
+    processSelectionChange();
+  }
+}
+
+void ZFlyEmBodyListView::setBodySelection(uint64_t bodyId, bool selected)
+{
+  setBodySelection(bodyId, selected, false);
+}
+
+void ZFlyEmBodyListView::setBodySelectionSliently(
+    uint64_t bodyId, bool selected)
+{
+  setBodySelection(bodyId, selected, true);
+}

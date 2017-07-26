@@ -15,6 +15,18 @@ public:
 
   QSet<uint64_t> getSelectedSet() const;
 
+  void setBodySelection(uint64_t bodyId, bool selected);
+
+  /*!
+   * \brief Set body selection silently
+   *
+   * No message of the selection change will be sent outside of the class.
+   *
+   * \param bodyId The ID of the body for selection
+   * \param selected Select or deselect the body
+   */
+  void setBodySelectionSliently(uint64_t bodyId, bool selected);
+
 signals:
   void bodySelectionChanged(QSet<uint64_t> selectedSet);
 
@@ -23,6 +35,8 @@ public slots:
 private slots:
   void processSelectionChange();
 
+private:
+  void setBodySelection(uint64_t bodyId, bool selected, bool silent);
 };
 
 #endif // ZFLYEMBODYLISTVIEW_H
