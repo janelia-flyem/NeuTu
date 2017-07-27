@@ -34,11 +34,15 @@ ZBodyListWidget::~ZBodyListWidget()
 }
 
 
-ZFlyEmBodyListModel *ZBodyListWidget::getModel() const
+ZFlyEmBodyListModel* ZBodyListWidget::getModel() const
 {
-  return ui->listView->getModel();
+  return getView()->getModel();
 }
 
+ZFlyEmBodyListView* ZBodyListWidget::getView() const
+{
+  return ui->listView;
+}
 
 void ZBodyListWidget::addString()
 {
@@ -49,6 +53,7 @@ void ZBodyListWidget::addString()
   QModelIndex index = model->index(row);
   ui->listView->setCurrentIndex(index);
   ui->listView->edit(index);
+  ui->listView->setIndexSelectionSliently(index, false);
 }
 
 void ZBodyListWidget::removeSelectedString()

@@ -27,6 +27,8 @@ public:
    */
   void setBodySelectionSliently(uint64_t bodyId, bool selected);
 
+  void setIndexSelectionSliently(const QModelIndex &index, bool selected);
+
 signals:
   void bodySelectionChanged(QSet<uint64_t> selectedSet);
 
@@ -37,6 +39,7 @@ private slots:
 
 private:
   void setBodySelection(uint64_t bodyId, bool selected, bool silent);
+  void setIndexSelection(const QModelIndex &index, bool selected, bool silent);
 };
 
 #endif // ZFLYEMBODYLISTVIEW_H

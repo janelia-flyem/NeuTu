@@ -15,10 +15,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="ZFlyEmBodyListView" name="listView"/>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Bodies</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -55,6 +59,9 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="ZFlyEmBodyListView" name="listView"/>
    </item>
   </layout>
  </widget>

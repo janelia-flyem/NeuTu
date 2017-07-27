@@ -62,17 +62,13 @@ void Neu3Window::initialize()
   layout->setMargin(1);
   widget->setLayout(layout);
 
+  /*
   ZWindowFactory factory;
   factory.setControlPanelVisible(false);
   factory.setObjectViewVisible(false);
   factory.setStatusBarVisible(false);
   factory.setParentWidget(this);
-
-//  m_3dwin = factory.make3DWindow(doc);
-
-//  m_3dwin = Z3DWindow::Make(doc, this);
-//  layout->addWidget(m_3dwin);
-//  setCentralWidget(widget);
+*/
 
   m_3dwin = m_dataContainer->makeNeu3Window();
   ZFlyEmBody3dDoc *bodydoc =

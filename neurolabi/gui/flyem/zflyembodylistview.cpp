@@ -39,9 +39,15 @@ QSet<uint64_t> ZFlyEmBodyListView::getSelectedSet() const
 void ZFlyEmBodyListView::setBodySelection(
     uint64_t bodyId, bool selected, bool silent)
 {
-  QItemSelectionModel *selModel = selectionModel();
-
   QModelIndex index = getModel()->getIndex(bodyId);
+
+  setIndexSelection(index, selected, silent);
+}
+
+void ZFlyEmBodyListView::setIndexSelection(
+    const QModelIndex &index, bool selected, bool silent)
+{
+  QItemSelectionModel *selModel = selectionModel();
 
   if (index.isValid()) {
     if (selected) {
@@ -54,6 +60,12 @@ void ZFlyEmBodyListView::setBodySelection(
   if (silent) {
     processSelectionChange();
   }
+}
+
+void ZFlyEmBodyListView::setIndexSelectionSliently(
+    const QModelIndex &index, bool selected)
+{
+  setIndexSelection(index, selected, true);
 }
 
 void ZFlyEmBodyListView::setBodySelection(uint64_t bodyId, bool selected)
