@@ -20,7 +20,13 @@ private slots:
     void onLoadTasksButton();
 
 private:
+    enum WindowConfigurations {
+        LOAD_BUTTON,
+        TASK_UI
+        };
+
     Ui::TaskProtocolWindow *ui;
+    void setWindowConfiguration(WindowConfigurations config);
 };
 
 #endif // TASKPROTOCOLWINDOW_H
