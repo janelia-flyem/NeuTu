@@ -7,19 +7,29 @@ class QLineEdit;
 
 class ZStringParameter : public ZSingleValueParameter<QString>
 {
-  Q_OBJECT
+Q_OBJECT
 public:
-  explicit ZStringParameter(const QString &name, const QString &str, QWidget *parent = 0);
+  explicit ZStringParameter(const QString& name, QObject* parent = nullptr);
+
+  explicit ZStringParameter(const QString& name, const QString& str, QObject* parent = nullptr);
+
+  // ZParameter interface
+public:
+  virtual void setSameAs(const ZParameter& rhs) override;
+
+  virtual bool supportInterpolation() const override
+  { return false; }
 
 signals:
-  void strChanged(QString str);
-  
-public slots:
-  void setContent(QString str);
+
+  void stringChanged(QString str);
 
 protected:
-  virtual QWidget* actualCreateWidget(QWidget *parent);
-  virtual void beforeChange(QString &value);
+  void setContent(const QString& str);
+
+  virtual QWidget* actualCreateWidget(QWidget* parent) override;
+
+  virtual void afterChange(QString& value) override;
 };
 
 #endif // ZSTRINGPARAMETER_H

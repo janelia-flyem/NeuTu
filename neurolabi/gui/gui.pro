@@ -97,6 +97,7 @@ CONFIG += static_gtest
 QT += printsupport
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+DEFINES += QT_USE_QSTRINGBUILDER #QT_NO_CAST_FROM_BYTEARRAY #QT_NO_CAST_TO_ASCII
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -482,7 +483,6 @@ HEADERS += mainwindow.h \
     zstackdoc.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
-    zglew.h \
     dialogs/penwidthdialog.h \
     dvid/zdvidclient.h \
     dialogs/dvidobjectdialog.h \
@@ -776,7 +776,12 @@ HEADERS += mainwindow.h \
     widgets/flyembodyinfowidget.h \
     neu3window.h \
     flyem/zflyembody3ddockeyprocessor.h \
-    zstackdockeyprocessor.h
+    zstackdockeyprocessor.h \
+    zexception.h \
+    zutils.h \
+    zflags.h \
+    zbbox.h \
+    zspinboxwithscrollbar.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1343,6 +1348,8 @@ SOURCES += main.cpp \
     zxmldoc.cpp \
     neu3window.cpp \
     flyem/zflyembody3ddockeyprocessor.cpp \
-    zstackdockeyprocessor.cpp
+    zstackdockeyprocessor.cpp \
+    zoptionparameter.cpp \
+    zspinboxwithscrollbar.cpp
 
 

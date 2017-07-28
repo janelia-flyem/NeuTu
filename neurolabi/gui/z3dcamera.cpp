@@ -1,81 +1,23 @@
 #include "z3dcamera.h"
+
+#include "QsLog.h"
 #include <cmath>
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 
 Z3DCamera::Z3DCamera()
-  : m_eye(0.f, 0.f, 0.f)
-  , m_center(0.f, 0.f, -1.f)
-  , m_upVector(0.f, 1.f, 0.f)
-  //, m_projectionType(Orthographic)
-  , m_projectionType(Perspective)
-  , m_fieldOfView(glm::radians(45.f))
-  , m_aspectRatio(1.f)
-  , m_nearDist(.1f)
-  , m_farDist(50.f)
-  , m_windowAspectRatio(1.f)
-  , m_eyeSeparationAngle(glm::radians(8.f))
 {
   updateCamera();
   updateFrustum();
-  invalidViewMatrix();
-  invalidProjectionMatrix();
 }
 
-Z3DCamera::~Z3DCamera()
-{
-}
-
-void Z3DCamera::setFieldOfView(float fov)
-{
-  m_fieldOfView = glm::clamp(fov, glm::radians(10.f), glm::radians(170.f));
-  updateFrustum();
-  invalidProjectionMatrix();
-}
-
-void Z3DCamera::setAspectRatio(float ar)
-{
-  m_aspectRatio = ar;
-  updateFrustum();
-  invalidProjectionMatrix();
-}
-
-void Z3DCamera::setNearDist(float nd)
-{
-  m_nearDist = nd;
-  updateFrustum();
-  invalidProjectionMatrix();
-}
-
-void Z3DCamera::setFarDist(float fd)
-{
-  m_farDist = fd;
-  invalidProjectionMatrix();
-}
-
-void Z3DCamera::setWindowAspectRatio(float war)
-{
-  m_windowAspectRatio = war;
-  updateFrustum();
-  invalidProjectionMatrix();
-}
-
-void Z3DCamera::setEyeSeparationAngle(float angle)
-{
-  m_eyeSeparationAngle = glm::clamp(angle, glm::radians(1.f), glm::radians(80.f));
-  updateCamera();
-  invalidStereoProjectionMatrix();
-  invalidStereoViewMatrix();
-}
-
-void Z3DCamera::setCamera(glm::vec3 eye, glm::vec3 center, glm::vec3 upVector)
+void Z3DCamera::setCamera(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& upVector)
 {
   m_eye = eye;
   m_center = center;
   m_upVector = glm::normalize(upVector);
   updateCamera();
-  invalidViewMatrix();
 }
 
 void Z3DCamera::setFrustum(float fov, float ratio, float nearDist, float farDist)
@@ -85,30 +27,41 @@ void Z3DCamera::setFrustum(float fov, float ratio, float nearDist, float farDist
   m_nearDist = nearDist;
   m_farDist = farDist;
   updateFrustum();
-  invalidProjectionMatrix();
 }
 
-void Z3DCamera::resetCamera(const std::vector<double> &bound, ResetCameraOptions options)
+void Z3DCamera::setTileFrustum(double left, double right, double bottom, double top)
 {
-  glm::vec3 center;
-  center[0] = (bound[0] + bound[1])/2.0;
-  center[1] = (bound[2] + bound[3])/2.0;
-  center[2] = (bound[4] + bound[5])/2.0;
+  float halfheight = std::tan(0.5f * m_fieldOfView) * m_nearDist;
+  float halfwidth = halfheight * m_aspectRatio * m_windowAspectRatio;
 
-  if (!(options & PreserveCenterDistance)) {
-    float w1 = bound[1] - bound[0];
-    float w2 = bound[3] - bound[2];
-    float w3 = bound[5] - bound[4];
+  m_left = -halfwidth + 2 * halfwidth * left;
+  m_right = -halfwidth + 2 * halfwidth * right;
+  m_bottom = -halfheight + 2 * halfheight * bottom;
+  m_top = -halfheight + 2 * halfheight * top;
+
+  //LOG(INFO) << m_left << m_right << m_bottom << m_top << halfheight << halfwidth;
+
+  makeProjectionMatrices();
+}
+
+void Z3DCamera::resetCamera(const ZBBox<glm::dvec3>& bound, ResetOption options)
+{
+  glm::vec3 center = glm::vec3((bound.minCorner() + bound.maxCorner()) / 2.0);
+
+  if (!is_flag_set(options, ResetOption::PreserveCenterDistance)) {
+    auto boundSize = bound.size();
+    float w1 = boundSize.x;
+    float w2 = boundSize.y;
+    float w3 = boundSize.z;
     w1 *= w1;
     w2 *= w2;
-    //w3 = 0;
     w3 *= w3;
-    float radius = std::max(w2 + w3, std::max(w1 + w2, w1 + w3));
-    radius = (radius==0)?(1.0):(radius);
+    float radius = w1 + w2 + w3;
+    radius = (radius == 0) ? (1.0) : (radius);
 
     // compute the radius of the enclosing sphere
     //radius = std::sqrt(radius)*0.5 + m_eyeSeparation/2.f;
-    radius = std::sqrt(radius)*0.5;
+    radius = std::sqrt(radius) * 0.5;
 
     // (from VTK) compute the distance from the intersection of the view frustum with the
     // bounding sphere. Basically in 2D draw a circle representing the bounding
@@ -123,54 +76,54 @@ void Z3DCamera::resetCamera(const std::vector<double> &bound, ResetCameraOptions
     // a sin.
     double angle = m_fieldOfView;
     if (m_aspectRatio < 1.0) {  // use horizontal angle to calculate
-      angle = 2.0*std::atan(std::tan(angle*0.5)*m_aspectRatio);
+      angle = 2.0 * std::atan(std::tan(angle * 0.5) * m_aspectRatio);
     }
 
-    //m_centerDist = radius/std::sin(angle*0.5);
-    m_centerDist = radius/std::sin(angle*0.5) + (bound[5] - bound[4]) / 2.0;
+    m_centerDist = radius / std::sin(angle * 0.5);
   }
-  if (!(options & PreserveViewVector)) {
+  if (!is_flag_set(options, ResetOption::PreserveViewVector)) {
     m_viewVector = glm::vec3(0.f, 0.f, 1.f);
     m_upVector = glm::vec3(0.f, -1.f, 0.f);
   }
-  glm::vec3 eye = center - m_centerDist*m_viewVector;
+  glm::vec3 eye = center - m_centerDist * m_viewVector;
   setCamera(eye, center, m_upVector);
 
   resetCameraNearFarPlane(bound);
 }
 
 void Z3DCamera::resetCamera(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax,
-                            ResetCameraOptions options)
+                            ResetOption options)
 {
-  std::vector<double> bound(6);
-  bound[0] = xmin;
-  bound[1] = xmax;
-  bound[2] = ymin;
-  bound[3] = ymax;
-  bound[4] = zmin;
-  bound[5] = zmax;
-  resetCamera(bound, options);
+  resetCamera(ZBBox<glm::dvec3>(glm::dvec3(xmin, ymin, zmin), glm::dvec3(xmax, ymax, zmax)), options);
 }
 
-void Z3DCamera::resetCameraNearFarPlane(const std::vector<double> &bound)
+void Z3DCamera::resetCameraNearFarPlane(const ZBBox<glm::dvec3>& bound)
 {
   double a = m_viewVector[0];
   double b = m_viewVector[1];
   double c = m_viewVector[2];
-  double d = -(a*m_eye[0] + b*m_eye[1] + c*m_eye[2]);
+  double d = -(a * m_eye[0] + b * m_eye[1] + c * m_eye[2]);
+
+  double bd[6];
+  bd[0] = bound.minCorner().x;
+  bd[1] = bound.maxCorner().x;
+  bd[2] = bound.minCorner().y;
+  bd[3] = bound.maxCorner().y;
+  bd[4] = bound.minCorner().z;
+  bd[5] = bound.maxCorner().z;
 
   // Set the max near clipping plane and the min far clipping plane
   double range[2];
-  range[0] = a*bound[0] + b*bound[2] + c*bound[4] + d;
+  range[0] = std::numeric_limits<double>::max();
   range[1] = 1e-18;
 
   // Find the closest / farthest bounding box vertex
-  for (int k = 0; k < 2; k++ ) {
-    for (int j = 0; j < 2; j++ ) {
-      for (int i = 0; i < 2; i++ ) {
-        double dist = a*bound[i] + b*bound[2+j] + c*bound[4+k] + d;
-        range[0] = (dist<range[0])?(dist):(range[0]);
-        range[1] = (dist>range[1])?(dist):(range[1]);
+  for (int k = 0; k < 2; ++k) {
+    for (int j = 0; j < 2; ++j) {
+      for (int i = 0; i < 2; ++i) {
+        double dist = a * bd[i] + b * bd[2 + j] + c * bd[4 + k] + d;
+        range[0] = std::min(dist, range[0]);
+        range[1] = std::max(dist, range[1]);
       }
     }
   }
@@ -181,8 +134,8 @@ void Z3DCamera::resetCameraNearFarPlane(const std::vector<double> &bound)
   }
 
   // Give ourselves a little breathing room
-  range[0] = 0.99*range[0] - (range[1] - range[0])*0.5;
-  range[1] = 1.01*range[1] + (range[1] - range[0])*0.5;
+  range[0] = 0.99 * range[0]; // - (range[1] - range[0])*0.5;
+  range[1] = 1.01 * range[1]; // + (range[1] - range[0])*0.5;
 
   // Make sure near is not bigger than far
   //range[0] = (range[0] >= range[1])?(0.01*range[1]):(range[0]);
@@ -194,96 +147,55 @@ void Z3DCamera::resetCameraNearFarPlane(const std::vector<double> &bound)
   // make sure the front clipping range is not too far from the far clippnig
   // range, this is to make sure that the zbuffer resolution is effectively
   // used
-  if (range[0] < nearClippingPlaneTolerance*range[1]) {
-    range[0] = nearClippingPlaneTolerance*range[1];
+  if (range[0] < nearClippingPlaneTolerance * range[1]) {
+    range[0] = nearClippingPlaneTolerance * range[1];
   }
 
   m_nearDist = range[0];
   m_farDist = range[1];
   updateFrustum();
-  invalidProjectionMatrix();
 }
 
 void Z3DCamera::resetCameraNearFarPlane(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax)
 {
-  std::vector<double> bound(6);
-  bound[0] = xmin;
-  bound[1] = xmax;
-  bound[2] = ymin;
-  bound[3] = ymax;
-  bound[4] = zmin;
-  bound[5] = zmax;
-  resetCameraNearFarPlane(bound);
+  resetCameraNearFarPlane(ZBBox<glm::dvec3>(glm::dvec3(xmin, ymin, zmin), glm::dvec3(xmax, ymax, zmax)));
 }
 
-glm::mat4 Z3DCamera::getViewMatrix(Z3DEye eye)
-{
-  if (!m_viewMatricesIsValid[eye]) {
-    glm::vec3 adjust(0.f,0.f,0.f);
-    if (eye == LeftEye)
-      adjust = m_strafeVector * -m_eyeSeparation/2.f;
-    else if (eye == RightEye)
-      adjust = m_strafeVector * m_eyeSeparation/2.f;
-    m_viewMatrices[eye] = glm::lookAt(m_eye+adjust, m_center+adjust, m_upVector);
-    m_viewMatricesIsValid[eye] = true;
-  }
-  return m_viewMatrices[eye];
-}
-
-glm::mat4 Z3DCamera::getProjectionMatrix(Z3DEye eye)
-{
-  if (!m_projectionMatricesIsValid[eye]) {
-    if (m_projectionType == Orthographic) {
-      m_projectionMatrices[eye] = glm::ortho(
-            m_left, m_right, m_bottom, m_top, m_nearDist, m_farDist);
-    } else {
-      if (eye == CenterEye) {
-        m_projectionMatrices[eye] = glm::frustum(
-              m_left, m_right, m_bottom, m_top, m_nearDist, m_farDist);
-      } else if (eye == LeftEye) {
-        float frustumShift = (m_eyeSeparation/2.f)*m_nearDist/m_centerDist;
-        m_projectionMatrices[eye] = glm::frustum(
-              m_left+frustumShift, m_right+frustumShift,
-              m_bottom, m_top, m_nearDist, m_farDist);
-      } else {  //RightEye
-        float frustumShift = (m_eyeSeparation/2.f)*m_nearDist/m_centerDist;
-        m_projectionMatrices[eye] = glm::frustum(
-              m_left-frustumShift, m_right-frustumShift,
-              m_bottom, m_top, m_nearDist, m_farDist);
-      }
-    }
-    m_projectionMatricesIsValid[eye] = true;
-  }
-  return m_projectionMatrices[eye];
-}
-
-bool Z3DCamera::operator ==(const Z3DCamera &rhs) const
+bool Z3DCamera::operator==(const Z3DCamera& rhs) const
 {
   return (m_eye == rhs.m_eye) &&
-      (m_center == rhs.m_center) &&
-      (m_upVector == rhs.m_upVector) &&
-      (m_projectionType == rhs.m_projectionType) &&
-      (m_fieldOfView == rhs.m_fieldOfView) &&
-      (m_aspectRatio == rhs.m_aspectRatio) &&
-      (m_nearDist == rhs.m_nearDist) &&
-      (m_farDist == rhs.m_farDist) &&
-      (m_windowAspectRatio == rhs.m_windowAspectRatio) &&
-      (m_eyeSeparation == rhs.m_eyeSeparation);
+         (m_center == rhs.m_center) &&
+         (m_upVector == rhs.m_upVector) &&
+         (m_projectionType == rhs.m_projectionType) &&
+         (m_fieldOfView == rhs.m_fieldOfView) &&
+         (m_aspectRatio == rhs.m_aspectRatio) &&
+         (m_nearDist == rhs.m_nearDist) &&
+         (m_farDist == rhs.m_farDist) &&
+         (m_windowAspectRatio == rhs.m_windowAspectRatio) &&
+         (﻿m_eyeSeparationAngle == rhs.﻿m_eyeSeparationAngle);
 }
 
-bool Z3DCamera::operator !=(const Z3DCamera &rhs) const
+bool Z3DCamera::operator!=(const Z3DCamera& rhs) const
 {
   return !(*this == rhs);
 }
 
 void Z3DCamera::dolly(float value)
 {
-  if (value <= 0.f || (m_centerDist < 3.0f && value > 1.f))
+  if (value <= 0.f || (m_centerDist < 0.01f && value > 1.f))
     return;
-
   glm::vec3 pos = m_center - m_viewVector * (m_centerDist / value);
   float maxV = 1e15;
-  if (std::abs(pos.x) < maxV && std::abs(pos.y) < maxV  && std::abs(pos.z) < maxV )
+  if (std::abs(pos.x) < maxV && std::abs(pos.y) < maxV && std::abs(pos.z) < maxV)
+    setEye(pos);
+}
+
+void Z3DCamera::dollyToCenterDistance(float centerDist)
+{
+  centerDist = std::max(0.01f, std::min(m_centerDist * 100.f, centerDist));
+  glm::vec3 pos = m_center - m_viewVector * centerDist;
+  float maxV = 1e15;
+  if (std::abs(pos.x) < maxV && std::abs(pos.y) < maxV && std::abs(pos.z) < maxV)
     setEye(pos);
 }
 
@@ -326,12 +238,12 @@ void Z3DCamera::zoom(float factor)
   setFieldOfView(m_fieldOfView / factor);
 }
 
-void Z3DCamera::rotate(float angle, glm::vec3 axis, glm::vec3 point)
+void Z3DCamera::rotate(float angle, const glm::vec3& axis, const glm::vec3& point)
 {
   rotate(glm::angleAxis(angle, glm::normalize(axis)), point);
 }
 
-void Z3DCamera::rotate(glm::quat quat, glm::vec3 point)
+void Z3DCamera::rotate(const glm::quat& quat, const glm::vec3& point)
 {
   glm::vec3 eye = m_eye - point;
   eye = glm::rotate(quat, eye);
@@ -346,12 +258,12 @@ void Z3DCamera::rotate(glm::quat quat, glm::vec3 point)
   setCamera(eye, center, upVector);
 }
 
-void Z3DCamera::rotate(float angle, glm::vec3 axis)
+void Z3DCamera::rotate(float angle, const glm::vec3& axis)
 {
   rotate(glm::angleAxis(angle, glm::normalize(axis)));
 }
 
-void Z3DCamera::rotate(glm::quat quat)
+void Z3DCamera::rotate(const glm::quat& quat)
 {
   glm::vec3 eye = m_eye - m_center;
   eye = glm::rotate(quat, eye);
@@ -362,49 +274,39 @@ void Z3DCamera::rotate(glm::quat quat)
   setCamera(eye, m_center, upVector);
 }
 
-glm::vec3 Z3DCamera::vectorEyeToWorld(glm::vec3 vec, Z3DEye eye)
+glm::vec3 Z3DCamera::vectorEyeToWorld(const glm::vec3& vec, Z3DEye eye)
 {
-  return glm::inverse(glm::mat3(getViewMatrix(eye))) * vec;
+  return glm::inverse(glm::mat3(viewMatrix(eye))) * vec;
 }
 
-glm::vec3 Z3DCamera::vectorWorldToEye(glm::vec3 vec, Z3DEye eye)
+glm::vec3 Z3DCamera::vectorWorldToEye(const glm::vec3& vec, Z3DEye eye)
 {
-  return glm::mat3(getViewMatrix(eye)) * vec;
+  return glm::mat3(viewMatrix(eye)) * vec;
 }
 
-glm::vec3 Z3DCamera::pointEyeToWorld(glm::vec3 pt, Z3DEye eye)
+glm::vec3 Z3DCamera::pointEyeToWorld(const glm::vec3& pt, Z3DEye eye)
 {
-  return glm::applyMatrix(glm::inverse(getViewMatrix(eye)), pt);
+  return glm::applyMatrix(glm::inverse(viewMatrix(eye)), pt);
 }
 
-glm::vec3 Z3DCamera::pointWorldToEye(glm::vec3 pt, Z3DEye eye)
+glm::vec3 Z3DCamera::pointWorldToEye(const glm::vec3& pt, Z3DEye eye)
 {
-  return glm::applyMatrix(getViewMatrix(eye), pt);
+  return glm::applyMatrix(viewMatrix(eye), pt);
 }
 
-glm::vec3 Z3DCamera::project(glm::vec3 wpt, glm::ivec4 viewport)
+glm::vec3 Z3DCamera::worldToScreen(const glm::vec3& wpt, const glm::ivec4& viewport, Z3DEye eye)
 {
-  glm::mat4 projection = getProjectionMatrix(CenterEye);
-  glm::mat4 modelview = getViewMatrix(CenterEye);
-
-
-  return glm::project(wpt, modelview, projection, viewport);
-}
-
-glm::vec3 Z3DCamera::worldToScreen(glm::vec3 wpt, glm::ivec4 viewport, Z3DEye eye)
-{
-  glm::vec4 clipSpacePos =
-      getProjectionMatrix(eye) * getViewMatrix(eye) * glm::vec4(wpt, 1.f);
+  glm::vec4 clipSpacePos = projectionMatrix(eye) * viewMatrix(eye) * glm::vec4(wpt, 1.f);
   if (clipSpacePos.w == 0.f)
     return glm::vec3(-1.f, -1.f, -1.f);
   glm::vec3 ndcSpacePos = glm::vec3(clipSpacePos.xyz()) / clipSpacePos.w;
-  return ((ndcSpacePos + 1.f) / 2.f) * glm::vec3((float)viewport.z, (float)viewport.w, 1.f)
-      + glm::vec3((float)viewport.x, (float)viewport.y, 0.f);
+  return ((ndcSpacePos + 1.f) / 2.f) * glm::vec3(viewport.z, viewport.w, 1.f)
+         + glm::vec3(viewport.x, viewport.y, 0.f);
 }
 
-glm::vec3 Z3DCamera::screenToWorld(glm::vec3 spt, glm::ivec4 viewport, Z3DEye eye)
+glm::vec3 Z3DCamera::screenToWorld(const glm::vec3& spt, const glm::ivec4& viewport, Z3DEye eye)
 {
-  return glm::unProject(spt, getViewMatrix(eye), getProjectionMatrix(eye), viewport);
+  return glm::unProject(spt, viewMatrix(eye), projectionMatrix(eye), viewport);
 }
 
 void Z3DCamera::updateCamera()
@@ -413,14 +315,19 @@ void Z3DCamera::updateCamera()
   m_centerDist = glm::length(m_center - m_eye);
   // make sure upVector is not parallel to viewVector
   if (std::abs(glm::dot(m_upVector, m_viewVector)) >= 0.9) {
-    LWARN() << "Resetting view up since view plane normal is parallel";
+    LOG(WARNING) << "Resetting view up since view plane normal is parallel";
     m_upVector = glm::cross(m_viewVector, glm::vec3(1.f, 0.f, 0.f));
-    if (glm::dot(m_upVector,m_upVector) < 0.001)
+    if (glm::dot(m_upVector, m_upVector) < 0.001)
       m_upVector = glm::cross(m_viewVector, glm::vec3(0.f, 1.f, 0.f));
     m_upVector = glm::normalize(m_upVector);
   }
   m_strafeVector = glm::cross(m_viewVector, m_upVector);
-  m_eyeSeparation = 2.f * m_centerDist * std::tan(m_eyeSeparationAngle/2.f);
+  m_eyeSeparation = 2.f * m_farDist * std::tan(m_eyeSeparationAngle / 2.f);
+  m_focusDistance = std::min((m_farDist - m_nearDist) * 0.75f + m_nearDist,
+                             m_nearDist * 2.f);
+  m_eyeSeparation = m_focusDistance / 30.f;
+
+  makeViewMatrices();
 }
 
 void Z3DCamera::updateFrustum()
@@ -431,6 +338,77 @@ void Z3DCamera::updateFrustum()
   float halfwidth = halfheight * m_aspectRatio * m_windowAspectRatio;
   m_left = -halfwidth;
   m_right = halfwidth;
+
+  makeProjectionMatrices();
+}
+
+void Z3DCamera::makeViewMatrices()
+{
+  glm::vec3 adjust = m_strafeVector * -m_eyeSeparation / 2.f;
+  m_viewMatrices[enumToUnderlyingType(Z3DEye::Left)] = glm::lookAt(m_eye + adjust, m_center + adjust, m_upVector);
+  m_viewMatrices[enumToUnderlyingType(Z3DEye::Mono)] = glm::lookAt(m_eye, m_center, m_upVector);
+  adjust = m_strafeVector * m_eyeSeparation / 2.f;
+  m_viewMatrices[enumToUnderlyingType(Z3DEye::Right)] = glm::lookAt(m_eye + adjust, m_center + adjust, m_upVector);
+
+  m_inverseViewMatrices[enumToUnderlyingType(Z3DEye::Left)] = glm::inverse(
+    m_viewMatrices[enumToUnderlyingType(Z3DEye::Left)]);
+  m_inverseViewMatrices[enumToUnderlyingType(Z3DEye::Mono)] = glm::inverse(
+    m_viewMatrices[enumToUnderlyingType(Z3DEye::Mono)]);
+  m_inverseViewMatrices[enumToUnderlyingType(Z3DEye::Right)] = glm::inverse(
+    m_viewMatrices[enumToUnderlyingType(Z3DEye::Right)]);
+
+  m_projectionViewMatrices[enumToUnderlyingType(Z3DEye::Left)] =
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Left)] * m_viewMatrices[enumToUnderlyingType(Z3DEye::Left)];
+  m_projectionViewMatrices[enumToUnderlyingType(Z3DEye::Mono)] =
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Mono)] * m_viewMatrices[enumToUnderlyingType(Z3DEye::Mono)];
+  m_projectionViewMatrices[enumToUnderlyingType(Z3DEye::Right)] =
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Right)] * m_viewMatrices[enumToUnderlyingType(Z3DEye::Right)];
+
+  m_normalMatrices[enumToUnderlyingType(Z3DEye::Left)] =
+    glm::transpose(glm::inverse(glm::mat3(m_viewMatrices[enumToUnderlyingType(Z3DEye::Left)])));
+  m_normalMatrices[enumToUnderlyingType(Z3DEye::Mono)] =
+    glm::transpose(glm::inverse(glm::mat3(m_viewMatrices[enumToUnderlyingType(Z3DEye::Mono)])));
+  m_normalMatrices[enumToUnderlyingType(Z3DEye::Right)] =
+    glm::transpose(glm::inverse(glm::mat3(m_viewMatrices[enumToUnderlyingType(Z3DEye::Right)])));
+}
+
+void Z3DCamera::makeProjectionMatrices()
+{
+  if (m_projectionType == ProjectionType::Orthographic) {
+    glm::mat4 pmat = glm::ortho(m_left, m_right, m_bottom, m_top, m_nearDist, m_farDist);
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Left)] = pmat;
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Mono)] = pmat;
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Right)] = pmat;
+    pmat = glm::inverse(pmat);
+    m_inverseProjectionMatrices[enumToUnderlyingType(Z3DEye::Left)] = pmat;
+    m_inverseProjectionMatrices[enumToUnderlyingType(Z3DEye::Mono)] = pmat;
+    m_inverseProjectionMatrices[enumToUnderlyingType(Z3DEye::Right)] = pmat;
+  } else {
+    //LOG(INFO) << m_left << m_right << m_bottom << m_top;
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Mono)] = glm::frustum(m_left, m_right, m_bottom, m_top,
+                                                                            m_nearDist, m_farDist);
+    float frustumShift = 0.5f * m_eyeSeparation * m_nearDist / m_focusDistance;
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Left)] = glm::frustum(m_left + frustumShift,
+                                                                            m_right + frustumShift,
+                                                                            m_bottom, m_top, m_nearDist, m_farDist);
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Right)] = glm::frustum(m_left - frustumShift,
+                                                                             m_right - frustumShift,
+                                                                             m_bottom, m_top, m_nearDist, m_farDist);
+
+    m_inverseProjectionMatrices[enumToUnderlyingType(Z3DEye::Left)] = glm::inverse(
+      m_projectionMatrices[enumToUnderlyingType(Z3DEye::Left)]);
+    m_inverseProjectionMatrices[enumToUnderlyingType(Z3DEye::Mono)] = glm::inverse(
+      m_projectionMatrices[enumToUnderlyingType(Z3DEye::Mono)]);
+    m_inverseProjectionMatrices[enumToUnderlyingType(Z3DEye::Right)] = glm::inverse(
+      m_projectionMatrices[enumToUnderlyingType(Z3DEye::Right)]);
+  }
+
+  m_projectionViewMatrices[enumToUnderlyingType(Z3DEye::Left)] =
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Left)] * m_viewMatrices[enumToUnderlyingType(Z3DEye::Left)];
+  m_projectionViewMatrices[enumToUnderlyingType(Z3DEye::Mono)] =
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Mono)] * m_viewMatrices[enumToUnderlyingType(Z3DEye::Mono)];
+  m_projectionViewMatrices[enumToUnderlyingType(Z3DEye::Right)] =
+    m_projectionMatrices[enumToUnderlyingType(Z3DEye::Right)] * m_viewMatrices[enumToUnderlyingType(Z3DEye::Right)];
 }
 
 ZJsonObject Z3DCamera::toJsonObject() const
@@ -456,10 +434,10 @@ ZJsonObject Z3DCamera::toJsonObject() const
   cameraJson.setEntry("up_vector", upVectorJson);
 
   switch (m_projectionType) {
-  case Perspective:
+  case ProjectionType::Perspective:
     cameraJson.setEntry("projection", std::string("Perspective"));
     break;
-  case Orthographic:
+  case ProjectionType::Orthographic:
     cameraJson.setEntry("projection", std::string("Orthographic"));
     break;
   }
@@ -520,6 +498,4 @@ void Z3DCamera::set(const ZJsonObject &cameraJson)
 
   updateCamera();
   updateFrustum();
-  invalidViewMatrix();
-  invalidProjectionMatrix();
 }
