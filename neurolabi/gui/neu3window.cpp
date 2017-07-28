@@ -21,6 +21,7 @@
 #include "zstackdochelper.h"
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
+#include "widgets/taskprotocolwindow.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -78,6 +79,7 @@ void Neu3Window::initialize()
   setCentralWidget(m_3dwin);
 
   createDockWidget();
+  createTaskWindow();
   createToolBar();
 
   connectSignalSlot();
@@ -162,6 +164,19 @@ void Neu3Window::createDockWidget()
   dockWidget->setFeatures(
         QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
   addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+}
+
+void Neu3Window::createTaskWindow() {
+    QDockWidget *dockWidget = new QDockWidget(this);
+    TaskProtocolWindow *window = new TaskProtocolWindow(this);
+
+    // add connections here
+
+    dockWidget->setWidget(window);
+    dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
+    dockWidget->setFeatures(
+          QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 }
 
 void Neu3Window::createToolBar()

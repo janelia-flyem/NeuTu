@@ -51,6 +51,7 @@ private slots:
 
 private:
   void createDockWidget();
+  void createTaskWindow();
   void createToolBar();
   void connectSignalSlot();
 

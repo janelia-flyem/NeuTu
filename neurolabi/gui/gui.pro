@@ -767,7 +767,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembodylistmodel.h \
     flyem/zflyembodylistview.h \
     flyem/zflyembodylistdelegate.h \
-    flyem/zflyembodyideditor.h
+    flyem/zflyembodyideditor.h \
+    widgets/taskprotocolwindow.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -869,7 +870,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyembodysplitdialog.ui \
     widgets/zbodylistwidget.ui \
     widgets/flyembodyinfowidget.ui \
-    neu3window.ui
+    neu3window.ui \
+    widgets/taskprotocolwindow.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1339,6 +1341,7 @@ SOURCES += main.cpp \
     flyem/zflyembodylistmodel.cpp \
     flyem/zflyembodylistview.cpp \
     flyem/zflyembodylistdelegate.cpp \
-    flyem/zflyembodyideditor.cpp
+    flyem/zflyembodyideditor.cpp \
+    widgets/taskprotocolwindow.cpp
 
 
