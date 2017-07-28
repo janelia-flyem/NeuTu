@@ -92,7 +92,6 @@ include(extlib.pri)
 
 CONFIG += rtti exceptions
 
-CONFIG += static_glew
 CONFIG += static_gtest
 
 QT += printsupport
@@ -171,21 +170,17 @@ contains(CONFIG, sanitize) {
   }
 }
 
-contains(CONFIG, static_glew) { # glew from ext folder
-    include($$PWD/ext/glew.pri)
-} else { # use your own glew
-  win32 {
-    LIBS += -lglew32 -lopengl32 -lglu32
-  }
-
-  macx {
-    LIBS += -lGLEW -framework AGL -framework OpenGL
-  }
-
-  unix:!macx {
-    LIBS += -lGL -lGLEW -lGLU
-  }
-} # static glew
+INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include
+LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp
+win32 {
+  LIBS += -lopengl32 -lglu32
+}
+macx {
+  LIBS += -framework AGL -framework OpenGL
+}
+unix:!macx {
+  LIBS += -lGL -lGLU
+}
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
   include($$PWD/ext/gtest.pri)
@@ -237,6 +232,12 @@ unix {
               QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
             }
           }
+        }
+
+        isEqual(OSX_MINOR_VERSION, 11) {
+          message("Forcing 10.12 SDK on xcode8: ")
+          QMAKE_MAC_SDK = macosx10.12
+          message("SDK: $$QMAKE_MAC_SDK")
         }
 
         doc.files = doc

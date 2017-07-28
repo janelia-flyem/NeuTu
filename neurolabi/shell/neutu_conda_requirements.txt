@@ -7,3 +7,5 @@ hdf5=1.8*
 lowtis>=0.1.0.p
 cgal=4.10
 gmp=6.1.2
+cmake
+tbb

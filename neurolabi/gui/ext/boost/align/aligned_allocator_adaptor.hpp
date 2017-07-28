@@ -1,10 +1,9 @@
 /*
-(c) 2014-2015 Glen Joseph Fernandes
-<glenjofe -at- gmail.com>
+Copyright 2014-2016 Glen Joseph Fernandes
+(glenjofe@gmail.com)
 
-Distributed under the Boost Software
-License, Version 1.0.
-http://boost.org/LICENSE_1_0.txt
+Distributed under the Boost Software License, Version 1.0.
+(http://www.boost.org/LICENSE_1_0.txt)
 */
 #ifndef BOOST_ALIGN_ALIGNED_ALLOCATOR_ADAPTOR_HPP
 #define BOOST_ALIGN_ALIGNED_ALLOCATOR_ADAPTOR_HPP
@@ -90,28 +89,23 @@ public:
     aligned_allocator_adaptor() = default;
 #else
     aligned_allocator_adaptor()
-        : Allocator() {
-    }
+        : Allocator() { }
 #endif
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template<class A>
     explicit aligned_allocator_adaptor(A&& alloc) BOOST_NOEXCEPT
-        : Allocator(std::forward<A>(alloc)) {
-    }
+        : Allocator(std::forward<A>(alloc)) { }
 #else
     template<class A>
-    explicit aligned_allocator_adaptor(const A& alloc)
-        BOOST_NOEXCEPT
-        : Allocator(alloc) {
-    }
+    explicit aligned_allocator_adaptor(const A& alloc) BOOST_NOEXCEPT
+        : Allocator(alloc) { }
 #endif
 
     template<class U>
     aligned_allocator_adaptor(const aligned_allocator_adaptor<U,
         Alignment>& other) BOOST_NOEXCEPT
-        : Allocator(other.base()) {
-    }
+        : Allocator(other.base()) { }
 
     Allocator& base() BOOST_NOEXCEPT {
         return static_cast<Allocator&>(*this);
@@ -128,8 +122,8 @@ public:
         char_ptr p = a.allocate(sizeof p + n);
         void* r = detail::addressof(*p) + sizeof p;
         (void)align(min_align, s, r, n);
-        ::new(static_cast<void*>(static_cast<char_ptr*>(r) -
-            1)) char_ptr(p);
+        ::new(static_cast<void*>(static_cast<char_ptr*>(r)
+            - 1)) char_ptr(p);
         return static_cast<pointer>(r);
     }
 
@@ -148,8 +142,8 @@ public:
 #endif
         void* r = detail::addressof(*p) + sizeof p;
         (void)align(min_align, s, r, n);
-        ::new(static_cast<void*>(static_cast<char_ptr*>(r) -
-            1)) char_ptr(p);
+        ::new(static_cast<void*>(static_cast<char_ptr*>(r)
+            - 1)) char_ptr(p);
         return static_cast<pointer>(r);
     }
 
@@ -163,23 +157,23 @@ public:
     }
 };
 
-template<class A1, class A2, std::size_t Alignment>
-inline bool operator==(const aligned_allocator_adaptor<A1,
-    Alignment>& a, const aligned_allocator_adaptor<A2,
-    Alignment>& b) BOOST_NOEXCEPT
+template<class A, class B, std::size_t Alignment>
+inline bool
+operator==(const aligned_allocator_adaptor<A, Alignment>& a,
+    const aligned_allocator_adaptor<B, Alignment>& b) BOOST_NOEXCEPT
 {
     return a.base() == b.base();
 }
 
-template<class A1, class A2, std::size_t Alignment>
-inline bool operator!=(const aligned_allocator_adaptor<A1,
-    Alignment>& a, const aligned_allocator_adaptor<A2,
-    Alignment>& b) BOOST_NOEXCEPT
+template<class A, class B, std::size_t Alignment>
+inline bool
+operator!=(const aligned_allocator_adaptor<A, Alignment>& a,
+    const aligned_allocator_adaptor<B, Alignment>& b) BOOST_NOEXCEPT
 {
     return !(a == b);
 }
 
-} /* .alignment */
-} /* .boost */
+} /* alignment */
+} /* boost */
 
 #endif

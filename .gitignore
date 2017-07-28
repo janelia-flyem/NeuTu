@@ -194,3 +194,14 @@ neutube_win64_*/
 
 #service result folder
 /neurolabi/python/service/surfrecon/result/*
+
+Miniconda-latest-x86_64.sh
+assimp-master.zip
+glbinding-master.zip
+__glbinding-build/
+glbinding-master/
+glbinding/
+__assimp-build/
+assimp-master/
+assimp/
+

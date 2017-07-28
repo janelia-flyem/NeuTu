@@ -1,0 +1,60 @@
+#!/bin/bash
+
+currDIR="$( cd -P "$( dirname "$0" )" && pwd )"
+srcDIR=$currDIR/assimp-master
+
+if [ -d $srcDIR ]
+then
+  rm -rf $srcDIR
+fi
+cd $currDIR
+unzip assimp-master.zip
+
+buildDIR=$srcDIR/../__assimp-build
+installDIR=$currDIR/assimp
+numCores=$( sysctl -n hw.logicalcpu )
+
+if [ -d $installDIR ]
+then
+  rm -rf $installDIR
+fi
+
+if [ ! -d $srcDIR ]
+then
+  echo ERROR: src folder $srcDIR does not exist.
+  exit 1 # terminate and indicate error
+fi
+
+# patch
+$currDIR/massedit.py --encoding=utf8 -w -e "re.sub(r'256U', r'size_t(256) * 1024', line)" $srcDIR/include/assimp/defs.h
+
+if [ -d $buildDIR ]
+then
+  rm -rf $buildDIR
+fi
+mkdir $buildDIR
+cd $buildDIR
+
+OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk
+if [ ! -d $OSX_SYSROOT ]
+then
+  OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+fi
+if [ ! -d $OSX_SYSROOT ]
+then
+  OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk
+fi
+
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_OSX_SYSROOT=$OSX_SYSROOT -DASSIMP_BUILD_ASSIMP_TOOLS:BOOL="0" -DASSIMP_BUILD_TESTS:BOOL="0" -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
+
+make -j $numCores install
+
+# unpatch
+mv -f $srcDIR/include/assimp/defs.h.bak $srcDIR/include/assimp/defs.h
+
+# don't know why
+#install_name_tool -id $installDIR/lib/libassimp.dylib $installDIR/lib/libassimp.dylib
+
+cd $currDIR
+rm -rf $buildDIR
+rm -rf $srcDIR

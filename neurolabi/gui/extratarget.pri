@@ -20,13 +20,13 @@ message("Config: " $${CONDA_CONFIG})
 neurolabi.target = neurolabi
 CONFIG(debug, debug|release) {
     contains(CONFIG, sanitize) {
-      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize "'$${CONDA_CONFIG}'"
+      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize "'$${CONDA_CONFIG}'"; cd $${PWD}/ext; ./build
     } else {
-      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library "'$${CONDA_CONFIG}'"
+      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library "'$${CONDA_CONFIG}'";  cd $${PWD}/ext; ./build
     }
 #make lib VERSION=
 } else {
-    neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --release "'$${CONDA_CONFIG}'"
+    neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --release "'$${CONDA_CONFIG}'";  cd $${PWD}/ext; ./build
 }
 neurolabi.depends = FORCE
 QMAKE_EXTRA_TARGETS += neurolabi
