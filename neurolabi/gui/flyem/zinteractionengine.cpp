@@ -5,7 +5,7 @@
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),
   m_mouseLeftButtonPressed(false), m_mouseRightButtonPressed(false),
-  m_cursorRadius(5), m_isStrokeOn(false), m_dataBuffer(NULL),
+  m_cursorRadius(5), m_isStrokeOn(false),
   m_isKeyEventEnabled(true), m_interactionHandler(NULL)
 {
   m_stroke.setWidth(10.0);

@@ -47,8 +47,6 @@ Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
   , m_widgetsGroup(NULL)
   , m_dataIsInvalid(false)
   , m_interactionMode(Select)
-  , m_enableCutting(true)
-  , m_enablePicking(true)
 {
   initTopologyColor();
   initTypeColor();
@@ -452,6 +450,32 @@ void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
   }
 }
 
+QList<Swc_Tree_Node *> Z3DSwcFilter::pickSwcNode(const ZObject3d &ptArray)
+{
+  QList<Swc_Tree_Node*> nodeArray;
+
+  if (isNodePicking()) {
+    for (size_t i = 0; i < ptArray.size(); ++i) {
+      int x = ptArray.getX(i);
+      int y = ptArray.getY(i);
+      const void* obj = pickObject(x, y);
+      if (obj != NULL) {
+        nodeArray.append((Swc_Tree_Node*) obj);
+      }
+    }
+  }
+
+  return nodeArray;
+}
+
+void Z3DSwcFilter::selectSwcNode(const ZObject3d &ptArray)
+{
+  QList<Swc_Tree_Node*> nodeArray = pickSwcNode(ptArray);
+
+  emit treeNodeSelected(nodeArray, true);
+}
+
+
 void Z3DSwcFilter::deregisterPickingObjects(Z3DPickingManager *pm)
 {
   if (m_enablePicking) {
@@ -736,6 +760,17 @@ void Z3DSwcFilter::clearDecorateSwcList()
   m_decorateSwcList.clear();
 }
 
+const void* Z3DSwcFilter::pickObject(int x, int y)
+{
+  int dpr = getParentWidget()->devicePixelRatio();
+
+  //const void* obj = getPickingManager()->getObjectAtPos(glm::ivec2(e->x(), h - e->y()));
+  const void* obj = getPickingManager()->getObjectAtWidgetPos(
+        glm::ivec2(x, y), m_pickingTexSize, dpr);
+
+  return obj;
+}
+
 void Z3DSwcFilter::render(Z3DEye eye)
 {
   if (!isVisible())
@@ -776,14 +811,18 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
     if (!m_pickingObjectsRegistered)
       registerPickingObjects(getPickingManager());
 
-    if (m_renderingPrimitive.isSelected("Normal")) {
-      m_rendererBase->activateRenderer(m_coneRenderer, m_sphereRendererForCone);
-    } /*else if (m_renderingPrimitive.isSelected("Cylinder"))
-    m_rendererBase->activateRenderer(m_coneRenderer);*/
-    else if (m_renderingPrimitive.isSelected("Line"))
-      m_rendererBase->activateRenderer(m_lineRenderer);
-    else /* (m_renderingPrimitive.get() == "Sphere") */{
-      m_rendererBase->activateRenderer(m_lineRenderer, m_sphereRenderer);
+    if (isNodePicking()) {
+      if (m_renderingPrimitive.isSelected("Normal")) {
+        m_rendererBase->activateRenderer(m_sphereRenderer);
+      } else {
+        m_rendererBase->activateRenderer(m_lineRenderer, m_sphereRenderer);
+      }
+    } else {
+      if (m_renderingPrimitive.isSelected("Normal")) {
+        m_rendererBase->activateRenderer(m_coneRenderer, m_sphereRendererForCone);
+      } else if (m_renderingPrimitive.isSelected("Line")) {
+        m_rendererBase->activateRenderer(m_lineRenderer);
+      }
     }
     m_rendererBase->renderPicking(eye);
     m_pickingTexSize =  getPickingManager()->getRenderTarget()->getAttachment(
@@ -1524,6 +1563,21 @@ void Z3DSwcFilter::adjustWidgets()
   }
 }
 
+bool Z3DSwcFilter::isNodeRendering() const
+{
+#ifdef _DEBUG_2
+  return true;
+#endif
+
+  return m_renderingPrimitive.isSelected("Sphere");
+}
+
+bool Z3DSwcFilter::isNodePicking() const
+{
+  return isNodeRendering() || m_forceNodePicking;
+}
+
+
 void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 {
   if (!m_enablePicking) {
@@ -1543,18 +1597,21 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     std::cout << "Picking swc at "
               << m_startCoord.x << ", " << m_startCoord.y <<  std::endl;
 #endif
 
+    const void* obj = pickObject(e->x(), e->y());
+    /*
     int dpr = getParentWidget()->devicePixelRatio();
 
     //const void* obj = getPickingManager()->getObjectAtPos(glm::ivec2(e->x(), h - e->y()));
     const void* obj = getPickingManager()->getObjectAtWidgetPos(
           glm::ivec2(e->x(), e->y()), m_pickingTexSize, dpr);
+          */
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
     std::cout << "Picked: " << obj << std::endl;
 #endif
 
@@ -1577,7 +1634,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     //        }
     //      }
     //    }
-    if (isNodeRendering()) {
+    if (isNodePicking()) {
       QMutexLocker locker(&m_nodeSelectionMutex);
       std::vector<Swc_Tree_Node*>::iterator it = std::find(
             m_sortedNodeList.begin(), m_sortedNodeList.end(),
@@ -1603,10 +1660,10 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 
       if (m_pressedSwc || m_pressedSwcTreeNode) {  // hit something
         // do not select tree when it is node rendering, but allow deselecting swc tree in node rendering mode
-        if (!(isNodeRendering() && m_pressedSwc))
+        if (!(isNodePicking() && m_pressedSwc))
           emit treeSelected(m_pressedSwc, appending);
 
-        if (m_interactionMode == ConnectSwcNode && isNodeRendering()) {
+        if (m_interactionMode == ConnectSwcNode && isNodePicking()) {
           emit(connectingSwcTreeNode(m_pressedSwcTreeNode));
         } else {
           emit treeNodeSelected(m_pressedSwcTreeNode, appending);
@@ -1624,7 +1681,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
         emit treeNodeSelected(m_pressedSwcTreeNode, appending);
       } else if ((m_interactionMode == AddSwcNode ||
                  m_interactionMode == PlainExtendSwcNode) &&
-                 isNodeRendering()) { // hit nothing, add node
+                 isNodePicking()) { // hit nothing, add node
         Swc_Tree_Node *tn = NULL;
 
         if (m_interactionMode == AddSwcNode) {
@@ -1825,34 +1882,6 @@ void Z3DSwcFilter::updateWidgetsGroup()
     createColorMapperWidget(m_randomTreeColorMapper, m_randomColorWidgetGroup);
     createColorMapperWidget(m_individualTreeColorMapper,
                             m_individualColorWidgetGroup);
-    /*
-    for (size_t i=0; i<m_randomColorWidgetGroup.size(); i++) {
-      delete m_randomColorWidgetGroup[i];
-    }
-    m_randomColorWidgetGroup.clear();
-
-    std::map<ZSwcTree*, ZVec4Parameter*> *colorMapper = NULL;
-
-    if (m_colorMode.isSelected("Individual")) {
-      colorMapper = &m_individualTreeColorMapper;
-    } else if (m_colorMode.isSelected("Random Tree Color")) {
-      colorMapper = &m_randomTreeColorMapper;
-    }
-
-    if (colorMapper != NULL) {
-      std::vector<ZParameter*> allTreeColorParas;
-      for (std::map<ZSwcTree*, ZVec4Parameter*>::iterator
-           it = colorMapper->begin();
-           it != colorMapper->end(); ++it) {
-        allTreeColorParas.push_back(it->second);
-      }
-      std::sort(allTreeColorParas.begin(), allTreeColorParas.end(), compareParameterName);
-      for (size_t i=0; i<allTreeColorParas.size(); ++i) {
-        m_randomColorWidgetGroup.push_back(
-              new ZWidgetsGroup(allTreeColorParas[i], m_widgetsGroup, 1));
-      }
-    }
-    */
 
     for (size_t i=0; i<m_colorsForBiocytinTypeWidgetsGroup.size(); i++) {
       delete m_colorsForBiocytinTypeWidgetsGroup[i];

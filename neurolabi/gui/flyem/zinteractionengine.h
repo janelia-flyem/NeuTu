@@ -143,7 +143,7 @@ private:
   ZRect2d m_rect;
   bool m_isStrokeOn;
 
-  ZStackDocReader *m_dataBuffer;
+//  ZStackDocReader *m_dataBuffer;
 
   Qt::CursorShape m_cursorShape;
 

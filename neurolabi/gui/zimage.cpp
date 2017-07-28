@@ -1198,60 +1198,70 @@ void ZImage::loadHighContrastProtocal(const ZJsonObject &obj)
 
 void ZImage::enhanceContrast(bool highContrast)
 {
-  if (format() != ZImage::Format_Indexed8) {
-    int i, j;
-    if (this->depth() == 32) {
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < width(); i++) {
-          if (line[0] <= 213) {
-            line[0] += line[0] / 5;
-          } else {
-            line[0] = 255;
-          }
-          if (line[1] <= 213) {
-            line[1] += line[1] / 5;
-          } else {
-            line[1] = 255;
-          }
-          if (line[2] <= 213) {
-            line[2] += line[2] / 5;
-          } else {
-            line[2] = 255;
-          }
 
-          line += 4;
+  if (format() != ZImage::Format_Indexed8) {
+
+    if (this->depth() == 32) {
+      if (highContrast) {
+        for (int j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (int i = 0; i < width(); i++) {
+            if (line[0] <= 213) {
+              line[0] += line[0] / 5;
+            } else {
+              line[0] = 255;
+            }
+            if (line[1] <= 213) {
+              line[1] += line[1] / 5;
+            } else {
+              line[1] = 255;
+            }
+            if (line[2] <= 213) {
+              line[2] += line[2] / 5;
+            } else {
+              line[2] = 255;
+            }
+
+            line += 4;
+          }
         }
       }
     } else if (this->depth() == 8) {
-      uchar colorTable[256];
-      double s = m_grayScale / 255.0;
-      for (int i = 0; i < 255; ++i) {
-        double v = (i + m_grayOffset) * s;
-        if (m_nonlinear) {
-          v = sqrt(v) * i;
+      if (highContrast) {
+        uchar colorTable[256];
+        double s = m_grayScale;
+        for (int i = 0; i < 256; ++i) {
+          double v = (i + m_grayOffset) * s;
+
+          if (m_nonlinear) {
+            if (v < 0.0) {
+              v = 0.0;
+            } else {
+              v = sqrt(v / 255.0) * i;
+            }
+          }
+
+          if (v < 0.0) {
+            v = 0.0;
+          } else if (v > 255.0) {
+            v = 255.0;
+          }
+          colorTable[i] = iround(v);
         }
 
-        if (v < 0.0) {
-          v = 0.0;
-        } else if (v > 255.0) {
-          v = 1.0;
-        }
-        colorTable[i] = iround(v);
-      }
-
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < width(); i++) {
-          line[0] = colorTable[line[0]];
-          line++;
+        for (int j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (int i = 0; i < width(); i++) {
+            line[0] = colorTable[line[0]];
+            line++;
+          }
         }
       }
     }
   } else {
     if (highContrast) {
       double s = m_grayScale / 255.0;
-      for (int i = 0; i < 255; ++i) {
+      for (int i = 0; i < 256; ++i) {
         QColor color;
         double v = (i + m_grayOffset) * s;
         if (m_nonlinear) {

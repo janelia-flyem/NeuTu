@@ -15,12 +15,14 @@ class Z3DLineWithFixedWidthColorRenderer;
 #include <QString>
 #include <vector>
 #include <utility>
+#include <QList>
 
 #include "zswctree.h"
 #include "zcolormap.h"
 #include "z3drendererbase.h"
 #include "zwidgetsgroup.h"
 #include "zswccolorscheme.h"
+#include "zobject3d.h"
 
 class Z3DSwcFilter : public Z3DGeometryFilter
 {
@@ -84,13 +86,17 @@ public:
   void resetCut();
   void setCutBox(const ZIntCuboid &box);
 
-  bool isNodeRendering() const { return m_renderingPrimitive.isSelected("Sphere"); }
-
+  bool isNodeRendering() const;
+  bool isNodePicking() const;
   void setInteractionMode(InteractionMode mode) { m_interactionMode = mode; }
   inline InteractionMode getInteractionMode() { return m_interactionMode; }
 
   void enablePicking(bool picking) {
     m_enablePicking = picking;
+  }
+
+  void forceNodePicking(bool picking) {
+    m_forceNodePicking = picking;
   }
 
 //  void setVisible(bool v);
@@ -99,9 +105,13 @@ public:
   virtual void configure(const ZJsonObject &obj);
   ZJsonObject getConfigJson() const;
 
+  QList<Swc_Tree_Node*> pickSwcNode(const ZObject3d &ptArray);
+  void selectSwcNode(const ZObject3d &ptArray);
+
 signals:
   void treeSelected(ZSwcTree*, bool append);
   void treeNodeSelected(Swc_Tree_Node*, bool append);
+  void treeNodeSelected(QList<Swc_Tree_Node*>, bool append);
   void connectingSwcTreeNode(Swc_Tree_Node*);
   void treeNodeSelectConnection(Swc_Tree_Node*);
   void treeNodeSelectFloodFilling(Swc_Tree_Node*);
@@ -162,6 +172,7 @@ private:
       std::vector<ZWidgetsGroup*> &widgetGroup);
 
   void clearDecorateSwcList();
+  const void* pickObject(int x, int y);
 
 private:
   Z3DLineRenderer *m_lineRenderer;
@@ -241,8 +252,9 @@ private:
   InteractionMode m_interactionMode;
   ZSwcColorScheme m_colorScheme;
 
-  bool m_enableCutting;
-  bool m_enablePicking;
+  bool m_enableCutting = true;
+  bool m_enablePicking = true;
+  bool m_forceNodePicking = true;
 
   QVector<QString> m_guiNameList;
 
