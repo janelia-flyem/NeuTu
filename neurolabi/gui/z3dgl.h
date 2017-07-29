@@ -6,7 +6,7 @@
 #include <glbinding/gl/gl.h>
 
 using namespace gl;
-#define ATLAS_CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+#define CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
 
 enum class Z3DEye
 {
@@ -22,7 +22,7 @@ bool GLVersionGE(int majorVersion, int minorVersion);
 
 void _CheckGLError(const char* file, int line);
 
-#ifdef ATLAS_CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
 #define CHECK_GL_ERROR
 #else
 #define CHECK_GL_ERROR _CheckGLError(__FILE__, __LINE__);

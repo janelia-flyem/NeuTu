@@ -781,7 +781,11 @@ HEADERS += mainwindow.h \
     zutils.h \
     zflags.h \
     zbbox.h \
-    zspinboxwithscrollbar.h
+    zspinboxwithscrollbar.h \
+    z3dshader.h \
+    z3dcontext.h \
+    zsysteminfo.h \
+    z3dshadermanager.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1350,6 +1354,10 @@ SOURCES += main.cpp \
     flyem/zflyembody3ddockeyprocessor.cpp \
     zstackdockeyprocessor.cpp \
     zoptionparameter.cpp \
-    zspinboxwithscrollbar.cpp
+    zspinboxwithscrollbar.cpp \
+    z3dshader.cpp \
+    z3dcontext.cpp \
+    zsysteminfo.cpp \
+    z3dshadermanager.cpp
 
 

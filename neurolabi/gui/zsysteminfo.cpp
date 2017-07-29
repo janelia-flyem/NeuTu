@@ -1,28 +1,38 @@
-#include "zglew.h"
-#include "z3dapplication.h"
+#include "zsysteminfo.h"
 
-#include "QsLog.h"
-#include "z3dshaderprogram.h"
+#include "z3dgl.h"
+#include "zlog.h"
 #include "z3dgpuinfo.h"
-#include "zerror.h"
+#include "zmainwindow.h"
+#include "z3dmainwindow.h"
+#include <glbinding/Binding.h>
+#include <glbinding/Meta.h>
+#include <QStandardPaths>
+#include <QStorageInfo>
+#include <QSettings>
+#include <QApplication>
+#include <QDateTime>
+#include <chrono>
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_DARWIN)
 #include <sys/utsname.h> // for uname
 #endif
 
 #ifdef Q_OS_WIN
-#include <windows.h>
+#include "zwindowsheader.h"
 #include <string>
 #include <sstream>
-typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
-typedef BOOL (WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
+using PGNSI = void (WINAPI *)(LPSYSTEM_INFO);
+using PGPI = BOOL (WINAPI *)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 //#define PRODUCT_PROFESSIONAL	0x00000030   //defined by winnt.h of mingw
 #define VER_SUITE_WH_SERVER	0x00008000
 #endif
 
 #ifdef Q_OS_DARWIN
+
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CFBundle.h>
+
 #endif
 
 namespace {
@@ -41,7 +51,7 @@ bool windowsVersionName(std::wstring &osString)
   if(!bOsVersionInfoEx)
     return false; // Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
   PGNSI pGNSI = (PGNSI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetNativeSystemInfo");
-  if(NULL != pGNSI)
+  if(pGNSI)
     pGNSI(&si);
   else GetSystemInfo(&si); // Check for unsupported OS
   if (VER_PLATFORM_WIN32_NT != osvi.dwPlatformId || osvi.dwMajorVersion <= 4 ) {
@@ -59,9 +69,9 @@ bool windowsVersionName(std::wstring &osString)
         os << "Windows 7 ";
       else os << "Windows Server 2008 R2 ";
     } else if (osvi.dwMinorVersion == 2) {
-      if (osvi.wProductType == VER_NT_WORKSTATION)
-        os << "Windows 8 ";
-      else os << "Windows Server 2012";
+        if (osvi.wProductType == VER_NT_WORKSTATION)
+           os << "Windows 8 ";
+        else os << "Windows Server 2012";
     }
     PGPI pGPI = (PGPI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
     pGPI( osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
@@ -204,107 +214,144 @@ bool windowsVersionName(std::wstring &osString)
 
 } // namespace
 
-Z3DApplication* Z3DApplication::m_app = NULL;
-
-Z3DApplication::Z3DApplication(const QString &appDir)
-  : m_applicationDirPath(appDir)
-  , m_initialized(false)
-  , m_glInitialized(false)
-  , m_stereoViewSupported(false)
+ZSystemInfo& ZSystemInfo::instance()
 {
-  m_app = this;
+  static ZSystemInfo ins;
+  return ins;
 }
 
-Z3DApplication::~Z3DApplication()
+ZSystemInfo::ZSystemInfo()
 {
-}
-
-void Z3DApplication::initialize()
-{
-  if (m_initialized) {
-    return;
-  }
-
   detectOS();
-#ifdef _QT5_
-  LINFO() << "OS:" << QSysInfo::prettyProductName();
-  LINFO() << "Kernel:" << QSysInfo::kernelType() + " " + QSysInfo::kernelVersion();
-  LINFO() << "Build ABI:" << QSysInfo::buildAbi();
-  LINFO() << "Current CPU:" << QSysInfo::currentCpuArchitecture();
-#else
-  LINFO() << "OS:" << m_osString;
-#endif
 
   // shader path
   m_shaderPath = ":/Resources/shader";
 
   // font path
   m_fontPath = ":/Resources/fonts";
-
-  m_initialized = true;
 }
 
-void Z3DApplication::deinitialize()
+void ZSystemInfo::logOSInfo() const
 {
-  m_initialized = false;
+  //LOG(INFO) << "OS: " << m_osString;
+  LOG(INFO) << "OS: " << QSysInfo::prettyProductName();
+  LOG(INFO) << "Kernel: " << QSysInfo::kernelType() + " " + QSysInfo::kernelVersion();
+  LOG(INFO) << "Build ABI: " << QSysInfo::buildAbi();
+  //LOG(INFO) << "Build CPU: " << QSysInfo::buildCpuArchitecture();
+  LOG(INFO) << "Current CPU: " << QSysInfo::currentCpuArchitecture();
+  LOG(INFO) << "Machine Host Name: " << QSysInfo::machineHostName();
+  //LOG(INFO) << "Product Type: " << QSysInfo::productType();
+  //LOG(INFO) << "Product Version: " << QSysInfo::productVersion();
+
+#ifdef 1
+  // time
+  LOG(INFO) << "system_clock res: "
+            << 1e9 * std::chrono::system_clock::period::num / std::chrono::system_clock::period::den << " ns";
+  LOG(INFO) << "system_clock is_steady = " << std::boolalpha << std::chrono::system_clock::is_steady;
+
+  LOG(INFO) << "steady_clock res: "
+            << 1e9 * std::chrono::steady_clock::period::num / std::chrono::steady_clock::period::den << " ns";
+  LOG(INFO) << "steady_clock is_steady = " << std::boolalpha << std::chrono::steady_clock::is_steady;
+
+  LOG(INFO) << "high_resolution_clock res: "
+            << 1e9 * std::chrono::high_resolution_clock::period::num / std::chrono::high_resolution_clock::period::den
+            << " ns";
+  LOG(INFO) << "high_resolution_clock is_steady = " << std::boolalpha << std::chrono::high_resolution_clock::is_steady;
+#endif
 }
 
-bool Z3DApplication::initializeGL()
+bool ZSystemInfo::initializeGL()
 {
-  if (!m_initialized) {
-    initialize();
-  }
-
   if (m_glInitialized) {
-    LINFO() << "OpenGL already initialized. Skip.";
+    LOG(ERROR) << "OpenGL already initialized. Skip.";
     return false;
   }
 
-  GLenum err = glewInit();
-  if (err != GLEW_OK) {
-    m_errorMsg = "glewInit failed, error: ";
-    m_errorMsg += reinterpret_cast<const char*>(glewGetErrorString(err));
-    RECORD_WARNING_UNCOND(m_errorMsg.toStdString());
-    RECORD_WARNING_UNCOND("3D functions will be disabled.");
-    //LERROR() << m_errorMsg;
-    //LWARN() << "3D functions will be disabled.";
-    return false;
-  } else {
-    //LINFO() << "GLEW version:" << (const char*)(glewGetString(GLEW_VERSION));
-    RECORD_TITLED_INFORMATION(
-          "GLEW version:", (const char*)(glewGetString(GLEW_VERSION)));
+  glbinding::Binding::initialize();
+  Z3DGpuInfo::instance().logGpuInfo();
+#if defined(CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS)
+  glbinding::setCallbackMaskExcept(glbinding::CallbackMask::After |
+                                   glbinding::CallbackMask::ParametersAndReturnValue |
+                                   glbinding::CallbackMask::Unresolved,
+                                   {"glGetError"});
+  glbinding::setAfterCallback([](const glbinding::FunctionCall& call) {
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+      std::ostringstream os;
 
-    Z3DGpuInfoInstance.logGpuInfo();
-    if (Z3DGpuInfoInstance.isSupported()) {
-      m_glInitialized = true;
-      return m_glInitialized;
-    } else {
-      m_errorMsg = Z3DGpuInfoInstance.getNotSupportedReason();
-      RECORD_WARNING_UNCOND(m_errorMsg.toStdString());
-      m_glInitialized = false;
-      return m_glInitialized;
+      os << call.function->name() << "(";
+      for (size_t i = 0; i < call.parameters.size(); ++i) {
+        os << call.parameters[i]->asString();
+        if (i + 1 < call.parameters.size())
+          os << ", ";
+      }
+      os << ")";
+
+      if (call.returnValue) {
+        os << " -> " << call.returnValue->asString();
+      }
+
+      LOG(ERROR) << "OpenGL error: " << glbinding::Meta::getString(error) << " with " << os.str();
     }
+  });
+#elif 0
+  glbinding::setCallbackMaskExcept(glbinding::CallbackMask::After |
+                                   glbinding::CallbackMask::ParametersAndReturnValue |
+                                   glbinding::CallbackMask::Unresolved,
+                                   {"glGetError"});
+  glbinding::setAfterCallback([](const glbinding::FunctionCall& call) {
+    std::cout << call.function->name() << "(";
+
+    for (size_t i = 0; i < call.parameters.size(); ++i) {
+      std::cout << call.parameters[i]->asString();
+      if (i < call.parameters.size() - 1)
+        std::cout << ", ";
+    }
+
+    std::cout << ")";
+
+    if (call.returnValue) {
+      std::cout << " -> " << call.returnValue->asString();
+    }
+
+    std::cout << "\n";
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR)
+      std::cout << "OpenGL error: " << glbinding::Meta::getString(error) << "\n";
+
+    std::cout.flush();
+  });
+#else
+  glbinding::setCallbackMask(glbinding::CallbackMask::Unresolved);
+#endif
+  glbinding::setUnresolvedCallback([](const glbinding::AbstractFunction& call) {
+    LOG(ERROR) << "OpenGL function " << call.name() << " can not be resolved.";
+  });
+  glbinding::Binding::addContextSwitchCallback([](glbinding::ContextHandle handle) {
+    LOG(INFO) << "Switching to OpenGL context " << handle;
+  });
+  if (Z3DGpuInfo::instance().isSupported()) {
+    m_glInitialized = true;
+    return m_glInitialized;
   }
-}
-
-bool Z3DApplication::deinitializeGL()
-{
+  m_errorMsg = Z3DGpuInfo::instance().notSupportedReason();
+  LOG(ERROR) << m_errorMsg;
   m_glInitialized = false;
-  return true;
+  return m_glInitialized;
 }
 
-
-QString Z3DApplication::getShaderPath(const QString& filename) const
+QString ZSystemInfo::shaderPath(const QString& filename) const
 {
   return m_shaderPath + (filename.isEmpty() ? QString("") : QString("/") + filename);
 }
 
-QString Z3DApplication::getFontPath(const QString& filename) const
+QString ZSystemInfo::fontPath(const QString& filename) const
 {
   return m_fontPath + (filename.isEmpty() ? QString("") : QString("/") + filename);
 }
 
-void Z3DApplication::detectOS()
+void ZSystemInfo::detectOS()
 {
 #ifdef Q_OS_WIN
   std::wstring osString;
@@ -322,9 +369,9 @@ void Z3DApplication::detectOS()
       m_osString = "Windows XP (operating system version 5.1)";
       break;
     case QSysInfo::WV_2003:
-      m_osString = "Windows Server 2003, Windows Server 2003 R2, Windows Home Server, \
-          Windows XP Professional x64 Edition (operating system version 5.2)";
-          break;
+      m_osString = "Windows Server 2003, Windows Server 2003 R2, Windows Home Server, "
+                   "Windows XP Professional x64 Edition (operating system version 5.2)";
+      break;
     case QSysInfo::WV_VISTA:
       m_osString = "Windows Vista, Windows Server 2008 (operating system version 6.0)";
       break;
@@ -335,10 +382,7 @@ void Z3DApplication::detectOS()
       m_osString = "Windows 8 (operating system version 6.2)";
       break;
     case QSysInfo::WV_WINDOWS8_1:
-      m_osString = "Windows 8.1 (operating system version 6.3), introduced in Qt 4.8.6";
-      break;
-    case QSysInfo::WV_WINDOWS10:
-      m_osString = "Windows 10 (operating system version 10.0), introduced in Qt 4.8.7";
+      m_osString = "Windows 8.1 (operating system version 6.3)";
       break;
     default:
       m_osString = "unknown win os";
@@ -346,51 +390,34 @@ void Z3DApplication::detectOS()
   }
 #elif defined(Q_OS_DARWIN)
   switch (QSysInfo::MacintoshVersion) {
-  case QSysInfo::MV_10_5:
-    m_osString = "Mac OS X LEOPARD";
-    break;
-  case QSysInfo::MV_10_6:
-    m_osString = "Mac OS X SNOW LEOPARD";
-    break;
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 0))
-  case QSysInfo::MV_10_7:
-    m_osString = "Mac OS X LION";
-    break;
-#endif
-#if (QT_VERSION > QT_VERSION_CHECK(4, 8, 1))
-  case QSysInfo::MV_10_8:
-    m_osString = "Mac OS X MOUNTAIN LION";
-    break;
-#endif
-#if (QT_VERSION >= QT_VERSION_CHECK(4, 8, 6))
-  case QSysInfo::MV_10_9:
-    m_osString = "Mac OS X MAVERICKS";
-    break;
-#endif
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-  case QSysInfo::MV_10_10:
-    m_osString = "Mac OS X YOSEMITE";
-    break;
-  case QSysInfo::MV_10_11:
-    m_osString = "Mac OS X El Capitan";
-    break;
-  case QSysInfo::MV_10_12:
-    m_osString = "Mac OS X Sierra";
-    break;
-#endif
-  default:
-    m_osString = "unsupported mac os";
-    return;
+    case QSysInfo::MV_10_7:
+      m_osString = "Mac OS X LION";
+      break;
+    case QSysInfo::MV_10_8:
+      m_osString = "Mac OS X MOUNTAIN LION";
+      break;
+    case QSysInfo::MV_10_9:
+      m_osString = "Mac OS X MAVERICKS";
+      break;
+    case QSysInfo::MV_10_10:
+      m_osString = "Mac OS X YOSEMITE";
+      break;
+    case QSysInfo::MV_10_11:
+      m_osString = "Mac OS X El Capitan";
+      break;
+    case QSysInfo::MV_10_12:
+      m_osString = "macOS Sierra";
+      break;
+    default:
+      m_osString = "unknown mac os";
+      return;
   }
-
-#if defined(_QT_APPLICATION_)
-  SInt32 majorVersion,minorVersion,bugFixVersion;
-  Gestalt(gestaltSystemVersionMajor, &majorVersion);
-  Gestalt(gestaltSystemVersionMinor, &minorVersion);
-  Gestalt(gestaltSystemVersionBugFix, &bugFixVersion);
-  m_osString += QString(" %1.%2.%3").arg(majorVersion).arg(minorVersion).arg(bugFixVersion);
-#endif
-
+  // deprecated from 10.8
+  //SInt32 majorVersion,minorVersion,bugFixVersion;
+  //Gestalt(gestaltSystemVersionMajor, &majorVersion);
+  //Gestalt(gestaltSystemVersionMinor, &minorVersion);
+  //Gestalt(gestaltSystemVersionBugFix, &bugFixVersion);
+  //m_osString += QString(" %1.%2.%3").arg(majorVersion).arg(minorVersion).arg(bugFixVersion);
 #else
   utsname name;
   if (uname(&name) != 0)

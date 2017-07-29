@@ -9,7 +9,6 @@
 #include <limits>
 #include <vector>
 
-
 class ZColorMapKey
 {
 public:
