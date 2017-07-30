@@ -29,7 +29,7 @@
 #include "z3dpunctafilter.h"
 #include "z3dcompositor.h"
 #include "z3dvolumeraycaster.h"
-#include "z3daxis.h"
+#include "z3daxisfilter.h"
 #include "dialogs/swcexportdialog.h"
 #include "zdialogfactory.h"
 #include "zprogressmanager.h"

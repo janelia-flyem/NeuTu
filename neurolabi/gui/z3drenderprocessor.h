@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "z3dprocessor.h"
+#include "z3dfilter.h"
 #include "z3drenderport.h"
 #include "z3drendererbase.h"
 

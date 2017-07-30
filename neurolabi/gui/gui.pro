@@ -175,9 +175,14 @@ INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include
 LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp
 win32 {
   LIBS += -lopengl32 -lglu32
+  SOURCES += $$PWD/ext/sys/VideoMemoryWin.cpp \
+      $$PWD/ext/sys/VidMemViaD3D9.cpp \
+      $$PWD/ext/sys/VidMemViaDDraw.cpp \
+      $$PWD/ext/sys/VidMemViaDxDiag.cpp
 }
 macx {
   LIBS += -framework AGL -framework OpenGL
+  SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
 }
 unix:!macx {
   LIBS += -lGL -lGLU
@@ -333,7 +338,6 @@ HEADERS += mainwindow.h \
     z3dcuberenderer.h \
     zcolormapwidgetwitheditorwindow.h \
     z3dbackgroundrenderer.h \
-    z3daxis.h \
     zwidgetsgroup.h \
     z3dcanvas.h \
     zspinbox.h \
@@ -342,9 +346,7 @@ HEADERS += mainwindow.h \
     z3drenderprocessor.h \
     z3drenderport.h \
     z3dnetworkevaluator.h \
-    z3dprocessor.h \
     z3dport.h \
-    z3dapplication.h \
     zoptionparameter.h \
     zcombobox.h \
     znumericparameter.h \
@@ -785,7 +787,11 @@ HEADERS += mainwindow.h \
     z3dshader.h \
     z3dcontext.h \
     zsysteminfo.h \
-    z3dshadermanager.h
+    z3dshadermanager.h \
+    z3daxisfilter.h \
+    z3dfilter.h \
+    zvertexbufferobject.h \
+    zvertexarrayobject.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -947,7 +953,6 @@ SOURCES += main.cpp \
     z3dcuberenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
     z3dbackgroundrenderer.cpp \
-    z3daxis.cpp \
     zwidgetsgroup.cpp \
     z3dcanvas.cpp \
     zspinbox.cpp \
@@ -956,9 +961,7 @@ SOURCES += main.cpp \
     z3drenderprocessor.cpp \
     z3drenderport.cpp \
     z3dnetworkevaluator.cpp \
-    z3dprocessor.cpp \
     z3dport.cpp \
-    z3dapplication.cpp \
     zcombobox.cpp \
     znumericparameter.cpp \
     zspinboxwithslider.cpp \
@@ -1358,6 +1361,10 @@ SOURCES += main.cpp \
     z3dshader.cpp \
     z3dcontext.cpp \
     zsysteminfo.cpp \
-    z3dshadermanager.cpp
+    z3dshadermanager.cpp \
+    z3daxisfilter.cpp \
+    z3dfilter.cpp \
+    zvertexbufferobject.cpp \
+    zvertexarrayobject.cpp
 
 

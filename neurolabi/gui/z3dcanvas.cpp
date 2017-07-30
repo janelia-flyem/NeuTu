@@ -1,49 +1,35 @@
 #include "z3dcanvas.h"
 
-#include <QPainter>
-#include <QGraphicsTextItem>
-
 #include "z3dnetworkevaluator.h"
-#include <algorithm>
 #include "z3dcanvaseventlistener.h"
-#include "QsLog/QsLog.h"
-#ifdef _QT5_
-#include <QWindow>
-#endif
+#include "z3dscene.h"
+#include "QsLog.h"
 #include "zpainter.h"
 #include "zstackdrawable.h"
+#include <QWindow>
+#include <QOpenGLWidget>
+#include <QPainter>
+#include <QGraphicsTextItem>
+#include <algorithm>
 
-#ifdef _QT5_
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* parent, Qt::WindowFlags f)
-#else
-Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLFormat &format,
-                     QWidget* parent, const QGLWidget *shareWidget, Qt::WindowFlags f)
-#endif
   : QGraphicsView(parent)
   , m_fullscreen(false)
-  , m_glWidget(NULL)
-  , m_3dScene(NULL)
-  , m_networkEvaluator(NULL)
-  , m_fakeStereoOnce(false)
+  , m_glWidget(nullptr)
+  , m_3dScene(nullptr)
 {
   setAlignment(Qt::AlignLeft | Qt::AlignTop);
   resize(width, height);
 
-#ifdef _QT5_
   m_glWidget = new QOpenGLWidget(nullptr, f);
-#else
-  m_glWidget = new QGLWidget(format, NULL, shareWidget, f);
-  m_glWidget->makeCurrent();
-#endif
-  m_isStereoScene = m_glWidget->format().stereo();
-  m_3dScene = new QGraphicsScene(0, 0, width, height, this);
+  m_3dScene = new Z3DScene(width, height, m_glWidget->format().stereo(), this);
 
   setViewport(m_glWidget);
   setViewportUpdateMode(FullViewportUpdate);
   setScene(m_3dScene);
 
   setWindowTitle(title);
-  setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+  setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
   setOptimizationFlags(QGraphicsView::DontSavePainterState |
                        QGraphicsView::DontAdjustForAntialiasing);
 
@@ -60,10 +46,13 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
           this->viewport(), SLOT(update()));
   connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
           this, SIGNAL(strokePainted(ZStroke2d*)));
-//#endif
+  //#endif
 }
 
-Z3DCanvas::~Z3DCanvas() {}
+QSurfaceFormat Z3DCanvas::format() const
+{
+  return m_glWidget->format();
+}
 
 void Z3DCanvas::toggleFullScreen()
 {
@@ -147,10 +136,6 @@ void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
 
 void Z3DCanvas::resizeEvent(QResizeEvent *event)
 {
-#ifdef _QT5_
-  glGetError(); // opengl error from qt5?
-#endif
-
   getGLFocus();
   QGraphicsView::resizeEvent(event);
   if (m_3dScene)
@@ -176,22 +161,9 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
   event->ignore();
 }
 
-void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
+void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 {
-#ifdef _QT5_
-  glGetError(); // opengl error from qt5?
-#endif
-
-  if (!m_networkEvaluator) {
-    return;
-  }
-
-  // QPainter set glclearcolor to white, we set it back
-  glClearColor(0.f, 0.f, 0.f, 0.f);
-
-  m_networkEvaluator->process(m_isStereoScene || m_fakeStereoOnce);
-  m_fakeStereoOnce = false;
-
+  m_3dScene->drawBackground(painter, rect);
 
 #if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
@@ -226,8 +198,6 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 
   //ZPainter painter()
   //painter->drawRect(QRect(10, 10, 40, 60));
-
-  CHECK_GL_ERROR;
 }
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)
@@ -237,16 +207,14 @@ void Z3DCanvas::timerEvent(QTimerEvent* e)
 
 void Z3DCanvas::setNetworkEvaluator(Z3DNetworkEvaluator *n)
 {
-  //m_3dScene->setNetworkEvaluator(n);
-  m_networkEvaluator = n;
+  m_3dScene->setNetworkEvaluator(n);
   if (n)
     n->setOpenGLContext(this);
 }
 
 void Z3DCanvas::setFakeStereoOnce()
 {
-  m_fakeStereoOnce = true;
-  //m_3dScene->setFakeStereoOnce();
+  m_3dScene->setFakeStereoOnce();
 }
 
 void Z3DCanvas::addEventListenerToBack(Z3DCanvasEventListener *e)
@@ -294,12 +262,8 @@ void Z3DCanvas::setKeyMode(ZInteractionEngine::EKeyMode mode)
 
 double Z3DCanvas::getDevicePixelRatio()
 {
-#ifdef _QT5_
   return (window() && window()->windowHandle()) ?
         window()->windowHandle()->devicePixelRatio() : 1.0;
-#else
-  return 1.0;
-#endif
 }
 
 void Z3DCanvas::disableKeyEvent()

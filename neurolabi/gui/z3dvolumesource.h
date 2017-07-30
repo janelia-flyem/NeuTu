@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-#include "z3dprocessor.h"
+#include "z3dfilter.h"
 #include "z3dvolume.h"
 #include "z3dport.h"
 #include "znumericparameter.h"

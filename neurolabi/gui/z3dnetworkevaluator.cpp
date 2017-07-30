@@ -21,7 +21,7 @@
 #include <boost/graph/topological_sort.hpp>
 #include "z3dcanvasrenderer.h"
 #include "z3dcameraparameter.h"
-#include "z3dprocessor.h"
+#include "z3dfilter.h"
 #include "z3drenderprocessor.h"
 #include "QsLog.h"
 #include "z3dtexture.h"

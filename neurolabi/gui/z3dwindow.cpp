@@ -20,7 +20,7 @@
 #include "z3dapplication.h"
 #include "z3dnetworkevaluator.h"
 #include "z3dcanvasrenderer.h"
-#include "z3daxis.h"
+#include "z3daxisfilter.h"
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
 #include "z3dcompositor.h"

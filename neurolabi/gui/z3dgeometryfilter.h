@@ -1,7 +1,7 @@
 #ifndef Z3DGEOMETRYFILTER_H
 #define Z3DGEOMETRYFILTER_H
 
-#include "z3dprocessor.h"
+#include "z3dfilter.h"
 #include "z3drendererbase.h"
 #include "z3dport.h"
 #include "z3dpickingmanager.h"
