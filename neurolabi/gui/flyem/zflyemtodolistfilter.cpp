@@ -63,8 +63,7 @@ void ZFlyEmTodoListFilter::initialize()
 {
   Z3DGeometryFilter::initialize();
 
-  m_rendererBase->setMaterialAmbient(glm::vec4(1, 1, 1, 1));
-  m_rendererBase->setLightAmbient(glm::vec4(0.3, 0.3, 0.3, 1));
+  m_rendererBase->setMaterialAmbient(glm::vec4(.3, .3, .3, 1));
 
   m_lineRenderer = new Z3DLineRenderer;
   m_rendererBase->addRenderer(m_lineRenderer);

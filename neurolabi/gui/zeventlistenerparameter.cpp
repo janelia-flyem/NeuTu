@@ -115,9 +115,3 @@ void ZEventListenerParameter::setValueSameAs(const ZParameter& rhs)
 {
   CHECK(this->isSameType(rhs));
 }
-
-void ZEventListenerParameter::interpolate(const ZParameter& prev, double progress, ZParameter& dest)
-{
-  Q_UNUSED(progress)
-  CHECK(this->isSameType(prev) && this->isSameType(dest));
-}

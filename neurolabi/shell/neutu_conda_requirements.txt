@@ -9,3 +9,4 @@ cgal=4.10
 gmp=6.1.2
 cmake
 tbb
+vtk

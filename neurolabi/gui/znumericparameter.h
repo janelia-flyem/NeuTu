@@ -72,14 +72,6 @@ public:
     ZParameter::setSameAs(rhs);
   }
 
-  virtual void interpolate(const ZParameter& prev, double progress, ZParameter& dest) override
-  {
-    CHECK(this->isSameType(prev) && this->isSameType(dest));
-    const ZNumericParameter<T>& prevPara = static_cast<const ZNumericParameter<T>&>(prev);
-    ZNumericParameter<T>& desPara = static_cast<ZNumericParameter<T>&>(dest);
-    desPara.set(glm::mix(prevPara.get(), this->m_value, progress));
-  }
-
 protected:
   virtual void makeValid(T& value) const override
   {
@@ -266,14 +258,6 @@ public:
     setNameForEachValue(src->m_nameOfEachValue);
     this->set(src->get());
     ZParameter::setSameAs(rhs);
-  }
-
-  virtual void interpolate(const ZParameter& prev, double progress, ZParameter& dest) override
-  {
-    CHECK(this->isSameType(prev) && this->isSameType(dest));
-    const ZNumericVectorParameter<T>& prevPara = static_cast<const ZNumericVectorParameter<T>&>(prev);
-    ZNumericVectorParameter<T>& desPara = static_cast<ZNumericVectorParameter<T>&>(dest);
-    desPara.set(glm::mix(prevPara.get(), this->m_value, progress));
   }
 
 protected:
@@ -633,14 +617,6 @@ public:
     setNameForEachValue(src->m_nameOfEachValue);
     this->set(src->get());
     ZParameter::setSameAs(rhs);
-  }
-
-  virtual void interpolate(const ZParameter& prev, double progress, ZParameter& dest) override
-  {
-    CHECK(this->isSameType(prev) && this->isSameType(dest));
-    const ZNumericSpanParameter<T>& prevPara = static_cast<const ZNumericSpanParameter<T>&>(prev);
-    ZNumericSpanParameter<T>& desPara = static_cast<ZNumericSpanParameter<T>&>(dest);
-    desPara.set(glm::mix(prevPara.get(), this->m_value, progress));
   }
 
 protected:

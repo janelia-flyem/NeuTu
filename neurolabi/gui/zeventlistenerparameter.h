@@ -39,8 +39,6 @@ public:
 
   virtual void setValueSameAs(const ZParameter& /*rhs*/) override;
 
-  virtual void interpolate(const ZParameter& prev, double progress, ZParameter& dest) override;
-
 signals:
 
   void eventTriggered(QEvent* e, int w, int h);

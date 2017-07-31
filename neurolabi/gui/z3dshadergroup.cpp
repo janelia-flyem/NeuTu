@@ -32,6 +32,7 @@ void Z3DShaderGroup::addAllSupportedPostShaders()
 {
   addDualDepthPeelingShaders();
   addWeightedAverageShaders();
+  addWeightedBlendedShaders();
 }
 
 void Z3DShaderGroup::addDualDepthPeelingShaders()
@@ -72,8 +73,16 @@ void Z3DShaderGroup::addWeightedAverageShaders()
 
 void Z3DShaderGroup::addWeightedBlendedShaders()
 {
-    m_shaders[Z3DRendererBase::WeightedBlendedInit] = new Z3DShaderProgram();
-    buildWeightedBlendedShader(m_shaders[Z3DRendererBase::WeightedBlendedInit]);
+  if (Z3DGpuInfo::instance().isWeightedBlendedSupported()) {
+    m_shaders[Z3DRendererBase::ShaderHookType::WeightedBlendedInit].reset(new Z3DShaderProgram());
+    if (!GLVersionGE(3, 2)) {
+      m_shaders[Z3DRendererBase::ShaderHookType::WeightedBlendedInit]->setGeometryInputType(m_geometryInputType);
+      m_shaders[Z3DRendererBase::ShaderHookType::WeightedBlendedInit]->setGeometryOutputType(m_geometryOutputType);
+      m_shaders[Z3DRendererBase::ShaderHookType::WeightedBlendedInit]->setGeometryOutputVertexCount(
+        m_geometryOutputVertexCount);
+    }
+    buildWeightedBlendedShader(m_shaders[Z3DRendererBase::ShaderHookType::WeightedBlendedInit].get());
+  }
 }
 
 void Z3DShaderGroup::bind()
@@ -116,7 +125,7 @@ void Z3DShaderGroup::rebuild(const QString& header, const QString& geomHeader)
       case Z3DRendererBase::ShaderHookType::WeightedAverageInit:
         buildWeightedAverageShader(i->second.get());
         break;
-      case Z3DRendererBase::ShaderHookType::WeightedBlendedInit;
+      case Z3DRendererBase::ShaderHookType::WeightedBlendedInit:
         buildWeightedBlendedShader(i->second.get());
       default:
         break;
@@ -180,11 +189,8 @@ void Z3DShaderGroup::buildWeightedAverageShader(Z3DShaderProgram* shader)
 void Z3DShaderGroup::buildWeightedBlendedShader(Z3DShaderProgram *shader)
 {
   QStringList allshaders(m_shaderFiles);
-  allshaders << "cube_wboit_compose.vert" << "cube_wboit_compose.frag";
-
-  //ZOUT(LTRACE(), 5) <<"buildWeightedBlendedShader header ... "<<m_header;
-
+  allshaders << "wblended_init.frag";
   shader->bindFragDataLocation(0, "FragData0");
   shader->bindFragDataLocation(1, "FragData1");
-  shader->loadFromSourceFile(allshaders, m_header);
+  shader->loadFromSourceFile(allshaders, m_header, m_geomHeader);
 }

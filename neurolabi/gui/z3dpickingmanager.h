@@ -16,78 +16,68 @@
 #ifndef Z3DPICKINGMANAGER_H
 #define Z3DPICKINGMANAGER_H
 
+#include "z3drendertarget.h"
 #include "zglmutils.h"
-#include <stdint.h>
+#include <cstdint>
 #include <map>
-
-//uint qHash(const glm::col4 &col);
-#include <QHash>
-
-class Z3DRenderTarget;
-
-inline uint32_t Col4ToUint(const glm::col4 &c) {
-  return reinterpret_cast<const uint32_t&>(c);
-}
-
-struct colComp
-{
-  // only work in little-endian system
-  bool operator()(const glm::col4 &c1, const glm::col4 &c2) const
-  {
-    const uint32_t i1 = reinterpret_cast<const uint32_t&>(c1);
-    const uint32_t i2 = reinterpret_cast<const uint32_t&>(c2);
-    return i1 < i2;
-  }
-};
+#include <vector>
 
 class Z3DPickingManager
 {
 public:
-  Z3DPickingManager();
+  // input render target should have color internal format as GL_RGBA8
+  // must call
+  void setRenderTarget(Z3DRenderTarget& rt);
 
   glm::col4 registerObject(const void* obj);
+
   void deregisterObject(const void* obj);
+
   void deregisterObject(const glm::col4& col);
+
   void clearRegisteredObjects();
 
-  glm::col4 getColorFromObject(const void* obj);
-  const void* getObjectFromColor(const glm::col4 &col);
+  glm::col4 colorOfObject(const void* obj);
 
-  const void* getObjectAtWidgetPos(glm::ivec2 pos);
-  const void* getObjectAtWidgetPos(glm::ivec2 pos, glm::ivec3 texSize);
-  const void* getObjectAtWidgetPos(glm::ivec2 pos, glm::ivec3 texSize, int dpr);
-  const void* getObjectAtPos(glm::ivec2 pos);
+  glm::vec4 fColorOfObject(const void* obj)
+  { return glm::vec4(glm::vec4(colorOfObject(obj)) / 255.f); }
+
+  const void* objectOfColor(const glm::col4& col);
+
+  const void* objectAtWidgetPos(const glm::ivec2& pos);
 
   // find all objects within a radius of pos, sort by distance
   // if radius is -1, search the whole image
-  std::vector<const void*> sortObjectsByDistanceToPos(glm::ivec2 pos, int radius = -1, bool ascend = true);
+  std::vector<const void*> sortObjectsByDistanceToPos(const glm::ivec2& pos, int radius = -1, bool ascend = true);
 
-  bool isHit(glm::ivec2 pos, const void* obj) { return (getObjectAtPos(pos) == obj); }
+  bool isHit(const glm::ivec2& pos, const void* obj)
+  { return (objectAtWidgetPos(pos) == obj); }
 
-  void bindTarget();
-  void releaseTarget();
+  void bindTarget()
+  { m_renderTarget->bind(); }
+
+  void releaseTarget()
+  { m_renderTarget->release(); }
+
   void clearTarget();
 
-  // input render target should has color internal format as GL_RGBA8
-  void setRenderTarget(Z3DRenderTarget* rt);
-  Z3DRenderTarget* getRenderTarget() const { return m_renderTarget; }
-  // check this before use pickingManager since setRenderTarget might fail
-  bool hasRenderTarget() const { return m_renderTarget != NULL; }
+  Z3DRenderTarget& renderTarget() const
+  { return *m_renderTarget; }
 
-  bool isRegistered(const void* obj) {
-    return m_objectToColor.contains(obj);
-  }
-  //  return m_objectToColor.find(obj) != m_objectToColor.end(); }
-  bool isRegistered(const glm::col4 &col) {
-    return m_colorToObject.contains(Col4ToUint(col)); }
+  bool isRegistered(const void* obj)
+  { return m_objectToColor.find(obj) != m_objectToColor.end(); }
+
+  bool isRegistered(const glm::col4& col)
+  { return m_colorToObject.find(col) != m_colorToObject.end(); }
+
 private:
   void increaseColor();
 
-  QHash<uint32_t, const void*> m_colorToObject;
-//  std::map<glm::col4, const void*, colComp> m_colorToObject;
-  QHash<const void*, glm::col4> m_objectToColor;
-  Z3DRenderTarget* m_renderTarget;
-  glm::col4 m_currentColor;
+private:
+  std::map<glm::col4, const void*, Col4Compare> m_colorToObject;
+  std::map<const void*, glm::col4> m_objectToColor;
+  Z3DRenderTarget* m_renderTarget = nullptr;
+  glm::col4 m_currentColor{0, 0, 0, 128};
 };
 
 #endif // Z3DPICKINGMANAGER_H

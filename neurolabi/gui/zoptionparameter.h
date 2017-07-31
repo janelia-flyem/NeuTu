@@ -189,9 +189,6 @@ public:
 
   virtual void setSameAs(const ZParameter& rhs) override;
 
-  virtual bool supportInterpolation() const override
-  { return false; }
-
   virtual void forceSetValueSameAs(const ZParameter& rhs) override;
 
 protected:

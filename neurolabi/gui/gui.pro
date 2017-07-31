@@ -791,7 +791,14 @@ HEADERS += mainwindow.h \
     z3daxisfilter.h \
     z3dfilter.h \
     zvertexbufferobject.h \
-    zvertexarrayobject.h
+    zvertexarrayobject.h \
+    z3dtransformparameter.h \
+    z3dglobalparameters.h \
+    z3dboundedfilter.h \
+    z3dcanvaspainter.h \
+    zmesh.h \
+    zmeshio.h \
+    zmeshutils.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1365,6 +1372,17 @@ SOURCES += main.cpp \
     z3daxisfilter.cpp \
     z3dfilter.cpp \
     zvertexbufferobject.cpp \
-    zvertexarrayobject.cpp
+    zvertexarrayobject.cpp \
+    z3dtransformparameter.cpp \
+    z3dglobalparameters.cpp \
+    z3dboundedfilter.cpp \
+    z3dcanvaspainter.cpp \
+    zmesh.cpp \
+    zmeshio.cpp \
+    zmeshutils.cpp
+
+DISTFILES += \
+    Resources/shader/wblended_final.frag \
+    Resources/shader/wblended_init.frag
 
 

@@ -88,9 +88,6 @@ public:
 public:
   virtual void setSameAs(const ZParameter& rhs) override;
 
-  virtual bool supportInterpolation() const override
-  { return false; }
-
 protected:
   virtual QWidget* actualCreateWidget(QWidget* parent) override;
 

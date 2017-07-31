@@ -61,13 +61,6 @@ public:
   inline bool isSameType(const ZParameter& rhs) const
   { return metaObject()->className() == rhs.metaObject()->className(); }
 
-  // return true if new value can be interpolated between two state
-  virtual bool supportInterpolation() const
-  { return true; }
-
-  // if interpolation is not supported, assign dest to one of prev (if progress < 1) and current (if progress >= 1)
-  virtual void interpolate(const ZParameter& prev, double progress, ZParameter& dest) = 0;
-
   void setVisible(bool s);
 
   void setEnabled(bool s);
@@ -156,12 +149,6 @@ public:
     set(static_cast<const ZSingleValueParameter<T>*>(&rhs)->get());
   }
 
-  virtual void interpolate(const ZParameter& prev, double progress, ZParameter& dest) override
-  {
-    CHECK(this->isSameType(prev) && this->isSameType(dest));
-    dest.setValueSameAs(progress >= 1.0 ? *this : prev);
-  }
-
 protected:
   // subclass can use this function to change input value to a valid value
   // default implement do nothing
@@ -239,9 +226,6 @@ public:
   // ZParameter interface
 public:
   virtual void setSameAs(const ZParameter& rhs) override;
-
-  virtual bool supportInterpolation() const override
-  { return false; }
 
   void setValue(bool v);
 

@@ -17,9 +17,6 @@ public:
 public:
   virtual void setSameAs(const ZParameter& rhs) override;
 
-  virtual bool supportInterpolation() const override
-  { return false; }
-
 signals:
 
   void stringChanged(QString str);

@@ -270,6 +270,14 @@ bool Z3DGpuInfo::isWeightedAverageSupported() const
          Z3DGpuInfo::instance().maxColorAttachments() >= 2;
 }
 
+bool Z3DGpuInfo::isWeightedBlendedSupported() const
+{
+  return Z3DGpuInfo::instance().isTextureRectangleSupported() &&
+         Z3DGpuInfo::instance().isTextureFloatSupported() &&
+         Z3DGpuInfo::instance().isColorBufferFloatSupported() &&
+         Z3DGpuInfo::instance().maxColorAttachments() >= 2;
+}
+
 bool Z3DGpuInfo::isDualDepthPeelingSupported() const
 {
   return Z3DGpuInfo::instance().isTextureRGSupported() && Z3DGpuInfo::instance().isTextureRectangleSupported() &&

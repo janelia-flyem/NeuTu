@@ -107,7 +107,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       }
     } else {
       window->getVolumeRaycasterRenderer()->setCompositeMode(
-            Z3DUtils::GetVolumeRenderingName(m_volumeMode).c_str());
+            NeuTube3D::GetVolumeRenderingModeName(m_volumeMode));
     }
     if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
         doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET &&

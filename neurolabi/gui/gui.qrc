@@ -128,5 +128,7 @@
         <file>images/test2.png</file>
         <file>images/science.png</file>
         <file>images/view_roi.png</file>
+        <file>Resources/shader/wblended_final.frag</file>
+        <file>Resources/shader/wblended_init.frag</file>
     </qresource>
 </RCC>
