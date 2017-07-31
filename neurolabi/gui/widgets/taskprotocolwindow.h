@@ -20,6 +20,11 @@ private slots:
     void onLoadTasksButton();
 
 private:
+    static const QString KEY_DESCRIPTION;
+    static const QString VALUE_DESCRIPTION;
+    static const QString KEY_VERSION;
+    static const int currentVersion;
+
     enum WindowConfigurations {
         LOAD_BUTTON,
         TASK_UI
@@ -27,6 +32,9 @@ private:
 
     Ui::TaskProtocolWindow *ui;
     void setWindowConfiguration(WindowConfigurations config);
+    QJsonObject loadJsonFromFile(QString filepath);
+    void showError(QString title, QString message);
+    bool isValidJson(QJsonObject json);
 };
 
 #endif // TASKPROTOCOLWINDOW_H
