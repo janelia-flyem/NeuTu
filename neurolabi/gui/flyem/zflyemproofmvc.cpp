@@ -711,6 +711,8 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow()
 //              m_roiSourceList);
   }
 
+  prepareBodyWindowSignalSlot(m_skeletonWindow, doc);
+
   return m_skeletonWindow;
 }
 

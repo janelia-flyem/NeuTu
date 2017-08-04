@@ -105,6 +105,7 @@ public:
   virtual void configure(const ZJsonObject &obj);
   ZJsonObject getConfigJson() const;
 
+  Swc_Tree_Node* pickSwcNode(double x, double y);
   QList<Swc_Tree_Node*> pickSwcNode(const ZObject3d &ptArray);
   void selectSwcNode(const ZObject3d &ptArray);
 

@@ -73,6 +73,13 @@ public:
   virtual void configure(const ZJsonObject &obj);
   virtual ZJsonObject getConfigJson() const;
 
+  // output v1 is start point of ray, v2 is a point on the ray, v2-v1 is normalized
+  // x and y are input screen point, width and height are input screen dimension
+  void get3DRayUnderScreenPoint(
+      glm::vec3 &v1, glm::vec3 &v2, int x, int y, int width, int height);
+  void get3DRayUnderScreenPoint(
+      glm::dvec3 &v1, glm::dvec3 &v2, int x, int y, int width, int height);
+
 protected:
   virtual void process(Z3DEye) {}
 
@@ -86,14 +93,6 @@ protected:
   // after register, m_pickingObjectsRegistered should be true and data picking color should be set
   // for renderers
   virtual void registerPickingObjects(Z3DPickingManager*) {}
-
-  // output v1 is start point of ray, v2 is a point on the ray, v2-v1 is normalized
-  // x and y are input screen point, width and height are input screen dimension
-  void get3DRayUnderScreenPoint(
-      glm::vec3 &v1, glm::vec3 &v2, int x, int y, int width, int height);
-  void get3DRayUnderScreenPoint(
-      glm::dvec3 &v1, glm::dvec3 &v2, int x, int y, int width, int height);
-
 
 
   Z3DProcessorOutputPort<Z3DGeometryFilter> m_outPort;

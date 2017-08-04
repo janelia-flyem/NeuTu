@@ -962,6 +962,21 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
   }
 }
 
+void ZFlyEmBody3dDoc::addTodo(int x, int y, int z, bool checked, uint64_t bodyId)
+{
+  ZIntPoint position = m_dvidReader.readPosition(bodyId, ZIntPoint(x, y, z));
+
+  if (position.isValid()) {
+    ZFlyEmToDoItem item(position);
+    item.setUserName(NeuTube::GetCurrentUserName());
+    if (checked) {
+      item.setChecked(checked);
+    }
+    m_dvidWriter.writeToDoItem(item);
+    updateTodo(bodyId);
+  }
+}
+
 
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
@@ -1337,6 +1352,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
 
   if (!m_dvidReader.isReady()) {
     m_dvidReader.open(getDvidTarget());
+    m_dvidWriter.open(m_dvidReader.getDvidTarget());
   }
 
   if (m_dvidReader.isReady()) {

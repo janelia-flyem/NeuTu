@@ -4283,6 +4283,43 @@ void Z3DWindow::selectSwcNodeFromStroke(const ZStroke2d *stroke)
   }
 }
 
+void Z3DWindow::addTodoMarkerFromStroke(const ZStroke2d *stroke)
+{
+  if (hasSwc() && stroke != NULL) {
+    getSwcFilter()->forceNodePicking(true);
+    getSwcFilter()->invalidate();
+    m_networkEvaluator->process();
+    int x = 0;
+    int y = 0;
+    stroke->getLastPoint(&x, &y);
+    Swc_Tree_Node *tn = getSwcFilter()->pickSwcNode(x, y);
+    if (tn != NULL) {
+      ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
+      if (tree != NULL) {
+        uint64_t bodyId = tree->getLabel();
+        glm::dvec3 v1,v2;
+        int w = getCanvas()->width();
+        int h = getCanvas()->height();
+        getSwcFilter()->get3DRayUnderScreenPoint(v1, v2, x, y, w, h);
+        ZPoint lineStart(v1.x, v1.y, v1.z);
+        glm::dvec3 norm = v2 - v1;
+        ZPoint lineNorm(norm.x, norm.y, norm.z);
+        std::vector<ZPoint> intersection = ZGeometry::LineShpereIntersection(
+              lineStart, lineNorm, SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
+
+        if (!intersection.empty()) {
+          ZPoint &pt = intersection.front();
+          int cx = iround(pt.x());
+          int cy = iround(pt.y());
+          int cz = iround(pt.z());
+          getDocument<ZFlyEmBody3dDoc>()->addTodo(cx, cy, cz, false, bodyId);
+//          emitAddTodoMarker(cx, cy, cz, false, bodyId);
+        }
+      }
+    }
+  }
+}
+
 void Z3DWindow::labelSwcNodeFromStroke(const ZStroke2d *stroke)
 {
   if (hasSwc() && stroke != NULL) {
@@ -4306,8 +4343,12 @@ void Z3DWindow::labelSwcNodeFromStroke(const ZStroke2d *stroke)
 
 void Z3DWindow::processStroke(ZStroke2d *stroke)
 {
+#ifdef _DEBUG_
+  addTodoMarkerFromStroke(stroke);
+#else
   labelSwcNodeFromStroke(stroke);
   addPolyplaneFrom3dPaint(stroke);
+#endif
 }
 
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)

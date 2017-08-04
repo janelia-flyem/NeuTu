@@ -7274,7 +7274,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZXmlDoc doc;
   doc.parseFile(NeutubeConfig::getInstance().getApplicatinDir() + "/config.xml");
   ZXmlNode root = doc.getRootElement();
@@ -24205,7 +24205,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "93e8", 8700);
   target.setLabelBlockName(
@@ -24272,6 +24272,18 @@ void ZTest::test(MainWindow *host)
    ZDvidUrl dvidUrl(target);
 
 
+#endif
+
+#if 1
+   std::vector<ZPoint> ptArray = ZGeometry::LineShpereIntersection(
+         ZPoint(0, 0.5, -2), ZPoint(0, 0, 1), ZPoint(0, 0, 0), 1);
+
+   std::cout << ptArray.size() << " intersections: " << std::endl;
+   for (std::vector<ZPoint>::const_iterator iter = ptArray.begin();
+        iter != ptArray.end(); ++iter) {
+     const ZPoint &pt = *iter;
+     std::cout << pt.toString() << std::endl;
+   }
 #endif
 
   std::cout << "Done." << std::endl;

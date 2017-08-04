@@ -15,6 +15,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidwriter.h"
 #include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 //#include "flyem/zflyemtodoitem.h"
@@ -142,6 +143,7 @@ public:
 
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
+  void addTodo(int x, int y, int z, bool checked, uint64_t bodyId);
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
@@ -301,6 +303,7 @@ private:
 
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidWriter m_dvidWriter;
   ZDvidReader m_bodyReader;
 
   ZDvidInfo m_dvidInfo;

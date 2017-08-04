@@ -446,6 +446,8 @@ private:
 
   void selectSwcNodeFromStroke(const ZStroke2d *stroke);
   void labelSwcNodeFromStroke(const ZStroke2d *stroke);
+  //Experimental function
+  void addTodoMarkerFromStroke(const ZStroke2d *stroke);
 
 private:
   QTabWidget* createBasicSettingTabWidget();
