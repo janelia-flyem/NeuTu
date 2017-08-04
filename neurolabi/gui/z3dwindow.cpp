@@ -4286,14 +4286,21 @@ void Z3DWindow::selectSwcNodeFromStroke(const ZStroke2d *stroke)
 void Z3DWindow::labelSwcNodeFromStroke(const ZStroke2d *stroke)
 {
   if (hasSwc() && stroke != NULL) {
+    getSwcFilter()->forceNodePicking(true);
+    getSwcFilter()->invalidate();
+    m_networkEvaluator->process();
     ZObject3d *ptArray = stroke->toObject3d();
     if (ptArray != NULL) {
       QList<Swc_Tree_Node*> nodeArray = getSwcFilter()->pickSwcNode(*ptArray);
+      getDocument()->executeChangeSwcNodeType(nodeArray, stroke->getLabel());
+      /*
       foreach (Swc_Tree_Node *node, nodeArray) {
-        SwcTreeNode::setType(node, stroke->getLabel() + 1);
+        SwcTreeNode::setType(node, stroke->getLabel());
       }
+      */
     }
-    m_doc->notifySwcModified();
+    getSwcFilter()->forceNodePicking(false);
+//    m_doc->notifySwcModified();
   }
 }
 

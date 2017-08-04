@@ -9,6 +9,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_isKeyEventEnabled(true), m_interactionHandler(NULL)
 {
   m_stroke.setWidth(10.0);
+  m_stroke.setZ(0);
   m_namedDecorationList.append(&m_stroke);
   m_rect.setColor(255, 0, 0, 128);
   m_namedDecorationList.append(&m_rect);
@@ -150,6 +151,13 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 
     if (isStateOn(STATE_DRAW_RECT)) {
       exitPaintRect();
+      processed = true;
+    }
+    break;
+  case Qt::Key_0:
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      m_stroke.setLabel(0);
+      emit decorationUpdated();
       processed = true;
     }
     break;

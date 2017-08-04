@@ -47,7 +47,17 @@ void ZStackDocObjectUpdate::print() const
   case ACTION_UPDATE:
     std::cout << "Update";
     break;
+  case ACTION_SELECT:
+    std::cout << "Select";
+    break;
+  case ACTION_DESELECT:
+    std::cout << "Deselect";
+    break;
+  default:
+    std::cout << "Unknown action:";
+    break;
   }
+
   std::cout << " " << m_obj << std::endl;
 }
 

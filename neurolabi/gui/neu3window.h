@@ -47,7 +47,8 @@ protected:
   virtual void keyPressEvent(QKeyEvent *event);
 
 private slots:
-  void processSwcChangeFrom3D(QList<ZSwcTree*> selected,QList<ZSwcTree*>deselected);
+  void processSwcChangeFrom3D(
+      QList<ZSwcTree*> selected,QList<ZSwcTree*>deselected);
 
 private:
   void createDockWidget();

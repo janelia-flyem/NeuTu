@@ -601,8 +601,10 @@ void ZFlyEmBody3dDoc::updateBodyModelSelection()
   QList<ZSwcTree*> swcList = getSwcList();
   foreach (ZSwcTree *tree, swcList) {
     if (m_selectedBodySet.contains(tree->getLabel())) {
-      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_SELECT);
-    } else {
+      if (!tree->isSelected()) {
+        getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_SELECT);
+      }
+    } else if (tree->isSelected()) {
       getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_DESELECT);
     }
   }
@@ -809,7 +811,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
   if (tree != NULL) {
     tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
     if (m_nodeSeeding) {
-      tree->setType(1);
+      tree->setType(0);
     }
 
 #ifdef _DEBUG_

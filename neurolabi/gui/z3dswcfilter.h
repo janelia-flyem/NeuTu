@@ -147,6 +147,7 @@ protected:
 private:
   void initTopologyColor();
   void initTypeColor();
+  void initLabelTypeColor();
   void initSubclassTypeColor();
 
   static QString GetTypeName(int type);
@@ -188,11 +189,13 @@ private:
   //std::vector<ZVec4Parameter*> m_colorsForDifferentSource;
   std::map<ZSwcTree*, ZVec4Parameter*> m_individualTreeColorMapper;
   std::map<ZSwcTree*, ZVec4Parameter*> m_randomTreeColorMapper;
+  std::map<int, ZVec4Parameter*> m_biocytinColorMapper;
+  std::map<int, size_t> m_subclassTypeColorMapper;
+
   std::vector<ZVec4Parameter*> m_colorsForDifferentType;
   std::vector<ZVec4Parameter*> m_colorsForSubclassType;
-  std::map<int, size_t> m_subclassTypeColorMapper;
+  std::vector<ZVec4Parameter*> m_colorsForLabelType;
   std::vector<ZVec4Parameter*> m_colorsForDifferentTopology;
-  std::map<int, ZVec4Parameter*> m_biocytinColorMapper;
   //std::map<int, ZVec4Parameter*> m_JinTypeColorMapper;
 
   //std::map<std::string, size_t> m_sourceColorMapper;   // should use unordered_map
@@ -254,7 +257,7 @@ private:
 
   bool m_enableCutting = true;
   bool m_enablePicking = true;
-  bool m_forceNodePicking = true;
+  bool m_forceNodePicking = false;
 
   QVector<QString> m_guiNameList;
 

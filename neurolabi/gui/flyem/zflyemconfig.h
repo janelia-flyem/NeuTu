@@ -54,9 +54,7 @@ public:
   std::string getDvidRootNode(const std::string &name) const;
 
   void setTaskServer(const std::string &taskServer);
-  std::string getTaskServer() const {
-    return m_taskServer;
-  }
+  std::string getTaskServer() const;
 
   std::string getDefaultLibrarian() const {
     return m_defaultLibrarian;
@@ -106,7 +104,7 @@ private:
 #ifdef _QT_GUI_USED_
   ZNeutuService m_neutuService;
 #endif
-  std::string m_taskServer;
+//  std::string m_taskServer;
   std::string m_configPath;
   std::string m_defaultConfigPath;
   bool m_usingDefaultConfig;

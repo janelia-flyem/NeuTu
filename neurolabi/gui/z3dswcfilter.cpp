@@ -25,6 +25,7 @@
 #include "z3dfiltersetting.h"
 #include "zjsonparser.h"
 #include "z3drendertarget.h"
+#include "zlabelcolortable.h"
 
 Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
   : Z3DGeometryFilter(parent)
@@ -51,7 +52,7 @@ Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
   initTopologyColor();
   initTypeColor();
   initSubclassTypeColor();
-
+  initLabelTypeColor();
 
 //  addParameter(m_showSwcs);
 
@@ -76,6 +77,7 @@ Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
                          "Branch Type",
                          "Topology",
                          "Colormap Branch Type",
+                         "Label Branch Type",
                          "Subclass",
                          "Direction",
                          "Intrinsic");
@@ -101,6 +103,10 @@ Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
 
   for (size_t i=0; i<m_colorsForSubclassType.size(); i++) {
     addParameter(m_colorsForSubclassType[i]);
+  }
+
+  for (size_t i = 0; i < m_colorsForLabelType.size(); ++i) {
+    addParameter(m_colorsForLabelType[i]);
   }
 
   m_selectSwcEvent = new ZEventListenerParameter("Select Puncta", true, false, this);
@@ -191,6 +197,9 @@ Z3DSwcFilter::~Z3DSwcFilter()
   }
   for(size_t i=0; i<m_colorsForSubclassType.size(); i++) {
     delete m_colorsForSubclassType[i];
+  }
+  for (size_t i = 0; i < m_colorsForLabelType.size(); ++i) {
+    delete m_colorsForLabelType[i];
   }
 
   delete m_selectSwcEvent;
@@ -315,6 +324,19 @@ void Z3DSwcFilter::initTypeColor()
   for (size_t i=0; i<m_colorsForDifferentType.size(); i++) {
     m_colorsForDifferentType[i]->setStyle("COLOR");
     connect(m_colorsForDifferentType[i], SIGNAL(valueChanged()), this, SLOT(prepareColor()));
+  }
+}
+
+void Z3DSwcFilter::initLabelTypeColor()
+{
+  ZColorScheme colorScheme;
+  colorScheme.setColorScheme(ZColorScheme::LABEL_COLOR);
+  for (int type = 0; type <= colorScheme.getColorNumber(); ++type) {
+    QColor color = colorScheme.getColor(type);
+    m_colorsForLabelType.push_back(
+          new ZVec4Parameter(
+            GetTypeName(type),
+            glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.f)));
   }
 }
 
@@ -690,26 +712,6 @@ ZWidgetsGroup *Z3DSwcFilter::getWidgetsGroup()
     createColorMapperWidget(m_randomTreeColorMapper, m_randomColorWidgetGroup);
     createColorMapperWidget(m_individualTreeColorMapper,
                             m_individualColorWidgetGroup);
-    /*
-    std::vector<ZParameter*> allTreeColorParas;
-    for (std::map<ZSwcTree*, ZVec4Parameter*>::iterator it = m_randomTreeColorMapper.begin();
-         it != m_randomTreeColorMapper.end(); ++it) {
-      allTreeColorParas.push_back(it->second);
-    }
-    std::sort(allTreeColorParas.begin(), allTreeColorParas.end(), compareParameterName);
-
-    allTreeColorParas.clear();
-    for (std::map<ZSwcTree*, ZVec4Parameter*>::iterator it = m_individualTreeColorMapper.begin();
-         it != m_individualTreeColorMapper.end(); ++it) {
-      allTreeColorParas.push_back(it->second);
-    }
-    std::sort(allTreeColorParas.begin(), allTreeColorParas.end(), compareParameterName);
-
-    for (size_t i=0; i<allTreeColorParas.size(); ++i) {
-      m_randomColorWidgetGroup.push_back(
-            new ZWidgetsGroup(allTreeColorParas[i], m_widgetsGroup, 1));
-    }
-    */
 
     for (std::map<int, ZVec4Parameter*>::iterator it = m_biocytinColorMapper.begin();
          it != m_biocytinColorMapper.end(); ++it) {
@@ -725,6 +727,9 @@ ZWidgetsGroup *Z3DSwcFilter::getWidgetsGroup()
     }
     for(size_t i=0; i<m_colorsForDifferentTopology.size(); i++) {
       new ZWidgetsGroup(m_colorsForDifferentTopology[i], m_widgetsGroup, 1);
+    }
+    for (size_t i = 0; i < m_colorsForLabelType.size(); ++i) {
+      new ZWidgetsGroup(m_colorsForLabelType[i], m_widgetsGroup, 1);
     }
     new ZWidgetsGroup(&m_colorMap, m_widgetsGroup, 1);
 
@@ -1338,9 +1343,12 @@ void Z3DSwcFilter::prepareColor()
   if (m_colorMode.isSelected("Branch Type") ||
       m_colorMode.isSelected("Colormap Branch Type") ||
       m_colorMode.isSelected("Subclass") ||
-      m_colorMode.isSelected("Biocytin Branch Type")) {
+      m_colorMode.isSelected("Biocytin Branch Type") ||
+      m_colorMode.isSelected("Label Branch Type")) {
     if (m_colorMode.isSelected("Biocytin Branch Type")) {
       m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
+    } else if (m_colorMode.isSelected("Label Branch Type")) {
+      m_colorScheme.setColorScheme(ZColorScheme::LABEL_COLOR);
     }
 
     for (size_t i=0; i<m_decompsedNodePairs.size(); i++) {
@@ -1476,6 +1484,9 @@ void Z3DSwcFilter::prepareColor()
   }
 
   m_coneRenderer->setDataColors(&m_swcColors1, &m_swcColors2);
+#ifdef _DEBUG_2
+  std::cout << "Line renderer: " << m_lineRenderer << std::endl;
+#endif
   m_lineRenderer->setDataColors(&m_lineColors);
   m_sphereRenderer->setDataColors(&m_pointColors);
   m_sphereRendererForCone->setDataColors(&m_pointColors);
@@ -1597,7 +1608,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Picking swc at "
               << m_startCoord.x << ", " << m_startCoord.y <<  std::endl;
 #endif
@@ -1611,7 +1622,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
           glm::ivec2(e->x(), e->y()), m_pickingTexSize, dpr);
           */
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Picked: " << obj << std::endl;
 #endif
 
@@ -1850,7 +1861,13 @@ glm::vec4 Z3DSwcFilter::getColorByType(Swc_Tree_Node *n)
   } else if (m_colorMode.isSelected("Biocytin Branch Type")) {
     return m_biocytinColorMapper[SwcTreeNode::type(n)]->get();
     //return m_colorsForBiocytinType[SwcTreeNode::type(n)]->get();
-  } else  /*if (m_colorMode.get() == "ColorMap Branch Type")*/ {
+  } else if (m_colorMode.isSelected("Label Branch Type")) {
+    if ((size_t)(n->node.type) < m_colorsForLabelType.size() - 1) {
+      return m_colorsForLabelType[n->node.type]->get();
+    } else {
+      return m_colorsForLabelType[m_colorsForDifferentType.size() - 1]->get();
+    }
+  } else {
     return m_colorMap.get().getMappedFColor(n->node.type);
   }
 }

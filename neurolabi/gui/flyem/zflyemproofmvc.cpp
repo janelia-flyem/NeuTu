@@ -717,7 +717,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow()
 Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 {
   makeExternalSkeletonWindow();
-  m_skeletonWindow->getSwcFilter()->setColorMode("Branch Type");
+  m_skeletonWindow->getSwcFilter()->setColorMode("Label Branch Type");
   m_skeletonWindow->getSwcFilter()->setStayOnTop(false);
   m_skeletonWindow->getPunctaFilter()->setStayOnTop(false);
   m_skeletonWindow->getGraphFilter()->setStayOnTop(false);

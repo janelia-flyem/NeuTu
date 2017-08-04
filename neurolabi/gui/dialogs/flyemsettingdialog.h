@@ -19,9 +19,11 @@ public:
 
 public slots:
   void update();
+  void updateDefaultConfigChecked(bool on);
 
 private:
   std::string getNeuTuServer() const;
+  std::string getTaskServer() const;
   std::string getConfigPath() const;
 
   bool usingDefaultConfig() const;
@@ -29,6 +31,7 @@ private:
   void init();
 
   void connectSignalSlot();
+  QString shrink(const QString &str, int len);
 
 private:
   Ui::FlyEmSettingDialog *ui;

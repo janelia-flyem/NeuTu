@@ -502,7 +502,6 @@ bool ZStackObjectGroup::removeSelectedUnsync(
   return !objSet.empty();
 }
 
-
 bool ZStackObjectGroup::removeSelected(ZStackObject::EType type, bool deleting)
 {
   QMutexLocker locker(&m_mutex);

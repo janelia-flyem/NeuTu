@@ -49,6 +49,8 @@ public:
 
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
+  static QString GetTaskServer();
+  static void SetTaskServer(const QString &path);
 
   static void SetDataDir(const QString &dataDir);
 #endif

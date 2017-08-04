@@ -67,6 +67,15 @@ ZStack* GenerateExampleStack(const ZJsonObject &obj);
 
 ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
 
+void SetSplitTaskSignalUrl(
+    ZJsonObject &taskObj, uint64_t bodyId, const ZDvidTarget &target);
+ZStroke2d SyGlassSeedToStroke(const ZJsonObject &obj);
+ZStroke2d SyGlassSeedToStroke(
+    const ZJsonObject &obj, const ZIntPoint &offset, const ZIntPoint &dsIntv);
+ZJsonObject MakeSplitSeedJson(const ZStroke2d &stroke);
+void AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke);
+void UploadSyGlassTask(const std::string &filePath, const ZDvidTarget &target);
+
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
 QSet<uint64_t> ReadBodyFromSequencer(const QString &filePath);
