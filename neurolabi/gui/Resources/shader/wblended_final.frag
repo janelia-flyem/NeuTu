@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------
 // File:        gl4-kepler\WeightedBlendedOIT\assets\shaders/weighted_final_fragment.glsl
-// SDK Version: v3.00 
+// SDK Version: v3.00
 // Email:       gameworks@nvidia.com
 // Site:        http://developer.nvidia.com/
 //
@@ -68,5 +68,6 @@ void main(void)
   float transmittance = texture(ColorTex1, gl_FragCoord.xy * screen_dim_RCP).r;
   #endif
 
-  FragData0 = vec4(sumColor.rgb / clamp(sumColor.a, 1e-4, 5e4), transmittance);
+  float a = 1 - transmittance;
+  FragData0 = vec4(sumColor.rgb / clamp(sumColor.a, 1e-4, 5e4) * a, a);
 }

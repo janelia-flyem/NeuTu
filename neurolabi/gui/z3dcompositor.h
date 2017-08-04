@@ -72,7 +72,7 @@ private:
 
   bool createWARenderTarget(const glm::uvec2& size);
 
-  void renderTransparentWB(const std::vector<Z3DGeometryFilter*>& filters,
+  void renderTransparentWB(const std::vector<Z3DBoundedFilter*>& filters,
                            Z3DRenderOutputPort &port, Z3DEye eye, Z3DTexture* depthTexture = nullptr);
 
   bool createWBRenderTarget(const glm::uvec2& size);

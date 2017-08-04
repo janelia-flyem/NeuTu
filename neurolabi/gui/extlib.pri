@@ -142,6 +142,24 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 #  QMAKE_CXXFLAGS+=-fext-numeric-literals
 }
 
+#
+exists($${CONDA_ENV}) {
+  INCLUDEPATH += $${CONDA_ENV}/include
+  LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp
+} else {
+  INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include
+  LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp
+}
+win32 {
+  LIBS += -lopengl32 -lglu32
+}
+macx {
+  LIBS += -framework AGL -framework OpenGL
+}
+unix:!macx {
+  LIBS += -lGL -lGLU
+}
+
 
 message($$DEFINES)
 message($$LIBS)

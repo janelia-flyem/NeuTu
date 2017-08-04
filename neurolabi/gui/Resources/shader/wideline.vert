@@ -1,14 +1,16 @@
 #if GLSL_VERSION >= 130
 in vec3 attr_vertex;
+#ifndef USE_1DTEXTURE
 in vec4 attr_color;
+#endif
 #else
 attribute vec3 attr_vertex;
+#ifndef USE_1DTEXTURE
 attribute vec4 attr_color;
 #endif
+#endif
 
-uniform mat4 view_matrix;
 uniform mat4 projection_view_matrix;
-//uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
 uniform mat4 pos_transform = mat4(1.0);
 
 #if GLSL_VERSION >= 130 && defined(HAS_CLIP_PLANE)
@@ -16,18 +18,21 @@ uniform vec4 clip_planes[CLIP_PLANE_COUNT];
 out float gl_ClipDistance[CLIP_PLANE_COUNT];
 #endif
 
+#ifndef USE_1DTEXTURE
 #if GLSL_VERSION >= 130
-out vec4 color;
+out vec4 colorIn;
 #else
-varying vec4 color;
+varying vec4 colorIn;
+#endif
 #endif
 
 void main()
 {
-  //vec4 vertex = vec4(attr_vertex*pos_scale, 1.0);
   vec4 vertex = pos_transform * vec4(attr_vertex, 1.0);
   gl_Position = projection_view_matrix * vertex;
-  color = attr_color;
+#ifndef USE_1DTEXTURE
+  colorIn = attr_color;
+#endif
 #if defined(HAS_CLIP_PLANE)
 #if GLSL_VERSION >= 130
   for (int i=0; i<CLIP_PLANE_COUNT; ++i)

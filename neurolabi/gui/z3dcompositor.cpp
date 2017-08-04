@@ -1268,8 +1268,8 @@ bool Z3DCompositor::createWARenderTarget(const glm::uvec2& size)
   return comp;
 }
 
-void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &filters,
-                                        Z3DRenderOutputPort &port, Z3DEye eye)
+void Z3DCompositor::renderTransparentWB(const std::vector<Z3DBoundedFilter*>& filters,
+                                        Z3DRenderOutputPort& port, Z3DEye eye, Z3DTexture* depthTexture)
 {
   if (!m_wbRT) {
     if (!createWBRenderTarget(port.size())) {
@@ -1285,8 +1285,8 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   }
 
   const Z3DTexture* g_accumulationTexId[2];
-  g_accumulationTexId[0] = m_waRT->attachment(GL_COLOR_ATTACHMENT0);
-  g_accumulationTexId[1] = m_waRT->attachment(GL_COLOR_ATTACHMENT1);
+  g_accumulationTexId[0] = m_wbRT->attachment(GL_COLOR_ATTACHMENT0);
+  g_accumulationTexId[1] = m_wbRT->attachment(GL_COLOR_ATTACHMENT1);
   const GLenum g_drawBuffers[] = {GL_COLOR_ATTACHMENT0,
                                   GL_COLOR_ATTACHMENT1
   };
@@ -1362,7 +1362,7 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DGeometryFilter *> &
   CHECK_GL_ERROR
 }
 
-bool Z3DCompositor::createWBRenderTarget(glm::ivec2 size)
+bool Z3DCompositor::createWBRenderTarget(const glm::uvec2& size)
 {
   m_wbRT.reset(new Z3DRenderTarget(size));
   Z3DTexture* g_accumulationTexId[2];

@@ -71,6 +71,7 @@ private:
 public:
   ZStringIntOptionParameter geometriesMultisampleMode;
   ZStringIntOptionParameter transparencyMethod;
+  ZFloatParameter weightedBlendedDepthScale;
   ZIntParameter lightCount;
   std::vector<std::unique_ptr<ZVec4Parameter>> lightPositions;
   std::vector<std::unique_ptr<ZVec4Parameter>> lightAmbients;

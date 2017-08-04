@@ -171,21 +171,14 @@ contains(CONFIG, sanitize) {
   }
 }
 
-INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include
-LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp
 win32 {
-  LIBS += -lopengl32 -lglu32
   SOURCES += $$PWD/ext/sys/VideoMemoryWin.cpp \
       $$PWD/ext/sys/VidMemViaD3D9.cpp \
       $$PWD/ext/sys/VidMemViaDDraw.cpp \
       $$PWD/ext/sys/VidMemViaDxDiag.cpp
 }
 macx {
-  LIBS += -framework AGL -framework OpenGL
   SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
-}
-unix:!macx {
-  LIBS += -lGL -lGLU
 }
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
@@ -798,7 +791,9 @@ HEADERS += mainwindow.h \
     z3dcanvaspainter.h \
     zmesh.h \
     zmeshio.h \
-    zmeshutils.h
+    zmeshutils.h \
+    z3dmeshfilter.h \
+    z3dmeshrenderer.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1379,7 +1374,9 @@ SOURCES += main.cpp \
     z3dcanvaspainter.cpp \
     zmesh.cpp \
     zmeshio.cpp \
-    zmeshutils.cpp
+    zmeshutils.cpp \
+    z3dmeshfilter.cpp \
+    z3dmeshrenderer.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+currDIR="$( cd -P "$( dirname "$0" )" && pwd )"
+cd $currDIR
+
+conda build assimp_recipe
+conda install --use-local -n neutu-env assimp -y
+conda build purge
+
+conda build glbinding_recipe
+conda install --use-local -n neutu-env glbinding -y
+conda build purge

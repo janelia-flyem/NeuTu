@@ -1,0 +1,33 @@
+{% set version = "2.1.3" %}
+{% set minor_version = ".".join(version.split(".")[:2]) %}
+
+package:
+  name: glbinding
+  version: {{ version }}
+
+source:
+  url: https://github.com/cginternals/glbinding/archive/v{{ version }}.tar.gz
+  fn:  glbinding-{{ version }}.tar.gz
+  sha256: 48f2e590a4a951005f79fec6c487217aa9b344a33ca1a8d2b7e618f04681ec60
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - cmake
+    - ninja
+  run:
+
+test:
+  
+
+about:
+  home: hhttps://github.com/cginternals/glbinding
+  license: MIT
+  summary: >
+    glbinding is an MIT licensed, cross-platform C++ binding for the OpenGL API.
+
+extra:
+  recipe-maintainers:
+    - Linqing Feng
