@@ -1,4 +1,7 @@
 #include "zstackdochelper.h"
+
+#include <QColor>
+
 #include "zstackdoc.h"
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidtileensemble.h"
@@ -92,7 +95,7 @@ bool ZStackDocHelper::hasCurrentZ() const
   return m_hasCurrentZ;
 }
 
-ZIntCuboid getVolumeBoundBox(const ZStackDoc *doc)
+ZIntCuboid ZStackDocHelper::getVolumeBoundBox(const ZStackDoc *doc)
 {
   ZIntCuboid box;
   if (doc != NULL) {
@@ -108,4 +111,16 @@ ZIntCuboid getVolumeBoundBox(const ZStackDoc *doc)
   }
 
   return box;
+}
+
+QColor ZStackDocHelper::GetBodyColor(
+    const ZFlyEmProofDoc *doc, uint64_t bodyId)
+{
+  QColor color;
+  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
+  if (labelSlice != NULL) {
+    color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+  }
+
+  return color;
 }

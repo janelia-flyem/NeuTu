@@ -10,8 +10,9 @@ class ZStackObject;
 class ZStackDocObjectUpdate {
 public:
   enum EAction {
-    ACTION_NULL, ACTION_ADD_NONUNIQUE, ACTION_ADD_UNIQUE, ACTION_EXPEL, ACTION_KILL,
-    ACTION_RECYCLE, ACTION_UPDATE
+    ACTION_NULL, ACTION_ADD_NONUNIQUE, ACTION_ADD_UNIQUE,
+    ACTION_UPDATE, ACTION_SELECT, ACTION_DESELECT,
+    ACTION_RECYCLE, ACTION_EXPEL, ACTION_KILL
   };
 
   ZStackDocObjectUpdate(ZStackObject *m_obj, EAction action);
@@ -27,7 +28,14 @@ public:
     return m_obj;
   }
 
+  void setAction(EAction action) {
+    m_action = action;
+  }
+
   void print() const;
+
+  static QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
+  MakeActionMap(QList<ZStackDocObjectUpdate*> updateList);
 
 private:
   ZStackObject *m_obj;

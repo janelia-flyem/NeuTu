@@ -83,6 +83,7 @@ class ZProgressSignal;
 class ZWidgetMessage;
 class ZDvidSparseStack;
 class ZStackDocDataBuffer;
+class ZStackDocKeyProcessor;
 
 /*!
  * \brief The class of stack document
@@ -157,6 +158,7 @@ public: //attributes
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
   bool hasObject(ZStackObject::ETarget target) const;
+  bool hasObject(const ZStackObject *obj) const;
 
   ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
 
@@ -463,6 +465,9 @@ public:
   void setSparseStack(ZSparseStack *spStack);
 
   void importSeedMask(const QString &filePath);
+
+  ZStackDocKeyProcessor* getKeyProcessor();
+  void setKeyProcessor(ZStackDocKeyProcessor *processor);
 
   /*
   ZNeuronTracer &getNeuronTracer() {
@@ -1102,6 +1107,8 @@ public slots: //undoable commands
   virtual bool executeEnhanceLineCommand();
   virtual bool executeWatershedCommand();
   virtual void executeRemoveRectRoiCommand();
+  virtual bool executeChangeSwcNodeType(
+      QList<Swc_Tree_Node*> &nodeList, int type);
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();
@@ -1260,6 +1267,7 @@ private:
   const T* getFirstUserByType() const;
 
   void updateTraceMask();
+  virtual void makeKeyProcessor();
 
 private:
   //Main stack
@@ -1317,6 +1325,7 @@ private:
   ZStackFactory *m_stackFactory;
 
   ZActionFactory *m_actionFactory;
+  ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
 
   bool m_selectionSilent;

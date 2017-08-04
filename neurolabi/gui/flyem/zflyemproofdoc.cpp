@@ -3439,6 +3439,16 @@ void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
   }
 }
 
+void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
+    slice->removeSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
+  }
+}
+
 void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
 {
   ZRect2d rect = getRect2dRoi();

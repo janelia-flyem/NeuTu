@@ -180,6 +180,13 @@ void Z3DWindow::createToolBar()
   connect(viewSynapseAction, SIGNAL(toggled(bool)),
           this, SLOT(showPuncta(bool)));
   m_toolBar->addAction(viewSynapseAction);
+
+  if (m_todoFilter != NULL) {
+    QAction *viewTodoAction =
+        ZActionFactory::MakeAction(ZActionFactory::ACTION_SHOW_TODO, this);
+    connect(viewTodoAction, SIGNAL(toggled(bool)), this, SLOT(showTodo(bool)));
+    m_toolBar->addAction(viewTodoAction);
+  }
 }
 
 void Z3DWindow::gotoPosition(double x, double y, double z, double radius)
@@ -277,7 +284,7 @@ void Z3DWindow::init(EInitMode mode)
   m_punctaFilter = new Z3DPunctaFilter();
   m_layerList.append(LAYER_PUNCTA);
   m_punctaFilter->setData(m_doc->getPunctumList());
-  m_swcFilter = new Z3DSwcFilter();
+  m_swcFilter = new Z3DSwcFilter(this);
   m_layerList.append(LAYER_SWC);
   m_swcFilter->setData(m_doc->getSwcList());
   m_graphFilter = new Z3DGraphFilter();
@@ -376,6 +383,8 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
   connect(m_swcFilter, SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
           this, SLOT(selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node*,bool)));
+  connect(m_swcFilter, SIGNAL(treeNodeSelected(QList<Swc_Tree_Node*>,bool)),
+          this, SLOT(selectedSwcTreeNodeChangedFrom3D(QList<Swc_Tree_Node*>,bool)));
 
   connect(m_swcFilter, SIGNAL(treeNodeSelectConnection(Swc_Tree_Node*)),
           m_doc.get(), SLOT(selectSwcNodeConnection(Swc_Tree_Node*)));
@@ -508,8 +517,10 @@ void Z3DWindow::init(EInitMode mode)
           this, SLOT(addStrokeFrom3dPaint(ZStroke2d*)));
           */
 
+//  connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
+//          this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
   connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
-          this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
+          this, SLOT(processStroke(ZStroke2d*)));
 
   m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
 
@@ -1366,6 +1377,11 @@ ZJsonObject Z3DWindow::getConfigJson(ERendererLayer layer) const
   return configJson;
 }
 
+void Z3DWindow::skipKeyEvent(bool on)
+{
+  m_skippingKeyEvent = on;
+}
+
 void Z3DWindow::readSettings()
 {
   QString windowKey = NeuTube3D::GetWindowKeyString(getWindowType()).c_str();
@@ -1533,8 +1549,8 @@ void Z3DWindow::cleanup()
     m_volumeRaycaster = NULL;
     delete m_punctaFilter;
     m_punctaFilter = NULL;
-    delete m_swcFilter;
-    m_swcFilter = NULL;
+//    delete m_swcFilter;
+//    m_swcFilter = NULL;
     delete m_graphFilter;
     m_graphFilter = NULL;
     delete m_surfaceFilter;
@@ -1865,6 +1881,26 @@ void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
   }
 
   statusBar()->showMessage(SwcTreeNode::toString(p).c_str());
+}
+
+void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(
+    QList<Swc_Tree_Node *> nodeArray, bool append)
+{
+  if (!append) {
+    if (m_doc->hasSelectedSwcNode()) {
+      m_blockingTraceMenu = true;
+    }
+  }
+
+  if (!append) {
+    if (m_doc->hasSelectedSwcNode()) {
+      m_doc->deselectAllSwcTreeNodes();
+    }
+  }
+
+  m_doc->setSwcTreeNodeSelected(nodeArray.begin(), nodeArray.end(), append);
+
+  statusBar()->showMessage(QString("%1 node(s) selected.").arg(nodeArray.size()));
 }
 
 void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
@@ -2825,6 +2861,11 @@ void Z3DWindow::closeEvent(QCloseEvent * /*event*/)
 
 void Z3DWindow::keyPressEvent(QKeyEvent *event)
 {
+  if (m_skippingKeyEvent) {
+    emit keyPressed(event);
+    return;
+  }
+
   ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
   switch(event->key())
   {
@@ -3793,6 +3834,12 @@ void Z3DWindow::showPuncta(bool on)
   emit showingPuncta(on);
 }
 
+void Z3DWindow::showTodo(bool on)
+{
+  setLayerVisible(LAYER_TODO, on);
+  emit showingTodo(on);
+}
+
 void Z3DWindow::showSeletedSwcNodeLength()
 {
   std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
@@ -4224,6 +4271,43 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
   } else {
     delete obj;
   }
+}
+
+void Z3DWindow::selectSwcNodeFromStroke(const ZStroke2d *stroke)
+{
+  if (hasSwc() && stroke != NULL) {
+    ZObject3d *ptArray = stroke->toObject3d();
+    if (ptArray != NULL) {
+      getSwcFilter()->selectSwcNode(*ptArray);
+    }
+  }
+}
+
+void Z3DWindow::labelSwcNodeFromStroke(const ZStroke2d *stroke)
+{
+  if (hasSwc() && stroke != NULL) {
+    getSwcFilter()->forceNodePicking(true);
+    getSwcFilter()->invalidate();
+    m_networkEvaluator->process();
+    ZObject3d *ptArray = stroke->toObject3d();
+    if (ptArray != NULL) {
+      QList<Swc_Tree_Node*> nodeArray = getSwcFilter()->pickSwcNode(*ptArray);
+      getDocument()->executeChangeSwcNodeType(nodeArray, stroke->getLabel());
+      /*
+      foreach (Swc_Tree_Node *node, nodeArray) {
+        SwcTreeNode::setType(node, stroke->getLabel());
+      }
+      */
+    }
+    getSwcFilter()->forceNodePicking(false);
+//    m_doc->notifySwcModified();
+  }
+}
+
+void Z3DWindow::processStroke(ZStroke2d *stroke)
+{
+  labelSwcNodeFromStroke(stroke);
+  addPolyplaneFrom3dPaint(stroke);
 }
 
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)

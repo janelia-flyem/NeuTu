@@ -4,17 +4,13 @@
 TEMPLATE = app
 
 contains(TEMPLATE, app) {
-    DEFINES += _QT_APPLICATION_
+  DEFINES += _QT_APPLICATION_
 } else {
-    CONFIG += staticlib
+  CONFIG += staticlib
 }
 
 contains(CONFIG, neu3) {
-    DEFINES += _NEU3_ _FLYEM_
-}
-
-contains(DEFINES,_ENABLE_SURFRECON_){
-  LIBS+= -lCGAL
+  DEFINES += _NEU3_ _FLYEM_
 }
 
 #DEFINES+=_CLI_VERSION
@@ -148,19 +144,6 @@ contains(CONFIG, c++11) {
     }
   }
 }
-
-#contains(CONFIG, sanitize) {
-#  message(Using sanitize)
-#  unix {
-#    macx {
-#      QMAKE_CXXFLAGS += -fsanitize=address
-#      QMAKE_LFLAGS += -fsanitize=address
-#    } else {
-#      QMAKE_CXXFLAGS += -fsanitize=address
-#      QMAKE_LFLAGS += -fsanitize=address
-#    }
-#  }
-#}
 
 contains(CONFIG, sanitize) {
   message(Using sanitize)
@@ -777,7 +760,14 @@ HEADERS += mainwindow.h \
     dialogs/zflyembodysplitdialog.h \
     widgets/zbodylistwidget.h \
     widgets/flyembodyinfowidget.h \
-    neu3window.h
+    neu3window.h \
+    flyem/zflyembody3ddockeyprocessor.h \
+    zstackdockeyprocessor.h \
+    widgets/ztextedit.h \
+    flyem/zflyembodylistmodel.h \
+    flyem/zflyembodylistview.h \
+    flyem/zflyembodylistdelegate.h \
+    flyem/zflyembodyideditor.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1342,6 +1332,13 @@ SOURCES += main.cpp \
     widgets/zbodylistwidget.cpp \
     widgets/flyembodyinfowidget.cpp \
     zxmldoc.cpp \
-    neu3window.cpp
+    neu3window.cpp \
+    flyem/zflyembody3ddockeyprocessor.cpp \
+    zstackdockeyprocessor.cpp \
+    widgets/ztextedit.cpp \
+    flyem/zflyembodylistmodel.cpp \
+    flyem/zflyembodylistview.cpp \
+    flyem/zflyembodylistdelegate.cpp \
+    flyem/zflyembodyideditor.cpp
 
 

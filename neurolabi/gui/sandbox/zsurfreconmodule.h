@@ -10,6 +10,8 @@
 #undef BOOL
 #undef TRUE
 #undef FALSE
+//#include <surfrecon.h>
+
 #include "imgproc/surfrecon.h"
 
 class ZStack;

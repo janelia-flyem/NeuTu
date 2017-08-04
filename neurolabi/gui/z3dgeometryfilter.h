@@ -10,7 +10,7 @@ class Z3DGeometryFilter : public Z3DProcessor
 {
   friend class Z3DCompositor;
 public:
-  Z3DGeometryFilter();
+  Z3DGeometryFilter(QObject *parent = NULL);
   virtual ~Z3DGeometryFilter();
 
   virtual void render(Z3DEye eye) = 0;

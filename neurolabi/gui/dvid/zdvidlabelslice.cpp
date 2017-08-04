@@ -953,6 +953,27 @@ void ZDvidLabelSlice::addSelection(
 //  m_selectedSet.insert(getMappedLabel(bodyId, labelType));
 }
 
+void ZDvidLabelSlice::removeSelection(
+    uint64_t bodyId, NeuTube::EBodyLabelType labelType)
+{
+  switch (labelType) {
+  case NeuTube::BODY_LABEL_ORIGINAL:
+    m_selectedOriginal.erase(bodyId);
+    break;
+  case NeuTube::BODY_LABEL_MAPPED:
+    if (m_bodyMerger != NULL) {
+      QSet<uint64_t> selectedOriginal =
+          m_bodyMerger->getOriginalLabelSet(bodyId);
+      foreach (uint64_t bodyId, selectedOriginal) {
+        m_selectedOriginal.erase(bodyId);
+      }
+    } else {
+      m_selectedOriginal.erase(bodyId);
+    }
+    break;
+  }
+}
+
 void ZDvidLabelSlice::xorSelection(
     uint64_t bodyId, NeuTube::EBodyLabelType labelType)
 {

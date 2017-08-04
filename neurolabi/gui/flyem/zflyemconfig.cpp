@@ -105,8 +105,10 @@ void ZFlyEmConfig::loadConfig()
         setAnalyzingMb6(ZJsonParser::booleanValue(obj[MB6_KEY]));
       }
 
-      if (obj.hasKey(TASK_SERVER_KEY)) {
-        setTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
+      if (getTaskServer().empty()) {
+        if (obj.hasKey(TASK_SERVER_KEY)) {
+          setTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
+        }
       }
 
       if (obj.hasKey(DVID_ROOT_KEY)) {
@@ -142,16 +144,6 @@ void ZFlyEmConfig::loadConfig()
   }
 }
 
-/*
-void ZFlyEmConfig::loadConfig(const std::string &filePath)
-{
-  m_configPath = filePath;
-  NeutubeConfig::SetFlyEmConfigPath(filePath.c_str());
-
-  loadConfig();
-}
-*/
-
 std::string ZFlyEmConfig::mapAddress(const std::string &address) const
 {
   if (m_addressMap.count(address) > 0) {
@@ -163,7 +155,19 @@ std::string ZFlyEmConfig::mapAddress(const std::string &address) const
 
 void ZFlyEmConfig::setTaskServer(const std::string &taskServer)
 {
-  m_taskServer = taskServer;
+#ifdef _DEBUG_
+  std::cout << "Setting task server to " << taskServer << std::endl;
+#endif
+//  m_taskServer = taskServer;
+  NeutubeConfig::SetTaskServer(taskServer.c_str());
+#ifdef _DEBUG_
+  std::cout << "Task server set to " << getTaskServer() << std::endl;
+#endif
+}
+
+std::string ZFlyEmConfig::getTaskServer() const
+{
+  return NeutubeConfig::GetTaskServer().toStdString();
 }
 
 std::string ZFlyEmConfig::getDvidRootNode(const std::string &name) const

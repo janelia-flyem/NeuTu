@@ -174,6 +174,12 @@ public:
   bool hasObject(ZStackObject::ETarget target) const;
   bool hasSelected() const;
   bool hasSelected(ZStackObject::EType type) const;
+  /*!
+   * \brief Test if the group contains a specific object
+   * \param obj The object to verify. The pointer does not have to be valid.
+   * \return
+   */
+  bool hasObject(const ZStackObject *obj) const;
 
   QList<ZStackObject::EType> getAllType() const;
 

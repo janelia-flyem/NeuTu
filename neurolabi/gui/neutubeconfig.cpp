@@ -862,6 +862,11 @@ QString NeutubeConfig::GetNeuTuServer()
   return GetSettings().value("neutu_server").toString();
 }
 
+QString NeutubeConfig::GetTaskServer()
+{
+  return GetSettings().value("task_server").toString();
+}
+
 bool NeutubeConfig::UsingDefaultFlyemConfig()
 {
   if (GetSettings().contains("default_flyem_config")) {
@@ -878,6 +883,11 @@ void NeutubeConfig::SetNeuTuServer(const QString &path)
   } else {
     GetSettings().setValue("neutu_server", path);
   }
+}
+
+void NeutubeConfig::SetTaskServer(const QString &path)
+{
+  GetSettings().setValue("task_server", path);
 }
 
 void NeutubeConfig::SetDataDir(const QString &dataDir)

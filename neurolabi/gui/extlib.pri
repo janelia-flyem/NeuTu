@@ -136,8 +136,10 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
 }
 
 contains(DEFINES, _ENABLE_SURFRECON_) {
-  LIBS+=-lCGAL -lCGAL_Core -lCGAL_ImageIO -lsurfrecon
-  QMAKE_CXXFLAGS+=-fext-numeric-literals
+  LIBS+=-lCGAL -lCGAL_Core -lgmp
+
+  #-lsurfrecon
+#  QMAKE_CXXFLAGS+=-fext-numeric-literals
 }
 
 

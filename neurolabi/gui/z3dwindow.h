@@ -203,6 +203,7 @@ public: //controls
   void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
   ZJsonObject getConfigJson(ERendererLayer layer) const;
 
+  void skipKeyEvent(bool on);
 
 public:
   void setROIs(size_t n);
@@ -232,6 +233,8 @@ signals:
   void deselectingBody(const std::set<uint64_t> bodyId);
   void settingNormalTodoVisible(bool);
   void showingPuncta(bool);
+  void showingTodo(bool);
+  void keyPressed(QKeyEvent *event);
 
 public slots:
   void resetCamera();  // set up camera based on visible objects in scene, original position
@@ -268,6 +271,8 @@ public slots:
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
+  void selectedSwcTreeNodeChangedFrom3D(
+      QList<Swc_Tree_Node*> nodeArray, bool append);
   void addNewSwcTreeNode(double x, double y, double z, double r);
   void extendSwcTreeNode(double x, double y, double z, double r);
   void connectSwcTreeNode(Swc_Tree_Node *tn);
@@ -300,6 +305,7 @@ public slots:
   void showSeletedSwcNodeLength();
 
   void showPuncta(bool on);
+  void showTodo(bool on);
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -378,6 +384,7 @@ public slots:
 
   void addStrokeFrom3dPaint(ZStroke2d*stroke);
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
+  void processStroke(ZStroke2d *stroke);
 
   void markSwcSoma();
   void help();
@@ -436,6 +443,9 @@ private:
   void exitExtendingSwc();
 
   bool exitEditMode();
+
+  void selectSwcNodeFromStroke(const ZStroke2d *stroke);
+  void labelSwcNodeFromStroke(const ZStroke2d *stroke);
 
 private:
   QTabWidget* createBasicSettingTabWidget();
@@ -554,6 +564,7 @@ private:
   bool m_isClean;   //already cleanup?
 
   bool m_blockingTraceMenu;
+  bool m_skippingKeyEvent = false;
 
   glm::ivec3 m_lastClickedPosInVolume;
 

@@ -5,6 +5,7 @@
 #include <QMetaType>
 #include <iostream>
 #include <QProcess>
+#include <QSet>
 
 #include "neutubeconfig.h"
 #include "zlogmessagereporter.h"
@@ -22,6 +23,7 @@ void NeuTube::RegisterMetaType()
   qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
+  qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
   qRegisterMetaType<FlyEM::EBodySplitMode>("FlyEM::EBodySplitMode");
 }
 

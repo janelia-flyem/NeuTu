@@ -323,6 +323,57 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   return painted;
 }
 
+ZStack* ZStroke2d::toLabelStack(int label) const
+{
+  if (isEmpty()) {
+    return NULL;
+
+  }
+  const static int margin = 5;
+
+  //Estimate bound box
+  double x0 = m_pointArray[0].x();
+  double y0 = m_pointArray[0].y();
+  double x1 = x0;
+  double y1 = y0;
+
+  foreach(const QPointF &pt, m_pointArray) {
+    if (x0 > pt.x()) {
+      x0 = pt.x();
+    }
+    if (x1 < pt.x()) {
+      x1 = pt.x();
+    }
+    if (y0 > pt.y()) {
+      y0 = pt.y();
+    }
+    if (y1 < pt.y()) {
+      y1 = pt.y();
+    }
+  }
+
+  Cuboid_I boundBox;
+  int r = iround(m_width / 2);
+  boundBox.cb[0] = iround(x0) - margin - r;
+  boundBox.cb[1] = iround(y0) - margin - r;
+  boundBox.cb[2] = m_z;
+  boundBox.ce[0] = iround(x1) + margin + r;
+  boundBox.ce[1] = iround(y1) + margin + r;
+  boundBox.ce[2] = m_z;
+
+  int width = Cuboid_I_Width(&boundBox);
+  int height = Cuboid_I_Height(&boundBox);
+  int depth = Cuboid_I_Depth(&boundBox);
+
+  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
+  stack->setOffset(boundBox.cb[0], boundBox.cb[1], boundBox.cb[2]);
+  ZStroke2d tmpStroke = *this;
+  tmpStroke.translate(-stack->getOffset());
+  tmpStroke.labelGrey(stack->c_stack(), label);
+
+  return stack;
+}
+
 void ZStroke2d::labelImage(QImage *image) const
 {
   if (image != NULL) {
@@ -537,8 +588,9 @@ bool ZStroke2d::getPoint(double *x, double *y, size_t index) const
 
 void ZStroke2d::print() const
 {
+  std::cout << "Stroke points (z=" << getZ() << ")" << std::endl;
   foreach (QPointF point, m_pointArray) {
-    std::cout << point.x() << " " << point.y() << std::endl;
+    std::cout << "  " << point.x() << " " << point.y() << std::endl;
   }
 }
 
@@ -604,7 +656,7 @@ void ZStroke2d::downsample(const ZIntPoint &dsIntv)
 ZObject3d* ZStroke2d::toObject3d() const
 {
   ZObject3d *obj = NULL;
-  ZStack *stack = toStack();
+  ZStack *stack = toBinaryStack();
   if (stack != NULL) {
     obj = new ZObject3d;
     obj->loadStack(stack);
@@ -647,53 +699,12 @@ ZCuboid ZStroke2d::getBoundBox() const
 
 ZStack* ZStroke2d::toStack() const
 {
-  if (isEmpty()) {
-    return NULL;
+  return toLabelStack(getLabel());
+}
 
-  }
-  const static int margin = 5;
-
-  //Estimate bound box
-  double x0 = m_pointArray[0].x();
-  double y0 = m_pointArray[0].y();
-  double x1 = x0;
-  double y1 = y0;
-
-  foreach(const QPointF &pt, m_pointArray) {
-    if (x0 > pt.x()) {
-      x0 = pt.x();
-    }
-    if (x1 < pt.x()) {
-      x1 = pt.x();
-    }
-    if (y0 > pt.y()) {
-      y0 = pt.y();
-    }
-    if (y1 < pt.y()) {
-      y1 = pt.y();
-    }
-  }
-
-  Cuboid_I boundBox;
-  int r = iround(m_width / 2);
-  boundBox.cb[0] = iround(x0) - margin - r;
-  boundBox.cb[1] = iround(y0) - margin - r;
-  boundBox.cb[2] = m_z;
-  boundBox.ce[0] = iround(x1) + margin + r;
-  boundBox.ce[1] = iround(y1) + margin + r;
-  boundBox.ce[2] = m_z;
-
-  int width = Cuboid_I_Width(&boundBox);
-  int height = Cuboid_I_Height(&boundBox);
-  int depth = Cuboid_I_Depth(&boundBox);
-
-  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
-  stack->setOffset(boundBox.cb[0], boundBox.cb[1], boundBox.cb[2]);
-  ZStroke2d tmpStroke = *this;
-  tmpStroke.translate(-stack->getOffset());
-  tmpStroke.labelGrey(stack->c_stack());
-
-  return stack;
+ZStack* ZStroke2d::toBinaryStack() const
+{
+  return toLabelStack(1);
 }
 
 void ZStroke2d::labelStack(ZStack *stack) const

@@ -17,6 +17,8 @@
 #define Z3DPROCESSOR_H
 
 #include <QObject>
+#include <QWidget>
+
 #include <vector>
 #include <map>
 #include <set>
@@ -49,7 +51,8 @@ public:
   };
   Q_DECLARE_FLAGS(InvalidationState, ___InvalidationState)
 
-  Z3DProcessor(const QString &name = "");
+  Z3DProcessor(const QString &name, QObject *parent = NULL);
+  Z3DProcessor(QObject *parent = NULL);
   virtual ~Z3DProcessor();
 
   virtual QString getClassName() const {return metaObject()->className();}
@@ -82,6 +85,8 @@ public:
 
   // removes all port connections
   void disconnectAllPorts();
+
+  QWidget* getParentWidget() const;
 
 public slots:
   inline void invalidateResult() { invalidate(InvalidAllResult); }
