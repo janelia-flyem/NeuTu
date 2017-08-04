@@ -100,8 +100,20 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 
 
 
-
+    updateLabel();
     setWindowConfiguration(TASK_UI);
+}
+
+void TaskProtocolWindow::updateLabel() {
+    int ncomplete = 0;
+    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
+        if (task->completed()) {
+            ncomplete++;
+        }
+    }
+    int ntasks = m_taskList.size();
+    float percent = (100.0 * ncomplete) / ntasks;
+    ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
 }
 
 void TaskProtocolWindow::saveState() {
@@ -156,10 +168,6 @@ bool TaskProtocolWindow::isValidJson(QJsonObject json) {
 
     // check file description and version
     if (!json.contains(KEY_DESCRIPTION) || json[KEY_DESCRIPTION].toString() != VALUE_DESCRIPTION) {
-        std::cout << "isvalidjson(); keys:" << std::endl;
-        foreach (QString key, json.keys()) {
-            std::cout << key.toStdString() << std::endl;
-        }
         showError("Json parsing error", "This file does not appear to be a Neu3 task list file!");
         return false;
     }

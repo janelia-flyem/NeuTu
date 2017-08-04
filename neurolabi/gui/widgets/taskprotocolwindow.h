@@ -64,6 +64,7 @@ private:
     QString generateDataKey();
     QJsonObject loadJsonFromDVID(QString instance, QString key);
     void startProtocol(QJsonObject json, bool save);
+    void updateLabel();
 };
 
 #endif // TASKPROTOCOLWINDOW_H

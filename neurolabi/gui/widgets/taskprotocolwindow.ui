@@ -174,16 +174,29 @@
       <item>
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>placeholder</string>
+         <string>Progress:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="progressLabel">
         <property name="text">
-         <string>progress: ##/## (## %)</string>
+         <string>##/## (## %)</string>
         </property>
        </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>
