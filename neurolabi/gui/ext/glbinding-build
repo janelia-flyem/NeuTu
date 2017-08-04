@@ -1,18 +1,22 @@
 #!/bin/bash
 
 currDIR="$( cd -P "$( dirname "$0" )" && pwd )"
-srcDIR=$currDIR/glbinding-master
+version=2.1.3
+srcDIR=$currDIR/glbinding-$version
 
 if [ -d $srcDIR ]
 then
   rm -rf $srcDIR
 fi
 cd $currDIR
-unzip glbinding-master.zip
+if [ ! -f glbinding-$version.zip ]
+then
+  curl -LJOk https://github.com/cginternals/glbinding/archive/v$version.zip
+fi
+unzip glbinding-$version.zip
 
 buildDIR=$srcDIR/../__glbinding-build
 installDIR=$currDIR/glbinding
-numCores=$( sysctl -n hw.logicalcpu )
 
 if [ -d $installDIR ]
 then
@@ -32,9 +36,9 @@ fi
 mkdir $buildDIR
 cd $buildDIR
 
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DOPTION_BUILD_GPU_TESTS:BOOL="0" -DBUILD_SHARED_LIBS:BOOL="0" -DOPTION_BUILD_TESTS:BOOL="0" -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DOPTION_BUILD_GPU_TESTS:BOOL="0" -DBUILD_SHARED_LIBS:BOOL="0" -DOPTION_BUILD_TESTS:BOOL="0" -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
 
-make -j $numCores install
+ninja install
 
 cd $currDIR
 rm -rf $buildDIR

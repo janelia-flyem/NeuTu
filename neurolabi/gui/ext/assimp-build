@@ -1,18 +1,22 @@
 #!/bin/bash
 
 currDIR="$( cd -P "$( dirname "$0" )" && pwd )"
-srcDIR=$currDIR/assimp-master
+version=4.0.1
+srcDIR=$currDIR/assimp-$version
 
 if [ -d $srcDIR ]
 then
   rm -rf $srcDIR
 fi
 cd $currDIR
-unzip assimp-master.zip
+if [ ! -f assimp-$version.zip ]
+then
+  curl -LJOk https://github.com/assimp/assimp/archive/v$version.zip
+fi
+unzip assimp-$version.zip
 
 buildDIR=$srcDIR/../__assimp-build
 installDIR=$currDIR/assimp
-numCores=$( sysctl -n hw.logicalcpu )
 
 if [ -d $installDIR ]
 then
@@ -35,9 +39,9 @@ fi
 mkdir $buildDIR
 cd $buildDIR
 
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DASSIMP_BUILD_ASSIMP_TOOLS:BOOL="0" -DASSIMP_BUILD_TESTS:BOOL="0" -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DASSIMP_BUILD_ASSIMP_TOOLS:BOOL="0" -DASSIMP_BUILD_TESTS:BOOL="0" -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
 
-make -j $numCores install
+ninja install
 
 # unpatch
 mv -f $srcDIR/include/assimp/defs.h.bak $srcDIR/include/assimp/defs.h
