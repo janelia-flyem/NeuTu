@@ -8,19 +8,37 @@
 #include <QJsonObject>
 #include <QsLog.h>
 
+#include "neutube.h"
+#include "flyem/zflyemproofdoc.h"
 #include "protocols/taskbodyreview.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
 
-TaskProtocolWindow::TaskProtocolWindow(QWidget *parent) :
+TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TaskProtocolWindow)
 {
     ui->setupUi(this);
 
+    m_proofDoc = doc;
+
+    m_protocolInstanceStatus = UNCHECKED;
+
+    // UI connections
+    connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
+    connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
+
+    // start to do stuff
+    if (!m_writer.open(doc->getDvidTarget())) {
+        showError("Couldn't open DVID", "DVID couldn't be opened!  Check your network connections.");
+        setWindowConfiguration(LOAD_BUTTON);
+        return;
+    }
 
     // check DVID; if user has a started task list, load it immediately
+
+    // determine key from username and constant
 
     // otherwise, show the load task file button
     // (for testing, start here)
@@ -28,19 +46,16 @@ TaskProtocolWindow::TaskProtocolWindow(QWidget *parent) :
 
 
 
-    // UI connections
-    connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
-    connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
-
-
 }
 // constants
 const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
 const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
 const QString TaskProtocolWindow::KEY_VERSION = "file version";
+const int TaskProtocolWindow::currentVersion = 1;
 const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
 const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
-const int TaskProtocolWindow::currentVersion = 1;
+const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
+const QString TaskProtocolWindow::TASK_PROTOCOL_KEY = "task-protocol";
 
 void TaskProtocolWindow::onDoneButton() {
     std::cout << "onDoneButton()" << std::endl;
@@ -72,7 +87,7 @@ void TaskProtocolWindow::onLoadTasksButton() {
 
 
     // testing
-    std::cout << "onLoadTasksButton: json is valid" << std::endl;
+    std::cout << "onLoadTasksButton(): json is valid" << std::endl;
 
 
 
@@ -85,9 +100,7 @@ void TaskProtocolWindow::onLoadTasksButton() {
     loadTasks(json);
 
     // save to DVID
-    // convert data from internal structures to json
-    // save json to dvid
-
+    saveState();
 
 
 
@@ -97,6 +110,11 @@ void TaskProtocolWindow::onLoadTasksButton() {
     // enable UI and go
     setWindowConfiguration(TASK_UI);
 
+}
+
+void TaskProtocolWindow::saveState() {
+    QJsonObject tasks = storeTasks();
+    saveJsonToDvid(tasks);
 }
 
 QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
@@ -172,6 +190,77 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
     // testing
     std::cout << "loadTasks(): # tasks = " << m_taskList.size() << std::endl;
 
+}
+
+QJsonObject TaskProtocolWindow::storeTasks() {
+
+    QJsonObject json;
+    json[KEY_TASKTYPE] = VALUE_DESCRIPTION;
+    json[KEY_VERSION] = currentVersion;
+
+    QJsonArray tasks;
+    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
+        tasks.append(task->toJson());
+    }
+    json[KEY_TASKLIST] = tasks;
+
+    return json;
+}
+
+void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
+    // check that instance exists; if not, create it
+    if (!checkCreateDataInstance()) {
+        showError("DVID error", "Could not create the protocol instance in DVID!  Data is not saved!");
+        return;
+    }
+
+    QJsonDocument doc(json);
+    QString jsonString(doc.toJson(QJsonDocument::Compact));
+    std::cout << "in saveJsonToDvid()" << std::endl;
+    std::cout << "instance = " << PROTOCOL_INSTANCE.toStdString() << std::endl;
+    std::cout << "key = " << generateDataKey().toStdString() << std::endl;
+
+    m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString(),
+        jsonString.toStdString());
+}
+
+QString TaskProtocolWindow::generateDataKey() {
+    return QString::fromStdString(NeuTube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+}
+
+bool TaskProtocolWindow::checkCreateDataInstance() {
+    // does our data instance exist?  if not, create
+
+    if (m_protocolInstanceStatus == CHECKED_PRESENT) {
+        return true;
+    } else if (m_protocolInstanceStatus == CHECKED_ABSENT) {
+        // only check once; always an error if we can't create
+        //  the first time
+        return false;
+    }
+
+    // m_protocolInstanceStatus = UNCHECKED:
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(m_proofDoc->getDvidTarget())) {
+        if (!reader.hasData(PROTOCOL_INSTANCE.toStdString())) {
+            m_writer.createKeyvalue(PROTOCOL_INSTANCE.toStdString());
+            // did it actually create?  I'm only going to try once
+            if (reader.hasData(PROTOCOL_INSTANCE.toStdString())) {
+                m_protocolInstanceStatus = CHECKED_PRESENT;
+                return true;
+            } else {
+                m_protocolInstanceStatus = CHECKED_ABSENT;
+                return false;
+            }
+        } else {
+            m_protocolInstanceStatus = CHECKED_PRESENT;
+            return true;
+        }
+    } else {
+        m_protocolInstanceStatus = CHECKED_ABSENT;
+        return false;
+    }
 }
 
 void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {

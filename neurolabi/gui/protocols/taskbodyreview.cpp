@@ -61,13 +61,13 @@ bool TaskBodyReview::loadJson(QJsonObject json) {
     // alternate possibility is to store the body IDs as strings are parse,
     //  but that seems just as inelegant
     m_bodyID = json[KEY_BODYID].toDouble();
-    if (m_bodyID == 0 || m_bodyID > 4503599627370496) {
+    if (m_bodyID == 0) {
         // 0 indicates a conversion failure; we don't
         //  anticipate reviewing body 0
         LINFO() << "error converting task json; 0 not allowed: " << objectToString(json);
         return false;
     }
-    if (m_bodyID == 0 || m_bodyID > 4503599627370496) {
+    if (m_bodyID > 4503599627370496) {
         // that number is 2^52
         LINFO() << "error converting task json; can't handle body ID > 2^52 " << objectToString(json);
         return false;

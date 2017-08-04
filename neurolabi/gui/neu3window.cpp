@@ -168,7 +168,7 @@ void Neu3Window::createDockWidget()
 
 void Neu3Window::createTaskWindow() {
     QDockWidget *dockWidget = new QDockWidget(this);
-    TaskProtocolWindow *window = new TaskProtocolWindow(this);
+    TaskProtocolWindow *window = new TaskProtocolWindow(getDataDocument(), this);
 
     // add connections here
 
