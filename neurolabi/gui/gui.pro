@@ -768,7 +768,9 @@ HEADERS += mainwindow.h \
     flyem/zflyembodylistview.h \
     flyem/zflyembodylistdelegate.h \
     flyem/zflyembodyideditor.h \
-    widgets/taskprotocolwindow.h
+    widgets/taskprotocolwindow.h \
+    protocols/taskprotocoltask.h \
+    protocols/taskbodyreview.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1342,6 +1344,8 @@ SOURCES += main.cpp \
     flyem/zflyembodylistview.cpp \
     flyem/zflyembodylistdelegate.cpp \
     flyem/zflyembodyideditor.cpp \
-    widgets/taskprotocolwindow.cpp
+    widgets/taskprotocolwindow.cpp \
+    protocols/taskprotocoltask.cpp \
+    protocols/taskbodyreview.cpp
 
 

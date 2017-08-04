@@ -3,8 +3,12 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QsLog.h>
+
+#include "protocols/taskbodyreview.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -31,9 +35,11 @@ TaskProtocolWindow::TaskProtocolWindow(QWidget *parent) :
 
 }
 // constants
-const QString TaskProtocolWindow::KEY_DESCRIPTION = "file description";
+const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
 const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
-const QString TaskProtocolWindow::KEY_VERSION= "file version";
+const QString TaskProtocolWindow::KEY_VERSION = "file version";
+const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
+const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
 const int TaskProtocolWindow::currentVersion = 1;
 
 void TaskProtocolWindow::onDoneButton() {
@@ -64,8 +70,26 @@ void TaskProtocolWindow::onLoadTasksButton() {
         return;
     }
 
-    // load tasks from json into internal data structures
+
+    // testing
     std::cout << "onLoadTasksButton: json is valid" << std::endl;
+
+
+
+
+    // at the point in time we have older versions hanging around, this is where you
+    //  would convert them
+
+
+    // load tasks from json into internal data structures
+    loadTasks(json);
+
+    // save to DVID
+    // convert data from internal structures to json
+    // save json to dvid
+
+
+
 
     // load first task
 
@@ -112,12 +136,42 @@ bool TaskProtocolWindow::isValidJson(QJsonObject json) {
         return false;
     }
 
-
-    // at the point in time we have older versions hanging around, this is where you
-    //  would convert them
-
+    if (!json.contains(KEY_TASKLIST)) {
+        showError("Json parsing issue", "Can't find list of tasks in json file!");
+        return false;
+    }
+    // could validate that it's a list and each element is a map, but I'll
+    //  draw the line here for now
 
     return true;
+}
+
+void TaskProtocolWindow::loadTasks(QJsonObject json) {
+
+    m_taskList.clear();
+    foreach(QJsonValue taskJson, json[KEY_TASKLIST].toArray()) {
+        if (!taskJson.isObject()) {
+            LWARN() << "found task json that is not an object; skipping";
+            continue;
+        }
+
+        // this if-else tree will get more awkward with more types...
+
+        // also, need to collect these keys and values better; hard-code this one
+        //  for now
+        QString taskType = taskJson.toObject()[KEY_TASKTYPE].toString();
+        if (taskType == "body review") {
+            QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
+            m_taskList.append(task);
+        } else {
+            // unknown task type; log it and move on
+            LWARN() << "found unknown task type " << taskType << " in task json; skipping";
+        }
+    }
+
+    // testing
+    std::cout << "loadTasks(): # tasks = " << m_taskList.size() << std::endl;
+
 }
 
 void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {
