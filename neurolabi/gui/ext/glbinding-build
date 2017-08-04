@@ -32,17 +32,7 @@ fi
 mkdir $buildDIR
 cd $buildDIR
 
-OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk
-if [ ! -d $OSX_SYSROOT ]
-then
-  OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
-fi
-if [ ! -d $OSX_SYSROOT ]
-then
-  OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk
-fi
-
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_OSX_SYSROOT=$OSX_SYSROOT -DOPTION_BUILD_GPU_TESTS:BOOL="0" -DBUILD_SHARED_LIBS:BOOL="0" -DOPTION_BUILD_TESTS:BOOL="0" -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DOPTION_BUILD_GPU_TESTS:BOOL="0" -DBUILD_SHARED_LIBS:BOOL="0" -DOPTION_BUILD_TESTS:BOOL="0" -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
 
 make -j $numCores install
 
