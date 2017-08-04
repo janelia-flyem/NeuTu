@@ -37,15 +37,14 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     }
 
     // check DVID; if user has a started task list, load it immediately
-
-    // determine key from username and constant
-
-    // otherwise, show the load task file button
-    // (for testing, start here)
-    setWindowConfiguration(LOAD_BUTTON);
-
-
-
+    QJsonObject json = loadJsonFromDVID(PROTOCOL_INSTANCE, generateDataKey());
+    if (!json.isEmpty()) {
+        // don't need to save to DVID if we load from DVID
+        startProtocol(json, false);
+    } else {
+        // otherwise, show the load task file button
+        setWindowConfiguration(LOAD_BUTTON);
+    }
 }
 // constants
 const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
@@ -65,8 +64,6 @@ void TaskProtocolWindow::onDoneButton() {
 }
 
 void TaskProtocolWindow::onLoadTasksButton() {
-    std::cout << "onLoadTaskButton()" << std::endl;
-
     // prompt for file path; might need to adjust this after testing on
     //  Linux; not sure what default file type filter is?
     QString result = QFileDialog::getOpenFileName(this, "Open task json file");
@@ -75,41 +72,36 @@ void TaskProtocolWindow::onLoadTasksButton() {
         return;
     }
 
-
     // load json from file (for now; eventually, allow user to browse from DVID,
     //  or maybe enter an assignment ID or something)
     QJsonObject json = loadJsonFromFile(result);
+    startProtocol(json, true);
+}
+
+void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 
     // validate json; this call displays errors itself
     if (!isValidJson(json)) {
         return;
     }
 
-
-    // testing
-    std::cout << "onLoadTasksButton(): json is valid" << std::endl;
-
-
-
-
     // at the point in time we have older versions hanging around, this is where you
     //  would convert them
 
 
-    // load tasks from json into internal data structures
+    // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
+    if (save) {
+        saveState();
+    }
 
-    // save to DVID
-    saveState();
-
-
-
-    // load first task
+    // load first task; enable UI and go
 
 
-    // enable UI and go
+
+
+
     setWindowConfiguration(TASK_UI);
-
 }
 
 void TaskProtocolWindow::saveState() {
@@ -131,14 +123,43 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
     if (doc.isNull() or !doc.isObject()) {
         showError("Error parsing file", "Couldn't parse file " + filepath + "!");
         return emptyResult;
+    } else {
+        LINFO() << "Task protocol: json loaded from file " + filepath;
+        return doc.object();
     }
-    return doc.object();
+}
+
+QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) {
+    QJsonObject emptyResult;
+    ZDvidReader reader;
+    if (!reader.open(m_proofDoc->getDvidTarget())) {
+        return emptyResult;
+    }
+    if (!reader.hasKey(instance, key)) {
+        return emptyResult;
+    }
+
+    // we got something!  reel it in...
+    QByteArray data = reader.readKeyValue(instance, key);
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+        if (doc.isNull() or !doc.isObject()) {
+            showError("Error parsing JSON", "Couldn't parse JSON from " + instance +
+                ", " + key + "!");
+            return emptyResult;
+        } else {
+            LINFO() << "Task protocol: json loaded from " + instance + ", " + key;
+            return doc.object();
+        }
 }
 
 bool TaskProtocolWindow::isValidJson(QJsonObject json) {
 
     // check file description and version
     if (!json.contains(KEY_DESCRIPTION) || json[KEY_DESCRIPTION].toString() != VALUE_DESCRIPTION) {
+        std::cout << "isvalidjson(); keys:" << std::endl;
+        foreach (QString key, json.keys()) {
+            std::cout << key.toStdString() << std::endl;
+        }
         showError("Json parsing error", "This file does not appear to be a Neu3 task list file!");
         return false;
     }
@@ -169,7 +190,7 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
     m_taskList.clear();
     foreach(QJsonValue taskJson, json[KEY_TASKLIST].toArray()) {
         if (!taskJson.isObject()) {
-            LWARN() << "found task json that is not an object; skipping";
+            LWARN() << "Task protocol: found task json that is not an object; skipping";
             continue;
         }
 
@@ -183,19 +204,17 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             m_taskList.append(task);
         } else {
             // unknown task type; log it and move on
-            LWARN() << "found unknown task type " << taskType << " in task json; skipping";
+            LWARN() << "Task protocol: found unknown task type " << taskType << " in task json; skipping";
         }
     }
 
-    // testing
-    std::cout << "loadTasks(): # tasks = " << m_taskList.size() << std::endl;
-
+    LINFO() << "Task protocol: loaded " << m_taskList.size() << " tasks";
 }
 
 QJsonObject TaskProtocolWindow::storeTasks() {
 
     QJsonObject json;
-    json[KEY_TASKTYPE] = VALUE_DESCRIPTION;
+    json[KEY_DESCRIPTION] = VALUE_DESCRIPTION;
     json[KEY_VERSION] = currentVersion;
 
     QJsonArray tasks;
@@ -216,12 +235,10 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
 
     QJsonDocument doc(json);
     QString jsonString(doc.toJson(QJsonDocument::Compact));
-    std::cout << "in saveJsonToDvid()" << std::endl;
-    std::cout << "instance = " << PROTOCOL_INSTANCE.toStdString() << std::endl;
-    std::cout << "key = " << generateDataKey().toStdString() << std::endl;
-
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString(),
         jsonString.toStdString());
+
+    LINFO() << "Task protocol: saved data to DVID";
 }
 
 QString TaskProtocolWindow::generateDataKey() {
@@ -229,8 +246,6 @@ QString TaskProtocolWindow::generateDataKey() {
 }
 
 bool TaskProtocolWindow::checkCreateDataInstance() {
-    // does our data instance exist?  if not, create
-
     if (m_protocolInstanceStatus == CHECKED_PRESENT) {
         return true;
     } else if (m_protocolInstanceStatus == CHECKED_ABSENT) {

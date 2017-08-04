@@ -62,6 +62,8 @@ private:
     void saveState();
     bool checkCreateDataInstance();
     QString generateDataKey();
+    QJsonObject loadJsonFromDVID(QString instance, QString key);
+    void startProtocol(QJsonObject json, bool save);
 };
 
 #endif // TASKPROTOCOLWINDOW_H
