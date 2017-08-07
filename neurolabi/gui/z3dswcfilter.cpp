@@ -1,5 +1,16 @@
 #include "z3dswcfilter.h"
 
+#include "tz_3dgeom.h"
+#include "zrandom.h"
+#include "QsLog.h"
+#include "swctreenode.h"
+#include "tz_geometry.h"
+#include "neutubeconfig.h"
+#include "zintcuboid.h"
+#include "z3dfiltersetting.h"
+#include "zjsonparser.h"
+#include <QMessageBox>
+#include <QApplication>
 #include <iostream>
 #include <QSet>
 #include <QtConcurrentRun>
@@ -9,64 +20,32 @@
 #include <QMessageBox>
 #include <QApplication>
 
-#include "zrandom.h"
-#include "tz_3dgeom.h"
-#include "z3dlinerenderer.h"
-#include "z3dlinewithfixedwidthcolorrenderer.h"
-#include "z3dsphererenderer.h"
-#include "z3dconerenderer.h"
-#include "zeventlistenerparameter.h"
-#include "QsLog.h"
-#include "swctreenode.h"
-#include "tz_geometry.h"
-#include "neutubeconfig.h"
-#include "zintcuboid.h"
-#include "z3dswcfilter.h"
-#include "z3dfiltersetting.h"
-#include "zjsonparser.h"
-#include "z3drendertarget.h"
-
-Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
-  : Z3DGeometryFilter(parent)
-  , m_lineRenderer(NULL)
-  , m_coneRenderer(NULL)
-  , m_sphereRenderer(NULL)
-  , m_sphereRendererForCone(NULL)
-  , m_boundBoxRenderer(NULL)
-//  , m_showSwcs("Visible", true)
-  , m_renderingPrimitive("Geometry")
+Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
+  : Z3DGeometryFilter(globalParas, parent)
+  , m_lineRenderer(m_rendererBase)
+  , m_coneRenderer(m_rendererBase)
+  , m_sphereRenderer(m_rendererBase)
+  , m_sphereRendererForCone(m_rendererBase)
+  , m_renderingPrimitive("Rendering Mode")
   , m_colorMode("Color Mode")
-  , m_pressedSwc(NULL)
-  //, m_selectedSwcs(NULL)
-  , m_pressedSwcTreeNode(NULL)
-  //, m_selectedSwcTreeNodes(NULL)
-  , m_colorMap("Color Map")
-  , m_xCut("X Cut", glm::ivec2(0,0), 0, 0)
-  , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
-  , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
-  , m_widgetsGroup(NULL)
-  , m_dataIsInvalid(false)
-  , m_interactionMode(Select)
-  , m_enableCutting(true)
-  , m_enablePicking(true)
+  , m_swcTreeColor("Color", glm::vec4(1, 0, 0, 1))
+  , m_colorMapBranchType("Branch Type Color Map")
+  , m_selectSwcEvent("Select Puncta", false)
+  , m_interactionMode(InteractionMode::Select)
 {
   initTopologyColor();
   initTypeColor();
   initSubclassTypeColor();
 
-
-//  addParameter(m_showSwcs);
-
-
   // rendering primitive
-  m_renderingPrimitive.addOptions("Normal", "Sphere", "Line");
+  m_renderingPrimitive.addOptions("Normal", "Line", "Sphere", "Cylinder");
   m_renderingPrimitive.select("Sphere");
-
   const NeutubeConfig::Z3DWindowConfig::SwcTabConfig &config =
       NeutubeConfig::getInstance().getZ3DWindowConfig().getSwcTabConfig();
   if (!config.getPrimitive().empty()) {
     m_renderingPrimitive.select(config.getPrimitive().c_str());
   }
+  connect(&m_renderingPrimitive, &ZStringIntOptionParameter::valueChanged, this, &Z3DSwcFilter::updateBoundBox);
 
   // Color Mode
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
@@ -87,35 +66,33 @@ Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
     m_colorMode.select(config.getColorMode().c_str());
   }
 
-  connect(&m_colorMode, SIGNAL(valueChanged()), this, SLOT(prepareColor()));
-  connect(&m_colorMode, SIGNAL(valueChanged()), this, SLOT(adjustWidgets()));
+  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DSwcFilter::prepareColor);
+  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DSwcFilter::adjustWidgets);
 
   addParameter(m_renderingPrimitive);
   addParameter(m_colorMode);
 
-  for (size_t i=0; i<m_colorsForDifferentType.size(); i++) {
-    addParameter(m_colorsForDifferentType[i]);
+  m_swcTreeColor.setStyle("COLOR");
+  connect(&m_swcTreeColor, &ZVec4Parameter::valueChanged, this, &Z3DSwcFilter::prepareColor);
+  addParameter(m_swcTreeColor);
+
+  for (const auto& color : m_colorsForDifferentType) {
+    addParameter(*color.get());
   }
 
-  for (size_t i=0; i<m_colorsForDifferentTopology.size(); i++) {
-    addParameter(m_colorsForDifferentTopology[i]);
+  for (const auto& color : m_colorsForDifferentTopology) {
+    addParameter(*color.get());
   }
 
-  for (size_t i=0; i<m_colorsForSubclassType.size(); i++) {
-    addParameter(m_colorsForSubclassType[i]);
+  for (const auto& color : m_colorsForSubclassType) {
+    addParameter(*color.get());
   }
 
-  m_selectSwcEvent = new ZEventListenerParameter("Select Puncta", true, false, this);
   m_selectSwcEvent->listenTo("select swc", Qt::LeftButton,
                              Qt::NoModifier, QEvent::MouseButtonPress);
   m_selectSwcEvent->listenTo("select swc", Qt::LeftButton,
                              Qt::NoModifier, QEvent::MouseButtonRelease);
-  /*
-  m_selectSwcEvent->listenTo("select swc", Qt::RightButton,
-                             Qt::NoModifier, QEvent::MouseButtonPress);
-  m_selectSwcEvent->listenTo("select swc", Qt::RightButton, Qt::NoModifier,
-                             QEvent::MouseButtonRelease);
-                             */
+
   m_selectSwcEvent->listenTo("select swc connection", Qt::LeftButton,
                              Qt::ShiftModifier, QEvent::MouseButtonPress);
   m_selectSwcEvent->listenTo("select swc connection", Qt::LeftButton,
@@ -135,25 +112,12 @@ Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
   m_selectSwcEvent->listenTo("append select swc", Qt::LeftButton,
                              Qt::ControlModifier, QEvent::MouseButtonRelease);
 
-  /*
-  m_selectSwcEvent->listenTo("append select swc", Qt::RightButton,
-                             Qt::ControlModifier, QEvent::MouseButtonPress);
-  m_selectSwcEvent->listenTo("append select swc", Qt::RightButton,
-                             Qt::ControlModifier, QEvent::MouseButtonRelease);
-*/
-  connect(m_selectSwcEvent, SIGNAL(mouseEventTriggered(QMouseEvent*,int,int)),
-          this, SLOT(selectSwc(QMouseEvent*,int,int)));
+  connect(&m_selectSwcEvent, &ZEventListenerParameter::mouseEventTriggered,
+          this, &Z3DSwcFilter::selectSwc);
   addEventListener(m_selectSwcEvent);
 
-  addParameter(m_colorMap);
-  connect(&m_colorMap, SIGNAL(valueChanged()), this, SLOT(prepareColor()));
-
-  addParameter(m_xCut);
-  addParameter(m_yCut);
-  addParameter(m_zCut);
-  connect(&m_xCut, SIGNAL(valueChanged()), this, SLOT(setClipPlanes()));
-  connect(&m_yCut, SIGNAL(valueChanged()), this, SLOT(setClipPlanes()));
-  connect(&m_zCut, SIGNAL(valueChanged()), this, SLOT(setClipPlanes()));
+  addParameter(m_colorMapBranchType);
+  connect(&m_colorMapBranchType, &ZColorMapParameter::valueChanged, this, &Z3DSwcFilter::prepareColor);
 
   adjustWidgets();
 
@@ -162,42 +126,7 @@ Z3DSwcFilter::Z3DSwcFilter(QObject *parent)
     m_guiNameList[i] = QString("Type %1 Color").arg(i);
   }
 
-  setFilterName(QString("swcfilter"));
-}
-
-Z3DSwcFilter::~Z3DSwcFilter()
-{
-  //  for(size_t i=0; i<m_colorsForDifferentSource.size(); i++) {
-  //    delete m_colorsForDifferentSource[i];
-  //  }
-  for (std::map<ZSwcTree*, ZVec4Parameter*>::iterator it = m_individualTreeColorMapper.begin();
-       it != m_individualTreeColorMapper.end(); ++it) {
-    delete it->second;
-  }
-
-  for (std::map<ZSwcTree*, ZVec4Parameter*>::iterator it = m_randomTreeColorMapper.begin();
-       it != m_randomTreeColorMapper.end(); ++it) {
-    delete it->second;
-  }
-
-  for (std::map<int, ZVec4Parameter*>::iterator it = m_biocytinColorMapper.begin();
-       it != m_biocytinColorMapper.end(); ++it) {
-    delete it->second;
-  }
-
-  for(size_t i=0; i<m_colorsForDifferentType.size(); i++) {
-    delete m_colorsForDifferentType[i];
-  }
-  for(size_t i=0; i<m_colorsForDifferentTopology.size(); i++) {
-    delete m_colorsForDifferentTopology[i];
-  }
-  for(size_t i=0; i<m_colorsForSubclassType.size(); i++) {
-    delete m_colorsForSubclassType[i];
-  }
-
-  delete m_selectSwcEvent;
-
-  clearDecorateSwcList();
+  connect(&m_visible, &ZBoolParameter::boolChanged, this, &Z3DSwcFilter::objVisibleChanged);
 }
 
 void Z3DSwcFilter::process(Z3DEye)
@@ -472,12 +401,6 @@ void Z3DSwcFilter::deregisterPickingObjects(Z3DPickingManager *pm)
   }
 }
 
-void Z3DSwcFilter::updateData(const QList<ZSwcTree *> &swcList)
-{
-  setData(swcList);
-//  prepareData();
-}
-
 void Z3DSwcFilter::setData(const std::vector<ZSwcTree *> &swcList)
 {
   QMutexLocker locker(&m_dataValidMutex);
@@ -724,16 +647,6 @@ ZWidgetsGroup *Z3DSwcFilter::getWidgetsGroup()
     m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
-}
-
-void Z3DSwcFilter::clearDecorateSwcList()
-{
-  for (std::vector<ZSwcTree*>::iterator iter = m_decorateSwcList.begin();
-       iter != m_decorateSwcList.end(); ++iter) {
-    delete *iter;
-  }
-
-  m_decorateSwcList.clear();
 }
 
 void Z3DSwcFilter::render(Z3DEye eye)
@@ -1934,12 +1847,4 @@ void Z3DSwcFilter::deinitialize()
 void Z3DSwcFilter::setColorMode(const std::string &mode)
 {
   m_colorMode.select(mode.c_str());
-}
-
-void Z3DSwcFilter::setSelectedSwcs(const QSet<ZStackObject *> &selectedSwc)
-{
-  for (QSet<ZStackObject *>::const_iterator iter = selectedSwc.begin();
-       iter != selectedSwc.end(); ++iter) {
-    m_selectedSwcs.insert(dynamic_cast<ZSwcTree*>(*iter));
-  }
 }

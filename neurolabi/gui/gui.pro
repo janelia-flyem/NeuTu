@@ -319,7 +319,6 @@ HEADERS += mainwindow.h \
     zcolormap.h \
     zclickablelabel.h \
     zcolormapeditor.h \
-    z3dcanvasrenderer.h \
     zselectfilewidget.h \
     z3dtakescreenshotwidget.h \
     z3drendererbase.h \
@@ -336,7 +335,6 @@ HEADERS += mainwindow.h \
     zspinbox.h \
     zparameter.h \
     zstringparameter.h \
-    z3drenderprocessor.h \
     z3drenderport.h \
     z3dnetworkevaluator.h \
     z3dport.h \
@@ -944,7 +942,6 @@ SOURCES += main.cpp \
     zlocsegchainconn.cpp \
     zlocsegchain.cpp \
     zcurve.cpp \
-    z3dcanvasrenderer.cpp \
     zselectfilewidget.cpp \
     z3dtakescreenshotwidget.cpp \
     z3drendererbase.cpp \
@@ -961,7 +958,6 @@ SOURCES += main.cpp \
     zspinbox.cpp \
     zparameter.cpp \
     zstringparameter.cpp \
-    z3drenderprocessor.cpp \
     z3drenderport.cpp \
     z3dnetworkevaluator.cpp \
     z3dport.cpp \

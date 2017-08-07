@@ -398,12 +398,6 @@ void Z3DWindow::init(EInitMode mode)
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
           this, SLOT(notifyUser(QString)));
 
-  m_swcFilter->setSelectedSwcs(
-        m_doc->getObjectGroup().getSelectedSet(ZStackObject::TYPE_SWC));
-  //m_swcFilter->setSelectedSwcTreeNodes(m_doc->getSelectedSwcTreeSet());
-  m_punctaFilter->setSelectedPuncta(
-        m_doc->getObjectGroup().getSelectedSet(ZStackObject::TYPE_PUNCTUM));
-
   // init windows size based on data
   setWindowSize();
 
@@ -1590,7 +1584,7 @@ void Z3DWindow::swcChanged()
 {
 //  QMutexLocker locker(&m_filterMutex);
 
-  m_swcFilter->updateData(m_doc->getSwcList());
+  m_swcFilter->setData(m_doc->getSwcList());
 
   updateSwcBoundBox();
   updateOverallBoundBox();
