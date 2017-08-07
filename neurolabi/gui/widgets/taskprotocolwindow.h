@@ -24,6 +24,13 @@ private slots:
     void onDoneButton();
     void onLoadTasksButton();    
     int onCompletedStateChanged(int state);
+    void onGotoButton();
+
+signals:
+    // I'm keeping the names Ting used in ZBodyListWidget (for now)
+    void bodyAdded(uint64_t bodyId);
+    void bodyRemoved(uint64_t bodyId);
+    void bodySelectionChanged(QSet<uint64_t> selectedSet);
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -70,6 +77,7 @@ private:
     void updateCurrentTaskLabel();
     int getFirstUncompleted();
     void showInfo(QString title, QString message);
+    void gotoCurrentTask();
 };
 
 #endif // TASKPROTOCOLWINDOW_H

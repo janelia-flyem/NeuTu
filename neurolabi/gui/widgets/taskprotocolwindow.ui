@@ -88,13 +88,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Next</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="gotoButton">
         <property name="text">
          <string>Go to</string>
@@ -102,9 +95,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="doneButton">
+       <widget class="QPushButton" name="pushButton">
         <property name="text">
-         <string>Done</string>
+         <string>Next</string>
         </property>
        </widget>
       </item>
@@ -120,6 +113,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="doneButton">
+        <property name="text">
+         <string>Done</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

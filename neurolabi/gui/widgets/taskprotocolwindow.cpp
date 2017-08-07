@@ -11,6 +11,7 @@
 #include "neutube.h"
 #include "flyem/zflyemproofdoc.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/taskgototarget.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -28,6 +29,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     // UI connections
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
     connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
+    connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
 
     // start to do stuff
@@ -79,6 +81,10 @@ void TaskProtocolWindow::onLoadTasksButton() {
     startProtocol(json, true);
 }
 
+void TaskProtocolWindow::onGotoButton() {
+    gotoCurrentTask();
+}
+
 int TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
@@ -110,6 +116,10 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     }
 
     // load first task; enable UI and go
+
+    // if I introduce the "show completed" checkbox, this should
+    //  change to "get first visible"
+
     m_currentTaskIndex = getFirstUncompleted();
     if (m_currentTaskIndex < 0) {
         showInfo("No tasks to do!", "All tasks have been completed!");
@@ -118,6 +128,23 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     updateCurrentTaskLabel();
     updateLabel();
     setWindowConfiguration(TASK_UI);
+}
+
+void TaskProtocolWindow::gotoCurrentTask() {
+    if (m_currentTaskIndex >= 0) {
+        TaskGotoTarget target = m_taskList[m_currentTaskIndex]->gotoTarget();
+        if (target.targetType() == TaskGotoTarget::BODY) {
+
+            // go to body ID
+            std::cout << "pretending to go to body " << target.bodyID() << std::endl;
+
+        } else if (target.targetType() == TaskGotoTarget::POINT) {
+
+            // go to point
+            std::cout << "pretending to go to point " << target.point().toString() << std::endl;
+
+        }
+    }
 }
 
 /*

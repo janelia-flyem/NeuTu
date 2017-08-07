@@ -5,6 +5,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "taskgototarget.h"
+
 class TaskProtocolTask
 {
 public:
@@ -16,6 +18,7 @@ public:
     virtual QString tasktype() = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;
+    virtual TaskGotoTarget gotoTarget() = 0;
     virtual QJsonObject toJson() = 0;
     virtual bool loadJson(QJsonObject json) = 0;
 
