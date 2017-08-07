@@ -23,7 +23,7 @@ test:
   
 
 about:
-  home: hhttps://github.com/cginternals/glbinding
+  home: https://github.com/cginternals/glbinding
   license: MIT
   summary: >
     glbinding is an MIT licensed, cross-platform C++ binding for the OpenGL API.

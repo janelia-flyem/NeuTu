@@ -15,7 +15,6 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   , m_leftEyeOutport2("LeftEyeImage2", this)
   , m_rightEyeOutport2("RightEyeImage2", this)
   , m_triangleListRenderer(m_rendererBase)
-  , m_visible("Visible", true)
   , m_colorMode("Color Mode")
   , m_singleColorForAllMesh("Mesh Color", glm::vec4(ZRandom::instance().randReal<float>(),
                                                     ZRandom::instance().randReal<float>(),
@@ -48,7 +47,6 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::adjustWidgets);
 
-  addParameter(m_visible);
   addParameter(m_colorMode);
 
   addParameter(m_singleColorForAllMesh);

@@ -11,3 +11,8 @@ if [ ! -d $currDIR/assimp ]
 then
   $currDIR/assimp-build
 fi
+
+if [ ! -d $currDIR/draco ]
+then
+  $currDIR/draco-build
+fi

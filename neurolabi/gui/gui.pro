@@ -793,7 +793,8 @@ HEADERS += mainwindow.h \
     zmeshio.h \
     zmeshutils.h \
     z3dmeshfilter.h \
-    z3dmeshrenderer.h
+    z3dmeshrenderer.h \
+    zstringutils.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1376,7 +1377,8 @@ SOURCES += main.cpp \
     zmeshio.cpp \
     zmeshutils.cpp \
     z3dmeshfilter.cpp \
-    z3dmeshrenderer.cpp
+    z3dmeshrenderer.cpp \
+    zstringutils.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

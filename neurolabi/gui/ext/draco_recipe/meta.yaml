@@ -1,0 +1,33 @@
+{% set version = "master" %}
+# {% set minor_version = ".".join(version.split(".")[:2]) %}
+
+package:
+  name: draco
+  version: {{ version }}
+
+source:
+  url: https://github.com/google/draco/archive/{{ version }}.zip
+  fn:  draco-{{ version }}.zip
+  sha256: 74b676ab55387155a0db1386bd05246420469f067e9ec3b380bac72c58522e01
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - cmake
+    - ninja
+  run:
+
+test:
+  
+
+about:
+  home: https://github.com/google/draco
+  license: MIT
+  summary: >
+    Draco is a library for compressing and decompressing 3D geometric meshes and point clouds. It is intended to improve the storage and transmission of 3D graphics.
+
+extra:
+  recipe-maintainers:
+    - Linqing Feng

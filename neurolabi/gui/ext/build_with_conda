@@ -10,3 +10,7 @@ conda build purge
 conda build glbinding_recipe
 conda install --use-local -n neutu-env glbinding -y
 conda build purge
+
+conda build draco_recipe
+conda install --use-local -n neutu-env draco -y
+conda build purge

@@ -144,11 +144,11 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 
 #
 exists($${CONDA_ENV}) {
-  INCLUDEPATH += $${CONDA_ENV}/include
-  LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp
+  INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
+  LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco
 } else {
-  INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include
-  LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp
+  INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include $$PWD/ext/draco/include/draco/src
+  LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp -L$$PWD/ext/draco/lib -ldracoenc -ldracodec -ldraco
 }
 win32 {
   LIBS += -lopengl32 -lglu32

@@ -22,12 +22,6 @@ Q_OBJECT
 public:
   explicit Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
 
-  void setVisible(bool v)
-  { m_visible.set(v); }
-
-  bool isVisible() const
-  { return m_visible.get(); }
-
   void setMeshColor(const glm::vec4& col)
   { m_singleColorForAllMesh.set(col); }
 
@@ -104,7 +98,6 @@ private:
 
   Z3DMeshRenderer m_triangleListRenderer;
 
-  ZBoolParameter m_visible;
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllMesh;
 

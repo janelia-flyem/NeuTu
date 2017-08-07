@@ -5,17 +5,19 @@ cd build
 
 BUILD_CONFIG=Release
 
-# choose different screen settings for OS X and Linux
+# choose different settings for OS X and Linux
 if [ `uname` = "Darwin" ]; then
     SCREEN_ARGS=(
         "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.9"
+        "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11"
     )
 else
     SCREEN_ARGS=(
-        
+        "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} -std=c++11"
     )
 fi
 
+IFS=""
 # now we can start configuring
 cmake .. -G "Ninja" \
     -Wno-dev \
@@ -25,7 +27,6 @@ cmake .. -G "Ninja" \
     -DCMAKE_INSTALL_RPATH:PATH="${PREFIX}/lib" \
     -DASSIMP_BUILD_ASSIMP_TOOLS:BOOL=OFF \
     -DASSIMP_BUILD_TESTS:BOOL=OFF \
-    -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" \
     ${SCREEN_ARGS[@]}
 
 # compile & install!

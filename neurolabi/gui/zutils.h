@@ -110,4 +110,17 @@ constexpr int32_t operator "" _i32(unsigned long long int n) noexcept { return s
 constexpr uint64_t operator "" _u64(unsigned long long int n) noexcept { return static_cast<uint64_t>(n); }
 constexpr int64_t operator "" _i64(unsigned long long int n) noexcept { return static_cast<int64_t>(n); }
 
+// for c++11
+#if __cplusplus == 201103L
+namespace std {
+
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
+}
+#endif
+
 #endif // ZUTILS_H
