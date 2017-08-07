@@ -11,6 +11,8 @@ public:
     TaskBodyReview(QJsonObject json);
     uint64_t bodyID() const;
     QString tasktype();
+    QString actionString();
+    QString targetString();
     QJsonObject toJson();
     bool loadJson(QJsonObject json);
 

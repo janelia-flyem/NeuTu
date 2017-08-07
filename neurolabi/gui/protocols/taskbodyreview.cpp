@@ -29,6 +29,14 @@ QString TaskBodyReview::tasktype() {
     return VALUE_TASKTYPE;
 }
 
+QString TaskBodyReview::actionString() {
+    return "Review body:";
+}
+
+QString TaskBodyReview::targetString() {
+    return QString::number(m_bodyID);
+}
+
 uint64_t TaskBodyReview::bodyID() const
 {
     return m_bodyID;

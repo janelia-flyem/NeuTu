@@ -95,6 +95,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="gotoButton">
+        <property name="text">
+         <string>Go to</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="doneButton">
         <property name="text">
          <string>Done</string>
@@ -133,23 +140,36 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="taskActionLabel">
         <property name="text">
          <string>task action</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="taskTargetLabel">
         <property name="text">
          <string>task target</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBox">
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="completedCheckBox">
         <property name="text">
-         <string>Done</string>
+         <string>Completed</string>
         </property>
        </widget>
       </item>

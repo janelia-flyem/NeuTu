@@ -22,7 +22,8 @@ public:
 
 private slots:
     void onDoneButton();
-    void onLoadTasksButton();
+    void onLoadTasksButton();    
+    int onCompletedStateChanged(int state);
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -50,6 +51,7 @@ private:
     ZFlyEmProofDoc *m_proofDoc;
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
+    int m_currentTaskIndex;
 
 
     void setWindowConfiguration(WindowConfigurations config);
@@ -65,6 +67,9 @@ private:
     QJsonObject loadJsonFromDVID(QString instance, QString key);
     void startProtocol(QJsonObject json, bool save);
     void updateLabel();
+    void updateCurrentTaskLabel();
+    int getFirstUncompleted();
+    void showInfo(QString title, QString message);
 };
 
 #endif // TASKPROTOCOLWINDOW_H

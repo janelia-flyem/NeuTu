@@ -28,6 +28,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     // UI connections
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
     connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
+    connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
 
     // start to do stuff
     if (!m_writer.open(doc->getDvidTarget())) {
@@ -78,6 +79,19 @@ void TaskProtocolWindow::onLoadTasksButton() {
     startProtocol(json, true);
 }
 
+int TaskProtocolWindow::onCompletedStateChanged(int state) {
+    if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
+        saveState();
+    }
+}
+
+/*
+ * input: json from file or dvid; flag whether to save immediately back to dvid
+ * output: none
+ * effect: start up the UI for the protocol; finds first uncompleted task and loads
+ *      into UI
+ */
 void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 
     // validate json; this call displays errors itself
@@ -96,14 +110,46 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     }
 
     // load first task; enable UI and go
+    m_currentTaskIndex = getFirstUncompleted();
+    if (m_currentTaskIndex < 0) {
+        showInfo("No tasks to do!", "All tasks have been completed!");
+    }
 
-
-
-
+    updateCurrentTaskLabel();
     updateLabel();
     setWindowConfiguration(TASK_UI);
 }
 
+/*
+ * returns index of first uncompleted task, or -1
+ */
+int TaskProtocolWindow::getFirstUncompleted() {
+    for (int i=0; i<m_taskList.size(); i++) {
+        if (!m_taskList[i]->completed()) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/*
+ * updates the task label for current index
+ */
+void TaskProtocolWindow::updateCurrentTaskLabel() {
+    if (m_currentTaskIndex < 0) {
+        ui->taskActionLabel->setText("(no task)");
+        ui->taskTargetLabel->setText("n/a");
+        ui->completedCheckBox->setChecked(false);
+    } else {
+        ui->taskActionLabel->setText(m_taskList[m_currentTaskIndex]->actionString());
+        ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
+        ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
+    }
+}
+
+/*
+ * updates any progress labels
+ */
 void TaskProtocolWindow::updateLabel() {
     int ncomplete = 0;
     foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
@@ -116,11 +162,20 @@ void TaskProtocolWindow::updateLabel() {
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
 }
 
+/*
+ * save the internal data to dvid in predetermined instance and key
+ * of current dvid target
+ */
 void TaskProtocolWindow::saveState() {
     QJsonObject tasks = storeTasks();
     saveJsonToDvid(tasks);
 }
 
+/*
+ * input: filepath
+ * output: json object of json in file; empty json if error
+ * effect: shows error dialogs on errors
+ */
 QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
     QJsonObject emptyResult;
 
@@ -141,6 +196,11 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
     }
 }
 
+/*
+ * input: dvid instance and key names
+ * output: json object of json in from dvid; empty json if error
+ * effect: shows error dialogs on errors
+ */
 QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) {
     QJsonObject emptyResult;
     ZDvidReader reader;
@@ -164,6 +224,9 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
         }
 }
 
+/*
+ * check input json for validity; not comprehensive, but good enough for our purposes
+ */
 bool TaskProtocolWindow::isValidJson(QJsonObject json) {
 
     // check file description and version
@@ -193,6 +256,10 @@ bool TaskProtocolWindow::isValidJson(QJsonObject json) {
     return true;
 }
 
+/*
+ * input: json object
+ * effect: load data from json into internal data structures
+ */
 void TaskProtocolWindow::loadTasks(QJsonObject json) {
 
     m_taskList.clear();
@@ -219,6 +286,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
     LINFO() << "Task protocol: loaded " << m_taskList.size() << " tasks";
 }
 
+/*
+ * output: json object containing data from internal data structures
+ */
 QJsonObject TaskProtocolWindow::storeTasks() {
 
     QJsonObject json;
@@ -234,6 +304,10 @@ QJsonObject TaskProtocolWindow::storeTasks() {
     return json;
 }
 
+/*
+ * input: json object
+ * effect: save json to dvid in predetermined instance and key
+ */
 void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
     // check that instance exists; if not, create it
     if (!checkCreateDataInstance()) {
@@ -249,10 +323,18 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
     LINFO() << "Task protocol: saved data to DVID";
 }
 
+/*
+ * output: key under which protocol data should be stored in dvid
+ */
 QString TaskProtocolWindow::generateDataKey() {
     return QString::fromStdString(NeuTube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
+/*
+ * output: success or not
+ * effect: check to see if predetermined instance exists in
+ * dvid in current target; if not, attempt to create it (once)
+ */
 bool TaskProtocolWindow::checkCreateDataInstance() {
     if (m_protocolInstanceStatus == CHECKED_PRESENT) {
         return true;
@@ -286,6 +368,10 @@ bool TaskProtocolWindow::checkCreateDataInstance() {
     }
 }
 
+/*
+ * hide and show UI panels to correspond to "ready for loading data"
+ * and "data loaded, time to do work"
+ */
 void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {
     // note that size constraint = fixed size, set in designer,
     //  ensures the widget resizes when child widgets are hidden/shown
@@ -303,6 +389,10 @@ void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {
     }
 }
 
+/*
+ * input: title and message for error dialog
+ * effect: shows error dialog (convenience function)
+ */
 void TaskProtocolWindow::showError(QString title, QString message) {
     QMessageBox errorBox;
     errorBox.setText(title);
@@ -310,6 +400,19 @@ void TaskProtocolWindow::showError(QString title, QString message) {
     errorBox.setStandardButtons(QMessageBox::Ok);
     errorBox.setIcon(QMessageBox::Warning);
     errorBox.exec();
+}
+
+/*
+ * input: title and message for info dialog
+ * effect: shows info dialog (convenience function)
+ */
+void TaskProtocolWindow::showInfo(QString title, QString message) {
+    QMessageBox infoBox;
+    infoBox.setText(title);
+    infoBox.setInformativeText(message);
+    infoBox.setStandardButtons(QMessageBox::Ok);
+    infoBox.setIcon(QMessageBox::Information);
+    infoBox.exec();
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()
