@@ -167,23 +167,20 @@ void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
 
-        std::cout << "updateBodyWindow(): " << std::endl;
-
         QSet<uint64_t> visible = m_taskList[m_currentTaskIndex]->visibleBodies();
         QSet<uint64_t> selected = m_taskList[m_currentTaskIndex]->selectedBodies();
 
         // if something is selected, it should be visible, too
         foreach (uint64_t bodyID, visible) {
-            std::cout << "adding visible body " << bodyID << std::endl;
             emit bodyAdded(bodyID);
         }
-        /*
+        // I don't assume all selected bodies are already added
         foreach (uint64_t bodyID, selected) {
-            std::cout << "adding selected body " << bodyID << std::endl;
-            emit bodyAdded(bodyID);
+            if (!visible.contains(bodyID)) {
+                emit bodyAdded(bodyID);
+            }
         }
         emit bodySelectionChanged(selected);
-        */
     }
 }
 
