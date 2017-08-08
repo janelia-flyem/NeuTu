@@ -26,9 +26,11 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     m_protocolInstanceStatus = UNCHECKED;
 
     // UI connections
+    connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
     connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
+    connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
 }
 // constants
@@ -66,6 +68,20 @@ void TaskProtocolWindow::init() {
 
 }
 
+void TaskProtocolWindow::onNextButton() {
+    if (ui->showCompletedCheckBox->isChecked()) {
+        m_currentTaskIndex = getNext();
+    } else {
+        m_currentTaskIndex = getNextUncompleted();
+        if (m_currentTaskIndex < 0) {
+            showInfo("No tasks to do!", "All tasks have been completed!");
+        }
+    }
+    updateCurrentTaskLabel();
+    updateBodyWindow();
+    updateLabel();
+}
+
 void TaskProtocolWindow::onDoneButton() {
     std::cout << "onDoneButton()" << std::endl;
 
@@ -95,6 +111,21 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
     }
 }
 
+void TaskProtocolWindow::onShowCompletedStateChanged(int state) {
+    // if we go from "show completed" to not, it's possible we need
+    //  to advance away from the current task, if it's completed
+    if (!ui->showCompletedCheckBox->isChecked() &&
+        m_taskList[m_currentTaskIndex]->completed()) {
+        m_currentTaskIndex = getNextUncompleted();
+        if (m_currentTaskIndex < 0) {
+            showInfo("No tasks to do!", "All tasks have been completed!");
+        }
+        updateCurrentTaskLabel();
+        updateBodyWindow();
+        updateLabel();
+    }
+}
+
 /*
  * input: json from file or dvid; flag whether to save immediately back to dvid
  * output: none
@@ -118,11 +149,11 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     }
 
     // load first task; enable UI and go
-
-    // if I introduce the "show completed" checkbox, this should
-    //  change to "get first visible"
-
-    m_currentTaskIndex = getFirstUncompleted();
+    if (ui->showCompletedCheckBox->isChecked()) {
+        m_currentTaskIndex = 0;
+    } else {
+        m_currentTaskIndex = getFirstUncompleted();
+    }
     if (m_currentTaskIndex < 0) {
         showInfo("No tasks to do!", "All tasks have been completed!");
     }
@@ -146,6 +177,42 @@ int TaskProtocolWindow::getFirstUncompleted() {
 }
 
 /*
+ * returns index of next task after current task
+ */
+int TaskProtocolWindow::getNext() {
+    int index = m_currentTaskIndex + 1;
+    if (index >= m_taskList.size()) {
+        index = 0;
+    }
+    return index;
+}
+
+/*
+ * returns index of next uncompleted task after current
+ * task, or -1
+ */
+int TaskProtocolWindow::getNextUncompleted() {
+    int startIndex = m_currentTaskIndex;
+    int index = startIndex + 1;
+    while (index != startIndex) {
+        if (index >= m_taskList.size()) {
+            index = 0;
+            continue;
+        }
+        if (!m_taskList[index]->completed()) {
+            return index;
+        }
+        index++;
+    }
+    // we're back at current index
+    if (m_taskList[index]->completed()) {
+        return -1;
+    } else {
+        return index;
+    }
+}
+
+/*
  * updates the task label for current index
  */
 void TaskProtocolWindow::updateCurrentTaskLabel() {
@@ -166,6 +233,10 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
 void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
+
+
+        // remove existing bodies; how?
+
 
         QSet<uint64_t> visible = m_taskList[m_currentTaskIndex]->visibleBodies();
         QSet<uint64_t> selected = m_taskList[m_currentTaskIndex]->selectedBodies();

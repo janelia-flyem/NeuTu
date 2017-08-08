@@ -28,9 +28,11 @@ signals:
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
 
 private slots:
+    void onNextButton();
     void onDoneButton();
     void onLoadTasksButton();    
-    void onCompletedStateChanged(int state);
+    void onCompletedStateChanged(int state);    
+    void onShowCompletedStateChanged(int state);
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -79,6 +81,8 @@ private:
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
     void updateBodyWindow();
+    int getNext();
+    int getNextUncompleted();
 };
 
 #endif // TASKPROTOCOLWINDOW_H
