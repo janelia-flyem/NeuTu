@@ -1,5 +1,6 @@
-#ifndef Z3DTEXTURECOORDINATERENDERER_H
-#define Z3DTEXTURECOORDINATERENDERER_H
+#ifndef Z3DTEXTUREANDEYECOORDINATERENDERER_H
+#define Z3DTEXTUREANDEYECOORDINATERENDERER_H
+
 
 #include "z3dprimitiverenderer.h"
 #include "z3dshaderprogram.h"
@@ -7,11 +8,11 @@
 class ZMesh;
 
 // render 3d texture coordinates as color
-class Z3DTextureCoordinateRenderer : public Z3DPrimitiveRenderer
+class Z3DTextureAndEyeCoordinateRenderer : public Z3DPrimitiveRenderer
 {
 Q_OBJECT
 public:
-  explicit Z3DTextureCoordinateRenderer(Z3DRendererBase& rendererBase);
+  explicit Z3DTextureAndEyeCoordinateRenderer(Z3DRendererBase& rendererBase);
 
   // triangle list should contains vertexs and 3d texture coordinates
   void setTriangleList(const ZMesh* mesh)
@@ -29,11 +30,11 @@ protected:
 protected:
   const ZMesh* m_mesh;
 
-  Z3DShaderProgram m_renderTextureCoordinateShader;
+  Z3DShaderProgram m_renderTextureAndEyeCoordinateShader;
 
   ZVertexBufferObject m_VBOs;
   ZVertexArrayObject m_VAO;
   bool m_dataChanged;
 };
 
-#endif // Z3DTEXTURECOORDINATERENDERER_H
+#endif // Z3DTEXTUREANDEYECOORDINATERENDERER_H

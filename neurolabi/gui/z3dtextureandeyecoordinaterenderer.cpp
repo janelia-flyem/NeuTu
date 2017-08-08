@@ -1,28 +1,29 @@
-#include "z3dtexturecoordinaterenderer.h"
+#include "z3dtextureandeyecoordinaterenderer.h"
 
 #include "z3dgl.h"
 #include "zmesh.h"
 
-Z3DTextureCoordinateRenderer::Z3DTextureCoordinateRenderer(Z3DRendererBase& rendererBase)
+Z3DTextureAndEyeCoordinateRenderer::Z3DTextureAndEyeCoordinateRenderer(Z3DRendererBase& rendererBase)
   : Z3DPrimitiveRenderer(rendererBase)
   , m_mesh(nullptr)
   , m_VBOs(3)
   , m_VAO(1)
   , m_dataChanged(false)
 {
-  m_renderTextureCoordinateShader.bindFragDataLocation(0, "FragData0");
-  m_renderTextureCoordinateShader.loadFromSourceFile("transform_with_3dtexture.vert",
-                                                     "render_3dtexture_coordinate.frag",
-                                                     m_rendererBase.generateHeader());
+  m_renderTextureAndEyeCoordinateShader.bindFragDataLocation(0, "FragData0");
+  m_renderTextureAndEyeCoordinateShader.bindFragDataLocation(1, "FragData1");
+  m_renderTextureAndEyeCoordinateShader.loadFromSourceFile("transform_with_3dtexture_and_eye_coordinate.vert",
+                                                           "render_3dtexture_coordinate_and_eye_coordinate.frag",
+                                                           m_rendererBase.generateHeader());
   CHECK_GL_ERROR
 }
 
-void Z3DTextureCoordinateRenderer::compile()
+void Z3DTextureAndEyeCoordinateRenderer::compile()
 {
-  m_renderTextureCoordinateShader.setHeaderAndRebuild(m_rendererBase.generateHeader());
+  m_renderTextureAndEyeCoordinateShader.setHeaderAndRebuild(m_rendererBase.generateHeader());
 }
 
-void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
+void Z3DTextureAndEyeCoordinateRenderer::render(Z3DEye eye)
 {
   if (!m_mesh || m_mesh->vertices().empty() ||
       m_mesh->numVertices() != m_mesh->num3DTextureCoordinates())
@@ -32,14 +33,14 @@ void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
   const std::vector<glm::vec3>& texCoords = m_mesh->textureCoordinates3D();
   const std::vector<GLuint>& triangleIndexes = m_mesh->indices();
 
-  m_renderTextureCoordinateShader.bind();
-  m_rendererBase.setGlobalShaderParameters(m_renderTextureCoordinateShader, eye);
+  m_renderTextureAndEyeCoordinateShader.bind();
+  m_rendererBase.setGlobalShaderParameters(m_renderTextureAndEyeCoordinateShader, eye);
 
   if (m_hardwareSupportVAO) {
     if (m_dataChanged) {
       m_VAO.bind();
-      GLint attr_vertex = m_renderTextureCoordinateShader.vertexAttributeLocation();
-      GLint attr_3dTexCoord0 = m_renderTextureCoordinateShader.tex3dCoord0AttributeLocation();
+      GLint attr_vertex = m_renderTextureAndEyeCoordinateShader.vertexAttributeLocation();
+      GLint attr_3dTexCoord0 = m_renderTextureAndEyeCoordinateShader.tex3dCoord0AttributeLocation();
 
       int bufIdx = 0;
       glEnableVertexAttribArray(attr_vertex);
@@ -73,8 +74,8 @@ void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
     m_VAO.release();
 
   } else {
-    GLint attr_vertex = m_renderTextureCoordinateShader.vertexAttributeLocation();
-    GLint attr_3dTexCoord0 = m_renderTextureCoordinateShader.tex3dCoord0AttributeLocation();
+    GLint attr_vertex = m_renderTextureAndEyeCoordinateShader.vertexAttributeLocation();
+    GLint attr_3dTexCoord0 = m_renderTextureAndEyeCoordinateShader.tex3dCoord0AttributeLocation();
 
     int bufIdx = 0;
     glEnableVertexAttribArray(attr_vertex);
@@ -103,5 +104,5 @@ void Z3DTextureCoordinateRenderer::render(Z3DEye eye)
     glDisableVertexAttribArray(attr_3dTexCoord0);
   }
 
-  m_renderTextureCoordinateShader.release();
+  m_renderTextureAndEyeCoordinateShader.release();
 }

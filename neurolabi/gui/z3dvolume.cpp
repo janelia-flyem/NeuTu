@@ -21,22 +21,19 @@
 #include "z3dgpuinfo.h"
 #include "z3dtexture.h"
 
-Z3DVolume::Z3DVolume(Stack *stack, const glm::vec3 &downsampleSpacing, const glm::vec3 &scaleSpacing,
+Z3DVolume::Z3DVolume(Stack *stack, const glm::vec3 &spacing,
                      const glm::vec3 &offset, const glm::mat4 &transformation, QObject *parent)
   : QObject(parent)
   , m_stack(stack)
   , m_histogramMaxValue(-1)
-  , m_texture(NULL)
   , m_volColor(1.f,1.f,1.f)
-  , m_histogramThread(NULL)
 {
   m_dimensions = glm::uvec3(m_stack->width, m_stack->height, m_stack->depth);
-  m_detailVolumeDimensions = glm::round(glm::vec3(m_dimensions) * downsampleSpacing);
+  m_detailVolumeDimensions = glm::round(glm::vec3(m_dimensions) * spacing);
   m_parentVolumeDimensions = m_detailVolumeDimensions;
   m_parentVolumeOffset = offset;
   m_data.array = m_stack->array;
-  setDownsampleSpacing(downsampleSpacing);
-  setScaleSpacing(scaleSpacing);
+  setSpacing(spacing);
   setOffset(offset);
   setPhysicalToWorldMatrix(transformation);
   computeMaxValue();
@@ -49,13 +46,11 @@ Z3DVolume::~Z3DVolume()
     if (m_histogramThread->isRunning()) {
       m_histogramThread->wait();
     }
-    delete m_histogramThread;
   }
-  delete m_texture;
   C_Stack::kill(m_stack);
 }
 
-int Z3DVolume::getBitsStored() const
+int Z3DVolume::bitsStored() const
 {
   if (m_stack->kind == GREY)
     return 8;
@@ -69,7 +64,7 @@ int Z3DVolume::getBitsStored() const
   return 0;
 }
 
-size_t Z3DVolume::getNumVoxels() const
+size_t Z3DVolume::numVoxels() const
 {
   if (m_stack == NULL) {
     return 0;
@@ -79,7 +74,7 @@ size_t Z3DVolume::getNumVoxels() const
 //  return (size_t)m_stack->depth * (size_t)m_stack->height * (size_t)m_stack->width;
 }
 
-QString Z3DVolume::getSamplerType() const
+QString Z3DVolume::samplerType() const
 {
   if (m_dimensions.z > 1)
     return "sampler3D";
@@ -89,23 +84,23 @@ QString Z3DVolume::getSamplerType() const
     return "sampler1D";
 }
 
-double Z3DVolume::getFloatMinValue() const
+double Z3DVolume::floatMinValue() const
 {
-  if (getBitsStored() <= 16)
+  if (bitsStored() <= 16)
     return m_minValue / ((1 << getBitsStored()) - 1);
   else
-    return getMinValue();   // already float image
+    return minValue();   // already float image
 }
 
-double Z3DVolume::getFloatMaxValue() const
+double Z3DVolume::floatMaxValue() const
 {
-  if (getBitsStored() <= 16)
+  if (bitsStored() <= 16)
     return m_maxValue / ((1 << getBitsStored()) - 1);
   else
-    return getMaxValue();   // already float image
+    return maxValue();   // already float image
 }
 
-double Z3DVolume::getValue(int x, int y, int z) const
+double Z3DVolume::value(int x, int y, int z) const
 {
   size_t stride_x = (size_t)m_stack->kind;
   size_t stride_y = (size_t)m_stack->kind * (size_t)m_stack->width;
@@ -120,7 +115,7 @@ double Z3DVolume::getValue(int x, int y, int z) const
   return 0.0;
 }
 
-double Z3DVolume::getValue(size_t index) const
+double Z3DVolume::value(size_t index) const
 {
   if (m_stack->kind == GREY) {
     return *(m_data.array8 + index);
@@ -136,24 +131,24 @@ void Z3DVolume::asyncGenerateHistogram()
 {
   if (hasHistogram() || m_histogramThread)
     return;
-  m_histogramThread = new Z3DVolumeHistogramThread(this);
-  connect(m_histogramThread, SIGNAL(finished()), this, SLOT(setHistogram()));
+  m_histogramThread.reset(new Z3DVolumeHistogramThread(this));
+  connect(m_histogramThread.get(), &Z3DVolumeHistogramThread::finished, this, &Z3DVolume::setHistogram);
   m_histogramThread->start();
 }
 
-size_t Z3DVolume::getHistogramBinCount() const
+size_t Z3DVolume::histogramBinCount() const
 {
   if (m_stack->kind == GREY) {
     return 256;
   } else if (m_stack->kind == GREY16) {
-    return getBitsStored() == 16 ? 65536 : 4096;
+    return bitsStored() == 16 ? 65536 : 4096;
   } else if (m_stack->kind == FLOAT32) {
     return m_histogram.size();
   }
   return 0;
 }
 
-size_t Z3DVolume::getHistogramValue(size_t index) const
+size_t Z3DVolume::histogramValue(size_t index) const
 {
   if (index < m_histogram.size())
     return m_histogram[index];
@@ -161,123 +156,58 @@ size_t Z3DVolume::getHistogramValue(size_t index) const
     return 0;
 }
 
-size_t Z3DVolume::getHistogramValue(double fraction) const
+size_t Z3DVolume::histogramValue(double fraction) const
 {
-  size_t index = static_cast<size_t>(fraction * static_cast<double>(getHistogramBinCount()-1));
-  return getHistogramValue(index);
+  size_t index = static_cast<size_t>(fraction * static_cast<double>(histogramBinCount()-1));
+  return histogramValue(index);
 }
 
-double Z3DVolume::getNormalizedHistogramValue(size_t index) const
+double Z3DVolume::normalizedHistogramValue(size_t index) const
 {
-  return static_cast<double>(getHistogramValue(index)) / m_histogramMaxValue;
+  return static_cast<double>(histogramValue(index)) / m_histogramMaxValue;
 }
 
-double Z3DVolume::getNormalizedHistogramValue(double fraction) const
+double Z3DVolume::normalizedHistogramValue(double fraction) const
 {
-  size_t index = static_cast<size_t>(fraction * static_cast<double>(getHistogramBinCount()-1));
-  return getNormalizedHistogramValue(index);
+  size_t index = static_cast<size_t>(fraction * static_cast<double>(histogramBinCount()-1));
+  return normalizedHistogramValue(index);
 }
 
-double Z3DVolume::getLogNormalizedHistogramValue(size_t index) const
+double Z3DVolume::logNormalizedHistogramValue(size_t index) const
 {
-  return std::log(static_cast<double>(getHistogramValue(index))+1.0) / std::log(m_histogramMaxValue+1.0);
+  return std::log(static_cast<double>(histogramValue(index)) + 1.0) / std::log(m_histogramMaxValue + 1.0);
 }
 
-double Z3DVolume::getLogNormalizedHistogramValue(double fraction) const
+double Z3DVolume::logNormalizedHistogramValue(double fraction) const
 {
-  size_t index = static_cast<size_t>(fraction * static_cast<double>(getHistogramBinCount()-1));
-  return getLogNormalizedHistogramValue(index);
+  size_t index = static_cast<size_t>(fraction * static_cast<double>(histogramBinCount() - 1));
+  return logNormalizedHistogramValue(index);
 }
 
-Z3DTexture *Z3DVolume::getTexture()
+Z3DTexture* Z3DVolume::texture() const
 {
-  if (m_texture)
-    return m_texture;
-  else {
+  if (!m_texture) {
     generateTexture();
-    return m_texture;   // might still be null
   }
+  return m_texture.get();
 }
 
-void Z3DVolume::setUniform(Z3DShaderProgram &shader, const QString &uniform, const GLint texUnit) const
-{
-  shader.setUniformValue(uniform + ".volume", texUnit);
-
-  shader.setLogUniformLocationError(false);
-
-  shader.setUniformValue(uniform + ".color", m_volColor);
-  // volume size
-  glm::vec3 dims = glm::vec3(getDimensions());
-  shader.setUniformValue(uniform + ".dimensions", dims);
-  shader.setUniformValue(uniform + ".dimensions_RCP", glm::vec3(1.f) / dims);
-
-  CHECK_GL_ERROR;
-
-  shader.setLogUniformLocationError(true);
-}
-
-glm::vec3 Z3DVolume::getPhysicalRDB() const
-{
-  glm::vec3 rdb = getOffset() + getCubeSize() - getSpacing();
-  for (int i = 0; i < 3; ++i) {
-    if (m_dimensions[i] == 1) {
-      rdb[i] = getOffset()[i] + getCubeSize()[i];
-    }
-  }
-
-  return rdb;
-}
-
-
-std::vector<double> Z3DVolume::getPhysicalBoundBox() const
-{
-  glm::vec3 luf = getPhysicalLUF();
-  glm::vec3 rdb = getPhysicalRDB();
-  std::vector<double> res(6);
-  res[0] = luf.x;
-  res[1] = rdb.x;
-  res[2] = luf.y;
-  res[3] = rdb.y;
-  res[4] = luf.z;
-  res[5] = rdb.z;
-  return res;
-}
-
-std::vector<double> Z3DVolume::getWorldBoundBox() const
+ZBBox<glm::dvec3> Z3DVolume::worldBoundBox() const
 {
   if (m_hasTransformMatrix) {
-    std::vector<double> res(6);
-    glm::vec3 minCoord = glm::min(getWorldLUF(), getWorldRDB());
-    glm::vec3 maxCoord = glm::max(getWorldLUF(), getWorldRDB());
-
-    minCoord = glm::min(minCoord, getWorldLDB());
-    maxCoord = glm::max(maxCoord, getWorldLDB());
-
-    minCoord = glm::min(minCoord, getWorldLDF());
-    maxCoord = glm::max(maxCoord, getWorldLDF());
-
-    minCoord = glm::min(minCoord, getWorldLUB());
-    maxCoord = glm::max(maxCoord, getWorldLUB());
-
-    minCoord = glm::min(minCoord, getWorldRUF());
-    maxCoord = glm::max(maxCoord, getWorldRUF());
-
-    minCoord = glm::min(minCoord, getWorldRDF());
-    maxCoord = glm::max(maxCoord, getWorldRDF());
-
-    minCoord = glm::min(minCoord, getWorldRUB());
-    maxCoord = glm::max(maxCoord, getWorldRUB());
-
-    res[0] = minCoord.x;
-    res[1] = maxCoord.x;
-    res[2] = minCoord.y;
-    res[3] = maxCoord.y;
-    res[4] = minCoord.z;
-    res[5] = maxCoord.z;
+    ZBBox<glm::dvec3> res;
+    res.expand(glm::dvec3(worldLUF()));
+    res.expand(glm::dvec3(worldLDB()));
+    res.expand(glm::dvec3(worldLDF()));
+    res.expand(glm::dvec3(worldLUB()));
+    res.expand(glm::dvec3(worldRUF()));
+    res.expand(glm::dvec3(worldRDB()));
+    res.expand(glm::dvec3(worldRDF()));
+    res.expand(glm::dvec3(worldRUB()));
 
     return res;
   } else {
-    return getPhysicalBoundBox();
+    return physicalBoundBox();
   }
 }
 
@@ -288,62 +218,62 @@ void Z3DVolume::setPhysicalToWorldMatrix(const glm::mat4 &transformationMatrix)
     m_hasTransformMatrix = true;
 }
 
-glm::mat4 Z3DVolume::getVoxelToWorldMatrix() const
+glm::mat4 Z3DVolume::voxelToWorldMatrix() const
 {
-  return getPhysicalToWorldMatrix() * getVoxelToPhysicalMatrix();
+  return physicalToWorldMatrix() * voxelToPhysicalMatrix();
 }
 
-glm::mat4 Z3DVolume::getWorldToVoxelMatrix() const
+glm::mat4 Z3DVolume::worldToVoxelMatrix() const
 {
-  return glm::inverse(getVoxelToWorldMatrix());
+  return glm::inverse(voxelToWorldMatrix());
 }
 
-glm::mat4 Z3DVolume::getWorldToTextureMatrix() const
+glm::mat4 Z3DVolume::worldToTextureMatrix() const
 {
-  return glm::inverse(getTextureToWorldMatrix());
+  return glm::inverse(textureToWorldMatrix());
 }
 
-glm::mat4 Z3DVolume::getTextureToWorldMatrix() const
+glm::mat4 Z3DVolume::textureToWorldMatrix() const
 {
-  return getVoxelToWorldMatrix() * getTextureToVoxelMatrix();
+  return voxelToWorldMatrix() * textureToVoxelMatrix();
 }
 
-glm::mat4 Z3DVolume::getVoxelToPhysicalMatrix() const
+glm::mat4 Z3DVolume::voxelToPhysicalMatrix() const
 {
   // 1. Multiply by spacing 2. Apply offset
-  glm::mat4 scale = glm::scale(glm::mat4(1.0), getSpacing());
-  return glm::translate(scale, getOffset());
+  glm::mat4 scale = glm::scale(glm::mat4(1.0), spacing());
+  return glm::translate(scale, offset());
 }
 
-glm::mat4 Z3DVolume::getPhysicalToVoxelMatrix() const
+glm::mat4 Z3DVolume::physicalToVoxelMatrix() const
 {
-  glm::mat4 translate = glm::translate(glm::mat4(1.0), -getOffset());
-  return glm::scale(translate, 1.f/getSpacing());
+  glm::mat4 translate = glm::translate(glm::mat4(1.0), -offset());
+  return glm::scale(translate, 1.f / spacing());
 }
 
-glm::mat4 Z3DVolume::getWorldToPhysicalMatrix() const
+glm::mat4 Z3DVolume::worldToPhysicalMatrix() const
 {
-  return glm::inverse(getPhysicalToWorldMatrix());
+  return glm::inverse(physicalToWorldMatrix());
 }
 
-glm::mat4 Z3DVolume::getTextureToPhysicalMatrix() const
+glm::mat4 Z3DVolume::textureToPhysicalMatrix() const
 {
-  return getVoxelToPhysicalMatrix() * getTextureToVoxelMatrix();
+  return voxelToPhysicalMatrix() * textureToVoxelMatrix();
 }
 
-glm::mat4 Z3DVolume::getPhysicalToTextureMatrix() const
+glm::mat4 Z3DVolume::physicalToTextureMatrix() const
 {
-  return getVoxelToTextureMatrix() * getPhysicalToVoxelMatrix();
+  return voxelToTextureMatrix() * physicalToVoxelMatrix();
 }
 
-glm::mat4 Z3DVolume::getTextureToVoxelMatrix() const
+glm::mat4 Z3DVolume::textureToVoxelMatrix() const
 {
-  return glm::scale(glm::mat4(1.0), glm::vec3(getDimensions()));
+  return glm::scale(glm::mat4(1.0), glm::vec3(dimensions()));
 }
 
-glm::mat4 Z3DVolume::getVoxelToTextureMatrix() const
+glm::mat4 Z3DVolume::voxelToTextureMatrix() const
 {
-  return glm::scale(glm::mat4(1.0), 1.0f/glm::vec3(getDimensions()));
+  return glm::scale(glm::mat4(1.0), 1.0f / glm::vec3(dimensions()));
 }
 
 void Z3DVolume::setHistogram()
@@ -367,15 +297,15 @@ void Z3DVolume::generateTexture()
   GLenum dataType;
   if (m_stack->kind == GREY) {
     format = GL_RED;
-    internalFormat = GL_R8;
+    internalFormat = GLint(GL_R8);
     dataType = GL_UNSIGNED_BYTE;
   } else if (m_stack->kind == GREY16) {
     format = GL_RED;
-    internalFormat = GL_R16;
+    internalFormat = GLint(GL_R16);
     dataType = GL_UNSIGNED_SHORT;
   } else if (m_stack->kind == FLOAT32) {
     format = GL_RED;
-    internalFormat = GL_R32F;
+    internalFormat = GLint(GL_R32F);
     dataType = GL_FLOAT;
   } else {
     LERROR() << "Only GREY, GREY16 or FLOAT32 stack formats are supported";
@@ -383,17 +313,10 @@ void Z3DVolume::generateTexture()
   }
 
   // Create texture
-  Z3DTexture* tex = new Z3DTexture(
-        glm::ivec3(getDimensions()), format, internalFormat, dataType);
+  m_texture.reset(new Z3DTexture(internalFormat, dimensions(), format, dataType));
+  m_texture->uploadImage(m_stack->array);
 
   CHECK_GL_ERROR;
-  tex->setData(m_stack->array);
-  tex->uploadTexture();
-
-  CHECK_GL_ERROR;
-
-  // append to internal data structure
-  m_texture = tex;
 }
 
 void Z3DVolume::computeMinValue()
@@ -430,21 +353,16 @@ Z3DVolumeHistogramThread::Z3DVolumeHistogramThread(Z3DVolume *volume, QObject* p
 
 void Z3DVolumeHistogramThread::run()
 {
-  if (m_volume->getType() == GREY) {
-    m_histogram.assign(static_cast<size_t>(m_volume->getMaxValue()+1), 0);
-    for (size_t i=0; i<m_volume->getNumVoxels(); i++) {
-      m_histogram[static_cast<size_t>(m_volume->getValue(i))]++;
-    }
-  } else if (m_volume->getType() == GREY16) {
-    m_histogram.assign(static_cast<size_t>(m_volume->getMaxValue()+1), 0);
-    for (size_t i=0; i<m_volume->getNumVoxels(); i++) {
-      m_histogram[static_cast<size_t>(m_volume->getValue(i))]++;
+  if (m_volume->getType() == GREY || m_volume->getType() == GREY16) {
+    m_histogram.assign(static_cast<size_t>(m_volume->maxValue() + 1), 0);
+    for (size_t i = 0; i < m_volume->numVoxels(); ++i) {
+      m_histogram[static_cast<size_t>(m_volume->value(i))]++;
     }
   } else if (m_volume->getType() == FLOAT32) {
     size_t binCount = 256;   // cover range [0.0f, 1.0f]
     m_histogram.assign(binCount, 0);
-    for (size_t i=0; i<m_volume->getNumVoxels(); i++) {
-      m_histogram[static_cast<size_t>(m_volume->getValue(i) * (binCount-1))]++;
+    for (size_t i = 0; i < m_volume->numVoxels(); ++i) {
+      m_histogram[static_cast<size_t>(m_volume->value(i) * (binCount-1))]++;
     }
   }
 }
@@ -454,16 +372,6 @@ void Z3DVolume::translate(double dx, double dy, double dz)
   m_transformationMatrix[3][0] += dx;
   m_transformationMatrix[3][1] += dy;
   m_transformationMatrix[3][2] += dz;
-
-  if (m_transformationMatrix != glm::mat4(1.0))
-    m_hasTransformMatrix = true;
-}
-
-void Z3DVolume::scaleOffset(double sx, double sy, double sz)
-{
-  m_transformationMatrix[3][0] *= sx;
-  m_transformationMatrix[3][1] *= sy;
-  m_transformationMatrix[3][2] *= sz;
 
   if (m_transformationMatrix != glm::mat4(1.0))
     m_hasTransformMatrix = true;

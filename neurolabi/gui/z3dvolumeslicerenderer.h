@@ -2,56 +2,59 @@
 #define Z3DVOLUMESLICERENDERER_H
 
 #include "z3dprimitiverenderer.h"
-#include "z3dmesh.h"
+#include "zmesh.h"
+#include "zcolormap.h"
+#include "z3dshaderprogram.h"
 
 class Z3DVolume;
 
-// render 2d slices of volume without color transfer function
-// support up to 5 channel, use color of each volume to composite final image
+// render 2d slices of volume with colormap
+// use colormap of each volume to composite final image
 class Z3DVolumeSliceRenderer : public Z3DPrimitiveRenderer
 {
   Q_OBJECT
 public:
-  explicit Z3DVolumeSliceRenderer(QObject *parent = 0);
-  ~Z3DVolumeSliceRenderer();
+  explicit Z3DVolumeSliceRenderer(Z3DRendererBase& rendererBase);
 
-  // input can be NULL means don't have this channel
-  void setChannel1(Z3DVolume *vol);
-  void setChannel2(Z3DVolume *vol);
-  void setChannel3(Z3DVolume *vol);
-  void setChannel4(Z3DVolume *vol);
-  void setChannel5(Z3DVolume *vol);
-  void setChannels(std::vector<Z3DVolume*> vols);
+  void setData(const std::vector<std::unique_ptr<Z3DVolume>>& vols,
+               const std::vector<std::unique_ptr<ZColorMapParameter>>& colormaps);
+
+  void setLayerTarget(Z3DRenderTarget* layerTarget)
+  { m_layerTarget = layerTarget; }
 
   // a slice (quad) in 3D volume contains corner vertex and 3d texture coordinates
   // clear
-  void clearQuads() { m_quads.clear(); }
+  void clearQuads()
+  { m_quads.clear(); }
+
   // add quad
-  void addQuad(const Z3DTriangleList &quad);
-
-signals:
-
-protected slots:
+  void addQuad(const ZMesh& quad);
 
 protected:
-  void bindVolumes(Z3DShaderProgram &shader);
-  bool hasVolume() const;
+  void bindVolumes(Z3DShaderProgram& shader) const;
 
-  virtual void compile();
-  virtual void initialize();
-  virtual void deinitialize();
-  virtual QString generateHeader();
+  void bindVolume(Z3DShaderProgram& shader, size_t idx) const;
 
-  virtual void render(Z3DEye eye);
-  virtual void renderPicking(Z3DEye);
+  virtual void compile() override;
 
-  Z3DShaderProgram m_volumeSliceShader;
+  QString generateHeader();
 
-  std::vector<Z3DVolume *> m_volumes;
+  virtual void render(Z3DEye eye) override;
+
+protected:
+  //Z3DShaderProgram m_volumeSliceShader;
+  Z3DShaderProgram m_scVolumeSliceShader;
+  Z3DRenderTarget* m_layerTarget = nullptr;
+  Z3DShaderProgram m_mergeChannelShader;
+
+  const std::vector<std::unique_ptr<Z3DVolume>>* m_vols;
+  const std::vector<std::unique_ptr<ZColorMapParameter>>* m_colormaps = nullptr;
   std::vector<QString> m_volumeUniformNames;
+  std::vector<QString> m_colormapUniformNames;
 
 private:
-  std::vector<Z3DTriangleList> m_quads;
+  std::vector<ZMesh> m_quads;
+  ZVertexArrayObject m_VAO;
 };
 
 #endif // Z3DVOLUMESLICERENDERER_H

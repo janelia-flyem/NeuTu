@@ -11,14 +11,14 @@
 namespace {
 
 struct _KeyComp {
-  bool operator()(const std::pair<QString, std::shared_ptr<ZVec4Parameter>>& p1,
+  bool operator()(const std::pair<QString, std::unique_ptr<ZVec4Parameter>>& p1,
                   const std::pair<QString, int>& p2) const
   {
     return p1.first < p2.first;
   }
 
   bool operator()(const std::pair<QString, int>& p1,
-                  const std::pair<QString, std::shared_ptr<ZVec4Parameter>>& p2) const
+                  const std::pair<QString, std::unique_ptr<ZVec4Parameter>>& p2) const
   {
     return p1.first < p2.first;
   }
@@ -145,7 +145,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DPunctaFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_colorMapMeanIntensity, 1);
     m_widgetsGroup->addChild(m_colorMapMaxIntensity, 1);
 
-    for (auto& kv : m_sourceColorMapper) {
+    for (const auto& kv : m_sourceColorMapper) {
       m_widgetsGroup->addChild(*kv.second, 2);
     }
 
@@ -327,7 +327,7 @@ void Z3DPunctaFilter::prepareData()
 
     // update widget group
     if (m_widgetsGroup) {
-      for (auto& kv : m_sourceColorMapper) {
+      for (const auto& kv : m_sourceColorMapper) {
         m_widgetsGroup->addChild(*kv.second, 2);
       }
       m_widgetsGroup->emitWidgetsGroupChangedSignal();
@@ -373,9 +373,11 @@ void Z3DPunctaFilter::updateNotTransformedBoundBoxImpl()
 void Z3DPunctaFilter::addSelectionLines()
 {
   ZBBox<glm::dvec3> boundBox;
-  for (const auto& p : *m_origPuncta) {
-    punctumBound(p, boundBox);
-    appendBoundboxLines(boundBox, m_selectionLines);
+  for (const auto& p : m_punctaList) {
+    if (p->isVisible() && p->isSelected()) {
+      punctumBound(p, boundBox);
+      appendBoundboxLines(boundBox, m_selectionLines);
+    }
   }
 }
 

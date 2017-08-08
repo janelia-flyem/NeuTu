@@ -353,7 +353,6 @@ HEADERS += mainwindow.h \
     z3dfontrenderer.h \
     z3dcanvaseventlistener.h \
     zspanslider.h \
-    z3dutils.h \
     z3dmesh.h \
     zcuboid.h \
     ztest.h \
@@ -792,7 +791,9 @@ HEADERS += mainwindow.h \
     zmeshutils.h \
     z3dmeshfilter.h \
     z3dmeshrenderer.h \
-    zstringutils.h
+    zstringutils.h \
+    z3dvolumefilter.h \
+    z3dtextureandeyecoordinaterenderer.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -974,7 +975,6 @@ SOURCES += main.cpp \
     z3dsdfont.cpp \
     z3dfontrenderer.cpp \
     zspanslider.cpp \
-    z3dutils.cpp \
     z3dmesh.cpp \
     ztest.cpp \
     z3dgpuinfo.cpp \
@@ -1374,7 +1374,9 @@ SOURCES += main.cpp \
     zmeshutils.cpp \
     z3dmeshfilter.cpp \
     z3dmeshrenderer.cpp \
-    zstringutils.cpp
+    zstringutils.cpp \
+    z3dvolumefilter.cpp \
+    z3dtextureandeyecoordinaterenderer.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
