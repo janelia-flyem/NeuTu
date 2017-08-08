@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
 
+#include <QDateTime>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QJsonArray>
@@ -83,10 +84,41 @@ void TaskProtocolWindow::onNextButton() {
 }
 
 void TaskProtocolWindow::onDoneButton() {
-    std::cout << "onDoneButton()" << std::endl;
+    bool allComplete = true;
+    foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
+        if (!task->completed()) {
+            allComplete = false;
+            break;
+        }
+    }
+    if (!allComplete) {
+        showInfo("Not all tasks complete!", "You have not completed all tasks!");
+        return;
+    }
+
+    QMessageBox messageBox;
+    messageBox.setText("Complete task protocol?");
+    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, the data in DVID will be renamed, and you will not be able to continue.\n\nComplete protocol?");
+    messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+    messageBox.setDefaultButton(QMessageBox::Ok);
+    int ret = messageBox.exec();
+    if (ret != QMessageBox::Ok) {
+        return;
+    }
+
+    // new key is old key + datetime stamp
+    QString key = generateDataKey() + "-" + QDateTime::currentDateTime().toString("yyyyMMddhhmm");
+    QJsonDocument doc(storeTasks());
+    QString jsonString(doc.toJson(QJsonDocument::Compact));
+    m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
+        jsonString.toStdString());
+
+    // delete old key
+    m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
+
+    LINFO() << "Task protocol: saved completed data to DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
-
 }
 
 void TaskProtocolWindow::onLoadTasksButton() {
@@ -120,6 +152,15 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int state) {
         if (m_currentTaskIndex < 0) {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
+        updateCurrentTaskLabel();
+        updateBodyWindow();
+        updateLabel();
+    }
+    // likewise, if there is nothing showing (all complete) and
+    //  we go to "show completed", advance and show something
+    if (ui->showCompletedCheckBox->isChecked() &&
+        m_currentTaskIndex < 0) {
+        m_currentTaskIndex = 0;
         updateCurrentTaskLabel();
         updateBodyWindow();
         updateLabel();
