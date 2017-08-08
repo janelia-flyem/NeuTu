@@ -5,8 +5,6 @@
 
 #include "protocols/taskprotocoltask.h"
 
-#include "taskgototarget.h"
-
 class TaskBodyReview : public TaskProtocolTask
 {
 public:
@@ -15,7 +13,8 @@ public:
     QString tasktype();
     QString actionString();
     QString targetString();
-    TaskGotoTarget gotoTarget();
+    QSet<uint64_t> visibleBodies();
+    QSet<uint64_t> selectedBodies();
     QJsonObject toJson();
     bool loadJson(QJsonObject json);
 

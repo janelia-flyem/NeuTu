@@ -7,8 +7,6 @@
 #include <QJsonObject>
 #include <QsLog.h>
 
-#include "taskgototarget.h"
-
 TaskBodyReview::TaskBodyReview(QJsonObject json)
 {
     if (json[KEY_TASKTYPE] != VALUE_TASKTYPE) {
@@ -43,10 +41,16 @@ uint64_t TaskBodyReview::bodyID() const
     return m_bodyID;
 }
 
-TaskGotoTarget TaskBodyReview::gotoTarget() {
-    TaskGotoTarget target(TaskGotoTarget::TargetType::BODY);
-    target.setBodyID(m_bodyID);
-    return target;
+QSet<uint64_t> TaskBodyReview::visibleBodies() {
+    QSet<uint64_t> bodies;
+    bodies.insert(m_bodyID);
+    return bodies;
+}
+
+QSet<uint64_t> TaskBodyReview::selectedBodies() {
+    QSet<uint64_t> bodies;
+    bodies.insert(m_bodyID);
+    return bodies;
 }
 
 QJsonObject TaskBodyReview::toJson() {

@@ -18,19 +18,19 @@ class TaskProtocolWindow : public QWidget
 
 public:
     explicit TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent = 0);
+    void init();
     ~TaskProtocolWindow();
-
-private slots:
-    void onDoneButton();
-    void onLoadTasksButton();    
-    int onCompletedStateChanged(int state);
-    void onGotoButton();
 
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
     void bodyRemoved(uint64_t bodyId);
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
+
+private slots:
+    void onDoneButton();
+    void onLoadTasksButton();    
+    void onCompletedStateChanged(int state);
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -78,6 +78,7 @@ private:
     int getFirstUncompleted();
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
+    void updateBodyWindow();
 };
 
 #endif // TASKPROTOCOLWINDOW_H

@@ -11,7 +11,6 @@
 #include "neutube.h"
 #include "flyem/zflyemproofdoc.h"
 #include "protocols/taskbodyreview.h"
-#include "protocols/taskgototarget.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -29,11 +28,27 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     // UI connections
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
     connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
-    connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
 
+}
+// constants
+const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
+const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
+const QString TaskProtocolWindow::KEY_VERSION = "file version";
+const int TaskProtocolWindow::currentVersion = 1;
+const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
+const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
+const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
+const QString TaskProtocolWindow::TASK_PROTOCOL_KEY = "task-protocol";
+
+/*
+ * init() performs tasks that have to occur after UI connections are
+ * made from this class to other things in Neu3; if we do them
+ * in the constructor, they happen too soon
+ */
+void TaskProtocolWindow::init() {
     // start to do stuff
-    if (!m_writer.open(doc->getDvidTarget())) {
+    if (!m_writer.open(m_proofDoc->getDvidTarget())) {
         showError("Couldn't open DVID", "DVID couldn't be opened!  Check your network connections.");
         setWindowConfiguration(LOAD_BUTTON);
         return;
@@ -48,16 +63,8 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
         // otherwise, show the load task file button
         setWindowConfiguration(LOAD_BUTTON);
     }
+
 }
-// constants
-const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
-const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
-const QString TaskProtocolWindow::KEY_VERSION = "file version";
-const int TaskProtocolWindow::currentVersion = 1;
-const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
-const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
-const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
-const QString TaskProtocolWindow::TASK_PROTOCOL_KEY = "task-protocol";
 
 void TaskProtocolWindow::onDoneButton() {
     std::cout << "onDoneButton()" << std::endl;
@@ -81,11 +88,7 @@ void TaskProtocolWindow::onLoadTasksButton() {
     startProtocol(json, true);
 }
 
-void TaskProtocolWindow::onGotoButton() {
-    gotoCurrentTask();
-}
-
-int TaskProtocolWindow::onCompletedStateChanged(int state) {
+void TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
         saveState();
@@ -99,7 +102,6 @@ int TaskProtocolWindow::onCompletedStateChanged(int state) {
  *      into UI
  */
 void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
-
     // validate json; this call displays errors itself
     if (!isValidJson(json)) {
         return;
@@ -126,25 +128,9 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     }
 
     updateCurrentTaskLabel();
+    updateBodyWindow();
     updateLabel();
     setWindowConfiguration(TASK_UI);
-}
-
-void TaskProtocolWindow::gotoCurrentTask() {
-    if (m_currentTaskIndex >= 0) {
-        TaskGotoTarget target = m_taskList[m_currentTaskIndex]->gotoTarget();
-        if (target.targetType() == TaskGotoTarget::BODY) {
-
-            // go to body ID
-            std::cout << "pretending to go to body " << target.bodyID() << std::endl;
-
-        } else if (target.targetType() == TaskGotoTarget::POINT) {
-
-            // go to point
-            std::cout << "pretending to go to point " << target.point().toString() << std::endl;
-
-        }
-    }
 }
 
 /*
@@ -171,6 +157,33 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
         ui->taskActionLabel->setText(m_taskList[m_currentTaskIndex]->actionString());
         ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
         ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
+    }
+}
+
+/*
+ * update the body view window for current index
+ */
+void TaskProtocolWindow::updateBodyWindow() {
+    // update the body window so the required bodies are visible and/or selected
+    if (m_currentTaskIndex >= 0) {
+
+        std::cout << "updateBodyWindow(): " << std::endl;
+
+        QSet<uint64_t> visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+        QSet<uint64_t> selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+
+        // if something is selected, it should be visible, too
+        foreach (uint64_t bodyID, visible) {
+            std::cout << "adding visible body " << bodyID << std::endl;
+            emit bodyAdded(bodyID);
+        }
+        /*
+        foreach (uint64_t bodyID, selected) {
+            std::cout << "adding selected body " << bodyID << std::endl;
+            emit bodyAdded(bodyID);
+        }
+        emit bodySelectionChanged(selected);
+        */
     }
 }
 

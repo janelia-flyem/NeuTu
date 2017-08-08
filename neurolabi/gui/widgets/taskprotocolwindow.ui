@@ -88,13 +88,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="gotoButton">
-        <property name="text">
-         <string>Go to</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="pushButton">
         <property name="text">
          <string>Next</string>

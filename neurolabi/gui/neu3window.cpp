@@ -172,10 +172,14 @@ void Neu3Window::createTaskWindow() {
 
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
-    connect(dockWidget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
-    connect(dockWidget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
-    connect(dockWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
+    connect(window, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
+    connect(window, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
+    connect(window, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodySelection(QSet<uint64_t>)));
+
+    // start up the TaskWindow UI (must come after connections are
+    //  established!)
+    window->init();
 
     dockWidget->setWidget(window);
     dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
