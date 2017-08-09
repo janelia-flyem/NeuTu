@@ -43,7 +43,7 @@ protected:
 
   QString generateHeader();
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   virtual void renderUsingOpengl() override;
   virtual void renderPickingUsingOpengl() override;
 #endif

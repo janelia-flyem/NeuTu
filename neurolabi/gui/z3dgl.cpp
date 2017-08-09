@@ -15,7 +15,7 @@ void _CheckGLError(const char* file, int line)
   GLenum err = glGetError();
 
   if (err != GL_NO_ERROR) {
-    LERRORF(file, line) << "OpenGL error: " << glbinding::Meta::getString(err);
+    LERRORF(file, line, "a") << "OpenGL error: " << glbinding::Meta::getString(err);
   }
 }
 

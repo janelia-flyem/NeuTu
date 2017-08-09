@@ -31,7 +31,7 @@ ZRandom::ZRandom()
 //  return globalZRandom.local();
 //}
 
-ZRandom& ZRandom::getInstance()
+ZRandom& ZRandom::instance()
 {
   // should be thread local,
   // use qt or use boost thread_specific_ptr or wait for c++11 thread_local keyword

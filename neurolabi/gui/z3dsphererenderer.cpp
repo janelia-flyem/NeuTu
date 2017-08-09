@@ -124,7 +124,7 @@ QString Z3DSphereRenderer::generateHeader()
   return headerSource;
 }
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
 void Z3DSphereRenderer::renderUsingOpengl()
 {
   if (m_pointAndRadius.empty())

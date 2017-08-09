@@ -77,10 +77,17 @@ Z3DTransferFunctionWidget::Z3DTransferFunctionWidget(Z3DTransferFunctionParamete
   m_keyContextMenu.addAction(m_deleteKeyAction);
   connect(m_deleteKeyAction, &QAction::triggered, this, &Z3DTransferFunctionWidget::deleteKey);
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
   if (m_volume)
     connect(m_volume, &Z3DVolume::histogramFinished, this, qOverload<>(&Z3DTransferFunctionWidget::update));
   connect(m_transferFunction, &Z3DTransferFunctionParameter::valueChanged, this,
           qOverload<>(&Z3DTransferFunctionWidget::update));
+#else
+  if (m_volume) {
+    connect(m_volume, SIGNAL(histogramFinished()), this, SLOT(update()));
+  }
+  connect(m_transferFunction, SIGNAL(valueChanged()), this, SLOT(update()));
+#endif
 
   setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding));
 }
@@ -725,7 +732,11 @@ void Z3DTransferFunctionWidget::volumeChanged(Z3DVolume* volume)
   m_histogramCache.reset();
 
   m_volume = volume;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
   connect(m_volume, &Z3DVolume::histogramFinished, this, qOverload<>(&Z3DTransferFunctionWidget::update));
+#else
+  connect(m_volume, SIGNAL(histogramFinished()), this, SLOT(update()));
+#endif
 }
 
 void Z3DTransferFunctionWidget::setTransFunc(Z3DTransferFunctionParameter* tf)
@@ -856,11 +867,15 @@ void Z3DTransferFunctionEditor::createConnections()
 {
   connect(m_transferFunction, &Z3DTransferFunctionParameter::valueChanged, this,
           &Z3DTransferFunctionEditor::updateFromTransferFunction);
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
   connect(m_domainMinSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
           &Z3DTransferFunctionEditor::domainMinSpinBoxChanged);
   connect(m_domainMaxSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this,
           &Z3DTransferFunctionEditor::domainMaxSpinBoxChanged);
+#else
+  connect(m_domainMinSpinBox, SIGNAL(valueChanged(double)), this, SLOT(domainMinSpinBoxChanged(double)));
+  connect(m_domainMaxSpinBox, SIGNAL(valueChanged(double)), this, SLOT(domainMaxSpinBoxChanged(double)));
+#endif
   connect(m_fitDomainToDataButton, &QPushButton::clicked, this, &Z3DTransferFunctionEditor::fitDomainToData);
   connect(&m_showHistogram, &ZBoolParameter::boolChanged, m_transferFunctionWidget,
           &Z3DTransferFunctionWidget::setHistogramVisible);

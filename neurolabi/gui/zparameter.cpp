@@ -150,13 +150,3 @@ void ZBoolParameter::setSameAs(const ZParameter& rhs)
   set(static_cast<const ZBoolParameter*>(&rhs)->get());
   ZSingleValueParameter<bool>::setSameAs(rhs);
 }
-
-QJsonValue ZBoolParameter::jsonValue() const
-{
-  return QJsonValue(this->m_value);
-}
-
-void ZBoolParameter::readValue(const QJsonValue& jsonValue)
-{
-  set(jsonValue.toBool(this->m_value));
-}

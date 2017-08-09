@@ -1,6 +1,7 @@
 #include "zbenchtimer.h"
 
 #include "QsLog.h"
+#include <sstream>
 
 ZBenchTimer::ZBenchTimer(const std::string& funName)
   : m_name(funName)

@@ -290,7 +290,7 @@ std::vector<glm::vec4>* Z3DLineRenderer::lineColors()
   return m_lineColorsPt;
 }
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
 void Z3DLineRenderer::renderUsingOpengl()
 {
   if (!m_linesPt || m_linesPt->empty())

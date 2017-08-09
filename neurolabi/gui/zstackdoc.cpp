@@ -1,8 +1,4 @@
-#include "z3dgl.h"
 #include <iostream>
-#ifdef _QT5_
-#include <QtWidgets>
-#endif
 #include <QTextStream>
 #include <QtDebug>
 #include <iterator>

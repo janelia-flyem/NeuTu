@@ -167,7 +167,7 @@ QString Z3DConeRenderer::generateHeader()
   return QString("#define %1\n").arg(m_coneCapStyle.associatedData());
 }
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
 void Z3DConeRenderer::renderUsingOpengl()
 {
   if (m_baseAndBaseRadius.empty())

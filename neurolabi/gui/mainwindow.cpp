@@ -1,11 +1,5 @@
 #include "mainwindow.h"
 
-#ifdef _QT5_
-#include <QtWidgets>
-#else
-#include <QtGui>
-#endif
-
 //#include <QtSvg>
 #include <QDir>
 #include <QtConcurrentRun>
@@ -91,14 +85,12 @@
 #include "zfilelist.h"
 #include "z3dwindow.h"
 #include "z3dgpuinfo.h"
-#include "z3dvolumesource.h"
 #include "z3dcompositor.h"
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemdataframe.h"
 #include "zmoviescript.h"
 #include "zmatlabprocess.h"
 #include "zmoviemaker.h"
-#include "z3dvolumeraycaster.h"
 #include "zstackdoccommand.h"
 #include "zqtmessagereporter.h"
 #include "dialogs/helpdialog.h"
@@ -182,8 +174,15 @@
 #include "dialogs/ztestoptiondialog.h"
 
 #include "z3dcanvas.h"
-#include "z3dapplication.h"
+#include "zsysteminfo.h"
 #include "dvid/libdvidheader.h"
+
+#include <QMdiArea>
+#include <QUndoGroup>
+#include <QProgressDialog>
+#include <QUndoView>
+#include <QInputDialog>
+#include <QMimeData>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -256,21 +255,6 @@ MainWindow::MainWindow(QWidget *parent) :
   }
 
   setAcceptDrops(true);
-
-  // init openGL context
-  RECORD_INFORMATION("Initializing OpenGL context ...");
-#ifdef _QT5_
-  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
-#else
-  QGLFormat format = QGLFormat();
-  format.setAlpha(true);
-  format.setDepth(true);
-  format.setDoubleBuffer(true);
-  format.setRgba(true);
-  format.setSampleBuffers(true);
-  //format.setStereo(true);
-  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, format, this);
-#endif
 
   m_frameCount = 0;
 
@@ -1329,29 +1313,18 @@ bool MainWindow::ask(const std::string &title, const std::string &msg)
 
 void MainWindow::initOpenglContext()
 {
-  if (Z3DApplication::app() == NULL) {
-    ZDialogFactory::Notify3DDisabled(this);
-    return;
+  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
+  m_sharedContext->show();
+
+  // initialize OpenGL
+  if (!ZSystemInfo::instance().initializeGL()) {
+    QString msg = ZSystemInfo::instance().errorMessage();
+    msg += ". 3D functions will be disabled.";
+    QMessageBox::warning(this, qApp->applicationName(), "OpenGL Initialization.\n" + msg);
   }
 
-  // initGL requires a valid OpenGL context
-  if (m_sharedContext != NULL) {
-    // initialize OpenGL
-    if (!Z3DApplication::app()->initializeGL()) {
-      QString msg = Z3DApplication::app()->getErrorMessage();
-      msg += ". 3D functions will be disabled.";
-      report("OpenGL Initialization", msg.toStdString(),
-             NeuTube::MSG_ERROR);
-    }
-
-    if (NeutubeConfig::getInstance().isStereoEnabled()) {
-      Z3DApplication::app()->setStereoSupported(m_sharedContext->format().stereo());
-    } else {
-      Z3DApplication::app()->setStereoSupported(false);
-    }
-
-    m_sharedContext->hide();
-  }
+  ZSystemInfo::instance().setStereoSupported(m_sharedContext->format().stereo());
+  m_sharedContext->hide();
 }
 
 bool MainWindow::okToContinue()
@@ -4208,13 +4181,13 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
       double zScale = 1.125;
       Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::INIT_NORMAL,
                                        false, NULL);
-      stage->getVolumeSource()->setZScale(zScale);
-      stage->getVolumeRaycaster()->hideBoundBox();
+      stage->getVolumeFilter()->setZScale(zScale);
+      stage->getVolumeFilter()->hideBoundBox();
 
       //const std::vector<double> &boundBox = stage->getBoundBox();
 
       Z3DCameraParameter* camera = stage->getCamera();
-      camera->setProjectionType(Z3DCamera::Orthographic);
+      camera->setProjectionType(Z3DCamera::ProjectionType::Orthographic);
       //stage->resetCamera();
 
       //camera->setUpVector(glm::vec3(0.0, 0.0, -1.0));
@@ -4223,7 +4196,7 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
         glm::vec3(1.0, 0.0, 0.0), TZ_PI_2);
         */
 
-      glm::vec3 referenceCenter = camera->getCenter();
+      glm::vec3 referenceCenter = camera->get().center();
 
       double eyeDistance = 3000;//boundBox[3] - referenceCenter[1] + 2500;
       //double eyeDistance = 2000 - referenceCenter[1];
@@ -4249,7 +4222,7 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
       stage->show();
 
       std::cout << output << std::endl;
-      stage->takeScreenShot(output.c_str(), 4000, 4000, MonoView);
+      stage->takeScreenShot(output.c_str(), 4000, 4000, Z3DScreenShotType::MonoView);
       stage->close();
       delete stage;
     }
@@ -5276,7 +5249,7 @@ void MainWindow::on_actionDiagnosis_triggered()
   info << QString("Mc_Stack usage: %1").arg(C_Stack::McStackUsage());
 #endif
 
-  info.append(Z3DGpuInfoInstance.getGpuInfo());
+  info.append(Z3DGpuInfo::instance().gpuInfo());
 
   m_DiagnosisDlg->setSystemInfo(info);
   m_DiagnosisDlg->scrollToBottom();

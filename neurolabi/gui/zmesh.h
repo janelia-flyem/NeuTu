@@ -3,6 +3,7 @@
 
 #include "z3dgl.h"
 #include "zbbox.h"
+#include "zstackobject.h"
 #include <H5Cpp.h>
 #include <vector>
 
@@ -35,7 +36,7 @@ struct ZMeshProperties
   size_t numTriangles = 0;
 };
 
-class ZMesh
+class ZMesh : public ZStackObject
 {
 public:
   // one of GL_TRIANGLES, GL_TRIANGLE_STRIP and GL_TRIANGLE_FAN
@@ -53,6 +54,13 @@ public:
   ZMesh& operator=(const ZMesh&) = default;
 
   void swap(ZMesh& rhs) noexcept;
+
+  virtual const std::string& className() const override;
+
+  virtual void display(
+      ZPainter &, int , EDisplayStyle ,
+      NeuTube::EAxis ) const override
+  {}
 
   // qt style read write name filter for filedialog
   static bool canReadFile(const QString& filename);
@@ -75,6 +83,8 @@ public:
   ZBBox<glm::dvec3> boundBox() const;
 
   ZBBox<glm::dvec3> boundBox(const glm::mat4& transform) const;
+
+  using ZStackObject::boundBox;
 
   GLenum type() const
   { return m_type; }

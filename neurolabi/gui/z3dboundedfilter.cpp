@@ -9,6 +9,7 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
   , m_baseBoundBoxRenderer(m_rendererBase)
   , m_selectionBoundBoxRenderer(m_rendererBase)
   , m_selectionCornerRenderer(m_rendererBase)
+  , m_visible("Visible", true)
   , m_xCut("X Cut", glm::vec2(0, 0), 0, 0)
   , m_yCut("Y Cut", glm::vec2(0, 0), 0, 0)
   , m_zCut("Z Cut", glm::vec2(0, 0), 0, 0)
@@ -44,6 +45,9 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
   m_selectionLineColor.setStyle("COLOR");
   connect(&m_selectionLineColor, &ZVec4Parameter::valueChanged, this, &Z3DBoundedFilter::updateSelectionLineColors);
 
+  connect(&m_visible, &ZBoolParameter::boolChanged, this, &Z3DBoundedFilter::objVisibleChanged);
+
+  addParameter(m_visible);
   addParameter(m_xCut);
   addParameter(m_yCut);
   addParameter(m_zCut);
@@ -152,6 +156,16 @@ void Z3DBoundedFilter::rotateZM()
   if (!m_isSelected || !m_transformEnabled)
     return;
   m_rendererBase.coordTransformPara().rotate(glm::vec3(0, 0, 1), -boost::math::float_constants::degree, m_center);
+}
+
+glm::vec3 Z3DBoundedFilter::getViewCoord(double x, double y, double z, double w, double h)
+{
+  glm::ivec4 viewport(0, 0, w, h);
+  glm::vec3 pt = m_rendererBase.camera().project(glm::applyMatrix(m_rendererBase.coordTransform(), glm::vec3(x, y, z)), viewport);
+
+  pt[1] = h - pt[1];
+
+  return pt;
 }
 
 void Z3DBoundedFilter::updateBoundBox()

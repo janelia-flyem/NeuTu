@@ -91,7 +91,6 @@ public:
   }
 
   void setCompositeMode(const QString &option) { m_compositingMode.set(option); }
-  QString getCompositeMode() const { return m_compositingMode.get(); }
   void setTextureFilterMode(const QString &option)
   {
     for (const auto& p : m_texFilterModeParas) {

@@ -7,7 +7,6 @@
 #include "znumericparameter.h"
 #include "z3dmeshrenderer.h"
 #include "zeventlistenerparameter.h"
-#include "z3dtextureglowrenderer.h"
 #include "z3drenderport.h"
 #include "z3dtexturecopyrenderer.h"
 #include <QObject>

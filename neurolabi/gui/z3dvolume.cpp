@@ -55,7 +55,7 @@ int Z3DVolume::bitsStored() const
   if (m_stack->kind == GREY)
     return 8;
   else if (m_stack->kind == GREY16) {
-    if (getMaxValue() <= 4096)
+    if (maxValue() <= 4096)
       return 12;
     else
       return 16;
@@ -87,7 +87,7 @@ QString Z3DVolume::samplerType() const
 double Z3DVolume::floatMinValue() const
 {
   if (bitsStored() <= 16)
-    return m_minValue / ((1 << getBitsStored()) - 1);
+    return m_minValue / ((1 << bitsStored()) - 1);
   else
     return minValue();   // already float image
 }
@@ -95,7 +95,7 @@ double Z3DVolume::floatMinValue() const
 double Z3DVolume::floatMaxValue() const
 {
   if (bitsStored() <= 16)
-    return m_maxValue / ((1 << getBitsStored()) - 1);
+    return m_maxValue / ((1 << bitsStored()) - 1);
   else
     return maxValue();   // already float image
 }
@@ -278,21 +278,21 @@ glm::mat4 Z3DVolume::voxelToTextureMatrix() const
 
 void Z3DVolume::setHistogram()
 {
-  m_histogram.swap(m_histogramThread->getHistogram());
+  m_histogram.swap(m_histogramThread->histogram());
   computeHistogramMaxValue();
   emit histogramFinished();
 }
 
-void Z3DVolume::generateTexture()
+void Z3DVolume::generateTexture() const
 {
-  if (getDimensions().x == 0 || getDimensions().y == 0 || getDimensions().z == 0) {
+  if (dimensions().x == 0 || dimensions().y == 0 || dimensions().z == 0) {
     QString message = QString("OpenGL volumes must have a size greater than 0 in all dimensions. Actual size: (%1, %2, %3)")
         .arg(m_stack->width).arg(m_stack->height).arg(m_stack->depth);
     LERROR() << message;
     return;
   }
 
-  GLint format;
+  GLenum format;
   GLint internalFormat;
   GLenum dataType;
   if (m_stack->kind == GREY) {
@@ -322,21 +322,21 @@ void Z3DVolume::generateTexture()
 void Z3DVolume::computeMinValue()
 {
   if (m_stack->kind == GREY)
-    m_minValue = *std::min_element(m_data.array8, m_data.array8 + getNumVoxels());
+    m_minValue = *std::min_element(m_data.array8, m_data.array8 + numVoxels());
   else if (m_stack->kind == GREY16)
-    m_minValue = *std::min_element(m_data.array16, m_data.array16 + getNumVoxels());
+    m_minValue = *std::min_element(m_data.array16, m_data.array16 + numVoxels());
   else if (m_stack->kind == FLOAT32)
-    m_minValue = *std::min_element(m_data.array32, m_data.array32 + getNumVoxels());
+    m_minValue = *std::min_element(m_data.array32, m_data.array32 + numVoxels());
 }
 
 void Z3DVolume::computeMaxValue()
 {
   if (m_stack->kind == GREY)
-    m_maxValue = *std::max_element(m_data.array8, m_data.array8 + getNumVoxels());
+    m_maxValue = *std::max_element(m_data.array8, m_data.array8 + numVoxels());
   else if (m_stack->kind == GREY16)
-    m_maxValue = *std::max_element(m_data.array16, m_data.array16 + getNumVoxels());
+    m_maxValue = *std::max_element(m_data.array16, m_data.array16 + numVoxels());
   else if (m_stack->kind == FLOAT32)
-    m_maxValue = *std::max_element(m_data.array32, m_data.array32 + getNumVoxels());
+    m_maxValue = *std::max_element(m_data.array32, m_data.array32 + numVoxels());
 }
 
 void Z3DVolume::computeHistogramMaxValue()

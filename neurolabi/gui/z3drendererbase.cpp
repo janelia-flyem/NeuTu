@@ -8,7 +8,7 @@
 Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* parent)
   : QObject(parent)
   , m_globalParas(globalParas)
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   , m_displayList(0)
   , m_pickingDisplayList(0)
 #endif
@@ -50,19 +50,19 @@ Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* pare
   addParameter(m_materialShininess);
 
   connect(&m_globalParas.lightCount, &ZIntParameter::valueChanged, this, &Z3DRendererBase::compile);
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   connect(&m_globalParas.lightCount, &ZIntParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
 #endif
 
   connect(&m_coordTransform, &Z3DTransformParameter::valueChanged, this,
           &Z3DRendererBase::makeCoordTransformNormalMatrix);
   connect(&m_coordTransform, &Z3DTransformParameter::valueChanged, this, &Z3DRendererBase::coordTransformChanged);
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   connect(&m_coordTransform, &Z3DTransformParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
   connect(&m_coordTransform, &Z3DTransformParameter::valueChanged, this, &Z3DRendererBase::invalidatePickingDisplayList);
 #endif
   connect(&m_sizeScale, &ZFloatParameter::valueChanged, this, &Z3DRendererBase::sizeScaleChanged);
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   connect(&m_sizeScale, &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
   connect(&m_sizeScale, &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidatePickingDisplayList);
   connect(&m_opacity, &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
@@ -70,14 +70,14 @@ Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* pare
   connect(&m_materialSpecular, &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
 
   for (size_t i=0; i<m_globalParas.lightPositions.size(); ++i) {
-    connect(m_globalParas.lightPositions[i], &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
-    connect(m_globalParas.lightAmbients[i], &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
-    connect(m_globalParas.lightDiffuses[i], &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
-    connect(m_globalParas.lightSpeculars[i], &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
-    connect(m_globalParas.lightAttenuations[i], &ZVec3Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
-    connect(m_globalParas.lightSpotCutoff[i], &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
-    connect(m_globalParas.lightSpotExponent[i], &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
-    connect(m_globalParas.lightSpotDirection[i], &ZVec3Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
+    connect(m_globalParas.lightPositions[i].get(), &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
+    connect(m_globalParas.lightAmbients[i].get(), &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
+    connect(m_globalParas.lightDiffuses[i].get(), &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
+    connect(m_globalParas.lightSpeculars[i].get(), &ZVec4Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
+    connect(m_globalParas.lightAttenuations[i].get(), &ZVec3Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
+    connect(m_globalParas.lightSpotCutoff[i].get(), &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
+    connect(m_globalParas.lightSpotExponent[i].get(), &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
+    connect(m_globalParas.lightSpotDirection[i].get(), &ZVec3Parameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
   }
 #endif
 
@@ -91,7 +91,7 @@ Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* pare
 
 Z3DRendererBase::~Z3DRendererBase()
 {
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   if ((bool)glIsList(m_displayList))
     glDeleteLists(m_displayList, 1);
   if ((bool)glIsList(m_pickingDisplayList))
@@ -217,7 +217,7 @@ void Z3DRendererBase::registerRenderer(Z3DPrimitiveRenderer* renderer)
 {
   CHECK(renderer && m_renderers.find(renderer) == m_renderers.end());
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   connect(renderer, &Z3DPrimitiveRenderer::openglRendererInvalid, this, &Z3DRendererBase::invalidateDisplayList);
   connect(renderer, &Z3DPrimitiveRenderer::openglPickingRendererInvalid, this, &Z3DRendererBase::invalidatePickingDisplayList);
 #endif
@@ -249,7 +249,7 @@ void Z3DRendererBase::setClipPlanes(std::vector<glm::vec4>* clipPlanes)
   for (size_t i = 0; i < m_clipPlanes.size(); ++i) {
     m_doubleClipPlanes.emplace_back(m_clipPlanes[i]);
   }
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   invalidateDisplayList();
   invalidatePickingDisplayList();
 #endif
@@ -263,7 +263,7 @@ void Z3DRendererBase::render(Z3DEye eye, Z3DPrimitiveRenderer* renderer)
   render(eye, renderers);
 }
 
-void Z3DRendererBase::render(Z3DEye eye, nim::Z3DPrimitiveRenderer* renderer1, nim::Z3DPrimitiveRenderer* renderer2)
+void Z3DRendererBase::render(Z3DEye eye, Z3DPrimitiveRenderer* renderer1, Z3DPrimitiveRenderer* renderer2)
 {
   CHECK(m_renderers.find(renderer1) != m_renderers.end());
   CHECK(m_renderers.find(renderer2) != m_renderers.end());
@@ -357,7 +357,7 @@ void Z3DRendererBase::renderPicking(Z3DEye eye, Z3DPrimitiveRenderer* renderer)
 }
 
 void
-Z3DRendererBase::renderPicking(Z3DEye eye, nim::Z3DPrimitiveRenderer* renderer1, nim::Z3DPrimitiveRenderer* renderer2)
+Z3DRendererBase::renderPicking(Z3DEye eye, Z3DPrimitiveRenderer* renderer1, Z3DPrimitiveRenderer* renderer2)
 {
   CHECK(m_renderers.find(renderer1) != m_renderers.end());
   CHECK(m_renderers.find(renderer2) != m_renderers.end());
@@ -424,20 +424,7 @@ void Z3DRendererBase::renderPicking(Z3DEye eye, const std::vector<Z3DPrimitiveRe
 #endif
 }
 
-glm::vec3 Z3DRendererBase::getViewCoord(
-    double x, double y, double z, double w, double h)
-{
-  glm::ivec4 viewport(0, 0, w, h);
-  glm::vec3 pt = camera().project(
-        glm::vec3(x * m_coordXScale.get(), y * m_coordYScale.get(),
-                  z * m_coordZScale.get()), viewport);
-
-  pt[1] = h - pt[1];
-
-  return pt;
-}
-
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
 void Z3DRendererBase::generateDisplayList(const std::vector<Z3DPrimitiveRenderer *> &renderers)
 {
   if ((bool)glIsList(m_displayList))
@@ -603,7 +590,7 @@ bool Z3DRendererBase::needLighting(const std::vector<Z3DPrimitiveRenderer*>& ren
   return needLighting;
 }
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
 bool Z3DRendererBase::useDisplayList(const std::vector<Z3DPrimitiveRenderer*> &renderers) const
 {
   bool useDisplayList = false;
@@ -614,7 +601,7 @@ bool Z3DRendererBase::useDisplayList(const std::vector<Z3DPrimitiveRenderer*> &r
 }
 #endif
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
 void Z3DRendererBase::activateClipPlanesOpenGL()
 {
   if (!m_clipEnabled)
@@ -696,7 +683,7 @@ void Z3DRendererBase::makeViewportMatrix()
   m_inverseViewportMatrix = glm::inverse(m_viewportMatrix);
 }
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
 void Z3DRendererBase::invalidateDisplayList()
 {
   if ((bool)glIsList(m_displayList)) {

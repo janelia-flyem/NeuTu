@@ -5,7 +5,6 @@
 #include "z3dtexturecopyrenderer.h"
 #include "z3drenderport.h"
 #include "znumericparameter.h"
-#include "zimg.h"
 #include "zexception.h"
 #include <QString>
 
@@ -55,6 +54,10 @@ protected:
 
   void renderInportToImage(Z3DEye eye);
 
+  void pasteQImage(QImage& dst, const QImage& src, int x, int y) const;
+
+  QImage composeStereoViewQImage(const QImage& left, const QImage& right, bool half = false);
+
 private:
   void setOutputSize(const glm::uvec2& size);
 
@@ -67,9 +70,9 @@ private:
   Z3DRenderInputPort m_rightEyeInport;
 
   bool m_renderToImage;
-  ZImg m_monoImg;
-  ZImg m_leftImg;
-  ZImg m_rightImg;
+  QImage m_monoImg;
+  QImage m_leftImg;
+  QImage m_rightImg;
   bool m_tiledRendering;
   int m_tileStartX;
   int m_tileStartY;

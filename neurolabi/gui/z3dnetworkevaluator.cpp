@@ -308,7 +308,7 @@ void Z3DCheckOpenGLStateFilterWrapper::checkState(const Z3DFilter* p)
     warn(p, "glActiveTexture was not set to GL_TEXTURE0");
   }
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   if (!checkGLState(GL_MATRIX_MODE, GL_MODELVIEW)) {
     glMatrixMode(GL_MODELVIEW);
     warn(p, "glMatrixMode was not set to GL_MODELVIEW");

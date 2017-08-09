@@ -40,11 +40,7 @@
 #include "zstackviewlocator.h"
 #include "zscrollslicestrategy.h"
 
-#ifdef _QT5_
-#include <QtWidgets>
-#else
-#include <QtGui>
-#endif
+#include <QImageWriter>
 
 using namespace std;
 

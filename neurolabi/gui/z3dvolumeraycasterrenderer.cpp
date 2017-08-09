@@ -384,11 +384,11 @@ void Z3DVolumeRaycasterRenderer::renderPicking(Z3DEye)
 void Z3DVolumeRaycasterRenderer::resetTransferFunctions()
 {
 #if 1
-  for (size_t i=0; i<m_nChannel; ++i) {
+  for (size_t i=0; i<m_transferFuncParas.size(); ++i) {
     if (m_opaque) {
       m_transferFuncParas[i]->get().reset(
             0.0, 1.0, glm::vec4(0.f),
-            glm::vec4(m_volumes[i]->getVolColor(), 1.0));
+            glm::vec4(m_volumes[i]->volColor(), 1.0));
       m_transferFuncParas[i]->get().addKey(
             ZColorMapKey(0.001, glm::vec4(0.01f, 0.01f, 0.01f,0.0)));
       m_transferFuncParas[i]->get().addKey(
@@ -396,7 +396,7 @@ void Z3DVolumeRaycasterRenderer::resetTransferFunctions()
     } else {
       m_transferFuncParas[i]->get().reset(
             0.0, 1.0, glm::vec4(0.f),
-            glm::vec4(m_volumes[i]->getVolColor(), 1.f));
+            glm::vec4(m_volumes[i]->volColor(), 1.f));
       //m_transferFuncParas[i]->get().addKey(ZColorMapKey(0.1, glm::vec4(m_volumes[i]->getVolColor(), 1.f) *
       //                                                  glm::vec4(.1f,.1f,.1f,0.f)));
     }

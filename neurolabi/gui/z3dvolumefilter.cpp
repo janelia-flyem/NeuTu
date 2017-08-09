@@ -18,7 +18,6 @@ Z3DVolumeFilter::Z3DVolumeFilter(Z3DGlobalParameters& globalParas, QObject* pare
   , m_textureAndEyeCoordinateRenderer(m_rendererBase)
   , m_textureCopyRenderer(m_rendererBase)
   , m_imgPack(nullptr)
-  , m_visible("Visible", true)
   , m_stayOnTop("Stay On Top", false)
   , m_isVolumeDownsampled("Volume Is Downsampled", false)
   , m_isSubVolume("Is Subvolume", false)
@@ -59,18 +58,6 @@ Z3DVolumeFilter::Z3DVolumeFilter(Z3DGlobalParameters& globalParas, QObject* pare
   m_baseBoundBoxRenderer.setEnableMultisample(false);
   m_textureCopyRenderer.setDiscardTransparent(true);
 
-  // directX 10 resource limit
-  // 128 MB
-  // directX 11 resource limit
-  //min(max(128, 0.25f * (amount of dedicated VRAM)), 2048) MB
-  //D3D11_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_A_TERM (128)
-  //D3D11_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_B_TERM (0.25f)
-  //D3D11_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_C_TERM (2048)
-  size_t currentAvailableTexMem = Z3DGpuInfo::instance().dedicatedVideoMemoryMB();
-  m_maxVoxelNumber =
-    std::min(std::max(size_t(128), static_cast<size_t>(0.25 * currentAvailableTexMem)), size_t(2048)) * 1024 * 1024;
-
-  addParameter(m_visible);
   addParameter(m_stayOnTop);
   m_isVolumeDownsampled.setEnabled(false);
   addParameter(m_isVolumeDownsampled);
@@ -172,8 +159,6 @@ Z3DVolumeFilter::Z3DVolumeFilter(Z3DGlobalParameters& globalParas, QObject* pare
   adjustWidget();
   CHECK_GL_ERROR
 
-  connect(&m_visible, SIGNAL(valueChanged(bool)), this, SIGNAL(objVisibleChanged(bool)));
-
   m_numParas = m_parameters.size();
 }
 
@@ -182,8 +167,22 @@ void Z3DVolumeFilter::setOffset(double x, double y, double z)
   m_rendererBase.translate(x, y, z);
 }
 
-void Z3DVolumeFilter::setData(ZStackDoc* doc)
+void Z3DVolumeFilter::setData(const ZStackDoc* doc, size_t maxVoxelNumber)
 {
+  if (maxVoxelNumber > 0) {
+    m_maxVoxelNumber = maxVoxelNumber;
+  } else {
+    // directX 10 resource limit
+    // 128 MB
+    // directX 11 resource limit
+    //min(max(128, 0.25f * (amount of dedicated VRAM)), 2048) MB
+    //D3D11_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_A_TERM (128)
+    //D3D11_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_B_TERM (0.25f)
+    //D3D11_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_C_TERM (2048)
+    size_t currentAvailableTexMem = Z3DGpuInfo::instance().dedicatedVideoMemoryMB();
+    m_maxVoxelNumber =
+      std::min(std::max(size_t(128), static_cast<size_t>(0.25 * currentAvailableTexMem)), size_t(2048)) * 1024 * 1024;
+  }
   m_isVolumeDownsampled.set(false);
   std::vector<std::unique_ptr<Z3DVolume>> vols;
   const ZStack* img = nullptr;
@@ -446,7 +445,7 @@ void Z3DVolumeFilter::exitInteractionMode()
 
 bool Z3DVolumeFilter::isReady(Z3DEye eye) const
 {
-  return Z3DBoundedFilter::isReady(eye) && m_visible.get() && m_imgPack;
+  return Z3DBoundedFilter::isReady(eye) && isVisible() && m_imgPack;
 }
 
 glm::vec3 Z3DVolumeFilter::get3DPosition(int x, int y, int width, int height, bool& success)

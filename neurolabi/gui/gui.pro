@@ -96,8 +96,8 @@ CONFIG += static_gtest
 
 QT += printsupport
 
-DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
-DEFINES += QT_USE_QSTRINGBUILDER #QT_NO_CAST_FROM_BYTEARRAY #QT_NO_CAST_TO_ASCII
+DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_ _USE_CORE_PROFILE_
+DEFINES += #QT_USE_QSTRINGBUILDER #QT_NO_CAST_FROM_BYTEARRAY #QT_NO_CAST_TO_ASCII
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -313,14 +313,11 @@ HEADERS += mainwindow.h \
     z3dinteractionhandler.h \
     zobjsitem.h \
     zobjsmodel.h \
-    z3dvolumesource.h \
-    z3dvolumeraycaster.h \
     zdirectionaltemplatechain.h \
     zcolormap.h \
     zclickablelabel.h \
     zcolormapeditor.h \
     zselectfilewidget.h \
-    z3dtakescreenshotwidget.h \
     z3drendererbase.h \
     z3dprimitiverenderer.h \
     z3dsphererenderer.h \
@@ -353,7 +350,6 @@ HEADERS += mainwindow.h \
     z3dfontrenderer.h \
     z3dcanvaseventlistener.h \
     zspanslider.h \
-    z3dmesh.h \
     zcuboid.h \
     ztest.h \
     z3dgpuinfo.h \
@@ -793,7 +789,9 @@ HEADERS += mainwindow.h \
     z3dmeshrenderer.h \
     zstringutils.h \
     z3dvolumefilter.h \
-    z3dtextureandeyecoordinaterenderer.h
+    z3dtextureandeyecoordinaterenderer.h \
+    z3dview.h \
+    ztakescreenshotwidget.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -935,8 +933,6 @@ SOURCES += main.cpp \
     z3dinteractionhandler.cpp \
     zobjsitem.cpp \
     zobjsmodel.cpp \
-    z3dvolumesource.cpp \
-    z3dvolumeraycaster.cpp \
     zcolormap.cpp \
     zclickablelabel.cpp \
     zcolormapeditor.cpp \
@@ -944,7 +940,6 @@ SOURCES += main.cpp \
     zlocsegchain.cpp \
     zcurve.cpp \
     zselectfilewidget.cpp \
-    z3dtakescreenshotwidget.cpp \
     z3drendererbase.cpp \
     z3dprimitiverenderer.cpp \
     z3dsphererenderer.cpp \
@@ -975,7 +970,6 @@ SOURCES += main.cpp \
     z3dsdfont.cpp \
     z3dfontrenderer.cpp \
     zspanslider.cpp \
-    z3dmesh.cpp \
     ztest.cpp \
     z3dgpuinfo.cpp \
     z3dtexture.cpp \
@@ -1376,7 +1370,9 @@ SOURCES += main.cpp \
     z3dmeshrenderer.cpp \
     zstringutils.cpp \
     z3dvolumefilter.cpp \
-    z3dtextureandeyecoordinaterenderer.cpp
+    z3dtextureandeyecoordinaterenderer.cpp \
+    z3dview.cpp \
+    ztakescreenshotwidget.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

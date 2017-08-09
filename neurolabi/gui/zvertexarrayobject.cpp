@@ -2,7 +2,7 @@
 
 #include "z3dgpuinfo.h"
 
-#if defined(__APPLE__) && !defined(ATLAS_USE_CORE_PROFILE)
+#if defined(__APPLE__) && !defined(_USE_CORE_PROFILE_)
 #undef glGenVertexArrays
 #undef glBindVertexArray
 #undef glDeleteVertexArrays

@@ -1,9 +1,8 @@
 #include "zsysteminfo.h"
 
 #include "z3dgl.h"
-#include "zlog.h"
+#include "QsLog.h"
 #include "z3dgpuinfo.h"
-#include "zmainwindow.h"
 #include "z3dmainwindow.h"
 #include <glbinding/Binding.h>
 #include <glbinding/Meta.h>

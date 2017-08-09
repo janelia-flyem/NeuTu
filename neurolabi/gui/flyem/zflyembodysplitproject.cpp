@@ -389,7 +389,7 @@ void ZFlyEmBodySplitProject::startQuickView(Z3DWindow *window)
     }
 
     std::cout << "Zooming in" << std::endl;
-    window->gotoPosition(boundBox.toCornerVector(), 0);
+    window->gotoPosition(boundBox);
 //    m_quickViewWindow->setYZView();
 
     std::cout << "Showing quick view ..." << std::endl;
@@ -676,7 +676,7 @@ void ZFlyEmBodySplitProject::showResult3d()
           ZIntPoint dsIntv =
               getDocument()->getConstSparseStack()->getDownsampleInterval();
           if (dsIntv.getX() != dsIntv.getZ()) {
-            m_resultWindow->getVolumeSource()->setZScale(
+            m_resultWindow->getVolumeFilter()->setZScale(
                   ((float) (dsIntv.getZ() + 1)) / (dsIntv.getX() + 1));
             m_resultWindow->resetCamera();
           }

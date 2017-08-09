@@ -51,7 +51,7 @@ public:
     : ZException(what)
   {
     if (errno != 0) {
-      m_what = m_what % QString(" <errno: %1>").arg(std::strerror(errno));
+      m_what = m_what + QString(" <errno: %1>").arg(std::strerror(errno));
       errno = 0;
     }
   }
@@ -60,7 +60,7 @@ public:
     : ZException(what)
   {
     if (errno != 0) {
-      m_what = m_what % QString(" <errno: %1>").arg(std::strerror(errno));
+      m_what = m_what + QString(" <errno: %1>").arg(std::strerror(errno));
       errno = 0;
     }
   }
@@ -69,7 +69,7 @@ public:
     : ZException(what)
   {
     if (errno != 0) {
-      m_what = m_what % QString(" <errno: %1>").arg(std::strerror(errno));
+      m_what = m_what + QString(" <errno: %1>").arg(std::strerror(errno));
       errno = 0;
     }
   }

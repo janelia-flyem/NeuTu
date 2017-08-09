@@ -16,16 +16,10 @@
 #include "ztraceproject.h"
 #include "zstack.hxx"
 #include "zcurve.h"
-#include "z3dapplication.h"
 #include "z3dwindow.h"
 #include "zstackfile.h"
 #include "zdoublevector.h"
 #include "zfiletype.h"
-#ifdef _QT5_
-#include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 #include "zobjsmanagerwidget.h"
 #include "neutubeconfig.h"
 #include "zstackviewlocator.h"
@@ -54,6 +48,9 @@
 #include "dvid/zdvidgrayslice.h"
 #endif
 
+#include <QMdiArea>
+#include <QMessageBox>
+#include <QMimeData>
 
 using namespace std;
 

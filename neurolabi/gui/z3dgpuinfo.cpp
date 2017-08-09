@@ -7,8 +7,6 @@
 
 uint64_t getDedicatedVideoMemoryMB();
 
-namespace nim {
-
 Z3DGpuInfo& Z3DGpuInfo::instance()
 {
   static Z3DGpuInfo gpuInfo;

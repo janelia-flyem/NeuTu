@@ -47,7 +47,11 @@ QWidget* ZIntParameter::actualCreateWidget(QWidget* parent)
     sb->setSingleStep(m_step);
     sb->setPrefix(m_prefix);
     sb->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb, qOverload<int>(&ZSpinBox::valueChanged), this, &ZIntParameter::setValue);
+#else
+    connect(sb, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)));
+#endif
     connect(this, &ZIntParameter::valueWillChange, sb, &ZSpinBox::setValue);
     connect(this, &ZIntParameter::rangeChanged, sb, &ZSpinBox::setRange);
     return sb;
@@ -111,7 +115,11 @@ QWidget* ZDoubleParameter::actualCreateWidget(QWidget* parent)
     sb->setDecimals(m_decimal);
     sb->setPrefix(m_prefix);
     sb->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDoubleParameter::setValue);
+#else
+    connect(sb, SIGNAL(valueChanged(double)), this, SLOT(setValue(double)));
+#endif
     connect(this, &ZDoubleParameter::valueWillChange, sb, &ZDoubleSpinBox::setValue);
     connect(this, &ZDoubleParameter::rangeChanged, sb, &ZDoubleSpinBox::setRange);
     return sb;
@@ -167,7 +175,11 @@ QWidget* ZFloatParameter::actualCreateWidget(QWidget* parent)
     sb->setDecimals(m_decimal);
     sb->setPrefix(m_prefix);
     sb->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZFloatParameter::setValue);
+#else
+    connect(sb, SIGNAL(valueChanged(double)), this, SLOT(setValue(double)));
+#endif
     connect(this, &ZFloatParameter::valueWillChange, sb, &ZDoubleSpinBox::setValue);
     connect(this, &ZFloatParameter::rangeChanged, sb, &ZDoubleSpinBox::setRange);
     return sb;
@@ -241,7 +253,11 @@ QWidget* ZVec2Parameter::actualCreateWidget(QWidget* parent)
       sb1->setDecimals(m_decimal);
       sb1->setPrefix(m_prefix);
       sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb1, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec2Parameter::setValue1);
+#else
+      connect(sb1, SIGNAL(valueChanged(double)), this, SLOT(setValue1(double)));
+#endif
       connect(this, &ZVec2Parameter::value1WillChange, sb1, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(0).isEmpty()) {
         lo->addWidget(sb1);
@@ -268,7 +284,11 @@ QWidget* ZVec2Parameter::actualCreateWidget(QWidget* parent)
       sb2->setDecimals(m_decimal);
       sb2->setPrefix(m_prefix);
       sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb2, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec2Parameter::setValue2);
+#else
+      connect(sb2, SIGNAL(valueChanged(double)), this, SLOT(setValue2(double)));
+#endif
       connect(this, &ZVec2Parameter::value2WillChange, sb2, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(1).isEmpty()) {
         lo->addWidget(sb2);
@@ -406,7 +426,11 @@ QWidget* ZVec3Parameter::actualCreateWidget(QWidget* parent)
       sb1->setDecimals(m_decimal);
       sb1->setPrefix(m_prefix);
       sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb1, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec3Parameter::setValue1);
+#else
+      connect(sb1, SIGNAL(valueChanged(double)), this, SLOT(setValue1(double)));
+#endif
       connect(this, &ZVec3Parameter::value1WillChange, sb1, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(0).isEmpty()) {
         lo->addWidget(sb1);
@@ -433,7 +457,11 @@ QWidget* ZVec3Parameter::actualCreateWidget(QWidget* parent)
       sb2->setDecimals(m_decimal);
       sb2->setPrefix(m_prefix);
       sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb2, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec3Parameter::setValue2);
+#else
+      connect(sb2, SIGNAL(valueChanged(double)), this, SLOT(setValue2(double)));
+#endif
       connect(this, &ZVec3Parameter::value2WillChange, sb2, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(1).isEmpty()) {
         lo->addWidget(sb2);
@@ -460,7 +488,11 @@ QWidget* ZVec3Parameter::actualCreateWidget(QWidget* parent)
       sb3->setDecimals(m_decimal);
       sb3->setPrefix(m_prefix);
       sb3->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb3, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec3Parameter::setValue3);
+#else
+      connect(sb3, SIGNAL(valueChanged(double)), this, SLOT(setValue3(double)));
+#endif
       connect(this, &ZVec3Parameter::value3WillChange, sb3, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(2).isEmpty()) {
         lo->addWidget(sb3);
@@ -627,7 +659,11 @@ QWidget* ZVec4Parameter::actualCreateWidget(QWidget* parent)
       sb1->setDecimals(m_decimal);
       sb1->setPrefix(m_prefix);
       sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb1, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec4Parameter::setValue1);
+#else
+      connect(sb1, SIGNAL(valueChanged(double)), this, SLOT(setValue1(double)));
+#endif
       connect(this, &ZVec4Parameter::value1WillChange, sb1, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(0).isEmpty()) {
         lo->addWidget(sb1);
@@ -654,7 +690,11 @@ QWidget* ZVec4Parameter::actualCreateWidget(QWidget* parent)
       sb2->setDecimals(m_decimal);
       sb2->setPrefix(m_prefix);
       sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb2, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec4Parameter::setValue2);
+#else
+      connect(sb2, SIGNAL(valueChanged(double)), this, SLOT(setValue2(double)));
+#endif
       connect(this, &ZVec4Parameter::value2WillChange, sb2, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(1).isEmpty()) {
         lo->addWidget(sb2);
@@ -681,7 +721,11 @@ QWidget* ZVec4Parameter::actualCreateWidget(QWidget* parent)
       sb3->setDecimals(m_decimal);
       sb3->setPrefix(m_prefix);
       sb3->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb3, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec4Parameter::setValue3);
+#else
+      connect(sb3, SIGNAL(valueChanged(double)), this, SLOT(setValue3(double)));
+#endif
       connect(this, &ZVec4Parameter::value3WillChange, sb3, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(2).isEmpty()) {
         lo->addWidget(sb3);
@@ -708,7 +752,11 @@ QWidget* ZVec4Parameter::actualCreateWidget(QWidget* parent)
       sb4->setDecimals(m_decimal);
       sb4->setPrefix(m_prefix);
       sb4->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb4, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZVec4Parameter::setValue4);
+#else
+      connect(sb4, SIGNAL(valueChanged(double)), this, SLOT(setValue4(double)));
+#endif
       connect(this, &ZVec4Parameter::value4WillChange, sb4, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(3).isEmpty()) {
         lo->addWidget(sb4);
@@ -878,7 +926,12 @@ QWidget* ZDVec2Parameter::actualCreateWidget(QWidget* parent)
       sb1->setDecimals(m_decimal);
       sb1->setPrefix(m_prefix);
       sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb1, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec2Parameter::setValue1);
+#else
+      connect(sb1, SIGNAL(valueChanged(double)), this, SLOT(setValue1(double)));
+#endif
+
       connect(this, &ZDVec2Parameter::value1WillChange, sb1, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(0).isEmpty()) {
         lo->addWidget(sb1);
@@ -905,7 +958,12 @@ QWidget* ZDVec2Parameter::actualCreateWidget(QWidget* parent)
       sb2->setDecimals(m_decimal);
       sb2->setPrefix(m_prefix);
       sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb2, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec2Parameter::setValue2);
+#else
+      connect(sb2, SIGNAL(valueChanged(double)), this, SLOT(setValue2(double)));
+#endif
+
       connect(this, &ZDVec2Parameter::value2WillChange, sb2, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(1).isEmpty()) {
         lo->addWidget(sb2);
@@ -1043,7 +1101,12 @@ QWidget* ZDVec3Parameter::actualCreateWidget(QWidget* parent)
       sb1->setDecimals(m_decimal);
       sb1->setPrefix(m_prefix);
       sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb1, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec3Parameter::setValue1);
+#else
+      connect(sb1, SIGNAL(valueChanged(double)), this, SLOT(setValue1(double)));
+#endif
+
       connect(this, &ZDVec3Parameter::value1WillChange, sb1, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(0).isEmpty()) {
         lo->addWidget(sb1);
@@ -1070,7 +1133,12 @@ QWidget* ZDVec3Parameter::actualCreateWidget(QWidget* parent)
       sb2->setDecimals(m_decimal);
       sb2->setPrefix(m_prefix);
       sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb2, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec3Parameter::setValue2);
+#else
+      connect(sb2, SIGNAL(valueChanged(double)), this, SLOT(setValue2(double)));
+#endif
+
       connect(this, &ZDVec3Parameter::value2WillChange, sb2, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(1).isEmpty()) {
         lo->addWidget(sb2);
@@ -1097,7 +1165,12 @@ QWidget* ZDVec3Parameter::actualCreateWidget(QWidget* parent)
       sb3->setDecimals(m_decimal);
       sb3->setPrefix(m_prefix);
       sb3->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb3, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec3Parameter::setValue3);
+#else
+      connect(sb3, SIGNAL(valueChanged(double)), this, SLOT(setValue3(double)));
+#endif
+
       connect(this, &ZDVec3Parameter::value3WillChange, sb3, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(2).isEmpty()) {
         lo->addWidget(sb3);
@@ -1264,7 +1337,12 @@ QWidget* ZDVec4Parameter::actualCreateWidget(QWidget* parent)
       sb1->setDecimals(m_decimal);
       sb1->setPrefix(m_prefix);
       sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb1, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec4Parameter::setValue1);
+#else
+      connect(sb1, SIGNAL(valueChanged(double)), this, SLOT(setValue1(double)));
+#endif
+
       connect(this, &ZDVec4Parameter::value1WillChange, sb1, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(0).isEmpty()) {
         lo->addWidget(sb1);
@@ -1291,7 +1369,12 @@ QWidget* ZDVec4Parameter::actualCreateWidget(QWidget* parent)
       sb2->setDecimals(m_decimal);
       sb2->setPrefix(m_prefix);
       sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb2, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec4Parameter::setValue2);
+#else
+      connect(sb2, SIGNAL(valueChanged(double)), this, SLOT(setValue2(double)));
+#endif
+
       connect(this, &ZDVec4Parameter::value2WillChange, sb2, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(1).isEmpty()) {
         lo->addWidget(sb2);
@@ -1318,7 +1401,12 @@ QWidget* ZDVec4Parameter::actualCreateWidget(QWidget* parent)
       sb3->setDecimals(m_decimal);
       sb3->setPrefix(m_prefix);
       sb3->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb3, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec4Parameter::setValue3);
+#else
+      connect(sb3, SIGNAL(valueChanged(double)), this, SLOT(setValue3(double)));
+#endif
+
       connect(this, &ZDVec4Parameter::value3WillChange, sb3, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(2).isEmpty()) {
         lo->addWidget(sb3);
@@ -1345,7 +1433,12 @@ QWidget* ZDVec4Parameter::actualCreateWidget(QWidget* parent)
       sb4->setDecimals(m_decimal);
       sb4->setPrefix(m_prefix);
       sb4->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb4, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZDVec4Parameter::setValue4);
+#else
+      connect(sb4, SIGNAL(valueChanged(double)), this, SLOT(setValue4(double)));
+#endif
+
       connect(this, &ZDVec4Parameter::value4WillChange, sb4, &ZDoubleSpinBox::setValue);
       if (m_nameOfEachValue.at(3).isEmpty()) {
         lo->addWidget(sb4);
@@ -1513,7 +1606,12 @@ QWidget* ZIVec2Parameter::actualCreateWidget(QWidget* parent)
       sb1->setSingleStep(m_step);
       sb1->setPrefix(m_prefix);
       sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb1, qOverload<int>(&ZSpinBox::valueChanged), this, &ZIVec2Parameter::setValue1);
+#else
+      connect(sb1, SIGNAL(valueChanged(int)), this, SLOT(setValue1(int)));
+#endif
+
       connect(this, &ZIVec2Parameter::value1WillChange, sb1, &ZSpinBox::setValue);
       if (m_nameOfEachValue.at(0).isEmpty()) {
         lo->addWidget(sb1);
@@ -1539,7 +1637,12 @@ QWidget* ZIVec2Parameter::actualCreateWidget(QWidget* parent)
       sb2->setSingleStep(m_step);
       sb2->setPrefix(m_prefix);
       sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb2, qOverload<int>(&ZSpinBox::valueChanged), this, &ZIVec2Parameter::setValue2);
+#else
+      connect(sb2, SIGNAL(valueChanged(int)), this, SLOT(setValue2(int)));
+#endif
+
       connect(this, &ZIVec2Parameter::value2WillChange, sb2, &ZSpinBox::setValue);
       if (m_nameOfEachValue.at(1).isEmpty()) {
         lo->addWidget(sb2);
@@ -1670,7 +1773,12 @@ QWidget* ZIVec3Parameter::actualCreateWidget(QWidget* parent)
       sb1->setSingleStep(m_step);
       sb1->setPrefix(m_prefix);
       sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb1, qOverload<int>(&ZSpinBox::valueChanged), this, &ZIVec3Parameter::setValue1);
+#else
+      connect(sb1, SIGNAL(valueChanged(int)), this, SLOT(setValue1(int)));
+#endif
+
       connect(this, &ZIVec3Parameter::value1WillChange, sb1, &ZSpinBox::setValue);
       if (m_nameOfEachValue.at(0).isEmpty()) {
         lo->addWidget(sb1);
@@ -1696,7 +1804,12 @@ QWidget* ZIVec3Parameter::actualCreateWidget(QWidget* parent)
       sb2->setSingleStep(m_step);
       sb2->setPrefix(m_prefix);
       sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb2, qOverload<int>(&ZSpinBox::valueChanged), this, &ZIVec3Parameter::setValue2);
+#else
+      connect(sb2, SIGNAL(valueChanged(int)), this, SLOT(setValue2(int)));
+#endif
+
       connect(this, &ZIVec3Parameter::value2WillChange, sb2, &ZSpinBox::setValue);
       if (m_nameOfEachValue.at(1).isEmpty()) {
         lo->addWidget(sb2);
@@ -1722,7 +1835,12 @@ QWidget* ZIVec3Parameter::actualCreateWidget(QWidget* parent)
       sb3->setSingleStep(m_step);
       sb3->setPrefix(m_prefix);
       sb3->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
       connect(sb3, qOverload<int>(&ZSpinBox::valueChanged), this, &ZIVec3Parameter::setValue3);
+#else
+      connect(sb3, SIGNAL(valueChanged(int)), this, SLOT(setValue3(int)));
+#endif
+
       connect(this, &ZIVec3Parameter::value3WillChange, sb3, &ZSpinBox::setValue);
       if (m_nameOfEachValue.at(2).isEmpty()) {
         lo->addWidget(sb3);
@@ -1869,7 +1987,12 @@ QWidget* ZIntSpanParameter::actualCreateWidget(QWidget* parent)
     sb1->setSingleStep(m_step);
     sb1->setPrefix(m_prefix);
     sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb1, qOverload<int>(&ZSpinBox::valueChanged), this, &ZIntSpanParameter::setLowerValue);
+#else
+    connect(sb1, SIGNAL(valueChanged(int)), this, SLOT(setLowerValue(int)));
+#endif
+
     connect(this, &ZIntSpanParameter::lowerValueWillChange, sb1, &ZSpinBox::setValue);
     if (m_nameOfEachValue.at(0).isEmpty()) {
       lo->addWidget(sb1);
@@ -1893,7 +2016,12 @@ QWidget* ZIntSpanParameter::actualCreateWidget(QWidget* parent)
     sb2->setSingleStep(m_step);
     sb2->setPrefix(m_prefix);
     sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb2, qOverload<int>(&ZSpinBox::valueChanged), this, &ZIntSpanParameter::setUpperValue);
+#else
+    connect(sb2, SIGNAL(valueChanged(int)), this, SLOT(setUpperValue(int)));
+#endif
+
     connect(this, &ZIntSpanParameter::upperValueWillChange, sb2, &ZSpinBox::setValue);
     if (m_nameOfEachValue.at(1).isEmpty()) {
       lo->addWidget(sb2);
@@ -1911,8 +2039,13 @@ QWidget* ZIntSpanParameter::actualCreateWidget(QWidget* parent)
         lo->addLayout(hlo);
       }
     }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb1, qOverload<int>(&ZSpinBox::valueChanged), sb2, &ZSpinBox::setMinimum);
     connect(sb2, qOverload<int>(&ZSpinBox::valueChanged), sb1, &ZSpinBox::setMaximum);
+#else
+    connect(sb1, SIGNAL(valueChanged(int)), sb2, SLOT(setMinimum(int)));
+    connect(sb2, SIGNAL(valueChanged(int)), sb1, SLOT(setMaximum(int)));
+#endif
     lo->setMargin(0);
     w->setLayout(lo);
     return w;
@@ -1987,7 +2120,12 @@ QWidget* ZFloatSpanParameter::actualCreateWidget(QWidget* parent)
     sb1->setDecimals(m_decimal);
     sb1->setPrefix(m_prefix);
     sb1->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb1, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZFloatSpanParameter::setLowerValue);
+#else
+    connect(sb1, SIGNAL(valueChanged(double)), this, SLOT(setLowerValue(double)));
+#endif
+
     connect(this, &ZFloatSpanParameter::lowerValueWillChange, sb1, &ZDoubleSpinBox::setValue);
     if (m_nameOfEachValue.at(0).isEmpty()) {
       lo->addWidget(sb1);
@@ -2012,7 +2150,12 @@ QWidget* ZFloatSpanParameter::actualCreateWidget(QWidget* parent)
     sb2->setDecimals(m_decimal);
     sb2->setPrefix(m_prefix);
     sb2->setSuffix(m_suffix);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb2, qOverload<double>(&ZDoubleSpinBox::valueChanged), this, &ZFloatSpanParameter::setUpperValue);
+#else
+    connect(sb2, SIGNAL(valueChanged(double)), this, SLOT(setUpperValue(double)));
+#endif
+
     connect(this, &ZFloatSpanParameter::upperValueWillChange, sb2, &ZDoubleSpinBox::setValue);
     if (m_nameOfEachValue.at(1).isEmpty()) {
       lo->addWidget(sb2);
@@ -2030,8 +2173,14 @@ QWidget* ZFloatSpanParameter::actualCreateWidget(QWidget* parent)
         lo->addLayout(hlo);
       }
     }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
     connect(sb1, qOverload<double>(&ZDoubleSpinBox::valueChanged), sb2, &ZDoubleSpinBox::setMinimum);
     connect(sb2, qOverload<double>(&ZDoubleSpinBox::valueChanged), sb1, &ZDoubleSpinBox::setMaximum);
+#else
+    connect(sb1, SIGNAL(valueChanged(double)), sb2, SLOT(setMinimum(double)));
+    connect(sb2, SIGNAL(valueChanged(double)), sb1, SLOT(setMaximum(double)));
+#endif
+
     lo->setMargin(0);
     w->setLayout(lo);
     return w;

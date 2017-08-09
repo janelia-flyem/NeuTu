@@ -99,8 +99,6 @@ Z3DPunctaFilter::Z3DPunctaFilter(Z3DGlobalParameters& globalParas, QObject* pare
   addEventListener(m_selectPunctumEvent);
 
   adjustWidgets();
-
-  connect(&m_visible, &ZBoolParameter::boolChanged, this, &Z3DPunctaFilter::objVisibleChanged);
 }
 
 void Z3DPunctaFilter::process(Z3DEye)

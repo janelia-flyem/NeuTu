@@ -28,13 +28,11 @@
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "z3dpunctafilter.h"
 #include "z3dcompositor.h"
-#include "z3dvolumeraycaster.h"
+#include "z3dvolumefilter.h"
 #include "z3daxisfilter.h"
 #include "dialogs/swcexportdialog.h"
 #include "zdialogfactory.h"
 #include "zprogressmanager.h"
-#include "z3dvolumesource.h"
-#include "z3dvolume.h"
 #include "zwindowfactory.h"
 #include "z3ddef.h"
 
@@ -1413,9 +1411,9 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
                                      false, NULL);
 
     stage->getVolumeRaycaster()->hideBoundBox();
-    stage->getVolumeRaycasterRenderer()->setCompositeMode(
+    stage->getVolumeFilter()->setCompositeMode(
           "Direct Volume Rendering");
-    stage->getAxis()->setVisible(false);
+    stage->getCompositor()->setShowAxis(false);
 
     Z3DCameraParameter* camera = stage->getCamera();
 

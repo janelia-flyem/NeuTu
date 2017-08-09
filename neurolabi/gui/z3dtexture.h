@@ -92,8 +92,6 @@ public:
 
   void saveAsColorImage(const QString& filename) const;
 
-  void saveAsDepthImage(const QString& filename) const;
-
 private:
   bool is1DTexture() const;
 

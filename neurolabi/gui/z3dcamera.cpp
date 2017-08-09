@@ -172,7 +172,7 @@ bool Z3DCamera::operator==(const Z3DCamera& rhs) const
          (m_nearDist == rhs.m_nearDist) &&
          (m_farDist == rhs.m_farDist) &&
          (m_windowAspectRatio == rhs.m_windowAspectRatio) &&
-         (﻿m_eyeSeparationAngle == rhs.﻿m_eyeSeparationAngle);
+         (m_eyeSeparationAngle == rhs.m_eyeSeparationAngle);
 }
 
 bool Z3DCamera::operator!=(const Z3DCamera& rhs) const
@@ -296,12 +296,13 @@ glm::vec3 Z3DCamera::pointWorldToEye(const glm::vec3& pt, Z3DEye eye)
 
 glm::vec3 Z3DCamera::worldToScreen(const glm::vec3& wpt, const glm::ivec4& viewport, Z3DEye eye)
 {
-  glm::vec4 clipSpacePos = projectionMatrix(eye) * viewMatrix(eye) * glm::vec4(wpt, 1.f);
-  if (clipSpacePos.w == 0.f)
-    return glm::vec3(-1.f, -1.f, -1.f);
-  glm::vec3 ndcSpacePos = glm::vec3(clipSpacePos.xyz()) / clipSpacePos.w;
-  return ((ndcSpacePos + 1.f) / 2.f) * glm::vec3(viewport.z, viewport.w, 1.f)
-         + glm::vec3(viewport.x, viewport.y, 0.f);
+//  glm::vec4 clipSpacePos = projectionMatrix(eye) * viewMatrix(eye) * glm::vec4(wpt, 1.f);
+//  if (clipSpacePos.w == 0.f)
+//    return glm::vec3(-1.f, -1.f, -1.f);
+//  glm::vec3 ndcSpacePos = glm::vec3(clipSpacePos.xyz()) / clipSpacePos.w;
+//  return ((ndcSpacePos + 1.f) / 2.f) * glm::vec3(viewport.z, viewport.w, 1.f)
+//         + glm::vec3(viewport.x, viewport.y, 0.f);
+  return glm::project(wpt, viewMatrix(eye), projectionMatrix(eye), viewport);
 }
 
 glm::vec3 Z3DCamera::screenToWorld(const glm::vec3& spt, const glm::ivec4& viewport, Z3DEye eye)
@@ -473,10 +474,10 @@ void Z3DCamera::set(const ZJsonObject &cameraJson)
   if (cameraJson.hasKey("projection")) {
     if (strcmp(ZJsonParser::stringValue(cameraJson["projection"]),
                "Perspective") == 0) {
-      m_projectionType = Perspective;
+      m_projectionType = ProjectionType::Perspective;
     } else if (strcmp(ZJsonParser::stringValue(cameraJson["projection"]),
                       "Orthographic") == 0) {
-      m_projectionType = Orthographic;
+      m_projectionType = ProjectionType::Orthographic;
     }
   }
 

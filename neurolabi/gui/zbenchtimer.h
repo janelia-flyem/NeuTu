@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <QDebug>
 
 /* usage:
   bench with repeats:

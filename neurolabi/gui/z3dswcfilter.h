@@ -58,42 +58,17 @@ public:
 
   virtual void renderTransparent(Z3DEye eye) override;
 
-  inline int xCutLowerValue() { return m_xCut.lowerValue(); }
-  inline int xCutUpperValue() { return m_xCut.upperValue(); }
-  inline int yCutLowerValue() { return m_yCut.lowerValue(); }
-  inline int yCutUpperValue() { return m_yCut.upperValue(); }
-  inline int zCutLowerValue() { return m_zCut.lowerValue(); }
-  inline int zCutUpperValue() { return m_zCut.upperValue(); }
-
-  inline int xCutMin() { return m_xCut.minimum(); }
-  inline int xCutMax() { return m_xCut.maximum(); }
-  inline int yCutMin() { return m_yCut.minimum(); }
-  inline int yCutMax() { return m_yCut.maximum(); }
-  inline int zCutMin() { return m_zCut.minimum(); }
-  inline int zCutMax() { return m_zCut.maximum(); }
-
-
-  inline void setXCutLower(int v) { m_xCut.setLowerValue(v); }
-  inline void setXCutUpper(int v) { m_xCut.setUpperValue(v); }
-  inline void setYCutLower(int v) { m_yCut.setLowerValue(v); }
-  inline void setYCutUpper(int v) { m_yCut.setUpperValue(v); }
-  inline void setZCutLower(int v) { m_zCut.setLowerValue(v); }
-  inline void setZCutUpper(int v) { m_zCut.setUpperValue(v); }
-
   void resetCut();
   void setCutBox(const ZIntCuboid &box);
-
-  bool isNodeRendering() const { return m_renderingPrimitive.isSelected("Sphere"); }
-
-  void setInteractionMode(InteractionMode mode) { m_interactionMode = mode; }
-  inline InteractionMode getInteractionMode() { return m_interactionMode; }
 
   void enablePicking(bool picking) {
     m_enablePicking = picking;
   }
 
-  virtual void configure(const ZJsonObject &obj);
-  ZJsonObject getConfigJson() const;
+  virtual void configure(const ZJsonObject &obj) override;
+  ZJsonObject getConfigJson() const override;
+
+  void setColorMode(const std::string& mode);
 
 signals:
   void treeSelected(ZSwcTree*, bool append);
@@ -110,8 +85,6 @@ protected:
   void adjustWidgets();
 
   void selectSwc(QMouseEvent* e, int w, int h);
-
-  void setColorMode(const std::string& mode);
 
   virtual void process(Z3DEye /*unused*/) override;
 

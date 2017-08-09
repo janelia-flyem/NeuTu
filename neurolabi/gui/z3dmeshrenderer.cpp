@@ -178,7 +178,7 @@ void Z3DMeshRenderer::prepareMeshPickingColor()
   }
 }
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
 void Z3DMeshRenderer::renderUsingOpengl()
 {
   if (!m_meshPt || m_meshPt->empty())

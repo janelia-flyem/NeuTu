@@ -1310,3 +1310,5 @@ ZMesh ZMesh::booleanOperation(const ZMesh& mesh1, const ZMesh& mesh2, ZMesh::Boo
   cleanFilter->Update();
   return vtkPolyDataToMesh(cleanFilter->GetOutput());
 }
+
+ZSTACKOBJECT_DEFINE_CLASS_NAME(ZMesh)

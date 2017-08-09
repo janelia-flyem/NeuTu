@@ -1,6 +1,4 @@
-#include "z3dgl.h"
 #ifdef _QT5_
-#include <QtWidgets>
 #include <QtConcurrent>
 #else
 #include <QtConcurrentRun>

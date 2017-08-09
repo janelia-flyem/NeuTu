@@ -1,18 +1,7 @@
 #ifndef Z3DWINDOW_H
 #define Z3DWINDOW_H
 
-#include <QMainWindow>
-#include <QTabWidget>
-#include <QTabBar>
-#include <QToolBar>
-#include <QIcon>
-#include <QAction>
-#include <QMutex>
-
-#include <vector>
-#include <set>
-#include <map>
-#include <QDir>
+#include "z3dview.h"
 
 #include "zparameter.h"
 #include "znumericparameter.h"
@@ -25,6 +14,18 @@
 #include "z3ddef.h"
 //#include "zstackviewparam.h"
 
+#include <QMainWindow>
+#include <QTabWidget>
+#include <QTabBar>
+#include <QToolBar>
+#include <QIcon>
+#include <QAction>
+#include <QMutex>
+
+#include <vector>
+#include <set>
+#include <map>
+#include <QDir>
 
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
@@ -41,13 +42,11 @@ struct _Swc_Tree_Node;
 typedef _Swc_Tree_Node Swc_Tree_Node;
 class Z3DCompositor;
 class Z3DCanvasRenderer;
-class Z3DTakeScreenShotWidget;
 class Z3DAxis;
 class ZWidgetsGroup;
 class Z3DCanvas;
 class Z3DNetworkEvaluator;
 class Z3DProcessorNetwork;
-class Z3DTriangleList;
 class QToolBar;
 class ZStroke2d;
 class ZStackViewParam;
@@ -61,6 +60,7 @@ class ZActionLibrary;
 class ZMenuFactory;
 class ZJsonObject;
 class Z3DGeometryFilter;
+class Z3DBoundedFilter;
 class ZComboEditDialog;
 class ZFlyEmBodyComparisonDialog;
 
@@ -122,35 +122,25 @@ public: //properties
 
 
 public: //Camera adjustment
-  void gotoPosition(double x, double y, double z, double radius = 64);
-  void gotoPosition(std::vector<double> bound, double minRadius = 64,
-                    double range = 128);
+  void gotoPosition(const ZCuboid& bound);
   void zoomToSelectedSwcNodes();
 
-
 public: //Components
-  Z3DTrackballInteractionHandler* getInteractionHandler();
-  Z3DCameraParameter* getCamera();
-  inline Z3DCanvasRenderer* getCanvasRenderer() { return m_canvasRenderer; }
-  inline Z3DPunctaFilter* getPunctaFilter() const { return m_punctaFilter; }
-  inline Z3DSwcFilter* getSwcFilter() const { return m_swcFilter; }
-  inline Z3DVolumeRaycaster* getVolumeRaycaster() { return m_volumeRaycaster; }
-  inline Z3DCanvas* getCanvas() { return m_canvas; }
-  inline const Z3DCanvas* getCanvas() const { return m_canvas; }
-
-  Z3DRendererBase* getRendererBase(ERendererLayer layer);
-
-  Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
+  Z3DTrackballInteractionHandler* getInteractionHandler() { return &m_view->interactionHandler(); }
+  Z3DCameraParameter* getCamera() { return &m_view->camera(); }
+  inline Z3DPunctaFilter* getPunctaFilter() const { return &m_view->punctaFilter(); }
+  inline Z3DSwcFilter* getSwcFilter() const { return &m_view->swcFilter(); }
+  inline Z3DVolumeFilter* getVolumeFilter() { return &m_view->volumeFilter(); }
+  inline Z3DCanvas* getCanvas() { return &m_view->canvas(); }
+  inline const Z3DCanvas* getCanvas() const { return &m_view->canvas(); }
 
   Z3DGeometryFilter* getFilter(ERendererLayer layer) const;
+  Z3DBoundedFilter& getBoundedFilter(ERendererLayer layer) const;
 
-  inline Z3DGraphFilter* getGraphFilter() const { return m_graphFilter; }
-  inline Z3DSurfaceFilter* getSurfaceFilter() const { return m_surfaceFilter; }
-  inline ZFlyEmTodoListFilter* getTodoFilter() const { return m_todoFilter; }
-  inline Z3DCompositor* getCompositor() const { return m_compositor; }
-  inline Z3DVolumeSource *getVolumeSource() const { return m_volumeSource; }
-  inline Z3DAxis *getAxis() { return m_axis; }
-  const std::vector<double>& getBoundBox() const { return m_boundBox; }
+  inline Z3DGraphFilter* getGraphFilter() const { return &m_view->graphFilter(); }
+  inline Z3DSurfaceFilter* getSurfaceFilter() const { return &m_view->surfaceFilter(); }
+  inline ZFlyEmTodoListFilter* getTodoFilter() const { return &m_view->todoFilter(); }
+  inline Z3DCompositor* getCompositor() const { return &m_view->compositor(); }
 
   QPointF getScreenProjection(double x, double y, double z, ERendererLayer layer);
 
@@ -163,26 +153,12 @@ public: //Components
     return dynamic_cast<T*>(m_doc.get());
   }
 
-public: //Bounding box
-  void updateVolumeBoundBox();
-  void updateSwcBoundBox();
-  void updateGraphBoundBox();
-  void updateSurfaceBoundBox();
-  void updateTodoBoundBox();
-//  void updateDecorationBoundBox();
-  void updatePunctaBoundBox();
-  void updateOverallBoundBox(std::vector<double> bound);
-  //get bounding box of all objects in world coordinate:
-  //[xmin xmax ymin ymax zmin zmax]
-  void updateOverallBoundBox();
+public:
   void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
-
 
   bool hasRectRoi() const;
   ZRect2d getRectRoi() const;
   void removeRectRoi();
-
-
 
 public: //controls
   void createToolBar();
@@ -237,35 +213,27 @@ signals:
   void keyPressed(QKeyEvent *event);
 
 public slots:
-  void resetCamera();  // set up camera based on visible objects in scene, original position
-  void resetCameraCenter();
+  void resetCamera()
+  { m_view->resetCamera(); }
+  void resetCameraCenter()
+  { m_view->resetCameraCenter(); }
 
-  void flipView(); //Look from the oppsite side
-  void setXZView();
-  void setYZView();
+  void flipView() //Look from the oppsite side
+  { m_view->flipView(); }
+  void setXZView()
+  { m_view->setXZView(); }
+  void setYZView()
+  { m_view->setYZView(); }
   void recordView(); //Record the current view parameters
   void diffView(); //Output difference between current view and recorded view
   void saveView(); //Save the view parameters into a file
   void loadView();
 
-  void resetCameraClippingRange(); // // Reset the camera clipping range to include this entire bounding box
+  void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
+  { m_view->resetCameraClippingRange(); }
   // redraw changed parts
-  void volumeChanged();
-  void swcChanged();
-  void punctaChanged();
-  void updateNetworkDisplay();
-  void update3DGraphDisplay();
   void update3DCubeDisplay();
-  void updateTodoDisplay();
-  void updateTodoVisibility();
 //  void updateDecorationDisplay();
-  void updateDisplay();
-
-  void volumeScaleChanged();
-  void swcCoordScaleChanged();
-  void punctaCoordScaleChanged();
-  void swcSizeScaleChanged();
-  void punctaSizeScaleChanged();
 
   void selectdObjectChangedFrom3D(ZStackObject *p, bool append);
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
@@ -279,12 +247,6 @@ public slots:
   void removeSwcTurn();
 
   void convertSelectedChainToSwc();
-
-  void punctaSelectionChanged();
-  void swcSelectionChanged();
-  void swcTreeNodeSelectionChanged();
-  void updateObjectSelection(QList<ZStackObject*> selected,
-                             QList<ZStackObject*> deselected);
 
   void swcDoubleClicked(ZSwcTree* tree);
   void swcNodeDoubleClicked(Swc_Tree_Node* node);
@@ -415,14 +377,11 @@ private:
   void customizeDockWindows(QTabWidget *m_settingTab);
   void setWindowSize();
   // init 3D view
-  void init(EInitMode mode = INIT_NORMAL);
+  void init();
 
   void cleanup();
 
   int channelNumber();
-
-  void setupCamera(const std::vector<double> &bound,
-                   Z3DCamera::ResetCameraOptions options);
 
   bool hasVolume();
 
@@ -447,7 +406,6 @@ private:
 
   // update menu based on context information
   void updateContextMenu(const QString &group);
-  void updateTodoList();
 
 private:
   NeuTube3D::EWindowType m_windowType;
@@ -528,30 +486,7 @@ private:
 
 
   ZSharedPointer<ZStackDoc> m_doc;
-  Z3DNetworkEvaluator *m_networkEvaluator;
-  Z3DCanvas *m_canvas;
-
-  // processors
-  Z3DCanvasRenderer *m_canvasRenderer;
-  Z3DAxis *m_axis;
-  Z3DVolumeRaycaster *m_volumeRaycaster;
-  Z3DPunctaFilter *m_punctaFilter;
-  Z3DCompositor *m_compositor;
-  Z3DSwcFilter *m_swcFilter;
-  Z3DVolumeSource *m_volumeSource;
-  Z3DGraphFilter *m_graphFilter;
-  Z3DSurfaceFilter *m_surfaceFilter;
-  ZFlyEmTodoListFilter *m_todoFilter;
-//  Z3DGraphFilter *m_decorationFilter;
-
-  std::vector<double> m_volumeBoundBox;
-  std::vector<double> m_swcBoundBox;
-  std::vector<double> m_punctaBoundBox;
-  std::vector<double> m_graphBoundBox;
-  std::vector<double> m_surfaceBoundBox;
-  std::vector<double> m_todoBoundBox;
-  std::vector<double> m_decorationBoundBox;
-  std::vector<double> m_boundBox;    //overall bound box
+  Z3DView* m_view;
 
   bool m_buttonStatus[4]; // 0-showgraph, 1-setting, 2-objects, 3-rois
 
@@ -562,8 +497,6 @@ private:
 
   glm::ivec3 m_lastClickedPosInVolume;
 
-  Z3DTakeScreenShotWidget *m_screenShotWidget;
-
   ZWidgetsGroup *m_widgetsGroup;
 
   QDockWidget *m_settingsDockWidget;
@@ -572,7 +505,6 @@ private:
   ZROIWidget *m_roiDockWidget;
   QDockWidget *m_bodyWidget;
 
-  bool m_isStereoView;
   bool m_cuttingStackBound;
 
   Z3DCamera m_cameraRecord;

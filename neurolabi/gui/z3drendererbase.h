@@ -115,7 +115,10 @@ public:
   inline void setZScale(float s)
   { m_coordTransform.setZScale(s); }
 
-  inline void translate(float x, float y, float z)
+  inline void setScale(float x, float y, float z)
+  { m_coordTransform.setScale(glm::vec3(x, y, z)); }
+
+  inline void setOffset(float x, float y, float z)
   { m_coordTransform.translate(x, y, z); }
 
   inline void setRotationCenter(const glm::vec3& c)
@@ -224,8 +227,6 @@ public:
   inline const glm::mat4& inverseViewportMatrix() const
   { return m_inverseViewportMatrix; }
 
-  glm::vec3 getViewCoord(double x, double y, double z, double w, double h);
-
 signals:
 
   void coordTransformChanged();
@@ -234,7 +235,7 @@ signals:
 
 protected:
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   void generateDisplayList(const std::vector<Z3DPrimitiveRenderer *> &renderers);
   void generatePickingDisplayList(const std::vector<Z3DPrimitiveRenderer *> &renderers);
 
@@ -253,7 +254,7 @@ protected:
   inline bool hasClipPlanes()
   { return !m_clipPlanes.empty(); }
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   void activateClipPlanesOpenGL();
   void deactivateClipPlanesOpenGL();
 #endif
@@ -265,7 +266,7 @@ protected:
   void makeViewportMatrix();
 
 private:
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   void invalidateDisplayList();
   void invalidatePickingDisplayList();
 #endif
@@ -277,7 +278,7 @@ private:
 protected:
   Z3DGlobalParameters& m_globalParas;
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   // display list generated from the geometry.
   GLuint m_displayList;
   GLuint m_pickingDisplayList;

@@ -75,8 +75,6 @@ public:
 
   void saveAsColorImage(const QString& filename);
 
-  void saveAsDepthImage(const QString& filename);
-
 protected:
   void generateId();
 

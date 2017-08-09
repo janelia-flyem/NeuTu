@@ -41,7 +41,7 @@ public:
   //virtual bool hasTransparent(Z3DEye eye) const override { return Z3DGeometryFilter::hasTransparent(eye) || m_randomGlow.get(); }
   virtual void renderTransparent(Z3DEye eye) override;
 
-  void configure(const ZJsonObject &obj);
+  void configure(const ZJsonObject &obj) override;
 
 signals:
   void punctumSelected(ZPunctum*, bool append);
@@ -90,7 +90,6 @@ private:
 
   Z3DSphereRenderer m_sphereRenderer;
 
-  ZBoolParameter m_visible;
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllPuncta;
   std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare> m_sourceColorMapper;

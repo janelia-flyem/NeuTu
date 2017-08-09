@@ -4,7 +4,7 @@
 #include "z3dboundedfilter.h"
 #include "z3dgeometryfilter.h"
 #include "z3drenderport.h"
-#include "z3dimgfilter.h"
+#include "z3dvolumefilter.h"
 #include "z3dbackgroundrenderer.h"
 #include "z3dcameraparameter.h"
 #include "z3dpickingmanager.h"
@@ -33,15 +33,17 @@ public:
 
   void setShowBackground(bool v) { m_showBackground.set(v); }
   bool showingBackground() const { return m_showBackground.get(); }
-  void setBackgroundFirstColor(glm::vec3 color) { m_backgroundRenderer->setFirstColor(color); }
-  void setBackgroundSecondColor(glm::vec3 color) { m_backgroundRenderer->setSecondColor(color); }
+  void setBackgroundFirstColor(glm::vec3 color) { m_backgroundRenderer.firstColorPara().set(glm::vec4(color, 1.f)); }
+  void setBackgroundSecondColor(glm::vec3 color) { m_backgroundRenderer.secondColorPara().set(glm::vec4(color, 1.f)); }
   void setBackgroundFirstColor(double r, double g, double b, double alpha)
-    { m_backgroundRenderer->setFirstColor(r, g, b, alpha); }
+    { m_backgroundRenderer.firstColorPara().set(glm::vec4(r, g, b, alpha)); }
   void setBackgroundSecondColor(double r, double g, double b, double alpha)
-    { m_backgroundRenderer->setSecondColor(r, g, b, alpha); }
+    { m_backgroundRenderer.secondColorPara().set(glm::vec4(r, g, b, alpha)); }
+
+  void setShowAxis(bool v) { m_showAxis.set(v); }
 
 protected:
-  virtual void process(Z3DEye eye);
+  virtual void process(Z3DEye eye) override;
 
 private:
   void renderGeometries(const std::vector<Z3DBoundedFilter*>& opaqueFilters,
@@ -108,7 +110,7 @@ private:
   Z3DRenderOutputPort m_tempPort5;
   Z3DRenderOutputPort m_pickingPort;
   Z3DFilterInputPort<Z3DGeometryFilter> m_gPPort;
-  Z3DFilterInputPort<Z3DImgFilter> m_vPPort;
+  Z3DFilterInputPort<Z3DVolumeFilter> m_vPPort;
 
   std::unique_ptr<Z3DRenderTarget> m_ddpRT;
   Z3DShaderProgram m_ddpBlendShader;

@@ -16,6 +16,12 @@ Q_OBJECT
 public:
   explicit Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* parent = nullptr);
 
+  bool isVisible() const
+  { return m_visible.get(); }
+
+  void setVisible(bool v)
+  { m_visible.set(v); }
+
   void setSelected(bool v);
 
   bool isSelected() const
@@ -127,17 +133,50 @@ public:
 
   void renderSelectionBox(Z3DEye eye);
 
-  virtual void rotateX() override;
+  void setXScale(float s)
+  { m_rendererBase.setXScale(s); }
 
-  virtual void rotateY() override;
+  void setYScale(float s)
+  { m_rendererBase.setYScale(s); }
 
-  virtual void rotateZ() override;
+  void setZScale(float s)
+  { m_rendererBase.setZScale(s); }
 
-  virtual void rotateXM() override;
+  void setOpacity(float o)
+  { m_rendererBase.setOpacity(o); }
 
-  virtual void rotateYM() override;
+  glm::vec3 getViewCoord(double x, double y, double z, double w, double h);
 
-  virtual void rotateZM() override;
+  void setOffset(float sx, float sy, float sz)
+  { m_rendererBase.setOffset(sx, sy, sz); }
+
+  void setScale(float sx, float sy, float sz)
+  { m_rendererBase.setScale(sx, sy, sz); }
+
+  void hideBoundBox()
+  { m_boundBoxMode.select("No Bound Box"); }
+
+  inline int xCutLowerValue() const { return m_xCut.lowerValue(); }
+  inline int xCutUpperValue() const { return m_xCut.upperValue(); }
+  inline int yCutLowerValue() const { return m_yCut.lowerValue(); }
+  inline int yCutUpperValue() const { return m_yCut.upperValue(); }
+  inline int zCutLowerValue() const { return m_zCut.lowerValue(); }
+  inline int zCutUpperValue() const { return m_zCut.upperValue(); }
+
+  inline int xCutMin() const { return m_xCut.minimum(); }
+  inline int xCutMax() const { return m_xCut.maximum(); }
+  inline int yCutMin() const { return m_yCut.minimum(); }
+  inline int yCutMax() const { return m_yCut.maximum(); }
+  inline int zCutMin() const { return m_zCut.minimum(); }
+  inline int zCutMax() const { return m_zCut.maximum(); }
+
+
+  inline void setXCutLower(int v) { m_xCut.setLowerValue(v); }
+  inline void setXCutUpper(int v) { m_xCut.setUpperValue(v); }
+  inline void setYCutLower(int v) { m_yCut.setLowerValue(v); }
+  inline void setYCutUpper(int v) { m_yCut.setUpperValue(v); }
+  inline void setZCutLower(int v) { m_zCut.setLowerValue(v); }
+  inline void setZCutUpper(int v) { m_zCut.setUpperValue(v); }
 
 signals:
 
@@ -209,6 +248,7 @@ protected:
   Z3DLineRenderer m_selectionBoundBoxRenderer;
   Z3DMeshRenderer m_selectionCornerRenderer;
 
+  ZBoolParameter m_visible;
   ZFloatSpanParameter m_xCut;
   ZFloatSpanParameter m_yCut;
   ZFloatSpanParameter m_zCut;

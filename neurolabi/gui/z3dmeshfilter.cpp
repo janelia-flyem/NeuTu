@@ -72,8 +72,6 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   addParameter(m_triangleListRenderer.wireframeModePara());
   addParameter(m_triangleListRenderer.wireframeColorPara());
   m_triangleListRenderer.setColorSource("CustomColor");
-
-  connect(&m_visible, &ZBoolParameter::boolChanged, this, &Z3DMeshFilter::objVisibleChanged);
 }
 
 void Z3DMeshFilter::process(Z3DEye eye)
@@ -146,7 +144,7 @@ void Z3DMeshFilter::setData(QList<ZMesh*>* meshList)
 
 bool Z3DMeshFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && m_visible.get() && !m_origMeshList.empty();
+  return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_origMeshList.empty();
 }
 
 //namespace {

@@ -85,7 +85,7 @@ protected:
 
   void setPickingShaderParameters(Z3DShaderProgram& shader);
 
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   virtual void renderUsingOpengl() {}
   virtual void renderPickingUsingOpengl() {}
 #endif

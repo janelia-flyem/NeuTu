@@ -2,7 +2,7 @@
 
 #include "tz_math.h"
 #include "z3dwindow.h"
-#include "z3dvolumeraycaster.h"
+#include "z3dvolumefilter.h"
 #include "z3dswcfilter.h"
 #include "zjsonobject.h"
 
@@ -48,7 +48,7 @@ void ZMovieSceneClipper::clip(
   switch (m_target) {
   case VOLUME:
   {
-    Z3DVolumeRaycaster *volume = stage->getVolumeRaycaster();
+    Z3DVolumeFilter *volume = stage->getVolumeFilter();
     int lowerCut = state->getLowerClip(m_target, m_axis);
     int upperCut = state->getUpperClip(m_target, m_axis);
     switch (m_axis) {

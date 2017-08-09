@@ -16,12 +16,6 @@ public:
   virtual void renderPicking(Z3DEye /*unused*/)
   {}
 
-  bool isVisible() const
-  { return m_visible.get(); }
-
-  void setVisible(bool v)
-  { m_visible.set(v); }
-
   bool isStayOnTop() const
   { return m_stayOnTop.get(); }
 
@@ -72,7 +66,6 @@ protected:
 protected:
   Z3DFilterOutputPort<Z3DGeometryFilter> m_outPort;
 
-  ZBoolParameter m_visible;
   ZBoolParameter m_stayOnTop;
 
   Z3DPickingManager* m_pickingManager;

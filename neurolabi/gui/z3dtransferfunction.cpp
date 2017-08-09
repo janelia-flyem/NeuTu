@@ -8,8 +8,6 @@
 #include "QsLog.h"
 #include <QLabel>
 
-namespace nim {
-
 Z3DTransferFunction::Z3DTransferFunction(double min, double max, const glm::col4& minColor,
                                          const glm::col4& maxColor, uint32_t width, QObject* parent)
   : ZColorMap(min, max, minColor, maxColor, parent)

@@ -6,7 +6,7 @@
 #include "neutubeconfig.h"
 #include "z3dcompositor.h"
 #include "z3dcanvas.h"
-#include "z3dvolumeraycaster.h"
+#include "z3dvolumefilter.h"
 #include "zscalablestack.h"
 #include "z3dvolume.h"
 #include "z3dvolumesource.h"
@@ -99,14 +99,14 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
           doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||
           doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
-        window->getVolumeRaycasterRenderer()->setCompositeMode(
+        window->getVolumeFilter()->setCompositeMode(
               "Direct Volume Rendering");
       } else {
         //      doc->getTag() == NeuTube::Document::SEGMENTATION_TARGET
-        window->getVolumeRaycasterRenderer()->setCompositeMode("MIP Opaque");
+        window->getVolumeFilter()->setCompositeMode("MIP Opaque");
       }
     } else {
-      window->getVolumeRaycasterRenderer()->setCompositeMode(
+      window->getVolumeFilter()->setCompositeMode(
             NeuTube3D::GetVolumeRenderingModeName(m_volumeMode));
     }
     if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
@@ -215,14 +215,10 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZScalableStack *stack)
     ZStackDoc *doc = new ZStackDoc;
     doc->loadStack(stack->getStack());
     window = make3DWindow(doc);
-    window->getVolumeSource()->getVolume(0)->setScaleSpacing(
-          glm::vec3(stack->getXScale(), stack->getYScale(), stack->getZScale()));
+
+    window->getVolumeFilter()->setScale(stack->getXScale(), stack->getYScale(), stack->getZScale());
     ZPoint offset = stack->getOffset();
-    window->getVolumeSource()->getVolume(0)->setOffset(
-          glm::vec3(offset.x(), offset.y(), offset.z()));
-    window->updateVolumeBoundBox();
-    window->updateOverallBoundBox();
-    //window->resetCameraClippingRange();
+    window->getVolumeFilter()->setOffset(offset.x(), offset.y(), offset.z());
     window->resetCamera();
     stack->releaseStack();
     delete stack;

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "z3dport.h"
 #include "z3drendertarget.h"
 #include "z3dtexture.h"

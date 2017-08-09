@@ -12,8 +12,8 @@
 
 namespace {
 
-bool widgetGroupPtVisibleLevelLessThan(const std::shared_ptr<nim::ZWidgetsGroup>& s1,
-                                       const std::shared_ptr<nim::ZWidgetsGroup>& s2)
+bool widgetGroupPtVisibleLevelLessThan(const std::shared_ptr<ZWidgetsGroup>& s1,
+                                       const std::shared_ptr<ZWidgetsGroup>& s2)
 {
   return s1->visibleLevel() < s2->visibleLevel();
 }
@@ -164,8 +164,7 @@ QLayout* ZWidgetsGroup::createLayout(bool createBasic)
     case Type::Parameter: {
       QHBoxLayout* hbl = new QHBoxLayout;
       if (qobject_cast<Z3DCameraParameter*>(m_parameter) ||
-        qobject_cast<Z3DTransformParameter*>(m_parameter) ||
-        qobject_cast<Z2DTransformParameter*>(m_parameter)) {
+        qobject_cast<Z3DTransformParameter*>(m_parameter)) {
         QWidget* wg = m_parameter->createWidget();
         hbl->addWidget(wg);
         return hbl;

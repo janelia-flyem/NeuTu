@@ -32,13 +32,12 @@ Q_OBJECT
 public:
   explicit Z3DVolumeFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
 
-  void setVisible(bool v)
-  { m_visible.set(v); }
-
   void setOffset(double x, double y, double z);
 
   // extract vols and img from stackdoc and call the overloaded setData
-  void setData(const ZStackDoc* doc = nullptr);
+  void setData(const ZStackDoc* doc = nullptr, size_t maxVoxelNumber = 0);
+  // reload current stackdoc with new maxVoxelNumber
+  void reloadData(size_t maxVoxelNumber);
   // will take ownership of vols
   void setData(std::vector<std::unique_ptr<Z3DVolume>>& vols,
                const ZStack* img = nullptr);
@@ -95,13 +94,28 @@ public:
    */
   ZLineSegment getScreenRay(int x, int y, int width, int height);
 
+  inline void setOpaque(bool opaque)
+  { m_volumeRaycasterRenderer.setOpaque(opaque); }
+
+  inline void setAlpha(double alpha)
+  { m_volumeRaycasterRenderer.setAlpha(alpha); }
+
+  inline double getAlpha()
+  { return m_volumeRaycasterRenderer.getAlpha(); }
+
+  void setCompositeMode(const QString& option)
+  { m_volumeRaycasterRenderer.setCompositeMode(option); }
+
+  void setTextureFilterMode(const QString& option)
+  { m_volumeRaycasterRenderer.setTextureFilterMode(option); }
+
 signals:
 
   void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos3D);
 
   void pointInVolumeRightClicked(QPoint pt, glm::ivec3 pos3D);
 
-protected slots:
+protected:
 
   void changeCoordTransform();
 
@@ -128,7 +142,6 @@ protected slots:
   virtual void setClipPlanes() override
   {}
 
-protected:
   virtual void process(Z3DEye eye) override;
 
   bool hasSlices() const;
@@ -183,7 +196,6 @@ private:
   const ZStack* m_imgPack = nullptr;
   std::vector<std::unique_ptr<Z3DVolume>> m_volumes;
   std::vector<std::unique_ptr<Z3DVolume>> m_zoomInVolumes;
-  ZBoolParameter m_visible;
   ZBoolParameter m_stayOnTop;
   ZBoolParameter m_isVolumeDownsampled;
   ZBoolParameter m_isSubVolume;
@@ -191,7 +203,7 @@ private:
   glm::ivec3 m_zoomInPos;
   ZBBox<glm::dvec3> m_zoomInBound;
 
-  size_t m_maxVoxelNumber;
+  size_t m_maxVoxelNumber = 0;
 
   std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
   size_t m_numParas;

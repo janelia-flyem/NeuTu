@@ -141,8 +141,8 @@ void Z3DCanvas::resizeEvent(QResizeEvent *event)
   if (m_3dScene)
     m_3dScene->setSceneRect(QRect(QPoint(0, 0), event->size()));
 
-  emit canvasSizeChanged(event->size().width() * getDevicePixelRatio(),
-                         event->size().height() * getDevicePixelRatio());
+  emit canvasSizeChanged(event->size().width() * devicePixelRatio(),
+                         event->size().height() * devicePixelRatio());
 }
 
 void Z3DCanvas::paintEvent(QPaintEvent *event)
@@ -260,7 +260,7 @@ void Z3DCanvas::setKeyMode(ZInteractionEngine::EKeyMode mode)
   update(QRect(QPoint(0, 0), size()));
 }
 
-double Z3DCanvas::getDevicePixelRatio()
+double Z3DCanvas::devicePixelRatio()
 {
   return (window() && window()->windowHandle()) ?
         window()->windowHandle()->devicePixelRatio() : 1.0;

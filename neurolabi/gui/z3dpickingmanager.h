@@ -44,7 +44,7 @@ public:
 
   const void* objectOfColor(const glm::col4& col);
 
-  const void* objectAtWidgetPos(const glm::ivec2& pos);
+  const void* objectAtWidgetPos(glm::ivec2 pos);
 
   // find all objects within a radius of pos, sort by distance
   // if radius is -1, search the whole image

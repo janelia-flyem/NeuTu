@@ -1,6 +1,7 @@
 #ifndef Z3DCANVAS_H
 #define Z3DCANVAS_H
 
+#include "zutils.h"
 #include "zglmutils.h"
 #include "zstroke2d.h"
 #include "flyem/zinteractionengine.h"
@@ -65,7 +66,7 @@ public:
   glm::uvec2 logicalSize()
   { return glm::uvec2(width(), height()); }
 
-  virtual void drawBackground(QPainter *painter, const QRectF &rect);
+  virtual void drawBackground(QPainter *painter, const QRectF &rect) override;
 
   bool processMouseMoveEventForPaint(QMouseEvent *e);
   bool suppressingContextMenu() const;

@@ -168,7 +168,7 @@ void Z3DPrimitiveRenderer::renderTriangleList(const ZVertexArrayObject& vao, con
 
 void Z3DPrimitiveRenderer::invalidateOpenglRenderer()
 {
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   if (m_useDisplayList)
     emit openglRendererInvalid();
 #endif
@@ -176,7 +176,7 @@ void Z3DPrimitiveRenderer::invalidateOpenglRenderer()
 
 void Z3DPrimitiveRenderer::invalidateOpenglPickingRenderer()
 {
-#ifndef ATLAS_USE_CORE_PROFILE
+#ifndef _USE_CORE_PROFILE_
   if (m_useDisplayList)
     emit openglPickingRendererInvalid();
 #endif
