@@ -31,7 +31,9 @@ uint64_t ZFlyEmBodyListModel::getBodyId(int row) const
 {
   QModelIndex modelIndex = index(row);
 
+#ifdef _DEBUG_2
   qDebug() << modelIndex << " from " << rowCount();
+#endif
 
   return getBodyId(modelIndex);
 }

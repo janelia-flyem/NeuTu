@@ -7061,6 +7061,23 @@ void ZStackDoc::executeRemoveRectRoiCommand()
   }
 }
 
+bool ZStackDoc::executeChangeSwcNodeType(
+    QList<Swc_Tree_Node *> &nodeList, int type)
+{
+  if (nodeList.isEmpty() || type < 0) {
+    return false;
+  }
+
+  ZStackDocCommand::SwcEdit::ChangeSwcNodeType *command =
+      new ZStackDocCommand::SwcEdit::ChangeSwcNodeType(this);
+  std::vector<Swc_Tree_Node*> nodeArray;
+  nodeArray.insert(nodeArray.begin(), nodeList.begin(), nodeList.end());
+  command->setNodeOperation(nodeArray, type);
+  pushUndoCommand(command);
+
+  return true;
+}
+
 bool ZStackDoc::executeBinarizeCommand(int thre)
 {
   if (hasStackData()) {

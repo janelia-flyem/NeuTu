@@ -1,3 +1,4 @@
+#define _NEUTU_USE_REF_KEY_
 #include "ztest.h"
 
 #include <QFile>
@@ -24140,9 +24141,137 @@ void ZTest::test(MainWindow *host)
   dlg->exec();
 #endif
 
-#if 1
+#if 0
   ZBodyListWidget *widget = new ZBodyListWidget(NULL);
   widget->show();
+#endif
+
+#if 0
+  CrashTest();
+#endif
+
+#if 0
+  QJsonObject json;
+  json["test"] = QJsonArray();
+
+  QJsonArray array = json["test"].toArray();
+  array << 1 << 2 << 3;
+  json["test"] = array;
+  qDebug() << json;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+  target.setBodyLabelName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz_vol");
+
+  QJsonObject taskJson;
+
+  QFile file((GET_TEST_DATA_DIR + "/_flyem/test/VR_Practice_Assignment_smithc_dvid.json").c_str());
+  file.open(QIODevice::ReadOnly | QIODevice::Text);
+  QJsonDocument jsonDoc = QJsonDocument::fromJson(file.readAll());
+
+  QJsonArray rootObj = jsonDoc.array();
+  foreach (QJsonValue v, rootObj) {
+    QJsonObject obj = v.toObject();
+    QJsonArray markerJson = obj.value("pointMarkers").toArray();
+    if (!markerJson.isEmpty()) {
+      uint64_t bodyId =
+          ZString(obj.value("file").toString().toStdString()).firstUint64();
+      ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
+
+      foreach (QJsonValue marker, markerJson) {
+        ZStroke2d stroke = ZFlyEmMisc::SyGlassSeedToStroke(marker.toObject());
+//        stroke.print();
+        ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
+      }
+
+      break;
+    }
+  }
+
+  QFile output((GET_TEST_DATA_DIR + "/test.json").c_str());
+  output.open(QIODevice::WriteOnly);
+
+  output.write(QJsonDocument(taskJson).toJson());
+  output.close();
+//  qDebug() << taskJson;
+
+//  qDebug() << rootObj[0];
+
+
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+  target.setBodyLabelName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz_vol");
+
+
+
+  ZJsonArray rootObj;
+  rootObj.load((GET_TEST_DATA_DIR +
+                "/_flyem/test/VR_Practice_Assignment_smithc_dvid.json"));
+//  QJsonArray rootObj = jsonDoc.array();
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+  ZDvidUrl dvidUrl(target);
+
+  for (size_t i = 0; i < rootObj.size(); ++i) {
+    ZJsonObject obj(rootObj.value(i));
+    ZJsonArray markerJson(obj.value("pointMarkers"));
+    if (!markerJson.isEmpty()) {
+      uint64_t bodyId =
+          ZString(obj.value("file").toString()).firstUint64();
+
+      if (bodyId > 0) {
+        ZJsonObject taskJson;
+//        ZIntPoint offset(298, 732, 544);
+//        ZIntPoint dsIntv(2, 2, 2);
+        ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
+
+        for (size_t i = 0; i < markerJson.size(); ++i) {
+          ZJsonObject markerObj(markerJson.value(i));
+          ZStroke2d stroke =
+              ZFlyEmMisc::SyGlassSeedToStroke(markerObj);
+          //        stroke.print();
+          ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
+        }
+        std::string location = writer->writeServiceTask("split", taskJson);
+
+        ZJsonObject entryJson;
+        entryJson.setEntry(NeuTube::Json::REF_KEY, location);
+        QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
+        writer->writeSplitTask(taskKey, taskJson);
+      }
+    }
+  }
+
+//  taskJson.dump(GET_TEST_DATA_DIR + "/test.json");
+
+//  qDebug() << taskKey;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+  target.setBodyLabelName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz_vol");
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+   ZDvidUrl dvidUrl(target);
+
+
 #endif
 
   std::cout << "Done." << std::endl;

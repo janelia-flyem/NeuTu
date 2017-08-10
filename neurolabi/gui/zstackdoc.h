@@ -1107,6 +1107,8 @@ public slots: //undoable commands
   virtual bool executeEnhanceLineCommand();
   virtual bool executeWatershedCommand();
   virtual void executeRemoveRectRoiCommand();
+  virtual bool executeChangeSwcNodeType(
+      QList<Swc_Tree_Node*> &nodeList, int type);
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();

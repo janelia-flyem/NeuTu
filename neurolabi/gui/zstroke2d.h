@@ -124,6 +124,8 @@ public:
    */
   ZStack *toStack() const;
 
+  ZStack *toBinaryStack() const;
+
   ZCuboid getBoundBox() const;
 
   ZObject3d* toObject3d() const;
@@ -159,6 +161,7 @@ private:
   static QVector<QColor> constructColorTable();
   const QColor& getLabelColor() const;
   void labelImage(QImage *image) const;
+  ZStack* toLabelStack(int label) const;
 
 
 private:

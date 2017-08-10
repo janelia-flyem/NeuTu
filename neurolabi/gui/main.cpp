@@ -245,6 +245,15 @@ int main(int argc, char *argv[])
   } else {
     GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
   }
+
+  if (config.GetTaskServer().isEmpty()) {
+    QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
+    if (!taskServer.isEmpty()) {
+      GET_FLYEM_CONFIG.setServer(taskServer.toStdString());
+    }
+  } else {
+    GET_FLYEM_CONFIG.setTaskServer(config.GetTaskServer().toStdString());
+  }
 #endif
 
   if (!runCommandLine) { //Command line mode takes care of configuration independently
@@ -371,11 +380,10 @@ int main(int argc, char *argv[])
     if (mainWin != NULL) {
 #if defined(_FLYEM_) && !defined(_DEBUG_) && !defined(_NEU3_)
       mainWin->startProofread();
-#else
-      mainWin->show();
 #endif
 
 #if defined(_NEU3_)
+      mainWin->show();
       mainWin->initialize();
       mainWin->raise();
       mainWin->showMaximized();

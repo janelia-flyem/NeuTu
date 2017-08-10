@@ -1,11 +1,16 @@
+#define _NEUTU_USE_REF_KEY_
 #include "zflyemmisc.h"
 
 #include <unistd.h>
 #include <iostream>
 #include <QString>
 #include <QProcess>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 #include "neutubeconfig.h"
+#include "zglobal.h"
 #include "zmatrix.h"
 #include "tz_math.h"
 #include "tz_utilities.h"
@@ -31,6 +36,7 @@
 #include "dvid/zdvidsparsestack.h"
 #include "zfileparser.h"
 #include "zjsonfactory.h"
+#include "dvid/zdvidwriter.h"
 
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
@@ -880,6 +886,104 @@ std::vector<ZStroke2d*> ZFlyEmMisc::MakeSplitSeedList(const ZObject3dScan &obj)
   seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 2));
 
   return seedList;
+}
+
+void ZFlyEmMisc::SetSplitTaskSignalUrl(
+    ZJsonObject &taskObj, uint64_t bodyId, const ZDvidTarget &target)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string signalUrl = dvidUrl.getSparsevolUrl(bodyId);
+  if (!signalUrl.empty()) {
+    taskObj.setEntry("signal", signalUrl);
+  }
+}
+
+ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(const ZJsonObject &obj)
+{
+  ZStroke2d stroke;
+  stroke.setLabel(0);
+  if (obj.hasKey("color")) {
+    stroke.setLabel(obj.value("color").toInteger() + 1);
+    stroke.setZ(obj.value("z").toInteger());
+    stroke.append(obj.value("x").toInteger(), obj.value("y").toInteger());
+    stroke.setWidth(5);
+  }
+
+  return stroke;
+}
+
+ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(
+    const ZJsonObject &obj, const ZIntPoint &offset, const ZIntPoint &dsIntv)
+{
+  ZStroke2d stroke = SyGlassSeedToStroke(obj);
+
+  stroke.translate(offset);
+  stroke.scale(dsIntv.getX() + 1, dsIntv.getY() + 1, dsIntv.getZ() + 1);
+
+  return stroke;
+}
+
+ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZStroke2d &stroke)
+{
+  ZJsonObject json;
+
+  json.setEntry("label", stroke.getLabel());
+  json.setEntry("type", "ZStroke2d");
+  ZJsonObject obj = stroke.toJsonObject();
+  json.setEntry("data", obj);
+
+  return json;
+}
+
+void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke)
+{
+  ZJsonArray array;
+
+  if (!taskObj.hasKey("seeds")) {
+    taskObj.setEntry("seeds", array);
+  } else {
+    array = ZJsonArray(taskObj.value("seeds"));
+  }
+
+  array.append(MakeSplitSeedJson(stroke));
+}
+
+void ZFlyEmMisc::UploadSyGlassTask(
+    const std::string &filePath, const ZDvidTarget &target)
+{
+  ZJsonArray rootObj;
+  rootObj.load(filePath);
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+  ZDvidUrl dvidUrl(target);
+
+  for (size_t i = 0; i < rootObj.size(); ++i) {
+    ZJsonObject obj(rootObj.value(i));
+    ZJsonArray markerJson(obj.value("pointMarkers"));
+    if (!markerJson.isEmpty()) {
+      uint64_t bodyId =
+          ZString(obj.value("file").toString()).firstUint64();
+
+      if (bodyId > 0) {
+        ZJsonObject taskJson;
+        ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
+
+        for (size_t i = 0; i < markerJson.size(); ++i) {
+          ZJsonObject markerObj(markerJson.value(i));
+          ZStroke2d stroke =
+              ZFlyEmMisc::SyGlassSeedToStroke(markerObj);
+          ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
+        }
+        std::string location = writer->writeServiceTask("split", taskJson);
+
+        ZJsonObject entryJson;
+        entryJson.setEntry(NeuTube::Json::REF_KEY, location);
+        QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
+        writer->writeSplitTask(taskKey, taskJson);
+      }
+    }
+  }
 }
 
 QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
