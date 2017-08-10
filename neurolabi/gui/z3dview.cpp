@@ -309,120 +309,126 @@ bool Z3DView::takeSeriesScreenShot(const QDir& dir, const QString& namePrefix, c
 
 void Z3DView::init(InitMode initMode)
 {
-  m_globalParas.setCanvas(m_canvas);
+  try {
+    m_globalParas.setCanvas(m_canvas);
 
-  // filters
-  m_compositor.reset(new Z3DCompositor(m_globalParas));
+    // filters
+    m_compositor.reset(new Z3DCompositor(m_globalParas));
 
-  m_canvasPainter.reset(new Z3DCanvasPainter(m_globalParas));
-  m_canvasPainter->setCanvas(m_canvas);
+    m_canvasPainter.reset(new Z3DCanvasPainter(m_globalParas));
+    m_canvasPainter->setCanvas(m_canvas);
 
-  m_canvas->addEventListenerToBack(m_compositor.get());  // for interaction
+    m_canvas->addEventListenerToBack(m_compositor.get());  // for interaction
 
-  m_compositor->outputPort("Image")->connect(m_canvasPainter->inputPort("Image"));
-  m_compositor->outputPort("LeftEyeImage")->connect(m_canvasPainter->inputPort("LeftEyeImage"));
-  m_compositor->outputPort("RightEyeImage")->connect(m_canvasPainter->inputPort("RightEyeImage"));
+    m_compositor->outputPort("Image")->connect(m_canvasPainter->inputPort("Image"));
+    m_compositor->outputPort("LeftEyeImage")->connect(m_canvasPainter->inputPort("LeftEyeImage"));
+    m_compositor->outputPort("RightEyeImage")->connect(m_canvasPainter->inputPort("RightEyeImage"));
 
-  // connection: canvas <-----> networkevaluator <-----> canvasrender
-  m_networkEvaluator.reset(new Z3DNetworkEvaluator());
-  m_canvas->setNetworkEvaluator(m_networkEvaluator.get());
+    // connection: canvas <-----> networkevaluator <-----> canvasrender
+    m_networkEvaluator.reset(new Z3DNetworkEvaluator());
+    m_canvas->setNetworkEvaluator(m_networkEvaluator.get());
 
-  // pass the canvasrender to the network evaluator
-  m_networkEvaluator->setNetworkSink(m_canvasPainter.get());
+    // pass the canvasrender to the network evaluator
+    m_networkEvaluator->setNetworkSink(m_canvasPainter.get());
 
-  // build network
-  m_volumeFilter.reset(new Z3DVolumeFilter(m_globalParas));
-  m_volumeFilter->outputPort("Image")->connect(m_compositor->inputPort("Image"));
-  m_volumeFilter->outputPort("LeftEyeImage")->connect(m_compositor->inputPort("LeftEyeImage"));
-  m_volumeFilter->outputPort("RightEyeImage")->connect(m_compositor->inputPort("RightEyeImage"));
-  m_volumeFilter->outputPort("VolumeFilter")->connect(m_compositor->inputPort("VolumeFilters"));
-  connect(m_volumeFilter.get(), &Z3DVolumeFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-  connect(m_volumeFilter.get(), &Z3DVolumeFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas->addEventListenerToBack(m_volumeFilter.get());
-  m_allFilters.push_back(m_volumeFilter.get());
+    // build network
+    m_volumeFilter.reset(new Z3DVolumeFilter(m_globalParas));
+    m_volumeFilter->outputPort("Image")->connect(m_compositor->inputPort("Image"));
+    m_volumeFilter->outputPort("LeftEyeImage")->connect(m_compositor->inputPort("LeftEyeImage"));
+    m_volumeFilter->outputPort("RightEyeImage")->connect(m_compositor->inputPort("RightEyeImage"));
+    m_volumeFilter->outputPort("VolumeFilter")->connect(m_compositor->inputPort("VolumeFilters"));
+    connect(m_volumeFilter.get(), &Z3DVolumeFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_volumeFilter.get(), &Z3DVolumeFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(m_volumeFilter.get());
+    m_allFilters.push_back(m_volumeFilter.get());
 
-  m_punctaFilter.reset(new Z3DPunctaFilter(m_globalParas));
-  m_punctaFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
-  connect(m_punctaFilter.get(), &Z3DPunctaFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-  connect(m_punctaFilter.get(), &Z3DPunctaFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas->addEventListenerToBack(m_punctaFilter.get());
-  m_allFilters.push_back(m_punctaFilter.get());
+    m_punctaFilter.reset(new Z3DPunctaFilter(m_globalParas));
+    m_punctaFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
+    connect(m_punctaFilter.get(), &Z3DPunctaFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_punctaFilter.get(), &Z3DPunctaFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(m_punctaFilter.get());
+    m_allFilters.push_back(m_punctaFilter.get());
 
-  m_swcFilter.reset(new Z3DSwcFilter(m_globalParas));
-  m_swcFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
-  connect(m_swcFilter.get(), &Z3DSwcFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-  connect(m_swcFilter.get(), &Z3DSwcFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas->addEventListenerToBack(m_swcFilter.get());
-  m_allFilters.push_back(m_swcFilter.get());
+    m_swcFilter.reset(new Z3DSwcFilter(m_globalParas));
+    m_swcFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
+    connect(m_swcFilter.get(), &Z3DSwcFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_swcFilter.get(), &Z3DSwcFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(m_swcFilter.get());
+    m_allFilters.push_back(m_swcFilter.get());
 
-  m_meshFilter.reset(new Z3DMeshFilter(m_globalParas));
-  m_meshFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
-  connect(m_meshFilter.get(), &Z3DMeshFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-  connect(m_meshFilter.get(), &Z3DMeshFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas->addEventListenerToBack(m_meshFilter.get());
-  m_allFilters.push_back(m_meshFilter.get());
+    m_meshFilter.reset(new Z3DMeshFilter(m_globalParas));
+    m_meshFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
+    connect(m_meshFilter.get(), &Z3DMeshFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_meshFilter.get(), &Z3DMeshFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(m_meshFilter.get());
+    m_allFilters.push_back(m_meshFilter.get());
 
-  m_graphFilter.reset(new Z3DGraphFilter(m_globalParas));
-  m_graphFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
-  connect(m_graphFilter.get(), &Z3DGraphFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-  connect(m_graphFilter.get(), &Z3DGraphFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas->addEventListenerToBack(m_graphFilter.get());
-  m_allFilters.push_back(m_graphFilter.get());
+    m_graphFilter.reset(new Z3DGraphFilter(m_globalParas));
+    m_graphFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
+    connect(m_graphFilter.get(), &Z3DGraphFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_graphFilter.get(), &Z3DGraphFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(m_graphFilter.get());
+    m_allFilters.push_back(m_graphFilter.get());
 
 #if defined _FLYEM_
-  m_todoFilter.reset(new ZFlyEmTodoListFilter(m_globalParas));
-  m_todoFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
-  connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-  connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas->addEventListenerToBack(m_todoFilter.get());
-  m_allFilters.push_back(m_todoFilter.get());
+    m_todoFilter.reset(new ZFlyEmTodoListFilter(m_globalParas));
+    m_todoFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
+    connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(m_todoFilter.get());
+    m_allFilters.push_back(m_todoFilter.get());
 #endif
 
-  // get data from doc and add to network
-  // volume
-  if (initMode != InitMode::EXCLUDE_VOLUME) {
-    volumeDataChanged();
-    connect(m_doc, &ZStackDoc::volumeModified, this, &Z3DView::volumeDataChanged);
-  }
-  // puncta
-  punctaDataChanged();
-  connect(m_doc, &ZStackDoc::punctaModified, this, &Z3DView::punctaDataChanged);
-  // swc
-  swcDataChanged();
-  connect(m_doc, &ZStackDoc::swcModified, this, &Z3DView::swcDataChanged);
-  // graph
-  swcNetworkDataChanged();
-  graph3DDataChanged();
-  connect(m_doc, &ZStackDoc::swcNetworkModified, this, &Z3DView::swcNetworkDataChanged);
-  connect(m_doc, &ZStackDoc::graph3dModified, this, &Z3DView::graph3DDataChanged);
-  // tododata
-  todoDataChanged();
-  connect(m_doc, &ZStackDoc::todoModified, this, &Z3DView::todoDataChanged);
+    // get data from doc and add to network
+    // volume
+    if (initMode != InitMode::EXCLUDE_VOLUME) {
+      volumeDataChanged();
+      connect(m_doc, &ZStackDoc::volumeModified, this, &Z3DView::volumeDataChanged);
+    }
+    // puncta
+    punctaDataChanged();
+    connect(m_doc, &ZStackDoc::punctaModified, this, &Z3DView::punctaDataChanged);
+    // swc
+    swcDataChanged();
+    connect(m_doc, &ZStackDoc::swcModified, this, &Z3DView::swcDataChanged);
+    // graph
+    swcNetworkDataChanged();
+    graph3DDataChanged();
+    connect(m_doc, &ZStackDoc::swcNetworkModified, this, &Z3DView::swcNetworkDataChanged);
+    connect(m_doc, &ZStackDoc::graph3dModified, this, &Z3DView::graph3DDataChanged);
+    // tododata
+    todoDataChanged();
+    connect(m_doc, &ZStackDoc::todoModified, this, &Z3DView::todoDataChanged);
 
-  connect(m_doc, &ZStackDoc::objectSelectionChanged, this, &Z3DView::objectSelectionChanged);
-  connect(m_doc, &ZStackDoc::punctaSelectionChanged, m_punctaFilter.get(), &Z3DPunctaFilter::invalidateResult);
-  connect(m_doc, &ZStackDoc::punctumVisibleStateChanged, m_punctaFilter.get(), &Z3DPunctaFilter::updatePunctumVisibleState);
-  connect(m_doc, &ZStackDoc::swcSelectionChanged, m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
-  connect(m_doc, &ZStackDoc::swcVisibleStateChanged, m_swcFilter.get(), &Z3DSwcFilter::updateSwcVisibleState);
-  connect(m_doc, SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)), m_swcFilter.get(), SLOT(invalidateResult()));
-  connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
+    connect(m_doc, &ZStackDoc::objectSelectionChanged, this, &Z3DView::objectSelectionChanged);
+    connect(m_doc, &ZStackDoc::punctaSelectionChanged, m_punctaFilter.get(), &Z3DPunctaFilter::invalidateResult);
+    connect(m_doc, &ZStackDoc::punctumVisibleStateChanged, m_punctaFilter.get(), &Z3DPunctaFilter::updatePunctumVisibleState);
+    connect(m_doc, &ZStackDoc::swcSelectionChanged, m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
+    connect(m_doc, &ZStackDoc::swcVisibleStateChanged, m_swcFilter.get(), &Z3DSwcFilter::updateSwcVisibleState);
+    connect(m_doc, SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)), m_swcFilter.get(), SLOT(invalidateResult()));
+    connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
 
-  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
-    m_compositor->setShowAxis(false);
-  }
+    if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
+      m_compositor->setShowAxis(false);
+    }
 #if defined(REMOTE_WORKSTATION)
-  m_compositor->setShowBackground(false);
+    m_compositor->setShowBackground(false);
 #endif
 
-  // initializes all connected filters
-  m_networkEvaluator->initializeNetwork();
+    // initializes all connected filters
+    m_networkEvaluator->initializeNetwork();
 
-  updateBoundBox();
+    updateBoundBox();
 
-  // adjust camera
-  resetCamera();
+    // adjust camera
+    resetCamera();
 
-  connect(&camera(), &Z3DCameraParameter::valueChanged, this, &Z3DView::resetCameraClippingRange);
+    connect(&camera(), &Z3DCameraParameter::valueChanged, this, &Z3DView::resetCameraClippingRange);
+  }
+  catch (const ZException& e) {
+    LOG(ERROR) << "Failed to init 3DView: " << e.what();
+    QMessageBox::critical(m_canvas, qApp->applicationName(), "Failed to init 3DView.\n" + e.what());
+  }
 }
 
 void Z3DView::createActions()
