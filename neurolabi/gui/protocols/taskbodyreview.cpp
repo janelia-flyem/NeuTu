@@ -55,9 +55,10 @@ QSet<uint64_t> TaskBodyReview::visibleBodies() {
 }
 
 QSet<uint64_t> TaskBodyReview::selectedBodies() {
+    // note that we don't select the target body; it's probably
+    //  clearer that way
     QSet<uint64_t> bodies;
     bodies.unite(m_selectedBodies);
-    bodies.insert(m_bodyID);
     return bodies;
 }
 

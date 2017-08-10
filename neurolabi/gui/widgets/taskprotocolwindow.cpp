@@ -276,7 +276,7 @@ void TaskProtocolWindow::updateBodyWindow() {
     if (m_currentTaskIndex >= 0) {
 
         // remove existing bodies; proof doc "selected" corresponds to "visible"
-        //  I'm taking a bit of a guess that I want "MAPPED" (not "ORIGINAL"
+        //  I'm taking a bit of a guess that I want "MAPPED" (not "ORIGINAL")
         foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED)) {
             emit bodyRemoved(bodyID);
         }
