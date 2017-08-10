@@ -144,8 +144,11 @@ contains(DEFINES, _ENABLE_SURFRECON_) {
 
 #
 exists($${CONDA_ENV}) {
-  INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src $${CONDA_ENV}/include/vtk-6.3
+  VTK_VER = 6.3
+  INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
   LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco
+  INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
+  LIBS += -lvtkFiltersGeometry-$${VTK_VER} -lvtkCommonCore-$${VTK_VER} -lvtksys-$${VTK_VER} -lvtkCommonDataModel-$${VTK_VER} -lvtkCommonMath-$${VTK_VER} -lvtkCommonMisc-$${VTK_VER} -lvtkCommonSystem-$${VTK_VER} -lvtkCommonTransforms-$${VTK_VER} -lvtkCommonExecutionModel-$${VTK_VER} -lvtkFiltersCore-$${VTK_VER} -lvtkFiltersSources-$${VTK_VER} -lvtkCommonComputationalGeometry-$${VTK_VER} -lvtkFiltersGeneral-$${VTK_VER}
 } else {
 # todo: add vtk or just use conda?
   INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include $$PWD/ext/draco/include/draco/src
