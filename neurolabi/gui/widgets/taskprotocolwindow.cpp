@@ -275,9 +275,11 @@ void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
 
-
-        // remove existing bodies; how?
-
+        // remove existing bodies; proof doc "selected" corresponds to "visible"
+        //  I'm taking a bit of a guess that I want "MAPPED" (not "ORIGINAL"
+        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED)) {
+            emit bodyRemoved(bodyID);
+        }
 
         QSet<uint64_t> visible = m_taskList[m_currentTaskIndex]->visibleBodies();
         QSet<uint64_t> selected = m_taskList[m_currentTaskIndex]->selectedBodies();
