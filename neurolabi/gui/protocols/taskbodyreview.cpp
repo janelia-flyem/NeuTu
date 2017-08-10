@@ -42,11 +42,6 @@ QString TaskBodyReview::targetString() {
     return QString::number(m_bodyID);
 }
 
-uint64_t TaskBodyReview::bodyID() const
-{
-    return m_bodyID;
-}
-
 QSet<uint64_t> TaskBodyReview::visibleBodies() {
     QSet<uint64_t> bodies;
     bodies.unite(m_visibleBodies);
