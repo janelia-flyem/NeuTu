@@ -20,7 +20,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
                                                     ZRandom::instance().randReal<float>(),
                                                     ZRandom::instance().randReal<float>(),
                                                     1.f))
-  , m_textureGlowRenderer(m_rendererBase)
+  //, m_textureGlowRenderer(m_rendererBase)
   , m_glow("Glow", false)
   , m_textureCopyRenderer(m_rendererBase)
   , m_selectMeshEvent("Select Mesh", false)
@@ -52,11 +52,11 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   addParameter(m_singleColorForAllMesh);
 
   connect(&m_glow, &ZBoolParameter::valueChanged, this, &Z3DMeshFilter::adjustWidgets);
-  addParameter(m_glow);
-  addParameter(m_textureGlowRenderer.glowModePara());
-  addParameter(m_textureGlowRenderer.blurRadiusPara());
-  addParameter(m_textureGlowRenderer.blurScalePara());
-  addParameter(m_textureGlowRenderer.blurStrengthPara());
+//  addParameter(m_glow);
+//  addParameter(m_textureGlowRenderer.glowModePara());
+//  addParameter(m_textureGlowRenderer.blurRadiusPara());
+//  addParameter(m_textureGlowRenderer.blurScalePara());
+//  addParameter(m_textureGlowRenderer.blurStrengthPara());
 
   m_selectMeshEvent.listenTo("select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
   m_selectMeshEvent.listenTo("select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
@@ -79,38 +79,38 @@ void Z3DMeshFilter::process(Z3DEye eye)
   if (m_dataIsInvalid) {
     prepareData();
   }
-  if (m_glow.get()) {
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+//  if (m_glow.get()) {
+//    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-    Z3DRenderOutputPort& currentOutport = (eye == Z3DEye::Mono) ?
-                                          m_monoEyeOutport : (eye == Z3DEye::Left) ? m_leftEyeOutport
-                                                                                   : m_rightEyeOutport;
+//    Z3DRenderOutputPort& currentOutport = (eye == Z3DEye::Mono) ?
+//                                          m_monoEyeOutport : (eye == Z3DEye::Left) ? m_leftEyeOutport
+//                                                                                   : m_rightEyeOutport;
 
-    currentOutport.bindTarget();
-    currentOutport.clearTarget();
-    m_rendererBase.setViewport(currentOutport.size());
-    m_rendererBase.render(eye, m_triangleListRenderer);
-    CHECK_GL_ERROR
-    currentOutport.releaseTarget();
+//    currentOutport.bindTarget();
+//    currentOutport.clearTarget();
+//    m_rendererBase.setViewport(currentOutport.size());
+//    m_rendererBase.render(eye, m_triangleListRenderer);
+//    CHECK_GL_ERROR
+//    currentOutport.releaseTarget();
 
-    Z3DRenderOutputPort& currentOutport2 = (eye == Z3DEye::Mono) ?
-                                           m_monoEyeOutport2 : (eye == Z3DEye::Left) ? m_leftEyeOutport2
-                                                                                     : m_rightEyeOutport2;
-    currentOutport2.bindTarget();
-    currentOutport2.clearTarget();
-    m_rendererBase.setViewport(currentOutport2.size());
-    m_textureGlowRenderer.setColorTexture(currentOutport.colorTexture());
-    m_textureGlowRenderer.setDepthTexture(currentOutport.depthTexture());
-    m_rendererBase.render(eye, m_textureGlowRenderer);
-    CHECK_GL_ERROR
-    currentOutport2.releaseTarget();
+//    Z3DRenderOutputPort& currentOutport2 = (eye == Z3DEye::Mono) ?
+//                                           m_monoEyeOutport2 : (eye == Z3DEye::Left) ? m_leftEyeOutport2
+//                                                                                     : m_rightEyeOutport2;
+//    currentOutport2.bindTarget();
+//    currentOutport2.clearTarget();
+//    m_rendererBase.setViewport(currentOutport2.size());
+//    m_textureGlowRenderer.setColorTexture(currentOutport.colorTexture());
+//    m_textureGlowRenderer.setDepthTexture(currentOutport.depthTexture());
+//    m_rendererBase.render(eye, m_textureGlowRenderer);
+//    CHECK_GL_ERROR
+//    currentOutport2.releaseTarget();
 
-    glBlendFunc(GL_ONE, GL_ZERO);
-    glDisable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
-  }
+//    glBlendFunc(GL_ONE, GL_ZERO);
+//    glDisable(GL_BLEND);
+//    glDisable(GL_DEPTH_TEST);
+//  }
 }
 
 void Z3DMeshFilter::setData(std::vector<ZMesh*>* meshList)
@@ -189,11 +189,11 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
         m_widgetsGroup->addChild(*para, 7);
     }
 
-    m_widgetsGroup->addChild(m_glow, 5);
-    m_widgetsGroup->addChild(m_textureGlowRenderer.glowModePara(), 5);
-    m_widgetsGroup->addChild(m_textureGlowRenderer.blurRadiusPara(), 5);
-    m_widgetsGroup->addChild(m_textureGlowRenderer.blurScalePara(), 5);
-    m_widgetsGroup->addChild(m_textureGlowRenderer.blurStrengthPara(), 5);
+//    m_widgetsGroup->addChild(m_glow, 5);
+//    m_widgetsGroup->addChild(m_textureGlowRenderer.glowModePara(), 5);
+//    m_widgetsGroup->addChild(m_textureGlowRenderer.blurRadiusPara(), 5);
+//    m_widgetsGroup->addChild(m_textureGlowRenderer.blurScalePara(), 5);
+//    m_widgetsGroup->addChild(m_textureGlowRenderer.blurStrengthPara(), 5);
 
     m_widgetsGroup->addChild(m_xCut, 5);
     m_widgetsGroup->addChild(m_yCut, 5);
@@ -203,7 +203,6 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_boundBoxLineColor, 5);
     m_widgetsGroup->addChild(m_selectionLineWidth, 7);
     m_widgetsGroup->addChild(m_selectionLineColor, 7);
-    m_widgetsGroup->addChild(m_manipulatorSize, 7);
     m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
@@ -361,10 +360,10 @@ void Z3DMeshFilter::adjustWidgets()
 {
   m_singleColorForAllMesh.setVisible(m_colorMode.isSelected("Single Color"));
 
-  m_textureGlowRenderer.glowModePara().setVisible(m_glow.get());
-  m_textureGlowRenderer.blurRadiusPara().setVisible(m_glow.get());
-  m_textureGlowRenderer.blurScalePara().setVisible(m_glow.get());
-  m_textureGlowRenderer.blurStrengthPara().setVisible(m_glow.get());
+//  m_textureGlowRenderer.glowModePara().setVisible(m_glow.get());
+//  m_textureGlowRenderer.blurRadiusPara().setVisible(m_glow.get());
+//  m_textureGlowRenderer.blurScalePara().setVisible(m_glow.get());
+//  m_textureGlowRenderer.blurStrengthPara().setVisible(m_glow.get());
 }
 
 void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int h)

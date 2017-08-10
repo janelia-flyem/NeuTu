@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zflyemproofmvc.h"
 
 #include <QFuture>
@@ -9,6 +8,7 @@
 #include <QMainWindow>
 #include <QDesktopWidget>
 #include <QApplication>
+#include <QMimeData>
 
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -424,9 +424,9 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
     const QString &outDir)
 {
   showSkeletonWindow();
-  glm::vec3 eye = m_skeletonWindow->getCamera()->getEye();
-  float nearDist = m_skeletonWindow->getCamera()->getNearDist();
-  glm::vec3 upVector = m_skeletonWindow->getCamera()->getUpVector();
+  glm::vec3 eye = m_skeletonWindow->getCamera()->get().eye();
+  float nearDist = m_skeletonWindow->getCamera()->get().nearDist();
+  glm::vec3 upVector = m_skeletonWindow->getCamera()->get().upVector();
 
   std::vector<uint64_t> skippedBodyIdArray;
   for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
@@ -444,7 +444,7 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
       m_skeletonWindow->getCamera()->setNearDist(nearDist);
       //  double eyeDist = eye[0];
       m_skeletonWindow->takeScreenShot(
-            QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+            QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
 
       m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(0, 0, 1));
       //  m_skeletonWindow->setXZView();
@@ -452,11 +452,11 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
       //  eye[1] = m_skeletonWindow->getCamera()->getCenter()[1] - eyeDist;
       //  m_skeletonWindow->getCamera()->setEye(eye);
       m_skeletonWindow->takeScreenShot(
-            QString("%1/%2_xz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+            QString("%1/%2_xz.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
 
       m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(1, 0, 0));
       m_skeletonWindow->takeScreenShot(
-            QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+            QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
     } else {
       skippedBodyIdArray.push_back(bodyId);
     }

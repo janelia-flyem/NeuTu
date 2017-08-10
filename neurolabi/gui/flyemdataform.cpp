@@ -29,7 +29,6 @@
 #include "z3dpunctafilter.h"
 #include "z3dcompositor.h"
 #include "z3dvolumefilter.h"
-#include "z3daxisfilter.h"
 #include "dialogs/swcexportdialog.h"
 #include "zdialogfactory.h"
 #include "zprogressmanager.h"
@@ -1410,7 +1409,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::INIT_FULL_RES_VOLUME,
                                      false, NULL);
 
-    stage->getVolumeRaycaster()->hideBoundBox();
+    stage->getVolumeFilter()->hideBoundBox();
     stage->getVolumeFilter()->setCompositeMode(
           "Direct Volume Rendering");
     stage->getCompositor()->setShowAxis(false);
@@ -1426,16 +1425,16 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
       ZJsonObject cameraJson;
       cameraJson.load(cameraFile.toStdString());
       camera->set(cameraJson);
-      glm::vec3 eyeSpec = camera->getEye();
-      glm::vec3 centerSpec = camera->getCenter();
+      glm::vec3 eyeSpec = camera->get().eye();
+      glm::vec3 centerSpec = camera->get().center();
       vec = ZPoint(eyeSpec[0], eyeSpec[1], eyeSpec[2]) -
               ZPoint(centerSpec[0], centerSpec[1], centerSpec[2]);
       vec.normalize();
 
-      upVector = camera->getUpVector();
+      upVector = camera->get().upVector();
     }
 
-    camera->setProjectionType(Z3DCamera::Orthographic);
+    camera->setProjectionType(Z3DCamera::ProjectionType::Orthographic);
 //    glm::vec3 eyeSpec = camera->getEye();
 //    glm::vec3 centerSpec = camera->getCenter();
 
@@ -1443,7 +1442,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     referenceCenter.set(dataRangeX / 2, dataRangeY / 2, dataRangeZ / 2);
 
     double distNearToCenter = referenceCenter.length() * 2.0;
-    double distEyeToNear = dataRangeZ * 0.5 / tan(camera->getFieldOfView() * 0.5);
+    double distEyeToNear = dataRangeZ * 0.5 / tan(camera->get().fieldOfView() * 0.5);
     double distEyeToCenter = distEyeToNear + distNearToCenter;
 
     ZPoint eyePosition = referenceCenter + vec * distEyeToCenter;
@@ -1475,7 +1474,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
 //    stage->show();
     //stage->showMaximized();
 
-    stage->takeScreenShot(output, 4000, 4000, MonoView);
+    stage->takeScreenShot(output, 4000, 4000, Z3DScreenShotType::MonoView);
     stage->close();
     delete stage;
   }

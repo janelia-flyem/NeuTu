@@ -21,10 +21,6 @@ public:
   const std::vector<ZParameter*>& parameters() const
   { return m_parameters; }
 
-  void read(const QJsonObject& json);
-
-  void write(QJsonObject& json) const;
-
   std::shared_ptr<ZWidgetsGroup> widgetsGroup(bool includeCamera);
 
   // count is lightCount

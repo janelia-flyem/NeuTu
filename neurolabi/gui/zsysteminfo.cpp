@@ -242,7 +242,7 @@ void ZSystemInfo::logOSInfo() const
   //LOG(INFO) << "Product Type: " << QSysInfo::productType();
   //LOG(INFO) << "Product Version: " << QSysInfo::productVersion();
 
-#ifdef 1
+#if 1
   // time
   LOG(INFO) << "system_clock res: "
             << 1e9 * std::chrono::system_clock::period::num / std::chrono::system_clock::period::den << " ns";

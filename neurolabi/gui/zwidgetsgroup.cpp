@@ -87,6 +87,7 @@ void ZWidgetsGroup::addChild(std::shared_ptr<ZWidgetsGroup> child, bool atEnd)
     m_childGroups.insert(m_childGroups.begin(), child);
   }
   connect(child.get(), &ZWidgetsGroup::widgetsGroupChanged, this, &ZWidgetsGroup::widgetsGroupChanged);
+  connect(child.get(), &ZWidgetsGroup::requestAdvancedWidget, this, &ZWidgetsGroup::requestAdvancedWidget);
   m_isSorted = false;
 }
 

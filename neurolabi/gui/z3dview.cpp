@@ -1,7 +1,6 @@
 #include "z3dview.h"
 
 #include "z3dcanvas.h"
-#include "z3daxisfilter.h"
 #include "z3dcompositor.h"
 #include "z3dcanvaspainter.h"
 #include "z3dcameraparameter.h"
@@ -19,6 +18,7 @@
 #include "zfiletype.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "neutubeconfig.h"
+#include "zswcnetwork.h"
 
 #include "zsysteminfo.h"
 #include "zwidgetsgroup.h"
@@ -29,63 +29,15 @@
 #include <QProgressDialog>
 #include <QMainWindow>
 #include <QScrollArea>
-
-namespace {
-// generic solution
-template<class T>
-int numDigits(T number)
-{
-  int digits = 0;
-  if (number < 0) digits = 1; // remove this line if '-' counts as a digit
-  while (number) {
-    number /= 10;
-    digits++;
-  }
-  return digits;
-}
-
-// partial specialization optimization for 32-bit numbers
-template<>
-int numDigits(int32_t x)
-{
-  if (x == std::numeric_limits<int>::min()) return 10 + 1;
-  if (x < 0) return numDigits(-x) + 1;
-
-  if (x >= 10000) {
-    if (x >= 10000000) {
-      if (x >= 100000000) {
-        if (x >= 1000000000)
-          return 10;
-        return 9;
-      }
-      return 8;
-    }
-    if (x >= 100000) {
-      if (x >= 1000000)
-        return 7;
-      return 6;
-    }
-    return 5;
-  }
-  if (x >= 100) {
-    if (x >= 1000)
-      return 4;
-    return 3;
-  }
-  if (x >= 10)
-    return 2;
-  return 1;
-}
-
-}  // namespace
+#include <boost/math/constants/constants.hpp>
 
 Z3DView::Z3DView(ZStackDoc* doc, InitMode initMode, bool stereo, QMainWindow* parent)
   : QObject(parent)
   , m_doc(doc)
   , m_isStereoView(stereo)
   , m_mainWin(parent)
-  , m_numObjsBefore(m_doc->numObjs())
   , m_lock(false)
+  , m_initMode(initMode)
 {
   CHECK(m_doc);
   m_canvas = new Z3DCanvas("", 512, 512);
@@ -118,6 +70,7 @@ QWidget* Z3DView::captureWidget()
   connect(m_screenShotWidget, &ZTakeScreenShotWidget::takeSeriesFixedSize3DScreenShot,
           this, &Z3DView::takeFixedSizeSeriesScreenShot);
   res->setWidget(m_screenShotWidget);
+
   return res;
 }
 
@@ -131,11 +84,46 @@ QWidget* Z3DView::axisWidget()
   return m_compositor->axisWidgetsGroup()->createWidget(false);
 }
 
+std::shared_ptr<ZWidgetsGroup> Z3DView::globalParasWidgetsGroup()
+{
+  return m_globalParas.widgetsGroup(true);
+}
+
+std::shared_ptr<ZWidgetsGroup> Z3DView::captureWidgetsGroup()
+{
+  auto res = new QScrollArea();
+  auto m_screenShotWidget = new ZTakeScreenShotWidget(false, false, nullptr);
+  m_screenShotWidget->setCaptureStereoImage(m_isStereoView);
+  connect(m_screenShotWidget, &ZTakeScreenShotWidget::take3DScreenShot,
+          this, &Z3DView::takeScreenShot);
+  connect(m_screenShotWidget, &ZTakeScreenShotWidget::takeFixedSize3DScreenShot,
+          this, &Z3DView::takeFixedSizeScreenShot);
+  connect(m_screenShotWidget, &ZTakeScreenShotWidget::takeSeries3DScreenShot,
+          this, &Z3DView::takeSeriesScreenShot);
+  connect(m_screenShotWidget, &ZTakeScreenShotWidget::takeSeriesFixedSize3DScreenShot,
+          this, &Z3DView::takeFixedSizeSeriesScreenShot);
+  res->setWidget(m_screenShotWidget);
+
+  auto capture = std::make_shared<ZWidgetsGroup>("Capture", 1);
+  capture->addChild(*res, 1);
+  return capture;
+}
+
+std::shared_ptr<ZWidgetsGroup> Z3DView::backgroundWidgetsGroup()
+{
+  return m_compositor->backgroundWidgetsGroup();
+}
+
+std::shared_ptr<ZWidgetsGroup> Z3DView::axisWidgetsGroup()
+{
+  return m_compositor->axisWidgetsGroup();
+}
+
 void Z3DView::updateBoundBox()
 {
   m_boundBox.reset();
-  for (int i = 0; i < m_3dObjViews.size(); ++i) {
-    m_boundBox.expand(m_3dObjViews[i]->boundBox());
+  for (auto flt : m_allFilters) {
+    m_boundBox.expand(flt->axisAlignedBoundBox());
   }
   if (m_boundBox.empty()) {
     // nothing visible
@@ -143,60 +131,7 @@ void Z3DView::updateBoundBox()
     m_boundBox.setMaxCorner(glm::dvec3(1.0));
   }
   m_boundBox.setMaxCorner(glm::max(m_boundBox.maxCorner(), m_boundBox.minCorner() + 1.0));
-  if (m_numObjsBefore == 0 && m_doc->numObjs() > 0) {
-    resetCamera();
-  } else {
-    resetCameraClippingRange();
-  }
-  m_numObjsBefore = m_doc->numObjs();
-}
-
-void Z3DView::read(size_t id, const QJsonObject& json)
-{
-  for (int i = 0; i < m_3dObjViews.size(); ++i) {
-    if (m_3dObjViews[i]->hasObj(id)) {
-      if (json.value("ViewObjType").toString() == m_3dObjViews[i]->doc().typeName()) {
-        m_3dObjViews[i]->read(id, json);
-      } else {
-        LOG(WARNING) << "view object type " << json.value("ViewObjType").toString()
-                     << " dones't match object type " << m_3dObjViews[i]->doc().typeName() << ". abort.";
-      }
-      return;
-    }
-  }
-}
-
-void Z3DView::write(size_t id, QJsonObject& json) const
-{
-  for (int i = 0; i < m_3dObjViews.size(); ++i) {
-    if (m_3dObjViews[i]->hasObj(id)) {
-      json.insert("ViewObjType", m_3dObjViews[i]->doc().typeName());
-      json.insert("ViewVersion", QJsonValue(1.0));
-      m_3dObjViews[i]->write(id, json);
-      return;
-    }
-  }
-}
-
-void Z3DView::read(const QJsonObject& json)
-{
-  if (json.contains("Compositor") && json.value("Compositor").isObject()) {
-    m_compositor->read(json.value("Compositor").toObject());
-  }
-  if (json.contains("Global") && json.value("Global").isObject()) {
-    m_globalParas.read(json.value("Global").toObject());
-  }
-}
-
-void Z3DView::write(QJsonObject& json) const
-{
-  QJsonObject compObj;
-  m_compositor->write(compObj);
-  json.insert("Compositor", compObj);
-
-  QJsonObject globObj;
-  m_globalParas.write(globObj);
-  json.insert("Global", globObj);
+  resetCameraClippingRange();
 }
 
 void Z3DView::zoomIn()
@@ -403,38 +338,44 @@ void Z3DView::init(InitMode initMode)
   m_volumeFilter->outputPort("VolumeFilter")->connect(m_compositor->inputPort("VolumeFilters"));
   connect(m_volumeFilter.get(), &Z3DVolumeFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_volumeFilter.get(), &Z3DVolumeFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas.addEventListenerToBack(m_volumeFilter);
+  m_canvas->addEventListenerToBack(m_volumeFilter.get());
+  m_allFilters.push_back(m_volumeFilter.get());
 
   m_punctaFilter.reset(new Z3DPunctaFilter(m_globalParas));
   m_punctaFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_punctaFilter.get(), &Z3DPunctaFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_punctaFilter.get(), &Z3DPunctaFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas.addEventListenerToBack(m_punctaFilter);
+  m_canvas->addEventListenerToBack(m_punctaFilter.get());
+  m_allFilters.push_back(m_punctaFilter.get());
 
   m_swcFilter.reset(new Z3DSwcFilter(m_globalParas));
   m_swcFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_swcFilter.get(), &Z3DSwcFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_swcFilter.get(), &Z3DSwcFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas.addEventListenerToBack(m_swcFilter);
+  m_canvas->addEventListenerToBack(m_swcFilter.get());
+  m_allFilters.push_back(m_swcFilter.get());
 
   m_meshFilter.reset(new Z3DMeshFilter(m_globalParas));
   m_meshFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_meshFilter.get(), &Z3DMeshFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_meshFilter.get(), &Z3DMeshFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas.addEventListenerToBack(m_meshFilter);
+  m_canvas->addEventListenerToBack(m_meshFilter.get());
+  m_allFilters.push_back(m_meshFilter.get());
 
   m_graphFilter.reset(new Z3DGraphFilter(m_globalParas));
   m_graphFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_graphFilter.get(), &Z3DGraphFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_graphFilter.get(), &Z3DGraphFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas.addEventListenerToBack(m_graphFilter);
+  m_canvas->addEventListenerToBack(m_graphFilter.get());
+  m_allFilters.push_back(m_graphFilter.get());
 
 #if defined _FLYEM_
   m_todoFilter.reset(new ZFlyEmTodoListFilter(m_globalParas));
   m_todoFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-  m_canvas.addEventListenerToBack(m_todoFilter);
+  m_canvas->addEventListenerToBack(m_todoFilter.get());
+  m_allFilters.push_back(m_todoFilter.get());
 #endif
 
   // get data from doc and add to network
@@ -459,11 +400,11 @@ void Z3DView::init(InitMode initMode)
   connect(m_doc, &ZStackDoc::todoModified, this, &Z3DView::todoDataChanged);
 
   connect(m_doc, &ZStackDoc::objectSelectionChanged, this, &Z3DView::objectSelectionChanged);
-  connect(m_doc, &ZStackDoc::punctaSelectionChanged, m_punctaFilter.get(), &Z3DPunctaFilter::invalidate);
+  connect(m_doc, &ZStackDoc::punctaSelectionChanged, m_punctaFilter.get(), &Z3DPunctaFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::punctumVisibleStateChanged, m_punctaFilter.get(), &Z3DPunctaFilter::updatePunctumVisibleState);
-  connect(m_doc, &ZStackDoc::swcSelectionChanged, m_swcFilter.get(), &Z3DSwcFilter::invalidate);
+  connect(m_doc, &ZStackDoc::swcSelectionChanged, m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
   connect(m_doc, &ZStackDoc::swcVisibleStateChanged, m_swcFilter.get(), &Z3DSwcFilter::updateSwcVisibleState);
-  connect(m_doc, &ZStackDoc::swcTreeNodeSelectionChanged, m_swcFilter.get(), &Z3DSwcFilter::invalidate);
+  connect(m_doc, SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)), m_swcFilter.get(), SLOT(invalidateResult()));
   connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
 
   if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
@@ -507,9 +448,9 @@ void Z3DView::createActions()
 
 void Z3DView::volumeDataChanged()
 {
-  if (initMode == InitMode::NORMAL) {
+  if (m_initMode == InitMode::NORMAL) {
     m_volumeFilter->setData(m_doc);
-  } else if (initMode == InitMode::FULL_RES_VOLUME) {
+  } else if (m_initMode == InitMode::FULL_RES_VOLUME) {
     m_volumeFilter->setData(m_doc, std::numeric_limits<int>::max() / 2);
   }
 }

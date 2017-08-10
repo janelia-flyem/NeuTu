@@ -14,8 +14,6 @@
 
 namespace {
 
-using namespace nim;
-
 void createMaterials(aiScene* pScene)
 {
   pScene->mNumMaterials = 1;

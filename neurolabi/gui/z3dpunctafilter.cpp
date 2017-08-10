@@ -10,17 +10,25 @@
 
 namespace {
 
-struct _KeyComp {
-  bool operator()(const std::pair<QString, std::unique_ptr<ZVec4Parameter>>& p1,
-                  const std::pair<QString, int>& p2) const
+class _KeyComp
+{
+public:
+  template<typename KeyType>
+  static KeyType getKey(const KeyType& k)
   {
-    return p1.first < p2.first;
+    return k;
   }
 
-  bool operator()(const std::pair<QString, int>& p1,
-                  const std::pair<QString, std::unique_ptr<ZVec4Parameter>>& p2) const
+  template<typename KeyType, typename ValueType>
+  static KeyType getKey(const std::pair<const KeyType, ValueType>& p)
   {
-    return p1.first < p2.first;
+    return p.first;
+  }
+
+  template<typename L, typename R>
+  bool operator()(const L& l, const R& r) const
+  {
+    return getKey(l) < getKey(r);
   }
 };
 
@@ -332,7 +340,7 @@ void Z3DPunctaFilter::prepareData()
     }
   }
 
-  m_sphereRenderer->setData(&m_pointAndRadius, &m_specularAndShininess);
+  m_sphereRenderer.setData(&m_pointAndRadius, &m_specularAndShininess);
   prepareColor();
   adjustWidgets();
   m_dataIsInvalid = false;
@@ -362,8 +370,8 @@ void Z3DPunctaFilter::updateNotTransformedBoundBoxImpl()
 {
   m_notTransformedBoundBox.reset();
   ZBBox<glm::dvec3> boundBox;
-  for (const auto& p : *m_origPuncta) {
-    notTransformedPunctumBound(p, boundBox);
+  for (const auto& p : m_origPunctaList) {
+    notTransformedPunctumBound(*p, boundBox);
     m_notTransformedBoundBox.expand(boundBox);
   }
 }
@@ -373,7 +381,7 @@ void Z3DPunctaFilter::addSelectionLines()
   ZBBox<glm::dvec3> boundBox;
   for (const auto& p : m_punctaList) {
     if (p->isVisible() && p->isSelected()) {
-      punctumBound(p, boundBox);
+      punctumBound(*p, boundBox);
       appendBoundboxLines(boundBox, m_selectionLines);
     }
   }
@@ -419,7 +427,7 @@ void Z3DPunctaFilter::prepareColor()
     }
   }
 
-  m_sphereRenderer->setDataColors(&m_pointColors);
+  m_sphereRenderer.setDataColors(&m_pointColors);
 }
 
 void Z3DPunctaFilter::adjustWidgets()
@@ -434,7 +442,7 @@ void Z3DPunctaFilter::adjustWidgets()
   }
 }
 
-void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int h)
+void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int)
 {
   if (m_punctaList.empty())
     return;
@@ -480,11 +488,11 @@ void Z3DPunctaFilter::updateData()
   double maxMeanInten = std::numeric_limits<double>::lowest();
   double minMaxInten = std::numeric_limits<double>::max();
   double maxMaxInten = std::numeric_limits<double>::lowest();
-  for (const auto& p : *m_origPuncta) {
-    minMeanInten = std::min(minMeanInten, p.meanIntensity());
-    maxMeanInten = std::max(maxMeanInten, p.meanIntensity());
-    minMaxInten = std::min(minMaxInten, p.maxIntensity());
-    maxMaxInten = std::max(maxMaxInten, p.maxIntensity());
+  for (const auto& p : m_origPunctaList) {
+    minMeanInten = std::min(minMeanInten, p->meanIntensity());
+    maxMeanInten = std::max(maxMeanInten, p->meanIntensity());
+    minMaxInten = std::min(minMaxInten, p->maxIntensity());
+    maxMaxInten = std::max(maxMaxInten, p->maxIntensity());
   }
   //todo: set correct range for colormap
 
@@ -519,6 +527,6 @@ void Z3DPunctaFilter::changePunctaSize()
     else
       m_pointAndRadius.at(i).w = m_punctaList[i]->radius();
   }
-  m_sphereRenderer->setData(&m_pointAndRadius, &m_specularAndShininess);
+  m_sphereRenderer.setData(&m_pointAndRadius, &m_specularAndShininess);
   updateBoundBox();
 }

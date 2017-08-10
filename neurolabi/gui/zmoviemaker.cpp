@@ -25,7 +25,6 @@
 #include "zcubearray.h"
 #include "flyem/zflyemmisc.h"
 #include "dvid/zdvidinfo.h"
-#include "z3daxisfilter.h"
 
 using namespace std;
 

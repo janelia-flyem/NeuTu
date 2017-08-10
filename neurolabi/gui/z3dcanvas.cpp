@@ -65,6 +65,11 @@ void Z3DCanvas::toggleFullScreen()
   }
 }
 
+void Z3DCanvas::updateAll()
+{
+  m_glWidget->update();
+}
+
 void Z3DCanvas::enterEvent(QEvent* e)
 {
   broadcastEvent(e, width(), height());

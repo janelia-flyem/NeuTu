@@ -93,14 +93,25 @@ void ZClickableColorLabel::paintEvent(QPaintEvent* e)
     return;
   }
 
+  QColor labelColor = toQColor();
   QPainter painter(this);
-  painter.setBrush(toQColor());
+  painter.setBrush(labelColor);
   painter.drawRect(1, 1, rect().width() - 2, rect().height() - 2);
+  if (m_vec4Color) {
+    double gray = .299*labelColor.redF() + .587*labelColor.greenF() +
+        .114*labelColor.blueF();
+    if (gray > 0.5) {
+      painter.setPen(QColor(0, 0, 0));
+    } else {
+      painter.setPen(QColor(255, 255, 255));
+    }
+    painter.drawText(rect(), Qt::AlignCenter, m_vec4Color->name());
+  }
 }
 
 QSize ZClickableColorLabel::minimumSizeHint() const
 {
-  return QSize(50, 33);
+  return QSize(m_width, m_height);
 }
 
 bool ZClickableColorLabel::getTip(const QPoint& p, QRect* r, QString* s)
@@ -119,9 +130,11 @@ bool ZClickableColorLabel::getTip(const QPoint& p, QRect* r, QString* s)
 
 void ZClickableColorLabel::labelClicked()
 {
-  QColor newColor = QColorDialog::getColor(toQColor());
-  if (newColor.isValid()) {
-    fromQColor(newColor);
+  if (m_isClickable) {
+    QColor newColor = QColorDialog::getColor(toQColor());
+    if (newColor.isValid()) {
+      fromQColor(newColor);
+    }
   }
 }
 

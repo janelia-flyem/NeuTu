@@ -4,10 +4,9 @@
 #include "zexception.h"
 #include "QsLog.h"
 #include "z3dshader.h"
+#include "zutils.h"
 #include <QTextStream>
 #include <QFile>
-
-namespace nim {
 
 Z3DShaderManager& Z3DShaderManager::instance()
 {

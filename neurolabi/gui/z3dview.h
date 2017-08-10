@@ -22,6 +22,7 @@ class Z3DMeshFilter;
 class Z3DGraphFilter;
 class Z3DSurfaceFilter;
 class ZFlyEmTodoListFilter;
+class Z3DBoundedFilter;
 
 class Z3DView : public QObject
 {
@@ -100,15 +101,15 @@ public:
 
   QWidget* axisWidget();
 
+  std::shared_ptr<ZWidgetsGroup> globalParasWidgetsGroup();
+
+  std::shared_ptr<ZWidgetsGroup> captureWidgetsGroup();
+
+  std::shared_ptr<ZWidgetsGroup> backgroundWidgetsGroup();
+
+  std::shared_ptr<ZWidgetsGroup> axisWidgetsGroup();
+
   void updateBoundBox();
-
-  void read(size_t id, const QJsonObject& json);
-
-  void write(size_t id, QJsonObject& json) const;
-
-  void read(const QJsonObject& json);
-
-  void write(QJsonObject& json) const;
 
   bool takeFixedSizeScreenShot(const QString& filename, int width, int height, Z3DScreenShotType sst);
 
@@ -185,9 +186,10 @@ private:
 //  std::unique_ptr<Z3DGraphFilter> m_decorationFilter;
 
   ZBBox<glm::dvec3> m_boundBox;
-  size_t m_numObjsBefore;
+  std::vector<Z3DBoundedFilter*> m_allFilters;
 
   bool m_lock;
+  InitMode m_initMode;
 };
 
 #endif // Z3DVIEW_H

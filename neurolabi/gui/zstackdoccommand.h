@@ -10,6 +10,7 @@
 #include "zswcpath.h"
 #include "zdocplayer.h"
 #include "zstackobjectrole.h"
+#include "zglmutils.h"
 
 class ZSwcTree;
 class ZLocsegChain;
@@ -668,18 +669,14 @@ class MoveSelected : public ZUndoCommand
   double m_z;
   bool m_swcMoved;
   bool m_punctaMoved;
-  double m_swcScaleX;
-  double m_swcScaleY;
-  double m_swcScaleZ;
-  double m_punctaScaleX;
-  double m_punctaScaleY;
-  double m_punctaScaleZ;
+  glm::mat3 m_swcTransform;
+  glm::mat3 m_punctaTransform;
 public:
   MoveSelected(ZStackDoc *doc, double x, double y,
                double z, QUndoCommand *parent = NULL);
   virtual ~MoveSelected();
-  void setSwcCoordScale(double x, double y, double z);
-  void setPunctaCoordScale(double x, double y, double z);
+  void setSwcTransform(const glm::mat4& mat) { m_swcTransform = glm::mat3(mat); }
+  void setPunctaTransform(const glm::mat4& mat) { m_punctaTransform = glm::mat3(mat); }
   virtual int id() const { return 1; }
   virtual bool mergeWith(const QUndoCommand *other);
   void undo();

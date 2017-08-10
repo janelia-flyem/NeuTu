@@ -11,213 +11,86 @@
 #include "zeventlistenerparameter.h"
 #include "neutubeconfig.h"
 
-ZFlyEmTodoListFilter::ZFlyEmTodoListFilter() :
-  m_xCut("X Cut", glm::ivec2(0,0), 0, 0),
-  m_yCut("Y Cut", glm::ivec2(0,0), 0, 0),
-  m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
+ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QObject* parent)
+  : Z3DGeometryFilter(globalParas, parent)
+  , m_selectItemEvent("Select Todo Item", false)
+  , m_lineRenderer(m_rendererBase)
+  , m_sphereRenderer(m_rendererBase)
 {
-  init();
-}
-
-void ZFlyEmTodoListFilter::init()
-{
-  m_lineRenderer = NULL;
-  m_sphereRenderer = NULL;
-  m_dataIsInvalid = false;
-  m_pressedItem = NULL;
-
-  m_widgetsGroup = NULL;
-
-//  addParameter(m_showGraph);
-
-  connect(&m_visible, SIGNAL(valueChanged(bool)),
-          this, SIGNAL(visibleChanged(bool)));
-
-  m_selectItemEvent = new ZEventListenerParameter(
-        "Select Todo Item", true, false, this);
-  m_selectItemEvent->listenTo(
-        "select todo item", Qt::LeftButton, Qt::NoModifier,
-        QEvent::MouseButtonPress);
-  m_selectItemEvent->listenTo(
-        "select todo item", Qt::LeftButton, Qt::NoModifier,
-        QEvent::MouseButtonRelease);
-  m_selectItemEvent->listenTo(
-        "select todo item", Qt::LeftButton, Qt::ControlModifier,
-        QEvent::MouseButtonPress);
-  m_selectItemEvent->listenTo(
-        "select todo item", Qt::LeftButton, Qt::ControlModifier,
-        QEvent::MouseButtonRelease);
-  connect(m_selectItemEvent, SIGNAL(mouseEventTriggered(QMouseEvent*,int,int)),
-          this, SLOT(selectObject(QMouseEvent*,int,int)));
+  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
+  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
+  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
+                                Qt::ControlModifier, QEvent::MouseButtonPress);
+  m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
+                                Qt::ControlModifier, QEvent::MouseButtonRelease);
+  connect(&m_selectItemEvent, &ZEventListenerParameter::mouseEventTriggered, this, &ZFlyEmTodoListFilter::selectObject);
   addEventListener(m_selectItemEvent);
 
-  setStayOnTop(false);
-}
-
-ZFlyEmTodoListFilter::~ZFlyEmTodoListFilter()
-{
-
-}
-
-void ZFlyEmTodoListFilter::initialize()
-{
-  Z3DGeometryFilter::initialize();
-
-  m_rendererBase->setMaterialAmbient(glm::vec4(.3, .3, .3, 1));
-
-  m_lineRenderer = new Z3DLineRenderer;
-  m_rendererBase->addRenderer(m_lineRenderer);
-  m_sphereRenderer = new Z3DSphereRenderer;
-  m_rendererBase->addRenderer(m_sphereRenderer);
-  m_boundBoxRenderer = new Z3DLineWithFixedWidthColorRenderer();
-  m_boundBoxRenderer->setUseDisplayList(false);
-  m_boundBoxRenderer->setRespectRendererBaseCoordScales(false);
-  m_boundBoxRenderer->setLineColorGuiName("Selection BoundBox Line Color");
-  m_boundBoxRenderer->setLineWidthGuiName("Selection BoundBox Line Width");
-  m_rendererBase->addRenderer(m_boundBoxRenderer);
-
-  std::vector<ZParameter*> paras = m_rendererBase->getParameters();
-  for (size_t i = 0; i < paras.size(); ++i) {
-    addParameter(paras[i]);
-  }
-}
-
-void ZFlyEmTodoListFilter::deinitialize()
-{
-  std::vector<ZParameter*> paras = m_rendererBase->getParameters();
-  for (size_t i=0; i<paras.size(); i++) {
-    removeParameter(paras[i]);
-  }
-  Z3DGeometryFilter::deinitialize();
-}
-
-/*
-void ZFlyEmTodoListFilter::setVisible(bool v)
-{
-  m_showGraph.set(v);
-}
-
-bool ZFlyEmTodoListFilter::isVisible() const
-{
-  return m_showGraph.get();
-}
-*/
-
-void ZFlyEmTodoListFilter::render(Z3DEye eye)
-{
-  if (m_graph.isEmpty()) {
-    return;
-  }
-
-  if (!isVisible())
-    return;
-
-  m_rendererBase->activateRenderer(m_sphereRenderer);
-  m_rendererBase->activateRenderer(m_lineRenderer, Z3DRendererBase::None);
-  m_rendererBase->render(eye);
-  renderSelectionBox(eye);
+  m_rendererBase.setMaterialAmbient(glm::vec4(.3, .3, .3, 1));
 }
 
 void ZFlyEmTodoListFilter::renderPicking(Z3DEye eye)
 {
-  if (!getPickingManager())
-      return;
-  if (m_graph.isEmpty())
-    return;
-  if (!isVisible())
-    return;
-
   if (!m_pickingObjectsRegistered) {
-    registerPickingObjects(getPickingManager());
+    registerPickingObjects();
   }
-  m_rendererBase->activateRenderer(m_sphereRenderer);
-  m_rendererBase->renderPicking(eye);
+  m_rendererBase.renderPicking(eye, m_sphereRenderer);
 }
 
-void ZFlyEmTodoListFilter::registerPickingObjects(Z3DPickingManager *pm)
+void ZFlyEmTodoListFilter::registerPickingObjects()
 {
   ZOUT(LTRACE(), 5) << "start";
-  if (pm && !m_pickingObjectsRegistered) {
+  if (!m_pickingObjectsRegistered) {
     for (size_t i=0; i<m_itemList.size(); i++) {
-      pm->registerObject(m_itemList[i]);
+      pickingManager().registerObject(m_itemList[i]);
     }
     m_registeredItemList = m_itemList;
     m_pointPickingColors.clear();
     for (size_t i=0; i<m_itemList.size(); i++) {
-      glm::col4 pickingColor = pm->getColorFromObject(m_itemList[i]);
+      glm::col4 pickingColor = pickingManager().colorOfObject(m_itemList[i]);
       glm::vec4 fPickingColor(
             pickingColor[0]/255.f, pickingColor[1]/255.f, pickingColor[2]/255.f,
           pickingColor[3]/255.f);
       m_pointPickingColors.push_back(fPickingColor);
     }
-    m_sphereRenderer->setDataPickingColors(&m_pointPickingColors);
+    m_sphereRenderer.setDataPickingColors(&m_pointPickingColors);
   }
 
   m_pickingObjectsRegistered = true;
   ZOUT(LTRACE(), 5) << "end";
 }
 
-void ZFlyEmTodoListFilter::renderSelectionBox(Z3DEye eye)
+void ZFlyEmTodoListFilter::updateNotTransformedBoundBoxImpl()
 {
-  if (m_itemList.size() > 0) {
-    std::vector<glm::vec3> lines;
-
-    for (std::vector<ZFlyEmToDoItem*>::iterator it=m_itemList.begin();
-         it != m_itemList.end(); it++) {
-      ZFlyEmToDoItem *selected = *it;
-      if (selected->isVisible() && selected->isSelected()) {
-        ZCuboid bound = selected->getBoundBox();
-//        std::vector<double> bound = getPunctumBound(selectedPunctum);
-        float xmin = bound.firstCorner().getX();
-        float xmax = bound.lastCorner().getX();
-        float ymin = bound.firstCorner().getY();
-        float ymax = bound.lastCorner().getY();
-        float zmin = bound.firstCorner().getZ();
-        float zmax = bound.lastCorner().getZ();
-        lines.push_back(glm::vec3(xmin, ymin, zmin));
-        lines.push_back(glm::vec3(xmin, ymin, zmax));
-        lines.push_back(glm::vec3(xmin, ymax, zmin));
-        lines.push_back(glm::vec3(xmin, ymax, zmax));
-
-        lines.push_back(glm::vec3(xmax, ymin, zmin));
-        lines.push_back(glm::vec3(xmax, ymin, zmax));
-        lines.push_back(glm::vec3(xmax, ymax, zmin));
-        lines.push_back(glm::vec3(xmax, ymax, zmax));
-
-        lines.push_back(glm::vec3(xmin, ymin, zmin));
-        lines.push_back(glm::vec3(xmax, ymin, zmin));
-        lines.push_back(glm::vec3(xmin, ymax, zmin));
-        lines.push_back(glm::vec3(xmax, ymax, zmin));
-
-        lines.push_back(glm::vec3(xmin, ymin, zmax));
-        lines.push_back(glm::vec3(xmax, ymin, zmax));
-        lines.push_back(glm::vec3(xmin, ymax, zmax));
-        lines.push_back(glm::vec3(xmax, ymax, zmax));
-
-        lines.push_back(glm::vec3(xmin, ymin, zmin));
-        lines.push_back(glm::vec3(xmin, ymax, zmin));
-        lines.push_back(glm::vec3(xmax, ymin, zmin));
-        lines.push_back(glm::vec3(xmax, ymax, zmin));
-
-        lines.push_back(glm::vec3(xmin, ymin, zmax));
-        lines.push_back(glm::vec3(xmin, ymax, zmax));
-        lines.push_back(glm::vec3(xmax, ymin, zmax));
-        lines.push_back(glm::vec3(xmax, ymax, zmax));
-      }
-    }
-    m_rendererBase->activateRenderer(m_boundBoxRenderer);
-    m_boundBoxRenderer->setData(&lines);
-    m_rendererBase->render(eye);
-    m_boundBoxRenderer->setData(NULL); // lines will go out of scope
+  m_notTransformedBoundBox.reset();
+  for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
+    ZPoint pos = m_graph.getNode(i).center();
+    glm::dvec3 p(pos.x(), pos.y(), pos.z());
+    double d = m_graph.getNode(i).radius() * 2.0;
+    m_notTransformedBoundBox.expand(p - d);
+    m_notTransformedBoundBox.expand(p + d);
   }
 }
 
-void ZFlyEmTodoListFilter::deregisterPickingObjects(Z3DPickingManager *pm)
+void ZFlyEmTodoListFilter::addSelectionLines()
+{
+  ZBBox<glm::dvec3> bb;
+  for (auto item : m_itemList) {
+    if (item->isVisible() && item->isSelected()) {
+      ZCuboid bound = item->getBoundBox();
+      bb.setMinCorner(glm::dvec3(bound.firstCorner().x(), bound.firstCorner().y(), bound.firstCorner().z()));
+      bb.setMaxCorner(glm::dvec3(bound.lastCorner().x(), bound.lastCorner().y(), bound.lastCorner().z()));
+      appendBoundboxLines(bb, m_selectionLines);
+    }
+  }
+}
+
+void ZFlyEmTodoListFilter::deregisterPickingObjects()
 {
   ZOUT(LTRACE(), 5) << "start";
-  if (pm && m_pickingObjectsRegistered) {
+  if (m_pickingObjectsRegistered) {
     for (size_t i=0; i<m_registeredItemList.size(); i++) {
-      pm->deregisterObject(m_registeredItemList[i]);
+      pickingManager().deregisterObject(m_registeredItemList[i]);
     }
     m_registeredItemList.clear();
   }
@@ -235,8 +108,8 @@ void ZFlyEmTodoListFilter::process(Z3DEye)
 
 void ZFlyEmTodoListFilter::updateGraph()
 {
+  deregisterPickingObjects();
   m_graph.clear();
-  deregisterPickingObjects(getPickingManager());
   m_selected.clear();
 
   for (std::vector<ZFlyEmToDoItem*>::const_iterator iter = m_itemList.begin();
@@ -333,7 +206,7 @@ void ZFlyEmTodoListFilter::resetData()
 {
   m_graph.clear();
   m_itemList.clear();
-  deregisterPickingObjects(getPickingManager());
+  deregisterPickingObjects();
   m_selected.clear();
 }
 
@@ -361,6 +234,36 @@ void ZFlyEmTodoListFilter::setData(const QList<ZFlyEmToDoItem *> &todoList)
   invalidateResult();
 }
 
+std::shared_ptr<ZWidgetsGroup> ZFlyEmTodoListFilter::widgetsGroup()
+{
+  if (!m_widgetsGroup) {
+    m_widgetsGroup = std::make_shared<ZWidgetsGroup>("To Do", 1);
+    m_widgetsGroup->addChild(m_visible, 1);
+    m_widgetsGroup->addChild(m_stayOnTop, 1);
+
+    const std::vector<ZParameter*>& paras = m_rendererBase.parameters();
+    for (auto para : paras) {
+      if (para->name() == "Coord Transform")
+        m_widgetsGroup->addChild(*para, 2);
+      else if (para->name() == "Size Scale")
+        m_widgetsGroup->addChild(*para, 3);
+      else if (para->name() == "Rendering Method")
+        m_widgetsGroup->addChild(*para, 4);
+      else if (para->name() == "Opacity")
+        m_widgetsGroup->addChild(*para, 5);
+      else
+        m_widgetsGroup->addChild(*para, 7);
+    }
+
+    m_widgetsGroup->addChild(m_xCut, 5);
+    m_widgetsGroup->addChild(m_yCut, 5);
+    m_widgetsGroup->addChild(m_zCut, 5);
+
+    m_widgetsGroup->setBasicAdvancedCutoff(5);
+  }
+  return m_widgetsGroup;
+}
+
 void ZFlyEmTodoListFilter::setData(const ZFlyEmToDoList &todoList)
 {
   resetData();
@@ -384,12 +287,6 @@ void ZFlyEmTodoListFilter::prepareData()
 
   m_pointAndRadius.clear();
   m_lines.clear();
-  int xMin = std::numeric_limits<int>::max();
-  int xMax = std::numeric_limits<int>::min();
-  int yMin = std::numeric_limits<int>::max();
-  int yMax = std::numeric_limits<int>::min();
-  int zMin = std::numeric_limits<int>::max();
-  int zMax = std::numeric_limits<int>::min();
 
   std::vector<float> edgeWidth;
 
@@ -407,18 +304,6 @@ void ZFlyEmTodoListFilter::prepareData()
 
     if (node.radius() > 0.0) {
       ZPoint nodePos = node.center();
-      if (nodePos.x() > xMax)
-        xMax = static_cast<int>(std::ceil(nodePos.x()));
-      if (nodePos.x() < xMin)
-        xMin = static_cast<int>(std::floor(nodePos.x()));
-      if (nodePos.y() > yMax)
-        yMax = static_cast<int>(std::ceil(nodePos.y()));
-      if (nodePos.y() < yMin)
-        yMin = static_cast<int>(std::floor(nodePos.y()));
-      if (nodePos.z() > zMax)
-        zMax = static_cast<int>(nodePos.z());
-      if (nodePos.z() < zMin)
-        zMin = static_cast<int>(nodePos.z());
 
       m_pointAndRadius.push_back(
             glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
@@ -426,17 +311,13 @@ void ZFlyEmTodoListFilter::prepareData()
     }
   }
 
-  m_xCut.setRange(xMin, xMax);
-  m_xCut.set(glm::ivec2(xMin, xMax));
-  m_yCut.setRange(yMin, yMax);
-  m_yCut.set(glm::ivec2(yMin, yMax));
-  m_zCut.setRange(zMin, zMax);
-  m_zCut.set(glm::ivec2(zMin, zMax));
+  initializeCutRange();
+  initializeRotationCenter();
 
-  m_lineRenderer->setData(&m_lines);
-  m_lineRenderer->setLineWidth(3.0);
-  m_lineRenderer->setLineWidth(edgeWidth);
-  m_sphereRenderer->setData(&m_pointAndRadius);
+  m_lineRenderer.setData(&m_lines);
+  m_lineRenderer.setLineWidth(3.0);
+  m_lineRenderer.setLineWidth(edgeWidth);
+  m_sphereRenderer.setData(&m_pointAndRadius);
 
   prepareColor();
 
@@ -498,65 +379,24 @@ void ZFlyEmTodoListFilter::prepareColor()
     m_lineColors.push_back(endColor);
   }
 
-  m_lineRenderer->setDataColors(&m_lineColors);
-  m_sphereRenderer->setDataColors(&m_pointColors);
+  m_lineRenderer.setDataColors(&m_lineColors);
+  m_sphereRenderer.setDataColors(&m_pointColors);
 }
 
-std::vector<double> ZFlyEmTodoListFilter::boundBox()
-{
-  std::vector<double> result(6, 0);
-
-  for (size_t i = 0; i < 3; i++) {
-    result[i * 2] = std::numeric_limits<double>::max();
-    result[i * 2 + 1] = -std::numeric_limits<double>::max();
-  }
-
-  for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
-    ZPoint pos = m_graph.getNode(i).center();
-    result[0] = std::min(result[0], pos.x() - m_graph.getNode(i).radius() * 2.0);
-    result[1] = std::max(result[1], pos.x() + m_graph.getNode(i).radius() * 2.0);
-    result[2] = std::min(result[2], pos.y() - m_graph.getNode(i).radius() * 2.0);
-    result[3] = std::max(result[3], pos.y() + m_graph.getNode(i).radius() * 2.0);
-    result[4] = std::min(result[4], pos.z() - m_graph.getNode(i).radius() * 2.0);
-    result[5] = std::max(result[5], pos.z() + m_graph.getNode(i).radius() * 2.0);
-  }
-
-  return result;
-}
-
-ZWidgetsGroup *ZFlyEmTodoListFilter::getWidgetsGroup()
-{
-  if (!m_widgetsGroup) {
-    m_widgetsGroup = new ZWidgetsGroup("To Do", NULL, 1);
-    new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
-
-    new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
-    std::vector<ZParameter*> paras = m_rendererBase->getParameters();
-    for (size_t i=0; i<paras.size(); i++) {
-      ZParameter *para = paras[i];
-      if (para->getName() == "Z Scale")
-        new ZWidgetsGroup(para, m_widgetsGroup, 2);
-      else if (para->getName() == "Size Scale")
-        new ZWidgetsGroup(para, m_widgetsGroup, 3);
-      else if (para->getName() == "Rendering Method")
-        new ZWidgetsGroup(para, m_widgetsGroup, 4);
-      else if (para->getName() == "Opacity")
-        new ZWidgetsGroup(para, m_widgetsGroup, 5);
-      else
-        new ZWidgetsGroup(para, m_widgetsGroup, 7);
-    }
-    new ZWidgetsGroup(&m_xCut, m_widgetsGroup, 5);
-    new ZWidgetsGroup(&m_yCut, m_widgetsGroup, 5);
-    new ZWidgetsGroup(&m_zCut, m_widgetsGroup, 5);
-    m_widgetsGroup->setBasicAdvancedCutoff(5);
-  }
-  return m_widgetsGroup;
-}
 
 bool ZFlyEmTodoListFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && isVisible() &&
-      !m_graph.isEmpty();
+  return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_graph.isEmpty();
+}
+
+void ZFlyEmTodoListFilter::renderOpaque(Z3DEye eye)
+{
+  m_rendererBase.render(eye, m_lineRenderer, m_sphereRenderer);
+}
+
+void ZFlyEmTodoListFilter::renderTransparent(Z3DEye eye)
+{
+  m_rendererBase.render(eye, m_lineRenderer, m_sphereRenderer);
 }
 
 void ZFlyEmTodoListFilter::updateGraphVisibleState()
@@ -570,8 +410,6 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int h)
 {
   if (m_itemList.empty())
     return;
-  if (!getPickingManager())
-    return;
 
   e->ignore();
   // Mouse button pressend
@@ -579,7 +417,7 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int h)
   if (e->type() == QEvent::MouseButtonPress) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
-    const void* obj = getPickingManager()->getObjectAtPos(
+    const void* obj = pickingManager().objectAtWidgetPos(
           glm::ivec2(e->x(), h - e->y()));
     if (obj == NULL) {
       return;

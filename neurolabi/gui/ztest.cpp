@@ -256,7 +256,6 @@
 #include "flyem/zflyembodymerger.h"
 #include "test/zflyembodymergertest.h"
 #include "test/zstackobjectgrouptest.h"
-#include "z3daxisfilter.h"
 #include "tz_int_histogram.h"
 #include "zsegmentationproject.h"
 #include "zstackviewmanager.h"

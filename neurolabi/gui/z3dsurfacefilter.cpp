@@ -1,9 +1,16 @@
-//#include "z3dsurfacefilter.h"
-//#include "neutubeconfig.h"
+#include "z3dsurfacefilter.h"
+#include "neutubeconfig.h"
 
-//using namespace std;
+using namespace std;
 
-////
+
+Z3DSurfaceFilter::Z3DSurfaceFilter(Z3DGlobalParameters& globalParas, QObject* parent)
+  : Z3DGeometryFilter(globalParas, parent)
+{
+
+}
+
+//
 //Z3DSurfaceFilter::Z3DSurfaceFilter() :
 //    Z3DGeometryFilter(),
 ////    m_showCube("Visible", true),
@@ -37,11 +44,6 @@
 //    connect(m_rendererBase, SIGNAL(opacityChanged(double)), this, SLOT(indicateOpacityChanged(double)));
 //}
 
-//Z3DSurfaceFilter::~Z3DSurfaceFilter()
-//{
-//    clearData();
-//}
-
 //void Z3DSurfaceFilter::initialize()
 //{
 //    Z3DGeometryFilter::initialize();
@@ -65,8 +67,8 @@
 //    m_initialized = true;
 //}
 
-//void Z3DSurfaceFilter::initRenderers(size_t n)
-//{
+void Z3DSurfaceFilter::initRenderers(size_t n)
+{
 //    m_nSources = n;
 
 //    //
@@ -89,29 +91,7 @@
 
 //    //
 //    m_initialized = true;
-//}
-
-//void Z3DSurfaceFilter::deinitialize()
-//{
-//    std::vector<ZParameter*> paras = m_rendererBase->getParameters();
-//    for (size_t i=0; i<paras.size(); i++) {
-//        removeParameter(paras[i]);
-//    }
-//    Z3DGeometryFilter::deinitialize();
-//    m_initialized = false;
-//}
-
-///*
-//void Z3DSurfaceFilter::setVisible(bool v)
-//{
-//    m_showCube.set(v);
-//}
-
-//bool Z3DSurfaceFilter::isVisible() const
-//{
-//    return m_showCube.get();
-//}
-//*/
+}
 
 //void Z3DSurfaceFilter::render(Z3DEye eye)
 //{
@@ -151,15 +131,15 @@
 //    m_rendererBase->render(eye);
 //}
 
-//void Z3DSurfaceFilter::process(Z3DEye)
-//{
-//    if (m_dataIsInvalid) {
-//        prepareData();
-//    }
-//}
+void Z3DSurfaceFilter::process(Z3DEye)
+{
+    if (m_dataIsInvalid) {
+        prepareData();
+    }
+}
 
-//void Z3DSurfaceFilter::invalidateRenderer(const string &source)
-//{
+void Z3DSurfaceFilter::invalidateRenderer(const string &source)
+{
 //  for(size_t i=0; i<m_cubeArrayList.size(); ++i) {
 //    if (m_cubeArrayList[i].getSource() == source) {
 //      m_cubeRenderers[i]->clearData();
@@ -170,10 +150,10 @@
 //      m_cubeArrayList[i].clear();
 //    }
 //  }
-//}
+}
 
-//void Z3DSurfaceFilter::prepareData()
-//{
+void Z3DSurfaceFilter::prepareData()
+{
 //    if (!m_dataIsInvalid)
 //        return;
 
@@ -222,7 +202,7 @@
 //    {
 //        // test code here
 //    }
-//}
+}
 
 //void Z3DSurfaceFilter::addData(const Z3DCube &cube)
 //{
@@ -323,44 +303,64 @@
 //    return result;
 //}
 
-//ZWidgetsGroup *Z3DSurfaceFilter::getWidgetsGroup()
-//{
-//    if (!m_widgetsGroup) {
-//        m_widgetsGroup = new ZWidgetsGroup("Surface", NULL, 1);
-//        new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
+void Z3DSurfaceFilter::updateNotTransformedBoundBoxImpl()
+{
 
-//        new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
-//        std::vector<ZParameter*> paras = m_rendererBase->getParameters();
-//        for (size_t i=0; i<paras.size(); i++) {
-//            ZParameter *para = paras[i];
-//            if (para->getName() == "Z Scale")
-//                new ZWidgetsGroup(para, m_widgetsGroup, 2);
-//            else if (para->getName() == "Size Scale")
-//                new ZWidgetsGroup(para, m_widgetsGroup, 3);
-//            else if (para->getName() == "Rendering Method")
-//                new ZWidgetsGroup(para, m_widgetsGroup, 4);
-//            else if (para->getName() == "Opacity")
-//                new ZWidgetsGroup(para, m_widgetsGroup, 5);
-//            else
-//                new ZWidgetsGroup(para, m_widgetsGroup, 7);
-//        }
-//        m_widgetsGroup->setBasicAdvancedCutoff(5);
-//    }
-//    return m_widgetsGroup;
-//}
+}
 
-//bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
-//{
-//    return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_sourceList.empty();
-//}
+bool Z3DSurfaceFilter::isReady(Z3DEye eye) const
+{
+  //return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_sourceList.empty();
+  return false;
+}
 
-//void Z3DSurfaceFilter::updateSurfaceVisibleState()
-//{
-//    m_dataIsInvalid = true;
-//    invalidateResult();
-//}
+std::shared_ptr<ZWidgetsGroup> Z3DSurfaceFilter::widgetsGroup()
+{
+  if (!m_widgetsGroup) {
+    m_widgetsGroup = std::make_shared<ZWidgetsGroup>("Surface", 1);
+    m_widgetsGroup->addChild(m_visible, 1);
+    m_widgetsGroup->addChild(m_stayOnTop, 1);
 
-//void Z3DSurfaceFilter::indicateOpacityChanged(double v)
-//{
-//    emit opacityValueChanged(v);
-//}
+    const std::vector<ZParameter*>& paras = m_rendererBase.parameters();
+    for (auto para : paras) {
+      if (para->name() == "Coord Transform")
+        m_widgetsGroup->addChild(*para, 2);
+      else if (para->name() == "Size Scale")
+        m_widgetsGroup->addChild(*para, 3);
+      else if (para->name() == "Rendering Method")
+        m_widgetsGroup->addChild(*para, 4);
+      else if (para->name() == "Opacity")
+        m_widgetsGroup->addChild(*para, 5);
+      else
+        m_widgetsGroup->addChild(*para, 7);
+    }
+
+    m_widgetsGroup->addChild(m_xCut, 5);
+    m_widgetsGroup->addChild(m_yCut, 5);
+    m_widgetsGroup->addChild(m_zCut, 5);
+
+    m_widgetsGroup->setBasicAdvancedCutoff(5);
+  }
+  return m_widgetsGroup;
+}
+
+void Z3DSurfaceFilter::renderOpaque(Z3DEye eye)
+{
+
+}
+
+void Z3DSurfaceFilter::renderTransparent(Z3DEye eye)
+{
+
+}
+
+void Z3DSurfaceFilter::updateSurfaceVisibleState()
+{
+    m_dataIsInvalid = true;
+    invalidateResult();
+}
+
+void Z3DSurfaceFilter::indicateOpacityChanged(double v)
+{
+    emit opacityValueChanged(v);
+}

@@ -58,9 +58,6 @@ public:
 
   virtual void renderTransparent(Z3DEye eye) override;
 
-  void resetCut();
-  void setCutBox(const ZIntCuboid &box);
-
   void enablePicking(bool picking) {
     m_enablePicking = picking;
   }
@@ -69,6 +66,16 @@ public:
   ZJsonObject getConfigJson() const override;
 
   void setColorMode(const std::string& mode);
+
+  //get bounding box of swc tree in world coordinate
+  void treeBound(ZSwcTree* tree, ZBBox<glm::dvec3>& res) const;
+
+  //get bounding box of swc tree node in world coordinate
+  void treeNodeBound(Swc_Tree_Node* tn, ZBBox<glm::dvec3>& result) const;
+
+  void addNodeType(int type);
+
+  void updateSwcVisibleState();
 
 signals:
   void treeSelected(ZSwcTree*, bool append);
@@ -96,12 +103,6 @@ protected:
 
   void prepareData();
 
-  //get bounding box of swc tree in world coordinate
-  void treeBound(ZSwcTree* tree, ZBBox<glm::dvec3>& res) const;
-
-  //get bounding box of swc tree node in world coordinate
-  void treeNodeBound(Swc_Tree_Node* tn, ZBBox<glm::dvec3>& result) const;
-
   void notTransformedTreeBound(ZSwcTree* tree, ZBBox<glm::dvec3>& result) const;
 
   //virtual void updateAxisAlignedBoundBoxImpl() override;
@@ -110,10 +111,6 @@ protected:
   virtual void addSelectionLines() override;
 
   void notTransformedTreeNodeBound(Swc_Tree_Node* tn, ZBBox<glm::dvec3>& result) const;
-
-  void addNodeType(int type);
-
-  void updateSwcVisibleState();
 
 private:
   void initTopologyColor();

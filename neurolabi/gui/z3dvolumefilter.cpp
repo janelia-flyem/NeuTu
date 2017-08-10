@@ -6,6 +6,9 @@
 #include "QsLog.h"
 #include "zbenchtimer.h"
 #include "zmeshutils.h"
+#include "zlabelcolortable.h"
+#include "zsparseobject.h"
+#include "zstackdochelper.h"
 #include <QApplication>
 #include <QMessageBox>
 
@@ -162,11 +165,6 @@ Z3DVolumeFilter::Z3DVolumeFilter(Z3DGlobalParameters& globalParas, QObject* pare
   m_numParas = m_parameters.size();
 }
 
-void Z3DVolumeFilter::setOffset(double x, double y, double z)
-{
-  m_rendererBase.translate(x, y, z);
-}
-
 void Z3DVolumeFilter::setData(const ZStackDoc* doc, size_t maxVoxelNumber)
 {
   if (maxVoxelNumber > 0) {
@@ -185,7 +183,7 @@ void Z3DVolumeFilter::setData(const ZStackDoc* doc, size_t maxVoxelNumber)
   }
   m_isVolumeDownsampled.set(false);
   std::vector<std::unique_ptr<Z3DVolume>> vols;
-  const ZStack* img = nullptr;
+  ZStack* img = nullptr;
   if (doc) {
     img = doc->getStack();
     if (doc->hasStackData()) {
@@ -210,7 +208,7 @@ void Z3DVolumeFilter::setData(const ZStackDoc* doc, size_t maxVoxelNumber)
 }
 
 void Z3DVolumeFilter::setData(std::vector<std::unique_ptr<Z3DVolume> >& vols,
-                              const ZStack* img)
+                              ZStack* img)
 {
   if (m_widgetsGroup) {
     for (auto it = m_volumeRaycasterRenderer.channelVisibleParas().begin();
@@ -325,14 +323,14 @@ void Z3DVolumeFilter::exitZoomInView()
 
 bool Z3DVolumeFilter::volumeNeedDownsample() const
 {
-  size_t maxTextureSize = 100;
-  if (m_imgPack->imgInfo().depth > 1)
+  int maxTextureSize = 100;
+  if (m_imgPack->depth() > 1)
     maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
   else
     maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
-  return m_imgPack->imgInfo().timeVoxelNumber() > m_maxVoxelNumber ||
-         m_imgPack->imgInfo().width > maxTextureSize || m_imgPack->imgInfo().height > maxTextureSize ||
-         m_imgPack->imgInfo().depth > maxTextureSize;
+  return m_imgPack->getVoxelNumber() * m_imgPack->channelNumber() > m_maxVoxelNumber ||
+         m_imgPack->width() > maxTextureSize || m_imgPack->height() > maxTextureSize ||
+         m_imgPack->depth() > maxTextureSize;
 }
 
 bool Z3DVolumeFilter::isVolumeDownsampled() const
@@ -376,7 +374,6 @@ std::shared_ptr<ZWidgetsGroup> Z3DVolumeFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_boundBoxLineColor, 13);
     m_widgetsGroup->addChild(m_selectionLineWidth, 17);
     m_widgetsGroup->addChild(m_selectionLineColor, 17);
-    m_widgetsGroup->addChild(m_manipulatorSize, 17);
     m_widgetsGroup->addChild(m_interactionDownsample, 19);
     m_widgetsGroup->addChild(m_rendererBase.coordTransformPara(), 1);
 
@@ -498,13 +495,14 @@ ZLineSegment Z3DVolumeFilter::getScreenRay(int x, int y, int width, int height)
   //ZStack *stack = m_stackInputPort.getFirstValidData();
   if ((m_outport.hasValidData() || m_rightEyeOutport.hasValidData())) {
     glm::ivec2 pos2D = glm::ivec2(x, height - y);
-    Z3DRenderOutputPort &port =
-        m_outport.hasValidData() ? m_outport : m_rightEyeOutport;
-    if (port.getSize() == port.getExpectedSize() / m_interactionDownsample.get()) {
-      pos2D /= m_interactionDownsample.get();
-      width /= m_interactionDownsample.get();
-      height /= m_interactionDownsample.get();
-    }
+    // ??
+//    Z3DRenderOutputPort &port =
+//        m_outport.hasValidData() ? m_outport : m_rightEyeOutport;
+//    if (port.size() == port.expectedSize() / m_interactionDownsample.get()) {
+//      pos2D /= m_interactionDownsample.get();
+//      width /= m_interactionDownsample.get();
+//      height /= m_interactionDownsample.get();
+//    }
     glm::vec3 fpos3D = get3DPosition(pos2D, 0.5, width, height);
     res = glm::applyMatrix(m_volumes[0]->worldToPhysicalMatrix(), fpos3D);
 #ifdef _DEBUG_
@@ -764,9 +762,9 @@ void Z3DVolumeFilter::renderSlices(Z3DEye eye)
   if (m_useFRVolumeSlice.get() && volume->isDownsampledVolume()) {
     std::vector<Z3DPrimitiveRenderer*> renderers;
 
-    const ZStack* zstack = m_imgPack;
+    ZStack* zstack = m_imgPack;
     const std::vector<ZVec3Parameter*>& chCols = zstack->channelColors();
-    size_t maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
+    int maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
 
     size_t sliceRendererIdx = 0;
     if (m_showZSlice.get()) {
@@ -1039,127 +1037,6 @@ void Z3DVolumeFilter::updateNotTransformedBoundBoxImpl()
   m_notTransformedBoundBox.setMaxCorner(glm::dvec3(m_volumes[0]->parentVolPhysicalRDB()));
 }
 
-void Z3DVolumeFilter::readVolumes()
-{
-  m_volumes.clear();
-  m_nChannels = m_imgPack->imgInfo().numChannels;
-
-#if 0
-  // shader limit is 20 channels
-  // limited by Max FS Texture Image Units
-  // see https://www.opengl.org/wiki/Shader#Resource_limitations
-  size_t maxPossibleChannels = std::min(20, (Z3DGpuInfoInstance.maxTextureImageUnits() - 4) / 2);
-#else
-  size_t maxPossibleChannels = Z3DGpuInfo::instance().maxArrayTextureLayers();
-#endif
-  if (m_nChannels > maxPossibleChannels) {
-    QMessageBox::warning(QApplication::activeWindow(), "Too many channels",
-                         QString("Due to hardware limit, only first %1 channels of this image will be shown").arg(
-                           maxPossibleChannels));
-    m_nChannels = maxPossibleChannels;
-  }
-
-  if (m_nChannels > m_layerColorTexture.depth()) {
-    m_layerColorTexture.setDimension(
-      glm::uvec3(m_layerColorTexture.width(), m_layerColorTexture.height(), m_nChannels));
-    m_layerColorTexture.uploadImage();
-    m_layerDepthTexture.setDimension(
-      glm::uvec3(m_layerDepthTexture.width(), m_layerDepthTexture.height(), m_nChannels));
-    m_layerDepthTexture.uploadImage();
-    m_layerTarget.attachTextureToFBO(&m_layerColorTexture, GL_COLOR_ATTACHMENT0, false);
-    m_layerTarget.attachTextureToFBO(&m_layerDepthTexture, GL_DEPTH_ATTACHMENT, false);
-    m_layerTarget.isFBOComplete();
-  }
-
-  bool scaleZ = m_imgPack->imgInfo().depth > std::pow(m_maxVoxelNumber, 1 / 3.0);
-  double scale = 1.0;
-  if (m_imgPack->imgInfo().timeVoxelNumber() > m_maxVoxelNumber) {
-    if (scaleZ)
-      scale = std::pow((m_maxVoxelNumber * 1.0) / m_imgPack->imgInfo().timeVoxelNumber(), 1 / 3.0);
-    else
-      scale = std::sqrt((m_maxVoxelNumber * 1.0) / m_imgPack->imgInfo().timeVoxelNumber());
-  }
-  int height = static_cast<int>(m_imgPack->imgInfo().height * scale);
-  int width = static_cast<int>(m_imgPack->imgInfo().width * scale);
-  int depth = scaleZ ? static_cast<int>(m_imgPack->imgInfo().depth * scale)
-                     : static_cast<int>(m_imgPack->imgInfo().depth);
-  double widthScale = 1.0;
-  double heightScale = 1.0;
-  double depthScale = 1.0;
-  int maxTextureSize = 100;
-  if (m_imgPack->imgInfo().depth > 1)
-    maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
-  else
-    maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
-
-  if (height > maxTextureSize) {
-    heightScale = static_cast<double>(maxTextureSize) / height;
-    height = std::floor(height * heightScale);
-  }
-  if (width > maxTextureSize) {
-    widthScale = static_cast<double>(maxTextureSize) / width;
-    width = std::floor(width * widthScale);
-  }
-  if (depth > maxTextureSize) {
-    depthScale = static_cast<double>(maxTextureSize) / depth;
-    depth = std::floor(depth * depthScale);
-  }
-
-  widthScale *= scale;
-  heightScale *= scale;
-  if (scaleZ)
-    depthScale *= scale;
-
-  if (widthScale != 1.0 || heightScale != 1.0 || depthScale != 1.0) {
-    m_isVolumeDownsampled.set(true);
-  }
-
-  ZImg img = m_imgPack->resizedImg(width, height, depth, 0);
-  img.computeMinMax(m_imgMinIntensity, m_imgMaxIntensity);
-  if (!img.isType<uint8_t>()) {
-    img = img.convertTo<uint8_t>(m_imgMinIntensity, m_imgMaxIntensity);
-  } else/* if (img.validBitCount() != 0 && img.validBitCount() < 8) */{
-    img.normalize(m_imgMinIntensity, m_imgMaxIntensity);
-  }
-  if (m_nChannels == 1) {
-    Z3DVolume* vh = new Z3DVolume(img,
-                                  glm::vec3(1.f / widthScale, 1.f / heightScale, 1.f / depthScale),
-                                  glm::vec3(.0),
-                                  m_rendererBase.coordTransform());
-
-    m_volumes.emplace_back(vh);
-  } else {
-    for (size_t i = 0; i < m_nChannels; ++i) {
-      ZImg cImg = img.crop(ZImgRegion(0, -1, 0, -1, 0, -1, i, i + 1));
-      Z3DVolume* vh = new Z3DVolume(cImg,
-                                    glm::vec3(1.f / widthScale, 1.f / heightScale, 1.f / depthScale),
-                                    glm::vec3(.0),
-                                    m_rendererBase.coordTransform());
-
-      m_volumes.emplace_back(vh);
-    } //for each cannel
-  }
-
-  for (size_t i = 0; i < m_nChannels; ++i) {
-    m_volumes[i]->setVolColor(glm::vec3(m_imgPack->imgInfo().channelColors[i].r / 255.,
-                                        m_imgPack->imgInfo().channelColors[i].g / 255.,
-                                        m_imgPack->imgInfo().channelColors[i].b / 255.));
-  }
-
-  m_sliceColormaps.clear();
-  for (size_t i = 0; i < m_volumes.size(); ++i) {
-    m_sliceColormaps.emplace_back(
-      std::make_unique<ZColorMapParameter>(QString("Slice Channel %1 Colormap").arg(i + 1)));
-    m_sliceColormaps[i]->get().create1DTexture(256);
-    m_sliceColormaps[i]->get().reset(0.0, 1.0, QColor(0, 0, 0),
-                                     QColor(m_imgPack->imgInfo().channelColors[i].r,
-                                            m_imgPack->imgInfo().channelColors[i].g,
-                                            m_imgPack->imgInfo().channelColors[i].b));
-  }
-
-  volumeChanged();
-}
-
 void Z3DVolumeFilter::readSubVolumes(int left, int right, int up, int down, int front, int back)
 {
   m_zoomInVolumes.clear();
@@ -1174,22 +1051,22 @@ void Z3DVolumeFilter::readSubVolumes(int left, int right, int up, int down, int 
             stack, left, up, front, right-left+1, down-up+1, back-front+1, NULL);
       if (subStack->kind == GREY) {
         Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, offset,
-                                      m_volumes[0]->getPhysicalToWorldMatrix());
+                                      m_volumes[0]->physicalToWorldMatrix());
         vh->setParentVolumeDimensions(glm::uvec3(stack->width, stack->height, stack->depth));
-        vh->setParentVolumeOffset(m_volumes[0]->getOffset());
+        vh->setParentVolumeOffset(m_volumes[0]->offset());
         m_zoomInVolumes.emplace_back(vh);
       } else {
         C_Stack::translate(subStack, GREY, 1);
         Z3DVolume *vh = new Z3DVolume(subStack, downsampleSpacing, offset,
-                                      m_volumes[0]->getPhysicalToWorldMatrix());
+                                      m_volumes[0]->physicalToWorldMatrix());
         vh->setParentVolumeDimensions(glm::uvec3(stack->width, stack->height, stack->depth));
-        vh->setParentVolumeOffset(m_volumes[0]->getOffset());
+        vh->setParentVolumeOffset(m_volumes[0]->offset());
         m_zoomInVolumes.emplace_back(vh);
       }
     }
 
     std::vector<ZVec3Parameter*>& chCols = m_imgPack->channelColors();
-    for (int i=0; i<nchannel; i++) {
+    for (size_t i=0; i<nchannel; i++) {
       m_zoomInVolumes[i]->setVolColor(chCols[i]->get());
     }
 
@@ -1238,7 +1115,7 @@ glm::vec3 Z3DVolumeFilter::getMaxInten3DPositionUnderScreenPoint(int x, int y, i
     glm::vec3 fpos3D = get3DPosition(pos2D, width, height, port);
     res = glm::round(glm::applyMatrix(getVolumes()[0]->worldToPhysicalMatrix(), fpos3D));
     Cuboid_I box;
-    stack->getBoundBox(&box);
+    m_imgPack->getBoundBox(&box);
     if (Cuboid_I_Hit(&box, res.x, res.y, res.z)) {
       success = true;
     }
@@ -1519,7 +1396,7 @@ void Z3DVolumeFilter::readVolumes(const ZStackDoc* doc, std::vector<std::unique_
 {
   int nchannel = doc->hasStackData() ? doc->getStack()->channelNumber() : 0;
 
-  size_t maxPossibleChannels = Z3DGpuInfo::instance().maxArrayTextureLayers();
+  int maxPossibleChannels = Z3DGpuInfo::instance().maxArrayTextureLayers();
   if (nchannel > maxPossibleChannels) {
     QMessageBox::warning(QApplication::activeWindow(), "Too many channels",
                          QString("Due to hardware limit, only first %1 channels of this image will be shown").arg(
@@ -1563,9 +1440,9 @@ void Z3DVolumeFilter::readVolumes(const ZStackDoc* doc, std::vector<std::unique_
 
         int maxTextureSize = 100;
         if (stack->depth > 1)
-          maxTextureSize = Z3DGpuInfo::instance().getMax3DTextureSize();
+          maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
         else
-          maxTextureSize = Z3DGpuInfo::instance().getMaxTextureSize();
+          maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
 
         if (maxTextureSize > 1024) {
           maxTextureSize = 1024;
@@ -1626,9 +1503,9 @@ void Z3DVolumeFilter::readVolumes(const ZStackDoc* doc, std::vector<std::unique_
         int depth = C_Stack::depth(stack);
         int maxTextureSize = 100;
         if (stack->depth > 1)
-          maxTextureSize = Z3DGpuInfo::instance().getMax3DTextureSize();
+          maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
         else
-          maxTextureSize = Z3DGpuInfo::instance().getMaxTextureSize();
+          maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
 
         if (height > maxTextureSize) {
           heightScale = (double)maxTextureSize / height;
@@ -1719,9 +1596,9 @@ void Z3DVolumeFilter::readVolumesWithObject(const ZStackDoc* doc, std::vector<st
   //C_Stack::copyValue(m_doc->getStack()->c_stack(0),
   //                   colorStack->c_stack(2));
 
-  QList<ZDocPlayer*> playerList =
+  const auto& playerList =
       doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
-  foreach (const ZDocPlayer *player, playerList) {
+  for (auto player : playerList) {
     //player->paintStack(colorStack);
     if (player->getLabel() > 0 && player->getLabel() < 10) {
       if (player->getLabel() >= (int) stackArray.size()) {
@@ -1745,7 +1622,7 @@ void Z3DVolumeFilter::readVolumesWithObject(const ZStackDoc* doc, std::vector<st
   }
   */
 
-  int nchannel = stackArray.size();
+  size_t nchannel = stackArray.size();
 
   size_t maxPossibleChannels = Z3DGpuInfo::instance().maxArrayTextureLayers();
   if (nchannel > maxPossibleChannels) {
@@ -1786,9 +1663,9 @@ void Z3DVolumeFilter::readVolumesWithObject(const ZStackDoc* doc, std::vector<st
         double depthScale = 1.0;
         int maxTextureSize = 100;
         if (stack->depth > 1)
-          maxTextureSize = Z3DGpuInfo::instance().getMax3DTextureSize();
+          maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
         else
-          maxTextureSize = Z3DGpuInfo::instance().getMaxTextureSize();
+          maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
 
         if (height > maxTextureSize) {
           heightScale = (double)maxTextureSize / height;
@@ -1835,9 +1712,9 @@ void Z3DVolumeFilter::readVolumesWithObject(const ZStackDoc* doc, std::vector<st
         int depth = C_Stack::depth(stack);
         int maxTextureSize = 100;
         if (stack->depth > 1)
-          maxTextureSize = Z3DGpuInfo::instance().getMax3DTextureSize();
+          maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
         else
-          maxTextureSize = Z3DGpuInfo::instance().getMaxTextureSize();
+          maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
 
         if (height > maxTextureSize) {
           heightScale = (double)maxTextureSize / height;
@@ -1937,9 +1814,9 @@ void Z3DVolumeFilter::readSparseVolume(const ZStackDoc* doc, std::vector<std::un
 
   int maxTextureSize = 100;
   if (depth > 1) {
-    maxTextureSize = Z3DGpuInfo::instance().getMax3DTextureSize();
+    maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
   } else {
-    maxTextureSize = Z3DGpuInfo::instance().getMaxTextureSize();
+    maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
   }
 
   if (height > maxTextureSize) {
@@ -2019,9 +1896,9 @@ void Z3DVolumeFilter::readSparseVolumeWithObject(const ZStackDoc* doc, std::vect
 
   int maxTextureSize = 100;
   if (depth > 1) {
-    maxTextureSize = Z3DGpuInfo::instance().getMax3DTextureSize();
+    maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
   } else {
-    maxTextureSize = Z3DGpuInfo::instance().getMaxTextureSize();
+    maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
   }
 
   if (height > maxTextureSize) {
@@ -2104,7 +1981,7 @@ void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::uni
     return;
   }
 
-  int nchannel = stackData->channelNumber();
+  size_t nchannel = stackData->channelNumber();
 
   size_t maxPossibleChannels = Z3DGpuInfo::instance().maxArrayTextureLayers();
   if (nchannel > maxPossibleChannels) {
@@ -2134,9 +2011,9 @@ void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::uni
   if (nchannel > 0) {
     int maxTextureSize = 100;
     if (stackData->depth() > 1) {
-      maxTextureSize = Z3DGpuInfoInstance.getMax3DTextureSize();
+      maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
     } else {
-      maxTextureSize = Z3DGpuInfoInstance.getMaxTextureSize();
+      maxTextureSize = Z3DGpuInfo::instance().maxTextureSize();
     }
 
     if (height > maxTextureSize) {
@@ -2220,9 +2097,7 @@ void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::uni
     offset[1] = -stackData->getOffset().getY() * (dsIntv.getY() + 1);
     offset[2] = -stackData->getOffset().getZ() * (dsIntv.getZ() + 1);
 
-    QList<ZDocPlayer*> playerList =
-        doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT);
-    foreach (const ZDocPlayer *player, playerList) {
+    for (auto player : doc->getPlayerList(ZStackObjectRole::ROLE_3DPAINT)) {
       //player->paintStack(colorStack);
       if (player->getLabel() > 0 && player->getLabel() < 10) {
         if (player->getLabel() >= (int) stackArray.size()) {

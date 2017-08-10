@@ -235,20 +235,6 @@ Z3DGlobalParameters::Z3DGlobalParameters()
   }
 }
 
-void Z3DGlobalParameters::read(const QJsonObject& json)
-{
-  for (size_t i = 0; i < m_parameters.size(); ++i) {
-    m_parameters[i]->read(json);
-  }
-}
-
-void Z3DGlobalParameters::write(QJsonObject& json) const
-{
-  for (size_t i = 0; i < m_parameters.size(); ++i) {
-    m_parameters[i]->write(json);
-  }
-}
-
 std::shared_ptr<ZWidgetsGroup> Z3DGlobalParameters::widgetsGroup(bool includeCamera)
 {
   return includeCamera ? m_widgetsGrp : m_widgetsGrpNoCamera;

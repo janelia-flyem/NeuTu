@@ -14,7 +14,6 @@
 #include "zstackobject.h"
 #include "zstackball.h"
 #include "zsparsestack.h"
-#include "z3dvolumesource.h"
 #include "zswctree.h"
 #include "zwindowfactory.h"
 #include "dvid/zdvidreader.h"
@@ -47,6 +46,7 @@
 #include "zneutuservice.h"
 #include "zglobal.h"
 #include "flyem/zserviceconsumer.h"
+#include "z3dvolumefilter.h"
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),

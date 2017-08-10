@@ -96,7 +96,7 @@ private:
   ZParameter* m_parameter = nullptr;
   int m_visibleLevel;
   bool m_isSorted = false;
-  int m_cutOffbetweenBasicAndAdvancedLevel = 1;
+  int m_cutOffbetweenBasicAndAdvancedLevel = 100;
   std::vector<std::shared_ptr<ZWidgetsGroup>> m_childGroups;
   bool m_isVisible = true;
 

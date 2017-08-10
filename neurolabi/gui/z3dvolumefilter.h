@@ -32,15 +32,13 @@ Q_OBJECT
 public:
   explicit Z3DVolumeFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
 
-  void setOffset(double x, double y, double z);
-
   // extract vols and img from stackdoc and call the overloaded setData
   void setData(const ZStackDoc* doc = nullptr, size_t maxVoxelNumber = 0);
   // reload current stackdoc with new maxVoxelNumber
   void reloadData(size_t maxVoxelNumber);
   // will take ownership of vols
   void setData(std::vector<std::unique_ptr<Z3DVolume>>& vols,
-               const ZStack* img = nullptr);
+               ZStack* img = nullptr);
 
   virtual bool isStayOnTop() const
   { return m_stayOnTop.get(); }
@@ -108,6 +106,12 @@ public:
 
   void setTextureFilterMode(const QString& option)
   { m_volumeRaycasterRenderer.setTextureFilterMode(option); }
+
+  void setChannel1Visible(bool v) { m_volumeRaycasterRenderer.setChannel1Visible(v); }
+  void setChannel2Visible(bool v) { m_volumeRaycasterRenderer.setChannel2Visible(v); }
+  void setChannel3Visible(bool v) { m_volumeRaycasterRenderer.setChannel3Visible(v); }
+  void setChannel4Visible(bool v) { m_volumeRaycasterRenderer.setChannel4Visible(v); }
+  void setChannel5Visible(bool v) { m_volumeRaycasterRenderer.setChannel5Visible(v); }
 
 signals:
 
@@ -193,7 +197,7 @@ private:
   std::vector<std::unique_ptr<Z3DImage2DRenderer>> m_image2DRenderers;
   Z3DTextureCopyRenderer m_textureCopyRenderer;
 
-  const ZStack* m_imgPack = nullptr;
+  ZStack* m_imgPack = nullptr;
   std::vector<std::unique_ptr<Z3DVolume>> m_volumes;
   std::vector<std::unique_ptr<Z3DVolume>> m_zoomInVolumes;
   ZBoolParameter m_stayOnTop;

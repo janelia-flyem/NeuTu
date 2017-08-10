@@ -110,10 +110,10 @@ void Z3DShaderGroup::release()
   get().release();
 }
 
-//Z3DShaderProgram& Z3DShaderGroup::get(Z3DRendererBase::ShaderHookType sht)
-//{
-//  return *m_shaders[sht];
-//}
+Z3DShaderProgram& Z3DShaderGroup::get()
+{
+  return *m_shaders[m_base.shaderHookType()];
+}
 
 void Z3DShaderGroup::rebuild(const QString& header, const QString& geomHeader)
 {

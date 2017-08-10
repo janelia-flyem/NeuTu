@@ -1,6 +1,7 @@
 #include "z3dboundedfilter.h"
 
 #include "QsLog.h"
+#include "zintcuboid.h"
 #include <boost/math/constants/constants.hpp>
 
 Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* parent)
@@ -116,56 +117,41 @@ void Z3DBoundedFilter::renderSelectionBox(Z3DEye eye)
   }
 }
 
-void Z3DBoundedFilter::rotateX()
-{
-  if (!m_isSelected || !m_transformEnabled)
-    return;
-  m_rendererBase.coordTransformPara().rotate(glm::vec3(1, 0, 0), boost::math::float_constants::degree, m_center);
-}
-
-void Z3DBoundedFilter::rotateY()
-{
-  if (!m_isSelected || !m_transformEnabled)
-    return;
-  m_rendererBase.coordTransformPara().rotate(glm::vec3(0, 1, 0), boost::math::float_constants::degree, m_center);
-}
-
-void Z3DBoundedFilter::rotateZ()
-{
-  if (!m_isSelected || !m_transformEnabled)
-    return;
-  m_rendererBase.coordTransformPara().rotate(glm::vec3(0, 0, 1), boost::math::float_constants::degree, m_center);
-}
-
-void Z3DBoundedFilter::rotateXM()
-{
-  if (!m_isSelected || !m_transformEnabled)
-    return;
-  m_rendererBase.coordTransformPara().rotate(glm::vec3(1, 0, 0), -boost::math::float_constants::degree, m_center);
-}
-
-void Z3DBoundedFilter::rotateYM()
-{
-  if (!m_isSelected || !m_transformEnabled)
-    return;
-  m_rendererBase.coordTransformPara().rotate(glm::vec3(0, 1, 0), -boost::math::float_constants::degree, m_center);
-}
-
-void Z3DBoundedFilter::rotateZM()
-{
-  if (!m_isSelected || !m_transformEnabled)
-    return;
-  m_rendererBase.coordTransformPara().rotate(glm::vec3(0, 0, 1), -boost::math::float_constants::degree, m_center);
-}
-
 glm::vec3 Z3DBoundedFilter::getViewCoord(double x, double y, double z, double w, double h)
 {
   glm::ivec4 viewport(0, 0, w, h);
-  glm::vec3 pt = m_rendererBase.camera().project(glm::applyMatrix(m_rendererBase.coordTransform(), glm::vec3(x, y, z)), viewport);
+  glm::vec3 pt = m_rendererBase.camera().worldToScreen(glm::applyMatrix(m_rendererBase.coordTransform(), glm::vec3(x, y, z)), viewport);
 
   pt[1] = h - pt[1];
 
   return pt;
+}
+
+void Z3DBoundedFilter::resetCut()
+{
+  setXCutLower(xCutMin());
+  setYCutLower(yCutMin());
+  setZCutLower(zCutMin());
+
+  setXCutUpper(xCutMax());
+  setYCutUpper(yCutMax());
+  setZCutUpper(zCutMax());
+}
+
+ZIntCuboid Z3DBoundedFilter::cutBox()
+{
+  ZIntCuboid box;
+  box.set(m_xCut.lowerValue(), m_yCut.lowerValue(), m_zCut.lowerValue(),
+          m_xCut.upperValue(), m_yCut.upperValue(), m_zCut.upperValue());
+
+  return box;
+}
+
+void Z3DBoundedFilter::setCutBox(const ZIntCuboid& box)
+{
+  m_xCut.set(glm::vec2(box.getFirstCorner().getX(), box.getLastCorner().getX()));
+  m_yCut.set(glm::vec2(box.getFirstCorner().getY(), box.getLastCorner().getY()));
+  m_zCut.set(glm::vec2(box.getFirstCorner().getZ(), box.getLastCorner().getZ()));
 }
 
 void Z3DBoundedFilter::updateBoundBox()

@@ -774,7 +774,6 @@ HEADERS += mainwindow.h \
     z3dcontext.h \
     zsysteminfo.h \
     z3dshadermanager.h \
-    z3daxisfilter.h \
     z3dfilter.h \
     zvertexbufferobject.h \
     zvertexarrayobject.h \
@@ -791,7 +790,8 @@ HEADERS += mainwindow.h \
     z3dvolumefilter.h \
     z3dtextureandeyecoordinaterenderer.h \
     z3dview.h \
-    ztakescreenshotwidget.h
+    ztakescreenshotwidget.h \
+    zioutils.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1355,7 +1355,6 @@ SOURCES += main.cpp \
     z3dcontext.cpp \
     zsysteminfo.cpp \
     z3dshadermanager.cpp \
-    z3daxisfilter.cpp \
     z3dfilter.cpp \
     zvertexbufferobject.cpp \
     zvertexarrayobject.cpp \
@@ -1372,7 +1371,9 @@ SOURCES += main.cpp \
     z3dvolumefilter.cpp \
     z3dtextureandeyecoordinaterenderer.cpp \
     z3dview.cpp \
-    ztakescreenshotwidget.cpp
+    ztakescreenshotwidget.cpp \
+    zioutils.cpp \
+    zexception.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

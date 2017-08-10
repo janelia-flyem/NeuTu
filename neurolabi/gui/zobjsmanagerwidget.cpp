@@ -13,6 +13,10 @@
 #include "QsLog/QsLog.h"
 #include "neutubeconfig.h"
 
+#include <QSortFilterProxyModel>
+#include <QHBoxLayout>
+#include <QKeyEvent>
+
 
 ZObjsManagerWidget::ZObjsManagerWidget(ZStackDoc *doc, QWidget *parent) :
   QWidget(parent), m_doc(doc)

@@ -130,7 +130,7 @@ public: //Components
   Z3DCameraParameter* getCamera() { return &m_view->camera(); }
   inline Z3DPunctaFilter* getPunctaFilter() const { return &m_view->punctaFilter(); }
   inline Z3DSwcFilter* getSwcFilter() const { return &m_view->swcFilter(); }
-  inline Z3DVolumeFilter* getVolumeFilter() { return &m_view->volumeFilter(); }
+  inline Z3DVolumeFilter* getVolumeFilter() const { return &m_view->volumeFilter(); }
   inline Z3DCanvas* getCanvas() { return &m_view->canvas(); }
   inline const Z3DCanvas* getCanvas() const { return &m_view->canvas(); }
 
@@ -217,7 +217,6 @@ public slots:
   { m_view->resetCamera(); }
   void resetCameraCenter()
   { m_view->resetCameraCenter(); }
-
   void flipView() //Look from the oppsite side
   { m_view->flipView(); }
   void setXZView()
@@ -319,16 +318,12 @@ public slots:
   void setNormalTodoVisible(bool visible);
 
 
-  void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
-  void takeScreenShot(QString filename, Z3DScreenShotType sst);
+  void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst)
+  { m_view->takeFixedSizeScreenShot(filename, width, height, sst); }
+  void takeScreenShot(QString filename, Z3DScreenShotType sst)
+  { m_view->takeScreenShot(filename, sst); }
 
   void openAdvancedSetting(const QString &name);
-
-  void takeSeriesScreenShot(const QDir& dir, const QString &namePrefix, glm::vec3 axis,
-                            bool clockWise, int numFrame, int width, int height,
-                            Z3DScreenShotType sst);
-  void takeSeriesScreenShot(const QDir& dir, const QString &namePrefix, glm::vec3 axis,
-                            bool clockWise, int numFrame, Z3DScreenShotType sst);
 
   void updateSettingsDockWidget();
 
@@ -497,7 +492,7 @@ private:
 
   glm::ivec3 m_lastClickedPosInVolume;
 
-  ZWidgetsGroup *m_widgetsGroup;
+  std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
 
   QDockWidget *m_settingsDockWidget;
   QDockWidget *m_objectsDockWidget;

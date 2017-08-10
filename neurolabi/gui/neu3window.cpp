@@ -1,12 +1,13 @@
 #include "neu3window.h"
 
 #include <QDockWidget>
+#include <QMessageBox>
 
 #include "ui_neu3window.h"
 #include "z3dwindow.h"
 #include "zstackdoc.h"
 #include "zdialogfactory.h"
-#include "z3dapplication.h"
+#include "zsysteminfo.h"
 #include "z3dcanvas.h"
 #include "neutubeconfig.h"
 #include "zwindowfactory.h"
@@ -94,29 +95,18 @@ void Neu3Window::connectSignalSlot()
 
 void Neu3Window::initOpenglContext()
 {
-  if (Z3DApplication::app() == NULL) {
-    ZDialogFactory::Notify3DDisabled(this);
-    return;
+  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
+  m_sharedContext->show();
+
+  // initialize OpenGL
+  if (!ZSystemInfo::instance().initializeGL()) {
+    QString msg = ZSystemInfo::instance().errorMessage();
+    msg += ". 3D functions will be disabled.";
+    QMessageBox::warning(this, qApp->applicationName(), "OpenGL Initialization.\n" + msg);
   }
 
-  // initGL requires a valid OpenGL context
-  if (m_sharedContext != NULL) {
-    // initialize OpenGL
-    if (!Z3DApplication::app()->initializeGL()) {
-      QString msg = Z3DApplication::app()->getErrorMessage();
-      msg += ". 3D functions will be disabled.";
-//      report("OpenGL Initialization", msg.toStdString(),
-//             NeuTube::MSG_ERROR);
-    }
-
-    if (NeutubeConfig::getInstance().isStereoEnabled()) {
-      Z3DApplication::app()->setStereoSupported(m_sharedContext->format().stereo());
-    } else {
-      Z3DApplication::app()->setStereoSupported(false);
-    }
-
-    m_sharedContext->hide();
-  }
+  ZSystemInfo::instance().setStereoSupported(m_sharedContext->format().stereo());
+  m_sharedContext->hide();
 }
 
 bool Neu3Window::loadDvidTarget()

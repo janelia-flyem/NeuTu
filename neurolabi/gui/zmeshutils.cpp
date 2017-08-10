@@ -580,8 +580,8 @@ int PointInPolygon(glm::dvec3 x, const std::vector<glm::dvec3>& pts, const doubl
     //
     bool rayOK;
     for (rayOK = false; rayOK == false;) {
-      ray[comps[0]] = nim::ZRandom::instance().randReal(rayMag, -rayMag);
-      ray[comps[1]] = nim::ZRandom::instance().randReal(rayMag, -rayMag);
+      ray[comps[0]] = ZRandom::instance().randReal(rayMag, -rayMag);
+      ray[comps[1]] = ZRandom::instance().randReal(rayMag, -rayMag);
       ray[maxComp] = -(normal[comps[0]] * ray[comps[0]] +
                        normal[comps[1]] * ray[comps[1]]) / normal[maxComp];
       if ((mag = glm::length(ray)) > rayMag * VTK_TOL) {
@@ -1579,7 +1579,7 @@ int vtkCCSPolyInPoly(
         double t;
         glm::dvec3 dummy;
         // This method returns distance squared
-        if (nim::ZMeshUtils::vertexLineSegmentSquaredDistance(p, q1, q2, t, dummy) < tol2) {
+        if (ZMeshUtils::vertexLineSegmentSquaredDistance(p, q1, q2, t, dummy) < tol2) {
           pointOnEdge = 1;
           break;
         }

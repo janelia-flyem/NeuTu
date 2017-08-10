@@ -1040,8 +1040,7 @@ public slots: //undoable commands
   //bool executeRemoveUnselectedObjectCommand();
   virtual bool executeMoveObjectCommand(
       double x, double y, double z,
-      double punctaScaleX, double punctaScaleY, double punctaScaleZ,
-      double swcScaleX, double swcScaleY, double swcScaleZ);
+      const glm::mat4& punctaTransform, const glm::mat4& swcTransform);
 
   virtual bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
   virtual bool executeRemoveTubeCommand();

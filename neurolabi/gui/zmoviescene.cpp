@@ -9,7 +9,6 @@
 #include "z3dinteractionhandler.h"
 #include "zmoviecamera.h"
 #include "zjsonobject.h"
-#include "z3daxisfilter.h"
 #include "z3dcompositor.h"
 
 using namespace std;

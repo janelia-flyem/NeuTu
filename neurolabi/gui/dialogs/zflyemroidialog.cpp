@@ -25,11 +25,9 @@
 #include "zflyemutilities.h"
 #include "zstring.h"
 #include "zfiletype.h"
-#include "z3dvolumesource.h"
 #include "zwindowfactory.h"
 #include "z3dpunctafilter.h"
-#include "z3dvolumeraycaster.h"
-#include "z3dvolumeraycasterrenderer.h"
+#include "z3dvolumefilter.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),

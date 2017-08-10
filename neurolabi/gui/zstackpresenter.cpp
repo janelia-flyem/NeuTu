@@ -3406,9 +3406,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     ZPoint offset = op.getMouseEventRecorder()->
         getPositionOffset(NeuTube::COORD_STACK);
 
-    buddyDocument()->executeMoveObjectCommand(offset.x(), offset.y(),
-                                              0,
-                                              1,1,1,1,1,1);
+    buddyDocument()->executeMoveObjectCommand(offset.x(), offset.y(), 0, glm::mat4(1.f), glm::mat4(1.f));
   }
     break;
   case ZStackOperator::OP_MOVE_IMAGE:

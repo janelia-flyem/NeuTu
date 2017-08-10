@@ -123,7 +123,6 @@ Z3DCompositor::Z3DCompositor(Z3DGlobalParameters& globalParas, QObject* parent)
   addParameter(m_axisRegionRatio);
   addParameter(m_axisMode);
   addParameter(m_fontRenderer.allFontNamesPara());
-  addParameter(m_fontRenderer.fontPara());
   addParameter(m_fontRenderer.fontSizePara());
   addParameter(m_fontRenderer.fontSoftEdgeScalePara());
   addParameter(m_fontRenderer.showFontOutlinePara());
@@ -183,7 +182,6 @@ std::shared_ptr<ZWidgetsGroup> Z3DCompositor::axisWidgetsGroup()
         m_axisWidgetsGroup->addChild(*para, 3);
     }
     m_axisWidgetsGroup->addChild(m_fontRenderer.allFontNamesPara(), 4);
-    m_axisWidgetsGroup->addChild(m_fontRenderer.fontPara(), 4);
     m_axisWidgetsGroup->addChild(m_fontRenderer.fontSizePara(), 4);
     m_axisWidgetsGroup->addChild(m_fontRenderer.fontSoftEdgeScalePara(), 4);
     m_axisWidgetsGroup->addChild(m_fontRenderer.showFontOutlinePara(), 4);
@@ -211,7 +209,7 @@ void Z3DCompositor::setRenderingRegion(double left, double right, double bottom,
 void Z3DCompositor::process(Z3DEye eye)
 {
   std::vector<Z3DGeometryFilter*> filters = m_gPPort.connectedFilters();
-  std::vector<Z3DImgFilter*> vFilters = m_vPPort.connectedFilters();
+  std::vector<Z3DVolumeFilter*> vFilters = m_vPPort.connectedFilters();
   std::vector<Z3DBoundedFilter*> onTopOpaqueFilters;
   std::vector<Z3DBoundedFilter*> onTopTransparentFilters;
   std::vector<Z3DBoundedFilter*> normalOpaqueFilters;

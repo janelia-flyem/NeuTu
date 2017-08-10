@@ -10,6 +10,7 @@
 #include "zstackobject.h"
 #include "zstackobjectselector.h"
 #include "zsharedpointer.h"
+#include "flyem/zflyemtodoitem.h"
 
 /*!
  * \brief The aggregate class of ZStackObject

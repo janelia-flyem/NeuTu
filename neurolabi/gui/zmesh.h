@@ -4,7 +4,7 @@
 #include "z3dgl.h"
 #include "zbbox.h"
 #include "zstackobject.h"
-#include <H5Cpp.h>
+#include "QsLog.h"
 #include <vector>
 
 struct ZMeshProperties
@@ -75,10 +75,6 @@ public:
   void load(const QString& filename);
 
   void save(const QString& filename, const std::string& format = "") const;
-
-  void load(H5::Group& allGrp);
-
-  void save(H5::Group& allGrp) const;
 
   ZBBox<glm::dvec3> boundBox() const;
 

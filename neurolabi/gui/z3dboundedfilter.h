@@ -178,6 +178,10 @@ public:
   inline void setZCutLower(int v) { m_zCut.setLowerValue(v); }
   inline void setZCutUpper(int v) { m_zCut.setUpperValue(v); }
 
+  void resetCut();
+  ZIntCuboid cutBox();
+  void setCutBox(const ZIntCuboid &box);
+
 signals:
 
   void boundBoxChanged();

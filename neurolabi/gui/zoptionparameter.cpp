@@ -71,7 +71,11 @@ QWidget* ZOptionParameter<T, T2>::actualCreateWidget(QWidget* parent)
   this->connect(this, &ZOptionParameter::reservedStringSignal1, cb, &ZComboBox::addItemSlot);
   this->connect(this, &ZOptionParameter::reservedStringSignal2, cb, &ZComboBox::removeItemSlot);
   this->connect(this, &ZOptionParameter::reservedSignal1, cb, &ZComboBox::clear);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
   this->connect(cb, qOverload<int>(&ZComboBox::currentIndexChanged), this, &ZOptionParameter::reservedIntSlot1);
+#else
+  this->connect(cb, SIGNAL(currentIndexChanged(int)), this, SLOT(reservedIntSlot1(int)));
+#endif
   return cb;
 }
 

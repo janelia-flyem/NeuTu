@@ -21,7 +21,7 @@ ZJsonObject Z3DGeometryFilter::getConfigJson() const
 
   obj.setEntry(Z3DFilterSetting::FRONT_KEY, isStayOnTop());
   obj.setEntry(Z3DFilterSetting::VISIBLE_KEY, isVisible());
-  obj.setEntry(Z3DFilterSetting::SIZE_SCALE_KEY, getSizeScale());
+  obj.setEntry(Z3DFilterSetting::SIZE_SCALE_KEY, sizeScale());
 
   return obj;
 }

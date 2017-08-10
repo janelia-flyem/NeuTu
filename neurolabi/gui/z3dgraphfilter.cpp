@@ -1,97 +1,26 @@
 #include "z3dgraphfilter.h"
 
 #include <algorithm>
-#include "z3dlinerenderer.h"
-#include "z3dsphererenderer.h"
-#include "z3dconerenderer.h"
 #include "neutubeconfig.h"
 
 using namespace std;
 
-
-Z3DGraphFilter::Z3DGraphFilter() :
-//  m_showGraph("Visible", true),
-  m_lineRenderer(NULL),
-  m_coneRenderer(NULL), m_arrowRenderer(NULL), m_sphereRenderer(NULL),
-  m_dataIsInvalid(false)
-  , m_xCut("X Cut", glm::ivec2(0,0), 0, 0)
-  , m_yCut("Y Cut", glm::ivec2(0,0), 0, 0)
-  , m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
-  , m_widgetsGroup(NULL)
+Z3DGraphFilter::Z3DGraphFilter(Z3DGlobalParameters& globalParas, QObject* parent)
+  : Z3DGeometryFilter(globalParas, parent)
+  , m_lineRenderer(m_rendererBase)
+  , m_coneRenderer(m_rendererBase)
+  , m_arrowRenderer(m_rendererBase)
+  , m_sphereRenderer(m_rendererBase)
 {
-//  addParameter(m_showGraph);
-
   const NeutubeConfig::Z3DWindowConfig::GraphTabConfig &config =
       NeutubeConfig::getInstance().getZ3DWindowConfig().getGraphTabConfig();
   setVisible(config.isVisible());
 //  m_rendererBase->setRenderMethod("Old openGL");
 //  adjustWidgets();
 
-  setFilterName(QString("graphfilter"));
-}
+  m_coneRenderer.setNeedLighting(false);
 
-Z3DGraphFilter::~Z3DGraphFilter()
-{
-
-}
-
-void Z3DGraphFilter::initialize()
-{
-  Z3DGeometryFilter::initialize();
-  m_coneRenderer = new Z3DConeRenderer();
-  m_coneRenderer->setNeedLighting(false);
-  m_rendererBase->addRenderer(m_coneRenderer);
-  m_arrowRenderer = new Z3DConeRenderer();
-  m_rendererBase->addRenderer(m_arrowRenderer);
-  m_lineRenderer = new Z3DLineRenderer();
-  m_rendererBase->addRenderer(m_lineRenderer);
-  m_sphereRenderer = new Z3DSphereRenderer();
-  m_rendererBase->addRenderer(m_sphereRenderer);
-
-  std::vector<ZParameter*> paras = m_rendererBase->getParameters();
-  for (size_t i=0; i<paras.size(); i++) {
-    //connect(paras[i], SIGNAL(valueChanged()), this, SLOT(invalidateResult()));
-    addParameter(paras[i]);
-  }
-}
-
-void Z3DGraphFilter::deinitialize()
-{
-  std::vector<ZParameter*> paras = m_rendererBase->getParameters();
-  for (size_t i=0; i<paras.size(); i++) {
-    removeParameter(paras[i]);
-  }
-  Z3DGeometryFilter::deinitialize();
-}
-
-/*
-void Z3DGraphFilter::setVisible(bool v)
-{
-  m_showGraph.set(v);
-}
-
-bool Z3DGraphFilter::isVisible() const
-{
-  return m_showGraph.get();
-}
-*/
-
-void Z3DGraphFilter::render(Z3DEye eye)
-{
-  if (m_graph.isEmpty()) {
-    return;
-  }
-
-  if (!isVisible())
-    return;
-
-  m_rendererBase->activateRenderer(m_sphereRenderer);
-  if (showingArrow()) {
-    m_rendererBase->activateRenderer(m_arrowRenderer, Z3DRendererBase::None);
-  }
-  m_rendererBase->activateRenderer(
-        m_lineRenderer, m_coneRenderer, Z3DRendererBase::None);
-  m_rendererBase->render(eye);
+  setName(QString("graphfilter"));
 }
 
 void Z3DGraphFilter::process(Z3DEye)
@@ -113,12 +42,6 @@ void Z3DGraphFilter::prepareData()
 
   m_pointAndRadius.clear();
   m_lines.clear();
-  int xMin = std::numeric_limits<int>::max();
-  int xMax = std::numeric_limits<int>::min();
-  int yMin = std::numeric_limits<int>::max();
-  int yMax = std::numeric_limits<int>::min();
-  int zMin = std::numeric_limits<int>::max();
-  int zMax = std::numeric_limits<int>::min();
 
   vector<float> edgeWidth;
 
@@ -176,18 +99,6 @@ void Z3DGraphFilter::prepareData()
 
     if (node.radius() > 0.0) {
       ZPoint nodePos = node.center();
-      if (nodePos.x() > xMax)
-        xMax = static_cast<int>(std::ceil(nodePos.x()));
-      if (nodePos.x() < xMin)
-        xMin = static_cast<int>(std::floor(nodePos.x()));
-      if (nodePos.y() > yMax)
-        yMax = static_cast<int>(std::ceil(nodePos.y()));
-      if (nodePos.y() < yMin)
-        yMin = static_cast<int>(std::floor(nodePos.y()));
-      if (nodePos.z() > zMax)
-        zMax = static_cast<int>(nodePos.z());
-      if (nodePos.z() < zMin)
-        zMin = static_cast<int>(nodePos.z());
 
       m_pointAndRadius.push_back(
             glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
@@ -195,19 +106,15 @@ void Z3DGraphFilter::prepareData()
     }
   }
 
-  m_xCut.setRange(xMin, xMax);
-  m_xCut.set(glm::ivec2(xMin, xMax));
-  m_yCut.setRange(yMin, yMax);
-  m_yCut.set(glm::ivec2(yMin, yMax));
-  m_zCut.setRange(zMin, zMax);
-  m_zCut.set(glm::ivec2(zMin, zMax));
+  initializeCutRange();
+  initializeRotationCenter();
 
-  m_coneRenderer->setData(&m_baseAndBaseRadius, &m_axisAndTopRadius);
+  m_coneRenderer.setData(&m_baseAndBaseRadius, &m_axisAndTopRadius);
 //  m_arrowRenderer->setData(&m_arrowBaseAndBaseRadius, &m_arrowAxisAndTopRadius);
-  m_lineRenderer->setData(&m_lines);
-//  m_lineRenderer->setLineWidth(2.0);
-  m_lineRenderer->setLineWidth(edgeWidth);
-  m_sphereRenderer->setData(&m_pointAndRadius);
+  m_lineRenderer.setData(&m_lines);
+//  m_lineRenderer.setLineWidth(2.0);
+  m_lineRenderer.setLineWidth(edgeWidth);
+  m_sphereRenderer.setData(&m_pointAndRadius);
 
   prepareColor();
 
@@ -294,32 +201,22 @@ void Z3DGraphFilter::prepareColor()
 //    m_arrowEndColors[i] = m_arrowStartColors[i];
   }
 
-  m_coneRenderer->setDataColors(&m_lineStartColors, &m_lineEndColors);
+  m_coneRenderer.setDataColors(&m_lineStartColors, &m_lineEndColors);
 //  m_arrowRenderer->setDataColors(&m_arrowStartColors, &m_arrowEndColors);
-  m_lineRenderer->setDataColors(&m_lineColors);
-  m_sphereRenderer->setDataColors(&m_pointColors);
+  m_lineRenderer.setDataColors(&m_lineColors);
+  m_sphereRenderer.setDataColors(&m_pointColors);
 }
 
-vector<double> Z3DGraphFilter::boundBox()
+void Z3DGraphFilter::updateNotTransformedBoundBoxImpl()
 {
-  vector<double> result(6, 0);
-
-  for (size_t i = 0; i < 3; i++) {
-    result[i * 2] = numeric_limits<double>::max();
-    result[i * 2 + 1] = -numeric_limits<double>::max();
-  }
-
+  m_notTransformedBoundBox.reset();
   for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
     ZPoint pos = m_graph.getNode(i).center();
-    result[0] = min(result[0], pos.x() - m_graph.getNode(i).radius() * 2.0);
-    result[1] = max(result[1], pos.x() + m_graph.getNode(i).radius() * 2.0);
-    result[2] = min(result[2], pos.y() - m_graph.getNode(i).radius() * 2.0);
-    result[3] = max(result[3], pos.y() + m_graph.getNode(i).radius() * 2.0);
-    result[4] = min(result[4], pos.z() - m_graph.getNode(i).radius() * 2.0);
-    result[5] = max(result[5], pos.z() + m_graph.getNode(i).radius() * 2.0);
+    glm::dvec3 p(pos.x(), pos.y(), pos.z());
+    double d = m_graph.getNode(i).radius() * 2.0;
+    m_notTransformedBoundBox.expand(p - d);
+    m_notTransformedBoundBox.expand(p + d);
   }
-
-  return result;
 }
 
 void Z3DGraphFilter::setData(const ZPointNetwork &pointNetwork,
@@ -353,39 +250,57 @@ void Z3DGraphFilter::setData(const ZObject3d &obj)
   invalidateResult();
 }
 
-ZWidgetsGroup *Z3DGraphFilter::getWidgetsGroup()
+std::shared_ptr<ZWidgetsGroup> Z3DGraphFilter::widgetsGroup()
 {
   if (!m_widgetsGroup) {
-    m_widgetsGroup = new ZWidgetsGroup("Graph", NULL, 1);
-    new ZWidgetsGroup(&m_visible, m_widgetsGroup, 1);
+    m_widgetsGroup = std::make_shared<ZWidgetsGroup>("Graph", 1);
+    m_widgetsGroup->addChild(m_visible, 1);
+    m_widgetsGroup->addChild(m_stayOnTop, 1);
 
-    new ZWidgetsGroup(&m_stayOnTop, m_widgetsGroup, 1);
-    std::vector<ZParameter*> paras = m_rendererBase->getParameters();
-    for (size_t i=0; i<paras.size(); i++) {
-      ZParameter *para = paras[i];
-      if (para->getName() == "Z Scale")
-        new ZWidgetsGroup(para, m_widgetsGroup, 2);
-      else if (para->getName() == "Size Scale")
-        new ZWidgetsGroup(para, m_widgetsGroup, 3);
-      else if (para->getName() == "Rendering Method")
-        new ZWidgetsGroup(para, m_widgetsGroup, 4);
-      else if (para->getName() == "Opacity")
-        new ZWidgetsGroup(para, m_widgetsGroup, 5);
+    const std::vector<ZParameter*>& paras = m_rendererBase.parameters();
+    for (auto para : paras) {
+      if (para->name() == "Coord Transform")
+        m_widgetsGroup->addChild(*para, 2);
+      else if (para->name() == "Size Scale")
+        m_widgetsGroup->addChild(*para, 3);
+      else if (para->name() == "Rendering Method")
+        m_widgetsGroup->addChild(*para, 4);
+      else if (para->name() == "Opacity")
+        m_widgetsGroup->addChild(*para, 5);
       else
-        new ZWidgetsGroup(para, m_widgetsGroup, 7);
+        m_widgetsGroup->addChild(*para, 7);
     }
-    new ZWidgetsGroup(&m_xCut, m_widgetsGroup, 5);
-    new ZWidgetsGroup(&m_yCut, m_widgetsGroup, 5);
-    new ZWidgetsGroup(&m_zCut, m_widgetsGroup, 5);
+
+    m_widgetsGroup->addChild(m_xCut, 5);
+    m_widgetsGroup->addChild(m_yCut, 5);
+    m_widgetsGroup->addChild(m_zCut, 5);
+
     m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
 }
 
+void Z3DGraphFilter::renderOpaque(Z3DEye eye)
+{
+  if (showingArrow()) {
+    m_rendererBase.render(eye, m_sphereRenderer, m_arrowRenderer, m_lineRenderer, m_coneRenderer);
+  } else {
+    m_rendererBase.render(eye, m_sphereRenderer, m_lineRenderer, m_coneRenderer);
+  }
+}
+
+void Z3DGraphFilter::renderTransparent(Z3DEye eye)
+{
+  if (showingArrow()) {
+    m_rendererBase.render(eye, m_sphereRenderer, m_arrowRenderer, m_lineRenderer, m_coneRenderer);
+  } else {
+    m_rendererBase.render(eye, m_sphereRenderer, m_lineRenderer, m_coneRenderer);
+  }
+}
+
 bool Z3DGraphFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && isVisible() &&
-      !m_graph.isEmpty();
+  return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_graph.isEmpty();
 }
 
 void Z3DGraphFilter::updateGraphVisibleState()

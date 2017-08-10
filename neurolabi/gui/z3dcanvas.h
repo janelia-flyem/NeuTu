@@ -89,6 +89,9 @@ public:
     return getInteractionEngine()->getInteractiveContext();
   }
 
+  void setCursor(const QCursor& c)
+  { viewport()->setCursor(c); }
+
 signals:
 
   // w and h is physical size not logical size, opengl works in physical pixel
@@ -126,9 +129,6 @@ protected:
   virtual void dragEnterEvent(QDragEnterEvent* event) override;
 
   virtual void dropEvent(QDropEvent* event) override;
-
-  void setCursor(const QCursor& c)
-  { viewport()->setCursor(c); }
 
   void rotateX();
 

@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zproofreadwindow.h"
 
 #include <QHBoxLayout>
@@ -11,6 +10,7 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QDragEnterEvent>
+#include <QMimeData>
 
 #include "neutubeconfig.h"
 #include "dialogs/dvidoperatedialog.h"

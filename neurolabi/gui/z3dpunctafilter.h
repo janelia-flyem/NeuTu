@@ -43,6 +43,10 @@ public:
 
   void configure(const ZJsonObject &obj) override;
 
+  void punctumBound(const ZPunctum& p, ZBBox<glm::dvec3>& result) const;
+
+  void updatePunctumVisibleState();
+
 signals:
   void punctumSelected(ZPunctum*, bool append);
 
@@ -63,10 +67,6 @@ protected:
 
   void prepareData();
 
-  // result should have at least 6 elements
-  void punctumBound(const ZPunctum& p, ZBBox<glm::dvec3>& result) const;
-
-  // result should have at least 6 elements
   void notTransformedPunctumBound(const ZPunctum& p, ZBBox<glm::dvec3>& result) const;
 
   //virtual void updateAxisAlignedBoundBoxImpl() override;
@@ -77,8 +77,6 @@ protected:
 private:
   // get visible data from origPunctaList put into punctaList
   void getVisibleData();
-
-  void updatePunctumVisibleState();
 
 private:
   Z3DRenderOutputPort m_monoEyeOutport;

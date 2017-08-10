@@ -14,6 +14,8 @@
 #include <QSpinBox>
 #include <QFileDialog>
 #include <QColorDialog>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 #include "neutubeconfig.h"
 #include "flyem/zflyemmisc.h"
@@ -122,7 +124,8 @@ void ZROIWidget::makeGUI()
     selectAll->setChecked(false);
 
     //
-    double alpha = m_window->getSurfaceFilter()->getOpacity();
+    double alpha = 0;
+ //   double alpha = m_window->getSurfaceFilter()->getOpacity();
     l_opacity = new QLabel(tr(" Opacity: %1").arg(alpha));
     s_opacity = new QSlider(Qt::Horizontal);
     s_opacity->setRange(0,100);
@@ -228,7 +231,7 @@ void ZROIWidget::makeGUI()
     //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
 
     connect(s_opacity,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
-    connect(m_window->getSurfaceFilter(),SIGNAL(opacityValueChanged(double)),this,SLOT(updateOpacity(double)));
+ //   connect(m_window->getSurfaceFilter(),SIGNAL(opacityValueChanged(double)),this,SLOT(updateOpacity(double)));
 }
 
 
@@ -310,7 +313,7 @@ void ZROIWidget::updateSelectedROIs()
         cubes->setSource(m_roiSourceList[i]);
         cubes->setColor(color);
         m_window->getDocument()->addObject(cubes, true);
-        m_window->getSurfaceFilter()->invalidateRenderer(cubes->getSource());
+ //       m_window->getSurfaceFilter()->invalidateRenderer(cubes->getSource());
       }
     }
     m_window->getDocument()->blockSignals(false);
@@ -451,7 +454,7 @@ void ZROIWidget::updateSlider(int v)
 
     if(m_window)
     {
-        m_window->getSurfaceFilter()->setOpacity(alpha);
+//        m_window->getSurfaceFilter()->setOpacity(alpha);
     }
 }
 

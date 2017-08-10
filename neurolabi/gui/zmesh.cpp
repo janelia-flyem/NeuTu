@@ -16,6 +16,7 @@
 #include <vtk-6.3/vtkTriangleFilter.h>
 #include <vtk-6.3/vtkCleanPolyData.h>
 #include <vtk-6.3/vtkAppendPolyData.h>
+#include <vtk-6.3/vtkCellArray.h>
 #include <boost/math/constants/constants.hpp>
 #include <map>
 
@@ -150,131 +151,6 @@ void ZMesh::load(const QString& filename)
 void ZMesh::save(const QString& filename, const std::string& format) const
 {
   ZMeshIO::instance().save(*this, filename, format);
-}
-
-void ZMesh::load(H5::Group& allGrp)
-{
-  CHECK(m_type == GL_TRIANGLES && numVertices() == numNormals());
-  clear();
-
-  try {
-    H5::Exception::dontPrint();
-
-    H5::FloatType floatType(H5::PredType::IEEE_F32LE);
-    H5::IntType intType(H5::PredType::STD_I32LE);
-    H5::IntType uintType(H5::PredType::STD_U32LE);
-    H5::StrType strType(0, H5T_VARIABLE);
-
-    H5::Attribute ver = allGrp.openAttribute("Version");
-    int meshVer;
-    ver.read(intType, &meshVer);
-
-    H5::Attribute typeAttr = allGrp.openAttribute("Type");
-    H5std_string strBuf;
-    typeAttr.read(strType, strBuf);
-    m_type = GL_TRIANGLES;
-    if (strBuf == "TRIANGLES") {
-      m_type = GL_TRIANGLES;
-    } else if (strBuf == "TRIANGLE_STRIP") {
-      m_type = GL_TRIANGLE_STRIP;
-    } else if (strBuf == "TRIANGLE_FAN") {
-      m_type = GL_TRIANGLE_FAN;
-    } else {
-      throw ZIOException(QString("invalid mesh type %1").arg(QString::fromStdString(strBuf)));
-    }
-
-    H5::DataSet vertices = allGrp.openDataSet("Vertices");
-    H5::DataSpace verticesDataspace = vertices.getSpace();
-    if (verticesDataspace.getSimpleExtentNdims() != 2)
-      throw ZIOException("Wrong mesh file contents");
-    hsize_t verticesDim[2];
-    verticesDataspace.getSimpleExtentDims(verticesDim, nullptr);
-    if (verticesDim[1] != 3 || verticesDim[0] < 3)
-      throw ZIOException("Wrong ROI file contents");
-    m_vertices.resize(verticesDim[0]);
-    vertices.read(m_vertices.data(), floatType);
-
-    H5::DataSet normals = allGrp.openDataSet("Normals");
-    H5::DataSpace normalsDataspace = normals.getSpace();
-    if (normalsDataspace.getSimpleExtentNdims() != 2)
-      throw ZIOException("Wrong mesh file contents");
-    hsize_t normalsDim[2];
-    normalsDataspace.getSimpleExtentDims(normalsDim, nullptr);
-    if (normalsDim[1] != 3 || normalsDim[0] < 3)
-      throw ZIOException("Wrong ROI file contents");
-    m_normals.resize(normalsDim[0]);
-    normals.read(m_normals.data(), floatType);
-
-    H5::DataSet indices = allGrp.openDataSet("Indices");
-    H5::DataSpace indicesDataspace = indices.getSpace();
-    if (indicesDataspace.getSimpleExtentNdims() != 1)
-      throw ZIOException("Wrong mesh file contents");
-    hsize_t indicesDim;
-    indicesDataspace.getSimpleExtentDims(&indicesDim, nullptr);
-    m_indices.resize(indicesDim);
-    indices.read(m_indices.data(), uintType);
-  }
-  catch (H5::Exception const& e) {
-    throw ZIOException(QString("hdf5:%1").arg(e.getDetailMsg().c_str()));
-  }
-}
-
-void ZMesh::save(H5::Group& allGrp) const
-{
-  try {
-    H5::Exception::dontPrint();
-
-    H5::FloatType floatType(H5::PredType::IEEE_F32LE);
-    H5::IntType intType(H5::PredType::STD_I32LE);
-    H5::IntType uintType(H5::PredType::STD_U32LE);
-    H5::StrType strType(0, H5T_VARIABLE);
-
-    H5::DataSpace attrDataSpace(H5S_SCALAR);
-
-    H5::Attribute ver = allGrp.createAttribute("Version", intType, attrDataSpace);
-    int meshVer = 100;
-    ver.write(intType, &meshVer);
-
-    H5::Attribute type = allGrp.createAttribute("Type", strType, attrDataSpace);
-    switch (m_type) {
-      case GL_TRIANGLES:
-        type.write(strType, std::string("TRIANGLES"));
-        break;
-      case GL_TRIANGLE_STRIP:
-        type.write(strType, std::string("TRIANGLE_STRIP"));
-        break;
-      case GL_TRIANGLE_FAN:
-        type.write(strType, std::string("TRIANGLE_FAN"));
-        break;
-      default:
-        CHECK(false);
-        break;
-    }
-
-    hsize_t verticesDim[2];
-    verticesDim[1] = 3;
-    CHECK(numVertices() >= 3);
-    verticesDim[0] = numVertices();
-    H5::DataSpace verticesDataspace(2, verticesDim);
-    H5::DataSet vertices = allGrp.createDataSet("Vertices", floatType, verticesDataspace);
-    vertices.write(m_vertices.data(), floatType);
-
-    hsize_t normalsDim[2];
-    normalsDim[1] = 3;
-    CHECK(numNormals() >= 3);
-    normalsDim[0] = numNormals();
-    H5::DataSpace normalsDataspace(2, normalsDim);
-    H5::DataSet normals = allGrp.createDataSet("Normals", floatType, normalsDataspace);
-    normals.write(m_normals.data(), floatType);
-
-    hsize_t indicesDim = m_indices.size();
-    H5::DataSpace indiceDataspace(1, &indicesDim);
-    H5::DataSet indices = allGrp.createDataSet("Indices", uintType, indiceDataspace);
-    indices.write(m_indices.data(), uintType);
-  }
-  catch (H5::Exception const& e) {
-    throw ZIOException(QString("hdf5:%1").arg(e.getDetailMsg().c_str()));
-  }
 }
 
 ZBBox<glm::dvec3> ZMesh::boundBox() const

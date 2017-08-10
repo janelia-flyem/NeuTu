@@ -7881,8 +7881,7 @@ bool ZStackDoc::executeRemoveUnselectedObjectCommand()
 }
 */
 bool ZStackDoc::executeMoveObjectCommand(double x, double y, double z,
-    double punctaScaleX, double punctaScaleY, double punctaScaleZ,
-    double swcScaleX, double swcScaleY, double swcScaleZ)
+    const glm::mat4& punctaTransform, const glm::mat4& swcTransform)
 {
   if (m_objectGroup.getSelectedSet(ZStackObject::TYPE_SWC).empty() &&
       m_objectGroup.getSelectedSet(ZStackObject::TYPE_PUNCTUM).empty() &&
@@ -7891,12 +7890,8 @@ bool ZStackDoc::executeMoveObjectCommand(double x, double y, double z,
 
   ZStackDocCommand::ObjectEdit::MoveSelected *moveSelectedObjectCommand =
       new ZStackDocCommand::ObjectEdit::MoveSelected(this, x, y, z);
-  moveSelectedObjectCommand->setPunctaCoordScale(punctaScaleX,
-                                                 punctaScaleY,
-                                                 punctaScaleZ);
-  moveSelectedObjectCommand->setSwcCoordScale(swcScaleX,
-                                              swcScaleY,
-                                              swcScaleZ);
+  moveSelectedObjectCommand->setPunctaTransform(punctaTransform);
+  moveSelectedObjectCommand->setSwcTransform(swcTransform);
   moveSelectedObjectCommand->setLogMessage("Move selected objects");
   pushUndoCommand(moveSelectedObjectCommand);
 

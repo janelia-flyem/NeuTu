@@ -23,14 +23,13 @@
 #include "z3dtexture.h"
 #include "QsLog.h"
 #include "zrandom.h"
+#include "zutils.h"
 #include <boost/graph/topological_sort.hpp>
 #include <algorithm>
 #include <queue>
 #include <set>
 
 //#define PROFILE3DRENDERERS
-
-namespace nim {
 
 Z3DNetworkEvaluator::Z3DNetworkEvaluator(QObject* parent)
   : QObject(parent)
@@ -219,8 +218,8 @@ void Z3DNetworkEvaluator::buildNetwork()
   // sort to get rendering order
   std::vector<Vertex> sorted;
   boost::topological_sort(m_filterGraph, std::back_inserter(sorted));
-  for (auto rv : make_reverse(sorted)) {
-    m_renderingOrder.push_back(m_filterGraph[rv].filter);
+  for (auto it = sorted.rbegin(); it != sorted.rend(); ++it) {
+    m_renderingOrder.push_back(m_filterGraph[*it].filter);
   }
 
   LOG(INFO) << "Rendering Order: ";

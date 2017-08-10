@@ -82,6 +82,10 @@
 
 #include <QDesktopWidget>
 #include <QMenuBar>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMimeData>
+#include <QMessageBox>
 
 /*
 class Sleeper : public QThread
@@ -174,12 +178,12 @@ void Z3DWindow::createToolBar()
           this, SLOT(showPuncta(bool)));
   m_toolBar->addAction(viewSynapseAction);
 
-//  if (m_todoFilter != NULL) {
-//    QAction *viewTodoAction =
-//        ZActionFactory::MakeAction(ZActionFactory::ACTION_SHOW_TODO, this);
-//    connect(viewTodoAction, SIGNAL(toggled(bool)), this, SLOT(showTodo(bool)));
-//    m_toolBar->addAction(viewTodoAction);
-//  }
+  if (getTodoFilter()) {
+    QAction *viewTodoAction =
+        ZActionFactory::MakeAction(ZActionFactory::ACTION_SHOW_TODO, this);
+    connect(viewTodoAction, SIGNAL(toggled(bool)), this, SLOT(showTodo(bool)));
+    m_toolBar->addAction(viewTodoAction);
+  }
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -198,8 +202,6 @@ void Z3DWindow::init()
   m_layerList.append(LAYER_GRAPH);
 #if defined _FLYEM_
   m_layerList.append(LAYER_TODO);
-#else
-  m_todoFilter = NULL;
 #endif
 
 //  // hard code
@@ -221,10 +223,10 @@ void Z3DWindow::init()
 
   connect(getPunctaFilter(), SIGNAL(punctumSelected(ZPunctum*, bool)),
           this, SLOT(selectedPunctumChangedFrom3D(ZPunctum*, bool)));
-//  if (m_todoFilter != NULL) {
-//    connect(m_todoFilter, SIGNAL(objectSelected(ZStackObject*,bool)),
-//            this, SLOT(selectdObjectChangedFrom3D(ZStackObject*,bool)));
-//  }
+  if (getTodoFilter()) {
+    connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
+            this, SLOT(selectdObjectChangedFrom3D(ZStackObject*,bool)));
+  }
   connect(getSwcFilter(), SIGNAL(treeSelected(ZSwcTree*,bool)),
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
   connect(getSwcFilter(), SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
@@ -294,10 +296,10 @@ void Z3DWindow::init()
   m_helpDlg = new HelpDialog(this);
 }
 
-//void Z3DWindow::setROIs(size_t n)
-//{
+void Z3DWindow::setROIs(size_t n)
+{
 //  m_surfaceFilter->initRenderers(n);
-//}
+}
 
 void Z3DWindow::setWindowSize()
 {
@@ -763,7 +765,7 @@ void Z3DWindow::createDockWindows()
   m_settingsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
   m_settingsDockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
-  m_widgetsGroup = new ZWidgetsGroup("All", NULL, 1);
+  m_widgetsGroup = std::make_shared<ZWidgetsGroup>("All", 1);
 
   QMenu *cameraMenu = new QMenu(this);
   QPushButton *cameraMenuButton = new QPushButton(tr("Camera"));
@@ -822,106 +824,60 @@ void Z3DWindow::createDockWindows()
 
   const NeutubeConfig &config = NeutubeConfig::getInstance();
   if (config.getZ3DWindowConfig().isUtilsOn()) {
-    ZWidgetsGroup *utils = new ZWidgetsGroup("General", m_widgetsGroup, 1);
-    new ZWidgetsGroup(cameraMenuButton, utils, 1);
-    new ZWidgetsGroup(getCamera(), utils, 1);
-    new ZWidgetsGroup(m_compositor->getParameter("Multisample Anti-Aliasing"), utils, 1);
-    new ZWidgetsGroup(m_compositor->getParameter("Transparency"), utils, 1);
-//    utils->setVisible(false);
+    auto utils = m_view->globalParasWidgetsGroup();
+    utils->addChild(*cameraMenuButton, 0);
+    m_widgetsGroup->addChild(utils);
   }
 
-  // capture function
-//  m_screenShotWidget = new Z3DTakeScreenShotWidget(false, this);
-//  m_screenShotWidget->setCaptureStereoImage(m_isStereoView);
-//  connect(m_screenShotWidget, SIGNAL(takeScreenShot(QString, Z3DScreenShotType)),
-//          this, SLOT(takeScreenShot(QString, Z3DScreenShotType)));
-//  connect(m_screenShotWidget, SIGNAL(takeScreenShot(QString,int,int,Z3DScreenShotType)),
-//          this, SLOT(takeScreenShot(QString,int,int,Z3DScreenShotType)));
-//  connect(m_screenShotWidget, SIGNAL(takeSeriesScreenShot(QDir,QString,glm::vec3,bool,int,Z3DScreenShotType)),
-//          this, SLOT(takeSeriesScreenShot(QDir,QString,glm::vec3,bool,int,Z3DScreenShotType)));
-//  connect(m_screenShotWidget, SIGNAL(takeSeriesScreenShot(QDir,QString,glm::vec3,bool,int,int,int,Z3DScreenShotType)),
-//          this, SLOT(takeSeriesScreenShot(QDir,QString,glm::vec3,bool,int,int,int,Z3DScreenShotType)));
-//  ZWidgetsGroup *capture = new ZWidgetsGroup("Capture", m_widgetsGroup, 1);
-  new ZWidgetsGroup(m_screenShotWidget, capture, 1);
+  m_widgetsGroup->addChild(m_view->captureWidgetsGroup());
 
   //volume
   if (config.getZ3DWindowConfig().isVolumeOn()) {
-    if (m_volumeSource != NULL) {
-      ZWidgetsGroup *wg = m_volumeRaycaster->getWidgetsGroup();
-      wg->mergeGroup(m_volumeSource->getWidgetsGroup(), false);
-      connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
-      m_widgetsGroup->addChildGroup(wg);
-    }
-  }
-
-  ZWidgetsGroup *wg = NULL;
-
-  if (config.getZ3DWindowConfig().isGraphOn()) {
-#if defined(_FLYEM_)
-    //graph
-    wg = m_graphFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-            this, SLOT(openAdvancedSetting(QString)));
-    m_widgetsGroup->addChildGroup(wg);
-#endif
+    m_widgetsGroup->addChild(getVolumeFilter()->widgetsGroup());
   }
 
   if (config.getZ3DWindowConfig().isGraphOn()) {
 #if defined(_FLYEM_)
     //graph
-    wg = m_surfaceFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-            this, SLOT(openAdvancedSetting(QString)));
-    m_widgetsGroup->addChildGroup(wg);
+    m_widgetsGroup->addChild(getGraphFilter()->widgetsGroup());
+#endif
+  }
+
+  if (config.getZ3DWindowConfig().isGraphOn()) {
+#if defined(_FLYEM_)
+    //m_widgetsGroup->addChild(getSurfaceFilter()->widgetsGroup());
 #endif
   }
 
 #if defined(_FLYEM_)
-  wg = m_todoFilter->getWidgetsGroup();
-  connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-          this, SLOT(openAdvancedSetting(QString)));
-  m_widgetsGroup->addChildGroup(wg);
+  //m_widgetsGroup->addChild(getTodoFilter()->widgetsGroup());
 #endif
 
   if (config.getZ3DWindowConfig().isSwcsOn()) {
     //swc
-    wg = m_swcFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-            this, SLOT(openAdvancedSetting(QString)));
-    m_widgetsGroup->addChildGroup(wg);
+    m_widgetsGroup->addChild(getSwcFilter()->widgetsGroup());
   }
 
 #if !defined(_NEUTUBE_LIGHT_)
   //puncta
   if (config.getZ3DWindowConfig().isPunctaOn()) {
-    wg = m_punctaFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-            this, SLOT(openAdvancedSetting(QString)));
-    m_widgetsGroup->addChildGroup(wg);
+    m_widgetsGroup->addChild(getPunctaFilter()->widgetsGroup());
   }
 #endif
 
   //background
-  wg = m_compositor->getBackgroundWidgetsGroup();
-  connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-          this, SLOT(openAdvancedSetting(QString)));
-  m_widgetsGroup->addChildGroup(wg);
+  m_widgetsGroup->addChild(m_view->backgroundWidgetsGroup());
 
   //axis
-  wg = m_axis->getWidgetsGroup();
-  connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-          this, SLOT(openAdvancedSetting(QString)));
-  m_widgetsGroup->addChildGroup(wg);
+  m_widgetsGroup->addChild(m_view->axisWidgetsGroup());
 
-  //QWidget *widget = m_widgetsGroup->createWidget(this, true);
-
-  //m_settingsDockWidget->setWidget(widget);
 
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
   m_viewMenu->addSeparator();
   m_viewMenu->addAction(m_settingsDockWidget->toggleViewAction());
-  connect(m_widgetsGroup, SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()));
+  connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()));
+  connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
 
   m_objectsDockWidget = new QDockWidget(tr("Objects"), this);
   m_objectsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
@@ -947,14 +903,6 @@ void Z3DWindow::createDockWindows()
 
 int Z3DWindow::channelNumber()
 {
-  if (m_volumeSource == NULL) {
-    return 0;
-  }
-
-  if (m_volumeSource->isEmpty()) {
-    return 0;
-  }
-
   if (m_doc.get() == NULL) {
     return 0;
   }
@@ -985,12 +933,12 @@ void Z3DWindow::recordView()
 
 void Z3DWindow::diffView()
 {
-  std::cout << "Eye: " << getCamera()->get().eye() - m_cameraRecord.getEye()
+  std::cout << "Eye: " << getCamera()->get().eye() - m_cameraRecord.eye()
             << std::endl;
   std::cout << "Center: "
-            << getCamera()->get().center() - m_cameraRecord.getCenter() << std::endl;
+            << getCamera()->get().center() - m_cameraRecord.center() << std::endl;
   std::cout << "Up vector: "
-            << getCamera()->get().upVector() - m_cameraRecord.getUpVector() << std::endl;
+            << getCamera()->get().upVector() - m_cameraRecord.upVector() << std::endl;
 }
 
 void Z3DWindow::saveView()
@@ -1016,8 +964,7 @@ void Z3DWindow::loadView()
   if (!fileName.isEmpty()) {
     ZJsonObject cameraJson;
     cameraJson.load(fileName.toStdString());
-    getCamera()->get().set(cameraJson);
-    getCamera()->updatePara();
+    getCamera()->set(cameraJson);
   }
 }
 
@@ -1157,37 +1104,6 @@ QPointF Z3DWindow::getScreenProjection(
 void Z3DWindow::cleanup()
 {
   if (!m_isClean) {
-    delete m_widgetsGroup;
-    m_widgetsGroup = NULL;
-    m_canvas->setNetworkEvaluator(NULL);
-    m_networkEvaluator->deinitializeNetwork();
-    delete m_networkEvaluator;
-    m_networkEvaluator = NULL;
-
-    delete m_volumeSource;
-    m_volumeSource = NULL;
-    delete m_volumeRaycaster;
-    m_volumeRaycaster = NULL;
-    delete m_punctaFilter;
-    m_punctaFilter = NULL;
-//    delete m_swcFilter;
-//    m_swcFilter = NULL;
-    delete m_graphFilter;
-    m_graphFilter = NULL;
-    delete m_surfaceFilter;
-    m_surfaceFilter = NULL;
-    delete m_todoFilter;
-    m_todoFilter = NULL;
-//    delete m_decorationFilter;
-//    m_decorationFilter = NULL;
-    delete m_compositor;
-    m_compositor = NULL;
-    delete m_axis;
-    m_axis = NULL;
-    delete m_canvasRenderer;
-    m_canvasRenderer = NULL;
-
-    delete m_canvas;
     m_isClean = true;
 
     m_buttonStatus[0] = true;  // showgraph
@@ -1200,17 +1116,17 @@ void Z3DWindow::cleanup()
 
 void Z3DWindow::update3DCubeDisplay()
 {
-  m_surfaceFilter->clearSources();
-  ZOUT(LTRACE(), 5) << "Update 3d cube";
-  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
-  for (TStackObjectList::const_iterator iter = objList.begin();
-       iter != objList.end(); ++iter) {
-    ZCubeArray *cubeArray = dynamic_cast<ZCubeArray*>(*iter);
-    if (cubeArray->isVisible()) {
-      m_surfaceFilter->addData(cubeArray);
-    }
-  }
-  m_surfaceFilter->updateSurfaceVisibleState();
+//  m_surfaceFilter->clearSources();
+//  ZOUT(LTRACE(), 5) << "Update 3d cube";
+//  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
+//  for (TStackObjectList::const_iterator iter = objList.begin();
+//       iter != objList.end(); ++iter) {
+//    ZCubeArray *cubeArray = dynamic_cast<ZCubeArray*>(*iter);
+//    if (cubeArray->isVisible()) {
+//      m_surfaceFilter->addData(cubeArray);
+//    }
+//  }
+//  m_surfaceFilter->updateSurfaceVisibleState();
 }
 
 bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
@@ -1244,9 +1160,9 @@ void Z3DWindow::selectdObjectChangedFrom3D(ZStackObject *p, bool append)
 {
   if (p == NULL) {
     if (!append) {
-      if (m_todoFilter != NULL) { //temporary hack
+      if (getTodoFilter()) { //temporary hack
         m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
-        m_todoFilter->invalidate();
+        getTodoFilter()->invalidate();
       }
     }
     return;
@@ -1363,10 +1279,10 @@ void Z3DWindow::startConnectingSwcNode()
 {
   notifyUser("Click on the target node to connect.");
   getSwcFilter()->setInteractionMode(Z3DSwcFilter::ConnectSwcNode);
-  m_canvas->getInteractionContext().setSwcEditMode(
+  getCanvas()->getInteractionContext().setSwcEditMode(
         ZInteractiveContext::SWC_EDIT_CONNECT);
-  m_canvas->updateCursor();
-  //m_canvas->setCursor(Qt::SizeBDiagCursor);
+  getCanvas()->updateCursor();
+  //getCanvas()->setCursor(Qt::SizeBDiagCursor);
 }
 
 void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
@@ -1376,10 +1292,10 @@ void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
           getDocument()->getSelectedSwcNodeSet(), tn);
     m_doc->executeConnectSwcNodeCommand(target, tn);
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->getInteractionContext().setSwcEditMode(
+    getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_OFF);
-    m_canvas->updateCursor();
-    //m_canvas->setCursor(Qt::ArrowCursor);
+    getCanvas()->updateCursor();
+    //getCanvas()->setCursor(Qt::ArrowCursor);
   }
 }
 
@@ -1387,25 +1303,27 @@ void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
 
 void Z3DWindow::swcDoubleClicked(ZSwcTree *tree)
 {
-  std::vector<double> boundBox = m_swcFilter->getTreeBound(tree);
-  gotoPosition(boundBox, 0);
+  ZBBox<glm::dvec3> bd;
+  getSwcFilter()->treeBound(tree, bd);
+  m_view->gotoPosition(bd, 0);
 }
 
 void Z3DWindow::swcNodeDoubleClicked(Swc_Tree_Node *node)
 {
-  std::vector<double> boundBox(6, 0);
-  m_swcFilter->getTreeNodeBound(node, boundBox);
-  gotoPosition(boundBox, 0);
+  ZBBox<glm::dvec3> bd;
+  getSwcFilter()->treeNodeBound(node, bd);
+  m_view->gotoPosition(bd, 0);
 }
 
 void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
 {
-  std::vector<double> boundBox = m_punctaFilter->getPunctumBound(p);
+  ZBBox<glm::dvec3> bd;
+  getPunctaFilter()->punctumBound(*p, bd);
   if (hasVolume()) {
-    if (m_volumeSource->isSubvolume())
-      m_volumeSource->exitZoomInView();
+    if (getVolumeFilter()->isSubvolume())
+      getVolumeFilter()->exitZoomInView();
   }
-  gotoPosition(boundBox);
+  m_view->gotoPosition(bd);
 }
 
 void Z3DWindow::pointInVolumeLeftClicked(
@@ -1437,7 +1355,7 @@ void Z3DWindow::pointInVolumeLeftClicked(
         !m_toggleMoveSelectedObjectsAction->isChecked() &&
         !m_toggleSmartExtendSelectedSwcNodeAction->isChecked() &&
         NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
-      m_contextMenuGroup["trace"]->popup(m_canvas->mapToGlobal(pt));
+      m_contextMenuGroup["trace"]->popup(getCanvas()->mapToGlobal(pt));
     }
   }
 }
@@ -1487,7 +1405,7 @@ bool Z3DWindow::exitEditMode()
   } else if (getSwcFilter()->interactionMode() ==
              Z3DSwcFilter::ConnectSwcNode) {
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->setCursor(Qt::ArrowCursor);
+    getCanvas()->setCursor(Qt::ArrowCursor);
     acted = true;
   }
 
@@ -1499,13 +1417,13 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   notifyUser(" ");
   if (exitEditMode()) {
     return;
-  } else if (m_canvas->suppressingContextMenu()) {
+  } else if (getCanvas()->suppressingContextMenu()) {
     return;
   }
 
   m_contextMenu = m_menuFactory->makeContextMenu(this, m_contextMenu);
   if (!m_contextMenu->isEmpty()) {
-    m_contextMenu->popup(m_canvas->mapToGlobal(pt));
+    m_contextMenu->popup(getCanvas()->mapToGlobal(pt));
     return;
   }
 
@@ -1591,12 +1509,12 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     if (channelNumber() > 0) {
       bool success;
 #ifdef _QT5_
-      glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
+      glm::vec3 fpos = getVolumeFilter()->get3DPosition(
             pt.x() * qApp->devicePixelRatio(), pt.y() * qApp->devicePixelRatio(),
-            m_canvas->width() * qApp->devicePixelRatio(), m_canvas->height() * qApp->devicePixelRatio(), success);
+            getCanvas()->width() * qApp->devicePixelRatio(), getCanvas()->height() * qApp->devicePixelRatio(), success);
 #else
-      glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
-            pt.x(), pt.y(), m_canvas->width(), m_canvas->height(), success);
+      glm::vec3 fpos = getVolumeFilter()->get3DPosition(
+            pt.x(), pt.y(), getCanvas()->width(), getCanvas()->height(), success);
 #endif
       if (success) {
         m_lastClickedPosInVolume = glm::ivec3(fpos);
@@ -1613,7 +1531,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
         if (!actions.empty()) {
           m_mergedContextMenu->clear();
           m_mergedContextMenu->addActions(actions);
-          m_mergedContextMenu->popup(m_canvas->mapToGlobal(pt));
+          m_mergedContextMenu->popup(getCanvas()->mapToGlobal(pt));
         }
         return;
       }
@@ -1634,7 +1552,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   if (!actions.empty()) {
     m_mergedContextMenu->clear();
     m_mergedContextMenu->addActions(actions);
-    m_mergedContextMenu->popup(m_canvas->mapToGlobal(pt));
+    m_mergedContextMenu->popup(getCanvas()->mapToGlobal(pt));
   }
 }
 
@@ -1645,19 +1563,19 @@ void Z3DWindow::traceTube()
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
       */
-  m_canvas->setCursor(Qt::BusyCursor);
+  getCanvas()->setCursor(Qt::BusyCursor);
   m_doc->executeTraceSwcBranchCommand(m_lastClickedPosInVolume[0],
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
   getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-  m_canvas->setCursor(Qt::ArrowCursor);
+  getCanvas()->setCursor(Qt::ArrowCursor);
 }
 
 void Z3DWindow::openZoomInView()
 {
   if (hasVolume()) {
-    if (m_volumeSource->openZoomInView(m_lastClickedPosInVolume)) {
-      gotoPosition(m_volumeSource->getZoomInBound());
+    if (getVolumeFilter()->openZoomInView(m_lastClickedPosInVolume)) {
+      m_view->gotoPosition(getVolumeFilter()->zoomInBound());
     }
   }
 }
@@ -1665,7 +1583,7 @@ void Z3DWindow::openZoomInView()
 void Z3DWindow::exitZoomInView()
 {
   if (hasVolume()) {
-    m_volumeSource->exitZoomInView();
+    getVolumeFilter()->exitZoomInView();
   }
 }
 
@@ -1946,33 +1864,6 @@ void Z3DWindow::markPunctum()
   m_doc->markPunctum(m_lastClickedPosInVolume[0], m_lastClickedPosInVolume[1], m_lastClickedPosInVolume[2]);
 }
 
-void Z3DWindow::takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst)
-{
-  if (!m_canvasRenderer->renderToImage(filename, width, height, sst)) {
-    QMessageBox::critical(this, "Error", m_canvasRenderer->getRenderToImageError());
-  }
-}
-
-void Z3DWindow::takeScreenShot(QString filename, Z3DScreenShotType sst)
-{
-  int h = m_canvas->height();
-  if (h % 2 == 1) {
-    ++h;
-  }
-  int w = m_canvas->width();
-  if (w % 2 == 1) {
-    ++w;
-  }
-  if (m_canvas->width() % 2 == 1 || m_canvas->height() % 2 == 1) {
-    LINFO() << "Resize canvas size from (" << m_canvas->width() << "," << m_canvas->height() << ") to (" << w << "," << h << ").";
-    m_canvas->resize(w, h);
-  }
-  if (!m_canvasRenderer->renderToImage(filename, sst)) {
-    QMessageBox::critical(this, "Error", m_canvasRenderer->getRenderToImageError());
-  }
-  //m_compositor->savePickingBufferToImage(filename + "_pickingBuffer.tif");
-}
-
 void Z3DWindow::openAdvancedSetting(const QString &name)
 {
   if (!m_advancedSettingDockWidget) {
@@ -1993,66 +1884,6 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
       break;
     }
   }
-}
-
-void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix, glm::vec3 axis,
-                                 bool clockWise, int numFrame, int width, int height, Z3DScreenShotType sst)
-{
-  QString title = "Capturing Images...";
-  if (sst == HalfSideBySideStereoView)
-    title = "Capturing Half Side-By-Side Stereo Images...";
-  else if (sst == FullSideBySideStereoView)
-    title = "Capturing Full Side-By-Side Stereo Images...";
-  QProgressDialog progress(title, "Cancel", 0, numFrame, this);
-  progress.setWindowModality(Qt::WindowModal);
-  progress.show();
-  double rAngle = M_PI * 2. / numFrame;
-  for (int i=0; i<numFrame; i++) {
-    progress.setValue(i);
-    if (progress.wasCanceled())
-      break;
-
-    if (clockWise)
-      getCamera()->rotate(rAngle, getCamera()->vectorEyeToWorld(axis), getCamera()->getCenter());
-    else
-      getCamera()->rotate(-rAngle, getCamera()->vectorEyeToWorld(axis), getCamera()->getCenter());
-    resetCameraClippingRange();
-    int fieldWidth = numDigits(numFrame);
-    QString filename = QString("%1%2.tif").arg(namePrefix).arg(i, fieldWidth, 10, QChar('0'));
-    QString filepath = dir.filePath(filename);
-    takeScreenShot(filepath, width, height, sst);
-  }
-  progress.setValue(numFrame);
-}
-
-void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix, glm::vec3 axis,
-                                 bool clockWise, int numFrame, Z3DScreenShotType sst)
-{
-  QString title = "Capturing Images...";
-  if (sst == HalfSideBySideStereoView)
-    title = "Capturing Half Side-By-Side Stereo Images...";
-  else if (sst == FullSideBySideStereoView)
-    title = "Capturing Full Side-By-Side Stereo Images...";
-  QProgressDialog progress(title, "Cancel", 0, numFrame, this);
-  progress.setWindowModality(Qt::WindowModal);
-  progress.show();
-  double rAngle = M_PI * 2. / numFrame;
-  for (int i=0; i<numFrame; i++) {
-    progress.setValue(i);
-    if (progress.wasCanceled())
-      break;
-
-    if (clockWise)
-      getCamera()->rotate(rAngle, getCamera()->vectorEyeToWorld(axis), getCamera()->getCenter());
-    else
-      getCamera()->rotate(-rAngle, getCamera()->vectorEyeToWorld(axis), getCamera()->getCenter());
-    resetCameraClippingRange();
-    int fieldWidth = numDigits(numFrame);
-    QString filename = QString("%1%2.tif").arg(namePrefix).arg(i, fieldWidth, 10, QChar('0'));
-    QString filepath = dir.filePath(filename);
-    takeScreenShot(filepath, sst);
-  }
-  progress.setValue(numFrame);
 }
 
 void Z3DWindow::updateSettingsDockWidget()
@@ -2112,18 +1943,18 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
       m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
       m_toggleSmartExtendSelectedSwcNodeAction->blockSignals(false);
     }
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::AddSwcNode);
-    m_canvas->getInteractionContext().setSwcEditMode(
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::AddSwcNode);
+    getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_ADD_NODE);
     //m_canvas->setCursor(Qt::PointingHandCursor);
     notifyUser("Click to add a node");
   } else {
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->getInteractionContext().setSwcEditMode(
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_OFF);
-    //m_canvas->setCursor(Qt::ArrowCursor);
+    //getCanvas()->setCursor(Qt::ArrowCursor);
   }
-  m_canvas->updateCursor();
+  getCanvas()->updateCursor();
 }
 
 //void Z3DWindow::toogleExtendSelectedSwcNodeMode(bool checked)
@@ -2161,39 +1992,40 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
     notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
                "Right click to exit extending mode.");
     if (getDocument()->hasStackData()) {
-      m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+      getSwcFilter()->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
     } else {
-      m_swcFilter->setInteractionMode(Z3DSwcFilter::PlainExtendSwcNode);
+      getSwcFilter()->setInteractionMode(Z3DSwcFilter::PlainExtendSwcNode);
     }
-    m_canvas->getInteractionContext().setSwcEditMode(
+    getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     //m_canvas->setCursor(Qt::PointingHandCursor);
   } else {
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->getInteractionContext().setSwcEditMode(
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_OFF);
-    //m_canvas->setCursor(Qt::ArrowCursor);
+    //getCanvas()->setCursor(Qt::ArrowCursor);
   }
-  m_canvas->updateCursor();
+  getCanvas()->updateCursor();
 }
 
 void Z3DWindow::changeBackground()
 {
   m_settingsDockWidget->show();
-  int index = m_widgetsGroup->getChildGroups().indexOf(m_compositor->getBackgroundWidgetsGroup());
+  const auto& grps = m_widgetsGroup->getChildGroups();
+  int index = std::find(grps.begin(), grps.end(), m_view->backgroundWidgetsGroup()) - grps.begin();
   QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   tab->setCurrentIndex(index);
 }
 
 bool Z3DWindow::isBackgroundOn() const
 {
-  return m_compositor->showingBackground();
+  return getCompositor()->showingBackground();
 }
 
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 {
   getInteractionHandler()->setMoveObjects(checked);
-  m_canvas->updateCursor();
+  getCanvas()->updateCursor();
   if (checked) {
     notifyUser("Shift + Mouse to move selected objects");
   }
@@ -2201,28 +2033,9 @@ void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 
 void Z3DWindow::moveSelectedObjects(double x, double y, double z)
 {
-  m_doc->executeMoveObjectCommand(x, y, z, m_punctaFilter->getCoordScales().x,
-                                  m_punctaFilter->getCoordScales().y,
-                                  m_punctaFilter->getCoordScales().z,
-                                  m_swcFilter->getCoordScales().x,
-                                  m_swcFilter->getCoordScales().y,
-                                  m_swcFilter->getCoordScales().z);
-
-#if 0
-  if (m_doc->selectedSwcs()->empty() && m_doc->selectedPuncta()->empty() &&
-      m_doc->selectedSwcTreeNodes()->empty())
-    return;
-  ZStackDocMoveSelectedObjectCommand *moveSelectedObjectCommand =
-      new ZStackDocMoveSelectedObjectCommand(m_doc.get(),
-                                             x, y, z);
-  moveSelectedObjectCommand->setPunctaCoordScale(m_punctaFilter->getCoordScales().x,
-                                                 m_punctaFilter->getCoordScales().y,
-                                                 m_punctaFilter->getCoordScales().z);
-  moveSelectedObjectCommand->setSwcCoordScale(m_swcFilter->getCoordScales().x,
-                                              m_swcFilter->getCoordScales().y,
-                                              m_swcFilter->getCoordScales().z);
-  m_doc->undoStack()->push(moveSelectedObjectCommand);
-#endif
+  m_doc->executeMoveObjectCommand(x, y, z,
+                                  getPunctaFilter()->coordTransform(),
+                                  getSwcFilter()->coordTransform());
 }
 
 void Z3DWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -2338,14 +2151,14 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_Equal: // increase swc size scale
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      getSwcFilter()->setSizeScale(getSwcFilter()->getSizeScale() + .1);
+      getSwcFilter()->setSizeScale(getSwcFilter()->sizeScale() + .1);
     }
   }
     break;
   case Qt::Key_Minus:  // decrease swc size scale
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      getSwcFilter()->setSizeScale(std::max(.1, getSwcFilter()->getSizeScale() - .1));
+      getSwcFilter()->setSizeScale(std::max(.1, getSwcFilter()->sizeScale() - .1));
     }
   }
     break;
@@ -2354,7 +2167,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       ZOptionParameter<QString> *sm =
           (ZOptionParameter<QString>*) (
-            getSwcFilter()->getParameter("Geometry"));
+            getSwcFilter()->parameter("Geometry"));
       sm->selectNext();
     }
   }
@@ -2411,7 +2224,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
         }
         if (getSwcFilter()->interactionMode() == Z3DSwcFilter::ConnectSwcNode) {
             getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-            m_canvas->setCursor(Qt::ArrowCursor);
+            getCanvas()->setCursor(Qt::ArrowCursor);
         }
         m_toggleMoveSelectedObjectsAction->toggle();
       }
@@ -2425,18 +2238,18 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
         }
         if (getSwcFilter()->interactionMode() == Z3DSwcFilter::ConnectSwcNode) {
             getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-            m_canvas->setCursor(Qt::ArrowCursor);
+            getCanvas()->setCursor(Qt::ArrowCursor);
         }
         m_toggleSmartExtendSelectedSwcNodeAction->toggle();
       }
     } else {
       if (GET_APPLICATION_NAME == "FlyEM") {
         if (event->modifiers() == Qt::ShiftModifier) {
-          QCursor oldCursor = m_canvas->cursor();
-          m_canvas->setCursor(Qt::BusyCursor);
+          QCursor oldCursor = getCanvas()->cursor();
+          getCanvas()->setCursor(Qt::BusyCursor);
           getDocument()->runSeededWatershed();
           notifyUser("Body splitted");
-          m_canvas->setCursor(oldCursor);
+          getCanvas()->setCursor(oldCursor);
         }
       }
     }
@@ -2493,12 +2306,10 @@ QTabWidget *Z3DWindow::createBasicSettingTabWidget()
   QTabWidget *tabs = new QTabWidget();
   tabs->setElideMode(Qt::ElideNone);
   tabs->setUsesScrollButtons(true);
-  const QList<ZWidgetsGroup*>& groups = m_widgetsGroup->getChildGroups();
-  for (int i=0; i<groups.size(); i++) {
-    if (groups[i]->isGroup()) {
-      QWidget *widget = groups[i]->createWidget(this, true);
-      tabs->addTab(widget, groups[i]->getGroupName());
-      //widget->setVisible(groups[i]->isVisible());
+  for (const auto& grp : m_widgetsGroup->getChildGroups()) {
+    if (grp->isGroup()) {
+      QWidget *widget = grp->createWidget(true);
+      tabs->addTab(widget, grp->getGroupName());
     }
   }
   return tabs;
@@ -2508,11 +2319,10 @@ QTabWidget *Z3DWindow::createAdvancedSettingTabWidget()
 {
   QTabWidget *tabs = new QTabWidget();
   tabs->setElideMode(Qt::ElideNone);
-  const QList<ZWidgetsGroup*>& groups = m_widgetsGroup->getChildGroups();
-  for (int i=0; i<groups.size(); i++) {
-    if (groups[i]->isGroup() && groups[i]->getGroupName() != "Capture" &&
-        groups[i]->getGroupName() != "Utils") {
-      tabs->addTab(groups[i]->createWidget(this, false), groups[i]->getGroupName());
+  for (const auto& grp : m_widgetsGroup->getChildGroups()) {
+    if (grp->isGroup() && grp->getGroupName() != "Capture" &&
+        grp->getGroupName() != "Utils") {
+      tabs->addTab(grp->createWidget(false), grp->getGroupName());
     }
   }
   return tabs;
@@ -2522,8 +2332,8 @@ void Z3DWindow::updateContextMenu(const QString &group)
 {
   if (group == "empty") {
     m_contextMenuGroup["empty"]->clear();
-    if (channelNumber() > 0 && m_volumeSource->volumeNeedDownsample() &&
-        m_volumeSource->isSubvolume()) {
+    if (channelNumber() > 0 && getVolumeFilter()->volumeNeedDownsample() &&
+        getVolumeFilter()->isSubvolume()) {
       m_contextMenuGroup["empty"]->addAction(m_exitVolumeZoomInViewAction);
     }
     //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
@@ -2532,7 +2342,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (channelNumber() > 0 && !m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
 */
-    if (m_doc->hasSwc() && m_swcFilter->isNodeRendering())
+    if (m_doc->hasSwc() && getSwcFilter()->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toggleAddSwcNodeModeAction);
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
@@ -2541,8 +2351,8 @@ void Z3DWindow::updateContextMenu(const QString &group)
   }
   if (group == "volume") {
     m_contextMenuGroup["volume"]->clear();
-    if (m_volumeSource->volumeNeedDownsample()) {
-      if (m_volumeSource->isSubvolume()) {
+    if (getVolumeFilter()->volumeNeedDownsample()) {
+      if (getVolumeFilter()->isSubvolume()) {
         m_contextMenuGroup["volume"]->addAction(m_exitVolumeZoomInViewAction);
       } else {
         m_contextMenuGroup["volume"]->addAction(m_openVolumeZoomInViewAction);
@@ -2555,7 +2365,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
 */
-    if (m_doc->hasSwc() && m_swcFilter->isNodeRendering())
+    if (m_doc->hasSwc() && getSwcFilter()->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toggleAddSwcNodeModeAction);
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
@@ -3557,9 +3367,9 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 */
   ZObject3d *obj = new ZObject3d;
   for (size_t i = 0; i < baseObj->size(); ++i) {
-    ZLineSegment seg = m_volumeRaycaster->getScreenRay(
+    ZLineSegment seg = getVolumeFilter()->getScreenRay(
           baseObj->getX(i), baseObj->getY(i),
-          m_canvas->width(), m_canvas->height());
+          getCanvas()->width(), getCanvas()->height());
     ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
     //if (success) {
 //      ZIntCuboid box = m_doc->stackRef()->getBoundBox();
@@ -3570,13 +3380,15 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
                    box.getLastCorner().getX(), box.getLastCorner().getY(),
                    box.getLastCorner().getZ());
 #endif
-      ZCuboid rbox(m_volumeBoundBox[0], m_volumeBoundBox[2], m_volumeBoundBox[4],
-          m_volumeBoundBox[1], m_volumeBoundBox[3], m_volumeBoundBox[5]);
+      const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
+      ZCuboid rbox;
+      rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+      rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
 
-      if (m_volumeSource->isSubvolume()) {
-        std::vector<double> zoomInBound = m_volumeSource->getZoomInBound();
-        rbox.setFirstCorner(zoomInBound[0], zoomInBound[2], zoomInBound[4]);
-        rbox.setLastCorner(zoomInBound[1], zoomInBound[3], zoomInBound[5]);
+      if (getVolumeFilter()->isSubvolume()) {
+        const auto& zoomInBound = getVolumeFilter()->zoomInBound();
+        rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+        rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
       }
 
       ZLineSegment stackSeg;
@@ -3619,14 +3431,17 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
                  box.getLastCorner().getX(), box.getLastCorner().getY(),
                  box.getLastCorner().getZ());
 #endif
-    ZCuboid rbox(m_volumeBoundBox[0], m_volumeBoundBox[2], m_volumeBoundBox[4],
-        m_volumeBoundBox[1], m_volumeBoundBox[3], m_volumeBoundBox[5]);
-    if (m_volumeSource->isSubvolume()) {
-      std::vector<double> zoomInBound = m_volumeSource->getZoomInBound();
-      rbox.setFirstCorner(zoomInBound[0], zoomInBound[2], zoomInBound[4]);
-      rbox.setLastCorner(zoomInBound[1], zoomInBound[3], zoomInBound[5]);
+    const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
+    ZCuboid rbox;
+    rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+    rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+
+    if (getVolumeFilter()->isSubvolume()) {
+      const auto& zoomInBound = getVolumeFilter()->zoomInBound();
+      rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+      rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
     } else {
-      ZIntCuboid cutBox = m_volumeRaycaster->getCutBox();
+      ZIntCuboid cutBox = getVolumeFilter()->cutBox();
 //      cutBox.translate(m_doc->getStackOffset());
       rbox = misc::CutBox(rbox, cutBox);
     }
@@ -3635,8 +3450,8 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
       double x = 0.0;
       double y = 0.0;
       stroke->getPoint(&x, &y, i);
-      ZLineSegment seg = m_volumeRaycaster->getScreenRay(
-            iround(x), iround(y), m_canvas->width(), m_canvas->height());
+      ZLineSegment seg = getVolumeFilter()->getScreenRay(
+            iround(x), iround(y), getCanvas()->width(), getCanvas()->height());
       //if (success) {
       ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
       ZLineSegment stackSeg;
@@ -3794,7 +3609,7 @@ Z3DGeometryFilter* Z3DWindow::getFilter(ERendererLayer layer) const
   case LAYER_TODO:
     return getTodoFilter();
   case LAYER_SURFACE:
-    return getSurfaceFilter();
+    //return getSurfaceFilter();
   case LAYER_VOLUME:
     break;
   }
@@ -3814,7 +3629,7 @@ Z3DBoundedFilter& Z3DWindow::getBoundedFilter(Z3DWindow::ERendererLayer layer) c
   case LAYER_TODO:
     return *getTodoFilter();
   case LAYER_SURFACE:
-    return *getSurfaceFilter();
+    //return *getSurfaceFilter();
   case LAYER_VOLUME:
     return *getVolumeFilter();
     break;

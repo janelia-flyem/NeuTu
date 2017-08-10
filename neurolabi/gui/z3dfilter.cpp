@@ -25,8 +25,6 @@
 #include "z3drenderport.h"
 #include "zvertexarrayobject.h"
 
-namespace nim {
-
 Z3DFilter::Z3DFilter(QObject* parent)
   : QObject(parent)
   , m_state(State::AllResultInvalid)
@@ -103,20 +101,6 @@ void Z3DFilter::disconnectAllPorts()
 
   for (auto port : m_outputPorts) {
     port->disconnectAll();
-  }
-}
-
-void Z3DFilter::read(const QJsonObject& json)
-{
-  for (auto para : m_parameters) {
-    para->read(json);
-  }
-}
-
-void Z3DFilter::write(QJsonObject& json) const
-{
-  for (auto para : m_parameters) {
-    para->write(json);
   }
 }
 

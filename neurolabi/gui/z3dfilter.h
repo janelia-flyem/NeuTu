@@ -110,10 +110,6 @@ public:
   // removes all port connections
   void disconnectAllPorts();
 
-  void read(const QJsonObject& json);
-
-  void write(QJsonObject& json) const;
-
   inline void invalidateResult()
   { invalidate(State::AllResultInvalid); }
 

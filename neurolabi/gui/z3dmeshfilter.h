@@ -100,7 +100,7 @@ private:
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllMesh;
 
-  Z3DTextureGlowRenderer m_textureGlowRenderer;
+  //Z3DTextureGlowRenderer m_textureGlowRenderer;
   ZBoolParameter m_glow;
   Z3DTextureCopyRenderer m_textureCopyRenderer;
 
