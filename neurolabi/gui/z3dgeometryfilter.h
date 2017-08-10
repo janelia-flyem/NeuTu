@@ -32,6 +32,8 @@ public:
   inline Z3DCamera& getCamera() const {return m_rendererBase->getCamera();}
   inline glm::ivec4 getViewport() const {return m_rendererBase->getViewport();}
   inline Z3DPickingManager* getPickingManager() const {return m_pickingManager;}
+  glm::ivec3 getPickingTexSize() const;
+  void updatePickingTexSize();
 
   inline glm::vec3 getCoordScales() const {return m_rendererBase->getCoordScales();}
   inline float getOpacity() const {return m_rendererBase->getOpacity();}
@@ -107,6 +109,7 @@ protected:
   bool m_needBlending;
   bool m_needOIT;
   QString m_filterName;
+  glm::ivec3 m_pickingTexSize;
 };
 
 #endif // Z3DGEOMETRYFILTER_H

@@ -767,7 +767,9 @@ HEADERS += mainwindow.h \
     flyem/zflyembodylistmodel.h \
     flyem/zflyembodylistview.h \
     flyem/zflyembodylistdelegate.h \
-    flyem/zflyembodyideditor.h
+    flyem/zflyembodyideditor.h \
+    flyem/zflyembody3ddoccommand.h \
+    flyem/zflyembody3ddocmenufactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1339,6 +1341,8 @@ SOURCES += main.cpp \
     flyem/zflyembodylistmodel.cpp \
     flyem/zflyembodylistview.cpp \
     flyem/zflyembodylistdelegate.cpp \
-    flyem/zflyembodyideditor.cpp
+    flyem/zflyembodyideditor.cpp \
+    flyem/zflyembody3ddoccommand.cpp \
+    flyem/zflyembody3ddocmenufactory.cpp
 
 

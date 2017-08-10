@@ -841,8 +841,9 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
       }
     }
     m_rendererBase->renderPicking(eye);
-    m_pickingTexSize =  getPickingManager()->getRenderTarget()->getAttachment(
-          GL_COLOR_ATTACHMENT0)->getDimensions();
+    updatePickingTexSize();
+//    m_pickingTexSize =  getPickingManager()->getRenderTarget()->getAttachment(
+//          GL_COLOR_ATTACHMENT0)->getDimensions();
   }
 }
 

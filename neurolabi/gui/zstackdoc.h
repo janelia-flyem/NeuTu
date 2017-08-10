@@ -84,6 +84,7 @@ class ZWidgetMessage;
 class ZDvidSparseStack;
 class ZStackDocDataBuffer;
 class ZStackDocKeyProcessor;
+class QKeyEvent;
 
 /*!
  * \brief The class of stack document
@@ -145,7 +146,10 @@ public: //attributes
    */
   bool hasStackPaint() const;
 
-
+  /*!
+   * \brief Test if the document has a mask
+   * \return
+   */
   bool hasStackMask();
 
   // hasTracable() returns true iff it has tracable data.
@@ -468,6 +472,7 @@ public:
 
   ZStackDocKeyProcessor* getKeyProcessor();
   void setKeyProcessor(ZStackDocKeyProcessor *processor);
+  bool processKeyEvent(QKeyEvent *event);
 
   /*
   ZNeuronTracer &getNeuronTracer() {
@@ -1245,6 +1250,7 @@ protected:
   virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
   void updateWatershedBoundaryObject(ZIntPoint dsIntv);
+  virtual void makeKeyProcessor();
 
 private:
   void init();
@@ -1267,7 +1273,9 @@ private:
   const T* getFirstUserByType() const;
 
   void updateTraceMask();
-  virtual void makeKeyProcessor();
+
+protected:
+  ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
 private:
   //Main stack
@@ -1325,7 +1333,6 @@ private:
   ZStackFactory *m_stackFactory;
 
   ZActionFactory *m_actionFactory;
-  ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
 
   bool m_selectionSilent;

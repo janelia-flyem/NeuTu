@@ -287,6 +287,8 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   QPen pen(color);
   QBrush brush(color);
 
+  pen.setCosmetic(m_usingCosmeticPen);
+
   if (isEraser()) {
     painter.setCompositionMode(QPainter::CompositionMode_Source);
   } else {

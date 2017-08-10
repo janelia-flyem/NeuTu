@@ -2068,7 +2068,7 @@ void ZFlyEmProofDoc::commitSplitFromService()
         GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), originalId);
   foreach (ZObject3dScan *obj, objList) {
     uint64_t newBodyId = getDvidWriter().writeSplit(*obj, originalId, 0);
-    emit messageGenerated(QString("%d uploaded").arg(newBodyId));
+    emit messageGenerated(QString("%1 uploaded").arg(newBodyId));
   }
 }
 

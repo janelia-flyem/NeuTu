@@ -60,6 +60,8 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
           this->viewport(), SLOT(update()));
   connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
           this, SIGNAL(strokePainted(ZStroke2d*)));
+  connect(&m_interaction, SIGNAL(shootingTodo(int,int)),
+          this, SIGNAL(shootingTodo(int,int)));
 //#endif
 }
 
@@ -90,7 +92,8 @@ bool Z3DCanvas::suppressingContextMenu() const
 {
 //#if defined(_FLYEM_)
   if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE) ||
-      m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT)) {
+      m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT) ||
+      m_interaction.isStateOn(ZInteractionEngine::STATE_MARK)) {
     return true;
   }
 //#endif
@@ -212,7 +215,7 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 
   if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
     painter->setPen(QColor(255, 255, 255));
-    QFont font("Helvetica [Cronyx]", 24);;
+    QFont font("Helvetica [Cronyx]", 24);
     painter->setFont(font);
     painter->drawText(
           QRectF(10, 10, 300, 200),

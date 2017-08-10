@@ -34,7 +34,6 @@ private:
   ZFlyEmBodyMerger::TLabelMapList m_oldMapList;
   std::set<uint64_t> m_bodySet;
 };
-
 }
 
 #endif // ZFLYEMPROOFDOCCOMMAND_H

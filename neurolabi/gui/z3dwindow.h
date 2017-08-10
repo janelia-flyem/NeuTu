@@ -58,11 +58,12 @@ class HelpDialog;
 //class Z3DRendererBase;
 class ZROIWidget;
 class ZActionLibrary;
-class ZMenuFactory;
+//class ZMenuFactory;
 class ZJsonObject;
 class Z3DGeometryFilter;
 class ZComboEditDialog;
 class ZFlyEmBodyComparisonDialog;
+class ZStackDocMenuFactory;
 
 
 class Z3DWindow : public QMainWindow
@@ -163,6 +164,8 @@ public: //Components
     return dynamic_cast<T*>(m_doc.get());
   }
 
+  void setMenuFactory(ZStackDocMenuFactory *factory);
+
 public: //Bounding box
   void updateVolumeBoundBox();
   void updateSwcBoundBox();
@@ -204,6 +207,8 @@ public: //controls
   ZJsonObject getConfigJson(ERendererLayer layer) const;
 
   void skipKeyEvent(bool on);
+
+  void syncAction();
 
 public:
   void setROIs(size_t n);
@@ -279,6 +284,7 @@ public slots:
   void deleteSelectedSwcNode();
   void locateSwcNodeIn2DView();
   void removeSwcTurn();
+  void deleteSelected();
 
   void convertSelectedChainToSwc();
 
@@ -306,6 +312,7 @@ public slots:
 
   void showPuncta(bool on);
   void showTodo(bool on);
+  void activateTodoAction();
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -395,7 +402,9 @@ public slots:
   void cropSwcInRoi();
 
   void updateCuttingBox();
-
+  void shootTodo(int x, int y);
+  void checkSelectedTodo();
+  void uncheckSelectedTodo();
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -443,6 +452,7 @@ private:
   void exitExtendingSwc();
 
   bool exitEditMode();
+  bool canSelectObject() const;
 
   void selectSwcNodeFromStroke(const ZStroke2d *stroke);
   void labelSwcNodeFromStroke(const ZStroke2d *stroke);
@@ -471,7 +481,7 @@ private:
   QMenu *m_editMenu;
 
   ZActionLibrary *m_actionLibrary;
-  ZMenuFactory *m_menuFactory;
+  ZStackDocMenuFactory *m_menuFactory;
   QMenu *m_helpMenu;
 
   QAction *m_removeSelectedObjectsAction;
@@ -524,6 +534,8 @@ private:
   QAction *m_changePunctaNameAction;
   QAction *m_saveAllPunctaAsAction;
   QAction *m_locatePunctumIn2DAction;
+
+//  QAction *m_viewTodoAction = NULL;
 
   /*
   QMenu *m_punctaContextMenu;

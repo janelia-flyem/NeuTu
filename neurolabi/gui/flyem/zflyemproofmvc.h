@@ -142,7 +142,7 @@ public:
 
   void diagnose();
 
-  Z3DWindow* makeExternalSkeletonWindow();
+  Z3DWindow* makeExternalSkeletonWindow(NeuTube3D::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
 
 signals:

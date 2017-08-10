@@ -227,12 +227,48 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
     QList<ZActionFactory::EAction> actionList;
 
-    if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
-        doc->getTag() == NeuTube::Document::FLYEM_COARSE_BODY) {
-      if (doc->getSelectedSwcNodeList().size() == 1) {
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
+        doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE ||
+        doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+      actionList.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
+    }
+
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D) {
+      actionList.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
+    }
+
+    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
+        doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE ||
+        doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+      int swcNodeCount = doc->getSelectedSwcNodeNumber();
+
+      if (swcNodeCount == 1) {
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
+        actionList.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
       }
+
+      if (!actionList.isEmpty()) {
+        actionList.append(ZActionFactory::ACTION_SEPARATOR);
+      }
+
+      if (swcNodeCount > 0 || doc->hasSelectedSwc()) {
+        actionList.append(ZActionFactory::ACTION_DESELECT_BODY);
+      }
+
+      if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
+          doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
+        actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
+
+        if (window->readyForAction(ZActionFactory::ACTION_FLYEM_COMPARE_BODY)) {
+          actionList.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
+        }
+      }
+    }
+
+    if (window->readyForAction(ZActionFactory::ACTION_COPY_POSITION)) {
+      actionList.append(ZActionFactory::ACTION_COPY_POSITION);
     }
 
     addAction(actionList, window, menu);

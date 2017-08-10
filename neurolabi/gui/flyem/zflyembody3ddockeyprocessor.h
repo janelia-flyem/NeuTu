@@ -20,6 +20,8 @@ signals:
 
 public slots:
   bool processKeyEvent(QKeyEvent *event);
+  bool processKeyEvent(
+      QKeyEvent *event, const ZInteractiveContext &context) override;
 
 };
 

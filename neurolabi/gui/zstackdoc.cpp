@@ -9812,6 +9812,12 @@ ZRect2d ZStackDoc::getRect2dRoi() const
 void ZStackDoc::setKeyProcessor(ZStackDocKeyProcessor *processor)
 {
   m_keyProcessor = processor;
+  m_keyProcessor->setParent(this);
+}
+
+bool ZStackDoc::processKeyEvent(QKeyEvent *event)
+{
+  return getKeyProcessor()->processKeyEvent(event);
 }
 
 ZStackDocKeyProcessor* ZStackDoc::getKeyProcessor()

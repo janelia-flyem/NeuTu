@@ -24205,19 +24205,19 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.set("emdata1.int.janelia.org", "3f7a", 8700);
   target.setLabelBlockName(
         "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
   target.setBodyLabelName(
         "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz_vol");
 
-
-
-  ZJsonArray rootObj;
-  rootObj.load((GET_TEST_DATA_DIR +
+  ZJsonObject docJson;
+  docJson.load((GET_TEST_DATA_DIR +
                 "/_flyem/test/VR_Practice_Assignment_smithc_dvid.json"));
+
+  ZJsonArray rootObj(docJson.value("meshReview"));
 //  QJsonArray rootObj = jsonDoc.array();
 
   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
@@ -24274,7 +24274,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
    std::vector<ZPoint> ptArray = ZGeometry::LineShpereIntersection(
          ZPoint(0, 0.5, -2), ZPoint(0, 0, 1), ZPoint(0, 0, 0), 1);
 

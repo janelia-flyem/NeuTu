@@ -120,6 +120,7 @@ signals:
   void canvasSizeChanged(int w, int h);
   void activeDecorationUpdated();
   void strokePainted(ZStroke2d*);
+  void shootingTodo(int x, int y);
 
 protected:
   double getDevicePixelRatio();

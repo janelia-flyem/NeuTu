@@ -144,6 +144,16 @@ public:
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
   void addTodo(int x, int y, int z, bool checked, uint64_t bodyId);
+  void addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
+  void addTodoSliently(const ZFlyEmToDoItem &item);
+  void addTodo(const QList<ZFlyEmToDoItem> &itemList);
+  void removeTodo(ZFlyEmToDoItem &item, uint64_t bodyId);
+  void removeTodo(const QList<ZFlyEmToDoItem> &itemList);
+  void removeTodo(int x, int y, int z);
+  void removeTodoSliently(const ZFlyEmToDoItem &item);
+  ZFlyEmToDoItem makeTodoItem(
+      int x, int y, int z, bool checked, uint64_t bodyId);
+  ZFlyEmToDoItem readTodoItem(int x, int y, int z) const;
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
@@ -204,6 +214,10 @@ public:
 
   void enableNodeSeeding(bool on);
 
+public:
+  void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
+  void executeRemoveTodoCommand();
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   void addSynapse(bool on);
@@ -212,16 +226,23 @@ public slots:
   void updateTodo(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
   void setNormalTodoVisible(bool visible);
+  void setSelectedTodoItemChecked(bool on);
+  void checkSelectedTodoItem();
+  void uncheckSelectedTodoItem();
 
-  void recycleObject(ZStackObject *obj);
-  void killObject(ZStackObject *obj);
+  void recycleObject(ZStackObject *obj) override;
+  void killObject(ZStackObject *obj) override;
 
   void setSeedType(int type);
 
   void setBodyModelSelected(const QSet<uint64_t> &bodySet);
 
+signals:
+  void bodyRemoved(uint64_t bodyId);
+
 protected:
-  void autoSave() {}
+  void autoSave() override {}
+  void makeKeyProcessor() override;
 
 private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
@@ -318,7 +339,6 @@ private:
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;
   QMap<uint64_t, int> m_bodyUpdateMap;
-  ZFlyEmBody3dDocKeyProcessor *m_keyProcessor;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;

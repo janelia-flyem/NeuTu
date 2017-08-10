@@ -128,5 +128,6 @@
         <file>images/test2.png</file>
         <file>images/science.png</file>
         <file>images/view_roi.png</file>
+        <file>images/add_todo.png</file>
     </qresource>
 </RCC>

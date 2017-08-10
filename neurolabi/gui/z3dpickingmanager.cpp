@@ -99,7 +99,7 @@ const void* Z3DPickingManager::getObjectAtWidgetPos(
   pos[0] = pos[0] * dpr;
   pos[1] = pos[1] * dpr;
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   std::cout << "Calibrated by " << dpr << ": "
             << pos[0] << ", " << pos[1] << std::endl;
 #endif
@@ -107,7 +107,7 @@ const void* Z3DPickingManager::getObjectAtWidgetPos(
 //  glm::ivec3 texSize =
 //      getRenderTarget()->getAttachment(GL_COLOR_ATTACHMENT0)->getDimensions();
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   std::cout << "Tex size: " << texSize[0] << ", " << texSize[1] << ", "
             << texSize[2] << std::endl;
 #endif

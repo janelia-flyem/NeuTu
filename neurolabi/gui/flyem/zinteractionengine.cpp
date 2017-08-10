@@ -1,6 +1,8 @@
 #include "zinteractionengine.h"
 #include <QMouseEvent>
 #include "z3dinteractionhandler.h"
+#include "zstackoperator.h"
+#include "zstackdockeyprocessor.h"
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),
@@ -10,7 +12,14 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
 {
   m_stroke.setWidth(10.0);
   m_stroke.setZ(0);
+
+  m_rayMarker.setWidth(10.0);
+  m_rayMarker.setZ(0);
+  m_rayMarker.setFilled(false);
+  m_rayMarker.useCosmeticPen(true);
+
   m_namedDecorationList.append(&m_stroke);
+  m_namedDecorationList.append(&m_rayMarker);
   m_rect.setColor(255, 0, 0, 128);
   m_namedDecorationList.append(&m_rect);
   m_previousKey = Qt::Key_unknown;
@@ -57,7 +66,11 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
     }
 
     emit decorationUpdated();
- }
+ } else if (m_interactiveContext.todoEditMode() ==
+            ZInteractiveContext::TODO_ADD_ITEM) {
+    m_rayMarker.set(event->x(), event->y());
+    emit decorationUpdated();
+  }
 }
 
 void ZInteractionEngine::processMouseReleaseEvent(
@@ -70,16 +83,12 @@ void ZInteractionEngine::processMouseReleaseEvent(
     } else if (isStateOn(STATE_DRAW_RECT)) {
       m_rect.makeValid();
       exitPaintRect();
+    } else if (isStateOn(STATE_MARK)) {
+      emit shootingTodo(event->x(), event->y());
     }
     m_mouseLeftButtonPressed = false;
   } else if (event->button() == Qt::RightButton) {
-    if (isStateOn(STATE_DRAW_STROKE)) {
-      exitPaintStroke();
-      event->accept();
-    }
-    if (m_interactiveContext.swcEditMode() != ZInteractiveContext::SWC_EDIT_OFF) {
-      exitSwcEdit();
-    }
+    exitEditMode();
     m_mouseRightButtonPressed = false;
   }
 }
@@ -104,6 +113,10 @@ void ZInteractionEngine::removeRectDecoration()
   m_rect.setSize(0, 0);
 }
 
+void ZInteractionEngine::setKeyProcessor(ZStackDocKeyProcessor *processor)
+{
+  m_keyProcessor = processor;
+}
 
 void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
                                                 int sliceIndex)
@@ -122,6 +135,54 @@ void ZInteractionEngine::processMousePressEvent(QMouseEvent *event,
   }
 }
 
+bool ZInteractionEngine::process(const ZStackOperator &op)
+{
+  bool processed = false;
+
+  switch (op.getOperation()) {
+  case ZStackOperator::OP_START_PAINT_STROKE:
+    enterPaintStroke();
+    processed = true;
+    break;
+  case ZStackOperator::OP_RECT_ROI_INIT:
+    enterPaintRect();
+    processed = true;
+    break;
+  case ZStackOperator::OP_EXIT_EDIT_MODE:
+    exitEditMode();
+    processed = true;
+    break;
+  case ZStackOperator::OP_ACTIVE_STROKE_CHANGE_LABEL:
+    m_stroke.setLabel(op.getLabel());
+    emit decorationUpdated();
+    processed = true;
+    break;
+  case ZStackOperator::OP_SWC_SELECT_NODE_IN_ROI:
+    if (hasRectDecoration()) {
+      emit selectingSwcNodeInRoi(op.isShift());
+    }
+    break;
+  case ZStackOperator::OP_FLYEM_TOD_ENTER_ADD_MODE:
+    enterMarkTodo();
+    processed = true;
+    break;
+  case ZStackOperator::OP_FLYEM_CROP_BODY:
+    if (hasRectDecoration()) {
+      emit croppingSwc();
+      processed = true;
+    }
+    break;
+  case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
+    emit deletingSelected();
+    processed = true;
+    break;
+  default:
+    break;
+  }
+
+  return processed;
+}
+
 bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 {
   if (!m_isKeyEventEnabled) {
@@ -130,6 +191,12 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 
   bool processed = false;
 
+  if (m_keyProcessor != NULL) {
+    m_keyProcessor->processKeyEvent(event, m_interactiveContext);
+    processed = process(m_keyProcessor->getOperator());
+  }
+
+#if 0
   switch (event->key()) {
   case Qt::Key_R:
 #ifdef _FLYEM_
@@ -228,6 +295,12 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_T:
+#ifdef _FLYEM_
+    if (event->modifiers() == Qt::NoModifier) {
+      enterMarkTodo();
+      processed = true;
+    }
+#else
     if (hasRectDecoration()) {
       if (event->modifiers() == Qt::ShiftModifier) {
         emit selectingSwcNodeTreeInRoi(true);
@@ -240,6 +313,7 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
       }
       processed = true;
     }
+#endif
     break;
   case Qt::Key_X:
     if (hasRectDecoration()) {
@@ -250,7 +324,7 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
   default:
     break;
   }
-
+#endif
   m_previousKey = event->key();
   m_previousKeyModifiers = event->modifiers();
 
@@ -259,17 +333,27 @@ bool ZInteractionEngine::processKeyPressEvent(QKeyEvent *event)
 
 void ZInteractionEngine::enterPaintStroke()
 {
+  exitEditMode();
+
   m_interactiveContext.setStrokeEditMode(ZInteractiveContext::STROKE_DRAW);
   m_stroke.set(m_mouseMovePosition[0], m_mouseMovePosition[1]);
   m_stroke.setVisible(true);
   emit decorationUpdated();
 }
 
+void ZInteractionEngine::enterMarkTodo()
+{
+  exitEditMode();
+
+  m_interactiveContext.setTodoEditMode(ZInteractiveContext::TODO_ADD_ITEM);
+  m_rayMarker.set(m_mouseMovePosition[0], m_mouseMovePosition[1]);
+  m_rayMarker.setVisible(true);
+  emit decorationUpdated();
+}
+
 void ZInteractionEngine::enterPaintRect()
 {
-  if (isStateOn(STATE_DRAW_STROKE)) {
-    exitPaintStroke();
-  }
+  exitEditMode();
 
 //  m_rect.setVisible(true);
   m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_DRAW);
@@ -278,9 +362,11 @@ void ZInteractionEngine::enterPaintRect()
 
 void ZInteractionEngine::exitPaintRect()
 {
-  m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
-//  m_rect.setVisible(false);
-  emit decorationUpdated();
+  if (m_interactiveContext.rectEditMode() != ZInteractiveContext::RECT_EDIT_OFF) {
+    m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_EDIT_OFF);
+    //  m_rect.setVisible(false);
+    emit decorationUpdated();
+  }
 }
 
 void ZInteractionEngine::exitSwcEdit()
@@ -290,9 +376,31 @@ void ZInteractionEngine::exitSwcEdit()
 
 void ZInteractionEngine::exitPaintStroke()
 {
-  m_interactiveContext.setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
-  m_stroke.setVisible(false);
-  emit decorationUpdated();
+  if (m_interactiveContext.strokeEditMode() !=
+      ZInteractiveContext::STROKE_EDIT_OFF) {
+    m_interactiveContext.setStrokeEditMode(ZInteractiveContext::STROKE_EDIT_OFF);
+    m_stroke.setVisible(false);
+    emit decorationUpdated();
+  }
+}
+
+void ZInteractionEngine::exitMarkTodo()
+{
+  if (m_interactiveContext.todoEditMode() != ZInteractiveContext::TODO_EDIT_OFF) {
+    m_interactiveContext.setTodoEditMode(ZInteractiveContext::TODO_EDIT_OFF);
+    m_rayMarker.setVisible(false);
+    emit decorationUpdated();
+  }
+}
+
+void ZInteractionEngine::exitEditMode()
+{
+  exitPaintRect();
+  exitSwcEdit();
+  exitPaintStroke();
+  exitMarkTodo();
+
+//  m_interactiveContext.setExitingEdit(true);
 }
 
 QList<ZStackObject*> ZInteractionEngine::getDecorationList() const
@@ -313,7 +421,6 @@ void ZInteractionEngine::saveStroke()
     //m_dataBuffer->addStroke(stroke);
     emit strokePainted(stroke);
   }
-  //}
 }
 
 bool ZInteractionEngine::isStateOn(EState status) const
@@ -324,6 +431,9 @@ bool ZInteractionEngine::isStateOn(EState status) const
   case STATE_DRAW_STROKE:
     return m_interactiveContext.strokeEditMode() ==
         ZInteractiveContext::STROKE_DRAW;
+  case STATE_MARK:
+    return m_interactiveContext.todoEditMode() ==
+        ZInteractiveContext::TODO_ADD_ITEM;
   case STATE_DRAW_RECT:
     return m_interactiveContext.rectEditMode() ==
         ZInteractiveContext::RECT_DRAW;

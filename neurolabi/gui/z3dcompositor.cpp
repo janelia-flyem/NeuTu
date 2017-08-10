@@ -166,6 +166,10 @@ void Z3DCompositor::deinitialize()
 
     if(m_ddpBlendShader)
     {
+#ifdef _DEBUG_
+      std::cout << "Shader count: " << m_ddpBlendShader->shaders().size() << std::endl;
+#endif
+
         m_ddpBlendShader->removeAllShaders();
         delete m_ddpBlendShader;
         m_ddpBlendShader = NULL;
