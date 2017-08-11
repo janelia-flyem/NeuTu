@@ -1,6 +1,7 @@
 #include "zspinboxwithscrollbar.h"
 
 #include "zspinbox.h"
+#include "zutils.h"
 #include <QHBoxLayout>
 #include <QScrollBar>
 #include <QLabel>
@@ -65,9 +66,9 @@ void ZSpinBoxWithScrollBar::createWidget(int value, int min, int max, int step, 
   lo->addWidget(m_label);
   lo->addWidget(m_scrollBar);
   connect(m_scrollBar, &QScrollBar::valueChanged, this, &ZSpinBoxWithScrollBar::valueChangedFromScrollBar);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_spinBox, qOverload<int>(&ZSpinBox::valueChanged), this, &ZSpinBoxWithScrollBar::valueChangedFromSpinBox);
 #else
-  connect(m_spinBox, SIGNAL(valueChanged(int)), this, SLOT(valueChangedFromSpinBox(int)));
+  connect(m_spinBox, QOverload<int>::of(&ZSpinBox::valueChanged), this, &ZSpinBoxWithScrollBar::valueChangedFromSpinBox);
 #endif
 }

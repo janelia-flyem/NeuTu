@@ -9,6 +9,7 @@
 #include <iterator>
 #include <memory>
 #include <type_traits>
+#include <QtGlobal> // not needed for qt >= 5.7
 
 #ifdef _MSC_VER
 #define __warn_unused_result _Check_return_
@@ -109,6 +110,49 @@ constexpr uint32_t operator "" _u32(unsigned long long int n) noexcept { return 
 constexpr int32_t operator "" _i32(unsigned long long int n) noexcept { return static_cast<int32_t>(n); }
 constexpr uint64_t operator "" _u64(unsigned long long int n) noexcept { return static_cast<uint64_t>(n); }
 constexpr int64_t operator "" _i64(unsigned long long int n) noexcept { return static_cast<int64_t>(n); }
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 7, 0)
+template <typename... Args>
+struct QNonConstOverload
+{
+  template <typename R, typename T>
+  constexpr auto operator()(R (T::*ptr)(Args...)) const noexcept -> decltype(ptr)
+  { return ptr; }
+
+  template <typename R, typename T>
+  static constexpr auto of(R (T::*ptr)(Args...)) noexcept -> decltype(ptr)
+  { return ptr; }
+};
+
+template <typename... Args>
+struct QConstOverload
+{
+  template <typename R, typename T>
+  constexpr auto operator()(R (T::*ptr)(Args...) const) const noexcept -> decltype(ptr)
+  { return ptr; }
+
+  template <typename R, typename T>
+  static constexpr auto of(R (T::*ptr)(Args...) const) noexcept -> decltype(ptr)
+  { return ptr; }
+};
+
+template <typename... Args>
+struct QOverload : QConstOverload<Args...>, QNonConstOverload<Args...>
+{
+  using QConstOverload<Args...>::of;
+  using QConstOverload<Args...>::operator();
+  using QNonConstOverload<Args...>::of;
+  using QNonConstOverload<Args...>::operator();
+
+  template <typename R>
+  constexpr auto operator()(R (*ptr)(Args...)) const noexcept -> decltype(ptr)
+  { return ptr; }
+
+  template <typename R>
+  static constexpr auto of(R (*ptr)(Args...)) noexcept -> decltype(ptr)
+  { return ptr; }
+};
+#endif
 
 // for c++11
 #if __cplusplus == 201103L

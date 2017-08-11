@@ -72,9 +72,9 @@ private:
   void fromQColor(const QColor& col);
 
 private:
-  int m_width;
-  int m_height;
-  int m_isClickable;
+  int m_width = 50;
+  int m_height = 33;
+  int m_isClickable = true;
 };
 
 class ZClickableColorMapLabel : public ZClickableLabel

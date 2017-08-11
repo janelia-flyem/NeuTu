@@ -46,10 +46,10 @@ ZClickableColorLabel::ZClickableColorLabel(ZVec4Parameter* color, QWidget* paren
   : ZClickableLabel(parent, f)
   , m_vec4Color(color)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_vec4Color, &ZVec4Parameter::valueChanged, this, qOverload<>(&ZClickableColorLabel::update));
 #else
-  connect(m_vec4Color, SIGNAL(valueChanged()), this, SLOT(update()));
+  connect(m_vec4Color, &ZVec4Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
 }
 
@@ -57,10 +57,10 @@ ZClickableColorLabel::ZClickableColorLabel(ZVec3Parameter* color, QWidget* paren
   : ZClickableLabel(parent, f)
   , m_vec3Color(color)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_vec3Color, &ZVec3Parameter::valueChanged, this, qOverload<>(&ZClickableColorLabel::update));
 #else
-  connect(m_vec3Color, SIGNAL(valueChanged()), this, SLOT(update()));
+  connect(m_vec3Color, &ZVec3Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
 }
 
@@ -68,10 +68,10 @@ ZClickableColorLabel::ZClickableColorLabel(ZDVec4Parameter* color, QWidget* pare
   : ZClickableLabel(parent, f)
   , m_dvec4Color(color)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_dvec4Color, &ZDVec4Parameter::valueChanged, this, qOverload<>(&ZClickableColorLabel::update));
 #else
-  connect(m_dvec4Color, SIGNAL(valueChanged()), this, SLOT(update()));
+  connect(m_dvec4Color, &ZDVec4Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
 }
 
@@ -79,10 +79,10 @@ ZClickableColorLabel::ZClickableColorLabel(ZDVec3Parameter* color, QWidget* pare
   : ZClickableLabel(parent, f)
   , m_dvec3Color(color)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_dvec3Color, &ZDVec3Parameter::valueChanged, this, qOverload<>(&ZClickableColorLabel::update));
 #else
-  connect(m_dvec3Color, SIGNAL(valueChanged()), this, SLOT(update()));
+  connect(m_dvec3Color, &ZDVec3Parameter::valueChanged, this, QOverload<>::of(&ZClickableColorLabel::update));
 #endif
 }
 
@@ -177,10 +177,10 @@ ZClickableColorMapLabel::ZClickableColorMapLabel(ZColorMapParameter* colorMap, Q
   : ZClickableLabel(parent, f)
   , m_colorMap(colorMap)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_colorMap, &ZColorMapParameter::valueChanged, this, qOverload<>(&ZClickableColorMapLabel::update));
 #else
-  connect(m_colorMap, SIGNAL(valueChanged()), this, SLOT(update()));
+  connect(m_colorMap, &ZColorMapParameter::valueChanged, this, QOverload<>::of(&ZClickableColorMapLabel::update));
 #endif
 }
 
@@ -226,12 +226,12 @@ ZClickableTransferFunctionLabel::ZClickableTransferFunctionLabel(Z3DTransferFunc
   : ZClickableLabel(parent, f)
   , m_transferFunction(transferFunc)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_transferFunction, &Z3DTransferFunctionParameter::valueChanged,
           this, qOverload<>(&ZClickableTransferFunctionLabel::update));
 #else
-  connect(m_transferFunction, SIGNAL(valueChanged()),
-          this, SLOT(update()));
+  connect(m_transferFunction, &Z3DTransferFunctionParameter::valueChanged,
+          this, QOverload<>::of(&ZClickableTransferFunctionLabel::update));
 #endif
 }
 

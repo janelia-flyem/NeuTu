@@ -17,6 +17,60 @@ uniform float fog_density_density_log2e;
 
 uniform vec2 screen_dim_RCP;
 
+uniform vec4 lights_position[LIGHT_COUNT];
+uniform vec4 lights_ambient[LIGHT_COUNT];
+uniform vec4 lights_diffuse[LIGHT_COUNT];
+uniform vec4 lights_specular[LIGHT_COUNT];
+uniform vec3 lights_attenuation[LIGHT_COUNT];
+uniform float lights_spotCutoff[LIGHT_COUNT];
+uniform float lights_spotExponent[LIGHT_COUNT];
+uniform vec3 lights_spotDirection[LIGHT_COUNT];
+
+vec4 computeColorFromLight(const in vec3 normalDirection, const in int lightIdx, const in vec3 position,
+                           const in float materialShininess, const in vec4 materialAmbient, const in vec4 materialSpecular,
+                           const in vec4 color)
+{
+  vec3 lightDirection;
+  float attenuation;
+  if (0.0 == lights_position[lightIdx].w)  // directional light
+  {
+    attenuation = 1.0;
+    lightDirection = normalize(lights_position[lightIdx].xyz);
+  } else {    // spotlight or point light
+    vec3 positionToLightSource = lights_position[lightIdx].xyz - position;
+    float distance = length(positionToLightSource);
+    lightDirection = normalize(positionToLightSource);
+    attenuation = 1.0 / (lights_attenuation[lightIdx].x
+                         + lights_attenuation[lightIdx].y * distance
+                         + lights_attenuation[lightIdx].z * distance * distance);
+
+    if (lights_spotCutoff[lightIdx] <= 90.0) // spotlight
+    {
+      float clampedCosine = max(0.0, dot(-lightDirection, normalize(lights_spotDirection[lightIdx])));
+      if (clampedCosine < cos(radians(lights_spotCutoff[lightIdx]))) // outside of spotlight cone
+      {
+        attenuation = 0.0;
+      }
+      else
+      {
+        attenuation = attenuation * pow(clampedCosine, lights_spotExponent[lightIdx]);
+      }
+    }
+  }
+  vec4 retVal = vec4(0.);
+  retVal += lights_ambient[lightIdx] * materialAmbient;
+  float NdotL = dot(normalDirection, lightDirection);
+  if (NdotL > 0.0) {
+    retVal += attenuation * lights_diffuse[lightIdx] * NdotL * color;
+    vec3 cameraDirection = normalize(-position);
+    float NdotH = max(dot(reflect(-lightDirection,normalDirection), cameraDirection), 0.0);
+    retVal += attenuation * lights_specular[lightIdx] * materialSpecular * pow(NdotH, materialShininess);
+  }
+  return retVal;
+}
+
+
+#if 0
 struct LightSource
 {
   vec4 position;
@@ -71,6 +125,7 @@ vec4 computeColorFromLight(const in vec3 normalDirection, const in LightSource l
   }
   return retVal;
 }
+#endif
 
 vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
                             const in float materialShininess, const in vec4 materialAmbient, const in vec4 materialSpecular,
@@ -80,7 +135,7 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
     vec4 finalColor = sceneAmbient * materialAmbient;
 
     for (int index = 0; index < LIGHT_COUNT; index++) {
-      finalColor += computeColorFromLight(normalDirection, lights[index], position,
+      finalColor += computeColorFromLight(normalDirection, index, position,
                                           materialShininess, materialAmbient, materialSpecular, color);
     }
 

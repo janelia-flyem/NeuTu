@@ -26,45 +26,13 @@
         <file>images/extend.png</file>
         <file>images/test.png</file>
         <file>images/videocam.png</file>
-        <file>Resources/shader/almag.frag</file>
-        <file>Resources/shader/almag.vert</file>
-        <file>Resources/shader/background.frag</file>
-        <file>Resources/shader/compositor.frag</file>
-        <file>Resources/shader/copyimage.frag</file>
-        <file>Resources/shader/image2d_with_transfun.frag</file>
-        <file>Resources/shader/line.frag</file>
-        <file>Resources/shader/line.vert</file>
-        <file>Resources/shader/pass_with_2dtexture.vert</file>
-        <file>Resources/shader/pass.vert</file>
-        <file>Resources/shader/render_3dtexture_coordinate.frag</file>
-        <file>Resources/shader/sphere.vert</file>
-        <file>Resources/shader/transform_with_2dtexture.vert</file>
-        <file>Resources/shader/transform_with_3dtexture.vert</file>
-        <file>Resources/shader/volume_raycaster.frag</file>
-        <file>Resources/shader/volume_slice_with_transfun.frag</file>
-        <file>Resources/shader/volume_slice.frag</file>
         <file>Resources/fonts/segoeui.ttf_sdf.png</file>
         <file>Resources/fonts/segoeui.ttf_sdf.txt</file>
         <file>images/screenshot_toolbar.png</file>
         <file>images/bc.png</file>
-        <file>Resources/shader/image2d.frag</file>
         <file>images/go-next.png</file>
         <file>images/go-previous.png</file>
-        <file>Resources/shader/dual_peeling_blend.frag</file>
-        <file>Resources/shader/dual_peeling_final.frag</file>
-        <file>Resources/shader/dual_peeling_init.frag</file>
-        <file>Resources/shader/dual_peeling_peel.frag</file>
-        <file>Resources/shader/wavg_final.frag</file>
-        <file>Resources/shader/wavg_init.frag</file>
-        <file>Resources/shader/sphere_func.frag</file>
-        <file>Resources/shader/common.frag</file>
-        <file>Resources/shader/line_func.frag</file>
-        <file>Resources/shader/almag_func.frag</file>
-        <file>Resources/shader/background_func.frag</file>
-        <file>Resources/shader/lighting.frag</file>
         <file>images/redo.png</file>
-        <file>Resources/shader/cone_2.vert</file>
-        <file>Resources/shader/cone_func_2.frag</file>
         <file>images/3dview.png</file>
         <file>images/help2.png</file>
         <file>images/expand.png</file>
@@ -110,10 +78,6 @@
         <file>images/bc_enhance.png</file>
         <file>images/save_split.png</file>
         <file>images/save_seed.png</file>
-        <file>Resources/shader/cube_wboit.vert</file>
-        <file>Resources/shader/cube_wboit.frag</file>
-        <file>Resources/shader/cube_wboit_compose.vert</file>
-        <file>Resources/shader/cube_wboit_compose.frag</file>
         <file>images/add_post.png</file>
         <file>images/todo.png</file>
         <file>images/roi_box.png</file>
@@ -128,7 +92,62 @@
         <file>images/test2.png</file>
         <file>images/science.png</file>
         <file>images/view_roi.png</file>
+        <file>Resources/shader/almag.frag</file>
+        <file>Resources/shader/almag.vert</file>
+        <file>Resources/shader/almag_func.frag</file>
+        <file>Resources/shader/background.frag</file>
+        <file>Resources/shader/background_func.frag</file>
+        <file>Resources/shader/common.frag</file>
+        <file>Resources/shader/compositor.frag</file>
+        <file>Resources/shader/cone_2.vert</file>
+        <file>Resources/shader/cone_func_2.frag</file>
+        <file>Resources/shader/copyimage.frag</file>
+        <file>Resources/shader/copyimage_func.frag</file>
+        <file>Resources/shader/cube_wboit.frag</file>
+        <file>Resources/shader/cube_wboit.vert</file>
+        <file>Resources/shader/cube_wboit_compose.frag</file>
+        <file>Resources/shader/cube_wboit_compose.vert</file>
+        <file>Resources/shader/dual_peeling_blend.frag</file>
+        <file>Resources/shader/dual_peeling_final.frag</file>
+        <file>Resources/shader/dual_peeling_init.frag</file>
+        <file>Resources/shader/dual_peeling_peel.frag</file>
+        <file>Resources/shader/image2d.frag</file>
+        <file>Resources/shader/image2d_array_compositor.frag</file>
+        <file>Resources/shader/image2d_with_colormap.frag</file>
+        <file>Resources/shader/image2d_with_colormap_single_channel.frag</file>
+        <file>Resources/shader/image2d_with_transfun.frag</file>
+        <file>Resources/shader/image2d_with_transfun_single_channel.frag</file>
+        <file>Resources/shader/lighting.frag</file>
+        <file>Resources/shader/lighting2.frag</file>
+        <file>Resources/shader/line.frag</file>
+        <file>Resources/shader/line.vert</file>
+        <file>Resources/shader/line_func.frag</file>
+        <file>Resources/shader/mesh.frag</file>
+        <file>Resources/shader/mesh.vert</file>
+        <file>Resources/shader/mesh_func.frag</file>
+        <file>Resources/shader/pass.vert</file>
+        <file>Resources/shader/pass_with_2dtexture.vert</file>
+        <file>Resources/shader/render_3dtexture_coordinate.frag</file>
+        <file>Resources/shader/render_3dtexture_coordinate_and_eye_coordinate.frag</file>
+        <file>Resources/shader/sphere.vert</file>
+        <file>Resources/shader/sphere_func.frag</file>
+        <file>Resources/shader/transform_with_2dtexture.vert</file>
+        <file>Resources/shader/transform_with_3dtexture.vert</file>
+        <file>Resources/shader/transform_with_3dtexture_and_eye_coordinate.vert</file>
+        <file>Resources/shader/volume_raycaster.frag</file>
+        <file>Resources/shader/volume_raycaster_single_channel.frag</file>
+        <file>Resources/shader/volume_slice.frag</file>
+        <file>Resources/shader/volume_slice_with_colormap_single_channel.frag</file>
+        <file>Resources/shader/volume_slice_with_transfun.frag</file>
+        <file>Resources/shader/volume_slice_with_transfun_single_channel.frag</file>
+        <file>Resources/shader/wavg_final.frag</file>
+        <file>Resources/shader/wavg_init.frag</file>
         <file>Resources/shader/wblended_final.frag</file>
         <file>Resources/shader/wblended_init.frag</file>
+        <file>Resources/shader/wideline.geom</file>
+        <file>Resources/shader/wideline.vert</file>
+        <file>Resources/shader/wideline1.vert</file>
+        <file>Resources/shader/wideline_func.frag</file>
+        <file>Resources/shader/wideline_func1.frag</file>
     </qresource>
 </RCC>

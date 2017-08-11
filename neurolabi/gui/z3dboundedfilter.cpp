@@ -9,7 +9,6 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
   , m_rendererBase(globalPara)
   , m_baseBoundBoxRenderer(m_rendererBase)
   , m_selectionBoundBoxRenderer(m_rendererBase)
-  , m_selectionCornerRenderer(m_rendererBase)
   , m_visible("Visible", true)
   , m_xCut("X Cut", glm::vec2(0, 0), 0, 0)
   , m_yCut("Y Cut", glm::vec2(0, 0), 0, 0)
@@ -21,7 +20,6 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
   , m_selectionLineWidth("Selection Line Width", 1, 1, 100)
   , m_selectionLineColor("Selection Line Color", glm::vec4(1.f, 1.f, 0.f, 1.f))
   , m_canUpdateClipPlane(true)
-  , m_isSelected(false)
   , m_transformEnabled(true)
 {
   m_boundBoxMode.addOptions("No Bound Box", "Bound Box", "Axis Aligned Bound Box");
@@ -77,10 +75,6 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
           &Z3DBoundedFilter::onSelectionBoundBoxLineWidthChanged);
   updateSelectionLineColors();
 
-  m_selectionCornerRenderer.setColorSource("CustomColor");
-  m_selectionCornerRenderer.setFollowCoordTransform(false);
-  m_selectionCornerRenderer.setFollowOpacity(false);
-
   const std::vector<ZParameter*>& globalParas = m_rendererBase.globalParameters();
   for (size_t i = 0; i < globalParas.size(); ++i) {
     connect(globalParas[i], &ZParameter::valueChanged, this, &Z3DBoundedFilter::invalidateResult);
@@ -91,19 +85,11 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
   }
 }
 
-void Z3DBoundedFilter::setSelected(bool v)
-{
-  if (m_isSelected != v) {
-    m_isSelected = v;
-    invalidateResult();
-  }
-}
-
 void Z3DBoundedFilter::renderSelectionBox(Z3DEye eye)
 {
-  if (m_isSelected) {
-    m_selectionLines.resize(24);
-    addSelectionLines();
+  m_selectionLines.clear();
+  addSelectionLines();
+  if (!m_selectionLines.empty()) {
     m_selectionBoundBoxRenderer.setData(&m_selectionLines);
     if (m_selectionLineColors.size() < m_selectionLines.size()) {
       for (size_t i = m_selectionLineColors.size(); i < m_selectionLines.size(); ++i) {
@@ -112,7 +98,7 @@ void Z3DBoundedFilter::renderSelectionBox(Z3DEye eye)
       m_selectionBoundBoxRenderer.setDataColors(&m_selectionLineColors);
     }
     m_rendererBase.setClipEnabled(false);
-    m_rendererBase.render(eye, m_selectionBoundBoxRenderer, m_selectionCornerRenderer);
+    m_rendererBase.render(eye, m_selectionBoundBoxRenderer);
     m_rendererBase.setClipEnabled(true);
   }
 }
@@ -346,8 +332,6 @@ void Z3DBoundedFilter::updateAxisAlignedBoundBox()
 
   m_center = glm::vec3((m_axisAlignedBoundBox.minCorner() + m_axisAlignedBoundBox.maxCorner()) / 2.0);
 
-  makeSelectionGeometries();
-
   emit boundBoxChanged();
 }
 
@@ -381,9 +365,8 @@ void Z3DBoundedFilter::updateBoundBoxLineColors()
 void Z3DBoundedFilter::updateSelectionLineColors()
 {
   m_selectionLineColors.clear();
-  m_selectionLineColors.resize(24, m_selectionLineColor.get());
+  //m_selectionLineColors.resize(24, m_selectionLineColor.get());
   m_selectionBoundBoxRenderer.setDataColors(&m_selectionLineColors);
-  m_selectionCornerRenderer.setDataColors(&m_selectionLineColors);
 }
 
 void Z3DBoundedFilter::onBoundBoxLineWidthChanged()
@@ -394,42 +377,4 @@ void Z3DBoundedFilter::onBoundBoxLineWidthChanged()
 void Z3DBoundedFilter::onSelectionBoundBoxLineWidthChanged()
 {
   m_selectionBoundBoxRenderer.setLineWidth(m_selectionLineWidth.get());
-}
-
-void Z3DBoundedFilter::makeSelectionGeometries()
-{
-  auto bbsz = m_axisAlignedBoundBox.size();
-  auto size = bbsz.x + bbsz.y + bbsz.z - std::max(bbsz.z, std::max(bbsz.x, bbsz.y)) -
-              std::min(bbsz.z, std::min(bbsz.x, bbsz.y));
-  auto cornerRadius = std::min(100.0, 0.01 * size);
-  m_selectionBoundBox = m_axisAlignedBoundBox;
-  m_selectionBoundBox.expand(cornerRadius);
-  m_selectionLines.clear();
-  appendBoundboxLines(m_selectionBoundBox, m_selectionLines);
-
-  glm::vec3 cornerShift(cornerRadius, cornerRadius, cornerRadius);
-
-  std::vector<glm::vec3> lowcoords;
-  std::vector<glm::vec3> highcoords;
-  double bd[6];
-  bd[0] = m_selectionBoundBox.minCorner().x;
-  bd[1] = m_selectionBoundBox.maxCorner().x;
-  bd[2] = m_selectionBoundBox.minCorner().y;
-  bd[3] = m_selectionBoundBox.maxCorner().y;
-  bd[4] = m_selectionBoundBox.minCorner().z;
-  bd[5] = m_selectionBoundBox.maxCorner().z;
-  for (int k = 0; k < 2; ++k) {
-    for (int j = 0; j < 2; ++j) {
-      for (int i = 0; i < 2; ++i) {
-        glm::vec3 pos(bd[i], bd[2 + j], bd[4 + k]);
-        lowcoords.push_back(pos - cornerShift);
-        highcoords.push_back(pos + cornerShift);
-      }
-    }
-  }
-
-  m_selectionCornerCubes = ZMesh::createCubesWithNormal(lowcoords, highcoords);
-  m_selectionCornerCubesWrapper.clear();
-  m_selectionCornerCubesWrapper.push_back(&m_selectionCornerCubes);
-  m_selectionCornerRenderer.setData(&m_selectionCornerCubesWrapper);
 }

@@ -123,7 +123,9 @@ void Z3DView::updateBoundBox()
 {
   m_boundBox.reset();
   for (auto flt : m_allFilters) {
-    m_boundBox.expand(flt->axisAlignedBoundBox());
+    if (flt->isVisible()) {
+      m_boundBox.expand(flt->axisAlignedBoundBox());
+    }
   }
   if (m_boundBox.empty()) {
     // nothing visible
@@ -328,9 +330,6 @@ void Z3DView::init(InitMode initMode)
     m_networkEvaluator.reset(new Z3DNetworkEvaluator());
     m_canvas->setNetworkEvaluator(m_networkEvaluator.get());
 
-    // pass the canvasrender to the network evaluator
-    m_networkEvaluator->setNetworkSink(m_canvasPainter.get());
-
     // build network
     m_volumeFilter.reset(new Z3DVolumeFilter(m_globalParas));
     m_volumeFilter->outputPort("Image")->connect(m_compositor->inputPort("Image"));
@@ -405,7 +404,8 @@ void Z3DView::init(InitMode initMode)
     connect(m_doc, &ZStackDoc::punctumVisibleStateChanged, m_punctaFilter.get(), &Z3DPunctaFilter::updatePunctumVisibleState);
     connect(m_doc, &ZStackDoc::swcSelectionChanged, m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
     connect(m_doc, &ZStackDoc::swcVisibleStateChanged, m_swcFilter.get(), &Z3DSwcFilter::updateSwcVisibleState);
-    connect(m_doc, SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)), m_swcFilter.get(), SLOT(invalidateResult()));
+    connect(m_doc, QOverload<QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>>::of(&ZStackDoc::swcTreeNodeSelectionChanged),
+            m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
     connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
 
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
@@ -415,6 +415,8 @@ void Z3DView::init(InitMode initMode)
     m_compositor->setShowBackground(false);
 #endif
 
+    // pass the canvasrender to the network evaluator and build network
+    m_networkEvaluator->setNetworkSink(m_canvasPainter.get());
     // initializes all connected filters
     m_networkEvaluator->initializeNetwork();
 

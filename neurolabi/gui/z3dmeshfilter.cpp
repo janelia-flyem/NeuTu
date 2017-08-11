@@ -203,7 +203,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_boundBoxLineColor, 5);
     m_widgetsGroup->addChild(m_selectionLineWidth, 7);
     m_widgetsGroup->addChild(m_selectionLineColor, 7);
-    m_widgetsGroup->setBasicAdvancedCutoff(5);
+    //m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
 }
@@ -228,7 +228,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroupForAnnotationFilter()
     m_widgetsGroup->addChild(m_boundBoxMode, 5);
     m_widgetsGroup->addChild(m_boundBoxLineWidth, 5);
     m_widgetsGroup->addChild(m_boundBoxLineColor, 5);
-    m_widgetsGroup->setBasicAdvancedCutoff(5);
+    //m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
 }
@@ -371,23 +371,6 @@ void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int h)
   Q_UNUSED(h)
   if (m_meshList.empty())
     return;
-
-  e->ignore();
-  if (e->type() == QEvent::MouseButtonDblClick) {
-    const void* obj = pickingManager().objectAtWidgetPos(
-      glm::ivec2(e->x(), e->y()));
-    bool appending = (e->modifiers() == Qt::ControlModifier);
-    if (!obj && !appending && m_isSelected) {
-      emit objDeselected();
-      return;
-    }
-    bool hit = std::find(m_meshList.begin(), m_meshList.end(), static_cast<const ZMesh*>(obj)) != m_meshList.end();
-    if (hit) {
-      emit objSelected(appending);
-      e->accept();
-    }
-    return;
-  }
 
   e->ignore();
   // Mouse button pressend

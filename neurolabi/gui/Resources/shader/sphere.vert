@@ -1,12 +1,12 @@
 #if GLSL_VERSION >= 130
-in vec4 attr_vertex_radius;
+in vec4 attr_vertex;
 #ifdef DYNAMIC_MATERIAL_PROPERTY
 in vec4 attr_specular_shininess;
 #endif
 in vec4 attr_color;
 in float attr_flags;
 #else
-attribute vec4 attr_vertex_radius;
+attribute vec4 attr_vertex;
 #ifdef DYNAMIC_MATERIAL_PROPERTY
 attribute vec4 attr_specular_shininess;
 #endif
@@ -14,7 +14,8 @@ attribute vec4 attr_color;
 attribute float attr_flags;
 #endif
 
-uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
+//uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
+uniform mat4 pos_transform = mat4(1.0);
 uniform float size_scale = 1.0;
 uniform float box_correction = 1.5;
 uniform mat4 view_matrix;
@@ -46,7 +47,7 @@ varying vec4 va_material_specular;
 
 void main(void)
 {
-  float radius = attr_vertex_radius.w * size_scale;
+  float radius = attr_vertex.w * size_scale;
 
   vec2 flags = mod(floor(vec2(attr_flags/16.0, attr_flags)), 16.0);
   // either -1 or 1, -1 -> left, 1 -> right
@@ -54,7 +55,8 @@ void main(void)
   // either -1 or 1, -1 -> down, 1 -> up
   float upFlag = flags.y - 1.;
 
-  vec4 centerVertex = vec4(attr_vertex_radius.xyz * pos_scale, 1.0);
+  //vec4 centerVertex = vec4(attr_vertex.xyz * pos_scale, 1.0);
+  vec4 centerVertex = pos_transform * vec4(attr_vertex.xyz, 1.0);
 
   color = attr_color;
 

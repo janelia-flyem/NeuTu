@@ -61,7 +61,6 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   , m_sphereRendererForCone(m_rendererBase)
   , m_renderingPrimitive("Rendering Mode")
   , m_colorMode("Color Mode")
-  , m_swcTreeColor("Color", glm::vec4(1, 0, 0, 1))
   , m_colorMapBranchType("Branch Type Color Map")
   , m_selectSwcEvent("Select Puncta", false)
   , m_interactionMode(InteractionMode::Select)
@@ -104,10 +103,6 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
 
   addParameter(m_renderingPrimitive);
   addParameter(m_colorMode);
-
-  m_swcTreeColor.setStyle("COLOR");
-  connect(&m_swcTreeColor, &ZVec4Parameter::valueChanged, this, &Z3DSwcFilter::prepareColor);
-  addParameter(m_swcTreeColor);
 
   for (const auto& color : m_colorsForDifferentType) {
     addParameter(*color.get());
@@ -467,7 +462,6 @@ std::shared_ptr<ZWidgetsGroup> Z3DSwcFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_stayOnTop, 1);
     m_widgetsGroup->addChild(m_renderingPrimitive, 1);
     m_widgetsGroup->addChild(m_colorMode, 1);
-    m_widgetsGroup->addChild(m_swcTreeColor, 1);
 
     for (const auto& color : m_colorsForDifferentType) {
       m_widgetsGroup->addChild(*color, 1);
@@ -527,7 +521,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DSwcFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_boundBoxLineColor, 5);
     m_widgetsGroup->addChild(m_selectionLineWidth, 7);
     m_widgetsGroup->addChild(m_selectionLineColor, 7);
-    m_widgetsGroup->setBasicAdvancedCutoff(5);
+    //m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
 }

@@ -23,8 +23,8 @@ Z3DVolumeRaycasterRenderer::Z3DVolumeRaycasterRenderer(Z3DRendererBase& renderer
                                "MIP Opaque", "Local MIP", "Local MIP Opaque", "ISO Surface", "X Ray");
   m_compositingMode.select("MIP Opaque");
 
-  connect(&m_compositingMode, SIGNAL(valueChanged()), this, SLOT(adjustWidgets()));
-  connect(&m_compositingMode, SIGNAL(valueChanged()), this, SLOT(compile()));
+  connect(&m_compositingMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DVolumeRaycasterRenderer::adjustWidgets);
+  connect(&m_compositingMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DVolumeRaycasterRenderer::compile);
   //connect(&m_gradientMode, SIGNAL(valueChanged()), this, SLOT(compile()));
 
   adjustWidgets();
@@ -81,7 +81,7 @@ void Z3DVolumeRaycasterRenderer::setChannels(const std::vector<std::unique_ptr<Z
         m_transferFuncUniformNames.push_back(QString("transfer_function_%1").arg(i + 1));
         m_channelVisibleParas.emplace_back(
               std::make_unique<ZBoolParameter>(QString("Show Channel %1").arg(i + 1), true));
-        connect(m_channelVisibleParas[i].get(), SIGNAL(valueChanged()), this, SLOT(compile()));
+        connect(m_channelVisibleParas[i].get(), &ZBoolParameter::valueChanged, this, &Z3DVolumeRaycasterRenderer::compile);
         m_transferFuncParas.emplace_back(
               std::make_unique<Z3DTransferFunctionParameter>(QString("Transfer Function %1").arg(i + 1)));
         m_texFilterModeParas.emplace_back(

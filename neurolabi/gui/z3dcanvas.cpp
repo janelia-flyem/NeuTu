@@ -168,7 +168,8 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
 
 void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 {
-  m_3dScene->drawBackground(painter, rect);
+  QGraphicsView::drawBackground(painter, rect);
+  //m_3dScene->drawBackground(painter, rect);
 
 #if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();

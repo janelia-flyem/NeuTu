@@ -432,12 +432,12 @@ ZColorMapEditor::ZColorMapEditor(ZColorMapParameter* colorMap, QWidget* parent)
 {
   createWidget();
   connect(m_colorMap, &ZColorMapParameter::valueChanged, this, &ZColorMapEditor::updateFromColorMap);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_domainMinSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &ZColorMapEditor::setDomainMin);
   connect(m_domainMaxSpinBox, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &ZColorMapEditor::setDomainMax);
 #else
-  connect(m_domainMinSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setDomainMin(double)));
-  connect(m_domainMaxSpinBox, SIGNAL(valueChanged(double)), this, SLOT(setDomainMax(double)));
+  connect(m_domainMinSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ZColorMapEditor::setDomainMin);
+  connect(m_domainMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &ZColorMapEditor::setDomainMax);
 #endif
   connect(m_fitDomainToDataButton, &QPushButton::clicked, this, &ZColorMapEditor::fitDomainToDataRange);
 }

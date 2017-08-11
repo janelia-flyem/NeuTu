@@ -1,5 +1,7 @@
 #include "zoptionparameter.h"
 
+#include "zutils.h"
+
 template<class T, class T2>
 ZOptionParameter<T, T2>::ZOptionParameter(const QString& name, QObject* parent, const QString& prefix,
                                           const QString& suffix)
@@ -71,10 +73,10 @@ QWidget* ZOptionParameter<T, T2>::actualCreateWidget(QWidget* parent)
   this->connect(this, &ZOptionParameter::reservedStringSignal1, cb, &ZComboBox::addItemSlot);
   this->connect(this, &ZOptionParameter::reservedStringSignal2, cb, &ZComboBox::removeItemSlot);
   this->connect(this, &ZOptionParameter::reservedSignal1, cb, &ZComboBox::clear);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   this->connect(cb, qOverload<int>(&ZComboBox::currentIndexChanged), this, &ZOptionParameter::reservedIntSlot1);
 #else
-  this->connect(cb, SIGNAL(currentIndexChanged(int)), this, SLOT(reservedIntSlot1(int)));
+  this->connect(cb, QOverload<int>::of(&ZComboBox::currentIndexChanged), this, &ZOptionParameter::reservedIntSlot1);
 #endif
   return cb;
 }

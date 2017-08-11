@@ -47,7 +47,7 @@ protected:
   Z3DRenderTarget* m_layerTarget = nullptr;
   Z3DShaderProgram m_mergeChannelShader;
 
-  const std::vector<std::unique_ptr<Z3DVolume>>* m_vols;
+  const std::vector<std::unique_ptr<Z3DVolume>>* m_vols = nullptr;
   const std::vector<std::unique_ptr<ZColorMapParameter>>* m_colormaps = nullptr;
   std::vector<QString> m_volumeUniformNames;
   std::vector<QString> m_colormapUniformNames;

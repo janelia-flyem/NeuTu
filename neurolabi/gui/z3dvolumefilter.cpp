@@ -69,8 +69,8 @@ Z3DVolumeFilter::Z3DVolumeFilter(Z3DGlobalParameters& globalParas, QObject* pare
   m_zoomInViewSize.setTracking(false);
   m_zoomInViewSize.setSingleStep(32);
   addParameter(m_zoomInViewSize);
-  connect(&m_rendererBase, SIGNAL(coordTransformChanged()), this, SLOT(changeCoordTransform()));
-  connect(&m_zoomInViewSize, SIGNAL(valueChanged()), this, SLOT(changeZoomInViewSize()));
+  connect(&m_rendererBase, &Z3DRendererBase::coordTransformChanged, this, &Z3DVolumeFilter::changeCoordTransform);
+  connect(&m_zoomInViewSize, &ZIntParameter::valueChanged, this, &Z3DVolumeFilter::changeZoomInViewSize);
 
   addParameter(m_interactionDownsample);
 
@@ -125,24 +125,23 @@ Z3DVolumeFilter::Z3DVolumeFilter(Z3DGlobalParameters& globalParas, QObject* pare
   addParameter(m_showZSlice2);
   addParameter(m_zSlice2Position);
 
-  connect(&m_showXSlice, SIGNAL(valueChanged()), this, SLOT(adjustWidget()));
-  connect(&m_showYSlice, SIGNAL(valueChanged()), this, SLOT(adjustWidget()));
-  connect(&m_showZSlice, SIGNAL(valueChanged()), this, SLOT(adjustWidget()));
-  connect(&m_showXSlice2, SIGNAL(valueChanged()), this, SLOT(adjustWidget()));
-  connect(&m_showYSlice2, SIGNAL(valueChanged()), this, SLOT(adjustWidget()));
-  connect(&m_showZSlice2, SIGNAL(valueChanged()), this, SLOT(adjustWidget()));
+  connect(&m_showXSlice, &ZBoolParameter::valueChanged, this, &Z3DVolumeFilter::adjustWidget);
+  connect(&m_showYSlice, &ZBoolParameter::valueChanged, this, &Z3DVolumeFilter::adjustWidget);
+  connect(&m_showZSlice, &ZBoolParameter::valueChanged, this, &Z3DVolumeFilter::adjustWidget);
+  connect(&m_showXSlice2, &ZBoolParameter::valueChanged, this, &Z3DVolumeFilter::adjustWidget);
+  connect(&m_showYSlice2, &ZBoolParameter::valueChanged, this, &Z3DVolumeFilter::adjustWidget);
+  connect(&m_showZSlice2, &ZBoolParameter::valueChanged, this, &Z3DVolumeFilter::adjustWidget);
 
-  connect(&m_xSlicePosition, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeXSlice()));
-  connect(&m_ySlicePosition, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeYSlice()));
-  connect(&m_zSlicePosition, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeZSlice()));
-  connect(&m_xSlice2Position, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeXSlice2()));
-  connect(&m_ySlice2Position, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeXSlice2()));
-  connect(&m_zSlice2Position, SIGNAL(valueChanged()), this, SLOT(invalidateFRVolumeXSlice2()));
+  connect(&m_xSlicePosition, &ZIntParameter::valueChanged, this, &Z3DVolumeFilter::invalidateFRVolumeXSlice);
+  connect(&m_ySlicePosition, &ZIntParameter::valueChanged, this, &Z3DVolumeFilter::invalidateFRVolumeYSlice);
+  connect(&m_zSlicePosition, &ZIntParameter::valueChanged, this, &Z3DVolumeFilter::invalidateFRVolumeZSlice);
+  connect(&m_xSlice2Position, &ZIntParameter::valueChanged, this, &Z3DVolumeFilter::invalidateFRVolumeXSlice2);
+  connect(&m_ySlice2Position, &ZIntParameter::valueChanged, this, &Z3DVolumeFilter::invalidateFRVolumeYSlice2);
+  connect(&m_zSlice2Position, &ZIntParameter::valueChanged, this, &Z3DVolumeFilter::invalidateFRVolumeZSlice2);
 
   m_leftMouseButtonPressEvent.listenTo("trace", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
   m_leftMouseButtonPressEvent.listenTo("trace", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
-  connect(&m_leftMouseButtonPressEvent, SIGNAL(mouseEventTriggered(QMouseEvent * , int, int)),
-          this, SLOT(leftMouseButtonPressed(QMouseEvent * , int, int)));
+  connect(&m_leftMouseButtonPressEvent, &ZEventListenerParameter::mouseEventTriggered, this, &Z3DVolumeFilter::leftMouseButtonPressed);
   addEventListener(m_leftMouseButtonPressEvent);
 
   m_volumeRaycasterRenderer.setLayerTarget(&m_layerTarget);
@@ -204,6 +203,7 @@ void Z3DVolumeFilter::setData(const ZStackDoc* doc, size_t maxVoxelNumber)
       }
     }
   }
+  //LOG(INFO) << img << vols.size();
   setData(vols, img);
 }
 
@@ -385,7 +385,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DVolumeFilter::widgetsGroup()
       else if (para->name().contains("Slice"))
         m_widgetsGroup->addChild(*para, 19);
     }
-    m_widgetsGroup->setBasicAdvancedCutoff(14);
+    //m_widgetsGroup->setBasicAdvancedCutoff(14);
   }
   return m_widgetsGroup;
 }
@@ -579,17 +579,17 @@ void Z3DVolumeFilter::leftMouseButtonPressed(QMouseEvent* e, int w, int h)
     if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
       bool success;
 #ifndef _QT4_
-      glm::vec3 pos3D = getFirstHit3DPosition(e->x() * qApp->devicePixelRatio(),
+      glm::vec3 pos3D = get3DPosition(e->x() * qApp->devicePixelRatio(),
                                               e->y() * qApp->devicePixelRatio(),
                                               w * qApp->devicePixelRatio(),
                                               h * qApp->devicePixelRatio(),
                                               success);
 #else
-      glm::vec3 pos3D = getFirstHit3DPosition(e->x(), e->y(), w, h, success);
+      glm::vec3 pos3D = get3DPosition(e->x(), e->y(), w, h, success);
 #endif
       if (success) {
-        emit pointInVolumeLeftClicked(e->pos(), glm::ivec3(pos3D));
-        //e->accept();
+        emit pointInVolumeLeftClicked(e->pos(), glm::ivec3(pos3D), e->modifiers());
+        e->accept();
       }
     }
     toggleInteractionMode(false, this);
@@ -1033,8 +1033,10 @@ const std::vector<std::unique_ptr<Z3DVolume>>& Z3DVolumeFilter::getVolumes() con
 
 void Z3DVolumeFilter::updateNotTransformedBoundBoxImpl()
 {
-  m_notTransformedBoundBox.setMinCorner(glm::dvec3(m_volumes[0]->parentVolPhysicalLUF()));
-  m_notTransformedBoundBox.setMaxCorner(glm::dvec3(m_volumes[0]->parentVolPhysicalRDB()));
+  if (!m_volumes.empty()) {
+    m_notTransformedBoundBox.setMinCorner(glm::dvec3(m_volumes[0]->parentVolPhysicalLUF()));
+    m_notTransformedBoundBox.setMaxCorner(glm::dvec3(m_volumes[0]->parentVolPhysicalRDB()));
+  }
 }
 
 void Z3DVolumeFilter::readSubVolumes(int left, int right, int up, int down, int front, int back)
@@ -1642,7 +1644,7 @@ void Z3DVolumeFilter::readVolumesWithObject(const ZStackDoc* doc, std::vector<st
   }
 
   if (nchannel > 0) {
-    for (int i=0; i<nchannel; i++) {
+    for (size_t i=0; i<nchannel; i++) {
       //Stack *stack = colorStack->c_stack(i);
       Stack *stack = stackArray[i];
 
@@ -1758,7 +1760,7 @@ void Z3DVolumeFilter::readVolumesWithObject(const ZStackDoc* doc, std::vector<st
     } //for each cannel
 
     //std::vector<ZVec3Parameter*>& chCols = colorStack->channelColors();
-    for (int i=0; i<nchannel; i++) {
+    for (size_t i=0; i<nchannel; i++) {
       QColor &color = colorArray[i];
       vols[i]->setVolColor(glm::vec3(color.redF(), color.greenF(),
                                           color.blueF()));
@@ -2055,7 +2057,7 @@ void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::uni
     }
     */
 
-    for (int i=0; i<nchannel; i++) {
+    for (size_t i=0; i<nchannel; i++) {
       const Stack *stack = stackData->c_stack(i);
       Stack *stack2 = NULL;
       if (C_Stack::width(stack) != width || C_Stack::height(stack) != height ||

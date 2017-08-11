@@ -157,7 +157,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DCompositor::backgroundWidgetsGroup()
     m_backgroundWidgetsGroup->addChild(m_backgroundRenderer.firstColorPara(), 1);
     m_backgroundWidgetsGroup->addChild(m_backgroundRenderer.secondColorPara(), 1);
     m_backgroundWidgetsGroup->addChild(m_backgroundRenderer.gradientOrientationPara(), 1);
-    m_backgroundWidgetsGroup->setBasicAdvancedCutoff(4);
+    //m_backgroundWidgetsGroup->setBasicAdvancedCutoff(4);
   }
   return m_backgroundWidgetsGroup;
 }
@@ -189,7 +189,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DCompositor::axisWidgetsGroup()
     m_axisWidgetsGroup->addChild(m_fontRenderer.fontOutlineColorPara(), 4);
     m_axisWidgetsGroup->addChild(m_fontRenderer.showFontShadowPara(), 4);
     m_axisWidgetsGroup->addChild(m_fontRenderer.fontShadowColorPara(), 4);
-    m_axisWidgetsGroup->setBasicAdvancedCutoff(5);
+    //m_axisWidgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_axisWidgetsGroup;
 }
@@ -220,7 +220,7 @@ void Z3DCompositor::process(Z3DEye eye)
     if (vFilter->isReady(eye) && vFilter->hasOpaque(eye)) {
       normalOpaqueFilters.push_back(vFilter);
     }
-    if (vFilter->isSelected()) {
+    if (vFilter->isReady(eye)) {
       selectedFilters.push_back(vFilter);
     }
   }
@@ -240,7 +240,7 @@ void Z3DCompositor::process(Z3DEye eye)
           normalTransparentFilters.push_back(geomFilter);
       }
     }
-    if (geomFilter->isSelected()) {
+    if (geomFilter->isReady(eye)) {
       selectedFilters.push_back(geomFilter);
     }
   }
@@ -1476,9 +1476,9 @@ void Z3DCompositor::prepareAxisData(Z3DEye eye)
   m_textPositions.push_back(m_YEnd * glm::vec3(0.93));
   m_textPositions.push_back(m_ZEnd * glm::vec3(0.93));
   QStringList texts;
-  texts.push_back("ML");
-  texts.push_back("DV");
-  texts.push_back("AP");
+  texts.push_back("X");
+  texts.push_back("Y");
+  texts.push_back("Z");
 
   m_fontRenderer.setData(&m_textPositions, texts);
 }

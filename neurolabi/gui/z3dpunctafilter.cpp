@@ -180,7 +180,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DPunctaFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_boundBoxLineColor, 5);
     m_widgetsGroup->addChild(m_selectionLineWidth, 7);
     m_widgetsGroup->addChild(m_selectionLineColor, 7);
-    m_widgetsGroup->setBasicAdvancedCutoff(5);
+    //m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
 }

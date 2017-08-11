@@ -22,11 +22,6 @@ public:
   void setVisible(bool v)
   { m_visible.set(v); }
 
-  void setSelected(bool v);
-
-  bool isSelected() const
-  { return m_isSelected; }
-
   bool isTransformEnabled() const
   { return m_transformEnabled; }
 
@@ -186,10 +181,6 @@ signals:
 
   void boundBoxChanged();
 
-  void objSelected(bool append);
-
-  void objDeselected();
-
   void objVisibleChanged(bool v);
 
 protected:
@@ -243,14 +234,11 @@ private:
 
   void onSelectionBoundBoxLineWidthChanged();
 
-  void makeSelectionGeometries();
-
 protected:
   Z3DRendererBase m_rendererBase;
 
   Z3DLineRenderer m_baseBoundBoxRenderer;
   Z3DLineRenderer m_selectionBoundBoxRenderer;
-  Z3DMeshRenderer m_selectionCornerRenderer;
 
   ZBoolParameter m_visible;
   ZFloatSpanParameter m_xCut;
@@ -272,8 +260,6 @@ protected:
   std::vector<glm::vec4> m_boundBoxLineColors;
 
   std::vector<glm::vec3> m_selectionLines;
-  ZMesh m_selectionCornerCubes;
-  std::vector<ZMesh*> m_selectionCornerCubesWrapper;
   std::vector<glm::vec4> m_selectionLineColors;
 
   bool m_canUpdateClipPlane;
@@ -281,8 +267,6 @@ protected:
   bool m_isSelected;
 
 private:
-  ZBBox<glm::dvec3> m_selectionBoundBox;
-
   glm::ivec2 m_lastMousePosition;
   glm::vec3 m_startMouseWorldPos;
   glm::vec3 m_startTrans;

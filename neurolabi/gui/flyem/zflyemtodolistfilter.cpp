@@ -259,7 +259,7 @@ std::shared_ptr<ZWidgetsGroup> ZFlyEmTodoListFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_yCut, 5);
     m_widgetsGroup->addChild(m_zCut, 5);
 
-    m_widgetsGroup->setBasicAdvancedCutoff(5);
+    //m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
 }

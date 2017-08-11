@@ -114,10 +114,9 @@ public:
   void setChannel5Visible(bool v) { m_volumeRaycasterRenderer.setChannel5Visible(v); }
 
 signals:
+  void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos3D, Qt::KeyboardModifiers mod);
 
-  void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos3D);
-
-  void pointInVolumeRightClicked(QPoint pt, glm::ivec3 pos3D);
+  void pointInVolumeRightClicked(QPoint pt, glm::ivec3 pos3D, Qt::KeyboardModifiers mod);
 
 protected:
 

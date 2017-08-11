@@ -2,6 +2,7 @@
 
 #include "zspinbox.h"
 #include "QsLog.h"
+#include "zutils.h"
 #include <QHBoxLayout>
 #include <QEvent>
 #include <limits>
@@ -104,10 +105,10 @@ void ZSpinBoxWithSlider::createWidget(int value, int min, int max, int step, boo
   lo->addWidget(m_spinBox);
   lo->addWidget(m_slider);
   connect(m_slider, &ZSlider2::valueChanged, this, &ZSpinBoxWithSlider::valueChangedFromSlider);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_spinBox, qOverload<int>(&ZSpinBox::valueChanged), this, &ZSpinBoxWithSlider::valueChangedFromSpinBox);
 #else
-  connect(m_spinBox, SIGNAL(valueChanged(int)), this, SLOT(valueChangedFromSpinBox(int)));
+  connect(m_spinBox, QOverload<int>::of(&ZSpinBox::valueChanged), this, &ZSpinBoxWithSlider::valueChangedFromSpinBox);
 #endif
 }
 
@@ -181,11 +182,11 @@ void ZDoubleSpinBoxWithSlider::createWidget(const QString& prefix,
   lo->addWidget(m_spinBox);
   lo->addWidget(m_slider);
   connect(m_slider, &ZSlider2::valueChanged, this, &ZDoubleSpinBoxWithSlider::valueChangedFromSlider);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && __cplusplus > 201103L
+#if __cplusplus > 201103L
   connect(m_spinBox, qOverload<double>(&ZDoubleSpinBox::valueChanged), this,
           &ZDoubleSpinBoxWithSlider::valueChangedFromSpinBox);
 #else
-  connect(m_spinBox, SIGNAL(valueChanged(double)), this,
-          SLOT(valueChangedFromSpinBox(double)));
+  connect(m_spinBox, QOverload<double>::of(&ZDoubleSpinBox::valueChanged), this,
+          &ZDoubleSpinBoxWithSlider::valueChangedFromSpinBox);
 #endif
 }
