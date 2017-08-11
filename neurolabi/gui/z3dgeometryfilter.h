@@ -22,6 +22,9 @@ public:
   void setStayOnTop(bool s)
   { m_stayOnTop.set(s); }
 
+  void setVisible(bool v);
+  bool isVisible() const;
+
   glm::mat4 coordTransform() const
   { return m_rendererBase.coordTransform(); }
 
@@ -37,9 +40,23 @@ public:
   void setSizeScale(float s)
   { m_rendererBase.setSizeScale(s); }
 
+  inline const Z3DCamera& getCamera() const {return m_rendererBase.getCamera();}
+
+  glm::uvec3 getPickingTexSize() const;
+  void updatePickingTexSize();
+
+  inline Z3DPickingManager* getPickingManager() const {return m_pickingManager;}
+
   virtual void configure(const ZJsonObject &obj);
 
   virtual ZJsonObject getConfigJson() const;
+
+  // output v1 is start point of ray, v2 is a point on the ray, v2-v1 is normalized
+  // x and y are input screen point, width and height are input screen dimension
+  void get3DRayUnderScreenPoint(
+      glm::vec3 &v1, glm::vec3 &v2, int x, int y, int width, int height);
+  void get3DRayUnderScreenPoint(
+      glm::dvec3 &v1, glm::dvec3 &v2, int x, int y, int width, int height);
 
 protected:
   virtual void process(Z3DEye /*eye*/) override
@@ -66,10 +83,12 @@ protected:
 protected:
   Z3DFilterOutputPort<Z3DGeometryFilter> m_outPort;
 
-  ZBoolParameter m_stayOnTop;
 
+  ZBoolParameter m_visible;
+  ZBoolParameter m_stayOnTop;
   Z3DPickingManager* m_pickingManager;
   bool m_pickingObjectsRegistered;
+  glm::ivec3 m_pickingTexSize;
 };
 
 #endif // Z3DGEOMETRYFILTER_H

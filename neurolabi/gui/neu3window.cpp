@@ -18,15 +18,17 @@
 #include "dialogs/zdviddialog.h"
 #include "z3dpunctafilter.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofdoc.h"
+#include "zstackdochelper.h"
+#include "dialogs/stringlistdialog.h"
+#include "widgets/zbodylistwidget.h"
+#include "widgets/taskprotocolwindow.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::Neu3Window)
 {
   ui->setupUi(this);
-
-  m_toolBar = NULL;
-  m_dataContainer = NULL;
 
 #ifdef _QT5_
   m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
@@ -62,26 +64,23 @@ void Neu3Window::initialize()
   layout->setMargin(1);
   widget->setLayout(layout);
 
+  /*
   ZWindowFactory factory;
   factory.setControlPanelVisible(false);
   factory.setObjectViewVisible(false);
   factory.setStatusBarVisible(false);
   factory.setParentWidget(this);
-
-//  m_3dwin = factory.make3DWindow(doc);
-
-//  m_3dwin = Z3DWindow::Make(doc, this);
-//  layout->addWidget(m_3dwin);
-//  setCentralWidget(widget);
+*/
 
   m_3dwin = m_dataContainer->makeNeu3Window();
-  ZFlyEmBody3dDoc *bodydoc =
-      qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
-  bodydoc->showTodo(false);
+//  ZFlyEmBody3dDoc *bodydoc =
+//      qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
+//  bodydoc->showTodo(false);
 
   setCentralWidget(m_3dwin);
 
   createDockWidget();
+  createTaskWindow();
   createToolBar();
 
   connectSignalSlot();
@@ -91,6 +90,8 @@ void Neu3Window::connectSignalSlot()
 {
   connect(m_3dwin, SIGNAL(showingPuncta(bool)), this, SLOT(showSynapse(bool)));
   connect(m_3dwin, SIGNAL(showingTodo(bool)), this, SLOT(showTodo(bool)));
+  connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
+          this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
 }
 
 void Neu3Window::initOpenglContext()
@@ -129,17 +130,54 @@ void Neu3Window::createDockWidget()
 {
   QDockWidget *dockWidget = new QDockWidget(this);
 
+#if 0
   FlyEmBodyInfoDialog *widget = m_dataContainer->getBodyInfoDlg();
   widget->simplify();
-//      new FlyEmBodyInfoDialog(this);
-//  ZDvidServerWidget *widget = new ZDvidServerWidget(this);
-//  FlyEmBodyInfoWidget *widget = new FlyEmBodyInfoWidget(this);
+#endif
+
+//  StringListDialog *widget = new StringListDialog(this);
+
+  ZBodyListWidget *widget = new ZBodyListWidget(this);
+
+  connect(widget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
+  connect(widget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
+  connect(widget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
+          this, SLOT(setBodySelection(QSet<uint64_t>)));
+  connect(this, SIGNAL(bodySelected(uint64_t)),
+          widget, SLOT(selectBodySliently(uint64_t)));
+  connect(this, SIGNAL(bodyDeselected(uint64_t)),
+          widget, SLOT(deselectBodySliently(uint64_t)));
+  connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
+          widget, SLOT(removeBody(uint64_t)));
+
   dockWidget->setWidget(widget);
 
   dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
   dockWidget->setFeatures(
         QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
   addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+}
+
+void Neu3Window::createTaskWindow() {
+    QDockWidget *dockWidget = new QDockWidget(this);
+    TaskProtocolWindow *window = new TaskProtocolWindow(getDataDocument(), this);
+
+    // add connections here; for now, I'm connecting up the same way
+    //  Ting connected the ZBodyListWidget, down to reusing the names
+    connect(window, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
+    connect(window, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
+    connect(window, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
+            this, SLOT(setBodySelection(QSet<uint64_t>)));
+
+    // start up the TaskWindow UI (must come after connections are
+    //  established!)
+    window->init();
+
+    dockWidget->setWidget(window);
+    dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
+    dockWidget->setFeatures(
+          QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 }
 
 void Neu3Window::createToolBar()
@@ -183,3 +221,58 @@ void Neu3Window::showTodo(bool on)
     doc->showTodo(on);
   }
 }
+
+ZFlyEmBody3dDoc* Neu3Window::getBodyDocument() const
+{
+  ZFlyEmBody3dDoc *doc = NULL;
+  if (m_3dwin != NULL) {
+    doc = qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
+  }
+
+  return doc;
+}
+
+ZFlyEmProofDoc* Neu3Window::getDataDocument() const
+{
+  ZFlyEmProofDoc *doc = NULL;
+  if (m_dataContainer != NULL) {
+    doc = m_dataContainer->getCompleteDocument();
+  }
+
+  return doc;
+}
+
+void Neu3Window::addBody(uint64_t bodyId)
+{
+  m_dataContainer->selectBody(bodyId);
+}
+
+void Neu3Window::removeBody(uint64_t bodyId)
+{
+  m_dataContainer->deselectBody(bodyId);
+}
+
+void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
+{
+  std::set<uint64_t> tmpBodySet;
+  tmpBodySet.insert(bodySet.begin(), bodySet.end());
+
+  getBodyDocument()->setBodyModelSelected(bodySet);
+}
+
+void Neu3Window::processSwcChangeFrom3D(
+    QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
+{
+  foreach (ZSwcTree *tree, selected) {
+    if (tree->getLabel() > 0) {
+      emit bodySelected(tree->getLabel());
+    }
+  }
+
+  foreach (ZSwcTree *tree, deselected) {
+    if (tree->getLabel() > 0) {
+      emit bodyDeselected(tree->getLabel());
+    }
+  }
+}
+

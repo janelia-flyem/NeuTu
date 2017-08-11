@@ -134,6 +134,14 @@ Z3DCompositor::Z3DCompositor(Z3DGlobalParameters& globalParas, QObject* parent)
   m_lineRenderer.setUseDisplayList(false);
   m_fontRenderer.setFollowCoordTransform(false);
   setupAxisCamera();
+
+//  // ROIs
+//  m_wbFinalShader = new Z3DShaderProgram();
+//  m_wbFinalShader->bindFragDataLocation(0, "FragData0");
+//  m_wbFinalShader->bindFragDataLocation(1, "FragData1");
+//  m_wbFinalShader->loadFromSourceFile("cube_wboit_compose.vert", "cube_wboit_compose.frag", m_rendererBase->generateHeader());
+
+//  CHECK_GL_ERROR;
 }
 
 bool Z3DCompositor::isReady(Z3DEye eye) const

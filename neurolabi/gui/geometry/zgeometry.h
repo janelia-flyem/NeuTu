@@ -5,6 +5,8 @@
 #include "zgeo3dscalarfield.h"
 #include "neutube_def.h"
 
+class ZPoint;
+
 namespace ZGeometry
 {
 /*!
@@ -15,6 +17,10 @@ template <typename T>
 void shiftSliceAxis(T &x, T &y, T &z, NeuTube::EAxis axis);
 template <typename T>
 void shiftSliceAxisInverse(T &x, T &y, T &z, NeuTube::EAxis axis);
+
+std::vector<ZPoint> LineShpereIntersection(
+    const ZPoint &lineStart, const ZPoint &lineNorm,
+    const ZPoint &center, double r);
 }
 
 template <typename T>

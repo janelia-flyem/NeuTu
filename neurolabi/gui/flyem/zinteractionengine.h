@@ -12,6 +12,8 @@
 #include "zrect2d.h"
 
 class Z3DTrackballInteractionHandler;
+class ZStackDocKeyProcessor;
+class ZStackOperator;
 
 /*!
  * \brief An experimental class of handling GUI interaction
@@ -36,7 +38,7 @@ public:
   };
 
   enum EState {
-    STATE_DRAW_STROKE, STATE_DRAW_LINE, STATE_LEFT_BUTTON_PRESSED,
+    STATE_DRAW_STROKE, STATE_DRAW_LINE, STATE_MARK, STATE_LEFT_BUTTON_PRESSED,
     STATE_RIGHT_BUTTON_PRESSED, STATE_MOVE_OBJECT, STATE_SWC_SMART_EXTEND,
     STATE_SWC_EXTEND, STATE_SWC_CONNECT, STATE_SWC_ADD_NODE,
     STATE_DRAW_RECT, STATE_SWC_SELECTION
@@ -72,6 +74,8 @@ public:
   void processMousePressEvent(QMouseEvent *event, int sliceIndex = 0);
   void processMouseDoubleClickEvent(QMouseEvent *eventint, int sliceIndex = 0);
 
+  bool process(const ZStackOperator &op);
+
   bool lockingMouseMoveEvent() const;
 
   bool isStateOn(EState status) const;
@@ -96,7 +100,12 @@ public:
     return m_keyMode;
   }
 
+  void setKeyProcessor(ZStackDocKeyProcessor *processor);
+
   void showContextMenu();
+  void enterPaintStroke();
+  void enterMarkTodo();
+  void enterPaintRect();
 
 signals:
   void decorationUpdated();
@@ -109,13 +118,15 @@ signals:
   void selectingUpstreamSwcNode();
   void selectingConnectedSwcNode();
   void croppingSwc();
+  void shootingTodo(int x, int y);
+  void deletingSelected();
 
 private:
-  void enterPaintStroke();
   void exitPaintStroke();
-  void enterPaintRect();
+  void exitMarkTodo();
   void exitPaintRect();
   void exitSwcEdit();
+  void exitEditMode();
   void saveStroke();
   void commitData();
 
@@ -141,14 +152,16 @@ private:
   QPointF m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
+  ZStroke2d m_rayMarker;
   ZRect2d m_rect;
   bool m_isStrokeOn;
 
-  ZStackDocReader *m_dataBuffer;
+//  ZStackDocReader *m_dataBuffer;
 
   Qt::CursorShape m_cursorShape;
 
   bool m_isKeyEventEnabled;
+  ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
 
   int m_previousKey;

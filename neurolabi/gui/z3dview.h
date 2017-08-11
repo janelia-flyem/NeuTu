@@ -93,6 +93,10 @@ public:
   inline ZFlyEmTodoListFilter& todoFilter()
   { return *m_todoFilter; }
 
+  inline Z3DNetworkEvaluator& getNetworkEvaluator() {
+    return *m_networkEvaluator;
+  }
+
   QWidget* globalParasWidget();
 
   QWidget* captureWidget();
@@ -129,6 +133,9 @@ public:
 
   const ZBBox<glm::dvec3>& boundBox() const
   { return m_boundBox; }
+
+  void updateNetwork();
+  int getDevicePixelRatio() const;
 
 signals:
 
@@ -179,11 +186,11 @@ private:
 
   std::unique_ptr<Z3DVolumeFilter> m_volumeFilter;
   std::unique_ptr<Z3DPunctaFilter> m_punctaFilter;
-  std::unique_ptr<Z3DSwcFilter> m_swcFilter;
+  Z3DSwcFilter *m_swcFilter;
   std::unique_ptr<Z3DMeshFilter> m_meshFilter;
   std::unique_ptr<Z3DGraphFilter> m_graphFilter;
   std::unique_ptr<Z3DSurfaceFilter> m_surfaceFilter;
-  std::unique_ptr<ZFlyEmTodoListFilter> m_todoFilter;
+  ZFlyEmTodoListFilter *m_todoFilter;
 //  std::unique_ptr<Z3DGraphFilter> m_decorationFilter;
 
   ZBBox<glm::dvec3> m_boundBox;

@@ -100,6 +100,7 @@ signals:
   void activeDecorationUpdated();
 
   void strokePainted(ZStroke2d*);
+  void shootingTodo(int x, int y);
 
 protected:
   virtual void enterEvent(QEvent* e) override;

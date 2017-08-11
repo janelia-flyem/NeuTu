@@ -123,6 +123,13 @@ public:
     addOptions(op2, op3, op4, op5, op6, op7, op8);
   }
 
+  inline void addOptions(const T& op1, const T& op2, const T& op3, const T& op4, const T& op5,
+                         const T& op6, const T& op7, const T& op8, const T& op9)
+  {
+    addOption(op1);
+    addOptions(op2, op3, op4, op5, op6, op7, op8, op9);
+  }
+
   inline void addOptionWithData(const QPair<T, T2>& value)
   {
     if (m_options.indexOf(value.first) != -1)

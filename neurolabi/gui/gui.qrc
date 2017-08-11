@@ -149,5 +149,6 @@
         <file>Resources/shader/wideline1.vert</file>
         <file>Resources/shader/wideline_func.frag</file>
         <file>Resources/shader/wideline_func1.frag</file>
+        <file>images/add_todo.png</file>
     </qresource>
 </RCC>

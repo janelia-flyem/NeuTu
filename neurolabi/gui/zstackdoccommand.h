@@ -276,6 +276,21 @@ public:
 };
 */
 
+class ChangeSwcNodeType : public ChangeSwcCommand
+{
+public:
+  ChangeSwcNodeType(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ChangeSwcNodeType();
+
+  void setNodeOperation(const std::vector<Swc_Tree_Node*> &nodeArray, int type);
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  int m_newType;
+};
+
 class MergeSwcNode : public ChangeSwcCommand
 {
 public:

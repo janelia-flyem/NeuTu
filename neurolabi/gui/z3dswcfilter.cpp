@@ -1,14 +1,5 @@
 #include "z3dswcfilter.h"
 
-#include "tz_3dgeom.h"
-#include "zrandom.h"
-#include "QsLog.h"
-#include "swctreenode.h"
-#include "tz_geometry.h"
-#include "neutubeconfig.h"
-#include "zintcuboid.h"
-#include "z3dfiltersetting.h"
-#include "zjsonparser.h"
 #include <QMessageBox>
 #include <QApplication>
 #include <iostream>
@@ -19,6 +10,33 @@
 #include <QElapsedTimer>
 #include <QMessageBox>
 #include <QApplication>
+
+#include "tz_3dgeom.h"
+#include "zrandom.h"
+#include "QsLog.h"
+#include "swctreenode.h"
+#include "tz_geometry.h"
+#include "neutubeconfig.h"
+#include "zintcuboid.h"
+#include "z3dfiltersetting.h"
+#include "zjsonparser.h"
+#include "zrandom.h"
+#include "tz_3dgeom.h"
+#include "z3dlinerenderer.h"
+#include "z3dlinewithfixedwidthcolorrenderer.h"
+#include "z3dsphererenderer.h"
+#include "z3dconerenderer.h"
+#include "zeventlistenerparameter.h"
+#include "QsLog.h"
+#include "swctreenode.h"
+#include "tz_geometry.h"
+#include "neutubeconfig.h"
+#include "zintcuboid.h"
+#include "z3dswcfilter.h"
+#include "z3dfiltersetting.h"
+#include "zjsonparser.h"
+#include "z3drendertarget.h"
+#include "zlabelcolortable.h"
 
 namespace {
 
@@ -46,6 +64,7 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   initTopologyColor();
   initTypeColor();
   initSubclassTypeColor();
+  initLabelTypeColor();
 
   // rendering primitive
   m_renderingPrimitive.addOptions("Normal", "Line", "Sphere");
@@ -67,6 +86,7 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
                          "Branch Type",
                          "Topology",
                          "Colormap Branch Type",
+                         "Label Branch Type",
                          "Subclass",
                          "Direction",
                          "Intrinsic");
@@ -94,11 +114,14 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
     addParameter(*color.get());
   }
 
+  for (const auto& color : m_colorsForLabelType) {
+    addParameter(*color.get());
+  }
+
   m_selectSwcEvent.listenTo("select swc", Qt::LeftButton,
                             Qt::NoModifier, QEvent::MouseButtonPress);
   m_selectSwcEvent.listenTo("select swc", Qt::LeftButton,
-                            Qt::NoModifier, QEvent::MouseButtonRelease);
-
+                            Qt::NoModifier, QEvent::MouseButtonRelease); 
   m_selectSwcEvent.listenTo("select swc connection", Qt::LeftButton,
                             Qt::ShiftModifier, QEvent::MouseButtonPress);
   m_selectSwcEvent.listenTo("select swc connection", Qt::LeftButton,
@@ -132,6 +155,22 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
     m_guiNameList[i] = QString("Type %1 Color").arg(i);
   }
 }
+
+Z3DSwcFilter::~Z3DSwcFilter()
+{
+  clearDecorateSwcList();
+}
+
+void Z3DSwcFilter::clearDecorateSwcList()
+{
+  for (std::vector<ZSwcTree*>::iterator iter = m_decorateSwcList.begin();
+       iter != m_decorateSwcList.end(); ++iter) {
+    delete *iter;
+  }
+
+  m_decorateSwcList.clear();
+}
+
 
 void Z3DSwcFilter::process(Z3DEye)
 {
@@ -240,6 +279,19 @@ void Z3DSwcFilter::initTypeColor()
   for (const auto& color : m_colorsForDifferentType) {
     color->setStyle("COLOR");
     connect(color.get(), &ZVec4Parameter::valueChanged, this, &Z3DSwcFilter::prepareColor);
+  }
+}
+
+void Z3DSwcFilter::initLabelTypeColor()
+{
+  ZColorScheme colorScheme;
+  colorScheme.setColorScheme(ZColorScheme::LABEL_COLOR);
+  for (int type = 0; type <= colorScheme.getColorNumber(); ++type) {
+    QColor color = colorScheme.getColor(type);
+    m_colorsForLabelType.emplace_back(
+          std::make_unique<ZVec4Parameter>(
+            GetTypeName(type),
+            glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.f)));
   }
 }
 
@@ -383,6 +435,43 @@ void Z3DSwcFilter::deregisterPickingObjects()
   }
 }
 
+Swc_Tree_Node* Z3DSwcFilter::pickSwcNode(double x, double y)
+{
+  Swc_Tree_Node *tn = NULL;
+  if (isNodePicking()) {
+    const void* obj = pickObject(x, y);
+    tn = (Swc_Tree_Node*) obj;
+  }
+
+  return tn;
+}
+
+QList<Swc_Tree_Node *> Z3DSwcFilter::pickSwcNode(const ZObject3d &ptArray)
+{
+  QList<Swc_Tree_Node*> nodeArray;
+
+  if (isNodePicking()) {
+    for (size_t i = 0; i < ptArray.size(); ++i) {
+      int x = ptArray.getX(i);
+      int y = ptArray.getY(i);
+      const void* obj = pickObject(x, y);
+      if (obj != NULL) {
+        nodeArray.append((Swc_Tree_Node*) obj);
+      }
+    }
+  }
+
+  return nodeArray;
+}
+
+void Z3DSwcFilter::selectSwcNode(const ZObject3d &ptArray)
+{
+  QList<Swc_Tree_Node*> nodeArray = pickSwcNode(ptArray);
+
+  emit treeNodeSelected(nodeArray, true);
+}
+
+
 void Z3DSwcFilter::setData(const std::vector<ZSwcTree*>& swcList)
 {
   QMutexLocker locker(&m_dataValidMutex);
@@ -504,6 +593,18 @@ std::shared_ptr<ZWidgetsGroup> Z3DSwcFilter::widgetsGroup()
   return m_widgetsGroup;
 }
 
+const void* Z3DSwcFilter::pickObject(int x, int y)
+{
+  int dpr = getDevicePixelRatio();
+
+  //const void* obj = getPickingManager()->getObjectAtPos(glm::ivec2(e->x(), h - e->y()));
+  const void* obj = getPickingManager()->getObjectAtWidgetPos(
+        glm::ivec2(x, y), m_pickingTexSize, dpr);
+
+  return obj;
+}
+
+
 void Z3DSwcFilter::renderOpaque(Z3DEye eye)
 {
   if (m_swcList.empty())
@@ -549,13 +650,20 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
     if (!m_pickingObjectsRegistered)
       registerPickingObjects();
 
-    if (m_renderingPrimitive.isSelected("Normal")) {
-      m_rendererBase.renderPicking(eye, m_coneRenderer, m_sphereRendererForCone);
-    } else if (m_renderingPrimitive.isSelected("Line")) {
-      m_rendererBase.renderPicking(eye, m_lineRenderer);
-    } else /* (m_renderingPrimitive.get() == "Sphere") */{
-      m_rendererBase.renderPicking(eye, m_lineRenderer, m_sphereRenderer);
+    if (isNodePicking()) {
+      if (m_renderingPrimitive.isSelected("Normal")) {
+        m_rendererBase.renderPicking(eye, m_sphereRenderer);
+      } else {
+        m_rendererBase.renderPicking(eye, m_lineRenderer, m_sphereRenderer);
+      }
+    } else {
+      if (m_renderingPrimitive.isSelected("Normal")) {
+        m_rendererBase.renderPicking(eye, m_coneRenderer, m_sphereRendererForCone);
+      } else if (m_renderingPrimitive.isSelected("Line")) {
+        m_rendererBase.renderPicking(eye, m_lineRenderer);
+      }
     }
+//    updatePickingTexSize();
   }
 }
 
@@ -1135,9 +1243,12 @@ void Z3DSwcFilter::prepareColor()
   if (m_colorMode.isSelected("Branch Type") ||
       m_colorMode.isSelected("Colormap Branch Type") ||
       m_colorMode.isSelected("Subclass") ||
-      m_colorMode.isSelected("Biocytin Branch Type")) {
+      m_colorMode.isSelected("Biocytin Branch Type") ||
+      m_colorMode.isSelected("Label Branch Type")) {
     if (m_colorMode.isSelected("Biocytin Branch Type")) {
       m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
+    } else if (m_colorMode.isSelected("Label Branch Type")) {
+      m_colorScheme.setColorScheme(ZColorScheme::LABEL_COLOR);
     }
 
     for (size_t i=0; i<m_decompsedNodePairs.size(); i++) {
@@ -1306,6 +1417,12 @@ void Z3DSwcFilter::adjustWidgets()
   m_colorMapBranchType.setVisible(m_colorMode.isSelected("Colormap Branch Type"));
 }
 
+bool Z3DSwcFilter::isNodePicking() const
+{
+  return isNodeRendering() || m_forceNodePicking;
+}
+
+
 void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 {
   if (!m_enablePicking) {
@@ -1327,9 +1444,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
               << m_startCoord.x << ", " << m_startCoord.y <<  std::endl;
 #endif
 
-    //const void* obj = getPickingManager()->getObjectAtPos(glm::ivec2(e->x(), h - e->y()));
-    const void* obj = pickingManager().objectAtWidgetPos(
-          glm::ivec2(e->x(), e->y()));
+    const void* obj = pickObject(e->x(), e->y());
 
 #ifdef _DEBUG_2
     std::cout << "Picked: " << obj << std::endl;
@@ -1354,7 +1469,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     //        }
     //      }
     //    }
-    if (isNodeRendering()) {
+    if (isNodePicking()) {
       QMutexLocker locker(&m_nodeSelectionMutex);
       std::vector<Swc_Tree_Node*>::iterator it = std::find(
             m_sortedNodeList.begin(), m_sortedNodeList.end(),
@@ -1380,10 +1495,10 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
 
       if (m_pressedSwc || m_pressedSwcTreeNode) {  // hit something
         // do not select tree when it is node rendering, but allow deselecting swc tree in node rendering mode
-        if (!(isNodeRendering() && m_pressedSwc))
+        if (!(isNodePicking() && m_pressedSwc))
           emit treeSelected(m_pressedSwc, appending);
 
-        if (m_interactionMode == ConnectSwcNode && isNodeRendering()) {
+        if (m_interactionMode == ConnectSwcNode && isNodePicking()) {
           emit(connectingSwcTreeNode(m_pressedSwcTreeNode));
         } else {
           emit treeNodeSelected(m_pressedSwcTreeNode, appending);
@@ -1401,7 +1516,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
         emit treeNodeSelected(m_pressedSwcTreeNode, appending);
       } else if ((m_interactionMode == AddSwcNode ||
                  m_interactionMode == PlainExtendSwcNode) &&
-                 isNodeRendering()) { // hit nothing, add node
+                 isNodePicking()) { // hit nothing, add node
         Swc_Tree_Node *tn = NULL;
 
         if (m_interactionMode == AddSwcNode) {
@@ -1565,10 +1680,39 @@ glm::vec4 Z3DSwcFilter::getColorByType(Swc_Tree_Node *n)
   } else if (m_colorMode.isSelected("Biocytin Branch Type")) {
     return m_biocytinColorMapper[SwcTreeNode::type(n)]->get();
     //return m_colorsForBiocytinType[SwcTreeNode::type(n)]->get();
-  } else  /*if (m_colorMode.get() == "ColorMap Branch Type")*/ {
+  } else if (m_colorMode.isSelected("Label Branch Type")) {
+    if ((size_t)(n->node.type) < m_colorsForLabelType.size() - 1) {
+      return m_colorsForLabelType[n->node.type]->get();
+    } else {
+      return m_colorsForLabelType[m_colorsForDifferentType.size() - 1]->get();
+    }
+  } else {
     return m_colorMapBranchType.get().mappedFColor(n->node.type);
   }
 }
+
+/*
+void Z3DSwcFilter::createColorMapperWidget(
+    const std::map<ZSwcTree*, ZVec4Parameter*>& colorMapper,
+    std::vector<ZWidgetsGroup*> &widgetGroup)
+{
+  for (size_t i=0; i<widgetGroup.size(); i++) {
+    delete widgetGroup[i];
+  }
+  widgetGroup.clear();
+
+  std::vector<ZParameter*> allTreeColorParas;
+  for (std::map<ZSwcTree*, ZVec4Parameter*>::const_iterator it = colorMapper.begin();
+       it != colorMapper.end(); ++it) {
+    allTreeColorParas.push_back(it->second);
+  }
+  std::sort(allTreeColorParas.begin(), allTreeColorParas.end(), compareParameterName);
+  for (size_t i=0; i<allTreeColorParas.size(); ++i) {
+    widgetGroup.push_back(
+          new ZWidgetsGroup(allTreeColorParas[i], m_widgetsGroup, 1));
+  }
+}
+*/
 
 void Z3DSwcFilter::loadVisibleData()
 {

@@ -1,13 +1,16 @@
 #ifndef ZTEXTEDIT_H
 #define ZTEXTEDIT_H
 
-#include <QWidget>
+#include <QTextEdit>
 
-class ZTextEdit : public QWidget
+class ZTextEdit : public QTextEdit
 {
   Q_OBJECT
 public:
   explicit ZTextEdit(QWidget *parent = 0);
+
+protected:
+//  void paintEvent(QPaintEvent *e);
 
 signals:
 

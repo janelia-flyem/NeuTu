@@ -20,6 +20,7 @@
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "zswcutil.h"
 #include "zflyembody3ddockeyprocessor.h"
+#include "zflyembody3ddoccommand.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -42,8 +43,6 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
 
   connectSignalSlot();
   disconnectSwcNodeModelUpdate();
-
-  m_keyProcessor = new ZFlyEmBody3dDocKeyProcessor(this);
 }
 
 ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
@@ -470,10 +469,48 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
   emit todoVisibleChanged();
 }
 
+void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
+{
+  bool changed = false;
+
+  const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
+        ZStackObject::TYPE_FLYEM_TODO_ITEM);
+  for (TStackObjectSet::const_iterator iter = objSet.begin();
+       iter != objSet.end(); ++iter) {
+    ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(*iter);
+    if (item != NULL) {
+      if (item->isChecked() != on) {
+        item->setChecked(on);
+        m_dvidWriter.writeToDoItem(*item);
+        changed = true;
+      }
+    }
+  }
+
+  if (changed) {
+    notifyTodoModified();
+  }
+}
+
+void ZFlyEmBody3dDoc::checkSelectedTodoItem()
+{
+  setSelectedTodoItemChecked(true);
+}
+
+void ZFlyEmBody3dDoc::uncheckSelectedTodoItem()
+{
+  setSelectedTodoItemChecked(false);
+}
+
 void ZFlyEmBody3dDoc::setSeedType(int type)
 {
   ZSwc::SetType(getSelectedSwcNodeSet(), type);
   notifySwcModified();
+}
+
+void ZFlyEmBody3dDoc::setBodyModelSelected(const QSet<uint64_t> &bodySet)
+{
+  m_selectedBodySet = bodySet;
 }
 
 bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
@@ -591,8 +628,25 @@ void ZFlyEmBody3dDoc::processEventFunc()
   std::cout << "====Processing done====" << std::endl;
 }
 
+void ZFlyEmBody3dDoc::updateBodyModelSelection()
+{
+  QList<ZSwcTree*> swcList = getSwcList();
+  foreach (ZSwcTree *tree, swcList) {
+    if (m_selectedBodySet.contains(tree->getLabel())) {
+      if (!tree->isSelected()) {
+        getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_SELECT);
+      }
+    } else if (tree->isSelected()) {
+      getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_DESELECT);
+    }
+  }
+  getDataBuffer()->deliver();
+}
+
 void ZFlyEmBody3dDoc::processEvent()
 {
+  updateBodyModelSelection();
+
   if (m_eventQueue.empty()) {
     return;
   }
@@ -789,7 +843,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
   if (tree != NULL) {
     tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
     if (m_nodeSeeding) {
-      tree->setType(1);
+      tree->setType(0);
     }
 
 #ifdef _DEBUG_
@@ -885,6 +939,11 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
   }
 }
 
+void ZFlyEmBody3dDoc::makeKeyProcessor()
+{
+  m_keyProcessor = new ZFlyEmBody3dDocKeyProcessor(this);
+}
+
 void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
 {
   if (m_showingTodo) {
@@ -940,6 +999,103 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
   }
 }
 
+ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
+    int x, int y, int z, bool checked, uint64_t bodyId)
+{
+  ZFlyEmToDoItem item;
+
+  ZIntPoint position = m_dvidReader.readPosition(bodyId, ZIntPoint(x, y, z));
+
+  if (position.isValid()) {
+    item.setPosition(position);
+    item.setKind(ZFlyEmToDoItem::KIND_NOTE);
+    item.setUserName(NeuTube::GetCurrentUserName());
+    if (checked) {
+      item.setChecked(checked);
+    }
+  }
+
+  return item;
+}
+
+ZFlyEmToDoItem ZFlyEmBody3dDoc::readTodoItem(int x, int y, int z) const
+{
+  ZFlyEmToDoItem item = m_dvidReader.readToDoItem(x, y, z);
+
+  return item;
+}
+
+void ZFlyEmBody3dDoc::addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId)
+{
+  if (item.isValid()) {
+    m_dvidWriter.writeToDoItem(item);
+    updateTodo(bodyId);
+  }
+}
+
+void ZFlyEmBody3dDoc::addTodoSliently(const ZFlyEmToDoItem &item)
+{
+  if (item.isValid()) {
+    m_dvidWriter.writeToDoItem(item);
+  }
+}
+
+void ZFlyEmBody3dDoc::addTodo(const QList<ZFlyEmToDoItem> &itemList)
+{
+  QSet<uint64_t> bodySet;
+  foreach (const ZFlyEmToDoItem &item, itemList) {
+    addTodoSliently(item);
+    if (item.getBodyId() > 0) {
+      bodySet.insert(item.getBodyId());
+    }
+  }
+
+  foreach (uint64_t bodyId, bodySet) {
+    updateTodo(bodyId);
+  }
+}
+
+void ZFlyEmBody3dDoc::removeTodo(const QList<ZFlyEmToDoItem> &itemList)
+{
+  QSet<uint64_t> bodySet;
+  foreach (const ZFlyEmToDoItem &item, itemList) {
+    removeTodoSliently(item);
+    if (item.getBodyId() > 0) {
+      bodySet.insert(item.getBodyId());
+    }
+  }
+
+  foreach (uint64_t bodyId, bodySet) {
+    updateTodo(bodyId);
+  }
+}
+
+void ZFlyEmBody3dDoc::removeTodo(ZFlyEmToDoItem &item, uint64_t bodyId)
+{
+  if (item.isValid()) {
+    m_dvidWriter.deleteToDoItem(item.getX(), item.getY(), item.getZ());
+    updateTodo(bodyId);
+  }
+}
+
+void ZFlyEmBody3dDoc::removeTodoSliently(const ZFlyEmToDoItem &item)
+{
+  if (item.isValid()) {
+    m_dvidWriter.deleteToDoItem(item.getX(), item.getY(), item.getZ());
+  }
+}
+
+void ZFlyEmBody3dDoc::removeTodo(int x, int y, int z)
+{
+  m_dvidWriter.deleteToDoItem(x, y, z);
+}
+
+void ZFlyEmBody3dDoc::addTodo(int x, int y, int z, bool checked, uint64_t bodyId)
+{
+  ZFlyEmToDoItem item = makeTodoItem(x, y, z, checked, bodyId);
+  addTodo(item, bodyId);
+}
+
 
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
@@ -989,6 +1145,40 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZSwcTree *tree)
   ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;
 }
 
+void ZFlyEmBody3dDoc::executeAddTodoCommand(
+    int x, int y, int z, bool checked, uint64_t bodyId)
+{
+  ZFlyEmBody3dDocCommand::AddTodo *command =
+      new ZFlyEmBody3dDocCommand::AddTodo(this);
+  command->setTodoItem(x, y, z, checked, bodyId);
+  if (command->hasValidItem()) {
+    pushUndoCommand(command);
+  } else {
+    delete command;
+  }
+}
+
+void ZFlyEmBody3dDoc::executeRemoveTodoCommand()
+{
+  ZFlyEmBody3dDocCommand::RemoveTodo *command =
+      new ZFlyEmBody3dDocCommand::RemoveTodo(this);
+  const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
+        ZStackObject::TYPE_FLYEM_TODO_ITEM);
+  for (TStackObjectSet::const_iterator iter = objSet.begin();
+       iter != objSet.end(); ++iter) {
+    const ZFlyEmToDoItem *item = dynamic_cast<const ZFlyEmToDoItem*>(*iter);
+    if (item != NULL) {
+      command->addTodoItem(
+            item->getX(), item->getY(), item->getZ(), item->getBodyId());
+    }
+  }
+  if (command->hasValidItem()) {
+    pushUndoCommand(command);
+  } else {
+    delete command;
+  }
+}
+
 void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
   if (removeObject(obj, false)) {
@@ -1023,6 +1213,10 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 //      removeObject(*iter, false);
 //      dumpGarbageUnsync(*iter, true);
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+    }
+
+    if (!objList.isEmpty()) {
+      emit bodyRemoved(bodyId);
     }
 
     if (removingAnnotation) {
@@ -1315,6 +1509,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
 
   if (!m_dvidReader.isReady()) {
     m_dvidReader.open(getDvidTarget());
+    m_dvidWriter.open(m_dvidReader.getDvidTarget());
   }
 
   if (m_dvidReader.isReady()) {

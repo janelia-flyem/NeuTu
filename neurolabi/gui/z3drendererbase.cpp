@@ -303,7 +303,7 @@ void Z3DRendererBase::render(Z3DEye eye, Z3DPrimitiveRenderer* renderer1, Z3DPri
 
 void Z3DRendererBase::render(Z3DEye eye, const std::vector<Z3DPrimitiveRenderer*>& renderers)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   if (m_renderMethod.isSelected("Old openGL")) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -382,7 +382,7 @@ void Z3DRendererBase::renderPicking(Z3DEye eye, Z3DPrimitiveRenderer* renderer1,
 
 void Z3DRendererBase::renderPicking(Z3DEye eye, const std::vector<Z3DPrimitiveRenderer*>& renderers)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   if (m_renderMethod.isSelected("Old openGL")) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();

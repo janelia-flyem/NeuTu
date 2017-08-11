@@ -145,19 +145,6 @@ contains(CONFIG, c++11) {
   }
 }
 
-#contains(CONFIG, sanitize) {
-#  message(Using sanitize)
-#  unix {
-#    macx {
-#      QMAKE_CXXFLAGS += -fsanitize=address
-#      QMAKE_LFLAGS += -fsanitize=address
-#    } else {
-#      QMAKE_CXXFLAGS += -fsanitize=address
-#      QMAKE_LFLAGS += -fsanitize=address
-#    }
-#  }
-#}
-
 contains(CONFIG, sanitize) {
   message(Using sanitize)
   unix {
@@ -792,7 +779,17 @@ HEADERS += mainwindow.h \
     z3dview.h \
     ztakescreenshotwidget.h \
     zioutils.h \
-    zmeshobjsmodel.h
+    zmeshobjsmodel.h \
+    widgets/ztextedit.h \
+    flyem/zflyembodylistmodel.h \
+    flyem/zflyembodylistview.h \
+    flyem/zflyembodylistdelegate.h \
+    flyem/zflyembodyideditor.h \
+    widgets/taskprotocolwindow.h \
+    protocols/taskprotocoltask.h \
+    protocols/taskbodyreview.h \
+    flyem/zflyembody3ddoccommand.h \
+    flyem/zflyembody3ddocmenufactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -894,7 +891,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyembodysplitdialog.ui \
     widgets/zbodylistwidget.ui \
     widgets/flyembodyinfowidget.ui \
-    neu3window.ui
+    neu3window.ui \
+    widgets/taskprotocolwindow.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1375,10 +1373,21 @@ SOURCES += main.cpp \
     ztakescreenshotwidget.cpp \
     zioutils.cpp \
     zexception.cpp \
-    zmeshobjsmodel.cpp
+    zmeshobjsmodel.cpp \
+    widgets/ztextedit.cpp \
+    flyem/zflyembodylistmodel.cpp \
+    flyem/zflyembodylistview.cpp \
+    flyem/zflyembodylistdelegate.cpp \
+    flyem/zflyembodyideditor.cpp \
+    widgets/taskprotocolwindow.cpp \
+    protocols/taskprotocoltask.cpp \
+    protocols/taskbodyreview.cpp \
+    flyem/zflyembody3ddoccommand.cpp \
+    flyem/zflyembody3ddocmenufactory.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
     Resources/shader/wblended_init.frag
+
 
 

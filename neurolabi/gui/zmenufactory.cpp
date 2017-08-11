@@ -27,7 +27,10 @@ static void AddAction(const QList<ZActionFactory::EAction> &actionList,
     if (action == ZActionFactory::ACTION_SEPARATOR) {
       menu->addSeparator();
     } else {
-      menu->addAction(source->getAction(action));
+      QAction *actionObject = source->getAction(action);
+      if (actionObject != NULL) {
+        menu->addAction(actionObject);
+      }
     }
   }
 }
@@ -237,7 +240,8 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
     }
 
     if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
-        doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
+        doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE ||
+        doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
       int swcNodeCount = doc->getSelectedSwcNodeNumber();
 
       if (swcNodeCount == 1) {
@@ -251,14 +255,17 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
         actionList.append(ZActionFactory::ACTION_SEPARATOR);
       }
 
-      if (swcNodeCount > 0) {
+      if (swcNodeCount > 0 || doc->hasSelectedSwc()) {
         actionList.append(ZActionFactory::ACTION_DESELECT_BODY);
       }
 
-      actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
+      if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
+          doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
+        actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
 
-      if (window->readyForAction(ZActionFactory::ACTION_FLYEM_COMPARE_BODY)) {
-        actionList.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
+        if (window->readyForAction(ZActionFactory::ACTION_FLYEM_COMPARE_BODY)) {
+          actionList.append(ZActionFactory::ACTION_FLYEM_COMPARE_BODY);
+        }
       }
     }
 

@@ -3,6 +3,13 @@
 
 #include "z3dgeometryfilter.h"
 #include "zoptionparameter.h"
+
+#include <map>
+#include <QString>
+#include <vector>
+#include <utility>
+#include <QList>
+
 #include "zswctree.h"
 #include "zcolormap.h"
 #include "zswccolorscheme.h"
@@ -11,11 +18,7 @@
 #include "z3dconerenderer.h"
 #include "z3dsphererenderer.h"
 #include "zeventlistenerparameter.h"
-#include <QObject>
-#include <QString>
-#include <map>
-#include <utility>
-#include <vector>
+#include "zobject3d.h"
 
 class Z3DSwcFilter : public Z3DGeometryFilter
 {
@@ -26,6 +29,7 @@ public:
   };
 
   explicit Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
+  ~Z3DSwcFilter();
 
   void setData(const std::vector<ZSwcTree*>& swcList);
   void setData(const QList<ZSwcTree*>& swcList);
@@ -58,6 +62,9 @@ public:
 
   virtual void renderTransparent(Z3DEye eye) override;
 
+  bool isNodePicking() const;
+
+
   void enablePicking(bool picking) {
     m_enablePicking = picking;
   }
@@ -69,6 +76,12 @@ public:
 
   //get bounding box of swc tree in world coordinate
   void treeBound(ZSwcTree* tree, ZBBox<glm::dvec3>& res) const;
+  void forceNodePicking(bool picking) {
+    m_forceNodePicking = picking;
+  }
+
+//  void setVisible(bool v);
+//  bool isVisible() const;
 
   //get bounding box of swc tree node in world coordinate
   void treeNodeBound(Swc_Tree_Node* tn, ZBBox<glm::dvec3>& result) const;
@@ -77,9 +90,14 @@ public:
 
   void updateSwcVisibleState();
 
+  Swc_Tree_Node* pickSwcNode(double x, double y);
+  QList<Swc_Tree_Node*> pickSwcNode(const ZObject3d &ptArray);
+  void selectSwcNode(const ZObject3d &ptArray);
+
 signals:
   void treeSelected(ZSwcTree*, bool append);
   void treeNodeSelected(Swc_Tree_Node*, bool append);
+  void treeNodeSelected(QList<Swc_Tree_Node*>, bool append);
   void connectingSwcTreeNode(Swc_Tree_Node*);
   void treeNodeSelectConnection(Swc_Tree_Node*);
   void treeNodeSelectFloodFilling(Swc_Tree_Node*);
@@ -116,7 +134,7 @@ private:
   void initTopologyColor();
 
   void initTypeColor();
-
+  void initLabelTypeColor();
   void initSubclassTypeColor();
 
   void decompseSwcTree();
@@ -139,6 +157,8 @@ private:
   void loadVisibleData();
 
   void sortNodeList();
+  void clearDecorateSwcList();
+  const void* pickObject(int x, int y);
 
 private:
   Z3DLineRenderer m_lineRenderer;
@@ -152,25 +172,29 @@ private:
   std::map<ZSwcTree*, std::unique_ptr<ZVec4Parameter>> m_individualTreeColorMapper;
   std::map<ZSwcTree*, std::unique_ptr<ZVec4Parameter>> m_randomTreeColorMapper;
   std::map<int, std::unique_ptr<ZVec4Parameter>> m_biocytinColorMapper;
+  std::map<int, size_t> m_subclassTypeColorMapper;
 
   std::vector<std::unique_ptr<ZVec4Parameter>> m_colorsForDifferentType;
   std::vector<std::unique_ptr<ZVec4Parameter>> m_colorsForSubclassType;
-  std::map<int, size_t> m_subclassTypeColorMapper;
+  std::vector<std::unique_ptr<ZVec4Parameter>> m_colorsForLabelType;
   std::vector<std::unique_ptr<ZVec4Parameter>> m_colorsForDifferentTopology;
   ZColorMapParameter m_colorMapBranchType;
+
 
   // swc list used for rendering, it is a subset of m_origSwcList. Some swcs are
   // hidden because they are unchecked from the object model. This allows us to control
   // the visibility of each single swc tree.
   std::vector<ZSwcTree*> m_swcList;
   std::vector<ZSwcTree*> m_registeredSwcList;    // used for picking
-  //std::vector<ZSwcTree*> m_decorateSwcList;  //For decoration. Self-owned.
+  std::vector<ZSwcTree*> m_decorateSwcList;  //For decoration. Self-owned.
   std::vector<Swc_Tree_Node*> m_registeredSwcTreeNodeList;    // used for picking
 
   ZEventListenerParameter m_selectSwcEvent;
   glm::ivec2 m_startCoord;
+
   ZSwcTree* m_pressedSwc = nullptr;
   Swc_Tree_Node* m_pressedSwcTreeNode = nullptr;
+  std::set<ZSwcTree*> m_selectedSwcs;   //point to all selected swcs, managed by other class
 
   std::vector<glm::vec4> m_baseAndBaseRadius;
   std::vector<glm::vec4> m_axisAndTopRadius;
@@ -197,11 +221,12 @@ private:
 
   std::vector<ZSwcTree*> m_origSwcList;
 
-  InteractionMode m_interactionMode;
+  InteractionMode m_interactionMode = Select;
   ZSwcColorScheme m_colorScheme;
 
   bool m_enableCutting = true;
   bool m_enablePicking = true;
+  bool m_forceNodePicking = false;
 
   QVector<QString> m_guiNameList;
 

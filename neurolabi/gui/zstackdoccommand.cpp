@@ -770,6 +770,48 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::~MergeSwcNode()
 #endif
 }
 
+
+///////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::ChangeSwcNodeType::ChangeSwcNodeType(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Change SWC node type"));
+}
+
+ZStackDocCommand::SwcEdit::ChangeSwcNodeType::~ChangeSwcNodeType()
+{
+
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::setNodeOperation(
+    const std::vector<Swc_Tree_Node *> &nodeArray, int type)
+{
+  m_nodeArray = nodeArray;
+  m_newType = type;
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::redo()
+{
+  for (std::vector<Swc_Tree_Node*>::iterator iter = m_nodeArray.begin();
+       iter != m_nodeArray.end(); ++iter) {
+    Swc_Tree_Node *tn = *iter;
+    if (SwcTreeNode::type(tn) != m_newType) {
+      backup(tn);
+      SwcTreeNode::setType(tn, m_newType);
+    }
+  }
+  if (!m_backupSet.empty()) {
+    m_doc->processSwcModified();
+    m_doc->notifyObjectModified();
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::undo()
+{
+  startUndo();
+  recover();
+}
+
 /////////////////////////////////////////////
 ZStackDocCommand::SwcEdit::ResolveCrossover::ResolveCrossover(
     ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)

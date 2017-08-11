@@ -41,12 +41,12 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* paren
 #endif
   setMouseTracking(true);
 
-//#if defined(_FLYEM_)
   connect(&m_interaction, SIGNAL(decorationUpdated()),
           this->viewport(), SLOT(update()));
   connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
           this, SIGNAL(strokePainted(ZStroke2d*)));
-  //#endif
+  connect(&m_interaction, SIGNAL(shootingTodo(int,int)),
+          this, SIGNAL(shootingTodo(int,int)));
 }
 
 QSurfaceFormat Z3DCanvas::format() const
@@ -84,7 +84,8 @@ bool Z3DCanvas::suppressingContextMenu() const
 {
 //#if defined(_FLYEM_)
   if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE) ||
-      m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT)) {
+      m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT) ||
+      m_interaction.isStateOn(ZInteractionEngine::STATE_MARK)) {
     return true;
   }
 //#endif
@@ -190,7 +191,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 
   if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
     painter->setPen(QColor(255, 255, 255));
-    QFont font("Helvetica [Cronyx]", 24);;
+    QFont font("Helvetica [Cronyx]", 24);
     painter->setFont(font);
     painter->drawText(
           QRectF(10, 10, 300, 200),

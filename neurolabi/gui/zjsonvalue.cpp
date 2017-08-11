@@ -267,6 +267,10 @@ double ZJsonValue::toReal() const
   return ZJsonParser::numberValue(m_data);
 }
 
+std::string ZJsonValue::toString() const
+{
+  return ZJsonParser::stringValue(m_data);
+}
 /*
 std::string ZJsonValue::toString() const
 {

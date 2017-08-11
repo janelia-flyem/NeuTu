@@ -9,6 +9,7 @@ ZEventListenerParameter::ZEventListenerParameter(const QString& name, bool shari
 {
 }
 
+
 void
 ZEventListenerParameter::listenTo(const QString& actionName, const Qt::MouseButtons& buttons,
                                   const Qt::KeyboardModifiers& modifiers,

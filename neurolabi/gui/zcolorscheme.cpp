@@ -1,6 +1,7 @@
 #include "zcolorscheme.h"
 #include "zrandomgenerator.h"
 #include "tz_color.h"
+#include "zlabelcolortable.h"
 
 ZColorScheme::ZColorScheme()
 {
@@ -49,6 +50,9 @@ void ZColorScheme::setColorScheme(EColorScheme scheme)
   case UNIQUE_COLOR:
     buildUniqueColorTable();
     break;
+  case LABEL_COLOR:
+    buildLabelColorTable();
+    break;
   default:
     break;
   }
@@ -64,6 +68,17 @@ void ZColorScheme::buildRandomColorTable(int n)
     Set_Color_Discrete(&color, labelArray[i] - 1);
     m_colorTable.append(QColor(color.r, color.g, color.b));
   }
+}
+
+void ZColorScheme::buildLabelColorTable()
+{
+  ZLabelColorTable colorTable;
+  m_colorTable.clear();
+
+  for (int i = 0; i < colorTable.GetColorCount(); ++i) {
+    m_colorTable.append(colorTable.getColor(i));
+  }
+
 }
 
 void ZColorScheme::buildConvRandomColorTable(int n)

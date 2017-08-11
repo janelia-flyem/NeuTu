@@ -9,10 +9,13 @@ StringListDialog::StringListDialog(QWidget *parent) :
 
   m_model = new QStringListModel(this);
   ui->listView->setModel(m_model);
+  ui->listView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
   connect(ui->addPushButton, SIGNAL(clicked()), this, SLOT(addString()));
   connect(ui->deletePushButton, SIGNAL(clicked()),
           this, SLOT(removeSelectedString()));
+  connect(m_model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+          this, SLOT(removeEmptyString(QModelIndex,QModelIndex)));
 }
 
 StringListDialog::~StringListDialog()
@@ -37,14 +40,53 @@ void StringListDialog::addString()
   ui->listView->edit(index);
 }
 
+void StringListDialog::removeRowList(const QList<int> &rowList)
+{
+  QList<int> sortedList = rowList;
+  qSort(sortedList);
+  for (int i = sortedList.size() - 1; i >= 0; --i) {
+    int row = sortedList[i];
+    m_model->removeRow(row);
+  }
+}
+
 void StringListDialog::removeSelectedString()
 {
   QItemSelectionModel *model = ui->listView->selectionModel();
 
-  QModelIndexList indexes;
-  while((indexes = model->selectedIndexes()).size()) {
-    m_model->removeRow(indexes.first().row());
+  QModelIndexList indexes = model->selectedIndexes();
+  QList<int> rowList;
+  foreach (const QModelIndex &index, indexes) {
+    rowList.append(index.row());
   }
+  removeRowList(rowList);
+}
+
+void StringListDialog::removeEmptyString()
+{
+  QStringList stringList = m_model->stringList();
+
+  QList<int> rowList;
+  for (int i = 0; i < stringList.size(); ++i) {
+    if (stringList[i].isEmpty()) {
+      rowList.append(i);
+    }
+  }
+  removeRowList(rowList);
+}
+
+void StringListDialog::removeEmptyString(
+    const QModelIndex &topLeft, const QModelIndex &bottomRight)
+{
+  QStringList stringList = m_model->stringList();
+
+  QList<int> rowList;
+  for (int i = topLeft.row(); i <= bottomRight.row(); ++i) {
+    if (stringList[i].isEmpty()) {
+      rowList.append(i);
+    }
+  }
+  removeRowList(rowList);
 }
 
 void StringListDialog::removeAllString()

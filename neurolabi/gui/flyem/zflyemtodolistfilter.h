@@ -17,6 +17,7 @@ class ZFlyEmTodoListFilter : public Z3DGeometryFilter
   Q_OBJECT
 public:
   explicit ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
+  virtual ~ZFlyEmTodoListFilter();
 
   void setData(const ZStackObject *obj);
   void setData(const ZFlyEmToDoList &todoList);

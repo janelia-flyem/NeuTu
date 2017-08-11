@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <QMouseEvent>
+#include <QApplication>
 
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemtodoitem.h"
@@ -29,12 +30,19 @@ ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QOb
   m_rendererBase.setMaterialAmbient(glm::vec4(.3, .3, .3, 1));
 }
 
+ZFlyEmTodoListFilter::~ZFlyEmTodoListFilter()
+{
+
+}
+
 void ZFlyEmTodoListFilter::renderPicking(Z3DEye eye)
 {
   if (!m_pickingObjectsRegistered) {
     registerPickingObjects();
   }
+
   m_rendererBase.renderPicking(eye, m_sphereRenderer);
+  updatePickingTexSize();
 }
 
 void ZFlyEmTodoListFilter::registerPickingObjects()
@@ -406,7 +414,7 @@ void ZFlyEmTodoListFilter::updateGraphVisibleState()
   invalidateResult();
 }
 
-void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int h)
+void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
 {
   if (m_itemList.empty())
     return;
@@ -417,8 +425,15 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int h)
   if (e->type() == QEvent::MouseButtonPress) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
-    const void* obj = pickingManager().objectAtWidgetPos(
-          glm::ivec2(e->x(), h - e->y()));
+
+    int dpr = getDevicePixelRatio();
+    const void* obj = getPickingManager()->getObjectAtWidgetPos(
+          glm::ivec2(e->x(), e->y()), m_pickingTexSize, dpr);
+
+#ifdef _DEBUG_
+    std::cout << "Picking env: " << "dpr: " << dpr << " tex: " << m_pickingTexSize << std::endl;
+#endif
+
     if (obj == NULL) {
       return;
     }

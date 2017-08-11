@@ -15,6 +15,8 @@
 
 #include "z3dfilter.h"
 
+#include <QWidget>
+
 #include "QsLog.h"
 #include "zsysteminfo.h"
 #include "z3dport.h"
@@ -24,6 +26,7 @@
 #include "zparameter.h"
 #include "z3drenderport.h"
 #include "zvertexarrayobject.h"
+#include "z3dview.h"
 
 Z3DFilter::Z3DFilter(QObject* parent)
   : QObject(parent)
@@ -102,6 +105,23 @@ void Z3DFilter::disconnectAllPorts()
   for (auto port : m_outputPorts) {
     port->disconnectAll();
   }
+}
+
+/*
+QWidget* Z3DFilter::getParentWidget() const
+{
+  return qobject_cast<QWidget*>(parent());
+}
+*/
+
+int Z3DFilter::getDevicePixelRatio() const
+{
+  Z3DView *view = qobject_cast<Z3DView*>(parent());
+  if (view != NULL) {
+    return view->getDevicePixelRatio();
+  }
+
+  return 1;
 }
 
 void Z3DFilter::setValid(Z3DEye eye)

@@ -6,6 +6,8 @@
 class ZStackDoc;
 class ZIntCuboid;
 class ZStack;
+class ZFlyEmProofDoc;
+class QColor;
 
 class ZStackDocHelper
 {
@@ -15,8 +17,6 @@ public:
 
   void extractCurrentZ(const ZStackDoc *doc);
 
-  ZIntCuboid getVolumeBoundBox(const ZStackDoc *doc);
-
   int getCurrentZ() const;
   bool hasCurrentZ() const;
 
@@ -24,6 +24,9 @@ public:
   ZIntPoint getSparseStackDsIntv() const {
     return m_sparseStackDsIntv;
   }
+
+  static ZIntCuboid getVolumeBoundBox(const ZStackDoc *doc);
+  static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);
 
 private:
   int m_currentZ;

@@ -2068,7 +2068,7 @@ void ZFlyEmProofDoc::commitSplitFromService()
         GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), originalId);
   foreach (ZObject3dScan *obj, objList) {
     uint64_t newBodyId = getDvidWriter().writeSplit(*obj, originalId, 0);
-    emit messageGenerated(QString("%d uploaded").arg(newBodyId));
+    emit messageGenerated(QString("%1 uploaded").arg(newBodyId));
   }
 }
 
@@ -3436,6 +3436,16 @@ void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
        iter != sliceList.end(); ++iter) {
     ZDvidLabelSlice *slice = *iter;
     slice->addSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
+  }
+}
+
+void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)
+{
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
+    slice->removeSelection(bodyId, NeuTube::BODY_LABEL_MAPPED);
   }
 }
 

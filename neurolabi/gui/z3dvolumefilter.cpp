@@ -526,7 +526,7 @@ ZLineSegment Z3DVolumeFilter::getScreenRay(int x, int y, int width, int height)
 //    }
     glm::vec3 fpos3D = get3DPosition(pos2D, 0.5, width, height);
     res = glm::applyMatrix(m_volumes[0]->worldToPhysicalMatrix(), fpos3D);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << m_volumes.getFirstValidData()->getScaleSpacing() << std::endl;
     std::cout << pos3D << std::endl;
     std::cout << res << std::endl;

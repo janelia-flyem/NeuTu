@@ -57,12 +57,13 @@ class HelpDialog;
 //class Z3DRendererBase;
 class ZROIWidget;
 class ZActionLibrary;
-class ZMenuFactory;
+//class ZMenuFactory;
 class ZJsonObject;
 class Z3DGeometryFilter;
 class Z3DBoundedFilter;
 class ZComboEditDialog;
 class ZFlyEmBodyComparisonDialog;
+class ZStackDocMenuFactory;
 
 
 class Z3DWindow : public QMainWindow
@@ -155,6 +156,9 @@ public: //Components
   }
 
 public:
+  void setMenuFactory(ZStackDocMenuFactory *factory);
+
+public:
   void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
 
   bool hasRectRoi() const;
@@ -181,6 +185,8 @@ public: //controls
   ZJsonObject getConfigJson(ERendererLayer layer) const;
 
   void skipKeyEvent(bool on);
+
+  void syncAction();
 
 public:
   void setROIs(size_t n);
@@ -240,12 +246,15 @@ public slots:
   void selectedMeshChangedFrom3D(ZMesh* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
+  void selectedSwcTreeNodeChangedFrom3D(
+      QList<Swc_Tree_Node*> nodeArray, bool append);
   void addNewSwcTreeNode(double x, double y, double z, double r);
   void extendSwcTreeNode(double x, double y, double z, double r);
   void connectSwcTreeNode(Swc_Tree_Node *tn);
   void deleteSelectedSwcNode();
   void locateSwcNodeIn2DView();
   void removeSwcTurn();
+  void deleteSelected();
 
   void convertSelectedChainToSwc();
 
@@ -268,6 +277,7 @@ public slots:
 
   void showPuncta(bool on);
   void showTodo(bool on);
+  void activateTodoAction();
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -342,6 +352,7 @@ public slots:
 
   void addStrokeFrom3dPaint(ZStroke2d*stroke);
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
+  void processStroke(ZStroke2d *stroke);
 
   void markSwcSoma();
   void help();
@@ -352,7 +363,9 @@ public slots:
   void cropSwcInRoi();
 
   void updateCuttingBox();
-
+  void shootTodo(int x, int y);
+  void checkSelectedTodo();
+  void uncheckSelectedTodo();
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -397,6 +410,12 @@ private:
   void exitExtendingSwc();
 
   bool exitEditMode();
+  bool canSelectObject() const;
+
+  void selectSwcNodeFromStroke(const ZStroke2d *stroke);
+  void labelSwcNodeFromStroke(const ZStroke2d *stroke);
+  //Experimental function
+  void addTodoMarkerFromStroke(const ZStroke2d *stroke);
 
 private:
   QTabWidget* createBasicSettingTabWidget();
@@ -419,7 +438,7 @@ private:
   QMenu *m_editMenu;
 
   ZActionLibrary *m_actionLibrary;
-  ZMenuFactory *m_menuFactory;
+  ZStackDocMenuFactory *m_menuFactory;
   QMenu *m_helpMenu;
 
   QAction *m_removeSelectedObjectsAction;
@@ -472,6 +491,8 @@ private:
   QAction *m_changePunctaNameAction;
   QAction *m_saveAllPunctaAsAction;
   QAction *m_locatePunctumIn2DAction;
+
+//  QAction *m_viewTodoAction = NULL;
 
   /*
   QMenu *m_punctaContextMenu;

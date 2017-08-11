@@ -498,9 +498,21 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     if (!objList.isEmpty()) {
       dp =  0.9 / objList.size();
     }
+
+    ZObject3dScan wholeBody;
+    ZFlyEmProofDoc *proofDoc = getDocument<ZFlyEmProofDoc>();
+    if (proofDoc != NULL) {
+      ZDvidSparseStack *spStack = proofDoc->getBodyForSplit();
+      wholeBody = *(spStack->getObjectMask());
+    }
+
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
+      if (!wholeBody.isEmpty()) {
+        wholeBody.subtractSliently(*splitObj);
+      }
+
       ZOUT(LINFO(), 3) << "Processing split object" << splitObj;
       if (splitObj != NULL) {
         if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
@@ -528,6 +540,14 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
         }
       }
       getProgressSignal()->advanceProgress(dp);
+    }
+
+    if (!wholeBody.isEmpty()) {
+      ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(wholeBody, 2);
+      if (tree != NULL) {
+        tree->setColor(255, 255, 255);
+        doc->addObject(tree);
+      }
     }
     doc->endObjectModifiedMode();
     doc->notifyObjectModified();

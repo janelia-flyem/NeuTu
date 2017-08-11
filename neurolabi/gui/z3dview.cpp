@@ -348,12 +348,12 @@ void Z3DView::init(InitMode initMode)
     m_canvas->addEventListenerToBack(m_punctaFilter.get());
     m_allFilters.push_back(m_punctaFilter.get());
 
-    m_swcFilter.reset(new Z3DSwcFilter(m_globalParas));
+    m_swcFilter = new Z3DSwcFilter(m_globalParas, this);
     m_swcFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
-    connect(m_swcFilter.get(), &Z3DSwcFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-    connect(m_swcFilter.get(), &Z3DSwcFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-    m_canvas->addEventListenerToBack(m_swcFilter.get());
-    m_allFilters.push_back(m_swcFilter.get());
+    connect(m_swcFilter, &Z3DSwcFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_swcFilter, &Z3DSwcFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(m_swcFilter);
+    m_allFilters.push_back(m_swcFilter);
 
     m_meshFilter.reset(new Z3DMeshFilter(m_globalParas));
     m_meshFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
@@ -370,12 +370,12 @@ void Z3DView::init(InitMode initMode)
     m_allFilters.push_back(m_graphFilter.get());
 
 #if defined _FLYEM_
-    m_todoFilter.reset(new ZFlyEmTodoListFilter(m_globalParas));
+    m_todoFilter = new ZFlyEmTodoListFilter(m_globalParas, this);
     m_todoFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
-    connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-    connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-    m_canvas->addEventListenerToBack(m_todoFilter.get());
-    m_allFilters.push_back(m_todoFilter.get());
+    connect(m_todoFilter, &ZFlyEmTodoListFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_todoFilter, &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(m_todoFilter);
+    m_allFilters.push_back(m_todoFilter);
 #endif
 
     // get data from doc and add to network
@@ -407,10 +407,10 @@ void Z3DView::init(InitMode initMode)
     connect(m_doc, &ZStackDoc::punctumVisibleStateChanged, m_punctaFilter.get(), &Z3DPunctaFilter::updatePunctumVisibleState);
     connect(m_doc, &ZStackDoc::meshSelectionChanged, m_meshFilter.get(), &Z3DMeshFilter::invalidateResult);
     connect(m_doc, &ZStackDoc::meshVisibleStateChanged, m_meshFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
-    connect(m_doc, &ZStackDoc::swcSelectionChanged, m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
-    connect(m_doc, &ZStackDoc::swcVisibleStateChanged, m_swcFilter.get(), &Z3DSwcFilter::updateSwcVisibleState);
+    connect(m_doc, &ZStackDoc::swcSelectionChanged, m_swcFilter, &Z3DSwcFilter::invalidateResult);
+    connect(m_doc, &ZStackDoc::swcVisibleStateChanged, m_swcFilter, &Z3DSwcFilter::updateSwcVisibleState);
     connect(m_doc, QOverload<QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>>::of(&ZStackDoc::swcTreeNodeSelectionChanged),
-            m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
+            m_swcFilter, &Z3DSwcFilter::invalidateResult);
     connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
 
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
@@ -563,4 +563,14 @@ void Z3DView::objectSelectionChanged(const QList<ZStackObject*>& selected,
       break;
     }
   }
+}
+
+int Z3DView::getDevicePixelRatio() const
+{
+  return m_mainWin->devicePixelRatio();
+}
+
+void Z3DView::updateNetwork()
+{
+  getNetworkEvaluator().process();
 }

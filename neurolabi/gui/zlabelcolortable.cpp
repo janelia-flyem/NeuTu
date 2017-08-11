@@ -4,10 +4,16 @@ const QVector<QColor> ZLabelColorTable::m_colorTable =
     ZLabelColorTable::constructColorTable();
 const QColor ZLabelColorTable::m_blackColor = QColor(0, 0, 0, 255);
 const QColor ZLabelColorTable::m_transparentColor = QColor(0, 0, 0, 0);
+const int ZLabelColorTable::COLOR_COUNT = 10;
+
+int ZLabelColorTable::GetColorCount()
+{
+  return COLOR_COUNT;
+}
 
 QVector<QColor> ZLabelColorTable::constructColorTable()
 {
-  QVector<QColor> colorTable(10);
+  QVector<QColor> colorTable(COLOR_COUNT);
 
   colorTable[0] = QColor(Qt::white);
   colorTable[1] = QColor(Qt::red);
