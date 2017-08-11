@@ -45,7 +45,7 @@ public:
   glm::uvec3 getPickingTexSize() const;
   void updatePickingTexSize();
 
-  inline Z3DPickingManager* getPickingManager() const {return m_pickingManager;}
+//  inline Z3DPickingManager* getPickingManager() const {return pickingManager();}
 
   virtual void configure(const ZJsonObject &obj);
 
@@ -86,7 +86,7 @@ protected:
 
   ZBoolParameter m_visible;
   ZBoolParameter m_stayOnTop;
-  Z3DPickingManager* m_pickingManager;
+//  Z3DPickingManager* m_pickingManager;
   bool m_pickingObjectsRegistered;
   glm::ivec3 m_pickingTexSize;
 };

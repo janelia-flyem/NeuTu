@@ -61,6 +61,9 @@ public:
   inline Z3DGlobalParameters& globalParas()
   { return m_globalParas; }
 
+  inline const Z3DGlobalParameters& globalParas() const
+  { return m_globalParas; }
+
   inline ZStringIntOptionParameter& geometriesMultisampleModePara()
   { return m_globalParas.geometriesMultisampleMode; }
 

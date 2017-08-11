@@ -43,6 +43,9 @@ public:
   inline Z3DPickingManager& pickingManager()
   { return m_rendererBase.globalParas().pickingManager; }
 
+  inline const Z3DPickingManager& pickingManager() const
+  { return m_rendererBase.globalParas().pickingManager; }
+
   inline Z3DTrackballInteractionHandler& interactionHandler()
   { return m_rendererBase.globalParas().interactionHandler; }
 

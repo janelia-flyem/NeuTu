@@ -10,7 +10,7 @@ Z3DGeometryFilter::Z3DGeometryFilter(Z3DGlobalParameters& globalPara, QObject* p
   , m_outPort("GeometryFilter", this)
   , m_visible("Visible", true)
   , m_stayOnTop("Stay On Top", false)
-  , m_pickingManager(nullptr)
+//  , m_pickingManager(nullptr)
   , m_pickingObjectsRegistered(false)
 {
   addPort(m_outPort);
@@ -29,7 +29,7 @@ bool Z3DGeometryFilter::isVisible() const
 
 glm::uvec3 Z3DGeometryFilter::getPickingTexSize() const
 {
-  return getPickingManager()->renderTarget().attachment(
+  return pickingManager().renderTarget().attachment(
         GL_COLOR_ATTACHMENT0)->dimension();
 }
 

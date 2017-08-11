@@ -427,7 +427,7 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
     m_startCoord.y = e->y();
 
     int dpr = getDevicePixelRatio();
-    const void* obj = getPickingManager()->getObjectAtWidgetPos(
+    const void* obj = pickingManager().getObjectAtWidgetPos(
           glm::ivec2(e->x(), e->y()), m_pickingTexSize, dpr);
 
 #ifdef _DEBUG_

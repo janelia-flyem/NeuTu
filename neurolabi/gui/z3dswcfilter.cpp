@@ -598,7 +598,7 @@ const void* Z3DSwcFilter::pickObject(int x, int y)
   int dpr = getDevicePixelRatio();
 
   //const void* obj = getPickingManager()->getObjectAtPos(glm::ivec2(e->x(), h - e->y()));
-  const void* obj = getPickingManager()->getObjectAtWidgetPos(
+  const void* obj = pickingManager().getObjectAtWidgetPos(
         glm::ivec2(x, y), m_pickingTexSize, dpr);
 
   return obj;
