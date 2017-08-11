@@ -745,7 +745,7 @@ void Z3DSwcFilter::prepareData()
     // do nothing if types don't change
     if (m_allNodeType.size() != m_biocytinColorMapper.size() ||
         !std::equal(m_biocytinColorMapper.begin(), m_biocytinColorMapper.end(),
-                    m_allNodeType.begin(), _KeyComp())) {
+                    m_allNodeType.begin(), _KeyEqual())) {
       // remove old type color parameters from widget, will add new ones later
       if (m_widgetsGroup) {
         for (auto& kv : m_biocytinColorMapper) {
@@ -768,7 +768,7 @@ void Z3DSwcFilter::prepareData()
       std::set_difference(m_allNodeType.begin(), m_allNodeType.end(),
                           m_biocytinColorMapper.begin(), m_biocytinColorMapper.end(),
                           std::inserter(newTypes, newTypes.end()),
-                          _KeyComp());
+                          _KeyLess());
       for (auto type : newTypes) {
         m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
         QString guiname = type >= m_guiNameList.size() ? QString("Type %1 Color").arg(type) : m_guiNameList[type];
@@ -802,7 +802,7 @@ void Z3DSwcFilter::prepareData()
   // do nothing if sources don't change
   if (sourceIndexMapper.size() != m_randomTreeColorMapper.size() ||
       !std::equal(m_randomTreeColorMapper.begin(), m_randomTreeColorMapper.end(),
-                  sourceIndexMapper.begin(), _KeyComp())) {
+                  sourceIndexMapper.begin(), _KeyEqual())) {
     // remove old source color parameters from widget, will add new ones later
     if (m_widgetsGroup) {
       for (auto& kv : m_randomTreeColorMapper) {
@@ -838,7 +838,7 @@ void Z3DSwcFilter::prepareData()
     std::set_difference(sourceIndexMapper.begin(), sourceIndexMapper.end(),
                         m_randomTreeColorMapper.begin(), m_randomTreeColorMapper.end(),
                         std::inserter(newSources, newSources.end()),
-                        _KeyComp());
+                        _KeyLess());
     for (const auto& kv : newSources) {
       m_randomTreeColorMapper.insert(std::make_pair(kv.first,
                                                     std::make_unique<ZVec4Parameter>(QString("Swc %1 Color").arg(kv.second + 1),

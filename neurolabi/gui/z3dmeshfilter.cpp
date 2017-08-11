@@ -237,7 +237,7 @@ void Z3DMeshFilter::prepareData()
   // do nothing if sources don't change
   if (m_sourceColorMapper.size() != allSources.size() ||
       !std::equal(m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
-                  allSources.begin(), _KeyComp())) {
+                  allSources.begin(), _KeyEqual())) {
     // remove old source color parameters from widget, will add new ones later
     if (m_widgetsGroup) {
       for (auto& kv : m_sourceColorMapper) {
@@ -260,7 +260,7 @@ void Z3DMeshFilter::prepareData()
     std::set_difference(allSources.begin(), allSources.end(),
                         m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
                         std::inserter(newSources, newSources.end()),
-                        _KeyComp());
+                        _KeyLess());
     for (const auto& kv : newSources) {
       QString guiname = QString("Source: %1").arg(kv);
       m_sourceColorMapper.insert(std::make_pair(kv,
@@ -375,6 +375,7 @@ void Z3DMeshFilter::prepareColor()
     }
   } else if (m_colorMode.isSelected("Mesh Source")) {
     for (size_t i=0; i<m_meshList.size(); i++) {
+      //LOG(INFO) << m_meshList[i]->getSource().c_str() << m_sourceColorMapper[m_meshList[i]->getSource().c_str()].get();
       glm::vec4 color = m_sourceColorMapper[m_meshList[i]->getSource().c_str()]->get();
       m_meshColors.push_back(color);
     }

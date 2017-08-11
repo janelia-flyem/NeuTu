@@ -111,7 +111,7 @@ constexpr int32_t operator "" _i32(unsigned long long int n) noexcept { return s
 constexpr uint64_t operator "" _u64(unsigned long long int n) noexcept { return static_cast<uint64_t>(n); }
 constexpr int64_t operator "" _i64(unsigned long long int n) noexcept { return static_cast<int64_t>(n); }
 
-class _KeyComp
+class _KeyLess
 {
 public:
   template<typename KeyType>
@@ -130,6 +130,28 @@ public:
   bool operator()(const L& l, const R& r) const
   {
     return getKey(l) < getKey(r);
+  }
+};
+
+class _KeyEqual
+{
+public:
+  template<typename KeyType>
+  static KeyType getKey(const KeyType& k)
+  {
+    return k;
+  }
+
+  template<typename KeyType, typename ValueType>
+  static KeyType getKey(const std::pair<const KeyType, ValueType>& p)
+  {
+    return p.first;
+  }
+
+  template<typename L, typename R>
+  bool operator()(const L& l, const R& r) const
+  {
+    return getKey(l) == getKey(r);
   }
 };
 

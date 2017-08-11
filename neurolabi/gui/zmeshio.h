@@ -30,6 +30,7 @@ public:
 private:
   void readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>& normals,
                           std::vector<glm::vec3>& vertices, std::vector<GLuint>& indices) const;
+  void readDracoMesh(const QString& filename, ZMesh& mesh) const;
 
 private:
   QStringList m_readExts;

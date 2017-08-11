@@ -257,7 +257,7 @@ void Z3DPunctaFilter::prepareData()
   // do nothing if sources don't change
   if (m_sourceColorMapper.size() != sourceTypeMapper.size() ||
       !std::equal(m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
-                  sourceTypeMapper.begin(), _KeyComp())) {
+                  sourceTypeMapper.begin(), _KeyEqual())) {
     // remove old source color parameters from widget, will add new ones later
     if (m_widgetsGroup) {
       for (auto& kv : m_sourceColorMapper) {
@@ -280,7 +280,7 @@ void Z3DPunctaFilter::prepareData()
     std::set_difference(sourceTypeMapper.begin(), sourceTypeMapper.end(),
                         m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
                         std::inserter(newSources, newSources.end()),
-                        _KeyComp());
+                        _KeyLess());
     for (const auto& kv : newSources) {
       QString guiname = QString("Source: %1").arg(kv.first);
       if (kv.second >= 0) {

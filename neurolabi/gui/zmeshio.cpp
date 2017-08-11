@@ -118,6 +118,143 @@ aiNode* createNodes(const ZMesh& mesh, aiNode* pParent, aiScene* pScene, std::ve
   return pNode;
 }
 
+using namespace draco;
+
+void getDracoVertices(const PointCloud& pc, std::vector<glm::vec3>& vertices)
+{
+  const PointAttribute *const att = pc.GetNamedAttribute(GeometryAttribute::POSITION);
+  if (att == nullptr || att->size() == 0)
+    throw ZIOException("no vertices found in draco file");
+  vertices.resize(att->size());
+  for (AttributeValueIndex i(0); i < att->size(); ++i) {
+    if (!att->ConvertValue<float, 3>(i, &vertices[i.value()][0])) {
+      vertices.clear();
+      throw ZIOException("can not decode draco vertices");
+    }
+  }
+}
+
+void getDracoNormals(const PointCloud& pc, std::vector<glm::vec3>& normals)
+{
+  const PointAttribute *const att = pc.GetNamedAttribute(GeometryAttribute::NORMAL);
+  if (att == nullptr || att->size() == 0) {
+    return; // no normal
+  }
+  if (att->num_components() == 3) {
+    normals.resize(att->size());
+    for (AttributeValueIndex i(0); i < att->size(); ++i) {
+      if (!att->ConvertValue<float, 3>(i, &normals[i.value()][0])) {
+        normals.clear();
+        throw ZIOException("can not decode draco normals");
+      }
+    }
+  } else {
+    LOG(WARNING) << "ignore normals that are not 3 components";
+  }
+}
+
+void getDracoColors(const PointCloud& pc, std::vector<glm::vec4>& colors)
+{
+  const PointAttribute *const att = pc.GetNamedAttribute(GeometryAttribute::COLOR);
+  if (att == nullptr || att->size() == 0) {
+    return; // no color
+  }
+  if (att->num_components() == 1) {
+    colors.resize(att->size());
+    for (AttributeValueIndex i(0); i < att->size(); ++i) {
+      if (!att->ConvertValue<float, 1>(i, &colors[i.value()][0])) {
+        colors.clear();
+        throw ZIOException("can not decode draco 1 component colors");
+      }
+    }
+    for (auto& c : colors) {
+      c.a = 1.f;
+    }
+  } else if (att->num_components() == 2) {
+    colors.resize(att->size());
+    for (AttributeValueIndex i(0); i < att->size(); ++i) {
+      if (!att->ConvertValue<float, 2>(i, &colors[i.value()][0])) {
+        colors.clear();
+        throw ZIOException("can not decode draco 2 component colors");
+      }
+    }
+    for (auto& c : colors) {
+      c.a = 1.f;
+    }
+  } else if (att->num_components() == 3) {
+    colors.resize(att->size());
+    for (AttributeValueIndex i(0); i < att->size(); ++i) {
+      if (!att->ConvertValue<float, 3>(i, &colors[i.value()][0])) {
+        colors.clear();
+        throw ZIOException("can not decode draco 3 component colors");
+      }
+    }
+    for (auto& c : colors) {
+      c.a = 1.f;
+    }
+  } else if (att->num_components() == 4) {
+    colors.resize(att->size());
+    for (AttributeValueIndex i(0); i < att->size(); ++i) {
+      if (!att->ConvertValue<float, 4>(i, &colors[i.value()][0])) {
+        colors.clear();
+        throw ZIOException("can not decode draco 4 component colors");
+      }
+    }
+  } else {
+    LOG(WARNING) << "texture coordinate with" << att->num_components() << "components are not supported";
+  }
+}
+
+void getDracoTextureCoordinates(const PointCloud& pc,
+                                std::vector<float>& textureCoordinates1D,
+                                std::vector<glm::vec2>& textureCoordinates2D,
+                                std::vector<glm::vec3>& textureCoordinates3D)
+{
+  const PointAttribute *const att = pc.GetNamedAttribute(GeometryAttribute::TEX_COORD);
+  if (att == nullptr || att->size() == 0) {
+    return; // no textureCoordinates2D
+  }
+  if (att->num_components() == 1) {
+    textureCoordinates1D.resize(att->size());
+    for (AttributeValueIndex i(0); i < att->size(); ++i) {
+      if (!att->ConvertValue<float, 1>(i, &textureCoordinates1D[i.value()])) {
+        textureCoordinates1D.clear();
+        throw ZIOException("can not decode draco textureCoordinates1D");
+      }
+    }
+  } else if (att->num_components() == 2) {
+    textureCoordinates2D.resize(att->size());
+    for (AttributeValueIndex i(0); i < att->size(); ++i) {
+      if (!att->ConvertValue<float, 2>(i, &textureCoordinates2D[i.value()][0])) {
+        textureCoordinates2D.clear();
+        throw ZIOException("can not decode draco textureCoordinates2D");
+      }
+    }
+  } else if (att->num_components() == 3) {
+    for (AttributeValueIndex i(0); i < att->size(); ++i) {
+      textureCoordinates3D.resize(att->size());
+      if (!att->ConvertValue<float, 3>(i, &textureCoordinates3D[i.value()][0])) {
+        textureCoordinates3D.clear();
+        throw ZIOException("can not decode draco textureCoordinates3D");
+      }
+    }
+  } else {
+    LOG(WARNING) << "texture coordinate with" << att->num_components() << "components are not supported";
+  }
+}
+
+void getDracoFaces(const Mesh& msh, std::vector<GLuint>& faces)
+{
+  faces.resize(msh.num_faces() * 3);
+  const PointAttribute *const pos_att_ = msh.GetNamedAttribute(GeometryAttribute::POSITION);
+  for (FaceIndex i(0); i < msh.num_faces(); ++i) {
+    for (int j = 0; j < 3; ++j) {
+      const PointIndex vert_index = msh.face(i)[j];
+      faces[i.value()*3+j] = pos_att_->mapped_index(vert_index).value();
+    }
+  }
+}
+
 }  // namespace
 
 
@@ -182,6 +319,8 @@ void ZMeshIO::load(const QString& filename, ZMesh& mesh) const
     mesh.setType(GL_TRIANGLES);
     if (filename.endsWith(".msh", Qt::CaseInsensitive)) {
       readAllenAtlasMesh(filename, mesh.m_normals, mesh.m_vertices, mesh.m_indices);
+    } else if (filename.endsWith(".drc", Qt::CaseInsensitive)) {
+      readDracoMesh(filename, mesh);
     } else {
       Assimp::Importer importer;
       importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
@@ -362,5 +501,64 @@ void ZMeshIO::readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>
         ++triIdx;
       }
     }
+  }
+}
+
+void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
+{
+  std::ifstream inputFileStream;
+  openFileStream(inputFileStream, filename, std::ios::in | std::ios::binary | std::ios::ate);
+  std::streamsize size = inputFileStream.tellg();
+  if (size <= 0) {
+    throw ZIOException("can not get draco file size or empty file");
+  }
+  inputFileStream.seekg(0, std::ios::beg);
+  std::vector<char> data(size);
+  readStream(inputFileStream, data.data(), size);
+  inputFileStream.close();
+
+  // Create a draco decoding buffer. Note that no data is copied in this step.
+  draco::DecoderBuffer buffer;
+  buffer.Init(data.data(), data.size());
+
+  // Decode the input data into a geometry.
+  std::unique_ptr<draco::PointCloud> pc;
+  draco::Mesh *msh = nullptr;
+  auto type_statusor = draco::Decoder::GetEncodedGeometryType(&buffer);
+  if (!type_statusor.ok()) {
+    throw ZIOException(QString("failed to decode the draco file %1").arg(type_statusor.status().error_msg()));
+  }
+  const draco::EncodedGeometryType geom_type = type_statusor.value();
+  if (geom_type == draco::TRIANGULAR_MESH) {
+    draco::Decoder decoder;
+    auto statusor = decoder.DecodeMeshFromBuffer(&buffer);
+    if (!statusor.ok()) {
+      throw ZIOException(QString("failed to decode the draco file %1").arg(type_statusor.status().error_msg()));
+    }
+    std::unique_ptr<draco::Mesh> in_mesh = std::move(statusor).value();
+    if (in_mesh) {
+      msh = in_mesh.get();
+      pc = std::move(in_mesh);
+    }
+  } else if (geom_type == draco::POINT_CLOUD) {
+    // Failed to decode it as mesh, so let's try to decode it as a point cloud.
+    draco::Decoder decoder;
+    auto statusor = decoder.DecodePointCloudFromBuffer(&buffer);
+    if (!statusor.ok()) {
+      throw ZIOException(QString("failed to decode the draco file %1").arg(type_statusor.status().error_msg()));
+    }
+    pc = std::move(statusor).value();
+  }
+
+  if (!pc) {
+    throw ZIOException("failed to decode the draco file");
+  }
+
+  getDracoVertices(*pc, mesh.m_vertices);
+  getDracoColors(*pc, mesh.m_colors);
+  getDracoNormals(*pc, mesh.m_normals);
+  getDracoTextureCoordinates(*pc, mesh.m_1DTextureCoordinates, mesh.m_2DTextureCoordinates, mesh.m_3DTextureCoordinates);
+  if (msh) {
+    getDracoFaces(*msh, mesh.m_indices);
   }
 }
