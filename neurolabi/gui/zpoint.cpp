@@ -82,6 +82,11 @@ double ZPoint::length() const
   return Geo3d_Orgdist(m_x, m_y, m_z);
 }
 
+double ZPoint::lengthSqure() const
+{
+  return Geo3d_Orgdist_Sqr(m_x, m_y, m_z);
+}
+
 ZPoint& ZPoint::operator +=(const ZPoint &pt)
 {
   m_x += pt.m_x;

@@ -72,9 +72,9 @@ void Neu3Window::initialize()
 */
 
   m_3dwin = m_dataContainer->makeNeu3Window();
-  ZFlyEmBody3dDoc *bodydoc =
-      qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
-  bodydoc->showTodo(false);
+//  ZFlyEmBody3dDoc *bodydoc =
+//      qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
+//  bodydoc->showTodo(false);
 
   setCentralWidget(m_3dwin);
 
@@ -157,6 +157,8 @@ void Neu3Window::createDockWidget()
           widget, SLOT(selectBodySliently(uint64_t)));
   connect(this, SIGNAL(bodyDeselected(uint64_t)),
           widget, SLOT(deselectBodySliently(uint64_t)));
+  connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
+          widget, SLOT(removeBody(uint64_t)));
 
   dockWidget->setWidget(widget);
 
@@ -266,10 +268,6 @@ void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
   tmpBodySet.insert(bodySet.begin(), bodySet.end());
 
   getBodyDocument()->setBodyModelSelected(bodySet);
-
-//  m_dataContainer->getCompleteDocument()->setSelectedBody(
-//        tmpBodySet, NeuTube::BODY_LABEL_MAPPED);
-//  m_dataContainer->updateBodySelection();
 }
 
 void Neu3Window::processSwcChangeFrom3D(

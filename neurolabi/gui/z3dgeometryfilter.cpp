@@ -2,6 +2,7 @@
 #include "zjsonobject.h"
 #include "z3dfiltersetting.h"
 #include "zjsonparser.h"
+#include "z3drendertarget.h"
 
 Z3DGeometryFilter::Z3DGeometryFilter(QObject *parent)
   : Z3DProcessor(parent)
@@ -77,6 +78,17 @@ void Z3DGeometryFilter::get3DRayUnderScreenPoint(
   v1 = glm::unProject(glm::dvec3(x, height-y, 0.f), modelview, projection, viewport);
   v2 = glm::unProject(glm::dvec3(x, height-y, 1.f), modelview, projection, viewport);
   v2 = glm::normalize(v2-v1) + v1;
+}
+
+glm::ivec3 Z3DGeometryFilter::getPickingTexSize() const
+{
+  return getPickingManager()->getRenderTarget()->getAttachment(
+        GL_COLOR_ATTACHMENT0)->getDimensions();
+}
+
+void Z3DGeometryFilter::updatePickingTexSize()
+{
+  m_pickingTexSize = getPickingTexSize();
 }
 
 ZJsonObject Z3DGeometryFilter::getConfigJson() const

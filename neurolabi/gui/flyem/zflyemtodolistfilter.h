@@ -17,7 +17,7 @@ class ZFlyEmTodoListFilter : public Z3DGeometryFilter
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmTodoListFilter();
+  explicit ZFlyEmTodoListFilter(QObject *parent);
   virtual ~ZFlyEmTodoListFilter();
 
 

@@ -15,7 +15,7 @@ enum ESwcGeometryPrimitive {
 };
 
 enum EWindowType {
-  TYPE_GENERAL, TYPE_COARSE_BODY, TYPE_BODY, TYPE_SKELETON
+  TYPE_GENERAL, TYPE_COARSE_BODY, TYPE_BODY, TYPE_SKELETON, TYPE_NEU3_SKELETON
 };
 
 const char* GetVolumeName();

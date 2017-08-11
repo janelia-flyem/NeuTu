@@ -12,7 +12,7 @@ class Z3DWindow;
 
 class ZMenuFactory
 {
-public:
+private: //disabled
   ZMenuFactory();
   virtual ~ZMenuFactory() {}
 

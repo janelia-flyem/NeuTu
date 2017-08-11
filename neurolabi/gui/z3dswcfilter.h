@@ -105,6 +105,7 @@ public:
   virtual void configure(const ZJsonObject &obj);
   ZJsonObject getConfigJson() const;
 
+  Swc_Tree_Node* pickSwcNode(double x, double y);
   QList<Swc_Tree_Node*> pickSwcNode(const ZObject3d &ptArray);
   void selectSwcNode(const ZObject3d &ptArray);
 
@@ -209,7 +210,6 @@ private:
 
   ZEventListenerParameter* m_selectSwcEvent;
   glm::ivec2 m_startCoord;
-  glm::ivec3 m_pickingTexSize;
   ZSwcTree *m_pressedSwc;
   std::set<ZSwcTree*> m_selectedSwcs;   //point to all selected swcs, managed by other class
   Swc_Tree_Node *m_pressedSwcTreeNode;

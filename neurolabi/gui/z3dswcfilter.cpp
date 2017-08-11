@@ -472,6 +472,17 @@ void Z3DSwcFilter::registerPickingObjects(Z3DPickingManager *pm)
   }
 }
 
+Swc_Tree_Node* Z3DSwcFilter::pickSwcNode(double x, double y)
+{
+  Swc_Tree_Node *tn = NULL;
+  if (isNodePicking()) {
+    const void* obj = pickObject(x, y);
+    tn = (Swc_Tree_Node*) obj;
+  }
+
+  return tn;
+}
+
 QList<Swc_Tree_Node *> Z3DSwcFilter::pickSwcNode(const ZObject3d &ptArray)
 {
   QList<Swc_Tree_Node*> nodeArray;
@@ -830,8 +841,9 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
       }
     }
     m_rendererBase->renderPicking(eye);
-    m_pickingTexSize =  getPickingManager()->getRenderTarget()->getAttachment(
-          GL_COLOR_ATTACHMENT0)->getDimensions();
+    updatePickingTexSize();
+//    m_pickingTexSize =  getPickingManager()->getRenderTarget()->getAttachment(
+//          GL_COLOR_ATTACHMENT0)->getDimensions();
   }
 }
 

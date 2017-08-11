@@ -82,6 +82,7 @@
 #include "dialogs/flyembodyiddialog.h"
 #include "zstackdockeyprocessor.h"
 #include "z3dgraphfilter.h"
+#include "flyem/zflyembody3ddocmenufactory.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -680,7 +681,8 @@ void ZFlyEmProofMvc::makeBodyWindow()
   }
 }
 
-Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow()
+Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
+    NeuTube3D::EWindowType windowType)
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
 
@@ -698,8 +700,9 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow()
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
-  m_skeletonWindow->setWindowType(NeuTube3D::TYPE_SKELETON);
-//  skeletonWindow->readSettings();
+  m_skeletonWindow->setWindowType(windowType);
+  m_skeletonWindow->readSettings();
+  m_skeletonWindow->syncAction();
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
@@ -711,21 +714,28 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow()
 //              m_roiSourceList);
   }
 
+  prepareBodyWindowSignalSlot(m_skeletonWindow, doc);
+
   return m_skeletonWindow;
 }
 
 Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 {
-  makeExternalSkeletonWindow();
+  makeExternalSkeletonWindow(NeuTube3D::TYPE_NEU3_SKELETON);
   m_skeletonWindow->getSwcFilter()->setColorMode("Label Branch Type");
   m_skeletonWindow->getSwcFilter()->setStayOnTop(false);
   m_skeletonWindow->getPunctaFilter()->setStayOnTop(false);
   m_skeletonWindow->getGraphFilter()->setStayOnTop(false);
   ZFlyEmBody3dDoc *doc = m_skeletonWindow->getDocument<ZFlyEmBody3dDoc>();
+  m_skeletonWindow->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
+
   doc->enableNodeSeeding(true);
-  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
-          doc->getKeyProcessor(), SLOT(processKeyEvent(QKeyEvent*)));
+//  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
+//          doc->getKeyProcessor(), SLOT(processKeyEvent(QKeyEvent*)));
   m_skeletonWindow->skipKeyEvent(true);
+
+  doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
+  doc->showTodo(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
 
   return m_skeletonWindow;
 }
@@ -762,7 +772,13 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
   m_externalNeuronWindow = m_bodyWindowFactory->make3DWindow(doc);
+  m_externalNeuronWindow->setWindowType(NeuTube3D::TYPE_NEU3_SKELETON);
+  m_externalNeuronWindow->readSettings();
   setWindowSignalSlot(m_externalNeuronWindow);
+
+  m_externalNeuronWindow->syncAction();
+//  doc->showSynapse(m_externalNeuronWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
+//  doc->showTodo(m_externalNeuronWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(

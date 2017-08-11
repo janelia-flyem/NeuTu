@@ -32,6 +32,8 @@ public:
   inline Z3DCamera& getCamera() const {return m_rendererBase->getCamera();}
   inline glm::ivec4 getViewport() const {return m_rendererBase->getViewport();}
   inline Z3DPickingManager* getPickingManager() const {return m_pickingManager;}
+  glm::ivec3 getPickingTexSize() const;
+  void updatePickingTexSize();
 
   inline glm::vec3 getCoordScales() const {return m_rendererBase->getCoordScales();}
   inline float getOpacity() const {return m_rendererBase->getOpacity();}
@@ -73,6 +75,13 @@ public:
   virtual void configure(const ZJsonObject &obj);
   virtual ZJsonObject getConfigJson() const;
 
+  // output v1 is start point of ray, v2 is a point on the ray, v2-v1 is normalized
+  // x and y are input screen point, width and height are input screen dimension
+  void get3DRayUnderScreenPoint(
+      glm::vec3 &v1, glm::vec3 &v2, int x, int y, int width, int height);
+  void get3DRayUnderScreenPoint(
+      glm::dvec3 &v1, glm::dvec3 &v2, int x, int y, int width, int height);
+
 protected:
   virtual void process(Z3DEye) {}
 
@@ -87,14 +96,6 @@ protected:
   // for renderers
   virtual void registerPickingObjects(Z3DPickingManager*) {}
 
-  // output v1 is start point of ray, v2 is a point on the ray, v2-v1 is normalized
-  // x and y are input screen point, width and height are input screen dimension
-  void get3DRayUnderScreenPoint(
-      glm::vec3 &v1, glm::vec3 &v2, int x, int y, int width, int height);
-  void get3DRayUnderScreenPoint(
-      glm::dvec3 &v1, glm::dvec3 &v2, int x, int y, int width, int height);
-
-
 
   Z3DProcessorOutputPort<Z3DGeometryFilter> m_outPort;
   Z3DRendererBase *m_rendererBase;
@@ -108,6 +109,7 @@ protected:
   bool m_needBlending;
   bool m_needOIT;
   QString m_filterName;
+  glm::ivec3 m_pickingTexSize;
 };
 
 #endif // Z3DGEOMETRYFILTER_H

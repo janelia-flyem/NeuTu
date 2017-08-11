@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <QMouseEvent>
+#include <QApplication>
 
 #include "flyem/zflyemtodolist.h"
 #include "flyem/zflyemtodoitem.h"
@@ -11,7 +12,8 @@
 #include "zeventlistenerparameter.h"
 #include "neutubeconfig.h"
 
-ZFlyEmTodoListFilter::ZFlyEmTodoListFilter() :
+ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(QObject *parent) :
+  Z3DGeometryFilter(parent),
   m_xCut("X Cut", glm::ivec2(0,0), 0, 0),
   m_yCut("Y Cut", glm::ivec2(0,0), 0, 0),
   m_zCut("Z Cut", glm::ivec2(0,0), 0, 0)
@@ -133,6 +135,7 @@ void ZFlyEmTodoListFilter::renderPicking(Z3DEye eye)
   }
   m_rendererBase->activateRenderer(m_sphereRenderer);
   m_rendererBase->renderPicking(eye);
+  updatePickingTexSize();
 }
 
 void ZFlyEmTodoListFilter::registerPickingObjects(Z3DPickingManager *pm)
@@ -580,8 +583,18 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int h)
   if (e->type() == QEvent::MouseButtonPress) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
+
+    int dpr = getParentWidget()->devicePixelRatio();
+    const void* obj = getPickingManager()->getObjectAtWidgetPos(
+          glm::ivec2(e->x(), e->y()), m_pickingTexSize, dpr);
+
+#ifdef _DEBUG_
+    std::cout << "Picking env: " << "dpr: " << dpr << " tex: " << m_pickingTexSize << std::endl;
+#endif
+/*
     const void* obj = getPickingManager()->getObjectAtPos(
           glm::ivec2(e->x(), h - e->y()));
+          */
     if (obj == NULL) {
       return;
     }

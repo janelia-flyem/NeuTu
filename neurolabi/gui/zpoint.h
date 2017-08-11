@@ -53,6 +53,7 @@ public:
   double distanceTo(const ZPoint &pt) const;
   double distanceTo(double x, double y, double z) const;
   double length() const;
+  double lengthSqure() const;
 
   ZPoint& operator += (const ZPoint &pt);
   ZPoint& operator += (const ZIntPoint &pt);

@@ -42,6 +42,8 @@ public slots:
   void selectBodySliently(uint64_t bodyId);
   void deselectBodySliently(uint64_t bodyId);
 
+  void removeBody(uint64_t bodyId);
+
 signals:
   void bodyAdded(uint64_t bodyId);
   void bodyRemoved(uint64_t bodyId);
