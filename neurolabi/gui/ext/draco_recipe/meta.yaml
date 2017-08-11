@@ -8,7 +8,7 @@ package:
 source:
   url: https://github.com/google/draco/archive/{{ version }}.zip
   fn:  draco-{{ version }}.zip
-  sha256: 12c372610a49f8cc6da6da6511835b24d70cdfa18b2099b5e3e9d6e1c805e23f
+  #sha256: 12c372610a49f8cc6da6da6511835b24d70cdfa18b2099b5e3e9d6e1c805e23f
 
 build:
   number: 0
