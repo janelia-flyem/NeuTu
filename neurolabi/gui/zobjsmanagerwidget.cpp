@@ -10,6 +10,7 @@
 #include "zdocplayerobjsmodel.h"
 #include "zgraphobjsmodel.h"
 #include "zsurfaceobjsmodel.h"
+#include "zmeshobjsmodel.h"
 #include "QsLog/QsLog.h"
 #include "neutubeconfig.h"
 
@@ -164,6 +165,32 @@ void ZObjsManagerWidget::punctaSelectionChangedFromTreeView(QItemSelection selec
   }
 }
 
+void ZObjsManagerWidget::meshItemDoubleClicked(QModelIndex index)
+{
+  ZMesh *p2 = m_doc->meshObjsModel()->getMesh(index);
+  if (p2 != NULL) {
+    emit meshDoubleClicked(p2);
+  }
+}
+
+void ZObjsManagerWidget::meshSelectionChangedFromTreeView(QItemSelection selected, QItemSelection deselected)
+{
+  QModelIndexList indexes = deselected.indexes();
+  for (int i=0; i<indexes.size(); i++) {
+    ZMesh *p2 = m_doc->meshObjsModel()->getMesh(indexes[i]);
+    if (p2 != NULL) {
+      m_doc->setMeshSelected(p2, false);
+    }
+  }
+  indexes = selected.indexes();
+  for (int i=0; i<indexes.size(); i++) {
+    ZMesh *p2 = m_doc->meshObjsModel()->getMesh(indexes[i]);
+    if (p2 != NULL) {
+      m_doc->setMeshSelected(p2, true);
+    }
+  }
+}
+
 void ZObjsManagerWidget::punctaSelectionChanged(QList<ZPunctum *> selected, QList<ZPunctum *> deselected)
 {
   if (!selected.empty() && m_punctaObjsTreeView != NULL) {
@@ -182,6 +209,28 @@ void ZObjsManagerWidget::punctaSelectionChanged(QList<ZPunctum *> selected, QLis
     QItemSelection is;
     buildItemSelectionFromList(deselected, is);
     m_punctaObjsTreeView->selectionModel()->select(
+          is, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
+  }
+}
+
+void ZObjsManagerWidget::meshSelectionChanged(QList<ZMesh*> selected, QList<ZMesh*> deselected)
+{
+  if (!selected.empty() && m_meshObjsTreeView != NULL) {
+    QItemSelection is;
+    buildItemSelectionFromList(selected, is);
+    m_meshObjsTreeView->selectionModel()->select(
+          is, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+    // scroll to first one if necessary
+    QModelIndex index = m_doc->meshObjsModel()->getIndex(selected[0]);
+    if (m_meshObjsTreeView->isExpanded(m_doc->punctaObjsModel()->parent(index))) {
+      m_meshObjsTreeView->scrollTo(index);
+    }
+  }
+
+  if (!deselected.empty()) {
+    QItemSelection is;
+    buildItemSelectionFromList(deselected, is);
+    m_meshObjsTreeView->selectionModel()->select(
           is, QItemSelectionModel::Deselect | QItemSelectionModel::Rows);
   }
 }
@@ -265,6 +314,21 @@ void ZObjsManagerWidget::createWidget()
     tabs->addTab(m_swcNodeObjsTreeView, "Neuron Nodes");
   }
 
+  if (NeutubeConfig::getInstance().getObjManagerConfig().isMeshOn()) {
+    m_meshObjsTreeView = new QTreeView(this);
+    m_meshObjsTreeView->setTextElideMode(Qt::ElideLeft);
+    m_meshObjsTreeView->setExpandsOnDoubleClick(false);
+    m_meshObjsTreeView->setModel(m_doc->meshObjsModel());
+    m_meshObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_meshObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_meshObjsTreeView, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(meshItemDoubleClicked(QModelIndex)));
+    connect(m_meshObjsTreeView->selectionModel(),
+            SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
+            this, SLOT(meshSelectionChangedFromTreeView(QItemSelection,QItemSelection)));
+    tabs->addTab(m_meshObjsTreeView, "Meshes");
+  }
+
   if (NeutubeConfig::getInstance().getMainWindowConfig().isMarkPunctaOn()) {
     m_punctaObjsTreeView = new QTreeView(this);
     m_punctaObjsTreeView->setSortingEnabled(true);
@@ -321,6 +385,12 @@ void ZObjsManagerWidget::createWidget()
     //std::copy(selectedPuncta->begin(), selectedPuncta->end(), std::back_inserter(selected));
     punctaSelectionChanged(selected, deselected);
   }
+  if (m_doc->hasSelectedMeshes()) {
+    QList<ZMesh*> selected =
+        m_doc->getSelectedObjectList<ZMesh>(ZStackObject::TYPE_PUNCTUM);
+    QList<ZMesh*> deselected;
+    meshSelectionChanged(selected, deselected);
+  }
   if (!m_doc->hasSelectedSwc()) {
     //std::set<ZSwcTree*> *selectedSwcs = m_doc->selectedSwcs();
     QList<ZSwcTree*> selected =
@@ -341,6 +411,9 @@ void ZObjsManagerWidget::createWidget()
   connect(m_doc,
           SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
           this, SLOT(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)));
+  connect(m_doc,
+          SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
+          this, SLOT(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)));
   connect(m_doc,
           SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)));
@@ -445,7 +518,7 @@ void ZObjsManagerWidget::buildItemSelectionFromList(const QList<ZSwcTree *> &lis
     if (index.isValid()) {
       allIndex[index.parent()].insert(index);
     } else {
-      LERROR() << "swc tree don't exist in widget, something is wrong";
+      LERROR() << "swc tree does not exist in widget, something is wrong";
     }
   }
 
@@ -464,6 +537,25 @@ void ZObjsManagerWidget::buildItemSelectionFromList(
     QModelIndex index = m_doc->swcNodeObjsModel()->getIndex(list[i]);
     if (index.isValid()) {
       allIndex[index.parent()].insert(index);
+    }
+  }
+
+  buildItemSelection(allIndex, is);
+}
+
+void ZObjsManagerWidget::buildItemSelectionFromList(const QList<ZMesh*>& list, QItemSelection& is)
+{
+  if (list.empty())
+    return;
+
+  std::map<QModelIndex, std::set<QModelIndex, ModelIndexCompareRow> > allIndex;
+
+  for (int i=0; i<list.size(); i++) {
+    QModelIndex index = m_doc->meshObjsModel()->getIndex(list[i]);
+    if (index.isValid()) {
+      allIndex[index.parent()].insert(index);
+    } else {
+      LERROR() << "mesh does not exist in widget, something is wrong";
     }
   }
 

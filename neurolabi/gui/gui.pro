@@ -791,7 +791,8 @@ HEADERS += mainwindow.h \
     z3dtextureandeyecoordinaterenderer.h \
     z3dview.h \
     ztakescreenshotwidget.h \
-    zioutils.h
+    zioutils.h \
+    zmeshobjsmodel.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1373,7 +1374,8 @@ SOURCES += main.cpp \
     z3dview.cpp \
     ztakescreenshotwidget.cpp \
     zioutils.cpp \
-    zexception.cpp
+    zexception.cpp \
+    zmeshobjsmodel.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

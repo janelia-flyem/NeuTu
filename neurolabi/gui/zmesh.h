@@ -57,6 +57,10 @@ public:
 
   virtual const std::string& className() const override;
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_MESH;
+  }
+
   virtual void display(
       ZPainter &, int , EDisplayStyle ,
       NeuTube::EAxis ) const override
@@ -83,14 +87,14 @@ public:
   using ZStackObject::boundBox;
 
   GLenum type() const
-  { return m_type; }
+  { return m_ttype; }
 
   QString typeAsString() const;
 
   void setType(GLenum type)
   {
-    m_type = type;
-    CHECK(m_type == GL_TRIANGLES || m_type == GL_TRIANGLE_FAN || m_type == GL_TRIANGLE_STRIP);
+    m_ttype = type;
+    CHECK(m_ttype == GL_TRIANGLES || m_ttype == GL_TRIANGLE_FAN || m_ttype == GL_TRIANGLE_STRIP);
   }
 
   const std::vector<glm::vec3>& vertices() const
@@ -292,7 +296,7 @@ private:
 private:
   friend class ZMeshIO;
 
-  GLenum m_type;
+  GLenum m_ttype;
 
   std::vector<glm::vec3> m_vertices;
   std::vector<float> m_1DTextureCoordinates;

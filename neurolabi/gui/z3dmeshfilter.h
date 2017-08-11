@@ -9,6 +9,7 @@
 #include "zeventlistenerparameter.h"
 #include "z3drenderport.h"
 #include "z3dtexturecopyrenderer.h"
+#include "zstringutils.h"
 #include <QObject>
 #include <QString>
 #include <QPoint>
@@ -32,9 +33,8 @@ public:
 
   virtual void process(Z3DEye eye) override;
 
-  void setData(std::vector<ZMesh*>* meshList);
-
-  void setData(QList<ZMesh*>* meshList);
+  void setData(const std::vector<ZMesh*>& meshList);
+  void setData(const QList<ZMesh*>& meshList);
 
   void setSelectedMeshes(std::set<ZMesh*>* list)
   { m_selectedMeshes = list; }
@@ -42,8 +42,6 @@ public:
   virtual bool isReady(Z3DEye eye) const override;
 
   std::shared_ptr<ZWidgetsGroup> widgetsGroup();
-
-  std::shared_ptr<ZWidgetsGroup> widgetsGroupForAnnotationFilter();
 
   virtual bool hasOpaque(Z3DEye eye) const override
   { return Z3DGeometryFilter::hasOpaque(eye) && !m_glow.get(); }
@@ -54,6 +52,10 @@ public:
   { return Z3DGeometryFilter::hasTransparent(eye) || m_glow.get(); }
 
   virtual void renderTransparent(Z3DEye eye) override;
+
+  void updateMeshVisibleState();
+
+  ZBBox<glm::dvec3> meshBound(ZMesh* p);
 
 signals:
 
@@ -76,12 +78,10 @@ protected:
 
   virtual void deregisterPickingObjects() override;
 
-  ZBBox<glm::dvec3> meshBound(ZMesh* p);
-
   //virtual void updateAxisAlignedBoundBoxImpl() override;
   virtual void updateNotTransformedBoundBoxImpl() override;
 
-  void updateMeshVisibleState();
+  virtual void addSelectionLines() override;
 
 private:
   // get visible data from m_origMeshList put into m_meshList
@@ -99,6 +99,7 @@ private:
 
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllMesh;
+  std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare> m_sourceColorMapper;
 
   //Z3DTextureGlowRenderer m_textureGlowRenderer;
   ZBoolParameter m_glow;

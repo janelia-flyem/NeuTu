@@ -100,6 +100,9 @@ void ZStackDocLoader::processObjectChanged(
   case ZStackObject::TYPE_PUNCTUM:
     doc->notifyPunctumModified();
     break;
+  case ZStackObject::TYPE_MESH:
+    doc->notifyMeshModified();
+    break;
   case ZStackObject::TYPE_SPARSE_OBJECT:
     doc->notifySparseObjectModified();
     break;

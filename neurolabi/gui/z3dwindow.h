@@ -129,6 +129,7 @@ public: //Components
   Z3DTrackballInteractionHandler* getInteractionHandler() { return &m_view->interactionHandler(); }
   Z3DCameraParameter* getCamera() { return &m_view->camera(); }
   inline Z3DPunctaFilter* getPunctaFilter() const { return &m_view->punctaFilter(); }
+  inline Z3DMeshFilter* getMeshFilter() const { return &m_view->meshFilter(); }
   inline Z3DSwcFilter* getSwcFilter() const { return &m_view->swcFilter(); }
   inline Z3DVolumeFilter* getVolumeFilter() const { return &m_view->volumeFilter(); }
   inline Z3DCanvas* getCanvas() { return &m_view->canvas(); }
@@ -236,6 +237,7 @@ public slots:
 
   void selectdObjectChangedFrom3D(ZStackObject *p, bool append);
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
+  void selectedMeshChangedFrom3D(ZMesh* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
   void addNewSwcTreeNode(double x, double y, double z, double r);
@@ -250,6 +252,7 @@ public slots:
   void swcDoubleClicked(ZSwcTree* tree);
   void swcNodeDoubleClicked(Swc_Tree_Node* node);
   void punctaDoubleClicked(ZPunctum* p);
+  void meshDoubleClicked(ZMesh* p);
   void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos,
                                 Qt::KeyboardModifiers modifiers);
 

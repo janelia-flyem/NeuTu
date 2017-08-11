@@ -236,6 +236,27 @@ void Z3DVolumeFilter::setData(std::vector<std::unique_ptr<Z3DVolume> >& vols,
   m_volumes.swap(vols);
   m_zoomInVolumes.clear();
   m_isSubVolume.set(false);
+
+  if (m_volumes.size() > m_layerColorTexture.depth()) {
+    m_layerColorTexture.setDimension(
+          glm::uvec3(m_layerColorTexture.width(), m_layerColorTexture.height(), m_volumes.size()));
+    m_layerColorTexture.uploadImage();
+    m_layerDepthTexture.setDimension(
+          glm::uvec3(m_layerDepthTexture.width(), m_layerDepthTexture.height(), m_volumes.size()));
+    m_layerDepthTexture.uploadImage();
+    m_layerTarget.attachTextureToFBO(&m_layerColorTexture, GL_COLOR_ATTACHMENT0, false);
+    m_layerTarget.attachTextureToFBO(&m_layerDepthTexture, GL_DEPTH_ATTACHMENT, false);
+    m_layerTarget.isFBOComplete();
+  }
+
+  m_sliceColormaps.clear();
+  for (size_t i = 0; i < m_volumes.size(); ++i) {
+    m_sliceColormaps.emplace_back(
+          std::make_unique<ZColorMapParameter>(QString("Slice Channel %1 Colormap").arg(i + 1)));
+    m_sliceColormaps[i]->get().create1DTexture(256);
+    m_sliceColormaps[i]->get().reset(0.0, 1.0, glm::vec4(0.f), glm::vec4(m_volumes[i]->volColor(), 1.f));
+  }
+
   volumeChanged();
   updateBoundBox();
 

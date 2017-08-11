@@ -22,28 +22,6 @@
 
 namespace {
 
-class _KeyComp
-{
-public:
-  template<typename KeyType>
-  static KeyType getKey(const KeyType& k)
-  {
-    return k;
-  }
-
-  template<typename KeyType, typename ValueType>
-  static KeyType getKey(const std::pair<const KeyType, ValueType>& p)
-  {
-    return p.first;
-  }
-
-  template<typename L, typename R>
-  bool operator()(const L& l, const R& r) const
-  {
-    return getKey(l) < getKey(r);
-  }
-};
-
 struct _ParameterNameComp {
   bool operator()(ZParameter* p1, ZParameter* p2) const
   {

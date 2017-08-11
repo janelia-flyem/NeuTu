@@ -8,7 +8,8 @@
 #include "zinteractivecontext.h"
 #include "zstroke2d.h"
 #include "zuncopyable.h"
-#include "zstackdoc.h"
+#include "zstackdocreader.h"
+#include "zrect2d.h"
 
 class Z3DTrackballInteractionHandler;
 

@@ -53,6 +53,7 @@ public:
     TYPE_UNIDENTIFIED = 0, //Unidentified type
     TYPE_SWC,
     TYPE_PUNCTUM,
+    TYPE_MESH,
     TYPE_OBJ3D,
     TYPE_STROKE,
     TYPE_LOCSEG_CHAIN,

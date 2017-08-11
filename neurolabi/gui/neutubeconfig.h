@@ -317,11 +317,13 @@ public:
     inline bool isSwcOn() const { return m_isSwcOn; }
     inline bool isCategorizedSwcNodeOn() const { return m_isSwcNodeOn; }
     inline bool isPunctaOn() const { return m_isPunctaOn; }
+    inline bool isMeshOn() const { return m_isMeshOn; }
 
   private:
     bool m_isSwcOn;
     bool m_isSwcNodeOn;
     bool m_isPunctaOn;
+    bool m_isMeshOn = true;
   };
 
   inline const MainWindowConfig& getMainWindowConfig() const {

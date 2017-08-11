@@ -153,6 +153,7 @@ private:
   void volumeDataChanged();
   void punctaDataChanged();
   void swcDataChanged();
+  void meshDataChanged();
   void swcNetworkDataChanged();
   void graph3DDataChanged();
   void todoDataChanged();

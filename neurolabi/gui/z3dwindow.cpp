@@ -79,6 +79,7 @@
 #include "z3dinteractionhandler.h"
 #include "dialogs/zcomboeditdialog.h"
 #include "dialogs/zflyembodycomparisondialog.h"
+#include "z3dmeshfilter.h"
 
 #include <QDesktopWidget>
 #include <QMenuBar>
@@ -223,6 +224,8 @@ void Z3DWindow::init()
 
   connect(getPunctaFilter(), SIGNAL(punctumSelected(ZPunctum*, bool)),
           this, SLOT(selectedPunctumChangedFrom3D(ZPunctum*, bool)));
+  connect(getMeshFilter(), SIGNAL(meshSelected(ZMesh*, bool)),
+          this, SLOT(selectedMeshChangedFrom3D(ZMesh*, bool)));
   if (getTodoFilter()) {
     connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
             this, SLOT(selectdObjectChangedFrom3D(ZStackObject*,bool)));
@@ -858,6 +861,11 @@ void Z3DWindow::createDockWindows()
     m_widgetsGroup->addChild(getSwcFilter()->widgetsGroup());
   }
 
+  if (config.getZ3DWindowConfig().isMeshOn()) {
+    //mesh
+    m_widgetsGroup->addChild(getMeshFilter()->widgetsGroup());
+  }
+
 #if !defined(_NEUTUBE_LIGHT_)
   //puncta
   if (config.getZ3DWindowConfig().isPunctaOn()) {
@@ -886,6 +894,7 @@ void Z3DWindow::createDockWindows()
   connect(omw, SIGNAL(swcDoubleClicked(ZSwcTree*)), this, SLOT(swcDoubleClicked(ZSwcTree*)));
   connect(omw, SIGNAL(swcNodeDoubleClicked(Swc_Tree_Node*)), this, SLOT(swcNodeDoubleClicked(Swc_Tree_Node*)));
   connect(omw, SIGNAL(punctaDoubleClicked(ZPunctum*)), this, SLOT(punctaDoubleClicked(ZPunctum*)));
+  connect(omw, SIGNAL(meshDoubleClicked(ZMesh*)), this, SLOT(meshDoubleClicked(ZMesh*)));
   m_objectsDockWidget->setWidget(omw);
   m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
 
@@ -1200,6 +1209,24 @@ void Z3DWindow::selectedPunctumChangedFrom3D(ZPunctum *p, bool append)
   statusBar()->showMessage(p->toString().c_str());
 }
 
+void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
+{
+  if (p == NULL) {
+    if (!append)
+      m_doc->deselectAllMesh();
+    return;
+  }
+
+  if (append) {
+    m_doc->setMeshSelected(p, true);
+  } else {
+    m_doc->deselectAllObject();
+    m_doc->setMeshSelected(p, true);
+  }
+
+  statusBar()->showMessage(p->getSource().c_str());
+}
+
 void Z3DWindow::selectedSwcChangedFrom3D(ZSwcTree *p, bool append)
 {
   if (!append) {
@@ -1324,6 +1351,11 @@ void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
       getVolumeFilter()->exitZoomInView();
   }
   m_view->gotoPosition(bd);
+}
+
+void Z3DWindow::meshDoubleClicked(ZMesh* p)
+{
+  m_view->gotoPosition(getMeshFilter()->meshBound(p), 0);
 }
 
 void Z3DWindow::pointInVolumeLeftClicked(

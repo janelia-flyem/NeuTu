@@ -41,8 +41,8 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   connect(&m_singleColorForAllMesh, &ZVec4Parameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
 
   // Color Mode
-  m_colorMode.addOption("Single Color");
-  m_colorMode.select("Single Color");
+  m_colorMode.addOptions("Single Color", "Mesh Source");
+  m_colorMode.select("Mesh Source");
 
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::adjustWidgets);
@@ -74,7 +74,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   m_triangleListRenderer.setColorSource("CustomColor");
 }
 
-void Z3DMeshFilter::process(Z3DEye eye)
+void Z3DMeshFilter::process(Z3DEye)
 {
   if (m_dataIsInvalid) {
     prepareData();
@@ -110,16 +110,13 @@ void Z3DMeshFilter::process(Z3DEye eye)
 //    glBlendFunc(GL_ONE, GL_ZERO);
 //    glDisable(GL_BLEND);
 //    glDisable(GL_DEPTH_TEST);
-//  }
+  //  }
 }
 
-void Z3DMeshFilter::setData(std::vector<ZMesh*>* meshList)
+void Z3DMeshFilter::setData(const std::vector<ZMesh*>& meshList)
 {
-  m_origMeshList.clear();
-  if (meshList) {
-    m_origMeshList = *meshList;
-    LOG(INFO) << className() << " read " << m_origMeshList.size() << " meshes.";
-  }
+  m_origMeshList = meshList;
+  //LOG(INFO) << className() << " read " << m_origMeshList.size() << " meshes.";
   getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
@@ -127,14 +124,12 @@ void Z3DMeshFilter::setData(std::vector<ZMesh*>* meshList)
   updateBoundBox();
 }
 
-void Z3DMeshFilter::setData(QList<ZMesh*>* meshList)
+void Z3DMeshFilter::setData(const QList<ZMesh*>& meshList)
 {
   m_origMeshList.clear();
-  if (meshList) {
-    for (auto mesh : *meshList)
-      m_origMeshList.push_back(mesh);
-    LOG(INFO) << className() << " read " << m_origMeshList.size() << " meshes.";
-  }
+  for (auto mesh : meshList)
+    m_origMeshList.push_back(mesh);
+  //LOG(INFO) << className() << " read " << m_origMeshList.size() << " meshes.";
   getVisibleData();
   m_dataIsInvalid = true;
   invalidateResult();
@@ -147,19 +142,6 @@ bool Z3DMeshFilter::isReady(Z3DEye eye) const
   return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_origMeshList.empty();
 }
 
-//namespace {
-
-//bool compareParameterName(const ZParameter *p1, const ZParameter *p2)
-//{
-//  QString n1 = p1->getName().mid(5); // "Mesh "
-//  QString n2 = p2->getName().mid(5);
-//  n1.remove(n1.size()-6, 6); //" Color"
-//  n2.remove(n2.size()-6, 6);
-//  return n1.toInt() < n2.toInt();
-//}
-
-//}
-
 std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
 {
   if (!m_widgetsGroup) {
@@ -168,21 +150,22 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_stayOnTop, 1);
     m_widgetsGroup->addChild(m_colorMode, 1);
     m_widgetsGroup->addChild(m_singleColorForAllMesh, 1);
-    m_widgetsGroup->addChild(m_triangleListRenderer.wireframeModePara(), 1);
-    m_widgetsGroup->addChild(m_triangleListRenderer.wireframeColorPara(), 1);
+
+    for (const auto& kv : m_sourceColorMapper) {
+      m_widgetsGroup->addChild(*kv.second, 2);
+    }
+
+    m_widgetsGroup->addChild(m_triangleListRenderer.wireframeModePara(), 3);
+    m_widgetsGroup->addChild(m_triangleListRenderer.wireframeColorPara(), 3);
 
     std::vector<ZParameter*> paras = m_rendererBase.parameters();
     for (auto para : paras) {
       if (para->name() == "Coord Transform") {
-        m_widgetsGroup->addChild(*para, 2);
+        m_widgetsGroup->addChild(*para, 4);
         //        QPushButton *pb = new QPushButton("Apply Transform");
         //        connect(pb, &QPushButton::clicked, this, &Z3DMeshFilter::onApplyTransform);
         //        m_widgetsGroup->addChild(*pb, 2);
       }
-        //else if (para->name() == "Size Scale")
-        //m_widgetsGroup->addChild(para, 3);
-        //else if (para->name() == "Rendering Method")
-        //m_widgetsGroup->addChild(para, 4);
       else if (para->name() == "Opacity")
         m_widgetsGroup->addChild(*para, 5);
       else if (para->name() != "Size Scale")
@@ -203,31 +186,6 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
     m_widgetsGroup->addChild(m_boundBoxLineColor, 5);
     m_widgetsGroup->addChild(m_selectionLineWidth, 7);
     m_widgetsGroup->addChild(m_selectionLineColor, 7);
-    //m_widgetsGroup->setBasicAdvancedCutoff(5);
-  }
-  return m_widgetsGroup;
-}
-
-std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroupForAnnotationFilter()
-{
-  if (!m_widgetsGroup) {
-    m_widgetsGroup = std::make_shared<ZWidgetsGroup>("Mesh", 1);
-    m_widgetsGroup->addChild(m_visible, 1);
-    m_widgetsGroup->addChild(m_singleColorForAllMesh, 1);
-    m_widgetsGroup->addChild(m_triangleListRenderer.wireframeModePara(), 1);
-    m_widgetsGroup->addChild(m_triangleListRenderer.wireframeColorPara(), 1);
-
-    std::vector<ZParameter*> paras = m_rendererBase.parameters();
-    for (auto para : paras) {
-      if (para->name().contains("Opacity") || para->name().contains("Material"))
-        m_widgetsGroup->addChild(*para, 5);
-    }
-    m_widgetsGroup->addChild(m_xCut, 5);
-    m_widgetsGroup->addChild(m_yCut, 5);
-    m_widgetsGroup->addChild(m_zCut, 5);
-    m_widgetsGroup->addChild(m_boundBoxMode, 5);
-    m_widgetsGroup->addChild(m_boundBoxLineWidth, 5);
-    m_widgetsGroup->addChild(m_boundBoxLineColor, 5);
     //m_widgetsGroup->setBasicAdvancedCutoff(5);
   }
   return m_widgetsGroup;
@@ -271,6 +229,61 @@ void Z3DMeshFilter::prepareData()
 
   initializeCutRange();
   initializeRotationCenter();
+
+  std::set<QString, QStringNaturalCompare> allSources;
+  for (auto mesh : m_origMeshList) {
+    allSources.insert(mesh->getSource().c_str());
+  }
+  // do nothing if sources don't change
+  if (m_sourceColorMapper.size() != allSources.size() ||
+      !std::equal(m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
+                  allSources.begin(), _KeyComp())) {
+    // remove old source color parameters from widget, will add new ones later
+    if (m_widgetsGroup) {
+      for (auto& kv : m_sourceColorMapper) {
+        m_widgetsGroup->removeChild(*kv.second);
+      }
+    }
+
+    // remove not in use sources
+    for (auto it = m_sourceColorMapper.begin(); it != m_sourceColorMapper.end(); ) {
+      if (allSources.find(it->first) == allSources.end()) {
+        removeParameter(*it->second);
+        it = m_sourceColorMapper.erase(it);
+      } else {
+        ++it;
+      }
+    }
+
+    // create color parameters for new sources
+    std::set<QString, QStringNaturalCompare> newSources;
+    std::set_difference(allSources.begin(), allSources.end(),
+                        m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
+                        std::inserter(newSources, newSources.end()),
+                        _KeyComp());
+    for (const auto& kv : newSources) {
+      QString guiname = QString("Source: %1").arg(kv);
+      m_sourceColorMapper.insert(std::make_pair(kv,
+                                                std::make_unique<ZVec4Parameter>(guiname,
+                                                                                 glm::vec4(ZRandom::instance().randReal<float>(),
+                                                                                           ZRandom::instance().randReal<float>(),
+                                                                                           ZRandom::instance().randReal<float>(),
+                                                                                           1.f))));
+
+      m_sourceColorMapper[kv]->setStyle("COLOR");
+      connect(m_sourceColorMapper[kv].get(), &ZVec4Parameter::valueChanged,
+              this, &Z3DMeshFilter::prepareColor);
+      addParameter(*m_sourceColorMapper[kv]);
+    }
+
+    // update widget group
+    if (m_widgetsGroup) {
+      for (const auto& kv : m_sourceColorMapper) {
+        m_widgetsGroup->addChild(*kv.second, 2);
+      }
+      m_widgetsGroup->emitWidgetsGroupChangedSignal();
+    }
+  }
 
   m_triangleListRenderer.setData(&m_meshList);
   prepareColor();
@@ -343,6 +356,15 @@ void Z3DMeshFilter::updateNotTransformedBoundBoxImpl()
   }
 }
 
+void Z3DMeshFilter::addSelectionLines()
+{
+  for (const auto& p : m_meshList) {
+    if (p->isVisible() && p->isSelected()) {
+      appendBoundboxLines(meshBound(p), m_selectionLines);
+    }
+  }
+}
+
 void Z3DMeshFilter::prepareColor()
 {
   m_meshColors.clear();
@@ -350,6 +372,11 @@ void Z3DMeshFilter::prepareColor()
   if (m_colorMode.isSelected("Single Color")) {
     for (size_t i = 0; i < m_meshList.size(); ++i) {
       m_meshColors.push_back(m_singleColorForAllMesh.get());
+    }
+  } else if (m_colorMode.isSelected("Mesh Source")) {
+    for (size_t i=0; i<m_meshList.size(); i++) {
+      glm::vec4 color = m_sourceColorMapper[m_meshList[i]->getSource().c_str()]->get();
+      m_meshColors.push_back(color);
     }
   }
 
@@ -364,6 +391,9 @@ void Z3DMeshFilter::adjustWidgets()
 //  m_textureGlowRenderer.blurRadiusPara().setVisible(m_glow.get());
 //  m_textureGlowRenderer.blurScalePara().setVisible(m_glow.get());
 //  m_textureGlowRenderer.blurStrengthPara().setVisible(m_glow.get());
+  for (auto& kv : m_sourceColorMapper) {
+    kv.second->setVisible(m_colorMode.isSelected("Mesh Source"));
+  }
 }
 
 void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int h)
@@ -419,5 +449,9 @@ void Z3DMeshFilter::updateMeshVisibleState()
 
 void Z3DMeshFilter::getVisibleData()
 {
-  m_meshList = m_origMeshList;
+  m_meshList.clear();
+  for (size_t i=0; i<m_origMeshList.size(); ++i) {
+    if (m_origMeshList[i]->isVisible())
+      m_meshList.push_back(m_origMeshList[i]);
+  }
 }

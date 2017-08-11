@@ -390,6 +390,9 @@ void Z3DView::init(InitMode initMode)
     // swc
     swcDataChanged();
     connect(m_doc, &ZStackDoc::swcModified, this, &Z3DView::swcDataChanged);
+    // mesh
+    meshDataChanged();
+    connect(m_doc, &ZStackDoc::meshModified, this, &Z3DView::meshDataChanged);
     // graph
     swcNetworkDataChanged();
     graph3DDataChanged();
@@ -402,6 +405,8 @@ void Z3DView::init(InitMode initMode)
     connect(m_doc, &ZStackDoc::objectSelectionChanged, this, &Z3DView::objectSelectionChanged);
     connect(m_doc, &ZStackDoc::punctaSelectionChanged, m_punctaFilter.get(), &Z3DPunctaFilter::invalidateResult);
     connect(m_doc, &ZStackDoc::punctumVisibleStateChanged, m_punctaFilter.get(), &Z3DPunctaFilter::updatePunctumVisibleState);
+    connect(m_doc, &ZStackDoc::meshSelectionChanged, m_meshFilter.get(), &Z3DMeshFilter::invalidateResult);
+    connect(m_doc, &ZStackDoc::meshVisibleStateChanged, m_meshFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
     connect(m_doc, &ZStackDoc::swcSelectionChanged, m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
     connect(m_doc, &ZStackDoc::swcVisibleStateChanged, m_swcFilter.get(), &Z3DSwcFilter::updateSwcVisibleState);
     connect(m_doc, QOverload<QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>>::of(&ZStackDoc::swcTreeNodeSelectionChanged),
@@ -471,6 +476,11 @@ void Z3DView::punctaDataChanged()
 void Z3DView::swcDataChanged()
 {
   m_swcFilter->setData(m_doc->getSwcList());
+}
+
+void Z3DView::meshDataChanged()
+{
+  m_meshFilter->setData(m_doc->getMeshList());
 }
 
 void Z3DView::swcNetworkDataChanged()
@@ -545,6 +555,9 @@ void Z3DView::objectSelectionChanged(const QList<ZStackObject*>& selected,
       break;
     case ZStackObject::TYPE_FLYEM_TODO_ITEM:
       m_todoFilter->invalidate();
+      break;
+    case ZStackObject::TYPE_MESH:
+      m_meshFilter->invalidate();
       break;
     default:
       break;

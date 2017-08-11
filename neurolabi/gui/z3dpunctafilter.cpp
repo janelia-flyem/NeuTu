@@ -8,32 +8,6 @@
 #include <algorithm>
 #include <iostream>
 
-namespace {
-
-class _KeyComp
-{
-public:
-  template<typename KeyType>
-  static KeyType getKey(const KeyType& k)
-  {
-    return k;
-  }
-
-  template<typename KeyType, typename ValueType>
-  static KeyType getKey(const std::pair<const KeyType, ValueType>& p)
-  {
-    return p.first;
-  }
-
-  template<typename L, typename R>
-  bool operator()(const L& l, const R& r) const
-  {
-    return getKey(l) < getKey(r);
-  }
-};
-
-}
-
 Z3DPunctaFilter::Z3DPunctaFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   : Z3DGeometryFilter(globalParas, parent)
   , m_monoEyeOutport("Image", this)
@@ -75,8 +49,8 @@ Z3DPunctaFilter::Z3DPunctaFilter(Z3DGlobalParameters& globalParas, QObject* pare
   connect(&m_colorMapMaxIntensity, &ZColorMapParameter::valueChanged, this, &Z3DPunctaFilter::prepareColor);
 
   // Color Mode
-  m_colorMode.addOptions("Single Color", "Random Color", "Based on Point Source", "Original Point Color", "Colormap Score");
-  m_colorMode.select("Based on Point Source");
+  m_colorMode.addOptions("Single Color", "Random Color", "Point Source", "Original Point Color", "Colormap Score");
+  m_colorMode.select("Point Source");
 
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DPunctaFilter::prepareColor);
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DPunctaFilter::adjustWidgets);
@@ -396,7 +370,7 @@ void Z3DPunctaFilter::prepareColor()
       glm::vec4 color(m_punctaList[i]->color().redF(), m_punctaList[i]->color().greenF(), m_punctaList[i]->color().blueF(), m_punctaList[i]->color().alphaF());
       m_pointColors.push_back(color);
     }
-  } else if (m_colorMode.isSelected("Based on Point Source")) {
+  } else if (m_colorMode.isSelected("Point Source")) {
     for (size_t i=0; i<m_punctaList.size(); i++) {
       glm::vec4 color = m_sourceColorMapper[m_punctaList[i]->getSource().c_str()]->get();
       m_pointColors.push_back(color);
@@ -438,7 +412,7 @@ void Z3DPunctaFilter::adjustWidgets()
   m_colorMapMaxIntensity.setVisible(m_colorMode.isSelected("Colormap Max Intensity"));
 
   for (auto& kv : m_sourceColorMapper) {
-    kv.second->setVisible(m_colorMode.isSelected("Based on Point Source"));
+    kv.second->setVisible(m_colorMode.isSelected("Point Source"));
   }
 }
 

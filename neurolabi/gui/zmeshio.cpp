@@ -9,6 +9,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/material.h>
+#include <draco/mesh/mesh.h>
+#include <draco/point_cloud/point_cloud.h>
+#include <draco/compression/decode.h>
 #include <QFile>
 #include <memory>
 
@@ -133,6 +136,7 @@ ZMeshIO::ZMeshIO()
   exts.replace("*.", "");
   m_readExts = exts.split(";", QString::SkipEmptyParts);
   m_readExts.push_back("msh");
+  m_readExts.push_back("drc");
 
   m_readFilter = QString("All Mesh files (*.") + m_readExts.join(" *.") + QString(")");
 
