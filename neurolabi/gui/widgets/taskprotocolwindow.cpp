@@ -140,6 +140,7 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
         saveState();
+        updateLabel();
     }
 }
 
