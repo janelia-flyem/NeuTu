@@ -94,6 +94,9 @@ public:
   QList<Swc_Tree_Node*> pickSwcNode(const ZObject3d &ptArray);
   void selectSwcNode(const ZObject3d &ptArray);
 
+  void changeGeometryMode()
+  { m_renderingPrimitive.selectNext(); }
+
 signals:
   void treeSelected(ZSwcTree*, bool append);
   void treeNodeSelected(Swc_Tree_Node*, bool append);
@@ -158,7 +161,6 @@ private:
 
   void sortNodeList();
   void clearDecorateSwcList();
-  const void* pickObject(int x, int y);
 
 private:
   Z3DLineRenderer m_lineRenderer;

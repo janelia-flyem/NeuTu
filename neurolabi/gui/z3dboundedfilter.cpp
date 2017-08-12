@@ -246,11 +246,7 @@ void Z3DBoundedFilter::rayUnderScreenPoint(glm::vec3& v1, glm::vec3& v2, int x, 
   const glm::mat4& projection = globalCamera().projectionMatrix(Z3DEye::Mono);
   const glm::mat4& modelview = globalCamera().viewMatrix(Z3DEye::Mono);
 
-  glm::ivec4 viewport;
-  viewport[0] = 0;
-  viewport[1] = 0;
-  viewport[2] = width;
-  viewport[3] = height;
+  glm::ivec4 viewport(0, 0, width, height);
 
   v1 = glm::unProject(glm::vec3(x, height - y, 0.f), modelview, projection, viewport);
   v2 = glm::unProject(glm::vec3(x, height - y, 1.f), modelview, projection, viewport);
@@ -262,11 +258,7 @@ void Z3DBoundedFilter::rayUnderScreenPoint(glm::dvec3& v1, glm::dvec3& v2, int x
   const glm::dmat4& projection = glm::dmat4(globalCamera().projectionMatrix(Z3DEye::Mono));
   const glm::dmat4& modelview = glm::dmat4(globalCamera().viewMatrix(Z3DEye::Mono));
 
-  glm::ivec4 viewport;
-  viewport[0] = 0;
-  viewport[1] = 0;
-  viewport[2] = width;
-  viewport[3] = height;
+  glm::ivec4 viewport(0, 0, width, height);
 
   v1 = glm::unProject(glm::dvec3(x, height - y, 0.f), modelview, projection, viewport);
   v2 = glm::unProject(glm::dvec3(x, height - y, 1.f), modelview, projection, viewport);

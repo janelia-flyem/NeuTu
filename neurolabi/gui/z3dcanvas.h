@@ -59,8 +59,8 @@ public:
   // for high dpi support like retina
   glm::uvec2 physicalSize()
   {
-    return glm::uvec2(width() * devicePixelRatio(),
-                      height() * devicePixelRatio());
+    return glm::uvec2(width() * devicePixelRatioF(),
+                      height() * devicePixelRatioF());
   }
 
   glm::uvec2 logicalSize()
@@ -144,7 +144,7 @@ protected:
   void rotateZM();
 
 private:
-  double devicePixelRatio();
+  //double devicePixelRatio();
 
 private:
   bool m_fullscreen;

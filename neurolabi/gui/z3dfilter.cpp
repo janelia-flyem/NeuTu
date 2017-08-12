@@ -107,23 +107,6 @@ void Z3DFilter::disconnectAllPorts()
   }
 }
 
-/*
-QWidget* Z3DFilter::getParentWidget() const
-{
-  return qobject_cast<QWidget*>(parent());
-}
-*/
-
-int Z3DFilter::getDevicePixelRatio() const
-{
-  Z3DView *view = qobject_cast<Z3DView*>(parent());
-  if (view != NULL) {
-    return view->getDevicePixelRatio();
-  }
-
-  return 1;
-}
-
 void Z3DFilter::setValid(Z3DEye eye)
 {
   if (eye == Z3DEye::Mono)

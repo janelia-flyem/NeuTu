@@ -240,6 +240,12 @@ std::shared_ptr<ZWidgetsGroup> Z3DGlobalParameters::widgetsGroup(bool includeCam
   return includeCamera ? m_widgetsGrp : m_widgetsGrpNoCamera;
 }
 
+void Z3DGlobalParameters::setCanvas(Z3DCanvas &canvas)
+{
+  m_canvas = &canvas;
+  pickingManager.setDevicePixelRatio(m_canvas->devicePixelRatioF());
+}
+
 void Z3DGlobalParameters::getGLFocus()
 {
   m_canvas->getGLFocus();

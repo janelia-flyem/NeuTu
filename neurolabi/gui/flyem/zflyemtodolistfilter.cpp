@@ -42,7 +42,6 @@ void ZFlyEmTodoListFilter::renderPicking(Z3DEye eye)
   }
 
   m_rendererBase.renderPicking(eye, m_sphereRenderer);
-  updatePickingTexSize();
 }
 
 void ZFlyEmTodoListFilter::registerPickingObjects()
@@ -426,9 +425,7 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
 
-    int dpr = getDevicePixelRatio();
-    const void* obj = pickingManager().getObjectAtWidgetPos(
-          glm::ivec2(e->x(), e->y()), m_pickingTexSize, dpr);
+    const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
 
 #ifdef _DEBUG_
     std::cout << "Picking env: " << "dpr: " << dpr << " tex: " << m_pickingTexSize << std::endl;

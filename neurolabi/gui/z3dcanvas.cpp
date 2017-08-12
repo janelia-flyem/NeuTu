@@ -147,8 +147,8 @@ void Z3DCanvas::resizeEvent(QResizeEvent *event)
   if (m_3dScene)
     m_3dScene->setSceneRect(QRect(QPoint(0, 0), event->size()));
 
-  emit canvasSizeChanged(event->size().width() * devicePixelRatio(),
-                         event->size().height() * devicePixelRatio());
+  emit canvasSizeChanged(event->size().width() * devicePixelRatioF(),
+                         event->size().height() * devicePixelRatioF());
 }
 
 void Z3DCanvas::paintEvent(QPaintEvent *event)
@@ -203,8 +203,11 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
           "  5: select small trees;");
   }
 
-  //ZPainter painter()
   //painter->drawRect(QRect(10, 10, 40, 60));
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 9, 0)
+  glGetError(); //error from qt
+#endif
 }
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)
@@ -267,11 +270,11 @@ void Z3DCanvas::setKeyMode(ZInteractionEngine::EKeyMode mode)
   update(QRect(QPoint(0, 0), size()));
 }
 
-double Z3DCanvas::devicePixelRatio()
-{
-  return (window() && window()->windowHandle()) ?
-        window()->windowHandle()->devicePixelRatio() : 1.0;
-}
+//double Z3DCanvas::devicePixelRatio()
+//{
+//  return (window() && window()->windowHandle()) ?
+//        window()->windowHandle()->devicePixelRatio() : 1.0;
+//}
 
 void Z3DCanvas::disableKeyEvent()
 {

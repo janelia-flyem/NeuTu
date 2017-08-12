@@ -49,8 +49,7 @@ public:
   { return m_lightSpotDirectionArray.data(); }
 
   // must call
-  void setCanvas(Z3DCanvas* canvas)
-  { m_canvas = canvas; }
+  void setCanvas(Z3DCanvas& canvas);
 
   void getGLFocus();
 

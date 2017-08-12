@@ -186,11 +186,11 @@ private:
 
   std::unique_ptr<Z3DVolumeFilter> m_volumeFilter;
   std::unique_ptr<Z3DPunctaFilter> m_punctaFilter;
-  Z3DSwcFilter *m_swcFilter;
+  std::unique_ptr<Z3DSwcFilter> m_swcFilter;
   std::unique_ptr<Z3DMeshFilter> m_meshFilter;
   std::unique_ptr<Z3DGraphFilter> m_graphFilter;
   std::unique_ptr<Z3DSurfaceFilter> m_surfaceFilter;
-  ZFlyEmTodoListFilter *m_todoFilter;
+  std::unique_ptr<ZFlyEmTodoListFilter> m_todoFilter;
 //  std::unique_ptr<Z3DGraphFilter> m_decorationFilter;
 
   ZBBox<glm::dvec3> m_boundBox;

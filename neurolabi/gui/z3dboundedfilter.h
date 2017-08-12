@@ -143,6 +143,18 @@ public:
   void setOpacity(float o)
   { m_rendererBase.setOpacity(o); }
 
+  float sizeScale() const
+  { return m_rendererBase.sizeScale(); }
+
+  void setSizeScale(float s)
+  { m_rendererBase.setSizeScale(s); }
+
+  float opacity() const
+  { return m_rendererBase.opacity(); }
+
+  glm::mat4 coordTransform() const
+  { return m_rendererBase.coordTransform(); }
+
   glm::vec3 getViewCoord(double x, double y, double z, double w, double h);
 
   void setOffset(float sx, float sy, float sz)
@@ -180,6 +192,12 @@ public:
   ZIntCuboid cutBox();
   void setCutBox(const ZIntCuboid &box);
 
+  // output v1 is start point of ray, v2 is a point on the ray, v2-v1 is normalized
+  // x and y are input screen point, width and height are input screen dimension
+  void rayUnderScreenPoint(glm::vec3& v1, glm::vec3& v2, int x, int y, int width, int height);
+
+  void rayUnderScreenPoint(glm::dvec3& v1, glm::dvec3& v2, int x, int y, int width, int height);
+
 signals:
 
   void boundBoxChanged();
@@ -202,12 +220,6 @@ protected:
   void renderBoundBox(Z3DEye eye);
 
   void appendBoundboxLines(const ZBBox<glm::dvec3>& bound, std::vector<glm::vec3>& lines);
-
-  // output v1 is start point of ray, v2 is a point on the ray, v2-v1 is normalized
-  // x and y are input screen point, width and height are input screen dimension
-  void rayUnderScreenPoint(glm::vec3& v1, glm::vec3& v2, int x, int y, int width, int height);
-
-  void rayUnderScreenPoint(glm::dvec3& v1, glm::dvec3& v2, int x, int y, int width, int height);
 
   // implement these to support bound box
   virtual void updateAxisAlignedBoundBoxImpl();

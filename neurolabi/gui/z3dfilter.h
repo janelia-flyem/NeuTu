@@ -113,9 +113,6 @@ public:
   inline void invalidateResult()
   { invalidate(State::AllResultInvalid); }
 
-//  QWidget* getParentWidget() const;
-  int getDevicePixelRatio() const;
-
 signals:
 
   // emit this only if resize starts from current filter.

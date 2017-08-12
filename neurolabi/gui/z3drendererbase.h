@@ -230,8 +230,6 @@ public:
   inline const glm::mat4& inverseViewportMatrix() const
   { return m_inverseViewportMatrix; }
 
-  inline const Z3DCamera& getCamera() const {return m_camera;}
-
 signals:
 
   void coordTransformChanged();

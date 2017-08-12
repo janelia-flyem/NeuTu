@@ -55,7 +55,7 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   , m_coneRenderer(m_rendererBase)
   , m_sphereRenderer(m_rendererBase)
   , m_sphereRendererForCone(m_rendererBase)
-  , m_renderingPrimitive("Rendering Mode")
+  , m_renderingPrimitive("Geometry")
   , m_colorMode("Color Mode")
   , m_colorMapBranchType("Branch Type Color Map")
   , m_selectSwcEvent("Select Puncta", false)
@@ -592,18 +592,6 @@ std::shared_ptr<ZWidgetsGroup> Z3DSwcFilter::widgetsGroup()
   }
   return m_widgetsGroup;
 }
-
-const void* Z3DSwcFilter::pickObject(int x, int y)
-{
-  int dpr = getDevicePixelRatio();
-
-  //const void* obj = getPickingManager()->getObjectAtPos(glm::ivec2(e->x(), h - e->y()));
-  const void* obj = pickingManager().getObjectAtWidgetPos(
-        glm::ivec2(x, y), m_pickingTexSize, dpr);
-
-  return obj;
-}
-
 
 void Z3DSwcFilter::renderOpaque(Z3DEye eye)
 {

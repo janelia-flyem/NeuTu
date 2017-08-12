@@ -2280,10 +2280,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_G:  // change swc display mode
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      ZOptionParameter<QString> *sm =
-          (ZOptionParameter<QString>*) (
-            getSwcFilter()->parameter("Geometry"));
-      sm->selectNext();
+      getSwcFilter()->changeGeometryMode();
     }
   }
     break;
@@ -3578,7 +3575,7 @@ void Z3DWindow::shootTodo(int x, int y)
         glm::dvec3 v1,v2;
         int w = getCanvas()->width();
         int h = getCanvas()->height();
-        getSwcFilter()->get3DRayUnderScreenPoint(v1, v2, x, y, w, h);
+        getSwcFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
         ZPoint lineStart(v1.x, v1.y, v1.z);
         glm::dvec3 norm = v2 - v1;
         ZPoint lineNorm(norm.x, norm.y, norm.z);

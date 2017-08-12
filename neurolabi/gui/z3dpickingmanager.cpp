@@ -83,50 +83,11 @@ const void* Z3DPickingManager::objectOfColor(const glm::col4& col)
   }
 }
 
-const void* Z3DPickingManager::getObjectAtWidgetPos(
-    glm::ivec2 pos, glm::ivec3 texSize, int dpr)
-{
-#ifdef _QT5_
-#if 0
-  std::cout << "device pixel ratio: "
-            << QApplication::activeWindow()->devicePixelRatio() << std::endl;
-#endif
-  pos[0] = pos[0] * dpr;
-  pos[1] = pos[1] * dpr;
-
-#ifdef _DEBUG_
-  std::cout << "Calibrated by " << dpr << ": "
-            << pos[0] << ", " << pos[1] << std::endl;
-#endif
-#endif
-//  glm::ivec3 texSize =
-//      getRenderTarget()->getAttachment(GL_COLOR_ATTACHMENT0)->getDimensions();
-
-#ifdef _DEBUG_
-  std::cout << "Tex size: " << texSize[0] << ", " << texSize[1] << ", "
-            << texSize[2] << std::endl;
-#endif
-
-  pos[1] = texSize[1]- pos[1];
-  return getObjectAtPos(pos);
-}
-
-const void* Z3DPickingManager::getObjectAtPos(glm::ivec2 pos)
-{
-  return objectOfColor(m_renderTarget->colorAtPos(pos));
-}
-
-
-const void* Z3DPickingManager::getObjectAtWidgetPos(glm::ivec2 pos, glm::ivec3 texSize)
-{
-  int dpr = QApplication::activeWindow()->devicePixelRatio();
-  return getObjectAtWidgetPos(pos, texSize, dpr);
-}
-
 const void* Z3DPickingManager::objectAtWidgetPos(glm::ivec2 pos)
 {
-  pos[0] = pos[0] * qApp->devicePixelRatio();
-  pos[1] = pos[1] * qApp->devicePixelRatio();
+  assert(m_devicePixelRatio >= 1);
+  pos[0] = pos[0] * m_devicePixelRatio;
+  pos[1] = pos[1] * m_devicePixelRatio;
 
   glm::ivec3 texSize = glm::ivec3(m_renderTarget->attachment(GL_COLOR_ATTACHMENT0)->dimension());
   pos[1] = texSize[1] - pos[1];

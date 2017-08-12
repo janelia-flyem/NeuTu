@@ -29,6 +29,10 @@ public:
   // must call
   void setRenderTarget(Z3DRenderTarget& rt);
 
+  // must call
+  void setDevicePixelRatio(double dpr)
+  { m_devicePixelRatio = dpr; }
+
   glm::col4 registerObject(const void* obj);
 
   void deregisterObject(const void* obj);
@@ -45,9 +49,6 @@ public:
   const void* objectOfColor(const glm::col4& col);
 
   const void* objectAtWidgetPos(glm::ivec2 pos);
-  const void* getObjectAtWidgetPos(glm::ivec2 pos, glm::ivec3 texSize);
-  const void* getObjectAtWidgetPos(glm::ivec2 pos, glm::ivec3 texSize, int dpr);
-  const void* getObjectAtPos(glm::ivec2 pos);
 
   // find all objects within a radius of pos, sort by distance
   // if radius is -1, search the whole image
@@ -81,6 +82,7 @@ private:
   std::map<const void*, glm::col4> m_objectToColor;
   Z3DRenderTarget* m_renderTarget = nullptr;
   glm::col4 m_currentColor{0, 0, 0, 128};
+  double m_devicePixelRatio = 0;
 };
 
 #endif // Z3DPICKINGMANAGER_H

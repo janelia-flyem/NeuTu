@@ -163,11 +163,6 @@ int main(int argc, char *argv[])
 
   if (guiEnabled) {
 #ifdef _QT5_
-    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
-#endif
-    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-#ifdef _QT5_
     QSurfaceFormat format;
 #if defined(__APPLE__) && defined(_USE_CORE_PROFILE_)
     format.setVersion(3, 2);
@@ -177,8 +172,8 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(format);
 
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
-    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
 #endif
+    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
   }
 
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first

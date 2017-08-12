@@ -117,7 +117,7 @@ void Z3DRenderTarget::release()
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_previousReadFBOID);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_previousDrawFBOID);
   glViewport(m_previousViewport.x, m_previousViewport.y, m_previousViewport.z, m_previousViewport.w);
-  glGetError(); // there should be no error according to openGL doc, but some drivers report error, ignore
+  //glGetError(); // there should be no error according to openGL doc, but some drivers report error, ignore
 }
 
 bool Z3DRenderTarget::isBound() const
