@@ -35,7 +35,9 @@ Z3DLineRenderer::Z3DLineRenderer(Z3DRendererBase& rendererBase)
   updateLineWidth();
   connect(&m_rendererBase.geometriesMultisampleModePara(), &ZStringIntOptionParameter::valueChanged,
           this, &Z3DLineRenderer::updateLineWidth);
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   setUseDisplayList(true);
+#endif
 
   QStringList allshaders;
   allshaders << "line.vert" << "line_func.frag";
@@ -126,8 +128,10 @@ void Z3DLineRenderer::setData(std::vector<glm::vec3>* linesInput)
     }
   }
 
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   invalidateOpenglRenderer();
   invalidateOpenglPickingRenderer();
+#endif
   m_dataChanged = true;
   m_pickingDataChanged = true;
 }
@@ -169,7 +173,9 @@ void Z3DLineRenderer::setDataColors(std::vector<glm::vec4>* lineColorsInput)
       }
     }
   }
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   invalidateOpenglRenderer();
+#endif
   m_dataChanged = true;
 }
 
@@ -210,7 +216,9 @@ void Z3DLineRenderer::setDataPickingColors(std::vector<glm::vec4>* linePickingCo
       }
     }
   }
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   invalidateOpenglPickingRenderer();
+#endif
   m_pickingDataChanged = true;
 }
 
@@ -290,7 +298,7 @@ std::vector<glm::vec4>* Z3DLineRenderer::lineColors()
   return m_lineColorsPt;
 }
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
 void Z3DLineRenderer::renderUsingOpengl()
 {
   if (!m_linesPt || m_linesPt->empty())

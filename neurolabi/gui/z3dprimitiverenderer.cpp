@@ -8,7 +8,9 @@
 Z3DPrimitiveRenderer::Z3DPrimitiveRenderer(Z3DRendererBase& rendererBase)
   : m_rendererBase(rendererBase)
   , m_needLighting(true)
+  #if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   , m_useDisplayList(false)
+  #endif
   , m_followCoordTransform(true)
   , m_followOpacity(true)
   , m_followSizeScale(true)
@@ -166,21 +168,19 @@ void Z3DPrimitiveRenderer::renderTriangleList(const ZVertexArrayObject& vao, con
   vao.release();
 }
 
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
 void Z3DPrimitiveRenderer::invalidateOpenglRenderer()
 {
-#ifndef _USE_CORE_PROFILE_
   if (m_useDisplayList)
     emit openglRendererInvalid();
-#endif
 }
 
 void Z3DPrimitiveRenderer::invalidateOpenglPickingRenderer()
 {
-#ifndef _USE_CORE_PROFILE_
   if (m_useDisplayList)
     emit openglPickingRendererInvalid();
-#endif
 }
+#endif
 
 void Z3DPrimitiveRenderer::setShaderParameters(Z3DShaderProgram& shader)
 {

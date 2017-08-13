@@ -376,7 +376,7 @@ void Z3DGpuInfo::detectGpuInfo()
     if (isGeometryShaderSupported())
       glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &m_maxGeometryOutputVertices);
 
-    if (GLVersionGE(3, 0)) {
+    if (GLVersionGE(3, 0) || isExtensionSupported("GL_EXT_texture_array")) {
       glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
     } else {
       m_maxArrayTextureLayers = 0;

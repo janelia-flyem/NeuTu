@@ -58,14 +58,18 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
 
   onBoundBoxModeChanged();
 
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   m_baseBoundBoxRenderer.setUseDisplayList(false);
+#endif
   m_baseBoundBoxRenderer.setFollowSizeScale(false);
   m_baseBoundBoxRenderer.setFollowCoordTransform(false);
   m_baseBoundBoxRenderer.setLineWidth(m_boundBoxLineWidth.get());
   connect(&m_boundBoxLineWidth, &ZIntParameter::valueChanged, this, &Z3DBoundedFilter::onBoundBoxLineWidthChanged);
   updateBoundBoxLineColors();
 
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   m_selectionBoundBoxRenderer.setUseDisplayList(false);
+#endif
   m_selectionBoundBoxRenderer.setFollowCoordTransform(false);
   m_selectionBoundBoxRenderer.setFollowSizeScale(false);
   m_selectionBoundBoxRenderer.setFollowOpacity(false);

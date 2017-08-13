@@ -130,8 +130,10 @@ Z3DCompositor::Z3DCompositor(Z3DGlobalParameters& globalParas, QObject* parent)
   addParameter(m_fontRenderer.fontOutlineColorPara());
   addParameter(m_fontRenderer.showFontShadowPara());
   addParameter(m_fontRenderer.fontShadowColorPara());
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   m_arrowRenderer.setUseDisplayList(false);
   m_lineRenderer.setUseDisplayList(false);
+#endif
   m_fontRenderer.setFollowCoordTransform(false);
   setupAxisCamera();
 

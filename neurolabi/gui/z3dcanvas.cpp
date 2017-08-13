@@ -205,7 +205,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 
   //painter->drawRect(QRect(10, 10, 40, 60));
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 9, 0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 9, 0) && defined(_USE_CORE_PROFILE_)
   glGetError(); //error from qt
 #endif
 }
