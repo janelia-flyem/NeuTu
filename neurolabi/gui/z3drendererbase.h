@@ -238,7 +238,7 @@ signals:
 
 protected:
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   void generateDisplayList(const std::vector<Z3DPrimitiveRenderer *> &renderers);
   void generatePickingDisplayList(const std::vector<Z3DPrimitiveRenderer *> &renderers);
 
@@ -257,7 +257,7 @@ protected:
   inline bool hasClipPlanes()
   { return !m_clipPlanes.empty(); }
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   void activateClipPlanesOpenGL();
   void deactivateClipPlanesOpenGL();
 #endif
@@ -269,7 +269,7 @@ protected:
   void makeViewportMatrix();
 
 private:
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   void invalidateDisplayList();
   void invalidatePickingDisplayList();
 #endif
@@ -281,7 +281,7 @@ private:
 protected:
   Z3DGlobalParameters& m_globalParas;
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   // display list generated from the geometry.
   GLuint m_displayList;
   GLuint m_pickingDisplayList;

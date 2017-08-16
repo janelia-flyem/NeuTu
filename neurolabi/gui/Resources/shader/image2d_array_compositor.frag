@@ -1,3 +1,8 @@
+#if GLSL_VERSION < 130
+#extension GL_EXT_texture_array : enable
+uniform vec2 screen_dim_RCP;
+#endif
+
 uniform sampler2DArray color_texture;
 uniform sampler2DArray depth_texture;
 
@@ -12,9 +17,25 @@ out vec4 FragData0;  // call glBindFragDataLocation before linking
 void main()
 {
 #if NUM_VOLUMES < 2
+#if GLSL_VERSION < 130
+  FragData0 = texture2DArray(color_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, 0));;
+  gl_FragDepth = texture2DArray(depth_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, 0)).r;;
+#else
   FragData0 = texelFetch(color_texture, ivec3(gl_FragCoord.xy, 0), 0);;
   gl_FragDepth = texelFetch(depth_texture, ivec3(gl_FragCoord.xy, 0), 0).r;;
+#endif
 #elif defined(MAX_PROJ_MERGE)
+#if GLSL_VERSION < 130
+  FragData0 = texture2DArray(color_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, 0));
+  gl_FragDepth = texture2DArray(depth_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, 0)).r;
+  for (int i = 1; i < NUM_VOLUMES; ++i) {
+    FragData0 = max(FragData0, texture2DArray(color_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, i)));
+#ifdef RESULT_OPAQUE
+    gl_FragDepth = max(gl_FragDepth, texture2DArray(depth_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, i)).r);
+#else
+    gl_FragDepth = min(gl_FragDepth, texture2DArray(depth_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, i)).r);
+#endif
+#else
   FragData0 = texelFetch(color_texture, ivec3(gl_FragCoord.xy, 0), 0);
   gl_FragDepth = texelFetch(depth_texture, ivec3(gl_FragCoord.xy, 0), 0).r;
   for (int i = 1; i < NUM_VOLUMES; ++i) {
@@ -24,6 +45,7 @@ void main()
 #else
     gl_FragDepth = min(gl_FragDepth, texelFetch(depth_texture, ivec3(gl_FragCoord.xy, i), 0).r);
 #endif
+#endif
   }
 #else
   vec4 colors[NUM_VOLUMES];
@@ -32,8 +54,13 @@ void main()
   float depth;
 
   for (int i = 0; i < NUM_VOLUMES; ++i) {
+#if GLSL_VERSION < 130
+    colors[i] = texture2DArray(color_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, i));
+    depths[i] = texture2DArray(depth_texture, vec3(gl_FragCoord.xy * screen_dim_RCP, i)).r;
+#else
     colors[i] = texelFetch(color_texture, ivec3(gl_FragCoord.xy, i), 0);
     depths[i] = texelFetch(depth_texture, ivec3(gl_FragCoord.xy, i), 0).r;
+#endif
   }
 
   for (int j = 1; j < NUM_VOLUMES; ++j) {

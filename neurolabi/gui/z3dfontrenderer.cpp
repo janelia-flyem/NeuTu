@@ -72,8 +72,10 @@ void Z3DFontRenderer::setData(std::vector<glm::vec3>* positions, const QStringLi
 {
   m_positionsPt = positions;
   m_texts = texts;
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   invalidateOpenglRenderer();
   invalidateOpenglPickingRenderer();
+#endif
   m_dataChanged = true;
   m_pickingDataChanged = true;
 }
@@ -82,14 +84,18 @@ void Z3DFontRenderer::setDataColors(std::vector<glm::vec4>* colors)
 {
   m_colorsPt = colors;
   m_colors.clear();
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   invalidateOpenglRenderer();
+#endif
   m_dataChanged = true;
 }
 
 void Z3DFontRenderer::setDataPickingColors(std::vector<glm::vec4>* pickingColors)
 {
   m_pickingColorsPt = pickingColors;
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   invalidateOpenglPickingRenderer();
+#endif
   m_pickingDataChanged = true;
 }
 

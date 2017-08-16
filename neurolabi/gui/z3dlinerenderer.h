@@ -62,7 +62,7 @@ protected:
 
   virtual std::vector<glm::vec4>* lineColors();
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   virtual void renderUsingOpengl() override;
   virtual void renderPickingUsingOpengl() override;
 #endif

@@ -8,7 +8,7 @@
 Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* parent)
   : QObject(parent)
   , m_globalParas(globalParas)
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   , m_displayList(0)
   , m_pickingDisplayList(0)
 #endif
@@ -38,7 +38,7 @@ Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* pare
 
   addParameter(m_coordTransform);
   addParameter(m_sizeScale);
-#ifdef _DEBUG_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   addParameter(m_renderMethod);
 #endif
   addParameter(m_opacity);
@@ -50,19 +50,19 @@ Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* pare
   addParameter(m_materialShininess);
 
   connect(&m_globalParas.lightCount, &ZIntParameter::valueChanged, this, &Z3DRendererBase::compile);
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   connect(&m_globalParas.lightCount, &ZIntParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
 #endif
 
   connect(&m_coordTransform, &Z3DTransformParameter::valueChanged, this,
           &Z3DRendererBase::makeCoordTransformNormalMatrix);
   connect(&m_coordTransform, &Z3DTransformParameter::valueChanged, this, &Z3DRendererBase::coordTransformChanged);
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   connect(&m_coordTransform, &Z3DTransformParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
   connect(&m_coordTransform, &Z3DTransformParameter::valueChanged, this, &Z3DRendererBase::invalidatePickingDisplayList);
 #endif
   connect(&m_sizeScale, &ZFloatParameter::valueChanged, this, &Z3DRendererBase::sizeScaleChanged);
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   connect(&m_sizeScale, &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
   connect(&m_sizeScale, &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidatePickingDisplayList);
   connect(&m_opacity, &ZFloatParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);
@@ -91,7 +91,7 @@ Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* pare
 
 Z3DRendererBase::~Z3DRendererBase()
 {
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   if ((bool)glIsList(m_displayList))
     glDeleteLists(m_displayList, 1);
   if ((bool)glIsList(m_pickingDisplayList))
@@ -217,7 +217,7 @@ void Z3DRendererBase::registerRenderer(Z3DPrimitiveRenderer* renderer)
 {
   CHECK(renderer && m_renderers.find(renderer) == m_renderers.end());
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   connect(renderer, &Z3DPrimitiveRenderer::openglRendererInvalid, this, &Z3DRendererBase::invalidateDisplayList);
   connect(renderer, &Z3DPrimitiveRenderer::openglPickingRendererInvalid, this, &Z3DRendererBase::invalidatePickingDisplayList);
 #endif
@@ -249,7 +249,7 @@ void Z3DRendererBase::setClipPlanes(std::vector<glm::vec4>* clipPlanes)
   for (size_t i = 0; i < m_clipPlanes.size(); ++i) {
     m_doubleClipPlanes.emplace_back(m_clipPlanes[i]);
   }
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   invalidateDisplayList();
   invalidatePickingDisplayList();
 #endif
@@ -303,7 +303,7 @@ void Z3DRendererBase::render(Z3DEye eye, Z3DPrimitiveRenderer* renderer1, Z3DPri
 
 void Z3DRendererBase::render(Z3DEye eye, const std::vector<Z3DPrimitiveRenderer*>& renderers)
 {
-#ifdef _DEBUG_2
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   if (m_renderMethod.isSelected("Old openGL")) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -382,7 +382,7 @@ void Z3DRendererBase::renderPicking(Z3DEye eye, Z3DPrimitiveRenderer* renderer1,
 
 void Z3DRendererBase::renderPicking(Z3DEye eye, const std::vector<Z3DPrimitiveRenderer*>& renderers)
 {
-#ifdef _DEBUG_2
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   if (m_renderMethod.isSelected("Old openGL")) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -424,7 +424,7 @@ void Z3DRendererBase::renderPicking(Z3DEye eye, const std::vector<Z3DPrimitiveRe
 #endif
 }
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
 void Z3DRendererBase::generateDisplayList(const std::vector<Z3DPrimitiveRenderer *> &renderers)
 {
   if ((bool)glIsList(m_displayList))
@@ -590,7 +590,7 @@ bool Z3DRendererBase::needLighting(const std::vector<Z3DPrimitiveRenderer*>& ren
   return needLighting;
 }
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
 bool Z3DRendererBase::useDisplayList(const std::vector<Z3DPrimitiveRenderer*> &renderers) const
 {
   bool useDisplayList = false;
@@ -601,7 +601,7 @@ bool Z3DRendererBase::useDisplayList(const std::vector<Z3DPrimitiveRenderer*> &r
 }
 #endif
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
 void Z3DRendererBase::activateClipPlanesOpenGL()
 {
   if (!m_clipEnabled)
@@ -683,7 +683,7 @@ void Z3DRendererBase::makeViewportMatrix()
   m_inverseViewportMatrix = glm::inverse(m_viewportMatrix);
 }
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
 void Z3DRendererBase::invalidateDisplayList()
 {
   if ((bool)glIsList(m_displayList)) {

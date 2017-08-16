@@ -20,12 +20,17 @@ public:
   inline QString className() const
   { return metaObject()->className(); }
 
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   // for opengl mode only, if set, display list will be build in opengl mode.
   // for large amount of objects, display list can render faster but it is expensive to build.
   // not necessary if number of objects is small (can be rendered in a few opengl calls)
   // default is false, subclass should call this function if needed
   void setUseDisplayList(bool v)
   { m_useDisplayList = v; }
+
+  inline bool useDisplayList()
+  { return m_useDisplayList; }
+#endif
 
   // If set, lighting will be enabled.
   // default is true, subclass should call this function if needed
@@ -34,9 +39,6 @@ public:
 
   inline bool needLighting()
   { return m_needLighting; }
-
-  inline bool useDisplayList()
-  { return m_useDisplayList; }
 
   //sometimes z scale transfrom is not appropriate, for example: bound box. we need to disable it and
   // precalc the correct location. Default is true
@@ -68,16 +70,18 @@ public:
 
 signals:
 
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   void openglRendererInvalid();
-
   void openglPickingRendererInvalid();
+#endif
 
 protected:
   virtual void compile() = 0;
 
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   void invalidateOpenglRenderer();
-
   void invalidateOpenglPickingRenderer();
+#endif
 
   friend class Z3DRendererBase;
 
@@ -85,7 +89,7 @@ protected:
 
   void setPickingShaderParameters(Z3DShaderProgram& shader);
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   virtual void renderUsingOpengl() {}
   virtual void renderPickingUsingOpengl() {}
 #endif
@@ -98,7 +102,9 @@ protected:
 protected:
   Z3DRendererBase& m_rendererBase;
   bool m_needLighting;
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   bool m_useDisplayList;
+#endif
   bool m_followCoordTransform;
   bool m_followOpacity;
   bool m_followSizeScale;

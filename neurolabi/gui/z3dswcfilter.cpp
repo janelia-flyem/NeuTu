@@ -1044,6 +1044,7 @@ void Z3DSwcFilter::notTransformedTreeBound(ZSwcTree* tree, ZBBox<glm::dvec3>& re
 
   ZBBox<glm::dvec3> nodeBound;
   treeNodeBound(tn, nodeBound);
+  res.expand(nodeBound);
 
   for (tn = tree->next(); tn != tree->end(); tn = tree->next()) {
     notTransformedTreeNodeBound(tn, nodeBound);

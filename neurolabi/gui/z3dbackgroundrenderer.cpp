@@ -80,7 +80,7 @@ QString Z3DBackgroundRenderer::generateHeader()
   return headerSource;
 }
 
-#ifndef _USE_CORE_PROFILE_
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
 void Z3DBackgroundRenderer::renderUsingOpengl()
 {
   glMatrixMode(GL_PROJECTION);
