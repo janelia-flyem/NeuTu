@@ -12210,7 +12210,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Volume: " << volume << std::endl;
 #endif
 
-#if 0
+#if 1
   ZStackFrame *frame = ZStackFrame::Make(NULL);
 
   /*
@@ -12245,7 +12245,8 @@ void ZTest::test(MainWindow *host)
 //  frame->document()->addObject(obj2);
 //  frame->document()->loadSwc(
 //        (GET_TEST_DATA_DIR + "/benchmark/swc/fork.swc").c_str());
-  frame->open3DWindow();
+//  frame->ope;
+  ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
   delete frame;
 #endif
 

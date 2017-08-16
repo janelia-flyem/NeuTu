@@ -122,7 +122,13 @@ std::shared_ptr<ZWidgetsGroup> Z3DView::axisWidgetsGroup()
 void Z3DView::updateBoundBox()
 {
   m_boundBox.reset();
-  for (auto flt : m_allFilters) {
+#ifdef _DEBUG_
+  std::cout << "Updating bounding box:" << std::endl;
+#endif
+  for (Z3DBoundedFilter* flt : m_allFilters) {
+#ifdef _DEBUG_
+    std::cout << "Getting bounding box of " << flt->className().toStdString() << std::endl;
+#endif
     if (flt->isVisible()) {
       m_boundBox.expand(flt->axisAlignedBoundBox());
     }
