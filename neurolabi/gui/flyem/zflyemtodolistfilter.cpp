@@ -427,7 +427,7 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
 
     const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Picking env: " << "dpr: " << dpr << " tex: " << m_pickingTexSize << std::endl;
 #endif
 
