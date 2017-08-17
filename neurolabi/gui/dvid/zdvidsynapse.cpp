@@ -2,6 +2,7 @@
 #include <QtCore>
 #include <QPen>
 
+#include "QsLog.h"
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -202,6 +203,11 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       int y = center.getY();
       painter.drawLine(QPointF(x - 1, y), QPointF(x + 1, y));
       painter.drawLine(QPointF(x, y - 1), QPointF(x, y + 1));
+
+      if (getStatus() == STATUS_DUPLICATED) {
+        painter.drawEllipse(
+              QPointF(center.getX(), center.getY()), 1, 1);
+      }
     }
     if (radius > 0.0) {
       double oldWidth = pen.widthF();
@@ -442,6 +448,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
         if (m_partnerKind[index] == KIND_POST_SYN) {
           ZDvidSynapse partnerSynapse;
           partnerSynapse.setKind(KIND_POST_SYN);
+          partnerSynapse.setStatus(m_partnerStatus[index]);
           partnerSynapse.setPosition(partner);
           partnerSynapse.setDefaultColor();
           partnerSynapse.setDefaultRadius();
@@ -461,6 +468,9 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
       if (getKind() == KIND_PRE_SYN && m_partnerKind[index] == KIND_PRE_SYN) {
         line.setColor(QColor(0, 255, 255));
         line.setFocusColor(QColor(0, 255, 255));
+      } else if (m_partnerKind[index] == KIND_UNKNOWN) {
+        line.setColor(QColor(164, 0, 0));
+        line.setFocusColor(QColor(255, 0, 0));
       } else {
         line.setColor(QColor(255, 255, 0));
         line.setFocusColor(QColor(255, 0, 255));
@@ -557,13 +567,21 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
 {
   m_isPartnerVerified.resize(m_partnerHint.size(), false);
   m_partnerKind.resize(m_partnerHint.size(), KIND_UNKNOWN);
+  m_partnerStatus.resize(m_partnerHint.size(), STATUS_NORMAL);
 
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
-      ZDvidSynapse synapse = reader.readSynapse(m_partnerHint[i]);
+      ZDvidSynapse synapse =
+          reader.readSynapse(m_partnerHint[i], FlyEM::LOAD_PARTNER_LOCATION);
       if (synapse.isValid()) {
-        m_isPartnerVerified[i] = synapse.isVerified();
-        m_partnerKind[i] = synapse.getKind();
+        if (synapse.hasPartner(getPosition())) {
+          m_isPartnerVerified[i] = synapse.isVerified();
+          m_partnerKind[i] = synapse.getKind();
+          m_partnerStatus[i] = synapse.getStatus();
+        }/* else {
+          LWARN() << "Inconsistent synapse link:" << getPosition().toString()
+                  << "->" << synapse.getPosition().toString();
+        }*/
       } else {
         m_isPartnerVerified[i] = false;
         m_partnerKind[i] = ZDvidSynapse::KIND_INVALID;

@@ -2232,7 +2232,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
       m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
-      m_lowtisConfigGray.enableprefetch = true;
+      m_lowtisConfigGray.enableprefetch = false;
 
       m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
@@ -3248,6 +3248,10 @@ ZDvidSynapse ZDvidReader::readSynapse(
   std::vector<ZDvidSynapse> synapseArray =
       readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
   if (!synapseArray.empty()) {
+    if (synapseArray.size() > 1) {
+      LWARN() << "Duplicated synapses at" << "(" << x << "" << y << "" << z << ")";
+      synapseArray[0].setStatus(ZDvidAnnotation::STATUS_DUPLICATED);
+    }
     return synapseArray[0];
   }
 

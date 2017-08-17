@@ -3818,13 +3818,13 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
         if (selectedPresyn.size() == 1) {
           ZDvidSynapse &presyn = selectedPresyn.front();
           new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
-                this, presyn.getPosition(), synapse.getPosition(),
-                ZDvidSynapse::Relation::GetName(
-                  ZDvidSynapse::Relation::RELATION_PRESYN_TO), command);
-          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
                 this, synapse.getPosition(), presyn.getPosition(),
                 ZDvidSynapse::Relation::GetName(
                   ZDvidSynapse::Relation::RELATION_POSTSYN_TO), command);
+          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+                this, presyn.getPosition(), synapse.getPosition(),
+                ZDvidSynapse::Relation::GetName(
+                  ZDvidSynapse::Relation::RELATION_PRESYN_TO), command);
         }
       }
     }

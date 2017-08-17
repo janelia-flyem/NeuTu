@@ -135,7 +135,7 @@ NeuTube::EAxis ZStackViewParam::getSliceAxis() const
 
 int ZStackViewParam::getZoomLevel(int maxLevel) const
 {
-  int zoom = iround(std::log(1.0 / getZoomRatio()) / std::log(2.0) );
+  int zoom = iround(std::log(1.0 / getZoomRatio()) / std::log(2.0) ) -1;
 
   if (zoom < 0) {
     zoom = 0;
