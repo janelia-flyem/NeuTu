@@ -66,6 +66,7 @@
 #include "zmatrix.h"
 #include "zswcbranch.h"
 #include "zswctreematcher.h"
+#include "widgets/z3dtabwidget.h"
 #include "dialogs/ztestdialog.h"
 #include "dialogs/parameterdialog.h"
 #include "zstring.h"
@@ -175,6 +176,7 @@
 #include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "swc/zswcnodedistselector.h"
 #include "zmultitaskmanager.h"
+#include "flyem/zflyembodywindowfactory.h"
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
@@ -211,6 +213,7 @@
 #include "test/z3dfiltersettingtest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
+#include "z3dmainwindow.h"
 #include "test/zswcgeneratortest.h"
 #include "test/zflyemneuronimagefactorytest.h"
 #include "test/zspgrowtest.h"
@@ -12239,6 +12242,13 @@ void ZTest::test(MainWindow *host)
   box.setFirstCorner(0, 0, 0);
   box.setLastCorner(1000, 2000, 3000);
 
+  Z3DMainWindow *mainWin = new Z3DMainWindow;
+  mainWin->setAttribute(Qt::WA_DeleteOnClose, false);
+  Z3DTabWidget *bodyViewers = new Z3DTabWidget(mainWin);
+  bodyViewers->setAttribute(Qt::WA_DeleteOnClose, false);
+  QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+  bodyViewers->setSizePolicy(sizePolicy);
+
   Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
 
   frame->document()->addObject(graphObj);
@@ -12246,7 +12256,23 @@ void ZTest::test(MainWindow *host)
 //  frame->document()->loadSwc(
 //        (GET_TEST_DATA_DIR + "/benchmark/swc/fork.swc").c_str());
 //  frame->ope;
-  ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+//  ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+  ZWindowFactory *factory = new ZFlyEmBodyWindowFactory;
+  factory->setDeleteOnClose(true);
+
+  factory->setDeleteOnClose(true);
+  factory->setControlPanelVisible(false);
+  factory->setObjectViewVisible(false);
+  factory->setVisible(Z3DWindow::LAYER_PUNCTA, false);
+
+  Z3DWindow *window = factory->make3DWindow(frame->document());
+  window->setWindowType(NeuTube3D::TYPE_SKELETON);
+  window->readSettings();
+
+  bodyViewers->addWindow(0, window, "test");
+
+  mainWin->show();
+
   delete frame;
 #endif
 
@@ -24202,7 +24228,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "3f7a", 8700);
   target.setLabelBlockName(

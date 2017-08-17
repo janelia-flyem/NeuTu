@@ -93,7 +93,7 @@ private:
   bool m_showStatusBar;
   NeuTube3D::EVolumeRenderingMode m_volumeMode;
 
-  bool m_deleteOnClose;
+  bool m_deleteOnClose = false;
 
   NeuTube3D::EWindowType m_windowType;
 

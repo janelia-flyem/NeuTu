@@ -140,7 +140,7 @@ public: //Components
   Z3DBoundedFilter& getBoundedFilter(ERendererLayer layer) const;
 
   inline Z3DGraphFilter* getGraphFilter() const { return &m_view->graphFilter(); }
-  inline Z3DSurfaceFilter* getSurfaceFilter() const { return &m_view->surfaceFilter(); }
+//  inline Z3DSurfaceFilter* getSurfaceFilter() const { return &m_view->surfaceFilter(); }
   inline ZFlyEmTodoListFilter* getTodoFilter() const { return &m_view->todoFilter(); }
   inline Z3DCompositor* getCompositor() const { return &m_view->compositor(); }
 

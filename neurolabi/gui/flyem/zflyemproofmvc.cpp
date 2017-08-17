@@ -745,6 +745,8 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
+
+
   doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
 
   connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
@@ -754,6 +756,7 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   m_skeletonWindow->setWindowType(NeuTube3D::TYPE_SKELETON);
   m_skeletonWindow->readSettings();
 
+#if 0
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_skeletonWindow, getGrayScaleInfo(),
@@ -763,6 +766,7 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
               m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
               m_roiSourceList);
   }
+#endif
 }
 
 void ZFlyEmProofMvc::makeExternalNeuronWindow()
