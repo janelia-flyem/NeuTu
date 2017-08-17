@@ -31,7 +31,7 @@ requirements:
     - cmake
     - ninja
     - tbb
-    - vtk
+    - vtk 6.3*
     - assimp
     - glbinding
     - draco
@@ -47,7 +47,7 @@ requirements:
     - lowtis  >=0.1.0.p
     - ninja
     - tbb
-    - vtk
+    - vtk 6.3*
     - assimp
     - glbinding
     - draco
