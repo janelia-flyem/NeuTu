@@ -5,7 +5,8 @@ HEADERS += \
     $$PWD/zsurfreconcommand.h \
     $$PWD/zstackdiffcommand.h \
     $$PWD/zmultiscalewatershedcommand.h \
-    $$PWD/zbodyexportcommand.h
+    $$PWD/zbodyexportcommand.h \
+    $$PWD/zsplittaskuploadcommand.h
 
 SOURCES += \ 
     $$PWD/zcommandmodule.cpp \
@@ -14,4 +15,5 @@ SOURCES += \
     $$PWD/zsurfreconcommand.cpp \
     $$PWD/zstackdiffcommand.cpp \
     $$PWD/zmultiscalewatershedcommand.cpp \
-    $$PWD/zbodyexportcommand.cpp
+    $$PWD/zbodyexportcommand.cpp \
+    $$PWD/zsplittaskuploadcommand.cpp

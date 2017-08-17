@@ -48,6 +48,7 @@
 #include "command/zstackdiffcommand.h"
 #include "command/zmultiscalewatershedcommand.h"
 #include "command/zbodyexportcommand.h"
+#include "command/zsplittaskuploadcommand.h"
 
 using namespace std;
 
@@ -93,6 +94,7 @@ void ZCommandLine::registerModule()
   registerModule<ZStackDiffCommand>("stack_diff");
   registerModule<ZMultiscaleWatershedCommand>("multiscale_watershed");
   registerModule<ZBodyExportCommand>("export_body");
+  registerModule<ZSplitTaskUploadCommand>("upload_split_task");
 }
 
 template <typename T>

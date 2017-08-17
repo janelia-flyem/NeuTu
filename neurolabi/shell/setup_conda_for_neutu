@@ -20,7 +20,7 @@ condaDir=$install_dir/miniconda
 if [ -d $condaDir ]
 then
   echo "$condaDir already exists. Abort."
-  exit 1
+  exit 0
 fi
 
 condaDir=$install_dir/miniconda

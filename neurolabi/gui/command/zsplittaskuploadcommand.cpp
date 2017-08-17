@@ -1,0 +1,83 @@
+#include "zsplittaskuploadcommand.h"
+
+#include <iostream>
+
+#define _NEUTU_USE_REF_KEY_ 1
+#include "neutubeconfig.h"
+#include "zjsonobject.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidwriter.h"
+#include "zstroke2d.h"
+#include "flyem/zflyemmisc.h"
+#include "zglobal.h"
+#include "zstring.h"
+
+ZSplitTaskUploadCommand::ZSplitTaskUploadCommand()
+{
+
+}
+
+int ZSplitTaskUploadCommand::run(
+    const std::vector<std::string> &input, const std::string &/*output*/,
+    const ZJsonObject &config)
+{
+  ZJsonObject dvidJson(config.value("dvid"));
+  if (dvidJson.isEmpty()) {
+    std::cerr << "No dvid server specified. Abort." << std::endl;
+    return 1;
+  }
+
+  if (input.empty()) {
+    std::cerr << "No input file specified. Abort." << std::endl;
+    return 1;
+  }
+
+  ZDvidTarget target;
+  target.loadJsonObject(dvidJson);
+  if (!target.isValid()) {
+    std::cerr << "No valide dvid server specified. Abort." << std::endl;
+    return 1;
+  }
+
+  ZJsonObject docJson;
+  docJson.load(input.front());
+
+  ZJsonArray rootObj(docJson.value("meshReview"));
+  if (rootObj.isEmpty()) {
+    std::cerr << "Unrecognized input format. Abort." << std::endl;
+    return 1;
+  }
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+  ZDvidUrl dvidUrl(target);
+
+  for (size_t i = 0; i < rootObj.size(); ++i) {
+    ZJsonObject obj(rootObj.value(i));
+    ZJsonArray markerJson(obj.value("pointMarkers"));
+    if (!markerJson.isEmpty()) {
+      uint64_t bodyId =
+          ZString(obj.value("file").toString()).firstUint64();
+
+      if (bodyId > 0) {
+        ZJsonObject taskJson;
+        ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
+
+        for (size_t i = 0; i < markerJson.size(); ++i) {
+          ZJsonObject markerObj(markerJson.value(i));
+          ZStroke2d stroke =
+              ZFlyEmMisc::SyGlassSeedToStroke(markerObj);
+          ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
+        }
+        std::string location = writer->writeServiceTask("split", taskJson);
+
+        ZJsonObject entryJson;
+        entryJson.setEntry(NeuTube::Json::REF_KEY, location);
+        QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
+        writer->writeSplitTask(taskKey, taskJson);
+      }
+    }
+  }
+
+  return 0;
+}
