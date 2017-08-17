@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+installDir=$1
+downloadDir=$1/Download
+condaDir=$downloadDir/miniconda
+neutuEnv='neutu-env'
+
+cd $downloadDir
+git clone https://github.com/janelia-flyem/pyzem.git pyzem
+source $condaDir/bin/activate $neutuEnv
+cd pyzem
+python setup.py install
+ 
