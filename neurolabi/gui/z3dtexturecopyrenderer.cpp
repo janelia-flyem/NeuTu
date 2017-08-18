@@ -16,7 +16,6 @@ Z3DTextureCopyRenderer::Z3DTextureCopyRenderer(Z3DRendererBase& rendererBase, Ou
   normalShaders << "pass.vert" << "copyimage.frag";
   m_copyTextureShaderGrp.init(allshaders, m_rendererBase.generateHeader() + generateHeader(), "", normalShaders);
   m_copyTextureShaderGrp.addAllSupportedPostShaders();
-  CHECK_GL_ERROR
 }
 
 void Z3DTextureCopyRenderer::compile()

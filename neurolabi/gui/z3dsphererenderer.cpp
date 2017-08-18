@@ -31,7 +31,6 @@ Z3DSphereRenderer::Z3DSphereRenderer(Z3DRendererBase& rendererBase)
   allshaders << "sphere.vert" << "sphere_func.frag" << "lighting2.frag";
   m_sphereShaderGrp.init(allshaders, m_rendererBase.generateHeader() + generateHeader());
   m_sphereShaderGrp.addAllSupportedPostShaders();
-  CHECK_GL_ERROR
 }
 
 void Z3DSphereRenderer::setData(std::vector<glm::vec4>* pointAndRadiusInput,

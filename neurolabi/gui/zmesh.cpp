@@ -5,6 +5,7 @@
 #include "zbbox.h"
 #include "zexception.h"
 #include "QsLog.h"
+#include "zcubearray.h"
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -548,13 +549,17 @@ void ZMesh::logProperties(const ZMeshProperties& prop, const QString& str)
   LOG(INFO) << "";
 }
 
-ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs, const std::vector<glm::vec3>& coordUrbs)
+ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
+                                   const std::vector<glm::vec3>& coordUrbs,
+                                   const std::vector<glm::vec4>* cubeColors)
 {
   CHECK(coordLlfs.size() == coordUrbs.size());
+  CHECK(!cubeColors || cubeColors->size() >= coordLlfs.size());
   ZMesh cubes(GL_TRIANGLES);
   std::vector<glm::vec3> vertices;
   std::vector<glm::vec3> normals;
   std::vector<GLuint> indexes;
+  std::vector<glm::vec4> colors;
   GLuint idxes[6] = {0, 1, 2, 2, 1, 3};
 
   for (size_t i = 0; i < coordLlfs.size(); ++i) {
@@ -654,11 +659,18 @@ ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs, cons
     for (GLuint j = 0; j < 6; ++j) {
       indexes.push_back(idxes[j] + 5 * 4 + i * 24);
     }
+
+    if (cubeColors) {
+      for (size_t j = 0; j < 24; ++j)  {
+        colors.push_back(cubeColors->at(i));
+      }
+    }
   }
 
   cubes.m_vertices.swap(vertices);
   cubes.m_normals.swap(normals);
   cubes.m_indices.swap(indexes);
+  cubes.m_colors.swap(colors);
   return cubes;
 }
 
@@ -1031,6 +1043,21 @@ ZMesh ZMesh::createConeMesh(glm::vec3 base, float baseRadius, glm::vec3 top, flo
   msh.setIndices(triangles);
   msh.setNormals(normals);
   return msh;
+}
+
+ZMesh ZMesh::fromZCubeArray(const ZCubeArray& ca)
+{
+  std::vector<glm::vec3> coordLlfs;
+  std::vector<glm::vec3> coordUrbs;
+  std::vector<glm::vec4> cubeColors;
+
+  for (const auto& cube : ca.getCubeArray()) {
+    coordLlfs.push_back(cube.nodes[0]);
+    coordUrbs.push_back(cube.nodes[7]);
+    cubeColors.push_back(cube.color);
+  }
+
+  return createCubesWithNormal(coordLlfs, coordUrbs, &cubeColors);
 }
 
 ZMesh ZMesh::merge(const std::vector<ZMesh>& meshes)

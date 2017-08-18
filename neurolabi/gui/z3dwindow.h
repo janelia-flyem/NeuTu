@@ -189,8 +189,6 @@ public: //controls
   void syncAction();
 
 public:
-  void setROIs(size_t n);
-
   bool readyForAction(ZActionFactory::EAction action) const;
 
 public:
@@ -237,8 +235,7 @@ public slots:
 
   void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
   { m_view->resetCameraClippingRange(); }
-  // redraw changed parts
-  void update3DCubeDisplay();
+
 //  void updateDecorationDisplay();
 
   void selectdObjectChangedFrom3D(ZStackObject *p, bool append);
@@ -385,6 +382,7 @@ private:
   void createContextMenu();
   void createStatusBar();
   void createDockWindows();
+  void fillDockWindows();
   void customizeDockWindows(QTabWidget *m_settingTab);
   void setWindowSize();
   // init 3D view

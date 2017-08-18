@@ -15,7 +15,6 @@ Z3DTextureAndEyeCoordinateRenderer::Z3DTextureAndEyeCoordinateRenderer(Z3DRender
   m_renderTextureAndEyeCoordinateShader.loadFromSourceFile("transform_with_3dtexture_and_eye_coordinate.vert",
                                                            "render_3dtexture_coordinate_and_eye_coordinate.frag",
                                                            m_rendererBase.generateHeader());
-  CHECK_GL_ERROR
 }
 
 void Z3DTextureAndEyeCoordinateRenderer::compile()

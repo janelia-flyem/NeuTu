@@ -46,13 +46,13 @@ public:
   { return m_resetCameraAction; }
 
   Z3DCameraParameter& camera()
-  { return m_globalParas.camera; }
+  { return m_globalParas->camera; }
 
   const Z3DCameraParameter& camera() const
-  { return m_globalParas.camera; }
+  { return m_globalParas->camera; }
 
   Z3DTrackballInteractionHandler& interactionHandler()
-  { return m_globalParas.interactionHandler; }
+  { return m_globalParas->interactionHandler; }
 
   inline Z3DCanvas& canvas()
   { return *m_canvas; }
@@ -70,7 +70,7 @@ public:
   { return *m_networkEvaluator; }
 
   inline Z3DGlobalParameters& globalParas()
-  { return m_globalParas; }
+  { return *m_globalParas; }
 
   inline Z3DVolumeFilter& volumeFilter()
   { return *m_volumeFilter; }
@@ -134,12 +134,8 @@ public:
   const ZBBox<glm::dvec3>& boundBox() const
   { return m_boundBox; }
 
-  void updateNetwork();
-  int getDevicePixelRatio() const;
-
 signals:
-
-  void objViewReady(size_t id);
+  void networkConstructed();
 
 private:
   void zoomIn();
@@ -153,7 +149,7 @@ private:
   bool takeSeriesScreenShot(const QDir& dir, const QString& namePrefix, const glm::vec3& axis,
                             bool clockWise, int numFrame, Z3DScreenShotType sst);
 
-  void init(InitMode initMode);
+  void init();
 
   void createActions();
 
@@ -164,6 +160,7 @@ private:
   void swcNetworkDataChanged();
   void graph3DDataChanged();
   void todoDataChanged();
+  void surfaceDataChanged();
 
   void objectSelectionChanged(const QList<ZStackObject*>& selected,
                               const QList<ZStackObject*>& deselected);
@@ -178,9 +175,8 @@ private:
   QAction* m_zoomOutAction;
   QAction* m_resetCameraAction;
 
-  std::unique_ptr<Z3DNetworkEvaluator> m_networkEvaluator;
-  Z3DGlobalParameters m_globalParas;
   Z3DCanvas* m_canvas;
+  std::unique_ptr<Z3DGlobalParameters> m_globalParas;
   std::unique_ptr<Z3DCanvasPainter> m_canvasPainter;
   std::unique_ptr<Z3DCompositor> m_compositor;
 
@@ -192,6 +188,8 @@ private:
   std::unique_ptr<Z3DSurfaceFilter> m_surfaceFilter;
   std::unique_ptr<ZFlyEmTodoListFilter> m_todoFilter;
 //  std::unique_ptr<Z3DGraphFilter> m_decorationFilter;
+
+  std::unique_ptr<Z3DNetworkEvaluator> m_networkEvaluator;
 
   ZBBox<glm::dvec3> m_boundBox;
   std::vector<Z3DBoundedFilter*> m_allFilters;

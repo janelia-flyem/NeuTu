@@ -42,7 +42,7 @@ public:
   unsigned int programId() const
   { return m_id; }
 
-  Z3DContext context() const
+  Z3DContextGroup context() const
   { return m_context; }
 
   void setGeometryInputType(GLenum /*unused*/)
@@ -619,7 +619,7 @@ private:
   GLuint m_id = 0;
   std::vector<Z3DShader*> m_shaders;
   std::vector<std::unique_ptr<Z3DShader>> m_anonShaders;
-  Z3DContext m_context;
+  Z3DContextGroup m_context;
 };
 
 #endif // Z3DSHADERPROGRAM_H

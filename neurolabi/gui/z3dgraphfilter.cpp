@@ -226,6 +226,8 @@ void Z3DGraphFilter::setData(const ZPointNetwork &pointNetwork,
 
   m_dataIsInvalid = true;
   invalidateResult();
+
+  updateBoundBox();
 }
 
 void Z3DGraphFilter::addData(const Z3DGraph &graph)
@@ -233,6 +235,8 @@ void Z3DGraphFilter::addData(const Z3DGraph &graph)
   m_graph.append(graph);
   m_dataIsInvalid = true;
   invalidateResult();
+
+  updateBoundBox();
 }
 
 void Z3DGraphFilter::setData(const Z3DGraph &graph)
@@ -240,6 +244,8 @@ void Z3DGraphFilter::setData(const Z3DGraph &graph)
   m_graph = graph;
   m_dataIsInvalid = true;
   invalidateResult();
+
+  updateBoundBox();
 }
 
 void Z3DGraphFilter::setData(const ZObject3d &obj)
@@ -248,6 +254,8 @@ void Z3DGraphFilter::setData(const ZObject3d &obj)
   m_graph.importObject3d(obj, 1.0, 3);
   m_dataIsInvalid = true;
   invalidateResult();
+
+  updateBoundBox();
 }
 
 std::shared_ptr<ZWidgetsGroup> Z3DGraphFilter::widgetsGroup()

@@ -2,6 +2,7 @@
 #define Z3DRENDERTARGET_H
 
 #include "z3dgl.h"
+#include "z3dcontext.h"
 #include <map>
 #include <set>
 
@@ -97,6 +98,10 @@ protected:
   int m_maxSamples = 0;
 
   glm::uvec2 m_size;
+
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  Z3DContext m_context;
+#endif
 };
 
 #endif // Z3DRENDERTARGET_H

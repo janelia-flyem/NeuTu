@@ -30,19 +30,6 @@ Neu3Window::Neu3Window(QWidget *parent) :
 {
   ui->setupUi(this);
 
-#ifdef _QT5_
-  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
-#else
-  QGLFormat format = QGLFormat();
-  format.setAlpha(true);
-  format.setDepth(true);
-  format.setDoubleBuffer(true);
-  format.setRgba(true);
-  format.setSampleBuffers(true);
-  //format.setStereo(true);
-  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, format, this);
-#endif
-
 //  initialize();
 }
 

@@ -36,6 +36,8 @@ struct ZMeshProperties
   size_t numTriangles = 0;
 };
 
+class ZCubeArray;
+
 class ZMesh : public ZStackObject
 {
 public:
@@ -201,7 +203,8 @@ public:
 
   // a list of cubes with normal
   static ZMesh createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
-                                     const std::vector<glm::vec3>& coordUrbs);
+                                     const std::vector<glm::vec3>& coordUrbs,
+                                     const std::vector<glm::vec4>* cubeColors = nullptr);
 
   // a cube with six surfaces
   static ZMesh createCube(
@@ -264,6 +267,9 @@ public:
 
   static ZMesh createConeMesh(glm::vec3 base, float baseRadius, glm::vec3 top, float topRadius,
                               int numberOfSides = 32, bool capping = true);
+
+  // from ZCubeArray
+  static ZMesh fromZCubeArray(const ZCubeArray& ca);
 
   // these functions only deal with meshes with normal, other fields (texture, color) are ignored
   static ZMesh unite(const ZMesh& mesh1, const ZMesh& mesh2)

@@ -28,6 +28,9 @@ Z3DRenderTarget::Z3DRenderTarget(glm::uvec2 size)
 
 Z3DRenderTarget::~Z3DRenderTarget()
 {
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  CHECK(m_context == Z3DContext());
+#endif
   //  if (m_multisample) {
   //    glDeleteRenderbuffers(1, &m_colorBufferID);
   //    glDeleteRenderbuffers(1, &m_depthBufferID);
@@ -90,6 +93,9 @@ void Z3DRenderTarget::createDepthAttachment(GLint internalDepthFormat)
 
 void Z3DRenderTarget::bind()
 {
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  CHECK(m_context == Z3DContext());
+#endif
   if (isBound())
     return;
   m_previousDrawFBOID = currentBoundDrawFBO();
@@ -105,13 +111,15 @@ void Z3DRenderTarget::bind()
 
 void Z3DRenderTarget::release()
 {
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  CHECK(m_context == Z3DContext());
+#endif
   //  if (m_multisample) {
   //    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_multisampleFBOID);
   //    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fboID);
   //    glBlitFramebuffer(0, 0, m_colorTex->getWidth(), m_colorTex->getHeight(), 0, 0,
   //                      m_colorTex->getWidth(), m_colorTex->getHeight(), GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT,
   //                      GL_LINEAR);
-  //    CHECK_GL_ERROR
   //  }
   //LOG(INFO) << m_previousDrawFBOID << " " << m_previousReadFBOID;
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_previousReadFBOID);
@@ -122,6 +130,9 @@ void Z3DRenderTarget::release()
 
 bool Z3DRenderTarget::isBound() const
 {
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  CHECK(m_context == Z3DContext());
+#endif
   return currentBoundDrawFBO() == m_fboID;
 }
 
@@ -194,7 +205,6 @@ bool Z3DRenderTarget::resize(const glm::uvec2& newsize)
     }
   }
   isFBOComplete();
-  CHECK_GL_ERROR
 
   //  if (m_multisample) {
   //    glBindRenderbuffer(GL_RENDERBUFFER, m_colorBufferID);
@@ -319,7 +329,6 @@ void Z3DRenderTarget::attachTextureToFBO(Z3DTexture* texture, GLenum attachment,
       break;
   }
   //LOG(INFO) << texture->getId() << " " << texture->getTextureTarget() << " " << GL_TEXTURE_RECTANGLE << " " << texture->getDimensions();
-  CHECK_GL_ERROR
   release();
   m_attachments[attachment] = texture;
   if (takeOwnership)
@@ -330,7 +339,6 @@ void Z3DRenderTarget::detach(GLenum attachment)
 {
   bind();
   glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
-  CHECK_GL_ERROR
   release();
 }
 
@@ -344,7 +352,6 @@ void Z3DRenderTarget::attachSlice(size_t zSlice)
     glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, enumAttach.first, texture->id(), 0, zSlice);
   }
   isFBOComplete();
-  CHECK_GL_ERROR
   release();
 }
 

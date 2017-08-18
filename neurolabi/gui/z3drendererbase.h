@@ -106,6 +106,9 @@ public:
   Z3DTransformParameter& coordTransformPara()
   { return m_coordTransform; }
 
+  ZFloatParameter& opacityPara()
+  { return m_opacity; }
+
   inline void setSizeScale(float s)
   { m_sizeScale.set(s); }
 

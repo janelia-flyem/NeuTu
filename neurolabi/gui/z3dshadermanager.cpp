@@ -14,7 +14,7 @@ Z3DShaderManager& Z3DShaderManager::instance()
   return sm;
 }
 
-Z3DShader& Z3DShaderManager::shader(const QString& fn, const QString& header, const Z3DContext& context)
+Z3DShader& Z3DShaderManager::shader(const QString& fn, const QString& header, const Z3DContextGroup& context)
 {
   ShaderKey key(fn, header, context);
   auto lb = m_shaders.lower_bound(key);
@@ -41,7 +41,7 @@ Z3DShader& Z3DShaderManager::shader(const QString& fn, const QString& header, co
     fileStream.setCodec("UTF-8");
     QString src = header + fileStream.readAll();
 
-    CHECK(context == Z3DContext());
+    CHECK(context == Z3DContextGroup());
     auto shdr = std::make_unique<Z3DShader>(type);
     shdr->compileSourceCode(src);
     Z3DShader* res = shdr.get();

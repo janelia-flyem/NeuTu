@@ -169,7 +169,7 @@ public:
   bool isEmpty() const;
   Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color, const std::vector<int> &faceArray);
   void append(Z3DCube cube);
-  std::vector<Z3DCube> getCubeArray();
+  const std::vector<Z3DCube>& getCubeArray() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;

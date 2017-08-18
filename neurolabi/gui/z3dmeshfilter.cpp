@@ -1,6 +1,5 @@
 #include "z3dmeshfilter.h"
 
-#include "z3drenderport.h"
 #include "zmesh.h"
 #include "zrandom.h"
 #include <QFileInfo>
@@ -8,40 +7,21 @@
 
 Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   : Z3DGeometryFilter(globalParas, parent)
-  , m_monoEyeOutport("Image", this)
-  , m_leftEyeOutport("LeftEyeImage", this)
-  , m_rightEyeOutport("RightEyeImage", this)
-  , m_monoEyeOutport2("Image2", this)
-  , m_leftEyeOutport2("LeftEyeImage2", this)
-  , m_rightEyeOutport2("RightEyeImage2", this)
-  , m_triangleListRenderer(m_rendererBase)
+  , m_meshRenderer(m_rendererBase)
   , m_colorMode("Color Mode")
   , m_singleColorForAllMesh("Mesh Color", glm::vec4(ZRandom::instance().randReal<float>(),
                                                     ZRandom::instance().randReal<float>(),
                                                     ZRandom::instance().randReal<float>(),
                                                     1.f))
-  //, m_textureGlowRenderer(m_rendererBase)
-  , m_glow("Glow", false)
-  , m_textureCopyRenderer(m_rendererBase)
   , m_selectMeshEvent("Select Mesh", false)
   , m_pressedMesh(nullptr)
-  , m_selectedMeshes(nullptr)
   , m_dataIsInvalid(false)
 {
-  addPrivateRenderPort(m_monoEyeOutport);
-  addPrivateRenderPort(m_leftEyeOutport);
-  addPrivateRenderPort(m_rightEyeOutport);
-  addPrivateRenderPort(m_monoEyeOutport2);
-  addPrivateRenderPort(m_leftEyeOutport2);
-  addPrivateRenderPort(m_rightEyeOutport2);
-
-  m_textureCopyRenderer.setDiscardTransparent(true);
-
   m_singleColorForAllMesh.setStyle("COLOR");
   connect(&m_singleColorForAllMesh, &ZVec4Parameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
 
   // Color Mode
-  m_colorMode.addOptions("Single Color", "Mesh Source");
+  m_colorMode.addOptions("Mesh Color", "Single Color", "Mesh Source");
   m_colorMode.select("Mesh Source");
 
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
@@ -50,13 +30,6 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   addParameter(m_colorMode);
 
   addParameter(m_singleColorForAllMesh);
-
-  connect(&m_glow, &ZBoolParameter::valueChanged, this, &Z3DMeshFilter::adjustWidgets);
-//  addParameter(m_glow);
-//  addParameter(m_textureGlowRenderer.glowModePara());
-//  addParameter(m_textureGlowRenderer.blurRadiusPara());
-//  addParameter(m_textureGlowRenderer.blurScalePara());
-//  addParameter(m_textureGlowRenderer.blurStrengthPara());
 
   m_selectMeshEvent.listenTo("select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
   m_selectMeshEvent.listenTo("select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
@@ -69,9 +42,8 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
 
   adjustWidgets();
 
-  addParameter(m_triangleListRenderer.wireframeModePara());
-  addParameter(m_triangleListRenderer.wireframeColorPara());
-  m_triangleListRenderer.setColorSource("CustomColor");
+  addParameter(m_meshRenderer.wireframeModePara());
+  addParameter(m_meshRenderer.wireframeColorPara());
 }
 
 void Z3DMeshFilter::process(Z3DEye)
@@ -79,38 +51,6 @@ void Z3DMeshFilter::process(Z3DEye)
   if (m_dataIsInvalid) {
     prepareData();
   }
-//  if (m_glow.get()) {
-//    glEnable(GL_DEPTH_TEST);
-//    glEnable(GL_BLEND);
-//    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-//    Z3DRenderOutputPort& currentOutport = (eye == Z3DEye::Mono) ?
-//                                          m_monoEyeOutport : (eye == Z3DEye::Left) ? m_leftEyeOutport
-//                                                                                   : m_rightEyeOutport;
-
-//    currentOutport.bindTarget();
-//    currentOutport.clearTarget();
-//    m_rendererBase.setViewport(currentOutport.size());
-//    m_rendererBase.render(eye, m_triangleListRenderer);
-//    CHECK_GL_ERROR
-//    currentOutport.releaseTarget();
-
-//    Z3DRenderOutputPort& currentOutport2 = (eye == Z3DEye::Mono) ?
-//                                           m_monoEyeOutport2 : (eye == Z3DEye::Left) ? m_leftEyeOutport2
-//                                                                                     : m_rightEyeOutport2;
-//    currentOutport2.bindTarget();
-//    currentOutport2.clearTarget();
-//    m_rendererBase.setViewport(currentOutport2.size());
-//    m_textureGlowRenderer.setColorTexture(currentOutport.colorTexture());
-//    m_textureGlowRenderer.setDepthTexture(currentOutport.depthTexture());
-//    m_rendererBase.render(eye, m_textureGlowRenderer);
-//    CHECK_GL_ERROR
-//    currentOutport2.releaseTarget();
-
-//    glBlendFunc(GL_ONE, GL_ZERO);
-//    glDisable(GL_BLEND);
-//    glDisable(GL_DEPTH_TEST);
-  //  }
 }
 
 void Z3DMeshFilter::setData(const std::vector<ZMesh*>& meshList)
@@ -155,8 +95,8 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
       m_widgetsGroup->addChild(*kv.second, 2);
     }
 
-    m_widgetsGroup->addChild(m_triangleListRenderer.wireframeModePara(), 3);
-    m_widgetsGroup->addChild(m_triangleListRenderer.wireframeColorPara(), 3);
+    m_widgetsGroup->addChild(m_meshRenderer.wireframeModePara(), 3);
+    m_widgetsGroup->addChild(m_meshRenderer.wireframeColorPara(), 3);
 
     std::vector<ZParameter*> paras = m_rendererBase.parameters();
     for (auto para : paras) {
@@ -171,12 +111,6 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
       else if (para->name() != "Size Scale")
         m_widgetsGroup->addChild(*para, 7);
     }
-
-//    m_widgetsGroup->addChild(m_glow, 5);
-//    m_widgetsGroup->addChild(m_textureGlowRenderer.glowModePara(), 5);
-//    m_widgetsGroup->addChild(m_textureGlowRenderer.blurRadiusPara(), 5);
-//    m_widgetsGroup->addChild(m_textureGlowRenderer.blurScalePara(), 5);
-//    m_widgetsGroup->addChild(m_textureGlowRenderer.blurStrengthPara(), 5);
 
     m_widgetsGroup->addChild(m_xCut, 5);
     m_widgetsGroup->addChild(m_yCut, 5);
@@ -193,31 +127,21 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
 
 void Z3DMeshFilter::renderOpaque(Z3DEye eye)
 {
-  m_rendererBase.render(eye, m_triangleListRenderer);
+  m_rendererBase.render(eye, m_meshRenderer);
   renderBoundBox(eye);
 }
 
 void Z3DMeshFilter::renderTransparent(Z3DEye eye)
 {
-  if (m_glow.get()) {
-    Z3DRenderOutputPort& currentOutport2 = (eye == Z3DEye::Mono) ?
-                                           m_monoEyeOutport2 : (eye == Z3DEye::Left) ? m_leftEyeOutport2
-                                                                                     : m_rightEyeOutport2;
-    m_textureCopyRenderer.setColorTexture(currentOutport2.colorTexture());
-    m_textureCopyRenderer.setDepthTexture(currentOutport2.depthTexture());
-    m_rendererBase.render(eye, m_textureCopyRenderer);
-    renderBoundBox(eye);
-  } else {
-    m_rendererBase.render(eye, m_triangleListRenderer);
-    renderBoundBox(eye);
-  }
+  m_rendererBase.render(eye, m_meshRenderer);
+  renderBoundBox(eye);
 }
 
 void Z3DMeshFilter::renderPicking(Z3DEye eye)
 {
   if (!m_pickingObjectsRegistered)
     registerPickingObjects();
-  m_rendererBase.renderPicking(eye, m_triangleListRenderer);
+  m_rendererBase.renderPicking(eye, m_meshRenderer);
 }
 
 void Z3DMeshFilter::prepareData()
@@ -285,7 +209,7 @@ void Z3DMeshFilter::prepareData()
     }
   }
 
-  m_triangleListRenderer.setData(&m_meshList);
+  m_meshRenderer.setData(&m_meshList);
   prepareColor();
   adjustWidgets();
   m_dataIsInvalid = false;
@@ -305,7 +229,7 @@ void Z3DMeshFilter::registerPickingObjects()
                               pickingColor[3] / 255.f);
       m_meshPickingColors.push_back(fPickingColor);
     }
-    m_triangleListRenderer.setDataPickingColors(&m_meshPickingColors);
+    m_meshRenderer.setDataPickingColors(&m_meshPickingColors);
   }
 
   m_pickingObjectsRegistered = true;
@@ -328,22 +252,10 @@ ZBBox<glm::dvec3> Z3DMeshFilter::meshBound(ZMesh* p)
   std::map<ZMesh*, ZBBox<glm::dvec3>>::const_iterator it = m_meshBoundboxMapper.find(p);
   if (it != m_meshBoundboxMapper.end()) {
     ZBBox<glm::dvec3> result = it->second;
-    //    result[0] *= getCoordTransform().x;
-    //    result[1] *= getCoordTransform().x;
-    //    result[2] *= getCoordTransform().y;
-    //    result[3] *= getCoordTransform().y;
-    //    result[4] *= getCoordTransform().z;
-    //    result[5] *= getCoordTransform().z;
     return result;
   } else {
     ZBBox<glm::dvec3> result = p->boundBox(coordTransform());
     m_meshBoundboxMapper[p] = result;
-    //    result[0] *= getCoordTransform().x;
-    //    result[1] *= getCoordTransform().x;
-    //    result[2] *= getCoordTransform().y;
-    //    result[3] *= getCoordTransform().y;
-    //    result[4] *= getCoordTransform().z;
-    //    result[5] *= getCoordTransform().z;
     return result;
   }
 }
@@ -373,25 +285,25 @@ void Z3DMeshFilter::prepareColor()
     for (size_t i = 0; i < m_meshList.size(); ++i) {
       m_meshColors.push_back(m_singleColorForAllMesh.get());
     }
+    m_meshRenderer.setDataColors(&m_meshColors);
+    m_meshRenderer.setColorSource("CustomColor");
   } else if (m_colorMode.isSelected("Mesh Source")) {
     for (size_t i=0; i<m_meshList.size(); i++) {
       //LOG(INFO) << m_meshList[i]->getSource().c_str() << m_sourceColorMapper[m_meshList[i]->getSource().c_str()].get();
       glm::vec4 color = m_sourceColorMapper[m_meshList[i]->getSource().c_str()]->get();
       m_meshColors.push_back(color);
     }
+    m_meshRenderer.setDataColors(&m_meshColors);
+    m_meshRenderer.setColorSource("CustomColor");
+  } else if (m_colorMode.isSelected("Mesh Color")) {
+    m_meshRenderer.setColorSource("MeshColor");
   }
-
-  m_triangleListRenderer.setDataColors(&m_meshColors);
 }
 
 void Z3DMeshFilter::adjustWidgets()
 {
   m_singleColorForAllMesh.setVisible(m_colorMode.isSelected("Single Color"));
 
-//  m_textureGlowRenderer.glowModePara().setVisible(m_glow.get());
-//  m_textureGlowRenderer.blurRadiusPara().setVisible(m_glow.get());
-//  m_textureGlowRenderer.blurScalePara().setVisible(m_glow.get());
-//  m_textureGlowRenderer.blurStrengthPara().setVisible(m_glow.get());
   for (auto& kv : m_sourceColorMapper) {
     kv.second->setVisible(m_colorMode.isSelected("Mesh Source"));
   }
