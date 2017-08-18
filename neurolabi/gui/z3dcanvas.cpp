@@ -186,7 +186,7 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
   UNUSED_PARAMETER(painter);
 #endif
 
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   painter->setPen(QColor(255, 0, 0));
   painter->drawRect(QRect(10, 10, 40, 60));
 #endif
