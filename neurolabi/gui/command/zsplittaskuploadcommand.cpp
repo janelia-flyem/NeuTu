@@ -39,6 +39,11 @@ int ZSplitTaskUploadCommand::run(
     return 1;
   }
 
+  if (target.getBodyLabelName().empty()) {
+    std::cerr << "No sparsevol data specified. Abort." << std::endl;
+    return 1;
+  }
+
   ZJsonObject docJson;
   docJson.load(input.front());
 

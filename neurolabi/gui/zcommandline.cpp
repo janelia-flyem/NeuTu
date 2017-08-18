@@ -1411,6 +1411,10 @@ int ZCommandLine::run(int argc, char *argv[])
     } else if (Is_Arg_Matched(const_cast<char*>("--general"))) {
       command = GENERAL_COMMAND;
       m_generalConfig = Get_String_Arg(const_cast<char*>("--general"));
+#ifdef _DEBUG_
+      std::cout << "Config:" << std::endl;
+      std::cout << m_generalConfig << std::endl;
+#endif
     }
   }
 
