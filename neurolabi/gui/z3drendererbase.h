@@ -80,7 +80,7 @@ public:
 
   inline void setViewport(const glm::uvec2& viewport)
   {
-    if (m_viewport.zw() != viewport) {
+    if ((m_viewport[3] != viewport[3]) || (m_viewport[2] != viewport[2])) {
       m_viewport = glm::ivec4(0, 0, viewport);
       makeViewportMatrix();
     }

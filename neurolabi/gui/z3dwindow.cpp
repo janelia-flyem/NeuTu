@@ -174,14 +174,17 @@ void Z3DWindow::createStatusBar()
 
 void Z3DWindow::createToolBar()
 {
-  m_toolBar = addToolBar("View");
-  QAction *viewSynapseAction = ZActionFactory::MakeAction(
-        ZActionFactory::ACTION_SHOW_SYNAPSE, this);
-  connect(viewSynapseAction, SIGNAL(toggled(bool)),
-          this, SLOT(showPuncta(bool)));
-  m_toolBar->addAction(viewSynapseAction);
+  if (getWindowType() == NeuTube3D::TYPE_COARSE_BODY ||
+      getWindowType() == NeuTube3D::TYPE_BODY ||
+      getWindowType() == NeuTube3D::TYPE_SKELETON ||
+      getWindowType() == NeuTube3D::TYPE_NEU3_SKELETON) {
+    m_toolBar = addToolBar("View");
+    QAction *viewSynapseAction = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_SHOW_SYNAPSE, this);
+    connect(viewSynapseAction, SIGNAL(toggled(bool)),
+            this, SLOT(showPuncta(bool)));
+    m_toolBar->addAction(viewSynapseAction);
 
-  if (getTodoFilter()) {
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SHOW_TODO));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TODO_ITEM));
   }

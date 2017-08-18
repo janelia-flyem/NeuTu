@@ -87,8 +87,8 @@ public:
   inline Z3DGraphFilter& graphFilter()
   { return *m_graphFilter; }
 
-//  inline Z3DSurfaceFilter& surfaceFilter()
-//  { return *m_surfaceFilter; }
+  inline Z3DSurfaceFilter& surfaceFilter()
+  { return *m_surfaceFilter; }
 
   inline ZFlyEmTodoListFilter& todoFilter()
   { return *m_todoFilter; }
