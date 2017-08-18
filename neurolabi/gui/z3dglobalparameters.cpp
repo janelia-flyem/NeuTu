@@ -4,7 +4,7 @@
 #include "z3dcanvas.h"
 #include "z3dgpuinfo.h"
 
-Z3DGlobalParameters::Z3DGlobalParameters()
+Z3DGlobalParameters::Z3DGlobalParameters(Z3DCanvas& canvas)
   : geometriesMultisampleMode("Multisample Anti-Aliasing")
   , transparencyMethod("Transparency")
   , weightedBlendedDepthScale("Weighted Blended Depth Scale", 1.f, 1e-3f, 1e3f)
@@ -18,7 +18,7 @@ Z3DGlobalParameters::Z3DGlobalParameters()
   , camera("Camera", Z3DCamera())
   , pickingManager()
   , interactionHandler("Interaction Handler", &camera)
-  , m_canvas(nullptr)
+  , m_canvas(canvas)
 {
   geometriesMultisampleMode.addOptions("None", "2x2");
   geometriesMultisampleMode.select("2x2");
@@ -233,22 +233,13 @@ Z3DGlobalParameters::Z3DGlobalParameters()
     m_widgetsGrp->addChild(*m_parameters[i], 1);
     m_widgetsGrpNoCamera->addChild(*m_parameters[i], 1);
   }
+
+  pickingManager.setDevicePixelRatio(m_canvas.devicePixelRatioF());
 }
 
 std::shared_ptr<ZWidgetsGroup> Z3DGlobalParameters::widgetsGroup(bool includeCamera)
 {
   return includeCamera ? m_widgetsGrp : m_widgetsGrpNoCamera;
-}
-
-void Z3DGlobalParameters::setCanvas(Z3DCanvas &canvas)
-{
-  m_canvas = &canvas;
-  pickingManager.setDevicePixelRatio(m_canvas->devicePixelRatioF());
-}
-
-void Z3DGlobalParameters::getGLFocus()
-{
-  m_canvas->getGLFocus();
 }
 
 void Z3DGlobalParameters::updateLightsArray()

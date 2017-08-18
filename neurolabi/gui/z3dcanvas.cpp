@@ -6,8 +6,8 @@
 #include "QsLog.h"
 #include "zpainter.h"
 #include "zstackdrawable.h"
+#include "zopenglwidget.h"
 #include <QWindow>
-#include <QOpenGLWidget>
 #include <QPainter>
 #include <QGraphicsTextItem>
 #include <algorithm>
@@ -21,7 +21,7 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* paren
   setAlignment(Qt::AlignLeft | Qt::AlignTop);
   resize(width, height);
 
-  m_glWidget = new QOpenGLWidget(nullptr, f);
+  m_glWidget = new ZOpenGLWidget(nullptr, f);
   m_3dScene = new Z3DScene(width, height, m_glWidget->format().stereo(), this);
 
   setViewport(m_glWidget);
@@ -47,6 +47,8 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* paren
           this, SIGNAL(strokePainted(ZStroke2d*)));
   connect(&m_interaction, SIGNAL(shootingTodo(int,int)),
           this, SIGNAL(shootingTodo(int,int)));
+
+  connect(m_glWidget, &ZOpenGLWidget::openGLContextInitialized, this, &Z3DCanvas::openGLContextInitialized);
 }
 
 QSurfaceFormat Z3DCanvas::format() const
@@ -218,8 +220,6 @@ void Z3DCanvas::timerEvent(QTimerEvent* e)
 void Z3DCanvas::setNetworkEvaluator(Z3DNetworkEvaluator *n)
 {
   m_3dScene->setNetworkEvaluator(n);
-  if (n)
-    n->setOpenGLContext(this);
 }
 
 void Z3DCanvas::setFakeStereoOnce()
@@ -262,6 +262,11 @@ void Z3DCanvas::broadcastEvent(QEvent *e, int w, int h)
       break;
     }
   }
+}
+
+void Z3DCanvas::getGLFocus()
+{
+  m_glWidget->makeCurrent();
 }
 
 void Z3DCanvas::setKeyMode(ZInteractionEngine::EKeyMode mode)

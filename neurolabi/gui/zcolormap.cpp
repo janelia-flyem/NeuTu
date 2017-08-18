@@ -845,7 +845,6 @@ void ZColorMap::create1DTexture(size_t width) const
   if (maxTexSize < width)
     width = maxTexSize;
   m_texture.reset(new Z3DTexture(GLint(GL_RGBA8), glm::uvec3(width, 1, 1), GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV));
-  CHECK_GL_ERROR
 }
 
 void ZColorMap::update1DTexture() const
@@ -857,7 +856,6 @@ void ZColorMap::update1DTexture() const
   for (size_t x = 0; x < tfData.size(); ++x)
     tfData[x] = mappedColorBGRA(static_cast<double>(x) / (tfData.size() - 1));
   m_texture->uploadImage(tfData.data());
-  CHECK_GL_ERROR
 
   m_textureIsInvalid = false;
 }

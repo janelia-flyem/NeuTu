@@ -16,7 +16,7 @@ class Z3DGlobalParameters : public QObject
 {
 Q_OBJECT
 public:
-  Z3DGlobalParameters();
+  Z3DGlobalParameters(Z3DCanvas& canvas);
 
   const std::vector<ZParameter*>& parameters() const
   { return m_parameters; }
@@ -47,11 +47,6 @@ public:
 
   const glm::vec3* lightSpotDirectionArray() const
   { return m_lightSpotDirectionArray.data(); }
-
-  // must call
-  void setCanvas(Z3DCanvas& canvas);
-
-  void getGLFocus();
 
   // must call
   void setPickingTarget(Z3DRenderTarget& rt)
@@ -106,7 +101,7 @@ private:
   std::vector<float> m_lightSpotExponentArray;
   std::vector<glm::vec3> m_lightSpotDirectionArray;
 
-  Z3DCanvas* m_canvas;
+  Z3DCanvas& m_canvas;
 };
 
 #endif // Z3DGLOBALPARAMETERS_H

@@ -48,8 +48,6 @@ Z3DWindow* ZWindowFactory::open3DWindow(
     ZStackDoc *doc, Z3DWindow::EInitMode mode)
 {
   Z3DWindow *window = make3DWindow(doc, mode);
-  window->show();
-  window->raise();
 
   return window;
 }
@@ -70,6 +68,9 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
 
   if (ZSystemInfo::instance().is3DSupported() && doc) {
     window = new Z3DWindow(doc, mode, false, m_parentWidget);
+    window->show();
+    window->raise();
+
     if (m_windowTitle.isEmpty()) {
       window->setWindowTitle("3D View");
     } else {

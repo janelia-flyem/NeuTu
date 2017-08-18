@@ -96,7 +96,7 @@ CONFIG += static_gtest
 
 QT += printsupport
 
-DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_ #_USE_CORE_PROFILE_
+DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_ _USE_CORE_PROFILE_
 DEFINES += #QT_USE_QSTRINGBUILDER #QT_NO_CAST_FROM_BYTEARRAY #QT_NO_CAST_TO_ASCII
 
 #Machine information
@@ -789,7 +789,8 @@ HEADERS += mainwindow.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
     flyem/zflyembody3ddoccommand.h \
-    flyem/zflyembody3ddocmenufactory.h
+    flyem/zflyembody3ddocmenufactory.h \
+    zopenglwidget.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1383,7 +1384,8 @@ SOURCES += main.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
     flyem/zflyembody3ddoccommand.cpp \
-    flyem/zflyembody3ddocmenufactory.cpp
+    flyem/zflyembody3ddocmenufactory.cpp \
+    zopenglwidget.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

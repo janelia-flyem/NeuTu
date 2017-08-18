@@ -36,14 +36,14 @@ public:
   unsigned int shaderId() const
   { return m_id; }
 
-  Z3DContext context() const
+  Z3DContextGroup context() const
   { return m_context; }
 
 private:
   Type m_type;
   bool m_compiled;
   unsigned int m_id;
-  Z3DContext m_context;
+  Z3DContextGroup m_context;
 };
 
 #endif // Z3DSHADER_H

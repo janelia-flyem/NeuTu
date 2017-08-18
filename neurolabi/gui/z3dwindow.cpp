@@ -131,8 +131,9 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
     break;
   }
   setCentralWidget(getCanvas());
-  init();
-  createDockWindows();
+  connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::init);
+  connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::createDockWindows);
+
   setAcceptDrops(true);
   m_mergedContextMenu = new QMenu(this);
   m_contextMenu = NULL;
@@ -3566,7 +3567,7 @@ void Z3DWindow::shootTodo(int x, int y)
   if (hasSwc()) {
     getSwcFilter()->forceNodePicking(true);
     getSwcFilter()->invalidate();
-    m_view->updateNetwork();
+    //m_view->updateNetwork();
     Swc_Tree_Node *tn = getSwcFilter()->pickSwcNode(x, y);
     if (tn != NULL) {
       ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
@@ -3602,7 +3603,7 @@ void Z3DWindow::addTodoMarkerFromStroke(const ZStroke2d *stroke)
   if (hasSwc() && stroke != NULL) {
     getSwcFilter()->forceNodePicking(true);
     getSwcFilter()->invalidate();
-    m_view->updateNetwork();
+    //m_view->updateNetwork();
     int x = 0;
     int y = 0;
     stroke->getLastPoint(&x, &y);
@@ -3615,7 +3616,7 @@ void Z3DWindow::labelSwcNodeFromStroke(const ZStroke2d *stroke)
   if (hasSwc() && stroke != NULL) {
     getSwcFilter()->forceNodePicking(true);
     getSwcFilter()->invalidate();
-    m_view->updateNetwork();
+    //m_view->updateNetwork();
     ZObject3d *ptArray = stroke->toObject3d();
     if (ptArray != NULL) {
       QList<Swc_Tree_Node*> nodeArray = getSwcFilter()->pickSwcNode(*ptArray);

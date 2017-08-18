@@ -41,7 +41,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   connect(&m_singleColorForAllMesh, &ZVec4Parameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
 
   // Color Mode
-  m_colorMode.addOptions("Single Color", "Mesh Source");
+  m_colorMode.addOptions("Mesh Color", "Single Color", "Mesh Source");
   m_colorMode.select("Mesh Source");
 
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
@@ -71,7 +71,6 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
 
   addParameter(m_triangleListRenderer.wireframeModePara());
   addParameter(m_triangleListRenderer.wireframeColorPara());
-  m_triangleListRenderer.setColorSource("CustomColor");
 }
 
 void Z3DMeshFilter::process(Z3DEye)
@@ -92,7 +91,6 @@ void Z3DMeshFilter::process(Z3DEye)
 //    currentOutport.clearTarget();
 //    m_rendererBase.setViewport(currentOutport.size());
 //    m_rendererBase.render(eye, m_triangleListRenderer);
-//    CHECK_GL_ERROR
 //    currentOutport.releaseTarget();
 
 //    Z3DRenderOutputPort& currentOutport2 = (eye == Z3DEye::Mono) ?
@@ -104,7 +102,6 @@ void Z3DMeshFilter::process(Z3DEye)
 //    m_textureGlowRenderer.setColorTexture(currentOutport.colorTexture());
 //    m_textureGlowRenderer.setDepthTexture(currentOutport.depthTexture());
 //    m_rendererBase.render(eye, m_textureGlowRenderer);
-//    CHECK_GL_ERROR
 //    currentOutport2.releaseTarget();
 
 //    glBlendFunc(GL_ONE, GL_ZERO);
@@ -373,15 +370,19 @@ void Z3DMeshFilter::prepareColor()
     for (size_t i = 0; i < m_meshList.size(); ++i) {
       m_meshColors.push_back(m_singleColorForAllMesh.get());
     }
+    m_triangleListRenderer.setDataColors(&m_meshColors);
+    m_triangleListRenderer.setColorSource("CustomColor");
   } else if (m_colorMode.isSelected("Mesh Source")) {
     for (size_t i=0; i<m_meshList.size(); i++) {
       //LOG(INFO) << m_meshList[i]->getSource().c_str() << m_sourceColorMapper[m_meshList[i]->getSource().c_str()].get();
       glm::vec4 color = m_sourceColorMapper[m_meshList[i]->getSource().c_str()]->get();
       m_meshColors.push_back(color);
     }
+    m_triangleListRenderer.setDataColors(&m_meshColors);
+    m_triangleListRenderer.setColorSource("CustomColor");
+  } else if (m_colorMode.isSelected("Mesh Color")) {
+    m_triangleListRenderer.setColorSource("MeshColor");
   }
-
-  m_triangleListRenderer.setDataColors(&m_meshColors);
 }
 
 void Z3DMeshFilter::adjustWidgets()

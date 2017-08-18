@@ -107,7 +107,6 @@ Z3DCompositor::Z3DCompositor(Z3DGlobalParameters& globalParas, QObject* parent)
 #endif
   }
 
-  CHECK_GL_ERROR
   globalParas.setPickingTarget(m_pickingPort.renderTarget());
   addInteractionHandler(globalParas.interactionHandler);
 
@@ -142,8 +141,6 @@ Z3DCompositor::Z3DCompositor(Z3DGlobalParameters& globalParas, QObject* parent)
 //  m_wbFinalShader->bindFragDataLocation(0, "FragData0");
 //  m_wbFinalShader->bindFragDataLocation(1, "FragData1");
 //  m_wbFinalShader->loadFromSourceFile("cube_wboit_compose.vert", "cube_wboit_compose.frag", m_rendererBase->generateHeader());
-
-//  CHECK_GL_ERROR;
 }
 
 bool Z3DCompositor::isReady(Z3DEye eye) const
@@ -309,7 +306,6 @@ void Z3DCompositor::process(Z3DEye eye)
         }
 
         currentOutport.releaseTarget();
-        CHECK_GL_ERROR
       } else {
         if (m_rendererBase.geometriesMultisampleModePara().isSelected("2x2")) {
           m_tempPort.resize(currentOutport.size() * 2_u32);
@@ -353,7 +349,6 @@ void Z3DCompositor::process(Z3DEye eye)
         }
 
         currentOutport.releaseTarget();
-        CHECK_GL_ERROR
       }
     } else {      // with volume
       if (numNormalFilters == 0 && numOnTopFilters == 0) {  // directly copy inport image to outport
@@ -388,7 +383,6 @@ void Z3DCompositor::process(Z3DEye eye)
         }
 
         currentOutport.releaseTarget();
-        CHECK_GL_ERROR
       } else if (numNormalFilters == 0 ||
                  numOnTopFilters == 0) {  // render geometries into one temp port then blend with volume
         if (m_rendererBase.geometriesMultisampleModePara().isSelected("2x2")) {
@@ -443,7 +437,6 @@ void Z3DCompositor::process(Z3DEye eye)
         }
 
         currentOutport.releaseTarget();
-        CHECK_GL_ERROR
       } else { // render normal geometries into tempport, then blend inport and tempport into tempport2, then render on top geometries into tempport, then
         // blend temport and temport2 into outport
         if (m_rendererBase.geometriesMultisampleModePara().isSelected("2x2")) {
@@ -463,7 +456,6 @@ void Z3DCompositor::process(Z3DEye eye)
 
         // blend inport and tempport into tempport2
         m_tempPort2.bindTarget();
-        CHECK_GL_ERROR
 
         m_rendererBase.setViewport(m_tempPort2.size());
         m_alphaBlendRenderer.setColorTexture1(m_tempPort.colorTexture());
@@ -473,7 +465,6 @@ void Z3DCompositor::process(Z3DEye eye)
         m_rendererBase.render(eye, m_alphaBlendRenderer);
 
         m_tempPort2.releaseTarget();
-        CHECK_GL_ERROR
 
         // render on top geometries into tempport
         renderGeometries(onTopOpaqueFilters, onTopTransparentFilters, m_tempPort, eye);
@@ -506,7 +497,6 @@ void Z3DCompositor::process(Z3DEye eye)
         }
 
         currentOutport.releaseTarget();
-        CHECK_GL_ERROR
       }
     }
   } else { // OIT
@@ -557,7 +547,6 @@ void Z3DCompositor::process(Z3DEye eye)
       }
 
       currentOutport.releaseTarget();
-      CHECK_GL_ERROR
     } else {
       if (m_rendererBase.geometriesMultisampleModePara().isSelected("2x2")) {
         m_tempPort.resize(currentOutport.size() * 2_u32);
@@ -601,7 +590,6 @@ void Z3DCompositor::process(Z3DEye eye)
       }
 
       currentOutport.releaseTarget();
-      CHECK_GL_ERROR
     }
   }
 
@@ -616,7 +604,6 @@ void Z3DCompositor::process(Z3DEye eye)
     glBlendFunc(GL_ONE, GL_ZERO);
     glDisable(GL_BLEND);
     currentOutport.releaseTarget();
-    CHECK_GL_ERROR
   }
 
   // render picking objects
@@ -627,14 +614,12 @@ void Z3DCompositor::process(Z3DEye eye)
       if (geomFilter->isReady(eye)) {
         geomFilter->setViewport(pickingManager().renderTarget().size());
         geomFilter->renderPicking(eye);
-        CHECK_GL_ERROR
       }
     }
     pickingManager().releaseTarget();
   }
 
   glDisable(GL_DEPTH_TEST);
-  CHECK_GL_ERROR
 }
 
 void Z3DCompositor::renderGeometries(const std::vector<Z3DBoundedFilter*>& opaqueFilters,
@@ -718,7 +703,6 @@ void Z3DCompositor::renderGeometries(const std::vector<Z3DBoundedFilter*>& opaqu
 //        port.releaseTarget();
 //    }
 
-//    CHECK_GL_ERROR;
 //}
 
 void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DBoundedFilter*>& opaqueFilters,
@@ -727,12 +711,10 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DBoundedFilter*>
 {
   port.bindTarget();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  CHECK_GL_ERROR
 
   for (auto filter : opaqueFilters) {
     filter->setViewport(port.size());
     filter->renderOpaque(eye);
-    CHECK_GL_ERROR
   }
 
   for (auto filter : transparentFilters) {
@@ -742,11 +724,9 @@ void Z3DCompositor::renderGeomsBlendDelayed(const std::vector<Z3DBoundedFilter*>
     filter->renderTransparent(eye);
     glBlendFunc(GL_ONE, GL_ZERO);
     glDisable(GL_BLEND);
-    CHECK_GL_ERROR
   }
 
   port.releaseTarget();
-  CHECK_GL_ERROR
 }
 
 void Z3DCompositor::renderGeomsBlendNoDepthMask(const std::vector<Z3DBoundedFilter*>& opaqueFilters,
@@ -755,12 +735,10 @@ void Z3DCompositor::renderGeomsBlendNoDepthMask(const std::vector<Z3DBoundedFilt
 {
   port.bindTarget();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  CHECK_GL_ERROR
 
   for (auto filter : opaqueFilters) {
     filter->setViewport(port.size());
     filter->renderOpaque(eye);
-    CHECK_GL_ERROR
   }
 
   for (auto filter : transparentFilters) {
@@ -772,11 +750,9 @@ void Z3DCompositor::renderGeomsBlendNoDepthMask(const std::vector<Z3DBoundedFilt
     glBlendFunc(GL_ONE, GL_ZERO);
     glDisable(GL_BLEND);
     glDepthMask(GL_TRUE);
-    CHECK_GL_ERROR
   }
 
   port.releaseTarget();
-  CHECK_GL_ERROR
 }
 
 void Z3DCompositor::renderGeomsOIT(const std::vector<Z3DBoundedFilter*>& opaqueFilters,
@@ -832,7 +808,6 @@ void Z3DCompositor::renderGeomsOIT(const std::vector<Z3DBoundedFilter*>& opaqueF
     m_rendererBase.render(eye, m_alphaBlendRenderer);
     port.releaseTarget();
   }
-  CHECK_GL_ERROR
 }
 
 void Z3DCompositor::renderOpaqueFilters(const std::vector<Z3DBoundedFilter*>& filters,
@@ -840,14 +815,11 @@ void Z3DCompositor::renderOpaqueFilters(const std::vector<Z3DBoundedFilter*>& fi
 {
   port.bindTarget();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  CHECK_GL_ERROR
   for (auto filter : filters) {
     filter->setViewport(port.size());
     filter->renderOpaque(eye);
-    CHECK_GL_ERROR
   }
   port.releaseTarget();
-  CHECK_GL_ERROR
 }
 
 //void Z3DCompositor::renderOpaqueObj(const std::vector<Z3DGeometryFilter *> &filters,
@@ -856,7 +828,6 @@ void Z3DCompositor::renderOpaqueFilters(const std::vector<Z3DBoundedFilter*>& fi
 //  //
 //  port.bindTarget();
 //  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-//  CHECK_GL_ERROR;
 
 //  //
 //  for (size_t i=0; i<filters.size(); i++) {
@@ -869,20 +840,17 @@ void Z3DCompositor::renderOpaqueFilters(const std::vector<Z3DBoundedFilter*>& fi
 //        geomFilter->render(eye);
 //        glBlendFunc(GL_ONE,GL_ZERO);
 //        glDisable(GL_BLEND);
-//        CHECK_GL_ERROR;
 //    }
 //    else
 //    {
 //        geomFilter->setCamera(m_camera.get());
 //        geomFilter->setViewport(port.getSize());
 //        geomFilter->render(eye);
-//        CHECK_GL_ERROR;
 //    }
 //  }
 
 //  //
 //  port.releaseTarget();
-//  CHECK_GL_ERROR;
 //}
 
 void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DBoundedFilter*>& filters,
@@ -896,7 +864,6 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DBoundedFilter*>& f
   if (depthTexture) {
     m_ddpRT->attachTextureToFBO(depthTexture, GL_DEPTH_ATTACHMENT, false);
     m_ddpRT->isFBOComplete();
-    CHECK_GL_ERROR
   }
 
   const Z3DTexture* g_dualDepthTexId[2];
@@ -955,7 +922,6 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DBoundedFilter*>& f
     filter->setViewport(m_ddpRT->size());
     filter->setShaderHookType(Z3DRendererBase::ShaderHookType::DualDepthPeelingInit);
     filter->renderTransparent(eye);
-    CHECK_GL_ERROR
   }
 
 
@@ -996,7 +962,6 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DBoundedFilter*>& f
       filter->setShaderHookParaDDPDepthBlenderTexture(g_dualDepthTexId[prevId]);
       filter->setShaderHookParaDDPFrontBlenderTexture(g_dualFrontBlenderTexId[prevId]);
       filter->renderTransparent(eye);
-      CHECK_GL_ERROR
     }
 
     // Full screen pass to alpha-blend the back color
@@ -1020,8 +985,6 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DBoundedFilter*>& f
     renderScreenQuad(m_screenQuadVAO, m_ddpBlendShader);
     m_ddpBlendShader.release();
 
-    CHECK_GL_ERROR
-
     if (g_useOQ) {
       glEndQuery(GL_SAMPLES_PASSED);
       GLuint sample_count;
@@ -1031,13 +994,11 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DBoundedFilter*>& f
         break;
       }
     }
-    CHECK_GL_ERROR
   }
 
   if (depthTexture) {
     m_ddpRT->detach(GL_DEPTH_ATTACHMENT);
     m_ddpRT->isFBOComplete();
-    CHECK_GL_ERROR
   }
   m_ddpRT->release();
 
@@ -1051,7 +1012,6 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DBoundedFilter*>& f
   for (auto filter : filters) {
     filter->setShaderHookType(Z3DRendererBase::ShaderHookType::Normal);
   }
-  CHECK_GL_ERROR
 
   // ---------------------------------------------------------------------
   // 3. Final Pass
@@ -1072,8 +1032,6 @@ void Z3DCompositor::renderTransparentDDP(const std::vector<Z3DBoundedFilter*>& f
   port.releaseTarget();
 
   glEnable(GL_DEPTH_TEST);
-
-  CHECK_GL_ERROR
 }
 
 bool Z3DCompositor::createDDPRenderTarget(const glm::uvec2& size)
@@ -1169,7 +1127,6 @@ void Z3DCompositor::renderTransparentWA(const std::vector<Z3DBoundedFilter*>& fi
   if (depthTexture) {
     m_waRT->attachTextureToFBO(depthTexture, GL_DEPTH_ATTACHMENT, false);
     m_waRT->isFBOComplete();
-    CHECK_GL_ERROR
   }
 
   const Z3DTexture* g_accumulationTexId[2];
@@ -1202,13 +1159,11 @@ void Z3DCompositor::renderTransparentWA(const std::vector<Z3DBoundedFilter*>& fi
     filter->setViewport(m_waRT->size());
     filter->setShaderHookType(Z3DRendererBase::ShaderHookType::WeightedAverageInit);
     filter->renderTransparent(eye);
-    CHECK_GL_ERROR
   }
 
   if (depthTexture) {
     m_waRT->detach(GL_DEPTH_ATTACHMENT);
     m_waRT->isFBOComplete();
-    CHECK_GL_ERROR
   }
   m_waRT->release();
 
@@ -1220,7 +1175,6 @@ void Z3DCompositor::renderTransparentWA(const std::vector<Z3DBoundedFilter*>& fi
   for (auto filter : filters) {
     filter->setShaderHookType(Z3DRendererBase::ShaderHookType::Normal);
   }
-  CHECK_GL_ERROR
 
   // ---------------------------------------------------------------------
   // 2. Approximate Blending
@@ -1240,8 +1194,6 @@ void Z3DCompositor::renderTransparentWA(const std::vector<Z3DBoundedFilter*>& fi
   port.releaseTarget();
 
   glEnable(GL_DEPTH_TEST);
-
-  CHECK_GL_ERROR
 }
 
 bool Z3DCompositor::createWARenderTarget(const glm::uvec2& size)
@@ -1289,7 +1241,6 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DBoundedFilter*>& fi
   if (depthTexture) {
     m_wbRT->attachTextureToFBO(depthTexture, GL_DEPTH_ATTACHMENT, false);
     m_wbRT->isFBOComplete();
-    CHECK_GL_ERROR
   }
 
   const Z3DTexture* g_accumulationTexId[2];
@@ -1328,13 +1279,11 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DBoundedFilter*>& fi
     filter->setViewport(m_wbRT->size());
     filter->setShaderHookType(Z3DRendererBase::ShaderHookType::WeightedBlendedInit);
     filter->renderTransparent(eye);
-    CHECK_GL_ERROR
   }
 
   if (depthTexture) {
     m_wbRT->detach(GL_DEPTH_ATTACHMENT);
     m_wbRT->isFBOComplete();
-    CHECK_GL_ERROR
   }
   m_wbRT->release();
 
@@ -1346,7 +1295,6 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DBoundedFilter*>& fi
   for (auto filter : filters) {
     filter->setShaderHookType(Z3DRendererBase::ShaderHookType::Normal);
   }
-  CHECK_GL_ERROR
 
   // ---------------------------------------------------------------------
   // 2. Compositing pass
@@ -1366,8 +1314,6 @@ void Z3DCompositor::renderTransparentWB(const std::vector<Z3DBoundedFilter*>& fi
   port.releaseTarget();
 
   glEnable(GL_DEPTH_TEST);
-
-  CHECK_GL_ERROR
 }
 
 bool Z3DCompositor::createWBRenderTarget(const glm::uvec2& size)
@@ -1378,7 +1324,7 @@ bool Z3DCompositor::createWBRenderTarget(const glm::uvec2& size)
   g_accumulationTexId[0] = new Z3DTexture(GLint(GL_RGBA16F), glm::uvec3(size, 1), GL_RGBA, GL_FLOAT);
   g_accumulationTexId[0]->setFilter(GLint(GL_NEAREST), GLint(GL_NEAREST));
   g_accumulationTexId[0]->uploadImage();
-  g_accumulationTexId[1] = new Z3DTexture(GLint(GL_R8), glm::uvec3(size, 1), GL_RED, GL_FLOAT);
+  g_accumulationTexId[1] = new Z3DTexture(GLint(GL_R16F), glm::uvec3(size, 1), GL_RED, GL_FLOAT);
   g_accumulationTexId[1]->setFilter(GLint(GL_NEAREST), GLint(GL_NEAREST));
   g_accumulationTexId[1]->uploadImage();
 
@@ -1408,7 +1354,6 @@ void Z3DCompositor::renderImages(Z3DRenderInputPort& currentInport, Z3DRenderOut
     // blend inport1 and inport2 into tempport3
     m_tempPort3.bindTarget();
     m_tempPort3.clearTarget();
-    CHECK_GL_ERROR
 
     m_rendererBase.setViewport(m_tempPort3.size());
     m_alphaBlendRenderer.setColorTexture1(currentInport.colorTexture(0));
@@ -1418,14 +1363,12 @@ void Z3DCompositor::renderImages(Z3DRenderInputPort& currentInport, Z3DRenderOut
     m_rendererBase.render(eye, m_alphaBlendRenderer);
 
     m_tempPort3.releaseTarget();
-    CHECK_GL_ERROR
 
     Z3DRenderOutputPort* resPort = &m_tempPort3;
     Z3DRenderOutputPort* nextResPort = &m_tempPort4;
     for (size_t i = 2; i < numImages; ++i) {
       nextResPort->bindTarget();
       nextResPort->clearTarget();
-      CHECK_GL_ERROR
 
       m_alphaBlendRenderer.setColorTexture1(resPort->colorTexture());
       m_alphaBlendRenderer.setDepthTexture1(resPort->depthTexture());
@@ -1434,7 +1377,6 @@ void Z3DCompositor::renderImages(Z3DRenderInputPort& currentInport, Z3DRenderOut
       m_rendererBase.render(eye, m_alphaBlendRenderer);
 
       nextResPort->releaseTarget();
-      CHECK_GL_ERROR
 
       std::swap(resPort, nextResPort);
     }

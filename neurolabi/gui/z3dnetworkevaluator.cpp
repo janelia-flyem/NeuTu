@@ -31,12 +31,11 @@
 
 //#define PROFILE3DRENDERERS
 
-Z3DNetworkEvaluator::Z3DNetworkEvaluator(QObject* parent)
+Z3DNetworkEvaluator::Z3DNetworkEvaluator(Z3DCanvasPainter& canvasPainter, QObject* parent)
   : QObject(parent)
-  , m_openGLContext(nullptr)
   , m_locked(false)
   , m_processPending(false)
-  , m_canvasPainter(nullptr)
+  , m_canvasPainter(canvasPainter)
 {
 #if defined(_DEBUG_)
   m_filterWrappers.emplace_back(std::make_unique<Z3DCheckOpenGLStateFilterWrapper>());
@@ -44,23 +43,20 @@ Z3DNetworkEvaluator::Z3DNetworkEvaluator(QObject* parent)
 #if defined(PROFILE3DRENDERERS)
   m_filterWrappers.emplace_back(std::make_unique<Z3DProfileFilterWrapper>());
 #endif
-}
-
-void Z3DNetworkEvaluator::setNetworkSink(Z3DCanvasPainter* canvasPainter)
-{
-  if (m_canvasPainter == canvasPainter)
-    return;
-
-  m_canvasPainter = canvasPainter;
 
   buildNetwork();
+  initializeNetwork();
+
+  m_canvasPainter.canvas().setNetworkEvaluator(this);
+}
+
+Z3DNetworkEvaluator::~Z3DNetworkEvaluator()
+{
+  m_canvasPainter.canvas().setNetworkEvaluator(nullptr);
 }
 
 void Z3DNetworkEvaluator::process(bool stereo)
 {
-  if (!m_canvasPainter)
-    return;
-
   if (m_locked) {
     LOG(INFO) << "locked. Scheduling.";
     //m_processPending = true;
@@ -82,6 +78,8 @@ void Z3DNetworkEvaluator::process(bool stereo)
 //    }
 //  }
 
+  m_canvasPainter.canvas().getGLFocus();
+
   // notify filter wrappers
   for (size_t j = 0; j < m_filterWrappers.size(); ++j)
     m_filterWrappers[j]->beforeNetworkProcess();
@@ -101,14 +99,12 @@ void Z3DNetworkEvaluator::process(bool stereo)
       CHECK_GL_ERROR
 
       {
-        getGLFocus();
         currentFilter->process(eye);
         currentFilter->setValid(eye);
         CHECK_GL_ERROR
       }
 
       // notify filter wrappers
-      getGLFocus();
       for (size_t j = 0; j < m_filterWrappers.size(); ++j)
         m_filterWrappers[j]->afterFilterProcess(currentFilter);
       CHECK_GL_ERROR
@@ -121,14 +117,12 @@ void Z3DNetworkEvaluator::process(bool stereo)
       CHECK_GL_ERROR
 
       {
-        getGLFocus();
         currentFilter->process(Z3DEye::Right);
         currentFilter->setValid(Z3DEye::Right);
         CHECK_GL_ERROR
       }
 
       // notify filter wrappers
-      getGLFocus();
       for (size_t j = 0; j < m_filterWrappers.size(); ++j)
         m_filterWrappers[j]->afterFilterProcess(currentFilter);
       CHECK_GL_ERROR
@@ -145,7 +139,7 @@ void Z3DNetworkEvaluator::process(bool stereo)
   // make sure that canvases are repainted, if their update has been blocked by the locked evaluator
   if (m_processPending) {
     m_processPending = false;
-    m_canvasPainter->invalidate();
+    m_canvasPainter.invalidate();
   }
 }
 
@@ -182,15 +176,11 @@ void Z3DNetworkEvaluator::buildNetwork()
   m_filterGraph.clear();
   m_reverseSortedFilters.clear();
 
-  // nothing more to do, if no network sink is present
-  if (!m_canvasPainter)
-    return;
-
   std::queue<Z3DFilter*> filterQueue;
 
-  filterQueue.push(m_canvasPainter);
-  Vertex v = boost::add_vertex(VertexInfo(m_canvasPainter), m_filterGraph);
-  m_filterToVertexMapper[m_canvasPainter] = v;
+  filterQueue.push(&m_canvasPainter);
+  Vertex v = boost::add_vertex(VertexInfo(&m_canvasPainter), m_filterGraph);
+  m_filterToVertexMapper[&m_canvasPainter] = v;
 
   // build graph of all connected filters
   while (!filterQueue.empty()) {
