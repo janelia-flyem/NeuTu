@@ -52,7 +52,6 @@ Z3DVolumeRaycasterRenderer::Z3DVolumeRaycasterRenderer(Z3DRendererBase& renderer
   m_mergeChannelShader.bindFragDataLocation(0, "FragData0");
   m_mergeChannelShader.loadFromSourceFile("pass.vert", "image2d_array_compositor.frag",
                                           m_rendererBase.generateHeader() + generateHeader());
-  CHECK_GL_ERROR
 }
 
 void Z3DVolumeRaycasterRenderer::setChannels(const std::vector<std::unique_ptr<Z3DVolume> >& volsIn)
@@ -105,7 +104,7 @@ void Z3DVolumeRaycasterRenderer::setChannels(const std::vector<std::unique_ptr<Z
   }
 }
 
-void Z3DVolumeRaycasterRenderer::addQuad(const ZMesh &quad)
+void Z3DVolumeRaycasterRenderer::addQuad(const ZMesh& quad)
 {
   if (quad.empty() ||
       (quad.numVertices() != 4 && quad.numVertices() != 6) ||
@@ -140,7 +139,7 @@ void Z3DVolumeRaycasterRenderer::adjustWidgets()
                                  m_compositingMode.isSelected("Local MIP Opaque"));
 }
 
-void Z3DVolumeRaycasterRenderer::bindVolumesAndTransferFuncs(Z3DShaderProgram &shader)
+void Z3DVolumeRaycasterRenderer::bindVolumesAndTransferFuncs(Z3DShaderProgram& shader)
 {
   shader.setLogUniformLocationError(false);
 
@@ -156,8 +155,6 @@ void Z3DVolumeRaycasterRenderer::bindVolumesAndTransferFuncs(Z3DShaderProgram &s
 
     // transfer functions
     shader.bindTexture(m_transferFuncUniformNames[idx++], m_transferFuncParas[i]->get().texture());
-
-    CHECK_GL_ERROR
   }
 
   shader.setLogUniformLocationError(true);
@@ -173,8 +170,6 @@ void Z3DVolumeRaycasterRenderer::bindVolumeAndTransferFunc(Z3DShaderProgram& sha
 
   // transfer functions
   shader.bindTexture(m_transferFuncUniformNames[0], m_transferFuncParas[idx]->get().texture());
-
-  CHECK_GL_ERROR
 
   shader.setLogUniformLocationError(true);
 }
@@ -373,8 +368,6 @@ void Z3DVolumeRaycasterRenderer::render(Z3DEye eye)
     renderScreenQuad(m_VAO, m_mergeChannelShader);
     m_mergeChannelShader.release();
   }
-
-  CHECK_GL_ERROR
 }
 
 void Z3DVolumeRaycasterRenderer::renderPicking(Z3DEye)

@@ -55,27 +55,19 @@ class Z3DNetworkEvaluator : public QObject
 Q_OBJECT
 
 public:
-  explicit Z3DNetworkEvaluator(QObject* parent = nullptr);
+  explicit Z3DNetworkEvaluator(Z3DCanvasPainter& canvasPainter, QObject* parent = nullptr);
 
-  void setOpenGLContext(Z3DCanvas* context)
-  { m_openGLContext = context; }
-
-  // set canvasPainter as the sink of rendering network and build network
-  void setNetworkSink(Z3DCanvasPainter* canvasPainter);
+  ~Z3DNetworkEvaluator();
 
   // process the currently assigned network. The rendering order is determined internally
   // according the network topology and the invalidation levels of the filters.
   // stereo means run two passes for left and right eye
   void process(bool stereo = false);
 
-  void initializeNetwork();
-
   // call when network topology changed
   void updateNetwork();
 
 protected:
-  void buildNetwork();
-
   // Locks the evaluator. In this state, it does not perform
   // any operations, such as initializing or processing, on the filter network
   void lock()
@@ -83,9 +75,6 @@ protected:
 
   void unlock()
   { m_locked = false; }
-
-  inline void getGLFocus() const
-  { if (m_openGLContext) m_openGLContext->getGLFocus(); }
 
   // update size of all upstream filters. If input filter is nullptr, update all filters
   void sizeChangedFromFilter(Z3DFilter* rp = nullptr);
@@ -95,14 +84,11 @@ private:
 
   std::vector<std::unique_ptr<Z3DFilterWrapper>> m_filterWrappers;
 
-  // used to make sure we operate in the correct opengl context
-  Z3DCanvas* m_openGLContext;
-
   bool m_locked;
 
   bool m_processPending;
 
-  Z3DCanvasPainter* m_canvasPainter;
+  Z3DCanvasPainter& m_canvasPainter;
 
   struct VertexInfo
   {

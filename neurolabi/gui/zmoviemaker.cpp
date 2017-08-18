@@ -87,9 +87,6 @@ void ZMovieMaker::prepareStage()
        iter != m_cast.end(); ++iter) {
     (*iter)->setStage(m_stage);
   }
-
-  //For ROIs
-  window->setROIs(m_academy->getObjectList<ZCubeArray>().size());
 }
 
 void ZMovieMaker::recruitCast()

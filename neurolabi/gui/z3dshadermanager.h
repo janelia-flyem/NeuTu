@@ -16,18 +16,18 @@ public:
   static Z3DShaderManager& instance();
 
   // return reference because it is always valid
-  Z3DShader& shader(const QString& fn, const QString& header, const Z3DContext& context);
+  Z3DShader& shader(const QString& fn, const QString& header, const Z3DContextGroup& context);
 
 private:
   struct ShaderKey
   {
-    ShaderKey(const QString& fn, const QString& hd, const Z3DContext& ct)
+    ShaderKey(const QString& fn, const QString& hd, const Z3DContextGroup& ct)
       : filename(fn), header(hd), context(ct)
     {}
 
     QString filename;
     QString header;
-    Z3DContext context;
+    Z3DContextGroup context;
 
     bool operator<(const ShaderKey& rhs) const;
   };

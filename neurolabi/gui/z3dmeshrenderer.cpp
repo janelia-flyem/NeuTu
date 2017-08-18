@@ -45,7 +45,6 @@ Z3DMeshRenderer::Z3DMeshRenderer(Z3DRendererBase& rendererBase)
   m_meshShaderGrp.init(allshaders, m_rendererBase.generateHeader() + generateHeader(), "",
                        normalShaders);
   m_meshShaderGrp.addAllSupportedPostShaders();
-  CHECK_GL_ERROR
 }
 
 void Z3DMeshRenderer::setData(std::vector<ZMesh*>* meshInput)
@@ -376,8 +375,8 @@ void Z3DMeshRenderer::render(Z3DEye eye)
     prepareMeshColor();
 
   for (auto mesh : *m_meshPt) {
-    if (m_colorSource.isSelected("MeshColor") && mesh->numColors() < mesh->numVertices())
-      return;
+    //if (m_colorSource.isSelected("MeshColor") && mesh->numColors() < mesh->numVertices())
+      //return;
     if (m_colorSource.isSelected("Mesh1DTexture") &&
         (mesh->num1DTextureCoordinates() < mesh->numVertices() ||
           !m_texture || m_texture->textureTarget() != GL_TEXTURE_1D))
@@ -478,7 +477,7 @@ void Z3DMeshRenderer::render(Z3DEye eye)
           glVertexAttribPointer(attr_3dTexCoord0, 3, GL_FLOAT, GL_FALSE, 0, 0);
         }
 
-        if (m_colorSource.isSelected("MeshColor") && attr_color != -1 && !colors.empty()) {
+        if (m_colorSource.isSelected("MeshColor") && attr_color != -1 && colors.size() >= vertices.size()) {
           glEnableVertexAttribArray(attr_color);
           m_VBOs[i].bind(GL_ARRAY_BUFFER, bufIdx++);
           glBufferData(GL_ARRAY_BUFFER, colors.size() * 4 * sizeof(GLfloat), colors.data(), GL_STATIC_DRAW);
@@ -498,6 +497,9 @@ void Z3DMeshRenderer::render(Z3DEye eye)
         if (m_colorSource.isSelected("CustomColor")) {
           shader.setUseCustomColorUniform(true);
           shader.setCustomColorUniform((*m_meshColorsPt)[i]);
+        } else if (m_colorSource.isSelected("MeshColor") && (*m_meshPt)[i]->numColors() < (*m_meshPt)[i]->numVertices()) {
+          shader.setUseCustomColorUniform(true);
+          shader.setCustomColorUniform(glm::vec4(0.f, 0.f, 0.f, 1.f));
         }
 
         GLenum type = (*m_meshPt)[i]->type();
@@ -559,6 +561,9 @@ void Z3DMeshRenderer::render(Z3DEye eye)
       if (m_colorSource.isSelected("CustomColor")) {
         shader.setUseCustomColorUniform(true);
         shader.setCustomColorUniform((*m_meshColorsPt)[i]);
+      } else if (m_colorSource.isSelected("MeshColor") && (*m_meshPt)[i]->numColors() < (*m_meshPt)[i]->numVertices()) {
+        shader.setUseCustomColorUniform(true);
+        shader.setCustomColorUniform(glm::vec4(0.f, 0.f, 0.f, 1.f));
       }
 
       const std::vector<glm::vec3>& vertices = (*m_meshPt)[i]->vertices();
@@ -619,7 +624,7 @@ void Z3DMeshRenderer::render(Z3DEye eye)
         glVertexAttribPointer(attr_3dTexCoord0, 3, GL_FLOAT, GL_FALSE, 0, 0);
       }
 
-      if (m_colorSource.isSelected("MeshColor") && attr_color != -1 && !colors.empty()) {
+      if (m_colorSource.isSelected("MeshColor") && attr_color != -1 && colors.size() >= vertices.size()) {
         glEnableVertexAttribArray(attr_color);
         m_VBOs[i].bind(GL_ARRAY_BUFFER, bufIdx++);
         if (m_dataChanged)
@@ -667,7 +672,7 @@ void Z3DMeshRenderer::render(Z3DEye eye)
         glDisableVertexAttribArray(attr_2dTexCoord0);
       if (m_colorSource.isSelected("Mesh3DTexture") && attr_3dTexCoord0 != -1 && !textureCoordinates3D.empty())
         glDisableVertexAttribArray(attr_3dTexCoord0);
-      if (m_colorSource.isSelected("MeshColor") && attr_color != -1 && !colors.empty())
+      if (m_colorSource.isSelected("MeshColor") && attr_color != -1 && colors.size() >= vertices.size())
         glDisableVertexAttribArray(attr_color);
     }
 

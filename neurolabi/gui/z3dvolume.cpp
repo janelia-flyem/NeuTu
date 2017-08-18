@@ -315,8 +315,6 @@ void Z3DVolume::generateTexture() const
   // Create texture
   m_texture.reset(new Z3DTexture(internalFormat, dimensions(), format, dataType));
   m_texture->uploadImage(m_stack->array);
-
-  CHECK_GL_ERROR;
 }
 
 void Z3DVolume::computeMinValue()

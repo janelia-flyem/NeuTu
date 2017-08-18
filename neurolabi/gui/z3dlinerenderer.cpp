@@ -63,7 +63,6 @@ Z3DLineRenderer::Z3DLineRenderer(Z3DRendererBase& rendererBase)
     m_smoothLineShaderGrp1.init(allshaders, m_rendererBase.generateHeader() + generateHeader());
     m_smoothLineShaderGrp1.addAllSupportedPostShaders();
   }
-  CHECK_GL_ERROR
 }
 
 void Z3DLineRenderer::setData(std::vector<glm::vec3>* linesInput)

@@ -222,7 +222,6 @@
 //    }
 
 //    m_cubeShaderGrp.removeAllShaders();
-//    CHECK_GL_ERROR;
 //    Z3DPrimitiveRenderer::deinitialize();
 //}
 

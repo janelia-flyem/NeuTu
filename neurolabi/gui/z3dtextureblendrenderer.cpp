@@ -20,7 +20,6 @@ Z3DTextureBlendRenderer::Z3DTextureBlendRenderer(Z3DRendererBase& rendererBase, 
   m_blendTextureShader.bindFragDataLocation(0, "FragData0");
   m_blendTextureShader.loadFromSourceFile("pass.vert", "compositor.frag",
                                           m_rendererBase.generateHeader() + generateHeader());
-  CHECK_GL_ERROR
 }
 
 void Z3DTextureBlendRenderer::compile()

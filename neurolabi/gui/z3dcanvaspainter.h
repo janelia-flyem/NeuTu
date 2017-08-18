@@ -18,15 +18,12 @@ class Z3DCanvasPainter : public Z3DBoundedFilter
 {
 Q_OBJECT
 public:
-  explicit Z3DCanvasPainter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
-
-  ~Z3DCanvasPainter();
+  explicit Z3DCanvasPainter(Z3DGlobalParameters& globalParas, Z3DCanvas& canvas, QObject* parent = nullptr);
 
   virtual void invalidate(State inv = State::AllResultInvalid) override;
 
-  void setCanvas(Z3DCanvas* canvas);
-
-  Z3DCanvas* canvas() const;
+  Z3DCanvas& canvas()
+  { return m_canvas; }
 
   const Z3DTexture* imageColorTexture(Z3DEye eye) const;
 
@@ -64,7 +61,7 @@ private:
 private:
   Z3DTextureCopyRenderer m_textureCopyRenderer;
 
-  Z3DCanvas* m_canvas;
+  Z3DCanvas& m_canvas;
   Z3DRenderInputPort m_inport;
   Z3DRenderInputPort m_leftEyeInport;
   Z3DRenderInputPort m_rightEyeInport;

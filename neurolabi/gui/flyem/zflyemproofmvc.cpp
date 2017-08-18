@@ -603,9 +603,9 @@ void ZFlyEmProofMvc::makeOrthoWindow()
 void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
     Z3DWindow *window, ZFlyEmBody3dDoc *doc)
 {
-  connect(window->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+  connect(window->getTodoFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showTodo(bool)));
-  connect(window->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+  connect(window->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   connect(window, SIGNAL(addingTodoMarker(int,int,int,bool,uint64_t)),
           getCompleteDocument(),
@@ -633,9 +633,9 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   doc->showSynapse(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
 
-//  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+//  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
 //          doc, SLOT(showSynapse(bool)));
-//  connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+//  connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(objVisibleChanged(bool)),
 //          doc, SLOT(showTodo(bool)));
   setWindowSignalSlot(m_coarseBodyWindow);
   prepareBodyWindowSignalSlot(m_coarseBodyWindow, doc);
@@ -696,7 +696,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
   m_skeletonWindow->getPunctaFilter()->setColorMode("Original Point Color");
 //  doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
 
-  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
@@ -749,7 +749,7 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
 
   doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
 
-  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
