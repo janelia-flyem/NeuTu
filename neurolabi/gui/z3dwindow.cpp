@@ -132,7 +132,8 @@ Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMod
   }
   setCentralWidget(getCanvas());
   connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::init);
-  connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::createDockWindows);
+  createDockWindows(); // empty docks
+  connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::fillDockWindows);  // fill in real widgets later
 
   setAcceptDrops(true);
   m_mergedContextMenu = new QMenu(this);
@@ -782,6 +783,27 @@ void Z3DWindow::createDockWindows()
   m_settingsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
   m_settingsDockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
+  m_viewMenu->addSeparator();
+  m_viewMenu->addAction(m_settingsDockWidget->toggleViewAction());
+
+  m_objectsDockWidget = new QDockWidget(tr("Objects"), this);
+  m_objectsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_objectsDockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+
+  m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
+
+  m_roiDockWidget = new ZROIWidget(tr("ROIs"), this);
+  m_roiDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_roiDockWidget->setVisible(false);
+  m_viewMenu->addAction(m_roiDockWidget->toggleViewAction());
+
+  addDockWidget(Qt::RightDockWidgetArea, m_roiDockWidget);
+  addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
+  addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
+}
+
+void Z3DWindow::fillDockWindows()
+{
   m_widgetsGroup = std::make_shared<ZWidgetsGroup>("All", 1);
 
   QMenu *cameraMenu = new QMenu(this);
@@ -896,32 +918,18 @@ void Z3DWindow::createDockWindows()
 
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
-  m_viewMenu->addSeparator();
-  m_viewMenu->addAction(m_settingsDockWidget->toggleViewAction());
+
   connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()));
   connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
 
-  m_objectsDockWidget = new QDockWidget(tr("Objects"), this);
-  m_objectsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
-  m_objectsDockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+  customizeDockWindows(tabs);
+
   ZObjsManagerWidget* omw = new ZObjsManagerWidget(getDocument(), m_objectsDockWidget);
   connect(omw, SIGNAL(swcDoubleClicked(ZSwcTree*)), this, SLOT(swcDoubleClicked(ZSwcTree*)));
   connect(omw, SIGNAL(swcNodeDoubleClicked(Swc_Tree_Node*)), this, SLOT(swcNodeDoubleClicked(Swc_Tree_Node*)));
   connect(omw, SIGNAL(punctaDoubleClicked(ZPunctum*)), this, SLOT(punctaDoubleClicked(ZPunctum*)));
   connect(omw, SIGNAL(meshDoubleClicked(ZMesh*)), this, SLOT(meshDoubleClicked(ZMesh*)));
   m_objectsDockWidget->setWidget(omw);
-  m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
-
-  m_roiDockWidget = new ZROIWidget(tr("ROIs"), this);
-  m_roiDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
-  m_roiDockWidget->setVisible(false);
-  m_viewMenu->addAction(m_roiDockWidget->toggleViewAction());
-
-  addDockWidget(Qt::RightDockWidgetArea, m_roiDockWidget);
-  addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
-  addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
-
-  customizeDockWindows(tabs);
 }
 
 int Z3DWindow::channelNumber()

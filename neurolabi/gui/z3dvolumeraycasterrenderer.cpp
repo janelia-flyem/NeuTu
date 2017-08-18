@@ -104,7 +104,7 @@ void Z3DVolumeRaycasterRenderer::setChannels(const std::vector<std::unique_ptr<Z
   }
 }
 
-void Z3DVolumeRaycasterRenderer::addQuad(const ZMesh &quad)
+void Z3DVolumeRaycasterRenderer::addQuad(const ZMesh& quad)
 {
   if (quad.empty() ||
       (quad.numVertices() != 4 && quad.numVertices() != 6) ||
@@ -139,7 +139,7 @@ void Z3DVolumeRaycasterRenderer::adjustWidgets()
                                  m_compositingMode.isSelected("Local MIP Opaque"));
 }
 
-void Z3DVolumeRaycasterRenderer::bindVolumesAndTransferFuncs(Z3DShaderProgram &shader)
+void Z3DVolumeRaycasterRenderer::bindVolumesAndTransferFuncs(Z3DShaderProgram& shader)
 {
   shader.setLogUniformLocationError(false);
 

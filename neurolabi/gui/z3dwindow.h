@@ -385,6 +385,7 @@ private:
   void createContextMenu();
   void createStatusBar();
   void createDockWindows();
+  void fillDockWindows();
   void customizeDockWindows(QTabWidget *m_settingTab);
   void setWindowSize();
   // init 3D view

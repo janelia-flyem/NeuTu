@@ -44,8 +44,7 @@ Z3DNetworkEvaluator::Z3DNetworkEvaluator(Z3DCanvasPainter& canvasPainter, QObjec
   m_filterWrappers.emplace_back(std::make_unique<Z3DProfileFilterWrapper>());
 #endif
 
-  buildNetwork();
-  initializeNetwork();
+  updateNetwork();
 
   m_canvasPainter.canvas().setNetworkEvaluator(this);
 }
@@ -143,33 +142,7 @@ void Z3DNetworkEvaluator::process(bool stereo)
   }
 }
 
-void Z3DNetworkEvaluator::initializeNetwork()
-{
-  if (m_locked) {
-    LOG(INFO) << "locked.";
-  }
-
-  lock();
-
-  // update size
-  sizeChangedFromFilter();
-  for (auto filter : m_reverseSortedFilters) {
-    QObject::disconnect(filter, &Z3DFilter::requestUpstreamSizeChange, 0, 0);
-    connect(filter, &Z3DFilter::requestUpstreamSizeChange,
-            this, &Z3DNetworkEvaluator::sizeChangedFromFilter);
-  }
-
-  unlock();
-  CHECK_GL_ERROR
-}
-
 void Z3DNetworkEvaluator::updateNetwork()
-{
-  buildNetwork();
-  initializeNetwork();
-}
-
-void Z3DNetworkEvaluator::buildNetwork()
 {
   m_renderingOrder.clear();
   m_filterToVertexMapper.clear();
@@ -221,6 +194,14 @@ void Z3DNetworkEvaluator::buildNetwork()
   // update reverse sorted filters
   m_reverseSortedFilters = m_renderingOrder;
   std::reverse(m_reverseSortedFilters.begin(), m_reverseSortedFilters.end());
+
+  // update size
+  sizeChangedFromFilter();
+  for (auto filter : m_reverseSortedFilters) {
+    QObject::disconnect(filter, &Z3DFilter::requestUpstreamSizeChange, 0, 0);
+    connect(filter, &Z3DFilter::requestUpstreamSizeChange,
+            this, &Z3DNetworkEvaluator::sizeChangedFromFilter);
+  }
 }
 
 void Z3DNetworkEvaluator::sizeChangedFromFilter(Z3DFilter* rp)

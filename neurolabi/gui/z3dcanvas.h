@@ -32,11 +32,13 @@ public:
 
   void setFakeStereoOnce();
 
-  void addEventListenerToBack(Z3DCanvasEventListener* e);
+  void addEventListenerToBack(Z3DCanvasEventListener& e)
+  { m_listeners.push_back(&e); }
 
-  void addEventListenerToFront(Z3DCanvasEventListener* e);
+  void addEventListenerToFront(Z3DCanvasEventListener& e)
+  { m_listeners.push_front(&e); }
 
-  void removeEventListener(Z3DCanvasEventListener* e);
+  void removeEventListener(Z3DCanvasEventListener& e);
 
   void clearEventListeners();
 

@@ -68,9 +68,6 @@ public:
   void updateNetwork();
 
 protected:
-  void buildNetwork();
-  void initializeNetwork();
-
   // Locks the evaluator. In this state, it does not perform
   // any operations, such as initializing or processing, on the filter network
   void lock()

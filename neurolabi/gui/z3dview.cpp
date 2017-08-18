@@ -332,7 +332,7 @@ void Z3DView::init()
     m_compositor->outputPort("Image")->connect(m_canvasPainter->inputPort("Image"));
     m_compositor->outputPort("LeftEyeImage")->connect(m_canvasPainter->inputPort("LeftEyeImage"));
     m_compositor->outputPort("RightEyeImage")->connect(m_canvasPainter->inputPort("RightEyeImage"));
-    m_canvas->addEventListenerToBack(m_compositor.get());
+    m_canvas->addEventListenerToBack(*m_compositor);
 
     // build network
     m_volumeFilter.reset(new Z3DVolumeFilter(*m_globalParas));
@@ -342,35 +342,35 @@ void Z3DView::init()
     m_volumeFilter->outputPort("VolumeFilter")->connect(m_compositor->inputPort("VolumeFilters"));
     connect(m_volumeFilter.get(), &Z3DVolumeFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
     connect(m_volumeFilter.get(), &Z3DVolumeFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-    m_canvas->addEventListenerToBack(m_volumeFilter.get());
+    m_canvas->addEventListenerToBack(*m_volumeFilter);
     m_allFilters.push_back(m_volumeFilter.get());
 
     m_punctaFilter.reset(new Z3DPunctaFilter(*m_globalParas));
     m_punctaFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
     connect(m_punctaFilter.get(), &Z3DPunctaFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
     connect(m_punctaFilter.get(), &Z3DPunctaFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-    m_canvas->addEventListenerToBack(m_punctaFilter.get());
+    m_canvas->addEventListenerToBack(*m_punctaFilter);
     m_allFilters.push_back(m_punctaFilter.get());
 
     m_swcFilter.reset(new Z3DSwcFilter(*m_globalParas));
     m_swcFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
     connect(m_swcFilter.get(), &Z3DSwcFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
     connect(m_swcFilter.get(), &Z3DSwcFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-    m_canvas->addEventListenerToBack(m_swcFilter.get());
+    m_canvas->addEventListenerToBack(*m_swcFilter);
     m_allFilters.push_back(m_swcFilter.get());
 
     m_meshFilter.reset(new Z3DMeshFilter(*m_globalParas));
     m_meshFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
     connect(m_meshFilter.get(), &Z3DMeshFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
     connect(m_meshFilter.get(), &Z3DMeshFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-    m_canvas->addEventListenerToBack(m_meshFilter.get());
+    m_canvas->addEventListenerToBack(*m_meshFilter);
     m_allFilters.push_back(m_meshFilter.get());
 
     m_graphFilter.reset(new Z3DGraphFilter(*m_globalParas));
     m_graphFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
     connect(m_graphFilter.get(), &Z3DGraphFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
     connect(m_graphFilter.get(), &Z3DGraphFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-    m_canvas->addEventListenerToBack(m_graphFilter.get());
+    m_canvas->addEventListenerToBack(*m_graphFilter);
     m_allFilters.push_back(m_graphFilter.get());
 
 #if defined _FLYEM_
@@ -378,7 +378,7 @@ void Z3DView::init()
     m_todoFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
     connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
     connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
-    m_canvas->addEventListenerToBack(m_todoFilter.get());
+    m_canvas->addEventListenerToBack(*m_todoFilter);
     m_allFilters.push_back(m_todoFilter.get());
 #endif
 
