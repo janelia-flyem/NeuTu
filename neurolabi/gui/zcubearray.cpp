@@ -402,7 +402,7 @@ void ZCubeArray::append(Z3DCube cube)
     m_cubeArray.push_back(cube);
 }
 
-std::vector<Z3DCube> ZCubeArray::getCubeArray()
+const std::vector<Z3DCube>& ZCubeArray::getCubeArray() const
 {
     return m_cubeArray;
 }

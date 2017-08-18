@@ -106,9 +106,6 @@ void ZROIWidget::getROIs(Z3DWindow *window,
             colorModified.push_back(false);
 
         //
-        window->setROIs(N);
-
-        //
         makeGUI();
 
     }
@@ -231,7 +228,7 @@ void ZROIWidget::makeGUI()
     //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
 
     connect(s_opacity,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
- //   connect(m_window->getSurfaceFilter(),SIGNAL(opacityValueChanged(double)),this,SLOT(updateOpacity(double)));
+    connect(m_window->getSurfaceFilter(),SIGNAL(opacityValueChanged(double)),this,SLOT(updateOpacity(double)));
 }
 
 
@@ -313,11 +310,10 @@ void ZROIWidget::updateSelectedROIs()
         cubes->setSource(m_roiSourceList[i]);
         cubes->setColor(color);
         m_window->getDocument()->addObject(cubes, true);
- //       m_window->getSurfaceFilter()->invalidateRenderer(cubes->getSource());
       }
     }
     m_window->getDocument()->blockSignals(false);
-    m_window->update3DCubeDisplay();
+    m_window->getDocument()->notify3DCubeModified();
   }
 }
 
@@ -379,7 +375,7 @@ void ZROIWidget::updateROIs()
       }
     }
     m_window->getDocument()->blockSignals(false);
-    m_window->update3DCubeDisplay();
+    m_window->getDocument()->notify3DCubeModified();
   }
 }
 
@@ -454,7 +450,7 @@ void ZROIWidget::updateSlider(int v)
 
     if(m_window)
     {
-//        m_window->getSurfaceFilter()->setOpacity(alpha);
+        m_window->getSurfaceFilter()->setOpacity(alpha);
     }
 }
 

@@ -382,6 +382,13 @@ void Z3DView::init()
     m_allFilters.push_back(m_todoFilter.get());
 #endif
 
+    m_surfaceFilter.reset(new Z3DSurfaceFilter(*m_globalParas));
+    m_surfaceFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
+    connect(m_surfaceFilter.get(), &Z3DSurfaceFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
+    connect(m_surfaceFilter.get(), &Z3DSurfaceFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+    m_canvas->addEventListenerToBack(*m_surfaceFilter);
+    m_allFilters.push_back(m_surfaceFilter.get());
+
     // get data from doc and add to network
     // volume
     if (m_initMode != InitMode::EXCLUDE_VOLUME) {
@@ -405,6 +412,9 @@ void Z3DView::init()
     // tododata
     todoDataChanged();
     connect(m_doc, &ZStackDoc::todoModified, this, &Z3DView::todoDataChanged);
+    // surface
+    surfaceDataChanged();
+    connect(m_doc, &ZStackDoc::cube3dModified, this, &Z3DView::surfaceDataChanged);
 
     connect(m_doc, &ZStackDoc::objectSelectionChanged, this, &Z3DView::objectSelectionChanged);
     connect(m_doc, &ZStackDoc::punctaSelectionChanged, m_punctaFilter.get(), &Z3DPunctaFilter::invalidateResult);
@@ -416,6 +426,7 @@ void Z3DView::init()
     connect(m_doc, QOverload<QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>>::of(&ZStackDoc::swcTreeNodeSelectionChanged),
             m_swcFilter.get(), &Z3DSwcFilter::invalidateResult);
     connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
+    connect(m_doc, &ZStackDoc::surfaceVisibleStateChanged, m_surfaceFilter.get(), &Z3DSurfaceFilter::updateSurfaceVisibleState);
 
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
       m_compositor->setShowAxis(false);
@@ -529,6 +540,17 @@ void Z3DView::todoDataChanged()
     */
   }
 #endif
+}
+
+void Z3DView::surfaceDataChanged()
+{
+  std::vector<ZCubeArray*> all;
+  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_CUBE);
+  for (TStackObjectList::const_iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    all.push_back(dynamic_cast<ZCubeArray*>(*iter));
+  }
+  m_surfaceFilter->setData(all);
 }
 
 void Z3DView::objectSelectionChanged(const QList<ZStackObject*>& selected,
