@@ -17,6 +17,7 @@
 
 #include "zfiletype.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyembody3ddockeyprocessor.h"
 #include "neutubeconfig.h"
 #include "zswcnetwork.h"
 
@@ -436,7 +437,13 @@ void Z3DView::init(InitMode initMode)
     // adjust camera
     resetCamera();
 
-    connect(&camera(), &Z3DCameraParameter::valueChanged, this, &Z3DView::resetCameraClippingRange);
+    connect(&camera(), &Z3DCameraParameter::valueChanged,
+            this, &Z3DView::resetCameraClippingRange);
+
+#ifdef _FLYEM_
+    m_canvas->getInteractionEngine()->setKeyProcessor(
+          new ZFlyEmBody3dDocKeyProcessor);
+#endif
   }
   catch (const ZException& e) {
     LOG(ERROR) << "Failed to init 3DView: " << e.what();
