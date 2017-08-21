@@ -14,5 +14,4 @@ source $condaDir/bin/activate $neutuEnv
 cd pyzem
 make init
 make install
-echo 'Done!'
  
