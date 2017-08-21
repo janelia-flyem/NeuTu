@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -e 
+
+if test $# -eq 0
+then
+  echo './setup_split_service <install_dir>'
+  exit 1
+fi
+
+installDir=$1
+condaDir=$1/miniconda
+./setup_conda_for_neutu $installDir
+./setup_pyzem $installDir
+
+source $condaDir/bin/activate neutu-env
+conda install PyYAML -y
+
+echo 'Testing ...'
+python -c "from pyzem.dvid import dvidenv"
+echo 'Done!'
+
+conda install neutu-develop -y
+cd $installDir
+git clone https://github.com/janelia-flyem/NeuTu.git -b develop NeuTu
+
+binDir=$installDir/bin
+mkdir $binDir
+
+script=$binDir/upload_split_task
+touch $script
+chmod a+x $script
+echo '#!/bin/bash' > $script
+if [ `uname` = 'Darwin' ]
+then
+  echo $installDir'/miniconda/envs/neutu-env/bin/neutu.app/Contents/MacOS/neutu --command --general $*' >> $script
+else
+  echo $installDir'/miniconda/envs/neutu-env/bin/neutu --command --general $*' >> $script
+fi
+
+script=$binDir/run_split_service
+touch $script
+chmod a+x $script
+echo '#!/bin/bash' > $script
+echo "source $condaDir/bin/activate neutu-env" >> $script
+echo "cd $installDir/NeuTu/neurolabi/python/service" >> $script
+echo "python split_server.py --config split_test.yaml" >> $script
