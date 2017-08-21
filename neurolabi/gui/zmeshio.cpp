@@ -312,6 +312,99 @@ void ZMeshIO::getQtWriteNameFilter(QStringList& filters, QList<std::string>& for
   formats = m_writeFormats;
 }
 
+void ZMeshIO::loadMesh(const aiScene *scene, ZMesh &mesh) const
+{
+  aiMesh* msh = scene->mMeshes[0];
+  mesh.m_vertices.resize(msh->mNumVertices);
+  mesh.m_normals.resize(msh->mNumVertices);
+  memcpy(mesh.m_vertices.data(), msh->mVertices, sizeof(float) * 3 * mesh.m_vertices.size());
+  memcpy(mesh.m_normals.data(), msh->mNormals, sizeof(float) * 3 * mesh.m_vertices.size());
+
+  for (size_t i = 0; i < msh->mNumFaces; ++i) {
+    if (msh->mFaces[i].mNumIndices != 3)
+      continue;
+    mesh.m_indices.push_back(msh->mFaces[i].mIndices[0]);
+    mesh.m_indices.push_back(msh->mFaces[i].mIndices[1]);
+    mesh.m_indices.push_back(msh->mFaces[i].mIndices[2]);
+  }
+
+  for (size_t j = 1; j < scene->mNumMeshes; ++j) {
+    size_t numV = mesh.numVertices();
+    msh = scene->mMeshes[j];
+    mesh.m_vertices.resize(numV + msh->mNumVertices);
+    mesh.m_normals.resize(numV + msh->mNumVertices);
+    memcpy(&mesh.m_vertices[numV], msh->mVertices, sizeof(float) * 3 * msh->mNumVertices);
+    memcpy(&mesh.m_normals[numV], msh->mNormals, sizeof(float) * 3 * msh->mNumVertices);
+
+    for (size_t i = 0; i < msh->mNumFaces; ++i) {
+      if (msh->mFaces[i].mNumIndices != 3)
+        continue;
+      mesh.m_indices.push_back(msh->mFaces[i].mIndices[0] + numV);
+      mesh.m_indices.push_back(msh->mFaces[i].mIndices[1] + numV);
+      mesh.m_indices.push_back(msh->mFaces[i].mIndices[2] + numV);
+    }
+  }
+}
+
+void ZMeshIO::initImporter(Assimp::Importer &importer) const
+{
+  importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
+                              aiPrimitiveType_POINT |      //remove points and
+                              aiPrimitiveType_LINE);      //lines
+  importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
+                              aiComponent_CAMERAS |
+                              aiComponent_LIGHTS |
+                              aiComponent_BONEWEIGHTS |
+                              aiComponent_COLORS |
+                              aiComponent_TANGENTS_AND_BITANGENTS |
+                              aiComponent_ANIMATIONS |
+                              aiComponent_MATERIALS |
+                              0);
+}
+
+void ZMeshIO::loadFromMemory(
+    const QByteArray &buffer, ZMesh &mesh, const std::string &format)
+{
+  try {
+    if (format == "drc") {
+      readDracoMeshFromMemory(buffer.constData(), buffer.size(), mesh);
+    } else {
+      mesh.clear();
+      mesh.setType(GL_TRIANGLES);
+      Assimp::Importer importer;
+      initImporter(importer);
+      const aiScene* scene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),                                               aiProcess_GenSmoothNormals |
+                                                         aiProcess_JoinIdenticalVertices |
+                                                         aiProcess_ImproveCacheLocality |
+                                                         aiProcess_PreTransformVertices |
+                                                         aiProcess_RemoveRedundantMaterials |
+                                                         aiProcess_Triangulate |
+                                                         aiProcess_GenUVCoords |
+                                                         aiProcess_TransformUVCoords |
+                                                         aiProcess_SortByPType |
+                                                         aiProcess_FindDegenerates |
+                                                         aiProcess_FindInvalidData |
+                                                         aiProcess_RemoveComponent |
+                                                         0);
+
+      if (!scene) {
+        throw ZIOException(importer.GetErrorString());
+      }
+
+      if (scene->mNumMeshes == 0) {
+        LOG(WARNING) << "Failed to load mesh data.";
+        return;
+      }
+
+      loadMesh(scene, mesh);
+    }
+
+  }
+  catch (const ZException& e) {
+    throw ZIOException(QString("Can not load mesh: %2").arg(e.what()));
+  }
+}
+
 void ZMeshIO::load(const QString& filename, ZMesh& mesh) const
 {
   try {
@@ -323,18 +416,7 @@ void ZMeshIO::load(const QString& filename, ZMesh& mesh) const
       readDracoMesh(filename, mesh);
     } else {
       Assimp::Importer importer;
-      importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
-                                  aiPrimitiveType_POINT |      //remove points and
-                                  aiPrimitiveType_LINE);      //lines
-      importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS,
-                                  aiComponent_CAMERAS |
-                                  aiComponent_LIGHTS |
-                                  aiComponent_BONEWEIGHTS |
-                                  aiComponent_COLORS |
-                                  aiComponent_TANGENTS_AND_BITANGENTS |
-                                  aiComponent_ANIMATIONS |
-                                  aiComponent_MATERIALS |
-                                  0);
+      initImporter(importer);
       const aiScene* scene = importer.ReadFile(QFile::encodeName(filename).constData(),
                                                aiProcess_GenSmoothNormals |
                                                aiProcess_JoinIdenticalVertices |
@@ -359,37 +441,7 @@ void ZMeshIO::load(const QString& filename, ZMesh& mesh) const
         return;
       }
 
-      aiMesh* msh = scene->mMeshes[0];
-      mesh.m_vertices.resize(msh->mNumVertices);
-      mesh.m_normals.resize(msh->mNumVertices);
-      memcpy(mesh.m_vertices.data(), msh->mVertices, sizeof(float) * 3 * mesh.m_vertices.size());
-      memcpy(mesh.m_normals.data(), msh->mNormals, sizeof(float) * 3 * mesh.m_vertices.size());
-
-      for (size_t i = 0; i < msh->mNumFaces; ++i) {
-        if (msh->mFaces[i].mNumIndices != 3)
-          continue;
-        mesh.m_indices.push_back(msh->mFaces[i].mIndices[0]);
-        mesh.m_indices.push_back(msh->mFaces[i].mIndices[1]);
-        mesh.m_indices.push_back(msh->mFaces[i].mIndices[2]);
-      }
-
-      for (size_t j = 1; j < scene->mNumMeshes; ++j) {
-        size_t numV = mesh.numVertices();
-        msh = scene->mMeshes[j];
-        mesh.m_vertices.resize(numV + msh->mNumVertices);
-        mesh.m_normals.resize(numV + msh->mNumVertices);
-        memcpy(&mesh.m_vertices[numV], msh->mVertices, sizeof(float) * 3 * msh->mNumVertices);
-        memcpy(&mesh.m_normals[numV], msh->mNormals, sizeof(float) * 3 * msh->mNumVertices);
-
-        for (size_t i = 0; i < msh->mNumFaces; ++i) {
-          if (msh->mFaces[i].mNumIndices != 3)
-            continue;
-          mesh.m_indices.push_back(msh->mFaces[i].mIndices[0] + numV);
-          mesh.m_indices.push_back(msh->mFaces[i].mIndices[1] + numV);
-          mesh.m_indices.push_back(msh->mFaces[i].mIndices[2] + numV);
-        }
-      }
-
+      loadMesh(scene, mesh);
       //mesh.generateNormals();
 
       //throw ZIOException("Not supported mesh format");
@@ -504,22 +556,11 @@ void ZMeshIO::readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>
   }
 }
 
-void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
+void ZMeshIO::readDracoMeshFromMemory(
+    const char *data, size_t size, ZMesh &mesh) const
 {
-  std::ifstream inputFileStream;
-  openFileStream(inputFileStream, filename, std::ios::in | std::ios::binary | std::ios::ate);
-  std::streamsize size = inputFileStream.tellg();
-  if (size <= 0) {
-    throw ZIOException("can not get draco file size or empty file");
-  }
-  inputFileStream.seekg(0, std::ios::beg);
-  std::vector<char> data(size);
-  readStream(inputFileStream, data.data(), size);
-  inputFileStream.close();
-
-  // Create a draco decoding buffer. Note that no data is copied in this step.
   draco::DecoderBuffer buffer;
-  buffer.Init(data.data(), data.size());
+  buffer.Init(data, size);
 
   // Decode the input data into a geometry.
   std::unique_ptr<draco::PointCloud> pc;
@@ -561,4 +602,20 @@ void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
   if (msh) {
     getDracoFaces(*msh, mesh.m_indices);
   }
+}
+
+void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
+{
+  std::ifstream inputFileStream;
+  openFileStream(inputFileStream, filename, std::ios::in | std::ios::binary | std::ios::ate);
+  std::streamsize size = inputFileStream.tellg();
+  if (size <= 0) {
+    throw ZIOException("can not get draco file size or empty file");
+  }
+  inputFileStream.seekg(0, std::ios::beg);
+  std::vector<char> data(size);
+  readStream(inputFileStream, data.data(), size);
+  inputFileStream.close();
+
+  readDracoMeshFromMemory(data.data(), data.size(), mesh);
 }
