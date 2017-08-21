@@ -28,6 +28,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
 
     // UI connections
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
+    connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
     connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
@@ -67,6 +68,20 @@ void TaskProtocolWindow::init() {
         setWindowConfiguration(LOAD_BUTTON);
     }
 
+}
+
+void TaskProtocolWindow::onPrevButton() {
+    if (ui->showCompletedCheckBox->isChecked()) {
+        m_currentTaskIndex = getPrev();
+    } else {
+        m_currentTaskIndex = getPrevUncompleted();
+        if (m_currentTaskIndex < 0) {
+            showInfo("No tasks to do!", "All tasks have been completed!");
+        }
+    }
+    updateCurrentTaskLabel();
+    updateBodyWindow();
+    updateLabel();
 }
 
 void TaskProtocolWindow::onNextButton() {
@@ -219,6 +234,17 @@ int TaskProtocolWindow::getFirstUncompleted() {
 }
 
 /*
+ * returns index of previous task before current task
+ */
+int TaskProtocolWindow::getPrev() {
+    int index = m_currentTaskIndex - 1;
+    if (index < 0) {
+        index = m_taskList.size() - 1;
+    }
+    return index;
+}
+
+/*
  * returns index of next task after current task
  */
 int TaskProtocolWindow::getNext() {
@@ -227,6 +253,31 @@ int TaskProtocolWindow::getNext() {
         index = 0;
     }
     return index;
+}
+
+/*
+ * returns index of previous uncompleted task before
+ * current task, or -1
+ */
+int TaskProtocolWindow::getPrevUncompleted() {
+    int startIndex = m_currentTaskIndex;
+    int index = startIndex - 1;
+    while (index != startIndex) {
+        if (index < 0) {
+            index = m_taskList.size() - 1;
+            continue;
+        }
+        if (!m_taskList[index]->completed()) {
+            return index;
+        }
+        index--;
+    }
+    // we're back at current index
+    if (m_taskList[index]->completed()) {
+        return -1;
+    } else {
+        return index;
+    }
 }
 
 /*

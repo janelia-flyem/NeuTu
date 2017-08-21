@@ -29,6 +29,7 @@ signals:
 
 private slots:
     void onNextButton();
+    void onPrevButton();
     void onDoneButton();
     void onLoadTasksButton();    
     void onCompletedStateChanged(int state);    
@@ -83,6 +84,8 @@ private:
     void updateBodyWindow();
     int getNext();
     int getNextUncompleted();
+    int getPrev();
+    int getPrevUncompleted();
 };
 
 #endif // TASKPROTOCOLWINDOW_H
