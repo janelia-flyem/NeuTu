@@ -162,7 +162,8 @@ void TaskProtocolWindow::onDoneButton() {
     // delete old key
     m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
 
-    LINFO() << "Task protocol: saved completed data to DVID";
+    LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
+            << "," << key.toStdString();
 
     setWindowConfiguration(LOAD_BUTTON);
 }
@@ -430,7 +431,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
         showError("Error parsing file", "Couldn't parse file " + filepath + "!");
         return emptyResult;
     } else {
-        LINFO() << "Task protocol: json loaded from file " + filepath;
+        LINFO() << "Task protocol: json loaded from file" + filepath;
         return doc.object();
     }
 }
@@ -458,7 +459,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
                 ", " + key + "!");
             return emptyResult;
         } else {
-            LINFO() << "Task protocol: json loaded from " + instance + ", " + key;
+            LINFO() << "Task protocol: json loaded from DVID:" + instance + "," + key;
             return doc.object();
         }
 }
@@ -522,7 +523,7 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
     }
 
-    LINFO() << "Task protocol: loaded " << m_taskList.size() << " tasks";
+    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
 }
 
 /*
@@ -559,7 +560,8 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString(),
         jsonString.toStdString());
 
-    LINFO() << "Task protocol: saved data to DVID";
+    LINFO() << "Task protocol: saved data to DVID:" << PROTOCOL_INSTANCE.toStdString()
+            << "," << generateDataKey().toStdString();
 }
 
 /*
