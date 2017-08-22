@@ -143,6 +143,7 @@ public:
 
   Z3DWindow* makeExternalSkeletonWindow(NeuTube3D::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
+  Z3DWindow* makeMeshWindow();
 
 signals:
   void launchingSplit(const QString &message);
@@ -213,6 +214,7 @@ public slots:
   void showCoarseBody3d();
   void showFineBody3d();
   void showSkeletonWindow();
+  void showMeshWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
   void showRoi3dWindow();
@@ -325,6 +327,7 @@ protected slots:
   void detachBodyWindow();
   void detachSplitWindow();
   void detachSkeletonWindow();
+  void detachMeshWindow();
   void detachObjectWindow();
   void detachRoiWindow();
   void detachExternalNeuronWindow();
@@ -341,6 +344,7 @@ protected slots:
   void updateBodyWindow();
   void updateBodyWindowDeep();
   void updateSkeletonWindow();
+  void updateMeshWindow();
   void cropCoarseBody3D();
   void showBodyGrayscale();
   void updateSplitBody();
@@ -459,6 +463,7 @@ protected:
   Z3DWindow *m_coarseBodyWindow;
   Z3DWindow *m_bodyWindow;
   Z3DWindow *m_skeletonWindow;
+  Z3DWindow *m_meshWindow;
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
@@ -507,6 +512,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(showFineBody3d()));
   connect(panel, SIGNAL(skeletonViewTriggered()),
           this, SLOT(showSkeletonWindow()));
+  connect(panel, SIGNAL(meshViewTriggered()),
+          this, SLOT(showMeshWindow()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
   connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),

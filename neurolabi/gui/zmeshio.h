@@ -33,7 +33,9 @@ public:
   void save(const ZMesh& mesh, const QString& filename, std::string format) const;
 
   void loadFromMemory(
-      const QByteArray &buffer, ZMesh &mesh, const std::string &format);
+      const QByteArray &buffer, ZMesh &mesh, const std::string &format) const;
+  ZMesh* loadFromMemory(
+      const QByteArray &buffer, const std::string &format) const;
 
 private:
   void readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>& normals,

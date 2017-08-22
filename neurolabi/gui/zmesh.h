@@ -68,6 +68,9 @@ public:
       NeuTube::EAxis ) const override
   {}
 
+  void setLabel(uint64_t label);
+  uint64_t getLabel() const;
+
   // qt style read write name filter for filedialog
   static bool canReadFile(const QString& filename);
 
@@ -311,6 +314,7 @@ private:
   std::vector<glm::vec3> m_normals;
   std::vector<glm::vec4> m_colors;
   std::vector<GLuint> m_indices;
+  uint64_t m_label = 0;
 };
 
 #endif // ZMESH_H

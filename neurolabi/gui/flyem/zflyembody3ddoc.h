@@ -24,6 +24,7 @@ class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
 class ZFlyEmBodyComparisonDialog;
 class ZFlyEmBody3dDocKeyProcessor;
+class ZMesh;
 //class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
@@ -247,9 +248,12 @@ protected:
 private:
   ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
   ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
+  ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  ZMesh* makeBodyMeshModel(uint64_t bodyId, int zoom);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
@@ -266,9 +270,11 @@ private:
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
+  void addBodyMeshFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
   void removeBodyFunc(uint64_t bodyId, bool removingAnnotation);
-  void updateBodyFunc(uint64_t bodyId, ZSwcTree *tree);
+  void updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject);
+//  void updateBodyMeshFunc(uint64_t bodyId, ZMesh *mesh);
 
   void connectSignalSlot();
   void updateBodyFunc();
@@ -294,6 +300,8 @@ private:
   ZDvidReader& getBodyReader();
   void updateBodyModelSelection();
 
+  ZStackObject::EType getBodyObjectType() const;
+
 signals:
   void todoVisibleChanged();
 
@@ -307,6 +315,7 @@ private:
   void processEventFunc(const BodyEvent &event);
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
+  ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
   void removeDiffBody();
 

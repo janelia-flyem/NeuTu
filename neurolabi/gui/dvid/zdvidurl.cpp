@@ -122,6 +122,35 @@ std::string ZDvidUrl::getServerInfoUrl() const
   return GetFullUrl(getApiUrl(), "server/info");
 }
 
+std::string ZDvidUrl::getMeshUrl()
+{
+  return getDataUrl(
+        ZDvidData::GetName(ZDvidData::ROLE_MESH,
+                           ZDvidData::ROLE_BODY_LABEL,
+                           m_dvidTarget.getBodyLabelName()));
+}
+
+std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
+{
+  std::string url;
+
+  ZString dataUrl = getMeshUrl();
+  if (!dataUrl.empty()) {
+    if (zoom > 0) {
+      dataUrl += "_";
+      dataUrl.appendNumber(zoom);
+    }
+    url = GetFullUrl(GetKeyCommandUrl(dataUrl), GetBodyKey(bodyId));
+  }
+
+  return url;
+}
+
+std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
+{
+  return getMeshUrl(bodyId, zoom) + "_info";
+}
+
 std::string ZDvidUrl::getSkeletonUrl() const
 {
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());
@@ -1218,6 +1247,14 @@ std::string ZDvidUrl::getSynapseLabelszThresholdUrl(
 void ZDvidUrl::setUuid(const std::string &uuid)
 {
   m_dvidTarget.setUuid(uuid);
+}
+
+std::string ZDvidUrl::GetBodyKey(uint64_t bodyId)
+{
+  std::ostringstream stream;
+  stream << bodyId;
+
+  return stream.str();
 }
 
 std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)

@@ -159,7 +159,7 @@ void ZStackView::init()
 
 //  m_layout->addWidget(m_depthControl);
 
-#ifdef _ADVANCED_
+#if defined(_ADVANCED_) && !defined(_FLYEM_)
   m_thresholdSlider = new ZSlider(false, this);
   m_thresholdSlider->setFocusPolicy(Qt::NoFocus);
 
@@ -227,11 +227,13 @@ void ZStackView::enableMessageManager()
 
 void ZStackView::hideThresholdControl()
 {
-#ifdef _ADVANCED_
   m_layout->removeItem(m_ctrlLayout);
-  m_thresholdSlider->hide();
-  m_autoThreButton->hide();
-#endif
+  if (m_thresholdSlider != NULL) {
+    m_thresholdSlider->hide();
+  }
+  if (m_autoThreButton != NULL) {
+    m_autoThreButton->hide();
+  }
 }
 
 void ZStackView::setDynamicObjectAlpha(int alpha)
@@ -420,38 +422,24 @@ void ZStackView::reset(bool updatingScreen)
       redraw(UPDATE_DIRECT);
     }
 
-#ifdef _ADVANCED_
     if (stack->isThresholdable()) {
-      m_thresholdSlider->setRange(stack->min(), stack->max());
-      m_thresholdSlider->setValue(stack->max());
+      if (m_thresholdSlider != NULL) {
+        m_thresholdSlider->setRange(stack->min(), stack->max());
+        m_thresholdSlider->setValue(stack->max());
+      }
     } else {
       hideThresholdControl();
     }
-#endif
   }
   setInfo();
 }
 
-#if 0
-void ZStackView::updateScrollControl()
-{
-  m_depthControl->setEnabled(m_scrollEnabled);
-
-  //m_spinBox->setEnabled(m_scrollEnabled);
-#ifdef _ADVANCED_
-  //m_thresholdSlider->clearFocus();
-#endif
-}
-#endif
-
 void ZStackView::updateThresholdSlider()
 {
-#ifdef _ADVANCED_
-  if (stackData() != NULL) {
+  if (stackData() != NULL && m_thresholdSlider != NULL) {
     m_thresholdSlider->setRangeQuietly(stackData()->min(), stackData()->max());
     m_thresholdSlider->setValueQuietly(stackData()->max());
   }
-#endif
 }
 
 void ZStackView::updateSlider()
@@ -633,11 +621,11 @@ void ZStackView::stepSlice(int step)
 int ZStackView::getIntensityThreshold()
 {
   int threshold = -1;
-#ifdef _ADVANCED_
-  if (m_thresholdSlider->value() < m_thresholdSlider->maximum()) {
-    threshold = m_thresholdSlider->value();
+  if (m_thresholdSlider != NULL) {
+    if (m_thresholdSlider->value() < m_thresholdSlider->maximum()) {
+      threshold = m_thresholdSlider->value();
+    }
   }
-#endif
 
   return threshold;
 }
@@ -1021,11 +1009,9 @@ void ZStackView::resetScreenCursor()
 */
 void ZStackView::setThreshold(int thre)
 {
-#ifdef _ADVANCED_
-  m_thresholdSlider->setValue(thre);
-#else
-  UNUSED_PARAMETER(thre);
-#endif
+  if (m_thresholdSlider != NULL) {
+    m_thresholdSlider->setValue(thre);
+  }
 }
 
 void ZStackView::takeScreenshot(const QString &filename)

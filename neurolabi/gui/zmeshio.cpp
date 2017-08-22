@@ -362,8 +362,21 @@ void ZMeshIO::initImporter(Assimp::Importer &importer) const
                               0);
 }
 
+ZMesh* ZMeshIO::loadFromMemory(
+    const QByteArray &buffer, const std::string &format) const
+{
+  ZMesh *mesh = new ZMesh();
+  loadFromMemory(buffer, *mesh, format);
+  if (mesh->empty()) {
+    delete mesh;
+    mesh = NULL;
+  }
+
+  return mesh;
+}
+
 void ZMeshIO::loadFromMemory(
-    const QByteArray &buffer, ZMesh &mesh, const std::string &format)
+    const QByteArray &buffer, ZMesh &mesh, const std::string &format) const
 {
   try {
     if (format == "drc") {

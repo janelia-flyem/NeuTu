@@ -14,7 +14,7 @@ Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
   connect(this, SIGNAL(tabIndexChanged(int)), this, SLOT(updateWindow(int)));
 
   // default button status
-  for(int i=0; i<4; i++)
+  for(int i=0; i<WINDOW3D_COUNT; i++)
   {
       buttonStatus[i][0] = true;
       buttonStatus[i][1] = false;
@@ -207,7 +207,7 @@ void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
 
       setCurrentIndex(tabLUT[index]);
 
-      for(int i=index+1; i<4; i++)
+      for(int i=index+1; i<WINDOW3D_COUNT; i++)
       {
           if(tabLUT[i]>-1)
           {
@@ -234,7 +234,7 @@ int Z3DTabWidget::getRealIndex(int index)
 
     if(index>-1)
     {
-        for(int i=0; i<4; i++)
+        for(int i=0; i<WINDOW3D_COUNT; i++)
         {
             if(tabLUT[i]==index)
             {
@@ -359,7 +359,7 @@ void Z3DTabWidget::updateWindow(int index)
 void Z3DTabWidget::closeAllWindows()
 {
 
-    for(int i=0; i<4; i++)
+    for(int i=0; i<WINDOW3D_COUNT; i++)
     {
         if(tabLUT[i]==currentIndex())
         {
@@ -369,7 +369,7 @@ void Z3DTabWidget::closeAllWindows()
         tabLUT[i] = -1;
     }
 
-    for(int i=0; i<4; i++)
+    for(int i=0; i<WINDOW3D_COUNT; i++)
     {
         closeWindow(i);
     }

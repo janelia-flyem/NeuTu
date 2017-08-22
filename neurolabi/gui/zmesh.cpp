@@ -126,6 +126,16 @@ void ZMesh::swap(ZMesh& rhs) noexcept
   m_indices.swap(rhs.m_indices);
 }
 
+void ZMesh::setLabel(uint64_t label)
+{
+  m_label = label;
+}
+
+uint64_t ZMesh::getLabel() const
+{
+  return m_label;
+}
+
 bool ZMesh::canReadFile(const QString& filename)
 {
   return ZMeshIO::instance().canReadFile(filename);

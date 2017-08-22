@@ -61,13 +61,16 @@ std::string ZStackObjectSourceFactory::GetBodyTypeName(
     FlyEM::EBodyType bodyType)
 {
   switch (bodyType) {
+  case FlyEM::BODY_NULL:
+    break;
   case FlyEM::BODY_FULL:
     return "full";
   case FlyEM::BODY_COARSE:
     return "coarse";
   case FlyEM::BODY_SKELETON:
     return "skeleton";
-  case FlyEM::BODY_NULL:
+  case FlyEM::BODY_MESH:
+    return "mesh";
     break;
   }
 

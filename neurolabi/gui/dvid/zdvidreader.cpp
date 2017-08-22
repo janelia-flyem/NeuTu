@@ -36,6 +36,8 @@
 #include "zobject3dscanarray.h"
 #include "zdvidpath.h"
 #include "flyem/zserviceconsumer.h"
+#include "zmeshio.h"
+#include "zmesh.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -656,6 +658,32 @@ ZObject3dScanArray* ZDvidReader::readBody(const std::set<uint64_t> &bodySet)
   }
 
   return objArray;
+}
+
+ZMesh* ZDvidReader::readMesh(uint64_t bodyId, int zoom)
+{
+  ZMesh *mesh = NULL;
+
+  ZDvidUrl dvidUrl(getDvidTarget());
+
+  std::string format = "obj";
+
+  ZJsonObject infoJson = readJsonObject(dvidUrl.getMeshInfoUrl(bodyId, zoom));
+  if (infoJson.hasKey("format")) {
+    format = ZJsonParser::stringValue(infoJson["format"]);
+  }
+
+  m_bufferReader.read(dvidUrl.getMeshUrl(bodyId, zoom).c_str(), isVerbose());
+  if (m_bufferReader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+    const QByteArray &buffer = m_bufferReader.getBuffer();
+    mesh = ZMeshIO::instance().loadFromMemory(buffer, format);
+    if (mesh != NULL) {
+      mesh->setLabel(bodyId);
+    }
+  }
+  m_bufferReader.clearBuffer();
+
+  return mesh;
 }
 
 ZObject3dScan* ZDvidReader::readMultiscaleBody(

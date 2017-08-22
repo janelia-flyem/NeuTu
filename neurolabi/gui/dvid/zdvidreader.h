@@ -43,6 +43,7 @@ class ZFlyEmBookmark;
 class ZFlyEmToDoItem;
 class ZDvidRoi;
 class ZObject3dScanArray;
+class ZMesh;
 
 namespace libdvid{
 class DVIDNodeService;
@@ -115,6 +116,8 @@ public:
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
   ZObject3dScan* readBody(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result);
+
+  ZMesh* readMesh(uint64_t bodyId, int zoom);
 
   ZObject3dScan* readBodyDs(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result);
