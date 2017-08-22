@@ -62,7 +62,7 @@ private:
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex;
-
+    bool m_nodeLocked;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);

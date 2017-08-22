@@ -58,16 +58,47 @@ void TaskProtocolWindow::init() {
         return;
     }
 
+    ZDvidReader reader;
+    if (!reader.open(m_proofDoc->getDvidTarget())) {
+        showError("Couldn't open DVID", "DVID couldn't be opened!  Check your network connections.");
+        setWindowConfiguration(LOAD_BUTTON);
+        return;
+    }
+    ZDvid::ENodeStatus status = reader.getNodeStatus();
+    if (status == ZDvid::NODE_INVALID || status == ZDvid::NODE_OFFLINE) {
+        showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
+        setWindowConfiguration(LOAD_BUTTON);
+        return;
+    }
+    if (status == ZDvid::NODE_LOCKED) {
+        m_nodeLocked = true;
+        ui->completedCheckBox->setEnabled(false);
+    } else {
+        // NODE_NORMAL
+        m_nodeLocked = false;
+        ui->completedCheckBox->setEnabled(true);
+    }
+
     // check DVID; if user has a started task list, load it immediately
     QJsonObject json = loadJsonFromDVID(PROTOCOL_INSTANCE, generateDataKey());
     if (!json.isEmpty()) {
-        // don't need to save to DVID if we load from DVID
+        if (m_nodeLocked) {
+            QMessageBox messageBox;
+            messageBox.setText("DVID node locked");
+            messageBox.setInformativeText("This DVID node is locked! Do you want to load the task protocol? If you do, you will not be able to complete any tasks.\n\nContinue loading protocol?");
+            messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            messageBox.setDefaultButton(QMessageBox::Ok);
+            int ret = messageBox.exec();
+            if (ret != QMessageBox::Ok) {
+                setWindowConfiguration(LOAD_BUTTON);
+                return;
+            }
+        }
         startProtocol(json, false);
     } else {
         // otherwise, show the load task file button
         setWindowConfiguration(LOAD_BUTTON);
     }
-
 }
 
 void TaskProtocolWindow::onPrevButton() {
@@ -142,6 +173,11 @@ void TaskProtocolWindow::onLoadTasksButton() {
     QString result = QFileDialog::getOpenFileName(this, "Open task json file");
     if (result.size() == 0) {
         // canceled
+        return;
+    }
+
+    if (m_nodeLocked) {
+        showError("DVID node locked", "This DVID node is locked! Protocol not loaded.");
         return;
     }
 
