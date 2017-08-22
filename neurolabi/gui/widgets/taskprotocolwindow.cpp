@@ -400,6 +400,10 @@ void TaskProtocolWindow::updateLabel() {
     int ntasks = m_taskList.size();
     float percent = (100.0 * ncomplete) / ntasks;
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
+
+    // whenever we update the label, also log the progress; this is not useful as
+    //  an activity tracker, as the label gets updated not always in response to user action
+    LINFO() << "Task protocol: progress updated:" << ncomplete << "/" << ntasks;
 }
 
 /*
