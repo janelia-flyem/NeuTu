@@ -826,7 +826,7 @@ def smoothBranches(branches, branchConnIDs):
 		indSel = indSel[where(abs(divs) < 0.5)[0]+1]
 				
 		if len(indSel) < minLen:
-			indSel = array(range(len(zz)))
+			indSel = array(list(range(len(zz))))
 
 		yy = zz[indSel]
 		xx = bind[indSel]
@@ -1194,7 +1194,7 @@ def PairwiseStitch(filenameBase1,filenameBase2, iplot=0):
 	# brutal force computing correlzation for each shift, 
 	iflagUseBrutalForce = 1
 	if iflagUseBrutalForce == 1:
-		zscan = range(-nz2+1, nz1-1)
+		zscan = list(range(-nz2+1, nz1-1))
 		crrs = []
 		for iz in zscan:
 			if iz < 0:
@@ -1545,7 +1545,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 
 	# create list of branches from the swc file, shift the coordinates using the stitch results. 
 	LinkedPointsAll = []
-	LeftFileIDs = range(len(fileIDs)-1, -1, -1)
+	LeftFileIDs = list(range(len(fileIDs)-1, -1, -1))
 	#LeftFileIDs = range(len(fileIDs))
 	#LeftFileIDs = [15,11]
 	npTot = 0

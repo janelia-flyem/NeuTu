@@ -183,7 +183,7 @@ def Title(word):
 def OneTo(n):
   """Returns the list [1, 2, 3, ..., n]."""
 
-  return range(1, n + 1)
+  return list(range(1, n + 1))
 
 
 def Iter(n, format, sep=''):
