@@ -24,7 +24,7 @@ if not configFile:
 config = json.load(configFile)
 exportDir = config['export']
 superpixelDir = exportDir
-if config.has_key('superpixel'):
+if 'superpixel' in config:
     superpixelDir = config['superpixel']
 
 
@@ -93,7 +93,7 @@ if not os.path.exists('body_maps'):
     subprocess.call([os.path.join(neutubeDir, 'neurolabi/shell/flyem_prepare_imat'), 'input', '.'])
     print 'Done.'
 
-if not config.has_key("body_partition"):
+if "body_partition" not in config:
     print 'Skip body generation because no body partition is specified. Done.'
     sys.exit(1)
 
@@ -109,10 +109,10 @@ for body in bodyPartition:
         sys.exit(1)
 
     bodySizeList[index] = bodyRange
-    if body.has_key("skeletonize"):
+    if "skeletonize" in body:
         bodySkeletonizeOn[index] = body["skeletonize"]
 
-    if body.has_key("z_range"):
+    if "z_range" in body:
         zRangeList[index] = body["z_range"]
 
     index += 1
@@ -136,7 +136,7 @@ taskManager.setTargetContainer(targetContainer)
 
 bodyDirList = []
 for body in bodyPartition:
-    if body.has_key('z_range'):
+    if 'z_range' in body:
         zRange = body['z_range']
         taskManager.setZRange(zRange[0], zRange[1])
     else:
@@ -170,9 +170,9 @@ import glob
 import SkeletonizeTaskDistributor as st
 distr = st.SkeletonizeTaskDistributor()
 excludedBodyList = []
-if config.has_key('skeletonize'):
+if 'skeletonize' in config:
     distr.setArgs(config['skeletonize'])
-    if config['skeletonize'].has_key('excluded'):
+    if 'excluded' in config['skeletonize']:
         excludedBodyList = config['skeletonize']['excluded']
 
 scriptList = []

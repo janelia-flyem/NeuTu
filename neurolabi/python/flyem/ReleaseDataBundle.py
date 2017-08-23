@@ -11,14 +11,14 @@ def CreateDataBundle(config):
         os.makedirs(outputDir + "/swc");
     if not os.path.exists(outputDir + "/volume"):
         os.makedirs(outputDir + "/volume");
-    if dataBundle.has_key("synapse"):
+    if "synapse" in dataBundle:
         synapsePath = dataBundle["synapse"];
         if os.path.isabs(synapsePath) == False:
             synapsePath = inputDir + "/" + synapsePath;
         os.system("cp " + synapsePath + " " + outputDir);
         dataBundle["synapse"] = os.path.basename(synapsePath);
     for neuron in dataBundle["neuron"]:
-        if neuron.has_key("model"):
+        if "model" in neuron:
             modelPath = neuron["model"];
             if os.path.isabs(modelPath) == False:
                 modelPath = inputDir + "/" + modelPath;
@@ -27,7 +27,7 @@ def CreateDataBundle(config):
             os.system("cp " + modelPath + " " + outputDir + "/swc");
             os.system("cp " + ssPath + " " + outputDir + "/swc");
             neuron["model"] = "swc/" + os.path.basename(neuron["model"]);
-        if neuron.has_key("volume"):
+        if "volume" in neuron:
             volumePath = neuron["volume"];
             if os.path.isabs(volumePath) == False:
                 volumePath = inputDir + "/" + volumePath;

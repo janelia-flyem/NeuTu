@@ -92,7 +92,7 @@ if __name__ == '__main__':
     configList =configJson['dvid repo']
     for config in configList:
         name = config['name']
-        if repoInfo.has_key(name):
+        if name in repoInfo:
             print name
             uuid = repoInfo[name]
             if uuid != config['uuid']:

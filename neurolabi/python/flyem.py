@@ -58,7 +58,7 @@ class FlyEmDataBundle:
         print 'Loading bundle ...'
         with open(filePath) as f:
             data = json.load(f)
-            if data.has_key('neuron'):
+            if 'neuron' in data:
                 for neuronConfig in data['neuron']:
                     neuron = FlyEmNeuron()
                     neuron.set(neuronConfig, base = baseDir)

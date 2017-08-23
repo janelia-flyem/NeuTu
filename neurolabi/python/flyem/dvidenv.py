@@ -36,7 +36,7 @@ class DvidEnv(object):
         self.labelBlock = name
 
     def loadServerConfig(self, config):
-        if config.has_key("dvid-server"):
+        if "dvid-server" in config:
             dvidServer = config["dvid-server"]
             p = urlparse.urlsplit(dvidServer)
             print p

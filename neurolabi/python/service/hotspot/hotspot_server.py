@@ -54,7 +54,7 @@ def compute_hotspot():
             print inst
             return '<p>Hotspot computation for ' + str(bodyArray) + ' failed.</p>'
         uuid = jsonObj['uuid']
-        if jsonObj.has_key('dvid-server'):
+        if 'dvid-server' in jsonObj:
             dvidServer = jsonObj['dvid-server']
         bodyArray = jsonObj['bodies']
     

@@ -28,9 +28,9 @@ def Skeletonize(source, target, config = None):
         if not config:
             raise Exception('Server configuration must be specified for DVID target.')
         else:
-            if not config.has_key('dvid-server'):
+            if 'dvid-server' not in config:
                 raise Exception('Server address must be specified for DVID target.')
-            elif not config.has_key('uuid'):
+            elif 'uuid' not in config:
                 raise Exception('UUID must be specified for DVID target.')
         
     if config:
@@ -45,7 +45,7 @@ def Skeletonize(source, target, config = None):
     
     print config
     
-    if not config.has_key('args'):
+    if 'args' not in config:
         configPath = os.path.join(baseDir, '../json/skeletonize.json')
         configFile = None
         print '********************'
@@ -63,7 +63,7 @@ def Skeletonize(source, target, config = None):
         if sparseObj.isEmpty():
             raise Exception('Unable to load the body: ' + str(source))
 
-        if config['args'].has_key('fillingHole'):
+        if 'fillingHole' in config['args']:
             if config['args']['fillingHole']:
                 sparseObj.fillHole()
         #stack = sparseObj.toStackObject()
@@ -71,7 +71,7 @@ def Skeletonize(source, target, config = None):
         sparseObj = LoadDvidObject(int(source), dvidServer, uuid)
         if sparseObj.isEmpty():
             raise Exception('Unable to load the body: ' + str(source))
-        if config['args'].has_key('fillingHole'):
+        if 'fillingHole' in config['args']:
             if config['args']['fillingHole']:
                 sparseObj.fillHole()
         #stack = sparseObj.toStackObject()
@@ -86,24 +86,24 @@ def Skeletonize(source, target, config = None):
         stackFile._import(source)
         stack = stackFile.readStack();
 
-    if config['args'].has_key('downsampleInterval'):
+    if 'downsampleInterval' in config['args']:
         skeletonizer.setDownsampleInterval(config['args']['downsampleInterval'][0],
                                            config['args']['downsampleInterval'][1],
                                            config['args']['downsampleInterval'][2])
             
-    if config['args'].has_key('minimalLength'):
+    if 'minimalLength' in config['args']:
         skeletonizer.setLengthThreshold(config['args']['minimalLength'])
 
-    if config['args'].has_key('maximalDistance'):
+    if 'maximalDistance' in config['args']:
         skeletonizer.setDistanceThreshold(config['args']['maximalDistance'])
             
-    if config['args'].has_key('minimalObjectSize'):
+    if 'minimalObjectSize' in config['args']:
         skeletonizer.setMinObjSize(config['args']['minimalObjectSize'])
             
-    if config['args'].has_key('keepingSingleObject'):
+    if 'keepingSingleObject' in config['args']:
         skeletonizer.setKeepingSingleObject(config['args']['keepingSingleObject'])
                 
-    if config['args'].has_key('rebase'):
+    if 'rebase' in config['args']:
         skeletonizer.setRebase(config['args']['rebase'])
             
     skeletonizer._print()

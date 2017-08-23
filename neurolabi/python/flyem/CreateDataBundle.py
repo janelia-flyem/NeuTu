@@ -7,15 +7,15 @@ def CreateDataBundle(config):
     swcPath = config['swcDir']; #sessionPath + '/' + config['swcDir'];
     
     swcFileList = list();
-    if config.has_key("minBodySize") | config.has_key("maxBodySize"):
+    if ("minBodySize" in config) | ("maxBodySize" in config):
         data = np.loadtxt(config['bundlePath'] + '/bodysize.txt', delimiter=',');
         bodyList = data[:, 0];
         bodySize = data[:, 1];
         lowerThreshold = -1;
         upperThreshold = -1;
-        if config.has_key("minBodySize"):
+        if "minBodySize" in config:
             lowerThreshold = config["minBodySize"];
-        if config.has_key("maxBodySize"):
+        if "maxBodySize" in config:
             upperThreshold = config["maxBodySize"];
 
         print lowerThreshold;
@@ -92,14 +92,14 @@ def CreateDataBundle(config):
                 if int(bodyId) in neuronName:
                     neuron["name"] = neuronName[int(bodyId)];
                 
-            if config.has_key("objDir"):
+            if "objDir" in config:
                 neuron["volume"] = (config["objDir"] + "/" + os.path.basename(f)).replace('.swc', '.sobj');
             dataBundle["neuron"].append(neuron);
             
     otherFields = ["image_resolution", "synapse_scale", "synapse", "source_offset", 
                    "source_dimension", "swc_resolution", "image_resolution"];
     for field in otherFields:
-        if config.has_key(field):
+        if field in config:
             dataBundle[field] = config[field];
 
     # dataBundlePath = sessionPath + "/data_bundle_with_class.json";

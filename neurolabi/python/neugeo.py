@@ -19,9 +19,9 @@ def computeHotSpot(source, config):
     if not config:
         raise Exception('Server configuration must be specified for DVID target.')
     else:
-        if not config.has_key('dvid-server'):
+        if 'dvid-server' not in config:
             raise Exception('Server address must be specified for DVID target.')
-        elif not config.has_key('uuid'):
+        elif 'uuid' not in config:
             raise Exception('UUID must be specified for DVID target.')
         
     dvidServer = config['dvid-server']
