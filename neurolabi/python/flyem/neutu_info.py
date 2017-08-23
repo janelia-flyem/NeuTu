@@ -8,24 +8,24 @@ import os.path
 import platform
 
 def checkNeuTuDir(path):
-    print '\nChecking git branches ...'
+    print('\nChecking git branches ...')
     repo = Repo(neutuDir)
-    print 'Active branch:', repo.active_branch
-    print 'Current head:', repo.head.commit.hexsha[0:4], \
-        '"' + repo.head.commit.message.rstrip() + '"'
+    print('Active branch:', repo.active_branch)
+    print('Current head:', repo.head.commit.hexsha[0:4], \
+        '"' + repo.head.commit.message.rstrip() + '"')
     flyemReleaseBranch = None
     for branch in repo.branches:
         if branch.name == 'flyem_release':
             flyemReleaseBranch = branch
-            print 'flyem_release branch found'
-            print 'head:', branch.commit.hexsha[0:4], '"' + branch.commit.message.rstrip() + '"'
+            print('flyem_release branch found')
+            print('head:', branch.commit.hexsha[0:4], '"' + branch.commit.message.rstrip() + '"')
 
     if not flyemReleaseBranch:
-        print 'WARNING: no flyem_release branch.'
+        print('WARNING: no flyem_release branch.')
             
 if __name__ == '__main__':
-    print '************Checking ...'
-    print 'Operating system:', platform.system()
+    print('************Checking ...')
+    print('Operating system:', platform.system())
     
     if platform.system() == 'Darwin':
         neutuDir = '/Users/zhaot/Work/neutube'
@@ -33,15 +33,15 @@ if __name__ == '__main__':
         neutuDir = '/groups/flyem/home/zhaot/Work/neutube_ws'
      
     if os.path.isdir(neutuDir):
-        print 'Master NeuTu directory', '\'' + neutuDir + '\'', 'found.'
+        print('Master NeuTu directory', '\'' + neutuDir + '\'', 'found.')
         checkNeuTuDir(neutuDir)
         
     neutuDir = '/opt/Download/neutube'
     if os.path.isdir(neutuDir):
-        print 'Install NeuTu directory', '\'' + neutuDir + '\'', 'found.'
+        print('Install NeuTu directory', '\'' + neutuDir + '\'', 'found.')
         checkNeuTuDir(neutuDir)
         
-    print '************Done.'
+    print('************Done.')
     
 #             print dir(repo)
 #             if str(repo.head.commit) != codeInfo['head']:
@@ -52,10 +52,10 @@ if __name__ == '__main__':
                 
     exit(1)
             
-    print os.environ['HOME']
-    print os.name
-    print platform.system()
-    print platform.node()
+    print(os.environ['HOME'])
+    print(os.name)
+    print(platform.system())
+    print(platform.node())
     
     exit (1)
     
@@ -69,20 +69,20 @@ if __name__ == '__main__':
     repoInfo = vp['dvid repo']
     codeInfo = vp['code branch']
     
-    print 'Checking git branches ...'
+    print('Checking git branches ...')
     repo = Repo(repoPath)
 #     print repo.head.commit
 #     print codeInfo['head']
     if str(repo.head.commit) != codeInfo['head']:
-        print 'Wrong branch:'
-        print '  Actual:', repo.head.commit
-        print '  Expected:', codeInfo['head']
-        print 'Failed.'
+        print('Wrong branch:')
+        print('  Actual:', repo.head.commit)
+        print('  Expected:', codeInfo['head'])
+        print('Failed.')
         exit(1)
         
-    print 'Checking database ...'
+    print('Checking database ...')
     dvidService = DvidService('emdata1.int.janelia.org', 8500, '86e1')
-    print dvidService.getNodeUrl()
+    print(dvidService.getNodeUrl())
     
     configFile = os.path.join(repoPath, 'neurolabi', 'json', 'flyem_config.json')
     configJson = None
@@ -93,14 +93,14 @@ if __name__ == '__main__':
     for config in configList:
         name = config['name']
         if name in repoInfo:
-            print name
+            print(name)
             uuid = repoInfo[name]
             if uuid != config['uuid']:
-                print 'Wrong uuid:'
-                print '  Actual:', config['uuid']
-                print '  Expected:', uuid
-                print 'Failed.'
+                print('Wrong uuid:')
+                print('  Actual:', config['uuid'])
+                print('  Expected:', uuid)
+                print('Failed.')
                 exit(1)
 #     dvidService.getApiHelp()
     
-    print 'Passed.'
+    print('Passed.')

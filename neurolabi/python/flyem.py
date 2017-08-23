@@ -15,7 +15,7 @@ class SwcTree:
             neutube.DeleteSwcTree(self._data)
 
     def load(self, filePath):
-        print filePath
+        print(filePath)
         self._data.load(filePath)
 
     def getCData(self):
@@ -55,7 +55,7 @@ class FlyEmDataBundle:
 
     def load(self, filePath):
         baseDir = os.path.dirname(os.path.abspath(filePath))
-        print 'Loading bundle ...'
+        print('Loading bundle ...')
         with open(filePath) as f:
             data = json.load(f)
             if 'neuron' in data:

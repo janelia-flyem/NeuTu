@@ -39,31 +39,31 @@ dvidWriter = DvidWriter()
 for config in flyemConfig["dvid repo"]:
     if config.get("user_name") != "[]":
         dvidEnv = DvidEnv()
-        print config
+        print(config)
         dvidEnv.loadFlyEmConfig(config)
         dvidEnvMap[config["name"]] = dvidEnv 
 
 def processEvent(event):
-    print "Processing event ..."
-    print event.dvidEnv
+    print("Processing event ...")
+    print(event.dvidEnv)
     dvidWriter.setDvidEnv(event.dvidEnv)
     if event.getType() == fd.DataEvent.DATA_INVALIDATE:
         if event.getDataId().getType() == fd.DataId.DATA_BODY:
-            print "Invalidating body", event.getDataId().getBodyId()
+            print("Invalidating body", event.getDataId().getBodyId())
             dvidWriter.deleteSkeleton(event.getDataId().getBodyId())
             dvidWriter.deleteThumbnail(event.getDataId().getBodyId())
     elif event.getType() == fd.DataEvent.DATA_DELETE:
         if event.getDataId().getType() == fd.DataId.DATA_BODY:
-            print "Deleting body data", event.getDataId().getBodyId()
+            print("Deleting body data", event.getDataId().getBodyId())
             dvidWriter.deleteSkeleton(event.getDataId().getBodyId())
             dvidWriter.deleteThumbnail(event.getDataId().getBodyId())
             dvidWriter.deleteBodyAnnotation(event.getDataId().getBodyId())
     elif event.getType() == fd.DataEvent.DATA_UPDATE:
         time.sleep(5)
         if event.getDataId().getType() == fd.DataId.DATA_SKELETON:
-            print "Skeletionzing body", event.getDataId().getBodyId(), event.dvidEnv
+            print("Skeletionzing body", event.getDataId().getBodyId(), event.dvidEnv)
             skl.setDvidEnv(event.dvidEnv)
-            print skl.getDvidEnv()
+            print(skl.getDvidEnv())
             skl.skeletonize(event.getDataId().getBodyId())
             
 def process():
@@ -77,16 +77,16 @@ def process():
             eqcopy.append(elem)
 
     for i, e in reversed(eqcopy):
-        print  e.getDataId().getBodyId(), i
+        print(e.getDataId().getBodyId(), i)
 
 
     while True:
         try:
             event = eventQueue.get()
-            print datetime.datetime.now(), "Processing event ...", event
+            print(datetime.datetime.now(), "Processing event ...", event)
             processEvent(event)
         except Exception as e:
-            print e
+            print(e)
 
         #threading.Timer(1, process).start()
     
@@ -167,7 +167,7 @@ def requestBodyUpdate():
 
 @post('/update_body')
 def updateBody():
-    print request.content_type
+    print(request.content_type)
     bodyArray = [];
     dvidEnv = None
     #dvidServer = getDefaultDvidServer()
@@ -179,15 +179,15 @@ def updateBody():
         dvidEnv = dvidEnvMap[dvidName]
         bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
     elif request.content_type == 'application/json':
-        print request.json
+        print(request.json)
         jsonObj = request.json
         try:
             schema = getSchema('update_body', 'post')
             #print schema
             jsonschema.validate(jsonObj, json.loads(schema))
         except jsonschema.exceptions.ValidationError as inst:
-            print 'Invalid json input'
-            print inst
+            print('Invalid json input')
+            print(inst)
             return '<p>Update for ' + str(bodyArray) + ' failed.</p>'
         bodyArray = jsonObj.get('bodies')
         #dvidServer = jsonObj.get('dvid-server')
@@ -196,7 +196,7 @@ def updateBody():
         #config = {'dvid-server': dvidServer, 'uuid': uuid}
         dvidEnv = DvidEnv()
         dvidEnv.loadServerConfig(jsonObj)
-        print dvidEnv
+        print(dvidEnv)
 
     if not option:
         option = "update"
@@ -205,21 +205,21 @@ def updateBody():
         if option == "delete":
             event = fd.DataEvent(fd.DataEvent.DATA_DELETE, fd.DataId(fd.DataId.DATA_BODY, bodyId), dvidEnv)
             eventQueue.put(event)
-            print "+++Event added:", event
+            print("+++Event added:", event)
 
         if option == "update" or option == "invalidate":
             event = fd.DataEvent(fd.DataEvent.DATA_INVALIDATE, fd.DataId(fd.DataId.DATA_BODY, bodyId), dvidEnv)
             eventQueue.put(event)
-            print "+++Event added:", event
+            print("+++Event added:", event)
 
         if option == "update" or option == "add":
             event = fd.DataEvent(fd.DataEvent.DATA_UPDATE, fd.DataId(fd.DataId.DATA_SKELETON, bodyId), dvidEnv)
             eventQueue.put(event)
-            print "+++Event added:", event
+            print("+++Event added:", event)
 
 @post('/skeletonize')
 def do_skeletonize():
-    print request.content_type
+    print(request.content_type)
     bodyArray = [];
     #dvidServer = getDefaultDvidServer()
     #uuid = getDefaultUuid()
@@ -227,16 +227,16 @@ def do_skeletonize():
         bodyIdStr = request.forms.get('bodyId')
         dvidName = request.forms.get('database')
         skl.setDvidEnv(dvidEnvMap[dvidName])
-        print skl.getDvidEnv()
+        print(skl.getDvidEnv())
         bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
     elif request.content_type == 'application/json':
-        print request.json
+        print(request.json)
         jsonObj = request.json
         try:
             jsonschema.validate(jsonObj, json.loads(getSchema('skeletonize', 'post')))
         except jsonschema.exceptions.ValidationError as inst:
-            print 'Invalid json input'
-            print inst
+            print('Invalid json input')
+            print(inst)
             return '<p>Skeletonization for ' + str(bodyArray) + ' failed.</p>'
         uuid = jsonObj['uuid']
         if 'dvid-server' in jsonObj:
@@ -251,10 +251,10 @@ def do_skeletonize():
     dvidUrl = DvidUrl(skl.getDvidEnv())
 
     for bodyId in bodyArray:
-        print dvidUrl.getServerUrl()
+        print(dvidUrl.getServerUrl())
         conn = http.client.HTTPConnection(dvidUrl.getServerUrl())
         bodyLink = dvidUrl.getSkeletonEndPoint(bodyId)
-        print '************', bodyLink
+        print('************', bodyLink)
         conn.request("GET", bodyLink)
 
         outputUrl = dvidUrl.getServerUrl() + bodyLink
@@ -262,16 +262,16 @@ def do_skeletonize():
         r1 = conn.getresponse()
         if not r1.status == 200:
             try:
-                print "Skeletonizing " + str(bodyId)
+                print("Skeletonizing " + str(bodyId))
                 skl.skeletonize(bodyId)
                 output[str(bodyId)] = outputUrl
             except Exception as inst:
                 return '<p>' + str(inst) + '</p>'
         else:
-            print "skeleton is ready for " + str(bodyId)
+            print("skeleton is ready for " + str(bodyId))
             output[str(bodyId)] = outputUrl
     
-    print output
+    print(output)
     return json.dumps(output, sort_keys = False)
 #     return '<p>Skeletonization for ' + str(bodyArray) + ' is completed.</p>'
 
@@ -286,7 +286,7 @@ def computing_hotspot():
 
 @post('/hotspot')
 def compute_hotspot():
-    print request.content_type
+    print(request.content_type)
     bodyArray = [];
     dvidServer = getDefaultDvidServer()
     uuid = getDefaultUuid()
@@ -295,13 +295,13 @@ def compute_hotspot():
         dvidName = requrest.forms.get('database')
         bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
     elif request.content_type == 'application/json':
-        print request.json
+        print(request.json)
         jsonObj = request.json
         try:
             jsonschema.validate(jsonObj, json.loads(getSchema('skeletonize', 'post')))
         except jsonschema.exceptions.ValidationError as inst:
-            print 'Invalid json input'
-            print inst
+            print('Invalid json input')
+            print(inst)
             return '<p>Hotspot computation for ' + str(bodyArray) + ' failed.</p>'
         uuid = jsonObj['uuid']
         if 'dvid-server' in jsonObj:
@@ -311,15 +311,15 @@ def compute_hotspot():
     output = {}
     config = {'dvid-server': dvidServer, 'uuid': uuid}
 
-    print '********'
-    print config
+    print('********')
+    print(config)
     
     global qualityAnalyzer
 
     for bodyId in bodyArray:
         #conn = httplib.HTTPConnection(dvidServer)
         bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
-        print '************', bodyLink
+        print('************', bodyLink)
         #conn.request("GET", bodyLink)
 
         #r1 = conn.getresponse()
@@ -340,7 +340,7 @@ def retrieveThumbnail(bodyId):
 @hook('after_request')
 def enable_cors(fn=None):
     def _enable_cors(*args, **kwargs):
-        print 'enable cors'
+        print('enable cors')
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Expose-Headers'] = 'Content-Type'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
@@ -358,7 +358,7 @@ def enable_cors(fn=None):
 @route('/interface/interface.raml', method=['GET', 'OPTIONS'])
 @enable_cors
 def retrieveRaml():
-    print 'retrieve raml'
+    print('retrieve raml')
     fileResponse = static_file('interface.raml', root='.', mimetype='application/raml+yaml')
     fileResponse.headers['Access-Control-Allow-Origin'] = '*'
 

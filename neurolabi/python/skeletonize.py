@@ -40,16 +40,16 @@ def Skeletonize(source, target, config = None):
     skeletonizer = neutube.ZStackSkeletonizer()
     
     if not config:
-        print 'null config'
+        print('null config')
         config = {'description': 'skeletonize configuration'}
     
-    print config
+    print(config)
     
     if 'args' not in config:
         configPath = os.path.join(baseDir, '../json/skeletonize.json')
         configFile = None
-        print '********************'
-        print configPath
+        print('********************')
+        print(configPath)
         if os.path.exists(configPath):
             configFile = open(configPath);
         if configFile:
@@ -76,7 +76,7 @@ def Skeletonize(source, target, config = None):
                 sparseObj.fillHole()
         #stack = sparseObj.toStackObject()
     elif isinstance(source, str):
-        print source
+        print(source)
         if source.endswith('.sobj'):
             sparseObj = neutube.CreateObject3dScan()
             sparseObj.load(source)
@@ -118,19 +118,19 @@ def Skeletonize(source, target, config = None):
         conn = http.client.HTTPConnection(dvidServer)
         array = neutube.EncodeSwcTree(tree)
         dvidRequest = '/api/node/' + uuid + '/skeletons/' + str(source) + '.swc'
-        print dvidRequest
+        print(dvidRequest)
         conn.request('POST', dvidRequest, ''.join(array))
         response = conn.getresponse()
-        print 'Uploaded into dvid'
-        print response.status, response.reason
+        print('Uploaded into dvid')
+        print(response.status, response.reason)
     else:
         tree.save(target)
     
     if stack:
-        print 'Deleting stack'
+        print('Deleting stack')
         neutube.DeleteStackObject(stack)
     if sparseObj:
-        print 'Deleting object'
+        print('Deleting object')
         neutube.DeleteObject3dScan(sparseObj)
 
     neutube.DeleteSwcTree(tree)
@@ -151,5 +151,5 @@ if __name__ == '__main__':
     config['uuid'] = 'a75'
     Skeletonize(options.input, options.output, config)
     
-    print options.input
-    print 'done'
+    print(options.input)
+    print('done')

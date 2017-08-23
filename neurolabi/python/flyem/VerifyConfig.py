@@ -6,7 +6,7 @@ import json
 import os.path
 
 if __name__ == '__main__':
-    print 'Verifying ...'
+    print('Verifying ...')
     
     vf = '/Users/zhaot/Work/neutube/neurolabi/json/verify.json'
     repoPath = '/Users/zhaot/Work/neutube'
@@ -18,20 +18,20 @@ if __name__ == '__main__':
     repoInfo = vp['dvid repo']
     codeInfo = vp['code branch']
     
-    print 'Checking git branches ...'
+    print('Checking git branches ...')
     repo = Repo(repoPath)
 #     print repo.head.commit
 #     print codeInfo['head']
     if str(repo.head.commit) != codeInfo['head']:
-        print 'Wrong branch:'
-        print '  Actual:', repo.head.commit
-        print '  Expected:', codeInfo['head']
-        print 'Failed.'
+        print('Wrong branch:')
+        print('  Actual:', repo.head.commit)
+        print('  Expected:', codeInfo['head'])
+        print('Failed.')
         exit(1)
         
-    print 'Checking database ...'
+    print('Checking database ...')
     dvidService = DvidService('emdata1.int.janelia.org', 8500, '86e1')
-    print dvidService.getNodeUrl()
+    print(dvidService.getNodeUrl())
     
     configFile = os.path.join(repoPath, 'neurolabi', 'json', 'flyem_config.json')
     configJson = None
@@ -42,14 +42,14 @@ if __name__ == '__main__':
     for config in configList:
         name = config['name']
         if name in repoInfo:
-            print name
+            print(name)
             uuid = repoInfo[name]
             if uuid != config['uuid']:
-                print 'Wrong uuid:'
-                print '  Actual:', config['uuid']
-                print '  Expected:', uuid
-                print 'Failed.'
+                print('Wrong uuid:')
+                print('  Actual:', config['uuid'])
+                print('  Expected:', uuid)
+                print('Failed.')
                 exit(1)
 #     dvidService.getApiHelp()
     
-    print 'Passed.'
+    print('Passed.')

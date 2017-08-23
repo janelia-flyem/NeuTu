@@ -34,7 +34,7 @@ def skeletonize():
 
 @post('/skeletonize')
 def do_skeletonize():
-    print request.content_type
+    print(request.content_type)
     bodyArray = [];
     dvidServer = ns.getDefaultDvidServer()
     uuid = ns.getDefaultUuid()
@@ -42,13 +42,13 @@ def do_skeletonize():
         bodyIdStr = request.forms.get('bodyId')
         bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
     elif request.content_type == 'application/json':
-        print request.json
+        print(request.json)
         jsonObj = request.json
         try:
             jsonschema.validate(jsonObj, json.loads(ns.getSchema('skeletonize', 'post')))
         except jsonschema.exceptions.ValidationError as inst:
-            print 'Invalid json input'
-            print inst
+            print('Invalid json input')
+            print(inst)
             return '<p>Skeletonization for ' + str(bodyArray) + ' failed.</p>'
         uuid = jsonObj['uuid']
         if 'dvid-server' in jsonObj:
@@ -58,13 +58,13 @@ def do_skeletonize():
     output = {}
     config = {'dvid-server': dvidServer, 'uuid': uuid}
 
-    print '********'
-    print config
+    print('********')
+    print(config)
     
     output["swc-list"] = []
     output['error'] = []
 
-    print dvidServer
+    print(dvidServer)
     conn = http.client.HTTPConnection(dvidServer)
     conn.request("GET", '/api/node/' + uuid + '/skeletons/info')
     r1 = conn.getresponse()
@@ -73,7 +73,7 @@ def do_skeletonize():
     else:
         for bodyId in bodyArray:
             bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
-            print '************', bodyLink
+            print('************', bodyLink)
             conn = http.client.HTTPConnection(dvidServer)
             conn.request("GET", bodyLink)
             r1 = conn.getresponse()
@@ -81,9 +81,9 @@ def do_skeletonize():
             if not r1.status == 200:
                 try:
                     skl.Skeletonize(bodyId, 'dvid', config)
-                    print 'skeletons retrieved.'
+                    print('skeletons retrieved.')
                 except Exception as inst:
-                    print str(inst)
+                    print(str(inst))
                     output['error'].append(str(inst))
                 else:
                     swcAvailable = True
@@ -99,7 +99,7 @@ def do_skeletonize():
 @hook('after_request')
 def enable_cors(fn=None):
     def _enable_cors(*args, **kwargs):
-        print 'enable cors'
+        print('enable cors')
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Expose-Headers'] = 'Content-Type'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
@@ -111,7 +111,7 @@ def enable_cors(fn=None):
 @route('/interface/interface.raml', method=['GET', 'OPTIONS'])
 @enable_cors
 def retrieveRaml():
-    print 'retrieve raml'
+    print('retrieve raml')
     fileResponse = static_file('interface.raml', root='.', mimetype='application/raml+yaml')
     fileResponse.headers['Access-Control-Allow-Origin'] = '*'
 
@@ -126,7 +126,7 @@ def parseJson():
     return '<p>' + data['head'] + '</p>'
 
 if __name__ == '__main__': 
-    print 'Starting the server ...'
+    print('Starting the server ...')
     parser = argparse.ArgumentParser();
     parser.add_argument("--port", dest="port", type = int, help="port", default=8082);
     args = parser.parse_args()

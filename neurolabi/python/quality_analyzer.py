@@ -49,7 +49,7 @@ class QualityAnalyzer:
         model = self.getSkeleton(bodyId)
         neuron = neutube.CreateZFlyEmNeuron(bodyId, model)
         hotspot = self._engine.computeHotSpotForSplit(neuron)
-        print hotspot
+        print(hotspot)
         hotspot._print()
         return hotspot.toJsonString()
 
@@ -62,7 +62,7 @@ class QualityAnalyzer:
 if __name__ == '__main__':
     qa = QualityAnalyzer()
     #qa.loadDataBundle('/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/data_release/bundle5/data_bundle.json')
-    print qa.computeHotSpot(1)
+    print(qa.computeHotSpot(1))
     #tree = qa.getSkeleton(1)
     #tree._print()
   

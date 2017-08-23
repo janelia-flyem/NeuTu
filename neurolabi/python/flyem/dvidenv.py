@@ -39,7 +39,7 @@ class DvidEnv(object):
         if "dvid-server" in config:
             dvidServer = config["dvid-server"]
             p = urllib.parse.urlsplit(dvidServer)
-            print p
+            print(p)
             if p.netloc:
                 self.address = p.netloc
             else:
@@ -47,7 +47,7 @@ class DvidEnv(object):
             self.port = None
 
             self.node = config["uuid"]
-            print config.get("labelvol")
+            print(config.get("labelvol"))
             self.setBodyLabel(config.get("labelvol"))
 
     def loadFlyEmConfig(self, config):
@@ -69,9 +69,9 @@ class DvidEnv(object):
 if __name__ == "__main__":
     dvidEnv = DvidEnv("emdata1", 8500, "372c")
     dvidEnv.setBodyLabel("bodies3")
-    print dvidEnv.getNeuTuInput()
-    print dvidEnv.getAddressWithPort()
+    print(dvidEnv.getNeuTuInput())
+    print(dvidEnv.getAddressWithPort())
 
     dvidEnv.loadServerConfig({"dvid-server": "emdata1.int.janelia.org:8500", "uuid": "372c", "bodies": [ 1 ]})
-    print dvidEnv.getNeuTuInput()
-    print dvidEnv.getAddressWithPort()
+    print(dvidEnv.getNeuTuInput())
+    print(dvidEnv.getAddressWithPort())

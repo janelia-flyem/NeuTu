@@ -67,5 +67,5 @@ def computeHotSpot(source, config):
 if __name__ == '__main__':
     config = {'dvid-server': 'emdata1.int.janelia.org', 'uuid': '240a'}
     
-    print computeHotSpot(1, config)
+    print(computeHotSpot(1, config))
     

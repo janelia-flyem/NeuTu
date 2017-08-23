@@ -31,7 +31,7 @@ def surfrecon_post():
     config={"command":"surfrecon"}
     config["npoints"]=points.count('(')
     cmd+=r"'"+json.dumps(config)+r"'"
-    print cmd
+    print(cmd)
     p=Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
     for a in points.split(')')[:-1]:
         a=a[1:]

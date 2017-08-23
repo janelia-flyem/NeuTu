@@ -67,7 +67,7 @@ def processOneStack(filenameBase):
 	bwz, bws = findZ(bw, im3d)
 	# save the mask. 
 	filenameSave = filenameBase+'.ana.npz'
-	print 'Saving the segmentation to file '+filenameSave,
+	print('Saving the segmentation to file '+filenameSave, end=' ')
 	numpy.savez(filenameSave, bw=bw, bwz=bwz)
 	#bwz = findZ2(bw,zMaxGrad)
 	createSWC(bw, bwz, bws, filenameBase)
@@ -123,7 +123,7 @@ def getMask(imFlat, im3d):
 	bw_s = skeletonize(bw)
 	bwz, bws = findZ(bw_s, im3d)
 
-	print 'Saving the initialMask and flattened image...'
+	print('Saving the initialMask and flattened image...')
 	img = PIL.Image.fromarray(((1-bw_s) * 255.0).astype('uint8'))
 	img = img.convert("RGBA")
 	datas = img.getdata()
@@ -218,7 +218,7 @@ def preprocessOneStack(filenameBase):
 	savez(filenameBase+'.npz', im3d=im3d)
 	#imGrad3d,maxGrad,zMaxGrad = getEdges(im3d)
 	bw = getBoundaries(imFlat, mag, iplot=0, filenameBase=filenameBase)
-	print 'Saving the initialMask and flattened image...'
+	print('Saving the initialMask and flattened image...')
 	img = PIL.Image.fromarray(((1-bw) * 255.0).astype('uint8'))
 	img = img.convert("RGBA")
 	datas = img.getdata()
@@ -244,12 +244,12 @@ def postProcessOneStack(filenameBase):
 	#bwz = findZ2(bw,zMaxGrad)
 	# save the mask. 
 	filenameSave = filenameBase+'.ana.npz'
-	print 'Saving the segmentation to file '+filenameSave,
+	print('Saving the segmentation to file '+filenameSave, end=' ')
 	numpy.savez(filenameSave, bw=bw, bwz=bwz)
 	createSWC(bw, bwz, bws, filenameBase)
 
 def loadMaskFromFile(filenameBase):
-	print 'Loading the initial mask from file...'
+	print('Loading the initial mask from file...')
 	saveDir = '/groups/visitors/home/jind/Dropbox/NeuralTracingImages/'
 	bw = imread(saveDir+filenameBase+'.mask.Edit.png')
 	bw= dot(bw[..., :3], [0.299, 0.587, 0.144])
@@ -267,7 +267,7 @@ def subtractBackground(img):
 	return img
 
 def loadStacks(tiffFilename):
-	print 'Loading stack image from ', tiffFilename
+	print('Loading stack image from ', tiffFilename)
 
 	sigmaSmooth = 1
 	# load the image
@@ -293,7 +293,7 @@ def loadStacks(tiffFilename):
 	return image3d, imFlat
 
 def loadStacks2(tiffFilename):
-	print 'Loading stack image from ', tiffFilename
+	print('Loading stack image from ', tiffFilename)
 
 	sigmaSmooth = 1
 	# load the image
@@ -343,7 +343,7 @@ def getEdges(image3d):
 # Get the boundaries of the neuites using the flatterned intensity and maximum gradient images. 	
 # Returns a bindary image with neurites labeled as 1.
 def getBoundaries(imFlat,mag,iplot=1,filenameBase='pyramidalNeuron'):
-	print 'Segmenting the image...'
+	print('Segmenting the image...')
 	# parameters for extracting initial boundaries
 	sigmaBackground = mag * 1.0 #60 # 100	# get the smooth background
 	thrFracMax = 0.6	# threshold for getting the initial boundary
@@ -360,7 +360,7 @@ def getBoundaries(imFlat,mag,iplot=1,filenameBase='pyramidalNeuron'):
 	sl = double(imFlat.copy())
 
 	# get the initial boundary
-	print 'Getting the initial boundary....'
+	print('Getting the initial boundary....')
 	sls1 = ndimage.gaussian_filter(sl, sigma=sigmaBackground)
 	sls = sls1 - sl
 	sls[where(sls < 0)] = 0
@@ -443,7 +443,7 @@ def getBoundaries3(imFlat, maxGrad):
 	slds = sld
 
 	# get the initial boundary
-	print 'Getting the initial boundary....'
+	print('Getting the initial boundary....')
 	sls1 = ndimage.gaussian_filter(sl, sigma=sigmaBackground)
 	sls2 = ndimage.gaussian_filter(sl, sigma=sigmaForground) 
 	sls = sls1 - sls2
@@ -464,15 +464,15 @@ def getBoundaries3(imFlat, maxGrad):
 							# See Section IV-A in the above IEEE TIP paper for implementation.
 
 	# start level set evolution
-	print 'Compuiting the boundaries...'
+	print('Compuiting the boundaries...')
 	for n in range(iterNum):
 		u=LSF(u, I, K, KI, KONE, nu, timestep, mu, lambda1, lambda2, epsilon, 1)
 		if np.mod(n, 5)==0:
-			print 'n=', n
+			print('n=', n)
 
 	subplot(2, 2, 2); cla(); imshow(sl, cm.gray); contour(u, 0, colors='r') 
 
-	print 'Getting rid of small regions...'
+	print('Getting rid of small regions...')
 	bw = u > 0
 	bw_l = label(bw)
 	for region in regionprops(bw_l, ['Area', 'Centroid', 'Label']):
@@ -516,7 +516,7 @@ def getBoundaries2(imFlat, maxGrad):
 	#slds = ndimage.gaussian_filter(sld, sigma=sigmaForground)
 
 	# get the initial boundary
-	print 'Getting the initial boundary....'
+	print('Getting the initial boundary....')
 	sls1 = ndimage.gaussian_filter(sl, sigma=sigmaBackground)
 	sls2 = ndimage.gaussian_filter(sl, sigma=sigmaForground) 
 	sls = sls1 - sls2
@@ -535,10 +535,10 @@ def getBoundaries2(imFlat, maxGrad):
 	for n in range(100):   
 		u=evolution(u, g, lam, mu, alf, epsilon, timestep, 1)
 		if mod(n, 20) == 0:
-			print 'At level set step ', n
+			print('At level set step ', n)
 	subplot(2, 2, 2); cla(); imshow(sl, cm.gray); contour(u, 0, colors='r') 
 
-	print 'Getting rid of small regions...'
+	print('Getting rid of small regions...')
 	bw = u > 0
 	#bw_l = label(bw)
 	#for region in regionprops(bw_l, ['Area', 'Centroid','Label']):
@@ -592,7 +592,7 @@ def findZ(bw, im3d):
 	# paramerer. 
 	thrPer = 2	# threshold for determing the significance of the peak. 
 	smoothLen = 10	# length for smoothing 
-	print 'Computing z...'
+	print('Computing z...')
 	bg = []
 	x, y = where(bw ==0)
 	nx, ny = bw.shape
@@ -700,7 +700,7 @@ def extrap1d(interpolator):
 
 
 def saveSWC(filenameSave, branches):
-	print 'Saving SWC to file '+filenameSave 
+	print('Saving SWC to file '+filenameSave) 
 	f = open(filenameSave, 'w')
 	for br in branches:
 		for PP in br:
@@ -749,10 +749,10 @@ def smoothBranchesTemp():
 
 
 def smoothBranches(branches, branchConnIDs):
-	print 'Smoothing z positions of the branches...'
+	print('Smoothing z positions of the branches...')
 	# smooth z, radius
 	minLen = 6
-	print 'Smoothing the branches...'
+	print('Smoothing the branches...')
 	for ibr in range(len(branches)):
 		if len(branches[ibr]) < 3:
 			continue
@@ -959,7 +959,7 @@ def scaleSWC(filenameBase, mag):
 		py *= xyDist; px *= xyDist; r = r*xyDist; z *= zDist
 		Points.append([nn, tp, py, px, z, r, np])
 		
-	print 'Saving SWC to file '+filenameBase+'.scaled.swc'
+	print('Saving SWC to file '+filenameBase+'.scaled.swc')
 	f = open(filenameBase+'.scaled.swc', 'w')
 	for [nn, tp, py, px, z, r, np] in Points:
 		ll = str(int(nn))+' '+str(int(tp))+' '+str(py)+' '+str(px)+' '+str(z)+' '+str(r)+' '+str(int(np))+'\n'
@@ -983,7 +983,7 @@ def sticthComputeOffSetOnePair(filenameCommon, overlapList):
 		outfile = filenameCommon+str(i)+'-'+str(j)+'.txt'
 		if os.path.exists(outfile):
 			continue
-		print 'Stitching '+filenameBase1+'.tif'+' and '+filenameBase2+'.tif'
+		print('Stitching '+filenameBase1+'.tif'+' and '+filenameBase2+'.tif')
 		connfile = outfile+'.conn.txt'
 		f = open(connfile, 'w')
 		ox, oy, oz = relPos[kk]
@@ -1030,7 +1030,7 @@ def stitchImages(filenameCommon=filenameCommon,overlapList=overlapList):
 		filenameBase2 = filenameCommon+str(j)
 		outfile = filenameCommon+str(i)+'.'+filenameCommon+str(j)+'.txt'
 		if os.path.exists(outfile):
-			print 'Loading previous stitching result from '+outfile
+			print('Loading previous stitching result from '+outfile)
 			# load the result
 			f = open(outfile)
 			lines = f.readlines()
@@ -1038,7 +1038,7 @@ def stitchImages(filenameCommon=filenameCommon,overlapList=overlapList):
 			dx, dy, dz = lines[0].split(',')
 			dx = float(dx); dy = float(dy); dz = float(dz)
 		else:
-			print 'Computing the offset by stitching the tif files...'	
+			print('Computing the offset by stitching the tif files...')	
 			dx, dy, dz=PairwiseStitch(filenameBase1, filenameBase2)
 		offsets.append(array([dx, dy, dz]))
 	for ss in sidsAppear:
@@ -1079,12 +1079,12 @@ def stitchImages(filenameCommon=filenameCommon,overlapList=overlapList):
 			imFlatCombined = zeros((int(X.max())+nx, int(Y.max())+ny, nc))
 		imFlatCombined[int(X[kk]):int(X[kk])+nx, int(Y[kk]):int(Y[kk])+ny,:] = imFlat		
 	cla(); subplot(1, 1, 1); imshow(imFlatCombined)
-	print 'Saving the combined images to ', filenameCommon+'.flatCombined.png'
+	print('Saving the combined images to ', filenameCommon+'.flatCombined.png')
 	im = PIL.Image.fromarray((array(imFlatCombined)*255).astype('uint8'))
 	im.save(filenameCommon+'.flatCombined.png')
 	
 	outFile = filenameCommon+'StitchCoord.npz'
-	print 'Saving stitch coordinates to ', outFile
+	print('Saving stitch coordinates to ', outFile)
 	savez(outFile, X=X, Y=Y, Z=Z, IDs=sids, shapes=shapes, overlapList=overlapList, filenameCommon=filenameCommon)
  
 def PairwiseStitch(filenameBase1,filenameBase2, iplot=0):
@@ -1109,7 +1109,7 @@ def PairwiseStitch(filenameBase1,filenameBase2, iplot=0):
 		imFlat2.save(filenameBase2+'.Flatten.tif')
 
 	# compute the X,Y shifts.
-	print 'Computing x,y shift throght fiji stitch plug in...'
+	print('Computing x,y shift throght fiji stitch plug in...')
 	fn1 = filenameBase1+'.Flatten.tif'
 	fn2 = filenameBase2+'.Flatten.tif'
 
@@ -1134,7 +1134,7 @@ def PairwiseStitch(filenameBase1,filenameBase2, iplot=0):
 	dy = int(round(float(LL[1][1:-2])))
 	dx = int(round(float(LL[2][0:-1])))
 	crr = float(LL[4][4:-1])
-	print 'ImageJ stitching returns with dx=', dx, ' dy=', dy, ' crr=', crr
+	print('ImageJ stitching returns with dx=', dx, ' dy=', dy, ' crr=', crr)
 
 	# Use Ting's program 
 	#outfile=filenameBase1+filenameBase2+'.tmp.txt'
@@ -1184,7 +1184,7 @@ def PairwiseStitch(filenameBase1,filenameBase2, iplot=0):
 		subplot(2, 1, 2); imshow(imFlat2[x21:x22, y21:y22], cm.gray)
 
 	# find Z shift. 
-	print 'Computing the z shift...',
+	print('Computing the z shift...', end=' ')
 	dn = 5	# subsample x, y
 	z1 = im3d1[x11:x12:dn, y11:y12:dn,:]
 	z2 = im3d2[x21:x22:dn, y21:y22:dn,:]
@@ -1215,7 +1215,7 @@ def PairwiseStitch(filenameBase1,filenameBase2, iplot=0):
 			figure(3); subplot(2, 1, 1);cla()
 			plot(crrs)	
 		dz = zscan[argmax(crrs)]
-		print 'Brutal force method returned dz=', dz, ' corr=', crrs.max()
+		print('Brutal force method returned dz=', dz, ' corr=', crrs.max())
 	else:		
 		d1 = nx*ny*nz1
 		d2 = nx*ny*nz2
@@ -1236,9 +1236,9 @@ def PairwiseStitch(filenameBase1,filenameBase2, iplot=0):
 		if iplot == 1:
 			subplot(1, 1, 1); cla();
 			plot(crrs)
-		print 'Phase correlatiion returns dz =', dz
+		print('Phase correlatiion returns dz =', dz)
 	outfile = filenameBase1+'.'+filenameBase2+'.txt'
-	print 'Saving the offsets to ', outfile
+	print('Saving the offsets to ', outfile)
 	f = open(outfile, 'w')
 	f.write(str(dx)+','+str(dy)+','+str(dz))
 	f.close()
@@ -1368,7 +1368,7 @@ def createBranchesFromLinkedPoints(LinkedPointsAll):
 			break
 		ii = argmax(-numConn[ind])
 		jj = ind[ii]	
-		print ii, jj
+		print(ii, jj)
 		getAllChildBranchesLinkedPoints(jj, LinkedPointsAll, IDs, flags, branches, branchConnIDs)
 
 	# connect branches
@@ -1531,7 +1531,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 
 	# load the coordinates genrated from stitchImages
 	outFile = filenameCommon+'StitchCoord.npz'
-	print 'Loading stitch coordinates from ', outFile
+	print('Loading stitch coordinates from ', outFile)
 	try:
 		res=numpy.load(outFile)
 		X = res['X']
@@ -1540,7 +1540,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 		fileIDs = res['IDs']
 		shapes = res['shapes']
 	except:
-		print 'ERROR: No results from image stitching found. First run stitchImages.'
+		print('ERROR: No results from image stitching found. First run stitchImages.')
 		return
 
 	# create list of branches from the swc file, shift the coordinates using the stitch results. 
@@ -1566,7 +1566,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 		else:
 			LeftFileIDs.remove(ii)
 
-		print 'Adding ', filename		
+		print('Adding ', filename)		
 		npTot += len(LinkedPoints)
 		
 		if len(LinkedPointsAll) == 0:
@@ -1619,8 +1619,8 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 	
 	# repair the connections. 
 	# disconnection long connections that are artifacts of stitching process. 
-	print 'Repairing stitches....'
-	print 'Delete connections with distances larger than ', minDistDisConnect
+	print('Repairing stitches....')
+	print('Delete connections with distances larger than ', minDistDisConnect)
 	PointsAll, IDsAll = getCoordinates(LinkedPointsAll)
 	for ii in range(len(LinkedPointsAll)):
 			delIDs = []
@@ -1636,7 +1636,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 	# create the branches 
 	branches, branchConnIDs = createBranchesFromLinkedPoints(LinkedPointsAll) 
 	# delete small branches. 
-	print 'Deleteing small terminal branches with nuber of points smaller than ', minBranchLen
+	print('Deleteing small terminal branches with nuber of points smaller than ', minBranchLen)
 	for ii in range(len(branches)):
 		br = branches[ii]
 		if len(br) == 0:
@@ -1645,7 +1645,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 			br.clear()		
 	branchConnIDs = repairBranches(branches, branchConnIDs)
 	# connect nearby endpoints of branch points. 
-	print 'Connecting end points of isolated branches within distance ', maxDistConnect
+	print('Connecting end points of isolated branches within distance ', maxDistConnect)
 	indIsos = []
 	indEnds = [] 
 	for ii in range(len(branches)):
@@ -1705,7 +1705,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 				break
 								
 	# smooth z and r.
-	print 'Smoothing z and r...'
+	print('Smoothing z and r...')
 	for br in branches:
 		if len(br) ==0:
 			continue

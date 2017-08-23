@@ -32,7 +32,7 @@ def CreateDataBundle(config):
             if os.path.isabs(volumePath) == False:
                 volumePath = inputDir + "/" + volumePath;
             os.system("cp " + volumePath + " " + outputDir + "/volume");
-            print neuron["volume"];
+            print(neuron["volume"]);
             neuron["volume"] = "volume/" + os.path.basename(neuron["volume"]);
             
     outFile = open(config["output"], "w");
@@ -42,4 +42,4 @@ def CreateDataBundle(config):
 if __name__ == '__main__':
     config = {"input": "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/skeletonization/session18/len10/adjusted/data_bundle_with_class.json", "output": "/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/data_release/data_bundle.json"}; 
     CreateDataBundle(config);
-    print config["output"], "saved";
+    print(config["output"], "saved");

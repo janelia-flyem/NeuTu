@@ -104,7 +104,7 @@ class SkeletonizeTaskDistributor:
             subscriptFile.append(open(self.subscripts[i], "w"));
         
         index = 0;
-        print "Job Number: ", jobNumber
+        print("Job Number: ", jobNumber)
         while index < len(self.bodyList):
             for i in range(0, jobNumber):
                 bodyId = self.bodyList[index];
@@ -139,4 +139,4 @@ if __name__ == '__main__':
     distr = SkeletonizeTaskDistributor();
     distr.setBodyList([1, 2]);
     distr.setCommandPath(home + '/Work/neutube/neurolabi/cpp/skeletonize-build-Qt_4_8_1_gcc-Debug/skeletonize');
-    print distr.getFullCommand(0);
+    print(distr.getFullCommand(0));

@@ -303,13 +303,13 @@ def GenerateFile(path, content):
   """Given a file path and a content string, overwrites it with the
   given content."""
 
-  print 'Updating file %s . . .' % path
+  print('Updating file %s . . .' % path)
 
   f = file(path, 'w+')
-  print >>f, content,
+  print(content, end=' ', file=f)
   f.close()
 
-  print 'File %s has been updated.' % path
+  print('File %s has been updated.' % path)
 
 
 def GenerateHeader(n):
@@ -717,8 +717,8 @@ def _Main():
   unit test."""
 
   if len(sys.argv) != 2:
-    print __doc__
-    print 'Author: ' + __author__
+    print(__doc__)
+    print('Author: ' + __author__)
     sys.exit(1)
 
   n = int(sys.argv[1])

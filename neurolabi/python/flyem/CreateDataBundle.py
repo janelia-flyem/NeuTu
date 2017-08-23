@@ -18,20 +18,20 @@ def CreateDataBundle(config):
         if "maxBodySize" in config:
             upperThreshold = config["maxBodySize"];
 
-        print lowerThreshold;
-        print upperThreshold;
+        print(lowerThreshold);
+        print(upperThreshold);
         for i in range(0, len(bodyList)):
 #             print bodySize[i];
 #             print (bodySize[i] >= lowerThreshold) | (lowerThreshold < 0);
 #             print (bodySize[i] <= upperThreshold) | (upperThreshold < 0);
 #             print ((bodySize[i] >= lowerThreshold) | (lowerThreshold < 0)) & ((bodySize[i] <= upperThreshold) | (upperThreshold < 0));
             if ((bodySize[i] >= lowerThreshold) | (lowerThreshold < 0)) & ((bodySize[i] <= upperThreshold) | (upperThreshold < 0)):
-                print str(int(bodyList[i]));
+                print(str(int(bodyList[i])));
                 swcFileList.append(str(int(bodyList[i])) + '.swc');
     else:
         swcFileList = os.listdir(swcPath);
         
-    print len(swcFileList), " neurons";   
+    print(len(swcFileList), " neurons");   
 
     dataBundle = {"neuron": list()};
 
@@ -61,7 +61,7 @@ def CreateDataBundle(config):
                 tokens = line.split();
                 #print(tokens)
                 if len(tokens) > 1:
-                    print(int(tokens[1]), tokens[3]);
+                    print((int(tokens[1]), tokens[3]));
                     neuronClass[int(tokens[1])] = tokens[3];
                     if tokens[3] == "unknown":
                         neuronClass[int(tokens[1])] = tokens[3] + " " + tokens[4];
@@ -108,7 +108,7 @@ def CreateDataBundle(config):
     json.dump(dataBundle, outFile, indent = 2);
     outFile.close();
      
-    print dataBundlePath + " saved";
+    print(dataBundlePath + " saved");
     
 if __name__ == '__main__':
     dataPath = '/Users/zhaot/Work/neutube/neurolabi/data';
