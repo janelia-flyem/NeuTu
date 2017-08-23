@@ -694,7 +694,7 @@ def extrap1d(interpolator):
             return interpolator(x)
 
     def ufunclike(xs):
-        return array(map(pointwise, array(xs)))
+        return array(list(map(pointwise, array(xs))))
 
     return ufunclike
 
