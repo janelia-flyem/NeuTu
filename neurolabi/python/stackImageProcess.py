@@ -277,7 +277,7 @@ def loadStacks(tiffFilename):
 	image3d = array(imgarray)[...,newaxis]
 	im.seek(0)
 	try:
-		while 1:
+		while True:
 			im.seek(im.tell()+1)
 			img = im.convert("L")	# convert to greyscale.
 			imgarray = ndimage.gaussian_filter(array(img).astype(float),sigma=sigmaSmooth)
@@ -303,7 +303,7 @@ def loadStacks2(tiffFilename):
 	image3d = array(imgarray)[...,newaxis]
 	im.seek(0)
 	try:
-		while 1:
+		while True:
 			im.seek(im.tell()+1)
 			img = im.convert("L")	# convert to greyscale.
 			#imgarray = ndimage.gaussian_filter(array(img).astype(float),sigma=sigmaSmooth)
@@ -1063,7 +1063,7 @@ def stitchImages(filenameCommon=filenameCommon,overlapList=overlapList):
 		nz = 0
 		im.seek(0)
 		try:
-			while 1:
+			while True:
 				im.seek(im.tell()+1)
 				nz += 1
 		except:
@@ -1322,7 +1322,7 @@ def getAllChildBranchesLinkedPoints(jj,LinkedPointsAll,IDs,flags,branches,branch
 	# this function gets all branches in the linked points starting from jj.
 	br = dllist()
 	brIDs = []
-	while 1:
+	while True:
 		PP = LinkedPointsAll[jj]
 		if len(br) > 0:
 			pid = br.last.value.ID
@@ -1362,7 +1362,7 @@ def createBranchesFromLinkedPoints(LinkedPointsAll):
 	branches = []		# linked lists of the branches.
 	branchConnIDs = []	# IDs of the branches connected to this branch. 
 	
-	while 1:
+	while True:
 		ind = where(flags == 0)[0]
 		if len(ind) == 0:
 			break
@@ -1465,7 +1465,7 @@ def repairBranches(branches,branchConnIDs):
 		node = branches[ii].first
 		if node == None:
 			continue
-		while 1:
+		while True:
 			node = node.next
 			if node == None:
 				break
@@ -1506,12 +1506,12 @@ def repairBranches(branches,branchConnIDs):
 			continue
 		br = branches[ii]
 		jj = branchConnIDs[ii][0]
-		while 1:
+		while True:
 			if jj in indRemove:
 				break
 			insertReverseOrder(indRemove,jj)
 			node = branches[jj].first
-			while 1:
+			while True:
 				br.append(node)
 				node = node.next
 				if node == None:
@@ -1549,7 +1549,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 	#LeftFileIDs = range(len(fileIDs))
 	#LeftFileIDs = [15,11]
 	npTot = 0
-	while 1:
+	while True:
 		ii = -1
 		for jj in LeftFileIDs:
 			try:
@@ -1660,7 +1660,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 			continue
 		if len(branchConnIDs[ii]) == 1:	# chase the branch connections see it ends with no connections. 
 			jj = branchConnIDs[ii][0]
-			while 1:
+			while True:
 				if len(branchConnIDs[jj]) == 0:
 					flag = 1
 					break
@@ -1694,7 +1694,7 @@ def stitchSWCs(filenameCommon=filenameCommon,mag=mag):
 				brnew = dllist()
 				node = branches[ii].last
 				id = P2.ID
-				while 1:
+				while True:
 					node.value.parentID = id
 					id = node.value.ID
 					brnew.append(node)

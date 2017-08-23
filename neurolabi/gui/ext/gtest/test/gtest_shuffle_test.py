@@ -314,8 +314,7 @@ class GTestShuffleUnitTest(gtest_test_utils.TestCase):
     [tests3] = GetTestsForAllIterations({TOTAL_SHARDS_ENV_VAR: '3',
                                          SHARD_INDEX_ENV_VAR: '2'},
                                         [ShuffleFlag(), RandomSeedFlag(25)])
-    sorted_sharded_tests = tests1 + tests2 + tests3
-    sorted_sharded_tests.sort()
+    sorted_sharded_tests = sorted(tests1 + tests2 + tests3)
     sorted_active_tests = []
     sorted_active_tests.extend(ACTIVE_TESTS)
     sorted_active_tests.sort()
