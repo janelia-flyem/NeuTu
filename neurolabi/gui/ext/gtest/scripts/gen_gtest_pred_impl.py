@@ -327,9 +327,9 @@ def UnitTestPreamble():
 
   # A map that defines the values used in the preamble template.
   DEFS = {
-    'today' : time.strftime('%m/%d/%Y'),
-    'year' : time.strftime('%Y'),
-    'command' : '%s %s' % (os.path.basename(sys.argv[0]), sys.argv[1]),
+    'today': time.strftime('%m/%d/%Y'),
+    'year': time.strftime('%Y'),
+    'command': '%s %s' % (os.path.basename(sys.argv[0]), sys.argv[1]),
     }
 
   return (
@@ -413,17 +413,17 @@ def TestsForArity(n):
 
   # A map that defines the values used in the template for the tests.
   DEFS = {
-    'n' : n,
-    'es' : Iter(n, 'e%s', sep=', '),
-    'vs' : Iter(n, 'v%s', sep=', '),
-    'vts' : Iter(n, '#v%s', sep=', '),
-    'tvs' : Iter(n, 'T%s v%s', sep=', '),
-    'int_vs' : Iter(n, 'int v%s', sep=', '),
-    'Bool_vs' : Iter(n, 'Bool v%s', sep=', '),
-    'types' : Iter(n, 'typename T%s', sep=', '),
-    'v_sum' : Iter(n, 'v%s', sep=' + '),
-    'arity' : Arity(n),
-    'Arity' : Title(Arity(n)),
+    'n': n,
+    'es': Iter(n, 'e%s', sep=', '),
+    'vs': Iter(n, 'v%s', sep=', '),
+    'vts': Iter(n, '#v%s', sep=', '),
+    'tvs': Iter(n, 'T%s v%s', sep=', '),
+    'int_vs': Iter(n, 'int v%s', sep=', '),
+    'Bool_vs': Iter(n, 'Bool v%s', sep=', '),
+    'types': Iter(n, 'typename T%s', sep=', '),
+    'v_sum': Iter(n, 'v%s', sep=' + '),
+    'arity': Arity(n),
+    'Arity': Title(Arity(n)),
     }
 
   tests = (
@@ -643,15 +643,15 @@ typedef Predicate%(n)sTest ASSERT_PRED%(n)sTest;
     # A map that defines the values used in the test template.
     defs = DEFS.copy()
     defs.update({
-      'assert' : assrt,
-      'assertion' : assertion,
-      'test_name' : test_name,
-      'pf_type' : pred_format_type,
-      'pf' : pred_format,
-      'arg_type' : arg_type,
-      'arg' : arg,
-      'successful' : successful_or_failed,
-      'expected' : expected_or_not,
+      'assert': assrt,
+      'assertion': assertion,
+      'test_name': test_name,
+      'pf_type': pred_format_type,
+      'pf': pred_format,
+      'arg_type': arg_type,
+      'arg': arg,
+      'successful': successful_or_failed,
+      'expected': expected_or_not,
       })
 
     test = """
