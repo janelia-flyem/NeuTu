@@ -1466,7 +1466,7 @@ def repairBranches(branches,branchConnIDs):
 		if node == None:
 			continue
 		while True:
-			node = node.next
+			node = node.__next__
 			if node == None:
 				break
 			if node.value.parentID != -1:
@@ -1513,7 +1513,7 @@ def repairBranches(branches,branchConnIDs):
 			node = branches[jj].first
 			while True:
 				br.append(node)
-				node = node.next
+				node = node.__next__
 				if node == None:
 					break
 			branches[jj].clear()		
