@@ -165,7 +165,7 @@ class AbstractRpcServer(object):
     req = urllib2.Request(url, data=data)
     if self.host_override:
       req.add_header("Host", self.host_override)
-    for key, value in self.extra_headers.iteritems():
+    for key, value in self.extra_headers.items():
       req.add_header(key, value)
     return req
 
@@ -698,7 +698,7 @@ class VersionControlSystem(object):
 
     patches = dict()
     [patches.setdefault(v, k) for k, v in patch_list]
-    for filename in patches.keys():
+    for filename in list(patches.keys()):
       base_content, new_content, is_binary, status = files[filename]
       file_id_str = patches.get(filename)
       if file_id_str.find("nobase") != -1:
@@ -1324,7 +1324,7 @@ def RealMain(argv, data=None):
   # Send a hash of all the base file so the server can determine if a copy
   # already exists in an earlier patchset.
   base_hashes = ""
-  for file, info in files.iteritems():
+  for file, info in files.items():
     if not info[0] is None:
       checksum = md5.new(info[0]).hexdigest()
       if base_hashes:

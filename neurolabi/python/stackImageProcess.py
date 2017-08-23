@@ -1020,7 +1020,7 @@ def stitchImages(filenameCommon=filenameCommon,overlapList=overlapList):
 	for (i,j) in overlapList:
 		sids.append(i)
 		sids.append(j)
-	sids=OrderedDict.fromkeys(sids).keys()
+	sids=list(OrderedDict.fromkeys(sids).keys())
 	sidsAppear = [[] for i in range(len(sids))]
 	k =0
 	offsets = []
@@ -1042,7 +1042,7 @@ def stitchImages(filenameCommon=filenameCommon,overlapList=overlapList):
 			dx,dy,dz=PairwiseStitch(filenameBase1,filenameBase2)
 		offsets.append(array([dx,dy,dz]))
 	for ss in sidsAppear:
-		ss = OrderedDict.fromkeys(ss).keys()
+		ss = list(OrderedDict.fromkeys(ss).keys())
 	# construct the coordinates of the images. 
 	X = zeros(len(sids))
 	Y = zeros(len(sids)) 

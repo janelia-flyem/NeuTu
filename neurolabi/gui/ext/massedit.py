@@ -159,7 +159,7 @@ class MassEdit(object):
 
     def edit_line(self, line):
         """Edit a single line using the code expression."""
-        for code, code_obj in self.code_objs.items():
+        for code, code_obj in list(self.code_objs.items()):
             line = self.__edit_line(line, code, code_obj)
         return line
 

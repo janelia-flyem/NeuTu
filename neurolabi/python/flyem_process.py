@@ -11,7 +11,7 @@ def get_body_list(source):
         bodyFileList = glob.glob(os.path.join(source, '*.sobj'))
     else:
         f = h5py.File(source)
-        bodyFileList = f['/'].keys()
+        bodyFileList = list(f['/'].keys())
 
     return bodyFileList
 
