@@ -81,7 +81,7 @@ def GetEmail(prompt):
       prompt += " [%s]" % last_email
     except IOError as e:
       pass
-  email = raw_input(prompt + ": ").strip()
+  email = input(prompt + ": ").strip()
   if email:
     try:
       last_email_file = open(last_email_file_name, "w")
@@ -618,7 +618,7 @@ class VersionControlSystem(object):
       for line in unknown_files:
         print line
       prompt = "Are you sure to continue?(y/N) "
-      answer = raw_input(prompt).strip()
+      answer = input(prompt).strip()
       if answer != "y":
         ErrorExit("User aborted")
 
@@ -1293,7 +1293,7 @@ def RealMain(argv, data=None):
     prompt = "Message describing this patch set: "
   else:
     prompt = "New issue subject: "
-  message = options.message or raw_input(prompt).strip()
+  message = options.message or input(prompt).strip()
   if not message:
     ErrorExit("A non-empty message is required")
   rpc_server = GetRpcServer(options)
