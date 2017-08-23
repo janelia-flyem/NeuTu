@@ -47,9 +47,9 @@ log = logging.getLogger(__name__)
 
 
 try:
-    unicode
+    str
 except NameError:
-    unicode = str  # pylint: disable=invalid-name, redefined-builtin
+    str = str  # pylint: disable=invalid-name, redefined-builtin
 
 
 def is_list(arg):
@@ -59,7 +59,7 @@ def is_list(arg):
     iterable.
 
     """
-    return iter(arg) and not isinstance(arg, unicode)
+    return iter(arg) and not isinstance(arg, str)
 
 
 def get_function(fn_name):
@@ -151,10 +151,10 @@ class MassEdit(object):
             log.error("cannot process line '%s' with %s", line, code)
             raise RuntimeError('failed to process line')
         elif isinstance(result, list) or isinstance(result, tuple):
-            line = unicode(' '.join([unicode(res_element)
+            line = str(' '.join([str(res_element)
                                      for res_element in result]))
         else:
-            line = unicode(result)
+            line = str(result)
         return line
 
     def edit_line(self, line):
@@ -215,7 +215,7 @@ class MassEdit(object):
             except Exception as err:
                 log.error("failed to execute %s: %s", " ".join(exec_list), err)
                 raise  # Let the exception be handled at a higher level.
-            to_lines = output.split(unicode("\n"))
+            to_lines = output.split(str("\n"))
         else:
             to_lines = from_lines
 
@@ -259,9 +259,9 @@ class MassEdit(object):
     def append_code_expr(self, code):
         """Compile argument and adds it to the list of code objects."""
         # expects a string.
-        if isinstance(code, str) and not isinstance(code, unicode):
-            code = unicode(code)
-        if not isinstance(code, unicode):
+        if isinstance(code, str) and not isinstance(code, str):
+            code = str(code)
+        if not isinstance(code, str):
             raise TypeError("string expected")
         log.debug("compiling code %s...", code)
         try:
@@ -297,9 +297,9 @@ class MassEdit(object):
           executable (str): os callable executable.
 
         """
-        if isinstance(executable, str) and not isinstance(executable, unicode):
-            executable = unicode(executable)
-        if not isinstance(executable, unicode):
+        if isinstance(executable, str) and not isinstance(executable, str):
+            executable = str(executable)
+        if not isinstance(executable, str):
             raise TypeError("expected executable name as str, not {}".
                             format(executable.__class__.__name__))
         self._executables.append(executable)
