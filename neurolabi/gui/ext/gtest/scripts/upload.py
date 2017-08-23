@@ -79,7 +79,7 @@ def GetEmail(prompt):
       last_email = last_email_file.readline().strip("\n")
       last_email_file.close()
       prompt += " [%s]" % last_email
-    except IOError, e:
+    except IOError as e:
       pass
   email = raw_input(prompt + ": ").strip()
   if email:
@@ -87,7 +87,7 @@ def GetEmail(prompt):
       last_email_file = open(last_email_file_name, "w")
       last_email_file.write(email)
       last_email_file.close()
-    except IOError, e:
+    except IOError as e:
       pass
   else:
     email = last_email
@@ -203,7 +203,7 @@ class AbstractRpcServer(object):
       response_dict = dict(x.split("=")
                            for x in response_body.split("\n") if x)
       return response_dict["Auth"]
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       if e.code == 403:
         body = e.read()
         response_dict = dict(x.split("=", 1) for x in body.split("\n") if x)
@@ -228,7 +228,7 @@ class AbstractRpcServer(object):
                               (self.host, urllib.urlencode(args)))
     try:
       response = self.opener.open(req)
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
       response = e
     if (response.code != 302 or
         response.info()["location"] != continue_location):
@@ -255,7 +255,7 @@ class AbstractRpcServer(object):
       credentials = self.auth_function()
       try:
         auth_token = self._GetAuthToken(credentials[0], credentials[1])
-      except ClientLoginError, e:
+      except ClientLoginError as e:
         if e.reason == "BadAuthentication":
           print >>sys.stderr, "Invalid username or password."
           continue
@@ -327,7 +327,7 @@ class AbstractRpcServer(object):
           response = f.read()
           f.close()
           return response
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
           if tries > 3:
             raise
           elif e.code == 401:
@@ -1223,7 +1223,8 @@ def GuessVCS(options):
     out, returncode = RunShellWithReturnCode(["hg", "root"])
     if returncode == 0:
       return MercurialVCS(options, out.strip())
-  except OSError, (errno, message):
+  except OSError as xxx_todo_changeme:
+    (errno, message) = xxx_todo_changeme.args
     if errno != 2:  # ENOENT -- they don't have hg installed.
       raise
 
@@ -1239,7 +1240,8 @@ def GuessVCS(options):
                                               "--is-inside-work-tree"])
     if returncode == 0:
       return GitVCS(options)
-  except OSError, (errno, message):
+  except OSError as xxx_todo_changeme1:
+    (errno, message) = xxx_todo_changeme1.args
     if errno != 2:  # ENOENT -- they don't have git installed.
       raise
 

@@ -622,7 +622,7 @@ class Env:
   def EvalExp(self, exp):
     try:
       result = eval(exp.python_exp)
-    except Exception, e:
+    except Exception as e:
       print 'ERROR: caught exception %s: %s' % (e.__class__.__name__, e)
       print ('ERROR: failed to evaluate meta expression %s at %s' %
              (exp.python_exp, exp.token.start))
