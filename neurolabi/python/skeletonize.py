@@ -8,13 +8,13 @@ import neutube
 from optparse import OptionParser
 import json
 from LoadDvidObject import LoadDvidObject
-import httplib
+import http.client
 
 def SubmitSkeletonizeService(dvidServer, uuid, bodyArray):
    #curl -X POST -H "Content-Type: application/json" #
    #-d '{"dvid-server": http://emdata1.int.janelia.org, "uuid": "339c", "bodies":[1, 2, 3]}'
    # http://emrecon100.janelia.priv:8082/skeletonize
-    conn = httplib.HTTPConnection("emrecon100.janelia.priv:8082")
+    conn = http.client.HTTPConnection("emrecon100.janelia.priv:8082")
     jsonData = {"dvid-server": dvidServer, "uuid": uuid, "bodies": bodyArray};
     headers = {"Content-type": "application/json"}
     conn.request("POST", "/skeletonize", json.dumps(jsonData), headers)
@@ -115,7 +115,7 @@ def Skeletonize(source, target, config = None):
         tree = skeletonizer.makeSkeleton(stack)
         
     if target == 'dvid':
-        conn = httplib.HTTPConnection(dvidServer)
+        conn = http.client.HTTPConnection(dvidServer)
         array = neutube.EncodeSwcTree(tree)
         dvidRequest = '/api/node/' + uuid + '/skeletons/' + str(source) + '.swc'
         print dvidRequest

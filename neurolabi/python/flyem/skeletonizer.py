@@ -1,8 +1,8 @@
 import os;
 from dvidenv import DvidEnv;
 import subprocess;
-import urlparse;
-import httplib;
+import urllib.parse;
+import http.client;
 from dvidurl import DvidUrl;
 
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     skeletonizer = Skeletonizer()
     skeletonizer.setDvidEnv(DvidEnv("emdata1.int.janelia.org", 8500, "372c")) 
     dvidUrl = DvidUrl(skeletonizer.getDvidEnv())
-    conn = httplib.HTTPConnection(dvidUrl.getServerUrl())
+    conn = http.client.HTTPConnection(dvidUrl.getServerUrl())
     #conn.request("DELETE", dvidUrl.getSkeletonEndPoint(15363212))
     skeletonizer.skeletonize(15363212, bg = True, forceUpdate = True)
     print "Done"

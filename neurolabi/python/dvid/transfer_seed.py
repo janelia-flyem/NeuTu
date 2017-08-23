@@ -5,7 +5,7 @@ import requests
 import urllib
 import urllib2
 import pydvid
-import httplib
+import http.client
 
 class ZDvidNode():
     def __init__(self, address = None, port = 8000, uuid = None):

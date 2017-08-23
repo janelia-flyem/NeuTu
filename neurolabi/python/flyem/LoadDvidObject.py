@@ -5,11 +5,11 @@ import neutube
 from optparse import OptionParser
 import json
 import os
-import httplib
+import http.client
 
 def LoadDvidObject(bodyId, dvidServer, uuid):
     print dvidServer
-    conn = httplib.HTTPConnection(dvidServer)
+    conn = http.client.HTTPConnection(dvidServer)
     
     dvidRequest = '/api/node/' + uuid +'/sp2body/sparsevol/' + str(bodyId)
     print dvidRequest

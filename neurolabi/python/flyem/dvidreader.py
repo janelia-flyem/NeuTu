@@ -4,7 +4,7 @@ Created on May 10, 2016
 @author: zhaot
 '''
 
-import httplib
+import http.client
 import requests
 from dvidurl import DvidUrl
 from dvidenv import DvidEnv

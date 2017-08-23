@@ -4,7 +4,7 @@ import subprocess
 import sys
 import socket
 import jsonschema
-import httplib
+import http.client
 import socket
 import os
 
@@ -100,7 +100,7 @@ def do_skeletonize():
     print config
     
     for bodyId in bodyArray:
-        conn = httplib.HTTPConnection(dvidServer)
+        conn = http.client.HTTPConnection(dvidServer)
         bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
         print '************', bodyLink
         conn.request("GET", bodyLink)

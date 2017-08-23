@@ -31,7 +31,7 @@ against by using the '--rev' option.
 # This code is derived from appcfg.py in the App Engine SDK (open source),
 # and from ASPN recipe #146306.
 
-import cookielib
+import http.cookiejar
 import getpass
 import logging
 import md5
@@ -44,7 +44,7 @@ import subprocess
 import sys
 import urllib
 import urllib2
-import urlparse
+import urllib.parse
 
 try:
   import readline
@@ -366,14 +366,14 @@ class HttpRpcServer(AbstractRpcServer):
     opener.add_handler(urllib2.HTTPErrorProcessor())
     if self.save_cookies:
       self.cookie_file = os.path.expanduser("~/.codereview_upload_cookies")
-      self.cookie_jar = cookielib.MozillaCookieJar(self.cookie_file)
+      self.cookie_jar = http.cookiejar.MozillaCookieJar(self.cookie_file)
       if os.path.exists(self.cookie_file):
         try:
           self.cookie_jar.load()
           self.authenticated = True
           StatusUpdate("Loaded authentication cookies from %s" %
                        self.cookie_file)
-        except (cookielib.LoadError, IOError):
+        except (http.cookiejar.LoadError, IOError):
           # Failed to load cookies - just ignore them.
           pass
       else:
@@ -384,7 +384,7 @@ class HttpRpcServer(AbstractRpcServer):
       os.chmod(self.cookie_file, 0600)
     else:
       # Don't save cookies across runs of update.py.
-      self.cookie_jar = cookielib.CookieJar()
+      self.cookie_jar = http.cookiejar.CookieJar()
     opener.add_handler(urllib2.HTTPCookieProcessor(self.cookie_jar))
     return opener
 
@@ -755,7 +755,7 @@ class SubversionVCS(VersionControlSystem):
       words = line.split()
       if len(words) == 2 and words[0] == "URL:":
         url = words[1]
-        scheme, netloc, path, params, query, fragment = urlparse.urlparse(url)
+        scheme, netloc, path, params, query, fragment = urllib.parse.urlparse(url)
         username, netloc = urllib.splituser(netloc)
         if username:
           logging.info("Removed username from base URL")
@@ -774,12 +774,12 @@ class SubversionVCS(VersionControlSystem):
           logging.info("Guessed CollabNet base = %s", base)
         elif netloc.endswith(".googlecode.com"):
           path = path + "/"
-          base = urlparse.urlunparse(("http", netloc, path, params,
+          base = urllib.parse.urlunparse(("http", netloc, path, params,
                                       query, fragment))
           logging.info("Guessed Google Code base = %s", base)
         else:
           path = path + "/"
-          base = urlparse.urlunparse((scheme, netloc, path, params,
+          base = urllib.parse.urlunparse((scheme, netloc, path, params,
                                       query, fragment))
           logging.info("Guessed base = %s", base)
         return base

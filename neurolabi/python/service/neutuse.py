@@ -4,7 +4,7 @@ import subprocess
 import sys
 import socket
 import jsonschema
-import httplib
+import http.client
 import socket
 import os
 import timer
@@ -12,7 +12,7 @@ import time
 import threading
 import datetime
 import copy
-from Queue import *
+from queue import *
 
 sys.path.append('..')
 sys.path.append('../flyem')
@@ -252,7 +252,7 @@ def do_skeletonize():
 
     for bodyId in bodyArray:
         print dvidUrl.getServerUrl()
-        conn = httplib.HTTPConnection(dvidUrl.getServerUrl())
+        conn = http.client.HTTPConnection(dvidUrl.getServerUrl())
         bodyLink = dvidUrl.getSkeletonEndPoint(bodyId)
         print '************', bodyLink
         conn.request("GET", bodyLink)

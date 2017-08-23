@@ -7,7 +7,7 @@ sys.path.append(os.path.join(baseDir, 'flyem'))
 import neutube
 from optparse import OptionParser
 import json
-import httplib
+import http.client
 import dvid
 
 class DvidServer:
@@ -23,7 +23,7 @@ class DvidServer:
 
     def retrieveBody(self, id):
         print self._host
-        conn = httplib.HTTPConnection(self._host)
+        conn = http.client.HTTPConnection(self._host)
         
         print self.getBodyRequest(id)
         print '**********Response:'
@@ -48,7 +48,7 @@ class DvidServer:
         return sparseObj
     
     def retrieveSkeleton(self, id):
-        conn = httplib.HTTPConnection(self._host) 
+        conn = http.client.HTTPConnection(self._host) 
         print self.getBodyRequest(id)
         print '**********Response:'
         conn.request("GET", self.getSkeletonRequest(id))
@@ -74,7 +74,7 @@ class DvidServer:
         
     
     def hasSkeleton(self, id):
-        conn = httplib.HTTPConnection(self._host)
+        conn = http.client.HTTPConnection(self._host)
         conn.request("GET", self.getSkeletonRequest(id))
 
         r1 = conn.getresponse()

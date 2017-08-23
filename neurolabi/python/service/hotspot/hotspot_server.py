@@ -4,7 +4,7 @@ import subprocess
 import sys
 import socket
 import jsonschema
-import httplib
+import http.client
 import socket
 import os
 import argparse

@@ -9,7 +9,7 @@ import neutube
 from optparse import OptionParser
 import json
 from LoadDvidObject import LoadDvidObject
-import httplib
+import http.client
 import dvid
 
 def computeHotSpot(source, config):

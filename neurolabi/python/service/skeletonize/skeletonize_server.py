@@ -4,7 +4,7 @@ import subprocess
 import sys
 import socket
 import jsonschema
-import httplib
+import http.client
 import socket
 import os
 import argparse
@@ -65,7 +65,7 @@ def do_skeletonize():
     output['error'] = []
 
     print dvidServer
-    conn = httplib.HTTPConnection(dvidServer)
+    conn = http.client.HTTPConnection(dvidServer)
     conn.request("GET", '/api/node/' + uuid + '/skeletons/info')
     r1 = conn.getresponse()
     if not r1.status == 200:
@@ -74,7 +74,7 @@ def do_skeletonize():
         for bodyId in bodyArray:
             bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
             print '************', bodyLink
-            conn = httplib.HTTPConnection(dvidServer)
+            conn = http.client.HTTPConnection(dvidServer)
             conn.request("GET", bodyLink)
             r1 = conn.getresponse()
             swcAvailable = False

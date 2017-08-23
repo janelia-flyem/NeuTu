@@ -1,4 +1,4 @@
-import httplib
+import http.client
 import requests
 from dvidurl import DvidUrl
 from dvidenv import DvidEnv

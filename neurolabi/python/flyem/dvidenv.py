@@ -1,5 +1,5 @@
 import json
-import urlparse
+import urllib.parse
 
 class DvidEnv(object):
     def __init__(self, address = None, port = None, node = None):
@@ -38,7 +38,7 @@ class DvidEnv(object):
     def loadServerConfig(self, config):
         if "dvid-server" in config:
             dvidServer = config["dvid-server"]
-            p = urlparse.urlsplit(dvidServer)
+            p = urllib.parse.urlsplit(dvidServer)
             print p
             if p.netloc:
                 self.address = p.netloc
