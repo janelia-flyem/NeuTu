@@ -2,8 +2,8 @@ import sys
 import os
 import json
 import requests
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import pydvid
 import http.client
 

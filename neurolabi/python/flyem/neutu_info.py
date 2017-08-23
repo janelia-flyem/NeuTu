@@ -1,5 +1,5 @@
 from git import Repo
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from DvidService import DvidService
 from git import Repo
 from git import Git
