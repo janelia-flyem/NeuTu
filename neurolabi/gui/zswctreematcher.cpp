@@ -432,7 +432,7 @@ void ZSwcTreeMatcher::debugOutputMatching(const map<int, int> &matching)
 #if defined(_QT_GUI_USED_)
     qDebug() << "Matched:" << iter->first << ' ' << iter->second;
 #else
-    cout << << "Matched:" << iter->first << ' ' << iter->second << std::endl;
+    std::cout << "Matched:" << iter->first << ' ' << iter->second << std::endl;
 #endif
   }
 }
