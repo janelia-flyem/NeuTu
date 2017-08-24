@@ -7,31 +7,31 @@ def CreateDataBundle(config):
     swcPath = config['swcDir']; #sessionPath + '/' + config['swcDir'];
     
     swcFileList = list();
-    if config.has_key("minBodySize") | config.has_key("maxBodySize"):
+    if ("minBodySize" in config) | ("maxBodySize" in config):
         data = np.loadtxt(config['bundlePath'] + '/bodysize.txt', delimiter=',');
         bodyList = data[:, 0];
         bodySize = data[:, 1];
         lowerThreshold = -1;
         upperThreshold = -1;
-        if config.has_key("minBodySize"):
+        if "minBodySize" in config:
             lowerThreshold = config["minBodySize"];
-        if config.has_key("maxBodySize"):
+        if "maxBodySize" in config:
             upperThreshold = config["maxBodySize"];
 
-        print lowerThreshold;
-        print upperThreshold;
+        print(lowerThreshold);
+        print(upperThreshold);
         for i in range(0, len(bodyList)):
 #             print bodySize[i];
 #             print (bodySize[i] >= lowerThreshold) | (lowerThreshold < 0);
 #             print (bodySize[i] <= upperThreshold) | (upperThreshold < 0);
 #             print ((bodySize[i] >= lowerThreshold) | (lowerThreshold < 0)) & ((bodySize[i] <= upperThreshold) | (upperThreshold < 0));
             if ((bodySize[i] >= lowerThreshold) | (lowerThreshold < 0)) & ((bodySize[i] <= upperThreshold) | (upperThreshold < 0)):
-                print str(int(bodyList[i]));
+                print(str(int(bodyList[i])));
                 swcFileList.append(str(int(bodyList[i])) + '.swc');
     else:
         swcFileList = os.listdir(swcPath);
         
-    print len(swcFileList), " neurons";   
+    print(len(swcFileList), " neurons");   
 
     dataBundle = {"neuron": list()};
 
@@ -61,7 +61,7 @@ def CreateDataBundle(config):
                 tokens = line.split();
                 #print(tokens)
                 if len(tokens) > 1:
-                    print(int(tokens[1]), tokens[3]);
+                    print((int(tokens[1]), tokens[3]));
                     neuronClass[int(tokens[1])] = tokens[3];
                     if tokens[3] == "unknown":
                         neuronClass[int(tokens[1])] = tokens[3] + " " + tokens[4];
@@ -92,14 +92,14 @@ def CreateDataBundle(config):
                 if int(bodyId) in neuronName:
                     neuron["name"] = neuronName[int(bodyId)];
                 
-            if config.has_key("objDir"):
+            if "objDir" in config:
                 neuron["volume"] = (config["objDir"] + "/" + os.path.basename(f)).replace('.swc', '.sobj');
             dataBundle["neuron"].append(neuron);
             
     otherFields = ["image_resolution", "synapse_scale", "synapse", "source_offset", 
                    "source_dimension", "swc_resolution", "image_resolution"];
     for field in otherFields:
-        if config.has_key(field):
+        if field in config:
             dataBundle[field] = config[field];
 
     # dataBundlePath = sessionPath + "/data_bundle_with_class.json";
@@ -108,7 +108,7 @@ def CreateDataBundle(config):
     json.dump(dataBundle, outFile, indent = 2);
     outFile.close();
      
-    print dataBundlePath + " saved";
+    print(dataBundlePath + " saved");
     
 if __name__ == '__main__':
     dataPath = '/Users/zhaot/Work/neutube/neurolabi/data';

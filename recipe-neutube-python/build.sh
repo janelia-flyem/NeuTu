@@ -11,10 +11,15 @@ cd neurolabi
 cd python/module
 make
 
-# Install to the environment prefix
-cp _neutube.so neutube.py ${PREFIX}/lib/python2.7/site-packages/
+PY_VER=$(python -c "import sys; print('{}.{}'.format(*sys.version_info[:2]))")
+PY_ABIFLAGS=$(python -c "import sys; print('' if sys.version_info.major == 2 else sys.abiflags)")
+PY_ABI=${PY_VER}${PY_ABIFLAGS}
 
-NEUTUBE_SO=${PREFIX}/lib/python2.7/site-packages/_neutube.so
+# Install to the environment prefix
+cp _neutube.so neutube.py ${PREFIX}/lib/python${PY_VER}/site-packages/
+
+
+NEUTUBE_SO=${PREFIX}/lib/python${PY_VER}/site-packages/_neutube.so
 
 # Adjust RPATH and lib references
 if [ $(uname) == 'Darwin' ]; then

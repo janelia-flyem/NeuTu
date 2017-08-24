@@ -4,7 +4,7 @@ import subprocess
 import sys
 import socket
 import jsonschema
-import httplib
+import http.client
 import socket
 import os
 import argparse
@@ -37,7 +37,7 @@ def computing_hotspot():
 
 @post('/hotspot')
 def compute_hotspot():
-    print request.content_type
+    print(request.content_type)
     bodyArray = [];
     dvidServer = ns.getDefaultDvidServer()
     uuid = ns.getDefaultUuid()
@@ -45,24 +45,24 @@ def compute_hotspot():
         bodyIdStr = request.forms.get('bodyId')
         bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
     elif request.content_type == 'application/json':
-        print request.json
+        print(request.json)
         jsonObj = request.json
         try:
             jsonschema.validate(jsonObj, json.loads(ns.getSchema('hotspot', 'post')))
         except jsonschema.exceptions.ValidationError as inst:
-            print 'Invalid json input'
-            print inst
+            print('Invalid json input')
+            print(inst)
             return '<p>Hotspot computation for ' + str(bodyArray) + ' failed.</p>'
         uuid = jsonObj['uuid']
-        if jsonObj.has_key('dvid-server'):
+        if 'dvid-server' in jsonObj:
             dvidServer = jsonObj['dvid-server']
         bodyArray = jsonObj['bodies']
     
     output = {}
     config = {'dvid-server': dvidServer, 'uuid': uuid}
 
-    print '********'
-    print config
+    print('********')
+    print(config)
     
     global qualityAnalyzer
 
@@ -80,7 +80,7 @@ def compute_hotspot():
 @hook('after_request')
 def enable_cors(fn=None):
     def _enable_cors(*args, **kwargs):
-        print 'enable cors'
+        print('enable cors')
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Expose-Headers'] = 'Content-Type'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
@@ -98,7 +98,7 @@ def enable_cors(fn=None):
 @route('/interface/interface.raml', method=['GET', 'OPTIONS'])
 @enable_cors
 def retrieveRaml():
-    print 'retrieve raml'
+    print('retrieve raml')
     fileResponse = static_file('interface.raml', root='.', mimetype='application/raml+yaml')
     fileResponse.headers['Access-Control-Allow-Origin'] = '*'
 
@@ -119,7 +119,7 @@ def parseJson():
     return '<p>' + data['head'] + '</p>'
 
 if __name__ == '__main__': 
-    print 'Starting the server ...'
+    print('Starting the server ...')
     parser = argparse.ArgumentParser();
     parser.add_argument("--port", dest="port", type = int, help="port", default=8081);
     args = parser.parse_args()

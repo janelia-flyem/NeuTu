@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description='Process arguments for running spli
 parser.add_argument('--config', dest='config', type=str, help='Configuration file in YAML format')
 parser.add_argument('--info', help='Show task information', action='store_true')
 args=parser.parse_args()
-print args.config
+print(args.config)
 
 with open(args.config, 'r') as fp:
     config = yaml.load(fp)
@@ -21,7 +21,7 @@ taskServer = config['task_server']
 
 taskEnv = dvidenv.DvidEnv(host = taskServer['host'], port=taskServer['port'], uuid=taskServer['uuid'])
 split = bodysplit.BodySplit(config['command'], taskEnv)
-print split._neutu
+print(split._neutu)
 #split.run('task__http-++emdata1.int.janelia.org-8500+api+node+b6bc+bodies+sparsevol+12007338')
 
 dc = dvidio.DvidClient(env = taskEnv)
@@ -34,7 +34,7 @@ splitTaskList = dc.read_split_task_keys()
 def process():
     while True:
         splitTaskList = dc.read_split_task_keys()
-        print splitTaskList
+        print(splitTaskList)
         for task in splitTaskList:
             split.run(task)
         time.sleep(10)

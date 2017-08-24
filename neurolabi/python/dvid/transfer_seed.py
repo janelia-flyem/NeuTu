@@ -2,10 +2,10 @@ import sys
 import os
 import json
 import requests
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import pydvid
-import httplib
+import http.client
 
 class ZDvidNode():
     def __init__(self, address = None, port = 8000, uuid = None):
@@ -135,7 +135,7 @@ class ZDvidReader():
 
     def readSplitSeedList(self, oldFormat = False):
         url = self.node.getSplitSeedUrl(self.dvidLabel, [0, 'a'], oldFormat)
-        print url
+        print(url)
         r = requests.get(url)
         
         return r.json()
@@ -180,13 +180,13 @@ if __name__ == '__main__':
 #       
     targetDvidReader = ZDvidReader(targtDvidNode, targetDvidLabel)
     seedList = targetDvidReader.readSplitSeedList()
-    print seedList
+    print(seedList)
     for seed in seedList:
         bodyId = targetDvidLabel.getBodyIdFromSeedKey(seed)
-        print bodyId
+        print(bodyId)
         if bodyId:
             seed = targetDvidReader.readSplitSeed(bodyId)
-            print len(seed['seeds'])
+            print(len(seed['seeds']))
     
     
 #     

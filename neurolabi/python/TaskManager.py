@@ -9,7 +9,7 @@ class Scheduler:
 
     def submit(self, command, dependency = None, finishedFlag = None):
         if not isinstance(dependency, list):
-            print 'depencency must be a list. Abort'
+            print('depencency must be a list. Abort')
             return
 
         jobPath = os.path.join(self.jobDir, str(uuid.uuid4()) + '.sh')
