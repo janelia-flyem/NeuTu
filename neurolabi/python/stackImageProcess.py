@@ -679,7 +679,7 @@ def smooth(x,window_len=11,window='hanning'):
         w=eval('numpy.'+window+'(window_len)')
 
     y=numpy.convolve(w/w.sum(), s, mode='valid')
-    return y[(window_len/2-1):-(window_len/2)]
+    return y[(window_len//2-1):-(window_len//2)]
 
 def extrap1d(interpolator):
     xs = interpolator.x
@@ -1230,8 +1230,8 @@ def PairwiseStitch(filenameBase1,filenameBase2, iplot=0):
 			z2d[0:d2] = reshape(z2.swapaxes(0, 2), d2)
 			z1d = reshape(z1.swapaxes(0, 2), nx*ny*nz1)
 		crrs = (ifftn(fftn(z1d)*ifftn(z2d))).real
-		dz = argmax(crrs)/(nx*ny)
-		if dz > nz/2:
+		dz = argmax(crrs) // (nx*ny)
+		if dz > (nz // 2):
 			dz = dz - nz
 		if iplot == 1:
 			subplot(1, 1, 1); cla();
