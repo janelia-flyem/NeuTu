@@ -9,7 +9,7 @@ package:
   {% endif %}
 
 source:
-    path: ../
+    git_url: ../
 
 build:
   number: 0
