@@ -500,6 +500,8 @@ void Z3DMeshRenderer::render(Z3DEye eye)
         } else if (m_colorSource.isSelected("MeshColor") && (*m_meshPt)[i]->numColors() < (*m_meshPt)[i]->numVertices()) {
           shader.setUseCustomColorUniform(true);
           shader.setCustomColorUniform(glm::vec4(0.f, 0.f, 0.f, 1.f));
+        } else {
+          shader.setUseCustomColorUniform(false);
         }
 
         GLenum type = (*m_meshPt)[i]->type();
@@ -564,6 +566,8 @@ void Z3DMeshRenderer::render(Z3DEye eye)
       } else if (m_colorSource.isSelected("MeshColor") && (*m_meshPt)[i]->numColors() < (*m_meshPt)[i]->numVertices()) {
         shader.setUseCustomColorUniform(true);
         shader.setCustomColorUniform(glm::vec4(0.f, 0.f, 0.f, 1.f));
+      } else {
+        shader.setUseCustomColorUniform(false);
       }
 
       const std::vector<glm::vec3>& vertices = (*m_meshPt)[i]->vertices();
