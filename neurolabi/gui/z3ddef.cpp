@@ -31,7 +31,7 @@ std::string NeuTube3D::GetWindowKeyString(NeuTube3D::EWindowType type)
     return "window3d_body";
   case NeuTube3D::TYPE_SKELETON:
     return "window3d_skeleton";
-  case NeuTube3D::TYPE_NEU3_SKELETON:
+  case NeuTube3D::TYPE_NEU3:
     return "window3d_neu3_skeleton";
   case NeuTube3D::TYPE_MESH:
     return "window3d_mesh";

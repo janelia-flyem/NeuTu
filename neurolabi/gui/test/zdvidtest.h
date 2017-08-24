@@ -406,7 +406,7 @@ TEST(ZDvidTest, ZDvidUrl)
               "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));
   ASSERT_EQ(0, ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/"));
-  ASSERT_EQ(123451234512345L, ZDvidUrl::GetBodyId(
+  ASSERT_EQ(uint64_t(123451234512345L), ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/123451234512345"));
 
   ASSERT_EQ("head__6c8409b833d57d9c62856b6cab608aa5",

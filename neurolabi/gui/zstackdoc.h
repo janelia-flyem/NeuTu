@@ -173,6 +173,7 @@ public: //attributes
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
+  bool hasMesh() const;
 
   // hasSwc() returns true iff it has a non-empty SWC object.
   bool hasSwcData() const;

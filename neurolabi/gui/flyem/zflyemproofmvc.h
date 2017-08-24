@@ -142,6 +142,7 @@ public:
   void diagnose();
 
   Z3DWindow* makeExternalSkeletonWindow(NeuTube3D::EWindowType windowType);
+  Z3DWindow* makeExternalMeshWindow(NeuTube3D::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
   Z3DWindow* makeMeshWindow();
 
@@ -396,6 +397,8 @@ private:
   void makeSplitWindow();
   void makeExternalNeuronWindow();
   void makeOrthoWindow();
+
+  ZWindowFactory makeExternalWindowFactory(NeuTube3D::EWindowType windowType);
 
   ZFlyEmBody3dDoc *makeBodyDoc(FlyEM::EBodyType bodyType);
 

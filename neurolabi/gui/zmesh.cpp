@@ -8,7 +8,6 @@
 #include "zcubearray.h"
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkSphereSource.h>
 #include <vtkTubeFilter.h>
 #include <vtkFloatArray.h>
@@ -17,10 +16,12 @@
 #include <vtkTriangleFilter.h>
 #include <vtkCleanPolyData.h>
 #include <vtkAppendPolyData.h>
+#include <vtkOBBTree.h>
 #include <vtkCellArray.h>
 #include <boost/math/constants/constants.hpp>
 #include <map>
 #include "misc/zvtkutil.h"
+#include "zpoint.h"
 
 ZMesh::ZMesh(GLenum type)
 {
@@ -45,6 +46,8 @@ void ZMesh::swap(ZMesh& rhs) noexcept
   m_normals.swap(rhs.m_normals);
   m_colors.swap(rhs.m_colors);
   m_indices.swap(rhs.m_indices);
+
+  validateObbTree(false);
 }
 
 void ZMesh::setLabel(uint64_t label)
@@ -81,6 +84,7 @@ void ZMesh::load(const QString& filename)
 {
   ZMeshIO::instance().load(filename, *this);
   setSource(qUtf8Printable(filename));
+  validateObbTree(false);
 }
 
 void ZMesh::save(const QString& filename, const std::string& format) const
@@ -137,6 +141,8 @@ void ZMesh::setVertices(const std::vector<glm::dvec3>& vertices)
   for (const auto& v : vertices) {
     m_vertices.push_back(glm::vec3(v));
   }
+
+  validateObbTree(false);
 }
 
 void ZMesh::setNormals(const std::vector<glm::dvec3>& normals)
@@ -231,6 +237,7 @@ void ZMesh::clear()
   m_normals.clear();
   m_colors.clear();
   m_indices.clear();
+  validateObbTree(false);
 }
 
 size_t ZMesh::numTriangles() const
@@ -1019,6 +1026,8 @@ void ZMesh::appendTriangle(const ZMesh& mesh, const glm::uvec3& triangle)
   m_vertices.push_back(mesh.m_vertices[triangle[1]]);
   m_vertices.push_back(mesh.m_vertices[triangle[2]]);
 
+  validateObbTree(false);
+
   if (mesh.num1DTextureCoordinates() > 0) {
     m_1DTextureCoordinates.push_back(mesh.m_1DTextureCoordinates[triangle[0]]);
     m_1DTextureCoordinates.push_back(mesh.m_1DTextureCoordinates[triangle[1]]);
@@ -1156,5 +1165,82 @@ void ZMesh::pushObjectColor()
                             getColor().blueF(), 1.0);
   }
 }
+
+void ZMesh::swapXZ()
+{
+  for (glm::vec3 &vertex : m_vertices) {
+    std::swap(vertex[0], vertex[2]);
+  }
+
+  validateObbTree(false);
+
+  for (glm::vec3 &normal : m_normals) {
+    std::swap(normal[0], normal[2]);
+//    normal[0] = -normal[0];
+//    normal[1] = -normal[1];
+//    normal[2] = -normal[2];
+  }
+}
+
+void ZMesh::translate(double x, double y, double z)
+{
+  for (glm::vec3 &vertex : m_vertices) {
+    vertex[0] += x;
+    vertex[1] += y;
+    vertex[2] += z;
+  }
+  validateObbTree(false);
+}
+
+void ZMesh::scale(double sx, double sy, double sz)
+{
+  for (glm::vec3 &vertex : m_vertices) {
+    vertex[0] *= sx;
+    vertex[1] *= sy;
+    vertex[2] *= sz;
+  }
+  validateObbTree(false);
+}
+
+vtkSmartPointer<vtkOBBTree> ZMesh::getObbTree() const
+{
+  if (!isObbTreeValid()) {
+    m_obbTree = vtkSmartPointer<vtkOBBTree>::New();
+    vtkSmartPointer<vtkPolyData> poly = meshToVtkPolyData(*this);
+    m_obbTree->SetDataSet(poly);
+    m_obbTree->BuildLocator();
+    validateObbTree(true);
+  }
+
+  return m_obbTree;
+}
+std::vector<ZPoint> ZMesh::intersectLineSeg(
+    const ZPoint &start, const ZPoint &end) const
+{
+  vtkSmartPointer<vtkOBBTree> obbTree = getObbTree();
+
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  double a0[3] = {start.getX(), start.getY(), start.getZ()};
+  double a1[3] = {end.getX(), end.getY(), end.getZ()};
+  obbTree->IntersectWithLine(a0, a1, points, NULL);
+#ifdef _DEBUG_
+  std::cout << "Intersect start: " << a0[0] << " " << a0[1] << " " << a0[2] << std::endl;
+  std::cout << "Intersect end: " << a1[0] << " " << a1[1] << " " << a1[2] << std::endl;
+#endif
+  std::vector<ZPoint> result;
+  int n = points->GetNumberOfPoints();
+#ifdef _DEBUG_
+  std::cout << n << " intersections" << std::endl;
+#endif
+  double point[3] = {0, 0, 0};
+  for (int i = 0; i < n; ++i) {
+    points->GetPoint(i, point);
+    result.emplace_back(point[0], point[1], point[2]);
+  }
+
+
+  return result;
+}
+
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZMesh)

@@ -28,12 +28,6 @@ ZWindowFactory::~ZWindowFactory()
 
 void ZWindowFactory::init()
 {
-  m_parentWidget = NULL;
-  m_showVolumeBoundBox = false;
-  m_showControlPanel = true;
-  m_showObjectView = true;
-  m_volumeMode = NeuTube3D::VR_AUTO;
-  m_showStatusBar = false;
 }
 
 Z3DWindow* ZWindowFactory::make3DWindow(
@@ -67,7 +61,8 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
   Z3DWindow *window = NULL;
 
   if (ZSystemInfo::instance().is3DSupported() && doc) {
-    window = new Z3DWindow(doc, mode, false, m_parentWidget);
+    window = new Z3DWindow(
+          doc, mode, m_windowType, false, m_parentWidget);
     window->show();
     window->raise();
 
@@ -240,6 +235,11 @@ void ZWindowFactory::setParentWidget(QWidget *parentWidget)
 void ZWindowFactory::setWindowGeometry(const QRect &rect)
 {
   m_windowGeometry = rect;
+}
+
+void ZWindowFactory::setWindowType(NeuTube3D::EWindowType type)
+{
+  m_windowType = type;
 }
 
 

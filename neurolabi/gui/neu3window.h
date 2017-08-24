@@ -14,6 +14,7 @@ class QToolBar;
 class ZFlyEmBody3dDoc;
 class ZFlyEmProofDoc;
 class ZSwcTree;
+class ZMesh;
 
 class Neu3Window : public QMainWindow
 {
@@ -49,6 +50,8 @@ protected:
 private slots:
   void processSwcChangeFrom3D(
       QList<ZSwcTree*> selected,QList<ZSwcTree*>deselected);
+  void processMeshChangedFrom3D(
+      QList<ZMesh*> selected, QList<ZMesh*>deselected);
 
 private:
   void createDockWidget();

@@ -4,10 +4,14 @@
 #include "z3dgl.h"
 
 #include <vector>
+#include <vtkSmartPointer.h>
 
 #include "zbbox.h"
 #include "zstackobject.h"
 #include "QsLog.h"
+
+class ZPoint;
+class vtkOBBTree;
 
 struct ZMeshProperties
 {
@@ -108,7 +112,7 @@ public:
   { return m_vertices; }
 
   void setVertices(const std::vector<glm::vec3>& vertices)
-  { m_vertices = vertices; }
+  { m_vertices = vertices; validateObbTree(false);}
 
   std::vector<glm::dvec3> doubleVertices() const;
 
@@ -150,7 +154,7 @@ public:
   { return m_indices; }
 
   void setIndices(const std::vector<GLuint>& indices)
-  { m_indices = indices; }
+  { m_indices = indices; validateObbTree(false);}
 
   bool hasIndices() const
   { return !m_indices.empty(); }
@@ -294,6 +298,9 @@ public:
 
   void pushObjectColor();
 
+  std::vector<ZPoint> intersectLineSeg(
+      const ZPoint &start, const ZPoint &end) const;
+
 private:
   enum class BooleanOperationType
   {
@@ -308,7 +315,18 @@ private:
 
   size_t numCoverCubes(double cubeEdgeLength);
 
-  static ZMesh booleanOperation(const ZMesh& mesh1, const ZMesh& mesh2, BooleanOperationType type);
+  static ZMesh booleanOperation(
+      const ZMesh& mesh1, const ZMesh& mesh2, BooleanOperationType type);
+
+  bool isObbTreeValid() const {
+    return m_isObbTreeValid;
+  }
+
+  void validateObbTree(bool valid) const {
+    m_isObbTreeValid = valid;
+  }
+
+  vtkSmartPointer<vtkOBBTree> getObbTree() const;
 
 private:
   friend class ZMeshIO;
@@ -323,6 +341,9 @@ private:
   std::vector<glm::vec4> m_colors;
   std::vector<GLuint> m_indices;
   uint64_t m_label = 0;
+
+  mutable bool m_isObbTreeValid = false;
+  mutable vtkSmartPointer<vtkOBBTree> m_obbTree;
 };
 
 #endif // ZMESH_H

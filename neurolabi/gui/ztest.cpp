@@ -24320,17 +24320,18 @@ void ZTest::test(MainWindow *host)
    stack.printInfo();
 #endif
 
-#if 0
+#if 1
    ZMesh mesh;
    ZMeshIO::instance().load(
          "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
-   mesh.swapXZ();
    mesh.translate(404, 480, 180);
    mesh.scale(8, 8, 8);
-   ZMeshIO::instance().save(mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
+//   mesh.swapXZ();
+   ZMeshIO::instance().save(
+         mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
 #endif
 
-#if 1
+#if 0
    ZMesh mesh;
    ZMeshIO::instance().load(
          "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);

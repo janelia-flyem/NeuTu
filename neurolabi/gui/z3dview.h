@@ -161,7 +161,6 @@ private:
   void graph3DDataChanged();
   void todoDataChanged();
   void surfaceDataChanged();
-
   void objectSelectionChanged(const QList<ZStackObject*>& selected,
                               const QList<ZStackObject*>& deselected);
 

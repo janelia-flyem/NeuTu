@@ -2,10 +2,6 @@
 
 #include <utility>
 
-#include "zmesh.h"
-#include "zioutils.h"
-#include "zexception.h"
-#include "QsLog.h"
 #include <assimp/Importer.hpp>
 #include <assimp/Exporter.hpp>
 #include <assimp/scene.h>
@@ -16,6 +12,11 @@
 #include <draco/compression/decode.h>
 #include <QFile>
 #include <memory>
+
+#include "zmesh.h"
+#include "zioutils.h"
+#include "zexception.h"
+#include "QsLog.h"
 
 namespace {
 
@@ -633,29 +634,4 @@ void ZMeshIO::readDracoMesh(const QString& filename, ZMesh& mesh) const
   inputFileStream.close();
 
   readDracoMeshFromMemory(data.data(), data.size(), mesh);
-}
-
-void ZMesh::swapXZ()
-{
-  for (glm::vec3 &vertex : m_vertices) {
-    std::swap(vertex[0], vertex[2]);
-  }
-}
-
-void ZMesh::translate(double x, double y, double z)
-{
-  for (glm::vec3 &vertex : m_vertices) {
-    vertex[0] += x;
-    vertex[1] += y;
-    vertex[2] += z;
-  }
-}
-
-void ZMesh::scale(double sx, double sy, double sz)
-{
-  for (glm::vec3 &vertex : m_vertices) {
-    vertex[0] *= sx;
-    vertex[1] *= sy;
-    vertex[2] *= sz;
-  }
 }

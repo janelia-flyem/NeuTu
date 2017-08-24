@@ -650,6 +650,18 @@ void ZFlyEmBody3dDoc::updateBodyModelSelection()
       getDataBuffer()->addUpdate(tree, ZStackDocObjectUpdate::ACTION_DESELECT);
     }
   }
+
+  QList<ZMesh*> meshList = getMeshList();
+  foreach (ZMesh *mesh, meshList) {
+    if (m_selectedBodySet.contains(mesh->getLabel())) {
+      if (!mesh->isSelected()) {
+        getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::ACTION_SELECT);
+      }
+    } else if (mesh->isSelected()) {
+      getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::ACTION_DESELECT);
+    }
+  }
+
   getDataBuffer()->deliver();
 }
 
@@ -867,7 +879,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     std::cout << "Vertex count: " << mesh->vertices().size() << std::endl;
 #endif
     mesh->setColor(color);
-//    mesh->pushObjectColor();
+    mesh->pushObjectColor();
 
     updateBodyFunc(bodyId, mesh);
 
