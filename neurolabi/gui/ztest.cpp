@@ -32,6 +32,8 @@
 #include <string>
 #include <set>
 #include <unordered_set>
+#include <vtkOBBTree.h>
+#include <vtkPolyData.h>
 
 #if defined(_ENABLE_LOWTIS_)
 #include <lowtis/LowtisConfig.h>
@@ -137,6 +139,8 @@
 #include "neutubeconfig.h"
 #include "tz_darray.h"
 #include "zhdf5writer.h"
+#include "zmesh.h"
+#include "zmeshio.h"
 #include "flyem/zbcfset.h"
 #include "flyem/zflyemstackframe.h"
 #include "zmoviemaker.h"
@@ -214,6 +218,7 @@
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "z3dmainwindow.h"
+#include "misc/zvtkutil.h"
 #include "test/zswcgeneratortest.h"
 #include "test/zflyemneuronimagefactorytest.h"
 #include "test/zspgrowtest.h"
@@ -12213,7 +12218,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Volume: " << volume << std::endl;
 #endif
 
-#if 1
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
 
   /*
@@ -24307,6 +24312,48 @@ void ZTest::test(MainWindow *host)
      const ZPoint &pt = *iter;
      std::cout << pt.toString() << std::endl;
    }
+#endif
+
+#if 0
+   ZStack stack;
+   stack.load(GET_TEST_DATA_DIR + "/test.tif");
+   stack.printInfo();
+#endif
+
+#if 0
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
+   mesh.swapXZ();
+   mesh.translate(404, 480, 180);
+   mesh.scale(8, 8, 8);
+   ZMeshIO::instance().save(mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
+#endif
+
+#if 1
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
+
+   vtkSmartPointer<vtkPolyData> poly = meshToVtkPolyData(mesh);
+
+   vtkSmartPointer<vtkOBBTree> obbTree =
+       vtkSmartPointer<vtkOBBTree>::New();
+   obbTree->SetDataSet(poly);
+   obbTree->BuildLocator();
+
+   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+   double a0[] = {0, 352.376, 54.7405};
+   double a1[] = {10, 352.376, 54.7405};
+   obbTree->IntersectWithLine(a0, a1, points, NULL);
+
+   std::cout << "#Intersections: " << points->GetNumberOfPoints() << std::endl;
+
+   points->GetPoint(0, a0);
+   points->GetPoint(1, a1);
+
+   std::cout << a0[0] << " " << a0[1] << " " << a0[2] << std::endl;
+   std::cout << a1[0] << " " << a1[1] << " " << a1[2] << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

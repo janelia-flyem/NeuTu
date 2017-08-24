@@ -735,6 +735,7 @@ void ZFlyEmBody3dDoc::updateBody(
     if (mesh != NULL) {
       if (mesh->getColor() != color) {
         mesh->setColor(color);
+        mesh->pushObjectColor();
         processObjectModified(mesh);
       }
     }
@@ -862,8 +863,11 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
   if (mesh != NULL) {
 #ifdef _DEBUG_
     std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(mesh) << std::endl;
+    std::cout << "Color count: " << mesh->colors().size() << std::endl;
+    std::cout << "Vertex count: " << mesh->vertices().size() << std::endl;
 #endif
     mesh->setColor(color);
+//    mesh->pushObjectColor();
 
     updateBodyFunc(bodyId, mesh);
 
@@ -1341,13 +1345,27 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
   ZOUT(LTRACE(), 5) << "Remove body:" << bodyId << "Done.";
 }
 
+ZStackObject* ZFlyEmBody3dDoc::retriveBodyObject(
+    uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType,
+    ZStackObject::EType objType)
+{
+  ZStackObject *obj = getObjectGroup().findFirstSameSource(
+        objType, ZStackObjectSourceFactory::MakeFlyEmBodySource(
+          bodyId, zoom, bodyType));
+
+  return obj;
+}
+
+ZStackObject* ZFlyEmBody3dDoc::retriveBodyObject(uint64_t bodyId, int zoom)
+{
+  return retriveBodyObject(bodyId, zoom, getBodyType(), getBodyObjectType());
+}
+
 ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(
     uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
 {
-  ZStackObject *obj = getObjectGroup().findFirstSameSource(
-        ZStackObject::TYPE_SWC,
-        ZStackObjectSourceFactory::MakeFlyEmBodySource(
-          bodyId, zoom, bodyType));
+  ZStackObject *obj =
+      retriveBodyObject(bodyId, zoom, bodyType, ZStackObject::TYPE_SWC);
 
   ZSwcTree *tree = dynamic_cast<ZSwcTree*>(obj);
 
@@ -1356,10 +1374,7 @@ ZSwcTree* ZFlyEmBody3dDoc::retrieveBodyModel(
 
 ZMesh* ZFlyEmBody3dDoc::retrieveBodyMesh(uint64_t bodyId, int zoom)
 {
-  ZStackObject *obj = getObjectGroup().findFirstSameSource(
-        ZStackObject::TYPE_MESH,
-        ZStackObjectSourceFactory::MakeFlyEmBodySource(
-          bodyId, zoom, FlyEM::BODY_MESH));
+  ZStackObject *obj = retriveBodyObject(bodyId, zoom);
 
   ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
 

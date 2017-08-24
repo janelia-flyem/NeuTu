@@ -3165,6 +3165,10 @@ bool ZStackDoc::importMesh(const QString& filePath)
   try {
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
     ZMesh *mesh = new ZMesh(filePath);
+#ifdef _DEBUG_2
+    mesh->setColor(255, 0, 0, 255);
+    mesh->pushObjectColor();
+#endif
     addObject(mesh);
     endObjectModifiedMode();
     notifyObjectModified();

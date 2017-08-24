@@ -434,6 +434,10 @@ void Z3DMeshRenderer::render(Z3DEye eye)
         const std::vector<glm::vec4>& colors = (*m_meshPt)[i]->colors();
         const std::vector<GLuint>& triangleIndexes = (*m_meshPt)[i]->indices();
 
+#ifdef _DEBUG_
+        std::cout << "Color count in renderer: " << colors.size() << std::endl;
+#endif
+
         int bufIdx = 0;
         glEnableVertexAttribArray(attr_vertex);
         m_VBOs[i].bind(GL_ARRAY_BUFFER, bufIdx++);

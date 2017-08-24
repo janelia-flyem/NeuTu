@@ -246,6 +246,10 @@ protected:
   void makeKeyProcessor() override;
 
 private:
+  ZStackObject* retriveBodyObject(
+      uint64_t bodyId, int zoom,
+      FlyEM::EBodyType bodyType, ZStackObject::EType objType);
+  ZStackObject* retriveBodyObject(uint64_t bodyId, int zoom);
   ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
   ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);

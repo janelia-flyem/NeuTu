@@ -790,7 +790,8 @@ HEADERS += mainwindow.h \
     protocols/taskbodyreview.h \
     flyem/zflyembody3ddoccommand.h \
     flyem/zflyembody3ddocmenufactory.h \
-    zopenglwidget.h
+    zopenglwidget.h \
+    misc/zvtkutil.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1385,7 +1386,8 @@ SOURCES += main.cpp \
     protocols/taskbodyreview.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \
-    zopenglwidget.cpp
+    zopenglwidget.cpp \
+    misc/zvtkutil.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

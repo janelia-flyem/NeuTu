@@ -2,10 +2,12 @@
 #define ZMESH_H
 
 #include "z3dgl.h"
+
+#include <vector>
+
 #include "zbbox.h"
 #include "zstackobject.h"
 #include "QsLog.h"
-#include <vector>
 
 struct ZMeshProperties
 {
@@ -285,6 +287,12 @@ public:
   { return booleanOperation(mesh1, mesh2, BooleanOperationType::Difference); }
 
   static ZMesh merge(const std::vector<ZMesh>& meshes);
+
+  void swapXZ();
+  void translate(double x, double y, double z);
+  void scale(double sx, double sy, double sz);
+
+  void pushObjectColor();
 
 private:
   enum class BooleanOperationType

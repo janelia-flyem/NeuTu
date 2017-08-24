@@ -82,6 +82,7 @@
 #include "dialogs/flyembodyiddialog.h"
 #include "zstackdockeyprocessor.h"
 #include "z3dgraphfilter.h"
+#include "z3dmeshfilter.h"
 #include "flyem/zflyembody3ddocmenufactory.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
@@ -760,6 +761,7 @@ Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_meshWindow);
 
+  m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
   m_meshWindow->setWindowType(NeuTube3D::TYPE_MESH);
   m_meshWindow->readSettings();
 

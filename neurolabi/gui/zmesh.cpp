@@ -20,86 +20,7 @@
 #include <vtkCellArray.h>
 #include <boost/math/constants/constants.hpp>
 #include <map>
-
-namespace {
-
-ZMesh vtkPolyDataToMesh(vtkPolyData* polyData)
-{
-  CHECK(polyData);
-  vtkPoints* points = polyData->GetPoints();
-  vtkCellArray* polys = polyData->GetPolys();
-  vtkDataArray* pointsNormals = polyData->GetPointData()->GetNormals();
-
-  std::vector<glm::dvec3> vertices(points->GetNumberOfPoints());
-  std::vector<glm::dvec3> normals(pointsNormals->GetNumberOfTuples());
-  CHECK(vertices.size() == normals.size());
-  std::vector<gl::GLuint> indices;
-  for (vtkIdType id = 0; id < points->GetNumberOfPoints(); ++id) {
-    points->GetPoint(id, &vertices[id][0]);
-    pointsNormals->GetTuple(id, &normals[id][0]);
-  }
-  vtkIdType npts;
-  vtkIdType* pts;
-  for (int i = 0; i < polyData->GetNumberOfPolys(); ++i) {
-    int h = polys->GetNextCell(npts, pts);
-    if (h == 0) {
-      break;
-    }
-    if (npts == 3) {
-      indices.push_back(pts[0]);
-      indices.push_back(pts[1]);
-      indices.push_back(pts[2]);
-    }
-  }
-
-  ZMesh msh;
-  msh.setVertices(vertices);
-  msh.setIndices(indices);
-  msh.setNormals(normals);
-  return msh;
-}
-
-vtkSmartPointer<vtkPolyData> meshToVtkPolyData(const ZMesh& mesh)
-{
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  points->SetDataType(VTK_FLOAT);
-  const std::vector<glm::vec3>& vertices = mesh.vertices();
-  points->Allocate(vertices.size());
-  for (size_t i = 0; i < vertices.size(); ++i) {
-    points->InsertPoint(i, vertices[i].x, vertices[i].y, vertices[i].z);
-  }
-
-  vtkSmartPointer<vtkFloatArray> nrmls = vtkSmartPointer<vtkFloatArray>::New();
-  const std::vector<glm::vec3>& normals = mesh.normals();
-  CHECK(normals.size() == vertices.size());
-  nrmls->SetNumberOfComponents(3);
-  nrmls->Allocate(3 * normals.size());
-  nrmls->SetName("Normals");
-  for (size_t i = 0; i < normals.size(); ++i) {
-    nrmls->InsertTuple(i, &normals[i][0]);
-  }
-
-  vtkSmartPointer<vtkCellArray> polys = vtkSmartPointer<vtkCellArray>::New();
-  size_t numTriangles = mesh.numTriangles();
-  polys->Allocate(numTriangles * 3);
-  vtkIdType pts[3];
-  for (size_t i = 0; i < numTriangles; ++i) {
-    glm::uvec3 tri = mesh.triangleIndices(i);
-    pts[0] = tri[0];
-    pts[1] = tri[1];
-    pts[2] = tri[2];
-    polys->InsertNextCell(3, pts);
-  }
-
-  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
-  polyData->SetPoints(points);
-  polyData->GetPointData()->SetNormals(nrmls);
-  polyData->SetPolys(polys);
-
-  return polyData;
-}
-
-} // namespace
+#include "misc/zvtkutil.h"
 
 ZMesh::ZMesh(GLenum type)
 {
@@ -1225,6 +1146,15 @@ ZMesh ZMesh::booleanOperation(const ZMesh& mesh1, const ZMesh& mesh2, ZMesh::Boo
 
   cleanFilter->Update();
   return vtkPolyDataToMesh(cleanFilter->GetOutput());
+}
+
+void ZMesh::pushObjectColor()
+{
+  m_colors.resize(m_vertices.size());
+  for (size_t i = 0; i < m_colors.size(); ++i) {
+    m_colors[i] = glm::vec4(getColor().redF(), getColor().greenF(),
+                            getColor().blueF(), 1.0);
+  }
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZMesh)
