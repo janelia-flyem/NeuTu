@@ -58,4 +58,4 @@ class DataValidator:
 
 if __name__ == "__main__":
     event = DataEvent(DataEvent.DATA_INVALIDATE, DataId(DataId.DATA_BODY, 1), DvidEnv("emdata1.int.janelia.org", 8500, "372c"))
-    print event
+    print(event)

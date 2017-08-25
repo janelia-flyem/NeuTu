@@ -93,8 +93,8 @@ def VerifyFileExists(directory, relative_path):
   """
 
   if not os.path.isfile(os.path.join(directory, relative_path)):
-    print('ERROR: Cannot find %s in directory %s.' % (relative_path,
-                                                      directory))
+    print(('ERROR: Cannot find %s in directory %s.' % (relative_path,
+                                                      directory)))
     print('Please either specify a valid project root directory '
           'or omit it on the command line.')
     sys.exit(1)
@@ -122,8 +122,8 @@ def VerifyOutputFile(output_dir, relative_path):
     # TODO(wan@google.com): The following user-interaction doesn't
     # work with automated processes.  We should provide a way for the
     # Makefile to force overwriting the files.
-    print('%s already exists in directory %s - overwrite it? (y/N) ' %
-          (relative_path, output_dir))
+    print(('%s already exists in directory %s - overwrite it? (y/N) ' %
+          (relative_path, output_dir)))
     answer = sys.stdin.readline().strip()
     if answer not in ['y', 'Y']:
       print('ABORTED.')
