@@ -91,7 +91,6 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zopencv_header.h \
    $${PWD}/neutubeconfig.h \
    $${PWD}/zhdf5writer.h \
-   $${PWD}/flyem/zbcfset.h \
    $${PWD}/zstackskeletonizer.h \
    $${PWD}/zswclayerfeatureanalyzer.h \
    $${PWD}/flyem/zflyemneuron.h \
@@ -233,9 +232,7 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zswcutil.h \
    $${PWD}/dvid/zdvidnode.h \
    $$PWD/zstackwriter.h \
-   $$PWD/zstackreader.h \
    $$PWD/zswcdirectionfeatureanalyzer.h \
-   $$PWD/dvid/zdvidpath.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
@@ -321,7 +318,6 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zhdf5reader.cpp \
    $${PWD}/neutubeconfig.cpp \
    $${PWD}/zhdf5writer.cpp \
-   $${PWD}/flyem/zbcfset.cpp \
    $${PWD}/zstackskeletonizer.cpp \
    $${PWD}/zswclayerfeatureanalyzer.cpp \
    $${PWD}/flyem/zflyemneuron.cpp \
@@ -448,7 +444,5 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zswcutil.cpp \
    $${PWD}/dvid/zdvidnode.cpp \
    $$PWD/zstackwriter.cpp \
-   $$PWD/zstackreader.cpp \
-   $$PWD/zswcdirectionfeatureanalyzer.cpp \
-   $$PWD/dvid/zdvidpath.cpp
+   $$PWD/zswcdirectionfeatureanalyzer.cpp
 

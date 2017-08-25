@@ -2,7 +2,10 @@
 
 //#include <QString>
 #include "zstring.h"
+
+#ifdef _QT_GUI_USED_
 #include "zmesh.h"
+#endif
 
 ZFileType::ZFileType()
 {
@@ -77,9 +80,12 @@ ZFileType::EFileType ZFileType::FileType(const std::string &filePath)
     return FILE_MC_STACK_RAW;
   } else if (str.endsWith(".zss", ZString::CASE_INSENSITIVE)) {
     return FILE_SPARSE_STACK;
-  } else if (ZMesh::canReadFile(QString::fromStdString(filePath))) {
+  }
+#if _QT_GUI_USED_
+  else if (ZMesh::canReadFile(QString::fromStdString(filePath))) {
     return FILE_MESH;
   }
+#endif
 
 
   return FILE_UNIDENTIFIED;

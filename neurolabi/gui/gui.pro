@@ -701,6 +701,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemmb6analyzer.h \
     dialogs/zflyemsynapseannotationdialog.h \
     zdvidutil.h \
+    zstackreader.h \
+    dvid/zdvidpath.h \
     dialogs/zcontrastprotocaldialog.h \
     flyem/zflyemsynapsedatafetcher.h \
     flyem/zflyemsynapsedataupdater.h \
@@ -1128,6 +1130,7 @@ SOURCES += main.cpp \
     zkeyeventswcmapper.cpp \
     dialogs/zflyemroidialog.cpp \
     flyem/zflyemroiproject.cpp \
+    flyem/zbcfset.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
     dialogs/shapepaperdialog.cpp \
@@ -1388,6 +1391,8 @@ SOURCES += main.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \
     zopenglwidget.cpp \
+    zstackreader.cpp \
+    dvid/zdvidpath.cpp \
     misc/zvtkutil.cpp
 
 DISTFILES += \

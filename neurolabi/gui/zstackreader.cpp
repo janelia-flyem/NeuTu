@@ -23,8 +23,6 @@ ZStackReader::ZStackReader()
 ZIntCuboid ZStackReader::GetRange(const QUrl &url)
 {
   ZIntCuboid box;
-#if defined(_QT_GUI_USED_)
-
 #ifdef _QT5_
   QUrlQuery query(url.query());
   QString x0Str = query.queryItemValue("x0");
@@ -170,7 +168,7 @@ ZStack* ZStackReader::read(const std::string &path)
     }
   }
 #endif
-#endif
+
 
   return stack;
 }
