@@ -1172,14 +1172,28 @@ void ZMesh::swapXZ()
     std::swap(vertex[0], vertex[2]);
   }
 
+  if (m_ttype == GL_TRIANGLES) {
+    if (!m_indices.empty()) {
+      for (size_t i = 0; i < m_indices.size() - 2; i += 3) {
+        std::swap(m_indices[i], m_indices[i + 2]);
+      }
+    } else {
+      for (size_t i = 0; i < m_vertices.size() - 2; i += 3) {
+        std::swap(m_vertices[i], m_vertices[i + 2]);
+      }
+    }
+  }
   validateObbTree(false);
 
-  for (glm::vec3 &normal : m_normals) {
-    std::swap(normal[0], normal[2]);
-//    normal[0] = -normal[0];
-//    normal[1] = -normal[1];
-//    normal[2] = -normal[2];
-  }
+  m_normals.clear();
+  generateNormals();
+
+//  for (glm::vec3 &normal : m_normals) {
+//    std::swap(normal[0], normal[2]);
+////    normal[0] = -normal[0];
+////    normal[1] = -normal[1];
+////    normal[2] = -normal[2];
+//  }
 }
 
 void ZMesh::translate(double x, double y, double z)

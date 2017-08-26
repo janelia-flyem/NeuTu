@@ -119,8 +119,7 @@ public:
   /*!
    * \brief Set the selection state
    */
-  void setSelected(bool selected) { m_selected = selected; }
-
+  void setSelected(bool selected);
   /*!
    * \brief Get the selection state
    *

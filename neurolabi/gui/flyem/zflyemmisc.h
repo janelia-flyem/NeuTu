@@ -23,6 +23,7 @@ class ZStroke2d;
 class QDir;
 class ZStack;
 class ZVaa3dMarker;
+class ZObject3d;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -73,7 +74,12 @@ ZStroke2d SyGlassSeedToStroke(const ZJsonObject &obj);
 ZStroke2d SyGlassSeedToStroke(
     const ZJsonObject &obj, const ZIntPoint &offset, const ZIntPoint &dsIntv);
 ZJsonObject MakeSplitSeedJson(const ZStroke2d &stroke);
+ZJsonObject MakeSplitSeedJson(const ZObject3d &seed);
 void AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke);
+void AddSplitTaskSeed(ZJsonObject &taskObj, const ZObject3d &obj);
+template<typename T>
+void AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj);
+
 void UploadSyGlassTask(const std::string &filePath, const ZDvidTarget &target);
 
 namespace MB6Paper {

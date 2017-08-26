@@ -73,24 +73,31 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
   }
 }
 
-void ZInteractionEngine::processMouseReleaseEvent(
+bool ZInteractionEngine::processMouseReleaseEvent(
     QMouseEvent *event, int sliceIndex)
 {
+  bool processed = false;
+
   UNUSED_PARAMETER(sliceIndex);
   if (event->button() == Qt::LeftButton) {
     if (isStateOn(STATE_DRAW_STROKE)) {
       commitData();
+      processed = true;
     } else if (isStateOn(STATE_DRAW_RECT)) {
       m_rect.makeValid();
       exitPaintRect();
+      processed = true;
     } else if (isStateOn(STATE_MARK)) {
       emit shootingTodo(event->x(), event->y());
+      processed = true;
     }
     m_mouseLeftButtonPressed = false;
   } else if (event->button() == Qt::RightButton) {
     exitEditMode();
     m_mouseRightButtonPressed = false;
   }
+
+  return processed;
 }
 
 void ZInteractionEngine::showContextMenu()

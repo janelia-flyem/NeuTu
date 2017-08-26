@@ -104,8 +104,9 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
-  broadcastEvent(e, width(), height());
-  m_interaction.processMouseReleaseEvent(e);
+  if (!m_interaction.processMouseReleaseEvent(e)) {
+    broadcastEvent(e, width(), height());
+  }
   setCursor(m_interaction.getCursorShape());
 }
 

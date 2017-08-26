@@ -214,6 +214,7 @@ public:
   bool updating() const;
 
   void enableNodeSeeding(bool on);
+  void enableBodySelectionSync(bool on);
 
 public:
   void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
@@ -332,6 +333,7 @@ private:
   bool m_showingSynapse = true;
   bool m_showingTodo = true;
   bool m_nodeSeeding = false;
+  bool m_syncyingBodySelection = false;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 

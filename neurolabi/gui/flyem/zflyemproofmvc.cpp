@@ -707,6 +707,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
     NeuTube3D::EWindowType windowType)
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_MESH);
+  doc->enableBodySelectionSync(true);
 
   ZWindowFactory factory = makeExternalWindowFactory(windowType);
 
@@ -738,6 +739,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
     NeuTube3D::EWindowType windowType)
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
+  doc->enableBodySelectionSync(true);
 
   ZWindowFactory factory = makeExternalWindowFactory(windowType);
 

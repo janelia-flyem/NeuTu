@@ -68,7 +68,7 @@ public:
 
   void initInteractiveContext();
 
-  void processMouseReleaseEvent(QMouseEvent *event, int sliceIndex = 0);
+  bool processMouseReleaseEvent(QMouseEvent *event, int sliceIndex = 0);
   bool processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event, int sliceIndex = 0);

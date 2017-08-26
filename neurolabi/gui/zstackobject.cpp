@@ -33,6 +33,11 @@ bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
   return false;
 }
 
+void ZStackObject::setSelected(bool selected)
+{
+  m_selected = selected;
+}
+
 void ZStackObject::setColor(int red, int green, int blue) {
 #if defined(_QT_GUI_USED_)
   m_color.setRed(red);

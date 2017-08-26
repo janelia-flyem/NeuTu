@@ -93,6 +93,11 @@ void ZFlyEmBody3dDoc::enableNodeSeeding(bool on)
   m_nodeSeeding = on;
 }
 
+void ZFlyEmBody3dDoc::enableBodySelectionSync(bool on)
+{
+  m_syncyingBodySelection = on;
+}
+
 template<typename T>
 T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
 {
@@ -667,7 +672,9 @@ void ZFlyEmBody3dDoc::updateBodyModelSelection()
 
 void ZFlyEmBody3dDoc::processEvent()
 {
-  updateBodyModelSelection();
+  if (m_syncyingBodySelection) {
+    updateBodyModelSelection();
+  }
 
   if (m_eventQueue.empty()) {
     return;
