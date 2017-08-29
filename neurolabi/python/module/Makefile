@@ -10,7 +10,6 @@ ifeq ($(UNAME), Darwin)
   #RPATH_FLAG = -install_name @rpath/$(PREFIX)/lib/libhdf5.dylib
 else
   HDF5_FLAG = -lhdf5
-  STDLIB_FLAG = ""
 endif
 
 
