@@ -34,7 +34,7 @@ requirements:
     - libdvid-cpp >=0.3
     - fftw    3.3*
     - jansson 2.7
-    - libpng  libpng >=1.6.28,<1.7
+    - libpng  >=1.6.28,<1.7
     - hdf5    1.8*
     - pango   1.40* # [linux64]
     - lowtis  >=0.1.0.p

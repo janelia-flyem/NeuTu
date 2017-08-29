@@ -34,7 +34,7 @@ requirements:
     - fftw    3.3*
     - jansson 2.7
     - libxml2 2.9*
-    - libpng  libpng >=1.6.28,<1.7
+    - libpng  >=1.6.28,<1.7
     - hdf5    1.8.18
     
 
