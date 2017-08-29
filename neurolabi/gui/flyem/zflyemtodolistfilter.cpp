@@ -27,7 +27,7 @@ ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QOb
   connect(&m_selectItemEvent, &ZEventListenerParameter::mouseEventTriggered, this, &ZFlyEmTodoListFilter::selectObject);
   addEventListener(m_selectItemEvent);
 
-  m_rendererBase.setMaterialAmbient(glm::vec4(.3, .3, .3, 1));
+  m_rendererBase.setMaterialAmbient(glm::vec4(1.f, 1.f, 1.f, 1.f));
 }
 
 ZFlyEmTodoListFilter::~ZFlyEmTodoListFilter()
