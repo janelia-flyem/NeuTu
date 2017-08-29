@@ -51,7 +51,10 @@ ZObject3d* createQuadrangleObject(const ZLineSegment &seg1,
 ZObject3d* createQuadrangleObject(const ZIntPoint &pt1, const ZIntPoint &pt2,
                                   const ZIntPoint &pt3, const ZIntPoint &pt4);
 
-
+void addLineObject(
+    ZObject3d *dst, const ZIntPoint &v1, const ZIntPoint &v2);
+ZObject3d* createScanObject(const ZObject3d *baseLine1,
+                            const ZObject3d *baseLine2);
 }
 
 #endif // ZVOXELGRAPHICS_H

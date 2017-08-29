@@ -466,6 +466,7 @@ NeutubeConfig::MainWindowConfig::MainWindowConfig() : m_tracingOn(true),
 {
 }
 
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::MainWindowConfig::loadXmlNode(const ZXmlNode *node)
 {
   ZXmlNode childNode = node->queryNode("tracing");
@@ -545,6 +546,7 @@ void NeutubeConfig::MainWindowConfig::loadXmlNode(const ZXmlNode *node)
     setThresholdControl(childNode.getAttribute("status") != "off");
   }
 }
+#endif
 
 NeutubeConfig::Z3DWindowConfig::Z3DWindowConfig() : m_isUtilsOn(true),
   m_isVolumeOn(true), m_isGraphOn(true), m_isSwcsOn(true), m_isTubesOn(true),
@@ -552,7 +554,7 @@ NeutubeConfig::Z3DWindowConfig::Z3DWindowConfig() : m_isUtilsOn(true),
   m_isBackgroundOn(true)
 {
 }
-
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::Z3DWindowConfig::loadXmlNode(const ZXmlNode *node)
 {
   ZXmlNode childNode = node->queryNode("Utils");
@@ -627,12 +629,14 @@ void NeutubeConfig::Z3DWindowConfig::loadXmlNode(const ZXmlNode *node)
     enableAxis(true);
   }
 }
+#endif
 
 NeutubeConfig::Z3DWindowConfig::GraphTabConfig::GraphTabConfig() :
   m_isVisible(true), m_opacity(1.0)
 {
 }
 
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::Z3DWindowConfig::GraphTabConfig::loadXmlNode(const ZXmlNode *node)
 {
   ZXmlNode childNode = node->queryNode("Visible");
@@ -645,13 +649,14 @@ void NeutubeConfig::Z3DWindowConfig::GraphTabConfig::loadXmlNode(const ZXmlNode 
     m_opacity = childNode.doubleValue();
   }
 }
+#endif
 
 NeutubeConfig::Z3DWindowConfig::SwcTabConfig::SwcTabConfig() : m_primitive("Normal"),
   m_colorMode("Branch Type"), m_zscale(1.0)
 {
 }
 
-
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::Z3DWindowConfig::SwcTabConfig::loadXmlNode(const ZXmlNode *node)
 {
   ZXmlNode childNode = node->queryNode("Primitive");
@@ -669,13 +674,14 @@ void NeutubeConfig::Z3DWindowConfig::SwcTabConfig::loadXmlNode(const ZXmlNode *n
     m_zscale = childNode.doubleValue();
   }
 }
+#endif
 
 NeutubeConfig::ObjManagerConfig::ObjManagerConfig() :
   m_isSwcOn(true), m_isSwcNodeOn(true), m_isPunctaOn(true)
 {
 
 }
-
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::ObjManagerConfig::loadXmlNode(
     const ZXmlNode *node)
 {
@@ -700,6 +706,7 @@ void NeutubeConfig::ObjManagerConfig::loadXmlNode(
     m_isPunctaOn = true;
   }
 }
+#endif
 
 void NeutubeConfig::configure(const ZJsonObject &obj)
 {

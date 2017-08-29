@@ -47,19 +47,19 @@ class SkeletonizeTaskDistributor:
         self.jobNumber = n;
 
     def setArgs(self, args):
-        if args.has_key('ds_intv'):
+        if 'ds_intv' in args:
             self.dsIntv = args['ds_intv']
-        if args.has_key('minlen'):
+        if 'minlen' in args:
             self.minLength = args['minlen']
-        if args.has_key('minobj'):
+        if 'minobj' in args:
             self.minObjSize = args['minobj']
-        if args.has_key('fill_hole'):
+        if 'fill_hole' in args:
             self.fillingHole = args['fill_hole']
-        if args.has_key('interpolate'):
+        if 'interpolate' in args:
             self.interpolating = args['interpolate']
-        if args.has_key('rebase'):
+        if 'rebase' in args:
             self.rebasing = args['rebase']
-        if args.has_key('keep_short'):
+        if 'keep_short' in args:
             self.keepingShort = args['keep_short']
         
     def useCluster(self, using):
@@ -104,7 +104,7 @@ class SkeletonizeTaskDistributor:
             subscriptFile.append(open(self.subscripts[i], "w"));
         
         index = 0;
-        print "Job Number: ", jobNumber
+        print("Job Number: ", jobNumber)
         while index < len(self.bodyList):
             for i in range(0, jobNumber):
                 bodyId = self.bodyList[index];
@@ -139,4 +139,4 @@ if __name__ == '__main__':
     distr = SkeletonizeTaskDistributor();
     distr.setBodyList([1, 2]);
     distr.setCommandPath(home + '/Work/neutube/neurolabi/cpp/skeletonize-build-Qt_4_8_1_gcc-Debug/skeletonize');
-    print distr.getFullCommand(0);
+    print(distr.getFullCommand(0));

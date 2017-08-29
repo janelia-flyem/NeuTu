@@ -38,6 +38,7 @@ signals:
   void showingFullSegmentation();
   void coarseBodyViewTriggered();
   void skeletonViewTriggered();
+  void meshViewTriggered();
   void bodyViewTriggered();
   void savingMerge();
   void committingMerge();

@@ -1,8 +1,8 @@
 import os;
 from dvidenv import DvidEnv;
 import subprocess;
-import urlparse;
-import httplib;
+import urllib.parse;
+import http.client;
 from dvidurl import DvidUrl;
 
 
@@ -30,11 +30,11 @@ class Skeletonizer:
             raise Exception("Invalid body ID")
 
         if self.dvidEnv and self.dvidEnv.isValid():
-            print self.dvidEnv.getNeuTuInput()
+            print(self.dvidEnv.getNeuTuInput())
             args = ["/opt/bin/neutu", "--command", "--skeletonize", self.dvidEnv.getNeuTuInput(), "--bodyid", str(bodyId)]
             if forceUpdate:
                 args.append("--force")
-            print args
+            print(args)
             p = subprocess.Popen(args)
             if not bg:
                 p.wait()
@@ -46,9 +46,9 @@ if __name__ == "__main__":
     skeletonizer = Skeletonizer()
     skeletonizer.setDvidEnv(DvidEnv("emdata1.int.janelia.org", 8500, "372c")) 
     dvidUrl = DvidUrl(skeletonizer.getDvidEnv())
-    conn = httplib.HTTPConnection(dvidUrl.getServerUrl())
+    conn = http.client.HTTPConnection(dvidUrl.getServerUrl())
     #conn.request("DELETE", dvidUrl.getSkeletonEndPoint(15363212))
     skeletonizer.skeletonize(15363212, bg = True, forceUpdate = True)
-    print "Done"
+    print("Done")
 
 

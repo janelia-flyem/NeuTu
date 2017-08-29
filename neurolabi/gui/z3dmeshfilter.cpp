@@ -53,6 +53,11 @@ void Z3DMeshFilter::process(Z3DEye)
   }
 }
 
+void Z3DMeshFilter::setColorMode(const std::string &mode)
+{
+  m_colorMode.select(mode.c_str());
+}
+
 void Z3DMeshFilter::setData(const std::vector<ZMesh*>& meshList)
 {
   m_origMeshList = meshList;

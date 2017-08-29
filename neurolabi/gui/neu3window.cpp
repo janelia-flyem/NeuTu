@@ -79,6 +79,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(showingTodo(bool)), this, SLOT(showTodo(bool)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
+  connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
+          this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
 }
 
 void Neu3Window::initOpenglContext()
@@ -262,4 +264,21 @@ void Neu3Window::processSwcChangeFrom3D(
     }
   }
 }
+
+void Neu3Window::processMeshChangedFrom3D(
+    QList<ZMesh *> selected, QList<ZMesh *> deselected)
+{
+  foreach (ZMesh *mesh, selected) {
+    if (mesh->getLabel() > 0) {
+      emit bodySelected(mesh->getLabel());
+    }
+  }
+
+  foreach (ZMesh *mesh, deselected) {
+    if (mesh->getLabel() > 0) {
+      emit bodyDeselected(mesh->getLabel());
+    }
+  }
+}
+
 

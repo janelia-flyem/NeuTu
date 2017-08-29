@@ -80,6 +80,7 @@ public:
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
+                     NeuTube3D::EWindowType windowType = NeuTube3D::TYPE_GENERAL,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 

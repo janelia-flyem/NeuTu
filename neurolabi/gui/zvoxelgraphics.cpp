@@ -4,7 +4,7 @@
 #include "zlinesegment.h"
 #include "tz_rastergeom.h"
 
-static void addLineObject(
+void ZVoxelGraphics::addLineObject(
     ZObject3d *dst, const ZIntPoint &v1, const ZIntPoint &v2)
 {
   ZObject3d *obj = ZVoxelGraphics::createLineObject(v1, v2);
@@ -13,8 +13,8 @@ static void addLineObject(
   delete obj;
 }
 
-static ZObject3d* createScanObject(const ZObject3d *baseLine1,
-                                   const ZObject3d *baseLine2)
+ZObject3d* ZVoxelGraphics::createScanObject(const ZObject3d *baseLine1,
+                                            const ZObject3d *baseLine2)
 {
   ZObject3d *obj = new ZObject3d;
 

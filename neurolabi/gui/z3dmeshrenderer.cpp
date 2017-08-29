@@ -434,6 +434,10 @@ void Z3DMeshRenderer::render(Z3DEye eye)
         const std::vector<glm::vec4>& colors = (*m_meshPt)[i]->colors();
         const std::vector<GLuint>& triangleIndexes = (*m_meshPt)[i]->indices();
 
+#ifdef _DEBUG_
+        std::cout << "Color count in renderer: " << colors.size() << std::endl;
+#endif
+
         int bufIdx = 0;
         glEnableVertexAttribArray(attr_vertex);
         m_VBOs[i].bind(GL_ARRAY_BUFFER, bufIdx++);
@@ -500,6 +504,8 @@ void Z3DMeshRenderer::render(Z3DEye eye)
         } else if (m_colorSource.isSelected("MeshColor") && (*m_meshPt)[i]->numColors() < (*m_meshPt)[i]->numVertices()) {
           shader.setUseCustomColorUniform(true);
           shader.setCustomColorUniform(glm::vec4(0.f, 0.f, 0.f, 1.f));
+        } else {
+          shader.setUseCustomColorUniform(false);
         }
 
         GLenum type = (*m_meshPt)[i]->type();
@@ -564,6 +570,8 @@ void Z3DMeshRenderer::render(Z3DEye eye)
       } else if (m_colorSource.isSelected("MeshColor") && (*m_meshPt)[i]->numColors() < (*m_meshPt)[i]->numVertices()) {
         shader.setUseCustomColorUniform(true);
         shader.setCustomColorUniform(glm::vec4(0.f, 0.f, 0.f, 1.f));
+      } else {
+        shader.setUseCustomColorUniform(false);
       }
 
       const std::vector<glm::vec3>& vertices = (*m_meshPt)[i]->vertices();

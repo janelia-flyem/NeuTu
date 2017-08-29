@@ -633,6 +633,11 @@ bool ZStackDoc::hasSwc() const
   return !m_objectGroup.getObjectList(ZStackObject::TYPE_SWC).isEmpty();
 }
 
+bool ZStackDoc::hasMesh() const
+{
+  return !m_objectGroup.getObjectList(ZStackObject::TYPE_MESH).isEmpty();
+}
+
 bool ZStackDoc::hasSwcData() const
 {
   QList<ZSwcTree*> swcList = getObjectList<ZSwcTree>();
@@ -734,10 +739,6 @@ void ZStackDoc::processDataBuffer()
 
   QList<ZStackObject*> selected;
   QList<ZStackObject*> deselected;
-//  qSort(updateList.begin(), updateList.end(),
-//        [](const ZStackDocObjectUpdate* a, const ZStackDocObjectUpdate *b)
-//        -> bool { return a->getAction() < b->getAction(); });
-
   ZStackDocObjectUpdate::MakeActionMap(updateList);
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
@@ -3165,6 +3166,13 @@ bool ZStackDoc::importMesh(const QString& filePath)
   try {
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
     ZMesh *mesh = new ZMesh(filePath);
+    mesh->setColor(200, 200, 200, 255);
+    mesh->pushObjectColor();
+
+#ifdef _DEBUG_2
+    mesh->swapXZ();
+#endif
+
     addObject(mesh);
     endObjectModifiedMode();
     notifyObjectModified();
@@ -3923,6 +3931,8 @@ void ZStackDoc::deselectAllMesh()
   }
 
   m_objectGroup.setSelected(ZStackObject::TYPE_MESH, false);
+
+  notifyDeselected(deselected);
 }
 
 #if 1
@@ -4265,6 +4275,7 @@ void ZStackDoc::deselectAllObject(bool recursive)
   }
 
   notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC));
+  notifyDeselected(getSelectedObjectList<ZMesh>(ZStackObject::TYPE_MESH));
   notifyDeselected(getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM));
   notifyDeselected(getSelectedObjectList<ZLocsegChain>(
                      ZStackObject::TYPE_LOCSEG_CHAIN));

@@ -106,4 +106,4 @@ if __name__ == '__main__':
 
     taskManager.setCommandPath(home + '/Work/neutube/neurolabi/cpp/'
                                'extract_body-build-Qt_4_8_1_gcc-Debug/extract_body');
-    print taskManager.getFullCommand();
+    print(taskManager.getFullCommand());

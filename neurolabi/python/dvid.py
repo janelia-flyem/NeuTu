@@ -7,7 +7,7 @@ sys.path.append(os.path.join(baseDir, 'flyem'))
 import neutube
 from optparse import OptionParser
 import json
-import httplib
+import http.client
 import dvid
 
 class DvidServer:
@@ -22,22 +22,22 @@ class DvidServer:
         return '/api/node/' + self._uuid + '/skeletons/' + str(id) + '.swc'
 
     def retrieveBody(self, id):
-        print self._host
-        conn = httplib.HTTPConnection(self._host)
+        print(self._host)
+        conn = http.client.HTTPConnection(self._host)
         
-        print self.getBodyRequest(id)
-        print '**********Response:'
+        print(self.getBodyRequest(id))
+        print('**********Response:')
         conn.request("GET", self.getBodyRequest(id))
         r1 = conn.getresponse()
         
-        print r1.status
+        print(r1.status)
         
-        print '**********'
-        print r1
+        print('**********')
+        print(r1)
         
         data = r1.read();
         
-        print len(data)
+        print(len(data))
         
         dataArray = neutube.Char_Array()
         dataArray = data
@@ -48,20 +48,20 @@ class DvidServer:
         return sparseObj
     
     def retrieveSkeleton(self, id):
-        conn = httplib.HTTPConnection(self._host) 
-        print self.getBodyRequest(id)
-        print '**********Response:'
+        conn = http.client.HTTPConnection(self._host) 
+        print(self.getBodyRequest(id))
+        print('**********Response:')
         conn.request("GET", self.getSkeletonRequest(id))
         r1 = conn.getresponse()
         
-        print r1.status
+        print(r1.status)
         
-        print '**********'
-        print r1
+        print('**********')
+        print(r1)
         
         data = r1.read();
         
-        print len(data)
+        print(len(data))
         
         dataArray = neutube.Char_Array()
         dataArray = data
@@ -74,7 +74,7 @@ class DvidServer:
         
     
     def hasSkeleton(self, id):
-        conn = httplib.HTTPConnection(self._host)
+        conn = http.client.HTTPConnection(self._host)
         conn.request("GET", self.getSkeletonRequest(id))
 
         r1 = conn.getresponse()
@@ -91,6 +91,6 @@ if __name__ == '__main__':
     body = server.retrieveBody(1)
     body._print()
     
-    print server.hasSkeleton(1)
+    print(server.hasSkeleton(1))
     
     

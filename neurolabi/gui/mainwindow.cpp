@@ -4179,8 +4179,7 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
       academy->loadFile((*inputIter).c_str());
 
       double zScale = 1.125;
-      Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::INIT_NORMAL,
-                                       false, NULL);
+      Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::INIT_NORMAL);
       stage->getVolumeFilter()->setZScale(zScale);
       stage->getVolumeFilter()->hideBoundBox();
 

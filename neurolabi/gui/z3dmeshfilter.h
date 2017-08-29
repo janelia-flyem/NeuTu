@@ -40,6 +40,8 @@ public:
 
   ZBBox<glm::dvec3> meshBound(ZMesh* p);
 
+  void setColorMode(const std::string &mode);
+
 signals:
 
   void meshSelected(ZMesh*, bool append);

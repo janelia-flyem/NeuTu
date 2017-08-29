@@ -47,7 +47,8 @@ public:
     ROLE_SPLIT_TASK_KEY,
     ROLE_SPLIT_RESULT_KEY,
     ROLE_SPLIT_TASK_PROPERTY_KEY,
-    ROLE_SPLIT_RESULT_PROPERTY_KEY
+    ROLE_SPLIT_RESULT_PROPERTY_KEY,
+    ROLE_MESH
   };
 
   enum EType {
@@ -109,6 +110,7 @@ private:
   static const char *m_todoListName;
   static const char *m_neutuConfigName;
   static const char *m_labelszName;
+  static const char *m_meshName;
   //static const char *m_keyValueTypeName;
 
   static const char *m_nullName;
