@@ -137,6 +137,8 @@ public:
   void setBodyType(FlyEM::EBodyType type);
   FlyEM::EBodyType getBodyType() const { return m_bodyType; }
 
+  QSet<uint64_t> getBodySet() const { return m_bodySet; }
+
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
@@ -238,6 +240,7 @@ public slots:
   void setSeedType(int type);
 
   void setBodyModelSelected(const QSet<uint64_t> &bodySet);
+  void saveSplitTask();
 
 signals:
   void bodyRemoved(uint64_t bodyId);

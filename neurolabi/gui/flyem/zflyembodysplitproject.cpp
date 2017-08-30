@@ -1778,7 +1778,7 @@ ZJsonArray ZFlyEmBodySplitProject::getSeedJson() const
       getDocument()->getPlayerList(ZStackObjectRole::ROLE_SEED);
   ZJsonArray jsonArray;
   foreach (const ZDocPlayer *player, playerList) {
-    ZJsonObject jsonObj = player->toJsonObject();
+    ZJsonObject jsonObj = player->toSeedJson();
     if (!jsonObj.isEmpty()) {
       jsonArray.append(jsonObj);
     }
@@ -1832,17 +1832,17 @@ void ZFlyEmBodySplitProject::saveSeed(bool emphasizingMessage)
   }
 }
 
-std::string ZFlyEmBodySplitProject::saveTask() const
+std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
 {
   std::string location;
 
-  if (getBodyId() > 0) {
+  if (bodyId > 0) {
     ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
           GET_FLYEM_CONFIG.getTaskServer());
     if (writer != NULL) {
       ZJsonObject task;
       ZDvidUrl dvidUrl(getDvidTarget());
-      std::string bodyUrl = dvidUrl.getSparsevolUrl(getBodyId());
+      std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
       task.setEntry("signal", bodyUrl);
       ZJsonArray seedJson = getSeedJson();
       task.setEntry("seeds", seedJson);
@@ -1861,7 +1861,7 @@ std::string ZFlyEmBodySplitProject::saveTask() const
       ZJsonObject taskJson;
       taskJson.setEntry(NeuTube::Json::REF_KEY, location);
 //      QUrl url(bodyUrl.c_str());
-      QString taskKey = dvidUrl.getSplitTaskKey(getBodyId()).c_str();
+      QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
 //      QString("task__") + QUrl::toPercentEncoding(bodyUrl.c_str());
       writer->writeSplitTask(taskKey, taskJson);
 
@@ -1870,6 +1870,33 @@ std::string ZFlyEmBodySplitProject::saveTask() const
   }
 
   return location;
+}
+
+void ZFlyEmBodySplitProject::updateBodyId()
+{
+  m_bodyId = 0;
+  ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
+  if (doc != NULL) {
+    std::set<uint64_t> bodySet =
+        doc->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    if (bodySet.size() == 1) {
+      m_bodyId = *(bodySet.begin());
+    }
+  }
+}
+
+uint64_t ZFlyEmBodySplitProject::getBodyId() const
+{
+#ifdef _NEU3_
+  const_cast<ZFlyEmBodySplitProject&>(*this).updateBodyId();
+#endif
+
+  return m_bodyId;
+}
+
+std::string ZFlyEmBodySplitProject::saveTask() const
+{
+  return saveTask(getBodyId());
 }
 
 void ZFlyEmBodySplitProject::recoverSeed()

@@ -971,6 +971,21 @@ void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZObject3d &obj)
   AddSplitTaskSeedG(taskObj, obj);
 }
 
+ZJsonArray ZFlyEmMisc::GetSeedJson(ZStackDoc *doc)
+{
+  QList<ZDocPlayer*> playerList =
+      doc->getPlayerList(ZStackObjectRole::ROLE_SEED);
+  ZJsonArray jsonArray;
+  foreach (const ZDocPlayer *player, playerList) {
+    ZJsonObject jsonObj = player->toSeedJson();
+    if (!jsonObj.isEmpty()) {
+      jsonArray.append(jsonObj);
+    }
+  }
+
+  return jsonArray;
+}
+
 void ZFlyEmMisc::UploadSyGlassTask(
     const std::string &filePath, const ZDvidTarget &target)
 {

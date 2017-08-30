@@ -79,6 +79,7 @@ void AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke);
 void AddSplitTaskSeed(ZJsonObject &taskObj, const ZObject3d &obj);
 template<typename T>
 void AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj);
+ZJsonArray GetSeedJson(ZStackDoc *doc);
 
 void UploadSyGlassTask(const std::string &filePath, const ZDvidTarget &target);
 

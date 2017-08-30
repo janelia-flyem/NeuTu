@@ -208,6 +208,8 @@ signals:
 //  void locating2DViewTriggered(const ZStackViewParam &param);
   void locating2DViewTriggered(int x, int y, int z, int width);
   void croppingSwcInRoi();
+  void savingSplitTask();
+  void savingSplitTask(uint64_t bodyId);
 
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
   void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
@@ -294,6 +296,7 @@ public slots:
   void convertPunctaToSwc();
   void changeSelectedPunctaColor();
 
+  void saveSplitTask();
   //
   void show3DViewContextMenu(QPoint pt);
 

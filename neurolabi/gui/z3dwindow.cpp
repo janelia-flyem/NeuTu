@@ -191,6 +191,10 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SHOW_TODO));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TODO_ITEM));
   }
+
+  if (getWindowType() == NeuTube3D::TYPE_NEU3) {
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
+  }
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -373,6 +377,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_UNCHECK_TODO_ITEM:
     action = m_actionLibrary->getAction(item, this, SLOT(uncheckSelectedTodo()));
+    break;
+  case ZActionFactory::ACTION_SAVE_SPLIT_TASK:
+    action = m_actionLibrary->getAction(item, this, SLOT(saveSplitTask()));
     break;
   default:  
     break;
@@ -4025,6 +4032,11 @@ void Z3DWindow::deleteSelected()
   if (doc != NULL) {
     doc->executeRemoveTodoCommand();
   }
+}
+
+void Z3DWindow::saveSplitTask()
+{
+  emit savingSplitTask();
 }
 
 void Z3DWindow::cropSwcInRoi()

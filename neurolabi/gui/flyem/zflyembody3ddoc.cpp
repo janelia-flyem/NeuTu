@@ -1,3 +1,4 @@
+#define _NEUTU_USE_REF_KEY_
 #include "zflyembody3ddoc.h"
 
 #include <QtConcurrentRun>
@@ -22,6 +23,8 @@
 #include "zflyembody3ddockeyprocessor.h"
 #include "zflyembody3ddoccommand.h"
 #include "zmesh.h"
+#include "zglobal.h"
+#include "zflyemmisc.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -523,6 +526,45 @@ bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
 {
   return !getObjectGroup().getSelectedSet(
         ZStackObject::TYPE_FLYEM_TODO_ITEM).empty();
+}
+
+void ZFlyEmBody3dDoc::saveSplitTask()
+{
+  if (m_bodySet.size() == 1) {
+    uint64_t bodyId = *m_bodySet.begin();
+    if (bodyId > 0) {
+      ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+            GET_FLYEM_CONFIG.getTaskServer());
+      if (writer != NULL) {
+        ZJsonObject task;
+        ZDvidUrl dvidUrl(getDvidTarget());
+        std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
+        task.setEntry("signal", bodyUrl);
+        ZJsonArray seedJson = ZFlyEmMisc::GetSeedJson(this);
+        task.setEntry("seeds", seedJson);
+//        ZJsonArray roiJson = getRoiJson();
+//        if (roiJson.isEmpty()) {
+//          ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
+//          if (!range.isEmpty()) {
+//            roiJson = range.toJsonArray();
+//          }
+//        }
+//        if (!roiJson.isEmpty()) {
+//          task.setEntry("range", roiJson);
+//        }
+
+        std::string location = writer->writeServiceTask("split", task);
+        ZJsonObject taskJson;
+        taskJson.setEntry(NeuTube::Json::REF_KEY, location);
+  //      QUrl url(bodyUrl.c_str());
+        QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
+  //      QString("task__") + QUrl::toPercentEncoding(bodyUrl.c_str());
+        writer->writeSplitTask(taskKey, taskJson);
+
+        std::cout << "Split task saved @" << taskKey.toStdString() << std::endl;
+      }
+    }
+  }
 }
 
 ZFlyEmToDoItem* ZFlyEmBody3dDoc::getOneSelectedTodoItem() const

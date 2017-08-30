@@ -652,6 +652,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setCheckable(true);
     action->setChecked(true);
     break;
+  case ACTION_SAVE_SPLIT_TASK:
+    action = new QAction("Save Split Task", parent);
+    action->setIcon(QIcon(":/images/save_seed.png"));
+    action->setToolTip("Save the split task defined by current seeds.");
+    break;
   default:
     break;
   }

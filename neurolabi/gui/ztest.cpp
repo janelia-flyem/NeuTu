@@ -24320,13 +24320,64 @@ void ZTest::test(MainWindow *host)
    stack.printInfo();
 #endif
 
-#if 1
+#if 0
    ZMesh mesh;
    ZMeshIO::instance().load(
          "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
    mesh.swapXZ();
    mesh.translate(404, 480, 180);
    mesh.scale(8, 8, 8);
+   ZMeshIO::instance().save(
+        mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("bodies");
+  target.setLabelBlockName("labels");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyIdArray;
+  bodyIdArray << 1;
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+
+  foreach (uint64_t bodyId, bodyIdArray) {
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(bodyId);
+
+    //  ZIntCuboid box = spStack->getBoundBox();
+
+    ZStack *stack = spStack->makeIsoDsStack(NeuTube::ONEGIGA);
+
+//    ZStack *stack = spStack->makeStack(ZIntCuboid());
+//    ZStack *stack = spStack->getStack();
+
+    ZString numStr;
+    numStr.appendNumber(bodyId);
+    writer.write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+//    delete stack;
+    delete spStack;
+  }
+#endif
+
+#if 0
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
+   mesh.swapXZ();
+
+   ZStack stack;
+   stack.load(GET_TEST_DATA_DIR + "/test.tif");
+   mesh.translate(stack.getOffset().getX(), stack.getOffset().getY(),
+                  stack.getOffset().getZ());
+   mesh.scale(stack.getDsIntv().getX() + 1, stack.getDsIntv().getY() + 1,
+              stack.getDsIntv().getZ() + 1);
    ZMeshIO::instance().save(
         mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
 #endif
