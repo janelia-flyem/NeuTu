@@ -29,6 +29,7 @@ signals:
 
 private slots:
     void onNextButton();
+    void onPrevButton();
     void onDoneButton();
     void onLoadTasksButton();    
     void onCompletedStateChanged(int state);    
@@ -61,7 +62,7 @@ private:
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex;
-
+    bool m_nodeLocked;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
@@ -83,6 +84,8 @@ private:
     void updateBodyWindow();
     int getNext();
     int getNextUncompleted();
+    int getPrev();
+    int getPrevUncompleted();
 };
 
 #endif // TASKPROTOCOLWINDOW_H

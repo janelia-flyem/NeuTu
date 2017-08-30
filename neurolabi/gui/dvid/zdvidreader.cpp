@@ -263,7 +263,7 @@ ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 {
   ZDvid::ENodeStatus status = ZDvid::NODE_NORMAL;
 
-#ifdef _ENABLE_DVIDCPP_
+#ifdef _ENABLE_LIBDVIDCPP_
   ZDvidUrl url(getDvidTarget());
   std::string repoUrl = url.getRepoUrl();
   if (repoUrl.empty()) {
