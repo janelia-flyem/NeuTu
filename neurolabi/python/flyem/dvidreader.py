@@ -4,7 +4,7 @@ Created on May 10, 2016
 @author: zhaot
 '''
 
-import httplib
+import http.client
 import requests
 from dvidurl import DvidUrl
 from dvidenv import DvidEnv
@@ -27,7 +27,7 @@ class DvidReader(object):
         
     def readMasterBranches(self):
         r = requests.get(self.dvidUrl.getMasterBranchUrl())
-        print r.json
+        print(r.json)
         
 if __name__ == '__main__':
     reader = DvidReader(DvidEnv("emdata1.int.janelia.org", 8500, "99ef"))

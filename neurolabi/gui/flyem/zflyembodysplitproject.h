@@ -41,7 +41,7 @@ public:
     m_bodyId = bodyId;
   }
 
-  inline uint64_t getBodyId() const { return m_bodyId; }
+  uint64_t getBodyId() const;
   inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
 
   ZFlyEmNeuron getFlyEmNeuron() const;
@@ -99,6 +99,7 @@ public:
   void swapMainSeedLabel(int label);
 
   std::string saveTask() const;
+  std::string saveTask(uint64_t bodyId) const;
 
   void exportSplits();
   void commitResult();
@@ -237,6 +238,8 @@ private:
   ZJsonArray getSeedJson() const;
   ZJsonArray getRoiJson() const;
   ZIntCuboid getSeedBoundBox() const;
+
+  void updateBodyId();
 
 private:
   ZDvidTarget m_dvidTarget;

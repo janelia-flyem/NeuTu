@@ -9,6 +9,7 @@ class ZPunctum;
 class ZSwcTree;
 struct _Swc_Tree_Node;
 typedef _Swc_Tree_Node Swc_Tree_Node;
+class ZMesh;
 class QSortFilterProxyModel;
 
 class ZObjsManagerWidget : public QWidget
@@ -22,6 +23,7 @@ signals:
   void swcDoubleClicked(ZSwcTree *tree);
   void swcNodeDoubleClicked(Swc_Tree_Node* node);
   void punctaDoubleClicked(ZPunctum* p);
+  void meshDoubleClicked(ZMesh* p);
   
 public slots:
   void swcItemDoubleClicked(QModelIndex index);
@@ -30,12 +32,19 @@ public slots:
       QItemSelection selected, QItemSelection deselected);
   void updateSelectionFromCategorizedSwcNode(
       QItemSelection selected, QItemSelection deselected);
+
   void punctaItemDoubleClicked(QModelIndex index);
   void punctaSelectionChangedFromTreeView(
       QItemSelection selected, QItemSelection deselected);
 
+  void meshItemDoubleClicked(QModelIndex index);
+  void meshSelectionChangedFromTreeView(
+      QItemSelection selected, QItemSelection deselected);
+
   void punctaSelectionChanged(
       QList<ZPunctum*> selected, QList<ZPunctum*> deselected);
+  void meshSelectionChanged(
+      QList<ZMesh*> selected, QList<ZMesh*> deselected);
   void swcSelectionChanged(
       QList<ZSwcTree*> selected, QList<ZSwcTree*> deselected);
   void swcTreeNodeSelectionChanged(
@@ -51,6 +60,7 @@ protected:
   void buildItemSelectionFromList(const QList<ZPunctum*> &list, QItemSelection &is);
   void buildItemSelectionFromList(const QList<ZSwcTree*> &list, QItemSelection &is);
   void buildItemSelectionFromList(const QList<Swc_Tree_Node*> &list, QItemSelection &is);
+  void buildItemSelectionFromList(const QList<ZMesh*> &list, QItemSelection &is);
 
   QList<Swc_Tree_Node*> getSwcNodeList(QItemSelection &is);
 
@@ -62,6 +72,7 @@ protected:
   QTreeView *m_seedObjsTreeView;
   QTreeView *m_graphObjsTreeView;
   QTreeView *m_surfaceObjsTreeView;
+  QTreeView *m_meshObjsTreeView;
   QSortFilterProxyModel *m_punctaProxyModel;
 };
 

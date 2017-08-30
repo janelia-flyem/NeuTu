@@ -92,12 +92,13 @@ include(extlib.pri)
 
 CONFIG += rtti exceptions
 
-CONFIG += static_glew
 CONFIG += static_gtest
 
 QT += printsupport
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+#_USE_CORE_PROFILE_
+DEFINES += #QT_USE_QSTRINGBUILDER #QT_NO_CAST_FROM_BYTEARRAY #QT_NO_CAST_TO_ASCII
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -158,21 +159,15 @@ contains(CONFIG, sanitize) {
   }
 }
 
-contains(CONFIG, static_glew) { # glew from ext folder
-    include($$PWD/ext/glew.pri)
-} else { # use your own glew
-  win32 {
-    LIBS += -lglew32 -lopengl32 -lglu32
-  }
-
-  macx {
-    LIBS += -lGLEW -framework AGL -framework OpenGL
-  }
-
-  unix:!macx {
-    LIBS += -lGL -lGLEW -lGLU
-  }
-} # static glew
+win32 {
+  SOURCES += $$PWD/ext/sys/VideoMemoryWin.cpp \
+      $$PWD/ext/sys/VidMemViaD3D9.cpp \
+      $$PWD/ext/sys/VidMemViaDDraw.cpp \
+      $$PWD/ext/sys/VidMemViaDxDiag.cpp
+}
+macx {
+  SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+}
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
   include($$PWD/ext/gtest.pri)
@@ -224,6 +219,12 @@ unix {
               QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
             }
           }
+        }
+
+        isEqual(OSX_MINOR_VERSION, 11) {
+          message("Forcing 10.12 SDK on xcode8: ")
+          QMAKE_MAC_SDK = macosx10.12
+          message("SDK: $$QMAKE_MAC_SDK")
         }
 
         doc.files = doc
@@ -300,15 +301,11 @@ HEADERS += mainwindow.h \
     z3dinteractionhandler.h \
     zobjsitem.h \
     zobjsmodel.h \
-    z3dvolumesource.h \
-    z3dvolumeraycaster.h \
     zdirectionaltemplatechain.h \
     zcolormap.h \
     zclickablelabel.h \
     zcolormapeditor.h \
-    z3dcanvasrenderer.h \
     zselectfilewidget.h \
-    z3dtakescreenshotwidget.h \
     z3drendererbase.h \
     z3dprimitiverenderer.h \
     z3dsphererenderer.h \
@@ -318,18 +315,14 @@ HEADERS += mainwindow.h \
     z3dcuberenderer.h \
     zcolormapwidgetwitheditorwindow.h \
     z3dbackgroundrenderer.h \
-    z3daxis.h \
     zwidgetsgroup.h \
     z3dcanvas.h \
     zspinbox.h \
     zparameter.h \
     zstringparameter.h \
-    z3drenderprocessor.h \
     z3drenderport.h \
     z3dnetworkevaluator.h \
-    z3dprocessor.h \
     z3dport.h \
-    z3dapplication.h \
     zoptionparameter.h \
     zcombobox.h \
     znumericparameter.h \
@@ -345,8 +338,6 @@ HEADERS += mainwindow.h \
     z3dfontrenderer.h \
     z3dcanvaseventlistener.h \
     zspanslider.h \
-    z3dutils.h \
-    z3dmesh.h \
     zcuboid.h \
     ztest.h \
     z3dgpuinfo.h \
@@ -468,7 +459,6 @@ HEADERS += mainwindow.h \
     zstackdoc.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
-    zglew.h \
     dialogs/penwidthdialog.h \
     dvid/zdvidclient.h \
     dialogs/dvidobjectdialog.h \
@@ -711,6 +701,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemmb6analyzer.h \
     dialogs/zflyemsynapseannotationdialog.h \
     zdvidutil.h \
+    zstackreader.h \
+    dvid/zdvidpath.h \
     dialogs/zcontrastprotocaldialog.h \
     flyem/zflyemsynapsedatafetcher.h \
     flyem/zflyemsynapsedataupdater.h \
@@ -763,11 +755,46 @@ HEADERS += mainwindow.h \
     neu3window.h \
     flyem/zflyembody3ddockeyprocessor.h \
     zstackdockeyprocessor.h \
+    zexception.h \
+    zutils.h \
+    zflags.h \
+    zbbox.h \
+    zspinboxwithscrollbar.h \
+    z3dshader.h \
+    z3dcontext.h \
+    zsysteminfo.h \
+    z3dshadermanager.h \
+    z3dfilter.h \
+    zvertexbufferobject.h \
+    zvertexarrayobject.h \
+    z3dtransformparameter.h \
+    z3dglobalparameters.h \
+    z3dboundedfilter.h \
+    z3dcanvaspainter.h \
+    zmesh.h \
+    zmeshio.h \
+    zmeshutils.h \
+    z3dmeshfilter.h \
+    z3dmeshrenderer.h \
+    zstringutils.h \
+    z3dvolumefilter.h \
+    z3dtextureandeyecoordinaterenderer.h \
+    z3dview.h \
+    ztakescreenshotwidget.h \
+    zioutils.h \
+    zmeshobjsmodel.h \
     widgets/ztextedit.h \
     flyem/zflyembodylistmodel.h \
     flyem/zflyembodylistview.h \
     flyem/zflyembodylistdelegate.h \
-    flyem/zflyembodyideditor.h
+    flyem/zflyembodyideditor.h \
+    widgets/taskprotocolwindow.h \
+    protocols/taskprotocoltask.h \
+    protocols/taskbodyreview.h \
+    flyem/zflyembody3ddoccommand.h \
+    flyem/zflyembody3ddocmenufactory.h \
+    zopenglwidget.h \
+    misc/zvtkutil.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -869,7 +896,8 @@ FORMS += dialogs/settingdialog.ui \
     dialogs/zflyembodysplitdialog.ui \
     widgets/zbodylistwidget.ui \
     widgets/flyembodyinfowidget.ui \
-    neu3window.ui
+    neu3window.ui \
+    widgets/taskprotocolwindow.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -909,17 +937,13 @@ SOURCES += main.cpp \
     z3dinteractionhandler.cpp \
     zobjsitem.cpp \
     zobjsmodel.cpp \
-    z3dvolumesource.cpp \
-    z3dvolumeraycaster.cpp \
     zcolormap.cpp \
     zclickablelabel.cpp \
     zcolormapeditor.cpp \
     zlocsegchainconn.cpp \
     zlocsegchain.cpp \
     zcurve.cpp \
-    z3dcanvasrenderer.cpp \
     zselectfilewidget.cpp \
-    z3dtakescreenshotwidget.cpp \
     z3drendererbase.cpp \
     z3dprimitiverenderer.cpp \
     z3dsphererenderer.cpp \
@@ -929,18 +953,14 @@ SOURCES += main.cpp \
     z3dcuberenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
     z3dbackgroundrenderer.cpp \
-    z3daxis.cpp \
     zwidgetsgroup.cpp \
     z3dcanvas.cpp \
     zspinbox.cpp \
     zparameter.cpp \
     zstringparameter.cpp \
-    z3drenderprocessor.cpp \
     z3drenderport.cpp \
     z3dnetworkevaluator.cpp \
-    z3dprocessor.cpp \
     z3dport.cpp \
-    z3dapplication.cpp \
     zcombobox.cpp \
     znumericparameter.cpp \
     zspinboxwithslider.cpp \
@@ -954,8 +974,6 @@ SOURCES += main.cpp \
     z3dsdfont.cpp \
     z3dfontrenderer.cpp \
     zspanslider.cpp \
-    z3dutils.cpp \
-    z3dmesh.cpp \
     ztest.cpp \
     z3dgpuinfo.cpp \
     z3dtexture.cpp \
@@ -1112,6 +1130,7 @@ SOURCES += main.cpp \
     zkeyeventswcmapper.cpp \
     dialogs/zflyemroidialog.cpp \
     flyem/zflyemroiproject.cpp \
+    flyem/zbcfset.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
     dialogs/shapepaperdialog.cpp \
@@ -1335,10 +1354,50 @@ SOURCES += main.cpp \
     neu3window.cpp \
     flyem/zflyembody3ddockeyprocessor.cpp \
     zstackdockeyprocessor.cpp \
+    zoptionparameter.cpp \
+    zspinboxwithscrollbar.cpp \
+    z3dshader.cpp \
+    z3dcontext.cpp \
+    zsysteminfo.cpp \
+    z3dshadermanager.cpp \
+    z3dfilter.cpp \
+    zvertexbufferobject.cpp \
+    zvertexarrayobject.cpp \
+    z3dtransformparameter.cpp \
+    z3dglobalparameters.cpp \
+    z3dboundedfilter.cpp \
+    z3dcanvaspainter.cpp \
+    zmesh.cpp \
+    zmeshio.cpp \
+    zmeshutils.cpp \
+    z3dmeshfilter.cpp \
+    z3dmeshrenderer.cpp \
+    zstringutils.cpp \
+    z3dvolumefilter.cpp \
+    z3dtextureandeyecoordinaterenderer.cpp \
+    z3dview.cpp \
+    ztakescreenshotwidget.cpp \
+    zioutils.cpp \
+    zexception.cpp \
+    zmeshobjsmodel.cpp \
     widgets/ztextedit.cpp \
     flyem/zflyembodylistmodel.cpp \
     flyem/zflyembodylistview.cpp \
     flyem/zflyembodylistdelegate.cpp \
-    flyem/zflyembodyideditor.cpp
+    flyem/zflyembodyideditor.cpp \
+    widgets/taskprotocolwindow.cpp \
+    protocols/taskprotocoltask.cpp \
+    protocols/taskbodyreview.cpp \
+    flyem/zflyembody3ddoccommand.cpp \
+    flyem/zflyembody3ddocmenufactory.cpp \
+    zopenglwidget.cpp \
+    zstackreader.cpp \
+    dvid/zdvidpath.cpp \
+    misc/zvtkutil.cpp
+
+DISTFILES += \
+    Resources/shader/wblended_final.frag \
+    Resources/shader/wblended_init.frag
+
 
 

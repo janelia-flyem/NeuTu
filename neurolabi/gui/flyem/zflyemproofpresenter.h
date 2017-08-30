@@ -91,6 +91,7 @@ signals:
   void runningLocalSplit();
   void goingToBody();
   void selectingBody();
+  void goingToPosition();
   void goingToTBar();
 //  void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);

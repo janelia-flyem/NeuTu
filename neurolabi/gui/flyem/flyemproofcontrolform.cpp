@@ -67,6 +67,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(bodyViewTriggered()));
   connect(ui->skeletonViewPushButton, SIGNAL(clicked()),
           this, SIGNAL(skeletonViewTriggered()));
+  connect(ui->meshPushButton, SIGNAL(clicked()),
+          this, SIGNAL(meshViewTriggered()));
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
@@ -180,6 +182,7 @@ void FlyEmProofControlForm::createMenu()
 
   QAction *queryPixelAction = new QAction("Go to Position", this);
   m_mainMenu->addAction(queryPixelAction);
+  queryPixelAction->setShortcut(Qt::Key_F3);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
 
   QAction *queryBodyAction = new QAction("Go to Body", this);

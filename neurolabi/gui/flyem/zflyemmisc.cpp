@@ -935,7 +935,20 @@ ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZStroke2d &stroke)
   return json;
 }
 
-void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke)
+ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZObject3d &seed)
+{
+  ZJsonObject json;
+
+  json.setEntry("label", seed.getLabel());
+  json.setEntry("type", "ZObject3d");
+  ZJsonObject obj = seed.toJsonObject();
+  json.setEntry("data", obj);
+
+  return json;
+}
+
+template<typename T>
+void ZFlyEmMisc::AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj)
 {
   ZJsonArray array;
 
@@ -945,7 +958,32 @@ void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke)
     array = ZJsonArray(taskObj.value("seeds"));
   }
 
-  array.append(MakeSplitSeedJson(stroke));
+  array.append(MakeSplitSeedJson(obj));
+}
+
+void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke)
+{
+  AddSplitTaskSeedG(taskObj, stroke);
+}
+
+void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZObject3d &obj)
+{
+  AddSplitTaskSeedG(taskObj, obj);
+}
+
+ZJsonArray ZFlyEmMisc::GetSeedJson(ZStackDoc *doc)
+{
+  QList<ZDocPlayer*> playerList =
+      doc->getPlayerList(ZStackObjectRole::ROLE_SEED);
+  ZJsonArray jsonArray;
+  foreach (const ZDocPlayer *player, playerList) {
+    ZJsonObject jsonObj = player->toSeedJson();
+    if (!jsonObj.isEmpty()) {
+      jsonArray.append(jsonObj);
+    }
+  }
+
+  return jsonArray;
 }
 
 void ZFlyEmMisc::UploadSyGlassTask(

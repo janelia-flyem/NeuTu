@@ -3,7 +3,7 @@ Created on Oct 25, 2015
 
 @author: zhaot
 '''
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 
 class DvidService(object):
@@ -18,7 +18,7 @@ class DvidService(object):
         self.address = address
         self.port = port
         self.node = node
-        self.opener = urllib2.build_opener()
+        self.opener = urllib.request.build_opener()
         
     def getRootUrl(self):
         return 'http://%s:%d' % (self.address, self.port)
@@ -30,7 +30,7 @@ class DvidService(object):
         return self.getRootUrl() + '/api/help'
     
     def getApiHelp(self):
-        req = urllib2.Request(self.getApiHelpUrl())
+        req = urllib.request.Request(self.getApiHelpUrl())
         r = self.opener.open(req)
         content  = r.read()
         return content
@@ -38,7 +38,7 @@ class DvidService(object):
     
 if __name__ == '__main__':
     service = DvidService('emdata1.int.janelia.org', 8500, '86e1')
-    print service.getNodeUrl()
-    print service.getApiHelp()
+    print(service.getNodeUrl())
+    print(service.getApiHelp())
     
     

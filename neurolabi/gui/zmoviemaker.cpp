@@ -13,13 +13,11 @@
 #include "z3dswcfilter.h"
 #include "zstack.hxx"
 #include "zstackmovieactor.h"
-#include "z3dvolumeraycaster.h"
-#include "z3dvolumeraycasterrenderer.h"
+#include "z3dvolumefilter.h"
 #include "zpunctamovieactor.h"
 #include "zmoviestage.h"
 #include "z3dcompositor.h"
 #include "zpunctum.h"
-#include "z3dvolumesource.h"
 #include "zpunctumio.h"
 #include "z3dpunctafilter.h"
 #include "zobject3dscan.h"
@@ -27,7 +25,6 @@
 #include "zcubearray.h"
 #include "flyem/zflyemmisc.h"
 #include "dvid/zdvidinfo.h"
-#include "z3daxis.h"
 
 using namespace std;
 
@@ -53,25 +50,23 @@ void ZMovieMaker::dismissCast()
 
 void ZMovieMaker::prepareStage()
 {
-  Z3DWindow *window = new Z3DWindow(m_academy, Z3DWindow::INIT_NORMAL,
-                                    false, NULL);
+  Z3DWindow *window = new Z3DWindow(m_academy, Z3DWindow::INIT_NORMAL);
   m_stage = new ZMovieStage(window);
 
   window->getDocument()->disconnectPunctaModelUpdate();
   window->getDocument()->disconnectSwcNodeModelUpdate();
 
   m_photographer.setStage(m_stage);
-  window->getVolumeSource()->setMaxVoxelNumber(1024 * 1024 * 512);
-  window->getVolumeSource()->reloadVolume();
+  window->getVolumeFilter()->setData(window->getDocument(), 1024 * 1024 * 512);
 
   window->show();
   window->getSwcFilter()->setColorMode("Intrinsic");
   window->getSwcFilter()->enablePicking(false);
   window->getPunctaFilter()->setColorMode("Original Point Color");
-  window->getVolumeRaycaster()->getRenderer()->setOpaque(true);
-  window->getVolumeRaycaster()->hideBoundBox();
-  window->getVolumeRaycasterRenderer()->setCompositeMode("Direct Volume Rendering");
-  window->getVolumeRaycasterRenderer()->setTextureFilterMode("Nearest");
+  window->getVolumeFilter()->setOpaque(true);
+  window->getVolumeFilter()->hideBoundBox();
+  window->getVolumeFilter()->setCompositeMode("Direct Volume Rendering");
+  window->getVolumeFilter()->setTextureFilterMode("Nearest");
   window->getCompositor()->setBackgroundFirstColor(
         glm::vec3(m_backgroundColor.redF(), m_backgroundColor.greenF(),
                   m_backgroundColor.blueF()));
@@ -82,7 +77,7 @@ void ZMovieMaker::prepareStage()
 //  window->getAxis()->setVisible(m_showingAxis);
 
 
-  window->getRendererBase(Z3DWindow::LAYER_SURFACE)->setOpacity(0.85);
+  window->getFilter(Z3DWindow::LAYER_SURFACE)->setOpacity(0.85);
 
    //stage->getVolumeSource()->setZScale(zScale);
   //m_clipperState.init(window);
@@ -91,9 +86,6 @@ void ZMovieMaker::prepareStage()
        iter != m_cast.end(); ++iter) {
     (*iter)->setStage(m_stage);
   }
-
-  //For ROIs
-  window->setROIs(m_academy->getObjectList<ZCubeArray>().size());
 }
 
 void ZMovieMaker::recruitCast()

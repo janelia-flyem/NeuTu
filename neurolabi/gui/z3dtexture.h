@@ -2,123 +2,147 @@
 #define Z3DTEXTURE_H
 
 #include "z3dgl.h"
-#include "zglmutils.h"
 
 class Z3DTexture
 {
 public:
-  // default min and mag filter is GL_LINEAR, default wrap is GL_CLAMP_TO_EDGE
+  Z3DTexture(GLenum textureTarget, GLint internalFormat, const glm::uvec3& dimension,
+             GLenum dataFormat, GLenum dataType);
 
-  // construct 1d, 2d or 3d texture, texture target will be derived from dimension
-  // Result Z3DTexture target will be one of GL_TEXTURE_1D, GL_TEXTURE_2D or GL_TEXTURE_3D
-  Z3DTexture(const glm::ivec3& dimensions, GLenum dataFormat, GLint internalformat, GLenum dataType);
-  Z3DTexture(const glm::ivec3& dimensions, GLenum dataFormat, GLint internalformat, GLenum dataType,
-             GLint minFilter, GLint magFilter, GLint wrap);
-  // construct any texture with user provided textureTarget
-  Z3DTexture(const glm::ivec3& dimensions, GLenum textureTarget, GLenum dataFormat, GLint internalformat,
-             GLenum dataType);
-  Z3DTexture(const glm::ivec3& dimensions, GLenum textureTarget, GLenum dataFormat, GLint internalformat,
-             GLenum dataType, GLint minFilter, GLint magFilter, GLint wrap);
+  // derive teture target as 1D, 2D or 3D
+  Z3DTexture(GLint internalFormat, const glm::uvec3& dimension,
+             GLenum dataFormat, GLenum dataType);
+
   ~Z3DTexture();
 
-  // call this only if you want to upload something. ( usually openGL will allocate texture
-  // memory ) Input data must match current dataFormat and dataType.
-  // Z3DTexture will **not** take ownership of the input data
-  // call this before uploadTexture
-  void setData(void *data) { m_data = (GLvoid*)data; }
+  // default is GL_LINEAR and GL_LINEAR.
+  // note: openGL default is GL_NEAREST_MIPMAP_LINEAR and GL_LINEAR.
+  void setFilter(GLint minFilter = GLint(GL_LINEAR), GLint magFilter = GLint(GL_LINEAR)) const;
 
-  void uploadTexture();
-  void bind() const { glBindTexture(m_textureTarget, m_id); }
+  // default is GL_CLAMP_TO_EDGE
+  // note: openGL default is GL_REPEAT
+  void setWrap(GLint wrap = GLint(GL_CLAMP_TO_EDGE)) const;
 
-  GLuint getId() const { return m_id; }
-  // Check if texture is in resident GL memory
-  bool isResident() const { GLboolean res; return glAreTexturesResident(1, &m_id, &res) == GL_TRUE; }
-  bool is1DTexture() const;
-  bool is2DTexture() const;
-  bool is3DTexture() const;
+  //
+  void generateMipmap() const;
 
-  // buffer must have at least getBypePerPixel(dataFormat, dataType) * getNumPixels() bytes space, crash otherwise
-  void downloadTextureToBuffer(GLenum dataFormat, GLenum dataType, GLvoid* buffer) const;
+  // changes made by the following four functions will take effect after next call of uploadImage()
+  void setDimension(const glm::uvec3& dimension)
+  { m_dimension = dimension; }
 
-  int getTextureSizeOnGPU() const;
+  void setInternalFormat(GLint internalformat)
+  { m_internalFormat = internalformat; }
 
-  GLenum getTextureTarget() const { return m_textureTarget; }
-  glm::ivec3 getDimensions() const { return m_dimensions;}
-  int getWidth() const { return m_dimensions.x; }
-  int getHeight() const { return m_dimensions.y; }
-  int getDepth() const { return m_dimensions.z; }
-  size_t getNumPixels() const { return m_dimensions.x * m_dimensions.y * m_dimensions.z; }
-  GLint getDataFormat() const { return m_dataFormat; }
-  GLint getInternalFormat() const { return m_internalFormat; }
-  GLint getMinFilter() const { return m_minFilter; }
-  GLint getMagFilter() const { return m_magFilter; }
-  GLenum getDataType() const { return m_dataType; }
+  void setDataFormat(GLenum format)
+  { m_dataFormat = format; }
 
-  void setFilter(GLint minFilter, GLint magFilter);
-  void setMinFilter(GLint minFilter);
-  void setMagFilter(GLint magFilter);
-  void setWrap(GLint wrap);
+  void setDataType(GLenum dataType)
+  { m_dataType = dataType; }
 
-  // changes made by the following four functions will take effect after next call of uploadTexture()
-  void setDimensions(glm::ivec3 dimensions) { m_dimensions = dimensions; }
-  void setDataFormat(GLint format) { m_dataFormat = format; }
-  void setInternalFormat(GLint internalformat) { m_internalFormat = internalformat; }
-  void setDataType(GLenum dataType) { m_dataType = dataType; }
+  // Input data must match current dataFormat and dataType.
+  void uploadImage(const GLvoid* data = nullptr) const;
+
+  // glTexSubImage*D
+  void uploadSubImage(const glm::uvec3& offset, const glm::uvec3& size, const GLvoid* data) const;
+
+  void bind() const
+  { glBindTexture(m_textureTarget, m_id); }
+
+  GLuint id() const
+  { return m_id; }
+
+  GLenum textureTarget() const
+  { return m_textureTarget; }
+
+  glm::uvec3 dimension() const
+  { return m_dimension; }
+
+  size_t width() const
+  { return m_dimension.x; }
+
+  size_t height() const
+  { return m_dimension.y; }
+
+  size_t depth() const
+  { return m_dimension.z; }
+
+  size_t numPixels() const
+  { return m_dimension.x * m_dimension.y * m_dimension.z; }
+
+  GLenum dataFormat() const
+  { return m_dataFormat; }
+
+  GLenum dataType() const
+  { return m_dataType; }
+
+  GLint internalFormat() const
+  { return m_internalFormat; }
 
   // calculates the bytes per pixel from dataFormat and dataType
-  static size_t getBypePerPixel(GLenum dataFormat, GLenum dataType);
+  static size_t bypePerPixel(GLenum dataFormat, GLenum dataType);
+
   // calculates the bytes per pixel from the internal format
-  static size_t getBypePerPixel(GLint internalFormat);
+  static size_t bypePerPixel(GLint internalFormat);
+
+  // buffer must have at least bypePerPixel(dataFormat, dataType) * numPixels() bytes space, crash otherwise
+  void downloadTextureToBuffer(GLenum dataFormat, GLenum dataType, GLvoid* buffer) const;
+
+  size_t textureSizeOnGPU() const
+  { return bypePerPixel(m_internalFormat) * numPixels(); }
+
+  void saveAsColorImage(const QString& filename) const;
 
 private:
-  void deriveTextureTarget();
-  void applyFilter();
-  void applyWrap();
-  bool useMipmap() const;
-  void init();
+  bool is1DTexture() const;
 
-protected:
-  glm::ivec3 m_dimensions;
+  bool is2DTexture() const;
+
+  bool is3DTexture() const;
+
+  void getType();
+
+private:
   GLenum m_textureTarget;
-  GLenum m_dataFormat;
+  glm::uvec3 m_dimension;
   GLint m_internalFormat;
+
+  GLenum m_dataFormat;
   GLenum m_dataType;
 
-  GLint m_minFilter;
-  GLint m_magFilter;
-  GLint m_wrap;
+  GLuint m_id = 0; // texture id
 
-  GLuint m_id; // texture id
-
-  GLvoid *m_data;
+  int m_type;
 };
 
 // provide unique texture units
 // usage:
 
-// Z3DTextureUnitManager *textureUnitManager = new Z3DTextureUnitManager();
+// auto textureUnitManager = std::make_unique<Z3DTextureUnitManager>();
 // textureUnitManager->nextAvailableUnit();
 // textureUnitManager->activateCurrentUnit();
 // texture->bind();
 
 // textureUnitManager->nextAvailableUnit();
 // ...
-
-// delete textureUnitManager;
 class Z3DTextureUnitManager
 {
 public:
   Z3DTextureUnitManager();
-  ~Z3DTextureUnitManager();
 
   void nextAvailableUnit();
-  void activateCurrentUnit();
-  GLint getCurrentUnitNumber() const { return m_currentUnitNumber; }
-  GLenum getCurrentUnitEnum() const;
-  // clear assigned unit
-  void reset() { m_currentUnitNumber = -1; }
 
-  static GLint getActiveTextureUnit();
+  void activateCurrentUnit();
+
+  GLint currentUnitNumber() const
+  { return m_currentUnitNumber; }
+
+  GLenum currentUnitEnum() const;
+
+  // clear assigned unit
+  void reset()
+  { m_currentUnitNumber = -1; }
+
+  static GLint activeTextureUnit();
 
 protected:
   int m_maxTextureUnits;   // total number of available units

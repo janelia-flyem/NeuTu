@@ -23,6 +23,20 @@ uniform sampler2D FrontBlenderTex;
 uniform vec2 screen_dim_RCP;
 #endif
 
+#if GLSL_VERSION >= 330
+layout(location = 0) out vec4 FragData0;
+layout(location = 1) out vec4 FragData1;
+layout(location = 2) out vec4 FragData2;
+#elif GLSL_VERSION >= 130
+out vec4 FragData0;
+out vec4 FragData1;
+out vec4 FragData2;  // call glBindFragDataLocation before linking
+#else
+#define FragData0 gl_FragData[0]
+#define FragData1 gl_FragData[1]
+#define FragData2 gl_FragData[2]
+#endif
+
 #define MAX_DEPTH 1.0
 
 #if GLSL_VERSION < 130
@@ -35,7 +49,8 @@ void main(void)
 {
 	float fragDepth;
 	vec4 color;
-        fragment_func(color, fragDepth);
+	fragment_func(color, fragDepth);
+	gl_FragDepth = fragDepth;
 
 	#ifdef USE_RECT_TEX
 	vec2 depthBlender = texture2DRect(DepthBlenderTex, gl_FragCoord.xy).xy;

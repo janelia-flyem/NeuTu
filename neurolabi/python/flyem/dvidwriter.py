@@ -1,4 +1,4 @@
-import httplib
+import http.client
 import requests
 from dvidurl import DvidUrl
 from dvidenv import DvidEnv
@@ -15,18 +15,18 @@ class DvidWriter(object):
     def deleteSkeleton(self, bodyId):
         url = self.dvidUrl.getSkeletonUrl(bodyId)
         r = requests.delete(url)
-        print r.url
+        print(r.url)
 
     def deleteThumbnail(self, bodyId):
         url = self.dvidUrl.getThumbnailUrl(bodyId)
         r = requests.delete(url)
-        print r.url
-        print r.status_code
+        print(r.url)
+        print(r.status_code)
 
     def deleteBodyAnnotation(self, bodyId):
         r = requests.delete(self.dvidUrl.getBodyAnnotationUrl(bodyId))
-        print r.url
-        print r.status_code
+        print(r.url)
+        print(r.status_code)
 
     def deleteKeyValue(self, dataName, key):
         r = requests.delete(self.dvidUrl.getKeyUrl(dataName, key))

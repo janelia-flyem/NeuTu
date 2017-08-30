@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zflyemproofmvc.h"
 
 #include <QFuture>
@@ -9,6 +8,7 @@
 #include <QMainWindow>
 #include <QDesktopWidget>
 #include <QApplication>
+#include <QMimeData>
 
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
@@ -82,6 +82,8 @@
 #include "dialogs/flyembodyiddialog.h"
 #include "zstackdockeyprocessor.h"
 #include "z3dgraphfilter.h"
+#include "z3dmeshfilter.h"
+#include "flyem/zflyembody3ddocmenufactory.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -294,6 +296,7 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_externalNeuronWindow = NULL;
   m_bodyWindow = NULL;
   m_skeletonWindow = NULL;
+  m_meshWindow = NULL;
   m_splitWindow = NULL;
 }
 
@@ -364,6 +367,11 @@ void ZFlyEmProofMvc::detachSkeletonWindow()
   m_skeletonWindow = NULL;
 }
 
+void ZFlyEmProofMvc::detachMeshWindow()
+{
+  m_meshWindow = NULL;
+}
+
 void ZFlyEmProofMvc::detachObjectWindow()
 {
   m_objectWindow = NULL;
@@ -425,9 +433,9 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
     const QString &outDir)
 {
   showSkeletonWindow();
-  glm::vec3 eye = m_skeletonWindow->getCamera()->getEye();
-  float nearDist = m_skeletonWindow->getCamera()->getNearDist();
-  glm::vec3 upVector = m_skeletonWindow->getCamera()->getUpVector();
+  glm::vec3 eye = m_skeletonWindow->getCamera()->get().eye();
+  float nearDist = m_skeletonWindow->getCamera()->get().nearDist();
+  glm::vec3 upVector = m_skeletonWindow->getCamera()->get().upVector();
 
   std::vector<uint64_t> skippedBodyIdArray;
   for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
@@ -445,7 +453,7 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
       m_skeletonWindow->getCamera()->setNearDist(nearDist);
       //  double eyeDist = eye[0];
       m_skeletonWindow->takeScreenShot(
-            QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+            QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
 
       m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(0, 0, 1));
       //  m_skeletonWindow->setXZView();
@@ -453,11 +461,11 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
       //  eye[1] = m_skeletonWindow->getCamera()->getCenter()[1] - eyeDist;
       //  m_skeletonWindow->getCamera()->setEye(eye);
       m_skeletonWindow->takeScreenShot(
-            QString("%1/%2_xz.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+            QString("%1/%2_xz.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
 
       m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(1, 0, 0));
       m_skeletonWindow->takeScreenShot(
-            QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, MonoView);
+            QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
     } else {
       skippedBodyIdArray.push_back(bodyId);
     }
@@ -492,6 +500,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
       connect(window, SIGNAL(destroyed()), this, SLOT(detachObjectWindow()));
     } else if (window == m_roiWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachRoiWindow()));
+    } else if (window == m_meshWindow) {
+      connect(window, SIGNAL(destroyed()), this, SLOT(detachMeshWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
             this, SLOT(zoomTo(int, int, int, int)));
@@ -602,9 +612,9 @@ void ZFlyEmProofMvc::makeOrthoWindow()
 void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
     Z3DWindow *window, ZFlyEmBody3dDoc *doc)
 {
-  connect(window->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+  connect(window->getTodoFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showTodo(bool)));
-  connect(window->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+  connect(window->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   connect(window, SIGNAL(addingTodoMarker(int,int,int,bool,uint64_t)),
           getCompleteDocument(),
@@ -632,9 +642,9 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
   doc->showSynapse(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
 
-//  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+//  connect(m_coarseBodyWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
 //          doc, SLOT(showSynapse(bool)));
-//  connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(visibleChanged(bool)),
+//  connect(m_coarseBodyWindow->getTodoFilter(), SIGNAL(objVisibleChanged(bool)),
 //          doc, SLOT(showTodo(bool)));
   setWindowSignalSlot(m_coarseBodyWindow);
   prepareBodyWindowSignalSlot(m_coarseBodyWindow, doc);
@@ -680,54 +690,140 @@ void ZFlyEmProofMvc::makeBodyWindow()
   }
 }
 
-Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow()
+ZWindowFactory ZFlyEmProofMvc::makeExternalWindowFactory(
+    NeuTube3D::EWindowType windowType)
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
-
   ZWindowFactory factory;
   factory.setControlPanelVisible(false);
   factory.setObjectViewVisible(false);
   factory.setStatusBarVisible(false);
   factory.setParentWidget(this);
+  factory.setWindowType(windowType);
+
+  return factory;
+}
+
+Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
+    NeuTube3D::EWindowType windowType)
+{
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_MESH);
+  doc->enableBodySelectionSync(true);
+
+  ZWindowFactory factory = makeExternalWindowFactory(windowType);
+
+  m_meshWindow = factory.make3DWindow(doc);
+
+  doc->showSynapse(m_meshWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
+  setWindowSignalSlot(m_meshWindow);
+  m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
+  m_meshWindow->readSettings();
+  m_meshWindow->syncAction();
+
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_meshWindow, getGrayScaleInfo(),
+          m_doc->getParentMvc()->getView()->getViewParameter());
+    if(m_ROILoaded) {
+        m_meshWindow->getROIsDockWidget()->getROIs(
+              m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+              m_roiSourceList);
+    }
+  }
+
+  prepareBodyWindowSignalSlot(m_meshWindow, doc);
+
+  return m_meshWindow;
+}
+
+Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
+    NeuTube3D::EWindowType windowType)
+{
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
+  doc->enableBodySelectionSync(true);
+
+  ZWindowFactory factory = makeExternalWindowFactory(windowType);
 
   m_skeletonWindow = factory.make3DWindow(doc);
   m_skeletonWindow->getPunctaFilter()->setColorMode("Original Point Color");
 //  doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
 
-  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
-  m_skeletonWindow->setWindowType(NeuTube3D::TYPE_SKELETON);
-//  skeletonWindow->readSettings();
+  m_skeletonWindow->setWindowType(windowType);
+  m_skeletonWindow->readSettings();
+  m_skeletonWindow->syncAction();
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_skeletonWindow, getGrayScaleInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
-//    if(m_ROILoaded)
-//        m_skeletonWindow->getROIsDockWidget()->getROIs(
-//              m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
-//              m_roiSourceList);
+    if(m_ROILoaded) {
+        m_skeletonWindow->getROIsDockWidget()->getROIs(
+              m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+              m_roiSourceList);
+    }
   }
+
+  prepareBodyWindowSignalSlot(m_skeletonWindow, doc);
 
   return m_skeletonWindow;
 }
 
 Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 {
-  makeExternalSkeletonWindow();
-  m_skeletonWindow->getSwcFilter()->setColorMode("Label Branch Type");
-  m_skeletonWindow->getSwcFilter()->setStayOnTop(false);
-  m_skeletonWindow->getPunctaFilter()->setStayOnTop(false);
-  m_skeletonWindow->getGraphFilter()->setStayOnTop(false);
-  ZFlyEmBody3dDoc *doc = m_skeletonWindow->getDocument<ZFlyEmBody3dDoc>();
-  doc->enableNodeSeeding(true);
-  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
-          doc->getKeyProcessor(), SLOT(processKeyEvent(QKeyEvent*)));
-  m_skeletonWindow->skipKeyEvent(true);
+//  Z3DWindow *window = makeExternalSkeletonWindow(NeuTube3D::TYPE_NEU3);
+  Z3DWindow *window = makeExternalMeshWindow(NeuTube3D::TYPE_NEU3);
+  window->getSwcFilter()->setColorMode("Label Branch Type");
+  window->getSwcFilter()->setStayOnTop(false);
+  window->getMeshFilter()->setStayOnTop(false);
+  window->getPunctaFilter()->setStayOnTop(false);
+  window->getGraphFilter()->setStayOnTop(false);
+  ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
+  window->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
 
-  return m_skeletonWindow;
+  connect(window, SIGNAL(savingSplitTask()),
+          doc, SLOT(saveSplitTask()));
+
+  doc->enableNodeSeeding(true);
+//  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
+//          doc->getKeyProcessor(), SLOT(processKeyEvent(QKeyEvent*)));
+  window->skipKeyEvent(true);
+
+  doc->showSynapse(window->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
+  doc->showTodo(window->isLayerVisible(Z3DWindow::LAYER_TODO));
+
+  return window;
+}
+
+Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
+{
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_MESH);
+  m_meshWindow = m_bodyWindowFactory->make3DWindow(doc);
+
+  doc->showSynapse(m_meshWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
+
+  connect(m_meshWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
+          doc, SLOT(showSynapse(bool)));
+  setWindowSignalSlot(m_meshWindow);
+
+  m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
+  m_meshWindow->setWindowType(NeuTube3D::TYPE_MESH);
+  m_meshWindow->readSettings();
+
+  if (m_doc->getParentMvc() != NULL) {
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_meshWindow, getGrayScaleInfo(),
+          m_doc->getParentMvc()->getView()->getViewParameter());
+    if(m_ROILoaded) {
+        m_meshWindow->getROIsDockWidget()->getROIs(
+              m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+              m_roiSourceList);
+    }
+  }
+
+  return m_meshWindow;
 }
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
@@ -735,9 +831,11 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
   ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
+
+
   doc->showSynapse(m_skeletonWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
 
-  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(visibleChanged(bool)),
+  connect(m_skeletonWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
   setWindowSignalSlot(m_skeletonWindow);
 
@@ -748,10 +846,11 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_skeletonWindow, getGrayScaleInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
-    if(m_ROILoaded)
+    if(m_ROILoaded) {
         m_skeletonWindow->getROIsDockWidget()->getROIs(
               m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
               m_roiSourceList);
+    }
   }
 }
 
@@ -762,7 +861,13 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
   m_externalNeuronWindow = m_bodyWindowFactory->make3DWindow(doc);
+  m_externalNeuronWindow->setWindowType(NeuTube3D::TYPE_NEU3);
+  m_externalNeuronWindow->readSettings();
   setWindowSignalSlot(m_externalNeuronWindow);
+
+  m_externalNeuronWindow->syncAction();
+//  doc->showSynapse(m_externalNeuronWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
+//  doc->showTodo(m_externalNeuronWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
@@ -874,6 +979,19 @@ void ZFlyEmProofMvc::updateSkeletonWindow()
         getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
+    if (doc != NULL){
+      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
+    }
+  }
+}
+
+void ZFlyEmProofMvc::updateMeshWindow()
+{
+  if (m_meshWindow != NULL) {
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    ZFlyEmBody3dDoc *doc =
+        qobject_cast<ZFlyEmBody3dDoc*>(m_meshWindow->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
@@ -1856,6 +1974,7 @@ void ZFlyEmProofMvc::updateBodySelection()
     updateCoarseBodyWindow();
     updateBodyWindow();
     updateSkeletonWindow();
+    updateMeshWindow();
 //    m_mergeProject.update3DBodyView();
     getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
     ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getDvidLabelSlice(
@@ -2901,6 +3020,23 @@ void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)
   m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
+void ZFlyEmProofMvc::showMeshWindow()
+{
+//  m_mergeProject.showBody3d();
+  if (m_meshWindow == NULL) {
+    makeMeshWindow();
+    m_bodyViewers->addWindow(4, m_meshWindow, "Mesh View");
+    updateMeshWindow();
+    m_meshWindow->setYZView();
+  } else {
+    m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(4));
+  }
+
+  m_bodyViewWindow->setCurrentWidow(m_meshWindow);
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+}
+
 void ZFlyEmProofMvc::showSkeletonWindow()
 {
 //  m_mergeProject.showBody3d();
@@ -2963,6 +3099,7 @@ void ZFlyEmProofMvc::closeAllBodyWindow()
   closeBodyWindow(m_bodyWindow);
   closeBodyWindow(m_splitWindow);
   closeBodyWindow(m_skeletonWindow);
+  closeBodyWindow(m_meshWindow);
   closeBodyWindow(m_externalNeuronWindow);
 }
 
@@ -3572,21 +3709,32 @@ void ZFlyEmProofMvc::saveSplitTask()
         emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
       }
   }
-#if 0
-  if (m_splitProject.getBodyId() > 0) {
-    if (getSupervisor()->checkIn(m_splitProject.getBodyId())) {
-      std::string location = m_splitProject.saveTask();
+}
 
-      emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
-    } else {
+void ZFlyEmProofMvc::saveSplitTask(uint64_t bodyId)
+{
+  if (bodyId > 0) {
+    std::string location = m_splitProject.saveTask(bodyId);
+
+    if (location.empty()) {
       emit messageGenerated(
-            ZWidgetMessage(
-              "Cannot save the task because the body has been locked"
-              " by someone else.", NeuTube::MSG_WARNING));
+            ZWidgetMessage("Failed to save the task.", NeuTube::MSG_WARNING));
+    } else {
+      emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
     }
   }
-#endif
 }
+
+uint64_t ZFlyEmProofMvc::getBodyIdForSplit() const
+{
+  return m_splitProject.getBodyId();
+}
+
+void ZFlyEmProofMvc::setBodyIdForSplit(uint64_t id)
+{
+  m_splitProject.setBodyId(id);
+}
+
 
 void ZFlyEmProofMvc::loadSplitResult()
 {
@@ -3795,6 +3943,7 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
     updateBodyWindowPlane(m_coarseBodyWindow, viewParam);
     updateBodyWindowPlane(m_bodyWindow, viewParam);
     updateBodyWindowPlane(m_skeletonWindow, viewParam);
+    updateBodyWindowPlane(m_meshWindow, viewParam);
     updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
 
     m_currentViewParam = viewParam;
@@ -4342,6 +4491,12 @@ void ZFlyEmProofMvc::updateRoiWidget()
   {
     m_skeletonWindow->getROIsDockWidget()->getROIs(
           m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
+          m_roiSourceList);
+  }
+
+  if (m_meshWindow) {
+    m_meshWindow->getROIsDockWidget()->getROIs(
+          m_meshWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
 }

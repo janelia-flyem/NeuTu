@@ -14,7 +14,6 @@
 #include "QsLog/QsLogDest.h"
 #include "zcommandline.h"
 #include "zerror.h"
-#include "z3dapplication.h"
 #include "zneurontracer.h"
 #include "zapplication.h"
 
@@ -164,15 +163,17 @@ int main(int argc, char *argv[])
 
   if (guiEnabled) {
 #ifdef _QT5_
+    QSurfaceFormat format;
+#if defined(__APPLE__) && defined(_USE_CORE_PROFILE_)
+    format.setVersion(3, 2);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+#endif
+    //format.setStereo(true);
+    QSurfaceFormat::setDefaultFormat(format);
+
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
 #endif
     QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-#ifdef _QT5_
-    QSurfaceFormat format;
-    //format.setStereo(true);
-    QSurfaceFormat::setDefaultFormat(format);
-#endif
   }
 
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
@@ -346,8 +347,6 @@ int main(int argc, char *argv[])
     // init 3D
     //std::cout << "Initializing 3D ..." << std::endl;
     RECORD_INFORMATION("Initializing 3D ...");
-    Z3DApplication z3dApp(QCoreApplication::applicationDirPath());
-    z3dApp.initialize();
 #ifdef _NEU3_
     Neu3Window *mainWin = new Neu3Window();
     if (!mainWin->loadDvidTarget()) {
@@ -397,8 +396,6 @@ int main(int argc, char *argv[])
 
       delete mainWin;
     }
-    z3dApp.deinitializeGL();
-    z3dApp.deinitialize();
 
     if (!runCommandLine) {
       //Sync log files

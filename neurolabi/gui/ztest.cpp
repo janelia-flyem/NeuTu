@@ -32,6 +32,8 @@
 #include <string>
 #include <set>
 #include <unordered_set>
+#include <vtkOBBTree.h>
+#include <vtkPolyData.h>
 
 #if defined(_ENABLE_LOWTIS_)
 #include <lowtis/LowtisConfig.h>
@@ -66,6 +68,7 @@
 #include "zmatrix.h"
 #include "zswcbranch.h"
 #include "zswctreematcher.h"
+#include "widgets/z3dtabwidget.h"
 #include "dialogs/ztestdialog.h"
 #include "dialogs/parameterdialog.h"
 #include "zstring.h"
@@ -136,10 +139,11 @@
 #include "neutubeconfig.h"
 #include "tz_darray.h"
 #include "zhdf5writer.h"
+#include "zmesh.h"
+#include "zmeshio.h"
 #include "flyem/zbcfset.h"
 #include "flyem/zflyemstackframe.h"
 #include "zmoviemaker.h"
-#include "z3dmesh.h"
 #include "zstackdoc.h"
 #include "bigdata/zstackblockgrid.h"
 #include "z3dwindow.h"
@@ -149,10 +153,8 @@
 #include "z3dswcfilter.h"
 #include "z3dinteractionhandler.h"
 #include "z3dcompositor.h"
-#include "z3dvolumeraycaster.h"
 #include "zjsonfactory.h"
 #include "z3dvolumeraycasterrenderer.h"
-#include "z3dvolumesource.h"
 #include "z3dpunctafilter.h"
 #include "tz_stack.h"
 #include "zswclayerfeatureanalyzer.h"
@@ -178,6 +180,7 @@
 #include "flyem/zflyemneuronfeatureanalyzer.h"
 #include "swc/zswcnodedistselector.h"
 #include "zmultitaskmanager.h"
+#include "flyem/zflyembodywindowfactory.h"
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
 #include "test/zjsontest.h"
@@ -214,6 +217,8 @@
 #include "test/z3dfiltersettingtest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
+#include "z3dmainwindow.h"
+#include "misc/zvtkutil.h"
 #include "test/zswcgeneratortest.h"
 #include "test/zflyemneuronimagefactorytest.h"
 #include "test/zspgrowtest.h"
@@ -260,7 +265,6 @@
 #include "flyem/zflyembodymerger.h"
 #include "test/zflyembodymergertest.h"
 #include "test/zstackobjectgrouptest.h"
-#include "z3daxis.h"
 #include "tz_int_histogram.h"
 #include "zsegmentationproject.h"
 #include "zstackviewmanager.h"
@@ -7274,7 +7278,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZXmlDoc doc;
   doc.parseFile(NeutubeConfig::getInstance().getApplicatinDir() + "/config.xml");
   ZXmlNode root = doc.getRootElement();
@@ -12243,13 +12247,37 @@ void ZTest::test(MainWindow *host)
   box.setFirstCorner(0, 0, 0);
   box.setLastCorner(1000, 2000, 3000);
 
+  Z3DMainWindow *mainWin = new Z3DMainWindow;
+  mainWin->setAttribute(Qt::WA_DeleteOnClose, false);
+  Z3DTabWidget *bodyViewers = new Z3DTabWidget(mainWin);
+  bodyViewers->setAttribute(Qt::WA_DeleteOnClose, false);
+  QSizePolicy sizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+  bodyViewers->setSizePolicy(sizePolicy);
+
   Z3DGraph *graphObj = Z3DGraphFactory::MakeBox(box, 10.0);
 
   frame->document()->addObject(graphObj);
 //  frame->document()->addObject(obj2);
 //  frame->document()->loadSwc(
 //        (GET_TEST_DATA_DIR + "/benchmark/swc/fork.swc").c_str());
-  frame->open3DWindow();
+//  frame->ope;
+//  ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+  ZWindowFactory *factory = new ZFlyEmBodyWindowFactory;
+  factory->setDeleteOnClose(true);
+
+  factory->setDeleteOnClose(true);
+  factory->setControlPanelVisible(false);
+  factory->setObjectViewVisible(false);
+  factory->setVisible(Z3DWindow::LAYER_PUNCTA, false);
+
+  Z3DWindow *window = factory->make3DWindow(frame->document());
+  window->setWindowType(NeuTube3D::TYPE_SKELETON);
+  window->readSettings();
+
+  bodyViewers->addWindow(0, window, "test");
+
+  mainWin->show();
+
   delete frame;
 #endif
 
@@ -24207,17 +24235,17 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.set("emdata1.int.janelia.org", "3f7a", 8700);
   target.setLabelBlockName(
         "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
   target.setBodyLabelName(
         "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz_vol");
 
-
-
-  ZJsonArray rootObj;
-  rootObj.load((GET_TEST_DATA_DIR +
+  ZJsonObject docJson;
+  docJson.load((GET_TEST_DATA_DIR +
                 "/_flyem/test/VR_Practice_Assignment_smithc_dvid.json"));
+
+  ZJsonArray rootObj(docJson.value("meshReview"));
 //  QJsonArray rootObj = jsonDoc.array();
 
   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
@@ -24272,6 +24300,123 @@ void ZTest::test(MainWindow *host)
    ZDvidUrl dvidUrl(target);
 
 
+#endif
+
+#if 0
+   std::vector<ZPoint> ptArray = ZGeometry::LineShpereIntersection(
+         ZPoint(0, 0.5, -2), ZPoint(0, 0, 1), ZPoint(0, 0, 0), 1);
+
+   std::cout << ptArray.size() << " intersections: " << std::endl;
+   for (std::vector<ZPoint>::const_iterator iter = ptArray.begin();
+        iter != ptArray.end(); ++iter) {
+     const ZPoint &pt = *iter;
+     std::cout << pt.toString() << std::endl;
+   }
+#endif
+
+#if 0
+   ZStack stack;
+   stack.load(GET_TEST_DATA_DIR + "/test.tif");
+   stack.printInfo();
+#endif
+
+#if 0
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
+   mesh.swapXZ();
+   mesh.translate(404, 480, 180);
+   mesh.scale(8, 8, 8);
+   ZMeshIO::instance().save(
+        mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("bodies");
+  target.setLabelBlockName("labels");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyIdArray;
+  bodyIdArray << 1;
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+
+  foreach (uint64_t bodyId, bodyIdArray) {
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(bodyId);
+
+    //  ZIntCuboid box = spStack->getBoundBox();
+
+    ZStack *stack = spStack->makeIsoDsStack(NeuTube::ONEGIGA);
+
+//    ZStack *stack = spStack->makeStack(ZIntCuboid());
+//    ZStack *stack = spStack->getStack();
+
+    ZString numStr;
+    numStr.appendNumber(bodyId);
+    writer.write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+//    delete stack;
+    delete spStack;
+  }
+#endif
+
+#if 0
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
+   mesh.swapXZ();
+
+   ZStack stack;
+   stack.load(GET_TEST_DATA_DIR + "/test.tif");
+   mesh.translate(stack.getOffset().getX(), stack.getOffset().getY(),
+                  stack.getOffset().getZ());
+   mesh.scale(stack.getDsIntv().getX() + 1, stack.getDsIntv().getY() + 1,
+              stack.getDsIntv().getZ() + 1);
+   ZMeshIO::instance().save(
+        mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
+#endif
+
+#if 0
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         (GET_TEST_DATA_DIR + "/test2.obj").c_str(), mesh);
+   mesh.translate(404, 480, 180);
+   mesh.scale(8, 8, 8);
+   mesh.swapXZ();
+   ZMeshIO::instance().save(
+        mesh, (GET_TEST_DATA_DIR + "/test3.obj").c_str(), "obj");
+#endif
+
+#if 0
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
+
+   vtkSmartPointer<vtkPolyData> poly = meshToVtkPolyData(mesh);
+
+   vtkSmartPointer<vtkOBBTree> obbTree =
+       vtkSmartPointer<vtkOBBTree>::New();
+   obbTree->SetDataSet(poly);
+   obbTree->BuildLocator();
+
+   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+   double a0[] = {0, 352.376, 54.7405};
+   double a1[] = {10, 352.376, 54.7405};
+   obbTree->IntersectWithLine(a0, a1, points, NULL);
+
+   std::cout << "#Intersections: " << points->GetNumberOfPoints() << std::endl;
+
+   points->GetPoint(0, a0);
+   points->GetPoint(1, a1);
+
+   std::cout << a0[0] << " " << a0[1] << " " << a0[2] << std::endl;
+   std::cout << a1[0] << " " << a1[1] << " " << a1[2] << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

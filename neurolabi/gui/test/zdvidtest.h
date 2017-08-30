@@ -100,6 +100,11 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getServerInfoUrl());
 //  std::cout << dvidUrl.getServerInfoUrl() << std::endl;
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1",
+            dvidUrl.getMeshUrl(1, 0));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes_1/key/1",
+            dvidUrl.getMeshUrl(1, 1));
+
   ASSERT_EQ("http://emdata.janelia.org/api", dvidUrl.getApiUrl());
 //  std::cout << dvidUrl.getApiUrl() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/repo/bf1", dvidUrl.getRepoUrl());
@@ -126,6 +131,11 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl2.getSkeletonUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons/key/1_swc",
             dvidUrl2.getSkeletonUrl(1));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_meshes/key/1",
+            dvidUrl2.getMeshUrl(1, 0));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_meshes_1/key/1",
+            dvidUrl2.getMeshUrl(1, 1));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies/sparsevol",
             dvidUrl.getSparsevolUrl("bodies"));
@@ -396,7 +406,7 @@ TEST(ZDvidTest, ZDvidUrl)
               "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));
   ASSERT_EQ(0, ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/"));
-  ASSERT_EQ(123451234512345L, ZDvidUrl::GetBodyId(
+  ASSERT_EQ(uint64_t(123451234512345L), ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/123451234512345"));
 
   ASSERT_EQ("head__6c8409b833d57d9c62856b6cab608aa5",

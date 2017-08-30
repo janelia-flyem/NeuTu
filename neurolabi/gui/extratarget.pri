@@ -28,6 +28,7 @@ CONFIG(debug, debug|release) {
 } else {
     neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --release "'$${CONDA_CONFIG}'"
 }
+
 neurolabi.depends = FORCE
 QMAKE_EXTRA_TARGETS += neurolabi
 

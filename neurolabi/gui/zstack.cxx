@@ -1902,6 +1902,7 @@ void ZStack::printInfo() const
   std::cout << "  Channel number: " << channelNumber() << std::endl;
   std::cout << "  Voxel type: " << kind() << std::endl;
   std::cout << "  Offset: " << getOffset().toString() << std::endl;
+  std::cout << "  Ds Intv: " << getDsIntv().toString() << std::endl;
 
   if (isEmpty()) {
     std::cout << "  Empty stack." << std::endl;

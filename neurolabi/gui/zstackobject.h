@@ -53,6 +53,7 @@ public:
     TYPE_UNIDENTIFIED = 0, //Unidentified type
     TYPE_SWC,
     TYPE_PUNCTUM,
+    TYPE_MESH,
     TYPE_OBJ3D,
     TYPE_STROKE,
     TYPE_LOCSEG_CHAIN,
@@ -118,8 +119,7 @@ public:
   /*!
    * \brief Set the selection state
    */
-  void setSelected(bool selected) { m_selected = selected; }
-
+  void setSelected(bool selected);
   /*!
    * \brief Get the selection state
    *

@@ -10,3 +10,9 @@ bool ZStackDocKeyProcessor::processKeyEvent(QKeyEvent */*event*/)
 {
   return false;
 }
+
+bool ZStackDocKeyProcessor::processKeyEvent(
+    QKeyEvent */*event*/, const ZInteractiveContext &/*context*/)
+{
+  return false;
+}

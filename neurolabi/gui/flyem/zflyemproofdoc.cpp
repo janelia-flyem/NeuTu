@@ -2068,7 +2068,7 @@ void ZFlyEmProofDoc::commitSplitFromService()
         GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), originalId);
   foreach (ZObject3dScan *obj, objList) {
     uint64_t newBodyId = getDvidWriter().writeSplit(*obj, originalId, 0);
-    emit messageGenerated(QString("%d uploaded").arg(newBodyId));
+    emit messageGenerated(QString("%1 uploaded").arg(newBodyId));
   }
 }
 
@@ -3818,13 +3818,13 @@ void ZFlyEmProofDoc::executeAddSynapseCommand(
         if (selectedPresyn.size() == 1) {
           ZDvidSynapse &presyn = selectedPresyn.front();
           new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
-                this, presyn.getPosition(), synapse.getPosition(),
-                ZDvidSynapse::Relation::GetName(
-                  ZDvidSynapse::Relation::RELATION_PRESYN_TO), command);
-          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
                 this, synapse.getPosition(), presyn.getPosition(),
                 ZDvidSynapse::Relation::GetName(
                   ZDvidSynapse::Relation::RELATION_POSTSYN_TO), command);
+          new ZStackDocCommand::DvidSynapseEdit::LinkSynapse(
+                this, presyn.getPosition(), synapse.getPosition(),
+                ZDvidSynapse::Relation::GetName(
+                  ZDvidSynapse::Relation::RELATION_PRESYN_TO), command);
         }
       }
     }

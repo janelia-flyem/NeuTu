@@ -136,6 +136,14 @@ UnlockFileEx(
     ::_OVERLAPPED* lpOverlapped);
 
 BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI
+ReadFile(
+    boost::detail::winapi::HANDLE_ hFile,
+    boost::detail::winapi::LPVOID_ lpBuffer,
+    boost::detail::winapi::DWORD_ nNumberOfBytesToRead,
+    boost::detail::winapi::LPDWORD_ lpNumberOfBytesRead,
+    ::_OVERLAPPED* lpOverlapped);
+
+BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI
 WriteFile(
     boost::detail::winapi::HANDLE_ hFile,
     boost::detail::winapi::LPCVOID_ lpBuffer,
@@ -149,6 +157,12 @@ SetFilePointer(
     boost::detail::winapi::LONG_ lpDistanceToMove,
     boost::detail::winapi::PLONG_ lpDistanceToMoveHigh,
     boost::detail::winapi::DWORD_ dwMoveMethod);
+
+struct _BY_HANDLE_FILE_INFORMATION;
+BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI
+GetFileInformationByHandle(
+    boost::detail::winapi::HANDLE_ hFile,
+    ::_BY_HANDLE_FILE_INFORMATION* lpFileInformation);
 }
 #endif
 
@@ -350,6 +364,19 @@ typedef struct BOOST_DETAIL_WINAPI_MAY_ALIAS _WIN32_FIND_DATAW {
 #endif
 } WIN32_FIND_DATAW_, *PWIN32_FIND_DATAW_, *LPWIN32_FIND_DATAW_;
 
+typedef struct BOOST_DETAIL_WINAPI_MAY_ALIAS _BY_HANDLE_FILE_INFORMATION {
+    DWORD_ dwFileAttributes;
+    FILETIME_ ftCreationTime;
+    FILETIME_ ftLastAccessTime;
+    FILETIME_ ftLastWriteTime;
+    DWORD_ dwVolumeSerialNumber;
+    DWORD_ nFileSizeHigh;
+    DWORD_ nFileSizeLow;
+    DWORD_ nNumberOfLinks;
+    DWORD_ nFileIndexHigh;
+    DWORD_ nFileIndexLow;
+} BY_HANDLE_FILE_INFORMATION_, *PBY_HANDLE_FILE_INFORMATION_, *LPBY_HANDLE_FILE_INFORMATION_;
+
 BOOST_FORCEINLINE HANDLE_ FindFirstFileW(LPCWSTR_ lpFileName, WIN32_FIND_DATAW_* lpFindFileData)
 {
     return ::FindFirstFileW(lpFileName, reinterpret_cast< ::_WIN32_FIND_DATAW* >(lpFindFileData));
@@ -386,6 +413,16 @@ BOOST_FORCEINLINE BOOL_ UnlockFileEx(
     return ::UnlockFileEx(hFile, dwReserved, nNumberOfBytesToUnlockLow, nNumberOfBytesToUnlockHigh, reinterpret_cast< ::_OVERLAPPED* >(lpOverlapped));
 }
 
+BOOST_FORCEINLINE BOOL_ ReadFile(
+    HANDLE_ hFile,
+    LPVOID_ lpBuffer,
+    DWORD_ nNumberOfBytesToWrite,
+    LPDWORD_ lpNumberOfBytesWritten,
+    OVERLAPPED_* lpOverlapped)
+{
+    return ::ReadFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, reinterpret_cast< ::_OVERLAPPED* >(lpOverlapped));
+}
+
 BOOST_FORCEINLINE BOOL_ WriteFile(
     HANDLE_ hFile,
     LPCVOID_ lpBuffer,
@@ -394,7 +431,7 @@ BOOST_FORCEINLINE BOOL_ WriteFile(
     OVERLAPPED_* lpOverlapped)
 {
     return ::WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, reinterpret_cast< ::_OVERLAPPED* >(lpOverlapped));
-};
+}
 
 #if !defined( BOOST_NO_ANSI_APIS )
 BOOST_FORCEINLINE HANDLE_ create_file(
@@ -484,6 +521,11 @@ BOOST_FORCEINLINE BOOL_ move_file(LPCWSTR_ lpExistingFileName, LPCWSTR_ lpNewFil
 BOOST_FORCEINLINE DWORD_ get_file_attributes(LPCWSTR_ lpFileName)
 {
     return ::GetFileAttributesW(lpFileName);
+}
+
+BOOST_FORCEINLINE BOOL_ GetFileInformationByHandle(HANDLE_ h, BY_HANDLE_FILE_INFORMATION_* info)
+{
+    return ::GetFileInformationByHandle(h, reinterpret_cast< ::_BY_HANDLE_FILE_INFORMATION* >(info));
 }
 
 }

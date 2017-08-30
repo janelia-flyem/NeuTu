@@ -1,8 +1,4 @@
-#include "z3dgl.h"
 #include <iostream>
-#ifdef _QT5_
-#include <QtWidgets>
-#endif
 #include <QTextStream>
 #include <QtDebug>
 #include <iterator>
@@ -113,6 +109,7 @@
 #include "zsurfaceobjsmodel.h"
 #include "zstackdocdatabuffer.h"
 #include "zstackdockeyprocessor.h"
+#include "zmeshobjsmodel.h"
 
 using namespace std;
 
@@ -178,6 +175,7 @@ void ZStackDoc::init()
         this, ZStackObjectRole::ROLE_SEED, this);
   m_graphObjsModel = new ZGraphObjsModel(this, this);
   m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
+  m_meshObjsModel = new ZMeshObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
   connectSignalSlot();
@@ -327,6 +325,7 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
+  connect(this, SIGNAL(meshModified()), m_meshObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
@@ -634,6 +633,11 @@ bool ZStackDoc::hasSwc() const
   return !m_objectGroup.getObjectList(ZStackObject::TYPE_SWC).isEmpty();
 }
 
+bool ZStackDoc::hasMesh() const
+{
+  return !m_objectGroup.getObjectList(ZStackObject::TYPE_MESH).isEmpty();
+}
+
 bool ZStackDoc::hasSwcData() const
 {
   QList<ZSwcTree*> swcList = getObjectList<ZSwcTree>();
@@ -735,10 +739,6 @@ void ZStackDoc::processDataBuffer()
 
   QList<ZStackObject*> selected;
   QList<ZStackObject*> deselected;
-//  qSort(updateList.begin(), updateList.end(),
-//        [](const ZStackDocObjectUpdate* a, const ZStackDocObjectUpdate *b)
-//        -> bool { return a->getAction() < b->getAction(); });
-
   ZStackDocObjectUpdate::MakeActionMap(updateList);
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
@@ -997,6 +997,7 @@ DEFINE_NOTIFY_SELECTION_CHANGED(ZSwcTree, swcSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZPunctum, punctaSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZLocsegChain, chainSelectionChanged)
 DEFINE_NOTIFY_SELECTION_CHANGED(ZStackObject, objectSelectionChanged)
+DEFINE_NOTIFY_SELECTION_CHANGED(ZMesh, meshSelectionChanged)
 
 void ZStackDoc::selectHitSwcTreeNodeConnection(ZSwcTree *tree)
 {
@@ -2669,7 +2670,30 @@ void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
   notifyObjectModified();
 //  blockSignals(false);
 
-//  notifyPunctumModified();
+  //  notifyPunctumModified();
+}
+
+void ZStackDoc::addMeshP(ZMesh* obj)
+{
+  if (obj == NULL) {
+    return;
+  }
+
+  m_objectGroup.add(obj, false);
+
+  if (obj->isSelected()) {
+    setMeshSelected(obj, true);
+  }
+}
+
+void ZStackDoc::addMesh(const QList<ZMesh*>& meshList)
+{
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (auto m : meshList) {
+    addObject(m, false);
+  }
+  endObjectModifiedMode();
+  notifyObjectModified();
 }
 
 void ZStackDoc::addPunctumFast(const QList<ZPunctum *> &punctaList)
@@ -2781,6 +2805,7 @@ DEFINE_GET_OBJECT_LIST(getObject3dScanList, ZObject3dScan, TYPE_OBJECT3D_SCAN)
 DEFINE_GET_OBJECT_LIST(getDvidLabelSliceList, ZDvidLabelSlice, TYPE_DVID_LABEL_SLICE)
 DEFINE_GET_OBJECT_LIST(getDvidTileEnsembleList, ZDvidTileEnsemble, TYPE_DVID_TILE_ENSEMBLE)
 DEFINE_GET_OBJECT_LIST(getDvidSparsevolSliceList, ZDvidSparsevolSlice, TYPE_DVID_SPARSEVOL_SLICE)
+DEFINE_GET_OBJECT_LIST(getMeshList, ZMesh, TYPE_MESH)
 
 void ZStackDoc::addSparseObjectP(ZSparseObject *obj)
 {
@@ -3134,6 +3159,30 @@ bool ZStackDoc::importPuncta(const char *filePath)
   importPuncta(fileList);
 
   return true;
+}
+
+bool ZStackDoc::importMesh(const QString& filePath)
+{
+  try {
+    beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+    ZMesh *mesh = new ZMesh(filePath);
+    mesh->setColor(200, 200, 200, 255);
+    mesh->pushObjectColor();
+
+#ifdef _DEBUG_2
+    mesh->swapXZ();
+#endif
+
+    addObject(mesh);
+    endObjectModifiedMode();
+    notifyObjectModified();
+    return true;
+  }
+  catch (const ZException& e) {
+    endObjectModifiedMode();
+    LOG(ERROR) << e.what();
+    return false;
+  }
 }
 
 void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objopt)
@@ -3850,6 +3899,42 @@ void ZStackDoc::deselectAllPuncta()
   */
   notifyDeselected(deselected);
 }
+
+void ZStackDoc::setMeshSelected(ZMesh* mesh, bool select)
+{
+  if (mesh->isSelected() != select) {
+    m_objectGroup.setSelected(mesh, select);
+    //punctum->setSelected(select);
+    QList<ZMesh*> selected;
+    QList<ZMesh*> deselected;
+    if (select) {
+      //m_selectedPuncta.insert(punctum);
+      selected.push_back(mesh);
+    } else {
+      //m_selectedPuncta.erase(punctum);
+      deselected.push_back(mesh);
+    }
+    notifySelectionChanged(selected, deselected);
+    //emit punctaSelectionChanged(selected, deselected);
+  }
+}
+
+void ZStackDoc::deselectAllMesh()
+{
+  QList<ZMesh*> deselected;
+
+  TStackObjectSet selectedSet =
+      m_objectGroup.getSelectedSet(ZStackObject::TYPE_MESH);
+  for (TStackObjectSet::iterator iter= selectedSet.begin();
+       iter != selectedSet.end(); ++iter) {
+    deselected.append(dynamic_cast<ZMesh*>(*iter));
+  }
+
+  m_objectGroup.setSelected(ZStackObject::TYPE_MESH, false);
+
+  notifyDeselected(deselected);
+}
+
 #if 1
 void ZStackDoc::setChainSelected(ZLocsegChain * /*chain*/, bool /*select*/)
 {
@@ -4190,6 +4275,7 @@ void ZStackDoc::deselectAllObject(bool recursive)
   }
 
   notifyDeselected(getSelectedObjectList<ZSwcTree>(ZStackObject::TYPE_SWC));
+  notifyDeselected(getSelectedObjectList<ZMesh>(ZStackObject::TYPE_MESH));
   notifyDeselected(getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM));
   notifyDeselected(getSelectedObjectList<ZLocsegChain>(
                      ZStackObject::TYPE_LOCSEG_CHAIN));
@@ -4272,6 +4358,14 @@ void ZStackDoc::setSurfaceVisible(ZCubeArray *cubearray, bool visible)
   if (cubearray->isVisible() != visible) {
     cubearray->setVisible(visible);
     emit surfaceVisibleStateChanged();
+  }
+}
+
+void ZStackDoc::setMeshVisible(ZMesh* mesh, bool visible)
+{
+  if (mesh->isVisible() != visible) {
+    mesh->setVisible(visible);
+    emit meshVisibleStateChanged();
   }
 }
 
@@ -5006,6 +5100,11 @@ bool ZStackDoc::loadFile(const QString &filePath)
       succ = false;
     }
     break;
+  case ZFileType::FILE_MESH:
+    if (!importMesh(filePath)) {
+      succ = false;
+    }
+    break;
   default:
     succ = false;
     break;
@@ -5428,6 +5527,11 @@ void ZStackDoc::notifyPunctumModified()
   emit punctaModified();
 }
 
+void ZStackDoc::notifyMeshModified()
+{
+  emit meshModified();
+}
+
 void ZStackDoc::notifyChainModified()
 {
   emit chainModified();
@@ -5726,6 +5830,9 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
     notify3DCubeModified();
   case ZStackObject::TYPE_FLYEM_TODO_ITEM:
     notifyTodoModified();
+    break;
+  case ZStackObject::TYPE_MESH:
+    notifyMeshModified();
     break;
   default:
 //    notifyObjectModified();
@@ -7701,6 +7808,9 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
   case ZStackObject::TYPE_PUNCTUM:
     addPunctumP(dynamic_cast<ZPunctum*>(obj));
     break;
+  case ZStackObject::TYPE_MESH:
+    addMeshP(dynamic_cast<ZMesh*>(obj));
+    break;
   case ZStackObject::TYPE_OBJ3D:
     addObj3dP(dynamic_cast<ZObject3d*>(obj));
     break;
@@ -7933,8 +8043,7 @@ bool ZStackDoc::executeRemoveUnselectedObjectCommand()
 }
 */
 bool ZStackDoc::executeMoveObjectCommand(double x, double y, double z,
-    double punctaScaleX, double punctaScaleY, double punctaScaleZ,
-    double swcScaleX, double swcScaleY, double swcScaleZ)
+    const glm::mat4& punctaTransform, const glm::mat4& swcTransform)
 {
   if (m_objectGroup.getSelectedSet(ZStackObject::TYPE_SWC).empty() &&
       m_objectGroup.getSelectedSet(ZStackObject::TYPE_PUNCTUM).empty() &&
@@ -7943,12 +8052,8 @@ bool ZStackDoc::executeMoveObjectCommand(double x, double y, double z,
 
   ZStackDocCommand::ObjectEdit::MoveSelected *moveSelectedObjectCommand =
       new ZStackDocCommand::ObjectEdit::MoveSelected(this, x, y, z);
-  moveSelectedObjectCommand->setPunctaCoordScale(punctaScaleX,
-                                                 punctaScaleY,
-                                                 punctaScaleZ);
-  moveSelectedObjectCommand->setSwcCoordScale(swcScaleX,
-                                              swcScaleY,
-                                              swcScaleZ);
+  moveSelectedObjectCommand->setPunctaTransform(punctaTransform);
+  moveSelectedObjectCommand->setSwcTransform(swcTransform);
   moveSelectedObjectCommand->setLogMessage("Move selected objects");
   pushUndoCommand(moveSelectedObjectCommand);
 
@@ -9108,6 +9213,10 @@ void ZStackDoc::addData(ZStackDocReader &reader)
     notifyPunctumModified();
   }
 
+  if (m_objectGroup.hasObject(ZStackObject::TYPE_MESH)) {
+    notifyMeshModified();
+  }
+
   if (m_objectGroup.hasObject(ZStackObject::TYPE_SPARSE_OBJECT)) {
     notifySparseObjectModified();
   }
@@ -9812,6 +9921,12 @@ ZRect2d ZStackDoc::getRect2dRoi() const
 void ZStackDoc::setKeyProcessor(ZStackDocKeyProcessor *processor)
 {
   m_keyProcessor = processor;
+  m_keyProcessor->setParent(this);
+}
+
+bool ZStackDoc::processKeyEvent(QKeyEvent *event)
+{
+  return getKeyProcessor()->processKeyEvent(event);
 }
 
 ZStackDocKeyProcessor* ZStackDoc::getKeyProcessor()

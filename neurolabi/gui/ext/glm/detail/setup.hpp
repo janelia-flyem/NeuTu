@@ -1,11 +1,22 @@
 /// @ref core
 /// @file glm/detail/setup.hpp
 
-#pragma once
+#ifndef GLM_SETUP_INCLUDED
+
+#define GLM_VERSION_MAJOR			0
+#define GLM_VERSION_MINOR			9
+#define GLM_VERSION_PATCH			9
+#define GLM_VERSION_REVISION		0
+#define GLM_VERSION					990
+
+#define GLM_SETUP_INCLUDED GLM_VERSION
 
 #if defined(GLM_FORCE_SWIZZLE) && defined(GLM_FORCE_UNRESTRICTED_GENTYPE)
 #	error "Both GLM_FORCE_SWIZZLE and GLM_FORCE_UNRESTRICTED_GENTYPE can't be defined at the same time"
 #endif
+
+#include <cassert>
+#include <cstddef>
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Messages
@@ -19,18 +30,13 @@
 #	define GLM_MESSAGES GLM_MESSAGES_DISABLE
 #endif
 
-#include <cassert>
-#include <cstddef>
+///////////////////////////////////////////////////////////////////////////////////
+// Detect the platform
+
 #include "../simd/platform.h"
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Version
-
-#define GLM_VERSION					99
-#define GLM_VERSION_MAJOR			0
-#define GLM_VERSION_MINOR			9
-#define GLM_VERSION_PATCH			9
-#define GLM_VERSION_REVISION		0
 
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_VERSION_DISPLAYED)
 #	define GLM_MESSAGE_VERSION_DISPLAYED
@@ -136,16 +142,26 @@
 #define GLM_LANG_CXXGNU			GLM_LANG_CXXGNU_FLAG
 
 #if defined(GLM_FORCE_CXX14)
-#	undef GLM_FORCE_CXX11
-#	undef GLM_FORCE_CXX03
-#	undef GLM_FORCE_CXX98
+#	if((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER <= GLM_COMPILER_GCC50)) || ((GLM_COMPILER & GLM_COMPILER_CLANG) && (GLM_COMPILER <= GLM_COMPILER_CLANG34))
+#			pragma message("GLM: Using GLM_FORCE_CXX14 with a compiler that doesn't fully support C++14")
+#	elif GLM_COMPILER & GLM_COMPILER_VC
+#			pragma message("GLM: Using GLM_FORCE_CXX14 but there is no known version of Visual C++ compiler that fully supports C++14")
+#	elif GLM_COMPILER & GLM_COMPILER_INTEL
+#			pragma message("GLM: Using GLM_FORCE_CXX14 but there is no known version of ICC compiler that fully supports C++14")
+#	endif
 #	define GLM_LANG GLM_LANG_CXX14
+#	define GLM_LANG_STL11_FORCED
 #elif defined(GLM_FORCE_CXX11)
-#	undef GLM_FORCE_CXX03
-#	undef GLM_FORCE_CXX98
+#	if((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER <= GLM_COMPILER_GCC48)) || ((GLM_COMPILER & GLM_COMPILER_CLANG) && (GLM_COMPILER <= GLM_COMPILER_CLANG33))
+#			pragma message("GLM: Using GLM_FORCE_CXX11 with a compiler that doesn't fully support C++11")
+#	elif GLM_COMPILER & GLM_COMPILER_VC
+#			pragma message("GLM: Using GLM_FORCE_CXX11 but there is no known version of Visual C++ compiler that fully supports C++11")
+#	elif GLM_COMPILER & GLM_COMPILER_INTEL
+#			pragma message("GLM: Using GLM_FORCE_CXX11 but there is no known version of ICC compiler that fully supports C++11")
+#	endif
 #	define GLM_LANG GLM_LANG_CXX11
+#	define GLM_LANG_STL11_FORCED
 #elif defined(GLM_FORCE_CXX03)
-#	undef GLM_FORCE_CXX98
 #	define GLM_LANG GLM_LANG_CXX03
 #elif defined(GLM_FORCE_CXX98)
 #	define GLM_LANG GLM_LANG_CXX98
@@ -178,28 +194,18 @@
 #		ifdef _MSC_EXTENSIONS
 #			if __cplusplus >= 201402L
 #				define GLM_LANG (GLM_LANG_CXX14 | GLM_LANG_CXXMS_FLAG)
-//#			elif GLM_COMPILER >= GLM_COMPILER_VC2015
-//#				define GLM_LANG (GLM_LANG_CXX1Y | GLM_LANG_CXXMS_FLAG)
 #			elif __cplusplus >= 201103L
 #				define GLM_LANG (GLM_LANG_CXX11 | GLM_LANG_CXXMS_FLAG)
-#			elif GLM_COMPILER >= GLM_COMPILER_VC2010
-#				define GLM_LANG (GLM_LANG_CXX0X | GLM_LANG_CXXMS_FLAG)
-#			elif __cplusplus >= 199711L
-#				define GLM_LANG (GLM_LANG_CXX98 | GLM_LANG_CXXMS_FLAG)
 #			else
-#				define GLM_LANG (GLM_LANG_CXX | GLM_LANG_CXXMS_FLAG)
+#				define GLM_LANG (GLM_LANG_CXX0X | GLM_LANG_CXXMS_FLAG)
 #			endif
 #		else
 #			if __cplusplus >= 201402L
 #				define GLM_LANG GLM_LANG_CXX14
 #			elif __cplusplus >= 201103L
 #				define GLM_LANG GLM_LANG_CXX11
-#			elif GLM_COMPILER >= GLM_COMPILER_VC2010
-#				define GLM_LANG GLM_LANG_CXX0X
-#			elif __cplusplus >= 199711L
-#				define GLM_LANG GLM_LANG_CXX98
 #			else
-#				define GLM_LANG GLM_LANG_CXX
+#				define GLM_LANG GLM_LANG_CXX0X
 #			endif
 #		endif
 #	elif GLM_COMPILER & GLM_COMPILER_INTEL
@@ -279,8 +285,11 @@
 // http://gcc.gnu.org/projects/cxx0x.html
 // http://msdn.microsoft.com/en-us/library/vstudio/hh567368(v=vs.120).aspx
 
-#if GLM_COMPILER & GLM_COMPILER_CLANG
-#	if defined(_LIBCPP_VERSION) && GLM_LANG & GLM_LANG_CXX11_FLAG
+// Android has multiple STLs but C++11 STL detection doesn't always work #284 #564
+#if GLM_PLATFORM == GLM_PLATFORM_ANDROID && !defined(GLM_LANG_STL11_FORCED)
+#	define GLM_HAS_CXX11_STL 0
+#elif GLM_COMPILER & GLM_COMPILER_CLANG
+#	if (defined(_LIBCPP_VERSION) && GLM_LANG & GLM_LANG_CXX11_FLAG) || defined(GLM_LANG_STL11_FORCED)
 #		define GLM_HAS_CXX11_STL 1
 #	else
 #		define GLM_HAS_CXX11_STL 0
@@ -288,7 +297,7 @@
 #else
 #	define GLM_HAS_CXX11_STL ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
 		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC48)) || \
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2013)) || \
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC12)) || \
 		((GLM_PLATFORM != GLM_PLATFORM_WINDOWS) && (GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL15))))
 #endif
 
@@ -299,9 +308,9 @@
 #	define GLM_HAS_STATIC_ASSERT 1
 #else
 #	define GLM_HAS_STATIC_ASSERT ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
-		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC43)) || \
+		((GLM_COMPILER & GLM_COMPILER_GCC)) || \
 		((GLM_COMPILER & GLM_COMPILER_CUDA)) || \
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2010))))
+		((GLM_COMPILER & GLM_COMPILER_VC))))
 #endif
 
 // N1988
@@ -309,10 +318,10 @@
 #	define GLM_HAS_EXTENDED_INTEGER_TYPE 1
 #else
 #	define GLM_HAS_EXTENDED_INTEGER_TYPE (\
-		((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2012)) || \
+		((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (GLM_COMPILER & GLM_COMPILER_VC)) || \
 		((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (GLM_COMPILER & GLM_COMPILER_CUDA)) || \
-		((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC43)) || \
-		((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (GLM_COMPILER & GLM_COMPILER_CLANG) && (GLM_COMPILER >= GLM_COMPILER_CLANG30)))
+		((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (GLM_COMPILER & GLM_COMPILER_GCC)) || \
+		((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (GLM_COMPILER & GLM_COMPILER_CLANG)))
 #endif
 
 // N2235
@@ -324,8 +333,9 @@
 #	define GLM_HAS_CONSTEXPR_PARTIAL GLM_HAS_CONSTEXPR
 #else
 #	define GLM_HAS_CONSTEXPR ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC15)) || \
 		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC48)))) // GCC 4.6 support constexpr but there is a compiler bug causing a crash
-#	define GLM_HAS_CONSTEXPR_PARTIAL (GLM_HAS_CONSTEXPR || ((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2015)))
+#	define GLM_HAS_CONSTEXPR_PARTIAL (GLM_HAS_CONSTEXPR || ((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC14)))
 #endif
 
 // N2672
@@ -335,8 +345,8 @@
 #	define GLM_HAS_INITIALIZER_LISTS 1
 #else
 #	define GLM_HAS_INITIALIZER_LISTS ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
-		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC44)) || \
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2013)) || \
+		((GLM_COMPILER & GLM_COMPILER_GCC)) || \
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC12)) || \
 		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA75))))
 #endif
 
@@ -361,9 +371,9 @@
 #	define GLM_HAS_DEFAULTED_FUNCTIONS 1
 #else
 #	define GLM_HAS_DEFAULTED_FUNCTIONS ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
-		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC44)) || \
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2013)) || \
-		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL12)) || \
+		((GLM_COMPILER & GLM_COMPILER_GCC)) || \
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC12)) || \
+		((GLM_COMPILER & GLM_COMPILER_INTEL)) || \
 		(GLM_COMPILER & GLM_COMPILER_CUDA)))
 #endif
 
@@ -374,9 +384,9 @@
 #	define GLM_HAS_RVALUE_REFERENCES 1
 #else
 #	define GLM_HAS_RVALUE_REFERENCES ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
-		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC43)) || \
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2012)) || \
-		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA50))))
+		((GLM_COMPILER & GLM_COMPILER_GCC)) || \
+		((GLM_COMPILER & GLM_COMPILER_VC)) || \
+		((GLM_COMPILER & GLM_COMPILER_CUDA))))
 #endif
 
 // N2437 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2437.pdf
@@ -386,10 +396,10 @@
 #	define GLM_HAS_EXPLICIT_CONVERSION_OPERATORS 1
 #else
 #	define GLM_HAS_EXPLICIT_CONVERSION_OPERATORS ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
-		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC45)) || \
+		((GLM_COMPILER & GLM_COMPILER_GCC)) || \
 		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL14)) || \
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2013)) || \
-		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA50))))
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC12)) || \
+		((GLM_COMPILER & GLM_COMPILER_CUDA))))
 #endif
 
 // N2258 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2258.pdf
@@ -399,10 +409,10 @@
 #	define GLM_HAS_TEMPLATE_ALIASES 1
 #else
 #	define GLM_HAS_TEMPLATE_ALIASES ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
-		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL12_1)) || \
+		((GLM_COMPILER & GLM_COMPILER_INTEL)) || \
 		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC47)) || \
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2013)) || \
-		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA50))))
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC12)) || \
+		((GLM_COMPILER & GLM_COMPILER_CUDA))))
 #endif
 
 // N2930 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2009/n2930.html
@@ -413,9 +423,27 @@
 #else
 #	define GLM_HAS_RANGE_FOR ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
 		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC46)) || \
-		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL13)) || \
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2012)) || \
-		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA50))))
+		((GLM_COMPILER & GLM_COMPILER_INTEL)) || \
+		((GLM_COMPILER & GLM_COMPILER_VC)) || \
+		((GLM_COMPILER & GLM_COMPILER_CUDA))))
+#endif
+
+// N2341 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2341.pdf
+#if GLM_COMPILER & GLM_COMPILER_CLANG
+#	define GLM_HAS_ALIGNOF __has_feature(c_alignof)
+#elif GLM_LANG & GLM_LANG_CXX11_FLAG
+#	define GLM_HAS_ALIGNOF 1
+#else
+#	define GLM_HAS_ALIGNOF ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
+		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC48)) || \
+		((GLM_COMPILER & GLM_COMPILER_INTEL) && (GLM_COMPILER >= GLM_COMPILER_INTEL15)) || \
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC14)) || \
+		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA70))))
+#endif
+
+#define GLM_HAS_ONLY_XYZW ((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER < GLM_COMPILER_GCC46))
+#if GLM_HAS_ONLY_XYZW
+#	pragma message("GLM: GCC older than 4.6 has a bug presenting the use of rgba and stpq components")
 #endif
 
 //
@@ -423,6 +451,7 @@
 #	define GLM_HAS_ASSIGNABLE 1
 #else
 #	define GLM_HAS_ASSIGNABLE ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC15)) || \
 		((GLM_COMPILER & GLM_COMPILER_GCC) && (GLM_COMPILER >= GLM_COMPILER_GCC49))))
 #endif
 
@@ -434,15 +463,16 @@
 #	define GLM_HAS_MAKE_SIGNED 1
 #else
 #	define GLM_HAS_MAKE_SIGNED ((GLM_LANG & GLM_LANG_CXX0X_FLAG) && (\
-		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC2013)) || \
-		((GLM_COMPILER & GLM_COMPILER_CUDA) && (GLM_COMPILER >= GLM_COMPILER_CUDA50))))
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC12)) || \
+		((GLM_COMPILER & GLM_COMPILER_CUDA))))
 #endif
 
 #if GLM_ARCH == GLM_ARCH_PURE
 #	define GLM_HAS_BITSCAN_WINDOWS 0
 #else
 #	define GLM_HAS_BITSCAN_WINDOWS ((GLM_PLATFORM & GLM_PLATFORM_WINDOWS) && (\
-		(GLM_COMPILER & (GLM_COMPILER_VC | GLM_COMPILER_INTEL))))
+		((GLM_COMPILER & GLM_COMPILER_INTEL)) || \
+		((GLM_COMPILER & GLM_COMPILER_VC) && (GLM_COMPILER >= GLM_COMPILER_VC14) && (GLM_ARCH & GLM_ARCH_X86_BIT))))
 #endif
 
 // OpenMP
@@ -454,10 +484,6 @@
 #			define GLM_HAS_OPENMP 40
 #		elif GLM_COMPILER >= GLM_COMPILER_GCC47
 #			define GLM_HAS_OPENMP 31
-#		elif GLM_COMPILER >= GLM_COMPILER_GCC44
-#			define GLM_HAS_OPENMP 30
-#		elif GLM_COMPILER >= GLM_COMPILER_GCC42
-#			define GLM_HAS_OPENMP 25
 #		else
 #			define GLM_HAS_OPENMP 0
 #		endif
@@ -468,16 +494,10 @@
 #			define GLM_HAS_OPENMP 0
 #		endif
 #	elif GLM_COMPILER & GLM_COMPILER_VC
-#		if GLM_COMPILER >= GLM_COMPILER_VC2010
-#			define GLM_HAS_OPENMP 20
-#		else
-#			define GLM_HAS_OPENMP 0
-#		endif
+#		define GLM_HAS_OPENMP 20
 #	elif GLM_COMPILER & GLM_COMPILER_INTEL
 #		if GLM_COMPILER >= GLM_COMPILER_INTEL16
 #			define GLM_HAS_OPENMP 40
-#		elif GLM_COMPILER >= GLM_COMPILER_INTEL12
-#			define GLM_HAS_OPENMP 31
 #		else
 #			define GLM_HAS_OPENMP 0
 #		endif
@@ -491,8 +511,6 @@
 
 #if GLM_HAS_STATIC_ASSERT
 #	define GLM_STATIC_ASSERT(x, message) static_assert(x, message)
-#elif defined(BOOST_STATIC_ASSERT)
-#	define GLM_STATIC_ASSERT(x, message) BOOST_STATIC_ASSERT(x)
 #elif GLM_COMPILER & GLM_COMPILER_VC
 #	define GLM_STATIC_ASSERT(x, message) typedef char __CASSERT__##__LINE__[(x) ? 1 : -1]
 #else
@@ -567,6 +585,12 @@
 
 // #define GLM_FORCE_UNRESTRICTED_GENTYPE
 
+#ifdef GLM_FORCE_UNRESTRICTED_GENTYPE
+#	define GLM_UNRESTRICTED_GENTYPE 1
+#else
+#	define GLM_UNRESTRICTED_GENTYPE 0
+#endif
+
 #if GLM_MESSAGES == GLM_MESSAGES_ENABLED && !defined(GLM_MESSAGE_UNRESTRICTED_GENTYPE_DISPLAYED)
 #	define GLM_MESSAGE_UNRESTRICTED_GENTYPE_DISPLAYED
 #	ifdef GLM_FORCE_UNRESTRICTED_GENTYPE
@@ -627,7 +651,7 @@
 #	define GLM_ALIGNED_TYPEDEF(type, name, alignment) typedef __declspec(align(alignment)) type name
 #	define GLM_RESTRICT_FUNC __declspec(restrict)
 #	define GLM_RESTRICT __restrict
-#	if GLM_COMPILER >= GLM_COMPILER_VC2013
+#	if GLM_COMPILER >= GLM_COMPILER_VC12
 #		define GLM_VECTOR_CALL __vectorcall
 #	else
 #		define GLM_VECTOR_CALL
@@ -678,22 +702,26 @@
 #	define GLM_DEFAULT_CTOR
 #endif
 
-#if GLM_HAS_CONSTEXPR
+#if GLM_HAS_CONSTEXPR || GLM_HAS_CONSTEXPR_PARTIAL
 #	define GLM_CONSTEXPR constexpr
-#	define GLM_CONSTEXPR_CTOR constexpr
-#	define GLM_RELAXED_CONSTEXPR constexpr
-#elif GLM_HAS_CONSTEXPR_PARTIAL
-#	define GLM_CONSTEXPR constexpr
-#	define GLM_CONSTEXPR_CTOR
-#	define GLM_RELAXED_CONSTEXPR const
+#	if GLM_COMPILER & GLM_COMPILER_VC // Visual C++ has a bug #594 https://github.com/g-truc/glm/issues/594
+#		define GLM_CONSTEXPR_CTOR
+#	else
+#		define GLM_CONSTEXPR_CTOR constexpr
+#	endif
 #else
 #	define GLM_CONSTEXPR
 #	define GLM_CONSTEXPR_CTOR
+#endif
+
+#if GLM_HAS_CONSTEXPR
+#	define GLM_RELAXED_CONSTEXPR constexpr
+#else
 #	define GLM_RELAXED_CONSTEXPR const
 #endif
 
 #if GLM_ARCH == GLM_ARCH_PURE
-#	define GLM_CONSTEXPR_SIMD GLM_CONSTEXPR
+#	define GLM_CONSTEXPR_SIMD GLM_CONSTEXPR_CTOR
 #else
 #	define GLM_CONSTEXPR_SIMD
 #endif
@@ -709,9 +737,11 @@
 #define GLM_HAS_ALIGNED_TYPE GLM_HAS_UNRESTRICTED_UNIONS
 
 ///////////////////////////////////////////////////////////////////////////////////
-// Length type
+// Length type: all length functions returns a length_t type.
+// When GLM_FORCE_SIZE_T_LENGTH is defined, length_t is a typedef of size_t otherwise
+// length_t is a typedef of int like GLSL defines it.
 
-// User defines: GLM_FORCE_SIZE_T_LENGTH GLM_FORCE_SIZE_FUNC
+// User define: GLM_FORCE_SIZE_T_LENGTH
 
 namespace glm
 {
@@ -742,7 +772,7 @@ namespace glm
 #if GLM_HAS_CONSTEXPR_PARTIAL
 	namespace glm
 	{
-		template <typename T, std::size_t N>
+		template<typename T, std::size_t N>
 		constexpr std::size_t countof(T const (&)[N])
 		{
 			return N;
@@ -762,3 +792,12 @@ namespace glm
 {
 	enum ctor{uninitialize};
 }//namespace glm
+
+///////////////////////////////////////////////////////////////////////////////////
+// Check inclusions of different versions of GLM
+
+#elif ((GLM_SETUP_INCLUDED != GLM_VERSION) && !defined(GLM_FORCE_IGNORE_VERSION))	
+#	error "GLM error: A different version of GLM is already included. Define GLM_FORCE_IGNORE_VERSION before including GLM headers to ignore this error."
+#elif GLM_SETUP_INCLUDED == GLM_VERSION
+
+#endif//GLM_SETUP_INCLUDED

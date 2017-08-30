@@ -1,0 +1,45 @@
+#!/bin/bash
+
+currDIR="$( cd -P "$( dirname "$0" )" && pwd )"
+version=master
+srcDIR=$currDIR/draco-$version
+
+if [ -d $srcDIR ]
+then
+  rm -rf $srcDIR
+fi
+cd $currDIR
+if [ ! -f draco-$version.zip ]
+then
+  curl -LJOk https://github.com/google/draco/archive/$version.zip
+fi
+unzip draco-$version.zip
+
+buildDIR=$srcDIR/../__draco-build
+installDIR=$currDIR/draco
+
+if [ -d $installDIR ]
+then
+  rm -rf $installDIR
+fi
+
+if [ ! -d $srcDIR ]
+then
+  echo ERROR: src folder $srcDIR does not exist.
+  exit 1 # terminate and indicate error
+fi
+
+if [ -d $buildDIR ]
+then
+  rm -rf $buildDIR
+fi
+mkdir $buildDIR
+cd $buildDIR
+
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
+
+ninja install
+
+cd $currDIR
+rm -rf $buildDIR
+rm -rf $srcDIR

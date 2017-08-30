@@ -8,81 +8,84 @@
 #define GLM_FORCE_CXX11
 #endif
 
-//#define GLM_FORCE_SSE3
+#define GLM_FORCE_SSE3
 //#define GLM_FORCE_INLINE
 #define GLM_FORCE_SIZE_T_LENGTH
 #define GLM_FORCE_NO_CTOR_INIT
 #define GLM_FORCE_EXPLICIT_CTOR
 //#define GLM_FORCE_MESSAGES
 #define GLM_FORCE_SWIZZLE
+#define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/vector_angle.hpp>
-
-#include <iostream>
-#include <sstream>
-#include <QDebug>
-#include <QRegExp>
+#include <glm/gtx/hash.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
+#include <QRegularExpression>
 #include <QStringList>
 #include <QColor>
-#if defined(_CPP11_)
-#include <cstdint>
-#endif
+#include <QLocale>
+#include <QDebug>
+#include <iostream>
+#include <sstream>
+#include <tuple>
 
 namespace glm {
-typedef tvec3<unsigned char, highp> col3;
-typedef tvec4<unsigned char, highp> col4;
+
+using col3 = vec<3, unsigned char, highp>;
+using col4 = vec<4, unsigned char, highp>;
 
 // apply transform matrix
 template<typename T, precision P>
-tvec3<T,P> applyMatrix(const tmat4x4<T,P> &mat, const tvec3<T,P> &vec)
+vec<3, T, P> applyMatrix(const mat<4, 4, T, P>& m, const vec<3, T, P>& v)
 {
-  tvec4<T,P> res = mat * tvec4<T,P>(vec, T(1));
-  return tvec3<T,P>(res / res.w);
+  vec<4, T, P> res = m * vec<4, T, P>(v, T(1));
+  return vec<3, T, P>(res / res.w);
 }
 
 // given vec, get normalized vector e1 and e2 to make (e1,e2,vec) orthogonal to each other
 // **crash** if vec is zero
 template<typename T, precision P>
-void getOrthogonalVectors(const tvec3<T,P> &vec, tvec3<T,P> &e1, tvec3<T,P> &e2)
+void getOrthogonalVectors(const vec<3, T, P>& v, vec<3, T, P>& e1, vec<3, T, P>& e2)
 {
-  GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'getOrthogonalVectors' only accept floating-point inputs");
+  static_assert(std::numeric_limits<T>::is_iec559, "'getOrthogonalVectors' only accept floating-point inputs");
   T eps = std::numeric_limits<T>::epsilon() * 1e2;
 
-  e1 = cross(vec, tvec3<T,P>(T(1), T(0), T(0)));
+  e1 = cross(v, vec<3, T, P>(T(1), T(0), T(0)));
   if (dot(e1, e1) < eps)
-    e1 = cross(vec, tvec3<T,P>(T(0), T(1), T(0)));
+    e1 = cross(v, vec<3, T, P>(T(0), T(1), T(0)));
   e1 = normalize(e1);
-  e2 = normalize(cross(e1, vec));
+  e2 = normalize(cross(e1, v));
 }
 
-inline quat mix(const quat &q1, const quat &q2, double p)
+inline quat mix(const quat& q1, const quat& q2, double p)
 {
   return mix(q1, q2, float(p));
 }
 
-}
+} // namespace glm
 
 template<typename T, glm::precision P>
 class Vec2Compare
 {
   bool less;
 public:
-  Vec2Compare(bool less = true) : less(less) {}
-  bool operator() (const glm::tvec2<T,P>& lhs, const glm::tvec2<T,P>& rhs) const
+  explicit Vec2Compare(bool less_ = true)
+    : less(less_)
+  {}
+
+  bool operator()(const glm::vec<2, T, P>& lhs, const glm::vec<2, T, P>& rhs) const
   {
     if (less) {
-      if (lhs.y != rhs.y)
-        return lhs.y < rhs.y;
-      return lhs.x < rhs.x;
+      return std::tie(lhs.y, lhs.x) < std::tie(rhs.y, rhs.x);
     } else {
-      if (lhs.y != rhs.y)
-        return lhs.y > rhs.y;
-      return lhs.x > rhs.x;
+      return std::tie(lhs.y, lhs.x) > std::tie(rhs.y, rhs.x);
     }
   }
 };
@@ -92,21 +95,16 @@ class Vec3Compare
 {
   bool less;
 public:
-  Vec3Compare(bool less = true) : less(less) {}
-  bool operator() (const glm::tvec3<T,P>& lhs, const glm::tvec3<T,P>& rhs) const
+  explicit Vec3Compare(bool less_ = true)
+    : less(less_)
+  {}
+
+  bool operator()(const glm::vec<3, T, P>& lhs, const glm::vec<3, T, P>& rhs) const
   {
     if (less) {
-      if (lhs.z != rhs.z)
-        return lhs.z < rhs.z;
-      if (lhs.y != rhs.y)
-        return lhs.y < rhs.y;
-      return lhs.x < rhs.x;
+      return std::tie(lhs.z, lhs.y, lhs.x) < std::tie(rhs.z, rhs.y, rhs.x);
     } else {
-      if (lhs.z != rhs.z)
-        return lhs.z > rhs.z;
-      if (lhs.y != rhs.y)
-        return lhs.y > rhs.y;
-      return lhs.x > rhs.x;
+      return std::tie(lhs.z, lhs.y, lhs.x) > std::tie(rhs.z, rhs.y, rhs.x);
     }
   }
 };
@@ -116,28 +114,22 @@ class Vec4Compare
 {
   bool less;
 public:
-  Vec4Compare(bool less = true) : less(less) {}
-  bool operator() (const glm::tvec4<T,P>& lhs, const glm::tvec4<T,P>& rhs) const
+  explicit Vec4Compare(bool less_ = true)
+    : less(less_)
+  {}
+
+  bool operator()(const glm::vec<4, T, P>& lhs, const glm::vec<4, T, P>& rhs) const
   {
     if (less) {
-      if (lhs.w != rhs.w)
-        return lhs.w < rhs.w;
-      if (lhs.z != rhs.z)
-        return lhs.z < rhs.z;
-      if (lhs.y != rhs.y)
-        return lhs.y < rhs.y;
-      return lhs.x < rhs.x;
+      return std::tie(lhs.w, lhs.z, lhs.y, lhs.x) < std::tie(rhs.w, rhs.z, rhs.y, rhs.x);
     } else {
-      if (lhs.w != rhs.w)
-        return lhs.w > rhs.w;
-      if (lhs.z != rhs.z)
-        return lhs.z > rhs.z;
-      if (lhs.y != rhs.y)
-        return lhs.y > rhs.y;
-      return lhs.x > rhs.x;
+      return std::tie(lhs.w, lhs.z, lhs.y, lhs.x) > std::tie(rhs.w, rhs.z, rhs.y, rhs.x);
     }
   }
 };
+
+using Col3Compare = Vec3Compare<unsigned char, glm::highp>;
+using Col4Compare = Vec4Compare<unsigned char, glm::highp>;
 
 // serialization support
 
@@ -185,67 +177,114 @@ inline void toVal(const std::string& str, T& v)
 template<typename T>
 inline QString toQString(T v)
 {
-  return QString("%1").arg(v);
+  static_assert(std::is_integral<T>::value, "Integer required.");
+  return QString::number(v);
 }
 
-template<typename T, glm::precision P>
-inline QString toQString(const glm::tvec2<T,P>& v)
+inline QString toQString(float v)
 {
-  return QString("[%1, %2]").arg(v[0]).arg(v[1]);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+  return QString::number(v, 'g', QLocale::FloatingPointShortest);
+#else
+  return QString::number(v, 'g', std::numeric_limits<float>::max_digits10);
+#endif
 }
 
-template<typename T, glm::precision P>
-inline void toVal(const QString &str, glm::tvec2<T,P>& v)
+inline QString toQString(double v)
 {
-  QRegExp rx("(\\ |\\,|\\[|\\]|\\;)"); //RegEx for ' ' or ',' or '[' or ']' or ';'
-  QStringList numList = str.split(rx, QString::SkipEmptyParts);
-  for (int i=0; i<std::min(2,numList.size()); ++i) {
-    toVal(numList[i], v[i]);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+  return QString::number(v, 'g', QLocale::FloatingPointShortest);
+#else
+  return QString::number(v, 'g', std::numeric_limits<double>::max_digits10);
+#endif
+}
+
+inline QString toQString(const QString& v)
+{
+  return v;
+}
+
+template<size_t L, typename T, glm::precision P>
+inline QString toQString(const glm::vec<L, T, P>& v)
+{
+  static_assert(std::is_integral<T>::value, "Integer required.");
+  QString res = "[" + QString::number(v[0]);
+  for (size_t i = 1; i < L; ++i) {
+    res += ", ";
+    res += QString::number(v[i]);
   }
+  res += "]";
+  return res;
 }
 
-template<typename T, glm::precision P>
-inline QString toQString(const glm::tvec3<T,P>& v)
+template<size_t L, glm::precision P>
+inline QString toQString(const glm::vec<L, float, P>& v)
 {
-  return QString("[%1, %2, %3]").arg(v[0]).arg(v[1]).arg(v[2]);
-}
-
-template<typename T, glm::precision P>
-inline void toVal(const QString &str, glm::tvec3<T,P>& v)
-{
-  QRegExp rx("(\\ |\\,|\\[|\\]|\\;)"); //RegEx for ' ' or ',' or '[' or ']' or ';'
-  QStringList numList = str.split(rx, QString::SkipEmptyParts);
-  for (int i=0; i<std::min(3,numList.size()); ++i) {
-    toVal(numList[i], v[i]);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+  QString res = "[" + QString::number(v[0], 'g', QLocale::FloatingPointShortest);
+  for (size_t i = 1; i < L; ++i) {
+    res += ", ";
+    res += QString::number(v[i], 'g', QLocale::FloatingPointShortest);
   }
+  res += "]";
+  return res;
+#else
+  QString res = "[" + QString::number(v[0], 'g', std::numeric_limits<float>::max_digits10);
+  for (size_t i = 1; i < L; ++i) {
+    res += ", ";
+    res += QString::number(v[i], 'g', std::numeric_limits<float>::max_digits10);
+  }
+  res += "]";
+  return res;
+#endif
 }
 
-template<typename T, glm::precision P>
-inline QString toQString(const glm::tvec4<T,P>& v)
+template<size_t L, glm::precision P>
+inline QString toQString(const glm::vec<L, double, P>& v)
 {
-  return QString("[%1, %2, %3, %4]").arg(v[0]).arg(v[1]).arg(v[2]).arg(v[3]);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+  QString res = "[" + QString::number(v[0], 'g', QLocale::FloatingPointShortest);
+  for (size_t i = 1; i < L; ++i) {
+    res += ", ";
+    res += QString::number(v[i], 'g', QLocale::FloatingPointShortest);
+  }
+  res += "]";
+  return res;
+#else
+  QString res = "[" + QString::number(v[0], 'g', std::numeric_limits<double>::max_digits10);
+  for (size_t i = 1; i < L; ++i) {
+    res += ", ";
+    res += QString::number(v[i], 'g', std::numeric_limits<double>::max_digits10);
+  }
+  res += "]";
+  return res;
+#endif
 }
 
-template<typename T, glm::precision P>
-inline void toVal(const QString &str, glm::tvec4<T,P>& v)
+template<size_t L, typename T, glm::precision P>
+inline void toVal(const QString& str, glm::vec<L, T, P>& v)
 {
-  QRegExp rx("(\\ |\\,|\\[|\\]|\\;)"); //RegEx for ' ' or ',' or '[' or ']' or ';'
+  QRegularExpression rx(R"((\ |\,|\[|\]|\;))"); //RegEx for ' ' or ',' or '[' or ']' or ';'
   QStringList numList = str.split(rx, QString::SkipEmptyParts);
-  for (int i=0; i<std::min(4,numList.size()); ++i) {
+  for (size_t i = 0; i < std::min(L, size_t(numList.size())); ++i) {
     toVal(numList[i], v[i]);
   }
 }
 
 inline QString toQString(const QColor& v)
 {
-  return QString("[%1, %2, %3, %4]").arg(v.red()).arg(v.green()).arg(v.blue()).arg(v.alpha());
+  return "[" + QString::number(v.red()) +
+         ", " + QString::number(v.green()) +
+         ", " + QString::number(v.blue()) +
+         ", " + QString::number(v.alpha()) +
+         "]";
 }
 
-inline void toVal(const QString &str, QColor& v)
+inline void toVal(const QString& str, QColor& v)
 {
-  QRegExp rx("(\\ |\\,|\\[|\\]|\\;)"); //RegEx for ' ' or ',' or '[' or ']' or ';'
+  QRegularExpression rx(R"((\ |\,|\[|\]|\;))"); //RegEx for ' ' or ',' or '[' or ']' or ';'
   QStringList numList = str.split(rx, QString::SkipEmptyParts);
-  for (int i=0; i<std::min(4,numList.size()); ++i) {
+  for (int i = 0; i < std::min(4, numList.size()); ++i) {
     int c;
     toVal(numList[i], c);
     if (i == 0) {
@@ -260,211 +299,178 @@ inline void toVal(const QString &str, QColor& v)
   }
 }
 
-
-template<typename T, glm::precision P>
-inline QString toQString(const glm::tmat2x2<T,P> &m)
+template<size_t C, size_t R, typename T, glm::precision P>
+inline QString toQString(const glm::mat<C, R, T, P>& m)
 {
-  return QString("[%1, %2; %3, %4]").
-      arg(m[0][0]).arg(m[1][0]).
-      arg(m[0][1]).arg(m[1][1]);
+  static_assert(std::is_integral<T>::value, "Integer required.");
+  QString res = "[";
+  for (size_t r = 0; r < R; ++r) {
+    if (r > 0)
+      res += "; ";
+    for (size_t c = 0; c < C; ++c) {
+      if (c > 0)
+        res += ", ";
+      res += QString::number(m[c][r]);
+    }
+  }
+  res += "]";
+  return res;
 }
 
-template<typename T, glm::precision P>
-inline void toVal(const QString &str, glm::tmat2x2<T,P>& m)
+template<size_t C, size_t R, glm::precision P>
+inline QString toQString(const glm::mat<C, R, float, P>& m)
 {
-  QRegExp rx("(\\ |\\,|\\[|\\]|\\;)"); //RegEx for ' ' or ',' or '[' or ']' or ';'
+  QString res = "[";
+  for (size_t r = 0; r < R; ++r) {
+    if (r > 0)
+      res += "; ";
+    for (size_t c = 0; c < C; ++c) {
+      if (c > 0)
+        res += ", ";
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+      res += QString::number(m[c][r], 'g', QLocale::FloatingPointShortest);
+#else
+      res += QString::number(m[c][r], 'g', std::numeric_limits<float>::max_digits10);
+#endif
+    }
+  }
+  res += "]";
+  return res;
+}
+
+template<size_t C, size_t R, glm::precision P>
+inline QString toQString(const glm::mat<C, R, double, P>& m)
+{
+  QString res = "[";
+  for (size_t r = 0; r < R; ++r) {
+    if (r > 0)
+      res += "; ";
+    for (size_t c = 0; c < C; ++c) {
+      if (c > 0)
+        res += ", ";
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+      res += QString::number(m[c][r], 'g', QLocale::FloatingPointShortest);
+#else
+      res += QString::number(m[c][r], 'g', std::numeric_limits<double>::max_digits10);
+#endif
+    }
+  }
+  res += "]";
+  return res;
+}
+
+template<size_t C, size_t R, typename T, glm::precision P>
+inline void toVal(const QString& str, glm::mat<C, R, T, P>& m)
+{
+  QRegularExpression rx(R"((\ |\,|\[|\]|\;))"); //RegEx for ' ' or ',' or '[' or ']' or ';'
   QStringList numList = str.split(rx, QString::SkipEmptyParts);
-  for (int i=0; i<std::min(4,numList.size()); ++i) {
-    toVal(numList[i], m[i%2][i/2]);
+  for (size_t i = 0; i < std::min(C * R, size_t(numList.size())); ++i) {
+    toVal(numList[i], m[i % C][i / R]);
   }
 }
 
 template<typename T, glm::precision P>
-inline QString toQString(const glm::tmat3x3<T,P> &m)
+inline QString toQString(const glm::tquat<T, P>& v)
 {
-  return QString("[%1, %2, %3; %4, %5, %6; %7, %8, %9]").
-      arg(m[0][0]).arg(m[1][0]).arg(m[2][0]).
-      arg(m[0][1]).arg(m[1][1]).arg(m[2][1]).
-      arg(m[0][2]).arg(m[1][2]).arg(m[2][2]);
+  static_assert(std::is_integral<T>::value, "Integer required.");
+  return "[" + QString::number(v[0]) +
+         ", " + QString::number(v[1]) +
+         ", " + QString::number(v[2]) +
+         ", " + QString::number(v[3]) +
+         "]";
+}
+
+template<glm::precision P>
+inline QString toQString(const glm::tquat<float, P>& v)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+  return "[" + QString::number(v[0], 'g', QLocale::FloatingPointShortest) +
+         ", " + QString::number(v[1], 'g', QLocale::FloatingPointShortest) +
+         ", " + QString::number(v[2], 'g', QLocale::FloatingPointShortest) +
+         ", " + QString::number(v[3], 'g', QLocale::FloatingPointShortest) +
+         "]";
+#else
+  return "[" + QString::number(v[0], 'g', std::numeric_limits<float>::max_digits10) +
+         ", " + QString::number(v[1], 'g', std::numeric_limits<float>::max_digits10) +
+         ", " + QString::number(v[2], 'g', std::numeric_limits<float>::max_digits10) +
+         ", " + QString::number(v[3], 'g', std::numeric_limits<float>::max_digits10) +
+         "]";
+#endif
+}
+
+template<glm::precision P>
+inline QString toQString(const glm::tquat<double, P>& v)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
+  return "[" + QString::number(v[0], 'g', QLocale::FloatingPointShortest) +
+         ", " + QString::number(v[1], 'g', QLocale::FloatingPointShortest) +
+         ", " + QString::number(v[2], 'g', QLocale::FloatingPointShortest) +
+         ", " + QString::number(v[3], 'g', QLocale::FloatingPointShortest) +
+         "]";
+#else
+  return "[" + QString::number(v[0], 'g', std::numeric_limits<double>::max_digits10) +
+         ", " + QString::number(v[1], 'g', std::numeric_limits<double>::max_digits10) +
+         ", " + QString::number(v[2], 'g', std::numeric_limits<double>::max_digits10) +
+         ", " + QString::number(v[3], 'g', std::numeric_limits<double>::max_digits10) +
+         "]";
+#endif
 }
 
 template<typename T, glm::precision P>
-inline void toVal(const QString &str, glm::tmat3x3<T,P>& m)
+inline void toVal(const QString& str, glm::tquat<T, P>& q)
 {
-  QRegExp rx("(\\ |\\,|\\[|\\]|\\;)"); //RegEx for ' ' or ',' or '[' or ']' or ';'
+  QRegularExpression rx(R"((\ |\,|\[|\]|\;))"); //RegEx for ' ' or ',' or '[' or ']' or ';'
   QStringList numList = str.split(rx, QString::SkipEmptyParts);
-  for (int i=0; i<std::min(9,numList.size()); ++i) {
-    toVal(numList[i], m[i%3][i/3]);
-  }
-}
-
-template<typename T, glm::precision P>
-inline QString toQString(const glm::tmat4x4<T,P> &m)
-{
-  return QString("[%1, %2, %3, %4; %5, %6, %7, %8; %9, %10, %11, %12; %13, %14, %15, %16]").
-      arg(m[0][0]).arg(m[1][0]).arg(m[2][0]).arg(m[3][0]).
-      arg(m[0][1]).arg(m[1][1]).arg(m[2][1]).arg(m[3][1]).
-      arg(m[0][2]).arg(m[1][2]).arg(m[2][2]).arg(m[3][2]).
-      arg(m[0][3]).arg(m[1][3]).arg(m[2][3]).arg(m[3][3]);
-}
-
-template<typename T, glm::precision P>
-inline void toVal(const QString &str, glm::tmat4x4<T,P>& m)
-{
-  QRegExp rx("(\\ |\\,|\\[|\\]|\\;)"); //RegEx for ' ' or ',' or '[' or ']' or ';'
-  QStringList numList = str.split(rx, QString::SkipEmptyParts);
-  for (int i=0; i<std::min(16,numList.size()); ++i) {
-    toVal(numList[i], m[i%4][i/4]);
-  }
-}
-
-template<typename T, glm::precision P>
-inline QString toQString(const glm::tquat<T,P> &q)
-{
-  return QString("[%1, %2, %3, %4]").arg(q[0]).arg(q[1]).arg(q[2]).arg(q[3]);
-}
-
-template<typename T, glm::precision P>
-inline void toVal(const QString &str, glm::tquat<T,P>& q)
-{
-  QRegExp rx("(\\ |\\,|\\[|\\]|\\;)"); //RegEx for ' ' or ',' or '[' or ']' or ';'
-  QStringList numList = str.split(rx, QString::SkipEmptyParts);
-  for (int i=0; i<std::min(4,numList.size()); ++i) {
+  for (size_t i = 0; i < std::min(q.length(), size_t(numList.size())); ++i) {
     toVal(numList[i], q[i]);
   }
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
-// std iostream print
+// qDebug print
 
-template<typename T, glm::precision P>
-std::ostream& operator << (std::ostream& s, const glm::tvec2<T,P>& v)
+template<size_t L, typename T, glm::precision P>
+inline QDebug& operator<<(QDebug s, const glm::vec<L, T, P>& v)
 {
-  return (s << qPrintable(toQString(v)));
+  s.nospace() << qUtf8Printable(toQString(v));
+  return s.space();
+}
+
+template<size_t C, size_t R, typename T, glm::precision P>
+inline QDebug& operator<<(QDebug s, const glm::mat<C, R, T, P>& m)
+{
+  s.nospace() << qUtf8Printable(toQString(m));
+  return s.space();
 }
 
 template<typename T, glm::precision P>
-std::ostream& operator << (std::ostream& s, const glm::tvec3<T,P>& v)
+inline QDebug& operator<<(QDebug s, const glm::tquat<T, P>& q)
 {
-  return (s << qPrintable(toQString(v)));
-}
-
-template<typename T, glm::precision P>
-std::ostream& operator << (std::ostream& s, const glm::tvec4<T,P>& v)
-{
-  return (s << qPrintable(toQString(v)));
-}
-
-template<>
-inline std::ostream& operator << <unsigned char,glm::highp>(std::ostream& s, const glm::tvec2<unsigned char,glm::highp>& v)
-{
-  return (s << glm::tvec2<int,glm::highp>(v));
-}
-
-template<>
-inline std::ostream& operator << <unsigned char,glm::highp>(std::ostream& s, const glm::tvec3<unsigned char,glm::highp>& v)
-{
-  return (s << glm::tvec3<int,glm::highp>(v));
-}
-
-template<>
-inline std::ostream& operator << <unsigned char,glm::highp>(std::ostream& s, const glm::tvec4<unsigned char,glm::highp>& v)
-{
-  return (s << glm::tvec4<int,glm::highp>(v));
-}
-
-template<>
-inline std::ostream& operator << <char,glm::highp>(std::ostream& s, const glm::tvec2<char,glm::highp>& v)
-{
-  return (s << glm::tvec2<int,glm::highp>(v));
-}
-
-template<>
-inline std::ostream& operator << <char,glm::highp>(std::ostream& s, const glm::tvec3<char,glm::highp>& v)
-{
-  return (s << glm::tvec3<int,glm::highp>(v));
-}
-
-template<>
-inline std::ostream& operator << <char,glm::highp>(std::ostream& s, const glm::tvec4<char,glm::highp>& v)
-{
-  return (s << glm::tvec4<int,glm::highp>(v));
-}
-
-template<typename T, glm::precision P>
-std::ostream& operator << (std::ostream& s, const glm::tmat2x2<T,P>& m)
-{
-  return (s << qPrintable(toQString(m)));
-}
-
-template<typename T, glm::precision P>
-std::ostream& operator << (std::ostream& s, const glm::tmat3x3<T,P>& m)
-{
-  return (s << qPrintable(toQString(m)));
-}
-
-template<typename T, glm::precision P>
-std::ostream& operator << (std::ostream& s, const glm::tmat4x4<T,P>& m)
-{
-  return (s << qPrintable(toQString(m)));
-}
-
-template<typename T, glm::precision P>
-std::ostream& operator << (std::ostream& s, const glm::tquat<T,P>& q)
-{
-  return (s << qPrintable(toQString(q)));
+  s.nospace() << qUtf8Printable(toQString(q));
+  return s.space();
 }
 
 //-------------------------------------------------------------------------------------------------------------------------
-// qDebug print
 
-template<typename T, glm::precision P>
-QDebug& operator << (QDebug s, const glm::tvec2<T,P>& v)
+//-------------------------------------------------------------------------------------------------------------------------
+// std iostream print
+
+template<size_t L, typename T, glm::precision P>
+inline std::ostream& operator<<(std::ostream& s, const glm::vec<L, T, P>& v)
 {
-  s.nospace() << qPrintable(toQString(v));
-  return s.space();
+  return (s << qUtf8Printable(toQString(v)));
+}
+
+template<size_t C, size_t R, typename T, glm::precision P>
+inline std::ostream& operator<<(std::ostream& s, const glm::mat<C, R, T, P>& m)
+{
+  return (s << qUtf8Printable(toQString(m)));
 }
 
 template<typename T, glm::precision P>
-QDebug& operator << (QDebug s, const glm::tvec3<T,P>& v)
+inline std::ostream& operator<<(std::ostream& s, const glm::tquat<T, P>& q)
 {
-  s.nospace() << qPrintable(toQString(v));
-  return s.space();
-}
-
-template<typename T, glm::precision P>
-QDebug& operator << (QDebug s, const glm::tvec4<T,P>& v)
-{
-  s.nospace() << qPrintable(toQString(v));
-  return s.space();
-}
-
-template<typename T, glm::precision P>
-QDebug& operator << (QDebug s, const glm::tmat2x2<T,P>& m)
-{
-  s.nospace() << qPrintable(toQString(m));
-  return s.space();
-}
-
-template<typename T, glm::precision P>
-QDebug& operator << (QDebug& s, const glm::tmat3x3<T,P>& m)
-{
-  s.nospace() << qPrintable(toQString(m));
-  return s.space();
-}
-
-template<typename T, glm::precision P>
-QDebug& operator << (QDebug s, const glm::tmat4x4<T,P>& m)
-{
-  s.nospace() << qPrintable(toQString(m));
-  return s.space();
-}
-
-template<typename T, glm::precision P>
-QDebug& operator << (QDebug s, const glm::tquat<T,P>& q)
-{
-  s.nospace() << qPrintable(toQString(q));
-  return s.space();
+  return (s << qUtf8Printable(toQString(q)));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------

@@ -26,6 +26,7 @@ const char* ZDvidData::m_todoListName = "todo";
 const char* ZDvidData::m_synapseName = ""; //No default
 const char* ZDvidData::m_neutuConfigName = "neutu_config";
 const char* ZDvidData::m_labelszName = "labelsz";
+const char* ZDvidData::m_meshName = "meshes";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -107,6 +108,8 @@ std::string ZDvidData::GetName(ERole role)
     return GetName(ROLE_SPLIT_RESULT_KEY) + "_" + "property";
   case ROLE_SPLIT_TASK_PROPERTY_KEY:
     return GetName(ROLE_SPLIT_TASK_KEY) + "_" + "property";
+  case ROLE_MESH:
+    return m_meshName;
   }
 
   return m_emptyName;

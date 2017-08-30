@@ -15,6 +15,8 @@ public:
   int getRow(uint64_t bodyId) const;
   QModelIndex getIndex(uint64_t bodyId) const;
 
+  void removeBody(uint64_t bodyId);
+
   void removeRowList(const QList<int> &rowList);
 
   void backupBody(int row, bool appending);

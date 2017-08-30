@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zflyemroitooldialog.h"
 
 #include <QMessageBox>

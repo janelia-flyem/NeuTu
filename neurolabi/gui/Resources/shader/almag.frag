@@ -19,6 +19,14 @@ varying vec2 texCoord0;
 varying vec4 color;
 #endif
 
+#if GLSL_VERSION >= 330
+layout(location = 0) out vec4 FragData0;
+#elif GLSL_VERSION >= 130
+out vec4 FragData0;  // call glBindFragDataLocation before linking
+#else
+#define FragData0 gl_FragData[0]
+#endif
+
 #if GLSL_VERSION < 130
 #define texture texture2D
 #endif
@@ -32,7 +40,7 @@ void main()
 	float width = fwidth(texCoord0.x) * softedge_scale;
 	baseColor.a = smoothstep(0.5-width, 0.5+width, distanceFactor);
 #else
-	baseColor.a = baseColor.a >= 0.5 ? 1.0 : 0.0;
+	baseColor.a = distanceFactor >= 0.5 ? 1.0 : 0.0;
 #endif
 
 #ifdef SHOW_GLOW
@@ -69,13 +77,14 @@ void main()
 
 	// Shadow / glow calculation
 	float glowDistance = texture(tex, texCoord0 + GLOW_UV_OFFSET).a;
-	float glowFactor = smoothstep(0.3, 0.5, glowDistance);
+	float glowFactor1 = smoothstep(0.3, 0.5, glowDistance);
 
-	baseColor = mix(vec4(shadow_color.xyz, glowFactor), baseColor, baseColor.a);
+	baseColor = mix(vec4(shadow_color.xyz, glowFactor1), baseColor, baseColor.a);
 #endif
 
 	baseColor.a = baseColor.a * alpha;
 	baseColor.rgb *= baseColor.a;
 
 	FragData0 = baseColor;
+	gl_FragDepth = baseColor.a > 0 ? gl_FragCoord.z : 1;
 }

@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zstackmvc.h"
 
 #include <QMainWindow>

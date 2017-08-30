@@ -25,11 +25,9 @@
 #include "zflyemutilities.h"
 #include "zstring.h"
 #include "zfiletype.h"
-#include "z3dvolumesource.h"
 #include "zwindowfactory.h"
 #include "z3dpunctafilter.h"
-#include "z3dvolumeraycaster.h"
-#include "z3dvolumeraycasterrenderer.h"
+#include "z3dvolumefilter.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),
@@ -1481,15 +1479,14 @@ void ZFlyEmRoiDialog::viewAllSynapseIn3D()
               stack->getOffset().getZ());
       }
       Z3DWindow *window = factory.make3DWindow(doc);
-      window->getVolumeSource()->setXScale(
+      window->getVolumeFilter()->setXScale(
             m_project->getCurrentDsIntv().getX() + 1);
-      window->getVolumeSource()->setYScale(
+      window->getVolumeFilter()->setYScale(
             m_project->getCurrentDsIntv().getY() + 1);
       window->getPunctaFilter()->setColorMode("Original Point Color");
       window->getPunctaFilter()->setSizeScale(0.5);
       window->getPunctaFilter()->setStayOnTop(false);
-      window->getVolumeRaycasterRenderer()->setCompositeMode(
-            "Direct Volume Rendering");
+      window->getVolumeFilter()->setCompositeMode("Direct Volume Rendering");
       window->setBackgroundColor(glm::vec3(0.0f), glm::vec3(0.0f));
       window->resetCamera();
 

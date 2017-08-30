@@ -9,7 +9,7 @@ package:
   {% endif %}
 
 source:
-    path: ../
+    git_url: ../
 
 build:
   number: 0
@@ -38,6 +38,12 @@ requirements:
     - hdf5    1.8*
     - pango   1.40* # [linux64]
     - lowtis  >=0.1.0.p
+    - ninja
+    - tbb
+    - vtk
+    - assimp
+    - glbinding
+    - draco
     
 about:
   home: http://github.com/janelia-flyem/NeuTu

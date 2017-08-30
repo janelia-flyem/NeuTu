@@ -29,7 +29,6 @@ struct LightSource
 };
 uniform LightSource lights[LIGHT_COUNT];
 
-
 vec4 computeColorFromLight(const in vec3 normalDirection, const in LightSource light, const in vec3 position,
                            const in float materialShininess, const in vec4 materialAmbient, const in vec4 materialSpecular,
                            const in vec4 color)

@@ -150,7 +150,9 @@ public:
   public:
     MainWindowConfig();
 
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
+#endif
 
     inline void enableTracing(bool tracingOn) { m_tracingOn = tracingOn; }
     inline void enableMarkPuncta(bool on) { m_isMarkPunctaOn = on; }
@@ -235,9 +237,9 @@ public:
   class Z3DWindowConfig {
   public:
     Z3DWindowConfig();
-
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
-
+#endif
     inline bool isUtilsOn() const { return m_isUtilsOn; }
     inline bool isVolumeOn() const { return m_isVolumeOn; }
     inline bool isGraphOn() const { return m_isGraphOn; }
@@ -263,8 +265,9 @@ public:
     class SwcTabConfig {
     public:
       SwcTabConfig();
+#ifdef _QT_GUI_USED_
       void loadXmlNode(const ZXmlNode *node);
-
+#endif
       inline std::string getPrimitive() const { return m_primitive; }
       inline std::string getColorMode() const { return m_colorMode; }
       inline double getZScale() const { return m_zscale; }
@@ -278,8 +281,9 @@ public:
     class GraphTabConfig {
     public:
       GraphTabConfig();
+#ifdef _QT_GUI_USED_
       void loadXmlNode(const ZXmlNode *node);
-
+#endif
       inline bool isVisible() const { return m_isVisible; }
       inline double getOpacity() const { return m_opacity; }
 
@@ -314,16 +318,19 @@ public:
   class ObjManagerConfig {
   public:
     ObjManagerConfig();
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
-
+#endif
     inline bool isSwcOn() const { return m_isSwcOn; }
     inline bool isCategorizedSwcNodeOn() const { return m_isSwcNodeOn; }
     inline bool isPunctaOn() const { return m_isPunctaOn; }
+    inline bool isMeshOn() const { return m_isMeshOn; }
 
   private:
     bool m_isSwcOn;
     bool m_isSwcNodeOn;
     bool m_isPunctaOn;
+    bool m_isMeshOn = true;
   };
 
   inline const MainWindowConfig& getMainWindowConfig() const {

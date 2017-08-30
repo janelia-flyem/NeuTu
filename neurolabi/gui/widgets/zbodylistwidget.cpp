@@ -68,6 +68,12 @@ void ZBodyListWidget::removeSelectedString()
   getModel()->removeRowList(rowList);
 }
 
+void ZBodyListWidget::removeBody(uint64_t bodyId)
+{
+  ZFlyEmBodyListModel *model = getModel();
+  model->removeBody(bodyId);
+}
+
 void ZBodyListWidget::processBodySelectionChange(
     const QSet<uint64_t> &selectedSet)
 {

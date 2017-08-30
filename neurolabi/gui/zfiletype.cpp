@@ -3,6 +3,10 @@
 //#include <QString>
 #include "zstring.h"
 
+#ifdef _QT_GUI_USED_
+#include "zmesh.h"
+#endif
+
 ZFileType::ZFileType()
 {
 }
@@ -77,6 +81,11 @@ ZFileType::EFileType ZFileType::FileType(const std::string &filePath)
   } else if (str.endsWith(".zss", ZString::CASE_INSENSITIVE)) {
     return FILE_SPARSE_STACK;
   }
+#if _QT_GUI_USED_
+  else if (ZMesh::canReadFile(QString::fromStdString(filePath))) {
+    return FILE_MESH;
+  }
+#endif
 
 
   return FILE_UNIDENTIFIED;
@@ -119,6 +128,8 @@ std::string ZFileType::TypeName(EFileType type)
     return "Neuron segmentation";
   case FILE_HDF5:
     return "HDF5";
+  case FILE_MESH:
+    return "Mesh";
   default:
     return "Unknown";
   }
@@ -154,7 +165,8 @@ bool ZFileType::isObjectFile(EFileType type)
       (type == FILE_V3D_MARKER) ||
       (type == FILE_RAVELER_BOOKMARK) ||
       (type == FILE_OBJECT_SCAN) ||
-      (type == FILE_SPARSE_STACK);
+      (type == FILE_SPARSE_STACK) ||
+      (type == FILE_MESH);
 }
 
 bool ZFileType::isObjectFile(const std::string &filePath)

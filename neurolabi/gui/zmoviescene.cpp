@@ -9,7 +9,7 @@
 #include "z3dinteractionhandler.h"
 #include "zmoviecamera.h"
 #include "zjsonobject.h"
-#include "z3daxis.h"
+#include "z3dcompositor.h"
 
 using namespace std;
 
@@ -215,9 +215,9 @@ void ZMovieScene::print() const
 void ZMovieScene::updateStage(Z3DWindow *stage)
 {
   if (m_showingAxis == 0) {
-    stage->getAxis()->setVisible(false);
+    stage->getCompositor()->setShowAxis(false);
   } else if (m_showingAxis == 1) {
-    stage->getAxis()->setVisible(true);
+    stage->getCompositor()->setShowAxis(true);
   }
 
   stage->configure(m_renderSetting);
@@ -243,12 +243,12 @@ void ZMovieScene::updateCamera(Z3DWindow *stage, double t)
     //stage->getInteractionHandler()->getTrackball()->rotate(
     //      axis, rotation.getAngle() * t);
     stage->getCamera()->rotate(rotation.getAngle() * t,
-                               stage->getCamera()->vectorEyeToWorld(
+                               stage->getCamera()->get().vectorEyeToWorld(
                                  glm::normalize(axis)));
   }
 
   //Move eye
-  glm::vec3 direction = stage->getCamera()->getViewVector();
+  glm::vec3 direction = stage->getCamera()->get().viewVector();
   const ZPoint &eyeMovingSpeed = m_camera.getMovingVelocity(ZMovieCamera::EYE);
   glm::vec3 offset;
   if (m_camera.getMovingDirection(ZMovieCamera::EYE) == ZMovieCamera::VIEW_AXIS) {
@@ -260,7 +260,7 @@ void ZMovieScene::updateCamera(Z3DWindow *stage, double t)
                        eyeMovingSpeed.z() * t);
   }
 
-  stage->getCamera()->setEye(stage->getCamera()->getEye() + offset);
+  stage->getCamera()->setEye(stage->getCamera()->get().eye() + offset);
 
   //Move center
   const ZPoint &centerMovingSpeed = m_camera.getMovingVelocity(ZMovieCamera::CENTER);
@@ -273,14 +273,14 @@ void ZMovieScene::updateCamera(Z3DWindow *stage, double t)
                        centerMovingSpeed.z() * t);
   }
 
-  stage->getCamera()->setCenter(stage->getCamera()->getCenter() + offset);
+  stage->getCamera()->setCenter(stage->getCamera()->get().center() + offset);
 
   //Move up_vector
   const ZPoint &uvMovingSpeed = m_camera.getMovingVelocity(ZMovieCamera::UP_VECTOR);
   offset = glm::vec3(uvMovingSpeed.x() * t, uvMovingSpeed.y() * t,
                      uvMovingSpeed.z() * t);
 
-  stage->getCamera()->setUpVector(stage->getCamera()->getUpVector() + offset);
+  stage->getCamera()->setUpVector(stage->getCamera()->get().upVector() + offset);
 }
 
 void ZMovieScene::updateClip(Z3DWindow *stage,

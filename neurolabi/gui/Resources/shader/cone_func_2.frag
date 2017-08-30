@@ -77,6 +77,10 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
   }
 
   float d = a1*a1 - a0*a2;
+#ifdef ANTI_ALIASING
+  float delta = fwidth(d);
+  float edgeAlpha = smoothstep(0, delta, d);
+#endif
   if (d < 0.0)
     // outside of the double cone
     discard;
@@ -237,7 +241,11 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
   fragDepth = depth;
 
   fragColor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
+#ifdef ANTI_ALIASING
+                                     normalDirection, ipoint, color, alpha * edgeAlpha);
+#else
                                      normalDirection, ipoint, color, alpha);
+#endif
 
 }
 

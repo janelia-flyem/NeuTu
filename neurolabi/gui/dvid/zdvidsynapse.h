@@ -119,6 +119,7 @@ private:
 private:
   std::vector<bool> m_isPartnerVerified;
   std::vector<EKind> m_partnerKind;
+  std::vector<EStatus> m_partnerStatus;
 };
 
 #endif // ZDVIDSYNAPSE_H

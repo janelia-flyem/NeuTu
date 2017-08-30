@@ -674,7 +674,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
             if (bodyAnnotationKeys.contains(bodyIDstring)) {
                 // body annotations currently stored as another json string
                 dvidTimer.restart();
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstring);
+                const QByteArray &temp = reader.readKeyValue(
+                      bodyAnnotationName, bodyIDstring);
                 dvidTime += dvidTimer.elapsed();
                 ZJsonObject bodyData;
                 bodyData.decodeString(temp.data());
@@ -683,7 +684,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
                     if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
                         entry.setEntry("name", bodyData["name"]);
                         // store name for later use
-                        m_bodyNames[bodyID] = QString(ZJsonParser::stringValue(bodyData["name"]));
+                        m_bodyNames[bodyID] =
+                            QString(ZJsonParser::stringValue(bodyData["name"]));
                     } else {
                         m_namelessBodies.insert(bodyID);
                     }

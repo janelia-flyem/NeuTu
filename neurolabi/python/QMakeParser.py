@@ -46,7 +46,7 @@ class QMakeParser:
         for line in allLine:
             line = line.replace("$${PWD}", qProFileDir);
             line = line.replace("$$PWD", qProFileDir);
-            print line
+            print(line)
             #For each line
             tokenList = re.findall("[\w\/\.]+", line);
             #for each word in the file

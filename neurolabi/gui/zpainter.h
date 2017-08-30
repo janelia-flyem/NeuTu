@@ -161,6 +161,8 @@ public:
 
   void drawArc(const QRectF &rectangle, int startAngle, int spanAngle);
 
+  void drawCross(const QPointF &center, double radius);
+
   void drawPolyline(const QPointF * points, int pointCount);
   void drawPolyline(const QPoint * points, int pointCount);
 

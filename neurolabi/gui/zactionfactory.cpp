@@ -569,6 +569,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ADD_TODO_ITEM:
     action = new QAction("Todo here", parent);
     break;
+  case ACTION_ACTIVATE_TODO_ITEM:
+    action = new QAction("Add Todo", parent);
+    action->setIcon(QIcon(":/images/add_todo.png"));
+    break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
     break;
@@ -646,7 +650,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("To Do", parent);
     action->setIcon((QIcon(":/images/view_todo.png")));
     action->setCheckable(true);
-    action->setChecked(false);
+    action->setChecked(true);
+    break;
+  case ACTION_SAVE_SPLIT_TASK:
+    action = new QAction("Save Split Task", parent);
+    action->setIcon(QIcon(":/images/save_seed.png"));
+    action->setToolTip("Save the split task defined by current seeds.");
     break;
   default:
     break;

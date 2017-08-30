@@ -15,6 +15,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidinfo.h"
+#include "dvid/zdvidwriter.h"
 #include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 //#include "flyem/zflyemtodoitem.h"
@@ -23,6 +24,7 @@ class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
 class ZFlyEmBodyComparisonDialog;
 class ZFlyEmBody3dDocKeyProcessor;
+class ZMesh;
 //class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
@@ -135,6 +137,8 @@ public:
   void setBodyType(FlyEM::EBodyType type);
   FlyEM::EBodyType getBodyType() const { return m_bodyType; }
 
+  QSet<uint64_t> getBodySet() const { return m_bodySet; }
+
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
@@ -142,6 +146,17 @@ public:
 
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
+  void addTodo(int x, int y, int z, bool checked, uint64_t bodyId);
+  void addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
+  void addTodoSliently(const ZFlyEmToDoItem &item);
+  void addTodo(const QList<ZFlyEmToDoItem> &itemList);
+  void removeTodo(ZFlyEmToDoItem &item, uint64_t bodyId);
+  void removeTodo(const QList<ZFlyEmToDoItem> &itemList);
+  void removeTodo(int x, int y, int z);
+  void removeTodoSliently(const ZFlyEmToDoItem &item);
+  ZFlyEmToDoItem makeTodoItem(
+      int x, int y, int z, bool checked, uint64_t bodyId);
+  ZFlyEmToDoItem readTodoItem(int x, int y, int z) const;
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
@@ -201,6 +216,11 @@ public:
   bool updating() const;
 
   void enableNodeSeeding(bool on);
+  void enableBodySelectionSync(bool on);
+
+public:
+  void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
+  void executeRemoveTodoCommand();
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
@@ -210,23 +230,38 @@ public slots:
   void updateTodo(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
   void setNormalTodoVisible(bool visible);
+  void setSelectedTodoItemChecked(bool on);
+  void checkSelectedTodoItem();
+  void uncheckSelectedTodoItem();
 
-  void recycleObject(ZStackObject *obj);
-  void killObject(ZStackObject *obj);
+  void recycleObject(ZStackObject *obj) override;
+  void killObject(ZStackObject *obj) override;
 
   void setSeedType(int type);
 
   void setBodyModelSelected(const QSet<uint64_t> &bodySet);
+  void saveSplitTask();
+
+signals:
+  void bodyRemoved(uint64_t bodyId);
 
 protected:
-  void autoSave() {}
+  void autoSave() override {}
+  void makeKeyProcessor() override;
 
 private:
+  ZStackObject* retriveBodyObject(
+      uint64_t bodyId, int zoom,
+      FlyEM::EBodyType bodyType, ZStackObject::EType objType);
+  ZStackObject* retriveBodyObject(uint64_t bodyId, int zoom);
   ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
   ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
+  ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  ZMesh* makeBodyMeshModel(uint64_t bodyId, int zoom);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
@@ -243,9 +278,11 @@ private:
   void updateDvidInfo();
 
   void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
+  void addBodyMeshFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
   void removeBodyFunc(uint64_t bodyId, bool removingAnnotation);
-  void updateBodyFunc(uint64_t bodyId, ZSwcTree *tree);
+  void updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject);
+//  void updateBodyMeshFunc(uint64_t bodyId, ZMesh *mesh);
 
   void connectSignalSlot();
   void updateBodyFunc();
@@ -271,6 +308,8 @@ private:
   ZDvidReader& getBodyReader();
   void updateBodyModelSelection();
 
+  ZStackObject::EType getBodyObjectType() const;
+
 signals:
   void todoVisibleChanged();
 
@@ -284,6 +323,7 @@ private:
   void processEventFunc(const BodyEvent &event);
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
+  ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
   void removeDiffBody();
 
@@ -296,11 +336,13 @@ private:
   bool m_showingSynapse = true;
   bool m_showingTodo = true;
   bool m_nodeSeeding = false;
+  bool m_syncyingBodySelection = false;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
   ZDvidTarget m_dvidTarget;
   ZDvidReader m_dvidReader;
+  ZDvidWriter m_dvidWriter;
   ZDvidReader m_bodyReader;
 
   ZDvidInfo m_dvidInfo;
@@ -315,7 +357,6 @@ private:
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;
   QMap<uint64_t, int> m_bodyUpdateMap;
-  ZFlyEmBody3dDocKeyProcessor *m_keyProcessor;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;

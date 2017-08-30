@@ -9,7 +9,7 @@ package:
   {% endif %}
 
 source:
-    path: ../
+    git_url: ../
 
 build:
   number: 0
@@ -17,7 +17,8 @@ build:
 
 requirements:
   build:
-    - python 2.7*
+    - python >=3.6
+    - python {{PY_VER}}*
     - swig
     - libdvid-cpp >=0.2.post55
     - fftw    3.3*
@@ -27,7 +28,7 @@ requirements:
     - hdf5    1.8.18 # Ting's build script uses 1.8.12, but that's not available from conda
 
   run:
-    - python 2.7*
+    - python {{PY_VER}}*
     - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.7

@@ -1,0 +1,70 @@
+#!/bin/bash
+function initdir
+{
+  dirname=$1
+  echo "Checking $dirname"
+  x=`mkdir -p $dirname 2>&1 || true`
+  username=$USER
+  if [[ "$x" == *"Permission denied"* ]]
+  then
+    sudo ./sudo_initdir $dirname $username
+  fi
+}
+
+set -e 
+
+export PATH=/usr/bin:/usr/local/bin:/bin
+
+if test $# -eq 0
+then
+  install_dir=/opt
+else
+  install_dir=$1
+fi
+
+echo "Installing NeuTu under $install_dir"
+initdir $install_dir
+bindir=$install_dir/bin
+initdir $bindir
+
+
+downloadDir=$install_dir/Download
+initdir $downloadDir
+condaDir=$install_dir/Download/miniconda
+
+cd $downloadDir
+if [ ! -d $condaDir ]
+then
+  curl -X GET https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh > Miniconda-latest-Linux-x86_64.sh
+  bash Miniconda-latest-Linux-x86_64.sh -b -p $condaDir
+fi
+
+CONDA_ROOT=`$condaDir/bin/conda info --root`
+neutuenv='neutu-env'
+envDir=$condaDir/envs/$neutuenv
+if [ ! -d $envDir ]
+then
+  source ${CONDA_ROOT}/bin/activate root
+  { echo y; } | $condaDir/bin/conda create -n $neutuenv -c flyem neutu
+fi
+
+
+updateFile=$bindir/ntupd
+touch $updateFile
+echo '#!/bin/bash' > $updateFile
+echo "source  $condaDir/bin/activate neutu-env" >> $updateFile
+echo "conda update neutu -c flyem" >> $updateFile
+chmod u+x $updateFile
+
+
+run_script=$bindir/neutu
+touch $run_script
+echo '#!/bin/bash' > $run_script
+echo "source $condaDir/bin/activate neutu-env" >> $run_script
+echo 'neutu $*' >> $run_script
+chmod a+x $run_script
+
+
+
+
+

@@ -36,6 +36,8 @@
 #include "zobject3dscanarray.h"
 #include "zdvidpath.h"
 #include "flyem/zserviceconsumer.h"
+#include "zmeshio.h"
+#include "zmesh.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -261,7 +263,7 @@ ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 {
   ZDvid::ENodeStatus status = ZDvid::NODE_NORMAL;
 
-#ifdef _ENABLE_DVIDCPP_
+#ifdef _ENABLE_LIBDVIDCPP_
   ZDvidUrl url(getDvidTarget());
   std::string repoUrl = url.getRepoUrl();
   if (repoUrl.empty()) {
@@ -656,6 +658,32 @@ ZObject3dScanArray* ZDvidReader::readBody(const std::set<uint64_t> &bodySet)
   }
 
   return objArray;
+}
+
+ZMesh* ZDvidReader::readMesh(uint64_t bodyId, int zoom)
+{
+  ZMesh *mesh = NULL;
+
+  ZDvidUrl dvidUrl(getDvidTarget());
+
+  std::string format = "obj";
+
+  ZJsonObject infoJson = readJsonObject(dvidUrl.getMeshInfoUrl(bodyId, zoom));
+  if (infoJson.hasKey("format")) {
+    format = ZJsonParser::stringValue(infoJson["format"]);
+  }
+
+  m_bufferReader.read(dvidUrl.getMeshUrl(bodyId, zoom).c_str(), isVerbose());
+  if (m_bufferReader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+    const QByteArray &buffer = m_bufferReader.getBuffer();
+    mesh = ZMeshIO::instance().loadFromMemory(buffer, format);
+    if (mesh != NULL) {
+      mesh->setLabel(bodyId);
+    }
+  }
+  m_bufferReader.clearBuffer();
+
+  return mesh;
 }
 
 ZObject3dScan* ZDvidReader::readMultiscaleBody(
@@ -2232,7 +2260,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
       m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
-      m_lowtisConfigGray.enableprefetch = true;
+      m_lowtisConfigGray.enableprefetch = false;
 
       m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
@@ -3248,6 +3276,10 @@ ZDvidSynapse ZDvidReader::readSynapse(
   std::vector<ZDvidSynapse> synapseArray =
       readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
   if (!synapseArray.empty()) {
+    if (synapseArray.size() > 1) {
+      LWARN() << "Duplicated synapses at" << "(" << x << "" << y << "" << z << ")";
+      synapseArray[0].setStatus(ZDvidAnnotation::STATUS_DUPLICATED);
+    }
     return synapseArray[0];
   }
 

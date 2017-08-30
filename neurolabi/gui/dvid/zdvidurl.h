@@ -51,6 +51,9 @@ public:
 
   std::string getSkeletonConfigUrl(const std::string &bodyLabelName);
 
+  std::string getMeshUrl();
+  std::string getMeshUrl(uint64_t bodyId, int zoom);
+  std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
 
@@ -229,6 +232,7 @@ public:
   std::string getConfigUrl() const;
   std::string getContrastUrl() const;
 
+  static std::string GetBodyKey(uint64_t bodyId);
   static std::string GetSkeletonKey(uint64_t bodyId);
 
   void setUuid(const std::string &uuid);

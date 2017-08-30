@@ -5,8 +5,7 @@
 #include "zstack.hxx"
 #include "zmoviestage.h"
 #include "z3dwindow.h"
-#include "z3dvolumeraycaster.h"
-#include "z3dvolumeraycasterrenderer.h"
+#include "z3dvolumefilter.h"
 #include "zstackdoc.h"
 
 using namespace std;
@@ -49,11 +48,8 @@ void ZStackMovieActor::show()
 
 void ZStackMovieActor::move(double t)
 {
-  m_stage->getWindow()->getVolumeRaycaster()->getRenderer()->translate(
+  m_stage->getWindow()->getVolumeFilter()->setOffset(
         m_movingOffset[0] * t, m_movingOffset[1] * t, m_movingOffset[2] * t);
-  getStage()->getWindow()->updateVolumeBoundBox();
-  getStage()->getWindow()->updateOverallBoundBox();
-  //getStage()->setVolumeChanged(true);
 }
 
 void ZStackMovieActor::reset()
@@ -72,8 +68,8 @@ void ZStackMovieActor::reset()
 void ZStackMovieActor::pushAlpha()
 {
   if (m_stage != NULL) {
-    m_stage->getWindow()->getVolumeRaycasterRenderer()->setOpaque(true);
-    m_stage->getWindow()->getVolumeRaycasterRenderer()->setAlpha(m_alpha);
+    m_stage->getWindow()->getVolumeFilter()->setOpaque(true);
+    m_stage->getWindow()->getVolumeFilter()->setAlpha(m_alpha);
   }
 }
 
@@ -84,7 +80,7 @@ void ZStackMovieActor::pushColor()
 
 void ZStackMovieActor::pullAlpha()
 {
-  m_alpha = m_stage->getWindow()->getVolumeRaycasterRenderer()->getAlpha();
+  m_alpha = m_stage->getWindow()->getVolumeFilter()->getAlpha();
 }
 
 void ZStackMovieActor::pullColor()

@@ -1,12 +1,13 @@
 #include "neu3window.h"
 
 #include <QDockWidget>
+#include <QMessageBox>
 
 #include "ui_neu3window.h"
 #include "z3dwindow.h"
 #include "zstackdoc.h"
 #include "zdialogfactory.h"
-#include "z3dapplication.h"
+#include "zsysteminfo.h"
 #include "z3dcanvas.h"
 #include "neutubeconfig.h"
 #include "zwindowfactory.h"
@@ -21,25 +22,13 @@
 #include "zstackdochelper.h"
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
+#include "widgets/taskprotocolwindow.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::Neu3Window)
 {
   ui->setupUi(this);
-
-#ifdef _QT5_
-  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
-#else
-  QGLFormat format = QGLFormat();
-  format.setAlpha(true);
-  format.setDepth(true);
-  format.setDoubleBuffer(true);
-  format.setRgba(true);
-  format.setSampleBuffers(true);
-  //format.setStereo(true);
-  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, format, this);
-#endif
 
 //  initialize();
 }
@@ -71,13 +60,14 @@ void Neu3Window::initialize()
 */
 
   m_3dwin = m_dataContainer->makeNeu3Window();
-  ZFlyEmBody3dDoc *bodydoc =
-      qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
-  bodydoc->showTodo(false);
+//  ZFlyEmBody3dDoc *bodydoc =
+//      qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
+//  bodydoc->showTodo(false);
 
   setCentralWidget(m_3dwin);
 
   createDockWidget();
+  createTaskWindow();
   createToolBar();
 
   connectSignalSlot();
@@ -89,33 +79,24 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(showingTodo(bool)), this, SLOT(showTodo(bool)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
+  connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
+          this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
 }
 
 void Neu3Window::initOpenglContext()
 {
-  if (Z3DApplication::app() == NULL) {
-    ZDialogFactory::Notify3DDisabled(this);
-    return;
+  m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
+  m_sharedContext->show();
+
+  // initialize OpenGL
+  if (!ZSystemInfo::instance().initializeGL()) {
+    QString msg = ZSystemInfo::instance().errorMessage();
+    msg += ". 3D functions will be disabled.";
+    QMessageBox::warning(this, qApp->applicationName(), "OpenGL Initialization.\n" + msg);
   }
 
-  // initGL requires a valid OpenGL context
-  if (m_sharedContext != NULL) {
-    // initialize OpenGL
-    if (!Z3DApplication::app()->initializeGL()) {
-      QString msg = Z3DApplication::app()->getErrorMessage();
-      msg += ". 3D functions will be disabled.";
-//      report("OpenGL Initialization", msg.toStdString(),
-//             NeuTube::MSG_ERROR);
-    }
-
-    if (NeutubeConfig::getInstance().isStereoEnabled()) {
-      Z3DApplication::app()->setStereoSupported(m_sharedContext->format().stereo());
-    } else {
-      Z3DApplication::app()->setStereoSupported(false);
-    }
-
-    m_sharedContext->hide();
-  }
+  ZSystemInfo::instance().setStereoSupported(m_sharedContext->format().stereo());
+  m_sharedContext->hide();
 }
 
 bool Neu3Window::loadDvidTarget()
@@ -155,6 +136,8 @@ void Neu3Window::createDockWidget()
           widget, SLOT(selectBodySliently(uint64_t)));
   connect(this, SIGNAL(bodyDeselected(uint64_t)),
           widget, SLOT(deselectBodySliently(uint64_t)));
+  connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
+          widget, SLOT(removeBody(uint64_t)));
 
   dockWidget->setWidget(widget);
 
@@ -162,6 +145,28 @@ void Neu3Window::createDockWidget()
   dockWidget->setFeatures(
         QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
   addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+}
+
+void Neu3Window::createTaskWindow() {
+    QDockWidget *dockWidget = new QDockWidget(this);
+    TaskProtocolWindow *window = new TaskProtocolWindow(getDataDocument(), this);
+
+    // add connections here; for now, I'm connecting up the same way
+    //  Ting connected the ZBodyListWidget, down to reusing the names
+    connect(window, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
+    connect(window, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
+    connect(window, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
+            this, SLOT(setBodySelection(QSet<uint64_t>)));
+
+    // start up the TaskWindow UI (must come after connections are
+    //  established!)
+    window->init();
+
+    dockWidget->setWidget(window);
+    dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
+    dockWidget->setFeatures(
+          QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 }
 
 void Neu3Window::createToolBar()
@@ -242,10 +247,6 @@ void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
   tmpBodySet.insert(bodySet.begin(), bodySet.end());
 
   getBodyDocument()->setBodyModelSelected(bodySet);
-
-//  m_dataContainer->getCompleteDocument()->setSelectedBody(
-//        tmpBodySet, NeuTube::BODY_LABEL_MAPPED);
-//  m_dataContainer->updateBodySelection();
 }
 
 void Neu3Window::processSwcChangeFrom3D(
@@ -263,4 +264,21 @@ void Neu3Window::processSwcChangeFrom3D(
     }
   }
 }
+
+void Neu3Window::processMeshChangedFrom3D(
+    QList<ZMesh *> selected, QList<ZMesh *> deselected)
+{
+  foreach (ZMesh *mesh, selected) {
+    if (mesh->getLabel() > 0) {
+      emit bodySelected(mesh->getLabel());
+    }
+  }
+
+  foreach (ZMesh *mesh, deselected) {
+    if (mesh->getLabel() > 0) {
+      emit bodyDeselected(mesh->getLabel());
+    }
+  }
+}
+
 

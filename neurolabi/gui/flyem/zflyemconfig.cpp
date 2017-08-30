@@ -159,7 +159,10 @@ void ZFlyEmConfig::setTaskServer(const std::string &taskServer)
   std::cout << "Setting task server to " << taskServer << std::endl;
 #endif
 //  m_taskServer = taskServer;
+#ifdef _QT_GUI_USED_
   NeutubeConfig::SetTaskServer(taskServer.c_str());
+#endif
+
 #ifdef _DEBUG_
   std::cout << "Task server set to " << getTaskServer() << std::endl;
 #endif
@@ -167,7 +170,11 @@ void ZFlyEmConfig::setTaskServer(const std::string &taskServer)
 
 std::string ZFlyEmConfig::getTaskServer() const
 {
+#ifdef _QT_GUI_USED_
   return NeutubeConfig::GetTaskServer().toStdString();
+#else
+  return "";
+#endif
 }
 
 std::string ZFlyEmConfig::getDvidRootNode(const std::string &name) const

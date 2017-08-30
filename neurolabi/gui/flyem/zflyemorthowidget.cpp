@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zflyemorthowidget.h"
 
 #include <QGridLayout>

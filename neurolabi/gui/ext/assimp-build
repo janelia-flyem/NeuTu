@@ -1,0 +1,54 @@
+#!/bin/bash
+
+currDIR="$( cd -P "$( dirname "$0" )" && pwd )"
+version=4.0.1
+srcDIR=$currDIR/assimp-$version
+
+if [ -d $srcDIR ]
+then
+  rm -rf $srcDIR
+fi
+cd $currDIR
+if [ ! -f assimp-$version.zip ]
+then
+  curl -LJOk https://github.com/assimp/assimp/archive/v$version.zip
+fi
+unzip assimp-$version.zip
+
+buildDIR=$srcDIR/../__assimp-build
+installDIR=$currDIR/assimp
+
+if [ -d $installDIR ]
+then
+  rm -rf $installDIR
+fi
+
+if [ ! -d $srcDIR ]
+then
+  echo ERROR: src folder $srcDIR does not exist.
+  exit 1 # terminate and indicate error
+fi
+
+# patch
+$currDIR/massedit.py --encoding=utf8 -w -e "re.sub(r'256U', r'size_t(256) * 1024', line)" $srcDIR/include/assimp/defs.h
+
+if [ -d $buildDIR ]
+then
+  rm -rf $buildDIR
+fi
+mkdir $buildDIR
+cd $buildDIR
+
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$installDIR -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DASSIMP_BUILD_ASSIMP_TOOLS:BOOL="0" -DASSIMP_BUILD_TESTS:BOOL="0" -DCMAKE_CXX_FLAGS:STRING="${CMAKE_CXX_FLAGS} -stdlib=libc++ -std=c++11" $srcDIR
+
+ninja install
+
+# unpatch
+mv -f $srcDIR/include/assimp/defs.h.bak $srcDIR/include/assimp/defs.h
+
+# don't know why
+#install_name_tool -id $installDIR/lib/libassimp.dylib $installDIR/lib/libassimp.dylib
+
+cd $currDIR
+rm -rf $buildDIR
+rm -rf $srcDIR

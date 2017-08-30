@@ -14,51 +14,16 @@
  */
 
 #include "z3dport.h"
-#include "QsLog.h"
 
-Z3DPort::Z3DPort(const QString& name, bool allowMultipleConnections, Z3DProcessor::InvalidationState invalidationState)
+Z3DInputPortBase::Z3DInputPortBase(const QString& name, bool allowMultipleConnections, Z3DFilter* filter,
+                                   Z3DFilter::State invalidationState)
   : m_name(name)
-  , m_processor(NULL)
   , m_allowMultipleConnections(allowMultipleConnections)
+  , m_filter(filter)
   , m_invalidationState(invalidationState)
-  , m_isInitialized(false)
+  , m_expectedSize(0)
 {
-}
-
-Z3DPort::~Z3DPort()
-{
-  if (isInitialized()) {
-    LWARN() << "Port" << getName() << "has not been deinitialized";
-  }
-}
-
-void Z3DPort::setProcessor(Z3DProcessor *p)
-{
-  m_processor = p;
-}
-
-void Z3DPort::initialize()
-{
-  if (isInitialized()) {
-    LWARN() << "Port" << getName() << "already initialized";
-    return;
-  }
-
-  m_isInitialized = true;
-}
-
-void Z3DPort::deinitialize()
-{
-  if (!isInitialized()) {
-    return;
-  }
-
-  m_isInitialized = false;
-}
-
-Z3DInputPortBase::Z3DInputPortBase(const QString &name, bool allowMultipleConnections, Z3DProcessor::InvalidationState invalidationState)
-  : Z3DPort(name, allowMultipleConnections, invalidationState)
-{
+  CHECK(filter);
 }
 
 Z3DInputPortBase::~Z3DInputPortBase()
@@ -69,27 +34,26 @@ Z3DInputPortBase::~Z3DInputPortBase()
 void Z3DInputPortBase::invalidate()
 {
   m_hasChanged = true;
-  getProcessor()->invalidate(m_invalidationState);
+  filter()->invalidate(m_invalidationState);
 }
 
-bool Z3DInputPortBase::isConnectedTo(const Z3DOutputPortBase *port) const
+bool Z3DInputPortBase::isConnectedTo(const Z3DOutputPortBase* port) const
 {
   return std::find(m_connectedOutputPorts.begin(), m_connectedOutputPorts.end(), port)
-      != m_connectedOutputPorts.end();
+         != m_connectedOutputPorts.end();
 }
 
-bool Z3DInputPortBase::connect(Z3DOutputPortBase *outport)
+bool Z3DInputPortBase::connect(Z3DOutputPortBase* outport)
 {
   return outport->connect(this);
 }
 
-void Z3DInputPortBase::disconnect(Z3DOutputPortBase *outport)
+void Z3DInputPortBase::disconnect(Z3DOutputPortBase* outport)
 {
   for (size_t i = 0; i < m_connectedOutputPorts.size(); ++i) {
     if (m_connectedOutputPorts[i] == outport) {
       m_connectedOutputPorts.erase(m_connectedOutputPorts.begin() + i);
       outport->disconnect(this);
-      invalidate();
       return;
     }
   }
@@ -102,10 +66,12 @@ void Z3DInputPortBase::disconnectAll()
   }
 }
 
-
-Z3DOutputPortBase::Z3DOutputPortBase(const QString &name, bool allowMultipleConnections, Z3DProcessor::InvalidationState invalidationState)
-  : Z3DPort(name, allowMultipleConnections, invalidationState)
+Z3DOutputPortBase::Z3DOutputPortBase(const QString& name, Z3DFilter* filter)
+  : m_name(name)
+  , m_filter(filter)
+  , m_size(32, 32)
 {
+  CHECK(filter);
 }
 
 Z3DOutputPortBase::~Z3DOutputPortBase()
@@ -113,7 +79,7 @@ Z3DOutputPortBase::~Z3DOutputPortBase()
   disconnectAll();
 }
 
-bool Z3DOutputPortBase::canConnectTo(const Z3DInputPortBase *inport) const
+bool Z3DOutputPortBase::canConnectTo(const Z3DInputPortBase* inport) const
 {
   if (!inport)
     return false;
@@ -121,10 +87,10 @@ bool Z3DOutputPortBase::canConnectTo(const Z3DInputPortBase *inport) const
   if (isConnectedTo(inport))
     return false;
 
-  if ((inport->allowMultipleConnections() == false) && inport->isConnected())
+  if (!inport->m_allowMultipleConnections && inport->isConnected())
     return false;
 
-  if (getProcessor() == inport->getProcessor())
+  if (filter() == inport->filter())
     return false;
 
   return true;
@@ -136,31 +102,31 @@ void Z3DOutputPortBase::invalidate()
     m_connectedInputPorts[i]->invalidate();
 }
 
-bool Z3DOutputPortBase::isConnectedTo(const Z3DInputPortBase *port) const
+bool Z3DOutputPortBase::isConnectedTo(const Z3DInputPortBase* port) const
 {
   return std::find(m_connectedInputPorts.begin(), m_connectedInputPorts.end(), port)
-      != m_connectedInputPorts.end();
+         != m_connectedInputPorts.end();
 }
 
-bool Z3DOutputPortBase::connect(Z3DInputPortBase *inport)
+bool Z3DOutputPortBase::connect(Z3DInputPortBase* inport)
 {
   if (canConnectTo(inport)) {
     m_connectedInputPorts.push_back(inport);
     inport->m_connectedOutputPorts.push_back(this);
-    getProcessor()->invalidate(m_invalidationState);
     inport->invalidate();
     return true;
   }
+  LOG(ERROR) << "Inport " << inport->name() << " of " << inport->filter()->className()
+             << " can not be connected to outport " << m_name << " of " << m_filter->className();
   return false;
 }
 
-void Z3DOutputPortBase::disconnect(Z3DInputPortBase *inport)
+void Z3DOutputPortBase::disconnect(Z3DInputPortBase* inport)
 {
   for (size_t i = 0; i < m_connectedInputPorts.size(); ++i) {
     if (m_connectedInputPorts[i] == inport) {
       m_connectedInputPorts.erase(m_connectedInputPorts.begin() + i);
       inport->disconnect(this);
-      getProcessor()->invalidate(m_invalidationState);
       invalidate();
       return;
     }
@@ -172,6 +138,15 @@ void Z3DOutputPortBase::disconnectAll()
   while (!m_connectedInputPorts.empty()) {
     m_connectedInputPorts[0]->disconnect(this);
   }
+}
+
+glm::uvec2 Z3DOutputPortBase::expectedSize() const
+{
+  glm::uvec2 result(0, 0);
+  for (size_t j = 0; j < m_connectedInputPorts.size(); ++j) {
+    result = glm::max(result, m_connectedInputPorts[j]->expectedSize());
+  }
+  return result;
 }
 
 
