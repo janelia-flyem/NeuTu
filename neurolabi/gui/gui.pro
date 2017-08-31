@@ -10,7 +10,12 @@ contains(TEMPLATE, app) {
 }
 
 contains(CONFIG, neu3) {
-  DEFINES += _NEU3_ _FLYEM_
+  DEFINES += _NEU3_
+}
+
+contains(CONFIG, neu3) | contains(CONFIG, flyem) {
+  CONFIG *=c++11
+  DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
 }
 
 #DEFINES+=_CLI_VERSION
@@ -132,7 +137,7 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     message("Qt 5")
     QT += concurrent gui widgets network xml
     DEFINES += _QT5_
-    CONFIG *= c++11 autotarget
+    CONFIG *= c++11
 }
 
 contains(CONFIG, c++11) {

@@ -22,7 +22,7 @@ then
   shift
   if [ $# -lt 1 ]
   then
-    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize]"
+    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize] [-q qmake_flags] [-m make_flags]"
     exit 1
   fi
   QMAKE_SPEC=$1
@@ -94,6 +94,11 @@ fi
 if [ ! -z "$CONDA_ENV" ]
 then
   qmake_args="$qmake_args 'CONDA_ENV=${CONDA_ENV}'"
+fi
+
+if [ $edition = "neu3" ]
+then
+  qmake_args="$qmake_args CONFIG+=neu3"
 fi
 
 qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=c++11 CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
