@@ -4,7 +4,7 @@ if [ $(uname) == 'Darwin' ]; then
 fi
 
 if [ $(uname) == 'Darwin' ]; then
-    QMAKE_SPEC_PATH=${PREFIX}/mkspecs/macx-g++
+    QMAKE_SPEC_PATH=${PREFIX}/mkspecs/macx-clang
 else
     QMAKE_SPEC_PATH=${PREFIX}/mkspecs/linux-g++-64
 fi

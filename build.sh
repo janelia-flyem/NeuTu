@@ -30,7 +30,12 @@ then
 else
   QMAKE=$1/bin/qmake
   if [ `uname` == 'Darwin' ]; then
-    QMAKE_SPEC=$1/mkspecs/macx-g++
+    if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+    then
+      QMAKE_SPEC=$1/mkspecs/macx-clang
+    else
+      QMAKE_SPEC=$1/mkspecs/macx-g++
+    fi
   else
     QMAKE_SPEC=$1/mkspecs/linux-g++
   fi

@@ -843,6 +843,8 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
       color.setAlpha(255);
       event.setBodyColor(color);
     }
+  } else {
+    event.setBodyColor(Qt::white);
   }
 
   if (event.getAction() == BodyEvent::ACTION_ADD &&
