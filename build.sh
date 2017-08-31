@@ -30,7 +30,12 @@ then
 else
   QMAKE=$1/bin/qmake
   if [ `uname` == 'Darwin' ]; then
-    QMAKE_SPEC=$1/mkspecs/macx-g++
+    if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+    then
+      QMAKE_SPEC=$1/mkspecs/macx-clang
+    else
+      QMAKE_SPEC=$1/mkspecs/macx-g++
+    fi
   else
     QMAKE_SPEC=$1/mkspecs/linux-g++
   fi
@@ -173,7 +178,7 @@ then
   cp -r ../gui/doc $bin_dir/
 fi
 
-if [ $edition = "flyem" ]
+if [ $edition = "flyem" ] | [ $edition = "neu3" ]
 then
   cp ../gui/config_flyem.xml $bin_dir/config.xml
   cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html
