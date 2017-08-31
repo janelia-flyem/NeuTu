@@ -18768,9 +18768,9 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 #endif
 
-#if 0
+#if 1
 #if defined(_ENABLE_LIBDVIDCPP_)
-  libdvid::DVIDNodeService service("emdata2.int.janelia.org:7100", "86e1");
+  libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "b6bc");
   std::cout << "Reading tiles ..." << std::endl;
 
   ZSleeper sleeper;

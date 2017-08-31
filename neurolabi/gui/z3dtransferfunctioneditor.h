@@ -16,6 +16,7 @@
 #ifndef Z3DTRANSFERFUNCTIONEDITOR_H
 #define Z3DTRANSFERFUNCTIONEDITOR_H
 
+#include <memory>
 #include "zglmutils.h"
 #include "zoptionparameter.h"
 #include <QWidget>

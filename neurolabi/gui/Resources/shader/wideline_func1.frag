@@ -59,7 +59,7 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
 #endif
 #endif
   if (lighting_enabled) {
-    float f = smoothstep(0, 1.0, d);
+    float f = smoothstep(0.0, 1.0, d);
     fragColor = vec4(color.rgb * color.a * f * alpha, color.a * f * alpha);
   } else {
     fragColor = color;
