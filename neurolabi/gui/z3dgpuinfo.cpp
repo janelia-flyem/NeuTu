@@ -497,7 +497,11 @@ void Z3DGpuInfo::detectDedicatedVideoMemory()
     }
   }
   if (m_dedicatedVideoMemoryMB == 0) {
+#if defined(_LINUX_)
+    m_dedicatedVideoMemoryMB = 0; //Temporary fix for linux
+#else
     m_dedicatedVideoMemoryMB = getDedicatedVideoMemoryMB();
+#endif
   }
   if (m_dedicatedVideoMemoryMB == 0) {
     LOG(ERROR) << "Can not detect dedicated video memory, use 256";

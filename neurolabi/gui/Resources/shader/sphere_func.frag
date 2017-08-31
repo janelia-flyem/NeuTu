@@ -42,7 +42,7 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
   float position = b * b + radius2 - dot(sphereVector, sphereVector);
 #ifdef ANTI_ALIASING
   float delta = fwidth(position);
-  float edgeAlpha = smoothstep(0, delta, position);
+  float edgeAlpha = smoothstep(0.0, delta, position);
 #endif
   if (position < 0.0)
     discard;

@@ -9,6 +9,7 @@
 #include <vector>
 #include <utility>
 #include <QList>
+#include <QMutex>
 
 #include "zswctree.h"
 #include "zcolormap.h"
