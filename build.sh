@@ -65,21 +65,11 @@ done
 
 if [ -n "$cxx_define" ]
 then
-  if [ $edition = "flyem" ]
-  then
-    cxx_define="_FLYEM_ $cxx_define"
-  fi
-
   if [ $edition = "biocytin" ]
   then
     cxx_define="_BIOCYTIN_ $cxx_define"
   fi
 else
-  if [ $edition = "flyem" ]
-  then
-    cxx_define="_FLYEM_"
-  fi
-
   if [ $edition = "biocytin" ]
   then
     cxx_define="_BIOCYTIN_"
@@ -96,12 +86,17 @@ then
   qmake_args="$qmake_args 'CONDA_ENV=${CONDA_ENV}'"
 fi
 
+if [ $edition = "flyem" ]
+then
+  qmake_args="$qmake_args CONFIG+=flyem"
+fi
+
 if [ $edition = "neu3" ]
 then
   qmake_args="$qmake_args CONFIG+=neu3"
 fi
 
-qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=c++11 CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
 
 if [ $debug_config = "sanitize" ]
 then
