@@ -11,7 +11,7 @@ fi
 
 export CONDA_ENV=${PREFIX}
 
-bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem 
+bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem
 
 # Install to conda environment
 if [ $(uname) == 'Darwin' ]; then
