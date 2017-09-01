@@ -843,9 +843,11 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
       color.setAlpha(255);
       event.setBodyColor(color);
     }
-  } else {
-    event.setBodyColor(Qt::white);
   }
+
+#if defined(_NEU3_)
+  event.setBodyColor(Qt::white);
+#endif
 
   if (event.getAction() == BodyEvent::ACTION_ADD &&
       getBodyType() != FlyEM::BODY_SKELETON) {

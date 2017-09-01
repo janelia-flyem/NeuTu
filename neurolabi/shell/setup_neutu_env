@@ -17,7 +17,7 @@ then
 fi
 
 source $CONDA_DIR/bin/activate root
-conda create -n $ENV_NAME python=2 -y
+conda create -n $ENV_NAME python=3.6 -y
 source $CONDA_DIR/bin/activate $ENV_NAME
 conda install --file neutu_conda_requirements.txt -y
 if [ `uname` == 'Linux' ]; then
