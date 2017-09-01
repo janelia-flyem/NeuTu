@@ -76,7 +76,7 @@ public:
 
   enum ERendererLayer {
     LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_SURFACE, LAYER_VOLUME,
-    LAYER_TODO
+    LAYER_TODO, LAYER_MESH
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
