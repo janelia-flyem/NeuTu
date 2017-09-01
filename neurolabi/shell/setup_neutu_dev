@@ -15,6 +15,12 @@ set -e
 
 export PATH=/usr/bin:/usr/local/bin:/bin
 
+if [ `uname` = 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+
 if test $# -eq 0
 then
   install_dir=/opt
@@ -39,18 +45,22 @@ then
   bash Miniconda-latest-Linux-x86_64.sh -b -p $condaDir
 fi
 
-envName='neutu-env'
-./setup_neutu_env $condaDir $envName
-source $condaDir/bin/activate $envName
-conda install neutu-develop
-conda install neu3-develop
+cd $scriptDir
+condarc=$condaDir/.condarc
+cp condarc $condarc
 
+envName='neutu-env'
+source $condaDir/bin/activate root
+conda create -n $envName python=3.6 -y
+conda install neutu-develop -y
+conda install neu3-develop -y
 
 updateFile=$bindir/ntupd
 touch $updateFile
 echo '#!/bin/bash' > $updateFile
 echo "source  $condaDir/bin/activate $envName" >> $updateFile
 echo "conda update neutu-develop" >> $updateFile
+echo "conda update neu3-develop" >> $updateFile
 chmod u+x $updateFile
 
 
