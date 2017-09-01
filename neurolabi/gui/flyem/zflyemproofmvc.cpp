@@ -780,6 +780,7 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   window->getMeshFilter()->setStayOnTop(false);
   window->getPunctaFilter()->setStayOnTop(false);
   window->getGraphFilter()->setStayOnTop(false);
+  window->setOpacity(Z3DWindow::LAYER_MESH, 0.9);
   ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
   window->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
 

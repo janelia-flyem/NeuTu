@@ -215,7 +215,9 @@ void Z3DWindow::init()
   m_layerList.append(LAYER_TODO);
 #endif
 
+  m_layerList.append(LAYER_MESH);
   m_layerList.append(LAYER_SURFACE);
+  m_layerList.append(LAYER_VOLUME);
 
   connect(getDocument(), SIGNAL(stackBoundBoxChanged()),
           this, SLOT(updateCuttingBox()));
@@ -255,7 +257,6 @@ void Z3DWindow::init()
   connect(getCanvas(), SIGNAL(customContextMenuRequested(QPoint)),
           this, SLOT(show3DViewContextMenu(QPoint)));
 
-  m_layerList.append(LAYER_VOLUME);
   connect(getVolumeFilter(),
           SIGNAL(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)),
           this, SLOT(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)));
@@ -1029,6 +1030,8 @@ std::string Z3DWindow::GetLayerString(ERendererLayer layer)
     return "Todo";
   case LAYER_VOLUME:
     return "Volume";
+  case LAYER_MESH:
+    return "mesh";
   }
 
   return "";
@@ -3912,6 +3915,9 @@ Z3DGeometryFilter* Z3DWindow::getFilter(ERendererLayer layer) const
     return getSurfaceFilter();
   case LAYER_VOLUME:
     break;
+  case LAYER_MESH:
+    return getMeshFilter();
+    break;
   }
 
   return NULL;
@@ -3932,6 +3938,9 @@ Z3DBoundedFilter& Z3DWindow::getBoundedFilter(Z3DWindow::ERendererLayer layer) c
     return *getSurfaceFilter();
   case LAYER_VOLUME:
     return *getVolumeFilter();
+    break;
+  case LAYER_MESH:
+    return *getMeshFilter();
     break;
   }
 }
@@ -4008,22 +4017,16 @@ bool Z3DWindow::isLayerVisible(ERendererLayer layer) const
 
 void Z3DWindow::setZScale(double scale)
 {
-  setZScale(LAYER_GRAPH, scale);
-  setZScale(LAYER_SWC, scale);
-  setZScale(LAYER_PUNCTA, scale);
-  setZScale(LAYER_VOLUME, scale);
-  setZScale(LAYER_TODO, scale);
-  setZScale(LAYER_SURFACE, scale);
+  foreach (ERendererLayer layer, m_layerList) {
+    setZScale(layer, scale);
+  }
 }
 
 void Z3DWindow::setScale(double sx, double sy, double sz)
 {
-  setScale(LAYER_GRAPH, sx, sy, sz);
-  setScale(LAYER_SWC, sx, sy, sz);
-  setScale(LAYER_PUNCTA, sx, sy, sz);
-  setScale(LAYER_VOLUME, sx, sy, sz);
-  setScale(LAYER_TODO, sx, sy, sz);
-  setScale(LAYER_SURFACE, sx, sy, sz);
+  foreach (ERendererLayer layer, m_layerList) {
+    setScale(layer, sx, sy, sz);
+  }
 }
 
 void Z3DWindow::deleteSelected()
