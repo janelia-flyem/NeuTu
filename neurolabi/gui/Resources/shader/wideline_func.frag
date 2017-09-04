@@ -46,7 +46,7 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
     discard;
 #endif
   float d = min(dist.x, dist.y);
-  float f = smoothstep(0, 1.0, d);
+  float f = smoothstep(0.0, 1.0, d);
 
 #ifdef USE_1DTEXTURE
   float texCoord0 = 1.0 - (d - 1.0) * 2.0 * size_scale / line_width;
