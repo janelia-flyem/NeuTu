@@ -18768,7 +18768,7 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 #endif
 
-#if 1
+#if 0
 #if defined(_ENABLE_LIBDVIDCPP_)
   libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "b6bc");
   std::cout << "Reading tiles ..." << std::endl;
@@ -24417,6 +24417,14 @@ void ZTest::test(MainWindow *host)
 
    std::cout << a0[0] << " " << a0[1] << " " << a0[2] << std::endl;
    std::cout << a1[0] << " " << a1[1] << " " << a1[2] << std::endl;
+#endif
+
+#if 1
+   std::vector<std::pair<int, int>> line = LineToPixel(0, -10, 18, 0);
+   for (const std::pair<int, int> &pt : line) {
+     std::cout << pt.first << " " << pt.second << std::endl;
+   }
+   std::cout << endl;
 #endif
 
   std::cout << "Done." << std::endl;

@@ -3714,35 +3714,42 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
             boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
     }
 
-    for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
-      double x = 0.0;
-      double y = 0.0;
-      stroke->getPoint(&x, &y, i);
+    if (m_doc->hasStack()) {
+      for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+        double x = 0.0;
+        double y = 0.0;
+        stroke->getPoint(&x, &y, i);
 
-      ZLineSegment seg;
-      if (m_doc->hasStack()) {
-        seg = getVolumeFilter()->getScreenRay(
-            iround(x), iround(y), getCanvas()->width(), getCanvas()->height());
-      } else {
+        ZLineSegment seg = getVolumeFilter()->getScreenRay(
+              iround(x), iround(y), getCanvas()->width(), getCanvas()->height());
+
+        ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
+        ZLineSegment stackSeg;
+        if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+          ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
+          if (slope.dot(slope2) < 0.0) {
+            stackSeg.invert();
+          }
+          polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
+          polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+        }
+      }
+    } else {
+      for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+        double x = 0.0;
+        double y = 0.0;
+        stroke->getPoint(&x, &y, i);
+
         glm::dvec3 v1,v2;
         int w = getCanvas()->width();
         int h = getCanvas()->height();
         getMeshFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
-        seg.setStartPoint(v1.x, v1.y, v1.z);
-        seg.setEndPoint(v2.x, v2.y, v2.z);
+//        ZLineSegment seg;
+//        seg.setStartPoint(v1.x, v1.y, v1.z);
+//        seg.setEndPoint(v2.x, v2.y, v2.z);
+        polyline1.push_back(ZPoint(v1.x, v1.y, v1.z).toIntPoint());
+        polyline1.push_back(ZPoint(v2.x, v2.y, v2.z).toIntPoint());
       }
-      //if (success) {
-      ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
-      ZLineSegment stackSeg;
-      if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
-        ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
-        if (slope.dot(slope2) < 0.0) {
-          stackSeg.invert();
-        }
-        polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
-        polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
-      }
-      //}
     }
 
     ZObject3d *obj = NULL;
