@@ -797,6 +797,7 @@ HEADERS += mainwindow.h \
     widgets/taskprotocolwindow.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
+    dialogs/dvidbranchdialog.h \
     flyem/zflyembody3ddoccommand.h \
     flyem/zflyembody3ddocmenufactory.h \
     zopenglwidget.h \
@@ -903,6 +904,7 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zbodylistwidget.ui \
     widgets/flyembodyinfowidget.ui \
     neu3window.ui \
+    dialogs/dvidbranchdialog.ui \
     widgets/taskprotocolwindow.ui
 
 SOURCES += main.cpp \
@@ -1394,6 +1396,7 @@ SOURCES += main.cpp \
     widgets/taskprotocolwindow.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
+    dialogs/dvidbranchdialog.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \
     zopenglwidget.cpp \

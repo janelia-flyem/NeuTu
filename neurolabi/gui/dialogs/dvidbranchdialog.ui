@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ZTestDialog2</class>
- <widget class="QDialog" name="ZTestDialog2">
+ <class>DvidBranchDialog</class>
+ <widget class="QDialog" name="DvidBranchDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,9 +15,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Testing...testing...</string>
+      <string>Open DVID</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -27,31 +27,38 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      <widget class="QListWidget" name="listWidget"/>
      </item>
      <item>
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Test DVID open dialog:</string>
-       </property>
-      </widget>
+      <widget class="QListView" name="listView"/>
      </item>
      <item>
-      <widget class="QPushButton" name="openDvidButton">
-       <property name="text">
-        <string>Open DVID</string>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="rightMargin">
+        <number>13</number>
        </property>
-      </widget>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
@@ -72,7 +79,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>ZTestDialog2</receiver>
+   <receiver>DvidBranchDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -88,7 +95,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>ZTestDialog2</receiver>
+   <receiver>DvidBranchDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
