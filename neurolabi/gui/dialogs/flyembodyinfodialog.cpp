@@ -1207,18 +1207,22 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
     // std::cout << "retrieving input/output bodies from DVID for body "<< bodyID << std::endl;
 
     // I'm leaving all the timing prints commented out for future use
-    // QElapsedTimer timer;
-    // timer.start();
+    // QElapsedTimer spottimer;
+    // QElapsedTimer totaltimer;
+    // spottimer.start();
+    // totaltimer.start();
 
     // note: this method is run in a different thread than the rest
     //  of the GUI, so we must open our own DVID reader
     ZDvidReader reader;
     reader.setVerbose(false);
 
-    // std::cout << "opening DVID reader: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+    // testing
+    // reader.setVerbose(true);
+
 
     if (reader.open(m_currentDvidTarget)) {
-        // std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        // std::cout << "open DVID reader: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         std::vector<ZDvidSynapse> synapses;
         if (ui->roiComboBox->currentIndex() > 0) {
           synapses = reader.readSynapse(
@@ -1228,8 +1232,8 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
           synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
         }
 
+        // std::cout << "read synapses: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         // std::cout << "got " << synapses.size() << " synapses" << std::endl;
-        // std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
         // how many pre/post?
         int npre = 0;
@@ -1241,6 +1245,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
                 npost++;
             }
         }
+        // std::cout << "counted pre/post: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         // std::cout << "found " << npre << " pre and " << npost << " post sites" << std::endl;
 
         // at this point, we'll need to iterate over the list and find either
@@ -1257,7 +1262,6 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
         m_connectionsSites.clear();
 
-        // std::cout << "building site list: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<ZIntPoint> siteList;
         for (size_t i=0; i<synapses.size(); i++) {
 
@@ -1280,23 +1284,25 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
                 // there are other connection types we aren't handling right now; eg, convergent
             }
         }
+        // std::cout << "built site list: " << spottimer.restart() / 1000.0 << "s" << std::endl;
 
         // get the body list from DVID
-        // std::cout << "retrieving body list from DVID: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<uint64_t> bodyList = reader.readBodyIdAt(siteList);
         if (bodyList.size() == 0) {
             emit ioNoBodiesLoaded();
             return;
         }
+        // std::cout << "got labels for " << bodyList.size() << " points" << std::endl;
+        // std::cout << "retrieved body list from DVID: " << spottimer.restart() / 1000.0 << "s" << std::endl;
 
         // copy into the map
-        // std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         for (size_t i=0; i<siteList.size(); i++) {
             if (!m_connectionsSites.contains(bodyList[i])) {
                 m_connectionsSites[bodyList[i]] = QList<ZIntPoint>();
             } 
             m_connectionsSites[bodyList[i]].append(siteList[i]);
         }
+        // std::cout << "built qmap: " << spottimer.restart() / 1000.0 << "s" << std::endl;
 
         // name check; if we aren't loading all bodies in the top table,
         //  we may not have names available for all bodies that could
@@ -1323,11 +1329,12 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
                 }
             }
         }
+        // std::cout << "got previously unknown names: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         emit ioBodiesLoaded();
     } else {
         emit ioBodyLoadFailed();
     }
-    // std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
+    // std::cout << "exiting retrieveIOBodiesDvid(): " << totaltimer.elapsed() / 1000.0 << "s" << std::endl;
 }
 
 void FlyEmBodyInfoDialog::onIOBodiesLoaded() {

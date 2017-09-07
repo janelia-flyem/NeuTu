@@ -692,6 +692,8 @@ HEADERS += mainwindow.h \
     protocols/doNthingsprotocol.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
+    protocols/synapsereviewprotocol.h \
+    protocols/synapsereviewinputdialog.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -817,6 +819,8 @@ FORMS += dialogs/settingdialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/synapsereviewprotocol.ui \
+    protocols/synapsereviewinputdialog.ui \
     protocols/protocoldialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
@@ -1242,6 +1246,8 @@ SOURCES += main.cpp \
     protocols/doNthingsprotocol.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsereviewprotocol.cpp \
+    protocols/synapsereviewinputdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
