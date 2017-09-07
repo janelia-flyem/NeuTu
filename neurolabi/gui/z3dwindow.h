@@ -419,6 +419,8 @@ private:
   //Experimental function
   void addTodoMarkerFromStroke(const ZStroke2d *stroke);
 
+  ZLineSegment getStackSeg(const ZLineSegment &seg, const ZCuboid &rbox) const;
+
 private:
   QTabWidget* createBasicSettingTabWidget();
   QTabWidget* createAdvancedSettingTabWidget();

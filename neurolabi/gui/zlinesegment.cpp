@@ -90,6 +90,11 @@ void ZLineSegment::shiftSliceAxis(NeuTube::EAxis axis)
   m_end.shiftSliceAxis(axis);
 }
 
+bool ZLineSegment::isValid() const
+{
+  return m_start != m_end;
+}
+
 double ZLineSegment::getLowerX() const
 {
   return std::min(getStartPoint().x(), getEndPoint().x());

@@ -244,7 +244,7 @@ bool ZDvidTileEnsemble::update(
       timer.start();
 //      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
 //                                       getDvidTarget().getUuid());
-      std::cout << "Connecting time: " << timer.elapsed() << std::endl;
+//      std::cout << "Connecting time: " << timer.elapsed() << std::endl;
 
 //#define DVID_TILE_THREAD_FETCH 1
 

@@ -3677,6 +3677,24 @@ void Z3DWindow::processStroke(ZStroke2d *stroke)
 #endif
 }
 
+ZLineSegment Z3DWindow::getStackSeg(
+    const ZLineSegment &seg, const ZCuboid &rbox) const
+{
+  ZLineSegment stackSeg;
+
+  if (seg.isValid()) {
+    ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
+    if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+      ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
+      if (slope.dot(slope2) < 0.0) {
+        stackSeg.invert();
+      }
+    }
+  }
+
+  return stackSeg;
+}
+
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 {
   //bool success = false;
@@ -3714,15 +3732,21 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
             boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
     }
 
-    if (m_doc->hasStack()) {
-      for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
-        double x = 0.0;
-        double y = 0.0;
-        stroke->getPoint(&x, &y, i);
+    int w = getCanvas()->width();
+    int h = getCanvas()->height();
 
+    for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+      ZLineSegment stackSeg;
+      double x = 0.0;
+      double y = 0.0;
+      stroke->getPoint(&x, &y, i);
+
+      if (m_doc->hasStack()) {
         ZLineSegment seg = getVolumeFilter()->getScreenRay(
-              iround(x), iround(y), getCanvas()->width(), getCanvas()->height());
+              iround(x), iround(y), w, h);
+        stackSeg = getStackSeg(seg, rbox);
 
+#if 0
         ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
         ZLineSegment stackSeg;
         if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
@@ -3733,22 +3757,62 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
           polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
           polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
         }
-      }
-    } else {
-      for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
-        double x = 0.0;
-        double y = 0.0;
-        stroke->getPoint(&x, &y, i);
+#endif
+      } else if (m_doc->hasMesh()){
+        ZLineSegment seg = getMeshFilter()->getScreenRay(
+              iround(x), iround(y), w, h);
+        stackSeg = getStackSeg(seg, rbox);
 
-        glm::dvec3 v1,v2;
-        int w = getCanvas()->width();
-        int h = getCanvas()->height();
-        getMeshFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
-//        ZLineSegment seg;
-//        seg.setStartPoint(v1.x, v1.y, v1.z);
-//        seg.setEndPoint(v2.x, v2.y, v2.z);
-        polyline1.push_back(ZPoint(v1.x, v1.y, v1.z).toIntPoint());
-        polyline1.push_back(ZPoint(v2.x, v2.y, v2.z).toIntPoint());
+        if (stackSeg.isValid()) {
+          QList<ZMesh*> meshList = m_doc->getMeshList();
+
+          foreach (ZMesh *mesh, meshList) {
+            std::vector<ZPoint> ptArray = mesh->intersectLineSeg(
+                  stackSeg.getStartPoint(), stackSeg.getEndPoint());
+            if (ptArray.size() >= 2) {
+              stackSeg.setStartPoint(ptArray[0]);
+              stackSeg.setEndPoint(ptArray[1]);
+              break;
+              //          ZVoxelGraphics::addLineObject(
+              //                processedObj, ptArray[0].toIntPoint(), ptArray[1].toIntPoint());
+            }
+            stackSeg.set(ZPoint(0, 0, 0), ZPoint(0, 0, 0));
+          }
+        }
+
+        /*
+        double x1 = 0.0;
+        double y1 = 0.0;
+        double x2 = 0.0;
+        double y2 = 0.0;
+
+        stroke->getPoint(&x1, &y1, i - 1);
+        stroke->getPoint(&x2, &y2, i);
+        std::vector<std::pair<int, int>> ptArray =
+            LineToPixel(iround(x1), iround(y1), iround(x2), iround(y2));
+        for (std::vector<std::pair<int, int> >::const_iterator iter = ptArray.begin();
+             iter != ptArray.end(); ++iter) {
+          int x = iter->first;
+          int y = iter->second;
+          int w = getCanvas()->width();
+          int h = getCanvas()->height();
+          ZLineSegment seg = getMeshFilter()->getScreenRay(x, y, w, h);
+          ZLineSegment stackSeg = getStackSeg(seg, rbox);
+          if (stackSeg.isValid()) {
+            polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
+            polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+          }
+          */
+        /*
+          getMeshFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
+          polyline1.push_back(ZPoint(v1.x, v1.y, v1.z).toIntPoint());
+          polyline2.push_back(ZPoint(v2.x, v2.y, v2.z).toIntPoint());
+          */
+      }
+//      ZLineSegment stackSeg = getStackSeg(seg, rbox);
+      if (stackSeg.isValid()) {
+        polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
+        polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
       }
     }
 
@@ -3799,6 +3863,8 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
         obj = processedObj;
       }
     } else if (m_doc->hasMesh()) {
+      obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
+      /*
       ZObject3d *processedObj = new ZObject3d;
       QList<ZMesh*> meshList = m_doc->getMeshList();
       for (size_t i = 0; i < polyline1.size(); ++i) {
@@ -3819,6 +3885,7 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
       } else {
         delete processedObj;
       }
+      */
     }
 
     if (obj != NULL) {

@@ -147,6 +147,18 @@ uint64_t ZString::firstUint64()
   return v;
 }
 
+uint64_t ZString::lastUint64()
+{
+  uint64_t v = 0;
+  vector<uint64_t> valueArray = toUint64Array();
+  if (!valueArray.empty()) {
+    v = valueArray.back();
+  }
+
+  return v;
+}
+
+
 vector<double> ZString::toDoubleArray()
 {
   int n;

@@ -24382,6 +24382,38 @@ void ZTest::test(MainWindow *host)
         mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
 #endif
 
+#if 1
+   QList<uint64_t> bodyList;
+
+   std::string dataDir = GET_TEST_DATA_DIR + "/_test/93e8";
+   ZFileList fileList;
+   fileList.load(dataDir, "tif");
+   for (int i = 0; i < fileList.size(); ++i) {
+     ZString path = fileList.getFilePath(i);
+     uint64_t bodyId = path.lastUint64();
+     bodyList << bodyId;
+   }
+
+   qDebug() << bodyList;
+   foreach (uint64_t bodyId, bodyList) {
+     std::cout << "Processing " << bodyId << "..." << std::endl;
+     ZMesh mesh;
+     QString path = QString("%1/meshes/%2.tif.smooth.obj").
+         arg(dataDir.c_str()).arg(bodyId);
+     ZMeshIO::instance().load(path, mesh);
+     mesh.swapXZ();
+     ZStack stack;
+     stack.load(QString("%1/%2.tif").arg(dataDir.c_str()).arg(bodyId).toStdString());
+     mesh.translate(stack.getOffset().getX(), stack.getOffset().getY(),
+                    stack.getOffset().getZ());
+     mesh.scale(stack.getDsIntv().getX() + 1, stack.getDsIntv().getY() + 1,
+                stack.getDsIntv().getZ() + 1);
+     ZMeshIO::instance().save(
+          mesh, QString("%1/meshes/%2.dvid.obj").arg(dataDir.c_str()).arg(bodyId), "obj");
+   }
+
+#endif
+
 #if 0
    ZMesh mesh;
    ZMeshIO::instance().load(
@@ -24419,7 +24451,7 @@ void ZTest::test(MainWindow *host)
    std::cout << a1[0] << " " << a1[1] << " " << a1[2] << std::endl;
 #endif
 
-#if 1
+#if 0
    std::vector<std::pair<int, int>> line = LineToPixel(0, -10, 18, 0);
    for (const std::pair<int, int> &pt : line) {
      std::cout << pt.first << " " << pt.second << std::endl;
