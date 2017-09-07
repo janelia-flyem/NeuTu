@@ -12,6 +12,7 @@
 #include "protocoldialog.h"
 #include "protocolmetadata.h"
 #include "synapsepredictionprotocol.h"
+#include "synapsereviewprotocol.h"
 
 #include "doNthingsprotocol.h"
 
@@ -73,6 +74,9 @@ QStringList ProtocolSwitcher::protocolNames = QStringList()
         // << "doNthings"
         << "synapse_prediction_body"
         << "synapse_prediction_region";
+
+        // implemented but never rolled out:
+        // << "synapse_review";
 
 
 void ProtocolSwitcher::openProtocolDialogRequested() {
@@ -335,13 +339,15 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     if (protocolName == "doNthings") {
         m_activeProtocol = new DoNThingsProtocol(m_parent);
     } else if (protocolName == "synapse_prediction_region") {
-        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
+        m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else if (protocolName == "synapse_prediction_body") {
-        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
-    }
+        m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+    // implemented, basically works, but never used
+    // } else if (protocolName == "synapse_review") {
+    //     m_activeProtocol = new SynapseReviewProtocol(m_parent);
     // below here: old protocols (renamed, deleted, etc.)
     // old synapse_prediction is always region:
-    else if (protocolName == "synapse_prediction") {
+    } else if (protocolName == "synapse_prediction") {
         m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else {
         // should never happen; the null will cause errors later

@@ -1,75 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SynapsePredictionProtocol</class>
- <widget class="QDialog" name="SynapsePredictionProtocol">
+ <class>SynapseReviewProtocol</class>
+ <widget class="QDialog" name="SynapseReviewProtocol">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>444</width>
-    <height>507</height>
+    <width>400</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Synapse Prediction Protocol</string>
+   <string>Synapse Review Protocol</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="toReviewLabel">
+      <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Sites to review:</string>
        </property>
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="firstButton">
-       <property name="text">
-        <string>First</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="prevButton">
-       <property name="text">
-        <string>&lt;&lt; Prev</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="nextButton">
-       <property name="text">
-        <string>Next &gt;&gt;</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QLabel" name="reviewedLabel">
-       <property name="text">
-        <string>Finished sites:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_3">
+      <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -105,56 +60,82 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Finished sites:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="finishedLastButton">
+       <property name="text">
+        <string>Last</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="finishedPrevButton">
+       <property name="text">
+        <string>&lt;&lt; Prev</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="finishedNextButton">
+       <property name="text">
+        <string>Next &gt;&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QLabel" name="currentLabel">
+        <widget class="QLabel" name="currentSiteLabel">
          <property name="text">
-          <string>Current T-bar
-</string>
+          <string>Current T-bar: </string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="preLocationLabel">
+        <widget class="QLabel" name="currentLocLabel">
          <property name="text">
-          <string>--, --, --</string>
+          <string>(--, --, --)</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="preConfLabel">
+        <widget class="QPushButton" name="gotoCurrentButton">
          <property name="text">
-          <string>Confidence: --</string>
+          <string>Goto current</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="preStatusLabel">
+        <widget class="QPushButton" name="markReviewedButton">
          <property name="text">
-          <string>Verified: --</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="gotoButton">
-         <property name="text">
-          <string>Go to current</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="finishCurrentButton">
-         <property name="text">
-          <string>Finish current</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="lastVerifiedButton">
-         <property name="text">
-          <string>Last finished</string>
+          <string>Mark reviewed</string>
          </property>
         </widget>
        </item>
@@ -174,9 +155,7 @@
        <item>
         <widget class="QLabel" name="progressLabel">
          <property name="text">
-          <string>Progress:
-
---/-- (--%)</string>
+          <string>Progress xx/yy ( %)</string>
          </property>
         </widget>
        </item>
@@ -185,9 +164,9 @@
      <item>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QLabel" name="postTableLabel">
+        <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>PSDs (--/-- verified)</string>
+          <string>PSDs</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -199,9 +178,6 @@
          <property name="editTriggers">
           <set>QAbstractItemView::NoEditTriggers</set>
          </property>
-         <property name="selectionMode">
-          <enum>QAbstractItemView::NoSelection</enum>
-         </property>
         </widget>
        </item>
       </layout>
@@ -209,12 +185,9 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <property name="topMargin">
-      <number>0</number>
-     </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <spacer name="horizontalSpacer_4">
+      <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -225,37 +198,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="refreshButton">
-       <property name="text">
-        <string>Refresh data</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="detailsButton">
-       <property name="text">
-        <string>Protocol details...</string>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="exitButton">
@@ -290,7 +232,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>SynapsePredictionProtocol</receiver>
+   <receiver>SynapseReviewProtocol</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -306,7 +248,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>SynapsePredictionProtocol</receiver>
+   <receiver>SynapseReviewProtocol</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
