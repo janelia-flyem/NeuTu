@@ -52,6 +52,7 @@ cp condarc $condarc
 envName='neutu-env'
 source $condaDir/bin/activate root
 conda create -n $envName python=3.6 -y
+source $condaDir/bin/activate $envName
 conda install neutu-develop -y
 conda install neu3-develop -y
 
