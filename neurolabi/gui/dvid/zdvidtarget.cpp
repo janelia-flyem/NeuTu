@@ -46,6 +46,12 @@ ZDvidTarget::ZDvidTarget(
   set(address, uuid, port);
 }
 
+ZDvidTarget::ZDvidTarget(const ZDvidNode &node)
+{
+  init();
+  m_node = node;
+}
+
 void ZDvidTarget::init()
 {
   m_isSupervised = true;
@@ -525,6 +531,16 @@ bool ZDvidTarget::hasLabelBlock() const
   return !getLabelBlockName().empty();
 }
 
+bool ZDvidTarget::usingLabelArray() const
+{
+  return m_usingLabelArray;
+}
+
+void ZDvidTarget::useLabelArray(bool on)
+{
+  m_usingLabelArray = on;
+}
+
 std::string ZDvidTarget::getLabelBlockName() const
 { 
   if (m_labelBlockName.empty()) {
@@ -837,6 +853,17 @@ ZDvidNode ZDvidTarget::getSource(const char *key) const
 ZDvidNode ZDvidTarget::getGrayScaleSource() const
 {
   return getSource(m_grayScaleNameKey);
+}
+
+
+ZDvidTarget ZDvidTarget::getGrayScaleTarget() const
+{
+  ZDvidNode node = getGrayScaleSource();
+
+  ZDvidTarget target(node);
+  target.setGrayScaleName(getGrayScaleName());
+
+  return target;
 }
 
 ZDvidNode ZDvidTarget::getTileSource() const

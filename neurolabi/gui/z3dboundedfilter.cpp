@@ -4,6 +4,8 @@
 #include "zintcuboid.h"
 #include <boost/math/constants/constants.hpp>
 
+#include "zlinesegment.h"
+
 Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* parent)
   : Z3DFilter(parent)
   , m_rendererBase(globalPara)
@@ -245,7 +247,8 @@ void Z3DBoundedFilter::appendBoundboxLines(const ZBBox<glm::dvec3>& bound, std::
   lines.emplace_back(xmax, ymax, zmax);
 }
 
-void Z3DBoundedFilter::rayUnderScreenPoint(glm::vec3& v1, glm::vec3& v2, int x, int y, int width, int height)
+void Z3DBoundedFilter::rayUnderScreenPoint(
+    glm::vec3& v1, glm::vec3& v2, int x, int y, int width, int height)
 {
   const glm::mat4& projection = globalCamera().projectionMatrix(Z3DEye::Mono);
   const glm::mat4& modelview = globalCamera().viewMatrix(Z3DEye::Mono);
@@ -257,7 +260,8 @@ void Z3DBoundedFilter::rayUnderScreenPoint(glm::vec3& v1, glm::vec3& v2, int x, 
   v2 = glm::normalize(v2 - v1) + v1;
 }
 
-void Z3DBoundedFilter::rayUnderScreenPoint(glm::dvec3& v1, glm::dvec3& v2, int x, int y, int width, int height)
+void Z3DBoundedFilter::rayUnderScreenPoint(
+    glm::dvec3& v1, glm::dvec3& v2, int x, int y, int width, int height)
 {
   const glm::dmat4& projection = glm::dmat4(globalCamera().projectionMatrix(Z3DEye::Mono));
   const glm::dmat4& modelview = glm::dmat4(globalCamera().viewMatrix(Z3DEye::Mono));
@@ -267,6 +271,19 @@ void Z3DBoundedFilter::rayUnderScreenPoint(glm::dvec3& v1, glm::dvec3& v2, int x
   v1 = glm::unProject(glm::dvec3(x, height - y, 0.f), modelview, projection, viewport);
   v2 = glm::unProject(glm::dvec3(x, height - y, 1.f), modelview, projection, viewport);
   v2 = glm::normalize(v2 - v1) + v1;
+}
+
+ZLineSegment Z3DBoundedFilter::getScreenRay(int x, int y, int width, int height)
+{
+  ZLineSegment seg;
+  glm::dvec3 v1;
+  glm::dvec3 v2;
+  rayUnderScreenPoint(v1, v2, x, y, width, height);
+
+  seg.setStartPoint(v1.x, v1.y, v1.z);
+  seg.setEndPoint(v2.x, v2.y, v2.z);
+
+  return seg;
 }
 
 void Z3DBoundedFilter::updateAxisAlignedBoundBoxImpl()

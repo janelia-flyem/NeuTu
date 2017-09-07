@@ -85,6 +85,12 @@ public:
 
   void shiftSliceAxis(NeuTube::EAxis axis);
 
+  /*!
+   * \brief A valid line segment has different start and end.
+   * \return
+   */
+  bool isValid() const;
+
 private:
   ZPoint m_start;
   ZPoint m_end;

@@ -170,8 +170,12 @@ win32 {
       $$PWD/ext/sys/VidMemViaDDraw.cpp \
       $$PWD/ext/sys/VidMemViaDxDiag.cpp
 }
-macx {
-  SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+unix {
+    macx {
+        SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+    } else {
+        SOURCES += $$PWD/ext/sys/VideoMemoryLinux.cpp
+    }
 }
 
 contains(CONFIG, static_gtest) { # gtest from ext folder

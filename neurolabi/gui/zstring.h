@@ -55,6 +55,7 @@ public:
   double firstDouble();
   double lastDouble();
   uint64_t firstUint64();
+  uint64_t lastUint64();
   std::string firstQuotedWord();
 
   std::vector<int> toIntegerArray();
