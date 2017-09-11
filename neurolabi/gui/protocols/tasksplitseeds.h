@@ -1,5 +1,5 @@
-#ifndef TASKBODYREVIEW_H
-#define TASKBODYREVIEW_H
+#ifndef TaskSplitSeeds_H
+#define TaskSplitSeeds_H
 
 #include <iostream>
 #include <stdlib.h>
@@ -9,10 +9,10 @@
 
 #include "protocols/taskprotocoltask.h"
 
-class TaskBodyReview : public TaskProtocolTask
+class TaskSplitSeeds : public TaskProtocolTask
 {
 public:
-    TaskBodyReview(QJsonObject json);
+    TaskSplitSeeds(QJsonObject json);
     QString tasktype();
     QString actionString();
     QString targetString();
@@ -27,4 +27,4 @@ private:
     QJsonObject addToJson(QJsonObject json);
 };
 
-#endif // TASKBODYREVIEW_H
+#endif // TaskSplitSeeds_H

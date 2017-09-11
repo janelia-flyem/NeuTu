@@ -1,4 +1,4 @@
-#include "taskbodyreview.h"
+#include "TaskSplitSeeds.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -8,7 +8,7 @@
 #include <QJsonObject>
 #include <QsLog.h>
 
-TaskBodyReview::TaskBodyReview(QJsonObject json)
+TaskSplitSeeds::TaskSplitSeeds(QJsonObject json)
 {
     if (json[KEY_TASKTYPE] != VALUE_TASKTYPE) {
         // wrong type, don't load the json
@@ -23,23 +23,23 @@ TaskBodyReview::TaskBodyReview(QJsonObject json)
 }
 
 // constants
-const QString TaskBodyReview::KEY_TASKTYPE = "task type";
-const QString TaskBodyReview::VALUE_TASKTYPE = "body review";
-const QString TaskBodyReview::KEY_BODYID = "body ID";
+const QString TaskSplitSeeds::KEY_TASKTYPE = "task type";
+const QString TaskSplitSeeds::VALUE_TASKTYPE = "split seeds";
+const QString TaskSplitSeeds::KEY_BODYID = "body ID";
 
-QString TaskBodyReview::tasktype() {
+QString TaskSplitSeeds::tasktype() {
     return VALUE_TASKTYPE;
 }
 
-QString TaskBodyReview::actionString() {
-    return "Review body:";
+QString TaskSplitSeeds::actionString() {
+    return "Add split seeds for body:";
 }
 
-QString TaskBodyReview::targetString() {
+QString TaskSplitSeeds::targetString() {
     return QString::number(m_bodyID);
 }
 
-QJsonObject TaskBodyReview::addToJson(QJsonObject taskJson) {
+QJsonObject TaskSplitSeeds::addToJson(QJsonObject taskJson) {
     // see note in loadJson() re: precision; because we
     //  know the source of the body IDs, the conversions
     //  below should be OK
@@ -50,7 +50,7 @@ QJsonObject TaskBodyReview::addToJson(QJsonObject taskJson) {
     return taskJson;
 }
 
-bool TaskBodyReview::loadSpecific(QJsonObject json) {
+bool TaskSplitSeeds::loadSpecific(QJsonObject json) {
 
     if (!json.contains(KEY_BODYID)) {
         return false;
@@ -75,4 +75,3 @@ bool TaskBodyReview::loadSpecific(QJsonObject json) {
 
     return true;
 }
-
