@@ -32,7 +32,8 @@ private slots:
     void onPrevButton();
     void onDoneButton();
     void onLoadTasksButton();    
-    void onCompletedStateChanged(int state);    
+    void onCompletedStateChanged(int state);
+    void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
 
 private:
@@ -44,6 +45,7 @@ private:
     static const QString KEY_TASKTYPE;
     static const QString PROTOCOL_INSTANCE;
     static const QString TASK_PROTOCOL_KEY;
+    static const QString TAG_NEEDS_REVIEW;
 
     enum WindowConfigurations {
         LOAD_BUTTON,

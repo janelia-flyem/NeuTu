@@ -32,6 +32,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
     connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
+    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
 }
@@ -44,6 +45,7 @@ const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
 const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
 const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
 const QString TaskProtocolWindow::TASK_PROTOCOL_KEY = "task-protocol";
+const QString TaskProtocolWindow::TAG_NEEDS_REVIEW = "needs review";
 
 /*
  * init() performs tasks that have to occur after UI connections are
@@ -191,6 +193,18 @@ void TaskProtocolWindow::onLoadTasksButton() {
 void TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
+        saveState();
+        updateLabel();
+    }
+}
+
+void TaskProtocolWindow::onReviewStateChanged(int state) {
+    if (m_currentTaskIndex >= 0) {
+        if (ui->reviewCheckBox->isChecked()) {
+            m_taskList[m_currentTaskIndex]->addTag(TAG_NEEDS_REVIEW);
+        } else {
+            m_taskList[m_currentTaskIndex]->removeTag(TAG_NEEDS_REVIEW);
+        }
         saveState();
         updateLabel();
     }
@@ -350,10 +364,16 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
         ui->taskActionLabel->setText("(no task)");
         ui->taskTargetLabel->setText("n/a");
         ui->completedCheckBox->setChecked(false);
+        ui->reviewCheckBox->setChecked(false);
     } else {
         ui->taskActionLabel->setText(m_taskList[m_currentTaskIndex]->actionString());
         ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
         ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
+        if (m_taskList[m_currentTaskIndex]->hasTag(TAG_NEEDS_REVIEW)) {
+            ui->reviewCheckBox->setChecked(true);
+        } else {
+            ui->reviewCheckBox->setChecked(false);
+        }
     }
 }
 
