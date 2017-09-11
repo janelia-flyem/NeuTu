@@ -54,6 +54,7 @@ public:
   void clear();
 
   void addUpdate(ZStackObject *obj, ZStackDocObjectUpdate::EAction action);
+  void addUpdate(QList<ZStackObject*> objList, ZStackDocObjectUpdate::EAction action);
 
   QList<ZStackDocObjectUpdate *> take();
   void deliver();

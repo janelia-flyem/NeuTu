@@ -5481,8 +5481,8 @@ void ZStackDoc::test(QProgressBar *pb)
     for (int i = 0; i < 10; ++i) {
       ZSwcTree *tree = new ZSwcTree;
       tree->load(GET_TEST_DATA_DIR + "/_benchmark/swc/diadem_e1.swc");
-      QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,
-                        tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+//      QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,
+//                        tree, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
 //      QtConcurrent::run(m_dataBuffer, &ZStackDocDataBuffer::addUpdate,
 //                        tree, ZStackDocObjectUpdate::ACTION_KILL);
 

@@ -59,7 +59,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  virtual void updateTileData();
+//  virtual void updateTileData();
 
   const ZDvidTarget& getDvidTarget() const;
 

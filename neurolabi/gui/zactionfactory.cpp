@@ -573,6 +573,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Add Todo", parent);
     action->setIcon(QIcon(":/images/add_todo.png"));
     break;
+  case ACTION_ACTIVATE_LOCATE:
+    action = new QAction("Locate", parent);
+    action->setIcon(QIcon(":/images/zoom2.png"));
+    break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
     break;

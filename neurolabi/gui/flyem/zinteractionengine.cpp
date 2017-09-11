@@ -18,10 +18,22 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_rayMarker.setFilled(false);
   m_rayMarker.useCosmeticPen(true);
 
+  m_exploreMarker.setRadius(5.0);
+  m_exploreMarker.setZ(0);
+  m_exploreMarker.useCosmeticPen(true);
+  m_exploreMarker.addVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+
   m_namedDecorationList.append(&m_stroke);
   m_namedDecorationList.append(&m_rayMarker);
+  m_namedDecorationList.append(&m_exploreMarker);
+
   m_rect.setColor(255, 0, 0, 128);
   m_namedDecorationList.append(&m_rect);
+
+  foreach (ZStackObject *drawable, m_namedDecorationList) {
+    drawable->setVisible(false);
+  }
+
   m_previousKey = Qt::Key_unknown;
   m_previousKeyModifiers = Qt::NoModifier;
   m_keyMode = KM_NORMAL;
@@ -70,6 +82,9 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
             ZInteractiveContext::TODO_ADD_ITEM) {
     m_rayMarker.set(event->x(), event->y());
     emit decorationUpdated();
+  } else if (m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_LOCAL) {
+    m_exploreMarker.setCenter(event->x(), event->y(), 0);
+    emit decorationUpdated();
   }
 }
 
@@ -90,6 +105,8 @@ bool ZInteractionEngine::processMouseReleaseEvent(
     } else if (isStateOn(STATE_MARK)) {
       emit shootingTodo(event->x(), event->y());
       processed = true;
+    } else if (isStateOn(STATE_LOCATE)) {
+      emit locating(event->x(), event->y());
     }
     m_mouseLeftButtonPressed = false;
   } else if (event->button() == Qt::RightButton) {
@@ -171,6 +188,10 @@ bool ZInteractionEngine::process(const ZStackOperator &op)
     break;
   case ZStackOperator::OP_FLYEM_TOD_ENTER_ADD_MODE:
     enterMarkTodo();
+    processed = true;
+    break;
+  case ZStackOperator::OP_EXPLORE_LOCAL:
+    enterLocateMode();
     processed = true;
     break;
   case ZStackOperator::OP_FLYEM_CROP_BODY:
@@ -358,6 +379,15 @@ void ZInteractionEngine::enterMarkTodo()
   emit decorationUpdated();
 }
 
+void ZInteractionEngine::enterLocateMode()
+{
+  exitEditMode();
+  m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_LOCAL);
+  m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
+  m_exploreMarker.setVisible(true);
+  emit decorationUpdated();
+}
+
 void ZInteractionEngine::enterPaintRect()
 {
   exitEditMode();
@@ -400,12 +430,24 @@ void ZInteractionEngine::exitMarkTodo()
   }
 }
 
+void ZInteractionEngine::exitExplore()
+{
+  if (m_interactiveContext.exploreMode() != ZInteractiveContext::EXPLORE_OFF) {
+    m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_OFF);
+    m_exploreMarker.setVisible(false);
+
+    emit decorationUpdated();
+  }
+}
+
+
 void ZInteractionEngine::exitEditMode()
 {
   exitPaintRect();
   exitSwcEdit();
   exitPaintStroke();
   exitMarkTodo();
+  exitExplore();
 
 //  m_interactiveContext.setExitingEdit(true);
 }
@@ -467,6 +509,9 @@ bool ZInteractionEngine::isStateOn(EState status) const
         ZInteractiveContext::SWC_EDIT_ADD_NODE;
   case STATE_SWC_SELECTION:
     return m_keyMode == KM_SWC_SELECTION;
+  case STATE_LOCATE:
+    return m_interactiveContext.exploreMode() ==
+        ZInteractiveContext::EXPLORE_LOCAL;
   }
 
   return false;

@@ -43,6 +43,12 @@ public:
   bool begin(QPaintDevice *device);
   bool end();
 
+  void attachPainter(QPainter *painter);
+  void detachPainter();
+
+  QPainter* getPainter();
+  const QPainter* getPainter() const;
+
   QPaintDevice* device();
 
   void save();
@@ -68,10 +74,6 @@ public:
 
   inline bool isPainted() {
     return m_isPainted;
-  }
-
-  QPainter* getPainter() {
-    return &m_painter;
   }
 
   //inline ZPoint getOffset() { return m_transform.getOffset(); }
@@ -192,13 +194,16 @@ public:
   */
 
 private:
+  void initPainter();
+
+private:
 #ifdef _QT_GUI_USED_
-  QPainter m_painter;
+  QPainter *m_painter = NULL;
 #endif
 
-  int m_z;
+  int m_z = 0;
   QRectF m_canvasRange;
-  bool m_isPainted;
+  bool m_isPainted = false;
 
   ZStTransform m_transform; //world coordinates to canvas coordinates
 //  ZPoint m_offset;

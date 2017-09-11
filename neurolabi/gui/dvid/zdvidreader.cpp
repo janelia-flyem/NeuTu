@@ -1361,7 +1361,11 @@ std::string ZDvidReader::readBodyLabelName() const
 void ZDvidReader::syncBodyLabelName()
 {
   if (getDvidTarget().hasLabelBlock()) {
-    m_dvidTarget.setBodyLabelName(readBodyLabelName());
+    if (getDvidTarget().usingLabelArray()) {
+      m_dvidTarget.setBodyLabelName(m_dvidTarget.getLabelBlockName());
+    } else {
+      m_dvidTarget.setBodyLabelName(readBodyLabelName());
+    }
   }
 }
 

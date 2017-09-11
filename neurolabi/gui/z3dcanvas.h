@@ -102,6 +102,7 @@ signals:
 
   void strokePainted(ZStroke2d*);
   void shootingTodo(int x, int y);
+  void locating(int x, int y);
 
   void openGLContextInitialized();
 
