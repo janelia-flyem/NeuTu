@@ -37,6 +37,32 @@ void TaskProtocolTask::setCompleted(bool completed)
     m_completed = completed;
 }
 
+// tag methods: standard add, remove, has, get all, clear
+
+void TaskProtocolTask::addTag(QString tag) {
+    m_tags.insert(tag);
+}
+
+void TaskProtocolTask::removeTag(QString tag) {
+    m_tags.remove(tag);
+}
+
+bool TaskProtocolTask::hasTag(QString tag) {
+    return m_tags.contains(tag);
+}
+
+QStringList TaskProtocolTask::getTags() {
+    QStringList tags;
+    foreach (QString tag, m_tags) {
+        tags.append(tag);
+    }
+    return tags;
+}
+
+void TaskProtocolTask::clearTags() {
+    m_tags.clear();
+}
+
 /*
  * load data from json
  */
@@ -112,10 +138,10 @@ bool TaskProtocolTask::loadStandard(QJsonObject json) {
     }
 
     // tags:
-    m_tags.clear();
+    clearTags();
     if (json.contains(KEY_TAGS)) {
         foreach (QJsonValue value, json[KEY_TAGS].toArray()) {
-            m_tags.insert(value.toString());
+            addTag(value.toString());
         }
     }
 
@@ -161,11 +187,11 @@ QJsonObject TaskProtocolTask::toJson() {
     }
 
     // tags:
-    if (m_tags.size() > 0) {
-        QJsonArray tags;
-        foreach (QString tag, m_tags) {
-            tags.append(tag);
-        }
+    QJsonArray tags;
+    foreach (QString tag, getTags()) {
+        tags.append(tag);
+    }
+    if (tags.size() > 0)  {
         taskJson[KEY_TAGS] = tags;
     }
 

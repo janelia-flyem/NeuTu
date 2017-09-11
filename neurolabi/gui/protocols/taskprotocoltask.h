@@ -18,10 +18,15 @@ public:
     QSet<uint64_t> selectedBodies();
     bool loadJson(QJsonObject json);
     QJsonObject toJson();
+    void addTag(QString tag);
+    void removeTag(QString tag);
+    bool hasTag(QString tag);
+    QStringList getTags();
+    void clearTags();
 
     virtual QString tasktype() = 0;
     virtual QString actionString() = 0;
-    virtual QString targetString() = 0;
+    virtual QString targetString() = 0;    
 
 protected:
     static const QString KEY_COMPLETED;
