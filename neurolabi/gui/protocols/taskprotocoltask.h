@@ -32,7 +32,7 @@ protected:
     bool m_completed;
     QSet<uint64_t> m_visibleBodies;
     QSet<uint64_t> m_selectedBodies;
-    QStringList m_tags;
+    QSet<QString> m_tags;
 
     QString objectToString(QJsonObject json);
 

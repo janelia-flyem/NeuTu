@@ -38,16 +38,36 @@ void TaskProtocolTask::setCompleted(bool completed)
 }
 
 /*
+ * load data from json
+ */
+bool TaskProtocolTask::loadJson(QJsonObject json) {
+
+    // take care of standard fields
+    if (!loadStandard(json)) {
+        return false;
+    }
+
+    // and fields provided by subclasses
+    if (!loadSpecific(json)) {
+        return false;
+    }
+
+    return true;
+}
+
+/*
  * parse out the standard fields that are used in all tasks
  */
 bool TaskProtocolTask::loadStandard(QJsonObject json) {
     // these keys are optional, so no need to fail if missing;
     //  we'll take the default values
 
+    // completed:
     if (json.contains(KEY_COMPLETED)) {
         m_completed = json[KEY_COMPLETED].toBool();
     }
 
+    // visible and selected bodies:
     m_visibleBodies.clear();
     if (json.contains(KEY_VISIBLE)) {
         foreach (QJsonValue value, json[KEY_VISIBLE].toArray()) {
@@ -91,9 +111,13 @@ bool TaskProtocolTask::loadStandard(QJsonObject json) {
         }
     }
 
-
-    // m_tags.clear();
-    // if (json.contains)
+    // tags:
+    m_tags.clear();
+    if (json.contains(KEY_TAGS)) {
+        foreach (QJsonValue value, json[KEY_TAGS].toArray()) {
+            m_tags.insert(value.toString());
+        }
+    }
 
     return true;
 }
@@ -108,15 +132,19 @@ QString TaskProtocolTask::objectToString(QJsonObject json) {
     return jsonString;
 }
 
+/*
+ * produce the json that holds all the task data
+ */
 QJsonObject TaskProtocolTask::toJson() {
+    QJsonObject taskJson;
+
+    // completed:
+    taskJson[KEY_COMPLETED] = m_completed;
+
+    // visible and selected bodies:
     // see note in loadJson() re: precision; because we
     //  know the source of the body IDs, the conversions
     //  below should be OK
-
-    QJsonObject taskJson;
-
-    taskJson[KEY_COMPLETED] = m_completed;
-
     if (m_visibleBodies.size() > 0) {
         QJsonArray array;
         foreach (uint64_t bodyID, m_visibleBodies) {
@@ -132,23 +160,17 @@ QJsonObject TaskProtocolTask::toJson() {
         taskJson[KEY_SELECTED] = array;
     }
 
-    // allow subclass to add fiels:
+    // tags:
+    if (m_tags.size() > 0) {
+        QJsonArray tags;
+        foreach (QString tag, m_tags) {
+            tags.append(tag);
+        }
+        taskJson[KEY_TAGS] = tags;
+    }
+
+    // allow subclass to add fields
     taskJson = addToJson(taskJson);
 
     return taskJson;
-}
-
-bool TaskProtocolTask::loadJson(QJsonObject json) {
-
-    // take care of standard fields
-    if (!loadStandard(json)) {
-        return false;
-    }
-
-    // and fields provided by subclasses
-    if (!loadSpecific(json)) {
-        return false;
-    }
-
-    return true;
 }
