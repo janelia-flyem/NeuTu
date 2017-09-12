@@ -41,6 +41,7 @@ const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
 const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
 const QString TaskProtocolWindow::KEY_VERSION = "file version";
 const int TaskProtocolWindow::currentVersion = 1;
+const QString TaskProtocolWindow::KEY_ID = "ID";
 const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
 const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
 const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
@@ -154,8 +155,14 @@ void TaskProtocolWindow::onDoneButton() {
         return;
     }
 
-    // new key is old key + datetime stamp
-    QString key = generateDataKey() + "-" + QDateTime::currentDateTime().toString("yyyyMMddhhmm");
+    // new key is old key + either identifier or datetime stamp
+    QString key;
+    if (m_ID.size() > 0) {
+        key = generateDataKey() + "-" + m_ID;
+    } else {
+        key = generateDataKey() + "-" + QDateTime::currentDateTime().toString("yyyyMMddhhmm");
+    }
+
     QJsonDocument doc(storeTasks());
     QString jsonString(doc.toJson(QJsonDocument::Compact));
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
@@ -248,6 +255,12 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 
     // at the point in time we have older versions hanging around, this is where you
     //  would convert them
+
+
+    // save the unique identifier, if present:
+    if (json.contains(KEY_ID)) {
+        m_ID = json[KEY_ID].toString();
+    }
 
 
     // load tasks from json into internal data structures; save to DVID if needed
@@ -558,6 +571,9 @@ QJsonObject TaskProtocolWindow::storeTasks() {
     QJsonObject json;
     json[KEY_DESCRIPTION] = VALUE_DESCRIPTION;
     json[KEY_VERSION] = currentVersion;
+    if (m_ID.size() > 0) {
+        json[KEY_ID] = m_ID;
+    }
 
     QJsonArray tasks;
     foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {

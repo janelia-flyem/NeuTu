@@ -41,6 +41,7 @@ private:
     static const QString VALUE_DESCRIPTION;
     static const QString KEY_VERSION;
     static const int currentVersion;
+    static const QString KEY_ID;
     static const QString KEY_TASKLIST;
     static const QString KEY_TASKTYPE;
     static const QString PROTOCOL_INSTANCE;
@@ -59,6 +60,7 @@ private:
     };
 
     Ui::TaskProtocolWindow *ui;
+    QString m_ID;
     QList<QSharedPointer<TaskProtocolTask>> m_taskList;
     ZFlyEmProofDoc *m_proofDoc;
     ZDvidWriter m_writer;
