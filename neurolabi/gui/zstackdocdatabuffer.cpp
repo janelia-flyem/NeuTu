@@ -77,6 +77,16 @@ void ZStackDocDataBuffer::addUpdate(
   m_updateList.append(new ZStackDocObjectUpdate(obj, action));
 }
 
+void ZStackDocDataBuffer::addUpdate(
+    QList<ZStackObject *> objList, ZStackDocObjectUpdate::EAction action)
+{
+  QMutexLocker locker(&m_mutex);
+  for (QList<ZStackObject *>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    m_updateList.append(new ZStackDocObjectUpdate(*iter, action));
+  }
+}
+
 void ZStackDocDataBuffer::deliver()
 {
   emit delivering();

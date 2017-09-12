@@ -1386,6 +1386,10 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 //        dumpGarbageUnsync(*iter, true);
         getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
       }
+
+      objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+      getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::ACTION_KILL);
     }
 
     getDataBuffer()->deliver();

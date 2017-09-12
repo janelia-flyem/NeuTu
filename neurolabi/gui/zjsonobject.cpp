@@ -102,9 +102,10 @@ ZJsonValue ZJsonObject::value(const char *key) const
 ZJsonValue ZJsonObject::value(
     const std::initializer_list<const char*> &keyList) const
 {
-  ZJsonValue v;
+  ZJsonValue v = *this;
   for (const char *key : keyList) {
-    v = value(key);
+    ZJsonObject obj(v);
+    v = obj.value(key);
     if (v.isEmpty()) {
       break;
     }

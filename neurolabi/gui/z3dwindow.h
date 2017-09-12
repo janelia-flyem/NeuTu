@@ -278,6 +278,7 @@ public slots:
   void showPuncta(bool on);
   void showTodo(bool on);
   void activateTodoAction();
+  void activateLocateAction();
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -365,6 +366,7 @@ public slots:
 
   void updateCuttingBox();
   void shootTodo(int x, int y);
+  void locateWithRay(int x, int y);
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 
@@ -420,6 +422,8 @@ private:
   void addTodoMarkerFromStroke(const ZStroke2d *stroke);
 
   ZLineSegment getStackSeg(const ZLineSegment &seg, const ZCuboid &rbox) const;
+
+  std::vector<ZPoint> getRayIntersection(int x, int y, uint64_t *id = NULL);
 
 private:
   QTabWidget* createBasicSettingTabWidget();

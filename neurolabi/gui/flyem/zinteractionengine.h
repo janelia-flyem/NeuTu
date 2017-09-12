@@ -10,6 +10,7 @@
 #include "zuncopyable.h"
 #include "zstackdocreader.h"
 #include "zrect2d.h"
+#include "zstackball.h"
 
 class Z3DTrackballInteractionHandler;
 class ZStackDocKeyProcessor;
@@ -41,7 +42,7 @@ public:
     STATE_DRAW_STROKE, STATE_DRAW_LINE, STATE_MARK, STATE_LEFT_BUTTON_PRESSED,
     STATE_RIGHT_BUTTON_PRESSED, STATE_MOVE_OBJECT, STATE_SWC_SMART_EXTEND,
     STATE_SWC_EXTEND, STATE_SWC_CONNECT, STATE_SWC_ADD_NODE,
-    STATE_DRAW_RECT, STATE_SWC_SELECTION
+    STATE_DRAW_RECT, STATE_SWC_SELECTION, STATE_LOCATE
   };
 
   enum EKeyMode {
@@ -106,6 +107,7 @@ public:
   void enterPaintStroke();
   void enterMarkTodo();
   void enterPaintRect();
+  void enterLocateMode();
 
 signals:
   void decorationUpdated();
@@ -120,10 +122,12 @@ signals:
   void croppingSwc();
   void shootingTodo(int x, int y);
   void deletingSelected();
+  void locating(int x, int y);
 
 private:
   void exitPaintStroke();
   void exitMarkTodo();
+  void exitExplore();
   void exitPaintRect();
   void exitSwcEdit();
   void exitEditMode();
@@ -153,6 +157,7 @@ private:
 
   ZStroke2d m_stroke;
   ZStroke2d m_rayMarker;
+  ZStackBall m_exploreMarker;
   ZRect2d m_rect;
   bool m_isStrokeOn;
 

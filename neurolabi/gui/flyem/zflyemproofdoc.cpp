@@ -925,7 +925,7 @@ void ZFlyEmProofDoc::prepareDvidData()
 //    addDvidLabelSlice(NeuTube::Y_AXIS);
 //    addDvidLabelSlice(NeuTube::Z_AXIS);
 }
-
+#if 0
 void ZFlyEmProofDoc::updateTileData()
 {
   if (m_dvidReader.isReady()) {
@@ -963,7 +963,7 @@ void ZFlyEmProofDoc::updateTileData()
 //    addDvidLabelSlice(NeuTube::Z_AXIS);
   }
 }
-
+#endif
 
 void ZFlyEmProofDoc::addDvidLabelSlice(NeuTube::EAxis axis)
 {

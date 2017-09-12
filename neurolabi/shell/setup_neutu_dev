@@ -60,8 +60,8 @@ updateFile=$bindir/ntupd
 touch $updateFile
 echo '#!/bin/bash' > $updateFile
 echo "source  $condaDir/bin/activate $envName" >> $updateFile
-echo "conda update neutu-develop" >> $updateFile
-echo "conda update neu3-develop" >> $updateFile
+echo "conda update neutu-develop -y" >> $updateFile
+echo "conda update neu3-develop -y" >> $updateFile
 chmod u+x $updateFile
 
 

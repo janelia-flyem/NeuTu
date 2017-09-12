@@ -24382,7 +24382,7 @@ void ZTest::test(MainWindow *host)
         mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
 #endif
 
-#if 1
+#if 0
    QList<uint64_t> bodyList;
 
    std::string dataDir = GET_TEST_DATA_DIR + "/_test/93e8";
@@ -24457,6 +24457,24 @@ void ZTest::test(MainWindow *host)
      std::cout << pt.first << " " << pt.second << std::endl;
    }
    std::cout << endl;
+#endif
+
+#if 1
+   ZDvidTarget target;
+   target.set("emdata3.int.janelia.org", "aed4", 8000);
+//   target.setBodyLabelName("labels-v3");
+   target.setLabelBlockName("labels-v3");
+
+   ZDvidReader reader;
+   reader.open(target);
+
+   std::cout << reader.getDvidTarget().usingLabelArray() << std::endl;
+   reader.updateMaxLabelZoom();
+   std::cout << reader.getDvidTarget().getMaxLabelZoom() << std::endl;
+
+   ZObject3dScan *obj = reader.readMultiscaleBody(229136931, 7, true, NULL);
+   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+   delete obj;
 #endif
 
   std::cout << "Done." << std::endl;
