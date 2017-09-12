@@ -12,6 +12,7 @@
 #include "neutube.h"
 #include "flyem/zflyemproofdoc.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/tasksplitseeds.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -32,6 +33,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
     connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
+    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
 }
@@ -40,10 +42,12 @@ const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
 const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
 const QString TaskProtocolWindow::KEY_VERSION = "file version";
 const int TaskProtocolWindow::currentVersion = 1;
+const QString TaskProtocolWindow::KEY_ID = "ID";
 const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
 const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
 const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
 const QString TaskProtocolWindow::TASK_PROTOCOL_KEY = "task-protocol";
+const QString TaskProtocolWindow::TAG_NEEDS_REVIEW = "needs review";
 
 /*
  * init() performs tasks that have to occur after UI connections are
@@ -152,8 +156,14 @@ void TaskProtocolWindow::onDoneButton() {
         return;
     }
 
-    // new key is old key + datetime stamp
-    QString key = generateDataKey() + "-" + QDateTime::currentDateTime().toString("yyyyMMddhhmm");
+    // new key is old key + either identifier or datetime stamp
+    QString key;
+    if (m_ID.size() > 0) {
+        key = generateDataKey() + "-" + m_ID;
+    } else {
+        key = generateDataKey() + "-" + QDateTime::currentDateTime().toString("yyyyMMddhhmm");
+    }
+
     QJsonDocument doc(storeTasks());
     QString jsonString(doc.toJson(QJsonDocument::Compact));
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
@@ -191,6 +201,18 @@ void TaskProtocolWindow::onLoadTasksButton() {
 void TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
+        saveState();
+        updateLabel();
+    }
+}
+
+void TaskProtocolWindow::onReviewStateChanged(int state) {
+    if (m_currentTaskIndex >= 0) {
+        if (ui->reviewCheckBox->isChecked()) {
+            m_taskList[m_currentTaskIndex]->addTag(TAG_NEEDS_REVIEW);
+        } else {
+            m_taskList[m_currentTaskIndex]->removeTag(TAG_NEEDS_REVIEW);
+        }
         saveState();
         updateLabel();
     }
@@ -234,6 +256,12 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 
     // at the point in time we have older versions hanging around, this is where you
     //  would convert them
+
+
+    // save the unique identifier, if present:
+    if (json.contains(KEY_ID)) {
+        m_ID = json[KEY_ID].toString();
+    }
 
 
     // load tasks from json into internal data structures; save to DVID if needed
@@ -350,10 +378,16 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
         ui->taskActionLabel->setText("(no task)");
         ui->taskTargetLabel->setText("n/a");
         ui->completedCheckBox->setChecked(false);
+        ui->reviewCheckBox->setChecked(false);
     } else {
         ui->taskActionLabel->setText(m_taskList[m_currentTaskIndex]->actionString());
         ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
         ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
+        if (m_taskList[m_currentTaskIndex]->hasTag(TAG_NEEDS_REVIEW)) {
+            ui->reviewCheckBox->setChecked(true);
+        } else {
+            ui->reviewCheckBox->setChecked(false);
+        }
     }
 }
 
@@ -521,6 +555,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         if (taskType == "body review") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
             m_taskList.append(task);
+        } else if (taskType == "split seeds") {
+            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject()));
+            m_taskList.append(task);
         } else {
             // unknown task type; log it and move on
             LWARN() << "Task protocol: found unknown task type " << taskType << " in task json; skipping";
@@ -538,6 +575,9 @@ QJsonObject TaskProtocolWindow::storeTasks() {
     QJsonObject json;
     json[KEY_DESCRIPTION] = VALUE_DESCRIPTION;
     json[KEY_VERSION] = currentVersion;
+    if (m_ID.size() > 0) {
+        json[KEY_ID] = m_ID;
+    }
 
     QJsonArray tasks;
     foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
