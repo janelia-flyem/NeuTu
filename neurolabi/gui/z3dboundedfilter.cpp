@@ -27,8 +27,10 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
   m_boundBoxMode.addOptions("No Bound Box", "Bound Box", "Axis Aligned Bound Box");
   m_boundBoxMode.select("No Bound Box");
 
-  connect(&m_rendererBase, &Z3DRendererBase::coordTransformChanged, this, &Z3DBoundedFilter::updateAxisAlignedBoundBox);
-  connect(&m_rendererBase, &Z3DRendererBase::sizeScaleChanged, this, &Z3DBoundedFilter::updateBoundBox);
+  connect(&m_rendererBase, &Z3DRendererBase::coordTransformChanged, this,
+          &Z3DBoundedFilter::updateAxisAlignedBoundBox);
+  connect(&m_rendererBase, &Z3DRendererBase::sizeScaleChanged, this,
+          &Z3DBoundedFilter::updateBoundBox);
 
   m_xCut.setSingleStep(1);
   m_yCut.setSingleStep(1);

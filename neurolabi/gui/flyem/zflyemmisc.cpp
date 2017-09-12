@@ -482,9 +482,8 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 }
 
 
-void ZFlyEmMisc::Decorate3dBodyWindowPlane(
-    Z3DWindow *window, const ZDvidInfo &dvidInfo,
-    const ZStackViewParam &viewParam)
+void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+    const ZStackViewParam &viewParam, bool visible)
 {
   if (window != NULL) {
     ZRect2d rect;
@@ -530,6 +529,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
     }
 
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
+    graph->setVisible(visible);
     window->getDocument()->addObject(graph, true);
 #if 0
     ZStackObject *replaced =
@@ -551,16 +551,23 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
 
 void ZFlyEmMisc::Decorate3dBodyWindow(
     Z3DWindow *window, const ZDvidInfo &dvidInfo,
-    const ZStackViewParam &viewParam)
+    const ZStackViewParam &viewParam, bool visible)
 {
   if (window != NULL) {
-    Decorate3dBodyWindowPlane(window, dvidInfo, viewParam);
+    Decorate3dBodyWindowPlane(window, dvidInfo, viewParam, visible);
     ZCuboid box;
     box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
     box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
+    double radius =
+        dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0);
+    if (!visible) {
+      radius = 0.0;
+    }
+    Z3DGraph *graph = Z3DGraphFactory::MakeBox(box, radius);
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+//    if (window->getWindowType() == NeuTube3D::TYPE_NEU3) {
+//      graph->setVisible(visible);
+//    }
 
     window->getDocument()->addObject(graph, true);
     window->resetCamera();

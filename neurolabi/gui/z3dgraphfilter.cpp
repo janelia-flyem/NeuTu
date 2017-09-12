@@ -23,6 +23,21 @@ Z3DGraphFilter::Z3DGraphFilter(Z3DGlobalParameters& globalParas, QObject* parent
   setName(QString("graphfilter"));
 }
 
+Z3DGraphFilter::~Z3DGraphFilter()
+{
+  clear();
+}
+
+void Z3DGraphFilter::clear()
+{
+  foreach (Z3DGraph *graph, m_graphList) {
+    delete graph;
+  }
+
+  m_graphList.clear();
+}
+
+
 void Z3DGraphFilter::process(Z3DEye)
 {
   if (m_dataIsInvalid) {
@@ -45,64 +60,53 @@ void Z3DGraphFilter::prepareData()
 
   vector<float> edgeWidth;
 
-  for (size_t i = 0; i <m_graph.getEdgeNumber(); i++) {
-    Z3DGraphNode n1 = m_graph.getStartNode(i);
-    Z3DGraphNode n2 = m_graph.getEndNode(i);
+  foreach (const Z3DGraph* graph, m_graphList) {
+    if (graph->isVisible()) {
+      for (size_t i = 0; i < graph->getEdgeNumber(); i++) {
+        Z3DGraphNode n1 = graph->getStartNode(i);
+        Z3DGraphNode n2 = graph->getEndNode(i);
 
-    if (m_graph.getEdge(i).shape() == GRAPH_CYLINDER) {
-      ZPoint startPos = ZPoint(n1.x(), n1.y(), n1.z());
-      ZPoint endPos = ZPoint(n2.x(), n2.y(), n2.z());
-      ZPoint vec = endPos - startPos;
-      ZPoint normalizedVec = vec;
-      normalizedVec.normalize();
+        if (graph->getEdge(i).shape() == GRAPH_CYLINDER) {
+          ZPoint startPos = ZPoint(n1.x(), n1.y(), n1.z());
+          ZPoint endPos = ZPoint(n2.x(), n2.y(), n2.z());
+          ZPoint vec = endPos - startPos;
+          ZPoint normalizedVec = vec;
+          normalizedVec.normalize();
 
-      startPos = startPos + normalizedVec * 0.8 * m_graph.getStartNode(i).radius();
-      endPos = endPos - normalizedVec * 0.8 * m_graph.getEndNode(i).radius();
-      vec = endPos - startPos;
+          startPos = startPos + normalizedVec * 0.8 * graph->getStartNode(i).radius();
+          endPos = endPos - normalizedVec * 0.8 * graph->getEndNode(i).radius();
+          vec = endPos - startPos;
 
-      glm::vec4 baseAndbRadius, axisAndtRadius;
-      baseAndbRadius = glm::vec4(startPos.x(), startPos.y(), startPos.z(),
-                                 m_graph.getEdge(i).getWidth());
-      axisAndtRadius = glm::vec4(vec.x(), vec.y(), vec.z(),
-                                 m_graph.getEdge(i).getWidth());
+          glm::vec4 baseAndbRadius, axisAndtRadius;
+          baseAndbRadius = glm::vec4(startPos.x(), startPos.y(), startPos.z(),
+                                     graph->getEdge(i).getWidth());
+          axisAndtRadius = glm::vec4(vec.x(), vec.y(), vec.z(),
+                                     graph->getEdge(i).getWidth());
 
-      m_baseAndBaseRadius.push_back(baseAndbRadius);
-      m_axisAndTopRadius.push_back(axisAndtRadius);
-    } else if (m_graph.getEdge(i).shape() == GRAPH_LINE) {
-      m_lines.push_back(glm::vec3(n1.x(), n1.y(), n1.z()));
-      m_lines.push_back(glm::vec3(n2.x(), n2.y(), n2.z()));
-      float width = m_graph.getEdge(i).getWidth();
-      if (width < 1.0) {
-        width = 1.0;
+          m_baseAndBaseRadius.push_back(baseAndbRadius);
+          m_axisAndTopRadius.push_back(axisAndtRadius);
+        } else if (graph->getEdge(i).shape() == GRAPH_LINE) {
+          m_lines.push_back(glm::vec3(n1.x(), n1.y(), n1.z()));
+          m_lines.push_back(glm::vec3(n2.x(), n2.y(), n2.z()));
+          float width = graph->getEdge(i).getWidth();
+          if (width < 1.0) {
+            width = 1.0;
+          }
+          edgeWidth.push_back(width);
+        }
       }
-      edgeWidth.push_back(width);
-    }
 
-#if 0
-    glm::vec4 arrowBaseAndbRadius, arrowAxisAndtRadius;
+      for (size_t i = 0; i < graph->getNodeNumber(); i++) {
+        Z3DGraphNode node = graph->getNode(i);
 
-    ZPoint arrowPos = startPos * 0.6 + endPos * 0.4;
-    arrowBaseAndbRadius = glm::vec4(arrowPos.x(), arrowPos.y(), arrowPos.z(),
-                                    m_graph.getEdge(i).getWidth() + 5);
+        if (node.radius() > 0.0) {
+          ZPoint nodePos = node.center();
 
-    normalizedVec *= 25 + m_graph.getEdge(i).getWidth() * 1.5;
-    arrowAxisAndtRadius = glm::vec4(
-          normalizedVec.x(), normalizedVec.y(), normalizedVec.z(), 0);
-
-    m_arrowBaseAndBaseRadius.push_back(arrowBaseAndbRadius);
-    m_arrowAxisAndTopRadius.push_back(arrowAxisAndtRadius);
-#endif
-  }
-
-  for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
-    Z3DGraphNode node = m_graph.getNode(i);
-
-    if (node.radius() > 0.0) {
-      ZPoint nodePos = node.center();
-
-      m_pointAndRadius.push_back(
-            glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
-                      m_graph.getNode(i).radius()));
+          m_pointAndRadius.push_back(
+                glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
+                          graph->getNode(i).radius()));
+        }
+      }
     }
   }
 
@@ -125,14 +129,16 @@ void Z3DGraphFilter::prepareColor()
 {
   m_pointColors.resize(m_pointAndRadius.size());
   size_t index = 0;
-  for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
-    const Z3DGraphNode& node = m_graph.getNode(i);
-    QColor color =node.color();
+  foreach (const Z3DGraph* graph, m_graphList) {
+    for (size_t i = 0; i < graph->getNodeNumber(); i++) {
+      const Z3DGraphNode& node = graph->getNode(i);
+      QColor color =node.color();
 
-    if (node.radius() > 0) {
-      Q_ASSERT(index < m_pointColors.size());
-      m_pointColors[index++] = glm::vec4(
-            color.redF(), color.greenF(), color.blueF(), color.alphaF());
+      if (node.radius() > 0) {
+        Q_ASSERT(index < m_pointColors.size());
+        m_pointColors[index++] = glm::vec4(
+              color.redF(), color.greenF(), color.blueF(), color.alphaF());
+      }
     }
   }
 
@@ -145,60 +151,49 @@ void Z3DGraphFilter::prepareColor()
 //  m_arrowStartColors.resize(m_graph.getEdgeNumber());
 //  m_arrowEndColors.resize(m_graph.getEdgeNumber());
 
-  for (size_t i = 0;i < m_graph.getEdgeNumber(); i++) {
-#if _DEBUG_2
-    cout << "color: "
-         << m_graph.getEdge(i).color().redF() << " "
-         << m_graph.getEdge(i).color().greenF() << " "
-         << m_graph.getEdge(i).color().blueF() << " "
-         << m_graph.getEdge(i).color().alphaF()
-         << endl;
-#endif
+  foreach (const Z3DGraph* graph, m_graphList) {
+    for (size_t i = 0;i < graph->getEdgeNumber(); i++) {
+      glm::vec4 startColor;
+      glm::vec4 endColor;
 
-    glm::vec4 startColor;
-    glm::vec4 endColor;
+      if (graph->getEdge(i).usingNodeColor()) {
+        startColor = glm::vec4(
+              graph->getStartNode(i).color().redF(),
+              graph->getStartNode(i).color().greenF(),
+              graph->getStartNode(i).color().blueF(),
+              graph->getStartNode(i).color().alphaF());
 
-    if (m_graph.getEdge(i).usingNodeColor()) {
-      startColor = glm::vec4(
-            m_graph.getStartNode(i).color().redF(),
-            m_graph.getStartNode(i).color().greenF(),
-            m_graph.getStartNode(i).color().blueF(),
-            m_graph.getStartNode(i).color().alphaF());
+        endColor = glm::vec4(
+              graph->getEndNode(i).color().redF(),
+              graph->getEndNode(i).color().greenF(),
+              graph->getEndNode(i).color().blueF(),
+              graph->getEndNode(i).color().alphaF());
+      } else {
+        startColor = glm::vec4(graph->getEdge(i).startColor().redF(),
+                               graph->getEdge(i).startColor().greenF(),
+                               graph->getEdge(i).startColor().blueF(),
+                               graph->getEdge(i).startColor().alphaF());
+        endColor = glm::vec4(graph->getEdge(i).endColor().redF(),
+                             graph->getEdge(i).endColor().greenF(),
+                             graph->getEdge(i).endColor().blueF(),
+                             graph->getEdge(i).endColor().alphaF());
+      }
 
-      endColor = glm::vec4(
-            m_graph.getEndNode(i).color().redF(),
-            m_graph.getEndNode(i).color().greenF(),
-            m_graph.getEndNode(i).color().blueF(),
-            m_graph.getEndNode(i).color().alphaF());
-    } else {
-#ifdef _DEBUG_2
-      cout << m_graph.getEdge(i).startColor().alphaF() << endl;
-#endif
+      if (graph->getEdge(i).shape() == GRAPH_CYLINDER) {
+        m_lineStartColors.push_back(startColor);
+        m_lineEndColors.push_back(endColor);
+      } else if (graph->getEdge(i).shape() == GRAPH_LINE) {
+        m_lineColors.push_back(startColor);
+        m_lineColors.push_back(endColor);
+      }
 
-      startColor = glm::vec4(m_graph.getEdge(i).startColor().redF(),
-                                      m_graph.getEdge(i).startColor().greenF(),
-                                      m_graph.getEdge(i).startColor().blueF(),
-                                      m_graph.getEdge(i).startColor().alphaF());
-      endColor = glm::vec4(m_graph.getEdge(i).endColor().redF(),
-                                          m_graph.getEdge(i).endColor().greenF(),
-                                          m_graph.getEdge(i).endColor().blueF(),
-                                          m_graph.getEdge(i).endColor().alphaF());
+      // m_lineStartColors[i] = startColor;
+      //m_lineEndColors[i] = endColor;
+
+      //    m_arrowStartColors[i] = startColor * 0.4f + endColor * 0.6f;
+      //    m_arrowStartColors[i][3] *= 0.5;
+      //    m_arrowEndColors[i] = m_arrowStartColors[i];
     }
-
-    if (m_graph.getEdge(i).shape() == GRAPH_CYLINDER) {
-      m_lineStartColors.push_back(startColor);
-      m_lineEndColors.push_back(endColor);
-    } else if (m_graph.getEdge(i).shape() == GRAPH_LINE) {
-      m_lineColors.push_back(startColor);
-      m_lineColors.push_back(endColor);
-    }
-
-   // m_lineStartColors[i] = startColor;
-    //m_lineEndColors[i] = endColor;
-
-//    m_arrowStartColors[i] = startColor * 0.4f + endColor * 0.6f;
-//    m_arrowStartColors[i][3] *= 0.5;
-//    m_arrowEndColors[i] = m_arrowStartColors[i];
   }
 
   m_coneRenderer.setDataColors(&m_lineStartColors, &m_lineEndColors);
@@ -210,19 +205,25 @@ void Z3DGraphFilter::prepareColor()
 void Z3DGraphFilter::updateNotTransformedBoundBoxImpl()
 {
   m_notTransformedBoundBox.reset();
-  for (size_t i = 0; i < m_graph.getNodeNumber(); i++) {
-    ZPoint pos = m_graph.getNode(i).center();
-    glm::dvec3 p(pos.x(), pos.y(), pos.z());
-    double d = m_graph.getNode(i).radius() * 2.0;
-    m_notTransformedBoundBox.expand(p - d);
-    m_notTransformedBoundBox.expand(p + d);
+  foreach (const Z3DGraph* graph, m_graphList) {
+    for (size_t i = 0; i < graph->getNodeNumber(); i++) {
+      ZPoint pos = graph->getNode(i).center();
+      glm::dvec3 p(pos.x(), pos.y(), pos.z());
+      double d = graph->getNode(i).radius() * 2.0;
+      m_notTransformedBoundBox.expand(p - d);
+      m_notTransformedBoundBox.expand(p + d);
+    }
   }
 }
 
 void Z3DGraphFilter::setData(const ZPointNetwork &pointNetwork,
                                ZNormColorMap *colorMap)
 {
-  m_graph.importPointNetwork(pointNetwork, colorMap);
+  clear();
+  Z3DGraph *graph = new Z3DGraph;
+
+  graph->importPointNetwork(pointNetwork, colorMap);
+  m_graphList.append(graph);
 
   m_dataIsInvalid = true;
   invalidateResult();
@@ -232,7 +233,16 @@ void Z3DGraphFilter::setData(const ZPointNetwork &pointNetwork,
 
 void Z3DGraphFilter::addData(const Z3DGraph &graph)
 {
-  m_graph.append(graph);
+  Z3DGraph *newGraph = new Z3DGraph;
+  *newGraph = graph;
+
+#ifdef _DEBUG_
+  std::cout << "Adding graph: " << graph.getSource() << std::endl;
+  std::cout << "Visible: " << graph.isVisible() << std::endl;
+#endif
+
+  m_graphList.append(newGraph);
+
   m_dataIsInvalid = true;
   invalidateResult();
 
@@ -241,17 +251,19 @@ void Z3DGraphFilter::addData(const Z3DGraph &graph)
 
 void Z3DGraphFilter::setData(const Z3DGraph &graph)
 {
-  m_graph = graph;
-  m_dataIsInvalid = true;
-  invalidateResult();
-
-  updateBoundBox();
+  clear();
+  addData(graph);
 }
 
 void Z3DGraphFilter::setData(const ZObject3d &obj)
 {
-  //m_graph.importPointNetwork();
-  m_graph.importObject3d(obj, 1.0, 3);
+  clear();
+
+  Z3DGraph *newGraph = new Z3DGraph;
+  newGraph->importObject3d(obj, 1.0, 3);
+  newGraph->setVisible(obj.isVisible());
+  m_graphList.append(newGraph);
+
   m_dataIsInvalid = true;
   invalidateResult();
 
@@ -308,7 +320,7 @@ void Z3DGraphFilter::renderTransparent(Z3DEye eye)
 
 bool Z3DGraphFilter::isReady(Z3DEye eye) const
 {
-  return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_graph.isEmpty();
+  return Z3DGeometryFilter::isReady(eye) && isVisible() && !m_graphList.isEmpty();
 }
 
 void Z3DGraphFilter::updateGraphVisibleState()

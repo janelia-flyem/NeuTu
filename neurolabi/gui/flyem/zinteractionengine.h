@@ -134,6 +134,9 @@ private:
   void saveStroke();
   void commitData();
 
+  void suppressMouseRelease(bool s);
+  bool mouseReleaseSuppressed() const;
+
 private:
   QList<ZStackObject*> m_unnamedDecorationList; //need to free up
   QList<ZStackObject*> m_namedDecorationList; //no need to free up
@@ -168,6 +171,7 @@ private:
   bool m_isKeyEventEnabled;
   ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
+  bool m_mouseReleaseSuppressed = false;
 
   int m_previousKey;
   Qt::KeyboardModifiers m_previousKeyModifiers;

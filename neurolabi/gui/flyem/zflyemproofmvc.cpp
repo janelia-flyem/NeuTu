@@ -720,11 +720,10 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
   m_meshWindow->syncAction();
 
   if (m_doc->getParentMvc() != NULL) {
-    if (windowType != NeuTube3D::TYPE_NEU3) {
-      ZFlyEmMisc::Decorate3dBodyWindow(
-            m_meshWindow, getGrayScaleInfo(),
-            m_doc->getParentMvc()->getView()->getViewParameter());
-    }
+    ZFlyEmMisc::Decorate3dBodyWindow(
+          m_meshWindow, getGrayScaleInfo(),
+          m_doc->getParentMvc()->getView()->getViewParameter(), false);
+
     if(m_ROILoaded) {
         m_meshWindow->getROIsDockWidget()->getROIs(
               m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,

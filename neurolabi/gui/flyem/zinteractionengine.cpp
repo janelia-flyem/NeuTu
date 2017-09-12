@@ -86,6 +86,10 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
     m_exploreMarker.setCenter(event->x(), event->y(), 0);
     emit decorationUpdated();
   }
+
+  if (m_mouseLeftButtonPressed) {
+    suppressMouseRelease(true);
+  }
 }
 
 bool ZInteractionEngine::processMouseReleaseEvent(
@@ -95,18 +99,24 @@ bool ZInteractionEngine::processMouseReleaseEvent(
 
   UNUSED_PARAMETER(sliceIndex);
   if (event->button() == Qt::LeftButton) {
-    if (isStateOn(STATE_DRAW_STROKE)) {
-      commitData();
+    if (mouseReleaseSuppressed()) {
+      suppressMouseRelease(false);
       processed = true;
-    } else if (isStateOn(STATE_DRAW_RECT)) {
-      m_rect.makeValid();
-      exitPaintRect();
-      processed = true;
-    } else if (isStateOn(STATE_MARK)) {
-      emit shootingTodo(event->x(), event->y());
-      processed = true;
-    } else if (isStateOn(STATE_LOCATE)) {
-      emit locating(event->x(), event->y());
+    } else {
+      if (isStateOn(STATE_DRAW_STROKE)) {
+        commitData();
+        processed = true;
+      } else if (isStateOn(STATE_DRAW_RECT)) {
+        m_rect.makeValid();
+        exitPaintRect();
+        processed = true;
+      } else if (isStateOn(STATE_MARK)) {
+        emit shootingTodo(event->x(), event->y());
+        processed = true;
+      } else if (isStateOn(STATE_LOCATE)) {
+        emit locating(event->x(), event->y());
+        processed = true;
+      }
     }
     m_mouseLeftButtonPressed = false;
   } else if (event->button() == Qt::RightButton) {
@@ -534,5 +544,15 @@ Qt::CursorShape ZInteractionEngine::getCursorShape() const
   }
 
   return Qt::ArrowCursor;
+}
+
+void ZInteractionEngine::suppressMouseRelease(bool s)
+{
+  m_mouseReleaseSuppressed = s;
+}
+
+bool ZInteractionEngine::mouseReleaseSuppressed() const
+{
+  return m_mouseReleaseSuppressed;
 }
 
