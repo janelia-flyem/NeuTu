@@ -12,6 +12,7 @@
 #include "neutube.h"
 #include "flyem/zflyemproofdoc.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/tasksplitseeds.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -553,6 +554,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         QString taskType = taskJson.toObject()[KEY_TASKTYPE].toString();
         if (taskType == "body review") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
+            m_taskList.append(task);
+        } else if (taskType == "split seeds") {
+            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject()));
             m_taskList.append(task);
         } else {
             // unknown task type; log it and move on
