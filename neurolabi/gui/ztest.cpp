@@ -24459,7 +24459,7 @@ void ZTest::test(MainWindow *host)
    std::cout << endl;
 #endif
 
-#if 1
+#if 0
    ZDvidTarget target;
    target.set("emdata3.int.janelia.org", "aed4", 8000);
 //   target.setBodyLabelName("labels-v3");
@@ -24475,6 +24475,15 @@ void ZTest::test(MainWindow *host)
    ZObject3dScan *obj = reader.readMultiscaleBody(229136931, 7, true, NULL);
    obj->save(GET_TEST_DATA_DIR + "/test.sobj");
    delete obj;
+#endif
+
+#if 1
+   ZStack *stack = ZStackFactory::MakeZeroStack(GREY, 3, 3, 3, 1);
+   stack->setValue(1, 1, 1, 0, 255);
+   stack->setOffset(1, 1, 1);
+   stack->setDsIntv(1, 1, 1);
+
+   stack->save(GET_BENCHMARK_DIR + "/dot.tif");
 #endif
 
   std::cout << "Done." << std::endl;
