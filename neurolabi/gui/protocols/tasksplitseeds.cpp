@@ -1,4 +1,4 @@
-#include "TaskSplitSeeds.h"
+#include "tasksplitseeds.h"
 
 #include <iostream>
 #include <stdlib.h>
