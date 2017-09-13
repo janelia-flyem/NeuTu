@@ -33,6 +33,11 @@ bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
   return false;
 }
 
+void ZStackObject::setLabel(uint64_t label)
+{
+  m_uLabel = label;
+}
+
 void ZStackObject::setSelected(bool selected)
 {
   m_selected = selected;

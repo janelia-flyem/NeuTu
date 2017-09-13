@@ -99,18 +99,20 @@ bool ZInteractionEngine::processMouseReleaseEvent(
 
   UNUSED_PARAMETER(sliceIndex);
   if (event->button() == Qt::LeftButton) {
+    if (isStateOn(STATE_DRAW_STROKE)) {
+      commitData();
+      processed = true;
+    } else if (isStateOn(STATE_DRAW_RECT)) {
+      m_rect.makeValid();
+      exitPaintRect();
+      processed = true;
+    }
+
     if (mouseReleaseSuppressed()) {
       suppressMouseRelease(false);
       processed = true;
     } else {
-      if (isStateOn(STATE_DRAW_STROKE)) {
-        commitData();
-        processed = true;
-      } else if (isStateOn(STATE_DRAW_RECT)) {
-        m_rect.makeValid();
-        exitPaintRect();
-        processed = true;
-      } else if (isStateOn(STATE_MARK)) {
+      if (isStateOn(STATE_MARK)) {
         emit shootingTodo(event->x(), event->y());
         processed = true;
       } else if (isStateOn(STATE_LOCATE)) {

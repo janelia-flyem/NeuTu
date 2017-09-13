@@ -25,6 +25,8 @@
 #include "zmesh.h"
 #include "zglobal.h"
 #include "zflyemmisc.h"
+#include "zstroke2d.h"
+#include "zobject3d.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -940,6 +942,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
       addSynapse(bodyId);
 //      addTodo(bodyId);
       updateTodo(bodyId);
+      loadSplitTask(bodyId);
     }
   }
 }
@@ -1153,6 +1156,61 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
               item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
       }
     }
+    getDataBuffer()->deliver();
+  }
+}
+
+void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(GET_FLYEM_CONFIG.getTaskServer());
+  ZJsonObject taskJson =
+      reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
+                                    taskKey.c_str());
+  if (taskJson.hasKey(NeuTube::Json::REF_KEY)) {
+    taskJson =
+        reader->readJsonObject(
+          ZJsonParser::stringValue(taskJson[NeuTube::Json::REF_KEY]));
+  }
+  ZJsonArray seedArrayJson(taskJson.value("seeds"));
+  QList<ZStackObject*> seedList;
+  for (size_t i = 0; i < seedArrayJson.size(); ++i) {
+    ZJsonObject seedJson(seedArrayJson.value(i));
+    if (seedJson.hasKey("type")) {
+//      std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
+      std::string type = ZJsonParser::stringValue(seedJson["type"]);
+      if (type == "ZStroke2d") {
+        ZStroke2d *stroke = new ZStroke2d;
+        stroke->loadJsonObject(ZJsonObject(seedJson.value("data")));
+
+        if (!stroke->isEmpty()) {
+          seedList.append(stroke);
+        } else {
+          delete stroke;
+        }
+      } else if (type == "ZObject3d") {
+        ZObject3d *obj = new ZObject3d;
+        obj->loadJsonObject(ZJsonObject(seedJson.value("data")));
+        if (!obj->isEmpty()) {
+          seedList.append(obj);
+        } else {
+          delete obj;
+        }
+      }
+    }
+  }
+  foreach (ZStackObject *seed, seedList) {
+    seed->addRole(ZStackObjectRole::ROLE_SEED |
+                  ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+    ZLabelColorTable colorTable;
+    seed->setColor(colorTable.getColor(seed->getLabel()));
+  }
+  if (!seedList.isEmpty()) {
+    getDataBuffer()->addUpdate(
+          seedList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     getDataBuffer()->deliver();
   }
 }

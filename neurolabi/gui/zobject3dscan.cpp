@@ -78,7 +78,7 @@ void ZObject3dScan::init()
   m_type = GetType();
 
   m_isCanonized = false;
-  m_label = 0;
+//  m_label = 0;
   m_blockingEvent = false;
   m_zProjection = NULL;
   m_sliceAxis = NeuTube::Z_AXIS;
@@ -94,7 +94,8 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
 
   m_stripeArray = obj.m_stripeArray;
   m_isCanonized = obj.m_isCanonized;
-  m_label = obj.m_label;
+  setLabel(obj.getLabel());
+//  m_label = obj.m_label;
   m_blockingEvent = false;
   m_sliceAxis = obj.m_sliceAxis;
   m_dsIntv = obj.m_dsIntv;

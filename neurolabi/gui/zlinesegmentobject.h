@@ -47,7 +47,7 @@ private:
 private:
   ZLineSegment m_segment;
   double m_width;
-  int m_label;
+//  int m_label;
   QColor m_focusColor;
 };
 

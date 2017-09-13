@@ -74,7 +74,7 @@ public:
       NeuTube::EAxis ) const override
   {}
 
-  void setLabel(uint64_t label);
+  void setLabel(uint64_t label) override;
   uint64_t getLabel() const;
 
   // qt style read write name filter for filedialog

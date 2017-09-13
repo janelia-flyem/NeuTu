@@ -229,6 +229,19 @@ public:
     return m_timeStamp;
   }
 
+  virtual void setLabel(uint64_t label);
+
+  inline uint64_t getLabel() const {
+    return m_uLabel;
+  }
+
+/*
+  virtual void setILabel(int label);
+
+  inline int getILabel() const {
+    return m_label;
+  }
+*/
   inline std::string getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
@@ -375,6 +388,8 @@ protected:
   std::string m_source;
   std::string m_objectClass;
   std::string m_objectId;
+  uint64_t m_uLabel = 0;
+//  int m_label = -1;
   int m_zOrder;
   int m_timeStamp;
   EType m_type;
