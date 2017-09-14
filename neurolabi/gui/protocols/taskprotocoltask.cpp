@@ -35,6 +35,19 @@ QSet<uint64_t> TaskProtocolTask::selectedBodies() {
 void TaskProtocolTask::setCompleted(bool completed)
 {
     m_completed = completed;
+
+    // call the method that subclasses might implement
+    if (completed) {
+        onCompleted();
+    }
+}
+
+/*
+ * subclasses may optionally implement this method to
+ * do something when the task is marked "complete"
+ */
+void TaskProtocolTask::onCompleted() {
+    // nothing
 }
 
 // tag methods: standard add, remove, has, get all, clear

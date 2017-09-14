@@ -37,6 +37,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
 }
+
 // constants
 const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
 const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
