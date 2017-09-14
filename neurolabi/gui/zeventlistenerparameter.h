@@ -6,6 +6,15 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 
+/*!
+ * \brief The parameter class of listening events
+ *
+ * The class is designed to listen to mouse or keyboard events. It is set up by
+ * the \a listenTo function and used by calling the \a sendEvent function. When
+ * an event matches one in the listening list, a triggered signal will be emitted.
+ *
+ * Unlike other paramter classes, this class cannot be used to create widgets.
+ */
 class ZEventListenerParameter : public ZParameter
 {
 Q_OBJECT
