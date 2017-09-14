@@ -142,6 +142,10 @@ void ZJsonValue::set(const ZJsonValue &value)
 
 void ZJsonValue::set(json_t *data, bool asNew)
 {
+  if (m_data == data) {
+    return;
+  }
+
   if (m_data != NULL) {
     json_decref(m_data);
   }

@@ -18770,7 +18770,7 @@ void ZTest::test(MainWindow *host)
 
 #if 0
 #if defined(_ENABLE_LIBDVIDCPP_)
-  libdvid::DVIDNodeService service("emdata2.int.janelia.org:7100", "86e1");
+  libdvid::DVIDNodeService service("emdata1.int.janelia.org:8500", "b6bc");
   std::cout << "Reading tiles ..." << std::endl;
 
   ZSleeper sleeper;
@@ -24320,15 +24320,109 @@ void ZTest::test(MainWindow *host)
    stack.printInfo();
 #endif
 
-#if 1
+#if 0
    ZMesh mesh;
    ZMeshIO::instance().load(
          "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
+   mesh.swapXZ();
    mesh.translate(404, 480, 180);
    mesh.scale(8, 8, 8);
-//   mesh.swapXZ();
    ZMeshIO::instance().save(
-         mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
+        mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("bodies");
+  target.setLabelBlockName("labels");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyIdArray;
+  bodyIdArray << 1;
+
+  ZStackWriter writer;
+  writer.setCompressHint(ZStackWriter::COMPRESS_NONE);
+
+  foreach (uint64_t bodyId, bodyIdArray) {
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(bodyId);
+
+    //  ZIntCuboid box = spStack->getBoundBox();
+
+    ZStack *stack = spStack->makeIsoDsStack(NeuTube::ONEGIGA);
+
+//    ZStack *stack = spStack->makeStack(ZIntCuboid());
+//    ZStack *stack = spStack->getStack();
+
+    ZString numStr;
+    numStr.appendNumber(bodyId);
+    writer.write(GET_TEST_DATA_DIR + "/test.tif", stack);
+
+//    delete stack;
+    delete spStack;
+  }
+#endif
+
+#if 0
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         "/Users/zhaot/Work/vol2mesh/test.tif.smooth.obj", mesh);
+   mesh.swapXZ();
+
+   ZStack stack;
+   stack.load(GET_TEST_DATA_DIR + "/test.tif");
+   mesh.translate(stack.getOffset().getX(), stack.getOffset().getY(),
+                  stack.getOffset().getZ());
+   mesh.scale(stack.getDsIntv().getX() + 1, stack.getDsIntv().getY() + 1,
+              stack.getDsIntv().getZ() + 1);
+   ZMeshIO::instance().save(
+        mesh, (GET_TEST_DATA_DIR + "/test.obj").c_str(), "obj");
+#endif
+
+#if 0
+   QList<uint64_t> bodyList;
+
+   std::string dataDir = GET_TEST_DATA_DIR + "/_test/93e8";
+   ZFileList fileList;
+   fileList.load(dataDir, "tif");
+   for (int i = 0; i < fileList.size(); ++i) {
+     ZString path = fileList.getFilePath(i);
+     uint64_t bodyId = path.lastUint64();
+     bodyList << bodyId;
+   }
+
+   qDebug() << bodyList;
+   foreach (uint64_t bodyId, bodyList) {
+     std::cout << "Processing " << bodyId << "..." << std::endl;
+     ZMesh mesh;
+     QString path = QString("%1/meshes/%2.tif.smooth.obj").
+         arg(dataDir.c_str()).arg(bodyId);
+     ZMeshIO::instance().load(path, mesh);
+     mesh.swapXZ();
+     ZStack stack;
+     stack.load(QString("%1/%2.tif").arg(dataDir.c_str()).arg(bodyId).toStdString());
+     mesh.translate(stack.getOffset().getX(), stack.getOffset().getY(),
+                    stack.getOffset().getZ());
+     mesh.scale(stack.getDsIntv().getX() + 1, stack.getDsIntv().getY() + 1,
+                stack.getDsIntv().getZ() + 1);
+     ZMeshIO::instance().save(
+          mesh, QString("%1/meshes/%2.dvid.obj").arg(dataDir.c_str()).arg(bodyId), "obj");
+   }
+
+#endif
+
+#if 0
+   ZMesh mesh;
+   ZMeshIO::instance().load(
+         (GET_TEST_DATA_DIR + "/test2.obj").c_str(), mesh);
+   mesh.translate(404, 480, 180);
+   mesh.scale(8, 8, 8);
+   mesh.swapXZ();
+   ZMeshIO::instance().save(
+        mesh, (GET_TEST_DATA_DIR + "/test3.obj").c_str(), "obj");
 #endif
 
 #if 0
@@ -24355,6 +24449,32 @@ void ZTest::test(MainWindow *host)
 
    std::cout << a0[0] << " " << a0[1] << " " << a0[2] << std::endl;
    std::cout << a1[0] << " " << a1[1] << " " << a1[2] << std::endl;
+#endif
+
+#if 0
+   std::vector<std::pair<int, int>> line = LineToPixel(0, -10, 18, 0);
+   for (const std::pair<int, int> &pt : line) {
+     std::cout << pt.first << " " << pt.second << std::endl;
+   }
+   std::cout << endl;
+#endif
+
+#if 1
+   ZDvidTarget target;
+   target.set("emdata3.int.janelia.org", "aed4", 8000);
+//   target.setBodyLabelName("labels-v3");
+   target.setLabelBlockName("labels-v3");
+
+   ZDvidReader reader;
+   reader.open(target);
+
+   std::cout << reader.getDvidTarget().usingLabelArray() << std::endl;
+   reader.updateMaxLabelZoom();
+   std::cout << reader.getDvidTarget().getMaxLabelZoom() << std::endl;
+
+   ZObject3dScan *obj = reader.readMultiscaleBody(229136931, 7, true, NULL);
+   obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+   delete obj;
 #endif
 
   std::cout << "Done." << std::endl;

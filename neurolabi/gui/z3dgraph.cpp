@@ -228,7 +228,7 @@ void Z3DGraphEdge::print()
 
 Z3DGraph::Z3DGraph()
 {
-  m_type = ZStackObject::TYPE_3D_GRAPH;
+  m_type = GetType();
   m_target = ZStackObject::TARGET_3D_ONLY;
 }
 

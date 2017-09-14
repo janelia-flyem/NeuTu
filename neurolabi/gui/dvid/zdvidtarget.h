@@ -18,6 +18,7 @@ class ZDvidTarget
 public:
   ZDvidTarget();
   ZDvidTarget(const std::string &address, const std::string &uuid, int port = -1);
+  ZDvidTarget(const ZDvidNode &node);
 
   void clear();
 
@@ -161,6 +162,8 @@ public:
 
   bool hasBodyLabel() const;
   bool hasLabelBlock() const;
+  bool usingLabelArray() const;
+  void useLabelArray(bool on);
 
   static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
@@ -293,6 +296,7 @@ public:
 
   ZDvidNode getGrayScaleSource() const;
   ZDvidNode getTileSource() const;
+  ZDvidTarget getGrayScaleTarget() const;
 
 private:
   void init();
@@ -322,6 +326,7 @@ private:
   int m_maxGrayscaleZoom;
   bool m_usingMultresBodyLabel;
   bool m_usingDefaultSetting;
+  bool m_usingLabelArray = false;
 //  std::string m_userName;
 //  std::string m_tileName;
 

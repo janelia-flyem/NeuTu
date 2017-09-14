@@ -707,6 +707,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
     NeuTube3D::EWindowType windowType)
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_MESH);
+  doc->enableBodySelectionSync(true);
 
   ZWindowFactory factory = makeExternalWindowFactory(windowType);
 
@@ -721,7 +722,8 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_meshWindow, getGrayScaleInfo(),
-          m_doc->getParentMvc()->getView()->getViewParameter());
+          m_doc->getParentMvc()->getView()->getViewParameter(), false);
+
     if(m_ROILoaded) {
         m_meshWindow->getROIsDockWidget()->getROIs(
               m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
@@ -738,6 +740,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
     NeuTube3D::EWindowType windowType)
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
+  doc->enableBodySelectionSync(true);
 
   ZWindowFactory factory = makeExternalWindowFactory(windowType);
 
@@ -778,8 +781,12 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   window->getMeshFilter()->setStayOnTop(false);
   window->getPunctaFilter()->setStayOnTop(false);
   window->getGraphFilter()->setStayOnTop(false);
+  window->setOpacity(Z3DWindow::LAYER_MESH, 0.9);
   ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
   window->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
+
+  connect(window, SIGNAL(savingSplitTask()),
+          doc, SLOT(saveSplitTask()));
 
   doc->enableNodeSeeding(true);
 //  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
@@ -3704,21 +3711,32 @@ void ZFlyEmProofMvc::saveSplitTask()
         emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
       }
   }
-#if 0
-  if (m_splitProject.getBodyId() > 0) {
-    if (getSupervisor()->checkIn(m_splitProject.getBodyId())) {
-      std::string location = m_splitProject.saveTask();
+}
 
-      emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
-    } else {
+void ZFlyEmProofMvc::saveSplitTask(uint64_t bodyId)
+{
+  if (bodyId > 0) {
+    std::string location = m_splitProject.saveTask(bodyId);
+
+    if (location.empty()) {
       emit messageGenerated(
-            ZWidgetMessage(
-              "Cannot save the task because the body has been locked"
-              " by someone else.", NeuTube::MSG_WARNING));
+            ZWidgetMessage("Failed to save the task.", NeuTube::MSG_WARNING));
+    } else {
+      emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
     }
   }
-#endif
 }
+
+uint64_t ZFlyEmProofMvc::getBodyIdForSplit() const
+{
+  return m_splitProject.getBodyId();
+}
+
+void ZFlyEmProofMvc::setBodyIdForSplit(uint64_t id)
+{
+  m_splitProject.setBodyId(id);
+}
+
 
 void ZFlyEmProofMvc::loadSplitResult()
 {

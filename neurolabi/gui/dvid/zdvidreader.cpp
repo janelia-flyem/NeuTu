@@ -230,6 +230,9 @@ bool ZDvidReader::open(const ZDvidTarget &target)
       loadDefaultDataSetting();
     }
 
+    std::string typeName = getType(getDvidTarget().getLabelBlockName());
+    m_dvidTarget.useLabelArray(typeName == "labelarray");
+
     if (getDvidTarget().getBodyLabelName().empty()) {
       syncBodyLabelName();
     }
@@ -263,7 +266,7 @@ ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 {
   ZDvid::ENodeStatus status = ZDvid::NODE_NORMAL;
 
-#ifdef _ENABLE_DVIDCPP_
+#ifdef _ENABLE_LIBDVIDCPP_
   ZDvidUrl url(getDvidTarget());
   std::string repoUrl = url.getRepoUrl();
   if (repoUrl.empty()) {
@@ -1358,7 +1361,11 @@ std::string ZDvidReader::readBodyLabelName() const
 void ZDvidReader::syncBodyLabelName()
 {
   if (getDvidTarget().hasLabelBlock()) {
-    m_dvidTarget.setBodyLabelName(readBodyLabelName());
+    if (getDvidTarget().usingLabelArray()) {
+      m_dvidTarget.setBodyLabelName(m_dvidTarget.getLabelBlockName());
+    } else {
+      m_dvidTarget.setBodyLabelName(readBodyLabelName());
+    }
   }
 }
 
@@ -2589,6 +2596,15 @@ void ZDvidReader::updateMaxGrayscaleZoom(
 void ZDvidReader::updateMaxGrayscaleZoom()
 {
   if (m_dvidTarget.isValid()) {
+    if (hasGrayscale()) {
+      ZJsonObject infoJson = readInfo();
+      ZDvidVersionDag dag = readVersionDag();
+      updateMaxGrayscaleZoom(infoJson, dag);
+    }
+  }
+
+#if 0
+  if (m_dvidTarget.isValid()) {
     int maxLabelLevel = 0;
     int level = 1;
     while (level < 50) {
@@ -2601,6 +2617,7 @@ void ZDvidReader::updateMaxGrayscaleZoom()
     }
     m_dvidTarget.setMaxGrayscaleZoom(maxLabelLevel);
   }
+#endif
 }
 
 void ZDvidReader::updateMaxLabelZoom(
@@ -2625,6 +2642,26 @@ void ZDvidReader::updateMaxLabelZoom(
 void ZDvidReader::updateMaxLabelZoom()
 {
   if (m_dvidTarget.isValid()) {
+    if (getDvidTarget().usingLabelArray()) {
+      ZJsonObject infoJson = readInfo(getDvidTarget().getLabelBlockName());
+      ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
+      if (!v.isEmpty()) {
+        m_dvidTarget.setMaxLabelZoom(v.toInteger());
+      }
+//      if (infoJson.hasKey("Extended")) {
+//        ZJsonObject extJson(infoJson.value("Extended"));
+
+//      }
+    } else {
+      if (getDvidTarget().hasLabelBlock()) {
+        ZJsonObject infoJson = readInfo();
+        ZDvidVersionDag dag = readVersionDag();
+        updateMaxLabelZoom(infoJson, dag);
+      }
+    }
+  }
+#if 0
+  if (m_dvidTarget.isValid()) {
     int maxLabelLevel = 0;
     int level = 1;
     while (level < 50) {
@@ -2637,6 +2674,7 @@ void ZDvidReader::updateMaxLabelZoom()
     }
     m_dvidTarget.setMaxLabelZoom(maxLabelLevel);
   }
+#endif
 }
 
 #define MAX_BODY_ID_START 50000000

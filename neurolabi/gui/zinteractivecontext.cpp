@@ -158,6 +158,12 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
       }
     }
 
+    if (mode == INTERACT_FREE) {
+      if (exploreMode() == EXPLORE_LOCAL) {
+        mode = INTERACT_EXPLORE_LOCAL;
+      }
+    }
+
 //  } else {
 //    if (mode == INTERACT_FREE) {
 //    switch (exploreMode()) {

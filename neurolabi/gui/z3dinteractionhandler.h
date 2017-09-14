@@ -1,9 +1,12 @@
 #ifndef Z3DINTERACTIONHANDLER_H
 #define Z3DINTERACTIONHANDLER_H
 
+#include <QObject>
+#include <memory>
+
 #include "zeventlistenerparameter.h"
 #include "zglmutils.h"
-#include <QObject>
+
 
 class Z3DInteractionHandler : public QObject
 {

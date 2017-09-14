@@ -22,7 +22,7 @@ then
   shift
   if [ $# -lt 1 ]
   then
-    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize]"
+    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize] [-q qmake_flags] [-m make_flags]"
     exit 1
   fi
   QMAKE_SPEC=$1
@@ -30,7 +30,12 @@ then
 else
   QMAKE=$1/bin/qmake
   if [ `uname` == 'Darwin' ]; then
-    QMAKE_SPEC=$1/mkspecs/macx-g++
+    if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+    then
+      QMAKE_SPEC=$1/mkspecs/macx-clang
+    else
+      QMAKE_SPEC=$1/mkspecs/macx-g++
+    fi
   else
     QMAKE_SPEC=$1/mkspecs/linux-g++
   fi
@@ -65,21 +70,11 @@ done
 
 if [ -n "$cxx_define" ]
 then
-  if [ $edition = "flyem" ]
-  then
-    cxx_define="_FLYEM_ $cxx_define"
-  fi
-
   if [ $edition = "biocytin" ]
   then
     cxx_define="_BIOCYTIN_ $cxx_define"
   fi
 else
-  if [ $edition = "flyem" ]
-  then
-    cxx_define="_FLYEM_"
-  fi
-
   if [ $edition = "biocytin" ]
   then
     cxx_define="_BIOCYTIN_"
@@ -96,7 +91,17 @@ then
   qmake_args="$qmake_args 'CONDA_ENV=${CONDA_ENV}'"
 fi
 
-qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=c++11 CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+if [ $edition = "flyem" ]
+then
+  qmake_args="$qmake_args CONFIG+=flyem"
+fi
+
+if [ $edition = "neu3" ]
+then
+  qmake_args="$qmake_args CONFIG+=neu3"
+fi
+
+qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
 
 if [ $debug_config = "sanitize" ]
 then
@@ -173,7 +178,7 @@ then
   cp -r ../gui/doc $bin_dir/
 fi
 
-if [ $edition = "flyem" ]
+if [ $edition = "flyem" ] || [ $edition = "neu3" ]
 then
   cp ../gui/config_flyem.xml $bin_dir/config.xml
   cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html

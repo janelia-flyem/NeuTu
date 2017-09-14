@@ -100,6 +100,9 @@ public:
   void setDvidDialog(ZDvidDialog *dlg);
   ZDvidDialog* getDvidDialog() const;
 
+  uint64_t getBodyIdForSplit() const;
+  void setBodyIdForSplit(uint64_t id);
+
   /*
   ZFlyEmBodyMergeProject* getMergeProject() {
     return &m_mergeProject;
@@ -251,6 +254,7 @@ public slots:
   void runSplit();
   void runLocalSplit();
   void saveSplitTask();
+  void saveSplitTask(uint64_t bodyId);
   void loadSplitResult();
   void uploadSplitResult();
 

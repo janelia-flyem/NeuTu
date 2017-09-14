@@ -76,7 +76,7 @@ public:
 
   enum ERendererLayer {
     LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_SURFACE, LAYER_VOLUME,
-    LAYER_TODO
+    LAYER_TODO, LAYER_MESH
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
@@ -208,6 +208,8 @@ signals:
 //  void locating2DViewTriggered(const ZStackViewParam &param);
   void locating2DViewTriggered(int x, int y, int z, int width);
   void croppingSwcInRoi();
+  void savingSplitTask();
+  void savingSplitTask(uint64_t bodyId);
 
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
   void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
@@ -276,6 +278,7 @@ public slots:
   void showPuncta(bool on);
   void showTodo(bool on);
   void activateTodoAction();
+  void activateLocateAction();
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -294,6 +297,7 @@ public slots:
   void convertPunctaToSwc();
   void changeSelectedPunctaColor();
 
+  void saveSplitTask();
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -362,6 +366,7 @@ public slots:
 
   void updateCuttingBox();
   void shootTodo(int x, int y);
+  void locateWithRay(int x, int y);
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 
@@ -415,6 +420,10 @@ private:
   void labelSwcNodeFromStroke(const ZStroke2d *stroke);
   //Experimental function
   void addTodoMarkerFromStroke(const ZStroke2d *stroke);
+
+  ZLineSegment getStackSeg(const ZLineSegment &seg, const ZCuboid &rbox) const;
+
+  std::vector<ZPoint> getRayIntersection(int x, int y, uint64_t *id = NULL);
 
 private:
   QTabWidget* createBasicSettingTabWidget();

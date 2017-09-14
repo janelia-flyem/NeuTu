@@ -580,6 +580,8 @@ public:
    */
   bool isAdjacentTo(ZObject3dScan &obj);
 
+
+  /*
   uint64_t getLabel() const {
     return m_label;
   }
@@ -587,6 +589,8 @@ public:
   void setLabel(uint64_t label) {
     m_label = label;
   }
+  */
+
 
   class Segment {
   public:
@@ -665,7 +669,7 @@ private:
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   bool m_isCanonized;
-  uint64_t m_label;
+//  uint64_t m_label;
   bool m_blockingEvent;
   ZIntPoint m_dsIntv; //Downsampling hint, mainly for display
 //  NeuTube::EAxis m_sliceAxis;

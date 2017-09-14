@@ -107,6 +107,10 @@ public:
 public:
   bool isEmpty() const;
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_3D_GRAPH;
+  }
+
   inline size_t getNodeNumber() const { return m_nodeArray.size(); }
   inline size_t getEdgeNumber() const { return m_edgeArray.size(); }
 

@@ -20,6 +20,7 @@ build:
 
 requirements:
   build:
+    - python >=3.6
     - qt      5*
     - libdvid-cpp >=0.2.post55
     - fftw    3.3*
@@ -31,12 +32,13 @@ requirements:
     - cmake
     - ninja
     - tbb
-    - vtk 6.3*
+    - vtk 7.1*
     - assimp
     - glbinding
     - draco
 
   run:
+    - python >=3.6
     - qt      5*
     - libdvid-cpp >=0.2.post55
     - fftw    3.3*
@@ -47,7 +49,7 @@ requirements:
     - lowtis  >=0.1.0.p
     - ninja
     - tbb
-    - vtk 6.3*
+    - vtk 7.1*
     - assimp
     - glbinding
     - draco

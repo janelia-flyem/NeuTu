@@ -42,7 +42,8 @@ public:
   const double& operator[] (int index) const;
   double& operator[] (int index);
   ZPoint& operator= (const ZPoint &pt);
-  bool operator== (const ZPoint &pt);
+  bool operator== (const ZPoint &pt) const;
+  bool operator!= (const ZPoint &pt) const;
 
   bool operator < (const ZPoint &pt) const;
 

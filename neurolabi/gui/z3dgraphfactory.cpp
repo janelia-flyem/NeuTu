@@ -96,48 +96,50 @@ Z3DGraph* Z3DGraphFactory::MakeBox(const ZCuboid &box, double radius)
     graph->addNode(node);
   }
 
-  Z3DGraphEdge edge;
-  edge.useNodeColor(true);
-  edge.setShape(GRAPH_CYLINDER);
-//  edge.setStartColor(QColor(128, 128, 0));
-//  edge.setEndColor(QColor(128, 128, 0));
-  edge.setWidth(radius);
+  if (radius > 0.0) {
+    Z3DGraphEdge edge;
+    edge.useNodeColor(true);
+    edge.setShape(GRAPH_CYLINDER);
+    //  edge.setStartColor(QColor(128, 128, 0));
+    //  edge.setEndColor(QColor(128, 128, 0));
+    edge.setWidth(radius);
 
-  edge.setConnection(0, 1);
-  graph->addEdge(edge);
+    edge.setConnection(0, 1);
+    graph->addEdge(edge);
 
-  edge.setConnection(0, 2);
-  graph->addEdge(edge);
+    edge.setConnection(0, 2);
+    graph->addEdge(edge);
 
-  edge.setConnection(2, 3);
-  graph->addEdge(edge);
+    edge.setConnection(2, 3);
+    graph->addEdge(edge);
 
-  edge.setConnection(1, 3);
-  graph->addEdge(edge);
+    edge.setConnection(1, 3);
+    graph->addEdge(edge);
 
-  edge.setConnection(4, 5);
-  graph->addEdge(edge);
+    edge.setConnection(4, 5);
+    graph->addEdge(edge);
 
-  edge.setConnection(5, 7);
-  graph->addEdge(edge);
+    edge.setConnection(5, 7);
+    graph->addEdge(edge);
 
-  edge.setConnection(6, 7);
-  graph->addEdge(edge);
+    edge.setConnection(6, 7);
+    graph->addEdge(edge);
 
-  edge.setConnection(4, 6);
-  graph->addEdge(edge);
+    edge.setConnection(4, 6);
+    graph->addEdge(edge);
 
-  edge.setConnection(0, 4);
-  graph->addEdge(edge);
+    edge.setConnection(0, 4);
+    graph->addEdge(edge);
 
-  edge.setConnection(1, 5);
-  graph->addEdge(edge);
+    edge.setConnection(1, 5);
+    graph->addEdge(edge);
 
-  edge.setConnection(2, 6);
-  graph->addEdge(edge);
+    edge.setConnection(2, 6);
+    graph->addEdge(edge);
 
-  edge.setConnection(3, 7);
-  graph->addEdge(edge);
+    edge.setConnection(3, 7);
+    graph->addEdge(edge);
+  }
 
   return graph;
 }
@@ -152,48 +154,50 @@ Z3DGraph* Z3DGraphFactory::MakeBox(const ZIntCuboid &box, double radius)
     graph->addNode(node);
   }
 
-  Z3DGraphEdge edge;
-  edge.useNodeColor(true);
-  edge.setShape(GRAPH_CYLINDER);
-//  edge.setStartColor(QColor(128, 128, 0));
-//  edge.setEndColor(QColor(128, 128, 0));
-  edge.setWidth(radius);
+  if (radius > 0.0) {
+    Z3DGraphEdge edge;
+    edge.useNodeColor(true);
+    edge.setShape(GRAPH_CYLINDER);
+    //  edge.setStartColor(QColor(128, 128, 0));
+    //  edge.setEndColor(QColor(128, 128, 0));
+    edge.setWidth(radius);
 
-  edge.setConnection(0, 1);
-  graph->addEdge(edge);
+    edge.setConnection(0, 1);
+    graph->addEdge(edge);
 
-  edge.setConnection(0, 2);
-  graph->addEdge(edge);
+    edge.setConnection(0, 2);
+    graph->addEdge(edge);
 
-  edge.setConnection(2, 3);
-  graph->addEdge(edge);
+    edge.setConnection(2, 3);
+    graph->addEdge(edge);
 
-  edge.setConnection(1, 3);
-  graph->addEdge(edge);
+    edge.setConnection(1, 3);
+    graph->addEdge(edge);
 
-  edge.setConnection(4, 5);
-  graph->addEdge(edge);
+    edge.setConnection(4, 5);
+    graph->addEdge(edge);
 
-  edge.setConnection(5, 7);
-  graph->addEdge(edge);
+    edge.setConnection(5, 7);
+    graph->addEdge(edge);
 
-  edge.setConnection(6, 7);
-  graph->addEdge(edge);
+    edge.setConnection(6, 7);
+    graph->addEdge(edge);
 
-  edge.setConnection(4, 6);
-  graph->addEdge(edge);
+    edge.setConnection(4, 6);
+    graph->addEdge(edge);
 
-  edge.setConnection(0, 4);
-  graph->addEdge(edge);
+    edge.setConnection(0, 4);
+    graph->addEdge(edge);
 
-  edge.setConnection(1, 5);
-  graph->addEdge(edge);
+    edge.setConnection(1, 5);
+    graph->addEdge(edge);
 
-  edge.setConnection(2, 6);
-  graph->addEdge(edge);
+    edge.setConnection(2, 6);
+    graph->addEdge(edge);
 
-  edge.setConnection(3, 7);
-  graph->addEdge(edge);
+    edge.setConnection(3, 7);
+    graph->addEdge(edge);
+  }
 
   return graph;
 }

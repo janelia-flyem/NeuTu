@@ -253,10 +253,16 @@ ZPoint& ZPoint::operator= (const ZPoint &pt)
   return *this;
 }
 
-bool ZPoint::operator ==(const ZPoint &pt)
+bool ZPoint::operator ==(const ZPoint &pt) const
 {
   return this->x() == pt.x() && this->y() == pt.y() && this->z() == pt.z();
 }
+
+bool ZPoint::operator !=(const ZPoint &pt) const
+{
+  return this->x() != pt.x() || this->y() != pt.y() || this->z() != pt.z();
+}
+
 
 double ZPoint::dot(const ZPoint &pt) const
 {

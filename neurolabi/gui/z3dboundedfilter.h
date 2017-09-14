@@ -8,6 +8,8 @@
 #include "z3dsphererenderer.h"
 #include "z3darrowrenderer.h"
 
+class ZLineSegment;
+
 // child class should implement two pure virtual function and call updateBoundBox whenever its
 // own parameter affect bound box
 class Z3DBoundedFilter : public Z3DFilter
@@ -197,6 +199,8 @@ public:
   void rayUnderScreenPoint(glm::vec3& v1, glm::vec3& v2, int x, int y, int width, int height);
 
   void rayUnderScreenPoint(glm::dvec3& v1, glm::dvec3& v2, int x, int y, int width, int height);
+
+  ZLineSegment getScreenRay(int x, int y, int width, int height);
 
 signals:
 

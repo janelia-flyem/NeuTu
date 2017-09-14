@@ -97,6 +97,8 @@ void write(std::ostream &stream, const T *v, size_t n)
   stream.write((const char*)(v), sizeof(T) * n);
 }
 
+template<typename T>
+void assign(T *out, const T &v);
 
 /*!
  * \brief Parse hdf5 path
@@ -146,6 +148,14 @@ std::set<T> misc::setdiff(const std::set<T> &s1, const std::set<T> &s2)
   std::set_difference(s1.begin(), s1.end(), s2.begin(), s2.end(),
                       std::inserter(result, result.begin()));
   return result;
+}
+
+template<typename T>
+void misc::assign(T *out, const T &v)
+{
+  if (out != NULL) {
+    *out = v;
+  }
 }
 
 //// partial-specialization optimization for 8-bit numbers

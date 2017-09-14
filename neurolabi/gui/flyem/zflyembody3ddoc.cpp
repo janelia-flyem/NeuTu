@@ -1,3 +1,4 @@
+#define _NEUTU_USE_REF_KEY_
 #include "zflyembody3ddoc.h"
 
 #include <QtConcurrentRun>
@@ -22,6 +23,10 @@
 #include "zflyembody3ddockeyprocessor.h"
 #include "zflyembody3ddoccommand.h"
 #include "zmesh.h"
+#include "zglobal.h"
+#include "zflyemmisc.h"
+#include "zstroke2d.h"
+#include "zobject3d.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -91,6 +96,11 @@ void ZFlyEmBody3dDoc::updateBodyFunc()
 void ZFlyEmBody3dDoc::enableNodeSeeding(bool on)
 {
   m_nodeSeeding = on;
+}
+
+void ZFlyEmBody3dDoc::enableBodySelectionSync(bool on)
+{
+  m_syncyingBodySelection = on;
 }
 
 template<typename T>
@@ -520,6 +530,45 @@ bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
         ZStackObject::TYPE_FLYEM_TODO_ITEM).empty();
 }
 
+void ZFlyEmBody3dDoc::saveSplitTask()
+{
+  if (m_bodySet.size() == 1) {
+    uint64_t bodyId = *m_bodySet.begin();
+    if (bodyId > 0) {
+      ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+            GET_FLYEM_CONFIG.getTaskServer());
+      if (writer != NULL) {
+        ZJsonObject task;
+        ZDvidUrl dvidUrl(getDvidTarget());
+        std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
+        task.setEntry("signal", bodyUrl);
+        ZJsonArray seedJson = ZFlyEmMisc::GetSeedJson(this);
+        task.setEntry("seeds", seedJson);
+//        ZJsonArray roiJson = getRoiJson();
+//        if (roiJson.isEmpty()) {
+//          ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
+//          if (!range.isEmpty()) {
+//            roiJson = range.toJsonArray();
+//          }
+//        }
+//        if (!roiJson.isEmpty()) {
+//          task.setEntry("range", roiJson);
+//        }
+
+        std::string location = writer->writeServiceTask("split", task);
+        ZJsonObject taskJson;
+        taskJson.setEntry(NeuTube::Json::REF_KEY, location);
+  //      QUrl url(bodyUrl.c_str());
+        QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
+  //      QString("task__") + QUrl::toPercentEncoding(bodyUrl.c_str());
+        writer->writeSplitTask(taskKey, taskJson);
+
+        std::cout << "Split task saved @" << taskKey.toStdString() << std::endl;
+      }
+    }
+  }
+}
+
 ZFlyEmToDoItem* ZFlyEmBody3dDoc::getOneSelectedTodoItem() const
 {
   ZFlyEmToDoItem *item = NULL;
@@ -667,7 +716,9 @@ void ZFlyEmBody3dDoc::updateBodyModelSelection()
 
 void ZFlyEmBody3dDoc::processEvent()
 {
-  updateBodyModelSelection();
+  if (m_syncyingBodySelection) {
+    updateBodyModelSelection();
+  }
 
   if (m_eventQueue.empty()) {
     return;
@@ -796,6 +847,10 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
     }
   }
 
+#if defined(_NEU3_)
+  event.setBodyColor(Qt::white);
+#endif
+
   if (event.getAction() == BodyEvent::ACTION_ADD &&
       getBodyType() != FlyEM::BODY_SKELETON) {
     event.setResLevel(MAX_RES_LEVEL);
@@ -887,6 +942,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
       addSynapse(bodyId);
 //      addTodo(bodyId);
       updateTodo(bodyId);
+      loadSplitTask(bodyId);
     }
   }
 }
@@ -1100,6 +1156,61 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
               item, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
       }
     }
+    getDataBuffer()->deliver();
+  }
+}
+
+void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(GET_FLYEM_CONFIG.getTaskServer());
+  ZJsonObject taskJson =
+      reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
+                                    taskKey.c_str());
+  if (taskJson.hasKey(NeuTube::Json::REF_KEY)) {
+    taskJson =
+        reader->readJsonObject(
+          ZJsonParser::stringValue(taskJson[NeuTube::Json::REF_KEY]));
+  }
+  ZJsonArray seedArrayJson(taskJson.value("seeds"));
+  QList<ZStackObject*> seedList;
+  for (size_t i = 0; i < seedArrayJson.size(); ++i) {
+    ZJsonObject seedJson(seedArrayJson.value(i));
+    if (seedJson.hasKey("type")) {
+//      std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
+      std::string type = ZJsonParser::stringValue(seedJson["type"]);
+      if (type == "ZStroke2d") {
+        ZStroke2d *stroke = new ZStroke2d;
+        stroke->loadJsonObject(ZJsonObject(seedJson.value("data")));
+
+        if (!stroke->isEmpty()) {
+          seedList.append(stroke);
+        } else {
+          delete stroke;
+        }
+      } else if (type == "ZObject3d") {
+        ZObject3d *obj = new ZObject3d;
+        obj->loadJsonObject(ZJsonObject(seedJson.value("data")));
+        if (!obj->isEmpty()) {
+          seedList.append(obj);
+        } else {
+          delete obj;
+        }
+      }
+    }
+  }
+  foreach (ZStackObject *seed, seedList) {
+    seed->addRole(ZStackObjectRole::ROLE_SEED |
+                  ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+    ZLabelColorTable colorTable;
+    seed->setColor(colorTable.getColor(seed->getLabel()));
+  }
+  if (!seedList.isEmpty()) {
+    getDataBuffer()->addUpdate(
+          seedList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     getDataBuffer()->deliver();
   }
 }
@@ -1333,6 +1444,10 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
 //        dumpGarbageUnsync(*iter, true);
         getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
       }
+
+      objList = getObjectGroup().findSameSource(
+            ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+      getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::ACTION_KILL);
     }
 
     getDataBuffer()->deliver();

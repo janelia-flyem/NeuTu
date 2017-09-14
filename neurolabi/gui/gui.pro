@@ -10,7 +10,12 @@ contains(TEMPLATE, app) {
 }
 
 contains(CONFIG, neu3) {
-  DEFINES += _NEU3_ _FLYEM_
+  DEFINES += _NEU3_
+}
+
+contains(CONFIG, neu3) | contains(CONFIG, flyem) {
+  CONFIG *=c++11
+  DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
 }
 
 #DEFINES+=_CLI_VERSION
@@ -132,7 +137,7 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     message("Qt 5")
     QT += concurrent gui widgets network xml
     DEFINES += _QT5_
-    CONFIG *= c++11 autotarget
+    CONFIG *= c++11
 }
 
 contains(CONFIG, c++11) {
@@ -165,8 +170,12 @@ win32 {
       $$PWD/ext/sys/VidMemViaDDraw.cpp \
       $$PWD/ext/sys/VidMemViaDxDiag.cpp
 }
-macx {
-  SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+unix {
+    macx {
+        SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+    } else {
+        SOURCES += $$PWD/ext/sys/VideoMemoryLinux.cpp
+    }
 }
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
@@ -242,6 +251,7 @@ unix {
             message($$QMAKE_HOST.arch)
             QMAKE_CXXFLAGS += -m64
         }
+        QMAKE_CXXFLAGS += -fext-numeric-literals
         RC_FILE = images/app.icns
     }
 }
@@ -692,6 +702,8 @@ HEADERS += mainwindow.h \
     protocols/doNthingsprotocol.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
+    protocols/synapsereviewprotocol.h \
+    protocols/synapsereviewinputdialog.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -791,6 +803,7 @@ HEADERS += mainwindow.h \
     widgets/taskprotocolwindow.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
+    protocols/tasksplitseeds.h \
     flyem/zflyembody3ddoccommand.h \
     flyem/zflyembody3ddocmenufactory.h \
     zopenglwidget.h \
@@ -873,6 +886,8 @@ FORMS += dialogs/settingdialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/synapsereviewprotocol.ui \
+    protocols/synapsereviewinputdialog.ui \
     protocols/protocoldialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
@@ -1294,6 +1309,8 @@ SOURCES += main.cpp \
     protocols/doNthingsprotocol.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsereviewprotocol.cpp \
+    protocols/synapsereviewinputdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
@@ -1388,6 +1405,7 @@ SOURCES += main.cpp \
     widgets/taskprotocolwindow.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
+    protocols/tasksplitseeds.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \
     zopenglwidget.cpp \

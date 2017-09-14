@@ -59,7 +59,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  virtual void updateTileData();
+//  virtual void updateTileData();
 
   const ZDvidTarget& getDvidTarget() const;
 
@@ -552,6 +552,7 @@ protected:
   ZDvidReader m_todoReader;
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
+  ZDvidReader m_grayscaleReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 

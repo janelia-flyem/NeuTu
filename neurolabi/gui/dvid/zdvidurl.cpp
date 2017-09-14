@@ -200,10 +200,21 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
 {
   std::string url;
 
-  if (zoom == 0) {
+  if (m_dvidTarget.usingLabelArray()) {
     url = getSparsevolUrl(bodyId);
+    if (zoom > m_dvidTarget.getMaxLabelZoom()) {
+      zoom = m_dvidTarget.getMaxLabelZoom();
+    }
+    ZString option = "?scale=";
+    option.appendNumber(zoom);
+
+    url += option;
   } else {
-    url = getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName(zoom));
+    if (zoom == 0) {
+      url = getSparsevolUrl(bodyId);
+    } else {
+      url = getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName(zoom));
+    }
   }
 
   return url;

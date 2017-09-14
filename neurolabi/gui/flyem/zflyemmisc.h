@@ -23,6 +23,7 @@ class ZStroke2d;
 class QDir;
 class ZStack;
 class ZVaa3dMarker;
+class ZObject3d;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -37,9 +38,9 @@ ZCubeArray* MakeRoiCube(const ZObject3dScan &roi, QColor color, int dsIntv);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
-                          const ZStackViewParam &viewParam);
+                          const ZStackViewParam &viewParam, bool visible = true);
 void Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
-                               const ZStackViewParam &viewParam);
+                               const ZStackViewParam &viewParam, bool visible = true);
 void Decorate3dBodyWindowRoi(Z3DWindow *window, const ZDvidInfo &dvidInfo,
                              const ZDvidTarget &dvidTarget);
 void Decorate3dBodyWindowRoiCube(Z3DWindow *window, const ZDvidInfo &dvidInfo,
@@ -73,7 +74,13 @@ ZStroke2d SyGlassSeedToStroke(const ZJsonObject &obj);
 ZStroke2d SyGlassSeedToStroke(
     const ZJsonObject &obj, const ZIntPoint &offset, const ZIntPoint &dsIntv);
 ZJsonObject MakeSplitSeedJson(const ZStroke2d &stroke);
+ZJsonObject MakeSplitSeedJson(const ZObject3d &seed);
 void AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke);
+void AddSplitTaskSeed(ZJsonObject &taskObj, const ZObject3d &obj);
+template<typename T>
+void AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj);
+ZJsonArray GetSeedJson(ZStackDoc *doc);
+
 void UploadSyGlassTask(const std::string &filePath, const ZDvidTarget &target);
 
 namespace MB6Paper {

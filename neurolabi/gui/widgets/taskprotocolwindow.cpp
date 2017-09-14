@@ -12,6 +12,7 @@
 #include "neutube.h"
 #include "flyem/zflyemproofdoc.h"
 #include "protocols/taskbodyreview.h"
+#include "protocols/tasksplitseeds.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -28,9 +29,11 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
 
     // UI connections
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
+    connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
     connect(ui->loadTasksButton, SIGNAL(clicked(bool)), this, SLOT(onLoadTasksButton()));
     connect(ui->completedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onCompletedStateChanged(int)));
+    connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
 }
@@ -39,10 +42,12 @@ const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
 const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
 const QString TaskProtocolWindow::KEY_VERSION = "file version";
 const int TaskProtocolWindow::currentVersion = 1;
+const QString TaskProtocolWindow::KEY_ID = "ID";
 const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
 const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
 const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
 const QString TaskProtocolWindow::TASK_PROTOCOL_KEY = "task-protocol";
+const QString TaskProtocolWindow::TAG_NEEDS_REVIEW = "needs review";
 
 /*
  * init() performs tasks that have to occur after UI connections are
@@ -57,16 +62,61 @@ void TaskProtocolWindow::init() {
         return;
     }
 
+    ZDvidReader reader;
+    if (!reader.open(m_proofDoc->getDvidTarget())) {
+        showError("Couldn't open DVID", "DVID couldn't be opened!  Check your network connections.");
+        setWindowConfiguration(LOAD_BUTTON);
+        return;
+    }
+    ZDvid::ENodeStatus status = reader.getNodeStatus();
+    if (status == ZDvid::NODE_INVALID || status == ZDvid::NODE_OFFLINE) {
+        showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
+        setWindowConfiguration(LOAD_BUTTON);
+        return;
+    }
+    if (status == ZDvid::NODE_LOCKED) {
+        m_nodeLocked = true;
+        ui->completedCheckBox->setEnabled(false);
+    } else {
+        // NODE_NORMAL
+        m_nodeLocked = false;
+        ui->completedCheckBox->setEnabled(true);
+    }
+
     // check DVID; if user has a started task list, load it immediately
     QJsonObject json = loadJsonFromDVID(PROTOCOL_INSTANCE, generateDataKey());
     if (!json.isEmpty()) {
-        // don't need to save to DVID if we load from DVID
+        if (m_nodeLocked) {
+            QMessageBox messageBox;
+            messageBox.setText("DVID node locked");
+            messageBox.setInformativeText("This DVID node is locked! Do you want to load the task protocol? If you do, you will not be able to complete any tasks.\n\nContinue loading protocol?");
+            messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+            messageBox.setDefaultButton(QMessageBox::Ok);
+            int ret = messageBox.exec();
+            if (ret != QMessageBox::Ok) {
+                setWindowConfiguration(LOAD_BUTTON);
+                return;
+            }
+        }
         startProtocol(json, false);
     } else {
         // otherwise, show the load task file button
         setWindowConfiguration(LOAD_BUTTON);
     }
+}
 
+void TaskProtocolWindow::onPrevButton() {
+    if (ui->showCompletedCheckBox->isChecked()) {
+        m_currentTaskIndex = getPrev();
+    } else {
+        m_currentTaskIndex = getPrevUncompleted();
+        if (m_currentTaskIndex < 0) {
+            showInfo("No tasks to do!", "All tasks have been completed!");
+        }
+    }
+    updateCurrentTaskLabel();
+    updateBodyWindow();
+    updateLabel();
 }
 
 void TaskProtocolWindow::onNextButton() {
@@ -106,8 +156,14 @@ void TaskProtocolWindow::onDoneButton() {
         return;
     }
 
-    // new key is old key + datetime stamp
-    QString key = generateDataKey() + "-" + QDateTime::currentDateTime().toString("yyyyMMddhhmm");
+    // new key is old key + either identifier or datetime stamp
+    QString key;
+    if (m_ID.size() > 0) {
+        key = generateDataKey() + "-" + m_ID;
+    } else {
+        key = generateDataKey() + "-" + QDateTime::currentDateTime().toString("yyyyMMddhhmm");
+    }
+
     QJsonDocument doc(storeTasks());
     QString jsonString(doc.toJson(QJsonDocument::Compact));
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
@@ -116,7 +172,8 @@ void TaskProtocolWindow::onDoneButton() {
     // delete old key
     m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
 
-    LINFO() << "Task protocol: saved completed data to DVID";
+    LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
+            << "," << key.toStdString();
 
     setWindowConfiguration(LOAD_BUTTON);
 }
@@ -130,6 +187,11 @@ void TaskProtocolWindow::onLoadTasksButton() {
         return;
     }
 
+    if (m_nodeLocked) {
+        showError("DVID node locked", "This DVID node is locked! Protocol not loaded.");
+        return;
+    }
+
     // load json from file (for now; eventually, allow user to browse from DVID,
     //  or maybe enter an assignment ID or something)
     QJsonObject json = loadJsonFromFile(result);
@@ -139,6 +201,18 @@ void TaskProtocolWindow::onLoadTasksButton() {
 void TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
+        saveState();
+        updateLabel();
+    }
+}
+
+void TaskProtocolWindow::onReviewStateChanged(int state) {
+    if (m_currentTaskIndex >= 0) {
+        if (ui->reviewCheckBox->isChecked()) {
+            m_taskList[m_currentTaskIndex]->addTag(TAG_NEEDS_REVIEW);
+        } else {
+            m_taskList[m_currentTaskIndex]->removeTag(TAG_NEEDS_REVIEW);
+        }
         saveState();
         updateLabel();
     }
@@ -184,6 +258,12 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     //  would convert them
 
 
+    // save the unique identifier, if present:
+    if (json.contains(KEY_ID)) {
+        m_ID = json[KEY_ID].toString();
+    }
+
+
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
     if (save) {
@@ -219,6 +299,17 @@ int TaskProtocolWindow::getFirstUncompleted() {
 }
 
 /*
+ * returns index of previous task before current task
+ */
+int TaskProtocolWindow::getPrev() {
+    int index = m_currentTaskIndex - 1;
+    if (index < 0) {
+        index = m_taskList.size() - 1;
+    }
+    return index;
+}
+
+/*
  * returns index of next task after current task
  */
 int TaskProtocolWindow::getNext() {
@@ -227,6 +318,31 @@ int TaskProtocolWindow::getNext() {
         index = 0;
     }
     return index;
+}
+
+/*
+ * returns index of previous uncompleted task before
+ * current task, or -1
+ */
+int TaskProtocolWindow::getPrevUncompleted() {
+    int startIndex = m_currentTaskIndex;
+    int index = startIndex - 1;
+    while (index != startIndex) {
+        if (index < 0) {
+            index = m_taskList.size() - 1;
+            continue;
+        }
+        if (!m_taskList[index]->completed()) {
+            return index;
+        }
+        index--;
+    }
+    // we're back at current index
+    if (m_taskList[index]->completed()) {
+        return -1;
+    } else {
+        return index;
+    }
 }
 
 /*
@@ -262,10 +378,16 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
         ui->taskActionLabel->setText("(no task)");
         ui->taskTargetLabel->setText("n/a");
         ui->completedCheckBox->setChecked(false);
+        ui->reviewCheckBox->setChecked(false);
     } else {
         ui->taskActionLabel->setText(m_taskList[m_currentTaskIndex]->actionString());
         ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
         ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
+        if (m_taskList[m_currentTaskIndex]->hasTag(TAG_NEEDS_REVIEW)) {
+            ui->reviewCheckBox->setChecked(true);
+        } else {
+            ui->reviewCheckBox->setChecked(false);
+        }
     }
 }
 
@@ -312,6 +434,10 @@ void TaskProtocolWindow::updateLabel() {
     int ntasks = m_taskList.size();
     float percent = (100.0 * ncomplete) / ntasks;
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
+
+    // whenever we update the label, also log the progress; this is not useful as
+    //  an activity tracker, as the label gets updated not always in response to user action
+    LINFO() << "Task protocol: progress updated:" << ncomplete << "/" << ntasks;
 }
 
 /*
@@ -343,7 +469,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
         showError("Error parsing file", "Couldn't parse file " + filepath + "!");
         return emptyResult;
     } else {
-        LINFO() << "Task protocol: json loaded from file " + filepath;
+        LINFO() << "Task protocol: json loaded from file" + filepath;
         return doc.object();
     }
 }
@@ -371,7 +497,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
                 ", " + key + "!");
             return emptyResult;
         } else {
-            LINFO() << "Task protocol: json loaded from " + instance + ", " + key;
+            LINFO() << "Task protocol: json loaded from DVID:" + instance + "," + key;
             return doc.object();
         }
 }
@@ -429,13 +555,16 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         if (taskType == "body review") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
             m_taskList.append(task);
+        } else if (taskType == "split seeds") {
+            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject()));
+            m_taskList.append(task);
         } else {
             // unknown task type; log it and move on
             LWARN() << "Task protocol: found unknown task type " << taskType << " in task json; skipping";
         }
     }
 
-    LINFO() << "Task protocol: loaded " << m_taskList.size() << " tasks";
+    LINFO() << "Task protocol: loaded" << m_taskList.size() << "tasks";
 }
 
 /*
@@ -446,6 +575,9 @@ QJsonObject TaskProtocolWindow::storeTasks() {
     QJsonObject json;
     json[KEY_DESCRIPTION] = VALUE_DESCRIPTION;
     json[KEY_VERSION] = currentVersion;
+    if (m_ID.size() > 0) {
+        json[KEY_ID] = m_ID;
+    }
 
     QJsonArray tasks;
     foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
@@ -472,7 +604,8 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString(),
         jsonString.toStdString());
 
-    LINFO() << "Task protocol: saved data to DVID";
+    LINFO() << "Task protocol: saved data to DVID:" << PROTOCOL_INSTANCE.toStdString()
+            << "," << generateDataKey().toStdString();
 }
 
 /*

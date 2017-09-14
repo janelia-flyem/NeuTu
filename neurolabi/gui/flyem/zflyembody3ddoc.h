@@ -137,6 +137,8 @@ public:
   void setBodyType(FlyEM::EBodyType type);
   FlyEM::EBodyType getBodyType() const { return m_bodyType; }
 
+  QSet<uint64_t> getBodySet() const { return m_bodySet; }
+
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
@@ -155,6 +157,7 @@ public:
   ZFlyEmToDoItem makeTodoItem(
       int x, int y, int z, bool checked, uint64_t bodyId);
   ZFlyEmToDoItem readTodoItem(int x, int y, int z) const;
+  void loadSplitTask(uint64_t bodyId);
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
@@ -214,6 +217,7 @@ public:
   bool updating() const;
 
   void enableNodeSeeding(bool on);
+  void enableBodySelectionSync(bool on);
 
 public:
   void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
@@ -237,6 +241,7 @@ public slots:
   void setSeedType(int type);
 
   void setBodyModelSelected(const QSet<uint64_t> &bodySet);
+  void saveSplitTask();
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -332,6 +337,7 @@ private:
   bool m_showingSynapse = true;
   bool m_showingTodo = true;
   bool m_nodeSeeding = false;
+  bool m_syncyingBodySelection = false;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 

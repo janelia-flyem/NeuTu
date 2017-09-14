@@ -6,7 +6,7 @@
 #include "tz_utilities.h"
 #include "zpainter.h"
 
-ZLineSegmentObject::ZLineSegmentObject() : m_width(1.0), m_label(0)
+ZLineSegmentObject::ZLineSegmentObject() : m_width(1.0)
 {
   m_type = TYPE_LINE_SEGMENT;
   m_focusColor.setAlpha(0);

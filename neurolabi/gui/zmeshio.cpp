@@ -50,12 +50,16 @@ aiMesh* createAIMesh(const ZMesh& mesh)
   }
   pMesh->mNumVertices = mesh.numVertices();
   pMesh->mVertices = new aiVector3D[pMesh->mNumVertices];
-  pMesh->mNormals = new aiVector3D[pMesh->mNumVertices];
   const std::vector<glm::vec3>& vertices = mesh.vertices();
   const std::vector<glm::vec3>& normals = mesh.normals();
-  CHECK(normals.size() >= vertices.size());
+  if (!normals.empty()) {
+    pMesh->mNormals = new aiVector3D[pMesh->mNumVertices];
+    CHECK(normals.size() >= vertices.size());
+  }
   memcpy(pMesh->mVertices, vertices.data(), sizeof(float) * 3 * vertices.size());
-  memcpy(pMesh->mNormals, normals.data(), sizeof(float) * 3 * vertices.size());
+  if (!normals.empty()) {
+    memcpy(pMesh->mNormals, normals.data(), sizeof(float) * 3 * vertices.size());
+  }
 
   return pMesh;
 }

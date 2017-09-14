@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <initializer_list>
 
 #include "zjsonvalue.h"
 #include "tz_stdint.h"
@@ -26,6 +27,7 @@ public:
   const json_t* operator[] (const char *key) const;
 
   ZJsonValue value(const char *key) const;
+  ZJsonValue value(const std::initializer_list<const char*> &keyList) const;
 
   /*!
    * \brief Test if an object is empty

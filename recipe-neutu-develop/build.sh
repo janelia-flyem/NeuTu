@@ -4,14 +4,14 @@ if [ $(uname) == 'Darwin' ]; then
 fi
 
 if [ $(uname) == 'Darwin' ]; then
-    QMAKE_SPEC_PATH=${PREFIX}/mkspecs/macx-g++
+    QMAKE_SPEC_PATH=${PREFIX}/mkspecs/macx-clang
 else
     QMAKE_SPEC_PATH=${PREFIX}/mkspecs/linux-g++-64
 fi
 
 export CONDA_ENV=${PREFIX}
 
-bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem 
+bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem
 
 # Install to conda environment
 if [ $(uname) == 'Darwin' ]; then
