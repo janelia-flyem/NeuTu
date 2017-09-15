@@ -2062,7 +2062,17 @@ void ZFlyEmProofDoc::loadSplitFromService()
           obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
     m_dataBuffer->deliver();
   }
+}
 
+void ZFlyEmProofDoc::loadSplitTaskFromService()
+{
+  uint64_t originalId = getBodyIdForSplit();
+  if (originalId > 0) {
+    QList<ZStackObject*> seedList = ZServiceConsumer::ReadSplitTaskSeed(
+          GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), originalId);
+    getDataBuffer()->addUpdate(seedList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    getDataBuffer()->deliver();
+  }
 }
 
 void ZFlyEmProofDoc::commitSplitFromService()

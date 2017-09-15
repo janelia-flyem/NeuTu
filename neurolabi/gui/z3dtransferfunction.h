@@ -70,6 +70,12 @@ protected:
   GLenum m_textureDataType;
 };
 
+/*!
+ * \brief The class of transfer function
+ *
+ * A transfer function maps a pixel value into a RGBA color. It is mainly used 
+ * to adjust colors in volume rendering.
+ */
 class Z3DTransferFunctionParameter : public ZSingleValueParameter<Z3DTransferFunction>
 {
 Q_OBJECT

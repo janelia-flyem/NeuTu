@@ -52,6 +52,7 @@ signals:
   void bookmarkChecked(ZFlyEmBookmark*);
   void croppingCoarseBody3D();
   void showingBodyGrayscale();
+  void loadingSplitTask();
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);
@@ -82,6 +83,7 @@ private slots:
   void saveTask();
   void loadSplitResult();
   void uploadSplitResult();
+  void loadSplitTask();
 
 private:
   void setupWidgetBehavior();

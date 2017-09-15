@@ -125,6 +125,17 @@ bool ZServiceConsumer::HasSplitResult(
   return hasResult;
 }
 
+QList<ZStackObject*> ZServiceConsumer::ReadSplitTaskSeed(
+    const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId)
+{
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(server.toStdString());
+
+  QList<ZStackObject*> seedList;
+  seedList = reader->readSeedFromSplitTask(bodySource, bodyId);
+  return seedList;
+}
+
 QList<ZObject3dScan*> ZServiceConsumer::ReadSplitResult(
     const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId)
 {
@@ -217,6 +228,7 @@ QList<ZObject3dScan*> ZServiceConsumer::ReadSplitResult(
 
   return ZServiceConsumer::ReadSplitResult(path);
 }
+
 
 QList<ZObject3dScan*> ZServiceConsumer::ReadSplitResult(const QString &path)
 {

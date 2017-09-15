@@ -370,6 +370,7 @@ public:
   int removeDvidSparsevol(NeuTube::EAxis axis);
 
   void loadSplitFromService();
+  void loadSplitTaskFromService();
   void commitSplitFromService();
 
 signals:

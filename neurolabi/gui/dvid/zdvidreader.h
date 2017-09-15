@@ -420,6 +420,11 @@ public:
   ZJsonObject readServiceTask(
       const std::string &group, const std::string &key) const;
   std::map<std::string, ZJsonObject> readSplitTaskMap() const;
+  QList<ZStackObject*> readSeedFromSplitTask(
+      const std::string &taskKey, uint64_t bodyId);
+  QList<ZStackObject*> readSeedFromSplitTask(
+      const ZDvidTarget &target, uint64_t bodyId);
+
 
 signals:
   void readingDone();

@@ -658,7 +658,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_SAVE_SPLIT_TASK:
     action = new QAction("Save Split Task", parent);
-    action->setIcon(QIcon(":/images/save_seed.png"));
+    action->setIcon(QIcon(":/images/save_seed2.png"));
     action->setToolTip("Save the split task defined by current seeds.");
     break;
   default:

@@ -1539,6 +1539,8 @@ void ZFlyEmProofMvc::customInit()
 
 
   m_splitProject.setDocument(getDocument());
+  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this, SLOT(zoomTo(int,int,int,int)));
 //  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
 //          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
@@ -3741,6 +3743,11 @@ void ZFlyEmProofMvc::setBodyIdForSplit(uint64_t id)
 void ZFlyEmProofMvc::loadSplitResult()
 {
   getCompleteDocument()->loadSplitFromService();
+}
+
+void ZFlyEmProofMvc::loadSplitTask()
+{
+  getCompleteDocument()->loadSplitTaskFromService();
 }
 
 void ZFlyEmProofMvc::uploadSplitResult()

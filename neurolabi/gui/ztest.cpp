@@ -24477,13 +24477,27 @@ void ZTest::test(MainWindow *host)
    delete obj;
 #endif
 
-#if 1
+#if 0
    ZStack *stack = ZStackFactory::MakeZeroStack(GREY, 3, 3, 3, 1);
    stack->setValue(1, 1, 1, 0, 255);
    stack->setOffset(1, 1, 1);
    stack->setDsIntv(1, 1, 1);
 
    stack->save(GET_BENCHMARK_DIR + "/dot.tif");
+#endif
+
+#if 0
+   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+         "http://emdata1.int.janelia.org:8500/api/node/b6bc/bodies2/sparsevol/1");
+   writer->getDvidTarget().print();
+#endif
+
+#if 0
+   ZDvidTarget target;
+   target.setFromUrl("http://emdata1.int.janelia.org:8500/api/node/b6bc/bodies2/sparsevol/1");
+
+//   target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c:bodies2");
+   target.print();
 #endif
 
   std::cout << "Done." << std::endl;
