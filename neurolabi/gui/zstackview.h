@@ -188,6 +188,9 @@ public:
 
   virtual void paintStackBuffer();
   void paintMaskBuffer();
+  /*!
+   * \brief Update the buffer of object canvas.
+   */
   void paintObjectBuffer();
   bool paintTileCanvasBuffer();
 

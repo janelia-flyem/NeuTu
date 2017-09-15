@@ -2365,6 +2365,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
       m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
       m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfig.datatypename = getDvidTarget().getLabelBlockName();
+      m_lowtisConfig.enableprefetch = false;
 
       m_lowtisService = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfig));

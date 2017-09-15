@@ -2057,11 +2057,14 @@ void ZFlyEmProofDoc::loadSplitFromService()
     obj->setVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
     obj->setProjectionVisible(false);
     obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-    LINFO() << "Adding" << obj << obj->getSource();
-    m_dataBuffer->addUpdate(
-          obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-    m_dataBuffer->deliver();
+    obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
   }
+
+  removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
+  m_dataBuffer->addUpdate(
+        objList.begin(), objList.end(),
+        ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+  m_dataBuffer->deliver();
 }
 
 void ZFlyEmProofDoc::loadSplitTaskFromService()
