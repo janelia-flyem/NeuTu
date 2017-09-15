@@ -3618,9 +3618,16 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
     }
   }
 
-  m_objectGroup.removeObject(removeSet.begin(), removeSet.end(), deleteObject);
+  if (deleteObject) {
+    m_dataBuffer->addUpdate(
+          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::ACTION_KILL);
+  } else {
+    m_dataBuffer->addUpdate(
+          removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::ACTION_EXPEL);
+  }
+//  m_objectGroup.removeObject(removeSet.begin(), removeSet.end(), deleteObject);
 
-  notifyObjectModified();
+//  notifyObjectModified();
 
 //  blockSignals(true);
 //  for (std::set<ZStackObject*>::iterator iter = removeSet.begin();
@@ -9354,11 +9361,8 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
 {
   if (out != NULL) {
     std::vector<ZObject3dScan*> objArray =
-        ZObject3dFactory::MakeObject3dScanPointerArray(*out);
-    /*
-    ZObject3dArray *objArray = ZObject3dFactory::MakeRegionBoundary(
-          *out, ZObject3dFactory::OUTPUT_SPARSE);
-          */
+        ZObject3dFactory::MakeObject3dScanPointerArray(*out, 1, false);
+
     if (dsIntv.getX() > 0 || dsIntv.getY() > 0 || dsIntv.getZ() > 0) {
       for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
            iter != objArray.end(); ++iter) {
@@ -9371,42 +9375,27 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
       }
     }
 
-    QList<ZDocPlayer*> playerList =
-        getPlayerList(ZStackObjectRole::ROLE_SEED);
-    //foreach (ZStroke2d *stroke, m_strokeList) {
-
     for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
       ZObject3dScan *obj = *iter;
       if (obj != NULL) {
         if (!obj->isEmpty()) {
-          foreach (const ZDocPlayer *player, playerList) {
-            if ((int) obj->getLabel() == player->getLabel()) {
-              obj->setColor(player->getData()->getColor());
-              //ZString objectSource = "localSeededWatershed:Temporary_Border:";
-              // objectSource.appendNumber(stroke->getLabel());
-              obj->setSource(
-                    ZStackObjectSourceFactory::MakeWatershedBoundarySource(
-                      player->getLabel()));
-              obj->setHitProtocal(ZStackObject::HIT_NONE);
-              obj->setProjectionVisible(false);
-              obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-              LINFO() << "Adding" << obj << obj->getSource();
-              //              addObject(obj, true);
-              m_dataBuffer->addUpdate(
-                    obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-              m_dataBuffer->deliver();
-              break;
-            }
-          }
+          obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
+          obj->setSource(
+                ZStackObjectSourceFactory::MakeWatershedBoundarySource(
+                  obj->getLabel()));
+          obj->setHitProtocal(ZStackObject::HIT_NONE);
+          obj->setVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
+          obj->setProjectionVisible(false);
+          obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
+          obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
+          LINFO() << "Adding" << obj << obj->getSource();
+          //              addObject(obj, true);
+          m_dataBuffer->addUpdate(
+                obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+          m_dataBuffer->deliver();
         }
-      }
-    }
-
-    for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
-         iter != objArray.end(); ++iter) {
-      ZObject3dScan *obj = *iter;
-      if (!obj->getRole().hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+      } else {
         delete obj;
       }
     }

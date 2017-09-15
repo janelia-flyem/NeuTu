@@ -54,7 +54,11 @@ public:
   void clear();
 
   void addUpdate(ZStackObject *obj, ZStackDocObjectUpdate::EAction action);
-  void addUpdate(QList<ZStackObject*> objList, ZStackDocObjectUpdate::EAction action);
+  void addUpdate(
+      QList<ZStackObject*> objList, ZStackDocObjectUpdate::EAction action);
+  template<typename InputIterator>
+  void addUpdate(const InputIterator &first, const InputIterator &last,
+                 ZStackDocObjectUpdate::EAction action);
 
   QList<ZStackDocObjectUpdate *> take();
   void deliver();
@@ -69,5 +73,15 @@ private:
 
   mutable QMutex m_mutex;
 };
+
+template<typename InputIterator>
+void ZStackDocDataBuffer::addUpdate(
+    const InputIterator &first, const InputIterator &last,
+    ZStackDocObjectUpdate::EAction action)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    addUpdate(*iter, action);
+  }
+}
 
 #endif // ZSTACKDOCDATABUFFER_H

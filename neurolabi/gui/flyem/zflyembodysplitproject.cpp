@@ -509,13 +509,14 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     for (TStackObjectList::const_iterator iter = objList.begin();
          iter != objList.end(); ++iter) {
       ZObject3dScan *splitObj = dynamic_cast<ZObject3dScan*>(*iter);
-      if (!wholeBody.isEmpty()) {
-        wholeBody.subtractSliently(*splitObj);
-      }
 
       ZOUT(LINFO(), 3) << "Processing split object" << splitObj;
       if (splitObj != NULL) {
-        if (splitObj->hasRole(ZStackObjectRole::ROLE_TMP_RESULT)) {
+        if (splitObj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
+          if (!wholeBody.isEmpty()) {
+            wholeBody.subtractSliently(*splitObj);
+          }
+
           ZOUT(LINFO(), 3) << "Converting split object";
           ZObject3d *obj = splitObj->toObject3d();
           if (obj != NULL) {

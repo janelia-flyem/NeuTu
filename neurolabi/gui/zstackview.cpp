@@ -1828,6 +1828,12 @@ void ZStackView::paintObjectBuffer(
       QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
+#ifdef _DEBUG_
+        std::cout << "Object to display:" << std::endl;
+        std::cout << "  " << obj->getSource() << std::endl;
+        std::cout << "  " << obj->getTarget() << std::endl;
+        std::cout << "  " << obj->isSliceVisible(z, m_sliceAxis) << std::endl;
+#endif
         if ((obj->isSliceVisible(z, m_sliceAxis) || slice < 0) &&
             obj->getTarget() == target) {
           visibleObject.append(obj);
@@ -1840,13 +1846,6 @@ void ZStackView::paintObjectBuffer(
       ZOUT(LTRACE(), 5) << "Displaying objects ...";
 
       for (int i = 0; i < visibleObject.size(); ++i) {
-        /*
-      }
-      for (QList<const ZStackObject*>::const_iterator
-           objIter = visibleObject.begin(); objIter != visibleObject.end(); ++objIter) {
-        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-        const ZStackObject *obj = *objIter;
-        */
         const ZStackObject *obj = visibleObject[i];
         if (slice == m_depthControl->value() || slice < 0) {
           ZOUT(LTRACE(), 5) << obj->className();
@@ -1854,8 +1853,6 @@ void ZStackView::paintObjectBuffer(
           paintHelper.paint(
                 obj, painter, slice, buddyPresenter()->objectStyle(),
                 m_sliceAxis);
-//          obj->display(painter, slice, buddyPresenter()->objectStyle());
-//          painted = true;
         }
       }
     }
@@ -1892,34 +1889,14 @@ void ZStackView::paintObjectBuffer()
     std::cout << "ZStackView::paintObjectBuffer" << std::endl;
   }
 
-
   if (buddyPresenter()->isObjectVisible()) {
     updateObjectCanvas();
-
-    /*
-  ZPixmap *objectCanvas = imageWidget()->getObjectCanvas();
-  if (objectCanvas != NULL) {
-    objectCanvas->cleanUp();
-  }
-  */
-
-    /*
-  if (m_objectCanvas == NULL) {
-    return;
-  }
-  */
 
     paintObjectBuffer(m_objectCanvasPainter, ZStackObject::TARGET_OBJECT_CANVAS);
   } else {
     m_objectCanvasPainter.setPainted(false);
     m_objectCanvas.setVisible(false);
   }
-
-  /*
-  if (m_objectCanvasPainter.isPainted()) {
-    m_objectCanvas.setVisible(true);
-  }
-  */
 }
 
 bool ZStackView::paintTileCanvasBuffer()
@@ -2701,9 +2678,16 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
     ZStackViewParam param = getViewParameter(NeuTube::COORD_STACK);
     QSet<ZStackObject::ETarget> targetSet = updateViewData(param);
     if (redrawing) {
+
       for (QSet<ZStackObject::ETarget>::const_iterator iter = targetSet.begin();
            iter != targetSet.end(); ++iter) {
         paintObjectBuffer(*iter);
+      }
+
+      if (depthChanged) {
+        if (!targetSet.contains(ZStackObject::TARGET_OBJECT_CANVAS)) {
+          paintObjectBuffer();
+        }
       }
 
       paintDynamicObjectBuffer();
