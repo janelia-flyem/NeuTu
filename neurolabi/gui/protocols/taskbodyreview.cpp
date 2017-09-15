@@ -8,6 +8,11 @@
 #include <QJsonObject>
 #include <QsLog.h>
 
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+
+
 TaskBodyReview::TaskBodyReview(QJsonObject json)
 {
     if (json[KEY_TASKTYPE] != VALUE_TASKTYPE) {
@@ -20,6 +25,37 @@ TaskBodyReview::TaskBodyReview(QJsonObject json)
 
     // I split the loading out for now
     loadJson(json);
+
+    // testing: set up UI
+
+
+    // for testing, be sloppy;
+
+    m_widget = new QWidget();
+    QHBoxLayout * layout = new QHBoxLayout;
+
+    QLabel * label = new QLabel("Body " + QString::number(m_bodyID) + ":", m_widget);
+    layout->addWidget(label);
+
+    QPushButton * yesButton = new QPushButton("Yes");
+    layout->addWidget(yesButton);
+
+    QPushButton * noButton = new QPushButton("No");
+    layout->addWidget(noButton);
+
+    m_widget->setLayout(layout);
+    m_widget->setVisible(false);
+
+    connect(yesButton, SIGNAL(clicked(bool)), this, SLOT(onYes()));
+    connect(noButton, SIGNAL(clicked(bool)), this, SLOT(onNo()));
+}
+
+void TaskBodyReview::onYes() {
+    std::cout << "yes button, body ID " << m_bodyID << std::endl;
+}
+
+void TaskBodyReview::onNo() {
+    std::cout << "no button, body ID " << m_bodyID << std::endl;
 }
 
 // constants
@@ -76,3 +112,12 @@ bool TaskBodyReview::loadSpecific(QJsonObject json) {
     return true;
 }
 
+QWidget * TaskBodyReview::getTaskWidget() {
+
+
+
+
+
+    return m_widget;
+
+}

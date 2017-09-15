@@ -7,8 +7,10 @@
 #include <QJsonObject>
 #include <QSet>
 
-class TaskProtocolTask
+class TaskProtocolTask: public QObject
 {
+    Q_OBJECT
+
 public:
     TaskProtocolTask();
 
@@ -27,6 +29,7 @@ public:
     virtual QString tasktype() = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
+    virtual QWidget * getTaskWidget();
 
 protected:
     static const QString KEY_COMPLETED;

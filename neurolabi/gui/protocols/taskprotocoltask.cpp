@@ -50,6 +50,15 @@ void TaskProtocolTask::onCompleted() {
     // nothing
 }
 
+/*
+ * subclasses may optionally implement this method to
+ * add UI below the standard UI
+ */
+QWidget * TaskProtocolTask::getTaskWidget() {
+    return NULL;
+}
+
+
 // tag methods: standard add, remove, has, get all, clear
 
 void TaskProtocolTask::addTag(QString tag) {

@@ -375,6 +375,12 @@ int TaskProtocolWindow::getNextUncompleted() {
  * updates the task label for current index
  */
 void TaskProtocolWindow::updateCurrentTaskLabel() {
+    // if there is a current task widget, remove it from the layout:
+    if (m_currentTaskWidget != NULL) {
+        ui->horizontalLayout->removeWidget(m_currentTaskWidget);
+        m_currentTaskWidget->setVisible(false);
+    }
+
     if (m_currentTaskIndex < 0) {
         ui->taskActionLabel->setText("(no task)");
         ui->taskTargetLabel->setText("n/a");
@@ -388,6 +394,12 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             ui->reviewCheckBox->setChecked(true);
         } else {
             ui->reviewCheckBox->setChecked(false);
+        }
+        // show task-specific UI if it exist
+        m_currentTaskWidget = m_taskList[m_currentTaskIndex]->getTaskWidget();
+        if (m_currentTaskWidget != NULL) {
+            ui->horizontalLayout->addWidget(m_currentTaskWidget);
+            m_currentTaskWidget->setVisible(true);
         }
     }
 }

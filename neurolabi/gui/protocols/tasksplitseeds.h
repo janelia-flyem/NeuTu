@@ -11,6 +11,8 @@
 
 class TaskSplitSeeds : public TaskProtocolTask
 {
+    Q_OBJECT
+
 public:
     TaskSplitSeeds(QJsonObject json);
     QString tasktype();
