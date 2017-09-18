@@ -39,7 +39,7 @@ public:
 
   inline void init() { m_workspace = NULL; }
 
-  static int firstInteger(const std::string &str);
+  static int FirstInteger(const std::string &str);
   int firstInteger();
   int lastInteger();
 
@@ -51,7 +51,7 @@ public:
    * \return Returns the last integer of \a str. It returns 0 if there is no
    *         integer in the string.
    */
-  static int lastInteger(const std::string &str);
+  static int LastInteger(const std::string &str);
   double firstDouble();
   double lastDouble();
   uint64_t firstUint64();
@@ -74,8 +74,29 @@ public:
   bool containsDigit();
   ZString& replace(const std::string &from, const std::string &to);
   ZString &replace(int from, const std::string &to);
+
+  /*!
+   * \brief Test if a string starts with another string.
+   *
+   *  Return true if the string starts with \a str; otherwise returns false. If
+   *  either of the strings is empty, it returns false.
+   *
+   * \param str The matching sub-string.
+   * \param cs Use case-senstivtive matching or not.
+   */
   bool startsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
+
+  /*!
+   * \brief Test if a string ends with another string.
+   *
+   *  Return true if the string ends with \a str; otherwise returns false. If
+   *  either of the strings is empty, it returns false.
+   *
+   * \param str The matching sub-string.
+   * \param cs Use case-senstivtive matching or not.
+   */
   bool endsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
+
   void trim();
 
   void toLower();

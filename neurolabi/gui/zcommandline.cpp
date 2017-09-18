@@ -254,7 +254,7 @@ int ZCommandLine::runBoundaryOrphan()
 
       if (isCandidate && qc.isStitchedOrphanBody(obj)) {
         std::cout << "Orphan: "
-                  << ZString::lastInteger(objFile.absoluteFilePath().toStdString())
+                  << ZString::LastInteger(objFile.absoluteFilePath().toStdString())
                   << std::endl;
         ZVoxel voxel = obj.getMarker();
         voxel.translate(bodyOffset[0], bodyOffset[1], bodyOffset[2]);
@@ -320,7 +320,7 @@ int ZCommandLine::runObjectOverlap()
                     << std::endl;
         }
         excludedBodySet.insert(
-              ZString::lastInteger(fileInfo.baseName().toStdString()));
+              ZString::LastInteger(fileInfo.baseName().toStdString()));
       }
     }
   }
@@ -335,7 +335,7 @@ int ZCommandLine::runObjectOverlap()
 
   std::cout << "Loading objects ..." << std::endl;
   for (int i = 0; i < objArray1.size(); ++i) {
-    int id = ZString::lastInteger(fileList1[i].baseName().toStdString());
+    int id = ZString::LastInteger(fileList1[i].baseName().toStdString());
 
     if (excludedBodySet.count(id) == 0) {
       objArray1[i].load(fileList1[i].absoluteFilePath().toStdString());
@@ -349,7 +349,7 @@ int ZCommandLine::runObjectOverlap()
 
   std::cout << "Loading objects ..." << std::endl;
   for (int i = 0; i < objArray2.size(); ++i) {
-    int id = ZString::lastInteger(fileList2[i].baseName().toStdString());
+    int id = ZString::LastInteger(fileList2[i].baseName().toStdString());
     if (excludedBodySet.count(id) == 0) {
       objArray2[i].load(fileList2[i].absoluteFilePath().toStdString());
       objArray2[i].downsample(m_intv[0], m_intv[1], m_intv[2]);

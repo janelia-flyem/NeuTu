@@ -82,7 +82,7 @@ bool ZString::isAllDigit() const
   return succ;
 }
 
-int ZString::firstInteger(const string &str)
+int ZString::FirstInteger(const string &str)
 {
   return String_First_Integer(str.c_str());
 }
@@ -97,7 +97,7 @@ int ZString::lastInteger()
   return String_Last_Integer(c_str());
 }
 
-int ZString::lastInteger(const string &str)
+int ZString::LastInteger(const string &str)
 {
   return String_Last_Integer(str.c_str());
 }
@@ -388,6 +388,10 @@ ZString& ZString::replace(int from, const string &to)
 
 bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 {
+  if (empty() ||str.empty()) {
+    return false;
+  }
+
   string str1(c_str());
   string str2(str.c_str());
 
@@ -401,6 +405,10 @@ bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 
 bool ZString::endsWith(const string &str, ECaseSensitivity cs) const
 {
+  if (empty() ||str.empty()) {
+    return false;
+  }
+
   string str1(c_str());
   string str2(str.c_str());
 

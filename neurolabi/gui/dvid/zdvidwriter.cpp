@@ -1401,7 +1401,7 @@ void ZDvidWriter::parseStandardOutput()
     foreach (QString str, output) {
       if (str.startsWith("HTTP/1.1 ")) {
         str.remove("HTTP/1.1 ");
-        m_statusCode = ZString::firstInteger(str.toStdString());
+        m_statusCode = ZString::FirstInteger(str.toStdString());
       }
     }
 
