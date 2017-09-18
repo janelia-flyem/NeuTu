@@ -4512,7 +4512,8 @@ void ZFlyEmProofMvc::updateRoiWidget()
 
 void ZFlyEmProofMvc::showInfoDialog()
 {
-  m_infoDlg->setText(getDvidTarget().toJsonObject().dumpString(2).c_str());
+//  m_infoDlg->setText(getDvidTarget().toJsonObject().dumpString(2).c_str());
+  m_infoDlg->setText(getCompleteDocument()->getInfo());
   m_infoDlg->show();
   m_infoDlg->raise();
 }

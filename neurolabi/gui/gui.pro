@@ -675,8 +675,6 @@ HEADERS += mainwindow.h \
     zcubearray.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
-    misc/zstackyzview.h \
-    misc/zstackyzmvc.h \
     flyem/zflyemorthowindow.h \
     flyem/zflyemorthodoc.h \
     flyem/zflyemorthomvc.h \
@@ -1282,8 +1280,6 @@ SOURCES += main.cpp \
     dvid/zdvidsynapsecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
-    misc/zstackyzview.cpp \
-    misc/zstackyzmvc.cpp \
     flyem/zflyemorthowindow.cpp \
     flyem/zflyemorthodoc.cpp \
     flyem/zflyemorthomvc.cpp \

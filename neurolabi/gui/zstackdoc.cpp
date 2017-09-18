@@ -9084,6 +9084,11 @@ ZIntPoint ZStackDoc::getStackOffset() const
   return ZIntPoint(0, 0, 0);
 }
 
+int ZStackDoc::getStackOffset(NeuTube::EAxis axis) const
+{
+  return getStackOffset().getSliceCoord(axis);
+}
+
 ZIntPoint ZStackDoc::getStackSize() const
 {
   ZIntPoint size(0, 0, 0);

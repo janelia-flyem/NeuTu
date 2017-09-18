@@ -96,6 +96,13 @@ public:
   void clearData();
 
   /*!
+   * \brief Get brief information of the document
+   *
+   * \return A string that contains information about the document.
+   */
+  QString getInfo() const;
+
+  /*!
    * \brief Get body ID at a certain location
    *
    * \return The body ID mapped by merge operations.

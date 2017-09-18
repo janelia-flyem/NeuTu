@@ -291,7 +291,7 @@
 #include "flyem/zflyemneuroninfo.h"
 #include "zlinesegmentobject.h"
 #include "zstackmvc.h"
-#include "misc/zstackyzmvc.h"
+//#include "misc/zstackyzmvc.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemorthomvc.h"
@@ -24477,7 +24477,7 @@ void ZTest::test(MainWindow *host)
    delete obj;
 #endif
 
-#if 0
+#if 1
    ZStack *stack = ZStackFactory::MakeZeroStack(GREY, 3, 3, 3, 1);
    stack->setValue(1, 1, 1, 0, 255);
    stack->setOffset(1, 1, 1);

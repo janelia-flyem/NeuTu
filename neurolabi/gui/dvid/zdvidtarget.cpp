@@ -28,6 +28,7 @@ const char* ZDvidTarget::m_supervisorServerKey = "librarian";
 const char* ZDvidTarget::m_roiListKey = "roi_list";
 const char* ZDvidTarget::m_roiNameKey = "roi";
 const char* ZDvidTarget::m_maxLabelZoomKey = "label_max_zoom";
+const char* ZDvidTarget::m_maxGrayscaleZoomKey = "grayscale_max_zoom";
 const char* ZDvidTarget::m_synapseLabelszKey = "labelsz";
 const char* ZDvidTarget::m_todoListNameKey = "todo";
 const char* ZDvidTarget::m_defaultSettingKey = "default";
@@ -279,6 +280,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setNonEmptyEntry(m_bodyLabelNameKey, m_bodyLabelName);
   obj.setNonEmptyEntry(m_labelBlockNameKey, m_labelBlockName);
   obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
+  obj.setEntry(m_maxGrayscaleZoomKey, getMaxGrayscaleZoom());
   obj.setNonEmptyEntry(m_grayScaleNameKey, m_grayScaleName);
   obj.setNonEmptyEntry(m_synapseLabelszKey, m_synapseLabelszName);
   obj.setNonEmptyEntry(m_roiNameKey, m_roiName);

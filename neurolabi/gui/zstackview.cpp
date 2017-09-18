@@ -1,6 +1,7 @@
 #include <iostream>
 #include <QElapsedTimer>
 #include <QMdiArea>
+#include <QImageWriter>
 
 #include "zstackview.h"
 #include "widgets/zimagewidget.h"
@@ -39,8 +40,6 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
 #include "zscrollslicestrategy.h"
-
-#include <QImageWriter>
 
 using namespace std;
 
@@ -471,13 +470,7 @@ void ZStackView::updateViewBox()
   updateActiveDecorationCanvas();
 
   setSliceIndexQuietly(m_depthControl->maximum() / 2);
-
-//  m_depthControl->setValue(m_depthControl->maximum() / 2);
   processViewChange(true, true);
-
-//  ZIntCuboid box = getViewBoundBox();
-
-
 }
 
 void ZStackView::updateChannelControl()
@@ -577,13 +570,13 @@ int ZStackView::sliceIndex() const
 int ZStackView::getCurrentZ() const
 {
   return sliceIndex() +
-      buddyDocument()->getStackOffset().getSliceCoord(m_sliceAxis);
+      buddyDocument()->getStackOffset(m_sliceAxis);
 }
 
 void ZStackView::setZ(int z)
 {
   setSliceIndex(
-        z - buddyDocument()->getStackOffset().getSliceCoord(m_sliceAxis));
+        z - buddyDocument()->getStackOffset(m_sliceAxis));
 }
 
 void ZStackView::setSliceIndex(int slice)
@@ -766,7 +759,7 @@ void ZStackView::mouseDoubleClickedInImageWidget(QMouseEvent *event)
   buddyPresenter()->processMouseDoubleClickEvent(event);
 }
 
-bool ZStackView::isDepthChangable()
+bool ZStackView::isDepthScrollable()
 {
   return m_depthControl->isEnabled();
 }
@@ -806,7 +799,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 
   if (event->modifiers() == Qt::NoModifier ||
       event->modifiers() == Qt::ShiftModifier) {
-    if (isDepthChangable()) {
+    if (isDepthScrollable()) {
       //for strange mighty mouse response in Qt 4.6.2
       if (numSteps != 0) {
         int ratio = 1;
@@ -897,13 +890,6 @@ void ZStackView::redraw(EUpdateOption option)
         box.getFirstCorner().getX(),
         box.getFirstCorner().getY(),
         box.getWidth(), box.getHeight());
-
-  /*
-  buddyDocument()->blockSignals(true);
-  buddyDocument()->showSwcFullSkeleton(
-        buddyPresenter()->isSwcFullSkeletonVisible());
-  buddyDocument()->blockSignals(false);
-  */
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
@@ -1027,14 +1013,6 @@ void ZStackView::takeScreenshot(const QString &filename)
   m_imageWidget->render(&image);
   m_imageWidget->setViewHintVisible(true);
   ZImage::writeImage(image, filename);
-
-//  const QRect& viewPort = m_imageWidget->viewPort();
-//  if(!writer.write(m_image->copy(viewPort))) {
-//  if(!writer.write(image)) {
-//    LERROR() << writer.errorString();
-//  } else {
-//    LINFO() << "wrote screenshot:" << filename;
-//  }
 }
 
 //void ZStackView::updateView()
@@ -1828,7 +1806,7 @@ void ZStackView::paintObjectBuffer(
       QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Object to display:" << std::endl;
         std::cout << "  " << obj->getSource() << std::endl;
         std::cout << "  " << obj->getTarget() << std::endl;

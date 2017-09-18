@@ -353,6 +353,7 @@ private:
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
   const static char* m_maxLabelZoomKey;
+  const static char* m_maxGrayscaleZoomKey;
   const static char* m_synapseLabelszKey;
   const static char* m_todoListNameKey;
   const static char* m_sourceConfigKey;

@@ -2794,6 +2794,18 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
   return bookmarkList;
 }
 
+QString ZFlyEmProofDoc::getInfo() const
+{
+  QString info = getDvidTarget().toJsonObject().dumpString(2).c_str();
+  if (getDvidTarget().hasGrayScaleData()) {
+    info.append("\n");
+    info.append("Grayscale setup:\n");
+    info.append(m_grayscaleReader.getDvidTarget().toJsonObject().dumpString(2).c_str());
+  }
+
+  return info;
+}
+
 uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
 {
   uint64_t bodyId = 0;
