@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>550</width>
-    <height>184</height>
+    <height>167</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -147,47 +147,54 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QLabel" name="taskActionLabel">
-          <property name="text">
-           <string>task action</string>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="topMargin">
+           <number>0</number>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="taskTargetLabel">
-          <property name="text">
-           <string>task target</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="reviewCheckBox">
-          <property name="text">
-           <string>Needs review</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="completedCheckBox">
-          <property name="text">
-           <string>Completed</string>
-          </property>
-         </widget>
+          <item>
+           <widget class="QLabel" name="taskActionLabel">
+            <property name="text">
+             <string>task action</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="taskTargetLabel">
+            <property name="text">
+             <string>task target</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="reviewCheckBox">
+            <property name="text">
+             <string>Needs review</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="completedCheckBox">
+            <property name="text">
+             <string>Completed</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
