@@ -13,6 +13,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
+#include "protocols/tasktesttask.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -570,6 +571,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             m_taskList.append(task);
         } else if (taskType == "split seeds") {
             QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject()));
+            m_taskList.append(task);
+        } else if (taskType == "test task") {
+            QSharedPointer<TaskProtocolTask> task(new TaskTestTask(taskJson.toObject()));
             m_taskList.append(task);
         } else {
             // unknown task type; log it and move on
