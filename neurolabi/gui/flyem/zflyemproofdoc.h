@@ -221,6 +221,8 @@ public:
     return &m_sparseVolReader;
   }
 
+  const ZDvidInfo& getDvidInfo() const;
+
 public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
@@ -520,6 +522,9 @@ private:
    */
   void initData(const ZDvidTarget &target);
   void initData(const std::string &type, const std::string &dataName);
+
+  void initTileData();
+  void initGrayscaleSlice();
 
   void readInfo();
   void updateMaxLabelZoom();

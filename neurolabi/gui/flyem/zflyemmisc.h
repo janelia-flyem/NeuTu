@@ -65,6 +65,8 @@ ZStroke2d* MakeSplitSeed(const ZObject3dScan &slice, int label);
 std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
 
 ZStack* GenerateExampleStack(const ZJsonObject &obj);
+ZStack* GenerateExampleStack(
+    const ZDvidTarget &target, uint64_t bodyId, const ZIntCuboid &range);
 
 ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
 

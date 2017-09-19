@@ -729,15 +729,15 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
     m_dvidWriter.open(target);
-    m_synapseReader.open(m_dvidReader.getDvidTarget());
-    m_todoReader.open(m_dvidReader.getDvidTarget());
-    m_sparseVolReader.open(m_dvidReader.getDvidTarget());
-    m_grayscaleReader.open(m_dvidReader.getDvidTarget().getGrayScaleTarget());
+    m_synapseReader.openRaw(m_dvidReader.getDvidTarget());
+    m_todoReader.openRaw(m_dvidReader.getDvidTarget());
+    m_sparseVolReader.openRaw(m_dvidReader.getDvidTarget());
+    m_grayscaleReader.openRaw(m_dvidReader.getDvidTarget().getGrayScaleTarget());
 //    m_dvidTarget = target;
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
 
-    initData(target);
+    initData(getDvidTarget());
     if (getSupervisor() != NULL) {
       getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
       if (!getSupervisor()->isEmpty() && !target.readOnly()) {
@@ -760,8 +760,14 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 
     updateDvidTargetForObject();
 
-    if (!target.readOnly()) {
-      int missing = m_dvidReader.checkProofreadingData();
+#ifdef _DEBUG_2
+//    m_dvidReader.getDvidTarget().setReadOnly(true);
+    const_cast<ZDvidTarget&>(target).setReadOnly(true);
+#endif
+
+    //Run check anyway to get around a strange bug of showing grayscale
+    int missing = m_dvidReader.checkProofreadingData();
+    if (!getDvidTarget().readOnly()) {
       if (missing > 0) {
         emit messageGenerated(
               ZWidgetMessage(
@@ -875,23 +881,26 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
   return dynamic_cast<ZDvidGraySlice*>(obj);
 }
 
+const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
+{
+  if (getDvidTarget().hasGrayScaleData()) {
+    return m_grayScaleInfo;
+  }
+
+  return m_labelInfo;
+}
+
 void ZFlyEmProofDoc::prepareDvidData()
 {
   if (m_dvidReader.isReady()) {
-    ZDvidInfo dvidInfo;
-
-    if (getDvidTarget().hasGrayScaleData()) {
-      dvidInfo = m_grayScaleInfo;
-    } else {
-      dvidInfo = m_labelInfo;
-    }
+    ZDvidInfo dvidInfo = getDvidInfo();
 
     ZIntCuboid boundBox;
     if (dvidInfo.isValid()) {
       boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),
                        dvidInfo.getEndCoordinates());
     } else {
-      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
+      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(512, 512, 512));
     }
 
     ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
@@ -904,66 +913,33 @@ void ZFlyEmProofDoc::prepareDvidData()
 
 
   if (getDvidTarget().hasTileData()) {
-    ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-    ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-    ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-    ensemble->setDvidTarget(getDvidTarget());
-    addObject(ensemble, true);
+    initTileData();
   } else {
-    if (getDvidTarget().hasGrayScaleData()) {
-      ZDvidGraySlice *slice = new ZDvidGraySlice;
-      slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-      slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
-//      slice->setDvidTarget(getDvidTarget());
-      slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
-      addObject(slice, true);
-    }
+    initGrayscaleSlice();
   }
 
   addDvidLabelSlice(NeuTube::Z_AXIS);
-
-//    addDvidLabelSlice(NeuTube::Y_AXIS);
-//    addDvidLabelSlice(NeuTube::Z_AXIS);
 }
-#if 0
-void ZFlyEmProofDoc::updateTileData()
+
+void ZFlyEmProofDoc::initTileData()
 {
-  if (m_dvidReader.isReady()) {
-    ZDvidInfo dvidInfo = m_grayScaleInfo;
-    ZIntCuboid boundBox;
-    if (dvidInfo.isValid()) {
-      boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),
-                       dvidInfo.getEndCoordinates());
-    } else {
-      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
-    }
+  ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+  ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+  ensemble->setDvidTarget(getDvidTarget());
+  addObject(ensemble, true);
+}
 
-    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
-    loadStack(stack);
-
-    ZDvidTileEnsemble *ensemble = getDvidTileEnsemble();
-
-    if (ensemble == NULL) {
-      ensemble = new ZDvidTileEnsemble;
-      ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-      ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-      addObject(ensemble, true);
-    }
-
-    ensemble->setDvidTarget(getDvidTarget());
-
-    ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
-
-    if (slice == NULL) {
-      addDvidLabelSlice(NeuTube::Z_AXIS);
-    } else{
-      slice->setDvidTarget(getDvidTarget());
-    }
-//    addDvidLabelSlice(NeuTube::Y_AXIS);
-//    addDvidLabelSlice(NeuTube::Z_AXIS);
+void ZFlyEmProofDoc::initGrayscaleSlice()
+{
+  if (getDvidTarget().hasGrayScaleData()) {
+    ZDvidGraySlice *slice = new ZDvidGraySlice;
+    slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+    slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
+    addObject(slice, true);
   }
 }
-#endif
 
 void ZFlyEmProofDoc::addDvidLabelSlice(NeuTube::EAxis axis)
 {
@@ -971,6 +947,9 @@ void ZFlyEmProofDoc::addDvidLabelSlice(NeuTube::EAxis axis)
   labelSlice->setSliceAxis(axis);
   labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
   labelSlice->setDvidTarget(getDvidTarget());
+
+  LINFO() << "Max label zoom:" << getDvidTarget().getMaxLabelZoom();
+
   labelSlice->setSource(
         ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
   labelSlice->setBodyMerger(&m_bodyMerger);
@@ -2370,6 +2349,7 @@ void ZFlyEmProofDoc::downloadSynapse()
   if (!getDvidTarget().getSynapseName().empty()) {
     ZDvidSynapseEnsemble *synapseEnsemble = new ZDvidSynapseEnsemble;
     synapseEnsemble->setDvidTarget(getDvidTarget());
+    synapseEnsemble->setDvidInfo(getDvidInfo());
     synapseEnsemble->setSource(
           ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
     synapseEnsemble->setResolution(m_grayScaleInfo.getVoxelResolution());

@@ -120,6 +120,18 @@ public:
   bool isValid() const;
 
   /*!
+   * \brief Get the status of the node.
+   *
+   * The status of the node is related to the status of the database.
+   */
+  ZDvid::ENodeStatus getNodeStatus() const;
+
+  /*!
+   * \brief Set the status of the node.
+   */
+  void setNodeStatus(ZDvid::ENodeStatus status);
+
+  /*!
    * \brief Load json object
    */
   void loadJsonObject(const ZJsonObject &obj);
@@ -241,7 +253,7 @@ public:
   inline bool isEditable() const { return m_isEditable; }
   void setEditable(bool on) { m_isEditable = on; }
 
-  inline bool readOnly() const { return m_readOnly; }
+  bool readOnly() const;
   void setReadOnly(bool readOnly) {
     m_readOnly = readOnly;
   }
@@ -332,8 +344,9 @@ private:
 
   int m_bgValue; //grayscale background
 
-  bool m_isEditable;
-  bool m_readOnly;
+  bool m_isEditable; //if the configuration is editable
+  bool m_readOnly; //if the database is readonly
+  ZDvid::ENodeStatus m_nodeStatus = ZDvid::NODE_OFFLINE; //Status of the node
 
   const static char* m_commentKey;
   const static char* m_nameKey;

@@ -1290,6 +1290,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
+
+
   ZDvidReader reader;
   if (!reader.open(target)) {
     emit messageGenerated(
@@ -1306,7 +1308,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   clear();
   getProgressSignal()->advanceProgress(0.1);
   //    getCompleteDocument()->clearData();
+
   getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
+
 
   if (getRole() == ROLE_WIDGET) {
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();

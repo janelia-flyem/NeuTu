@@ -91,6 +91,13 @@ public:
    */
   bool open(const QString &sourceString);
 
+  /*!
+   * \brief Open a target as it is.
+   *
+   * No inference is applied.
+   */
+  bool openRaw(const ZDvidTarget &target);
+
   void clear();
 
   int getStatusCode() const;
@@ -106,6 +113,7 @@ public:
   std::string readNodeInfo() const;
 
   ZDvid::ENodeStatus getNodeStatus() const;
+  void updateNodeStatus();
 
   ZDvidBufferReader& getBufferReader() const {
     return m_bufferReader;

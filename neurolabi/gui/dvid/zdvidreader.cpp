@@ -100,53 +100,13 @@ void ZDvidReader::clear()
 #endif
 }
 
-/*
-void ZDvidReader::slotTest()
-{
-  qDebug() << "ZDvidReader::slotTest";
-  qDebug() << QThread::currentThread();
-
-  m_eventLoop->quit();
-}
-
-void ZDvidReader::startReading()
-{
-  m_isReadingDone = false;
-}
-
-void ZDvidReader::endReading()
-{
-  m_isReadingDone = true;
-
-  emit readingDone();
-}
-*/
 bool ZDvidReader::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
-//    delete m_service;
-    /*
-    m_service = ZSharedPointer<libdvid::DVIDNodeService>(
-          new libdvid::DVIDNodeService(
-          m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid()));
-          */
-    m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
-    m_connection = ZDvid::MakeDvidConnection(m_dvidTarget.getAddressWithPort());
+    m_service = ZDvid::MakeDvidNodeService(getDvidTarget());
+    m_connection = ZDvid::MakeDvidConnection(getDvidTarget().getAddressWithPort());
     m_bufferReader.setService(getDvidTarget());
-//    m_lowtisService = ZDvid::MakeLowtisService(m_dvidTarget);
-    /*
-    lowtis::DVIDLabelblkConfig config;
-    config.username = NeuTube::GetCurrentUserName();
-    config.dvid_server = getDvidTarget().getAddressWithPort();
-    config.dvid_uuid = getDvidTarget().getUuid();
-    config.datatypename = getDvidTarget().getLabelBlockName();
-    m_lowtisService = new lowtis::ImageService(config);
-    */
-//    m_lowtisService = NULL;
-
-//      ZSharedPointer<lowtis::ImageService> lowtisService = ZDvid::MakeLowtisService(getDvidTarget());
-
   } catch (std::exception &e) {
     m_service.reset();
     std::cout << e.what() << std::endl;
@@ -201,23 +161,24 @@ bool ZDvidReader::open(
   return open(target);
 }
 
-bool ZDvidReader::open(const ZDvidTarget &target)
+bool ZDvidReader::openRaw(const ZDvidTarget &target)
 {
-//  m_dvidClient->reset();
-
   if (!target.isValid()) {
     return false;
   }
 
-  /*
-  ZDvidBufferReader bufferReader;
-  ZDvidUrl dvidUrl(target);
-  if (!bufferReader.isReadable(dvidUrl.getHelpUrl().c_str())) {
+  m_dvidTarget = target;
+
+  bool succ = startService();
+
+  return succ;
+}
+
+bool ZDvidReader::open(const ZDvidTarget &target)
+{
+  if (!target.isValid()) {
     return false;
   }
-  */
-
-//  m_dvidClient->setDvidTarget(target);
 
   m_dvidTarget = target;
 
@@ -229,6 +190,8 @@ bool ZDvidReader::open(const ZDvidTarget &target)
   bool succ = startService();
 
   if (succ) { //Read default settings
+    updateNodeStatus();
+
     if (getDvidTarget().usingDefaultDataSetting()) {
       loadDefaultDataSetting();
     }
@@ -239,6 +202,8 @@ bool ZDvidReader::open(const ZDvidTarget &target)
     if (getDvidTarget().getBodyLabelName().empty()) {
       syncBodyLabelName();
     }
+  } else {
+    m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
   }
 
   return succ;
@@ -264,6 +229,10 @@ void ZDvidReader::waitForReading()
 }
 #endif
 
+void ZDvidReader::updateNodeStatus()
+{
+  m_dvidTarget.setNodeStatus(getNodeStatus());
+}
 
 ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 {

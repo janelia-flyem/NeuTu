@@ -11,6 +11,7 @@ class TaskProtocolTask
 {
 public:
     TaskProtocolTask();
+    virtual ~TaskProtocolTask() {}
 
     bool completed() const;
     void setCompleted(bool completed);

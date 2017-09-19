@@ -108,6 +108,7 @@ void FlyEmSplitControlForm::createMenu()
   ui->menuPushButton->setMenu(m_mainMenu);
 
   QAction *queryPixelAction = new QAction("Go to Position", this);
+  queryPixelAction->setShortcut(Qt::Key_F3);
   m_mainMenu->addAction(queryPixelAction);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
 
