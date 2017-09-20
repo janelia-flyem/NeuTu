@@ -800,6 +800,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
   if (event->modifiers() == Qt::NoModifier ||
       event->modifiers() == Qt::ShiftModifier) {
     if (isDepthScrollable()) {
+      setAttribute(Qt::WA_TransparentForMouseEvents);
       //for strange mighty mouse response in Qt 4.6.2
       if (numSteps != 0) {
         int ratio = 1;
@@ -829,6 +830,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
                     pt.x(), pt.y(), pt.z(), getSliceAxis()));
         }
       }
+      setAttribute(Qt::WA_TransparentForMouseEvents, false);
     }
   } else if (event->modifiers() == Qt::ControlModifier) {
     if (numSteps < 0) {
