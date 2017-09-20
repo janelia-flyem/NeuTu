@@ -14,7 +14,9 @@ public:
   ZDoubleVector(const double *data, std::size_t start,
                 std::size_t end, std::size_t stride);
   ZDoubleVector(const std::vector<double> &array);
+#ifndef SWIG
   ZDoubleVector(std::initializer_list<double> init);
+#endif
 
 public:
   inline double* dataArray() { return &((*this)[0]); }
