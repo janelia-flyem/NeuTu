@@ -33,9 +33,12 @@ TaskTestTask::TaskTestTask(QJsonObject json)
 
     m_widget = new QWidget();
     QHBoxLayout * layout = new QHBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
 
     QLabel * label = new QLabel("Body " + QString::number(m_bodyID) + ":", m_widget);
     layout->addWidget(label);
+
+    layout->addItem(new QSpacerItem(0, 10, QSizePolicy::Expanding));
 
     QPushButton * yesButton = new QPushButton("Yes");
     layout->addWidget(yesButton);
