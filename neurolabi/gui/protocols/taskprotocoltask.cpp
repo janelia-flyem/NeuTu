@@ -3,7 +3,24 @@
 #include <QsLog.h>
 
 /*
- * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3
+ * this is the abstract base class for tasks used by the TaskProtocolWindow in Neu3; your
+ * create a new task by subclassing this class
+ *
+ * pure virtual methods you must implement:
+ * -- tasktype() should return the string that identifies the class type in the json
+ * -- actionString() and targetString() will appear in the task UI; eg, "Review body:" and "12345"
+ * -- loadSpecific() and addToJson() are how the task reads and writes its particular data;
+ *      note that the task takes care of standard values for you (eg, completed status, tags)
+ *
+ * optional methods you may implement:
+ * -- onCompleted() is called when the user completes the task, in case the task
+ *      wants to do something, check something, etc.
+ * -- getTaskWidget(): optionally return a QWidget that the task will insert into
+ *      the layout below the generic task interface, in case the task needs more UI
+ *
+ * other things you should do:
+ * -- document the json that the task expects, preferably both in the task
+ *      cpp file top comments, and on the wiki page (if you're at Janelia)
  *
  */
 TaskProtocolTask::TaskProtocolTask()
@@ -35,7 +52,29 @@ QSet<uint64_t> TaskProtocolTask::selectedBodies() {
 void TaskProtocolTask::setCompleted(bool completed)
 {
     m_completed = completed;
+
+    // call the method that subclasses might implement
+    if (completed) {
+        onCompleted();
+    }
 }
+
+/*
+ * subclasses may optionally implement this method to
+ * do something when the task is marked "complete"
+ */
+void TaskProtocolTask::onCompleted() {
+    // nothing
+}
+
+/*
+ * subclasses may optionally implement this method to
+ * add UI below the standard UI
+ */
+QWidget * TaskProtocolTask::getTaskWidget() {
+    return NULL;
+}
+
 
 // tag methods: standard add, remove, has, get all, clear
 

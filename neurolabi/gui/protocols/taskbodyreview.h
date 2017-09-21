@@ -11,6 +11,7 @@
 
 class TaskBodyReview : public TaskProtocolTask
 {
+
 public:
     TaskBodyReview(QJsonObject json);
     QString tasktype();

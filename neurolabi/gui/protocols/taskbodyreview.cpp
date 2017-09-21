@@ -20,6 +20,7 @@ TaskBodyReview::TaskBodyReview(QJsonObject json)
 
     // I split the loading out for now
     loadJson(json);
+
 }
 
 // constants

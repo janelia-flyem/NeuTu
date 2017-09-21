@@ -66,6 +66,7 @@ private:
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex;
+    QWidget * m_currentTaskWidget;
     bool m_nodeLocked;
 
     void setWindowConfiguration(WindowConfigurations config);
