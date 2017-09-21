@@ -260,16 +260,25 @@ void ZImageWidget::zoomTo(const QPoint &center, int width)
   updateView();
 }
 
-void ZImageWidget::restoreFromBadView()
+bool ZImageWidget::isBadView() const
 {
   QRectF projRect = projectRegion();
 
   if (projRect.isEmpty() || !projRect.intersects(m_viewProj.getWidgetRect())) {
-    maximizeViewPort();
+    return true;
   } else {
     if (m_viewProj.getZoom() < m_viewProj.getMinZoomRatio() * 1.1) {
-      maximizeViewPort();
+      return true;
     }
+  }
+
+  return false;
+}
+
+void ZImageWidget::restoreFromBadView()
+{
+  if (isBadView()) {
+    maximizeViewPort();
   }
 }
 

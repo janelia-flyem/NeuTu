@@ -27,8 +27,9 @@ public:
   const json_t* operator[] (const char *key) const;
 
   ZJsonValue value(const char *key) const;
+#ifndef SWIG
   ZJsonValue value(const std::initializer_list<const char*> &keyList) const;
-
+#endif
   /*!
    * \brief Test if an object is empty
    *

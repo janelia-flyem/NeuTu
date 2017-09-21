@@ -96,6 +96,13 @@ public:
   void clearData();
 
   /*!
+   * \brief Get brief information of the document
+   *
+   * \return A string that contains information about the document.
+   */
+  QString getInfo() const;
+
+  /*!
    * \brief Get body ID at a certain location
    *
    * \return The body ID mapped by merge operations.
@@ -213,6 +220,8 @@ public:
   ZDvidReader* getSparseVolReader() {
     return &m_sparseVolReader;
   }
+
+  const ZDvidInfo& getDvidInfo() const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
@@ -370,6 +379,7 @@ public:
   int removeDvidSparsevol(NeuTube::EAxis axis);
 
   void loadSplitFromService();
+  void loadSplitTaskFromService();
   void commitSplitFromService();
 
 signals:
@@ -512,6 +522,9 @@ private:
    */
   void initData(const ZDvidTarget &target);
   void initData(const std::string &type, const std::string &dataName);
+
+  void initTileData();
+  void initGrayscaleSlice();
 
   void readInfo();
   void updateMaxLabelZoom();

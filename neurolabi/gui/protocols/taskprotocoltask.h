@@ -13,6 +13,7 @@ class TaskProtocolTask: public QObject
 
 public:
     TaskProtocolTask();
+    virtual ~TaskProtocolTask() {}
 
     bool completed() const;
     void setCompleted(bool completed);

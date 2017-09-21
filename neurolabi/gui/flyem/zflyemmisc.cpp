@@ -1116,6 +1116,24 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 }
 
 
+ZStack* ZFlyEmMisc::GenerateExampleStack(
+    const ZDvidTarget &target, uint64_t bodyId, const ZIntCuboid &range)
+{
+  ZStack *stack = NULL;
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader(target);
+  if (reader != NULL) {
+    ZDvidSparseStack *spStack = reader->readDvidSparseStack(bodyId, range);
+    spStack->shakeOff();
+    stack = spStack->makeIsoDsStack(MAX_INT32);
+
+    delete spStack;
+  }
+
+  return stack;
+}
+
+
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {
   QStringList fileList;

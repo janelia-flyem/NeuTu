@@ -557,6 +557,7 @@ public:
   ZSwcBranch *extractFurthestBranch();
 
   ZSwcPath getLongestPath();
+  double getLongestPathLength();
 
   std::vector<Swc_Tree_Node*> extractLeaf(Swc_Tree_Node *start);
 

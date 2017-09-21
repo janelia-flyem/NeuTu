@@ -2024,6 +2024,11 @@ ZSwcBranch* ZSwcTree::extractLongestBranch()
   return branch;
 }
 
+double ZSwcTree::getLongestPathLength()
+{
+  return getLongestPath().getLength();
+}
+
 ZSwcPath ZSwcTree::getLongestPath()
 {
 //  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");

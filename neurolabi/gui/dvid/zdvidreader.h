@@ -91,6 +91,13 @@ public:
    */
   bool open(const QString &sourceString);
 
+  /*!
+   * \brief Open a target as it is.
+   *
+   * No inference is applied.
+   */
+  bool openRaw(const ZDvidTarget &target);
+
   void clear();
 
   int getStatusCode() const;
@@ -106,6 +113,7 @@ public:
   std::string readNodeInfo() const;
 
   ZDvid::ENodeStatus getNodeStatus() const;
+  void updateNodeStatus();
 
   ZDvidBufferReader& getBufferReader() const {
     return m_bufferReader;
@@ -420,6 +428,11 @@ public:
   ZJsonObject readServiceTask(
       const std::string &group, const std::string &key) const;
   std::map<std::string, ZJsonObject> readSplitTaskMap() const;
+  QList<ZStackObject*> readSeedFromSplitTask(
+      const std::string &taskKey, uint64_t bodyId);
+  QList<ZStackObject*> readSeedFromSplitTask(
+      const ZDvidTarget &target, uint64_t bodyId);
+
 
 signals:
   void readingDone();

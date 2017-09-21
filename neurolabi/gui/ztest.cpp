@@ -291,7 +291,7 @@
 #include "flyem/zflyemneuroninfo.h"
 #include "zlinesegmentobject.h"
 #include "zstackmvc.h"
-#include "misc/zstackyzmvc.h"
+//#include "misc/zstackyzmvc.h"
 #include "dvid/zdvidlabelslice.h"
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemorthomvc.h"
@@ -23969,6 +23969,20 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "93e8", 8700);
+  target.setLabelBlockName(
+        "pb26-27-2-trm-eroded32_ffn-20170216-2_celis_cx2-2048_r10_0_seeded_64blksz");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *spStack = reader.readDvidSparseStackAsync(2932287);
+  spStack->getSparseStack()->save(GET_TEST_DATA_DIR + "/2932287.zss");
+  delete spStack;
+#endif
+
+#if 0
   QList<ZJsonObject> objList = ZDvidResultService::ReadSplitTaskList(
         GET_FLYEM_CONFIG.getTaskServer().c_str());
 
@@ -24459,7 +24473,7 @@ void ZTest::test(MainWindow *host)
    std::cout << endl;
 #endif
 
-#if 1
+#if 0
    ZDvidTarget target;
    target.set("emdata3.int.janelia.org", "aed4", 8000);
 //   target.setBodyLabelName("labels-v3");
@@ -24472,9 +24486,44 @@ void ZTest::test(MainWindow *host)
    reader.updateMaxLabelZoom();
    std::cout << reader.getDvidTarget().getMaxLabelZoom() << std::endl;
 
-   ZObject3dScan *obj = reader.readMultiscaleBody(229136931, 7, true, NULL);
+   ZObject3dScan *obj = reader.readMultiscaleBody(274766007, 6, true, NULL);
    obj->save(GET_TEST_DATA_DIR + "/test.sobj");
    delete obj;
+#endif
+
+#if 0
+   ZStack *stack = ZStackFactory::MakeZeroStack(GREY, 3, 3, 3, 1);
+   stack->setValue(1, 1, 1, 0, 255);
+   stack->setOffset(1, 1, 1);
+   stack->setDsIntv(1, 1, 1);
+
+   stack->save(GET_BENCHMARK_DIR + "/dot.tif");
+#endif
+
+#if 0
+   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+         "http://emdata1.int.janelia.org:8500/api/node/b6bc/bodies2/sparsevol/1");
+   writer->getDvidTarget().print();
+#endif
+
+#if 0
+   ZDvidTarget target;
+   target.setFromUrl("http://emdata1.int.janelia.org:8500/api/node/b6bc/bodies2/sparsevol/1");
+
+//   target.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c:bodies2");
+   target.print();
+#endif
+
+#if 0
+
+  std::string dataDir = GET_DATA_DIR + "/_system/split/data9";
+  ZJsonObject obj;
+  obj.load(dataDir + "/" + "data.json");
+  ZStack *stack = ZFlyEmMisc::GenerateExampleStack(obj);
+  stack->setOffset(0, 0, 0);
+  stack->save(dataDir + "/test.tif");
+
+  delete stack;
 #endif
 
   std::cout << "Done." << std::endl;

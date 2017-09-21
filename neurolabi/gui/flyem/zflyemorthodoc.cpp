@@ -116,14 +116,6 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
       }
     }
 
-    /*
-    getDvidSynapseEnsemble(NeuTube::X_AXIS)->setRange(box);
-    getDvidSynapseEnsemble(NeuTube::Y_AXIS)->setRange(box);
-    getDvidSynapseEnsemble(NeuTube::Z_AXIS)->setRange(box);
-    */
-
-
-
     QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
     for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
          iter != todoList.end(); ++iter) {
