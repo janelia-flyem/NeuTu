@@ -196,11 +196,21 @@ bool ZDvidReader::open(const ZDvidTarget &target)
       loadDefaultDataSetting();
     }
 
-    std::string typeName = getType(getDvidTarget().getLabelBlockName());
+    std::string typeName;
+    if (getDvidTarget().hasLabelBlock()) {
+      typeName = getType(getDvidTarget().getLabelBlockName());
+    } else {
+      typeName = getType(getDvidTarget().getBodyLabelName());
+    }
     m_dvidTarget.useLabelArray(typeName == "labelarray");
 
     if (getDvidTarget().getBodyLabelName().empty()) {
       syncBodyLabelName();
+    }
+    if (!getDvidTarget().hasLabelBlock()) {
+      if (getDvidTarget().usingLabelArray()) {
+        getDvidTarget().setLabelBlockName(getDvidTarget().getBodyLabelName());
+      }
     }
   } else {
     m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
