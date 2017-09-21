@@ -72,6 +72,16 @@ QString TaskSplitSeeds::targetString() {
 }
 
 void TaskSplitSeeds::onNoSplitStateChanged(int state) {
+    updateSeedsTag();
+}
+
+void TaskSplitSeeds::onCompleted() {
+    // be sure the tag is right; there's one sequence by which it won't
+    //  be set until here
+    updateSeedsTag();
+}
+
+void TaskSplitSeeds::updateSeedsTag() {
     if (m_noSplitCheck->isChecked()) {
         removeTag(TAG_SEEDS_ADDED);
     } else {

@@ -36,6 +36,8 @@ private:
 
     bool loadSpecific(QJsonObject json);
     QJsonObject addToJson(QJsonObject json);
+    void onCompleted();
+    void updateSeedsTag();
 };
 
 #endif // TaskSplitSeeds_H
