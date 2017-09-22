@@ -31,13 +31,18 @@ public:
   /*!
    * \brief Set dvid target from source string
    *
-   * The old settings will be cleared no matter what. The source string is
-   * http:address:port:uuid.
+   * The old settings will be cleared no matter what.
    *
-   * \param sourceString Must start with "http:".
+   * \param sourceString Format: http:host:port:node:labelblk_name.
    */
   void setFromSourceString(const std::string &sourceString);
 
+
+  /*!
+   * \brief Set dvid target from source string
+   *
+   * \param sourceString Format: http:host:port:node:<dataType>_name.
+   */
   void setFromSourceString(
       const std::string &sourceString, ZDvid::EDataType dataType);
 
@@ -231,6 +236,8 @@ public:
   std::string getTodoListName() const;
   void setTodoListName(const std::string &name);
   bool isDefaultTodoListName() const;
+  bool isDefaultBodyLabelName() const;
+  void setDefaultBodyLabelFlag(bool on);
 
   std::string getBodyAnnotationName() const;
 
@@ -339,6 +346,7 @@ private:
   bool m_usingMultresBodyLabel;
   bool m_usingDefaultSetting;
   bool m_usingLabelArray = false;
+  bool m_isDefaultBodyLabel = false;
 //  std::string m_userName;
 //  std::string m_tileName;
 

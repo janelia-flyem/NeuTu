@@ -412,6 +412,9 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
     }
 
     if (m_labelArray != NULL) {
+#ifdef _DEBUG_
+      std::cout << "Max label: " << m_labelArray->getMax<uint64_t>() << std::endl;
+#endif
 
       ZGeometry::shiftSliceAxis(width, height, depth, getSliceAxis());
       ZGeometry::shiftSliceAxis(x0, y0, z0, getSliceAxis());

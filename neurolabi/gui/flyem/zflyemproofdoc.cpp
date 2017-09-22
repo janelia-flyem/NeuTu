@@ -801,7 +801,8 @@ void ZFlyEmProofDoc::notifyBodySelectionChanged()
 
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
-  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
+  m_dvidReader.updateMaxLabelZoom();
+//  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
 void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
