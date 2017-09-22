@@ -95,6 +95,21 @@ TEST(ZString, ParseFileName)
             ZString::removeFileExt(ZString::getBaseName(str)));
 }
 
+TEST(ZString, Match)
+{
+  ASSERT_FALSE(ZString("").startsWith("test"));
+  ASSERT_FALSE(ZString("test").startsWith(""));
+
+  ASSERT_TRUE(ZString("test").startsWith("te"));
+  ASSERT_FALSE(ZString("test").startsWith("test1"));
+
+  ASSERT_FALSE(ZString("").endsWith("test"));
+  ASSERT_FALSE(ZString("test").endsWith(""));
+
+  ASSERT_TRUE(ZString("test").endsWith("st"));
+  ASSERT_FALSE(ZString("test").endsWith("test1"));
+}
+
 TEST(ZBiocytinFileNameParser, Basic)
 {
   std::string str = "/Users/foo/test/DH070613-1-2.tif";

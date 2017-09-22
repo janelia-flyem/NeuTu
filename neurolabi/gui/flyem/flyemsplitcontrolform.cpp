@@ -108,8 +108,13 @@ void FlyEmSplitControlForm::createMenu()
   ui->menuPushButton->setMenu(m_mainMenu);
 
   QAction *queryPixelAction = new QAction("Go to Position", this);
+  queryPixelAction->setShortcut(Qt::Key_F3);
   m_mainMenu->addAction(queryPixelAction);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
+
+  QAction *loadSplitTaskAction = new QAction("Load Split Task", this);
+  m_mainMenu->addAction(loadSplitTaskAction);
+  connect(loadSplitTaskAction, SIGNAL(triggered()), this, SLOT(loadSplitTask()));
 
   QAction *saveTaskAction = new QAction("Save Split Task", this);
   m_mainMenu->addAction(saveTaskAction);
@@ -170,6 +175,11 @@ void FlyEmSplitControlForm::loadSplitResult()
 void FlyEmSplitControlForm::uploadSplitResult()
 {
   emit uploadingSplitResult();
+}
+
+void FlyEmSplitControlForm::loadSplitTask()
+{
+  emit loadingSplitTask();
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)

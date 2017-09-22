@@ -26,7 +26,7 @@ std::vector<ZPoint> LineShpereIntersection(
     const ZPoint &center, double r);
 }
 
-std::vector<std::pair<int, int>> LineToPixel(int x0, int y0, int x1, int y1);
+std::vector<std::pair<int, int> > LineToPixel(int x0, int y0, int x1, int y1);
 
 template <typename T>
 void ZGeometry::shiftSliceAxis(T &x, T &y, T &z, NeuTube::EAxis axis)

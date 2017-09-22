@@ -99,6 +99,7 @@ ZJsonValue ZJsonObject::value(const char *key) const
                     ZJsonValue::SET_INCREASE_REF_COUNT);
 }
 
+#ifndef SWIG
 ZJsonValue ZJsonObject::value(
     const std::initializer_list<const char*> &keyList) const
 {
@@ -113,6 +114,7 @@ ZJsonValue ZJsonObject::value(
 
   return v;
 }
+#endif
 
 bool ZJsonObject::decode(const string &str)
 {

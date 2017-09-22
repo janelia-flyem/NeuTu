@@ -7,10 +7,13 @@
 #include <QJsonObject>
 #include <QSet>
 
-class TaskProtocolTask
+class TaskProtocolTask: public QObject
 {
+    Q_OBJECT
+
 public:
     TaskProtocolTask();
+    virtual ~TaskProtocolTask() {}
 
     bool completed() const;
     void setCompleted(bool completed);
@@ -27,6 +30,7 @@ public:
     virtual QString tasktype() = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
+    virtual QWidget * getTaskWidget();
 
 protected:
     static const QString KEY_COMPLETED;
@@ -45,6 +49,7 @@ private:
     bool loadStandard(QJsonObject json);
     virtual bool loadSpecific(QJsonObject json) = 0;
     virtual QJsonObject addToJson(QJsonObject json) = 0;
+    virtual void onCompleted();
 };
 
 #endif // TASKPROTOCOLTASK_H

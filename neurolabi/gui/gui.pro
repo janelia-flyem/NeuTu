@@ -675,8 +675,6 @@ HEADERS += mainwindow.h \
     zcubearray.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
-    misc/zstackyzview.h \
-    misc/zstackyzmvc.h \
     flyem/zflyemorthowindow.h \
     flyem/zflyemorthodoc.h \
     flyem/zflyemorthomvc.h \
@@ -803,6 +801,7 @@ HEADERS += mainwindow.h \
     widgets/taskprotocolwindow.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
+    protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
     flyem/zflyembody3ddoccommand.h \
     flyem/zflyembody3ddocmenufactory.h \
@@ -1282,8 +1281,6 @@ SOURCES += main.cpp \
     dvid/zdvidsynapsecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
-    misc/zstackyzview.cpp \
-    misc/zstackyzmvc.cpp \
     flyem/zflyemorthowindow.cpp \
     flyem/zflyemorthodoc.cpp \
     flyem/zflyemorthomvc.cpp \
@@ -1405,6 +1402,7 @@ SOURCES += main.cpp \
     widgets/taskprotocolwindow.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
+    protocols/tasktesttask.cpp \
     protocols/tasksplitseeds.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \

@@ -1542,7 +1542,8 @@ void Z3DVolumeFilter::readVolumes(const ZStackDoc* doc, std::vector<std::unique_
         }
 
         if (stack->kind == GREY && doc->getStack()->isBinary()) {
-          size_t volume = doc->getStack()->getVoxelNumber();
+//          size_t volume = doc->getStack()->getVoxelNumber();
+          size_t volume = C_Stack::voxelNumber(stack2);
           for (size_t voxelIndex = 0; voxelIndex < volume; ++voxelIndex) {
             if (stack2->array[voxelIndex] == 1) {
               stack2->array[voxelIndex] = 255;

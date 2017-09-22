@@ -30,7 +30,7 @@ std::vector<ZPoint> ZGeometry::LineShpereIntersection(
   return result;
 }
 
-std::vector<std::pair<int, int>> LineToPixel(int x0, int y0, int x1, int y1)
+std::vector<std::pair<int, int> > LineToPixel(int x0, int y0, int x1, int y1)
 {
   std::vector<std::pair<int, int>> result;
 

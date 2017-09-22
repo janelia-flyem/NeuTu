@@ -185,7 +185,7 @@ void ZDvidNode::setFromUrl(const std::string &url)
   int port = -1;
   if (tokens2.size() > 1) {
     if (!tokens2[1].empty()) {
-      port = ZString::firstInteger(tokens2[1]);
+      port = ZString::FirstInteger(tokens2[1]);
       if (tokens2[1][0] == '-') {
         port = -port;
       }
@@ -213,7 +213,7 @@ void ZDvidNode::setFromSourceString(const std::string &sourceString)
   } else {
     int port = -1;
     if (!tokens[2].empty()) {
-      port = ZString::firstInteger(tokens[2]);
+      port = ZString::FirstInteger(tokens[2]);
       if (tokens[2][0] == '-') {
         port = -port;
       }

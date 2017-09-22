@@ -8,6 +8,19 @@
 
 class ZJsonObject;
 
+/*!
+ * 
+ * \brief The class of camera parameters
+ *
+ * It wrapps all parameters for the camera, including:
+ *   Projection type: which can be orthogonal or projective
+ *   Eye center: center of the eye
+ *   World center: center of the world, which is also the rotating center
+ *   Up vector: picture direction
+ *   Field of view: 
+ *   Near distance:
+ *   Far distance
+ */
 class Z3DCameraParameter : public ZSingleValueParameter<Z3DCamera>
 {
   Q_OBJECT

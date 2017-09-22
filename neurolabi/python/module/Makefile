@@ -43,7 +43,7 @@ _neutube_d.so: neutube_wrap.o
 
 
 neutube_wrap.o: neutube_wrap.cxx
-	$(CXX) -std=c++11 $(STDLIB_FLAG) -c $< -I../../c -I../../lib/genelib/src -I../../c/include -I../../gui -I../../lib/jansson/include -I../../lib/fftw3/include -fPIC `python3-config --cflags`
+	$(CXX) -DSWIG -std=c++11 $(STDLIB_FLAG) -c $< -I../../c -I../../lib/genelib/src -I../../c/include -I../../gui -I../../lib/jansson/include -I../../lib/fftw3/include -fPIC `python3-config --cflags`
 
 neutube_wrap.cxx: $(SOURCE)
 	@which gcc

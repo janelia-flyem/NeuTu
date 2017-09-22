@@ -1290,6 +1290,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
+
+
   ZDvidReader reader;
   if (!reader.open(target)) {
     emit messageGenerated(
@@ -1306,7 +1308,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   clear();
   getProgressSignal()->advanceProgress(0.1);
   //    getCompleteDocument()->clearData();
+
   getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
+
 
   if (getRole() == ROLE_WIDGET) {
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
@@ -1539,6 +1543,8 @@ void ZFlyEmProofMvc::customInit()
 
 
   m_splitProject.setDocument(getDocument());
+  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this, SLOT(zoomTo(int,int,int,int)));
 //  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
 //          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
@@ -3743,6 +3749,11 @@ void ZFlyEmProofMvc::loadSplitResult()
   getCompleteDocument()->loadSplitFromService();
 }
 
+void ZFlyEmProofMvc::loadSplitTask()
+{
+  getCompleteDocument()->loadSplitTaskFromService();
+}
+
 void ZFlyEmProofMvc::uploadSplitResult()
 {
   getCompleteDocument()->commitSplitFromService();
@@ -4505,7 +4516,8 @@ void ZFlyEmProofMvc::updateRoiWidget()
 
 void ZFlyEmProofMvc::showInfoDialog()
 {
-  m_infoDlg->setText(getDvidTarget().toJsonObject().dumpString(2).c_str());
+//  m_infoDlg->setText(getDvidTarget().toJsonObject().dumpString(2).c_str());
+  m_infoDlg->setText(getCompleteDocument()->getInfo());
   m_infoDlg->show();
   m_infoDlg->raise();
 }

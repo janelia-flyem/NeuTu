@@ -33,6 +33,11 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
   }
 }
 
+void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
+{
+  m_dvidInfo = info;
+}
+
 void ZDvidSynapseEnsemble::init()
 {
   m_startZ = 0;

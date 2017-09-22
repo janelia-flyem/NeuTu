@@ -9,6 +9,8 @@ class ZSparseStack;
 class ZStackGarbageCollector;
 class ZIntCuboid;
 class ZStackWatershedContainer;
+class ZObject3dScanArray;
+class ZDvidWriter;
 
 class ZBodySplitCommand : public ZCommandModule
 {
@@ -30,6 +32,7 @@ private:
       const std::string &dataDir, bool isFile);
   static void ProcessResult(ZStackWatershedContainer &container, const std::string &output,
       const std::string &splitTaskKey);
+  static void CommitResult(ZObject3dScanArray *objArray, ZDvidWriter &writer);
 };
 
 #endif // ZBODYSPLITCOMMAND_H

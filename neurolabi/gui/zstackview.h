@@ -9,10 +9,10 @@
 #include <QImage>
 #include <QWidget>
 #include <QPixmap>
+#include <vector>
 
 #include "zstackframe.h"
 #include "zparameter.h"
-#include <vector>
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
 #include "zpaintbundle.h"
@@ -51,7 +51,8 @@ class ZScrollSliceStrategy;
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
  *
- * ZStackView provides a widget of showing 3D data slice by slice. It displays
+ * ZStackView provides a widget of showing 3D data slice by slice, which can be
+ * along any of the three axes. It displays
  * the data in an image screen with the support of slice change and zooming. It
  * is designed to be the view component of the MVC framework, which can be
  * represented by the ZStackFrame class (and its derivatives) or the
@@ -75,7 +76,9 @@ public:
   void reset(bool updatingScreen = true);
 
   enum EUpdateOption {
-    UPDATE_NONE, UPDATE_QUEUED, UPDATE_DIRECT
+    UPDATE_NONE, //No update
+    UPDATE_QUEUED, //Put updating request in a queue
+    UPDATE_DIRECT //Update immediately
   };
 
   /*!
@@ -85,9 +88,12 @@ public:
    */
   void updateImageScreen(EUpdateOption option);
 
+  /*!
+   * \brief Restore the view from a bad setting
+   *
+   * The definition of a bad setting is provided by ZImageWidget::isBadView().
+   */
   void restoreFromBadView();
-
-  //void updateScrollControl();
 
   /*!
    * \brief Get the parent frame
@@ -112,7 +118,6 @@ public:
    * \brief Get the widget of data display
    */
   inline ZImageWidget* imageWidget() const { return m_imageWidget; }
-  //inline ZImageWidget* screen() { return m_imageWidget; }
 
   inline QProgressBar* progressBar() { return m_progress; }
 
@@ -135,6 +140,10 @@ public:
    * The value will be clipped if \a slice is out of range.
    */
   void setSliceIndex(int slice);
+
+  /*!
+   * \brief Set the slice index without emitting signal.
+   */
   void setSliceIndexQuietly(int slice);
 
   /*!
@@ -163,11 +172,16 @@ public:
    */
   ZStack *stackData() const;
 
-  //set up the view after the document is ready
+  /*!
+   * \brief set up the view after the document is ready
+   */
   void prepareDocument();
 
   virtual void resizeEvent(QResizeEvent *event);
 
+  /*!
+   * \brief Get the information of the view as a list of strings.
+   */
   QStringList toStringList() const;
 
   //void setImageWidgetCursor(const QCursor &cursor);
@@ -176,18 +190,30 @@ public:
    */
   void setScreenCursor(const QCursor &cursor);
 
+  /*!
+   * \brief Set up the scroll strategy.
+   *
+   * The scroll strategy \a strategy controls the scrolling behavior of the view.
+   * The \a strategy pointer is owned by the view.
+   */
   void setScrollStrategy(ZScrollSliceStrategy *strategy);
 
-  //void resetScreenCursor();
+  /*!
+   * \brief Intensity threshold for stack data.
+   */
   int getIntensityThreshold();
 
-  //void open3DWindow();
+  /*!
+   * \brief Save the current scene in an image file.
+   */
   void takeScreenshot(const QString &filename);
 
-  bool isDepthChangable();
-
-  virtual void paintStackBuffer();
+  void paintStackBuffer();
   void paintMaskBuffer();
+
+  /*!
+   * \brief Update the buffer of object canvas.
+   */
   void paintObjectBuffer();
   bool paintTileCanvasBuffer();
 
@@ -223,8 +249,24 @@ public:
 
 public:
   bool isViewPortFronzen() const;
+
+  /*!
+   * \brief Check if the view depth is frozen.
+   *
+   * The depth cannot be changed if it is frozen.
+   */
   bool isDepthFronzen() const;
+
   bool isViewChangeEventBlocked() const;
+
+  /*!
+   * \brief Check if the view is scrollable on depth.
+   *
+   * If the depth is not scrollable, the user will not be able to scroll the
+   * slice with mouse wheels.
+   */
+  bool isDepthScrollable();
+
 
   void setViewPortFrozen(bool state);
   void setDepthFrozen(bool state);
@@ -246,10 +288,25 @@ public: //Message system implementation
   void enableMessageManager();
 
 public slots:
+  /*!
+   * \brief Update view settings from the stack box.
+   *
+   * It resets view parameters according the current bounding box of the stack.
+   */
   void updateViewBox();
-//  void updateView();
+
+  /*!
+   * \brief Redraw the whole scene.
+   */
   void redraw(EUpdateOption option = UPDATE_QUEUED);
+
+  /*!
+   * \brief Redraw objects.
+   *
+   * It redraws objects in the object canvases.
+   */
   void redrawObject();
+
   void processStackChange(bool rangeChanged);
   //void updateData(int nslice, int threshold = -1);
   //void updateData();

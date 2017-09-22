@@ -281,6 +281,8 @@ private:
   void paintZoomHint();
   void paintCrossHair();
 
+  bool isBadView() const;
+
 private:
   ZImage *m_image;
   QVector<ZImage*> m_mask;
