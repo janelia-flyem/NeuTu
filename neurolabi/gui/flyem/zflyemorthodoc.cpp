@@ -81,12 +81,12 @@ void ZFlyEmOrthoDoc::initTodoList()
 
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 {
-  if (m_dvidReader.isReady()) {
+  if (m_grayscaleReader.isReady()) {
     ZIntCuboid box;
     box.setFirstCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
     box.setSize(m_width, m_height, m_depth);
 //    m_dvidReader.readGrayScale(box);
-    ZStack *stack = m_dvidReader.readGrayScale(box);
+    ZStack *stack = m_grayscaleReader.readGrayScale(box);
     loadStack(stack);
 
     ZDvidUrl dvidUrl(getDvidTarget());
