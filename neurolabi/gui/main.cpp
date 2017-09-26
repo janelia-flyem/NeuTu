@@ -197,8 +197,6 @@ int main(int argc, char *argv[])
     configPath =
         QFileInfo(QDir((GET_APPLICATION_DIR + "/json").c_str()), "config.json").
         absoluteFilePath();
-//        ZString::fullPath(
-//          GET_APPLICATION_DIR, "json", "", "config.json").c_str();
   }
 
   LINFO() << "Config path: " << configPath;

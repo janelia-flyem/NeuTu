@@ -88,7 +88,7 @@ unix {
   include(extratarget.pri)
 
   # suppress warnings from 3rd party library, works for gcc and clang
-  QMAKE_CXXFLAGS += -isystem ../gui/ext
+  QMAKE_CXXFLAGS += -isystem -msse2 ../gui/ext
 } else {
   INCLUDEPATH += ../gui/ext
 }
@@ -245,7 +245,9 @@ unix {
     } else {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
-        LIBS += -lX11 -lm -lpthread -lGL -lrt -lGLU -lstdc++
+        LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
+#        LIBS += /usr/lib/x86_64-linux-gnu/libGL.so.1.0.0
+#        LIBS += -L/usr/lib/x86_64-linux-gnu
         message(Checking arch...)
         contains(QMAKE_HOST.arch, x86_64) {
             message($$QMAKE_HOST.arch)
