@@ -86,9 +86,17 @@ public:
    */
   void setDepth(int depth);
 
-  //union
-  //Empty box does not add anything to join
+
+  /*!
+   * \brief Join two cuboids
+   *
+   * Note that if the object is empty, the result will become the same as \a cuboid.
+   * If \a cuboid is empty, nothing will be done.
+   *
+   * \return The current object after joining.
+   */
   ZIntCuboid& join(const ZIntCuboid &cuboid);
+
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);

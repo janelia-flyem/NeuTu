@@ -79,7 +79,7 @@ public:
 
   bool isEmpty() const;
 
-  void append(int getX, int getY, int getZ);
+  void append(int x, int y, int z);
 
   /*!
    * \brief Append an object to the current object.
@@ -217,6 +217,7 @@ public:
   ZIntPoint getHitVoxel() const;
 
   void boundBox(ZIntCuboid *box) const;
+  ZIntCuboid getBoundBox() const;
 
 private:
   int m_conn;

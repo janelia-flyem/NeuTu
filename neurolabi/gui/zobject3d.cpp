@@ -971,6 +971,14 @@ void ZObject3d::boundBox(ZIntCuboid *box) const
   }
 }
 
+ZIntCuboid ZObject3d::getBoundBox() const
+{
+  ZIntCuboid cuboid;
+  boundBox(&cuboid);
+
+  return cuboid;
+}
+
 ZIntPoint ZObject3d::getCentralVoxel() const
 {
   Voxel_t center;

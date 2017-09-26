@@ -42,6 +42,7 @@
 #include "zrect2d.h"
 #include "QsLog/QsLog.h"
 #endif
+#include "zstackfactory.h"
 
 using namespace std;
 
@@ -3346,6 +3347,28 @@ void ZSwcTree::labelStackByType(ZStack *stack) const
       }
     }
   }
+}
+
+ZStack* ZSwcTree::toTypeStack() const
+{
+  ZIntCuboid boundBox;
+  updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST);
+  for (Swc_Tree_Node *iter = begin(); iter != NULL; iter = next()) {
+    if (SwcTreeNode::isRegular(iter)) {
+      if (SwcTreeNode::type(iter) > 0) {
+        boundBox.join(SwcTreeNode::boundBox(iter).toIntCuboid());
+      }
+    }
+  }
+
+  ZStack *stack = NULL;
+
+  if (!boundBox.isEmpty()) {
+    stack = ZStackFactory::MakeZeroStack(GREY, boundBox);
+    labelStackByType(stack);
+  }
+
+  return stack;
 }
 
 

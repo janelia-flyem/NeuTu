@@ -2,6 +2,7 @@
 #define ZSTACKWATERSHEDCONTAINER_H
 
 #include <utility>
+#include <vector>
 
 #include "tz_stack_watershed.h"
 #include "zintcuboid.h"
@@ -52,6 +53,10 @@ public:
     return m_result;
   }
 
+  void useSeedRange(bool on);
+  bool usingSeedRange() const;
+  void expandRange(const ZIntCuboid &box);
+
   ZObject3dScanArray* makeSplitResult(ZObject3dScanArray *result = NULL);
 
   void printInfo() const;
@@ -64,6 +69,7 @@ private:
   void clearWorkspace();
   void clearSource();
   void clearResult();
+  void clearSeed();
   Stack* getSource();
   ZStack* getSourceStack();
 
@@ -84,9 +90,12 @@ private:
   Stack_Watershed_Workspace *m_workspace;
   ZIntPoint m_sourceOffset;
   ZIntCuboid m_range;
-  ZStack *m_source;
+  ZStack *m_source; //Source stack to refer to data in m_stack or m_spStack
+  std::vector<ZObject3d*> m_seedArray;
+
   bool m_floodingZero;
   int m_channel;
+  bool m_usingSeedRange = false;
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H

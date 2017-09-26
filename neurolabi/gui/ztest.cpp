@@ -24526,5 +24526,13 @@ void ZTest::test(MainWindow *host)
   delete stack;
 #endif
 
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/swc/color.swc");
+  ZStack *stack = tree.toTypeStack();
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete stack;
+#endif
+
   std::cout << "Done." << std::endl;
 }

@@ -72,8 +72,16 @@ ZStackWatershedContainer::~ZStackWatershedContainer()
   clearWorkspace();
   clearSource();
   clearResult();
+  clearSeed();
 }
 
+void ZStackWatershedContainer::clearSeed()
+{
+  for (ZObject3d *seed : m_seedArray) {
+    delete seed;
+  }
+  m_seedArray.clear();
+}
 
 void ZStackWatershedContainer::clearWorkspace()
 {
@@ -110,8 +118,26 @@ ZIntPoint ZStackWatershedContainer::getSourceDsIntv()
   return dsIntv;
 }
 
+void ZStackWatershedContainer::useSeedRange(bool on)
+{
+  m_usingSeedRange = on;
+}
+
+bool ZStackWatershedContainer::usingSeedRange() const
+{
+  return m_usingSeedRange;
+}
+
+void ZStackWatershedContainer::expandRange(const ZIntCuboid &box)
+{
+  m_range.join(box);
+}
+
 void ZStackWatershedContainer::addSeed(const ZObject3dScan &seed)
 {
+  m_seedArray.push_back(seed.toObject3d());
+
+#if 0
   ZIntPoint dsIntv = getSourceDsIntv();
 
   if (dsIntv.isZero()) {
@@ -121,10 +147,19 @@ void ZStackWatershedContainer::addSeed(const ZObject3dScan &seed)
     newSeed.downsampleMax(dsIntv);
     ZStackWatershed::AddSeed(getWorkspace(), getSourceOffset(), newSeed);
   }
+
+  if (usingSeedRange()) {
+    expandRange(seed.getBoundBox());
+  }
+#endif
 }
 
 void ZStackWatershedContainer::addSeed(const ZStack &seed)
 {
+  std::vector<ZObject3d*> objArray = ZObject3dFactory::MakeObject3dArray(seed);
+  m_seedArray.insert(m_seedArray.end(), objArray.begin(), objArray.end());
+
+#if 0
   ZIntPoint dsIntv = getSourceDsIntv();
 
   if (dsIntv.isZero()) {
@@ -141,27 +176,52 @@ void ZStackWatershedContainer::addSeed(const ZStack &seed)
           getWorkspace()->mask, block, x0, y0, z0, 0, STACK_WATERSHED_BARRIER);
     C_Stack::kill(block);
   }
+
+  if (usingSeedRange()) {
+    expandRange(seed.getBoundBox());
+  }
+#endif
 }
 
 void ZStackWatershedContainer::addSeed(const ZStroke2d &seed)
 {
+  m_seedArray.push_back(seed.toObject3d());
+#if 0
   ZStack stack;
   makeMaskStack(stack);
   seed.labelStack(&stack, STACK_WATERSHED_BARRIER);
+  if (usingSeedRange()) {
+    expandRange(seed.getBoundBox().toIntCuboid());
+  }
+#endif
 }
 
 void ZStackWatershedContainer::addSeed(const ZObject3d &seed)
 {
+  m_seedArray.push_back(seed.clone());
+#if 0
   ZStack stack;
   makeMaskStack(stack);
   seed.labelStack(&stack);
+  if (usingSeedRange()) {
+    expandRange(seed.getBoundBox());
+  }
+#endif
 }
 
 void ZStackWatershedContainer::addSeed(const ZSwcTree &seed)
 {
+  ZStack *stack = seed.toTypeStack();
+  addSeed(*stack);
+  delete stack;
+#if 0
   ZStack stack;
   makeMaskStack(stack);
   seed.labelStackByType(&stack);
+  if (usingSeedRange()) {
+    expandRange(seed.getBoundBox().toIntCuboid());
+  }
+#endif
 //  seed.labelStack(&stack);
 }
 

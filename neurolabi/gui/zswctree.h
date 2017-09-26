@@ -686,6 +686,11 @@ public:
   void labelStackByType(ZStack *stack) const;
 
   /*!
+   * \brief Convert typed nodes (type>0) in a swc object into a stack.
+   */
+  ZStack* toTypeStack() const;
+
+  /*!
    * \brief Get the length of the longest segment
    * \return
    */
