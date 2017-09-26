@@ -88,7 +88,7 @@ unix {
   include(extratarget.pri)
 
   # suppress warnings from 3rd party library, works for gcc and clang
-  QMAKE_CXXFLAGS += -isystem -msse2 ../gui/ext
+  QMAKE_CXXFLAGS += -isystem ../gui/ext
 } else {
   INCLUDEPATH += ../gui/ext
 }
