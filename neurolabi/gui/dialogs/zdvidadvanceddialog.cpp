@@ -46,6 +46,13 @@ void ZDvidAdvancedDialog::update(const ZDvidTarget &dvidTarget)
   } else {
     setTodoName(dvidTarget.getTodoListName());
   }
+
+  if (dvidTarget.isDefaultBodyLabelName()) {
+    setBodyLabelName("");
+  } else {
+    setBodyLabelName(dvidTarget.getBodyLabelName());
+  }
+
   setDvidServer(dvidTarget.getAddressWithPort().c_str());
 
   ZDvidNode node = dvidTarget.getGrayScaleSource();
@@ -65,6 +72,7 @@ void ZDvidAdvancedDialog::configure(ZDvidTarget *target)
     target->enableSupervisor(isSupervised());
     target->setSupervisorServer(getSupervisorServer());
     target->setTodoListName(getTodoName());
+    target->setBodyLabelName(getBodyLabelName());
     target->setGrayScaleSource(getGrayscaleSource());
     target->setTileSource(getTileSource());
   }
@@ -75,6 +83,7 @@ void ZDvidAdvancedDialog::backup()
   m_oldSupervised = isSupervised();
   m_oldSupervisorServer = getSupervisorServer();
   m_oldTodoName = getTodoName();
+  m_oldBodyLabelName = getBodyLabelName();
   m_oldGrayscaleSource = ui->grayscaleSourceWidget->getNode();
   m_oldTileSource = ui->tileSourceWidget->getNode();
   m_oldMainGrayscale = ui->grayscaleMainCheckBox->isChecked();
@@ -87,6 +96,7 @@ void ZDvidAdvancedDialog::recover()
   setSupervised(m_oldSupervised);
   setSupervisorServer(m_oldSupervisorServer);
   setTodoName(m_oldTodoName);
+  setBodyLabelName(m_oldBodyLabelName);
   setGrayscaleSource(m_oldGrayscaleSource, m_oldMainGrayscale);
   setTileSource(m_oldTileSource, m_oldMainTile);
 //  ui->defaultTodoCheckBox->setChecked(m_oldDefaultTodo);
@@ -102,6 +112,7 @@ void ZDvidAdvancedDialog::updateWidgetForEdit(bool editable)
   ui->librarianCheckBox->setEnabled(editable);
   ui->librarianLineEdit->setEnabled(editable);
   ui->todoLineEdit->setEnabled(editable);
+  ui->bodyLabelLineEdit->setEnabled(editable);
 }
 
 void ZDvidAdvancedDialog::UpdateWidget(QLabel *label, QLineEdit *lineEdit,
@@ -139,6 +150,8 @@ void ZDvidAdvancedDialog::updateWidgetForDefaultSetting(const ZJsonObject &obj)
 {
   UpdateWidget(ui->todoLabel, ui->todoLineEdit, "Todo Name", obj, "todos",
                ui->todoHintLabel);
+  UpdateWidget(ui->bodyLabel, ui->bodyLabelLineEdit, "Body Label", obj, "bodies",
+               ui->bodyLabelHintLabel);
 //  ui->todoHintLabel->setVisible(ui->todoLineEdit->isVisible());
 }
 
@@ -195,13 +208,17 @@ void ZDvidAdvancedDialog::setTodoName(const std::string &name)
 
 std::string ZDvidAdvancedDialog::getTodoName() const
 {
-  /*
-  if (ui->defaultTodoCheckBox->isChecked()) {
-    return "";
-  }
-  */
-
   return ui->todoLineEdit->text().trimmed().toStdString();
+}
+
+void ZDvidAdvancedDialog::setBodyLabelName(const std::string &name)
+{
+  ui->bodyLabelLineEdit->setText(name.c_str());
+}
+
+std::string ZDvidAdvancedDialog::getBodyLabelName() const
+{
+  return ui->bodyLabelLineEdit->text().trimmed().toStdString();
 }
 
 bool ZDvidAdvancedDialog::isSupervised() const

@@ -47,6 +47,12 @@ public slots:
 private:
   bool usingDefaultSetting() const;
   void resetAdvancedDlg(const ZDvidTarget &dvidTarget);
+  std::string getBodyLabelName() const;
+  std::string getGrayscaleName() const;
+  std::string getTileName() const;
+  std::string getSegmentationName() const;
+  std::string getSynapseName() const;
+  std::string getRoiName() const;
 
 
 private:

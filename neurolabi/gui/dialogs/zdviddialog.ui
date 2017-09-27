@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>453</width>
-    <height>496</height>
+    <height>463</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -82,25 +82,11 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_7">
-     <item>
-      <widget class="QLabel" name="bodyLabelLabel">
-       <property name="text">
-        <string>Body Label</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="bodyLineEdit"/>
-     </item>
-    </layout>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_8">
      <item>
       <widget class="QLabel" name="labelBlockLabel">
        <property name="text">
-        <string>Label Block</string>
+        <string>Segmentation</string>
        </property>
       </widget>
      </item>

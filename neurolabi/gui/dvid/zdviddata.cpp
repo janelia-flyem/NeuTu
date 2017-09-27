@@ -16,7 +16,7 @@ const char* ZDvidData::m_bodyInfoName = "bodyinfo";
 const char* ZDvidData::m_mergeTestBodyLabelName = "merge_test";
 const char* ZDvidData::m_maxBodyIdName = "max_body_id";
 const char* ZDvidData::m_splitStatusName = "split_status";
-const char* ZDvidData::m_labelBlockName = "labels";
+const char* ZDvidData::m_labelBlockName = "";
 const char* ZDvidData::m_multiscale2dName = "tiles";
 const char* ZDvidData::m_mergeOperationName = "neutu_merge_opr";
 const char* ZDvidData::m_bookmarkKeyName = "bookmarks";
@@ -176,6 +176,12 @@ bool ZDvidData::IsDefaultName(ERole role, const std::string &name)
 
   if (role == ZDvidData::ROLE_BODY_LABEL) { //For backfward compability
     if (name == "bodies") {
+      return true;
+    }
+  }
+
+  if (role == ZDvidData::ROLE_LABEL_BLOCK) {
+    if (name == "labels") {
       return true;
     }
   }

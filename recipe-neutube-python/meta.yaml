@@ -20,20 +20,21 @@ requirements:
     - python >=3.6
     - python {{PY_VER}}*
     - swig
-    - libdvid-cpp >=0.2.post55
+    - libdvid-cpp >=0.3
     - fftw    3.3*
     - jansson 2.7
     - libxml2 2.9*
-    - libpng  1.6*
+    - libpng  1.6.28
     - hdf5    1.8.18 # Ting's build script uses 1.8.12, but that's not available from conda
+    - cmake
 
   run:
     - python {{PY_VER}}*
-    - libdvid-cpp >=0.2.post55
+    - libdvid-cpp >=0.3
     - fftw    3.3*
     - jansson 2.7
     - libxml2 2.9*
-    - libpng  1.6*
+    - libpng  >=1.6.28,<1.7
     - hdf5    1.8.18
     
 

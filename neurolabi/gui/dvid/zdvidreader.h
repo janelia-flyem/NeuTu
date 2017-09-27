@@ -81,13 +81,16 @@ public:
 
   /*!
    * \brief Open a dvid node to read.
+   *
+   * This function will try to infer the real node and data instances from the
+   * settings in \a target.
    */
   bool open(const ZDvidTarget &target);
 
   /*!
    * \brief Open a dvid node defined by a source string
    *
-   * \param sourceString source string format: http:host:port:node:labelblk_name
+   * \param sourceString the format of the source string is defined in the ZDvidTarget class.
    */
   bool open(const QString &sourceString);
 
@@ -456,6 +459,8 @@ private:
 
   void init();
 
+  void updateSegmentationData();
+
   std::vector<ZStack*> readGrayScaleBlockOld(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
@@ -474,10 +479,6 @@ private:
   bool reportMissingData(const std::string dataName) const;
 
 protected:
-//  QEventLoop *m_eventLoop;
-//  ZDvidClient *m_dvidClient;
-//  QTimer *m_timer;
-//  bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
   mutable int m_statusCode;

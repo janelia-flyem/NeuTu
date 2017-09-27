@@ -50,34 +50,11 @@ ZDvidReader::ZDvidReader(QObject *parent) :
 
 ZDvidReader::~ZDvidReader()
 {
-#if defined(_ENABLE_LIBDVIDCPP_)
-//  delete m_service;
-//  m_service = NULL;
-#endif
 }
 
 void ZDvidReader::init()
 {
-//  m_eventLoop = new QEventLoop(this);
-//  m_dvidClient = new ZDvidClient(this);
-//  m_timer = new QTimer(this);
-#if defined(_ENABLE_LIBDVIDCPP_)
-//  m_service = NULL;
-#endif
-  //m_timer->setInterval(1000);
-
-//  m_isReadingDone = false;
-
-  //connect(m_dvidClient, SIGNAL(noRequestLeft()), m_eventLoop, SLOT(quit()));
-//  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(endReading()));
-//  connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
-  //connect(m_dvidClient, SIGNAL(requestFailed()), m_eventLoop, SLOT(quit()));
-//  connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
-
-//  connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
-
   m_readingTime = 0;
-
   m_statusCode = 0;
 }
 
@@ -134,8 +111,6 @@ bool ZDvidReader::isReady() const
 bool ZDvidReader::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
-//  m_dvidClient->reset();
-
   if (serverAddress.isEmpty()) {
     return false;
   }
@@ -143,17 +118,6 @@ bool ZDvidReader::open(
   if (uuid.isEmpty()) {
     return false;
   }
-
-//  m_dvidClient->setServer(serverAddress, port);
-//  m_dvidClient->setUuid(uuid);
-
-  /*
-  ZDvidBufferReader bufferReader;
-  ZDvidUrl dvidUrl(serverAddress.toStdString(), uuid.toStdString(), port);
-  if (!bufferReader.isReadable(dvidUrl.getHelpUrl().c_str())) {
-    return false;
-  }
-  */
 
   ZDvidTarget target;
   target.set(serverAddress.toStdString(), uuid.toStdString(), port);
@@ -196,12 +160,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
       loadDefaultDataSetting();
     }
 
-    std::string typeName = getType(getDvidTarget().getLabelBlockName());
-    m_dvidTarget.useLabelArray(typeName == "labelarray");
-
-    if (getDvidTarget().getBodyLabelName().empty()) {
-      syncBodyLabelName();
-    }
+    updateSegmentationData();
   } else {
     m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
   }
@@ -209,6 +168,25 @@ bool ZDvidReader::open(const ZDvidTarget &target)
   return succ;
 }
 
+void ZDvidReader::updateSegmentationData()
+{
+  std::string typeName;
+  if (getDvidTarget().hasLabelBlock()) {
+    typeName = getType(getDvidTarget().getLabelBlockName());
+  } else {
+    typeName = getType(getDvidTarget().getBodyLabelName());
+  }
+  getDvidTarget().useLabelArray(typeName == "labelarray");
+
+  if (getDvidTarget().getBodyLabelName().empty()) {
+    syncBodyLabelName();
+  }
+  if (!getDvidTarget().hasLabelBlock()) {
+    if (getDvidTarget().usingLabelArray()) {
+      getDvidTarget().setLabelBlockName(getDvidTarget().getBodyLabelName());
+    }
+  }
+}
 
 bool ZDvidReader::open(const QString &sourceString)
 {
@@ -216,18 +194,6 @@ bool ZDvidReader::open(const QString &sourceString)
   target.setFromSourceString(sourceString.toStdString());
   return open(target);
 }
-#if 0
-void ZDvidReader::waitForReading()
-{
-#ifdef _DEBUG_
-  std::cout << "Start waiting ..." << std::endl;
-  qDebug() << QThread::currentThread();
-#endif
-  if (!isReadingDone()) {
-    m_eventLoop->exec();
-  }
-}
-#endif
 
 void ZDvidReader::updateNodeStatus()
 {
@@ -1334,9 +1300,9 @@ void ZDvidReader::syncBodyLabelName()
 {
   if (getDvidTarget().hasLabelBlock()) {
     if (getDvidTarget().usingLabelArray()) {
-      m_dvidTarget.setBodyLabelName(m_dvidTarget.getLabelBlockName());
+      getDvidTarget().setBodyLabelName(getDvidTarget().getLabelBlockName());
     } else {
-      m_dvidTarget.setBodyLabelName(readBodyLabelName());
+      getDvidTarget().setBodyLabelName(readBodyLabelName());
     }
   }
 }

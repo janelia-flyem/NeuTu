@@ -8,6 +8,7 @@
 #include "zstack.hxx"
 #include "zintcuboid.h"
 #include "zobject3dscan.h"
+#include "zobject3d.h"
 
 ZStackWatershed::ZStackWatershed() : m_floodingZero(false)
 {
@@ -135,6 +136,45 @@ void ZStackWatershed::AddSeed(
         }
       }
     }
+  }
+}
+
+void ZStackWatershed::AddSeed(
+    Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
+    const ZIntPoint &dsIntv, const ZObject3d *seed)
+{
+  if (ws != NULL) {
+    uint8_t label = seed->getLabel();
+    int sx = dsIntv.getX() + 1;
+    int sy = dsIntv.getY() + 1;
+    int sz = dsIntv.getZ() + 1;
+    uint8_t *array = C_Stack::array8(ws->mask);
+    size_t area = C_Stack::area(ws->mask);
+    int width = C_Stack::width(ws->mask);
+
+    for (size_t i = 0; i < seed->size(); ++i) {
+      int x = seed->getX(i);
+      int y = seed->getY(i);
+      int z = seed->getZ(i);
+      x /= sx;
+      y /= sy;
+      z /= sz;
+      x -= offset.getX();
+      y -= offset.getY();
+      z -= offset.getZ();
+      array[z * area + y * width + x] = label;
+    }
+  }
+}
+
+void ZStackWatershed::AddSeed(
+    Stack_Watershed_Workspace *ws, const ZIntPoint &offset, const ZIntPoint &dsIntv,
+    const std::vector<ZObject3d *> &seedArray)
+{
+  for (std::vector<ZObject3d*>::const_iterator iter = seedArray.begin();
+       iter != seedArray.end(); ++iter) {
+    const ZObject3d *obj = *iter;
+    AddSeed(ws, offset, dsIntv, obj);
   }
 }
 

@@ -154,14 +154,6 @@ void ZFlyEmProofMvc::init()
       new ZFlyEmBookmarkListModel(this);
 
 
-//  m_assignedBookmarkList = new ZFlyEmBookmarkListModel(this);
-//  m_assignedBookmarkProxy = new QSortFilterProxyModel(this);
-//  prepareBookmarkModel(m_assignedBookmarkList, m_assignedBookmarkProxy);
-
-//  m_userBookmarkList = new ZFlyEmBookmarkListModel(this);
-//  m_userBookmarkProxy = new QSortFilterProxyModel(this);
-//  prepareBookmarkModel(m_userBookmarkList, m_userBookmarkProxy);
-
   m_seFetcher = new ZFlyEmSynapseDataFetcher(this);
   m_seUpdater = new ZFlyEmSynapseDataUpdater(this);
   connect(m_seFetcher, SIGNAL(dataFetched(ZFlyEmSynapseDataFetcher*)),

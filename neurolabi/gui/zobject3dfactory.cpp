@@ -560,6 +560,43 @@ ZObject3dScan ZObject3dFactory::MakeRandomObject3dScan(const ZIntCuboid &box)
   return obj;
 }
 
+std::vector<ZObject3d*> ZObject3dFactory::MakeObject3dArray(const ZStack &stack)
+{
+  std::map<int, ZObject3d*> objMap;
+  int width = stack.width();
+  int height = stack.height();
+  int depth = stack.depth();
+  int i = 0;
+  for (int z = 0; z < depth; ++z) {
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        int v = stack.getIntValue(i);
+        if (v > 0) {
+          ZObject3d *obj = NULL;
+          if (objMap.count(v) == 0) {
+            obj = new ZObject3d;
+            obj->setLabel(v);
+            objMap[v] = obj;
+          } else {
+            obj = objMap[v];
+          }
+
+          obj->append(x, y, z);
+        }
+        ++i;
+      }
+    }
+  }
+
+  std::vector<ZObject3d*> objArray;
+  for (std::map<int, ZObject3d*>::iterator iter = objMap.begin();
+       iter != objMap.end(); ++iter) {
+    objArray.push_back(iter->second);
+  }
+
+  return objArray;
+}
+
 #if defined(_QT_GUI_USED_)
 ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZStroke2d &stroke)
 {

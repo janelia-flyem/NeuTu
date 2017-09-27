@@ -23569,13 +23569,14 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZSparseStack stack;
   stack.load(GET_TEST_DATA_DIR + "/_system/test.zss");
   stack.getObjectMask()->canonize();
   ZStackWatershedContainer container(&stack);
   container.setFloodFillingZero(false);
-  container.setRange(3707, 4142, 4681, 4235, 5849, 9793);
+  container.useSeedRange(true);
+//  container.setRange(3707, 4142, 4681, 4235, 5849, 9793);
 
 
   ZObject3dScan obj1;
@@ -23589,9 +23590,10 @@ void ZTest::test(MainWindow *host)
   container.addSeed(obj1);
   container.addSeed(obj2);
 
+  container.run();
 //  container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
 //  container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
-  container.run();
+
   container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
 
   ZObject3dScanArray *split = container.makeSplitResult();
@@ -24523,6 +24525,14 @@ void ZTest::test(MainWindow *host)
   stack->setOffset(0, 0, 0);
   stack->save(dataDir + "/test.tif");
 
+  delete stack;
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/swc/color.swc");
+  ZStack *stack = tree.toTypeStack();
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
   delete stack;
 #endif
 

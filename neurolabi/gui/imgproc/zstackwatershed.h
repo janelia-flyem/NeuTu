@@ -10,6 +10,7 @@ class ZStack;
 class ZIntPoint;
 class ZObject3dScan;
 class ZIntCuboid;
+class ZObject3d;
 
 /*!
  * \brief The class of running watershed
@@ -52,6 +53,11 @@ public:
                       const std::vector<ZObject3dScan*> &seedArray);
   static void AddSeed(Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
                       const std::vector<ZObject3dScan> &seedArray);
+  static void AddSeed(Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
+                      const ZIntPoint &dsIntv,
+                      const std::vector<ZObject3d*> &seedArray);
+  static void AddSeed(Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
+                      const ZIntPoint &dsIntv, const ZObject3d* seed);
 
 private:
   Cuboid_I m_range;

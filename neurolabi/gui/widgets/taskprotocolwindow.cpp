@@ -13,6 +13,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
+#include "protocols/tasktesttask.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -37,6 +38,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
 }
+
 // constants
 const QString TaskProtocolWindow::KEY_DESCRIPTION = "file type";
 const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
@@ -374,6 +376,13 @@ int TaskProtocolWindow::getNextUncompleted() {
  * updates the task label for current index
  */
 void TaskProtocolWindow::updateCurrentTaskLabel() {
+    // if there is a current task widget, remove it from the layout:
+    if (m_currentTaskWidget != NULL) {
+        ui->verticalLayout_3->removeWidget(m_currentTaskWidget);
+        // ui->horizontalLayout->removeWidget(m_currentTaskWidget);
+        m_currentTaskWidget->setVisible(false);
+    }
+
     if (m_currentTaskIndex < 0) {
         ui->taskActionLabel->setText("(no task)");
         ui->taskTargetLabel->setText("n/a");
@@ -387,6 +396,13 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             ui->reviewCheckBox->setChecked(true);
         } else {
             ui->reviewCheckBox->setChecked(false);
+        }
+        // show task-specific UI if it exist
+        m_currentTaskWidget = m_taskList[m_currentTaskIndex]->getTaskWidget();
+        if (m_currentTaskWidget != NULL) {
+            ui->verticalLayout_3->addWidget(m_currentTaskWidget);
+            // ui->horizontalLayout->addWidget(m_currentTaskWidget);
+            m_currentTaskWidget->setVisible(true);
         }
     }
 }
@@ -557,6 +573,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             m_taskList.append(task);
         } else if (taskType == "split seeds") {
             QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject()));
+            m_taskList.append(task);
+        } else if (taskType == "test task") {
+            QSharedPointer<TaskProtocolTask> task(new TaskTestTask(taskJson.toObject()));
             m_taskList.append(task);
         } else {
             // unknown task type; log it and move on

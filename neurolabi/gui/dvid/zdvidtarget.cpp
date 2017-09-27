@@ -103,11 +103,9 @@ void ZDvidTarget::clear()
   m_localFolder = "";
   m_bodyLabelName = "*";
   m_labelBlockName = "*";
-//  m_multiscale2dName = "";
 
   m_grayScaleName = "";
   m_synapseLabelszName = "";
-//  m_roiName = "";
   m_synapseName = "";
   m_roiName = "";
   m_todoListName = "";
@@ -116,7 +114,6 @@ void ZDvidTarget::clear()
   m_supervisorServer.clear();
   m_tileConfig.clear();
   m_sourceConfig.clear();
-//  m_tileJson = ZJsonArray();
 }
 
 void ZDvidTarget::setServer(const std::string &address)
@@ -803,6 +800,16 @@ std::string ZDvidTarget::getTodoListName() const
 bool ZDvidTarget::isDefaultTodoListName() const
 {
   return m_todoListName.empty();
+}
+
+bool ZDvidTarget::isDefaultBodyLabelName() const
+{
+  return m_isDefaultBodyLabel;
+}
+
+void ZDvidTarget::setDefaultBodyLabelFlag(bool on)
+{
+  m_isDefaultBodyLabel = on;
 }
 
 std::string ZDvidTarget::getBodyAnnotationName() const

@@ -300,7 +300,13 @@ public:
   Stack* toStack(int *offset = NULL, int v = 1) const;
   Stack* toStackWithMargin(int *offset, int v, int margin) const;
 
+  /*!
+   * \brief Make a stack from the object.
+   *
+   * The downsample intervals of the object will be passed to the stack too.
+   */
   ZStack* toStackObject(int v = 1, ZStack *result = NULL) const;
+
   ZStack* toStackObjectWithMargin(int v, int margin) const;
 
   ZStack* toVirtualStack() const;
