@@ -75,6 +75,16 @@ ZStackWatershedContainer::~ZStackWatershedContainer()
   clearSeed();
 }
 
+ZIntCuboid &ZStackWatershedContainer::getRange()
+{
+  if (m_range.isEmpty()) {
+    updateRange();
+  }
+
+  return m_range;
+}
+
+
 void ZStackWatershedContainer::clearSeed()
 {
   for (ZObject3d *seed : m_seedArray) {
@@ -120,6 +130,9 @@ ZIntPoint ZStackWatershedContainer::getSourceDsIntv()
 
 void ZStackWatershedContainer::useSeedRange(bool on)
 {
+  if (m_usingSeedRange != on) {
+    deprecate(COMP_RANGE);
+  }
   m_usingSeedRange = on;
 }
 
@@ -128,14 +141,101 @@ bool ZStackWatershedContainer::usingSeedRange() const
   return m_usingSeedRange;
 }
 
+/*
 void ZStackWatershedContainer::expandRange(const ZIntCuboid &box)
 {
-  m_range.join(box);
+  getRange().join(box);
+  deprecateDependent(COMP_RANGE);
+}
+*/
+
+void ZStackWatershedContainer::updateSeedMask()
+{
+  ZStackWatershed::AddSeed(
+        getWorkspace(), getSourceOffset(), getSourceDsIntv(), m_seedArray);
+}
+
+bool ZStackWatershedContainer::isDeprecated(EComponent component) const
+{
+  switch (component) {
+  case COMP_SEED_ARRAY:
+    return m_seedArray.empty();
+  case COMP_RANGE:
+    return m_range.isEmpty();
+  case COMP_SOURCE:
+    return m_source == NULL;
+  case COMP_WORKSPACE:
+    return m_workspace == NULL;
+  case COMP_RESULT:
+    return m_result == NULL;
+  }
+
+  return false;
+}
+
+void ZStackWatershedContainer::deprecate(EComponent component)
+{
+  switch (component) {
+  case COMP_SEED_ARRAY:
+    clearSeed();
+    break;
+  case COMP_RANGE:
+    m_range.reset();
+    break;
+  case COMP_SOURCE:
+    clearSource();
+    break;
+  case COMP_WORKSPACE:
+    clearWorkspace();
+    break;
+  case COMP_RESULT:
+    clearResult();
+    break;
+  }
+
+  deprecateDependent(component);
+}
+
+void ZStackWatershedContainer::deprecateDependent(EComponent component)
+{
+  switch (component) {
+  case COMP_SEED_ARRAY:
+    if (usingSeedRange()) {
+      deprecate(COMP_RANGE);
+    } else {
+      deprecate(COMP_WORKSPACE);
+    }
+    break;
+  case COMP_RANGE:
+    deprecate(COMP_WORKSPACE);
+    deprecate(COMP_SOURCE);
+    break;
+  case COMP_SOURCE:
+    deprecate(COMP_RESULT);
+    break;
+  case COMP_WORKSPACE:
+    deprecate(COMP_RESULT);
+    break;
+  case COMP_RESULT:
+    break;
+  }
+}
+
+void ZStackWatershedContainer::expandSeedArray(ZObject3d *obj)
+{
+  m_seedArray.push_back(obj);
+  deprecateDependent(COMP_SEED_ARRAY);
+}
+
+void ZStackWatershedContainer::expandSeedArray(const std::vector<ZObject3d *> &objArray)
+{
+  m_seedArray.insert(m_seedArray.end(), objArray.begin(), objArray.end());
+  deprecateDependent(COMP_SEED_ARRAY);
 }
 
 void ZStackWatershedContainer::addSeed(const ZObject3dScan &seed)
 {
-  m_seedArray.push_back(seed.toObject3d());
+  expandSeedArray(seed.toObject3d());
 
 #if 0
   ZIntPoint dsIntv = getSourceDsIntv();
@@ -157,7 +257,8 @@ void ZStackWatershedContainer::addSeed(const ZObject3dScan &seed)
 void ZStackWatershedContainer::addSeed(const ZStack &seed)
 {
   std::vector<ZObject3d*> objArray = ZObject3dFactory::MakeObject3dArray(seed);
-  m_seedArray.insert(m_seedArray.end(), objArray.begin(), objArray.end());
+  expandSeedArray(objArray);
+//  m_seedArray.insert(m_seedArray.end(), objArray.begin(), objArray.end());
 
 #if 0
   ZIntPoint dsIntv = getSourceDsIntv();
@@ -185,7 +286,8 @@ void ZStackWatershedContainer::addSeed(const ZStack &seed)
 
 void ZStackWatershedContainer::addSeed(const ZStroke2d &seed)
 {
-  m_seedArray.push_back(seed.toObject3d());
+//  m_seedArray.push_back(seed.toObject3d());
+  expandSeedArray(seed.toObject3d());
 #if 0
   ZStack stack;
   makeMaskStack(stack);
@@ -198,7 +300,8 @@ void ZStackWatershedContainer::addSeed(const ZStroke2d &seed)
 
 void ZStackWatershedContainer::addSeed(const ZObject3d &seed)
 {
-  m_seedArray.push_back(seed.clone());
+  expandSeedArray(seed.clone());
+//  m_seedArray.push_back(seed.clone());
 #if 0
   ZStack stack;
   makeMaskStack(stack);
@@ -293,7 +396,7 @@ Stack_Watershed_Workspace* ZStackWatershedContainer::getWorkspace()
 {
   if (m_workspace == NULL) {
     if (getSource() != NULL) {
-      if (!m_range.isEmpty()) {
+      if (!getRange().isEmpty()) {
         m_workspace =
             ZStackWatershed::CreateWorkspace(getSource(), m_floodingZero);
       }
@@ -333,7 +436,10 @@ void ZStackWatershedContainer::setRange(
     newRange.intersect(m_stack->getBoundBox());
   }
 
-  if (!newRange.equals(m_range)) {
+  if (!newRange.equals(getRange())) {
+    deprecateDependent(COMP_RANGE);
+  }
+#if 0
     clearWorkspace();
     m_range = newRange;
     if (m_stack != NULL) {
@@ -356,12 +462,30 @@ void ZStackWatershedContainer::setRange(
       }
     }
   }
+#endif
 }
 
 ZStack* ZStackWatershedContainer::getSourceStack()
 {
-  if (m_source == NULL && m_spStack != NULL) {
-    m_source = m_spStack->makeStack(m_range);
+  ZIntCuboid range = getRange();
+  if (m_source == NULL) {
+    if (m_spStack != NULL) {
+      m_source = m_spStack->makeStack(range);
+    } else {
+      if (range.equals(m_stack->getBoundBox())) {
+        m_source = m_stack;
+      } else {
+        ZIntCuboid fullRange = m_stack->getBoundBox();
+        ZIntPoint corner = m_range.getFirstCorner() - fullRange.getFirstCorner();
+
+        Stack *rawSource = C_Stack::crop(
+              m_stack->c_stack(m_channel),
+              corner.getX(), corner.getY(), corner.getZ(),
+              m_range.getWidth(), m_range.getHeight(), m_range.getDepth(), NULL);
+        m_source->consume(rawSource);
+        m_source->setOffset(m_range.getFirstCorner());
+      }
+    }
   }
 
   return m_source;
@@ -379,9 +503,10 @@ bool ZStackWatershedContainer::isEmpty() const
 
 void ZStackWatershedContainer::run()
 {
-  m_result = NULL;
+  deprecate(COMP_RESULT);
   Stack *source = getSource();
   if (source != NULL) {
+    updateSeedMask();
     Stack *out = C_Stack::watershed(source, getWorkspace());
     m_result = new ZStack;
     m_result->consume(out);
@@ -513,5 +638,29 @@ void ZStackWatershedContainer::printInfo() const
   std::cout << "Flooding zero: " << m_floodingZero << std::endl;
   if (m_source != NULL) {
     std::cout << "Downsampling: " << m_source->getDsIntv().toString() << std::endl;
+  }
+}
+
+void ZStackWatershedContainer::updateRange()
+{
+  if (m_spStack != NULL) {
+    m_range = m_spStack->getBoundBox();
+  } else if (m_stack != NULL) {
+    m_range = m_stack->getBoundBox();
+  }
+
+  if (usingSeedRange()) {
+    ZIntCuboid seedBox;
+    for (ZObject3d *seed : m_seedArray) {
+      seedBox.join(seed->getBoundBox());
+    }
+
+    if (!seedBox.isEmpty()) {
+      if (m_range.isEmpty()) {
+        m_range = seedBox;
+      } else {
+        m_range.intersect(seedBox);
+      }
+    }
   }
 }

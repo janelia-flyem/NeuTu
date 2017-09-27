@@ -27,6 +27,14 @@ public:
 
   bool isEmpty() const;
 
+  enum EComponent {
+    COMP_SEED_ARRAY, COMP_RANGE, COMP_SOURCE, COMP_WORKSPACE, COMP_RESULT
+  };
+
+  bool isDeprecated(EComponent component) const;
+  void deprecateDependent(EComponent component);
+  void deprecate(EComponent component);
+
   void run();
 
   void addSeed(const ZStack &seed);
@@ -55,11 +63,13 @@ public:
 
   void useSeedRange(bool on);
   bool usingSeedRange() const;
-  void expandRange(const ZIntCuboid &box);
+//  void expandRange(const ZIntCuboid &box);
 
   ZObject3dScanArray* makeSplitResult(ZObject3dScanArray *result = NULL);
 
   void printInfo() const;
+
+  ZIntCuboid& getRange();
 
 private:
   void init();
@@ -72,6 +82,8 @@ private:
   void clearSeed();
   Stack* getSource();
   ZStack* getSourceStack();
+  void expandSeedArray(ZObject3d *obj);
+  void expandSeedArray(const std::vector<ZObject3d*> &objArray);
 
   ZIntPoint getSourceOffset() const;
 
@@ -83,12 +95,15 @@ private:
 
   ZIntPoint getSourceDsIntv();
 
+  void updateRange();
+  void updateSeedMask();
+
 private:
   ZStack *m_stack;
   ZSparseStack *m_spStack;
   ZStack *m_result;
   Stack_Watershed_Workspace *m_workspace;
-  ZIntPoint m_sourceOffset;
+//  ZIntPoint m_sourceOffset;
   ZIntCuboid m_range;
   ZStack *m_source; //Source stack to refer to data in m_stack or m_spStack
   std::vector<ZObject3d*> m_seedArray;
