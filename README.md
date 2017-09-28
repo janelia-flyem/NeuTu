@@ -21,7 +21,7 @@ Here \<NAME\> is the conda environment name. If you don't know what it is, just 
 
 After successful installation, you should be able to lauch the application neutu.app in \<CONDA_ROOT\>/envs/\<NAME\>/bin.
 
-### Linux
+### Linux (Tested on Ubuntu 16.04 and Fedora 22)
     curl -X GET https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh > Miniconda-latest-Linux-x86_64.sh
     bash Miniconda-latest-Linux-x86_64.sh
     
