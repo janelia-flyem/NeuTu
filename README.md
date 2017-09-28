@@ -12,10 +12,9 @@ Software for proofreading EM connectomics
 ## Installation
 
 ### Mac (OSX 10.10+ preferred)
-    curl -X GET https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh > Miniconda-latest-MacOSX-x86_64.sh
+    curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-MacOSX-x86_64.sh
     bash Miniconda-latest-MacOSX-x86_64.sh
     
-    #Assuming miniconda is installed under <CONDA_ROOT>
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
     conda create -n <NAME> -c flyem neutu
@@ -43,31 +42,6 @@ After successful installation, you can launch the program with the following com
 
     scource <CONDA_ROOT>/bin/activate <NAME>
     neutu 
-
-## Build
-
-If the installation does not work for you, you can build the application from scratch.
-
-### Linux
-
-Go to the NeuTu/neurolabi/shell directory and run
- 
-    ./setup_neutu_j <install_dir>
-
-Here \<install_dir\> must be a clean directory if it already exists. Run \<install_dir\>/bin/neutu to launch the program after installation.
-
-Note: you need to install the following packages using the package manager (e.g. apt-get for Ubuntu and yum/dnf for Fedora) if they have not been installed:
-* libxext-dev
-* freeglut3-dev
-* build-essential for Ubuntu or groupinstall "Development Tools" for Fedora
-
-### Mac
-
-Go to the NeuTu/neurolabi/shell directory and run
- 
-    ./setup_neutu_conda <install_dir>
-    
-Here \<install_dir\> must be a clean directory if it already exists. Run \<install_dir\>/bin/neutu to launch the program after installation.
  
 ### Windows
 
