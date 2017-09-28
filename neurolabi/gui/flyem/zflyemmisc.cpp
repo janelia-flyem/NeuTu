@@ -913,7 +913,7 @@ ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(const ZJsonObject &obj)
     stroke.setLabel(obj.value("color").toInteger() + 1);
     stroke.setZ(obj.value("z").toInteger());
     stroke.append(obj.value("x").toInteger(), obj.value("y").toInteger());
-    stroke.setWidth(5);
+    stroke.setWidth(30);
   }
 
   return stroke;

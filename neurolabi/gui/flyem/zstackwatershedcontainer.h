@@ -15,11 +15,27 @@ class ZSparseStack;
 class ZObject3dScanArray;
 class ZSwcTree;
 
+/*!
+ * \brief The wrapper class for running watershed split
+ *
+ * The class can be used to split a normal or sparse stack. Its usage is simple:
+ *
+ * ZStackWatershedContainer container(stack);
+ * container.addSeed(seed1);
+ * container.addSeed(seed2);
+ * container.run();
+ * ZObject3dScanArray *result = container.makeSplitResult();
+ */
 class ZStackWatershedContainer
 {
 public:
   ZStackWatershedContainer(ZStack *stack);
   ZStackWatershedContainer(ZSparseStack *stack);
+  /*!
+   * \brief A convenient constructor for setting stacks
+   *
+   * \a spStack will suppress \a stack if \a spStack is not NULL.
+   */
   ZStackWatershedContainer(ZStack *stack, ZSparseStack *spStack);
   ZStackWatershedContainer(const std::pair<ZStack*, ZSparseStack*> &data);
 
@@ -43,9 +59,6 @@ public:
   void addSeed(const ZObject3d &seed);
   void addSeed(const ZSwcTree &seed);
 
-  //It will remove old seeds
-
-
   void setRange(const ZIntCuboid &range);
   void setRange(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   void setRange(int x0, int y0, int z0, int x1, int y1, int z1);
@@ -67,7 +80,7 @@ public:
 
   ZObject3dScanArray* makeSplitResult(ZObject3dScanArray *result = NULL);
 
-  void printInfo() const;
+  void printState() const;
 
   ZIntCuboid& getRange();
 

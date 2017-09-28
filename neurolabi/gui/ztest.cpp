@@ -23615,7 +23615,7 @@ void ZTest::test(MainWindow *host)
 
   delete split;
 
-  container.printInfo();
+  container.printState();
 
 
 //  delete result;

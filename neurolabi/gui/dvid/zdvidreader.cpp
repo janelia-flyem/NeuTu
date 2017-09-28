@@ -3533,6 +3533,7 @@ QList<ZStackObject*> ZDvidReader::readSeedFromSplitTask(
       if (type == "ZStroke2d") {
         ZStroke2d *stroke = new ZStroke2d;
         stroke->loadJsonObject(ZJsonObject(seedJson.value("data")));
+        stroke->setPenetrating(false);
 
         if (!stroke->isEmpty()) {
           seedList.append(stroke);
