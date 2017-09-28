@@ -252,7 +252,7 @@ unix {
             message($$QMAKE_HOST.arch)
             QMAKE_CXXFLAGS += -m64
         }
-        QMAKE_CXXFLAGS += -fext-numeric-literals
+        QMAKE_CXXFLAGS += -fext-numeric-literals -msse3
         RC_FILE = images/app.icns
     }
 }
