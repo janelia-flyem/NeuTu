@@ -262,7 +262,7 @@ void ZBodySplitCommand::ProcessResult(
 //              *result, NeuTube::Z_AXIS, true, &objArray);
       for (ZObject3dScanArray::const_iterator iter = result->begin();
            iter != result->end(); ++iter) {
-        const ZObject3dScan &obj = *iter;
+        const ZObject3dScan &obj = **iter;
         std::string endPoint =
             writer->writeServiceResult("split", obj.toDvidPayload(), false);
         ZJsonObject regionJson;

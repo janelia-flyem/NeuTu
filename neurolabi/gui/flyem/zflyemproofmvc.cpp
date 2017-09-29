@@ -2664,8 +2664,8 @@ void ZFlyEmProofMvc::exportSelectedBodyLevel()
           int index = 0;
           for (std::set<uint64_t>::const_iterator iter = idSet.begin();
                iter != idSet.end(); ++iter) {
-            ZObject3dScan &obj = objArray[index];
-            reader.readBody(*iter, false, &obj);
+            ZObject3dScan *obj = objArray[index];
+            reader.readBody(*iter, false, obj);
             index++;
           }
         }

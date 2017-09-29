@@ -1240,9 +1240,11 @@ void ZStackFrame::saveStack(const QString &filePath)
     QList<ZSparseObject*> objList = document()->getSparseObjectList();
     ZObject3dScanArray objArray;
     foreach (ZSparseObject *obj, objList) {
-      objArray.push_back(*dynamic_cast<ZObject3dScan*>(obj));
+      objArray.append(dynamic_cast<ZObject3dScan*>(obj));
     }
     ZStack *stack = objArray.toStackObject();
+    objArray.shallowClear();
+
     if (stack != NULL) {
       stack->save(filePath.toStdString().c_str());
       delete stack;

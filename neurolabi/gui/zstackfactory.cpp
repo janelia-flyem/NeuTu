@@ -710,7 +710,7 @@ ZStack* ZStackFactory::MakeBinaryStack(
 
     for (ZObject3dScanArray::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
+      const ZObject3dScan &obj = **iter;
       obj.drawStack(stack->c_stack(), v, offset);
     }
   }
@@ -742,7 +742,7 @@ ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 
     for (ZObject3dScanArray::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
+      const ZObject3dScan &obj = **iter;
       obj.drawStack(stack->c_stack(0), obj.getColor().red(), offset);
       obj.drawStack(stack->c_stack(1), obj.getColor().green(), offset);
       obj.drawStack(stack->c_stack(2), obj.getColor().blue(), offset);

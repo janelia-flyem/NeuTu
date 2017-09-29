@@ -11,7 +11,7 @@
 #include "zswctree.h"
 #include "tz_math.h"
 #include "flyem/zflyemmisc.h"
-
+#include "zstackobjectsourcefactory.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -537,7 +537,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
       ZObject3dScan body = *wholeBody;
       for (ZObject3dScanArray::iterator iter = objArray->begin();
            iter != objArray->end(); ++iter) {
-        ZObject3dScan &obj = *iter;
+        ZObject3dScan &obj = **iter;
         if (obj.getLabel() > 1) {
           uint64_t splitLabel = obj.getLabel();
 
@@ -579,11 +579,11 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
 #endif
               if (!isAdopted) {//Treated as a split region
                 subobj.setLabel(splitLabel);
-                result->push_back(subobj);
+                result->append(subobj);
               }
             }
           } else {
-            result->push_back(currentBody);
+            result->append(currentBody);
           }
         } else {
           mainBody.concat(obj);
@@ -605,7 +605,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
 
         if (!obj.isAdjacentTo(mainBody)) {
           for (size_t index = 0; index < result->size(); ++index) {
-            if (obj.isAdjacentTo((*result)[index])) {
+            ZObject3dScan *resultObj = (*result)[index];
+            if (obj.isAdjacentTo(*resultObj)) {
               ++count;
               if (count > 1) {
                 break;
@@ -616,8 +617,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
         }
 
         if (count > 0) {
-          ZObject3dScan &split = (*result)[splitIndex];
-          split.concat(obj);
+          ZObject3dScan *split = (*result)[splitIndex];
+          split->concat(obj);
         }
       }
 
@@ -625,6 +626,20 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
     } else if (m_stack != NULL) {
       result = ZObject3dFactory::MakeObject3dScanArray(
             *(getResultStack()), NeuTube::Z_AXIS, true, NULL);
+    }
+  }
+
+  if (result != NULL) {
+    for (ZObject3dScanArray::iterator iter = result->begin();
+         iter != result->end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+      obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
+      obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
+      obj->setHitProtocal(ZStackObject::HIT_NONE);
+      obj->setVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
+      obj->setProjectionVisible(false);
+      obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
+      obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
     }
   }
 

@@ -23603,7 +23603,7 @@ void ZTest::test(MainWindow *host)
   int index = 1;
   for (ZObject3dScanArray::const_iterator iter = split->begin();
        iter != split->end(); ++iter) {
-    const ZObject3dScan &obj = *iter;
+    const ZObject3dScan &obj = **iter;
     ZString path = GET_TEST_DATA_DIR + "/test";
     path.appendNumber(index++);
     obj.save(path + ".sobj");

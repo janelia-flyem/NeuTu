@@ -49,6 +49,7 @@
 #include "flyem/zserviceconsumer.h"
 #include "zstroke2d.h"
 #include "flyem/zflyemmisc.h"
+#include "zstackwatershedcontainer.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -2992,6 +2993,67 @@ void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
   getProgressSignal()->startProgress("Splitting ...");
 
   ZOUT(LINFO(), 3) << "Removing old result ...";
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+//  m_isSegmentationReady = false;
+  setSegmentationReady(false);
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  ZStackArray seedMask = createWatershedMask(true);
+
+  if (!seedMask.empty()) {
+    ZStack *signalStack = getStack();
+    ZDvidSparseStack *sparseStack = NULL;
+    ZIntCuboid cuboid;
+    if (signalStack->isVirtual()) {
+      signalStack = NULL;
+      ZOUT(LINFO(), 3) << "Retrieving signal stack";
+      cuboid = estimateSplitRoi(seedMask);
+      sparseStack = getDvidSparseStack(cuboid, mode);
+    }
+
+    getProgressSignal()->advanceProgress(0.1);
+    ZStackWatershedContainer container(signalStack, sparseStack->getSparseStack());
+    container.setRange(cuboid);
+    for (ZStackArray::const_iterator iter = seedMask.begin();
+         iter != seedMask.end(); ++iter) {
+      container.addSeed(**iter);
+    }
+    container.run();
+//    container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
+//    container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
+    container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
+
+    ZObject3dScanArray result;
+    container.makeSplitResult(&result);
+    for (ZObject3dScanArray::iterator iter = result.begin();
+         iter != result.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+      getDataBuffer()->addUpdate(
+            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    getDataBuffer()->deliver();
+
+    result.shallowClear();
+
+    setSegmentationReady(true);
+
+    ZOUT(LINFO(), 3) << "Segmentation ready";
+
+    emit messageGenerated(
+          ZWidgetMessage(
+            ZWidgetMessage::appendTime("Split done. Ready to upload.")));
+  }
+
+  getProgressSignal()->endProgress();
+}
+
+#if 0
+void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
+{
+  getProgressSignal()->startProgress("Splitting ...");
+
+  ZOUT(LINFO(), 3) << "Removing old result ...";
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
 //  m_isSegmentationReady = false;
   setSegmentationReady(false);
@@ -3056,6 +3118,7 @@ void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
   getProgressSignal()->endProgress();
   emit labelFieldModified();
 }
+#endif
 
 void ZFlyEmProofDoc::localSplitFunc(FlyEM::EBodySplitMode mode)
 {
@@ -3204,6 +3267,25 @@ ZIntCuboid ZFlyEmProofDoc::estimateLocalSplitRoi()
   return cuboid;
 }
 
+ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi(const ZStackArray &seedMask)
+{
+  ZIntCuboid cuboid;
+
+  ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
+  if (originalStack != NULL) {
+    ZIntCuboidObj *roi = getSplitRoi();
+    if (roi == NULL) {
+      if (originalStack->stackDownsampleRequired()) {
+        cuboid = ZFlyEmMisc::EstimateSplitRoi(seedMask.getBoundBox());
+      }
+    } else {
+      cuboid = roi->getCuboid();
+    }
+  }
+
+  return cuboid;
+}
+
 ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
 {
   ZIntCuboid cuboid;
@@ -3215,31 +3297,6 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
       if (originalStack->stackDownsampleRequired()) {
         ZStackArray seedMask = createWatershedMask(true);
         cuboid = ZFlyEmMisc::EstimateSplitRoi(seedMask.getBoundBox());
-        /*
-        Cuboid_I box;
-        seedMask.getBoundBox(&box);
-
-        Cuboid_I_Expand_Z(&box, 10);
-
-        int v = Cuboid_I_Volume(&box);
-
-        double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
-        if (s > 1) {
-          int dw = iround(Cuboid_I_Width(&box) * s) - Cuboid_I_Width(&box);
-          int dh = iround(Cuboid_I_Height(&box) * s) - Cuboid_I_Height(&box);
-          int dd = iround(Cuboid_I_Depth(&box) * s) - Cuboid_I_Depth(&box);
-
-          const int xMargin = dw / 2;
-          const int yMargin = dh / 2;
-          const int zMargin = dd / 2;
-          Cuboid_I_Expand_X(&box, xMargin);
-          Cuboid_I_Expand_Y(&box, yMargin);
-          Cuboid_I_Expand_Z(&box, zMargin);
-        }
-
-        cuboid.set(box.cb[0], box.cb[1], box.cb[2], box.ce[0], box.ce[1],
-            box.ce[2]);
-            */
       }
     } else {
       cuboid = roi->getCuboid();

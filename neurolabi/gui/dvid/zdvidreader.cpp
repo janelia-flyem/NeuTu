@@ -593,8 +593,8 @@ ZObject3dScanArray* ZDvidReader::readBody(const std::set<uint64_t> &bodySet)
     int index = 0;
     for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
          iter != bodySet.end(); ++iter) {
-      ZObject3dScan &obj = (*objArray)[index++];
-      readBody(*iter, false, &obj);
+      ZObject3dScan *obj = (*objArray)[index++];
+      readBody(*iter, false, obj);
     }
   }
 

@@ -308,7 +308,7 @@ void ZSegmentationProject::exportLabelField(const QString &fileName)
   while (iterator.hasNext()) {
     ZTreeNode<ZObject3dScan> *node = iterator.nextNode();
     if (node->isLeaf()) {
-      objArray.push_back(node->data());
+      objArray.append(node->data());
     }
   }
 

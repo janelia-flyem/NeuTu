@@ -280,7 +280,7 @@ ZScalableStack* ZFlyEmNeuronListModel::retrieveBody(
       ZObject3dScan *body = neuron->getBody();
 
       if (body != NULL) {
-        bodyArray.push_back(*body);
+        bodyArray.append(*body);
       }
     }
   }
@@ -303,7 +303,7 @@ ZScalableStack* ZFlyEmNeuronListModel::retrieveBody(
 
     ZLabelColorTable colorTable;
     for (size_t i = 0; i < bodyArray.size(); ++i) {
-      ZObject3dScan &obj = bodyArray[i];
+      ZObject3dScan &obj = *(bodyArray[i]);
       obj.setColor(colorTable.getColor(i));
     }
     if (bodyArray.size() == 1) {
@@ -340,7 +340,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
       ZObject3dScan *body = neuron->getBody();
 
       if (body != NULL) {
-        bodyArray.push_back(*body);
+        bodyArray.append(*body);
       }
     }
   }
@@ -363,7 +363,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
 
     ZLabelColorTable colorTable;
     for (size_t i = 0; i < bodyArray.size(); ++i) {
-      ZObject3dScan &obj = bodyArray[i];
+      ZObject3dScan &obj = *(bodyArray[i]);
       obj.setColor(colorTable.getColor(i));
     }
 

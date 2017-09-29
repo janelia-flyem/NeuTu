@@ -31,6 +31,7 @@ class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
 class ZFlyEmSynapseAnnotationDialog;
+class ZStackArray;
 
 
 class ZFlyEmProofDoc : public ZStackDoc
@@ -540,6 +541,7 @@ private:
   void runSplitFunc(FlyEM::EBodySplitMode mode);
   void localSplitFunc(FlyEM::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
+  ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);

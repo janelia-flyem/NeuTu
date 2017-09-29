@@ -8,10 +8,17 @@
 class ZIntCuboid;
 class ZStack;
 
-class ZObject3dScanArray : public std::vector<ZObject3dScan>
+class ZObject3dScanArray : public std::vector<ZObject3dScan*>
 {
 public:
   ZObject3dScanArray();
+  ~ZObject3dScanArray();
+
+  void clearAll();
+  void shallowClear();
+
+  void append(ZObject3dScan *obj);
+  void append(const ZObject3dScan &obj);
 
   ZIntCuboid getBoundBox() const;
   size_t getVoxelNumber() const;
@@ -24,7 +31,6 @@ public:
   ZStack* toStackObject() const;
   ZStack* toLabelField() const;
   ZStack* toLabelField(const ZIntCuboid &box) const;
-
 };
 
 #endif // ZOBJECT3DSCANARRAY_H
