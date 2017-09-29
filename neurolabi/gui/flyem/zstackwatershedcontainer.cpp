@@ -9,6 +9,9 @@
 #include "zobject3dfactory.h"
 #include "neutubeconfig.h"
 #include "zswctree.h"
+#include "tz_math.h"
+#include "flyem/zflyemmisc.h"
+
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -50,6 +53,7 @@ void ZStackWatershedContainer::init()
   m_result = NULL;
   m_channel = 0;
   m_floodingZero = false;
+  m_usingSeedRange = false;
 }
 
 void ZStackWatershedContainer::init(ZStack *stack, ZSparseStack *spStack)
@@ -439,6 +443,7 @@ void ZStackWatershedContainer::setRange(
   if (!newRange.equals(getRange())) {
     deprecateDependent(COMP_RANGE);
   }
+  m_range = newRange;
 #if 0
     clearWorkspace();
     m_range = newRange;
@@ -626,7 +631,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
   return result;
 }
 
-void ZStackWatershedContainer::printInfo() const
+void ZStackWatershedContainer::printState() const
 {
   if (m_stack != NULL) {
     m_stack->printInfo();
@@ -656,6 +661,8 @@ void ZStackWatershedContainer::updateRange()
     }
 
     if (!seedBox.isEmpty()) {
+      seedBox = ZFlyEmMisc::EstimateSplitRoi(seedBox);
+
       if (m_range.isEmpty()) {
         m_range = seedBox;
       } else {

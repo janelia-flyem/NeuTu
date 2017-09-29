@@ -77,6 +77,8 @@ public:
   int getHeight() const;
   int getDepth() const;
 
+  double getDiagonalLength() const;
+
   /*!
    * \brief Set the depth
    *
