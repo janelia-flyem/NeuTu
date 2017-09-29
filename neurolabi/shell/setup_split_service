@@ -31,7 +31,7 @@ if [ `uname` = 'Darwin' ]
 then
   neutu_cmd=$installDir'/miniconda/envs/neutu-env/bin/neutu.app/Contents/MacOS/neutu'
 else
-  neutu_cmd=$installDir'/miniconda/envs/neutu-env/bin/neutu' >> $script
+  neutu_cmd=$installDir'/miniconda/envs/neutu-env/bin/neutu'
 fi
 
 
