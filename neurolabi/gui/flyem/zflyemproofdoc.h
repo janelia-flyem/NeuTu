@@ -538,6 +538,7 @@ private:
 
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
 
+  void runSplitFunc(FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range);
   void runSplitFunc(FlyEM::EBodySplitMode mode);
   void localSplitFunc(FlyEM::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();

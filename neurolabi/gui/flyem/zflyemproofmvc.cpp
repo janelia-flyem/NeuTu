@@ -2816,6 +2816,7 @@ void ZFlyEmProofMvc::exitSplit()
     //m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
     getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+    getDocument()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
     getDocument()->removeObject(ZStackObjectRole::ROLE_ROI);
 //    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
 
@@ -2866,6 +2867,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
          m_splitProject.clear();
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
          getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+         getDocument()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
          getCompleteDocument()->setSelectedBody(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
          launchSplit(bodyId, getCompletePresenter()->getSplitMode());
        }

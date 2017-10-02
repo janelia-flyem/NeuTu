@@ -1809,7 +1809,7 @@ void ZStackView::paintObjectBuffer(
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
 #ifdef _DEBUG_2
-        std::cout << "Object to display:" << std::endl;
+        std::cout << "Object to display:" << obj << std::endl;
         std::cout << "  " << obj->getSource() << std::endl;
         std::cout << "  " << obj->getTarget() << std::endl;
         std::cout << "  " << obj->isSliceVisible(z, m_sliceAxis) << std::endl;

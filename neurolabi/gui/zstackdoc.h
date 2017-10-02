@@ -847,6 +847,14 @@ public:
     m_isSegmentationReady = state;
   }
 
+  inline bool hadSegmentationDownsampled() const {
+    return m_hadSegmentationDownsampled;
+  }
+
+  void setHadSegmentationSampled(bool on) {
+    m_hadSegmentationDownsampled = on;
+  }
+
 public:
   ZNeuronTracer* getNeuronTracer() {
     return &m_neuronTracer;
@@ -1364,6 +1372,7 @@ private:
   bool m_selectionSilent;
   bool m_isReadyForPaint;
   bool m_isSegmentationReady;
+  bool m_hadSegmentationDownsampled = false;
   bool m_autoSaving;
 
   //QMutex m_mutex;

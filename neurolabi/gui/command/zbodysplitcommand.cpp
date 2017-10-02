@@ -251,7 +251,7 @@ void ZBodySplitCommand::ProcessResult(
   ZStack *resultStack = container.getResultStack();
   if (resultStack != NULL) {
     QUrl outputUrl(output.c_str());
-    ZObject3dScanArray *result = container.makeSplitResult();
+    ZObject3dScanArray *result = container.makeSplitResult(2, NULL);
 
     if (outputUrl.scheme() == "dvid" || outputUrl.scheme() == "http") {
       ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(output);

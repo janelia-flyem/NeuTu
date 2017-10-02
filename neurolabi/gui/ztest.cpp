@@ -23596,7 +23596,7 @@ void ZTest::test(MainWindow *host)
 
   container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
 
-  ZObject3dScanArray *split = container.makeSplitResult();
+  ZObject3dScanArray *split = container.makeSplitResult(2, NULL);
   std::cout << split->size() << " splits" << std::endl;
   std::cout << split->getVoxelNumber() << " voxels" << std::endl;
 

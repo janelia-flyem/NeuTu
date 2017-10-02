@@ -347,7 +347,7 @@ void NeutubeConfig::print()
   cout << endl;
 }
 
-std::string NeutubeConfig::getPath(Config_Item item) const
+std::string NeutubeConfig::getPath(EConfigItem item) const
 {
   switch (item) {
   case DATA:

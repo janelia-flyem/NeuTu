@@ -2957,7 +2957,7 @@ void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
     m_futureMap[threadId] = future;
   }
 }
-
+#if 0
 void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
 {
   QList<ZDocPlayer*> playerList =
@@ -2987,8 +2987,20 @@ void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
     m_futureMap[threadId] = future;
   }
 }
+#endif
 
 void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
+{
+  runSplitFunc(mode, FlyEM::RANGE_SEED);
+}
+
+void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
+{
+  runSplitFunc(mode, FlyEM::RANGE_LOCAL);
+}
+
+void ZFlyEmProofDoc::runSplitFunc(
+    FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range)
 {
   getProgressSignal()->startProgress("Splitting ...");
 
@@ -3008,7 +3020,17 @@ void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
     if (signalStack->isVirtual()) {
       signalStack = NULL;
       ZOUT(LINFO(), 3) << "Retrieving signal stack";
-      cuboid = estimateSplitRoi(seedMask);
+      switch (range) {
+      case FlyEM::RANGE_SEED:
+        cuboid = estimateSplitRoi(seedMask);
+        break;
+      case FlyEM::RANGE_LOCAL:
+        cuboid = estimateLocalSplitRoi();
+        break;
+      case FlyEM::RANGE_FULL:
+        break;
+      }
+
       sparseStack = getDvidSparseStack(cuboid, mode);
     }
 
@@ -3020,12 +3042,15 @@ void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
       container.addSeed(**iter);
     }
     container.run();
+
+    setHadSegmentationSampled(container.computationDowsampled());
+
 //    container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
 //    container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
-    container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
+//    container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
 
     ZObject3dScanArray result;
-    container.makeSplitResult(&result);
+    container.makeSplitResult(1, &result);
     for (ZObject3dScanArray::iterator iter = result.begin();
          iter != result.end(); ++iter) {
       ZObject3dScan *obj = *iter;
@@ -3120,6 +3145,7 @@ void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
 }
 #endif
 
+#if 0
 void ZFlyEmProofDoc::localSplitFunc(FlyEM::EBodySplitMode mode)
 {
   getProgressSignal()->startProgress("Splitting ...");
@@ -3187,6 +3213,7 @@ void ZFlyEmProofDoc::localSplitFunc(FlyEM::EBodySplitMode mode)
   getProgressSignal()->endProgress();
   emit labelFieldModified();
 }
+#endif
 
 void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 {

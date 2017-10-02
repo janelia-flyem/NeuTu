@@ -2,6 +2,7 @@
 #define ZFLYEMBODYSPLITPROJECT_H
 
 #include <QObject>
+#include <QList>
 #include <QMutex>
 
 #include <set>
@@ -105,6 +106,10 @@ public:
   void commitResult();
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
       /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
+  void commitResultFunc(
+      ZObject3dScan *wholeBody, const std::vector<ZObject3dScan*> &objArray,
+      size_t minObjSize, bool checkingIsolation);
+
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
   void cropBody(ZFlyEmSplitUploadOptionDialog *dlg);
@@ -240,6 +245,11 @@ private:
   ZIntCuboid getSeedBoundBox() const;
 
   void updateBodyId();
+  void processSmallBodyGroup(
+      ZObject3dScan *body, size_t minObjSize, ZObject3dScan *smallBodyGroup);
+  void processIsolation(ZObject3dScan &currentBody, ZObject3dScan *body,
+      QList<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
+      const ZObject3dScan *obj, size_t minIsolationSize);
 
 private:
   ZDvidTarget m_dvidTarget;

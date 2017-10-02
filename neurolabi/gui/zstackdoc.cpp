@@ -3625,6 +3625,8 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
     m_dataBuffer->addUpdate(
           removeSet.begin(), removeSet.end(), ZStackDocObjectUpdate::ACTION_EXPEL);
   }
+
+  m_dataBuffer->deliver();
 //  m_objectGroup.removeObject(removeSet.begin(), removeSet.end(), deleteObject);
 
 //  notifyObjectModified();

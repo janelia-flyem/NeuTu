@@ -78,7 +78,13 @@ public:
   bool usingSeedRange() const;
 //  void expandRange(const ZIntCuboid &box);
 
-  ZObject3dScanArray* makeSplitResult(ZObject3dScanArray *result = NULL);
+  ZObject3dScanArray* makeSplitResult(
+      uint64_t minLabel, ZObject3dScanArray *result);
+
+  /*!
+   * \brief Check if the actual computation is done in the downsampled space.
+   */
+  bool computationDowsampled();
 
   void printState() const;
 

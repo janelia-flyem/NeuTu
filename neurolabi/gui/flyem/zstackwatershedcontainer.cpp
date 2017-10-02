@@ -519,7 +519,12 @@ void ZStackWatershedContainer::run()
   }
 }
 
-ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
+bool ZStackWatershedContainer::computationDowsampled()
+{
+  return !getSourceDsIntv().isZero();
+}
+
+ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     ZObject3dScanArray *result)
 {
   if (result == NULL) {
@@ -538,7 +543,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
       for (ZObject3dScanArray::iterator iter = objArray->begin();
            iter != objArray->end(); ++iter) {
         ZObject3dScan &obj = **iter;
-        if (obj.getLabel() > 1) {
+        if (obj.getLabel() >= minLabel) {
           uint64_t splitLabel = obj.getLabel();
 
           obj.upSample(dsIntv);
@@ -635,6 +640,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(
       ZObject3dScan *obj = *iter;
       obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
       obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
+      obj->setSource(ZStackObjectSourceFactory::MakeSplitResultSource());
       obj->setHitProtocal(ZStackObject::HIT_NONE);
       obj->setVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
       obj->setProjectionVisible(false);

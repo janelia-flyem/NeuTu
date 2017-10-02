@@ -22,7 +22,7 @@ class ZJsonObject;
 class NeutubeConfig
 {
 public:
-  enum Config_Item {
+  enum EConfigItem {
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
@@ -38,10 +38,18 @@ public:
   }
 
 #ifdef _QT_GUI_USED_
+  /*!
+   * \brief Get persistent settings.
+   *
+   * The settings mainly contain information for GUI appearances.
+   */
   static QSettings& GetSettings() {
     return getInstance().getSettings();
   }
 
+  /*!
+   * \brief Get configuration file path for FlyEM applications.
+   */
   static QString GetFlyEmConfigPath();
   static void SetFlyEmConfigPath(const QString &path);
   static void UseDefaultFlyEmConfig(bool on);
@@ -67,11 +75,20 @@ public:
 
   static void EnableProfileLogging(bool on);
   static bool LoggingProfile();
+
+  /*!
+   * \brief Get the verbose level of the program.
+   *
+   * The higher level, the more verbose is the program. The lowest level is 0.
+   */
   static int GetVerboseLevel();
   static void SetVerboseLevel(int level);
   static bool ParallelTileFetching();
   static void SetParallelTileFetching(bool on);
 
+  /*!
+   * \brief Configure from a json object.
+   */
   static void Configure(const ZJsonObject &obj);
 
   static void EnableAutoStatusCheck(bool on);
@@ -86,7 +103,21 @@ public:
   bool load(const std::string &filePath);
   void print();
 
-  std::string getPath(Config_Item item) const;
+  /*!
+   * \brief Get the path of a certain item.
+   *
+   * \a item can be:
+   *   CONFIGURE_FILE: general configuration
+   *   DOCUMENT: documentation
+   *   AUTO_SAVE: autosaving path
+   *   SKELETONIZATION_CONFIG: configuration for skeletonization parameters
+   *   TMP_DATA: folder for saving temporary data
+   *   WORKING_DIR: working directory
+   *   LOG_DIR: logging directory
+   *   LOG_FILE: prefix for logging files
+   *   LOG_TRACE: prefix for tracing files
+   */
+  std::string getPath(EConfigItem item) const;
 
   /*!
    * \brief Get the application directory
