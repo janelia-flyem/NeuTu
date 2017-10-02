@@ -745,7 +745,7 @@ void ZStackDoc::processDataBuffer()
   for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
        iter != updateList.end(); ++iter) {
     ZStackDocObjectUpdate *u = *iter;
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     u->print();
 #endif
     if (u->getObject() != NULL) {
