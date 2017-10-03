@@ -5,6 +5,7 @@
 
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyembody3ddoc.h"
 #include "protocols/taskprotocoltask.h"
 
 
@@ -17,7 +18,7 @@ class TaskProtocolWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent = 0);
+    explicit TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent = 0);
     void init();
     ~TaskProtocolWindow();
 
@@ -62,7 +63,8 @@ private:
     Ui::TaskProtocolWindow *ui;
     QString m_ID;
     QList<QSharedPointer<TaskProtocolTask>> m_taskList;
-    ZFlyEmProofDoc *m_proofDoc;
+    ZFlyEmProofDoc * m_proofDoc;
+    ZFlyEmBody3dDoc * m_body3dDoc;
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex;

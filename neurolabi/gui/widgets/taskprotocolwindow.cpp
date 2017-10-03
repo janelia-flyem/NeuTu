@@ -11,6 +11,7 @@
 
 #include "neutube.h"
 #include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyembody3ddoc.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
@@ -18,13 +19,14 @@
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
 
-TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
+TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TaskProtocolWindow)
 {
     ui->setupUi(this);
 
     m_proofDoc = doc;
+    m_body3dDoc = bodyDoc;
 
     m_protocolInstanceStatus = UNCHECKED;
 
