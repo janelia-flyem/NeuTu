@@ -13,7 +13,7 @@ export CONDA_ENV=${PREFIX}
 
 app_name=neutu
 build_dir=neurolabi/build
-if [ ${NEUTU_BUILD_MODE} == 'debug' ]
+if [ "X${NEUTU_BUILD_MODE}" == 'Xdebug' ]
 then
   qtlib_dir=${PREFIX}/lib
   cd neurolabi/shell
