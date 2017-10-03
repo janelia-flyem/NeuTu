@@ -1930,7 +1930,7 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
       pt *= dvidInfo.getBlockSize();
 //      pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
 //                      dvidInfo.getBlockSize().getY() / 2, 0);
-      pt += dvidInfo.getStartCoordinates();
+//      pt += dvidInfo.getStartCoordinates();
 
       ZIntCuboid box;
       box.setFirstCorner(pt);
