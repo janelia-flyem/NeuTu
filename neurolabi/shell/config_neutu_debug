@@ -3,14 +3,13 @@ set -e
 
 if test $# -eq 0
 then
-  install_dir=/opt
-else
-  install_dir=$1
+  echo 'config_neutu_debug <install_dir>'
+  exit 
 fi
 
+install_dir=$1
 echo "Installing NeuTu under $install_dir"
 bindir=$install_dir/bin
-
 
 downloadDir=$install_dir/Download
 condaDir=$install_dir/Download/miniconda
