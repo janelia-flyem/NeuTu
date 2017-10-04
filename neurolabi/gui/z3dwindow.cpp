@@ -1852,6 +1852,11 @@ void Z3DWindow::setNormalTodoVisible(bool visible)
   emit settingNormalTodoVisible(visible);
 }
 
+void Z3DWindow::updateTodoVisibility()
+{
+
+}
+
 void Z3DWindow::addTodoMarker()
 {
   AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, false);
