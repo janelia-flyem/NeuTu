@@ -574,7 +574,10 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
             m_taskList.append(task);
         } else if (taskType == "split seeds") {
-            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject()));
+            // I'm not really fond of this task having a different constructor signature, but
+            //  neither do I want to pass in both docs to every task just because a few might
+            //  need one or the other of them
+            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject(), m_body3dDoc));
             m_taskList.append(task);
         } else if (taskType == "test task") {
             QSharedPointer<TaskProtocolTask> task(new TaskTestTask(taskJson.toObject()));
