@@ -61,7 +61,7 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
 }
 
 std::pair<ZStack*, ZSparseStack*>
-ZBodySplitCommand::ParseSignalPath(
+ZBodySplitCommand::parseSignalPath(
     std::string &signalPath, const std::string &dataDir, bool isFile,
     const ZIntCuboid &range, ZStackGarbageCollector &gc)
 {
@@ -73,8 +73,9 @@ ZBodySplitCommand::ParseSignalPath(
     ZDvidReader *reader =
         ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
     if (reader != NULL) {
+      m_bodyId = ZDvidUrl::GetBodyId(signalPath);
       ZDvidSparseStack *dvidStack =
-          dvidStack = reader->readDvidSparseStack(ZDvidUrl::GetBodyId(signalPath));
+          dvidStack = reader->readDvidSparseStack(m_bodyId);
       spStack = dvidStack->getSparseStack(range);
       gc.registerObject(dvidStack);
 //      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
@@ -147,7 +148,7 @@ int ZBodySplitCommand::run(
 
   ZStackGarbageCollector gc;
   std::pair<ZStack*, ZSparseStack*> data =
-      ParseSignalPath(signalPath, dataDir, isFile, range, gc);
+      parseSignalPath(signalPath, dataDir, isFile, range, gc);
 //  ZSparseStack *spStack = data.second;
 //  ZStack *signalStack = data.first;
 
@@ -242,6 +243,19 @@ void ZBodySplitCommand::LoadSeeds(
       container.addSeed(obj);
     }
   }
+}
+
+std::vector<uint64_t> ZBodySplitCommand::commitResult(
+    ZObject3dScanArray *objArray, ZDvidWriter &writer)
+{
+  std::vector<uint64_t> newBodyIdArray;
+  if (m_bodyId > 0) {
+    for (ZObject3dScan *obj : *objArray) {
+      uint64_t newBodyId = writer.writeSplit(*obj, m_bodyId, 0);
+      newBodyIdArray.push_back(newBodyId);
+    }
+  }
+  return newBodyIdArray;
 }
 
 void ZBodySplitCommand::ProcessResult(

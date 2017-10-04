@@ -1,0 +1,35 @@
+#!/bin/bash
+set -e 
+
+if test $# -eq 0
+then
+  install_dir=/opt
+else
+  install_dir=$1
+fi
+
+echo "Installing NeuTu under $install_dir"
+bindir=$install_dir/bin
+
+
+downloadDir=$install_dir/Download
+condaDir=$install_dir/Download/miniconda
+
+cd $condaDir
+if [ ! -d NeuTu ]
+then
+  git clone -b develop https://github.com/janelia-flyem/NeuTu.git NeuTu
+fi
+
+envName='neutu-env'
+source $condaDir/bin/activate $envName
+conda install neutu-debug -c tingzhao -y
+
+neutu_bin_dir=$condaDir'/envs/neutu-env/bin'
+run_script=$bindir/debug_neutu
+touch $run_script
+echo '#!/bin/bash' > $run_script
+echo "cd $downloadDir/NeuTu/neurolabi/gui"
+echo gdb $neutu_bin_dir'/neutu_d $*' >> $run_script
+chmod a+x $run_script
+
