@@ -659,7 +659,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
               doc, ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo));
         ZStackDocAccessor::AddObject(
               doc, ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo));
-        m_quickResultWindow->resetCamera();
+        m_quickResultWindow->setYZView();
 //        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 //        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
 //        doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
@@ -1540,8 +1540,8 @@ void ZFlyEmBodySplitProject::commitResultFunc(
   foreach (const ZObject3dScan &obj, splitList) {
     wholeBody->subtractSliently(obj);
 
-//    uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
-    uint64_t newBodyId = writer.writeSplit(obj, getBodyId(), 0);
+    uint64_t newBodyId = writer.writePartition(*wholeBody, obj, getBodyId());
+//    uint64_t newBodyId = writer.writeSplit(obj, getBodyId(), 0);
     ++bodyIndex;
 
     uint64_t oldBodyId = oldBodyIdList[bodyIndex - 1];
