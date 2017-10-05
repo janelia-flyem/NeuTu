@@ -95,7 +95,7 @@ int ZSplitTaskUploadCommand::run(
         entryJson.setEntry(NeuTube::Json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
-        std::cout << "*    Task for " << bodyId << " is saved at "
+        std::cout << "*    Task for " << bodyId << " is saved @ "
                   << taskKey.toStdString() << "->" << location << std::endl;
         ++count;
       }

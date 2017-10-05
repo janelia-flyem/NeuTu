@@ -3062,6 +3062,7 @@ void ZFlyEmProofDoc::runSplitFunc(
     result.shallowClear();
 
     setSegmentationReady(true);
+    emit segmentationUpdated();
 
     ZOUT(LINFO(), 3) << "Segmentation ready";
 

@@ -81,17 +81,17 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   }
 
   m_reader.open(target);
-#if 0
-  m_dvidTarget = target;
 
-  std::string masterNode = ZDvidReader::ReadMasterNode(m_dvidTarget);
-  if (!masterNode.empty()) {
-    m_dvidTarget.setUuid(masterNode.substr(0, 4));
+  return startService();;
+}
+
+bool ZDvidWriter::openRaw(const ZDvidTarget &target)
+{
+  if (!target.isValid()) {
+    return false;
   }
-#endif
 
-//  m_dvidClient->reset();
-//  m_dvidClient->setDvidTarget(target);
+  m_reader.openRaw(target);
 
   return startService();;
 }
@@ -1158,7 +1158,7 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
       bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
                     dvidInfo.getBlockSize().getY() - 1,
                     dvidInfo.getBlockSize().getZ() - 1);
-      bBsc.translate(dvidInfo.getStartCoordinates());
+//      bBsc.translate(dvidInfo.getStartCoordinates());
 
       ZObject3dScan bsr = bs;
       bsr.subtractSliently(bBsc);
@@ -1265,7 +1265,7 @@ uint64_t ZDvidWriter::writePartition(
       bBbs.upSample(dvidInfo.getBlockSize().getX() - 1,
                     dvidInfo.getBlockSize().getY() - 1,
                     dvidInfo.getBlockSize().getZ() - 1);
-      bBbs.translate(dvidInfo.getStartCoordinates());
+//      bBbs.translate(dvidInfo.getStartCoordinates());
 
       ZObject3dScan bsr = bs.intersect(bBbs);
 #if 0

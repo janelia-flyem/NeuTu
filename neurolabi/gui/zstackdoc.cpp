@@ -3597,6 +3597,23 @@ QList<ZStackObject*> ZStackDoc::getObjectList(ZStackObjectRole::TRole role) cons
   return m_objectGroup.getObjectList(role);
 }
 
+void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
+{
+  TStackObjectList objList = m_objectGroup.take(type);
+  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+       ++iter) {
+//    role.addRole(m_playerList.removePlayer(*iter));
+    bufferObjectModified(*iter);
+    m_playerList.removePlayer(*iter);
+
+    if (deleteObject) {
+      delete *iter;
+    }
+  }
+
+  notifyObjectModified();
+}
+
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
   std::set<ZStackObject*> removeSet;
@@ -3776,23 +3793,6 @@ TStackObjectList ZStackDoc::takeObject(
     ZStackObject::EType type, const string &source)
 {
   return m_objectGroup.takeSameSource(type, source);
-}
-
-void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
-{
-  TStackObjectList objList = m_objectGroup.take(type);
-  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-       ++iter) {
-//    role.addRole(m_playerList.removePlayer(*iter));
-    bufferObjectModified(*iter);
-    m_playerList.removePlayer(*iter);
-
-    if (deleteObject) {
-      delete *iter;
-    }
-  }
-
-  notifyObjectModified();
 }
 
 void ZStackDoc::removeSelectedPuncta(bool deleteObject)
