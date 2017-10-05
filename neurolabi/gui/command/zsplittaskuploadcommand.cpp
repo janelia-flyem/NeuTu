@@ -67,6 +67,9 @@ int ZSplitTaskUploadCommand::run(
 
   ZDvidUrl dvidUrl(target);
 
+  std::cout << std::endl;
+  std::cout << "Uploading tasks: " << std::endl << std::endl;
+  int count = 0;
   for (size_t i = 0; i < rootObj.size(); ++i) {
     ZJsonObject obj(rootObj.value(i));
     ZJsonArray markerJson(obj.value("pointMarkers"));
@@ -88,16 +91,18 @@ int ZSplitTaskUploadCommand::run(
         }
 
         std::string location = writer->writeServiceTask("split", taskJson);
-
-        std::cout << "Task for " << bodyId << " is saved at " << location << std::endl;
-
         ZJsonObject entryJson;
         entryJson.setEntry(NeuTube::Json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
+        std::cout << "*    Task for " << bodyId << " is saved at "
+                  << taskKey.toStdString() << "->" << location << std::endl;
+        ++count;
       }
     }
   }
+  std::cout << std::endl;
+  std::cout << count << " tasks uploaded." << std::endl;
 
   return 0;
 }

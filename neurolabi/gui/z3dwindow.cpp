@@ -1213,6 +1213,7 @@ void Z3DWindow::selectdObjectChangedFrom3D(ZStackObject *p, bool append)
     ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
     if (doc != NULL) {
       doc->selectObject(p, append);
+      getTodoFilter()->invalidate();
     }
   }
     break;
@@ -1854,7 +1855,7 @@ void Z3DWindow::setNormalTodoVisible(bool visible)
 
 void Z3DWindow::updateTodoVisibility()
 {
-
+  getDocument()->notifyTodoModified();
 }
 
 void Z3DWindow::addTodoMarker()

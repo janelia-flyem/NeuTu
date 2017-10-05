@@ -18,6 +18,8 @@ cd $condaDir
 if [ ! -d NeuTu ]
 then
   git clone -b develop https://github.com/janelia-flyem/NeuTu.git NeuTu
+else
+  git pull origin $(git rev-parse --abbrev-ref HEAD)
 fi
 
 envName='neutu-env'
