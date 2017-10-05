@@ -233,6 +233,8 @@ private:
   void removeAllSeed();
   void removeAllSideSeed();
   void updateResult3dQuickFunc();
+
+  void clearResultWindow();
 //  void quickViewFunc();
 //  void showBodyQuickView();
 //  void showResultQuickView();

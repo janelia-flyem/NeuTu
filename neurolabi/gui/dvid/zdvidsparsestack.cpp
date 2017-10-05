@@ -395,7 +395,7 @@ bool ZDvidSparseStack::fillValue(
 
           std::vector<int> blockSpan;
           ZIntPoint blockIndex =
-              ZIntPoint(x0, y, z) - m_grayscaleInfo.getStartBlockIndex();
+              ZIntPoint(x0, y, z);// - m_grayscaleInfo.getStartBlockIndex();
           for (int x = x0; x <= x1; ++x) {
             bool isValidBlock = true;
             if (!box.isEmpty()) {

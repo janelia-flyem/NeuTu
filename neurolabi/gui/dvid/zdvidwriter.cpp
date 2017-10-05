@@ -1154,7 +1154,7 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
       }
 
       ZObject3dScan bBsc = Bsc;
-      bBsc.translate(-dvidInfo.getStartBlockIndex());
+//      bBsc.translate(-dvidInfo.getStartBlockIndex());
       bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
                     dvidInfo.getBlockSize().getY() - 1,
                     dvidInfo.getBlockSize().getZ() - 1);
@@ -1261,7 +1261,7 @@ uint64_t ZDvidWriter::writePartition(
       ZObject3dScan Bbs = dvidInfo.getBlockIndex(bs);
       Bbs.subtractSliently(Bsc);
       ZObject3dScan bBbs = Bbs;
-      bBbs.translate(-dvidInfo.getStartBlockIndex());
+//      bBbs.translate(-dvidInfo.getStartBlockIndex());
       bBbs.upSample(dvidInfo.getBlockSize().getX() - 1,
                     dvidInfo.getBlockSize().getY() - 1,
                     dvidInfo.getBlockSize().getZ() - 1);

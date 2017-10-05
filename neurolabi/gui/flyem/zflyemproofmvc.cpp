@@ -1093,11 +1093,11 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
 
             body.setAlpha(255);
             ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
-            tree->translate(-getGrayScaleInfo().getStartBlockIndex());
+//            tree->translate(-getGrayScaleInfo().getStartBlockIndex());
             tree->rescale(getGrayScaleInfo().getBlockSize().getX(),
                           getGrayScaleInfo().getBlockSize().getY(),
                           getGrayScaleInfo().getBlockSize().getZ());
-            tree->translate(getGrayScaleInfo().getStartCoordinates());
+//            tree->translate(getGrayScaleInfo().getStartCoordinates());
             tree->setSource(source);
             m_coarseBodyWindow->getDocument()->addObject(tree, true);
           }
@@ -4333,7 +4333,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
               for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
                 ZIntPoint pt(0, seg.getY(), seg.getZ());
                 pt.setX(x);
-                pt -= dvidInfo.getStartBlockIndex();
+//                pt -= dvidInfo.getStartBlockIndex();
                 pt *= dvidInfo.getBlockSize();
                 pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
                                 dvidInfo.getBlockSize().getY() / 2, 0);

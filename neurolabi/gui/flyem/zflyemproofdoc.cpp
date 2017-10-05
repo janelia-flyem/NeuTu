@@ -3379,7 +3379,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
             int x1 = stripe.getSegmentEnd(i);
 
             ZIntPoint blockIndex =
-                ZIntPoint(x0, y, z) - dvidInfo.getStartBlockIndex();
+                ZIntPoint(x0, y, z);// - dvidInfo.getStartBlockIndex();
             for (int x = x0; x <= x1; ++x) {
               ZStack *stack =
                   originalStack->getStackGrid()->getStack(blockIndex);

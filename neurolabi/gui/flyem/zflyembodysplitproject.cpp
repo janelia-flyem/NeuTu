@@ -84,11 +84,7 @@ void ZFlyEmBodySplitProject::clear(QWidget *widget)
 
 void ZFlyEmBodySplitProject::clear()
 {
-  if (m_resultWindow != NULL) {
-    m_resultWindow->hide();
-    delete m_resultWindow;
-    m_resultWindow = NULL;
-  }
+  clearResultWindow();
 
   clear(m_quickResultWindow);
 
@@ -98,12 +94,7 @@ void ZFlyEmBodySplitProject::clear()
     delete m_dataFrame;
     m_dataFrame = NULL;
   }
-
-  if (m_quickViewWindow != NULL) {
-    m_quickViewWindow->hide();
-    delete m_quickViewWindow;
-    m_quickViewWindow = NULL;
-  }
+  clearResultWindow();
 
   shallowClear();
 }
@@ -354,6 +345,18 @@ void ZFlyEmBodySplitProject::showQuickView(Z3DWindow *window)
   if (window != NULL) {
     window->show();
     window->raise();
+  }
+}
+
+void ZFlyEmBodySplitProject::clearResultWindow()
+{
+  if (m_futureMap.hasThreadAlive()) {
+    m_futureMap.waitForFinished();
+  }
+  if (m_quickViewWindow != NULL) {
+    m_quickViewWindow->hide();
+    delete m_quickViewWindow;
+    m_quickViewWindow = NULL;
   }
 }
 
