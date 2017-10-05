@@ -816,7 +816,9 @@ std::string ZDvidWriter::request(
 #endif
 
 #ifdef _DEBUG_
-  std::cout << response << std::endl;
+  if (!response.empty()) {
+    std::cout << "Post resonse: " << response << std::endl;
+  }
 #endif
 
   return response;

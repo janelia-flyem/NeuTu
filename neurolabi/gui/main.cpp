@@ -129,7 +129,7 @@ static void LoadFlyEmConfig(
 
   if (usingConfig) {
 #ifdef _DEBUG_
-    std::cout << config.GetNeuTuServer().toStdString() << std::endl;
+    std::cout << "NeuTu server: " << config.GetNeuTuServer().toStdString() << std::endl;
 #endif
 
     if (config.GetNeuTuServer().isEmpty()) {
@@ -207,7 +207,6 @@ int main(int argc, char *argv[])
       NeutubeConfig &config = NeutubeConfig::getInstance();
       QFileInfo fileInfo(argv[0]);
       std::string appDir = fileInfo.absoluteDir().absolutePath().toStdString();
-      std::cout << appDir << std::endl;
       config.setApplicationDir(appDir);
       LoadFlyEmConfig("", config, false);
 #endif
