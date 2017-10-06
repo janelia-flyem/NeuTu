@@ -17,4 +17,5 @@ else
 fi
 
 THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
-make -j${THREAD_COUNT} 
+make -j${THREAD_COUNT} VERBOSE=1
+
