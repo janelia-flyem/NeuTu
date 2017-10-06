@@ -14,7 +14,7 @@ bindir=$install_dir/bin
 downloadDir=$install_dir/Download
 condaDir=$install_dir/Download/miniconda
 
-cd $condaDir
+cd $downloadDir
 if [ ! -d NeuTu ]
 then
   git clone -b develop https://github.com/janelia-flyem/NeuTu.git NeuTu
@@ -28,7 +28,7 @@ neutu_bin_dir=$condaDir'/envs/neutu-env/bin'
 run_script=$bindir/debug_neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
-echo "cd $downloadDir/NeuTu/neurolabi/gui"
+echo "cd $downloadDir/NeuTu/neurolabi/gui" >> $run_script
 echo gdb $neutu_bin_dir'/neutu_d $*' >> $run_script
 chmod a+x $run_script
 
