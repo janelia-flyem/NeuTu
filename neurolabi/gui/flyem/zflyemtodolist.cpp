@@ -33,6 +33,10 @@ void ZFlyEmToDoList::setDvidTarget(const ZDvidTarget &target)
   }
 }
 
+void ZFlyEmToDoList::setDvidInfo(const ZDvidInfo &info)
+{
+  m_dvidInfo = info;
+}
 
 void ZFlyEmToDoList::init()
 {

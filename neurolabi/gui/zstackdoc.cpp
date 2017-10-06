@@ -5012,7 +5012,8 @@ bool ZStackDoc::loadFile(const QString &filePath)
 
   m_changingSaveState = false;
 
-  const char *filePathStr = filePath.toLocal8Bit().constData();
+  std::string filePathStr = filePath.toStdString();
+//  const char *filePathStr = filePath.toLocal8Bit().constData();
   switch (ZFileType::FileType(filePathStr)) {
   case ZFileType::FILE_SWC:
 #ifdef _FLYEM_2
@@ -5092,13 +5093,13 @@ bool ZStackDoc::loadFile(const QString &filePath)
   case ZFileType::FILE_V3D_RAW:
   case ZFileType::FILE_PNG:
   case ZFileType::FILE_V3D_PBD:
-    readStack(filePathStr, false);
+    readStack(filePathStr.c_str(), false);
     break;
   case ZFileType::FILE_SPARSE_STACK:
     readSparseStack(filePathStr);
     break;
   case ZFileType::FILE_FLYEM_NETWORK:
-    importFlyEmNetwork(filePathStr);
+    importFlyEmNetwork(filePathStr.c_str());
     break;
   case ZFileType::FILE_JSON:
   case ZFileType::FILE_SYNAPSE_ANNOTATON:
@@ -5109,7 +5110,7 @@ bool ZStackDoc::loadFile(const QString &filePath)
   case ZFileType::FILE_V3D_APO:
   case ZFileType::FILE_V3D_MARKER:
   case ZFileType::FILE_RAVELER_BOOKMARK:
-    if (!importPuncta(filePathStr)) {
+    if (!importPuncta(filePathStr.c_str())) {
       succ = false;
     }
     break;

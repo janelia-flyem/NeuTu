@@ -179,15 +179,15 @@ ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z) const
 {
   ZIntPoint blockIndex(-1, -1, -1);
 
-  if (x < 0 || x >= m_stackSize[0]) {
-    return blockIndex;
-  }
-  if (y < 0 || y >= m_stackSize[1]) {
-    return blockIndex;
-  }
-  if (z < 0 || z >= m_stackSize[2]) {
-    return blockIndex;
-  }
+//  if (x < 0 || x >= m_stackSize[0]) {
+//    return blockIndex;
+//  }
+//  if (y < 0 || y >= m_stackSize[1]) {
+//    return blockIndex;
+//  }
+//  if (z < 0 || z >= m_stackSize[2]) {
+//    return blockIndex;
+//  }
 
   blockIndex.set(x / m_blockSize[0], y / m_blockSize[1], z / m_blockSize[2]);
 
@@ -231,15 +231,15 @@ ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z) const
 {
   ZIntPoint blockIndex(-1, -1, -1);
 
-  if (x < 0 || x >= m_stackSize[0]) {
-    return blockIndex;
-  }
-  if (y < 0 || y >= m_stackSize[1]) {
-    return blockIndex;
-  }
-  if (z < 0 || z >= m_stackSize[2]) {
-    return blockIndex;
-  }
+//  if (x < 0 || x >= m_stackSize[0]) {
+//    return blockIndex;
+//  }
+//  if (y < 0 || y >= m_stackSize[1]) {
+//    return blockIndex;
+//  }
+//  if (z < 0 || z >= m_stackSize[2]) {
+//    return blockIndex;
+//  }
 
   int pt[3];
 
@@ -264,9 +264,9 @@ int ZDvidInfo::getCoordZ(int zIndex) const
 int ZDvidInfo::getBlockIndexZ(int z) const
 {
   int bz = -1;
-  if (z < 0 || z >= m_stackSize[2]) {
-    return bz;
-  }
+//  if (z < 0 || z >= m_stackSize[2]) {
+//    return bz;
+//  }
 
   bz = z / m_blockSize[2];
 

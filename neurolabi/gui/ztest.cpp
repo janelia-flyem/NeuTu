@@ -23569,7 +23569,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZSparseStack stack;
   stack.load(GET_TEST_DATA_DIR + "/_system/test.zss");
   stack.getObjectMask()->canonize();
@@ -24534,6 +24534,32 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = tree.toTypeStack();
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
   delete stack;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 0);
+  ZDvidInfo dvidInfo;
+  dvidInfo.setBlockSize(32, 32, 32);
+  ZCubeArray *cubeArray = ZFlyEmMisc::MakeRoiCube(
+        obj, dvidInfo, QColor(255, 0, 0), 0);
+  std::cout << "#cubes: " << cubeArray->size() << std::endl;
+  ZMesh mesh = ZMesh::FromZCubeArray(*cubeArray);
+  std::cout << "#vertices: " << mesh.numVertices() << std::endl;
+  std::cout << "#Indices: " << mesh.indices().size() << std::endl;
+  ZDebugPrintArrayG(mesh.indices(), 0, 36);
+  mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+  delete cubeArray;
+#endif
+
+#if 1
+   ZDvidTarget target;
+   target.set("emdata3", "bf6e", 8000);
+   target.setLabelBlockName("segmentation");
+   ZDvidReader reader;
+   reader.open(target);
+
+   reader.checkProofreadingData();
 #endif
 
   std::cout << "Done." << std::endl;

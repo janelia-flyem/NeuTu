@@ -3580,8 +3580,8 @@ int ZDvidReader::checkProofreadingData() const
   missing += reportMissingData(getDvidTarget().getBodyLabelName());
   missing += reportMissingData(getDvidTarget().getBodyAnnotationName());
   missing += reportMissingData(getDvidTarget().getSkeletonName());
-  missing += reportMissingData(getDvidTarget().getGrayScaleName());
-  missing += reportMissingData(getDvidTarget().getMultiscale2dName());
+//  missing += reportMissingData(getDvidTarget().getGrayScaleName());
+//  missing += reportMissingData(getDvidTarget().getMultiscale2dName());
   missing += reportMissingData(getDvidTarget().getSplitLabelName());
 
   return missing;

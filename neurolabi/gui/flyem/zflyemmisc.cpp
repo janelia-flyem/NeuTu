@@ -424,7 +424,6 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 
   size_t offset = 0;
   int i, j, k;
-  int n;
   int neighbor[26];
   int width = C_Stack::width(stack);
   int height = C_Stack::height(stack);
@@ -451,9 +450,15 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
         if (goodCube) {
           if (array[offset] > 0) {
             std::vector<int> faceArray;
-            for (n = 0; n < 6; n++) {
+            for (int n = 0; n < 6; n++) {
               if (array[offset + neighbor[n]] == 0) {
-                faceArray.push_back(n);
+                int f = n;
+                if (f % 2 == 0) { //Remapping to match face defination (temporary fix)
+                  f += 1;
+                } else {
+                  f -= 1;
+                }
+                faceArray.push_back(f);
               }
             }
             if (!faceArray.empty()) {

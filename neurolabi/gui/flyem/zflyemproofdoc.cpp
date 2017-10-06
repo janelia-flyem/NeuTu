@@ -717,6 +717,8 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
     initData("keyvalue", target.getSkeletonName());
     initData("keyvalue", target.getThumbnailName());
     initData("keyvalue", target.getBookmarkKeyName());
+    initData("keyvalue", target.getBodyAnnotationName());
+    initData("keyvalue", target.getSplitLabelName());
     initData("keyvalue", ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION));
   }
 }
@@ -2374,6 +2376,7 @@ void ZFlyEmProofDoc::downloadTodoList()
 {
   ZFlyEmToDoList *todoList = new ZFlyEmToDoList;
   todoList->setDvidTarget(getDvidTarget());
+  todoList->setDvidInfo(getDvidInfo());
   todoList->setSource(ZStackObjectSourceFactory::MakeTodoListEnsembleSource());
   addObject(todoList);
 }
