@@ -3597,6 +3597,23 @@ QList<ZStackObject*> ZStackDoc::getObjectList(ZStackObjectRole::TRole role) cons
   return m_objectGroup.getObjectList(role);
 }
 
+void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
+{
+  TStackObjectList objList = m_objectGroup.take(type);
+  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+       ++iter) {
+//    role.addRole(m_playerList.removePlayer(*iter));
+    bufferObjectModified(*iter);
+    m_playerList.removePlayer(*iter);
+
+    if (deleteObject) {
+      delete *iter;
+    }
+  }
+
+  notifyObjectModified();
+}
+
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
   std::set<ZStackObject*> removeSet;
@@ -3776,23 +3793,6 @@ TStackObjectList ZStackDoc::takeObject(
     ZStackObject::EType type, const string &source)
 {
   return m_objectGroup.takeSameSource(type, source);
-}
-
-void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
-{
-  TStackObjectList objList = m_objectGroup.take(type);
-  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-       ++iter) {
-//    role.addRole(m_playerList.removePlayer(*iter));
-    bufferObjectModified(*iter);
-    m_playerList.removePlayer(*iter);
-
-    if (deleteObject) {
-      delete *iter;
-    }
-  }
-
-  notifyObjectModified();
 }
 
 void ZStackDoc::removeSelectedPuncta(bool deleteObject)
@@ -5078,9 +5078,13 @@ bool ZStackDoc::loadFile(const QString &filePath)
       ZIntCuboid cuboid = sobj->getBoundBox();
       ZStack *stack = ZStackFactory::MakeVirtualStack(
             cuboid.getWidth(), cuboid.getHeight(), cuboid.getDepth());
-      stack->setSource(filePath.toStdString());
-      stack->setOffset(cuboid.getFirstCorner());
-      loadStack(stack);
+      if (stack != NULL) {
+        stack->setSource(filePath.toStdString());
+        stack->setOffset(cuboid.getFirstCorner());
+        loadStack(stack);
+      } else  {
+        succ = false;
+      }
     }
     break;
   case ZFileType::FILE_TIFF:

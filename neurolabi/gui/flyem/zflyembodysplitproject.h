@@ -6,7 +6,8 @@
 #include <QMutex>
 
 #include <set>
-#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 #include "flyem/zflyembookmarklistmodel.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "zthreadfuturemap.h"
@@ -43,7 +44,8 @@ public:
   }
 
   uint64_t getBodyId() const;
-  inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
+  inline const ZDvidTarget& getDvidTarget() const {
+    return m_reader.getDvidTarget(); }
 
   ZFlyEmNeuron getFlyEmNeuron() const;
 
@@ -84,9 +86,9 @@ public:
 //  void removeAllBookmark();
 
   void showSkeleton(ZSwcTree *tree);
-  void showBodyQuickView();
+//  void showBodyQuickView();
 
-  ZObject3dScan* readBody(ZObject3dScan *out) const;
+//  ZObject3dScan* readBody(ZObject3dScan *out) const;
 
   void saveSeed(bool emphasizingMessage);
   void deleteSavedSeed();
@@ -231,7 +233,9 @@ private:
   void removeAllSeed();
   void removeAllSideSeed();
   void updateResult3dQuickFunc();
-  void quickViewFunc();
+
+  void clearResultWindow();
+//  void quickViewFunc();
 //  void showBodyQuickView();
 //  void showResultQuickView();
   void showQuickView(Z3DWindow *window);
@@ -251,8 +255,25 @@ private:
       QList<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
       const ZObject3dScan *obj, size_t minIsolationSize);
 
+  const ZDvidReader &getMainReader() const {
+    return m_reader;
+  }
+
+  ZDvidReader &getMainReader() {
+    return m_reader;
+  }
+
+  ZDvidReader& getCommitReader();
+  ZDvidWriter& getCommitWriter();
+  ZDvidWriter& getMainWriter();
+
 private:
-  ZDvidTarget m_dvidTarget;
+  ZDvidReader m_reader;
+  ZDvidWriter m_writer;
+  ZDvidReader m_commitReader;
+  ZDvidWriter m_commitWriter;
+
+//  ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
   uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;

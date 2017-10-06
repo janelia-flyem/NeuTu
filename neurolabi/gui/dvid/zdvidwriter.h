@@ -42,6 +42,8 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  bool openRaw(const ZDvidTarget &target);
+
   void clear();
 
   const ZDvidTarget& getDvidTarget() const {

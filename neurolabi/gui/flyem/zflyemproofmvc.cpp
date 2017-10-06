@@ -620,10 +620,10 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
   connect(window, SIGNAL(deselectingBody(std::set<uint64_t>)),
           getCompleteDocument(),
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
-  connect(m_bodyWindow, SIGNAL(settingNormalTodoVisible(bool)),
+  connect(window, SIGNAL(settingNormalTodoVisible(bool)),
           doc, SLOT(setNormalTodoVisible(bool)));
   connect(doc, SIGNAL(todoVisibleChanged()),
-          m_bodyWindow, SLOT(updateTodoVisibility()));
+          window, SLOT(updateTodoVisibility()));
 
 }
 
@@ -1093,11 +1093,11 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
 
             body.setAlpha(255);
             ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
-            tree->translate(-getGrayScaleInfo().getStartBlockIndex());
+//            tree->translate(-getGrayScaleInfo().getStartBlockIndex());
             tree->rescale(getGrayScaleInfo().getBlockSize().getX(),
                           getGrayScaleInfo().getBlockSize().getY(),
                           getGrayScaleInfo().getBlockSize().getZ());
-            tree->translate(getGrayScaleInfo().getStartCoordinates());
+//            tree->translate(getGrayScaleInfo().getStartCoordinates());
             tree->setSource(source);
             m_coarseBodyWindow->getDocument()->addObject(tree, true);
           }
@@ -4333,7 +4333,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
               for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
                 ZIntPoint pt(0, seg.getY(), seg.getZ());
                 pt.setX(x);
-                pt -= dvidInfo.getStartBlockIndex();
+//                pt -= dvidInfo.getStartBlockIndex();
                 pt *= dvidInfo.getBlockSize();
                 pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
                                 dvidInfo.getBlockSize().getY() / 2, 0);

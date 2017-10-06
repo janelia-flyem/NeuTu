@@ -997,7 +997,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
 
         for (int x = x0; x <= x1; ++x) {
           const ZIntPoint blockIndex =
-              ZIntPoint(x, y, z) - dvidInfo.getStartBlockIndex();
+              ZIntPoint(x, y, z);// - dvidInfo.getStartBlockIndex();
           //ZStack *stack = readGrayScaleBlock(blockIndex, dvidInfo);
           //const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
           ZIntCuboid box = grid->getBlockBox(blockIndex);
@@ -1926,7 +1926,7 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
       ZVoxel voxel = objSlice.getMarker();
       //        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
       pt.set(voxel.x(), voxel.y(), voxel.z());
-      pt -= dvidInfo.getStartBlockIndex();
+//      pt -= dvidInfo.getStartBlockIndex();
       pt *= dvidInfo.getBlockSize();
 //      pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
 //                      dvidInfo.getBlockSize().getY() / 2, 0);

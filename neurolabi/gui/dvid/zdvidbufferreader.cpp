@@ -73,7 +73,7 @@ void ZDvidBufferReader::read(
     bool outputingUrl)
 {
   if (outputingUrl) {
-    qDebug() << url;
+    qDebug() << "Reading " << url;
   }
 
   m_buffer.clear();
@@ -166,7 +166,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
   }
 
   if (outputingUrl) {
-    qDebug() << url;
+    qDebug() << "Reading" << url;
   }
 
   m_buffer.clear();
