@@ -36,6 +36,7 @@ void ZFlyEmToDoList::setDvidTarget(const ZDvidTarget &target)
 void ZFlyEmToDoList::setDvidInfo(const ZDvidInfo &info)
 {
   m_dvidInfo = info;
+  m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
 }
 
 void ZFlyEmToDoList::init()

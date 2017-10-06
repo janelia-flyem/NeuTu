@@ -328,7 +328,7 @@ ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj) const
     const ZObject3dStripe &stripe = obj.getStripe(i);
     int y = stripe.getY();
     int z = stripe.getZ();
-    if (y > 0 && z > 0 && y < m_stackSize[1] && z < m_stackSize[2]) {
+//    if (y > 0 && z > 0 && y < m_stackSize[1] && z < m_stackSize[2]) {
       for (int j = 0; j < stripe.getSegmentNumber(); ++j) {
         int x0 = stripe.getSegmentStart(j);
         int x1 = stripe.getSegmentEnd(j);
@@ -358,7 +358,7 @@ ZObject3dScan ZDvidInfo::getBlockIndex(const ZObject3dScan &obj) const
 //          isAdded[blockIndex2] = true;
 //        }
       }
-    }
+//    }
   }
 
   //blockArray.append(blockSet.begin(), blockSet.end());
