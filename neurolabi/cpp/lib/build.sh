@@ -13,7 +13,7 @@ if [ ${config:-release} == debug ]
 then
   cmake -DCMAKE_BUILD_TYPE=Debug ..
 else
-  cmake ..
+  cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
 
 THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
