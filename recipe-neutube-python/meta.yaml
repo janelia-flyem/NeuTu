@@ -38,6 +38,10 @@ requirements:
     - hdf5    1.8.18
     
 
+test:
+  imports:
+    - neutube
+
 about:
   home: http://github.com/janelia-flyem/NeuTu
   license: GPL
