@@ -283,10 +283,8 @@ public:
 
   bool usingMulitresBodylabel() const;
 
-  /*
-  void setLabelszName(const std::string &name);
-  std::string getLabelszName() const;
-  */
+  bool isInferred() const;
+  void setInferred(bool status);
 
   std::string getSynapseLabelszName() const;
   void setSynapseLabelszName(const std::string &name);
@@ -355,6 +353,7 @@ private:
   bool m_isEditable; //if the configuration is editable
   bool m_readOnly; //if the database is readonly
   ZDvid::ENodeStatus m_nodeStatus = ZDvid::NODE_OFFLINE; //Status of the node
+  bool m_isInferred = false;
 
   const static char* m_commentKey;
   const static char* m_nameKey;

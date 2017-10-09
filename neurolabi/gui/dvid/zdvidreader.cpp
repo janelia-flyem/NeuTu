@@ -135,6 +135,10 @@ bool ZDvidReader::openRaw(const ZDvidTarget &target)
 
   bool succ = startService();
 
+  if (!succ) {
+    m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+  }
+
   return succ;
 }
 
@@ -144,25 +148,32 @@ bool ZDvidReader::open(const ZDvidTarget &target)
     return false;
   }
 
-  m_dvidTarget = target;
+  bool succ = false;
 
-  std::string masterNode = ReadMasterNode(target);
-  if (!masterNode.empty()) {
-    m_dvidTarget.setUuid(masterNode.substr(0, 4));
-  }
+  if (target.isInferred()) {
+    succ = openRaw(target);
+  } else {
+    m_dvidTarget = target;
 
-  bool succ = startService();
-
-  if (succ) { //Read default settings
-    updateNodeStatus();
-
-    if (getDvidTarget().usingDefaultDataSetting()) {
-      loadDefaultDataSetting();
+    std::string masterNode = ReadMasterNode(target);
+    if (!masterNode.empty()) {
+      m_dvidTarget.setUuid(masterNode.substr(0, 4));
     }
 
-    updateSegmentationData();
-  } else {
-    m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+    succ = startService();
+
+    if (succ) { //Read default settings
+      updateNodeStatus();
+
+      if (getDvidTarget().usingDefaultDataSetting()) {
+        loadDefaultDataSetting();
+      }
+
+      updateSegmentationData();
+      m_dvidTarget.setInferred(true);
+    } else {
+      m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+    }
   }
 
   return succ;
@@ -865,6 +876,10 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
         stack->copyValueFrom(blocks.get_raw() + i * currentBox.getVolume(),
                              currentBox.getVolume(), stack->array8());
         currentBox.translateX(currentBox.getWidth());
+#ifdef _DEBUG_2
+        stack->save(GET_TEST_DATA_DIR + "/test.tif");
+        std::cout << "Stack binary: " << stack->isBinary() << std::endl;
+#endif
       }
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
@@ -969,7 +984,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
     ZObject3dScan blockObj = dvidInfo.getBlockIndex(*body);;
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     spStack->setGreyScale(grid);
-    grid->setMinPoint(dvidInfo.getStartCoordinates());
+//    grid->setMinPoint(dvidInfo.getStartCoordinates());
     grid->setBlockSize(dvidInfo.getBlockSize());
     grid->setGridSize(dvidInfo.getGridSize());
 

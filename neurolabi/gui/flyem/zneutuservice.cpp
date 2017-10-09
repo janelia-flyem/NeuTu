@@ -102,6 +102,7 @@ ZNeutuService::ERequestStatus ZNeutuService::requestBodyUpdate(
       obj.setEntry("bodies", bodyJson);
 
       int statusCode;
+      QMutexLocker locker(&m_connectionMutex);
       ZDvid::MakePostRequest(*m_connection, GetBodyUpdatePath(),  obj, statusCode);
 
       if (statusCode != 200) {

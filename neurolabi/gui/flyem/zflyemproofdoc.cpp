@@ -3048,9 +3048,11 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     setHadSegmentationSampled(container.computationDowsampled());
 
+#ifdef _DEBUG_
 //    container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
-//    container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
+    container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
 //    container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
     ZObject3dScanArray result;
     container.makeSplitResult(1, &result);

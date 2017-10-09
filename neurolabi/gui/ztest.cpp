@@ -24552,7 +24552,7 @@ void ZTest::test(MainWindow *host)
   delete cubeArray;
 #endif
 
-#if 1
+#if 0
    ZDvidTarget target;
    target.set("emdata3", "bf6e", 8000);
    target.setLabelBlockName("segmentation");
@@ -24560,6 +24560,29 @@ void ZTest::test(MainWindow *host)
    reader.open(target);
 
    reader.checkProofreadingData();
+#endif
+
+#if 1
+   ZDvidReader reader;
+   ZDvidTarget target("emdata3.int.janelia.org", "c0ab", 8000);
+   target.setLabelBlockName("segmentation-from-bricks");
+   target.setGrayScaleSource(ZDvidNode("127.0.0.1", "9b07", 8000));
+   target.setGrayScaleName("grayscalejpeg");
+   reader.open(target);
+
+   ZDvidSparseStack *dss = reader.readDvidSparseStack(290523653);
+   ZSparseStack *ss = dss->getSparseStack();
+   ss->save(GET_TEST_DATA_DIR + "/test.zss");
+//   ss->getStackGrid()->toStack()->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//   ss.setDvidTarget(target);
+//   ss.
+
+//   std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
+//         ZIntPoint(52, 57, 212), reader.readGrayScaleInfo(), 2);
+//   ZStack *stack = stackArray[1];
+////   ZStack *stack = reader.readGrayScale(3189, 3850, 13970, 100, 100, 100);
+//   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
   std::cout << "Done." << std::endl;

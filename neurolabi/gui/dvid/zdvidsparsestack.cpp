@@ -95,12 +95,12 @@ ZStack* ZDvidSparseStack::getSlice(int z) const
 
 void ZDvidSparseStack::initBlockGrid()
 {
-
-  if (m_dvidReader.open(getDvidTarget())) {
-    ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+  ZDvidReader &reader = getGrayscaleReader();
+  if (reader.good()) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     m_sparseStack.setGreyScale(grid);
-    grid->setMinPoint(dvidInfo.getStartCoordinates());
+//    grid->setMinPoint(dvidInfo.getStartCoordinates());
     grid->setBlockSize(dvidInfo.getBlockSize());
     grid->setGridSize(dvidInfo.getGridSize());
   }
@@ -108,7 +108,8 @@ void ZDvidSparseStack::initBlockGrid()
 
 void ZDvidSparseStack::setDvidTarget(const ZDvidTarget &target)
 {
-  m_dvidTarget = target;
+//  m_dvidTarget = target;
+  m_dvidReader.open(target);
   initBlockGrid();
 }
 
@@ -204,7 +205,7 @@ ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
   if (!m_grayScaleReader.isReady()) {
     ZDvidTarget target = getDvidTarget();
     target.prepareGrayScale();
-    m_grayScaleReader.open(target);
+    m_grayScaleReader.open(target.getGrayScaleTarget());
     m_grayscaleInfo = m_grayScaleReader.readGrayScaleInfo();
   }
 
