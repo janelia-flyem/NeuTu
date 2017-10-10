@@ -10,12 +10,16 @@ class Skeletonizer:
     def __init__(self):
         self.dvidEnv = None
         self.processMap = {}
+        self.executable = "/opt/bin/neut"
 
     def setDvidEnv(self, env):
         self.dvidEnv = env
 
     def getDvidEnv(self):
         return self.dvidEnv
+
+    def setExecutable(self, exe):
+        self.executable = exe
 
     def loadDvidConfig(self, config):
         self.dvidEnv = DvidEnv()
@@ -31,7 +35,7 @@ class Skeletonizer:
 
         if self.dvidEnv and self.dvidEnv.isValid():
             print(self.dvidEnv.getNeuTuInput())
-            args = ["/opt/bin/neutu", "--command", "--skeletonize", self.dvidEnv.getNeuTuInput(), "--bodyid", str(bodyId)]
+            args = [self.executable, "--command", "--skeletonize", self.dvidEnv.getNeuTuInput(), "--bodyid", str(bodyId)]
             if forceUpdate:
                 args.append("--force")
             print(args)

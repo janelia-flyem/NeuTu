@@ -22,11 +22,22 @@ else
   git pull origin $(git rev-parse --abbrev-ref HEAD)
 fi
 
-neutu_bin_dir=$condaDir'/envs/neutu-env/bin'
+if [ `uname` = 'Darwin' ]
+then
+  neutu_bin_dir=$condaDir'/envs/neutu-env/bin/neutu.app/Contents/MacOS'
+else
+  neutu_bin_dir=$condaDir'/envs/neutu-env/bin'
+fi
+
 run_script=$bindir/neutuse
 touch $run_script
 echo '#!/bin/bash' > $run_script
 echo "cd $downloadDir/NeuTu/neurolabi/python/service" >> $run_script
 echo 'python neutus.py $*' >> $run_script
 chmod a+x $run_script
+
+config_file=$bindir/neutuse_config.yaml
+echo "command: $neutu_bin_dir/neutu" > $config_file
+echo "port: 9000" >> $config_file
+
 
