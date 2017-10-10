@@ -19,8 +19,16 @@ if [ ! -d NeuTu ]
 then
   git clone -b develop https://github.com/janelia-flyem/NeuTu.git NeuTu
 else
+  cd NeuTu
   git pull origin $(git rev-parse --abbrev-ref HEAD)
+  cd ..
 fi
+
+source $condaDir/bin/activate root
+easy_install bottle
+easy_install jsonschema
+easy_install timer
+easy_install pyyaml
 
 if [ `uname` = 'Darwin' ]
 then
@@ -32,12 +40,14 @@ fi
 run_script=$bindir/neutuse
 touch $run_script
 echo '#!/bin/bash' > $run_script
+echo "source $condaDir/bin/activate root" >> $run_script
 echo "cd $downloadDir/NeuTu/neurolabi/python/service" >> $run_script
-echo 'python neutus.py $*' >> $run_script
+echo "python neutuse.py --config $bindir/neutuse_config.yaml" >> $run_script
 chmod a+x $run_script
 
 config_file=$bindir/neutuse_config.yaml
 echo "command: $neutu_bin_dir/neutu" > $config_file
-echo "port: 9000" >> $config_file
+echo "host: $HOSTNAME" >> $config_file
+echo "port: 9100" >> $config_file
 
 
