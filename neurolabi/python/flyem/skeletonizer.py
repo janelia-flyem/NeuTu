@@ -35,7 +35,7 @@ class Skeletonizer:
 
         if self.dvidEnv and self.dvidEnv.isValid():
             print(self.dvidEnv.getNeuTuInput())
-            args = [self.executable, "--command", "--skeletonize", self.dvidEnv.getNeuTuInput(), "--bodyid", str(bodyId)]
+            args = [self.executable, "--command", "--skeletonize", "--bodyid", str(bodyId), self.dvidEnv.getNeuTuInput()]
             if forceUpdate:
                 args.append("--force")
             print(args)
