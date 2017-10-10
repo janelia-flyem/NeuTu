@@ -395,11 +395,15 @@ port = 8080
 if 'port' in serverConfig:
     port = int(serverConfig['port'])
 
+host = 'localhost'
+if 'host' in serverConfig:
+    host = int(serverConfig['host'])
+
 #if len(sys.argv) > 1:
 #    port = sys.argv[1]
 
 #run(host=socket.gethostname(), port=port, debug=True)
-run(host="localhost", port=port, debug=True)
+run(host=host, port=port, debug=True)
 
 # print getSchema('skeletonize', 'post')
 # try:
