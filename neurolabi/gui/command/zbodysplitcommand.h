@@ -9,6 +9,8 @@ class ZSparseStack;
 class ZStackGarbageCollector;
 class ZIntCuboid;
 class ZStackWatershedContainer;
+class ZObject3dScanArray;
+class ZDvidWriter;
 
 class ZBodySplitCommand : public ZCommandModule
 {
@@ -22,7 +24,7 @@ public:
 private:
   static ZDvidReader* ParseInputPath(const std::string inputPath, ZJsonObject &inputJson,
       std::string &splitTaskKey, std::string &splitResultKey, std::string &dataDir, bool &isFile);
-  static std::pair<ZStack *, ZSparseStack*> ParseSignalPath(
+  std::pair<ZStack *, ZSparseStack*> parseSignalPath(
       std::string &signalPath, const std::string &dataDir,
       bool isFile, const ZIntCuboid &range, ZStackGarbageCollector &gc);
   static void LoadSeeds(
@@ -30,6 +32,10 @@ private:
       const std::string &dataDir, bool isFile);
   static void ProcessResult(ZStackWatershedContainer &container, const std::string &output,
       const std::string &splitTaskKey);
+  std::vector<uint64_t> commitResult(ZObject3dScanArray *objArray, ZDvidWriter &writer);
+
+private:
+  uint64_t m_bodyId = 0;
 };
 
 #endif // ZBODYSPLITCOMMAND_H

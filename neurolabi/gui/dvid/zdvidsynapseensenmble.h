@@ -46,6 +46,7 @@ public:
   }
 
   void setDvidTarget(const ZDvidTarget &target);
+  void setDvidInfo(const ZDvidInfo &info);
 
   ZResolution getResolution() const {
     return m_resolution;

@@ -12,6 +12,7 @@
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
+#include "QsLog/QsLog.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -49,6 +50,7 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
 
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->finishCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onFinishCurrentButton()));
+    connect(ui->detailsButton, SIGNAL(clicked(bool)), this, SLOT(onDetailsButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
@@ -332,6 +334,28 @@ void SynapsePredictionProtocol::onRefreshButton()
         }
     }
     updateLabels();
+}
+
+void SynapsePredictionProtocol::onDetailsButton() {
+    QString message = "Synapses come from ";
+    if (m_variation == VARIATION_REGION) {
+        message += "region between ";
+        message += QString::fromStdString(m_protocolRange.getFirstCorner().toString());
+        message += " and ";
+        message += QString::fromStdString(m_protocolRange.getLastCorner().toString());
+    } else if (m_variation == VARIATION_BODY) {
+        message += "body ";
+        message += QString::number(m_bodyID);
+    } else {
+        variationError(m_variation);
+    }
+
+    QMessageBox mb;
+    mb.setText("Protocol details");
+    mb.setInformativeText(message);
+    mb.setStandardButtons(QMessageBox::Ok);
+    mb.setDefaultButton(QMessageBox::Ok);
+    mb.exec();
 }
 
 void SynapsePredictionProtocol::onExitButton() {
@@ -625,6 +649,10 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
+        // show wait cursor
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        QApplication::processEvents();
+
         std::vector<ZDvidSynapse> synapseList;
         if (m_variation == VARIATION_REGION) {
             synapseList = reader.readSynapse(m_protocolRange, FlyEM::LOAD_PARTNER_LOCATION);
@@ -661,7 +689,11 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
         for (int i=0; i<pendingSynapses.size(); i++) {
             m_pendingList.append(pendingSynapses[i].getPosition());
         }
+        // restore original cursor
+        QApplication::restoreOverrideCursor();
+        QApplication::processEvents();
     }
+
 }
 
 bool SynapsePredictionProtocol::compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2) {
@@ -794,7 +826,13 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
         std::vector<ZIntPoint> psdArray = synapse.getPartners();
         for (size_t i=0; i<psdArray.size(); i++) {
             ZDvidSynapse post = reader.readSynapse(psdArray[i], FlyEM::LOAD_NO_PARTNER);
-            result.push_back(post);
+            // we've been seeing some blank lines in the PSD table; I think
+            //  they might be due to unlinked PSDs, and this might catch them:
+            if (post.isValid()) {
+                result.push_back(post);
+            } else {
+                LINFO() << "found invalid PSD at " << psdArray[i].toString();
+            }
         }
     }
     return result;

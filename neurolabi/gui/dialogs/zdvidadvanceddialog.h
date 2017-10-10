@@ -33,6 +33,9 @@ public:
 
   void setTodoName(const std::string &name);
   std::string getTodoName() const;
+  void setBodyLabelName(const std::string &name);
+  std::string getBodyLabelName() const;
+
   bool isSupervised() const;
   std::string getSupervisorServer() const;
   void setSupervised(bool supervised);
@@ -63,6 +66,7 @@ private:
   bool m_oldSupervised;
   std::string m_oldSupervisorServer;
   std::string m_oldTodoName;
+  std::string m_oldBodyLabelName;
   ZDvidNode m_oldGrayscaleSource;
   ZDvidNode m_oldTileSource;
   bool m_oldMainGrayscale;

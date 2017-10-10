@@ -38,7 +38,7 @@ void ZFlyEmBookmarkArray::importJsonFile(
       if (idJson.isInteger()) {
         bodyId = ZJsonParser::integerValue(idJson.getData());
       } else if (idJson.isString()) {
-        bodyId = ZString::firstInteger(ZJsonParser::stringValue(idJson.getData()));
+        bodyId = ZString::FirstInteger(ZJsonParser::stringValue(idJson.getData()));
       }
 
       if (bodyId > 0) {

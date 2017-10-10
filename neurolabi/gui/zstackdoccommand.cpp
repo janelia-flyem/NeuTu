@@ -1617,7 +1617,7 @@ void ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty::undo()
 
 ZStackDocCommand::SwcEdit::RemoveEmptyTree::RemoveEmptyTree(
     ZStackDoc *doc, QUndoCommand *parent) :
-  CompositeCommand(doc, parent), m_doc(doc)
+  CompositeCommand(doc, parent)
 {
   if (doc != NULL) {
     QList<ZSwcTree*> treeList = doc->getSwcList();

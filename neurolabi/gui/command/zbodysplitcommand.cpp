@@ -61,7 +61,7 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
 }
 
 std::pair<ZStack*, ZSparseStack*>
-ZBodySplitCommand::ParseSignalPath(
+ZBodySplitCommand::parseSignalPath(
     std::string &signalPath, const std::string &dataDir, bool isFile,
     const ZIntCuboid &range, ZStackGarbageCollector &gc)
 {
@@ -73,8 +73,9 @@ ZBodySplitCommand::ParseSignalPath(
     ZDvidReader *reader =
         ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
     if (reader != NULL) {
+      m_bodyId = ZDvidUrl::GetBodyId(signalPath);
       ZDvidSparseStack *dvidStack =
-          dvidStack = reader->readDvidSparseStack(ZDvidUrl::GetBodyId(signalPath));
+          dvidStack = reader->readDvidSparseStack(m_bodyId);
       spStack = dvidStack->getSparseStack(range);
       gc.registerObject(dvidStack);
 //      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
@@ -147,7 +148,7 @@ int ZBodySplitCommand::run(
 
   ZStackGarbageCollector gc;
   std::pair<ZStack*, ZSparseStack*> data =
-      ParseSignalPath(signalPath, dataDir, isFile, range, gc);
+      parseSignalPath(signalPath, dataDir, isFile, range, gc);
 //  ZSparseStack *spStack = data.second;
 //  ZStack *signalStack = data.first;
 
@@ -244,6 +245,19 @@ void ZBodySplitCommand::LoadSeeds(
   }
 }
 
+std::vector<uint64_t> ZBodySplitCommand::commitResult(
+    ZObject3dScanArray *objArray, ZDvidWriter &writer)
+{
+  std::vector<uint64_t> newBodyIdArray;
+  if (m_bodyId > 0) {
+    for (ZObject3dScan *obj : *objArray) {
+      uint64_t newBodyId = writer.writeSplit(*obj, m_bodyId, 0);
+      newBodyIdArray.push_back(newBodyId);
+    }
+  }
+  return newBodyIdArray;
+}
+
 void ZBodySplitCommand::ProcessResult(
     ZStackWatershedContainer &container, const std::string &output,
     const std::string &splitTaskKey)
@@ -251,7 +265,7 @@ void ZBodySplitCommand::ProcessResult(
   ZStack *resultStack = container.getResultStack();
   if (resultStack != NULL) {
     QUrl outputUrl(output.c_str());
-    ZObject3dScanArray *result = container.makeSplitResult();
+    ZObject3dScanArray *result = container.makeSplitResult(2, NULL);
 
     if (outputUrl.scheme() == "dvid" || outputUrl.scheme() == "http") {
       ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(output);
@@ -262,7 +276,7 @@ void ZBodySplitCommand::ProcessResult(
 //              *result, NeuTube::Z_AXIS, true, &objArray);
       for (ZObject3dScanArray::const_iterator iter = result->begin();
            iter != result->end(); ++iter) {
-        const ZObject3dScan &obj = *iter;
+        const ZObject3dScan &obj = **iter;
         std::string endPoint =
             writer->writeServiceResult("split", obj.toDvidPayload(), false);
         ZJsonObject regionJson;

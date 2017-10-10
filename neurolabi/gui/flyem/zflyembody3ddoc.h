@@ -157,6 +157,7 @@ public:
   ZFlyEmToDoItem makeTodoItem(
       int x, int y, int z, bool checked, uint64_t bodyId);
   ZFlyEmToDoItem readTodoItem(int x, int y, int z) const;
+  void loadSplitTask(uint64_t bodyId);
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);

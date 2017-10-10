@@ -172,6 +172,7 @@
 #include "flyem/zfileparser.h"
 #include "dialogs/zdvidbodypositiondialog.h"
 #include "dialogs/ztestoptiondialog.h"
+#include "zobject3dscanarray.h"
 
 #include "z3dcanvas.h"
 #include "zsysteminfo.h"
@@ -5450,6 +5451,7 @@ void MainWindow::createDvidFrame()
     }
     */
   } else {
+#if 0 //obsolete
     const QVector<ZObject3dScan>& bodyArray = dvidBuffer->getBodyArray();
     int offset[3] = {0, 0, 0};
     Stack *stack = ZObject3dScan::makeStack(bodyArray.begin(), bodyArray.end(),
@@ -5460,6 +5462,7 @@ void MainWindow::createDvidFrame()
       docStack->setOffset(offset[0], offset[1], offset[2]);
       //frame = createStackFrame(docStack, NeuTube::Document::FLYEM_BODY);
     }
+#endif
   }
 
   if (docStack != NULL) {
@@ -6335,17 +6338,18 @@ ZStackDoc* MainWindow::importHdf5BodyM(const std::vector<int> &bodyIdArray,
                                        const QString &hdf5Path,
                                        const std::vector<int> &downsampleInterval)
 {
-  QVector<ZObject3dScan> objectArray;
-  objectArray.resize(bodyIdArray.size());
+  ZObject3dScanArray objectArray;
+  objectArray.resize(bodyIdArray.size(), NULL);
 
   ZStack *stack = NULL;
   int offset[3] = {0, 0, 0};
   for (size_t i = 0; i < bodyIdArray.size(); ++i) {
     int bodyId = bodyIdArray[i];
-    objectArray[i].importHdf5(
+    objectArray[i] = new ZObject3dScan;
+    objectArray[i]->importHdf5(
           hdf5Path.toStdString(), ZString::num2str(bodyId) + ".sobj");
     if (downsampleInterval.size() == 3) {
-      objectArray[i].downsampleMax(downsampleInterval[0],
+      objectArray[i]->downsampleMax(downsampleInterval[0],
           downsampleInterval[1], downsampleInterval[2]);
     }
     Stack *stackData = ZObject3dScan::makeStack(

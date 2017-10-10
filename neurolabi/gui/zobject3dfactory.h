@@ -57,6 +57,12 @@ public:
   static ZObject3dScan MakeObject3dScan(const ZIntCuboid &box);
 
   static ZStack* MakeBoundaryStack(const ZStack &stack);
+  /*!
+   * \brief Extracts objects from a stack.
+   *
+   * \return an array of objects, each representing a region of one value.
+   */
+  static std::vector<ZObject3d*> MakeObject3dArray(const ZStack &stack);
 
   static ZObject3dScan MakeRandomObject3dScan(const ZIntCuboid &box);
 

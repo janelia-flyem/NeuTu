@@ -254,7 +254,7 @@ int ZCommandLine::runBoundaryOrphan()
 
       if (isCandidate && qc.isStitchedOrphanBody(obj)) {
         std::cout << "Orphan: "
-                  << ZString::lastInteger(objFile.absoluteFilePath().toStdString())
+                  << ZString::LastInteger(objFile.absoluteFilePath().toStdString())
                   << std::endl;
         ZVoxel voxel = obj.getMarker();
         voxel.translate(bodyOffset[0], bodyOffset[1], bodyOffset[2]);
@@ -320,7 +320,7 @@ int ZCommandLine::runObjectOverlap()
                     << std::endl;
         }
         excludedBodySet.insert(
-              ZString::lastInteger(fileInfo.baseName().toStdString()));
+              ZString::LastInteger(fileInfo.baseName().toStdString()));
       }
     }
   }
@@ -335,7 +335,7 @@ int ZCommandLine::runObjectOverlap()
 
   std::cout << "Loading objects ..." << std::endl;
   for (int i = 0; i < objArray1.size(); ++i) {
-    int id = ZString::lastInteger(fileList1[i].baseName().toStdString());
+    int id = ZString::LastInteger(fileList1[i].baseName().toStdString());
 
     if (excludedBodySet.count(id) == 0) {
       objArray1[i].load(fileList1[i].absoluteFilePath().toStdString());
@@ -349,7 +349,7 @@ int ZCommandLine::runObjectOverlap()
 
   std::cout << "Loading objects ..." << std::endl;
   for (int i = 0; i < objArray2.size(); ++i) {
-    int id = ZString::lastInteger(fileList2[i].baseName().toStdString());
+    int id = ZString::LastInteger(fileList2[i].baseName().toStdString());
     if (excludedBodySet.count(id) == 0) {
       objArray2[i].load(fileList2[i].absoluteFilePath().toStdString());
       objArray2[i].downsample(m_intv[0], m_intv[1], m_intv[2]);
@@ -1280,7 +1280,7 @@ int ZCommandLine::run(int argc, char *argv[])
   std::string applicationDir = app.applicationDirPath().toStdString();
 
 //  std::string applicationDir = ZString::dirPath(argv[0]);
-  std::cout << applicationDir << std::endl;
+  std::cout << "Executable directory: " << applicationDir << std::endl;
   m_configDir = applicationDir + "/json";
   std::string configPath = m_configDir + "/command_config.json";
 
@@ -1411,7 +1411,7 @@ int ZCommandLine::run(int argc, char *argv[])
     } else if (Is_Arg_Matched(const_cast<char*>("--general"))) {
       command = GENERAL_COMMAND;
       m_generalConfig = Get_String_Arg(const_cast<char*>("--general"));
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Config:" << std::endl;
       std::cout << m_generalConfig << std::endl;
 #endif
@@ -1465,7 +1465,9 @@ void ZCommandLine::loadConfig(const std::string &filePath)
   expandConfig(filePath, "trace");
 
 #ifdef _DEBUG_
+  std::cout << "==========Command configuration========" << std::endl;
   std::cout << m_configJson.dumpString(2) << std::endl;
+  std::cout << "=======================================" << std::endl;
 #endif
 }
 

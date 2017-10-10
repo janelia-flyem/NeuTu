@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e 
+
+if test $# -eq 0
+then
+  echo 'setup_neutuse <install_dir>'
+  exit 
+fi
+
+install_dir=$1
+echo "Installing NeuTu under $install_dir"
+bindir=$install_dir/bin
+
+downloadDir=$install_dir/Download
+condaDir=$install_dir/Download/miniconda
+
+cd $downloadDir
+if [ ! -d NeuTu ]
+then
+  git clone -b develop https://github.com/janelia-flyem/NeuTu.git NeuTu
+else
+  git pull origin $(git rev-parse --abbrev-ref HEAD)
+fi
+
+neutu_bin_dir=$condaDir'/envs/neutu-env/bin'
+run_script=$bindir/neutuse
+touch $run_script
+echo '#!/bin/bash' > $run_script
+echo "cd $downloadDir/NeuTu/neurolabi/python/service" >> $run_script
+echo 'python neutus.py $*' >> $run_script
+chmod a+x $run_script
+

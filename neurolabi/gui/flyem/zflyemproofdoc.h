@@ -31,6 +31,7 @@ class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
 class ZFlyEmSynapseAnnotationDialog;
+class ZStackArray;
 
 
 class ZFlyEmProofDoc : public ZStackDoc
@@ -59,7 +60,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  virtual void updateTileData();
+//  virtual void updateTileData();
 
   const ZDvidTarget& getDvidTarget() const;
 
@@ -94,6 +95,13 @@ public:
   void updateBodyObject();
 
   void clearData();
+
+  /*!
+   * \brief Get brief information of the document
+   *
+   * \return A string that contains information about the document.
+   */
+  QString getInfo() const;
 
   /*!
    * \brief Get body ID at a certain location
@@ -213,6 +221,8 @@ public:
   ZDvidReader* getSparseVolReader() {
     return &m_sparseVolReader;
   }
+
+  const ZDvidInfo& getDvidInfo() const;
 
 public:
   //The split mode may affect some data loading behaviors, but the result should
@@ -370,6 +380,7 @@ public:
   int removeDvidSparsevol(NeuTube::EAxis axis);
 
   void loadSplitFromService();
+  void loadSplitTaskFromService();
   void commitSplitFromService();
 
 signals:
@@ -513,6 +524,9 @@ private:
   void initData(const ZDvidTarget &target);
   void initData(const std::string &type, const std::string &dataName);
 
+  void initTileData();
+  void initGrayscaleSlice();
+
   void readInfo();
   void updateMaxLabelZoom();
   void updateMaxGrayscaleZoom();
@@ -524,9 +538,11 @@ private:
 
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
 
+  void runSplitFunc(FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range);
   void runSplitFunc(FlyEM::EBodySplitMode mode);
   void localSplitFunc(FlyEM::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
+  ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
@@ -552,6 +568,7 @@ protected:
   ZDvidReader m_todoReader;
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
+  ZDvidReader m_grayscaleReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 

@@ -16,6 +16,9 @@ class Z3DGraphFilter : public Z3DGeometryFilter
   Q_OBJECT
 public:
   explicit Z3DGraphFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
+  ~Z3DGraphFilter();
+
+  void clear();
 
   void setData(const ZPointNetwork &pointCloud, ZNormColorMap *colorMap = NULL);
   void setData(const Z3DGraph &graph);
@@ -49,7 +52,8 @@ protected:
   virtual void updateNotTransformedBoundBoxImpl() override;
 
 private:
-  Z3DGraph m_graph;
+//  Z3DGraph m_graph;
+  QList<Z3DGraph*> m_graphList;
 
 //  ZBoolParameter m_showGraph;
 

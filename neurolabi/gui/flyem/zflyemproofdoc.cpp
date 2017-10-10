@@ -49,6 +49,7 @@
 #include "flyem/zserviceconsumer.h"
 #include "zstroke2d.h"
 #include "flyem/zflyemmisc.h"
+#include "zstackwatershedcontainer.h"
 
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -716,6 +717,8 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
     initData("keyvalue", target.getSkeletonName());
     initData("keyvalue", target.getThumbnailName());
     initData("keyvalue", target.getBookmarkKeyName());
+    initData("keyvalue", target.getBodyAnnotationName());
+    initData("keyvalue", target.getSplitLabelName());
     initData("keyvalue", ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION));
   }
 }
@@ -729,14 +732,15 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_dvidReader.open(target)) {
     m_dvidWriter.open(target);
-    m_synapseReader.open(m_dvidReader.getDvidTarget());
-    m_todoReader.open(m_dvidReader.getDvidTarget());
-    m_sparseVolReader.open(m_dvidReader.getDvidTarget());
+    m_synapseReader.openRaw(m_dvidReader.getDvidTarget());
+    m_todoReader.openRaw(m_dvidReader.getDvidTarget());
+    m_sparseVolReader.openRaw(m_dvidReader.getDvidTarget());
+    m_grayscaleReader.openRaw(m_dvidReader.getDvidTarget().getGrayScaleTarget());
 //    m_dvidTarget = target;
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
-    readInfo();
-    initData(target);
+
+    initData(getDvidTarget());
     if (getSupervisor() != NULL) {
       getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
       if (!getSupervisor()->isEmpty() && !target.readOnly()) {
@@ -753,12 +757,20 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
       }
     }
 
+    readInfo();
+
     prepareDvidData();
 
     updateDvidTargetForObject();
 
-    if (!target.readOnly()) {
-      int missing = m_dvidReader.checkProofreadingData();
+#ifdef _DEBUG_2
+//    m_dvidReader.getDvidTarget().setReadOnly(true);
+    const_cast<ZDvidTarget&>(target).setReadOnly(true);
+#endif
+
+    //Run check anyway to get around a strange bug of showing grayscale
+    int missing = m_dvidReader.checkProofreadingData();
+    if (!getDvidTarget().readOnly()) {
       if (missing > 0) {
         emit messageGenerated(
               ZWidgetMessage(
@@ -792,17 +804,19 @@ void ZFlyEmProofDoc::notifyBodySelectionChanged()
 
 void ZFlyEmProofDoc::updateMaxLabelZoom()
 {
-  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
+  m_dvidReader.updateMaxLabelZoom();
+//  m_dvidReader.updateMaxLabelZoom(m_infoJson, m_versionDag);
 }
 
 void ZFlyEmProofDoc::updateMaxGrayscaleZoom()
 {
-  m_dvidReader.updateMaxGrayscaleZoom(m_infoJson, m_versionDag);
+  m_grayscaleReader.updateMaxGrayscaleZoom();
+//  m_dvidReader.updateMaxGrayscaleZoom(m_infoJson, m_versionDag);
 }
 
 void ZFlyEmProofDoc::readInfo()
 {
-  m_grayScaleInfo = m_dvidReader.readGrayScaleInfo();
+  m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
   m_labelInfo = m_dvidReader.readLabelInfo();
   m_versionDag = m_dvidReader.readVersionDag();
 #ifdef _DEBUG_2
@@ -871,23 +885,26 @@ ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
   return dynamic_cast<ZDvidGraySlice*>(obj);
 }
 
+const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
+{
+  if (getDvidTarget().hasGrayScaleData()) {
+    return m_grayScaleInfo;
+  }
+
+  return m_labelInfo;
+}
+
 void ZFlyEmProofDoc::prepareDvidData()
 {
   if (m_dvidReader.isReady()) {
-    ZDvidInfo dvidInfo;
-
-    if (getDvidTarget().hasGrayScaleData()) {
-      dvidInfo = m_dvidReader.readGrayScaleInfo();
-    } else {
-      dvidInfo = m_dvidReader.readLabelInfo();
-    }
+    ZDvidInfo dvidInfo = getDvidInfo();
 
     ZIntCuboid boundBox;
     if (dvidInfo.isValid()) {
       boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),
                        dvidInfo.getEndCoordinates());
     } else {
-      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
+      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(512, 512, 512));
     }
 
     ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
@@ -900,65 +917,33 @@ void ZFlyEmProofDoc::prepareDvidData()
 
 
   if (getDvidTarget().hasTileData()) {
-    ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
-    ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-    ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-    ensemble->setDvidTarget(getDvidTarget());
-    addObject(ensemble, true);
+    initTileData();
   } else {
-    if (getDvidTarget().hasGrayScaleData()) {
-      ZDvidGraySlice *slice = new ZDvidGraySlice;
-      slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-      slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
-      slice->setDvidTarget(getDvidTarget());
-      addObject(slice, true);
-    }
+    initGrayscaleSlice();
   }
 
   addDvidLabelSlice(NeuTube::Z_AXIS);
-
-//    addDvidLabelSlice(NeuTube::Y_AXIS);
-//    addDvidLabelSlice(NeuTube::Z_AXIS);
 }
 
-void ZFlyEmProofDoc::updateTileData()
+void ZFlyEmProofDoc::initTileData()
 {
-  if (m_dvidReader.isReady()) {
-    ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
-    ZIntCuboid boundBox;
-    if (dvidInfo.isValid()) {
-      boundBox = ZIntCuboid(dvidInfo.getStartCoordinates(),
-                       dvidInfo.getEndCoordinates());
-    } else {
-      boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(13500, 11000, 10000));
-    }
+  ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
+  ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+  ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
+  ensemble->setDvidTarget(getDvidTarget());
+  addObject(ensemble, true);
+}
 
-    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
-    loadStack(stack);
-
-    ZDvidTileEnsemble *ensemble = getDvidTileEnsemble();
-
-    if (ensemble == NULL) {
-      ensemble = new ZDvidTileEnsemble;
-      ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-      ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-      addObject(ensemble, true);
-    }
-
-    ensemble->setDvidTarget(getDvidTarget());
-
-    ZDvidLabelSlice *slice = getDvidLabelSlice(NeuTube::Z_AXIS);
-
-    if (slice == NULL) {
-      addDvidLabelSlice(NeuTube::Z_AXIS);
-    } else{
-      slice->setDvidTarget(getDvidTarget());
-    }
-//    addDvidLabelSlice(NeuTube::Y_AXIS);
-//    addDvidLabelSlice(NeuTube::Z_AXIS);
+void ZFlyEmProofDoc::initGrayscaleSlice()
+{
+  if (getDvidTarget().hasGrayScaleData()) {
+    ZDvidGraySlice *slice = new ZDvidGraySlice;
+    slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+    slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
+    addObject(slice, true);
   }
 }
-
 
 void ZFlyEmProofDoc::addDvidLabelSlice(NeuTube::EAxis axis)
 {
@@ -966,6 +951,9 @@ void ZFlyEmProofDoc::addDvidLabelSlice(NeuTube::EAxis axis)
   labelSlice->setSliceAxis(axis);
   labelSlice->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
   labelSlice->setDvidTarget(getDvidTarget());
+
+  LINFO() << "Max label zoom:" << getDvidTarget().getMaxLabelZoom();
+
   labelSlice->setSource(
         ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
   labelSlice->setBodyMerger(&m_bodyMerger);
@@ -2052,12 +2040,25 @@ void ZFlyEmProofDoc::loadSplitFromService()
     obj->setVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
     obj->setProjectionVisible(false);
     obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
-    LINFO() << "Adding" << obj << obj->getSource();
-    m_dataBuffer->addUpdate(
-          obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-    m_dataBuffer->deliver();
+    obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
   }
 
+  removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
+  m_dataBuffer->addUpdate(
+        objList.begin(), objList.end(),
+        ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+  m_dataBuffer->deliver();
+}
+
+void ZFlyEmProofDoc::loadSplitTaskFromService()
+{
+  uint64_t originalId = getBodyIdForSplit();
+  if (originalId > 0) {
+    QList<ZStackObject*> seedList = ZServiceConsumer::ReadSplitTaskSeed(
+          GET_FLYEM_CONFIG.getTaskServer().c_str(), getDvidTarget(), originalId);
+    getDataBuffer()->addUpdate(seedList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    getDataBuffer()->deliver();
+  }
 }
 
 void ZFlyEmProofDoc::commitSplitFromService()
@@ -2352,6 +2353,7 @@ void ZFlyEmProofDoc::downloadSynapse()
   if (!getDvidTarget().getSynapseName().empty()) {
     ZDvidSynapseEnsemble *synapseEnsemble = new ZDvidSynapseEnsemble;
     synapseEnsemble->setDvidTarget(getDvidTarget());
+    synapseEnsemble->setDvidInfo(getDvidInfo());
     synapseEnsemble->setSource(
           ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource());
     synapseEnsemble->setResolution(m_grayScaleInfo.getVoxelResolution());
@@ -2374,6 +2376,7 @@ void ZFlyEmProofDoc::downloadTodoList()
 {
   ZFlyEmToDoList *todoList = new ZFlyEmToDoList;
   todoList->setDvidTarget(getDvidTarget());
+  todoList->setDvidInfo(getDvidInfo());
   todoList->setSource(ZStackObjectSourceFactory::MakeTodoListEnsembleSource());
   addObject(todoList);
 }
@@ -2473,7 +2476,7 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(uint64_t bodyId)
       int maxZ = box.getLastCorner().getZ();
 
       ZObject3dScan coarseBody = reader.readCoarseBody(bodyId);
-      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+      ZDvidInfo dvidInfo = m_grayScaleInfo;
 
       for (int z = minZ; z <= maxZ; ++z) {
         QList<ZStackBall*> ballList = tbar->getPunctaOnSlice(z);
@@ -2716,7 +2719,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
         if (idJson.isInteger()) {
           bodyId = ZJsonParser::integerValue(idJson.getData());
         } else if (idJson.isString()) {
-          bodyId = ZString::firstInteger(ZJsonParser::stringValue(idJson.getData()));
+          bodyId = ZString::FirstInteger(ZJsonParser::stringValue(idJson.getData()));
         }
 
         std::vector<int> coordinates =
@@ -2774,6 +2777,18 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
   ZOUT(LINFO(), 3) << "Bookmark imported";
 
   return bookmarkList;
+}
+
+QString ZFlyEmProofDoc::getInfo() const
+{
+  QString info = getDvidTarget().toJsonObject().dumpString(2).c_str();
+  if (getDvidTarget().hasGrayScaleData()) {
+    info.append("\n");
+    info.append("Grayscale setup:\n");
+    info.append(m_grayscaleReader.getDvidTarget().toJsonObject().dumpString(2).c_str());
+  }
+
+  return info;
 }
 
 uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
@@ -2945,7 +2960,7 @@ void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
     m_futureMap[threadId] = future;
   }
 }
-
+#if 0
 void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
 {
   QList<ZDocPlayer*> playerList =
@@ -2975,7 +2990,96 @@ void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
     m_futureMap[threadId] = future;
   }
 }
+#endif
 
+void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
+{
+  runSplitFunc(mode, FlyEM::RANGE_SEED);
+}
+
+void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
+{
+  runSplitFunc(mode, FlyEM::RANGE_LOCAL);
+}
+
+void ZFlyEmProofDoc::runSplitFunc(
+    FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range)
+{
+  getProgressSignal()->startProgress("Splitting ...");
+
+  ZOUT(LINFO(), 3) << "Removing old result ...";
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+//  m_isSegmentationReady = false;
+  setSegmentationReady(false);
+
+  getProgressSignal()->advanceProgress(0.1);
+
+  ZStackArray seedMask = createWatershedMask(true);
+
+  if (!seedMask.empty()) {
+    ZStack *signalStack = getStack();
+    ZDvidSparseStack *sparseStack = NULL;
+    ZIntCuboid cuboid;
+    if (signalStack->isVirtual()) {
+      signalStack = NULL;
+      ZOUT(LINFO(), 3) << "Retrieving signal stack";
+      switch (range) {
+      case FlyEM::RANGE_SEED:
+        cuboid = estimateSplitRoi(seedMask);
+        break;
+      case FlyEM::RANGE_LOCAL:
+        cuboid = estimateLocalSplitRoi();
+        break;
+      case FlyEM::RANGE_FULL:
+        break;
+      }
+
+      sparseStack = getDvidSparseStack(cuboid, mode);
+    }
+
+    getProgressSignal()->advanceProgress(0.1);
+    ZStackWatershedContainer container(signalStack, sparseStack->getSparseStack());
+    container.setRange(cuboid);
+    for (ZStackArray::const_iterator iter = seedMask.begin();
+         iter != seedMask.end(); ++iter) {
+      container.addSeed(**iter);
+    }
+    container.run();
+
+    setHadSegmentationSampled(container.computationDowsampled());
+
+#ifdef _DEBUG_
+//    container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
+    container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
+//    container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+    ZObject3dScanArray result;
+    container.makeSplitResult(1, &result);
+    for (ZObject3dScanArray::iterator iter = result.begin();
+         iter != result.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+      getDataBuffer()->addUpdate(
+            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    getDataBuffer()->deliver();
+
+    result.shallowClear();
+
+    setSegmentationReady(true);
+    emit segmentationUpdated();
+
+    ZOUT(LINFO(), 3) << "Segmentation ready";
+
+    emit messageGenerated(
+          ZWidgetMessage(
+            ZWidgetMessage::appendTime("Split done. Ready to upload.")));
+  }
+
+  getProgressSignal()->endProgress();
+}
+
+#if 0
 void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
 {
   getProgressSignal()->startProgress("Splitting ...");
@@ -3045,7 +3149,9 @@ void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
   getProgressSignal()->endProgress();
   emit labelFieldModified();
 }
+#endif
 
+#if 0
 void ZFlyEmProofDoc::localSplitFunc(FlyEM::EBodySplitMode mode)
 {
   getProgressSignal()->startProgress("Splitting ...");
@@ -3113,6 +3219,7 @@ void ZFlyEmProofDoc::localSplitFunc(FlyEM::EBodySplitMode mode)
   getProgressSignal()->endProgress();
   emit labelFieldModified();
 }
+#endif
 
 void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 {
@@ -3193,6 +3300,25 @@ ZIntCuboid ZFlyEmProofDoc::estimateLocalSplitRoi()
   return cuboid;
 }
 
+ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi(const ZStackArray &seedMask)
+{
+  ZIntCuboid cuboid;
+
+  ZDvidSparseStack *originalStack = ZStackDoc::getDvidSparseStack();
+  if (originalStack != NULL) {
+    ZIntCuboidObj *roi = getSplitRoi();
+    if (roi == NULL) {
+      if (originalStack->stackDownsampleRequired()) {
+        cuboid = ZFlyEmMisc::EstimateSplitRoi(seedMask.getBoundBox());
+      }
+    } else {
+      cuboid = roi->getCuboid();
+    }
+  }
+
+  return cuboid;
+}
+
 ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
 {
   ZIntCuboid cuboid;
@@ -3204,31 +3330,6 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
       if (originalStack->stackDownsampleRequired()) {
         ZStackArray seedMask = createWatershedMask(true);
         cuboid = ZFlyEmMisc::EstimateSplitRoi(seedMask.getBoundBox());
-        /*
-        Cuboid_I box;
-        seedMask.getBoundBox(&box);
-
-        Cuboid_I_Expand_Z(&box, 10);
-
-        int v = Cuboid_I_Volume(&box);
-
-        double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
-        if (s > 1) {
-          int dw = iround(Cuboid_I_Width(&box) * s) - Cuboid_I_Width(&box);
-          int dh = iround(Cuboid_I_Height(&box) * s) - Cuboid_I_Height(&box);
-          int dd = iround(Cuboid_I_Depth(&box) * s) - Cuboid_I_Depth(&box);
-
-          const int xMargin = dw / 2;
-          const int yMargin = dh / 2;
-          const int zMargin = dd / 2;
-          Cuboid_I_Expand_X(&box, xMargin);
-          Cuboid_I_Expand_Y(&box, yMargin);
-          Cuboid_I_Expand_Z(&box, zMargin);
-        }
-
-        cuboid.set(box.cb[0], box.cb[1], box.cb[2], box.ce[0], box.ce[1],
-            box.ce[2]);
-            */
       }
     } else {
       cuboid = roi->getCuboid();
@@ -3263,10 +3364,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
 
         originalStack->runFillValueFunc(roi, true, cont);
 
-        ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
-//        dvidInfo.setFromJsonString(
-//              m_dvidReader.readInfo(getDvidTarget().getGrayScaleName().c_str()).
-//              toStdString());
+        ZDvidInfo dvidInfo = m_grayScaleInfo;
 
         ZObject3dScan *objMask = m_splitSource->getObjectMask();
 
@@ -3286,7 +3384,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
             int x1 = stripe.getSegmentEnd(i);
 
             ZIntPoint blockIndex =
-                ZIntPoint(x0, y, z) - dvidInfo.getStartBlockIndex();
+                ZIntPoint(x0, y, z);// - dvidInfo.getStartBlockIndex();
             for (int x = x0; x <= x1; ++x) {
               ZStack *stack =
                   originalStack->getStackGrid()->getStack(blockIndex);

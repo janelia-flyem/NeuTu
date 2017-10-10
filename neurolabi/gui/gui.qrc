@@ -5,6 +5,7 @@
         <file>images/paste.png</file>
         <file>images/cut.png</file>
         <file>images/undo.png</file>
+        <file>images/binoculars.png</file>
         <file>images/notrace.png</file>
         <file>images/fitseg.png</file>
         <file>images/tracetube.png</file>
@@ -72,18 +73,21 @@
         <file>images/stretch.png</file>
         <file>images/bodymerge.png</file>
         <file>images/synapse.png</file>
+        <file>images/synapse2.png</file>
         <file>images/import_bookmark.png</file>
         <file>images/view_bookmark.png</file>
         <file>images/view_segmentation.png</file>
         <file>images/bc_enhance.png</file>
         <file>images/save_split.png</file>
         <file>images/save_seed.png</file>
+        <file>images/save_seed2.png</file>
         <file>images/add_post.png</file>
         <file>images/todo.png</file>
         <file>images/roi_box.png</file>
         <file>images/cancel.png</file>
         <file>images/zoom2.png</file>
         <file>images/view_todo.png</file>
+        <file>images/view_todo2.png</file>
         <file>images/smooth.png</file>
         <file>images/hl_post.png</file>
         <file>images/link2.png</file>
@@ -150,5 +154,6 @@
         <file>Resources/shader/wideline_func.frag</file>
         <file>Resources/shader/wideline_func1.frag</file>
         <file>images/add_todo.png</file>
+        <file>images/add_todo2.png</file>
     </qresource>
 </RCC>

@@ -154,14 +154,6 @@ void ZFlyEmProofMvc::init()
       new ZFlyEmBookmarkListModel(this);
 
 
-//  m_assignedBookmarkList = new ZFlyEmBookmarkListModel(this);
-//  m_assignedBookmarkProxy = new QSortFilterProxyModel(this);
-//  prepareBookmarkModel(m_assignedBookmarkList, m_assignedBookmarkProxy);
-
-//  m_userBookmarkList = new ZFlyEmBookmarkListModel(this);
-//  m_userBookmarkProxy = new QSortFilterProxyModel(this);
-//  prepareBookmarkModel(m_userBookmarkList, m_userBookmarkProxy);
-
   m_seFetcher = new ZFlyEmSynapseDataFetcher(this);
   m_seUpdater = new ZFlyEmSynapseDataUpdater(this);
   connect(m_seFetcher, SIGNAL(dataFetched(ZFlyEmSynapseDataFetcher*)),
@@ -628,10 +620,10 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
   connect(window, SIGNAL(deselectingBody(std::set<uint64_t>)),
           getCompleteDocument(),
           SLOT(deselectMappedBodyWithOriginalId(std::set<uint64_t>)));
-  connect(m_bodyWindow, SIGNAL(settingNormalTodoVisible(bool)),
+  connect(window, SIGNAL(settingNormalTodoVisible(bool)),
           doc, SLOT(setNormalTodoVisible(bool)));
   connect(doc, SIGNAL(todoVisibleChanged()),
-          m_bodyWindow, SLOT(updateTodoVisibility()));
+          window, SLOT(updateTodoVisibility()));
 
 }
 
@@ -722,7 +714,8 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
           m_meshWindow, getGrayScaleInfo(),
-          m_doc->getParentMvc()->getView()->getViewParameter());
+          m_doc->getParentMvc()->getView()->getViewParameter(), false);
+
     if(m_ROILoaded) {
         m_meshWindow->getROIsDockWidget()->getROIs(
               m_skeletonWindow, getGrayScaleInfo(), m_roiList, m_loadedROIs,
@@ -1100,11 +1093,11 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
 
             body.setAlpha(255);
             ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(body);
-            tree->translate(-getGrayScaleInfo().getStartBlockIndex());
+//            tree->translate(-getGrayScaleInfo().getStartBlockIndex());
             tree->rescale(getGrayScaleInfo().getBlockSize().getX(),
                           getGrayScaleInfo().getBlockSize().getY(),
                           getGrayScaleInfo().getBlockSize().getZ());
-            tree->translate(getGrayScaleInfo().getStartCoordinates());
+//            tree->translate(getGrayScaleInfo().getStartCoordinates());
             tree->setSource(source);
             m_coarseBodyWindow->getDocument()->addObject(tree, true);
           }
@@ -1289,6 +1282,8 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
+
+
   ZDvidReader reader;
   if (!reader.open(target)) {
     emit messageGenerated(
@@ -1305,7 +1300,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   clear();
   getProgressSignal()->advanceProgress(0.1);
   //    getCompleteDocument()->clearData();
+
   getCompleteDocument()->setDvidTarget(reader.getDvidTarget());
+
 
   if (getRole() == ROLE_WIDGET) {
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
@@ -1538,6 +1535,8 @@ void ZFlyEmProofMvc::customInit()
 
 
   m_splitProject.setDocument(getDocument());
+  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this, SLOT(zoomTo(int,int,int,int)));
 //  connect(&m_splitProject, SIGNAL(locating2DViewTriggered(int, int, int, int)),
 //          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
@@ -2665,8 +2664,8 @@ void ZFlyEmProofMvc::exportSelectedBodyLevel()
           int index = 0;
           for (std::set<uint64_t>::const_iterator iter = idSet.begin();
                iter != idSet.end(); ++iter) {
-            ZObject3dScan &obj = objArray[index];
-            reader.readBody(*iter, false, &obj);
+            ZObject3dScan *obj = objArray[index];
+            reader.readBody(*iter, false, obj);
             index++;
           }
         }
@@ -2817,6 +2816,7 @@ void ZFlyEmProofMvc::exitSplit()
     //m_splitProject.clearBookmarkDecoration();
     getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
     getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+    getDocument()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
     getDocument()->removeObject(ZStackObjectRole::ROLE_ROI);
 //    getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_BOOKMARK);
 
@@ -2867,6 +2867,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
          m_splitProject.clear();
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
          getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
+         getDocument()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
          getCompleteDocument()->setSelectedBody(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
          launchSplit(bodyId, getCompletePresenter()->getSplitMode());
        }
@@ -3742,6 +3743,11 @@ void ZFlyEmProofMvc::loadSplitResult()
   getCompleteDocument()->loadSplitFromService();
 }
 
+void ZFlyEmProofMvc::loadSplitTask()
+{
+  getCompleteDocument()->loadSplitTaskFromService();
+}
+
 void ZFlyEmProofMvc::uploadSplitResult()
 {
   getCompleteDocument()->commitSplitFromService();
@@ -4327,7 +4333,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
               for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
                 ZIntPoint pt(0, seg.getY(), seg.getZ());
                 pt.setX(x);
-                pt -= dvidInfo.getStartBlockIndex();
+//                pt -= dvidInfo.getStartBlockIndex();
                 pt *= dvidInfo.getBlockSize();
                 pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
                                 dvidInfo.getBlockSize().getY() / 2, 0);
@@ -4504,7 +4510,8 @@ void ZFlyEmProofMvc::updateRoiWidget()
 
 void ZFlyEmProofMvc::showInfoDialog()
 {
-  m_infoDlg->setText(getDvidTarget().toJsonObject().dumpString(2).c_str());
+//  m_infoDlg->setText(getDvidTarget().toJsonObject().dumpString(2).c_str());
+  m_infoDlg->setText(getCompleteDocument()->getInfo());
   m_infoDlg->show();
   m_infoDlg->raise();
 }

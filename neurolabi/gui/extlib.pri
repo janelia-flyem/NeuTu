@@ -160,9 +160,9 @@ win32 {
 macx {
   LIBS += -framework AGL -framework OpenGL
 }
-unix:!macx {
-  LIBS += -lGL -lGLU
-}
+#unix:!macx {
+#  LIBS += -lGL -lGLU
+#}
 
 
 message($$DEFINES)

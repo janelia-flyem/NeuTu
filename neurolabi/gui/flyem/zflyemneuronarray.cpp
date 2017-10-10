@@ -25,7 +25,7 @@ void ZFlyEmNeuronArray::importBodyDir(const std::string &dirPath)
         reader.getAllDatasetName(pathArray[1]);
     for (size_t i = 0; i < bodyNameArray.size(); ++i) {
       if (ZString(bodyNameArray[i]).endsWith(".sobj")) {
-        int bodyId = ZString::lastInteger(bodyNameArray[i]);
+        int bodyId = ZString::LastInteger(bodyNameArray[i]);
         ZFlyEmNeuron neuron;
         neuron.setId(bodyId);
         if (!ZString(pathArray[1]).endsWith("/")) {
@@ -39,7 +39,7 @@ void ZFlyEmNeuronArray::importBodyDir(const std::string &dirPath)
     ZFileList fileList;
     fileList.load(dirPath, "sobj");
     for (int i = 0; i < fileList.size(); ++i) {
-      int bodyId = ZString::lastInteger(fileList.getFilePath(i));
+      int bodyId = ZString::LastInteger(fileList.getFilePath(i));
       ZFlyEmNeuron neuron;
       neuron.setId(bodyId);
       neuron.setVolumePath(fileList.getFilePath(i));

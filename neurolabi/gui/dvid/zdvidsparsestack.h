@@ -66,7 +66,7 @@ public:
   bool stackDownsampleRequired();
 
   const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return m_dvidReader.getDvidTarget();
   }
 
 

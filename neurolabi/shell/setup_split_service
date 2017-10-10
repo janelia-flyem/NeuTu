@@ -27,16 +27,32 @@ git clone https://github.com/janelia-flyem/NeuTu.git -b develop NeuTu
 binDir=$installDir/bin
 mkdir $binDir
 
+if [ `uname` = 'Darwin' ]
+then
+  neutu_cmd=$installDir'/miniconda/envs/neutu-env/bin/neutu.app/Contents/MacOS/neutu'
+else
+  neutu_cmd=$installDir'/miniconda/envs/neutu-env/bin/neutu'
+fi
+
+
 script=$binDir/upload_split_task
 touch $script
 chmod a+x $script
 echo '#!/bin/bash' > $script
 if [ `uname` = 'Darwin' ]
 then
-  echo $installDir'/miniconda/envs/neutu-env/bin/neutu.app/Contents/MacOS/neutu --command --general $*' >> $script
+  echo $neutu_cmd' --command --general $*' >> $script
 else
-  echo $installDir'/miniconda/envs/neutu-env/bin/neutu --command --general $*' >> $script
+  echo $neutu_cmd' --command --general $*' >> $script
 fi
+
+file=$installDir/NeuTu/neurolabi/python/service/_split_config.yaml
+echo "command: $neutu_cmd" > $file
+echo 'task_server:' > $file
+echo '  host: zhaot-ws1' >> $file
+echo '  port: 9000' >> $file
+echo '  uuid: 194d' >> $file
+
 
 script=$binDir/run_split_service
 touch $script
@@ -44,4 +60,4 @@ chmod a+x $script
 echo '#!/bin/bash' > $script
 echo "source $condaDir/bin/activate neutu-env" >> $script
 echo "cd $installDir/NeuTu/neurolabi/python/service" >> $script
-echo "python split_server.py --config split_test.yaml" >> $script
+echo "python split_server.py --config _split_config.yaml" >> $script

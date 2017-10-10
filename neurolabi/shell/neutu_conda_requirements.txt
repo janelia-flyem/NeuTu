@@ -1,4 +1,5 @@
 qt=5*
+python>=3.6
 libdvid-cpp>=0.2.post55
 fftw=3.3*
 jansson=2.7
@@ -10,4 +11,7 @@ gmp=6.1.2
 cmake
 ninja
 tbb
-vtk
+assimp
+glbinding
+vtk=7.1*
+draco

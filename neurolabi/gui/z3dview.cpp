@@ -215,7 +215,7 @@ bool Z3DView::takeScreenShot(const QString& filename, Z3DScreenShotType sst)
 void Z3DView::gotoPosition(double x, double y, double z, double radius)
 {
   ZBBox<glm::dvec3> bound(glm::dvec3(x, y, z) - radius, glm::dvec3(x, y, z) + radius);
-  camera().resetCamera(bound, Z3DCamera::ResetOption::ResetAll);
+  camera().resetCamera(bound, Z3DCamera::ResetOption::PreserveViewVector);
 }
 
 void Z3DView::gotoPosition(const ZBBox<glm::dvec3>& bound, double minRadius)

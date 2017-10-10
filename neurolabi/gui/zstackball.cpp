@@ -72,6 +72,29 @@ void ZStackBall::setCenter(const ZIntPoint &center)
 //#endif
 //}
 
+bool ZStackBall::display(
+    QPainter *painter, int z, EDisplayStyle option, EDisplaySliceMode sliceMode,
+    NeuTube::EAxis sliceAxis) const
+{
+  ZPainter zp;
+  zp.attachPainter(painter);
+  int slice = z;
+  if (z < 0) {
+    zp.setZOffset(z);
+    slice = 0;
+  }
+
+  if (sliceMode == DISPLAY_SLICE_PROJECTION) {
+    slice = -1;
+  }
+
+  display(zp, slice, option, sliceAxis);
+
+  zp.detachPainter();
+
+  return zp.isPainted();
+}
+
 void ZStackBall::display(ZPainter &painter, int slice,
                          ZStackObject::EDisplayStyle style,
                          NeuTube::EAxis sliceAxis) const

@@ -5,17 +5,26 @@ NeuTu-EM
 
 Software for proofreading EM connectomics
 
-## Download Source Code (Not needed for installation)
-
-    git clone -b flyem_release https://github.com/janelia-flyem/NeuTu.git NeuTu
-
 ## Installation
 
+NeuTu can be installed on a Mac or Linux machine.
+
+### The Easiest Way
+
+1. Download https://raw.githubusercontent.com/janelia-flyem/NeuTu/develop/neurolabi/shell/setup_neutu_dev
+
+2. Run 'bash setup_neutu_dev <intall_dir>', where <install_dir> is the installation directory. 
+
+Once the installation is done, you can launch the program by running
+
+    <install_dir>/bin/neutu
+
+We use conda to manage our package, so you can also install the software in a more manual way with miniconda3.
+
 ### Mac (OSX 10.10+ preferred)
-    curl -X GET https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh > Miniconda-latest-MacOSX-x86_64.sh
+    curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-MacOSX-x86_64.sh
     bash Miniconda-latest-MacOSX-x86_64.sh
     
-    #Assuming miniconda is installed under <CONDA_ROOT>
     #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
     source <CONDA_ROOT>/bin/activate root
     conda create -n <NAME> -c flyem neutu
@@ -26,7 +35,7 @@ Here \<NAME\> is the conda environment name. If you don't know what it is, just 
 
 After successful installation, you should be able to lauch the application neutu.app in \<CONDA_ROOT\>/envs/\<NAME\>/bin.
 
-### Linux
+### Linux (Tested on Ubuntu 16.04 and Fedora 22)
     curl -X GET https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh > Miniconda-latest-Linux-x86_64.sh
     bash Miniconda-latest-Linux-x86_64.sh
     
@@ -43,31 +52,6 @@ After successful installation, you can launch the program with the following com
 
     scource <CONDA_ROOT>/bin/activate <NAME>
     neutu 
-
-## Build
-
-If the installation does not work for you, you can build the application from scratch.
-
-### Linux
-
-Go to the NeuTu/neurolabi/shell directory and run
- 
-    ./setup_neutu_j <install_dir>
-
-Here \<install_dir\> must be a clean directory if it already exists. Run \<install_dir\>/bin/neutu to launch the program after installation.
-
-Note: you need to install the following packages using the package manager (e.g. apt-get for Ubuntu and yum/dnf for Fedora) if they have not been installed:
-* libxext-dev
-* freeglut3-dev
-* build-essential for Ubuntu or groupinstall "Development Tools" for Fedora
-
-### Mac
-
-Go to the NeuTu/neurolabi/shell directory and run
- 
-    ./setup_neutu_conda <install_dir>
-    
-Here \<install_dir\> must be a clean directory if it already exists. Run \<install_dir\>/bin/neutu to launch the program after installation.
  
 ### Windows
 

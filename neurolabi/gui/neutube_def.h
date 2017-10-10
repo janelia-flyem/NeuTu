@@ -164,6 +164,10 @@ enum EBodySplitMode {
   BODY_SPLIT_NONE, BODY_SPLIT_ONLINE, BODY_SPLIT_OFFLINE
 };
 
+enum EBodySplitRange {
+  RANGE_FULL, RANGE_SEED, RANGE_LOCAL
+};
+
 static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
 }

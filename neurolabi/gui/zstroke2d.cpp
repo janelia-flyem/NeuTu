@@ -38,7 +38,7 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
 {
   m_pointArray = stroke.m_pointArray;
   m_width = stroke.m_width;
-  m_label = stroke.m_label;
+//  m_label = stroke.m_label;
   m_originalLabel = stroke.m_originalLabel;
 //  setLabel(stroke.m_label);
   //m_label = stroke.m_label;
@@ -102,9 +102,9 @@ void ZStroke2d::setLast(double x, double y)
   }
 }
 
-void ZStroke2d::setLabel(int label)
+void ZStroke2d::setLabel(uint64_t label)
 {
-  m_label = label;
+  m_uLabel = label;
   m_originalLabel = label;
   m_color = getLabelColor();
 }
@@ -112,26 +112,21 @@ void ZStroke2d::setLabel(int label)
 void ZStroke2d::toggleLabel(bool toggling)
 {
   if (toggling) {
-    if (m_label == m_originalLabel) {
-      m_label++;
+    if (m_uLabel == m_originalLabel) {
+      m_uLabel++;
     }
   } else {
-    m_label = m_originalLabel;
+    m_uLabel = m_originalLabel;
   }
 
   m_color = getLabelColor();
-}
-
-int ZStroke2d::getLabel() const
-{
-  return m_label;
 }
 
 void ZStroke2d::setEraser(bool enabled)
 {
   if (enabled) {
     setLabel(0);
-  } else if (m_label == 0) {
+  } else if (getLabel() == 0) {
     setLabel(1);
   }
   /*
@@ -467,7 +462,7 @@ void ZStroke2d::labelGrey(Stack *stack, int label) const
 
 void ZStroke2d::labelGrey(Stack *stack) const
 {
-  labelGrey(stack, m_label);
+  labelGrey(stack, getLabel());
 }
 
 void ZStroke2d::labelBinary(Stack *stack) const
@@ -603,7 +598,7 @@ QColor ZStroke2d::GetLabelColor(int label)
 
 const QColor& ZStroke2d::getLabelColor() const
 {
-  return m_colorTable.getColor(m_label);
+  return m_colorTable.getColor((int) getLabel());
 
 #if 0
   if (m_label == 255) {
@@ -733,7 +728,7 @@ ZJsonObject ZStroke2d::toJsonObject() const
 {
   ZJsonObject obj;
 
-  obj.setEntry("label", m_label);
+  obj.setEntry("label", getLabel());
   obj.setEntry("width", m_width);
   obj.setEntry("z", m_z);
   obj.setEntry("z_order", m_zOrder);

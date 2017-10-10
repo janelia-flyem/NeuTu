@@ -38,6 +38,9 @@
 #include "flyem/zserviceconsumer.h"
 #include "zmeshio.h"
 #include "zmesh.h"
+#include "zstackobjectsourcefactory.h"
+#include "zstroke2d.h"
+#include "zobject3d.h"
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -47,34 +50,11 @@ ZDvidReader::ZDvidReader(QObject *parent) :
 
 ZDvidReader::~ZDvidReader()
 {
-#if defined(_ENABLE_LIBDVIDCPP_)
-//  delete m_service;
-//  m_service = NULL;
-#endif
 }
 
 void ZDvidReader::init()
 {
-//  m_eventLoop = new QEventLoop(this);
-//  m_dvidClient = new ZDvidClient(this);
-//  m_timer = new QTimer(this);
-#if defined(_ENABLE_LIBDVIDCPP_)
-//  m_service = NULL;
-#endif
-  //m_timer->setInterval(1000);
-
-//  m_isReadingDone = false;
-
-  //connect(m_dvidClient, SIGNAL(noRequestLeft()), m_eventLoop, SLOT(quit()));
-//  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(endReading()));
-//  connect(this, SIGNAL(readingDone()), m_eventLoop, SLOT(quit()));
-  //connect(m_dvidClient, SIGNAL(requestFailed()), m_eventLoop, SLOT(quit()));
-//  connect(m_dvidClient, SIGNAL(requestCanceled()), this, SLOT(endReading()));
-
-//  connect(m_timer, SIGNAL(timeout()), m_dvidClient, SLOT(cancelRequest()));
-
   m_readingTime = 0;
-
   m_statusCode = 0;
 }
 
@@ -97,53 +77,13 @@ void ZDvidReader::clear()
 #endif
 }
 
-/*
-void ZDvidReader::slotTest()
-{
-  qDebug() << "ZDvidReader::slotTest";
-  qDebug() << QThread::currentThread();
-
-  m_eventLoop->quit();
-}
-
-void ZDvidReader::startReading()
-{
-  m_isReadingDone = false;
-}
-
-void ZDvidReader::endReading()
-{
-  m_isReadingDone = true;
-
-  emit readingDone();
-}
-*/
 bool ZDvidReader::startService()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
-//    delete m_service;
-    /*
-    m_service = ZSharedPointer<libdvid::DVIDNodeService>(
-          new libdvid::DVIDNodeService(
-          m_dvidTarget.getAddressWithPort(), m_dvidTarget.getUuid()));
-          */
-    m_service = ZDvid::MakeDvidNodeService(m_dvidTarget);
-    m_connection = ZDvid::MakeDvidConnection(m_dvidTarget.getAddressWithPort());
+    m_service = ZDvid::MakeDvidNodeService(getDvidTarget());
+    m_connection = ZDvid::MakeDvidConnection(getDvidTarget().getAddressWithPort());
     m_bufferReader.setService(getDvidTarget());
-//    m_lowtisService = ZDvid::MakeLowtisService(m_dvidTarget);
-    /*
-    lowtis::DVIDLabelblkConfig config;
-    config.username = NeuTube::GetCurrentUserName();
-    config.dvid_server = getDvidTarget().getAddressWithPort();
-    config.dvid_uuid = getDvidTarget().getUuid();
-    config.datatypename = getDvidTarget().getLabelBlockName();
-    m_lowtisService = new lowtis::ImageService(config);
-    */
-//    m_lowtisService = NULL;
-
-//      ZSharedPointer<lowtis::ImageService> lowtisService = ZDvid::MakeLowtisService(getDvidTarget());
-
   } catch (std::exception &e) {
     m_service.reset();
     std::cout << e.what() << std::endl;
@@ -171,8 +111,6 @@ bool ZDvidReader::isReady() const
 bool ZDvidReader::open(
     const QString &serverAddress, const QString &uuid, int port)
 {
-//  m_dvidClient->reset();
-
   if (serverAddress.isEmpty()) {
     return false;
   }
@@ -181,63 +119,85 @@ bool ZDvidReader::open(
     return false;
   }
 
-//  m_dvidClient->setServer(serverAddress, port);
-//  m_dvidClient->setUuid(uuid);
-
-  /*
-  ZDvidBufferReader bufferReader;
-  ZDvidUrl dvidUrl(serverAddress.toStdString(), uuid.toStdString(), port);
-  if (!bufferReader.isReadable(dvidUrl.getHelpUrl().c_str())) {
-    return false;
-  }
-  */
-
   ZDvidTarget target;
   target.set(serverAddress.toStdString(), uuid.toStdString(), port);
 
   return open(target);
 }
 
-bool ZDvidReader::open(const ZDvidTarget &target)
+bool ZDvidReader::openRaw(const ZDvidTarget &target)
 {
-//  m_dvidClient->reset();
-
   if (!target.isValid()) {
     return false;
   }
 
-  /*
-  ZDvidBufferReader bufferReader;
-  ZDvidUrl dvidUrl(target);
-  if (!bufferReader.isReadable(dvidUrl.getHelpUrl().c_str())) {
-    return false;
-  }
-  */
-
-//  m_dvidClient->setDvidTarget(target);
-
   m_dvidTarget = target;
-
-  std::string masterNode = ReadMasterNode(target);
-  if (!masterNode.empty()) {
-    m_dvidTarget.setUuid(masterNode.substr(0, 4));
-  }
 
   bool succ = startService();
 
-  if (succ) { //Read default settings
-    if (getDvidTarget().usingDefaultDataSetting()) {
-      loadDefaultDataSetting();
+  if (!succ) {
+    m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+  }
+
+  return succ;
+}
+
+bool ZDvidReader::open(const ZDvidTarget &target)
+{
+  if (!target.isValid()) {
+    return false;
+  }
+
+  bool succ = false;
+
+  if (target.isInferred()) {
+    succ = openRaw(target);
+  } else {
+    m_dvidTarget = target;
+
+    std::string masterNode = ReadMasterNode(target);
+    if (!masterNode.empty()) {
+      m_dvidTarget.setUuid(masterNode.substr(0, 4));
     }
 
-    if (getDvidTarget().getBodyLabelName().empty()) {
-      syncBodyLabelName();
+    succ = startService();
+
+    if (succ) { //Read default settings
+      updateNodeStatus();
+
+      if (getDvidTarget().usingDefaultDataSetting()) {
+        loadDefaultDataSetting();
+      }
+
+      updateSegmentationData();
+      m_dvidTarget.setInferred(true);
+    } else {
+      m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
     }
   }
 
   return succ;
 }
 
+void ZDvidReader::updateSegmentationData()
+{
+  std::string typeName;
+  if (getDvidTarget().hasLabelBlock()) {
+    typeName = getType(getDvidTarget().getLabelBlockName());
+  } else {
+    typeName = getType(getDvidTarget().getBodyLabelName());
+  }
+  getDvidTarget().useLabelArray(typeName == "labelarray");
+
+  if (getDvidTarget().getBodyLabelName().empty()) {
+    syncBodyLabelName();
+  }
+  if (!getDvidTarget().hasLabelBlock()) {
+    if (getDvidTarget().usingLabelArray()) {
+      getDvidTarget().setLabelBlockName(getDvidTarget().getBodyLabelName());
+    }
+  }
+}
 
 bool ZDvidReader::open(const QString &sourceString)
 {
@@ -245,19 +205,11 @@ bool ZDvidReader::open(const QString &sourceString)
   target.setFromSourceString(sourceString.toStdString());
   return open(target);
 }
-#if 0
-void ZDvidReader::waitForReading()
-{
-#ifdef _DEBUG_
-  std::cout << "Start waiting ..." << std::endl;
-  qDebug() << QThread::currentThread();
-#endif
-  if (!isReadingDone()) {
-    m_eventLoop->exec();
-  }
-}
-#endif
 
+void ZDvidReader::updateNodeStatus()
+{
+  m_dvidTarget.setNodeStatus(getNodeStatus());
+}
 
 ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 {
@@ -291,7 +243,7 @@ ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 void ZDvidReader::testApiLoad()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZDvid::MakeRequest(*m_connection, "/../api/load", "GET",
+  ZDvid::MakeRequest(*m_connection, "/api/load", "GET",
                      libdvid::BinaryDataPtr(), libdvid::DEFAULT,
                      m_statusCode);
 #endif
@@ -652,8 +604,8 @@ ZObject3dScanArray* ZDvidReader::readBody(const std::set<uint64_t> &bodySet)
     int index = 0;
     for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
          iter != bodySet.end(); ++iter) {
-      ZObject3dScan &obj = (*objArray)[index++];
-      readBody(*iter, false, &obj);
+      ZObject3dScan *obj = (*objArray)[index++];
+      readBody(*iter, false, obj);
     }
   }
 
@@ -924,6 +876,10 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
         stack->copyValueFrom(blocks.get_raw() + i * currentBox.getVolume(),
                              currentBox.getVolume(), stack->array8());
         currentBox.translateX(currentBox.getWidth());
+#ifdef _DEBUG_2
+        stack->save(GET_TEST_DATA_DIR + "/test.tif");
+        std::cout << "Stack binary: " << stack->isBinary() << std::endl;
+#endif
       }
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
@@ -1028,7 +984,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
     ZObject3dScan blockObj = dvidInfo.getBlockIndex(*body);;
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     spStack->setGreyScale(grid);
-    grid->setMinPoint(dvidInfo.getStartCoordinates());
+//    grid->setMinPoint(dvidInfo.getStartCoordinates());
     grid->setBlockSize(dvidInfo.getBlockSize());
     grid->setGridSize(dvidInfo.getGridSize());
 
@@ -1056,7 +1012,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
 
         for (int x = x0; x <= x1; ++x) {
           const ZIntPoint blockIndex =
-              ZIntPoint(x, y, z) - dvidInfo.getStartBlockIndex();
+              ZIntPoint(x, y, z);// - dvidInfo.getStartBlockIndex();
           //ZStack *stack = readGrayScaleBlock(blockIndex, dvidInfo);
           //const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
           ZIntCuboid box = grid->getBlockBox(blockIndex);
@@ -1358,7 +1314,11 @@ std::string ZDvidReader::readBodyLabelName() const
 void ZDvidReader::syncBodyLabelName()
 {
   if (getDvidTarget().hasLabelBlock()) {
-    m_dvidTarget.setBodyLabelName(readBodyLabelName());
+    if (getDvidTarget().usingLabelArray()) {
+      getDvidTarget().setBodyLabelName(getDvidTarget().getLabelBlockName());
+    } else {
+      getDvidTarget().setBodyLabelName(readBodyLabelName());
+    }
   }
 }
 
@@ -1981,11 +1941,11 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
       ZVoxel voxel = objSlice.getMarker();
       //        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
       pt.set(voxel.x(), voxel.y(), voxel.z());
-      pt -= dvidInfo.getStartBlockIndex();
+//      pt -= dvidInfo.getStartBlockIndex();
       pt *= dvidInfo.getBlockSize();
 //      pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
 //                      dvidInfo.getBlockSize().getY() / 2, 0);
-      pt += dvidInfo.getStartCoordinates();
+//      pt += dvidInfo.getStartCoordinates();
 
       ZIntCuboid box;
       box.setFirstCorner(pt);
@@ -2355,6 +2315,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
       m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
       m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfig.datatypename = getDvidTarget().getLabelBlockName();
+      m_lowtisConfig.enableprefetch = false;
 
       m_lowtisService = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfig));
@@ -2589,6 +2550,15 @@ void ZDvidReader::updateMaxGrayscaleZoom(
 void ZDvidReader::updateMaxGrayscaleZoom()
 {
   if (m_dvidTarget.isValid()) {
+    if (hasGrayscale()) {
+      ZJsonObject infoJson = readInfo();
+      ZDvidVersionDag dag = readVersionDag();
+      updateMaxGrayscaleZoom(infoJson, dag);
+    }
+  }
+
+#if 0
+  if (m_dvidTarget.isValid()) {
     int maxLabelLevel = 0;
     int level = 1;
     while (level < 50) {
@@ -2601,6 +2571,7 @@ void ZDvidReader::updateMaxGrayscaleZoom()
     }
     m_dvidTarget.setMaxGrayscaleZoom(maxLabelLevel);
   }
+#endif
 }
 
 void ZDvidReader::updateMaxLabelZoom(
@@ -2625,6 +2596,26 @@ void ZDvidReader::updateMaxLabelZoom(
 void ZDvidReader::updateMaxLabelZoom()
 {
   if (m_dvidTarget.isValid()) {
+    if (getDvidTarget().usingLabelArray()) {
+      ZJsonObject infoJson = readInfo(getDvidTarget().getLabelBlockName());
+      ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
+      if (!v.isEmpty()) {
+        m_dvidTarget.setMaxLabelZoom(v.toInteger());
+      }
+//      if (infoJson.hasKey("Extended")) {
+//        ZJsonObject extJson(infoJson.value("Extended"));
+
+//      }
+    } else {
+      if (getDvidTarget().hasLabelBlock()) {
+        ZJsonObject infoJson = readInfo();
+        ZDvidVersionDag dag = readVersionDag();
+        updateMaxLabelZoom(infoJson, dag);
+      }
+    }
+  }
+#if 0
+  if (m_dvidTarget.isValid()) {
     int maxLabelLevel = 0;
     int level = 1;
     while (level < 50) {
@@ -2637,6 +2628,7 @@ void ZDvidReader::updateMaxLabelZoom()
     }
     m_dvidTarget.setMaxLabelZoom(maxLabelLevel);
   }
+#endif
 }
 
 #define MAX_BODY_ID_START 50000000
@@ -3538,6 +3530,61 @@ std::map<std::string, ZJsonObject> ZDvidReader::readSplitTaskMap() const
   return taskMap;
 }
 
+QList<ZStackObject*> ZDvidReader::readSeedFromSplitTask(
+    const std::string &taskKey, uint64_t bodyId)
+{
+  ZJsonObject taskJson = readJsonObjectFromKey(
+        ZDvidData::GetTaskName("split").c_str(), taskKey.c_str());
+  if (taskJson.hasKey(NeuTube::Json::REF_KEY)) {
+    taskJson = readJsonObject(
+          ZJsonParser::stringValue(taskJson[NeuTube::Json::REF_KEY]));
+  }
+  ZJsonArray seedArrayJson(taskJson.value("seeds"));
+  QList<ZStackObject*> seedList;
+  for (size_t i = 0; i < seedArrayJson.size(); ++i) {
+    ZJsonObject seedJson(seedArrayJson.value(i));
+    if (seedJson.hasKey("type")) {
+      std::string type = ZJsonParser::stringValue(seedJson["type"]);
+      if (type == "ZStroke2d") {
+        ZStroke2d *stroke = new ZStroke2d;
+        stroke->loadJsonObject(ZJsonObject(seedJson.value("data")));
+        stroke->setPenetrating(false);
+
+        if (!stroke->isEmpty()) {
+          seedList.append(stroke);
+        } else {
+          delete stroke;
+        }
+      } else if (type == "ZObject3d") {
+        ZObject3d *obj = new ZObject3d;
+        obj->loadJsonObject(ZJsonObject(seedJson.value("data")));
+        if (!obj->isEmpty()) {
+          seedList.append(obj);
+        } else {
+          delete obj;
+        }
+      }
+    }
+  }
+  foreach (ZStackObject *seed, seedList) {
+    seed->addRole(ZStackObjectRole::ROLE_SEED |
+                  ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+    ZLabelColorTable colorTable;
+    seed->setColor(colorTable.getColor(seed->getLabel()));
+  }
+
+  return seedList;
+}
+
+QList<ZStackObject*> ZDvidReader::readSeedFromSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  return readSeedFromSplitTask(taskKey, bodyId);
+}
+
 int ZDvidReader::checkProofreadingData() const
 {
   int missing = 0;
@@ -3548,8 +3595,8 @@ int ZDvidReader::checkProofreadingData() const
   missing += reportMissingData(getDvidTarget().getBodyLabelName());
   missing += reportMissingData(getDvidTarget().getBodyAnnotationName());
   missing += reportMissingData(getDvidTarget().getSkeletonName());
-  missing += reportMissingData(getDvidTarget().getGrayScaleName());
-  missing += reportMissingData(getDvidTarget().getMultiscale2dName());
+//  missing += reportMissingData(getDvidTarget().getGrayScaleName());
+//  missing += reportMissingData(getDvidTarget().getMultiscale2dName());
   missing += reportMissingData(getDvidTarget().getSplitLabelName());
 
   return missing;

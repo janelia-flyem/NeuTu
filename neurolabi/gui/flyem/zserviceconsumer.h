@@ -12,6 +12,7 @@ class ZObject3dScan;
 class ZJsonObject;
 class ZDvidReader;
 class ZDvidTarget;
+class ZStackObject;
 
 class ZServiceConsumer
 {
@@ -23,6 +24,8 @@ public:
   static QList<ZObject3dScan*> ReadSplitResult(const QString &path);
   static QList<ZJsonObject> ReadSplitTaskList(const QString &server);
 
+  static QList<ZStackObject*> ReadSplitTaskSeed(
+      const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId);
   static QList<ZObject3dScan*> ReadSplitResult(
       const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId);
   static void RemoveSplitTask(

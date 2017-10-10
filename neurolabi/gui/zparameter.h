@@ -1,7 +1,7 @@
 #ifndef ZPARAMETER_H
 #define ZPARAMETER_H
 
-// Base class for all parameters that algorithms or renderers need.
+// The abstract base class for all parameters used in algorithms or renderers.
 // A parameter can emit changed() signal while changed. And it has
 // createWidget functions which can be used for UI
 // generation. The changed() signal can be used to change algorithm

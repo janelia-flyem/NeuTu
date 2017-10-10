@@ -38,9 +38,9 @@ ZCubeArray* MakeRoiCube(const ZObject3dScan &roi, QColor color, int dsIntv);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
-                          const ZStackViewParam &viewParam);
+                          const ZStackViewParam &viewParam, bool visible = true);
 void Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
-                               const ZStackViewParam &viewParam);
+                               const ZStackViewParam &viewParam, bool visible = true);
 void Decorate3dBodyWindowRoi(Z3DWindow *window, const ZDvidInfo &dvidInfo,
                              const ZDvidTarget &dvidTarget);
 void Decorate3dBodyWindowRoiCube(Z3DWindow *window, const ZDvidInfo &dvidInfo,
@@ -65,6 +65,8 @@ ZStroke2d* MakeSplitSeed(const ZObject3dScan &slice, int label);
 std::vector<ZStroke2d*> MakeSplitSeedList(const ZObject3dScan &obj);
 
 ZStack* GenerateExampleStack(const ZJsonObject &obj);
+ZStack* GenerateExampleStack(
+    const ZDvidTarget &target, uint64_t bodyId, const ZIntCuboid &range);
 
 ZIntCuboid EstimateSplitRoi(const ZIntCuboid &boundBox);
 

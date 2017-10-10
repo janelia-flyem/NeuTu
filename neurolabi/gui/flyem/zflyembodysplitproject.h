@@ -2,10 +2,12 @@
 #define ZFLYEMBODYSPLITPROJECT_H
 
 #include <QObject>
+#include <QList>
 #include <QMutex>
 
 #include <set>
-#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidwriter.h"
 #include "flyem/zflyembookmarklistmodel.h"
 #include "flyem/zflyembookmarkarray.h"
 #include "zthreadfuturemap.h"
@@ -42,7 +44,8 @@ public:
   }
 
   uint64_t getBodyId() const;
-  inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
+  inline const ZDvidTarget& getDvidTarget() const {
+    return m_reader.getDvidTarget(); }
 
   ZFlyEmNeuron getFlyEmNeuron() const;
 
@@ -83,9 +86,9 @@ public:
 //  void removeAllBookmark();
 
   void showSkeleton(ZSwcTree *tree);
-  void showBodyQuickView();
+//  void showBodyQuickView();
 
-  ZObject3dScan* readBody(ZObject3dScan *out) const;
+//  ZObject3dScan* readBody(ZObject3dScan *out) const;
 
   void saveSeed(bool emphasizingMessage);
   void deleteSavedSeed();
@@ -105,6 +108,10 @@ public:
   void commitResult();
   void commitResultFunc(ZObject3dScan *wholeBody, const ZStack *stack,
       /*const ZIntPoint &dsIntv,*/ size_t minObjSize);
+  void commitResultFunc(
+      ZObject3dScan *wholeBody, const std::vector<ZObject3dScan*> &objArray,
+      size_t minObjSize, bool checkingIsolation);
+
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
   void cropBody(ZFlyEmSplitUploadOptionDialog *dlg);
@@ -226,7 +233,9 @@ private:
   void removeAllSeed();
   void removeAllSideSeed();
   void updateResult3dQuickFunc();
-  void quickViewFunc();
+
+  void clearResultWindow();
+//  void quickViewFunc();
 //  void showBodyQuickView();
 //  void showResultQuickView();
   void showQuickView(Z3DWindow *window);
@@ -240,9 +249,31 @@ private:
   ZIntCuboid getSeedBoundBox() const;
 
   void updateBodyId();
+  void processSmallBodyGroup(
+      ZObject3dScan *body, size_t minObjSize, ZObject3dScan *smallBodyGroup);
+  void processIsolation(ZObject3dScan &currentBody, ZObject3dScan *body,
+      QList<ZObject3dScan> &splitList, QList<uint64_t> &oldBodyIdList,
+      const ZObject3dScan *obj, size_t minIsolationSize);
+
+  const ZDvidReader &getMainReader() const {
+    return m_reader;
+  }
+
+  ZDvidReader &getMainReader() {
+    return m_reader;
+  }
+
+  ZDvidReader& getCommitReader();
+  ZDvidWriter& getCommitWriter();
+  ZDvidWriter& getMainWriter();
 
 private:
-  ZDvidTarget m_dvidTarget;
+  ZDvidReader m_reader;
+  ZDvidWriter m_writer;
+  ZDvidReader m_commitReader;
+  ZDvidWriter m_commitWriter;
+
+//  ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
   uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;

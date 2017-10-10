@@ -412,6 +412,9 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
     }
 
     if (m_labelArray != NULL) {
+#ifdef _DEBUG_
+      std::cout << "Max label: " << m_labelArray->getMax<uint64_t>() << std::endl;
+#endif
 
       ZGeometry::shiftSliceAxis(width, height, depth, getSliceAxis());
       ZGeometry::shiftSliceAxis(x0, y0, z0, getSliceAxis());
@@ -576,7 +579,7 @@ void ZDvidLabelSlice::assignColorMap()
   updateRgbTable();
   for (ZObject3dScanArray::iterator iter = m_objArray.begin();
        iter != m_objArray.end(); ++iter) {
-    ZObject3dScan &obj = *iter;
+    ZObject3dScan &obj = **iter;
     //obj.setColor(getColor(obj.getLabel()));
     obj.setColor(getLabelColor(obj.getLabel(), NeuTube::BODY_LABEL_ORIGINAL));
   }
@@ -837,7 +840,7 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
   if (!m_objArray.empty()) {
     for (ZObject3dScanArray::iterator iter = m_objArray.begin();
          iter != m_objArray.end(); ++iter) {
-      ZObject3dScan &obj = *iter;
+      ZObject3dScan &obj = **iter;
       if (obj.hit(x, y, z)) {
         //m_hitLabel = obj.getLabel();
         m_hitLabel = getMappedLabel(obj);

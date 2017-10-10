@@ -103,7 +103,6 @@ QT += printsupport
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 #_USE_CORE_PROFILE_
-DEFINES += #QT_USE_QSTRINGBUILDER #QT_NO_CAST_FROM_BYTEARRAY #QT_NO_CAST_TO_ASCII
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -170,8 +169,12 @@ win32 {
       $$PWD/ext/sys/VidMemViaDDraw.cpp \
       $$PWD/ext/sys/VidMemViaDxDiag.cpp
 }
-macx {
-  SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+unix {
+    macx {
+        SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+    } else {
+        SOURCES += $$PWD/ext/sys/VideoMemoryLinux.cpp
+    }
 }
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
@@ -241,13 +244,15 @@ unix {
     } else {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
-        LIBS += -lX11 -lm -lpthread -lGL -lrt -lGLU -lstdc++
+        LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
+#        LIBS += /usr/lib/x86_64-linux-gnu/libGL.so.1.0.0
+#        LIBS += -L/usr/lib/x86_64-linux-gnu
         message(Checking arch...)
         contains(QMAKE_HOST.arch, x86_64) {
             message($$QMAKE_HOST.arch)
             QMAKE_CXXFLAGS += -m64
         }
-        QMAKE_CXXFLAGS += -fext-numeric-literals
+        QMAKE_CXXFLAGS += -fext-numeric-literals -msse3
         RC_FILE = images/app.icns
     }
 }
@@ -671,8 +676,6 @@ HEADERS += mainwindow.h \
     zcubearray.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
-    misc/zstackyzview.h \
-    misc/zstackyzmvc.h \
     flyem/zflyemorthowindow.h \
     flyem/zflyemorthodoc.h \
     flyem/zflyemorthomvc.h \
@@ -698,6 +701,8 @@ HEADERS += mainwindow.h \
     protocols/doNthingsprotocol.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
+    protocols/synapsereviewprotocol.h \
+    protocols/synapsereviewinputdialog.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -798,10 +803,13 @@ HEADERS += mainwindow.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
     dialogs/dvidbranchdialog.h \
+    protocols/tasktesttask.h \
+    protocols/tasksplitseeds.h \
     flyem/zflyembody3ddoccommand.h \
     flyem/zflyembody3ddocmenufactory.h \
     zopenglwidget.h \
-    misc/zvtkutil.h
+    misc/zvtkutil.h \
+    zstackdocaccessor.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -880,6 +888,8 @@ FORMS += dialogs/settingdialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/synapsereviewprotocol.ui \
+    protocols/synapsereviewinputdialog.ui \
     protocols/protocoldialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
@@ -1275,8 +1285,6 @@ SOURCES += main.cpp \
     dvid/zdvidsynapsecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
-    misc/zstackyzview.cpp \
-    misc/zstackyzmvc.cpp \
     flyem/zflyemorthowindow.cpp \
     flyem/zflyemorthodoc.cpp \
     flyem/zflyemorthomvc.cpp \
@@ -1302,6 +1310,8 @@ SOURCES += main.cpp \
     protocols/doNthingsprotocol.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsereviewprotocol.cpp \
+    protocols/synapsereviewinputdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
@@ -1397,12 +1407,15 @@ SOURCES += main.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
     dialogs/dvidbranchdialog.cpp \
+    protocols/tasktesttask.cpp \
+    protocols/tasksplitseeds.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \
     zopenglwidget.cpp \
     zstackreader.cpp \
     dvid/zdvidpath.cpp \
-    misc/zvtkutil.cpp
+    misc/zvtkutil.cpp \
+    zstackdocaccessor.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

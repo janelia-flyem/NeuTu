@@ -142,6 +142,22 @@ void ZSlider::setValue(int value)
   }
 }
 
+void ZSlider::initValue(int value)
+{
+  if (value < minimum()) {
+    value = minimum();
+  } else if (value > maximum()) {
+    value = maximum();
+  }
+
+
+  if (m_slider->value() != value) {
+    m_slider->setValue(value);
+  } else {
+    emit valueChanged(value);
+  }
+}
+
 void ZSlider::setValueQuietly(int value)
 {
   if (m_slider->value() != value) {

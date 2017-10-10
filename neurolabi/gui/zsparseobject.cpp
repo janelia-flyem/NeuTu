@@ -45,9 +45,9 @@ void ZSparseObject::display(ZPainter &painter, int z, Display_Style option) cons
 #endif
 }
 #endif
-void ZSparseObject::setLabel(int label)
+void ZSparseObject::setLabel(uint64_t label)
 {
-  m_label = label;
+  m_uLabel = label;
   m_color = m_colorTable.getColor(label);
 }
 
@@ -58,7 +58,7 @@ void ZSparseObject::labelStack(ZStack *stack) const
   offset[1] = stack->getOffset().getY();
   offset[2] = stack->getOffset().getZ();
 
-  drawStack(stack->c_stack(), m_label, offset);
+  drawStack(stack->c_stack(), getLabel(), offset);
 }
 
 void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,

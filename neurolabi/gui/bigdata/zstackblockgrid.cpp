@@ -160,7 +160,7 @@ ZStack* ZStackBlockGrid::toStack() const
   //int depth = getSpatialDepth();
 
   ZStack *out =
-      new ZStack(GREY, box.getWidth(), box.getHeight(), box.getDepth(), 1);
+      new ZStack(GREY, box, 1);
   out->setOffset(box.getFirstCorner());
   out->setZero();
 

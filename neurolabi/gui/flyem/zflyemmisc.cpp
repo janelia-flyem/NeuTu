@@ -424,7 +424,6 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 
   size_t offset = 0;
   int i, j, k;
-  int n;
   int neighbor[26];
   int width = C_Stack::width(stack);
   int height = C_Stack::height(stack);
@@ -451,9 +450,15 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
         if (goodCube) {
           if (array[offset] > 0) {
             std::vector<int> faceArray;
-            for (n = 0; n < 6; n++) {
+            for (int n = 0; n < 6; n++) {
               if (array[offset + neighbor[n]] == 0) {
-                faceArray.push_back(n);
+                int f = n;
+                if (f % 2 == 0) { //Remapping to match face defination (temporary fix)
+                  f += 1;
+                } else {
+                  f -= 1;
+                }
+                faceArray.push_back(f);
               }
             }
             if (!faceArray.empty()) {
@@ -482,9 +487,8 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 }
 
 
-void ZFlyEmMisc::Decorate3dBodyWindowPlane(
-    Z3DWindow *window, const ZDvidInfo &dvidInfo,
-    const ZStackViewParam &viewParam)
+void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+    const ZStackViewParam &viewParam, bool visible)
 {
   if (window != NULL) {
     ZRect2d rect;
@@ -530,6 +534,7 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
     }
 
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
+    graph->setVisible(visible);
     window->getDocument()->addObject(graph, true);
 #if 0
     ZStackObject *replaced =
@@ -551,16 +556,23 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
 
 void ZFlyEmMisc::Decorate3dBodyWindow(
     Z3DWindow *window, const ZDvidInfo &dvidInfo,
-    const ZStackViewParam &viewParam)
+    const ZStackViewParam &viewParam, bool visible)
 {
   if (window != NULL) {
-    Decorate3dBodyWindowPlane(window, dvidInfo, viewParam);
+    Decorate3dBodyWindowPlane(window, dvidInfo, viewParam, visible);
     ZCuboid box;
     box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
     box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
+    double radius =
+        dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0);
+    if (!visible) {
+      radius = 0.0;
+    }
+    Z3DGraph *graph = Z3DGraphFactory::MakeBox(box, radius);
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+//    if (window->getWindowType() == NeuTube3D::TYPE_NEU3) {
+//      graph->setVisible(visible);
+//    }
 
     window->getDocument()->addObject(graph, true);
     window->resetCamera();
@@ -906,7 +918,7 @@ ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(const ZJsonObject &obj)
     stroke.setLabel(obj.value("color").toInteger() + 1);
     stroke.setZ(obj.value("z").toInteger());
     stroke.append(obj.value("x").toInteger(), obj.value("y").toInteger());
-    stroke.setWidth(5);
+    stroke.setWidth(30);
   }
 
   return stroke;
@@ -1099,6 +1111,24 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
     }
 
     ZDvidSparseStack *spStack = reader.readDvidSparseStack(bodyId, box);
+    spStack->shakeOff();
+    stack = spStack->makeIsoDsStack(MAX_INT32);
+
+    delete spStack;
+  }
+
+  return stack;
+}
+
+
+ZStack* ZFlyEmMisc::GenerateExampleStack(
+    const ZDvidTarget &target, uint64_t bodyId, const ZIntCuboid &range)
+{
+  ZStack *stack = NULL;
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader(target);
+  if (reader != NULL) {
+    ZDvidSparseStack *spStack = reader->readDvidSparseStack(bodyId, range);
     spStack->shakeOff();
     stack = spStack->makeIsoDsStack(MAX_INT32);
 

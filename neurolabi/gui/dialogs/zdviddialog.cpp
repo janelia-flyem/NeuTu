@@ -27,6 +27,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
   QRegExp rx("[^\\s]*");
   QValidator *validator = new QRegExpValidator(rx, this);
   ui->labelBlockLineEdit->setValidator(validator);
+  ui->grayScalelineEdit->setValidator(validator);
 
 #if defined(_FLYEM_)
   const std::vector<ZDvidTarget> dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
@@ -122,6 +123,36 @@ QString ZDvidDialog::getUuid() const
   return ui->dvidSourceWidget->getUuid();
 }
 
+std::string ZDvidDialog::getBodyLabelName() const
+{
+  return m_advancedDlg->getBodyLabelName();
+}
+
+std::string ZDvidDialog::getGrayscaleName() const
+{
+  return ui->grayScalelineEdit->text().trimmed().toStdString();
+}
+
+std::string ZDvidDialog::getTileName() const
+{
+  return ui->tileLineEdit->text().trimmed().toStdString();
+}
+
+std::string ZDvidDialog::getSegmentationName() const
+{
+  return ui->labelBlockLineEdit->text().trimmed().toStdString();
+}
+
+std::string ZDvidDialog::getSynapseName() const
+{
+  return ui->synapseLineEdit->text().trimmed().toStdString();
+}
+
+std::string ZDvidDialog::getRoiName() const
+{
+  return ui->roiLineEdit->text().trimmed().toStdString();
+}
+
 ZDvidTarget &ZDvidDialog::getDvidTarget()
 {
   ZDvidTarget &target = m_dvidRepo[ui->serverComboBox->currentIndex()];
@@ -129,38 +160,21 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setServer(getAddress().toStdString());
     target.setUuid(getUuid().toStdString());
     target.setPort(getPort());
-    if (ui->bodyLineEdit->text().isEmpty()) {
-      target.setNullBodyLabelName();
-    } else {
-      target.setBodyLabelName(ui->bodyLineEdit->text().toStdString());
-    }
-    if (ui->labelBlockLineEdit->text().isEmpty()) {
+    target.setBodyLabelName(getBodyLabelName());
+    if (getSegmentationName().empty()) {
       target.setNullLabelBlockName();
     } else {
-      target.setLabelBlockName(ui->labelBlockLineEdit->text().toStdString());
+      target.setLabelBlockName(getSegmentationName());
     }
-    target.setGrayScaleName(ui->grayScalelineEdit->text().toStdString());
+    target.setGrayScaleName(getGrayscaleName());
 
-    std::string tileName = ui->tileLineEdit->text().toStdString();
+    std::string tileName = getTileName();
     target.setMultiscale2dName(tileName);
     target.configTile(tileName, ui->lowQualityCheckBox->isChecked());
 
-    target.setSynapseName(ui->synapseLineEdit->text().toStdString());
+    target.setSynapseName(getSynapseName());
 
-#if 0
-    target.enableSupervisor(m_advancedDlg->isSupervised());
-    target.setSupervisorServer(m_advancedDlg->getSupervisorServer());
-    target.setTodoListName(m_advancedDlg->getTodoName());
-    target.setGrayScaleSource(m_advancedDlg->getGrayscaleSource());
-    target.setTileSource(m_advancedDlg->getTileSource());
-#endif
-
-#if 0
-    target.enableSupervisor(ui->librarianCheckBox->isChecked());
-    target.setSupervisorServer(ui->librarianLineEdit->text().toStdString());
-#endif
-    //target.setMaxLabelZoom(ui->maxZoomSpinBox->value());
-    target.setRoiName(ui->roiLineEdit->text().toStdString());
+    target.setRoiName(getRoiName());
     target.setReadOnly(ui->readOnlyCheckBox->isChecked());
     target.useDefaultDataSetting(usingDefaultSetting());
 
@@ -181,7 +195,6 @@ void ZDvidDialog::setServer(int index)
   ui->dvidSourceWidget->setPort(dvidTarget.getPort());
   ui->dvidSourceWidget->setUuid(dvidTarget.getUuid());
   ui->infoLabel->setText(dvidTarget.getComment().c_str());
-  ui->bodyLineEdit->setText(dvidTarget.getBodyLabelName().c_str());
   ui->grayScalelineEdit->setText(dvidTarget.getGrayScaleName().c_str());
   ui->labelBlockLineEdit->setText(dvidTarget.getLabelBlockName().c_str());
   //ui->maxZoomSpinBox->setValue(dvidTarget.getMaxLabelZoom());
@@ -210,7 +223,7 @@ void ZDvidDialog::setServer(int index)
   ui->settingCheckBox->setChecked(dvidTarget.usingDefaultDataSetting());
 
   ui->dvidSourceWidget->setReadOnly(!dvidTarget.isEditable());
-  ui->bodyLineEdit->setReadOnly(!dvidTarget.isEditable());
+//  ui->bodyLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->labelBlockLineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->grayScalelineEdit->setReadOnly(!dvidTarget.isEditable());
   ui->tileLineEdit->setReadOnly(!dvidTarget.isEditable());
@@ -229,20 +242,6 @@ void ZDvidDialog::setServer(int index)
   ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
 
   resetAdvancedDlg(dvidTarget);
-
-  /*
-  m_advancedDlg->setTodoName(dvidTarget.getTodoListName());
-  m_advancedDlg->setDvidServer(dvidTarget.getAddressWithPort().c_str());
-
-  ZDvidNode node = dvidTarget.getGrayScaleSource();
-  m_advancedDlg->setGrayscaleSource(node, node == dvidTarget.getNode());
-
-  node = dvidTarget.getTileSource();
-  m_advancedDlg->setTileSource(
-        dvidTarget.getTileSource(), node == dvidTarget.getNode());
-
-  m_advancedDlg->updateWidgetForEdit(dvidTarget.isEditable());
-  */
 }
 
 bool ZDvidDialog::hasNameConflict(const std::string &name) const
@@ -381,7 +380,7 @@ void ZDvidDialog::setAdvanced()
 void ZDvidDialog::updateWidgetForDefaultSetting()
 {
   ui->grayScalelineEdit->setVisible(true);
-  ui->bodyLineEdit->setVisible(true);
+//  ui->bodyLineEdit->setVisible(true);
   ui->labelBlockLineEdit->setVisible(true);
   ui->synapseLineEdit->setVisible(true);
 
@@ -398,9 +397,9 @@ void ZDvidDialog::updateWidgetForDefaultSetting()
   ZDvidAdvancedDialog::UpdateWidget(
         ui->grayscaleLabel, ui->grayScalelineEdit, "Gray Scale", obj,
         "grayscale");
-  ZDvidAdvancedDialog::UpdateWidget(
-        ui->bodyLabelLabel, ui->bodyLineEdit, "Body Label",
-        obj, "bodies");
+//  ZDvidAdvancedDialog::UpdateWidget(
+//        ui->bodyLabelLabel, ui->bodyLineEdit, "Body Label",
+//        obj, "bodies");
   ZDvidAdvancedDialog::UpdateWidget(
         ui->labelBlockLabel, ui->labelBlockLineEdit, "Label Block",
         obj, "segmentation");

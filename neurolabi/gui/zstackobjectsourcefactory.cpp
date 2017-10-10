@@ -261,6 +261,13 @@ std::string ZStackObjectSourceFactory::MakeFlyEmTBarSource(uint64_t bodyId)
   return source;
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmSeedSource(uint64_t bodyId)
+{
+  ZString source = "#.FlyEMSeed#";
+  source.appendNumber(bodyId);
+
+  return source;
+}
 
 std::string ZStackObjectSourceFactory::MakeFlyEmPsdSource()
 {

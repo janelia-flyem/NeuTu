@@ -562,7 +562,7 @@ public:
   virtual ~RemoveEmptyTree();
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
 //  std::set<ZSwcTree*> m_emptyTreeSet;
 };
 

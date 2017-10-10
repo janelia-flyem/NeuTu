@@ -18,6 +18,7 @@ class ZDvidTarget
 public:
   ZDvidTarget();
   ZDvidTarget(const std::string &address, const std::string &uuid, int port = -1);
+  ZDvidTarget(const ZDvidNode &node);
 
   void clear();
 
@@ -30,13 +31,18 @@ public:
   /*!
    * \brief Set dvid target from source string
    *
-   * The old settings will be cleared no matter what. The source string is
-   * http:address:port:uuid.
+   * The old settings will be cleared no matter what.
    *
-   * \param sourceString Must start with "http:".
+   * \param sourceString Format: http:host:port:node:labelblk_name.
    */
   void setFromSourceString(const std::string &sourceString);
 
+
+  /*!
+   * \brief Set dvid target from source string
+   *
+   * \param sourceString Format: http:host:port:node:<dataType>_name.
+   */
   void setFromSourceString(
       const std::string &sourceString, ZDvid::EDataType dataType);
 
@@ -119,6 +125,18 @@ public:
   bool isValid() const;
 
   /*!
+   * \brief Get the status of the node.
+   *
+   * The status of the node is related to the status of the database.
+   */
+  ZDvid::ENodeStatus getNodeStatus() const;
+
+  /*!
+   * \brief Set the status of the node.
+   */
+  void setNodeStatus(ZDvid::ENodeStatus status);
+
+  /*!
    * \brief Load json object
    */
   void loadJsonObject(const ZJsonObject &obj);
@@ -161,6 +179,8 @@ public:
 
   bool hasBodyLabel() const;
   bool hasLabelBlock() const;
+  bool usingLabelArray() const;
+  void useLabelArray(bool on);
 
   static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
@@ -216,6 +236,8 @@ public:
   std::string getTodoListName() const;
   void setTodoListName(const std::string &name);
   bool isDefaultTodoListName() const;
+  bool isDefaultBodyLabelName() const;
+  void setDefaultBodyLabelFlag(bool on);
 
   std::string getBodyAnnotationName() const;
 
@@ -238,7 +260,7 @@ public:
   inline bool isEditable() const { return m_isEditable; }
   void setEditable(bool on) { m_isEditable = on; }
 
-  inline bool readOnly() const { return m_readOnly; }
+  bool readOnly() const;
   void setReadOnly(bool readOnly) {
     m_readOnly = readOnly;
   }
@@ -261,10 +283,8 @@ public:
 
   bool usingMulitresBodylabel() const;
 
-  /*
-  void setLabelszName(const std::string &name);
-  std::string getLabelszName() const;
-  */
+  bool isInferred() const;
+  void setInferred(bool status);
 
   std::string getSynapseLabelszName() const;
   void setSynapseLabelszName(const std::string &name);
@@ -293,6 +313,7 @@ public:
 
   ZDvidNode getGrayScaleSource() const;
   ZDvidNode getTileSource() const;
+  ZDvidTarget getGrayScaleTarget() const;
 
 private:
   void init();
@@ -322,13 +343,17 @@ private:
   int m_maxGrayscaleZoom;
   bool m_usingMultresBodyLabel;
   bool m_usingDefaultSetting;
+  bool m_usingLabelArray = false;
+  bool m_isDefaultBodyLabel = false;
 //  std::string m_userName;
 //  std::string m_tileName;
 
   int m_bgValue; //grayscale background
 
-  bool m_isEditable;
-  bool m_readOnly;
+  bool m_isEditable; //if the configuration is editable
+  bool m_readOnly; //if the database is readonly
+  ZDvid::ENodeStatus m_nodeStatus = ZDvid::NODE_OFFLINE; //Status of the node
+  bool m_isInferred = false;
 
   const static char* m_commentKey;
   const static char* m_nameKey;
@@ -348,6 +373,7 @@ private:
   const static char* m_supervisorKey;
   const static char* m_supervisorServerKey;
   const static char* m_maxLabelZoomKey;
+  const static char* m_maxGrayscaleZoomKey;
   const static char* m_synapseLabelszKey;
   const static char* m_todoListNameKey;
   const static char* m_sourceConfigKey;

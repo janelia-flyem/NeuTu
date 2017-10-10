@@ -1,6 +1,7 @@
 #include <iostream>
 #include <QElapsedTimer>
 #include <QMdiArea>
+#include <QImageWriter>
 
 #include "zstackview.h"
 #include "widgets/zimagewidget.h"
@@ -39,8 +40,6 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
 #include "zscrollslicestrategy.h"
-
-#include <QImageWriter>
 
 using namespace std;
 
@@ -414,7 +413,7 @@ void ZStackView::reset(bool updatingScreen)
   updateChannelControl();
   if (stack != NULL) {
     updateSlider();
-    m_depthControl->setValue(getDepth() / 2);
+    m_depthControl->initValue(getDepth() / 2);
 //    resetDepthControl();
 //    m_imageWidget->reset();
 
@@ -471,13 +470,7 @@ void ZStackView::updateViewBox()
   updateActiveDecorationCanvas();
 
   setSliceIndexQuietly(m_depthControl->maximum() / 2);
-
-//  m_depthControl->setValue(m_depthControl->maximum() / 2);
   processViewChange(true, true);
-
-//  ZIntCuboid box = getViewBoundBox();
-
-
 }
 
 void ZStackView::updateChannelControl()
@@ -577,13 +570,13 @@ int ZStackView::sliceIndex() const
 int ZStackView::getCurrentZ() const
 {
   return sliceIndex() +
-      buddyDocument()->getStackOffset().getSliceCoord(m_sliceAxis);
+      buddyDocument()->getStackOffset(m_sliceAxis);
 }
 
 void ZStackView::setZ(int z)
 {
   setSliceIndex(
-        z - buddyDocument()->getStackOffset().getSliceCoord(m_sliceAxis));
+        z - buddyDocument()->getStackOffset(m_sliceAxis));
 }
 
 void ZStackView::setSliceIndex(int slice)
@@ -766,7 +759,7 @@ void ZStackView::mouseDoubleClickedInImageWidget(QMouseEvent *event)
   buddyPresenter()->processMouseDoubleClickEvent(event);
 }
 
-bool ZStackView::isDepthChangable()
+bool ZStackView::isDepthScrollable()
 {
   return m_depthControl->isEnabled();
 }
@@ -774,6 +767,11 @@ bool ZStackView::isDepthChangable()
 void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
   int numSteps = -event->delta();
+
+#ifdef _DEBUG_
+  std::cout << "Event time: " << event->timestamp() << std::endl;
+  std::cout << "Time to event: " << QDateTime::currentMSecsSinceEpoch() << std::endl;
+#endif
 
 #if defined(_NEUTUBE_MAC_)
   switch (QSysInfo::MacintoshVersion) {
@@ -806,7 +804,8 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 
   if (event->modifiers() == Qt::NoModifier ||
       event->modifiers() == Qt::ShiftModifier) {
-    if (isDepthChangable()) {
+    if (isDepthScrollable()) {
+      setAttribute(Qt::WA_TransparentForMouseEvents);
       //for strange mighty mouse response in Qt 4.6.2
       if (numSteps != 0) {
         int ratio = 1;
@@ -836,6 +835,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
                     pt.x(), pt.y(), pt.z(), getSliceAxis()));
         }
       }
+      setAttribute(Qt::WA_TransparentForMouseEvents, false);
     }
   } else if (event->modifiers() == Qt::ControlModifier) {
     if (numSteps < 0) {
@@ -897,13 +897,6 @@ void ZStackView::redraw(EUpdateOption option)
         box.getFirstCorner().getX(),
         box.getFirstCorner().getY(),
         box.getWidth(), box.getHeight());
-
-  /*
-  buddyDocument()->blockSignals(true);
-  buddyDocument()->showSwcFullSkeleton(
-        buddyPresenter()->isSwcFullSkeletonVisible());
-  buddyDocument()->blockSignals(false);
-  */
 
   paintStackBuffer();
   qint64 stackPaintTime = timer.elapsed();
@@ -1027,14 +1020,6 @@ void ZStackView::takeScreenshot(const QString &filename)
   m_imageWidget->render(&image);
   m_imageWidget->setViewHintVisible(true);
   ZImage::writeImage(image, filename);
-
-//  const QRect& viewPort = m_imageWidget->viewPort();
-//  if(!writer.write(m_image->copy(viewPort))) {
-//  if(!writer.write(image)) {
-//    LERROR() << writer.errorString();
-//  } else {
-//    LINFO() << "wrote screenshot:" << filename;
-//  }
 }
 
 //void ZStackView::updateView()
@@ -1828,6 +1813,12 @@ void ZStackView::paintObjectBuffer(
       QList<ZStackObject*>::const_iterator iter = objs->end() - 1;
       for (;iter != objs->begin() - 1; --iter) {
         const ZStackObject *obj = *iter;
+#ifdef _DEBUG_2
+        std::cout << "Object to display:" << obj << std::endl;
+        std::cout << "  " << obj->getSource() << std::endl;
+        std::cout << "  " << obj->getTarget() << std::endl;
+        std::cout << "  " << obj->isSliceVisible(z, m_sliceAxis) << std::endl;
+#endif
         if ((obj->isSliceVisible(z, m_sliceAxis) || slice < 0) &&
             obj->getTarget() == target) {
           visibleObject.append(obj);
@@ -1840,13 +1831,6 @@ void ZStackView::paintObjectBuffer(
       ZOUT(LTRACE(), 5) << "Displaying objects ...";
 
       for (int i = 0; i < visibleObject.size(); ++i) {
-        /*
-      }
-      for (QList<const ZStackObject*>::const_iterator
-           objIter = visibleObject.begin(); objIter != visibleObject.end(); ++objIter) {
-        //(*obj)->display(m_objectCanvas, slice, buddyPresenter()->objectStyle());
-        const ZStackObject *obj = *objIter;
-        */
         const ZStackObject *obj = visibleObject[i];
         if (slice == m_depthControl->value() || slice < 0) {
           ZOUT(LTRACE(), 5) << obj->className();
@@ -1854,8 +1838,6 @@ void ZStackView::paintObjectBuffer(
           paintHelper.paint(
                 obj, painter, slice, buddyPresenter()->objectStyle(),
                 m_sliceAxis);
-//          obj->display(painter, slice, buddyPresenter()->objectStyle());
-//          painted = true;
         }
       }
     }
@@ -1892,34 +1874,14 @@ void ZStackView::paintObjectBuffer()
     std::cout << "ZStackView::paintObjectBuffer" << std::endl;
   }
 
-
   if (buddyPresenter()->isObjectVisible()) {
     updateObjectCanvas();
-
-    /*
-  ZPixmap *objectCanvas = imageWidget()->getObjectCanvas();
-  if (objectCanvas != NULL) {
-    objectCanvas->cleanUp();
-  }
-  */
-
-    /*
-  if (m_objectCanvas == NULL) {
-    return;
-  }
-  */
 
     paintObjectBuffer(m_objectCanvasPainter, ZStackObject::TARGET_OBJECT_CANVAS);
   } else {
     m_objectCanvasPainter.setPainted(false);
     m_objectCanvas.setVisible(false);
   }
-
-  /*
-  if (m_objectCanvasPainter.isPainted()) {
-    m_objectCanvas.setVisible(true);
-  }
-  */
 }
 
 bool ZStackView::paintTileCanvasBuffer()
@@ -2701,9 +2663,16 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
     ZStackViewParam param = getViewParameter(NeuTube::COORD_STACK);
     QSet<ZStackObject::ETarget> targetSet = updateViewData(param);
     if (redrawing) {
+
       for (QSet<ZStackObject::ETarget>::const_iterator iter = targetSet.begin();
            iter != targetSet.end(); ++iter) {
         paintObjectBuffer(*iter);
+      }
+
+      if (depthChanged) {
+        if (!targetSet.contains(ZStackObject::TARGET_OBJECT_CANVAS)) {
+          paintObjectBuffer();
+        }
       }
 
       paintDynamicObjectBuffer();

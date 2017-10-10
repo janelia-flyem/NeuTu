@@ -9,7 +9,7 @@ cd neurolabi
 
 # Build the swig bindings
 cd python/module
-make
+make VERBOSE=1
 
 PY_VER=$(python -c "import sys; print('{}.{}'.format(*sys.version_info[:2]))")
 PY_ABIFLAGS=$(python -c "import sys; print('' if sys.version_info.major == 2 else sys.abiflags)")

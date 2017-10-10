@@ -5,10 +5,15 @@
 #include <vector>
 #include <stdint.h>
 #include <set>
+#include <QMutex>
 
 #include "tz_stdint.h"
+#include "zsharedpointer.h"
 
 class ZDvidTarget;
+namespace libdvid {
+class DVIDConnection;
+}
 
 class ZNeutuService
 {
@@ -42,7 +47,9 @@ public:
                          EUpdateOption option);
 
   std::string getBodyUpdateUrl() const;
+  static std::string GetBodyUpdatePath();
   std::string getHomeUrl() const;
+  static std::string GetHomePath();
   EStatus getStatus() const {
     return m_status;
   }
@@ -60,6 +67,10 @@ private:
 private:
   std::string m_server;
   EStatus m_status;
+#if defined(_ENABLE_LIBDVIDCPP_)
+  ZSharedPointer<libdvid::DVIDConnection> m_connection;
+  QMutex m_connectionMutex;
+#endif
 };
 
 #endif // ZNEUTUSERVICE_H

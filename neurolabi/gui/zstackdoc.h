@@ -208,6 +208,7 @@ public: //attributes
    * \brief The offset from stack space to data space
    */
   ZIntPoint getStackOffset() const;
+  int getStackOffset(NeuTube::EAxis axis) const;
   void setStackOffset(int x, int y, int z);
   void setStackOffset(const ZIntPoint &offset);
   void setStackOffset(const ZPoint &offset);
@@ -420,12 +421,7 @@ public:
   void removeAllObject(bool deleteObject = true);
   bool removeObject(
       ZStackObject *obj, bool deleteObject = false);
-
   void removeSelectedObject(bool deleteObject = false);
-  /*
-  void removeObject(
-      ZStackObject::ETarget target, bool deleteObject = false);
-      */
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
 
@@ -846,6 +842,14 @@ public:
     m_isSegmentationReady = state;
   }
 
+  inline bool hadSegmentationDownsampled() const {
+    return m_hadSegmentationDownsampled;
+  }
+
+  void setHadSegmentationSampled(bool on) {
+    m_hadSegmentationDownsampled = on;
+  }
+
 public:
   ZNeuronTracer* getNeuronTracer() {
     return &m_neuronTracer;
@@ -1191,6 +1195,7 @@ public slots:
 signals:
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true);
+  void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
@@ -1198,6 +1203,7 @@ signals:
   void stackModified(bool rangeChanged);
   void sparseStackModified();
   void labelFieldModified();
+  void segmentationUpdated();
   void stackReadDone();
   void stackLoaded();
   void punctaModified();
@@ -1362,6 +1368,7 @@ private:
   bool m_selectionSilent;
   bool m_isReadyForPaint;
   bool m_isSegmentationReady;
+  bool m_hadSegmentationDownsampled = false;
   bool m_autoSaving;
 
   //QMutex m_mutex;

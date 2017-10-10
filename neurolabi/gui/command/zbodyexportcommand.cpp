@@ -22,15 +22,38 @@ int ZBodyExportCommand::run(
 
   if (bodyId > 0) {
     ZDvidReader *reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
+    reader->updateMaxLabelZoom();
     if (reader != NULL) {
       if (reader->isReady()) {
         ZObject3dScan obj;
-        reader->readBody(bodyId, false, &obj);
+        bool needDownsampling = true;
+        std::cout << "Max label zoom: "
+                  << reader->getDvidTarget().getMaxLabelZoom() << std::endl;
+        if (reader->getDvidTarget().getMaxLabelZoom() > 0) {
+          ZObject3dScan coarseObj = reader->readCoarseBody(bodyId);
+          ZDvidInfo dvidInfo = reader->readLabelInfo();
+          ZIntCuboid box =coarseObj.getBoundBox();
+          box.setWidth(box.getWidth() * dvidInfo.getBlockSize().getX());
+          box.setHeight(box.getHeight() * dvidInfo.getBlockSize().getY());
+          box.setDepth(box.getDepth() * dvidInfo.getBlockSize().getZ());
+          int dsIntv = misc::getIsoDsIntvFor3DVolume(
+                box, NeuTube::ONEGIGA, true);
+          int scale = std::log2(dsIntv + 1);
+          if (scale > reader->getDvidTarget().getMaxLabelZoom()) {
+            scale = reader->getDvidTarget().getMaxLabelZoom();
+            needDownsampling = true;
+          }
+          reader->readMultiscaleBody(bodyId, scale, false, &obj);
+        } else {
+          reader->readBody(bodyId, false, &obj);
+        }
 
         if (!obj.isEmpty()) {
-          int dsIntv = misc::getIsoDsIntvFor3DVolume(
-                obj.getBoundBox(), NeuTube::ONEGIGA, false);
-          obj.downsampleMax(ZIntPoint(dsIntv, dsIntv, dsIntv));
+          if (needDownsampling) {
+            int dsIntv = misc::getIsoDsIntvFor3DVolume(
+                  obj.getBoundBox(), NeuTube::ONEGIGA, false);
+            obj.downsampleMax(ZIntPoint(dsIntv, dsIntv, dsIntv));
+          }
           ZStack *stack = obj.toStackObject();
           stack->save(output);
           delete stack;

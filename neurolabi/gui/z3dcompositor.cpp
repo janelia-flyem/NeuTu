@@ -222,7 +222,7 @@ void Z3DCompositor::process(Z3DEye eye)
   std::vector<Z3DBoundedFilter*> normalOpaqueFilters;
   std::vector<Z3DBoundedFilter*> normalTransparentFilters;
   std::vector<Z3DBoundedFilter*> selectedFilters;
-  std::vector<Z3DBoundedFilter*> showHandleFilters;
+//  std::vector<Z3DBoundedFilter*> showHandleFilters;
   for (auto vFilter : vFilters) {
     if (vFilter->isReady(eye) && vFilter->hasOpaque(eye)) {
       normalOpaqueFilters.push_back(vFilter);

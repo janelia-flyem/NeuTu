@@ -52,10 +52,12 @@ __forceinline Dest bit_cast(const Source& source)
 {
   static_assert(sizeof(Dest) == sizeof(Source),
                 "bit_cast requires source and destination to be the same size");
+#if 0 //for compatibility for gcc 4.8*
   static_assert(std::is_trivially_copyable<Dest>::value,
                 "non-trivially-copyable bit_cast is undefined");
   static_assert(std::is_trivially_copyable<Source>::value,
                 "non-trivially-copyable bit_cast is undefined");
+#endif
   Dest dest;
   memcpy(&dest, &source, sizeof(dest));
   return dest;

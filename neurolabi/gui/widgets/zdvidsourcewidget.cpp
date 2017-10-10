@@ -21,12 +21,12 @@ int ZDvidSourceWidget::getPort() const
 
 QString ZDvidSourceWidget::getAddress() const
 {
-  return ui->addressLineEdit->text();
+  return ui->addressLineEdit->text().trimmed();
 }
 
 QString ZDvidSourceWidget::getUuid() const
 {
-  return ui->uuidLineEdit->text();
+  return ui->uuidLineEdit->text().trimmed();
 }
 
 ZDvidNode ZDvidSourceWidget::getNode() const

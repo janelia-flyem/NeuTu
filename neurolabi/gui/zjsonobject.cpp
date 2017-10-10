@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <cstdarg>
 
 #include "tz_error.h"
 #include "zjsonparser.h"
@@ -97,6 +98,23 @@ ZJsonValue ZJsonObject::value(const char *key) const
   return ZJsonValue(const_cast<json_t*>((*this)[key]),
                     ZJsonValue::SET_INCREASE_REF_COUNT);
 }
+
+#ifndef SWIG
+ZJsonValue ZJsonObject::value(
+    const std::initializer_list<const char*> &keyList) const
+{
+  ZJsonValue v = *this;
+  for (const char *key : keyList) {
+    ZJsonObject obj(v);
+    v = obj.value(key);
+    if (v.isEmpty()) {
+      break;
+    }
+  }
+
+  return v;
+}
+#endif
 
 bool ZJsonObject::decode(const string &str)
 {

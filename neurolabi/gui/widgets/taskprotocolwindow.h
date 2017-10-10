@@ -32,7 +32,8 @@ private slots:
     void onPrevButton();
     void onDoneButton();
     void onLoadTasksButton();    
-    void onCompletedStateChanged(int state);    
+    void onCompletedStateChanged(int state);
+    void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
 
 private:
@@ -40,10 +41,12 @@ private:
     static const QString VALUE_DESCRIPTION;
     static const QString KEY_VERSION;
     static const int currentVersion;
+    static const QString KEY_ID;
     static const QString KEY_TASKLIST;
     static const QString KEY_TASKTYPE;
     static const QString PROTOCOL_INSTANCE;
     static const QString TASK_PROTOCOL_KEY;
+    static const QString TAG_NEEDS_REVIEW;
 
     enum WindowConfigurations {
         LOAD_BUTTON,
@@ -57,11 +60,13 @@ private:
     };
 
     Ui::TaskProtocolWindow *ui;
+    QString m_ID;
     QList<QSharedPointer<TaskProtocolTask>> m_taskList;
     ZFlyEmProofDoc *m_proofDoc;
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex;
+    QWidget * m_currentTaskWidget;
     bool m_nodeLocked;
 
     void setWindowConfiguration(WindowConfigurations config);
