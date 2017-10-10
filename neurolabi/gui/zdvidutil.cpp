@@ -16,9 +16,13 @@
 
 #include "neutube.h"
 
+/*!
+ * Note that libdvid::DVIDConnection automatically add '/api' at the beginning
+ * of the path.
+ */
 libdvid::BinaryDataPtr ZDvid::MakeRequest(
     libdvid::DVIDConnection &connection,
-    const std::string &endpoint, const std::string &method,
+    const std::string &path, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode)
 {
@@ -43,7 +47,7 @@ libdvid::BinaryDataPtr ZDvid::MakeRequest(
     //  qDebug() << "path: " << qurl.path();
 
     statusCode = connection.make_request(
-          endpoint, connMethod, payload, results, error_msg, type);
+          "/.." + path, connMethod, payload, results, error_msg, type);
   } catch (libdvid::DVIDException &e) {
     std::cout << e.what() << std::endl;
     statusCode = e.getStatus();
@@ -106,6 +110,32 @@ libdvid::BinaryDataPtr ZDvid::MakeGetRequest(
   return MakeRequest(url, "GET", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
                      statusCode);
 }
+
+libdvid::BinaryDataPtr ZDvid::MakeGetRequest(
+    libdvid::DVIDConnection &connection, const std::string &path,
+    int &statusCode)
+{
+  return MakeRequest(
+        connection, path, "GET", libdvid::BinaryDataPtr(), libdvid::DEFAULT,
+        statusCode);
+}
+
+libdvid::BinaryDataPtr ZDvid::MakePostRequest(
+    libdvid::DVIDConnection &connection, const std::string &path,
+    const ZJsonObject &obj, int &statusCode)
+{
+  std::string payload = obj.dumpString(0);
+  libdvid::BinaryDataPtr libdvidPayload;
+  if (!payload.empty()) {
+    libdvidPayload =
+        libdvid::BinaryData::create_binary_data(payload.c_str(), payload.size());
+  }
+
+  return MakeRequest(
+        connection, path, "POST", libdvidPayload, libdvid::JSON,
+        statusCode);
+}
+
 
 void ZDvid::MakeHeadRequest(const std::string &url, int &statusCode)
 {

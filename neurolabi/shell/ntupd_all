@@ -1,5 +1,8 @@
 #!/bin/bash
 
+machine_file=${1:-machine.txt}
+echo "Input: "$machine_file
+
 namelist=""
 while read line
 do
@@ -14,7 +17,7 @@ do
       #ssh $name "$cmd_dir/ntconfig $src_neutu /opt/Download/neutube"
     fi
   fi
-done < machine.txt
+done < $machine_file
 echo $namelist
 for name in $namelist
 do

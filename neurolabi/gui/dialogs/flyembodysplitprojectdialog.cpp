@@ -415,7 +415,8 @@ bool FlyEmBodySplitProjectDialog::loadBody()
 
 void FlyEmBodySplitProjectDialog::quickView()
 {
-  m_project.showBodyQuickView();
+  //Obsolete
+//  m_project.showBodyQuickView();
 }
 
 bool FlyEmBodySplitProjectDialog::isBodyLoaded() const

@@ -421,12 +421,7 @@ public:
   void removeAllObject(bool deleteObject = true);
   bool removeObject(
       ZStackObject *obj, bool deleteObject = false);
-
   void removeSelectedObject(bool deleteObject = false);
-  /*
-  void removeObject(
-      ZStackObject::ETarget target, bool deleteObject = false);
-      */
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
 
@@ -1208,6 +1203,7 @@ signals:
   void stackModified(bool rangeChanged);
   void sparseStackModified();
   void labelFieldModified();
+  void segmentationUpdated();
   void stackReadDone();
   void stackLoaded();
   void punctaModified();

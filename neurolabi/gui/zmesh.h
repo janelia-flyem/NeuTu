@@ -215,6 +215,11 @@ public:
                                      const std::vector<glm::vec3>& coordUrbs,
                                      const std::vector<glm::vec4>* cubeColors = nullptr);
 
+  static ZMesh createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
+                                     const std::vector<glm::vec3>& coordUrbs,
+                                     const std::vector<std::vector<bool> > &faceVisbility,
+                                     const std::vector<glm::vec4>* cubeColors = nullptr);
+
   // a cube with six surfaces
   static ZMesh createCube(
     const glm::vec3& coordLlf = glm::vec3(0.f, 0.f, 0.f),
@@ -278,7 +283,7 @@ public:
                               int numberOfSides = 32, bool capping = true);
 
   // from ZCubeArray
-  static ZMesh fromZCubeArray(const ZCubeArray& ca);
+  static ZMesh FromZCubeArray(const ZCubeArray& ca);
 
   // these functions only deal with meshes with normal, other fields (texture, color) are ignored
   static ZMesh unite(const ZMesh& mesh1, const ZMesh& mesh2)

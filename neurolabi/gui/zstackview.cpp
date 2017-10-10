@@ -768,6 +768,11 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
   int numSteps = -event->delta();
 
+#ifdef _DEBUG_
+  std::cout << "Event time: " << event->timestamp() << std::endl;
+  std::cout << "Time to event: " << QDateTime::currentMSecsSinceEpoch() << std::endl;
+#endif
+
 #if defined(_NEUTUBE_MAC_)
   switch (QSysInfo::MacintoshVersion) {
   case QSysInfo::MV_10_5:

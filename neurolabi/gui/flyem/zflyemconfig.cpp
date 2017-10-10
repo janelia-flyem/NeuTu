@@ -79,7 +79,7 @@ void ZFlyEmConfig::loadConfig()
     filePath = m_configPath;
   }
 
-  std::cout << "Loading config: " << filePath << std::endl;
+  std::cout << "Loading FlyEM config: " << filePath << std::endl;
 
   if (!filePath.empty()) {
     ZJsonObject obj;

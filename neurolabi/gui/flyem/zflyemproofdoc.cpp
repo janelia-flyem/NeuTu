@@ -717,6 +717,8 @@ void ZFlyEmProofDoc::initData(const ZDvidTarget &target)
     initData("keyvalue", target.getSkeletonName());
     initData("keyvalue", target.getThumbnailName());
     initData("keyvalue", target.getBookmarkKeyName());
+    initData("keyvalue", target.getBodyAnnotationName());
+    initData("keyvalue", target.getSplitLabelName());
     initData("keyvalue", ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION));
   }
 }
@@ -2374,6 +2376,7 @@ void ZFlyEmProofDoc::downloadTodoList()
 {
   ZFlyEmToDoList *todoList = new ZFlyEmToDoList;
   todoList->setDvidTarget(getDvidTarget());
+  todoList->setDvidInfo(getDvidInfo());
   todoList->setSource(ZStackObjectSourceFactory::MakeTodoListEnsembleSource());
   addObject(todoList);
 }
@@ -3045,9 +3048,11 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     setHadSegmentationSampled(container.computationDowsampled());
 
+#ifdef _DEBUG_
 //    container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
-//    container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
+    container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
 //    container.exportMask(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
     ZObject3dScanArray result;
     container.makeSplitResult(1, &result);
@@ -3062,6 +3067,7 @@ void ZFlyEmProofDoc::runSplitFunc(
     result.shallowClear();
 
     setSegmentationReady(true);
+    emit segmentationUpdated();
 
     ZOUT(LINFO(), 3) << "Segmentation ready";
 
@@ -3378,7 +3384,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
             int x1 = stripe.getSegmentEnd(i);
 
             ZIntPoint blockIndex =
-                ZIntPoint(x0, y, z) - dvidInfo.getStartBlockIndex();
+                ZIntPoint(x0, y, z);// - dvidInfo.getStartBlockIndex();
             for (int x = x0; x <= x1; ++x) {
               ZStack *stack =
                   originalStack->getStackGrid()->getStack(blockIndex);

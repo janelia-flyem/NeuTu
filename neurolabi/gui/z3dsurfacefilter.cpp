@@ -173,12 +173,13 @@ void Z3DSurfaceFilter::prepareData()
                         _KeyLess());
     for (const auto& kv : newSources) {
       QString guiname = QString("Source: %1").arg(kv);
-      m_sourceColorMapper.insert(std::make_pair(kv,
-                                                std::make_unique<ZVec4Parameter>(guiname,
-                                                                                 glm::vec4(ZRandom::instance().randReal<float>(),
-                                                                                           ZRandom::instance().randReal<float>(),
-                                                                                           ZRandom::instance().randReal<float>(),
-                                                                                           1.f))));
+      m_sourceColorMapper.insert(
+            std::make_pair(
+              kv, std::make_unique<ZVec4Parameter>(
+                guiname, glm::vec4(ZRandom::instance().randReal<float>(),
+                                   ZRandom::instance().randReal<float>(),
+                                   ZRandom::instance().randReal<float>(),
+                                   1.f))));
 
       m_sourceColorMapper[kv]->setStyle("COLOR");
       connect(m_sourceColorMapper[kv].get(), &ZVec4Parameter::valueChanged,
@@ -198,7 +199,7 @@ void Z3DSurfaceFilter::prepareData()
   m_meshCache.clear();
   m_meshPtCache.clear();
   for (auto cap : m_cubeArrayList) {
-    m_meshCache.push_back(ZMesh::fromZCubeArray(*cap));
+    m_meshCache.push_back(ZMesh::FromZCubeArray(*cap));
   }
   for (auto& mesh : m_meshCache) {
     m_meshPtCache.push_back(&mesh);

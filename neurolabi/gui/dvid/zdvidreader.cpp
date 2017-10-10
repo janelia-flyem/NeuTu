@@ -135,6 +135,10 @@ bool ZDvidReader::openRaw(const ZDvidTarget &target)
 
   bool succ = startService();
 
+  if (!succ) {
+    m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+  }
+
   return succ;
 }
 
@@ -144,25 +148,32 @@ bool ZDvidReader::open(const ZDvidTarget &target)
     return false;
   }
 
-  m_dvidTarget = target;
+  bool succ = false;
 
-  std::string masterNode = ReadMasterNode(target);
-  if (!masterNode.empty()) {
-    m_dvidTarget.setUuid(masterNode.substr(0, 4));
-  }
+  if (target.isInferred()) {
+    succ = openRaw(target);
+  } else {
+    m_dvidTarget = target;
 
-  bool succ = startService();
-
-  if (succ) { //Read default settings
-    updateNodeStatus();
-
-    if (getDvidTarget().usingDefaultDataSetting()) {
-      loadDefaultDataSetting();
+    std::string masterNode = ReadMasterNode(target);
+    if (!masterNode.empty()) {
+      m_dvidTarget.setUuid(masterNode.substr(0, 4));
     }
 
-    updateSegmentationData();
-  } else {
-    m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+    succ = startService();
+
+    if (succ) { //Read default settings
+      updateNodeStatus();
+
+      if (getDvidTarget().usingDefaultDataSetting()) {
+        loadDefaultDataSetting();
+      }
+
+      updateSegmentationData();
+      m_dvidTarget.setInferred(true);
+    } else {
+      m_dvidTarget.setNodeStatus(ZDvid::NODE_OFFLINE);
+    }
   }
 
   return succ;
@@ -232,7 +243,7 @@ ZDvid::ENodeStatus ZDvidReader::getNodeStatus() const
 void ZDvidReader::testApiLoad()
 {
 #if defined(_ENABLE_LIBDVIDCPP_)
-  ZDvid::MakeRequest(*m_connection, "/../api/load", "GET",
+  ZDvid::MakeRequest(*m_connection, "/api/load", "GET",
                      libdvid::BinaryDataPtr(), libdvid::DEFAULT,
                      m_statusCode);
 #endif
@@ -865,6 +876,10 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
         stack->copyValueFrom(blocks.get_raw() + i * currentBox.getVolume(),
                              currentBox.getVolume(), stack->array8());
         currentBox.translateX(currentBox.getWidth());
+#ifdef _DEBUG_2
+        stack->save(GET_TEST_DATA_DIR + "/test.tif");
+        std::cout << "Stack binary: " << stack->isBinary() << std::endl;
+#endif
       }
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
@@ -969,7 +984,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
     ZObject3dScan blockObj = dvidInfo.getBlockIndex(*body);;
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     spStack->setGreyScale(grid);
-    grid->setMinPoint(dvidInfo.getStartCoordinates());
+//    grid->setMinPoint(dvidInfo.getStartCoordinates());
     grid->setBlockSize(dvidInfo.getBlockSize());
     grid->setGridSize(dvidInfo.getGridSize());
 
@@ -997,7 +1012,7 @@ ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
 
         for (int x = x0; x <= x1; ++x) {
           const ZIntPoint blockIndex =
-              ZIntPoint(x, y, z) - dvidInfo.getStartBlockIndex();
+              ZIntPoint(x, y, z);// - dvidInfo.getStartBlockIndex();
           //ZStack *stack = readGrayScaleBlock(blockIndex, dvidInfo);
           //const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
           ZIntCuboid box = grid->getBlockBox(blockIndex);
@@ -1926,11 +1941,11 @@ ZIntPoint ZDvidReader::readBodyPosition(uint64_t bodyId) const
       ZVoxel voxel = objSlice.getMarker();
       //        ZVoxel voxel = body.getSlice((body.getMinZ() + body.getMaxZ()) / 2).getMarker();
       pt.set(voxel.x(), voxel.y(), voxel.z());
-      pt -= dvidInfo.getStartBlockIndex();
+//      pt -= dvidInfo.getStartBlockIndex();
       pt *= dvidInfo.getBlockSize();
 //      pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
 //                      dvidInfo.getBlockSize().getY() / 2, 0);
-      pt += dvidInfo.getStartCoordinates();
+//      pt += dvidInfo.getStartCoordinates();
 
       ZIntCuboid box;
       box.setFirstCorner(pt);
@@ -3580,8 +3595,8 @@ int ZDvidReader::checkProofreadingData() const
   missing += reportMissingData(getDvidTarget().getBodyLabelName());
   missing += reportMissingData(getDvidTarget().getBodyAnnotationName());
   missing += reportMissingData(getDvidTarget().getSkeletonName());
-  missing += reportMissingData(getDvidTarget().getGrayScaleName());
-  missing += reportMissingData(getDvidTarget().getMultiscale2dName());
+//  missing += reportMissingData(getDvidTarget().getGrayScaleName());
+//  missing += reportMissingData(getDvidTarget().getMultiscale2dName());
   missing += reportMissingData(getDvidTarget().getSplitLabelName());
 
   return missing;

@@ -43,7 +43,7 @@ if [ `uname` = 'Darwin' ]
 then
   echo $neutu_cmd' --command --general $*' >> $script
 else
-  echo $netu_cmd' --command --general $*' >> $script
+  echo $neutu_cmd' --command --general $*' >> $script
 fi
 
 file=$installDir/NeuTu/neurolabi/python/service/_split_config.yaml

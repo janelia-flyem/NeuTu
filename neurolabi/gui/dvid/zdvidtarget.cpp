@@ -504,6 +504,16 @@ std::string ZDvidTarget::getLocalLowResGrayScalePath(
   return path;
 }
 
+bool ZDvidTarget::isInferred() const
+{
+  return m_isInferred;
+}
+
+void ZDvidTarget::setInferred(bool status)
+{
+  m_isInferred = status;
+}
+
 std::string ZDvidTarget::getBodyLabelName() const
 {
   if (m_bodyLabelName.empty()) {

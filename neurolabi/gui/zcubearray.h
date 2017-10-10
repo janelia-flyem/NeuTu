@@ -86,7 +86,6 @@ public:
 // 12 triangles: 36 vertices, normals, and colors
 // 12 lines: 24 vertices and colors
 //
-//
 // ---------------> U = ((-Z/|X|) + 1)/2
 // |       ____
 // |      | U 2|
@@ -97,6 +96,14 @@ public:
 // |      |_-y_|
 // v
 // V = ((-Y/|X|) + 1)/2
+//
+// Face vertices:
+//   0: 2, 3, 6, 7
+//   1: 0, 1, 4, 5
+//   2: 4, 5, 6, 7
+//   3: 0, 1, 2, 3
+//   4: 1, 2, 5, 6
+//   5: 0, 3, 4, 7
 //
 // GL_TEXTURE_CUBE_MAP_POSITIVE_X 	0 +x Right
 // GL_TEXTURE_CUBE_MAP_NEGATIVE_X 	1 -x Left
@@ -145,6 +152,9 @@ public:
     Z3DCube();
     ~Z3DCube();
 
+    bool hasVisibleFace() const;
+    const std::vector<bool>& getFaceVisiblity() const;
+
 public:
     double length;
     double x,y,z;
@@ -167,7 +177,10 @@ public:
 
 public:
   bool isEmpty() const;
-  Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color, const std::vector<int> &faceArray);
+  Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color,
+                    const std::vector<int> &faceArray);
+  Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color,
+                    const std::vector<bool> &fv);
   void append(Z3DCube cube);
   const std::vector<Z3DCube>& getCubeArray() const;
 

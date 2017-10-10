@@ -81,17 +81,17 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   }
 
   m_reader.open(target);
-#if 0
-  m_dvidTarget = target;
 
-  std::string masterNode = ZDvidReader::ReadMasterNode(m_dvidTarget);
-  if (!masterNode.empty()) {
-    m_dvidTarget.setUuid(masterNode.substr(0, 4));
+  return startService();;
+}
+
+bool ZDvidWriter::openRaw(const ZDvidTarget &target)
+{
+  if (!target.isValid()) {
+    return false;
   }
-#endif
 
-//  m_dvidClient->reset();
-//  m_dvidClient->setDvidTarget(target);
+  m_reader.openRaw(target);
 
   return startService();;
 }
@@ -816,7 +816,9 @@ std::string ZDvidWriter::request(
 #endif
 
 #ifdef _DEBUG_
-  std::cout << response << std::endl;
+  if (!response.empty()) {
+    std::cout << "Post resonse: " << response << std::endl;
+  }
 #endif
 
   return response;
@@ -1152,11 +1154,11 @@ uint64_t ZDvidWriter::writeSplitMultires(const ZObject3dScan &bf,
       }
 
       ZObject3dScan bBsc = Bsc;
-      bBsc.translate(-dvidInfo.getStartBlockIndex());
+//      bBsc.translate(-dvidInfo.getStartBlockIndex());
       bBsc.upSample(dvidInfo.getBlockSize().getX() - 1,
                     dvidInfo.getBlockSize().getY() - 1,
                     dvidInfo.getBlockSize().getZ() - 1);
-      bBsc.translate(dvidInfo.getStartCoordinates());
+//      bBsc.translate(dvidInfo.getStartCoordinates());
 
       ZObject3dScan bsr = bs;
       bsr.subtractSliently(bBsc);
@@ -1259,11 +1261,11 @@ uint64_t ZDvidWriter::writePartition(
       ZObject3dScan Bbs = dvidInfo.getBlockIndex(bs);
       Bbs.subtractSliently(Bsc);
       ZObject3dScan bBbs = Bbs;
-      bBbs.translate(-dvidInfo.getStartBlockIndex());
+//      bBbs.translate(-dvidInfo.getStartBlockIndex());
       bBbs.upSample(dvidInfo.getBlockSize().getX() - 1,
                     dvidInfo.getBlockSize().getY() - 1,
                     dvidInfo.getBlockSize().getZ() - 1);
-      bBbs.translate(dvidInfo.getStartCoordinates());
+//      bBbs.translate(dvidInfo.getStartCoordinates());
 
       ZObject3dScan bsr = bs.intersect(bBbs);
 #if 0

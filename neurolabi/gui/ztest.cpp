@@ -23569,7 +23569,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZSparseStack stack;
   stack.load(GET_TEST_DATA_DIR + "/_system/test.zss");
   stack.getObjectMask()->canonize();
@@ -24534,6 +24534,55 @@ void ZTest::test(MainWindow *host)
   ZStack *stack = tree.toTypeStack();
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
   delete stack;
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 0);
+  ZDvidInfo dvidInfo;
+  dvidInfo.setBlockSize(32, 32, 32);
+  ZCubeArray *cubeArray = ZFlyEmMisc::MakeRoiCube(
+        obj, dvidInfo, QColor(255, 0, 0), 0);
+  std::cout << "#cubes: " << cubeArray->size() << std::endl;
+  ZMesh mesh = ZMesh::FromZCubeArray(*cubeArray);
+  std::cout << "#vertices: " << mesh.numVertices() << std::endl;
+  std::cout << "#Indices: " << mesh.indices().size() << std::endl;
+  ZDebugPrintArrayG(mesh.indices(), 0, 36);
+  mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+  delete cubeArray;
+#endif
+
+#if 0
+   ZDvidTarget target;
+   target.set("emdata3", "bf6e", 8000);
+   target.setLabelBlockName("segmentation");
+   ZDvidReader reader;
+   reader.open(target);
+
+   reader.checkProofreadingData();
+#endif
+
+#if 1
+   ZDvidReader reader;
+   ZDvidTarget target("emdata3.int.janelia.org", "c0ab", 8000);
+   target.setLabelBlockName("segmentation-from-bricks");
+   target.setGrayScaleSource(ZDvidNode("127.0.0.1", "9b07", 8000));
+   target.setGrayScaleName("grayscalejpeg");
+   reader.open(target);
+
+   ZDvidSparseStack *dss = reader.readDvidSparseStack(290523653);
+   ZSparseStack *ss = dss->getSparseStack();
+   ss->save(GET_TEST_DATA_DIR + "/test.zss");
+//   ss->getStackGrid()->toStack()->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//   ss.setDvidTarget(target);
+//   ss.
+
+//   std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
+//         ZIntPoint(52, 57, 212), reader.readGrayScaleInfo(), 2);
+//   ZStack *stack = stackArray[1];
+////   ZStack *stack = reader.readGrayScale(3189, 3850, 13970, 100, 100, 100);
+//   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
   std::cout << "Done." << std::endl;

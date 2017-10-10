@@ -1280,7 +1280,7 @@ int ZCommandLine::run(int argc, char *argv[])
   std::string applicationDir = app.applicationDirPath().toStdString();
 
 //  std::string applicationDir = ZString::dirPath(argv[0]);
-  std::cout << applicationDir << std::endl;
+  std::cout << "Executable directory: " << applicationDir << std::endl;
   m_configDir = applicationDir + "/json";
   std::string configPath = m_configDir + "/command_config.json";
 
@@ -1411,7 +1411,7 @@ int ZCommandLine::run(int argc, char *argv[])
     } else if (Is_Arg_Matched(const_cast<char*>("--general"))) {
       command = GENERAL_COMMAND;
       m_generalConfig = Get_String_Arg(const_cast<char*>("--general"));
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Config:" << std::endl;
       std::cout << m_generalConfig << std::endl;
 #endif
@@ -1465,7 +1465,9 @@ void ZCommandLine::loadConfig(const std::string &filePath)
   expandConfig(filePath, "trace");
 
 #ifdef _DEBUG_
+  std::cout << "==========Command configuration========" << std::endl;
   std::cout << m_configJson.dumpString(2) << std::endl;
+  std::cout << "=======================================" << std::endl;
 #endif
 }
 

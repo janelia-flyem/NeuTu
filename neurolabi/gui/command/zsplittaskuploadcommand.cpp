@@ -55,11 +55,27 @@ int ZSplitTaskUploadCommand::run(
 
   ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
         GET_FLYEM_CONFIG.getTaskServer());
+  if (writer == NULL) {
+    std::cerr << "Unable to Initialize the task server: "
+              << GET_FLYEM_CONFIG.getTaskServer() << std::endl;
+    std::cerr << "Abort" << std::endl;
+    return 1;
+  } else {
+    std::cout << "Task server: " << writer->getDvidTarget().getSourceString()
+              << std::endl;
+  }
+
   ZDvidUrl dvidUrl(target);
 
+  std::cout << std::endl;
+  std::cout << "Uploading tasks: " << std::endl << std::endl;
+  int count = 0;
   for (size_t i = 0; i < rootObj.size(); ++i) {
     ZJsonObject obj(rootObj.value(i));
     ZJsonArray markerJson(obj.value("pointMarkers"));
+#ifdef _DEBUG_2
+      std::cout << "Here";
+#endif
     if (!markerJson.isEmpty()) {
       uint64_t bodyId =
           ZString(obj.value("file").toString()).firstUint64();
@@ -67,22 +83,26 @@ int ZSplitTaskUploadCommand::run(
       if (bodyId > 0) {
         ZJsonObject taskJson;
         ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
-
         for (size_t i = 0; i < markerJson.size(); ++i) {
           ZJsonObject markerObj(markerJson.value(i));
           ZStroke2d stroke =
               ZFlyEmMisc::SyGlassSeedToStroke(markerObj);
           ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
         }
-        std::string location = writer->writeServiceTask("split", taskJson);
 
+        std::string location = writer->writeServiceTask("split", taskJson);
         ZJsonObject entryJson;
         entryJson.setEntry(NeuTube::Json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
+        std::cout << "*    Task for " << bodyId << " is saved @ "
+                  << taskKey.toStdString() << "->" << location << std::endl;
+        ++count;
       }
     }
   }
+  std::cout << std::endl;
+  std::cout << count << " tasks uploaded." << std::endl;
 
   return 0;
 }

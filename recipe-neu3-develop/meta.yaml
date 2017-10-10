@@ -17,6 +17,7 @@ build:
 
   script_env:
    - TARGET_TYPE
+   - NEUTU_BUILD_MODE
 
 requirements:
   build:

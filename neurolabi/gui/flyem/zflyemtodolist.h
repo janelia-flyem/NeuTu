@@ -43,6 +43,8 @@ public:
     return m_dvidTarget;
   }
 
+  void setDvidInfo(const ZDvidInfo &info);
+
   class ItemMap : public QMap<int, ZFlyEmToDoItem> {
   public:
     ItemMap(EDataStatus status = STATUS_NORMAL);

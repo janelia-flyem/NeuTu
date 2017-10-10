@@ -1632,12 +1632,11 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
            iter != treeArray.end(); ++iter) {
         ZSwcTree *tree = *iter;
         if (tree != NULL) {
-          tree->translate(-getDvidInfo().getStartBlockIndex());
+//          tree->translate(-getDvidInfo().getStartBlockIndex());
           tree->rescale(getDvidInfo().getBlockSize().getX(),
                         getDvidInfo().getBlockSize().getY(),
                         getDvidInfo().getBlockSize().getZ());
-          tree->translate(getDvidInfo().getStartCoordinates() +
-                          getDvidInfo().getBlockSize() / 2);
+          tree->translate(getDvidInfo().getBlockSize() / 2);
         }
       }
     } else {
@@ -1682,7 +1681,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         ZObject3dScan obj = m_dvidReader.readCoarseBody(bodyId);
         if (!obj.isEmpty()) {
           tree = ZSwcFactory::CreateSurfaceSwc(obj);
-          tree->translate(-getDvidInfo().getStartBlockIndex());
+//          tree->translate(-getDvidInfo().getStartBlockIndex());
           tree->rescale(getDvidInfo().getBlockSize().getX(),
                         getDvidInfo().getBlockSize().getY(),
                         getDvidInfo().getBlockSize().getZ());
