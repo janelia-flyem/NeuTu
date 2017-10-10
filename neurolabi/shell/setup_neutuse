@@ -48,6 +48,6 @@ chmod a+x $run_script
 config_file=$bindir/neutuse_config.yaml
 echo "command: $neutu_bin_dir/neutu" > $config_file
 echo "host: $HOSTNAME" >> $config_file
-echo "port: 9100" >> $config_file
+echo "port: 8080" >> $config_file
 
 
