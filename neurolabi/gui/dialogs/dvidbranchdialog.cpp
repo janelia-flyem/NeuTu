@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QMessageBox>
 #include <QModelIndex>
+#include <QStandardItem>
 #include <QStringList>
 #include <QStringListModel>
 #include <QsLog.h>
@@ -31,6 +32,9 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     // models & related
     m_repoModel = new QStringListModel();
     ui->repoListView->setModel(m_repoModel);
+
+    m_branchModel = new QStringListModel();
+    ui->branchListView->setModel(m_branchModel);
 
 
 
@@ -80,6 +84,7 @@ void DvidBranchDialog::loadDatasets() {
         m_repoMap[repo[KEY_NAME].toString()] = repo;
     }
 
+    // note that once this is populated, it's never changed or cleared
     QStringList repoNameList = m_repoMap.keys();
     repoNameList.sort();
     m_repoModel->setStringList(repoNameList);
@@ -112,9 +117,20 @@ QJsonObject DvidBranchDialog::loadDatasetsFromFile() {
 
 void DvidBranchDialog::onRepoClicked(QModelIndex modelIndex) {
 
-    std::cout << "in onRepoClicked()" << std::endl;
+    QString itemString = m_repoModel->data(modelIndex, Qt::DisplayRole).toString();
 
-    // QStandardItem *item = m_repoModel->itemData(modelIndex);
+    std::cout << "in onRepoClicked(); got " << itemString.toStdString() << std::endl;
+
+
+    // clear existing view and model?
+    // loading message?
+
+
+    // do the read
+
+    // store stuff in intermediate form (presumably)
+
+    // populate the branch model
 
 
 }

@@ -32,6 +32,7 @@ private:
 
     Ui::DvidBranchDialog *ui;
     QStringListModel * m_repoModel;
+    QStringListModel * m_branchModel;
     QMap<QString, QJsonObject> m_repoMap;
 
     void loadDatasets();
