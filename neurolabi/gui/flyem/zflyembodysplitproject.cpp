@@ -51,7 +51,7 @@
 
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
-  m_resultWindow(NULL), m_quickResultWindow(NULL),
+  m_quickResultWindow(NULL),
   m_minObjSize(0), m_keepingMainSeed(false), /*m_bookmarkArray(NULL),*/
   m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
@@ -94,14 +94,16 @@ void ZFlyEmBodySplitProject::start()
 void ZFlyEmBodySplitProject::exit()
 {
   quitResultUpdate();
-  m_quickResultWindow->close();
+  if (m_quickResultWindow != NULL) {
+    m_quickResultWindow->close();
+  }
 }
 
 void ZFlyEmBodySplitProject::clear()
 {
   clearQuickResultWindow();
 
-  clear(m_resultWindow);
+//  clear(m_resultWindow);
 
   if (m_dataFrame != NULL) {
 //    m_dataFrame->close3DWindow();
@@ -116,11 +118,13 @@ void ZFlyEmBodySplitProject::clear()
 
 void ZFlyEmBodySplitProject::shallowClearDataFrame()
 {
+  /*
   if (m_resultWindow != NULL) {
     m_resultWindow->hide();
     delete m_resultWindow;
     m_resultWindow = NULL;
   }
+  */
 
   clear(m_quickResultWindow);
 
@@ -129,7 +133,7 @@ void ZFlyEmBodySplitProject::shallowClearDataFrame()
 
 void ZFlyEmBodySplitProject::shallowClear()
 {
-  m_resultWindow = NULL;
+//  m_resultWindow = NULL;
   m_quickResultWindow = NULL;
   m_dataFrame = NULL;
 
@@ -140,7 +144,7 @@ void ZFlyEmBodySplitProject::shallowClear()
 
 void ZFlyEmBodySplitProject::shallowClearResultWindow()
 {
-  m_resultWindow = NULL;
+//  m_resultWindow = NULL;
 }
 
 void ZFlyEmBodySplitProject::shallowClearQuickResultWindow()
@@ -656,7 +660,9 @@ void ZFlyEmBodySplitProject::quitResultUpdate()
   m_timer->stop();
   invalidateSplitQuick();
   m_futureMap.waitForFinished();
-  m_quickResultDoc->removeAllSwcTree(true);
+  if (m_quickResultDoc) {
+    m_quickResultDoc->removeAllSwcTree(true);
+  }
   m_splitUpdated = true;
 }
 
@@ -711,8 +717,8 @@ void ZFlyEmBodySplitProject::showResultQuickView()
               this, SLOT(shallowClearQuickResultWindow()));
 //      connect(m_quickResultWindow, &Z3DWindow::closed,
 //              this, &ZFlyEmBodySplitProject::resetQuickResultWindow);
-      connect(mainDoc, &ZStackDoc::labelFieldModified,
-              this, &ZFlyEmBodySplitProject::invalidateSplitQuick);
+//      connect(mainDoc, &ZStackDoc::labelFieldModified,
+//              this, &ZFlyEmBodySplitProject::invalidateSplitQuick);
       connect(mainDoc, &ZStackDoc::segmentationUpdated,
               this, &ZFlyEmBodySplitProject::invalidateSplitQuick);
 
@@ -750,6 +756,7 @@ void ZFlyEmBodySplitProject::resetQuickResultWindow()
   m_quickResultDoc->removeAllSwcTree(true);
 }
 
+#if 0
 void ZFlyEmBodySplitProject::showResult3d()
 {
   if (getDocument() != NULL) {
@@ -802,6 +809,7 @@ void ZFlyEmBodySplitProject::showResult3d()
     //emit messageGenerated("Done.");
   }
 }
+#endif
 
 bool ZFlyEmBodySplitProject::hasDataFrame() const
 {
@@ -2883,12 +2891,9 @@ void ZFlyEmBodySplitProject::update3DViewPlane()
 {
   if (m_quickResultWindow) {
     if (m_dvidInfo.isValid()) {
-      if (m_quickResultWindow != NULL) {
-        Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo);
-        m_quickResultWindow->getDocument()->addObject(graph, true);
-      }
+      Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo);
+      m_quickResultWindow->getDocument()->addObject(graph, true);
     }
-
   }
 }
 

@@ -574,7 +574,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
                 SwcTreeNode::makePointer(i + stack.getOffset().getX(),
                                          j + stack.getOffset().getY(),
                                          k + stack.getOffset().getZ(),
-                                         sparseLevel * 0.7, root);
+                                         sqrt(sparseLevel), root);
               }
             }
           }

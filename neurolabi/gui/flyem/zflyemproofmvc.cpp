@@ -2915,7 +2915,7 @@ void ZFlyEmProofMvc::showBody3d()
 
 void ZFlyEmProofMvc::showSplit3d()
 {
-  m_splitProject.showResult3d();
+//  m_splitProject.showResult3d();
 }
 
 void ZFlyEmProofMvc::showExternalNeuronWindow()

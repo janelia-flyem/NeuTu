@@ -196,7 +196,7 @@ public slots:
   void start();
   void showDataFrame() const;
   void showDataFrame3d();
-  void showResult3d();
+//  void showResult3d();
   void showResultQuickView();
 //  void showBookmark(bool visible);
   void runSplit();
@@ -287,7 +287,7 @@ private:
   ZSharedPointer<ZStackDoc> m_doc;
   ZSharedPointer<ZStackDoc> m_quickResultDoc;
 //  Z3DWindow *m_bodyWindow;
-  Z3DWindow *m_resultWindow; //Result window with split volumes
+//  Z3DWindow *m_resultWindow; //Result window with split volumes * obsolete
   Z3DWindow *m_quickResultWindow; //Result window with split surfaces
 //  Z3DWindow *m_quickViewWindow; //Obsolete
 
