@@ -322,6 +322,7 @@
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
+#include "zcontrastprotocol.h"
 
 using namespace std;
 
@@ -11480,6 +11481,33 @@ void ZTest::test(MainWindow *host)
   ZFlyEmBodyAnnotation annotation = reader.readAnnotation(117);
   annotation.print();
 
+#endif
+
+#if 1
+  QImage image(1024, 1024, QImage::Format_Indexed8);
+
+  tic();
+  image.setColor(0, 10);
+  ptoc();
+
+  QPixmap pixmap;
+  std::cout << pixmap.isDetached() << std::endl;
+  pixmap.fromImage(image);
+  std::cout << pixmap.isDetached() << std::endl;
+
+  pixmap.detach();
+  std::cout << pixmap.isDetached() << std::endl;
+#endif
+
+#if 0
+  ZContrastProtocol cp;
+  std::cout << cp.hasNoEffect() << std::endl;
+  cp.setOffset(-0.3);
+  cp.setScale(5.197);
+  cp.setNonlinear(ZContrastProtocol::NONLINEAR_SIGMOID);
+  for (int i = 0; i < 256; ++i) {
+    std::cout << i << " --> " << (int) cp.mapGrey(i) << std::endl;
+  }
 #endif
 
 #if 0
@@ -24562,7 +24590,7 @@ void ZTest::test(MainWindow *host)
    reader.checkProofreadingData();
 #endif
 
-#if 1
+#if 0
    ZDvidReader reader;
    ZDvidTarget target("emdata3.int.janelia.org", "c0ab", 8000);
    target.setLabelBlockName("segmentation-from-bricks");

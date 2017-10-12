@@ -5,6 +5,7 @@
 #include "zimage.h"
 #include "zstackfactory.h"
 #include "zstack.hxx"
+#include "zcontrastprotocol.h"
 
 #ifdef _USE_GTEST_
 
@@ -78,6 +79,13 @@ TEST(ZImage, setData)
   ASSERT_EQ(2, qBlue(color));
   ASSERT_EQ(2, qGreen(color));
   ASSERT_EQ(255, qAlpha(color));
+}
+
+TEST(ZContrastProtocol, Basic)
+{
+  ZContrastProtocol cp(0, 1, ZContrastProtocol::NONLINEAR_NONE);
+  ASSERT_TRUE(cp.hasNoEffect());
+  ASSERT_EQ(1, cp.mapGrey(1));
 }
 
 #endif

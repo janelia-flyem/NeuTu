@@ -52,7 +52,6 @@
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_resultWindow(NULL), m_quickResultWindow(NULL),
-  m_quickViewWindow(NULL),
   m_minObjSize(0), m_keepingMainSeed(false), /*m_bookmarkArray(NULL),*/
   m_isBookmarkVisible(true), m_showingBodyMask(false)
 {
@@ -61,11 +60,17 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_skelThre = 20;
   m_splitMode = FlyEM::BODY_SPLIT_ONLINE;
 
-  connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
+//  connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
   connect(this, SIGNAL(result3dQuickViewReady()),
           this, SLOT(startResultQuickView()));
-  connect(this, SIGNAL(rasingBodyQuickView()), this, SLOT(raiseBodyQuickView()));
+//  connect(this, SIGNAL(rasingBodyQuickView()), this, SLOT(raiseBodyQuickView()));
   connect(this, SIGNAL(rasingResultQuickView()), this, SLOT(raiseResultQuickView()));
+
+  m_timer = new QTimer(this);
+  m_timer->setInterval(200);
+  connect(m_timer, &QTimer::timeout,
+          this, &ZFlyEmBodySplitProject::updateSplitQuick);
+  m_timer->start();
 }
 
 ZFlyEmBodySplitProject::~ZFlyEmBodySplitProject()
@@ -84,9 +89,9 @@ void ZFlyEmBodySplitProject::clear(QWidget *widget)
 
 void ZFlyEmBodySplitProject::clear()
 {
-  clearResultWindow();
+  clearQuickResultWindow();
 
-  clear(m_quickResultWindow);
+  clear(m_resultWindow);
 
   if (m_dataFrame != NULL) {
 //    m_dataFrame->close3DWindow();
@@ -94,7 +99,7 @@ void ZFlyEmBodySplitProject::clear()
     delete m_dataFrame;
     m_dataFrame = NULL;
   }
-  clearResultWindow();
+//  clearResultWindow();
 
   shallowClear();
 }
@@ -109,12 +114,6 @@ void ZFlyEmBodySplitProject::shallowClearDataFrame()
 
   clear(m_quickResultWindow);
 
-  if (m_quickViewWindow != NULL) {
-    m_quickViewWindow->hide();
-    delete m_quickViewWindow;
-    m_quickViewWindow = NULL;
-  }
-
   shallowClear();
 }
 
@@ -122,7 +121,6 @@ void ZFlyEmBodySplitProject::shallowClear()
 {
   m_resultWindow = NULL;
   m_quickResultWindow = NULL;
-  m_quickViewWindow = NULL;
   m_dataFrame = NULL;
 
   m_bodyId = 0;
@@ -142,7 +140,6 @@ void ZFlyEmBodySplitProject::shallowClearQuickResultWindow()
 
 void ZFlyEmBodySplitProject::shallowClearQuickViewWindow()
 {
-  m_quickViewWindow = NULL;
 }
 
 /*
@@ -326,13 +323,14 @@ void ZFlyEmBodySplitProject::quickViewFunc()
 }
 #endif
 
+/*
 void ZFlyEmBodySplitProject::raiseBodyQuickView()
 {
   if (m_quickViewWindow != NULL) {
     m_quickViewWindow->raise();
   }
 }
-
+*/
 void ZFlyEmBodySplitProject::raiseResultQuickView()
 {
   if (m_quickResultWindow != NULL) {
@@ -348,15 +346,16 @@ void ZFlyEmBodySplitProject::showQuickView(Z3DWindow *window)
   }
 }
 
-void ZFlyEmBodySplitProject::clearResultWindow()
+void ZFlyEmBodySplitProject::clearQuickResultWindow()
 {
+  m_cancelSplitQuick = true;
   if (m_futureMap.hasThreadAlive()) {
     m_futureMap.waitForFinished();
   }
-  if (m_quickViewWindow != NULL) {
-    m_quickViewWindow->hide();
-    delete m_quickViewWindow;
-    m_quickViewWindow = NULL;
+  if (m_quickResultWindow != NULL) {
+    m_quickResultWindow->hide();
+    delete m_quickResultWindow;
+    m_quickResultWindow = NULL;
   }
 }
 
@@ -407,6 +406,7 @@ void ZFlyEmBodySplitProject::startResultQuickView()
   startQuickView(m_quickResultWindow);
 }
 
+#if 0
 void ZFlyEmBodySplitProject::startBodyQuickView()
 {
   startQuickView(m_quickViewWindow);
@@ -434,6 +434,7 @@ void ZFlyEmBodySplitProject::startBodyQuickView()
   }
 #endif
 }
+#endif
 
 #if 0
 void ZFlyEmBodySplitProject::showBodyQuickView()
@@ -460,7 +461,7 @@ void ZFlyEmBodySplitProject::showBodyQuickView()
 }
 #endif
 
-
+#if 0
 void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 {
   if (tree != NULL) {
@@ -484,6 +485,34 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
     m_quickViewWindow->show();
     m_quickViewWindow->raise();
   }
+}
+#endif
+
+void ZFlyEmBodySplitProject::updateSplitQuick()
+{
+  if (!m_splitUpdated) {
+    const QString threadId = "updateSplitQuickFunc";
+    if (!m_futureMap.isAlive(threadId)) {
+      m_futureMap.removeDeadThread();
+      m_cancelSplitQuick = false;
+      QFuture<void> future =
+          QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateSplitQuickFunc);
+      m_futureMap[threadId] = future;
+    }
+  }
+
+  m_splitUpdated = true;
+}
+
+void ZFlyEmBodySplitProject::invalidateSplitQuick()
+{
+  m_cancelSplitQuick = true;
+  m_splitUpdated = false;
+}
+
+void ZFlyEmBodySplitProject::updateSplitQuickFunc()
+{
+  loadResult3dQuick(m_quickResultDoc.get());
 }
 
 void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
@@ -528,9 +557,8 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
           }
 
           ZOUT(LINFO(), 3) << "Converting split object";
-          ZObject3d *obj = splitObj->toObject3d();
-          if (obj != NULL) {
-            int ds = obj->size() / maxSwcNodeNumber + 1;
+          if (splitObj != NULL) {
+            int ds = splitObj->getVoxelNumber() / maxSwcNodeNumber + 1;
             if (ds < minScale) {
               ds = minScale;
             }
@@ -539,36 +567,39 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
             }
 
             ZOUT(LINFO(), 3) << "Creating split SWC";
-            ZSwcTree *tree = ZSwcGenerator::createSwc(
-                  *obj, dmin2(5.0, ds / 2.0), ds);
+            ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(*splitObj, ds);
             if (tree != NULL) {
               tree->setAlpha(255);
               ZOUT(LINFO(), 3) << "Adding split SWC";
-//              doc->addObject(tree);
               ZStackDocAccessor::AddObject(doc, tree);
             }
-            delete obj;
           }
         }
+      }
+
+      if (m_cancelSplitQuick) {
+        break;
       }
 //      getProgressSignal()->advanceProgress(dp);
     }
 
-    if (!wholeBody.isEmpty()) {
-      ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(wholeBody, 2);
+    if (!wholeBody.isEmpty() && !m_cancelSplitQuick) {
+      ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(wholeBody, 10);
       if (tree != NULL) {
         tree->setColor(255, 255, 255);
-//        doc->addObject(tree);
         ZStackDocAccessor::AddObject(doc, tree);
       }
     }
-//    doc->endObjectModifiedMode();
-//    doc->notifyObjectModified();
+
+    if (m_cancelSplitQuick) {
+      ZStackDocAccessor::RemoveAllSwcTree(doc, true);
+    }
 
     ZOUT(LINFO(), 3) << "Split object processed";
   }
 }
 
+#if 0
 void ZFlyEmBodySplitProject::updateResult3dQuickFunc()
 {
   QMutexLocker locker(&m_splitWindowMutex);
@@ -588,6 +619,7 @@ void ZFlyEmBodySplitProject::updateResult3dQuickFunc()
     emit messageGenerated(ZWidgetMessage("3D split view updated."));
   }
 }
+#endif
 
 void ZFlyEmBodySplitProject::updateResult3dQuick()
 {
@@ -639,16 +671,24 @@ void ZFlyEmBodySplitProject::showResultQuickView()
     if (m_quickResultWindow == NULL) {
       ZWindowFactory windowFactory;
       windowFactory.setWindowTitle("Splitting Result");
-      ZStackDoc *doc = new ZStackDoc;
-      doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
-      doc->disconnectSwcNodeModelUpdate();
-      m_quickResultWindow = windowFactory.make3DWindow(doc);
+      invalidateSplitQuick();
+
+//      ZStackDoc *doc = new ZStackDoc;
+      m_quickResultDoc = ZSharedPointer<ZStackDoc>(new ZStackDoc);
+      m_quickResultDoc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
+      m_quickResultDoc->disconnectSwcNodeModelUpdate();
+      m_quickResultWindow = windowFactory.make3DWindow(m_quickResultDoc);
+      m_quickResultWindow->setAttribute(Qt::WA_DeleteOnClose, false);
+
       connect(m_quickResultWindow, SIGNAL(destroyed()),
               this, SLOT(shallowClearQuickResultWindow()));
-      connect(mainDoc, SIGNAL(labelFieldModified()),
-              this, SLOT(updateResult3dQuick()));
+//      connect(m_quickResultWindow, &Z3DWindow::closed,
+//              this, &ZFlyEmBodySplitProject::resetQuickResultWindow);
+      connect(mainDoc, &ZStackDoc::labelFieldModified,
+              this, &ZFlyEmBodySplitProject::invalidateSplitQuick);
       connect(mainDoc, &ZStackDoc::segmentationUpdated,
-              this, &ZFlyEmBodySplitProject::updateResult3dQuick);
+              this, &ZFlyEmBodySplitProject::invalidateSplitQuick);
+
       if (m_dataFrame != NULL) {
         connect(m_quickResultWindow, SIGNAL(locating2DViewTriggered(int, int, int, int)),
                 m_dataFrame, SLOT(setView(int, int, int, int)));
@@ -659,20 +699,28 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 //      ZDvidReader reader;
       if (m_reader.isReady()) {
         ZStackDocAccessor::AddObject(
-              doc, ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo));
+              m_quickResultDoc.get(), ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo));
         ZStackDocAccessor::AddObject(
-              doc, ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo));
+              m_quickResultDoc.get(), ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo));
         m_quickResultWindow->setYZView();
 //        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 //        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
 //        doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
       }
 
-      updateResult3dQuick();
+//      updateResult3dQuick();
     } else {
       showQuickView(m_quickResultWindow);
     }
   }
+}
+
+void ZFlyEmBodySplitProject::resetQuickResultWindow()
+{
+  if (m_futureMap.hasThreadAlive()) {
+    m_futureMap.waitForFinished();
+  }
+  m_quickResultDoc->removeAllSwcTree(true);
 }
 
 void ZFlyEmBodySplitProject::showResult3d()
@@ -2797,25 +2845,12 @@ void ZFlyEmBodySplitProject::emitError(const QString &msg, bool appending)
 
 void ZFlyEmBodySplitProject::update3DViewPlane()
 {
-  if (m_quickViewWindow || m_quickResultWindow) {
-
-//    ZDvidReader reader;
-
-//    tic();
+  if (m_quickResultWindow) {
     if (m_dvidInfo.isValid()) {
-//      ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
-
-
-      if (m_quickViewWindow != NULL) {
-        Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo);
-        m_quickViewWindow->getDocument()->addObject(graph, true);
-      }
-
       if (m_quickResultWindow != NULL) {
         Z3DGraph *graph = ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo);
         m_quickResultWindow->getDocument()->addObject(graph, true);
       }
-//      std::cout << "3d plane rendering time: " << toc() << std::endl;
     }
 
   }

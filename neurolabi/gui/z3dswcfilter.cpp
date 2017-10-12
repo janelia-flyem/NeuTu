@@ -931,24 +931,29 @@ void Z3DSwcFilter::prepareData()
     ZSwcColorScheme colorScheme;
     colorScheme.setColorScheme(ZSwcColorScheme::UNIQUE_COLOR);
     std::map<ZSwcTree*, size_t> newSources;
-    std::set_difference(sourceIndexMapper.begin(), sourceIndexMapper.end(),
-                        m_randomTreeColorMapper.begin(), m_randomTreeColorMapper.end(),
-                        std::inserter(newSources, newSources.end()),
+    std::set_difference(
+          sourceIndexMapper.begin(), sourceIndexMapper.end(),
+          m_randomTreeColorMapper.begin(), m_randomTreeColorMapper.end(),
+          std::inserter(newSources, newSources.end()),
                         _KeyLess());
     for (const auto& kv : newSources) {
-      m_randomTreeColorMapper.insert(std::make_pair(kv.first,
-                                                    std::make_unique<ZVec4Parameter>(QString("Swc %1 Color").arg(kv.second + 1),
-                                                                                     glm::vec4(ZRandom::instance().randReal<float>(),
-                                                                                               ZRandom::instance().randReal<float>(),
-                                                                                               ZRandom::instance().randReal<float>(),
-                                                                                               1.f))));
+      m_randomTreeColorMapper.insert(
+            std::make_pair(kv.first,
+                           std::make_unique<ZVec4Parameter>(
+                             QString("Swc %1 Color").arg(kv.second + 1),
+                             glm::vec4(ZRandom::instance().randReal<float>(),
+                                       ZRandom::instance().randReal<float>(),
+                                       ZRandom::instance().randReal<float>(),
+                                       1.f))));
       QColor color = colorScheme.getColor((uint64_t)kv.second);
-      m_individualTreeColorMapper.insert(std::make_pair(kv.first,
-                                                        std::make_unique<ZVec4Parameter>(QString("Swc %1 Color").arg(kv.second + 1),
-                                                                                         glm::vec4(color.redF(),
-                                                                                                   color.greenF(),
-                                                                                                   color.blueF(),
-                                                                                                   1.f))));
+      m_individualTreeColorMapper.insert(
+            std::make_pair(kv.first,
+                           std::make_unique<ZVec4Parameter>(
+                             QString("Swc %1 Color").arg(kv.second + 1),
+                             glm::vec4(color.redF(),
+                                       color.greenF(),
+                                       color.blueF(),
+                                       1.f))));
 
       m_randomTreeColorMapper[kv.first]->setStyle("COLOR");
       connect(m_randomTreeColorMapper[kv.first].get(), &ZVec4Parameter::valueChanged,

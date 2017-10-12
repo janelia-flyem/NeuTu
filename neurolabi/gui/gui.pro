@@ -808,7 +808,8 @@ HEADERS += mainwindow.h \
     flyem/zflyembody3ddocmenufactory.h \
     zopenglwidget.h \
     misc/zvtkutil.h \
-    zstackdocaccessor.h
+    zstackdocaccessor.h \
+    zcontrastprotocol.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1412,7 +1413,8 @@ SOURCES += main.cpp \
     zstackreader.cpp \
     dvid/zdvidpath.cpp \
     misc/zvtkutil.cpp \
-    zstackdocaccessor.cpp
+    zstackdocaccessor.cpp \
+    zcontrastprotocol.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

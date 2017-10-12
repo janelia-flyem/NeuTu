@@ -85,7 +85,7 @@ public:
 
 //  void removeAllBookmark();
 
-  void showSkeleton(ZSwcTree *tree);
+//  void showSkeleton(ZSwcTree *tree);
 //  void showBodyQuickView();
 
 //  ZObject3dScan* readBody(ZObject3dScan *out) const;
@@ -203,10 +203,10 @@ public slots:
   void runLocalSplit();
   void updateResult3dQuick();
   void backupSeed();
-  void startBodyQuickView();
+//  void startBodyQuickView();
   void startResultQuickView();
   void startQuickView(Z3DWindow *window);
-  void raiseBodyQuickView();
+//  void raiseBodyQuickView();
   void raiseResultQuickView();
 
   /*!
@@ -225,6 +225,12 @@ public slots:
 
   void updateSplitDocument();
 
+private slots:
+  void resetQuickResultWindow();
+  void updateSplitQuick();
+  void updateSplitQuickFunc();
+  void invalidateSplitQuick();
+
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);
@@ -232,9 +238,9 @@ private:
   void downloadSeed(const std::string &seedKey);
   void removeAllSeed();
   void removeAllSideSeed();
-  void updateResult3dQuickFunc();
+//  void updateResult3dQuickFunc();
 
-  void clearResultWindow();
+  void clearQuickResultWindow();
 //  void quickViewFunc();
 //  void showBodyQuickView();
 //  void showResultQuickView();
@@ -278,10 +284,11 @@ private:
   uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
+  ZSharedPointer<ZStackDoc> m_quickResultDoc;
 //  Z3DWindow *m_bodyWindow;
-  Z3DWindow *m_resultWindow;
-  Z3DWindow *m_quickResultWindow;
-  Z3DWindow *m_quickViewWindow;
+  Z3DWindow *m_resultWindow; //Result window with split volumes
+  Z3DWindow *m_quickResultWindow; //Result window with split surfaces
+//  Z3DWindow *m_quickViewWindow; //Obsolete
 
   size_t m_minObjSize;
   bool m_keepingMainSeed;
@@ -296,8 +303,11 @@ private:
   size_t m_skelThre;
 
   ZThreadFutureMap m_futureMap;
+  QTimer *m_timer;
 
   QMutex m_splitWindowMutex;
+  bool m_cancelSplitQuick = false;
+  bool m_splitUpdated = false;
 
   ZProgressSignal *m_progressSignal;
 };

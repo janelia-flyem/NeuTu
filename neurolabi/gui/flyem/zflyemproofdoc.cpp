@@ -2876,6 +2876,13 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
       bufferObjectModified(tile->getTarget());
       notifyObjectModified();
     }
+  } else {
+    ZDvidGraySlice *slice = getDvidGraySlice();
+    if (slice != NULL) {
+      slice->updateContrast(highContrast);
+      bufferObjectModified(slice->getTarget());
+      notifyObjectModified();
+    }
   }
 }
 
@@ -3038,7 +3045,8 @@ void ZFlyEmProofDoc::runSplitFunc(
     }
 
     getProgressSignal()->advanceProgress(0.1);
-    ZStackWatershedContainer container(signalStack, sparseStack->getSparseStack());
+    ZStackWatershedContainer container(
+          signalStack, sparseStack->getSparseStack(cuboid));
     container.setRange(cuboid);
     for (ZStackArray::const_iterator iter = seedMask.begin();
          iter != seedMask.end(); ++iter) {
@@ -3048,7 +3056,7 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     setHadSegmentationSampled(container.computationDowsampled());
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
 //    container.getResultStack()->save(GET_TEST_DATA_DIR + "/test.tif");
     container.exportSource(GET_TEST_DATA_DIR + "/test2.tif");
 //    container.exportMask(GET_TEST_DATA_DIR + "/test.tif");

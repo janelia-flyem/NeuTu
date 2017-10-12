@@ -84,6 +84,7 @@
 #include "z3dgraphfilter.h"
 #include "z3dmeshfilter.h"
 #include "flyem/zflyembody3ddocmenufactory.h"
+#include "dvid/zdvidgrayslice.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -1305,17 +1306,19 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 
   if (getRole() == ROLE_WIDGET) {
+    ZJsonObject contrastObj = reader.readContrastProtocal();
+    getPresenter()->setHighContrastProtocal(contrastObj);
+
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
     if (slice != NULL) {
+      slice->updateContrast(getCompletePresenter()->highTileContrast());
+
       ZDvidGraySliceScrollStrategy *scrollStrategy =
           new ZDvidGraySliceScrollStrategy;
       scrollStrategy->setGraySlice(slice);
 
       getView()->setScrollStrategy(scrollStrategy);
     }
-
-    ZJsonObject contrastObj = reader.readContrastProtocal();
-    getPresenter()->setHighContrastProtocal(contrastObj);
   }
 
   //    getCompleteDocument()->beginObjectModifiedMode(
@@ -4008,17 +4011,6 @@ void ZFlyEmProofMvc::enhanceTileContrast(bool state)
 {
   getCompletePresenter()->setHighTileContrast(state);
   getCompleteDocument()->enhanceTileContrast(state);
-  /*
-  ZDvidTileEnsemble *tile = getCompleteDocument()->getDvidTileEnsemble();
-  if (tile != NULL) {
-    if (state) {
-      tile->addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
-    } else {
-      tile->removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
-    }
-    getCompleteDocument()->processObjectModified(tile->getTarget());
-  }
-  */
 }
 
 void ZFlyEmProofMvc::smoothDisplay(bool state)

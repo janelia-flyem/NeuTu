@@ -37,7 +37,7 @@ Z3DFilter::Z3DFilter(QObject* parent)
 
 ZParameter* Z3DFilter::parameter(const QString& name) const
 {
-  for (auto para : m_parameters) {
+  for (ZParameter* para : m_parameters) {
     if (para->name() == name)
       return para;
   }
