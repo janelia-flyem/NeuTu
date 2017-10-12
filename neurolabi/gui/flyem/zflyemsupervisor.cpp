@@ -58,7 +58,7 @@ void ZFlyEmSupervisor::setUserName(const std::string userName)
 std::string ZFlyEmSupervisor::GetUserName(
     const std::string &userName, FlyEM::EBodySplitMode mode)
 {
-  if (mode == FlyEM::BODY_SPLIT_ONLINE) {
+  if (mode == FlyEM::BODY_SPLIT_OFFLINE) {
     return userName + "-offline";
   }
 

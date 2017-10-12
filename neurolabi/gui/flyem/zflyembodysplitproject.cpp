@@ -97,6 +97,7 @@ void ZFlyEmBodySplitProject::exit()
   invalidateSplitQuick();
   m_futureMap.waitForFinished();
   setBodyId(0);
+  m_doc->removeAllSwcTree(true);
   m_quickResultWindow->close();
 }
 
