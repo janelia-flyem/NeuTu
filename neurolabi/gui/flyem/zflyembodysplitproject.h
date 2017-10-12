@@ -246,6 +246,7 @@ private:
 //  void showResultQuickView();
   void showQuickView(Z3DWindow *window);
   void result3dQuickFunc();
+  void quitResultUpdate();
 
   int getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }

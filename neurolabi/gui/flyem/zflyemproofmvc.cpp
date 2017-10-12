@@ -1544,8 +1544,10 @@ void ZFlyEmProofMvc::customInit()
 //          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
           this, SLOT(updateSplitBody()));
+  /*
   connect(this, SIGNAL(splitBodyLoaded(uint64_t,FlyEM::EBodySplitMode)),
           &m_splitProject, SLOT(start()));
+          */
   /*
   connect(&m_splitProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString, bool)));

@@ -93,11 +93,7 @@ void ZFlyEmBodySplitProject::start()
 
 void ZFlyEmBodySplitProject::exit()
 {
-  m_timer->stop();
-  invalidateSplitQuick();
-  m_futureMap.waitForFinished();
-  setBodyId(0);
-  m_doc->removeAllSwcTree(true);
+  quitResultUpdate();
   m_quickResultWindow->close();
 }
 
@@ -655,6 +651,15 @@ void ZFlyEmBodySplitProject::updateResult3dQuick()
 //  QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateResult3dQuickFunc);
 }
 
+void ZFlyEmBodySplitProject::quitResultUpdate()
+{
+  m_timer->stop();
+  invalidateSplitQuick();
+  m_futureMap.waitForFinished();
+  m_quickResultDoc->removeAllSwcTree(true);
+  m_splitUpdated = true;
+}
+
 void ZFlyEmBodySplitProject::result3dQuickFunc()
 {
   ZStackDoc *mainDoc = getDocument();
@@ -699,6 +704,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
       m_quickResultDoc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(m_quickResultDoc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
+      m_quickResultWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
       m_quickResultWindow->setAttribute(Qt::WA_DeleteOnClose, false);
 
       connect(m_quickResultWindow, SIGNAL(destroyed()),
@@ -2698,6 +2704,7 @@ std::string ZFlyEmBodySplitProject::getBackupSeedKey(uint64_t bodyId) const
 
 void ZFlyEmBodySplitProject::runLocalSplit()
 {
+  quitResultUpdate();
   if (getDocument() != NULL) {
     backupSeed();
     ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
@@ -2707,10 +2714,12 @@ void ZFlyEmBodySplitProject::runLocalSplit()
       getDocument()->runLocalSeededWatershed();
     }
   }
+  m_timer->start();
 }
 
 void ZFlyEmBodySplitProject::runSplit()
 {
+  quitResultUpdate();
   if (getDocument() != NULL) {
     backupSeed();
     ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
@@ -2720,6 +2729,7 @@ void ZFlyEmBodySplitProject::runSplit()
       getDocument()->runSeededWatershed();
     }
   }
+  m_timer->start();
 
   /*
   ZStackFrame *frame = getDataFrame();
