@@ -1544,6 +1544,8 @@ void ZFlyEmProofMvc::customInit()
 //          this->getView(), SLOT(setView(int, int, int, int)));
   connect(&m_splitProject, SIGNAL(resultCommitted()),
           this, SLOT(updateSplitBody()));
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t,FlyEM::EBodySplitMode)),
+          &m_splitProject, SLOT(start()));
   /*
   connect(&m_splitProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString, bool)));
@@ -2808,6 +2810,8 @@ void ZFlyEmProofMvc::exitSplit()
 {
   if (getCompletePresenter()->isSplitWindow()) {
     emit messageGenerated("Exiting split ...");
+
+    m_splitProject.exit();
 //    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
@@ -2843,7 +2847,7 @@ void ZFlyEmProofMvc::exitSplit()
 //    m_latencyLabelWidget->show();
 
     getCompleteDocument()->deprecateSplitSource();
-    m_splitProject.clear();
+//    m_splitProject.clear();
     disableSplit();
 
     updateAssignedBookmarkTable();
@@ -2867,7 +2871,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
          if (ret == QMessageBox::Save) {
            m_splitProject.saveSeed(false);
          }
-         m_splitProject.clear();
+//         m_splitProject.clear();
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
          getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);

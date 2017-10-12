@@ -37,11 +37,10 @@ public:
 
 
   void clear();
+  void exit();
 
   void setDvidTarget(const ZDvidTarget &target);
-  inline void setBodyId(uint64_t bodyId) {
-    m_bodyId = bodyId;
-  }
+  void setBodyId(uint64_t bodyId);
 
   uint64_t getBodyId() const;
   inline const ZDvidTarget& getDvidTarget() const {
@@ -194,6 +193,7 @@ signals:
   void rasingBodyQuickView();
 
 public slots:
+  void start();
   void showDataFrame() const;
   void showDataFrame3d();
   void showResult3d();

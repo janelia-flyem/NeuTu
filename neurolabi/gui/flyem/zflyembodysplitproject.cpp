@@ -70,7 +70,6 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_timer->setInterval(200);
   connect(m_timer, &QTimer::timeout,
           this, &ZFlyEmBodySplitProject::updateSplitQuick);
-  m_timer->start();
 }
 
 ZFlyEmBodySplitProject::~ZFlyEmBodySplitProject()
@@ -85,6 +84,20 @@ void ZFlyEmBodySplitProject::clear(QWidget *widget)
     delete widget;
     widget = NULL;
   }
+}
+
+void ZFlyEmBodySplitProject::start()
+{
+  m_timer->start();
+}
+
+void ZFlyEmBodySplitProject::exit()
+{
+  m_timer->stop();
+  invalidateSplitQuick();
+  m_futureMap.waitForFinished();
+  setBodyId(0);
+  m_quickResultWindow->close();
 }
 
 void ZFlyEmBodySplitProject::clear()
@@ -153,6 +166,12 @@ void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
   if (m_reader.open(target)) {
     m_dvidInfo = m_reader.readGrayScaleInfo();
   }
+}
+
+void ZFlyEmBodySplitProject::setBodyId(uint64_t bodyId)
+{
+  m_bodyId = bodyId;
+  invalidateSplitQuick();
 }
 
 void ZFlyEmBodySplitProject::showDataFrame() const
@@ -678,6 +697,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
       m_quickResultDoc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
       m_quickResultDoc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(m_quickResultDoc);
+      m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
       m_quickResultWindow->setAttribute(Qt::WA_DeleteOnClose, false);
 
       connect(m_quickResultWindow, SIGNAL(destroyed()),
@@ -1235,6 +1255,11 @@ void ZFlyEmBodySplitProject::commitResult()
   getProgressSignal()->startProgress("Saving splits");
 
   getProgressSignal()->startProgress(0.8);
+
+  m_cancelSplitQuick = true;
+  m_splitUpdated = true;
+  m_futureMap.waitForFinished();
+
   if (getDocument()->getLabelField() != NULL) {
     commitResultFunc(
           getDocument()->getSparseStackMask(),
