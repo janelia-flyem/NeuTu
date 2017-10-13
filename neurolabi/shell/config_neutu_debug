@@ -33,6 +33,6 @@ run_script=$bindir/debug_neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
 echo "cd $downloadDir/NeuTu/neurolabi/gui" >> $run_script
-echo gdb $neutu_bin_dir'/neutu_d $*' >> $run_script
+echo "gdb $neutu_bin_dir/neutu_d" >> $run_script
 chmod a+x $run_script
 

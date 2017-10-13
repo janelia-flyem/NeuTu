@@ -3828,6 +3828,12 @@ ZObject3dScan* ZObject3dScan::subobject(
     remain->clear();
     remain->setSliceAxis(m_sliceAxis);
   }
+
+  if (box.contains(getBoundBox())) {
+    *result = *this;
+    return result;
+  }
+
   ConstSegmentIterator iter(this);
   while (iter.hasNext()) {
     const ZObject3dScan::Segment &seg = iter.next();

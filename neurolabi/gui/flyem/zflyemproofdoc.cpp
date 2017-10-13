@@ -2967,6 +2967,38 @@ void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
     m_futureMap[threadId] = future;
   }
 }
+
+void ZFlyEmProofDoc::runFullSplit(FlyEM::EBodySplitMode mode)
+{
+  QList<ZDocPlayer*> playerList =
+      getPlayerList(ZStackObjectRole::ROLE_SEED);
+
+  ZOUT(LINFO(), 3) << "Retrieving label set";
+
+  QSet<int> labelSet;
+  foreach (const ZDocPlayer *player, playerList) {
+    labelSet.insert(player->getLabel());
+  }
+
+  if (labelSet.size() < 2) {
+    ZWidgetMessage message(
+          QString("The seed has no more than one label. No split is done"));
+    message.setType(NeuTube::MSG_WARNING);
+
+    emit messageGenerated(message);
+    return;
+  }
+
+  const QString threadId = "seededWatershed";
+  if (!m_futureMap.isAlive(threadId)) {
+    m_futureMap.removeDeadThread();
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmProofDoc::runFullSplitFunc, mode);
+    m_futureMap[threadId] = future;
+  }
+}
+
+
 #if 0
 void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
 {
@@ -3009,6 +3041,11 @@ void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
   runSplitFunc(mode, FlyEM::RANGE_LOCAL);
 }
 
+void ZFlyEmProofDoc::runFullSplitFunc(FlyEM::EBodySplitMode mode)
+{
+  runSplitFunc(mode, FlyEM::RANGE_FULL);
+}
+
 void ZFlyEmProofDoc::runSplitFunc(
     FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range)
 {
@@ -3048,6 +3085,7 @@ void ZFlyEmProofDoc::runSplitFunc(
     ZStackWatershedContainer container(
           signalStack, sparseStack->getSparseStack(cuboid));
     container.setRange(cuboid);
+    container.setCcaPost(false);
     for (ZStackArray::const_iterator iter = seedMask.begin();
          iter != seedMask.end(); ++iter) {
       container.addSeed(**iter);

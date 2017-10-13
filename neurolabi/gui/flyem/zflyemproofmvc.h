@@ -252,6 +252,7 @@ public slots:
   void exportSeed();
   void importSeed();
   void runSplit();
+  void runFullSplit();
   void runLocalSplit();
   void saveSplitTask();
   void saveSplitTask(uint64_t bodyId);
@@ -387,6 +388,7 @@ private:
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
+  void runFullSplitFunc();
   void runLocalSplitFunc();
 
   void mergeSelectedWithoutConflict();

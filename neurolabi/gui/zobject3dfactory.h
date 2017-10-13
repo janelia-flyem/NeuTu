@@ -39,6 +39,15 @@ public:
   static std::vector<ZObject3dScan*> MakeObject3dScanPointerArray(
       const ZStack &stack, int yStep = 1, bool boundaryOnly = true);
 
+  /*!
+   * \brief Extract objects from a stack
+   *
+   * \param stack Input stack.
+   * \param axis Scanning axis.
+   * \param foreground Exclude background object if it is true.
+   * \param out Output pointer if it is not NULL.
+   * \return An array of objects.
+   */
   static ZObject3dScanArray* MakeObject3dScanArray(
       const ZStack &stack, NeuTube::EAxis axis, bool foreground,
       ZObject3dScanArray *out);

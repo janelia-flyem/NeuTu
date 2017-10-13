@@ -228,6 +228,7 @@ public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
   void runSplit(FlyEM::EBodySplitMode mode);
+  void runFullSplit(FlyEM::EBodySplitMode mode);
   void runLocalSplit(FlyEM::EBodySplitMode mode);
 
   bool isSplitRunning() const;
@@ -541,6 +542,7 @@ private:
   void runSplitFunc(FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range);
   void runSplitFunc(FlyEM::EBodySplitMode mode);
   void localSplitFunc(FlyEM::EBodySplitMode mode);
+  void runFullSplitFunc(FlyEM::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();

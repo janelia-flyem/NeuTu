@@ -103,15 +103,11 @@ void ZFlyEmBodySplitProject::clear()
 {
   clearQuickResultWindow();
 
-//  clear(m_resultWindow);
-
   if (m_dataFrame != NULL) {
-//    m_dataFrame->close3DWindow();
     m_dataFrame->hide();
     delete m_dataFrame;
     m_dataFrame = NULL;
   }
-//  clearResultWindow();
 
   shallowClear();
 }
@@ -368,10 +364,7 @@ void ZFlyEmBodySplitProject::showQuickView(Z3DWindow *window)
 
 void ZFlyEmBodySplitProject::clearQuickResultWindow()
 {
-  m_cancelSplitQuick = true;
-  if (m_futureMap.hasThreadAlive()) {
-    m_futureMap.waitForFinished();
-  }
+  quitResultUpdate();
   if (m_quickResultWindow != NULL) {
     m_quickResultWindow->hide();
     delete m_quickResultWindow;
@@ -518,10 +511,9 @@ void ZFlyEmBodySplitProject::updateSplitQuick()
       QFuture<void> future =
           QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateSplitQuickFunc);
       m_futureMap[threadId] = future;
+      m_splitUpdated = true;
     }
   }
-
-  m_splitUpdated = true;
 }
 
 void ZFlyEmBodySplitProject::invalidateSplitQuick()
@@ -532,7 +524,12 @@ void ZFlyEmBodySplitProject::invalidateSplitQuick()
 
 void ZFlyEmBodySplitProject::updateSplitQuickFunc()
 {
-  loadResult3dQuick(m_quickResultDoc.get());
+  loadResult3dQuick(m_quickResultDoc);
+}
+
+void ZFlyEmBodySplitProject::loadResult3dQuick(ZSharedPointer<ZStackDoc> doc)
+{
+  loadResult3dQuick(doc.get());
 }
 
 void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
@@ -605,7 +602,7 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
 
     if (!wholeBody.isEmpty() && !m_cancelSplitQuick) {
       ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(wholeBody, 10);
-      if (tree != NULL) {
+      if (tree != NULL && !m_cancelSplitQuick) {
         tree->setColor(255, 255, 255);
         ZStackDocAccessor::AddObject(doc, tree);
       }
@@ -664,6 +661,12 @@ void ZFlyEmBodySplitProject::quitResultUpdate()
     m_quickResultDoc->removeAllSwcTree(true);
   }
   m_splitUpdated = true;
+}
+
+void ZFlyEmBodySplitProject::cancelResultUpdate()
+{
+  m_cancelSplitQuick = true;
+  m_futureMap.waitForFinished();
 }
 
 void ZFlyEmBodySplitProject::result3dQuickFunc()
@@ -2738,13 +2741,21 @@ void ZFlyEmBodySplitProject::runSplit()
     }
   }
   m_timer->start();
+}
 
-  /*
-  ZStackFrame *frame = getDataFrame();
-  if (frame != NULL) {
-    frame->document()->runSeededWatershed();
+void ZFlyEmBodySplitProject::runFullSplit()
+{
+  quitResultUpdate();
+  if (getDocument() != NULL) {
+    backupSeed();
+    ZFlyEmProofDoc *proofdoc = getDocument<ZFlyEmProofDoc>();
+    if (proofdoc != NULL) {
+      proofdoc->runFullSplit(getSplitMode());
+    } else {
+      getDocument()->runSeededWatershed();
+    }
   }
-  */
+  m_timer->start();
 }
 
 void ZFlyEmBodySplitProject::setSeedProcessed(uint64_t bodyId)

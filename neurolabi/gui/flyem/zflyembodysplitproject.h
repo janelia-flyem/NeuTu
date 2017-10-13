@@ -35,8 +35,11 @@ public:
   explicit ZFlyEmBodySplitProject(QObject *parent = 0);
   virtual ~ZFlyEmBodySplitProject();
 
-
+  /*!
+   * \brief Clear all resources associated with the project.
+   */
   void clear();
+
   void exit();
 
   void setDvidTarget(const ZDvidTarget &target);
@@ -200,6 +203,7 @@ public slots:
   void showResultQuickView();
 //  void showBookmark(bool visible);
   void runSplit();
+  void runFullSplit();
   void runLocalSplit();
   void updateResult3dQuick();
   void backupSeed();
@@ -235,6 +239,7 @@ private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);
   void loadResult3dQuick(ZStackDoc *doc);
+  void loadResult3dQuick(ZSharedPointer<ZStackDoc> doc);
   void downloadSeed(const std::string &seedKey);
   void removeAllSeed();
   void removeAllSideSeed();
@@ -247,6 +252,7 @@ private:
   void showQuickView(Z3DWindow *window);
   void result3dQuickFunc();
   void quitResultUpdate();
+  void cancelResultUpdate();
 
   int getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }

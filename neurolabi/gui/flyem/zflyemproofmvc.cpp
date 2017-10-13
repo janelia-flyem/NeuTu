@@ -1581,6 +1581,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
           this, SLOT(deselectAllBody()));
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
+  connect(getCompletePresenter(), SIGNAL(runningFullSplit()),
+          this, SLOT(runFullSplit()));
   connect(getCompletePresenter(), SIGNAL(runningLocalSplit()),
           this, SLOT(runLocalSplit()));
 //  connect(getCompletePresenter(), SIGNAL(bookmarkAdded(ZFlyEmBookmark*)),
@@ -1938,6 +1940,14 @@ void ZFlyEmProofMvc::runSplitFunc()
   getProgressSignal()->endProgress();
 }
 
+void ZFlyEmProofMvc::runFullSplitFunc()
+{
+  getProgressSignal()->startProgress(1.0);
+  m_splitProject.setSplitMode(getCompletePresenter()->getSplitMode());
+  m_splitProject.runFullSplit();
+  getProgressSignal()->endProgress();
+}
+
 void ZFlyEmProofMvc::runLocalSplitFunc()
 {
   getProgressSignal()->startProgress(1.0);
@@ -1949,6 +1959,11 @@ void ZFlyEmProofMvc::runLocalSplitFunc()
 void ZFlyEmProofMvc::runLocalSplit()
 {
   runLocalSplitFunc();
+}
+
+void ZFlyEmProofMvc::runFullSplit()
+{
+  runFullSplitFunc();
 }
 
 void ZFlyEmProofMvc::runSplit()
