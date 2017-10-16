@@ -2261,13 +2261,13 @@ ZObject3dScan ZObject3dScan::getMedianSlice() const
   return getSlice(z);
 }
 
-void ZObject3dScan::exportImageSlice(const string outputFolder) const
+void ZObject3dScan::exportImageSlice(const std::string outputFolder) const
 {
   exportImageSlice(getMinZ(), getMaxZ(), outputFolder);
 }
 
 void ZObject3dScan::exportImageSlice(
-    int minZ, int maxZ, const string outputFolder) const
+    int minZ, int maxZ, const std::string outputFolder) const
 {
   ZIntCuboid box = getBoundBox();
   if (!box.isEmpty()) {
