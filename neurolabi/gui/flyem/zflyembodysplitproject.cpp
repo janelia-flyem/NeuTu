@@ -570,7 +570,15 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
       if (splitObj != NULL) {
         if (splitObj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
           if (!wholeBody.isEmpty()) {
+            //For testing
+//            ZObject3dScan testBody = wholeBody;
+//            testBody.subtract(*splitObj);
+            ////
+
             wholeBody.subtractSliently(*splitObj);
+
+//            std::cout << "Subtract comparison: " << testBody.equalsLiterally(wholeBody)
+//                      << std::endl;
           }
 
           ZOUT(LINFO(), 3) << "Converting split object";
@@ -601,6 +609,7 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     }
 
     if (!wholeBody.isEmpty() && !m_cancelSplitQuick) {
+      ZOUT(LINFO(), 3) << "Adding remain SWC";
       ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(wholeBody, 10);
       if (tree != NULL && !m_cancelSplitQuick) {
         tree->setColor(255, 255, 255);

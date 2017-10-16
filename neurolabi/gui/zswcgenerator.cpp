@@ -501,7 +501,9 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsampleMax(intv, intv, intv);
+    std::cout << "Object downsampled" << std::endl;
     stack = obj2.toStackObject();
+    std::cout << "Stack generated" << std::endl;
   } else {
     stack = obj.toStackObject();
   }
@@ -515,6 +517,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
     }
     delete stack;
   }
+  std::cout << "Surface swc created." << std::endl;
 
   return tree;
 }
