@@ -39,6 +39,7 @@
 #include "tz_stack_bwmorph.h"
 #include "geometry/zgeometry.h"
 #include "zintcuboid.h"
+#include "zstackwriter.h"
 
 using namespace std;
 
@@ -2265,6 +2266,34 @@ ZObject3dScan ZObject3dScan::getMedianSlice() const
   }
 
   return getSlice(z);
+}
+
+void ZObject3dScan::exportImageSlice(const string outputFolder) const
+{
+  exportImageSlice(getMinZ(), getMaxZ(), outputFolder);
+}
+
+void ZObject3dScan::exportImageSlice(
+    int minZ, int maxZ, const string outputFolder) const
+{
+  ZIntCuboid box = getBoundBox();
+  if (!box.isEmpty()) {
+    for (int i = minZ; i <= maxZ; ++i) {
+      std::cout << "Saving " << i << std::endl;
+      ZString path = outputFolder + "/";
+      path.appendNumber(i, 5);
+      path += ".tif";
+      ZIntCuboid sliceBox = box;
+      sliceBox.setFirstZ(i);
+      sliceBox.setLastZ(i);
+      ZStack *stack = ZStackFactory::MakeZeroStack(GREY, sliceBox);
+      getSlice(i).drawStack(stack, 255);
+      ZStackWriter writer;
+      writer.setCompressHint(ZStackWriter::COMPRESS_DEFAULT);
+      writer.write(path, stack);
+      delete stack;
+    }
+  }
 }
 
 ZObject3dScan ZObject3dScan::getSlice(int z) const

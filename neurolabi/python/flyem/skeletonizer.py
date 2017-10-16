@@ -10,7 +10,7 @@ class Skeletonizer:
     def __init__(self):
         self.dvidEnv = None
         self.processMap = {}
-        self.executable = "/opt/bin/neut"
+        self.executable = "/opt/bin/neutu"
 
     def setDvidEnv(self, env):
         self.dvidEnv = env

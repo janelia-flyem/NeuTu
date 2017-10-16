@@ -30,8 +30,8 @@ private:
   static void LoadSeeds(
       const ZJsonObject &inputJson, ZStackWatershedContainer &container,
       const std::string &dataDir, bool isFile);
-  static void ProcessResult(ZStackWatershedContainer &container, const std::string &output,
-      const std::string &splitTaskKey);
+  void processResult(ZStackWatershedContainer &container, const std::string &output,
+      const std::string &splitTaskKey, bool committing);
   std::vector<uint64_t> commitResult(ZObject3dScanArray *objArray, ZDvidWriter &writer);
 
 private:

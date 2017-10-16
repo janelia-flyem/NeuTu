@@ -24613,5 +24613,26 @@ void ZTest::test(MainWindow *host)
 //   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
+#if 1
+   ZDvidReader reader;
+   ZDvidTarget target("emdata1.int.janelia.org", "babd", 8500);
+   target.setBodyLabelName("bodies3");
+   reader.open(target);
+
+   ZObject3dScan *obj = reader.readBody(43752, true, NULL);
+   obj->exportImageSlice(GET_TEST_DATA_DIR + "/tmp/43752");
+   delete obj;
+
+#endif
+
+#if 0
+   ZObject3dScan obj;
+   obj.addSegment(0, 0, 0, 0);
+   obj.addSegment(1, 1, 2, 3);
+   obj.exportImageSlice(0, 1, GET_TEST_DATA_DIR + "/tmp/slice");
+
+
+#endif
+
   std::cout << "Done." << std::endl;
 }

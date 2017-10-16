@@ -40,6 +40,11 @@ public:
    */
   void clear();
 
+  /*!
+   * \brief Exit the working state.
+   *
+   *
+   */
   void exit();
 
   void setDvidTarget(const ZDvidTarget &target);
