@@ -137,6 +137,12 @@ void ZProofreadWindow::init()
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
   connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
+  // Use "showNormal" instead of "show" to un-minimize the window if needed.
+  connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this, SLOT(showNormal()));
+  connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this, SLOT(raise()));
+
   setCentralWidget(widget);
 
   m_progressDlg = NULL;

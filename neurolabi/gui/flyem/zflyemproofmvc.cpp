@@ -498,6 +498,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
     }
     connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
             this, SLOT(zoomTo(int, int, int, int)));
+    connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+            this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
   }
 }
 
