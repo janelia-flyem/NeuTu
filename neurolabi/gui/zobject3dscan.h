@@ -385,6 +385,9 @@ public:
   ZObject3dScan interpolateSlice(int z) const;
   ZObject3dScan getFirstSlice() const;
 
+  void exportImageSlice(int minZ, int maxZ, const std::string outputFolder) const;
+  void exportImageSlice(const std::string outputFolder) const;
+
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
       NeuTube::EAxis sliceAxis) const;

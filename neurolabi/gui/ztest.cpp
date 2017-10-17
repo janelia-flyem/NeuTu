@@ -322,6 +322,7 @@
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
+#include "zcontrastprotocol.h"
 
 using namespace std;
 
@@ -11480,6 +11481,33 @@ void ZTest::test(MainWindow *host)
   ZFlyEmBodyAnnotation annotation = reader.readAnnotation(117);
   annotation.print();
 
+#endif
+
+#if 1
+  QImage image(1024, 1024, QImage::Format_Indexed8);
+
+  tic();
+  image.setColor(0, 10);
+  ptoc();
+
+  QPixmap pixmap;
+  std::cout << pixmap.isDetached() << std::endl;
+  pixmap.fromImage(image);
+  std::cout << pixmap.isDetached() << std::endl;
+
+  pixmap.detach();
+  std::cout << pixmap.isDetached() << std::endl;
+#endif
+
+#if 0
+  ZContrastProtocol cp;
+  std::cout << cp.hasNoEffect() << std::endl;
+  cp.setOffset(-0.3);
+  cp.setScale(5.197);
+  cp.setNonlinear(ZContrastProtocol::NONLINEAR_SIGMOID);
+  for (int i = 0; i < 256; ++i) {
+    std::cout << i << " --> " << (int) cp.mapGrey(i) << std::endl;
+  }
 #endif
 
 #if 0
@@ -24562,7 +24590,7 @@ void ZTest::test(MainWindow *host)
    reader.checkProofreadingData();
 #endif
 
-#if 1
+#if 0
    ZDvidReader reader;
    ZDvidTarget target("emdata3.int.janelia.org", "c0ab", 8000);
    target.setLabelBlockName("segmentation-from-bricks");
@@ -24583,6 +24611,27 @@ void ZTest::test(MainWindow *host)
 //   ZStack *stack = stackArray[1];
 ////   ZStack *stack = reader.readGrayScale(3189, 3850, 13970, 100, 100, 100);
 //   stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 1
+   ZDvidReader reader;
+   ZDvidTarget target("emdata1.int.janelia.org", "babd", 8500);
+   target.setBodyLabelName("bodies3");
+   reader.open(target);
+
+   ZObject3dScan *obj = reader.readBody(43752, true, NULL);
+   obj->exportImageSlice(GET_TEST_DATA_DIR + "/tmp/43752");
+   delete obj;
+
+#endif
+
+#if 0
+   ZObject3dScan obj;
+   obj.addSegment(0, 0, 0, 0);
+   obj.addSegment(1, 1, 2, 3);
+   obj.exportImageSlice(0, 1, GET_TEST_DATA_DIR + "/tmp/slice");
+
+
 #endif
 
   std::cout << "Done." << std::endl;

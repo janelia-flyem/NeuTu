@@ -90,6 +90,13 @@ public:
 
   ZIntCuboid& getRange();
 
+  void setCcaPost(bool on) {
+    m_ccaPost = on;
+  }
+  bool ccaPost() const {
+    return m_ccaPost;
+  }
+
 private:
   void init();
   void init(ZStack *stack, ZSparseStack *spStack);
@@ -130,6 +137,7 @@ private:
   bool m_floodingZero;
   int m_channel;
   bool m_usingSeedRange = false;
+  bool m_ccaPost = true;
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H

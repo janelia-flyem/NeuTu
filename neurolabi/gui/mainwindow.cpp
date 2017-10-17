@@ -7428,10 +7428,6 @@ void MainWindow::showAndRaise()
 
 void MainWindow::launchSplit(const QString &str)
 {
-//  ZJsonObject obj;
-//  obj.decodeString(str.toStdString().c_str());
-
-//  m_bodySplitProjectDialog->show();
   m_bodySplitProjectDialog->startSplit(str);
 }
 

@@ -39,9 +39,7 @@
 #include "tz_stack_bwmorph.h"
 #include "geometry/zgeometry.h"
 #include "zintcuboid.h"
-
-using namespace std;
-
+#include "zstackwriter.h"
 
 ///////////////////////////////////////////////////
 
@@ -442,7 +440,7 @@ ZObject3d* ZObject3dScan::toObject3d() const
 
   ZObject3d *obj = new ZObject3d();
 
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     int y = iter->getY();
     int z = iter->getZ();
@@ -634,8 +632,8 @@ void ZObject3dScan::printInfo() const
 
 void ZObject3dScan::print() const
 {
-  cout << getStripeNumber() << " stripes" << endl;
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  std::cout << getStripeNumber() << " stripes" << std::endl;
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     //cout << "  Z:" << iter->getZ() << " Y:" << iter->getY() << " #S:"
     //     << iter->getSegmentNumber() << " #V:" << iter->getVoxelNumber() << endl;
@@ -643,7 +641,7 @@ void ZObject3dScan::print() const
   }
 }
 
-bool ZObject3dScan::load(const string &filePath)
+bool ZObject3dScan::load(const std::string &filePath)
 {
   clear();
 
@@ -677,7 +675,7 @@ bool ZObject3dScan::load(const string &filePath)
     */
 
       m_stripeArray.resize(stripeNumber);
-      for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+      for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
            iter != m_stripeArray.end(); ++iter) {
         iter->read(fp);
       }
@@ -711,19 +709,19 @@ bool ZObject3dScan::load(const char *filePath)
 
 bool ZObject3dScan::save(const char *filePath)
 {
-  return save(string(filePath));
+  return save(std::string(filePath));
 }
 
 bool ZObject3dScan::save(const char *filePath) const
 {
-  return save(string(filePath));
+  return save(std::string(filePath));
 }
 
 void ZObject3dScan::write(std::ostream &stream) const
 {
   int stripeNumber = (int) getStripeNumber();
   stream.write((const char*)(&stripeNumber), sizeof(int));
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     const ZObject3dStripe &stripe = *iter;
     stripe.write(stream);
@@ -736,7 +734,7 @@ void ZObject3dScan::read(std::istream &stream)
   stream.read((char*)(&stripeNumber), sizeof(int));
 
   m_stripeArray.resize(stripeNumber);
-  for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     iter->read(stream);
   }
@@ -750,7 +748,7 @@ void ZObject3dScan::read(std::istream &stream)
   deprecate(COMPONENT_ALL);
 }
 
-bool ZObject3dScan::save(const string &filePath) const
+bool ZObject3dScan::save(const std::string &filePath) const
 {
 #ifdef _DEBUG_
   std::cout << "Saving " << filePath << std::endl;
@@ -760,7 +758,7 @@ bool ZObject3dScan::save(const string &filePath) const
   if (fp != NULL) {
     int stripeNumber = (int) getStripeNumber();
     fwrite(&stripeNumber, sizeof(int), 1, fp);
-    for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       iter->write(fp);
     }
@@ -776,7 +774,7 @@ bool ZObject3dScan::save(const string &filePath) const
 size_t ZObject3dScan::countForegroundOverlap(Stack *stack, const int *offset)
 {
   size_t count = 0;
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     count += iter->countForegroundOverlap(stack, offset);
   }
@@ -786,7 +784,7 @@ size_t ZObject3dScan::countForegroundOverlap(Stack *stack, const int *offset)
 
 void ZObject3dScan::addStack(Stack *stack, int v, const int *offset) const
 {
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     iter->addStackValue(stack, v, offset);
   }
@@ -794,7 +792,7 @@ void ZObject3dScan::addStack(Stack *stack, int v, const int *offset) const
 
 void ZObject3dScan::drawStack(Stack *stack, int v, const int *offset) const
 {
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     iter->drawStack(stack, v, offset);
   }
@@ -823,7 +821,7 @@ void ZObject3dScan::drawStack(ZStack *stack, int v) const
 void ZObject3dScan::drawStack(
     Stack *stack, uint8_t red, uint8_t green, uint8_t blue, const int *offset) const
 {
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     const ZObject3dStripe &stripe = *iter;
     stripe.drawStack(stack, red, green, blue, m_sliceAxis, offset);
@@ -834,7 +832,7 @@ void ZObject3dScan::drawStack(
     Stack *stack, uint8_t red, uint8_t green, uint8_t blue, double alpha,
     const int *offset) const
 {
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     const ZObject3dStripe &stripe = *iter;
     stripe.drawStack(stack, red, green, blue, alpha, offset);
@@ -886,7 +884,7 @@ void ZObject3dScan::sort()
 void ZObject3dScan::sortedCanonize()
 {
   if (!isEmpty() && !isCanonized()) {
-    vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
+    std::vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
     size_t length = 0;
     //newStripeArray.reserve(m_stripeArray.size());
     m_stripeArray[0].sortedCanonize();
@@ -917,7 +915,7 @@ void ZObject3dScan::sortedCanonize()
 void ZObject3dScan::fullySortedCanonize()
 {
   if (!isEmpty() && !isCanonized()) {
-    vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
+    std::vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
     size_t length = 0;
     //newStripeArray.reserve(m_stripeArray.size());
     m_stripeArray[0].sortedCanonize();
@@ -1005,8 +1003,8 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
   TEvent event = EVENT_NULL;
 
   if (yintv > 0 || zintv > 0) {
-    vector<ZObject3dStripe> newStripeArray;
-    for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+    std::vector<ZObject3dStripe> newStripeArray;
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       if ((iter->getY() % (yintv + 1) == 0) &&
           (iter->getZ() % (zintv + 1) == 0)) {
@@ -1019,7 +1017,7 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
   }
 
   if (xintv > 0) {
-    for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+    for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       iter->downsample(xintv);
       iter->setY(iter->getY() / (yintv + 1));
@@ -1057,29 +1055,22 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
 
   TEvent event = EVENT_NULL;
 
-#ifdef _DEBUG_2
-      std::cout << getMinZ() << std::endl;
-      std::cout << getMaxZ() << std::endl;
-#endif
+  ZOUT(LINFO(), 3) << "Downsmapling obj: " << xintv << yintv << zintv;
 
   if (yintv > 0 || zintv > 0) {
-    for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+    for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
-#ifdef _DEBUG_2
-    std::cout << iter->getZ() << std::endl;
-#endif
+//      ZOUT(LINFO(), 3) << "Checking " << iter->getZ();
       iter->setY(iter->getY() / (yintv + 1));
       iter->setZ(iter->getZ() / (zintv + 1));
-#ifdef _DEBUG_2
-    std::cout << iter->getZ() << std::endl;
-#endif
     }
     //m_isCanonized = false;
     event |= EVENT_OBJECT_UNCANONIZED;
   }
 
   if (xintv > 0) {
-    for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+    ZOUT(LINFO(), 3) << "Downsmapling x: " << xintv;
+    for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       iter->downsampleMax(xintv);
     }
@@ -1087,8 +1078,10 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
     event |= EVENT_OBJECT_UNCANONIZED;
   }
 
+  ZOUT(LINFO(), 3) << "Processing " << event;
   processEvent(event);
 
+  ZOUT(LINFO(), 3) << "Resetting ds";
   pushDsIntv(xintv, yintv, zintv);
 
 #ifdef _DEBUG_
@@ -1096,6 +1089,7 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
       std::cout << getMaxZ() << std::endl;
 #endif
 
+  ZOUT(LINFO(), 3) << "Canonizing ... " << xintv << yintv << zintv;
   canonize();
 
   //deprecate(ALL_COMPONENT);
@@ -1336,7 +1330,7 @@ ZIntCuboid ZObject3dScan::getBoundBox() const
   ZIntCuboid boundBox;
 
   bool isFirst = true;
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     if (!iter->isEmpty()) {
       if (isFirst) {
@@ -2267,6 +2261,34 @@ ZObject3dScan ZObject3dScan::getMedianSlice() const
   return getSlice(z);
 }
 
+void ZObject3dScan::exportImageSlice(const std::string outputFolder) const
+{
+  exportImageSlice(getMinZ(), getMaxZ(), outputFolder);
+}
+
+void ZObject3dScan::exportImageSlice(
+    int minZ, int maxZ, const std::string outputFolder) const
+{
+  ZIntCuboid box = getBoundBox();
+  if (!box.isEmpty()) {
+    for (int i = minZ; i <= maxZ; ++i) {
+      std::cout << "Saving " << i << std::endl;
+      ZString path = outputFolder + "/";
+      path.appendNumber(i, 5);
+      path += ".tif";
+      ZIntCuboid sliceBox = box;
+      sliceBox.setFirstZ(i);
+      sliceBox.setLastZ(i);
+      ZStack *stack = ZStackFactory::MakeZeroStack(GREY, sliceBox);
+      getSlice(i).drawStack(stack, 255);
+      ZStackWriter writer;
+      writer.setCompressHint(ZStackWriter::COMPRESS_DEFAULT);
+      writer.write(path, stack);
+      delete stack;
+    }
+  }
+}
+
 ZObject3dScan ZObject3dScan::getSlice(int z) const
 {
   ZObject3dScan slice;
@@ -2899,7 +2921,7 @@ void ZObject3dScan::fillHole()
     return false; \
   }
 
-void ZObject3dScan::exportDvidObject(const string &filePath) const
+void ZObject3dScan::exportDvidObject(const std::string &filePath) const
 {
   FILE *fp = fopen(filePath.c_str(), "w");
 
@@ -3828,6 +3850,12 @@ ZObject3dScan* ZObject3dScan::subobject(
     remain->clear();
     remain->setSliceAxis(m_sliceAxis);
   }
+
+  if (box.contains(getBoundBox())) {
+    *result = *this;
+    return result;
+  }
+
   ConstSegmentIterator iter(this);
   while (iter.hasNext()) {
     const ZObject3dScan::Segment &seg = iter.next();
@@ -3898,7 +3926,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
     double xyCorr = 0.0;
 
     size_t count = 0;
-    for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       int y = iter->getY();
       int nseg = iter->getSegmentNumber();
@@ -4101,7 +4129,7 @@ std::vector<int> ZObject3dScan::toIntArray() const
   return array;
 }
 
-bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
+bool ZObject3dScan::importHdf5(const std::string &filePath, const std::string &key)
 {
   clear();
 
@@ -4116,7 +4144,7 @@ bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
   return false;
 }
 
-bool ZObject3dScan::exportHdf5(const string &filePath, const string &key) const
+bool ZObject3dScan::exportHdf5(const std::string &filePath, const std::string &key) const
 {
   ZHdf5Writer writer;
   if (writer.open(filePath)) {
@@ -4191,7 +4219,7 @@ std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(
   return result;
 }
 
-bool ZObject3dScan::importDvidRoi(const string &filePath)
+bool ZObject3dScan::importDvidRoi(const std::string &filePath)
 {
   ZJsonArray objJson;
   objJson.load(filePath);

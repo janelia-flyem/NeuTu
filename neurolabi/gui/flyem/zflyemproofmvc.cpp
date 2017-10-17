@@ -84,6 +84,7 @@
 #include "z3dgraphfilter.h"
 #include "z3dmeshfilter.h"
 #include "flyem/zflyembody3ddocmenufactory.h"
+#include "dvid/zdvidgrayslice.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -1305,17 +1306,19 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 
   if (getRole() == ROLE_WIDGET) {
+    ZJsonObject contrastObj = reader.readContrastProtocal();
+    getPresenter()->setHighContrastProtocal(contrastObj);
+
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
     if (slice != NULL) {
+      slice->updateContrast(getCompletePresenter()->highTileContrast());
+
       ZDvidGraySliceScrollStrategy *scrollStrategy =
           new ZDvidGraySliceScrollStrategy;
       scrollStrategy->setGraySlice(slice);
 
       getView()->setScrollStrategy(scrollStrategy);
     }
-
-    ZJsonObject contrastObj = reader.readContrastProtocal();
-    getPresenter()->setHighContrastProtocal(contrastObj);
   }
 
   //    getCompleteDocument()->beginObjectModifiedMode(
@@ -1542,6 +1545,10 @@ void ZFlyEmProofMvc::customInit()
   connect(&m_splitProject, SIGNAL(resultCommitted()),
           this, SLOT(updateSplitBody()));
   /*
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t,FlyEM::EBodySplitMode)),
+          &m_splitProject, SLOT(start()));
+          */
+  /*
   connect(&m_splitProject, SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString, bool)));
           */
@@ -1574,6 +1581,8 @@ void ZFlyEmProofMvc::customInit()
   connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
           this, SLOT(deselectAllBody()));
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
+  connect(getCompletePresenter(), SIGNAL(runningFullSplit()),
+          this, SLOT(runFullSplit()));
   connect(getCompletePresenter(), SIGNAL(runningLocalSplit()),
           this, SLOT(runLocalSplit()));
 //  connect(getCompletePresenter(), SIGNAL(bookmarkAdded(ZFlyEmBookmark*)),
@@ -1931,6 +1940,14 @@ void ZFlyEmProofMvc::runSplitFunc()
   getProgressSignal()->endProgress();
 }
 
+void ZFlyEmProofMvc::runFullSplitFunc()
+{
+  getProgressSignal()->startProgress(1.0);
+  m_splitProject.setSplitMode(getCompletePresenter()->getSplitMode());
+  m_splitProject.runFullSplit();
+  getProgressSignal()->endProgress();
+}
+
 void ZFlyEmProofMvc::runLocalSplitFunc()
 {
   getProgressSignal()->startProgress(1.0);
@@ -1942,6 +1959,11 @@ void ZFlyEmProofMvc::runLocalSplitFunc()
 void ZFlyEmProofMvc::runLocalSplit()
 {
   runLocalSplitFunc();
+}
+
+void ZFlyEmProofMvc::runFullSplit()
+{
+  runFullSplitFunc();
 }
 
 void ZFlyEmProofMvc::runSplit()
@@ -2805,6 +2827,8 @@ void ZFlyEmProofMvc::exitSplit()
 {
   if (getCompletePresenter()->isSplitWindow()) {
     emit messageGenerated("Exiting split ...");
+
+    m_splitProject.exit();
 //    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
@@ -2840,7 +2864,7 @@ void ZFlyEmProofMvc::exitSplit()
 //    m_latencyLabelWidget->show();
 
     getCompleteDocument()->deprecateSplitSource();
-    m_splitProject.clear();
+//    m_splitProject.clear();
     disableSplit();
 
     updateAssignedBookmarkTable();
@@ -2864,7 +2888,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
          if (ret == QMessageBox::Save) {
            m_splitProject.saveSeed(false);
          }
-         m_splitProject.clear();
+//         m_splitProject.clear();
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
          getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
@@ -2906,7 +2930,7 @@ void ZFlyEmProofMvc::showBody3d()
 
 void ZFlyEmProofMvc::showSplit3d()
 {
-  m_splitProject.showResult3d();
+//  m_splitProject.showResult3d();
 }
 
 void ZFlyEmProofMvc::showExternalNeuronWindow()
@@ -4008,17 +4032,6 @@ void ZFlyEmProofMvc::enhanceTileContrast(bool state)
 {
   getCompletePresenter()->setHighTileContrast(state);
   getCompleteDocument()->enhanceTileContrast(state);
-  /*
-  ZDvidTileEnsemble *tile = getCompleteDocument()->getDvidTileEnsemble();
-  if (tile != NULL) {
-    if (state) {
-      tile->addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
-    } else {
-      tile->removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
-    }
-    getCompleteDocument()->processObjectModified(tile->getTarget());
-  }
-  */
 }
 
 void ZFlyEmProofMvc::smoothDisplay(bool state)
