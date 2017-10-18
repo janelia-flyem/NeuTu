@@ -100,6 +100,7 @@ void ZFlyEmBodySplitProject::exit()
   if (m_quickResultWindow != NULL) {
     m_quickResultWindow->close();
   }
+  m_timer->stop();
 }
 
 void ZFlyEmBodySplitProject::clear()
@@ -837,6 +838,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 
       connect(m_quickResultWindow, SIGNAL(destroyed()),
               this, SLOT(shallowClearQuickResultWindow()));
+      connect(m_quickResultWindow, SIGNAL(closed()), m_timer, SLOT(stop()));
 //      connect(m_quickResultWindow, &Z3DWindow::closed,
 //              this, &ZFlyEmBodySplitProject::resetQuickResultWindow);
 //      connect(mainDoc, &ZStackDoc::labelFieldModified,
@@ -869,6 +871,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
     } else {
       if (!m_quickResultWindow->isVisible()) {
         m_futureMap.waitForFinished(THREAD_RESULT_QUICK);
+        m_timer->start();
       }
       showQuickView(m_quickResultWindow);
     }

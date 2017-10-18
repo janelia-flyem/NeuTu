@@ -2078,9 +2078,9 @@ void ZFlyEmProofMvc::testBodySplit()
 
       //  zoomTo(pos);
       locateBody(bodyId, false);
-      if (m_bodyWindow != NULL) {
-        m_bodyWindow->updateBody();
-      }
+//      if (m_bodyWindow != NULL) {
+//        m_bodyWindow->updateBody();
+//      }
 
       if (getCompleteDocument()->isSplittable(bodyId)) {
         launchSplit(bodyId, FlyEM::BODY_SPLIT_ONLINE);
@@ -2171,8 +2171,8 @@ void ZFlyEmProofMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
     connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyMerge()));
     break;
   case ZStressTestOptionDialog::OPTION_BODY_SPLIT:
-    showFineBody3d();
-    showSplitQuickView();
+//    showFineBody3d();
+//    showSplitQuickView();
     connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodySplit()));
     break;
   default:
