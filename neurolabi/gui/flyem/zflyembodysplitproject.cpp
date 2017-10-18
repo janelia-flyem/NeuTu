@@ -50,6 +50,8 @@
 #include "zstackdocaccessor.h"
 #include "zswcfactory.h"
 
+const char* ZFlyEmBodySplitProject::THREAD_RESULT_QUICK = "updateSplitQuickFunc";
+
 ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   QObject(parent), m_bodyId(0), m_dataFrame(NULL),
   m_quickResultWindow(NULL),
@@ -505,16 +507,21 @@ void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
 void ZFlyEmBodySplitProject::updateSplitQuick()
 {
   if (!m_splitUpdated) {
-    const QString threadId = "updateSplitQuickFunc";
+    m_splitUpdated = true;
+    const QString threadId = THREAD_RESULT_QUICK;
     if (!m_futureMap.isAlive(threadId)) {
       m_futureMap.removeDeadThread();
       m_cancelSplitQuick = false;
       QFuture<void> future =
           QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateSplitQuickFunc);
       m_futureMap[threadId] = future;
-      m_splitUpdated = true;
     }
   }
+}
+
+void ZFlyEmBodySplitProject::waitResultQuickView()
+{
+  m_futureMap.waitForFinished(THREAD_RESULT_QUICK);
 }
 
 void ZFlyEmBodySplitProject::invalidateSplitQuick()
