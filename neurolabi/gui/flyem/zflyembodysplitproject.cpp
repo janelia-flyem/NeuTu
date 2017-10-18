@@ -775,7 +775,7 @@ void ZFlyEmBodySplitProject::quitResultUpdate()
 {
   m_timer->stop();
   invalidateSplitQuick();
-  m_futureMap.waitForFinished();
+  m_futureMap.waitForFinished(THREAD_RESULT_QUICK);
   if (m_quickResultDoc) {
     m_quickResultDoc->removeAllSwcTree(true);
   }
@@ -785,7 +785,7 @@ void ZFlyEmBodySplitProject::quitResultUpdate()
 void ZFlyEmBodySplitProject::cancelResultUpdate()
 {
   m_cancelSplitQuick = true;
-  m_futureMap.waitForFinished();
+  m_futureMap.waitForFinished(THREAD_RESULT_QUICK);
 }
 
 void ZFlyEmBodySplitProject::result3dQuickFunc()
@@ -868,7 +868,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
       m_timer->start();
     } else {
       if (!m_quickResultWindow->isVisible()) {
-        m_futureMap.waitForFinished();
+        m_futureMap.waitForFinished(THREAD_RESULT_QUICK);
       }
       showQuickView(m_quickResultWindow);
     }
