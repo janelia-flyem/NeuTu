@@ -163,6 +163,8 @@ private:
   void sortNodeList();
   void clearDecorateSwcList();
 
+  void updateBiocytinWidget();
+
 private:
   Z3DLineRenderer m_lineRenderer;
   Z3DConeRenderer m_coneRenderer;

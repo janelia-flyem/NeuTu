@@ -745,9 +745,10 @@ void ZStackDoc::processDataBuffer()
   for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
        iter != updateList.end(); ++iter) {
     ZStackDocObjectUpdate *u = *iter;
-#ifdef _DEBUG_2
+
+    std::cout << "Doc update: ";
     u->print();
-#endif
+
     if (u->getObject() != NULL) {
       switch (u->getAction()) {
       case ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE:
