@@ -2058,6 +2058,10 @@ uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
 void ZFlyEmProofMvc::testBodySplit()
 {
   static ZRandomGenerator rand;
+  if (rand.rndint(10) % 2 == 0) {
+    m_splitProject.waitResultQuickView();
+    return;
+  }
 
   //If currently it's neither on the split mode nor entering split
   //  Enter split
@@ -2084,6 +2088,7 @@ void ZFlyEmProofMvc::testBodySplit()
     }
   } else {
     if (!getCompleteDocument()->isSplitRunning()) {
+      m_futureMap.waitForFinished("launchSplitFunc");
       if (getDocument()->getObjectList(ZStackObjectRole::ROLE_SEED).isEmpty()) {
         ZDvidSparseStack *sparseStack =
             getCompleteDocument()->getDvidSparseStack();
@@ -2099,6 +2104,8 @@ void ZFlyEmProofMvc::testBodySplit()
           }
 
           runSplit();
+          m_splitProject.showResultQuickView();
+          m_splitProject.waitResultQuickView();
         }
       } else {
         emit exitingSplit();
@@ -2828,7 +2835,9 @@ void ZFlyEmProofMvc::exitSplit()
   if (getCompletePresenter()->isSplitWindow()) {
     emit messageGenerated("Exiting split ...");
 
+    getCompleteDocument()->exitSplit();
     m_splitProject.exit();
+
 //    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);

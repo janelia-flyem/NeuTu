@@ -183,6 +183,8 @@ public:
 
   void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
 
+  void waitResultQuickView();
+
 signals:
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
@@ -217,6 +219,7 @@ public slots:
   void startQuickView(Z3DWindow *window);
 //  void raiseBodyQuickView();
   void raiseResultQuickView();
+  void updateSplitQuick();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -236,7 +239,6 @@ public slots:
 
 private slots:
   void resetQuickResultWindow();
-  void updateSplitQuick();
   void updateSplitQuickFunc();
   void invalidateSplitQuick();
 
@@ -322,6 +324,8 @@ private:
   bool m_splitUpdated = false;
 
   ZProgressSignal *m_progressSignal;
+
+  static const char* THREAD_RESULT_QUICK;
 };
 
 template <typename T>

@@ -1,5 +1,7 @@
 #include "z3dglobalparameters.h"
 
+#include <QWindow>
+
 #include "zwidgetsgroup.h"
 #include "z3dcanvas.h"
 #include "z3dgpuinfo.h"
@@ -234,12 +236,21 @@ Z3DGlobalParameters::Z3DGlobalParameters(Z3DCanvas& canvas)
     m_widgetsGrpNoCamera->addChild(*m_parameters[i], 1);
   }
 
-  pickingManager.setDevicePixelRatio(m_canvas.devicePixelRatioF());
+  updateDevicePixelRatio();
+  connect(m_canvas.parentWidget()->windowHandle(), SIGNAL(screenChanged(QScreen*)),
+          this, SLOT(updateDevicePixelRatio()));
+  connect(&canvas, SIGNAL(canvasSizeChanged(size_t,size_t)),
+          this, SLOT(updateDevicePixelRatio()));
 }
 
 std::shared_ptr<ZWidgetsGroup> Z3DGlobalParameters::widgetsGroup(bool includeCamera)
 {
   return includeCamera ? m_widgetsGrp : m_widgetsGrpNoCamera;
+}
+
+void Z3DGlobalParameters::updateDevicePixelRatio()
+{
+  pickingManager.setDevicePixelRatio(m_canvas.devicePixelRatioF());
 }
 
 void Z3DGlobalParameters::updateLightsArray()

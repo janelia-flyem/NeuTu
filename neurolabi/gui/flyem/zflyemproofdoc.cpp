@@ -51,6 +51,8 @@
 #include "flyem/zflyemmisc.h"
 #include "zstackwatershedcontainer.h"
 
+const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
+
 ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   ZStackDoc(parent)
 {
@@ -2933,9 +2935,12 @@ ZIntCuboidObj* ZFlyEmProofDoc::getSplitRoi() const
 
 bool ZFlyEmProofDoc::isSplitRunning() const
 {
-  const QString threadId = "seededWatershed";
+  return m_futureMap.isAlive(THREAD_SPLIT);
+}
 
-  return m_futureMap.isAlive(threadId);
+void ZFlyEmProofDoc::exitSplit()
+{
+  m_futureMap.waitForFinished(THREAD_SPLIT);
 }
 
 void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
@@ -2959,12 +2964,11 @@ void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
     return;
   }
 
-  const QString threadId = "seededWatershed";
-  if (!m_futureMap.isAlive(threadId)) {
+  if (!m_futureMap.isAlive(THREAD_SPLIT)) {
     m_futureMap.removeDeadThread();
     QFuture<void> future =
         QtConcurrent::run(this, &ZFlyEmProofDoc::runSplitFunc, mode);
-    m_futureMap[threadId] = future;
+    m_futureMap[THREAD_SPLIT] = future;
   }
 }
 
@@ -2989,12 +2993,11 @@ void ZFlyEmProofDoc::runFullSplit(FlyEM::EBodySplitMode mode)
     return;
   }
 
-  const QString threadId = "seededWatershed";
-  if (!m_futureMap.isAlive(threadId)) {
+  if (!m_futureMap.isAlive(THREAD_SPLIT)) {
     m_futureMap.removeDeadThread();
     QFuture<void> future =
         QtConcurrent::run(this, &ZFlyEmProofDoc::runFullSplitFunc, mode);
-    m_futureMap[threadId] = future;
+    m_futureMap[THREAD_SPLIT] = future;
   }
 }
 

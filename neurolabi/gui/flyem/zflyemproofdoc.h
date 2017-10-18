@@ -230,6 +230,7 @@ public:
   void runSplit(FlyEM::EBodySplitMode mode);
   void runFullSplit(FlyEM::EBodySplitMode mode);
   void runLocalSplit(FlyEM::EBodySplitMode mode);
+  void exitSplit();
 
   bool isSplitRunning() const;
   void refreshDvidLabelBuffer(unsigned long delay);
@@ -599,6 +600,8 @@ protected:
   mutable ZFlyEmMB6Analyzer m_analyzer;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
+
+  static const char *THREAD_SPLIT;
 };
 
 template <typename InputIterator>
