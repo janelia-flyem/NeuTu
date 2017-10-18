@@ -137,11 +137,8 @@ void ZProofreadWindow::init()
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
   connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
-  // Use "showNormal" instead of "show" to un-minimize the window if needed.
   connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
-          this, SLOT(showNormal()));
-  connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
-          this, SLOT(raise()));
+          this, SLOT(showAndRaise()));
 
   setCentralWidget(widget);
 
@@ -844,4 +841,15 @@ void ZProofreadWindow::displayActiveHint(bool on)
   setPalette(pal);
 #endif
 #endif
+}
+
+void ZProofreadWindow::showAndRaise()
+{
+  if (windowState() & Qt::WindowMinimized) {
+    showNormal();
+  } else {
+    show();
+  }
+  activateWindow();
+  raise();
 }
