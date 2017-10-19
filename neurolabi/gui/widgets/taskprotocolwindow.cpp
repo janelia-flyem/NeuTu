@@ -30,6 +30,10 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
 
     m_protocolInstanceStatus = UNCHECKED;
 
+    // control connections
+    // connect prefetch signals to BodyPrefetchQueue here, if applicable
+
+
     // UI connections
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
@@ -118,6 +122,12 @@ void TaskProtocolWindow::onPrevButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
+
+    // no prefetching is performed here; if we're backing up in the list,
+    //  the next body should already be in memory; it's the responsibility of
+    //  the rest of the application not to throw it out too soon (yes, this
+    //  is a debatable position)
+
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
@@ -132,6 +142,14 @@ void TaskProtocolWindow::onNextButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
+
+    // for now, simplest possible prefetching: just prefetch for the next task,
+    //  as long as there is one and it's not the current one
+    int nextTaskIndex = getNext();
+    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+        prefetchForTaskIndex(nextTaskIndex);
+    }
+
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
@@ -372,6 +390,34 @@ int TaskProtocolWindow::getNextUncompleted() {
     } else {
         return index;
     }
+}
+
+/*
+ * prefetch the bodies for a task
+ */
+void TaskProtocolWindow::prefetchForTaskIndex(int index) {
+    // each task may have bodies that it wants visible and selected;
+    //  add those, selected first (which are presumably more important?)
+    if (m_taskList[index]->selectedBodies().size() > 0) {
+        prefetch(m_taskList[index]->selectedBodies());
+    }
+    if (m_taskList[index]->visibleBodies().size() > 0) {
+        prefetch(m_taskList[index]->visibleBodies());
+    }
+}
+
+/*
+ * request prefetch of bodies that you know are coming up next
+ */
+void TaskProtocolWindow::prefetch(QSet<uint64_t> bodyIDs) {
+    emit prefetchBody(bodyIDs);
+}
+
+/*
+ * request prefetch of a body that you know is coming up next
+ */
+void TaskProtocolWindow::prefetch(uint64_t bodyID) {
+    emit prefetchBody(bodyID);
 }
 
 /*

@@ -27,6 +27,8 @@ signals:
     void bodyAdded(uint64_t bodyId);
     void bodyRemoved(uint64_t bodyId);
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
+    void prefetchBody(QSet<uint64_t> bodyIDs);
+    void prefetchBody(uint64_t bodyID);
 
 private slots:
     void onNextButton();
@@ -93,6 +95,9 @@ private:
     int getNextUncompleted();
     int getPrev();
     int getPrevUncompleted();
+    void prefetch(uint64_t bodyID);
+    void prefetch(QSet<uint64_t> bodyIDs);
+    void prefetchForTaskIndex(int index);
 };
 
 #endif // TASKPROTOCOLWINDOW_H
