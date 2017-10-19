@@ -1,5 +1,7 @@
 #include "bodyprefetchqueue.h"
 
+#include <QsLog.h>
+
 /*
  * NOTE: this implementation is a quick-and-dirty version; the API
  * is queue-like, but internally, it only stores one body ID, not
@@ -9,6 +11,13 @@
  */
 BodyPrefetchQueue::BodyPrefetchQueue(QObject *parent) : QObject(parent)
 {
+
+    // 64-bit int is not guaranteed to be atomic on all platforms;
+    //  log if not
+
+#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
+    LINFO << "QAtomicInt doesn't support 64-bit integers on this platform; BodyPrefetchQueue not actually thread safe!";
+#endif
 
     clear();
 
