@@ -169,6 +169,7 @@ signals:
 //  void highlightModeEnabled(bool);
   void highlightModeChanged();
   void roiLoaded();
+  void locating2DViewTriggered(int x, int y, int z, int width);
 
 
 public slots:
