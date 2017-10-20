@@ -13,7 +13,8 @@ BodyPrefetchQueue::BodyPrefetchQueue(QObject *parent) : QObject(parent)
 {
 
     // 64-bit int is not guaranteed to be atomic on all platforms;
-    //  log if not
+    //  log if not; if I'm reading the header files properly, it
+    //  is atomic on our platforms (Mac, Linux, x86_64)
 
 #ifndef Q_ATOMIC_INT64_IS_SUPPORTED
     LINFO << "QAtomicInt doesn't support 64-bit integers on this platform; BodyPrefetchQueue not actually thread safe!";
