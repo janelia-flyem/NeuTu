@@ -12,6 +12,7 @@
 #include "neutube.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
@@ -30,8 +31,12 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
 
     m_protocolInstanceStatus = UNCHECKED;
 
-    // control connections
-    // connect prefetch signals to BodyPrefetchQueue here, if applicable
+    // prefetch queue
+    m_prefetchQueue = new BodyPrefetchQueue();
+    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
+    connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
+    // note; no remove signal/slot yet
+
 
 
     // UI connections
@@ -453,6 +458,10 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             m_currentTaskWidget->setVisible(true);
         }
     }
+}
+
+BodyPrefetchQueue * TaskProtocolWindow::getPrefetchQueue() {
+    return m_prefetchQueue;
 }
 
 /*

@@ -6,6 +6,7 @@
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltask.h"
 
 
@@ -20,6 +21,7 @@ class TaskProtocolWindow : public QWidget
 public:
     explicit TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent = 0);
     void init();
+    BodyPrefetchQueue *getPrefetchQueue();
     ~TaskProtocolWindow();
 
 signals:
@@ -72,6 +74,7 @@ private:
     int m_currentTaskIndex;
     QWidget * m_currentTaskWidget;
     bool m_nodeLocked;
+    BodyPrefetchQueue * m_prefetchQueue;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
