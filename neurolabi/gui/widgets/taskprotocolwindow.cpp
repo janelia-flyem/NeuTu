@@ -170,7 +170,7 @@ void TaskProtocolWindow::onDoneButton() {
 
     QMessageBox messageBox;
     messageBox.setText("Complete task protocol?");
-    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, the data in DVID will be renamed, and you will not be able to continue.\n\nComplete protocol?");
+    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, your progress data will be stored in DVID, and you will not be able to continue.\n\nComplete protocol?");
     messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
     messageBox.setDefaultButton(QMessageBox::Ok);
     int ret = messageBox.exec();
