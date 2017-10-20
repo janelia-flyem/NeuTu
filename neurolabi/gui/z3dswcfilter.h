@@ -164,6 +164,9 @@ private:
   void clearDecorateSwcList();
 
   void updateBiocytinWidget();
+  void updateTreeColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+  void updateWidgetGroup();
+  void updateColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
 
 private:
   Z3DLineRenderer m_lineRenderer;
@@ -232,6 +235,7 @@ private:
   bool m_enableCutting = true;
   bool m_enablePicking = true;
   bool m_forceNodePicking = false;
+  bool m_updatingWidget = true;
 
   QVector<QString> m_guiNameList;
 

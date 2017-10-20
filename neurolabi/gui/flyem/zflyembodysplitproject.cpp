@@ -64,10 +64,10 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_splitMode = FlyEM::BODY_SPLIT_ONLINE;
 
 //  connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
-  connect(this, SIGNAL(result3dQuickViewReady()),
-          this, SLOT(startResultQuickView()));
+//  connect(this, SIGNAL(result3dQuickViewReady()),
+//          this, SLOT(startResultQuickView()));
 //  connect(this, SIGNAL(rasingBodyQuickView()), this, SLOT(raiseBodyQuickView()));
-  connect(this, SIGNAL(rasingResultQuickView()), this, SLOT(raiseResultQuickView()));
+//  connect(this, SIGNAL(rasingResultQuickView()), this, SLOT(raiseResultQuickView()));
 
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
@@ -361,7 +361,9 @@ void ZFlyEmBodySplitProject::raiseResultQuickView()
 void ZFlyEmBodySplitProject::showQuickView(Z3DWindow *window)
 {
   if (window != NULL) {
+    std::cout << "Showing quick view" << std::endl;
     window->show();
+    std::cout << "Quick view ready" << std::endl;
     window->raise();
   }
 }
@@ -761,6 +763,8 @@ void ZFlyEmBodySplitProject::updateResult3dQuickFunc()
 void ZFlyEmBodySplitProject::updateResult3dQuick()
 {
   emit messageGenerated(ZWidgetMessage("Updating 3D split view ..."));
+//  result3dQuickFunc();
+#if 1
   const QString threadId = "result3dQuickFunc";
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();
@@ -768,6 +772,7 @@ void ZFlyEmBodySplitProject::updateResult3dQuick()
         QtConcurrent::run(this, &ZFlyEmBodySplitProject::result3dQuickFunc);
     m_futureMap[threadId] = future;
   }
+#endif
 //  updateResult3dQuickFunc();
 //  QtConcurrent::run(this, &ZFlyEmBodySplitProject::updateResult3dQuickFunc);
 }
@@ -804,15 +809,11 @@ void ZFlyEmBodySplitProject::result3dQuickFunc()
 //      getProgressSignal()->startProgress(0.5);
       loadResult3dQuick(doc);
 //      getProgressSignal()->endProgress();
-
-      m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
-      m_quickResultWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
-      m_quickResultWindow->setYZView();
-
-      emit result3dQuickViewReady();
+      std::cout << "Result update done" << std::endl;
+//      emit result3dQuickViewReady();
 //      getProgressSignal()->endProgress();
 
-      emit rasingResultQuickView();
+//      emit rasingResultQuickView();
     }
   }
 }
@@ -835,6 +836,8 @@ void ZFlyEmBodySplitProject::showResultQuickView()
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
       m_quickResultWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
       m_quickResultWindow->setAttribute(Qt::WA_DeleteOnClose, false);
+      m_quickResultWindow->setYZView();
+
 
       connect(m_quickResultWindow, SIGNAL(destroyed()),
               this, SLOT(shallowClearQuickResultWindow()));
@@ -864,16 +867,14 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 //        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
 //        doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
       }
-       showQuickView(m_quickResultWindow);
-
-//      updateResult3dQuick();
-      m_timer->start();
     } else {
       if (!m_quickResultWindow->isVisible()) {
         m_futureMap.waitForFinished(THREAD_RESULT_QUICK);
-        m_timer->start();
       }
-      showQuickView(m_quickResultWindow);
+    }
+    showQuickView(m_quickResultWindow);
+    if (!m_timer->isActive()) {
+      m_timer->start();
     }
   }
 }
