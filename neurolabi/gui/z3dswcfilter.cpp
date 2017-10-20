@@ -741,6 +741,63 @@ void Z3DSwcFilter::addSelectionBox(
   lines.emplace_back(xmax, ymax, zmax);
 }
 
+void Z3DSwcFilter::updateBiocytinWidget()
+{
+  if (GET_APPLICATION_NAME == "Biocytin") {
+    // do nothing if types don't change
+    if (m_allNodeType.size() != m_biocytinColorMapper.size() ||
+        !std::equal(m_biocytinColorMapper.begin(), m_biocytinColorMapper.end(),
+                    m_allNodeType.begin(), _KeyEqual())) {
+      // remove old type color parameters from widget, will add new ones later
+      if (m_widgetsGroup) {
+        for (auto& kv : m_biocytinColorMapper) {
+          m_widgetsGroup->removeChild(*kv.second);
+        }
+      }
+
+      // remove not-in-use types
+      for (auto it = m_biocytinColorMapper.begin(); it != m_biocytinColorMapper.end(); ) {
+        if (m_allNodeType.find(it->first) == m_allNodeType.end()) {
+          removeParameter(*it->second);
+          it = m_biocytinColorMapper.erase(it);
+        } else {
+          ++it;
+        }
+      }
+
+      // create color parameters for new types
+      std::set<int> newTypes;
+      std::set_difference(m_allNodeType.begin(), m_allNodeType.end(),
+                          m_biocytinColorMapper.begin(), m_biocytinColorMapper.end(),
+                          std::inserter(newTypes, newTypes.end()),
+                          _KeyLess());
+      for (auto type : newTypes) {
+        m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
+        QString guiname = type >= m_guiNameList.size() ? QString("Type %1 Color").arg(type) : m_guiNameList[type];
+        QColor color = m_colorScheme.getColor(type);
+        m_biocytinColorMapper.insert(std::make_pair(type,
+                                                    std::make_unique<ZVec4Parameter>(guiname,
+                                                                                     glm::vec4(color.redF(),
+                                                                                               color.greenF(),
+                                                                                               color.blueF(),
+                                                                                               1.f))));
+        m_biocytinColorMapper[type]->setStyle("COLOR");
+        connect(m_biocytinColorMapper[type].get(), &ZVec4Parameter::valueChanged,
+            this, &Z3DSwcFilter::prepareColor);
+        addParameter(*m_biocytinColorMapper[type]);
+      }
+
+      // update widget group
+      if (m_widgetsGroup) {
+        for (const auto& kv : m_biocytinColorMapper) {
+          m_widgetsGroup->addChild(*kv.second, 2);
+        }
+        m_widgetsGroup->emitWidgetsGroupChangedSignal();
+      }
+    }
+  }
+}
+
 void Z3DSwcFilter::prepareData()
 {
   QMutexLocker locker(&m_dataValidMutex);
@@ -837,59 +894,7 @@ void Z3DSwcFilter::prepareData()
   initializeRotationCenter();
 
   // update widget if any type/swc added/removed
-  if (GET_APPLICATION_NAME == "Biocytin") {
-    // do nothing if types don't change
-    if (m_allNodeType.size() != m_biocytinColorMapper.size() ||
-        !std::equal(m_biocytinColorMapper.begin(), m_biocytinColorMapper.end(),
-                    m_allNodeType.begin(), _KeyEqual())) {
-      // remove old type color parameters from widget, will add new ones later
-      if (m_widgetsGroup) {
-        for (auto& kv : m_biocytinColorMapper) {
-          m_widgetsGroup->removeChild(*kv.second);
-        }
-      }
-
-      // remove not-in-use types
-      for (auto it = m_biocytinColorMapper.begin(); it != m_biocytinColorMapper.end(); ) {
-        if (m_allNodeType.find(it->first) == m_allNodeType.end()) {
-          removeParameter(*it->second);
-          it = m_biocytinColorMapper.erase(it);
-        } else {
-          ++it;
-        }
-      }
-
-      // create color parameters for new types
-      std::set<int> newTypes;
-      std::set_difference(m_allNodeType.begin(), m_allNodeType.end(),
-                          m_biocytinColorMapper.begin(), m_biocytinColorMapper.end(),
-                          std::inserter(newTypes, newTypes.end()),
-                          _KeyLess());
-      for (auto type : newTypes) {
-        m_colorScheme.setColorScheme(ZSwcColorScheme::BIOCYTIN_TYPE_COLOR);
-        QString guiname = type >= m_guiNameList.size() ? QString("Type %1 Color").arg(type) : m_guiNameList[type];
-        QColor color = m_colorScheme.getColor(type);
-        m_biocytinColorMapper.insert(std::make_pair(type,
-                                                    std::make_unique<ZVec4Parameter>(guiname,
-                                                                                     glm::vec4(color.redF(),
-                                                                                               color.greenF(),
-                                                                                               color.blueF(),
-                                                                                               1.f))));
-        m_biocytinColorMapper[type]->setStyle("COLOR");
-        connect(m_biocytinColorMapper[type].get(), &ZVec4Parameter::valueChanged,
-            this, &Z3DSwcFilter::prepareColor);
-        addParameter(*m_biocytinColorMapper[type]);
-      }
-
-      // update widget group
-      if (m_widgetsGroup) {
-        for (const auto& kv : m_biocytinColorMapper) {
-          m_widgetsGroup->addChild(*kv.second, 2);
-        }
-        m_widgetsGroup->emitWidgetsGroupChangedSignal();
-      }
-    }
-  }
+  updateBiocytinWidget();
 
   std::map<ZSwcTree*, size_t> sourceIndexMapper;
   for (size_t i=0; i<m_origSwcList.size(); ++i) {

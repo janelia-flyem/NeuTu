@@ -137,6 +137,9 @@ void ZProofreadWindow::init()
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
   connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
+  connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this, SLOT(showAndRaise()));
+
   setCentralWidget(widget);
 
   m_progressDlg = NULL;
@@ -838,4 +841,15 @@ void ZProofreadWindow::displayActiveHint(bool on)
   setPalette(pal);
 #endif
 #endif
+}
+
+void ZProofreadWindow::showAndRaise()
+{
+  if (windowState() & Qt::WindowMinimized) {
+    showNormal();
+  } else {
+    show();
+  }
+  activateWindow();
+  raise();
 }

@@ -3636,7 +3636,7 @@ void Z3DWindow::processStroke(ZStroke2d *stroke)
 #ifdef _DEBUG_2
   addTodoMarkerFromStroke(stroke);
 #else
-  labelSwcNodeFromStroke(stroke);
+//  labelSwcNodeFromStroke(stroke);
   addPolyplaneFrom3dPaint(stroke);
 #endif
 }

@@ -13,6 +13,7 @@
 #include <QElapsedTimer>
 #include <QFileInfo>
 #include <QTime>
+#include <QTimer>
 #include <QProcess>
 #include <QtCore>
 #include <iostream>
@@ -11483,7 +11484,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   QImage image(1024, 1024, QImage::Format_Indexed8);
 
   tic();
@@ -11497,6 +11498,14 @@ void ZTest::test(MainWindow *host)
 
   pixmap.detach();
   std::cout << pixmap.isDetached() << std::endl;
+#endif
+
+#if 1
+  QTimer timer;
+  timer.start();
+  std::cout << timer.isActive() << std::endl;
+  timer.stop();
+  std::cout << timer.isActive() << std::endl;
 #endif
 
 #if 0
@@ -24613,7 +24622,33 @@ void ZTest::test(MainWindow *host)
 //   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
-#if 1
+#if 0
+   ZRandomGenerator g;
+   while (true) {
+     ZObject3dScan obj1;
+     ZObject3dScan obj2;
+     int z = g.rndint(1000);
+     for (int i = 0; i < 100; ++i) {
+       obj1.addSegment(
+             z, g.rndint(100), g.rndint(100),
+             g.rndint(1000));
+       obj2.addSegment(
+             z, g.rndint(100), g.rndint(100),
+             g.rndint(1000));
+     }
+
+     std::cout << obj1.getVoxelNumber() << " ";
+     obj1.subtractSliently(obj2);
+     std::cout << obj1.getVoxelNumber() << std::endl;
+     obj1.downsampleMax(1, 1, 1);
+     ZSwcTree *tree = ZSwcGenerator::createSurfaceSwc(obj1, 3);
+     delete tree;
+   }
+
+#endif
+
+
+#if 0
    ZDvidReader reader;
    ZDvidTarget target("emdata1.int.janelia.org", "babd", 8500);
    target.setBodyLabelName("bodies3");

@@ -58,6 +58,9 @@ private:
   void addParameter(ZParameter& para)
   { m_parameters.push_back(&para); }
 
+private slots:
+  void updateDevicePixelRatio();
+
 public:
   ZStringIntOptionParameter geometriesMultisampleMode;
   ZStringIntOptionParameter transparencyMethod;

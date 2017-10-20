@@ -1084,7 +1084,7 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
   ZOUT(LINFO(), 3) << "Resetting ds";
   pushDsIntv(xintv, yintv, zintv);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << getMinZ() << std::endl;
       std::cout << getMaxZ() << std::endl;
 #endif

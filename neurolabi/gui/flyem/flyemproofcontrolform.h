@@ -59,6 +59,7 @@ signals:
   void exportingSelectedBodyStack();
   void skeletonizingSelectedBody();
   void showingInfo();
+  void reportingBodyCorruption();
 
 public slots:
   void setInfo(const QString &info);

@@ -498,6 +498,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
     }
     connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
             this, SLOT(zoomTo(int, int, int, int)));
+    connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+            this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
   }
 }
 
@@ -2058,6 +2060,10 @@ uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
 void ZFlyEmProofMvc::testBodySplit()
 {
   static ZRandomGenerator rand;
+  if (rand.rndint(10) % 2 == 0) {
+    m_splitProject.waitResultQuickView();
+    return;
+  }
 
   //If currently it's neither on the split mode nor entering split
   //  Enter split
@@ -2074,9 +2080,9 @@ void ZFlyEmProofMvc::testBodySplit()
 
       //  zoomTo(pos);
       locateBody(bodyId, false);
-      if (m_bodyWindow != NULL) {
-        m_bodyWindow->updateBody();
-      }
+//      if (m_bodyWindow != NULL) {
+//        m_bodyWindow->updateBody();
+//      }
 
       if (getCompleteDocument()->isSplittable(bodyId)) {
         launchSplit(bodyId, FlyEM::BODY_SPLIT_ONLINE);
@@ -2084,6 +2090,7 @@ void ZFlyEmProofMvc::testBodySplit()
     }
   } else {
     if (!getCompleteDocument()->isSplitRunning()) {
+      m_futureMap.waitForFinished("launchSplitFunc");
       if (getDocument()->getObjectList(ZStackObjectRole::ROLE_SEED).isEmpty()) {
         ZDvidSparseStack *sparseStack =
             getCompleteDocument()->getDvidSparseStack();
@@ -2099,6 +2106,8 @@ void ZFlyEmProofMvc::testBodySplit()
           }
 
           runSplit();
+          m_splitProject.showResultQuickView();
+          m_splitProject.waitResultQuickView();
         }
       } else {
         emit exitingSplit();
@@ -2164,8 +2173,8 @@ void ZFlyEmProofMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
     connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyMerge()));
     break;
   case ZStressTestOptionDialog::OPTION_BODY_SPLIT:
-    showFineBody3d();
-    showSplitQuickView();
+//    showFineBody3d();
+//    showSplitQuickView();
     connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodySplit()));
     break;
   default:
@@ -2828,7 +2837,9 @@ void ZFlyEmProofMvc::exitSplit()
   if (getCompletePresenter()->isSplitWindow()) {
     emit messageGenerated("Exiting split ...");
 
+    getCompleteDocument()->exitSplit();
     m_splitProject.exit();
+
 //    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
@@ -3775,6 +3786,30 @@ void ZFlyEmProofMvc::loadSplitTask()
 void ZFlyEmProofMvc::uploadSplitResult()
 {
   getCompleteDocument()->commitSplitFromService();
+}
+
+void ZFlyEmProofMvc::reportBodyCorruption()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("Problem Report"),
+                                       tr("Comment:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok) {
+    LINFO() << "***Body corrupted***";
+    QString message = "Current selected:";
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    for (uint64_t id : bodySet) {
+      message += QString(" %1").arg(id);
+    }
+    ZIntPoint pt = getView()->getViewCenter();
+    message += QString("; %1; %2").
+        arg(ZDvidUrl(getDvidTarget()).getSparsevolUrl(0).c_str()).
+        arg(pt.toString().c_str());
+
+    LINFO() << message;
+    LINFO() << "Comment:" << text;
+  }
 }
 
 void ZFlyEmProofMvc::importSeed()

@@ -58,7 +58,7 @@ void ZStackDocObjectUpdate::print() const
     break;
   }
 
-  std::cout << " " << m_obj << std::endl;
+  std::cout << " " << m_obj->getType() << " " << m_obj->getSource() << m_obj << std::endl;
 }
 
 ZStackDocDataBuffer::ZStackDocDataBuffer(QObject *parent) : QObject(parent)

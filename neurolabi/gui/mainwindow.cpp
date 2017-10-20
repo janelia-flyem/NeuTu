@@ -931,13 +931,13 @@ void MainWindow::customizeActions()
   }
 
 #ifdef _DEBUG_
-  testAction->setVisible(true);
+//  testAction->setVisible(true);
 //        NeutubeConfig::getInstance().getApplication() != "Biocytin");
 
   testAction2->setVisible(
         NeutubeConfig::getInstance().getApplication() == "FlyEM");
 #else
-  testAction->setVisible(false);
+//  testAction->setVisible(false);
   testAction2->setVisible(false);
   this->punctaExportAction->setVisible(false);
 #endif
@@ -1109,10 +1109,10 @@ void MainWindow::createToolBars()
 #endif
   m_toolBar->addAction(settingAction);
   m_toolBar->addAction(screenshotAction);
-//#ifdef _DEBUG_
+#ifdef _DEBUG_
   m_toolBar->addAction(testAction);
   m_toolBar->addAction(testAction2);
-//#endif
+#endif
   m_toolBar->addAction(m_ui->actionShortcut);
 }
 

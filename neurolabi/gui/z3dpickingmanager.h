@@ -20,6 +20,7 @@
 #include "zglmutils.h"
 #include <cstdint>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 class Z3DPickingManager
@@ -78,8 +79,8 @@ private:
   void increaseColor();
 
 private:
-  std::map<glm::col4, const void*, Col4Compare> m_colorToObject;
-  std::map<const void*, glm::col4> m_objectToColor;
+  std::unordered_map<glm::col4, const void*> m_colorToObject;
+  std::unordered_map<const void*, glm::col4> m_objectToColor;
   Z3DRenderTarget* m_renderTarget = nullptr;
   glm::col4 m_currentColor{0, 0, 0, 128};
   double m_devicePixelRatio = 0;

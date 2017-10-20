@@ -198,7 +198,8 @@ void ZStackDoc::init()
   m_progressSignal = new ZProgressSignal(this);
 
   m_dataBuffer = new ZStackDocDataBuffer(this);
-  connect(m_dataBuffer, SIGNAL(delivering()), this, SLOT(processDataBuffer()));
+  connect(m_dataBuffer, SIGNAL(delivering()),
+          this, SLOT(processDataBuffer()), Qt::QueuedConnection);
 }
 
 void ZStackDoc::clearData()
@@ -745,9 +746,10 @@ void ZStackDoc::processDataBuffer()
   for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
        iter != updateList.end(); ++iter) {
     ZStackDocObjectUpdate *u = *iter;
-#ifdef _DEBUG_2
+
+    std::cout << "Doc update: ";
     u->print();
-#endif
+
     if (u->getObject() != NULL) {
       switch (u->getAction()) {
       case ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE:
