@@ -3790,14 +3790,26 @@ void ZFlyEmProofMvc::uploadSplitResult()
 
 void ZFlyEmProofMvc::reportBodyCorruption()
 {
-  LINFO() << "***Body corrupted***";
-  QString message = "Current selected:";
-  std::set<uint64_t> bodySet =
-      getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
-  for (uint64_t id : bodySet) {
-    message += QString(" %1").arg(id);
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("Problem Report"),
+                                       tr("Comment:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok) {
+    LINFO() << "***Body corrupted***";
+    QString message = "Current selected:";
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    for (uint64_t id : bodySet) {
+      message += QString(" %1").arg(id);
+    }
+    ZIntPoint pt = getView()->getViewCenter();
+    message += QString("; %1; %2").
+        arg(ZDvidUrl(getDvidTarget()).getSparsevolUrl(0).c_str()).
+        arg(pt.toString().c_str());
+
+    LINFO() << message;
+    LINFO() << "Comment:" << text;
   }
-  LINFO() << message;
 }
 
 void ZFlyEmProofMvc::importSeed()
