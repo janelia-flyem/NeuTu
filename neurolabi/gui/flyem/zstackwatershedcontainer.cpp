@@ -593,8 +593,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 //                currentBody.concat(subobj); //modifying
 //                result->append(subobj);
               }
-              result->append(currentBody);
             }
+            result->append(currentBody);
           } else {
             if (ccaPost()) {
               body.subtractSliently(obj);

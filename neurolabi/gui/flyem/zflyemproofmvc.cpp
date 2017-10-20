@@ -3788,6 +3788,18 @@ void ZFlyEmProofMvc::uploadSplitResult()
   getCompleteDocument()->commitSplitFromService();
 }
 
+void ZFlyEmProofMvc::reportBodyCorruption()
+{
+  LINFO() << "***Body corrupted***";
+  QString message = "Current selected:";
+  std::set<uint64_t> bodySet =
+      getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+  for (uint64_t id : bodySet) {
+    message += QString(" %1").arg(id);
+  }
+  LINFO() << message;
+}
+
 void ZFlyEmProofMvc::importSeed()
 {
   if (ZDialogFactory::Ask("Import Seed",

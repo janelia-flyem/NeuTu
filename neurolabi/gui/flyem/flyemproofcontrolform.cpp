@@ -237,6 +237,12 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
 #endif
+
+  QAction *reportAction = new QAction("Report Body Corruption", this);
+  connect(reportAction, &QAction::triggered,
+          this, &FlyEmProofControlForm::reportingBodyCorruption);
+  m_mainMenu->addAction(reportAction);
+
 //  colorMenu->setEnabled(false);
 }
 

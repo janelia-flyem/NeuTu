@@ -260,6 +260,7 @@ public slots:
   void loadSplitResult();
   void loadSplitTask();
   void uploadSplitResult();
+  void reportBodyCorruption();
 
   void loadSynapse();
   void goToTBar();
@@ -564,6 +565,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),
           this, SLOT(skeletonizeSelectedBody()));
+  connect(panel, SIGNAL(reportingBodyCorruption()),
+          this, SLOT(reportBodyCorruption()));
   connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
 }
 

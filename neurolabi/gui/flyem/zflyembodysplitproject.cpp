@@ -651,7 +651,7 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     ZStackDocAccessor::RemoveAllSwcTree(doc, true);
 
     TStackObjectList objList =
-        getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        getDocument()->getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
     const int maxSwcNodeNumber = 100000;
     const int maxScale = 50;
     const int minScale = 1;
