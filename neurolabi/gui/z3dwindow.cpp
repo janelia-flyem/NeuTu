@@ -2008,6 +2008,7 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
 
 void Z3DWindow::updateSettingsDockWidget()
 {
+  LINFO() << "Updating widgets";
   //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
@@ -2048,6 +2049,7 @@ void Z3DWindow::updateSettingsDockWidget()
       delete old;
     }
   }
+  LINFO() << "Widget updated";
 }
 
 void Z3DWindow::toogleAddSwcNodeMode(bool checked)
