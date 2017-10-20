@@ -498,6 +498,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
     }
     connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
             this, SLOT(zoomTo(int, int, int, int)));
+    connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+            this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
   }
 }
 
@@ -3784,6 +3786,30 @@ void ZFlyEmProofMvc::loadSplitTask()
 void ZFlyEmProofMvc::uploadSplitResult()
 {
   getCompleteDocument()->commitSplitFromService();
+}
+
+void ZFlyEmProofMvc::reportBodyCorruption()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("Problem Report"),
+                                       tr("Comment:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok) {
+    LINFO() << "***Body corrupted***";
+    QString message = "Current selected:";
+    std::set<uint64_t> bodySet =
+        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+    for (uint64_t id : bodySet) {
+      message += QString(" %1").arg(id);
+    }
+    ZIntPoint pt = getView()->getViewCenter();
+    message += QString("; %1; %2").
+        arg(ZDvidUrl(getDvidTarget()).getSparsevolUrl(0).c_str()).
+        arg(pt.toString().c_str());
+
+    LINFO() << message;
+    LINFO() << "Comment:" << text;
+  }
 }
 
 void ZFlyEmProofMvc::importSeed()

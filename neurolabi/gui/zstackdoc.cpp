@@ -198,7 +198,8 @@ void ZStackDoc::init()
   m_progressSignal = new ZProgressSignal(this);
 
   m_dataBuffer = new ZStackDocDataBuffer(this);
-  connect(m_dataBuffer, SIGNAL(delivering()), this, SLOT(processDataBuffer()));
+  connect(m_dataBuffer, SIGNAL(delivering()),
+          this, SLOT(processDataBuffer()), Qt::QueuedConnection);
 }
 
 void ZStackDoc::clearData()

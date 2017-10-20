@@ -231,6 +231,10 @@ Z3DGlobalParameters::Z3DGlobalParameters(Z3DCanvas& canvas)
   m_widgetsGrpNoCamera->addChild(geometriesMultisampleMode, 1);
   m_widgetsGrpNoCamera->addChild(transparencyMethod, 1);
   m_widgetsGrpNoCamera->addChild(weightedBlendedDepthScale, 1);
+<<<<<<< HEAD
+=======
+
+>>>>>>> a0b3876d02ed7d49a02b99a5d9943e2fbb94e00b
   for (size_t i = 4; i < m_parameters.size(); ++i) {
     m_widgetsGrp->addChild(*m_parameters[i], 1);
     m_widgetsGrpNoCamera->addChild(*m_parameters[i], 1);

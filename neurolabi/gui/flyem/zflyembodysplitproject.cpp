@@ -165,7 +165,7 @@ void ZFlyEmBodySplitProject::shallowClearBodyWindow()
 void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_reader.open(target)) {
-    m_dvidInfo = m_reader.readGrayScaleInfo();
+    m_dvidInfo = m_reader.readLabelInfo();
   }
 }
 
@@ -653,7 +653,7 @@ void ZFlyEmBodySplitProject::loadResult3dQuick(ZStackDoc *doc)
     ZStackDocAccessor::RemoveAllSwcTree(doc, true);
 
     TStackObjectList objList =
-        getDocument()->getObjectList(ZStackObject::TYPE_OBJECT3D_SCAN);
+        getDocument()->getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
     const int maxSwcNodeNumber = 100000;
     const int maxScale = 50;
     const int minScale = 1;
@@ -857,15 +857,30 @@ void ZFlyEmBodySplitProject::showResultQuickView()
               this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
 
 //      ZDvidReader reader;
+      ZIntCuboid box(m_dvidInfo.getStartCoordinates(),
+                     m_dvidInfo.getEndCoordinates());
       if (m_reader.isReady()) {
+        Z3DGraph *boxGraph = ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo);
+//        boxGraph->boundBox(&box);
         ZStackDocAccessor::AddObject(
-              m_quickResultDoc.get(), ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo));
+              m_quickResultDoc.get(), boxGraph);
         ZStackDocAccessor::AddObject(
-              m_quickResultDoc.get(), ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo));
+              m_quickResultDoc.get(),
+              ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo));
         m_quickResultWindow->setYZView();
 //        ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
 //        doc->addObject(ZFlyEmMisc::MakeBoundBoxGraph(m_dvidInfo), true);
 //        doc->addObject(ZFlyEmMisc::MakePlaneGraph(getDocument(), m_dvidInfo), true);
+      }
+
+      if (!box.isEmpty()) {
+        m_quickResultWindow->gotoPosition(
+              ZCuboid(box.getFirstCorner().getX(),
+                      box.getFirstCorner().getY(),
+                      box.getFirstCorner().getZ(),
+                      box.getLastCorner().getX(),
+                      box.getLastCorner().getY(),
+                      box.getLastCorner().getZ()));
       }
     } else {
       if (!m_quickResultWindow->isVisible()) {
