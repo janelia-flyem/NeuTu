@@ -422,34 +422,44 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
 void ZDvidWriter::syncAnnotationToLabel(
     const std::string &name, const std::string &queryString)
 {
-  ZDvidUrl url(getDvidTarget());
-  ZJsonObject jsonObj;
-  jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
-                   getDvidTarget().getBodyLabelName());
+  if (!getDvidTarget().getLabelBlockName().empty()) {
+    ZDvidUrl url(getDvidTarget());
+    ZJsonObject jsonObj;
+    if (getDvidTarget().getLabelBlockName() == getDvidTarget().getBodyLabelName()) {
+      jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName());
+    } else {
+      jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
+                       getDvidTarget().getBodyLabelName());
+    }
 #ifdef _DEBUG_
-  std::cout << jsonObj.dumpString(0) << std::endl;
+    std::cout << jsonObj.dumpString(0) << std::endl;
 #endif
 
-  post(url.getAnnotationSyncUrl(name, queryString), jsonObj);
+    post(url.getAnnotationSyncUrl(name, queryString), jsonObj);
+  }
 }
 
 void ZDvidWriter::syncData(
     const std::string &dataName, const std::string &syncDataName,
     const std::string &queryString)
 {
-  ZDvidUrl url(getDvidTarget());
-  ZJsonObject jsonObj;
-  jsonObj.setEntry("sync", syncDataName);
-  post(url.getDataSyncUrl(dataName, queryString), jsonObj);
+  if (!syncDataName.empty()) {
+    ZDvidUrl url(getDvidTarget());
+    ZJsonObject jsonObj;
+    jsonObj.setEntry("sync", syncDataName);
+    post(url.getDataSyncUrl(dataName, queryString), jsonObj);
+  }
 }
 
 void ZDvidWriter::syncLabelsz(
     const std::string &dataName, const std::string &annotationName)
 {
-  ZDvidUrl url(getDvidTarget());
-  ZJsonObject jsonObj;
-  jsonObj.setEntry("sync", annotationName);
-  post(url.getLabelszSyncUrl(dataName), jsonObj);
+  if (!annotationName.empty()) {
+    ZDvidUrl url(getDvidTarget());
+    ZJsonObject jsonObj;
+    jsonObj.setEntry("sync", annotationName);
+    post(url.getLabelszSyncUrl(dataName), jsonObj);
+  }
 }
 
 void ZDvidWriter::syncSynapseLabelsz()

@@ -86,7 +86,7 @@
       "default": false,
       "name": "FIB19 (emdata2) Synapse Check",
       "comment": "FIB19 production",
-      "label_block": "segmentation3",
+      "label_block": "segmentation2",
       "multires_tile": "graytiles",
       "synapse": "annot_synapse_prod_062817",
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "olbrisd", "cheathamn", "neacee"]

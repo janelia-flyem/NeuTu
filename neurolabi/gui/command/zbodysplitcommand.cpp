@@ -174,7 +174,7 @@ int ZBodySplitCommand::run(
 #endif
 
     container.run();
-    processResult(container, output, splitTaskKey, commiting);
+    processResult(container, output, splitTaskKey, signalPath, commiting);
 
 #ifdef _DEBUG_2
     resultStack->save(GET_TEST_DATA_DIR + "/test.tif");
@@ -265,9 +265,8 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
   return newBodyIdArray;
 }
 
-void ZBodySplitCommand::processResult(
-    ZStackWatershedContainer &container, const std::string &output,
-    const std::string &splitTaskKey, bool committing)
+void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
+    const std::string &splitTaskKey, const std::string &signalPath, bool committing)
 {
   ZStack *resultStack = container.getResultStack();
   if (resultStack != NULL) {
@@ -279,19 +278,21 @@ void ZBodySplitCommand::processResult(
       ZJsonArray resultArray;
 
       if (committing) {
-          std::vector<uint64_t> bodyIdArray = commitResult(result, *writer);
-          ZJsonArray resultArray;
-          for (uint64_t bodyId : bodyIdArray) {
-            resultArray.append(bodyId);
-          }
-          ZJsonObject resultJson;
-          resultJson.setEntry("committed", resultJson);
-          QString refPath = ZDvidPath::GetResultKeyPath(
-                ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
-                ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
-          resultJson.setEntry(
-                "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
-          writer->writeJson(refPath.toStdString(), resultJson);
+        ZDvidWriter *bodyWriter =
+            ZGlobal::GetInstance().getDvidWriterFromUrl(signalPath);
+        std::vector<uint64_t> bodyIdArray = commitResult(result, *bodyWriter);
+        ZJsonArray resultArray;
+        for (uint64_t bodyId : bodyIdArray) {
+          resultArray.append(bodyId);
+        }
+        ZJsonObject resultJson;
+        resultJson.setEntry("committed", resultArray);
+        QString refPath = ZDvidPath::GetResultKeyPath(
+              ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
+              ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
+        resultJson.setEntry(
+              "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
+        writer->writeJson(refPath.toStdString(), resultJson);
       } else {
         for (ZObject3dScanArray::const_iterator iter = result->begin();
              iter != result->end(); ++iter) {
