@@ -55,7 +55,8 @@ Stack_Watershed_Workspace* ZStackWatershed::CreateWorkspace(
   }
 
   Stack_Watershed_Workspace *ws = C_Stack::MakeStackWatershedWorkspace(stack);
-  ws->conn =26;
+  //ws->conn =26;
+  ws->conn =6;
   if (C_Stack::kind(stack) == GREY) {
     ws->start_level = 255;
   } else {

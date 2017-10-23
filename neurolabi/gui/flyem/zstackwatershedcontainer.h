@@ -70,6 +70,10 @@ public:
     m_floodingZero = on;
   }
 
+  void setScale(int scale){
+      m_scale=scale;
+  }
+
   ZStack* getResultStack() const {
     return m_result;
   }
@@ -130,6 +134,8 @@ private:
   bool m_floodingZero;
   int m_channel;
   bool m_usingSeedRange = false;
+
+  int m_scale;
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H

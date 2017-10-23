@@ -12,6 +12,7 @@
 #include "tz_math.h"
 #include "flyem/zflyemmisc.h"
 #include "zstackobjectsourcefactory.h"
+#include "imgproc/zstackmultiscalewatershed.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -54,6 +55,7 @@ void ZStackWatershedContainer::init()
   m_channel = 0;
   m_floodingZero = false;
   m_usingSeedRange = false;
+  m_scale=1;
 }
 
 void ZStackWatershedContainer::init(ZStack *stack, ZSparseStack *spStack)
@@ -329,7 +331,7 @@ void ZStackWatershedContainer::addSeed(const ZSwcTree &seed)
     expandRange(seed.getBoundBox().toIntCuboid());
   }
 #endif
-//  seed.labelStack(&stack);
+ //seed.labelStack(&stack);
 }
 
 void ZStackWatershedContainer::prepareSeedMask(Stack *stack, Stack *mask)
@@ -511,11 +513,18 @@ void ZStackWatershedContainer::run()
   deprecate(COMP_RESULT);
   Stack *source = getSource();
   if (source != NULL) {
-    updateSeedMask();
-    Stack *out = C_Stack::watershed(source, getWorkspace());
-    m_result = new ZStack;
-    m_result->consume(out);
-    m_result->setOffset(getSourceOffset());
+      if(m_scale==1){
+        updateSeedMask();
+        Stack *out = C_Stack::watershed(source, getWorkspace());
+        m_result = new ZStack;
+        m_result->consume(out);
+        m_result->setOffset(getSourceOffset());
+      }
+      else{
+        ZStackMultiScaleWatershed watershed;
+        m_result=watershed.run(getSourceStack(),m_seedArray,m_scale);
+        m_result->setOffset(getSourceOffset());
+      }
   }
 }
 
