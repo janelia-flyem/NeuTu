@@ -469,7 +469,7 @@ Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
   DOWNSAMPLE_GENERAL(srcArray, dstArray, (*srcArray < *dstArray))
 
 #define DOWNSAMPLE_MIN_IGNORE_ZERO(srcArray, dstArray) \
-  DOWNSAMPLE_GENERAL(srcArray, dstArray, ((*srcArray < *dstArray)&&(*srcArray!=0)))
+  DOWNSAMPLE_GENERAL(srcArray, dstArray, (((*srcArray < *dstArray)&&(*srcArray!=0))||(*dstArray==0)))
 
 Stack* C_Stack::downsampleMax(
     const Stack *stack, int xintv, int yintv, int zintv, Stack *out)

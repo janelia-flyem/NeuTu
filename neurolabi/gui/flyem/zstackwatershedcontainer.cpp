@@ -515,6 +515,7 @@ void ZStackWatershedContainer::run()
   if (source != NULL) {
       if(m_scale==1){
         updateSeedMask();
+        getWorkspace()->conn=6;
         Stack *out = C_Stack::watershed(source, getWorkspace());
         m_result = new ZStack;
         m_result->consume(out);
