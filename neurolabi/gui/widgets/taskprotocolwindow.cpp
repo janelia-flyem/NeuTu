@@ -11,6 +11,8 @@
 
 #include "neutube.h"
 #include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
@@ -18,15 +20,24 @@
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
 
-TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
+TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TaskProtocolWindow)
 {
     ui->setupUi(this);
 
     m_proofDoc = doc;
+    m_body3dDoc = bodyDoc;
 
     m_protocolInstanceStatus = UNCHECKED;
+
+    // prefetch queue
+    m_prefetchQueue = new BodyPrefetchQueue();
+    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
+    connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
+    // note; no remove signal/slot yet
+
+
 
     // UI connections
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
@@ -116,6 +127,12 @@ void TaskProtocolWindow::onPrevButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
+
+    // no prefetching is performed here; if we're backing up in the list,
+    //  the next body should already be in memory; it's the responsibility of
+    //  the rest of the application not to throw it out too soon (yes, this
+    //  is a debatable position)
+
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
@@ -130,6 +147,14 @@ void TaskProtocolWindow::onNextButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
+
+    // for now, simplest possible prefetching: just prefetch for the next task,
+    //  as long as there is one and it's not the current one
+    int nextTaskIndex = getNext();
+    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+        prefetchForTaskIndex(nextTaskIndex);
+    }
+
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
@@ -150,7 +175,7 @@ void TaskProtocolWindow::onDoneButton() {
 
     QMessageBox messageBox;
     messageBox.setText("Complete task protocol?");
-    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, the data in DVID will be renamed, and you will not be able to continue.\n\nComplete protocol?");
+    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, your progress data will be stored in DVID, and you will not be able to continue.\n\nComplete protocol?");
     messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
     messageBox.setDefaultButton(QMessageBox::Ok);
     int ret = messageBox.exec();
@@ -373,6 +398,34 @@ int TaskProtocolWindow::getNextUncompleted() {
 }
 
 /*
+ * prefetch the bodies for a task
+ */
+void TaskProtocolWindow::prefetchForTaskIndex(int index) {
+    // each task may have bodies that it wants visible and selected;
+    //  add those, selected first (which are presumably more important?)
+    if (m_taskList[index]->selectedBodies().size() > 0) {
+        prefetch(m_taskList[index]->selectedBodies());
+    }
+    if (m_taskList[index]->visibleBodies().size() > 0) {
+        prefetch(m_taskList[index]->visibleBodies());
+    }
+}
+
+/*
+ * request prefetch of bodies that you know are coming up next
+ */
+void TaskProtocolWindow::prefetch(QSet<uint64_t> bodyIDs) {
+    emit prefetchBody(bodyIDs);
+}
+
+/*
+ * request prefetch of a body that you know is coming up next
+ */
+void TaskProtocolWindow::prefetch(uint64_t bodyID) {
+    emit prefetchBody(bodyID);
+}
+
+/*
  * updates the task label for current index
  */
 void TaskProtocolWindow::updateCurrentTaskLabel() {
@@ -405,6 +458,10 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             m_currentTaskWidget->setVisible(true);
         }
     }
+}
+
+BodyPrefetchQueue * TaskProtocolWindow::getPrefetchQueue() {
+    return m_prefetchQueue;
 }
 
 /*
@@ -572,7 +629,10 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
             m_taskList.append(task);
         } else if (taskType == "split seeds") {
-            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject()));
+            // I'm not really fond of this task having a different constructor signature, but
+            //  neither do I want to pass in both docs to every task just because a few might
+            //  need one or the other of them
+            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject(), m_body3dDoc));
             m_taskList.append(task);
         } else if (taskType == "test task") {
             QSharedPointer<TaskProtocolTask> task(new TaskTestTask(taskJson.toObject()));

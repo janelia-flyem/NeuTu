@@ -149,7 +149,7 @@ void Neu3Window::createDockWidget()
 
 void Neu3Window::createTaskWindow() {
     QDockWidget *dockWidget = new QDockWidget(this);
-    TaskProtocolWindow *window = new TaskProtocolWindow(getDataDocument(), this);
+    TaskProtocolWindow *window = new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names

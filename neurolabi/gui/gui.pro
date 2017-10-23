@@ -805,6 +805,7 @@ HEADERS += mainwindow.h \
     protocols/taskbodyreview.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
+    protocols/bodyprefetchqueue.h \
     flyem/zflyembody3ddoccommand.h \
     flyem/zflyembody3ddocmenufactory.h \
     zopenglwidget.h \
@@ -1408,6 +1409,7 @@ SOURCES += main.cpp \
     protocols/taskbodyreview.cpp \
     protocols/tasktesttask.cpp \
     protocols/tasksplitseeds.cpp \
+    protocols/bodyprefetchqueue.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \
     zopenglwidget.cpp \

@@ -12,13 +12,16 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
+#include "flyem/zflyembody3ddoc.h"
 
-TaskSplitSeeds::TaskSplitSeeds(QJsonObject json)
+TaskSplitSeeds::TaskSplitSeeds(QJsonObject json, ZFlyEmBody3dDoc * bodyDoc)
 {
     if (json[KEY_TASKTYPE] != VALUE_TASKTYPE) {
         // wrong type, don't load the json
         return;
     }
+
+    m_bodyDoc = bodyDoc;
 
     m_visibleBodies = QSet<uint64_t>();
     m_selectedBodies = QSet<uint64_t>();
@@ -48,6 +51,8 @@ TaskSplitSeeds::TaskSplitSeeds(QJsonObject json)
     m_widget->setVisible(false);
 
     connect (m_noSplitCheck, SIGNAL(stateChanged(int)), this, SLOT(onNoSplitStateChanged(int)));
+
+    connect (this, SIGNAL(saveSplitTask()), m_bodyDoc, SLOT(saveSplitTask()));
 
     // I split the loading out for now
     loadJson(json);
@@ -79,6 +84,11 @@ void TaskSplitSeeds::onCompleted() {
     // be sure the tag is right; there's one sequence by which it won't
     //  be set until here
     updateSeedsTag();
+
+    // if there are seeds, be sure they are saved
+    if (hasTag(TAG_SEEDS_ADDED)) {
+        emit saveSplitTask();
+    }
 }
 
 void TaskSplitSeeds::updateSeedsTag() {
