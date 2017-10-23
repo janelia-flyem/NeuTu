@@ -487,7 +487,170 @@ void ZMesh::logProperties(const ZMeshProperties& prop, const QString& str)
   LOG(INFO) << "";
 }
 
-ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
+ZMesh ZMesh::CreateCuboidFaceMesh(
+    const ZIntCuboid &cf, const std::vector<bool> &visible, const QColor &color)
+{
+  std::vector<glm::vec3> coordLlfs;
+  coordLlfs.emplace_back(cf.getFirstCorner().getX(), cf.getFirstCorner().getY(),
+                         cf.getFirstCorner().getZ());
+
+  std::vector<glm::vec3> coordUrbs;
+  coordUrbs.emplace_back(cf.getLastCorner().getX(), cf.getLastCorner().getY(),
+                         cf.getLastCorner().getZ());
+
+  std::vector<std::vector<bool> > faceVisbility;
+  faceVisbility.push_back(visible);
+
+  std::vector<glm::vec4> cubeColors;
+  cubeColors.emplace_back(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+
+  return CreateCubesWithNormal(coordLlfs, coordUrbs, faceVisbility, &cubeColors);
+}
+
+void ZMesh::createCubesWithNormal(
+    const std::vector<glm::vec3>& coordLlfs,
+    const std::vector<glm::vec3>& coordUrbs,
+    const std::vector<std::vector<bool> >& faceVisbility,
+    const std::vector<glm::vec4>* cubeColors)
+{
+  CHECK(coordLlfs.size() == coordUrbs.size());
+  CHECK(!cubeColors || cubeColors->size() >= coordLlfs.size());
+  clear();
+  setType(GL_TRIANGLES);
+
+  GLuint idxes[6] = {0, 1, 2, 2, 1, 3};
+
+  size_t offset = 0;
+  for (size_t i = 0; i < coordLlfs.size(); ++i) {
+    //CHECK(coordUrbs[i].z > coordLlfs[i].z && coordUrbs[i].y > coordLlfs[i].y && coordUrbs[i].x > coordLlfs[i].x);
+    glm::vec3 p0(coordLlfs[i][0], coordLlfs[i][1], coordUrbs[i][2]); //4
+    glm::vec3 p1(coordUrbs[i][0], coordLlfs[i][1], coordUrbs[i][2]); //5
+    glm::vec3 p2(coordLlfs[i][0], coordUrbs[i][1], coordUrbs[i][2]); //6
+    glm::vec3 p3(coordUrbs[i][0], coordUrbs[i][1], coordUrbs[i][2]); //7
+    glm::vec3 p4(coordLlfs[i][0], coordLlfs[i][1], coordLlfs[i][2]); //0
+    glm::vec3 p5(coordUrbs[i][0], coordLlfs[i][1], coordLlfs[i][2]); //1
+    glm::vec3 p6(coordLlfs[i][0], coordUrbs[i][1], coordLlfs[i][2]); //2
+    glm::vec3 p7(coordUrbs[i][0], coordUrbs[i][1], coordLlfs[i][2]); //3
+
+    glm::vec3 frontFaceNormal = glm::normalize(p4 - p0); //z0 - z1
+    glm::vec3 rightFaceNormal = glm::normalize(p5 - p4); //x1 - x0
+    glm::vec3 upFaceNormal = glm::normalize(p4 - p6); //y0 - y1
+
+    const std::vector<bool> fv = faceVisbility[i];
+
+    size_t nvertices = 0;
+    if (fv[5]) { //Front face
+      m_vertices.push_back(p0);
+      m_vertices.push_back(p1);
+      m_vertices.push_back(p2);
+      m_vertices.push_back(p3);
+
+      m_normals.push_back(-frontFaceNormal);
+      m_normals.push_back(-frontFaceNormal);
+      m_normals.push_back(-frontFaceNormal);
+      m_normals.push_back(-frontFaceNormal);
+
+      for (GLuint j = 0; j < 6; ++j) {
+        m_indices.push_back(idxes[j] + nvertices + offset);
+      }
+      nvertices += 4;
+    }
+
+    if (fv[3]) { //Up face
+      m_vertices.push_back(p2);
+      m_vertices.push_back(p3);
+      m_vertices.push_back(p6);
+      m_vertices.push_back(p7);
+
+      m_normals.push_back(-upFaceNormal);
+      m_normals.push_back(-upFaceNormal);
+      m_normals.push_back(-upFaceNormal);
+      m_normals.push_back(-upFaceNormal);
+
+      for (GLuint j = 0; j < 6; ++j) {
+        m_indices.push_back(idxes[j] + nvertices + offset);
+      }
+      nvertices += 4;
+    }
+
+    if (fv[0]) { //Left face
+      m_vertices.push_back(p4);
+      m_vertices.push_back(p0);
+      m_vertices.push_back(p6);
+      m_vertices.push_back(p2);
+
+      m_normals.push_back(-rightFaceNormal);
+      m_normals.push_back(-rightFaceNormal);
+      m_normals.push_back(-rightFaceNormal);
+      m_normals.push_back(-rightFaceNormal);
+
+      for (GLuint j = 0; j < 6; ++j) {
+        m_indices.push_back(idxes[j] + nvertices + offset);
+      }
+      nvertices += 4;
+    }
+
+    if (fv[1]) { //Right face
+      m_vertices.push_back(p7);
+      m_vertices.push_back(p3);
+      m_vertices.push_back(p5);
+      m_vertices.push_back(p1);
+
+      m_normals.push_back(rightFaceNormal);
+      m_normals.push_back(rightFaceNormal);
+      m_normals.push_back(rightFaceNormal);
+      m_normals.push_back(rightFaceNormal);
+
+      for (GLuint j = 0; j < 6; ++j) {
+        m_indices.push_back(idxes[j] + nvertices + offset);
+      }
+      nvertices += 4;
+    }
+
+    if (fv[2]) { //Down face
+      m_vertices.push_back(p4);
+      m_vertices.push_back(p5);
+      m_vertices.push_back(p0);
+      m_vertices.push_back(p1);
+
+      m_normals.push_back(upFaceNormal);
+      m_normals.push_back(upFaceNormal);
+      m_normals.push_back(upFaceNormal);
+      m_normals.push_back(upFaceNormal);
+
+      for (GLuint j = 0; j < 6; ++j) {
+        m_indices.push_back(idxes[j] + nvertices + offset);
+      }
+      nvertices += 4;
+    }
+
+    if (fv[4]) { //Back face
+      m_vertices.push_back(p6);
+      m_vertices.push_back(p7);
+      m_vertices.push_back(p4);
+      m_vertices.push_back(p5);
+
+      m_normals.push_back(frontFaceNormal);
+      m_normals.push_back(frontFaceNormal);
+      m_normals.push_back(frontFaceNormal);
+      m_normals.push_back(frontFaceNormal);
+
+      for (GLuint j = 0; j < 6; ++j) {
+        m_indices.push_back(idxes[j] + nvertices + offset);
+      }
+      nvertices += 4;
+    }
+
+    offset += nvertices;
+    if (cubeColors) {
+      for (size_t j = 0; j < nvertices; ++j)  {
+        m_colors.push_back(cubeColors->at(i));
+      }
+    }
+  }
+}
+
+ZMesh ZMesh::CreateCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
                                    const std::vector<glm::vec3>& coordUrbs,
                                    const std::vector<std::vector<bool> >& faceVisbility,
                                    const std::vector<glm::vec4>* cubeColors)
@@ -504,23 +667,23 @@ ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
   size_t offset = 0;
   for (size_t i = 0; i < coordLlfs.size(); ++i) {
     //CHECK(coordUrbs[i].z > coordLlfs[i].z && coordUrbs[i].y > coordLlfs[i].y && coordUrbs[i].x > coordLlfs[i].x);
-    glm::vec3 p0(coordLlfs[i][0], coordLlfs[i][1], coordUrbs[i][2]); //1
-    glm::vec3 p1(coordUrbs[i][0], coordLlfs[i][1], coordUrbs[i][2]); //2
-    glm::vec3 p2(coordLlfs[i][0], coordUrbs[i][1], coordUrbs[i][2]); //5
-    glm::vec3 p3(coordUrbs[i][0], coordUrbs[i][1], coordUrbs[i][2]); //6
+    glm::vec3 p0(coordLlfs[i][0], coordLlfs[i][1], coordUrbs[i][2]); //4
+    glm::vec3 p1(coordUrbs[i][0], coordLlfs[i][1], coordUrbs[i][2]); //5
+    glm::vec3 p2(coordLlfs[i][0], coordUrbs[i][1], coordUrbs[i][2]); //6
+    glm::vec3 p3(coordUrbs[i][0], coordUrbs[i][1], coordUrbs[i][2]); //7
     glm::vec3 p4(coordLlfs[i][0], coordLlfs[i][1], coordLlfs[i][2]); //0
-    glm::vec3 p5(coordUrbs[i][0], coordLlfs[i][1], coordLlfs[i][2]); //3
-    glm::vec3 p6(coordLlfs[i][0], coordUrbs[i][1], coordLlfs[i][2]); //4
-    glm::vec3 p7(coordUrbs[i][0], coordUrbs[i][1], coordLlfs[i][2]); //7
+    glm::vec3 p5(coordUrbs[i][0], coordLlfs[i][1], coordLlfs[i][2]); //1
+    glm::vec3 p6(coordLlfs[i][0], coordUrbs[i][1], coordLlfs[i][2]); //2
+    glm::vec3 p7(coordUrbs[i][0], coordUrbs[i][1], coordLlfs[i][2]); //3
 
-    glm::vec3 frontFaceNormal = glm::normalize(p4 - p0);
-    glm::vec3 rightFaceNormal = glm::normalize(p5 - p4);
-    glm::vec3 upFaceNormal = glm::normalize(p4 - p6);
+    glm::vec3 frontFaceNormal = glm::normalize(p4 - p0); //z0 - z1
+    glm::vec3 rightFaceNormal = glm::normalize(p5 - p4); //x1 - x0
+    glm::vec3 upFaceNormal = glm::normalize(p4 - p6); //y0 - y1
 
     const std::vector<bool> fv = faceVisbility[i];
 
     size_t nvertices = 0;
-    if (fv[4]) {
+    if (fv[5]) { //Front face
       vertices.push_back(p0);
       vertices.push_back(p1);
       vertices.push_back(p2);
@@ -537,7 +700,7 @@ ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
       nvertices += 4;
     }
 
-    if (fv[2]) {
+    if (fv[3]) { //Up face
       vertices.push_back(p2);
       vertices.push_back(p3);
       vertices.push_back(p6);
@@ -554,7 +717,7 @@ ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
       nvertices += 4;
     }
 
-    if (fv[1]) {
+    if (fv[0]) { //Left face
       vertices.push_back(p4);
       vertices.push_back(p0);
       vertices.push_back(p6);
@@ -571,7 +734,7 @@ ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
       nvertices += 4;
     }
 
-    if (fv[0]) {
+    if (fv[1]) { //Right face
       vertices.push_back(p7);
       vertices.push_back(p3);
       vertices.push_back(p5);
@@ -588,7 +751,7 @@ ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
       nvertices += 4;
     }
 
-    if (fv[3]) {
+    if (fv[2]) { //Down face
       vertices.push_back(p4);
       vertices.push_back(p5);
       vertices.push_back(p0);
@@ -605,7 +768,7 @@ ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
       nvertices += 4;
     }
 
-    if (fv[5]) {
+    if (fv[4]) { //Back face
       vertices.push_back(p6);
       vertices.push_back(p7);
       vertices.push_back(p4);
@@ -647,7 +810,7 @@ ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
 }
 
 
-ZMesh ZMesh::createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
+ZMesh ZMesh::CreateCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
                                    const std::vector<glm::vec3>& coordUrbs,
                                    const std::vector<glm::vec4>* cubeColors)
 {
@@ -1146,6 +1309,14 @@ ZMesh ZMesh::createConeMesh(glm::vec3 base, float baseRadius, glm::vec3 top, flo
 
 ZMesh ZMesh::FromZCubeArray(const ZCubeArray& ca)
 {
+  if (!ca.isEmpty()) {
+    ZMesh mesh((*ca.getMesh()));
+
+    return mesh;
+  }
+
+  return ZMesh();
+#if 0
   std::vector<glm::vec3> coordLlfs;
   std::vector<glm::vec3> coordUrbs;
   std::vector<glm::vec4> cubeColors;
@@ -1160,8 +1331,9 @@ ZMesh ZMesh::FromZCubeArray(const ZCubeArray& ca)
     }
   }
 
-  return createCubesWithNormal(
+  return CreateCubesWithNormal(
         coordLlfs, coordUrbs, faceVisibility, &cubeColors);
+#endif
 }
 
 ZMesh ZMesh::merge(const std::vector<ZMesh>& meshes)
@@ -1326,6 +1498,9 @@ ZMesh ZMesh::booleanOperation(const ZMesh& mesh1, const ZMesh& mesh2, ZMesh::Boo
 void ZMesh::pushObjectColor()
 {
   m_colors.resize(m_vertices.size());
+#ifdef _DEBUG_
+  qDebug() << "Push mesh color:" << getColor();
+#endif
   for (size_t i = 0; i < m_colors.size(); ++i) {
     m_colors[i] = glm::vec4(getColor().redF(), getColor().greenF(),
                             getColor().blueF(), 1.0);

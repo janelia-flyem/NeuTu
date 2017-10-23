@@ -43,30 +43,42 @@ void ZStackObject::setSelected(bool selected)
   m_selected = selected;
 }
 
-void ZStackObject::setColor(int red, int green, int blue) {
+void ZStackObject::setColor(int red, int green, int blue)
+{
 #if defined(_QT_GUI_USED_)
-  m_color.setRed(red);
-  m_color.setGreen(green);
-  m_color.setBlue(blue);
+  setColor(QColor(red, green, blue, m_color.alpha()));
 #else
   UNUSED_PARAMETER(red);
   UNUSED_PARAMETER(green);
   UNUSED_PARAMETER(blue);
 #endif
+
+//#if defined(_QT_GUI_USED_)
+//  m_color.setRed(red);
+//  m_color.setGreen(green);
+//  m_color.setBlue(blue);
+//#else
+//  UNUSED_PARAMETER(red);
+//  UNUSED_PARAMETER(green);
+//  UNUSED_PARAMETER(blue);
+//#endif
 }
 
-void ZStackObject::setColor(int red, int green, int blue, int alpha) {
-#if defined(_QT_GUI_USED_)
-  m_color.setRed(red);
-  m_color.setGreen(green);
-  m_color.setBlue(blue);
-  m_color.setAlpha(alpha);
-#else
-  UNUSED_PARAMETER(red);
-  UNUSED_PARAMETER(green);
-  UNUSED_PARAMETER(blue);
-  UNUSED_PARAMETER(alpha);
-#endif
+void ZStackObject::setColor(int red, int green, int blue, int alpha)
+{
+  setColor(QColor(red, green, blue, alpha));
+
+//#if defined(_QT_GUI_USED_)
+//  m_color.setRed(red);
+//  m_color.setGreen(green);
+//  m_color.setBlue(blue);
+//  m_color.setAlpha(alpha);
+//#else
+//  UNUSED_PARAMETER(red);
+//  UNUSED_PARAMETER(green);
+//  UNUSED_PARAMETER(blue);
+//  UNUSED_PARAMETER(alpha);
+//#endif
 }
 
 void ZStackObject::setColor(const QColor &n) {
@@ -79,7 +91,8 @@ void ZStackObject::setColor(const QColor &n) {
 
 void ZStackObject::setAlpha(int alpha) {
 #if defined(_QT_GUI_USED_)
-  m_color.setAlpha(alpha);
+  setColor(QColor(m_color.red(), m_color.green(), m_color.blue(), alpha));
+//  m_color.setAlpha(alpha);
 #else
   UNUSED_PARAMETER(alpha);
 #endif

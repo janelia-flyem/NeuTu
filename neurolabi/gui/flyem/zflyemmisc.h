@@ -24,6 +24,7 @@ class QDir;
 class ZStack;
 class ZVaa3dMarker;
 class ZObject3d;
+class ZMesh;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -34,6 +35,11 @@ Z3DGraph* MakeRoiGraph(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo);
 ZCubeArray* MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv);
 ZCubeArray* MakeRoiCube(const ZObject3dScan &roi, QColor color, int dsIntv);
+ZMesh* MakeRoiMesh(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv);
+
+ZMesh* MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsIntv);
+
 
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);

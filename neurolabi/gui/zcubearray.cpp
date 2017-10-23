@@ -1,4 +1,5 @@
 #include "zcubearray.h"
+#include "zmesh.h"
 
 //
 Mesh::Mesh()
@@ -371,6 +372,55 @@ ZCubeArray::~ZCubeArray()
 
 }
 
+void ZCubeArray::display(
+    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
+    NeuTube::EAxis /*sliceAxis*/) const
+{
+}
+
+void ZCubeArray::setMesh(ZMesh *mesh)
+{
+  m_mesh = ZSharedPointer<ZMesh>(mesh);
+}
+
+#if 0
+void ZCubeArray::setColor(const QColor &n)
+{
+  if (m_mesh) {
+    m_mesh->setColor(n);
+    m_mesh->pushObjectColor();
+  }
+}
+#endif
+
+void ZCubeArray::pushObjectColor()
+{
+  if (m_mesh) {
+    m_mesh->setColor(getColor());
+    m_mesh->pushObjectColor();
+  }
+}
+
+ZSharedPointer<ZMesh> ZCubeArray::getMesh() const
+{
+  return m_mesh;
+}
+
+void ZCubeArray::clear()
+{
+  m_mesh.reset();
+}
+
+bool ZCubeArray::isEmpty() const
+{
+  if (m_mesh) {
+    return m_mesh->empty();
+  }
+
+  return false;
+}
+
+#if 0
 bool ZCubeArray::isEmpty() const
 {
     return (m_cubeArray.size()==0);
@@ -449,6 +499,7 @@ void ZCubeArray::clear()
 {
   m_cubeArray.clear();
 }
+#endif
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)
 

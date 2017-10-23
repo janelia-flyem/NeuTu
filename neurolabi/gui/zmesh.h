@@ -43,6 +43,7 @@ struct ZMeshProperties
 };
 
 class ZCubeArray;
+//class ZIntCuboidFace;
 
 class ZMesh : public ZStackObject
 {
@@ -208,17 +209,26 @@ public:
   void logProperties(const QString& str = "") const
   { logProperties(properties(), str); }
 
+
+  void createCubesWithNormal(
+      const std::vector<glm::vec3>& coordLlfs,
+      const std::vector<glm::vec3>& coordUrbs,
+      const std::vector<std::vector<bool> > &faceVisbility,
+      const std::vector<glm::vec4>* cubeColors = nullptr);
+
   static void logProperties(const ZMeshProperties& prop, const QString& str = "");
 
   // a list of cubes with normal
-  static ZMesh createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
-                                     const std::vector<glm::vec3>& coordUrbs,
-                                     const std::vector<glm::vec4>* cubeColors = nullptr);
+  static ZMesh CreateCubesWithNormal(
+      const std::vector<glm::vec3>& coordLlfs,
+      const std::vector<glm::vec3>& coordUrbs,
+      const std::vector<glm::vec4>* cubeColors = nullptr);
 
-  static ZMesh createCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
-                                     const std::vector<glm::vec3>& coordUrbs,
-                                     const std::vector<std::vector<bool> > &faceVisbility,
-                                     const std::vector<glm::vec4>* cubeColors = nullptr);
+  static ZMesh CreateCubesWithNormal(
+      const std::vector<glm::vec3>& coordLlfs,
+      const std::vector<glm::vec3>& coordUrbs,
+      const std::vector<std::vector<bool> > &faceVisbility,
+      const std::vector<glm::vec4>* cubeColors = nullptr);
 
   // a cube with six surfaces
   static ZMesh createCube(
@@ -284,6 +294,9 @@ public:
 
   // from ZCubeArray
   static ZMesh FromZCubeArray(const ZCubeArray& ca);
+
+  static ZMesh CreateCuboidFaceMesh(
+      const ZIntCuboid &cf, const std::vector<bool> &visible, const QColor &color);
 
   // these functions only deal with meshes with normal, other fields (texture, color) are ignored
   static ZMesh unite(const ZMesh& mesh1, const ZMesh& mesh2)
