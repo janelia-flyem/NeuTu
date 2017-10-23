@@ -21,7 +21,7 @@ Z3DSurfaceFilter::Z3DSurfaceFilter(Z3DGlobalParameters& globalParas, QObject* pa
       NeutubeConfig::getInstance().getZ3DWindowConfig().getGraphTabConfig();
   setVisible(config.isVisible());
 
-  setOpacity(0.75);
+  setOpacity(0.1);
   m_rendererBase.setMaterialSpecular(glm::vec4(0, 0, 0, 1));
 
   m_singleColorForAllSurface.setStyle("COLOR");

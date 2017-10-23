@@ -166,6 +166,9 @@ public:
     bool initByNodes;
 };
 
+/*!
+ * \brief A temporary fix for using meshes for ROIs
+ */
 class ZCubeArray : public ZStackObject
 {
 public:
