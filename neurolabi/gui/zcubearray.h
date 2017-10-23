@@ -11,10 +11,12 @@
 #include "zglmutils.h"
 #include "zcuboid.h"
 #include "zintcuboid.h"
+#include "zsharedpointer.h"
 
 class ZNormColorMap;
 class ZObject3d;
 class ZStackBall;
+class ZMesh;
 
 /// Mesh
 class Mesh
@@ -164,6 +166,37 @@ public:
     bool initByNodes;
 };
 
+class ZCubeArray : public ZStackObject
+{
+public:
+  ZCubeArray();
+  ~ZCubeArray();
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_3D_CUBE;
+  }
+
+public:
+  bool isEmpty() const;
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const override;
+
+  const std::string& className() const override;
+
+  size_t size();
+  void setMesh(ZMesh *mesh);
+  ZSharedPointer<ZMesh> getMesh() const;
+//  void setColor(const QColor &n) override;
+  void pushObjectColor();
+
+  void clear();
+
+private:
+  ZSharedPointer<ZMesh> m_mesh;
+};
+
+#if 0
 //
 class ZCubeArray : public ZStackObject
 {
@@ -198,7 +231,7 @@ private:
   std::vector<Z3DCube> m_cubeArray;
 
 };
-
+#endif
 
 
 #endif // ZCUBEARRAY_H

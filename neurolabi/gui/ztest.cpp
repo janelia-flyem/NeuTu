@@ -11500,7 +11500,7 @@ void ZTest::test(MainWindow *host)
   std::cout << pixmap.isDetached() << std::endl;
 #endif
 
-#if 1
+#if 0
   QTimer timer;
   timer.start();
   std::cout << timer.isActive() << std::endl;
@@ -24667,6 +24667,44 @@ void ZTest::test(MainWindow *host)
    obj.exportImageSlice(0, 1, GET_TEST_DATA_DIR + "/tmp/slice");
 
 
+#endif
+
+#if 0
+   ZIntCuboid box;
+   box.setFirstCorner(0, 0, 0);
+   box.setLastCorner(10, 20, 30);
+
+   std::vector<bool> visible;
+   visible.resize(6, true);
+   visible[0] = false;
+   visible[2] = false;
+   visible[4] = false;
+
+   ZMesh mesh = ZMesh::CreateCuboidFaceMesh(box, visible, QColor(255, 0, 0));
+   std::cout << "#vertices: " << mesh.numVertices() << std::endl;
+   std::cout << "#Indices: " << mesh.indices().size() << std::endl;
+//   ZDebugPrintArrayG(mesh.indices(), 0, 36);
+   mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+#endif
+
+#if 1
+  ZObject3dScan obj;
+//  obj.load(GET_TEST_DATA_DIR + "/_flyem/MB/large_outside_block.sobj");
+  obj.addSegment(0, 0, 0, 1);
+  obj.addSegment(0, 1, 0, 2);
+  obj.addSegment(1, 0, 1, 2);
+  ZDvidInfo dvidInfo;
+  dvidInfo.setBlockSize(32, 32, 32);
+  obj.setDsIntv(31);
+//  ZMesh *mesh = ZFlyEmMisc::MakeRoiMesh(obj, QColor(255, 0, 0), 1);
+  ZMesh *mesh = ZFlyEmMisc::MakeRoiMesh(
+        obj, dvidInfo, QColor(255, 0, 0), 1);
+
+  std::cout << "#vertices: " << mesh->numVertices() << std::endl;
+  std::cout << "#Indices: " << mesh->indices().size() << std::endl;
+
+  mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+  delete mesh;
 #endif
 
   std::cout << "Done." << std::endl;

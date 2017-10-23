@@ -29,7 +29,7 @@ Z3DSurfaceFilter::Z3DSurfaceFilter(Z3DGlobalParameters& globalParas, QObject* pa
 
   // Color Mode
   m_colorMode.addOptions("CubeArray Color", "Single Color", "CubeArray Source");
-  m_colorMode.select("CubeArray Source");
+  m_colorMode.select("CubeArray Color");
 
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DSurfaceFilter::prepareColor);
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DSurfaceFilter::adjustWidgets);
@@ -213,14 +213,22 @@ void Z3DSurfaceFilter::prepareData()
 
 ZBBox<glm::dvec3> Z3DSurfaceFilter::cubeBound(const ZCubeArray& p)
 {
-  const auto& cubes = p.getCubeArray();
   ZBBox<glm::dvec3> res;
+  if (!p.isEmpty()) {
+    res = p.getMesh()->boundBox();
+  }
+  return res;
+
+#if 0
+  const auto& cubes = p.getCubeArray();
+
   for (auto& cube : cubes) {
     for (const auto& node : cube.nodes) {
       res.expand(glm::dvec3(node));
     }
   }
   return res;
+#endif
 }
 
 void Z3DSurfaceFilter::updateNotTransformedBoundBoxImpl()
