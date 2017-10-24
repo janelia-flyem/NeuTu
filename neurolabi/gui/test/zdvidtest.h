@@ -442,6 +442,13 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getMasterUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
             dvidUrl4.getDefaultDataInstancesUrl());
+  ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1).empty());
+
+  target.useLabelArray(true);
+  dvidUrl4.setDvidTarget(target, "3456");
+//  std::cout << target.getBodyLabelName() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
+            dvidUrl4.getSparsevolSizeUrl(1));
 
   ASSERT_EQ(12345, ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));

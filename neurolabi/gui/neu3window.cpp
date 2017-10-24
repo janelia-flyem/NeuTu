@@ -81,6 +81,8 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
   connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
           this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
+  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
+          this, &Neu3Window::zoomToBodyMesh, Qt::QueuedConnection);
 }
 
 void Neu3Window::initOpenglContext()
@@ -108,6 +110,7 @@ bool Neu3Window::loadDvidTarget()
     m_dataContainer = ZFlyEmProofMvc::Make(
           dlg->getDvidTarget(), ZStackMvc::ROLE_DOCUMENT);
     succ = true;
+    setWindowTitle(dlg->getDvidTarget().getSourceString(false).c_str());
   }
 
   delete dlg;
@@ -247,6 +250,15 @@ void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
   tmpBodySet.insert(bodySet.begin(), bodySet.end());
 
   getBodyDocument()->setBodyModelSelected(bodySet);
+}
+
+void Neu3Window::zoomToBodyMesh()
+{
+  QList<ZMesh*> meshList = getBodyDocument()->getMeshList();
+  if (meshList.size() == 1) {
+    ZMesh *mesh = meshList.front();
+    m_3dwin->gotoPosition(mesh->getBoundBox());
+  }
 }
 
 void Neu3Window::processSwcChangeFrom3D(

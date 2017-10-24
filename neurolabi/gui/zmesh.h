@@ -12,6 +12,7 @@
 
 class ZPoint;
 class vtkOBBTree;
+class ZCuboid;
 
 struct ZMeshProperties
 {
@@ -95,6 +96,8 @@ public:
   ZBBox<glm::dvec3> boundBox() const;
 
   ZBBox<glm::dvec3> boundBox(const glm::mat4& transform) const;
+
+  ZCuboid getBoundBox() const;
 
   using ZStackObject::boundBox;
 

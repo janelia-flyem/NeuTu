@@ -2276,7 +2276,13 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     }
 
     m_readingTime = timer.elapsed();
-    LINFO() << "label reading time: " << m_readingTime;
+    if (NeutubeConfig::GetVerboseLevel() < 5) {
+      if (m_readingTime > 10) {
+        LINFO() << "label reading time: " << m_readingTime;
+      }
+    } else {
+      LINFO() << "label reading time: " << m_readingTime;
+    }
   }
 
   return stack;
@@ -2789,6 +2795,19 @@ ZDvidVersionDag ZDvidReader::readVersionDag(const std::string &uuid) const
   return dag;
 }
 
+int ZDvidReader::readBodyBlockCount(uint64_t bodyId) const
+{
+  int count = -1;
+  ZDvidUrl dvidUrl(getDvidTarget());
+  ZJsonObject jsonObj = readJsonObject(dvidUrl.getSparsevolSizeUrl(bodyId));
+  if (jsonObj.hasKey("numblocks")) {
+    count = ZJsonParser::integerValue(jsonObj["numblocks"]);
+  }
+  //Todo: add block count read for labelblk data
+
+  return count;
+}
+
 ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId) const
 {
   ZDvidBufferReader &reader = m_bufferReader;
@@ -3086,15 +3105,17 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
 {
   ZJsonObject obj;
 
-  ZDvidBufferReader &bufferReader = m_bufferReader;
-  if (ZString(url).startsWith("http:")) {
-    bufferReader.read(url.c_str(), isVerbose());
-  } else {
-    bufferReader.readFromPath(url.c_str(), isVerbose());
-  }
-  const QByteArray &buffer = bufferReader.getBuffer();
-  if (!buffer.isEmpty()) {
-    obj.decodeString(buffer.constData());
+  if (!url.empty()) {
+    ZDvidBufferReader &bufferReader = m_bufferReader;
+    if (ZString(url).startsWith("http:")) {
+      bufferReader.read(url.c_str(), isVerbose());
+    } else {
+      bufferReader.readFromPath(url.c_str(), isVerbose());
+    }
+    const QByteArray &buffer = bufferReader.getBuffer();
+    if (!buffer.isEmpty()) {
+      obj.decodeString(buffer.constData());
+    }
   }
 
   return obj;

@@ -151,6 +151,14 @@ public:
 
   ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet);
 
+  /*!
+   * \brief Check the number of blocks of a body
+   *
+   * \return The number of blocks of a body. It returns -1 if the count cannot
+   *         be determined.
+   */
+  int readBodyBlockCount(uint64_t bodyId) const;
+
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId);

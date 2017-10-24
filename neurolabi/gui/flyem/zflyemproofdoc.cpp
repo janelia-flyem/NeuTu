@@ -821,6 +821,12 @@ void ZFlyEmProofDoc::readInfo()
   m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
   m_labelInfo = m_dvidReader.readLabelInfo();
   m_versionDag = m_dvidReader.readVersionDag();
+
+#ifdef _DEBUG_2
+  std::cout << "Label Info:" << std::endl;
+  m_labelInfo.print();
+#endif
+
 #ifdef _DEBUG_2
   m_versionDag.print();
 #endif

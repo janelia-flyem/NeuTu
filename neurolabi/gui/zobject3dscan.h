@@ -160,6 +160,8 @@ public:
    */
   bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber);
 
+  static size_t CountVoxelNumber(const char *byteArray, size_t byteNumber);
+
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
   bool importDvidObjectBufferDs(const char *byteArray, size_t byteNumber);

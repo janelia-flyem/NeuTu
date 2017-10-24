@@ -101,6 +101,16 @@ ZBBox<glm::dvec3> ZMesh::boundBox() const
   return result;
 }
 
+ZCuboid ZMesh::getBoundBox() const
+{
+  ZCuboid box;
+  ZBBox<glm::dvec3> bbox = boundBox();
+  box.setFirstCorner(bbox.minCorner().x, bbox.minCorner().y, bbox.minCorner().z);
+  box.setLastCorner(bbox.maxCorner().x, bbox.maxCorner().y, bbox.maxCorner().z);
+
+  return box;
+}
+
 ZBBox<glm::dvec3> ZMesh::boundBox(const glm::mat4& transform) const
 {
   ZBBox<glm::dvec3> result;
@@ -385,7 +395,9 @@ std::vector<ZMesh> ZMesh::split(size_t numTriangle) const
   size_t numResult = std::ceil(1.0 * totalNumTri / numTriangle);
   std::vector<ZMesh> res(numResult);
   for (size_t i = 0; i < numResult; ++i) {
-    for (size_t j = i * numTriangle; j < std::min(totalNumTri, (i + 1) * numTriangle); ++j) {
+    size_t first = i * numTriangle;
+    size_t last = std::min(totalNumTri, (i + 1) * numTriangle);
+    for (size_t j = first; j < last; ++j) {
       res[i].appendTriangle(*this, triangleIndices(j));
     }
   }

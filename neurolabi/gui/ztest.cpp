@@ -24687,7 +24687,7 @@ void ZTest::test(MainWindow *host)
    mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
 //  obj.load(GET_TEST_DATA_DIR + "/_flyem/MB/large_outside_block.sobj");
   obj.addSegment(0, 0, 0, 1);
@@ -24706,6 +24706,20 @@ void ZTest::test(MainWindow *host)
   mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
   delete mesh;
 #endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "c0ab", 8000);
+  target.setLabelBlockName("segmentation-from-bricks");
+
+  reader.open(target);
+  tic();
+  std::cout << reader.readBodyBlockCount(296188589) << std::endl;
+  std::cout << reader.readBodyBlockCount(296612416) << std::endl;
+  ptoc();
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

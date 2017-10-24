@@ -39,6 +39,7 @@ public slots:
   void addBody(uint64_t bodyId);
 
   void setBodySelection(const QSet<uint64_t> &bodySet);
+  void zoomToBodyMesh();
 
 signals:
   void bodySelected(uint64_t bodyId);

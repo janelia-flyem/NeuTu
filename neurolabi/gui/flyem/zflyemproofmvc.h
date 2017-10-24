@@ -76,6 +76,7 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
+  const ZDvidInfo& getDvidInfo() const;
   const ZDvidInfo& getGrayScaleInfo() const;
 
   virtual void setDvidTarget(const ZDvidTarget &target);
@@ -415,8 +416,8 @@ private:
 
   void mergeCoarseBodyWindow();
 
-  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
-                              bool isDeep);
+//  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
+//                              bool isDeep);
   void updateBodyWindowForSplit();
 
   void setWindowSignalSlot(Z3DWindow *window);

@@ -1338,6 +1338,7 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
 
     getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
     getDataBuffer()->deliver();
+    emit bodyMeshLoaded();
   }
 
   ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;

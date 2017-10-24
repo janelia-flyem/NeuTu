@@ -313,6 +313,7 @@ private:
 
 signals:
   void todoVisibleChanged();
+  void bodyMeshLoaded();
 
 private slots:
 //  void updateBody();

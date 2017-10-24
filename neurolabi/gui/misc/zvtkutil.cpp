@@ -55,15 +55,6 @@ vtkSmartPointer<vtkPolyData> meshToVtkPolyData(const ZMesh& mesh)
     points->InsertPoint(i, vertices[i].x, vertices[i].y, vertices[i].z);
   }
 
-  vtkSmartPointer<vtkFloatArray> nrmls = vtkSmartPointer<vtkFloatArray>::New();
-  const std::vector<glm::vec3>& normals = mesh.normals();
-  CHECK(normals.size() == vertices.size());
-  nrmls->SetNumberOfComponents(3);
-  nrmls->Allocate(3 * normals.size());
-  nrmls->SetName("Normals");
-  for (size_t i = 0; i < normals.size(); ++i) {
-    nrmls->InsertTuple(i, &normals[i][0]);
-  }
 
   vtkSmartPointer<vtkCellArray> polys = vtkSmartPointer<vtkCellArray>::New();
   size_t numTriangles = mesh.numTriangles();
@@ -79,7 +70,24 @@ vtkSmartPointer<vtkPolyData> meshToVtkPolyData(const ZMesh& mesh)
 
   vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
   polyData->SetPoints(points);
-  polyData->GetPointData()->SetNormals(nrmls);
+
+  const std::vector<glm::vec3>& normals = mesh.normals();
+  if (!normals.empty()) {
+    vtkSmartPointer<vtkFloatArray> nrmls = vtkSmartPointer<vtkFloatArray>::New();
+
+    if (normals.size() != vertices.size()) {
+      LWARN() << "Unmatched normal size" << normals.size() << vertices.size();
+    }
+    //  CHECK(normals.size() == vertices.size());
+    nrmls->SetNumberOfComponents(3);
+    nrmls->Allocate(3 * normals.size());
+    nrmls->SetName("Normals");
+    for (size_t i = 0; i < normals.size(); ++i) {
+      nrmls->InsertTuple(i, &normals[i][0]);
+    }
+    polyData->GetPointData()->SetNormals(nrmls);
+  }
+
   polyData->SetPolys(polys);
 
   return polyData;
