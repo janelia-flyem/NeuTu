@@ -42,27 +42,13 @@ void Neu3Window::initialize()
 {
   initOpenglContext();
 
-//  ZStackDoc *doc = new ZStackDoc;
-//  doc->loadFile(GET_TEST_DATA_DIR + "/_system/slice15_L11.Edit.swc");
-
   QWidget *widget = new QWidget(this);
 
   QHBoxLayout *layout = new QHBoxLayout(this);
   layout->setMargin(1);
   widget->setLayout(layout);
 
-  /*
-  ZWindowFactory factory;
-  factory.setControlPanelVisible(false);
-  factory.setObjectViewVisible(false);
-  factory.setStatusBarVisible(false);
-  factory.setParentWidget(this);
-*/
-
   m_3dwin = m_dataContainer->makeNeu3Window();
-//  ZFlyEmBody3dDoc *bodydoc =
-//      qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
-//  bodydoc->showTodo(false);
 
   setCentralWidget(m_3dwin);
 
@@ -110,7 +96,10 @@ bool Neu3Window::loadDvidTarget()
     m_dataContainer = ZFlyEmProofMvc::Make(
           dlg->getDvidTarget(), ZStackMvc::ROLE_DOCUMENT);
     succ = true;
-    setWindowTitle(dlg->getDvidTarget().getSourceString(false).c_str());
+    QString windowTitle = QString("%1 [%2]").
+        arg(dlg->getDvidTarget().getSourceString(false).c_str()).
+        arg(dlg->getDvidTarget().getLabelBlockName().c_str());
+    setWindowTitle(windowTitle);
   }
 
   delete dlg;
