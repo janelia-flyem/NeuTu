@@ -747,8 +747,8 @@ void ZStackDoc::processDataBuffer()
        iter != updateList.end(); ++iter) {
     ZStackDocObjectUpdate *u = *iter;
 
-    std::cout << "Doc update: ";
-    u->print();
+//    std::cout << "Doc update: ";
+//    u->print();
 
     if (u->getObject() != NULL) {
       switch (u->getAction()) {

@@ -192,8 +192,9 @@ void Z3DFilter::removePort(Z3DOutputPortBase& port)
 
 void Z3DFilter::addParameter(ZParameter& para, State inv)
 {
+  LINFO() << "Adding" << &para << para.name();
   if (m_parameterNames.find(para.name()) != m_parameterNames.end()) {
-    //LOG(FATAL) << "Duplicated para name " << para.name();
+//    LOG(FATAL) << "Duplicated para name " << para.name();
   }
   m_parameters.push_back(&para);
   m_parameterNames.insert(para.name());
