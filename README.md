@@ -5,10 +5,6 @@ NeuTu-EM
 
 Software for proofreading EM connectomics
 
-## Download Source Code (Not needed for installation)
-
-    git clone -b flyem_release https://github.com/janelia-flyem/NeuTu.git NeuTu
-
 ## Installation
 
 ### Mac (OSX 10.10+ preferred)
@@ -82,4 +78,3 @@ https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
 
 https://www.dropbox.com/s/lxvvelfn16mhc60/NeuTu_Explorer_Manual_Mac.pdf?dl=0
 
-Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.
