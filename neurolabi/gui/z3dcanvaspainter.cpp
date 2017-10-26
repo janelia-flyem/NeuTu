@@ -101,6 +101,8 @@ bool Z3DCanvasPainter::renderToImage(const QString& filename, Z3DScreenShotType 
     return false;
   }
 
+  m_canvas.getGLFocus();
+
   // enable render-to-file on next process
   m_renderToImage = true;
   m_renderToImageError.clear();
@@ -164,6 +166,8 @@ bool Z3DCanvasPainter::renderToImage(const QString& filename, int width, int hei
     LOG(FATAL) << "impossible configuration";
     return false;
   }
+
+  m_canvas.getGLFocus();
 
   if (m_inport.numValidInputs() == 0) {
     QApplication::processEvents();
@@ -311,7 +315,7 @@ void Z3DCanvasPainter::renderInportToImage(Z3DEye eye)
         CHECK(!m_monoImg.isNull());
         pasteQImage(m_monoImg, bufImg, m_tileStartX, m_tileStartY);
       } else {
-        m_monoImg = bufImg;
+        m_monoImg = bufImg.copy();
       }
     } else if (eye == Z3DEye::Right) {
       const Z3DTexture* leftTex = imageColorTexture(Z3DEye::Left);
@@ -321,7 +325,7 @@ void Z3DCanvasPainter::renderInportToImage(Z3DEye eye)
       std::vector<uint8_t, boost::alignment::aligned_allocator<uint8_t, 32>> colorBuffer(
         leftTex->bypePerPixel(dataFormat, dataType) * leftTex->numPixels());
       leftTex->downloadTextureToBuffer(dataFormat, dataType, colorBuffer.data());
-      QImage bufImg(colorBuffer.data(), leftTex->width(), leftTex->width(), QImage::Format_ARGB32_Premultiplied);
+      QImage bufImg(colorBuffer.data(), leftTex->width(), leftTex->height(), QImage::Format_ARGB32_Premultiplied);
       if (m_tiledRendering) {
         CHECK(!m_leftImg.isNull());
         pasteQImage(m_leftImg, bufImg, m_tileStartX, m_tileStartY);
@@ -330,12 +334,12 @@ void Z3DCanvasPainter::renderInportToImage(Z3DEye eye)
       }
 
       tex->downloadTextureToBuffer(dataFormat, dataType, colorBuffer.data());
-      bufImg = QImage(colorBuffer.data(), tex->width(), tex->width(), QImage::Format_ARGB32_Premultiplied);
+      bufImg = QImage(colorBuffer.data(), tex->width(), tex->height(), QImage::Format_ARGB32_Premultiplied);
       if (m_tiledRendering) {
         CHECK(!m_rightImg.isNull());
         pasteQImage(m_rightImg, bufImg, m_tileStartX, m_tileStartY);
       } else {
-        m_rightImg = bufImg;
+        m_rightImg = bufImg.copy();
       }
     }
   }
@@ -354,7 +358,8 @@ void Z3DCanvasPainter::pasteQImage(QImage& dst, const QImage& src, int x, int y)
 
 QImage Z3DCanvasPainter::composeStereoViewQImage(const QImage& left, const QImage& right, bool half)
 {
-  QImage res(left.width() + right.width(), left.height() + right.height(), QImage::Format_ARGB32_Premultiplied);
+  CHECK(left.height() == right.height());
+  QImage res(left.width() + right.width(), left.height(), QImage::Format_ARGB32_Premultiplied);
   QPainter painter(&res);
   painter.drawImage(QPoint(0, 0), left);
   painter.drawImage(QPoint(left.width(), 0), right);

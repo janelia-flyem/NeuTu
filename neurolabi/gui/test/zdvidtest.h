@@ -70,7 +70,7 @@ TEST(ZDvidTest, ZDvidInfo)
   ZObject3dScan obj;
   obj.addSegment(-1, -2, -1, 10);
   ZObject3dScan obj2 = info.getBlockIndex(obj);
-  ASSERT_EQ(2, obj2.getVoxelNumber());
+  ASSERT_EQ(2, (int) obj2.getVoxelNumber());
   ASSERT_TRUE(obj2.contains(-1, -1, -1));
   ASSERT_TRUE(obj2.contains(0, -1, -1));
 
@@ -450,9 +450,9 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
             dvidUrl4.getSparsevolSizeUrl(1));
 
-  ASSERT_EQ(12345, ZDvidUrl::GetBodyId(
+  ASSERT_EQ(12345, (int) ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));
-  ASSERT_EQ(0, ZDvidUrl::GetBodyId(
+  ASSERT_EQ(0, (int) ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/"));
   ASSERT_EQ(uint64_t(123451234512345L), ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/123451234512345"));

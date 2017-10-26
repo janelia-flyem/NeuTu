@@ -290,7 +290,7 @@ void Z3DSwcFilter::initLabelTypeColor()
     QColor color = colorScheme.getColor(type);
     m_colorsForLabelType.emplace_back(
           std::make_unique<ZVec4Parameter>(
-            GetTypeName(type),
+            "Label " + GetTypeName(type),
             glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.f)));
   }
 }
@@ -834,7 +834,7 @@ void Z3DSwcFilter::updateColorParameter(const std::map<ZSwcTree *, size_t> &sour
     m_randomTreeColorMapper.insert(
           std::make_pair(kv.first,
                          std::make_unique<ZVec4Parameter>(
-                           QString("Swc %1 Color").arg(kv.second + 1),
+                           QString("Random Swc %1 Color").arg(kv.second + 1),
                            glm::vec4(ZRandom::instance().randReal<float>(),
                                      ZRandom::instance().randReal<float>(),
                                      ZRandom::instance().randReal<float>(),

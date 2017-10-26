@@ -330,6 +330,7 @@ public slots:
 //  void toggleEdgeMode(bool edgeOn);
 
   void testBodyMerge();
+  void testBodyVis();
   void testBodySplit();
 
 protected slots:

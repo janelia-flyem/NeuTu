@@ -444,6 +444,7 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
       m_skeletonWindow->getCamera()->setEye(eye);
       m_skeletonWindow->getCamera()->setUpVector(upVector);
       m_skeletonWindow->getCamera()->setNearDist(nearDist);
+      m_skeletonWindow->raise();
       //  double eyeDist = eye[0];
       m_skeletonWindow->takeScreenShot(
             QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
@@ -2123,6 +2124,39 @@ void ZFlyEmProofMvc::testBodySplit()
   }
 }
 
+void ZFlyEmProofMvc::testBodyVis()
+{
+  static ZRandomGenerator rand;
+
+  ZIntPoint pos;
+  uint64_t bodyId = getRandomBodyId(rand, &pos);
+
+  showBodyQuickView();
+
+  if (rand.rndint(10) % 2 ==0) {
+    zoomTo(pos);
+  } else {
+    bool appending = true;
+    if (bodyId % 9 == 0) {
+//      getCompleteDocument()->deselectAllObject();
+      appending = false;
+    }
+
+    if (bodyId % 13 == 0) {
+      if (m_bodyWindow != NULL) {
+        m_bodyWindow->updateBody();
+      }
+    }
+
+    if (rand.rndint(10000) % 17 == 0) {
+      getCompletePresenter()->toggleHighlightMode();
+    }
+
+    locateBody(bodyId, appending);
+  }
+}
+
+
 void ZFlyEmProofMvc::testBodyMerge()
 {
   static ZRandomGenerator rand;
@@ -2180,9 +2214,10 @@ void ZFlyEmProofMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
     connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyMerge()));
     break;
   case ZStressTestOptionDialog::OPTION_BODY_SPLIT:
-//    showFineBody3d();
-//    showSplitQuickView();
     connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodySplit()));
+    break;
+  case ZStressTestOptionDialog::OPTION_BODY_3DVIS:
+    connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyVis()));
     break;
   default:
     break;

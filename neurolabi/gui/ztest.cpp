@@ -24707,7 +24707,7 @@ void ZTest::test(MainWindow *host)
   delete mesh;
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "c0ab", 8000);
@@ -24720,6 +24720,26 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
+#if 1
+  std::map<QString, int> map1;
+  map1["#.FlyEMSynapse.Psd#43"] = 1;
+  map1["#.FlyEMSynapse.Psd#18110738494"] = 2;
+  map1["#.FlyEMSynapse.TBar#43"] = 3;
+  map1["#.FlyEMSynapse.TBar#18110738494"] = 4;
+
+  std::map<QString, std::string> map2;
+  map2["#.FlyEMSynapse.Psd#18110738494"] = "1";
+  map2["#.FlyEMSynapse.TBar#18110738494"] = "2";
+
+  std::map<QString, int> map3;
+  std::set_difference(map1.begin(), map1.end(), map2.begin(), map2.end(),
+                      std::inserter(map3, map3.end()), QStringKeyNaturalLess());
+
+  std::cout << map3.size() << std::endl;
+  for (const auto &m : map3) {
+    qDebug() << m.first << m.second;
+  }
+#endif
 
   std::cout << "Done." << std::endl;
 }
