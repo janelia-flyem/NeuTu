@@ -1286,6 +1286,7 @@ ZStack* ZObject3dScan::toStackObject(int v, ZStack *result) const
   }
 
   if (stack != NULL) {
+    stackObject->useChannelColors(false);
     stackObject->load(stack);
     stackObject->setOffset(offset[0], offset[1], offset[2]);
   }

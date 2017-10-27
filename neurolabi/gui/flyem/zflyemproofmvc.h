@@ -48,6 +48,7 @@ class ZFlyEmBody3dDoc;
 class ZDvidLabelSlice;
 class ZFlyEmGrayscaleDialog;
 class FlyEmBodyIdDialog;
+class ZFlyEmMergeUploadDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -471,6 +472,7 @@ protected:
   ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
   ZFlyEmGrayscaleDialog *m_grayscaleDlg;
   FlyEmBodyIdDialog *m_bodyIdDialog;
+  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

@@ -85,6 +85,7 @@
 #include "z3dmeshfilter.h"
 #include "flyem/zflyembody3ddocmenufactory.h"
 #include "dvid/zdvidgrayslice.h"
+#include "dialogs/zflyemmergeuploaddialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -121,6 +122,7 @@ void ZFlyEmProofMvc::init()
   m_todoDlg = new FlyEmTodoDialog(this);
   m_roiDlg = new ZFlyEmRoiToolDialog(this);
   m_splitUploadDlg = new ZFlyEmSplitUploadOptionDialog(this);
+  m_mergeUploadDlg = new ZFlyEmMergeUploadDialog(this);
   m_bodyChopDlg = new ZFlyEmBodyChopDialog(this);
   m_infoDlg = new ZInfoDialog(this);
   m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
@@ -3218,12 +3220,16 @@ void ZFlyEmProofMvc::saveMergeOperation()
 
 void ZFlyEmProofMvc::commitMerge()
 {
-  if (ZDialogFactory::Ask("Upload Confirmation",
-                          "Do you want to upload the merging result now? "
-                          "It cannot be undone. ",
-                          this)) {
+  QString message = "Do you want to upload the merging result now? "
+                     "It cannot be undone. ";
+
+
+  m_mergeUploadDlg->setMessage(message);
+
+  if (m_mergeUploadDlg->exec()) {
     mergeCoarseBodyWindow();
-    getCompleteDocument()->getMergeProject()->uploadResult();
+    getCompleteDocument()->getMergeProject()->uploadResult(
+          m_mergeUploadDlg->mergingToLargest());
 //    m_mergeProject.uploadResult();
     ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
     if (body != NULL) {

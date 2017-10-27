@@ -441,7 +441,7 @@ public slots:
   void saveMergeOperation();
   void processExternalBodyMergeUpload();
   void clearBodyMergeStage();
-  void uploadMergeResult();
+//  void uploadMergeResult();
 
 //  void updateDvidLabelObject();
 

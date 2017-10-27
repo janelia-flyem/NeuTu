@@ -160,11 +160,12 @@ void ZFlyEmProofDoc::syncMergeWithDvid()
   getMergeProject()->syncWithDvid();
 }
 
+/*
 void ZFlyEmProofDoc::uploadMergeResult()
 {
   getMergeProject()->uploadResult();
 }
-
+*/
 void ZFlyEmProofDoc::runRoutineCheck()
 {
   if (m_routineCheck) {
