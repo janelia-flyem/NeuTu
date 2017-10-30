@@ -44,6 +44,8 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
 
   addParameter(m_meshRenderer.wireframeModePara());
   addParameter(m_meshRenderer.wireframeColorPara());
+
+  addParameter(m_meshRenderer.useTwoSidedLightingPara());
 }
 
 void Z3DMeshFilter::process(Z3DEye)
@@ -93,6 +95,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
     m_widgetsGroup = std::make_shared<ZWidgetsGroup>("Mesh", 1);
     m_widgetsGroup->addChild(m_visible, 1);
     m_widgetsGroup->addChild(m_stayOnTop, 1);
+    m_widgetsGroup->addChild(m_meshRenderer.useTwoSidedLightingPara(), 1);
     m_widgetsGroup->addChild(m_colorMode, 1);
     m_widgetsGroup->addChild(m_singleColorForAllMesh, 1);
 
