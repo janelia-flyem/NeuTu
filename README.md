@@ -61,4 +61,3 @@ Not supported yet.
 
 https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
 
-Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.
