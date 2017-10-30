@@ -469,6 +469,9 @@ public:
   void setUseCustomColorUniform(bool value)
   { if (m_useCustomColorUniform) { setUniform(m_useCustomColorUniform->location, value); }}
 
+  void setUseTwoSidedLightingUniform(bool value)
+  { if (m_useTwoSidedLightingUniform) { setUniform(m_useTwoSidedLightingUniform->location, value); }}
+
   void setRegionUniform(const glm::vec4& value)
   { if (m_regionUniform) { setUniform(m_regionUniform->location, value); }}
 
@@ -596,6 +599,7 @@ protected:
   const Uniform* m_customColorUniform;
   const Uniform* m_useCustomColorUniform;
   const Uniform* m_regionUniform;
+  const Uniform* m_useTwoSidedLightingUniform;
 
   const Attribute* m_vertexAttribute;
   const Attribute* m_normalAttribute;

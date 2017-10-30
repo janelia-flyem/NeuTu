@@ -38,6 +38,9 @@ public:
   ZVec4Parameter& wireframeColorPara()
   { return m_wireframeColor; }
 
+  ZBoolParameter& useTwoSidedLightingPara()
+  { return m_useTwoSidedLighting; }
+
 protected:
   virtual void compile() override;
 
@@ -95,6 +98,8 @@ private:
 
   ZStringIntOptionParameter m_wireframeMode;
   ZVec4Parameter m_wireframeColor;
+
+  ZBoolParameter m_useTwoSidedLighting;
 };
 
 #endif // Z3DMESHRENDERER_H

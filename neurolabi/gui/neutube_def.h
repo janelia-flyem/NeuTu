@@ -8,8 +8,6 @@
 
 namespace NeuTube {
 
-static const char *VERSION = "1.1";
-
 static const uint64_t ONEGIGA = 1073741824;
 
 enum ESyncOption {
