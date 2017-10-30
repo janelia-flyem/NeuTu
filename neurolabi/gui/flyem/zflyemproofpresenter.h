@@ -129,6 +129,7 @@ public slots:
   void setTodoItemToSplit();
   void selectBodyInRoi();
   void zoomInRectRoi();
+  void refreshSegmentation();
 
 private:
 //  void connectAction();
