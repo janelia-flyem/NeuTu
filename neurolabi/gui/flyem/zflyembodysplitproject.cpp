@@ -164,9 +164,23 @@ void ZFlyEmBodySplitProject::shallowClearBodyWindow()
 */
 void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
 {
+  m_reader.open(target);
+
+#if 0
   if (m_reader.open(target)) {
     m_dvidInfo = m_reader.readLabelInfo();
+#ifdef _DEBUG_
+    std::vector<int> stackSize = m_dvidInfo.getStackSize();
+    std::cout << "Dvid info: " << stackSize[0] << " " << stackSize[1] << " "
+              << stackSize[2] << std::endl;
+#endif
   }
+#endif
+}
+
+void ZFlyEmBodySplitProject::setDvidInfo(const ZDvidInfo &info)
+{
+  m_dvidInfo = info;
 }
 
 void ZFlyEmBodySplitProject::setBodyId(uint64_t bodyId)

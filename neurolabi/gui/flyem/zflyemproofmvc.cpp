@@ -1347,6 +1347,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   getProgressSignal()->advanceProgress(0.1);
 
   m_splitProject.setDvidTarget(getDvidTarget());
+  m_splitProject.setDvidInfo(getDvidInfo());
   getCompleteDocument()->syncMergeWithDvid();
   //    m_mergeProject.setDvidTarget(getDvidTarget());
   //    m_mergeProject.syncWithDvid();
