@@ -2802,8 +2802,10 @@ int ZDvidReader::readBodyBlockCount(uint64_t bodyId) const
   ZJsonObject jsonObj = readJsonObject(dvidUrl.getSparsevolSizeUrl(bodyId));
   if (jsonObj.hasKey("numblocks")) {
     count = ZJsonParser::integerValue(jsonObj["numblocks"]);
+  } else {
+    //Todo: add block count read for labelblk data
+    count = readCoarseBodySize(bodyId);
   }
-  //Todo: add block count read for labelblk data
 
   return count;
 }
@@ -2825,6 +2827,27 @@ ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId) const
   clearBuffer();
 
   return obj;
+}
+
+int ZDvidReader::readCoarseBodySize(uint64_t bodyId) const
+{
+  int count = -1;
+
+  ZDvidBufferReader &reader = m_bufferReader;
+  reader.tryCompress(false);
+  ZDvidUrl dvidUrl(m_dvidTarget);
+  reader.read(dvidUrl.getCoarseSparsevolUrl(
+                bodyId, m_dvidTarget.getBodyLabelName()).c_str(), isVerbose());
+  setStatusCode(reader.getStatusCode());
+
+  if (reader.getStatus() == ZDvidBufferReader::READ_OK) {
+    count = ZObject3dScan::CountVoxelNumber(
+          reader.getBuffer().data(), reader.getBuffer().size());
+  }
+
+  clearBuffer();
+
+  return count;
 }
 
 uint64_t ZDvidReader::readBodyIdAt(const ZIntPoint &pt) const

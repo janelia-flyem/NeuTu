@@ -631,6 +631,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setToolTip("Rewrite segmentation in the current ROI. "
                        "Mainly used for fixing sync errors.");
     break;
+  case ACTION_REFRESH_SEGMENTATION:
+    action = new QAction("Refresh segmentation", parent);
+    action->setToolTip("Refresh segmentation to get the latest data from DVID");
+    break;
   case ACTION_FLYEM_UPDATE_BODY:
     action = new QAction("Update Bodies", parent);
     action->setToolTip("Update bodies from DVID");

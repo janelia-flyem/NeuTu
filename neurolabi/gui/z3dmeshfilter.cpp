@@ -189,7 +189,7 @@ void Z3DMeshFilter::prepareData()
     std::set_difference(allSources.begin(), allSources.end(),
                         m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
                         std::inserter(newSources, newSources.end()),
-                        _KeyLess());
+                        QStringKeyNaturalLess());
     for (const auto& kv : newSources) {
       QString guiname = QString("Source: %1").arg(kv);
       m_sourceColorMapper.insert(std::make_pair(kv,

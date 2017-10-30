@@ -24720,7 +24720,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
   std::map<QString, int> map1;
   map1["#.FlyEMSynapse.Psd#43"] = 1;
   map1["#.FlyEMSynapse.Psd#18110738494"] = 2;
@@ -24739,6 +24739,26 @@ void ZTest::test(MainWindow *host)
   for (const auto &m : map3) {
     qDebug() << m.first << m.second;
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+//  target.set("emdata3.int.janelia.org", "0312", 8000);
+//  target.setLabelBlockName("segmentation-agglomerated");
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+
+  ZDvidReader reader;
+  reader.open(target);
+  std::cout << reader.readCoarseBodySize(1) << std::endl;
+
+  ZObject3dScan obj = reader.readCoarseBody(1);
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZFlyEmBodyMergeProject project;
+  project.test();
 #endif
 
   std::cout << "Done." << std::endl;
