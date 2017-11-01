@@ -2,6 +2,7 @@
 #define TASKPROTOCOLWINDOW_H
 
 #include <QWidget>
+#include <QThread>
 
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyemproofdoc.h"
@@ -21,7 +22,6 @@ class TaskProtocolWindow : public QWidget
 public:
     explicit TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent = 0);
     void init();
-    BodyPrefetchQueue *getPrefetchQueue();
     ~TaskProtocolWindow();
 
 signals:
@@ -40,6 +40,7 @@ private slots:
     void onCompletedStateChanged(int state);
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
+    void applicationQuitting();
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -74,7 +75,8 @@ private:
     int m_currentTaskIndex;
     QWidget * m_currentTaskWidget;
     bool m_nodeLocked;
-    BodyPrefetchQueue * m_prefetchQueue;
+    BodyPrefetchQueue m_prefetchQueue;
+    QThread m_prefetchThread;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);

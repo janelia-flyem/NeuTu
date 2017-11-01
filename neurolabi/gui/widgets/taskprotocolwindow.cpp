@@ -31,15 +31,22 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
 
     m_protocolInstanceStatus = UNCHECKED;
 
-    // prefetch queue
-    m_prefetchQueue = new BodyPrefetchQueue();
-    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
-    connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
-    // note; no remove signal/slot yet
+    // prefetch queue, setup
+    // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+    // but it's simpler as I'm using member objects, not created on the heap
+    m_prefetchQueue.moveToThread(&m_prefetchThread);
+    connect(&m_prefetchQueue, SIGNAL(finished()), &m_prefetchThread, SLOT(quit()));
 
+    // prefetch queue, item management
+    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), &m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
+    connect(this, SIGNAL(prefetchBody(uint64_t)), &m_prefetchQueue, SLOT(add(uint64_t)));
+    // note: no remove signal/slot yet, as the prefetch logic doesn't require it
+
+    m_prefetchThread.start();
 
 
     // UI connections
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
@@ -307,6 +314,13 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
         showInfo("No tasks to do!", "All tasks have been completed!");
     }
 
+    // first prefetch
+    int nextTaskIndex = getNext();
+    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+        prefetchForTaskIndex(nextTaskIndex);
+    }
+
+
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
@@ -458,10 +472,6 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             m_currentTaskWidget->setVisible(true);
         }
     }
-}
-
-BodyPrefetchQueue * TaskProtocolWindow::getPrefetchQueue() {
-    return m_prefetchQueue;
 }
 
 /*
@@ -777,6 +787,10 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::applicationQuitting() {
+    m_prefetchQueue.finish();
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()
