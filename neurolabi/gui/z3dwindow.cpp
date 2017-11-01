@@ -3750,7 +3750,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 {
   //bool success = false;
-  std::string source;
+//  std::string source;
   if (m_doc->hasStack() || m_doc->hasMesh()) {
     std::vector<ZIntPoint> polyline1;
     std::vector<ZIntPoint> polyline2;

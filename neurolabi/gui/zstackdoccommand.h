@@ -652,7 +652,7 @@ public:
 
 private:
   ZStackDoc *m_doc;
-  ZStackObject *m_obj;
+  QSet<ZStackObject*> m_objSet;
   bool m_isInDoc;
 };
 
