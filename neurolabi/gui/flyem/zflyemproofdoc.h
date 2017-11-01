@@ -493,6 +493,7 @@ protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
   void updateDvidTargetForObject();
+  void updateDvidInfoForObject();
   virtual void prepareDvidData();
   void addDvidLabelSlice(NeuTube::EAxis axis);
   void annotateSynapse(

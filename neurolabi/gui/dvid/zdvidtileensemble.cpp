@@ -476,8 +476,10 @@ void ZDvidTileEnsemble::display(
     }
   }
 
+  /*
   QRect highresViewPort =
       m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+      */
 //  if (highresViewPort.width() > 256 || highresViewPort.height() > 256) {
     const_cast<ZDvidTileEnsemble&>(*this).update(
           tileIndices, resLevel, painter.getZ(slice));

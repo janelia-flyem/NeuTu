@@ -15,7 +15,11 @@ class ZFlyEmBody3dDoc;
 class ZFlyEmProofDoc;
 class ZSwcTree;
 class ZMesh;
+class ZBodyListWidget;
 
+/*!
+ * \brief The class of the main window for Neu3
+ */
 class Neu3Window : public QMainWindow
 {
   Q_OBJECT
@@ -35,10 +39,37 @@ public slots:
   void showSynapse(bool on);
   void showTodo(bool on);
 
+  /*!
+   * \brief Remove a body from the current list.
+   */
   void removeBody(uint64_t bodyId);
+
+  /*!
+   * \brief Add a body to the body list.
+   */
   void addBody(uint64_t bodyId);
 
+  /*!
+   * \brief Load body data.
+   *
+   * This function will not update the list model.
+   */
+  void loadBody(uint64_t bodyId);
+
+  /*!
+   * \brief Unload body data.
+   *
+   * This function will not update the list model.
+   */
+  void unloadBody(uint64_t bodyId);
+
+  /*!
+   * \brief Update the selection states of a set of bodies
+   *
+   * A body absent from \a bodySet will be set to unselected.
+   */
   void setBodySelection(const QSet<uint64_t> &bodySet);
+
   void zoomToBodyMesh();
 
 signals:
@@ -53,6 +84,7 @@ private slots:
       QList<ZSwcTree*> selected,QList<ZSwcTree*>deselected);
   void processMeshChangedFrom3D(
       QList<ZMesh*> selected, QList<ZMesh*>deselected);
+  void test();
 
 private:
   void createDockWidget();
@@ -67,6 +99,7 @@ private:
   Z3DWindow *m_3dwin = NULL;
   ZFlyEmProofMvc *m_dataContainer = NULL;
   QToolBar *m_toolBar = NULL;
+  ZBodyListWidget *m_bodyListWidget = NULL;
 };
 
 #endif // NEU3WINDOW_H

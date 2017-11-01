@@ -245,7 +245,7 @@ void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
     }
 }
 
-void TaskProtocolWindow::onShowCompletedStateChanged(int state) {
+void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
     // if we go from "show completed" to not, it's possible we need
     //  to advance away from the current task, if it's completed
     if (!ui->showCompletedCheckBox->isChecked() &&

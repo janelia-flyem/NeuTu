@@ -765,6 +765,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     prepareDvidData();
 
     updateDvidTargetForObject();
+    updateDvidInfoForObject();
 
 #ifdef _DEBUG_2
 //    m_dvidReader.getDvidTarget().setReadOnly(true);
@@ -978,6 +979,25 @@ ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
   }
 
   return NULL;
+}
+
+template<typename T>
+static void UpdateDvidInfoForObject(ZFlyEmProofDoc *doc)
+{
+  ZOUT(LTRACE(), 5) << "Update dvid target";
+  QList<T*> objList = doc->getObjectList<T>();
+  for (typename QList<T*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    T *obj = *iter;
+    obj->setDvidInfo(doc->getDvidInfo());
+//    doc->processObjectModified(obj);
+  }
+}
+
+void ZFlyEmProofDoc::updateDvidInfoForObject()
+{
+  UpdateDvidInfoForObject<ZDvidSynapseEnsemble>(this);
+  UpdateDvidInfoForObject<ZFlyEmToDoList>(this);
 }
 
 template<typename T>

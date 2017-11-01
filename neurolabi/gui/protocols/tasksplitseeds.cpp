@@ -76,7 +76,7 @@ QString TaskSplitSeeds::targetString() {
     return QString::number(m_bodyID);
 }
 
-void TaskSplitSeeds::onNoSplitStateChanged(int state) {
+void TaskSplitSeeds::onNoSplitStateChanged(int /*state*/) {
     updateSeedsTag();
 }
 
