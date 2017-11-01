@@ -282,6 +282,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     }
   }
     break;
+  case ACTION_TEST:
+    action = new QAction("Test", parent);
+    action->setIcon(QIcon(":/images/test.png"));
+    break;
   case ACTION_ADD_SWC_NODE:
     action = new QAction("Add Neuron Node", parent);
     action->setStatusTip("Add an isolated neuron node.");

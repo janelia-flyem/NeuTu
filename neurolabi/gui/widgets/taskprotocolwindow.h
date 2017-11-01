@@ -72,7 +72,7 @@ private:
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex;
-    QWidget * m_currentTaskWidget;
+    QWidget * m_currentTaskWidget = NULL;
     bool m_nodeLocked;
     BodyPrefetchQueue * m_prefetchQueue;
 

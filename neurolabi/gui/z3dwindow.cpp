@@ -197,6 +197,10 @@ void Z3DWindow::createToolBar()
   if (getWindowType() == NeuTube3D::TYPE_NEU3) {
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
   }
+
+#ifdef _DEBUG_
+  m_toolBar->addAction(getAction(ZActionFactory::ACTION_TEST));
+#endif
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -388,6 +392,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_SAVE_SPLIT_TASK:
     action = m_actionLibrary->getAction(item, this, SLOT(saveSplitTask()));
+    break;
+  case ZActionFactory::ACTION_TEST:
+    action = m_actionLibrary->getAction(item, this, SLOT(test()));
     break;
   default:  
     break;
@@ -3216,13 +3223,17 @@ void Z3DWindow::changeSelectedSwcAlpha()
 
 void Z3DWindow::test()
 {
+
+#if 0
   const NeutubeConfig &config = NeutubeConfig::getInstance();
 
   UNUSED_PARAMETER(&config);
 
   ZMovieMaker director;
   ZMovieScript script;
+#endif
 
+  emit testing();
 
   /*
   std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
