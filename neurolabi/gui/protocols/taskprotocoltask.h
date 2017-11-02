@@ -50,6 +50,8 @@ private:
     virtual bool loadSpecific(QJsonObject json) = 0;
     virtual QJsonObject addToJson(QJsonObject json) = 0;
     virtual void onCompleted();
+    virtual void beforeNext();
+    virtual void beforePrev();
 };
 
 #endif // TASKPROTOCOLTASK_H

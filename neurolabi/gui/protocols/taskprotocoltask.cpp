@@ -69,6 +69,24 @@ void TaskProtocolTask::onCompleted() {
 
 /*
  * subclasses may optionally implement this method to
+ * do something when the task about to be moved away from
+ * via "next" button
+ */
+void TaskProtocolTask::beforeNext() {
+    // nothing
+}
+
+/*
+ * subclasses may optionally implement this method to
+ * do something when the task about to be moved away from
+ * via "prev" button
+ */
+void TaskProtocolTask::beforePrev() {
+    // nothing
+}
+
+/*
+ * subclasses may optionally implement this method to
  * add UI below the standard UI
  */
 QWidget * TaskProtocolTask::getTaskWidget() {
