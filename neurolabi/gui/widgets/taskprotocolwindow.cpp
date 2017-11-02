@@ -29,6 +29,8 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     m_proofDoc = doc;
     m_body3dDoc = bodyDoc;
 
+    m_currentTaskWidget = NULL;
+
     m_protocolInstanceStatus = UNCHECKED;
 
     // prefetch queue, setup
