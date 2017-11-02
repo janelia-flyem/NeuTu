@@ -1862,29 +1862,37 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
 
 ZStackDocCommand::ObjectEdit::RemoveObject::RemoveObject(
     ZStackDoc *doc, ZStackObject *obj, QUndoCommand *parent) :
-  ZUndoCommand(parent), m_doc(doc), m_obj(obj), m_isInDoc(true)
+  ZUndoCommand(parent), m_doc(doc), m_isInDoc(true)
 {
   setText(QObject::tr("Remove object"));
+  if (obj != NULL) {
+    m_objSet.insert(obj);
+  }
 }
 
 ZStackDocCommand::ObjectEdit::RemoveObject::~RemoveObject()
 {
   if (!m_isInDoc) {
-    delete m_obj;
+    foreach (ZStackObject *obj, m_objSet) {
+      delete obj;
+    }
   }
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveObject::redo()
 {
-  m_obj->setSelected(false);
-  m_doc->removeObject(m_obj, false);
+  m_doc->removeObject(m_objSet, false);
+
+  foreach (ZStackObject *obj, m_objSet) {
+    obj->setSelected(false);
+  }
   m_isInDoc = false;
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveObject::undo()
 {
   startUndo();
-  m_doc->addObject(m_obj, false);
+  m_doc->addObjectFast(m_objSet.begin(), m_objSet.end());
   m_isInDoc = true;
 }
 

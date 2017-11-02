@@ -11500,7 +11500,7 @@ void ZTest::test(MainWindow *host)
   std::cout << pixmap.isDetached() << std::endl;
 #endif
 
-#if 1
+#if 0
   QTimer timer;
   timer.start();
   std::cout << timer.isActive() << std::endl;
@@ -24667,6 +24667,98 @@ void ZTest::test(MainWindow *host)
    obj.exportImageSlice(0, 1, GET_TEST_DATA_DIR + "/tmp/slice");
 
 
+#endif
+
+#if 0
+   ZIntCuboid box;
+   box.setFirstCorner(0, 0, 0);
+   box.setLastCorner(10, 20, 30);
+
+   std::vector<bool> visible;
+   visible.resize(6, true);
+   visible[0] = false;
+   visible[2] = false;
+   visible[4] = false;
+
+   ZMesh mesh = ZMesh::CreateCuboidFaceMesh(box, visible, QColor(255, 0, 0));
+   std::cout << "#vertices: " << mesh.numVertices() << std::endl;
+   std::cout << "#Indices: " << mesh.indices().size() << std::endl;
+//   ZDebugPrintArrayG(mesh.indices(), 0, 36);
+   mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+#endif
+
+#if 0
+  ZObject3dScan obj;
+//  obj.load(GET_TEST_DATA_DIR + "/_flyem/MB/large_outside_block.sobj");
+  obj.addSegment(0, 0, 0, 1);
+  obj.addSegment(0, 1, 0, 2);
+  obj.addSegment(1, 0, 1, 2);
+  ZDvidInfo dvidInfo;
+  dvidInfo.setBlockSize(32, 32, 32);
+  obj.setDsIntv(31);
+//  ZMesh *mesh = ZFlyEmMisc::MakeRoiMesh(obj, QColor(255, 0, 0), 1);
+  ZMesh *mesh = ZFlyEmMisc::MakeRoiMesh(
+        obj, dvidInfo, QColor(255, 0, 0), 1);
+
+  std::cout << "#vertices: " << mesh->numVertices() << std::endl;
+  std::cout << "#Indices: " << mesh->indices().size() << std::endl;
+
+  mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+  delete mesh;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "c0ab", 8000);
+  target.setLabelBlockName("segmentation-from-bricks");
+
+  reader.open(target);
+  tic();
+  std::cout << reader.readBodyBlockCount(296188589) << std::endl;
+  std::cout << reader.readBodyBlockCount(296612416) << std::endl;
+  ptoc();
+#endif
+
+#if 0
+  std::map<QString, int> map1;
+  map1["#.FlyEMSynapse.Psd#43"] = 1;
+  map1["#.FlyEMSynapse.Psd#18110738494"] = 2;
+  map1["#.FlyEMSynapse.TBar#43"] = 3;
+  map1["#.FlyEMSynapse.TBar#18110738494"] = 4;
+
+  std::map<QString, std::string> map2;
+  map2["#.FlyEMSynapse.Psd#18110738494"] = "1";
+  map2["#.FlyEMSynapse.TBar#18110738494"] = "2";
+
+  std::map<QString, int> map3;
+  std::set_difference(map1.begin(), map1.end(), map2.begin(), map2.end(),
+                      std::inserter(map3, map3.end()), QStringKeyNaturalLess());
+
+  std::cout << map3.size() << std::endl;
+  for (const auto &m : map3) {
+    qDebug() << m.first << m.second;
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+//  target.set("emdata3.int.janelia.org", "0312", 8000);
+//  target.setLabelBlockName("segmentation-agglomerated");
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+
+  ZDvidReader reader;
+  reader.open(target);
+  std::cout << reader.readCoarseBodySize(1) << std::endl;
+
+  ZObject3dScan obj = reader.readCoarseBody(1);
+  std::cout << obj.getVoxelNumber() << std::endl;
+#endif
+
+#if 0
+  ZFlyEmBodyMergeProject project;
+  project.test();
 #endif
 
   std::cout << "Done." << std::endl;

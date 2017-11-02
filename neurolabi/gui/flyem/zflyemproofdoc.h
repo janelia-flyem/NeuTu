@@ -441,7 +441,7 @@ public slots:
   void saveMergeOperation();
   void processExternalBodyMergeUpload();
   void clearBodyMergeStage();
-  void uploadMergeResult();
+//  void uploadMergeResult();
 
 //  void updateDvidLabelObject();
 
@@ -493,6 +493,7 @@ protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
   void updateDvidTargetForObject();
+  void updateDvidInfoForObject();
   virtual void prepareDvidData();
   void addDvidLabelSlice(NeuTube::EAxis axis);
   void annotateSynapse(

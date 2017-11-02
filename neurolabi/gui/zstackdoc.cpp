@@ -747,8 +747,8 @@ void ZStackDoc::processDataBuffer()
        iter != updateList.end(); ++iter) {
     ZStackDocObjectUpdate *u = *iter;
 
-    std::cout << "Doc update: ";
-    u->print();
+//    std::cout << "Doc update: ";
+//    u->print();
 
     if (u->getObject() != NULL) {
       switch (u->getAction()) {
@@ -3616,6 +3616,11 @@ void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
   notifyObjectModified();
 }
 
+void ZStackDoc::removeObject(const QSet<ZStackObject *> &objSet, bool deleteObject)
+{
+  removeObjectP(objSet.begin(), objSet.end(), deleteObject);
+}
+
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
   std::set<ZStackObject*> removeSet;
@@ -3663,6 +3668,31 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
     notifyPlayerChanged(role);
   }
   */
+}
+
+template <class InputIterator>
+void ZStackDoc::removeObjectP(
+    InputIterator first, InputIterator last, bool deleting)
+{
+//  TStackObjectList objList = m_objectGroup.take(type);
+  m_objectGroup.take(first, last);
+  for (InputIterator iter = first; iter != last; ++iter) {
+//    role.addRole(m_playerList.removePlayer(*iter));
+    ZStackObject *obj = *iter;
+
+#ifdef _DEBUG_
+    std::cout << "Removing object: " << obj << std::endl;
+#endif
+
+    bufferObjectModified(obj);
+    m_playerList.removePlayer(obj);
+
+    if (deleting) {
+      delete obj;
+    }
+  }
+
+  notifyObjectModified();
 }
 
 void ZStackDoc::removeObject(const string &source, bool deleteObject)

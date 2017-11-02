@@ -244,7 +244,7 @@ void TaskProtocolWindow::onLoadTasksButton() {
     startProtocol(json, true);
 }
 
-void TaskProtocolWindow::onCompletedStateChanged(int state) {
+void TaskProtocolWindow::onCompletedStateChanged(int /*state*/) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
         saveState();
@@ -252,7 +252,7 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
     }
 }
 
-void TaskProtocolWindow::onReviewStateChanged(int state) {
+void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
     if (m_currentTaskIndex >= 0) {
         if (ui->reviewCheckBox->isChecked()) {
             m_taskList[m_currentTaskIndex]->addTag(TAG_NEEDS_REVIEW);
@@ -264,7 +264,7 @@ void TaskProtocolWindow::onReviewStateChanged(int state) {
     }
 }
 
-void TaskProtocolWindow::onShowCompletedStateChanged(int state) {
+void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
     // if we go from "show completed" to not, it's possible we need
     //  to advance away from the current task, if it's completed
     if (!ui->showCompletedCheckBox->isChecked() &&

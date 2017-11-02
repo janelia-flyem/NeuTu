@@ -1,39 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ZFlyEmBodySplitDialog</class>
- <widget class="QDialog" name="ZFlyEmBodySplitDialog">
+ <class>ZFlyEmMergeUploadDialog</class>
+ <widget class="QDialog" name="ZFlyEmMergeUploadDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>309</width>
-    <height>124</height>
+    <width>430</width>
+    <height>176</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Launching Split</string>
+   <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Body ID</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="bodyLineEdit"/>
-     </item>
-    </layout>
+    <widget class="QTextEdit" name="infoTextEdit">
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.SF NS Text'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QCheckBox" name="offlineCheckBox">
+      <widget class="QCheckBox" name="mergeCheckBox">
        <property name="text">
-        <string>Offline split</string>
+        <string>Merge to the largest</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -69,7 +81,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>ZFlyEmBodySplitDialog</receiver>
+   <receiver>ZFlyEmMergeUploadDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -85,7 +97,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>ZFlyEmBodySplitDialog</receiver>
+   <receiver>ZFlyEmMergeUploadDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

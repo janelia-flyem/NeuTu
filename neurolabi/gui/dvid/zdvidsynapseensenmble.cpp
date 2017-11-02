@@ -27,8 +27,8 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
   m_dvidTarget = target;
   if (m_reader.open(target)) {
     m_writer.open(target);
-    m_dvidInfo = m_reader.readGrayScaleInfo();
-    m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
+//    m_dvidInfo = m_reader.readGrayScaleInfo();
+
 //    m_startY = m_dvidInfo.getStartCoordinates().getY();
   }
 }
@@ -36,6 +36,7 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
 void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
 {
   m_dvidInfo = info;
+  m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
 }
 
 void ZDvidSynapseEnsemble::init()

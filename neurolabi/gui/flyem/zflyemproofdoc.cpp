@@ -160,11 +160,12 @@ void ZFlyEmProofDoc::syncMergeWithDvid()
   getMergeProject()->syncWithDvid();
 }
 
+/*
 void ZFlyEmProofDoc::uploadMergeResult()
 {
   getMergeProject()->uploadResult();
 }
-
+*/
 void ZFlyEmProofDoc::runRoutineCheck()
 {
   if (m_routineCheck) {
@@ -764,6 +765,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     prepareDvidData();
 
     updateDvidTargetForObject();
+    updateDvidInfoForObject();
 
 #ifdef _DEBUG_2
 //    m_dvidReader.getDvidTarget().setReadOnly(true);
@@ -821,6 +823,12 @@ void ZFlyEmProofDoc::readInfo()
   m_grayScaleInfo = m_grayscaleReader.readGrayScaleInfo();
   m_labelInfo = m_dvidReader.readLabelInfo();
   m_versionDag = m_dvidReader.readVersionDag();
+
+#ifdef _DEBUG_2
+  std::cout << "Label Info:" << std::endl;
+  m_labelInfo.print();
+#endif
+
 #ifdef _DEBUG_2
   m_versionDag.print();
 #endif
@@ -971,6 +979,25 @@ ZDvidTileEnsemble* ZFlyEmProofDoc::getDvidTileEnsemble() const
   }
 
   return NULL;
+}
+
+template<typename T>
+static void UpdateDvidInfoForObject(ZFlyEmProofDoc *doc)
+{
+  ZOUT(LTRACE(), 5) << "Update dvid target";
+  QList<T*> objList = doc->getObjectList<T>();
+  for (typename QList<T*>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    T *obj = *iter;
+    obj->setDvidInfo(doc->getDvidInfo());
+//    doc->processObjectModified(obj);
+  }
+}
+
+void ZFlyEmProofDoc::updateDvidInfoForObject()
+{
+  UpdateDvidInfoForObject<ZDvidSynapseEnsemble>(this);
+  UpdateDvidInfoForObject<ZFlyEmToDoList>(this);
 }
 
 template<typename T>

@@ -197,6 +197,10 @@ void Z3DWindow::createToolBar()
   if (getWindowType() == NeuTube3D::TYPE_NEU3) {
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
   }
+
+#ifdef _DEBUG_
+  m_toolBar->addAction(getAction(ZActionFactory::ACTION_TEST));
+#endif
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -388,6 +392,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_SAVE_SPLIT_TASK:
     action = m_actionLibrary->getAction(item, this, SLOT(saveSplitTask()));
+    break;
+  case ZActionFactory::ACTION_TEST:
+    action = m_actionLibrary->getAction(item, this, SLOT(test()));
     break;
   default:  
     break;
@@ -923,7 +930,7 @@ void Z3DWindow::fillDockWindows()
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
 
-  connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()));
+  connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()), Qt::QueuedConnection);
   connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
 
   customizeDockWindows(tabs);
@@ -2008,6 +2015,7 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
 
 void Z3DWindow::updateSettingsDockWidget()
 {
+  LINFO() << "Updating widgets";
   //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
@@ -2048,6 +2056,7 @@ void Z3DWindow::updateSettingsDockWidget()
       delete old;
     }
   }
+  LINFO() << "Widget updated";
 }
 
 void Z3DWindow::toogleAddSwcNodeMode(bool checked)
@@ -3214,13 +3223,17 @@ void Z3DWindow::changeSelectedSwcAlpha()
 
 void Z3DWindow::test()
 {
+
+#if 0
   const NeutubeConfig &config = NeutubeConfig::getInstance();
 
   UNUSED_PARAMETER(&config);
 
   ZMovieMaker director;
   ZMovieScript script;
+#endif
 
+  emit testing();
 
   /*
   std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
@@ -3737,7 +3750,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 {
   //bool success = false;
-  std::string source;
+//  std::string source;
   if (m_doc->hasStack() || m_doc->hasMesh()) {
     std::vector<ZIntPoint> polyline1;
     std::vector<ZIntPoint> polyline2;

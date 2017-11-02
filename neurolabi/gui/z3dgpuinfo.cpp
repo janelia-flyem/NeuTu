@@ -278,10 +278,14 @@ bool Z3DGpuInfo::isWeightedBlendedSupported() const
 
 bool Z3DGpuInfo::isDualDepthPeelingSupported() const
 {
+#if defined(__APPLE__)
+  return false;
+#else
   return Z3DGpuInfo::instance().isTextureRGSupported() && Z3DGpuInfo::instance().isTextureRectangleSupported() &&
          Z3DGpuInfo::instance().isTextureFloatSupported() &&
          Z3DGpuInfo::instance().isColorBufferFloatSupported() &&
          Z3DGpuInfo::instance().maxColorAttachments() >= 8;
+#endif
 }
 
 bool Z3DGpuInfo::isLinkedListSupported() const

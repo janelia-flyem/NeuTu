@@ -23,6 +23,7 @@
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
 #include "widgets/taskprotocolwindow.h"
+#include "flyem/zflyembodylistmodel.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -42,27 +43,13 @@ void Neu3Window::initialize()
 {
   initOpenglContext();
 
-//  ZStackDoc *doc = new ZStackDoc;
-//  doc->loadFile(GET_TEST_DATA_DIR + "/_system/slice15_L11.Edit.swc");
-
   QWidget *widget = new QWidget(this);
 
   QHBoxLayout *layout = new QHBoxLayout(this);
   layout->setMargin(1);
   widget->setLayout(layout);
 
-  /*
-  ZWindowFactory factory;
-  factory.setControlPanelVisible(false);
-  factory.setObjectViewVisible(false);
-  factory.setStatusBarVisible(false);
-  factory.setParentWidget(this);
-*/
-
   m_3dwin = m_dataContainer->makeNeu3Window();
-//  ZFlyEmBody3dDoc *bodydoc =
-//      qobject_cast<ZFlyEmBody3dDoc*>(m_3dwin->getDocument());
-//  bodydoc->showTodo(false);
 
   setCentralWidget(m_3dwin);
 
@@ -77,10 +64,13 @@ void Neu3Window::connectSignalSlot()
 {
   connect(m_3dwin, SIGNAL(showingPuncta(bool)), this, SLOT(showSynapse(bool)));
   connect(m_3dwin, SIGNAL(showingTodo(bool)), this, SLOT(showTodo(bool)));
+  connect(m_3dwin, SIGNAL(testing()), this, SLOT(test()));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
   connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
           this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
+  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
+          this, &Neu3Window::zoomToBodyMesh, Qt::QueuedConnection);
 }
 
 void Neu3Window::initOpenglContext()
@@ -108,6 +98,10 @@ bool Neu3Window::loadDvidTarget()
     m_dataContainer = ZFlyEmProofMvc::Make(
           dlg->getDvidTarget(), ZStackMvc::ROLE_DOCUMENT);
     succ = true;
+    QString windowTitle = QString("%1 [%2]").
+        arg(dlg->getDvidTarget().getSourceString(false).c_str()).
+        arg(dlg->getDvidTarget().getLabelBlockName().c_str());
+    setWindowTitle(windowTitle);
   }
 
   delete dlg;
@@ -126,20 +120,20 @@ void Neu3Window::createDockWidget()
 
 //  StringListDialog *widget = new StringListDialog(this);
 
-  ZBodyListWidget *widget = new ZBodyListWidget(this);
+  m_bodyListWidget = new ZBodyListWidget(this);
 
-  connect(widget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
-  connect(widget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
-  connect(widget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
+  connect(m_bodyListWidget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(loadBody(uint64_t)));
+  connect(m_bodyListWidget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(unloadBody(uint64_t)));
+  connect(m_bodyListWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
           this, SLOT(setBodySelection(QSet<uint64_t>)));
   connect(this, SIGNAL(bodySelected(uint64_t)),
-          widget, SLOT(selectBodySliently(uint64_t)));
+          m_bodyListWidget, SLOT(selectBodySliently(uint64_t)));
   connect(this, SIGNAL(bodyDeselected(uint64_t)),
-          widget, SLOT(deselectBodySliently(uint64_t)));
+          m_bodyListWidget, SLOT(deselectBodySliently(uint64_t)));
   connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
-          widget, SLOT(removeBody(uint64_t)));
+          m_bodyListWidget, SLOT(removeBody(uint64_t)));
 
-  dockWidget->setWidget(widget);
+  dockWidget->setWidget(m_bodyListWidget);
 
   dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
   dockWidget->setFeatures(
@@ -233,12 +227,27 @@ ZFlyEmProofDoc* Neu3Window::getDataDocument() const
 
 void Neu3Window::addBody(uint64_t bodyId)
 {
+  m_bodyListWidget->getModel()->addBody(bodyId);
+}
+
+void Neu3Window::loadBody(uint64_t bodyId)
+{
   m_dataContainer->selectBody(bodyId);
+}
+
+void Neu3Window::unloadBody(uint64_t bodyId)
+{
+  m_dataContainer->deselectBody(bodyId);
 }
 
 void Neu3Window::removeBody(uint64_t bodyId)
 {
-  m_dataContainer->deselectBody(bodyId);
+  m_bodyListWidget->getModel()->removeBody(bodyId);
+}
+
+void Neu3Window::test()
+{
+  m_bodyListWidget->getModel()->addBody(1);
 }
 
 void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
@@ -247,6 +256,15 @@ void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
   tmpBodySet.insert(bodySet.begin(), bodySet.end());
 
   getBodyDocument()->setBodyModelSelected(bodySet);
+}
+
+void Neu3Window::zoomToBodyMesh()
+{
+  QList<ZMesh*> meshList = getBodyDocument()->getMeshList();
+  if (meshList.size() == 1) {
+    ZMesh *mesh = meshList.front();
+    m_3dwin->gotoPosition(mesh->getBoundBox());
+  }
 }
 
 void Neu3Window::processSwcChangeFrom3D(

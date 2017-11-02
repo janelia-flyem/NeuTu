@@ -124,6 +124,9 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 #ifdef _DEBUG_2
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
+#ifdef _DEBUG_
+      qDebug() << "Paint tile:" << m_viewProj.getViewPort() << m_viewProj.getProjRect();
+#endif
       painter.drawPixmap(m_viewProj, *m_tileCanvas);
 //      painter.drawPixmap(m_projRegion, *m_tileCanvas, m_viewPort);
     }

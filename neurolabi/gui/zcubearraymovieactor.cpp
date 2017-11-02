@@ -46,6 +46,7 @@ void ZCubeArrayMovieActor::pushColor()
   if (m_cubeArray != NULL) {
     m_cubeArray->setColor(iround(m_red * 255.0), iround(m_green * 255.0),
                      iround(m_blue * 255.0));
+    m_cubeArray->pushObjectColor();
     getStage()->setCubeArrayChanged(true);
   }
 }

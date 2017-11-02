@@ -53,6 +53,7 @@ public:
   uint64_t getBodyId() const;
   inline const ZDvidTarget& getDvidTarget() const {
     return m_reader.getDvidTarget(); }
+  void setDvidInfo(const ZDvidInfo &info);
 
   ZFlyEmNeuron getFlyEmNeuron() const;
 

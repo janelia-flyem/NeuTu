@@ -811,7 +811,8 @@ HEADERS += mainwindow.h \
     zopenglwidget.h \
     misc/zvtkutil.h \
     zstackdocaccessor.h \
-    zcontrastprotocol.h
+    zcontrastprotocol.h \
+    dialogs/zflyemmergeuploaddialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -916,7 +917,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zbodylistwidget.ui \
     widgets/flyembodyinfowidget.ui \
     neu3window.ui \
-    widgets/taskprotocolwindow.ui
+    widgets/taskprotocolwindow.ui \
+    dialogs/zflyemmergeuploaddialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1417,7 +1419,8 @@ SOURCES += main.cpp \
     dvid/zdvidpath.cpp \
     misc/zvtkutil.cpp \
     zstackdocaccessor.cpp \
-    zcontrastprotocol.cpp
+    zcontrastprotocol.cpp \
+    dialogs/zflyemmergeuploaddialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

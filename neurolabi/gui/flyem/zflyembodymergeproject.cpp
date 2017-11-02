@@ -116,6 +116,7 @@ int ZFlyEmBodyMergeProject::getCurrentZ() const
 
 void ZFlyEmBodyMergeProject::test()
 {
+#if 0
   ZStackDocReader *reader = new ZStackDocReader();
   reader->loadStack(
         (GET_TEST_DATA_DIR + "/benchmark/em_stack_slice.tif").c_str());
@@ -129,6 +130,22 @@ void ZFlyEmBodyMergeProject::test()
   } else {
     emit newDocReady(reader, true);
   }
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  setDvidTarget(target);
+
+  uint64_t targetId = 12532906;
+  std::vector<uint64_t> merged;
+  merged.push_back(12767166);
+  merged.push_back(1);
+
+  std::cout << "Target: " << getTargetId(targetId, merged, false) << std::endl;
+
+#endif
 }
 
 void ZFlyEmBodyMergeProject::changeDvidNode(const std::string &newUuid)
@@ -441,7 +458,25 @@ void ZFlyEmBodyMergeProject::mergeBodyAnnotation(
   }
 }
 
-void ZFlyEmBodyMergeProject::uploadResultFunc()
+uint64_t ZFlyEmBodyMergeProject::getTargetId(
+    uint64_t targetId, const std::vector<uint64_t> &bodyId,
+    bool mergingToLargest)
+{
+  if (mergingToLargest) {
+    int maxSize = m_reader.readBodyBlockCount(targetId);
+    for (uint64_t id : bodyId) {
+      int bodySize = m_reader.readBodyBlockCount(id);
+      if (bodySize > maxSize) {
+        bodySize = maxSize;
+        targetId = id;
+      }
+    }
+  }
+
+  return targetId;
+}
+
+void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 {
   ZFlyEmBodyMerger *bodyMerger = getBodyMerger();
   if (bodyMerger != NULL) {
@@ -472,10 +507,23 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
             getSelection(NeuTube::BODY_LABEL_ORIGINAL);
 
         foreach (uint64_t targetId, mergeMap.keys()) {
+          const std::vector<uint64_t> &merged = mergeMap.value(targetId);
+          uint64_t newTargetId = getTargetId(targetId, merged, mergingToLargest);
+          std::vector<uint64_t> newMerged;
+          if (targetId != newTargetId) {
+            newMerged.push_back(targetId);
+            for (uint64_t id : merged) {
+              if (id != newTargetId) {
+                newMerged.push_back(id);
+              }
+            }
+          } else {
+            newMerged = merged;
+          }
+
           m_writer.mergeBody(
-                getDvidTarget().getBodyLabelName(),
-                targetId, mergeMap.value(targetId));
-          mergeBodyAnnotation(targetId, mergeMap.value(targetId));
+                getDvidTarget().getBodyLabelName(), newTargetId, newMerged);
+          mergeBodyAnnotation(newTargetId, newMerged);
 
           if (m_writer.getStatusCode() != 200) {
             emit messageGenerated(
@@ -483,7 +531,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
                     "Failed to upload merging results", NeuTube::MSG_ERROR));
           } else {
 #if defined(_FLYEM_)
-            std::vector<uint64_t> bodyArray = mergeMap.value(targetId);
+            std::vector<uint64_t> bodyArray = newMerged;
             if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
               if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
                     getDvidTarget(), bodyArray, ZNeutuService::UPDATE_DELETE) ==
@@ -492,7 +540,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
               }
 
               if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
-                    getDvidTarget(), targetId, ZNeutuService::UPDATE_ALL) ==
+                    getDvidTarget(), newTargetId, ZNeutuService::UPDATE_ALL) ==
                   ZNeutuService::REQUEST_FAILED) {
                 warnMsg.setMessage("Computing service failed");
               }
@@ -568,10 +616,10 @@ void ZFlyEmBodyMergeProject::uploadResultFunc()
   }
 }
 
-void ZFlyEmBodyMergeProject::uploadResult()
+void ZFlyEmBodyMergeProject::uploadResult(bool mergingToLargest)
 {
 //  QtConcurrent::run(this, &ZFlyEmBodyMergeProject::uploadResultFunc);
-  uploadResultFunc();
+  uploadResultFunc(mergingToLargest);
 }
 
 #if 0
@@ -1321,7 +1369,7 @@ void ZFlyEmBodyMergeProject::setDvidTarget(const ZDvidTarget &target)
 {
   if (m_reader.open(target)) {
     m_dvidInfo = m_reader.readGrayScaleInfo();
-    m_writer.open(target);
+    m_writer.open(m_reader.getDvidTarget());
   }
 }
 

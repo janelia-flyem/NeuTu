@@ -30,6 +30,7 @@ signals:
   void bodyRemoved(uint64_t bodyId);
 
 public slots:
+  void addBody(uint64_t bodyId);
 
 private slots:
   void processInsertedRows(const QModelIndex &modelIndex, int first, int last);

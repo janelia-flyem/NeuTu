@@ -74,7 +74,7 @@ std::string NeuTube::GetCurrentUserName()
 
 
   if (userName == "zhaot") { //temporary hack
-//    userName = "shinomiyak";
+//    userName = "ogundeyio";
   }
 
   return userName;

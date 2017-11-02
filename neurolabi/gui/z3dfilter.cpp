@@ -192,8 +192,9 @@ void Z3DFilter::removePort(Z3DOutputPortBase& port)
 
 void Z3DFilter::addParameter(ZParameter& para, State inv)
 {
+  LINFO() << "Adding" << &para << para.name();
   if (m_parameterNames.find(para.name()) != m_parameterNames.end()) {
-    //LOG(FATAL) << "Duplicated para name " << para.name();
+//    LOG(FATAL) << "Duplicated para name " << para.name();
   }
   m_parameters.push_back(&para);
   m_parameterNames.insert(para.name());
@@ -202,14 +203,16 @@ void Z3DFilter::addParameter(ZParameter& para, State inv)
   }
 }
 
-void Z3DFilter::removeParameter(ZParameter& para)
+void Z3DFilter::removeParameter(const ZParameter &para)
 {
+  LINFO() << "Removing" << &para << para.name();
   if (!parameter(para.name())) {
     LOG(ERROR) << className() << " parameter " << para.name() << " cannot be removed, it does not exist";
   } else {
     para.disconnect(this);
     m_parameters.erase(std::find(m_parameters.begin(), m_parameters.end(), &para));
     m_parameterNames.erase(para.name());
+    LINFO() << "Removed";
   }
 }
 

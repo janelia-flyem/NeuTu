@@ -219,6 +219,7 @@ signals:
   void showingPuncta(bool);
   void showingTodo(bool);
   void keyPressed(QKeyEvent *event);
+  void testing();
 
 public slots:
   void resetCamera()

@@ -48,6 +48,7 @@ class ZFlyEmBody3dDoc;
 class ZDvidLabelSlice;
 class ZFlyEmGrayscaleDialog;
 class FlyEmBodyIdDialog;
+class ZFlyEmMergeUploadDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -76,6 +77,7 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
+  const ZDvidInfo& getDvidInfo() const;
   const ZDvidInfo& getGrayScaleInfo() const;
 
   virtual void setDvidTarget(const ZDvidTarget &target);
@@ -329,6 +331,7 @@ public slots:
 //  void toggleEdgeMode(bool edgeOn);
 
   void testBodyMerge();
+  void testBodyVis();
   void testBodySplit();
 
 protected slots:
@@ -415,8 +418,8 @@ private:
 
   void mergeCoarseBodyWindow();
 
-  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
-                              bool isDeep);
+//  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
+//                              bool isDeep);
   void updateBodyWindowForSplit();
 
   void setWindowSignalSlot(Z3DWindow *window);
@@ -469,6 +472,7 @@ protected:
   ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
   ZFlyEmGrayscaleDialog *m_grayscaleDlg;
   FlyEmBodyIdDialog *m_bodyIdDialog;
+  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

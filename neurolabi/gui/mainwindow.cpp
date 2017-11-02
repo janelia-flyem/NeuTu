@@ -185,6 +185,10 @@
 #include <QInputDialog>
 #include <QMimeData>
 
+namespace NeuTube {
+static const char *VERSION = "1.1";
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(new Ui::MainWindow),
@@ -285,9 +289,12 @@ MainWindow::MainWindow(QWidget *parent) :
            NeuTube::MSG_WARNING);
   }
 
-  m_version = windowTitle();
+  m_version = NeuTube::VERSION;
+#if defined(__NEUTU_BUILD_VERSION__)
+  m_version += __NEUTU_BUILD_VERSION__;
+#endif
   setWindowTitle(QString("%1 %2").arg(GET_SOFTWARE_NAME.c_str()).
-                 arg(windowTitle()));
+                 arg(m_version));
 
   checkVersion();
 
@@ -1124,7 +1131,9 @@ void MainWindow::createStatusBar()
 void MainWindow::updateStatusBar()
 {
   if (frameNumber() == 0) {
+#ifndef _FLYEM_
     statusBar()->showMessage(tr("Load a stack to start"));
+#endif
   } else {
     ZStackFrame *frame = activeStackFrame();
     if (frame != NULL) {
@@ -2258,6 +2267,7 @@ void MainWindow::checkVersion()
   if (version.isEmpty()) {
     getSettings().setValue("version", m_version);
   } else if (version != m_version) {
+#if 0 //Disabled to wait for future improvement
     QString message = QString("%1 on your computer appears to be updated "
                               "(%2 --> %3).<br>").
         arg(GET_SOFTWARE_NAME.c_str()).arg(version).arg(m_version);
@@ -2270,6 +2280,7 @@ void MainWindow::checkVersion()
 
     report("Software Updated", message.toStdString(),
            NeuTube::MSG_INFORMATION);
+#endif
     getSettings().setValue("version", m_version);
   }
 #endif

@@ -1286,6 +1286,7 @@ ZStack* ZObject3dScan::toStackObject(int v, ZStack *result) const
   }
 
   if (stack != NULL) {
+    stackObject->useChannelColors(false);
     stackObject->load(stack);
     stackObject->setOffset(offset[0], offset[1], offset[2]);
   }
@@ -3186,6 +3187,64 @@ bool ZObject3dScan::importDvidObjectBuffer(
   }
 
   return true;
+}
+
+size_t ZObject3dScan::CountVoxelNumber(
+    const char *byteArray, size_t byteNumber)
+{
+  size_t count = 0;
+
+  if (byteArray == NULL || byteNumber <= 12) {
+    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    return 0;
+  }
+
+  size_t currentIndex = 0;
+  tz_uint8 flag = 0;
+  READ_BYTE_BUFFER(flag, tz_uint8);
+  UNUSED_PARAMETER(flag);
+
+
+  tz_uint8 numberOfDimensions = 0;
+  READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
+
+  if (numberOfDimensions != 3) {
+    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    return 0;
+  }
+
+  tz_uint8 dimOfRun = 0;
+  READ_BYTE_BUFFER(dimOfRun, tz_uint8);
+  if (dimOfRun != 0) {
+    RECORD_ERROR_UNCOND("Unspported run dimension");
+    return 0;
+  }
+
+  ++currentIndex;
+
+  currentIndex += 4;
+
+  tz_uint32 numberOfSpans = 0;
+  READ_BYTE_BUFFER(numberOfSpans, tz_uint32);
+
+  for (tz_uint32 span = 0; span < numberOfSpans; ++span) {
+    tz_int32 coord[3];
+    for (int i = 0; i < 3; ++i) {
+      READ_BYTE_BUFFER(coord[i], tz_int32);
+    }
+
+    tz_int32 runLength = 0;
+    READ_BYTE_BUFFER(runLength, tz_int32);
+
+    if (runLength <= 0) {
+      RECORD_ERROR_UNCOND("Invalid run length");
+      return 0;
+    }
+
+    count += runLength;
+  }
+
+  return count;
 }
 
 bool ZObject3dScan::importDvidObjectBuffer(
