@@ -33,16 +33,20 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
 
     // prefetch queue, setup
     // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
-    // but it's simpler as I'm using member objects, not created on the heap
-    m_prefetchQueue.moveToThread(&m_prefetchThread);
-    connect(&m_prefetchQueue, SIGNAL(finished()), &m_prefetchThread, SLOT(quit()));
+    m_prefetchQueue = new BodyPrefetchQueue();
+    m_prefetchThread = new QThread();
+
+    m_prefetchQueue->moveToThread(m_prefetchThread);
+    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
+    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchQueue, SLOT(deleteLater()));
+    connect(m_prefetchThread, SIGNAL(finished()), m_prefetchThread, SLOT(deleteLater()));
 
     // prefetch queue, item management
-    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), &m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
-    connect(this, SIGNAL(prefetchBody(uint64_t)), &m_prefetchQueue, SLOT(add(uint64_t)));
+    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
+    connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
     // note: no remove signal/slot yet, as the prefetch logic doesn't require it
 
-    m_prefetchThread.start();
+    m_prefetchThread->start();
 
 
     // UI connections
@@ -790,7 +794,7 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
 }
 
 void TaskProtocolWindow::applicationQuitting() {
-    m_prefetchQueue.finish();
+    m_prefetchQueue->finish();
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()

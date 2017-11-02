@@ -82,6 +82,7 @@ void BodyPrefetchQueue::remove(QSet<uint64_t> bodyIDs) {
     QMutexLocker locker(&m_queueLock);
 
     foreach (uint64_t bodyID, bodyIDs) {
+        LINFO() << "BodyPrefetchQueue: removed body:" << bodyID;
         m_queue.removeAll(bodyID);
     }
 }

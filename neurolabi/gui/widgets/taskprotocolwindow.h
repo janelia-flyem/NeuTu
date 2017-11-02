@@ -75,8 +75,8 @@ private:
     int m_currentTaskIndex;
     QWidget * m_currentTaskWidget;
     bool m_nodeLocked;
-    BodyPrefetchQueue m_prefetchQueue;
-    QThread m_prefetchThread;
+    BodyPrefetchQueue * m_prefetchQueue;
+    QThread * m_prefetchThread;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
