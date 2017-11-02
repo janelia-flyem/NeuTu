@@ -81,6 +81,7 @@ public:
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
+  void clearBodyForSplit();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();

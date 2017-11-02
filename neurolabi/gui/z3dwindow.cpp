@@ -199,7 +199,7 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
   }
 
-#ifdef _DEBUG_
+#if defined(_DEBUG_) && defined(_NEU3_)
   m_toolBar->addAction(getAction(ZActionFactory::ACTION_TEST));
 #endif
 }

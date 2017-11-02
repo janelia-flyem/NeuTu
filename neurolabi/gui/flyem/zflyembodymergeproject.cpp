@@ -503,12 +503,13 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
         }
         getProgressSignal()->advanceProgress(0.1);
 
-        const std::set<uint64_t> &bodySet =
-            getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+        std::set<uint64_t> bodySet = getSelection(NeuTube::BODY_LABEL_ORIGINAL);
 
+        std::set<uint64_t> newBodySet;
         foreach (uint64_t targetId, mergeMap.keys()) {
           const std::vector<uint64_t> &merged = mergeMap.value(targetId);
           uint64_t newTargetId = getTargetId(targetId, merged, mergingToLargest);
+          newBodySet.insert(newTargetId);
           std::vector<uint64_t> newMerged;
           if (targetId != newTargetId) {
             newMerged.push_back(targetId);
@@ -551,21 +552,29 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
           QList<ZDvidLabelSlice*> labelList =
               getDocument()->getDvidLabelSliceList();
           foreach (ZDvidLabelSlice *slice, labelList) {
-            slice->mapSelection();
+            slice->setSelection(newBodySet, NeuTube::BODY_LABEL_ORIGINAL);
+//            slice->mapSelection();
           }
           ZOUT(LTRACE(), 5) << "Label slice updated";
         }
         getProgressSignal()->advanceProgress(0.1);
 
+        m_selectedOriginal.clear();
+        for (std::set<uint64_t>::const_iterator iter = newBodySet.begin();
+             iter != newBodySet.end(); ++iter) {
+          m_selectedOriginal.insert(*iter);
+        }
+
+        if (getDocument<ZFlyEmProofDoc>() != NULL) {
+          getDocument<ZFlyEmProofDoc>()->clearBodyForSplit();
+          getDocument<ZFlyEmProofDoc>()->refreshDvidLabelBuffer(2000);
+          ZOUT(LTRACE(), 5) << "Label buffer refreshed";
+        }
+
         ZOUT(LTRACE(), 5) << "Merge uploaded.";
 
         emit mergeUploaded();
 
-
-        if (getDocument<ZFlyEmProofDoc>() != NULL) {
-          getDocument<ZFlyEmProofDoc>()->refreshDvidLabelBuffer(2000);
-          ZOUT(LTRACE(), 5) << "Label buffer refreshed";
-        }
 #if 0
         ZSleeper::msleep(2000);
 
@@ -576,13 +585,8 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
         }
 #endif
 
-        std::set<uint64_t> selectionSet =
-            getSelection(NeuTube::BODY_LABEL_MAPPED);
-        m_selectedOriginal.clear();
-        for (std::set<uint64_t>::const_iterator iter = selectionSet.begin();
-             iter != selectionSet.end(); ++iter) {
-          m_selectedOriginal.insert(*iter);
-        }
+//        std::set<uint64_t> selectionSet =
+//            getSelection(NeuTube::BODY_LABEL_MAPPED);
 
         for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
              iter != bodySet.end(); ++iter) {
