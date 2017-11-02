@@ -141,6 +141,9 @@ void TaskProtocolWindow::onPrevButton() {
         }
     }
 
+    // warn the task we're about to move away
+    m_taskList[m_currentTaskIndex]->beforePrev();
+
     // no prefetching is performed here; if we're backing up in the list,
     //  the next body should already be in memory; it's the responsibility of
     //  the rest of the application not to throw it out too soon (yes, this
@@ -160,6 +163,9 @@ void TaskProtocolWindow::onNextButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
+
+    // warn the task we're about to move away
+    m_taskList[m_currentTaskIndex]->beforeNext();
 
     // for now, simplest possible prefetching: just prefetch for the next task,
     //  as long as there is one and it's not the current one

@@ -19,8 +19,13 @@ public:
     void setCompleted(bool completed);
     QSet<uint64_t> visibleBodies();
     QSet<uint64_t> selectedBodies();
+
+    virtual void beforeNext();
+    virtual void beforePrev();
+
     bool loadJson(QJsonObject json);
     QJsonObject toJson();
+
     void addTag(QString tag);
     void removeTag(QString tag);
     bool hasTag(QString tag);
@@ -50,8 +55,6 @@ private:
     virtual bool loadSpecific(QJsonObject json) = 0;
     virtual QJsonObject addToJson(QJsonObject json) = 0;
     virtual void onCompleted();
-    virtual void beforeNext();
-    virtual void beforePrev();
 };
 
 #endif // TASKPROTOCOLTASK_H
