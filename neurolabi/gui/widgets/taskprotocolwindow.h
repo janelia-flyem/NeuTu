@@ -24,6 +24,8 @@ public:
     void init();
     ~TaskProtocolWindow();
 
+    BodyPrefetchQueue *getPrefetchQueue() const;
+
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);

@@ -797,6 +797,11 @@ void TaskProtocolWindow::applicationQuitting() {
     m_prefetchQueue->finish();
 }
 
+BodyPrefetchQueue *TaskProtocolWindow::getPrefetchQueue() const
+{
+    return m_prefetchQueue;
+}
+
 TaskProtocolWindow::~TaskProtocolWindow()
 {
     delete ui;
