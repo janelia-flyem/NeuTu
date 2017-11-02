@@ -425,6 +425,7 @@ public:
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
   void removeObject(const QSet<ZStackObject*> &objSet, bool deleteObject = false);
+  void removeObject(const std::set<ZStackObject*> &objSet, bool deleteObject = false);
 
   TStackObjectList takeObject(
       ZStackObject::EType type, const std::string &source);
@@ -1067,6 +1068,7 @@ public slots: //undoable commands
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
   virtual bool executeRemoveObjectCommand(ZStackObject *obj);
+  virtual bool executeRemoveObjectCommand(ZStackObjectRole::TRole role);
   virtual bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
   virtual bool executeMoveObjectCommand(

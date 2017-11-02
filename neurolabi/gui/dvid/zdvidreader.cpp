@@ -3629,6 +3629,11 @@ QList<ZStackObject*> ZDvidReader::readSeedFromSplitTask(
   return readSeedFromSplitTask(taskKey, bodyId);
 }
 
+bool ZDvidReader::hasSplitTask(const QString &key) const
+{
+  return hasKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY).c_str(), key);
+}
+
 int ZDvidReader::checkProofreadingData() const
 {
   int missing = 0;

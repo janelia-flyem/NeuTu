@@ -445,6 +445,8 @@ public:
   QList<ZStackObject*> readSeedFromSplitTask(
       const ZDvidTarget &target, uint64_t bodyId);
 
+  bool hasSplitTask(const QString &key) const;
+
 
 signals:
   void readingDone();

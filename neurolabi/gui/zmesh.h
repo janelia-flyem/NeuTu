@@ -8,7 +8,7 @@
 
 #include "zbbox.h"
 #include "zstackobject.h"
-#include "QsLog.h"
+//#include "QsLog.h"
 
 class ZPoint;
 class vtkOBBTree;
@@ -106,11 +106,7 @@ public:
 
   QString typeAsString() const;
 
-  void setType(GLenum type)
-  {
-    m_ttype = type;
-    CHECK(m_ttype == GL_TRIANGLES || m_ttype == GL_TRIANGLE_FAN || m_ttype == GL_TRIANGLE_STRIP);
-  }
+  void setType(GLenum type);
 
   const std::vector<glm::vec3>& vertices() const
   { return m_vertices; }

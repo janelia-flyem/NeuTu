@@ -3,6 +3,7 @@
 #include "zrandom.h"
 #include <limits>
 #include <queue>
+#include "zqslog.h"
 
 namespace {
 

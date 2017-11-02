@@ -669,6 +669,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/save_seed2.png"));
     action->setToolTip("Save the split task defined by current seeds.");
     break;
+  case ACTION_DELETE_SPLIT_SEED:
+    action = new QAction("Delete Seeds", parent);
+    action->setIcon(QIcon(":/images/delete_seed.png"));
+    action->setToolTip("Delete all seeds used in splitting");
+    break;
   default:
     break;
   }

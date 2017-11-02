@@ -1838,6 +1838,11 @@ void ZFlyEmProofDoc::deleteSelectedSynapse()
   */
 }
 
+void ZFlyEmProofDoc::clearBodyForSplit()
+{
+  removeObject(ZStackObjectSourceFactory::MakeSplitObjectSource(), true);
+}
+
 const ZDvidSparseStack *ZFlyEmProofDoc::getBodyForSplit() const
 {
   return dynamic_cast<ZDvidSparseStack*>(

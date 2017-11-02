@@ -50,6 +50,10 @@ public:
     return m_reader.getDvidTarget();
   }
 
+  const ZDvidReader& getDvidReader() const {
+    return m_reader;
+  }
+
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   bool isSwcWrittable();
 
@@ -233,6 +237,7 @@ public:
       const QString &group, const QByteArray &task, bool head);
   std::string writeServiceTask(const QString &group, const ZJsonObject &task);
   void writeSplitTask(const QString &key, const ZJsonObject &task);
+  void deleteSplitTask(const QString &key);
 //  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:
