@@ -530,6 +530,11 @@ bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
         ZStackObject::TYPE_FLYEM_TODO_ITEM).empty();
 }
 
+void ZFlyEmBody3dDoc::deleteSplitSeed()
+{
+  executeRemoveObjectCommand(ZStackObjectRole::ROLE_SEED);
+}
+
 void ZFlyEmBody3dDoc::saveSplitTask()
 {
   if (m_bodySet.size() == 1) {
@@ -543,27 +548,22 @@ void ZFlyEmBody3dDoc::saveSplitTask()
         std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
         task.setEntry("signal", bodyUrl);
         ZJsonArray seedJson = ZFlyEmMisc::GetSeedJson(this);
-        task.setEntry("seeds", seedJson);
-//        ZJsonArray roiJson = getRoiJson();
-//        if (roiJson.isEmpty()) {
-//          ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
-//          if (!range.isEmpty()) {
-//            roiJson = range.toJsonArray();
-//          }
-//        }
-//        if (!roiJson.isEmpty()) {
-//          task.setEntry("range", roiJson);
-//        }
-
-        std::string location = writer->writeServiceTask("split", task);
-        ZJsonObject taskJson;
-        taskJson.setEntry(NeuTube::Json::REF_KEY, location);
-  //      QUrl url(bodyUrl.c_str());
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
-  //      QString("task__") + QUrl::toPercentEncoding(bodyUrl.c_str());
-        writer->writeSplitTask(taskKey, taskJson);
+        if (seedJson.isEmpty()) {
+          if (writer->getDvidReader().hasSplitTask(taskKey)) {
+            writer->deleteSplitTask(taskKey);
+            std::cout << "Split task deleted: " << taskKey.toStdString() << std::endl;
+          }
+        } else {
+          task.setEntry("seeds", seedJson);
 
-        std::cout << "Split task saved @" << taskKey.toStdString() << std::endl;
+          std::string location = writer->writeServiceTask("split", task);
+          ZJsonObject taskJson;
+          taskJson.setEntry(NeuTube::Json::REF_KEY, location);
+          writer->writeSplitTask(taskKey, taskJson);
+
+          std::cout << "Split task saved @" << taskKey.toStdString() << std::endl;
+        }
       }
     }
   }

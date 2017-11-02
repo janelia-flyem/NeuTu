@@ -3621,6 +3621,11 @@ void ZStackDoc::removeObject(const QSet<ZStackObject *> &objSet, bool deleteObje
   removeObjectP(objSet.begin(), objSet.end(), deleteObject);
 }
 
+void ZStackDoc::removeObject(const std::set<ZStackObject *> &objSet, bool deleteObject)
+{
+  removeObjectP(objSet.begin(), objSet.end(), deleteObject);
+}
+
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
   std::set<ZStackObject*> removeSet;
@@ -8054,6 +8059,22 @@ bool ZStackDoc::executeRemoveObjectCommand(ZStackObject *obj)
     ZStackDocCommand::ObjectEdit::RemoveObject *command =
         new ZStackDocCommand::ObjectEdit::RemoveObject(this, obj);
     command->setLogMessage("Remove object: " + obj->className());
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeRemoveObjectCommand(ZStackObjectRole::TRole role)
+{
+  QList<ZStackObject*> objList = getObjectList(role);
+  if (!objList.isEmpty()) {
+    ZStackDocCommand::ObjectEdit::RemoveObject *command =
+        new ZStackDocCommand::ObjectEdit::RemoveObject(this, NULL);
+    command->setRemoval(objList);
+    command->setLogMessage(QString("Remove object: role %1").arg(role));
     pushUndoCommand(command);
 
     return true;

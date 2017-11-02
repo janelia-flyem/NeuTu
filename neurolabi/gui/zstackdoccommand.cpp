@@ -1879,6 +1879,12 @@ ZStackDocCommand::ObjectEdit::RemoveObject::~RemoveObject()
   }
 }
 
+void ZStackDocCommand::ObjectEdit::RemoveObject::setRemoval(
+    const QList<ZStackObject *> &objList)
+{
+  m_objSet = QSet<ZStackObject*>::fromList(objList);
+}
+
 void ZStackDocCommand::ObjectEdit::RemoveObject::redo()
 {
   m_doc->removeObject(m_objSet, false);

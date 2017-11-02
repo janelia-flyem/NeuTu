@@ -4,7 +4,6 @@
 #include "zmeshutils.h"
 #include "zbbox.h"
 #include "zexception.h"
-#include "QsLog.h"
 #include "zcubearray.h"
 #include <vtkPolyData.h>
 #include <vtkPointData.h>
@@ -22,6 +21,7 @@
 #include <map>
 #include "misc/zvtkutil.h"
 #include "zpoint.h"
+#include "zqslog.h"
 
 ZMesh::ZMesh(GLenum type)
 {
@@ -136,6 +136,12 @@ QString ZMesh::typeAsString() const
   }
 
   return "WrongType";
+}
+
+void ZMesh::setType(GLenum type)
+{
+  m_ttype = type;
+  CHECK(m_ttype == GL_TRIANGLES || m_ttype == GL_TRIANGLE_FAN || m_ttype == GL_TRIANGLE_STRIP);
 }
 
 std::vector<glm::dvec3> ZMesh::doubleVertices() const

@@ -1033,6 +1033,12 @@ void ZDvidWriter::writeSplitTask(const QString &key, const ZJsonObject &task)
         ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY), key.toStdString(), task);
 }
 
+void ZDvidWriter::deleteSplitTask(const QString &key)
+{
+  deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
+            key.toStdString());
+}
+
 /*
 std::string ZDvidWriter::transferLocalSplitTaskToServer(const ZJsonObject &task)
 {

@@ -216,6 +216,7 @@
 #include "test/zflyembodycoloroptiontest.h"
 #include "test/zflyembodyannotationtest.h"
 #include "test/z3dfiltersettingtest.h"
+#include "test/zpointtest.h"
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "z3dmainwindow.h"

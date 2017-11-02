@@ -196,6 +196,7 @@ void Z3DWindow::createToolBar()
 
   if (getWindowType() == NeuTube3D::TYPE_NEU3) {
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
   }
 
 #ifdef _DEBUG_
@@ -392,6 +393,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_SAVE_SPLIT_TASK:
     action = m_actionLibrary->getAction(item, this, SLOT(saveSplitTask()));
+    break;
+  case ZActionFactory::ACTION_DELETE_SPLIT_SEED:
+    action = m_actionLibrary->getAction(item, this, SLOT(deleteSplitSeed()));
     break;
   case ZActionFactory::ACTION_TEST:
     action = m_actionLibrary->getAction(item, this, SLOT(test()));
@@ -3832,6 +3836,11 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
       if (stackSeg.isValid()) {
         polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
         polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+      } else {
+        ZIntPoint pt = ZIntPoint();
+        pt.invalidate();
+        polyline1.push_back(pt);
+        polyline2.push_back(pt);
       }
     }
 
@@ -4111,6 +4120,11 @@ void Z3DWindow::deleteSelected()
 void Z3DWindow::saveSplitTask()
 {
   emit savingSplitTask();
+}
+
+void Z3DWindow::deleteSplitSeed()
+{
+  emit deletingSplitSeed();
 }
 
 void Z3DWindow::cropSwcInRoi()
