@@ -27,6 +27,7 @@
 #include <map>
 #include <QDir>
 
+class QSlider;
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
 class Z3DPunctaFilter;
@@ -376,6 +377,8 @@ public slots:
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 
+  void setMeshOpacity(int opacity);
+
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
@@ -548,7 +551,8 @@ private:
 
   QString m_lastOpenedFilePath;
 
-  QToolBar *m_toolBar;
+  QToolBar *m_toolBar = NULL;
+  QSlider *m_meshOpacitySlider = NULL;
 
   mutable QMutex m_filterMutex;
   ZSwcIsolationDialog *m_swcIsolationDlg;

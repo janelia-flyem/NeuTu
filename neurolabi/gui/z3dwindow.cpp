@@ -197,6 +197,11 @@ void Z3DWindow::createToolBar()
   }
 
   if (getWindowType() == NeuTube3D::TYPE_NEU3) {
+    m_meshOpacitySlider = new QSlider(Qt::Horizontal, this);
+    m_meshOpacitySlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+    m_meshOpacitySlider->setRange(0, 255);
+    m_toolBar->addWidget(m_meshOpacitySlider);
+    m_toolBar->addSeparator();
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
   }
@@ -310,6 +315,12 @@ void Z3DWindow::init()
   }
 
   m_helpDlg = new HelpDialog(this);
+
+  if (m_meshOpacitySlider != NULL) {
+    m_meshOpacitySlider->setValue(iround(getMeshFilter()->opacity() * 255));
+    connect(m_meshOpacitySlider, SIGNAL(valueChanged(int)),
+            this, SLOT(setMeshOpacity(int)));
+  }
 }
 
 void Z3DWindow::setWindowSize()
@@ -3602,6 +3613,11 @@ void Z3DWindow::uncheckSelectedTodo()
   if (doc != NULL) {
     doc->uncheckSelectedTodoItem();
   }
+}
+
+void Z3DWindow::setMeshOpacity(int opacity)
+{
+  getMeshFilter()->setOpacity(opacity / 255.0);
 }
 
 void Z3DWindow::locateWithRay(int x, int y)
