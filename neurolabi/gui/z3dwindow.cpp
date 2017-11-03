@@ -120,6 +120,8 @@ Z3DWindow::Z3DWindow(
   createMenus();
   createStatusBar();
   m_viewMenu->addAction("Reset Camera", this, SLOT(resetCamera()));
+  m_viewMenu->addAction("Zoom to Selected Meshes", this, SLOT(zoomToSelectedMeshes()),
+                        QKeySequence("m"));
 
   switch (initMode) {
   case INIT_NORMAL:
@@ -1011,6 +1013,20 @@ void Z3DWindow::loadView()
     ZJsonObject cameraJson;
     cameraJson.load(fileName.toStdString());
     getCamera()->set(cameraJson);
+  }
+}
+
+void Z3DWindow::zoomToSelectedMeshes()
+{
+  TStackObjectSet &meshSet = m_doc->getSelected(ZStackObject::TYPE_MESH);
+  ZBBox<glm::dvec3> boundingBox;
+  for (ZStackObject *obj : meshSet) {
+    if (ZMesh* mesh = dynamic_cast<ZMesh*>(obj)) {
+      boundingBox.expand(getMeshFilter()->meshBound(mesh));
+    }
+  }
+  if (!boundingBox.empty()) {
+      m_view->gotoPosition(boundingBox, 0);
   }
 }
 

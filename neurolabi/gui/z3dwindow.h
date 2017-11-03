@@ -241,6 +241,8 @@ public slots:
   void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
   { m_view->resetCameraClippingRange(); }
 
+  void zoomToSelectedMeshes();
+
 //  void updateDecorationDisplay();
 
   void selectdObjectChangedFrom3D(ZStackObject *p, bool append);
