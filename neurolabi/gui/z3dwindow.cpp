@@ -3686,6 +3686,11 @@ ZLineSegment Z3DWindow::getStackSeg(
       if (slope.dot(slope2) < 0.0) {
         stackSeg.invert();
       }
+      const ZPoint &start = stackSeg.getStartPoint();
+      const ZPoint &end = stackSeg.getEndPoint();
+      if (end.distanceTo(start) > end.distanceTo(seg.getStartPoint())) {
+        stackSeg.setStartPoint(seg.getStartPoint());
+      }
     }
   }
 
@@ -3740,6 +3745,11 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
               boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
 
         ZLineSegment seg(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+        ZLineSegment stackSeg = getStackSeg(seg, rbox);
+/*
+        ZLineSegment Z3DWindow::getStackSeg(
+            const ZLineSegment &seg, const ZCuboid &rbox) const
+
         ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
         ZLineSegment stackSeg;
         if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
@@ -3748,7 +3758,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
             stackSeg.invert();
           }
         }
-
+*/
 #ifdef _DEBUG_
         std::cout << "Segment start: " << stackSeg.getStartPoint().toString() << std::endl;
         std::cout << "Segment end: " << stackSeg.getEndPoint().toString() << std::endl;
@@ -3767,102 +3777,127 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
   return intersection;
 }
 
+ZCuboid Z3DWindow::getRayBoundbox() const
+{
+  ZCuboid rbox;
+
+  if (m_doc->hasStack()) {
+    const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
+
+    rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+    rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+
+    if (getVolumeFilter()->isSubvolume()) {
+      const auto& zoomInBound = getVolumeFilter()->zoomInBound();
+      rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+      rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
+    } else {
+      ZIntCuboid cutBox = getVolumeFilter()->cutBox();
+      //      cutBox.translate(m_doc->getStackOffset());
+      rbox = misc::CutBox(rbox, cutBox);
+    }
+  } else {
+    const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
+    rbox.setFirstCorner(
+          boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
+    rbox.setLastCorner(
+          boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
+  }
+
+  return rbox;
+}
+
+ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
+{
+  ZLineSegment stackSeg;
+
+  int w = getCanvas()->width();
+  int h = getCanvas()->height();
+  ZCuboid rbox = getRayBoundbox();
+
+  if (m_doc->hasStack()) {
+    ZLineSegment seg = getVolumeFilter()->getScreenRay(
+          iround(x), iround(y), w, h);
+    stackSeg = getStackSeg(seg, rbox);
+    source = "";
+  } else if (m_doc->hasMesh()){
+    QList<ZMesh*> meshList = m_doc->getMeshList();
+    ZMesh *mesh = meshList.front();
+
+#if defined(_NEU3_)
+    uint64_t bodyId =
+        ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(mesh->getSource());
+    if (bodyId > 0) {
+      source = ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId);
+    }
+#endif
+
+    ZLineSegment seg = getMeshFilter()->getScreenRay(
+          iround(x), iround(y), w, h);
+    stackSeg = getStackSeg(seg, rbox);
+
+    if (stackSeg.isValid()) {
+      std::vector<ZPoint> ptArray = mesh->intersectLineSeg(
+            stackSeg.getStartPoint(), stackSeg.getEndPoint());
+      if (ptArray.size() >= 2) {
+        stackSeg.setStartPoint(ptArray[0]);
+        stackSeg.setEndPoint(ptArray[1]);
+        //          ZVoxelGraphics::addLineObject(
+        //                processedObj, ptArray[0].toIntPoint(), ptArray[1].toIntPoint());
+      } else {
+        stackSeg.set(ZPoint(0, 0, 0), ZPoint(0, 0, 0));
+      }
+    }
+  }
+
+  return stackSeg;
+}
+
 void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 {
   //bool success = false;
 //  std::string source;
   if (m_doc->hasStack() || m_doc->hasMesh()) {
-    std::vector<ZIntPoint> polyline1;
-    std::vector<ZIntPoint> polyline2;
-#if 0
-    ZIntCuboid box = m_doc->stackRef()->getBoundBox();
-    ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-                 box.getFirstCorner().getZ(),
-                 box.getLastCorner().getX(), box.getLastCorner().getY(),
-                 box.getLastCorner().getZ());
-#endif
-    const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
-    ZCuboid rbox;
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
 
-    if (m_doc->hasStack()) {
-      rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
-      rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+    ZIntPointArrayPtr polyline1 = ZIntPointArray::MakePointer();
+    ZIntPointArrayPtr polyline2 = ZIntPointArray::MakePointer();
 
-      if (getVolumeFilter()->isSubvolume()) {
-        const auto& zoomInBound = getVolumeFilter()->zoomInBound();
-        rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
-        rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
-      } else {
-        ZIntCuboid cutBox = getVolumeFilter()->cutBox();
-        //      cutBox.translate(m_doc->getStackOffset());
-        rbox = misc::CutBox(rbox, cutBox);
-      }
-    } else {
-      const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
-      rbox.setFirstCorner(
-            boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
-      rbox.setLastCorner(
-            boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
-    }
-
-    int w = getCanvas()->width();
-    int h = getCanvas()->height();
+    polylinePairList.emplace_back(polyline1, polyline2);
 
     std::string source;
 
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
-      ZLineSegment stackSeg;
       double x = 0.0;
       double y = 0.0;
       stroke->getPoint(&x, &y, i);
 
-      if (m_doc->hasStack()) {
-        ZLineSegment seg = getVolumeFilter()->getScreenRay(
-              iround(x), iround(y), w, h);
-        stackSeg = getStackSeg(seg, rbox);
-      } else if (m_doc->hasMesh()){
-        QList<ZMesh*> meshList = m_doc->getMeshList();
-        ZMesh *mesh = meshList.front();
+      ZLineSegment stackSeg = getRaySegment(iround(x), iround(y), source);
 
-#if defined(_NEU3_)
-        uint64_t bodyId =
-            ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(mesh->getSource());
-        if (bodyId > 0) {
-          source = ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId);
-        }
-#endif
-
-        ZLineSegment seg = getMeshFilter()->getScreenRay(
-              iround(x), iround(y), w, h);
-        stackSeg = getStackSeg(seg, rbox);
-
-        if (stackSeg.isValid()) {
-          std::vector<ZPoint> ptArray = mesh->intersectLineSeg(
-                stackSeg.getStartPoint(), stackSeg.getEndPoint());
-          if (ptArray.size() >= 2) {
-            stackSeg.setStartPoint(ptArray[0]);
-            stackSeg.setEndPoint(ptArray[1]);
-            //          ZVoxelGraphics::addLineObject(
-            //                processedObj, ptArray[0].toIntPoint(), ptArray[1].toIntPoint());
-          } else {
-            stackSeg.set(ZPoint(0, 0, 0), ZPoint(0, 0, 0));
-          }
-        }
-      }
       if (stackSeg.isValid()) {
-        polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
-        polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
-      } else {
-        ZIntPoint pt = ZIntPoint();
-        pt.invalidate();
-        polyline1.push_back(pt);
-        polyline2.push_back(pt);
+        polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
+        polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+      } else { //Add a new pair after a break point
+        polyline1 = ZIntPointArray::MakePointer();
+        polyline2 = ZIntPointArray::MakePointer();
+        polylinePairList.emplace_back(polyline1, polyline2);
       }
     }
 
     ZObject3d *obj = NULL;
+    for (const auto &pp : polylinePairList) {
+      ZObject3d *tmpObj =
+          ZVoxelGraphics::createPolyPlaneObject(*pp.first, *pp.second);
+      if (obj == NULL) {
+        obj = tmpObj;
+      } else {
+        obj->append(tmpObj);
+        delete tmpObj;
+      }
+    }
+
     if (m_doc->hasStack()) {
-      obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
+
 
       if (obj != NULL) {
         ZObject3d *processedObj = NULL;
@@ -3906,9 +3941,9 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
         delete obj;
         obj = processedObj;
       }
-    } else if (m_doc->hasMesh()) {
-      obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
-    }
+    } /*else if (m_doc->hasMesh()) {
+      obj = ZVoxelGraphics::createPolyPlaneObject(*polyline1, *polyline2);
+    }*/
 
     if (obj != NULL) {
 #ifdef _DEBUG_2

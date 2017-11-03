@@ -270,7 +270,7 @@ void Z3DBoundedFilter::rayUnderScreenPoint(
 
   glm::ivec4 viewport(0, 0, width, height);
 
-  v1 = glm::unProject(glm::dvec3(x, height - y, 0.f), modelview, projection, viewport);
+  v1 = glm::unProject(glm::dvec3(x, height - y, -1.0f), modelview, projection, viewport);
   v2 = glm::unProject(glm::dvec3(x, height - y, 1.f), modelview, projection, viewport);
   v2 = glm::normalize(v2 - v1) + v1;
 }

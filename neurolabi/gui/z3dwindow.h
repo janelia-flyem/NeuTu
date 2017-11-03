@@ -432,6 +432,10 @@ private:
   std::vector<ZPoint> getRayIntersection(int x, int y, uint64_t *id = NULL);
 
 private:
+  ZCuboid getRayBoundbox() const;
+  ZLineSegment getRaySegment(int x, int y, std::string &source) const;
+
+private:
   QTabWidget* createBasicSettingTabWidget();
   QTabWidget* createAdvancedSettingTabWidget();
 
