@@ -4435,7 +4435,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
                 pt *= dvidInfo.getBlockSize();
                 pt += ZIntPoint(dvidInfo.getBlockSize().getX() / 2,
                                 dvidInfo.getBlockSize().getY() / 2, 0);
-                pt += dvidInfo.getStartCoordinates();
+//                pt += dvidInfo.getStartCoordinates();
 
                 QPointF screenPos = m_coarseBodyWindow->getScreenProjection(
                       pt.getX(), pt.getY(), pt.getZ(), Z3DWindow::LAYER_SWC);
