@@ -1,24 +1,21 @@
 #include "bodyprefetchqueue.h"
 
 #include <QsLog.h>
+#include <QMutexLocker>
 
 /*
- * NOTE: this implementation is a quick-and-dirty version; the API
- * is queue-like, but internally, it only stores one body ID, not
- * a set of them; this was done to get it out as soon as possible;
- * it's intended to update this in the future to handle multiple
- * items in the queue with some reasonable behavior
+ * this queue should be moved into its own thread after creation; see
+ * TaskProtocolWindow, where it's used
+ *
+ * incoming add/remove item requests come in through queued signal/slot;
+ * request for item is blocking if there are none
+ *
+ * I followed these examples:
+ * - http://code.jamming.com.ua/classic-producer-consumer-in-qtc/
+ * - https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
  */
 BodyPrefetchQueue::BodyPrefetchQueue(QObject *parent) : QObject(parent)
 {
-
-    // 64-bit int is not guaranteed to be atomic on all platforms;
-    //  log if not; if I'm reading the header files properly, it
-    //  is atomic on our platforms (Mac, Linux, x86_64)
-
-#ifndef Q_ATOMIC_INT64_IS_SUPPORTED
-    LINFO << "QAtomicInt doesn't support 64-bit integers on this platform; BodyPrefetchQueue not actually thread safe!";
-#endif
 
     clear();
 
@@ -26,21 +23,23 @@ BodyPrefetchQueue::BodyPrefetchQueue(QObject *parent) : QObject(parent)
 
 /*
  * returns the top body ID in the queue (ie, the body
- * that should be fetched next); if body ID 0 is returned,
- * there are no bodies in the queue
+ * that should be fetched next); blocks if there are no items
  */
 uint64_t BodyPrefetchQueue::get() {
-    // for the single value case, we're just returning the stored
-    //  value and storing zero again
-    return m_bodyID.fetchAndStoreOrdered(0);
+    QMutexLocker locker(&m_queueLock);
+
+    while (m_queue.isEmpty()) {
+        m_queueHasItems.wait(&m_queueLock);
+    }
+    LINFO() << "BodyPrefetchQueue: returning body:" << m_queue.head();
+    return m_queue.dequeue();
 }
 
 /*
- * are there any items in the queue?  this is sketchy, not really
- * safe, but maybe useful?
+ * are there any items in the queue?
  */
 bool BodyPrefetchQueue::isEmpty() {
-    return m_bodyID.loadAcquire() > 0;
+    return m_queue.isEmpty();
 }
 
 /*
@@ -48,18 +47,30 @@ bool BodyPrefetchQueue::isEmpty() {
  * arbitrary within the input set
  */
 void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
-    // for the single-item implementation, we take an
-    //  arbitrary item from the set and ignore the others
-    m_bodyID.storeRelease(bodyIDs.values().first());
+    QMutexLocker locker(&m_queueLock);
+
+    bool wasEmpty = m_queue.isEmpty();
+    foreach (uint64_t bodyID, bodyIDs) {
+        m_queue.enqueue(bodyID);
+        LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
+    }
+    if (wasEmpty) {
+        m_queueHasItems.wakeAll();
+    }
 }
 
 /*
  * add the body ID to the prefetch queue
  */
 void BodyPrefetchQueue::add(uint64_t bodyID) {
-    // for the single-item implementation, this is easy;
-    //  we overwrite whatever is there currently
-    m_bodyID.storeRelease(bodyID);
+    QMutexLocker locker(&m_queueLock);
+
+    bool wasEmpty = m_queue.isEmpty();
+    m_queue.enqueue(bodyID);
+    LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
+    if (wasEmpty) {
+        m_queueHasItems.wakeAll();
+    }
 }
 
 /*
@@ -68,13 +79,11 @@ void BodyPrefetchQueue::add(uint64_t bodyID) {
  * fetched
  */
 void BodyPrefetchQueue::remove(QSet<uint64_t> bodyIDs) {
-    // for single-item implementation, we're just comparing each value
-    //  in the set to the current value; in this case, since there's
-    //  only one case, we can break the loop if we actually to find the value
-    foreach(uint64_t bodyID, bodyIDs) {
-        if (m_bodyID.testAndSetAcquire(bodyID, 0)) {
-            break;
-        }
+    QMutexLocker locker(&m_queueLock);
+
+    foreach (uint64_t bodyID, bodyIDs) {
+        LINFO() << "BodyPrefetchQueue: removed body:" << bodyID;
+        m_queue.removeAll(bodyID);
     }
 }
 
@@ -82,5 +91,15 @@ void BodyPrefetchQueue::remove(QSet<uint64_t> bodyIDs) {
  * clear the prefetch queue
  */
 void BodyPrefetchQueue::clear() {
-    m_bodyID.storeRelease(0);
+    QMutexLocker locker(&m_queueLock);
+    m_queue.clear();
+}
+
+/*
+ * finish up and signal the thread it can die
+ */
+void BodyPrefetchQueue::finish() {
+    // do I need to grab the lock here?
+    QMutexLocker locker(&m_queueLock);
+    emit finished();
 }

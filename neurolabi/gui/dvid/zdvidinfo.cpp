@@ -208,7 +208,8 @@ ZIntPoint ZDvidInfo::getBlockIndex(int x, int y, int z) const
 
 ZIntPoint ZDvidInfo::getBlockIndex(double x, double y, double z) const
 {
-  return getBlockIndex(std::floor(x), std::floor(y), std::floor(z));
+  return getBlockIndex(
+        int(std::floor(x)), int(std::floor(y)), int(std::floor(z)));
 }
 
 void ZDvidInfo::setBlockSize(int width, int height, int depth)

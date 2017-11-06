@@ -24762,5 +24762,26 @@ void ZTest::test(MainWindow *host)
   project.test();
 #endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "3b54", 7000);
+  target.setLabelBlockName("labels1104");
+  ZDvidReader reader;
+  reader.open(target);
+
+  QList<uint64_t> bodyList =
+      QList<uint64_t>() << 22351 << 151837 << 618595
+                        << 597861 << 568121 << 571372 << 598856;
+
+  foreach (uint64_t bodyId, bodyList) {
+    ZSwcTree *tree = reader.readSwc(bodyId);
+    ZString outputPath = GET_TEST_DATA_DIR + "/_flyem/FIB/FIB25/neuromorpho_20171103/";
+    outputPath.appendNumber(bodyId);
+    outputPath += ".swc";
+    tree->rescale(0.01, 0.01, 0.01);
+    tree->save(outputPath);
+  }
+#endif
+
   std::cout << "Done." << std::endl;
 }

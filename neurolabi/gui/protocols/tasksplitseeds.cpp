@@ -91,6 +91,22 @@ void TaskSplitSeeds::onCompleted() {
     }
 }
 
+void TaskSplitSeeds::beforeNext() {
+    // save seeds before the user moves to another task
+    updateSeedsTag();
+    if (hasTag(TAG_SEEDS_ADDED)) {
+        emit saveSplitTask();
+    }
+}
+
+void TaskSplitSeeds::beforePrev() {
+    // save seeds before the user moves to another task
+    updateSeedsTag();
+    if (hasTag(TAG_SEEDS_ADDED)) {
+        emit saveSplitTask();
+    }
+}
+
 void TaskSplitSeeds::updateSeedsTag() {
     if (m_noSplitCheck->isChecked()) {
         removeTag(TAG_SEEDS_ADDED);

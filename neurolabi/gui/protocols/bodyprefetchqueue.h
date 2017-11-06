@@ -2,8 +2,10 @@
 #define BODYPREFETCHQUEUE_H
 
 #include <QObject>
-#include <QAtomicInteger>
+#include <QMutex>
+#include <QQueue>
 #include <QSet>
+#include <QWaitCondition>
 
 class BodyPrefetchQueue : public QObject
 {
@@ -15,15 +17,20 @@ public:
     bool isEmpty();
 
 signals:
+    void finished();
 
 public slots:    
     void add(uint64_t bodyID);
     void add(QSet<uint64_t> bodyIDs);
     void remove(QSet<uint64_t> bodyIDs);
     void clear();
+    void finish();
 
 private:
-    QAtomicInteger<uint64_t> m_bodyID;
+    QQueue<uint64_t> m_queue;
+    QMutex m_queueLock;
+    QWaitCondition m_queueHasItems;
+
 };
 
 #endif // BODYPREFETCHQUEUE_H

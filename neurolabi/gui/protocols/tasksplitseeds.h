@@ -42,6 +42,8 @@ private:
     bool loadSpecific(QJsonObject json);
     QJsonObject addToJson(QJsonObject json);
     void onCompleted();
+    void beforeNext();
+    void beforePrev();
     void updateSeedsTag();
 };
 
