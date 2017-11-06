@@ -2,6 +2,7 @@
 #define TASKPROTOCOLWINDOW_H
 
 #include <QWidget>
+#include <QThread>
 
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyemproofdoc.h"
@@ -21,8 +22,9 @@ class TaskProtocolWindow : public QWidget
 public:
     explicit TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent = 0);
     void init();
-    BodyPrefetchQueue *getPrefetchQueue();
     ~TaskProtocolWindow();
+
+    BodyPrefetchQueue *getPrefetchQueue() const;
 
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
@@ -40,6 +42,7 @@ private slots:
     void onCompletedStateChanged(int state);
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
+    void applicationQuitting();
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -75,6 +78,7 @@ private:
     QWidget * m_currentTaskWidget = NULL;
     bool m_nodeLocked;
     BodyPrefetchQueue * m_prefetchQueue;
+    QThread * m_prefetchThread;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);

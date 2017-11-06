@@ -29,17 +29,30 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     m_proofDoc = doc;
     m_body3dDoc = bodyDoc;
 
+    m_currentTaskWidget = NULL;
+
     m_protocolInstanceStatus = UNCHECKED;
 
-    // prefetch queue
+    // prefetch queue, setup
+    // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
     m_prefetchQueue = new BodyPrefetchQueue();
+    m_prefetchThread = new QThread();
+
+    m_prefetchQueue->moveToThread(m_prefetchThread);
+    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
+    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchQueue, SLOT(deleteLater()));
+    connect(m_prefetchThread, SIGNAL(finished()), m_prefetchThread, SLOT(deleteLater()));
+
+    // prefetch queue, item management
     connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
     connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
-    // note; no remove signal/slot yet
+    // note: no remove signal/slot yet, as the prefetch logic doesn't require it
 
+    m_prefetchThread->start();
 
 
     // UI connections
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
@@ -128,6 +141,9 @@ void TaskProtocolWindow::onPrevButton() {
         }
     }
 
+    // warn the task we're about to move away
+    m_taskList[m_currentTaskIndex]->beforePrev();
+
     // no prefetching is performed here; if we're backing up in the list,
     //  the next body should already be in memory; it's the responsibility of
     //  the rest of the application not to throw it out too soon (yes, this
@@ -147,6 +163,9 @@ void TaskProtocolWindow::onNextButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
+
+    // warn the task we're about to move away
+    m_taskList[m_currentTaskIndex]->beforeNext();
 
     // for now, simplest possible prefetching: just prefetch for the next task,
     //  as long as there is one and it's not the current one
@@ -307,6 +326,13 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
         showInfo("No tasks to do!", "All tasks have been completed!");
     }
 
+    // first prefetch
+    int nextTaskIndex = getNext();
+    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+        prefetchForTaskIndex(nextTaskIndex);
+    }
+
+
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
@@ -458,10 +484,6 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             m_currentTaskWidget->setVisible(true);
         }
     }
-}
-
-BodyPrefetchQueue * TaskProtocolWindow::getPrefetchQueue() {
-    return m_prefetchQueue;
 }
 
 /*
@@ -777,6 +799,15 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::applicationQuitting() {
+    m_prefetchQueue->finish();
+}
+
+BodyPrefetchQueue *TaskProtocolWindow::getPrefetchQueue() const
+{
+    return m_prefetchQueue;
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()
