@@ -424,6 +424,8 @@ public:
   void removeSelectedObject(bool deleteObject = false);
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
+  void removeObject(const QSet<ZStackObject*> &objSet, bool deleteObject = false);
+  void removeObject(const std::set<ZStackObject*> &objSet, bool deleteObject = false);
 
   TStackObjectList takeObject(
       ZStackObject::EType type, const std::string &source);
@@ -1066,6 +1068,7 @@ public slots: //undoable commands
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
   virtual bool executeRemoveObjectCommand(ZStackObject *obj);
+  virtual bool executeRemoveObjectCommand(ZStackObjectRole::TRole role);
   virtual bool executeRemoveSelectedObjectCommand();
   //bool executeRemoveUnselectedObjectCommand();
   virtual bool executeMoveObjectCommand(
@@ -1616,59 +1619,6 @@ void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
   }
   endObjectModifiedMode();
   notifyObjectModified();
-}
-
-template <class InputIterator>
-void ZStackDoc::removeObjectP(
-    InputIterator first, InputIterator last, bool deleting)
-{
-//  TStackObjectList objList = m_objectGroup.take(type);
-  m_objectGroup.take(first, last);
-  for (TStackObjectList::iterator iter = first; iter != last; ++iter) {
-//    role.addRole(m_playerList.removePlayer(*iter));
-    ZStackObject *obj = *iter;
-
-#ifdef _DEBUG_
-    std::cout << "Removing object: " << obj << std::endl;
-#endif
-
-    bufferObjectModified(obj);
-    m_playerList.removePlayer(obj);
-
-    if (deleting) {
-      delete obj;
-    }
-  }
-
-  notifyObjectModified();
-#if 0
-//  QSet<ZStackObject::EType> typeSet;
-//  QSet<ZStackObject::ETarget> targetSet;
-
-//  ZStackObjectRole role;
-
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-  for (InputIterator iter = first; iter != last; ++iter) {
-    ZStackObject *obj = *iter;
-//    role.addRole(m_playerList.removePlayer(obj));
-//    typeSet.insert(obj->getType());
-//    targetSet.insert(obj->getTarget());
-    processObjectModified(obj);
-    if (deleting) {
-      delete obj;
-    }
-  }
-  endObjectModifiedMode();
-
-  notifyObjectModified();
-#endif
-  /*
-  if (first != last) {
-    processObjectModified(typeSet);
-    processObjectModified(targetSet);
-    notifyPlayerChanged(role);
-  }
-  */
 }
 
 template<typename T>

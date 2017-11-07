@@ -125,6 +125,7 @@ bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
   rawPainter->setPen(pen);
   rawPainter->setBrush(Qt::NoBrush);
 
+
   int width = m_width;
   int height = m_height;
   int x0 = m_x0;
@@ -140,6 +141,7 @@ bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
     y0 -= height - 1;
   }
 
+//  rawPainter->drawEllipse(x0, y0, width/2, height/2);
   rawPainter->drawRect(x0, y0, width, height);
 
   return true;

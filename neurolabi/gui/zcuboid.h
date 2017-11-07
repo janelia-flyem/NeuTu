@@ -10,11 +10,11 @@ class ZLineSegment;
 
 /*************
  *
- *        4________5       z /
+ *        4________5       z / front
  *       /|        /|       /
- *    0 /_______1 / |       x--->
+ *    0 /_______1 / |       x---> right
  *     |  .      |  |     y |
- *     |  |      |  |       v
+ *     |  |      |  |       v up
  *     | 6._ . _ |_ |7
  *     | /       | /
  *     |_________|/
@@ -22,6 +22,8 @@ class ZLineSegment;
  *
  * The order is determined by binary increment: 000 (zyx)->111, where 0 and 1
  * indicate min and max repectively.
+ *
+ * Face indexing: left 0, right 1, down 2, up 3, back 4, front 5
  ************/
 
 class ZCuboid

@@ -198,7 +198,8 @@ void ZStackDoc::init()
   m_progressSignal = new ZProgressSignal(this);
 
   m_dataBuffer = new ZStackDocDataBuffer(this);
-  connect(m_dataBuffer, SIGNAL(delivering()), this, SLOT(processDataBuffer()));
+  connect(m_dataBuffer, SIGNAL(delivering()),
+          this, SLOT(processDataBuffer()), Qt::QueuedConnection);
 }
 
 void ZStackDoc::clearData()
@@ -745,9 +746,10 @@ void ZStackDoc::processDataBuffer()
   for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
        iter != updateList.end(); ++iter) {
     ZStackDocObjectUpdate *u = *iter;
-#ifdef _DEBUG_2
-    u->print();
-#endif
+
+//    std::cout << "Doc update: ";
+//    u->print();
+
     if (u->getObject() != NULL) {
       switch (u->getAction()) {
       case ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE:
@@ -3614,6 +3616,16 @@ void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
   notifyObjectModified();
 }
 
+void ZStackDoc::removeObject(const QSet<ZStackObject *> &objSet, bool deleteObject)
+{
+  removeObjectP(objSet.begin(), objSet.end(), deleteObject);
+}
+
+void ZStackDoc::removeObject(const std::set<ZStackObject *> &objSet, bool deleteObject)
+{
+  removeObjectP(objSet.begin(), objSet.end(), deleteObject);
+}
+
 void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
 {
   std::set<ZStackObject*> removeSet;
@@ -3661,6 +3673,31 @@ void ZStackDoc::removeObject(ZStackObjectRole::TRole role, bool deleteObject)
     notifyPlayerChanged(role);
   }
   */
+}
+
+template <class InputIterator>
+void ZStackDoc::removeObjectP(
+    InputIterator first, InputIterator last, bool deleting)
+{
+//  TStackObjectList objList = m_objectGroup.take(type);
+  m_objectGroup.take(first, last);
+  for (InputIterator iter = first; iter != last; ++iter) {
+//    role.addRole(m_playerList.removePlayer(*iter));
+    ZStackObject *obj = *iter;
+
+#ifdef _DEBUG_
+    std::cout << "Removing object: " << obj << std::endl;
+#endif
+
+    bufferObjectModified(obj);
+    m_playerList.removePlayer(obj);
+
+    if (deleting) {
+      delete obj;
+    }
+  }
+
+  notifyObjectModified();
 }
 
 void ZStackDoc::removeObject(const string &source, bool deleteObject)
@@ -8022,6 +8059,22 @@ bool ZStackDoc::executeRemoveObjectCommand(ZStackObject *obj)
     ZStackDocCommand::ObjectEdit::RemoveObject *command =
         new ZStackDocCommand::ObjectEdit::RemoveObject(this, obj);
     command->setLogMessage("Remove object: " + obj->className());
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
+bool ZStackDoc::executeRemoveObjectCommand(ZStackObjectRole::TRole role)
+{
+  QList<ZStackObject*> objList = getObjectList(role);
+  if (!objList.isEmpty()) {
+    ZStackDocCommand::ObjectEdit::RemoveObject *command =
+        new ZStackDocCommand::ObjectEdit::RemoveObject(this, NULL);
+    command->setRemoval(objList);
+    command->setLogMessage(QString("Remove object: role %1").arg(role));
     pushUndoCommand(command);
 
     return true;

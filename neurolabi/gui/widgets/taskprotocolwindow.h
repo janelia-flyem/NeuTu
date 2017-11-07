@@ -2,9 +2,12 @@
 #define TASKPROTOCOLWINDOW_H
 
 #include <QWidget>
+#include <QThread>
 
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltask.h"
 
 
@@ -17,15 +20,19 @@ class TaskProtocolWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent = 0);
+    explicit TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent = 0);
     void init();
     ~TaskProtocolWindow();
+
+    BodyPrefetchQueue *getPrefetchQueue() const;
 
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
     void bodyRemoved(uint64_t bodyId);
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
+    void prefetchBody(QSet<uint64_t> bodyIDs);
+    void prefetchBody(uint64_t bodyID);
 
 private slots:
     void onNextButton();
@@ -35,6 +42,7 @@ private slots:
     void onCompletedStateChanged(int state);
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
+    void applicationQuitting();
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -62,12 +70,15 @@ private:
     Ui::TaskProtocolWindow *ui;
     QString m_ID;
     QList<QSharedPointer<TaskProtocolTask>> m_taskList;
-    ZFlyEmProofDoc *m_proofDoc;
+    ZFlyEmProofDoc * m_proofDoc;
+    ZFlyEmBody3dDoc * m_body3dDoc;
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex;
-    QWidget * m_currentTaskWidget;
+    QWidget * m_currentTaskWidget = NULL;
     bool m_nodeLocked;
+    BodyPrefetchQueue * m_prefetchQueue;
+    QThread * m_prefetchThread;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
@@ -91,6 +102,9 @@ private:
     int getNextUncompleted();
     int getPrev();
     int getPrevUncompleted();
+    void prefetch(uint64_t bodyID);
+    void prefetch(QSet<uint64_t> bodyIDs);
+    void prefetchForTaskIndex(int index);
 };
 
 #endif // TASKPROTOCOLWINDOW_H

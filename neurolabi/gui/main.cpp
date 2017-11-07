@@ -337,6 +337,7 @@ int main(int argc, char *argv[])
   RECORD_INFORMATION("************* Start ******************");
 
   if (guiEnabled) {
+    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -359,8 +360,6 @@ int main(int argc, char *argv[])
 #if (defined __APPLE__) && !(defined _QT5_)
     app.setGraphicsSystem("raster");
 #endif
-
-    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 
     ZTest::getInstance().setCommandLineArg(argc, argv);
 

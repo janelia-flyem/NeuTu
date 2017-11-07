@@ -40,6 +40,7 @@ public:
     ROLE_LABELSZ,
     ROLE_SYNAPSE,
     ROLE_TODO_LIST,
+    ROLE_SPARSEVOL_SIZE,
     ROLE_NEUTU_CONFIG,
     ROLE_RESULT_KEY,
     ROLE_TASK_KEY,
@@ -111,6 +112,7 @@ private:
   static const char *m_neutuConfigName;
   static const char *m_labelszName;
   static const char *m_meshName;
+  static const char *m_sparsevolSizeName;
   //static const char *m_keyValueTypeName;
 
   static const char *m_nullName;

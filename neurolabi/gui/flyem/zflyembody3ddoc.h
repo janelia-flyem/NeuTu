@@ -242,6 +242,7 @@ public slots:
 
   void setBodyModelSelected(const QSet<uint64_t> &bodySet);
   void saveSplitTask();
+  void deleteSplitSeed();
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -313,6 +314,7 @@ private:
 
 signals:
   void todoVisibleChanged();
+  void bodyMeshLoaded();
 
 private slots:
 //  void updateBody();

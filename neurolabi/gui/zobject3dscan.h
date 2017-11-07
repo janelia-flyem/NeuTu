@@ -160,6 +160,8 @@ public:
    */
   bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber);
 
+  static size_t CountVoxelNumber(const char *byteArray, size_t byteNumber);
+
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
   bool importDvidObjectBufferDs(const char *byteArray, size_t byteNumber);
@@ -384,6 +386,9 @@ public:
   ZObject3dScan getSlice(int minZ, int maxZ) const;
   ZObject3dScan interpolateSlice(int z) const;
   ZObject3dScan getFirstSlice() const;
+
+  void exportImageSlice(int minZ, int maxZ, const std::string outputFolder) const;
+  void exportImageSlice(const std::string outputFolder) const;
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,

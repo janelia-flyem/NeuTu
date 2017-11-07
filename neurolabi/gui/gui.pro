@@ -71,6 +71,7 @@ CONFIG(debug, debug|release) {
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
+    QMAKE_CXXFLAGS += -g
     TARGET = neuTube
     contains(CONFIG, neu3) {
       TARGET = neu3
@@ -805,11 +806,14 @@ HEADERS += mainwindow.h \
     dialogs/dvidbranchdialog.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
+    protocols/bodyprefetchqueue.h \
     flyem/zflyembody3ddoccommand.h \
     flyem/zflyembody3ddocmenufactory.h \
     zopenglwidget.h \
     misc/zvtkutil.h \
-    zstackdocaccessor.h
+    zstackdocaccessor.h \
+    zcontrastprotocol.h \
+    dialogs/zflyemmergeuploaddialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -915,7 +919,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/flyembodyinfowidget.ui \
     neu3window.ui \
     dialogs/dvidbranchdialog.ui \
-    widgets/taskprotocolwindow.ui
+    widgets/taskprotocolwindow.ui \
+    dialogs/zflyemmergeuploaddialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1409,13 +1414,16 @@ SOURCES += main.cpp \
     dialogs/dvidbranchdialog.cpp \
     protocols/tasktesttask.cpp \
     protocols/tasksplitseeds.cpp \
+    protocols/bodyprefetchqueue.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \
     zopenglwidget.cpp \
     zstackreader.cpp \
     dvid/zdvidpath.cpp \
     misc/zvtkutil.cpp \
-    zstackdocaccessor.cpp
+    zstackdocaccessor.cpp \
+    zcontrastprotocol.cpp \
+    dialogs/zflyemmergeuploaddialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

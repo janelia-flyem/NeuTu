@@ -600,6 +600,8 @@ public: /* processing routines */
 
 public:
   void initChannelColors();
+  void useChannelColors(bool on);
+  void clearChannelColors();
 
   std::string getTransformMeta() const;
 
@@ -656,11 +658,14 @@ private:
   mutable std::vector<ZSingleChannelStack*> m_singleChannelStack;
   mutable char m_buffer[1] = {'\0'}; //Buffer of text field of temporary stack
 
+
   //float color for each channel
 
 //  bool m_isLSMFile;
 
 #ifdef _NEUTUBE_
+  bool m_usingChannelColors = true; //Temporary hack.
+  //Need to make channelColors on demand in the future.
   std::vector<ZVec3Parameter*> m_channelColors;
 
   LsmInfo m_lsmInfo;

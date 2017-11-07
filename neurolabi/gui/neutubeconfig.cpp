@@ -88,7 +88,11 @@ void NeutubeConfig::init()
 
 void NeutubeConfig::setDefaultSoftwareName()
 {
+#if defined(_NEU3_)
+  m_softwareName = "Neu3";
+#else
   m_softwareName = "NeuTu";
+#endif
 }
 
 void NeutubeConfig::setTestSoftwareName()

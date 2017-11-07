@@ -27,7 +27,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_namedDecorationList.append(&m_rayMarker);
   m_namedDecorationList.append(&m_exploreMarker);
 
-  m_rect.setColor(255, 0, 0, 128);
+  m_rect.setColor(255, 0, 0, 164);
   m_namedDecorationList.append(&m_rect);
 
   foreach (ZStackObject *drawable, m_namedDecorationList) {
@@ -404,7 +404,7 @@ void ZInteractionEngine::enterPaintRect()
 {
   exitEditMode();
 
-//  m_rect.setVisible(true);
+  m_rect.setVisible(true);
   m_interactiveContext.setRectEditMode(ZInteractiveContext::RECT_DRAW);
   emit decorationUpdated();
 }

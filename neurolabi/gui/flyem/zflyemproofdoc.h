@@ -81,6 +81,7 @@ public:
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
+  void clearBodyForSplit();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();
@@ -228,7 +229,9 @@ public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
   void runSplit(FlyEM::EBodySplitMode mode);
+  void runFullSplit(FlyEM::EBodySplitMode mode);
   void runLocalSplit(FlyEM::EBodySplitMode mode);
+  void exitSplit();
 
   bool isSplitRunning() const;
   void refreshDvidLabelBuffer(unsigned long delay);
@@ -439,7 +442,7 @@ public slots:
   void saveMergeOperation();
   void processExternalBodyMergeUpload();
   void clearBodyMergeStage();
-  void uploadMergeResult();
+//  void uploadMergeResult();
 
 //  void updateDvidLabelObject();
 
@@ -491,6 +494,7 @@ protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
   void updateDvidTargetForObject();
+  void updateDvidInfoForObject();
   virtual void prepareDvidData();
   void addDvidLabelSlice(NeuTube::EAxis axis);
   void annotateSynapse(
@@ -541,6 +545,7 @@ private:
   void runSplitFunc(FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range);
   void runSplitFunc(FlyEM::EBodySplitMode mode);
   void localSplitFunc(FlyEM::EBodySplitMode mode);
+  void runFullSplitFunc(FlyEM::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
@@ -597,6 +602,8 @@ protected:
   mutable ZFlyEmMB6Analyzer m_analyzer;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
+
+  static const char *THREAD_SPLIT;
 };
 
 template <typename InputIterator>

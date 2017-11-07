@@ -92,6 +92,13 @@ void ZObject3d::append(const ZObject3d &obj, size_t srcOffset)
                       obj.m_voxelArray.end());
 }
 
+void ZObject3d::append(const ZObject3d *obj, size_t srcOffset)
+{
+  if (obj != NULL) {
+    append(*obj, srcOffset);
+  }
+}
+
 void ZObject3d::appendBackward(const ZObject3d &obj, size_t srcOffset)
 {
   size_t voxelNumber = obj.size();

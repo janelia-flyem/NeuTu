@@ -27,6 +27,7 @@
 #include <map>
 #include <QDir>
 
+class QSlider;
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
 class Z3DPunctaFilter;
@@ -209,6 +210,7 @@ signals:
   void locating2DViewTriggered(int x, int y, int z, int width);
   void croppingSwcInRoi();
   void savingSplitTask();
+  void deletingSplitSeed();
   void savingSplitTask(uint64_t bodyId);
 
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
@@ -219,6 +221,7 @@ signals:
   void showingPuncta(bool);
   void showingTodo(bool);
   void keyPressed(QKeyEvent *event);
+  void testing();
 
 public slots:
   void resetCamera()
@@ -238,6 +241,8 @@ public slots:
 
   void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
   { m_view->resetCameraClippingRange(); }
+
+  void zoomToSelectedMeshes();
 
 //  void updateDecorationDisplay();
 
@@ -298,6 +303,7 @@ public slots:
   void changeSelectedPunctaColor();
 
   void saveSplitTask();
+  void deleteSplitSeed();
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -371,6 +377,8 @@ public slots:
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 
+  void setMeshOpacity(int opacity);
+
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
@@ -425,6 +433,10 @@ private:
   ZLineSegment getStackSeg(const ZLineSegment &seg, const ZCuboid &rbox) const;
 
   std::vector<ZPoint> getRayIntersection(int x, int y, uint64_t *id = NULL);
+
+private:
+  ZCuboid getRayBoundbox() const;
+  ZLineSegment getRaySegment(int x, int y, std::string &source) const;
 
 private:
   QTabWidget* createBasicSettingTabWidget();
@@ -539,7 +551,8 @@ private:
 
   QString m_lastOpenedFilePath;
 
-  QToolBar *m_toolBar;
+  QToolBar *m_toolBar = NULL;
+  QSlider *m_meshOpacitySlider = NULL;
 
   mutable QMutex m_filterMutex;
   ZSwcIsolationDialog *m_swcIsolationDlg;
