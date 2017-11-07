@@ -647,12 +647,14 @@ public:
                QUndoCommand *parent = NULL);
   virtual ~RemoveObject();
 
+  void setRemoval(const QList<ZStackObject*> &objList);
+
   void undo();
   void redo();
 
 private:
   ZStackDoc *m_doc;
-  ZStackObject *m_obj;
+  QSet<ZStackObject*> m_objSet;
   bool m_isInDoc;
 };
 
@@ -794,7 +796,7 @@ private:
 class AutoTraceAxon : public ZUndoCommand
 {
 public:
-  AutoTraceAxon(ZStackDoc *m_doc, QUndoCommand *parent = NULL);
+  AutoTraceAxon(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~AutoTraceAxon();
 
   void undo();

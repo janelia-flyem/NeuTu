@@ -1,5 +1,7 @@
 #include "znumericparameter.h"
 
+#include <iostream>
+
 #include "zspinboxwithslider.h"
 #include "zspinboxwithscrollbar.h"
 #include "zspinbox.h"

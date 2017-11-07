@@ -14,4 +14,27 @@ public:
   }
 };
 
+class QStringKeyNaturalLess
+{
+public:
+
+  template<typename L, typename R>
+  bool operator()(const L& l, const R& r) const
+  {
+    return naturalSortLessThan(l.first, r.first);
+  }
+
+  template<typename R>
+  bool operator()(const QString& l, const R& r) const
+  {
+    return naturalSortLessThan(l, r.first);
+  }
+
+  template<typename L>
+  bool operator()(const L& l, const QString& r) const
+  {
+    return naturalSortLessThan(l.first, r);
+  }
+};
+
 #endif // ZSTRINGUTILS_H

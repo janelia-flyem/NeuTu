@@ -287,6 +287,22 @@ std::string ZDvidUrl::getSparsevolUrl(
   return url;
 }
 
+std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
+{
+  ZString url;
+
+  if (m_dvidTarget.usingLabelArray()) {
+    url = getDataUrl(m_dvidTarget.getBodyLabelName());
+    if (!url.empty()) {
+      url += "/" + ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL_SIZE);
+      url += "/";
+      url.appendNumber(bodyId);
+    }
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, const ZIntCuboid &box) const
 {

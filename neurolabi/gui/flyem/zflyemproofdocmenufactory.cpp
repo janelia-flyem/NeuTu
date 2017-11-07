@@ -224,6 +224,8 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       }
     }
 
+    actionList.append(ZActionFactory::ACTION_REFRESH_SEGMENTATION);
+
     addAction(actionList, presenter, menu);
 
     /* Bookmark actions */

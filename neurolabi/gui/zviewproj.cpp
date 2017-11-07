@@ -62,7 +62,7 @@ void ZViewProj::setOffset(int x0, int y0)
   m_x0 = x0;
   m_y0 = y0;
   deprecateViewPort();
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "setOffset: " << m_x0 << " " << m_y0 << std::endl;
 #endif
 }

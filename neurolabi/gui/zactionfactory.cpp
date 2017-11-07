@@ -282,6 +282,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     }
   }
     break;
+  case ACTION_TEST:
+    action = new QAction("Test", parent);
+    action->setIcon(QIcon(":/images/test.png"));
+    break;
   case ACTION_ADD_SWC_NODE:
     action = new QAction("Add Neuron Node", parent);
     action->setStatusTip("Add an isolated neuron node.");
@@ -631,6 +635,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setToolTip("Rewrite segmentation in the current ROI. "
                        "Mainly used for fixing sync errors.");
     break;
+  case ACTION_REFRESH_SEGMENTATION:
+    action = new QAction("Refresh segmentation", parent);
+    action->setToolTip("Refresh segmentation to get the latest data from DVID");
+    break;
   case ACTION_FLYEM_UPDATE_BODY:
     action = new QAction("Update Bodies", parent);
     action->setToolTip("Update bodies from DVID");
@@ -660,6 +668,11 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Save Split Task", parent);
     action->setIcon(QIcon(":/images/save_seed2.png"));
     action->setToolTip("Save the split task defined by current seeds.");
+    break;
+  case ACTION_DELETE_SPLIT_SEED:
+    action = new QAction("Delete Seeds", parent);
+    action->setIcon(QIcon(":/images/delete_seed.png"));
+    action->setToolTip("Delete all seeds used in splitting");
     break;
   default:
     break;

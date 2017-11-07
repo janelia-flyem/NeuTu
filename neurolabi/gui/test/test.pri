@@ -60,4 +60,5 @@ HEADERS += \
     test/zviewprojtest.h \
     test/z3dfiltersettingtest.h \
     test/zdvidresultservicetest.h \
-    $$PWD/zxmltest.h
+    test/zxmltest.h \
+    test/zpointtest.h

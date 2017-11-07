@@ -42,7 +42,7 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* paren
   setMouseTracking(true);
 
   connect(&m_interaction, SIGNAL(decorationUpdated()),
-          this->viewport(), SLOT(update()));
+          this, SLOT(updateDecoration()));
   connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
           this, SIGNAL(strokePainted(ZStroke2d*)));
   connect(&m_interaction, SIGNAL(shootingTodo(int,int)),
@@ -173,9 +173,18 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
   event->ignore();
 }
 
+void Z3DCanvas::updateDecoration()
+{
+  m_updatingDecoration = true;
+  viewport()->update();
+  m_updatingDecoration = false;
+}
+
 void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 {
-  QGraphicsView::drawBackground(painter, rect);
+  if (!m_updatingDecoration) {
+    QGraphicsView::drawBackground(painter, rect);
+  }
   //m_3dScene->drawBackground(painter, rect);
 
 #if 1

@@ -23,6 +23,7 @@ class ZParameter : public QObject
 Q_OBJECT
 public:
   explicit ZParameter(const QString& name, QObject* parent = nullptr);
+  ~ZParameter();
 
   inline QString name() const
   { return m_name; }

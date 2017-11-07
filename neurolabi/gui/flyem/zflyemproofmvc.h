@@ -48,6 +48,7 @@ class ZFlyEmBody3dDoc;
 class ZDvidLabelSlice;
 class ZFlyEmGrayscaleDialog;
 class FlyEmBodyIdDialog;
+class ZFlyEmMergeUploadDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -76,6 +77,7 @@ public:
 
   ZDvidTileEnsemble* getDvidTileEnsemble();
 
+  const ZDvidInfo& getDvidInfo() const;
   const ZDvidInfo& getGrayScaleInfo() const;
 
   virtual void setDvidTarget(const ZDvidTarget &target);
@@ -169,6 +171,7 @@ signals:
 //  void highlightModeEnabled(bool);
   void highlightModeChanged();
   void roiLoaded();
+  void locating2DViewTriggered(int x, int y, int z, int width);
 
 
 public slots:
@@ -252,12 +255,14 @@ public slots:
   void exportSeed();
   void importSeed();
   void runSplit();
+  void runFullSplit();
   void runLocalSplit();
   void saveSplitTask();
   void saveSplitTask(uint64_t bodyId);
   void loadSplitResult();
   void loadSplitTask();
   void uploadSplitResult();
+  void reportBodyCorruption();
 
   void loadSynapse();
   void goToTBar();
@@ -326,6 +331,7 @@ public slots:
 //  void toggleEdgeMode(bool edgeOn);
 
   void testBodyMerge();
+  void testBodyVis();
   void testBodySplit();
 
 protected slots:
@@ -387,6 +393,7 @@ private:
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
   void runSplitFunc();
+  void runFullSplitFunc();
   void runLocalSplitFunc();
 
   void mergeSelectedWithoutConflict();
@@ -411,8 +418,8 @@ private:
 
   void mergeCoarseBodyWindow();
 
-  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
-                              bool isDeep);
+//  void updateCoarseBodyWindow(bool showingWindow, bool resettingCamera,
+//                              bool isDeep);
   void updateBodyWindowForSplit();
 
   void setWindowSignalSlot(Z3DWindow *window);
@@ -465,6 +472,7 @@ protected:
   ZFlyEmSkeletonUpdateDialog *m_skeletonUpdateDlg;
   ZFlyEmGrayscaleDialog *m_grayscaleDlg;
   FlyEmBodyIdDialog *m_bodyIdDialog;
+  ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -561,6 +569,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),
           this, SLOT(skeletonizeSelectedBody()));
+  connect(panel, SIGNAL(reportingBodyCorruption()),
+          this, SLOT(reportBodyCorruption()));
   connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
 }
 
@@ -573,7 +583,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(splitQuickViewTriggered()),
           this, SLOT(showSplitQuickView()));
   connect(panel, SIGNAL(bodyViewTriggered()), this, SLOT(showBody3d()));
-  connect(panel, SIGNAL(splitViewTriggered()), this, SLOT(showSplit3d()));
+//  connect(panel, SIGNAL(splitViewTriggered()), this, SLOT(showSplit3d()));
 
   connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
   connect(panel, SIGNAL(changingSplit(uint64_t)), this,

@@ -76,6 +76,7 @@ public:
       uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const;
   std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom);
+  std::string getSparsevolSizeUrl(uint64_t bodyId) const;
 
 
 

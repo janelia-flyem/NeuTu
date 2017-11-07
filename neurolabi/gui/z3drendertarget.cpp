@@ -124,7 +124,8 @@ void Z3DRenderTarget::release()
   //LOG(INFO) << m_previousDrawFBOID << " " << m_previousReadFBOID;
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_previousReadFBOID);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_previousDrawFBOID);
-  glViewport(m_previousViewport.x, m_previousViewport.y, m_previousViewport.z, m_previousViewport.w);
+  glViewport(m_previousViewport.x, m_previousViewport.y,
+             m_previousViewport.z, m_previousViewport.w);
   //glGetError(); // there should be no error according to openGL doc, but some drivers report error, ignore
 }
 

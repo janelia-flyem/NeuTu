@@ -245,7 +245,7 @@ void Z3DCheckOpenGLStateFilterWrapper::checkState(const Z3DFilter* p)
 
   if (!checkGLState(GL_BLEND_SRC, GL_ONE) || !checkGLState(GL_BLEND_DST, GL_ZERO)) {
     glBlendFunc(GL_ONE, GL_ZERO);
-    warn(p, "Modified BlendFunc");
+//    warn(p, "Modified BlendFunc"); //Remove warning produced by rect display with an unknown reason
   }
 
   if (!checkGLState(GL_DEPTH_TEST, false)) {

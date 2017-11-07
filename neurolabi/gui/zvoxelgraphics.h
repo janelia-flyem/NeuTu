@@ -9,6 +9,11 @@ class ZLineSegment;
 
 namespace ZVoxelGraphics
 {
+/*!
+ * \brief Get voxels on a line segment.
+ *
+ * It returns NULL if \a v1 or \a v2 is valid.
+ */
 ZObject3d* createLineObject(const ZIntPoint &v1, const ZIntPoint &v2);
 ZObject3d* createLineObject(const ZLineSegment &seg);
 /*!

@@ -87,6 +87,8 @@ public slots:
   void stressTestSlot();
   void diagnose();
 
+  void showAndRaise();
+
 protected:
   void dragEnterEvent(QDragEnterEvent *event);
   void changeEvent(QEvent * event);

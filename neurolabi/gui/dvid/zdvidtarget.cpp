@@ -671,7 +671,7 @@ bool ZDvidTarget::isLowQualityTile(const std::string &name) const
 
 bool ZDvidTarget::hasGrayScaleData() const
 {
-  if (getGrayScaleName() == "*") {
+  if (getGrayScaleName() == "*" || getGrayScaleName().empty()) {
     return false;
   }
 
@@ -680,9 +680,9 @@ bool ZDvidTarget::hasGrayScaleData() const
 
 std::string ZDvidTarget::getGrayScaleName() const
 {
-  if (m_grayScaleName.empty()) {
-    return ZDvidData::GetName(ZDvidData::ROLE_GRAY_SCALE);
-  }
+//  if (m_grayScaleName.empty()) {
+//    return ZDvidData::GetName(ZDvidData::ROLE_GRAY_SCALE);
+//  }
 
   return m_grayScaleName;
 }

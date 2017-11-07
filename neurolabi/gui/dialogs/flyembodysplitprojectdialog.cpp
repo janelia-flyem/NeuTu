@@ -40,8 +40,8 @@ FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
           this, SLOT(showData2d()));
   connect(ui->view3dBodyPushButton, SIGNAL(clicked()),
           this, SLOT(showData3d()));
-  connect(ui->viewSplitPushButton,
-          SIGNAL(clicked()), this, SLOT(showResult3d()));
+//  connect(ui->viewSplitPushButton,
+//          SIGNAL(clicked()), this, SLOT(showResult3d()));
   connect(ui->viewResultQuickPushButton,
           SIGNAL(clicked()), this, SLOT(showResult3dQuick()));
   connect(ui->donePushButton, SIGNAL(clicked()), this, SLOT(clear()));
@@ -345,7 +345,7 @@ void FlyEmBodySplitProjectDialog::showData3d()
 void FlyEmBodySplitProjectDialog::showResult3d()
 {
   dump("Showing splitting result ...", true);
-  m_project.showResult3d();
+//  m_project.showResult3d();
   dump("Done.", true);
 }
 

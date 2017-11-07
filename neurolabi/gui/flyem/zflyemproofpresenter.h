@@ -88,6 +88,7 @@ signals:
   void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
+  void runningFullSplit();
   void runningLocalSplit();
   void goingToBody();
   void selectingBody();
@@ -128,6 +129,7 @@ public slots:
   void setTodoItemToSplit();
   void selectBodyInRoi();
   void zoomInRectRoi();
+  void refreshSegmentation();
 
 private:
 //  void connectAction();

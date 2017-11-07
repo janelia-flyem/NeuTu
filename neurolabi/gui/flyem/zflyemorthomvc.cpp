@@ -38,12 +38,15 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   frame->getView()->setHoverFocus(true);
   frame->updateDvidTargetFromDoc();
   frame->getPresenter()->useHighContrastProtocal(true);
+
+  ZStackView *view = frame->getView();
+
   QList<ZDvidSynapseEnsemble*> seList = doc->getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
-    if (se->getSliceAxis() == frame->getView()->getSliceAxis()) {
-      se->attachView(frame->getView());
+    if (se->getSliceAxis() == view->getSliceAxis()) {
+      se->attachView(view);
     }
   }
 
@@ -51,7 +54,9 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     ZFlyEmToDoList *obj = *iter;
-    obj->attachView(frame->getView());
+    if (obj->getSliceAxis() == view->getSliceAxis()) {
+      obj->attachView(view);
+    }
   }
 
   connect(frame->getPresenter(), SIGNAL(savingStack()),

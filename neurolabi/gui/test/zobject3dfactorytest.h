@@ -25,7 +25,7 @@ TEST(ZObject3dFactory, makeObject)
 
   ZObject3d *obj = out->at(0);
   ASSERT_EQ(1, (int) obj->size());
-  ASSERT_EQ(1, obj->getLabel());
+  ASSERT_EQ(1, (int) obj->getLabel());
   delete out;
 
   stack->setIntValue(0, 1, 1, 0, 2);

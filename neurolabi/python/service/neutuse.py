@@ -12,7 +12,18 @@ import time
 import threading
 import datetime
 import copy
+import yaml
+import argparse
 from queue import *
+
+parser = argparse.ArgumentParser(description='Process arguments for running neutu service')
+parser.add_argument('--config', dest='config', type=str, help='Configuration file in YAML format')
+args=parser.parse_args()
+print(args.config)
+
+with open(args.config, 'r') as fp:
+    serverConfig = yaml.load(fp)
+    print(serverConfig)
 
 sys.path.append('..')
 sys.path.append('../flyem')
@@ -24,6 +35,8 @@ from dvidwriter import DvidWriter
 import flyem_data as fd
 
 skl = Skeletonizer()
+if 'command' in serverConfig:
+    skl.setExecutable(serverConfig['command'])
 
 socket.setdefaulttimeout(1000)
 
@@ -379,11 +392,18 @@ def parseJson():
     return '<p>' + data['head'] + '</p>'
 
 port = 8080
-if len(sys.argv) > 1:
-    port = sys.argv[1]
+if 'port' in serverConfig:
+    port = int(serverConfig['port'])
+
+host = 'localhost'
+if 'host' in serverConfig:
+    host = serverConfig['host']
+
+#if len(sys.argv) > 1:
+#    port = sys.argv[1]
 
 #run(host=socket.gethostname(), port=port, debug=True)
-run(host="localhost", port=port, debug=True)
+run(host=host, port=port, debug=True)
 
 # print getSchema('skeletonize', 'post')
 # try:

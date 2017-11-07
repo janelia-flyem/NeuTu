@@ -5,6 +5,7 @@ uniform float material_shininess;
 uniform float alpha;
 uniform vec4 custom_color;
 uniform bool use_custom_color = false;
+uniform bool use_two_sided_lighting = true;
 
 #if GLSL_VERSION >= 130
 #if defined(USE_MESH_COLOR)
@@ -46,10 +47,12 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
 
 void fragment_func(out vec4 fragColor, out float fragDepth)
 {
+  vec3 sidedNormal = (use_two_sided_lighting && !gl_FrontFacing) ? -normal : normal;
+
   if (use_custom_color) {
     fragDepth = gl_FragCoord.z;
     fragColor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
-                                       normal, point, custom_color, alpha);
+                                       sidedNormal, point, custom_color, alpha);
   } else {
 #if defined(USE_MESH_2DTEXTURE)
 #if GLSL_VERSION >= 130
@@ -75,7 +78,7 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
 
 #if defined(USE_MESH_COLOR) || defined(USE_MESH_2DTEXTURE) || defined(USE_MESH_1DTEXTURE) || defined(USE_MESH_3DTEXTURE)
     fragColor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
-                                       normal, point, color, alpha);
+                                       sidedNormal, point, color, alpha);
 #endif
   }
 }

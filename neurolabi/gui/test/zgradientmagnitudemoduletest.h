@@ -176,12 +176,12 @@ TEST(GRADIENTMAGNITUDEMODULE,NORMAL)
   {
     EXPECT_EQ(250,po[i]);
   }
-  context.run(in,out,false,0.5);
+  context.run(in,out,false,true,0.5);
   for(uint i=0;i<out->getVoxelNumber();++i)
   {
     EXPECT_EQ(int(5*0.5+0.5*pi[i]),po[i]);
   }
-  context.run(in,out,true,0.4);
+  context.run(in,out,true,true,0.4);
   for(uint i=0;i<out->getVoxelNumber();++i)
   {
     EXPECT_EQ(int(250*0.6+0.4*pi[i]),po[i]);

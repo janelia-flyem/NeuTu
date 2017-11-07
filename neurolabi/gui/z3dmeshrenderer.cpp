@@ -24,6 +24,7 @@ Z3DMeshRenderer::Z3DMeshRenderer(Z3DRendererBase& rendererBase)
   , m_pickingDataChanged(false)
   , m_wireframeMode("Wireframe Option")
   , m_wireframeColor("Wireframe Color", glm::vec4(1), glm::vec4(0), glm::vec4(1))
+  , m_useTwoSidedLighting("Two-Sided Lighting", true)
 {
   m_colorSource.addOptions("MeshColor", "Mesh1DTexture", "Mesh2DTexture", "Mesh3DTexture", "CustomColor");
   m_colorSource.select("MeshColor");
@@ -400,6 +401,8 @@ void Z3DMeshRenderer::render(Z3DEye eye)
   Z3DShaderProgram& shader = m_meshShaderGrp.get();
   m_rendererBase.setGlobalShaderParameters(shader, eye);
   setShaderParameters(shader);
+
+  shader.setUseTwoSidedLightingUniform(m_useTwoSidedLighting.get());
 
   if (m_colorSource.isSelected("Mesh2DTexture") ||
       m_colorSource.isSelected("Mesh3DTexture") ||
