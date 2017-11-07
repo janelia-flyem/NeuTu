@@ -579,7 +579,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ACTIVATE_LOCATE:
     action = new QAction("Locate", parent);
-    action->setIcon(QIcon(":/images/binoculars.png"));
+    action->setIcon(QIcon(":/images/locate.png"));
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);

@@ -8073,7 +8073,13 @@ bool ZStackDoc::executeRemoveObjectCommand(ZStackObjectRole::TRole role)
   if (!objList.isEmpty()) {
     ZStackDocCommand::ObjectEdit::RemoveObject *command =
         new ZStackDocCommand::ObjectEdit::RemoveObject(this, NULL);
-    command->setRemoval(objList);
+    foreach (ZStackObject *obj, objList) {
+      if (obj->isSelected()) {
+        command->addRemoval(obj);
+      }
+    }
+
+//    command->setRemoval(objList);
     command->setLogMessage(QString("Remove object: role %1").arg(role));
     pushUndoCommand(command);
 

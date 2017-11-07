@@ -648,6 +648,7 @@ public:
   virtual ~RemoveObject();
 
   void setRemoval(const QList<ZStackObject*> &objList);
+  void addRemoval(ZStackObject *obj);
 
   void undo();
   void redo();

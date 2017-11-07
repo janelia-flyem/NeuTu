@@ -28,6 +28,7 @@
 #include <QDir>
 
 class QSlider;
+class QDoubleSpinBox;
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
 class Z3DPunctaFilter;
@@ -377,7 +378,7 @@ public slots:
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 
-  void setMeshOpacity(int opacity);
+  void setMeshOpacity(double opacity);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -552,7 +553,8 @@ private:
   QString m_lastOpenedFilePath;
 
   QToolBar *m_toolBar = NULL;
-  QSlider *m_meshOpacitySlider = NULL;
+//  QSlider *m_meshOpacitySlider = NULL;
+  QDoubleSpinBox *m_meshOpacitySpinBox = NULL;
 
   mutable QMutex m_filterMutex;
   ZSwcIsolationDialog *m_swcIsolationDlg;

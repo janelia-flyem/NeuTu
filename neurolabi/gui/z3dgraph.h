@@ -99,10 +99,16 @@ private:
   EGraphShape m_shape;
 };
 
+class Z3DGraph;
+
+typedef ZSharedPointer<Z3DGraph> Z3DGraphPtr;
+
 class Z3DGraph : public ZStackObject
 {
 public:
   Z3DGraph();
+
+  static Z3DGraphPtr MakePointer();
 
 public:
   bool isEmpty() const;
