@@ -585,7 +585,7 @@ Z3DGraph ZObject3dPlayer::get3DGraph() const
 
   const ZObject3d *obj = getCompleteData();
   if (obj != NULL) {
-    graph.importObject3d(*obj, 1.0);
+    graph.importObject3d(*obj, 2.0);
   }
 
   return graph;

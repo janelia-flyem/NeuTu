@@ -210,6 +210,7 @@ void Z3DWindow::createToolBar()
 
     m_toolBar->addSeparator();
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
   }
 
@@ -249,7 +250,7 @@ void Z3DWindow::init()
           this, SLOT(selectedMeshChangedFrom3D(ZMesh*, bool)));
   if (getTodoFilter()) {
     connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
-            this, SLOT(selectdObjectChangedFrom3D(ZStackObject*,bool)));
+            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
   }
   connect(getSwcFilter(), SIGNAL(treeSelected(ZSwcTree*,bool)),
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
@@ -269,7 +270,7 @@ void Z3DWindow::init()
 
   if (getGraphFilter() != NULL) {
     connect(getGraphFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
-            this, SLOT(selectdObjectChangedFrom3D(ZStackObject*,bool)));
+            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
   }
 
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
@@ -429,6 +430,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_DELETE_SPLIT_SEED:
     action = m_actionLibrary->getAction(item, this, SLOT(deleteSplitSeed()));
+    break;
+  case ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED:
+    action = m_actionLibrary->getAction(item, this, SLOT(deleteSelectedSplitSeed()));
     break;
   case ZActionFactory::ACTION_TEST:
     action = m_actionLibrary->getAction(item, this, SLOT(test()));
@@ -1253,7 +1257,7 @@ bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
   return true;
 }
 
-void Z3DWindow::selectdObjectChangedFrom3D(ZStackObject *p, bool append)
+void Z3DWindow::selectedObjectChangedFrom3D(ZStackObject *p, bool append)
 {
   if (p == NULL) {
     if (!append) {
@@ -1332,7 +1336,8 @@ void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
   if (append) {
     m_doc->setMeshSelected(p, true);
   } else {
-    m_doc->deselectAllObject();
+//    m_doc->deselectAllObject();
+    m_doc->deselectAllMesh();
     m_doc->setMeshSelected(p, true);
   }
 
@@ -4251,6 +4256,11 @@ void Z3DWindow::saveSplitTask()
 void Z3DWindow::deleteSplitSeed()
 {
   emit deletingSplitSeed();
+}
+
+void Z3DWindow::deleteSelectedSplitSeed()
+{
+  emit deletingSelectedSplitSeed();
 }
 
 void Z3DWindow::cropSwcInRoi()

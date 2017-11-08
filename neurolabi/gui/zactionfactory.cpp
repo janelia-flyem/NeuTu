@@ -672,7 +672,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_DELETE_SPLIT_SEED:
     action = new QAction("Delete Seeds", parent);
     action->setIcon(QIcon(":/images/delete_seed.png"));
-    action->setToolTip("Delete all seeds used in splitting");
+    action->setToolTip("Delete all seeds for splitting");
+    break;
+  case ACTION_DELETE_SELECTED_SPLIT_SEED:
+    action = new QAction("Delete Seleted Seeds", parent);
+    action->setIcon(QIcon(":/images/delete_selected_seed.png"));
+    action->setToolTip("Delete selected seeds for splitting");
     break;
   default:
     break;

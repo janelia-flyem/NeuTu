@@ -30,9 +30,9 @@ Z3DGraphFilter::Z3DGraphFilter(Z3DGlobalParameters& globalParas, QObject* parent
   m_selectGraphEvent.listenTo(
         "select graph", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
   m_selectGraphEvent.listenTo(
-        "select graph", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonPress);
+        "append graph", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonPress);
   m_selectGraphEvent.listenTo(
-        "select graph", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonRelease);
+        "append graph", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonRelease);
   connect(&m_selectGraphEvent, &ZEventListenerParameter::mouseEventTriggered,
           this, &Z3DGraphFilter::selectGraph);
   addEventListener(m_selectGraphEvent);
