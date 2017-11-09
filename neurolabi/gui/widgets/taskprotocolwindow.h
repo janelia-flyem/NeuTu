@@ -109,6 +109,7 @@ private:
     void prefetch(uint64_t bodyID);
     void prefetch(QSet<uint64_t> bodyIDs);
     void prefetchForTaskIndex(int index);
+    bool checkDVIDTarget();
 };
 
 #endif // TASKPROTOCOLWINDOW_H

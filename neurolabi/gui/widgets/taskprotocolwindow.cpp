@@ -321,7 +321,17 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
         m_UUID = json[KEY_UUID].toString();
     }
 
-
+    // check that the server and UUID are correct if they are both present
+    if (m_DVIDServer.size() > 0 && m_UUID.size() > 0) {
+        if (!checkDVIDTarget()) {
+            ZDvidTarget target = m_proofDoc->getDvidTarget();
+            showError("Wrong DVID server or UUID",
+                "This task list expects server " + m_DVIDServer + " and UUID " + m_UUID +
+                ". You have opened " + QString::fromStdString(target.getAddressWithPort()) +
+                " and " + QString::fromStdString(target.getUuid()) + ".");
+            return;
+        }
+    }
 
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
@@ -771,6 +781,35 @@ bool TaskProtocolWindow::checkCreateDataInstance() {
         m_protocolInstanceStatus = CHECKED_ABSENT;
         return false;
     }
+}
+
+/*
+ * check that the current DVID target matches the one
+ * input in the task json
+ */
+bool TaskProtocolWindow::checkDVIDTarget() {
+    ZDvidTarget target = m_proofDoc->getDvidTarget();
+
+    // UUID: we don't always specify the full UUID; just compare
+    //  the digits we have (ie, the shorter of the two)
+    QString targetUUID = QString::fromStdString(target.getUuid());
+    if (targetUUID.size() > m_UUID.size()) {
+        if (!targetUUID.startsWith(m_UUID)) {
+            return false;
+        }
+    } else {
+        if (!m_UUID.startsWith(targetUUID)) {
+            return false;
+        }
+    }
+
+    // server: the server name should always include port, and it should
+    //  always be fully qualified
+    if (m_DVIDServer != QString::fromStdString(target.getAddressWithPort())) {
+        return false;
+    }
+
+    return true;
 }
 
 /*
