@@ -28,6 +28,7 @@
 #include <QDir>
 
 class QSlider;
+class QDoubleSpinBox;
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
 class Z3DPunctaFilter;
@@ -211,6 +212,7 @@ signals:
   void croppingSwcInRoi();
   void savingSplitTask();
   void deletingSplitSeed();
+  void deletingSelectedSplitSeed();
   void savingSplitTask(uint64_t bodyId);
 
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
@@ -246,7 +248,7 @@ public slots:
 
 //  void updateDecorationDisplay();
 
-  void selectdObjectChangedFrom3D(ZStackObject *p, bool append);
+  void selectedObjectChangedFrom3D(ZStackObject *p, bool append);
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
   void selectedMeshChangedFrom3D(ZMesh* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
@@ -304,6 +306,7 @@ public slots:
 
   void saveSplitTask();
   void deleteSplitSeed();
+  void deleteSelectedSplitSeed();
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -377,7 +380,7 @@ public slots:
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 
-  void setMeshOpacity(int opacity);
+  void setMeshOpacity(double opacity);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -552,7 +555,8 @@ private:
   QString m_lastOpenedFilePath;
 
   QToolBar *m_toolBar = NULL;
-  QSlider *m_meshOpacitySlider = NULL;
+//  QSlider *m_meshOpacitySlider = NULL;
+  QDoubleSpinBox *m_meshOpacitySpinBox = NULL;
 
   mutable QMutex m_filterMutex;
   ZSwcIsolationDialog *m_swcIsolationDlg;

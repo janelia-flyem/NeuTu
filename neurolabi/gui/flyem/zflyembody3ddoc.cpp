@@ -535,6 +535,11 @@ void ZFlyEmBody3dDoc::deleteSplitSeed()
   executeRemoveObjectCommand(ZStackObjectRole::ROLE_SEED);
 }
 
+void ZFlyEmBody3dDoc::deleteSelectedSplitSeed()
+{
+  executeRemoveSelectedObjectCommand(ZStackObjectRole::ROLE_SEED);
+}
+
 void ZFlyEmBody3dDoc::saveSplitTask()
 {
   if (m_bodySet.size() == 1) {

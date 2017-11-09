@@ -232,6 +232,11 @@ Z3DGraph::Z3DGraph()
   m_target = ZStackObject::TARGET_3D_ONLY;
 }
 
+Z3DGraphPtr Z3DGraph::MakePointer()
+{
+  return std::make_shared<Z3DGraph>();
+}
+
 bool Z3DGraph::isEmpty() const
 {
   return getNodeNumber() == 0;
