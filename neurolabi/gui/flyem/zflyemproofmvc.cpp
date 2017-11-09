@@ -786,6 +786,8 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   connect(window, SIGNAL(savingSplitTask()),
           doc, SLOT(saveSplitTask()));
   connect(window, SIGNAL(deletingSplitSeed()), doc, SLOT(deleteSplitSeed()));
+  connect(window, &Z3DWindow::deletingSelectedSplitSeed, doc,
+          &ZFlyEmBody3dDoc::deleteSelectedSplitSeed);
 
   doc->enableNodeSeeding(true);
 //  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),

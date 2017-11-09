@@ -243,6 +243,7 @@ public slots:
   void setBodyModelSelected(const QSet<uint64_t> &bodySet);
   void saveSplitTask();
   void deleteSplitSeed();
+  void deleteSelectedSplitSeed();
 
 signals:
   void bodyRemoved(uint64_t bodyId);

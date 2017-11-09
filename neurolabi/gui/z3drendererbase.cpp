@@ -49,6 +49,9 @@ Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* pare
   addParameter(m_materialSpecular);
   addParameter(m_materialShininess);
 
+  connect(&m_opacity, SIGNAL(floatChanged(double)),
+          this, SIGNAL(opacityChanged(double)));
+
   connect(&m_globalParas.lightCount, &ZIntParameter::valueChanged, this, &Z3DRendererBase::compile);
 #if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   connect(&m_globalParas.lightCount, &ZIntParameter::valueChanged, this, &Z3DRendererBase::invalidateDisplayList);

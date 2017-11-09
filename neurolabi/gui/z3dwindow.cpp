@@ -197,12 +197,20 @@ void Z3DWindow::createToolBar()
   }
 
   if (getWindowType() == NeuTube3D::TYPE_NEU3) {
-    m_meshOpacitySlider = new QSlider(Qt::Horizontal, this);
-    m_meshOpacitySlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-    m_meshOpacitySlider->setRange(0, 255);
-    m_toolBar->addWidget(m_meshOpacitySlider);
+//    m_meshOpacitySlider = new QSlider(Qt::Horizontal, this);
+//    m_meshOpacitySlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+//    m_meshOpacitySlider->setRange(0, 255);
+//    m_toolBar->addWidget(m_meshOpacitySlider);
+
+    m_meshOpacitySpinBox = new QDoubleSpinBox(this);
+    m_meshOpacitySpinBox->setPrefix("Mesh Opacity: ");
+    m_meshOpacitySpinBox->setRange(0, 1);
+    m_meshOpacitySpinBox->setSingleStep(0.1);
+    m_toolBar->addWidget(m_meshOpacitySpinBox);
+
     m_toolBar->addSeparator();
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
   }
 
@@ -242,7 +250,7 @@ void Z3DWindow::init()
           this, SLOT(selectedMeshChangedFrom3D(ZMesh*, bool)));
   if (getTodoFilter()) {
     connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
-            this, SLOT(selectdObjectChangedFrom3D(ZStackObject*,bool)));
+            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
   }
   connect(getSwcFilter(), SIGNAL(treeSelected(ZSwcTree*,bool)),
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
@@ -259,6 +267,11 @@ void Z3DWindow::init()
           this, SLOT(extendSwcTreeNode(double, double, double, double)));
   connect(getSwcFilter(), SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
+
+  if (getGraphFilter() != NULL) {
+    connect(getGraphFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
+            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
+  }
 
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
           this, SLOT(notifyUser(QString)));
@@ -316,10 +329,18 @@ void Z3DWindow::init()
 
   m_helpDlg = new HelpDialog(this);
 
-  if (m_meshOpacitySlider != NULL) {
-    m_meshOpacitySlider->setValue(iround(getMeshFilter()->opacity() * 255));
-    connect(m_meshOpacitySlider, SIGNAL(valueChanged(int)),
-            this, SLOT(setMeshOpacity(int)));
+//  if (m_meshOpacitySlider != NULL) {
+//    m_meshOpacitySlider->setValue(iround(getMeshFilter()->opacity() * 255));
+//    connect(m_meshOpacitySlider, SIGNAL(valueChanged(int)),
+//            this, SLOT(setMeshOpacity(int)));
+//  }
+
+  if (m_meshOpacitySpinBox != NULL) {
+    m_meshOpacitySpinBox->setValue(getMeshFilter()->opacity());
+    connect(m_meshOpacitySpinBox, SIGNAL(valueChanged(double)),
+            this, SLOT(setMeshOpacity(double)));
+    connect(getMeshFilter(), SIGNAL(opacityChanged(double)),
+            this, SLOT(setMeshOpacity(double)));
   }
 }
 
@@ -409,6 +430,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_DELETE_SPLIT_SEED:
     action = m_actionLibrary->getAction(item, this, SLOT(deleteSplitSeed()));
+    break;
+  case ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED:
+    action = m_actionLibrary->getAction(item, this, SLOT(deleteSelectedSplitSeed()));
     break;
   case ZActionFactory::ACTION_TEST:
     action = m_actionLibrary->getAction(item, this, SLOT(test()));
@@ -1233,13 +1257,16 @@ bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
   return true;
 }
 
-void Z3DWindow::selectdObjectChangedFrom3D(ZStackObject *p, bool append)
+void Z3DWindow::selectedObjectChangedFrom3D(ZStackObject *p, bool append)
 {
   if (p == NULL) {
     if (!append) {
       if (getTodoFilter()) { //temporary hack
         m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
         getTodoFilter()->invalidate();
+      }
+      if (getGraphFilter()) {
+        getGraphFilter()->deselectAllGraph();
       }
     }
     return;
@@ -1256,6 +1283,25 @@ void Z3DWindow::selectdObjectChangedFrom3D(ZStackObject *p, bool append)
   }
     break;
   default:
+  {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc != NULL) {
+      if (!append) {
+        if (getTodoFilter()) { //temporary hack
+          m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
+          getTodoFilter()->invalidate();
+        }
+        if (getGraphFilter()) {
+          getGraphFilter()->deselectAllGraph();
+        }
+      }
+
+      doc->selectObject(p, append);
+      if (getGraphFilter()) {
+        getGraphFilter()->invalidate();
+      }
+    }
+  }
     break;
   }
 }
@@ -1290,12 +1336,14 @@ void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
   if (append) {
     m_doc->setMeshSelected(p, true);
   } else {
-    m_doc->deselectAllObject();
+//    m_doc->deselectAllObject();
+    m_doc->deselectAllMesh();
     m_doc->setMeshSelected(p, true);
   }
 
   statusBar()->showMessage(p->getSource().c_str());
 }
+
 bool Z3DWindow::canSelectObject() const
 {
   return !(getCanvas()->getInteractionEngine()->isStateOn(ZInteractionEngine::STATE_DRAW_LINE) ||
@@ -3615,9 +3663,21 @@ void Z3DWindow::uncheckSelectedTodo()
   }
 }
 
-void Z3DWindow::setMeshOpacity(int opacity)
+void Z3DWindow::setMeshOpacity(double opacity)
 {
-  getMeshFilter()->setOpacity(opacity / 255.0);
+  if (m_meshOpacitySpinBox != NULL) {
+    if (opacity != m_meshOpacitySpinBox->value()) {
+      m_meshOpacitySpinBox->blockSignals(true);
+      m_meshOpacitySpinBox->setValue(opacity);
+      m_meshOpacitySpinBox->blockSignals(false);
+    }
+  }
+
+  if (getMeshFilter() != NULL) {
+    if (opacity != getMeshFilter()->opacity()) {
+      getMeshFilter()->setOpacityQuitely(opacity);
+    }
+  }
 }
 
 void Z3DWindow::locateWithRay(int x, int y)
@@ -4149,7 +4209,11 @@ void Z3DWindow::gotoPosition(const ZCuboid& bound)
 
 void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
 {
-  getBoundedFilter(layer).setOpacity(opacity);
+  if (layer == LAYER_MESH) {
+    setMeshOpacity(opacity);
+  } else {
+    getBoundedFilter(layer).setOpacity(opacity);
+  }
 }
 
 void Z3DWindow::setLayerVisible(ERendererLayer layer, bool visible)
@@ -4192,6 +4256,11 @@ void Z3DWindow::saveSplitTask()
 void Z3DWindow::deleteSplitSeed()
 {
   emit deletingSplitSeed();
+}
+
+void Z3DWindow::deleteSelectedSplitSeed()
+{
+  emit deletingSelectedSplitSeed();
 }
 
 void Z3DWindow::cropSwcInRoi()

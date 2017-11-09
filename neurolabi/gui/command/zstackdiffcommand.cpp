@@ -8,7 +8,7 @@ ZStackDiffCommand::ZStackDiffCommand()
 
 
 int ZStackDiffCommand::run(const std::vector<std::string> &input, const std::string& output,
-                           const ZJsonObject &config)
+                           const ZJsonObject &/*config*/)
 {
 
   if(input.size()!=2 ||output=="")
