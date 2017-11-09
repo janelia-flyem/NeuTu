@@ -3200,14 +3200,18 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
   }
 }
 
-void ZFlyEmProofMvc::showFullSegmentation()
+void ZFlyEmProofMvc::showFullSegmentation(bool on)
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     if (slice != NULL) {
-      slice->updateFullView(getView()->getViewParameter());
-      getView()->paintObject();
+      if (on) {
+        slice->updateFullView(getView()->getViewParameter());
+        getView()->paintObject();
+      } else {
+        slice->disableFullView();
+      }
     }
   }
 }

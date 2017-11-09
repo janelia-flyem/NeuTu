@@ -58,8 +58,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SLOT(incSegmentSize()));
   connect(ui->segmentSizeDecPushButton, SIGNAL(clicked()),
           this, SLOT(decSegmentSize()));
-  connect(ui->fullViewPushButton, SIGNAL(clicked()),
-          this, SLOT(showFullSegmentation()));
+  connect(ui->fullViewCheckBox, SIGNAL(clicked(bool)),
+          this, SLOT(showFullSegmentation(bool)));
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
@@ -314,9 +314,9 @@ void FlyEmProofControlForm::decSegmentSize()
   emit labelSizeChanged(512, 512);
 }
 
-void FlyEmProofControlForm::showFullSegmentation()
+void FlyEmProofControlForm::showFullSegmentation(bool on)
 {
-  emit showingFullSegmentation();
+  emit showingFullSegmentation(on);
 }
 
 void FlyEmProofControlForm::goToBody()

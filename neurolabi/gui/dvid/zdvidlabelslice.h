@@ -40,6 +40,7 @@ public:
   void update();
 
   void updateFullView(const ZStackViewParam &viewParam);
+  void disableFullView();
 
   void setSliceAxis(NeuTube::EAxis sliceAxis);
 

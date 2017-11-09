@@ -19,7 +19,7 @@ std::vector<Swc_Tree_Node*> FindOverlapNode(
 
 void Subtract(ZSwcTree *tree1, const ZSwcTree *tree2);
 
-#if __cplusplus == 201103L
+#if __cplusplus >= 201103L
 template <template<class...> class container>
 void SetType(container<Swc_Tree_Node*> nodeGroup, int type);
 #define _SWC_SET_TYPE_DEFINED 1
@@ -31,7 +31,7 @@ template <typename InputIterator>
 void SetType(const InputIterator &first, const InputIterator &last, int type);
 }
 
-#if __cplusplus == 201103L
+#if __cplusplus >= 201103L
 template <template<class...> class container>
 void ZSwc::SetType(container<Swc_Tree_Node *> nodeGroup, int type)
 {

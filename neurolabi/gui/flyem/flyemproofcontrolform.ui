@@ -175,22 +175,19 @@
      <item>
       <widget class="QPushButton" name="segmentSizeDecPushButton">
        <property name="text">
-        <string>-</string>
+        <string>small</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="segmentSizeIncPushButton">
        <property name="text">
-        <string>+</string>
+        <string>big</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="fullViewPushButton">
-       <property name="toolTip">
-        <string>Show the segmetnation fully in the field view</string>
-       </property>
+      <widget class="QCheckBox" name="fullViewCheckBox">
        <property name="text">
         <string>Full View</string>
        </property>
