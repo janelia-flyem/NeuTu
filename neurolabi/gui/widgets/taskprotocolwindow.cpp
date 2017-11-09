@@ -134,6 +134,11 @@ void TaskProtocolWindow::init() {
 }
 
 void TaskProtocolWindow::onPrevButton() {
+    // warn the task we're about to move away
+    if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->beforePrev();
+    }
+
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getPrev();
     } else {
@@ -142,9 +147,6 @@ void TaskProtocolWindow::onPrevButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
-
-    // warn the task we're about to move away
-    m_taskList[m_currentTaskIndex]->beforePrev();
 
     // no prefetching is performed here; if we're backing up in the list,
     //  the next body should already be in memory; it's the responsibility of
@@ -157,6 +159,11 @@ void TaskProtocolWindow::onPrevButton() {
 }
 
 void TaskProtocolWindow::onNextButton() {
+    // warn the task we're about to move away
+    if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->beforeNext();
+    }
+
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getNext();
     } else {
@@ -165,9 +172,6 @@ void TaskProtocolWindow::onNextButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
-
-    // warn the task we're about to move away
-    m_taskList[m_currentTaskIndex]->beforeNext();
 
     // for now, simplest possible prefetching: just prefetch for the next task,
     //  as long as there is one and it's not the current one
