@@ -456,6 +456,11 @@ void ZDvidLabelSlice::updateFullView(const ZStackViewParam &viewParam)
   update(viewParam);
 }
 
+void ZDvidLabelSlice::disableFullView()
+{
+  m_isFullView = false;
+}
+
 QRect ZDvidLabelSlice::getDataRect(const ZStackViewParam &viewParam) const
 {
   QRect viewPort = viewParam.getViewPort();
@@ -491,13 +496,11 @@ bool ZDvidLabelSlice::update(const QRect &dataRect, int zoom, int z)
 
   if (z != getCurrentZ()) {
     updating = true;
-  } else if (!m_isFullView) {
+  } else {
     if (zoom != m_currentZoom) {
       updating = true;
-    } else {
-      if (!m_currentDataRect.contains(dataRect)) {
-        updating = true;
-      }
+    } else if (!m_currentDataRect.contains(dataRect)) {
+      updating = true;
     }
   }
 
