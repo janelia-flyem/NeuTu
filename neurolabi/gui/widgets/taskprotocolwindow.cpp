@@ -69,6 +69,8 @@ const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
 const QString TaskProtocolWindow::KEY_VERSION = "file version";
 const int TaskProtocolWindow::currentVersion = 1;
 const QString TaskProtocolWindow::KEY_ID = "ID";
+const QString TaskProtocolWindow::KEY_DVID_SERVER = "DVID server";
+const QString TaskProtocolWindow::KEY_UUID = "UUID";
 const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
 const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
 const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
@@ -304,10 +306,17 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     //  would convert them
 
 
-    // save the unique identifier, if present:
+    // save various metadata, if present:
     if (json.contains(KEY_ID)) {
         m_ID = json[KEY_ID].toString();
     }
+    if (json.contains(KEY_DVID_SERVER)) {
+        m_DVIDServer = json[KEY_DVID_SERVER].toString();
+    }
+    if (json.contains(KEY_UUID)) {
+        m_UUID = json[KEY_UUID].toString();
+    }
+
 
 
     // load tasks from json into internal data structures; save to DVID if needed
@@ -678,6 +687,12 @@ QJsonObject TaskProtocolWindow::storeTasks() {
     json[KEY_VERSION] = currentVersion;
     if (m_ID.size() > 0) {
         json[KEY_ID] = m_ID;
+    }
+    if (m_DVIDServer.size() > 0) {
+        json[KEY_DVID_SERVER] = m_DVIDServer;
+    }
+    if (m_UUID.size() > 0) {
+        json[KEY_UUID] = m_UUID;
     }
 
     QJsonArray tasks;
