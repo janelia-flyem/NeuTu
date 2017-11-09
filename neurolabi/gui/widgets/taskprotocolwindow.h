@@ -33,6 +33,8 @@ signals:
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
     void prefetchBody(QSet<uint64_t> bodyIDs);
     void prefetchBody(uint64_t bodyID);
+    void unprefetchBody(QSet<uint64_t> bodyIDs);
+    void clearBodyQueue();
 
 private slots:
     void onNextButton();
@@ -110,6 +112,7 @@ private:
     void prefetch(QSet<uint64_t> bodyIDs);
     void prefetchForTaskIndex(int index);
     bool checkDVIDTarget();
+    void unprefetchForTaskIndex(int index);
 };
 
 #endif // TASKPROTOCOLWINDOW_H

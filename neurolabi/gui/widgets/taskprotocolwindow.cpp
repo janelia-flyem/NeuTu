@@ -46,7 +46,8 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     // prefetch queue, item management
     connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
     connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
-    // note: no remove signal/slot yet, as the prefetch logic doesn't require it
+    connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
+    connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
     m_prefetchThread->start();
 
@@ -139,6 +140,10 @@ void TaskProtocolWindow::onPrevButton() {
         m_taskList[m_currentTaskIndex]->beforePrev();
     }
 
+    // for now, just clear the body prefetch queue; see
+    //  longer note in onNextButton()
+    emit clearBodyQueue();
+
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getPrev();
     } else {
@@ -163,6 +168,13 @@ void TaskProtocolWindow::onNextButton() {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforeNext();
     }
+
+    // currently the prefetching is unsophisticated--we only
+    //  look one task ahead; so for now, we'll just clear the queue
+    //  as we move; in the future, we could get fancier and both
+    //  fetch farther ahead and be smarter about detecting which
+    //  bodies are or aren't needed "soon"
+    emit clearBodyQueue();
 
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getNext();
