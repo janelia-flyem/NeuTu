@@ -1646,7 +1646,11 @@ void ZFlyEmProofMvc::customInit()
   m_paintLabelWidget = new ZPaintLabelWidget();
 
   getView()->addHorizontalWidget(m_paintLabelWidget);
+  m_paintLabelWidget->setSizePolicy(
+        QSizePolicy::Preferred, QSizePolicy::Minimum);
   m_paintLabelWidget->hide();
+  m_paintLabelWidget->setTitle(
+        "Seed Labels (hotkeys: R to activate; 1~9 to select label)");
 
 //  m_speedLabelWidget->hide();
 
@@ -3195,6 +3199,7 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     if (slice != NULL) {
       slice->setMaxSize(getView()->getViewParameter(), width, height);
+      slice->disableFullView();
       getView()->paintObject();
     }
   }

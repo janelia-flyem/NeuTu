@@ -147,6 +147,8 @@ public:
   void addEdge(const Z3DGraphEdge &edge);
   void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2,
                EGraphShape shape = GRAPH_CYLINDER);
+  void addConnectedNode(const std::vector<Z3DGraphNode> &nodeArray,
+                        EGraphShape shape);
 
 public:
   void importPointNetwork(const ZPointNetwork &pointNetwork,
@@ -155,6 +157,7 @@ public:
   void importObject3d(const ZObject3d &obj, double radius);
   void importObject3d(const ZObject3d &obj, double radius, int sampleStep);
   void addNode(const ZStackBall &ball);
+  void connectNode(const ZStackBall &ball, EGraphShape shape);
   void addNode(double x, double y, double z, double radius);
   void syncNodeColor();
 

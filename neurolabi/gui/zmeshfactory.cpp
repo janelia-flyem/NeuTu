@@ -3,6 +3,7 @@
 #include "zmesh.h"
 #include "tz_stack_neighborhood.h"
 #include "zintcuboid.h"
+#include "misc/miscutility.h"
 
 ZMeshFactory::ZMeshFactory()
 {
@@ -11,11 +12,22 @@ ZMeshFactory::ZMeshFactory()
 
 ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv)
 {
+  if (obj.isEmpty()) {
+    return NULL;
+  }
+
   ZObject3dScan dsObj = obj;
+
+  if (dsIntv == 0) {
+    ZIntCuboid box = dsObj.getBoundBox();
+    dsIntv = misc::getIsoDsIntvFor3DVolume(box, NeuTube::ONEGIGA / 2, true);
+  }
 
   if (dsIntv > 0) {
     dsObj.downsampleMax(dsIntv, dsIntv, dsIntv);
   }
+
+//  dsObj.fillHole();
 
   ZMesh *mesh = new ZMesh;
 

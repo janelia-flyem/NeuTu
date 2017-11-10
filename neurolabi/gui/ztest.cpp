@@ -325,6 +325,7 @@
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
 #include "zcontrastprotocol.h"
+#include "zmeshfactory.h"
 
 using namespace std;
 
@@ -24762,7 +24763,7 @@ void ZTest::test(MainWindow *host)
   project.test();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "3b54", 7000);
   target.setLabelBlockName("labels1104");
@@ -24781,6 +24782,38 @@ void ZTest::test(MainWindow *host)
     tree->rescale(0.01, 0.01, 0.01);
     tree->save(outputPath);
   }
+#endif
+
+#if 0
+  ZObject3dScan obj;
+//  obj.load(GET_TEST_DATA_DIR + "/_flyem/MB/large_outside_block.sobj");
+  obj.addSegment(0, 0, 0, 1);
+  obj.addSegment(0, 1, 0, 2);
+  obj.addSegment(1, 0, 1, 2);
+  ZDvidInfo dvidInfo;
+  dvidInfo.setBlockSize(32, 32, 32);
+//  obj.setDsIntv(31);
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj, 0);
+  mesh->setColor(255, 0, 0);
+  mesh->pushObjectColor();
+
+  std::cout << "#vertices: " << mesh->numVertices() << std::endl;
+  std::cout << "#Indices: " << mesh->indices().size() << std::endl;
+
+  mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+  delete mesh;
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_TEST_DATA_DIR + "/_system/big.sobj");
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+
+  std::cout << "#vertices: " << mesh->numVertices() << std::endl;
+  std::cout << "#Indices: " << mesh->indices().size() << std::endl;
+
+  mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+  delete mesh;
 #endif
 
   std::cout << "Done." << std::endl;
