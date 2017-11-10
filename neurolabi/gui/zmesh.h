@@ -215,6 +215,12 @@ public:
       const std::vector<std::vector<bool> > &faceVisbility,
       const std::vector<glm::vec4>* cubeColors = nullptr);
 
+  void createCubesWithoutNormal(
+      const std::vector<glm::vec3>& coordLlfs,
+      const std::vector<glm::vec3>& coordUrbs,
+      const std::vector<std::vector<bool> > &faceVisbility,
+      const std::vector<glm::vec4>* cubeColors = nullptr);
+
   static void logProperties(const ZMeshProperties& prop, const QString& str = "");
 
   // a list of cubes with normal

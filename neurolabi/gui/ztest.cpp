@@ -24794,11 +24794,12 @@ void ZTest::test(MainWindow *host)
   dvidInfo.setBlockSize(32, 32, 32);
 //  obj.setDsIntv(31);
   ZMesh *mesh = ZMeshFactory::MakeMesh(obj, 0);
-  mesh->setColor(255, 0, 0);
-  mesh->pushObjectColor();
-
   std::cout << "#vertices: " << mesh->numVertices() << std::endl;
   std::cout << "#Indices: " << mesh->indices().size() << std::endl;
+
+  mesh->generateNormals();
+  mesh->setColor(255, 0, 0);
+  mesh->pushObjectColor();
 
   mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
   delete mesh;
@@ -24806,12 +24807,13 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZObject3dScan obj;
-  obj.load(GET_TEST_DATA_DIR + "/_system/big.sobj");
+  obj.load(GET_TEST_DATA_DIR + "/_system/test.sobj");
   ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
 
   std::cout << "#vertices: " << mesh->numVertices() << std::endl;
   std::cout << "#Indices: " << mesh->indices().size() << std::endl;
 
+  mesh->generateNormals();
   mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
   delete mesh;
 #endif
