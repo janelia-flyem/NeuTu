@@ -1106,6 +1106,7 @@ void ZDvidLabelSlice::setMaxSize(
     m_objArray.clear();
     delete m_paintBuffer;
     m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
+    m_currentDataRect.setSize(QSize(0, 0));
 
     update(viewParam);
   }

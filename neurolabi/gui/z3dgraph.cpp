@@ -350,6 +350,22 @@ void Z3DGraph::addNode(const ZStackBall &ball)
   m_nodeArray.back().setColor(ball.getColor());
 }
 
+void Z3DGraph::connectNode(const ZStackBall &ball, EGraphShape shape)
+{
+  m_nodeArray.push_back(
+        Z3DGraphNode(ball.getX(), ball.getY(), ball.getZ(), ball.getRadius()));
+  m_nodeArray.back().setColor(ball.getColor());
+
+  if (m_nodeArray.size() > 1) {
+    Z3DGraphEdge edge;
+    edge.useNodeColor(true);
+    edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1,
+             ball.getRadius() * 2.0);
+    edge.setShape(shape);
+    addEdge(edge);
+  }
+}
+
 void Z3DGraph::addNode(double x, double y, double z, double radius)
 {
   m_nodeArray.push_back(Z3DGraphNode(x, y, z, radius));
@@ -410,6 +426,24 @@ void Z3DGraph::addEdge(
   edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, node1.radius() * 2.0);
   edge.setShape(shape);
   addEdge(edge);
+}
+
+void Z3DGraph::addConnectedNode(
+    const std::vector<Z3DGraphNode> &nodeArray, EGraphShape shape)
+{
+  if (!nodeArray.empty()) {
+    addNode(nodeArray[0]);
+  }
+
+  for (size_t i = 1; i < nodeArray.size(); ++i) {
+    addNode(nodeArray[i]);
+    Z3DGraphEdge edge;
+    edge.useNodeColor(true);
+    edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1,
+             nodeArray[i].radius() * 2.0);
+    edge.setShape(shape);
+    addEdge(edge);
+  }
 }
 
 void Z3DGraph::syncNodeColor()
