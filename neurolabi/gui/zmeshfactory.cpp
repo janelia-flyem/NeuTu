@@ -99,7 +99,7 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv)
 
   C_Stack::kill(stack);
 
-  mesh->createCubesWithNormal(coordLlfs, coordUrbs, faceVisbility, NULL);
+  mesh->createCubesWithoutNormal(coordLlfs, coordUrbs, faceVisbility, NULL);
 
   return mesh;
 }
