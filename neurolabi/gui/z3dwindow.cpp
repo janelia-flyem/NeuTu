@@ -3745,8 +3745,10 @@ void Z3DWindow::processStroke(ZStroke2d *stroke)
 #ifdef _DEBUG_2
   addTodoMarkerFromStroke(stroke);
 #else
+//  stroke->decimate();
 //  labelSwcNodeFromStroke(stroke);
   addPolyplaneFrom3dPaint(stroke);
+  delete stroke;
 #endif
 }
 
@@ -3929,126 +3931,181 @@ ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
   return stackSeg;
 }
 
-void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
+std::string Z3DWindow::updatePolyLinePairList(
+    const ZStroke2d *stroke,
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > &polylinePairList)
 {
-  //bool success = false;
-//  std::string source;
-  if (m_doc->hasStack() || m_doc->hasMesh()) {
-    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
+  std::string source;
 
-    ZIntPointArrayPtr polyline1 = ZIntPointArray::MakePointer();
-    ZIntPointArrayPtr polyline2 = ZIntPointArray::MakePointer();
+  ZIntPointArrayPtr polyline1;
+  ZIntPointArrayPtr polyline2;
+  for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+    double x = 0.0;
+    double y = 0.0;
+    stroke->getPoint(&x, &y, i);
 
-    polylinePairList.emplace_back(polyline1, polyline2);
+    ZLineSegment stackSeg = getRaySegment(iround(x), iround(y), source);
 
+    if (stackSeg.isValid()) {
+      if (!polyline1) {
+        polyline1 = ZIntPointArray::MakePointer();
+        polyline2 = ZIntPointArray::MakePointer();
+        polylinePairList.emplace_back(polyline1, polyline2);
+      }
+      polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
+      polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+    } else {
+      polyline1.reset();
+      polyline2.reset();
+    }
+  }
+
+  return source;
+}
+
+ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
+{
+  ZObject3d *obj = NULL;
+  if (m_doc->hasMesh() && getMeshFilter()) {
+    std::vector<ZStroke2dPtr> strokeList;
+    ZStroke2dPtr subStroke = ZStroke2dPtr(new ZStroke2d);
     std::string source;
 
+    std::vector<std::pair<int, int> > ptArray;
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
       double x = 0.0;
       double y = 0.0;
       stroke->getPoint(&x, &y, i);
 
-      ZLineSegment stackSeg = getRaySegment(iround(x), iround(y), source);
-
-      if (stackSeg.isValid()) {
-        polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
-        polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
-      } else { //Add a new pair after a break point
-        polyline1 = ZIntPointArray::MakePointer();
-        polyline2 = ZIntPointArray::MakePointer();
-        polylinePairList.emplace_back(polyline1, polyline2);
-      }
+      ptArray.emplace_back(iround(x), iround(y));
     }
+    getCanvas()->getGLFocus();
+    std::vector<bool> hitTest = getMeshFilter()->hitObject(ptArray);
 
-    ZObject3d *obj = NULL;
-    for (const auto &pp : polylinePairList) {
-      ZObject3d *tmpObj =
-          ZVoxelGraphics::createPolyPlaneObject(*pp.first, *pp.second);
-      if (obj == NULL) {
-        obj = tmpObj;
+    for (size_t i = 0; i < hitTest.size(); ++i) {
+      bool hit = hitTest[i];
+
+      double x = 0.0;
+      double y = 0.0;
+      stroke->getPoint(&x, &y, i);
+
+      if (hit) {
+        if (subStroke->isEmpty()) {
+          strokeList.push_back(subStroke);
+        }
+        subStroke->append(x, y);
       } else {
-        obj->append(tmpObj);
-        delete tmpObj;
+        if (!subStroke->isEmpty()) {
+          subStroke = ZStroke2dPtr(new ZStroke2d);
+        }
       }
     }
 
-    if (m_doc->hasStack()) {
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
 
 
-      if (obj != NULL) {
-        ZObject3d *processedObj = NULL;
 
-        const ZStack *stack = NULL;
-        int xIntv = 0;
-        int yIntv = 0;
-        int zIntv = 0;
+    for (size_t i = 0; i < strokeList.size(); ++i) {
+      ZStroke2dPtr subStroke = strokeList[i];
+      subStroke->decimate();
+      source = updatePolyLinePairList(subStroke.get(), polylinePairList);
+    }
 
-        if (getDocument()->hasSparseStack()) {
-          stack = getDocument()->getSparseStack()->getStack();
-          ZIntPoint dsIntv = stack->getDsIntv();
-          //        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
-          xIntv = dsIntv.getX();
-          yIntv = dsIntv.getY();
-          zIntv = dsIntv.getZ();
-        } else {
-          stack = getDocument()->getStack();
-        }
-
-        processedObj = new ZObject3d;
-        for (size_t i = 0; i < obj->size(); ++i) {
-          int x = obj->getX(i) / (xIntv + 1) - stack->getOffset().getX();
-          int y = obj->getY(i) / (yIntv + 1) - stack->getOffset().getY();
-          int z = obj->getZ(i) / (zIntv + 1) - stack->getOffset().getZ();
-          int v = 0;
-          for (int dz = -1; dz <= 1; ++dz) {
-            for (int dy = -1; dy <= 1; ++dy) {
-              for (int dx = -1; dx <= 1; ++dx) {
-                v = stack->getIntValueLocal(x + dx, y + dy, z + dz);
-                if (v > 0) {
-                  break;
-                }
-              }
-            }
-          }
-          if (v > 0) {
-            processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
-          }
-        }
-        delete obj;
-        obj = processedObj;
-      }
-    } /*else if (m_doc->hasMesh()) {
-      obj = ZVoxelGraphics::createPolyPlaneObject(*polyline1, *polyline2);
-    }*/
-
+    obj = ZVoxelGraphics::createPolylineObject(polylinePairList);
     if (obj != NULL) {
-#ifdef _DEBUG_2
-      ZStack *stack = obj->toStackObject();
-      stack->save(GET_TEST_DATA_DIR + "/test.tif");
-      delete stack;
-#endif
-
-      if (!obj->isEmpty()) {
-#ifdef _DEBUG_2
-        ZSwcTree *tree = ZSwcGenerator::createSwc(*obj, 1.0, 3);
-        tree->save(GET_TEST_DATA_DIR + "/test.swc");
-#endif
-
-        obj->setLabel(stroke->getLabel());
-        ZLabelColorTable colorTable;
-        obj->setColor(colorTable.getColor(obj->getLabel()));
-        obj->setRole(ZStackObjectRole::ROLE_SEED |
-                     ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-        obj->setSource(source);
-        m_doc->executeAddObjectCommand(obj, false);
-        //m_doc->notifyVolumeModified();
-      } else {
-        delete obj;
-      }
+      obj->setSource(source);
     }
   }
 
-  delete stroke;
+  return obj;
+}
+
+ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForVolume(ZStroke2d *stroke)
+{
+  ZObject3d *obj = NULL;
+
+  if (m_doc->hasStack()) {
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
+    std::string source = updatePolyLinePairList(stroke, polylinePairList);
+
+
+    obj = ZVoxelGraphics::createPolylineObject(polylinePairList);
+
+    if (obj != NULL) {
+      ZObject3d *processedObj = NULL;
+
+      const ZStack *stack = NULL;
+      int xIntv = 0;
+      int yIntv = 0;
+      int zIntv = 0;
+
+      if (getDocument()->hasSparseStack()) {
+        stack = getDocument()->getSparseStack()->getStack();
+        ZIntPoint dsIntv = stack->getDsIntv();
+        //        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+        xIntv = dsIntv.getX();
+        yIntv = dsIntv.getY();
+        zIntv = dsIntv.getZ();
+      } else {
+        stack = getDocument()->getStack();
+      }
+
+      processedObj = new ZObject3d;
+      for (size_t i = 0; i < obj->size(); ++i) {
+        int x = obj->getX(i) / (xIntv + 1) - stack->getOffset().getX();
+        int y = obj->getY(i) / (yIntv + 1) - stack->getOffset().getY();
+        int z = obj->getZ(i) / (zIntv + 1) - stack->getOffset().getZ();
+        int v = 0;
+        for (int dz = -1; dz <= 1; ++dz) {
+          for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+              v = stack->getIntValueLocal(x + dx, y + dy, z + dz);
+              if (v > 0) {
+                break;
+              }
+            }
+          }
+        }
+        if (v > 0) {
+          processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
+        }
+      }
+      delete obj;
+      obj = processedObj;
+    }
+
+    if (obj != NULL) {
+      obj->setSource(source);
+    }
+  }
+
+  return obj;
+}
+
+void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
+{
+  //bool success = false;
+//  std::string source;
+  ZObject3d* obj = NULL;
+  if (m_doc->hasStack()) {
+    obj = createPolyplaneFrom3dPaintForVolume(stroke);
+  } else {
+    obj = createPolyplaneFrom3dPaintForMesh(stroke);
+  }
+
+  if (obj != NULL) {
+    if (!obj->isEmpty()) {
+      obj->setLabel(stroke->getLabel());
+      ZLabelColorTable colorTable;
+      obj->setColor(colorTable.getColor(obj->getLabel()));
+      obj->setRole(ZStackObjectRole::ROLE_SEED |
+                   ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+      m_doc->executeAddObjectCommand(obj, false);
+      //m_doc->notifyVolumeModified();
+    } else {
+      delete obj;
+    }
+  }
 }
 
 void Z3DWindow::help()

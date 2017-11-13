@@ -50,6 +50,9 @@ public:
   const void* objectOfColor(const glm::col4& col);
 
   const void* objectAtWidgetPos(glm::ivec2 pos);
+  std::vector<const void*> objectAtWidgetPos(std::vector<glm::ivec2> &posArray);
+  std::vector<const void*> objectAtWidgetPos(
+      const std::vector<std::pair<int, int> > &posArray);
 
   // find all objects within a radius of pos, sort by distance
   // if radius is -1, search the whole image

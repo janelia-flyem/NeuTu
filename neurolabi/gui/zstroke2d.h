@@ -11,10 +11,14 @@
 #include "c_stack.h"
 #include "zlabelcolortable.h"
 #include "zcuboid.h"
+#include "zsharedpointer.h"
 
 class ZStack;
 class ZObject3d;
 class ZJsonObject;
+class ZStroke2d;
+
+typedef ZSharedPointer<ZStroke2d> ZStroke2dPtr;
 
 /*!
  * \brief The class of plane strokes.
@@ -156,12 +160,18 @@ public:
 
   static QColor GetLabelColor(int label);
 
+  void decimate();
+
 private:
   static QVector<QColor> constructColorTable();
   const QColor& getLabelColor() const;
   void labelImage(QImage *image) const;
   ZStack* toLabelStack(int label) const;
 
+  void decimate(size_t first, size_t last, double eps,
+                std::vector<bool> &marker);
+  double pointLinesegDistance(
+      const QPointF &x, const QPointF &x0, const QPointF x1);
 
 private:
   std::vector<QPointF> m_pointArray;
