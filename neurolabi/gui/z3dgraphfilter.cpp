@@ -328,7 +328,7 @@ Z3DGraphPtr Z3DGraphFilter::addData(const Z3DGraph &graph)
   if (!graph.isEmpty()) {
     *newGraph = graph;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Adding graph: " << graph.getSource() << std::endl;
     std::cout << "Visible: " << graph.isVisible() << std::endl;
 #endif

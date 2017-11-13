@@ -324,6 +324,33 @@ void Z3DMeshFilter::adjustWidgets()
   }
 }
 
+bool Z3DMeshFilter::hitObject(int x, int y)
+{
+  const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(x, y));
+  if (obj != NULL) {
+    return true;
+  }
+
+  return false;
+}
+
+std::vector<bool> Z3DMeshFilter::hitObject(
+    const std::vector<std::pair<int, int> > &ptArray)
+{
+  std::vector<bool> hitArray(ptArray.size(), false);
+
+  std::vector<const void*> objArray =
+      pickingManager().objectAtWidgetPos(ptArray);
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    if (objArray[i] != NULL) {
+      hitArray[i] = true;
+    }
+  }
+
+  return hitArray;
+}
+
+
 void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
 {
 #ifdef _DEBUG_

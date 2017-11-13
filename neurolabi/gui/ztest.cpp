@@ -24805,7 +24805,7 @@ void ZTest::test(MainWindow *host)
   delete mesh;
 #endif
 
-#if 1
+#if 0
   ZObject3dScan obj;
   obj.load(GET_TEST_DATA_DIR + "/_system/test.sobj");
   ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
@@ -24816,6 +24816,19 @@ void ZTest::test(MainWindow *host)
   mesh->generateNormals();
   mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
   delete mesh;
+#endif
+
+#if 1
+  ZStroke2d stroke;
+  stroke.setWidth(3);
+  stroke.append(0, 0);
+  stroke.append(1, 1.5);
+  stroke.append(0, 2);
+  stroke.append(0, 3);
+  stroke.append(3, 3);
+  stroke.decimate();
+
+  stroke.print();
 #endif
 
   std::cout << "Done." << std::endl;
