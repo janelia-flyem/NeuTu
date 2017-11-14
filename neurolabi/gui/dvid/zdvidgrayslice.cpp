@@ -79,6 +79,21 @@ void ZDvidGraySlice::updateContrast()
 #endif
 }
 
+bool ZDvidGraySlice::hasLowresRegion() const
+{
+  if (m_zoom > 0) {
+    return true;
+  }
+
+  QRect viewport = m_currentViewParam.getViewPort();
+  if (viewport.width() > m_centerCutWidth ||
+      viewport.height() > m_centerCutHeight) {
+    return true;
+  }
+
+  return false;
+}
+
 void ZDvidGraySlice::invalidatePixmap()
 {
   m_isPixmapValid = false;
@@ -267,10 +282,13 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 
 
 #if defined(_ENABLE_LOWTIS_)
-    int cx = 256;
-    int cy = 256;
+    int cx = m_centerCutWidth;
+    int cy = m_centerCutHeight;
     int z = box.getFirstCorner().getZ();
-    int zoom = m_zoom + 1;
+    int zoom = m_zoom;
+    if (hasLowresRegion()) {
+      ++zoom;
+    }
     int scale = misc::GetZoomScale(zoom);
     int remain = z % scale;
     ZStack *stack = m_reader.readGrayScaleLowtis(
