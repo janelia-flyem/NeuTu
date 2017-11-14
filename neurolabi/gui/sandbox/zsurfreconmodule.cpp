@@ -7,14 +7,16 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QPushButton>
+#include <QLabel>
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QJsonParseError>
 #include <QHBoxLayout>
 #include <QCryptographicHash>
 #include "zsandbox.h"
-#include "mainwindow.h"
+#include "zswctree.h"
 #include "zswcforest.h"
+#include "zstackdoc.h"
 #include "imgproc/zsurfrecon.h"
 
 
