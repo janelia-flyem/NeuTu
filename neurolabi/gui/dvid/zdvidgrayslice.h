@@ -69,6 +69,11 @@ public:
   void updateContrast(bool highContrast);
   void updateContrast(const ZJsonObject &obj);
 
+  /*!
+   * \brief Check if the slice has any low-resolution region.
+   */
+  bool hasLowresRegion() const;
+
 
 public: //for testing
   void saveImage(const std::string &path);
@@ -105,6 +110,9 @@ private:
 
   int m_maxWidth;
   int m_maxHeight;
+
+  int m_centerCutWidth = 256;
+  int m_centerCutHeight = 256;
 
   ZDvidReader m_reader;
 };
