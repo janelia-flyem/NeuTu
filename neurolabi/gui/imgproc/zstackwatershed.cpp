@@ -256,7 +256,7 @@ ZStack *ZStackWatershed::run(
       source = C_Stack::crop(stack->c_stack(), box, NULL);
 
       Stack_Watershed_Workspace *ws = CreateWorkspace(source, m_floodingZero);
-      //ws->conn=18;
+      ws->conn=6;
       AddSeed(ws, sourceOffset, seedMask);
 
 #ifdef _DEBUG_2
