@@ -15,7 +15,7 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
-                       NeuTube::EAxis sliceAxis) const;
+                       neutube::EAxis sliceAxis) const;
 
   virtual const std::string& className() const;
 

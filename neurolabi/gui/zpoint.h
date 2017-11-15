@@ -128,10 +128,10 @@ public:
     }
   };
 
-  void shiftSliceAxis(NeuTube::EAxis axis);
-  void shiftSliceAxisInverse(NeuTube::EAxis axis);
+  void shiftSliceAxis(neutube::EAxis axis);
+  void shiftSliceAxisInverse(neutube::EAxis axis);
 
-  double getSliceCoord(NeuTube::EAxis axis) const;
+  double getSliceCoord(neutube::EAxis axis) const;
 
 private:
   double m_x;

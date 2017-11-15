@@ -127,7 +127,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
     case ZStackObject::TYPE_DVID_LABEL_SLICE:
       if (event.getModifiers() == Qt::NoModifier) {
         if (op.getHitObject()->hasVisualEffect(
-              NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+              neutube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
           op.setOperation(ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT);
         } else {
           op.setOperation(
@@ -283,7 +283,7 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
       case ZInteractiveContext::SWC_EDIT_OFF:
         if (event.getModifiers() == Qt::NoModifier) {
           if (!getDocument()->hasObjectSelected()) {
-            if (getDocument()->getTag() == NeuTube::Document::NORMAL) {
+            if (getDocument()->getTag() == neutube::Document::NORMAL) {
               op.setOperation(ZStackOperator::OP_SHOW_TRACE_CONTEXT_MENU);
             }
           } else {
@@ -397,7 +397,7 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
           op.setOperation(ZStackOperator::OP_STACK_VIEW_SLICE);
         }
       } else {
-        if (getDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD &&
+        if (getDocument()->getTag() != neutube::Document::FLYEM_PROOFREAD &&
             getDocument()->getStack()->depth() > 1) {
           if (event.getModifiers() == Qt::ShiftModifier) {
             op.setOperation(ZStackOperator::OP_STACK_VIEW_PROJECTION);
@@ -506,16 +506,16 @@ ZMouseEventRightButtonReleaseMapper::getOperation(const ZMouseEvent &event) cons
       if (m_context->isContextMenuActivated()) {
         if (m_doc->hasSelectedSwcNode()) {
           op.setOperation(ZStackOperator::OP_SHOW_SWC_CONTEXT_MENU);
-        } else if (m_doc->getTag() == NeuTube::Document::FLYEM_MERGE) {
+        } else if (m_doc->getTag() == neutube::Document::FLYEM_MERGE) {
           if (m_doc->getSelected(ZStackObject::TYPE_OBJECT3D_SCAN).size() == 1) {
             op.setOperation(ZStackOperator::OP_SHOW_BODY_CONTEXT_MENU);
           }
-        } else if (m_doc->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+        } else if (m_doc->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
             op.setOperation(ZStackOperator::OP_SHOW_STROKE_CONTEXT_MENU);
         }
 
-        if (m_doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD ||
-            m_doc->getTag() == NeuTube::Document::FLYEM_ORTHO) {
+        if (m_doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
+            m_doc->getTag() == neutube::Document::FLYEM_ORTHO) {
           op.setOperation(ZStackOperator::OP_SHOW_CONTEXT_MENU);
 #if 0
           ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc.get());

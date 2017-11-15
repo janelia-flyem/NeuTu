@@ -250,7 +250,7 @@ void ZDvidReader::testApiLoad()
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, int z, NeuTube::EAxis axis, bool canonizing,
+    uint64_t bodyId, int z, neutube::EAxis axis, bool canonizing,
     ZObject3dScan *result)
 {
   if (result != NULL) {
@@ -319,12 +319,12 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 #ifdef _DEBUG_
         std::cout << "Read first part: " << startZ << "--" << endZ << std::endl;
 #endif
-        readBody(bodyId, startZ, endZ, true, NeuTube::Z_AXIS, result);
+        readBody(bodyId, startZ, endZ, true, neutube::Z_AXIS, result);
       } else {
 #ifdef _DEBUG_
         std::cout << "Read part: " << startZ << "--" << endZ << std::endl;
 #endif
-        readBody(bodyId, startZ, endZ, true, NeuTube::Z_AXIS, &part);
+        readBody(bodyId, startZ, endZ, true, neutube::Z_AXIS, &part);
         if (!part.isEmpty()) {
           result->unify(part);
         }
@@ -338,7 +338,7 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, int minZ, int maxZ, bool canonizing, NeuTube::EAxis axis,
+    uint64_t bodyId, int minZ, int maxZ, bool canonizing, neutube::EAxis axis,
     ZObject3dScan *result)
 {
   if (result != NULL) {
@@ -2215,7 +2215,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
 
   if (m_lowtisServiceGray.get() == NULL) {
     try {
-      m_lowtisConfigGray.username = NeuTube::GetCurrentUserName();
+      m_lowtisConfigGray.username = neutube::GetCurrentUserName();
       m_lowtisConfigGray.dvid_server = getDvidTarget().getAddressWithPort();
       m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
@@ -2317,7 +2317,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
   if (m_lowtisService.get() == NULL) {
     try {
 //      lowtis::DVIDLabelblkConfig config;
-      m_lowtisConfig.username = NeuTube::GetCurrentUserName();
+      m_lowtisConfig.username = neutube::GetCurrentUserName();
       m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
       m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfig.datatypename = getDvidTarget().getLabelBlockName();
@@ -3587,8 +3587,8 @@ std::map<std::string, ZJsonObject> ZDvidReader::readSplitTaskMap() const
   QStringList keyList = readKeys(dataName.c_str(), "task__0", "task__z");
   foreach (const QString &key, keyList) {
     ZJsonObject obj = readJsonObjectFromKey(dataName.c_str(), key);
-    if (obj.hasKey(NeuTube::Json::REF_KEY)) {
-      obj = readJsonObject(ZJsonParser::stringValue(obj[NeuTube::Json::REF_KEY]));
+    if (obj.hasKey(neutube::Json::REF_KEY)) {
+      obj = readJsonObject(ZJsonParser::stringValue(obj[neutube::Json::REF_KEY]));
     }
     if (!obj.isEmpty()) {
       taskMap[key.toStdString()] = obj;
@@ -3603,9 +3603,9 @@ QList<ZStackObject*> ZDvidReader::readSeedFromSplitTask(
 {
   ZJsonObject taskJson = readJsonObjectFromKey(
         ZDvidData::GetTaskName("split").c_str(), taskKey.c_str());
-  if (taskJson.hasKey(NeuTube::Json::REF_KEY)) {
+  if (taskJson.hasKey(neutube::Json::REF_KEY)) {
     taskJson = readJsonObject(
-          ZJsonParser::stringValue(taskJson[NeuTube::Json::REF_KEY]));
+          ZJsonParser::stringValue(taskJson[neutube::Json::REF_KEY]));
   }
   ZJsonArray seedArrayJson(taskJson.value("seeds"));
   QList<ZStackObject*> seedList;

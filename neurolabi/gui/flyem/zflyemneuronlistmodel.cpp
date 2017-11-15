@@ -379,7 +379,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
 
   if (stack != NULL) {
     doc->loadStack(stack);
-    doc->setTag(NeuTube::Document::FLYEM_BODY);
+    doc->setTag(neutube::Document::FLYEM_BODY);
   }
 
   return dsIntvPt;

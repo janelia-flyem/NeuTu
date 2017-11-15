@@ -96,7 +96,7 @@ int ZObject3dScan::scanArrayShift(
 template<class T>
 int ZObject3dScan::scanArray(
     const T *array, int x, int y, int z, int width, int dim, int start,
-    NeuTube::EAxis axis)
+    neutube::EAxis axis)
 {
   if (array == NULL) {
     return 0;
@@ -109,7 +109,7 @@ int ZObject3dScan::scanArray(
   }
 
   size_t stride = 1;
-  if (axis == NeuTube::X_AXIS) {
+  if (axis == neutube::X_AXIS) {
     stride = width;
   }
 
@@ -227,7 +227,7 @@ std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllObject(
 
 template<class T>
 std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllObject(
-    const T *array, int width, int height, int depth, NeuTube::EAxis axis)
+    const T *array, int width, int height, int depth, neutube::EAxis axis)
 {
   std::map<uint64_t, ZObject3dScan *> *bodySet =
       new std::map<uint64_t, ZObject3dScan*>;
@@ -274,7 +274,7 @@ std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllObject(
 
 template<class T>
 std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllForegroundObject(
-    const T *array, int width, int height, int depth, NeuTube::EAxis axis)
+    const T *array, int width, int height, int depth, neutube::EAxis axis)
 {
   std::map<uint64_t, ZObject3dScan *> *bodySet =
       new std::map<uint64_t, ZObject3dScan*>;

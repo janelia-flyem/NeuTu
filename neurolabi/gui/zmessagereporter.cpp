@@ -13,9 +13,9 @@ ZMessageReporter::ZMessageReporter()
 
 void ZMessageReporter::report(
     const std::string &title, const std::string &message,
-    NeuTube::EMessageType msgType)
+    neutube::EMessageType msgType)
 {
-  if (msgType == NeuTube::MSG_ERROR) {
+  if (msgType == neutube::MSG_ERROR) {
     report(cerr, title, message, msgType);
   } else {
     report(cout, title, message, msgType);
@@ -41,7 +41,7 @@ void ZMessageReporter::report(
 void ZMessageReporter::report(std::ostream &stream,
                               const std::string &title,
                               const std::string &message,
-                              NeuTube::EMessageType msgType)
+                              neutube::EMessageType msgType)
 {
   time_t timer;
   time(&timer);
@@ -49,16 +49,16 @@ void ZMessageReporter::report(std::ostream &stream,
   stream << "#" << m_count << ": ";
 
   switch (msgType) {
-  case NeuTube::MSG_INFORMATION:
+  case neutube::MSG_INFORMATION:
     stream << title << endl << "  " << message << endl;
     break;
-  case NeuTube::MSG_WARNING:
+  case neutube::MSG_WARNING:
     stream  << title << endl << "  " << message << endl;
     break;
-  case NeuTube::MSG_ERROR:
+  case neutube::MSG_ERROR:
     stream << "Error: " << title << endl << "  " << message << endl;
     break;
-  case NeuTube::MSG_DEBUG:
+  case neutube::MSG_DEBUG:
     stream << "Debug: " << title << endl << "  " << message << endl;
     break;
   }

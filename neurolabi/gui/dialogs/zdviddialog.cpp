@@ -32,7 +32,7 @@ ZDvidDialog::ZDvidDialog(QWidget *parent) :
 #if defined(_FLYEM_)
   const std::vector<ZDvidTarget> dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
 
-  std::string userName = NeuTube::GetCurrentUserName();
+  std::string userName = neutube::GetCurrentUserName();
 
   for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
            iter != dvidRepo.end(); ++iter) {

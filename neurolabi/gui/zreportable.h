@@ -19,7 +19,7 @@ public:
   void destroyReporter();
 
   void report(const std::string &title, const std::string &msg,
-              NeuTube::EMessageType msgType = NeuTube::MSG_INFORMATION);
+              neutube::EMessageType msgType = neutube::MSG_INFORMATION);
 
 private:
   ZMessageReporter m_defaultReporter;

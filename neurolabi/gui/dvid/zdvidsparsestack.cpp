@@ -137,11 +137,11 @@ int ZDvidSparseStack::getValue(int x, int y, int z) const
 }
 
 void ZDvidSparseStack::display(
-    ZPainter &painter, int slice, EDisplayStyle option, NeuTube::EAxis sliceAxis) const
+    ZPainter &painter, int slice, EDisplayStyle option, neutube::EAxis sliceAxis) const
 {
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
-          getLabel(), painter.getZ(slice), NeuTube::Z_AXIS, true, NULL);
+          getLabel(), painter.getZ(slice), neutube::Z_AXIS, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -712,7 +712,7 @@ bool ZDvidSparseStack::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidSparseStack::hit(double x, double y, NeuTube::EAxis axis)
+bool ZDvidSparseStack::hit(double x, double y, neutube::EAxis axis)
 {
   ZObject3dScan *objectMask = getObjectMask();
   if (objectMask != NULL) {

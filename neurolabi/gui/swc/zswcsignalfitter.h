@@ -12,7 +12,7 @@ class ZSwcSignalFitter
 public:
   ZSwcSignalFitter();
 
-  void setBackground(NeuTube::EImageBackground bg) {
+  void setBackground(neutube::EImageBackground bg) {
     m_background = bg;
   }
 
@@ -20,7 +20,7 @@ public:
     m_fixingTerminal = on;
   }
 
-  NeuTube::EImageBackground getBackground() const {
+  neutube::EImageBackground getBackground() const {
     return m_background;
   }
 
@@ -32,7 +32,7 @@ private:
   void init();
 
 private:
-  NeuTube::EImageBackground m_background;
+  neutube::EImageBackground m_background;
   bool m_fixingTerminal;
 
 };

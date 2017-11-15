@@ -18,7 +18,7 @@ ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 
 bool ZIntPoint::IsNormalDimIndex(int index)
 {
-  return index >= NeuTube::DIM_MIN_NORMAL_INDEX;
+  return index >= neutube::DIM_MIN_NORMAL_INDEX;
 }
 
 ZIntPoint::ZIntPoint(int x, int y, int z)
@@ -312,24 +312,24 @@ ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
   return *this;
 }
 
-void ZIntPoint::shiftSliceAxis(NeuTube::EAxis axis)
+void ZIntPoint::shiftSliceAxis(neutube::EAxis axis)
 {
   ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
-void ZIntPoint::shiftSliceAxisInverse(NeuTube::EAxis axis)
+void ZIntPoint::shiftSliceAxisInverse(neutube::EAxis axis)
 {
   ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
-int ZIntPoint::getSliceCoord(NeuTube::EAxis axis) const
+int ZIntPoint::getSliceCoord(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_x;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_y;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_z;
   }
 
