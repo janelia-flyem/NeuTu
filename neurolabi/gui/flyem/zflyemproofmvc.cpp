@@ -164,9 +164,6 @@ void ZFlyEmProofMvc::init()
           Qt::QueuedConnection);
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
-
-  setStyleSheet("QGroupBox {  border: 1px solid lightgray; border-radius: 3px; margin-top: 1ex;}"
-                "QGroupBox::title {subcontrol-origin: margin; subcontrol-position: top left; padding: 0 3px;}");
 //  m_testTimer = new QTimer(this);
 
 #ifdef _DEBUG_
