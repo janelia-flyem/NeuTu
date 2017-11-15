@@ -32,14 +32,14 @@ void ZFlyEmOrthoWidget::init(const ZDvidTarget &target)
       ZSharedPointer<ZFlyEmOrthoDoc>(new ZFlyEmOrthoDoc);
   sharedDoc->setDvidTarget(target);
 
-  m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, NeuTube::Z_AXIS);
+  m_xyMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::Z_AXIS);
 //  xyWidget->setDvidTarget(target);
 //  m_xyMvc->getCompleteDocument()->updateStack(ZIntPoint(4085, 5300, 7329));
 
-  m_yzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, NeuTube::X_AXIS);
+  m_yzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::X_AXIS);
 //  yzWidget->setDvidTarget(target);
 
-  m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, NeuTube::Y_AXIS);
+  m_xzMvc = ZFlyEmOrthoMvc::Make(this, sharedDoc, neutube::Y_AXIS);
 //  xzWidget->setDvidTarget(target);
 
   m_mvcArray.append(m_xyMvc);
@@ -358,15 +358,15 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
   helper.attach(mvc);
 
   switch (mvc->getView()->getSliceAxis()) {
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     helper.syncCrossHair(m_yzMvc);
     helper.syncCrossHair(m_xzMvc);
     break;
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_xzMvc);
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_yzMvc);
     break;
@@ -383,20 +383,20 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
   helper.attach(mvc);
 
   switch (mvc->getView()->getSliceAxis()) {
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     helper.syncViewPort(m_yzMvc);
     helper.syncViewPort(m_xzMvc);
 
 //    m_yzMvc->zoomWithHeightAligned(mvc->getView());
 //    m_xzMvc->zoomWithWidthAligned(mvc->getView());
     break;
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     helper.syncViewPort(m_xyMvc);
     helper.syncViewPort(m_xzMvc);
 //    m_xyMvc->zoomWithHeightAligned(mvc->getView());
 //    m_xzMvc->zoomWithWidthAligned(m_xyMvc->getView());
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     helper.syncViewPort(m_xyMvc);
     helper.syncViewPort(m_yzMvc);
 //    m_xyMvc->zoomWithWidthAligned(mvc->getView());

@@ -14,11 +14,11 @@ public:
   void updateStack(const ZIntPoint &center);
   void prepareDvidData();
 
-  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
 
   ZCrossHair* getCrossHair() const;
 
-  void setCrossHairCenter(double x, double y, NeuTube::EAxis axis);
+  void setCrossHairCenter(double x, double y, neutube::EAxis axis);
 
 signals:
 
@@ -27,9 +27,9 @@ public slots:
 private:
   void init();
   void initSynapseEnsemble();
-  void initSynapseEnsemble(NeuTube::EAxis axis);
+  void initSynapseEnsemble(neutube::EAxis axis);
   void initTodoList();
-  void initTodoList(NeuTube::EAxis axis);
+  void initTodoList(neutube::EAxis axis);
 
 private:
   int m_width;

@@ -7,7 +7,7 @@
 #include "zswcgenerator.h"
 #include "zswctree.h"
 
-ZIntCuboidFace::ZIntCuboidFace() : m_z(0), m_normalAxis(NeuTube::Z_AXIS),
+ZIntCuboidFace::ZIntCuboidFace() : m_z(0), m_normalAxis(neutube::Z_AXIS),
   m_isNormalPositive(true)
 {
 }
@@ -98,13 +98,13 @@ void ZIntCuboidFace::print() const
   }
 
   switch (getAxis()) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     std::cout << "X";
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     std::cout << "Y";
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     std::cout << "Z";
     break;
   default:
@@ -130,17 +130,17 @@ bool ZIntCuboidFace::contains(int x, int y, int z) const
   int w = 0;
 
   switch (getAxis()) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     u = y;
     v = z;
     w = x;
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     u = x;
     v = z;
     w = y;
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     u = x;
     v = y;
     w = z;
@@ -168,12 +168,12 @@ void ZIntCuboidFace::set(int x0, int y0, int x1, int y1)
   m_lastCorner.set(x1, y1);
 }
 
-void ZIntCuboidFace::setNormal(NeuTube::EAxis axis)
+void ZIntCuboidFace::setNormal(neutube::EAxis axis)
 {
   m_normalAxis = axis;
 }
 
-void ZIntCuboidFace::setNormal(NeuTube::EAxis axis, bool isPositive)
+void ZIntCuboidFace::setNormal(neutube::EAxis axis, bool isPositive)
 {
   m_normalAxis = axis;
   m_isNormalPositive = isPositive;
@@ -235,13 +235,13 @@ ZIntPoint ZIntCuboidFace::getCornerCoordinates(int index) const
   ZIntPoint pt;
   Corner corner = getCorner(index);
   switch (getAxis()) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     pt.set(getPlanePosition(), corner.getX(), corner.getY());
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     pt.set(corner.getX(), getPlanePosition(), corner.getY());
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     pt.set(corner.getX(), corner.getY(), getPlanePosition());
     break;
   }
@@ -315,17 +315,17 @@ double ZIntCuboidFace::computeDistance(double x, double y, double z)
   double w = 0.0;
 
   switch (getAxis()) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     u = y;
     v = z;
     w = x;
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     u = x;
     v = z;
     w = y;
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     u = x;
     v = y;
     w = z;
@@ -404,7 +404,7 @@ void ZIntCuboidFaceArray::append(const Cuboid_I *cuboid)
     if (Cuboid_I_Is_Valid(cuboid)) {
       ZIntCuboidFace face;
 
-      face.setNormal(NeuTube::X_AXIS, true);
+      face.setNormal(neutube::X_AXIS, true);
       face.setZ(cuboid->cb[0]);
       face.set(cuboid->cb[1], cuboid->cb[2], cuboid->ce[1], cuboid->ce[2]);
       append(face);
@@ -414,7 +414,7 @@ void ZIntCuboidFaceArray::append(const Cuboid_I *cuboid)
       face.setZ(cuboid->ce[0]);
       append(face);
 
-      face.setNormal(NeuTube::Y_AXIS, true);
+      face.setNormal(neutube::Y_AXIS, true);
       face.setZ(cuboid->cb[1]);
       face.set(cuboid->cb[0], cuboid->cb[2], cuboid->ce[0], cuboid->ce[2]);
       append(face);
@@ -423,7 +423,7 @@ void ZIntCuboidFaceArray::append(const Cuboid_I *cuboid)
       face.setZ(cuboid->ce[1]);
       append(face);
 
-      face.setNormal(NeuTube::Z_AXIS, true);
+      face.setNormal(neutube::Z_AXIS, true);
       face.setZ(cuboid->cb[2]);
       face.set(cuboid->cb[0], cuboid->cb[1], cuboid->ce[0], cuboid->ce[1]);
       append(face);

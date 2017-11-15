@@ -37,7 +37,7 @@ int ZBodyExportCommand::run(
           box.setHeight(box.getHeight() * dvidInfo.getBlockSize().getY());
           box.setDepth(box.getDepth() * dvidInfo.getBlockSize().getZ());
           int dsIntv = misc::getIsoDsIntvFor3DVolume(
-                box, NeuTube::ONEGIGA, true);
+                box, neutube::ONEGIGA, true);
           int scale = std::log2(dsIntv + 1);
           if (scale > reader->getDvidTarget().getMaxLabelZoom()) {
             scale = reader->getDvidTarget().getMaxLabelZoom();
@@ -51,7 +51,7 @@ int ZBodyExportCommand::run(
         if (!obj.isEmpty()) {
           if (needDownsampling) {
             int dsIntv = misc::getIsoDsIntvFor3DVolume(
-                  obj.getBoundBox(), NeuTube::ONEGIGA, false);
+                  obj.getBoundBox(), neutube::ONEGIGA, false);
             obj.downsampleMax(ZIntPoint(dsIntv, dsIntv, dsIntv));
           }
           ZStack *stack = obj.toStackObject();

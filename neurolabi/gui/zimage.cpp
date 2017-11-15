@@ -50,7 +50,7 @@ void ZImage::init()
   setDefaultContrastProtocal();
 
   m_visible = true;
-  m_z = NeuTube::DIM_INVALID_INDEX;
+  m_z = neutube::DIM_INVALID_INDEX;
 }
 
 void ZImage::setDefaultContrastProtocal()
@@ -348,14 +348,14 @@ void ZImage::setData(const uint8 *data, int threshold)
 
 void ZImage::setData(
     const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
-    int slice, NeuTube::EAxis sliceAxis)
+    int slice, neutube::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
   int area = stackWidth * stackHeight;
 
   switch (sliceAxis) {
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
   {
     data += (size_t) area * slice;
     if (isIndexed8()) {
@@ -367,7 +367,7 @@ void ZImage::setData(
     }
   }
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -394,7 +394,7 @@ void ZImage::setData(
     }
   }
     break;
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
   {
     const uint8 *dataOrigin = data + slice;
 
@@ -442,7 +442,7 @@ void ZImage::MakeValueMap(double scale, double offset, uint8 *valueMap)
 
 void ZImage::setData(
     const uint8 *data, int stackWidth, int stackHeight, int /*stackDepth*/,
-    int slice, double scale, double offset, NeuTube::EAxis sliceAxis)
+    int slice, double scale, double offset, neutube::EAxis sliceAxis)
 {
   int imageWidth = width();
   int imageHeight = height();
@@ -456,7 +456,7 @@ void ZImage::setData(
   }
 
   switch (sliceAxis) {
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
   {
     data += (size_t) area * slice;
     if (format() == Format_Indexed8) {
@@ -466,7 +466,7 @@ void ZImage::setData(
     }
   }
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
   {
     const uint8 *dataOrigin = data + slice * stackWidth;
 
@@ -494,7 +494,7 @@ void ZImage::setData(
     }
   }
     break;
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
   {
     const uint8 *dataOrigin = data + slice;
 //    data += slice;

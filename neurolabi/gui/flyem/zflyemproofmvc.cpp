@@ -165,6 +165,8 @@ void ZFlyEmProofMvc::init()
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 
+  setStyleSheet("QGroupBox {  border: 1px solid lightgray; border-radius: 3px; margin-top: 1ex;}"
+                "QGroupBox::title {subcontrol-origin: margin; subcontrol-position: top left; padding: 0 3px;}");
 //  m_testTimer = new QTimer(this);
 
 #ifdef _DEBUG_
@@ -296,7 +298,7 @@ void ZFlyEmProofMvc::initBodyWindow()
 }
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
-    QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc, NeuTube::EAxis axis,
+    QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc, neutube::EAxis axis,
     ERole role)
 {
   ZFlyEmProofMvc *frame = new ZFlyEmProofMvc(parent);
@@ -312,9 +314,9 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
 {
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
-//  doc->setTag(NeuTube::Document::FLYEM_DVID);
+//  doc->setTag(neutube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc = ZFlyEmProofMvc::Make(
-        NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), NeuTube::Z_AXIS, role);
+        NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), neutube::Z_AXIS, role);
   mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
   mvc->setDvidTarget(target);
 
@@ -471,7 +473,7 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
         ZWidgetMessage(
           QString("Screenshots created for %1 bodies; %2 bodies skipped").
           arg(bodyIdArray.size() - skippedBodyIdArray.size()).
-          arg(skippedBodyIdArray.size()), NeuTube::MSG_INFORMATION));
+          arg(skippedBodyIdArray.size()), neutube::MSG_INFORMATION));
 
 }
 
@@ -540,8 +542,8 @@ void ZFlyEmProofMvc::syncBodySelectionToOrthoWindow()
 {
   if (m_orthoWindow != NULL) {
     m_orthoWindow->getDocument()->setSelectedBody(
-          getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL),
-          NeuTube::BODY_LABEL_ORIGINAL);
+          getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL),
+          neutube::BODY_LABEL_ORIGINAL);
   }
 }
 
@@ -550,8 +552,8 @@ void ZFlyEmProofMvc::syncBodySelectionFromOrthoWindow()
   if (m_orthoWindow != NULL) {
     getCompleteDocument()->setSelectedBody(
           m_orthoWindow->getDocument()->getSelectedBodySet(
-            NeuTube::BODY_LABEL_ORIGINAL),
-          NeuTube::BODY_LABEL_ORIGINAL);
+            neutube::BODY_LABEL_ORIGINAL),
+          neutube::BODY_LABEL_ORIGINAL);
   }
 }
 
@@ -888,7 +890,7 @@ void ZFlyEmProofMvc::mergeCoarseBodyWindow()
 {
   if (m_coarseBodyWindow != NULL) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
@@ -901,7 +903,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow()
 {
   if (m_coarseBodyWindow != NULL) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
@@ -916,7 +918,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowDeep()
 {
   if (m_coarseBodyWindow != NULL) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_coarseBodyWindow->getDocument());
     if (doc != NULL){
@@ -936,7 +938,7 @@ void ZFlyEmProofMvc::updateBodyWindow()
 {
   if (m_bodyWindow != NULL) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
@@ -949,7 +951,7 @@ void ZFlyEmProofMvc::updateBodyWindowDeep()
 {
   if (m_bodyWindow != NULL) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
@@ -965,7 +967,7 @@ void ZFlyEmProofMvc::updateBodyWindowDeep()
 #if 0
   if (m_bodyWindow != NULL) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_bodyWindow->getDocument());
     if (doc != NULL){
@@ -979,7 +981,7 @@ void ZFlyEmProofMvc::updateSkeletonWindow()
 {
   if (m_skeletonWindow != NULL) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
     if (doc != NULL){
@@ -992,7 +994,7 @@ void ZFlyEmProofMvc::updateMeshWindow()
 {
   if (m_meshWindow != NULL) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
         qobject_cast<ZFlyEmBody3dDoc*>(m_meshWindow->getDocument());
     if (doc != NULL){
@@ -1008,7 +1010,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowColor()
   if (m_coarseBodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
     std::set<uint64_t> selectedMapped =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_MAPPED);
 
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
@@ -1028,7 +1030,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindowColor()
       std::vector<uint64_t> labelArray = ZString(tree->getSource()).toUint64Array();
       if (!labelArray.empty()) {
         uint64_t label = labelArray.back();
-        QColor color = labelSlice->getColor(label, NeuTube::BODY_LABEL_ORIGINAL);
+        QColor color = labelSlice->getColor(label, neutube::BODY_LABEL_ORIGINAL);
         color.setAlpha(255);
         tree->setColor(color);
         m_coarseBodyWindow->getDocument()->processObjectModified(tree);
@@ -1048,7 +1050,7 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
   if (m_coarseBodyWindow != NULL) {
     std::set<std::string> currentBodySourceSet;
     std::set<uint64_t> selectedMapped =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_MAPPED);
 
     for (std::set<uint64_t>::const_iterator iter = selectedMapped.begin();
          iter != selectedMapped.end(); ++iter) {
@@ -1095,10 +1097,10 @@ void ZFlyEmProofMvc::updateCoarseBodyWindow(
 
           if (!body.isEmpty()) {
             ZDvidLabelSlice *labelSlice =
-                getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+                getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
             if (labelSlice != NULL) {
               body.setColor(labelSlice->getLabelColor(
-                              label, NeuTube::BODY_LABEL_MAPPED));
+                              label, neutube::BODY_LABEL_MAPPED));
             }
 
             body.setAlpha(255);
@@ -1194,7 +1196,7 @@ void ZFlyEmProofMvc::setSegmentationVisible(bool visible)
     foreach (ZDvidLabelSlice *slice, sliceList) {
       slice->setVisible(visible);
       if (visible) {
-        slice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
+        slice->update(getView()->getViewParameter(neutube::COORD_STACK));
       }
     }
   }
@@ -1284,7 +1286,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   if (getCompleteDocument() == NULL) {
     emit messageGenerated(
           ZWidgetMessage("Corrupted data structure. Abort",
-                         NeuTube::MSG_WARNING,
+                         neutube::MSG_WARNING,
                          ZWidgetMessage::TARGET_DIALOG));
     return;
   }
@@ -1293,7 +1295,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     emit messageGenerated(
           ZWidgetMessage("You cannot change the database in this window. "
                          "Please open a new proofread window to load a different database",
-                         NeuTube::MSG_WARNING,
+                         neutube::MSG_WARNING,
                          ZWidgetMessage::TARGET_DIALOG));
     return;
   }
@@ -1304,7 +1306,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
   if (!reader.open(target)) {
     emit messageGenerated(
           ZWidgetMessage("Failed to open the database.",
-                         NeuTube::MSG_WARNING,
+                         neutube::MSG_WARNING,
                          ZWidgetMessage::TARGET_DIALOG));
     return;
   }
@@ -1385,18 +1387,18 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
         ZWidgetMessage(
           QString("Database %1 loaded.").arg(
             getDvidTarget().getSourceString(false).c_str()),
-          NeuTube::MSG_INFORMATION,
+          neutube::MSG_INFORMATION,
           ZWidgetMessage::TARGET_STATUS_BAR));
 }
 
 void ZFlyEmProofMvc::diagnose()
 {
   emit messageGenerated(
-        ZWidgetMessage("Start diagnosing...", NeuTube::MSG_INFORMATION));
+        ZWidgetMessage("Start diagnosing...", neutube::MSG_INFORMATION));
 
   emit messageGenerated(
         ZWidgetMessage(getDvidTarget().toJsonObject().dumpString(2),
-                       NeuTube::MSG_INFORMATION));
+                       neutube::MSG_INFORMATION));
 
   QList<ZDvidTileEnsemble*> teList =
       getCompleteDocument()->getDvidTileEnsembleList();
@@ -1669,7 +1671,7 @@ void ZFlyEmProofMvc::goToBodyBottom()
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
   if (reader.isReady()) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     if (!bodySet.empty()) {
       ZIntPoint pt;
       std::set<uint64_t>::const_iterator iter = bodySet.begin();
@@ -1692,7 +1694,7 @@ void ZFlyEmProofMvc::goToBodyTop()
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
   if (reader.isReady()) {
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     if (!bodySet.empty()) {
       ZIntPoint pt;
       std::set<uint64_t>::const_iterator iter = bodySet.begin();
@@ -1774,7 +1776,7 @@ void ZFlyEmProofMvc::selectBody()
 void ZFlyEmProofMvc::updateDvidLabelObject()
 {
   ZFlyEmProofDoc *doc = getCompleteDocument();
-  NeuTube::EAxis axis = getView()->getSliceAxis();
+  neutube::EAxis axis = getView()->getSliceAxis();
   doc->updateDvidLabelObject(axis);
   doc->cleanBodyAnnotationMap();
 }
@@ -1834,19 +1836,19 @@ void ZFlyEmProofMvc::highlightSelectedObject(
           obj->setLabel(bodyId);
           obj->setRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
           obj->setColor(labelSlice->getLabelColor(
-                          bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+                          bodyId, neutube::BODY_LABEL_ORIGINAL));
                           */
           doc->addObject(obj);
         }
       } else {
         labelSlice->addVisualEffect(
-              NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
+              neutube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
         labelSlice->paintBuffer();
         doc->processObjectModified(labelSlice);
       }
     } else {
       labelSlice->removeVisualEffect(
-            NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
+            neutube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
       if (usingSparseVol) {
         labelSlice->paintBuffer();
         doc->notifyActiveViewModified();
@@ -1864,7 +1866,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(
 void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 {
   ZFlyEmProofDoc *doc = getCompleteDocument();
-  NeuTube::EAxis axis = getView()->getSliceAxis();
+  neutube::EAxis axis = getView()->getSliceAxis();
 
   ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(axis);
 
@@ -1876,7 +1878,7 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 {
   ZDvidLabelSlice *labelSlice =
-      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+      getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
   if (labelSlice != NULL){
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
@@ -1899,7 +1901,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
           }
         }
 
-        ZWidgetMessage msg("", NeuTube::MSG_INFORMATION,
+        ZWidgetMessage msg("", neutube::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_CUSTOM_AREA);
         if (finalAnnotation.isEmpty()) {
           msg.setMessage(QString("%1 is not annotated.").arg(selected.front()));
@@ -1941,13 +1943,13 @@ void ZFlyEmProofMvc::processSelectionChange(const ZStackObjectSelector &selector
     if (bookmark != NULL) {
       emit messageGenerated(
             ZWidgetMessage(bookmark->toJsonObject(true).dumpString(0).c_str(),
-                           NeuTube::MSG_INFORMATION,
+                           neutube::MSG_INFORMATION,
                            ZWidgetMessage::TARGET_STATUS_BAR));
     }
   } else {
     emit messageGenerated(
           ZWidgetMessage("---",
-                         NeuTube::MSG_INFORMATION,
+                         neutube::MSG_INFORMATION,
                          ZWidgetMessage::TARGET_STATUS_BAR));
   }
 }
@@ -2009,10 +2011,10 @@ void ZFlyEmProofMvc::updateBodySelection()
 {
   if (getCompleteDocument() != NULL) {
 //    ZDvidLabelSlice *slice =
-//        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+//        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
 //    const std::set<uint64_t> &selected = slice->getSelectedOriginal();
 //    getCompleteDocument()->getMergeProject()->setSelection(
-//          selected, NeuTube::BODY_LABEL_ORIGINAL);
+//          selected, neutube::BODY_LABEL_ORIGINAL);
     updateCoarseBodyWindow();
     updateBodyWindow();
     updateSkeletonWindow();
@@ -2279,7 +2281,7 @@ void ZFlyEmProofMvc::checkInSelectedBody(FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
-        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+        getCurrentSelectedBodyId(neutube::BODY_LABEL_ORIGINAL);
     for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
@@ -2300,7 +2302,7 @@ void ZFlyEmProofMvc::checkInSelectedBodyAdmin()
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
-        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+        getCurrentSelectedBodyId(neutube::BODY_LABEL_ORIGINAL);
     for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
@@ -2325,7 +2327,7 @@ void ZFlyEmProofMvc::checkOutBody(FlyEM::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
-        getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+        getCurrentSelectedBodyId(neutube::BODY_LABEL_ORIGINAL);
     for (std::set<uint64_t>::const_iterator iter = bodyIdArray.begin();
          iter != bodyIdArray.end(); ++iter) {
       uint64_t bodyId = *iter;
@@ -2339,12 +2341,12 @@ void ZFlyEmProofMvc::checkOutBody(FlyEM::EBodySplitMode mode)
                   ZWidgetMessage(
                     QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
                     arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
-                    NeuTube::MSG_ERROR));
+                    neutube::MSG_ERROR));
           } else {
             emit messageGenerated(
                   ZWidgetMessage(
                     QString("Failed to lock body %1 because it has been locked by %2").
-                    arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
+                    arg(bodyId).arg(owner.c_str()), neutube::MSG_ERROR));
           }
         }
       }
@@ -2354,7 +2356,7 @@ void ZFlyEmProofMvc::checkOutBody(FlyEM::EBodySplitMode mode)
   }
 #if 0
   std::set<uint64_t> bodyIdArray =
-      getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED);
+      getCurrentSelectedBodyId(neutube::BODY_LABEL_MAPPED);
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
@@ -2373,7 +2375,7 @@ void ZFlyEmProofMvc::checkOutBody(FlyEM::EBodySplitMode mode)
 void ZFlyEmProofMvc::annotateBody()
 {
   std::set<uint64_t> bodyIdArray =
-      getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+      getCurrentSelectedBodyId(neutube::BODY_LABEL_ORIGINAL);
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
@@ -2403,12 +2405,12 @@ void ZFlyEmProofMvc::annotateBody()
                   ZWidgetMessage(
                     QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
                     arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
-                    NeuTube::MSG_ERROR));
+                    neutube::MSG_ERROR));
           } else {
             emit messageGenerated(
                   ZWidgetMessage(
                     QString("Failed to start annotation. %1 has been locked by %2").
-                    arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
+                    arg(bodyId).arg(owner.c_str()), neutube::MSG_ERROR));
           }
         }
       }
@@ -2417,7 +2419,7 @@ void ZFlyEmProofMvc::annotateBody()
     }
   } else {
     QString msg;
-    if (getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED).size() == 1) {
+    if (getCurrentSelectedBodyId(neutube::BODY_LABEL_MAPPED).size() == 1) {
       msg = "The annotation cannot be done because "
           "the merged body has not be uploaded.";
     } else {
@@ -2425,20 +2427,20 @@ void ZFlyEmProofMvc::annotateBody()
           "one and only one body has to be selected.";
     }
     if (!msg.isEmpty()) {
-      emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARNING));
+      emit messageGenerated(ZWidgetMessage(msg, neutube::MSG_WARNING));
     }
   }
 
 
 //  emit messageGenerated(
 //        ZWidgetMessage("The function of annotating body is still under testing.",
-//                       NeuTube::MSG_WARING));
+//                       neutube::MSG_WARING));
 }
 
 void ZFlyEmProofMvc::notifySplitTriggered()
 {
   const std::set<uint64_t> &selected =
-      getCurrentSelectedBodyId(NeuTube::BODY_LABEL_ORIGINAL);
+      getCurrentSelectedBodyId(neutube::BODY_LABEL_ORIGINAL);
 
   if (selected.size() == 1) {
     uint64_t bodyId = *(selected.begin());
@@ -2446,14 +2448,14 @@ void ZFlyEmProofMvc::notifySplitTriggered()
     emit launchingSplit(bodyId);
   } else {
     QString msg;
-    if (getCurrentSelectedBodyId(NeuTube::BODY_LABEL_MAPPED).size() == 1) {
+    if (getCurrentSelectedBodyId(neutube::BODY_LABEL_MAPPED).size() == 1) {
       msg = "The split cannot be launched because "
           "the merged body has not been uploaded.";
     } else {
       msg = "The split cannot be launched because "
           "one and only one body has to be selected.";
     }
-    emit messageGenerated(ZWidgetMessage(msg, NeuTube::MSG_WARNING));
+    emit messageGenerated(ZWidgetMessage(msg, neutube::MSG_WARNING));
   }
 
   /*
@@ -2540,14 +2542,14 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, FlyEM::EBodySplitMode mode
       m_splitProject.setBodyId(bodyId);
 
       ZDvidLabelSlice *labelSlice =
-          getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+          getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
       ZOUT(LINFO(), 3) << "Get label slice:" << labelSlice;
       labelSlice->setVisible(false);
 //      labelSlice->setHittable(false);
       labelSlice->setHitProtocal(ZStackObject::HIT_NONE);
 
       body->setColor(labelSlice->getLabelColor(
-                       bodyId, NeuTube::BODY_LABEL_ORIGINAL));
+                       bodyId, neutube::BODY_LABEL_ORIGINAL));
       body->setVisible(true);
       body->setProjectionVisible(false);
 
@@ -2559,7 +2561,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, FlyEM::EBodySplitMode mode
     } else {
       QString msg = QString("Invalid body id: %1").arg(bodyId);
       emit messageGenerated(
-            ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+            ZWidgetMessage(msg, neutube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);
     }
 
@@ -2610,13 +2612,13 @@ void ZFlyEmProofMvc::skeletonizeSelectedBody()
 {
 #if defined(_FLYEM_)
   ZWidgetMessage warnMsg;
-  warnMsg.setType(NeuTube::MSG_WARNING);
+  warnMsg.setType(neutube::MSG_WARNING);
   if (GET_NETU_SERVICE.isNormal()) {
     m_skeletonUpdateDlg->setComputingServer(
           GET_NETU_SERVICE.getServer().c_str());
     if (m_skeletonUpdateDlg->exec()) {
       const std::set<uint64_t> &bodySet =
-          getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+          getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
 
       if (m_skeletonUpdateDlg->isOverwriting()) {
         if (GET_FLYEM_CONFIG.getNeutuService().requestBodyUpdate(
@@ -2658,7 +2660,7 @@ void ZFlyEmProofMvc::exportBodyStack()
             ZDvidSparseStack *sparseStack = NULL;
             sparseStack = reader.readDvidSparseStack(bodyId);
             ZStackWriter stackWriter;
-            ZStack *stack = sparseStack->makeIsoDsStack(NeuTube::ONEGIGA);
+            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA);
             QString fileName = dirName + QString("/%1.tif").arg(bodyId);
             stackWriter.write(fileName.toStdString(), stack);
             delete stack;
@@ -2676,10 +2678,10 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
         ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
     if (!fileName.isEmpty()) {
       ZDvidLabelSlice *slice =
-          getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+          getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
       if (slice != NULL) {
         std::set<uint64_t> idSet =
-            slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+            slice->getSelected(neutube::BODY_LABEL_ORIGINAL);
 
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
         ZDvidSparseStack *sparseStack = NULL;
@@ -2703,7 +2705,7 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
              sparseStack->getSparseStack()->save(fileName.toStdString());
              emit messageGenerated(fileName + " saved");
           } else {
-            ZStack *stack = sparseStack->makeIsoDsStack(NeuTube::ONEGIGA);
+            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA);
             stackWriter.write(fileName.toStdString(), stack);
             delete stack;
           }
@@ -2732,12 +2734,12 @@ void ZFlyEmProofMvc::exportSelectedBodyLevel()
     QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
     if (!fileName.isEmpty()) {
       ZDvidLabelSlice *slice =
-          getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+          getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
       if (slice != NULL) {
         std::set<uint64_t> idSet =
-            slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+            slice->getSelected(neutube::BODY_LABEL_ORIGINAL);
         //      std::set<uint64_t> idSet =
-        //          m_mergeProject.getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+        //          m_mergeProject.getSelection(neutube::BODY_LABEL_ORIGINAL);
 
         ZObject3dScanArray objArray;
         objArray.resize(idSet.size());
@@ -2773,12 +2775,12 @@ void ZFlyEmProofMvc::exportSelectedBody()
   QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
   if (!fileName.isEmpty()) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
     if (slice != NULL) {
       std::set<uint64_t> idSet =
-          slice->getSelected(NeuTube::BODY_LABEL_ORIGINAL);
+          slice->getSelected(neutube::BODY_LABEL_ORIGINAL);
 //      std::set<uint64_t> idSet =
-//          m_mergeProject.getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+//          m_mergeProject.getSelection(neutube::BODY_LABEL_ORIGINAL);
       ZObject3dScan obj;
 
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();
@@ -2844,7 +2846,7 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode)
                             "The body could be annotated as 'Finalized' or "
                             "a merged body waiting for upload.").arg(bodyId);
       emit messageGenerated(
-            ZWidgetMessage(msg, NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
+            ZWidgetMessage(msg, neutube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG));
       emit errorGenerated(msg);
     } else if (checkOutBody(bodyId, mode)) {
 #ifdef _DEBUG_2
@@ -2871,12 +2873,12 @@ void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode)
                 ZWidgetMessage(
                   QString("Failed to lock body %1. Is the librarian sever (%2) ready?").
                   arg(bodyId).arg(getDvidTarget().getSupervisor().c_str()),
-                  NeuTube::MSG_ERROR));
+                  neutube::MSG_ERROR));
         }
         emit messageGenerated(
               ZWidgetMessage(
                 QString("Failed to launch split. %1 has been locked by %2").
-                arg(bodyId).arg(owner.c_str()), NeuTube::MSG_ERROR));
+                arg(bodyId).arg(owner.c_str()), neutube::MSG_ERROR));
       }
     }
   } else {
@@ -2894,9 +2896,9 @@ void ZFlyEmProofMvc::exitSplit()
 
 //    emitMessage("Exiting split ...");
     ZDvidLabelSlice *labelSlice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
     labelSlice->setVisible(true);
-    labelSlice->update(getView()->getViewParameter(NeuTube::COORD_STACK));
+    labelSlice->update(getView()->getViewParameter(neutube::COORD_STACK));
     labelSlice->setHitProtocal(ZStackObject::HIT_STACK_POS);
 //    labelSlice->setHittable(true);
 
@@ -2955,7 +2957,7 @@ void ZFlyEmProofMvc::switchSplitBody(uint64_t bodyId)
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEED);
          getDocument()->removeObject(ZStackObjectRole::ROLE_TMP_RESULT);
          getDocument()->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
-         getCompleteDocument()->setSelectedBody(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+         getCompleteDocument()->setSelectedBody(bodyId, neutube::BODY_LABEL_ORIGINAL);
          launchSplit(bodyId, getCompletePresenter()->getSplitMode());
        }
     }
@@ -3196,7 +3198,7 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
     if (slice != NULL) {
       slice->setMaxSize(getView()->getViewParameter(), width, height);
       slice->disableFullView();
@@ -3209,7 +3211,7 @@ void ZFlyEmProofMvc::showFullSegmentation(bool on)
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
     if (slice != NULL) {
       if (on) {
         slice->updateFullView(getView()->getViewParameter());
@@ -3279,10 +3281,10 @@ void ZFlyEmProofMvc::chopBody()
         m_futureMap.removeDeadThread();
         ZIntPoint center = getView()->getCenter();
         int v = center.getZ();
-        NeuTube::EAxis axis = m_bodyChopDlg->getAxis();
-        if (axis == NeuTube::X_AXIS) {
+        neutube::EAxis axis = m_bodyChopDlg->getAxis();
+        if (axis == neutube::X_AXIS) {
           v = center.getX();
-        } else if (axis == NeuTube::Y_AXIS) {
+        } else if (axis == neutube::Y_AXIS) {
           v = center.getY();
         }
 
@@ -3337,7 +3339,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
     emit messageGenerated(
           ZWidgetMessage("Failed to save results: The split has not been updated."
                          "Please Run full split (shift+space) first.",
-                         NeuTube::MSG_ERROR, ZWidgetMessage::TARGET_TEXT_APPENDING));
+                         neutube::MSG_ERROR, ZWidgetMessage::TARGET_TEXT_APPENDING));
     return;
   }
 
@@ -3514,7 +3516,7 @@ void ZFlyEmProofMvc::updateRoiGlyph()
     ZSwcTree *tree = project->getAllRoiSwc();
     if (tree != NULL) {
       tree->addRole(ZStackObjectRole::ROLE_ROI);
-      tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
+      tree->removeVisualEffect(neutube::Display::SwcTree::VE_FULL_SKELETON);
       getCompleteDocument()->executeAddObjectCommand(tree);
     }
   } else {
@@ -3555,11 +3557,11 @@ void ZFlyEmProofMvc::goToTBar()
 void ZFlyEmProofMvc::showSynapseAnnotation(bool visible)
 {
   ZDvidSynapseEnsemble *se =
-      getCompleteDocument()->getDvidSynapseEnsemble(NeuTube::Z_AXIS);
+      getCompleteDocument()->getDvidSynapseEnsemble(neutube::Z_AXIS);
   if (se != NULL) {
     se->setVisible(visible);
     if (visible) {
-      se->download(getView()->getZ(NeuTube::COORD_STACK));
+      se->download(getView()->getZ(neutube::COORD_STACK));
     }
     getCompleteDocument()->processObjectModified(se);
     getCompleteDocument()->notifyObjectModified();
@@ -3581,7 +3583,7 @@ void ZFlyEmProofMvc::showRoiMask(bool visible)
 void ZFlyEmProofMvc::showSegmentation(bool visible)
 {
   ZDvidLabelSlice *slice =
-      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+      getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
   if (slice != NULL) {
     slice->setVisible(visible);
     if (visible) {
@@ -3595,7 +3597,7 @@ void ZFlyEmProofMvc::showSegmentation(bool visible)
 void ZFlyEmProofMvc::toggleSegmentation()
 {
   ZDvidLabelSlice *slice =
-      getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+      getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
   if (slice != NULL) {
     showSegmentation(!slice->isVisible());
   }
@@ -3670,8 +3672,8 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
         if (slice != NULL) {
           slice->recordSelection();
           slice->addSelection(
-                slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
-                NeuTube::BODY_LABEL_ORIGINAL);
+                slice->getMappedLabel(bodyId, neutube::BODY_LABEL_ORIGINAL),
+                neutube::BODY_LABEL_ORIGINAL);
           slice->processSelection();
         }
       }
@@ -3688,7 +3690,7 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
     if (bodyId > 0) {
       bodyId = getCompleteDocument()->getBodyMerger()->getFinalLabel(bodyId);
       getCompleteDocument()->toggleBodySelection(
-            bodyId, NeuTube::BODY_LABEL_MAPPED);
+            bodyId, neutube::BODY_LABEL_MAPPED);
 #if 0
 //      ZDvidLabelSlice *slice = getDvidLabelSlice();
       QList<ZDvidLabelSlice*> sliceList =
@@ -3700,8 +3702,8 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
           //        uint64_t finalBodyId = getMappedBodyId(bodyId);
           slice->recordSelection();
           slice->xorSelection(
-                slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
-                NeuTube::BODY_LABEL_MAPPED);
+                slice->getMappedLabel(bodyId, neutube::BODY_LABEL_ORIGINAL),
+                neutube::BODY_LABEL_MAPPED);
           slice->processSelection();
 #if 0
           QList<uint64_t> labelList =
@@ -3802,7 +3804,7 @@ void ZFlyEmProofMvc::saveSplitTask()
 
       if (location.empty()) {
         emit messageGenerated(
-              ZWidgetMessage("Failed to save the task.", NeuTube::MSG_WARNING));
+              ZWidgetMessage("Failed to save the task.", neutube::MSG_WARNING));
       } else {
         emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
       }
@@ -3816,7 +3818,7 @@ void ZFlyEmProofMvc::saveSplitTask(uint64_t bodyId)
 
     if (location.empty()) {
       emit messageGenerated(
-            ZWidgetMessage("Failed to save the task.", NeuTube::MSG_WARNING));
+            ZWidgetMessage("Failed to save the task.", neutube::MSG_WARNING));
     } else {
       emit messageGenerated(ZWidgetMessage("Split task saved @" + location));
     }
@@ -3859,7 +3861,7 @@ void ZFlyEmProofMvc::reportBodyCorruption()
     LINFO() << "***Body corrupted***";
     QString message = "Current selected:";
     std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     for (uint64_t id : bodySet) {
       message += QString(" %1").arg(id);
     }
@@ -3892,7 +3894,7 @@ uint64_t ZFlyEmProofMvc::getMappedBodyId(uint64_t bodyId)
 }
 
 std::set<uint64_t> ZFlyEmProofMvc::getCurrentSelectedBodyId(
-    NeuTube::EBodyLabelType type) const
+    neutube::EBodyLabelType type) const
 {
   const ZDvidLabelSlice *labelSlice = getDvidLabelSlice();
   if (labelSlice != NULL) {
@@ -3934,8 +3936,8 @@ void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
       slice->clearSelection();
       foreach(uint64_t bodyId, bodyIdList) {
         slice->addSelection(
-              slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
-              NeuTube::BODY_LABEL_MAPPED);
+              slice->getMappedLabel(bodyId, neutube::BODY_LABEL_ORIGINAL),
+              neutube::BODY_LABEL_MAPPED);
       }
       slice->processSelection();
       processLabelSliceSelectionChange();
@@ -3968,7 +3970,7 @@ void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
           stream << badId;
         }
 
-        ZWidgetMessage(stream.str().c_str(), NeuTube::MSG_WARNING);
+        ZWidgetMessage(stream.str().c_str(), neutube::MSG_WARNING);
       }
 
       if (!goodIdList.isEmpty()) {
@@ -3978,8 +3980,8 @@ void ZFlyEmProofMvc::locateBody(QList<uint64_t> bodyIdList)
           slice->clearSelection();
           foreach(uint64_t bodyId, goodIdList) {
             slice->addSelection(
-                  slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
-                  NeuTube::BODY_LABEL_MAPPED);
+                  slice->getMappedLabel(bodyId, neutube::BODY_LABEL_ORIGINAL),
+                  neutube::BODY_LABEL_MAPPED);
           }
           slice->processSelection();
           processLabelSliceSelectionChange();
@@ -4010,8 +4012,8 @@ bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
             slice->clearSelection();
           }
           slice->addSelection(
-                slice->getMappedLabel(bodyId, NeuTube::BODY_LABEL_ORIGINAL),
-                NeuTube::BODY_LABEL_MAPPED);
+                slice->getMappedLabel(bodyId, neutube::BODY_LABEL_ORIGINAL),
+                neutube::BODY_LABEL_MAPPED);
           slice->processSelection();
 //          processLabelSliceSelectionChange(); //will be called in updateBodySelection
         }
@@ -4019,11 +4021,11 @@ bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
         zoomTo(pt);
       } else {
         emit messageGenerated(ZWidgetMessage("Failed to zoom into the body",
-                                             NeuTube::MSG_ERROR));
+                                             neutube::MSG_ERROR));
         if (!reader.hasBody(bodyId)) {
           emit messageGenerated(
                 ZWidgetMessage(QString("Cannot go to body: %1. No such body.").
-                               arg(bodyId), NeuTube::MSG_ERROR));
+                               arg(bodyId), neutube::MSG_ERROR));
           succ = false;
         }
       }
@@ -4114,7 +4116,7 @@ void ZFlyEmProofMvc::recordBookmark(ZFlyEmBookmark *bookmark)
 
     if (writer.getStatusCode() != 200) {
       emit messageGenerated(ZWidgetMessage("Failed to record bookmark.",
-                                           NeuTube::MSG_WARNING));
+                                           neutube::MSG_WARNING));
     }
   }
 }
@@ -4153,7 +4155,7 @@ void ZFlyEmProofMvc::annotateBookmark(ZFlyEmBookmark *bookmark)
       }
       if (!writer.isStatusOk()) {
         emit messageGenerated(
-              ZWidgetMessage("Failed to save bookmark.", NeuTube::MSG_WARNING));
+              ZWidgetMessage("Failed to save bookmark.", neutube::MSG_WARNING));
       }
       getCompleteDocument()->processBookmarkAnnotationEvent(bookmark);
 
@@ -4432,7 +4434,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
             emit messageGenerated(
                   ZWidgetMessage(QString("Cannot crop body: %1. No such body.").
                                  arg(m_splitProject.getBodyId()),
-                                 NeuTube::MSG_ERROR));
+                                 neutube::MSG_ERROR));
           } else {
             ZDvidInfo dvidInfo = reader.readLabelInfo();
             ZObject3dScan bodyInRoi;
@@ -4470,7 +4472,7 @@ void ZFlyEmProofMvc::cropCoarseBody3D()
         } else {
           emit messageGenerated(
                 ZWidgetMessage("Must enter split mode to enable crop.",
-                               NeuTube::MSG_WARNING));
+                               neutube::MSG_WARNING));
         }
       }
     }
@@ -4483,7 +4485,7 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
   bool processed = false;
   if (urls.size() == 1) {
     const QUrl &url = urls[0];
-    QString filePath = NeuTube::GetFilePath(url);
+    QString filePath = neutube::GetFilePath(url);
     if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_JSON) {
       processed = true; //todo
     }
@@ -4491,7 +4493,7 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 
   if (!processed) {
     foreach (const QUrl &url, urls) {
-      QString filePath = NeuTube::GetFilePath(url);
+      QString filePath = neutube::GetFilePath(url);
       if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_SWC) {
         ZSwcTree *tree = new ZSwcTree;
         tree->load(filePath.toStdString());

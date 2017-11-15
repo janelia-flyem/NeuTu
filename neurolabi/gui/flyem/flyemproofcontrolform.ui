@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>455</width>
-    <height>695</height>
+    <width>488</width>
+    <height>748</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
@@ -176,6 +179,9 @@
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_3">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="title">
       <string>3D Body Visualization</string>
      </property>
@@ -205,7 +211,7 @@
           <number>5</number>
          </property>
          <property name="topMargin">
-          <number>5</number>
+          <number>12</number>
          </property>
          <property name="rightMargin">
           <number>5</number>
@@ -215,8 +221,11 @@
          </property>
          <item>
           <widget class="QLabel" name="label_8">
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {  border: 1px solid gray; border-radius: 3px; margin-top: 2ex;}</string>
+           </property>
            <property name="text">
-            <string>Resolution:</string>
+            <string>Resolution</string>
            </property>
           </widget>
          </item>
@@ -226,7 +235,7 @@
             <string>3D body visualization (low resolution)</string>
            </property>
            <property name="text">
-            <string>Low</string>
+            <string>LowRes</string>
            </property>
           </widget>
          </item>
@@ -236,7 +245,7 @@
             <string>3D body visualization (high resolution)</string>
            </property>
            <property name="text">
-            <string>High</string>
+            <string>HighRes</string>
            </property>
           </widget>
          </item>
@@ -316,6 +325,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
       <widget class="QGroupBox" name="groupBox">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <property name="title">
         <string>Correct False Split</string>
        </property>
@@ -389,6 +401,9 @@
      </item>
      <item>
       <widget class="QGroupBox" name="groupBox_2">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <property name="title">
         <string>Correct False Merge</string>
        </property>

@@ -183,14 +183,14 @@ std::string ZStackObjectSourceFactory::MakeDvidTileSource()
 }
 
 std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
-    NeuTube::EAxis axis)
+    neutube::EAxis axis)
 {
   std::string source = "#.DVIDLabelSlice";
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     source += ".X";
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     source += ".Y";
     break;
   default:
@@ -303,14 +303,14 @@ std::string ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource()
 }
 
 std::string
-ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis)
+ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(neutube::EAxis axis)
 {
   std::string source = MakeDvidSynapseEnsembleSource();
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     source += ".X";
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     source += ".Y";
     break;
   default:
@@ -345,14 +345,14 @@ std::string ZStackObjectSourceFactory::MakeTodoPunctaSource(uint64_t bodyId)
 }
 
 std::string
-ZStackObjectSourceFactory::MakeTodoListEnsembleSource(NeuTube::EAxis axis)
+ZStackObjectSourceFactory::MakeTodoListEnsembleSource(neutube::EAxis axis)
 {
   std::string source = MakeTodoListEnsembleSource();
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     source += ".X";
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     source += ".Y";
     break;
   default:

@@ -13,7 +13,7 @@ void ZStackObjectPainter::init()
 
 void ZStackObjectPainter::paint(
     const ZStackObject *obj, ZPainter &painter, int slice,
-    ZStackObject::EDisplayStyle option, NeuTube::EAxis sliceAxis) const
+    ZStackObject::EDisplayStyle option, neutube::EAxis sliceAxis) const
 {
   if (obj != NULL) {
     if (m_painterConst) {

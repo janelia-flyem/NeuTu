@@ -483,7 +483,7 @@ public: /* operations */
                    int c = 0);
 
 
-  void* projection(NeuTube::EImageBackground bg,
+  void* projection(neutube::EImageBackground bg,
                    ZSingleChannelStack::Stack_Axis axis = ZSingleChannelStack::Z_AXIS,
                    int c = 0);
 

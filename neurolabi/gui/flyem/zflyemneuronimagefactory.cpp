@@ -20,29 +20,29 @@ void ZFlyEmNeuronImageFactory::setSizePolicy(
 }
 
 void ZFlyEmNeuronImageFactory::setSizePolicy(
-    NeuTube::EAxis axis, ESizePolicy policy)
+    neutube::EAxis axis, ESizePolicy policy)
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     m_sizePolicy[0] = policy;
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     m_sizePolicy[1] = policy;
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     m_sizePolicy[2] = policy;
     break;
   }
 }
 
-int ZFlyEmNeuronImageFactory::getSourceDimension(NeuTube::EAxis axis) const
+int ZFlyEmNeuronImageFactory::getSourceDimension(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_sourceDimension[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_sourceDimension[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_sourceDimension[2];
   }
 
@@ -147,7 +147,7 @@ Stack *ZFlyEmNeuronImageFactory::createSurfaceImage(const ZObject3dScan &obj) co
     C_Stack::write("/Users/zhaot/Work/neutube/neurolabi/data/test2.tif", objStack);
 #endif
 
-    stack = misc::computeNormal(objStack, NeuTube::Y_AXIS);
+    stack = misc::computeNormal(objStack, neutube::Y_AXIS);
     C_Stack::kill(objStack);
 
     int height= C_Stack::height(stack);

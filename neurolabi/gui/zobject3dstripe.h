@@ -44,7 +44,7 @@ public:
   void addStackValue(Stack *stack, int v, const int *offset = NULL) const;
 
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
-  void drawStack(Stack *stack, int v, NeuTube::EAxis axis,
+  void drawStack(Stack *stack, int v, neutube::EAxis axis,
                  const int *offset = NULL) const;
 
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,

@@ -7,21 +7,21 @@
 
 ZStackViewParam::ZStackViewParam()
 {
-  init(NeuTube::COORD_RAW_STACK);
+  init(neutube::COORD_RAW_STACK);
 }
 
-ZStackViewParam::ZStackViewParam(NeuTube::ECoordinateSystem coordSys)
+ZStackViewParam::ZStackViewParam(neutube::ECoordinateSystem coordSys)
 {
   init(coordSys);
 }
 
-void ZStackViewParam::init(NeuTube::ECoordinateSystem coordSys)
+void ZStackViewParam::init(neutube::ECoordinateSystem coordSys)
 {
   m_z = 0;
   m_coordSys = coordSys;
-  m_action = NeuTube::View::EXPLORE_UNKNOWN;
+  m_action = neutube::View::EXPLORE_UNKNOWN;
   m_fixingZ = false;
-  m_sliceAxis = NeuTube::Z_AXIS;
+  m_sliceAxis = neutube::Z_AXIS;
 }
 
 QRectF ZStackViewParam::getProjRect() const
@@ -66,7 +66,7 @@ void ZStackViewParam::setProjRect(const QRectF &rect)
 }
 #endif
 
-void ZStackViewParam::setExploreAction(NeuTube::View::EExploreAction action)
+void ZStackViewParam::setExploreAction(neutube::View::EExploreAction action)
 {
   m_action = action;
 }
@@ -123,12 +123,12 @@ int ZStackViewParam::getArea() const
   return getViewPort().width() * getViewPort().height();
 }
 
-void ZStackViewParam::setSliceAxis(NeuTube::EAxis sliceAxis)
+void ZStackViewParam::setSliceAxis(neutube::EAxis sliceAxis)
 {
   m_sliceAxis = sliceAxis;
 }
 
-NeuTube::EAxis ZStackViewParam::getSliceAxis() const
+neutube::EAxis ZStackViewParam::getSliceAxis() const
 {
   return m_sliceAxis;
 }

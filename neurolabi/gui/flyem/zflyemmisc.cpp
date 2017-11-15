@@ -962,25 +962,25 @@ void ZFlyEmMisc::PrepareBodyStatus(QComboBox *box)
 }
 
 void ZFlyEmMisc::MakeTriangle(
-    const QRectF &rect, QPointF *ptArray, NeuTube::ECardinalDirection direction)
+    const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
 {
   switch (direction) {
-  case NeuTube::CD_EAST:
+  case neutube::CD_EAST:
     ptArray[0] = QPointF(rect.right(), rect.center().y());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.bottomLeft();
     break;
-  case NeuTube::CD_WEST:
+  case neutube::CD_WEST:
     ptArray[0] = QPointF(rect.left(), rect.center().y());
     ptArray[1] = rect.topRight();
     ptArray[2] = rect.bottomRight();
     break;
-  case NeuTube::CD_NORTH:
+  case neutube::CD_NORTH:
     ptArray[0] = QPointF(rect.center().x(), rect.top());
     ptArray[1] = rect.bottomLeft();
     ptArray[2] = rect.bottomRight();
     break;
-  case NeuTube::CD_SOUTH:
+  case neutube::CD_SOUTH:
     ptArray[0] = QPointF(rect.center().x(), rect.bottom());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.topRight();
@@ -1206,7 +1206,7 @@ void ZFlyEmMisc::UploadSyGlassTask(
         std::string location = writer->writeServiceTask("split", taskJson);
 
         ZJsonObject entryJson;
-        entryJson.setEntry(NeuTube::Json::REF_KEY, location);
+        entryJson.setEntry(neutube::Json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
       }

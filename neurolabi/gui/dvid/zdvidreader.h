@@ -137,11 +137,11 @@ public:
       uint64_t bodyId, int xIntv, int yIntv, int zIntv,
       bool canonizing, ZObject3dScan *result);
 
-  ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
+  ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
                           bool canonizing, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
-                          NeuTube::EAxis axis, ZObject3dScan *result);
+                          neutube::EAxis axis, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
 

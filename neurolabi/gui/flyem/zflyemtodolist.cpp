@@ -44,7 +44,7 @@ void ZFlyEmToDoList::init()
   m_startZ = 0;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = NeuTube::Z_AXIS;
+  m_sliceAxis = neutube::Z_AXIS;
   m_isReady = false;
 }
 
@@ -336,7 +336,7 @@ bool ZFlyEmToDoList::isReady() const
 
 void ZFlyEmToDoList::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return;
@@ -368,7 +368,7 @@ void ZFlyEmToDoList::display(
 
           if (!ready && m_view != NULL) {
             ready =itemSlice.isReady(
-                  m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
+                  m_view->getViewPort(neutube::COORD_STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);
@@ -749,7 +749,7 @@ ZFlyEmToDoList::ItemSlice::getMap(int y, EAdjustment adjust)
 }
 
 void ZFlyEmToDoList::ItemSlice::addItem(
-    const ZFlyEmToDoItem &item, NeuTube::EAxis sliceAxis)
+    const ZFlyEmToDoItem &item, neutube::EAxis sliceAxis)
 {
   ZIntPoint center = item.getPosition();
   center.shiftSliceAxis(sliceAxis);

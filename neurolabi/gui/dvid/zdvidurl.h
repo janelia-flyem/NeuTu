@@ -71,9 +71,9 @@ public:
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
-  std::string getSparsevolUrl(uint64_t bodyId, int z, NeuTube::EAxis axis) const;
+  std::string getSparsevolUrl(uint64_t bodyId, int z, neutube::EAxis axis) const;
   std::string getSparsevolUrl(
-      uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const;
+      uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
   std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom);
   std::string getSparsevolSizeUrl(uint64_t bodyId) const;

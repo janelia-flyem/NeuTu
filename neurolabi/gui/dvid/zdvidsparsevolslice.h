@@ -21,12 +21,12 @@ public:
   void setReader(ZDvidReader *reader);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   void update();
   bool update(const ZStackViewParam &viewParam);
 
-  bool isSliceVisible(int z, NeuTube::EAxis axis) const;
+  bool isSliceVisible(int z, neutube::EAxis axis) const;
 
 private:
   ZDvidSparsevolSlice& operator=(const ZDvidSparsevolSlice& obj);

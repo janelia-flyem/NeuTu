@@ -37,9 +37,9 @@ void ZPuncta::sort() const
 }
 
 void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
-                      NeuTube::EAxis sliceAxis) const
+                      neutube::EAxis sliceAxis) const
 {
-  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != NeuTube::Z_AXIS) {
+  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != neutube::Z_AXIS) {
     return;
   }
 
@@ -163,7 +163,7 @@ void ZPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZPuncta::pushVisualEffect(NeuTube::Display::TVisualEffect effect)
+void ZPuncta::pushVisualEffect(neutube::Display::TVisualEffect effect)
 {
   for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

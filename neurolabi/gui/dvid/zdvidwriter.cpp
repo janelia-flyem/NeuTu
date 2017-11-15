@@ -1413,7 +1413,7 @@ uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLab
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
   std::string url = ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
-        NeuTube::GetCurrentUserName());
+        neutube::GetCurrentUserName());
 
   if (!url.empty()) {
     if (!bodyMap.isEmpty()) {

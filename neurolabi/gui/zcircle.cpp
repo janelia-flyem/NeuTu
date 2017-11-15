@@ -61,9 +61,9 @@ void ZCircle::set(const ZPoint &center, double r)
 
 void ZCircle::display(
     ZPainter &painter, int n,
-    ZStackObject::EDisplayStyle style, NeuTube::EAxis sliceAxis) const
+    ZStackObject::EDisplayStyle style, neutube::EAxis sliceAxis) const
 {
-  if (!isVisible() || sliceAxis != NeuTube::Z_AXIS) {
+  if (!isVisible() || sliceAxis != neutube::Z_AXIS) {
     return;
   }
 

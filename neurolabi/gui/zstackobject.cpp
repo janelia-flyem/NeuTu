@@ -10,10 +10,10 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_isVisible(true), m_hitProtocal(HIT_STACK_POS), m_projectionVisible(true),
   m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(NeuTube::Display::VE_NONE), m_prevDisplaySlice(-1)
+  m_visualEffect(neutube::Display::VE_NONE), m_prevDisplaySlice(-1)
 {
   m_type = TYPE_UNIDENTIFIED;
-  setSliceAxis(NeuTube::Z_AXIS);
+  setSliceAxis(neutube::Z_AXIS);
   m_basePenWidth = m_defaultPenWidth;
   m_timeStamp = 0;
 }
@@ -28,7 +28,7 @@ ZStackObject::~ZStackObject()
 
 bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
                            EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
-                           NeuTube::EAxis /*sliceAxis*/) const
+                           neutube::EAxis /*sliceAxis*/) const
 {
   return false;
 }
@@ -158,12 +158,12 @@ double ZStackObject::getPenWidth() const
   return width;
 }
 
-bool ZStackObject::isSliceVisible(int /*z*/, NeuTube::EAxis /*axis*/) const
+bool ZStackObject::isSliceVisible(int /*z*/, neutube::EAxis /*axis*/) const
 {
   return isVisible();
 }
 
-bool ZStackObject::hit(double /*x*/, double /*y*/, NeuTube::EAxis /*axis*/)
+bool ZStackObject::hit(double /*x*/, double /*y*/, neutube::EAxis /*axis*/)
 {
   return false;
 }
@@ -179,7 +179,7 @@ bool ZStackObject::hit(const ZIntPoint &pt)
 }
 
 bool ZStackObject::hit(
-    const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis)
+    const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutube::EAxis axis)
 {
   switch (m_hitProtocal) {
   case HIT_STACK_POS:
@@ -194,7 +194,7 @@ bool ZStackObject::hit(
 }
 
 bool ZStackObject::hitWidgetPos(
-    const ZIntPoint &/*widgetPos*/, NeuTube::EAxis /*axis*/)
+    const ZIntPoint &/*widgetPos*/, neutube::EAxis /*axis*/)
 {
   return false;
 }
@@ -295,22 +295,22 @@ void ZStackObject::boundBox(ZIntCuboid *box) const
   }
 }
 
-void ZStackObject::addVisualEffect(NeuTube::Display::TVisualEffect ve)
+void ZStackObject::addVisualEffect(neutube::Display::TVisualEffect ve)
 {
   m_visualEffect |= ve;
 }
 
-void ZStackObject::removeVisualEffect(NeuTube::Display::TVisualEffect ve)
+void ZStackObject::removeVisualEffect(neutube::Display::TVisualEffect ve)
 {
   m_visualEffect &= ~ve;
 }
 
-void ZStackObject::setVisualEffect(NeuTube::Display::TVisualEffect ve)
+void ZStackObject::setVisualEffect(neutube::Display::TVisualEffect ve)
 {
   m_visualEffect = ve;
 }
 
-bool ZStackObject::hasVisualEffect(NeuTube::Display::TVisualEffect ve) const
+bool ZStackObject::hasVisualEffect(neutube::Display::TVisualEffect ve) const
 {
   return m_visualEffect & ve;
 }

@@ -45,8 +45,8 @@ void ZDvidSynapseEnsemble::init()
   m_type = TYPE_DVID_SYNAPE_ENSEMBLE;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = NeuTube::Z_AXIS;
-  addVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT);
+  m_sliceAxis = neutube::Z_AXIS;
+  addVisualEffect(neutube::Display::VE_GROUP_HIGHLIGHT);
   m_dataFetcher = NULL;
   m_isReady = false;
 }
@@ -177,7 +177,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
           viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
           viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
-    if (m_dataFetcher == NULL || getSliceAxis() == NeuTube::Z_AXIS) {
+    if (m_dataFetcher == NULL || getSliceAxis() == neutube::Z_AXIS) {
       syncedFetch(box, startZ, endZ, false);
       /*
       updateUnsync(box);
@@ -697,7 +697,7 @@ void ZDvidSynapseEnsemble::updateFromCacheUnsync(int z)
 
 void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
   QMutexLocker locker(&m_dataMutex);
 
@@ -733,7 +733,7 @@ void ZDvidSynapseEnsemble::display(
 
           if (!ready && m_view != NULL) {
             ready = synapseSlice.isReady(
-                  m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
+                  m_view->getViewPort(neutube::COORD_STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);
@@ -772,7 +772,7 @@ void ZDvidSynapseEnsemble::display(
           if (!synapse.isSelected()) {
             EDisplayStyle tmpOption = option;
             if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN &&
-                hasVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT)) {
+                hasVisualEffect(neutube::Display::VE_GROUP_HIGHLIGHT)) {
               tmpOption = SKELETON;
             }
             synapse.display(painter, slice, tmpOption, sliceAxis);
@@ -1326,7 +1326,7 @@ ZDvidSynapseEnsemble::SynapseSlice::getMap(int y, EAdjustment adjust)
 }
 
 void ZDvidSynapseEnsemble::SynapseSlice::addSynapse(
-    const ZDvidSynapse &synapse, NeuTube::EAxis sliceAxis)
+    const ZDvidSynapse &synapse, neutube::EAxis sliceAxis)
 {
   ZIntPoint center = synapse.getPosition();
   center.shiftSliceAxis(sliceAxis);

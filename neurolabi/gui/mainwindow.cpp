@@ -185,7 +185,7 @@
 #include <QInputDialog>
 #include <QMimeData>
 
-namespace NeuTube {
+namespace neutube {
 static const char *VERSION = "1.1";
 }
 
@@ -291,10 +291,10 @@ MainWindow::MainWindow(QWidget *parent) :
            "It seems the software folder is not writable to you. "
            "The software will not remember your settings. "
            "We suggest each user get an indvidual copy of the software.",
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
   }
 
-  m_version = NeuTube::VERSION;
+  m_version = neutube::VERSION;
 #if defined(__NEUTU_BUILD_VERSION__)
   m_version += __NEUTU_BUILD_VERSION__;
 #endif
@@ -1315,7 +1315,7 @@ void MainWindow::enableStackActions(bool b)
 }
 
 void MainWindow::report(const std::string &title, const std::string &msg,
-                        NeuTube::EMessageType msgType)
+                        neutube::EMessageType msgType)
 {
   m_reporter->report(title, msg, msgType);
 }
@@ -1413,7 +1413,7 @@ void MainWindow::takeScreenshot()
     }
   } else {
     report("No Active Frame", "Select one image first.",
-           NeuTube::MSG_INFORMATION);
+           neutube::MSG_INFORMATION);
     //QMessageBox::information(this, "No Active Frame", "Select one image first!");
   }
 }
@@ -1479,9 +1479,9 @@ void MainWindow::viewObject(QAction *action)
 void MainWindow::stretchStackFrame(ZStackFrame *frame)
 {
   if (frame != NULL) {
-    frame->setSizeHintOption(NeuTube::SIZE_HINT_TAKING_SPACE);
+    frame->setSizeHintOption(neutube::SIZE_HINT_TAKING_SPACE);
     frame->resize(frame->sizeHint());
-    frame->setSizeHintOption(NeuTube::SIZE_HINT_CURRENT_BEST);
+    frame->setSizeHintOption(neutube::SIZE_HINT_CURRENT_BEST);
   }
 }
 
@@ -1536,9 +1536,9 @@ void MainWindow::openFileListFunc(const QStringList fileList)
     emit progressStarted("Opening " + fileName + " ...", 100);
     ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
     if (ZFileType::isNeutubeOpenable(fileType)) {
-      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
+      neutube::Document::ETag tag = neutube::Document::NORMAL;
       if (GET_APPLICATION_NAME == "Biocytin") {
-        tag = NeuTube::Document::BIOCYTIN_STACK;
+        tag = neutube::Document::BIOCYTIN_STACK;
       }
 
       emit progressAdvanced(0.2);
@@ -1565,9 +1565,9 @@ void MainWindow::openFileFunc(const QString &fileName)
   ZFileType::EFileType fileType = ZFileType::FileType(fileName.toStdString());
 
   if (ZFileType::isNeutubeOpenable(fileType)) {
-    NeuTube::Document::ETag tag = NeuTube::Document::NORMAL;
+    neutube::Document::ETag tag = neutube::Document::NORMAL;
     if (GET_APPLICATION_NAME == "Biocytin") {
-      tag = NeuTube::Document::BIOCYTIN_STACK;
+      tag = neutube::Document::BIOCYTIN_STACK;
     }
 
     emit progressAdvanced(0.2);
@@ -2792,7 +2792,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 
   QStringList fileList;
   foreach (QUrl url, urls) {
-    QString filePath = NeuTube::GetFilePath(url);
+    QString filePath = neutube::GetFilePath(url);
 
     if (!filePath.isEmpty()) {
       fileList.append(filePath);
@@ -3337,7 +3337,7 @@ void MainWindow::on_actionSkeletonization_triggered()
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         report("Skeletonization failed", "No SWC tree generated.",
-               NeuTube::MSG_ERROR);
+               neutube::MSG_ERROR);
       }
     }
   }
@@ -4531,7 +4531,7 @@ void MainWindow::reportFileOpenProblem(const QString &filePath,
 
   report(std::string("File Open Error"),
          std::string("Cannot open ") + filePath.toStdString() +
-         ": " + finalReason.toStdString(), NeuTube::MSG_WARNING);
+         ": " + finalReason.toStdString(), neutube::MSG_WARNING);
 
 #if 0
   QMessageBox::critical(this, tr("Error"),
@@ -4742,7 +4742,7 @@ void MainWindow::on_actionMask_triggered()
 #endif
 
     if (!fileName.isEmpty()) {
-      frame->exportObjectMask(NeuTube::COLOR_RED, fileName);
+      frame->exportObjectMask(neutube::COLOR_RED, fileName);
       m_lastOpenedFilePath = fileName;
     }
   }
@@ -4780,7 +4780,7 @@ ZStackFrame* MainWindow::createEmptyStackFrame(ZStackFrame *parentFrame)
 }
 
 ZStackFrame *MainWindow::createStackFrame(
-    Stack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+    Stack *stack, neutube::Document::ETag tag, ZStackFrame *parentFrame)
 {
   if (stack != NULL) {
     ZStackFrame *newFrame = createEmptyStackFrame(parentFrame);
@@ -4807,12 +4807,12 @@ ZStackFrame *MainWindow::createStackFrame(
 }
 
 ZStackFrame *MainWindow::createStackFrame(
-    ZStack *stack, NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+    ZStack *stack, neutube::Document::ETag tag, ZStackFrame *parentFrame)
 {
   if (stack != NULL) {
 
     ZSharedPointer<ZStackDoc> doc;
-    if (tag == NeuTube::Document::BIOCYTIN_PROJECTION) {
+    if (tag == neutube::Document::BIOCYTIN_PROJECTION) {
       doc = ZSharedPointer<ZStackDoc>(new ZBiocytinProjectionDoc);
       if (parentFrame != NULL) {
         ZBiocytinProjectionDoc *cdoc =
@@ -4874,7 +4874,7 @@ ZStackFrame *MainWindow::createStackFrame(
 #endif
 
 ZStackFrame* MainWindow::createStackFrame(
-    ZStackDocReader &reader, NeuTube::Document::ETag tag)
+    ZStackDocReader &reader, neutube::Document::ETag tag)
 {
   //ZStackFrame *newFrame = new ZStackFrame;
   ZStackFrame *newFrame = ZStackFrame::Make(NULL, tag);
@@ -4934,7 +4934,7 @@ void MainWindow::on_actionMake_Projection_triggered()
            iter != projArray.end(); ++iter) {
         ZStack *stack = *iter;
         ZStackFrame *newFrame =
-            createStackFrame(stack, NeuTube::Document::BIOCYTIN_PROJECTION, frame);
+            createStackFrame(stack, neutube::Document::BIOCYTIN_PROJECTION, frame);
 //        newFrame->makeSwcProjection(frame->document().get());
         newFrame->document()->setStackOffset(frame->document()->getStackOffset());
         addStackFrame(newFrame);
@@ -5004,17 +5004,17 @@ void MainWindow::on_actionMask_SWC_triggered()
       ZStackArray maskArray;
 
       ZStack *mask = NULL;
-      if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+      if (frame->document()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
         LINFO() << "Skeletonizing projected mask ...";
-        mask = frame->getStrokeMask(NeuTube::COLOR_RED);
+        mask = frame->getStrokeMask(neutube::COLOR_RED);
         if (mask != NULL) {
           maskArray.push_back(mask);
         }
-        mask = frame->getStrokeMask(NeuTube::COLOR_GREEN);
+        mask = frame->getStrokeMask(neutube::COLOR_GREEN);
         if (mask != NULL) {
           maskArray.push_back(mask);
         }
-        mask = frame->getStrokeMask(NeuTube::COLOR_BLUE);
+        mask = frame->getStrokeMask(neutube::COLOR_BLUE);
         if (mask != NULL) {
           maskArray.push_back(mask);
         }
@@ -5028,7 +5028,7 @@ void MainWindow::on_actionMask_SWC_triggered()
 
       if (maskArray.empty()) {
         report("Skeletonization Failed", "No mask found. No SWC generated",
-               NeuTube::MSG_WARNING);
+               neutube::MSG_WARNING);
         return;
       }
 
@@ -5062,7 +5062,7 @@ void MainWindow::on_actionMask_SWC_triggered()
 
       if (wholeTree != NULL) {
         ZStackFrame *stackFrame = frame;
-        if (frame->document()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+        if (frame->document()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
           stackFrame = frame->getParentFrame();
         }
         if (stackFrame != NULL) {
@@ -5080,7 +5080,7 @@ void MainWindow::on_actionMask_SWC_triggered()
             report("Mask Choice",
                    "No stack data found. "
                    "The second channel of the current image is used as a depth mask.",
-                   NeuTube::MSG_WARNING);
+                   neutube::MSG_WARNING);
             Stack *depthData = frame->document()->getStack()->c_stack(1);
             if (depthData != NULL) {
               Biocytin::SwcProcessor::AssignZ(wholeTree, *depthData);
@@ -5197,7 +5197,7 @@ void MainWindow::on_actionMask_SWC_triggered()
       } else {
         progressDlg->reset();
         report("Skeletonization failed", "No SWC tree generated.",
-               NeuTube::MSG_ERROR);
+               neutube::MSG_ERROR);
       }
     }
   }
@@ -5293,7 +5293,7 @@ void MainWindow::on_actionSave_SWC_triggered()
         frame->document()->saveSwc(fileName.toStdString());
       }
     } else {
-      m_reporter->report("Warning", "No SWC found", NeuTube::MSG_WARNING);
+      m_reporter->report("Warning", "No SWC found", neutube::MSG_WARNING);
     }
   }
 }
@@ -5414,11 +5414,11 @@ void MainWindow::on_actionDendrogram_triggered()
           svgGenerator.write(output.toStdString().c_str(), svgString);
 
           report("Dendrogram Generated", output.toStdString() + " saved.",
-                 NeuTube::MSG_INFORMATION);
+                 neutube::MSG_INFORMATION);
         }
       } else {
         report("Command Failure", "Unable to process similarity matrix.",
-               NeuTube::MSG_ERROR);
+               neutube::MSG_ERROR);
       }
     }
   }
@@ -5512,7 +5512,7 @@ void MainWindow::createDvidFrame()
     }
   } else {
     report("No data retrieved", "No data retrieved from DVID",
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
   }
 
   dvidBuffer->clear();
@@ -5623,19 +5623,19 @@ void MainWindow::on_actionAssign_Clustering_triggered()
                 frame->assignClass(outputFile);
               } else {
                 report("Error Output", "Cannot finish the task for unknown reasons.",
-                       NeuTube::MSG_WARNING);
+                       neutube::MSG_WARNING);
               }
             } else {
               report("Error Output", "No output key found.",
-                    NeuTube::MSG_WARNING);
+                    neutube::MSG_WARNING);
             }
           } else {
             report("Task Failed", "Cannot finish the task for unknown reasons.",
-                   NeuTube::MSG_WARNING);
+                   neutube::MSG_WARNING);
           }
         } else {
           report("No Matlab", "No Matlab found. This function requires Matlab.",
-                 NeuTube::MSG_WARNING);
+                 neutube::MSG_WARNING);
         }
         /*
         QProcess::execute(
@@ -5647,7 +5647,7 @@ void MainWindow::on_actionAssign_Clustering_triggered()
         */
       } else {
         report("Unable to generate similarity matrix",
-               "Unable to generate similarity matrix", NeuTube::MSG_ERROR);
+               "Unable to generate similarity matrix", neutube::MSG_ERROR);
       }
     }
   }
@@ -5661,7 +5661,7 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
       if (m_resDlg->getXScale() == 0.0 || m_resDlg->getYScale() == 0.0 ||
           m_resDlg->getZScale() == 0.0) {
         report("Invalid Parameter", "A scale value is 0. No SWC is saved",
-               NeuTube::MSG_WARNING);
+               neutube::MSG_WARNING);
       } else {
         if (frame->document()->hasSwc()) {
           if (!m_lastOpenedFilePath.endsWith(".swc")) {
@@ -5686,11 +5686,11 @@ void MainWindow::on_actionSWC_Rescaling_triggered()
               delete tree;
             } else {
               report("Empty tree", "No neuron structure is obtained.",
-                     NeuTube::MSG_WARNING);
+                     neutube::MSG_WARNING);
             }
           }
         } else {
-          m_reporter->report("Warning", "No SWC found", NeuTube::MSG_WARNING);
+          m_reporter->report("Warning", "No SWC found", neutube::MSG_WARNING);
         }
       }
     }
@@ -5714,7 +5714,7 @@ void MainWindow::on_actionMorphological_Features_triggered()
     if (!featureFile.isEmpty()) {
       if (!frame->saveNeuronFeature(featureFile, true)) {
         report("Save Failed", "Unable to save the features.",
-               NeuTube::MSG_WARNING);
+               neutube::MSG_WARNING);
       }
     }
   }
@@ -5748,15 +5748,15 @@ void MainWindow::on_actionFeature_Selection_triggered()
           frame->dump(featureList.c_str());
         } else {
           report("Error Output", "Empty value.",
-                NeuTube::MSG_WARNING);
+                neutube::MSG_WARNING);
         }
       } else {
         report("Task Failed", "Cannot finish the task for unknown reasons.",
-               NeuTube::MSG_WARNING);
+               neutube::MSG_WARNING);
       }
     } else {
       report("No Matlab", "No Matlab found. This function requires Matlab.",
-             NeuTube::MSG_WARNING);
+             neutube::MSG_WARNING);
     }
   }
 }
@@ -5839,7 +5839,7 @@ void MainWindow::on_actionTiles_triggered()
     progressDlg->open();
 
     ZSharedPointer<ZStackDoc> doc =
-        ZStackDocFactory::Make(NeuTube::Document::BIOCYTIN_STACK);
+        ZStackDocFactory::Make(neutube::Document::BIOCYTIN_STACK);
     ZTiledStackFrame *frame = ZTiledStackFrame::Make(NULL, doc);
     if (frame->importTiles(fileName)) {
       addStackFrame(frame);
@@ -5990,7 +5990,7 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   ZSwcTree *tree = reader.readSwc(bodyId);
   if (tree == NULL) {
     report("Hot Spot Demo Failed", "No skeleton found.",
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
     return NULL;
   }
 
@@ -6000,7 +6000,7 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
   if (hotSpotArray.empty()) {
     report("Hot Spot Demo Failed", "The neuron seems normal.",
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
     return NULL;
   }
 
@@ -6022,7 +6022,7 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   if (stack == NULL) {
     if (hotSpotArray.empty()) {
       report("Hot Spot Demo Failed", "Cannot retreive grayscale data.",
-             NeuTube::MSG_WARNING);
+             neutube::MSG_WARNING);
       return NULL;
     }
   }
@@ -6256,7 +6256,7 @@ void MainWindow::on_actionHot_Spot_Demo_triggered()
       presentStackFrame(frame);
     } else {
       report("No Hotspot Detected", "No hotspot detected.",
-             NeuTube::MSG_INFORMATION);
+             neutube::MSG_INFORMATION);
     }
 #if 0
     ZStackFrame *frame = res.result();
@@ -6443,7 +6443,7 @@ void MainWindow::on_actionDVID_Bundle_triggered()
     GET_FLYEM_CONFIG.setDvidTarget(m_dvidDlg->getDvidTarget());
     target = GET_FLYEM_CONFIG.getDvidTarget();
     if (!target.isValid()) {
-      report("Invalid DVID", "Invalid DVID server.", NeuTube::MSG_WARNING);
+      report("Invalid DVID", "Invalid DVID server.", neutube::MSG_WARNING);
     } else {
       continueLoading = true;
     }
@@ -6632,7 +6632,7 @@ void MainWindow::on_actionLoad_Body_with_Grayscale_triggered()
             ZStackDocReader docReader;
             docReader.setStack(out);
             ZStackFrame *frame = createStackFrame(&docReader);
-            frame->document()->setTag(NeuTube::Document::FLYEM_BODY);
+            frame->document()->setTag(neutube::Document::FLYEM_BODY);
             addStackFrame(frame);
             presentStackFrame(frame);
           }
@@ -6656,8 +6656,8 @@ void MainWindow::createStackFrameFromDocReader(ZStackDocReader *reader)
 
     if (frame->document()->hasStack()) {
       if (GET_APPLICATION_NAME == "Biocytin") {
-        frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
-        frame->document()->setTag(NeuTube::Document::BIOCYTIN_STACK);
+        frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
+        frame->document()->setTag(neutube::Document::BIOCYTIN_STACK);
         frame->document()->setResolution(1, 1, 10, 'p');
       }
       addStackFrame(frame);
@@ -6749,7 +6749,7 @@ void MainWindow::on_actionView_Labeled_Regions_triggered()
     if (labeled != NULL) {
       docReader.setStack(labeled);
       ZStackFrame *newFrame = createStackFrame(&docReader, frame);
-      newFrame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
+      newFrame->document()->setTag(neutube::Document::FLYEM_SPLIT);
       newFrame->document()->setStackFactory(factory);
       connect(frame->document().get(), SIGNAL(labelFieldModified()),
               newFrame->document().get(), SLOT(reloadStack()));
@@ -6889,9 +6889,7 @@ bool MainWindow::initBodySplitProject()
         //docReader.setStack(out);
         docReader.setSparseStack(spStack);
         ZStackFrame *frame = createStackFrame(
-              docReader, NeuTube::Document::FLYEM_SPLIT);
-//        frame->setTag(NeuTube::Document::FLYEM_SPLIT);
-//        frame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
+              docReader, neutube::Document::FLYEM_SPLIT);
 
         m_bodySplitProjectDialog->setDataFrame(frame);
         m_bodySplitProjectDialog->downloadSeed();
@@ -7033,7 +7031,7 @@ void MainWindow::on_actionCreate_ROI_triggered()
 void MainWindow::on_actionFlyEmROI_triggered()
 {
   report("Warning", "The ROI tool is under maintainence. Please wait for the update.",
-         NeuTube::MSG_WARNING);
+         neutube::MSG_WARNING);
 #if 0
   m_roiDlg->show();
   m_roiDlg->raise();
@@ -7396,7 +7394,7 @@ void MainWindow::on_actionHackathonSimmat_triggered()
     }
   } else {
     report("Data Not Ready", "Please load the data from DVID first",
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
   }
 }
 
@@ -7411,7 +7409,7 @@ void MainWindow::on_actionHackathonEvaluate_triggered()
       QString("Accuracy: %1 / %2").arg(evaluator.getAccurateCount()).
       arg(evaluator.getNeuronCount());
 
-  report("Evaluation", information.toStdString(), NeuTube::MSG_INFORMATION);
+  report("Evaluation", information.toStdString(), neutube::MSG_INFORMATION);
 }
 
 ZProofreadWindow *MainWindow::startProofread()
@@ -7430,7 +7428,7 @@ ZProofreadWindow *MainWindow::startProofread()
           ZWidgetMessage("Failed to initialize tmp directory. "
                          "Some editing functions (especially split) will not work. "
                          "Please check the permission or disk space.",
-                         NeuTube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+                         neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
   }
 
   return window;
@@ -7681,7 +7679,7 @@ void MainWindow::MessageProcessor::processMessage(
       ZJsonObject messageBody = message->getMessageBody();
       std::string title = ZJsonParser::stringValue(messageBody["title"]);
       std::string msg = ZJsonParser::stringValue(messageBody["body"]);
-      realHost->report(title, msg, NeuTube::MSG_INFORMATION);
+      realHost->report(title, msg, neutube::MSG_INFORMATION);
 
       message->deactivate();
     }
@@ -7701,7 +7699,7 @@ void MainWindow::on_actionRemove_Obsolete_Annotations_triggered()
     GET_FLYEM_CONFIG.setDvidTarget(m_dvidDlg->getDvidTarget());
     target = GET_FLYEM_CONFIG.getDvidTarget();
     if (!target.isValid()) {
-      report("Invalid DVID", "Invalid DVID server.", NeuTube::MSG_WARNING);
+      report("Invalid DVID", "Invalid DVID server.", neutube::MSG_WARNING);
     } else {
       continueLoading = true;
     }
@@ -7762,7 +7760,7 @@ void MainWindow::generateMBKcCast(const std::string &movieFolder)
     report("Reading Failed",
            ("Failed to read " + neuronListFile.fileName() + ":" +
             neuronListFile.errorString()).toStdString(),
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
     return;
   }
 
@@ -7844,7 +7842,7 @@ void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
     report("Reading Failed",
            ("Failed to read " + neuronListFile.fileName() + ":" +
             neuronListFile.errorString()).toStdString(),
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
     return;
   }
 
@@ -7928,7 +7926,7 @@ void MainWindow::generateMBPAMCast(const std::string &movieFolder)
     report("Reading Failed",
            ("Failed to read " + neuronListFile.fileName() + ":" +
             neuronListFile.errorString()).toStdString(),
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
     return;
   }
 
@@ -7976,7 +7974,7 @@ void MainWindow::generateMBONCast(const std::string &movieFolder)
     report("Reading Failed",
            ("Failed to read " + neuronListFile.fileName() + ":" +
             neuronListFile.errorString()).toStdString(),
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
     return;
   }
 
@@ -8024,7 +8022,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     report("Reading Failed",
            ("Failed to read " + neuronListFile.fileName() + ":" +
             neuronListFile.errorString()).toStdString(),
-           NeuTube::MSG_WARNING);
+           neutube::MSG_WARNING);
     return;
   }
 
@@ -8182,7 +8180,7 @@ void MainWindow::generateMBONConvCast(const std::string &movieFolder)
         (GET_FLYEM_DATA_DIR + "/MB/paper/" + movieFolder).c_str());
 
   if (!errMsg.isEmpty()) {
-    report("Failed to generate cast", errMsg.toStdString(), NeuTube::MSG_WARNING);
+    report("Failed to generate cast", errMsg.toStdString(), neutube::MSG_WARNING);
   }
 }
 
@@ -8192,7 +8190,7 @@ void MainWindow::generateFIB19VsCast(const std::string &movieFolder)
         ZFlyEmMisc::FIB19::GetMovieDir(movieFolder.c_str()));
 
   if (!errMsg.isEmpty()) {
-    report("Failed to generate cast", errMsg.toStdString(), NeuTube::MSG_WARNING);
+    report("Failed to generate cast", errMsg.toStdString(), neutube::MSG_WARNING);
   }
 }
 
