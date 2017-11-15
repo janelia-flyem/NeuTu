@@ -13,7 +13,7 @@ ZIntCuboidObj::ZIntCuboidObj()
   m_type = GetType();
 }
 
-bool ZIntCuboidObj::isSliceVisible(int /*z*/, NeuTube::EAxis /*sliceAxis*/) const
+bool ZIntCuboidObj::isSliceVisible(int /*z*/, neutube::EAxis /*sliceAxis*/) const
 {
   return true;
 }
@@ -63,7 +63,7 @@ int ZIntCuboidObj::getDepth() const
   return m_cuboid.getDepth();
 }
 
-bool ZIntCuboidObj::isOnSlice(int z, NeuTube::EAxis sliceAxis) const
+bool ZIntCuboidObj::isOnSlice(int z, neutube::EAxis sliceAxis) const
 {
   return z >= getFirstCorner().getSliceCoord(sliceAxis) &&
       z <= getLastCorner().getSliceCoord(sliceAxis);
@@ -71,7 +71,7 @@ bool ZIntCuboidObj::isOnSlice(int z, NeuTube::EAxis sliceAxis) const
 
 void ZIntCuboidObj::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
   if (m_cuboid.isEmpty()) {
     return;
@@ -115,7 +115,7 @@ void ZIntCuboidObj::display(
                    lastCorner.getY() - firstCorner.getY() + 1);
 }
 
-bool ZIntCuboidObj::hit(double x, double y, NeuTube::EAxis axis)
+bool ZIntCuboidObj::hit(double x, double y, neutube::EAxis axis)
 {
   ZIntPoint firstCorner = getFirstCorner();
   ZIntPoint lastCorner = getLastCorner();
@@ -131,8 +131,8 @@ bool ZIntCuboidObj::hit(double x, double y, NeuTube::EAxis axis)
 
 bool ZIntCuboidObj::hit(double x, double y, double z)
 {
-  if (isOnSlice(z, NeuTube::Z_AXIS)) {
-    return hit(x, y, NeuTube::Z_AXIS);
+  if (isOnSlice(z, neutube::Z_AXIS)) {
+    return hit(x, y, neutube::Z_AXIS);
   }
 
   return false;

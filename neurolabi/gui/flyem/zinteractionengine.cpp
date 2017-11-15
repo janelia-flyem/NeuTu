@@ -21,7 +21,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_exploreMarker.setRadius(5.0);
   m_exploreMarker.setZ(0);
   m_exploreMarker.useCosmeticPen(true);
-  m_exploreMarker.addVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+  m_exploreMarker.addVisualEffect(neutube::Display::Sphere::VE_CROSS_CENTER);
 
   m_namedDecorationList.append(&m_stroke);
   m_namedDecorationList.append(&m_rayMarker);

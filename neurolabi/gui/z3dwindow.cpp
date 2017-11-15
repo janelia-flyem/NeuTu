@@ -1616,7 +1616,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     return;
   }
 
-  if (getDocument()->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+  if (getDocument()->getTag() == neutube::Document::FLYEM_SKELETON) {
     return;
   }
 
@@ -2288,8 +2288,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != NeuTube::Document::FLYEM_BODY_3D_COARSE &&
-      getDocument()->getTag() != NeuTube::Document::FLYEM_BODY_3D){
+  if (getDocument()->getTag() != neutube::Document::FLYEM_BODY_3D_COARSE &&
+      getDocument()->getTag() != neutube::Document::FLYEM_BODY_3D){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -2329,9 +2329,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
     } else if (event->modifiers() == Qt::NoModifier) {
-      if (getDocument()->getTag() == NeuTube::Document::NORMAL ||
-          getDocument()->getTag() == NeuTube::Document::FLYEM_SKELETON ||
-          getDocument()->getTag() == NeuTube::Document::BIOCYTIN_STACK) {
+      if (getDocument()->getTag() == neutube::Document::NORMAL ||
+          getDocument()->getTag() == neutube::Document::FLYEM_SKELETON ||
+          getDocument()->getTag() == neutube::Document::BIOCYTIN_STACK) {
         keyMode = ZInteractionEngine::KM_SWC_SELECTION;
       }
     }
@@ -2576,7 +2576,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
-    if (m_doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+    if (m_doc->getTag() == neutube::Document::FLYEM_SPLIT) {
       m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
     }
   }
@@ -4322,13 +4322,13 @@ void Z3DWindow::deleteSelectedSplitSeed()
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
+  if (m_doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE) {
 //    m_doc->executeDeleteSwcNodeCommand();
     if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
       emit croppingSwcInRoi();
     }
-  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
-             m_doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+  } else if (m_doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
+             m_doc->getTag() == neutube::Document::FLYEM_SKELETON) {
     QMessageBox::warning(
           this, "Action Failed", "Cropping only works in coarse body view.");
   } else {

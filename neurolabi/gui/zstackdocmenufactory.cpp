@@ -164,14 +164,14 @@ QMenu* ZStackDocMenuFactory::makeStackContextMenu(
   }
 
   switch (presenter->buddyDocument()->getTag()) {
-  case NeuTube::Document::FLYEM_SPLIT:
-  case NeuTube::Document::SEGMENTATION_TARGET:
+  case neutube::Document::FLYEM_SPLIT:
+  case neutube::Document::SEGMENTATION_TARGET:
     menu->addAction(presenter->getAction(ZActionFactory::ACTION_SPLIT_DATA));
     menu->addAction(presenter->getAction(
                       ZActionFactory::ACTION_ADD_SPLIT_SEED));
     break;
-  case NeuTube::Document::NORMAL:
-  case NeuTube::Document::BIOCYTIN_STACK:
+  case neutube::Document::NORMAL:
+  case neutube::Document::BIOCYTIN_STACK:
     menu->addAction(presenter->getAction(ZActionFactory::ACTION_ADD_SWC_NODE));
     menu->addAction(presenter->getAction(
                       ZActionFactory::ACTION_TOGGLE_SWC_SKELETON));
@@ -227,19 +227,19 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
     QList<ZActionFactory::EAction> actionList;
 
-    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
-        doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE ||
-        doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
+        doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE ||
+        doc->getTag() == neutube::Document::FLYEM_SKELETON) {
       actionList.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
     }
 
-    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D) {
+    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D) {
       actionList.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
     }
 
-    if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
-        doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE ||
-        doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+    if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
+        doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE ||
+        doc->getTag() == neutube::Document::FLYEM_SKELETON) {
       int swcNodeCount = doc->getSelectedSwcNodeNumber();
 
       if (swcNodeCount == 1) {
@@ -257,8 +257,8 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
         actionList.append(ZActionFactory::ACTION_DESELECT_BODY);
       }
 
-      if (doc->getTag() == NeuTube::Document::FLYEM_BODY_3D ||
-          doc->getTag() == NeuTube::Document::FLYEM_BODY_3D_COARSE) {
+      if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
+          doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE) {
         actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
 
         if (window->readyForAction(ZActionFactory::ACTION_FLYEM_COMPARE_BODY)) {

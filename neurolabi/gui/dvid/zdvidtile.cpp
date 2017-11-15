@@ -54,7 +54,7 @@ void ZDvidTile::loadDvidSlice(
 {
   bool loading = true;
   if (m_view != NULL) {
-    if (m_view->getZ(NeuTube::COORD_STACK) != z) {
+    if (m_view->getZ(neutube::COORD_STACK) != z) {
       loading = false;
     }
   }
@@ -86,11 +86,11 @@ void ZDvidTile::loadDvidSlice(
     m_z = z;
   }
 
-  if (hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST) != highContrast) {
+  if (hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST) != highContrast) {
     if (highContrast) {
-      addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+      addVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
     } else {
-      removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+      removeVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
     }
     modified = true;
   }
@@ -102,7 +102,7 @@ void ZDvidTile::loadDvidSlice(
   if (modified && (m_image != NULL)) {
     m_image->loadHighContrastProtocal(m_contrastProtocal);
     m_image->enhanceContrast(
-          hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
+          hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST));
 //    m_image->enhanceContrast(highContrast);
     updatePixmap();
   }
@@ -146,17 +146,17 @@ void ZDvidTile::updatePixmap()
 
 void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
 {
-  if (high != hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST)) {
+  if (high != hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST)) {
     if (high) {
-      addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+      addVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
     } else {
-      removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+      removeVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
     }
 
     if (m_image != NULL) {
       m_image->loadHighContrastProtocal(m_contrastProtocal);
       m_image->enhanceContrast(
-            hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
+            hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST));
       if (updatingPixmap) {
         updatePixmap();
       }
@@ -221,9 +221,9 @@ void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z, bool highConstras
 
 void ZDvidTile::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis != NeuTube::Z_AXIS) {
+  if (sliceAxis != neutube::Z_AXIS) {
     return;
   }
 
@@ -344,7 +344,7 @@ void ZDvidTile::update(int z)
 
     if (!buffer.isEmpty()) {
       loadDvidSlice(buffer, z,
-                    hasVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST));
+                    hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST));
     }
 #endif
   }

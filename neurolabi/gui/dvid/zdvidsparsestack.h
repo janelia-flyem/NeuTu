@@ -23,7 +23,7 @@ public:
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   const std::string& className() const;
 
@@ -100,7 +100,7 @@ public:
 //  void downloadBodyMask(ZDvidReader &reader);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, NeuTube::EAxis axis);
+  bool hit(double x, double y, neutube::EAxis axis);
 
   bool isEmpty() const;
 

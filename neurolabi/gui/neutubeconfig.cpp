@@ -142,8 +142,8 @@ void NeutubeConfig::updateLogDir()
     ZString dir = getPath(WORKING_DIR);
 #if defined(_QT_GUI_USED_) && defined(_FLYEM_)
     if (dir.startsWith("/groups/flyem/")) {
-      m_logDir = "/opt/neutu_log/" + NeuTube::GetCurrentUserName();
-      m_logDestDir = "/groups/flyem/data/neutu_log/" + NeuTube::GetCurrentUserName();
+      m_logDir = "/opt/neutu_log/" + neutube::GetCurrentUserName();
+      m_logDestDir = "/groups/flyem/data/neutu_log/" + neutube::GetCurrentUserName();
       if (!QDir(m_logDir.c_str()).exists()) {
         m_logDir = m_logDestDir;
         m_logDestDir = "";
@@ -399,7 +399,7 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   {
     std::string tmpDir;
 #if defined(_QT_GUI_USED_)
-    std::string user = NeuTube::GetCurrentUserName();
+    std::string user = neutube::GetCurrentUserName();
     tmpDir = QDir::tempPath().toStdString() + "/.neutube.z." + user;
     QDir tmpDirObj(tmpDir.c_str());
     if (!tmpDirObj.exists()) {

@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
   QApplication app(argc, argv, guiEnabled);
 
-  NeuTube::RegisterMetaType();
+  neutube::RegisterMetaType();
 
   //load config
   NeutubeConfig &config = NeutubeConfig::getInstance();

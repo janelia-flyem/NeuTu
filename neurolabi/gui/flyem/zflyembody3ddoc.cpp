@@ -295,14 +295,14 @@ void ZFlyEmBody3dDoc::BodyEvent::print() const
 }
 
 void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
-    const BodyEvent &event, NeuTube::EBiDirection direction)
+    const BodyEvent &event, neutube::EBiDirection direction)
 {
   if (getBodyId() != event.getBodyId())  {
     return;
   }
 
   switch (direction) {
-  case NeuTube::DIRECTION_FORWARD: //event comes first
+  case neutube::DIRECTION_FORWARD: //event comes first
     switch (getAction()) {
     case ACTION_UPDATE:
       switch (event.getAction()) {
@@ -338,10 +338,10 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
       break;
     }
     break;
-  case NeuTube::DIRECTION_BACKWARD:
+  case neutube::DIRECTION_BACKWARD:
   {
     BodyEvent tmpEvent = event;
-    tmpEvent.mergeEvent(*this, NeuTube::DIRECTION_FORWARD);
+    tmpEvent.mergeEvent(*this, neutube::DIRECTION_FORWARD);
     *this = tmpEvent;
   }
     break;
@@ -565,7 +565,7 @@ void ZFlyEmBody3dDoc::saveSplitTask()
 
           std::string location = writer->writeServiceTask("split", task);
           ZJsonObject taskJson;
-          taskJson.setEntry(NeuTube::Json::REF_KEY, location);
+          taskJson.setEntry(neutube::Json::REF_KEY, location);
           writer->writeSplitTask(taskKey, taskJson);
 
           std::cout << "Split task saved @" << taskKey.toStdString() << std::endl;
@@ -599,7 +599,7 @@ QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMapUnsync(
     const BodyEvent &event = *iter;
     uint64_t bodyId = event.getBodyId();
     if (actionMap.contains(bodyId)) {
-      actionMap[bodyId].mergeEvent(event, NeuTube::DIRECTION_BACKWARD);
+      actionMap[bodyId].mergeEvent(event, neutube::DIRECTION_BACKWARD);
     } else {
       actionMap[bodyId] = event;
     }
@@ -762,16 +762,16 @@ void ZFlyEmBody3dDoc::setBodyType(FlyEM::EBodyType type)
   m_bodyType = type;
   switch (m_bodyType) {
   case FlyEM::BODY_COARSE:
-    setTag(NeuTube::Document::FLYEM_BODY_3D_COARSE);
+    setTag(neutube::Document::FLYEM_BODY_3D_COARSE);
     break;
   case FlyEM::BODY_FULL:
-    setTag(NeuTube::Document::FLYEM_BODY_3D);
+    setTag(neutube::Document::FLYEM_BODY_3D);
     break;
   case FlyEM::BODY_SKELETON:
-    setTag(NeuTube::Document::FLYEM_SKELETON);
+    setTag(neutube::Document::FLYEM_SKELETON);
     break;
   case FlyEM::BODY_MESH:
-    setTag(NeuTube::Document::FLYEM_MESH);
+    setTag(neutube::Document::FLYEM_MESH);
     break;
   case FlyEM::BODY_NULL:
     break;
@@ -838,15 +838,15 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
   event.addUpdateFlag(flag);
   if (getDataDocument() != NULL) {
     ZDvidLabelSlice *labelSlice =
-        getDataDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
+        getDataDocument()->getDvidLabelSlice(neutube::Z_AXIS);
 
     if (labelSlice != NULL) {
       QColor color;
 
       if (getBodyType() == FlyEM::BODY_FULL) { //using the original color
-        color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_MAPPED);
+        color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_MAPPED);
       } else {
-        color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+        color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_ORIGINAL);
       }
       color.setAlpha(255);
       event.setBodyColor(color);
@@ -1175,10 +1175,10 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
   ZJsonObject taskJson =
       reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
                                     taskKey.c_str());
-  if (taskJson.hasKey(NeuTube::Json::REF_KEY)) {
+  if (taskJson.hasKey(neutube::Json::REF_KEY)) {
     taskJson =
         reader->readJsonObject(
-          ZJsonParser::stringValue(taskJson[NeuTube::Json::REF_KEY]));
+          ZJsonParser::stringValue(taskJson[neutube::Json::REF_KEY]));
   }
   ZJsonArray seedArrayJson(taskJson.value("seeds"));
   QList<ZStackObject*> seedList;
@@ -1231,7 +1231,7 @@ ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
   if (position.isValid()) {
     item.setPosition(position);
     item.setKind(ZFlyEmToDoItem::KIND_NOTE);
-    item.setUserName(NeuTube::GetCurrentUserName());
+    item.setUserName(neutube::GetCurrentUserName());
     if (checked) {
       item.setChecked(checked);
     }
@@ -1871,7 +1871,7 @@ void ZFlyEmBody3dDoc::compareBody(ZDvidReader &diffReader, const ZIntPoint &pt)
       treeArray = makeDiffBodyModel(pt, diffReader, 0, getBodyType());
     } else {
       std::set<uint64_t> bodySet = doc->getSelectedBodySet(
-            NeuTube::BODY_LABEL_ORIGINAL);
+            neutube::BODY_LABEL_ORIGINAL);
       for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
            iter != bodySet.end(); ++iter) {
         uint64_t bodyId = *iter;
@@ -1934,7 +1934,7 @@ void ZFlyEmBody3dDoc::compareBody()
 
   if (doc != NULL) {
     std::set<uint64_t> bodySet = doc->getSelectedBodySet(
-          NeuTube::BODY_LABEL_ORIGINAL);
+          neutube::BODY_LABEL_ORIGINAL);
     if (bodySet.size() == 1) {
       const ZDvidVersionDag &dag = doc->getVersionDag();
 
@@ -1987,7 +1987,7 @@ void ZFlyEmBody3dDoc::compareBody(const std::string &uuid)
 
   if (doc != NULL) {
     std::set<uint64_t> bodySet = doc->getSelectedBodySet(
-          NeuTube::BODY_LABEL_ORIGINAL);
+          neutube::BODY_LABEL_ORIGINAL);
     if (bodySet.size() == 1) {
       ZDvidTarget target = getBodyReader().getDvidTarget();
       target.setUuid(uuid);

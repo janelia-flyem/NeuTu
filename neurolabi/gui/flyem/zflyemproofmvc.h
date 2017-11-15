@@ -62,7 +62,7 @@ public:
 
   static ZFlyEmProofMvc* Make(
       QWidget *parent, ZSharedPointer<ZFlyEmProofDoc> doc,
-      NeuTube::EAxis axis = NeuTube::Z_AXIS, ERole role = ROLE_WIDGET);
+      neutube::EAxis axis = neutube::Z_AXIS, ERole role = ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
       const ZDvidTarget &target, ERole role = ROLE_WIDGET);
 
@@ -391,7 +391,7 @@ private:
   void initBodyWindow();
   void launchSplitFunc(uint64_t bodyId, FlyEM::EBodySplitMode mode);
   uint64_t getMappedBodyId(uint64_t bodyId);
-  std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
+  std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
   void runSplitFunc();
   void runFullSplitFunc();
   void runLocalSplitFunc();

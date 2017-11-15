@@ -73,11 +73,11 @@ public:
   }
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
-  ZDvidLabelSlice* getDvidLabelSlice(NeuTube::EAxis axis) const;
+  ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
   ZDvidGraySlice* getDvidGraySlice() const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
-  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
@@ -114,20 +114,20 @@ public:
 
   bool hasBodySelected() const;
 
-  std::set<uint64_t> getSelectedBodySet(NeuTube::EBodyLabelType labelType) const;
-  void setSelectedBody(const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
-  void setSelectedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
-  void toggleBodySelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+  std::set<uint64_t> getSelectedBodySet(neutube::EBodyLabelType labelType) const;
+  void setSelectedBody(const std::set<uint64_t> &selected, neutube::EBodyLabelType labelType);
+  void setSelectedBody(uint64_t bodyId, neutube::EBodyLabelType labelType);
+  void toggleBodySelection(uint64_t bodyId, neutube::EBodyLabelType labelType);
   /*!
    * \brief Deselect bodies
    *
    * Deselect bodies that have the same mapped ID as that of \a bodyId.
    */
-  void deselectMappedBody(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
-  void deselectMappedBody(const std::set<uint64_t> &bodySet, NeuTube::EBodyLabelType labelType);
+  void deselectMappedBody(uint64_t bodyId, neutube::EBodyLabelType labelType);
+  void deselectMappedBody(const std::set<uint64_t> &bodySet, neutube::EBodyLabelType labelType);
 
   void addSelectedBody(
-      const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
+      const std::set<uint64_t> &selected, neutube::EBodyLabelType labelType);
 
   bool isSplittable(uint64_t bodyId) const;
 
@@ -254,10 +254,10 @@ public: //Synapse functions
   std::set<ZIntPoint> getSelectedSynapse() const;
   bool hasDvidSynapseSelected() const;
   bool hasDvidSynapse() const;
-  void tryMoveSelectedSynapse(const ZIntPoint &dest, NeuTube::EAxis axis);
-  void annotateSelectedSynapse(ZJsonObject propJson, NeuTube::EAxis axis);
+  void tryMoveSelectedSynapse(const ZIntPoint &dest, neutube::EAxis axis);
+  void annotateSelectedSynapse(ZJsonObject propJson, neutube::EAxis axis);
   void annotateSelectedSynapse(ZFlyEmSynapseAnnotationDialog *dlg,
-                               NeuTube::EAxis axis);
+                               neutube::EAxis axis);
 
   /*!
    * \brief Sync the synapse with DVID
@@ -339,7 +339,7 @@ public:
   /*!
    * \brief Fetch DVID label slice data and set body selections
    */
-  void updateDvidLabelSlice(NeuTube::EAxis axis);
+  void updateDvidLabelSlice(neutube::EAxis axis);
 //  void updateDvidLabelSlice();
 
   /*!
@@ -380,7 +380,7 @@ public:
    * \param axis Axis of the objects to remove
    * \return Number of objects removed
    */
-  int removeDvidSparsevol(NeuTube::EAxis axis);
+  int removeDvidSparsevol(neutube::EAxis axis);
 
   void loadSplitFromService();
   void loadSplitTaskFromService();
@@ -448,7 +448,7 @@ public slots:
 
   void updateDvidLabelObject(EObjectModifiedMode updateMode);
   void updateDvidLabelObjectSliently();
-  void updateDvidLabelObject(NeuTube::EAxis axis);
+  void updateDvidLabelObject(neutube::EAxis axis);
 
 
   void loadSynapse(const std::string &filePath);
@@ -496,9 +496,9 @@ protected:
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData();
-  void addDvidLabelSlice(NeuTube::EAxis axis);
+  void addDvidLabelSlice(neutube::EAxis axis);
   void annotateSynapse(
-      const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis);
+      const ZIntPoint &pt, ZJsonObject propJson, neutube::EAxis axis);
   void setRoutineCheck(bool on);
   uint64_t getBodyIdForSplit() const;
   QColor getSeedColor(int label) const;
@@ -513,7 +513,7 @@ private:
   void decoratePsd(ZSlicedPuncta *puncta);
   void loadRoiFunc();
 
-  std::set<uint64_t> getCurrentSelectedBodyId(NeuTube::EBodyLabelType type) const;
+  std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
 
   void init();
   void initTimer();

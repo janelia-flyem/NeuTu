@@ -68,7 +68,7 @@ public:
   public:
     SynapseSlice(EDataStatus status = STATUS_NORMAL);
 
-    void addSynapse(const ZDvidSynapse &synapse, NeuTube::EAxis sliceAxis);
+    void addSynapse(const ZDvidSynapse &synapse, neutube::EAxis sliceAxis);
     const SynapseMap& getMap(int y) const;
     SynapseMap& getMap(int y);
     SynapseMap& getMap(int y, EAdjustment adjust);
@@ -99,7 +99,7 @@ public:
   void setRange(const ZIntCuboid &dataRange);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   bool removeSynapse(const ZIntPoint &pt, EDataScope scope);
   bool removeSynapse(int x, int y, int z, EDataScope scope);
@@ -176,11 +176,6 @@ public:
 
   void setReady(bool ready);
   bool isReady() const;
-
-//  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
-//  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
-
-//  bool deleteSynapse(int x, int y, int z);
 
   int getMinZUnsync() const;
   int getMaxZUnsync() const;

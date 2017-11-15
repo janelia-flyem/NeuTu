@@ -367,24 +367,24 @@ bool ZPoint::operator <(const ZPoint &pt) const
   return x() < pt.x();
 }
 
-void ZPoint::shiftSliceAxis(NeuTube::EAxis axis)
+void ZPoint::shiftSliceAxis(neutube::EAxis axis)
 {
   ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
-void ZPoint::shiftSliceAxisInverse(NeuTube::EAxis axis)
+void ZPoint::shiftSliceAxisInverse(neutube::EAxis axis)
 {
   ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
-double ZPoint::getSliceCoord(NeuTube::EAxis axis) const
+double ZPoint::getSliceCoord(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_x;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_y;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_z;
   }
 

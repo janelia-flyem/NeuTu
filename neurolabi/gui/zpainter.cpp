@@ -302,7 +302,7 @@ void ZPainter::drawActivePixmap(
 
   if (!image.isFullyActive()) {
     newSourceRect =
-        newSourceRect.intersected(image.getActiveArea(NeuTube::COORD_WORLD));
+        newSourceRect.intersected(image.getActiveArea(neutube::COORD_WORLD));
     if (!newSourceRect.isEmpty()) {
       newTargetRect = ZRect2d::CropRect(sourceRect, newSourceRect, targetRect);
     }
@@ -358,7 +358,7 @@ void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
     if (!image.isFullyActive()) {
       QRectF oldSourceRect = sourceRect;
       sourceRect =
-          sourceRect.intersected(image.getActiveArea(NeuTube::COORD_WORLD));
+          sourceRect.intersected(image.getActiveArea(neutube::COORD_WORLD));
       if (!sourceRect.isEmpty()) {
         targetRect = ZRect2d::CropRect(oldSourceRect, sourceRect, targetRect);
       }
