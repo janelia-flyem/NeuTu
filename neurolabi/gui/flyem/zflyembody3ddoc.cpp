@@ -27,6 +27,7 @@
 #include "zflyemmisc.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
+#include "zmeshfactory.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -533,6 +534,11 @@ bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
 void ZFlyEmBody3dDoc::deleteSplitSeed()
 {
   executeRemoveObjectCommand(ZStackObjectRole::ROLE_SEED);
+}
+
+void ZFlyEmBody3dDoc::deleteSelectedSplitSeed()
+{
+  executeRemoveSelectedObjectCommand(ZStackObjectRole::ROLE_SEED);
 }
 
 void ZFlyEmBody3dDoc::saveSplitTask()
@@ -1740,6 +1746,27 @@ ZMesh* ZFlyEmBody3dDoc::makeBodyMeshModel(uint64_t bodyId, int zoom)
     if (bodyId > 0) {
       int t = m_objectTime.elapsed();
       mesh = m_dvidReader.readMesh(bodyId, zoom);
+
+      if (mesh == NULL) {
+        bool loaded = false;
+        if (zoom > MAX_RES_LEVEL) {
+            loaded = !(getObjectGroup().findSameClass(
+                ZStackObject::TYPE_MESH,
+                ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
+              isEmpty());
+        }
+
+        if (!loaded) { //Now make mesh
+          ZObject3dScan obj;
+          if (zoom == 0) {
+            m_dvidReader.readMultiscaleBody(bodyId, zoom, true, &obj);
+          } else if (zoom == MAX_RES_LEVEL){
+            m_dvidReader.readCoarseBody(bodyId, &obj);
+            obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
+          }
+          mesh = ZMeshFactory::MakeMesh(obj);
+        }
+      }
 
       if (mesh != NULL) {
         mesh->setTimeStamp(t);

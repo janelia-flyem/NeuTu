@@ -36,3 +36,15 @@ void ZSwc::Subtract(ZSwcTree *tree1, const ZSwcTree *tree2)
 {
   Swc_Tree_Subtract(tree1->data(), tree2->data());
 }
+
+
+#ifndef _SWC_SET_TYPE_DEFINED
+void ZSwc::SetType(const std::set<Swc_Tree_Node *> &nodeSet, int type)
+{
+  SetType(nodeSet.begin(), nodeSet.end(), type);
+}
+#endif
+
+
+
+

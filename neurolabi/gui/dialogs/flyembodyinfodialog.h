@@ -86,6 +86,7 @@ private slots:
     void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
     void onMaxBodiesChanged(int maxBodies);
     void onRoiChanged(int index);
+    void onNamedOnlyToggled();
     void onIOConnectionsSelectionChanged(QItemSelection selected, QItemSelection deselected);
 
 private:
@@ -145,6 +146,9 @@ private:
     bool m_cancelLoading;
     ZDvidTarget m_currentDvidTarget;
     ZDvidReader m_reader;
+    ZDvidReader m_sequencerReader;
+    bool m_hasLabelsz = false;
+    bool m_hasBodyAnnotation = false;
     std::string m_defaultSynapseLabelsz;
     int m_currentMaxBodies;
     bool m_connectionsLoading;

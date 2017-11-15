@@ -197,12 +197,20 @@ void Z3DWindow::createToolBar()
   }
 
   if (getWindowType() == NeuTube3D::TYPE_NEU3) {
-    m_meshOpacitySlider = new QSlider(Qt::Horizontal, this);
-    m_meshOpacitySlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-    m_meshOpacitySlider->setRange(0, 255);
-    m_toolBar->addWidget(m_meshOpacitySlider);
+//    m_meshOpacitySlider = new QSlider(Qt::Horizontal, this);
+//    m_meshOpacitySlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+//    m_meshOpacitySlider->setRange(0, 255);
+//    m_toolBar->addWidget(m_meshOpacitySlider);
+
+    m_meshOpacitySpinBox = new QDoubleSpinBox(this);
+    m_meshOpacitySpinBox->setPrefix("Mesh Opacity: ");
+    m_meshOpacitySpinBox->setRange(0, 1);
+    m_meshOpacitySpinBox->setSingleStep(0.1);
+    m_toolBar->addWidget(m_meshOpacitySpinBox);
+
     m_toolBar->addSeparator();
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
   }
 
@@ -242,7 +250,7 @@ void Z3DWindow::init()
           this, SLOT(selectedMeshChangedFrom3D(ZMesh*, bool)));
   if (getTodoFilter()) {
     connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
-            this, SLOT(selectdObjectChangedFrom3D(ZStackObject*,bool)));
+            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
   }
   connect(getSwcFilter(), SIGNAL(treeSelected(ZSwcTree*,bool)),
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
@@ -259,6 +267,11 @@ void Z3DWindow::init()
           this, SLOT(extendSwcTreeNode(double, double, double, double)));
   connect(getSwcFilter(), SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
+
+  if (getGraphFilter() != NULL) {
+    connect(getGraphFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
+            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
+  }
 
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
           this, SLOT(notifyUser(QString)));
@@ -316,10 +329,18 @@ void Z3DWindow::init()
 
   m_helpDlg = new HelpDialog(this);
 
-  if (m_meshOpacitySlider != NULL) {
-    m_meshOpacitySlider->setValue(iround(getMeshFilter()->opacity() * 255));
-    connect(m_meshOpacitySlider, SIGNAL(valueChanged(int)),
-            this, SLOT(setMeshOpacity(int)));
+//  if (m_meshOpacitySlider != NULL) {
+//    m_meshOpacitySlider->setValue(iround(getMeshFilter()->opacity() * 255));
+//    connect(m_meshOpacitySlider, SIGNAL(valueChanged(int)),
+//            this, SLOT(setMeshOpacity(int)));
+//  }
+
+  if (m_meshOpacitySpinBox != NULL) {
+    m_meshOpacitySpinBox->setValue(getMeshFilter()->opacity());
+    connect(m_meshOpacitySpinBox, SIGNAL(valueChanged(double)),
+            this, SLOT(setMeshOpacity(double)));
+    connect(getMeshFilter(), SIGNAL(opacityChanged(double)),
+            this, SLOT(setMeshOpacity(double)));
   }
 }
 
@@ -409,6 +430,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_DELETE_SPLIT_SEED:
     action = m_actionLibrary->getAction(item, this, SLOT(deleteSplitSeed()));
+    break;
+  case ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED:
+    action = m_actionLibrary->getAction(item, this, SLOT(deleteSelectedSplitSeed()));
     break;
   case ZActionFactory::ACTION_TEST:
     action = m_actionLibrary->getAction(item, this, SLOT(test()));
@@ -1233,13 +1257,16 @@ bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
   return true;
 }
 
-void Z3DWindow::selectdObjectChangedFrom3D(ZStackObject *p, bool append)
+void Z3DWindow::selectedObjectChangedFrom3D(ZStackObject *p, bool append)
 {
   if (p == NULL) {
     if (!append) {
       if (getTodoFilter()) { //temporary hack
         m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
         getTodoFilter()->invalidate();
+      }
+      if (getGraphFilter()) {
+        getGraphFilter()->deselectAllGraph();
       }
     }
     return;
@@ -1256,6 +1283,25 @@ void Z3DWindow::selectdObjectChangedFrom3D(ZStackObject *p, bool append)
   }
     break;
   default:
+  {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc != NULL) {
+      if (!append) {
+        if (getTodoFilter()) { //temporary hack
+          m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
+          getTodoFilter()->invalidate();
+        }
+        if (getGraphFilter()) {
+          getGraphFilter()->deselectAllGraph();
+        }
+      }
+
+      doc->selectObject(p, append);
+      if (getGraphFilter()) {
+        getGraphFilter()->invalidate();
+      }
+    }
+  }
     break;
   }
 }
@@ -1290,12 +1336,14 @@ void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
   if (append) {
     m_doc->setMeshSelected(p, true);
   } else {
-    m_doc->deselectAllObject();
+//    m_doc->deselectAllObject();
+    m_doc->deselectAllMesh();
     m_doc->setMeshSelected(p, true);
   }
 
   statusBar()->showMessage(p->getSource().c_str());
 }
+
 bool Z3DWindow::canSelectObject() const
 {
   return !(getCanvas()->getInteractionEngine()->isStateOn(ZInteractionEngine::STATE_DRAW_LINE) ||
@@ -3615,9 +3663,21 @@ void Z3DWindow::uncheckSelectedTodo()
   }
 }
 
-void Z3DWindow::setMeshOpacity(int opacity)
+void Z3DWindow::setMeshOpacity(double opacity)
 {
-  getMeshFilter()->setOpacity(opacity / 255.0);
+  if (m_meshOpacitySpinBox != NULL) {
+    if (opacity != m_meshOpacitySpinBox->value()) {
+      m_meshOpacitySpinBox->blockSignals(true);
+      m_meshOpacitySpinBox->setValue(opacity);
+      m_meshOpacitySpinBox->blockSignals(false);
+    }
+  }
+
+  if (getMeshFilter() != NULL) {
+    if (opacity != getMeshFilter()->opacity()) {
+      getMeshFilter()->setOpacityQuitely(opacity);
+    }
+  }
 }
 
 void Z3DWindow::locateWithRay(int x, int y)
@@ -3685,8 +3745,10 @@ void Z3DWindow::processStroke(ZStroke2d *stroke)
 #ifdef _DEBUG_2
   addTodoMarkerFromStroke(stroke);
 #else
+//  stroke->decimate();
 //  labelSwcNodeFromStroke(stroke);
   addPolyplaneFrom3dPaint(stroke);
+  delete stroke;
 #endif
 }
 
@@ -3869,126 +3931,181 @@ ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
   return stackSeg;
 }
 
-void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
+std::string Z3DWindow::updatePolyLinePairList(
+    const ZStroke2d *stroke,
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > &polylinePairList)
 {
-  //bool success = false;
-//  std::string source;
-  if (m_doc->hasStack() || m_doc->hasMesh()) {
-    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
+  std::string source;
 
-    ZIntPointArrayPtr polyline1 = ZIntPointArray::MakePointer();
-    ZIntPointArrayPtr polyline2 = ZIntPointArray::MakePointer();
+  ZIntPointArrayPtr polyline1;
+  ZIntPointArrayPtr polyline2;
+  for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+    double x = 0.0;
+    double y = 0.0;
+    stroke->getPoint(&x, &y, i);
 
-    polylinePairList.emplace_back(polyline1, polyline2);
+    ZLineSegment stackSeg = getRaySegment(iround(x), iround(y), source);
 
+    if (stackSeg.isValid()) {
+      if (!polyline1) {
+        polyline1 = ZIntPointArray::MakePointer();
+        polyline2 = ZIntPointArray::MakePointer();
+        polylinePairList.emplace_back(polyline1, polyline2);
+      }
+      polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
+      polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+    } else {
+      polyline1.reset();
+      polyline2.reset();
+    }
+  }
+
+  return source;
+}
+
+ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
+{
+  ZObject3d *obj = NULL;
+  if (m_doc->hasMesh() && getMeshFilter()) {
+    std::vector<ZStroke2dPtr> strokeList;
+    ZStroke2dPtr subStroke = ZStroke2dPtr(new ZStroke2d);
     std::string source;
 
+    std::vector<std::pair<int, int> > ptArray;
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
       double x = 0.0;
       double y = 0.0;
       stroke->getPoint(&x, &y, i);
 
-      ZLineSegment stackSeg = getRaySegment(iround(x), iround(y), source);
-
-      if (stackSeg.isValid()) {
-        polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
-        polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
-      } else { //Add a new pair after a break point
-        polyline1 = ZIntPointArray::MakePointer();
-        polyline2 = ZIntPointArray::MakePointer();
-        polylinePairList.emplace_back(polyline1, polyline2);
-      }
+      ptArray.emplace_back(iround(x), iround(y));
     }
+    getCanvas()->getGLFocus();
+    std::vector<bool> hitTest = getMeshFilter()->hitObject(ptArray);
 
-    ZObject3d *obj = NULL;
-    for (const auto &pp : polylinePairList) {
-      ZObject3d *tmpObj =
-          ZVoxelGraphics::createPolyPlaneObject(*pp.first, *pp.second);
-      if (obj == NULL) {
-        obj = tmpObj;
+    for (size_t i = 0; i < hitTest.size(); ++i) {
+      bool hit = hitTest[i];
+
+      double x = 0.0;
+      double y = 0.0;
+      stroke->getPoint(&x, &y, i);
+
+      if (hit) {
+        if (subStroke->isEmpty()) {
+          strokeList.push_back(subStroke);
+        }
+        subStroke->append(x, y);
       } else {
-        obj->append(tmpObj);
-        delete tmpObj;
+        if (!subStroke->isEmpty()) {
+          subStroke = ZStroke2dPtr(new ZStroke2d);
+        }
       }
     }
 
-    if (m_doc->hasStack()) {
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
 
 
-      if (obj != NULL) {
-        ZObject3d *processedObj = NULL;
 
-        const ZStack *stack = NULL;
-        int xIntv = 0;
-        int yIntv = 0;
-        int zIntv = 0;
+    for (size_t i = 0; i < strokeList.size(); ++i) {
+      ZStroke2dPtr subStroke = strokeList[i];
+      subStroke->decimate();
+      source = updatePolyLinePairList(subStroke.get(), polylinePairList);
+    }
 
-        if (getDocument()->hasSparseStack()) {
-          stack = getDocument()->getSparseStack()->getStack();
-          ZIntPoint dsIntv = stack->getDsIntv();
-          //        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
-          xIntv = dsIntv.getX();
-          yIntv = dsIntv.getY();
-          zIntv = dsIntv.getZ();
-        } else {
-          stack = getDocument()->getStack();
-        }
-
-        processedObj = new ZObject3d;
-        for (size_t i = 0; i < obj->size(); ++i) {
-          int x = obj->getX(i) / (xIntv + 1) - stack->getOffset().getX();
-          int y = obj->getY(i) / (yIntv + 1) - stack->getOffset().getY();
-          int z = obj->getZ(i) / (zIntv + 1) - stack->getOffset().getZ();
-          int v = 0;
-          for (int dz = -1; dz <= 1; ++dz) {
-            for (int dy = -1; dy <= 1; ++dy) {
-              for (int dx = -1; dx <= 1; ++dx) {
-                v = stack->getIntValueLocal(x + dx, y + dy, z + dz);
-                if (v > 0) {
-                  break;
-                }
-              }
-            }
-          }
-          if (v > 0) {
-            processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
-          }
-        }
-        delete obj;
-        obj = processedObj;
-      }
-    } /*else if (m_doc->hasMesh()) {
-      obj = ZVoxelGraphics::createPolyPlaneObject(*polyline1, *polyline2);
-    }*/
-
+    obj = ZVoxelGraphics::createPolylineObject(polylinePairList);
     if (obj != NULL) {
-#ifdef _DEBUG_2
-      ZStack *stack = obj->toStackObject();
-      stack->save(GET_TEST_DATA_DIR + "/test.tif");
-      delete stack;
-#endif
-
-      if (!obj->isEmpty()) {
-#ifdef _DEBUG_2
-        ZSwcTree *tree = ZSwcGenerator::createSwc(*obj, 1.0, 3);
-        tree->save(GET_TEST_DATA_DIR + "/test.swc");
-#endif
-
-        obj->setLabel(stroke->getLabel());
-        ZLabelColorTable colorTable;
-        obj->setColor(colorTable.getColor(obj->getLabel()));
-        obj->setRole(ZStackObjectRole::ROLE_SEED |
-                     ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-        obj->setSource(source);
-        m_doc->executeAddObjectCommand(obj, false);
-        //m_doc->notifyVolumeModified();
-      } else {
-        delete obj;
-      }
+      obj->setSource(source);
     }
   }
 
-  delete stroke;
+  return obj;
+}
+
+ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForVolume(ZStroke2d *stroke)
+{
+  ZObject3d *obj = NULL;
+
+  if (m_doc->hasStack()) {
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
+    std::string source = updatePolyLinePairList(stroke, polylinePairList);
+
+
+    obj = ZVoxelGraphics::createPolylineObject(polylinePairList);
+
+    if (obj != NULL) {
+      ZObject3d *processedObj = NULL;
+
+      const ZStack *stack = NULL;
+      int xIntv = 0;
+      int yIntv = 0;
+      int zIntv = 0;
+
+      if (getDocument()->hasSparseStack()) {
+        stack = getDocument()->getSparseStack()->getStack();
+        ZIntPoint dsIntv = stack->getDsIntv();
+        //        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+        xIntv = dsIntv.getX();
+        yIntv = dsIntv.getY();
+        zIntv = dsIntv.getZ();
+      } else {
+        stack = getDocument()->getStack();
+      }
+
+      processedObj = new ZObject3d;
+      for (size_t i = 0; i < obj->size(); ++i) {
+        int x = obj->getX(i) / (xIntv + 1) - stack->getOffset().getX();
+        int y = obj->getY(i) / (yIntv + 1) - stack->getOffset().getY();
+        int z = obj->getZ(i) / (zIntv + 1) - stack->getOffset().getZ();
+        int v = 0;
+        for (int dz = -1; dz <= 1; ++dz) {
+          for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+              v = stack->getIntValueLocal(x + dx, y + dy, z + dz);
+              if (v > 0) {
+                break;
+              }
+            }
+          }
+        }
+        if (v > 0) {
+          processedObj->append(obj->getX(i), obj->getY(i), obj->getZ(i));
+        }
+      }
+      delete obj;
+      obj = processedObj;
+    }
+
+    if (obj != NULL) {
+      obj->setSource(source);
+    }
+  }
+
+  return obj;
+}
+
+void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
+{
+  //bool success = false;
+//  std::string source;
+  ZObject3d* obj = NULL;
+  if (m_doc->hasStack()) {
+    obj = createPolyplaneFrom3dPaintForVolume(stroke);
+  } else {
+    obj = createPolyplaneFrom3dPaintForMesh(stroke);
+  }
+
+  if (obj != NULL) {
+    if (!obj->isEmpty()) {
+      obj->setLabel(stroke->getLabel());
+      ZLabelColorTable colorTable;
+      obj->setColor(colorTable.getColor(obj->getLabel()));
+      obj->setRole(ZStackObjectRole::ROLE_SEED |
+                   ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+      m_doc->executeAddObjectCommand(obj, false);
+      //m_doc->notifyVolumeModified();
+    } else {
+      delete obj;
+    }
+  }
 }
 
 void Z3DWindow::help()
@@ -4149,7 +4266,11 @@ void Z3DWindow::gotoPosition(const ZCuboid& bound)
 
 void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
 {
-  getBoundedFilter(layer).setOpacity(opacity);
+  if (layer == LAYER_MESH) {
+    setMeshOpacity(opacity);
+  } else {
+    getBoundedFilter(layer).setOpacity(opacity);
+  }
 }
 
 void Z3DWindow::setLayerVisible(ERendererLayer layer, bool visible)
@@ -4192,6 +4313,11 @@ void Z3DWindow::saveSplitTask()
 void Z3DWindow::deleteSplitSeed()
 {
   emit deletingSplitSeed();
+}
+
+void Z3DWindow::deleteSelectedSplitSeed()
+{
+  emit deletingSelectedSplitSeed();
 }
 
 void Z3DWindow::cropSwcInRoi()

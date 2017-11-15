@@ -1885,6 +1885,11 @@ void ZStackDocCommand::ObjectEdit::RemoveObject::setRemoval(
   m_objSet = QSet<ZStackObject*>::fromList(objList);
 }
 
+void ZStackDocCommand::ObjectEdit::RemoveObject::addRemoval(ZStackObject *obj)
+{
+  m_objSet.insert(obj);
+}
+
 void ZStackDocCommand::ObjectEdit::RemoveObject::redo()
 {
   m_doc->removeObject(m_objSet, false);
