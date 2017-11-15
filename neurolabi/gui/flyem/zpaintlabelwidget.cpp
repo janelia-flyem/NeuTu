@@ -2,6 +2,7 @@
 #include "zclickablelabel.h"
 #include "zlabelcolortable.h"
 #include "znumericparameter.h"
+#include "zflyem.h"
 
 #include <QHBoxLayout>
 #include <QGroupBox>
@@ -24,7 +25,7 @@ void ZPaintLabelWidget::init(int maxLabel)
   m_groupBox = new QGroupBox(this);
 //  groupBox->setStyleSheet("margin-top: 1px;");
   QHBoxLayout *layout = new QHBoxLayout;
-  layout->setContentsMargins(5, 0, 5, 0);
+  layout->setContentsMargins(5, 2, 5, 2);
   ZLabelColorTable colorTable;
   for (int label = 1; label <= maxLabel; ++label) {
     ZClickableColorLabel *labelWidget =
@@ -32,6 +33,7 @@ void ZPaintLabelWidget::init(int maxLabel)
     layout->addWidget(labelWidget);
   }
   m_groupBox->setLayout(layout);
+  setStyleSheet(FlyEm::GROUP_BOX_STYLE);
 }
 
 ZClickableColorLabel* ZPaintLabelWidget::makeColorWidget(
