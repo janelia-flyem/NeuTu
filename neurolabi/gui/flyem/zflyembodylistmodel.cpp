@@ -192,6 +192,11 @@ bool ZFlyEmBodyListModel::setData(
     QString bodyIdStr = value.toString();
 
     uint64_t bodyId = bodyIdStr.toULongLong();
+
+    if (oldBodyId == bodyId) {
+      return false;
+    }
+
     if (m_bodySet.contains(bodyId)) {
       newValue.setValue(QString());
     }
