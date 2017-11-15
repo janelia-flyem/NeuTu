@@ -130,7 +130,7 @@ void Z3DView::updateBoundBox()
   std::cout << "Updating bounding box:" << std::endl;
 #endif
   for (Z3DBoundedFilter* flt : m_allFilters) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Getting bounding box of " << flt->className().toStdString() << std::endl;
 #endif
     if (flt->isVisible()) {
@@ -520,12 +520,15 @@ void Z3DView::swcNetworkDataChanged()
 
 void Z3DView::graph3DDataChanged()
 {
-  m_graphFilter->setData(m_doc->get3DGraphDecoration());
+  m_graphFilter->clear();
+  m_graphFilter->addData(
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR));
+
   TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
   for (TStackObjectList::const_iterator iter = objList.begin(); iter != objList.end(); ++iter) {
     Z3DGraph *graph = dynamic_cast<Z3DGraph*>(*iter);
     if (graph->isVisible()) {
-      m_graphFilter->addData(*graph);
+      m_graphFilter->addData(graph);
     }
   }
 }

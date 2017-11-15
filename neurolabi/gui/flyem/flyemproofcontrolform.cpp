@@ -38,28 +38,37 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(dvidSetTriggered()));
   connect(ui->segmentSizePushButton, SIGNAL(clicked()),
           this, SLOT(setSegmentSize()));
-  connect(ui->saveMergePushButton, SIGNAL(clicked()),
-          this, SIGNAL(savingMerge()));
+//  connect(ui->saveMergePushButton, SIGNAL(clicked()),
+//          this, SIGNAL(savingMerge()));
   connect(ui->splitPushButton, SIGNAL(clicked()),
           this, SIGNAL(splitTriggered()));
   connect(ui->uploadPushButton, SIGNAL(clicked()),
           this, SIGNAL(committingMerge()));
 
   ui->segmentSizePushButton->hide();
-  ui->segmentSizeDecPushButton->setEnabled(false);
+  ui->smallRadioButton->setChecked(true);
+//  ui->segmentSizeDecPushButton->setEnabled(false);
 
-  ui->saveMergePushButton->hide();
+//  ui->saveMergePushButton->hide();
   ui->dataInfoWidget->hide();
 
 //  ui->bodyViewPushButton->hide();
 
+  connect(ui->smallRadioButton, SIGNAL(clicked(bool)),
+          this, SLOT(decSegmentSize()));
+  connect(ui->bigRadioButton, SIGNAL(clicked(bool)),
+          this, SLOT(incSegmentSize()));
+  connect(ui->fullRadioButton, SIGNAL(clicked(bool)),
+          this, SLOT(showFullSegmentation(bool)));
 
+  /*
   connect(ui->segmentSizeIncPushButton, SIGNAL(clicked()),
           this, SLOT(incSegmentSize()));
   connect(ui->segmentSizeDecPushButton, SIGNAL(clicked()),
           this, SLOT(decSegmentSize()));
-  connect(ui->fullViewPushButton, SIGNAL(clicked()),
-          this, SLOT(showFullSegmentation()));
+  connect(ui->fullViewCheckBox, SIGNAL(clicked(bool)),
+          this, SLOT(showFullSegmentation(bool)));
+          */
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
@@ -302,21 +311,21 @@ void FlyEmProofControlForm::setSegmentSize()
 
 void FlyEmProofControlForm::incSegmentSize()
 {
-  ui->segmentSizeIncPushButton->setEnabled(false);
-  ui->segmentSizeDecPushButton->setEnabled(true);
+//  ui->segmentSizeIncPushButton->setEnabled(false);
+//  ui->segmentSizeDecPushButton->setEnabled(true);
   emit labelSizeChanged(1024, 1024);
 }
 
 void FlyEmProofControlForm::decSegmentSize()
 {
-  ui->segmentSizeIncPushButton->setEnabled(true);
-  ui->segmentSizeDecPushButton->setEnabled(false);
+//  ui->segmentSizeIncPushButton->setEnabled(true);
+//  ui->segmentSizeDecPushButton->setEnabled(false);
   emit labelSizeChanged(512, 512);
 }
 
-void FlyEmProofControlForm::showFullSegmentation()
+void FlyEmProofControlForm::showFullSegmentation(bool on)
 {
-  emit showingFullSegmentation();
+  emit showingFullSegmentation(on);
 }
 
 void FlyEmProofControlForm::goToBody()
@@ -360,6 +369,22 @@ void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
 //    ui->menuPushButton->setEnabled(false);
     ui->uploadPushButton->setEnabled(false);
     ui->splitPushButton->setEnabled(false);
+  }
+
+  if (target.usingMulitresBodylabel()) {
+    ui->smallRadioButton->hide();
+    ui->bigRadioButton->hide();
+    ui->fullRadioButton->setChecked(true);
+    ui->fullRadioButton->setDisabled(true);
+    /*
+    QLayout *layout = ui->segmentationHorizontalLayout;
+    for (int i = 0; i != layout->count(); ++i) {
+      QWidget* w = layout->itemAt(i)->widget();
+      if (w != 0) {
+        w->setDisabled(true);
+      }
+    }
+    */
   }
 }
 

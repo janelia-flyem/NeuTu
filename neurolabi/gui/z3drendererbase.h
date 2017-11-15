@@ -238,6 +238,7 @@ signals:
   void coordTransformChanged();
 
   void sizeScaleChanged();
+  void opacityChanged(double);
 
 protected:
 

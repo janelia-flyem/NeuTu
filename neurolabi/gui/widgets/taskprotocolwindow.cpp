@@ -46,7 +46,8 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     // prefetch queue, item management
     connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
     connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
-    // note: no remove signal/slot yet, as the prefetch logic doesn't require it
+    connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
+    connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
     m_prefetchThread->start();
 
@@ -69,6 +70,8 @@ const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
 const QString TaskProtocolWindow::KEY_VERSION = "file version";
 const int TaskProtocolWindow::currentVersion = 1;
 const QString TaskProtocolWindow::KEY_ID = "ID";
+const QString TaskProtocolWindow::KEY_DVID_SERVER = "DVID server";
+const QString TaskProtocolWindow::KEY_UUID = "UUID";
 const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
 const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
 const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
@@ -132,6 +135,15 @@ void TaskProtocolWindow::init() {
 }
 
 void TaskProtocolWindow::onPrevButton() {
+    // warn the task we're about to move away
+    if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->beforePrev();
+    }
+
+    // for now, just clear the body prefetch queue; see
+    //  longer note in onNextButton()
+    emit clearBodyQueue();
+
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getPrev();
     } else {
@@ -140,9 +152,6 @@ void TaskProtocolWindow::onPrevButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
-
-    // warn the task we're about to move away
-    m_taskList[m_currentTaskIndex]->beforePrev();
 
     // no prefetching is performed here; if we're backing up in the list,
     //  the next body should already be in memory; it's the responsibility of
@@ -155,6 +164,18 @@ void TaskProtocolWindow::onPrevButton() {
 }
 
 void TaskProtocolWindow::onNextButton() {
+    // warn the task we're about to move away
+    if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->beforeNext();
+    }
+
+    // currently the prefetching is unsophisticated--we only
+    //  look one task ahead; so for now, we'll just clear the queue
+    //  as we move; in the future, we could get fancier and both
+    //  fetch farther ahead and be smarter about detecting which
+    //  bodies are or aren't needed "soon"
+    emit clearBodyQueue();
+
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getNext();
     } else {
@@ -163,9 +184,6 @@ void TaskProtocolWindow::onNextButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
-
-    // warn the task we're about to move away
-    m_taskList[m_currentTaskIndex]->beforeNext();
 
     // for now, simplest possible prefetching: just prefetch for the next task,
     //  as long as there is one and it's not the current one
@@ -304,11 +322,28 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     //  would convert them
 
 
-    // save the unique identifier, if present:
+    // save various metadata, if present:
     if (json.contains(KEY_ID)) {
         m_ID = json[KEY_ID].toString();
     }
+    if (json.contains(KEY_DVID_SERVER)) {
+        m_DVIDServer = json[KEY_DVID_SERVER].toString();
+    }
+    if (json.contains(KEY_UUID)) {
+        m_UUID = json[KEY_UUID].toString();
+    }
 
+    // check that the server and UUID are correct if they are both present
+    if (m_DVIDServer.size() > 0 && m_UUID.size() > 0) {
+        if (!checkDVIDTarget()) {
+            ZDvidTarget target = m_proofDoc->getDvidTarget();
+            showError("Wrong DVID server or UUID",
+                "This task list expects server " + m_DVIDServer + " and UUID " + m_UUID +
+                ". You have opened " + QString::fromStdString(target.getAddressWithPort()) +
+                " and " + QString::fromStdString(target.getUuid()) + ".");
+            return;
+        }
+    }
 
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
@@ -679,6 +714,12 @@ QJsonObject TaskProtocolWindow::storeTasks() {
     if (m_ID.size() > 0) {
         json[KEY_ID] = m_ID;
     }
+    if (m_DVIDServer.size() > 0) {
+        json[KEY_DVID_SERVER] = m_DVIDServer;
+    }
+    if (m_UUID.size() > 0) {
+        json[KEY_UUID] = m_UUID;
+    }
 
     QJsonArray tasks;
     foreach (QSharedPointer<TaskProtocolTask> task, m_taskList) {
@@ -752,6 +793,35 @@ bool TaskProtocolWindow::checkCreateDataInstance() {
         m_protocolInstanceStatus = CHECKED_ABSENT;
         return false;
     }
+}
+
+/*
+ * check that the current DVID target matches the one
+ * input in the task json
+ */
+bool TaskProtocolWindow::checkDVIDTarget() {
+    ZDvidTarget target = m_proofDoc->getDvidTarget();
+
+    // UUID: we don't always specify the full UUID; just compare
+    //  the digits we have (ie, the shorter of the two)
+    QString targetUUID = QString::fromStdString(target.getUuid());
+    if (targetUUID.size() > m_UUID.size()) {
+        if (!targetUUID.startsWith(m_UUID)) {
+            return false;
+        }
+    } else {
+        if (!m_UUID.startsWith(targetUUID)) {
+            return false;
+        }
+    }
+
+    // server: the server name should always include port, and it should
+    //  always be fully qualified
+    if (m_DVIDServer != QString::fromStdString(target.getAddressWithPort())) {
+        return false;
+    }
+
+    return true;
 }
 
 /*

@@ -1,8 +1,12 @@
 #ifndef ZVOXELGRAPHICS_H
 #define ZVOXELGRAPHICS_H
 
+#include <vector>
+#include <utility>
+
 #include "zintpoint.h"
 #include "zpoint.h"
+#include "zintpointarray.h"
 
 class ZObject3d;
 class ZLineSegment;
@@ -27,6 +31,10 @@ ZObject3d* createPlaneObject(const ZIntPoint &start, const ZPoint &vec1,
 
 ZObject3d* createPolylineObject(const std::vector<ZIntPoint> &polyline);
 ZObject3d* createPolylineObject6c(const std::vector<ZIntPoint> &polyline);
+
+ZObject3d* createPolylineObject(
+    const std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> >
+    &polylinePairList);
 
 
 ZObject3d* createPolyPlaneObject(const std::vector<ZIntPoint> &polyline,

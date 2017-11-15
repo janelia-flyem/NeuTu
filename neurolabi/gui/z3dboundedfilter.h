@@ -151,8 +151,8 @@ public:
   float opacity() const
   { return m_rendererBase.opacity(); }
 
-  void setOpacity(float o)
-  { m_rendererBase.setOpacity(o); }
+  void setOpacity(float o);
+  void setOpacityQuitely(float o);
 
   glm::mat4 coordTransform() const
   { return m_rendererBase.coordTransform(); }
@@ -207,6 +207,7 @@ signals:
   void boundBoxChanged();
 
   void objVisibleChanged(bool v);
+  void opacityChanged(double v);
 
 protected:
   void updateBoundBox();

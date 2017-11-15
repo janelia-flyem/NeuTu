@@ -6,6 +6,7 @@
         <file>images/cut.png</file>
         <file>images/undo.png</file>
         <file>images/binoculars.png</file>
+        <file>images/locate.png</file>
         <file>images/notrace.png</file>
         <file>images/fitseg.png</file>
         <file>images/tracetube.png</file>
@@ -82,6 +83,7 @@
         <file>images/save_seed.png</file>
         <file>images/save_seed2.png</file>
         <file>images/delete_seed.png</file>
+        <file>images/delete_selected_seed.png</file>
         <file>images/add_post.png</file>
         <file>images/todo.png</file>
         <file>images/roi_box.png</file>

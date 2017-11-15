@@ -4,6 +4,7 @@
 #include "znumericparameter.h"
 
 #include <QHBoxLayout>
+#include <QGroupBox>
 
 const int ZPaintLabelWidget::m_maxLabel = 9;
 
@@ -13,15 +14,24 @@ ZPaintLabelWidget::ZPaintLabelWidget(QWidget *parent) :
   init(m_maxLabel);
 }
 
+void ZPaintLabelWidget::setTitle(const QString &title)
+{
+  m_groupBox->setTitle(title);
+}
+
 void ZPaintLabelWidget::init(int maxLabel)
 {
-  QHBoxLayout *layout = new QHBoxLayout(this);
+  m_groupBox = new QGroupBox(this);
+//  groupBox->setStyleSheet("margin-top: 1px;");
+  QHBoxLayout *layout = new QHBoxLayout;
+  layout->setContentsMargins(5, 0, 5, 0);
   ZLabelColorTable colorTable;
   for (int label = 1; label <= maxLabel; ++label) {
     ZClickableColorLabel *labelWidget =
         makeColorWidget(colorTable.getColor(label), label);
     layout->addWidget(labelWidget);
   }
+  m_groupBox->setLayout(layout);
 }
 
 ZClickableColorLabel* ZPaintLabelWidget::makeColorWidget(
@@ -38,4 +48,9 @@ ZClickableColorLabel* ZPaintLabelWidget::makeColorWidget(
   labelWidget->setClickable(false);
 
   return labelWidget;
+}
+
+QSize ZPaintLabelWidget::minimumSizeHint() const
+{
+  return QWidget::minimumSizeHint() + QSize(0, 40);
 }

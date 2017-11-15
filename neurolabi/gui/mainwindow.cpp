@@ -209,7 +209,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
   m_lastOpenedFilePath = ".";
   m_ui->setupUi(this);
+#ifndef _FLYEM_
   this->setWindowIcon(QIcon(":/images/app.png"));
+#else
+  this->setWindowIcon(QIcon(":/images/app2.png"));
+#endif
+
   mdiArea = new QMdiArea;
   mdiArea->setActivationOrder(QMdiArea::StackingOrder);
 

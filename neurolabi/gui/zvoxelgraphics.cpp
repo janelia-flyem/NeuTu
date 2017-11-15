@@ -150,6 +150,25 @@ ZObject3d* ZVoxelGraphics::createLineObject6c(const ZLineSegment &seg)
 }
 
 ZObject3d* ZVoxelGraphics::createPolylineObject(
+    const std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> >
+    &polylinePairList)
+{
+  ZObject3d *obj = NULL;
+  for (const auto &pp : polylinePairList) {
+    ZObject3d *tmpObj =
+        ZVoxelGraphics::createPolyPlaneObject(*pp.first, *pp.second);
+    if (obj == NULL) {
+      obj = tmpObj;
+    } else {
+      obj->append(tmpObj);
+      delete tmpObj;
+    }
+  }
+
+  return obj;
+}
+
+ZObject3d* ZVoxelGraphics::createPolylineObject(
     const std::vector<ZIntPoint> &polyline)
 {
   if (polyline.empty()) {

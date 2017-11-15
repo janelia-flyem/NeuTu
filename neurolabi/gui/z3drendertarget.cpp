@@ -161,14 +161,58 @@ glm::vec4 Z3DRenderTarget::floatColorAtPos(const glm::ivec2& pos)
 }
 
 glm::col4 Z3DRenderTarget::colorAtPos(const glm::ivec2& pos)
-{
+{  
   bind();
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   glm::col4 pixel;
   glReadPixels(pos.x, pos.y, 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &pixel[0]);
   std::swap(pixel.r, pixel.b);
   release();
+
+#ifdef _DEBUG_
+  std::cout << "Color at " << pos.x << " " << pos.y << ": " << int(pixel.r) << " "
+            << " " <<  int(pixel.g) << " " << int(pixel.b) << " "
+            << int(pixel.a) << std::endl;
+#endif
+
   return pixel;
+}
+
+std::vector<glm::col4> Z3DRenderTarget::colorAtPos(
+    const std::vector<glm::ivec2> &posArray)
+{
+  bind();
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  std::vector<glm::col4> pixelArray;
+  for (const glm::ivec2 &pos : posArray) {
+    glm::col4 pixel;
+    glReadPixels(pos.x, pos.y, 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &pixel[0]);
+    std::swap(pixel.r, pixel.b);
+    pixelArray.push_back(pixel);
+  }
+
+  release();
+
+  return pixelArray;
+}
+
+std::vector<glm::col4> Z3DRenderTarget::colorAtPos(
+    const std::vector<std::pair<int, int> > &posArray)
+{
+  bind();
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  std::vector<glm::col4> pixelArray;
+  for (const std::pair<int,int> &pos : posArray) {
+    glm::col4 pixel;
+    glReadPixels(pos.first, pos.second,
+                 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &pixel[0]);
+    std::swap(pixel.r, pixel.b);
+    pixelArray.push_back(pixel);
+  }
+
+  release();
+
+  return pixelArray;
 }
 
 GLfloat Z3DRenderTarget::depthAtPos(const glm::ivec2& pos)

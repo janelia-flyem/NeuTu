@@ -40,7 +40,6 @@ ZMesh* MakeRoiMesh(
 
 ZMesh* MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsIntv);
 
-
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,

@@ -786,6 +786,8 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   connect(window, SIGNAL(savingSplitTask()),
           doc, SLOT(saveSplitTask()));
   connect(window, SIGNAL(deletingSplitSeed()), doc, SLOT(deleteSplitSeed()));
+  connect(window, &Z3DWindow::deletingSelectedSplitSeed, doc,
+          &ZFlyEmBody3dDoc::deleteSelectedSplitSeed);
 
   doc->enableNodeSeeding(true);
 //  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
@@ -1644,7 +1646,11 @@ void ZFlyEmProofMvc::customInit()
   m_paintLabelWidget = new ZPaintLabelWidget();
 
   getView()->addHorizontalWidget(m_paintLabelWidget);
+  m_paintLabelWidget->setSizePolicy(
+        QSizePolicy::Preferred, QSizePolicy::Minimum);
   m_paintLabelWidget->hide();
+  m_paintLabelWidget->setTitle(
+        "Seed Labels (hotkeys: R to activate; 1~9 to select label)");
 
 //  m_speedLabelWidget->hide();
 
@@ -3193,19 +3199,24 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     if (slice != NULL) {
       slice->setMaxSize(getView()->getViewParameter(), width, height);
+      slice->disableFullView();
       getView()->paintObject();
     }
   }
 }
 
-void ZFlyEmProofMvc::showFullSegmentation()
+void ZFlyEmProofMvc::showFullSegmentation(bool on)
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
         getCompleteDocument()->getDvidLabelSlice(NeuTube::Z_AXIS);
     if (slice != NULL) {
-      slice->updateFullView(getView()->getViewParameter());
-      getView()->paintObject();
+      if (on) {
+        slice->updateFullView(getView()->getViewParameter());
+        getView()->paintObject();
+      } else {
+        slice->disableFullView();
+      }
     }
   }
 }
