@@ -652,8 +652,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
         delete objArray;
       }
     } else if (m_stack != NULL) {
-      result = ZObject3dFactory::MakeObject3dScanArray(
-            *(getResultStack()), NeuTube::Z_AXIS, true, NULL);
+      ZObject3dFactory::MakeObject3dScanArray(
+            *(getResultStack()), NeuTube::Z_AXIS, true, result);
     }
   }
 
