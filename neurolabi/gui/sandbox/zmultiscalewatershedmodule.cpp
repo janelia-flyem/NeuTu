@@ -2,6 +2,7 @@
 #include <QWidget>
 #include <QSpinBox>
 #include <QMessageBox>
+#include <QTime>
 #include <vector>
 #include <map>
 #include <QPushButton>
@@ -98,11 +99,12 @@ void ZWaterShedWindow::onOk()
       container.addSeed(*stroke);
   }
   container.setScale(scale);
-  clock_t start=clock();
+  QTime time;
+  time.start();
   container.run();
-  clock_t end=clock();
+  time_t end=std::time(NULL);
 
-  std::cout<<"multiscale watershed total run time:"<<double(end-start)/CLOCKS_PER_SEC<<std::endl;
+  std::cout<<"+++++++++++++multiscale watershed total run time:"<<time.elapsed()/1000.0<<std::endl;
   ZStack* result=container.getResultStack()->clone();
 
   if(result){
