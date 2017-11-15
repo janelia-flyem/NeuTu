@@ -172,6 +172,8 @@ void ZProofreadWindow::init()
   m_flyemDataLoader = new ZFlyEmDataLoader(this);
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
+
+  setStyleSheet(FlyEm::GROUP_BOX_STYLE);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -515,7 +517,7 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
   dump(ZWidgetMessage(
          QString("Body %1 loaded for split.").arg(bodyId),
-         NeuTube::MSG_INFORMATION,
+         neutube::MSG_INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
 }
 
@@ -550,7 +552,7 @@ void ZProofreadWindow::launchSplit()
 //  ->setValueLabel("Body ID");
   std::set<uint64_t> bodySet =
       m_mainMvc->getCompleteDocument()->getSelectedBodySet(
-        NeuTube::BODY_LABEL_ORIGINAL);
+        neutube::BODY_LABEL_ORIGINAL);
 
   if (!bodySet.empty()) {
     m_bodySplitDlg->setBodyId(*(bodySet.begin()));
@@ -576,7 +578,7 @@ void ZProofreadWindow::exitSplit()
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
   dump(ZWidgetMessage(
-         "Back from splitting mode.", NeuTube::MSG_INFORMATION,
+         "Back from splitting mode.", neutube::MSG_INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
 }
 
@@ -623,16 +625,16 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 
   //Record message in files
   switch (msg.getType()) {
-  case NeuTube::MSG_INFORMATION:
+  case neutube::MSG_INFORMATION:
     LINFO() << msg.toPlainString();
     break;
-  case NeuTube::MSG_WARNING:
+  case neutube::MSG_WARNING:
     LWARN() << msg.toPlainString();
     break;
-  case NeuTube::MSG_ERROR:
+  case neutube::MSG_ERROR:
     LERROR() << msg.toPlainString();
     break;
-  case NeuTube::MSG_DEBUG:
+  case neutube::MSG_DEBUG:
     LDEBUG() << msg.toPlainString();
     break;
   }
@@ -736,16 +738,16 @@ void ZProofreadWindow::logMessage(const QString &msg)
 void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
 {
   switch (msg.getType()) {
-  case NeuTube::MSG_INFORMATION:
+  case neutube::MSG_INFORMATION:
     LINFO() << msg.toPlainString();
     break;
-  case NeuTube::MSG_WARNING:
+  case neutube::MSG_WARNING:
     LWARN() << msg.toPlainString();
     break;
-  case NeuTube::MSG_ERROR:
+  case neutube::MSG_ERROR:
     LERROR() << msg.toPlainString();
     break;
-  case NeuTube::MSG_DEBUG:
+  case neutube::MSG_DEBUG:
     LDEBUG() << msg.toPlainString();
     break;
   }

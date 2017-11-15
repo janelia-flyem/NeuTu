@@ -515,9 +515,9 @@ double localRadius(const Swc_Tree_Node *tn, int extend = 1);
 ZWeightedPointArray localSegment(const Swc_Tree_Node *tn, int extend = 1);
 
 double estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
-                      NeuTube::EImageBackground bg);
+                      neutube::EImageBackground bg);
 bool fitSignal(Swc_Tree_Node *tn, const Stack *stack,
-               NeuTube::EImageBackground bg, int option = 1);
+               neutube::EImageBackground bg, int option = 1);
 
 //Node set
 bool connect(const std::vector<Swc_Tree_Node*> &nodeArray);

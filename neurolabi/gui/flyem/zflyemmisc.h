@@ -56,7 +56,7 @@ void SubtractBodyWithBlock(
     const ZDvidInfo& dvidInfo);
 
 void MakeTriangle(const QRectF &rect, QPointF *ptArray,
-                  NeuTube::ECardinalDirection direction);
+                  neutube::ECardinalDirection direction);
 void MakeStar(const QRectF &rect, QPointF *ptArray);
 void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
 

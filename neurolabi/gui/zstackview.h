@@ -164,8 +164,8 @@ public:
 
   //int threshold();
 
-  void setSliceAxis(NeuTube::EAxis axis);
-  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(neutube::EAxis axis);
+  neutube::EAxis getSliceAxis() const { return m_sliceAxis; }
 
   /*!
    * \brief Get stack data from the buddy document
@@ -230,16 +230,16 @@ public:
   /*!
    * \brief Get object mask of a certain color
    */
-  ZStack* getObjectMask(NeuTube::EColor color, uint8_t maskValue);
+  ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
 
   ZStack* getStrokeMask(uint8_t maskValue);
-  ZStack* getStrokeMask(NeuTube::EColor color);
+  ZStack* getStrokeMask(neutube::EColor color);
 
 
   void exportObjectMask(const std::string &filePath);
-  void exportObjectMask(NeuTube::EColor color, const std::string &filePath);
+  void exportObjectMask(neutube::EColor color, const std::string &filePath);
 
-  inline void setSizeHintOption(NeuTube::ESizeHintOption option) {
+  inline void setSizeHintOption(neutube::ESizeHintOption option) {
     m_sizeHintOption = option;
   }
 
@@ -389,14 +389,14 @@ public:
   void setInfo();
   bool isImageMovable() const;
 
-  int getZ(NeuTube::ECoordinateSystem coordSys) const;
+  int getZ(neutube::ECoordinateSystem coordSys) const;
   ZIntPoint getCenter(
-      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK) const;
+      neutube::ECoordinateSystem coordSys = neutube::COORD_STACK) const;
 
-  QRect getViewPort(NeuTube::ECoordinateSystem coordSys) const;
+  QRect getViewPort(neutube::ECoordinateSystem coordSys) const;
   ZStackViewParam getViewParameter(
-      NeuTube::ECoordinateSystem coordSys = NeuTube::COORD_STACK,
-      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
+      neutube::ECoordinateSystem coordSys = neutube::COORD_STACK,
+      neutube::View::EExploreAction action = neutube::View::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
   ZViewProj getViewProj() const;
@@ -412,8 +412,8 @@ public:
    */
   void setViewPortOffset(int x, int y);
 
-  void setViewPortCenter(int x, int y, int z, NeuTube::EAxisSystem system);
-  void setViewPortCenter(const ZIntPoint &center, NeuTube::EAxisSystem system);
+  void setViewPortCenter(int x, int y, int z, neutube::EAxisSystem system);
+  void setViewPortCenter(const ZIntPoint &center, neutube::EAxisSystem system);
 
   void setViewProj(int x0, int y0, double zoom);
   void setViewProj(const QPoint &pt, double zoom);
@@ -533,7 +533,7 @@ protected:
   ZMultiscalePixmap m_objectCanvas;
   ZPainter m_objectCanvasPainter;
 
-  NeuTube::EAxis m_sliceAxis;
+  neutube::EAxis m_sliceAxis;
 
   ZPainter m_tileCanvasPainter;
   ZPixmap *m_activeDecorationCanvas;
@@ -557,7 +557,7 @@ protected:
   // used to turn on or off each channel
   std::vector<ZBoolParameter*> m_chVisibleState;
 
-  NeuTube::ESizeHintOption m_sizeHintOption;
+  neutube::ESizeHintOption m_sizeHintOption;
 
   ZPaintBundle m_paintBundle;
   bool m_isRedrawBlocked;

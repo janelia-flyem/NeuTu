@@ -26,7 +26,7 @@ ZFlyEmConfig::ZFlyEmConfig()
 void ZFlyEmConfig::init()
 {
 #ifdef _QT_GUI_USED_
-  m_userName = NeuTube::GetCurrentUserName();
+  m_userName = neutube::GetCurrentUserName();
 #endif
 //  m_neutuService.setServer("http://zhaot-ws1:8080");
 //  m_neutuService.updateStatus();

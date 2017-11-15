@@ -11,10 +11,10 @@ public:
   ZKeyEventBodyMapper();
 
 public:
-  ZKeyEventBodyMapper(NeuTube::Document::ETag tag);
+  ZKeyEventBodyMapper(neutube::Document::ETag tag);
 
 //  ZStroke2d::EOperation getOperation(QKeyEvent *event);
-  void setTag(NeuTube::Document::ETag tag);
+  void setTag(neutube::Document::ETag tag);
 
 private:
   void initKeyMap();
@@ -26,7 +26,7 @@ private:
 //  QMap<int, ZStroke2d::EOperation> m_altKeyMap;
 //  QMap<int, ZStroke2d::EOperation> m_shiftKeyMap;
 
-  NeuTube::Document::ETag m_docTag;
+  neutube::Document::ETag m_docTag;
 };
 
 #endif // ZKEYEVENTBODYMAPPER_H

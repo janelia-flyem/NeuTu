@@ -39,7 +39,7 @@ void ZDvidSparsevolSlice::setReader(ZDvidReader *reader)
   m_externalReader = reader;
 }
 
-bool ZDvidSparsevolSlice::isSliceVisible(int /*z*/, NeuTube::EAxis axis) const
+bool ZDvidSparsevolSlice::isSliceVisible(int /*z*/, neutube::EAxis axis) const
 {
   if (m_sliceAxis != axis) {
     return false;
@@ -154,7 +154,7 @@ void ZDvidSparsevolSlice::forceUpdate(
 
 void ZDvidSparsevolSlice::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
   if (slice >= 0) {
 //    const_cast<ZDvidSparsevolSlice&>(*this).update(painter.getZOffset() + slice);

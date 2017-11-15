@@ -1,6 +1,6 @@
 #include "zpaintbundle.h"
 
-ZPaintBundle::ZPaintBundle(NeuTube::EAxis sliceAxis)
+ZPaintBundle::ZPaintBundle(neutube::EAxis sliceAxis)
 {
 //  m_swcNodes = &m_emptyNodeSet;
   clearAllDrawableLists();

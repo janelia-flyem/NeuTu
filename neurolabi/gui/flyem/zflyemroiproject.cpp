@@ -543,7 +543,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
                                   arg(roiName.c_str())));
         } else {
           emit messageGenerated(
-                ZWidgetMessage("Failed to create ROI data.", NeuTube::MSG_WARNING));
+                ZWidgetMessage("Failed to create ROI data.", neutube::MSG_WARNING));
           return false;
         }
       }
@@ -553,7 +553,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
       if (obj.isEmpty()) {
         emit messageGenerated(
               ZWidgetMessage("Failed to create ROI data. The ROI is empty.",
-                             NeuTube::MSG_WARNING));
+                             neutube::MSG_WARNING));
         return false;
       }
 
@@ -587,7 +587,7 @@ bool ZFlyEmRoiProject::createRoiData(const std::string &roiName, QWidget *parent
         succ = true;
       } else {
         emit messageGenerated(
-              ZWidgetMessage("Failed to create ROI data.", NeuTube::MSG_WARNING));
+              ZWidgetMessage("Failed to create ROI data.", neutube::MSG_WARNING));
         return false;
       }
     }

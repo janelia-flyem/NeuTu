@@ -683,56 +683,56 @@ void ZFlyEmDataBundle::updateNeuronConnection()
   }
 }
 
-double ZFlyEmDataBundle::getImageResolution(NeuTube::EAxis axis)
+double ZFlyEmDataBundle::getImageResolution(neutube::EAxis axis)
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_imageResolution[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_imageResolution[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_imageResolution[2];
   }
 
   return 1.0;
 }
 
-double ZFlyEmDataBundle::getSwcResolution(NeuTube::EAxis axis)
+double ZFlyEmDataBundle::getSwcResolution(neutube::EAxis axis)
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_swcResolution[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_swcResolution[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_swcResolution[2];
   }
 
   return 1.0;
 }
 
-int ZFlyEmDataBundle::getSourceDimension(NeuTube::EAxis axis) const
+int ZFlyEmDataBundle::getSourceDimension(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_sourceDimension[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_sourceDimension[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_sourceDimension[2];
   }
 
   return 0;
 }
 
-int ZFlyEmDataBundle::getSourceOffset(NeuTube::EAxis axis) const
+int ZFlyEmDataBundle::getSourceOffset(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_sourceOffset[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_sourceOffset[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_sourceOffset[2];
   }
 

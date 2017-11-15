@@ -136,13 +136,13 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       } else {
         if (!doc->getDvidTarget().readOnly()) {
           std::set<uint64_t> selectedOriginal =
-              doc->getSelectedBodySet(NeuTube::BODY_LABEL_ORIGINAL);
+              doc->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
           std::set<uint64_t> selectedMapped =
-              doc->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED);
+              doc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED);
 
           if (!selectedOriginal.empty()) {
             if (selectedOriginal.size() == 1) {
-              if (doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
+              if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
                 actionList.append(ZActionFactory::ACTION_BODY_SPLIT_START);
               }
               actionList.append(ZActionFactory::ACTION_BODY_ANNOTATION);

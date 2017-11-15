@@ -148,20 +148,20 @@ static void ComputeGradient(
 
 static int ComputeLightIntensity(
     const Stack *stack, const Stack *innerDist, const Stack *outerDist,
-    int x, int y, int z, NeuTube::EAxis axis)
+    int x, int y, int z, neutube::EAxis axis)
 {
   double dx, dy, dz;
   ComputeGradient(stack, innerDist, outerDist, x, y, z, &dx, &dy, &dz);
   double norm = 1.0;
   if (dx != 0.0 || dy != 0.0 || dz != 0.0) {
     switch (axis) {
-    case NeuTube::X_AXIS:
+    case neutube::X_AXIS:
       norm = fabs(dx / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case NeuTube::Y_AXIS:
+    case neutube::Y_AXIS:
       norm = fabs(dy / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case NeuTube::Z_AXIS:
+    case neutube::Z_AXIS:
       norm = fabs(dz / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     }
@@ -171,7 +171,7 @@ static int ComputeLightIntensity(
   //return Clip_Value(1.0 / (1.0 + exp((0.5 - norm) * 5.0)) * 255.0, 0, 255);
 }
 
-Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
+Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
 {
   Stack *tmpStack = C_Stack::clone(stack);
   Stack *innerDist = Stack_Bwdist_L_U16P(tmpStack, NULL, 0);
@@ -189,15 +189,15 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
   int outHeight = 0;
 
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     outWidth = height;
     outHeight = depth;
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     outWidth = width;
     outHeight = depth;
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     outWidth = width;
     outHeight = height;
     break;
@@ -210,7 +210,7 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
   size_t offset2 = 0;
 
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int y = 0; y < C_Stack::height(stack); ++y) {
       bool hit = false;
@@ -231,7 +231,7 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
     }
   }
   break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;
@@ -252,7 +252,7 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
     }
   }
   break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
   for (int y = 0; y < C_Stack::height(stack); ++y) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;

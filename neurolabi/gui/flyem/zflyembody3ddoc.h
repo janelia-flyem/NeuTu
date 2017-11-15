@@ -61,7 +61,7 @@ public:
     void setAction(EAction action) { m_action = action; }
     void setBodyColor(const QColor &color) { m_bodyColor = color; }
 
-    void mergeEvent(const BodyEvent &event, NeuTube::EBiDirection direction);
+    void mergeEvent(const BodyEvent &event, neutube::EBiDirection direction);
 
 //    void syncBodySelection();
 

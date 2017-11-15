@@ -2,7 +2,7 @@
 
 #include <QKeyEvent>
 
-ZKeyEventStrokeMapper::ZKeyEventStrokeMapper(NeuTube::Document::ETag tag) :
+ZKeyEventStrokeMapper::ZKeyEventStrokeMapper(neutube::Document::ETag tag) :
   m_docTag(tag)
 {
   initKeyMap();
@@ -71,7 +71,7 @@ ZStroke2d::EOperation ZKeyEventStrokeMapper::getOperation(QKeyEvent *event)
   return operation;
 }
 
-void ZKeyEventStrokeMapper::setTag(NeuTube::Document::ETag tag)
+void ZKeyEventStrokeMapper::setTag(neutube::Document::ETag tag)
 {
   m_docTag = tag;
   updateKeyMap();
@@ -79,6 +79,6 @@ void ZKeyEventStrokeMapper::setTag(NeuTube::Document::ETag tag)
 
 void ZKeyEventStrokeMapper::updateKeyMap()
 {
-  if (m_docTag == NeuTube::Document::FLYEM_SPLIT) {
+  if (m_docTag == neutube::Document::FLYEM_SPLIT) {
   }
 }

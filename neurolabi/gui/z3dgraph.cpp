@@ -401,7 +401,7 @@ void Z3DGraph::clear()
 
 void Z3DGraph::display(
     ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
-    NeuTube::EAxis /*sliceAxis*/) const
+    neutube::EAxis /*sliceAxis*/) const
 {
 }
 

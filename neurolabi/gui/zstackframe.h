@@ -59,7 +59,7 @@ public:
 
 public:
   static ZStackFrame* Make(QMdiArea *parent);
-  static ZStackFrame* Make(QMdiArea *parent, NeuTube::Document::ETag docTag);
+  static ZStackFrame* Make(QMdiArea *parent, neutube::Document::ETag docTag);
   static ZStackFrame* Make(QMdiArea *parent, ZSharedPointer<ZStackDoc> doc);
 
   // A frame has three parts: view, document and presenter
@@ -121,11 +121,11 @@ public:
   //void exportChainConnection(const QString &filePath);
   //void exportChainConnectionFeat(const QString &filePath);
   void exportObjectMask(const QString &filePath);
-  void exportObjectMask(NeuTube::EColor color, const QString &filePath);
+  void exportObjectMask(neutube::EColor color, const QString &filePath);
   ZStack* getObjectMask();
-  ZStack* getObjectMask(NeuTube::EColor color);
+  ZStack* getObjectMask(neutube::EColor color);
   ZStack* getStrokeMask();
-  ZStack* getStrokeMask(NeuTube::EColor color);
+  ZStack* getStrokeMask(neutube::EColor color);
   ZTileManager* getTileManager() {return m_tile;}
   void setTileManager(ZTileManager *p) {m_tile = p; }
 
@@ -243,7 +243,7 @@ public:
   void setParentFrame(ZStackFrame *frame);
   inline ZStackFrame* getParentFrame() { return m_parentFrame; }
 
-  void setSizeHintOption(NeuTube::ESizeHintOption option);
+  void setSizeHintOption(neutube::ESizeHintOption option);
   /*!
    * Remove all existing decorations if isExclusive is true.
    */

@@ -43,9 +43,9 @@ void ZSlicedPuncta::addPunctum(ZStackBall *p, bool ignoreNull)
 }
 
 void ZSlicedPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
-                            NeuTube::EAxis sliceAxis) const
+                            neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis != NeuTube::Z_AXIS) {
+  if (sliceAxis != neutube::Z_AXIS) {
     return;
   }
 
@@ -169,7 +169,7 @@ void ZSlicedPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZSlicedPuncta::pushVisualEffect(NeuTube::Display::TVisualEffect effect)
+void ZSlicedPuncta::pushVisualEffect(neutube::Display::TVisualEffect effect)
 {
   for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

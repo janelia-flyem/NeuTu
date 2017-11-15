@@ -36,9 +36,9 @@ void ZDvidGraySlice::clear()
 
 void ZDvidGraySlice::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis != NeuTube::Z_AXIS) {
+  if (sliceAxis != neutube::Z_AXIS) {
     return;
   }
   //if (!m_image.isNull()) {
@@ -262,7 +262,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
-  if (m_sliceAxis != NeuTube::Z_AXIS) {
+  if (m_sliceAxis != neutube::Z_AXIS) {
     return;
   }
 

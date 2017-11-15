@@ -269,7 +269,7 @@ TEST(ZIntCuboidFace, dist)
   ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(0, 10, 10));
   ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(50, 90, -10));
 
-  face.setNormal(NeuTube::X_AXIS);
+  face.setNormal(neutube::X_AXIS);
   ASSERT_DOUBLE_EQ(0.0, face.computeDistance(0, 10, 20));
   ASSERT_DOUBLE_EQ(10.0, face.computeDistance(10, 10, 20));
   ASSERT_DOUBLE_EQ(10.0, face.computeDistance(0, 10, 10));

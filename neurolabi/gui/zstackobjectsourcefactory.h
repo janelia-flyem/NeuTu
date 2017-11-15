@@ -34,7 +34,7 @@ public:
 
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
-  static std::string MakeDvidLabelSliceSource(NeuTube::EAxis axis);
+  static std::string MakeDvidLabelSliceSource(neutube::EAxis axis);
   static std::string MakeDvidGraySliceSource();
   static std::string MakeSplitObjectSource();
   static std::string MakeSplitResultSource();
@@ -55,9 +55,9 @@ public:
   static std::string MakeFlyEmExtNeuronClass();
   static std::string MakeStackBoundBoxSource();
   static std::string MakeDvidSynapseEnsembleSource();
-  static std::string MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis);
+  static std::string MakeDvidSynapseEnsembleSource(neutube::EAxis axis);
   static std::string MakeTodoListEnsembleSource();
-  static std::string MakeTodoListEnsembleSource(NeuTube::EAxis axis);
+  static std::string MakeTodoListEnsembleSource(neutube::EAxis axis);
   static std::string MakeTodoPunctaSource();
   static std::string MakeTodoPunctaSource(uint64_t bodyId);
   static std::string MakeCrossHairSource();
