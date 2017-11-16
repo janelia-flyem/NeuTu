@@ -88,7 +88,7 @@ void ZSlicedPuncta::clear()
 bool ZSlicedPuncta::load(const ZJsonObject &obj, double radius)
 {
   clear();
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(obj);
   std::vector<ZStackBall*> puncta = synapseArray.toTBarBall(radius);
   addPunctum(puncta.begin(), puncta.end());

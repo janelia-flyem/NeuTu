@@ -609,7 +609,7 @@ void ZFlyEmDataBundle::importSynpaseAnnotation(const string &filePath)
   updateSynapseAnnotation();
 }
 
-FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
+flyem::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
 {
   if (isDeprecated(SYNAPSE_ANNOTATION)) {
     ZString path = m_synapseAnnotationFile;
@@ -620,7 +620,7 @@ FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
     }
 
     if (fexist(path.c_str()) || ZString(path).startsWith("http:")) {
-      m_synaseAnnotation = new FlyEm::ZSynapseAnnotationArray;
+      m_synaseAnnotation = new flyem::ZSynapseAnnotationArray;
       m_synaseAnnotation->loadJson(path);
       m_synaseAnnotation->setResolution(m_imageResolution);
       m_synaseAnnotation->setSourceOffset(m_sourceOffset);

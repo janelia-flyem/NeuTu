@@ -1846,7 +1846,7 @@ void ZStackDoc::importFlyEmNetwork(const char *filePath)
     delete m_swcNetwork;
   }
 
-  FlyEm::ZNeuronNetwork flyemNetwork;
+  flyem::ZNeuronNetwork flyemNetwork;
   flyemNetwork.import(filePath);
   flyemNetwork.layoutSwc();
   m_swcNetwork = flyemNetwork.toSwcNetwork();
@@ -4880,7 +4880,7 @@ bool ZStackDoc::enhanceLine()
 bool ZStackDoc::importSynapseAnnotation(const std::string &filePath,
                                         int s)
 {
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   if (synapseArray.loadJson(filePath)) {
     std::vector<ZPunctum*> puncta;
     switch (s) {

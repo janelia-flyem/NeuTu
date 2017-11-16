@@ -410,7 +410,7 @@ const ZClosedCurve* ZFlyEmRoiProject::getRoi() const
 
 double ZFlyEmRoiProject::GetMarkerRadius(double s)
 {
-  return FlyEm::GetFlyEmRoiMarkerRadius(s);
+  return flyem::GetFlyEmRoiMarkerRadius(s);
 }
 
 double ZFlyEmRoiProject::getMarkerRadius() const
@@ -426,7 +426,7 @@ double ZFlyEmRoiProject::getMarkerRadius() const
     }
   }
 
-  return FlyEm::GetFlyEmRoiMarkerRadius(s);
+  return flyem::GetFlyEmRoiMarkerRadius(s);
 }
 
 ZSwcTree* ZFlyEmRoiProject::getRoiSwc() const

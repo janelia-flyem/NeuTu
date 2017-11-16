@@ -2043,7 +2043,7 @@ ZIntPoint ZDvidReader::readPosition(uint64_t bodyId, int x, int y, int z) const
   pt.invalidate();
 
   if (found) {
-    pt = FlyEm::FindClosestBg(stack, x, y, z);
+    pt = flyem::FindClosestBg(stack, x, y, z);
   }
 
   delete label;

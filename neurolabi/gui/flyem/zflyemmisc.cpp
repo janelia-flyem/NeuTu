@@ -1422,10 +1422,10 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
             preMarkerArray.push_back(marker);
           }
         }
-        FlyEm::ZFileParser::writeVaa3dMakerFile(
+        flyem::ZFileParser::writeVaa3dMakerFile(
               outDir.absoluteFilePath(name + ".pre.marker").toStdString(),
               preMarkerArray);
-        FlyEm::ZFileParser::writeVaa3dMakerFile(
+        flyem::ZFileParser::writeVaa3dMakerFile(
               outDir.absoluteFilePath(name + ".post.marker").toStdString(),
               postMarkerArray);
       }
@@ -1685,12 +1685,12 @@ QString ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
 
   ZJsonArray singleJson(json.value("single"));
   std::vector<ZVaa3dMarker> singleMarkerArray = GetLocationMarker(singleJson);
-  FlyEm::ZFileParser::writeVaa3dMakerFile(
+  flyem::ZFileParser::writeVaa3dMakerFile(
         (movieDir + "/cast/single.marker").toStdString(), singleMarkerArray);
 
   ZJsonArray multipleJson(json.value("multiple"));
   std::vector<ZVaa3dMarker> multileMarkerArray = GetLocationMarker(multipleJson);
-  FlyEm::ZFileParser::writeVaa3dMakerFile(
+  flyem::ZFileParser::writeVaa3dMakerFile(
         (movieDir + "/cast/multiple.marker").toStdString(), multileMarkerArray);
 
 
