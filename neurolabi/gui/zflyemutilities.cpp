@@ -6,17 +6,17 @@
 #include "zintpoint.h"
 #include "zstack.hxx"
 
-double FlyEm::GetFlyEmRoiMarkerRadius(double s)
+double flyem::GetFlyEmRoiMarkerRadius(double s)
 {
   return 10.0 + s / 2000;
 }
 
-double FlyEm::GetFlyEmRoiMarkerRadius(double width, double height)
+double flyem::GetFlyEmRoiMarkerRadius(double width, double height)
 {
   return GetFlyEmRoiMarkerRadius(std::min(width, height));
 }
 
-std::set<uint64_t> FlyEm::LoadBodySet(const std::string &input)
+std::set<uint64_t> flyem::LoadBodySet(const std::string &input)
 {
 //  ZString
 
@@ -37,7 +37,7 @@ std::set<uint64_t> FlyEm::LoadBodySet(const std::string &input)
   return bodySet;
 }
 
-ZIntPoint FlyEm::FindClosestBg(const ZStack *stack, int x, int y, int z)
+ZIntPoint flyem::FindClosestBg(const ZStack *stack, int x, int y, int z)
 {
   if (stack->getIntValue(x, y, z) == 0) {
     return ZIntPoint(x, y, z);

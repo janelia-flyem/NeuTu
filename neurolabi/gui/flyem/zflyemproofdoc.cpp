@@ -2324,7 +2324,7 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
     ZJsonObject jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
-      FlyEm::ZSynapseAnnotationArray synapseArray;
+      flyem::ZSynapseAnnotationArray synapseArray;
       synapseArray.loadJson(jsonObj);
       const double radius = 5.0;
       std::vector<ZStackBall*> puncta = synapseArray.toTBarBall(radius);

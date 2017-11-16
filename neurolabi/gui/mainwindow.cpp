@@ -3655,7 +3655,7 @@ void MainWindow::on_actionImport_Network_triggered()
 
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = fileName;
-    FlyEm::ZNeuronNetwork flyemNetwork;
+    flyem::ZNeuronNetwork flyemNetwork;
     flyemNetwork.import(fileName.toStdString());
     flyemNetwork.layoutSwc();
     ZSwcNetwork *network = flyemNetwork.toSwcNetwork();
@@ -3755,7 +3755,7 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
       //ZStackFrame *frame = new ZStackFrame;
       ZStackDoc *doc = new ZStackDoc(NULL);
 
-      FlyEm::ZSynapseAnnotationArray synapseArray;
+      flyem::ZSynapseAnnotationArray synapseArray;
 
       double radius = 10.0;
       doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
@@ -4036,7 +4036,7 @@ void MainWindow::on_actionExtract_body_triggered()
         std::vector<int> bodyId = str.toIntegerArray();
         for (size_t i = 0; i < bodyId.size(); ++i) {
           std::vector<uint8_t> code =
-              FlyEm::ZSegmentationAnalyzer::idToChannelCode(bodyId[i],
+              flyem::ZSegmentationAnalyzer::idToChannelCode(bodyId[i],
                                                             frame->document()->stackMask()->channelNumber());
           for (size_t k = 0; k < code.size(); ++k) {
             bodyColor.push_back(code[k]);
@@ -5997,7 +5997,7 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   ZFlyEmNeuron neuron(bodyId, tree, NULL);
 
   ZFlyEmQualityAnalyzer analyzer;
-  FlyEm::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
+  flyem::ZHotSpotArray &hotSpotArray = analyzer.computeHotSpotForSplit(neuron);
   if (hotSpotArray.empty()) {
     report("Hot Spot Demo Failed", "The neuron seems normal.",
            neutube::MSG_WARNING);
@@ -6008,7 +6008,7 @@ ZStackDocReader *MainWindow::hotSpotDemo(
   hotSpotArray.exportJsonFile(GET_TEST_DATA_DIR + "/test.json");
 #endif
 
-  FlyEm::ZHotSpot *hotSpot = hotSpotArray[0];
+  flyem::ZHotSpot *hotSpot = hotSpotArray[0];
   ZCuboid boundBox = hotSpot->toPointArray().getBoundBox();
   boundBox.expand(10);
 
@@ -6138,7 +6138,7 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
 
   std::cout << "Computing hot spots ..." << std::endl;
   ZFlyEmQualityAnalyzer analyzer;
-  FlyEm::ZHotSpotArray &hotSpotArray =
+  flyem::ZHotSpotArray &hotSpotArray =
       analyzer.computeHotSpot(neuron, neuronArray);
   if (hotSpotArray.empty()) {
     /*
@@ -6196,7 +6196,7 @@ ZStackDocReader *MainWindow::hotSpotDemoFs(
 
 void MainWindow::on_actionHot_Spot_Demo_triggered()
 {
-  ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25);
+  ZFlyEmDataInfo dataInfo(flyem::DATA_FIB25);
 
   //m_dvidObjectDlg->setAddress(dataInfo.getDvidAddressWithPort().c_str());
   if (m_hotSpotDlg->exec()) {
@@ -7085,7 +7085,7 @@ void MainWindow::on_actionOne_Column_triggered()
   //Screen synapses
   for (size_t i = 0; i < synapseArrayJson.size(); ++i) {
     json_t *value = synapseArrayJson.at(i);
-    FlyEm::ZSynapseAnnotation synapse;
+    flyem::ZSynapseAnnotation synapse;
     synapse.loadJsonObject(value);
 
     ZJsonObject synapseJson(value, ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -7121,10 +7121,10 @@ void MainWindow::on_actionOne_Column_triggered()
 
       //add the related body ID to the set
       bodyIdSet.insert(synapse.getTBarRef()->getBodyId());
-      std::vector<FlyEm::SynapseLocation> *partnerArray = synapse.getPartnerArrayRef();
-      for (std::vector<FlyEm::SynapseLocation>::const_iterator iter = partnerArray->begin();
+      std::vector<flyem::SynapseLocation> *partnerArray = synapse.getPartnerArrayRef();
+      for (std::vector<flyem::SynapseLocation>::const_iterator iter = partnerArray->begin();
            iter != partnerArray->end(); ++iter) {
-        const FlyEm::SynapseLocation &partner = *iter;
+        const flyem::SynapseLocation &partner = *iter;
         x = partner.x();
         y = partner.y();
         z = partner.z();
@@ -7815,7 +7815,7 @@ void MainWindow::generateMBKcCast(const std::string &movieFolder)
 
         outFileName = QString("%1.marker").arg(bodyId);
         outPath = outDir.absoluteFilePath(outFileName);
-        FlyEm::ZFileParser::writeVaa3dMakerFile(
+        flyem::ZFileParser::writeVaa3dMakerFile(
               outPath.toStdString(), markerArray);
       }
 
@@ -8089,7 +8089,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
 
       QString outFileName = QString("%1.marker").arg(bodyId);
       QString outPath = outDir.absoluteFilePath(outFileName);
-      FlyEm::ZFileParser::writeVaa3dMakerFile(
+      flyem::ZFileParser::writeVaa3dMakerFile(
             outPath.toStdString(), markerArray);
     }
 
@@ -8129,7 +8129,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
 
       QString outFileName = QString("%1.marker").arg(bodyId);
       QString outPath = outDir.absoluteFilePath(outFileName);
-      FlyEm::ZFileParser::writeVaa3dMakerFile(
+      flyem::ZFileParser::writeVaa3dMakerFile(
             outPath.toStdString(), markerArray);
     }
     {
@@ -8168,7 +8168,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
 
       QString outFileName = QString("%1.marker").arg(bodyId);
       QString outPath = outDir.absoluteFilePath(outFileName);
-      FlyEm::ZFileParser::writeVaa3dMakerFile(
+      flyem::ZFileParser::writeVaa3dMakerFile(
             outPath.toStdString(), markerArray);
     }
   }
@@ -8305,19 +8305,19 @@ void MainWindow::generateMBONPartnerCast(const std::string &movieFolder)
     }
 
     outPath = outDir.absoluteFilePath("kc.marker");
-    FlyEm::ZFileParser::writeVaa3dMakerFile(
+    flyem::ZFileParser::writeVaa3dMakerFile(
           outPath.toStdString(), kcMarkerArray);
 
     outPath = outDir.absoluteFilePath("mbon11.marker");
-    FlyEm::ZFileParser::writeVaa3dMakerFile(
+    flyem::ZFileParser::writeVaa3dMakerFile(
           outPath.toStdString(), mbon11MarkerArray);
 
     outPath = outDir.absoluteFilePath("mbon06.marker");
-    FlyEm::ZFileParser::writeVaa3dMakerFile(
+    flyem::ZFileParser::writeVaa3dMakerFile(
           outPath.toStdString(), mbon06MarkerArray);
 
     outPath = outDir.absoluteFilePath("ppl106.marker");
-    FlyEm::ZFileParser::writeVaa3dMakerFile(
+    flyem::ZFileParser::writeVaa3dMakerFile(
           outPath.toStdString(), ppl106MarkerArray);
   }
 #if 0

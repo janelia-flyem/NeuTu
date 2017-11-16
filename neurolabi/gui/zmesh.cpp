@@ -410,6 +410,13 @@ std::vector<ZMesh> ZMesh::split(size_t numTriangle) const
   return res;
 }
 
+void ZMesh::prepareNormals(bool useAreaWeight)
+{
+  if (m_normals.size() < m_vertices.size()) {
+    generateNormals(useAreaWeight);
+  }
+}
+
 void ZMesh::generateNormals(bool useAreaWeight)
 {
   m_normals.resize(m_vertices.size());

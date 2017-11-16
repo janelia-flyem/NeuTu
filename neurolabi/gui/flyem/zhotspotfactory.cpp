@@ -1,38 +1,38 @@
 #include "zhotspotfactory.h"
 
-FlyEm::ZHotSpotFactory::ZHotSpotFactory()
+flyem::ZHotSpotFactory::ZHotSpotFactory()
 {
 }
 
-FlyEm::ZHotSpot*
-FlyEm::ZHotSpotFactory::createPointHotSpot(double x, double y, double z)
+flyem::ZHotSpot*
+flyem::ZHotSpotFactory::createPointHotSpot(double x, double y, double z)
 {
-  FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
+  flyem::ZHotSpot *hotSpot = new flyem::ZHotSpot;
 
-  FlyEm::ZPointGeometry *geometry = new FlyEm::ZPointGeometry;
+  flyem::ZPointGeometry *geometry = new flyem::ZPointGeometry;
   geometry->setCenter(x, y, z);
   hotSpot->setGeometry(geometry);
-  hotSpot->setType(FlyEm::ZHotSpot::TYPE_POINT);
+  hotSpot->setType(flyem::ZHotSpot::TYPE_POINT);
 
   return hotSpot;
 }
 
-FlyEm::ZHotSpot* FlyEm::ZHotSpotFactory::createCurveHotSpot()
+flyem::ZHotSpot* flyem::ZHotSpotFactory::createCurveHotSpot()
 {
-  FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
-  FlyEm::ZCurveGeometry *geometry = new FlyEm::ZCurveGeometry;
+  flyem::ZHotSpot *hotSpot = new flyem::ZHotSpot;
+  flyem::ZCurveGeometry *geometry = new flyem::ZCurveGeometry;
   hotSpot->setGeometry(geometry);
-  hotSpot->setType(FlyEm::ZHotSpot::TYPE_CURVE);
+  hotSpot->setType(flyem::ZHotSpot::TYPE_CURVE);
 
   return hotSpot;
 }
 
-FlyEm::ZHotSpot*
-FlyEm::ZHotSpotFactory::createCurveHotSpot(const ZPointArray &pointArray)
+flyem::ZHotSpot*
+flyem::ZHotSpotFactory::createCurveHotSpot(const ZPointArray &pointArray)
 {
-  FlyEm::ZHotSpot *hotSpot = createCurveHotSpot();
-  FlyEm::ZCurveGeometry *geometry =
-      dynamic_cast<FlyEm::ZCurveGeometry*>(hotSpot->getGeometry());
+  flyem::ZHotSpot *hotSpot = createCurveHotSpot();
+  flyem::ZCurveGeometry *geometry =
+      dynamic_cast<flyem::ZCurveGeometry*>(hotSpot->getGeometry());
   geometry->setAnchor(pointArray);
 
   return hotSpot;

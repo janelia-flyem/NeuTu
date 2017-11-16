@@ -563,7 +563,7 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       m_docReader.setStack(stack);
 
       ZSwcTree *tree = m_project->getRoiSwc(
-            z, FlyEm::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
+            z, flyem::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
       if (tree != NULL) {
         m_docReader.addObject(tree);
       }

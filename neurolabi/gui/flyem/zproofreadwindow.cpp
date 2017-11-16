@@ -173,7 +173,7 @@ void ZProofreadWindow::init()
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
 
-  setStyleSheet(FlyEm::GROUP_BOX_STYLE);
+  setStyleSheet(flyem::GROUP_BOX_STYLE);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)

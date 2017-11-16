@@ -88,7 +88,7 @@ void ZPuncta::setSorted(bool state) const
 bool ZPuncta::load(const ZJsonObject &obj, double radius)
 {
   clear();
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(obj);
   std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
   addPunctum(puncta.begin(), puncta.end());

@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace FlyEm {
+namespace flyem {
 
 class ZSynapseAnnotationAnalyzer
 {

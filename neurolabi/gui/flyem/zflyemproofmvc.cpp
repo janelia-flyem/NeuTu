@@ -3483,7 +3483,7 @@ void ZFlyEmProofMvc::loadRoiProject()
   updateRoiGlyph();
   getPresenter()->setActiveObjectSize(
         ZStackPresenter::ROLE_SWC,
-        FlyEm::GetFlyEmRoiMarkerRadius(getDocument()->getStackWidth(),
+        flyem::GetFlyEmRoiMarkerRadius(getDocument()->getStackWidth(),
                                        getDocument()->getStackHeight()));
 }
 

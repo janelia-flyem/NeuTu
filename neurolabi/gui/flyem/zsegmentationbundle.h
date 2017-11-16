@@ -11,7 +11,7 @@
 #include "zobject3darray.h"
 #include "zjsonparser.h"
 
-namespace FlyEm {
+namespace flyem {
 
 class ZGalaPredictionEntry {
 public:
