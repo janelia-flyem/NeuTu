@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>488</width>
+    <width>479</width>
     <height>748</height>
    </rect>
   </property>
@@ -225,7 +225,7 @@
             <string notr="true">QGroupBox {  border: 1px solid gray; border-radius: 3px; margin-top: 2ex;}</string>
            </property>
            <property name="text">
-            <string>Resolution</string>
+            <string>Quality:</string>
            </property>
           </widget>
          </item>
