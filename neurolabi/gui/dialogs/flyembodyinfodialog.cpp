@@ -503,6 +503,7 @@ void FlyEmBodyInfoDialog::onRoiChanged(int index)
   }
   m_reader.getDvidTarget().setSynapseLabelszName(labelszName);
   m_currentDvidTarget.setSynapseLabelszName(labelszName);
+  m_sequencerReader.getDvidTarget().setSynapseLabelszName(labelszName);
 
   onRefreshButton();
 }
@@ -817,7 +818,9 @@ void FlyEmBodyInfoDialog::appendModel(ZJsonValue data, int state)
 
   if (!data.isEmpty()) {
     ZJsonArray bookmarks(data);
+#if 0
     std::cout << "Count: " << bookmarks.size() << std::endl;
+#endif
     for (size_t i = 0; i < bookmarks.size(); ++i) {
       ZJsonObject bkmk(bookmarks.value(i));
       QList<QStandardItem*> itemList = getBodyItemList(bkmk);
