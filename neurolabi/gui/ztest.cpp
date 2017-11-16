@@ -21701,15 +21701,19 @@ void ZTest::test(MainWindow *host)
   std::cout << sizeof(std::vector<std::string>) << std::endl;
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "@FIB19", 7000);
   ZDvidWriter writer;
   writer.open(target);
 
+//  ZJsonObject obj = writer.getDvidReader().readDataMap();
+
   ZJsonObject labelszObj;
+
   labelszObj.setEntry("ROI_LOP_15", "annot_synapse_010417_ROI_LOP_15");
   labelszObj.setEntry("ROI_LOP_40", "annot_synapse_010417_ROI_LOP_40");
+  labelszObj.setEntry("ROI_chiasm_body2", "annot_synapse_ROI_chiasm_body2");
 
   ZJsonObject obj;
   obj.setEntry("roi_synapse_labelsz", labelszObj);
@@ -24818,7 +24822,7 @@ void ZTest::test(MainWindow *host)
   delete mesh;
 #endif
 
-#if 1
+#if 0
   ZStroke2d stroke;
   stroke.setWidth(3);
   stroke.append(0, 0);
