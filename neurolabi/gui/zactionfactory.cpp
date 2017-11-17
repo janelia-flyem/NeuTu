@@ -73,6 +73,10 @@ QAction* ZActionFactory::makeAction(
     doc->connect(action, SIGNAL(triggered()),
             doc, SLOT(showSeletedSwcNodeScaledLength()));
     break;
+  case ACTION_MEASURE_SWC_NODE_DIST:
+    action = new QAction("Measure Distance", parent);
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(showSeletedSwcNodeDist()));
+    break;
   case ACTION_DELETE_SWC_NODE:
     action = new QAction("Delete", parent);
     action->setShortcut(Qt::Key_X);
@@ -678,6 +682,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Delete Seleted Seeds", parent);
     action->setIcon(QIcon(":/images/delete_selected_seed.png"));
     action->setToolTip("Delete selected seeds for splitting");
+    break;
+  case ACTION_MEASURE_SWC_NODE_DIST:
+    action = new QAction("Measure Distance", parent);
     break;
   default:
     break;

@@ -1171,6 +1171,7 @@ public slots:
   void selectNeighborSwcNode();
 
   void showSeletedSwcNodeLength(double *resolution = NULL);
+  void showSeletedSwcNodeDist(double *resolution = NULL);
   void showSeletedSwcNodeScaledLength();
   void showSwcSummary();
 

@@ -8723,6 +8723,37 @@ void ZStackDoc::showSeletedSwcNodeLength(double *resolution)
   dlg.exec();
 }
 
+void ZStackDoc::showSeletedSwcNodeDist(double *resolution)
+{
+  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
+
+  InformationDialog dlg;
+
+  std::ostringstream textStream;
+
+  if (nodeSet.size() == 2) {
+    std::set<Swc_Tree_Node*>::const_iterator iter = nodeSet.begin();
+    Swc_Tree_Node *tn1 = *iter;
+    ++iter;
+    Swc_Tree_Node *tn2 = *iter;
+
+    if (!SwcTreeNode::isConnected(tn1, tn2)) {
+      double dist = 0.0;
+      if (resolution == NULL) {
+        dist = SwcTreeNode::distance(tn1, tn2);
+      } else {
+        dist = SwcTreeNode::scaledDistance(tn1, tn2, resolution[0],
+            resolution[1], resolution[2]);
+      }
+      textStream << "<p>Euclidean distance between the two selected nodes: "
+                 << dist << "</p>";
+    }
+  }
+
+  dlg.setText(textStream.str());
+  dlg.exec();
+}
+
 void ZStackDoc::showSwcSummary()
 {
   InformationDialog dlg;
