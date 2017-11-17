@@ -169,7 +169,7 @@ void ZSlicedPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZSlicedPuncta::pushVisualEffect(neutube::Display::TVisualEffect effect)
+void ZSlicedPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
 {
   for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

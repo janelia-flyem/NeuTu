@@ -23,11 +23,11 @@ TEST(FlyEmBody3d, source)
   ASSERT_EQ("#.FlyEmBody#123_1", source);
 
   source =
-      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, FlyEM::BODY_FULL);
+      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, flyem::BODY_FULL);
   ASSERT_EQ("#.FlyEmBody#123_1#.full", source);
 
   source =
-      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, FlyEM::BODY_COARSE);
+      ZStackObjectSourceFactory::MakeFlyEmBodySource(123, 1, flyem::BODY_COARSE);
   ASSERT_EQ("#.FlyEmBody#123_1#.coarse", source);
 
   id = ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(source);

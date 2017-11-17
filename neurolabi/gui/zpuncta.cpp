@@ -163,7 +163,7 @@ void ZPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZPuncta::pushVisualEffect(neutube::Display::TVisualEffect effect)
+void ZPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
 {
   for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

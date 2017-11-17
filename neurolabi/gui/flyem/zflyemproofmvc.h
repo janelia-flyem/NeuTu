@@ -87,7 +87,7 @@ public:
 
   void exitCurrentDoc();
 
-  void enableSplit(FlyEM::EBodySplitMode mode);
+  void enableSplit(flyem::EBodySplitMode mode);
   void disableSplit();
 
   void processViewChangeCustom(const ZStackViewParam &viewParam);
@@ -95,7 +95,7 @@ public:
   ZFlyEmSupervisor* getSupervisor() const;
 
 //  bool checkInBody(uint64_t bodyId);
-  bool checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  bool checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode);
 
   virtual ZDvidTarget getDvidTarget() const;
 
@@ -117,12 +117,12 @@ public:
 //  QSortFilterProxyModel* getUserBookmarkProxy() const;
 
   ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
-     FlyEM::EProofreadingMode mode) const {
+     flyem::EProofreadingMode mode) const {
     return m_assignedBookmarkModel[mode];
   }
 
   ZFlyEmBookmarkListModel* getUserBookmarkModel(
-     FlyEM::EProofreadingMode mode) const {
+     flyem::EProofreadingMode mode) const {
     return m_userBookmarkModel[mode];
   }
 
@@ -158,7 +158,7 @@ signals:
   void messageGenerated(const QString &message, bool appending = true);
   void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage &message);
-  void splitBodyLoaded(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  void splitBodyLoaded(uint64_t bodyId, flyem::EBodySplitMode mode);
   void bookmarkUpdated(ZFlyEmBodyMergeProject *m_project);
   void bookmarkUpdated(ZFlyEmBodySplitProject *m_project);
   void bookmarkDeleted(ZFlyEmBodyMergeProject *m_project);
@@ -182,25 +182,25 @@ public slots:
 
   void setSegmentationVisible(bool visible);
   void setDvidTarget();
-  void launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  void launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode);
   void processMessageSlot(const QString &message);
   void notifySplitTriggered();
   void annotateBody();
   void annotateSynapse();
-  void checkInSelectedBody(FlyEM::EBodySplitMode mode);
+  void checkInSelectedBody(flyem::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
-  void checkOutBody(FlyEM::EBodySplitMode mode);
+  void checkOutBody(flyem::EBodySplitMode mode);
 //  bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(
-      uint64_t bodyId, FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_NONE);
+      uint64_t bodyId, flyem::EBodySplitMode mode = flyem::BODY_SPLIT_NONE);
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut,
-      FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_NONE);
+      flyem::EBodySplitMode mode = flyem::BODY_SPLIT_NONE);
   void exitSplit();
   void switchSplitBody(uint64_t bodyId);
   void showBodyQuickView();
   void showSplitQuickView();
-  void presentBodySplit(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  void presentBodySplit(uint64_t bodyId, flyem::EBodySplitMode mode);
   void updateBodySelection();
   void saveSeed();
   void saveMergeOperation();
@@ -389,7 +389,7 @@ private slots:
 private:
   void init();
   void initBodyWindow();
-  void launchSplitFunc(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  void launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode);
   uint64_t getMappedBodyId(uint64_t bodyId);
   std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
   void runSplitFunc();
@@ -412,7 +412,7 @@ private:
 
   ZWindowFactory makeExternalWindowFactory(NeuTube3D::EWindowType windowType);
 
-  ZFlyEmBody3dDoc *makeBodyDoc(FlyEM::EBodyType bodyType);
+  ZFlyEmBody3dDoc *makeBodyDoc(flyem::EBodyType bodyType);
 
   void prepareBodyWindowSignalSlot(Z3DWindow *window, ZFlyEmBody3dDoc *doc);
 
@@ -444,9 +444,9 @@ protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
 
-  QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>
+  QMap<flyem::EProofreadingMode, ZFlyEmBookmarkListModel*>
   m_assignedBookmarkModel;
-  QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>
+  QMap<flyem::EProofreadingMode, ZFlyEmBookmarkListModel*>
   m_userBookmarkModel;
 //  ZFlyEmBookmarkListModel *m_assignedBookmarkList;
 //  ZFlyEmBookmarkListModel *m_userBookmarkList;
@@ -606,7 +606,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(recoveringSeed()), this, SLOT(recoverSeed()));
   connect(panel, SIGNAL(exportingSeed()), this, SLOT(exportSeed()));
   connect(panel, SIGNAL(importingSeed()), this, SLOT(importSeed()));
-  connect(this, SIGNAL(splitBodyLoaded(uint64_t, FlyEM::EBodySplitMode)),
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t, flyem::EBodySplitMode)),
           panel, SLOT(updateBodyWidget(uint64_t)));
   connect(panel, SIGNAL(savingTask()), this, SLOT(saveSplitTask()));
   connect(panel, SIGNAL(loadingSplitResult()), this, SLOT(loadSplitResult()));

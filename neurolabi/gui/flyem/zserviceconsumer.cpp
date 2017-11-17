@@ -1,4 +1,4 @@
-#define _NEUTU_USE_REF_KEY_
+//#define _NEUTU_USE_REF_KEY_
 #include "zserviceconsumer.h"
 
 #include <QByteArray>

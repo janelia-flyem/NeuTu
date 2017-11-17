@@ -10,7 +10,7 @@ ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
   m_isVisible(true), m_hitProtocal(HIT_STACK_POS), m_projectionVisible(true),
   m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
   m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(neutube::Display::VE_NONE), m_prevDisplaySlice(-1)
+  m_visualEffect(neutube::display::VE_NONE), m_prevDisplaySlice(-1)
 {
   m_type = TYPE_UNIDENTIFIED;
   setSliceAxis(neutube::Z_AXIS);
@@ -295,22 +295,22 @@ void ZStackObject::boundBox(ZIntCuboid *box) const
   }
 }
 
-void ZStackObject::addVisualEffect(neutube::Display::TVisualEffect ve)
+void ZStackObject::addVisualEffect(neutube::display::TVisualEffect ve)
 {
   m_visualEffect |= ve;
 }
 
-void ZStackObject::removeVisualEffect(neutube::Display::TVisualEffect ve)
+void ZStackObject::removeVisualEffect(neutube::display::TVisualEffect ve)
 {
   m_visualEffect &= ~ve;
 }
 
-void ZStackObject::setVisualEffect(neutube::Display::TVisualEffect ve)
+void ZStackObject::setVisualEffect(neutube::display::TVisualEffect ve)
 {
   m_visualEffect = ve;
 }
 
-bool ZStackObject::hasVisualEffect(neutube::Display::TVisualEffect ve) const
+bool ZStackObject::hasVisualEffect(neutube::display::TVisualEffect ve) const
 {
   return m_visualEffect & ve;
 }

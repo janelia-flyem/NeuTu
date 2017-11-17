@@ -147,13 +147,13 @@ void ZFlyEmProofMvc::init()
 //  m_queryWindow = NULL;
   m_ROILoaded = false;
 
-  m_assignedBookmarkModel[FlyEM::PR_NORMAL] =
+  m_assignedBookmarkModel[flyem::PR_NORMAL] =
       new ZFlyEmBookmarkListModel(this);
-  m_assignedBookmarkModel[FlyEM::PR_SPLIT] =
+  m_assignedBookmarkModel[flyem::PR_SPLIT] =
       new ZFlyEmBookmarkListModel(this);
-  m_userBookmarkModel[FlyEM::PR_NORMAL] =
+  m_userBookmarkModel[flyem::PR_NORMAL] =
       new ZFlyEmBookmarkListModel(this);
-  m_userBookmarkModel[FlyEM::PR_SPLIT] =
+  m_userBookmarkModel[flyem::PR_SPLIT] =
       new ZFlyEmBookmarkListModel(this);
 
 
@@ -505,7 +505,7 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
   }
 }
 
-ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(FlyEM::EBodyType bodyType)
+ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
 {
   ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
   doc->setDvidTarget(getDvidTarget());
@@ -634,7 +634,7 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_COARSE);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_COARSE);
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_coarseBodyWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
@@ -663,7 +663,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 
 void ZFlyEmProofMvc::makeBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_FULL);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_FULL);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_bodyWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   doc->showTodo(m_bodyWindow->isLayerVisible(Z3DWindow::LAYER_TODO));
@@ -703,7 +703,7 @@ ZWindowFactory ZFlyEmProofMvc::makeExternalWindowFactory(
 Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
     NeuTube3D::EWindowType windowType)
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_MESH);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_MESH);
   doc->enableBodySelectionSync(true);
 
   ZWindowFactory factory = makeExternalWindowFactory(windowType);
@@ -736,7 +736,7 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
 Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
     NeuTube3D::EWindowType windowType)
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_SKELETON);
   doc->enableBodySelectionSync(true);
 
   ZWindowFactory factory = makeExternalWindowFactory(windowType);
@@ -801,7 +801,7 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 
 Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_MESH);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_MESH);
   m_meshWindow = m_bodyWindowFactory->make3DWindow(doc);
 
   doc->showSynapse(m_meshWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
@@ -830,7 +830,7 @@ Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(FlyEM::BODY_SKELETON);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_SKELETON);
 
   m_skeletonWindow = m_bodyWindowFactory->make3DWindow(doc);
 
@@ -1470,12 +1470,12 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(notifySplitTriggered()));
   connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
           this, SLOT(annotateBody()));
-  connect(getPresenter(), SIGNAL(bodyCheckinTriggered(FlyEM::EBodySplitMode)),
-          this, SLOT(checkInSelectedBody(FlyEM::EBodySplitMode)));
+  connect(getPresenter(), SIGNAL(bodyCheckinTriggered(flyem::EBodySplitMode)),
+          this, SLOT(checkInSelectedBody(flyem::EBodySplitMode)));
   connect(getPresenter(), SIGNAL(bodyForceCheckinTriggered()),
           this, SLOT(checkInSelectedBodyAdmin()));
-  connect(getPresenter(), SIGNAL(bodyCheckoutTriggered(FlyEM::EBodySplitMode)),
-          this, SLOT(checkOutBody(FlyEM::EBodySplitMode)));
+  connect(getPresenter(), SIGNAL(bodyCheckoutTriggered(flyem::EBodySplitMode)),
+          this, SLOT(checkOutBody(flyem::EBodySplitMode)));
   connect(getPresenter(), SIGNAL(objectVisibleTurnedOn()),
           this, SLOT(processViewChange()));
   connect(getCompletePresenter(), SIGNAL(goingToTBar()),
@@ -1588,8 +1588,8 @@ void ZFlyEmProofMvc::customInit()
 //  ZWidgetMessage::ConnectMessagePipe(&getDocument().get(), this, false);
 
 
-  connect(this, SIGNAL(splitBodyLoaded(uint64_t, FlyEM::EBodySplitMode)),
-          this, SLOT(presentBodySplit(uint64_t, FlyEM::EBodySplitMode)));
+  connect(this, SIGNAL(splitBodyLoaded(uint64_t, flyem::EBodySplitMode)),
+          this, SLOT(presentBodySplit(uint64_t, flyem::EBodySplitMode)));
 
   connect(getCompletePresenter(), SIGNAL(selectingBodyAt(int,int,int)),
           this, SLOT(xorSelectionAt(int, int, int)));
@@ -1839,13 +1839,13 @@ void ZFlyEmProofMvc::highlightSelectedObject(
         }
       } else {
         labelSlice->addVisualEffect(
-              neutube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
+              neutube::display::LabelField::VE_HIGHLIGHT_SELECTED);
         labelSlice->paintBuffer();
         doc->processObjectModified(labelSlice);
       }
     } else {
       labelSlice->removeVisualEffect(
-            neutube::Display::LabelField::VE_HIGHLIGHT_SELECTED);
+            neutube::display::LabelField::VE_HIGHLIGHT_SELECTED);
       if (usingSparseVol) {
         labelSlice->paintBuffer();
         doc->notifyActiveViewModified();
@@ -2102,7 +2102,7 @@ void ZFlyEmProofMvc::testBodySplit()
 //      }
 
       if (getCompleteDocument()->isSplittable(bodyId)) {
-        launchSplit(bodyId, FlyEM::BODY_SPLIT_ONLINE);
+        launchSplit(bodyId, flyem::BODY_SPLIT_ONLINE);
       }
     }
   } else {
@@ -2235,7 +2235,7 @@ void ZFlyEmProofMvc::prepareStressTestEnv(ZStressTestOptionDialog *optionDlg)
 
 
 bool ZFlyEmProofMvc::checkBodyWithMessage(
-    uint64_t bodyId, bool checkingOut, FlyEM::EBodySplitMode mode)
+    uint64_t bodyId, bool checkingOut, flyem::EBodySplitMode mode)
 {
   bool succ = true;
 
@@ -2249,7 +2249,7 @@ bool ZFlyEmProofMvc::checkBodyWithMessage(
 }
 
 bool ZFlyEmProofMvc::checkInBodyWithMessage(
-    uint64_t bodyId, FlyEM::EBodySplitMode mode)
+    uint64_t bodyId, flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     if (bodyId > 0) {
@@ -2265,7 +2265,7 @@ bool ZFlyEmProofMvc::checkInBodyWithMessage(
   return true;
 }
 
-bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode)
+bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     return getSupervisor()->checkOut(bodyId, mode);
@@ -2274,7 +2274,7 @@ bool ZFlyEmProofMvc::checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode)
   return true;
 }
 
-void ZFlyEmProofMvc::checkInSelectedBody(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofMvc::checkInSelectedBody(flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -2320,7 +2320,7 @@ void ZFlyEmProofMvc::checkInSelectedBodyAdmin()
   }
 }
 
-void ZFlyEmProofMvc::checkOutBody(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofMvc::checkOutBody(flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -2376,7 +2376,7 @@ void ZFlyEmProofMvc::annotateBody()
   if (bodyIdArray.size() == 1) {
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
-      if (checkOutBody(bodyId, FlyEM::BODY_SPLIT_NONE)) {
+      if (checkOutBody(bodyId, flyem::BODY_SPLIT_NONE)) {
         ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
@@ -2392,7 +2392,7 @@ void ZFlyEmProofMvc::annotateBody()
           getCompleteDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
         }
 
-        checkInBodyWithMessage(bodyId, FlyEM::BODY_SPLIT_NONE);
+        checkInBodyWithMessage(bodyId, flyem::BODY_SPLIT_NONE);
       } else {
         if (getSupervisor() != NULL) {
           std::string owner = getSupervisor()->getOwner(bodyId);
@@ -2514,7 +2514,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
   return body;
 }
 
-void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, FlyEM::EBodySplitMode mode)
+void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode)
 {
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
@@ -2532,7 +2532,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, FlyEM::EBodySplitMode mode
         body = updateBodyForSplit(bodyId, reader);
       }
 
-      if (mode == FlyEM::BODY_SPLIT_ONLINE) {
+      if (mode == flyem::BODY_SPLIT_ONLINE) {
         body->runFillValueFunc();
       }
 
@@ -2801,7 +2801,7 @@ void ZFlyEmProofMvc::clearBodyMergeStage()
 }
 
 void ZFlyEmProofMvc::presentBodySplit(
-    uint64_t bodyId, FlyEM::EBodySplitMode mode)
+    uint64_t bodyId, flyem::EBodySplitMode mode)
 {
   enableSplit(mode);
 
@@ -2823,7 +2823,7 @@ void ZFlyEmProofMvc::presentBodySplit(
   getView()->redrawObject();
 }
 
-void ZFlyEmProofMvc::enableSplit(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofMvc::enableSplit(flyem::EBodySplitMode mode)
 {
 //  m_splitOn = true;
   getCompletePresenter()->enableSplit(mode);
@@ -2835,7 +2835,7 @@ void ZFlyEmProofMvc::disableSplit()
   getCompletePresenter()->disableSplit();
 }
 
-void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode)
+void ZFlyEmProofMvc::launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode)
 {
   if (bodyId > 0) {
     if (!getCompleteDocument()->isSplittable(bodyId)) {
@@ -3359,7 +3359,7 @@ void ZFlyEmProofMvc::commitCurrentSplit()
 
 void ZFlyEmProofMvc::clearAssignedBookmarkModel()
 {
-  for (QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>::iterator
+  for (QMap<flyem::EProofreadingMode, ZFlyEmBookmarkListModel*>::iterator
        iter = m_assignedBookmarkModel.begin();
        iter != m_assignedBookmarkModel.end(); ++iter) {
     ZFlyEmBookmarkListModel *model = *iter;
@@ -3369,7 +3369,7 @@ void ZFlyEmProofMvc::clearAssignedBookmarkModel()
 
 void ZFlyEmProofMvc::clearUserBookmarkModel()
 {
-  for (QMap<FlyEM::EProofreadingMode, ZFlyEmBookmarkListModel*>::iterator
+  for (QMap<flyem::EProofreadingMode, ZFlyEmBookmarkListModel*>::iterator
        iter = m_userBookmarkModel.begin();
        iter != m_userBookmarkModel.end(); ++iter) {
     ZFlyEmBookmarkListModel *model = *iter;
@@ -3513,7 +3513,7 @@ void ZFlyEmProofMvc::updateRoiGlyph()
     ZSwcTree *tree = project->getAllRoiSwc();
     if (tree != NULL) {
       tree->addRole(ZStackObjectRole::ROLE_ROI);
-      tree->removeVisualEffect(neutube::Display::SwcTree::VE_FULL_SKELETON);
+      tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
       getCompleteDocument()->executeAddObjectCommand(tree);
     }
   } else {
@@ -4214,9 +4214,9 @@ ZFlyEmBookmarkListModel* ZFlyEmProofMvc::getUserBookmarkModel() const
 {
   ZFlyEmBookmarkListModel *model = NULL;
   if (getCompletePresenter()->isSplitOn()) {
-    model = m_userBookmarkModel[FlyEM::PR_SPLIT];
+    model = m_userBookmarkModel[flyem::PR_SPLIT];
   } else {
-    model = m_userBookmarkModel[FlyEM::PR_NORMAL];
+    model = m_userBookmarkModel[flyem::PR_NORMAL];
   }
 
   return model;
@@ -4226,9 +4226,9 @@ ZFlyEmBookmarkListModel* ZFlyEmProofMvc::getAssignedBookmarkModel() const
 {
   ZFlyEmBookmarkListModel *model = NULL;
   if (getCompletePresenter()->isSplitOn()) {
-    model = m_assignedBookmarkModel[FlyEM::PR_SPLIT];
+    model = m_assignedBookmarkModel[flyem::PR_SPLIT];
   } else {
-    model = m_assignedBookmarkModel[FlyEM::PR_NORMAL];
+    model = m_assignedBookmarkModel[flyem::PR_NORMAL];
   }
 
   return model;

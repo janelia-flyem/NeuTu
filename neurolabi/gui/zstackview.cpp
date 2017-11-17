@@ -325,6 +325,17 @@ void ZStackView::connectSignalSlot()
 
 void ZStackView::updateZSpinBoxValue()
 {
+#if 0
+  int z0 = buddyDocument()->getStackOffset(m_sliceAxis);
+  int prevIndex = m_zSpinBox->getValue() - z0;
+  int currentIndex = getCurrentZ() - z0;
+  int newPos = m_sliceStrategy->scroll(prevIndex, currentIndex - prevIndex);
+#ifdef _DEBUG_
+  std::cout << "Scrolling: " << currentIndex << " " << prevIndex << " "
+            << newPos << std::endl;
+#endif
+#endif
+
   m_zSpinBox->setValue(getCurrentZ());
 }
 
@@ -3096,7 +3107,7 @@ void ZStackView::highlightPosition(int x, int y, int z)
 {
   ZStackBall *ball = new ZStackBall(x, y, z, 5.0);
   ball->setColor(255, 0, 0);
-  ball->addVisualEffect(neutube::Display::Sphere::VE_GRADIENT_FILL);
+  ball->addVisualEffect(neutube::display::Sphere::VE_GRADIENT_FILL);
 //  ball->display(m_objectCanvasPainter, sliceIndex(), ZStackObject::SOLID);
 
   buddyPresenter()->setHighlight(true);

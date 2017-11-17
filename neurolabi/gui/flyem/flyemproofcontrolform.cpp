@@ -363,6 +363,11 @@ void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
 {
   setDvidInfo(target);
   ui->dvidPushButton->setEnabled(false);
+  ui->dvidPushButton->setText("Ready");
+  QFont font = ui->dvidPushButton->font();
+  font.setBold(false);
+  ui->dvidPushButton->setFont(font);
+//  ui->dvidPushButton->setStyleSheet("QPushButton: {font-weight: normal}");
 
   if (target.readOnly()) {
     ui->mergeSegmentPushButton->setEnabled(false);

@@ -46,7 +46,7 @@ void ZDvidSynapseEnsemble::init()
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
   m_sliceAxis = neutube::Z_AXIS;
-  addVisualEffect(neutube::Display::VE_GROUP_HIGHLIGHT);
+  addVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
   m_dataFetcher = NULL;
   m_isReady = false;
 }
@@ -76,7 +76,7 @@ ZIntCuboid ZDvidSynapseEnsemble::updateUnsync(const ZIntCuboid &box)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, FlyEM::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, flyem::LOAD_NO_PARTNER);
         addSynapseUnsync(synapse, DATA_LOCAL);
       }
     }
@@ -332,7 +332,7 @@ void ZDvidSynapseEnsemble::downloadForLabelUnsync(uint64_t label)
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZDvidSynapse synapse;
-    synapse.loadJsonObject(synapseJson, FlyEM::LOAD_PARTNER_LOCATION);
+    synapse.loadJsonObject(synapseJson, flyem::LOAD_PARTNER_LOCATION);
     if (synapse.isValid()) {
       addSynapse(synapse, DATA_LOCAL);
     }
@@ -772,7 +772,7 @@ void ZDvidSynapseEnsemble::display(
           if (!synapse.isSelected()) {
             EDisplayStyle tmpOption = option;
             if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN &&
-                hasVisualEffect(neutube::Display::VE_GROUP_HIGHLIGHT)) {
+                hasVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT)) {
               tmpOption = SKELETON;
             }
             synapse.display(painter, slice, tmpOption, sliceAxis);
@@ -984,7 +984,7 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 
     if (!objArray.isEmpty()) {
       ZJsonObject obj(objArray.value(0));
-      synapse.loadJsonObject(obj, FlyEM::LOAD_PARTNER_RELJSON);
+      synapse.loadJsonObject(obj, flyem::LOAD_PARTNER_RELJSON);
       synapse.updatePartner();
       synapse.updatePartnerProperty(m_reader);
 #if 0

@@ -199,7 +199,7 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
     color.setRgb(255, 255, 0);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(neutube::Display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);

@@ -127,7 +127,7 @@ void ZMouseEventLeftButtonReleaseMapper::processSelectionOperation(
     case ZStackObject::TYPE_DVID_LABEL_SLICE:
       if (event.getModifiers() == Qt::NoModifier) {
         if (op.getHitObject()->hasVisualEffect(
-              neutube::Display::LabelField::VE_HIGHLIGHT_SELECTED)) {
+              neutube::display::LabelField::VE_HIGHLIGHT_SELECTED)) {
           op.setOperation(ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT);
         } else {
           op.setOperation(

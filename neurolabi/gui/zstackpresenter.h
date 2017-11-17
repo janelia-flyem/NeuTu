@@ -422,9 +422,9 @@ signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
   void bodyAnnotationTriggered();
-  void bodyCheckinTriggered(FlyEM::EBodySplitMode mode);
+  void bodyCheckinTriggered(flyem::EBodySplitMode mode);
   void bodyForceCheckinTriggered();
-  void bodyCheckoutTriggered(FlyEM::EBodySplitMode mode);
+  void bodyCheckoutTriggered(flyem::EBodySplitMode mode);
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
   void exitingRectEdit();

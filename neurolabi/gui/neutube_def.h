@@ -89,21 +89,18 @@ enum ECardinalDirection {
 };
 
 namespace Json {
-//To avoid compile warnings
-//#if defined(_NEUTU_USE_REF_KEY_)
 namespace {
 static const char* REF_KEY = "->";
 }
-//#endif
 }
 
-namespace Display {
+namespace display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
 static const TVisualEffect VE_Z_PROJ = BIT_FLAG(19);
 static const TVisualEffect VE_GROUP_HIGHLIGHT = BIT_FLAG(20);
 
-namespace Image {
+namespace image {
 static const TVisualEffect VE_HIGH_CONTRAST = 1;
 }
 
@@ -149,7 +146,7 @@ static const int DIM_PROJECTION_INDEX = DIM_INVALID_INDEX + 1;
 static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
 }
 
-namespace FlyEM {
+namespace flyem {
 enum EDvidAnnotationLoadMode {
   LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION, LOAD_PARTNER_RELJSON
 };

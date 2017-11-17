@@ -21,11 +21,25 @@
     <layout class="QHBoxLayout" name="topHorizontalLayout">
      <item>
       <widget class="QPushButton" name="dvidPushButton">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+         <underline>false</underline>
+        </font>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton { color: green; }</string>
+       </property>
        <property name="text">
-        <string>Select Database</string>
+        <string>Start</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../gui.qrc">
+         <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
        </property>
       </widget>
      </item>
@@ -357,7 +371,7 @@
           <item>
            <widget class="QPushButton" name="mergeSegmentPushButton">
             <property name="toolTip">
-             <string>Merge selected bodies (M)</string>
+             <string>Group selected bodies (M)</string>
             </property>
             <property name="text">
              <string>Group</string>
@@ -377,7 +391,7 @@
              <string>Upload merging result (U)</string>
             </property>
             <property name="text">
-             <string>Merge</string>
+             <string>Upload</string>
             </property>
            </widget>
           </item>
@@ -489,6 +503,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

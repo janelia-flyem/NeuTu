@@ -156,7 +156,7 @@ void ZStackPresenter::init()
 
   m_highlightDecoration.setRadius(5.0);
   m_highlightDecoration.setColor(QColor(255, 255, 255, 160));
-  m_highlightDecoration.setVisualEffect(neutube::Display::Sphere::VE_FORCE_FILL);
+  m_highlightDecoration.setVisualEffect(neutube::display::Sphere::VE_FORCE_FILL);
   m_highlightDecorationList.append(&m_highlightDecoration);
   m_highlight = false;
 
@@ -2753,7 +2753,7 @@ void ZStackPresenter::notifyBodyAnnotationTriggered()
 
 void ZStackPresenter::notifyBodyCheckinTriggered()
 {
-  emit bodyCheckinTriggered(FlyEM::BODY_SPLIT_NONE);
+  emit bodyCheckinTriggered(flyem::BODY_SPLIT_NONE);
 }
 
 void ZStackPresenter::notifyBodyForceCheckinTriggered()
@@ -2763,7 +2763,7 @@ void ZStackPresenter::notifyBodyForceCheckinTriggered()
 
 void ZStackPresenter::notifyBodyCheckoutTriggered()
 {
-  emit bodyCheckoutTriggered(FlyEM::BODY_SPLIT_NONE);
+  emit bodyCheckoutTriggered(flyem::BODY_SPLIT_NONE);
 }
 
 void ZStackPresenter::selectDownstreamNode()
@@ -3359,7 +3359,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
         labelSlice->recordSelection();
         labelSlice->toggleHitSelection(
               labelSlice->hasVisualEffect(
-                neutube::Display::LabelField::VE_HIGHLIGHT_SELECTED));
+                neutube::display::LabelField::VE_HIGHLIGHT_SELECTED));
         labelSlice->processSelection();
         SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
         interactionEvent.setEvent(

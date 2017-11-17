@@ -540,7 +540,7 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
   if (ZStackObjectRole(role).hasRole(ZStackObjectRole::ROLE_ROI)) {
     m_tree->useCosmeticPen(true);
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
-    m_tree->removeVisualEffect(neutube::Display::SwcTree::VE_FULL_SKELETON);
+    m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
   }
 

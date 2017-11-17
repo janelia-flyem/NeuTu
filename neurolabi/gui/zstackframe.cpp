@@ -1703,7 +1703,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
     if (isExclusive) {
       clearDecoration();
     }
-    obj->addVisualEffect(neutube::Display::SparseObject::VE_FORCE_SOLID);
+    obj->addVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID);
     addDecoration(obj);
     updateView();
 
