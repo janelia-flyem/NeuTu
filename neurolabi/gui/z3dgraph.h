@@ -23,7 +23,6 @@ public:
   Z3DGraphNode();
   Z3DGraphNode(double x, double y, double z, double r = 3.0);
   Z3DGraphNode(const ZPoint &center, double radius);
-  Z3DGraphNode(const Z3DGraphNode &node);
 
   inline const ZPoint& center() const { return m_center; }
   inline double radius() const { return m_radius; }
@@ -40,6 +39,9 @@ public:
   void setCenter(const ZIntPoint &center);
   void setCenter(const ZPoint &center);
   void setRadius(double r);
+  void setText(const QString &text);
+
+  const QString& getText() const;
 
   void addX(double dx);
   void addY(double dy);
@@ -56,6 +58,7 @@ private:
   ZPoint m_center;
   double m_radius;
   QColor m_color;
+  QString m_text;
   EGraphShape m_shape;
 };
 
