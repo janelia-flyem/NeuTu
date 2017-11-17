@@ -99,9 +99,9 @@ void ZDvidTileEnsemble::updateContrast()
       ZDvidTile *tile = tileIter->second;
       if (tile != NULL) {
         if (m_highContrast) {
-          tile->addVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
+          tile->addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
         } else {
-          tile->removeVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
+          tile->removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
         }
       }
     }

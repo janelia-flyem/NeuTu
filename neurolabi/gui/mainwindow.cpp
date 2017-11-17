@@ -8056,7 +8056,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 1190582;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, flyem::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
@@ -8096,7 +8096,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 8862577;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, flyem::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
@@ -8135,7 +8135,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
     {
       int bodyId = 2089450;
       std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-            bodyId, FlyEM::LOAD_PARTNER_LOCATION);
+            bodyId, flyem::LOAD_PARTNER_LOCATION);
       std::vector<ZVaa3dMarker> markerArray;
       for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
            iter != synapseArray.end(); ++iter) {
@@ -8230,7 +8230,7 @@ void MainWindow::generateMBONPartnerCast(const std::string &movieFolder)
 
     //Read synapses
     std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-          bodyId, FlyEM::LOAD_PARTNER_LOCATION);
+          bodyId, flyem::LOAD_PARTNER_LOCATION);
 
     double radius = 30;
 

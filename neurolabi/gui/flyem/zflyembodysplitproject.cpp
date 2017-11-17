@@ -1,4 +1,4 @@
-#define _NEUTU_USE_REF_KEY_
+//#define _NEUTU_USE_REF_KEY_
 #include "zflyembodysplitproject.h"
 
 #include <QProcess>
@@ -61,7 +61,7 @@ ZFlyEmBodySplitProject::ZFlyEmBodySplitProject(QObject *parent) :
   m_progressSignal = new ZProgressSignal(this);
 
   m_skelThre = 20;
-  m_splitMode = FlyEM::BODY_SPLIT_ONLINE;
+  m_splitMode = flyem::BODY_SPLIT_ONLINE;
 
 //  connect(this, SIGNAL(bodyQuickViewReady()), this, SLOT(startBodyQuickView()));
 //  connect(this, SIGNAL(result3dQuickViewReady()),

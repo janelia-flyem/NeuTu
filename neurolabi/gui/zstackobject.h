@@ -355,10 +355,10 @@ public:
     m_projectionVisible = visible;
   }
 
-  virtual void addVisualEffect(neutube::Display::TVisualEffect ve);
-  virtual void removeVisualEffect(neutube::Display::TVisualEffect ve);
-  virtual void setVisualEffect(neutube::Display::TVisualEffect ve);
-  bool hasVisualEffect(neutube::Display::TVisualEffect ve) const;
+  virtual void addVisualEffect(neutube::display::TVisualEffect ve);
+  virtual void removeVisualEffect(neutube::display::TVisualEffect ve);
+  virtual void setVisualEffect(neutube::display::TVisualEffect ve);
+  bool hasVisualEffect(neutube::display::TVisualEffect ve) const;
 
   neutube::EAxis getSliceAxis() const { return m_sliceAxis; }
   void setSliceAxis(neutube::EAxis axis) { m_sliceAxis = axis; }
@@ -397,7 +397,7 @@ protected:
   ZIntPoint m_hitPoint;
   neutube::EAxis m_sliceAxis;
 
-  neutube::Display::TVisualEffect m_visualEffect;
+  neutube::display::TVisualEffect m_visualEffect;
 
   mutable int m_prevDisplaySlice;
 //  static const char *m_nodeAdapterId;

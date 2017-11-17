@@ -9472,7 +9472,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                   obj->getLabel()));
           obj->setHitProtocal(ZStackObject::HIT_NONE);
-          obj->setVisualEffect(neutube::Display::SparseObject::VE_PLANE_BOUNDARY);
+          obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
           obj->setProjectionVisible(false);
           obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
           obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
@@ -10260,9 +10260,9 @@ void ZStackDoc::showSwcFullSkeleton(bool state)
        iter != objList.end(); ++iter) {
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
     if (state) {
-      tree->addVisualEffect(neutube::Display::SwcTree::VE_FULL_SKELETON);
+      tree->addVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
     } else {
-      tree->removeVisualEffect(neutube::Display::SwcTree::VE_FULL_SKELETON);
+      tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
     }
     bufferObjectModified(tree->getTarget());
   }

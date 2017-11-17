@@ -40,7 +40,7 @@ void ZFlyEmProofPresenter::init()
 {
   m_isHightlightMode = false;
 //  m_splitWindowMode = false;
-  m_splitMode = FlyEM::BODY_SPLIT_NONE;
+  m_splitMode = flyem::BODY_SPLIT_NONE;
   m_highTileContrast = false;
   m_smoothTransform = false;
   m_showingData = false;
@@ -522,9 +522,9 @@ bool ZFlyEmProofPresenter::isSplitOn() const
   return getAction(ZActionFactory::ACTION_PAINT_STROKE)->isEnabled();
 }
 
-void ZFlyEmProofPresenter::enableSplit(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofPresenter::enableSplit(flyem::EBodySplitMode mode)
 {
-  if (mode == FlyEM::BODY_SPLIT_NONE) {
+  if (mode == flyem::BODY_SPLIT_NONE) {
     disableSplit();
   } else {
     setSplitMode(mode);
@@ -534,7 +534,7 @@ void ZFlyEmProofPresenter::enableSplit(FlyEM::EBodySplitMode mode)
 
 void ZFlyEmProofPresenter::disableSplit()
 {
-  setSplitMode(FlyEM::BODY_SPLIT_NONE);
+  setSplitMode(flyem::BODY_SPLIT_NONE);
   setSplitEnabled(false);
 }
 

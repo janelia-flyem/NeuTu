@@ -1,4 +1,4 @@
-#define _NEUTU_USE_REF_KEY_
+//#define _NEUTU_USE_REF_KEY_
 #include "zflyemmisc.h"
 
 #include <unistd.h>
@@ -1407,7 +1407,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
         uint64_t bodyId = reader.readBodyIdAt(pos);
         QString name = ZJsonParser::stringValue(obj["name"]);
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-              bodyId, FlyEM::LOAD_NO_PARTNER);
+              bodyId, flyem::LOAD_NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
         std::vector<ZVaa3dMarker> postMarkerArray;
         for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();

@@ -86,11 +86,11 @@ void ZDvidTile::loadDvidSlice(
     m_z = z;
   }
 
-  if (hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST) != highContrast) {
+  if (hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST) != highContrast) {
     if (highContrast) {
-      addVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
+      addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
     } else {
-      removeVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
+      removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
     }
     modified = true;
   }
@@ -102,7 +102,7 @@ void ZDvidTile::loadDvidSlice(
   if (modified && (m_image != NULL)) {
     m_image->loadHighContrastProtocal(m_contrastProtocal);
     m_image->enhanceContrast(
-          hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST));
+          hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
 //    m_image->enhanceContrast(highContrast);
     updatePixmap();
   }
@@ -146,17 +146,17 @@ void ZDvidTile::updatePixmap()
 
 void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
 {
-  if (high != hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST)) {
+  if (high != hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST)) {
     if (high) {
-      addVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
+      addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
     } else {
-      removeVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST);
+      removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
     }
 
     if (m_image != NULL) {
       m_image->loadHighContrastProtocal(m_contrastProtocal);
       m_image->enhanceContrast(
-            hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST));
+            hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
       if (updatingPixmap) {
         updatePixmap();
       }
@@ -344,7 +344,7 @@ void ZDvidTile::update(int z)
 
     if (!buffer.isEmpty()) {
       loadDvidSlice(buffer, z,
-                    hasVisualEffect(neutube::Display::Image::VE_HIGH_CONTRAST));
+                    hasVisualEffect(neutube::display::image::VE_HIGH_CONTRAST));
     }
 #endif
   }
