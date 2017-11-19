@@ -99,12 +99,14 @@ void ZWaterShedWindow::onOk()
       container.addSeed(*stroke);
   }
   container.setScale(scale);
+#ifdef _DEBUG_
   QTime time;
   time.start();
+#endif
   container.run();
-  time_t end=std::time(NULL);
-
-  std::cout<<"+++++++++++++multiscale watershed total run time:"<<time.elapsed()/1000.0<<std::endl;
+#ifdef _DEBUG_
+  std::cout<<"----------multiscale segmentation total run time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
   ZStack* result=container.getResultStack()->clone();
 
   if(result){

@@ -2,6 +2,7 @@
 #include <QProcess>
 #include <QStringList>
 #include <QFile>
+#include <QTime>
 #include "zstackmultiscalewatershed.h"
 #include "zstackwatershed.h"
 #include "zobject3dfactory.h"
@@ -186,7 +187,6 @@ ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
 void ZStackMultiScaleWatershed::generateSeeds(ZStack* seed,int width,int height,int depth,const ZStack* boundary_map,const ZStack* stack)
 {
   int step=m_scale;
-  int slice=width*height;
   int s_width=stack->width();
   int s_height=stack->height();
   int s_depth=stack->depth();
@@ -194,7 +194,6 @@ void ZStackMultiScaleWatershed::generateSeeds(ZStack* seed,int width,int height,
 
   const uint8_t* pstack=stack->array8();
   const uint8_t* pboundary=boundary_map->array8();
-  uint8_t* pseed=seed->array8();
 
   int offset=0,_offset=0;
 
@@ -270,81 +269,65 @@ void ZStackMultiScaleWatershed::generateSeeds(ZStack* seed,int width,int height,
 }
 
 
-//label area needed second pass segmentation: seed union boundary;  and return the bounding box
+//label area needed on second pass segmentation;  and return the bounding box
 ZStack* ZStackMultiScaleWatershed::labelAreaNeedUpdate(ZStack* boundary_map,ZStack* seed,ZIntCuboid& boundbox,ZStack* srcStack)
 {
   int scale=m_scale;
   int width=seed->width();
   int height=seed->height();
   int depth=seed->depth();
+  size_t slice=width*height;
+
   int s_width=boundary_map->width();
   int s_height=boundary_map->height();
+  int s_depth=boundary_map->depth();
   size_t s_slice=s_width*s_height;
 
   ZStack* rv=new ZStack(GREY,width,height,depth,1);
   uint8_t* pmap=boundary_map->array8();
   uint8_t* pdst=rv->array8();
-  uint8_t* pseed=seed->array8();
   uint8_t* psrc=srcStack?srcStack->array8():NULL;
 
-  int xcnt=0,ycnt=0,zcnt=0;
-  double cnt=0;
 
   int min_x=MAX_INT32,min_y=MAX_INT32,min_z=MAX_INT32;
   int max_x=0,max_y=0,max_z=0;
+#ifdef _DEBUG_
+  size_t cnt=0;
+#endif
+  for(int z=0;z<s_depth;++z){
+    for(int y=0;y<s_height;++y){
+      for(int x=0;x<s_width;++x){
+        if(pmap[x+y*s_width+z*s_slice]){
 
-  for (int z = 0; z < depth; ++z)
-  {
-    for (int y = 0; y < height; ++y)
-    {
-      for (int x = 0; x < width; ++x)
-      {
-        if(*pmap || *pseed)//if current voxel is seed or boundary,it needs update
-        {
-          *pdst=srcStack?(*psrc):1;
-          cnt+=1;
-          if(x<min_x)min_x=x;
-          if(x>max_x)max_x=x;
-          if(y<min_y)min_y=y;
-          if(y>max_y)max_y=y;
-          if(z<min_z)min_z=z;
-          if(z>max_z)max_z=z;
+          int start_x=std::max(0,x*scale-1),end_x=std::min(width-1,(x+1)*scale);
+          int start_y=std::max(0,y*scale-1),end_y=std::min(height-1,(y+1)*scale);
+          int start_z=std::max(0,z*scale-1),end_z=std::min(depth-1,(z+1)*scale);
+
+          if(start_x<min_x)min_x=start_x;
+          if(end_x>max_x)max_x=end_x;
+          if(start_y<min_y)min_y=start_y;
+          if(end_y>max_y)max_y=end_y;
+          if(start_z<min_z)min_z=start_z;
+          if(end_z>max_z)max_z=end_z;
+
+          for(int k=start_z;k<=end_z;++k){
+            for(int j=start_y;j<=end_y;++j){
+              for(int i=start_x;i<=end_x;++i){
+                pdst[i+j*width+k*slice]=srcStack?(psrc[i+j*width+k*slice]):1;
+#ifdef _DEBUG_
+                ++cnt;
+#endif
+              }
+            }
+          }
+
         }
-        ++pdst,++psrc,++pseed;
-        if(++xcnt>=scale)
-        {
-          xcnt=0;
-          ++pmap;
-        }
       }
-      if(xcnt)
-      {
-        xcnt=0;
-        ++pmap;
-      }
-      if(++ycnt>=scale)
-      {
-        ycnt=0;
-      }
-      else
-      {
-        pmap-=s_width;
-      }
-    }
-    if(ycnt)
-    {
-      ycnt=0;
-      pmap+=s_width;
-    }
-    if(++zcnt>=scale)
-    {
-      zcnt=0;
-    }
-    else
-    {
-      pmap-=s_slice;
     }
   }
+#ifdef _DEBUG_
+  std::cout<<"----------# voxels needed update"<<cnt<<std::endl;
+#endif
   boundbox.set(min_x,min_y,min_z,max_x,max_y,max_z);
   return rv;
 }
@@ -364,23 +347,64 @@ ZStackMultiScaleWatershed::~ZStackMultiScaleWatershed()
 
 ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_watershed,ZStack* src)
 {
-
+  int width=src->width(),height=src->height();
+  size_t slice=width*height;
+#ifdef _DEBUG_
+  QTime time;
+  time.start();
+#endif
   ZStack* recovered=upSample(src->width(),src->height(),src->depth(),sampled_watershed);
+#ifdef _DEBUG_
+  std::cout<<"----------upsample time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
+
   recovered->setOffset(src->getOffset());
 
+#ifdef _DEBUG_
+  time.restart();
+#endif
   ZStack* boundary_map=getBoundaryMap(*sampled_watershed);
+#ifdef _DEBUG_
+  std::cout<<"----------boundary map time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
+
   ZStack* seed=new ZStack(GREY,src->width(),src->height(),src->depth(),1);
 
+#ifdef _DEBUG_
+  time.restart();
+#endif
   generateSeeds(seed,src->width(),src->height(),src->depth(),boundary_map,sampled_watershed);
+#ifdef _DEBUG_
+  std::cout<<"----------generate seeds time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
+
   ZIntCuboid box;
+
+#ifdef _DEBUG_
+  time.restart();
+#endif
   ZStack* src_clone=labelAreaNeedUpdate(boundary_map,seed,box,src);
+#ifdef _DEBUG_
+  std::cout<<"----------label area time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
 
   src_clone->crop(box);
+#ifdef _DEBUG_
+  std::cout<<"----------# voxels within bounding box:"<<src_clone->getVoxelNumber()<<std::endl;
+#endif
   seed->crop(box);
 
   ZStackWatershed watershed;
   watershed.setFloodingZero(false);
+
+#ifdef _DEBUG_
+  time.restart();
+#endif
   ZStack* result=watershed.run(src_clone,seed);
+#ifdef _DEBUG_
+  std::cout<<"----------second pass seg time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
+
   if(!result){
     std::cout<<"local watershed failed"<<std::endl;
     return recovered;
@@ -389,12 +413,14 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
   int s_x=box.getFirstCorner().getX();
   int s_y=box.getFirstCorner().getY();
   int s_z=box.getFirstCorner().getZ();
-  int width=src->width(),height=src->height();
-  size_t slice=width*height;
+
 
   uint8_t *pres=result->array8();
   uint8_t *prec=recovered->array8();
 
+#ifdef _DEBUG_
+  time.restart();
+#endif
   for(int k=0;k<result->depth();k++){//update second pass segmenttaion result into result
     for(int j=0;j<result->height();++j){
       for(int i=0;i<result->width();++i,++pres){
@@ -411,6 +437,13 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
   for(;pend!=psrc;++prec,++psrc){//if a voxel in the original stack is background, it should be background in the result
      if(!*psrc)*prec=0;
   }
+#ifdef _DEBUG_
+  std::cout<<"----------update time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
+
+#ifdef _DEBUG_
+  std::cout<<"----------# total voxels:"<<recovered->getVoxelNumber()<<std::endl;
+#endif
 
   delete seed;
   delete result;
@@ -440,11 +473,25 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
 
   //down sample src stack
   ZStack* sampled=src->clone();
+#ifdef _DEBUG_
+  QTime time;
+  time.start();
+#endif
   sampled->downsampleMinIgnoreZero(m_scale-1,m_scale-1,m_scale-1);
+#ifdef _DEBUG_
+  std::cout<<"----------downsample time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
+
   seed=toSeedStack(seeds,sampled->width(),sampled->height(),sampled->depth(),sampled->getOffset());
 
-
+#ifdef _DEBUG_
+  time.restart();
+#endif
   ZStack* sampled_watershed=watershed.run(sampled,seed);
+#ifdef _DEBUG_
+  std::cout<<"----------downsample seg time:"<<time.elapsed()/1000.0<<std::endl;
+#endif
+
 
   if(sampled_watershed){
     rv=upSampleAndRecoverBoundary(sampled_watershed,src);
