@@ -1072,13 +1072,13 @@ void MainWindow::createToolBars()
   //m_toolBar->addAction(openAction);
 
   if (NeutubeConfig::getInstance().getApplication() == "FlyEM") {
-    m_toolBar->addAction(m_ui->actionImportFlyEmDatabase);
-    m_toolBar->addAction(m_ui->actionDVID_Bundle);
+//    m_toolBar->addAction(m_ui->actionImportFlyEmDatabase);
+//    m_toolBar->addAction(m_ui->actionDVID_Bundle);
     //m_toolBar->addAction(m_ui->actionDvid_Object);
 //    m_toolBar->addAction(m_ui->actionSplit_Body);
 //    m_toolBar->addAction(m_ui->actionMerge_Body_Project);
-    m_toolBar->addAction(m_ui->actionFlyEmROI);
-    m_toolBar->addSeparator();
+//    m_toolBar->addAction(m_ui->actionFlyEmROI);
+//    m_toolBar->addSeparator();
     m_toolBar->addAction(m_ui->actionProof);
 #ifdef _DEBUG_2
     m_toolBar->addAction(m_ui->actionShape_Matching);
