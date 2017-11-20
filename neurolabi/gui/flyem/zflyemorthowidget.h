@@ -60,6 +60,7 @@ public slots:
   void toggleData();
   void updateImageScreen();
   void notifyBodyMergeEdited();
+  void showCrosshair(bool on);
 
 public:
   void keyPressEvent(QKeyEvent *event);

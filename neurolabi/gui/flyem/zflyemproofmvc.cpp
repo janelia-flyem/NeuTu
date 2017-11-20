@@ -402,20 +402,23 @@ void ZFlyEmProofMvc::registerBookmarkView(ZFlyEmBookmarkView *view)
 
 void ZFlyEmProofMvc::exportGrayscale()
 {
+  m_grayscaleDlg->makeGrayscaleExportAppearance();
   if (m_grayscaleDlg->exec()) {
     QString fileName =
         ZDialogFactory::GetSaveFileName("Save Grayscale", "", this);
     if (!fileName.isEmpty()) {
-      exportGrayscale(m_grayscaleDlg->getBoundBox(), fileName);
+      exportGrayscale(
+            m_grayscaleDlg->getBoundBox(), m_grayscaleDlg->getDsIntv(), fileName);
     }
   }
 }
 
 void ZFlyEmProofMvc::exportGrayscale(
-    const ZIntCuboid &box, const QString &fileName)
+    const ZIntCuboid &box, int dsIntv, const QString &fileName)
 {
   ZStack *stack =
       getCompleteDocument()->getDvidReader().readGrayScale(box);
+  stack->downsampleMean(dsIntv, dsIntv, dsIntv);
 
   if (stack != NULL) {
     stack->save(fileName.toStdString());
@@ -2687,6 +2690,7 @@ void ZFlyEmProofMvc::exportBodyStack()
 
 void ZFlyEmProofMvc::exportSelectedBodyStack()
 {
+  m_grayscaleDlg->makeBodyExportAppearance();
   if (m_grayscaleDlg->exec()) {
     QString fileName =
         ZDialogFactory::GetSaveFileName("Export Bodies as Stack", "", this);
@@ -2744,6 +2748,7 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
 
 void ZFlyEmProofMvc::exportSelectedBodyLevel()
 {
+  m_grayscaleDlg->makeBodyExportAppearance();
   if (m_grayscaleDlg->exec()) {
     QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
     if (!fileName.isEmpty()) {

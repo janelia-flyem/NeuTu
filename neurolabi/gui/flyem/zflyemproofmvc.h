@@ -132,7 +132,7 @@ public:
   void registerBookmarkView(ZFlyEmBookmarkView *view);
 
   void exportGrayscale();
-  void exportGrayscale(const ZIntCuboid &box, const QString &fileName);
+  void exportGrayscale(const ZIntCuboid &box, int dsIntv, const QString &fileName);
   void exportBodyStack();
 
   //exploratory code
