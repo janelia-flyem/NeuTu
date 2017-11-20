@@ -40,6 +40,8 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           this, SIGNAL(settingHighContrast(bool)));
   connect(ui->smoothCheckBox, SIGNAL(toggled(bool)),
           this, SIGNAL(settingSmooth(bool)));
+  connect(ui->crosshairCheckBox, SIGNAL(toggled(bool)),
+          this, SIGNAL(showingCrosshair(bool)));
 }
 
 void FlyEmOrthoControlForm::toggleShowingSeg()

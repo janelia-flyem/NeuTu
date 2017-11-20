@@ -36,6 +36,7 @@ signals:
   void showingData(bool on);
   void settingHighContrast(bool on);
   void settingSmooth(bool on);
+  void showingCrosshair(bool on);
 
 public slots:
   void dump(const ZWidgetMessage &message);
