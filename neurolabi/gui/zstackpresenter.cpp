@@ -403,6 +403,10 @@ bool ZStackPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyOrthoViewTriggered()));
       break;
+    case ZActionFactory::ACTION_SHOW_ORTHO_BIG:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyOrthoViewBigTriggered()));
+      break;
     case ZActionFactory::ACTION_COPY_POSITION:
       connect(action, SIGNAL(triggered()), this, SLOT(copyCurrentPosition()));
       break;
@@ -2707,6 +2711,17 @@ void ZStackPresenter::notifyOrthoViewTriggered()
 //  ZPoint pt = getLastMousePosInStack();
 
   emit orthoViewTriggered(pt.x(), pt.y(), pt.z());
+}
+
+void ZStackPresenter::notifyOrthoViewBigTriggered()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+
+//  ZPoint pt = getLastMousePosInStack();
+
+  emit orthoViewBigTriggered(pt.x(), pt.y(), pt.z());
 }
 
 void ZStackPresenter::copyCurrentPosition()

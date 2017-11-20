@@ -227,6 +227,7 @@ public slots:
   void showRoi3dWindow();
   void showQueryTable();
   void showOrthoWindow(double x, double y, double z);
+  void showBigOrthoWindow(double x, double y, double z);
 
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation(bool on);
@@ -409,6 +410,8 @@ private:
   void makeSplitWindow();
   void makeExternalNeuronWindow();
   void makeOrthoWindow();
+  void makeBigOrthoWindow();
+  void makeOrthoWindow(int width, int height, int depth);
 
   ZWindowFactory makeExternalWindowFactory(NeuTube3D::EWindowType windowType);
 

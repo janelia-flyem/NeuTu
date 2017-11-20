@@ -1359,6 +1359,11 @@ QSize ZStackView::getCanvasSize() const
   return size;
 }
 
+QSize ZStackView::getScreenSize() const
+{
+  return m_imageWidget->size();
+}
+
 void ZStackView::resetCanvasWithStack(
     ZMultiscalePixmap &canvas, ZPainter *painter)
 {

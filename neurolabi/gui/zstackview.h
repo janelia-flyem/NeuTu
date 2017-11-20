@@ -440,6 +440,14 @@ public:
   void notifyViewChanged(const ZStackViewParam &param);
   void notifyViewChanged();
 
+  /*!
+   * \brief Get the size of the image window.
+   *
+   * It's the size of the widget in which any dot can be painted by an image
+   * pixel.
+   */
+  QSize getScreenSize() const;
+
 
 public: //Change view parameters
   void move(const QPoint& src, const QPointF &dst);
@@ -490,6 +498,11 @@ protected:
 
   void connectSignalSlot();
 
+  /*!
+   * \brief Get the size of the canvas.
+   *
+   * It is usually the same as the size of a stack slice.
+   */
   QSize getCanvasSize() const;
 
   //help functions

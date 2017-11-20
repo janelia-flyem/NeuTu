@@ -17,6 +17,9 @@ class ZFlyEmOrthoWindow : public QMainWindow
   Q_OBJECT
 public:
   explicit ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent = 0);
+  explicit ZFlyEmOrthoWindow(
+      const ZDvidTarget &target, int width, int height, int depth,
+      QWidget *parent = 0);
 
   ZFlyEmOrthoDoc *getDocument() const;
   void copyBookmarkFrom(ZFlyEmProofDoc *doc);
@@ -39,6 +42,9 @@ public slots:
   void syncBodyColorMap(ZFlyEmProofDoc *doc);
 //  void updateSequencerBodyMap(ZFlyEmBodyColorOption::EColorOption type);
 //  void notifyBodyMergeEdited();
+
+private:
+  void initWidget();
 
 private:
   ZFlyEmOrthoWidget *m_orthoWidget;

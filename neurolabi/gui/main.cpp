@@ -189,6 +189,7 @@ int main(int argc, char *argv[])
   bool runCommandLine = false;
 
   bool guiEnabled = true;
+  bool advanced = false;
 
   QString configPath;
   QStringList fileList;
@@ -196,6 +197,10 @@ int main(int argc, char *argv[])
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
+    }
+
+    if (strcmp(argv[1], "a") == 0) {
+      advanced = true;
     }
 
     if (strcmp(argv[1], "--command") == 0) {
@@ -256,6 +261,8 @@ int main(int argc, char *argv[])
 
   //load config
   NeutubeConfig &config = NeutubeConfig::getInstance();
+  config.setAdvancedMode(advanced);
+
   std::cout << QApplication::applicationDirPath().toStdString() << std::endl;
   config.setApplicationDir(QApplication::applicationDirPath().toStdString());
 

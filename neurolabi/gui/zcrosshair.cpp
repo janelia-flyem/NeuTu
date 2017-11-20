@@ -113,6 +113,11 @@ void ZCrossHair::setCenter(const ZPoint &center)
   m_center = center;
 }
 
+void ZCrossHair::setCenter(const ZIntPoint &center)
+{
+  m_center.set(center.getX(), center.getY(), center.getZ());
+}
+
 void ZCrossHair::setCenter(double x, double y, double z)
 {
   m_center.set(x, y, z);

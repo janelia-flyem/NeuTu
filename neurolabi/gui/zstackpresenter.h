@@ -382,6 +382,7 @@ public slots:
   void notifyBodyCheckoutTriggered();
 
   void notifyOrthoViewTriggered();
+  void notifyOrthoViewBigTriggered();
 
   void slotTest();
 
@@ -436,6 +437,7 @@ signals:
   void bodyMergeTriggered();
   void bodyUnmergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
+  void orthoViewBigTriggered(double x, double y, double z);
   void checkingBookmark();
   void uncheckingBookmark();
   void savingStack();

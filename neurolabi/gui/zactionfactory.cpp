@@ -560,6 +560,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;
+  case ACTION_SHOW_ORTHO_BIG:
+    action = new QAction("Show orthogonal view (1024)", parent);
+    break;
   case ACTION_COPY_POSITION:
     action = new QAction("Copy position", parent);
     break;
