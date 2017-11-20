@@ -602,6 +602,12 @@ void ZFlyEmProofMvc::makeOrthoWindow()
           m_orthoWindow->getDocument(), SLOT(processExternalBodyMergeUpload()));
   connect(m_orthoWindow->getDocument(), SIGNAL(bodyMergeUploaded()),
           getCompleteDocument(), SLOT(processExternalBodyMergeUpload()));
+//  connect(getCompleteDocument(),
+//          SIGNAL(sequencerBodyMapUpdated(ZFlyEmBodyColorOption::EColorOption)),
+//          m_orthoWindow->getDocument(), SLOT()
+
+  connect(getCompleteDocument(), SIGNAL(bodyColorUpdated(ZFlyEmProofDoc*)),
+          m_orthoWindow, SLOT(syncBodyColorMap(ZFlyEmProofDoc*)));
 
   syncBodySelectionToOrthoWindow();
 }
