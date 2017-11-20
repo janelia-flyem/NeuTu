@@ -386,6 +386,25 @@ public:
   void loadSplitTaskFromService();
   void commitSplitFromService();
 
+  const ZSharedPointer<ZFlyEmBodyColorScheme>& getActiveBodyColorMap() const {
+    return m_activeBodyColorMap;
+  }
+  const QMap<ZFlyEmBodyColorOption::EColorOption,
+  ZSharedPointer<ZFlyEmBodyColorScheme> > &getColorMapConfig() const {
+    return m_colorMapConfig;
+  }
+
+  void setActiveBodyColorMap(const ZSharedPointer<ZFlyEmBodyColorScheme>& colorMap) {
+    m_activeBodyColorMap = colorMap;
+  }
+  void setColorMapConfig(const QMap<ZFlyEmBodyColorOption::EColorOption,
+                         ZSharedPointer<ZFlyEmBodyColorScheme> > &config) {
+    m_colorMapConfig = config;
+  }
+
+  void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
+  void updateBodyColor(ZSharedPointer<ZFlyEmBodyColorScheme> colorMap);
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -411,6 +430,7 @@ signals:
   void bodyMapReady();
   void todoModified(uint64_t bodyId);
   void requestingBodyLock(uint64_t bodyId, bool locking);
+  void bodyColorUpdated(ZFlyEmProofDoc*);
 
 public slots: //Commands
   void repairSelectedSynapses();
@@ -540,8 +560,6 @@ private:
   template<typename T>
   ZSharedPointer<T> getColorScheme(ZFlyEmBodyColorOption::EColorOption type);
 
-  void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
-
   void runSplitFunc(flyem::EBodySplitMode mode, flyem::EBodySplitRange range);
   void runSplitFunc(flyem::EBodySplitMode mode);
   void localSplitFunc(flyem::EBodySplitMode mode);
@@ -597,6 +615,7 @@ protected:
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<ZFlyEmBodyColorOption::EColorOption,
   ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
+
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZFlyEmMB6Analyzer m_analyzer;

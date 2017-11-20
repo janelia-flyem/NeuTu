@@ -36,6 +36,8 @@ public slots:
   void downloadTodo(int x, int y, int z);
   void syncMergeWithDvid();
   void processMessage(const ZWidgetMessage &message);
+  void syncBodyColorMap(ZFlyEmProofDoc *doc);
+//  void updateSequencerBodyMap(ZFlyEmBodyColorOption::EColorOption type);
 //  void notifyBodyMergeEdited();
 
 private:

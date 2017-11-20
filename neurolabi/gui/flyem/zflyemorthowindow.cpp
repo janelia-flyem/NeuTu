@@ -59,6 +59,12 @@ void ZFlyEmOrthoWindow::copyBookmarkFrom(ZFlyEmProofDoc *doc)
   getDocument()->copyBookmarkFrom(doc);
 }
 
+void ZFlyEmOrthoWindow::syncBodyColorMap(ZFlyEmProofDoc *doc)
+{
+  getDocument()->updateBodyColor(doc->getActiveBodyColorMap());
+  getDocument()->setActiveBodyColorMap(doc->getActiveBodyColorMap());
+}
+
 void ZFlyEmOrthoWindow::syncMergeWithDvid()
 {
   m_orthoWidget->syncMergeWithDvid();
