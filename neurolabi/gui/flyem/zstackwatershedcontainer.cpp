@@ -523,7 +523,7 @@ void ZStackWatershedContainer::run()
       }
       else{
         ZStackMultiScaleWatershed watershed;
-        m_result=watershed.run(getSourceStack(),m_seedArray,m_scale);
+        m_result=watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm);
         m_result->setOffset(getSourceOffset());
       }
   }

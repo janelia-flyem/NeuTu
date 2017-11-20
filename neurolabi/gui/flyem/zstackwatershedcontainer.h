@@ -6,7 +6,7 @@
 
 #include "tz_stack_watershed.h"
 #include "zintcuboid.h"
-
+#include <QString>
 class ZStack;
 class ZObject3dScan;
 class ZStroke2d;
@@ -14,7 +14,6 @@ class ZObject3d;
 class ZSparseStack;
 class ZObject3dScanArray;
 class ZSwcTree;
-
 /*!
  * \brief The wrapper class for running watershed split
  *
@@ -74,6 +73,9 @@ public:
       m_scale=scale;
   }
 
+  void setAlgorithm(const QString &algorithm){
+    m_algorithm=algorithm;
+  }
   ZStack* getResultStack() const {
     return m_result;
   }
@@ -136,6 +138,7 @@ private:
   bool m_usingSeedRange = false;
 
   int m_scale;
+  QString m_algorithm;
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H

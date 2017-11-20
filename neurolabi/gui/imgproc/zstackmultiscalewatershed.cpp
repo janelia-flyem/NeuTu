@@ -1,8 +1,7 @@
 #include <fstream>
-#include <QProcess>
-#include <QStringList>
 #include <QFile>
 #include <QTime>
+#include <QCoreApplication>
 #include "zstackmultiscalewatershed.h"
 #include "zstackwatershed.h"
 #include "zobject3dfactory.h"
@@ -14,6 +13,7 @@
 #include "zswctree.h"
 #include "zobject3d.h"
 #include "zintcuboid.h"
+#include "widgets/zpythonprocess.h"
 #undef ASCII
 #undef BOOL
 #undef TRUE
@@ -455,7 +455,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
 
 
 #if defined(_QT_GUI_USED_)
-ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seeds,int scale)
+ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seeds,int scale,const QString &algorithm)
 {
   m_scale=scale;
   ZStack* rv=NULL;
@@ -487,7 +487,28 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
 #ifdef _DEBUG_
   time.restart();
 #endif
-  ZStack* sampled_watershed=watershed.run(sampled,seed);
+  ZStack* sampled_watershed=NULL;
+  if(algorithm=="watershed"){
+    sampled_watershed=watershed.run(sampled,seed);
+  }
+  else if(algorithm=="random_walker"){
+    const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
+    sampled->setOffset(0,0,0);
+    seed->setOffset(0,0,0);
+    sampled->save(working_dir.toStdString()+"/data.tif");
+    seed->save(working_dir.toStdString()+"/seed.tif");
+
+    ZPythonProcess python;
+    python.setWorkDir(working_dir);
+    python.setScript(working_dir+"/random_walker.py");
+    python.addArg(working_dir+"/data.tif");
+    python.addArg(working_dir+"/seed.tif");
+    python.addArg(working_dir+"/result.tif");
+    sampled_watershed=new ZStack();
+    python.run();
+    sampled_watershed->load(working_dir.toStdString()+"/result.tif");
+  }
+
 #ifdef _DEBUG_
   std::cout<<"----------downsample seg time:"<<time.elapsed()/1000.0<<std::endl;
 #endif
