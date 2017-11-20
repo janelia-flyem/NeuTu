@@ -650,6 +650,11 @@ ZIntPoint ZStackMvc::getViewCenter() const
   return getView()->getViewCenter();
 }
 
+QSize ZStackMvc::getViewScreenSize() const
+{
+  return getView()->getScreenSize();
+}
+
 double ZStackMvc::getWidthZoomRatio() const
 {
   return getView()->getCanvasWidthZoomRatio();

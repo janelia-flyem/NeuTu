@@ -319,6 +319,8 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
 
   connect(mvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
           mvc, SLOT(showOrthoWindow(double,double,double)));
+  connect(mvc->getPresenter(), SIGNAL(orthoViewBigTriggered(double,double,double)),
+          mvc, SLOT(showBigOrthoWindow(double,double,double)));
   connect(mvc->getDocument().get(), SIGNAL(updatingLatency(int)),
           mvc, SLOT(updateLatencyWidget(int)));
   connect(mvc->getView(), SIGNAL(sliceSliderPressed()),
@@ -554,10 +556,9 @@ void ZFlyEmProofMvc::syncBodySelectionFromOrthoWindow()
   }
 }
 
-
-void ZFlyEmProofMvc::makeOrthoWindow()
+void ZFlyEmProofMvc::makeOrthoWindow(int width, int height, int depth)
 {
-  m_orthoWindow = new ZFlyEmOrthoWindow(getDvidTarget());
+  m_orthoWindow = new ZFlyEmOrthoWindow(getDvidTarget(), width, height, depth);
   connect(m_orthoWindow, SIGNAL(destroyed()), this, SLOT(detachOrthoWindow()));
   connect(m_orthoWindow, SIGNAL(bookmarkEdited(int, int, int)),
           getCompleteDocument(), SLOT(downloadBookmark(int,int,int)));
@@ -610,6 +611,16 @@ void ZFlyEmProofMvc::makeOrthoWindow()
           m_orthoWindow, SLOT(syncBodyColorMap(ZFlyEmProofDoc*)));
 
   syncBodySelectionToOrthoWindow();
+}
+
+void ZFlyEmProofMvc::makeOrthoWindow()
+{
+  makeOrthoWindow(256, 256, 256);
+}
+
+void ZFlyEmProofMvc::makeBigOrthoWindow()
+{
+  makeOrthoWindow(1024, 1024, 1024);
 }
 
 void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
@@ -3114,6 +3125,17 @@ void ZFlyEmProofMvc::showOrthoWindow(double x, double y, double z)
   m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
+void ZFlyEmProofMvc::showBigOrthoWindow(double x, double y, double z)
+{
+  if (m_orthoWindow == NULL) {
+    makeBigOrthoWindow();
+  }
+
+  m_orthoWindow->show();
+  m_orthoWindow->raise();
+  m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
+}
+
 void ZFlyEmProofMvc::showMeshWindow()
 {
 //  m_mergeProject.showBody3d();
@@ -3201,7 +3223,7 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
     if (slice != NULL) {
       slice->setMaxSize(getView()->getViewParameter(), width, height);
       slice->disableFullView();

@@ -31,6 +31,7 @@ signals:
   void movingLeft();
   void movingRight();
   void locatingMain();
+  void resettingCrosshair();
   void showingSeg(bool on);
   void showingData(bool on);
   void settingHighContrast(bool on);

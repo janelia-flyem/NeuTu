@@ -824,6 +824,26 @@ bool NeutubeConfig::LoggingProfile()
   return getInstance().loggingProfile();
 }
 
+void NeutubeConfig::setAdvancedMode(bool on)
+{
+  m_advancedMode = on;
+}
+
+bool NeutubeConfig::isAdvancedMode() const
+{
+  return m_advancedMode;
+}
+
+void NeutubeConfig::SetAdvancedMode(bool on)
+{
+  getInstance().setAdvancedMode(on);
+}
+
+bool NeutubeConfig::IsAdvancedMode()
+{
+  return getInstance().isAdvancedMode();
+}
+
 int NeutubeConfig::GetVerboseLevel()
 {
   return getInstance().getVerboseLevel();

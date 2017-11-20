@@ -30,6 +30,8 @@ void FlyEmOrthoControlForm::connectSignalSlot()
           */
   connect(ui->locateToPushButton, SIGNAL(clicked()),
           this, SIGNAL(locatingMain()));
+  connect(ui->resetCrosshairPushButton, SIGNAL(clicked()),
+          this, SIGNAL(resettingCrosshair()));
   connect(ui->showSegCheckBox, SIGNAL(toggled(bool)),
           this, SIGNAL(showingSeg(bool)));
   connect(ui->dataCheckBox, SIGNAL(toggled(bool)),
