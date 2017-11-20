@@ -90,7 +90,7 @@ enum ECardinalDirection {
 
 namespace Json {
 namespace {
-static const char* REF_KEY = "->";
+const char* REF_KEY = "->";
 }
 }
 
