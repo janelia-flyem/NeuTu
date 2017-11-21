@@ -1,144 +1,107 @@
-/*
- * Copyright (C) 2005-2012 University of Muenster, Germany.
- * Visualization and Computer Graphics Group <http://viscg.uni-muenster.de>
- * For a list of authors please refer to the file "CREDITS.txt".
- * Copyright (C) 2012-2013 Korea Institiute of Science and Technologhy, Seoul.
- * Linqing Feng, Jinny Kim's lab <http://jinny.kist.re.kr>
- *
- * This file is derived from code of the free Voreen software package.
- * you can redistribute it and/or modify it under the terms of the GNU General
- * Public License version 2 as published by the Free Software Foundation.
- *
- * You should have received a copy of the GNU General Public License in the file
- * "LICENSE.txt" along with this file. If not, see <http://www.gnu.org/licenses/>.
- */
-
-#ifndef Z3DRENDERPORT_H
-#define Z3DRENDERPORT_H
+#pragma once
 
 #include "z3dport.h"
+#include "z3drendertarget.h"
 #include "z3dtexture.h"
 #include <typeinfo>
 
-class Z3DRenderTarget;
-
-class Z3DRenderInputPort;
-
-#ifndef GL_DEPTH_COMPONENT24
-#define GL_DEPTH_COMPONENT24 0x81A6
-#endif
-#ifndef GL_RGBA16
-#define GL_RGBA16 0x805B
-#endif
-
 class Z3DRenderOutputPort : public Z3DOutputPortBase
 {
-  friend class Z3DRenderProcessor;
-
 public:
-  Z3DRenderOutputPort(const QString& name, bool allowMultipleConnections = true,
-                      Z3DProcessor::InvalidationState invalidationState = Z3DProcessor::InvalidAllResult,
-                      GLint internalColorFormat=GL_RGBA16, GLint internalDepthFormat=GL_DEPTH_COMPONENT24);
-  virtual ~Z3DRenderOutputPort();
+  Z3DRenderOutputPort(const QString& name, Z3DFilter* filter,
+                      GLint internalColorFormat = GLint(GL_RGBA16),
+                      GLint internalDepthFormat = GLint(GL_DEPTH_COMPONENT24));
 
-  virtual void invalidate();
+  virtual void invalidate() override;
 
-  void bindTarget();
-  void releaseTarget();
+  void bindTarget()
+  {
+    m_renderTarget.bind();
+    m_resultIsValid = true;
+  }
 
-  GLint getInternalDepthFormat() const { return m_internalDepthFormat; }
-  GLint getInternalColorFormat() const { return m_internalColorFormat; }
+  void releaseTarget()
+  { m_renderTarget.release(); }
+
+  GLint internalDepthFormat() const
+  { return m_internalDepthFormat; }
+
+  GLint internalColorFormat() const
+  { return m_internalColorFormat; }
 
   // Clears the contents of an activated outport's RenderTarget,
-  void clearTarget();
+  void clearTarget() const;
 
-  virtual bool isReady() const { return isConnected() && m_renderTarget; }
-
-  virtual bool hasValidData() const { return m_renderTarget && m_resultIsValid; }
-
-  // returns the dimensions of the associated RenderTarget or zero if no rendertarget
-  glm::ivec2 getSize() const;
-
-  // return the maximum of expectesize of all connected inports.
-  // If no inport connected, return (-1, -1)
-  glm::ivec2 getExpectedSize() const;
+  virtual bool hasValidData() const override
+  { return m_resultIsValid; }
 
   // Returns true, if the associated RenderTarget is currently bound.
-  bool isBound() const;
+  bool isBound() const
+  { return m_renderTarget.isBound(); }
 
-  // Returns the port's RenderTarget, may be null.
-  Z3DRenderTarget* getRenderTarget() const { return m_renderTarget; }
+  const Z3DRenderTarget& renderTarget() const
+  { return m_renderTarget; }
 
-  Z3DTexture* getColorTexture();
-  Z3DTexture* getDepthTexture();
+  Z3DRenderTarget& renderTarget()
+  { return m_renderTarget; }
 
-  bool hasRenderTarget() const { return m_renderTarget; }
+  const Z3DTexture* colorTexture() const
+  { return m_renderTarget.attachment(GL_COLOR_ATTACHMENT0); }
+
+  const Z3DTexture* depthTexture() const
+  { return m_renderTarget.attachment(GL_DEPTH_ATTACHMENT); }
+
+  Z3DTexture* colorTexture()
+  { return m_renderTarget.attachment(GL_COLOR_ATTACHMENT0); }
+
+  Z3DTexture* depthTexture()
+  { return m_renderTarget.attachment(GL_DEPTH_ATTACHMENT); }
 
   // Resizes the associated RenderTarget to the passed dimensions.
-  void resize(const glm::ivec2& newsize);
-  void resize(int x, int y) { resize(glm::ivec2(x,y)); }
+  virtual void resize(const glm::uvec2& newsize) override;
 
   // change RenderTarget with the given format.
   void changeColorFormat(GLint internalColorFormat);
+
   void chagneDepthFormat(GLint internalDepthFormat);
 
-  virtual bool canConnectTo(const Z3DInputPortBase* inport) const;
+  virtual bool canConnectTo(const Z3DInputPortBase* inport) const override;
 
   //void setMultisample(bool multisample, int nsample = 4);
 
-protected:
-
-  virtual void setRenderTarget(Z3DRenderTarget* renderTarget);
-
-  virtual void initialize();
-
-  virtual void deinitialize();
-
-  virtual void setProcessor(Z3DProcessor *p);
-
 private:
-  Z3DRenderTarget* m_renderTarget;
-
   bool m_resultIsValid;
-  glm::ivec2 m_size;
 
   GLint m_internalColorFormat;
   GLint m_internalDepthFormat;
 
   bool m_multisample;
   int m_sample;
+
+  Z3DRenderTarget m_renderTarget;
 };
 
 class Z3DRenderInputPort : public Z3DInputPortBase
 {
-  friend class Z3DRenderProcessor;
-
 public:
-  Z3DRenderInputPort(const QString &name, bool allowMultipleConnections = false,
-                     Z3DProcessor::InvalidationState invalidationState = Z3DProcessor::InvalidAllResult);
-  virtual ~Z3DRenderInputPort();
+  Z3DRenderInputPort(const QString& name, bool allowMultipleConnections,
+                     Z3DFilter* filter,
+                     Z3DFilter::State invalidationState = Z3DFilter::State::AllResultInvalid);
 
-  virtual bool isReady() const { return getNumOfValidInputs() > 0; }
-
-  void setExpectedSize(glm::ivec2 size) { m_expectedSize = size; }
-  glm::ivec2 getExpectedSize() const { return m_expectedSize; }
+  virtual bool isReady() const override
+  { return numValidInputs() > 0; }
 
   // go through all connected output render ports and count how many have valid rendering
-  size_t getNumOfValidInputs() const;
+  size_t numValidInputs() const;
 
   // once we have the number of valid inputs, we can use a index as parameter to query data from input
-  // idx range from 0 to getNumOfValidInputs() - 1
-  glm::ivec2 getSize(size_t idx = 0) const;
-  const Z3DTexture* getColorTexture(size_t idx = 0) const;
-  const Z3DTexture* getDepthTexture(size_t idx = 0) const;
+  // idx range from 0 to numValidInputs() - 1
+  glm::uvec2 size(size_t idx = 0) const;
 
-protected:
-  virtual void setProcessor(Z3DProcessor *p);
+  const Z3DTexture* colorTexture(size_t idx = 0) const;
+
+  const Z3DTexture* depthTexture(size_t idx = 0) const;
 
 private:
-  const Z3DRenderTarget* getRenderTarget(size_t idx) const;
-
-  glm::ivec2 m_expectedSize;
+  const Z3DRenderTarget* renderTarget(size_t idx) const;
 };
-
-#endif // Z3DRENDERPORT_H

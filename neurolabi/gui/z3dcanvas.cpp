@@ -1,49 +1,35 @@
 #include "z3dcanvas.h"
 
-#include <QPainter>
-#include <QGraphicsTextItem>
-
 #include "z3dnetworkevaluator.h"
-#include <algorithm>
 #include "z3dcanvaseventlistener.h"
-#include "QsLog/QsLog.h"
-#ifdef _QT5_
-#include <QWindow>
-#endif
+#include "z3dscene.h"
+#include "QsLog.h"
 #include "zpainter.h"
 #include "zstackdrawable.h"
+#include "zopenglwidget.h"
+#include <QWindow>
+#include <QPainter>
+#include <QGraphicsTextItem>
+#include <algorithm>
 
-#ifdef _QT5_
 Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* parent, Qt::WindowFlags f)
-#else
-Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLFormat &format,
-                     QWidget* parent, const QGLWidget *shareWidget, Qt::WindowFlags f)
-#endif
   : QGraphicsView(parent)
   , m_fullscreen(false)
-  , m_glWidget(NULL)
-  , m_3dScene(NULL)
-  , m_networkEvaluator(NULL)
-  , m_fakeStereoOnce(false)
+  , m_glWidget(nullptr)
+  , m_3dScene(nullptr)
 {
   setAlignment(Qt::AlignLeft | Qt::AlignTop);
   resize(width, height);
 
-#ifdef _QT5_
-  m_glWidget = new QOpenGLWidget(nullptr, f);
-#else
-  m_glWidget = new QGLWidget(format, NULL, shareWidget, f);
-  m_glWidget->makeCurrent();
-#endif
-  m_isStereoScene = m_glWidget->format().stereo();
-  m_3dScene = new QGraphicsScene(0, 0, width, height, this);
+  m_glWidget = new ZOpenGLWidget(nullptr, f);
+  m_3dScene = new Z3DScene(width, height, m_glWidget->format().stereo(), this);
 
   setViewport(m_glWidget);
   setViewportUpdateMode(FullViewportUpdate);
   setScene(m_3dScene);
 
   setWindowTitle(title);
-  setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+  setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform | QPainter::TextAntialiasing);
   setOptimizationFlags(QGraphicsView::DontSavePainterState |
                        QGraphicsView::DontAdjustForAntialiasing);
 
@@ -55,15 +41,22 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, const QGLForma
 #endif
   setMouseTracking(true);
 
-//#if defined(_FLYEM_)
   connect(&m_interaction, SIGNAL(decorationUpdated()),
-          this->viewport(), SLOT(update()));
+          this, SLOT(updateDecoration()));
   connect(&m_interaction, SIGNAL(strokePainted(ZStroke2d*)),
           this, SIGNAL(strokePainted(ZStroke2d*)));
-//#endif
+  connect(&m_interaction, SIGNAL(shootingTodo(int,int)),
+          this, SIGNAL(shootingTodo(int,int)));
+  connect(&m_interaction, SIGNAL(locating(int, int)),
+          this, SIGNAL(locating(int, int)));
+
+  connect(m_glWidget, &ZOpenGLWidget::openGLContextInitialized, this, &Z3DCanvas::openGLContextInitialized);
 }
 
-Z3DCanvas::~Z3DCanvas() {}
+QSurfaceFormat Z3DCanvas::format() const
+{
+  return m_glWidget->format();
+}
 
 void Z3DCanvas::toggleFullScreen()
 {
@@ -74,6 +67,11 @@ void Z3DCanvas::toggleFullScreen()
     showFullScreen();
     m_fullscreen = !m_fullscreen;
   }
+}
+
+void Z3DCanvas::updateAll()
+{
+  m_glWidget->update();
 }
 
 void Z3DCanvas::enterEvent(QEvent* e)
@@ -90,7 +88,9 @@ bool Z3DCanvas::suppressingContextMenu() const
 {
 //#if defined(_FLYEM_)
   if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE) ||
-      m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT)) {
+      m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT) ||
+      m_interaction.isStateOn(ZInteractionEngine::STATE_MARK) ||
+      m_interaction.isStateOn(ZInteractionEngine::STATE_LOCATE)) {
     return true;
   }
 //#endif
@@ -107,8 +107,9 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
-  broadcastEvent(e, width(), height());
-  m_interaction.processMouseReleaseEvent(e);
+  if (!m_interaction.processMouseReleaseEvent(e)) {
+    broadcastEvent(e, width(), height());
+  }
   setCursor(m_interaction.getCursorShape());
 }
 
@@ -147,17 +148,13 @@ void Z3DCanvas::keyReleaseEvent(QKeyEvent* event)
 
 void Z3DCanvas::resizeEvent(QResizeEvent *event)
 {
-#ifdef _QT5_
-  glGetError(); // opengl error from qt5?
-#endif
-
   getGLFocus();
   QGraphicsView::resizeEvent(event);
   if (m_3dScene)
     m_3dScene->setSceneRect(QRect(QPoint(0, 0), event->size()));
 
-  emit canvasSizeChanged(event->size().width() * getDevicePixelRatio(),
-                         event->size().height() * getDevicePixelRatio());
+  emit canvasSizeChanged(event->size().width() * devicePixelRatioF(),
+                         event->size().height() * devicePixelRatioF());
 }
 
 void Z3DCanvas::paintEvent(QPaintEvent *event)
@@ -176,22 +173,19 @@ void Z3DCanvas::dropEvent(QDropEvent *event)
   event->ignore();
 }
 
-void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
+void Z3DCanvas::updateDecoration()
 {
-#ifdef _QT5_
-  glGetError(); // opengl error from qt5?
-#endif
+  m_updatingDecoration = true;
+  viewport()->update();
+  m_updatingDecoration = false;
+}
 
-  if (!m_networkEvaluator) {
-    return;
+void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
+{
+  if (!m_updatingDecoration) {
+    QGraphicsView::drawBackground(painter, rect);
   }
-
-  // QPainter set glclearcolor to white, we set it back
-  glClearColor(0.f, 0.f, 0.f, 0.f);
-
-  m_networkEvaluator->process(m_isStereoScene || m_fakeStereoOnce);
-  m_fakeStereoOnce = false;
-
+  //m_3dScene->drawBackground(painter, rect);
 
 #if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
@@ -212,7 +206,7 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
 
   if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
     painter->setPen(QColor(255, 255, 255));
-    QFont font("Helvetica [Cronyx]", 24);;
+    QFont font("Helvetica [Cronyx]", 24);
     painter->setFont(font);
     painter->drawText(
           QRectF(10, 10, 300, 200),
@@ -224,10 +218,11 @@ void Z3DCanvas::drawBackground(QPainter *painter, const QRectF &)
           "  5: select small trees;");
   }
 
-  //ZPainter painter()
   //painter->drawRect(QRect(10, 10, 40, 60));
 
-  CHECK_GL_ERROR;
+#if QT_VERSION < QT_VERSION_CHECK(5, 9, 0) && defined(_USE_CORE_PROFILE_)
+  glGetError(); //error from qt
+#endif
 }
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)
@@ -237,34 +232,18 @@ void Z3DCanvas::timerEvent(QTimerEvent* e)
 
 void Z3DCanvas::setNetworkEvaluator(Z3DNetworkEvaluator *n)
 {
-  //m_3dScene->setNetworkEvaluator(n);
-  m_networkEvaluator = n;
-  if (n)
-    n->setOpenGLContext(this);
+  m_3dScene->setNetworkEvaluator(n);
 }
 
 void Z3DCanvas::setFakeStereoOnce()
 {
-  m_fakeStereoOnce = true;
-  //m_3dScene->setFakeStereoOnce();
+  m_3dScene->setFakeStereoOnce();
 }
 
-void Z3DCanvas::addEventListenerToBack(Z3DCanvasEventListener *e)
-{
-  if (e)
-    m_listeners.push_back(e);
-}
-
-void Z3DCanvas::addEventListenerToFront(Z3DCanvasEventListener *e)
-{
-  if (e)
-    m_listeners.push_front(e);
-}
-
-void Z3DCanvas::removeEventListener(Z3DCanvasEventListener *e)
+void Z3DCanvas::removeEventListener(Z3DCanvasEventListener& e)
 {
   std::deque<Z3DCanvasEventListener*>::iterator pos;
-  pos = std::find(m_listeners.begin(), m_listeners.end(), e);
+  pos = std::find(m_listeners.begin(), m_listeners.end(), &e);
 
   if (pos != m_listeners.end())
     m_listeners.erase(pos);
@@ -286,21 +265,22 @@ void Z3DCanvas::broadcastEvent(QEvent *e, int w, int h)
   }
 }
 
+void Z3DCanvas::getGLFocus()
+{
+  m_glWidget->makeCurrent();
+}
+
 void Z3DCanvas::setKeyMode(ZInteractionEngine::EKeyMode mode)
 {
   m_interaction.setKeyMode(mode);
   update(QRect(QPoint(0, 0), size()));
 }
 
-double Z3DCanvas::getDevicePixelRatio()
-{
-#ifdef _QT5_
-  return (window() && window()->windowHandle()) ?
-        window()->windowHandle()->devicePixelRatio() : 1.0;
-#else
-  return 1.0;
-#endif
-}
+//double Z3DCanvas::devicePixelRatio()
+//{
+//  return (window() && window()->windowHandle()) ?
+//        window()->windowHandle()->devicePixelRatio() : 1.0;
+//}
 
 void Z3DCanvas::disableKeyEvent()
 {

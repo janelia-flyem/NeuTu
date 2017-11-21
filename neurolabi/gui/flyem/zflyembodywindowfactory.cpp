@@ -12,8 +12,8 @@ void ZFlyEmBodyWindowFactory::configure(Z3DWindow *window)
   if (window != NULL) {
     window->getGraphFilter()->setStayOnTop(false);
 
-    window->getSwcFilter()->setColorMode("Intrinsic");
     window->getSwcFilter()->setRenderingPrimitive("Sphere");
+    window->getSwcFilter()->setColorMode("Intrinsic");
     window->getSwcFilter()->setStayOnTop(false);
 
     window->getPunctaFilter()->setStayOnTop(false);

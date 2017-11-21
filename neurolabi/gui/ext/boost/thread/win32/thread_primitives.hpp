@@ -16,7 +16,9 @@
 #include <boost/assert.hpp>
 #include <boost/thread/exceptions.hpp>
 #include <boost/detail/interlocked.hpp>
+#include <boost/detail/winapi/config.hpp>
 //#include <boost/detail/winapi/synchronization.hpp>
+#include <boost/thread/win32/interlocked_read.hpp>
 #include <algorithm>
 
 #if BOOST_PLAT_WINDOWS_RUNTIME
@@ -156,7 +158,7 @@ namespace boost
             {
                 struct _SECURITY_ATTRIBUTES;
 # ifdef BOOST_NO_ANSI_APIS
-# if defined(BOOST_USE_WINAPI_VERSION) && ( BOOST_USE_WINAPI_VERSION < BOOST_WINAPI_VERSION_VISTA )
+# if BOOST_USE_WINAPI_VERSION < BOOST_WINAPI_VERSION_VISTA
                 __declspec(dllimport) void* __stdcall CreateMutexW(_SECURITY_ATTRIBUTES*,int,wchar_t const*);
                 __declspec(dllimport) void* __stdcall CreateSemaphoreW(_SECURITY_ATTRIBUTES*,long,long,wchar_t const*);
                 __declspec(dllimport) void* __stdcall CreateEventW(_SECURITY_ATTRIBUTES*,int,int,wchar_t const*);
@@ -243,19 +245,19 @@ namespace boost
             // Borrowed from https://stackoverflow.com/questions/8211820/userland-interrupt-timer-access-such-as-via-kequeryinterrupttime-or-similar
             inline ticks_type __stdcall GetTickCount64emulation()
             {
-                static volatile long count = 0xFFFFFFFF;
+                static long count = -1l;
                 unsigned long previous_count, current_tick32, previous_count_zone, current_tick32_zone;
                 ticks_type current_tick64;
 
-                previous_count = (unsigned long) _InterlockedCompareExchange(&count, 0, 0);
+                previous_count = (unsigned long) boost::detail::interlocked_read_acquire(&count);
                 current_tick32 = GetTickCount();
 
-                if(previous_count == 0xFFFFFFFF)
+                if(previous_count == (unsigned long)-1l)
                 {
                     // count has never been written
                     unsigned long initial_count;
                     initial_count = current_tick32 >> 28;
-                    previous_count = (unsigned long) _InterlockedCompareExchange(&count, initial_count, 0xFFFFFFFF);
+                    previous_count = (unsigned long) _InterlockedCompareExchange(&count, (long)initial_count, -1l);
 
                     current_tick64 = initial_count;
                     current_tick64 <<= 28;
@@ -278,8 +280,9 @@ namespace boost
                 if(current_tick32_zone == previous_count_zone + 1 || (current_tick32_zone == 0 && previous_count_zone == 15))
                 {
                     // The top four bits of the 32-bit tick count have been incremented since count was last written.
-                    _InterlockedCompareExchange(&count, previous_count + 1, previous_count);
-                    current_tick64 = previous_count + 1;
+                    unsigned long new_count = previous_count + 1;
+                    _InterlockedCompareExchange(&count, (long)new_count, (long)previous_count);
+                    current_tick64 = new_count;
                     current_tick64 <<= 28;
                     current_tick64 += current_tick32 & 0x0FFFFFFF;
                     return current_tick64;
@@ -339,7 +342,7 @@ namespace boost
             {
 #if !defined(BOOST_NO_ANSI_APIS)
                 handle const res = win32::CreateEventA(0, type, state, mutex_name);
-#elif defined(BOOST_USE_WINAPI_VERSION) && ( BOOST_USE_WINAPI_VERSION < BOOST_WINAPI_VERSION_VISTA )
+#elif BOOST_USE_WINAPI_VERSION < BOOST_WINAPI_VERSION_VISTA
                 handle const res = win32::CreateEventW(0, type, state, mutex_name);
 #else
                 handle const res = win32::CreateEventExW(
@@ -366,7 +369,7 @@ namespace boost
 #if !defined(BOOST_NO_ANSI_APIS)
                 handle const res=win32::CreateSemaphoreA(0,initial_count,max_count,0);
 #else
-#if defined(BOOST_USE_WINAPI_VERSION) && ( BOOST_USE_WINAPI_VERSION < BOOST_WINAPI_VERSION_VISTA )
+#if BOOST_USE_WINAPI_VERSION < BOOST_WINAPI_VERSION_VISTA
                 handle const res=win32::CreateSemaphoreEx(0,initial_count,max_count,0,0);
 #else
                 handle const res=win32::CreateSemaphoreExW(0,initial_count,max_count,0,0,semaphore_all_access);

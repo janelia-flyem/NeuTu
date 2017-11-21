@@ -1,6 +1,7 @@
 {
   "librarian": "emdata2.int.janelia.org:9100",
   "mb6_paper": false,
+  "task server": "http://zhaot-ws1:9000/api/node/194d",
   "dvid root": {
     "@MB6": "99ef",
     "@FIB19": "752d",
@@ -85,10 +86,9 @@
       "default": false,
       "name": "FIB19 (emdata2) Synapse Check",
       "comment": "FIB19 production",
-      "body_label": "segmentation-labelvol",
       "label_block": "segmentation2",
       "multires_tile": "graytiles",
-      "synapse": "annot_synapse_prod",
+      "synapse": "annot_synapse_prod_062817",
       "user_name": ["shinomiyak", "takemuras", "zhaot", "anicetor", "changl", "lauchies", "ogundeyio", "ordishc", "sigmundc", "shinomiyaa", "tranj", "rivlinp", "takemurasa", "olbrisd", "cheathamn", "neacee"]
     },
     {

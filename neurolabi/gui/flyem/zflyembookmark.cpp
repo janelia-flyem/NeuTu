@@ -246,7 +246,11 @@ void ZFlyEmBookmark::setCustom(bool state)
   }
   */
   m_isCustom = state;
-  setHittable(state);
+  if (state == true) {
+    setHitProtocal(ZStackObject::HIT_STACK_POS);
+  } else {
+    setHitProtocal(ZStackObject::HIT_NONE);
+  }
 }
 
 void ZFlyEmBookmark::display(

@@ -102,8 +102,8 @@ if __name__ == '__main__':
     taskManager.setRange([100000, -1])
     taskManager.setOverwriteLevel(1)
     taskManager.setBodySizeFile('bodysize.txt')
-    taskManager.setZOffset(1490)
+#     taskManager.setZOffset(1490)
 
     taskManager.setCommandPath(home + '/Work/neutube/neurolabi/cpp/'
                                'extract_body-build-Qt_4_8_1_gcc-Debug/extract_body');
-    print taskManager.getFullCommand();
+    print(taskManager.getFullCommand());

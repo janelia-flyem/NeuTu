@@ -7,8 +7,10 @@
 
 #include <vector>
 
+
 class ZStack;
 class ZSwcTree;
+class ZIntPoint;
 
 class ZStackMultiScaleWatershed
 {
@@ -20,15 +22,21 @@ public:
   ZStack* run(ZStack *src,QList<ZSwcTree*>& trees,int scale);
 #endif
 
-
-private:
+  void test();
+public:
+  void setScale(int scale){_scale=scale;}
+  ZStack* labelAreaNeedUpdate(ZStack* edge_map,ZStack* seed,ZStack* src=NULL);
+  void generateSeeds(ZStack* seed,int width,int height,int depth,const ZStack* edge_map,const ZStack* stack);
+  ZStack* getEdgeMap(const ZStack& stack);
+  ZStack* upSample(int width,int height,int depth,ZStack* sampled);
 #if defined(_QT_GUI_USED_)
-  void getSeeds(std::vector<ZStack*>& seeds,QList<ZSwcTree*>& trees);
+  void fillSeed(ZStack* seed,QList<ZSwcTree*>& trees,const ZIntPoint& offset);
 #endif
+
   ZStack* upSampleAndRecoverEdge(ZStack* sampled_watershed,ZStack* src);
 
 private:
-  int _scale;
+  double _scale;
 };
 
 #endif // ZSTACKMULTISCALEWATERSHED_H

@@ -58,8 +58,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SLOT(incSegmentSize()));
   connect(ui->segmentSizeDecPushButton, SIGNAL(clicked()),
           this, SLOT(decSegmentSize()));
-  connect(ui->fullViewPushButton, SIGNAL(clicked()),
-          this, SLOT(showFullSegmentation()));
+  connect(ui->fullViewCheckBox, SIGNAL(clicked(bool)),
+          this, SLOT(showFullSegmentation(bool)));
 
   connect(ui->coarseBodyPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
@@ -67,6 +67,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(bodyViewTriggered()));
   connect(ui->skeletonViewPushButton, SIGNAL(clicked()),
           this, SIGNAL(skeletonViewTriggered()));
+  connect(ui->meshPushButton, SIGNAL(clicked()),
+          this, SIGNAL(meshViewTriggered()));
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
@@ -216,6 +218,10 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(skeletonizeSelectedBody()));
   bodyMenu->addAction(skeletonizeAction);
 
+  QAction *exportBodyStackAction = new QAction("Export Body Stack", this);
+  connect(exportBodyStackAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBodyStack()));
+  bodyMenu->addAction(exportBodyStackAction);
 #if 0
   QMenu *grayscaleMenu = m_mainMenu->addMenu("Grayscale");
   QAction *exportGrayScaleAction = new QAction("Export Grayscale", this);
@@ -230,12 +236,13 @@ void FlyEmProofControlForm::createMenu()
   connect(clearMergeAction, SIGNAL(triggered()),
           this, SLOT(clearBodyMergeStage()));
   developerMenu->addAction(clearMergeAction);
-
-  QAction *exportBodyStackAction = new QAction("Export Body Stack", this);
-  connect(exportBodyStackAction, SIGNAL(triggered()),
-          this, SLOT(exportSelectedBodyStack()));
-  developerMenu->addAction(exportBodyStackAction);
 #endif
+
+  QAction *reportAction = new QAction("Report Body Corruption", this);
+  connect(reportAction, &QAction::triggered,
+          this, &FlyEmProofControlForm::reportingBodyCorruption);
+  m_mainMenu->addAction(reportAction);
+
 //  colorMenu->setEnabled(false);
 }
 
@@ -307,9 +314,9 @@ void FlyEmProofControlForm::decSegmentSize()
   emit labelSizeChanged(512, 512);
 }
 
-void FlyEmProofControlForm::showFullSegmentation()
+void FlyEmProofControlForm::showFullSegmentation(bool on)
 {
-  emit showingFullSegmentation();
+  emit showingFullSegmentation(on);
 }
 
 void FlyEmProofControlForm::goToBody()

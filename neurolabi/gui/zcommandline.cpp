@@ -40,11 +40,30 @@
 #include "dvid/zdvidneurontracer.h"
 //#include "mylib/utilities.h"
 
+//Incude your module headers here
+#include "command/zcommandmodule.h"
+#include "command/zstackdownsamplecommand.h"
+#include "command/zbodysplitcommand.h"
+#include "command/zsurfreconcommand.h"
+#include "command/zstackdiffcommand.h"
+#include "command/zmultiscalewatershedcommand.h"
+#include "command/zbodyexportcommand.h"
+#include "command/zsplittaskuploadcommand.h"
+
 using namespace std;
 
 ZCommandLine::ZCommandLine()
 {
   init();
+}
+
+ZCommandLine::~ZCommandLine()
+{
+  for (std::map<std::string, ZCommandModule*>::iterator
+       iter = m_commandMap.begin(); iter != m_commandMap.end(); ++iter) {
+    delete iter->second;
+  }
+  m_commandMap.clear();
 }
 
 void ZCommandLine::init()
@@ -66,6 +85,38 @@ void ZCommandLine::init()
   m_namedOnly = false;
   m_intvSpecified = false;
 }
+
+void ZCommandLine::registerModule()
+{
+  registerModule<ZStackDownsampleCommand>("downsample_stack");
+  registerModule<ZBodySplitCommand>("split_body");
+  registerModule<ZSurfreconCommand>("surfrecon");
+  registerModule<ZStackDiffCommand>("stack_diff");
+  registerModule<ZMultiscaleWatershedCommand>("multiscale_watershed");
+  registerModule<ZBodyExportCommand>("export_body");
+  registerModule<ZSplitTaskUploadCommand>("upload_split_task");
+}
+
+template <typename T>
+void ZCommandLine::registerModule(const std::string &name)
+{
+  registerModule(name, new T);
+}
+
+void ZCommandLine::registerModule(
+    const std::string &name, ZCommandModule *module)
+{
+  if (!name.empty() && module != NULL) {
+    if (m_commandMap.count(name) > 0) {
+      std::cout << "WARNING: Cannot overwrite a registered module: " << name
+                << std::endl;
+    } else {
+      module->setForceUpdate(m_forceUpdate);
+      m_commandMap[name] = module;
+    }
+  }
+}
+
 
 ZCommandLine::ECommand ZCommandLine::getCommand(const char *cmd)
 {
@@ -203,7 +254,7 @@ int ZCommandLine::runBoundaryOrphan()
 
       if (isCandidate && qc.isStitchedOrphanBody(obj)) {
         std::cout << "Orphan: "
-                  << ZString::lastInteger(objFile.absoluteFilePath().toStdString())
+                  << ZString::LastInteger(objFile.absoluteFilePath().toStdString())
                   << std::endl;
         ZVoxel voxel = obj.getMarker();
         voxel.translate(bodyOffset[0], bodyOffset[1], bodyOffset[2]);
@@ -269,7 +320,7 @@ int ZCommandLine::runObjectOverlap()
                     << std::endl;
         }
         excludedBodySet.insert(
-              ZString::lastInteger(fileInfo.baseName().toStdString()));
+              ZString::LastInteger(fileInfo.baseName().toStdString()));
       }
     }
   }
@@ -284,7 +335,7 @@ int ZCommandLine::runObjectOverlap()
 
   std::cout << "Loading objects ..." << std::endl;
   for (int i = 0; i < objArray1.size(); ++i) {
-    int id = ZString::lastInteger(fileList1[i].baseName().toStdString());
+    int id = ZString::LastInteger(fileList1[i].baseName().toStdString());
 
     if (excludedBodySet.count(id) == 0) {
       objArray1[i].load(fileList1[i].absoluteFilePath().toStdString());
@@ -298,7 +349,7 @@ int ZCommandLine::runObjectOverlap()
 
   std::cout << "Loading objects ..." << std::endl;
   for (int i = 0; i < objArray2.size(); ++i) {
-    int id = ZString::lastInteger(fileList2[i].baseName().toStdString());
+    int id = ZString::LastInteger(fileList2[i].baseName().toStdString());
     if (excludedBodySet.count(id) == 0) {
       objArray2[i].load(fileList2[i].absoluteFilePath().toStdString());
       objArray2[i].downsample(m_intv[0], m_intv[1], m_intv[2]);
@@ -383,7 +434,7 @@ int ZCommandLine::runSynapseObjectList()
 
 int ZCommandLine::runOutputClassList()
 {
-  if (ZFileType::FileType(m_input[0]) == ZFileType::JSON_FILE) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_JSON) {
     ZFlyEmDataBundle bundle;
     bundle.loadJsonFile(m_input[0]);
     std::map<string, int> classMap = bundle.getClassIdMap();
@@ -517,7 +568,7 @@ int ZCommandLine::runComputeSeed()
                 << std::endl;
       return 1;
     }
-    if (ZFileType::FileType(m_output) == ZFileType::SWC_FILE) {
+    if (ZFileType::FileType(m_output) == ZFileType::FILE_SWC) {
       ZSwcTree *tree = ZSwcFactory::CreateSwc(ptArray);
 
       //Unfortunately ZSwcTree::save does not return any status, so we use this
@@ -696,6 +747,44 @@ std::set<uint64_t> ZCommandLine::loadBodySet(const std::string &input) const
   return bodySet;
 }
 
+ZCommandModule* ZCommandLine::getModule(const std::string &name)
+{
+  ZCommandModule *module = NULL;
+  if (m_commandMap.count(name) > 0) {
+    module = m_commandMap[name];
+  }
+
+  return module;
+}
+
+int ZCommandLine::runGeneral()
+{
+  if (!m_generalConfig.empty()) {
+#ifdef _DEBUG_
+    std::cout << "Config: " << m_generalConfig << std::endl;
+#endif
+
+    ZJsonObject config;
+    if (ZFileType::FileType(m_generalConfig) == ZFileType::FILE_JSON) {
+      config.load(m_generalConfig);
+    } else {
+      config.decode(m_generalConfig);
+    }
+
+    ZCommandModule *module =
+        getModule(ZJsonParser::stringValue(config["command"]));
+    if (module != NULL) {
+      return module->run(m_input, m_output, config);
+    } else {
+      std::cerr << "Invalid command module." << std::endl;
+
+      return 1;
+    }
+  }
+
+  return 1;
+}
+
 int ZCommandLine::runTest()
 {
 #if 0
@@ -760,7 +849,7 @@ int ZCommandLine::runTest()
   ZDvidTarget target;
   target.setFromSourceString(m_input[0]);
 
-  m_input.push_back(GET_TEST_DATA_DIR + "/flyem/FIB/FIB19/bodylist.txt");
+  m_input.push_back(GET_FLYEM_DATA_DIR + "/FIB/FIB19/bodylist.txt");
 
   ZDvidReader reader;
   reader.open(target);
@@ -1112,7 +1201,7 @@ int ZCommandLine::skeletonizeFile()
     skeletonizer.print();
   }
 
-  if (ZFileType::FileType(m_input[0]) == ZFileType::TIFF_FILE) {
+  if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_TIFF) {
     if (m_output.empty()) {
       m_reporter.report("Skeletonization Failed",
                         "The input is not a binary image.",
@@ -1127,7 +1216,7 @@ int ZCommandLine::skeletonizeFile()
       stack.binarize();
     }
     tree = skeletonizer.makeSkeleton(stack);
-  } else if (ZFileType::FileType(m_input[0]) == ZFileType::OBJECT_SCAN_FILE) {
+  } else if (ZFileType::FileType(m_input[0]) == ZFileType::FILE_OBJECT_SCAN) {
     ZObject3dScan obj;
     obj.load(m_input[0]);
     if (m_isVerbose) {
@@ -1168,6 +1257,7 @@ int ZCommandLine::run(int argc, char *argv[])
     "[-o <string>]",
     "[--config <string>]", "[--intv <int> <int> <int>]",
     "[--skeletonize] [--force] [--bodyid <string>] [--named_only]",
+    "[--general <string>]",
     "[--compare_swc] [--scale <double>]",
     "[--trace] [--level <int>]","[--separate <string>]", "[--foutput <string>]",
     "[--compute_seed]",
@@ -1178,13 +1268,19 @@ int ZCommandLine::run(int argc, char *argv[])
     0
   };
 
+#ifdef _DEBUG_2
+  for (int i = 0; i < argc; ++i) {
+    std::cout << argv[i] << std::endl;
+  }
+#endif
+
   Process_Arguments(argc, argv, const_cast<char**>(Spec), 1);
 
   QCoreApplication app(argc, argv, false);
   std::string applicationDir = app.applicationDirPath().toStdString();
 
 //  std::string applicationDir = ZString::dirPath(argv[0]);
-  std::cout << applicationDir << std::endl;
+  std::cout << "Executable directory: " << applicationDir << std::endl;
   m_configDir = applicationDir + "/json";
   std::string configPath = m_configDir + "/command_config.json";
 
@@ -1312,8 +1408,17 @@ int ZCommandLine::run(int argc, char *argv[])
       command = COMPARE_SWC;
     } else if (Is_Arg_Matched(const_cast<char*>("--compute_seed"))) {
       command = COMPUTE_SEED;
+    } else if (Is_Arg_Matched(const_cast<char*>("--general"))) {
+      command = GENERAL_COMMAND;
+      m_generalConfig = Get_String_Arg(const_cast<char*>("--general"));
+#ifdef _DEBUG_2
+      std::cout << "Config:" << std::endl;
+      std::cout << m_generalConfig << std::endl;
+#endif
     }
   }
+
+  registerModule();
 
   switch (command) {
   case OBJECT_MARKER:
@@ -1340,6 +1445,9 @@ int ZCommandLine::run(int argc, char *argv[])
     return runComputeSeed();
   case TEST_SELF:
     return runTest();
+  case GENERAL_COMMAND:
+    return runGeneral();
+    break;
   default:
     std::cout << "Unknown command" << std::endl;
     return 1;
@@ -1357,7 +1465,9 @@ void ZCommandLine::loadConfig(const std::string &filePath)
   expandConfig(filePath, "trace");
 
 #ifdef _DEBUG_
+  std::cout << "==========Command configuration========" << std::endl;
   std::cout << m_configJson.dumpString(2) << std::endl;
+  std::cout << "=======================================" << std::endl;
 #endif
 }
 

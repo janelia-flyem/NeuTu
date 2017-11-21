@@ -44,11 +44,13 @@ public:
   void setDepth(int depth);
 
   bool isFullRange() const;
+  bool isSparse() const;
 
 private slots:
   void useCurrentOffset();
   void useViewCenter();
   void useViewPort();
+  void updateWidget();
 
 private:
   void connectSignalSlot();

@@ -9,7 +9,9 @@
 #include "zfiletype.h"
 #include "zfilelist.h"
 #include "zstring.h"
+#if defined(_QT_GUI_USED_)
 #include "zxmldoc.h"
+#endif
 #include "tz_error.h"
 #include "zhdf5reader.h"
 #include "zobject3dscan.h"
@@ -115,13 +117,13 @@ void ZStackFile::retrieveAttribute(
   std::string filePath = firstUrl();
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::TIFF_FILE:
+  case ZFileType::FILE_TIFF:
     Tiff_Attribute(filePath.c_str(), 0, kind, width, height, depth);
     break;
-  case ZFileType::LSM_FILE:
+  case ZFileType::FILE_LSM:
     Tiff_Attribute(filePath.c_str(), 1, kind, width, height, depth);
     break;
-  case ZFileType::PNG_FILE:
+  case ZFileType::FILE_PNG:
     Png_Attribute(filePath.c_str(), kind, width, height);
     *depth = 1;
     break;
@@ -158,16 +160,16 @@ void ZStackFile::import(const string &filePath)
   m_urlList.clear();
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::TIFF_FILE:
-  case ZFileType::LSM_FILE:
-  case ZFileType::V3D_RAW_FILE:
-  case ZFileType::PNG_FILE:
-  case ZFileType::V3D_PBD_FILE:
-  case ZFileType::MYERS_NSP_FILE:
-  case ZFileType::OBJECT_SCAN_FILE:
-  case ZFileType::DVID_OBJECT_FILE:
-  case ZFileType::JPG_FILE:
-  case ZFileType::MC_STACK_RAW_FILE:
+  case ZFileType::FILE_TIFF:
+  case ZFileType::FILE_LSM:
+  case ZFileType::FILE_V3D_RAW:
+  case ZFileType::FILE_PNG:
+  case ZFileType::FILE_V3D_PBD:
+  case ZFileType::FILE_MYERS_NSP:
+  case ZFileType::FILE_OBJECT_SCAN:
+  case ZFileType::FILE_DVID_OBJECT:
+  case ZFileType::FILE_JPG:
+  case ZFileType::FILE_MC_STACK_RAW:
 #ifdef _DEBUG_2
     cout << filePath << endl;
     cout << filePath.find("*") << endl;
@@ -179,10 +181,10 @@ void ZStackFile::import(const string &filePath)
     }
     m_urlList.push_back(filePath);
     break;
-  case ZFileType::XML_FILE:
+  case ZFileType::FILE_XML:
     importXmlFile(filePath);
     break;
-  case ZFileType::JSON_FILE:
+  case ZFileType::FILE_JSON:
     importJsonFile(filePath);
     break;
   default:
@@ -335,7 +337,7 @@ void ZStackFile::importJsonFile(const std::string &filePath)
   ZJsonObject jsonObject;
   jsonObject.load(filePath);
 
-  map<string, json_t*> entryMap = jsonObject.toEntryMap();
+  map<string, json_t*> entryMap = jsonObject.toEntryMap(true);
 
   bool stackFound = false;
   for (map<string, json_t*>::const_iterator iter = entryMap.begin();
@@ -355,6 +357,7 @@ void ZStackFile::importJsonFile(const std::string &filePath)
 
 void ZStackFile::importXmlFile(const string &filePath)
 {
+#if defined(_QT_GUI_USED_)
   if (!fexist(filePath.c_str())) {
     cout << filePath << " does not exist." << endl;
     return;
@@ -403,6 +406,7 @@ void ZStackFile::importXmlFile(const string &filePath)
     }
     node = node.nextSibling();
   }
+#endif
 }
 
 int ZStackFile::countImageSeries() const
@@ -504,10 +508,11 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
     {
       Mc_Stack *stack = NULL;
       int offset[3] = {0, 0, 0};
+      int intv[3] = {0, 0, 0};
       if (ZFileType::FileType(m_urlList[0].c_str()) ==
-          ZFileType::OBJECT_SCAN_FILE ||
+          ZFileType::FILE_OBJECT_SCAN ||
           ZFileType::FileType(m_urlList[0].c_str()) ==
-                    ZFileType::DVID_OBJECT_FILE) {
+                    ZFileType::FILE_DVID_OBJECT) {
         ZObject3dScan obj;
         if (obj.load(m_urlList[0])) {
           data = obj.toStackObject();
@@ -515,6 +520,8 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
       } else {
         C_Stack::readStackOffset(m_urlList[0].c_str(), offset, offset + 1,
             offset + 2);
+        C_Stack::readStackIntv(m_urlList[0].c_str(), intv, intv + 1,
+            intv + 2);
 
         stack = C_Stack::read(m_urlList[0].c_str(), m_channel);
 
@@ -527,6 +534,7 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
           }
           data->setData(stack);
           data->setOffset(offset[0], offset[1], offset[2]);
+          data->setDsIntv(intv[0], intv[1], intv[2]);
 #ifdef _NEUTUBE_
           if (initColor) {
             data->initChannelColors();
@@ -597,9 +605,10 @@ ZStack* ZStackFile::readStack(ZStack *data, bool initColor) const
         int depth = fileList.size();
         Mc_Stack *stack = C_Stack::make(kind, width, height, depth, nchannel);
         C_Stack::kill(slice);
+        slice = NULL;
 
         for (int i = 0; i < nchannel; i++) {
-          Stack *slice = Read_Sc_Stack(fileList.getFilePath(0), i);
+//          Stack *slice = Read_Sc_Stack(fileList.getFilePath(0), i);
 
           for (int j = 0; j < fileList.size(); j++) {
             slice = Read_Sc_Stack(fileList.getFilePath(j), i);

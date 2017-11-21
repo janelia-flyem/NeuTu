@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zflyemroitooldialog.h"
 
 #include <QMessageBox>
@@ -229,7 +228,7 @@ void ZFlyEmRoiToolDialog::downloadAllProject()
     m_dvidReader.open(doc->getDvidTarget());
     if (m_dvidReader.isReady()) {
       QByteArray value = m_dvidReader.readKeyValue(
-            ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE), "projects");
+            ZDvidData::GetName<QString>(ZDvidData::ROLE_ROI_CURVE), "projects");
       ZJsonArray array;
       array.decode(value.constData());
       for (size_t i = 0; i < array.size(); ++i) {

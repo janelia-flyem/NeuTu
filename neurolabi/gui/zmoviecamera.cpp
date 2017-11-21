@@ -19,7 +19,7 @@ ZMovieCamera::ZMovieCamera()
 
 void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
 {
-  map<string, json_t*> entryMap = obj.toEntryMap();
+  map<string, json_t*> entryMap = obj.toEntryMap(false);
   if (entryMap.count("rotate") > 0) {
     json_t* rotateObj = entryMap["rotate"];
     if (ZJsonParser::isObject(rotateObj)) {

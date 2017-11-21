@@ -53,21 +53,41 @@ TEST(ZSparseStack, basic)
   ASSERT_EQ(0, stack2->getIntValue(2, 3, 2));
 }
 
+TEST(ZSparseStack, process)
+{
+  ZSparseStack spStack;
+
+  ZObject3dScan *obj = new ZObject3dScan;
+  obj->addStripe(0, 0);
+  obj->addSegment(0, 1);
+  spStack.setObjectMask(obj);
+
+  spStack.shakeOff();
+
+  ASSERT_EQ(2, (int) spStack.getObjectVolume());
+
+  obj->addStripe(2, 2);
+  obj->addSegment(0, 5);
+  ASSERT_EQ(8, (int) spStack.getObjectVolume());
+  spStack.shakeOff();
+  ASSERT_EQ(6, (int) spStack.getObjectVolume());
+}
+
 TEST(ZSparseStack, downsample)
 {
   ZStackBlockGrid *stackGrid = new ZStackBlockGrid;
   stackGrid->setBlockSize(2, 2, 2);
   stackGrid->setGridSize(2, 2, 2);
-  ZStack *stack = ZStackFactory::makeUniformStack(2, 2, 2, 1);
+  ZStack *stack = ZStackFactory::MakeUniformStack(2, 2, 2, 1);
   stackGrid->consumeStack(ZIntPoint(0, 0, 0), stack);
 
-  stack = ZStackFactory::makeUniformStack(2, 2, 2, 2);
+  stack = ZStackFactory::MakeUniformStack(2, 2, 2, 2);
   stackGrid->consumeStack(ZIntPoint(1, 0, 0), stack);
 
-  stack = ZStackFactory::makeUniformStack(2, 2, 2, 3);
+  stack = ZStackFactory::MakeUniformStack(2, 2, 2, 3);
   stackGrid->consumeStack(ZIntPoint(0, 1, 0), stack);
 
-  stack = ZStackFactory::makeUniformStack(2, 2, 2, 4);
+  stack = ZStackFactory::MakeUniformStack(2, 2, 2, 4);
   stackGrid->consumeStack(ZIntPoint(1, 1, 0), stack);
 
   ZStackBlockGrid *dsGrid = stackGrid->makeDownsample(1, 1, 1);
@@ -82,16 +102,16 @@ TEST(ZSparseStack, downsample)
   stackGrid->setGridSize(2, 2, 2);
   spStack.setGreyScale(stackGrid);
 
-  stack = ZStackFactory::makeUniformStack(1024, 1024, 512, 1);
+  stack = ZStackFactory::MakeUniformStack(1024, 1024, 512, 1);
   stackGrid->consumeStack(ZIntPoint(0, 0, 0), stack);
 
-  stack = ZStackFactory::makeUniformStack(1024, 1024, 512, 2);
+  stack = ZStackFactory::MakeUniformStack(1024, 1024, 512, 2);
   stackGrid->consumeStack(ZIntPoint(1, 0, 0), stack);
 
-  stack = ZStackFactory::makeUniformStack(1024, 1024, 512, 3);
+  stack = ZStackFactory::MakeUniformStack(1024, 1024, 512, 3);
   stackGrid->consumeStack(ZIntPoint(0, 1, 1), stack);
 
-  stack = ZStackFactory::makeUniformStack(1024, 1024, 512, 4);
+  stack = ZStackFactory::MakeUniformStack(1024, 1024, 512, 4);
   stackGrid->consumeStack(ZIntPoint(1, 1, 1), stack);
 
   ZObject3dScan *obj = new ZObject3dScan;

@@ -336,6 +336,22 @@ float* C_Stack::guardedArrayFloat32(const Stack *stack)
   return array;
 }
 
+uint8_t* C_Stack::array8(const Stack *stack, int x, int y, int z)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
+  uint8_t *array = NULL;
+  ssize_t index = C_Stack::offset(
+        x, y, z, C_Stack::width(stack), C_Stack::height(stack), C_Stack::depth(stack));
+  if (index >= 0) {
+    array = C_Stack::array8(stack) + index;
+  }
+
+  return array;
+}
+
 double C_Stack::value(const Stack *stack, size_t index)
 {
   return Stack_Array_Value(stack, index);
@@ -626,6 +642,12 @@ Stack* C_Stack::downsampleMinIgnoreZero(
   return out;
 }
 
+Stack* C_Stack::downsampleMean(
+    const Stack *stack, int xintv, int yintv, int zintv, Stack *result)
+{
+  return Downsample_Stack_Mean(
+        const_cast<Stack*>(stack), xintv, yintv, zintv, result);
+}
 
 /*
 Stack* C_Stack::copy(const Stack *stack)
@@ -896,9 +918,6 @@ int C_Stack::neighborTest(int conn, int width, int height, int depth,
   return nnbr;
 }
 
-
-#define MRAW_MAGIC_NUMBER 1836212599
-
 void C_Stack::write(
     const std::string &filePath, const Mc_Stack *stack, const char *meta)
 {
@@ -909,7 +928,7 @@ void C_Stack::write(
   ZFileType::EFileType fileType = ZFileType::FileType(filePath) ;
 
   switch (fileType) {
-  case ZFileType::MC_STACK_RAW_FILE:
+  case ZFileType::FILE_MC_STACK_RAW:
   {
     FILE *fp = fopen(filePath.c_str(), "w");
     if (fp != NULL) {
@@ -929,14 +948,14 @@ void C_Stack::write(
   }
     break;
   default:
-    Write_Mc_Stack(filePath.c_str(), stack, meta);
+    Write_Mc_Stack(filePath.c_str(), stack, meta, 0);
     break;
   }
 }
 
 void C_Stack::write(const std::string &filePath, const Stack *stack)
 {
-  Write_Stack_U(filePath.c_str(), stack, NULL);
+  Write_Stack_U(filePath.c_str(), stack, NULL, 0);
 }
 
 void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)
@@ -946,6 +965,15 @@ void C_Stack::readStackOffset(const string &filePath, int *x, int *y, int *z)
   *z = 0;
 
   Read_Stack_Offset(filePath.c_str(), x, y, z);
+}
+
+void C_Stack::readStackIntv(const string &filePath, int *ix, int *iy, int *iz)
+{
+  *ix = 0;
+  *iy = 0;
+  *iz = 0;
+
+  Read_Stack_Intv(filePath.c_str(), ix, iy, iz);
 }
 
 char *C_Stack::toMrawBuffer(const Mc_Stack *stack, size_t *length)
@@ -1057,7 +1085,7 @@ Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
   ZFileType::EFileType fileType = ZFileType::FileType(filePath) ;
 
   switch (fileType) {
-  case ZFileType::OBJECT_SCAN_FILE:
+  case ZFileType::FILE_OBJECT_SCAN:
   {
     ZObject3dScan obj;
     if (obj.load(filePath)) {
@@ -1071,7 +1099,7 @@ Mc_Stack* C_Stack::read(const std::string &filePath, int channel)
     }
   }
     break;
-  case ZFileType::MC_STACK_RAW_FILE:
+  case ZFileType::FILE_MC_STACK_RAW:
   {
     FILE *fp = fopen(filePath.c_str(), "r");
     if (fp != NULL) {
@@ -1163,7 +1191,7 @@ Stack* C_Stack::readSc(const string &filePath)
 {
   Stack *stack = NULL;
 
-  if (ZFileType::FileType(filePath) == ZFileType::OBJECT_SCAN_FILE) {
+  if (ZFileType::FileType(filePath) == ZFileType::FILE_OBJECT_SCAN) {
     ZObject3dScan obj;
     if (obj.load(filePath)) {
       ZObject3d *obj3d = obj.toObject3d();
@@ -1895,6 +1923,11 @@ Stack_Watershed_Workspace* C_Stack::MakeStackWatershedWorkspace(
   Stack_Watershed_Workspace *ws = Make_Stack_Watershed_Workspace(stack);
 
   return ws;
+}
+
+Stack_Watershed_Workspace* C_Stack::MakeStackWatershedWorkspace(size_t volume)
+{
+  return Make_Stack_Watershed_Workspace_S(volume);
 }
 
 void C_Stack::KillStackWatershedWorkspace(Stack_Watershed_Workspace *ws)

@@ -230,7 +230,7 @@ void ZDvidAnnotation::setProperty(ZJsonObject propJson)
     m_propertyJson.removeKey("confidence");
   }
 
-  std::map<std::string, json_t*> entryMap = propJson.toEntryMap();
+  std::map<std::string, json_t*> entryMap = propJson.toEntryMap(false);
   for (std::map<std::string, json_t*>::iterator iter = entryMap.begin();
        iter != entryMap.end(); ++iter) {
     const std::string &key = iter->first;

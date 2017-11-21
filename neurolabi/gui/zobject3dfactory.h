@@ -14,6 +14,7 @@ class ZObject3dScanArray;
 class ZClosedCurve;
 class ZArray;
 class ZIntCuboid;
+class ZStroke2d;
 
 class ZObject3dFactory
 {
@@ -38,6 +39,15 @@ public:
   static std::vector<ZObject3dScan*> MakeObject3dScanPointerArray(
       const ZStack &stack, int yStep = 1, bool boundaryOnly = true);
 
+  /*!
+   * \brief Extract objects from a stack
+   *
+   * \param stack Input stack.
+   * \param axis Scanning axis.
+   * \param foreground Exclude background object if it is true.
+   * \param out Output pointer if it is not NULL.
+   * \return An array of objects.
+   */
   static ZObject3dScanArray* MakeObject3dScanArray(
       const ZStack &stack, NeuTube::EAxis axis, bool foreground,
       ZObject3dScanArray *out);
@@ -56,8 +66,16 @@ public:
   static ZObject3dScan MakeObject3dScan(const ZIntCuboid &box);
 
   static ZStack* MakeBoundaryStack(const ZStack &stack);
+  /*!
+   * \brief Extracts objects from a stack.
+   *
+   * \return an array of objects, each representing a region of one value.
+   */
+  static std::vector<ZObject3d*> MakeObject3dArray(const ZStack &stack);
 
   static ZObject3dScan MakeRandomObject3dScan(const ZIntCuboid &box);
+
+  static ZObject3dScan MakeObject3dScan(const ZStroke2d &stroke);
 };
 
 #endif // ZOBJECT3DFACTORY_H

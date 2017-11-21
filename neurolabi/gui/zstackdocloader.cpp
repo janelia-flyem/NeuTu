@@ -83,7 +83,7 @@ void ZStackDocLoader::processChanged(ZStackDoc *doc)
 
   if (m_isStackChanged) {
     //doc->initNeuronTracer();
-    doc->notifyStackModified();
+    doc->notifyStackModified(true);
   }
 }
 
@@ -99,6 +99,9 @@ void ZStackDocLoader::processObjectChanged(
     break;
   case ZStackObject::TYPE_PUNCTUM:
     doc->notifyPunctumModified();
+    break;
+  case ZStackObject::TYPE_MESH:
+    doc->notifyMeshModified();
     break;
   case ZStackObject::TYPE_SPARSE_OBJECT:
     doc->notifySparseObjectModified();

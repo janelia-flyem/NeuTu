@@ -130,8 +130,6 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     ui->connectionsTableView->setModel(m_connectionsProxy);
     // set col width here?
 
-
-
     // UI connects
     connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(onCloseButton()));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(onRefreshButton()));
@@ -154,11 +152,14 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
             this, SLOT(onIOConnectionsSelectionChanged(QItemSelection,QItemSelection)));
     connect(ui->roiComboBox, SIGNAL(currentIndexChanged(int)),
             this, SLOT(onRoiChanged(int)));
+    connect(ui->namedCheckBox, SIGNAL(clicked(bool)), this, SLOT(onNamedOnlyToggled()));
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
 
     // data update connects
     // register our type so we can signal/slot it across threads:
     connect(this, SIGNAL(dataChanged(ZJsonValue)), this, SLOT(updateModel(ZJsonValue)));
+    connect(this, SIGNAL(appendingData(ZJsonValue, int)),
+            this, SLOT(appendModel(ZJsonValue, int)));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateStatusAfterLoading()));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateBodyFilterAfterLoading()));
     connect(this, SIGNAL(loadCompleted()), this, SLOT(updateColorScheme()));
@@ -169,6 +170,28 @@ FlyEmBodyInfoDialog::FlyEmBodyInfoDialog(QWidget *parent) :
     connect(this, SIGNAL(ioBodyLoadFailed()), this, SLOT(onIOBodyLoadFailed()));
     connect(this, SIGNAL(ioNoBodiesLoaded()), this, SLOT(onIONoBodiesLoaded()));
 
+}
+
+void FlyEmBodyInfoDialog::simplify()
+{
+  ui->roiComboBox->hide();
+  ui->exportBodiesButton->hide();
+  ui->gotoBodiesButton->hide();
+  ui->colorTab->hide();
+  ui->saveColorFilterButton->hide();
+  ui->closeButton->hide();
+  ui->refreshButton->hide();
+  ui->clearFilterButton->hide();
+//  ui->connectionBodyLabel->hide();
+  ui->roiLabel->hide();
+  ui->tabWidget->removeTab(0);
+  ui->connectionsTableLabel->hide();
+  ui->connectionsTableView->hide();
+  ui->regexCheckBox->setChecked(true);
+  ui->regexCheckBox->hide();
+  ui->bodyFilterLabel->setText("Body filter (regular expression supported):");
+//  ui->regexCheckBox->setEnabled(false);
+//  ui->regexCheckBox->setText("Regular expression supported");
 }
 
 void FlyEmBodyInfoDialog::setupMaxBodyMenu() {
@@ -209,7 +232,8 @@ void FlyEmBodyInfoDialog::activateBody(QModelIndex modelIndex)
     // double-click = select and goto
     // shift-double-click = select and goto, but don't clear previous bodies from 3d views
     Qt::KeyboardModifiers modifiers  = QApplication::queryKeyboardModifiers();
-    if (modifiers.testFlag(Qt::ShiftModifier)) {
+    if (modifiers.testFlag(Qt::ShiftModifier) ||
+        modifiers.testFlag(Qt::ControlModifier)) {
         emit addBodyActivated(bodyId);
     } else {
         // technically also catches alt, ctrl double-click
@@ -250,21 +274,25 @@ void FlyEmBodyInfoDialog::dvidTargetChanged(ZDvidTarget target) {
         // open the reader; reuse it so we don't multiply connections on
         //  the server
         m_reader.setVerbose(false);
-        if (!m_reader.open(m_currentDvidTarget)) {
-            QMessageBox errorBox;
-            errorBox.setText("Error connecting to DVID");
-            errorBox.setInformativeText("Could not open DVID!  Check server information!");
-            errorBox.setStandardButtons(QMessageBox::Ok);
-            errorBox.setIcon(QMessageBox::Warning);
-            errorBox.exec();
-            setStatusLabel("Load failed!");
-            return;
-        }
-        // need to clear this to ensure it's repopulated exactly once
-        ui->maxBodiesMenu->clear();
-        updateRoi();
+        if (m_reader.open(m_currentDvidTarget)) {
+          m_sequencerReader.open(m_reader.getDvidTarget());
+          m_sequencerReader.setVerbose(false);
+          m_hasLabelsz = labelszPresent();
+          m_hasBodyAnnotation = bodyAnnotationsPresent();
+          // need to clear this to ensure it's repopulated exactly once
+          ui->maxBodiesMenu->clear();
+          updateRoi();
 
-        loadData();
+          loadData();
+        } else {
+          QMessageBox errorBox;
+          errorBox.setText("Error connecting to DVID");
+          errorBox.setInformativeText("Could not open DVID!  Check server information!");
+          errorBox.setStandardButtons(QMessageBox::Ok);
+          errorBox.setIcon(QMessageBox::Warning);
+          errorBox.exec();
+          setStatusLabel("Load failed!");
+        }
     }
 }
 
@@ -274,17 +302,18 @@ void FlyEmBodyInfoDialog::loadData() {
 
     QString loadingThreadId = "importBodiesDvid";
     m_cancelLoading = true;
-    QFuture<void> *future = m_futureMap.getFuture(loadingThreadId);
-    if (future != NULL) {
-      future->waitForFinished();
-    }
+    m_futureMap.waitForFinished(loadingThreadId);
+//    QFuture<void> *future = m_futureMap.getFuture(loadingThreadId);
+//    if (future != NULL) {
+//      future->waitForFinished();
+//    }
     m_cancelLoading = false;
 
     // we can load this info from different sources, depending on
     //  what's available in DVID
-    if (bodyAnnotationsPresent()) {
+    if (m_hasBodyAnnotation) {
         // both of these need body annotations:
-        if (labelszPresent()) {
+        if (m_hasLabelsz) {
             // how about labelsz data?
             // only set up menu on first load:
             if (ui->maxBodiesMenu->count() == 0) {
@@ -478,6 +507,15 @@ void FlyEmBodyInfoDialog::onRoiChanged(int index)
   onRefreshButton();
 }
 
+void FlyEmBodyInfoDialog::onNamedOnlyToggled()
+{
+  bool namedOnly = ui->namedCheckBox->isChecked();
+  ui->maxBodiesMenu->setDisabled(namedOnly);
+  ui->roiComboBox->setDisabled(namedOnly);
+
+  onRefreshButton();
+}
+
 bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
     // validation is admittedly limited for now; ultimately, I
     //  expect we'll be getting the info from DVID rather than
@@ -522,13 +560,17 @@ bool FlyEmBodyInfoDialog::isValidBookmarkFile(ZJsonObject jsonObject) {
  *
  * note: max bodies number is ignored for this routine
  */
-void FlyEmBodyInfoDialog::importBodiesDvid() {
+void FlyEmBodyInfoDialog::importBodiesDvid()
+{
+    bool namedOnly = ui->namedCheckBox->isChecked();
 
     // note: this method is run in a different thread than the rest
     //  of the GUI, so we must open our own DVID reader
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(m_currentDvidTarget)) {
+    ZDvidReader &reader = m_sequencerReader;
+    if (m_sequencerReader.isReady()) {
+         m_bodyNames.clear();
+         m_namelessBodies.clear();
+
         // we need to construct a json structure from scratch to
         //  match what we'd get out of the bookmarks annotation file;
         //  probably this should be refactored 
@@ -544,10 +586,17 @@ void FlyEmBodyInfoDialog::importBodiesDvid() {
 
         ZJsonArray bodies;
         bool ok;
-//        qlonglong bodyID;
+        qlonglong bodyID;
         foreach (const QString &bodyIDstr, keyList) {
+            if (m_quitting || m_cancelLoading) {
+#ifdef _DEBUG_
+                std::cout << "Sequencer loading canceled." << std::endl;
+#endif
+                return;
+            }
+
             // skip the few non-numeric keys mixed in there
-            /*bodyID =*/ bodyIDstr.toLongLong(&ok);
+            bodyID = bodyIDstr.toLongLong(&ok);
             if (ok) {
                 // get body annotations and transform to what we need
                 const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstr);
@@ -559,6 +608,12 @@ void FlyEmBodyInfoDialog::importBodiesDvid() {
                     bodyData.removeKey("name");
                 }
 
+                if (namedOnly) {
+                  if (!bodyData.hasKey("name")) {
+                    bodyData.clear();
+                  }
+                }
+
                 // remove status if empty; change status > body status
                 if (bodyData.hasKey("status")) {
                     if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
@@ -568,7 +623,15 @@ void FlyEmBodyInfoDialog::importBodiesDvid() {
                     bodyData.removeKey("status");
                 }
 
-                bodies.append(bodyData);
+                if (!bodyData.isEmpty() && m_hasLabelsz) {
+                  int npre = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_PRE_SYN);
+                  int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_POST_SYN);
+
+                  bodyData.setEntry("body T-bars", npre);
+                  bodyData.setEntry("body PSDs", npost);
+
+                  bodies.append(bodyData);
+                }
             } 
         }
 
@@ -586,7 +649,12 @@ void FlyEmBodyInfoDialog::importBodiesDvid() {
  * other versions either use a pregenerated file or
  * do not require labelsz (and thus do not include all information)
  */
-void FlyEmBodyInfoDialog::importBodiesDvid2() {
+void FlyEmBodyInfoDialog::importBodiesDvid2()
+{
+    if (ui->namedCheckBox->isChecked()) {
+      importBodiesDvid();
+      return;
+    }
 
     QElapsedTimer fullTimer;
     QElapsedTimer dvidTimer;
@@ -596,9 +664,8 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
 
     // note: this method is run in a different thread than the rest
     //  of the GUI, so we must open our own DVID reader
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(m_currentDvidTarget)) {
+    ZDvidReader &reader = m_sequencerReader;
+    if (reader.isReady()) {
 
         // you would use this call to get all bodies with any synapses:
         // ZJsonArray thresholdData = reader.readSynapseLabelszThreshold(1, ZDvid::INDEX_ALL_SYN);
@@ -606,6 +673,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         // as it turns out, that's usually too many (and you would have to retrieve
         //  the lists in pages); so we let the user set the max number of bodies to get in the UI
         dvidTimer.start();
+
         ZJsonArray thresholdData = reader.readSynapseLabelsz(
               m_currentMaxBodies, ZDvid::INDEX_ALL_SYN);
         dvidTime += dvidTimer.elapsed();
@@ -613,21 +681,27 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
         // first, get the list of bodies that actually have annotations,
         //  so we don't try to retrieve annotations that aren't there
         dvidTimer.restart();
-        QString bodyAnnotationName = QString::fromStdString(m_currentDvidTarget.getBodyAnnotationName());
-        QSet<QString> m_bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
+        QString bodyAnnotationName = QString::fromStdString(
+              m_currentDvidTarget.getBodyAnnotationName());
+        QSet<QString> bodyAnnotationKeys = reader.readKeys(bodyAnnotationName).toSet();
 
         #ifdef _DEBUG_
             std::cout << "populating body info dialog:" << std::endl;
             std::cout << "    reading body annotations from " << bodyAnnotationName.toStdString() << std::endl;
-            std::cout << "    # body annotation keys = " << m_bodyAnnotationKeys.size() << std::endl;
+            std::cout << "    # body annotation keys = " << bodyAnnotationKeys.size() << std::endl;
             std::cout << "    # bodies read with synapses = " << thresholdData.size() << std::endl;
         #endif
 
         // build the data structure we pass along to the table
         ZJsonArray bodies;
+        ZJsonArray namedBodies;
         m_bodyNames.clear();
         m_namelessBodies.clear();
+        int capacity = 20;
+        int batchState = 0;
+//        int count = 0; //Number of bodies added to the list
         for (size_t i=0; i<thresholdData.size(); i++) {
+            --capacity;
             // if application is quitting, return = exit thread
             if (m_quitting || m_cancelLoading) {
 #ifdef _DEBUG_
@@ -644,10 +718,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
             entry.setEntry("body ID", bodyID);
 
             // body annotation info
-            if (m_bodyAnnotationKeys.contains(bodyIDstring)) {
+            if (bodyAnnotationKeys.contains(bodyIDstring)) {
                 // body annotations currently stored as another json string
                 dvidTimer.restart();
-                const QByteArray &temp = reader.readKeyValue(bodyAnnotationName, bodyIDstring);
+                const QByteArray &temp = reader.readKeyValue(
+                      bodyAnnotationName, bodyIDstring);
                 dvidTime += dvidTimer.elapsed();
                 ZJsonObject bodyData;
                 bodyData.decodeString(temp.data());
@@ -656,18 +731,20 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
                     if (strlen(ZJsonParser::stringValue(bodyData["name"])) > 0) {
                         entry.setEntry("name", bodyData["name"]);
                         // store name for later use
-                        m_bodyNames[bodyID] = QString(ZJsonParser::stringValue(bodyData["name"]));
+                        m_bodyNames[bodyID] =
+                            QString(ZJsonParser::stringValue(bodyData["name"]));
                     } else {
                         m_namelessBodies.insert(bodyID);
                     }
+                    namedBodies.append(entry);
                 } else {
                     m_namelessBodies.insert(bodyID);
                 }
 
                 if (bodyData.hasKey("status")) {
-                    if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
-                        entry.setEntry("body status", bodyData["status"]);
-                    }
+                  if (strlen(ZJsonParser::stringValue(bodyData["status"])) > 0) {
+                    entry.setEntry("body status", bodyData["status"]);
+                  }
                 }
             }
 
@@ -678,25 +755,27 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
             int npost = reader.readSynapseLabelszBody(bodyID, ZDvid::INDEX_POST_SYN);
             dvidTime += dvidTimer.elapsed();
 
-#if 0
-            std::vector<ZDvidSynapse> synapses = reader.readSynapse(bodyID, FlyEM::LOAD_NO_PARTNER);
-            dvidTime += dvidTimer.elapsed();
-            int npre = 0;
-            int npost = 0;
-            for (size_t i=0; i<synapses.size(); i++) {
-                if (synapses[i].getKind() == ZDvidSynapse::KIND_PRE_SYN) {
-                    npre++;
-                } else if (synapses[i].getKind() == ZDvidSynapse::KIND_POST_SYN) {
-                    npost++;
-                }
-            }
-#endif
             entry.setEntry("body T-bars", npre);
             entry.setEntry("body PSDs", npost);
 
             bodies.append(entry);
+
+            if (capacity < 0) {
+              emit appendingData(bodies.clone(), batchState);
+              batchState++;
+              bodies.clear();
+              capacity = 20;
+            }
+
+            /*
+            if (capacity < 0 || i == thresholdData.size() - 1) {
+              emit dataChanged(bodies.clone());
+              capacity = 20;
+            }
+            */
         }
 
+        emit appendingData(bodies, -1);
 
         fullTime = fullTimer.elapsed();
         // I left the timers active; I think we'll want them later, plus
@@ -704,9 +783,10 @@ void FlyEmBodyInfoDialog::importBodiesDvid2() {
          std::cout << "total time (ms) = " << fullTime << std::endl;
          std::cout << "DVID time (ms)  = " << dvidTime << std::endl;
 
+         emit namedBodyChanged(namedBodies);
 
         // no "loadCompleted()" here; it's emitted in updateModel(), when it's done
-        emit dataChanged(bodies);
+//        emit dataChanged(bodies);
     } else {
         // but we need to clear the loading message if we can't read from DVID
         emit loadCompleted();
@@ -720,6 +800,91 @@ void FlyEmBodyInfoDialog::onRefreshButton() {
 
 void FlyEmBodyInfoDialog::onCloseButton() {
     close();
+}
+
+void FlyEmBodyInfoDialog::appendModel(ZJsonValue data, int state)
+{
+#ifdef _DEBUG_
+  std::cout << "Batch: " << state << std::endl;
+#endif
+
+  if (state == 0) {
+    m_bodyModel->clear();
+    setBodyHeaders(m_bodyModel);
+    m_totalPre = 0;
+    m_totalPost = 0;
+  }
+
+  if (!data.isEmpty()) {
+    ZJsonArray bookmarks(data);
+    std::cout << "Count: " << bookmarks.size() << std::endl;
+    for (size_t i = 0; i < bookmarks.size(); ++i) {
+      ZJsonObject bkmk(bookmarks.value(i));
+      QList<QStandardItem*> itemList = getBodyItemList(bkmk);
+      m_bodyModel->appendRow(itemList);
+    }
+
+    if (state == 0) {
+      ui->bodyTableView->resizeColumnsToContents();
+      ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+    }
+    // currently initially sorting on # pre-synaptic sites
+//    ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
+  }
+
+  if (state == -1) {
+    ui->bodyTableView->resizeColumnsToContents();
+    ui->bodyTableView->setColumnWidth(BODY_NAME_COLUMN, 150);
+    ui->bodyTableView->sortByColumn(BODY_NPRE_COLUMN, Qt::DescendingOrder);
+    emit loadCompleted();
+  }
+}
+
+QList<QStandardItem*> FlyEmBodyInfoDialog::getBodyItemList(
+    const ZJsonObject &bkmk)
+{
+  QVector<QStandardItem*> itemArray;
+  itemArray.resize(BODY_TABLE_COLUMN_COUNT);
+
+  // carefully set data for column items so they will sort
+  //  properly (eg, IDs numerically, not lexically)
+  qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
+  QStandardItem * bodyIDItem = new QStandardItem();
+  bodyIDItem->setData(QVariant(bodyID), Qt::DisplayRole);
+  itemArray[BODY_ID_COLUMN] = bodyIDItem;
+
+  if (bkmk.hasKey("name")) {
+    const char* name = ZJsonParser::stringValue(bkmk["name"]);
+    itemArray[BODY_NAME_COLUMN] = new QStandardItem(QString(name));
+  }
+
+  if (bkmk.hasKey("body T-bars")) {
+    int nPre = ZJsonParser::integerValue(bkmk["body T-bars"]);
+    m_totalPre += nPre;
+    QStandardItem * preSynapseItem = new QStandardItem();
+    preSynapseItem->setData(QVariant(nPre), Qt::DisplayRole);
+    itemArray[BODY_NPRE_COLUMN] = preSynapseItem;
+//      m_bodyModel->setItem(i, BODY_NPRE_COLUMN, preSynapseItem);
+  }
+
+  if (bkmk.hasKey("body PSDs")) {
+    int nPost = ZJsonParser::integerValue(bkmk["body PSDs"]);
+    m_totalPost += nPost;
+    QStandardItem * postSynapseItem = new QStandardItem();
+    postSynapseItem->setData(QVariant(nPost), Qt::DisplayRole);
+    itemArray[BODY_NPOST_COLUMN] = postSynapseItem;
+//      m_bodyModel->setItem(i, BODY_NPOST_COLUMN, postSynapseItem);
+  }
+
+  // note that this routine expects "body status", not "status";
+  //  historical side-effect of the original file format we read from
+  if (bkmk.hasKey("body status")) {
+    const char* status = ZJsonParser::stringValue(bkmk["body status"]);
+    itemArray[BODY_STATUS_COLUMN] = new QStandardItem(QString(status));
+    //      m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
+  }
+
+  return itemArray.toList();
 }
 
 /*
@@ -750,6 +915,11 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
     for (size_t i = 0; i < bookmarks.size(); ++i) {
         ZJsonObject bkmk(bookmarks.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
 
+        QList<QStandardItem*> itemList = getBodyItemList(bkmk);
+        for (int j = 0; j < itemList.size(); ++j) {
+          m_bodyModel->setItem(i, j, itemList[j]);
+        }
+#if 0
         // carefully set data for column items so they will sort
         //  properly (eg, IDs numerically, not lexically)
         qulonglong bodyID = ZJsonParser::integerValue(bkmk["body ID"]);
@@ -784,6 +954,7 @@ void FlyEmBodyInfoDialog::updateModel(ZJsonValue data) {
             const char* status = ZJsonParser::stringValue(bkmk["body status"]);
             m_bodyModel->setItem(i, BODY_STATUS_COLUMN, new QStandardItem(QString(status)));
         }
+#endif
     }
     // the resize isn't reliable, so set the name column wider by hand
     ui->bodyTableView->resizeColumnsToContents();
@@ -1207,18 +1378,22 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
     // std::cout << "retrieving input/output bodies from DVID for body "<< bodyID << std::endl;
 
     // I'm leaving all the timing prints commented out for future use
-    // QElapsedTimer timer;
-    // timer.start();
+    // QElapsedTimer spottimer;
+    // QElapsedTimer totaltimer;
+    // spottimer.start();
+    // totaltimer.start();
 
     // note: this method is run in a different thread than the rest
     //  of the GUI, so we must open our own DVID reader
     ZDvidReader reader;
     reader.setVerbose(false);
 
-    // std::cout << "opening DVID reader: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+    // testing
+    // reader.setVerbose(true);
+
 
     if (reader.open(m_currentDvidTarget)) {
-        // std::cout << "reading synapses: " << timer.elapsed() / 1000.0 << "s" << std::endl;
+        // std::cout << "open DVID reader: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         std::vector<ZDvidSynapse> synapses;
         if (ui->roiComboBox->currentIndex() > 0) {
           synapses = reader.readSynapse(
@@ -1228,8 +1403,8 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
           synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
         }
 
+        // std::cout << "read synapses: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         // std::cout << "got " << synapses.size() << " synapses" << std::endl;
-        // std::cout << "getting synapse info: " << timer.elapsed() / 1000.0 << "s" << std::endl;
 
         // how many pre/post?
         int npre = 0;
@@ -1241,6 +1416,7 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
                 npost++;
             }
         }
+        // std::cout << "counted pre/post: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         // std::cout << "found " << npre << " pre and " << npost << " post sites" << std::endl;
 
         // at this point, we'll need to iterate over the list and find either
@@ -1257,7 +1433,6 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
 
         m_connectionsSites.clear();
 
-        // std::cout << "building site list: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<ZIntPoint> siteList;
         for (size_t i=0; i<synapses.size(); i++) {
 
@@ -1280,23 +1455,25 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
                 // there are other connection types we aren't handling right now; eg, convergent
             }
         }
+        // std::cout << "built site list: " << spottimer.restart() / 1000.0 << "s" << std::endl;
 
         // get the body list from DVID
-        // std::cout << "retrieving body list from DVID: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         std::vector<uint64_t> bodyList = reader.readBodyIdAt(siteList);
         if (bodyList.size() == 0) {
             emit ioNoBodiesLoaded();
             return;
         }
+        // std::cout << "got labels for " << bodyList.size() << " points" << std::endl;
+        // std::cout << "retrieved body list from DVID: " << spottimer.restart() / 1000.0 << "s" << std::endl;
 
         // copy into the map
-        // std::cout << "building qmap: " << timer.elapsed() / 1000.0 << "s" << std::endl;
         for (size_t i=0; i<siteList.size(); i++) {
             if (!m_connectionsSites.contains(bodyList[i])) {
                 m_connectionsSites[bodyList[i]] = QList<ZIntPoint>();
             } 
             m_connectionsSites[bodyList[i]].append(siteList[i]);
         }
+        // std::cout << "built qmap: " << spottimer.restart() / 1000.0 << "s" << std::endl;
 
         // name check; if we aren't loading all bodies in the top table,
         //  we may not have names available for all bodies that could
@@ -1323,11 +1500,12 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
                 }
             }
         }
+        // std::cout << "got previously unknown names: " << spottimer.restart() / 1000.0 << "s" << std::endl;
         emit ioBodiesLoaded();
     } else {
         emit ioBodyLoadFailed();
     }
-    // std::cout << "exiting retrieveIOBodiesDvid(): " << timer.elapsed() / 1000.0 << "s" << std::endl;
+    // std::cout << "exiting retrieveIOBodiesDvid(): " << totaltimer.elapsed() / 1000.0 << "s" << std::endl;
 }
 
 void FlyEmBodyInfoDialog::onIOBodiesLoaded() {

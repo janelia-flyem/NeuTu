@@ -372,7 +372,7 @@ std::vector<std::string> misc::parseHdf5Path(const string &path)
   std::vector<std::string> tokens = ZString(path).tokenize(':');
   std::vector<std::string> pathArray;
   if (tokens.size() > 0) {
-    if (ZFileType::FileType(tokens[0]) == ZFileType::HDF5_FILE) {
+    if (ZFileType::FileType(tokens[0]) == ZFileType::FILE_HDF5) {
       pathArray = tokens;
     }
   }
@@ -551,6 +551,36 @@ double misc::GetExpansionScale(size_t currentVol, size_t maxVol)
   return Cube_Root(ratio);
 }
 
+int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
+{
+  if (dsRatio <= 1) {
+    return 0;
+  }
+
+  int s = int(std::ceil(Cube_Root(dsRatio)));
+
+  if (powed) {
+    int k, m;
+    pow2decomp(s, &k, &m);
+    s = iround(std::pow((double) 2, k + 1));
+  }
+
+  s -= 1;
+
+  return s;
+}
+
+int misc::getIsoDsIntvFor3DVolume(const ZIntCuboid &box, size_t maxVolume, bool powed)
+{
+  if (box.getVolume() <= maxVolume) {
+    return 0;
+  }
+
+  double dsRatio = (double) box.getVolume() / maxVolume;
+
+  return getIsoDsIntvFor3DVolume(dsRatio, powed);
+}
+
 ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
 {
   ZIntPoint dsIntv;
@@ -591,6 +621,31 @@ ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
   }
 
   return curve;
+}
+
+ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)
+{
+  ZCuboid result;
+
+  result.setFirstCorner(box1.firstCorner().x() - box2.getFirstCorner().getX(),
+                        box1.firstCorner().y() - box2.getFirstCorner().getY(),
+                        box1.firstCorner().z() - box2.getFirstCorner().getZ());
+
+  result.setSize(box2.getWidth(), box2.getHeight(), box2.getDepth());
+
+  return result;
+}
+
+ZCuboid misc::Intersect(const ZCuboid &box1, const ZIntCuboid &box2)
+{
+  ZCuboid result = box1;
+
+  result.setFirstCorner(box2.getFirstCorner().toPoint());
+  result.setLastCorner(box2.getLastCorner().toPoint());
+
+  result.intersect(box1);
+
+  return result;
 }
 
 double misc::SampleStack(

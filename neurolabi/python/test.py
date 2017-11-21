@@ -53,7 +53,7 @@ neuron = server.retrieveNeuron(9889)
 analyzer = neutube.CreateZFlyEmQualityAnalyzer()
 
 pointArray = analyzer.computeHotSpot(neuron)
-print pointArray.toJsonString()
+print(pointArray.toJsonString())
 
 # neuron.releaseBody()
 # neuron.releaseModel()

@@ -6,25 +6,52 @@ INCLUDEPATH += $${NEUROLABI_DIR}/gui \
     $${NEUROLABI_DIR}/c/include \
     $${EXTLIB_DIR}/genelib/src $${NEUROLABI_DIR}/gui/ext
 
+contains(TEMPLATE, app) {
+exists($$DVIDCPP_PATH) {
+    DEFINES += _ENABLE_LIBDVIDCPP_
+    INCLUDEPATH += $$DVIDCPP_PATH/include
+    LIBS += -L$$DVIDCPP_PATH/lib
+    DEFINES += _LIBDVIDCPP_OLD_
+} else:exists($${BUILDEM_DIR}) {
+    INCLUDEPATH +=  $${BUILDEM_DIR}/include
+    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
+    DEFINES += _ENABLE_LIBDVIDCPP_
+} else:exists($${CONDA_ENV}) {
+    INCLUDEPATH += $${CONDA_ENV}/include
+    LIBS += -L$${CONDA_ENV}/lib
+    unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
+    DEFINES += _ENABLE_LIBDVIDCPP_
 
-unix {
-#neurolabi
-LIBS += -L$${NEUROLABI_DIR}/c/lib
-CONFIG(debug, debug|release) {
-    contains(CONFIG, sanitize) {
-      LIBS += -lneurolabi_sanitize
-    } else {
-      LIBS += -lneurolabi_debug
-    }
-} else {
-    #DEFINES += _ADVANCED_
-    LIBS += -lneurolabi
+#    LIBS += $${CONDA_ENV}/lib/libhdf5.la $${CONDA_ENV}/lib/libhdf5_hl.la
+#    DEFINES += _ENABLE_HDF5_
 }
 
-    INCLUDEPATH += $${EXTLIB_DIR}/xml/include/libxml2 \
-        $${EXTLIB_DIR}/fftw3/include \
+exists($${CONDA_ENV}) {
+#  LIBXML_DIR = $${CONDA_ENV}
+  LIBJANSSON_DIR = $${CONDA_ENV}
+  LIBFFTW_DIR = $${CONDA_ENV}
+} else {
+#  LIBXML_DIR = $${EXTLIB_DIR}/xml
+  LIBJANSSON_DIR = $${EXTLIB_DIR}/jansson
+  LIBFFTW_DIR = $${EXTLIB_DIR}/fftw3
+}
+
+unix {
+  #neurolabi
+  LIBS += -L$${NEUROLABI_DIR}/c/lib
+  CONFIG(debug, debug|release) {
+      contains(CONFIG, sanitize) {
+        LIBS += -lneurolabi_sanitize
+      } else {
+        LIBS += -lneurolabi_debug
+      }
+  } else {
+      LIBS += -lneurolabi
+  }
+
+  INCLUDEPATH += $${LIBFFTW_DIR}/include \
 #        $${EXTLIB_DIR}/png/include \
-        $${EXTLIB_DIR}/jansson/include
+        $${LIBJANSSON_DIR}/include
 }
 
 win32 {
@@ -56,19 +83,19 @@ CONFIG(debug, debug|release) {
 
 #Self-contained libraries
 unix {
-    LIBS += -L$${EXTLIB_DIR}/xml/lib -L$${EXTLIB_DIR}/fftw3/lib \
-        -L$${EXTLIB_DIR}/jansson/lib \
+    LIBS += -L$${LIBFFTW_DIR}/lib \
+        -L$${LIBJANSSON_DIR}/lib \
         -lfftw3 \
         -lfftw3f \
-        -lxml2 \
         -ljansson
 }
 
-exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
-    DEFINES += _ENABLE_HDF5_
-    INCLUDEPATH += $${EXTLIB_DIR}/hdf5/include
-    LIBS += -L$${EXTLIB_DIR}/hdf5/lib -lhdf5 -lhdf5_hl
-}
+#exists($${EXTLIB_DIR}/hdf5/lib/libhdf5.a) {
+#    message("hdf5 enabled")
+#    DEFINES += _ENABLE_HDF5_
+#    INCLUDEPATH += $${EXTLIB_DIR}/hdf5/include
+##    LIBS += -L$${EXTLIB_DIR}/hdf5/lib -lhdf5 -lhdf5_hl
+#}
 
 #System libraries
 unix {
@@ -84,23 +111,6 @@ CONFIG(debug, debug|release) {
         INCLUDEPATH += $${EXTLIB_DIR}/opencv/include $${EXTLIB_DIR}/opencv/include/opencv
         LIBS += -L$${EXTLIB_DIR}/opencv/lib -lopencv_core -lopencv_ml
     }
-}
-
-contains(TEMPLATE, app) {
-exists($$DVIDCPP_PATH) {
-    DEFINES += _ENABLE_LIBDVIDCPP_
-    INCLUDEPATH += $$DVIDCPP_PATH/include
-    LIBS += -L$$DVIDCPP_PATH/lib
-    DEFINES += _LIBDVIDCPP_OLD_
-} else:exists($${BUILDEM_DIR}) {
-    INCLUDEPATH +=  $${BUILDEM_DIR}/include
-    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64
-    DEFINES += _ENABLE_LIBDVIDCPP_
-} else:exists($${CONDA_ENV}) {
-    INCLUDEPATH +=  $${CONDA_ENV}/include
-    LIBS += -L$${CONDA_ENV}/lib
-    unix: QMAKE_RPATHDIR *= $${CONDA_ENV}/lib
-    DEFINES += _ENABLE_LIBDVIDCPP_
 }
 
 message("rpath")
@@ -125,16 +135,35 @@ contains(DEFINES, _ENABLE_LIBDVIDCPP_) {
 }
 }
 
+contains(DEFINES, _ENABLE_SURFRECON_) {
+  LIBS+=-lCGAL -lCGAL_Core -lgmp
+
+  #-lsurfrecon
+#  QMAKE_CXXFLAGS+=-fext-numeric-literals
+}
+
+#
+exists($${CONDA_ENV}) {
+  VTK_VER = 7.1
+  INCLUDEPATH += $${CONDA_ENV}/include $${CONDA_ENV}/include/draco/src
+  LIBS += -L$${CONDA_ENV}/lib -lglbinding -lassimp -ldracoenc -ldracodec -ldraco
+  INCLUDEPATH += $${CONDA_ENV}/include/vtk-$${VTK_VER}
+  LIBS += -lvtkFiltersGeometry-$${VTK_VER} -lvtkCommonCore-$${VTK_VER} -lvtksys-$${VTK_VER} -lvtkCommonDataModel-$${VTK_VER} -lvtkCommonMath-$${VTK_VER} -lvtkCommonMisc-$${VTK_VER} -lvtkCommonSystem-$${VTK_VER} -lvtkCommonTransforms-$${VTK_VER} -lvtkCommonExecutionModel-$${VTK_VER} -lvtkFiltersCore-$${VTK_VER} -lvtkFiltersSources-$${VTK_VER} -lvtkCommonComputationalGeometry-$${VTK_VER} -lvtkFiltersGeneral-$${VTK_VER}
+} else {
+# todo: add vtk or just use conda?
+  INCLUDEPATH += $$PWD/ext/glbinding/include $$PWD/ext/assimp/include $$PWD/ext/draco/include/draco/src
+  LIBS += -L$$PWD/ext/glbinding/lib -lglbinding -L$$PWD/ext/assimp/lib -lassimp -L$$PWD/ext/draco/lib -ldracoenc -ldracodec -ldraco
+}
+win32 {
+  LIBS += -lopengl32 -lglu32
+}
+macx {
+  LIBS += -framework AGL -framework OpenGL
+}
+#unix:!macx {
+#  LIBS += -lGL -lGLU
+#}
+
 
 message($$DEFINES)
 message($$LIBS)
-
-#BUILDEM_DIR = /opt/Downloads/buildem
-#exists($${BUILDEM_DIR}/lib/libdvidcpp2.a) {
-#    DEFINES += _ENABLE_LIBDVID_
-#    INCLUDEPATH +=  $${BUILDEM_DIR}/include $${BUILDEM_DIR}/include/libdvid
-#    LIBS += -L$${BUILDEM_DIR}/lib -L$${BUILDEM_DIR}/lib64 -ldvidcpp \
-#        -ljsoncpp -lcppnetlib-uri \
-#        -lcppnetlib-client-connections -lcppnetlib-server-parsers  \
-#        -lboost_system -lboost_thread -lssl -lcrypto
-#}

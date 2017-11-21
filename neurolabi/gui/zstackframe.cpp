@@ -11,21 +11,15 @@
 #include "widgets/zimagewidget.h"
 #include "dialogs/settingdialog.h"
 #include "zlocsegchain.h"
-#include "tz_xml_utils.h"
+//#include "tz_xml_utils.h"
 #include "tz_string.h"
 #include "ztraceproject.h"
 #include "zstack.hxx"
 #include "zcurve.h"
-#include "z3dapplication.h"
 #include "z3dwindow.h"
 #include "zstackfile.h"
 #include "zdoublevector.h"
 #include "zfiletype.h"
-#ifdef _QT5_
-#include <QtWidgets>
-#else
-#include <QtGui>
-#endif
 #include "zobjsmanagerwidget.h"
 #include "neutubeconfig.h"
 #include "zstackviewlocator.h"
@@ -54,6 +48,9 @@
 #include "dvid/zdvidgrayslice.h"
 #endif
 
+#include <QMdiArea>
+#include <QMessageBox>
+#include <QMimeData>
 
 using namespace std;
 
@@ -309,15 +306,15 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   }
 
   connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateChannelControl()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateThresholdSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(updateSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_presenter, SLOT(updateStackBc()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(redraw()));
   connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
@@ -408,15 +405,15 @@ void ZStackFrame::updateDocument()
 {
   updateSignalSlot(connectFunc);
 
-  m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
-                              xResolution(), yResolution(), zResolution());
-  m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
-                                       zResolution(), unit(),
-                                       reconstructDistThre(),
-                                       reconstructSpTest(),
-                                       crossoverTest());
-
   if (m_doc->hasStackData()) {
+    m_doc->updateTraceWorkspace(traceEffort(), traceMasked(),
+                                xResolution(), yResolution(), zResolution());
+    m_doc->updateConnectionTestWorkspace(xResolution(), yResolution(),
+                                         zResolution(), unit(),
+                                         reconstructDistThre(),
+                                         reconstructSpTest(),
+                                         crossoverTest());
+
     if (m_presenter != NULL && (m_doc->getStack()->kind() != GREY)) {
       m_presenter->optimizeStackBc();
     }
@@ -542,7 +539,7 @@ int ZStackFrame::readStack(const char *filePath)
   Q_ASSERT(m_doc.get() != NULL);
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::SWC_FILE:
+  case ZFileType::FILE_SWC:
     m_doc->readSwc(filePath);
     if (!m_doc->hasSwc()) {
       return ERROR_IO_READ;
@@ -553,15 +550,15 @@ int ZStackFrame::readStack(const char *filePath)
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::V3D_APO_FILE:
-  case ZFileType::V3D_MARKER_FILE:
+  case ZFileType::FILE_V3D_APO:
+  case ZFileType::FILE_V3D_MARKER:
     m_doc->importPuncta(filePath);
 #ifdef _DEBUG_
     cout << "emit stackLoaded()" << endl;
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::LOCSEG_CHAIN_FILE: {
+  case ZFileType::FILE_LOCSEG_CHAIN: {
     QStringList files;
     files.push_back(filePath);
     m_doc->importLocsegChain(files);
@@ -571,14 +568,14 @@ int ZStackFrame::readStack(const char *filePath)
     emit stackLoaded();
     break;
   }
-  case ZFileType::SWC_NETWORK_FILE:
+  case ZFileType::FILE_SWC_NETWORK:
     m_doc->loadSwcNetwork(filePath);
 #ifdef _DEBUG_
     cout << "emit stackLoaded()" << endl;
 #endif
     emit stackLoaded();
     break;
-  case ZFileType::JSON_FILE:
+  case ZFileType::FILE_JSON:
     if (!m_doc->importSynapseAnnotation(filePath, 0)) {
       return ERROR_IO_READ;
     }
@@ -958,13 +955,18 @@ void ZStackFrame::changeWindowTitle(bool clean)
   }
 }
 
-void ZStackFrame::keyPressEvent(QKeyEvent *event)
+void ZStackFrame::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
     if (!m_presenter->processKeyPressEvent(event)) {
       emit keyEventEmitted(event);
     }
   }
+}
+
+void ZStackFrame::keyPressEvent(QKeyEvent *event)
+{
+  processKeyEvent(event);
 }
 
 void ZStackFrame::updateInfo()
@@ -1238,9 +1240,11 @@ void ZStackFrame::saveStack(const QString &filePath)
     QList<ZSparseObject*> objList = document()->getSparseObjectList();
     ZObject3dScanArray objArray;
     foreach (ZSparseObject *obj, objList) {
-      objArray.push_back(*dynamic_cast<ZObject3dScan*>(obj));
+      objArray.append(dynamic_cast<ZObject3dScan*>(obj));
     }
     ZStack *stack = objArray.toStackObject();
+    objArray.shallowClear();
+
     if (stack != NULL) {
       stack->save(filePath.toStdString().c_str());
       delete stack;
@@ -1527,7 +1531,7 @@ void ZStackFrame::importSeedMask(const QString &filePath)
 void ZStackFrame::importMask(const QString &filePath)
 {
   ZStack *stack = NULL;
-  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::PNG_FILE) {
+  if (ZFileType::FileType(filePath.toStdString()) == ZFileType::FILE_PNG) {
     QImage image;
     image.load(filePath);
     stack = new ZStack(GREY, image.width(), image.height(), 1, 1);

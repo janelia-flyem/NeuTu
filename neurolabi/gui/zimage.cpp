@@ -27,9 +27,10 @@ ZImage::ZImage(const ZImage &image) : QImage(image)
 {
   m_transform = image.m_transform;
   m_usingContrastProtocal = image.m_usingContrastProtocal;
-  m_nonlinear = image.m_nonlinear;
-  m_grayScale = image.m_grayScale;
-  m_grayOffset = image.m_grayOffset;
+  m_contrastProtocol = image.m_contrastProtocol;
+//  m_nonlinear = image.m_nonlinear;
+//  m_grayScale = image.m_grayScale;
+//  m_grayOffset = image.m_grayOffset;
   m_z = image.m_z;
 }
 
@@ -54,17 +55,23 @@ void ZImage::init()
 
 void ZImage::setDefaultContrastProtocal()
 {
-  m_nonlinear = true;
-  m_grayOffset = 0.0;
-  m_grayScale = 1.5;
+  m_contrastProtocol.setDefaultNonLinear();
+//  m_nonlinear = true;
+//  m_grayOffset = 0.0;
+//  m_grayScale = 1.5;
 }
 
+/*
 void ZImage::setContrastProtocol(double scale, double offset, bool nonlinear)
 {
-  m_grayOffset = offset;
-  m_grayScale = scale;
-  m_nonlinear = nonlinear;
+  m_contrastProtocol.setOffset(offset);
+  m_contrastProtocol.setScale(scale);
+  m_contrastProtocol.setNonlinear(nonlinear);
+//  m_grayOffset = offset;
+//  m_grayScale = scale;
+//  m_nonlinear = nonlinear;
 }
+*/
 
 void ZImage::setVisible(bool visible)
 {
@@ -74,6 +81,15 @@ void ZImage::setVisible(bool visible)
 bool ZImage::isVisible() const
 {
   return m_visible;
+}
+
+bool ZImage::isIndexed8() const
+{
+#ifdef _QT5_
+  return format() == Format_Indexed8 || format() == Format_Grayscale8;
+#else
+  return format() == Format_Indexed8;
+#endif
 }
 
 void ZImage::clear()
@@ -117,6 +133,8 @@ void ZImage::adjustColorTable(double scale, double offset, int threshold)
 {
   if (scale !=  1.0 || offset != 0.0 || m_usingContrastProtocal) {
     for (int i = 0; i <= 255; ++i) {
+      int iv = m_contrastProtocol.mapGrey(i);
+#if 0
       double v = i * scale + offset;
       if (m_usingContrastProtocal) {
         if (m_grayOffset != 0.0 || m_grayScale != 1.0) {
@@ -135,7 +153,7 @@ void ZImage::adjustColorTable(double scale, double offset, int threshold)
       } else if (iv > 255) {
         iv = 255;
       }
-
+#endif
       setColor(i, qRgb(iv, iv, iv));
     }
   } else {
@@ -340,7 +358,7 @@ void ZImage::setData(
   case NeuTube::Z_AXIS:
   {
     data += (size_t) area * slice;
-    if (format() == Format_Indexed8) {
+    if (isIndexed8()) {
       setDataIndexed8(data);
     } else if (isArgb32()) {
       setDataRgba(data);
@@ -1163,17 +1181,46 @@ void ZImage::setData(const ZStack *stack, int z, bool ignoringZero,
     }
   }
 }
-
+/*
 void ZImage::setHighContrastProtocal(
     double grayOffset, double grayScale, bool nonlinear)
 {
-  m_nonlinear = nonlinear;
-  m_grayOffset = grayOffset;
-  m_grayScale = grayScale;
+  m_contrastProtocol.setOffset(grayOffset);
+  m_contrastProtocol.setScale(grayScale);
+  m_contrastProtocol.setNonlinear(nonlinear);
+//  m_nonlinear = nonlinear;
+//  m_grayOffset = grayOffset;
+//  m_grayScale = grayScale;
+}
+*/
+void ZImage::setContrastProtocol(const ZContrastProtocol &cp)
+{
+  m_contrastProtocol = cp;
+}
+
+void ZImage::updateContrast(const ZContrastProtocol &cp)
+{
+  setContrastProtocol(cp);
+  enhanceContrast(m_usingContrastProtocal);
+}
+
+void ZImage::updateContrast(const ZJsonObject &cpObj)
+{
+  ZContrastProtocol cp;
+  cp.load(cpObj);
+  updateContrast(cp);
+}
+
+void ZImage::updateContrast(bool usingContrast)
+{
+  m_usingContrastProtocal = usingContrast;
+  enhanceContrast(m_usingContrastProtocal);
 }
 
 void ZImage::loadHighContrastProtocal(const ZJsonObject &obj)
 {
+  m_contrastProtocol.load(obj);
+#if 0
   if (obj.hasKey("nonlinear")) {
     m_nonlinear = ZJsonParser::booleanValue(obj["nonlinear"]);
   }
@@ -1185,54 +1232,79 @@ void ZImage::loadHighContrastProtocal(const ZJsonObject &obj)
   if (obj.hasKey("scale")) {
     m_grayScale = ZJsonParser::numberValue(obj["scale"]);
   }
+#endif
 }
 
 void ZImage::enhanceContrast(bool highContrast)
 {
   if (format() != ZImage::Format_Indexed8) {
-    int i, j;
-    if (this->depth() == 32) {
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < width(); i++) {
-          if (line[0] <= 213) {
-            line[0] += line[0] / 5;
-          } else {
-            line[0] = 255;
-          }
-          if (line[1] <= 213) {
-            line[1] += line[1] / 5;
-          } else {
-            line[1] = 255;
-          }
-          if (line[2] <= 213) {
-            line[2] += line[2] / 5;
-          } else {
-            line[2] = 255;
-          }
 
-          line += 4;
+    if (this->depth() == 32) {
+      if (highContrast) {
+        for (int j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (int i = 0; i < width(); i++) {
+            if (line[0] <= 213) {
+              line[0] += line[0] / 5;
+            } else {
+              line[0] = 255;
+            }
+            if (line[1] <= 213) {
+              line[1] += line[1] / 5;
+            } else {
+              line[1] = 255;
+            }
+            if (line[2] <= 213) {
+              line[2] += line[2] / 5;
+            } else {
+              line[2] = 255;
+            }
+
+            line += 4;
+          }
         }
       }
     } else if (this->depth() == 8) {
-      for (j = 0; j < height(); j++) {
-        uchar *line = scanLine(j);
-        for (i = 0; i < width(); i++) {
-          if (line[0] <= 213) {
-            line[0] += line[0] / 5;
-          } else {
-            line[0] = 255;
+      if (highContrast) {
+        uchar colorTable[256];
+//        double s = m_grayScale;
+        for (int i = 0; i < 256; ++i) {
+          int v = m_contrastProtocol.mapGrey(i);
+#if 0
+          double v = (i + m_grayOffset) * s;
+
+          if (m_nonlinear) {
+            if (v < 0.0) {
+              v = 0.0;
+            } else {
+              v = sqrt(v / 255.0) * i;
+            }
           }
 
-          line++;
+          if (v < 0.0) {
+            v = 0.0;
+          } else if (v > 255.0) {
+            v = 255.0;
+          }
+#endif
+          colorTable[i] = iround(v);
+        }
+
+        for (int j = 0; j < height(); j++) {
+          uchar *line = scanLine(j);
+          for (int i = 0; i < width(); i++) {
+            line[0] = colorTable[line[0]];
+            line++;
+          }
         }
       }
     }
   } else {
     if (highContrast) {
-      double s = m_grayScale / 255.0;
-      for (int i = 0; i < 255; ++i) {
+//      double s = m_grayScale / 255.0;
+      for (int i = 0; i < 256; ++i) {
         QColor color;
+#if 0
         double v = (i + m_grayOffset) * s;
         if (m_nonlinear) {
           v = sqrt(v) * i / 255.0;
@@ -1245,10 +1317,12 @@ void ZImage::enhanceContrast(bool highContrast)
         } else if (v > 1.0) {
           v = 1.0;
         }
+#endif
+        int v = m_contrastProtocol.mapGrey(i);
 
-        color.setRedF(v);
-        color.setGreenF(v);
-        color.setBlueF(v);
+        color.setRed(v);
+        color.setGreen(v);
+        color.setBlue(v);
         setColor(i, color.rgb());
       }
     } else {
@@ -1843,7 +1917,7 @@ bool ZImage::writeImage(const QImage &image, const QString &filename)
   if (!writer.write(image)) {
     writer.setCompression(0);
     if (!writer.write(image)) {
-      if (ZFileType::FileType(filename.toStdString()) == ZFileType::TIFF_FILE) {
+      if (ZFileType::FileType(filename.toStdString()) == ZFileType::FILE_TIFF) {
         Stack *stack = C_Stack::make(COLOR, image.width(), image.height(), 1);
         color_t *arrayc = (color_t*) stack->array;
         size_t index = 0;

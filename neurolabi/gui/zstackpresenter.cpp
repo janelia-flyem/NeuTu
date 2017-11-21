@@ -1,6 +1,4 @@
-#include "z3dgl.h"
 #ifdef _QT5_
-#include <QtWidgets>
 #include <QtConcurrent>
 #else
 #include <QtConcurrentRun>
@@ -35,6 +33,7 @@
 #include "zstackfactory.h"
 #include "zstackdocselector.h"
 #include "zglobal.h"
+#include "zstackdockeyprocessor.h"
 
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
@@ -237,6 +236,7 @@ QAction* ZStackPresenter::getAction(ZActionFactory::EAction item) const
 
   return action;
 }
+
 bool ZStackPresenter::connectAction(
     QAction *action, ZActionFactory::EAction item)
 {
@@ -1256,6 +1256,8 @@ int ZStackPresenter::getSliceIndex() const {
 
 void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 {
+//  interactiveContext().setUniqueMode(ZInteractiveContext::INTERACT_FREE);
+
 #ifdef _DEBUG_
   std::cout << event->button() << " released: " << event->buttons() << std::endl;
 #endif
@@ -1294,9 +1296,15 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
   }
 }
 
+void ZStackPresenter::moveCrossHairToMouse(int mouseX, int mouseY)
+{
+  emit movingCrossHairTo(mouseX, mouseY);
+}
+
 void ZStackPresenter::moveImageToMouse(
     double srcX, double srcY, int mouseX, int mouseY)
 {
+#if 0
 //  QPointF targetPosition =
 //      buddyView()->imageWidget()->canvasCoordinate(QPoint(mouseX, mouseY));
 
@@ -1318,6 +1326,9 @@ void ZStackPresenter::moveImageToMouse(
 //  QPointF newOffset = oldViewportOffset + targetPosition - QPointF(srcX, srcY);
 
   moveViewPortTo(iround(x), iround(y));
+#endif
+
+  buddyView()->move(QPoint(iround(srcX), iround(srcY)), QPointF(mouseX, mouseY));
 
   /*
   int x, y;
@@ -1335,7 +1346,7 @@ void ZStackPresenter::moveImageToMouse(
 
 void ZStackPresenter::moveViewPort(int dx, int dy)
 {
-  buddyView()->imageWidget()->moveViewPort(dx, dy);
+  buddyView()->moveViewPort(dx, dy);
   buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
 
@@ -1443,6 +1454,13 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
   }
 
   ZStackOperator op = m_mouseEventProcessor.getOperator();
+
+  if (op.getHitObject() != NULL) {
+    if (op.getHitObject()->getType() == ZStackObject::TYPE_CROSS_HAIR) {
+      op.setOperation(ZStackOperator::OP_CROSSHAIR_GRAB);
+    }
+  }
+
   process(op);
 
   m_interactiveContext.setExitingEdit(false);
@@ -1850,6 +1868,9 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
         buddyDocument()->getAction(ZActionFactory::ACTION_UNDO)->trigger();
 //        buddyDocument()->undoStack()->undo();
         processed = true;
+      } else if (event->modifiers() == Qt::ShiftModifier) {
+        buddyView()->maximizeViewPort();
+        processed = true;
       }
     }
     break;
@@ -1867,7 +1888,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
 
 bool ZStackPresenter::processKeyPressEvent(QKeyEvent *event)
 {
-  bool processed = true;
+  bool processed = buddyDocument()->getKeyProcessor()->processKeyEvent(event);
 
   if (processKeyPressEventForActiveStroke(event)) {
     return processed;
@@ -2653,6 +2674,9 @@ void ZStackPresenter::updateCursor()
              interactiveContext().todoEditMode() ==
              ZInteractiveContext::TODO_ADD_ITEM){
     buddyView()->setScreenCursor(Qt::PointingHandCursor);
+  } else if (interactiveContext().getUniqueMode()
+             == ZInteractiveContext::INTERACT_MOVE_CROSSHAIR) {
+    buddyView()->setScreenCursor(Qt::ClosedHandCursor);
   } else {
     buddyView()->setScreenCursor(Qt::CrossCursor);
   }
@@ -2729,7 +2753,7 @@ void ZStackPresenter::notifyBodyAnnotationTriggered()
 
 void ZStackPresenter::notifyBodyCheckinTriggered()
 {
-  emit bodyCheckinTriggered();
+  emit bodyCheckinTriggered(FlyEM::BODY_SPLIT_NONE);
 }
 
 void ZStackPresenter::notifyBodyForceCheckinTriggered()
@@ -2739,7 +2763,7 @@ void ZStackPresenter::notifyBodyForceCheckinTriggered()
 
 void ZStackPresenter::notifyBodyCheckoutTriggered()
 {
-  emit bodyCheckoutTriggered();
+  emit bodyCheckoutTriggered(FlyEM::BODY_SPLIT_NONE);
 }
 
 void ZStackPresenter::selectDownstreamNode()
@@ -2880,8 +2904,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
 
   ZInteractionEvent interactionEvent;
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  QPoint currentWidgetPos(event.getPosition().getX(),
-             event.getPosition().getY());
+  ZIntPoint widgetPos = event.getPosition();
+  QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
   ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(NeuTube::COORD_RAW_STACK);
 
@@ -3147,9 +3171,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_RESTORE_EXPLORE_MODE:
     this->interactiveContext().restoreExploreMode();
     buddyView()->processViewChange(false, false);
-//    buddyView()->notifyViewChanged();
     buddyView()->redraw();
-//    buddyView()->notifyViewPortChanged();
     break;
   case ZStackOperator::OP_SHOW_CONTEXT_MENU:
     buddyView()->showContextMenu(getContextMenu(), currentWidgetPos);
@@ -3384,9 +3406,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     ZPoint offset = op.getMouseEventRecorder()->
         getPositionOffset(NeuTube::COORD_STACK);
 
-    buddyDocument()->executeMoveObjectCommand(offset.x(), offset.y(),
-                                              0,
-                                              1,1,1,1,1,1);
+    buddyDocument()->executeMoveObjectCommand(offset.x(), offset.y(), 0, glm::mat4(1.f), glm::mat4(1.f));
   }
     break;
   case ZStackOperator::OP_MOVE_IMAGE:
@@ -3402,6 +3422,17 @@ bool ZStackPresenter::process(ZStackOperator &op)
           grabPosition.x(), grabPosition.y(),
           currentWidgetPos.x(), currentWidgetPos.y());
   }
+    break;
+  case ZStackOperator::OP_CROSSHAIR_MOVE:
+    moveCrossHairToMouse(currentWidgetPos.x(), currentWidgetPos.y());
+    break;
+  case ZStackOperator::OP_CROSSHAIR_GRAB:
+    m_interactiveContext.setUniqueMode(ZInteractiveContext::INTERACT_MOVE_CROSSHAIR);
+    updateCursor();
+    break;
+  case ZStackOperator::OP_CROSSHAIR_RELEASE:
+    m_interactiveContext.setUniqueMode(ZInteractiveContext::INTERACT_FREE);
+    updateCursor();
     break;
   case ZStackOperator::OP_ZOOM_IN:
     increaseZoomRatio();
@@ -3428,17 +3459,16 @@ bool ZStackPresenter::process(ZStackOperator &op)
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::RightButton, ZMouseEvent::ACTION_PRESS,
           NeuTube::COORD_WIDGET);
-    m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE);
-//    buddyView()->blockViewChangeEvent(true);
+    m_interactiveContext.setExploreMode(
+          ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE);
     decreaseZoomRatio(grabPosition.x(), grabPosition.y());
-//    buddyView()->blockViewChangeEvent(false);
   }
     break;
   case ZStackOperator::OP_EXIT_ZOOM_MODE:
     m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_OFF);
+    buddyView()->restoreFromBadView();
     buddyView()->processViewChange(true, false);
-    buddyView()->imageWidget()->update();
-//    buddyView()->notifyViewChanged();
+    buddyView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
     break;
   case ZStackOperator::OP_PAINT_STROKE:
   {
@@ -3528,8 +3558,10 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
     buddyView()->setInfo(
           buddyDocument()->rawDataInfo(
-            currentRawStackPos.x(), currentRawStackPos.y(),
-            currentRawStackPos.z()));
+            currentRawStackPos.getX(),
+            currentRawStackPos.getY(),
+            currentRawStackPos.getZ(),
+            buddyView()->getSliceAxis()));
 
     if (m_interactiveContext.synapseEditMode() ==
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {

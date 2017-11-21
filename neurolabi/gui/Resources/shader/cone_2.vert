@@ -4,18 +4,19 @@
 in vec4 attr_origin;    // base location + base radius
 in vec4 attr_axis;      // axis (= top - base) + top radius
 in float attr_flags;
-in vec4 attr_colors;
-in vec4 attr_colors2;
+in vec4 attr_color;
+in vec4 attr_color2;
 #else
 attribute vec4 attr_origin;    // base location + base radius
 attribute vec4 attr_axis;      // axis (= top - base) + top radius
 attribute float attr_flags;
-attribute vec4 attr_colors;
-attribute vec4 attr_colors2;
+attribute vec4 attr_color;
+attribute vec4 attr_color2;
 #endif
 
 uniform float size_scale = 1.0;
-uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
+//uniform vec3 pos_scale = vec3(1.0, 1.0, 1.0);
+uniform mat4 pos_transform = mat4(1.0);
 uniform mat4 view_matrix;
 uniform mat4 projection_view_matrix;
 uniform mat4 projection_matrix_inverse;
@@ -61,8 +62,8 @@ void main(void)
   bradius = size_scale * attr_origin.w;
   tradius = size_scale * attr_axis.w;
 
-  color1 = attr_colors;
-  color2 = attr_colors2;
+  color1 = attr_color;
+  color2 = attr_color2;
 
   vec2 flags = mod(floor(vec2(attr_flags/16.0, attr_flags)), 16.0);
   // either 0 or 1, 0 -> left, 1 -> right
@@ -70,8 +71,11 @@ void main(void)
   // either 0 or 1, 0 -> down, 1 -> up
   float upFlag = flags.y;
 
-  vec3 scaledAxis = attr_axis.xyz * pos_scale;
-  vec3 scaledOrigin = attr_origin.xyz * pos_scale;
+  //vec3 scaledAxis = attr_axis.xyz * pos_scale;
+  //vec3 scaledOrigin = attr_origin.xyz * pos_scale;
+  vec3 scaledOrigin = (pos_transform * vec4(attr_origin.xyz, 1.0)).xyz;
+  vec3 scaledTop = (pos_transform * vec4(attr_origin.xyz + attr_axis.xyz, 1.0)).xyz;
+  vec3 scaledAxis = scaledTop - scaledOrigin;
 
   height = length(scaledAxis);
   inv_sqr_height = height * height;

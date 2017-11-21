@@ -3,10 +3,11 @@
 // Copyright (c) 2007-2015 Barend Gehrels, Amsterdam, the Netherlands.
 // Copyright (c) 2013-2015 Adam Wulkiewicz, Lodz, Poland
 
-// This file was modified by Oracle on 2015.
-// Modifications copyright (c) 2015, Oracle and/or its affiliates.
+// This file was modified by Oracle on 2015, 2017.
+// Modifications copyright (c) 2015-2017, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -23,10 +24,10 @@
 #include <boost/mpl/assert.hpp>
 
 
+#include <boost/geometry/algorithms/detail/overlay/cluster_info.hpp>
 #include <boost/geometry/algorithms/detail/overlay/enrich_intersection_points.hpp>
 #include <boost/geometry/algorithms/detail/overlay/enrichment_info.hpp>
 #include <boost/geometry/algorithms/detail/overlay/get_turns.hpp>
-#include <boost/geometry/algorithms/detail/overlay/handle_touch.hpp>
 #include <boost/geometry/algorithms/detail/overlay/overlay_type.hpp>
 #include <boost/geometry/algorithms/detail/overlay/traverse.hpp>
 #include <boost/geometry/algorithms/detail/overlay/traversal_info.hpp>
@@ -184,7 +185,7 @@ struct overlay
                 Geometry1 const& geometry1, Geometry2 const& geometry2,
                 RobustPolicy const& robust_policy,
                 OutputIterator out,
-                Strategy const& ,
+                Strategy const& strategy,
                 Visitor& visitor)
     {
         bool const is_empty1 = geometry::is_empty(geometry1);
@@ -220,10 +221,8 @@ struct overlay
         typedef std::map
             <
                 signed_size_type,
-                std::set<signed_size_type>
+                cluster_info
             > cluster_type;
-
-        cluster_type clusters;
 
         turn_container_type turns;
 
@@ -235,41 +234,24 @@ std::cout << "get turns" << std::endl;
             <
                 Reverse1, Reverse2,
                 detail::overlay::assign_null_policy
-            >(geometry1, geometry2, robust_policy, turns, policy);
+            >(geometry1, geometry2, strategy, robust_policy, turns, policy);
 
         visitor.visit_turns(1, turns);
-
-        static const operation_type op_type
-                = OverlayType == overlay_union
-                  ? geometry::detail::overlay::operation_union
-                  : geometry::detail::overlay::operation_intersection;
 
 #ifdef BOOST_GEOMETRY_DEBUG_ASSEMBLE
 std::cout << "enrich" << std::endl;
 #endif
         typename Strategy::side_strategy_type side_strategy;
+        cluster_type clusters;
+
         geometry::enrich_intersection_points<Reverse1, Reverse2, OverlayType>(turns,
-                clusters, op_type,
-                    geometry1, geometry2,
+                clusters, geometry1, geometry2,
                     robust_policy,
                     side_strategy);
 
         visitor.visit_turns(2, turns);
 
         visitor.visit_clusters(clusters, turns);
-
-
-#if 0
-        // TODO: does not work always correctly, move to traverse and fix
-        if (op_type == geometry::detail::overlay::operation_union)
-        {
-            #ifdef BOOST_GEOMETRY_DEBUG_ASSEMBLE
-            std::cout << "handle_touch" << std::endl;
-            #endif
-
-            handle_touch(op_type, turns, visitor);
-        }
-#endif
 
 #ifdef BOOST_GEOMETRY_DEBUG_ASSEMBLE
 std::cout << "traverse" << std::endl;
@@ -278,9 +260,10 @@ std::cout << "traverse" << std::endl;
         // Note that these rings are always in clockwise order, even in CCW polygons,
         // and are marked as "to be reversed" below
         ring_container_type rings;
-        traverse<Reverse1, Reverse2, Geometry1, Geometry2, op_type>::apply
+        traverse<Reverse1, Reverse2, Geometry1, Geometry2, OverlayType>::apply
                 (
                     geometry1, geometry2,
+                    strategy,
                     robust_policy,
                     turns, rings,
                     clusters,

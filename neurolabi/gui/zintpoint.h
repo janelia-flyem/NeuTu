@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "neutube_def.h"
 
@@ -41,12 +42,36 @@ public:
   /*!
    * \brief Comparison.
    *
+   * The result of comparing with an invalid point is undefined.
+   *
    * Compare order: z, y, x
    */
   bool operator < (const ZIntPoint &pt) const;
+
+  /*!
+   * \brief Check if tow points are the same.
+   *
+   * Tow invalid points are considered as the same.
+   */
   bool operator == (const ZIntPoint &pt) const;
+
+  /*!
+   * \brief Check if tow points are different.
+   */
   bool operator != (const ZIntPoint &pt) const;
 
+
+  /**@addtogroup _opr Point operations
+   *
+   * Note: An operation always results in an invalid point if any of the inputs
+   * is invalid.
+   *
+   * @{
+   */
+
+  /*!
+   * \brief Negate a point.
+   */
   ZIntPoint operator - () const;
 
   ZIntPoint& operator += (const ZIntPoint &pt);
@@ -56,8 +81,11 @@ public:
 
   friend ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2);
   friend ZIntPoint operator + (const ZIntPoint &pt1, int v);
+  friend ZIntPoint operator * (const ZIntPoint &pt1, const ZIntPoint &pt2);
+  friend ZIntPoint operator * (const ZIntPoint &pt1, int v);
   friend ZIntPoint operator - (const ZIntPoint &pt1, const ZIntPoint &pt2);
   friend ZIntPoint operator - (const ZIntPoint &pt1, int v);
+
   /*!
    * \brief Coordinate-wise division
    *
@@ -65,6 +93,8 @@ public:
    */
   friend ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2);
   friend ZIntPoint operator / (const ZIntPoint &pt1, int scale);
+
+  /**@}*/
 
   std::string toString() const;
 
@@ -85,8 +115,12 @@ public:
 
   void invalidate();
   bool isValid() const;
+  static bool IsValid(int x);
 
   static bool IsNormalDimIndex(int index);
+
+  void read(std::istream &stream);
+  void write(std::ostream &stream) const;
 
 public:
   int m_x;

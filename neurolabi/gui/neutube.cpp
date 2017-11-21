@@ -5,6 +5,7 @@
 #include <QMetaType>
 #include <iostream>
 #include <QProcess>
+#include <QSet>
 
 #include "neutubeconfig.h"
 #include "zlogmessagereporter.h"
@@ -22,6 +23,8 @@ void NeuTube::RegisterMetaType()
   qRegisterMetaType<QList<Swc_Tree_Node*> >("QList<Swc_Tree_Node*>");
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
+  qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
+  qRegisterMetaType<FlyEM::EBodySplitMode>("FlyEM::EBodySplitMode");
 }
 
 ZMessageReporter* NeuTube::getMessageReporter()
@@ -64,16 +67,15 @@ std::string NeuTube::getInfoFile()
 
 std::string NeuTube::GetCurrentUserName()
 {
-#ifdef _DEBUG_2
-  std::cout << qgetenv("USER").data() << std::endl;
+#ifdef _DEBUG_
+  std::cout << "User name: " << qgetenv("USER").data() << std::endl;
 #endif
   std::string userName = qgetenv("USER").data();
 
-  /*
+
   if (userName == "zhaot") { //temporary hack
-    userName = "takemuras";
+//    userName = "ogundeyio";
   }
-  */
 
   return userName;
 }

@@ -4,6 +4,8 @@
 #include <QRect>
 #include "neutube_def.h"
 
+#include "zviewproj.h"
+
 /*!
  * \brief The class of stack view parameter
  */
@@ -23,22 +25,18 @@ public:
 
   int getArea() const;
 
-  inline const QRect& getViewPort() const {
-    return m_viewPort;
-  }
+  QRect getViewPort() const;
+  QRectF getProjRect() const;
 
   inline NeuTube::View::EExploreAction getExploreAction() const {
     return m_action;
   }
 
-
-  inline const QRectF& getProjRect() const {
-    return m_projRect;
-  }
-
   void setZ(int z);
+  void setViewProj(const ZViewProj &vp);
+
   void setViewPort(const QRect &rect);
-  void setProjRect(const QRectF &rect);
+//  void setProjRect(const QRectF &rect);
 
   double getZoomRatio() const;
 
@@ -70,13 +68,18 @@ public:
 
   int getZoomLevel(int maxLevel) const;
 
+  const ZViewProj& getViewProj() const {
+    return m_viewProj;
+  }
+
 private:
   void init(NeuTube::ECoordinateSystem coordSys);
 
 private:
   int m_z;
-  QRect m_viewPort;
-  QRectF m_projRect;
+  ZViewProj m_viewProj;
+//  QRect m_viewPort;
+//  QRectF m_projRect;
   NeuTube::ECoordinateSystem m_coordSys;
   NeuTube::View::EExploreAction m_action;
   NeuTube::EAxis m_sliceAxis;

@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zdialogfactory.h"
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -26,7 +25,7 @@
 #include "flyem/flyemproofcontrolform.h"
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemproofdoc.h"
-#include "z3dapplication.h"
+#include "zsysteminfo.h"
 
 #ifdef _WIN32
 #undef GetOpenFileName
@@ -271,14 +270,6 @@ QString ZDialogFactory::GetSaveFileName(
 
 void ZDialogFactory::Notify3DDisabled(QWidget *parent)
 {
-  if (Z3DApplication::app() == NULL) {
-    QMessageBox::information(
-          parent, "3D Unavailable", "The 3D visualization is unavailable in this"
-          "plug-in because of some technical problems. To obtain a "
-          "fully-functioing version of neuTube, because visit "
-          "<a href=www.neutracing.com>www.neutracing.com</a>");
-  } else {
-    QMessageBox::critical(parent, "3D functions are disabled",
-                          Z3DApplication::app()->getErrorMessage());
-  }
+  QMessageBox::critical(parent, "3D functions are disabled",
+                        ZSystemInfo::instance().errorMessage());
 }

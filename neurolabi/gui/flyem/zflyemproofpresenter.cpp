@@ -39,7 +39,8 @@ ZFlyEmProofPresenter::ZFlyEmProofPresenter(QWidget *parent) :
 void ZFlyEmProofPresenter::init()
 {
   m_isHightlightMode = false;
-  m_splitWindowMode = false;
+//  m_splitWindowMode = false;
+  m_splitMode = FlyEM::BODY_SPLIT_NONE;
   m_highTileContrast = false;
   m_smoothTransform = false;
   m_showingData = false;
@@ -128,6 +129,10 @@ bool ZFlyEmProofPresenter::connectAction(
       connect(action, SIGNAL(triggered()),
               getCompleteDocument(), SLOT(rewriteSegmentation()));
       break;
+    case ZActionFactory::ACTION_REFRESH_SEGMENTATION:
+      connect(action, &QAction::triggered, this,
+              &ZFlyEmProofPresenter::refreshSegmentation);
+      break;
     case ZActionFactory::ACTION_SYNAPSE_VERIFY:
       connect(getAction(ZActionFactory::ACTION_SYNAPSE_VERIFY), SIGNAL(triggered()),
               this, SLOT(verifySelectedSynapse()));
@@ -148,6 +153,12 @@ bool ZFlyEmProofPresenter::connectAction(
   return connected;
 }
 
+void ZFlyEmProofPresenter::refreshSegmentation()
+{
+  getCompleteDocument()->refreshDvidLabelBuffer(0);
+  getCompleteDocument()->updateDvidLabelSlice(buddyView()->getSliceAxis());
+}
+
 void ZFlyEmProofPresenter::selectBodyInRoi()
 {
   getCompleteDocument()->selectBodyInRoi(buddyView()->getCurrentZ(), true, true);
@@ -158,13 +169,8 @@ void ZFlyEmProofPresenter::zoomInRectRoi()
   ZRect2d rect = buddyDocument()->getRect2dRoi();
 
   if (rect.isValid()) {
-    ZStackViewParam param(NeuTube::COORD_STACK);
-
-    param.setViewPort(rect.getFirstX(), rect.getFirstY(),
-                      rect.getLastX(), rect.getLastY());
-    param.fixZ(true);
-
-    buddyView()->setView(param);
+    buddyView()->setViewPort(QRect(rect.getFirstX(), rect.getFirstY(),
+                               rect.getWidth(), rect.getHeight()));
     buddyDocument()->executeRemoveRectRoiCommand();
   }
 }
@@ -342,6 +348,9 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
       } else if (event->modifiers() == Qt::NoModifier) {
         emit runningLocalSplit();
         processed = true;
+      } else if (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
+        emit runningFullSplit();
+        processed = true;
       }
     }
     break;
@@ -513,15 +522,19 @@ bool ZFlyEmProofPresenter::isSplitOn() const
   return getAction(ZActionFactory::ACTION_PAINT_STROKE)->isEnabled();
 }
 
-void ZFlyEmProofPresenter::enableSplit()
+void ZFlyEmProofPresenter::enableSplit(FlyEM::EBodySplitMode mode)
 {
-  setSplitWindow(true);
-  setSplitEnabled(true);
+  if (mode == FlyEM::BODY_SPLIT_NONE) {
+    disableSplit();
+  } else {
+    setSplitMode(mode);
+    setSplitEnabled(true);
+  }
 }
 
 void ZFlyEmProofPresenter::disableSplit()
 {
-  setSplitWindow(false);
+  setSplitMode(FlyEM::BODY_SPLIT_NONE);
   setSplitEnabled(false);
 }
 
@@ -884,7 +897,9 @@ bool ZFlyEmProofPresenter::processCustomOperator(
                  ZInteractiveContext::SYNAPSE_MOVE) {
         updateActiveObjectForSynapseMove(currentStackPos);
       }
-      stroke->setLast(currentStackPos.x(), currentStackPos.y());
+      ZPoint pos = currentStackPos;
+      pos.shiftSliceAxis(buddyView()->getSliceAxis());
+      stroke->setLast(pos.x(), pos.y());
       if (e != NULL) {
         e->setEvent(
               ZInteractionEvent::EVENT_ACTIVE_DECORATION_UPDATED);
@@ -1059,7 +1074,12 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
         stroke->setColor(synapse.getColor());
         stroke->setWidth(synapse.getRadius() * 2.0);
         stroke->set(pt.getX(), pt.getY());
-        stroke->append(currentStackPos.x(), currentStackPos.y());
+
+        ZPoint pos = currentStackPos;
+        pos.shiftSliceAxis(buddyView()->getSliceAxis());
+        stroke->set(pos.x(), pos.y());
+
+        stroke->append(pos.x(), pos.y());
 
         return true;
       }
@@ -1080,7 +1100,10 @@ void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd(
     const ZPoint &currentStackPos)
 {
   ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SYNAPSE);
-  stroke->set(currentStackPos.x(), currentStackPos.y());
+
+  ZPoint pos = currentStackPos;
+  pos.shiftSliceAxis(buddyView()->getSliceAxis());
+  stroke->set(pos.x(), pos.y());
 
   ZDvidSynapse::EKind kind  = ZDvidSynapse::KIND_UNKNOWN;
   switch (interactiveContext().synapseEditMode()) {

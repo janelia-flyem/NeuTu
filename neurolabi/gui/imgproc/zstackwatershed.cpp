@@ -6,6 +6,9 @@
 #include "tz_cuboid_i.h"
 #include "tz_math.h"
 #include "zstack.hxx"
+#include "zintcuboid.h"
+#include "zobject3dscan.h"
+#include "zobject3d.h"
 
 ZStackWatershed::ZStackWatershed() : m_floodingZero(false)
 {
@@ -17,8 +20,40 @@ ZStackWatershed::~ZStackWatershed()
 
 }
 
-Stack_Watershed_Workspace* ZStackWatershed::createWorkspace(const Stack *stack)
+Stack_Watershed_Workspace* ZStackWatershed::CreateWorkspace(
+    const ZIntCuboid &box, int kind)
 {
+  Stack_Watershed_Workspace *ws = NULL;
+  if (!box.isEmpty()) {
+    size_t voxelNumber = box.getVolume();
+
+    ws = C_Stack::MakeStackWatershedWorkspace(voxelNumber);
+    ws->conn =26;
+    if (kind == GREY) {
+      ws->start_level = 255;
+    } else {
+      ws->start_level = 65535;
+    }
+    std::cout << "workspace mask size: " << box.getWidth() << "x"
+              << box.getHeight() << "x" << box.getDepth()
+              << std::endl;
+    Stack *mask = C_Stack::make(
+          GREY, box.getWidth(), box.getHeight(), box.getDepth());
+    C_Stack::setZero(mask);
+    ws->mask = mask;
+  }
+
+  return ws;
+}
+
+
+Stack_Watershed_Workspace* ZStackWatershed::CreateWorkspace(
+    const Stack *stack, bool floodingZero)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
   Stack_Watershed_Workspace *ws = C_Stack::MakeStackWatershedWorkspace(stack);
   ws->conn =26;
   if (C_Stack::kind(stack) == GREY) {
@@ -33,18 +68,44 @@ Stack_Watershed_Workspace* ZStackWatershed::createWorkspace(const Stack *stack)
                               C_Stack::height(stack), C_Stack::depth(stack));
   ws->mask = mask;
   C_Stack::setZero(mask);
-  size_t voxelNumber = C_Stack::voxelNumber(stack);
-  for (size_t i = 0; i < voxelNumber; ++i) {
-    //Need modifcation to handle 16bit data
-    if (stack->array[i] == 0) {
-      mask->array[i] = STACK_WATERSHED_BARRIER;
+
+  if (!floodingZero) {
+    size_t voxelNumber = C_Stack::voxelNumber(stack);
+    if (C_Stack::kind(stack) == GREY) {
+      uint8_t *array = C_Stack::array8(stack);
+      for (size_t i = 0; i < voxelNumber; ++i) {
+        if (array[i] == 0) {
+          mask->array[i] = STACK_WATERSHED_BARRIER;
+        }
+      }
+    } else {
+      uint16_t *array = C_Stack::guardedArray16(stack);
+      for (size_t i = 0; i < voxelNumber; ++i) {
+        if (array[i] == 0) {
+          mask->array[i] = STACK_WATERSHED_BARRIER;
+        }
+      }
     }
   }
 
   return ws;
 }
 
-void ZStackWatershed::addSeed(Stack_Watershed_Workspace *ws,
+void ZStackWatershed::AddSeed(
+    Stack_Watershed_Workspace *ws, const ZIntPoint &offset, const ZStack *seed)
+{
+  if (seed != NULL) {
+    const Stack *block = seed->c_stack();
+    int x0 = seed->getOffset().getX() - offset.getX();
+    int y0 = seed->getOffset().getY() - offset.getY();
+    int z0 = seed->getOffset().getZ() - offset.getZ();
+
+    C_Stack::setBlockValue(
+          ws->mask, block, x0, y0, z0, 0, STACK_WATERSHED_BARRIER);
+  }
+}
+
+void ZStackWatershed::AddSeed(Stack_Watershed_Workspace *ws,
                               const ZIntPoint &offset,
                               const std::vector<ZStack*> &seedMask)
 {
@@ -52,14 +113,96 @@ void ZStackWatershed::addSeed(Stack_Watershed_Workspace *ws,
     for (std::vector<ZStack*>::const_iterator iter = seedMask.begin();
          iter != seedMask.end(); ++iter) {
       ZStack *seed = *iter;
-      Stack *block = seed->c_stack();
-      int x0 = seed->getOffset().getX() - offset.getX();
-      int y0 = seed->getOffset().getY() - offset.getY();
-      int z0 = seed->getOffset().getZ() - offset.getZ();
-
-      C_Stack::setBlockValue(
-            ws->mask, block, x0, y0, z0, 0, STACK_WATERSHED_BARRIER);
+      AddSeed(ws, offset, seed);
     }
+  }
+}
+
+void ZStackWatershed::AddSeed(
+    Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
+    const ZObject3dScan &seed)
+{
+  if (ws != NULL) {
+    uint8_t label = seed.getLabel();
+    ZObject3dScan::ConstVoxelIterator voxelIter(&seed);
+    while (voxelIter.hasNext()) {
+      ZIntPoint pt = voxelIter.next();
+      pt -= offset;
+
+      uint8_t *array = C_Stack::array8(ws->mask, pt.getX(), pt.getY(), pt.getZ());
+      if (array != NULL) {
+        if (array[0] != STACK_WATERSHED_BARRIER) {
+          array[0] = label;
+        }
+      }
+    }
+  }
+}
+
+void ZStackWatershed::AddSeed(
+    Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
+    const ZIntPoint &dsIntv, const ZObject3d *seed)
+{
+  if (ws != NULL) {
+    uint8_t label = seed->getLabel();
+    int sx = dsIntv.getX() + 1;
+    int sy = dsIntv.getY() + 1;
+    int sz = dsIntv.getZ() + 1;
+    uint8_t *array = C_Stack::array8(ws->mask);
+    size_t area = C_Stack::area(ws->mask);
+    int width = C_Stack::width(ws->mask);
+    int height = C_Stack::height(ws->mask);
+    int depth = C_Stack::depth(ws->mask);
+
+    for (size_t i = 0; i < seed->size(); ++i) {
+      int x = seed->getX(i);
+      int y = seed->getY(i);
+      int z = seed->getZ(i);
+      x /= sx;
+      y /= sy;
+      z /= sz;
+      x -= offset.getX();
+      y -= offset.getY();
+      z -= offset.getZ();
+      if (x >= 0 && x < width && y >= 0 && y <= height && z >= 0 && z <= depth) {
+        uint8_t *p = array + z * area + y * width + x;
+        if (*p != STACK_WATERSHED_BARRIER) {
+          *p = label;
+        }
+      }
+    }
+  }
+}
+
+void ZStackWatershed::AddSeed(
+    Stack_Watershed_Workspace *ws, const ZIntPoint &offset, const ZIntPoint &dsIntv,
+    const std::vector<ZObject3d *> &seedArray)
+{
+  for (std::vector<ZObject3d*>::const_iterator iter = seedArray.begin();
+       iter != seedArray.end(); ++iter) {
+    const ZObject3d *obj = *iter;
+    AddSeed(ws, offset, dsIntv, obj);
+  }
+}
+
+void ZStackWatershed::AddSeed(
+    Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
+    const std::vector<ZObject3dScan *> &seedArray)
+{
+  for (std::vector<ZObject3dScan*>::const_iterator iter = seedArray.begin();
+       iter != seedArray.end(); ++iter) {
+    const ZObject3dScan *obj = *iter;
+    AddSeed(ws, offset, *obj);
+  }
+}
+
+void ZStackWatershed::AddSeed(
+    Stack_Watershed_Workspace *ws, const ZIntPoint &offset,
+    const std::vector<ZObject3dScan> &seedArray)
+{
+  for (std::vector<ZObject3dScan>::const_iterator iter = seedArray.begin();
+       iter != seedArray.end(); ++iter) {
+    AddSeed(ws, offset, *iter);
   }
 }
 
@@ -112,9 +255,9 @@ ZStack *ZStackWatershed::run(
             &box, -stackBox.cb[0], -stackBox.cb[1], -stackBox.cb[2]);
       source = C_Stack::crop(stack->c_stack(), box, NULL);
 
-      Stack_Watershed_Workspace *ws = createWorkspace(source);
-
-      addSeed(ws, sourceOffset, seedMask);
+      Stack_Watershed_Workspace *ws = CreateWorkspace(source, m_floodingZero);
+      //ws->conn=18;
+      AddSeed(ws, sourceOffset, seedMask);
 
 #ifdef _DEBUG_2
       C_Stack::write(GET_DATA_DIR + "/test_seed.tif", ws->mask);

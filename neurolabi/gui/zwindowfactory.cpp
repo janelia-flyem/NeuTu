@@ -2,22 +2,19 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QMessageBox>
-#include "z3dapplication.h"
 #include "neutubeconfig.h"
 #include "z3dcompositor.h"
 #include "z3dcanvas.h"
-#include "z3dvolumeraycaster.h"
+#include "z3dvolumefilter.h"
 #include "zscalablestack.h"
-#include "z3dvolume.h"
-#include "z3dvolumesource.h"
 #include "z3dwindow.h"
 #include "z3dswcfilter.h"
 #include "z3dpunctafilter.h"
-#include "z3dutils.h"
 #include "zstackdoc.h"
 #include "zstackframe.h"
 #include "zdialogfactory.h"
 #include "mainwindow.h"
+#include "zsysteminfo.h"
 
 ZWindowFactory::ZWindowFactory()
 {
@@ -31,11 +28,6 @@ ZWindowFactory::~ZWindowFactory()
 
 void ZWindowFactory::init()
 {
-  m_parentWidget = NULL;
-  m_showVolumeBoundBox = false;
-  m_showControlPanel = true;
-  m_showObjectView = true;
-  m_volumeMode = NeuTube3D::VR_AUTO;
 }
 
 Z3DWindow* ZWindowFactory::make3DWindow(
@@ -50,8 +42,6 @@ Z3DWindow* ZWindowFactory::open3DWindow(
     ZStackDoc *doc, Z3DWindow::EInitMode mode)
 {
   Z3DWindow *window = make3DWindow(doc, mode);
-  window->show();
-  window->raise();
 
   return window;
 }
@@ -59,7 +49,7 @@ Z3DWindow* ZWindowFactory::open3DWindow(
 Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
                                         Z3DWindow::EInitMode mode)
 {
-  if (Z3DApplication::app() == NULL) {
+  if (!ZSystemInfo::instance().is3DSupported()) {
     QMessageBox::information(
           NULL, "3D Unavailable", "The 3D visualization is unavailable in this"
           "plug-in because of some technical problems. To obtain a "
@@ -70,8 +60,12 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
 
   Z3DWindow *window = NULL;
 
-  if (Z3DApplication::app()->is3DSupported() && doc) {
-    window = new Z3DWindow(doc, mode, false, m_parentWidget);
+  if (ZSystemInfo::instance().is3DSupported() && doc) {
+    window = new Z3DWindow(
+          doc, mode, m_windowType, false, m_parentWidget);
+    window->show();
+    window->raise();
+
     if (m_windowTitle.isEmpty()) {
       window->setWindowTitle("3D View");
     } else {
@@ -98,15 +92,15 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       if (doc->getTag() == NeuTube::Document::FLYEM_BODY ||
           doc->getTag() == NeuTube::Document::FLYEM_SPLIT ||
           doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
-        window->getVolumeRaycasterRenderer()->setCompositeMode(
+        window->getVolumeFilter()->setCompositeMode(
               "Direct Volume Rendering");
       } else {
         //      doc->getTag() == NeuTube::Document::SEGMENTATION_TARGET
-        window->getVolumeRaycasterRenderer()->setCompositeMode("MIP Opaque");
+        window->getVolumeFilter()->setCompositeMode("MIP Opaque");
       }
     } else {
-      window->getVolumeRaycasterRenderer()->setCompositeMode(
-            Z3DUtils::GetVolumeRenderingName(m_volumeMode).c_str());
+      window->getVolumeFilter()->setCompositeMode(
+            NeuTube3D::GetVolumeRenderingModeName(m_volumeMode));
     }
     if (doc->getTag() != NeuTube::Document::FLYEM_SPLIT &&
         doc->getTag() != NeuTube::Document::SEGMENTATION_TARGET &&
@@ -117,7 +111,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
     window->setZScale(doc->getPreferredZScale());
 
     if (!m_showVolumeBoundBox) {
-      window->getVolumeRaycaster()->hideBoundBox();
+      window->getVolumeFilter()->hideBoundBox();
     }
 
     if (m_windowGeometry.isEmpty()/* || m_parentWidget == NULL*/) {
@@ -142,6 +136,10 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
       window->hideObjectView();
     }
 
+    if (!isStatusBarVisible()) {
+      window->hideStatusBar();
+    }
+
     configure(window);
 //    doc->registerUser(window);
   }
@@ -152,7 +150,7 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
 Z3DWindow* ZWindowFactory::Open3DWindow(
     ZStackFrame *frame, Z3DWindow::EInitMode mode)
 {
-  if (Z3DApplication::app() == NULL) {
+  if (!ZSystemInfo::instance().is3DSupported()) {
     ZDialogFactory::Notify3DDisabled(frame);
 
     return NULL;
@@ -206,18 +204,14 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZScalableStack *stack)
 
   Z3DWindow *window = NULL;
 
-  if (Z3DApplication::app()->is3DSupported()) {
+  if (ZSystemInfo::instance().is3DSupported()) {
     ZStackDoc *doc = new ZStackDoc;
     doc->loadStack(stack->getStack());
     window = make3DWindow(doc);
-    window->getVolumeSource()->getVolume(0)->setScaleSpacing(
-          glm::vec3(stack->getXScale(), stack->getYScale(), stack->getZScale()));
+
+    window->getVolumeFilter()->setScale(stack->getXScale(), stack->getYScale(), stack->getZScale());
     ZPoint offset = stack->getOffset();
-    window->getVolumeSource()->getVolume(0)->setOffset(
-          glm::vec3(offset.x(), offset.y(), offset.z()));
-    window->updateVolumeBoundBox();
-    window->updateOverallBoundBox();
-    //window->resetCameraClippingRange();
+    window->getVolumeFilter()->setOffset(offset.x(), offset.y(), offset.z());
     window->resetCamera();
     stack->releaseStack();
     delete stack;
@@ -241,6 +235,11 @@ void ZWindowFactory::setParentWidget(QWidget *parentWidget)
 void ZWindowFactory::setWindowGeometry(const QRect &rect)
 {
   m_windowGeometry = rect;
+}
+
+void ZWindowFactory::setWindowType(NeuTube3D::EWindowType type)
+{
+  m_windowType = type;
 }
 
 

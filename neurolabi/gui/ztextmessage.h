@@ -11,7 +11,7 @@ public:
   ZTextMessage();
 
 private:
-  NeuTube::EMessageType m_type;
+//  NeuTube::EMessageType m_type;
   QString m_plainText;
 };
 

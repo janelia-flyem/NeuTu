@@ -4,7 +4,7 @@ import subprocess
 import sys
 import socket
 import jsonschema
-import httplib
+import http.client
 import socket
 import os
 
@@ -72,7 +72,7 @@ def skeletonize():
 
 @post('/skeletonize')
 def do_skeletonize():
-    print request.content_type
+    print(request.content_type)
     bodyArray = [];
     dvidServer = getDefaultDvidServer()
     uuid = getDefaultUuid()
@@ -80,29 +80,29 @@ def do_skeletonize():
         bodyIdStr = request.forms.get('bodyId')
         bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
     elif request.content_type == 'application/json':
-        print request.json
+        print(request.json)
         jsonObj = request.json
         try:
             jsonschema.validate(jsonObj, json.loads(getSchema('skeletonize', 'post')))
         except jsonschema.exceptions.ValidationError as inst:
-            print 'Invalid json input'
-            print inst
+            print('Invalid json input')
+            print(inst)
             return '<p>Skeletonization for ' + str(bodyArray) + ' failed.</p>'
         uuid = jsonObj['uuid']
-        if jsonObj.has_key('dvid-server'):
+        if 'dvid-server' in jsonObj:
             dvidServer = jsonObj['dvid-server']
         bodyArray = jsonObj['bodies']
     
     output = {}
     config = {'dvid-server': dvidServer, 'uuid': uuid}
 
-    print '********'
-    print config
+    print('********')
+    print(config)
     
     for bodyId in bodyArray:
-        conn = httplib.HTTPConnection(dvidServer)
+        conn = http.client.HTTPConnection(dvidServer)
         bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
-        print '************', bodyLink
+        print('************', bodyLink)
         conn.request("GET", bodyLink)
 
         r1 = conn.getresponse()
@@ -129,7 +129,7 @@ def computing_hotspot():
 
 @post('/hotspot')
 def compute_hotspot():
-    print request.content_type
+    print(request.content_type)
     bodyArray = [];
     dvidServer = getDefaultDvidServer()
     uuid = getDefaultUuid()
@@ -137,31 +137,31 @@ def compute_hotspot():
         bodyIdStr = request.forms.get('bodyId')
         bodyArray = [int(bodyId) for bodyId in bodyIdStr.split()]
     elif request.content_type == 'application/json':
-        print request.json
+        print(request.json)
         jsonObj = request.json
         try:
             jsonschema.validate(jsonObj, json.loads(getSchema('skeletonize', 'post')))
         except jsonschema.exceptions.ValidationError as inst:
-            print 'Invalid json input'
-            print inst
+            print('Invalid json input')
+            print(inst)
             return '<p>Hotspot computation for ' + str(bodyArray) + ' failed.</p>'
         uuid = jsonObj['uuid']
-        if jsonObj.has_key('dvid-server'):
+        if 'dvid-server' in jsonObj:
             dvidServer = jsonObj['dvid-server']
         bodyArray = jsonObj['bodies']
     
     output = {}
     config = {'dvid-server': dvidServer, 'uuid': uuid}
 
-    print '********'
-    print config
+    print('********')
+    print(config)
     
     global qualityAnalyzer
 
     for bodyId in bodyArray:
         #conn = httplib.HTTPConnection(dvidServer)
         bodyLink = '/api/node/' + uuid + '/skeletons/' + str(bodyId) + '.swc'
-        print '************', bodyLink
+        print('************', bodyLink)
         #conn.request("GET", bodyLink)
 
         #r1 = conn.getresponse()
@@ -182,7 +182,7 @@ def retrieveThumbnail(bodyId):
 @hook('after_request')
 def enable_cors(fn=None):
     def _enable_cors(*args, **kwargs):
-        print 'enable cors'
+        print('enable cors')
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Access-Control-Expose-Headers'] = 'Content-Type'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
@@ -200,7 +200,7 @@ def enable_cors(fn=None):
 @route('/interface/interface.raml', method=['GET', 'OPTIONS'])
 @enable_cors
 def retrieveRaml():
-    print 'retrieve raml'
+    print('retrieve raml')
     fileResponse = static_file('interface.raml', root='.', mimetype='application/raml+yaml')
     fileResponse.headers['Access-Control-Allow-Origin'] = '*'
 

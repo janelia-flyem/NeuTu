@@ -41,6 +41,14 @@ public:
   ZIntPoint getBlockIndex(int x, int y, int z) const;
   ZIntPoint getBlockIndex(const ZIntPoint &pt) const;
 
+  /*!
+   * \brief Get the first corner of a block.
+   *
+   * It returns the coordinates of the first corner of the block index
+   * (\a ix, \a iy, \a iz).
+   */
+  ZIntPoint getBlockCoord(int ix, int iy, int iz) const;
+
   int getBlockIndexZ(int z) const;
 
   int getCoordZ(int zIndex) const;
@@ -81,10 +89,10 @@ public:
   /*!
    * \brief Get the bound box of a block
    *
-   * Get the bound box of a block in DVID coordinates. (\a x, \a y, \a z) is
+   * Get the bound box of a block in DVID coordinates. (\a ix, \a iy, \a iz) is
    * the block index.
    */
-  ZIntCuboid getBlockBox(int x, int y, int z) const;
+  ZIntCuboid getBlockBox(int ix, int iy, int iz) const;
   ZIntCuboid getBlockBox(const ZIntPoint &blockIndex) const;
 
   ZIntCuboid getBlockBox(int x0, int x1, int y, int z) const;
@@ -135,6 +143,13 @@ public:
   const std::string& getDvidUuid() const {
     return m_dvidUuid;
   }
+
+private:
+  static int CoordToBlockIndex(int x, int s);
+  /*!
+   * \brief Get the first corner of the block.
+   */
+  static int BlockIndexToCoord(int index, int s);
 
 private:
   std::vector<int> m_stackSize;

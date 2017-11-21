@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QString>
 
+#include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "zsharedpointer.h"
 
@@ -16,8 +17,8 @@ class ZFlyEmSupervisor : public QObject
   Q_OBJECT
 public:
   explicit ZFlyEmSupervisor(QObject *parent = 0);
-  bool checkIn(uint64_t bodyId);
-  bool checkOut(uint64_t bodyId);
+  bool checkIn(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  bool checkOut(uint64_t bodyId, FlyEM::EBodySplitMode mode);
 
   bool checkInAdmin(uint64_t bodyId);
 
@@ -72,18 +73,25 @@ public:
   std::string getCheckinUrl(const std::string &uuid) const;
   std::string getCheckoutUrl(const std::string &uuid) const;
 
-  std::string getCheckinUrl(const std::string &uuid, uint64_t bodyId) const;
-  std::string getCheckoutUrl(const std::string &uuid, uint64_t bodyId) const;
+  std::string getCheckinUrl(
+      const std::string &uuid, uint64_t bodyId, FlyEM::EBodySplitMode mode) const;
+  std::string getCheckoutUrl(
+      const std::string &uuid, uint64_t bodyId, FlyEM::EBodySplitMode mode) const;
 
   std::string getCheckinUrl(const std::string &uuid, uint64_t bodyId,
                             const std::string &userName) const;
 
-  std::string getCheckinUrl(uint64_t bodyId) const;
-  std::string getCheckoutUrl(uint64_t bodyId) const;
+  std::string getCheckinUrl(uint64_t bodyId, FlyEM::EBodySplitMode mode) const;
+  std::string getCheckoutUrl(uint64_t bodyId, FlyEM::EBodySplitMode mode) const;
 
 signals:
 
 public slots:
+
+private:
+  static std::string GetUserName(
+      const std::string &userName, FlyEM::EBodySplitMode mode);
+  std::string getUserName(FlyEM::EBodySplitMode mode) const;
 
 private:
   std::string m_userName;

@@ -34,6 +34,19 @@ ZCrossHair* ZFlyEmOrthoDoc::getCrossHair() const
   return getObject<ZCrossHair>(ZStackObjectSourceFactory::MakeCrossHairSource());
 }
 
+void ZFlyEmOrthoDoc::setCrossHairCenter(double x, double y, NeuTube::EAxis axis)
+{
+  ZPoint center = getCrossHair()->getCenter();
+  //Transform to the view space
+  center.shiftSliceAxis(axis);
+  center.setX(x);
+  center.setY(y);
+  //Transform back to the world space
+  center.shiftSliceAxisInverse(axis);
+
+  getCrossHair()->setCenter(center);
+}
+
 void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
 {
   ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
@@ -68,12 +81,12 @@ void ZFlyEmOrthoDoc::initTodoList()
 
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 {
-  if (m_dvidReader.isReady()) {
+  if (m_grayscaleReader.isReady()) {
     ZIntCuboid box;
     box.setFirstCorner(center - ZIntPoint(m_width / 2, m_height / 2, m_depth / 2));
     box.setSize(m_width, m_height, m_depth);
 //    m_dvidReader.readGrayScale(box);
-    ZStack *stack = m_dvidReader.readGrayScale(box);
+    ZStack *stack = m_grayscaleReader.readGrayScale(box);
     loadStack(stack);
 
     ZDvidUrl dvidUrl(getDvidTarget());
@@ -102,14 +115,6 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
         }
       }
     }
-
-    /*
-    getDvidSynapseEnsemble(NeuTube::X_AXIS)->setRange(box);
-    getDvidSynapseEnsemble(NeuTube::Y_AXIS)->setRange(box);
-    getDvidSynapseEnsemble(NeuTube::Z_AXIS)->setRange(box);
-    */
-
-
 
     QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
     for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();

@@ -58,7 +58,7 @@ static void testTreeIterator(ZSwcTree &tree,
 
 TEST(TestSwcTree, TestTreeIterator) {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/breadth_first.swc");
   ZTestSwcTreeIteratorConfig config;
   config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
   {
@@ -306,8 +306,8 @@ TEST(SwcTree, Metric)
   ZSwcTree tree1;
   ZSwcTree tree2;
 
-  std::string filePath1 = GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree1.swc";
-  std::string filePath2 = GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree2.swc";
+  std::string filePath1 = GET_BENCHMARK_DIR + "/swc/dist/angle/tree1.swc";
+  std::string filePath2 = GET_BENCHMARK_DIR + "/swc/dist/angle/tree2.swc";
 
   tree1.load(filePath1);
   tree2.load(filePath2);
@@ -322,7 +322,7 @@ TEST(SwcTree, Backtrace)
 {
   //test computeBackTraceLenth
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/length_test.swc");
   tree.forceVirtualRoot();
   tree.computeBackTraceLength();
   //tree.print();
@@ -343,7 +343,7 @@ TEST(SwcTree, Subtree)
 {
   //test labelSubtree
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/length_test.swc");
 
   Swc_Tree_Node *tn = tree.queryNode(3);
   tree.labelSubtree(tn, 1);
@@ -364,7 +364,7 @@ TEST(SwcTree, Subtree)
 TEST(SwcTree, getNodeArray)
 {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/long_fork.swc");
   ASSERT_EQ(1, (int) tree.getSwcTreeNodeArray(ZSwcTree::BRANCH_POINT_ITERATOR).size());
   ASSERT_EQ(2, (int) tree.getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR).size());
   ASSERT_EQ(3, (int) tree.getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR).size());
@@ -380,14 +380,14 @@ TEST(SwcTree, getNodeArray)
 TEST(SwcTree, getLongestPath)
 {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/long_fork.swc");
 
   ZSwcPath path = tree.getLongestPath();
   ASSERT_EQ(24, (int) path.size());
   ASSERT_EQ(1, SwcTreeNode::id(*path.begin()));
   ASSERT_EQ(31, SwcTreeNode::id(path.at(23)));
 
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare5.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/compare/compare5.swc");
   path = tree.getLongestPath();
   ASSERT_EQ(9, (int) path.size());
   ASSERT_EQ(8, SwcTreeNode::id(*path.begin()));
@@ -400,7 +400,7 @@ TEST(SwcTree, forest)
   ZSwcTree tree;
   ASSERT_EQ(0x0, tree.toSwcTreeArray());
 
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/long_fork.swc");
   ZSwcForest *forest = tree.toSwcTreeArray();
 
   ASSERT_EQ(1, (int) forest->size());
@@ -415,19 +415,19 @@ TEST(SwcTree, Prune)
   pruner.setMinLength(18.0);
 
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
 
   ASSERT_EQ(1, pruner.prune(&tree));
 
   pruner.setMinLength(100.0);
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/compare/compare1.swc");
 
   ASSERT_EQ(4 , pruner.prune(&tree));
 
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/compare/compare1.swc");
 
   ZSwcTree tree2;
-  tree2.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  tree2.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
   tree.merge(&tree2, false);
 
   tree.print();
@@ -440,7 +440,7 @@ TEST(SwcTree, Prune)
 TEST(SwcTree, boundBox)
 {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
 
   ASSERT_TRUE(tree.isDeprecated(ZSwcTree::BOUND_BOX));
   ASSERT_TRUE(tree.getBoundBox().isValid());
@@ -450,7 +450,7 @@ TEST(SwcTree, ExtIterator)
 {
   {
     ZSwcTree tree;
-    tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/depth_first.swc");
+    tree.load(GET_BENCHMARK_DIR + "/swc/depth_first.swc");
 
     ZSwcTree::DepthFirstIterator iter(&tree);
     iter.excludeVirtual(true);
@@ -490,7 +490,7 @@ TEST(SwcTree, ExtIterator)
 
   {
     ZSwcTree tree;
-    tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+    tree.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
 
     ZSwcTree::TerminalIterator iter(&tree);
     ASSERT_TRUE(iter.hasNext());
@@ -514,7 +514,7 @@ TEST(SwcTree, ExtIterator)
 
   {
     ZSwcTree tree;
-    tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+    tree.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
 
     ZSwcTree::LeafIterator iter(&tree);
     ASSERT_TRUE(iter.hasNext());
@@ -535,7 +535,7 @@ TEST(SwcTree, ExtIterator)
 
   {
     ZSwcTree tree;
-    tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/multi_tree2.swc");
+    tree.load(GET_BENCHMARK_DIR + "/swc/multi_tree2.swc");
 
     ZSwcTree::RegularRootIterator iter(&tree);
     ASSERT_TRUE(iter.hasNext());
@@ -562,7 +562,7 @@ TEST(SwcTree, ExtIterator)
 
   {
     ZSwcTree tree;
-    tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/forest1.swc");
+    tree.load(GET_BENCHMARK_DIR + "/swc/forest1.swc");
 
     ZSwcTree::DownstreamIterator iter(tree.firstRegularRoot());
     ASSERT_TRUE(iter.hasNext());

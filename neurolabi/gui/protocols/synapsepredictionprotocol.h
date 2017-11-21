@@ -57,7 +57,7 @@ private slots:
     void onExitButton();
     void onCompleteButton();
     void onRefreshButton();
-
+    void onDetailsButton();
     void onDoubleClickSitesTable(QModelIndex index);
 
 private:

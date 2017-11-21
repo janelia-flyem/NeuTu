@@ -29,6 +29,8 @@ public:
 
   ZStack *getSlice(int z) const;
 
+  ZStack* getSlice(int z, int x0, int y0, int width, int height) const;
+
   /*!
    * \brief Get the dense representation of the sparse stack
    *
@@ -57,10 +59,14 @@ public:
    */
   ZStack* makeStack(const ZIntCuboid &range);
 
+  ZStack* makeIsoDsStack(size_t maxVolume);
+
+  ZStack* makeDsStack(int xintv, int yintv, int zintv);
+
   bool stackDownsampleRequired();
 
   const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
+    return m_dvidReader.getDvidTarget();
   }
 
 
@@ -77,6 +83,8 @@ public:
   void loadBodyAsync(uint64_t bodyId);
   void setMaskColor(const QColor &color);
   void setLabel(uint64_t bodyId);
+
+  void loadBody(uint64_t bodyId, const ZIntCuboid &range, bool canonizing = false);
 
   uint64_t getLabel() const;
 
@@ -109,12 +117,18 @@ public:
   void cancelFillValueSync();
 //  void cancelFillValueFunc();
 
-private:
-  void init();
-  void initBlockGrid();
+  /*!
+   * \brief Only keep the largest component.
+   */
+  void shakeOff();
+
   bool fillValue(bool cancelable = false);
   bool fillValue(const ZIntCuboid &box, bool cancelable = false);
   bool fillValue(const ZIntCuboid &box, bool cancelable, bool fillingAll);
+
+private:
+  void init();
+  void initBlockGrid();
   QString getLoadBodyThreadId() const;
   QString getFillValueThreadId() const;
   void pushMaskColor();

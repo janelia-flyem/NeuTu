@@ -3,6 +3,7 @@
 #include "tz_utilities.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
+#include "zpoint.h"
 
 ZIntCuboid::ZIntCuboid()
 {
@@ -49,6 +50,11 @@ int ZIntCuboid::getDepth() const
   return m_lastCorner.getZ() - m_firstCorner.getZ() + 1;
 }
 
+double ZIntCuboid::getDiagonalLength() const
+{
+  return ZPoint(getWidth(), getHeight(), getDepth()).length();
+}
+
 void ZIntCuboid::setSize(int width, int height, int depth)
 {
   m_lastCorner.set(m_firstCorner.getX() + width - 1,
@@ -89,11 +95,23 @@ void ZIntCuboid::translateX(int dx)
   m_lastCorner.setX(m_lastCorner.getX() + dx);
 }
 
+void ZIntCuboid::translate(const ZIntPoint &offset)
+{
+  m_firstCorner += offset;
+  m_lastCorner += offset;
+}
+
 ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
-  for (int i = 0; i < 3; i++) {
-    m_firstCorner[i] = imin2(m_firstCorner[i], cuboid.m_firstCorner[i]);
-    m_lastCorner[i] = imax2(m_lastCorner[i], cuboid.m_lastCorner[i]);
+  if (!cuboid.isEmpty()) {
+    if (isEmpty()) {
+      *this = cuboid;
+    } else  {
+      for (int i = 0; i < 3; i++) {
+        m_firstCorner[i] = imin2(m_firstCorner[i], cuboid.m_firstCorner[i]);
+        m_lastCorner[i] = imax2(m_lastCorner[i], cuboid.m_lastCorner[i]);
+      }
+    }
   }
 
   return *this;

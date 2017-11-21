@@ -49,6 +49,8 @@ public:
 public:
   virtual void display(ZPainter &painter, int slice,
                        EDisplayStyle option, NeuTube::EAxis sliceAxis) const;
+  virtual bool display(QPainter *painter, int z, EDisplayStyle option,
+                       EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);

@@ -11,19 +11,28 @@ CONFIG(debug, debug|release) {
     TargetFile  = $${NEUROLABI_DIR}/c/lib/libneurolabi.a
 }
 
+exists($${CONDA_ENV}) {
+  CONDA_CONFIG = "CONDA_ENV=$${CONDA_ENV}"
+}
+
+message("Config: " $${CONDA_CONFIG})
+
 neurolabi.target = neurolabi
 CONFIG(debug, debug|release) {
     contains(CONFIG, sanitize) {
-      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize
+      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize "'$${CONDA_CONFIG}'"
     } else {
-      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library
+      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library "'$${CONDA_CONFIG}'"
     }
 #make lib VERSION=
 } else {
-    neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --release
+    neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --release "'$${CONDA_CONFIG}'"
 }
+
 neurolabi.depends = FORCE
 QMAKE_EXTRA_TARGETS += neurolabi
+
+message($${neurolabi.commands})
 
 #May not work in parallel compiling
 #PRE_TARGETDEPS = $${TargetFile}
@@ -48,7 +57,7 @@ unix {
   macx {
     OutputDir = $${OutputDir}/$${TARGET}.app/Contents/MacOS
     exists($${CONDA_ENV}) {
-      QMAKE_POST_LINK += install_name_tool -add_rpath $${CONDA_ENV}/lib $${OutputDir}/$$TARGET
+#      QMAKE_POST_LINK += install_name_tool -add_rpath $${CONDA_ENV}/lib $${OutputDir}/$$TARGET
     }
   }
 

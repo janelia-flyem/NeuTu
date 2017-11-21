@@ -16,7 +16,7 @@ FlyEmHotSpotDialog::~FlyEmHotSpotDialog()
 
 int FlyEmHotSpotDialog::getBodyId() const
 {
-  return ZString::firstInteger(ui->idLineEdit->text().toStdString());
+  return ZString::FirstInteger(ui->idLineEdit->text().toStdString());
 }
 
 FlyEmHotSpotDialog::EHotSpotType FlyEmHotSpotDialog::getType() const

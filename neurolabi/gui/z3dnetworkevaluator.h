@@ -16,144 +16,136 @@
 #ifndef Z3DNETWORKEVALUATOR_H
 #define Z3DNETWORKEVALUATOR_H
 
-#include <QObject>
-#include <vector>
-#include "zbenchtimer.h"
 #include "z3dcanvas.h"
-
+#include "zbenchtimer.h"
+#include <QObject>
 #ifndef Q_MOC_RUN
-#include "boost/graph/adjacency_list.hpp"
+#include <boost/graph/adjacency_list.hpp>
 #endif
+#include <vector>
 
-class Z3DRenderProcessor;
-class Z3DCanvasRenderer;
-class Z3DProcessor;
+class Z3DFilter;
+
+class Z3DCanvasPainter;
+
 class Z3DOutputPortBase;
+
 class Z3DInputPortBase;
 
-class Z3DProcessWrapper
+class Z3DFilterWrapper
 {
 public:
-  virtual ~Z3DProcessWrapper() {}
-  virtual void beforeProcess(const Z3DProcessor*) {}
-  virtual void afterProcess(const Z3DProcessor*) {}
-  virtual void beforeNetworkProcess() {}
-  virtual void afterNetworkProcess() {}
+  virtual ~Z3DFilterWrapper() = default;
+
+  virtual void beforeFilterProcess(const Z3DFilter* /*unused*/)
+  {}
+
+  virtual void afterFilterProcess(const Z3DFilter* /*unused*/)
+  {}
+
+  virtual void beforeNetworkProcess()
+  {}
+
+  virtual void afterNetworkProcess()
+  {}
 };
 
 class Z3DNetworkEvaluator : public QObject
 {
-  Q_OBJECT
+Q_OBJECT
 
 public:
-  Z3DNetworkEvaluator(QObject *parent = 0);
+  explicit Z3DNetworkEvaluator(Z3DCanvasPainter& canvasPainter, QObject* parent = nullptr);
+
   ~Z3DNetworkEvaluator();
 
-  void setOpenGLContext(Z3DCanvas *context) { m_openGLContext = context; }
-
-  // set canvasrenderer as the sink of rendering network and build network
-  void setNetworkSink(Z3DCanvasRenderer* canvasRenderer);
-
   // process the currently assigned network. The rendering order is determined internally
-  // according the network topology and the invalidation levels of the processors.
-  // return error message if any
+  // according the network topology and the invalidation levels of the filters.
   // stereo means run two passes for left and right eye
-  QString process(bool stereo = false);
+  void process(bool stereo = false);
 
-  // Initializes all related processors, return true if initialization of all processors has been successful
-  // must be called before process()
-  bool initializeNetwork();
-  // Deinitializes all related processors, return true if deinitialization of all processors has been successful
-  // must be called before delelting processors
-  bool deinitializeNetwork();
-
-  // Manage ProcessWrappers which will be called before and after Processor::process()
-  // networkevaluator will take ownership of the passed Z3DProcessWrapper object
-  void addProcessWrapper(Z3DProcessWrapper* w);
-  void removeProcessWrapper(const Z3DProcessWrapper* w);
-  void clearProcessWrappers();
-
-public slots:
   // call when network topology changed
   void updateNetwork();
 
 protected:
-  void buildNetwork();
-
   // Locks the evaluator. In this state, it does not perform
-  // any operations, such as initializing or processing, on the processor network
-  void lock() { m_locked = true; }
-  void unlock() { m_locked = false; }
+  // any operations, such as initializing or processing, on the filter network
+  void lock()
+  { m_locked = true; }
 
-  inline void getGLFocus() const { if (m_openGLContext) m_openGLContext->getGLFocus(); }
+  void unlock()
+  { m_locked = false; }
 
-protected slots:
-  // update all upstream renderprocessor size. If input renderProcessor is NULL, update all renderProcessor
-  void sizeChangedFromProcessor(Z3DRenderProcessor* rp = 0);
-
-private:
-  bool hasCameraParameter(Z3DProcessor *processor) const;
-  void beginProcess();
-  void endProcess();
-  void beginProcess(Z3DProcessor *processor);
-  void endProcess(Z3DProcessor *processor);
-  QString process(Z3DProcessor *processor, const Z3DEye eye);
+  // update size of all upstream filters. If input filter is nullptr, update all filters
+  void sizeChangedFromFilter(Z3DFilter* rp = nullptr);
 
 private:
-  std::vector<Z3DProcessor*> m_sortedProcessor;
+  std::vector<Z3DFilter*> m_renderingOrder;
 
-  std::vector<Z3DProcessWrapper*> m_processWrappers;
-
-  // used to make sure we operate in the correct opengl context
-  Z3DCanvas* m_openGLContext;
+  std::vector<std::unique_ptr<Z3DFilterWrapper>> m_filterWrappers;
 
   bool m_locked;
 
   bool m_processPending;
 
-  Z3DCanvasRenderer *m_canvasRenderer;
+  Z3DCanvasPainter& m_canvasPainter;
 
-  struct VertexInfo {
-    VertexInfo() : processor(0) {}
-    VertexInfo(Z3DProcessor* p) : processor(p) {}
-    Z3DProcessor *processor;
+  struct VertexInfo
+  {
+    VertexInfo() : filter(nullptr)
+    {}
+
+    explicit VertexInfo(Z3DFilter* p) : filter(p)
+    {}
+
+    Z3DFilter* filter;
     //
   };
 
-  struct EdgeInfo {
-    EdgeInfo(Z3DOutputPortBase *out, Z3DInputPortBase *in) : outPort(out), inPort(in) {}
-    Z3DOutputPortBase *outPort;
-    Z3DInputPortBase *inPort;
+  struct EdgeInfo
+  {
+    EdgeInfo(Z3DOutputPortBase* out, Z3DInputPortBase* in) : outPort(out), inPort(in)
+    {}
+
+    Z3DOutputPortBase* outPort;
+    Z3DInputPortBase* inPort;
   };
 
-  typedef boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS, VertexInfo, EdgeInfo> GraphT;
-  typedef boost::graph_traits<GraphT>::vertex_descriptor Vertex;
-  typedef boost::graph_traits<GraphT>::edge_descriptor Edge;
-  std::map<Z3DProcessor*, Vertex> m_processorToVertexMapper;
-  GraphT m_processorGraph;
+  using GraphT = boost::adjacency_list<boost::listS, boost::vecS, boost::bidirectionalS, VertexInfo, EdgeInfo>;
+  using Vertex = boost::graph_traits<GraphT>::vertex_descriptor;
+  using Edge = boost::graph_traits<GraphT>::edge_descriptor;
+  std::map<Z3DFilter*, Vertex> m_filterToVertexMapper;
+  GraphT m_filterGraph;
 
-  std::vector<Z3DRenderProcessor*> m_reverseSortedRenderProcessors;
+  std::vector<Z3DFilter*> m_reverseSortedFilters;
 };
 
 // check if OpenGL state conforms to default settings. Log a warning message if not.
-class Z3DCheckOpenGLStateProcessWrapper : public Z3DProcessWrapper
+class Z3DCheckOpenGLStateFilterWrapper : public Z3DFilterWrapper
 {
 public:
-  void afterProcess(const Z3DProcessor *p);
-  void beforeNetworkProcess();
-  void checkState(const Z3DProcessor *p = 0);
-  void warn(const Z3DProcessor *p, const QString &message);
+  void afterFilterProcess(const Z3DFilter* p) override;
+
+  void beforeNetworkProcess() override;
+
+private:
+  void checkState(const Z3DFilter* p = nullptr);
+
+  void warn(const Z3DFilter* p, const char* message);
 };
 
-// profile each process and whole network
-class Z3DProfileProcessWrapper : public Z3DProcessWrapper
+// profile each filter and whole network
+class Z3DProfileFilterWrapper : public Z3DFilterWrapper
 {
   ZBenchTimer m_benchTimer;
 public:
-  void beforeProcess(const Z3DProcessor*);
-  void afterProcess(const Z3DProcessor *p);
-  void beforeNetworkProcess();
-  void afterNetworkProcess();
+  void beforeFilterProcess(const Z3DFilter* /*unused*/) override;
+
+  void afterFilterProcess(const Z3DFilter* p) override;
+
+  void beforeNetworkProcess() override;
+
+  void afterNetworkProcess() override;
 };
 
 #endif // Z3DNETWORKEVALUATOR_H

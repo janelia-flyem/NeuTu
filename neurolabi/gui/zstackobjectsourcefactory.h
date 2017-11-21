@@ -37,6 +37,8 @@ public:
   static std::string MakeDvidLabelSliceSource(NeuTube::EAxis axis);
   static std::string MakeDvidGraySliceSource();
   static std::string MakeSplitObjectSource();
+  static std::string MakeSplitResultSource();
+  static std::string MakeSplitResultSource(int label);
   static std::string MakeNodeAdaptorSource();
   static std::string MakeFlyEmBoundBoxSource();
   static std::string MakeFlyEmRoiSource(const std::string &roiName);
@@ -44,6 +46,7 @@ public:
   static std::string MakeFlyEmSynapseSource();
   static std::string MakeFlyEmTBarSource();
   static std::string MakeFlyEmTBarSource(uint64_t bodyId);
+  static std::string MakeFlyEmSeedSource(uint64_t bodyId);
 
   static std::string MakeFlyEmPsdSource();
   static std::string MakeFlyEmPsdSource(uint64_t bodyId);

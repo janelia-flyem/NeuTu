@@ -2,6 +2,7 @@
 #define ZSTACKDOCHITTEST_H
 
 #include "swctreenode.h"
+#include "neutube_def.h"
 
 class ZStroke2d;
 class ZStackDoc;
@@ -15,9 +16,12 @@ class ZStackDocHitTest
 public:
   ZStackDocHitTest();
 
+  void setSliceAxis(NeuTube::EAxis axis);
+  NeuTube::EAxis getSliceAxis() const;
+
   bool hitTest(ZStackDoc *doc, double x, double y, double z);
-  bool hitTest(ZStackDoc *doc, const ZPoint &pt);
-  bool hitTest(ZStackDoc *doc, double x, double y, NeuTube::EAxis axis);
+  bool hitTest(ZStackDoc *doc, const ZPoint &pt, const ZIntPoint &widgetPosition);
+  bool hitTest(ZStackDoc *doc, double x, double y);
 
 //  Swc_Tree_Node* getHitSwcNode() const;
 //  ZStroke2d* getHitStroke2d() const;
@@ -30,6 +34,8 @@ public:
 
 private:
   ZStackObject *m_hitObject;
+  NeuTube::EAxis m_sliceAxis;
+
  // Swc_Tree_Node *m_hitSwcNode;
 //  ZStroke2d *m_hitStroke;
 //  ZObject3d *m_hitObj3d;

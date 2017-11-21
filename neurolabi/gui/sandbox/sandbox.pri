@@ -4,6 +4,7 @@ HEADERS += sandbox/zsandbox.h \
     sandbox/zsandboxproject.h \
     sandbox/zaboutmodule.h \
     sandbox/zrgb2graymodule.h \
+    sandbox/zsurfreconmodule.h\
     $$PWD/ztracemodule.h \
     $$PWD/qcustomplot.h \
     $$PWD/zimageinfomodule.h \
@@ -11,6 +12,7 @@ HEADERS += sandbox/zsandbox.h \
     $$PWD/zmultiscalewatershedmodule.h
 
 SOURCES += sandbox/zsandbox.cpp \
+    sandbox/zsurfreconmodule.cpp\
     sandbox/zexamplemodule.cpp \
     sandbox/zsandboxmodule.cpp \
     sandbox/zsandboxproject.cpp \
@@ -21,3 +23,12 @@ SOURCES += sandbox/zsandbox.cpp \
     $$PWD/zimageinfomodule.cpp \
     $$PWD/zgradientmagnitudemodule.cpp \
     $$PWD/zmultiscalewatershedmodule.cpp
+
+contains(CONFIG, surfrecon) {
+  HEADERS += \
+    $$PWD/surfrecon.h \
+    $$PWD/zsurfreconmodule.h
+
+  SOURCES += \
+    $$PWD/zsurfreconmodule.cpp
+}

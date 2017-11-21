@@ -23,18 +23,18 @@ def print_hdf5_file_structure(file_name):
     
 def print_hdf5_item_structure(g, offset = '  '):
     if (isinstance(g, h5py.File)):
-        print g.file, '(File)', g.name
+        print(g.file, '(File)', g.name)
     elif isinstance(g, h5py.Dataset):
-        print '(Dataset)', g.name, '  len=', g.shape;
+        print('(Dataset)', g.name, '  len=', g.shape);
     elif isinstance(g, h5py.Group):
-        print '(Group)', g.name;
+        print('(Group)', g.name);
     else:
-        print 'Working: unknow item', g.name;
+        print('Working: unknow item', g.name);
         
     if isinstance(g, h5py.File) or isinstance(g, h5py.Group):
-        for key, val in dict(g).iteritems():
+        for key, val in dict(g).items():
             subg = val;
-            print offset, key;
+            print(offset, key);
             print_hdf5_item_structure(subg, offset + '  ');
             
 if __name__ == "__main__":

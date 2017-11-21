@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zflyemorthomvc.h"
 #include "zflyemorthodoc.h"
 #include "zstackpresenter.h"
@@ -39,12 +38,15 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   frame->getView()->setHoverFocus(true);
   frame->updateDvidTargetFromDoc();
   frame->getPresenter()->useHighContrastProtocal(true);
+
+  ZStackView *view = frame->getView();
+
   QList<ZDvidSynapseEnsemble*> seList = doc->getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
-    if (se->getSliceAxis() == frame->getView()->getSliceAxis()) {
-      se->attachView(frame->getView());
+    if (se->getSliceAxis() == view->getSliceAxis()) {
+      se->attachView(view);
     }
   }
 
@@ -52,13 +54,18 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     ZFlyEmToDoList *obj = *iter;
-    obj->attachView(frame->getView());
+    if (obj->getSliceAxis() == view->getSliceAxis()) {
+      obj->attachView(view);
+    }
   }
 
   connect(frame->getPresenter(), SIGNAL(savingStack()),
           frame, SLOT(saveStack()));
   connect(frame->getCompletePresenter(), SIGNAL(highlightModeChanged()),
           frame, SIGNAL(highlightModeChanged()));
+
+  connect(frame->getPresenter(), SIGNAL(movingCrossHairTo(int,int)),
+          frame, SLOT(moveCrossHairTo(int, int)));
 
   return frame;
 }
@@ -107,6 +114,21 @@ void ZFlyEmOrthoMvc::updateDvidTargetFromDoc()
 //    m_mergeProject.setDvidTarget(doc->getDvidTarget());
 //    m_mergeProject.syncWithDvid();
   }
+}
+
+void ZFlyEmOrthoMvc::setCrossHairCenter(double x, double y)
+{
+  ZFlyEmOrthoDoc *doc = getCompleteDocument();
+  if (doc != NULL) {
+    doc->setCrossHairCenter(x, y, getView()->getSliceAxis());
+    emit crossHairChanged();
+  }
+}
+
+void ZFlyEmOrthoMvc::moveCrossHairTo(int x, int y)
+{
+  setCrossHairCenter(x, y);
+  getView()->updateImageScreen(ZStackView::UPDATE_QUEUED);
 }
 
 ZDvidTarget ZFlyEmOrthoMvc::getDvidTarget() const

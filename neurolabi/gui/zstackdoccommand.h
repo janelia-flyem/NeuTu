@@ -10,6 +10,7 @@
 #include "zswcpath.h"
 #include "zdocplayer.h"
 #include "zstackobjectrole.h"
+#include "zglmutils.h"
 
 class ZSwcTree;
 class ZLocsegChain;
@@ -275,6 +276,21 @@ public:
 };
 */
 
+class ChangeSwcNodeType : public ChangeSwcCommand
+{
+public:
+  ChangeSwcNodeType(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ChangeSwcNodeType();
+
+  void setNodeOperation(const std::vector<Swc_Tree_Node*> &nodeArray, int type);
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  int m_newType;
+};
+
 class MergeSwcNode : public ChangeSwcCommand
 {
 public:
@@ -385,12 +401,12 @@ public:
 #endif
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   Swc_Tree_Node *m_node;
   Swc_Tree_Node *m_root;
-  Swc_Tree_Node m_backup;
-  Swc_Tree_Node *m_prevSibling;
-  Swc_Tree_Node *m_lastChild;
+//  Swc_Tree_Node m_backup;
+//  Swc_Tree_Node *m_prevSibling;
+//  Swc_Tree_Node *m_lastChild;
   bool m_nodeInDoc;
 };
 
@@ -401,7 +417,7 @@ public:
                    QUndoCommand *parent = NULL);
   virtual ~DeleteSwcNodeSet();
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   std::set<Swc_Tree_Node*> m_nodeSet;
   bool m_nodeInDoc;
 };
@@ -455,7 +471,7 @@ public:
   virtual ~RemoveSubtree();
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   Swc_Tree_Node *m_node;
 };
 
@@ -546,7 +562,7 @@ public:
   virtual ~RemoveEmptyTree();
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
 //  std::set<ZSwcTree*> m_emptyTreeSet;
 };
 
@@ -631,12 +647,15 @@ public:
                QUndoCommand *parent = NULL);
   virtual ~RemoveObject();
 
+  void setRemoval(const QList<ZStackObject*> &objList);
+  void addRemoval(ZStackObject *obj);
+
   void undo();
   void redo();
 
 private:
   ZStackDoc *m_doc;
-  ZStackObject *m_obj;
+  QSet<ZStackObject*> m_objSet;
   bool m_isInDoc;
 };
 
@@ -668,18 +687,14 @@ class MoveSelected : public ZUndoCommand
   double m_z;
   bool m_swcMoved;
   bool m_punctaMoved;
-  double m_swcScaleX;
-  double m_swcScaleY;
-  double m_swcScaleZ;
-  double m_punctaScaleX;
-  double m_punctaScaleY;
-  double m_punctaScaleZ;
+  glm::mat3 m_swcTransform;
+  glm::mat3 m_punctaTransform;
 public:
   MoveSelected(ZStackDoc *doc, double x, double y,
                double z, QUndoCommand *parent = NULL);
   virtual ~MoveSelected();
-  void setSwcCoordScale(double x, double y, double z);
-  void setPunctaCoordScale(double x, double y, double z);
+  void setSwcTransform(const glm::mat4& mat) { m_swcTransform = glm::mat3(mat); }
+  void setPunctaTransform(const glm::mat4& mat) { m_punctaTransform = glm::mat3(mat); }
   virtual int id() const { return 1; }
   virtual bool mergeWith(const QUndoCommand *other);
   void undo();
@@ -782,7 +797,7 @@ private:
 class AutoTraceAxon : public ZUndoCommand
 {
 public:
-  AutoTraceAxon(ZStackDoc *m_doc, QUndoCommand *parent = NULL);
+  AutoTraceAxon(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~AutoTraceAxon();
 
   void undo();

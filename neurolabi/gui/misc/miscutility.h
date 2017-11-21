@@ -5,6 +5,7 @@
 #include <string>
 #include <set>
 #include <algorithm>
+#include <iostream>
 
 #include "zhistogram.h"
 #include "zstack.hxx"
@@ -18,6 +19,8 @@ class ZGraph;
 class ZIntPoint;
 class ZSwcTree;
 class ZClosedCurve;
+class ZIntCuboid;
+class ZCuboid;
 
 namespace misc {
 
@@ -40,6 +43,9 @@ ZGraph* makeCoOccurGraph(const Stack *stack, int nnbr);
 ZIntPoint getDsIntvFor3DVolume(const ZIntCuboid &box);
 
 ZIntPoint getDsIntvFor3DVolume(double dsRatio);
+int getIsoDsIntvFor3DVolume(double dsRatio, bool powed);
+int getIsoDsIntvFor3DVolume(
+    const ZIntCuboid &box, size_t maxVolume, bool powed);
 
 int GetZoomScale(int zoom);
 
@@ -57,12 +63,42 @@ ZTree<int> *buildSegmentationTree(const Stack *stack);
 
 ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 
+ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
+ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
+
 enum ESampleStackOption {
   SAMPLE_STACK_NN, SAMPLE_STACK_AVERAGE, SAMPLE_STACK_UNIFORM
 };
 
 double SampleStack(const Stack *stack, double x, double y, double z,
                    ESampleStackOption option);
+
+template<typename T>
+void read(std::istream &stream, T &v)
+{
+  stream.read((char*)(&v), sizeof(T));
+}
+
+template<typename T>
+void read(std::istream &stream, T &v, size_t n)
+{
+  stream.read((char*)(&v), sizeof(T) * n);
+}
+
+template<typename T>
+void write(std::ostream &stream, const T &v)
+{
+  stream.write((const char*)(&v), sizeof(T));
+}
+
+template<typename T>
+void write(std::ostream &stream, const T *v, size_t n)
+{
+  stream.write((const char*)(v), sizeof(T) * n);
+}
+
+template<typename T>
+void assign(T *out, const T &v);
 
 /*!
  * \brief Parse hdf5 path
@@ -112,6 +148,14 @@ std::set<T> misc::setdiff(const std::set<T> &s1, const std::set<T> &s2)
   std::set_difference(s1.begin(), s1.end(), s2.begin(), s2.end(),
                       std::inserter(result, result.begin()));
   return result;
+}
+
+template<typename T>
+void misc::assign(T *out, const T &v)
+{
+  if (out != NULL) {
+    *out = v;
+  }
 }
 
 //// partial-specialization optimization for 8-bit numbers

@@ -557,6 +557,7 @@ public:
   ZSwcBranch *extractFurthestBranch();
 
   ZSwcPath getLongestPath();
+  double getLongestPathLength();
 
   std::vector<Swc_Tree_Node*> extractLeaf(Swc_Tree_Node *start);
 
@@ -568,6 +569,14 @@ public:
 
   std::vector<double> computeAllContinuationAngle(bool rotating = false);
   std::vector<double> computeAllBranchingAngle();
+
+  /*!
+   * \brief Computer all terminal directions
+   * \return An array of terminal direction information. Each entry is an array
+   * with the following elements:
+   * (x, y, z, vx, vy, vz,
+   */
+  std::vector<std::vector<double> >computeAllTerminalDirection();
 
   void merge(Swc_Tree *tree, bool freeInput = false);
   void merge(ZSwcTree *tree, bool freeInput = false);
@@ -670,9 +679,17 @@ public:
   const std::vector<Swc_Tree_Node*>& getSwcTreeNodeArray(
       EIteratorOption iteratorOption = DEPTH_FIRST_ITERATOR) const;
 
-  void labelStack(Stack *stack);
+  void labelStack(Stack *stack) const;
 
-  void labelStack(ZStack* stack,int v);
+  void labelStack(ZStack* stack,int v) const;
+  void labelStack(ZStack *stack) const;
+  void labelStackByType(ZStack *stack) const;
+
+  /*!
+   * \brief Convert typed nodes (type>0) in a swc object into a stack.
+   */
+  ZStack* toTypeStack() const;
+
   /*!
    * \brief Get the length of the longest segment
    * \return

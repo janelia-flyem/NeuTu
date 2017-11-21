@@ -28,27 +28,27 @@ bool ZStackDocReader::readFile(const QString &filePath)
   m_filePath = filePath;
 
   switch (ZFileType::FileType(filePath.toStdString())) {
-  case ZFileType::SWC_FILE:
+  case ZFileType::FILE_SWC:
     loadSwc(filePath);
     break;
-  case ZFileType::LOCSEG_CHAIN_FILE:
+  case ZFileType::FILE_LOCSEG_CHAIN:
     loadLocsegChain(filePath);
     break;
-  case ZFileType::SWC_NETWORK_FILE:
+  case ZFileType::FILE_SWC_NETWORK:
     loadSwcNetwork(filePath);
     break;
-  case ZFileType::OBJECT_SCAN_FILE:
-  case ZFileType::TIFF_FILE:
-  case ZFileType::V3D_PBD_FILE:
-  case ZFileType::LSM_FILE:
-  case ZFileType::V3D_RAW_FILE:
-  case ZFileType::MC_STACK_RAW_FILE:
-  case ZFileType::DVID_OBJECT_FILE:
+  case ZFileType::FILE_OBJECT_SCAN:
+  case ZFileType::FILE_TIFF:
+  case ZFileType::FILE_V3D_PBD:
+  case ZFileType::FILE_LSM:
+  case ZFileType::FILE_V3D_RAW:
+  case ZFileType::FILE_MC_STACK_RAW:
+  case ZFileType::FILE_DVID_OBJECT:
     loadStack(filePath);
     break;
-  case ZFileType::V3D_APO_FILE:
-  case ZFileType::V3D_MARKER_FILE:
-  case ZFileType::RAVELER_BOOKMARK:
+  case ZFileType::FILE_V3D_APO:
+  case ZFileType::FILE_V3D_MARKER:
+  case ZFileType::FILE_RAVELER_BOOKMARK:
     loadPuncta(filePath);
     break;
   default:
@@ -96,10 +96,10 @@ void ZStackDocReader::addLocsegChain(ZLocsegChain *chain)
 void ZStackDocReader::loadStack(const QString &filePath)
 {
   ZFileType::EFileType type = ZFileType::FileType(filePath.toStdString());
-  if (type == ZFileType::OBJECT_SCAN_FILE ||
-      type == ZFileType::DVID_OBJECT_FILE) {
+  if (type == ZFileType::FILE_OBJECT_SCAN ||
+      type == ZFileType::FILE_DVID_OBJECT) {
     ZSparseObject *sobj = new ZSparseObject;
-    if (type == ZFileType::DVID_OBJECT_FILE) {
+    if (type == ZFileType::FILE_DVID_OBJECT) {
       sobj->importDvidObject(filePath.toStdString());
     } else {
       sobj->load(filePath.toStdString().c_str());

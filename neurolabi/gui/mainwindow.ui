@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0z</string>
+   <string/>
   </property>
   <property name="iconSize">
    <size>
@@ -411,8 +411,18 @@
       <addaction name="actionGenerate_PAM_Actor"/>
       <addaction name="actionGenerate_MB_Actor"/>
       <addaction name="actionGenerate_MB_Conn_Actor"/>
+      <addaction name="actionGenerate_MB_SynapseT_Actor"/>
+      <addaction name="actionGenerate_MB_SynapseS_Actor"/>
       <addaction name="separator"/>
       <addaction name="actionMake_Movie_MB"/>
+     </widget>
+     <widget class="QMenu" name="menuFIB19">
+      <property name="title">
+       <string>FIB19</string>
+      </property>
+      <addaction name="actionGenerate_VS_Cast"/>
+      <addaction name="separator"/>
+      <addaction name="actionMake_Movie_3"/>
      </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
@@ -430,6 +440,7 @@
      <addaction name="menuHackathon"/>
      <addaction name="menuTEM_Paper"/>
      <addaction name="menuMB_Paper"/>
+     <addaction name="menuFIB19"/>
      <addaction name="menuSeven_Column"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
@@ -1526,6 +1537,26 @@
   <action name="actionSeed_Mask">
    <property name="text">
     <string>Foreground Mask</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_SynapseT_Actor">
+   <property name="text">
+    <string>Generate MB-SynapseT Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_SynapseS_Actor">
+   <property name="text">
+    <string>Generate MB-SynapseS Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_VS_Cast">
+   <property name="text">
+    <string>Generate VS Cast</string>
+   </property>
+  </action>
+  <action name="actionMake_Movie_3">
+   <property name="text">
+    <string>Make Movie</string>
    </property>
   </action>
  </widget>

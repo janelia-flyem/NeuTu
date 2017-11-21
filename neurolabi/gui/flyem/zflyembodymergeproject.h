@@ -133,11 +133,11 @@ signals:
   void bodyMerged(QList<uint64_t> objLabelList);
   void mergeUploaded();
   void splitSent(ZDvidTarget target, uint64_t bodyId);
-  void locating2DViewTriggered(ZStackViewParam);
+  void locating2DViewTriggered(int, int, int, int);
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
   void coarseBodyWindowCreatedInThread();
-  void checkingInBody(uint64_t bodyId);
+  void checkingInBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
 
   /*
   void messageGenerated(QString, bool appending = true);
@@ -150,7 +150,7 @@ public slots:
   void shallowClear();
   void mergeBody();
   void setLoadingLabel(bool state);
-  void uploadResult();
+  void uploadResult(bool mergingToLargest);
   void saveMergeOperation();
 //  void update3DBodyView(const ZStackObjectSelector &selector);
 //  void update3DBodyView(
@@ -175,7 +175,7 @@ private:
 //  void update3DBodyViewPlane(
 //      const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam);
 //  void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
-  void uploadResultFunc();
+  void uploadResultFunc(bool mergingToLargest);
 //  void makeCoarseBodyWindow(ZStackDoc *doc);
 //  void makeBodyWindow();
   void connectSignalSlot();
@@ -184,6 +184,10 @@ private:
 
   void mergeBodyAnnotation(
       uint64_t targetId, const std::vector<uint64_t> &bodyId);
+
+  uint64_t getTargetId(
+      uint64_t targetId, const std::vector<uint64_t> &bodyId,
+      bool mergingToLargest);
 
   //void updateSelection();
 

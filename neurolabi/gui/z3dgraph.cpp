@@ -228,8 +228,13 @@ void Z3DGraphEdge::print()
 
 Z3DGraph::Z3DGraph()
 {
-  m_type = ZStackObject::TYPE_3D_GRAPH;
+  m_type = GetType();
   m_target = ZStackObject::TARGET_3D_ONLY;
+}
+
+Z3DGraphPtr Z3DGraph::MakePointer()
+{
+  return std::make_shared<Z3DGraph>();
 }
 
 bool Z3DGraph::isEmpty() const

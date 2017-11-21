@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 #include "tz_error.h"
 #include "tz_utilities.h"
@@ -636,8 +637,12 @@ bool ZCuboid::intersectLine(
 ZIntCuboid ZCuboid::toIntCuboid() const
 {
   ZIntCuboid cuboid;
-  cuboid.setFirstCorner(m_firstCorner.toIntPoint());
-  cuboid.setLastCorner(m_lastCorner.toIntPoint());
+  cuboid.setFirstCorner(std::floor(m_firstCorner.getX()),
+                        std::floor(m_firstCorner.getY()),
+                        std::floor(m_firstCorner.getZ()));
+  cuboid.setLastCorner(std::ceil(m_lastCorner.getX()),
+                       std::ceil(m_lastCorner.getY()),
+                       std::ceil(m_lastCorner.getZ()));
 
   return cuboid;
 }

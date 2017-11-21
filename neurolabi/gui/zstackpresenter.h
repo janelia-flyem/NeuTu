@@ -265,6 +265,8 @@ public:
    */
   void moveImageToMouse(double srcX, double srcY, int mouseX, int mouseY);
 
+  void moveCrossHairToMouse(int mouseX, int mouseY);
+
   void increaseZoomRatio();
   void decreaseZoomRatio();
 
@@ -420,9 +422,9 @@ signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
   void bodyAnnotationTriggered();
-  void bodyCheckinTriggered();
+  void bodyCheckinTriggered(FlyEM::EBodySplitMode mode);
   void bodyForceCheckinTriggered();
-  void bodyCheckoutTriggered();
+  void bodyCheckoutTriggered(FlyEM::EBodySplitMode mode);
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
   void exitingRectEdit();
@@ -437,6 +439,7 @@ signals:
   void checkingBookmark();
   void uncheckingBookmark();
   void savingStack();
+  void movingCrossHairTo(int x, int y);
 
 protected:
   void init();

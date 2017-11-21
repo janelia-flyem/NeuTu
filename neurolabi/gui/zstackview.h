@@ -9,10 +9,10 @@
 #include <QImage>
 #include <QWidget>
 #include <QPixmap>
+#include <vector>
 
 #include "zstackframe.h"
 #include "zparameter.h"
-#include <vector>
 #include "tz_image_lib_defs.h"
 #include "neutube.h"
 #include "zpaintbundle.h"
@@ -51,7 +51,8 @@ class ZScrollSliceStrategy;
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
  *
- * ZStackView provides a widget of showing 3D data slice by slice. It displays
+ * ZStackView provides a widget of showing 3D data slice by slice, which can be
+ * along any of the three axes. It displays
  * the data in an image screen with the support of slice change and zooming. It
  * is designed to be the view component of the MVC framework, which can be
  * represented by the ZStackFrame class (and its derivatives) or the
@@ -75,7 +76,9 @@ public:
   void reset(bool updatingScreen = true);
 
   enum EUpdateOption {
-    UPDATE_NONE, UPDATE_QUEUED, UPDATE_DIRECT
+    UPDATE_NONE, //No update
+    UPDATE_QUEUED, //Put updating request in a queue
+    UPDATE_DIRECT //Update immediately
   };
 
   /*!
@@ -85,7 +88,12 @@ public:
    */
   void updateImageScreen(EUpdateOption option);
 
-  //void updateScrollControl();
+  /*!
+   * \brief Restore the view from a bad setting
+   *
+   * The definition of a bad setting is provided by ZImageWidget::isBadView().
+   */
+  void restoreFromBadView();
 
   /*!
    * \brief Get the parent frame
@@ -110,7 +118,6 @@ public:
    * \brief Get the widget of data display
    */
   inline ZImageWidget* imageWidget() const { return m_imageWidget; }
-  //inline ZImageWidget* screen() { return m_imageWidget; }
 
   inline QProgressBar* progressBar() { return m_progress; }
 
@@ -133,6 +140,10 @@ public:
    * The value will be clipped if \a slice is out of range.
    */
   void setSliceIndex(int slice);
+
+  /*!
+   * \brief Set the slice index without emitting signal.
+   */
   void setSliceIndexQuietly(int slice);
 
   /*!
@@ -161,11 +172,16 @@ public:
    */
   ZStack *stackData() const;
 
-  //set up the view after the document is ready
+  /*!
+   * \brief set up the view after the document is ready
+   */
   void prepareDocument();
 
   virtual void resizeEvent(QResizeEvent *event);
 
+  /*!
+   * \brief Get the information of the view as a list of strings.
+   */
   QStringList toStringList() const;
 
   //void setImageWidgetCursor(const QCursor &cursor);
@@ -174,18 +190,30 @@ public:
    */
   void setScreenCursor(const QCursor &cursor);
 
+  /*!
+   * \brief Set up the scroll strategy.
+   *
+   * The scroll strategy \a strategy controls the scrolling behavior of the view.
+   * The \a strategy pointer is owned by the view.
+   */
   void setScrollStrategy(ZScrollSliceStrategy *strategy);
 
-  //void resetScreenCursor();
+  /*!
+   * \brief Intensity threshold for stack data.
+   */
   int getIntensityThreshold();
 
-  //void open3DWindow();
+  /*!
+   * \brief Save the current scene in an image file.
+   */
   void takeScreenshot(const QString &filename);
 
-  bool isDepthChangable();
-
-  virtual void paintStackBuffer();
+  void paintStackBuffer();
   void paintMaskBuffer();
+
+  /*!
+   * \brief Update the buffer of object canvas.
+   */
   void paintObjectBuffer();
   bool paintTileCanvasBuffer();
 
@@ -221,19 +249,35 @@ public:
 
 public:
   bool isViewPortFronzen() const;
+
+  /*!
+   * \brief Check if the view depth is frozen.
+   *
+   * The depth cannot be changed if it is frozen.
+   */
   bool isDepthFronzen() const;
+
   bool isViewChangeEventBlocked() const;
+
+  /*!
+   * \brief Check if the view is scrollable on depth.
+   *
+   * If the depth is not scrollable, the user will not be able to scroll the
+   * slice with mouse wheels.
+   */
+  bool isDepthScrollable();
+
 
   void setViewPortFrozen(bool state);
   void setDepthFrozen(bool state);
   void blockViewChangeEvent(bool state);
 
-  void updateViewBox();
-
   void zoomTo(int x, int y, int z);
   void zoomTo(const ZIntPoint &pt);
 
   void zoomTo(int x, int y, int z, int w);
+
+  void printViewParam() const;
 
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
@@ -244,9 +288,26 @@ public: //Message system implementation
   void enableMessageManager();
 
 public slots:
-//  void updateView();
+  /*!
+   * \brief Update view settings from the stack box.
+   *
+   * It resets view parameters according the current bounding box of the stack.
+   */
+  void updateViewBox();
+
+  /*!
+   * \brief Redraw the whole scene.
+   */
   void redraw(EUpdateOption option = UPDATE_QUEUED);
+
+  /*!
+   * \brief Redraw objects.
+   *
+   * It redraws objects in the object canvases.
+   */
   void redrawObject();
+
+  void processStackChange(bool rangeChanged);
   //void updateData(int nslice, int threshold = -1);
   //void updateData();
   //void updateSlice(int nslide);
@@ -294,6 +355,8 @@ public slots:
 
 
   void setView(const ZStackViewParam &param);
+  void setViewPort(const QRect &rect);
+  void maximizeViewPort();
 
   void updateZSpinBoxValue();
 
@@ -305,6 +368,7 @@ public slots:
   void hideThresholdControl();
 
   void setDynamicObjectAlpha(int alpha);
+  void resetViewProj();
 
 
 signals:
@@ -335,6 +399,7 @@ public:
       NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
+  ZViewProj getViewProj() const;
 
   //Get transform from view port to proj region
   ZStTransform getViewTransform() const;
@@ -350,6 +415,10 @@ public:
   void setViewPortCenter(int x, int y, int z, NeuTube::EAxisSystem system);
   void setViewPortCenter(const ZIntPoint &center, NeuTube::EAxisSystem system);
 
+  void setViewProj(int x0, int y0, double zoom);
+  void setViewProj(const QPoint &pt, double zoom);
+  void setViewProj(const ZViewProj &vp);
+
   ZIntPoint getViewCenter() const;
 
   void paintMultiresImageTest(int resLevel);
@@ -362,6 +431,7 @@ public:
 
   bool isViewChanged(const ZStackViewParam &param) const;
   void processViewChange(bool redrawing, bool depthChanged);
+  void processViewChange(bool redrawing);
 //  void processViewChange(const ZStackViewParam &param);
 
   void setHoverFocus(bool on);
@@ -372,14 +442,17 @@ public:
 
 
 public: //Change view parameters
+  void move(const QPoint& src, const QPointF &dst);
+  void moveViewPort(int dx, int dy);
+
   void increaseZoomRatio();
   void decreaseZoomRatio();
   void increaseZoomRatio(int x, int y, bool usingRef = true);
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
 
-  void zoomWithWidthAligned(int x0, int x1, int cy);
-  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
-  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
+//  void zoomWithWidthAligned(int x0, int x1, int cy);
+//  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
+//  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
 //  void notifyViewChanged(
 //      NeuTube::View::EExploreAction action = NeuTube::View::EXPLORE_UNKNOWN);
   void highlightPosition(int x, int y, int z);
@@ -438,6 +511,10 @@ protected:
 
   bool event(QEvent *event);
 
+private:
+  void updateSliceFromZ(int z);
+  void recordViewParam();
+
 protected:
   //ZStackFrame *m_parent;
   ZSlider *m_depthControl;
@@ -484,7 +561,7 @@ protected:
 
   ZPaintBundle m_paintBundle;
   bool m_isRedrawBlocked;
-  QMutex m_mutex;
+//  QMutex m_mutex;
 
   ZBodySplitButton *m_splitButton;
   ZMessageManager *m_messageManager;
@@ -494,6 +571,8 @@ protected:
   bool m_viewChangeEventBlocked;
 
   ZScrollSliceStrategy *m_sliceStrategy;
+
+  ZStackViewParam m_oldViewParam;
 //  ZStackDoc::ActiveViewObjectUpdater m_objectUpdater;
 };
 

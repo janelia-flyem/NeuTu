@@ -6,6 +6,7 @@
 #include <set>
 #include <map>
 #include <utility>
+#include <fstream>
 
 #ifdef _QT_GUI_USED_
 #include <QByteArray>
@@ -122,6 +123,9 @@ public:
   void copyDataFrom(const ZObject3dScan &obj);
   void copyAttributeFrom(const ZObject3dScan &obj);
 
+  void write(std::ostream &stream) const;
+  void read(std::istream &stream);
+
   /*!
    * \brief Import a dvid object
    *
@@ -155,6 +159,8 @@ public:
    * \brief Import object from a byte array
    */
   bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber);
+
+  static size_t CountVoxelNumber(const char *byteArray, size_t byteNumber);
 
   bool importDvidObjectBuffer(const std::vector<char> &byteArray);
 
@@ -288,13 +294,21 @@ public:
 
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
+  void downsampleMax(const ZIntPoint &dsIntv);
 
   void upSample(int xIntv, int yIntv, int zIntv);
+  void upSample(const ZIntPoint &dsIntv);
 
   Stack* toStack(int *offset = NULL, int v = 1) const;
   Stack* toStackWithMargin(int *offset, int v, int margin) const;
 
+  /*!
+   * \brief Make a stack from the object.
+   *
+   * The downsample intervals of the object will be passed to the stack too.
+   */
   ZStack* toStackObject(int v = 1, ZStack *result = NULL) const;
+
   ZStack* toStackObjectWithMargin(int v, int margin) const;
 
   ZStack* toVirtualStack() const;
@@ -372,6 +386,9 @@ public:
   ZObject3dScan getSlice(int minZ, int maxZ) const;
   ZObject3dScan interpolateSlice(int z) const;
   ZObject3dScan getFirstSlice() const;
+
+  void exportImageSlice(int minZ, int maxZ, const std::string outputFolder) const;
+  void exportImageSlice(const std::string outputFolder) const;
 
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
@@ -559,7 +576,7 @@ public:
    *
    * \return true iff the object is saved successfully
    */
-  //bool exportHdf5(const std::string &filePath, const std::string &key) const;
+  bool exportHdf5(const std::string &filePath, const std::string &key) const;
 
   /*!
    * \brief Check if two objects have overlap
@@ -574,6 +591,8 @@ public:
    */
   bool isAdjacentTo(ZObject3dScan &obj);
 
+
+  /*
   uint64_t getLabel() const {
     return m_label;
   }
@@ -581,20 +600,26 @@ public:
   void setLabel(uint64_t label) {
     m_label = label;
   }
+  */
+
 
   class Segment {
   public:
-    Segment(int z = 0, int y = 0, int x0 = 0, int x1 = 0) :
+    Segment(int z = 0, int y = 0, int x0 = 0, int x1 = -1) :
       m_x0(x0), m_x1(x1), m_y(y), m_z(z) {}
     inline int getZ() const { return m_z; }
     inline int getY() const { return m_y; }
     inline int getStart() const { return m_x0; }
     inline int getEnd() const { return m_x1; }
-    inline void set(int z = 0, int y = 0, int x0 = 0, int x1 = 0) {
+    inline void set(int z, int y, int x0, int x1) {
       m_x0 = x0;
       m_x1 = x1;
       m_y = y;
       m_z = z;
+    }
+    inline bool isEmpty() const { return m_x0 > m_x1; }
+    void clear() {
+      set(0, 0, 0, -1);
     }
 
   private:
@@ -606,16 +631,34 @@ public:
 
   class ConstSegmentIterator {
   public:
+    //The iterator always starts from the position prior to the first element.
     ConstSegmentIterator(const ZObject3dScan *obj = NULL);
-    const Segment& next();
+    const Segment& next(); //Go to next and return the elment
+    const Segment& current() const;
+    bool hasNext() const;
+    void advance();
+
+  private:
+    void skipOverEmptyStripe();
+
+  private:
+    const ZObject3dScan *m_obj;
+    size_t m_nextStripeIndex;
+    int m_nextSegmentIndex;
+    Segment m_seg;
+  };
+
+  class ConstVoxelIterator {
+  public:
+    ConstVoxelIterator(const ZObject3dScan *obj = NULL);
+    const ZIntPoint next();
     bool hasNext() const;
     void advance();
 
   private:
     const ZObject3dScan *m_obj;
-    size_t m_stripeIndex;
-    int m_segmentIndex;
-    Segment m_seg;
+    ConstSegmentIterator m_segIter;
+    int m_nextX;
   };
 
   std::vector<ZObject3dStripe>& getStripeArray() {
@@ -637,7 +680,7 @@ private:
 protected:
   std::vector<ZObject3dStripe> m_stripeArray;
   bool m_isCanonized;
-  uint64_t m_label;
+//  uint64_t m_label;
   bool m_blockingEvent;
   ZIntPoint m_dsIntv; //Downsampling hint, mainly for display
 //  NeuTube::EAxis m_sliceAxis;

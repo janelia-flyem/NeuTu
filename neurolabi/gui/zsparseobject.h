@@ -28,7 +28,7 @@ public:
    */
   void labelStack(ZStack *stack) const;
 
-  void setLabel(int label);
+  void setLabel(uint64_t label);
 
   void display(ZPainter &painter, int z, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
@@ -56,7 +56,7 @@ private:
 
 private:
   //ZObject3dScan m_obj;
-  int m_label; //Label = 0 is reserved for eraser
+//  int m_label; //Label = 0 is reserved for eraser
 
 #if defined(_USE_OPENVDB_)
   //ZOpenVdbObject m_voxelValueObject;

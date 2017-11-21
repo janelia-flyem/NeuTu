@@ -150,6 +150,7 @@ inline size_t allByteNumber(const Stack *stack) {
  * \brief Pointer to the raw data
  */
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
+uint8_t* array8(const Stack *stack, int x, int y, int z);
 
 uint16_t* guardedArray16(const Stack *stack);
 float* guardedArrayFloat32(const Stack *stack);
@@ -251,6 +252,10 @@ Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv,
 Stack* downsampleMinIgnoreZero(const Stack *stack, int xintv, int yintv, int zintv,
                      Stack *result = NULL);
 void print(const Stack *stack);
+
+
+Stack* downsampleMean(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
 
 /*!
  * \brief Print the voxel values of a stack
@@ -394,6 +399,7 @@ Stack* readSc(const std::string &filePath);
 Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
 char* toMrawBuffer(const Mc_Stack *stack, size_t *length);
 void readStackOffset(const std::string &filePath, int *x, int *y, int *z);
+void readStackIntv(const std::string &filePath, int *ix, int *iy, int *iz);
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);
 
@@ -446,6 +452,7 @@ void drawInteger(Stack *canvas, int n, int dx, int dy, int dz, int interval = 10
 
 //Workspace APIs
 Stack_Watershed_Workspace *MakeStackWatershedWorkspace(const Stack *stack);
+Stack_Watershed_Workspace *MakeStackWatershedWorkspace(size_t volume);
 void KillStackWatershedWorkspace(Stack_Watershed_Workspace *ws);
 
 //Experimenting APIs
@@ -454,5 +461,7 @@ void shrinkBorder(const Stack *stack, int r, int nnbr = 6);
 Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws);
 
 }
+
+#define MRAW_MAGIC_NUMBER 1836212599
 
 #endif // C_STACK_H

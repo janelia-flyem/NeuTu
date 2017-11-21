@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#ssh emrecon2 '/opt/bin/ntupd'
+ssh emrecon10 '/opt/bin/ntupd' > /tmp/emrecon10.update.out &
+ssh emrecon11 '/opt/bin/ntupd' > /tmp/emrecon11.update.out &
+ssh emrecon12 '/opt/bin/ntupd' > /tmp/emrecon11.update.out &
+ssh emrecon13 '/opt/bin/ntupd' > /tmp/emrecon13.update.out &
+ssh emrecon14 '/opt/bin/ntupd' > /tmp/emrecon14.update.out &
+ssh emrecon15 '/opt/bin/ntupd' > /tmp/emrecon15.update.out &
+ssh emrecon16 '/opt/bin/ntupd' > /tmp/emrecon16.update.out &
+ssh emrecon17 '/opt/bin/ntupd' > /tmp/emrecon17.update.out &
+ssh emrecon19 '/opt/bin/ntupd' > /tmp/emrecon19.update.out &
+ssh emrecon42 '/opt/bin/ntupd' > /tmp/emrecon42.update.out &
+ssh emrecon99 '/opt/bin/ntupd' > /tmp/emrecon99.update.out &
+ssh ordishc-ws1 '/opt/bin/ntupd' > /tmp/ordishc-ws1.update.out &
+ssh 10.123.13.46 '/opt/bin/ntupd' > /tmp/10.123.13.46.update.out &
+ssh plazas-ws1 '/opt/bin/ntupd' > /tmp/plazas-ws1.update.out &
+
+ 

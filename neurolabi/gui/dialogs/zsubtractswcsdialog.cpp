@@ -18,17 +18,17 @@ void ZSubtractSWCsDialog::init()
 {
   QVBoxLayout *alllayout = new QVBoxLayout;
 
-  m_subtractSWCsWidget = new ZSelectFileWidget(ZSelectFileWidget::OPEN_MULTIPLE_FILES, "Subtract SWCs:",
+  m_subtractSWCsWidget = new ZSelectFileWidget(ZSelectFileWidget::FileMode::OpenMultipleFiles, "Subtract SWCs:",
                                                tr("SWCs (*.swc)"));
   alllayout->addWidget(m_subtractSWCsWidget);
 
-  m_inputSWCWidget = new ZSelectFileWidget(ZSelectFileWidget::OPEN_SINGLE_FILE, "From SWC:",
+  m_inputSWCWidget = new ZSelectFileWidget(ZSelectFileWidget::FileMode::OpenSingleFile, "From SWC:",
                                            tr("SWCs (*.swc)"));
   alllayout->addWidget(m_inputSWCWidget);
 
   alllayout->addSpacing(5);
 
-  m_outputSWCWidget = new ZSelectFileWidget(ZSelectFileWidget::SAVE_FILE, "Output SWC:",
+  m_outputSWCWidget = new ZSelectFileWidget(ZSelectFileWidget::FileMode::SaveFile, "Output SWC:",
                                             tr("SWC (*.swc)"));
   alllayout->addWidget(m_outputSWCWidget);
 

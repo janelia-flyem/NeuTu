@@ -14,7 +14,7 @@
 #include "tz_stack_lib.h"
 #include "zstack.hxx"
 #include "tz_fimage_lib.h"
-#include "tz_xml_utils.h"
+//#include "tz_xml_utils.h"
 #include "tz_stack_relation.h"
 #include "zfilelist.h"
 #include "c_stack.h"
@@ -31,6 +31,7 @@
 #include "zstackfactory.h"
 #include "zpoint.h"
 #include "zintcuboid.h"
+#include "misc/miscutility.h"
 
 using namespace std;
 
@@ -83,8 +84,7 @@ ZStack::ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual)
   setOffset(box.getFirstCorner());
 }
 
-ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/) :
-  m_stack(NULL)
+ZStack::ZStack(Mc_Stack *stack/*, C_Stack::Mc_Stack_Deallocator *dealloc*/)
 {
   init();
 
@@ -397,9 +397,9 @@ Stack *ZStack::averageOfAllChannels()
 
 void ZStack::init()
 {
-  m_stack = NULL;
-  m_dealloc = NULL;
-  m_buffer[0] = '\0';
+//  m_stack = NULL;
+//  m_dealloc = NULL;
+//  m_buffer[0] = '\0';
   //m_singleChannelStackVector.resize(nchannel);
 //  m_preferredZScale = 1.0;
   //m_source = NULL;
@@ -494,22 +494,11 @@ bool ZStack::isDeprecated(EComponent component) const
 void ZStack::clear()
 {
   deprecate(ZStack::MC_STACK);
+  clearChannelColors();
+}
 
-  /*
-  if (m_stack != NULL) {
-    m_delloc(m_stack);
-  }
-  */
-
-  /*
-  for (size_t i=0; i<m_singleChannelStackVector.size(); i++) {
-    if (m_singleChannelStackVector[i] != NULL) {
-      delete m_singleChannelStackVector[i];
-    }
-  }
-  m_singleChannelStackVector.clear();
-*/
-
+void ZStack::clearChannelColors()
+{
 #ifdef _NEUTUBE_
   for (size_t i=0; i<m_channelColors.size(); ++i)
     delete m_channelColors[i];
@@ -522,26 +511,46 @@ void ZStack::setChannelNumber(int nchannel)
   C_Stack::setChannelNumber(m_stack, nchannel);
 }
 
+void ZStack::useChannelColors(bool on)
+{
+  m_usingChannelColors = on;
+}
+
 void ZStack::initChannelColors()
 {
 #ifdef _NEUTUBE_
-  if (m_channelColors.size() == (size_t)channelNumber()) {
-    return;
-  }
-  for (int i=0; i<channelNumber(); ++i) {
-    m_channelColors.push_back(new ZVec3Parameter(QString("Ch%1").arg(i+1),
-                                                 glm::vec3(0.f)));
-    m_channelColors[i]->setStyle("COLOR");
-  }
-  if (channelNumber() == 1)
-    m_channelColors[0]->set(glm::vec3(1.f,1.f,1.f));
-  else {
-    m_channelColors[0]->set(glm::vec3(1.f,0.f,0.f));
-    m_channelColors[1]->set(glm::vec3(0.f,1.f,0.f));
-    if (channelNumber() > 2)
-      m_channelColors[2]->set(glm::vec3(0.f,0.f,1.f));
+  if (m_usingChannelColors) {
+    if (m_channelColors.size() == (size_t)channelNumber()) {
+      return;
+    }
+    for (int i=0; i<channelNumber(); ++i) {
+      m_channelColors.push_back(new ZVec3Parameter(QString("Ch%1").arg(i+1),
+                                                   glm::vec3(0.f)));
+      m_channelColors[i]->setStyle("COLOR");
+    }
+    if (channelNumber() == 1)
+      m_channelColors[0]->set(glm::vec3(1.f,1.f,1.f));
+    else {
+      m_channelColors[0]->set(glm::vec3(1.f,0.f,0.f));
+      m_channelColors[1]->set(glm::vec3(0.f,1.f,0.f));
+      if (channelNumber() > 2)
+        m_channelColors[2]->set(glm::vec3(0.f,0.f,1.f));
+    }
   }
 #endif
+}
+
+std::string ZStack::getTransformMeta() const
+{
+  std::string meta;
+  ZIntPoint offset = getOffset();
+  ZIntPoint dsIntv = getDsIntv();
+  if (!offset.isZero() || !dsIntv.isZero()) {
+    meta = "@transform ";
+    meta += offset.toString() + " " + dsIntv.toString();
+  }
+
+  return meta;
 }
 
 void ZStack::removeChannel(int c)
@@ -647,6 +656,32 @@ bool ZStack::load(const Stack *ch1, const Stack *ch2, const Stack *ch3)
   return true;
 }
 
+void ZStack::read(std::istream &stream)
+{
+  clear();
+
+  int kind = GREY;
+  misc::read(stream, kind);
+  int channel = 0;
+  misc::read(stream, channel);
+
+  m_offset.read(stream);
+  ZIntPoint dim;
+  dim.read(stream);
+
+  m_stack = C_Stack::make(kind, dim.getX(), dim.getY(), dim.getZ(), channel);
+  stream.read((char*)(m_stack->array), C_Stack::allByteNumber(m_stack));
+}
+
+void ZStack::write(std::ostream &stream) const
+{
+  misc::write(stream, m_stack->kind);
+  misc::write(stream, m_stack->nchannel);
+  m_offset.write(stream);
+  ZIntPoint dim(width(), height(), depth());
+  dim.write(stream);
+  stream.write((const char*)(m_stack->array), C_Stack::allByteNumber(m_stack));
+}
 
 void ZStack::setSource(const string &filepath, int channel)
 {
@@ -677,10 +712,10 @@ int ZStack::getChannelNumber(const string &filepath)
   int nchannel = 0;
   ZFileType::EFileType type = ZFileType::FileType(filepath);
 
-  if (type == ZFileType::TIFF_FILE ||
-      type == ZFileType::LSM_FILE) {
+  if (type == ZFileType::FILE_TIFF ||
+      type == ZFileType::FILE_LSM) {
     Tiff_Reader *reader;
-    if (type == ZFileType::TIFF_FILE) {
+    if (type == ZFileType::FILE_TIFF) {
       reader = Open_Tiff_Reader((char*) filepath.c_str(), NULL, 0);
     } else {
       reader = Open_Tiff_Reader((char*) filepath.c_str(), NULL, 1);
@@ -725,7 +760,7 @@ int ZStack::getChannelNumber(const string &filepath)
     nchannel = image->number_channels;
     Kill_Tiff_Image(image);
     Free_Tiff_Reader(reader);
-  } else if (type == ZFileType::V3D_RAW_FILE) {
+  } else if (type == ZFileType::FILE_V3D_RAW) {
     FILE *fp = Guarded_Fopen(filepath.c_str(), "rb", "Read_Raw_Stack_C");
 
     char formatkey[] = "raw_image_stack_by_hpeng";
@@ -762,7 +797,7 @@ int ZStack::getChannelNumber(const string &filepath)
 
     nchannel = sz[3];
     fclose(fp);
-  } else if (type == ZFileType::PNG_FILE) {
+  } else if (type == ZFileType::FILE_PNG) {
     //No support for multi-channel png yet
     return 1;
   }
@@ -778,8 +813,8 @@ string ZStack::save(const string &filepath) const
     resultFilePath = filepath;
     if ((channelNumber() > 1 && kind() != GREY && kind() != GREY16) ||
         (getVoxelNumber() > 2147483648)) { //save as raw
-      if (ZFileType::FileType(filepath) != ZFileType::V3D_RAW_FILE ||
-          ZFileType::FileType(filepath) != ZFileType::MC_STACK_RAW_FILE) {
+      if (ZFileType::FileType(filepath) != ZFileType::FILE_V3D_RAW ||
+          ZFileType::FileType(filepath) != ZFileType::FILE_MC_STACK_RAW) {
         std::cout << "Unsupported data format for " << resultFilePath << endl;
         resultFilePath += ".raw";
         std::cout << resultFilePath << " saved instead." << endl;
@@ -788,11 +823,7 @@ string ZStack::save(const string &filepath) const
   }
 
   if (!resultFilePath.empty()) {
-    ZString meta;
-    if (m_offset.getX() > 0 || m_offset.getY() > 0 || m_offset.getZ() > 0) {
-      meta = "@offset ";
-      meta += m_offset.toString();
-    }
+    ZString meta = getTransformMeta();
     C_Stack::write(resultFilePath.c_str(), m_stack, meta.c_str());
   }
 
@@ -1264,7 +1295,7 @@ bool ZStack::isTracable()
 bool ZStack::isSwc()
 {
   if (isVirtual()) {
-    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::SWC_FILE;
+    return ZFileType::FileType(m_source.firstUrl()) == ZFileType::FILE_SWC;
     /*
     if (m_source != NULL) {
       if (m_source->type == STACK_DOC_SWC_FILE) {
@@ -1867,6 +1898,7 @@ void ZStack::printInfo() const
   std::cout << "  Channel number: " << channelNumber() << std::endl;
   std::cout << "  Voxel type: " << kind() << std::endl;
   std::cout << "  Offset: " << getOffset().toString() << std::endl;
+  std::cout << "  Ds Intv: " << getDsIntv().toString() << std::endl;
 
   if (isEmpty()) {
     std::cout << "  Empty stack." << std::endl;
@@ -2155,6 +2187,43 @@ void ZStack::downsampleMin(int xintv, int yintv, int zintv)
       C_Stack::view(result, &dst, c);
       C_Stack::view(original, &src, c);
       C_Stack::downsampleMin(&src, xintv, yintv, zintv, &dst);
+    }
+
+    setData(result);
+  }
+}
+
+void ZStack::downsampleMean(int xintv, int yintv, int zintv)
+{
+  if (xintv == 0 && yintv == 0 && zintv == 0) {
+    return;
+  }
+
+  int w = width();
+  int h = height();
+  int d = depth();
+  int swidth = w / (xintv + 1) + (w % (xintv + 1) > 0);
+  int sheight = h / (yintv + 1) + (h % (yintv + 1) > 0);
+  int sdepth = d / (zintv + 1) + (d % (zintv + 1) > 0);
+
+  m_offset.setX(m_offset.getX() / (xintv + 1));
+  m_offset.setY(m_offset.getY() / (yintv + 1));
+  m_offset.setZ(m_offset.getZ() / (zintv + 1));
+
+  if (isVirtual()) {
+    m_stack->width = swidth;
+    m_stack->height = sheight;
+    m_stack->depth = sdepth;
+  } else {
+    Stack dst;
+    Stack src;
+    Mc_Stack *result = C_Stack::make(GREY, swidth, sheight, sdepth, 1);
+    Mc_Stack *original = m_stack;
+
+    for (int c = 0; c < channelNumber(); ++c) {
+      C_Stack::view(result, &dst, c);
+      C_Stack::view(original, &src, c);
+      C_Stack::downsampleMean(&src, xintv, yintv, zintv, &dst);
     }
 
     setData(result);

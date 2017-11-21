@@ -1,31 +1,44 @@
 #include "zstringparameter.h"
+
 #ifdef _QT5_
 #include <QtWidgets>
 #else
 #include <QtGui>
 #endif
 
+ZStringParameter::ZStringParameter(const QString& name, QObject* parent)
+  : ZSingleValueParameter<QString>(name, parent)
+{
+}
 
-ZStringParameter::ZStringParameter(const QString &name, const QString &str, QWidget *parent)
+ZStringParameter::ZStringParameter(const QString& name, const QString& str, QObject* parent)
   : ZSingleValueParameter<QString>(name, str, parent)
 {
 }
 
-void ZStringParameter::setContent(QString str)
+void ZStringParameter::setContent(const QString& str)
 {
   set(str);
 }
 
-QWidget *ZStringParameter::actualCreateWidget(QWidget *parent)
+QWidget* ZStringParameter::actualCreateWidget(QWidget* parent)
 {
-  QLineEdit* le = new QLineEdit(parent);
+  auto le = new QLineEdit(parent);
   le->setText(m_value);
-  connect(le, SIGNAL(textChanged(QString)), this, SLOT(setContent(QString)));
-  connect(this, SIGNAL(strChanged(QString)), le, SLOT(setText(QString)));
+  connect(le, &QLineEdit::textChanged, this, &ZStringParameter::setContent);
+  connect(this, &ZStringParameter::stringChanged, le, &QLineEdit::setText);
   return le;
 }
 
-void ZStringParameter::beforeChange(QString &value)
+void ZStringParameter::afterChange(QString& /*unused*/)
 {
-  emit strChanged(value);
+  emit stringChanged(m_value);
+}
+
+void ZStringParameter::setSameAs(const ZParameter& rhs)
+{
+  CHECK(this->isSameType(rhs));
+  const ZStringParameter* src = static_cast<const ZStringParameter*>(&rhs);
+  this->set(src->get());
+  ZParameter::setSameAs(rhs);
 }

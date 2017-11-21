@@ -16,7 +16,7 @@ const char* ZDvidData::m_bodyInfoName = "bodyinfo";
 const char* ZDvidData::m_mergeTestBodyLabelName = "merge_test";
 const char* ZDvidData::m_maxBodyIdName = "max_body_id";
 const char* ZDvidData::m_splitStatusName = "split_status";
-const char* ZDvidData::m_labelBlockName = "labels";
+const char* ZDvidData::m_labelBlockName = "";
 const char* ZDvidData::m_multiscale2dName = "tiles";
 const char* ZDvidData::m_mergeOperationName = "neutu_merge_opr";
 const char* ZDvidData::m_bookmarkKeyName = "bookmarks";
@@ -26,6 +26,8 @@ const char* ZDvidData::m_todoListName = "todo";
 const char* ZDvidData::m_synapseName = ""; //No default
 const char* ZDvidData::m_neutuConfigName = "neutu_config";
 const char* ZDvidData::m_labelszName = "labelsz";
+const char* ZDvidData::m_meshName = "meshes";
+const char* ZDvidData::m_sparsevolSizeName = "sparsevol-size";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -36,7 +38,7 @@ ZDvidData::ZDvidData()
 {
 }
 
-const char* ZDvidData::GetName(ERole role)
+std::string ZDvidData::GetName(ERole role)
 {
   switch (role) {
   case ROLE_GRAY_SCALE:
@@ -91,8 +93,26 @@ const char* ZDvidData::GetName(ERole role)
     return m_todoListName;
   case ROLE_LABELSZ:
     return m_labelszName;
+  case ROLE_SPARSEVOL_SIZE:
+    return m_sparsevolSizeName;
   case ROLE_NEUTU_CONFIG:
     return m_neutuConfigName;
+  case ROLE_RESULT_KEY:
+    return "result";
+  case ROLE_TASK_KEY:
+    return "task";
+  case ROLE_SPLIT_GROUP:
+    return "split";
+  case ROLE_SPLIT_RESULT_KEY:
+    return GetName(ROLE_RESULT_KEY) + "_" + GetName(ROLE_SPLIT_GROUP);
+  case ROLE_SPLIT_TASK_KEY:
+    return GetName(ROLE_TASK_KEY) + "_" + GetName(ROLE_SPLIT_GROUP);
+  case ROLE_SPLIT_RESULT_PROPERTY_KEY:
+    return GetName(ROLE_SPLIT_RESULT_KEY) + "_" + "property";
+  case ROLE_SPLIT_TASK_PROPERTY_KEY:
+    return GetName(ROLE_SPLIT_TASK_KEY) + "_" + "property";
+  case ROLE_MESH:
+    return m_meshName;
   }
 
   return m_emptyName;
@@ -132,7 +152,7 @@ std::string ZDvidData::GetName(
 {
 
   std::string prefix = "";
-  if (!isDefaultName(prefixRole, prefixName)) {
+  if (!IsDefaultName(prefixRole, prefixName)) {
     prefix = prefixName;
   } else {
     return ZDvidData::GetName(role);
@@ -141,15 +161,33 @@ std::string ZDvidData::GetName(
   return GetName(role, prefix);
 }
 
-bool ZDvidData::isDefaultName(ERole role, const std::string &name)
+std::string ZDvidData::GetResultName(const std::string &group)
 {
-  /*
-  if (role == ZDvidData::ROLE_BODY_LABEL) {
-    if (name == m_sp2bodyName) {
+  return GetName(ROLE_RESULT_KEY) + "_" + group;
+}
+
+std::string ZDvidData::GetTaskName(const std::string &group)
+{
+  return GetName(ROLE_TASK_KEY) + "_" + group;
+}
+
+bool ZDvidData::IsDefaultName(ERole role, const std::string &name)
+{
+  if (name.empty()) {
+    return false;
+  }
+
+  if (role == ZDvidData::ROLE_BODY_LABEL) { //For backfward compability
+    if (name == "bodies") {
       return true;
     }
   }
-  */
+
+  if (role == ZDvidData::ROLE_LABEL_BLOCK) {
+    if (name == "labels") {
+      return true;
+    }
+  }
 
   return ZDvidData::GetName(role) == name;
 }

@@ -11,10 +11,12 @@
 #include "zglmutils.h"
 #include "zcuboid.h"
 #include "zintcuboid.h"
+#include "zsharedpointer.h"
 
 class ZNormColorMap;
 class ZObject3d;
 class ZStackBall;
+class ZMesh;
 
 /// Mesh
 class Mesh
@@ -86,7 +88,6 @@ public:
 // 12 triangles: 36 vertices, normals, and colors
 // 12 lines: 24 vertices and colors
 //
-//
 // ---------------> U = ((-Z/|X|) + 1)/2
 // |       ____
 // |      | U 2|
@@ -97,6 +98,14 @@ public:
 // |      |_-y_|
 // v
 // V = ((-Y/|X|) + 1)/2
+//
+// Face vertices:
+//   0: 2, 3, 6, 7
+//   1: 0, 1, 4, 5
+//   2: 4, 5, 6, 7
+//   3: 0, 1, 2, 3
+//   4: 1, 2, 5, 6
+//   5: 0, 3, 4, 7
 //
 // GL_TEXTURE_CUBE_MAP_POSITIVE_X 	0 +x Right
 // GL_TEXTURE_CUBE_MAP_NEGATIVE_X 	1 -x Left
@@ -145,6 +154,9 @@ public:
     Z3DCube();
     ~Z3DCube();
 
+    bool hasVisibleFace() const;
+    const std::vector<bool>& getFaceVisiblity() const;
+
 public:
     double length;
     double x,y,z;
@@ -154,6 +166,40 @@ public:
     bool initByNodes;
 };
 
+/*!
+ * \brief A temporary fix for using meshes for ROIs
+ */
+class ZCubeArray : public ZStackObject
+{
+public:
+  ZCubeArray();
+  ~ZCubeArray();
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_3D_CUBE;
+  }
+
+public:
+  bool isEmpty() const;
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               NeuTube::EAxis sliceAxis) const override;
+
+  const std::string& className() const override;
+
+  size_t size();
+  void setMesh(ZMesh *mesh);
+  ZSharedPointer<ZMesh> getMesh() const;
+//  void setColor(const QColor &n) override;
+  void pushObjectColor();
+
+  void clear();
+
+private:
+  ZSharedPointer<ZMesh> m_mesh;
+};
+
+#if 0
 //
 class ZCubeArray : public ZStackObject
 {
@@ -167,9 +213,12 @@ public:
 
 public:
   bool isEmpty() const;
-  Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color, const std::vector<int> &faceArray);
+  Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color,
+                    const std::vector<int> &faceArray);
+  Z3DCube* makeCube(const ZIntCuboid &box, glm::vec4 color,
+                    const std::vector<bool> &fv);
   void append(Z3DCube cube);
-  std::vector<Z3DCube> getCubeArray();
+  const std::vector<Z3DCube>& getCubeArray() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                NeuTube::EAxis sliceAxis) const;
@@ -185,6 +234,7 @@ private:
   std::vector<Z3DCube> m_cubeArray;
 
 };
+#endif
 
 
 #endif // ZCUBEARRAY_H

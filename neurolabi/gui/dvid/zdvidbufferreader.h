@@ -32,6 +32,8 @@ public:
     READ_BAD_RESPONSE
   };
 
+  void readFromPath(const QString &path, bool outputingUrl = true);
+
   void read(const QString &url, bool outputingUrl = true);
   void readPartial(const QString &url, int maxSize, bool outputingUrl);
 
@@ -57,6 +59,10 @@ public:
 
   void tryCompress(bool compress) {
     m_tryingCompress = compress;
+  }
+
+  bool tryingCompress() const {
+    return m_tryingCompress;
   }
 
 #if defined(_ENABLE_LIBDVIDCPP_)

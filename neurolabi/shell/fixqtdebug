@@ -1,0 +1,24 @@
+#!/bin/bash
+
+qt=Qt
+if [ $# -ge 1 ]
+then
+  qt=$1
+fi
+
+if [ $# -eq 2 ]
+then
+  cd $2
+fi
+
+libs="Core Gui Network OpenGL Xml PrintSupport Widgets Concurrent"
+for lib in $libs
+do
+  libfile=lib${qt}${lib}.dylib
+  debug_libfile=lib${qt}${lib}_debug.dylib
+  if [ -f $libfile ] && [ ! -f $debug_libfile ]
+  then
+    ln -s $libfile $debug_libfile
+  fi
+done
+ 

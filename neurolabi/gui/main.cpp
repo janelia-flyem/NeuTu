@@ -9,11 +9,11 @@
 #endif
 
 #include "mainwindow.h"
+#include "neu3window.h"
 #include "QsLog/QsLog.h"
 #include "QsLog/QsLogDest.h"
 #include "zcommandline.h"
 #include "zerror.h"
-#include "z3dapplication.h"
 #include "zneurontracer.h"
 #include "zapplication.h"
 
@@ -93,6 +93,85 @@ static void syncLogDir(const std::string &srcDir, const std::string &destDir)
   }
 }
 
+static void LoadFlyEmConfig(
+    const QString &configPath, NeutubeConfig &config, bool usingConfig)
+{
+#ifdef _FLYEM_
+  ZJsonObject configObj;
+  if (!configPath.isEmpty()) {
+    configObj.load(configPath.toStdString());
+  }
+
+  GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
+  QString defaultFlyemConfigPath = QFileInfo(
+        QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
+      absoluteFilePath();
+  GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
+
+  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
+  if (flyemConfigPath.isEmpty()) {
+    QFileInfo configFileInfo(configPath);
+
+    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
+    if (flyemConfigPath.isEmpty()) {
+      flyemConfigPath = defaultFlyemConfigPath;
+    } else {
+      QFileInfo flyemConfigFileInfo(flyemConfigPath);
+      if (!flyemConfigFileInfo.isAbsolute()) {
+        flyemConfigPath =
+            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
+      }
+    }
+  }
+
+  GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
+  GET_FLYEM_CONFIG.loadConfig();
+
+  if (usingConfig) {
+#ifdef _DEBUG_
+    std::cout << "NeuTu server: " << config.GetNeuTuServer().toStdString() << std::endl;
+#endif
+
+    if (config.GetNeuTuServer().isEmpty()) {
+      QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
+      if (!neutuServer.isEmpty()) {
+        GET_FLYEM_CONFIG.setServer(neutuServer.toStdString());
+      }
+    } else {
+      GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
+    }
+
+    if (config.GetTaskServer().isEmpty()) {
+      QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
+      if (!taskServer.isEmpty()) {
+        GET_FLYEM_CONFIG.setServer(taskServer.toStdString());
+      }
+    } else {
+      GET_FLYEM_CONFIG.setTaskServer(config.GetTaskServer().toStdString());
+    }
+  } else {
+    QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
+    if (!taskServer.isEmpty()) {
+      GET_FLYEM_CONFIG.setServer(taskServer.toStdString());
+    }
+  }
+#endif
+}
+
+#ifdef _CLI_VERSION
+int main(int argc, char *argv[])
+{
+  if (argc > 1 && strcmp(argv[1], "--command") == 0)
+  {
+    return ZCommandLine().run(argc,argv);
+  }
+  else
+  {
+    std::cout<<"This is CLI version of neutu,please use --command option."<<std::endl;
+    return 1;
+  }
+}
+#else
 int main(int argc, char *argv[])
 {
 #if 0 //Disable redirect for explicit logging
@@ -124,6 +203,14 @@ int main(int argc, char *argv[])
     }
 
     if (runCommandLine) {
+#if defined(_FLYEM_)
+      NeutubeConfig &config = NeutubeConfig::getInstance();
+      QFileInfo fileInfo(argv[0]);
+      std::string appDir = fileInfo.absoluteDir().absolutePath().toStdString();
+      config.setApplicationDir(appDir);
+      LoadFlyEmConfig("", config, false);
+#endif
+
       ZCommandLine cmd;
       return cmd.run(argc, argv);
     }
@@ -149,15 +236,17 @@ int main(int argc, char *argv[])
 
   if (guiEnabled) {
 #ifdef _QT5_
+    QSurfaceFormat format;
+#if defined(__APPLE__) && defined(_USE_CORE_PROFILE_)
+    format.setVersion(3, 2);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+#endif
+    //format.setStereo(true);
+    QSurfaceFormat::setDefaultFormat(format);
+
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
 #endif
     QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-#ifdef _QT5_
-    QSurfaceFormat format;
-    //format.setStereo(true);
-    QSurfaceFormat::setDefaultFormat(format);
-#endif
   }
 
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
@@ -169,6 +258,7 @@ int main(int argc, char *argv[])
   NeutubeConfig &config = NeutubeConfig::getInstance();
   std::cout << QApplication::applicationDirPath().toStdString() << std::endl;
   config.setApplicationDir(QApplication::applicationDirPath().toStdString());
+
   if (config.load(config.getConfigPath()) == false) {
     std::cout << "Unable to load configuration: "
               << config.getConfigPath() << std::endl;
@@ -178,55 +268,13 @@ int main(int argc, char *argv[])
     configPath =
         QFileInfo(QDir((GET_APPLICATION_DIR + "/json").c_str()), "config.json").
         absoluteFilePath();
-//        ZString::fullPath(
-//          GET_APPLICATION_DIR, "json", "", "config.json").c_str();
   }
 
   LINFO() << "Config path: " << configPath;
 
-  ZJsonObject configObj;
-  if (!configPath.isEmpty()) {
-    configObj.load(configPath.toStdString());
-  }
 
 #ifdef _FLYEM_
-  GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
-  QString defaultFlyemConfigPath = QFileInfo(
-        QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
-      absoluteFilePath();
-  GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
-
-  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
-  if (flyemConfigPath.isEmpty()) {
-    QFileInfo configFileInfo(configPath);
-
-    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
-    if (flyemConfigPath.isEmpty()) {
-      flyemConfigPath = defaultFlyemConfigPath;
-    } else {
-      QFileInfo flyemConfigFileInfo(flyemConfigPath);
-      if (!flyemConfigFileInfo.isAbsolute()) {
-        flyemConfigPath =
-            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
-      }
-    }
-  }
-
-  GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
-  GET_FLYEM_CONFIG.loadConfig();
-
-#ifdef _DEBUG_
-  std::cout << config.GetNeuTuServer().toStdString() << std::endl;
-#endif
-
-  if (config.GetNeuTuServer().isEmpty()) {
-    QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
-    if (!neutuServer.isEmpty()) {
-      GET_FLYEM_CONFIG.setServer(neutuServer.toStdString());
-    }
-  } else {
-    GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
-  }
+  LoadFlyEmConfig(configPath, config, true);
 #endif
 
   if (!runCommandLine) { //Command line mode takes care of configuration independently
@@ -289,6 +337,7 @@ int main(int argc, char *argv[])
   RECORD_INFORMATION("************* Start ******************");
 
   if (guiEnabled) {
+    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -312,16 +361,18 @@ int main(int argc, char *argv[])
     app.setGraphicsSystem("raster");
 #endif
 
-    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
-
     ZTest::getInstance().setCommandLineArg(argc, argv);
 
     // init 3D
     //std::cout << "Initializing 3D ..." << std::endl;
     RECORD_INFORMATION("Initializing 3D ...");
-    Z3DApplication z3dApp(QCoreApplication::applicationDirPath());
-    z3dApp.initialize();
-
+#ifdef _NEU3_
+    Neu3Window *mainWin = new Neu3Window();
+    if (!mainWin->loadDvidTarget()) {
+      delete mainWin;
+      mainWin = NULL;
+    }
+#else
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
     mainWin->show();
@@ -340,26 +391,30 @@ int main(int argc, char *argv[])
 
     ZSandbox::SetMainWindow(mainWin);
     ZSandboxProject::InitSandbox();
-
-#if defined(_FLYEM_) && !defined(_DEBUG_)
-    mainWin->startProofread();
-#else
-    mainWin->show();
-    mainWin->raise();
 #endif
-
 
     int result = 1;
 
-    try {
-      result = app.exec();
-    } catch (std::exception &e) {
-      LERROR() << "Crashed by exception:" << e.what();
-    }
+    if (mainWin != NULL) {
+#if defined(_FLYEM_) && !defined(_DEBUG_) && !defined(_NEU3_)
+      mainWin->startProofread();
+#endif
 
-    delete mainWin;
-    z3dApp.deinitializeGL();
-    z3dApp.deinitialize();
+#if defined(_NEU3_)
+      mainWin->show();
+      mainWin->initialize();
+      mainWin->raise();
+      mainWin->showMaximized();
+#endif
+
+      try {
+        result = app.exec();
+      } catch (std::exception &e) {
+        LERROR() << "Crashed by exception:" << e.what();
+      }
+
+      delete mainWin;
+    }
 
     if (!runCommandLine) {
       //Sync log files
@@ -405,3 +460,4 @@ int main(int argc, char *argv[])
     return 1;
   }
 }
+#endif

@@ -12,6 +12,7 @@
 #include "zpoint.h"
 
 class ZWeightedPointArray;
+class ZStack;
 
 typedef int (*Swc_Tree_Node_Compare) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
 typedef bool (*Swc_Tree_Node_Compare_B) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
@@ -508,6 +509,8 @@ furthestNode(Swc_Tree_Node *tn, EDistanceType distType = EUCLIDEAN);
 int labelDifference(Swc_Tree_Node *lhs, Swc_Tree_Node *rhs);
 ZPoint upStreamDirection(Swc_Tree_Node *tn, int n = 0);
 ZPoint localDirection(const Swc_Tree_Node *tn, int extend = 1);
+ZPoint weightedDirection(const Swc_Tree_Node *tn, int extend = 1);
+ZPoint weightedDirection(const ZWeightedPointArray &ptArray);
 double localRadius(const Swc_Tree_Node *tn, int extend = 1);
 ZWeightedPointArray localSegment(const Swc_Tree_Node *tn, int extend = 1);
 
@@ -663,6 +666,10 @@ void average(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
              Swc_Tree_Node *out);
 void weightedAverage(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
              Swc_Tree_Node *out);
+
+//Paint
+void LabelStack(
+    const Swc_Tree_Node *tn, ZStack *stack, Swc_Tree_Node_Label_Workspace *ws);
 
 /*!
  * \brief interpolate

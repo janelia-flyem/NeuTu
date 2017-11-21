@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>470</width>
-    <height>351</height>
+    <height>341</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -59,6 +59,27 @@
      </item>
      <item>
       <widget class="QLabel" name="todoHintLabel">
+       <property name="text">
+        <string>Leave it empty to use default name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QLabel" name="bodyLabel">
+       <property name="text">
+        <string>Body Label</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="bodyLabelLineEdit"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="bodyLabelHintLabel">
        <property name="text">
         <string>Leave it empty to use default name</string>
        </property>

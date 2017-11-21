@@ -73,6 +73,8 @@ public:
    */
   double toReal() const;
 
+  std::string toString() const;
+
   //std::string toString() const;
 
   void set(json_t *data, bool asNew);
@@ -101,6 +103,7 @@ public:
    * \brief Get a string describing the current error
    */
   static std::string GetErrorString(const json_error_t &error);
+  static void PrintError(const json_error_t &error);
 
   /*!
    * \brief Dump the object to a string.
@@ -116,9 +119,12 @@ public:
 
   bool load(const std::string &filePath);
 
+  std::string getSource() const;
+
 protected:
 //  json_error_t m_error;
   json_t *m_data;
+  std::string m_source;
 };
 
 #endif

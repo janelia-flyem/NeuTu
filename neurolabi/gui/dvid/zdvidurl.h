@@ -51,6 +51,9 @@ public:
 
   std::string getSkeletonConfigUrl(const std::string &bodyLabelName);
 
+  std::string getMeshUrl();
+  std::string getMeshUrl(uint64_t bodyId, int zoom);
+  std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
 
@@ -73,6 +76,7 @@ public:
       uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const;
   std::string getSparsevolUrl(uint64_t bodyId, const ZIntCuboid &box) const;
   std::string getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom);
+  std::string getSparsevolSizeUrl(uint64_t bodyId) const;
 
 
 
@@ -179,12 +183,6 @@ public:
 
   std::string getCustomBookmarkUrl(const std::string &userName) const;
 
-  static std::string GetEndPoint(const std::string &url);
-  /*!
-   * \brief Get entry point of getting key value entries
-   */
-  static std::string GetKeyCommandUrl(const std::string &dataUrl);
-
   std::string getBodyAnnotationName() const;
 
   std::string getAnnotationUrl(const std::string &dataName) const;
@@ -235,6 +233,7 @@ public:
   std::string getConfigUrl() const;
   std::string getContrastUrl() const;
 
+  static std::string GetBodyKey(uint64_t bodyId);
   static std::string GetSkeletonKey(uint64_t bodyId);
 
   void setUuid(const std::string &uuid);
@@ -249,15 +248,35 @@ public:
       uint64_t bodyId, ZDvid::ELabelIndexType indexType) const;
 
   std::string getSynapseLabelszThresholdUrl(int threshold) const;
-  std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType) const;
-  std::string getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
+  std::string getSynapseLabelszThresholdUrl(
+      int threshold, ZDvid::ELabelIndexType indexType) const;
+  std::string getSynapseLabelszThresholdUrl(
+      int threshold, ZDvid::ELabelIndexType indexType, int offset, int number) const;
+
+public:
+  static std::string GetPath(const std::string &url);
+  static std::string GetFullUrl(
+      const std::string &prefix, const std::string &path);
+  /*!
+   * \brief Get entry point of getting key value entries
+   */
+  static std::string GetKeyCommandUrl(const std::string &dataUrl);
+
+  static uint64_t GetBodyId(const std::string &url);
+
+  static std::string ExtractSplitTaskKey(const std::string &url);
+  static std::string GetResultKeyFromTaskKey(const std::string &key);
+
+  std::string getSplitTaskKey(const uint64_t bodyId) const;
+  std::string getSplitResultKey(const uint64_t bodyId) const;
+
+//  static bool IsSplitTask(const std::string &url);
 
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
-  static std::string GetFullUrl(
-      const std::string &prefix, const std::string &endpoint);
+  static std::string GetServiceResultEndPoint();
 
 private:
   ZDvidTarget m_dvidTarget;

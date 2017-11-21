@@ -70,19 +70,7 @@ public:
   inline const QString& property3() const {return m_property3;}
   inline const QColor& color() const {return m_color;}
   inline double score() const { return m_score; }
-//  inline void setX(double n) {  m_x = n; }
-//  inline void setY(double n) {  m_y = n; }
-//  inline void setZ(double n) {  m_z = n; }
-//  inline void setCenter(double x, double y, double z) {
-//    m_x = x;
-//    m_y = y;
-//    m_z = z;
-//  }
-//  inline void setCenter(const ZPoint &pt) {
-//    m_x = pt.x();
-//    m_y = pt.y();
-//    m_z = pt.z();
-//  }
+
   inline void setSDevOfIntensity(double n) {  m_sDevOfIntensity = n; }
   inline void setMaxIntensity(double n) {  m_maxIntensity = n; }
   inline void setMeanIntensity(double n) {  m_meanIntensity = n;}

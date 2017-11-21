@@ -82,6 +82,11 @@ double ZPoint::length() const
   return Geo3d_Orgdist(m_x, m_y, m_z);
 }
 
+double ZPoint::lengthSqure() const
+{
+  return Geo3d_Orgdist_Sqr(m_x, m_y, m_z);
+}
+
 ZPoint& ZPoint::operator +=(const ZPoint &pt)
 {
   m_x += pt.m_x;
@@ -248,10 +253,16 @@ ZPoint& ZPoint::operator= (const ZPoint &pt)
   return *this;
 }
 
-bool ZPoint::operator ==(const ZPoint &pt)
+bool ZPoint::operator ==(const ZPoint &pt) const
 {
   return this->x() == pt.x() && this->y() == pt.y() && this->z() == pt.z();
 }
+
+bool ZPoint::operator !=(const ZPoint &pt) const
+{
+  return this->x() != pt.x() || this->y() != pt.y() || this->z() != pt.z();
+}
+
 
 double ZPoint::dot(const ZPoint &pt) const
 {

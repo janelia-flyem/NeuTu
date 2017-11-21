@@ -205,7 +205,8 @@ vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstDirection(
   }
 
   double theta, psi;
-  double bestTheta, bestPsi;
+  double bestTheta = 0.0;
+  double bestPsi = 0.0;
   double dx, dy, dz;
   double currX, currY, currZ;
   int x, y, z;

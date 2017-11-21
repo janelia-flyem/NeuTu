@@ -23,8 +23,10 @@ class FlyEmBodyInfoDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit FlyEmBodyInfoDialog(QWidget *parent = 0);
-    ~FlyEmBodyInfoDialog();
+  explicit FlyEmBodyInfoDialog(QWidget *parent = 0);
+  ~FlyEmBodyInfoDialog();
+
+  void simplify();
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);
@@ -34,6 +36,7 @@ signals:
   void bodiesActivated(QList<uint64_t> bodyIdList);
   void addBodyActivated(uint64_t bodyId);
   void dataChanged(ZJsonValue object);
+  void namedBodyChanged(ZJsonValue object);
   void jsonLoadBookmarksError(QString message);
   void jsonLoadColorMapError(QString message);
   void loadCompleted();
@@ -44,6 +47,12 @@ signals:
   void ioNoBodiesLoaded();
   void ioConnectionsLoaded();
   void pointDisplayRequested(int, int, int);
+  /*!
+   * \brief appendingData
+   * \param object
+   * \param state 0: first batch; -1: last batch
+   */
+  void appendingData(ZJsonValue object, int state);
 
 private slots:
     void onCloseButton();
@@ -51,6 +60,7 @@ private slots:
     void onDoubleClickBodyTable(QModelIndex modelIndex);
     void activateBody(QModelIndex modelIndex);
     void updateModel(ZJsonValue object);
+    void appendModel(ZJsonValue object, int state);
     void onjsonLoadBookmarksError(QString message);
     void onjsonLoadColorMapError(QString message);
     void updateStatusLabel();
@@ -76,6 +86,7 @@ private slots:
     void onDoubleClickIOConnectionsTable(QModelIndex proxyIndex);    
     void onMaxBodiesChanged(int maxBodies);
     void onRoiChanged(int index);
+    void onNamedOnlyToggled();
     void onIOConnectionsSelectionChanged(QItemSelection selected, QItemSelection deselected);
 
 private:
@@ -84,11 +95,12 @@ private:
         CONNECTIONS_TAB
         };
     enum BodyTableColumns {
-        BODY_ID_COLUMN,
+        BODY_ID_COLUMN = 0,
         BODY_NAME_COLUMN,
         BODY_NPRE_COLUMN,
         BODY_NPOST_COLUMN,
-        BODY_STATUS_COLUMN
+        BODY_STATUS_COLUMN,
+        BODY_TABLE_COLUMN_COUNT
     };
     enum FilterTableColumns {
         FILTER_NAME_COLUMN,
@@ -134,6 +146,9 @@ private:
     bool m_cancelLoading;
     ZDvidTarget m_currentDvidTarget;
     ZDvidReader m_reader;
+    ZDvidReader m_sequencerReader;
+    bool m_hasLabelsz = false;
+    bool m_hasBodyAnnotation = false;
     std::string m_defaultSynapseLabelsz;
     int m_currentMaxBodies;
     bool m_connectionsLoading;
@@ -171,6 +186,7 @@ private:
     void updateRoi();
     void updateRoi(const std::vector<std::string> &roiList);
     ZDvidRoi* getRoi(const QString &name);
+    QList<QStandardItem*> getBodyItemList(const ZJsonObject &bkmk);
 };
 
 #endif // FLYEMBODYINFODIALOG_H

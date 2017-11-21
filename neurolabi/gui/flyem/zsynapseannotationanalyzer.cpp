@@ -113,10 +113,10 @@ void ZSynapseAnnotationAnalyzer::loadConfig(string filePath)
   if (fp == NULL) {
     cerr << "Cannot open " << filePath << endl;
   } else {
-    if (ZFileType::FileType(filePath) == ZFileType::JSON_FILE) {
+    if (ZFileType::FileType(filePath) == ZFileType::FILE_JSON) {
       ZJsonObject jsonObject;
       jsonObject.load(filePath);
-      map<string, json_t*> entryMap = jsonObject.toEntryMap();
+      map<string, json_t*> entryMap = jsonObject.toEntryMap(false);
 
       for (map<string, json_t*>::const_iterator iter = entryMap.begin();
            iter != entryMap.end(); ++iter) {
