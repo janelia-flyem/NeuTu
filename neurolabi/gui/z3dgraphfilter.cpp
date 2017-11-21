@@ -13,6 +13,7 @@ Z3DGraphFilter::Z3DGraphFilter(Z3DGlobalParameters& globalParas, QObject* parent
   , m_coneRenderer(m_rendererBase)
   , m_arrowRenderer(m_rendererBase)
   , m_sphereRenderer(m_rendererBase)
+  , m_fontRenderer(m_rendererBase)
   , m_selectGraphEvent("Select Graph", false)
 {
   const NeutubeConfig::Z3DWindowConfig::GraphTabConfig &config =
@@ -22,6 +23,7 @@ Z3DGraphFilter::Z3DGraphFilter(Z3DGlobalParameters& globalParas, QObject* parent
 //  adjustWidgets();
 
   m_coneRenderer.setNeedLighting(false);
+  m_fontRenderer.setFollowCoordTransform(false);
 
   setName(QString("graphfilter"));
 
@@ -121,6 +123,9 @@ void Z3DGraphFilter::prepareData()
   m_pointAndRadius.clear();
   m_lines.clear();
 
+  m_textList.clear();
+  m_textPosition.clear();
+
   vector<float> edgeWidth;
 
   foreach (const Z3DGraphPtr &graph, m_graphList) {
@@ -162,12 +167,16 @@ void Z3DGraphFilter::prepareData()
       for (size_t i = 0; i < graph->getNodeNumber(); i++) {
         Z3DGraphNode node = graph->getNode(i);
 
+        ZPoint nodePos = node.center();
         if (node.radius() > 0.0) {
-          ZPoint nodePos = node.center();
-
           m_pointAndRadius.push_back(
                 glm::vec4(nodePos.x(), nodePos.y(), nodePos.z(),
                           graph->getNode(i).radius()));
+        }
+
+        if (!node.getText().isEmpty()) {
+          m_textPosition.push_back(glm::vec3(nodePos.x(), nodePos.y(), nodePos.z()));
+          m_textList.append(node.getText());
         }
       }
     }
@@ -182,6 +191,8 @@ void Z3DGraphFilter::prepareData()
 //  m_lineRenderer.setLineWidth(2.0);
   m_lineRenderer.setLineWidth(edgeWidth);
   m_sphereRenderer.setData(&m_pointAndRadius);
+
+  m_fontRenderer.setData(&m_textPosition, m_textList);
 
   prepareColor();
 
@@ -328,7 +339,7 @@ Z3DGraphPtr Z3DGraphFilter::addData(const Z3DGraph &graph)
   if (!graph.isEmpty()) {
     *newGraph = graph;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Adding graph: " << graph.getSource() << std::endl;
     std::cout << "Visible: " << graph.isVisible() << std::endl;
 #endif
@@ -458,20 +469,34 @@ void Z3DGraphFilter::selectGraph(QMouseEvent* e, int, int)
 
 void Z3DGraphFilter::renderOpaque(Z3DEye eye)
 {
+  std::vector<Z3DPrimitiveRenderer*> renderList;
+  renderList.push_back(&m_sphereRenderer);
+  renderList.push_back(&m_coneRenderer);
+  renderList.push_back(&m_lineRenderer);
+  renderList.push_back(&m_fontRenderer);
   if (showingArrow()) {
-    m_rendererBase.render(eye, m_sphereRenderer, m_arrowRenderer, m_lineRenderer, m_coneRenderer);
-  } else {
-    m_rendererBase.render(eye, m_sphereRenderer, m_lineRenderer, m_coneRenderer);
+    renderList.push_back(&m_arrowRenderer);
   }
+  m_rendererBase.render(eye, renderList);
 }
 
 void Z3DGraphFilter::renderTransparent(Z3DEye eye)
 {
+  std::vector<Z3DPrimitiveRenderer*> renderList;
+  renderList.push_back(&m_sphereRenderer);
+  renderList.push_back(&m_coneRenderer);
+  renderList.push_back(&m_lineRenderer);
+  renderList.push_back(&m_fontRenderer);
   if (showingArrow()) {
-    m_rendererBase.render(eye, m_sphereRenderer, m_arrowRenderer, m_lineRenderer, m_coneRenderer);
-  } else {
-    m_rendererBase.render(eye, m_sphereRenderer, m_lineRenderer, m_coneRenderer);
+    renderList.push_back(&m_arrowRenderer);
   }
+  m_rendererBase.render(eye, renderList);
+
+//  if (showingArrow()) {
+//    m_rendererBase.render(eye, m_sphereRenderer, m_arrowRenderer, m_lineRenderer, m_coneRenderer);
+//  } else {
+//    m_rendererBase.render(eye, m_sphereRenderer, m_lineRenderer, m_coneRenderer);
+//  }
 }
 
 bool Z3DGraphFilter::isReady(Z3DEye eye) const

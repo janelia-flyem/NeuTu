@@ -9,7 +9,7 @@ class ZMeshFactory
 public:
   ZMeshFactory();
 
-  ZMesh* MakeMesh(const ZObject3dScan &obj, int dsIntv);
+  static ZMesh* MakeMesh(const ZObject3dScan &obj, int dsIntv = 0);
 };
 
 #endif // ZMESHFACTORY_H

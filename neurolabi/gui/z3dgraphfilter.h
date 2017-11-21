@@ -9,6 +9,7 @@
 #include "z3dlinerenderer.h"
 #include "z3dconerenderer.h"
 #include "z3dsphererenderer.h"
+#include "z3dfontrenderer.h"
 
 class ZDocPlayer;
 class ZObject3d;
@@ -84,6 +85,7 @@ private:
   Z3DConeRenderer m_coneRenderer;
   Z3DConeRenderer m_arrowRenderer;
   Z3DSphereRenderer m_sphereRenderer;
+  Z3DFontRenderer m_fontRenderer;
 
   std::vector<glm::vec4> m_baseAndBaseRadius;
   std::vector<glm::vec4> m_axisAndTopRadius;
@@ -99,6 +101,8 @@ private:
   std::vector<glm::vec4> m_lineEndColors;
   std::vector<glm::vec4> m_arrowStartColors;
   std::vector<glm::vec4> m_arrowEndColors;
+  std::vector<glm::vec3> m_textPosition;
+  QStringList m_textList;
 
   std::vector<glm::vec4> m_graphPickingColors;
   glm::ivec2 m_startCoord;

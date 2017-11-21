@@ -123,7 +123,7 @@ public:
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
   void cropBody(ZFlyEmSplitUploadOptionDialog *dlg);
-  void chopBody(int v, NeuTube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBody(int v, neutube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);
@@ -139,11 +139,11 @@ public:
     m_showingBodyMask = state;
   }
 
-  void setSplitMode(FlyEM::EBodySplitMode mode) {
+  void setSplitMode(flyem::EBodySplitMode mode) {
     m_splitMode = mode;
   }
 
-  FlyEM::EBodySplitMode getSplitMode() const {
+  flyem::EBodySplitMode getSplitMode() const {
     return m_splitMode;
   }
 
@@ -308,7 +308,7 @@ private:
   size_t m_minObjSize;
   bool m_keepingMainSeed;
   bool m_runningCca;
-  FlyEM::EBodySplitMode m_splitMode;
+  flyem::EBodySplitMode m_splitMode;
 
 //  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 

@@ -1,13 +1,13 @@
 #include "zflyemneuroninfo.h"
 
-const FlyEm::ZTypeClassMap ZFlyEmNeuronInfo::m_typeClassMap =
-    FlyEm::ZTypeClassMap();
+const flyem::ZTypeClassMap ZFlyEmNeuronInfo::m_typeClassMap =
+    flyem::ZTypeClassMap();
 
-const FlyEm::ZClassSuperMap ZFlyEmNeuronInfo::m_classSuperMap =
-    FlyEm::ZClassSuperMap();
+const flyem::ZClassSuperMap ZFlyEmNeuronInfo::m_classSuperMap =
+    flyem::ZClassSuperMap();
 
-const FlyEm::ZFlyEmTypeSet ZFlyEmNeuronInfo::m_typeSet =
-    FlyEm::ZFlyEmTypeSet();
+const flyem::ZFlyEmTypeSet ZFlyEmNeuronInfo::m_typeSet =
+    flyem::ZFlyEmTypeSet();
 
 ZFlyEmNeuronInfo::ZFlyEmNeuronInfo()
 {
@@ -68,7 +68,7 @@ std::string ZFlyEmNeuronInfo::GuessTypeFromName(const std::string &name)
   return "";
 }
 
-FlyEm::ZFlyEmTypeSet::ZFlyEmTypeSet()
+flyem::ZFlyEmTypeSet::ZFlyEmTypeSet()
 {
   insert("C");
   insert("C2");
@@ -126,7 +126,7 @@ FlyEm::ZFlyEmTypeSet::ZFlyEmTypeSet()
   insert("Y");
 }
 
-FlyEm::ZTypeClassMap::ZTypeClassMap()
+flyem::ZTypeClassMap::ZTypeClassMap()
 {
   (*this)["C"] = "C";
   (*this)["C2"] = "C";
@@ -185,7 +185,7 @@ FlyEm::ZTypeClassMap::ZTypeClassMap()
   (*this)["Y"] = "Y";
 }
 
-FlyEm::ZClassSuperMap::ZClassSuperMap()
+flyem::ZClassSuperMap::ZClassSuperMap()
 {
   (*this)["C"] = "Lamina";
   (*this)["Dm"] = "Intrinsic Medulla";

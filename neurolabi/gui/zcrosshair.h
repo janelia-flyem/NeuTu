@@ -23,7 +23,7 @@ public:
 
 public:
   virtual void display(ZPainter &painter, int slice,
-                       EDisplayStyle option, NeuTube::EAxis sliceAxis) const;
+                       EDisplayStyle option, neutube::EAxis sliceAxis) const;
 
   ZPoint getCenter() const {
     return m_center;
@@ -31,12 +31,13 @@ public:
 
   void setCenter(double x, double y, double z);
   void setCenter(const ZPoint &center);
+  void setCenter(const ZIntPoint &center);
 //  void setCenter(double x, double y);
   void setX(double x);
   void setY(double y);
   void setZ(double z);
 
-  bool hitWidgetPos(const ZIntPoint &widgetPos, NeuTube::EAxis axis);
+  bool hitWidgetPos(const ZIntPoint &widgetPos, neutube::EAxis axis);
 
 
 private:

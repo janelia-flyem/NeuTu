@@ -37,34 +37,34 @@ ZStackView* ZFlyEmOrthoViewHelper::getMasterView() const
   return NULL;
 }
 
-NeuTube::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(
-    NeuTube::EAxis a1, NeuTube::EAxis a2)
+neutube::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(
+    neutube::EAxis a1, neutube::EAxis a2)
 {
   if (a1 > a2) {
     return getAlignAxis(a2, a1);
   }
 
   switch (a1) {
-  case NeuTube::X_AXIS:
-    if (a2 == NeuTube::Y_AXIS) {
-      return NeuTube::Z_AXIS;
-    } else if (a2 == NeuTube::Z_AXIS) {
-      return NeuTube::X_AXIS;
+  case neutube::X_AXIS:
+    if (a2 == neutube::Y_AXIS) {
+      return neutube::Z_AXIS;
+    } else if (a2 == neutube::Z_AXIS) {
+      return neutube::X_AXIS;
     }
     break;
-  case NeuTube::Y_AXIS:
-    if (a2 == NeuTube::Z_AXIS) {
-      return NeuTube::Y_AXIS;
+  case neutube::Y_AXIS:
+    if (a2 == neutube::Z_AXIS) {
+      return neutube::Y_AXIS;
     }
     break;
   default:
     break;
   }
 
-  return NeuTube::X_AXIS;
+  return neutube::X_AXIS;
 }
 
-NeuTube::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(const ZFlyEmOrthoMvc *mvc)
+neutube::EAxis ZFlyEmOrthoViewHelper::getAlignAxis(const ZFlyEmOrthoMvc *mvc)
 {
   return getAlignAxis(mvc->getView()->getSliceAxis(),
                       getMasterMvc()->getView()->getSliceAxis());
@@ -146,7 +146,7 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     ZViewProj viewProj = getMasterView()->getViewProj();
     ZViewProj newViewProj = mvc->getView()->getViewProj();
     ZPoint mappedCrossCenter = getCrossCenter();
-    NeuTube::EAxis slaveAxis = mvc->getView()->getSliceAxis();
+    neutube::EAxis slaveAxis = mvc->getView()->getSliceAxis();
 
     ZCrossHair *refCross = mvc->getCompleteDocument()->getCrossHair();
 
@@ -156,21 +156,21 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     QPointF refCrossPos = QPointF(refCenter.getX(), refCenter.getY());
 
     switch (slaveAxis) {
-    case NeuTube::Z_AXIS:
+    case neutube::Z_AXIS:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
             QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getY()),
             refCrossPos);
 //      mvc->getView()->setZ(mappedCrossCenter.getZ());
       break;
-    case NeuTube::X_AXIS:
+    case neutube::X_AXIS:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
             QPoint(mappedCrossCenter.getZ(), mappedCrossCenter.getY()),
             refCrossPos);
 //      mvc->getView()->setZ(mappedCrossCenter.getX());
       break;
-    case NeuTube::Y_AXIS:
+    case neutube::Y_AXIS:
       newViewProj.setZoomWithFixedPoint(
             viewProj.getZoom(),
             QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()),
@@ -180,12 +180,12 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     }
 
     //To avoid misalignment caused by rounding error
-    NeuTube::EAxis axis = getAlignAxis(mvc);
+    neutube::EAxis axis = getAlignAxis(mvc);
     switch (axis) {
-    case NeuTube::Y_AXIS:
+    case neutube::Y_AXIS:
       newViewProj.setX0(viewProj.getX0());
       break;
-    case NeuTube::X_AXIS:
+    case neutube::X_AXIS:
       newViewProj.setY0(viewProj.getY0());
       break;
     default:

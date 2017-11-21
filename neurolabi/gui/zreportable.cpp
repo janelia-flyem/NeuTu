@@ -18,7 +18,7 @@ void ZReportable::destroyReporter()
 }
 
 void ZReportable::report(const std::string &title, const std::string &msg,
-                        NeuTube::EMessageType msgType)
+                        neutube::EMessageType msgType)
 {
   m_reporter->report(title, msg, msgType);
 }

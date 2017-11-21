@@ -38,7 +38,7 @@ public:
     m_isVisible = visible;
   }
 
-  QRectF getActiveArea(NeuTube::ECoordinateSystem coord) const;
+  QRectF getActiveArea(neutube::ECoordinateSystem coord) const;
   bool isFullyActive() const;
   void matchProj();
 

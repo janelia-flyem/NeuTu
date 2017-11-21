@@ -131,7 +131,7 @@ public: /* File and message dialogs */
   QString getDirectory(const QString &caption);
 
   void report(const std::string &title, const std::string &msg,
-              NeuTube::EMessageType msgType);
+              neutube::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
 
   QMenu* getSandboxMenu() const;
@@ -190,17 +190,17 @@ public slots:
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      ZStack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStack *stack,neutube::Document::ETag tag = neutube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      Stack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      Stack *stack,neutube::Document::ETag tag = neutube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
   ZStackFrame* createStackFrame(ZStackDocReader &reader,
-      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
+      neutube::Document::ETag tag = neutube::Document::NORMAL);
 
   ZStackFrame* showStackDoc(ZStackDocPtr doc);
   ZStackFrame* showStackDoc(ZStackDoc *doc);

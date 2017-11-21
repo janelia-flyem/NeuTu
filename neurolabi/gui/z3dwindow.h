@@ -12,6 +12,7 @@
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
 #include "z3ddef.h"
+#include "zintpointarray.h"
 //#include "zstackviewparam.h"
 
 #include <QMainWindow>
@@ -281,6 +282,7 @@ public slots:
   void tranlateSelectedSwcNode();
   void changeSelectedSwcNodeSize();
   void showSeletedSwcNodeLength();
+  void showSeletedSwcNodeDist();
 
   void showPuncta(bool on);
   void showTodo(bool on);
@@ -436,6 +438,12 @@ private:
   ZLineSegment getStackSeg(const ZLineSegment &seg, const ZCuboid &rbox) const;
 
   std::vector<ZPoint> getRayIntersection(int x, int y, uint64_t *id = NULL);
+
+  ZObject3d* createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke);
+  ZObject3d* createPolyplaneFrom3dPaintForVolume(ZStroke2d *stroke);
+  std::string updatePolyLinePairList(
+      const ZStroke2d *stroke,
+      std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > &polylinePairList);
 
 private:
   ZCuboid getRayBoundbox() const;

@@ -17,22 +17,22 @@ ZQtMessageReporter::~ZQtMessageReporter()
 
 void ZQtMessageReporter::report(
     const std::string &title, const std::string &message,
-    NeuTube::EMessageType msgType)
+    neutube::EMessageType msgType)
 {
   switch (msgType) {
-  case NeuTube::MSG_ERROR:
+  case neutube::MSG_ERROR:
     QMessageBox::critical(m_parent, title.c_str(), message.c_str());
 //    m_box.setIcon(QMessageBox::Critical);
     break;
-  case NeuTube::MSG_WARNING:
+  case neutube::MSG_WARNING:
     QMessageBox::warning(m_parent, title.c_str(), message.c_str());
 //    m_box.setIcon(QMessageBox::Warning);
     break;
-  case NeuTube::MSG_INFORMATION:
+  case neutube::MSG_INFORMATION:
     QMessageBox::information(m_parent, title.c_str(), message.c_str());
 //    m_box.setIcon(QMessageBox::Information);
     break;
-  case NeuTube::MSG_DEBUG:
+  case neutube::MSG_DEBUG:
     ZMessageReporter::report(title, message, msgType);
     break;
   }

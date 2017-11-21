@@ -4,7 +4,7 @@
 ZBiocytinProjectionDoc::ZBiocytinProjectionDoc(QObject *parent) :
   ZStackDoc(parent)
 {
-  setTag(NeuTube::Document::BIOCYTIN_PROJECTION);
+  setTag(neutube::Document::BIOCYTIN_PROJECTION);
 }
 
 ZBiocytinProjectionDoc::~ZBiocytinProjectionDoc()

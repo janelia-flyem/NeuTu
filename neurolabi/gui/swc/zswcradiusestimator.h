@@ -8,7 +8,7 @@ class ZSwcRadiusEstimator
 public:
   ZSwcRadiusEstimator();
 
-  void setBackground(NeuTube::EImageBackground bg) {
+  void setBackground(neutube::EImageBackground bg) {
     m_background = bg;
   }
 
@@ -16,7 +16,7 @@ private:
   void init();
 
 private:
-  NeuTube::EImageBackground m_background;
+  neutube::EImageBackground m_background;
 
 };
 

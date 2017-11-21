@@ -29,7 +29,7 @@ bool ZStackOperator::isNull() const
   return getOperation() == OP_NULL;
 }
 
-ZPoint ZStackOperator::getMouseOffset(NeuTube::ECoordinateSystem cs) const
+ZPoint ZStackOperator::getMouseOffset(neutube::ECoordinateSystem cs) const
 {
   ZPoint offset(0, 0, 0);
 
@@ -99,10 +99,10 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
     }
     break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
-    if (doc->getTag() != NeuTube::Document::NORMAL &&
-        doc->getTag() != NeuTube::Document::BIOCYTIN_STACK &&
-        doc->getTag() != NeuTube::Document::FLYEM_ROI &&
-        doc->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
+    if (doc->getTag() != neutube::Document::NORMAL &&
+        doc->getTag() != neutube::Document::BIOCYTIN_STACK &&
+        doc->getTag() != neutube::Document::FLYEM_ROI &&
+        doc->getTag() != neutube::Document::FLYEM_PROOFREAD) {
       opable = false;
     }
     break;

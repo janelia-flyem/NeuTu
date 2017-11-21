@@ -60,7 +60,7 @@ public:
   const ZFlyEmNeuron* getNeuronFromName(const std::string &name) const;
 
 
-  FlyEm::ZSynapseAnnotationArray *getSynapseAnnotation() const;
+  flyem::ZSynapseAnnotationArray *getSynapseAnnotation() const;
   void importSynpaseAnnotation(const std::string &filePath);
   std::map<int, QColor> *getColorMap() const;
   inline const std::map<std::string, double>& getMatchThresholdMap() const {
@@ -76,18 +76,18 @@ public:
   /*!
    * \brief Get image resolution along a certain axis
    */
-  double getImageResolution(NeuTube::EAxis axis);
+  double getImageResolution(neutube::EAxis axis);
 
   /*!
    * \brief Get SWC resolution along a certain axis
    */
-  double getSwcResolution(NeuTube::EAxis axis);
+  double getSwcResolution(neutube::EAxis axis);
 
   /*!
    * \brief Get source dimension.
    */
-  int getSourceDimension(NeuTube::EAxis axis) const;
-  int getSourceOffset(NeuTube::EAxis axis) const;
+  int getSourceDimension(neutube::EAxis axis) const;
+  int getSourceOffset(neutube::EAxis axis) const;
 
   /*!
    * \brief Export the bundle into a json file
@@ -199,7 +199,7 @@ private:
   std::string m_source;
   std::map<std::string, double> m_matchThreshold;
 
-  mutable FlyEm::ZSynapseAnnotationArray *m_synaseAnnotation;
+  mutable flyem::ZSynapseAnnotationArray *m_synaseAnnotation;
   mutable std::map<int, QColor> *m_colorMap;
 
   static const char *m_synapseKey;

@@ -83,6 +83,41 @@ const void* Z3DPickingManager::objectOfColor(const glm::col4& col)
   }
 }
 
+std::vector<const void*> Z3DPickingManager::objectAtWidgetPos(
+    std::vector<glm::ivec2> &posArray)
+{
+  std::vector<const void*> objArray;
+
+  assert(m_devicePixelRatio >= 1);
+  glm::ivec3 texSize = glm::ivec3(
+        m_renderTarget->attachment(GL_COLOR_ATTACHMENT0)->dimension());
+
+  for (glm::ivec2 &pos : posArray) {
+    pos[0] = pos[0] * m_devicePixelRatio;
+    pos[1] = pos[1] * m_devicePixelRatio;
+    pos[1] = texSize[1] - pos[1];
+  }
+
+  std::vector<glm::col4> colorArray = m_renderTarget->colorAtPos(posArray);
+
+  for (const glm::col4 &color : colorArray) {
+    objArray.push_back(objectOfColor(color));
+  }
+
+  return objArray;
+}
+
+std::vector<const void*> Z3DPickingManager::objectAtWidgetPos(
+    const std::vector<std::pair<int, int> > &posArray)
+{
+  std::vector<glm::ivec2> vecArray;
+  for (const std::pair<int, int> &pos : posArray) {
+    vecArray.emplace_back(pos.first, pos.second);
+  }
+
+  return objectAtWidgetPos(vecArray);
+}
+
 const void* Z3DPickingManager::objectAtWidgetPos(glm::ivec2 pos)
 {
   assert(m_devicePixelRatio >= 1);

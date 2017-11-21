@@ -29,8 +29,8 @@ public:
   explicit ZUndoCommand(QUndoCommand *parent = 0);
   explicit ZUndoCommand(const QString &text, QUndoCommand *parent = 0);
 
-  bool isSaved(NeuTube::EDocumentableType type) const;
-  void setSaved(NeuTube::EDocumentableType type, bool state);
+  bool isSaved(neutube::EDocumentableType type) const;
+  void setSaved(neutube::EDocumentableType type, bool state);
 
   void enableLog(bool on);
   bool loggingCommand() const;

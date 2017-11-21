@@ -25,8 +25,8 @@ public:
 
   void set(QMouseEvent *event, int z);
   void set(QMouseEvent *event, EAction action, int z);
-  void setSliceAxis(NeuTube::EAxis axis);
-  NeuTube::EAxis getSliceAxis() const;
+  void setSliceAxis(neutube::EAxis axis);
+  neutube::EAxis getSliceAxis() const;
 
   //void setStackPosition(const ZPoint &pt);
   //void setStackPosition(double x, double y, double z);
@@ -73,7 +73,7 @@ public:
     return m_position;
   }
 
-  ZPoint getPosition(NeuTube::ECoordinateSystem cs) const;
+  ZPoint getPosition(neutube::ECoordinateSystem cs) const;
 
   inline int getX() const {
     return getPosition().getX();
@@ -115,7 +115,7 @@ private:
   ZPoint m_rawStackPosition; //If z is negative, it means a projection
   ZPoint m_stackPosition;
   bool m_isInStack;
-  NeuTube::EAxis m_sliceAxis;
+  neutube::EAxis m_sliceAxis;
 };
 
 #endif // ZMOUSEEVENT_H

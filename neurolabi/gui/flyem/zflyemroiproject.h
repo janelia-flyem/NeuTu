@@ -204,7 +204,7 @@ private:
   ZIntCuboid m_dataRange;
   std::vector<bool> m_isRoiCurveUploaded;
   std::vector<ZClosedCurve*> m_curveArray; //curve array sorted by z position
-  FlyEm::ZSynapseAnnotationArray m_synapseArray;
+  flyem::ZSynapseAnnotationArray m_synapseArray;
   std::vector<ZPunctum*> m_puncta;
   std::vector<QColor> m_punctaColorMap;
 

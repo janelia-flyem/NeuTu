@@ -28,7 +28,7 @@ public:
 
   const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   double getConfidence() const;
   void setConfidence(double c);
@@ -110,8 +110,6 @@ public: //Additional properties
 
 private:
   void init();
-//  bool isVisible(int z, NeuTube::EAxis sliceAxis) const;
-//  double getRadius(int z, NeuTube::EAxis sliceAxis) const;
   ZJsonObject makeRelJson(const ZIntPoint &pt) const;
 
   static QColor GetArrowColor(bool verified);
