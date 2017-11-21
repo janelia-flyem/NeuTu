@@ -2607,11 +2607,15 @@ void ZDvidReader::updateMaxLabelZoom()
       ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
       if (!v.isEmpty()) {
         m_dvidTarget.setMaxLabelZoom(v.toInteger());
-      } else { //temporary hack!!!
+      }
+#if 0
+      else { //temporary hack!!!
         if (getDvidTarget().getUuid() == "c140") {
           m_dvidTarget.setMaxLabelZoom(7);
         }
       }
+#endif
+
 //      if (infoJson.hasKey("Extended")) {
 //        ZJsonObject extJson(infoJson.value("Extended"));
 

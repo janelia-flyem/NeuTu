@@ -80,12 +80,9 @@ void ZDvidInfo::set(const ZJsonObject &rootObj)
   if (!rootObj.isEmpty()) {
     ZJsonObject obj;
 
-    bool rangeProcessed = false;
-
     if (rootObj.hasKey("Extents")) {
       obj.set(rootObj.value("Extents"));
       setExtents(obj);
-      rangeProcessed = true;
     }
 
     if (rootObj.hasKey("Extended")) {
@@ -94,7 +91,7 @@ void ZDvidInfo::set(const ZJsonObject &rootObj)
       obj = rootObj;
     }
 
-    if (!rangeProcessed) {
+    if (getDataRange().getVolume() == 0) {
       setExtents(obj);
     }
     /*
