@@ -17,9 +17,9 @@ namespace ZGeometry
  */
 void transform(ZGeo3dScalarField *field, const ZGeo3dTransform &transform);
 template <typename T>
-void shiftSliceAxis(T &x, T &y, T &z, NeuTube::EAxis axis);
+void shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis);
 template <typename T>
-void shiftSliceAxisInverse(T &x, T &y, T &z, NeuTube::EAxis axis);
+void shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis);
 
 std::vector<ZPoint> LineShpereIntersection(
     const ZPoint &lineStart, const ZPoint &lineNorm,
@@ -29,33 +29,33 @@ std::vector<ZPoint> LineShpereIntersection(
 std::vector<std::pair<int, int> > LineToPixel(int x0, int y0, int x1, int y1);
 
 template <typename T>
-void ZGeometry::shiftSliceAxis(T &x, T &y, T &z, NeuTube::EAxis axis)
+void ZGeometry::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
 //    std::swap(x, y);
     std::swap(x, z);
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     std::swap(y, z);
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     break;
   }
 }
 
 template <typename T>
-void ZGeometry::shiftSliceAxisInverse(T &x, T &y, T &z, NeuTube::EAxis axis)
+void ZGeometry::shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis)
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     std::swap(x, z);
 //    std::swap(x, y);
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     std::swap(y, z);
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     break;
   }
 }

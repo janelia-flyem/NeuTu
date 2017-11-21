@@ -42,6 +42,9 @@ public:
 
   void setColorMode(const std::string &mode);
 
+  bool hitObject(int x, int y);
+  std::vector<bool> hitObject(const std::vector<std::pair<int, int> > &ptArray);
+
 signals:
 
   void meshSelected(ZMesh*, bool append);

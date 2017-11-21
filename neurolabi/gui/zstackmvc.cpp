@@ -44,13 +44,13 @@ ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
-  BaseConstruct(frame, doc, NeuTube::Z_AXIS);
+  BaseConstruct(frame, doc, neutube::Z_AXIS);
 
   return frame;
 }
 
 ZStackMvc* ZStackMvc::Make(
-    QWidget *parent, ztr1::shared_ptr<ZStackDoc> doc, NeuTube::EAxis axis)
+    QWidget *parent, ztr1::shared_ptr<ZStackDoc> doc, neutube::EAxis axis)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
@@ -61,7 +61,7 @@ ZStackMvc* ZStackMvc::Make(
   return frame;
 }
 
-void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, NeuTube::EAxis axis)
+void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, neutube::EAxis axis)
 {
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView(axis);
@@ -82,17 +82,17 @@ void ZStackMvc::customInit()
 }
 
 void ZStackMvc::BaseConstruct(
-    ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, NeuTube::EAxis axis)
+    ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
 {
   frame->construct(doc, axis);
 }
 
 void ZStackMvc::createView()
 {
-  createView(NeuTube::Z_AXIS);
+  createView(neutube::Z_AXIS);
 }
 
-void ZStackMvc::createView(NeuTube::EAxis axis)
+void ZStackMvc::createView(neutube::EAxis axis)
 {
   if (m_doc.get() != NULL) {
     m_view = new ZStackView(qobject_cast<QWidget*>(this));
@@ -108,7 +108,7 @@ void ZStackMvc::createPresenter()
   }
 }
 
-void ZStackMvc::createPresenter(NeuTube::EAxis axis)
+void ZStackMvc::createPresenter(neutube::EAxis axis)
 {
   createPresenter();
   if (m_presenter != NULL) {
@@ -248,12 +248,12 @@ bool ZStackMvc::event(QEvent *event)
 
 void ZStackMvc::processViewChange()
 {
-  processViewChange(getView()->getViewParameter(NeuTube::COORD_STACK));
+  processViewChange(getView()->getViewParameter(neutube::COORD_STACK));
 }
 
 void ZStackMvc::updateActiveViewData()
 {
-  processViewChangeCustom(getView()->getViewParameter(NeuTube::COORD_STACK));
+  processViewChangeCustom(getView()->getViewParameter(neutube::COORD_STACK));
 }
 
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
@@ -388,7 +388,7 @@ void ZStackMvc::dropEvent(QDropEvent *event)
   QList<QUrl> nonImageUrls;
 
   foreach (QUrl url, urls) {
-    if (ZFileType::isImageFile(NeuTube::GetFilePath(url).toStdString())) {
+    if (ZFileType::isImageFile(neutube::GetFilePath(url).toStdString())) {
       imageUrls.append(url);
     } else {
       nonImageUrls.append(url);
@@ -563,7 +563,7 @@ void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)
   getPresenter()->blockSignals(false);
 
   getView()->blockSignals(true);
-  getView()->setViewPortCenter(pt, NeuTube::AXIS_NORMAL);
+  getView()->setViewPortCenter(pt, neutube::AXIS_NORMAL);
   getView()->blockSignals(false);
 
   getView()->processViewChange(true, depthChanged);
@@ -648,6 +648,11 @@ void ZStackMvc::zoomToL1(int x, int y, int z)
 ZIntPoint ZStackMvc::getViewCenter() const
 {
   return getView()->getViewCenter();
+}
+
+QSize ZStackMvc::getViewScreenSize() const
+{
+  return getView()->getScreenSize();
 }
 
 double ZStackMvc::getWidthZoomRatio() const

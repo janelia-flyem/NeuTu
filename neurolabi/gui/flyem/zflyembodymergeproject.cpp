@@ -486,7 +486,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
       ZFlyEmBodyMerger::TLabelMap labelMap = bodyMerger->getFinalMap();
 
       ZWidgetMessage warnMsg;
-      warnMsg.setType(NeuTube::MSG_WARNING);
+      warnMsg.setType(neutube::MSG_WARNING);
 
       if (!labelMap.isEmpty()) {
         //reorganize the map
@@ -503,7 +503,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
         }
         getProgressSignal()->advanceProgress(0.1);
 
-        std::set<uint64_t> bodySet = getSelection(NeuTube::BODY_LABEL_ORIGINAL);
+        std::set<uint64_t> bodySet = getSelection(neutube::BODY_LABEL_ORIGINAL);
 
         std::set<uint64_t> newBodySet;
         foreach (uint64_t targetId, mergeMap.keys()) {
@@ -529,7 +529,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
           if (m_writer.getStatusCode() != 200) {
             emit messageGenerated(
                   ZWidgetMessage(
-                    "Failed to upload merging results", NeuTube::MSG_ERROR));
+                    "Failed to upload merging results", neutube::MSG_ERROR));
           } else {
 #if defined(_FLYEM_)
             std::vector<uint64_t> bodyArray = newMerged;
@@ -552,7 +552,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
           QList<ZDvidLabelSlice*> labelList =
               getDocument()->getDvidLabelSliceList();
           foreach (ZDvidLabelSlice *slice, labelList) {
-            slice->setSelection(newBodySet, NeuTube::BODY_LABEL_ORIGINAL);
+            slice->setSelection(newBodySet, neutube::BODY_LABEL_ORIGINAL);
 //            slice->mapSelection();
           }
           ZOUT(LTRACE(), 5) << "Label slice updated";
@@ -590,7 +590,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 
         for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
              iter != bodySet.end(); ++iter) {
-          emit checkingInBody(*iter, FlyEM::BODY_SPLIT_NONE);
+          emit checkingInBody(*iter, flyem::BODY_SPLIT_NONE);
         }
 
         getProgressSignal()->advanceProgress(0.1);
@@ -1206,7 +1206,7 @@ void ZFlyEmBodyMergeProject::setSelectionFromOriginal(const std::set<uint64_t> &
 */
 
 std::set<uint64_t> ZFlyEmBodyMergeProject::getSelection(
-    NeuTube::EBodyLabelType labelType) const
+    neutube::EBodyLabelType labelType) const
 {
   ZFlyEmProofDoc *doc = getDocument<ZFlyEmProofDoc>();
   if (doc != NULL) {
@@ -1308,7 +1308,7 @@ QString ZFlyEmBodyMergeProject::getSelectionMessage() const
 {
   QString msg;
 
-  const std::set<uint64_t> &selected = getSelection(NeuTube::BODY_LABEL_MAPPED);
+  const std::set<uint64_t> &selected = getSelection(neutube::BODY_LABEL_MAPPED);
 
   for (std::set<uint64_t>::const_iterator iter = selected.begin();
        iter != selected.end(); ++iter) {
@@ -1345,7 +1345,7 @@ void ZFlyEmBodyMergeProject::emitMessage(const QString msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_INFORMATION, target));
+        ZWidgetMessage(msg, neutube::MSG_INFORMATION, target));
 }
 
 void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
@@ -1356,7 +1356,7 @@ void ZFlyEmBodyMergeProject::emitError(const QString msg, bool appending)
   }
 
   emit messageGenerated(
-        ZWidgetMessage(msg, NeuTube::MSG_ERROR, target));
+        ZWidgetMessage(msg, neutube::MSG_ERROR, target));
 }
 
 
@@ -1384,7 +1384,7 @@ void ZFlyEmBodyMergeProject::syncWithDvid()
     if (bodyMerger != NULL) {
       QByteArray buffer = m_reader.readBuffer(
             ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
-              NeuTube::GetCurrentUserName()));
+              neutube::GetCurrentUserName()));
       bodyMerger->decodeJsonString(buffer.data());
 
       /*

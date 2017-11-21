@@ -3,7 +3,7 @@
 
 #include "tz_cuboid_i.h"
 
-namespace FlyEm {
+namespace flyem {
 /*!
  * \brief A class of a 3D grid (Obsolete)
  *

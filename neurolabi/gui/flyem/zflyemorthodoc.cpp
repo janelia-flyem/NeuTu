@@ -11,15 +11,21 @@
 ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(QObject *parent) :
   ZFlyEmProofDoc(parent)
 {
-  init();
+  init(256, 256, 256);
 }
 
-void ZFlyEmOrthoDoc::init()
+ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(int width, int height, int depth, QObject *parent) :
+  ZFlyEmProofDoc(parent)
 {
-  setTag(NeuTube::Document::FLYEM_ORTHO);
-  m_width = 256;
-  m_height = 256;
-  m_depth = 256;
+  init(width, height, depth);
+}
+
+void ZFlyEmOrthoDoc::init(int width, int height, int depth)
+{
+  setTag(neutube::Document::FLYEM_ORTHO);
+  m_width = width;
+  m_height = height;
+  m_depth = depth;
 
   setRoutineCheck(false);
 
@@ -29,12 +35,19 @@ void ZFlyEmOrthoDoc::init()
   addObject(crossHair);
 }
 
+void ZFlyEmOrthoDoc::setSize(int width, int height, int depth)
+{
+  m_width = width;
+  m_height = height;
+  m_depth = depth;
+}
+
 ZCrossHair* ZFlyEmOrthoDoc::getCrossHair() const
 {
   return getObject<ZCrossHair>(ZStackObjectSourceFactory::MakeCrossHairSource());
 }
 
-void ZFlyEmOrthoDoc::setCrossHairCenter(double x, double y, NeuTube::EAxis axis)
+void ZFlyEmOrthoDoc::setCrossHairCenter(double x, double y, neutube::EAxis axis)
 {
   ZPoint center = getCrossHair()->getCenter();
   //Transform to the view space
@@ -47,7 +60,12 @@ void ZFlyEmOrthoDoc::setCrossHairCenter(double x, double y, NeuTube::EAxis axis)
   getCrossHair()->setCenter(center);
 }
 
-void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
+void ZFlyEmOrthoDoc::setCrossHairCenter(const ZIntPoint &center)
+{
+  getCrossHair()->setCenter(center);
+}
+
+void ZFlyEmOrthoDoc::initSynapseEnsemble(neutube::EAxis axis)
 {
   ZDvidSynapseEnsemble *se = new ZDvidSynapseEnsemble;
   se->setSliceAxis(axis);
@@ -59,12 +77,12 @@ void ZFlyEmOrthoDoc::initSynapseEnsemble(NeuTube::EAxis axis)
 
 void ZFlyEmOrthoDoc::initSynapseEnsemble()
 {
-  initSynapseEnsemble(NeuTube::X_AXIS);
-  initSynapseEnsemble(NeuTube::Y_AXIS);
-  initSynapseEnsemble(NeuTube::Z_AXIS);
+  initSynapseEnsemble(neutube::X_AXIS);
+  initSynapseEnsemble(neutube::Y_AXIS);
+  initSynapseEnsemble(neutube::Z_AXIS);
 }
 
-void ZFlyEmOrthoDoc::initTodoList(NeuTube::EAxis axis)
+void ZFlyEmOrthoDoc::initTodoList(neutube::EAxis axis)
 {
   ZFlyEmToDoList *td = new ZFlyEmToDoList;
   td->setSliceAxis(axis);
@@ -74,9 +92,9 @@ void ZFlyEmOrthoDoc::initTodoList(NeuTube::EAxis axis)
 
 void ZFlyEmOrthoDoc::initTodoList()
 {
-  initTodoList(NeuTube::X_AXIS);
-  initTodoList(NeuTube::Y_AXIS);
-  initTodoList(NeuTube::Z_AXIS);
+  initTodoList(neutube::X_AXIS);
+  initTodoList(neutube::Y_AXIS);
+  initTodoList(neutube::Z_AXIS);
 }
 
 void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
@@ -107,7 +125,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, FlyEM::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, flyem::LOAD_NO_PARTNER);
         for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
              iter != seList.end(); ++iter) {
           ZDvidSynapseEnsemble *se = *iter;
@@ -126,7 +144,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
 }
 
 ZDvidSynapseEnsemble* ZFlyEmOrthoDoc::getDvidSynapseEnsemble(
-    NeuTube::EAxis axis) const
+    neutube::EAxis axis) const
 {
   ZOUT(LTRACE(), 5) << "Get dvid synapses";
   QList<ZStackObject*> teList =
@@ -148,8 +166,8 @@ void ZFlyEmOrthoDoc::prepareDvidData()
   if (m_dvidReader.isReady()) {
     initSynapseEnsemble();
     initTodoList();
-    addDvidLabelSlice(NeuTube::X_AXIS);
-    addDvidLabelSlice(NeuTube::Y_AXIS);
-    addDvidLabelSlice(NeuTube::Z_AXIS);
+    addDvidLabelSlice(neutube::X_AXIS);
+    addDvidLabelSlice(neutube::Y_AXIS);
+    addDvidLabelSlice(neutube::Z_AXIS);
   }
 }

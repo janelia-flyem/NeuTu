@@ -5,7 +5,7 @@
 #include <string>
 #include <set>
 
-namespace FlyEm {
+namespace flyem {
 class ZFlyEmTypeSet : public std::set<std::string>
 {
 public:
@@ -37,9 +37,9 @@ public:
   static std::string GuessTypeFromName(const std::string &name);
 
 private:
-  static const FlyEm::ZTypeClassMap m_typeClassMap;
-  static const FlyEm::ZClassSuperMap m_classSuperMap;
-  static const FlyEm::ZFlyEmTypeSet m_typeSet;
+  static const flyem::ZTypeClassMap m_typeClassMap;
+  static const flyem::ZClassSuperMap m_classSuperMap;
+  static const flyem::ZFlyEmTypeSet m_typeSet;
 };
 
 #endif // ZFLYEMNEURONINFO_H

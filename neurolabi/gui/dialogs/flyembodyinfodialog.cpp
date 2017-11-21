@@ -503,6 +503,7 @@ void FlyEmBodyInfoDialog::onRoiChanged(int index)
   }
   m_reader.getDvidTarget().setSynapseLabelszName(labelszName);
   m_currentDvidTarget.setSynapseLabelszName(labelszName);
+  m_sequencerReader.getDvidTarget().setSynapseLabelszName(labelszName);
 
   onRefreshButton();
 }
@@ -817,7 +818,9 @@ void FlyEmBodyInfoDialog::appendModel(ZJsonValue data, int state)
 
   if (!data.isEmpty()) {
     ZJsonArray bookmarks(data);
+#if 0
     std::cout << "Count: " << bookmarks.size() << std::endl;
+#endif
     for (size_t i = 0; i < bookmarks.size(); ++i) {
       ZJsonObject bkmk(bookmarks.value(i));
       QList<QStandardItem*> itemList = getBodyItemList(bkmk);
@@ -1398,9 +1401,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         if (ui->roiComboBox->currentIndex() > 0) {
           synapses = reader.readSynapse(
                 bodyID, *getRoi(ui->roiComboBox->currentText()),
-                FlyEM::LOAD_PARTNER_LOCATION);
+                flyem::LOAD_PARTNER_LOCATION);
         } else {
-          synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
+          synapses = reader.readSynapse(bodyID, flyem::LOAD_PARTNER_LOCATION);
         }
 
         // std::cout << "read synapses: " << spottimer.restart() / 1000.0 << "s" << std::endl;

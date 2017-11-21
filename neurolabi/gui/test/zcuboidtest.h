@@ -155,7 +155,7 @@ TEST(ZIntCuboidArray, face)
 
 TEST(ZIntCuboidComposition, hitTest)
 {
-  FlyEm::ZIntCuboidComposition cuboid;
+  flyem::ZIntCuboidComposition cuboid;
   cuboid.setSingular(0, 0, 0, 3, 3, 3);
 
   EXPECT_TRUE(cuboid.hitTest(0, 0, 0));
@@ -163,29 +163,29 @@ TEST(ZIntCuboidComposition, hitTest)
   EXPECT_TRUE(cuboid.hitTest(2, 2, 2));
   EXPECT_FALSE(cuboid.hitTest(3, 3, 3));
 
-  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp1(
-        new FlyEm::ZIntCuboidComposition);
+  ZSharedPointer<flyem::ZIntCuboidComposition> comp1(
+        new flyem::ZIntCuboidComposition);
   comp1->setSingular(0, 0, 0, 3, 3, 3);
 
-  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp2(
-        new FlyEm::ZIntCuboidComposition);
+  ZSharedPointer<flyem::ZIntCuboidComposition> comp2(
+        new flyem::ZIntCuboidComposition);
   comp2->setSingular(0, 0, 0, 3, 3, 3);
 
-  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp3(
-        new FlyEm::ZIntCuboidComposition);
-  comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::OR);
+  ZSharedPointer<flyem::ZIntCuboidComposition> comp3(
+        new flyem::ZIntCuboidComposition);
+  comp3->setComposition(comp1, comp2, flyem::ZIntCuboidComposition::OR);
   EXPECT_TRUE(comp3->hitTest(0, 0, 0));
   EXPECT_TRUE(comp3->hitTest(1, 1, 1));
   EXPECT_TRUE(comp3->hitTest(2, 2, 2));
   EXPECT_FALSE(comp3->hitTest(3, 3, 3));
 
-  comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::AND);
+  comp3->setComposition(comp1, comp2, flyem::ZIntCuboidComposition::AND);
   EXPECT_TRUE(comp3->hitTest(0, 0, 0));
   EXPECT_TRUE(comp3->hitTest(1, 1, 1));
   EXPECT_TRUE(comp3->hitTest(2, 2, 2));
   EXPECT_FALSE(comp3->hitTest(3, 3, 3));
 
-  comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::XOR);
+  comp3->setComposition(comp1, comp2, flyem::ZIntCuboidComposition::XOR);
   EXPECT_FALSE(comp3->hitTest(0, 0, 0));
   EXPECT_FALSE(comp3->hitTest(1, 1, 1));
   EXPECT_FALSE(comp3->hitTest(2, 2, 2));
@@ -269,7 +269,7 @@ TEST(ZIntCuboidFace, dist)
   ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(0, 10, 10));
   ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(50, 90, -10));
 
-  face.setNormal(NeuTube::X_AXIS);
+  face.setNormal(neutube::X_AXIS);
   ASSERT_DOUBLE_EQ(0.0, face.computeDistance(0, 10, 20));
   ASSERT_DOUBLE_EQ(10.0, face.computeDistance(10, 10, 20));
   ASSERT_DOUBLE_EQ(10.0, face.computeDistance(0, 10, 10));

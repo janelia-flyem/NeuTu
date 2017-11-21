@@ -140,9 +140,9 @@ public:
 
   //double distanceTo(const ZIntPoint &pt);
 
-  void shiftSliceAxis(NeuTube::EAxis axis);
-  void shiftSliceAxisInverse(NeuTube::EAxis axis);
-  int getDim(NeuTube::EAxis axis) const;
+  void shiftSliceAxis(neutube::EAxis axis);
+  void shiftSliceAxisInverse(neutube::EAxis axis);
+  int getDim(neutube::EAxis axis) const;
 
   ZIntPoint getCenter() const;
 

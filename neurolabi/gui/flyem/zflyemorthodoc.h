@@ -10,26 +10,30 @@ class ZFlyEmOrthoDoc : public ZFlyEmProofDoc
   Q_OBJECT
 public:
   explicit ZFlyEmOrthoDoc(QObject *parent = 0);
+  explicit ZFlyEmOrthoDoc(int width, int height, int depth, QObject *parent = 0);
 
   void updateStack(const ZIntPoint &center);
   void prepareDvidData();
 
-  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(NeuTube::EAxis axis) const;
+  ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
 
   ZCrossHair* getCrossHair() const;
 
-  void setCrossHairCenter(double x, double y, NeuTube::EAxis axis);
+  void setCrossHairCenter(double x, double y, neutube::EAxis axis);
+  void setCrossHairCenter(const ZIntPoint &center);
+
+  void setSize(int width, int height, int depth);
 
 signals:
 
 public slots:
 
 private:
-  void init();
+  void init(int width, int height, int depth);
   void initSynapseEnsemble();
-  void initSynapseEnsemble(NeuTube::EAxis axis);
+  void initSynapseEnsemble(neutube::EAxis axis);
   void initTodoList();
-  void initTodoList(NeuTube::EAxis axis);
+  void initTodoList(neutube::EAxis axis);
 
 private:
   int m_width;

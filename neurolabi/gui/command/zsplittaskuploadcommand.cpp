@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#define _NEUTU_USE_REF_KEY_ 1
+//#define _NEUTU_USE_REF_KEY_ 1
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "dvid/zdvidtarget.h"
@@ -92,7 +92,7 @@ int ZSplitTaskUploadCommand::run(
 
         std::string location = writer->writeServiceTask("split", taskJson);
         ZJsonObject entryJson;
-        entryJson.setEntry(NeuTube::Json::REF_KEY, location);
+        entryJson.setEntry(neutube::Json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
         std::cout << "*    Task for " << bodyId << " is saved @ "

@@ -9,6 +9,21 @@ ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent)
   QMainWindow(parent)
 {
   m_orthoWidget = new ZFlyEmOrthoWidget(target, this);
+
+  initWidget();
+}
+
+ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(
+    const ZDvidTarget &target, int width, int height, int depth, QWidget *parent) :
+  QMainWindow(parent)
+{
+  m_orthoWidget = new ZFlyEmOrthoWidget(target, width, height, depth, this);
+
+  initWidget();
+}
+
+void ZFlyEmOrthoWindow::initWidget()
+{
   setCentralWidget(m_orthoWidget);
   connect(m_orthoWidget, SIGNAL(bookmarkEdited(int,int,int)),
           this, SIGNAL(bookmarkEdited(int,int,int)));
@@ -28,7 +43,6 @@ ZFlyEmOrthoWindow::ZFlyEmOrthoWindow(const ZDvidTarget &target, QWidget *parent)
   m_progressDlg = NULL;
   m_progressSignal = NULL;
 }
-
 
 void ZFlyEmOrthoWindow::updateData(const ZIntPoint &center)
 {
@@ -57,6 +71,12 @@ ZFlyEmOrthoDoc *ZFlyEmOrthoWindow::getDocument() const
 void ZFlyEmOrthoWindow::copyBookmarkFrom(ZFlyEmProofDoc *doc)
 {
   getDocument()->copyBookmarkFrom(doc);
+}
+
+void ZFlyEmOrthoWindow::syncBodyColorMap(ZFlyEmProofDoc *doc)
+{
+  getDocument()->updateBodyColor(doc->getActiveBodyColorMap());
+  getDocument()->setActiveBodyColorMap(doc->getActiveBodyColorMap());
 }
 
 void ZFlyEmOrthoWindow::syncMergeWithDvid()

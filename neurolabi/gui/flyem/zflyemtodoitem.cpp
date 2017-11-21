@@ -114,7 +114,7 @@ void ZFlyEmToDoItem::setAction(EToDoAction action)
 }
 
 void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
-                           NeuTube::EAxis sliceAxis) const
+                           neutube::EAxis sliceAxis) const
 {
   bool visible = true;
   int z = painter.getZ(slice);
@@ -199,7 +199,7 @@ void ZFlyEmToDoItem::display(ZPainter &painter, int slice, EDisplayStyle /*optio
     color.setRgb(255, 255, 0);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);

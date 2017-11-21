@@ -23,7 +23,6 @@ public:
   Z3DGraphNode();
   Z3DGraphNode(double x, double y, double z, double r = 3.0);
   Z3DGraphNode(const ZPoint &center, double radius);
-  Z3DGraphNode(const Z3DGraphNode &node);
 
   inline const ZPoint& center() const { return m_center; }
   inline double radius() const { return m_radius; }
@@ -40,6 +39,9 @@ public:
   void setCenter(const ZIntPoint &center);
   void setCenter(const ZPoint &center);
   void setRadius(double r);
+  void setText(const QString &text);
+
+  const QString& getText() const;
 
   void addX(double dx);
   void addY(double dy);
@@ -56,6 +58,7 @@ private:
   ZPoint m_center;
   double m_radius;
   QColor m_color;
+  QString m_text;
   EGraphShape m_shape;
 };
 
@@ -140,13 +143,15 @@ public:
   void clear();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
   const std::string& className() const;
 
   void addNode(const Z3DGraphNode &node);
   void addEdge(const Z3DGraphEdge &edge);
   void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2,
                EGraphShape shape = GRAPH_CYLINDER);
+  void addConnectedNode(const std::vector<Z3DGraphNode> &nodeArray,
+                        EGraphShape shape);
 
 public:
   void importPointNetwork(const ZPointNetwork &pointNetwork,
@@ -155,6 +160,7 @@ public:
   void importObject3d(const ZObject3d &obj, double radius);
   void importObject3d(const ZObject3d &obj, double radius, int sampleStep);
   void addNode(const ZStackBall &ball);
+  void connectNode(const ZStackBall &ball, EGraphShape shape);
   void addNode(double x, double y, double z, double radius);
   void syncNodeColor();
 

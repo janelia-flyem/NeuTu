@@ -563,7 +563,7 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       m_docReader.setStack(stack);
 
       ZSwcTree *tree = m_project->getRoiSwc(
-            z, FlyEm::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
+            z, flyem::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
       if (tree != NULL) {
         m_docReader.addObject(tree);
       }
@@ -595,8 +595,8 @@ void ZFlyEmRoiDialog::processLoadGrayscaleFailure()
 void ZFlyEmRoiDialog::newDataFrame()
 {
   ZStackFrame *frame = getMainWindow()->createStackFrame(
-        m_docReader, NeuTube::Document::FLYEM_ROI);
-  frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        m_docReader, neutube::Document::FLYEM_ROI);
+  frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
   setDataFrame(frame);
 
   getMainWindow()->addStackFrame(frame);

@@ -12,14 +12,14 @@ class ZFlyEmQualityAnalyzerTaskManager : public ZMultiTaskManager
 public:
   ZFlyEmQualityAnalyzerTaskManager(QObject *parent = NULL);
 
-  FlyEm::ZHotSpotArray& getHotSpot() { return m_hotSpotArray; }
+  flyem::ZHotSpotArray& getHotSpot() { return m_hotSpotArray; }
 
 protected:
   virtual void prepare();
   virtual void postProcess();
 
 private:
-  FlyEm::ZHotSpotArray m_hotSpotArray;
+  flyem::ZHotSpotArray m_hotSpotArray;
 };
 
 #endif // ZFLYEMQUALITYANALYZERTASKMANAGER_H

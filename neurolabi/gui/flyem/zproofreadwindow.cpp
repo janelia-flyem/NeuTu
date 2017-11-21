@@ -95,9 +95,9 @@ void ZProofreadWindow::init()
 
   m_controlForm = new FlyEmProofControlForm;
   m_controlForm->getUserBookmarkView()->setBookmarkModel(
-        m_mainMvc->getUserBookmarkModel(FlyEM::PR_NORMAL));
+        m_mainMvc->getUserBookmarkModel(flyem::PR_NORMAL));
   m_controlForm->getAssignedBookmarkView()->setBookmarkModel(
-        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_NORMAL));
+        m_mainMvc->getAssignedBookmarkModel(flyem::PR_NORMAL));
   m_mainMvc->registerBookmarkView(m_controlForm->getUserBookmarkView());
   m_mainMvc->registerBookmarkView(m_controlForm->getAssignedBookmarkView());
   m_controlForm->getAssignedBookmarkView()->enableDeletion(false);
@@ -106,9 +106,9 @@ void ZProofreadWindow::init()
 
   m_splitControlForm = new FlyEmSplitControlForm;
   m_splitControlForm->getUserBookmarkView()->setBookmarkModel(
-        m_mainMvc->getUserBookmarkModel(FlyEM::PR_SPLIT));
+        m_mainMvc->getUserBookmarkModel(flyem::PR_SPLIT));
   m_splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
-        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_SPLIT));
+        m_mainMvc->getAssignedBookmarkModel(flyem::PR_SPLIT));
   m_mainMvc->registerBookmarkView(m_splitControlForm->getUserBookmarkView());
   m_mainMvc->registerBookmarkView(m_splitControlForm->getAssignedBookmarkView());
   m_splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
@@ -131,7 +131,7 @@ void ZProofreadWindow::init()
   connectMessagePipe(m_mainMvc);
   connectMessagePipe(m_mainMvc->getDocument().get());
 
-  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, FlyEM::EBodySplitMode)),
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, flyem::EBodySplitMode)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
@@ -172,6 +172,8 @@ void ZProofreadWindow::init()
   m_flyemDataLoader = new ZFlyEmDataLoader(this);
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
+
+  setStyleSheet(flyem::GROUP_BOX_STYLE);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -515,7 +517,7 @@ void ZProofreadWindow::presentSplitInterface(uint64_t bodyId)
 
   dump(ZWidgetMessage(
          QString("Body %1 loaded for split.").arg(bodyId),
-         NeuTube::MSG_INFORMATION,
+         neutube::MSG_INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
 }
 
@@ -525,7 +527,7 @@ void ZProofreadWindow::operateDvid()
   m_dvidOpDlg->raise();
 }
 
-void ZProofreadWindow::launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode)
+void ZProofreadWindow::launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode)
 {
 //  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
@@ -550,7 +552,7 @@ void ZProofreadWindow::launchSplit()
 //  ->setValueLabel("Body ID");
   std::set<uint64_t> bodySet =
       m_mainMvc->getCompleteDocument()->getSelectedBodySet(
-        NeuTube::BODY_LABEL_ORIGINAL);
+        neutube::BODY_LABEL_ORIGINAL);
 
   if (!bodySet.empty()) {
     m_bodySplitDlg->setBodyId(*(bodySet.begin()));
@@ -561,9 +563,9 @@ void ZProofreadWindow::launchSplit()
       m_mainMvc->notifySplitTriggered();
     } else {*/
       if (m_bodySplitDlg->getBodyId() > 0) {
-        FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_ONLINE;
+        flyem::EBodySplitMode mode = flyem::BODY_SPLIT_ONLINE;
         if (m_bodySplitDlg->isOfflineSplit()) {
-          mode = FlyEM::BODY_SPLIT_OFFLINE;
+          mode = flyem::BODY_SPLIT_OFFLINE;
         }
         launchSplit(m_bodySplitDlg->getBodyId(), mode);
       }
@@ -576,7 +578,7 @@ void ZProofreadWindow::exitSplit()
   m_mainMvc->exitSplit();
   m_controlGroup->setCurrentIndex(0);
   dump(ZWidgetMessage(
-         "Back from splitting mode.", NeuTube::MSG_INFORMATION,
+         "Back from splitting mode.", neutube::MSG_INFORMATION,
          ZWidgetMessage::TARGET_TEXT));
 }
 
@@ -623,16 +625,16 @@ void ZProofreadWindow::dump(const ZWidgetMessage &msg)
 
   //Record message in files
   switch (msg.getType()) {
-  case NeuTube::MSG_INFORMATION:
+  case neutube::MSG_INFORMATION:
     LINFO() << msg.toPlainString();
     break;
-  case NeuTube::MSG_WARNING:
+  case neutube::MSG_WARNING:
     LWARN() << msg.toPlainString();
     break;
-  case NeuTube::MSG_ERROR:
+  case neutube::MSG_ERROR:
     LERROR() << msg.toPlainString();
     break;
-  case NeuTube::MSG_DEBUG:
+  case neutube::MSG_DEBUG:
     LDEBUG() << msg.toPlainString();
     break;
   }
@@ -736,16 +738,16 @@ void ZProofreadWindow::logMessage(const QString &msg)
 void ZProofreadWindow::logMessage(const ZWidgetMessage &msg)
 {
   switch (msg.getType()) {
-  case NeuTube::MSG_INFORMATION:
+  case neutube::MSG_INFORMATION:
     LINFO() << msg.toPlainString();
     break;
-  case NeuTube::MSG_WARNING:
+  case neutube::MSG_WARNING:
     LWARN() << msg.toPlainString();
     break;
-  case NeuTube::MSG_ERROR:
+  case neutube::MSG_ERROR:
     LERROR() << msg.toPlainString();
     break;
-  case NeuTube::MSG_DEBUG:
+  case neutube::MSG_DEBUG:
     LDEBUG() << msg.toPlainString();
     break;
   }

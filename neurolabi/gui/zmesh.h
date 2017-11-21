@@ -73,7 +73,7 @@ public:
 
   virtual void display(
       ZPainter &, int , EDisplayStyle ,
-      NeuTube::EAxis ) const override
+      neutube::EAxis ) const override
   {}
 
   void setLabel(uint64_t label) override;
@@ -200,6 +200,14 @@ public:
 
   std::vector<ZMesh> split(size_t numTriangle = 100000) const;
 
+  /*!
+   * \brief Generate normals if the normals are not ready.
+   */
+  void prepareNormals(bool useAreaWeight = true);
+
+  /*!
+   * \brief Recompute normals.
+   */
   void generateNormals(bool useAreaWeight = true);
 
   //double volume() const;
@@ -210,6 +218,12 @@ public:
 
 
   void createCubesWithNormal(
+      const std::vector<glm::vec3>& coordLlfs,
+      const std::vector<glm::vec3>& coordUrbs,
+      const std::vector<std::vector<bool> > &faceVisbility,
+      const std::vector<glm::vec4>* cubeColors = nullptr);
+
+  void createCubesWithoutNormal(
       const std::vector<glm::vec3>& coordLlfs,
       const std::vector<glm::vec3>& coordUrbs,
       const std::vector<std::vector<bool> > &faceVisbility,

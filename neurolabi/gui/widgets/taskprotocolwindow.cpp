@@ -530,7 +530,7 @@ void TaskProtocolWindow::updateBodyWindow() {
 
         // remove existing bodies; proof doc "selected" corresponds to "visible"
         //  I'm taking a bit of a guess that I want "MAPPED" (not "ORIGINAL")
-        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED)) {
+        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED)) {
             emit bodyRemoved(bodyID);
         }
 
@@ -754,7 +754,7 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
  * output: key under which protocol data should be stored in dvid
  */
 QString TaskProtocolWindow::generateDataKey() {
-    return QString::fromStdString(NeuTube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+    return QString::fromStdString(neutube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
 /*

@@ -30,7 +30,7 @@ public:
   bool isEmpty() const;
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   ZDvidTile* getTile(int resLevel, const ZDvidTileInfo::TIndex &index);
 

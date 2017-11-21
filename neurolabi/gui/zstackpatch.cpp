@@ -28,9 +28,9 @@ ZPoint ZStackPatch::getFinalOffset() const
 
 void ZStackPatch::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis != NeuTube::Z_AXIS) {
+  if (sliceAxis != neutube::Z_AXIS) {
     return;
   }
 

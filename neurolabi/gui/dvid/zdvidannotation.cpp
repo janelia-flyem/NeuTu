@@ -34,7 +34,7 @@ void ZDvidAnnotation::setRadius(double r)
 }
 
 void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
-                           NeuTube::EAxis sliceAxis) const
+                           neutube::EAxis sliceAxis) const
 {
   bool visible = true;
   int z = painter.getZ(slice);
@@ -96,7 +96,7 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
     color.setRgb(255, 255, 0);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(NeuTube::Display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
@@ -141,10 +141,10 @@ double ZDvidAnnotation::GetDefaultRadius(
   double r = GetDefaultRadius(kind);
 
   if (resolution.getUnit() == ZResolution::UNIT_PIXEL) {
-    r *= sqrt(resolution.getPlaneVoxelSize(NeuTube::PLANE_XY));
+    r *= sqrt(resolution.getPlaneVoxelSize(neutube::PLANE_XY));
   } else {
     r *= sqrt(resolution.getPlaneVoxelSize(
-                NeuTube::PLANE_XY, ZResolution::UNIT_NANOMETER)) / 8.0;
+                neutube::PLANE_XY, ZResolution::UNIT_NANOMETER)) / 8.0;
   }
 
   return r;
@@ -197,13 +197,13 @@ void ZDvidAnnotation::setDefaultColor()
 
 bool ZDvidAnnotation::hit(double x, double y, double z)
 {
-  if (isSliceVisible(z, NeuTube::Z_AXIS)) {
+  if (isSliceVisible(z, neutube::Z_AXIS)) {
     double dx = x - m_position.getX();
     double dy = y - m_position.getY();
 
     double d2 = dx * dx + dy * dy;
 
-    double radius = getRadius(z, NeuTube::Z_AXIS);
+    double radius = getRadius(z, neutube::Z_AXIS);
 
     return d2 <= radius * radius;
   }
@@ -211,7 +211,7 @@ bool ZDvidAnnotation::hit(double x, double y, double z)
   return false;
 }
 
-bool ZDvidAnnotation::hit(double x, double y, NeuTube::EAxis axis)
+bool ZDvidAnnotation::hit(double x, double y, neutube::EAxis axis)
 {
   ZIntPoint shiftedCenter = m_position;
   shiftedCenter.shiftSliceAxis(axis);
@@ -334,7 +334,7 @@ void ZDvidAnnotation::updatePartner()
 
 void ZDvidAnnotation::loadJsonObject(
     const ZJsonObject &obj,
-    FlyEM::EDvidAnnotationLoadMode mode)
+    flyem::EDvidAnnotationLoadMode mode)
 {
   clear();
   if (obj.hasKey("Pos")) {
@@ -356,14 +356,14 @@ void ZDvidAnnotation::loadJsonObject(
       }
     }
 
-    if (mode != FlyEM::LOAD_NO_PARTNER) {
+    if (mode != flyem::LOAD_NO_PARTNER) {
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
         switch (mode) {
-        case FlyEM::LOAD_PARTNER_RELJSON:
+        case flyem::LOAD_PARTNER_RELJSON:
           m_relJson = jsonArray;
           break;
-        case FlyEM::LOAD_PARTNER_LOCATION:
+        case flyem::LOAD_PARTNER_LOCATION:
 //          m_relJson = jsonArray;
           updatePartner(jsonArray);
 #if 0
@@ -489,17 +489,17 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
   return obj;
 }
 
-bool ZDvidAnnotation::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
+bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 {
   int dz = 0;
   switch (sliceAxis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     dz = abs(getPosition().getX() - z);
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     dz = abs(getPosition().getY() - z);
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     dz = abs(getPosition().getZ() - z);
     break;
   }
@@ -507,17 +507,17 @@ bool ZDvidAnnotation::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
   return dz < iround(getRadius());
 }
 
-double ZDvidAnnotation::getRadius(int z, NeuTube::EAxis sliceAxis) const
+double ZDvidAnnotation::getRadius(int z, neutube::EAxis sliceAxis) const
 {
   int dz = 0;
   switch (sliceAxis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     dz = abs(getPosition().getX() - z);
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     dz = abs(getPosition().getY() - z);
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     dz = abs(getPosition().getZ() - z);
     break;
   }

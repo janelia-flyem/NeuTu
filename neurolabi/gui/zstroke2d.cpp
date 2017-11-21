@@ -13,6 +13,7 @@
 #include "zpainter.h"
 #include "geometry/zgeometry.h"
 #include "zintcuboid.h"
+#include "tz_geo3d_utils.h"
 
 const double ZStroke2d::m_minWidth = 1.0;
 #ifdef _FLYEM_
@@ -30,7 +31,7 @@ ZStroke2d::ZStroke2d() :
 {
   setLabel(1);
   m_type = GetType();
-  setSliceAxis(NeuTube::Z_AXIS);
+  setSliceAxis(neutube::Z_AXIS);
   //setEraser(m_isEraser);
 }
 
@@ -148,7 +149,7 @@ void ZStroke2d::setEraser(bool enabled)
 }
 
 void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
-                        NeuTube::EAxis sliceAxis) const
+                        neutube::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return;
@@ -248,7 +249,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
 }
 
 bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
-                        EDisplaySliceMode sliceMode, NeuTube::EAxis sliceAxis) const
+                        EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const
 {
   if (sliceAxis != getSliceAxis()) {
     return false;
@@ -777,7 +778,73 @@ void ZStroke2d::loadJsonObject(const ZJsonObject &obj)
   }
 }
 
-bool ZStroke2d::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
+//Douglas-Peucker Algorithm: preserve farthest intermediate point iteratively.
+void ZStroke2d::decimate()
+{
+  std::vector<bool> marker = std::vector<bool>(m_pointArray.size(), false);
+  marker.front() = true;
+  marker.back() = true;
+  decimate(0, m_pointArray.size() - 1, getWidth() * 0.5, marker);
+
+  std::vector<QPointF> originalPointArray = m_pointArray;
+  m_pointArray.clear();
+  for (size_t i = 0; i < originalPointArray.size(); ++i) {
+    if (marker[i]) {
+      m_pointArray.push_back(originalPointArray[i]);
+    }
+  }
+}
+
+void ZStroke2d::decimate(
+    size_t first, size_t last, double eps, std::vector<bool> &marker)
+{
+  if (last - first <= 1) {
+    return;
+  }
+
+  QPointF x0 = m_pointArray[first];
+  QPointF x1 = m_pointArray[last];
+
+  double maxDist = 0;
+  size_t maxIndex = first;
+  for (size_t i = first + 1; i <= last - 1; ++i) {
+    QPointF x = m_pointArray[i];
+    double d = pointLinesegDistance(x, x0, x1);
+    if (d > maxDist) {
+      maxDist = d;
+      maxIndex = i;
+    }
+  }
+
+  if (maxDist > eps) {
+    marker[maxIndex] = true;
+    decimate(first, maxIndex, eps, marker);
+    decimate(maxIndex, last, eps, marker);
+  }
+}
+
+double ZStroke2d::pointLinesegDistance(
+    const QPointF &x, const QPointF &x0, const QPointF x1)
+{
+  double point[3];
+  point[0] = x.x();
+  point[1] = x.y();
+  point[2] = 0;
+
+  double lineStart[3];
+  lineStart[0] = x0.x();
+  lineStart[1] = x0.y();
+  lineStart[2] = 0;
+
+  double lineEnd[3];
+  lineEnd[0] = x1.x();
+  lineEnd[1] = x1.y();
+  lineEnd[2] = 0;
+
+  return Geo3d_Point_Lineseg_Dist(point, lineStart, lineEnd, NULL);
+}
+
+bool ZStroke2d::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 {
   if (isVisible() && !isEmpty() && (sliceAxis == getSliceAxis())) {
     if (m_isPenetrating || m_z == z) {
@@ -788,7 +855,7 @@ bool ZStroke2d::isSliceVisible(int z, NeuTube::EAxis sliceAxis) const
   return false;
 }
 
-bool ZStroke2d::hitTest(double x, double y, NeuTube::EAxis axis) const
+bool ZStroke2d::hitTest(double x, double y, neutube::EAxis axis) const
 {
   if (axis != getSliceAxis()) {
     return false;
@@ -865,7 +932,7 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
   return hit;
 }
 
-bool ZStroke2d::hit(double x, double y, NeuTube::EAxis axis)
+bool ZStroke2d::hit(double x, double y, neutube::EAxis axis)
 {
   return hitTest(x, y, axis);
 }

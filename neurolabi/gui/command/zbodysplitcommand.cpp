@@ -3,8 +3,6 @@
 #include <QUrl>
 #include <QDateTime>
 
-#define _NEUTU_USE_REF_KEY_
-
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -41,10 +39,10 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
     reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
     inputJson = reader->readJsonObject(inputPath);
-    if (inputJson.hasKey(NeuTube::Json::REF_KEY)) {
+    if (inputJson.hasKey(neutube::Json::REF_KEY)) {
       inputJson =
           reader->readJsonObject(
-            ZJsonParser::stringValue(inputJson[NeuTube::Json::REF_KEY]));
+            ZJsonParser::stringValue(inputJson[neutube::Json::REF_KEY]));
     }
     isFile = false;
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
@@ -301,7 +299,7 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
               writer->writeServiceResult("split", obj.toDvidPayload(), false);
           ZJsonObject regionJson;
           regionJson.setEntry("label", (int) obj.getLabel());
-          regionJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
+          regionJson.setEntry(neutube::Json::REF_KEY, endPoint);
           resultArray.append(regionJson);
 #ifdef _DEBUG_2
           obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -328,7 +326,7 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
           std::cout << "Result endpoint: " << endPoint << std::endl;
 
           if (!splitTaskKey.empty()) {
-            refJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
+            refJson.setEntry(neutube::Json::REF_KEY, endPoint);
           }
         } else {
           if (!splitTaskKey.empty()) {

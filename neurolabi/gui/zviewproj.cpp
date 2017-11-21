@@ -171,14 +171,15 @@ void ZViewProj::setViewPort(const QRect &rect)
 
 void ZViewProj::zoomTo(int x, int y, int width)
 {
-  int radius = width / 2;
+//  int radius = width / 2;
 
   double zoom = std::min((double) (m_widgetRect.width()) / width,
                          (double) (m_widgetRect.height()) / width);
 
   if (zoom > getZoom()) {
-    setOffset(x - radius, y - radius);
+//    setOffset(x - radius, y - radius);
     setZoom(zoom);
+    setViewCenter(x, y);
   } else {
     setViewCenter(x, y);
   }
