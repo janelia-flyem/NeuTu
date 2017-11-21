@@ -110,7 +110,7 @@ bool ZInteractionEngine::processMouseReleaseEvent(
 
     if (mouseReleaseSuppressed()) {
       suppressMouseRelease(false);
-      processed = true;
+//      processed = true;
     } else {
       if (isStateOn(STATE_MARK)) {
         emit shootingTodo(event->x(), event->y());
