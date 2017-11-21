@@ -5,10 +5,6 @@ NeuTu-EM
 
 Software for proofreading EM connectomics
 
-## Download Source Code (Not needed for installation)
-
-    git clone -b flyem_release https://github.com/janelia-flyem/NeuTu.git NeuTu
-
 ## Installation
 
 ### Mac (OSX 10.10+ preferred)
@@ -41,7 +37,7 @@ Here \<NAME\> is the conda environment name. If you don't know what it is, just 
 
 After successful installation, you can launch the program with the following commands
 
-    scource <CONDA_ROOT>/bin/activate <NAME>
+    source <CONDA_ROOT>/bin/activate <NAME>
     neutu 
 
 ## Build
@@ -75,6 +71,10 @@ Not supported yet.
 
 ## Manual
 
+### Short manual
 https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
 
-Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.
+### A detailed manual for exploring data in NeuTu
+
+https://www.dropbox.com/s/lxvvelfn16mhc60/NeuTu_Explorer_Manual_Mac.pdf?dl=0
+
