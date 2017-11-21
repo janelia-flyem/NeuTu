@@ -42,7 +42,7 @@ public:
   public:
     enum EAction {
       ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_FORCE_ADD,
-      ACTION_UPDATE
+      ACTION_UPDATE, ACTION_CACHE
     };
 
     typedef uint64_t TUpdateFlag;
@@ -245,6 +245,8 @@ public slots:
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
 
+  void cacheObject(ZStackObject *obj);
+
 signals:
   void bodyRemoved(uint64_t bodyId);
 
@@ -330,7 +332,9 @@ private:
   ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
   void removeDiffBody();
-  void cacheObject(ZStackObject *obj);
+
+  ZStackObject* takeObjectFromCache(
+      ZStackObject::EType type, const std::string &source);
 
 private:
   QSet<uint64_t> m_bodySet;

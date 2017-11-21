@@ -1,5 +1,9 @@
 package:
-    name: neutu-develop
+  {% if NEUTU_BUILD %}
+    name: neutu-{{NEUTU_BUILD}}
+  {% else %}
+    name: neutu
+  {% endif %}
 
   {% if GIT_DESCRIBE_NUMBER|int == 0 %}
     version: "{{GIT_DESCRIBE_TAG}}"

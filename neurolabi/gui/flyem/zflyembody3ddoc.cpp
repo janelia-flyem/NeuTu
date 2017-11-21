@@ -287,6 +287,9 @@ void ZFlyEmBody3dDoc::BodyEvent::print() const
   case ACTION_NULL:
     std::cout << "No action: ";
     break;
+  case ACTION_CACHE:
+    std::cout << "Cache: ";
+    break;
   }
 
   std::cout << getBodyId() << std::endl;
@@ -388,6 +391,17 @@ void ZFlyEmBody3dDoc::removeDiffBody()
     }
   }
   getDataBuffer()->deliver();
+}
+
+ZStackObject* ZFlyEmBody3dDoc::takeObjectFromCache(
+    ZStackObject::EType type, const std::string &source)
+{
+  TStackObjectList objList = m_objCache.takeSameSource(type, source);
+  if (!objList.isEmpty()) {
+    return objList.back();
+  }
+
+  return NULL;
 }
 
 void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
@@ -1491,9 +1505,10 @@ ZStackObject* ZFlyEmBody3dDoc::retriveBodyObject(
     uint64_t bodyId, int zoom, flyem::EBodyType bodyType,
     ZStackObject::EType objType)
 {
+  std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
+        bodyId, zoom, bodyType);
   ZStackObject *obj = getObjectGroup().findFirstSameSource(
-        objType, ZStackObjectSourceFactory::MakeFlyEmBodySource(
-          bodyId, zoom, bodyType));
+        objType, source);
 
   return obj;
 }
@@ -1749,6 +1764,12 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 ZMesh* ZFlyEmBody3dDoc::makeBodyMeshModel(uint64_t bodyId, int zoom)
 {
   ZMesh *mesh = recoverMeshFromGarbage(bodyId, zoom);
+  if (mesh == NULL) {
+    std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
+          bodyId, zoom, flyem::BODY_MESH);
+    mesh = dynamic_cast<ZMesh*>(
+          takeObjectFromCache(ZStackObject::TYPE_MESH, source));
+  }
 
   if (mesh == NULL) {
     if (bodyId > 0) {
