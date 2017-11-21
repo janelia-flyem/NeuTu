@@ -153,7 +153,7 @@ void ZFlyEmRoiProject::downloadAllRoi()
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
     QStringList roiIdArray = reader.readKeys(
-          ZDvidData::GetName(ZDvidData::ROLE_ROI_CURVE),
+          ZDvidData::GetName<QString>(ZDvidData::ROLE_ROI_CURVE),
           QString("%1").arg(getRoiKey(m_dvidInfo.getMinZ()).c_str()),
           QString("%1").arg(getRoiKey(m_dvidInfo.getMaxZ()).c_str()));
     foreach (const QString &roiKey, roiIdArray) {
@@ -1250,13 +1250,13 @@ void ZFlyEmRoiProject::loadSynapse(const std::string &filePath, bool isVisible)
   m_puncta.clear();
   const double radius = m_defaultSynapseRadius;
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::JSON_FILE:
+  case ZFileType::FILE_JSON:
   {
     m_synapseArray.loadJson(filePath);
     m_puncta = m_synapseArray.toTBarPuncta(radius);
   }
     break;
-  case ZFileType::TXT_FILE:
+  case ZFileType::FILE_TXT:
   {
     FILE *fp = fopen(filePath.c_str(), "r");
     ZString line;
@@ -1429,7 +1429,7 @@ void ZFlyEmRoiProject::printSummary() const
 
 void ZFlyEmRoiProject::test()
 {
-  std::ofstream stream((GET_TEST_DATA_DIR + "/flyem/AL/roi_area.txt").c_str());
+  std::ofstream stream((GET_FLYEM_DATA_DIR + "/AL/roi_area.txt").c_str());
   for (size_t z = 0; z < m_curveArray.size(); ++z) {
     const ZClosedCurve *curve = m_curveArray[z];
     if (curve != NULL) {

@@ -53,6 +53,7 @@ public:
     TYPE_UNIDENTIFIED = 0, //Unidentified type
     TYPE_SWC,
     TYPE_PUNCTUM,
+    TYPE_MESH,
     TYPE_OBJ3D,
     TYPE_STROKE,
     TYPE_LOCSEG_CHAIN,
@@ -104,6 +105,10 @@ public:
     DISPLAY_SLICE_SINGLE      //Display a cross section of the object
   };
 
+  enum EHitProtocal {
+    HIT_NONE, HIT_WIDGET_POS, HIT_STACK_POS
+  };
+
   /*!
    * \brief Name of the class
    *
@@ -114,8 +119,7 @@ public:
   /*!
    * \brief Set the selection state
    */
-  void setSelected(bool selected) { m_selected = selected; }
-
+  void setSelected(bool selected);
   /*!
    * \brief Get the selection state
    *
@@ -165,7 +169,11 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
+  virtual bool hit(
+      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis);
   virtual bool hit(double x, double y, NeuTube::EAxis axis);
+  virtual bool hitWidgetPos(const ZIntPoint &widgetPos, NeuTube::EAxis axis);
+
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
   /*!
@@ -221,6 +229,19 @@ public:
     return m_timeStamp;
   }
 
+  virtual void setLabel(uint64_t label);
+
+  inline uint64_t getLabel() const {
+    return m_uLabel;
+  }
+
+/*
+  virtual void setILabel(int label);
+
+  inline int getILabel() const {
+    return m_label;
+  }
+*/
   inline std::string getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
@@ -317,11 +338,11 @@ public:
   }
 
   inline bool isHittable() const {
-    return m_isHittable && isVisible();
+    return m_hitProtocal != HIT_NONE && isVisible();
   }
 
-  inline void setHittable(bool state) {
-    m_isHittable = state;
+  inline void setHitProtocal(EHitProtocal protocal) {
+    m_hitProtocal = protocal;
   }
 
   void setHitPoint(const ZIntPoint &pt);
@@ -354,7 +375,8 @@ protected:
   bool m_selected;
   bool m_isSelectable;
   bool m_isVisible;
-  bool m_isHittable;
+//  bool m_isHittable;
+  EHitProtocal m_hitProtocal;
   bool m_projectionVisible;
   EDisplayStyle m_style;
   QColor m_color;
@@ -366,6 +388,8 @@ protected:
   std::string m_source;
   std::string m_objectClass;
   std::string m_objectId;
+  uint64_t m_uLabel = 0;
+//  int m_label = -1;
   int m_zOrder;
   int m_timeStamp;
   EType m_type;

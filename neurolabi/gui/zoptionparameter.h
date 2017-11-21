@@ -6,27 +6,38 @@
 #include <QList>
 #include <QString>
 #include <cassert>
-#include "QsLog.h"
-
 
 // One of many options parameter. T is the description type, which should be
 // convertible to QString if create widget. T2 is data type associated with T.
-// Associated data is optional. It can be retrieved by getAssociatedData.
+// Associated data is optional. It can be retrieved by associatedData().
 
 template<class T, class T2 = int>
 class ZOptionParameter : public ZSingleValueParameter<T>
 {
 public:
-  ZOptionParameter(const QString &name, QObject *parent = NULL, const QString &prefix = "",
-                   const QString &suffix = "");
-  virtual ~ZOptionParameter() {}
+  explicit ZOptionParameter(const QString& name, QObject* parent = nullptr, const QString& prefix = "",
+                            const QString& suffix = "");
+
+  inline QString prefix() const
+  { return m_prefix; }
+
+  inline QString suffix() const
+  { return m_suffix; }
 
   void select(const T& value);
-  void selectNext();
-  bool isSelected(const T& value) const;
-  bool isEmpty() const { return m_options.empty(); }
 
-  inline T2 getAssociatedData() const {return m_associatedData;}
+  void selectNext();
+
+  bool isSelected(const T& value) const;
+
+  bool isEmpty() const
+  { return m_options.empty(); }
+
+  bool hasOption(const T& value) const
+  { return m_options.contains(value); }
+
+  inline T2 associatedData() const
+  { return m_associatedData; }
 
   void addOption(const T& value)
   {
@@ -35,7 +46,7 @@ public:
     }
     m_options.push_back(value);
     m_associatedDatas.push_back(T2());
-    emit this->reservedStringSignal1(getComboBoxItemString(value));
+    emit this->reservedStringSignal1(comboBoxItemString(value));
     if (!m_dataIsValid) {
       select(value);
       m_dataIsValid = true;
@@ -57,11 +68,11 @@ public:
       return;
     m_options.removeAt(idx);
     m_associatedDatas.removeAt(idx);
-    emit this->reservedStringSignal2(getComboBoxItemString(value));
+    emit this->reservedStringSignal2(comboBoxItemString(value));
     int index = m_options.indexOf(this->m_value);
-    if (index != -1)
+    if (index != -1) {
       emit this->reservedIntSignal1(index);
-    else {
+    } else {
       emit this->reservedIntSignal1(0);
       this->set(m_options[0]);
     }
@@ -112,13 +123,20 @@ public:
     addOptions(op2, op3, op4, op5, op6, op7, op8);
   }
 
+  inline void addOptions(const T& op1, const T& op2, const T& op3, const T& op4, const T& op5,
+                         const T& op6, const T& op7, const T& op8, const T& op9)
+  {
+    addOption(op1);
+    addOptions(op2, op3, op4, op5, op6, op7, op8, op9);
+  }
+
   inline void addOptionWithData(const QPair<T, T2>& value)
   {
     if (m_options.indexOf(value.first) != -1)
       return;
     m_options.push_back(value.first);
     m_associatedDatas.push_back(value.second);
-    emit this->reservedStringSignal1(getComboBoxItemString(value.first));
+    emit this->reservedStringSignal1(comboBoxItemString(value.first));
     if (!m_dataIsValid) {
       select(value.first);
       m_dataIsValid = true;
@@ -137,161 +155,93 @@ public:
     addOptionsWithData(op2, op3);
   }
 
-  inline void addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4)
+  inline void
+  addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4)
   {
     addOptionWithData(op1);
     addOptionsWithData(op2, op3, op4);
   }
 
-  inline void addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4,
-                                 const QPair<T, T2>& op5)
+  inline void
+  addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4,
+                     const QPair<T, T2>& op5)
   {
     addOptionWithData(op1);
     addOptionsWithData(op2, op3, op4, op5);
   }
 
-  inline void addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4,
-                                 const QPair<T, T2>& op5, const QPair<T, T2>& op6)
+  inline void
+  addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4,
+                     const QPair<T, T2>& op5, const QPair<T, T2>& op6)
   {
     addOptionWithData(op1);
     addOptionsWithData(op2, op3, op4, op5, op6);
   }
 
-  inline void addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4,
-                                 const QPair<T, T2>& op5, const QPair<T, T2>& op6, const QPair<T, T2>& op7)
+  inline void
+  addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4,
+                     const QPair<T, T2>& op5, const QPair<T, T2>& op6, const QPair<T, T2>& op7)
   {
     addOptionWithData(op1);
     addOptionsWithData(op2, op3, op4, op5, op6, op7);
   }
 
-  inline void addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4,
-                                 const QPair<T, T2>& op5, const QPair<T, T2>& op6, const QPair<T, T2>& op7, const QPair<T, T2>& op8)
+  inline void
+  addOptionsWithData(const QPair<T, T2>& op1, const QPair<T, T2>& op2, const QPair<T, T2>& op3, const QPair<T, T2>& op4,
+                     const QPair<T, T2>& op5, const QPair<T, T2>& op6, const QPair<T, T2>& op7, const QPair<T, T2>& op8)
   {
     addOptionWithData(op1);
     addOptionsWithData(op2, op3, op4, op5, op6, op7, op8);
   }
 
-protected:
-  virtual void reservedIntSlot1(int v);
-  virtual QWidget* actualCreateWidget(QWidget* parent);
-  virtual void beforeChange(T &value);
-  virtual void makeValid(T& value) const;
-  QString getComboBoxItemString(const T &value) const;
+  virtual void setSameAs(const ZParameter& rhs) override;
 
+  virtual void forceSetValueSameAs(const ZParameter& rhs) override;
+
+protected:
+  virtual void reservedIntSlot1(int v) override;
+
+  virtual QWidget* actualCreateWidget(QWidget* parent) override;
+
+  virtual void beforeChange(T& value) override;
+
+  virtual void makeValid(T& value) const override;
+
+  QString comboBoxItemString(const T& value) const;
+
+private:
   QList<T> m_options;
   T2 m_associatedData;
   QList<T2> m_associatedDatas;
 
-  bool m_dataIsValid;
+  bool m_dataIsValid = false;
   QString m_prefix;
   QString m_suffix;
 };
 
-template<class T, class T2>
-ZOptionParameter<T, T2>::ZOptionParameter(const QString &name, QObject *parent, const QString &prefix,
-                                          const QString &suffix)
-  : ZSingleValueParameter<T>(name, parent), m_dataIsValid(false)
-  , m_prefix(prefix), m_suffix(suffix)
+class ZStringIntOptionParameter : public ZOptionParameter<QString, int>
 {
-}
+Q_OBJECT
+public:
+  explicit ZStringIntOptionParameter(const QString& name, QObject* parent = nullptr, const QString& prefix = "",
+                                     const QString& suffix = "");
+};
 
-template<class T, class T2>
-void ZOptionParameter<T, T2>::select(const T &value)
+class ZStringStringOptionParameter : public ZOptionParameter<QString, QString>
 {
-  this->set(value);
-}
+Q_OBJECT
+public:
+  explicit ZStringStringOptionParameter(const QString& name, QObject* parent = nullptr, const QString& prefix = "",
+                                        const QString& suffix = "");
+};
 
-template<class T, class T2>
-void ZOptionParameter<T, T2>::selectNext()
+class ZIntIntOptionParameter : public ZOptionParameter<int, int>
 {
-  if (m_options.size() < 2)
-    return;
-  if (!m_dataIsValid) {
-    select(m_options[0]);
-    m_dataIsValid = true;
-  } else {
-    int index = m_options.indexOf(this->m_value);
-    assert(index >= 0);
-    if (++index >= m_options.size())
-      index = 0;
-    select(m_options[index]);
-  }
-}
-
-template<class T, class T2>
-bool ZOptionParameter<T, T2>::isSelected(const T &value) const
-{
-#if defined(_DEBUG_2)
-  if (!m_options.contains(value)) {
-    LERROR() << QString("Option <%1> does not exist.").arg(value);
-  }
-#endif
-  return value == this->m_value;
-}
-
-template<class T, class T2>
-void ZOptionParameter<T, T2>::reservedIntSlot1(int index)
-{
-  // notify all widgets
-  if (index >= 0 && index < m_options.size())
-    this->set(m_options[index]);
-}
-
-template<class T, class T2>
-QWidget* ZOptionParameter<T, T2>::actualCreateWidget(QWidget* parent)
-{
-  ZComboBox *cb = new ZComboBox(parent);
-
-  for (int i=0; i<m_options.size(); i++) {
-    cb->addItem(getComboBoxItemString(m_options[i]));
-  }
-  if (!m_options.empty()) {
-    int index = m_options.indexOf(this->m_value);
-    if (index != -1)
-      cb->setCurrentIndex(index);
-    else {
-      cb->setCurrentIndex(0);
-      this->set(m_options[0]);
-    }
-  }
-  this->connect(this, SIGNAL(reservedIntSignal1(int)), cb, SLOT(setCurrentIndex(int)));
-  this->connect(this, SIGNAL(reservedStringSignal1(QString)), cb, SLOT(addItemSlot(QString)));
-  this->connect(this, SIGNAL(reservedStringSignal2(QString)), cb, SLOT(removeItemSlot(QString)));
-  this->connect(this, SIGNAL(reservedSignal1()), cb, SLOT(clear()));
-  this->connect(cb, SIGNAL(currentIndexChanged(int)), this, SLOT(reservedIntSlot1(int)));
-  return cb;
-}
-
-template<class T, class T2>
-void ZOptionParameter<T, T2>::makeValid(T &value) const
-{
-  if (!m_options.contains(value)) {
-    LERROR() << QString("Optiong value <%1> does not exist.").arg(value);
-    if (m_options.empty())
-      LERROR() << QString("Error: Try to select <%1> from empty options list. Call addOptions() first!").arg(value);
-    else if (m_dataIsValid) {
-      LERROR() << QString("Warning: Select failed, value is still <%1>").arg(this->m_value);
-      value = this->m_value;
-    } else {
-      LERROR() << QString("Default to first option <%1>").arg(m_options[0]);
-      value = m_options[0];
-    }
-  }
-}
-
-template<class T, class T2>
-QString ZOptionParameter<T,T2>::getComboBoxItemString(const T &value) const
-{
-  return QString("%1%2%3").arg(m_prefix).arg(value).arg(m_suffix);
-}
-
-template<class T, class T2>
-void ZOptionParameter<T, T2>::beforeChange(T &value)
-{
-  int index = m_options.indexOf(value);
-  m_associatedData = m_associatedDatas[index];
-  emit this->reservedIntSignal1(index);
-}
+Q_OBJECT
+public:
+  explicit ZIntIntOptionParameter(const QString& name, QObject* parent = nullptr, const QString& prefix = "",
+                                  const QString& suffix = "");
+};
 
 
 #endif // ZOPTIONPARAMETER_H

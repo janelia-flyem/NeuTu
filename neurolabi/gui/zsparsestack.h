@@ -1,6 +1,8 @@
 #ifndef ZSPARSESTACK_H
 #define ZSPARSESTACK_H
 
+#include <iostream>
+
 #include "zobject3dscan.h"
 #include "bigdata/zstackblockgrid.h"
 #include "zuncopyable.h"
@@ -33,6 +35,11 @@ public:
   const ZStack* getStack() const;
 
   ZStack *makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv = NULL);
+
+//  Stack* makeRawStack(const ZIntCuboid &box);
+
+  ZStack *makeIsoDsStack(size_t maxVolume);
+  ZStack* makeDsStack(int xintv, int yintv, int zintv);
 
   static bool DownsampleRequired(const ZIntCuboid &box);
   static size_t GetMaxStackVolume();
@@ -105,6 +112,16 @@ public:
   bool isEmpty() const;
 
   void merge(ZSparseStack &sparseStack);
+
+  void shakeOff();
+
+  bool save(const std::string &filePath) const;
+  bool load(const std::string &filePath);
+
+  void read(std::istream &stream);
+  void write(std::ostream &stream) const;
+
+  void printInfo() const;
 
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,

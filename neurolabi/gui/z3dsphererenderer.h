@@ -2,43 +2,44 @@
 #define Z3DSPHERERENDERER_H
 
 #include "z3dprimitiverenderer.h"
-#include "z3dshadergroup.h"
 
 class Z3DSphereRenderer : public Z3DPrimitiveRenderer
 {
-  Q_OBJECT
+Q_OBJECT
 public:
   // default use display list and lighting for opengl mode
-  explicit Z3DSphereRenderer(QObject *parent = 0);
-  virtual ~Z3DSphereRenderer();
+  explicit Z3DSphereRenderer(Z3DRendererBase& rendererBase);
 
-  void setData(std::vector<glm::vec4> *pointAndRadiusInput, std::vector<glm::vec4> *specularAndShininessInput = NULL);
-  void setDataColors(std::vector<glm::vec4> *pointColorsInput);
-  void setDataPickingColors(std::vector<glm::vec4> *pointPickingColorsInput = NULL);
+  void setData(std::vector<glm::vec4>* pointAndRadiusInput, std::vector<glm::vec4>* specularAndShininessInput = nullptr);
+
+  void setDataColors(std::vector<glm::vec4>* pointColorsInput);
+
+  void setDataPickingColors(std::vector<glm::vec4>* pointPickingColorsInput = nullptr);
+
+  ZBoolParameter& useDynamicMaterialPara()
+  { return m_useDynamicMaterial; }
 
 protected:
-  virtual void compile();
-  virtual void initialize();
-  virtual void deinitialize();
-  virtual QString generateHeader();
+  virtual void compile() override;
 
-  virtual void renderUsingOpengl();
-  virtual void renderPickingUsingOpengl();
+  QString generateHeader();
 
-  virtual void render(Z3DEye eye);
-  virtual void renderPicking(Z3DEye eye);
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
+  virtual void renderUsingOpengl() override;
+  virtual void renderPickingUsingOpengl() override;
+#endif
+
+  virtual void render(Z3DEye eye) override;
+
+  virtual void renderPicking(Z3DEye eye) override;
 
   void appendDefaultColors();
 
+protected:
   Z3DShaderGroup m_sphereShaderGrp;
 
   ZIntParameter m_sphereSlicesStacks;
   ZBoolParameter m_useDynamicMaterial;
-
-private:
-  static void SetDataColors(
-      const std::vector<glm::vec4> *pointColorsInput,
-      std::vector<glm::vec4> &pointColors);
 
 private:
   std::vector<glm::vec4> m_pointAndRadius;
@@ -50,10 +51,10 @@ private:
 
   //std::vector<GLuint> m_VBOs;
   //std::vector<GLuint> m_pickingVBOs;
-  std::vector<GLuint> m_VAOs;
-  std::vector<GLuint> m_pickingVAOs;
-  std::vector<std::vector<GLuint> > m_VBOs;
-  std::vector<std::vector<GLuint> > m_pickingVBOs;
+  ZVertexArrayObject m_VAOs;
+  ZVertexArrayObject m_pickingVAOs;
+  std::vector<ZVertexBufferObject> m_VBOs;
+  std::vector<ZVertexBufferObject> m_pickingVBOs;
   bool m_dataChanged;
   bool m_pickingDataChanged;
   size_t m_oneBatchNumber;

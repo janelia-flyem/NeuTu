@@ -25,6 +25,11 @@ void FlyEmSettingDialog::init()
   connectSignalSlot();
   ui->configPushButton->hide();
   ui->dataDirPushButton->hide();
+  ui->defaultConfigLineEdit->setText(
+        shrink(GET_FLYEM_CONFIG.getDefaultConfigPath().c_str(), 40));
+  ui->defaultConfigLineEdit->setToolTip(
+        GET_FLYEM_CONFIG.getDefaultConfigPath().c_str());
+  updateDefaultConfigChecked(usingDefaultConfig());
 }
 
 void FlyEmSettingDialog::loadSetting()
@@ -43,6 +48,10 @@ void FlyEmSettingDialog::loadSetting()
         GET_FLYEM_CONFIG.getNeutuService().getServer().c_str());
   ui->statusLabel->setText(
         GET_FLYEM_CONFIG.getNeutuService().isNormal() ? "Normal" : "Down");
+#ifdef _DEBUG_
+  std::cout << "Current task server: " << GET_FLYEM_CONFIG.getTaskServer() << std::endl;
+#endif
+  ui->taskServerLineEdit->setText(GET_FLYEM_CONFIG.getTaskServer().c_str());
 #endif
   ui->profilingCheckBox->setChecked(NeutubeConfig::LoggingProfile());
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
@@ -59,6 +68,8 @@ void FlyEmSettingDialog::connectSignalSlot()
 {
   connect(ui->updatePushButton, SIGNAL(clicked()), this, SLOT(update()));
   connect(ui->closePushButton, SIGNAL(clicked()), this, SLOT(close()));
+  connect(ui->defaultConfigFileCheckBox, SIGNAL(toggled(bool)),
+          this, SLOT(updateDefaultConfigChecked(bool)));
 }
 
 bool FlyEmSettingDialog::usingDefaultConfig() const
@@ -71,23 +82,36 @@ std::string FlyEmSettingDialog::getNeuTuServer() const
   return ui->servicelineEdit->text().trimmed().toStdString();
 }
 
+std::string FlyEmSettingDialog::getTaskServer() const
+{
+  return ui->taskServerLineEdit->text().trimmed().toStdString();
+}
+
 std::string FlyEmSettingDialog::getConfigPath() const
 {
   return ui->configLineEdit->text().toStdString();
 }
 
+void FlyEmSettingDialog::updateDefaultConfigChecked(bool on)
+{
+  ui->defaultConfigLineEdit->setVisible(on);
+  ui->configLineEdit->setVisible(!on);
+  ui->configPushButton->setVisible(!on);
+}
+
 void FlyEmSettingDialog::update()
 {
 #if defined(_FLYEM_)
+  GET_FLYEM_CONFIG.setConfigPath(getConfigPath());
+  GET_FLYEM_CONFIG.useDefaultConfig(usingDefaultConfig());
+  GET_FLYEM_CONFIG.loadConfig();
   GET_FLYEM_CONFIG.setServer(getNeuTuServer());
   if (GET_FLYEM_CONFIG.getNeutuService().isNormal()) {
     ui->statusLabel->setText("Normal");
   } else {
     ui->statusLabel->setText("Down");
   }
-  GET_FLYEM_CONFIG.setConfigPath(getConfigPath());
-  GET_FLYEM_CONFIG.useDefaultConfig(usingDefaultConfig());
-  GET_FLYEM_CONFIG.loadConfig();
+  GET_FLYEM_CONFIG.setTaskServer(getTaskServer());
 #endif
 
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
@@ -100,4 +124,14 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetDataDir(ui->dataDirLineEdit->text());
   NeutubeConfig::SetFlyEmConfigPath(getConfigPath().c_str());
   NeutubeConfig::UseDefaultFlyEmConfig(usingDefaultConfig());
+}
+
+QString FlyEmSettingDialog::shrink(const QString &str, int len)
+{
+  QString newStr = str;
+  if (str.size() > len) {
+    newStr = str.left(len / 2 - 1) + "..." + str.right(len / 2 - 1);
+  }
+
+  return newStr;
 }

@@ -73,7 +73,7 @@ void ZDvidBufferReader::read(
     bool outputingUrl)
 {
   if (outputingUrl) {
-    qDebug() << url;
+    qDebug() << "Reading " << url;
   }
 
   m_buffer.clear();
@@ -86,7 +86,7 @@ void ZDvidBufferReader::read(
 
   if (target.isValid()) {
     try {
-      std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
+      std::string endPoint = ZDvidUrl::GetPath(url.toStdString());
       libdvid::BinaryDataPtr libdvidPayload =
           libdvid::BinaryData::create_binary_data(payload.data(), payload.length());
       libdvid::BinaryDataPtr data;
@@ -123,6 +123,40 @@ void ZDvidBufferReader::read(
 #endif
 }
 
+void ZDvidBufferReader::readFromPath(const QString &path, bool outputingUrl)
+{
+  m_statusCode = 0;
+
+  if (path.isEmpty()) {
+    return;
+  }
+
+  if (outputingUrl) {
+    qDebug() << path;
+  }
+
+  m_buffer.clear();
+
+#if defined(_ENABLE_LIBDVIDCPP_)
+  try {
+    libdvid::BinaryDataPtr data;
+    if (m_service.get() != NULL) {
+      data = m_service->custom_request(
+            path.toStdString(), libdvid::BinaryDataPtr(),
+            libdvid::GET, m_tryingCompress);
+    }
+
+    m_buffer.append(data->get_data().c_str(), data->length());
+    m_status = READ_OK;
+    m_statusCode = 200;
+  } catch (libdvid::DVIDException &e) {
+    std::cout << e.what() << std::endl;
+    m_statusCode = e.getStatus();
+    m_status = READ_FAILED;
+  }
+#endif
+}
+
 void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
 {
   m_statusCode = 0;
@@ -132,7 +166,7 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
   }
 
   if (outputingUrl) {
-    qDebug() << url;
+    qDebug() << "Reading" << url;
   }
 
   m_buffer.clear();
@@ -146,15 +180,11 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
   if (target.isValid()) {
     try {
       libdvid::BinaryDataPtr data;
-      std::string endPoint = ZDvidUrl::GetEndPoint(url.toStdString());
+      std::string endPoint = ZDvidUrl::GetPath(url.toStdString());
       if (m_service.get() != NULL) {
         data = m_service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       } else {
-        /*
-        libdvid::DVIDNodeService service(
-              target.getAddressWithPort(), target.getUuid());
-              */
         ZSharedPointer<libdvid::DVIDNodeService> service =
             ZDvid::MakeDvidNodeService(target);
         data = service->custom_request(

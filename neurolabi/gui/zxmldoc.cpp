@@ -2,6 +2,10 @@
 
 #include <iostream>
 #include <iomanip>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QFile>
+#include <QDebug>
 
 using namespace std;
 
@@ -27,6 +31,13 @@ void ZXmlDoc::parseFile(const std::string &filePath)
   }
 
   m_doc = xmlParseFile(filePath.c_str());
+#else
+  m_doc = ZSharedPointer<QDomDocument>(new QDomDocument());
+  QFile file(filePath.c_str());
+  if (file.open(QIODevice::ReadOnly)) {
+    m_doc->setContent(&file);
+  }
+  file.close();
 #endif
 }
 
@@ -35,20 +46,29 @@ ZXmlNode ZXmlDoc::getRootElement()
 #if defined(HAVE_LIBXML2)
   return ZXmlNode(Xml_Doc_Root_Element(m_doc), m_doc);
 #else
-  return ZXmlNode(NULL, NULL);
+  return ZXmlNode(m_doc->documentElement(), m_doc);
 #endif
 }
 
 void ZXmlDoc::printInfo()
 {
-  getRootElement().printElementNames();
+  getRootElement().printInfo();
 }
 
-ZXmlNode::ZXmlNode() : m_node(NULL), m_doc(NULL)
+ZXmlNode::ZXmlNode()
+#if defined(HAVE_LIBXML2)
+  : ZXmlNode(NULL, NULL)
+#endif
 {
 }
 
-ZXmlNode::ZXmlNode(xmlNodePtr node, xmlDocPtr doc) : m_node(node), m_doc(doc)
+ZXmlNode::ZXmlNode(xmlNodePtr node, xmlDocPtr doc)
+  : m_node(node), m_doc(doc)
+{
+}
+
+ZXmlNode::ZXmlNode(const QDomNode &node, xmlDocPtr doc) :
+  ZXmlNode(xmlNodePtr(new QDomNode(node)), doc)
 {
 }
 
@@ -67,8 +87,22 @@ string ZXmlNode::name() const
 
   return name;
 #else
-  return "";
+  return m_node->nodeName().toStdString();
 #endif
+}
+
+QString ZXmlNode::getText() const
+{
+  QString text;
+
+  if (!empty()) {
+    QDomText textNode = m_node->firstChild().toText();
+    if (!textNode.isNull()) {
+      text = textNode.data();
+    }
+  }
+
+  return text;
 }
 
 string ZXmlNode::stringValue()
@@ -87,7 +121,7 @@ string ZXmlNode::stringValue()
 
   return strValue;
 #else
-  return "";
+  return getText().toStdString();
 #endif
 }
 
@@ -100,7 +134,7 @@ double ZXmlNode::doubleValue()
 
   return Xml_Node_Double_Value(m_doc, m_node);
 #else
-  return 0.0;
+  return getText().toDouble();
 #endif
 }
 
@@ -113,48 +147,66 @@ int ZXmlNode::intValue()
 
   return Xml_Node_Int_Value(m_doc, m_node);
 #else
-  return 0;
+  return getText().toInt();
 #endif
 }
 
 bool ZXmlNode::empty() const
 {
-  return (m_doc == NULL || m_node == NULL);
+#if defined(HAVE_LIBXML2)
+  return (m_node == NULL);
+#else
+  if (m_node) {
+    return m_node->isNull();
+  }
+  return true;
+#endif
 }
 
 ZXmlNode ZXmlNode::firstChild() const
 {
-  ZXmlNode child;
-#if defined(HAVE_LIBXML2)
-  if (!empty()) {
-    child.m_node = m_node->xmlChildrenNode;
-    child.m_doc = m_doc;
+  if (empty()) {
+    return ZXmlNode();
   }
+
+#if defined(HAVE_LIBXML2)
+  ZXmlNode child;
+  child.m_node = m_node->xmlChildrenNode;
+  child.m_doc = m_doc;
+#else
+  ZXmlNode child(m_node->firstChild(), m_doc);
 #endif
   return child;
 }
 
 ZXmlNode ZXmlNode::nextSibling()
 {
-  ZXmlNode sibling;
-#if defined(HAVE_LIBXML2)
-  if (!empty()) {
-    sibling.m_node = m_node->next;
-    sibling.m_doc = m_doc;
+  if (empty()) {
+    return ZXmlNode();
   }
+
+#if defined(HAVE_LIBXML2)
+  ZXmlNode sibling;
+  sibling.m_node = m_node->next;
+  sibling.m_doc = m_doc;
+#else
+  ZXmlNode sibling(m_node->nextSibling(), m_doc);
 #endif
 
-  return ZXmlNode();
+  return sibling;
 }
 
+#if 0
 ZXmlNode ZXmlNode::next()
 {
-  ZXmlNode nextNode;
 #if defined(HAVE_LIBXML2)
+  ZXmlNode nextNode;
   if (!empty()) {
     nextNode.m_node = m_node->next;
     nextNode.m_doc = m_doc;
   }
+#else
+  ZXmlNode nextNode(m_node->nextSibling(), m_doc);
 #endif
   return nextNode;
 }
@@ -169,30 +221,70 @@ int ZXmlNode::type() const
 
   return 0;
 }
+#endif
 
-void ZXmlNode::printElementNames(int indent)
+bool ZXmlNode::isElement() const
 {
+  if (empty()) {
+    return false;
+  }
+
 #if defined(HAVE_LIBXML2)
+  return type() == XML_ELEMENT_NODE;
+#else
+  return m_node->isElement();
+#endif
+}
+
+void ZXmlNode::printElementNames(int indent) const
+{
   if (!empty()) {
-    if (type() == XML_ELEMENT_NODE) {
-      cout << setfill(' ') << setw(indent) << "";
-      cout << name() << endl;
+    if (m_node->isElement()) {
+      std::cout << setfill(' ') << setw(indent) << "";
+      std::cout << name() << std::endl;
       ZXmlNode child = firstChild();
+#ifdef _DEBUG_2
+      std::cout << child.name() << std::endl;
+#endif
       while (!child.empty()) {
         child.printElementNames(indent + 2);
-        child = child.next();
+        child = child.nextSibling();
       }
     }
   }
+}
+
+void ZXmlNode::printInfo(int indent) const
+{
+  if (!empty()) {
+    if (m_node->isElement()) {
+      std::cout << setfill(' ') << setw(indent) << "";
+      std::cout << name() << "(" << m_node->childNodes().size() << "): ";
+      QDomText textNode = m_node->firstChild().toText();
+      if (!textNode.isNull()) {
+        std::cout << qPrintable(textNode.data());
+      }
+      std::cout << std::endl;
+      ZXmlNode child = firstChild();
+#ifdef _DEBUG_2
+      std::cout << child.name() << std::endl;
 #endif
+      while (!child.empty()) {
+        child.printInfo(indent + 2);
+        child = child.nextSibling();
+      }
+    }
+  }
 }
 
 ZXmlNode ZXmlNode::queryNode(const std::string &nodeName) const
 {
   ZXmlNode node;
-#if defined(HAVE_LIBXML2)
   if (!empty()) {
-    if (type() == XML_ELEMENT_NODE) {
+    if (isElement()) {
+#ifdef _DEBUG_2
+      std::cout << name() << std::endl;
+#endif
       if (name() == nodeName) {
         node = *this;
       } else {
@@ -202,12 +294,11 @@ ZXmlNode ZXmlNode::queryNode(const std::string &nodeName) const
           if (!node.empty()) {
             break;
           }
-          child = child.next();
+          child = child.nextSibling();
         }
       }
     }
   }
-#endif
 
   return node;
 }
@@ -215,14 +306,22 @@ ZXmlNode ZXmlNode::queryNode(const std::string &nodeName) const
 string ZXmlNode::getAttribute(const char *attribute) const
 {
   string attributeValue;
+  if (!empty()) {
 #if defined(HAVE_LIBXML2)
-  if (m_node != NULL) {
-    xmlChar *prop = xmlGetProp(m_node, CONST_XML_STRING(attribute));
-    char *tmpStr = Xml_String_To_String(prop);
-    attributeValue = tmpStr;
-    free(tmpStr);
-    free(prop);
-  }
+    if (m_node != NULL) {
+      xmlChar *prop = xmlGetProp(m_node, CONST_XML_STRING(attribute));
+      char *tmpStr = Xml_String_To_String(prop);
+      attributeValue = tmpStr;
+      free(tmpStr);
+      free(prop);
+    }
+#else
+    QDomNamedNodeMap nodeMap = m_node->attributes();
+    QDomAttr node = nodeMap.namedItem(attribute).toAttr();
+    if (!node.isNull()) {
+      return node.nodeValue().toStdString();
+    }
 #endif
+  }
   return attributeValue;
 }

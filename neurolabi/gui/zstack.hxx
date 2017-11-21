@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #ifdef _NEUTUBE_
 #include "zglmutils.h"
@@ -451,6 +452,9 @@ public: /* data operation */
   //Load stack from several single channel stack, stack can be null
   bool load(const Stack *ch1, const Stack *ch2, const Stack *ch3);
 
+  void read(std::istream &stream);
+  void write(std::ostream &stream) const;
+
   // return output file name, some image format might not support some data, so the real file name might be changed
   std::string save(const std::string &filepath) const;
   void setSource(const std::string &filepath, int channel = -1);
@@ -568,6 +572,9 @@ public: /* processing routines */
   void setDsIntv(const ZIntPoint &dsIntv) {
     m_dsIntv = dsIntv;
   }
+  void setDsIntv(int ix, int iy, int iz) {
+    m_dsIntv.set(ix, iy, iz);
+  }
 
   /*!
    * \brief Downsample the stack with maximum assignment.
@@ -584,6 +591,8 @@ public: /* processing routines */
   void downsampleMin(int xintv, int yintv, int zintv);
   void downsampleMinIgnoreZero(int xintv, int yintv, int zintv);
 
+  void downsampleMean(int xintv, int yintv, int zintv);
+
   void crop(const ZIntCuboid &cuboid);
   ZStack* makeCrop(const ZIntCuboid &cuboid) const;
 
@@ -591,6 +600,10 @@ public: /* processing routines */
 
 public:
   void initChannelColors();
+  void useChannelColors(bool on);
+  void clearChannelColors();
+
+  std::string getTransformMeta() const;
 
   struct LsmInfo {
     LsmInfo() {}
@@ -633,22 +646,26 @@ private:
 
 
 private:
-  Mc_Stack *m_stack; //Master data
-  C_Stack::Mc_Stack_Deallocator *m_dealloc; //Dellocator of the master data
+  Mc_Stack *m_stack = nullptr; //Master data
+  C_Stack::Mc_Stack_Deallocator *m_dealloc = nullptr; //Dellocator of the master data
   ZIntPoint m_offset;
-  ZIntPoint m_dsIntv; //Downsampling ratio from original space
+  ZIntPoint m_dsIntv; //Downsampling ratio from original space;
+                      //note that the offset is also supposed to be downsampled
 
   ZStackFile m_source;
 
   mutable std::vector<Stack> m_stackView;
   mutable std::vector<ZSingleChannelStack*> m_singleChannelStack;
-  mutable char m_buffer[1]; //Buffer of text field of temporary stack
+  mutable char m_buffer[1] = {'\0'}; //Buffer of text field of temporary stack
+
 
   //float color for each channel
 
 //  bool m_isLSMFile;
 
 #ifdef _NEUTUBE_
+  bool m_usingChannelColors = true; //Temporary hack.
+  //Need to make channelColors on demand in the future.
   std::vector<ZVec3Parameter*> m_channelColors;
 
   LsmInfo m_lsmInfo;

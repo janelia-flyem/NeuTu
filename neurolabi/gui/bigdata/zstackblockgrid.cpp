@@ -2,6 +2,7 @@
 #include "zstack.hxx"
 #include "zintcuboid.h"
 #include "neutubeconfig.h"
+#include "misc/miscutility.h"
 
 ZStackBlockGrid::ZStackBlockGrid()
 {
@@ -159,7 +160,7 @@ ZStack* ZStackBlockGrid::toStack() const
   //int depth = getSpatialDepth();
 
   ZStack *out =
-      new ZStack(GREY, box.getWidth(), box.getHeight(), box.getDepth(), 1);
+      new ZStack(GREY, box, 1);
   out->setOffset(box.getFirstCorner());
   out->setZero();
 
@@ -252,4 +253,57 @@ ZIntCuboid ZStackBlockGrid::getStackBoundBox() const
   }
 
   return cuboid;
+}
+
+void ZStackBlockGrid::read(std::istream &stream)
+{
+  m_size.read(stream);
+  m_minPoint.read(stream);
+  m_blockSize.read(stream);
+
+  int count = 0;
+  misc::read(stream, count);
+  int maxIndex = -1;
+  misc::read(stream, maxIndex);
+
+  if (maxIndex >= 0) {
+    m_stackArray.resize(maxIndex + 1, 0);
+    for (int i = 0; i < count; ++i) {
+      int index = -1;
+      misc::read(stream, index);
+      if (index >= 0) {
+        ZStack *stack = new ZStack;
+        stack->read(stream);
+        m_stackArray[index] = stack;
+      }
+    }
+  }
+}
+
+void ZStackBlockGrid::write(std::ostream &stream) const
+{
+  m_size.write(stream);
+  m_minPoint.write(stream);
+  m_blockSize.write(stream);
+
+  int count = 0;
+  int maxIndex = -1;
+  for (int i = 0; i < (int) m_stackArray.size(); ++i) {
+    ZStack *stack = m_stackArray[i];
+    if (stack != NULL) {
+      ++count;
+      maxIndex = i;
+    }
+  }
+
+  misc::write(stream, count);
+  misc::write(stream, maxIndex);
+
+  for (int i = 0; i < (int) m_stackArray.size(); ++i) {
+    ZStack *stack = m_stackArray[i];
+    if (stack != NULL) {
+      misc::write(stream, i);
+      stack->write(stream);
+    }
+  }
 }

@@ -6,7 +6,8 @@
 
 #include "neurolabi_config.h"
 #include "zstring.h"
-#include "tz_xml_utils.h"
+#include "tz_utilities.h"
+//#include "tz_xml_utils.h"
 #include "tz_error.h"
 #include "zhdf5reader.h"
 
@@ -88,8 +89,9 @@ void ZFileList::setFilePath(int index, string path)
   strcpy(m_fileList.file_path[index], path.c_str());
 }
 
-void ZFileList::importFromXml(const string &filePath)
+void ZFileList::importFromXml(const string &/*filePath*/)
 {
+#if 0
 #if defined(HAVE_LIBXML2)
   xmlDocPtr doc;
   xmlNodePtr cur;
@@ -137,5 +139,6 @@ void ZFileList::importFromXml(const string &filePath)
   }
 #else
   TZ_ERROR(ERROR_NA_FUNC);
+#endif
 #endif
 }

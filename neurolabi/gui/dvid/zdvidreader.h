@@ -43,6 +43,7 @@ class ZFlyEmBookmark;
 class ZFlyEmToDoItem;
 class ZDvidRoi;
 class ZObject3dScanArray;
+class ZMesh;
 
 namespace libdvid{
 class DVIDNodeService;
@@ -53,6 +54,9 @@ namespace lowtis {
 class ImageService;
 }
 
+/*!
+ * \brief The class for reading data from DVID
+ */
 class ZDvidReader : public QObject
 {
   Q_OBJECT
@@ -60,10 +64,42 @@ public:
   explicit ZDvidReader(QObject *parent = 0);
   ~ZDvidReader();
 
+  /*!
+   * \brief Open a dvid node to read.
+   *
+   * It returns true iff the node is opened correctly. The user can also use
+   * \a good() or \a isReady() to check if the node is opened later.
+   *
+   * \param serverAddress Host name of the server.
+   * \param uuid UUID of the node
+   * \param port Port of the server.
+   *
+   * \return true iff the node is opened correctly
+   */
   bool open(const QString &serverAddress, const QString &uuid,
             int port = -1);
+
+  /*!
+   * \brief Open a dvid node to read.
+   *
+   * This function will try to infer the real node and data instances from the
+   * settings in \a target.
+   */
   bool open(const ZDvidTarget &target);
+
+  /*!
+   * \brief Open a dvid node defined by a source string
+   *
+   * \param sourceString the format of the source string is defined in the ZDvidTarget class.
+   */
   bool open(const QString &sourceString);
+
+  /*!
+   * \brief Open a target as it is.
+   *
+   * No inference is applied.
+   */
+  bool openRaw(const ZDvidTarget &target);
 
   void clear();
 
@@ -80,6 +116,7 @@ public:
   std::string readNodeInfo() const;
 
   ZDvid::ENodeStatus getNodeStatus() const;
+  void updateNodeStatus();
 
   ZDvidBufferReader& getBufferReader() const {
     return m_bufferReader;
@@ -90,6 +127,8 @@ public:
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
   ZObject3dScan* readBody(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result);
+
+  ZMesh* readMesh(uint64_t bodyId, int zoom);
 
   ZObject3dScan* readBodyDs(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result);
@@ -112,10 +151,19 @@ public:
 
   ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet);
 
+  /*!
+   * \brief Check the number of blocks of a body
+   *
+   * \return The number of blocks of a body. It returns -1 if the count cannot
+   *         be determined.
+   */
+  int readBodyBlockCount(uint64_t bodyId) const;
+
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId);
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
+  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range);
   ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
@@ -150,10 +198,12 @@ public:
 
   bool hasKey(const QString &dataName, const QString &key) const;
   QByteArray readKeyValue(const QString &dataName, const QString &key) const;
-  QStringList readKeys(const QString &dataName);
+  QStringList readKeys(const QString &dataName) const;
   QStringList readKeys(const QString &dataName, const QString &minKey);
   QStringList readKeys(const QString &dataName,
-                       const QString &minKey, const QString &maxKey);
+                       const QString &minKey, const QString &maxKey) const;
+  ZJsonObject readJsonObjectFromKey(
+      const QString &dataName, const QString &key) const;
 
   ZClosedCurve* readRoiCurve(const std::string &key, ZClosedCurve *result);
   ZIntCuboid readBoundBox(int z);
@@ -223,6 +273,8 @@ public:
   bool hasBodyInfo(uint64_t bodyId) const;
   bool hasBody(uint64_t bodyId) const;
 
+  bool hasGrayscale() const;
+
   ZIntPoint readBodyLocation(uint64_t bodyId) const;
 
   bool hasCoarseSparseVolume(uint64_t bodyId) const;
@@ -250,6 +302,8 @@ public:
   uint64_t readBodyIdAt(const ZIntPoint &pt) const;
   std::vector<uint64_t> readBodyIdAt(
       const std::vector<ZIntPoint> &ptArray) const;
+  std::vector<std::vector<uint64_t> > readBodyIdAt(
+      const std::vector<std::vector<ZIntPoint> > &ptArray) const;
   template <typename InputIterator>
   std::vector<uint64_t> readBodyIdAt(
       const InputIterator &first, const InputIterator &last) const;
@@ -264,10 +318,12 @@ public:
   ZDvidVersionDag readVersionDag() const;
 
   ZObject3dScan readCoarseBody(uint64_t bodyId) const;
+  int readCoarseBodySize(uint64_t bodyId) const;
 
   ZObject3dScan readRoi(const std::string &dataName);
   ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result);
   ZDvidRoi* readRoi(const std::string &dataName, ZDvidRoi *roi);
+  ZJsonArray readRoiJson(const std::string &dataName);
 
   ZFlyEmBodyAnnotation readBodyAnnotation(uint64_t bodyId) const;
   ZJsonObject readBodyAnnotationJson(uint64_t bodyId) const;
@@ -369,13 +425,28 @@ public:
   }
 #endif
 
-  QByteArray readBuffer(const std::string &url);
+  QByteArray readBuffer(const std::string &url) const;
+  QByteArray readDataFromEndpoint(
+      const std::string &endPoint, bool tryingCompress = false) const;
 
   bool refreshLabelBuffer();
 
   void testApiLoad();
 
   int checkProofreadingData() const;
+
+  QByteArray readServiceResult(
+      const std::string &group, const std::string &key) const;
+  ZJsonObject readServiceTask(
+      const std::string &group, const std::string &key) const;
+  std::map<std::string, ZJsonObject> readSplitTaskMap() const;
+  QList<ZStackObject*> readSeedFromSplitTask(
+      const std::string &taskKey, uint64_t bodyId);
+  QList<ZStackObject*> readSeedFromSplitTask(
+      const ZDvidTarget &target, uint64_t bodyId);
+
+  bool hasSplitTask(const QString &key) const;
+
 
 signals:
   void readingDone();
@@ -399,6 +470,8 @@ private:
 
   void init();
 
+  void updateSegmentationData();
+
   std::vector<ZStack*> readGrayScaleBlockOld(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber);
@@ -417,10 +490,6 @@ private:
   bool reportMissingData(const std::string dataName) const;
 
 protected:
-//  QEventLoop *m_eventLoop;
-//  ZDvidClient *m_dvidClient;
-//  QTimer *m_timer;
-//  bool m_isReadingDone;
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
   mutable int m_statusCode;

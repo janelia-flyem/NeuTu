@@ -40,7 +40,16 @@ public:
     ROLE_LABELSZ,
     ROLE_SYNAPSE,
     ROLE_TODO_LIST,
-    ROLE_NEUTU_CONFIG
+    ROLE_SPARSEVOL_SIZE,
+    ROLE_NEUTU_CONFIG,
+    ROLE_RESULT_KEY,
+    ROLE_TASK_KEY,
+    ROLE_SPLIT_GROUP,
+    ROLE_SPLIT_TASK_KEY,
+    ROLE_SPLIT_RESULT_KEY,
+    ROLE_SPLIT_TASK_PROPERTY_KEY,
+    ROLE_SPLIT_RESULT_PROPERTY_KEY,
+    ROLE_MESH
   };
 
   enum EType {
@@ -48,7 +57,10 @@ public:
     TYPE_LABELMAP, TYPE_MULTISCALE_2D, TYPE_MULTCHAN16, TYPE_KEY_VALUE
   };
 
-  static const char* GetName(ERole role);
+  static std::string GetName(ERole role);
+
+  template<typename T>
+  static T GetName(ERole role);
   //static const char* getName(EType type);
 
   static std::string GetName(
@@ -56,11 +68,21 @@ public:
       const std::string &prefixName);
 //  static std::string GetName(ERole role, ERole prefixRole);
 
-  static bool isDefaultName(ERole role, const std::string &name);
   static bool IsNullName(const std::string &name);
+
+  static std::string GetTaskName(const std::string &group);
+  static std::string GetResultName(const std::string &group);
+
+  template<typename T>
+  static T GetTaskName(const std::string &group);
+
+  template<typename T>
+  static T GetResultName(const std::string &group);
+
 
 private:
   static std::string GetName(ERole role, const std::string &prefix);
+  static bool IsDefaultName(ERole role, const std::string &name);
 
 private:
   static const char *m_grayScaleName;
@@ -89,10 +111,30 @@ private:
   static const char *m_todoListName;
   static const char *m_neutuConfigName;
   static const char *m_labelszName;
+  static const char *m_meshName;
+  static const char *m_sparsevolSizeName;
   //static const char *m_keyValueTypeName;
 
   static const char *m_nullName;
   static const char *m_emptyName;
 };
+
+template<typename T>
+T ZDvidData::GetName(ERole role)
+{
+  return T(GetName(role).c_str());
+}
+
+template<typename T>
+T ZDvidData::GetResultName(const std::string &group)
+{
+  return T(GetResultName(group).c_str());
+}
+
+template<typename T>
+T ZDvidData::GetTaskName(const std::string &group)
+{
+  return T(GetTaskName(group).c_str());
+}
 
 #endif // ZDVIDDATA_H

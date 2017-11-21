@@ -502,7 +502,6 @@ bool ZStackObjectGroup::removeSelectedUnsync(
   return !objSet.empty();
 }
 
-
 bool ZStackObjectGroup::removeSelected(ZStackObject::EType type, bool deleting)
 {
   QMutexLocker locker(&m_mutex);
@@ -888,6 +887,17 @@ void ZStackObjectGroup::add(ZStackObject *obj, int zOrder, bool uniqueSource)
   QMutexLocker locker(&m_mutex);
 
   addUnsync(obj, zOrder, uniqueSource);
+}
+
+bool ZStackObjectGroup::hasObject(const ZStackObject *obj) const
+{
+  if (obj == NULL) {
+    return false;
+  }
+
+  QMutexLocker locker(&m_mutex);
+
+  return m_objectList.contains(const_cast<ZStackObject*>(obj));
 }
 
 bool ZStackObjectGroup::containsUnsync(const ZStackObject *obj) const

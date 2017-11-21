@@ -1,64 +1,89 @@
 #ifndef Z3DGRAPHFILTER_H
 #define Z3DGRAPHFILTER_H
 
-#include <QObject>
 #include "z3dgeometryfilter.h"
 #include "tz_geo3d_scalar_field.h"
 #include "tz_graph.h"
 #include "z3dgraph.h"
 #include "zwidgetsgroup.h"
+#include "z3dlinerenderer.h"
+#include "z3dconerenderer.h"
+#include "z3dsphererenderer.h"
 
-class Z3DLineRenderer;
-class Z3DConeRenderer;
-class Z3DSphereRenderer;
+class ZDocPlayer;
 class ZObject3d;
 
 class Z3DGraphFilter : public Z3DGeometryFilter
 {
   Q_OBJECT
-
 public:
-  explicit Z3DGraphFilter();
-  virtual ~Z3DGraphFilter();
+  explicit Z3DGraphFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
+  ~Z3DGraphFilter();
 
-  virtual void initialize();
-  virtual void deinitialize();
+  void clear();
 
-  void prepareData();
   void setData(const ZPointNetwork &pointCloud, ZNormColorMap *colorMap = NULL);
   void setData(const Z3DGraph &graph);
-  void addData(const Z3DGraph &graph);
-
+  Z3DGraphPtr addData(const Z3DGraph &graph);
   void setData(const ZObject3d &obj);
 
-  virtual void process(Z3DEye);
+  void addData(const ZDocPlayer &player);
+  void addData(const QList<ZDocPlayer*> &playerList);
+  void addData(Z3DGraph *graph);
 
-  virtual void render(Z3DEye eye);
+  std::shared_ptr<ZWidgetsGroup> widgetsGroup();
 
-  std::vector<double> boundBox();
+  virtual void renderOpaque(Z3DEye eye) override;
 
-  ZWidgetsGroup *getWidgetsGroup();
+  virtual void renderTransparent(Z3DEye eye) override;
 
   inline bool showingArrow() { return m_showingArrow; }
 
-  bool isReady(Z3DEye eye) const;
+  virtual bool isReady(Z3DEye eye) const override;
 
-  void setVisible(bool v);
-  bool isVisible() const;
+//  void setVisible(bool v);
+//  bool isVisible() const;
 
-public slots:
+  void configure(const ZJsonObject &obj) override;
+
+  void renderSelectionBox(Z3DEye eye);
+  void deselectAllGraph();
+
+signals:
+  void objectSelected(ZStackObject *obj, bool appending);
+
+protected:
+  void prepareData();
   void prepareColor();
   void updateGraphVisibleState();
+  virtual void renderPicking(Z3DEye eye) override;
+  virtual void registerPickingObjects() override;
+  virtual void deregisterPickingObjects() override;
+
+  virtual void process(Z3DEye eye) override;
+
+  std::vector<double> boundBox();
+
+  virtual void updateNotTransformedBoundBoxImpl() override;
+
+  void selectGraph(QMouseEvent *e, int w, int h);
+  virtual void addSelectionLines() override;
+  void graphBound(const Z3DGraphPtr &p, ZBBox<glm::dvec3> &result);
 
 private:
-  Z3DGraph m_graph;
+//  Z3DGraph m_graph;
+  QList<Z3DGraphPtr> m_graphList;
+  QList<Z3DGraphPtr> m_registeredGraphList;
+  Z3DGraphPtr m_pressedGraph;
 
-  ZBoolParameter m_showGraph;
+  QMap<Z3DGraph*, ZStackObject*> m_objectMap;
 
-  Z3DLineRenderer *m_lineRenderer;
-  Z3DConeRenderer *m_coneRenderer;
-  Z3DConeRenderer *m_arrowRenderer;
-  Z3DSphereRenderer *m_sphereRenderer;
+//  ZBoolParameter m_showGraph;
+
+  Z3DLineRenderer m_lineRenderer;
+  Z3DConeRenderer m_coneRenderer;
+  Z3DConeRenderer m_arrowRenderer;
+  Z3DSphereRenderer m_sphereRenderer;
 
   std::vector<glm::vec4> m_baseAndBaseRadius;
   std::vector<glm::vec4> m_axisAndTopRadius;
@@ -75,14 +100,15 @@ private:
   std::vector<glm::vec4> m_arrowStartColors;
   std::vector<glm::vec4> m_arrowEndColors;
 
-  bool m_dataIsInvalid;
-  ZIntSpanParameter m_xCut;
-  ZIntSpanParameter m_yCut;
-  ZIntSpanParameter m_zCut;
+  std::vector<glm::vec4> m_graphPickingColors;
+  glm::ivec2 m_startCoord;
+  ZEventListenerParameter m_selectGraphEvent;
 
-  ZWidgetsGroup *m_widgetsGroup;
+  bool m_dataIsInvalid = false;
 
-  bool m_showingArrow;
+  std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
+
+  bool m_showingArrow = true;
 };
 
 #endif // Z3DGRAPHFILTER_H

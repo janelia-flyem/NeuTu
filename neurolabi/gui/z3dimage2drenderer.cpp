@@ -2,211 +2,158 @@
 
 #include "z3dtexture.h"
 #include "z3dvolume.h"
+#include "QsLog.h"
 
-Z3DImage2DRenderer::Z3DImage2DRenderer(QObject *parent)
-  : Z3DPrimitiveRenderer(parent)
+Z3DImage2DRenderer::Z3DImage2DRenderer(Z3DRendererBase& rendererBase)
+  : Z3DPrimitiveRenderer(rendererBase)
+  , m_VAO(1)
 {
-  m_volumes.resize(5,NULL);
-  for (size_t i=0; i<m_volumes.size(); ++i) {
-    m_volumeUniformNames.push_back(QString("volume_struct_%1").arg(i+1));
-  }
+//  m_image2DShader.bindFragDataLocation(0, "FragData0");
+//  m_image2DShader.loadFromSourceFile("transform_with_2dtexture.vert", "image2d_with_colormap.frag",
+//                                     m_rendererBase.generateHeader() + generateHeader());
+
+  m_scImage2DShader.bindFragDataLocation(0, "FragData0");
+  m_scImage2DShader.loadFromSourceFile("transform_with_2dtexture.vert", "image2d_with_colormap_single_channel.frag",
+                                       m_rendererBase.generateHeader() + generateHeader());
+  m_mergeChannelShader.bindFragDataLocation(0, "FragData0");
+  m_mergeChannelShader.loadFromSourceFile("pass.vert", "image2d_array_compositor.frag",
+                                          m_rendererBase.generateHeader() + generateHeader());
 }
 
-Z3DImage2DRenderer::~Z3DImage2DRenderer()
+void Z3DImage2DRenderer::setChannels(const std::vector<std::unique_ptr<Z3DVolume>>& volsIn,
+                                     const std::vector<std::unique_ptr<ZColorMapParameter>>& colormapsIn)
 {
-}
+  CHECK(colormapsIn.size() >= volsIn.size());
+  for (size_t i = 0; i < volsIn.size(); ++i) {
+    CHECK(volsIn[i]->is2DData());
+  }
+  std::vector<Z3DVolume*> vols;
+  std::vector<ZColorMapParameter*> colormaps;
+  for (size_t i = 0; i < volsIn.size(); ++i) {
+    vols.push_back(volsIn[i].get());
+    colormaps.push_back(colormapsIn[i].get());
+  }
 
-void Z3DImage2DRenderer::setChannel1(Z3DVolume *vol)
-{
-  if (vol && !vol->is2DData()) {
-    LERROR() << "Input is not 2D image";
-    return;
-  }
-  if (m_volumes[0] != vol) {
-    Z3DVolume *oldvol = m_volumes[0];
-    m_volumes[0] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DImage2DRenderer::setChannel2(Z3DVolume *vol)
-{
-  if (vol && !vol->is2DData()) {
-    LERROR() << "Input is not 2D image";
-    return;
-  }
-  if (m_volumes[1] != vol) {
-    Z3DVolume *oldvol = m_volumes[1];
-    m_volumes[1] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DImage2DRenderer::setChannel3(Z3DVolume *vol)
-{
-  if (vol && !vol->is2DData()) {
-    LERROR() << "Input is not 2D image";
-    return;
-  }
-  if (m_volumes[2] != vol) {
-    Z3DVolume *oldvol = m_volumes[2];
-    m_volumes[2] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DImage2DRenderer::setChannel4(Z3DVolume *vol)
-{
-  if (vol && !vol->is2DData()) {
-    LERROR() << "Input is not 2D image";
-    return;
-  }
-  if (m_volumes[3] != vol) {
-    Z3DVolume *oldvol = m_volumes[3];
-    m_volumes[3] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DImage2DRenderer::setChannel5(Z3DVolume *vol)
-{
-  if (vol && !vol->is2DData()) {
-    LERROR() << "Input is not 2D image";
-    return;
-  }
-  if (m_volumes[4] != vol) {
-    Z3DVolume *oldvol = m_volumes[4];
-    m_volumes[4] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DImage2DRenderer::setChannels(std::vector<Z3DVolume*> vols)
-{
-  for (size_t i=0; i<vols.size(); ++i) {
-    if (vols[i] && !vols[i]->is2DData()) {
-      LERROR() << "Input is not 2D image";
-      return;
-    }
-  }
-  vols.resize(m_volumes.size(), NULL);
   if (m_volumes != vols) {
     m_volumes = vols;
     compile();
   }
+  m_colormaps = colormaps;
+
+  m_volumeUniformNames.resize(m_volumes.size());
+  m_colormapUniformNames.resize(m_volumes.size());
+  for (size_t i = 0; i < m_volumes.size(); ++i) {
+    m_volumeUniformNames[i] = QString("volume_%1").arg(i + 1);
+    m_colormapUniformNames[i] = QString("colormap_%1").arg(i + 1);
+  }
 }
 
-void Z3DImage2DRenderer::addQuad(const Z3DTriangleList &quad)
+void Z3DImage2DRenderer::addQuad(const ZMesh& quad)
 {
   if (quad.empty() ||
-      (quad.getVertices().size() != 4 && quad.getVertices().size() != 6) ||
-      quad.getVertices().size() != quad.get2DTextureCoordinates().size()) {
-    LERROR() << "Input quad should be 2D slice with 2D texture coordinates";
+      (quad.numVertices() != 4 && quad.numVertices() != 6) ||
+      quad.numVertices() != quad.num2DTextureCoordinates()) {
+    LOG(FATAL) << "Input quad should be 2D slice with 2D texture coordinates";
     return;
   }
   m_quads.push_back(quad);
 }
 
-void Z3DImage2DRenderer::bindVolumes(Z3DShaderProgram &shader)
+void Z3DImage2DRenderer::bindVolumes(Z3DShaderProgram& shader) const
 {
-  for (size_t i=0; i < m_volumes.size(); ++i) {
-    Z3DVolume *volume = m_volumes[i];
+  size_t idx = 0;
+  for (size_t i = 0; i < m_volumes.size(); ++i) {
+    Z3DVolume* volume = m_volumes[i];
     if (!volume)
       continue;
 
     // volumes
-    shader.bindVolume(m_volumeUniformNames[i], volume, GL_NEAREST, GL_NEAREST);
+    shader.bindTexture(m_volumeUniformNames[idx], volume->texture(), GLint(GL_NEAREST), GLint(GL_NEAREST));
 
-    CHECK_GL_ERROR;
+    // colormap
+    shader.bindTexture(m_colormapUniformNames[idx++], m_colormaps[i]->get().texture1D());
   }
+}
+
+void Z3DImage2DRenderer::bindVolume(Z3DShaderProgram& shader, size_t idx) const
+{
+  // volumes
+  shader.bindTexture(m_volumeUniformNames[0], m_volumes[idx]->texture(), GLint(GL_NEAREST), GLint(GL_NEAREST));
+
+  // colormap
+  shader.bindTexture(m_colormapUniformNames[0], m_colormaps[idx]->get().texture1D());
 }
 
 bool Z3DImage2DRenderer::hasVolume() const
 {
-  for (size_t i=0; i<m_volumes.size(); ++i)
+  for (size_t i = 0; i < m_volumes.size(); ++i) {
     if (m_volumes[i])
       return true;
+  }
   return false;
 }
 
 void Z3DImage2DRenderer::compile()
 {
-  m_image2DShader.setHeaderAndRebuild(generateHeader());
-}
+  //m_image2DShader.setHeaderAndRebuild(m_rendererBase.generateHeader() + generateHeader());
 
-void Z3DImage2DRenderer::initialize()
-{
-  Z3DPrimitiveRenderer::initialize();
-  m_image2DShader.bindFragDataLocation(0, "FragData0");
-  m_image2DShader.loadFromSourceFile("transform_with_2dtexture.vert", "image2d.frag", generateHeader());
-}
-
-void Z3DImage2DRenderer::deinitialize()
-{
-  m_image2DShader.removeAllShaders();
-  CHECK_GL_ERROR;
-  Z3DPrimitiveRenderer::deinitialize();
+  m_scImage2DShader.setHeaderAndRebuild(m_rendererBase.generateHeader() + generateHeader());
+  m_mergeChannelShader.setHeaderAndRebuild(m_rendererBase.generateHeader() + generateHeader());
 }
 
 QString Z3DImage2DRenderer::generateHeader()
 {
-  QString headerSource = Z3DPrimitiveRenderer::generateHeader();
+  QString headerSource;
 
   if (hasVolume()) {
-    if (m_volumes[0]) {
-      headerSource += "#define VOLUME_1_EXIST\n";
-    }
-    if (m_volumes[1]) {
-      headerSource += "#define VOLUME_2_EXIST\n";
-    }
-    if (m_volumes[2]) {
-      headerSource += "#define VOLUME_3_EXIST\n";
-    }
-    if (m_volumes[3]) {
-      headerSource += "#define VOLUME_4_EXIST\n";
-    }
-    if (m_volumes[4]) {
-      headerSource += "#define VOLUME_5_EXIST\n";
-    }
+    headerSource += QString("#define NUM_VOLUMES %1\n").arg(m_volumes.size());
   } else {
+    headerSource += QString("#define NUM_VOLUMES 0\n");
     headerSource += "#define DISABLE_TEXTURE_COORD_OUTPUT\n";
   }
+
+  // for merge shader
+  headerSource += "#define MAX_PROJ_MERGE\n";
 
   return headerSource;
 }
 
 void Z3DImage2DRenderer::render(Z3DEye eye)
 {
-  if (!m_initialized)
-    return;
-
   bool needRender = hasVolume() && !m_quads.empty();
   if (!needRender)
     return;
 
-  m_image2DShader.bind();
-  m_rendererBase->setGlobalShaderParameters(m_image2DShader, eye);
+  m_scImage2DShader.bind();
+  m_rendererBase.setGlobalShaderParameters(m_scImage2DShader, eye);
 
-  bindVolumes(m_image2DShader);
+  if (m_volumes.size() == 1) {
+    bindVolume(m_scImage2DShader, 0);
+    for (size_t i = 0; i < m_quads.size(); ++i)
+      renderTriangleList(m_VAO, m_scImage2DShader, m_quads[i]);
+  } else {
+    for (size_t j = 0; j < m_volumes.size(); ++j) {
+      m_layerTarget->attachSlice(j);
+      m_layerTarget->bind();
+      m_layerTarget->clear();
 
-  for (size_t i=0; i<m_quads.size(); ++i)
-    renderTriangleList(m_image2DShader, m_quads[i]);
+      bindVolume(m_scImage2DShader, j);
+      for (size_t i = 0; i < m_quads.size(); ++i)
+        renderTriangleList(m_VAO, m_scImage2DShader, m_quads[i]);
 
-  m_image2DShader.release();
-}
+      m_layerTarget->release();
+    }
+  }
 
-void Z3DImage2DRenderer::renderPicking(Z3DEye)
-{
+  m_scImage2DShader.release();
+
+  if (m_volumes.size() > 1) {
+    m_mergeChannelShader.bind();
+    m_mergeChannelShader.bindTexture("color_texture", m_layerTarget->attachment(GL_COLOR_ATTACHMENT0));
+    m_mergeChannelShader.bindTexture("depth_texture", m_layerTarget->attachment(GL_DEPTH_ATTACHMENT));
+    renderScreenQuad(m_VAO, m_mergeChannelShader);
+    m_mergeChannelShader.release();
+  }
 }
 
 

@@ -21,6 +21,7 @@ class QPointF;
 class QRectF;
 class QRect;
 class QTransform;
+class ZViewProj;
 
 /*!
  * \brief The painter class using QPainter to draw objects with extended options
@@ -41,6 +42,12 @@ public:
   bool begin(ZPixmap *pixmap);
   bool begin(QPaintDevice *device);
   bool end();
+
+  void attachPainter(QPainter *painter);
+  void detachPainter();
+
+  QPainter* getPainter();
+  const QPainter* getPainter() const;
 
   QPaintDevice* device();
 
@@ -69,14 +76,11 @@ public:
     return m_isPainted;
   }
 
-  QPainter* getPainter() {
-    return &m_painter;
-  }
-
   //inline ZPoint getOffset() { return m_transform.getOffset(); }
 
   void drawImage(
       const QRectF &targetRect, const ZImage &image, const QRectF &sourceRect);
+  void drawImage(const ZViewProj &viewProj, const ZImage &image);
 
   /*!
    * \brief Draw image.
@@ -94,6 +98,9 @@ public:
       const QRectF &targetRect, const ZPixmap &image, const QRectF &sourceRect);
 
   void drawPixmap(const QRectF &targetRect, const ZPixmap &image);
+
+  void drawPixmap(const ZViewProj &viewProj, const ZPixmap &image);
+
 
   /*!
    * \brief Draw image.
@@ -187,13 +194,16 @@ public:
   */
 
 private:
+  void initPainter();
+
+private:
 #ifdef _QT_GUI_USED_
-  QPainter m_painter;
+  QPainter *m_painter = NULL;
 #endif
 
-  int m_z;
+  int m_z = 0;
   QRectF m_canvasRange;
-  bool m_isPainted;
+  bool m_isPainted = false;
 
   ZStTransform m_transform; //world coordinates to canvas coordinates
 //  ZPoint m_offset;

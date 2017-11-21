@@ -31,6 +31,7 @@ class ZIntCuboidObj;
 class ZSlicedPuncta;
 class ZFlyEmSequencerColorScheme;
 class ZFlyEmSynapseAnnotationDialog;
+class ZStackArray;
 
 
 class ZFlyEmProofDoc : public ZStackDoc
@@ -59,7 +60,7 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
-  virtual void updateTileData();
+//  virtual void updateTileData();
 
   const ZDvidTarget& getDvidTarget() const;
 
@@ -80,6 +81,7 @@ public:
 
   const ZDvidSparseStack* getBodyForSplit() const;
   ZDvidSparseStack* getBodyForSplit();
+  void clearBodyForSplit();
 
   const ZSparseStack* getSparseStack() const;
   ZSparseStack* getSparseStack();
@@ -94,6 +96,13 @@ public:
   void updateBodyObject();
 
   void clearData();
+
+  /*!
+   * \brief Get brief information of the document
+   *
+   * \return A string that contains information about the document.
+   */
+  QString getInfo() const;
 
   /*!
    * \brief Get body ID at a certain location
@@ -151,7 +160,8 @@ public:
 //  }
 
   ZDvidSparseStack* getDvidSparseStack() const;
-  ZDvidSparseStack* getDvidSparseStack(const ZIntCuboid &roi) const;
+  ZDvidSparseStack* getDvidSparseStack(
+      const ZIntCuboid &roi, FlyEM::EBodySplitMode mode) const;
 
   void enhanceTileContrast(bool highContrast);
 
@@ -161,6 +171,8 @@ public:
   void selectBody(uint64_t bodyId);
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
+
+  void deselectBody(uint64_t bodyId);
 
   void recordBodySelection();
   void processBodySelection();
@@ -211,10 +223,17 @@ public:
     return &m_sparseVolReader;
   }
 
+  const ZDvidInfo& getDvidInfo() const;
+
 public:
-  void runSplit();
+  //The split mode may affect some data loading behaviors, but the result should
+  //be the same.
+  void runSplit(FlyEM::EBodySplitMode mode);
+  void runFullSplit(FlyEM::EBodySplitMode mode);
+  void runLocalSplit(FlyEM::EBodySplitMode mode);
+  void exitSplit();
+
   bool isSplitRunning() const;
-  void runLocalSplit();
   void refreshDvidLabelBuffer(unsigned long delay);
 //  void setLabelSliceAlpha(int alpha);
 
@@ -363,6 +382,10 @@ public:
    */
   int removeDvidSparsevol(NeuTube::EAxis axis);
 
+  void loadSplitFromService();
+  void loadSplitTaskFromService();
+  void commitSplitFromService();
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -419,7 +442,7 @@ public slots:
   void saveMergeOperation();
   void processExternalBodyMergeUpload();
   void clearBodyMergeStage();
-  void uploadMergeResult();
+//  void uploadMergeResult();
 
 //  void updateDvidLabelObject();
 
@@ -448,13 +471,15 @@ public slots:
   void unverifySelectedSynapse();
 
   void deselectMappedBodyWithOriginalId(const std::set<uint64_t> &bodySet);
-  void checkInSelectedBody();
+  void checkInSelectedBody(FlyEM::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
-  void checkOutBody();
-  bool checkOutBody(uint64_t bodyId);
-  bool checkInBody(uint64_t bodyId);
-  bool checkInBodyWithMessage(uint64_t bodyId);
-  bool checkBodyWithMessage(uint64_t bodyId, bool checkingOut);
+  void checkOutBody(FlyEM::EBodySplitMode mode);
+  bool checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+//  bool checkInBody(uint64_t bodyId);
+  bool checkInBodyWithMessage(
+      uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  bool checkBodyWithMessage(
+      uint64_t bodyId, bool checkingOut, FlyEM::EBodySplitMode mode);
 
   void downloadBookmark(int x, int y, int z);  
   void rewriteSegmentation();
@@ -469,11 +494,14 @@ protected:
   void autoSave();
   void customNotifyObjectModified(ZStackObject::EType type);
   void updateDvidTargetForObject();
+  void updateDvidInfoForObject();
   virtual void prepareDvidData();
   void addDvidLabelSlice(NeuTube::EAxis axis);
   void annotateSynapse(
       const ZIntPoint &pt, ZJsonObject propJson, NeuTube::EAxis axis);
   void setRoutineCheck(bool on);
+  uint64_t getBodyIdForSplit() const;
+  QColor getSeedColor(int label) const;
 
 private:
   void connectSignalSlot();
@@ -500,6 +528,9 @@ private:
   void initData(const ZDvidTarget &target);
   void initData(const std::string &type, const std::string &dataName);
 
+  void initTileData();
+  void initGrayscaleSlice();
+
   void readInfo();
   void updateMaxLabelZoom();
   void updateMaxGrayscaleZoom();
@@ -511,9 +542,12 @@ private:
 
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
 
-  void runSplitFunc();
-  void localSplitFunc();
+  void runSplitFunc(FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range);
+  void runSplitFunc(FlyEM::EBodySplitMode mode);
+  void localSplitFunc(FlyEM::EBodySplitMode mode);
+  void runFullSplitFunc(FlyEM::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
+  ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
@@ -539,6 +573,7 @@ protected:
   ZDvidReader m_todoReader;
   ZDvidReader m_roiReader;
   ZDvidReader m_sparseVolReader;
+  ZDvidReader m_grayscaleReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
@@ -567,6 +602,8 @@ protected:
   mutable ZFlyEmMB6Analyzer m_analyzer;
 
   mutable ZSharedPointer<ZDvidSparseStack> m_splitSource;
+
+  static const char *THREAD_SPLIT;
 };
 
 template <typename InputIterator>

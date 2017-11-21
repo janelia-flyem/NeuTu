@@ -29,6 +29,12 @@ public slots:
   void addString();
   void removeSelectedString();
   void removeAllString();
+  void removeEmptyString();
+  void removeEmptyString(
+      const QModelIndex &topLeft, const QModelIndex &bottomRight);
+
+private:
+  void removeRowList(const QList<int> &rowList);
 
 private:
   Ui::StringListDialog *ui;

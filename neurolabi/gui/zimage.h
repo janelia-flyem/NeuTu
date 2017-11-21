@@ -10,6 +10,7 @@
 #include "zintpoint.h"
 #include "zsttransform.h"
 #include "neutube.h"
+#include "zcontrastprotocol.h"
 
 class ZStack;
 class ZObject3dScan;
@@ -184,18 +185,24 @@ public:
   void setScale(double sx, double sy);
   void setOffset(double dx, double dy);
 
-  void setHighContrastProtocal(
-      double grayOffset, double grayScale, bool nonlinear);
+//  void setHighContrastProtocal(
+//      double grayOffset, double grayScale, bool nonlinear);
   void useContrastProtocal(bool on) {
     m_usingContrastProtocal = on;
   }
 
   void loadHighContrastProtocal(const ZJsonObject &obj);
   void setDefaultContrastProtocal();
-  void setContrastProtocol(double scale, double offset, bool nonlinear);
+//  void setContrastProtocol(double scale, double offset, bool nonlinear);
+  void setContrastProtocol(const ZContrastProtocol &cp);
+  void updateContrast(const ZContrastProtocol &cp);
+  void updateContrast(bool usingContrast);
+  void updateContrast(const ZJsonObject &cpObj);
 
   void setVisible(bool visible);
   bool isVisible() const;
+
+  bool isIndexed8() const;
 
 
 private:
@@ -254,10 +261,7 @@ private:
 
   //high constrast protocal
   bool m_usingContrastProtocal;
-  bool m_nonlinear;
-  double m_grayScale;
-  double m_grayOffset;
-  //ZIntPoint m_offset;
+  ZContrastProtocol m_contrastProtocol;
 
   bool m_visible;
 

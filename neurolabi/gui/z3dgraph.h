@@ -99,13 +99,23 @@ private:
   EGraphShape m_shape;
 };
 
+class Z3DGraph;
+
+typedef ZSharedPointer<Z3DGraph> Z3DGraphPtr;
+
 class Z3DGraph : public ZStackObject
 {
 public:
   Z3DGraph();
 
+  static Z3DGraphPtr MakePointer();
+
 public:
   bool isEmpty() const;
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_3D_GRAPH;
+  }
 
   inline size_t getNodeNumber() const { return m_nodeArray.size(); }
   inline size_t getEdgeNumber() const { return m_edgeArray.size(); }

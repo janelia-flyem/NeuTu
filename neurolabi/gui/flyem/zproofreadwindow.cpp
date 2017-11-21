@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zproofreadwindow.h"
 
 #include <QHBoxLayout>
@@ -11,6 +10,7 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QDragEnterEvent>
+#include <QMimeData>
 
 #include "neutubeconfig.h"
 #include "dialogs/dvidoperatedialog.h"
@@ -33,7 +33,7 @@
 #include "zflyemdataloader.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "dialogs/zflyembodyscreenshotdialog.h"
-
+#include "dialogs/zflyembodysplitdialog.h"
 
 ZProofreadWindow::ZProofreadWindow(QWidget *parent) :
   QMainWindow(parent)
@@ -131,19 +131,25 @@ void ZProofreadWindow::init()
   connectMessagePipe(m_mainMvc);
   connectMessagePipe(m_mainMvc->getDocument().get());
 
-  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t)),
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, FlyEM::EBodySplitMode)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
   connect(m_mainMvc, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));
 
+  connect(m_mainMvc, SIGNAL(locating2DViewTriggered(int, int, int, int)),
+          this, SLOT(showAndRaise()));
+
   setCentralWidget(widget);
 
+  m_progressDlg = NULL;
+#if 0
   m_progressDlg = new QProgressDialog(this);
   m_progressDlg->setWindowModality(Qt::WindowModal);
   m_progressDlg->setAutoClose(true);
   m_progressDlg->setCancelButton(0);
-  m_progressDlg->setAutoClose(false);
+#endif
+//  m_progressDlg->setAutoClose(false);
 
   m_progressSignal = new ZProgressSignal(this);
   ZProgressSignal::ConnectProgress(m_mainMvc->getProgressSignal(),
@@ -191,6 +197,7 @@ void ZProofreadWindow::createDialog()
   m_bodyFilterDlg = new FlyEmBodyFilterDialog(this);
   m_stressTestOptionDlg = new ZStressTestOptionDialog(this);
   m_bodyScreenshotDlg = new ZFlyEmBodyScreenshotDialog(this);
+  m_bodySplitDlg = new ZFlyEmBodySplitDialog(this);
 }
 
 void ZProofreadWindow::setDvidDialog(ZDvidDialog *dvidDlg)
@@ -213,6 +220,18 @@ void ZProofreadWindow::stressTestSlot()
 void ZProofreadWindow::diagnose()
 {
   m_mainMvc->diagnose();
+}
+
+QProgressDialog* ZProofreadWindow::getProgressDialog()
+{
+  if (m_progressDlg == NULL) {
+    m_progressDlg = new QProgressDialog(this);
+    m_progressDlg->setWindowModality(Qt::WindowModal);
+    m_progressDlg->setAutoClose(true);
+    m_progressDlg->setCancelButton(0);
+  }
+
+  return m_progressDlg;
 }
 
 void ZProofreadWindow::stressTest()
@@ -258,6 +277,9 @@ void ZProofreadWindow::createMenu()
           this, SLOT(exportGrayscale()));
   exportMenu->addAction(exportGrayscaleAction);
 
+  QAction *exportBodyStackAction = new QAction("Bodies with Grayscale", this);
+  connect(exportBodyStackAction, SIGNAL(triggered()), this, SLOT(exportBodyStack()));
+  exportMenu->addAction(exportBodyStackAction);
 
   m_viewMenu = new QMenu("View", this);
 
@@ -503,13 +525,13 @@ void ZProofreadWindow::operateDvid()
   m_dvidOpDlg->raise();
 }
 
-void ZProofreadWindow::launchSplit(uint64_t bodyId)
+void ZProofreadWindow::launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode)
 {
 //  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
 //  m_progressSignal->advanceProgress(0.1);
 //  advanceProgress(0.1);
-  m_mainMvc->launchSplit(bodyId);
+  m_mainMvc->launchSplit(bodyId, mode);
 
   /*
   if (m_mainMvc->launchSplit(bodyId)) {
@@ -523,16 +545,29 @@ void ZProofreadWindow::launchSplit(uint64_t bodyId)
 
 void ZProofreadWindow::launchSplit()
 {
-  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
-  dlg->setValueLabel("Body ID");
-  if (dlg->exec()) {
-    if (dlg->isSkipped()) {
+//  ZSpinBoxDialog *dlg = ZDialogFactory::makeSpinBoxDialog(this);
+
+//  ->setValueLabel("Body ID");
+  std::set<uint64_t> bodySet =
+      m_mainMvc->getCompleteDocument()->getSelectedBodySet(
+        NeuTube::BODY_LABEL_ORIGINAL);
+
+  if (!bodySet.empty()) {
+    m_bodySplitDlg->setBodyId(*(bodySet.begin()));
+  }
+
+  if (m_bodySplitDlg->exec()) {
+/*    if (m_bodySplitDlg->isSkipped()) {
       m_mainMvc->notifySplitTriggered();
-    } else {
-      if (dlg->getValue() > 0) {
-        launchSplit(dlg->getValue());
+    } else {*/
+      if (m_bodySplitDlg->getBodyId() > 0) {
+        FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_ONLINE;
+        if (m_bodySplitDlg->isOfflineSplit()) {
+          mode = FlyEM::BODY_SPLIT_OFFLINE;
+        }
+        launchSplit(m_bodySplitDlg->getBodyId(), mode);
       }
-    }
+//    }
   }
 }
 
@@ -753,6 +788,11 @@ void ZProofreadWindow::exportGrayscale()
   m_mainMvc->exportGrayscale();
 }
 
+void ZProofreadWindow::exportBodyStack()
+{
+  m_mainMvc->exportBodyStack();
+}
+
 void ZProofreadWindow::exportNeuronScreenshot()
 {
   if (m_bodyScreenshotDlg->exec()) {
@@ -801,4 +841,15 @@ void ZProofreadWindow::displayActiveHint(bool on)
   setPalette(pal);
 #endif
 #endif
+}
+
+void ZProofreadWindow::showAndRaise()
+{
+  if (windowState() & Qt::WindowMinimized) {
+    showNormal();
+  } else {
+    show();
+  }
+  activateWindow();
+  raise();
 }

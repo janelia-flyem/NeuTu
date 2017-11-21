@@ -25,6 +25,7 @@ void ZFlyEmGrayscaleDialog::connectSignalSlot()
   connect(ui->offsetPushButton, SIGNAL(clicked()), SLOT(useCurrentOffset()));
   connect(ui->centerPushButton, SIGNAL(clicked()), SLOT(useViewCenter()));
   connect(ui->viewPortPushButton, SIGNAL(clicked()), SLOT(useViewPort()));
+  connect(ui->fullRangeCheckBox, SIGNAL(toggled(bool)), SLOT(updateWidget()));
 }
 
 ZProofreadWindow* ZFlyEmGrayscaleDialog::getMainWindow() const
@@ -165,6 +166,25 @@ void ZFlyEmGrayscaleDialog::useCurrentOffset()
 bool ZFlyEmGrayscaleDialog::isFullRange() const
 {
   return ui->fullRangeCheckBox->isChecked();
+}
+
+bool ZFlyEmGrayscaleDialog::isSparse() const
+{
+  return ui->sparseCheckBox->isChecked();
+}
+
+void ZFlyEmGrayscaleDialog::updateWidget()
+{
+  bool rangeAjustable = !(ui->fullRangeCheckBox->isChecked());
+  ui->xSpinBox->setEnabled(rangeAjustable);
+  ui->ySpinBox->setEnabled(rangeAjustable);
+  ui->zSpinBox->setEnabled(rangeAjustable);
+  ui->widthSpinBox->setEnabled(rangeAjustable);
+  ui->heightSpinBox->setEnabled(rangeAjustable);
+  ui->depthSpinBox->setEnabled(rangeAjustable);
+  ui->centerPushButton->setEnabled(rangeAjustable);
+  ui->viewPortPushButton->setEnabled(rangeAjustable);
+  ui->offsetPushButton->setEnabled(rangeAjustable);
 }
 
 

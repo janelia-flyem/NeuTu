@@ -49,6 +49,7 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 
   ZMouseEvent zevent;
   zevent.set(event, action, z);
+  zevent.setSliceAxis(m_imageWidget->getSliceAxis());
   const ZIntPoint &pt = zevent.getPosition();
   zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt));
 
@@ -157,6 +158,14 @@ ZPoint ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
 void ZMouseEventProcessor::mapPositionFromWidgetToRawStack(double *x, double *y)
 const
 {
+  ZViewProj viewProj = m_imageWidget->getViewProj();
+
+  viewProj.mapPointBack(x, y);
+
+  (*x) -= viewProj.getCanvasRect().left();
+  (*y) -= viewProj.getCanvasRect().top();
+
+#if 0
   QSizeF csize = m_imageWidget->projectSize();
 
   if (csize.width() > 0 && csize.height() > 0) {
@@ -167,6 +176,7 @@ const
         m_imageWidget->viewPort().top() -
         m_imageWidget->canvasRegion().top() - 0.5;
   }
+#endif
 }
 
 const ZMouseEvent& ZMouseEventProcessor::getLatestMouseEvent() const

@@ -1,122 +1,126 @@
 #ifndef Z3DPUNCTAFILTER_H
 #define Z3DPUNCTAFILTER_H
 
-class ZPunctum;
-class Z3DSphereRenderer;
-class Z3DLineWithFixedWidthColorRenderer;
-
-#include <QObject>
-#include <QSet>
-
 #include "z3dgeometryfilter.h"
 #include "zoptionparameter.h"
-#include <map>
+#include "zwidgetsgroup.h"
+#include "zcolormap.h"
+#include "znumericparameter.h"
+#include "z3dsphererenderer.h"
+#include "zeventlistenerparameter.h"
+#include "zpunctum.h"
+#include "z3drenderport.h"
+#include "z3dtexturecopyrenderer.h"
+#include "zstringutils.h"
 #include <QString>
 #include <QPoint>
+#include <map>
 #include <vector>
-#include "z3drendererbase.h"
-#include "zwidgetsgroup.h"
-#include "znumericparameter.h"
-
-class ZStackObject;
 
 class Z3DPunctaFilter : public Z3DGeometryFilter
 {
   Q_OBJECT
 public:
-  explicit Z3DPunctaFilter();
-  virtual ~Z3DPunctaFilter();
+  explicit Z3DPunctaFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
 
-  void setData(const std::vector<ZPunctum*> &punctaList);
-  void setData(const QList<ZPunctum*> &punctaList);
-  void setSelectedPuncta(const QSet<ZStackObject*> &list);
+  void setData(const std::vector<ZPunctum*>& punctaList);
+  void setData(const QList<ZPunctum*>& punctaList);
 
-  std::vector<double> getPunctumBound(ZPunctum* p) const;
+  virtual bool isReady(Z3DEye eye) const override;
 
-  virtual bool isReady(Z3DEye eye) const;
+  std::shared_ptr<ZWidgetsGroup> widgetsGroup();
 
-  // caller should clean up this (by delete parent of this zwidgetgroup)
-  ZWidgetsGroup *getWidgetsGroup();
-
-  inline void setColorMode(const std::string &mode)
+  inline void setColorMode(const std::string& mode)
   {
     m_colorMode.select(mode.c_str());
   }
 
-  void setVisible(bool v);
-  bool isVisible() const;
+  //virtual bool hasOpaque(Z3DEye eye) const override { return Z3DGeometryFilter::hasOpaque(eye) && !m_randomGlow.get(); }
+  virtual void renderOpaque(Z3DEye eye) override;
+
+  //virtual bool hasTransparent(Z3DEye eye) const override { return Z3DGeometryFilter::hasTransparent(eye) || m_randomGlow.get(); }
+  virtual void renderTransparent(Z3DEye eye) override;
+
+  void configure(const ZJsonObject &obj) override;
+
+  void punctumBound(const ZPunctum& p, ZBBox<glm::dvec3>& result) const;
+
+  void updatePunctumVisibleState();
 
 signals:
   void punctumSelected(ZPunctum*, bool append);
-  void visibleChanged(bool);
-
-protected slots:
-  virtual void prepareColor();
-  void setClipPlanes();
-  virtual void adjustWidgets();
-  void changePunctaSize();
-  void selectPuncta(QMouseEvent *e, int w, int h);
 
 protected:
-  void initialize();
-  void deinitialize();
-  virtual void process(Z3DEye);
+  void prepareColor();
+  void adjustWidgets();
+  void changePunctaSize();
+  void selectPuncta(QMouseEvent *e, int w, int h);
+  void updateData();
 
-  virtual void render(Z3DEye eye);
-  virtual void renderPicking(Z3DEye eye);
-  void renderSelectionBox(Z3DEye eye);
+  virtual void process(Z3DEye eye) override;
 
-  virtual void registerPickingObjects(Z3DPickingManager *pm);
-  virtual void deregisterPickingObjects(Z3DPickingManager *pm);
+  virtual void renderPicking(Z3DEye eye) override;
 
-  virtual void prepareData();
+  virtual void registerPickingObjects() override;
+
+  virtual void deregisterPickingObjects() override;
+
+  void prepareData();
+
+  void notTransformedPunctumBound(const ZPunctum& p, ZBBox<glm::dvec3>& result) const;
+
+  //virtual void updateAxisAlignedBoundBoxImpl() override;
+  virtual void updateNotTransformedBoundBoxImpl() override;
+
+  virtual void addSelectionLines() override;
 
 private:
-  void updateWidgetsGroup();
-
   // get visible data from origPunctaList put into punctaList
   void getVisibleData();
 
-public slots:
-  void updatePunctumVisibleState();
-
 private:
-  Z3DSphereRenderer *m_sphereRenderer;
-  Z3DLineWithFixedWidthColorRenderer *m_boundBoxRenderer;
+  Z3DRenderOutputPort m_monoEyeOutport;
+  Z3DRenderOutputPort m_leftEyeOutport;
+  Z3DRenderOutputPort m_rightEyeOutport;
+  Z3DRenderOutputPort m_monoEyeOutport2;
+  Z3DRenderOutputPort m_leftEyeOutport2;
+  Z3DRenderOutputPort m_rightEyeOutport2;
 
-  ZBoolParameter m_showPuncta;
-  ZOptionParameter<QString> m_colorMode;
+  Z3DSphereRenderer m_sphereRenderer;
+
+  ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllPuncta;
-  //std::vector<ZVec4Parameter*> m_colorsForDifferentSource;
-  std::map<QString, ZVec4Parameter*> m_sourceColorMapper;
-  //std::map<QString, ZVec4Parameter*> m_nameColorMapper;
+  std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare>
+  m_sourceColorMapper;
+  ZColorMapParameter m_colorMapScore;
+  ZColorMapParameter m_colorMapMeanIntensity;
+  ZColorMapParameter m_colorMapMaxIntensity;
   ZBoolParameter m_useSameSizeForAllPuncta;
 
-  //std::map<QString, size_t> m_sourceColorMapper;   // should use unordered_map
+  //  Z3DSphereRenderer m_glowSphereRenderer;
+  //  Z3DTextureGlowRenderer m_textureGlowRenderer;
+  //  ZBoolParameter m_randomGlow;
+  //  ZFloatParameter m_glowPercentage;
+  //  Z3DTextureCopyRenderer m_textureCopyRenderer;
+
   // puncta list used for rendering, it is a subset of m_origPunctaList. Some puncta are
   // hidden because they are unchecked from the object model. This allows us to control
   // the visibility of each single punctum.
   std::vector<ZPunctum*> m_punctaList;
   std::vector<ZPunctum*> m_registeredPunctaList;    // used for picking
 
-  ZEventListenerParameter* m_selectPunctumEvent;
+  ZEventListenerParameter m_selectPunctumEvent;
   glm::ivec2 m_startCoord;
-  ZPunctum *m_pressedPunctum;
-  std::set<ZPunctum*> m_selectedPuncta;   //point to all selected puncta, managed by other class
+  ZPunctum* m_pressedPunctum = nullptr;
 
   std::vector<glm::vec4> m_pointAndRadius;
   std::vector<glm::vec4> m_specularAndShininess;
   std::vector<glm::vec4> m_pointColors;
   std::vector<glm::vec4> m_pointPickingColors;
 
-  ZIntSpanParameter m_xCut;
-  ZIntSpanParameter m_yCut;
-  ZIntSpanParameter m_zCut;
-
-  ZWidgetsGroup *m_widgetsGroup;
+  std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
   std::vector<ZWidgetsGroup*> m_colorsForDifferentSourceWidgetsGroup;
-  //std::vector<ZWidgetsGroup*> m_colorsForDifferentNameWidgetsGroup;
-  bool m_dataIsInvalid;
+  bool m_dataIsInvalid = false;
 
   std::vector<ZPunctum*> m_origPunctaList;
 };

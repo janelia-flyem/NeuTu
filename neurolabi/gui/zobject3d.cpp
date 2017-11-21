@@ -20,8 +20,7 @@
 
 using namespace std;
 
-ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1),
-  m_hitVoxelIndex(-1)
+ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_hitVoxelIndex(-1)
 {
   if (obj != NULL) {
     m_voxelArray.resize(obj->size * 3);
@@ -35,7 +34,7 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1),
 }
 
 ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
-                     int dx, int dy, int dz) : m_conn(0), m_label(-1),
+                     int dx, int dy, int dz) : m_conn(0),
   m_hitVoxelIndex(-1)
 {
   setSize(indexArray.size());
@@ -91,6 +90,13 @@ void ZObject3d::append(const ZObject3d &obj, size_t srcOffset)
   m_voxelArray.insert(m_voxelArray.end(),
                       obj.m_voxelArray.begin() + srcOffset * 3,
                       obj.m_voxelArray.end());
+}
+
+void ZObject3d::append(const ZObject3d *obj, size_t srcOffset)
+{
+  if (obj != NULL) {
+    append(*obj, srcOffset);
+  }
 }
 
 void ZObject3d::appendBackward(const ZObject3d &obj, size_t srcOffset)
@@ -246,7 +252,7 @@ void ZObject3d::display(
 
 void ZObject3d::labelStack(Stack *stack) const
 {
-  labelStack(stack, m_label);
+  labelStack(stack, getLabel());
 }
 
 void ZObject3d::labelStack(Stack *stack, int label) const
@@ -280,12 +286,17 @@ void ZObject3d::labelStack(Stack *stack, int label) const
 
 void ZObject3d::labelStack(ZStack *stack, int label) const
 {
-  labelStack(stack->c_stack(), label, stack->getOffset().getX(),
-             stack->getOffset().getY(), stack->getOffset().getZ());
+  ZIntPoint offset = -stack->getOffset();
+  offset *= stack->getDsIntv() + 1;
+  labelStack(stack->c_stack(), label,
+             offset.getX(), offset.getY(), offset.getZ(),
+             stack->getDsIntv().getX(), stack->getDsIntv().getY(),
+             stack->getDsIntv().getZ());
 }
+
 void ZObject3d::labelStack(ZStack *stack) const
 {
-  labelStack(stack, m_label);
+  labelStack(stack, getLabel());
 }
 
 void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz) const
@@ -622,7 +633,7 @@ ZStack* ZObject3d::toLabelStack() const
   Stack *stack = C_Stack::make(GREY, width, height, depth);
   C_Stack::setZero(stack);
 
-  int label = m_label;
+  int label = getLabel();
   CLIP_VALUE(label, 0, 255);
   for (size_t i = 0; i < obj->size; ++i) {
     int x = obj->voxels[i][0] - corners[0];
@@ -868,7 +879,7 @@ void ZObject3d::upSample(int xIntv, int yIntv, int zIntv)
 ZJsonObject ZObject3d::toJsonObject() const
 {
   ZJsonObject jsonObj;
-  jsonObj.setEntry("label", m_label);
+  jsonObj.setEntry("label", getLabel());
   ZJsonArray jsonArray;
   for (size_t i = 0; i < m_voxelArray.size(); ++i) {
     jsonArray.append(m_voxelArray[i]);
@@ -965,6 +976,14 @@ void ZObject3d::boundBox(ZIntCuboid *box) const
       box->joinZ(getZ(i));
     }
   }
+}
+
+ZIntCuboid ZObject3d::getBoundBox() const
+{
+  ZIntCuboid cuboid;
+  boundBox(&cuboid);
+
+  return cuboid;
 }
 
 ZIntPoint ZObject3d::getCentralVoxel() const

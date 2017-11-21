@@ -23,6 +23,14 @@ uniform sampler2D BackBlenderTex;
 uniform vec2 screen_dim_RCP;
 #endif
 
+#if GLSL_VERSION >= 330
+layout(location = 0) out vec4 FragData0;
+#elif GLSL_VERSION >= 130
+out vec4 FragData0;  // call glBindFragDataLocation before linking
+#else
+#define FragData0 gl_FragData[0]
+#endif
+
 #if GLSL_VERSION < 130
 #define texture texture2D
 #endif

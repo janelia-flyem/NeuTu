@@ -23,6 +23,7 @@ ZInteractiveContext::ZInteractiveContext()
   m_acceptingRect = false;
   m_rectSpan = false;
   m_keyIndex = 1;
+  m_uniqueMode = INTERACT_FREE;
 }
 
 
@@ -54,9 +55,18 @@ void ZInteractiveContext::blockContextMenu(bool blocking)
   m_blockingContextMenu = blocking;
 }
 
+void ZInteractiveContext::setUniqueMode(EUniqueMode mode)
+{
+  m_uniqueMode = mode;
+}
+
 ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
 {
-  EUniqueMode mode = INTERACT_FREE;
+  EUniqueMode mode = m_uniqueMode;
+
+  if (mode != INTERACT_FREE) {
+    return mode;
+  }
 
   if (exploreMode() == EXPLORE_MOVE_IMAGE) {
     return INTERACT_IMAGE_MOVE;
@@ -145,6 +155,12 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
         break;
       default:
         break;
+      }
+    }
+
+    if (mode == INTERACT_FREE) {
+      if (exploreMode() == EXPLORE_LOCAL) {
+        mode = INTERACT_EXPLORE_LOCAL;
       }
     }
 

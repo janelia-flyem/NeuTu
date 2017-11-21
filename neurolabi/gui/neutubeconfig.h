@@ -22,7 +22,7 @@ class ZJsonObject;
 class NeutubeConfig
 {
 public:
-  enum Config_Item {
+  enum EConfigItem {
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
@@ -38,10 +38,18 @@ public:
   }
 
 #ifdef _QT_GUI_USED_
+  /*!
+   * \brief Get persistent settings.
+   *
+   * The settings mainly contain information for GUI appearances.
+   */
   static QSettings& GetSettings() {
     return getInstance().getSettings();
   }
 
+  /*!
+   * \brief Get configuration file path for FlyEM applications.
+   */
   static QString GetFlyEmConfigPath();
   static void SetFlyEmConfigPath(const QString &path);
   static void UseDefaultFlyEmConfig(bool on);
@@ -49,6 +57,8 @@ public:
 
   static QString GetNeuTuServer();
   static void SetNeuTuServer(const QString &path);
+  static QString GetTaskServer();
+  static void SetTaskServer(const QString &path);
 
   static void SetDataDir(const QString &dataDir);
 #endif
@@ -65,11 +75,20 @@ public:
 
   static void EnableProfileLogging(bool on);
   static bool LoggingProfile();
+
+  /*!
+   * \brief Get the verbose level of the program.
+   *
+   * The higher level, the more verbose is the program. The lowest level is 0.
+   */
   static int GetVerboseLevel();
   static void SetVerboseLevel(int level);
   static bool ParallelTileFetching();
   static void SetParallelTileFetching(bool on);
 
+  /*!
+   * \brief Configure from a json object.
+   */
   static void Configure(const ZJsonObject &obj);
 
   static void EnableAutoStatusCheck(bool on);
@@ -84,7 +103,21 @@ public:
   bool load(const std::string &filePath);
   void print();
 
-  std::string getPath(Config_Item item) const;
+  /*!
+   * \brief Get the path of a certain item.
+   *
+   * \a item can be:
+   *   CONFIGURE_FILE: general configuration
+   *   DOCUMENT: documentation
+   *   AUTO_SAVE: autosaving path
+   *   SKELETONIZATION_CONFIG: configuration for skeletonization parameters
+   *   TMP_DATA: folder for saving temporary data
+   *   WORKING_DIR: working directory
+   *   LOG_DIR: logging directory
+   *   LOG_FILE: prefix for logging files
+   *   LOG_TRACE: prefix for tracing files
+   */
+  std::string getPath(EConfigItem item) const;
 
   /*!
    * \brief Get the application directory
@@ -148,7 +181,9 @@ public:
   public:
     MainWindowConfig();
 
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
+#endif
 
     inline void enableTracing(bool tracingOn) { m_tracingOn = tracingOn; }
     inline void enableMarkPuncta(bool on) { m_isMarkPunctaOn = on; }
@@ -233,9 +268,9 @@ public:
   class Z3DWindowConfig {
   public:
     Z3DWindowConfig();
-
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
-
+#endif
     inline bool isUtilsOn() const { return m_isUtilsOn; }
     inline bool isVolumeOn() const { return m_isVolumeOn; }
     inline bool isGraphOn() const { return m_isGraphOn; }
@@ -261,8 +296,9 @@ public:
     class SwcTabConfig {
     public:
       SwcTabConfig();
+#ifdef _QT_GUI_USED_
       void loadXmlNode(const ZXmlNode *node);
-
+#endif
       inline std::string getPrimitive() const { return m_primitive; }
       inline std::string getColorMode() const { return m_colorMode; }
       inline double getZScale() const { return m_zscale; }
@@ -276,8 +312,9 @@ public:
     class GraphTabConfig {
     public:
       GraphTabConfig();
+#ifdef _QT_GUI_USED_
       void loadXmlNode(const ZXmlNode *node);
-
+#endif
       inline bool isVisible() const { return m_isVisible; }
       inline double getOpacity() const { return m_opacity; }
 
@@ -312,16 +349,19 @@ public:
   class ObjManagerConfig {
   public:
     ObjManagerConfig();
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
-
+#endif
     inline bool isSwcOn() const { return m_isSwcOn; }
     inline bool isCategorizedSwcNodeOn() const { return m_isSwcNodeOn; }
     inline bool isPunctaOn() const { return m_isPunctaOn; }
+    inline bool isMeshOn() const { return m_isMeshOn; }
 
   private:
     bool m_isSwcOn;
     bool m_isSwcNodeOn;
     bool m_isPunctaOn;
+    bool m_isMeshOn = true;
   };
 
   inline const MainWindowConfig& getMainWindowConfig() const {
@@ -414,6 +454,9 @@ private:
 #ifndef GET_TEST_DATA_DIR
 #  define GET_TEST_DATA_DIR GET_DATA_DIR
 #endif
+
+#define GET_BENCHMARK_DIR (GET_TEST_DATA_DIR + "/_benchmark")
+#define GET_FLYEM_DATA_DIR (GET_TEST_DATA_DIR + "/_flyem")
 
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
 #define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())

@@ -5,6 +5,8 @@
 
 class Z3DWindow;
 
+#define WINDOW3D_COUNT 5
+
 class Z3DTabWidget : public QTabWidget
 {
     Q_OBJECT
@@ -49,9 +51,9 @@ signals:
     void tabIndexChanged(int);
 
 private:
-    bool buttonStatus[4][4]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects 3-rois
-    bool windowStatus[4]; // 0-coarsebody 1-body 2-skeleton 3-synapse false-closed true-opened
-    int tabLUT[4]; // tab index look up table
+    bool buttonStatus[WINDOW3D_COUNT][4]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects 3-rois
+    bool windowStatus[WINDOW3D_COUNT]; // 0-coarsebody 1-body 2-skeleton 3-synapse false-closed true-opened
+    int tabLUT[WINDOW3D_COUNT]; // tab index look up table
     int preIndex;
 
 };

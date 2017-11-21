@@ -14,7 +14,8 @@ public:
 
   enum EColorScheme {
     VAA3D_TYPE_COLOR, BIOCYTIN_TYPE_COLOR, JIN_TYPE_COLOR, UNIQUE_COLOR,
-    PUNCTUM_TYPE_COLOR, RANDOM_COLOR, CONV_RANDOM_COLOR, GMU_TYPE_COLOR
+    PUNCTUM_TYPE_COLOR, RANDOM_COLOR, CONV_RANDOM_COLOR, GMU_TYPE_COLOR,
+    LABEL_COLOR
   };
 
   QColor getColor(int index) const;
@@ -32,6 +33,7 @@ protected:
   void buildConvRandomColorTable(int n);
   void buildPunctumColorTable();
   void buildUniqueColorTable();
+  void buildLabelColorTable();
 
 protected:
   EColorScheme m_colorScheme;

@@ -1,6 +1,19 @@
 #ifndef Z3DWINDOW_H
 #define Z3DWINDOW_H
 
+#include "z3dview.h"
+
+#include "zparameter.h"
+#include "znumericparameter.h"
+#include "zglmutils.h"
+#include "z3dcameraparameter.h"
+#include "zactionactivator.h"
+#include "z3dvolumeraycasterrenderer.h"
+#include "zsharedpointer.h"
+#include "zactionfactory.h"
+#include "z3ddef.h"
+//#include "zstackviewparam.h"
+
 #include <QMainWindow>
 #include <QTabWidget>
 #include <QTabBar>
@@ -14,18 +27,8 @@
 #include <map>
 #include <QDir>
 
-#include "zparameter.h"
-#include "znumericparameter.h"
-#include "zglmutils.h"
-#include "z3dcameraparameter.h"
-#include "zactionactivator.h"
-#include "z3dvolumeraycasterrenderer.h"
-#include "zsharedpointer.h"
-#include "zactionfactory.h"
-#include "z3ddef.h"
-//#include "zstackviewparam.h"
-
-
+class QSlider;
+class QDoubleSpinBox;
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
 class Z3DPunctaFilter;
@@ -41,13 +44,11 @@ struct _Swc_Tree_Node;
 typedef _Swc_Tree_Node Swc_Tree_Node;
 class Z3DCompositor;
 class Z3DCanvasRenderer;
-class Z3DTakeScreenShotWidget;
 class Z3DAxis;
 class ZWidgetsGroup;
 class Z3DCanvas;
 class Z3DNetworkEvaluator;
 class Z3DProcessorNetwork;
-class Z3DTriangleList;
 class QToolBar;
 class ZStroke2d;
 class ZStackViewParam;
@@ -58,11 +59,13 @@ class HelpDialog;
 //class Z3DRendererBase;
 class ZROIWidget;
 class ZActionLibrary;
-class ZMenuFactory;
+//class ZMenuFactory;
 class ZJsonObject;
 class Z3DGeometryFilter;
+class Z3DBoundedFilter;
 class ZComboEditDialog;
 class ZFlyEmBodyComparisonDialog;
+class ZStackDocMenuFactory;
 
 
 class Z3DWindow : public QMainWindow
@@ -75,10 +78,11 @@ public:
 
   enum ERendererLayer {
     LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_SURFACE, LAYER_VOLUME,
-    LAYER_TODO
+    LAYER_TODO, LAYER_MESH
   };
 
   explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
+                     NeuTube3D::EWindowType windowType = NeuTube3D::TYPE_GENERAL,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
@@ -101,7 +105,7 @@ public: //properties
   void setZScale(double scale);
   void setScale(double sx, double sy, double sz);
   void setOpacity(ERendererLayer layer, double opacity);
-  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+//  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void setLayerVisible(ERendererLayer layer, bool visible);
   bool isLayerVisible(ERendererLayer layer) const;
 
@@ -122,35 +126,26 @@ public: //properties
 
 
 public: //Camera adjustment
-  void gotoPosition(double x, double y, double z, double radius = 64);
-  void gotoPosition(std::vector<double> bound, double minRadius = 64,
-                    double range = 128);
+  void gotoPosition(const ZCuboid& bound);
   void zoomToSelectedSwcNodes();
 
-
 public: //Components
-  Z3DTrackballInteractionHandler* getInteractionHandler();
-  Z3DCameraParameter* getCamera();
-  inline Z3DCanvasRenderer* getCanvasRenderer() { return m_canvasRenderer; }
-  inline Z3DPunctaFilter* getPunctaFilter() const { return m_punctaFilter; }
-  inline Z3DSwcFilter* getSwcFilter() const { return m_swcFilter; }
-  inline Z3DVolumeRaycaster* getVolumeRaycaster() { return m_volumeRaycaster; }
-  inline Z3DCanvas* getCanvas() { return m_canvas; }
-  inline const Z3DCanvas* getCanvas() const { return m_canvas; }
-
-  Z3DRendererBase* getRendererBase(ERendererLayer layer);
-
-  Z3DVolumeRaycasterRenderer* getVolumeRaycasterRenderer();
+  Z3DTrackballInteractionHandler* getInteractionHandler() { return &m_view->interactionHandler(); }
+  Z3DCameraParameter* getCamera() { return &m_view->camera(); }
+  inline Z3DPunctaFilter* getPunctaFilter() const { return &m_view->punctaFilter(); }
+  inline Z3DMeshFilter* getMeshFilter() const { return &m_view->meshFilter(); }
+  inline Z3DSwcFilter* getSwcFilter() const { return &m_view->swcFilter(); }
+  inline Z3DVolumeFilter* getVolumeFilter() const { return &m_view->volumeFilter(); }
+  inline Z3DCanvas* getCanvas() { return &m_view->canvas(); }
+  inline const Z3DCanvas* getCanvas() const { return &m_view->canvas(); }
 
   Z3DGeometryFilter* getFilter(ERendererLayer layer) const;
+  Z3DBoundedFilter& getBoundedFilter(ERendererLayer layer) const;
 
-  inline Z3DGraphFilter* getGraphFilter() const { return m_graphFilter; }
-  inline Z3DSurfaceFilter* getSurfaceFilter() const { return m_surfaceFilter; }
-  inline ZFlyEmTodoListFilter* getTodoFilter() const { return m_todoFilter; }
-  inline Z3DCompositor* getCompositor() const { return m_compositor; }
-  inline Z3DVolumeSource *getVolumeSource() const { return m_volumeSource; }
-  inline Z3DAxis *getAxis() { return m_axis; }
-  const std::vector<double>& getBoundBox() const { return m_boundBox; }
+  inline Z3DGraphFilter* getGraphFilter() const { return &m_view->graphFilter(); }
+  inline Z3DSurfaceFilter* getSurfaceFilter() const { return &m_view->surfaceFilter(); }
+  inline ZFlyEmTodoListFilter* getTodoFilter() const { return &m_view->todoFilter(); }
+  inline Z3DCompositor* getCompositor() const { return &m_view->compositor(); }
 
   QPointF getScreenProjection(double x, double y, double z, ERendererLayer layer);
 
@@ -163,31 +158,21 @@ public: //Components
     return dynamic_cast<T*>(m_doc.get());
   }
 
-public: //Bounding box
-  void updateVolumeBoundBox();
-  void updateSwcBoundBox();
-  void updateGraphBoundBox();
-  void updateSurfaceBoundBox();
-  void updateTodoBoundBox();
-//  void updateDecorationBoundBox();
-  void updatePunctaBoundBox();
-  void updateOverallBoundBox(std::vector<double> bound);
-  //get bounding box of all objects in world coordinate:
-  //[xmin xmax ymin ymax zmin zmax]
-  void updateOverallBoundBox();
-  void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
+public:
+  void setMenuFactory(ZStackDocMenuFactory *factory);
 
+public:
+  void setBackgroundColor(const glm::vec3 &color1, const glm::vec3 &color2);
 
   bool hasRectRoi() const;
   ZRect2d getRectRoi() const;
   void removeRectRoi();
 
-
-
 public: //controls
   void createToolBar();
   void hideControlPanel();
   void hideObjectView();
+  void hideStatusBar();
 
   void setButtonStatus(int index, bool v);
   bool getButtonStatus(int index);
@@ -198,9 +183,15 @@ public: //controls
   QDockWidget * getObjectsDockWidget();
   ZROIWidget * getROIsDockWidget();
 
-public:
-  void setROIs(size_t n);
+  //Configuration
+  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(ERendererLayer layer) const;
 
+  void skipKeyEvent(bool on);
+
+  void syncAction();
+
+public:
   bool readyForAction(ZActionFactory::EAction action) const;
 
 public:
@@ -216,68 +207,68 @@ public: //external signal call
 
 signals:
   void closed();
-  void locating2DViewTriggered(const ZStackViewParam &param);
+//  void locating2DViewTriggered(const ZStackViewParam &param);
+  void locating2DViewTriggered(int x, int y, int z, int width);
   void croppingSwcInRoi();
+  void savingSplitTask();
+  void deletingSplitSeed();
+  void deletingSelectedSplitSeed();
+  void savingSplitTask(uint64_t bodyId);
 
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
   void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
   void addingToSplitMarker(int x, int y, int z, uint64_t bodyId);
   void deselectingBody(const std::set<uint64_t> bodyId);
   void settingNormalTodoVisible(bool);
+  void showingPuncta(bool);
+  void showingTodo(bool);
+  void keyPressed(QKeyEvent *event);
+  void testing();
 
 public slots:
-  void resetCamera();  // set up camera based on visible objects in scene, original position
-  void resetCameraCenter();
-
-  void flipView(); //Look from the oppsite side
-  void setXZView();
-  void setYZView();
+  void resetCamera()
+  { m_view->resetCamera(); }
+  void resetCameraCenter()
+  { m_view->resetCameraCenter(); }
+  void flipView() //Look from the oppsite side
+  { m_view->flipView(); }
+  void setXZView()
+  { m_view->setXZView(); }
+  void setYZView()
+  { m_view->setYZView(); }
   void recordView(); //Record the current view parameters
   void diffView(); //Output difference between current view and recorded view
   void saveView(); //Save the view parameters into a file
   void loadView();
 
-  void resetCameraClippingRange(); // // Reset the camera clipping range to include this entire bounding box
-  // redraw changed parts
-  void volumeChanged();
-  void swcChanged();
-  void punctaChanged();
-  void updateNetworkDisplay();
-  void update3DGraphDisplay();
-  void update3DCubeDisplay();
-  void updateTodoDisplay();
-  void updateTodoVisibility();
+  void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
+  { m_view->resetCameraClippingRange(); }
+
+  void zoomToSelectedMeshes();
+
 //  void updateDecorationDisplay();
-  void updateDisplay();
 
-  void volumeScaleChanged();
-  void swcCoordScaleChanged();
-  void punctaCoordScaleChanged();
-  void swcSizeScaleChanged();
-  void punctaSizeScaleChanged();
-
-  void selectdObjectChangedFrom3D(ZStackObject *p, bool append);
+  void selectedObjectChangedFrom3D(ZStackObject *p, bool append);
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
+  void selectedMeshChangedFrom3D(ZMesh* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
+  void selectedSwcTreeNodeChangedFrom3D(
+      QList<Swc_Tree_Node*> nodeArray, bool append);
   void addNewSwcTreeNode(double x, double y, double z, double r);
   void extendSwcTreeNode(double x, double y, double z, double r);
   void connectSwcTreeNode(Swc_Tree_Node *tn);
   void deleteSelectedSwcNode();
   void locateSwcNodeIn2DView();
   void removeSwcTurn();
+  void deleteSelected();
 
   void convertSelectedChainToSwc();
-
-  void punctaSelectionChanged();
-  void swcSelectionChanged();
-  void swcTreeNodeSelectionChanged();
-  void updateObjectSelection(QList<ZStackObject*> selected,
-                             QList<ZStackObject*> deselected);
 
   void swcDoubleClicked(ZSwcTree* tree);
   void swcNodeDoubleClicked(Swc_Tree_Node* node);
   void punctaDoubleClicked(ZPunctum* p);
+  void meshDoubleClicked(ZMesh* p);
   void pointInVolumeLeftClicked(QPoint pt, glm::ivec3 pos,
                                 Qt::KeyboardModifiers modifiers);
 
@@ -290,6 +281,11 @@ public slots:
   void tranlateSelectedSwcNode();
   void changeSelectedSwcNodeSize();
   void showSeletedSwcNodeLength();
+
+  void showPuncta(bool on);
+  void showTodo(bool on);
+  void activateTodoAction();
+  void activateLocateAction();
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -308,6 +304,9 @@ public slots:
   void convertPunctaToSwc();
   void changeSelectedPunctaColor();
 
+  void saveSplitTask();
+  void deleteSplitSeed();
+  void deleteSelectedSplitSeed();
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -339,19 +338,17 @@ public slots:
   void updateBody();
   void compareBody();
   void deselectBody();
+  void copyPosition();
   void setNormalTodoVisible(bool visible);
+  void updateTodoVisibility();
 
 
-  void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst);
-  void takeScreenShot(QString filename, Z3DScreenShotType sst);
+  void takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst)
+  { m_view->takeFixedSizeScreenShot(filename, width, height, sst); }
+  void takeScreenShot(QString filename, Z3DScreenShotType sst)
+  { m_view->takeScreenShot(filename, sst); }
 
   void openAdvancedSetting(const QString &name);
-
-  void takeSeriesScreenShot(const QDir& dir, const QString &namePrefix, glm::vec3 axis,
-                            bool clockWise, int numFrame, int width, int height,
-                            Z3DScreenShotType sst);
-  void takeSeriesScreenShot(const QDir& dir, const QString &namePrefix, glm::vec3 axis,
-                            bool clockWise, int numFrame, Z3DScreenShotType sst);
 
   void updateSettingsDockWidget();
 
@@ -367,6 +364,7 @@ public slots:
 
   void addStrokeFrom3dPaint(ZStroke2d*stroke);
   void addPolyplaneFrom3dPaint(ZStroke2d*stroke);
+  void processStroke(ZStroke2d *stroke);
 
   void markSwcSoma();
   void help();
@@ -377,7 +375,12 @@ public slots:
   void cropSwcInRoi();
 
   void updateCuttingBox();
+  void shootTodo(int x, int y);
+  void locateWithRay(int x, int y);
+  void checkSelectedTodo();
+  void uncheckSelectedTodo();
 
+  void setMeshOpacity(double opacity);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -397,22 +400,15 @@ private:
   void createContextMenu();
   void createStatusBar();
   void createDockWindows();
+  void fillDockWindows();
   void customizeDockWindows(QTabWidget *m_settingTab);
   void setWindowSize();
-
-  //Configuration
-  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
-  ZJsonObject getConfigJson(ERendererLayer layer) const;
-
   // init 3D view
-  void init(EInitMode mode = INIT_NORMAL);
+  void init();
 
   void cleanup();
 
   int channelNumber();
-
-  void setupCamera(const std::vector<double> &bound,
-                   Z3DCamera::ResetCameraOptions options);
 
   bool hasVolume();
 
@@ -430,6 +426,20 @@ private:
   void exitExtendingSwc();
 
   bool exitEditMode();
+  bool canSelectObject() const;
+
+  void selectSwcNodeFromStroke(const ZStroke2d *stroke);
+  void labelSwcNodeFromStroke(const ZStroke2d *stroke);
+  //Experimental function
+  void addTodoMarkerFromStroke(const ZStroke2d *stroke);
+
+  ZLineSegment getStackSeg(const ZLineSegment &seg, const ZCuboid &rbox) const;
+
+  std::vector<ZPoint> getRayIntersection(int x, int y, uint64_t *id = NULL);
+
+private:
+  ZCuboid getRayBoundbox() const;
+  ZLineSegment getRaySegment(int x, int y, std::string &source) const;
 
 private:
   QTabWidget* createBasicSettingTabWidget();
@@ -437,7 +447,6 @@ private:
 
   // update menu based on context information
   void updateContextMenu(const QString &group);
-  void updateTodoList();
 
 private:
   NeuTube3D::EWindowType m_windowType;
@@ -453,7 +462,7 @@ private:
   QMenu *m_editMenu;
 
   ZActionLibrary *m_actionLibrary;
-  ZMenuFactory *m_menuFactory;
+  ZStackDocMenuFactory *m_menuFactory;
   QMenu *m_helpMenu;
 
   QAction *m_removeSelectedObjectsAction;
@@ -507,6 +516,8 @@ private:
   QAction *m_saveAllPunctaAsAction;
   QAction *m_locatePunctumIn2DAction;
 
+//  QAction *m_viewTodoAction = NULL;
+
   /*
   QMenu *m_punctaContextMenu;
   QMenu *m_traceMenu;
@@ -518,56 +529,34 @@ private:
 
 
   ZSharedPointer<ZStackDoc> m_doc;
-  Z3DNetworkEvaluator *m_networkEvaluator;
-  Z3DCanvas *m_canvas;
-
-  // processors
-  Z3DCanvasRenderer *m_canvasRenderer;
-  Z3DAxis *m_axis;
-  Z3DVolumeRaycaster *m_volumeRaycaster;
-  Z3DPunctaFilter *m_punctaFilter;
-  Z3DCompositor *m_compositor;
-  Z3DSwcFilter *m_swcFilter;
-  Z3DVolumeSource *m_volumeSource;
-  Z3DGraphFilter *m_graphFilter;
-  Z3DSurfaceFilter *m_surfaceFilter;
-  ZFlyEmTodoListFilter *m_todoFilter;
-//  Z3DGraphFilter *m_decorationFilter;
-
-  std::vector<double> m_volumeBoundBox;
-  std::vector<double> m_swcBoundBox;
-  std::vector<double> m_punctaBoundBox;
-  std::vector<double> m_graphBoundBox;
-  std::vector<double> m_surfaceBoundBox;
-  std::vector<double> m_todoBoundBox;
-  std::vector<double> m_decorationBoundBox;
-  std::vector<double> m_boundBox;    //overall bound box
+  Z3DView* m_view;
 
   bool m_buttonStatus[4]; // 0-showgraph, 1-setting, 2-objects, 3-rois
 
   bool m_isClean;   //already cleanup?
 
   bool m_blockingTraceMenu;
+  bool m_skippingKeyEvent = false;
 
   glm::ivec3 m_lastClickedPosInVolume;
 
-  Z3DTakeScreenShotWidget *m_screenShotWidget;
-
-  ZWidgetsGroup *m_widgetsGroup;
+  std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
 
   QDockWidget *m_settingsDockWidget;
   QDockWidget *m_objectsDockWidget;
   QDockWidget *m_advancedSettingDockWidget;
   ZROIWidget *m_roiDockWidget;
+  QDockWidget *m_bodyWidget;
 
-  bool m_isStereoView;
   bool m_cuttingStackBound;
 
   Z3DCamera m_cameraRecord;
 
   QString m_lastOpenedFilePath;
 
-  QToolBar *m_toolBar;
+  QToolBar *m_toolBar = NULL;
+//  QSlider *m_meshOpacitySlider = NULL;
+  QDoubleSpinBox *m_meshOpacitySpinBox = NULL;
 
   mutable QMutex m_filterMutex;
   ZSwcIsolationDialog *m_swcIsolationDlg;

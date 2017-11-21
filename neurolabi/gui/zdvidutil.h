@@ -28,12 +28,20 @@ libdvid::BinaryDataPtr MakeRequest(
 
 libdvid::BinaryDataPtr MakeRequest(
     libdvid::DVIDConnection &connection,
-    const std::string &endpoint, const std::string &method,
+    const std::string &path, const std::string &method,
     libdvid::BinaryDataPtr payload, libdvid::ConnectionType type,
     int &statusCode);
 
 
 libdvid::BinaryDataPtr MakeGetRequest(const std::string &url, int &statusCode);
+libdvid::BinaryDataPtr MakeGetRequest(
+    libdvid::DVIDConnection &connection, const std::string &path,
+    int &statusCode);
+
+libdvid::BinaryDataPtr MakePostRequest(
+    libdvid::DVIDConnection &connection, const std::string &path,
+    const ZJsonObject &obj, int &statusCode);
+
 void MakeHeadRequest(const std::string &url, int &statusCode);
 
 ZSharedPointer<libdvid::DVIDNodeService> MakeDvidNodeService(
@@ -72,6 +80,8 @@ ZJsonObject GetDataInstances(const std::string &type);
 
 ZDvid::EDataType GetDataTypeFromInfo(const ZJsonObject &obj);
 ZDvid::EDataType GetDataType(const std::string &typeName);
+
+ZDvidTarget MakeTargetFromUrl(const std::string path);
 
 
 /*!

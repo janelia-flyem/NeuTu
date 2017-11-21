@@ -489,8 +489,8 @@ TEST(ZObject3dScan, TestObjectSize){
   ASSERT_EQ(4, (int) sizeArray[1]);
 
   obj.clear();
-  Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR +
-        "/benchmark/binary/2d/disk_n2.tif");
+  Stack *stack = C_Stack::readSc(GET_BENCHMARK_DIR +
+        "/binary/2d/disk_n2.tif");
   obj.loadStack(stack);
   ASSERT_TRUE(obj.isCanonized());
   sizeArray = obj.getConnectedObjectSize();
@@ -502,8 +502,8 @@ TEST(ZObject3dScan, TestObjectSize){
 
   obj.clear();
   stack = C_Stack::readSc(
-        GET_TEST_DATA_DIR +
-        "/benchmark/binary/2d/ring_n10.tif");
+        GET_BENCHMARK_DIR +
+        "/binary/2d/ring_n10.tif");
   obj.loadStack(stack);
 
   ASSERT_TRUE(obj.isCanonized());
@@ -583,8 +583,8 @@ TEST(ZObject3dScan, TestBuildGraph) {
 
   obj.clear();
   Stack *stack = C_Stack::readSc(
-        GET_TEST_DATA_DIR +
-        "/benchmark/binary/2d/ring_n10.tif");
+        GET_BENCHMARK_DIR +
+        "/binary/2d/ring_n10.tif");
   obj.loadStack(stack);
   graph = obj.buildConnectionGraph();
   const std::vector<ZGraph*> &subGraph2 = graph->getConnectedSubgraph();
@@ -595,8 +595,8 @@ TEST(ZObject3dScan, TestBuildGraph) {
 #if 1
   obj.clear();
   stack = C_Stack::readSc(
-        GET_TEST_DATA_DIR +
-        "/benchmark/binary/3d/diadem_e1.tif");
+        GET_BENCHMARK_DIR +
+        "/binary/3d/diadem_e1.tif");
   obj.loadStack(stack);
   graph = obj.buildConnectionGraph();
   const std::vector<ZGraph*> &subGraph3 = graph->getConnectedSubgraph();
@@ -633,8 +633,8 @@ TEST(ZObject3dScan, TestBuildGraph) {
 
   obj.clear();
   stack = C_Stack::readSc(
-        GET_TEST_DATA_DIR +
-        "/benchmark/binary/3d/series.tif");
+        GET_BENCHMARK_DIR +
+        "/binary/3d/series.tif");
   obj.loadStack(stack);
   graph = obj.buildConnectionGraph();
   const std::vector<ZGraph*> &subGraph4 = graph->getConnectedSubgraph();
@@ -643,8 +643,8 @@ TEST(ZObject3dScan, TestBuildGraph) {
 
   obj.clear();
   stack = C_Stack::readSc(
-        GET_TEST_DATA_DIR +
-        "/benchmark/binary/3d/block/test.tif");
+        GET_BENCHMARK_DIR +
+        "/binary/3d/block/test.tif");
   obj.loadStack(stack);
   graph = obj.buildConnectionGraph();
   EXPECT_EQ(1, (int) graph->getConnectedSubgraph().size());
@@ -719,8 +719,8 @@ TEST(ZObject3dScan, TestGetConnectedComponent) {
 
   obj.clear();
   Stack *stack = C_Stack::readSc(
-        GET_TEST_DATA_DIR +
-        "/benchmark/binary/2d/ring_n10.tif");
+        GET_BENCHMARK_DIR +
+        "/binary/2d/ring_n10.tif");
   obj.loadStack(stack);
 
   objArray = obj.getConnectedComponent(ZObject3dScan::ACTION_NONE);
@@ -740,8 +740,8 @@ TEST(ZObject3dScan, TestGetConnectedComponent) {
 
   obj.clear();
   stack = C_Stack::readSc(
-        GET_TEST_DATA_DIR +
-        "/benchmark/binary/3d/diadem_e1.tif");
+        GET_BENCHMARK_DIR +
+        "/binary/3d/diadem_e1.tif");
   obj.loadStack(stack);
   objArray = obj.getConnectedComponent(ZObject3dScan::ACTION_NONE);
   EXPECT_EQ(43, (int) objArray.size());
@@ -780,8 +780,8 @@ TEST(ZObject3dScan, duplicateAcrossZ)
 }
 
 TEST(ZObject3dScan, TestScanArray) {
-  Stack *stack = C_Stack::readSc(GET_TEST_DATA_DIR +
-                                 "/benchmark/binary/3d/diadem_e1.tif");
+  Stack *stack = C_Stack::readSc(GET_BENCHMARK_DIR +
+                                 "/binary/3d/diadem_e1.tif");
 
   std::map<uint64_t, ZObject3dScan*> *objSet = ZObject3dScan::extractAllObject(
         stack->array, C_Stack::width(stack), C_Stack::height(stack),
@@ -798,7 +798,7 @@ TEST(ZObject3dScan, TestScanArray) {
 
 
   ZStack stack2;
-  stack2.load(GET_TEST_DATA_DIR + "/benchmark/block.tif");
+  stack2.load(GET_BENCHMARK_DIR + "/block.tif");
   std::vector<ZObject3dScan*> objArray =
       ZObject3dScan::extractAllObject(stack2);
   ASSERT_EQ(99, (int) objArray.size());
@@ -821,7 +821,7 @@ TEST(ZObject3dScan, TestScanArray) {
 
 TEST(ZObject3dScan, TestIO) {
   ZObject3dScan obj;
-  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
 
   EXPECT_TRUE(obj.isCanonizedActually());
 }
@@ -1107,7 +1107,7 @@ TEST(ZObject3dScan, contains)
   ASSERT_FALSE(obj.contains(0, 8, 6));
 
   obj.clear();
-  obj.load(GET_TEST_DATA_DIR + "/benchmark/tower3.sobj");
+  obj.load(GET_BENCHMARK_DIR + "/tower3.sobj");
   ASSERT_TRUE(obj.contains(1, 1, 0));
   ASSERT_FALSE(obj.contains(0, 0, 0));
   ASSERT_FALSE(obj.contains(0, 0, 2));
@@ -1318,7 +1318,7 @@ TEST(ZObject3dScan, Stack)
   ASSERT_TRUE(obj.equalsLiterally(obj4));
 
   obj.clear();
-  obj.load(GET_TEST_DATA_DIR + "/benchmark/tower5.sobj");
+  obj.load(GET_BENCHMARK_DIR + "/tower5.sobj");
   stack2 = obj.toStackObjectWithMargin(1, 1);
   obj4.loadStack(*stack2);
 
@@ -1352,6 +1352,118 @@ TEST(ZObject3dScan, Intersect)
 
   ASSERT_EQ(1, (int) obj3.getVoxelNumber());
   ASSERT_TRUE(obj3.contains(1, 1, 1));
+}
+
+TEST(ZObject3dScan, Iterator)
+{
+  ZObject3dScan::ConstSegmentIterator segIter(NULL);
+  ASSERT_FALSE(segIter.hasNext());
+
+  ZObject3dScan::ConstVoxelIterator voxelIter(NULL);
+  ASSERT_FALSE(voxelIter.hasNext());
+
+  {
+    ZObject3dScan obj1;
+    obj1.addSegment(0, 0, 0, 2);
+    obj1.addSegment(1, 1, 1, 3);
+    ZObject3dScan::ConstSegmentIterator segIter1(&obj1);
+    ASSERT_TRUE(segIter1.hasNext());
+    const ZObject3dScan::Segment &seg1 = segIter1.next();
+    ASSERT_TRUE(segIter1.hasNext());
+    ASSERT_EQ(0, seg1.getY());
+    ASSERT_EQ(2, seg1.getEnd());
+  }
+
+  {
+    ZObject3dScan obj1;
+    obj1.addStripe(0, 1);
+    obj1.addSegment(0, 0, 0, 2);
+    obj1.addStripe(1, 0);
+    obj1.addStripe(4, 5);
+    obj1.addSegment(1, 1, 1, 3);
+    ZObject3dScan::ConstSegmentIterator segIter1(&obj1);
+    ASSERT_TRUE(segIter1.hasNext());
+    const ZObject3dScan::Segment &seg1 = segIter1.next();
+    ASSERT_TRUE(segIter1.hasNext());
+    ASSERT_EQ(0, seg1.getY());
+    ASSERT_EQ(2, seg1.getEnd());
+    const ZObject3dScan::Segment &seg2 = segIter1.next();
+    ASSERT_EQ(1, seg2.getY());
+    ASSERT_EQ(3, seg2.getEnd());
+    ASSERT_FALSE(segIter1.hasNext());
+  }
+
+  {
+    ZObject3dScan obj1;
+    obj1.addStripe(0, 1);
+    obj1.addStripe(0, 2);
+    obj1.addSegment(0, 0, 0, 2);
+    obj1.addStripe(1, 0);
+    obj1.addStripe(4, 9);
+
+    ZObject3dScan::ConstSegmentIterator segIter1(&obj1);
+    ASSERT_TRUE(segIter1.hasNext());
+    const ZObject3dScan::Segment &seg1 = segIter1.next();
+    ASSERT_EQ(0, seg1.getY());
+    ASSERT_FALSE(segIter1.hasNext());
+
+    const ZObject3dScan::Segment &seg2 = segIter1.next();
+    ASSERT_TRUE(seg2.isEmpty());
+  }
+
+  {
+    ZObject3dScan obj1;
+    obj1.addSegment(0, 0, 0, 2);
+    obj1.addSegment(1, 1, 1, 3);
+    ZObject3dScan::ConstVoxelIterator voxelIter1(&obj1);
+    ASSERT_TRUE(voxelIter1.hasNext());
+    ZIntPoint pt = voxelIter1.next();
+    ASSERT_TRUE(voxelIter1.hasNext());
+    ASSERT_EQ(ZIntPoint(0, 0, 0), pt);
+    ASSERT_EQ(ZIntPoint(1, 0, 0), voxelIter1.next());
+    ASSERT_EQ(ZIntPoint(2, 0, 0), voxelIter1.next());
+    ASSERT_EQ(ZIntPoint(1, 1, 1), voxelIter1.next());
+    ASSERT_EQ(ZIntPoint(2, 1, 1), voxelIter1.next());
+    ASSERT_EQ(ZIntPoint(3, 1, 1), voxelIter1.next());
+    ASSERT_FALSE(voxelIter1.hasNext());
+  }
+
+  {
+    ZObject3dScan obj1;
+    obj1.addStripe(0, 1);
+    obj1.addSegment(0, 0, 0, 2);
+    obj1.addStripe(1, 0);
+    obj1.addStripe(4, 5);
+    obj1.addSegment(1, 1, 1, 3);
+    obj1.addStripe(5, 6);
+    ZObject3dScan::ConstVoxelIterator voxelIter1(&obj1);
+
+    ASSERT_TRUE(voxelIter1.hasNext());
+    ZIntPoint pt = voxelIter1.next();
+    ASSERT_EQ(ZIntPoint(0, 0, 0), pt);
+    ASSERT_EQ(ZIntPoint(1, 0, 0), voxelIter1.next());
+    ASSERT_EQ(ZIntPoint(2, 0, 0), voxelIter1.next());
+    ASSERT_EQ(ZIntPoint(1, 1, 1), voxelIter1.next());
+    ASSERT_EQ(ZIntPoint(2, 1, 1), voxelIter1.next());
+    ASSERT_EQ(ZIntPoint(3, 1, 1), voxelIter1.next());
+    ASSERT_FALSE(voxelIter1.hasNext());
+  }
+
+  {
+    ZObject3dScan obj1;
+    obj1.load(GET_BENCHMARK_DIR + "/29.sobj");
+    int v = obj1.getVoxelNumber();
+
+    int v2 = 0;
+    ZObject3dScan::ConstVoxelIterator voxelIter1(&obj1);
+    while (voxelIter1.hasNext()) {
+      ++v2;
+      voxelIter1.next();
+    }
+
+    ASSERT_EQ(v, v2);
+  }
+
 }
 
 TEST(ZObject3dScan, Unify)
@@ -1416,7 +1528,7 @@ TEST(ZObject3dScan, Mainpulate)
   subobj.unify(remain);
   ASSERT_TRUE(obj.equalsLiterally(subobj));
 
-  obj.load(GET_TEST_DATA_DIR + "/benchmark/29.sobj");
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
   box.setFirstCorner(210, 759, 348);
   box.setLastCorner(694, 1001, 480);
   obj.subobject(box, &remain, &subobj);
@@ -1461,9 +1573,6 @@ TEST(ZObject3dScan, Mainpulate)
   obj.chopZ(2, &remain, &subobj);
   ASSERT_TRUE(remain.isEmpty());
   ASSERT_TRUE(obj.equalsLiterally(subobj));
-
-
-
 }
 
 #endif

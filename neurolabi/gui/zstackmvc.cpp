@@ -1,4 +1,3 @@
-#include "zglew.h"
 #include "zstackmvc.h"
 
 #include <QMainWindow>
@@ -33,6 +32,7 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 //  qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
 
   m_testTimer = new QTimer(this);
+  m_role = ROLE_WIDGET;
 }
 
 ZStackMvc::~ZStackMvc()
@@ -140,35 +140,16 @@ void ZStackMvc::connectSignalSlot()
 
 void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 {
-//  connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
-//  connectAction(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)),
-//          this, SIGNAL(messageGenerated(ZWidgetMessage)));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateChannelControl()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateThresholdSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(updateSlider()));
-  /*
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_presenter, SLOT(updateStackBc()));
-          */
-  connectAction(m_doc.get(), SIGNAL(stackModified()),
-          m_view, SLOT(redraw()));
+  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
+          m_view, SLOT(processStackChange(bool)));
   connectAction(m_doc.get(), SIGNAL(objectModified()),
                 m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
           m_view, SLOT(paintObject(ZStackObject::ETarget)));
-  connectAction(m_doc.get(), SIGNAL(objectModified()),
-                m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
           m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));
-//  connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
-//                this, SLOT(changeWindowTitle(bool)));
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
                 m_view, SLOT(paintObject()));
-//  connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged()),
-//          this, SLOT(updateSwcExtensionHint()));
   connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
                 m_view, SLOT(paintObject()));
@@ -185,14 +166,15 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
           m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
           m_view, SLOT(paintObject()));
-//  connectAction(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
-//          this, SLOT(notifyUser(QString)));
   connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
                 m_view, SLOT(paintStack()));
   connectAction(m_doc.get(), SIGNAL(zoomingTo(int, int, int)),
                 this, SLOT(zoomTo(int,int,int)));
   connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
           this, SLOT(processViewChange(ZStackViewParam)));
+
+  connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
+                m_view, SLOT(updateViewBox()));
 }
 
 void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
@@ -201,64 +183,6 @@ void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
 //  connectAction(m_view, SIGNAL(currentSliceChanged(int)),
 //                m_presenter, SLOT(processSliceChangeEvent(int)));
 }
-
-#if 0
-#define UPDATE_DOC_SIGNAL_SLOT(connect) \
-  connect(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));\
-  connect(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)), \
-          this, SIGNAL(messageGenerated(ZWidgetMessage)));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateChannelControl()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateThresholdSlider()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateSlider()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_presenter, SLOT(updateStackBc()));\
-  connect(m_doc.get(), SIGNAL(stackModified()),\
-          m_view, SLOT(updateView()));\
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)), \
-          m_view, SLOT(paintObject(ZStackObject::ETarget)));\
-  connect(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)), \
-          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));\
-  connect(m_doc.get(), SIGNAL(cleanChanged(bool)),\
-          this, SLOT(changeWindowTitle(bool)));\
-  connect(m_doc.get(), SIGNAL(holdSegChanged()), m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainSelectionChanged(QList<ZLocsegChain*>,\
-          QList<ZLocsegChain*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged()),\
-          this, SLOT(updateSwcExtensionHint()));\
-  connect(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(\
-                                QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(objectSelectionChanged(\
-                                QList<ZStackObject*>,QList<ZStackObject*>)),\
-          m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)));\
-  connect(m_doc.get(), SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),\
-          m_view, SLOT(paintObject()));\
-  connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),\
-          this, SLOT(notifyUser(QString)));\
-  connect(m_doc.get(), SIGNAL(stackTargetModified()), m_view, SLOT(paintStack()));\
-  connect(m_doc.get(), SIGNAL(thresholdChanged(int)), m_view, SLOT(setThreshold(int)));\
-  connect(m_view, SIGNAL(viewChanged(ZStackViewParam)), \
-          this, SLOT(processViewChange(ZStackViewParam)));
-
-#define UPDATE_SIGNAL_SLOT(connect) \
-  UPDATE_DOC_SIGNAL_SLOT(connect) \
-  connect(m_view, SIGNAL(currentSliceChanged(int)),\
-          m_presenter, SLOT(processSliceChangeEvent(int)));
-#endif
-  //connect(this, SIGNAL(stackLoaded()), this, SLOT(setupDisplay()));
-
 
 void ZStackMvc::disconnectAll()
 {
@@ -296,11 +220,16 @@ void ZStackMvc::updateDocument()
   }
 }
 
-void ZStackMvc::keyPressEvent(QKeyEvent *event)
+void ZStackMvc::processKeyEvent(QKeyEvent *event)
 {
   if (m_presenter != NULL) {
     m_presenter->processKeyPressEvent(event);
   }
+}
+
+void ZStackMvc::keyPressEvent(QKeyEvent *event)
+{
+  processKeyEvent(event);
 }
 
 bool ZStackMvc::event(QEvent *event)
@@ -395,6 +324,16 @@ void ZStackMvc::stressTest(ZStressTestOptionDialog *dlg)
 {
   setStressTestEnv(dlg);
   toggleStressTest();
+}
+
+ZStackMvc::ERole ZStackMvc::getRole() const
+{
+  return m_role;
+}
+
+void ZStackMvc::setRole(ZStackMvc::ERole role)
+{
+  m_role = role;
 }
 
 
@@ -516,6 +455,7 @@ void ZStackMvc::changeEvent(QEvent *event)
 }
 #endif
 
+#if 0
 void ZStackMvc::zoomWithWidthAligned(int x0, int x1, int cy)
 {
 //  getView()->blockSignals(true);
@@ -531,23 +471,38 @@ void ZStackMvc::zoomWithWidthAligned(const QRect &viewPort, int z, double pw)
         viewPort.left(), viewPort.right(), pw, viewPort.center().y(), z);
 }
 
-void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
+
+void ZStackMvc::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz)
 {
-  ZIntPoint center = view->getViewCenter();
-
-  center.shiftSliceAxis(getView()->getSliceAxis());
-
-//  bool depthChanged = (center.getZ() == getView()->getCurrentZ());
-
-  QRect refViewPort = view->getViewPort(NeuTube::COORD_STACK);
-
-  zoomWithHeightAligned(refViewPort.top(), refViewPort.bottom(),
-                        view->getProjRegion().height(),
-                        center.getX(), center.getZ());
+  getView()->zoomWithHeightAligned(y0, y1, ph, cx, cz);
 }
+
+void ZStackMvc::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
+{
+  getView()->zoomWithWidthAligned(x0, x1, pw, cy, cz);
+}
+#endif
 
 void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
 {
+  ZStackViewParam param = view->getViewParameter();
+  ZViewProj viewProj = param.getViewProj();
+
+  double zoom = viewProj.getZoom();
+
+  if (zoom > 0.0) {
+    ZIntPoint center = view->getViewCenter();
+    center.shiftSliceAxis(getView()->getSliceAxis());
+
+    int x0 = viewProj.getX0();
+    int cy = center.getZ();
+    int y0 = cy - iround(
+          double(getView()->getViewProj().getWidgetCenter().y()) / zoom);
+
+    getView()->setViewProj(x0, y0, viewProj.getZoom());
+  }
+
+#if 0
   ZIntPoint center = view->getViewCenter();
 
   center.shiftSliceAxis(getView()->getSliceAxis());
@@ -559,16 +514,44 @@ void ZStackMvc::zoomWithWidthAligned(const ZStackView *view)
   zoomWithWidthAligned(refViewPort.left(), refViewPort.right(),
                        view->getProjRegion().width(),
                        center.getY(), center.getZ());
+#endif
 }
 
-void ZStackMvc::zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz)
+void ZStackMvc::zoomWithHeightAligned(const ZStackView *view)
 {
-  getView()->zoomWithHeightAligned(y0, y1, ph, cx, cz);
-}
+  ZStackViewParam param = view->getViewParameter();
+  ZViewProj viewProj = param.getViewProj();
 
-void ZStackMvc::zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz)
-{
-  getView()->zoomWithWidthAligned(x0, x1, pw, cy, cz);
+  double zoom = viewProj.getZoom();
+
+  if (zoom > 0.0) {
+    ZIntPoint center = view->getViewCenter();
+    center.shiftSliceAxis(getView()->getSliceAxis());
+
+    int y0 = viewProj.getY0();
+    int cx = center.getZ();
+    int x0 = cx - iround(
+          double(getView()->getViewProj().getWidgetCenter().x()) / zoom);
+
+    getView()->setViewProj(x0, y0, viewProj.getZoom());
+  }
+
+#if 0
+  ZIntPoint center = view->getViewCenter();
+
+//  center.shiftSliceAxis(getView()->getSliceAxis());
+
+//  bool depthChanged = (center.getZ() == getView()->getCurrentZ());
+
+  QRect refViewPort = view->getViewPort(NeuTube::COORD_STACK);
+
+  getView()->setView();
+
+  zoomWithHeightAligned(refViewPort.top(), refViewPort.bottom(),
+                        view->getProjRegion().height(),
+                        center.getX(), center.getZ());
+#endif
+
 }
 
 void ZStackMvc::zoomTo(const ZIntPoint &pt, double zoomRatio)

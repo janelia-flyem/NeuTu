@@ -770,6 +770,48 @@ ZStackDocCommand::SwcEdit::MergeSwcNode::~MergeSwcNode()
 #endif
 }
 
+
+///////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::ChangeSwcNodeType::ChangeSwcNodeType(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Change SWC node type"));
+}
+
+ZStackDocCommand::SwcEdit::ChangeSwcNodeType::~ChangeSwcNodeType()
+{
+
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::setNodeOperation(
+    const std::vector<Swc_Tree_Node *> &nodeArray, int type)
+{
+  m_nodeArray = nodeArray;
+  m_newType = type;
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::redo()
+{
+  for (std::vector<Swc_Tree_Node*>::iterator iter = m_nodeArray.begin();
+       iter != m_nodeArray.end(); ++iter) {
+    Swc_Tree_Node *tn = *iter;
+    if (SwcTreeNode::type(tn) != m_newType) {
+      backup(tn);
+      SwcTreeNode::setType(tn, m_newType);
+    }
+  }
+  if (!m_backupSet.empty()) {
+    m_doc->processSwcModified();
+    m_doc->notifyObjectModified();
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::undo()
+{
+  startUndo();
+  recover();
+}
+
 /////////////////////////////////////////////
 ZStackDocCommand::SwcEdit::ResolveCrossover::ResolveCrossover(
     ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
@@ -1064,8 +1106,8 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNode::undo()
 ZStackDocCommand::SwcEdit::DeleteSwcNode::DeleteSwcNode(
     ZStackDoc *doc, Swc_Tree_Node *node, Swc_Tree_Node *root,
     QUndoCommand *parent) :
-  CompositeCommand(doc, parent), m_doc(doc), m_node(node), m_root(root),
-  m_prevSibling(NULL), m_lastChild(NULL), m_nodeInDoc(true)
+  CompositeCommand(doc, parent), m_node(node), m_root(root),
+  m_nodeInDoc(true)
 {
   TZ_ASSERT(m_root != NULL, "Null root");
   setText(QObject::tr("Delete swc node"));
@@ -1099,7 +1141,7 @@ ZStackDocCommand::SwcEdit::DeleteSwcNode::~DeleteSwcNode()
 ZStackDocCommand::SwcEdit::DeleteSwcNodeSet::DeleteSwcNodeSet(
     ZStackDoc *doc, std::set<Swc_Tree_Node*> &nodeSet,
     QUndoCommand *parent) :
-  CompositeCommand(doc, parent), m_doc(doc), m_nodeSet(nodeSet),
+  CompositeCommand(doc, parent), m_nodeSet(nodeSet),
   m_nodeInDoc(true)
 {
   //TZ_ASSERT(root != NULL, "Null root");
@@ -1483,7 +1525,7 @@ ZStackDocCommand::SwcEdit::ConnectSwcNode::ConnectSwcNode(
 
         //Check source
         if (ZFileType::FileType(swcMap[downNode]->getSource()) ==
-            ZFileType::SWC_FILE) {
+            ZFileType::FILE_SWC) {
           upNode = nodeArray[e2];
           downNode = nodeArray[e1];
         }
@@ -1575,7 +1617,7 @@ void ZStackDocCommand::SwcEdit::RemoveSwcIfEmpty::undo()
 
 ZStackDocCommand::SwcEdit::RemoveEmptyTree::RemoveEmptyTree(
     ZStackDoc *doc, QUndoCommand *parent) :
-  CompositeCommand(doc, parent), m_doc(doc)
+  CompositeCommand(doc, parent)
 {
   if (doc != NULL) {
     QList<ZSwcTree*> treeList = doc->getSwcList();
@@ -1820,29 +1862,48 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
 
 ZStackDocCommand::ObjectEdit::RemoveObject::RemoveObject(
     ZStackDoc *doc, ZStackObject *obj, QUndoCommand *parent) :
-  ZUndoCommand(parent), m_doc(doc), m_obj(obj), m_isInDoc(true)
+  ZUndoCommand(parent), m_doc(doc), m_isInDoc(true)
 {
   setText(QObject::tr("Remove object"));
+  if (obj != NULL) {
+    m_objSet.insert(obj);
+  }
 }
 
 ZStackDocCommand::ObjectEdit::RemoveObject::~RemoveObject()
 {
   if (!m_isInDoc) {
-    delete m_obj;
+    foreach (ZStackObject *obj, m_objSet) {
+      delete obj;
+    }
   }
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::setRemoval(
+    const QList<ZStackObject *> &objList)
+{
+  m_objSet = QSet<ZStackObject*>::fromList(objList);
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::addRemoval(ZStackObject *obj)
+{
+  m_objSet.insert(obj);
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveObject::redo()
 {
-  m_obj->setSelected(false);
-  m_doc->removeObject(m_obj, false);
+  m_doc->removeObject(m_objSet, false);
+
+  foreach (ZStackObject *obj, m_objSet) {
+    obj->setSelected(false);
+  }
   m_isInDoc = false;
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveObject::undo()
 {
   startUndo();
-  m_doc->addObject(m_obj, false);
+  m_doc->addObjectFast(m_objSet.begin(), m_objSet.end());
   m_isInDoc = true;
 }
 
@@ -2225,8 +2286,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::undo()
 ZStackDocCommand::ObjectEdit::MoveSelected::MoveSelected(
     ZStackDoc *doc, double x, double y, double z, QUndoCommand *parent)
   : ZUndoCommand(parent), m_doc(doc), m_x(x), m_y(y), m_z(z), m_swcMoved(false),
-    m_punctaMoved(false), m_swcScaleX(1.), m_swcScaleY(1.), m_swcScaleZ(1.),
-    m_punctaScaleX(1.), m_punctaScaleY(1.), m_punctaScaleZ(1.)
+    m_punctaMoved(false), m_swcTransform(1.f), m_punctaTransform(1.f)
 {
   setText(QObject::tr("Move Selected"));
 }
@@ -2297,21 +2357,6 @@ void ZStackDocCommand::ObjectEdit::AddObject::undo()
   m_isInDoc = false;
 }
 
-
-void ZStackDocCommand::ObjectEdit::MoveSelected::setSwcCoordScale(double x, double y, double z)
-{
-  m_swcScaleX = x;
-  m_swcScaleY = y;
-  m_swcScaleZ = z;
-}
-
-void ZStackDocCommand::ObjectEdit::MoveSelected::setPunctaCoordScale(double x, double y, double z)
-{
-  m_punctaScaleX = x;
-  m_punctaScaleY = y;
-  m_punctaScaleZ = z;
-}
-
 bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *other)
 {
 //  return true;
@@ -2324,12 +2369,8 @@ bool ZStackDocCommand::ObjectEdit::MoveSelected::mergeWith(const QUndoCommand *o
     if (m_punctaList != oth->m_punctaList ||
         m_swcNodeList != oth->m_swcNodeList ||
         m_swcList != oth->m_swcList ||
-        m_swcScaleX != oth->m_swcScaleX ||
-        m_swcScaleY != oth->m_swcScaleY ||
-        m_swcScaleZ != oth->m_swcScaleZ ||
-        m_punctaScaleX != oth->m_punctaScaleX ||
-        m_punctaScaleY != oth->m_punctaScaleY ||
-        m_punctaScaleZ != oth->m_punctaScaleZ) {
+        m_swcTransform != oth->m_swcTransform ||
+        m_punctaTransform != oth->m_punctaTransform) {
       return false;
     }
 
@@ -2348,22 +2389,24 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::undo()
   startUndo();
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
 
+  glm::vec3 pmv = m_punctaTransform * glm::vec3(m_x, m_y, m_z);
+  glm::vec3 smv = m_swcTransform * glm::vec3(m_x, m_y, m_z);
   for (QList<ZPunctum*>::iterator it = m_punctaList.begin();
        it != m_punctaList.end(); ++it) {
-    (*it)->translate(-m_x/m_punctaScaleX, -m_y/m_punctaScaleY, -m_z/m_punctaScaleZ);
+    (*it)->translate(-pmv.x, -pmv.y, -pmv.z);
     m_doc->processObjectModified(*it);
   }
   for (QList<ZSwcTree*>::iterator it = m_swcList.begin();
        it != m_swcList.end(); ++it) {
-    (*it)->translate(-m_x/m_swcScaleX, -m_y/m_swcScaleY, -m_z/m_swcScaleZ);
+    (*it)->translate(-smv.x, -smv.y, -smv.z);
     m_doc->processObjectModified(*it);
   }
   for (std::set<Swc_Tree_Node*>::iterator it = m_swcNodeList.begin();
        it != m_swcNodeList.end(); ++it) {
     Swc_Tree_Node* tn = *it;
-    tn->node.x -= m_x/m_swcScaleX;
-    tn->node.y -= m_y/m_swcScaleY;
-    tn->node.z -= m_z/m_swcScaleZ;
+    tn->node.x -= smv.x;
+    tn->node.y -= smv.y;
+    tn->node.z -= smv.z;
   }
 
   if (!m_swcNodeList.empty()) {
@@ -2412,22 +2455,24 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::redo()
   if (!m_swcList.empty())
     m_swcMoved = true;
 
+  glm::vec3 pmv = m_punctaTransform * glm::vec3(m_x, m_y, m_z);
+  glm::vec3 smv = m_swcTransform * glm::vec3(m_x, m_y, m_z);
   for (QList<ZPunctum*>::iterator it = m_punctaList.begin();
        it != m_punctaList.end(); ++it) {
-    (*it)->translate(m_x/m_punctaScaleX, m_y/m_punctaScaleY, m_z/m_punctaScaleZ);
+    (*it)->translate(pmv.x, pmv.y, pmv.z);
     m_doc->processObjectModified(*it);
   }
   for (QList<ZSwcTree*>::iterator it = m_swcList.begin();
        it != m_swcList.end(); ++it) {
-    (*it)->translate(m_x/m_swcScaleX, m_y/m_swcScaleY, m_z/m_swcScaleZ);
+    (*it)->translate(smv.x, smv.y, smv.z);
     m_doc->processObjectModified(*it);
   }
   for (std::set<Swc_Tree_Node*>::iterator it = m_swcNodeList.begin();
        it != m_swcNodeList.end(); ++it) {
     Swc_Tree_Node* tn = *it;
-    tn->node.x += m_x/m_swcScaleX;
-    tn->node.y += m_y/m_swcScaleY;
-    tn->node.z += m_z/m_swcScaleZ;
+    tn->node.x += smv.x;
+    tn->node.y += smv.y;
+    tn->node.z += smv.z;
   }
 
   if (!m_swcNodeList.empty()) {

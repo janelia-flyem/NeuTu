@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <cctype>
 
 #include "tz_error.h"
 #include "tz_utilities.h"
@@ -63,7 +64,25 @@ ZString::~ZString()
   }
 }
 
-int ZString::firstInteger(const string &str)
+bool ZString::isAllDigit() const
+{
+  bool succ = true;
+
+  if (empty()) {
+    succ = false;
+  } else {
+    for (size_type i = 0; i < size(); ++i) {
+      if (!isdigit(at(i))) {
+        succ = false;
+        break;
+      }
+    }
+  }
+
+  return succ;
+}
+
+int ZString::FirstInteger(const string &str)
 {
   return String_First_Integer(str.c_str());
 }
@@ -78,7 +97,7 @@ int ZString::lastInteger()
   return String_Last_Integer(c_str());
 }
 
-int ZString::lastInteger(const string &str)
+int ZString::LastInteger(const string &str)
 {
   return String_Last_Integer(str.c_str());
 }
@@ -127,6 +146,18 @@ uint64_t ZString::firstUint64()
 
   return v;
 }
+
+uint64_t ZString::lastUint64()
+{
+  uint64_t v = 0;
+  vector<uint64_t> valueArray = toUint64Array();
+  if (!valueArray.empty()) {
+    v = valueArray.back();
+  }
+
+  return v;
+}
+
 
 vector<double> ZString::toDoubleArray()
 {
@@ -188,6 +219,13 @@ std::vector<std::string> ZString::ToWordArray(
   free(str);
 
   return wordArray;
+}
+
+std::string ZString::getLastWord(char c)
+{
+  size_t pos = find_last_of(c);
+
+  return substr(pos + 1, std::string::npos);
 }
 
 std::vector<std::string> ZString::Tokenize(const std::string &str, char c)
@@ -310,7 +348,7 @@ bool ZString::containsDigit()
 }
 
 
-string& ZString::replace(const string &from, const string &to)
+ZString &ZString::replace(const string &from, const string &to)
 {
   if (from.size() == 0) {
     return *this;
@@ -327,7 +365,7 @@ string& ZString::replace(const string &from, const string &to)
   return *this;
 }
 
-string& ZString::replace(int from, const string &to)
+ZString& ZString::replace(int from, const string &to)
 {
   ostringstream stream;
   stream << from;
@@ -350,6 +388,10 @@ string& ZString::replace(int from, const string &to)
 
 bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 {
+  if (empty() ||str.empty()) {
+    return false;
+  }
+
   string str1(c_str());
   string str2(str.c_str());
 
@@ -363,6 +405,10 @@ bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 
 bool ZString::endsWith(const string &str, ECaseSensitivity cs) const
 {
+  if (empty() ||str.empty()) {
+    return false;
+  }
+
   string str1(c_str());
   string str2(str.c_str());
 

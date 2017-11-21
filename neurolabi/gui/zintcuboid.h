@@ -62,6 +62,8 @@ public:
 
   void translateX(int dx);
 
+  void translate(const ZIntPoint &offset);
+
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
    */
@@ -75,6 +77,8 @@ public:
   int getHeight() const;
   int getDepth() const;
 
+  double getDiagonalLength() const;
+
   /*!
    * \brief Set the depth
    *
@@ -84,8 +88,17 @@ public:
    */
   void setDepth(int depth);
 
-  //union
+
+  /*!
+   * \brief Join two cuboids
+   *
+   * Note that if the object is empty, the result will become the same as \a cuboid.
+   * If \a cuboid is empty, nothing will be done.
+   *
+   * \return The current object after joining.
+   */
   ZIntCuboid& join(const ZIntCuboid &cuboid);
+
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);

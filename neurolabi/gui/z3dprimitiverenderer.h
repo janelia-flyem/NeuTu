@@ -1,107 +1,115 @@
 #ifndef Z3DPRIMITIVERENDERER_H
 #define Z3DPRIMITIVERENDERER_H
 
-#include <QObject>
 #include "z3drendererbase.h"
+#include "z3dshadergroup.h"
+#include "zvertexarrayobject.h"
+#include "zvertexbufferobject.h"
+#include <QObject>
 
-class Z3DTriangleList;
+class ZMesh;
 
 class Z3DPrimitiveRenderer : public QObject
 {
-  Q_OBJECT
-
-  friend class Z3DRendererBase;
+Q_OBJECT
 public:
-  explicit Z3DPrimitiveRenderer(QObject *parent);
-  virtual ~Z3DPrimitiveRenderer();
-  inline virtual QString getClassName() const {return metaObject()->className();}
+  explicit Z3DPrimitiveRenderer(Z3DRendererBase& rendererBase);
 
+  virtual ~Z3DPrimitiveRenderer();
+
+  inline QString className() const
+  { return metaObject()->className(); }
+
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   // for opengl mode only, if set, display list will be build in opengl mode.
   // for large amount of objects, display list can render faster but it is expensive to build.
   // not necessary if number of objects is small (can be rendered in a few opengl calls)
   // default is false, subclass should call this function if needed
-  void setUseDisplayList(bool v) { m_useDisplayList = v; }
+  void setUseDisplayList(bool v)
+  { m_useDisplayList = v; }
+
+  inline bool useDisplayList()
+  { return m_useDisplayList; }
+#endif
+
   // If set, lighting will be enabled.
-  // default is false, subclass should call this function if needed
-  void setNeedLighting(bool v) { m_needLighting = v; }
+  // default is true, subclass should call this function if needed
+  void setNeedLighting(bool v)
+  { m_needLighting = v; }
+
+  inline bool needLighting()
+  { return m_needLighting; }
 
   //sometimes z scale transfrom is not appropriate, for example: bound box. we need to disable it and
   // precalc the correct location. Default is true
-  void setRespectRendererBaseCoordScales(bool v) {m_respectRendererBaseCoordScale = v;}
-  
-  inline void setZScale(float s) { m_rendererBase->setZScale(s); }
+  void setFollowCoordTransform(bool v)
+  { m_followCoordTransform = v; }
 
-  Z3DRendererBase* getRendererBase() { return m_rendererBase; }
+  //
+  void setFollowOpacity(bool v)
+  { m_followOpacity = v; }
 
-  inline glm::vec3 getCoordScales() const
+  //
+  void setFollowSizeScale(bool v)
+  { m_followSizeScale = v; }
+
+  inline glm::mat4 coordTransform() const
   {
-    if (m_respectRendererBaseCoordScale)
-      return m_rendererBase->getCoordScales();
+    if (m_followCoordTransform)
+      return m_rendererBase.coordTransform();
     else
-      return glm::vec3(1.f,1.f,1.f);
+      return glm::mat4(1.f);
   }
 
+  // commonly used render functions
+  // Render a screen-aligned quad (whole screen)
+  static void renderScreenQuad(const ZVertexArrayObject& vao, const Z3DShaderProgram& shader);
+
+  // render a trianglelist with whatever it contains
+  static void renderTriangleList(const ZVertexArrayObject& vao, const Z3DShaderProgram& shader, const ZMesh& mesh);
+
 signals:
+
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   void openglRendererInvalid();
   void openglPickingRendererInvalid();
-  
-public slots:
-  virtual void coordScalesChanged();
-
-protected slots:
-  void invalidateOpenglRenderer();
-  void invalidateOpenglPickingRenderer();
-  virtual void compile() = 0;
+#endif
 
 protected:
-  inline float getOpacity()  const {return m_rendererBase->getOpacity();}
-  inline float getSizeScale() const {return m_rendererBase->getSizeScale();}
-  inline Z3DCamera& getCamera() const {return m_rendererBase->getCamera();}
-  inline glm::ivec4 getViewport() const {return m_rendererBase->getViewport();}
+  virtual void compile() = 0;
 
-  virtual inline bool getNeedLighting() {return m_needLighting;}
-  virtual inline bool getUseDisplayList() {return m_useDisplayList;}
-  virtual inline void setRendererBase(Z3DRendererBase* base) { m_rendererBase = base;}
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
+  void invalidateOpenglRenderer();
+  void invalidateOpenglPickingRenderer();
+#endif
 
-//  inline Z3DRendererBase* getRendererBase() const { return m_rendererBase; }
+  friend class Z3DRendererBase;
 
-  virtual void initialize();
-  virtual void deinitialize();
+  void setShaderParameters(Z3DShaderProgram& shader);
 
+  void setPickingShaderParameters(Z3DShaderProgram& shader);
+
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   virtual void renderUsingOpengl() {}
   virtual void renderPickingUsingOpengl() {}
+#endif
 
   virtual void render(Z3DEye) = 0;
-  virtual void renderPicking(Z3DEye) = 0;
 
-  void addParameter(ZParameter &para);
-  void addParameter(ZParameter *para);
-  std::vector<ZParameter*> getParameters();
+  virtual void renderPicking(Z3DEye /*unused*/)
+  {}
 
-  inline void setInitialized(bool i) {m_initialized = i;}
-
-  virtual QString generateHeader();
-
-  // commonly used render functions
-  // Render a screen-aligned quad (whole screen) with depth func GL_ALWAYS.
-  void renderScreenQuad(const Z3DShaderProgram &shader, bool depthAlwaysPass = true);
-  // render a trianglelist with whatever it contains
-  void renderTriangleList(const Z3DShaderProgram &shader, const Z3DTriangleList &mesh);
-
-  Z3DRendererBase* m_rendererBase;
-  bool m_initialized;
+protected:
+  Z3DRendererBase& m_rendererBase;
   bool m_needLighting;
+#if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   bool m_useDisplayList;
-  bool m_respectRendererBaseCoordScale;
-
-  std::vector<ZParameter*> m_parameters;
+#endif
+  bool m_followCoordTransform;
+  bool m_followOpacity;
+  bool m_followSizeScale;
 
   bool m_hardwareSupportVAO;
-  GLuint m_VAO;
-  GLuint m_pickingVAO;
-
-private:
-  GLuint m_privateVAO;
 };
 
 #endif // Z3DPRIMITIVERENDERER_H

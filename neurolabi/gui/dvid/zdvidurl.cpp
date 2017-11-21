@@ -56,15 +56,15 @@ void ZDvidUrl::setDvidTarget(const ZDvidTarget &target, const std::string &uuid)
 }
 
 std::string ZDvidUrl::GetFullUrl(
-      const std::string &prefix, const std::string &endpoint)
+    const std::string &prefix, const std::string &path)
 {
   std::string url;
 
-  if (!prefix.empty() && !endpoint.empty()) {
-    if (endpoint[0] == '/' || endpoint[0] == '?') {
-      url = prefix + endpoint;
+  if (!prefix.empty() && !path.empty()) {
+    if (path[0] == '/' || path[0] == '?') {
+      url = prefix + path;
     } else {
-      url = prefix + "/" + endpoint;
+      url = prefix + "/" + path;
     }
   }
 
@@ -122,6 +122,35 @@ std::string ZDvidUrl::getServerInfoUrl() const
   return GetFullUrl(getApiUrl(), "server/info");
 }
 
+std::string ZDvidUrl::getMeshUrl()
+{
+  return getDataUrl(
+        ZDvidData::GetName(ZDvidData::ROLE_MESH,
+                           ZDvidData::ROLE_BODY_LABEL,
+                           m_dvidTarget.getBodyLabelName()));
+}
+
+std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
+{
+  std::string url;
+
+  ZString dataUrl = getMeshUrl();
+  if (!dataUrl.empty()) {
+    if (zoom > 0) {
+      dataUrl += "_";
+      dataUrl.appendNumber(zoom);
+    }
+    url = GetFullUrl(GetKeyCommandUrl(dataUrl), GetBodyKey(bodyId));
+  }
+
+  return url;
+}
+
+std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
+{
+  return getMeshUrl(bodyId, zoom) + "_info";
+}
+
 std::string ZDvidUrl::getSkeletonUrl() const
 {
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());
@@ -171,10 +200,21 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
 {
   std::string url;
 
-  if (zoom == 0) {
+  if (m_dvidTarget.usingLabelArray()) {
     url = getSparsevolUrl(bodyId);
+    if (zoom > m_dvidTarget.getMaxLabelZoom()) {
+      zoom = m_dvidTarget.getMaxLabelZoom();
+    }
+    ZString option = "?scale=";
+    option.appendNumber(zoom);
+
+    url += option;
   } else {
-    url = getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName(zoom));
+    if (zoom == 0) {
+      url = getSparsevolUrl(bodyId);
+    } else {
+      url = getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName(zoom));
+    }
   }
 
   return url;
@@ -242,6 +282,22 @@ std::string ZDvidUrl::getSparsevolUrl(
     url += "&maxy=";
     url.appendNumber(maxZ);
     break;
+  }
+
+  return url;
+}
+
+std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
+{
+  ZString url;
+
+  if (m_dvidTarget.usingLabelArray()) {
+    url = getDataUrl(m_dvidTarget.getBodyLabelName());
+    if (!url.empty()) {
+      url += "/" + ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL_SIZE);
+      url += "/";
+      url.appendNumber(bodyId);
+    }
   }
 
   return url;
@@ -827,13 +883,19 @@ std::string ZDvidUrl::getBranchUrl() const
   return GetFullUrl(getNodeUrl(), "/branch");
 }
 
-std::string ZDvidUrl::GetEndPoint(const std::string &url)
+std::string ZDvidUrl::GetPath(const std::string &url)
 {
   std::string marker = "api/node/";
-  std::string::size_type markerPos = url.find(marker) + marker.size();
-  std::string::size_type uuidPos = url.find('/', markerPos);
 
-  return url.substr(uuidPos);
+  std::string::size_type markerPos = url.find(marker);
+
+  if (markerPos != std::string::npos) {
+    markerPos += marker.size();
+    std::string::size_type uuidPos = url.find('/', markerPos);
+    return url.substr(uuidPos);
+  }
+
+  return url;
 }
 
 std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
@@ -1194,12 +1256,13 @@ std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold) const {
     return name;
 }
 
-std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType)  const {
-    return getSynapseLabelszThresholdUrl(threshold) + "/" + GetLabelszIndexTypeStr(indexType);
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(
+    int threshold, ZDvid::ELabelIndexType indexType)  const {
+  return getSynapseLabelszThresholdUrl(threshold) + "/" + GetLabelszIndexTypeStr(indexType);
 }
 
-std::string ZDvidUrl::getSynapseLabelszThresholdUrl(int threshold, ZDvid::ELabelIndexType indexType,
-        int offset, int number)  const {
+std::string ZDvidUrl::getSynapseLabelszThresholdUrl(
+    int threshold, ZDvid::ELabelIndexType indexType, int offset, int number)  const {
     std::string url = getSynapseLabelszThresholdUrl(threshold, indexType);
     url += "/?offset=";
     url += ZString::num2str(offset);
@@ -1213,10 +1276,86 @@ void ZDvidUrl::setUuid(const std::string &uuid)
   m_dvidTarget.setUuid(uuid);
 }
 
+std::string ZDvidUrl::GetBodyKey(uint64_t bodyId)
+{
+  std::ostringstream stream;
+  stream << bodyId;
+
+  return stream.str();
+}
+
 std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
 {
   std::ostringstream stream;
   stream << bodyId << "_swc";
 
   return stream.str();
+}
+
+std::string ZDvidUrl::GetServiceResultEndPoint()
+{
+  return "result";
+}
+
+std::string ZDvidUrl::GetResultKeyFromTaskKey(const std::string &key)
+{
+  ZString newKey = key;
+  if (newKey.startsWith("task__")) {
+//    newKey.replace("head__", "task__");
+    newKey = key;
+  } else {
+    newKey = "";
+  }
+
+  return newKey;
+}
+
+std::string ZDvidUrl::ExtractSplitTaskKey(const std::string &url)
+{
+  std::string w("task_split/key/");
+  std::string::size_type index = url.rfind(w);
+
+  if (index == std::string::npos) {
+    return "";
+  }
+
+  return url.substr(index + w.size());
+}
+
+std::string ZDvidUrl::getSplitTaskKey(const uint64_t bodyId) const
+{
+  std::string key;
+  std::string bodyUrl = getSparsevolUrl(bodyId);
+  if (!bodyUrl.empty()) {
+    key = "task__" + ZString(bodyUrl).replace(":", "-").replace("/", "+");
+  }
+
+  return key;
+}
+
+std::string ZDvidUrl::getSplitResultKey(const uint64_t bodyId) const
+{
+  std::string taskKey = getSplitTaskKey(bodyId);
+
+  return GetResultKeyFromTaskKey(taskKey);
+}
+
+/*
+bool ZDvidUrl::IsSplitTask(const std::string &url)
+{
+  return ZString()
+}
+*/
+
+uint64_t ZDvidUrl::GetBodyId(const std::string &url)
+{
+  uint64_t id = 0;
+
+  ZString idWord = ZString(url).getLastWord('/');
+
+  if (idWord.isAllDigit()) {
+    id = idWord.firstUint64();
+  }
+
+  return id;
 }

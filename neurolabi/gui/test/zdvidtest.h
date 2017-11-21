@@ -13,6 +13,8 @@
 #include "dvid/zdviddata.h"
 #include "zdvidutil.h"
 #include "dvid/zdvidnode.h"
+#include "zintcuboid.h"
+#include "zobject3dscan.h"
 
 #ifdef _USE_GTEST_
 
@@ -20,6 +22,7 @@ TEST(ZDvidTest, ZDvidInfo)
 {
   ZDvidInfo info;
   info.print();
+  std::cout << std::endl;
   /*
   const char* ZDvidInfo::m_minPointKey = "MinPoint";
   const char* ZDvidInfo::m_maxPointKey = "MaxPoint";
@@ -27,12 +30,50 @@ TEST(ZDvidTest, ZDvidInfo)
   const char* ZDvidInfo::m_voxelSizeKey = "VoxelSize";
   const char* ZDvidInfo::m_blockMinIndexKey = "MinIndex";
 */
-  info.setFromJsonString("{ \"MinPoint\": [1, 2, 3]}");
+  info.setFromJsonString("{ "
+                         " \"MinPoint\": [1, 2, 3], "
+                         " \"BlockSize\": [16, 32, 64],"
+                         " \"MaxPoint\": [1000, 2000, 3000],"
+                         " \"MinIndex\": [4, 5, 6],"
+                         " \"MaxIndex\": [1000, 2000, 3000]"
+                         "}");
   info.print();
 
   ASSERT_EQ(1, info.getStartCoordinates().getX());
   ASSERT_EQ(2, info.getStartCoordinates().getY());
   ASSERT_EQ(3, info.getStartCoordinates().getZ());
+
+  ASSERT_EQ(1000, info.getEndCoordinates().getX());
+  ASSERT_EQ(2000, info.getEndCoordinates().getY());
+  ASSERT_EQ(3000, info.getEndCoordinates().getZ());
+
+  ASSERT_EQ(16, info.getBlockSize().getX());
+  ASSERT_EQ(32, info.getBlockSize().getY());
+  ASSERT_EQ(64, info.getBlockSize().getZ());
+
+  ASSERT_EQ(ZIntPoint(0, 0, 0), info.getBlockIndex(0, 0, 0));
+  ASSERT_EQ(ZIntPoint(-1, -1, -1), info.getBlockIndex(-1, -1, -1));
+  ASSERT_EQ(ZIntPoint(1, 1, 1), info.getBlockIndex(16, 32, 64));
+  ASSERT_EQ(ZIntPoint(-1, -1, -1), info.getBlockIndex(-16, -32, -64));
+  ASSERT_EQ(ZIntPoint(-2, -2, -2), info.getBlockIndex(-17, -33, -65));
+  ASSERT_EQ(ZIntPoint(0, 0, 0), info.getBlockCoord(0, 0, 0));
+  ASSERT_EQ(ZIntPoint(16, 32, 64), info.getBlockCoord(1, 1, 1));
+  ZIntCuboid box = info.getBlockBox(1, 2, 3);
+  ASSERT_EQ(ZIntPoint(16, 64, 192), box.getFirstCorner());
+  ASSERT_EQ(16, box.getWidth());
+  ASSERT_EQ(32, box.getHeight());
+  ASSERT_EQ(64, box.getDepth());
+
+  ASSERT_TRUE(info.isValidBlockIndex(ZIntPoint(100, 20, 30)));
+  ASSERT_FALSE(info.isValidBlockIndex(ZIntPoint(100, 20, 3)));
+
+  ZObject3dScan obj;
+  obj.addSegment(-1, -2, -1, 10);
+  ZObject3dScan obj2 = info.getBlockIndex(obj);
+  ASSERT_EQ(2, (int) obj2.getVoxelNumber());
+  ASSERT_TRUE(obj2.contains(-1, -1, -1));
+  ASSERT_TRUE(obj2.contains(0, -1, -1));
+
 }
 
 TEST(ZDvidTest, Util)
@@ -50,6 +91,8 @@ TEST(ZDvidTest, ZDvidUrl)
 {
   ZDvidTarget target("emdata.janelia.org", "bf1");
   target.setLabelBlockName("labels");
+  target.setBodyLabelName("bodies");
+
   //const std::vector<ZDvidTarget> &dvidRepo =
   //    NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo();
   ZDvidUrl dvidUrl(target);
@@ -63,7 +106,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/skeletons/key/1_swc",
             dvidUrl.getSkeletonUrl(1));
 
-  ASSERT_TRUE(dvidUrl.getSkeletonUrl("").empty());
+  ASSERT_EQ("", dvidUrl.getSkeletonUrl(""));
 
 //  std::cout << dvidUrl.getMergeOperationUrl(
 //                 ZDvidData::GetName(ZDvidData::ROLE_MERGE_OPERATION))
@@ -98,6 +141,11 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl.getServerInfoUrl());
 //  std::cout << dvidUrl.getServerInfoUrl() << std::endl;
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1",
+            dvidUrl.getMeshUrl(1, 0));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes_1/key/1",
+            dvidUrl.getMeshUrl(1, 1));
+
   ASSERT_EQ("http://emdata.janelia.org/api", dvidUrl.getApiUrl());
 //  std::cout << dvidUrl.getApiUrl() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/repo/bf1", dvidUrl.getRepoUrl());
@@ -124,6 +172,11 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl2.getSkeletonUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons/key/1_swc",
             dvidUrl2.getSkeletonUrl(1));
+
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_meshes/key/1",
+            dvidUrl2.getMeshUrl(1, 0));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_meshes_1/key/1",
+            dvidUrl2.getMeshUrl(1, 1));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies/sparsevol",
             dvidUrl.getSparsevolUrl("bodies"));
@@ -389,6 +442,32 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getMasterUrl());
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/default_instances/key/data",
             dvidUrl4.getDefaultDataInstancesUrl());
+  ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1).empty());
+
+  target.useLabelArray(true);
+  dvidUrl4.setDvidTarget(target, "3456");
+//  std::cout << target.getBodyLabelName() << std::endl;
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
+            dvidUrl4.getSparsevolSizeUrl(1));
+
+  ASSERT_EQ(12345, (int) ZDvidUrl::GetBodyId(
+              "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));
+  ASSERT_EQ(0, (int) ZDvidUrl::GetBodyId(
+              "http://localhost:8000/api/node/uuid/segname/sparsevol/"));
+  ASSERT_EQ(uint64_t(123451234512345L), ZDvidUrl::GetBodyId(
+              "http://localhost:8000/api/node/uuid/segname/sparsevol/123451234512345"));
+
+  ASSERT_EQ("head__6c8409b833d57d9c62856b6cab608aa5",
+            ZDvidUrl::ExtractSplitTaskKey(
+              "http://localhost:8000/api/node/4d3e/task_split/key/"
+              "head__6c8409b833d57d9c62856b6cab608aa5"));
+  ASSERT_EQ("",
+            ZDvidUrl::ExtractSplitTaskKey(
+              "http://localhost:8000/api/node/4d3e/split/key/"
+              "head__6c8409b833d57d9c62856b6cab608aa5"));
+  ASSERT_EQ("",
+            ZDvidUrl::ExtractSplitTaskKey(
+              "http://localhost:8000/api/node/4d3e/split/key/"));
 }
 
 TEST(ZDvidTest, Reader)
@@ -492,12 +571,14 @@ TEST(ZDvidTest, ZDvidTarget)
   ASSERT_EQ(9000, target.getPort());
 
   target.clear();
-  target.setServer("http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  target.setServer(
+        "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
   ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
   ASSERT_EQ(9000, target.getPort());
 
   target.clear();
-  target.setServer("http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
+  target.setServer(
+        "http://emdata2.int.janelia.org/9000/api/node/3456/branches/key/master");
   ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
   ASSERT_EQ(-1, target.getPort());
 

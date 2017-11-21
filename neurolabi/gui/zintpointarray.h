@@ -3,6 +3,11 @@
 
 #include <vector>
 #include "zintpoint.h"
+#include "zsharedpointer.h"
+
+class ZIntPointArray;
+
+typedef ZSharedPointer<ZIntPointArray> ZIntPointArrayPtr;
 
 class ZIntPointArray : public std::vector<ZIntPoint>
 {
@@ -13,6 +18,8 @@ public:
   void append(int x, int y, int z);
   template<typename InputIterator>
   void append(InputIterator first, InputIterator last);
+
+  static ZIntPointArrayPtr MakePointer();
 };
 
 template<typename InputIterator>

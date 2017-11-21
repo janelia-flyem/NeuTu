@@ -32,13 +32,15 @@ public:
     return ZStackObject::TYPE_DVID_LABEL_SLICE;
   }
 
-  void setMaxSize(int maxWidth, int maxHeight);
+  void setMaxSize(const ZStackViewParam &viewParam, int maxWidth, int maxHeight);
 
   bool update(const ZStackViewParam &viewParam);
+  bool update(const QRect &dataRect, int zoom, int z);
   void update(int z);
   void update();
 
   void updateFullView(const ZStackViewParam &viewParam);
+  void disableFullView();
 
   void setSliceAxis(NeuTube::EAxis sliceAxis);
 
@@ -66,6 +68,7 @@ public:
       const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
   void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
   void xorSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+  void removeSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
 
   template <typename InputIterator>
   void addSelection(const InputIterator &begin, const InputIterator &end,
@@ -112,7 +115,9 @@ public:
   uint64_t getHitLabel() const;
   std::set<uint64_t> getHitLabelSet() const;
 
-  const ZStackViewParam& getViewParam() const;
+//  const ZStackViewParam& getViewParam() const;
+  int getCurrentZ() const;
+  QRect getDataRect() const;
 
   void mapSelection();
 
@@ -149,9 +154,11 @@ public:
 
   void paintBuffer();
 
+  QRect getDataRect(const ZStackViewParam &viewParam) const;
+
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
-  void forceUpdate(const ZStackViewParam &viewParam, bool ignoringHidden);
+//  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
             NeuTube::EAxis sliceAxis = NeuTube::Z_AXIS);
@@ -179,7 +186,11 @@ private:
 //  ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZObject3dScanArray m_objArray;
-  ZStackViewParam m_currentViewParam;
+//  ZStackViewParam m_currentViewParam;
+  QRect m_currentDataRect;
+  int m_currentZ;
+  int m_currentZoom;
+
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
 

@@ -3,210 +3,132 @@
 #include "z3dtexture.h"
 #include "z3dvolume.h"
 
-Z3DVolumeSliceRenderer::Z3DVolumeSliceRenderer(QObject *parent)
-  : Z3DPrimitiveRenderer(parent)
+Z3DVolumeSliceRenderer::Z3DVolumeSliceRenderer(Z3DRendererBase& rendererBase)
+  : Z3DPrimitiveRenderer(rendererBase)
+  , m_VAO(1)
 {
-  m_volumes.resize(5,NULL);
-  for (size_t i=0; i<m_volumes.size(); ++i) {
-    m_volumeUniformNames.push_back(QString("volume_struct_%1").arg(i+1));
-  }
+  m_scVolumeSliceShader.bindFragDataLocation(0, "FragData0");
+  m_scVolumeSliceShader.loadFromSourceFile("transform_with_3dtexture.vert",
+                                           "volume_slice_with_colormap_single_channel.frag",
+                                           m_rendererBase.generateHeader() + generateHeader());
+  m_mergeChannelShader.bindFragDataLocation(0, "FragData0");
+  m_mergeChannelShader.loadFromSourceFile("pass.vert", "image2d_array_compositor.frag",
+                                          m_rendererBase.generateHeader() + generateHeader());
 }
 
-Z3DVolumeSliceRenderer::~Z3DVolumeSliceRenderer()
+void Z3DVolumeSliceRenderer::setData(const std::vector<std::unique_ptr<Z3DVolume> >& vols,
+                                     const std::vector<std::unique_ptr<ZColorMapParameter> >& colormaps)
 {
-}
+  CHECK(colormaps.size() >= vols.size() && !vols.empty() && vols[0]->is3DData());
 
-void Z3DVolumeSliceRenderer::setChannel1(Z3DVolume *vol)
-{
-  if (vol && !vol->is3DData()) {
-    LERROR() << "Input is not 3D volume";
-    return;
-  }
-  if (m_volumes[0] != vol) {
-    Z3DVolume *oldvol = m_volumes[0];
-    m_volumes[0] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
+  m_vols = &vols;
+  m_colormaps = &colormaps;
 
-void Z3DVolumeSliceRenderer::setChannel2(Z3DVolume *vol)
-{
-  if (vol && !vol->is3DData()) {
-    LERROR() << "Input is not 3D volume";
-    return;
-  }
-  if (m_volumes[1] != vol) {
-    Z3DVolume *oldvol = m_volumes[1];
-    m_volumes[1] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DVolumeSliceRenderer::setChannel3(Z3DVolume *vol)
-{
-  if (vol && !vol->is3DData()) {
-    LERROR() << "Input is not 3D volume";
-    return;
-  }
-  if (m_volumes[2] != vol) {
-    Z3DVolume *oldvol = m_volumes[2];
-    m_volumes[2] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DVolumeSliceRenderer::setChannel4(Z3DVolume *vol)
-{
-  if (vol && !vol->is3DData()) {
-    LERROR() << "Input is not 3D volume";
-    return;
-  }
-  if (m_volumes[3] != vol) {
-    Z3DVolume *oldvol = m_volumes[3];
-    m_volumes[3] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DVolumeSliceRenderer::setChannel5(Z3DVolume *vol)
-{
-  if (vol && !vol->is3DData()) {
-    LERROR() << "Input is not 3D volume";
-    return;
-  }
-  if (m_volumes[4] != vol) {
-    Z3DVolume *oldvol = m_volumes[4];
-    m_volumes[4] = vol;
-    if ((oldvol && vol == NULL) ||
-        (oldvol == NULL && vol))
-      compile();
-  }
-}
-
-void Z3DVolumeSliceRenderer::setChannels(std::vector<Z3DVolume *> vols)
-{
-  for (size_t i=0; i<vols.size(); ++i) {
-    if (vols[i] && !vols[i]->is3DData()) {
-      LERROR() << "Input is not 3D volume";
-      return;
+  if (m_vols->size() != m_volumeUniformNames.size()) {
+    compile();
+    m_volumeUniformNames.resize(m_vols->size());
+    m_colormapUniformNames.resize(m_vols->size());
+    for (size_t i = 0; i < m_vols->size(); ++i) {
+      m_volumeUniformNames[i] = QString("volume_%1").arg(i + 1);
+      m_colormapUniformNames[i] = QString("colormap_%1").arg(i + 1);
     }
   }
-  vols.resize(m_volumes.size(), NULL);
-  if (m_volumes != vols) {
-    m_volumes = vols;
-    compile();
-  }
 }
 
-void Z3DVolumeSliceRenderer::addQuad(const Z3DTriangleList &quad)
+void Z3DVolumeSliceRenderer::addQuad(const ZMesh& quad)
 {
   if (quad.empty() ||
-      (quad.getVertices().size() != 4 && quad.getVertices().size() != 6) ||
-      quad.getVertices().size() != quad.get3DTextureCoordinates().size()) {
-    LERROR() << "Input quad should be 2D slice with 3D texture coordinates";
+      (quad.numVertices() != 4 && quad.numVertices() != 6) ||
+      quad.numVertices() != quad.num3DTextureCoordinates()) {
+    LOG(FATAL) << "Input quad should be 2D slice with 3D texture coordinates";
     return;
   }
   m_quads.push_back(quad);
 }
 
-void Z3DVolumeSliceRenderer::bindVolumes(Z3DShaderProgram &shader)
+void Z3DVolumeSliceRenderer::bindVolumes(Z3DShaderProgram& shader) const
 {
-  for (size_t i=0; i < m_volumes.size(); ++i) {
-    Z3DVolume *volume = m_volumes[i];
-    if (!volume)
-      continue;
-
+  size_t idx = 0;
+  for (size_t i = 0; i < m_vols->size(); ++i) {
     // volumes
-    shader.bindVolume(m_volumeUniformNames[i], volume, GL_NEAREST, GL_NEAREST);
+    shader.bindTexture(m_volumeUniformNames[idx], m_vols->at(i)->texture(),
+                       GLint(GL_NEAREST), GLint(GL_NEAREST));
 
-    CHECK_GL_ERROR;
+    // colormap
+    shader.bindTexture(m_colormapUniformNames[idx++], (*m_colormaps)[i]->get().texture1D());
   }
 }
 
-bool Z3DVolumeSliceRenderer::hasVolume() const
+void Z3DVolumeSliceRenderer::bindVolume(Z3DShaderProgram& shader, size_t idx) const
 {
-  for (size_t i=0; i<m_volumes.size(); ++i)
-    if (m_volumes[i])
-      return true;
-  return false;
+  // volumes
+  shader.bindTexture(m_volumeUniformNames[0], m_vols->at(idx)->texture(),
+                     GLint(GL_NEAREST), GLint(GL_NEAREST));
+
+  // colormap
+  shader.bindTexture(m_colormapUniformNames[0], (*m_colormaps)[idx]->get().texture1D());
 }
 
 void Z3DVolumeSliceRenderer::compile()
 {
-  m_volumeSliceShader.setHeaderAndRebuild(generateHeader());
-}
+  //m_volumeSliceShader.setHeaderAndRebuild(m_rendererBase.generateHeader() + generateHeader());
 
-void Z3DVolumeSliceRenderer::initialize()
-{
-  Z3DPrimitiveRenderer::initialize();
-  m_volumeSliceShader.bindFragDataLocation(0, "FragData0");
-  m_volumeSliceShader.loadFromSourceFile("transform_with_3dtexture.vert", "volume_slice.frag", generateHeader());
-}
-
-void Z3DVolumeSliceRenderer::deinitialize()
-{
-  m_volumeSliceShader.removeAllShaders();
-  CHECK_GL_ERROR;
-  Z3DPrimitiveRenderer::deinitialize();
+  m_scVolumeSliceShader.setHeaderAndRebuild(m_rendererBase.generateHeader() + generateHeader());
+  m_mergeChannelShader.setHeaderAndRebuild(m_rendererBase.generateHeader() + generateHeader());
 }
 
 QString Z3DVolumeSliceRenderer::generateHeader()
 {
-  QString headerSource = Z3DPrimitiveRenderer::generateHeader();
+  QString headerSource;
 
-  if (hasVolume()) {
-    if (m_volumes[0]) {
-      headerSource += "#define VOLUME_1_EXIST\n";
-    }
-    if (m_volumes[1]) {
-      headerSource += "#define VOLUME_2_EXIST\n";
-    }
-    if (m_volumes[2]) {
-      headerSource += "#define VOLUME_3_EXIST\n";
-    }
-    if (m_volumes[3]) {
-      headerSource += "#define VOLUME_4_EXIST\n";
-    }
-    if (m_volumes[4]) {
-      headerSource += "#define VOLUME_5_EXIST\n";
-    }
+  if (m_vols && m_vols->size() > 0) {
+    headerSource += QString("#define NUM_VOLUMES %1\n").arg(m_vols->size());
   } else {
+    headerSource += QString("#define NUM_VOLUMES 0\n");
     headerSource += "#define DISABLE_TEXTURE_COORD_OUTPUT\n";
   }
+
+  // for merge shader
+  headerSource += "#define MAX_PROJ_MERGE\n";
 
   return headerSource;
 }
 
 void Z3DVolumeSliceRenderer::render(Z3DEye eye)
 {
-  if (!m_initialized)
-    return;
-
-  bool needRender = hasVolume() && !m_quads.empty();
+  bool needRender = m_vols && m_vols->size() > 0 && !m_quads.empty();
   if (!needRender)
     return;
 
-  m_volumeSliceShader.bind();
-  m_rendererBase->setGlobalShaderParameters(m_volumeSliceShader, eye);
+  m_scVolumeSliceShader.bind();
+  m_rendererBase.setGlobalShaderParameters(m_scVolumeSliceShader, eye);
 
-  bindVolumes(m_volumeSliceShader);
+  if (m_vols->size() == 1) {
+    bindVolume(m_scVolumeSliceShader, 0);
+    for (size_t i = 0; i < m_quads.size(); ++i)
+      renderTriangleList(m_VAO, m_scVolumeSliceShader, m_quads[i]);
+  } else {
+    for (size_t j = 0; j < m_vols->size(); ++j) {
+      m_layerTarget->attachSlice(j);
+      m_layerTarget->bind();
+      m_layerTarget->clear();
 
-  for (size_t i=0; i<m_quads.size(); ++i)
-    renderTriangleList(m_volumeSliceShader, m_quads[i]);
+      bindVolume(m_scVolumeSliceShader, j);
+      for (size_t i = 0; i < m_quads.size(); ++i)
+        renderTriangleList(m_VAO, m_scVolumeSliceShader, m_quads[i]);
 
-  m_volumeSliceShader.release();
+      m_layerTarget->release();
+    }
+  }
+
+  m_scVolumeSliceShader.release();
+
+  if (m_vols->size() > 1) {
+    m_mergeChannelShader.bind();
+    m_mergeChannelShader.bindTexture("color_texture", m_layerTarget->attachment(GL_COLOR_ATTACHMENT0));
+    m_mergeChannelShader.bindTexture("depth_texture", m_layerTarget->attachment(GL_DEPTH_ATTACHMENT));
+    renderScreenQuad(m_VAO, m_mergeChannelShader);
+    m_mergeChannelShader.release();
+  }
 }
-
-void Z3DVolumeSliceRenderer::renderPicking(Z3DEye)
-{
-}
-
 

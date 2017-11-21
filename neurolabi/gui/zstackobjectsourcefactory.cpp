@@ -61,13 +61,16 @@ std::string ZStackObjectSourceFactory::GetBodyTypeName(
     FlyEM::EBodyType bodyType)
 {
   switch (bodyType) {
+  case FlyEM::BODY_NULL:
+    break;
   case FlyEM::BODY_FULL:
     return "full";
   case FlyEM::BODY_COARSE:
     return "coarse";
   case FlyEM::BODY_SKELETON:
     return "skeleton";
-  case FlyEM::BODY_NULL:
+  case FlyEM::BODY_MESH:
+    return "mesh";
     break;
   }
 
@@ -207,6 +210,19 @@ std::string ZStackObjectSourceFactory::MakeSplitObjectSource()
   return "#.FlyEMSplitObject";
 }
 
+std::string ZStackObjectSourceFactory::MakeSplitResultSource()
+{
+  return "#.FlyEMSplitResult";
+}
+
+std::string ZStackObjectSourceFactory::MakeSplitResultSource(int label)
+{
+  ZString source = MakeSplitResultSource();
+  source.appendNumber(label);
+
+  return source;
+}
+
 std::string ZStackObjectSourceFactory::MakeNodeAdaptorSource()
 {
   return "#.NodeAdapter";
@@ -245,6 +261,13 @@ std::string ZStackObjectSourceFactory::MakeFlyEmTBarSource(uint64_t bodyId)
   return source;
 }
 
+std::string ZStackObjectSourceFactory::MakeFlyEmSeedSource(uint64_t bodyId)
+{
+  ZString source = "#.FlyEMSeed#";
+  source.appendNumber(bodyId);
+
+  return source;
+}
 
 std::string ZStackObjectSourceFactory::MakeFlyEmPsdSource()
 {

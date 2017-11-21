@@ -488,8 +488,8 @@ void FlyEm::Service::FaceOrphanOverlap::loadFaceOrphanBodyMock(
        iter != bodyIdArray.end(); ++iter, ++bodyIndex) {
     int bodyId = *iter;
     ZObject3dScan obj;
-    std::string path = GET_TEST_DATA_DIR +
-        "/flyem/FIB/skeletonization/session34/0_100000/stacked.hf5:" +
+    std::string path = GET_FLYEM_DATA_DIR +
+        "/FIB/skeletonization/session34/0_100000/stacked.hf5:" +
         ZString::num2str(bodyId) + ".sobj";
     obj.load(path);
     m_bodySizeArray[bodyIndex] = obj.getVoxelNumber();

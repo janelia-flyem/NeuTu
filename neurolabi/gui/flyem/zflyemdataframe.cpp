@@ -1922,8 +1922,8 @@ void ZFlyEmDataFrame::test()
   //FILE *fp = fopen((GET_DATA_DIR + "/flyem/TEM/matching/name.txt").c_str(), "r");
   //ZString str;
 
-  ofstream out((GET_DATA_DIR + "/flyem/TEM/matching/class_label.txt").c_str());
-  ofstream nameOut((GET_DATA_DIR + "/flyem/TEM/matching/class_name.txt").c_str());
+  ofstream out((GET_FLYEM_DATA_DIR + "/TEM/matching/class_label.txt").c_str());
+  ofstream nameOut((GET_FLYEM_DATA_DIR + "/TEM/matching/class_name.txt").c_str());
 
   QMap<string, int> classMap;
 

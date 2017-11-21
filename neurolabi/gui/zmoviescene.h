@@ -4,11 +4,15 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <map>
+
 #include "zpoint.h"
 //#include "zjsonobject.h"
 #include "z3drotation.h"
 #include "zmoviesceneclipper.h"
 #include "zmoviecamera.h"
+//#include "z3dwindow.h"
+
 
 struct MovieAction {
   std::string actorId;
@@ -101,11 +105,13 @@ private:
   bool isClipperTag(const char *tag);
   bool isFadingTag(const char *tag);
   bool isTransitTag(const char *tag);
+  bool isRenderSettingTag(const char *tag);
   void init();
 
 private:
   std::vector<MovieAction> m_actionList;
   ZMovieCamera m_camera;
+  ZJsonObject m_renderSetting;
   //Z3DRotation m_cameraRotation;
   std::vector<ZMovieSceneClipper> m_clipperArray;
 

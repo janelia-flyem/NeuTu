@@ -8,6 +8,8 @@
 
 namespace NeuTube {
 
+static const uint64_t ONEGIGA = 1073741824;
+
 enum ESyncOption {
   SYNC, NO_SYNC
 };
@@ -21,7 +23,7 @@ enum EDocumentableType {
 namespace Document {
 enum ETag {
   NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY, FLYEM_COARSE_BODY,
-  FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON,
+  FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON, FLYEM_MESH,
   FLYEM_STACK,
   FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID,
   FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO
@@ -86,6 +88,13 @@ enum ECardinalDirection {
   CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
 };
 
+namespace Json {
+//To avoid compile warnings
+#if defined(_NEUTU_USE_REF_KEY_)
+static const char* REF_KEY = "->";
+#endif
+}
+
 namespace Display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
@@ -148,13 +157,24 @@ enum EProofreadingMode {
 };
 
 enum EBodyType {
-  BODY_FULL, BODY_COARSE, BODY_SKELETON, BODY_NULL
+  BODY_NULL, BODY_FULL, BODY_COARSE, BODY_SKELETON, BODY_MESH
+};
+
+enum EBodySplitMode {
+  BODY_SPLIT_NONE, BODY_SPLIT_ONLINE, BODY_SPLIT_OFFLINE
+};
+
+enum EBodySplitRange {
+  RANGE_FULL, RANGE_SEED, RANGE_LOCAL
 };
 
 static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
-
 }
 
+#if defined(_CPP11_)
+#  undef NULL
+#  define NULL nullptr
+#endif
 
 #endif // NEUTUBE_DEF_H

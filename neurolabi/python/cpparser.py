@@ -310,7 +310,7 @@ if __name__ == '__main__':
             statement = statement.strip()
 #             print 'Statement: ', statement
             if statement:
-                print 'Statement: ', statement
+                print('Statement: ', statement)
 #                 tokens = statement.split()
                 tokens = generateToken(statement)
                 if tokens[0] == 'class':
@@ -399,7 +399,7 @@ if __name__ == '__main__':
         graph.addEdge(conn.toDotEdge())
 
     if options.output == 'stdout':
-        print graph.dumps(ps = dotLineList)
+        print(graph.dumps(ps = dotLineList))
     else:
         graph.export(options.output, ps = dotLineList)
 #     print 'digraph{'

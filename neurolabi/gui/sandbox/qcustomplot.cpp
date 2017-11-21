@@ -25,6 +25,15 @@
 
 #include "qcustomplot.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#  include <qnumeric.h>
+#  include <QPrinter>
+#  include <QPrintEngine>
+#else
+#  include <QtNumeric>
+#  include <QtPrintSupport/QtPrintSupport>
+#endif
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

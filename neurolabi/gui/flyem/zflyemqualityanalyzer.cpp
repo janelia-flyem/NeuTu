@@ -531,11 +531,7 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
   ZSwcDeepAngleMetric metric;
   metric.setLevel(3);
   metric.setMinDist(20.0);
-  /*
-  ZFlyEmDataBundle dataBundle;
-  dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
-  ZFlyEmNeuron *neuron = dataBundle.getNeuron(538772);
-  */
+
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
     if (neuron.getId() != buddyNeuron.getId() && buddyNeuron.getId() > 0) {

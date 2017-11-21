@@ -116,7 +116,11 @@ QString ZFlyEmMB6Analyzer::getPunctumName(const ZDvidSynapse &synapse)
 
       name = getPunctumName(bodyName, partnerName);
     } else {
-      name = getPunctumName(getBodyName(bodyIdArray.front()), bodyName);
+      if (!bodyIdArray.empty()) {
+        name = getPunctumName(getBodyName(bodyIdArray.front()), bodyName);
+      } else {
+        name = getPunctumName("WARNING_READ_FAILED", bodyName);
+      }
     }
   }
 

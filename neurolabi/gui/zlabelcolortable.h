@@ -10,6 +10,10 @@ public:
   ZLabelColorTable();
 
   const QColor& getColor(int label) const;
+  static int GetColorCount();
+
+public:
+  const static int COLOR_COUNT;
 
 private:
   static QVector<QColor> constructColorTable();

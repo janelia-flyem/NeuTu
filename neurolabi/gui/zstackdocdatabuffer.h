@@ -10,8 +10,9 @@ class ZStackObject;
 class ZStackDocObjectUpdate {
 public:
   enum EAction {
-    ACTION_NULL, ACTION_ADD_NONUNIQUE, ACTION_ADD_UNIQUE, ACTION_EXPEL, ACTION_KILL,
-    ACTION_RECYCLE, ACTION_UPDATE
+    ACTION_NULL, ACTION_ADD_NONUNIQUE, ACTION_ADD_UNIQUE,
+    ACTION_UPDATE, ACTION_SELECT, ACTION_DESELECT,
+    ACTION_RECYCLE, ACTION_EXPEL, ACTION_KILL
   };
 
   ZStackDocObjectUpdate(ZStackObject *m_obj, EAction action);
@@ -27,7 +28,14 @@ public:
     return m_obj;
   }
 
+  void setAction(EAction action) {
+    m_action = action;
+  }
+
   void print() const;
+
+  static QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
+  MakeActionMap(QList<ZStackDocObjectUpdate*> updateList);
 
 private:
   ZStackObject *m_obj;
@@ -46,6 +54,11 @@ public:
   void clear();
 
   void addUpdate(ZStackObject *obj, ZStackDocObjectUpdate::EAction action);
+  void addUpdate(
+      QList<ZStackObject*> objList, ZStackDocObjectUpdate::EAction action);
+  template<typename InputIterator>
+  void addUpdate(const InputIterator &first, const InputIterator &last,
+                 ZStackDocObjectUpdate::EAction action);
 
   QList<ZStackDocObjectUpdate *> take();
   void deliver();
@@ -60,5 +73,15 @@ private:
 
   mutable QMutex m_mutex;
 };
+
+template<typename InputIterator>
+void ZStackDocDataBuffer::addUpdate(
+    const InputIterator &first, const InputIterator &last,
+    ZStackDocObjectUpdate::EAction action)
+{
+  for (InputIterator iter = first; iter != last; ++iter) {
+    addUpdate(*iter, action);
+  }
+}
 
 #endif // ZSTACKDOCDATABUFFER_H

@@ -42,7 +42,8 @@ public:
   const double& operator[] (int index) const;
   double& operator[] (int index);
   ZPoint& operator= (const ZPoint &pt);
-  bool operator== (const ZPoint &pt);
+  bool operator== (const ZPoint &pt) const;
+  bool operator!= (const ZPoint &pt) const;
 
   bool operator < (const ZPoint &pt) const;
 
@@ -53,6 +54,7 @@ public:
   double distanceTo(const ZPoint &pt) const;
   double distanceTo(double x, double y, double z) const;
   double length() const;
+  double lengthSqure() const;
 
   ZPoint& operator += (const ZPoint &pt);
   ZPoint& operator += (const ZIntPoint &pt);

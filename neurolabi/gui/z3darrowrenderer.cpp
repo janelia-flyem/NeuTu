@@ -1,92 +1,88 @@
 #include "z3darrowrenderer.h"
 
-Z3DArrowRenderer::Z3DArrowRenderer(QObject *parent) :
-  Z3DConeRenderer(parent)
+Z3DArrowRenderer::Z3DArrowRenderer(Z3DRendererBase& rendererBase) :
+  Z3DConeRenderer(rendererBase)
 {
 }
 
-Z3DArrowRenderer::~Z3DArrowRenderer()
-{
-}
-
-void Z3DArrowRenderer::setArrowData(std::vector<glm::vec4> *tailPosAndTailRadius,
-                                    std::vector<glm::vec4> *headPosAndHeadRadius,
+void Z3DArrowRenderer::setArrowData(std::vector<glm::vec4>* tailPosAndTailRadius,
+                                    std::vector<glm::vec4>* headPosAndHeadRadius,
                                     float headLengthProportion)
 {
   m_arrowConeBaseAndBaseRadius.clear();
   m_arrowConeAxisAndTopRadius.clear();
 
-  for (size_t i=0; i<tailPosAndTailRadius->size(); i++) {
-    glm::vec3 tail = tailPosAndTailRadius->at(i).xyz();
-    glm::vec3 head = headPosAndHeadRadius->at(i).xyz();
+  for (size_t i = 0; i < tailPosAndTailRadius->size(); ++i) {
+    glm::vec3 tail = (*tailPosAndTailRadius)[i].xyz();
+    glm::vec3 head = (*headPosAndHeadRadius)[i].xyz();
     glm::vec3 cutPos = glm::mix(head, tail, headLengthProportion);
-    m_arrowConeBaseAndBaseRadius.push_back(glm::vec4(cutPos, tailPosAndTailRadius->at(i).w));
-    m_arrowConeAxisAndTopRadius.push_back(glm::vec4(tail-cutPos, tailPosAndTailRadius->at(i).w));
-    m_arrowConeBaseAndBaseRadius.push_back(glm::vec4(head, 0.f));
-    m_arrowConeAxisAndTopRadius.push_back(glm::vec4(cutPos-head, headPosAndHeadRadius->at(i).w));
+    m_arrowConeBaseAndBaseRadius.emplace_back(cutPos, (*tailPosAndTailRadius)[i].w);
+    m_arrowConeAxisAndTopRadius.emplace_back(tail - cutPos, (*tailPosAndTailRadius)[i].w);
+    m_arrowConeBaseAndBaseRadius.emplace_back(head, 0.f);
+    m_arrowConeAxisAndTopRadius.emplace_back(cutPos - head, (*headPosAndHeadRadius)[i].w);
   }
 
   setData(&m_arrowConeBaseAndBaseRadius, &m_arrowConeAxisAndTopRadius);
 }
 
-void Z3DArrowRenderer::setFixedHeadLengthArrowData(std::vector<glm::vec4> *tailPosAndTailRadius,
-                                                   std::vector<glm::vec4> *headPosAndHeadRadius,
+void Z3DArrowRenderer::setFixedHeadLengthArrowData(std::vector<glm::vec4>* tailPosAndTailRadius,
+                                                   std::vector<glm::vec4>* headPosAndHeadRadius,
                                                    float fixedHeadLength)
 {
   m_arrowConeBaseAndBaseRadius.clear();
   m_arrowConeAxisAndTopRadius.clear();
 
-  for (size_t i=0; i<tailPosAndTailRadius->size(); i++) {
-    glm::vec3 tail = tailPosAndTailRadius->at(i).xyz();
-    glm::vec3 head = headPosAndHeadRadius->at(i).xyz();
+  for (size_t i = 0; i < tailPosAndTailRadius->size(); ++i) {
+    glm::vec3 tail = (*tailPosAndTailRadius)[i].xyz();
+    glm::vec3 head = (*headPosAndHeadRadius)[i].xyz();
     float totalLength = glm::length(head - tail);
-    glm::vec3 cutPos = head + glm::normalize(tail-head) *
-        (fixedHeadLength<totalLength ? fixedHeadLength : .5f*totalLength);
-    m_arrowConeBaseAndBaseRadius.push_back(glm::vec4(cutPos, tailPosAndTailRadius->at(i).w));
-    m_arrowConeAxisAndTopRadius.push_back(glm::vec4(tail-cutPos, tailPosAndTailRadius->at(i).w));
-    m_arrowConeBaseAndBaseRadius.push_back(glm::vec4(head, 0.f));
-    m_arrowConeAxisAndTopRadius.push_back(glm::vec4(cutPos-head, headPosAndHeadRadius->at(i).w));
+    glm::vec3 cutPos = head + glm::normalize(tail - head) *
+                              (fixedHeadLength < totalLength ? fixedHeadLength : .5f * totalLength);
+    m_arrowConeBaseAndBaseRadius.emplace_back(cutPos, (*tailPosAndTailRadius)[i].w);
+    m_arrowConeAxisAndTopRadius.emplace_back(tail - cutPos, (*tailPosAndTailRadius)[i].w);
+    m_arrowConeBaseAndBaseRadius.emplace_back(head, 0.f);
+    m_arrowConeAxisAndTopRadius.emplace_back(cutPos - head, (*headPosAndHeadRadius)[i].w);
   }
 
   setData(&m_arrowConeBaseAndBaseRadius, &m_arrowConeAxisAndTopRadius);
 }
 
-void Z3DArrowRenderer::setArrowColors(std::vector<glm::vec4> *arrowColors)
+void Z3DArrowRenderer::setArrowColors(std::vector<glm::vec4>* arrowColors)
 {
   m_arrowConeColors.clear();
 
-  for (size_t i=0; i<arrowColors->size(); ++i) {
-    m_arrowConeColors.push_back(arrowColors->at(i));
-    m_arrowConeColors.push_back(arrowColors->at(i));
+  for (auto color : *arrowColors) {
+    m_arrowConeColors.push_back(color);
+    m_arrowConeColors.push_back(color);
   }
 
   setDataColors(&m_arrowConeColors);
 }
 
-void Z3DArrowRenderer::setArrowColors(std::vector<glm::vec4> *arrowTailColors, std::vector<glm::vec4> *arrowHeadColors)
+void Z3DArrowRenderer::setArrowColors(std::vector<glm::vec4>* arrowTailColors, std::vector<glm::vec4>* arrowHeadColors)
 {
   m_arrowConeColors.clear();
 
-  for (size_t i=0; i<arrowTailColors->size(); ++i) {
-    m_arrowConeColors.push_back(arrowTailColors->at(i));
-    m_arrowConeColors.push_back(arrowHeadColors->at(i));
+  for (size_t i = 0; i < arrowTailColors->size(); ++i) {
+    m_arrowConeColors.push_back((*arrowTailColors)[i]);
+    m_arrowConeColors.push_back((*arrowHeadColors)[i]);
   }
 
   setDataColors(&m_arrowConeColors);
 }
 
-void Z3DArrowRenderer::setArrowPickingColors(std::vector<glm::vec4> *arrowPickingColors)
+void Z3DArrowRenderer::setArrowPickingColors(std::vector<glm::vec4>* arrowPickingColors)
 {
   m_arrowConePickingColors.clear();
 
   if (!arrowPickingColors) {
-    setDataPickingColors(NULL);
+    setDataPickingColors(nullptr);
     return;
   }
 
-  for (size_t i=0; i<arrowPickingColors->size(); ++i) {
-    m_arrowConePickingColors.push_back(arrowPickingColors->at(i));
-    m_arrowConePickingColors.push_back(arrowPickingColors->at(i));
+  for (auto color : *arrowPickingColors) {
+    m_arrowConePickingColors.push_back(color);
+    m_arrowConePickingColors.push_back(color);
   }
 
   setDataPickingColors(&m_arrowConePickingColors);

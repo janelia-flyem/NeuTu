@@ -47,8 +47,19 @@ void ZStackDocObjectUpdate::print() const
   case ACTION_UPDATE:
     std::cout << "Update";
     break;
+  case ACTION_SELECT:
+    std::cout << "Select";
+    break;
+  case ACTION_DESELECT:
+    std::cout << "Deselect";
+    break;
+  default:
+    std::cout << "Unknown action:";
+    break;
   }
-  std::cout << " " << m_obj << std::endl;
+
+  std::cout << " " << m_obj->getType() << " " << m_obj->getSource() << " "
+            << m_obj << std::endl;
 }
 
 ZStackDocDataBuffer::ZStackDocDataBuffer(QObject *parent) : QObject(parent)
@@ -65,6 +76,16 @@ void ZStackDocDataBuffer::addUpdate(
 {
   QMutexLocker locker(&m_mutex);
   m_updateList.append(new ZStackDocObjectUpdate(obj, action));
+}
+
+void ZStackDocDataBuffer::addUpdate(
+    QList<ZStackObject *> objList, ZStackDocObjectUpdate::EAction action)
+{
+  QMutexLocker locker(&m_mutex);
+  for (QList<ZStackObject *>::iterator iter = objList.begin();
+       iter != objList.end(); ++iter) {
+    m_updateList.append(new ZStackDocObjectUpdate(*iter, action));
+  }
 }
 
 void ZStackDocDataBuffer::deliver()
@@ -100,4 +121,29 @@ void ZStackDocDataBuffer::clearList()
   QMutexLocker locker(&m_mutex);
 
   m_updateList.clear();
+}
+
+QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
+ZStackDocObjectUpdate::MakeActionMap(QList<ZStackDocObjectUpdate *> updateList)
+{
+  //Rules for processing actions of the same object:
+  //  If the last action is delete, then all the other actions
+  QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap;
+  for (QList<ZStackDocObjectUpdate*>::reverse_iterator iter = updateList.rbegin();
+       iter != updateList.rend(); ++iter) {
+    ZStackDocObjectUpdate *u = *iter;
+    if (!actionMap.contains(u->getObject())) {
+      actionMap[u->getObject()] = u->getAction();
+    } else {
+      ZStackDocObjectUpdate::EAction laterAction = actionMap[u->getObject()];
+      if (laterAction == ACTION_RECYCLE || laterAction == ACTION_EXPEL ||
+          laterAction == ACTION_KILL) {
+        if (laterAction > u->getAction()) {
+          u->setAction(ACTION_NULL);
+        }
+      }
+    }
+  }
+
+  return actionMap;
 }

@@ -1,49 +1,31 @@
 #include "zbenchtimer.h"
 
-ZBenchTimer::ZBenchTimer(const std::string &funName)
+#include "QsLog.h"
+#include <sstream>
+
+ZBenchTimer::ZBenchTimer(const std::string& funName)
+  : m_name(funName)
 {
-#if defined(_WIN32) || defined(_WIN64)
-    LARGE_INTEGER freq;
-    QueryPerformanceFrequency(&freq);
-    m_frequency = (double)freq.QuadPart;
-#endif
-    reset();
-    if (!funName.empty()) {
-      m_name = funName.substr(funName.find_first_not_of(" \t"));
-    }
+  reset();
+}
+
+void ZBenchTimer::start()
+{
+  m_time = 0.0;
+  m_pauseTime = 0.0;
+  m_paused = false;
+  m_start = std::chrono::high_resolution_clock::now();
 }
 
 void ZBenchTimer::stop()
 {
-#if defined(_WIN64) || defined(_WIN32)
-  LARGE_INTEGER stop = getCpuTicks();
-  if (m_paused)
-    m_pauseTime += ((stop.QuadPart - m_start.QuadPart) / m_frequency);
-  else
-    m_time += ((stop.QuadPart - m_start.QuadPart) / m_frequency);
-#elif defined(__APPLE__) && defined(__MACH__)
-  uint64_t elapsed = getCpuTicks() - m_start;
-  static mach_timebase_info_data_t sTimebaseInfo = {0,0};
-  if (sTimebaseInfo.denom == 0)
-    (void) mach_timebase_info(&sTimebaseInfo);
-  if (m_paused)
-    m_pauseTime += 1e-9 * elapsed * sTimebaseInfo.numer / sTimebaseInfo.denom;
-  else
-    m_time +=  1e-9 * elapsed * sTimebaseInfo.numer / sTimebaseInfo.denom;
-#else
-  timespec end = getCpuTicks();
-  if ((end.tv_nsec - m_start.tv_nsec)<0) {
-    end.tv_sec = end.tv_sec - m_start.tv_sec - 1;
-    end.tv_nsec = 1000000000 + end.tv_nsec - m_start.tv_nsec;
+  double elapsed = std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - m_start).count();
+  if (m_paused) {
+    m_pauseTime += elapsed;
   } else {
-    end.tv_sec -= m_start.tv_sec;
-    end.tv_nsec -= m_start.tv_nsec;
+    m_time += elapsed;
   }
-  if (m_paused)
-    m_pauseTime += double(end.tv_sec) + 1e-9 * double(end.tv_nsec);
-  else
-    m_time += double(end.tv_sec) + 1e-9 * double(end.tv_nsec);
-#endif
+
   m_paused = false;
 
   m_best = std::min(m_best, m_time);
@@ -60,29 +42,9 @@ void ZBenchTimer::pause()
   if (m_paused)
     return;
 
-#if defined(_WIN64) || defined(_WIN32)
-  LARGE_INTEGER stop = getCpuTicks();
-  m_time += ((stop.QuadPart - m_start.QuadPart) / m_frequency);
-#elif defined(__APPLE__) && defined(__MACH__)
-  uint64_t elapsed = getCpuTicks() - m_start;
-  static mach_timebase_info_data_t sTimebaseInfo = {0,0};
-  if (sTimebaseInfo.denom == 0)
-    (void) mach_timebase_info(&sTimebaseInfo);
-  m_time +=  1e-9 * elapsed * sTimebaseInfo.numer / sTimebaseInfo.denom;
-#else
-  timespec end = getCpuTicks();
-  if ((end.tv_nsec - m_start.tv_nsec)<0) {
-    end.tv_sec = end.tv_sec - m_start.tv_sec - 1;
-    end.tv_nsec = 1000000000 + end.tv_nsec - m_start.tv_nsec;
-  } else {
-    end.tv_sec -= m_start.tv_sec;
-    end.tv_nsec -= m_start.tv_nsec;
-  }
-  m_time += double(end.tv_sec) + 1e-9 * double(end.tv_nsec);
-#endif
-
+  m_time += std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - m_start).count();
   m_paused = true;
-  m_start = getCpuTicks();
+  m_start = std::chrono::high_resolution_clock::now();
 }
 
 void ZBenchTimer::resume()
@@ -90,45 +52,24 @@ void ZBenchTimer::resume()
   if (!m_paused)
     return;
 
-#if defined(_WIN64) || defined(_WIN32)
-  LARGE_INTEGER stop = getCpuTicks();
-  m_pauseTime += ((stop.QuadPart - m_start.QuadPart) / m_frequency);
-#elif defined(__APPLE__) && defined(__MACH__)
-  uint64_t elapsed = getCpuTicks() - m_start;
-  static mach_timebase_info_data_t sTimebaseInfo = {0,0};
-  if (sTimebaseInfo.denom == 0)
-    (void) mach_timebase_info(&sTimebaseInfo);
-  m_pauseTime +=  1e-9 * elapsed * sTimebaseInfo.numer / sTimebaseInfo.denom;
-#else
-  timespec end = getCpuTicks();
-  if ((end.tv_nsec - m_start.tv_nsec)<0) {
-    end.tv_sec = end.tv_sec - m_start.tv_sec - 1;
-    end.tv_nsec = 1000000000 + end.tv_nsec - m_start.tv_nsec;
-  } else {
-    end.tv_sec -= m_start.tv_sec;
-    end.tv_nsec -= m_start.tv_nsec;
-  }
-  m_pauseTime += double(end.tv_sec) + 1e-9 * double(end.tv_nsec);
-#endif
-
+  m_pauseTime += std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - m_start).count();
   m_paused = false;
-  m_start = getCpuTicks();
+  m_start = std::chrono::high_resolution_clock::now();
 }
 
-std::ostream& ZBenchTimer::print(std::ostream& s) const
+std::ostream& operator<<(std::ostream& s, const ZBenchTimer& m)
 {
-  if (m_rep == 1) {
-    s << "Function " << m_name << " took " << m_time << " seconds." << std::endl;
-    if (m_pauseTime > 0)
-      s << "Function " << m_name << " pause " << m_pauseTime << " seconds." << std::endl;
-  } else if (m_rep > 1) {
-    s << "Function " << m_name << " took on average " << m_average << " seconds.";
-    s << " (out of " << m_rep << " repeats. best: " << m_best << "  worst: ";
-    s << m_worst << ")" << std::endl;
-    if (m_averagePauseTime > 0)
-      s << "Function " << m_name << " pause on average " << m_averagePauseTime << " seconds." << std::endl;
+  if (m.m_rep == 1) {
+    s << "Function " << m.m_name << " took " << m.m_time << " seconds.\n";
+    if (m.m_pauseTime > 0)
+      s << "Function " << m.m_name << " pause " << m.m_pauseTime << " seconds.\n";
+  } else if (m.m_rep > 1) {
+    s << "Function " << m.m_name << " took on average " << m.m_average << " seconds.";
+    s << " (out of " << m.m_rep << " repeats. best: " << m.m_best << "  worst: ";
+    s << m.m_worst << ")\n";
+    if (m.m_averagePauseTime > 0)
+      s << "Function " << m.m_name << " pause on average " << m.m_averagePauseTime << " seconds.\n";
   }
-  s.flush();
   return s;
 }
 

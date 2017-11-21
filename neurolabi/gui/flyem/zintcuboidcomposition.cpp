@@ -17,8 +17,8 @@ bool FlyEm::ZIntCuboidComposition::hitTestF(double x, double y, double z)
 }
 
 void FlyEm::ZIntCuboidComposition::setComposition(
-    shared_ptr<ZIntCuboidComposition> firstComponent,
-    shared_ptr<ZIntCuboidComposition> secondComponent,
+    ZSharedPointer<ZIntCuboidComposition> firstComponent,
+    ZSharedPointer<ZIntCuboidComposition> secondComponent,
     EOperator opr)
 {
   m_firstComponent = firstComponent;

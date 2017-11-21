@@ -42,10 +42,16 @@ public:
   bool open(const ZDvidTarget &target);
   bool open(const QString &sourceString);
 
+  bool openRaw(const ZDvidTarget &target);
+
   void clear();
 
   const ZDvidTarget& getDvidTarget() const {
     return m_reader.getDvidTarget();
+  }
+
+  const ZDvidReader& getDvidReader() const {
+    return m_reader;
   }
 
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
@@ -94,6 +100,9 @@ public:
 
   void mergeBody(const std::string &dataName, uint64_t targetId,
                  const std::vector<uint64_t> &bodyId);
+  void mergeBody(const std::string &dataName,
+                 const std::vector<uint64_t> &bodyId,
+                 bool mergingToLargest);
 
   /*!
    * \brief Create a new keyvalue data in DVID.
@@ -184,6 +193,10 @@ public:
   void writeLabel(const ZArray &label);
   void writeLabel(const ZArray &label, int zoom);
   void refreshLabel(const ZIntCuboid &box, uint64_t bodyId);
+  void changeLabel(const ZIntCuboid &box, uint64_t oldId, uint64_t newId);
+  void refreshLabel(const std::vector<ZIntCuboid> &boxArray, uint64_t bodyId);
+  void changeLabel(
+      const std::vector<ZIntCuboid> &boxArray, uint64_t oldId, uint64_t newId);
   void refreshLabel(const ZIntCuboid &box, uint64_t bodyId, int zoom);
   void refreshLabel(const ZIntCuboid &box, const std::set<uint64_t> &bodySet);
 
@@ -212,6 +225,20 @@ public:
   void writeUrl(const std::string &url, const std::string &method = "POST");
 
   bool good() const;
+
+  void writeData(const std::string &dest, const QByteArray &data);
+
+  std::string writeServiceResult(
+      const QString &group, const QByteArray &data, bool head);
+  std::string writeServiceResult(
+      const QString &group, const ZJsonObject &result);
+
+  std::string writeServiceTask(
+      const QString &group, const QByteArray &task, bool head);
+  std::string writeServiceTask(const QString &group, const ZJsonObject &task);
+  void writeSplitTask(const QString &key, const ZJsonObject &task);
+  void deleteSplitTask(const QString &key);
+//  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:
   std::string post(const std::string &url);

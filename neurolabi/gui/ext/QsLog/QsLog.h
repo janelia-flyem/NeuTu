@@ -236,6 +236,9 @@ QDebug& operator << (QDebug s, const std::basic_string<wchar_t>& m);
 #endif
 
 // glog style
+#if defined(LOG)
+#  undef LOG
+#endif
 
 #define LOG(n) \
   if (QsLogging::Logger::instance().loggingLevel() > n) {} \

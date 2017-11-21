@@ -201,6 +201,9 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
 
     if (op.isNull()) {
       switch (m_context->getUniqueMode()) {
+      case ZInteractiveContext::INTERACT_MOVE_CROSSHAIR:
+        op.setOperation(ZStackOperator::OP_CROSSHAIR_RELEASE);
+        break;
       case ZInteractiveContext::INTERACT_STROKE_DRAW:
         op.setOperation(ZStackOperator::OP_STROKE_ADD_NEW);
         break;
@@ -246,14 +249,15 @@ ZStackOperator ZMouseEventLeftButtonReleaseMapper::getOperation(
               m_context->strokeEditMode() == ZInteractiveContext::STROKE_EDIT_OFF;
           if (hitTestOn) {
             ZStackDocHitTest hitManager;
+            hitManager.setSliceAxis(event.getSliceAxis());
 
             if (m_context->isObjectProjectView()) {
               hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                                 stackPosition.x(), stackPosition.y(),
-                                 m_context->getSliceAxis());
+                                 stackPosition.x(), stackPosition.y());
             } else {
-              hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
-                                 stackPosition);
+              hitManager.hitTest(
+                    const_cast<ZStackDoc*>(getDocument()),
+                    stackPosition.x(), stackPosition.y(), stackPosition.z());
             }
             op.setHitObject(hitManager.getHitObject<ZStackObject>());
 
@@ -346,12 +350,13 @@ ZStackOperator ZMouseEventLeftButtonDoubleClickMapper::getOperation(
 //    op.setHitSwcNode(m_doc->swcHitTest(stackPosition.x(), stackPosition.y()));
 //  }
   ZStackDocHitTest hitManager;
+  hitManager.setSliceAxis(event.getSliceAxis());
   if (event.getRawStackPosition().z() < 0) {
     hitManager.hitTest(const_cast<ZStackDoc*>(
-                         getDocument()), stackPosition.x(), stackPosition.y(),
-                       m_context->getSliceAxis());
+                         getDocument()), stackPosition.x(), stackPosition.y());
   } else {
-    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition);
+    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()), stackPosition,
+                       event.getPosition());
   }
   //op.setHitSwcNode(hitManager.getHitObject<Swc_Tree_Node>());
   op.setHitObject(hitManager.getHitObject<ZStackObject>());
@@ -424,6 +429,14 @@ ZStackOperator ZMouseEventLeftButtonPressMapper::getOperation(
     default:
       break;
     }
+  }
+
+  if (op.isNull()) {
+    ZStackDocHitTest hitManager;
+    hitManager.setSliceAxis(event.getSliceAxis());
+    hitManager.hitTest(const_cast<ZStackDoc*>(getDocument()),
+                       event.getStackPosition(), event.getPosition());
+    op.setHitObject(hitManager.getHitObject<ZStackObject>());
   }
 
   return op;
@@ -567,9 +580,10 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
         }
         canMoveImage = true;
       } else {
-//        if (m_context->getUniqueMode() ==
-//            ZInteractiveContext::INTERACT_SWC_EXTEND) {
-        if (1) {
+        if (m_context->getUniqueMode() ==
+            ZInteractiveContext::INTERACT_MOVE_CROSSHAIR) {
+          op.setOperation(ZStackOperator::OP_CROSSHAIR_MOVE);
+        } else {
           ZIntPoint pressPos =
               getPosition(Qt::LeftButton, ZMouseEvent::ACTION_PRESS);
           int dx = pressPos.getX() - event.getX();
@@ -577,8 +591,6 @@ ZStackOperator ZMouseEventMoveMapper::getOperation(
           if (dx * dx + dy * dy > MOUSE_MOVE_IMAGE_THRESHOLD) {
             canMoveImage = true;
           }
-        } else {
-          canMoveImage = true;
         }
       }
     } else if (event.getButtons() == (Qt::LeftButton | Qt::RightButton) ||

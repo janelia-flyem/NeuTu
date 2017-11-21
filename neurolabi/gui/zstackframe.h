@@ -260,6 +260,7 @@ public:
   void clearData();
 
   void createMainWindowActions();
+  virtual void processKeyEvent(QKeyEvent *event);
 
 public:
   virtual void stressTest();

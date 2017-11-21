@@ -38,7 +38,7 @@ ZStroke2d::ZStroke2d(const ZStroke2d &stroke) : ZStackObject(stroke)
 {
   m_pointArray = stroke.m_pointArray;
   m_width = stroke.m_width;
-  m_label = stroke.m_label;
+//  m_label = stroke.m_label;
   m_originalLabel = stroke.m_originalLabel;
 //  setLabel(stroke.m_label);
   //m_label = stroke.m_label;
@@ -102,9 +102,9 @@ void ZStroke2d::setLast(double x, double y)
   }
 }
 
-void ZStroke2d::setLabel(int label)
+void ZStroke2d::setLabel(uint64_t label)
 {
-  m_label = label;
+  m_uLabel = label;
   m_originalLabel = label;
   m_color = getLabelColor();
 }
@@ -112,26 +112,21 @@ void ZStroke2d::setLabel(int label)
 void ZStroke2d::toggleLabel(bool toggling)
 {
   if (toggling) {
-    if (m_label == m_originalLabel) {
-      m_label++;
+    if (m_uLabel == m_originalLabel) {
+      m_uLabel++;
     }
   } else {
-    m_label = m_originalLabel;
+    m_uLabel = m_originalLabel;
   }
 
   m_color = getLabelColor();
-}
-
-int ZStroke2d::getLabel() const
-{
-  return m_label;
 }
 
 void ZStroke2d::setEraser(bool enabled)
 {
   if (enabled) {
     setLabel(0);
-  } else if (m_label == 0) {
+  } else if (getLabel() == 0) {
     setLabel(1);
   }
   /*
@@ -287,6 +282,8 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   QPen pen(color);
   QBrush brush(color);
 
+  pen.setCosmetic(m_usingCosmeticPen);
+
   if (isEraser()) {
     painter.setCompositionMode(QPainter::CompositionMode_Source);
   } else {
@@ -323,6 +320,57 @@ bool ZStroke2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
   return painted;
 }
 
+ZStack* ZStroke2d::toLabelStack(int label) const
+{
+  if (isEmpty()) {
+    return NULL;
+
+  }
+  const static int margin = 5;
+
+  //Estimate bound box
+  double x0 = m_pointArray[0].x();
+  double y0 = m_pointArray[0].y();
+  double x1 = x0;
+  double y1 = y0;
+
+  foreach(const QPointF &pt, m_pointArray) {
+    if (x0 > pt.x()) {
+      x0 = pt.x();
+    }
+    if (x1 < pt.x()) {
+      x1 = pt.x();
+    }
+    if (y0 > pt.y()) {
+      y0 = pt.y();
+    }
+    if (y1 < pt.y()) {
+      y1 = pt.y();
+    }
+  }
+
+  Cuboid_I boundBox;
+  int r = iround(m_width / 2);
+  boundBox.cb[0] = iround(x0) - margin - r;
+  boundBox.cb[1] = iround(y0) - margin - r;
+  boundBox.cb[2] = m_z;
+  boundBox.ce[0] = iround(x1) + margin + r;
+  boundBox.ce[1] = iround(y1) + margin + r;
+  boundBox.ce[2] = m_z;
+
+  int width = Cuboid_I_Width(&boundBox);
+  int height = Cuboid_I_Height(&boundBox);
+  int depth = Cuboid_I_Depth(&boundBox);
+
+  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
+  stack->setOffset(boundBox.cb[0], boundBox.cb[1], boundBox.cb[2]);
+  ZStroke2d tmpStroke = *this;
+  tmpStroke.translate(-stack->getOffset());
+  tmpStroke.labelGrey(stack->c_stack(), label);
+
+  return stack;
+}
+
 void ZStroke2d::labelImage(QImage *image) const
 {
   if (image != NULL) {
@@ -352,6 +400,37 @@ void ZStroke2d::labelImage(QImage *image) const
     }
   }
 }
+
+void ZStroke2d::labelGrey(Stack *stack, int label, int ignoringValue) const
+{
+  if (stack == NULL || C_Stack::kind(stack) != GREY ||
+      m_z < 0 || m_z >= C_Stack::depth(stack)) {
+    return;
+  }
+
+  CLIP_VALUE(label, 0, 255);
+
+  //QBitmap image(C_Stack::width(stack), C_Stack::height(stack));
+  QImage image(C_Stack::width(stack), C_Stack::height(stack),
+               QImage::Format_RGB16);
+  labelImage(&image);
+
+  uint8_t* array = C_Stack::array8(stack);
+  size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+  size_t offset = area * m_z;
+  for (int j = 0; j < image.height(); ++j) {
+    for (int i = 0; i < image.width(); ++i) {
+      QRgb color = image.pixel(i, j);
+      if (qRed(color) > 0 || qGreen(color) > 0 || qBlue(color) > 0) {
+        if (array[offset] != ignoringValue) {
+          array[offset] = label;
+        }
+      }
+      offset++;
+    }
+  }
+}
+
 
 void ZStroke2d::labelGrey(Stack *stack, int label) const
 {
@@ -383,7 +462,7 @@ void ZStroke2d::labelGrey(Stack *stack, int label) const
 
 void ZStroke2d::labelGrey(Stack *stack) const
 {
-  labelGrey(stack, m_label);
+  labelGrey(stack, getLabel());
 }
 
 void ZStroke2d::labelBinary(Stack *stack) const
@@ -506,8 +585,9 @@ bool ZStroke2d::getPoint(double *x, double *y, size_t index) const
 
 void ZStroke2d::print() const
 {
+  std::cout << "Stroke points (z=" << getZ() << ")" << std::endl;
   foreach (QPointF point, m_pointArray) {
-    std::cout << point.x() << " " << point.y() << std::endl;
+    std::cout << "  " << point.x() << " " << point.y() << std::endl;
   }
 }
 
@@ -518,7 +598,7 @@ QColor ZStroke2d::GetLabelColor(int label)
 
 const QColor& ZStroke2d::getLabelColor() const
 {
-  return m_colorTable.getColor(m_label);
+  return m_colorTable.getColor((int) getLabel());
 
 #if 0
   if (m_label == 255) {
@@ -550,11 +630,30 @@ void ZStroke2d::translate(const ZIntPoint &offset)
   m_z += iround(offset.getZ());
 }
 
+void ZStroke2d::scale(double sx, double sy, double sz)
+{
+  for (std::vector<QPointF>::iterator iter = m_pointArray.begin();
+       iter != m_pointArray.end(); ++iter) {
+    QPointF &pt = *iter;
+    pt.setX(pt.x() * sx);
+    pt.setY(pt.y() * sy);
+  }
+  m_z = iround(m_z * sz);
+  m_width *= std::sqrt(sx * sy);
+}
+
+void ZStroke2d::downsample(const ZIntPoint &dsIntv)
+{
+  if (!dsIntv.isZero()) {
+    scale(1.0 / (dsIntv.getX() + 1), 1.0 / (dsIntv.getY() + 1),
+          1.0 / (dsIntv.getZ() + 1));
+  }
+}
 
 ZObject3d* ZStroke2d::toObject3d() const
 {
   ZObject3d *obj = NULL;
-  ZStack *stack = toStack();
+  ZStack *stack = toBinaryStack();
   if (stack != NULL) {
     obj = new ZObject3d;
     obj->loadStack(stack);
@@ -597,61 +696,31 @@ ZCuboid ZStroke2d::getBoundBox() const
 
 ZStack* ZStroke2d::toStack() const
 {
-  if (isEmpty()) {
-    return NULL;
+  return toLabelStack(getLabel());
+}
 
-  }
-  const static int margin = 5;
-
-  //Estimate bound box
-  double x0 = m_pointArray[0].x();
-  double y0 = m_pointArray[0].y();
-  double x1 = x0;
-  double y1 = y0;
-
-  foreach(const QPointF &pt, m_pointArray) {
-    if (x0 > pt.x()) {
-      x0 = pt.x();
-    }
-    if (x1 < pt.x()) {
-      x1 = pt.x();
-    }
-    if (y0 > pt.y()) {
-      y0 = pt.y();
-    }
-    if (y1 < pt.y()) {
-      y1 = pt.y();
-    }
-  }
-
-  Cuboid_I boundBox;
-  int r = iround(m_width / 2);
-  boundBox.cb[0] = iround(x0) - margin - r;
-  boundBox.cb[1] = iround(y0) - margin - r;
-  boundBox.cb[2] = m_z;
-  boundBox.ce[0] = iround(x1) + margin + r;
-  boundBox.ce[1] = iround(y1) + margin + r;
-  boundBox.ce[2] = m_z;
-
-  int width = Cuboid_I_Width(&boundBox);
-  int height = Cuboid_I_Height(&boundBox);
-  int depth = Cuboid_I_Depth(&boundBox);
-
-  ZStack *stack = new ZStack(GREY, width, height, depth, 1);
-  stack->setOffset(boundBox.cb[0], boundBox.cb[1], boundBox.cb[2]);
-  ZStroke2d tmpStroke = *this;
-  tmpStroke.translate(-stack->getOffset());
-  tmpStroke.labelGrey(stack->c_stack());
-
-  return stack;
+ZStack* ZStroke2d::toBinaryStack() const
+{
+  return toLabelStack(1);
 }
 
 void ZStroke2d::labelStack(ZStack *stack) const
 {
   if (stack != NULL) {
     ZStroke2d tmpStroke = *this;
+    tmpStroke.downsample(stack->getDsIntv());
     tmpStroke.translate(-stack->getOffset());
     tmpStroke.labelGrey(stack->c_stack());
+  }
+}
+
+void ZStroke2d::labelStack(ZStack *stack, int ignoringValue) const
+{
+  if (stack != NULL) {
+    ZStroke2d tmpStroke = *this;
+    tmpStroke.downsample(stack->getDsIntv());
+    tmpStroke.translate(-stack->getOffset());
+    tmpStroke.labelGrey(stack->c_stack(), getLabel(), ignoringValue);
   }
 }
 
@@ -659,7 +728,7 @@ ZJsonObject ZStroke2d::toJsonObject() const
 {
   ZJsonObject obj;
 
-  obj.setEntry("label", m_label);
+  obj.setEntry("label", getLabel());
   obj.setEntry("width", m_width);
   obj.setEntry("z", m_z);
   obj.setEntry("z_order", m_zOrder);

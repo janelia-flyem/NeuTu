@@ -48,6 +48,7 @@
 #include "zthreadfuturemap.h"
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
+#include "zmesh.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -61,6 +62,7 @@ class ZResolution;
 class ZSwcNetwork;
 class ZSwcObjsModel;
 class ZPunctaObjsModel;
+class ZMeshObjsModel;
 class ZStroke2d;
 class QWidget;
 class ZSwcNodeObjsModel;
@@ -83,6 +85,8 @@ class ZProgressSignal;
 class ZWidgetMessage;
 class ZDvidSparseStack;
 class ZStackDocDataBuffer;
+class ZStackDocKeyProcessor;
+class QKeyEvent;
 
 /*!
  * \brief The class of stack document
@@ -144,7 +148,10 @@ public: //attributes
    */
   bool hasStackPaint() const;
 
-
+  /*!
+   * \brief Test if the document has a mask
+   * \return
+   */
   bool hasStackMask();
 
   // hasTracable() returns true iff it has tracable data.
@@ -157,6 +164,7 @@ public: //attributes
   bool hasObject(ZStackObject::EType type) const;
   bool hasObject(ZStackObject::EType type, const std::string &source) const;
   bool hasObject(ZStackObject::ETarget target) const;
+  bool hasObject(const ZStackObject *obj) const;
 
   ZStackObject* getObject(ZStackObject::EType type, const std::string &source) const;
 
@@ -165,6 +173,7 @@ public: //attributes
 
   // hasSwc() returns true iff it has an SWC object.
   bool hasSwc() const;
+  bool hasMesh() const;
 
   // hasSwc() returns true iff it has a non-empty SWC object.
   bool hasSwcData() const;
@@ -199,6 +208,7 @@ public: //attributes
    * \brief The offset from stack space to data space
    */
   ZIntPoint getStackOffset() const;
+  int getStackOffset(NeuTube::EAxis axis) const;
   void setStackOffset(int x, int y, int z);
   void setStackOffset(const ZIntPoint &offset);
   void setStackOffset(const ZPoint &offset);
@@ -260,6 +270,7 @@ public: //attributes
   QList<ZDvidTileEnsemble*> getDvidTileEnsembleList() const;
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
   virtual ZDvidSparseStack* getDvidSparseStack() const;
+  QList<ZMesh*> getMeshList() const;
 
   bool hasSwcList();       //to test swctree
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
@@ -270,6 +281,7 @@ public: //attributes
   inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
   inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
   inline ZSurfaceObjsModel* surfaceObjsModel() { return m_surfaceObjsModel; }
+  inline ZMeshObjsModel* meshObjsModel() { return m_meshObjsModel; }
 
   void updatePunctaObjsModel(ZPunctum *punctum);
 
@@ -362,6 +374,7 @@ public:
 
   void readStack(const char *filePath, bool newThread = true);
   void readSwc(const char *filePath);
+  void readSparseStack(const std::string &filePath);
 
   void saveSwc(QWidget *parentWidget);
 
@@ -381,6 +394,9 @@ public:
 
   virtual ZStack* getStack() const;
   virtual ZStack *stackMask() const;
+
+  ZIntCuboid getDataRange() const;
+
   void setStackSource(const char *filePath);
   void setStackSource(const ZStackFile &stackFile);
   void loadSwcNetwork(const QString &filePath);
@@ -405,14 +421,11 @@ public:
   void removeAllObject(bool deleteObject = true);
   bool removeObject(
       ZStackObject *obj, bool deleteObject = false);
-
   void removeSelectedObject(bool deleteObject = false);
-  /*
-  void removeObject(
-      ZStackObject::ETarget target, bool deleteObject = false);
-      */
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
+  void removeObject(const QSet<ZStackObject*> &objSet, bool deleteObject = false);
+  void removeObject(const std::set<ZStackObject*> &objSet, bool deleteObject = false);
 
   TStackObjectList takeObject(
       ZStackObject::EType type, const std::string &source);
@@ -439,7 +452,7 @@ public:
 
   //QString toString();
   QStringList toStringList() const;
-  virtual QString rawDataInfo(double cx, double cy, int z) const;
+  virtual QString rawDataInfo(double cx, double cy, int z, NeuTube::EAxis axis) const;
   QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;
@@ -459,6 +472,10 @@ public:
   void setSparseStack(ZSparseStack *spStack);
 
   void importSeedMask(const QString &filePath);
+
+  ZStackDocKeyProcessor* getKeyProcessor();
+  void setKeyProcessor(ZStackDocKeyProcessor *processor);
+  bool processKeyEvent(QKeyEvent *event);
 
   /*
   ZNeuronTracer &getNeuronTracer() {
@@ -513,6 +530,9 @@ public: /* puncta related methods */
   inline bool hasSelectedPuncta() {
     return m_objectGroup.hasSelected(ZStackObject::TYPE_PUNCTUM);
   }
+  inline bool hasSelectedMeshes() {
+    return m_objectGroup.hasSelected(ZStackObject::TYPE_MESH);
+  }
 
 public:
   void addLocsegChainP(ZLocsegChain *chain);
@@ -526,6 +546,9 @@ public:
   void addSparseObject(const QList<ZSparseObject*> &objList);
   void addPunctumP(ZPunctum *obj);
   void addPunctum(const QList<ZPunctum*> &punctaList);
+
+  void addMeshP(ZMesh* obj);
+  void addMesh(const QList<ZMesh*> &meshList);
 
   void addPunctumFast(const QList<ZPunctum*> &punctaList);
 
@@ -569,6 +592,8 @@ public:
 
   bool importPuncta(const char *filePath);
 
+  bool importMesh(const QString& filePath);
+
   int pickLocsegChainId(int x, int y, int z) const;
   void holdClosestSeg(int id, int x, int y, int z);
   int selectLocsegChain(int id, int x = -1, int y = -1, int z = -1,
@@ -596,6 +621,10 @@ public:
 
   ZStackObject *hitTest(double x, double y, double z);
   ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);
+//  ZStackObject *hitTestWidget(int x, int y);
+
+  ZStackObject *hitTest(
+      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis);
 
 //  Swc_Tree_Node *swcHitTest(double x, double y) const;
 //  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
@@ -627,6 +656,10 @@ public:
   template <class InputIterator>
   void setPunctumSelected(InputIterator first, InputIterator last, bool select);
   void deselectAllPuncta();
+  void setMeshSelected(ZMesh* mesh, bool select);
+  template <class InputIterator>
+  void setMeshSelected(InputIterator first, InputIterator last, bool select);
+  void deselectAllMesh();
   void setChainSelected(ZLocsegChain* chain, bool select);
   void setChainSelected(const std::vector<ZLocsegChain*> &chains, bool select);
   void deselectAllChains();
@@ -650,6 +683,7 @@ public:
   void setChainVisible(ZLocsegChain* chain, bool visible);
   void setSwcVisible(ZSwcTree* tree, bool visible);
   void setSurfaceVisible(ZCubeArray *cubearray, bool visible);
+  void setMeshVisible(ZMesh *mesh, bool visible);
 
   void setAutoTraceMinScore(double score);
   void setManualTraceMinScore(double score);
@@ -810,6 +844,14 @@ public:
     m_isSegmentationReady = state;
   }
 
+  inline bool hadSegmentationDownsampled() const {
+    return m_hadSegmentationDownsampled;
+  }
+
+  void setHadSegmentationSampled(bool on) {
+    m_hadSegmentationDownsampled = on;
+  }
+
 public:
   ZNeuronTracer* getNeuronTracer() {
     return &m_neuronTracer;
@@ -879,12 +921,13 @@ public:
   void notifySwcModified();
 
   void notifyPunctumModified();
+  void notifyMeshModified();
   void notifyChainModified();
   void notifyObj3dModified();
   void notifyObject3dScanModified();
   void notifyStackPatchModified();
   void notifySparseObjectModified();
-  void notifyStackModified();
+  void notifyStackModified(bool rangeChanged);
   void notifySparseStackModified();
   void notifyVolumeModified();
   void notifyStrokeModified();
@@ -926,6 +969,7 @@ public:
   DECLARE_NOTIFY_SELECTION_CHANGED(ZPunctum);
   DECLARE_NOTIFY_SELECTION_CHANGED(ZLocsegChain);
   DECLARE_NOTIFY_SELECTION_CHANGED(ZStackObject);
+  DECLARE_NOTIFY_SELECTION_CHANGED(ZMesh);
 
   void notifySelectionChanged(const std::set<ZStackObject*> &selected,
                               const std::set<ZStackObject*> &deselected);
@@ -1024,12 +1068,13 @@ public slots: //undoable commands
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
   virtual bool executeRemoveObjectCommand(ZStackObject *obj);
+  virtual bool executeRemoveObjectCommand(ZStackObjectRole::TRole role);
   virtual bool executeRemoveSelectedObjectCommand();
+  virtual bool executeRemoveSelectedObjectCommand(ZStackObjectRole::TRole role);
   //bool executeRemoveUnselectedObjectCommand();
   virtual bool executeMoveObjectCommand(
       double x, double y, double z,
-      double punctaScaleX, double punctaScaleY, double punctaScaleZ,
-      double swcScaleX, double swcScaleY, double swcScaleZ);
+      const glm::mat4& punctaTransform, const glm::mat4& swcTransform);
 
   virtual bool executeTraceTubeCommand(double x, double y, double z, int c = 0);
   virtual bool executeRemoveTubeCommand();
@@ -1061,6 +1106,7 @@ public slots: //undoable commands
   virtual bool executeSmartConnectSwcNodeCommand(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
   virtual bool executeSmartConnectSwcNodeCommand();
   virtual bool executeBreakSwcConnectionCommand();
+  virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius);
   virtual bool executeAddSwcNodeCommand(const ZPoint &center, double radius,
                                         ZStackObjectRole::TRole role);
   virtual bool executeSwcNodeChangeSizeCommand(double dr);
@@ -1093,6 +1139,8 @@ public slots: //undoable commands
   virtual bool executeEnhanceLineCommand();
   virtual bool executeWatershedCommand();
   virtual void executeRemoveRectRoiCommand();
+  virtual bool executeChangeSwcNodeType(
+      QList<Swc_Tree_Node*> &nodeList, int type);
 
   void advanceProgressSlot(double dp);
   void startProgressSlot();
@@ -1151,16 +1199,19 @@ public slots:
 signals:
   void addingObject(ZStackObject *obj, bool uniqueSource = true);
   void messageGenerated(const QString &message, bool appending = true);
+  void errorGenerated(const QString &message, bool appending = true);
   void messageGenerated(const ZWidgetMessage&);
   void locsegChainSelected(ZLocsegChain*);
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
-  void stackModified();
+  void stackModified(bool rangeChanged);
   void sparseStackModified();
   void labelFieldModified();
+  void segmentationUpdated();
   void stackReadDone();
   void stackLoaded();
   void punctaModified();
+  void meshModified();
   void swcModified();
   void seedModified();
   void chainModified();
@@ -1184,6 +1235,8 @@ signals:
                               QList<ZStackObject*> deselected);
   void punctaSelectionChanged(QList<ZPunctum*> selected,
                               QList<ZPunctum*> deselected);
+  void meshSelectionChanged(QList<ZMesh*> selected,
+                            QList<ZMesh*> deselected);
   void chainSelectionChanged(QList<ZLocsegChain*> selected,
                              QList<ZLocsegChain*> deselected);
   void swcSelectionChanged(QList<ZSwcTree*> selected,
@@ -1195,6 +1248,7 @@ signals:
   void swcTreeNodeSelectionChanged();
 
   void punctumVisibleStateChanged();
+  void meshVisibleStateChanged();
   void graphVisibleStateChanged();
   void surfaceVisibleStateChanged();
   void chainVisibleStateChanged(ZLocsegChain* chain, bool visible);
@@ -1229,6 +1283,7 @@ protected:
   virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
   void updateWatershedBoundaryObject(ZIntPoint dsIntv);
+  virtual void makeKeyProcessor();
 
 private:
   void init();
@@ -1252,6 +1307,9 @@ private:
 
   void updateTraceMask();
 
+protected:
+  ZStackDocKeyProcessor *m_keyProcessor = NULL;
+
 private:
   //Main stack
   ZStack *m_stack;
@@ -1274,6 +1332,7 @@ private:
   ZDocPlayerObjsModel *m_seedObjsModel;
   ZGraphObjsModel *m_graphObjsModel;
   ZSurfaceObjsModel *m_surfaceObjsModel;
+  ZMeshObjsModel *m_meshObjsModel;
 
   //Parent frame
   ZStackFrame *m_parentFrame;
@@ -1313,6 +1372,7 @@ private:
   bool m_selectionSilent;
   bool m_isReadyForPaint;
   bool m_isSegmentationReady;
+  bool m_hadSegmentationDownsampled = false;
   bool m_autoSaving;
 
   //QMutex m_mutex;
@@ -1362,6 +1422,28 @@ void ZStackDoc::setPunctumSelected(InputIterator first, InputIterator last, bool
       } else {
         //m_selectedPuncta.erase(punctum);
         deselected.push_back(punctum);
+      }
+    }
+  }
+  notifySelectionChanged(selected, deselected);
+}
+
+template <class InputIterator>
+void ZStackDoc::setMeshSelected(InputIterator first, InputIterator last, bool select)
+{
+  QList<ZMesh*> selected;
+  QList<ZMesh*> deselected;
+  for (InputIterator it = first; it != last; ++it) {
+    ZMesh *mesh = *it;
+    if (mesh->isSelected() != select) {
+      mesh->setSelected(select);
+      m_objectGroup.setSelected(mesh, select);
+      if (select) {
+        //m_selectedPuncta.insert(punctum);
+        selected.push_back(mesh);
+      } else {
+        //m_selectedPuncta.erase(punctum);
+        deselected.push_back(mesh);
       }
     }
   }
@@ -1538,59 +1620,6 @@ void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
   }
   endObjectModifiedMode();
   notifyObjectModified();
-}
-
-template <class InputIterator>
-void ZStackDoc::removeObjectP(
-    InputIterator first, InputIterator last, bool deleting)
-{
-//  TStackObjectList objList = m_objectGroup.take(type);
-  m_objectGroup.take(first, last);
-  for (TStackObjectList::iterator iter = first; iter != last; ++iter) {
-//    role.addRole(m_playerList.removePlayer(*iter));
-    ZStackObject *obj = *iter;
-
-#ifdef _DEBUG_
-    std::cout << "Removing object: " << obj << std::endl;
-#endif
-
-    bufferObjectModified(obj);
-    m_playerList.removePlayer(obj);
-
-    if (deleting) {
-      delete obj;
-    }
-  }
-
-  notifyObjectModified();
-#if 0
-//  QSet<ZStackObject::EType> typeSet;
-//  QSet<ZStackObject::ETarget> targetSet;
-
-//  ZStackObjectRole role;
-
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-  for (InputIterator iter = first; iter != last; ++iter) {
-    ZStackObject *obj = *iter;
-//    role.addRole(m_playerList.removePlayer(obj));
-//    typeSet.insert(obj->getType());
-//    targetSet.insert(obj->getTarget());
-    processObjectModified(obj);
-    if (deleting) {
-      delete obj;
-    }
-  }
-  endObjectModifiedMode();
-
-  notifyObjectModified();
-#endif
-  /*
-  if (first != last) {
-    processObjectModified(typeSet);
-    processObjectModified(targetSet);
-    notifyPlayerChanged(role);
-  }
-  */
 }
 
 template<typename T>

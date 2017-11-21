@@ -65,6 +65,7 @@ public:
    * done.
    */
   void labelGrey(Stack *stack, int label) const;
+  void labelGrey(Stack *stack, int label, int ignoringValue) const;
 
   virtual const std::string& className() const;
 
@@ -73,8 +74,7 @@ public:
   void set(const QPoint &pt);
   void set(double x, double y);
   void setLast(double x, double y);
-  void setLabel(int label);
-  int getLabel() const;
+  void setLabel(uint64_t label);
 
   /*!
    * \brief Toggle the label.
@@ -90,7 +90,7 @@ public:
   void addWidth(double dw);
 
   void setEraser(bool enabled);
-  inline bool isEraser() const { return m_label == 0; }
+  inline bool isEraser() const { return getLabel() == 0; }
   inline void setFilled(bool isFilled) {
     m_isFilled = isFilled;
   }
@@ -112,6 +112,8 @@ public:
    */
   void translate(const ZPoint &offset);
   void translate(const ZIntPoint &offset);
+  void scale(double sx, double sy, double sz);
+  void downsample(const ZIntPoint &dsIntv);
 
   /*!
    * \brief Convert the stroke to a stack.
@@ -121,11 +123,14 @@ public:
    */
   ZStack *toStack() const;
 
+  ZStack *toBinaryStack() const;
+
   ZCuboid getBoundBox() const;
 
   ZObject3d* toObject3d() const;
 
   void labelStack(ZStack *stack) const;
+  void labelStack(ZStack *stack, int ignoringValue) const;
 
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
@@ -155,14 +160,15 @@ private:
   static QVector<QColor> constructColorTable();
   const QColor& getLabelColor() const;
   void labelImage(QImage *image) const;
+  ZStack* toLabelStack(int label) const;
 
 
 private:
   std::vector<QPointF> m_pointArray;
   double m_width;
 
-  int m_label; //Label = 0 is reserved for eraser
-  int m_originalLabel; //for label toggling
+//  int m_label; //Label = 0 is reserved for eraser
+  uint64_t m_originalLabel; //for label toggling
   int m_z;
 
   //bool m_isEraser;

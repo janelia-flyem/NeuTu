@@ -1,4 +1,5 @@
 #include "zcubearray.h"
+#include "zmesh.h"
 
 //
 Mesh::Mesh()
@@ -343,6 +344,22 @@ Z3DCube::~Z3DCube()
 {
 }
 
+bool Z3DCube::hasVisibleFace() const
+{
+  for (size_t i = 0; i < b_visible.size(); ++i) {
+    if (b_visible[i]) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+const std::vector<bool>& Z3DCube::getFaceVisiblity() const
+{
+  return b_visible;
+}
+
 //
 ZCubeArray::ZCubeArray()
 {
@@ -355,46 +372,101 @@ ZCubeArray::~ZCubeArray()
 
 }
 
+void ZCubeArray::display(
+    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
+    NeuTube::EAxis /*sliceAxis*/) const
+{
+}
+
+void ZCubeArray::setMesh(ZMesh *mesh)
+{
+  m_mesh = ZSharedPointer<ZMesh>(mesh);
+}
+
+#if 0
+void ZCubeArray::setColor(const QColor &n)
+{
+  if (m_mesh) {
+    m_mesh->setColor(n);
+    m_mesh->pushObjectColor();
+  }
+}
+#endif
+
+void ZCubeArray::pushObjectColor()
+{
+  if (m_mesh) {
+    m_mesh->setColor(getColor());
+    m_mesh->pushObjectColor();
+  }
+}
+
+ZSharedPointer<ZMesh> ZCubeArray::getMesh() const
+{
+  return m_mesh;
+}
+
+void ZCubeArray::clear()
+{
+  m_mesh.reset();
+}
+
+bool ZCubeArray::isEmpty() const
+{
+  if (m_mesh) {
+    return m_mesh->empty();
+  }
+
+  return false;
+}
+
+#if 0
 bool ZCubeArray::isEmpty() const
 {
     return (m_cubeArray.size()==0);
 }
 
-Z3DCube* ZCubeArray::makeCube(const ZIntCuboid &box, glm::vec4 color, const std::vector<int> &faceArray)
+Z3DCube* ZCubeArray::makeCube(
+    const ZIntCuboid &box, glm::vec4 color, const std::vector<bool> &fv)
 {
-    Z3DCube *cube = new Z3DCube;
+  Z3DCube *cube = new Z3DCube;
 
-    //
-    cube->b_visible.clear();
-    for(int i=0; i<6; i++)
-        cube->b_visible.push_back(false);
+  cube->b_visible = fv;
 
-    //
-    for (size_t i = 0; i < faceArray.size(); ++i)
-    {
-        cube->b_visible[ faceArray[i] ] = true;
-    }
+  //
+  ZPoint p;
+  QVector<int> vertexOrder;
+//  vertexOrder << 0 << 2 << 3 << 1 << 4 << 6 << 7 << 5;  // convert ZCuboid -> Cube
 
-    //
-    ZPoint p;
-    QVector<int> vertexOrder;
-    vertexOrder << 0 << 2 << 3 << 1 << 4 << 6 << 7 << 5;  // convert ZCuboid -> Cube
+  vertexOrder << 0 << 3 << 4 << 7 << 1 << 2 << 5 << 6;
 
-    for (int i = 0; i < 8; ++i)
-    {
-        //p = box.getCorner( vertexOrder[i] ).toPoint();
-        p = box.getCorner( i ).toPoint();
-        cube->nodes.push_back(glm::vec3(p.x(), p.y(), p.z()));
-    }
+  for (int i = 0; i < 8; ++i)
+  {
+      p = box.getCorner( vertexOrder[i] ).toPoint();
+//      p = box.getCorner( i ).toPoint();
+      cube->nodes.push_back(glm::vec3(p.x(), p.y(), p.z()));
+  }
 
-    //
-    cube->color = color;
+  //
+  cube->color = color;
 
-    //
-    cube->initByNodes = true;
+  //
+  cube->initByNodes = true;
 
-    //
-    return cube;
+  //
+  return cube;
+}
+
+Z3DCube* ZCubeArray::makeCube(
+    const ZIntCuboid &box, glm::vec4 color, const std::vector<int> &faceArray)
+{
+  std::vector<bool> fv(6, false);
+  for (size_t i = 0; i < faceArray.size(); ++i)
+  {
+    fv[faceArray[i]] = true;
+  }
+
+  return makeCube(box, color, fv);
 }
 
 void ZCubeArray::append(Z3DCube cube)
@@ -402,7 +474,7 @@ void ZCubeArray::append(Z3DCube cube)
     m_cubeArray.push_back(cube);
 }
 
-std::vector<Z3DCube> ZCubeArray::getCubeArray()
+const std::vector<Z3DCube>& ZCubeArray::getCubeArray() const
 {
     return m_cubeArray;
 }
@@ -427,6 +499,7 @@ void ZCubeArray::clear()
 {
   m_cubeArray.clear();
 }
+#endif
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZCubeArray)
 

@@ -19,6 +19,7 @@
 #include "tz_stack_bwmorph.h"
 #include "c_stack.h"
 #include "zintcuboid.h"
+#include "zswctree.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -167,7 +168,7 @@ ZStack* ZStackFactory::makeIndexStack(int width, int height, int depth)
   return stack;
 }
 
-ZStack* ZStackFactory::makeUniformStack(int width, int height, int depth, int v)
+ZStack* ZStackFactory::MakeUniformStack(int width, int height, int depth, int v)
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, 1);
   size_t voxelNumber = stack->getVoxelNumber();
@@ -709,12 +710,20 @@ ZStack* ZStackFactory::MakeBinaryStack(
 
     for (ZObject3dScanArray::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
+      const ZObject3dScan &obj = **iter;
       obj.drawStack(stack->c_stack(), v, offset);
     }
   }
 
   return stack;
+}
+
+ZStack* ZStackFactory::MakeLabelStack(ZSwcTree *obj, int v)
+{
+  ZIntCuboid box = obj->getBoundBox().toIntCuboid();
+
+  return NULL;
+//  ZStack *stack = MakeStack()
 }
 
 ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
@@ -733,7 +742,7 @@ ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 
     for (ZObject3dScanArray::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
+      const ZObject3dScan &obj = **iter;
       obj.drawStack(stack->c_stack(0), obj.getColor().red(), offset);
       obj.drawStack(stack->c_stack(1), obj.getColor().green(), offset);
       obj.drawStack(stack->c_stack(2), obj.getColor().blue(), offset);

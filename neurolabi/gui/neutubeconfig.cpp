@@ -15,7 +15,9 @@
 #endif
 
 #include "tz_cdefs.h"
+#ifdef _QT_GUI_USED_
 #include "zxmldoc.h"
+#endif
 #include "zstring.h"
 #include "zlogmessagereporter.h"
 #include "zjsonobject.h"
@@ -86,7 +88,11 @@ void NeutubeConfig::init()
 
 void NeutubeConfig::setDefaultSoftwareName()
 {
+#if defined(_NEU3_)
+  m_softwareName = "Neu3";
+#else
   m_softwareName = "NeuTu";
+#endif
 }
 
 void NeutubeConfig::setTestSoftwareName()
@@ -184,6 +190,7 @@ void NeutubeConfig::operator=(const NeutubeConfig& config)
 
 bool NeutubeConfig::load(const std::string &filePath)
 {
+#ifdef _QT_GUI_USED_
 #ifdef _DEBUG_
   cout << "Loading configuration ..." << endl;
 #endif
@@ -311,6 +318,7 @@ bool NeutubeConfig::load(const std::string &filePath)
 
     return true;
   }
+#endif
 
   return false;
 }
@@ -343,7 +351,7 @@ void NeutubeConfig::print()
   cout << endl;
 }
 
-std::string NeutubeConfig::getPath(Config_Item item) const
+std::string NeutubeConfig::getPath(EConfigItem item) const
 {
   switch (item) {
   case DATA:
@@ -462,6 +470,7 @@ NeutubeConfig::MainWindowConfig::MainWindowConfig() : m_tracingOn(true),
 {
 }
 
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::MainWindowConfig::loadXmlNode(const ZXmlNode *node)
 {
   ZXmlNode childNode = node->queryNode("tracing");
@@ -541,6 +550,7 @@ void NeutubeConfig::MainWindowConfig::loadXmlNode(const ZXmlNode *node)
     setThresholdControl(childNode.getAttribute("status") != "off");
   }
 }
+#endif
 
 NeutubeConfig::Z3DWindowConfig::Z3DWindowConfig() : m_isUtilsOn(true),
   m_isVolumeOn(true), m_isGraphOn(true), m_isSwcsOn(true), m_isTubesOn(true),
@@ -548,7 +558,7 @@ NeutubeConfig::Z3DWindowConfig::Z3DWindowConfig() : m_isUtilsOn(true),
   m_isBackgroundOn(true)
 {
 }
-
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::Z3DWindowConfig::loadXmlNode(const ZXmlNode *node)
 {
   ZXmlNode childNode = node->queryNode("Utils");
@@ -623,12 +633,14 @@ void NeutubeConfig::Z3DWindowConfig::loadXmlNode(const ZXmlNode *node)
     enableAxis(true);
   }
 }
+#endif
 
 NeutubeConfig::Z3DWindowConfig::GraphTabConfig::GraphTabConfig() :
   m_isVisible(true), m_opacity(1.0)
 {
 }
 
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::Z3DWindowConfig::GraphTabConfig::loadXmlNode(const ZXmlNode *node)
 {
   ZXmlNode childNode = node->queryNode("Visible");
@@ -641,13 +653,14 @@ void NeutubeConfig::Z3DWindowConfig::GraphTabConfig::loadXmlNode(const ZXmlNode 
     m_opacity = childNode.doubleValue();
   }
 }
+#endif
 
 NeutubeConfig::Z3DWindowConfig::SwcTabConfig::SwcTabConfig() : m_primitive("Normal"),
   m_colorMode("Branch Type"), m_zscale(1.0)
 {
 }
 
-
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::Z3DWindowConfig::SwcTabConfig::loadXmlNode(const ZXmlNode *node)
 {
   ZXmlNode childNode = node->queryNode("Primitive");
@@ -665,13 +678,14 @@ void NeutubeConfig::Z3DWindowConfig::SwcTabConfig::loadXmlNode(const ZXmlNode *n
     m_zscale = childNode.doubleValue();
   }
 }
+#endif
 
 NeutubeConfig::ObjManagerConfig::ObjManagerConfig() :
   m_isSwcOn(true), m_isSwcNodeOn(true), m_isPunctaOn(true)
 {
 
 }
-
+#ifdef _QT_GUI_USED_
 void NeutubeConfig::ObjManagerConfig::loadXmlNode(
     const ZXmlNode *node)
 {
@@ -696,6 +710,7 @@ void NeutubeConfig::ObjManagerConfig::loadXmlNode(
     m_isPunctaOn = true;
   }
 }
+#endif
 
 void NeutubeConfig::configure(const ZJsonObject &obj)
 {
@@ -858,6 +873,11 @@ QString NeutubeConfig::GetNeuTuServer()
   return GetSettings().value("neutu_server").toString();
 }
 
+QString NeutubeConfig::GetTaskServer()
+{
+  return GetSettings().value("task_server").toString();
+}
+
 bool NeutubeConfig::UsingDefaultFlyemConfig()
 {
   if (GetSettings().contains("default_flyem_config")) {
@@ -874,6 +894,11 @@ void NeutubeConfig::SetNeuTuServer(const QString &path)
   } else {
     GetSettings().setValue("neutu_server", path);
   }
+}
+
+void NeutubeConfig::SetTaskServer(const QString &path)
+{
+  GetSettings().setValue("task_server", path);
 }
 
 void NeutubeConfig::SetDataDir(const QString &dataDir)

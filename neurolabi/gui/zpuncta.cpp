@@ -103,14 +103,14 @@ bool ZPuncta::load(const std::string &filePath, double radius)
   bool succ = false;
 
   switch (ZFileType::FileType(filePath)) {
-  case ZFileType::JSON_FILE:
+  case ZFileType::FILE_JSON:
   {
     ZJsonObject obj;
     obj.load(filePath);
     succ = load(obj, radius);
   }
     break;
-  case ZFileType::TXT_FILE:
+  case ZFileType::FILE_TXT:
   {
     ZColorScheme scheme;
     scheme.setColorScheme(ZColorScheme::PUNCTUM_TYPE_COLOR);

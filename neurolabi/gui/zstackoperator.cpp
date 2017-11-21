@@ -13,6 +13,17 @@ ZStackOperator::ZStackOperator() :
 {
 }
 
+void ZStackOperator::clear()
+{
+  m_op = OP_NULL;
+  m_hitObject = NULL;
+  m_punctaIndex = -1;
+  m_togglingStrokeLabel = false;
+  m_buttonPressed = Qt::NoButton;
+  m_label = 0;
+  m_shift = false;
+}
+
 bool ZStackOperator::isNull() const
 {
   return getOperation() == OP_NULL;

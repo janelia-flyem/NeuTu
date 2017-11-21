@@ -244,7 +244,7 @@ bool ZDvidTileEnsemble::update(
       timer.start();
 //      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
 //                                       getDvidTarget().getUuid());
-      std::cout << "Connecting time: " << timer.elapsed() << std::endl;
+//      std::cout << "Connecting time: " << timer.elapsed() << std::endl;
 
 //#define DVID_TILE_THREAD_FETCH 1
 
@@ -476,8 +476,10 @@ void ZDvidTileEnsemble::display(
     }
   }
 
+  /*
   QRect highresViewPort =
       m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+      */
 //  if (highresViewPort.width() > 256 || highresViewPort.height() > 256) {
     const_cast<ZDvidTileEnsemble&>(*this).update(
           tileIndices, resLevel, painter.getZ(slice));

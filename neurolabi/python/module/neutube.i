@@ -23,6 +23,7 @@ namespace std {
   %template(Byte_Array) vector<uint8_t>;
   %template(Char_Array) vector<char>;
   %template(Point_Array) vector<ZPoint>;
+  %template(VecVecDouble) vector< vector<double> >;
 }
 
 %inline %{

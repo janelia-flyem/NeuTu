@@ -39,6 +39,8 @@ public slots:
   void moveTo(const ZIntPoint &center);
   void syncView();
   void syncViewWith(ZFlyEmOrthoMvc *mvc);
+  void syncCrossHair();
+  void syncCrossHairWith(ZFlyEmOrthoMvc *mvc);
   void syncImageScreen();
   void syncImageScreenWith(ZFlyEmOrthoMvc *mvc);
   void syncHighlightModeWith(ZFlyEmOrthoMvc *mvc);
@@ -61,6 +63,10 @@ public:
 private:
   void init(const ZDvidTarget &target);
   void connectSignalSlot();
+  void beginViewSync();
+  void endViewSync();
+  void beginCrossHairSync();
+  void endCrossHairSync();
 
 private:
   ZFlyEmOrthoMvc *m_xyMvc;

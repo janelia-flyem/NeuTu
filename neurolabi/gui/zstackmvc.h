@@ -6,10 +6,6 @@
 #include <QFrame>
 #include <QLayout>
 
-#if QT_VERSION >= 0x050000
-#include <QtWidgets>
-#endif
-
 #include "zsharedpointer.h"
 #include "neutube_def.h"
 //#include "zwidgetmessage.h"
@@ -41,6 +37,10 @@ public:
   static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc);
   static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc,
                          NeuTube::EAxis axis);
+
+  enum ERole {
+    ROLE_WIDGET, ROLE_DOCUMENT
+  };
 
   void attachDocument(ZStackDoc *doc);
   void attachDocument(ZSharedPointer<ZStackDoc> doc);
@@ -81,6 +81,9 @@ public:
   void toggleStressTest();
   virtual void stressTest(ZStressTestOptionDialog *dlg);
 
+  ERole getRole() const;
+  void setRole(ERole role);
+
 signals:
   void stackChanged();
   void objectChanged();
@@ -99,19 +102,21 @@ public slots:
   void zoomTo(int x, int y, int z, int width);
   void zoomTo(const ZIntPoint &pt, double zoomRatio);
   void zoomTo(const ZStackViewParam &param);
-  void zoomWithWidthAligned(int x0, int x1, int cy);
-  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
-  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
+//  void zoomWithWidthAligned(int x0, int x1, int cy);
+//  void zoomWithWidthAligned(int x0, int x1, double pw, int cy, int cz);
+//  void zoomWithHeightAligned(int y0, int y1, double ph, int cx, int cz);
   void goToSlice(int z);
   void stepSlice(int dz);
 
-  void zoomWithWidthAligned(const QRect &viewPort, int z, double pw);
+//  void zoomWithWidthAligned(const QRect &viewPort, int z, double pw);
   void zoomWithWidthAligned(const ZStackView *view);
   void zoomWithHeightAligned(const ZStackView *view);
 
   void dump(const QString &msg);
 
   void saveStack();
+
+  virtual void processKeyEvent(QKeyEvent *event);
 
   virtual void testSlot();
 
@@ -160,6 +165,7 @@ protected:
   QLayout *m_layout;
   ZProgressSignal *m_progressSignal;
   QTimer *m_testTimer;
+  ERole m_role;
 };
 
 #endif // ZSTACKMVC_H

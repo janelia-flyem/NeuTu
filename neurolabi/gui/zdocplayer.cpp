@@ -11,6 +11,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidgrayslice.h"
+#include "flyem/zflyemmisc.h"
 
 ZDocPlayer::~ZDocPlayer()
 {
@@ -49,6 +50,21 @@ bool ZDocPlayer::isEmpty() const
 ZJsonObject ZDocPlayer::toJsonObject() const
 {
   return ZJsonObject();
+}
+
+ZJsonObject ZDocPlayer::toSeedJson() const
+{
+  return ZJsonObject();
+}
+
+ZIntCuboid ZDocPlayer::getBoundBox() const
+{
+  ZIntCuboid box;
+  if (getData() != NULL) {
+    getData()->boundBox(&box);
+  }
+
+  return box;
 }
 
 /*************************************/
@@ -366,6 +382,16 @@ ZJsonObject ZStroke2dPlayer::toJsonObject() const
   return getCompleteData()->toJsonObject();
 }
 
+ZJsonObject ZStroke2dPlayer::toSeedJson() const
+{
+  ZJsonObject json;
+  if (getCompleteData() != NULL) {
+    json = ZFlyEmMisc::MakeSplitSeedJson(*getCompleteData());
+  }
+
+  return json;
+}
+
 Z3DGraph ZStroke2dPlayer::get3DGraph() const
 {
   Z3DGraph graph;
@@ -559,7 +585,7 @@ Z3DGraph ZObject3dPlayer::get3DGraph() const
 
   const ZObject3d *obj = getCompleteData();
   if (obj != NULL) {
-    graph.importObject3d(*obj, 1.0);
+    graph.importObject3d(*obj, 2.0);
   }
 
   return graph;
@@ -568,6 +594,16 @@ Z3DGraph ZObject3dPlayer::get3DGraph() const
 ZJsonObject ZObject3dPlayer::toJsonObject() const
 {
   return getCompleteData()->toJsonObject();
+}
+
+ZJsonObject ZObject3dPlayer::toSeedJson() const
+{
+  ZJsonObject json;
+  if (getCompleteData() != NULL) {
+    json = ZFlyEmMisc::MakeSplitSeedJson(*getCompleteData());
+  }
+
+  return json;
 }
 
 /*************************************/

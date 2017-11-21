@@ -38,7 +38,7 @@ void ZFlyEmBookmarkArray::importJsonFile(
       if (idJson.isInteger()) {
         bodyId = ZJsonParser::integerValue(idJson.getData());
       } else if (idJson.isString()) {
-        bodyId = ZString::firstInteger(ZJsonParser::stringValue(idJson.getData()));
+        bodyId = ZString::FirstInteger(ZJsonParser::stringValue(idJson.getData()));
       }
 
       if (bodyId > 0) {
@@ -122,7 +122,7 @@ QVector<ZPunctum*> ZFlyEmBookmarkArray::toPunctumArray(bool isVisible) const
 //      circle->set(bookmark.getLocation(), 5);
     circle->setColor(255, 0, 0);
     circle->setVisible(isVisible);
-    circle->setHittable(false);
+    circle->setHitProtocal(ZStackObject::HIT_NONE);
     punctumArray.push_back(circle);
   }
 

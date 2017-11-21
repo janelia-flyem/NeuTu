@@ -8,6 +8,7 @@
 #include "zpainter.h"
 #include "zimage.h"
 #include "neutubeconfig.h"
+#include "c_stack.h"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {
@@ -33,6 +34,30 @@ void ZDvidSparseStack::init()
   m_label = 0;
   setCancelFillValue(false);
 //  m_cancelingValueFill = false;
+}
+
+ZStack* ZDvidSparseStack::getSlice(
+    int z, int x0, int y0, int width, int height) const
+{
+  ZStack *slice  = getSlice(z);
+
+  ZStack *newSlice = NULL;
+
+  if (slice != NULL) {
+    Stack *newSliceData = NULL;
+
+    newSliceData = C_Stack::crop(
+          slice->c_stack(), x0 - slice->getOffset().getX(),
+          y0 - slice->getOffset().getY(), 0, width, height, 1, NULL);
+
+    newSlice = new ZStack;
+    newSlice->consume(newSliceData);
+    newSlice->setOffset(x0, y0, z);
+
+    delete slice;
+  }
+
+  return newSlice;
 }
 
 ZStack* ZDvidSparseStack::getSlice(int z) const
@@ -70,12 +95,12 @@ ZStack* ZDvidSparseStack::getSlice(int z) const
 
 void ZDvidSparseStack::initBlockGrid()
 {
-
-  if (m_dvidReader.open(getDvidTarget())) {
-    ZDvidInfo dvidInfo = m_dvidReader.readGrayScaleInfo();
+  ZDvidReader &reader = getGrayscaleReader();
+  if (reader.good()) {
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
     ZStackBlockGrid *grid = new ZStackBlockGrid;
     m_sparseStack.setGreyScale(grid);
-    grid->setMinPoint(dvidInfo.getStartCoordinates());
+//    grid->setMinPoint(dvidInfo.getStartCoordinates());
     grid->setBlockSize(dvidInfo.getBlockSize());
     grid->setGridSize(dvidInfo.getGridSize());
   }
@@ -83,7 +108,8 @@ void ZDvidSparseStack::initBlockGrid()
 
 void ZDvidSparseStack::setDvidTarget(const ZDvidTarget &target)
 {
-  m_dvidTarget = target;
+//  m_dvidTarget = target;
+  m_dvidReader.open(target);
   initBlockGrid();
 }
 
@@ -179,11 +205,24 @@ ZDvidReader& ZDvidSparseStack::getGrayscaleReader() const
   if (!m_grayScaleReader.isReady()) {
     ZDvidTarget target = getDvidTarget();
     target.prepareGrayScale();
-    m_grayScaleReader.open(target);
+    m_grayScaleReader.open(target.getGrayScaleTarget());
     m_grayscaleInfo = m_grayScaleReader.readGrayScaleInfo();
   }
 
   return m_grayScaleReader;
+}
+
+void ZDvidSparseStack::loadBody(
+    uint64_t bodyId, const ZIntCuboid &range, bool canonizing)
+{
+  m_isValueFilled = false;
+
+  ZObject3dScan *obj = new ZObject3dScan;
+
+  getMaskReader().readBody(bodyId, range, canonizing, obj);
+
+  m_sparseStack.setObjectMask(obj);
+  setLabel(bodyId);
 }
 
 void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
@@ -357,7 +396,7 @@ bool ZDvidSparseStack::fillValue(
 
           std::vector<int> blockSpan;
           ZIntPoint blockIndex =
-              ZIntPoint(x0, y, z) - m_grayscaleInfo.getStartBlockIndex();
+              ZIntPoint(x0, y, z);// - m_grayscaleInfo.getStartBlockIndex();
           for (int x = x0; x <= x1; ++x) {
             bool isValidBlock = true;
             if (!box.isEmpty()) {
@@ -531,15 +570,35 @@ ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
   return m_sparseStack.getStack();
 }
 
+ZStack* ZDvidSparseStack::makeDsStack(int xintv, int yintv, int zintv)
+{
+  runFillValueFunc(ZIntCuboid(), true, false);
+  m_sparseStack.deprecate(ZSparseStack::STACK);
+
+  return m_sparseStack.makeDsStack(xintv, yintv, zintv);
+}
+
+ZStack* ZDvidSparseStack::makeIsoDsStack(size_t maxVolume)
+{
+  ZStack *stack = NULL;
+
+  if (maxVolume == 0) {
+    return NULL;
+  }
+
+  runFillValueFunc(ZIntCuboid(), true, false);
+  m_sparseStack.deprecate(ZSparseStack::STACK);
+  stack = m_sparseStack.makeIsoDsStack(maxVolume);
+
+  return stack;
+}
+
+
 ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range)
 {
   ZStack *stack = NULL;
 
-  if (range.isEmpty()) {
-    return NULL;
-  }
-
-  if (range.contains(getBoundBox())) {
+  if (range.contains(getBoundBox()) || range.isEmpty()) {
     stack = getStack()->clone();
   } else {
     runFillValueFunc(range, true, false);
@@ -588,6 +647,12 @@ void ZDvidSparseStack::syncObjectMask()
 {
   finishObjectMaskLoading();
   pushAttribute();
+}
+
+void ZDvidSparseStack::shakeOff()
+{
+  syncObjectMask();
+  m_sparseStack.shakeOff();
 }
 
 /*

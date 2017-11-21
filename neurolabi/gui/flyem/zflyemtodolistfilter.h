@@ -11,55 +11,48 @@ class ZFlyEmToDoList;
 class Z3DLineRenderer;
 class Z3DSphereRenderer;
 class ZFlyEmToDoItem;
-class Z3DLineWithFixedWidthColorRenderer;
 
 class ZFlyEmTodoListFilter : public Z3DGeometryFilter
 {
   Q_OBJECT
 public:
-  explicit ZFlyEmTodoListFilter();
+  explicit ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QObject* parent = nullptr);
   virtual ~ZFlyEmTodoListFilter();
-
-
 
   void setData(const ZStackObject *obj);
   void setData(const ZFlyEmToDoList &todoList);
   void setData(const QList<ZFlyEmToDoItem*> &todoList);
 
-  std::vector<double> boundBox();
+  std::shared_ptr<ZWidgetsGroup> widgetsGroup();
 
-  ZWidgetsGroup *getWidgetsGroup();
+  virtual bool isReady(Z3DEye eye) const override;
 
+  virtual void renderOpaque(Z3DEye eye) override;
 
-  bool isReady(Z3DEye eye) const;
-
-  void setVisible(bool v);
-  bool isVisible() const;
-
-    void updateGraph();
+  virtual void renderTransparent(Z3DEye eye) override;
 
 signals:
   void objectSelected(ZStackObject*, bool append);
-  void visibleChanged(bool);
-
-protected slots:
-  void prepareColor();
-  void selectObject(QMouseEvent *e, int w, int h);
 
 protected:
-  virtual void initialize();
-  virtual void deinitialize();
-  virtual void process(Z3DEye);
+  void prepareColor();
+  void selectObject(QMouseEvent *e, int w, int h);
+  virtual void process(Z3DEye) override;
   void prepareData();
   void render(Z3DEye eye);
-  void renderPicking(Z3DEye eye);
-  void renderSelectionBox(Z3DEye eye);
+  virtual void renderPicking(Z3DEye eye) override;
 
-  void registerPickingObjects(Z3DPickingManager *pm);
-  void deregisterPickingObjects(Z3DPickingManager *pm);
+  virtual void registerPickingObjects() override;
+
+  virtual void deregisterPickingObjects() override;
+
+  virtual void updateNotTransformedBoundBoxImpl() override;
+
+  virtual void addSelectionLines() override;
+
+  void updateGraph();
 
 private:
-  void init();
   void updateGraphVisibleState();
   void addItem(ZFlyEmToDoItem *item);
   void addItemNode(const ZFlyEmToDoItem *item);
@@ -71,16 +64,15 @@ private:
   std::vector<ZFlyEmToDoItem*> m_itemList;
   std::vector<ZFlyEmToDoItem*> m_registeredItemList;    // used for picking
 
-  ZEventListenerParameter* m_selectItemEvent;
+  ZEventListenerParameter m_selectItemEvent;
   glm::ivec2 m_startCoord;
-  ZFlyEmToDoItem *m_pressedItem;
+  ZFlyEmToDoItem* m_pressedItem = nullptr;
   std::set<ZFlyEmToDoItem*> m_selected;
 
-  ZBoolParameter m_showGraph;
+//  ZBoolParameter m_showGraph;
 
-  Z3DLineRenderer *m_lineRenderer;
-  Z3DSphereRenderer *m_sphereRenderer;
-  Z3DLineWithFixedWidthColorRenderer *m_boundBoxRenderer;
+  Z3DLineRenderer m_lineRenderer;
+  Z3DSphereRenderer m_sphereRenderer;
 
   std::vector<glm::vec3> m_lines;
   std::vector<glm::vec4> m_lineColors;
@@ -89,12 +81,9 @@ private:
 
   std::vector<glm::vec4> m_pointPickingColors;
 
-  bool m_dataIsInvalid;
-  ZIntSpanParameter m_xCut;
-  ZIntSpanParameter m_yCut;
-  ZIntSpanParameter m_zCut;
+  bool m_dataIsInvalid = false;
 
-  ZWidgetsGroup *m_widgetsGroup;
+  std::shared_ptr<ZWidgetsGroup> m_widgetsGroup;
 };
 
 #endif // ZFLYEMTODOLISTFILTER_H

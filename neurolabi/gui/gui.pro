@@ -4,11 +4,21 @@
 TEMPLATE = app
 
 contains(TEMPLATE, app) {
-    DEFINES += _QT_APPLICATION_
+  DEFINES += _QT_APPLICATION_
 } else {
-    CONFIG += staticlib
+  CONFIG += staticlib
 }
 
+contains(CONFIG, neu3) {
+  DEFINES += _NEU3_
+}
+
+contains(CONFIG, neu3) | contains(CONFIG, flyem) {
+  CONFIG *=c++11
+  DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
+}
+
+#DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
     #QMAKE_LFLAGS += /LTCG # Link-time Code Generation
@@ -52,25 +62,34 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
-    contains(DEFINES, _FLYEM_) {
-        TARGET = neutu_d
+    contains(CONFIG, neu3) {
+        TARGET = neu3_d
+    } else {
+      contains(DEFINES, _FLYEM_) {
+          TARGET = neutu_d
+      }
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
+    QMAKE_CXXFLAGS += -g
     TARGET = neuTube
-    contains(DEFINES, _FLYEM_) {
-        TARGET = neutu
+    contains(CONFIG, neu3) {
+      TARGET = neu3
+    } else {
+      contains(DEFINES, _FLYEM_) {
+          TARGET = neutu
+      }
     }
-#    DEFINES += PROJECT_PATH=\"\\\"$$PWD\\\"\"
 }
 
 message("Target: $$TARGET")
+message("Defines: $$DEFINES")
 
 unix {
-include(extratarget.pri)
+  include(extratarget.pri)
 
-# suppress warnings from 3rd party library, works for gcc and clang
-QMAKE_CXXFLAGS += -isystem ../gui/ext
+  # suppress warnings from 3rd party library, works for gcc and clang
+  QMAKE_CXXFLAGS += -isystem ../gui/ext
 } else {
   INCLUDEPATH += ../gui/ext
 }
@@ -79,12 +98,12 @@ include(extlib.pri)
 
 CONFIG += rtti exceptions
 
-CONFIG += static_glew
 CONFIG += static_gtest
 
 QT += printsupport
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+#_USE_CORE_PROFILE_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -94,17 +113,17 @@ GIT = $$system(which git)
 
 #message($$GIT)
 contains(GIT, .*git) {
-    COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
-    DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
-    message($$COMMIT_HASH)
+  COMMIT_HASH = $$system("git log --pretty=format:\"%H %p\" -1 | sed s/' '/_/g")
+  DEFINES += _CURRENT_COMMIT_=\"\\\"$$COMMIT_HASH\\\"\"
+  message($$COMMIT_HASH)
 }
 
 include(add_itk.pri)
 
 #Qt4
 isEqual(QT_MAJOR_VERSION,4) {
-    QT += opengl xml network
-    message("Qt 4")
+  QT += opengl xml network
+  message("Qt 4")
 }
 
 #Qt5
@@ -126,18 +145,8 @@ contains(CONFIG, c++11) {
   DEFINES += _CPP11_
   unix {
     QMAKE_CXXFLAGS += -std=c++11
-  }
-}
-
-contains(CONFIG, sanitize) {
-  message(Using sanitize)
-  unix {
     macx {
-      QMAKE_CXXFLAGS += -fsanitize=address
-      QMAKE_LFLAGS += -fsanitize=address
-    } else {
-      QMAKE_CXXFLAGS += -fsanitize=address
-      QMAKE_LFLAGS += -fsanitize=address
+      QMAKE_CXXFLAGS += -stdlib=libc++
     }
   }
 }
@@ -155,26 +164,22 @@ contains(CONFIG, sanitize) {
   }
 }
 
-#QT += webkit
-
-contains(CONFIG, static_glew) { # glew from ext folder
-    include($$PWD/ext/glew.pri)
-} else { # use your own glew
-  win32 {
-    LIBS += -lglew32 -lopengl32 -lglu32
-  }
-
-  macx {
-    LIBS += -lGLEW -framework AGL -framework OpenGL
-  }
-
-  unix:!macx {
-    LIBS += -lGL -lGLEW -lGLU
-  }
-} # static glew
+win32 {
+  SOURCES += $$PWD/ext/sys/VideoMemoryWin.cpp \
+      $$PWD/ext/sys/VidMemViaD3D9.cpp \
+      $$PWD/ext/sys/VidMemViaDDraw.cpp \
+      $$PWD/ext/sys/VidMemViaDxDiag.cpp
+}
+unix {
+    macx {
+        SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
+    } else {
+        SOURCES += $$PWD/ext/sys/VideoMemoryLinux.cpp
+    }
+}
 
 contains(CONFIG, static_gtest) { # gtest from ext folder
-    include($$PWD/ext/gtest.pri)
+  include($$PWD/ext/gtest.pri)
 }
 
 unix {
@@ -186,7 +191,11 @@ unix {
             -framework ApplicationServices \
             -framework CoreFoundation
 
-        ICON = images/app.icns
+        contains(DEFINES, _FLYEM_) {
+            ICON = images/app2.icns
+        } else {
+          ICON = images/app.icns
+        }
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
@@ -205,35 +214,56 @@ unix {
           message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
           greaterThan(OSX_MINOR_VERSION, 8) {
-          contains(CONFIG, libstdc++) {
-            message("Using libstdc++")
-          } else {
-            LIBS -= -lstdc++
-            QMAKE_CXXFLAGS += -stdlib=libc++
-          }
+            contains(CONFIG, libstdc++) {
+              message("Using libstdc++")
+            } else {
+              LIBS -= -lstdc++
+              QMAKE_CXXFLAGS += -stdlib=libc++
+            }
 
             QMAKE_MAC_SDK = macosx$${OSX_COM_VER}
             message("SDK: $$QMAKE_MAC_SDK")
           }
+        } else {
+          message("No auto mac version check")
+          contains(CONFIG, c++11) {
+            isEqual(QT_MAJOR_VERSION,4) {
+              message("Forcing deployment target: ")
+              QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
+            }
+          }
+        }
+
+        isEqual(OSX_MINOR_VERSION, 11) {
+          message("Forcing 10.12 SDK on xcode8: ")
+          QMAKE_MAC_SDK = macosx10.12
+          message("SDK: $$QMAKE_MAC_SDK")
         }
 
         doc.files = doc
         doc.path = Contents/MacOS
         QMAKE_BUNDLE_DATA += doc
-
 #        config.files = config.xml
 #        config.path = Contents/MacOS
 #        QMAKE_BUNDLE_DATA += config
     } else {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
-        LIBS += -lX11 -lm -lpthread -lGL -lrt -lGLU -lstdc++
+        LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
+#        LIBS += /usr/lib/x86_64-linux-gnu/libGL.so.1.0.0
+#        LIBS += -L/usr/lib/x86_64-linux-gnu
         message(Checking arch...)
         contains(QMAKE_HOST.arch, x86_64) {
             message($$QMAKE_HOST.arch)
             QMAKE_CXXFLAGS += -m64
         }
-        RC_FILE = images/app.icns
+        QMAKE_CXXFLAGS += -fext-numeric-literals -msse3
+        contains(DEFINES, _FLYEM_) {
+            RC_FILE = images/app2.icns
+        } else {
+            RC_FILE = images/app.icns
+        }
+
     }
 }
 
@@ -247,8 +277,11 @@ include(ext/libqxt.pri)
 include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
+include(command/command.pri)
 
 message("Config: $$CONFIG")
+
+message($$QMAKE_MACOSX_DEPLOYMENT_TARGET)
 
 # Input
 RESOURCES = gui.qrc
@@ -289,15 +322,11 @@ HEADERS += mainwindow.h \
     z3dinteractionhandler.h \
     zobjsitem.h \
     zobjsmodel.h \
-    z3dvolumesource.h \
-    z3dvolumeraycaster.h \
     zdirectionaltemplatechain.h \
     zcolormap.h \
     zclickablelabel.h \
     zcolormapeditor.h \
-    z3dcanvasrenderer.h \
     zselectfilewidget.h \
-    z3dtakescreenshotwidget.h \
     z3drendererbase.h \
     z3dprimitiverenderer.h \
     z3dsphererenderer.h \
@@ -307,18 +336,14 @@ HEADERS += mainwindow.h \
     z3dcuberenderer.h \
     zcolormapwidgetwitheditorwindow.h \
     z3dbackgroundrenderer.h \
-    z3daxis.h \
     zwidgetsgroup.h \
     z3dcanvas.h \
     zspinbox.h \
     zparameter.h \
     zstringparameter.h \
-    z3drenderprocessor.h \
     z3drenderport.h \
     z3dnetworkevaluator.h \
-    z3dprocessor.h \
     z3dport.h \
-    z3dapplication.h \
     zoptionparameter.h \
     zcombobox.h \
     znumericparameter.h \
@@ -334,8 +359,6 @@ HEADERS += mainwindow.h \
     z3dfontrenderer.h \
     z3dcanvaseventlistener.h \
     zspanslider.h \
-    z3dutils.h \
-    z3dmesh.h \
     zcuboid.h \
     ztest.h \
     z3dgpuinfo.h \
@@ -354,7 +377,6 @@ HEADERS += mainwindow.h \
     zlocsegchain.h \
     zcurve.h \
     z3dvolumeslicerenderer.h \
-    zstackfile.h \
     zxmldoc.h \
     zintmap.h \
     flyem/zsegmentationanalyzer.h \
@@ -458,7 +480,6 @@ HEADERS += mainwindow.h \
     zstackdoc.h \
     zstackdocmenustore.h \
     zstackdocmenufactory.h \
-    zglew.h \
     dialogs/penwidthdialog.h \
     dvid/zdvidclient.h \
     dialogs/dvidobjectdialog.h \
@@ -665,8 +686,6 @@ HEADERS += mainwindow.h \
     zcubearray.h \
     dvid/zdvidannotationcommand.h \
     dvid/zflyembookmarkcommand.h \
-    misc/zstackyzview.h \
-    misc/zstackyzmvc.h \
     flyem/zflyemorthowindow.h \
     flyem/zflyemorthodoc.h \
     flyem/zflyemorthomvc.h \
@@ -692,6 +711,8 @@ HEADERS += mainwindow.h \
     protocols/doNthingsprotocol.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
+    protocols/synapsereviewprotocol.h \
+    protocols/synapsereviewinputdialog.h \
     widgets/zcolorlabel.h \
     zactionlibrary.h \
     zmenufactory.h \
@@ -701,6 +722,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemmb6analyzer.h \
     dialogs/zflyemsynapseannotationdialog.h \
     zdvidutil.h \
+    zstackreader.h \
+    dvid/zdvidpath.h \
     dialogs/zcontrastprotocaldialog.h \
     flyem/zflyemsynapsedatafetcher.h \
     flyem/zflyemsynapsedataupdater.h \
@@ -735,10 +758,71 @@ HEADERS += mainwindow.h \
     zviewproj.h \
     dialogs/zflyemgrayscaledialog.h \
     dvid/zdvidneurontracer.h \
+    zorthoviewhelper.h \
+    flyem/zflyemorthoviewhelper.h \
     widgets/zcomboeditwidget.h \
     dialogs/zcomboeditdialog.h \
     dialogs/zflyembodycomparisondialog.h \
-    dvid/zdvidstore.h
+    dvid/zdvidstore.h \
+    z3dfiltersetting.h \
+    zglobal.h \
+    flyem/zstackwatershedcontainer.h \
+    dvid/zdvidresultservice.h \
+    flyem/zserviceconsumer.h \
+    zstackgarbagecollector.h \
+    dialogs/zflyembodysplitdialog.h \
+    widgets/zbodylistwidget.h \
+    widgets/flyembodyinfowidget.h \
+    neu3window.h \
+    flyem/zflyembody3ddockeyprocessor.h \
+    zstackdockeyprocessor.h \
+    zexception.h \
+    zutils.h \
+    zflags.h \
+    zbbox.h \
+    zspinboxwithscrollbar.h \
+    z3dshader.h \
+    z3dcontext.h \
+    zsysteminfo.h \
+    z3dshadermanager.h \
+    z3dfilter.h \
+    zvertexbufferobject.h \
+    zvertexarrayobject.h \
+    z3dtransformparameter.h \
+    z3dglobalparameters.h \
+    z3dboundedfilter.h \
+    z3dcanvaspainter.h \
+    zmesh.h \
+    zmeshio.h \
+    zmeshutils.h \
+    z3dmeshfilter.h \
+    z3dmeshrenderer.h \
+    zstringutils.h \
+    z3dvolumefilter.h \
+    z3dtextureandeyecoordinaterenderer.h \
+    z3dview.h \
+    ztakescreenshotwidget.h \
+    zioutils.h \
+    zmeshobjsmodel.h \
+    widgets/ztextedit.h \
+    flyem/zflyembodylistmodel.h \
+    flyem/zflyembodylistview.h \
+    flyem/zflyembodylistdelegate.h \
+    flyem/zflyembodyideditor.h \
+    widgets/taskprotocolwindow.h \
+    protocols/taskprotocoltask.h \
+    protocols/taskbodyreview.h \
+    protocols/tasktesttask.h \
+    protocols/tasksplitseeds.h \
+    protocols/bodyprefetchqueue.h \
+    flyem/zflyembody3ddoccommand.h \
+    flyem/zflyembody3ddocmenufactory.h \
+    zopenglwidget.h \
+    misc/zvtkutil.h \
+    zstackdocaccessor.h \
+    zcontrastprotocol.h \
+    dialogs/zflyemmergeuploaddialog.h \
+    zmeshfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -817,6 +901,8 @@ FORMS += dialogs/settingdialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/synapsereviewprotocol.ui \
+    protocols/synapsereviewinputdialog.ui \
     protocols/protocoldialog.ui \
     dialogs/flyemsettingdialog.ui \
     dialogs/flyemsynapsefilterdialog.ui \
@@ -836,7 +922,13 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zdvidsourcewidget.ui \
     dialogs/zflyemgrayscaledialog.ui \
     dialogs/zcomboeditdialog.ui \
-    dialogs/zflyembodycomparisondialog.ui
+    dialogs/zflyembodycomparisondialog.ui \
+    dialogs/zflyembodysplitdialog.ui \
+    widgets/zbodylistwidget.ui \
+    widgets/flyembodyinfowidget.ui \
+    neu3window.ui \
+    widgets/taskprotocolwindow.ui \
+    dialogs/zflyemmergeuploaddialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -876,17 +968,13 @@ SOURCES += main.cpp \
     z3dinteractionhandler.cpp \
     zobjsitem.cpp \
     zobjsmodel.cpp \
-    z3dvolumesource.cpp \
-    z3dvolumeraycaster.cpp \
     zcolormap.cpp \
     zclickablelabel.cpp \
     zcolormapeditor.cpp \
     zlocsegchainconn.cpp \
     zlocsegchain.cpp \
     zcurve.cpp \
-    z3dcanvasrenderer.cpp \
     zselectfilewidget.cpp \
-    z3dtakescreenshotwidget.cpp \
     z3drendererbase.cpp \
     z3dprimitiverenderer.cpp \
     z3dsphererenderer.cpp \
@@ -896,18 +984,14 @@ SOURCES += main.cpp \
     z3dcuberenderer.cpp \
     zcolormapwidgetwitheditorwindow.cpp \
     z3dbackgroundrenderer.cpp \
-    z3daxis.cpp \
     zwidgetsgroup.cpp \
     z3dcanvas.cpp \
     zspinbox.cpp \
     zparameter.cpp \
     zstringparameter.cpp \
-    z3drenderprocessor.cpp \
     z3drenderport.cpp \
     z3dnetworkevaluator.cpp \
-    z3dprocessor.cpp \
     z3dport.cpp \
-    z3dapplication.cpp \
     zcombobox.cpp \
     znumericparameter.cpp \
     zspinboxwithslider.cpp \
@@ -921,8 +1005,6 @@ SOURCES += main.cpp \
     z3dsdfont.cpp \
     z3dfontrenderer.cpp \
     zspanslider.cpp \
-    z3dutils.cpp \
-    z3dmesh.cpp \
     ztest.cpp \
     z3dgpuinfo.cpp \
     z3dtexture.cpp \
@@ -1079,6 +1161,7 @@ SOURCES += main.cpp \
     zkeyeventswcmapper.cpp \
     dialogs/zflyemroidialog.cpp \
     flyem/zflyemroiproject.cpp \
+    flyem/zbcfset.cpp \
     newprojectmainwindow.cpp \
     zmouseeventmapper.cpp \
     dialogs/shapepaperdialog.cpp \
@@ -1215,8 +1298,6 @@ SOURCES += main.cpp \
     dvid/zdvidsynapsecommand.cpp \
     dvid/zdvidannotationcommand.cpp \
     dvid/zflyembookmarkcommand.cpp \
-    misc/zstackyzview.cpp \
-    misc/zstackyzmvc.cpp \
     flyem/zflyemorthowindow.cpp \
     flyem/zflyemorthodoc.cpp \
     flyem/zflyemorthomvc.cpp \
@@ -1242,6 +1323,8 @@ SOURCES += main.cpp \
     protocols/doNthingsprotocol.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsereviewprotocol.cpp \
+    protocols/synapsereviewinputdialog.cpp \
     widgets/zcolorlabel.cpp \
     zactionlibrary.cpp \
     zmenufactory.cpp \
@@ -1283,11 +1366,76 @@ SOURCES += main.cpp \
     zviewproj.cpp \
     dialogs/zflyemgrayscaledialog.cpp \
     dvid/zdvidneurontracer.cpp \
+    zorthoviewhelper.cpp \
+    flyem/zflyemorthoviewhelper.cpp \
     widgets/zcomboeditwidget.cpp \
     dialogs/zcomboeditdialog.cpp \
     dialogs/zflyembodycomparisondialog.cpp \
-    dvid/zdvidstore.cpp
+    dvid/zdvidstore.cpp \
+    z3dfiltersetting.cpp \
+    zglobal.cpp \
+    flyem/zstackwatershedcontainer.cpp \
+    dvid/zdvidresultservice.cpp \
+    flyem/zserviceconsumer.cpp \
+    zstackgarbagecollector.cpp \
+    dialogs/zflyembodysplitdialog.cpp \
+    widgets/zbodylistwidget.cpp \
+    widgets/flyembodyinfowidget.cpp \
+    zxmldoc.cpp \
+    neu3window.cpp \
+    flyem/zflyembody3ddockeyprocessor.cpp \
+    zstackdockeyprocessor.cpp \
+    zoptionparameter.cpp \
+    zspinboxwithscrollbar.cpp \
+    z3dshader.cpp \
+    z3dcontext.cpp \
+    zsysteminfo.cpp \
+    z3dshadermanager.cpp \
+    z3dfilter.cpp \
+    zvertexbufferobject.cpp \
+    zvertexarrayobject.cpp \
+    z3dtransformparameter.cpp \
+    z3dglobalparameters.cpp \
+    z3dboundedfilter.cpp \
+    z3dcanvaspainter.cpp \
+    zmesh.cpp \
+    zmeshio.cpp \
+    zmeshutils.cpp \
+    z3dmeshfilter.cpp \
+    z3dmeshrenderer.cpp \
+    zstringutils.cpp \
+    z3dvolumefilter.cpp \
+    z3dtextureandeyecoordinaterenderer.cpp \
+    z3dview.cpp \
+    ztakescreenshotwidget.cpp \
+    zioutils.cpp \
+    zexception.cpp \
+    zmeshobjsmodel.cpp \
+    widgets/ztextedit.cpp \
+    flyem/zflyembodylistmodel.cpp \
+    flyem/zflyembodylistview.cpp \
+    flyem/zflyembodylistdelegate.cpp \
+    flyem/zflyembodyideditor.cpp \
+    widgets/taskprotocolwindow.cpp \
+    protocols/taskprotocoltask.cpp \
+    protocols/taskbodyreview.cpp \
+    protocols/tasktesttask.cpp \
+    protocols/tasksplitseeds.cpp \
+    protocols/bodyprefetchqueue.cpp \
+    flyem/zflyembody3ddoccommand.cpp \
+    flyem/zflyembody3ddocmenufactory.cpp \
+    zopenglwidget.cpp \
+    zstackreader.cpp \
+    dvid/zdvidpath.cpp \
+    misc/zvtkutil.cpp \
+    zstackdocaccessor.cpp \
+    zcontrastprotocol.cpp \
+    dialogs/zflyemmergeuploaddialog.cpp \
+    zmeshfactory.cpp
 
-#OTHER_FILES += \
-##    extlib.pri \
-#    extratarget.pri
+DISTFILES += \
+    Resources/shader/wblended_final.frag \
+    Resources/shader/wblended_init.frag
+
+
+

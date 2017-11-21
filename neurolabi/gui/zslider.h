@@ -27,6 +27,7 @@ public:
 
 public slots:
   void setValue(int value);
+  void initValue(int value);
   void setValueQuietly(int value);
   void setRange(int min, int max);
   void setRangeQuietly(int min, int max);

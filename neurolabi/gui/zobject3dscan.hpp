@@ -376,14 +376,14 @@ Stack* ZObject3dScan::makeStack(InputIterator startObject,
 {
   if (startObject != endObject) {
     Cuboid_I boundBox;
-    startObject->getBoundBox(&boundBox);
+    (*startObject)->getBoundBox(&boundBox);
 
     InputIterator iter = startObject;
     ++iter;
     //Get Bound box
     for (; iter != endObject; ++iter) {
       Cuboid_I subBoundBox;
-      iter->getBoundBox(&subBoundBox);
+      (*iter)->getBoundBox(&subBoundBox);
       Cuboid_I_Union(&boundBox, &subBoundBox, &boundBox);
     }
 
@@ -400,7 +400,7 @@ Stack* ZObject3dScan::makeStack(InputIterator startObject,
 
     int v = 1;
     for (iter = startObject; iter != endObject; ++iter) {
-      iter->drawStack(stack, v++, stackOffset);
+      (*iter)->drawStack(stack, v++, stackOffset);
     }
 
     if (offset != NULL) {

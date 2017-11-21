@@ -3,6 +3,7 @@
 #include <cfloat>
 #include <cmath>
 #include <typeinfo>
+#include <string.h>
 
 #include "imgproc/zstackprocessor.h"
 
@@ -24,13 +25,14 @@ GradientStrategy<T>::GradientStrategy()
 
 
 template<typename T>
-void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth)
+void GradientStrategy<T>::run(const T* in,T* out,uint width,uint height,uint depth,bool ignore_background)
 {
   _width=width;
   _height=height;
   _depth=depth;
   _slice=_width*_height;
   _total=_slice*_depth;
+  _ignore_background=ignore_background;
   _run(in,out);
 }
 
@@ -40,21 +42,22 @@ void GradientStrategy<T>::edgeEnhance(const T* in,T* out,double alpha)
 {
   for(size_t i=0;i<this->_total;++i)
   {
-    out[i]=(1-alpha)*out[i]+in[i]*(alpha);
+    out[i]=(_ignore_background&&in[i]==0)?0:(1-alpha)*out[i]+in[i]*(alpha);
   }
 }
 
 
 template<>
-void GradientStrategy<color_t>::edgeEnhance(const color_t* in,color_t* out,double alpha)
+void GradientStrategy<color_t>::edgeEnhance(const color_t* /*in*/,color_t* /*out*/,double /*alpha*/)
 {
-  for(size_t i=0;i<this->_total;++i)
+  //not support yet
+  /*for(size_t i=0;i<this->_total;++i)
   {
     for(uint j=0;j<3;++j)
     {
-      out[i][j]=(1-alpha)*out[i][j]+in[i][j]*alpha;
+      out[i][j]=in[i][j]==0?0:(1-alpha)*out[i][j]+in[i][j]*alpha;
     }
-  }
+  }*/
 }
 
 
@@ -62,16 +65,18 @@ template<typename T>
 void GradientStrategy<T>::reverse(T* begin,T* end)
 {
   for(T* it=begin;it!=end;++it)
-    *it=_max-*it;
+    *it=(_ignore_background && *it==0)?0:_max-*it;
 }
 
 
 template<>
-void GradientStrategy<color_t>::reverse(color_t* begin,color_t* end)
+void GradientStrategy<color_t>::reverse(color_t* /*begin*/,color_t* /*end*/)
 {
+  //not support yet
+  /*
   for(color_t* it=begin;it!=end;++it)
     for(uint i=0;i<3;++i)
-      (*it)[i]=_max-(*it)[i];
+      (*it)[i]=_max-(*it)[i];*/
 }
 
 
@@ -92,6 +97,7 @@ void GradientStrategyContext::run
     const ZStack* in,
     ZStack* out,
     bool reverse,
+    bool ignore_background,
     double edge_enhance_alpha,
     double gaussin_smooth_sigma_x,
     double gaussin_smooth_sigma_y,
@@ -103,7 +109,7 @@ void GradientStrategyContext::run
 
 #define _run_(type)\
   _run<type>(in,out,edge_enhance_alpha,gaussin_smooth_sigma_x,\
-  gaussin_smooth_sigma_y,gaussin_smooth_sigma_z,reverse)
+  gaussin_smooth_sigma_y,gaussin_smooth_sigma_z,reverse,ignore_background)
   switch(in->kind())
   {
     case GREY:
@@ -124,6 +130,7 @@ void GradientStrategyContext::run
     default:
           break;
   }
+  out->setOffset(in->getOffset());
 #undef _run_
 }
 
@@ -137,7 +144,8 @@ void GradientStrategyContext:: _run
     double gaussin_smooth_sigma_x,
     double gaussin_smooth_sigma_y,
     double gaussin_smooth_sigma_z,
-    bool reverse)
+    bool reverse,
+    bool ignore_background)
 {
   GradientStrategy<T>* strategy=getStrategy<T>();
   size_t total=in->width()*in->height()*in->depth();
@@ -149,7 +157,7 @@ void GradientStrategyContext:: _run
     {
       const T*_in=(const T*)in->array8(i);
       T* _out=(T*)out->array8(i);
-      strategy->run(_in,_out,in->width(),in->height(),in->depth());
+      strategy->run(_in,_out,in->width(),in->height(),in->depth(),ignore_background);
     }
 
     if(
@@ -194,21 +202,30 @@ void GradientStrategyContext:: _run
 template<typename T>
 void GradientStrategySimple<T>::process(uint& x,uint&y ,uint&z,uint& w,const T* pi,T* p,uint offset,uint end)
 {
-
+  bool ignore_background=this->_ignore_background;
   for(z=0;z<this->_depth;++z)
     for(y=0;y<this->_height;++y)
       for(x=0;x<this->_width;++x,++pi,++p)
       {
-        if(w==0)*p=std::abs(double(*pi)-*(pi+offset));
-        else if(w==end)*p=std::abs(double(*(pi-offset))-*pi);
-        else*p=std::abs(double(*(pi+offset))-*(pi-offset))/2.0;
+        if(ignore_background && *pi==0)
+        {
+          *p=0;
+        }
+        else
+        {
+          if(w==0)*p=std::abs(double(*pi)-*(pi+offset));
+          else if(w==end)*p=std::abs(double(*(pi-offset))-*pi);
+          else*p=std::abs(double(*(pi+offset))-*(pi-offset))/2.0;
+        }
       }
 }
 
 
 template<>
-void GradientStrategySimple<color_t>::process(uint& x,uint&y ,uint&z,uint& w,const color_t* pi,color_t* p,uint offset,uint end)
+void GradientStrategySimple<color_t>::process(uint& /*x*/,uint&/*y*/ ,uint&/*z*/,uint& /*w*/,const color_t* /*pi*/,color_t* /*p*/,uint /*offset*/,uint /*end*/)
 {
+  //not support yet
+  /*
   for(z=0;z<this->_depth;++z)
     for(y=0;y<this->_height;++y)
       for(x=0;x<this->_width;++x,++pi,++p)
@@ -217,7 +234,7 @@ void GradientStrategySimple<color_t>::process(uint& x,uint&y ,uint&z,uint& w,con
           if(w==0)(*p)[t]=std::abs(double((*pi)[t])-(*(pi+offset))[t]);
           else if(w==end)(*p)[t]=std::abs(double((*(pi-offset))[t])-(*pi)[t]);
           else(*p)[t]=std::abs(double((*(pi+offset))[t])-(*(pi-offset))[t])/2.0;
-        }
+        }*/
 
 }
 
@@ -228,6 +245,7 @@ void GradientStrategySimple<T>::_run(const T* in,T* out)
   uint width=this->_width,height=this->_height,depth=this->_depth;
   size_t slice=this->_slice,total=this->_total;
   double max=this->_max;
+
 
   T *px=new T[total],*py=new T[total],*pz=new T[total];
   T *_px=px,*_py=py,*_pz=pz;
@@ -261,8 +279,10 @@ void GradientStrategySimple<T>::_run(const T* in,T* out)
 
 
 template<>
-void GradientStrategySimple<color_t>::_run(const color_t* in,color_t* out)
+void GradientStrategySimple<color_t>::_run(const color_t* /*in*/,color_t* /*out*/)
 {
+  //not support yet
+  /*
   uint width=this->_width,height=this->_height,depth=this->_depth;
   size_t slice=this->_slice,total=this->_total;
   double max=this->_max;
@@ -299,5 +319,5 @@ void GradientStrategySimple<color_t>::_run(const color_t* in,color_t* out)
   }
   delete[] px;
   delete[] py;
-  delete[] pz;
+  delete[] pz;*/
 }

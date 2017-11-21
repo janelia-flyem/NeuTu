@@ -27,6 +27,7 @@
 #include "swctreenode.h"
 #include "zswctrunkanalyzer.h"
 #include "zswcdisttrunkanalyzer.h"
+#include "zswcdirectionfeatureanalyzer.h"
 #include "zstring.h"
 #include "zfiletype.h"
 #include "zjsonobject.h"
@@ -41,6 +42,7 @@
 #include "zrect2d.h"
 #include "QsLog/QsLog.h"
 #endif
+#include "zstackfactory.h"
 
 using namespace std;
 
@@ -326,7 +328,7 @@ bool ZSwcTree::load(const char *filePath)
       }
     }
 
-    if (ZFileType::FileType(styleFilePath) == ZFileType::JSON_FILE) {
+    if (ZFileType::FileType(styleFilePath) == ZFileType::FILE_JSON) {
       if (!styleFilePath.isAbsolutePath()) {
         styleFilePath = styleFilePath.absolutePath(ZString::dirPath(m_source));
       }
@@ -2023,6 +2025,11 @@ ZSwcBranch* ZSwcTree::extractLongestBranch()
   return branch;
 }
 
+double ZSwcTree::getLongestPathLength()
+{
+  return getLongestPath().getLength();
+}
+
 ZSwcPath ZSwcTree::getLongestPath()
 {
 //  TZ_ASSERT(regularRootNumber() == 1, "multiple trees not supported yet");
@@ -2250,7 +2257,7 @@ vector<double> ZSwcTree::computeAllBranchingAngle()
   return angleArray;
 }
 
-vector<double> ZSwcTree::computeAllContinuationAngle(bool rotating)
+std::vector<double> ZSwcTree::computeAllContinuationAngle(bool rotating)
 {
   updateIterator(SWC_TREE_ITERATOR_DEPTH_FIRST);
 
@@ -2292,6 +2299,23 @@ vector<double> ZSwcTree::computeAllContinuationAngle(bool rotating)
 
   return angleArray;
 }
+
+std::vector<std::vector<double> > ZSwcTree::computeAllTerminalDirection()
+{
+  std::vector<std::vector<double> > result;
+
+  LeafIterator nodeIter(this);
+  while (nodeIter.hasNext()) {
+    Swc_Tree_Node *tn = nodeIter.next();
+    ZSwcDirectionFeatureAnalyzer analyzer;
+    std::vector<double> feature = analyzer.computeFeature(tn);
+    result.push_back(feature);
+  }
+
+  return result;
+}
+
+
 
 static void GenerateRandomPos(const double *targetVec, double theta,
                               const double *orgPos, const double *prevPos,
@@ -3247,14 +3271,14 @@ const std::vector<Swc_Tree_Node *> &ZSwcTree::getSwcTreeNodeArray(
 
 bool ZSwcTree::hasGoodSourceName()
 {
-  if (ZFileType::FileType(getSource()) == ZFileType::SWC_FILE) {
+  if (ZFileType::FileType(getSource()) == ZFileType::FILE_SWC) {
     return true;
   }
 
   return false;
 }
 
-void ZSwcTree::labelStack(Stack *stack)
+void ZSwcTree::labelStack(Stack *stack) const
 {
   Swc_Tree_Node_Label_Workspace workspace;
   Default_Swc_Tree_Node_Label_Workspace(&workspace);
@@ -3266,8 +3290,12 @@ void ZSwcTree::labelStack(Stack *stack)
   }
 }
 
+void ZSwcTree::labelStack(ZStack *stack) const
+{
+  labelStack(stack, getLabel());
+}
 
-void ZSwcTree::labelStack(ZStack* stack,int v)
+void ZSwcTree::labelStack(ZStack* stack,int v) const
 {
   Swc_Tree_Node_Label_Workspace ws;
   Stack* _stack=stack->c_stack();
@@ -3291,6 +3319,56 @@ void ZSwcTree::labelStack(ZStack* stack,int v)
       Swc_Tree_Node_Label_Stack(iter, _stack, &ws);
     }
   }
+}
+
+void ZSwcTree::labelStackByType(ZStack *stack) const
+{
+  updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST);
+  Swc_Tree_Node_Label_Workspace workspace;
+  Default_Swc_Tree_Node_Label_Workspace(&workspace);
+  workspace.offset[0] = -stack->getOffset().getX();
+  workspace.offset[1] = -stack->getOffset().getY();
+  workspace.offset[2] = -stack->getOffset().getZ();
+
+  for (Swc_Tree_Node *iter = begin(); iter != NULL; iter = next()) {
+    if (SwcTreeNode::isRegular(iter)) {
+      //Label current node
+      workspace.label_mode = SWC_TREE_LABEL_NODE;
+      workspace.sdw.color.r = SwcTreeNode::type(iter);
+      Swc_Tree_Node_Label_Stack(iter, stack->c_stack(), &workspace);
+
+      //Label the parent link if the types are consistent
+      Swc_Tree_Node *parent = SwcTreeNode::parent(iter);
+      if (SwcTreeNode::isRegular(parent)) {
+        if (SwcTreeNode::type(iter) == SwcTreeNode::type(parent)) {
+          workspace.label_mode = SWC_TREE_LABEL_CONNECTION;
+          Swc_Tree_Node_Label_Stack(iter, stack->c_stack(), &workspace);
+        }
+      }
+    }
+  }
+}
+
+ZStack* ZSwcTree::toTypeStack() const
+{
+  ZIntCuboid boundBox;
+  updateIterator(SWC_TREE_ITERATOR_BREADTH_FIRST);
+  for (Swc_Tree_Node *iter = begin(); iter != NULL; iter = next()) {
+    if (SwcTreeNode::isRegular(iter)) {
+      if (SwcTreeNode::type(iter) > 0) {
+        boundBox.join(SwcTreeNode::boundBox(iter).toIntCuboid());
+      }
+    }
+  }
+
+  ZStack *stack = NULL;
+
+  if (!boundBox.isEmpty()) {
+    stack = ZStackFactory::MakeZeroStack(GREY, boundBox);
+    labelStackByType(stack);
+  }
+
+  return stack;
 }
 
 

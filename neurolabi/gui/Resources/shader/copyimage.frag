@@ -2,8 +2,15 @@ uniform vec2 screen_dim_RCP;
 
 uniform sampler2D color_texture;
 uniform sampler2D depth_texture;
-uniform float output_color_option = 0.0;
 uniform bool discard_transparent = false;
+
+#if GLSL_VERSION >= 330
+layout(location = 0) out vec4 FragData0;
+#elif GLSL_VERSION >= 130
+out vec4 FragData0;  // call glBindFragDataLocation before linking
+#else
+#define FragData0 gl_FragData[0]
+#endif
 
 #if GLSL_VERSION < 130
 #define texture texture2D
@@ -17,10 +24,13 @@ void main()
   if (discard_transparent && fragColor.a == 0.0)
     discard;
 
-  if (output_color_option > 0.0)
-    fragColor.rgb *= fragColor.a;
-  else if (fragColor.a > 0.0 && output_color_option < 0.0)
+#ifdef Multiply_Alpha
+  fragColor.rgb *= fragColor.a;
+#endif
+#ifdef Divide_By_Alpha
+  if (fragColor.a > 0.0)
     fragColor.rgb /= fragColor.a;
+#endif
 
   FragData0 = fragColor;
 

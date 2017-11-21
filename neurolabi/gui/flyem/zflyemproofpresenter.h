@@ -33,7 +33,7 @@ public:
   void showData(bool on);
   bool showingData() const;
 
-  void enableSplit();
+  void enableSplit(FlyEM::EBodySplitMode mode);
   void disableSplit();
   void setSplitEnabled(bool s);
 
@@ -41,12 +41,17 @@ public:
   bool processCustomOperator(
       const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
-  inline bool isSplitWindow() const {
-    return m_splitWindowMode;
+  FlyEM::EBodySplitMode getSplitMode() const {
+    return m_splitMode;
   }
 
-  void setSplitWindow(bool state) {
-    m_splitWindowMode = state;
+  inline bool isSplitWindow() const {
+    return m_splitMode != FlyEM::BODY_SPLIT_NONE;
+//    return m_splitWindowMode;
+  }
+
+  void setSplitMode(FlyEM::EBodySplitMode mode) {
+    m_splitMode = mode;
   }
 
   void processRectRoiUpdate(ZRect2d *rect, bool appending);
@@ -83,6 +88,7 @@ signals:
   void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
+  void runningFullSplit();
   void runningLocalSplit();
   void goingToBody();
   void selectingBody();
@@ -123,6 +129,7 @@ public slots:
   void setTodoItemToSplit();
   void selectBodyInRoi();
   void zoomInRectRoi();
+  void refreshSegmentation();
 
 private:
 //  void connectAction();
@@ -147,7 +154,8 @@ private:
 
 private:
   bool m_isHightlightMode;
-  bool m_splitWindowMode;
+  FlyEM::EBodySplitMode m_splitMode;
+//  bool m_splitWindowMode;
   bool m_highTileContrast;
   bool m_smoothTransform;
   bool m_showingData;

@@ -8,9 +8,13 @@
 #include "zinteractivecontext.h"
 #include "zstroke2d.h"
 #include "zuncopyable.h"
-#include "zstackdoc.h"
+#include "zstackdocreader.h"
+#include "zrect2d.h"
+#include "zstackball.h"
 
 class Z3DTrackballInteractionHandler;
+class ZStackDocKeyProcessor;
+class ZStackOperator;
 
 /*!
  * \brief An experimental class of handling GUI interaction
@@ -35,10 +39,10 @@ public:
   };
 
   enum EState {
-    STATE_DRAW_STROKE, STATE_DRAW_LINE, STATE_LEFT_BUTTON_PRESSED,
+    STATE_DRAW_STROKE, STATE_DRAW_LINE, STATE_MARK, STATE_LEFT_BUTTON_PRESSED,
     STATE_RIGHT_BUTTON_PRESSED, STATE_MOVE_OBJECT, STATE_SWC_SMART_EXTEND,
     STATE_SWC_EXTEND, STATE_SWC_CONNECT, STATE_SWC_ADD_NODE,
-    STATE_DRAW_RECT, STATE_SWC_SELECTION
+    STATE_DRAW_RECT, STATE_SWC_SELECTION, STATE_LOCATE
   };
 
   enum EKeyMode {
@@ -65,11 +69,13 @@ public:
 
   void initInteractiveContext();
 
-  void processMouseReleaseEvent(QMouseEvent *event, int sliceIndex = 0);
+  bool processMouseReleaseEvent(QMouseEvent *event, int sliceIndex = 0);
   bool processKeyPressEvent(QKeyEvent *event);
   void processMouseMoveEvent(QMouseEvent *event);
   void processMousePressEvent(QMouseEvent *event, int sliceIndex = 0);
   void processMouseDoubleClickEvent(QMouseEvent *eventint, int sliceIndex = 0);
+
+  bool process(const ZStackOperator &op);
 
   bool lockingMouseMoveEvent() const;
 
@@ -95,7 +101,13 @@ public:
     return m_keyMode;
   }
 
+  void setKeyProcessor(ZStackDocKeyProcessor *processor);
+
   void showContextMenu();
+  void enterPaintStroke();
+  void enterMarkTodo();
+  void enterPaintRect();
+  void enterLocateMode();
 
 signals:
   void decorationUpdated();
@@ -108,15 +120,22 @@ signals:
   void selectingUpstreamSwcNode();
   void selectingConnectedSwcNode();
   void croppingSwc();
+  void shootingTodo(int x, int y);
+  void deletingSelected();
+  void locating(int x, int y);
 
 private:
-  void enterPaintStroke();
   void exitPaintStroke();
-  void enterPaintRect();
+  void exitMarkTodo();
+  void exitExplore();
   void exitPaintRect();
   void exitSwcEdit();
+  void exitEditMode();
   void saveStroke();
   void commitData();
+
+  void suppressMouseRelease(bool s);
+  bool mouseReleaseSuppressed() const;
 
 private:
   QList<ZStackObject*> m_unnamedDecorationList; //need to free up
@@ -140,15 +159,19 @@ private:
   QPointF m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
+  ZStroke2d m_rayMarker;
+  ZStackBall m_exploreMarker;
   ZRect2d m_rect;
   bool m_isStrokeOn;
 
-  ZStackDocReader *m_dataBuffer;
+//  ZStackDocReader *m_dataBuffer;
 
   Qt::CursorShape m_cursorShape;
 
   bool m_isKeyEventEnabled;
+  ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
+  bool m_mouseReleaseSuppressed = false;
 
   int m_previousKey;
   Qt::KeyboardModifiers m_previousKeyModifiers;

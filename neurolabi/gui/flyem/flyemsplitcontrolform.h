@@ -38,6 +38,9 @@ signals:
   void committingResult();
   void zoomingTo(int x, int y, int z);
   void loadingBookmark(QString);
+  void savingTask();
+  void loadingSplitResult();
+  void uploadingSplitResult();
   void recoveringSeed();
   void exportingSeed();
   void importingSeed();
@@ -49,6 +52,7 @@ signals:
   void bookmarkChecked(ZFlyEmBookmark*);
   void croppingCoarseBody3D();
   void showingBodyGrayscale();
+  void loadingSplitTask();
 
 public slots:
   void updateBodyWidget(uint64_t bodyId);
@@ -76,6 +80,10 @@ private slots:
   void checkCurrentBookmark();
   void uncheckCurrentBookmark();
   void checkCurrentBookmark(bool checking);
+  void saveTask();
+  void loadSplitResult();
+  void uploadSplitResult();
+  void loadSplitTask();
 
 private:
   void setupWidgetBehavior();

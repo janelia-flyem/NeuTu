@@ -25,7 +25,6 @@ class ZStackViewParam;
 class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
 class ZDvidGraySlice;
-
 /*!
  * \brief The basic class of manage roles to a stack object
  */
@@ -75,6 +74,9 @@ public:
   virtual Z3DGraph get3DGraph() const { return Z3DGraph(); }
 
   virtual ZJsonObject toJsonObject() const;
+  virtual ZJsonObject toSeedJson() const;
+
+  virtual ZIntCuboid getBoundBox() const;
 
   inline ZStackObject* getData() const {
     return m_data;
@@ -220,6 +222,7 @@ public:
   void setLabel(int label);
   QString getTypeName() const;
   ZJsonObject toJsonObject() const;
+  ZJsonObject toSeedJson() const;
 
   ZSwcTree* getSwcDecoration() const;
   Z3DGraph get3DGraph() const;
@@ -254,6 +257,8 @@ public:
 
   const ZObject3d *getCompleteData() const;
   ZObject3d *getCompleteData();
+
+  ZJsonObject toSeedJson() const;
 };
 
 /***************************************************/

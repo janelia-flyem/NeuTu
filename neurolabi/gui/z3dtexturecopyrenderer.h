@@ -3,50 +3,49 @@
 
 #include "z3dprimitiverenderer.h"
 
-class Z3DTexture;
-
 class Z3DTextureCopyRenderer : public Z3DPrimitiveRenderer
 {
-  Q_OBJECT
+Q_OBJECT
 public:
-  enum OutputColorOption
-  {
-    None, Divide_By_Alpha, Multiply_By_Alpha
-  };
-
-  explicit Z3DTextureCopyRenderer(QObject *parent = 0);
-
-  void setColorTexture(const Z3DTexture *colorTex) { m_colorTexture = colorTex; }
-  void setDepthTexture(const Z3DTexture *depthTex) { m_depthTexture = depthTex; }
-  // Multiply_By_Alpha : output color will be multiplied by alpha value (convert to premultiplied format)
+  // Multiply_Alpha : output color will be multiplied by alpha value (convert to premultiplied format)
   // None (default): just copy
   // Divide_By_Alpha : output color will be divided by alpha value (input is premultiplied format)
-  void setOutputColorOption(OutputColorOption option)
-    { m_colorOpAlpha = option == None ? 0.f : option == Divide_By_Alpha ? -1.f : 1.f; }
+  enum class OutputColorOption
+  {
+    NoChange, DivideByAlpha, MultiplyAlpha
+  };
+
+  explicit Z3DTextureCopyRenderer(Z3DRendererBase& rendererBase, OutputColorOption mode = OutputColorOption::NoChange);
+
+  void setColorTexture(const Z3DTexture* colorTex)
+  { m_colorTexture = colorTex; }
+
+  void setDepthTexture(const Z3DTexture* depthTex)
+  { m_depthTexture = depthTex; }
 
   // if true, color with zero alpha value should be discarded, which might save many depth texture lookup. default is false
   // Make sure your color and depth buffer are cleared before if set to true
   // glClear + discard transparent  is usually faster than   not discard transparent if many pixels are empty
-  void setDiscardTransparent(bool v) { m_discardTransparent = v; }
-  
-signals:
-  
-public slots:
+  void setDiscardTransparent(bool v)
+  { m_discardTransparent = v; }
 
 protected:
-  virtual void compile();
-  virtual void initialize();
-  virtual void deinitialize();
+  virtual void compile() override;
 
-  virtual void render(Z3DEye eye);
-  virtual void renderPicking(Z3DEye);
+  QString generateHeader() const;
 
-  const Z3DTexture *m_colorTexture;
-  const Z3DTexture *m_depthTexture;
+  virtual void render(Z3DEye eye) override;
 
-  Z3DShaderProgram m_copyTextureShader;
-  float m_colorOpAlpha;
+protected:
+  const Z3DTexture* m_colorTexture;
+  const Z3DTexture* m_depthTexture;
+
+  Z3DShaderGroup m_copyTextureShaderGrp;
   bool m_discardTransparent;
+
+  OutputColorOption m_mode;
+  ZVertexArrayObject m_VAO;
 };
+
 
 #endif // Z3DTEXTURECOPYRENDERER_H

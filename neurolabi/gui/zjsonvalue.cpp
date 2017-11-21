@@ -142,6 +142,10 @@ void ZJsonValue::set(const ZJsonValue &value)
 
 void ZJsonValue::set(json_t *data, bool asNew)
 {
+  if (m_data == data) {
+    return;
+  }
+
   if (m_data != NULL) {
     json_decref(m_data);
   }
@@ -198,12 +202,6 @@ void ZJsonValue::decodeString(const char *str, json_error_t *error)
   }
 
   m_data = json_loads(str, JSON_DECODE_ANY, error);
-  if (error->line > 0) {
-    std::cout << "JSON decoding error: " << std::endl;
-    std::cout << "  " << GetErrorString(*error) << std::endl;
-//    std::cout << error->source << std::endl;
-//    std::cout << error->text << std::endl;
-  }
 
   delete ownError;
 }
@@ -246,6 +244,14 @@ std::vector<ZJsonValue> ZJsonValue::toArray()
   return array;
 }
 
+void ZJsonValue::PrintError(const json_error_t &error)
+{
+  if (error.line > 0) {
+    std::cout << "JSON decoding error: " << std::endl;
+    std::cout << "  " << GetErrorString(error) << std::endl;
+  }
+}
+
 std::string ZJsonValue::GetErrorString(const json_error_t &error)
 {
   ostringstream stream;
@@ -265,6 +271,10 @@ double ZJsonValue::toReal() const
   return ZJsonParser::numberValue(m_data);
 }
 
+std::string ZJsonValue::toString() const
+{
+  return ZJsonParser::stringValue(m_data);
+}
 /*
 std::string ZJsonValue::toString() const
 {
@@ -302,15 +312,20 @@ bool ZJsonValue::load(const string &filePath)
   json_error_t error;
   m_data = json_load_file(filePath.c_str(), 0, &error);
   if (m_data) {
+    m_source = filePath;
     return true;
   }
-
 
   std::cout << filePath << "(" << error.line << ")" << ": "
             << error.text << std::endl;
 #endif
 
   return false;
+}
+
+std::string ZJsonValue::getSource() const
+{
+  return m_source;
 }
 
 ZJsonValue ZJsonValue::clone() const

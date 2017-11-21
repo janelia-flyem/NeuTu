@@ -28,6 +28,7 @@ private:
   QPushButton* start_gradient_magnitude;
   QComboBox*   strategies;
   QCheckBox*   reverse;
+  QCheckBox*   ignore_background;
   QDoubleSpinBox*     gaussin_sigma_x;
   QDoubleSpinBox*     gaussin_sigma_y;
   QDoubleSpinBox*     gaussin_sigma_z;

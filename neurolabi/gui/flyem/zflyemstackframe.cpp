@@ -141,7 +141,7 @@ ZStackFrame* ZFlyEmStackFrame::spinoffSegmentationSelection(
     //frame = new ZStackFrame();
 #ifdef _DEBUG_
     cout << "Color selected: ";
-    ZDoubleVector::print(selected);
+    ZDoubleVector::Print(selected);
 #endif
     ZStack *substack = doc->stackMask()->createSubstack(selected);
 

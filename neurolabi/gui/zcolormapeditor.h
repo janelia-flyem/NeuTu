@@ -2,35 +2,49 @@
 #define ZCOLORMAPEDITOR_H
 
 #include <QWidget>
-class ZColorMapParameter;
+
 class QLabel;
+
 class QDoubleSpinBox;
+
 class QPushButton;
+
 class QCheckBox;
+
+class ZColorMapParameter;
 
 class ZColorMapWidget : public QWidget
 {
-  Q_OBJECT
+Q_OBJECT
 public:
-  explicit ZColorMapWidget(ZColorMapParameter *colorMap, QWidget *parent = 0);
+  explicit ZColorMapWidget(ZColorMapParameter* colorMap, QWidget* parent = nullptr);
 
   void editLColor(size_t index);
+
   void editRColor(size_t index);
-  
-public slots:
-  void updateIntensityScreenWidth();
 
 protected:
-  virtual void mousePressEvent(QMouseEvent *e);
-  virtual void mouseMoveEvent(QMouseEvent *e);
-  virtual void mouseReleaseEvent(QMouseEvent *e);
-  virtual void mouseDoubleClickEvent(QMouseEvent *e);
-  virtual void contextMenuEvent(QContextMenuEvent *e);
-  virtual void keyPressEvent(QKeyEvent *e);
-  virtual bool event(QEvent *e);
-  virtual void paintEvent(QPaintEvent *);
-  virtual void resizeEvent(QResizeEvent *);
-  virtual QSize sizeHint() const;
+  void updateIntensityScreenWidth();
+
+  virtual void mousePressEvent(QMouseEvent* e) override;
+
+  virtual void mouseMoveEvent(QMouseEvent* e) override;
+
+  virtual void mouseReleaseEvent(QMouseEvent* e) override;
+
+  virtual void mouseDoubleClickEvent(QMouseEvent* e) override;
+
+  virtual void contextMenuEvent(QContextMenuEvent* e) override;
+
+  virtual void keyPressEvent(QKeyEvent* e) override;
+
+  virtual bool event(QEvent* e) override;
+
+  virtual void paintEvent(QPaintEvent* /*event*/) override;
+
+  virtual void resizeEvent(QResizeEvent* /*event*/) override;
+
+  virtual QSize sizeHint() const override;
 
   enum FindKeyResult
   {
@@ -39,12 +53,16 @@ protected:
     RIGHT
   };
 
-  FindKeyResult findkey(const QPoint &pos, size_t &index, bool includeBoundKey = false) const;
+  FindKeyResult findkey(const QPoint& pos, size_t& index, bool includeBoundKey = false) const;
+
   double intensityToScreenXPosition(double intensity) const;
+
   double screenXPositionToIntensity(double x) const;
+
   QRect sliderBounds(size_t index) const;
 
-  ZColorMapParameter *m_colorMap;
+private:
+  ZColorMapParameter* m_colorMap;
 
   int m_sliderWidth;
   int m_sliderHeight;
@@ -57,31 +75,35 @@ protected:
 
 class ZColorMapEditor : public QWidget
 {
-  Q_OBJECT
+Q_OBJECT
 public:
-  explicit ZColorMapEditor(ZColorMapParameter *colorMap, QWidget *parent = 0);
+  explicit ZColorMapEditor(ZColorMapParameter* colorMap, QWidget* parent = nullptr);
 
-public slots:
+protected:
   void updateFromColorMap();
-  void setDomainMin(double min);
-  void setDomainMax(double max);
-  void fitDomainToDataRange();
-private:
 
+  void setDomainMin(double min);
+
+  void setDomainMax(double max);
+
+  void fitDomainToDataRange();
+
+private:
   void createWidget();
 
-  ZColorMapParameter *m_colorMap;
-  ZColorMapWidget *m_colorMapWidget;
-  QLabel *m_dataMinNameLabel;
-  QLabel *m_dataMinValueLabel;
-  QLabel *m_dataMaxNameLabel;
-  QLabel *m_dataMaxValueLabel;
-  QLabel *m_domainMinNameLabel;
-  QLabel *m_domainMaxNameLabel;
-  QDoubleSpinBox *m_domainMinSpinBox;
-  QDoubleSpinBox *m_domainMaxSpinBox;
-  QPushButton *m_fitDomainToDataButton;
-  QCheckBox *m_rescaleKeys;
+private:
+  ZColorMapParameter* m_colorMap;
+  ZColorMapWidget* m_colorMapWidget;
+  QLabel* m_dataMinNameLabel;
+  QLabel* m_dataMinValueLabel;
+  QLabel* m_dataMaxNameLabel;
+  QLabel* m_dataMaxValueLabel;
+  QLabel* m_domainMinNameLabel;
+  QLabel* m_domainMaxNameLabel;
+  QDoubleSpinBox* m_domainMinSpinBox;
+  QDoubleSpinBox* m_domainMaxSpinBox;
+  QPushButton* m_fitDomainToDataButton;
+  QCheckBox* m_rescaleKeys;
 };
 
 #endif // ZCOLORMAPEDITOR_H

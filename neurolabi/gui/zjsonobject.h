@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <initializer_list>
 
 #include "zjsonvalue.h"
 #include "tz_stdint.h"
@@ -26,7 +27,9 @@ public:
   const json_t* operator[] (const char *key) const;
 
   ZJsonValue value(const char *key) const;
-
+#ifndef SWIG
+  ZJsonValue value(const std::initializer_list<const char*> &keyList) const;
+#endif
   /*!
    * \brief Test if an object is empty
    *
@@ -48,7 +51,7 @@ public:
   bool decode(const std::string &str);
 
   std::string summary();
-  std::map<std::string, json_t*> toEntryMap(bool recursive = true) const;
+  std::map<std::string, json_t*> toEntryMap(bool recursive) const;
 
   /*!
    * \brief Test if a key is valid

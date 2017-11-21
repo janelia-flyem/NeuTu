@@ -2,34 +2,26 @@
 #define Z3DTRANSFERFUNCTIONWIDGETWITHEDITORWINDOW_H
 
 #include "zclickablelabel.h"
+#include <memory>
+
 class Z3DTransferFunctionEditor;
-class QMainWindow;
-class QDockWidget;
 
 class Z3DTransferFunctionWidgetWithEditorWindow : public ZClickableTransferFunctionLabel
 {
-  Q_OBJECT
+Q_OBJECT
 public:
-  explicit Z3DTransferFunctionWidgetWithEditorWindow(Z3DTransferFunctionParameter* tf, QMainWindow *minWin, QWidget *parent = 0);
-
-signals:
-
-public slots:
-  void createEditorWindow();
-  //void mainWindowClosed();
-  void mainWindowDestroyed();
+  explicit Z3DTransferFunctionWidgetWithEditorWindow(Z3DTransferFunctionParameter* tf, QWidget* parent = nullptr);
 
 protected:
-  virtual void labelClicked();
-  virtual void hideEvent(QHideEvent *);
+  void createEditorWindow();
+
+  virtual void labelClicked() override;
 
 private:
-  Z3DTransferFunctionParameter *m_transferFunction;
-  Z3DTransferFunctionEditor *m_transferFunctionEditor;
+  Z3DTransferFunctionParameter* m_transferFunction;
+  Z3DTransferFunctionEditor* m_transferFunctionEditor;
 
-  QMainWindow *m_mainWin;
-  QDockWidget* m_editorWindow;
-  
+  std::unique_ptr<QWidget> m_editorWindow;
 };
 
 #endif // Z3DTRANSFERFUNCTIONWIDGETWITHEDITORWINDOW_H
