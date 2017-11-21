@@ -1764,12 +1764,14 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 ZMesh* ZFlyEmBody3dDoc::makeBodyMeshModel(uint64_t bodyId, int zoom)
 {
   ZMesh *mesh = recoverMeshFromGarbage(bodyId, zoom);
+#if 0 //todo
   if (mesh == NULL) {
     std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
           bodyId, zoom, flyem::BODY_MESH);
     mesh = dynamic_cast<ZMesh*>(
           takeObjectFromCache(ZStackObject::TYPE_MESH, source));
   }
+#endif
 
   if (mesh == NULL) {
     if (bodyId > 0) {
