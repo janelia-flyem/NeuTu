@@ -109,9 +109,9 @@ public:
 
   double distanceTo(double x, double y, double z) const;
 
-  void shiftSliceAxis(NeuTube::EAxis axis);
-  void shiftSliceAxisInverse(NeuTube::EAxis axis);
-  int getSliceCoord(NeuTube::EAxis axis) const;
+  void shiftSliceAxis(neutube::EAxis axis);
+  void shiftSliceAxisInverse(neutube::EAxis axis);
+  int getSliceCoord(neutube::EAxis axis) const;
 
   void invalidate();
   bool isValid() const;

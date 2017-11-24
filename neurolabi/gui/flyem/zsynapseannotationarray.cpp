@@ -21,7 +21,7 @@
 #include "zweightedpointarray.h"
 #include "zpointarray.h"
 
-using namespace FlyEm;
+using namespace flyem;
 using namespace std;
 
 ZSynapseAnnotationArray::ZSynapseAnnotationArray()
@@ -746,9 +746,9 @@ ZSwcTree* ZSynapseAnnotationArray::toSwcTree()
   return tree;
 }
 
-vector<FlyEm::SynapseLocation*> ZSynapseAnnotationArray::toTBarRefArray()
+vector<flyem::SynapseLocation*> ZSynapseAnnotationArray::toTBarRefArray()
 {
-  vector<FlyEm::SynapseLocation*> refArray(size());
+  vector<flyem::SynapseLocation*> refArray(size());
 
   for (size_t i = 0; i < size(); i++) {
     refArray[i] = (*this)[i].getTBarRef();
@@ -757,9 +757,9 @@ vector<FlyEm::SynapseLocation*> ZSynapseAnnotationArray::toTBarRefArray()
   return refArray;
 }
 
-vector<FlyEm::SynapseLocation*> ZSynapseAnnotationArray::toMultiTBarRefArray()
+vector<flyem::SynapseLocation*> ZSynapseAnnotationArray::toMultiTBarRefArray()
 {
-  vector<FlyEm::SynapseLocation*> refArray;
+  vector<flyem::SynapseLocation*> refArray;
 
   for (size_t i = 0; i < size(); i++) {
     SynapseLocation *tbar = (*this)[i].getTBarRef();
@@ -771,9 +771,9 @@ vector<FlyEm::SynapseLocation*> ZSynapseAnnotationArray::toMultiTBarRefArray()
   return refArray;
 }
 
-vector<FlyEm::SynapseLocation*> ZSynapseAnnotationArray::toPsdRefArray()
+vector<flyem::SynapseLocation*> ZSynapseAnnotationArray::toPsdRefArray()
 {
-  vector<FlyEm::SynapseLocation*> refArray;
+  vector<flyem::SynapseLocation*> refArray;
 
   for(SynapseLocation *loc = beginSynapseLocation(); loc != NULL;
       loc = nextSynapseLocation()) {
@@ -785,12 +785,12 @@ vector<FlyEm::SynapseLocation*> ZSynapseAnnotationArray::toPsdRefArray()
   return refArray;
 }
 
-vector<FlyEm::SynapseLocation*> ZSynapseAnnotationArray::toPsdRefArray(int index)
+vector<flyem::SynapseLocation*> ZSynapseAnnotationArray::toPsdRefArray(int index)
 {
   std::vector<SynapseLocation> *partnerRef =
       (*this)[index].getPartnerArrayRef();
 
-  vector<FlyEm::SynapseLocation*> refArray(partnerRef->size());
+  vector<flyem::SynapseLocation*> refArray(partnerRef->size());
 
   for (size_t i = 0; i < refArray.size(); i++) {
     refArray[i] = &((*partnerRef)[i]);
@@ -799,10 +799,10 @@ vector<FlyEm::SynapseLocation*> ZSynapseAnnotationArray::toPsdRefArray(int index
   return refArray;
 }
 
-vector<FlyEm::SynapseLocation*>
+vector<flyem::SynapseLocation*>
 ZSynapseAnnotationArray::toSynapseLocationArray()
 {
-  vector<FlyEm::SynapseLocation*> refArray;
+  vector<flyem::SynapseLocation*> refArray;
 
   for(SynapseLocation *loc = beginSynapseLocation(); loc != NULL;
       loc = nextSynapseLocation()) {
@@ -950,7 +950,7 @@ void ZSynapseAnnotationArray::assembleTBarSequence(ZIntTree *tbarSequence,
   }
 }
 
-vector<vector<FlyEm::SynapseLocation*> >
+vector<vector<flyem::SynapseLocation*> >
 ZSynapseAnnotationArray::buildTbarSequence(double maxDist)
 {
   vector<SynapseLocation*> locArray1 = toMultiTBarRefArray();
@@ -1064,7 +1064,7 @@ ZSynapseAnnotationArray::buildTbarSequence(double maxDist)
 }
 
 vector<pair<SynapseLocation*, SynapseLocation*> >
-FlyEm::ZSynapseAnnotationArray::findDuplicatedTBar(double minDist)
+flyem::ZSynapseAnnotationArray::findDuplicatedTBar(double minDist)
 {
   vector<pair<SynapseLocation*, SynapseLocation*> > duplicateSet;
 
@@ -1086,7 +1086,7 @@ FlyEm::ZSynapseAnnotationArray::findDuplicatedTBar(double minDist)
   return duplicateSet;
 }
 
-ZGraph* FlyEm::ZSynapseAnnotationArray::toGraph()
+ZGraph* flyem::ZSynapseAnnotationArray::toGraph()
 {
   ZGraph *graph = new ZGraph(ZGraph::DIRECTED_WITH_WEIGHT);
 
@@ -1101,7 +1101,7 @@ ZGraph* FlyEm::ZSynapseAnnotationArray::toGraph()
   return graph;
 }
 
-ZGraph* FlyEm::ZSynapseAnnotationArray::toGraph(const std::set<int> &bodySet)
+ZGraph* flyem::ZSynapseAnnotationArray::toGraph(const std::set<int> &bodySet)
 {
   ZGraph *graph = new ZGraph(ZGraph::DIRECTED_WITH_WEIGHT);
 
@@ -1118,7 +1118,7 @@ ZGraph* FlyEm::ZSynapseAnnotationArray::toGraph(const std::set<int> &bodySet)
   return graph;
 }
 
-vector<int> FlyEm::ZSynapseAnnotationArray::countPsd()
+vector<int> flyem::ZSynapseAnnotationArray::countPsd()
 {
   vector<int> psdCount;
 
@@ -1145,7 +1145,7 @@ vector<int> FlyEm::ZSynapseAnnotationArray::countPsd()
   return psdCount;
 }
 
-int FlyEm::ZSynapseAnnotationArray::countPsd(int bodyId) const
+int flyem::ZSynapseAnnotationArray::countPsd(int bodyId) const
 {
   int count = 0;
   for (size_t i = 0; i < size(); i++) {
@@ -1160,7 +1160,7 @@ int FlyEm::ZSynapseAnnotationArray::countPsd(int bodyId) const
   return count;
 }
 
-bool FlyEm::ZSynapseAnnotationArray::hasPsd(int bodyId) const
+bool flyem::ZSynapseAnnotationArray::hasPsd(int bodyId) const
 {
   for (size_t i = 0; i < size(); i++) {
     for (size_t j = 0; j < (*this)[i].getPartnerArrayRef()->size(); ++j) {
@@ -1174,7 +1174,7 @@ bool FlyEm::ZSynapseAnnotationArray::hasPsd(int bodyId) const
   return false;
 }
 
-vector<int> FlyEm::ZSynapseAnnotationArray::countTBar()
+vector<int> flyem::ZSynapseAnnotationArray::countTBar()
 {
   vector<int> tbarCount;
   for (size_t i = 0; i < size(); i++) {
@@ -1188,7 +1188,7 @@ vector<int> FlyEm::ZSynapseAnnotationArray::countTBar()
   return tbarCount;
 }
 
-int FlyEm::ZSynapseAnnotationArray::countTBar(int bodyId) const
+int flyem::ZSynapseAnnotationArray::countTBar(int bodyId) const
 {
   int count = 0;
   for (size_t i = 0; i < size(); i++) {
@@ -1201,7 +1201,7 @@ int FlyEm::ZSynapseAnnotationArray::countTBar(int bodyId) const
   return count;
 }
 
-bool FlyEm::ZSynapseAnnotationArray::hasTBar(int bodyId) const
+bool flyem::ZSynapseAnnotationArray::hasTBar(int bodyId) const
 {
   for (size_t i = 0; i < size(); i++) {
     int tbarBodyId = getTBarRef(i)->bodyId();
@@ -1213,7 +1213,7 @@ bool FlyEm::ZSynapseAnnotationArray::hasTBar(int bodyId) const
   return false;
 }
 
-int FlyEm::ZSynapseAnnotationArray::countInputNeuron(int bodyId) const
+int flyem::ZSynapseAnnotationArray::countInputNeuron(int bodyId) const
 {
   std::set<int> idSet;
   for (size_t i = 0; i < size(); i++) {
@@ -1228,7 +1228,7 @@ int FlyEm::ZSynapseAnnotationArray::countInputNeuron(int bodyId) const
   return idSet.size();
 }
 
-int FlyEm::ZSynapseAnnotationArray::countOutputNeuron(int bodyId) const
+int flyem::ZSynapseAnnotationArray::countOutputNeuron(int bodyId) const
 {
   std::set<int> idSet;
 
@@ -1245,7 +1245,7 @@ int FlyEm::ZSynapseAnnotationArray::countOutputNeuron(int bodyId) const
   return idSet.size();
 }
 
-vector<int> FlyEm::ZSynapseAnnotationArray::countSynapse()
+vector<int> flyem::ZSynapseAnnotationArray::countSynapse()
 {
   vector<int> count;
 
@@ -1276,7 +1276,7 @@ vector<int> FlyEm::ZSynapseAnnotationArray::countSynapse()
 }
 
 std::vector<SynapseLocation*>
-FlyEm::ZSynapseAnnotationArray::getTBarArray(int bodyId) const
+flyem::ZSynapseAnnotationArray::getTBarArray(int bodyId) const
 {
   std::vector<SynapseLocation*> synapseArray;
   for (size_t i = 0; i < size(); i++) {
@@ -1290,7 +1290,7 @@ FlyEm::ZSynapseAnnotationArray::getTBarArray(int bodyId) const
 }
 
 std::vector<SynapseLocation*>
-FlyEm::ZSynapseAnnotationArray::getPsdArray(int bodyId) const
+flyem::ZSynapseAnnotationArray::getPsdArray(int bodyId) const
 {
   std::vector<SynapseLocation*> synapseArray;
   for (size_t i = 0; i < size(); i++) {
@@ -1306,7 +1306,7 @@ FlyEm::ZSynapseAnnotationArray::getPsdArray(int bodyId) const
 }
 
 
-void FlyEm::ZSynapseAnnotationArray::convertRavelerToImageSpace(
+void flyem::ZSynapseAnnotationArray::convertRavelerToImageSpace(
     int startZ, int height)
 {
   for (SynapseLocation *synapse = beginSynapseLocation();
@@ -1315,13 +1315,13 @@ void FlyEm::ZSynapseAnnotationArray::convertRavelerToImageSpace(
   }
 }
 
-void FlyEm::ZSynapseAnnotationArray::convertRavelerToDvidSpace()
+void flyem::ZSynapseAnnotationArray::convertRavelerToDvidSpace()
 {
   convertRavelerToImageSpace(0, m_metadata.getSourceYDim());
 }
 
 #ifdef _QT_GUI_USED_
-vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(
+vector<ZPunctum*> flyem::ZSynapseAnnotationArray::toPuncta(
     const SynapseAnnotationConfig &config,
     SynapseLocation::ELocationSpace spaceOption,
     const SynapseDisplayConfig &displayConfig) const
@@ -1340,9 +1340,9 @@ vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(
   return puncta;
 }
 
-vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(double radius) const
+vector<ZPunctum*> flyem::ZSynapseAnnotationArray::toPuncta(double radius) const
 {
-  FlyEm::SynapseAnnotationConfig config;
+  flyem::SynapseAnnotationConfig config;
   config.startNumber = getMetaData().getSourceZOffset();
   config.height = getMetaData().getSourceYDim();
   config.xResolution = getMetaData().getXResolution();
@@ -1352,8 +1352,8 @@ vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(double radius) const
   config.swcDownsample2 = 1;
   config.sizeScale = radius;
 
-  FlyEm::SynapseDisplayConfig displayConfig;
-  displayConfig.mode = FlyEm::SynapseDisplayConfig::HALF_SYNAPSE;
+  flyem::SynapseDisplayConfig displayConfig;
+  displayConfig.mode = flyem::SynapseDisplayConfig::HALF_SYNAPSE;
   displayConfig.tBarColor.red = 255;
   displayConfig.tBarColor.green = 255;
   displayConfig.tBarColor.blue = 0;
@@ -1361,11 +1361,11 @@ vector<ZPunctum*> FlyEm::ZSynapseAnnotationArray::toPuncta(double radius) const
   displayConfig.psdColor.green = 0;
   displayConfig.psdColor.blue = 0;
 
-  return toPuncta(config, FlyEm::SynapseLocation::CURRENT_SPACE, displayConfig);
+  return toPuncta(config, flyem::SynapseLocation::CURRENT_SPACE, displayConfig);
 }
 
 std::vector<ZPunctum*>
-FlyEm::ZSynapseAnnotationArray::toTBarPuncta(
+flyem::ZSynapseAnnotationArray::toTBarPuncta(
     double radius, double minConfidence) const
 {
   std::vector<ZPunctum*> puncta;
@@ -1385,7 +1385,7 @@ FlyEm::ZSynapseAnnotationArray::toTBarPuncta(
 }
 
 std::vector<ZPunctum*>
-FlyEm::ZSynapseAnnotationArray::toPsdPuncta(
+flyem::ZSynapseAnnotationArray::toPsdPuncta(
     double radius, double minConfidence) const
 {
   std::vector<ZPunctum*> puncta;
@@ -1405,7 +1405,7 @@ FlyEm::ZSynapseAnnotationArray::toPsdPuncta(
 }
 
 std::vector<ZStackBall*>
-FlyEm::ZSynapseAnnotationArray::toTBarBall(
+flyem::ZSynapseAnnotationArray::toTBarBall(
     double radius, double minConfidence) const
 {
   std::vector<ZStackBall*> puncta;
@@ -1425,7 +1425,7 @@ FlyEm::ZSynapseAnnotationArray::toTBarBall(
 }
 
 std::vector<ZStackBall*>
-FlyEm::ZSynapseAnnotationArray::toPsdBall(
+flyem::ZSynapseAnnotationArray::toPsdBall(
     double radius, double minConfidence) const
 {
   std::vector<ZStackBall*> puncta;
@@ -1472,7 +1472,7 @@ ZWeightedPointArray ZSynapseAnnotationArray::toTBarConfidencePointArray() const
   return ptArray;
 }
 
-int FlyEm::ZSynapseAnnotationArray::getStrongestInput(int bodyId) const
+int flyem::ZSynapseAnnotationArray::getStrongestInput(int bodyId) const
 {
   std::map<int, int> idMap;
   int id = -1;
@@ -1498,7 +1498,7 @@ int FlyEm::ZSynapseAnnotationArray::getStrongestInput(int bodyId) const
   return id;
 }
 
-int FlyEm::ZSynapseAnnotationArray::getStrongestOutput(int bodyId) const
+int flyem::ZSynapseAnnotationArray::getStrongestOutput(int bodyId) const
 {
   std::map<int, int> idMap;
   int id = -1;
@@ -1602,7 +1602,7 @@ ZGraph* ZSynapseAnnotationArray::getConnectionGraph(bool excludingSelfConnection
   return m_connectionGraph;
 }
 
-bool FlyEm::ZSynapseAnnotationArray::exportCsvFile(const string &filePath)
+bool flyem::ZSynapseAnnotationArray::exportCsvFile(const string &filePath)
 {
   ofstream stream(filePath.c_str());
   if (!stream.is_open()) {
@@ -1627,7 +1627,7 @@ bool FlyEm::ZSynapseAnnotationArray::exportCsvFile(const string &filePath)
   return true;
 }
 
-void FlyEm::ZSynapseAnnotationArray::ravelerFlip(int height)
+void flyem::ZSynapseAnnotationArray::ravelerFlip(int height)
 {
   convertRavelerToImageSpace(0, height);
 }

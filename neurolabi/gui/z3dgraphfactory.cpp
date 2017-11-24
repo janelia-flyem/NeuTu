@@ -71,6 +71,7 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
     node1.setY(y);
     node2.setY(y);
     graph->addEdge(node1, node2, GRAPH_LINE);
+//    node1.setText(QString("%1").arg(y));
   }
 
   node1.setCenter(rect.getFirstX(), rect.getFirstY(), rect.getZ());
@@ -81,7 +82,15 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
     node1.setX(x);
     node2.setX(x);
     graph->addEdge(node1, node2, GRAPH_LINE);
+
+//    node1.setText(QString("%1").arg(x));
   }
+
+//  Z3DGraphNode textNode;
+//  textNode.setCenter(rect.get, rect.getFirstY(), rect.getZ());
+//  textNode.setText(QString("Grid interval: %1 px").arg(interval));
+//  graph->addNode(textNode);
+
 
   return graph;
 }

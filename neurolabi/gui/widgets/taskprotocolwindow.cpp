@@ -426,11 +426,31 @@ int TaskProtocolWindow::getPrevUncompleted() {
         index--;
     }
     // we're back at current index
-    if (m_taskList[index]->completed()) {
+    if (index >= 0) {
+      if (m_taskList[index]->completed()) {
         return -1;
-    } else {
+      } else {
         return index;
+      }
     }
+
+    return -1;
+}
+
+int TaskProtocolWindow::getPrevIndex(int currentIndex) const
+{
+  int index = currentIndex - 1;
+  if (index >= m_taskList.size()) {
+    index = -1;
+  } else {
+    if ((index == -1) && (m_taskList.size() > 1)) {
+      index = m_taskList.size() - 1;
+    } else {
+      index = -1;
+    }
+  }
+
+  return index;
 }
 
 /*
@@ -450,12 +470,17 @@ int TaskProtocolWindow::getNextUncompleted() {
         }
         index++;
     }
-    // we're back at current index
-    if (m_taskList[index]->completed()) {
+
+    if (index < m_taskList.size()) {
+      // we're back at current index
+      if (m_taskList[index]->completed()) {
         return -1;
-    } else {
+      } else {
         return index;
+      }
     }
+
+    return -1;
 }
 
 /*
@@ -530,7 +555,7 @@ void TaskProtocolWindow::updateBodyWindow() {
 
         // remove existing bodies; proof doc "selected" corresponds to "visible"
         //  I'm taking a bit of a guess that I want "MAPPED" (not "ORIGINAL")
-        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED)) {
+        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED)) {
             emit bodyRemoved(bodyID);
         }
 
@@ -754,7 +779,7 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
  * output: key under which protocol data should be stored in dvid
  */
 QString TaskProtocolWindow::generateDataKey() {
-    return QString::fromStdString(NeuTube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+    return QString::fromStdString(neutube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
 /*

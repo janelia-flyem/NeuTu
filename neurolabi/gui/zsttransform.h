@@ -69,8 +69,8 @@ public:
     return z * m_sz + m_dz;
   }
 
-  double getScale(NeuTube::EAxis axis) const;
-  double getOffset(NeuTube::EAxis axis) const;
+  double getScale(neutube::EAxis axis) const;
+  double getOffset(neutube::EAxis axis) const;
   ZPoint getOffset() const;
 
   bool isIntTransform() const;
@@ -104,7 +104,7 @@ public:
 
   void estimate(
       double source0, double source1, double target0, double target1,
-      NeuTube::EAxis axis);
+      neutube::EAxis axis);
 
 private:
   double m_sx;

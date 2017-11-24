@@ -10,7 +10,7 @@
 #include "zswcnetwork.h"
 #include "swctreenode.h"
 
-using namespace FlyEm;
+using namespace flyem;
 using namespace std;
 
 ZNeuronNetwork::ZNeuronNetwork()
@@ -123,13 +123,13 @@ void ZNeuronNetwork::exportSwcFile(const std::string &filePath, int bodyId,
     }
 
     if (option == EXPORT_ALL) {
-      FlyEm::SynapseDisplayConfig displayConfig;
-      displayConfig.mode = FlyEm::SynapseDisplayConfig::SYNAPSE_PAIR;
+      flyem::SynapseDisplayConfig displayConfig;
+      displayConfig.mode = flyem::SynapseDisplayConfig::SYNAPSE_PAIR;
       displayConfig.bodyId = bodyId;
 
       m_synapseArray.exportSwcFile("/tmp/zswcnetwork_exportswcfile_tmp.swc",
                                    m_analyzer.config(),
-                                   FlyEm::SynapseLocation::ADJUSTED_SWC_SPACE,
+                                   flyem::SynapseLocation::ADJUSTED_SWC_SPACE,
                                    displayConfig);
 
       Swc_Tree *connect_tree =

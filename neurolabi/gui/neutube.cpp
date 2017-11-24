@@ -13,7 +13,7 @@
 #include "zstackdoc.h"
 #include "zwidgetmessage.h"
 
-void NeuTube::RegisterMetaType()
+void neutube::RegisterMetaType()
 {
   qRegisterMetaType<uint64_t>("uint64_t");
   qRegisterMetaType<ZJsonValue>("ZJsonValue");
@@ -24,21 +24,21 @@ void NeuTube::RegisterMetaType()
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
   qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
-  qRegisterMetaType<FlyEM::EBodySplitMode>("FlyEM::EBodySplitMode");
+  qRegisterMetaType<flyem::EBodySplitMode>("flyem::EBodySplitMode");
 }
 
-ZMessageReporter* NeuTube::getMessageReporter()
+ZMessageReporter* neutube::getMessageReporter()
 {
   return NeutubeConfig::getInstance().getMessageReporter();
 }
 
-ZLogMessageReporter* NeuTube::getLogMessageReporter()
+ZLogMessageReporter* neutube::getLogMessageReporter()
 {
   return dynamic_cast<ZLogMessageReporter*>(getMessageReporter());
 }
 
 
-std::string NeuTube::getErrorFile()
+std::string neutube::getErrorFile()
 {
   if (getLogMessageReporter() != NULL) {
     return getLogMessageReporter()->getErrorFile();
@@ -47,7 +47,7 @@ std::string NeuTube::getErrorFile()
   return "";
 }
 
-std::string NeuTube::getWarnFile()
+std::string neutube::getWarnFile()
 {
   if (getLogMessageReporter() != NULL) {
     return getLogMessageReporter()->getWarnFile();
@@ -56,7 +56,7 @@ std::string NeuTube::getWarnFile()
   return "";
 }
 
-std::string NeuTube::getInfoFile()
+std::string neutube::getInfoFile()
 {
   if (getLogMessageReporter() != NULL) {
     return getLogMessageReporter()->getInfoFile();
@@ -65,7 +65,7 @@ std::string NeuTube::getInfoFile()
   return "";
 }
 
-std::string NeuTube::GetCurrentUserName()
+std::string neutube::GetCurrentUserName()
 {
 #ifdef _DEBUG_
   std::cout << "User name: " << qgetenv("USER").data() << std::endl;
@@ -80,20 +80,20 @@ std::string NeuTube::GetCurrentUserName()
   return userName;
 }
 
-bool NeuTube::IsAdminUser()
+bool neutube::IsAdminUser()
 {
 #if defined(_FLYEM_)
-  if (NeuTube::GetCurrentUserName() == "takemuras" ||
-      NeuTube::GetCurrentUserName() == "shinomiyak" ||
-      NeuTube::GetCurrentUserName() == "jah") {
+  if (neutube::GetCurrentUserName() == "takemuras" ||
+      neutube::GetCurrentUserName() == "shinomiyak" ||
+      neutube::GetCurrentUserName() == "jah") {
     return true;
   }
 #endif
 
-  return NeuTube::GetCurrentUserName() == "zhaot";
+  return neutube::GetCurrentUserName() == "zhaot";
 }
 
-QFileDialog::Options NeuTube::GetFileDialogOption()
+QFileDialog::Options neutube::GetFileDialogOption()
 {
   if (!NeutubeConfig::getInstance().usingNativeDialog()) {
     return QFileDialog::DontUseNativeDialog;
@@ -102,12 +102,12 @@ QFileDialog::Options NeuTube::GetFileDialogOption()
   return 0;
 }
 
-QString NeuTube::GetLastFilePath()
+QString neutube::GetLastFilePath()
 {
   return NeutubeConfig::GetSettings().value("lastPath").toString();
 }
 
-QString NeuTube::GetFilePath(const QUrl &url)
+QString neutube::GetFilePath(const QUrl &url)
 {
   QString filePath;
 

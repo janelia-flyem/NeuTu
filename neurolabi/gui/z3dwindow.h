@@ -282,6 +282,7 @@ public slots:
   void tranlateSelectedSwcNode();
   void changeSelectedSwcNodeSize();
   void showSeletedSwcNodeLength();
+  void showSeletedSwcNodeDist();
 
   void showPuncta(bool on);
   void showTodo(bool on);

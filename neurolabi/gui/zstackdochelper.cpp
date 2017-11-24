@@ -32,7 +32,7 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
   }
 
   ZStack *stack = NULL;
-  if (doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
+  if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
     const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
     if (cdoc != NULL) {
       ZDvidSparseStack *dvidSparseStack = doc->getDvidSparseStack();
@@ -99,7 +99,7 @@ ZIntCuboid ZStackDocHelper::getVolumeBoundBox(const ZStackDoc *doc)
 {
   ZIntCuboid box;
   if (doc != NULL) {
-    if (doc->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
+    if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
       const ZFlyEmProofDoc *cdoc = qobject_cast<const ZFlyEmProofDoc*>(doc);
       if (cdoc != NULL) {
         box = cdoc->getSplitRoi()->getCuboid();
@@ -117,9 +117,9 @@ QColor ZStackDocHelper::GetBodyColor(
     const ZFlyEmProofDoc *doc, uint64_t bodyId)
 {
   QColor color;
-  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(NeuTube::Z_AXIS);
+  ZDvidLabelSlice *labelSlice = doc->getDvidLabelSlice(neutube::Z_AXIS);
   if (labelSlice != NULL) {
-    color = labelSlice->getLabelColor(bodyId, NeuTube::BODY_LABEL_ORIGINAL);
+    color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_ORIGINAL);
   }
 
   return color;

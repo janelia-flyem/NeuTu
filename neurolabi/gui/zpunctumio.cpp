@@ -137,7 +137,7 @@ void ZPunctumIO::readV3DApoFile(const QString &file, QList<ZPunctum *> &punctaLi
 void ZPunctumIO::readV3DMarkerFile(const QString &file, QList<ZPunctum *> &punctaList)
 {
   std::vector<ZVaa3dMarker> markerArray =
-      FlyEm::ZFileParser::readVaa3dMarkerFile(file.toStdString());
+      flyem::ZFileParser::readVaa3dMarkerFile(file.toStdString());
   for (size_t i = 0; i < markerArray.size(); ++i) {
     ZPunctum* punctum = new ZPunctum();
     punctum->setName(markerArray[i].name().c_str());

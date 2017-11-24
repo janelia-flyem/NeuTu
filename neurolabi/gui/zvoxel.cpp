@@ -121,7 +121,7 @@ void ZVoxel::print() const
             << std::endl;
 }
 
-void ZVoxel::shiftSliceAxis(NeuTube::EAxis axis)
+void ZVoxel::shiftSliceAxis(neutube::EAxis axis)
 {
   ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
 }

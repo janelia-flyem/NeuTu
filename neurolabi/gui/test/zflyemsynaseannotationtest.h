@@ -11,7 +11,7 @@
 #ifdef _USE_GTEST_
 
 TEST(ZFlyEmSyanpzeAnnotation, synapseCount) {
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
 
   synapseArray.loadJson(
         GET_TEST_DATA_DIR + "/benchmark/flyem/annotations-synapse.json");
@@ -41,7 +41,7 @@ TEST(ZFlyEmSyanpzeAnnotation, synapseCount) {
 }
 
 TEST(ZFlyEmSyanpzeAnnotation, buildConnection) {
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
 
   synapseArray.loadJson(
         GET_TEST_DATA_DIR + "/benchmark/flyem/annotations-synapse.json");
@@ -53,7 +53,7 @@ TEST(ZFlyEmSyanpzeAnnotation, buildConnection) {
   ZFlyEmDataBundle bundle;
   bundle.loadJsonFile(GET_TEST_DATA_DIR + "/benchmark/flyem/data_bundle.json");
 
-  FlyEm::ZSynapseAnnotationArray *synapseAnnotation =
+  flyem::ZSynapseAnnotationArray *synapseAnnotation =
       bundle.getSynapseAnnotation();
   graph = synapseAnnotation->getConnectionGraph();
   graph->print();

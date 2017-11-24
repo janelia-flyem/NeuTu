@@ -58,18 +58,18 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodyDiffSource(
 }
 
 std::string ZStackObjectSourceFactory::GetBodyTypeName(
-    FlyEM::EBodyType bodyType)
+    flyem::EBodyType bodyType)
 {
   switch (bodyType) {
-  case FlyEM::BODY_NULL:
+  case flyem::BODY_NULL:
     break;
-  case FlyEM::BODY_FULL:
+  case flyem::BODY_FULL:
     return "full";
-  case FlyEM::BODY_COARSE:
+  case flyem::BODY_COARSE:
     return "coarse";
-  case FlyEM::BODY_SKELETON:
+  case flyem::BODY_SKELETON:
     return "skeleton";
-  case FlyEM::BODY_MESH:
+  case flyem::BODY_MESH:
     return "mesh";
     break;
   }
@@ -79,7 +79,7 @@ std::string ZStackObjectSourceFactory::GetBodyTypeName(
 
 std::string ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(uint64_t bodyId)
 {
-  return MakeFlyEmBodySource(bodyId, 0, FlyEM::BODY_COARSE);
+  return MakeFlyEmBodySource(bodyId, 0, flyem::BODY_COARSE);
 }
 
 std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
@@ -102,7 +102,7 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
 }
 
 std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
-    uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType)
+    uint64_t bodyId, int zoom, flyem::EBodyType bodyType)
 {
   return MakeFlyEmBodySource(bodyId, zoom, GetBodyTypeName(bodyType));
 }
@@ -139,17 +139,17 @@ uint64_t ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(
   return id;
 }
 
-FlyEM::EBodyType ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
+flyem::EBodyType ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
       const std::string &source)
 {
   ZString str(source);
-  FlyEM::EBodyType bodyType = FlyEM::BODY_NULL;
+  flyem::EBodyType bodyType = flyem::BODY_NULL;
   if (str.endsWith("#.full")) {
-    bodyType = FlyEM::BODY_FULL;
+    bodyType = flyem::BODY_FULL;
   } else if (str.endsWith("#.coarse")) {
-    bodyType = FlyEM::BODY_COARSE;
+    bodyType = flyem::BODY_COARSE;
   } else if (str.endsWith("#.skeleton")) {
-    bodyType = FlyEM::BODY_SKELETON;
+    bodyType = flyem::BODY_SKELETON;
   }
 
   return bodyType;
@@ -183,14 +183,14 @@ std::string ZStackObjectSourceFactory::MakeDvidTileSource()
 }
 
 std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
-    NeuTube::EAxis axis)
+    neutube::EAxis axis)
 {
   std::string source = "#.DVIDLabelSlice";
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     source += ".X";
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     source += ".Y";
     break;
   default:
@@ -303,14 +303,14 @@ std::string ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource()
 }
 
 std::string
-ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis)
+ZStackObjectSourceFactory::MakeDvidSynapseEnsembleSource(neutube::EAxis axis)
 {
   std::string source = MakeDvidSynapseEnsembleSource();
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     source += ".X";
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     source += ".Y";
     break;
   default:
@@ -345,14 +345,14 @@ std::string ZStackObjectSourceFactory::MakeTodoPunctaSource(uint64_t bodyId)
 }
 
 std::string
-ZStackObjectSourceFactory::MakeTodoListEnsembleSource(NeuTube::EAxis axis)
+ZStackObjectSourceFactory::MakeTodoListEnsembleSource(neutube::EAxis axis)
 {
   std::string source = MakeTodoListEnsembleSource();
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     source += ".X";
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     source += ".Y";
     break;
   default:
