@@ -47,6 +47,17 @@ private slots:
     void applicationQuitting();
 
 private:
+    /*!
+     * \brief Get the previous index.
+     * \param currentIndex The currentIndex.
+     * \return (\a currentIndex - 1) if it is valid. It returns the last
+     *         index if \a currentIndex is 0 and there are more than one tasks.
+     *         It returns -1 in other cases.
+     */
+    int getPrevIndex(int currentIndex) const;
+    int getNextIndex(int currentIndex) const;
+
+private:
     static const QString KEY_DESCRIPTION;
     static const QString VALUE_DESCRIPTION;
     static const QString KEY_VERSION;
