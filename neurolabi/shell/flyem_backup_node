@@ -22,9 +22,9 @@ then
 fi
 
 
-http POST http://$address/api/node/$node/commit log:="[\"locked for backup\"]"
+http POST http://$address/api/node/$node/commit log="[\"locked for backup\"]"
 date=`date`
-http POST http://$address/api/node/$node/branch log:="[\"Node for $name: $log\"]"
+http POST http://$address/api/node/$node/branch branch="$name" 
 
 
  
