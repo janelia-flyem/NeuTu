@@ -326,6 +326,7 @@
 #include "widgets/zbodylistwidget.h"
 #include "zcontrastprotocol.h"
 #include "zmeshfactory.h"
+#include "widgets/taskprotocolwindow.h"
 
 using namespace std;
 
@@ -24834,6 +24835,19 @@ void ZTest::test(MainWindow *host)
   stroke.decimate();
 
   stroke.print();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("labels");
+
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc(host);
+  doc->setDvidTarget(target);
+
+  TaskProtocolWindow *window = new TaskProtocolWindow(doc, NULL, host);
+  window->test();
+
 #endif
 
   std::cout << "Done." << std::endl;

@@ -26,6 +26,9 @@ public:
 
     BodyPrefetchQueue *getPrefetchQueue() const;
 
+public:
+    void test();
+
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
@@ -45,6 +48,27 @@ private slots:
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
     void applicationQuitting();
+
+private:
+    /*!
+     * \brief Get the previous index.
+     * \param currentIndex The currentIndex.
+     * \return (\a currentIndex - 1) if both \a currentIndex and
+     *         (\a currentIndex - 1) is valid. It returns the last
+     *         index if \a currentIndex is 0 and there are more than one tasks.
+     *         It returns -1 in other cases.
+     */
+    int getPrevIndex(int currentIndex) const;
+
+    /*!
+     * \brief Get the next index.
+     * \param currentIndex The currentIndex.
+     * \return (\a currentIndex + 1) if both \a currentIndex and
+     *         (\a currentIndex + 1) is valid. It returns 0 if
+     *         \a currentIndex is the last index and not 0. It returns -1 in
+     *          other cases.
+     */
+    int getNextIndex(int currentIndex) const;
 
 private:
     static const QString KEY_DESCRIPTION;
