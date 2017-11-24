@@ -161,17 +161,17 @@ void ZPixmap::clean(const QRect &rect)
   */
 }
 
-QRectF ZPixmap::getActiveArea(NeuTube::ECoordinateSystem coord) const
+QRectF ZPixmap::getActiveArea(neutube::ECoordinateSystem coord) const
 {
   switch (coord) {
-  case NeuTube::COORD_WORLD:
+  case neutube::COORD_WORLD:
     if (m_activeArea.isEmpty()) {
       return m_objTransform.getInverseTransform().transform(
             QRectF(0, 0, width(), height()));
     } else {
       return m_activeArea;
     }
-  case NeuTube::COORD_CANVAS:
+  case neutube::COORD_CANVAS:
     if (m_activeArea.isEmpty()) {
       return QRectF(0, 0, width(), height());
     } else {

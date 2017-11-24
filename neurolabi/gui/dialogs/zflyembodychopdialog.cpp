@@ -30,7 +30,7 @@ ZFlyEmBodyChopDialog::ZFlyEmBodyChopDialog(QWidget *parent) :
   layout->addLayout(buttonLayout);
 }
 
-NeuTube::EAxis ZFlyEmBodyChopDialog::getAxis() const
+neutube::EAxis ZFlyEmBodyChopDialog::getAxis() const
 {
   return m_axisWidget->getAxis();
 }

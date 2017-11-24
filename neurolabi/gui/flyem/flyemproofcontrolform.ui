@@ -6,23 +6,40 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>455</width>
-    <height>695</height>
+    <width>479</width>
+    <height>748</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <layout class="QHBoxLayout" name="topHorizontalLayout">
      <item>
       <widget class="QPushButton" name="dvidPushButton">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+         <underline>false</underline>
+        </font>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton { color: green; }</string>
+       </property>
        <property name="text">
-        <string>Select Database</string>
+        <string>Start</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../gui.qrc">
+         <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
        </property>
       </widget>
      </item>
@@ -176,6 +193,9 @@
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox_3">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="title">
       <string>3D Body Visualization</string>
      </property>
@@ -205,7 +225,7 @@
           <number>5</number>
          </property>
          <property name="topMargin">
-          <number>5</number>
+          <number>12</number>
          </property>
          <property name="rightMargin">
           <number>5</number>
@@ -215,8 +235,11 @@
          </property>
          <item>
           <widget class="QLabel" name="label_8">
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {  border: 1px solid gray; border-radius: 3px; margin-top: 2ex;}</string>
+           </property>
            <property name="text">
-            <string>Resolution:</string>
+            <string>Quality:</string>
            </property>
           </widget>
          </item>
@@ -226,7 +249,7 @@
             <string>3D body visualization (low resolution)</string>
            </property>
            <property name="text">
-            <string>Low</string>
+            <string>LowRes</string>
            </property>
           </widget>
          </item>
@@ -236,7 +259,7 @@
             <string>3D body visualization (high resolution)</string>
            </property>
            <property name="text">
-            <string>High</string>
+            <string>HighRes</string>
            </property>
           </widget>
          </item>
@@ -316,6 +339,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
       <widget class="QGroupBox" name="groupBox">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <property name="title">
         <string>Correct False Split</string>
        </property>
@@ -345,7 +371,7 @@
           <item>
            <widget class="QPushButton" name="mergeSegmentPushButton">
             <property name="toolTip">
-             <string>Merge selected bodies (M)</string>
+             <string>Group selected bodies (M)</string>
             </property>
             <property name="text">
              <string>Group</string>
@@ -365,7 +391,7 @@
              <string>Upload merging result (U)</string>
             </property>
             <property name="text">
-             <string>Merge</string>
+             <string>Upload</string>
             </property>
            </widget>
           </item>
@@ -389,6 +415,9 @@
      </item>
      <item>
       <widget class="QGroupBox" name="groupBox_2">
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
        <property name="title">
         <string>Correct False Merge</string>
        </property>
@@ -474,6 +503,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -399,15 +399,15 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
   }
 }
 
-void ZObject3dStripe::drawStack(Stack *stack, int v, NeuTube::EAxis axis,
+void ZObject3dStripe::drawStack(Stack *stack, int v, neutube::EAxis axis,
                                 const int *offset) const
 {
   switch (axis) {
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     drawStack(stack, v, offset);
     break;
-  case NeuTube::X_AXIS:
-  case NeuTube::Y_AXIS:
+  case neutube::X_AXIS:
+  case neutube::Y_AXIS:
     if (C_Stack::kind(stack) == GREY || C_Stack::kind(stack) != GREY16) {
       Image_Array ima;
       ima.array = stack->array;
@@ -445,7 +445,7 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, NeuTube::EAxis axis,
       size_t arrayOffset = 0;
 
       int stride = 1;
-      if (axis == NeuTube::Y_AXIS) {
+      if (axis == neutube::Y_AXIS) {
         arrayOffset = C_Stack::width(stack) * y + area * z;
       } else {
         arrayOffset = area * y + z;

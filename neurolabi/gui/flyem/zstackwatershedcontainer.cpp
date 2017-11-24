@@ -545,7 +545,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     if (m_spStack != NULL) {
       //Extract labeled regions
       ZObject3dScanArray *objArray = ZObject3dFactory::MakeObject3dScanArray(
-            *(getResultStack()), NeuTube::Z_AXIS, true, NULL);
+            *(getResultStack()), neutube::Z_AXIS, true, NULL);
 
       ZIntPoint dsIntv = getSourceDsIntv();
       const size_t minIsolationSize = 50;
@@ -652,8 +652,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
         delete objArray;
       }
     } else if (m_stack != NULL) {
-      ZObject3dFactory::MakeObject3dScanArray(
-            *(getResultStack()), NeuTube::Z_AXIS, true, result);
+      result = ZObject3dFactory::MakeObject3dScanArray(
+            *(getResultStack()), neutube::Z_AXIS, true, result);
     }
   }
 
@@ -665,7 +665,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
       obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
       obj->setSource(ZStackObjectSourceFactory::MakeSplitResultSource());
       obj->setHitProtocal(ZStackObject::HIT_NONE);
-      obj->setVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY);
+      obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
       obj->setProjectionVisible(false);
       obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
       obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);

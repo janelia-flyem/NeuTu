@@ -7,7 +7,7 @@
 #include "zvaa3dmarker.h"
 #include "zvaa3dapo.h"
 
-namespace FlyEm {
+namespace flyem {
 
 class ZFileParser
 {

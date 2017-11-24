@@ -79,7 +79,7 @@ void ZObject3dScan::init()
 //  m_label = 0;
   m_blockingEvent = false;
   m_zProjection = NULL;
-  m_sliceAxis = NeuTube::Z_AXIS;
+  m_sliceAxis = neutube::Z_AXIS;
   setColor(255, 255, 255, 255);
 }
 
@@ -527,7 +527,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   ZGeometry::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
 
   switch (m_sliceAxis) {
-  case NeuTube::Z_AXIS: //XY plane
+  case neutube::Z_AXIS: //XY plane
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; ++y) {
       int x1 = -1;
@@ -567,8 +567,8 @@ void ZObject3dScan::loadStack(const Stack *stack)
     }
   }
   break;
-  case NeuTube::Y_AXIS: //XZ plane
-  case NeuTube::X_AXIS: //ZY plane
+  case neutube::Y_AXIS: //XZ plane
+  case neutube::X_AXIS: //ZY plane
     for (int z = 0; z < sd; ++z) {
       for (int y = 0; y < sh; ++y) {
         int x1 = -1;
@@ -1872,7 +1872,7 @@ static QList<std::vector<QPoint> > extract_contour(
 #endif
 
 void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
-                            NeuTube::EAxis sliceAxis) const
+                            neutube::EAxis sliceAxis) const
 {
 #if _QT_GUI_USED_
 //  if (isSelected() && style == ZStackObject::SOLID) {
@@ -1898,11 +1898,11 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   QPen pen(m_color);
 
 
-  if (hasVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY)) {
+  if (hasVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY)) {
     style = ZStackObject::BOUNDARY;
   }
 
-  if (hasVisualEffect(NeuTube::Display::SparseObject::VE_FORCE_SOLID)) {
+  if (hasVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID)) {
     style = ZStackObject::SOLID;
   }
 
@@ -2431,7 +2431,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   return false;
 }
 
-bool ZObject3dScan::hit(double x, double y, NeuTube::EAxis axis)
+bool ZObject3dScan::hit(double x, double y, neutube::EAxis axis)
 {
   if (!isHittable() || m_sliceAxis != axis) {
     return false;
@@ -3177,7 +3177,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
     ZGeometry::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
 
-    if (getSliceAxis() == NeuTube::X_AXIS) {
+    if (getSliceAxis() == neutube::X_AXIS) {
       for (int i = 0; i < runLength; ++i) {
         addSegment(coord[2] + i, coord[1], coord[0], coord[0], false);
       }
@@ -3431,7 +3431,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
   int cx = 0;
   int cy = 0;
-  int cz = NeuTube::DIM_INVALID_INDEX;
+  int cz = neutube::DIM_INVALID_INDEX;
   bool newSlice = true;
   bool newStripe = true;
 
@@ -3748,17 +3748,17 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
 }
 
 ZObject3dScan* ZObject3dScan::chop(
-    int v, NeuTube::EAxis axis, ZObject3dScan *remain,
+    int v, neutube::EAxis axis, ZObject3dScan *remain,
     ZObject3dScan *result) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return chopX(v, remain, result);
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return chopY(v, remain, result);
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return chopZ(v, remain, result);
     break;
   }

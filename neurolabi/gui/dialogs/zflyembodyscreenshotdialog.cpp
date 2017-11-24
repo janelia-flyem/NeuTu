@@ -92,7 +92,7 @@ void ZFlyEmBodyScreenshotDialog::setOutput()
 std::vector<uint64_t> ZFlyEmBodyScreenshotDialog::getBodyIdArray() const
 {
   std::vector<uint64_t> bodyArray;
-  std::set<uint64_t> bodySet = FlyEm::LoadBodySet(getInputPath().toStdString());
+  std::set<uint64_t> bodySet = flyem::LoadBodySet(getInputPath().toStdString());
   bodyArray.insert(bodyArray.end(), bodySet.begin(), bodySet.end());
 
   return bodyArray;

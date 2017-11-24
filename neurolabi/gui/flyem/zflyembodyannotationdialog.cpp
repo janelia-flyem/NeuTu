@@ -14,7 +14,7 @@ ZFlyEmBodyAnnotationDialog::ZFlyEmBodyAnnotationDialog(QWidget *parent) :
 
   ZFlyEmMisc::PrepareBodyStatus(ui->statusComboBox);
 
-  if (NeuTube::IsAdminUser()) {
+  if (neutube::IsAdminUser()) {
     showFinalizedStatus();
 //    ui->statusComboBox->addItem("Finalized");
   }
@@ -111,7 +111,7 @@ ZFlyEmBodyAnnotation ZFlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setStatus(getStatus().toStdString());
   annotation.setName(getName().toStdString());
   annotation.setType(getType().toStdString());
-  annotation.setUser(NeuTube::GetCurrentUserName());
+  annotation.setUser(neutube::GetCurrentUserName());
 
   return annotation;
 }

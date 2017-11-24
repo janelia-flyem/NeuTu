@@ -137,11 +137,11 @@ public:
       uint64_t bodyId, int xIntv, int yIntv, int zIntv,
       bool canonizing, ZObject3dScan *result);
 
-  ZObject3dScan* readBody(uint64_t bodyId, int z, NeuTube::EAxis axis,
+  ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
                           bool canonizing, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
-                          NeuTube::EAxis axis, ZObject3dScan *result);
+                          neutube::EAxis axis, ZObject3dScan *result);
   ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
 
@@ -359,20 +359,20 @@ public:
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
-      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label,
-      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label, const ZDvidRoi &roi,
-      FlyEM::EDvidAnnotationLoadMode mode) const;
+      flyem::EDvidAnnotationLoadMode mode) const;
 
   ZDvidSynapse readSynapse(
       int x, int y, int z,
-      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       const ZIntPoint &pt,
-      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

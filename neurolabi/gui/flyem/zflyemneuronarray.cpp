@@ -49,7 +49,7 @@ void ZFlyEmNeuronArray::importBodyDir(const std::string &dirPath)
 }
 
 void ZFlyEmNeuronArray::setSynapseAnnotation(
-    FlyEm::ZSynapseAnnotationArray *annotation)
+    flyem::ZSynapseAnnotationArray *annotation)
 {
   for (size_t i = 0; i < size(); ++i) {
     ZFlyEmNeuron &neuron = (*this)[i];

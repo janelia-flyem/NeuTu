@@ -36,7 +36,7 @@ public:
 
   static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc);
   static ZStackMvc* Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc,
-                         NeuTube::EAxis axis);
+                         neutube::EAxis axis);
 
   enum ERole {
     ROLE_WIDGET, ROLE_DOCUMENT
@@ -77,6 +77,7 @@ public:
   ZIntPoint getViewCenter() const;
   double getWidthZoomRatio() const;
   double getHeightZoomRatio() const;
+  QSize getViewScreenSize() const;
 
   void toggleStressTest();
   virtual void stressTest(ZStressTestOptionDialog *dlg);
@@ -130,12 +131,12 @@ protected:
 
 protected:
   static void BaseConstruct(
-      ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, NeuTube::EAxis axis);
+      ZStackMvc *frame, ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis);
   virtual void customInit();
   virtual void createPresenter();
-  void createPresenter(NeuTube::EAxis axis);
+  void createPresenter(neutube::EAxis axis);
   virtual void createView();
-  virtual void createView(NeuTube::EAxis axis);
+  virtual void createView(neutube::EAxis axis);
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
 //  virtual void focusInEvent(QFocusEvent * event);
@@ -156,7 +157,7 @@ private:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
   void construct(ZSharedPointer<ZStackDoc> doc,
-                 NeuTube::EAxis axis = NeuTube::Z_AXIS);
+                 neutube::EAxis axis = neutube::Z_AXIS);
 
 protected:
   ZSharedPointer<ZStackDoc> m_doc;

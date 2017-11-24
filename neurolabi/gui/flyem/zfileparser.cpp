@@ -6,7 +6,7 @@
 #include "tz_error.h"
 #include "zerror.h"
 
-using namespace FlyEm;
+using namespace flyem;
 using namespace std;
 
 ZFileParser::ZFileParser()

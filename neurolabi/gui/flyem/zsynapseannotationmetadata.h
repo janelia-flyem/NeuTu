@@ -5,7 +5,7 @@
 #include "neurolabi_config.h"
 #include "tz_json.h"
 
-namespace FlyEm {
+namespace flyem {
 
 class ZSynapseAnnotationMetadata
 {

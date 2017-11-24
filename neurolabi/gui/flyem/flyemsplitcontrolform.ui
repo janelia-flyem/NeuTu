@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>438</width>
+    <width>433</width>
     <height>637</height>
    </rect>
   </property>
@@ -253,7 +253,7 @@
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Resolution:</string>
+            <string>Quality:</string>
            </property>
           </widget>
          </item>
@@ -263,7 +263,7 @@
             <string>3D body visualization (low resolution)</string>
            </property>
            <property name="text">
-            <string>Low</string>
+            <string>LowRes</string>
            </property>
           </widget>
          </item>
@@ -273,7 +273,7 @@
             <string>3D body visualization (high resolution)</string>
            </property>
            <property name="text">
-            <string>High</string>
+            <string>HighRes</string>
            </property>
           </widget>
          </item>
@@ -292,7 +292,7 @@
          <string>3D split visualization</string>
         </property>
         <property name="text">
-         <string>Split View</string>
+         <string>Split Result</string>
         </property>
        </widget>
       </item>
