@@ -66,6 +66,10 @@ ZWaterShedWindow::ZWaterShedWindow(QWidget *parent) :
   cancel=new QPushButton("Cancel");
   lay->addWidget(cancel,1,2);
   lay->addWidget(ok,1,3);
+  algorithms=new QComboBox;
+  algorithms->addItem("watershed");
+  algorithms->addItem("random_walker");
+  lay->addWidget(algorithms,1,0,1,2);
   this->setLayout(lay);
   this->move(300,200);
   connect(ok,SIGNAL(clicked()),this,SLOT(onOk()));
@@ -102,10 +106,12 @@ void ZWaterShedWindow::onOk()
       container.addSeed(*stroke);
   }
   container.setScale(scale);
+#ifdef _DEBUG_
   QTime time;
   time.start();
+#endif
+  container.setAlgorithm(algorithms->currentText());
   container.run();
-//  time_t end=std::time(NULL);
 
   std::cout<<"+++++++++++++multiscale watershed total run time:"<<time.elapsed()/1000.0<<std::endl;
 
@@ -121,6 +127,7 @@ void ZWaterShedWindow::onOk()
   result.shallowClear();
 
 #if 0
+=======
   ZStack* result=container.getResultStack()->clone();
 
   if(result){

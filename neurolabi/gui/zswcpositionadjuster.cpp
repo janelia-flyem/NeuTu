@@ -83,7 +83,7 @@ void ZSwcPositionAdjuster::adjustPosition(ZSwcPath &swcPath)
         voxelArray.append(ZVoxel(x, y, z));
       }
 
-      if (!voxelArray.empty()) {
+      if (!voxelArray.isEmpty()) {
         size_t currentIndex = 0;
         const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
         for (ZSwcPath::iterator iter = swcPath.begin(); iter != swcPath.end(); ++iter) {

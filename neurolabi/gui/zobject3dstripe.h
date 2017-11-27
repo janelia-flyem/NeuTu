@@ -18,6 +18,7 @@ public:
   inline int getZ() const { return m_z; }
   int getMinX() const;
   int getMaxX() const;
+
   inline size_t getSize() const { return m_segmentArray.size() / 2; }
   inline int getSegmentNumber() const { return getSize(); }
   size_t getVoxelNumber() const;
@@ -69,6 +70,14 @@ public:
   void sort();
   void canonize();
   void sortedCanonize();
+
+  /*!
+   * \brief Combine two stripes
+   *
+   * If the current object is empty, it will be set to \a stripe.
+   *
+   * \return true iff the unification is successful.
+   */
   bool unify(const ZObject3dStripe &stripe, bool canonizing = true);
 
   void print(int indent = 0) const;
@@ -122,6 +131,13 @@ public:
   void fillIntArray(int *array) const;
 
   std::vector<int>& getSegmentArray() { return m_segmentArray; }
+
+  /*!
+   * \brief Remove voxels within a give range.
+   *
+   * Voxels in [\a bx0, \a bx1] will be removed.
+   */
+  void remove(int bx0, int bx1);
 
   friend ZObject3dStripe operator - (
       const ZObject3dStripe &s1, const ZObject3dStripe &s2);

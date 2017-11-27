@@ -51,7 +51,7 @@ void ZStackWatershedContainer::init()
   m_spStack = NULL;
   m_source = NULL;
   m_workspace = NULL;
-  m_result = NULL;
+//  m_result = NULL;
   m_channel = 0;
   m_floodingZero = false;
   m_usingSeedRange = false;
@@ -119,8 +119,7 @@ void ZStackWatershedContainer::clearSource()
 
 void ZStackWatershedContainer::clearResult()
 {
-  delete m_result;
-  m_result = NULL;
+  m_result.clear();
 }
 
 ZIntPoint ZStackWatershedContainer::getSourceDsIntv()
@@ -173,7 +172,7 @@ bool ZStackWatershedContainer::isDeprecated(EComponent component) const
   case COMP_WORKSPACE:
     return m_workspace == NULL;
   case COMP_RESULT:
-    return m_result == NULL;
+    return m_result.empty();
   }
 
   return false;
@@ -503,6 +502,17 @@ Stack* ZStackWatershedContainer::getSource()
   return getSourceStack()->c_stack(m_channel);
 }
 
+bool ZStackWatershedContainer::hasResult() const
+{
+  for (const auto &result : m_result) {
+    if (result) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool ZStackWatershedContainer::isEmpty() const
 {
   return (m_stack == NULL) && (m_spStack ==NULL);
@@ -517,14 +527,17 @@ void ZStackWatershedContainer::run()
         updateSeedMask();
         getWorkspace()->conn=6;
         Stack *out = C_Stack::watershed(source, getWorkspace());
-        m_result = new ZStack;
-        m_result->consume(out);
-        m_result->setOffset(getSourceOffset());
+        ZStackPtr stack = ZStackPtr::Make();
+        stack->consume(out);
+        stack->setOffset(getSourceOffset());
+        m_result.push_back(stack);
       }
       else{
         ZStackMultiScaleWatershed watershed;
-        m_result=watershed.run(getSourceStack(),m_seedArray,m_scale);
-        m_result->setOffset(getSourceOffset());
+        ZStackPtr stack = ZStackPtr(
+              watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm));
+        stack->setOffset(getSourceOffset());
+        m_result.push_back(stack);
       }
   }
 }
@@ -541,11 +554,11 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     result = new ZObject3dScanArray;
   }
   //For sparse stack only for the current version
-  if (getResultStack() != NULL) {
+  for (ZSharedPointer<ZStack> resultStack : m_result) {
     if (m_spStack != NULL) {
       //Extract labeled regions
       ZObject3dScanArray *objArray = ZObject3dFactory::MakeObject3dScanArray(
-            *(getResultStack()), neutube::Z_AXIS, true, NULL);
+            *(resultStack), neutube::Z_AXIS, true, NULL);
 
       ZIntPoint dsIntv = getSourceDsIntv();
       const size_t minIsolationSize = 50;

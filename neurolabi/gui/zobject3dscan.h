@@ -93,7 +93,7 @@ public:
   const ZObject3dStripe& getStripe(size_t index) const;
   ZObject3dStripe& getStripe(size_t index);
 
-  void addStripe(int z, int y, bool canonizing = true);
+  void addStripe(int z, int y);
   void addStripeFast(int z, int y);
   void addStripeFast(const ZObject3dStripe &stripe);
   void addSegment(int x1, int x2, bool canonizing = true);
@@ -292,6 +292,11 @@ public:
       int v, neutube::EAxis axis, ZObject3dScan *remain,
       ZObject3dScan *result) const;
 
+  /*!
+   * \brief Remove voxels within a box.
+   */
+  void remove(const ZIntCuboid &box);
+
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
   void downsampleMax(const ZIntPoint &dsIntv);
@@ -358,7 +363,18 @@ public:
   std::vector<size_t> getConnectedObjectSize();
   std::vector<ZObject3dScan> getConnectedComponent(EAction ppAction);
 
+  /*!
+   * \brief Check if an object is canonized.
+   *
+   * Note that this property may also determine the actual content of the object.
+   * In the case of empty stripes in an object, the canonized form of the object
+   * will remove all empty stripes if the object is not canonized. Otherwise,
+   * the empty stripe may leave there. This complicates the data structure, but
+   * no better solution has been worked out because an empty stripe is often used
+   * to serve as a place holder.
+   */
   inline bool isCanonized() const { return isEmpty() || m_isCanonized; }
+
   inline void setCanonized(bool canonized) { m_isCanonized = canonized; }
 
   const std::map<size_t, std::pair<size_t, size_t> >&

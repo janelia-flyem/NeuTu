@@ -1528,6 +1528,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
 
     deprecate(STACK);
     mainStack = zstack;
+    mainStack->useChannelColors(true);
     initNeuronTracer();
 
 //    emit stackBoundBoxChanged();

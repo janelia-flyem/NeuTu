@@ -266,8 +266,8 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
 void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
     const std::string &splitTaskKey, const std::string &signalPath, bool committing)
 {
-  ZStack *resultStack = container.getResultStack();
-  if (resultStack != NULL) {
+//  ZStack *resultStack = container.getResultStack();
+  if (container.hasResult()) {
     QUrl outputUrl(output.c_str());
     ZObject3dScanArray *result = container.makeSplitResult(2, NULL);
 
@@ -345,7 +345,7 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
 //      }
     } else {
       ZStackWriter writer;
-      writer.write(output, resultStack);
+      writer.write(output, container.getResultStack().get());
     }
 
 //      delete result;

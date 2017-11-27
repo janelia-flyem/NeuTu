@@ -6,6 +6,9 @@
 
 #include "tz_stack_watershed.h"
 #include "zintcuboid.h"
+#include "zstackptr.h"
+
+#include <QString>
 
 class ZStack;
 class ZObject3dScan;
@@ -14,7 +17,6 @@ class ZObject3d;
 class ZSparseStack;
 class ZObject3dScanArray;
 class ZSwcTree;
-
 /*!
  * \brief The wrapper class for running watershed split
  *
@@ -74,9 +76,16 @@ public:
       m_scale=scale;
   }
 
-  ZStack* getResultStack() const {
-    return m_result;
+  void setAlgorithm(const QString &algorithm){
+    m_algorithm=algorithm;
   }
+
+  ZStackPtr getResultStack() const {
+    return m_result.front();
+  }
+
+
+  bool hasResult() const;
 
   void useSeedRange(bool on);
   bool usingSeedRange() const;
@@ -131,7 +140,7 @@ private:
 private:
   ZStack *m_stack;
   ZSparseStack *m_spStack;
-  ZStack *m_result;
+  std::vector<ZStackPtr> m_result;
   Stack_Watershed_Workspace *m_workspace;
 //  ZIntPoint m_sourceOffset;
   ZIntCuboid m_range;
@@ -143,6 +152,7 @@ private:
   bool m_usingSeedRange = false;
   bool m_ccaPost = true;
   int m_scale;
+  QString m_algorithm;
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H
