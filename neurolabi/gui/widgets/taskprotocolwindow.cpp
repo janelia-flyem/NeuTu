@@ -488,28 +488,6 @@ int TaskProtocolWindow::getPrevUncompleted() {
     }
 
     return index;
-/*
-    int index = startIndex - 1;
-    while (index != startIndex) {
-        if (index < 0) {
-            index = m_taskList.size() - 1;
-            continue;
-        }
-        if (!m_taskList[index]->completed()) {
-            return index;
-        }
-        index--;
-    }
-    // we're back at current index
-    if (index >= 0) {
-      if (m_taskList[index]->completed()) {
-        return -1;
-      } else {
-        return index;
-      }
-    }
-    */
-
 }
 
 int TaskProtocolWindow::getPrevIndex(int currentIndex) const
@@ -555,31 +533,6 @@ int TaskProtocolWindow::getNextUncompleted() {
   }
 
   return index;
-/*
-    int startIndex = m_currentTaskIndex;
-    int index = startIndex + 1;
-    while (index != startIndex) {
-        if (index >= m_taskList.size()) {
-            index = 0;
-            continue;
-        }
-        if (!m_taskList[index]->completed()) {
-            return index;
-        }
-        index++;
-    }
-
-    if (index < m_taskList.size()) {
-      // we're back at current index
-      if (m_taskList[index]->completed()) {
-        return -1;
-      } else {
-        return index;
-      }
-    }
-
-    return -1;
-    */
 }
 
 /*
