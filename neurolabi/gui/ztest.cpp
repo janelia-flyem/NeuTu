@@ -24836,5 +24836,44 @@ void ZTest::test(MainWindow *host)
   stroke.print();
 #endif
 
+#if 0
+  ZObject3dScan *obj = new ZObject3dScan;
+  obj->addStripe(0, 0);
+  obj->addSegment(0, 1, false);
+  obj->addSegment(0, 5, false);
+  obj->addSegment(0, 8, false);
+  obj->addStripe(0, 2);
+  obj->addSegment(3, 3, false);
+  obj->addSegment(0, 1, false);
+  obj->addStripe(0, 1);
+  obj->addSegment(5, 7, false);
+
+//  obj->sort();
+//  obj->sortedCanonize();
+//  obj->isEmpty();
+  obj->canonize();
+#endif
+
+#if 0
+  ZObject3dStripe stripe;
+  stripe.setY(0);
+  stripe.setZ(0);
+  stripe.addSegment(0, 2);
+  stripe.addSegment(4, 6);
+  stripe.addSegment(8, 10);
+  stripe.remove(5, 8);
+  stripe.print();
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
+  ZIntCuboid box;
+  box.set(ZIntPoint(276, 784, 182), ZIntPoint(293, 798, 186));
+  obj.remove(box);
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
   std::cout << "Done." << std::endl;
 }

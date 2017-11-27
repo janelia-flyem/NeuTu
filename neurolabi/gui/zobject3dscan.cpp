@@ -75,7 +75,7 @@ void ZObject3dScan::init()
   setTarget(TARGET_OBJECT_CANVAS);
   m_type = GetType();
 
-  m_isCanonized = false;
+  m_isCanonized = true;
 //  m_label = 0;
   m_blockingEvent = false;
   m_zProjection = NULL;
@@ -275,7 +275,7 @@ ZObject3dStripe &ZObject3dScan::getStripe(size_t index)
   return m_stripeArray[index];
 }
 
-void ZObject3dScan::addStripe(int z, int y, bool canonizing)
+void ZObject3dScan::addStripe(int z, int y)
 {
   bool adding = true;
   if (!m_stripeArray.empty()) {
@@ -290,7 +290,7 @@ void ZObject3dScan::addStripe(int z, int y, bool canonizing)
     stripe.setY(y);
     stripe.setZ(z);
 
-    addStripe(stripe, canonizing);
+    addStripe(stripe, false);
   }
 }
 
@@ -399,7 +399,7 @@ void ZObject3dScan::addSegmentFast(int x1, int x2)
 
 void ZObject3dScan::addSegment(int z, int y, int x1, int x2, bool canonizing)
 {
-  addStripe(z, y, false);
+  addStripe(z, y);
   addSegment(x1, x2, canonizing);
 }
 
@@ -891,13 +891,17 @@ void ZObject3dScan::sortedCanonize()
     //newStripeArray.push_back(m_stripeArray[0]);
     newStripeArray[length++] = m_stripeArray[0];
     for (size_t i = 1; i < m_stripeArray.size(); ++i) {
-      ZObject3dStripe &newStripe = newStripeArray[length - 1];
-      ZObject3dStripe &stripe = m_stripeArray[i];
+      ZObject3dStripe &newStripe = newStripeArray[length - 1]; //Last target stripe
+      ZObject3dStripe &stripe = m_stripeArray[i]; //Current source stripe
       if (!newStripe.unify(stripe)) {
+        //Extend target stripe if the source stripe cannot be unified.
         stripe.canonize();
         //newStripeArray.push_back(m_stripeArray[i]);
         newStripeArray[length++] = stripe;
       }
+    }
+    if (newStripeArray[length - 1].isEmpty()) { //Remove empty stripe
+      --length;
     }
 
     newStripeArray.resize(length);
@@ -932,6 +936,10 @@ void ZObject3dScan::fullySortedCanonize()
         //newStripeArray.push_back(m_stripeArray[i]);
         newStripeArray[length++] = stripe;
       }
+    }
+
+    if (newStripeArray[length - 1].isEmpty()) { //Remove empty stripe
+      --length;
     }
 
     newStripeArray.resize(length);
@@ -996,6 +1004,29 @@ void ZObject3dScan::concat(const ZObject3dScan &obj)
 
   processEvent(EVENT_OBJECT_MODEL_CHANGED | EVENT_OBJECT_UNCANONIZED);
   //deprecate(ALL_COMPONENT);
+}
+
+void ZObject3dScan::remove(const ZIntCuboid &box)
+{
+  canonize();
+  TEvent event = EVENT_NULL;
+  for (ZObject3dStripe &stripe : m_stripeArray) {
+    if (stripe.getZ() >= box.getFirstCorner().getZ() &&
+        stripe.getZ() <= box.getLastCorner().getZ()) {
+      if (stripe.getY() >= box.getFirstCorner().getY() &&
+          stripe.getY() <= box.getLastCorner().getY()) {
+        stripe.remove(box.getFirstCorner().getX(), box.getLastCorner().getX());
+        if (stripe.isEmpty()) {
+          event |= EVENT_OBJECT_UNCANONIZED;
+        }
+      }
+    } else if (stripe.getZ() > box.getLastCorner().getZ()) {
+      break;
+    }
+  }
+  processEvent(event);
+
+  fullySortedCanonize();
 }
 
 void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
@@ -2534,7 +2565,7 @@ void ZObject3dScan::makeZProjection(ZObject3dScan *obj) const
   if (obj != NULL) {
     obj->clear();
     for (size_t i = 0; i < getStripeNumber(); ++i) {
-      obj->addStripe(0, m_stripeArray[i].getY(), false);
+      obj->addStripe(0, m_stripeArray[i].getY());
       int nseg = m_stripeArray[i].getSegmentNumber();
       for (int j = 0; j < nseg; ++j) {
         int x1 = m_stripeArray[i].getSegmentStart(j);
@@ -2561,7 +2592,7 @@ ZObject3dScan ZObject3dScan::makeYProjection() const
 {
   ZObject3dScan proj;
   for (size_t i = 0; i < getStripeNumber(); ++i) {
-    proj.addStripe(0, m_stripeArray[i].getZ(), false);
+    proj.addStripe(0, m_stripeArray[i].getZ());
     int nseg = m_stripeArray[i].getSegmentNumber();
     for (int j = 0; j < nseg; ++j) {
       int x1 = m_stripeArray[i].getSegmentStart(j);

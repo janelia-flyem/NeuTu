@@ -254,10 +254,10 @@ void Z3DGpuInfo::logGpuInfo() const
 {
   QStringList info = gpuInfo();
   for (int i = 0; i < info.size(); ++i) {
-    LOG(INFO) << info[i];
+    LINFO() << info[i];
   }
 
-  LOG(INFO) << "";
+  LINFO() << "";
 }
 
 bool Z3DGpuInfo::isWeightedAverageSupported() const
