@@ -1,5 +1,5 @@
 package:
-  {% if NEUTU_BUILD %}
+  {% if NEUTU_BUILD is defined %}
     name: neutu-{{NEUTU_BUILD}}
   {% else %}
     name: neutu
