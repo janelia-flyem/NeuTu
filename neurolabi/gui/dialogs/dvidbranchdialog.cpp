@@ -232,10 +232,16 @@ void DvidBranchDialog::onBranchClicked(QModelIndex modelIndex) {
 
     QString branchName = m_branchModel->data(modelIndex, Qt::DisplayRole).toString();
 
-    // this is kind of ad hoc:
-    if (branchName != MESSAGE_LOADING) {
-        LINFO() << "branch clicked:" << branchName;
+    // this is kind of ad hoc: filter out the loading message
+    if (branchName == MESSAGE_LOADING) {
+        return;
     }
+
+    LINFO() << "branch clicked:" << branchName;
+
+    // given chosen branch, retrieve values to fill in for last window
+
+
 
 }
 
