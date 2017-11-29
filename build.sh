@@ -175,8 +175,9 @@ then
 fi
 
 if [ $debug_config = "debug" ]
-  app_name=${app_name}_d
 then
+  app_name=${app_name}_d
+fi
 
 if [ -d $bin_dir/$app_name.app ]
 then

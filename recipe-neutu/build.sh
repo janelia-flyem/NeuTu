@@ -49,7 +49,6 @@ then
   edition=neu3
 fi
 
-echo "bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag"
 bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e $edition $build_flag
 
 # Install to conda environment

@@ -24859,11 +24859,11 @@ void ZTest::test(MainWindow *host)
   ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
   std::cout << "Bound box: " << dvidInfo.getDataRange().toString() << std::endl;
 
-//  ZStack *stack = reader.readGrayScale(10000, 3000, 10000, 256, 256, 256, 0);
-//  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  ZStack *stack = reader.readGrayScale(10000, 3000, 10000, 256, 256, 256, 0);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
 
-//  ZStack *stack2 = reader.readGrayScale(10000, 3000, 10000, 256, 256, 256, 1);
-//  stack2->save(GET_TEST_DATA_DIR + "/test2.tif");
+  ZStack *stack2 = reader.readGrayScale(10000, 3000, 10000, 256, 256, 256, 1);
+  stack2->save(GET_TEST_DATA_DIR + "/test2.tif");
 
 #endif
 
