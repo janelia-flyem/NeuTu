@@ -387,6 +387,10 @@ void ZIntCuboid::loadJson(const ZJsonArray &json)
   }
 }
 
+std::string ZIntCuboid::toString() const
+{
+  return toJsonArray().dumpString(0);
+}
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
 {
