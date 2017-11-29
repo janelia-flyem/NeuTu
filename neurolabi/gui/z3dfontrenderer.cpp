@@ -151,7 +151,7 @@ void Z3DFontRenderer::render(Z3DEye eye)
     LOG(ERROR) << "Can not find any font.";
     return;
   }
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   if (m_positionsPt) {
     std::cout << "Text position size: " << m_positionsPt->size() << std::endl;
   }
