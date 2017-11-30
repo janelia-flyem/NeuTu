@@ -9,6 +9,7 @@
 #include "zintcuboid.h"
 #include "zobject3dscan.h"
 #include "zobject3d.h"
+#include "zstackarray.h"
 
 ZStackWatershed::ZStackWatershed() : m_floodingZero(false)
 {
@@ -228,6 +229,13 @@ ZStack* ZStackWatershed::run(const ZStack *stack, const ZStack* seedMask)
 
   return run(stack, seedArray);
 }
+
+ZStack *ZStackWatershed::run(
+    const ZStack *stack, const ZStackArray &seedMask)
+{
+  return run(stack, seedMask.toRawArray());
+}
+
 
 ZStack *ZStackWatershed::run(
     const ZStack *stack, const std::vector<ZStack *> &seedMask)

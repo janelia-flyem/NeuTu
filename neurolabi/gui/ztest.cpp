@@ -24850,7 +24850,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("127.0.0.1", "0f59", 8000);
   target.setGrayScaleName("grayscalejpeg");
@@ -24865,6 +24865,15 @@ void ZTest::test(MainWindow *host)
   ZStack *stack2 = reader.readGrayScale(10000, 3000, 10000, 256, 256, 256, 1);
   stack2->save(GET_TEST_DATA_DIR + "/test2.tif");
 
+#endif
+
+#if 1
+  ZObject3dScan obj;
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
+  ZObject3dScan obj2 = obj;
+  tic();
+  ZObject3dScan obj3 = obj - obj2;
+  ptoc();
 #endif
 
   std::cout << "Done." << std::endl;
