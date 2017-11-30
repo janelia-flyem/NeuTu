@@ -162,6 +162,8 @@ public:
    */
   void loadJson(const ZJsonArray &json);
 
+  std::string toString() const;
+
 private:
   ZIntPoint m_firstCorner;
   ZIntPoint m_lastCorner;

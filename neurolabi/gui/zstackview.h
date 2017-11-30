@@ -314,9 +314,11 @@ public slots:
   //void viewThreshold(int threshold);
   void updateThresholdSlider();
   void updateSlider();
+  void updateStackInfo();
   void updateChannelControl();
   void processDepthSliderValueChange();
   void processDepthSliderValueChange(int sliceIndex);
+  void updateStackWidget();
 
   void paintStack();
   void paintMask();
@@ -340,7 +342,8 @@ public slots:
   QMenu* leftMenu();
   QMenu* rightMenu();
 
-  void setInfo(QString info);
+  void setInfo(const QString &info);
+  void setStackInfo(const QString &info);
   void autoThreshold();
   void setThreshold(int thre);
   void setZ(int z);
@@ -533,7 +536,7 @@ protected:
   ZSlider *m_depthControl;
   //QSpinBox *m_spinBox;
   QLabel *m_infoLabel;
-  QLabel *m_msgLabel;
+  QLabel *m_stackLabel;
   QLabel *m_activeLabel;
   ZImage *m_image;
 //  ZPainter m_imagePainter;

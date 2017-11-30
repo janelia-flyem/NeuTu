@@ -841,7 +841,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlockOld(
 
 std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
     const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-    int blockNumber)
+    int blockNumber, int zoom)
 {
   std::vector<ZStack*> stackArray(blockNumber, NULL);
 
@@ -861,7 +861,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
         std::cout << blockNumber << std::endl;
 #endif
       libdvid::GrayscaleBlocks blocks = m_service->get_grayblocks(
-            getDvidTarget().getGrayScaleName(), blockCoords, blockNumber);
+            getDvidTarget().getGrayScaleName(zoom), blockCoords, blockNumber);
 #ifdef _DEBUG_
         std::cout << "one read done" << std::endl;
 #endif
@@ -1061,6 +1061,7 @@ ZStack* ZDvidReader::readGrayScaleOld(
 }
 #endif
 
+
 ZStack* ZDvidReader::readGrayScale(
     int x0, int y0, int z0, int width, int height, int depth, int zoom) const
 {
@@ -1068,7 +1069,7 @@ ZStack* ZDvidReader::readGrayScale(
 
   return readGrayScale(getDvidTarget().getGrayScaleName(zoom),
                      x0 / zoomRatio, y0 / zoomRatio, z0 / zoomRatio,
-                      width / zoomRatio, height / zoomRatio, depth);
+                      width / zoomRatio, height / zoomRatio, depth / zoomRatio);
 }
 
 ZStack* ZDvidReader::readGrayScale(

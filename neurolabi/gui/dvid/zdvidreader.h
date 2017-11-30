@@ -170,8 +170,10 @@ public:
   ZStack* readGrayScale(
       const std::string &dataName,
       int x0, int y0, int z0, int width, int height, int depth) const;
+
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
+
 #if 0
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;
@@ -181,7 +183,7 @@ public:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
   std::vector<ZStack*> readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-      int blockNumber);
+      int blockNumber, int zoom = 0);
 
 //  QString readInfo(const QString &dataName) const;
 
