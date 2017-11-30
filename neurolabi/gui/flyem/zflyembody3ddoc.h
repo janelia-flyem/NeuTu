@@ -161,7 +161,7 @@ public:
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
-  void addEvent(const BodyEvent &event);
+  void addEvent(const BodyEvent &event, QMutex *mutex = NULL);
 
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
