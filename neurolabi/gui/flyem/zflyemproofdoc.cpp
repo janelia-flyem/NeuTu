@@ -3296,7 +3296,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
         m_splitSource = ZSharedPointer<ZDvidSparseStack>(
               originalStack->getCrop(roi));
 
-        bool cont = true;
+        bool cont = originalStack->prefetching();
         if (mode == flyem::BODY_SPLIT_OFFLINE) {
           cont = false;
         }

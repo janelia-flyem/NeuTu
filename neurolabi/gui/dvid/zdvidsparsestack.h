@@ -69,6 +69,7 @@ public:
     return m_dvidReader.getDvidTarget();
   }
 
+  bool prefetching() const { return m_prefectching; }
 
   int getValue(int x, int y, int z) const;
 
