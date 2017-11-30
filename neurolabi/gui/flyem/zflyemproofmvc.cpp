@@ -1671,6 +1671,10 @@ void ZFlyEmProofMvc::customInit()
   m_paintLabelWidget->setTitle(
         "Seed Labels (hotkeys: R to activate; 1~9 to select label)");
 
+//  getView()->addHorizontalWidget(
+//        new QSpacerItem(
+//          1, 1, QSizePolicy::Expanding, QSizePolicy::Fixed));
+
 //  m_speedLabelWidget->hide();
 
   m_todoDlg->setDocument(getDocument());
@@ -2553,7 +2557,7 @@ void ZFlyEmProofMvc::launchSplitFunc(uint64_t bodyId, flyem::EBodySplitMode mode
       }
 
       if (mode == flyem::BODY_SPLIT_ONLINE) {
-        body->runFillValueFunc();
+//        body->runFillValueFunc(); //disable prefetching
       }
 
       m_splitProject.setBodyId(bodyId);
