@@ -138,9 +138,9 @@ void ZStackView::init()
   m_secondTopLayout->addWidget(m_progress);
 //  m_secondTopLayout->addWidget(m_zSpinBox);
 
-  m_secondTopLayout->addSpacerItem(new QSpacerItem(1, m_progress->height(),
-                                               QSizePolicy::Preferred,
-                                               QSizePolicy::Fixed));
+//  m_secondTopLayout->addSpacerItem(new QSpacerItem(1, 1,
+//                                               QSizePolicy::Expanding,
+//                                               QSizePolicy::Fixed));
 
 
   m_layout = new QVBoxLayout;

@@ -1,5 +1,7 @@
 #include "zintcuboid.h"
 #include <cmath>
+#include <sstream>
+
 #include "tz_utilities.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
@@ -389,7 +391,9 @@ void ZIntCuboid::loadJson(const ZJsonArray &json)
 
 std::string ZIntCuboid::toString() const
 {
-  return toJsonArray().dumpString(0);
+  std::ostringstream stream;
+  stream << getFirstCorner().toString() << "->" << getLastCorner().toString();
+  return stream.str();
 }
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
