@@ -838,9 +838,17 @@ ZMesh* ZFlyEmBody3dDoc::getBodyMesh(uint64_t bodyId, int zoom)
   return retrieveBodyMesh(bodyId, zoom);
 }
 
-void ZFlyEmBody3dDoc::addEvent(const BodyEvent &event)
+void ZFlyEmBody3dDoc::addEvent(const BodyEvent &event, QMutex *mutex)
 {
-  m_eventQueue.append(event);
+  QMutexLocker locker(mutex);
+
+  if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+    //When a body is removed, its associated objects will be removed as well.
+    //Clear the undo queue to avoid potential crash
+    undoStack()->clear();
+  }
+
+  m_eventQueue.enqueue(event);
 }
 
 void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
@@ -876,7 +884,8 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
     event.setResLevel(MAX_RES_LEVEL);
   }
 
-  m_eventQueue.enqueue(event);
+  addEvent(event);
+//  m_eventQueue.enqueue(event);
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::getBodyQuickly(uint64_t bodyId)
