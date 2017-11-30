@@ -244,18 +244,18 @@ void ZSystemInfo::logOSInfo() const
 
 #if 1
   // time
-  LOG(INFO) << "system_clock res: "
-            << 1e9 * std::chrono::system_clock::period::num / std::chrono::system_clock::period::den << " ns";
-  LOG(INFO) << "system_clock is_steady = " << std::boolalpha << std::chrono::system_clock::is_steady;
+  LINFO() << "system_clock res: "
+          << 1e9 * std::chrono::system_clock::period::num / std::chrono::system_clock::period::den << " ns";
+  LINFO() << "system_clock is_steady = " << std::boolalpha << std::chrono::system_clock::is_steady;
 
-  LOG(INFO) << "steady_clock res: "
-            << 1e9 * std::chrono::steady_clock::period::num / std::chrono::steady_clock::period::den << " ns";
-  LOG(INFO) << "steady_clock is_steady = " << std::boolalpha << std::chrono::steady_clock::is_steady;
+  LINFO() << "steady_clock res: "
+          << 1e9 * std::chrono::steady_clock::period::num / std::chrono::steady_clock::period::den << " ns";
+  LINFO() << "steady_clock is_steady = " << std::boolalpha << std::chrono::steady_clock::is_steady;
 
-  LOG(INFO) << "high_resolution_clock res: "
-            << 1e9 * std::chrono::high_resolution_clock::period::num / std::chrono::high_resolution_clock::period::den
-            << " ns";
-  LOG(INFO) << "high_resolution_clock is_steady = " << std::boolalpha << std::chrono::high_resolution_clock::is_steady;
+  LINFO() << "high_resolution_clock res: "
+          << 1e9 * std::chrono::high_resolution_clock::period::num / std::chrono::high_resolution_clock::period::den
+          << " ns";
+  LINFO() << "high_resolution_clock is_steady = " << std::boolalpha << std::chrono::high_resolution_clock::is_steady;
 #endif
 }
 
