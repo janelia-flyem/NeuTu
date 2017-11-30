@@ -275,7 +275,7 @@ const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
 
 void ZDvidSparseStack::runFillValueFunc()
 {
-  runFillValueFunc(ZIntCuboid(), false);
+  runFillValueFunc(ZIntCuboid(), false, m_prefectching);
 }
 
 //void ZDvidSparseStack::cancelFillValueFunc()
@@ -564,7 +564,7 @@ ZStack* ZDvidSparseStack::getStack(const ZIntCuboid &updateBox)
   }
   */
 
-  runFillValueFunc(updateBox, true);
+  runFillValueFunc(updateBox, true, m_prefectching);
   m_sparseStack.deprecate(ZSparseStack::STACK);
 
   return m_sparseStack.getStack();

@@ -150,6 +150,7 @@ private:
   ZSparseStack m_sparseStack;
   ZDvidTarget m_dvidTarget;
   bool m_isValueFilled;
+  bool m_prefectching = false;
   uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;
