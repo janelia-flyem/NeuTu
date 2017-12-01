@@ -532,7 +532,7 @@ ZStack* ZStackMultiScaleWatershed::toSeedStack(std::vector<ZObject3d*>& seeds,in
 {
   ZStack* mask=new ZStack(GREY,width,height,depth,1);
   mask->setOffset(offset);
-  for(auto seed:seeds){
+  for(ZObject3d* seed:seeds){
     uint8_t label = seed->getLabel();
     uint8_t *array = mask->array8();
     size_t area = width*height;
@@ -546,7 +546,11 @@ ZStack* ZStackMultiScaleWatershed::toSeedStack(std::vector<ZObject3d*>& seeds,in
       x -= offset.getX();
       y -= offset.getY();
       z -= offset.getZ();
-      array[z * area + y * width + x] = label;
+      if (IS_IN_CLOSE_RANGE(x, 0, width - 1) &&
+          IS_IN_CLOSE_RANGE(y, 0, height - 1) &&
+          IS_IN_CLOSE_RANGE(z, 0, depth - 1)) {
+        array[z * area + y * width + x] = label;
+      }
     }
   }
   return mask;
