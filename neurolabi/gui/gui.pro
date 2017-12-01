@@ -825,7 +825,8 @@ HEADERS += mainwindow.h \
     zmeshfactory.h \
     flyem/zflyemmeshfactory.h \
     widgets/zpythonprocess.h \
-    zstackptr.h
+    zstackptr.h \
+    zstackutil.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1437,7 +1438,8 @@ SOURCES += main.cpp \
     zmeshfactory.cpp \
     flyem/zflyemmeshfactory.cpp \
     widgets/zpythonprocess.cpp \
-    zstackptr.cpp
+    zstackptr.cpp \
+    zstackutil.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
