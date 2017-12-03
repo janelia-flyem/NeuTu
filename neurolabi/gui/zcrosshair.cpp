@@ -19,7 +19,7 @@ void ZCrossHair::init()
 
 void ZCrossHair::display(ZPainter &painter, int /*slice*/,
                          ZStackObject::EDisplayStyle /*style*/,
-                         NeuTube::EAxis sliceAxis) const
+                         neutube::EAxis sliceAxis) const
 {
   if (!isVisible() || painter.getCanvasRange().isEmpty()) {
     return;
@@ -68,7 +68,7 @@ void ZCrossHair::display(ZPainter &painter, int /*slice*/,
 
 }
 
-bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos, NeuTube::EAxis axis)
+bool ZCrossHair::hitWidgetPos(const ZIntPoint &widgetPos, neutube::EAxis axis)
 {
   ZPoint shiftedCenter = m_center;
   shiftedCenter.shiftSliceAxis(axis);
@@ -111,6 +111,11 @@ void ZCrossHair::setCenter(double x, double y)
 void ZCrossHair::setCenter(const ZPoint &center)
 {
   m_center = center;
+}
+
+void ZCrossHair::setCenter(const ZIntPoint &center)
+{
+  m_center.set(center.getX(), center.getY(), center.getZ());
 }
 
 void ZCrossHair::setCenter(double x, double y, double z)

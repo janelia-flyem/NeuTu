@@ -39,9 +39,7 @@
 #include "tz_stack_bwmorph.h"
 #include "geometry/zgeometry.h"
 #include "zintcuboid.h"
-
-using namespace std;
-
+#include "zstackwriter.h"
 
 ///////////////////////////////////////////////////
 
@@ -77,11 +75,11 @@ void ZObject3dScan::init()
   setTarget(TARGET_OBJECT_CANVAS);
   m_type = GetType();
 
-  m_isCanonized = false;
+  m_isCanonized = true;
 //  m_label = 0;
   m_blockingEvent = false;
   m_zProjection = NULL;
-  m_sliceAxis = NeuTube::Z_AXIS;
+  m_sliceAxis = neutube::Z_AXIS;
   setColor(255, 255, 255, 255);
 }
 
@@ -277,7 +275,7 @@ ZObject3dStripe &ZObject3dScan::getStripe(size_t index)
   return m_stripeArray[index];
 }
 
-void ZObject3dScan::addStripe(int z, int y, bool canonizing)
+void ZObject3dScan::addStripe(int z, int y)
 {
   bool adding = true;
   if (!m_stripeArray.empty()) {
@@ -292,7 +290,7 @@ void ZObject3dScan::addStripe(int z, int y, bool canonizing)
     stripe.setY(y);
     stripe.setZ(z);
 
-    addStripe(stripe, canonizing);
+    addStripe(stripe, false);
   }
 }
 
@@ -401,7 +399,7 @@ void ZObject3dScan::addSegmentFast(int x1, int x2)
 
 void ZObject3dScan::addSegment(int z, int y, int x1, int x2, bool canonizing)
 {
-  addStripe(z, y, false);
+  addStripe(z, y);
   addSegment(x1, x2, canonizing);
 }
 
@@ -442,7 +440,7 @@ ZObject3d* ZObject3dScan::toObject3d() const
 
   ZObject3d *obj = new ZObject3d();
 
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     int y = iter->getY();
     int z = iter->getZ();
@@ -529,7 +527,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   ZGeometry::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
 
   switch (m_sliceAxis) {
-  case NeuTube::Z_AXIS: //XY plane
+  case neutube::Z_AXIS: //XY plane
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; ++y) {
       int x1 = -1;
@@ -569,8 +567,8 @@ void ZObject3dScan::loadStack(const Stack *stack)
     }
   }
   break;
-  case NeuTube::Y_AXIS: //XZ plane
-  case NeuTube::X_AXIS: //ZY plane
+  case neutube::Y_AXIS: //XZ plane
+  case neutube::X_AXIS: //ZY plane
     for (int z = 0; z < sd; ++z) {
       for (int y = 0; y < sh; ++y) {
         int x1 = -1;
@@ -634,8 +632,8 @@ void ZObject3dScan::printInfo() const
 
 void ZObject3dScan::print() const
 {
-  cout << getStripeNumber() << " stripes" << endl;
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  std::cout << getStripeNumber() << " stripes" << std::endl;
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     //cout << "  Z:" << iter->getZ() << " Y:" << iter->getY() << " #S:"
     //     << iter->getSegmentNumber() << " #V:" << iter->getVoxelNumber() << endl;
@@ -643,7 +641,7 @@ void ZObject3dScan::print() const
   }
 }
 
-bool ZObject3dScan::load(const string &filePath)
+bool ZObject3dScan::load(const std::string &filePath)
 {
   clear();
 
@@ -677,7 +675,7 @@ bool ZObject3dScan::load(const string &filePath)
     */
 
       m_stripeArray.resize(stripeNumber);
-      for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+      for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
            iter != m_stripeArray.end(); ++iter) {
         iter->read(fp);
       }
@@ -711,19 +709,19 @@ bool ZObject3dScan::load(const char *filePath)
 
 bool ZObject3dScan::save(const char *filePath)
 {
-  return save(string(filePath));
+  return save(std::string(filePath));
 }
 
 bool ZObject3dScan::save(const char *filePath) const
 {
-  return save(string(filePath));
+  return save(std::string(filePath));
 }
 
 void ZObject3dScan::write(std::ostream &stream) const
 {
   int stripeNumber = (int) getStripeNumber();
   stream.write((const char*)(&stripeNumber), sizeof(int));
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     const ZObject3dStripe &stripe = *iter;
     stripe.write(stream);
@@ -736,7 +734,7 @@ void ZObject3dScan::read(std::istream &stream)
   stream.read((char*)(&stripeNumber), sizeof(int));
 
   m_stripeArray.resize(stripeNumber);
-  for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     iter->read(stream);
   }
@@ -750,7 +748,7 @@ void ZObject3dScan::read(std::istream &stream)
   deprecate(COMPONENT_ALL);
 }
 
-bool ZObject3dScan::save(const string &filePath) const
+bool ZObject3dScan::save(const std::string &filePath) const
 {
 #ifdef _DEBUG_
   std::cout << "Saving " << filePath << std::endl;
@@ -760,7 +758,7 @@ bool ZObject3dScan::save(const string &filePath) const
   if (fp != NULL) {
     int stripeNumber = (int) getStripeNumber();
     fwrite(&stripeNumber, sizeof(int), 1, fp);
-    for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       iter->write(fp);
     }
@@ -776,7 +774,7 @@ bool ZObject3dScan::save(const string &filePath) const
 size_t ZObject3dScan::countForegroundOverlap(Stack *stack, const int *offset)
 {
   size_t count = 0;
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     count += iter->countForegroundOverlap(stack, offset);
   }
@@ -786,7 +784,7 @@ size_t ZObject3dScan::countForegroundOverlap(Stack *stack, const int *offset)
 
 void ZObject3dScan::addStack(Stack *stack, int v, const int *offset) const
 {
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     iter->addStackValue(stack, v, offset);
   }
@@ -794,7 +792,7 @@ void ZObject3dScan::addStack(Stack *stack, int v, const int *offset) const
 
 void ZObject3dScan::drawStack(Stack *stack, int v, const int *offset) const
 {
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     iter->drawStack(stack, v, offset);
   }
@@ -823,7 +821,7 @@ void ZObject3dScan::drawStack(ZStack *stack, int v) const
 void ZObject3dScan::drawStack(
     Stack *stack, uint8_t red, uint8_t green, uint8_t blue, const int *offset) const
 {
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     const ZObject3dStripe &stripe = *iter;
     stripe.drawStack(stack, red, green, blue, m_sliceAxis, offset);
@@ -834,7 +832,7 @@ void ZObject3dScan::drawStack(
     Stack *stack, uint8_t red, uint8_t green, uint8_t blue, double alpha,
     const int *offset) const
 {
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     const ZObject3dStripe &stripe = *iter;
     stripe.drawStack(stack, red, green, blue, alpha, offset);
@@ -886,20 +884,24 @@ void ZObject3dScan::sort()
 void ZObject3dScan::sortedCanonize()
 {
   if (!isEmpty() && !isCanonized()) {
-    vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
+    std::vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
     size_t length = 0;
     //newStripeArray.reserve(m_stripeArray.size());
     m_stripeArray[0].sortedCanonize();
     //newStripeArray.push_back(m_stripeArray[0]);
     newStripeArray[length++] = m_stripeArray[0];
     for (size_t i = 1; i < m_stripeArray.size(); ++i) {
-      ZObject3dStripe &newStripe = newStripeArray[length - 1];
-      ZObject3dStripe &stripe = m_stripeArray[i];
+      ZObject3dStripe &newStripe = newStripeArray[length - 1]; //Last target stripe
+      ZObject3dStripe &stripe = m_stripeArray[i]; //Current source stripe
       if (!newStripe.unify(stripe)) {
+        //Extend target stripe if the source stripe cannot be unified.
         stripe.canonize();
         //newStripeArray.push_back(m_stripeArray[i]);
         newStripeArray[length++] = stripe;
       }
+    }
+    if (newStripeArray[length - 1].isEmpty()) { //Remove empty stripe
+      --length;
     }
 
     newStripeArray.resize(length);
@@ -917,7 +919,7 @@ void ZObject3dScan::sortedCanonize()
 void ZObject3dScan::fullySortedCanonize()
 {
   if (!isEmpty() && !isCanonized()) {
-    vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
+    std::vector<ZObject3dStripe> newStripeArray(m_stripeArray.size());
     size_t length = 0;
     //newStripeArray.reserve(m_stripeArray.size());
     m_stripeArray[0].sortedCanonize();
@@ -934,6 +936,10 @@ void ZObject3dScan::fullySortedCanonize()
         //newStripeArray.push_back(m_stripeArray[i]);
         newStripeArray[length++] = stripe;
       }
+    }
+
+    if (newStripeArray[length - 1].isEmpty()) { //Remove empty stripe
+      --length;
     }
 
     newStripeArray.resize(length);
@@ -1000,13 +1006,36 @@ void ZObject3dScan::concat(const ZObject3dScan &obj)
   //deprecate(ALL_COMPONENT);
 }
 
+void ZObject3dScan::remove(const ZIntCuboid &box)
+{
+  canonize();
+  TEvent event = EVENT_NULL;
+  for (ZObject3dStripe &stripe : m_stripeArray) {
+    if (stripe.getZ() >= box.getFirstCorner().getZ() &&
+        stripe.getZ() <= box.getLastCorner().getZ()) {
+      if (stripe.getY() >= box.getFirstCorner().getY() &&
+          stripe.getY() <= box.getLastCorner().getY()) {
+        stripe.remove(box.getFirstCorner().getX(), box.getLastCorner().getX());
+        if (stripe.isEmpty()) {
+          event |= EVENT_OBJECT_UNCANONIZED;
+        }
+      }
+    } else if (stripe.getZ() > box.getLastCorner().getZ()) {
+      break;
+    }
+  }
+  processEvent(event);
+
+  fullySortedCanonize();
+}
+
 void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
 {
   TEvent event = EVENT_NULL;
 
   if (yintv > 0 || zintv > 0) {
-    vector<ZObject3dStripe> newStripeArray;
-    for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+    std::vector<ZObject3dStripe> newStripeArray;
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       if ((iter->getY() % (yintv + 1) == 0) &&
           (iter->getZ() % (zintv + 1) == 0)) {
@@ -1019,7 +1048,7 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
   }
 
   if (xintv > 0) {
-    for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+    for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       iter->downsample(xintv);
       iter->setY(iter->getY() / (yintv + 1));
@@ -1057,29 +1086,22 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
 
   TEvent event = EVENT_NULL;
 
-#ifdef _DEBUG_2
-      std::cout << getMinZ() << std::endl;
-      std::cout << getMaxZ() << std::endl;
-#endif
+  ZOUT(LINFO(), 3) << "Downsmapling obj: " << xintv << yintv << zintv;
 
   if (yintv > 0 || zintv > 0) {
-    for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+    for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
-#ifdef _DEBUG_2
-    std::cout << iter->getZ() << std::endl;
-#endif
+//      ZOUT(LINFO(), 3) << "Checking " << iter->getZ();
       iter->setY(iter->getY() / (yintv + 1));
       iter->setZ(iter->getZ() / (zintv + 1));
-#ifdef _DEBUG_2
-    std::cout << iter->getZ() << std::endl;
-#endif
     }
     //m_isCanonized = false;
     event |= EVENT_OBJECT_UNCANONIZED;
   }
 
   if (xintv > 0) {
-    for (vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+    ZOUT(LINFO(), 3) << "Downsmapling x: " << xintv;
+    for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       iter->downsampleMax(xintv);
     }
@@ -1087,15 +1109,18 @@ void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
     event |= EVENT_OBJECT_UNCANONIZED;
   }
 
+  ZOUT(LINFO(), 3) << "Processing " << event;
   processEvent(event);
 
+  ZOUT(LINFO(), 3) << "Resetting ds";
   pushDsIntv(xintv, yintv, zintv);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << getMinZ() << std::endl;
       std::cout << getMaxZ() << std::endl;
 #endif
 
+  ZOUT(LINFO(), 3) << "Canonizing ... " << xintv << yintv << zintv;
   canonize();
 
   //deprecate(ALL_COMPONENT);
@@ -1292,6 +1317,7 @@ ZStack* ZObject3dScan::toStackObject(int v, ZStack *result) const
   }
 
   if (stack != NULL) {
+    stackObject->useChannelColors(false);
     stackObject->load(stack);
     stackObject->setOffset(offset[0], offset[1], offset[2]);
   }
@@ -1336,7 +1362,7 @@ ZIntCuboid ZObject3dScan::getBoundBox() const
   ZIntCuboid boundBox;
 
   bool isFirst = true;
-  for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+  for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
        iter != m_stripeArray.end(); ++iter) {
     if (!iter->isEmpty()) {
       if (isFirst) {
@@ -1877,7 +1903,7 @@ static QList<std::vector<QPoint> > extract_contour(
 #endif
 
 void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
-                            NeuTube::EAxis sliceAxis) const
+                            neutube::EAxis sliceAxis) const
 {
 #if _QT_GUI_USED_
 //  if (isSelected() && style == ZStackObject::SOLID) {
@@ -1903,11 +1929,11 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   QPen pen(m_color);
 
 
-  if (hasVisualEffect(NeuTube::Display::SparseObject::VE_PLANE_BOUNDARY)) {
+  if (hasVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY)) {
     style = ZStackObject::BOUNDARY;
   }
 
-  if (hasVisualEffect(NeuTube::Display::SparseObject::VE_FORCE_SOLID)) {
+  if (hasVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID)) {
     style = ZStackObject::SOLID;
   }
 
@@ -2267,6 +2293,34 @@ ZObject3dScan ZObject3dScan::getMedianSlice() const
   return getSlice(z);
 }
 
+void ZObject3dScan::exportImageSlice(const std::string outputFolder) const
+{
+  exportImageSlice(getMinZ(), getMaxZ(), outputFolder);
+}
+
+void ZObject3dScan::exportImageSlice(
+    int minZ, int maxZ, const std::string outputFolder) const
+{
+  ZIntCuboid box = getBoundBox();
+  if (!box.isEmpty()) {
+    for (int i = minZ; i <= maxZ; ++i) {
+      std::cout << "Saving " << i << std::endl;
+      ZString path = outputFolder + "/";
+      path.appendNumber(i, 5);
+      path += ".tif";
+      ZIntCuboid sliceBox = box;
+      sliceBox.setFirstZ(i);
+      sliceBox.setLastZ(i);
+      ZStack *stack = ZStackFactory::MakeZeroStack(GREY, sliceBox);
+      getSlice(i).drawStack(stack, 255);
+      ZStackWriter writer;
+      writer.setCompressHint(ZStackWriter::COMPRESS_DEFAULT);
+      writer.write(path, stack);
+      delete stack;
+    }
+  }
+}
+
 ZObject3dScan ZObject3dScan::getSlice(int z) const
 {
   ZObject3dScan slice;
@@ -2408,7 +2462,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   return false;
 }
 
-bool ZObject3dScan::hit(double x, double y, NeuTube::EAxis axis)
+bool ZObject3dScan::hit(double x, double y, neutube::EAxis axis)
 {
   if (!isHittable() || m_sliceAxis != axis) {
     return false;
@@ -2511,7 +2565,7 @@ void ZObject3dScan::makeZProjection(ZObject3dScan *obj) const
   if (obj != NULL) {
     obj->clear();
     for (size_t i = 0; i < getStripeNumber(); ++i) {
-      obj->addStripe(0, m_stripeArray[i].getY(), false);
+      obj->addStripe(0, m_stripeArray[i].getY());
       int nseg = m_stripeArray[i].getSegmentNumber();
       for (int j = 0; j < nseg; ++j) {
         int x1 = m_stripeArray[i].getSegmentStart(j);
@@ -2538,7 +2592,7 @@ ZObject3dScan ZObject3dScan::makeYProjection() const
 {
   ZObject3dScan proj;
   for (size_t i = 0; i < getStripeNumber(); ++i) {
-    proj.addStripe(0, m_stripeArray[i].getZ(), false);
+    proj.addStripe(0, m_stripeArray[i].getZ());
     int nseg = m_stripeArray[i].getSegmentNumber();
     for (int j = 0; j < nseg; ++j) {
       int x1 = m_stripeArray[i].getSegmentStart(j);
@@ -2899,7 +2953,7 @@ void ZObject3dScan::fillHole()
     return false; \
   }
 
-void ZObject3dScan::exportDvidObject(const string &filePath) const
+void ZObject3dScan::exportDvidObject(const std::string &filePath) const
 {
   FILE *fp = fopen(filePath.c_str(), "w");
 
@@ -3154,7 +3208,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
     ZGeometry::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
 
-    if (getSliceAxis() == NeuTube::X_AXIS) {
+    if (getSliceAxis() == neutube::X_AXIS) {
       for (int i = 0; i < runLength; ++i) {
         addSegment(coord[2] + i, coord[1], coord[0], coord[0], false);
       }
@@ -3164,6 +3218,64 @@ bool ZObject3dScan::importDvidObjectBuffer(
   }
 
   return true;
+}
+
+size_t ZObject3dScan::CountVoxelNumber(
+    const char *byteArray, size_t byteNumber)
+{
+  size_t count = 0;
+
+  if (byteArray == NULL || byteNumber <= 12) {
+    RECORD_ERROR_UNCOND("Invalid byte buffer");
+    return 0;
+  }
+
+  size_t currentIndex = 0;
+  tz_uint8 flag = 0;
+  READ_BYTE_BUFFER(flag, tz_uint8);
+  UNUSED_PARAMETER(flag);
+
+
+  tz_uint8 numberOfDimensions = 0;
+  READ_BYTE_BUFFER(numberOfDimensions, tz_uint8);
+
+  if (numberOfDimensions != 3) {
+    RECORD_ERROR_UNCOND("Current version only supports 3D");
+    return 0;
+  }
+
+  tz_uint8 dimOfRun = 0;
+  READ_BYTE_BUFFER(dimOfRun, tz_uint8);
+  if (dimOfRun != 0) {
+    RECORD_ERROR_UNCOND("Unspported run dimension");
+    return 0;
+  }
+
+  ++currentIndex;
+
+  currentIndex += 4;
+
+  tz_uint32 numberOfSpans = 0;
+  READ_BYTE_BUFFER(numberOfSpans, tz_uint32);
+
+  for (tz_uint32 span = 0; span < numberOfSpans; ++span) {
+    tz_int32 coord[3];
+    for (int i = 0; i < 3; ++i) {
+      READ_BYTE_BUFFER(coord[i], tz_int32);
+    }
+
+    tz_int32 runLength = 0;
+    READ_BYTE_BUFFER(runLength, tz_int32);
+
+    if (runLength <= 0) {
+      RECORD_ERROR_UNCOND("Invalid run length");
+      return 0;
+    }
+
+    count += runLength;
+  }
+
+  return count;
 }
 
 bool ZObject3dScan::importDvidObjectBuffer(
@@ -3350,7 +3462,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
   int cx = 0;
   int cy = 0;
-  int cz = NeuTube::DIM_INVALID_INDEX;
+  int cz = neutube::DIM_INVALID_INDEX;
   bool newSlice = true;
   bool newStripe = true;
 
@@ -3667,17 +3779,17 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
 }
 
 ZObject3dScan* ZObject3dScan::chop(
-    int v, NeuTube::EAxis axis, ZObject3dScan *remain,
+    int v, neutube::EAxis axis, ZObject3dScan *remain,
     ZObject3dScan *result) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return chopX(v, remain, result);
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return chopY(v, remain, result);
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return chopZ(v, remain, result);
     break;
   }
@@ -3828,6 +3940,12 @@ ZObject3dScan* ZObject3dScan::subobject(
     remain->clear();
     remain->setSliceAxis(m_sliceAxis);
   }
+
+  if (box.contains(getBoundBox())) {
+    *result = *this;
+    return result;
+  }
+
   ConstSegmentIterator iter(this);
   while (iter.hasNext()) {
     const ZObject3dScan::Segment &seg = iter.next();
@@ -3898,7 +4016,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
     double xyCorr = 0.0;
 
     size_t count = 0;
-    for (vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
+    for (std::vector<ZObject3dStripe>::const_iterator iter = m_stripeArray.begin();
          iter != m_stripeArray.end(); ++iter) {
       int y = iter->getY();
       int nseg = iter->getSegmentNumber();
@@ -4101,7 +4219,7 @@ std::vector<int> ZObject3dScan::toIntArray() const
   return array;
 }
 
-bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
+bool ZObject3dScan::importHdf5(const std::string &filePath, const std::string &key)
 {
   clear();
 
@@ -4116,7 +4234,7 @@ bool ZObject3dScan::importHdf5(const string &filePath, const string &key)
   return false;
 }
 
-bool ZObject3dScan::exportHdf5(const string &filePath, const string &key) const
+bool ZObject3dScan::exportHdf5(const std::string &filePath, const std::string &key) const
 {
   ZHdf5Writer writer;
   if (writer.open(filePath)) {
@@ -4191,7 +4309,7 @@ std::vector<ZObject3dScan*> ZObject3dScan::extractAllObject(
   return result;
 }
 
-bool ZObject3dScan::importDvidRoi(const string &filePath)
+bool ZObject3dScan::importDvidRoi(const std::string &filePath)
 {
   ZJsonArray objJson;
   objJson.load(filePath);

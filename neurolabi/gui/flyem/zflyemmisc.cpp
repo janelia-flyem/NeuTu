@@ -1,4 +1,4 @@
-#define _NEUTU_USE_REF_KEY_
+//#define _NEUTU_USE_REF_KEY_
 #include "zflyemmisc.h"
 
 #include <unistd.h>
@@ -321,6 +321,12 @@ Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(
     const ZObject3dScan &roi, QColor color, int dsIntv)
 {
+  ZCubeArray *cubeArray = new ZCubeArray;
+  ZMesh *mesh = MakeRoiMesh(roi, color, dsIntv);
+  cubeArray->setMesh(mesh);
+
+  return cubeArray;
+#if 0
   ZObject3dScan dsRoi = roi;
 //  ZDvidInfo dsInfo = dvidInfo;
 
@@ -401,11 +407,18 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 
   //
   return cubes;
+#endif
 }
 
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
 {
+  ZCubeArray *cubeArray = new ZCubeArray;
+  ZMesh *mesh = MakeRoiMesh(roi, dvidInfo, color, dsIntv);
+  cubeArray->setMesh(mesh);
+
+  return cubeArray;
+#if 0
   ZObject3dScan dsRoi = roi;
   ZDvidInfo dsInfo = dvidInfo;
 
@@ -453,11 +466,11 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
             for (int n = 0; n < 6; n++) {
               if (array[offset + neighbor[n]] == 0) {
                 int f = n;
-                if (f % 2 == 0) { //Remapping to match face defination (temporary fix)
-                  f += 1;
-                } else {
-                  f -= 1;
-                }
+//                if (f % 2 == 0) { //Remapping to match face defination (temporary fix)
+//                  f += 1;
+//                } else {
+//                  f -= 1;
+//                }
                 faceArray.push_back(f);
               }
             }
@@ -484,8 +497,173 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
 
   //
   return cubes;
+#endif
 }
 
+ZMesh* ZFlyEmMisc::MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsIntv)
+{
+  ZObject3dScan dsRoi = roi;
+
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZMesh *mesh = new ZMesh;
+
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
+
+  size_t offset = 0;
+  int i, j, k;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  std::vector<glm::vec3> coordLlfs;
+  std::vector<glm::vec3> coordUrbs;
+  std::vector<std::vector<bool> > faceVisbility;
+  std::vector<glm::vec4> cubeColors;
+
+  qreal r,g,b,a;
+  color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+  int bw = dsRoi.getDsIntv().getX() + 1;
+  int bh = dsRoi.getDsIntv().getY() + 1;
+  int bd = dsRoi.getDsIntv().getZ() + 1;
+
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+        bool goodCube = true;
+        if (goodCube) {
+          if (array[offset] > 0) {
+            std::vector<bool> fv(6, false);
+            bool visible = false;
+            for (int n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                fv[n] = true;
+                visible = true;
+              }
+            }
+            if (visible) {
+              ZIntCuboid box;
+              box.setFirstCorner(
+                    (i + startCoord[0]) * bw, (j + startCoord[1]) * bh,
+                  (k + startCoord[2]) * bd);
+              box.setLastCorner(box.getFirstCorner() + ZIntPoint(bw, bh, bd));
+
+              coordLlfs.emplace_back(box.getFirstCorner().getX(),
+                                     box.getFirstCorner().getY(),
+                                     box.getFirstCorner().getZ());
+              coordUrbs.emplace_back(box.getLastCorner().getX(),
+                                     box.getLastCorner().getY(),
+                                     box.getLastCorner().getZ());
+              cubeColors.emplace_back(r, g, b, a);
+              faceVisbility.push_back(fv);
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  mesh->createCubesWithNormal(coordLlfs, coordUrbs, faceVisbility, &cubeColors);
+
+
+  return mesh;
+}
+
+ZMesh* ZFlyEmMisc::MakeRoiMesh(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
+{
+  ZObject3dScan dsRoi = roi;
+  ZDvidInfo dsInfo = dvidInfo;
+
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+    dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZMesh *mesh = new ZMesh;
+
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
+
+  size_t offset = 0;
+  int i, j, k;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  std::vector<glm::vec3> coordLlfs;
+  std::vector<glm::vec3> coordUrbs;
+  std::vector<std::vector<bool> > faceVisbility;
+  std::vector<glm::vec4> cubeColors;
+
+  qreal r,g,b,a;
+  color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+        bool goodCube = true;
+        if (goodCube) {
+          if (array[offset] > 0) {
+            std::vector<bool> fv(6, false);
+            bool visible = false;
+            for (int n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                fv[n] = true;
+                visible = true;
+              }
+            }
+            if (visible) {
+              ZIntCuboid box = dsInfo.getBlockBox(
+                    i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+
+              coordLlfs.emplace_back(box.getFirstCorner().getX(),
+                                     box.getFirstCorner().getY(),
+                                     box.getFirstCorner().getZ());
+              coordUrbs.emplace_back(box.getLastCorner().getX(),
+                                     box.getLastCorner().getY(),
+                                     box.getLastCorner().getZ());
+              cubeColors.emplace_back(r, g, b, a);
+              faceVisbility.push_back(fv);
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  mesh->createCubesWithNormal(coordLlfs, coordUrbs, faceVisbility, &cubeColors);
+
+
+  return mesh;
+}
 
 void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
     const ZStackViewParam &viewParam, bool visible)
@@ -784,25 +962,25 @@ void ZFlyEmMisc::PrepareBodyStatus(QComboBox *box)
 }
 
 void ZFlyEmMisc::MakeTriangle(
-    const QRectF &rect, QPointF *ptArray, NeuTube::ECardinalDirection direction)
+    const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
 {
   switch (direction) {
-  case NeuTube::CD_EAST:
+  case neutube::CD_EAST:
     ptArray[0] = QPointF(rect.right(), rect.center().y());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.bottomLeft();
     break;
-  case NeuTube::CD_WEST:
+  case neutube::CD_WEST:
     ptArray[0] = QPointF(rect.left(), rect.center().y());
     ptArray[1] = rect.topRight();
     ptArray[2] = rect.bottomRight();
     break;
-  case NeuTube::CD_NORTH:
+  case neutube::CD_NORTH:
     ptArray[0] = QPointF(rect.center().x(), rect.top());
     ptArray[1] = rect.bottomLeft();
     ptArray[2] = rect.bottomRight();
     break;
-  case NeuTube::CD_SOUTH:
+  case neutube::CD_SOUTH:
     ptArray[0] = QPointF(rect.center().x(), rect.bottom());
     ptArray[1] = rect.topLeft();
     ptArray[2] = rect.topRight();
@@ -825,7 +1003,7 @@ QString ZFlyEmMisc::GetMemoryUsage()
   p.start(QString("ps v -p %1").arg(getpid()));
 #endif
 
-  if (p.waitForFinished(-1)) {
+  if (p.waitForFinished(1000)) {
     QString output = p.readAllStandardOutput();
     QStringList lines = output.split("\n", QString::SkipEmptyParts);
 //    qDebug() << lines;
@@ -1028,7 +1206,7 @@ void ZFlyEmMisc::UploadSyGlassTask(
         std::string location = writer->writeServiceTask("split", taskJson);
 
         ZJsonObject entryJson;
-        entryJson.setEntry(NeuTube::Json::REF_KEY, location);
+        entryJson.setEntry(neutube::Json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
       }
@@ -1229,7 +1407,7 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
         uint64_t bodyId = reader.readBodyIdAt(pos);
         QString name = ZJsonParser::stringValue(obj["name"]);
         std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
-              bodyId, FlyEM::LOAD_NO_PARTNER);
+              bodyId, flyem::LOAD_NO_PARTNER);
         std::vector<ZVaa3dMarker> preMarkerArray;
         std::vector<ZVaa3dMarker> postMarkerArray;
         for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
@@ -1244,10 +1422,10 @@ QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
             preMarkerArray.push_back(marker);
           }
         }
-        FlyEm::ZFileParser::writeVaa3dMakerFile(
+        flyem::ZFileParser::writeVaa3dMakerFile(
               outDir.absoluteFilePath(name + ".pre.marker").toStdString(),
               preMarkerArray);
-        FlyEm::ZFileParser::writeVaa3dMakerFile(
+        flyem::ZFileParser::writeVaa3dMakerFile(
               outDir.absoluteFilePath(name + ".post.marker").toStdString(),
               postMarkerArray);
       }
@@ -1507,12 +1685,12 @@ QString ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
 
   ZJsonArray singleJson(json.value("single"));
   std::vector<ZVaa3dMarker> singleMarkerArray = GetLocationMarker(singleJson);
-  FlyEm::ZFileParser::writeVaa3dMakerFile(
+  flyem::ZFileParser::writeVaa3dMakerFile(
         (movieDir + "/cast/single.marker").toStdString(), singleMarkerArray);
 
   ZJsonArray multipleJson(json.value("multiple"));
   std::vector<ZVaa3dMarker> multileMarkerArray = GetLocationMarker(multipleJson);
-  FlyEm::ZFileParser::writeVaa3dMakerFile(
+  flyem::ZFileParser::writeVaa3dMakerFile(
         (movieDir + "/cast/multiple.marker").toStdString(), multileMarkerArray);
 
 

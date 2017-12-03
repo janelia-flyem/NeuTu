@@ -150,6 +150,9 @@ protected:
 private:
   //double devicePixelRatio();
 
+private slots:
+  void updateDecoration();
+
 private:
   bool m_fullscreen;
 
@@ -158,6 +161,7 @@ private:
   std::deque<Z3DCanvasEventListener*> m_listeners;
 
   ZInteractionEngine m_interaction;
+  bool m_updatingDecoration = false;
 };
 
 #endif // Z3DCANVAS_H

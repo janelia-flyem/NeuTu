@@ -88,6 +88,15 @@ void ZFlyEmBodyListModel::removeRowList(const QList<int> &rowList)
   }
 }
 
+void ZFlyEmBodyListModel::addBody(uint64_t bodyId)
+{
+  if (!m_bodySet.contains(bodyId)) {
+    insertRow(rowCount());
+    QModelIndex modelIndex = index(rowCount() - 1);
+    setData(modelIndex, QString("%1").arg(bodyId), Qt::DisplayRole);
+  }
+}
+
 void ZFlyEmBodyListModel::processChangedRows(
     const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
@@ -183,6 +192,11 @@ bool ZFlyEmBodyListModel::setData(
     QString bodyIdStr = value.toString();
 
     uint64_t bodyId = bodyIdStr.toULongLong();
+
+    if (oldBodyId == bodyId) {
+      return false;
+    }
+
     if (m_bodySet.contains(bodyId)) {
       newValue.setValue(QString());
     }

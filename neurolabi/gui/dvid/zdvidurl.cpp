@@ -221,7 +221,7 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
 }
 
 std::string ZDvidUrl::getSparsevolUrl(
-    uint64_t bodyId, int z, NeuTube::EAxis axis) const
+    uint64_t bodyId, int z, neutube::EAxis axis) const
 {
   ZString url = getSparsevolUrl(bodyId);
 
@@ -230,17 +230,17 @@ std::string ZDvidUrl::getSparsevolUrl(
   }
 
   switch (axis) {
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     url += "?minz=";
     url.appendNumber(z);
     url += "&maxz=";
     break;
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     url += "?minx=";
     url.appendNumber(z);
     url += "&maxx=";
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     url += "?miny=";
     url.appendNumber(z);
     url += "&maxy=";
@@ -255,7 +255,7 @@ std::string ZDvidUrl::getSparsevolUrl(
 }
 
 std::string ZDvidUrl::getSparsevolUrl(
-    uint64_t bodyId, int minZ, int maxZ, NeuTube::EAxis axis) const
+    uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
 {
   ZString url = getSparsevolUrl(bodyId);
 
@@ -264,24 +264,40 @@ std::string ZDvidUrl::getSparsevolUrl(
   }
 
   switch (axis) {
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     url += "?minz=";
     url.appendNumber(minZ);
     url += "&maxz=";
     url.appendNumber(maxZ);
     break;
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     url += "?minx=";
     url.appendNumber(minZ);
     url += "&maxx=";
     url.appendNumber(maxZ);
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     url += "?miny=";
     url.appendNumber(minZ);
     url += "&maxy=";
     url.appendNumber(maxZ);
     break;
+  }
+
+  return url;
+}
+
+std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
+{
+  ZString url;
+
+  if (m_dvidTarget.usingLabelArray()) {
+    url = getDataUrl(m_dvidTarget.getBodyLabelName());
+    if (!url.empty()) {
+      url += "/" + ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL_SIZE);
+      url += "/";
+      url.appendNumber(bodyId);
+    }
   }
 
   return url;

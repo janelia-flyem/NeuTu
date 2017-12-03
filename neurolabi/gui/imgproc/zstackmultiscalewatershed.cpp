@@ -20,6 +20,7 @@
 #include "mainwindow.h"
 #include "zstackdocdatabuffer.h"
 #endif
+#include "neutubeconfig.h"
 #undef ASCII
 #undef BOOL
 #undef TRUE
@@ -512,21 +513,23 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     sampled_watershed=watershed.run(sampled,seed);
   }
   else if(algorithm=="random_walker"){
-    const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
+    std::string working_dir = NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR);
+        //on QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
     sampled->setOffset(0,0,0);
     seed->setOffset(0,0,0);
-    sampled->save(working_dir.toStdString()+"/data.tif");
-    seed->save(working_dir.toStdString()+"/seed.tif");
+    sampled->save(working_dir+"/data.tif");
+    seed->save(working_dir+"/seed.tif");
 
     ZPythonProcess python;
-    python.setWorkDir(working_dir);
-    python.setScript(working_dir+"/random_walker.py");
-    python.addArg(working_dir+"/data.tif");
-    python.addArg(working_dir+"/seed.tif");
-    python.addArg(working_dir+"/result.tif");
+    python.setWorkDir(working_dir.c_str());
+    python.setScript((working_dir+"/random_walker.py").c_str());
+    python.addArg((working_dir+"/data.tif").c_str());
+    python.addArg((working_dir+"/seed.tif").c_str());
+    python.addArg((working_dir+"/result.tif").c_str());
+
     sampled_watershed=new ZStack();
     python.run();
-    sampled_watershed->load(working_dir.toStdString()+"/result.tif");
+    sampled_watershed->load(working_dir+"/result.tif");
   }
   else if(algorithm=="power_watershed"){
     const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/power_watershed";
@@ -645,7 +648,7 @@ ZStack* ZStackMultiScaleWatershed::toSeedStack(std::vector<ZObject3d*>& seeds,in
 {
   ZStack* mask=new ZStack(GREY,width,height,depth,1);
   mask->setOffset(offset);
-  for(auto seed:seeds){
+  for(ZObject3d* seed:seeds){
     uint8_t label = seed->getLabel();
     uint8_t *array = mask->array8();
     size_t area = width*height;
@@ -659,7 +662,11 @@ ZStack* ZStackMultiScaleWatershed::toSeedStack(std::vector<ZObject3d*>& seeds,in
       x -= offset.getX();
       y -= offset.getY();
       z -= offset.getZ();
-      array[z * area + y * width + x] = label;
+      if (IS_IN_CLOSE_RANGE(x, 0, width - 1) &&
+          IS_IN_CLOSE_RANGE(y, 0, height - 1) &&
+          IS_IN_CLOSE_RANGE(z, 0, depth - 1)) {
+        array[z * area + y * width + x] = label;
+      }
     }
   }
   return mask;

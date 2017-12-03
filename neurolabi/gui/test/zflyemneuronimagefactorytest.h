@@ -34,7 +34,7 @@ TEST(ZFlyEmNeuronImageFactory, createImage)
   C_Stack::kill(stack);
 
   factory.setSourceDimension(100, 200, 300);
-  factory.setSizePolicy(NeuTube::Z_AXIS, ZFlyEmNeuronImageFactory::SIZE_SOURCE);
+  factory.setSizePolicy(neutube::Z_AXIS, ZFlyEmNeuronImageFactory::SIZE_SOURCE);
   stack = factory.createImage(obj);
 
   ASSERT_EQ(3, C_Stack::width(stack));

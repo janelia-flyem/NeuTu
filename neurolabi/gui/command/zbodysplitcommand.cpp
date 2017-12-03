@@ -3,8 +3,6 @@
 #include <QUrl>
 #include <QDateTime>
 
-#define _NEUTU_USE_REF_KEY_
-
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -41,10 +39,10 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
     reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
     inputJson = reader->readJsonObject(inputPath);
-    if (inputJson.hasKey(NeuTube::Json::REF_KEY)) {
+    if (inputJson.hasKey(neutube::Json::REF_KEY)) {
       inputJson =
           reader->readJsonObject(
-            ZJsonParser::stringValue(inputJson[NeuTube::Json::REF_KEY]));
+            ZJsonParser::stringValue(inputJson[neutube::Json::REF_KEY]));
     }
     isFile = false;
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
@@ -102,7 +100,7 @@ ZBodySplitCommand::parseSignalPath(
 
 int ZBodySplitCommand::run(
     const std::vector<std::string> &input, const std::string &output,
-    const ZJsonObject &/*config*/)
+    const ZJsonObject &config)
 {
   int status = 1;
 
@@ -114,6 +112,11 @@ int ZBodySplitCommand::run(
   ZJsonObject inputJson;
   bool isFile = true;
   std::string dataDir;
+  bool commiting = false;
+
+  if (config.hasKey("commit")) {
+    commiting = ZJsonParser::booleanValue(config["commit"]);
+  }
 
   ZDvidReader *reader = ParseInputPath(
        inputPath, inputJson, splitTaskKey, splitResultKey, dataDir, isFile);
@@ -155,6 +158,8 @@ int ZBodySplitCommand::run(
 
   ZStackWatershedContainer container(data);
 
+  container.setCcaPost(true);
+
   if (!container.isEmpty()) {
     if (!range.isEmpty()) {
       container.setRange(range);
@@ -167,7 +172,7 @@ int ZBodySplitCommand::run(
 #endif
 
     container.run();
-    ProcessResult(container, output, splitTaskKey);
+    processResult(container, output, splitTaskKey, signalPath, commiting);
 
 #ifdef _DEBUG_2
     resultStack->save(GET_TEST_DATA_DIR + "/test.tif");
@@ -258,12 +263,11 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
   return newBodyIdArray;
 }
 
-void ZBodySplitCommand::ProcessResult(
-    ZStackWatershedContainer &container, const std::string &output,
-    const std::string &splitTaskKey)
+void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
+    const std::string &splitTaskKey, const std::string &signalPath, bool committing)
 {
-  ZStack *resultStack = container.getResultStack();
-  if (resultStack != NULL) {
+//  ZStack *resultStack = container.getResultStack();
+  if (container.hasResult()) {
     QUrl outputUrl(output.c_str());
     ZObject3dScanArray *result = container.makeSplitResult(2, NULL);
 
@@ -271,53 +275,68 @@ void ZBodySplitCommand::ProcessResult(
       ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(output);
       ZJsonArray resultArray;
 
-//        ZObject3dScanArray objArray;
-//        ZObject3dFactory::MakeObject3dScanArray(
-//              *result, NeuTube::Z_AXIS, true, &objArray);
-      for (ZObject3dScanArray::const_iterator iter = result->begin();
-           iter != result->end(); ++iter) {
-        const ZObject3dScan &obj = **iter;
-        std::string endPoint =
-            writer->writeServiceResult("split", obj.toDvidPayload(), false);
-        ZJsonObject regionJson;
-        regionJson.setEntry("label", (int) obj.getLabel());
-        regionJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
-        resultArray.append(regionJson);
-#ifdef _DEBUG_2
-        obj.save(GET_TEST_DATA_DIR + "/test.sobj");
-#endif
-      }
-
-      ZJsonObject resultJson;
-      QString refPath;
-      ZJsonObject refJson;
-
-      if (!splitTaskKey.empty()) {
-        refPath = ZDvidPath::GetResultKeyPath(
+      if (committing) {
+        ZDvidWriter *bodyWriter =
+            ZGlobal::GetInstance().getDvidWriterFromUrl(signalPath);
+        std::vector<uint64_t> bodyIdArray = commitResult(result, *bodyWriter);
+        ZJsonArray resultArray;
+        for (uint64_t bodyId : bodyIdArray) {
+          resultArray.append(bodyId);
+        }
+        ZJsonObject resultJson;
+        resultJson.setEntry("committed", resultArray);
+        QString refPath = ZDvidPath::GetResultKeyPath(
               ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
               ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
-        refJson.setEntry(
+        resultJson.setEntry(
               "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
-      }
-
-      if (!resultArray.isEmpty()) {
-        resultJson.addEntry("type", "split");
-        resultJson.addEntry("result", resultArray);
-        std::string endPoint =
-            writer->writeServiceResult("split", resultJson);
-        std::cout << "Result endpoint: " << endPoint << std::endl;
-
-        if (!splitTaskKey.empty()) {
-          refJson.setEntry(NeuTube::Json::REF_KEY, endPoint);
-        }
+        writer->writeJson(refPath.toStdString(), resultJson);
       } else {
-        if (!splitTaskKey.empty()) {
-          refJson.setEntry("message", "Split failed.");
+        for (ZObject3dScanArray::const_iterator iter = result->begin();
+             iter != result->end(); ++iter) {
+          const ZObject3dScan &obj = **iter;
+          std::string endPoint =
+              writer->writeServiceResult("split", obj.toDvidPayload(), false);
+          ZJsonObject regionJson;
+          regionJson.setEntry("label", (int) obj.getLabel());
+          regionJson.setEntry(neutube::Json::REF_KEY, endPoint);
+          resultArray.append(regionJson);
+#ifdef _DEBUG_2
+          obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
         }
-      }
 
-      if (!refJson.isEmpty() && !refPath.isEmpty()) {
-        writer->writeJson(refPath.toStdString(), refJson);
+        ZJsonObject resultJson;
+        QString refPath;
+        ZJsonObject refJson;
+
+        if (!splitTaskKey.empty()) {
+          refPath = ZDvidPath::GetResultKeyPath(
+                ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
+                ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
+          refJson.setEntry(
+                "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
+        }
+
+        if (!resultArray.isEmpty()) {
+          resultJson.addEntry("type", "split");
+          resultJson.addEntry("result", resultArray);
+          std::string endPoint =
+              writer->writeServiceResult("split", resultJson);
+          std::cout << "Result endpoint: " << endPoint << std::endl;
+
+          if (!splitTaskKey.empty()) {
+            refJson.setEntry(neutube::Json::REF_KEY, endPoint);
+          }
+        } else {
+          if (!splitTaskKey.empty()) {
+            refJson.setEntry("message", "Split failed.");
+          }
+        }
+
+        if (!refJson.isEmpty() && !refPath.isEmpty()) {
+          writer->writeJson(refPath.toStdString(), refJson);
+        }
       }
 
 //      if (!splitTaskKey.empty()) {
@@ -326,7 +345,7 @@ void ZBodySplitCommand::ProcessResult(
 //      }
     } else {
       ZStackWriter writer;
-      writer.write(output, resultStack);
+      writer.write(output, container.getResultStack().get());
     }
 
 //      delete result;

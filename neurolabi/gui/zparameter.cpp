@@ -1,5 +1,7 @@
 #include "zparameter.h"
 
+#include <iostream>
+
 #include <QWidget>
 #include <QLabel>
 #include <QCheckBox>
@@ -9,6 +11,16 @@ ZParameter::ZParameter(const QString& name, QObject* parent)
   , m_name(name)
 {
   addStyle("DEFAULT");
+#ifdef _DEBUG_2
+  std::cout << "Constructing ZParameter " << name.toStdString() << " " << this << std::endl;
+#endif
+}
+
+ZParameter::~ZParameter()
+{
+#ifdef _DEBUG_
+  std::cout << "Destroying ZParameter " << m_name.toStdString() << " " << this << std::endl;
+#endif
 }
 
 void ZParameter::setName(const QString& name)

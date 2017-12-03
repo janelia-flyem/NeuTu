@@ -5,17 +5,17 @@
 
 using namespace std;
 
-FlyEm::ZBcfSet::ZBcfSet()
+flyem::ZBcfSet::ZBcfSet()
 {
 
 }
 
-FlyEm::ZBcfSet::ZBcfSet(const std::string &featurePath)
+flyem::ZBcfSet::ZBcfSet(const std::string &featurePath)
 {
   setPath(featurePath);
 }
 
-ZMatrix* FlyEm::ZBcfSet::load(const std::string &name)
+ZMatrix* flyem::ZBcfSet::load(const std::string &name)
 {
   ZHdf5Reader reader;
 
@@ -39,7 +39,7 @@ ZMatrix* FlyEm::ZBcfSet::load(const std::string &name)
   return matrix;
 }
 
-ZMatrix* FlyEm::ZBcfSet::load(const vector<string> &name)
+ZMatrix* flyem::ZBcfSet::load(const vector<string> &name)
 {
   ZMatrix *matrix = NULL;
   for (vector<string>::const_iterator iter = name.begin(); iter != name.end();

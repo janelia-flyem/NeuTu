@@ -35,18 +35,22 @@ Z3DRendererBase::Z3DRendererBase(Z3DGlobalParameters& globalParas, QObject* pare
   m_sizeScale.setDecimal(1);
   m_sizeScale.setStyle("SPINBOX");
 
-  addParameter(m_coordTransform);
   addParameter(m_sizeScale);
 #if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   addParameter(m_renderMethod);
 #endif
   addParameter(m_opacity);
 
+  addParameter(m_coordTransform);
+
   m_materialAmbient.setStyle("COLOR");
   m_materialSpecular.setStyle("COLOR");
   addParameter(m_materialAmbient);
   addParameter(m_materialSpecular);
   addParameter(m_materialShininess);
+
+  connect(&m_opacity, SIGNAL(floatChanged(double)),
+          this, SIGNAL(opacityChanged(double)));
 
   connect(&m_globalParas.lightCount, &ZIntParameter::valueChanged, this, &Z3DRendererBase::compile);
 #if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)

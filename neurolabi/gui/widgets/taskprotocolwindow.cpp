@@ -9,8 +9,11 @@
 #include <QJsonObject>
 #include <QsLog.h>
 
-#include "neutube.h"
+#include "neutube_def.h"
+#include "neutubeconfig.h"
 #include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
@@ -18,17 +21,40 @@
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
 
-TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, QWidget *parent) :
+TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bodyDoc, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::TaskProtocolWindow)
 {
     ui->setupUi(this);
 
     m_proofDoc = doc;
+    m_body3dDoc = bodyDoc;
+
+    m_currentTaskWidget = NULL;
 
     m_protocolInstanceStatus = UNCHECKED;
 
+    // prefetch queue, setup
+    // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+    m_prefetchQueue = new BodyPrefetchQueue();
+    m_prefetchThread = new QThread();
+
+    m_prefetchQueue->moveToThread(m_prefetchThread);
+    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
+    connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchQueue, SLOT(deleteLater()));
+    connect(m_prefetchThread, SIGNAL(finished()), m_prefetchThread, SLOT(deleteLater()));
+
+    // prefetch queue, item management
+    connect(this, SIGNAL(prefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(add(QSet<uint64_t>)));
+    connect(this, SIGNAL(prefetchBody(uint64_t)), m_prefetchQueue, SLOT(add(uint64_t)));
+    connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
+    connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
+
+    m_prefetchThread->start();
+
+
     // UI connections
+    connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
     connect(ui->nextButton, SIGNAL(clicked(bool)), this, SLOT(onNextButton()));
     connect(ui->prevButton, SIGNAL(clicked(bool)), this, SLOT(onPrevButton()));
     connect(ui->doneButton, SIGNAL(clicked(bool)), this, SLOT(onDoneButton()));
@@ -45,6 +71,8 @@ const QString TaskProtocolWindow::VALUE_DESCRIPTION = "Neu3 task list";
 const QString TaskProtocolWindow::KEY_VERSION = "file version";
 const int TaskProtocolWindow::currentVersion = 1;
 const QString TaskProtocolWindow::KEY_ID = "ID";
+const QString TaskProtocolWindow::KEY_DVID_SERVER = "DVID server";
+const QString TaskProtocolWindow::KEY_UUID = "UUID";
 const QString TaskProtocolWindow::KEY_TASKLIST = "task list";
 const QString TaskProtocolWindow::KEY_TASKTYPE = "task type";
 const QString TaskProtocolWindow::PROTOCOL_INSTANCE = "Neu3-protocols";
@@ -108,6 +136,15 @@ void TaskProtocolWindow::init() {
 }
 
 void TaskProtocolWindow::onPrevButton() {
+    // warn the task we're about to move away
+    if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->beforePrev();
+    }
+
+    // for now, just clear the body prefetch queue; see
+    //  longer note in onNextButton()
+    emit clearBodyQueue();
+
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getPrev();
     } else {
@@ -116,12 +153,83 @@ void TaskProtocolWindow::onPrevButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
+
+    // no prefetching is performed here; if we're backing up in the list,
+    //  the next body should already be in memory; it's the responsibility of
+    //  the rest of the application not to throw it out too soon (yes, this
+    //  is a debatable position)
+
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
 }
 
+void TaskProtocolWindow::test()
+{
+  QJsonObject json =
+      loadJsonFromFile((GET_TEST_DATA_DIR + "/_system/neu3_protocol.json").c_str());
+  startProtocol(json, false);
+
+  std::cout << "#Tasks: " << m_taskList.size() << std::endl;
+  for (int i = -1; i <= m_taskList.size() + 1; ++i) {
+    std::cout << "Prev index of " << i << ": " << getPrevIndex(i) << std::endl;
+    std::cout << "Next index of " << i << ": " << getNextIndex(i) << std::endl;
+  }
+  int index = 0;
+  for (int i = 0; i < 5; ++i) {
+    std::cout << "Prev index of " << index << ": " << getPrevIndex(index) << std::endl;
+    index = getPrevIndex(index);
+  }
+
+  index = 0;
+  for (int i = 0; i < 5; ++i) {
+    std::cout << "Next index of " << index << ": " << getNextIndex(index) << std::endl;
+    index = getNextIndex(index);
+  }
+
+  m_currentTaskIndex = 0;
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Prev uncompleted (" << m_currentTaskIndex << "): ";
+    m_currentTaskIndex = getPrevUncompleted();
+    std::cout << m_currentTaskIndex << std::endl;
+  }
+
+  m_currentTaskIndex = 0;
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Next uncompleted (" << m_currentTaskIndex << "): ";
+    m_currentTaskIndex = getNextUncompleted();
+    std::cout << m_currentTaskIndex << std::endl;
+  }
+
+  m_taskList[0]->setCompleted(true);
+  m_currentTaskIndex = 0;
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Prev uncompleted (" << m_currentTaskIndex << "): ";
+    m_currentTaskIndex = getPrevUncompleted();
+    std::cout << m_currentTaskIndex << std::endl;
+  }
+
+  m_currentTaskIndex = 0;
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Next uncompleted (" << m_currentTaskIndex << "): ";
+    m_currentTaskIndex = getNextUncompleted();
+    std::cout << m_currentTaskIndex << std::endl;
+  }
+}
+
 void TaskProtocolWindow::onNextButton() {
+    // warn the task we're about to move away
+    if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->beforeNext();
+    }
+
+    // currently the prefetching is unsophisticated--we only
+    //  look one task ahead; so for now, we'll just clear the queue
+    //  as we move; in the future, we could get fancier and both
+    //  fetch farther ahead and be smarter about detecting which
+    //  bodies are or aren't needed "soon"
+    emit clearBodyQueue();
+
     if (ui->showCompletedCheckBox->isChecked()) {
         m_currentTaskIndex = getNext();
     } else {
@@ -130,6 +238,14 @@ void TaskProtocolWindow::onNextButton() {
             showInfo("No tasks to do!", "All tasks have been completed!");
         }
     }
+
+    // for now, simplest possible prefetching: just prefetch for the next task,
+    //  as long as there is one and it's not the current one
+    int nextTaskIndex = getNext();
+    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+        prefetchForTaskIndex(nextTaskIndex);
+    }
+
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
@@ -150,7 +266,7 @@ void TaskProtocolWindow::onDoneButton() {
 
     QMessageBox messageBox;
     messageBox.setText("Complete task protocol?");
-    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, the data in DVID will be renamed, and you will not be able to continue.\n\nComplete protocol?");
+    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, your progress data will be stored in DVID, and you will not be able to continue.\n\nComplete protocol?");
     messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
     messageBox.setDefaultButton(QMessageBox::Ok);
     int ret = messageBox.exec();
@@ -200,7 +316,7 @@ void TaskProtocolWindow::onLoadTasksButton() {
     startProtocol(json, true);
 }
 
-void TaskProtocolWindow::onCompletedStateChanged(int state) {
+void TaskProtocolWindow::onCompletedStateChanged(int /*state*/) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
         saveState();
@@ -208,7 +324,7 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
     }
 }
 
-void TaskProtocolWindow::onReviewStateChanged(int state) {
+void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
     if (m_currentTaskIndex >= 0) {
         if (ui->reviewCheckBox->isChecked()) {
             m_taskList[m_currentTaskIndex]->addTag(TAG_NEEDS_REVIEW);
@@ -220,7 +336,7 @@ void TaskProtocolWindow::onReviewStateChanged(int state) {
     }
 }
 
-void TaskProtocolWindow::onShowCompletedStateChanged(int state) {
+void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
     // if we go from "show completed" to not, it's possible we need
     //  to advance away from the current task, if it's completed
     if (!ui->showCompletedCheckBox->isChecked() &&
@@ -260,11 +376,28 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     //  would convert them
 
 
-    // save the unique identifier, if present:
+    // save various metadata, if present:
     if (json.contains(KEY_ID)) {
         m_ID = json[KEY_ID].toString();
     }
+    if (json.contains(KEY_DVID_SERVER)) {
+        m_DVIDServer = json[KEY_DVID_SERVER].toString();
+    }
+    if (json.contains(KEY_UUID)) {
+        m_UUID = json[KEY_UUID].toString();
+    }
 
+    // check that the server and UUID are correct if they are both present
+    if (m_DVIDServer.size() > 0 && m_UUID.size() > 0) {
+        if (!checkDVIDTarget()) {
+            ZDvidTarget target = m_proofDoc->getDvidTarget();
+            showError("Wrong DVID server or UUID",
+                "This task list expects server " + m_DVIDServer + " and UUID " + m_UUID +
+                ". You have opened " + QString::fromStdString(target.getAddressWithPort()) +
+                " and " + QString::fromStdString(target.getUuid()) + ".");
+            return;
+        }
+    }
 
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
@@ -281,6 +414,13 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     if (m_currentTaskIndex < 0) {
         showInfo("No tasks to do!", "All tasks have been completed!");
     }
+
+    // first prefetch
+    int nextTaskIndex = getNext();
+    if (nextTaskIndex >= 0 && nextTaskIndex != m_currentTaskIndex) {
+        prefetchForTaskIndex(nextTaskIndex);
+    }
+
 
     updateCurrentTaskLabel();
     updateBodyWindow();
@@ -304,22 +444,28 @@ int TaskProtocolWindow::getFirstUncompleted() {
  * returns index of previous task before current task
  */
 int TaskProtocolWindow::getPrev() {
+  return getPrevIndex(m_currentTaskIndex);
+  /*
     int index = m_currentTaskIndex - 1;
     if (index < 0) {
         index = m_taskList.size() - 1;
     }
     return index;
+    */
 }
 
 /*
  * returns index of next task after current task
  */
 int TaskProtocolWindow::getNext() {
+  return getNextIndex(m_currentTaskIndex);
+  /*
     int index = m_currentTaskIndex + 1;
     if (index >= m_taskList.size()) {
         index = 0;
     }
     return index;
+    */
 }
 
 /*
@@ -328,48 +474,93 @@ int TaskProtocolWindow::getNext() {
  */
 int TaskProtocolWindow::getPrevUncompleted() {
     int startIndex = m_currentTaskIndex;
-    int index = startIndex - 1;
-    while (index != startIndex) {
-        if (index < 0) {
-            index = m_taskList.size() - 1;
-            continue;
+    int index = getPrevIndex(startIndex);
+    while (index >= 0) {
+      if (!m_taskList[index]->completed()) {
+        break;
+      } else {
+        index = getPrevIndex(index);
+        if (index == m_currentTaskIndex) {
+          index = -1;
+          break;
         }
-        if (!m_taskList[index]->completed()) {
-            return index;
-        }
-        index--;
+      }
     }
-    // we're back at current index
-    if (m_taskList[index]->completed()) {
-        return -1;
-    } else {
-        return index;
-    }
+
+    return index;
 }
 
+int TaskProtocolWindow::getPrevIndex(int currentIndex) const
+{
+  int index = -1;
+  if (currentIndex > 0 && currentIndex < m_taskList.size()) {
+    index = currentIndex - 1;
+  } else if (currentIndex == 0 && m_taskList.size() > 1) {
+    index = m_taskList.size() - 1;
+  }
+
+  return index;
+}
+
+int TaskProtocolWindow::getNextIndex(int currentIndex) const
+{
+  int index =  currentIndex + 1;
+  if (index == m_taskList.size() && currentIndex >= 0) {
+    index = 0;
+  } else if (index <= 0 || index >= m_taskList.size()) {
+    index = -1;
+  }
+
+  return index;
+}
 /*
  * returns index of next uncompleted task after current
  * task, or -1
  */
 int TaskProtocolWindow::getNextUncompleted() {
-    int startIndex = m_currentTaskIndex;
-    int index = startIndex + 1;
-    while (index != startIndex) {
-        if (index >= m_taskList.size()) {
-            index = 0;
-            continue;
-        }
-        if (!m_taskList[index]->completed()) {
-            return index;
-        }
-        index++;
-    }
-    // we're back at current index
-    if (m_taskList[index]->completed()) {
-        return -1;
+  int startIndex = m_currentTaskIndex;
+  int index = getNextIndex(startIndex);
+  while (index >= 0) {
+    if (!m_taskList[index]->completed()) {
+      break;
     } else {
-        return index;
+      index = getNextIndex(index);
+      if (index == m_currentTaskIndex) {
+        index = -1;
+        break;
+      }
     }
+  }
+
+  return index;
+}
+
+/*
+ * prefetch the bodies for a task
+ */
+void TaskProtocolWindow::prefetchForTaskIndex(int index) {
+    // each task may have bodies that it wants visible and selected;
+    //  add those, selected first (which are presumably more important?)
+    if (m_taskList[index]->selectedBodies().size() > 0) {
+        prefetch(m_taskList[index]->selectedBodies());
+    }
+    if (m_taskList[index]->visibleBodies().size() > 0) {
+        prefetch(m_taskList[index]->visibleBodies());
+    }
+}
+
+/*
+ * request prefetch of bodies that you know are coming up next
+ */
+void TaskProtocolWindow::prefetch(QSet<uint64_t> bodyIDs) {
+    emit prefetchBody(bodyIDs);
+}
+
+/*
+ * request prefetch of a body that you know is coming up next
+ */
+void TaskProtocolWindow::prefetch(uint64_t bodyID) {
+    emit prefetchBody(bodyID);
 }
 
 /*
@@ -416,7 +607,7 @@ void TaskProtocolWindow::updateBodyWindow() {
 
         // remove existing bodies; proof doc "selected" corresponds to "visible"
         //  I'm taking a bit of a guess that I want "MAPPED" (not "ORIGINAL")
-        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(NeuTube::BODY_LABEL_MAPPED)) {
+        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED)) {
             emit bodyRemoved(bodyID);
         }
 
@@ -572,7 +763,10 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
             m_taskList.append(task);
         } else if (taskType == "split seeds") {
-            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject()));
+            // I'm not really fond of this task having a different constructor signature, but
+            //  neither do I want to pass in both docs to every task just because a few might
+            //  need one or the other of them
+            QSharedPointer<TaskProtocolTask> task(new TaskSplitSeeds(taskJson.toObject(), m_body3dDoc));
             m_taskList.append(task);
         } else if (taskType == "test task") {
             QSharedPointer<TaskProtocolTask> task(new TaskTestTask(taskJson.toObject()));
@@ -596,6 +790,12 @@ QJsonObject TaskProtocolWindow::storeTasks() {
     json[KEY_VERSION] = currentVersion;
     if (m_ID.size() > 0) {
         json[KEY_ID] = m_ID;
+    }
+    if (m_DVIDServer.size() > 0) {
+        json[KEY_DVID_SERVER] = m_DVIDServer;
+    }
+    if (m_UUID.size() > 0) {
+        json[KEY_UUID] = m_UUID;
     }
 
     QJsonArray tasks;
@@ -631,7 +831,7 @@ void TaskProtocolWindow::saveJsonToDvid(QJsonObject json) {
  * output: key under which protocol data should be stored in dvid
  */
 QString TaskProtocolWindow::generateDataKey() {
-    return QString::fromStdString(NeuTube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
+    return QString::fromStdString(neutube::GetCurrentUserName()) + "-" + TASK_PROTOCOL_KEY;
 }
 
 /*
@@ -670,6 +870,35 @@ bool TaskProtocolWindow::checkCreateDataInstance() {
         m_protocolInstanceStatus = CHECKED_ABSENT;
         return false;
     }
+}
+
+/*
+ * check that the current DVID target matches the one
+ * input in the task json
+ */
+bool TaskProtocolWindow::checkDVIDTarget() {
+    ZDvidTarget target = m_proofDoc->getDvidTarget();
+
+    // UUID: we don't always specify the full UUID; just compare
+    //  the digits we have (ie, the shorter of the two)
+    QString targetUUID = QString::fromStdString(target.getUuid());
+    if (targetUUID.size() > m_UUID.size()) {
+        if (!targetUUID.startsWith(m_UUID)) {
+            return false;
+        }
+    } else {
+        if (!m_UUID.startsWith(targetUUID)) {
+            return false;
+        }
+    }
+
+    // server: the server name should always include port, and it should
+    //  always be fully qualified
+    if (m_DVIDServer != QString::fromStdString(target.getAddressWithPort())) {
+        return false;
+    }
+
+    return true;
 }
 
 /*
@@ -717,6 +946,15 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::applicationQuitting() {
+    m_prefetchQueue->finish();
+}
+
+BodyPrefetchQueue *TaskProtocolWindow::getPrefetchQueue() const
+{
+    return m_prefetchQueue;
 }
 
 TaskProtocolWindow::~TaskProtocolWindow()

@@ -6,23 +6,40 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>505</width>
-    <height>539</height>
+    <width>479</width>
+    <height>748</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <layout class="QHBoxLayout" name="topHorizontalLayout">
      <item>
       <widget class="QPushButton" name="dvidPushButton">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+         <underline>false</underline>
+        </font>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton { color: green; }</string>
+       </property>
        <property name="text">
-        <string>Select Database</string>
+        <string>Start</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../gui.qrc">
+         <normaloff>:/images/open_dvid.png</normaloff>:/images/open_dvid.png</iconset>
        </property>
       </widget>
      </item>
@@ -123,48 +140,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="coarseBodyPushButton">
-       <property name="toolTip">
-        <string>3D body visualization (low resolution)</string>
-       </property>
-       <property name="text">
-        <string>Coarse Body View</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="bodyViewPushButton">
-       <property name="toolTip">
-        <string>3D body visualization (high resolution)</string>
-       </property>
-       <property name="text">
-        <string>Body View</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="skeletonViewPushButton">
-       <property name="toolTip">
-        <string>3D skeleton visualization</string>
-       </property>
-       <property name="text">
-        <string>Skeleton</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="meshPushButton">
-       <property name="text">
-        <string>Mesh</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <layout class="QHBoxLayout" name="segmentationHorizontalLayout">
      <item>
       <widget class="QLabel" name="label_11">
        <property name="text">
@@ -173,26 +149,23 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="segmentSizeDecPushButton">
+      <widget class="QRadioButton" name="smallRadioButton">
        <property name="text">
-        <string>-</string>
+        <string>Small</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="segmentSizeIncPushButton">
+      <widget class="QRadioButton" name="bigRadioButton">
        <property name="text">
-        <string>+</string>
+        <string>Big</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="fullViewPushButton">
-       <property name="toolTip">
-        <string>Show the segmetnation fully in the field view</string>
-       </property>
+      <widget class="QRadioButton" name="fullRadioButton">
        <property name="text">
-        <string>Full View</string>
+        <string>Full</string>
        </property>
       </widget>
      </item>
@@ -217,6 +190,104 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="title">
+      <string>3D Body Visualization</string>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <item>
+       <widget class="QGroupBox" name="groupBox_4">
+        <property name="toolTip">
+         <string>A body is rendered as a set of balls resembling its surface</string>
+        </property>
+        <property name="title">
+         <string>Ball Surface</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <property name="leftMargin">
+          <number>5</number>
+         </property>
+         <property name="topMargin">
+          <number>12</number>
+         </property>
+         <property name="rightMargin">
+          <number>5</number>
+         </property>
+         <property name="bottomMargin">
+          <number>5</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {  border: 1px solid gray; border-radius: 3px; margin-top: 2ex;}</string>
+           </property>
+           <property name="text">
+            <string>Quality:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="coarseBodyPushButton">
+           <property name="toolTip">
+            <string>3D body visualization (low resolution)</string>
+           </property>
+           <property name="text">
+            <string>LowRes</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="bodyViewPushButton">
+           <property name="toolTip">
+            <string>3D body visualization (high resolution)</string>
+           </property>
+           <property name="text">
+            <string>HighRes</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="skeletonViewPushButton">
+        <property name="toolTip">
+         <string>3D skeleton visualization</string>
+        </property>
+        <property name="text">
+         <string>Skeleton</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="meshPushButton">
+        <property name="text">
+         <string>Mesh</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -265,45 +336,146 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_7">
+    <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
-      <widget class="QPushButton" name="mergeSegmentPushButton">
-       <property name="toolTip">
-        <string>Merge selected bodies (M)</string>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="styleSheet">
+        <string notr="true"/>
        </property>
-       <property name="text">
-        <string>Merge</string>
+       <property name="title">
+        <string>Correct False Split</string>
        </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="leftMargin">
+         <number>5</number>
+        </property>
+        <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Select &gt;1 bodies</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>  =&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="mergeSegmentPushButton">
+            <property name="toolTip">
+             <string>Group selected bodies (M)</string>
+            </property>
+            <property name="text">
+             <string>Group</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>=&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="uploadPushButton">
+            <property name="toolTip">
+             <string>Upload merging result (U)</string>
+            </property>
+            <property name="text">
+             <string>Upload</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="saveMergePushButton">
-       <property name="text">
-        <string>Save</string>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="styleSheet">
+        <string notr="true"/>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="uploadPushButton">
-       <property name="toolTip">
-        <string>Upload merging result (U)</string>
+       <property name="title">
+        <string>Correct False Merge</string>
        </property>
-       <property name="text">
-        <string>Upload Result</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="splitPushButton">
-       <property name="toolTip">
-        <string>Enter split mode</string>
-       </property>
-       <property name="text">
-        <string>Launch Split</string>
-       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="leftMargin">
+         <number>5</number>
+        </property>
+        <property name="rightMargin">
+         <number>5</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Select 1 body</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>  =&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="splitPushButton">
+            <property name="toolTip">
+             <string>Enter split mode</string>
+            </property>
+            <property name="text">
+             <string>Start Split</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_8"/>
    </item>
    <item>
     <widget class="ZFlyEmBookmarkWidget" name="bookmarkWidget" native="true">
@@ -316,6 +488,12 @@
     </widget>
    </item>
   </layout>
+  <zorder>dataInfoWidget</zorder>
+  <zorder>bookmarkWidget</zorder>
+  <zorder></zorder>
+  <zorder></zorder>
+  <zorder>groupBox_3</zorder>
+  <zorder></zorder>
  </widget>
  <customwidgets>
   <customwidget>
@@ -325,6 +503,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../gui.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,19 +1,19 @@
 #include "zsynapselocationmetric.h"
 
-FlyEm::ZSynapseLocationMetric::ZSynapseLocationMetric()
+flyem::ZSynapseLocationMetric::ZSynapseLocationMetric()
 {
 }
 
-double FlyEm::ZSynapseLocationEuclideanMetric::distance(
-    const FlyEm::SynapseLocation &loc1,
-    const FlyEm::SynapseLocation &loc2)
+double flyem::ZSynapseLocationEuclideanMetric::distance(
+    const flyem::SynapseLocation &loc1,
+    const flyem::SynapseLocation &loc2)
 {
   return loc1.pos().distanceTo(loc2.pos());
 }
 
-double FlyEm::ZSynapseLocationAngleMetric::distance(
-    const FlyEm::SynapseLocation &loc1,
-    const FlyEm::SynapseLocation &loc2)
+double flyem::ZSynapseLocationAngleMetric::distance(
+    const flyem::SynapseLocation &loc1,
+    const flyem::SynapseLocation &loc2)
 {
   ZPoint vec1, vec2;
   vec1 = loc1.pos() - m_refPoint;

@@ -35,17 +35,25 @@ public:
   explicit ZFlyEmBodySplitProject(QObject *parent = 0);
   virtual ~ZFlyEmBodySplitProject();
 
-
+  /*!
+   * \brief Clear all resources associated with the project.
+   */
   void clear();
 
+  /*!
+   * \brief Exit the working state.
+   *
+   *
+   */
+  void exit();
+
   void setDvidTarget(const ZDvidTarget &target);
-  inline void setBodyId(uint64_t bodyId) {
-    m_bodyId = bodyId;
-  }
+  void setBodyId(uint64_t bodyId);
 
   uint64_t getBodyId() const;
   inline const ZDvidTarget& getDvidTarget() const {
     return m_reader.getDvidTarget(); }
+  void setDvidInfo(const ZDvidInfo &info);
 
   ZFlyEmNeuron getFlyEmNeuron() const;
 
@@ -85,7 +93,7 @@ public:
 
 //  void removeAllBookmark();
 
-  void showSkeleton(ZSwcTree *tree);
+//  void showSkeleton(ZSwcTree *tree);
 //  void showBodyQuickView();
 
 //  ZObject3dScan* readBody(ZObject3dScan *out) const;
@@ -115,7 +123,7 @@ public:
   void commitCoarseSplit(const ZObject3dScan &splitPart);
   void decomposeBody(ZFlyEmSplitUploadOptionDialog *dlg);
   void cropBody(ZFlyEmSplitUploadOptionDialog *dlg);
-  void chopBody(int v, NeuTube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg);
+  void chopBody(int v, neutube::EAxis axis, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyX(int x, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyY(int y, ZFlyEmSplitUploadOptionDialog *dlg);
   void chopBodyZ(int z, ZFlyEmSplitUploadOptionDialog *dlg);
@@ -131,11 +139,11 @@ public:
     m_showingBodyMask = state;
   }
 
-  void setSplitMode(FlyEM::EBodySplitMode mode) {
+  void setSplitMode(flyem::EBodySplitMode mode) {
     m_splitMode = mode;
   }
 
-  FlyEM::EBodySplitMode getSplitMode() const {
+  flyem::EBodySplitMode getSplitMode() const {
     return m_splitMode;
   }
 
@@ -176,6 +184,8 @@ public:
 
   void attachBookmarkArray(ZFlyEmBookmarkArray *bookmarkArray);
 
+  void waitResultQuickView();
+
 signals:
   void messageGenerated(QString, bool appending = true);
   void errorGenerated(QString, bool appending = true);
@@ -194,20 +204,23 @@ signals:
   void rasingBodyQuickView();
 
 public slots:
+  void start();
   void showDataFrame() const;
   void showDataFrame3d();
-  void showResult3d();
+//  void showResult3d();
   void showResultQuickView();
 //  void showBookmark(bool visible);
   void runSplit();
+  void runFullSplit();
   void runLocalSplit();
   void updateResult3dQuick();
   void backupSeed();
-  void startBodyQuickView();
+//  void startBodyQuickView();
   void startResultQuickView();
   void startQuickView(Z3DWindow *window);
-  void raiseBodyQuickView();
+//  void raiseBodyQuickView();
   void raiseResultQuickView();
+  void updateSplitQuick();
 
   /*!
    * \brief Clear the project without deleting the associated widgets
@@ -225,21 +238,29 @@ public slots:
 
   void updateSplitDocument();
 
+private slots:
+  void resetQuickResultWindow();
+  void updateSplitQuickFunc();
+  void invalidateSplitQuick();
+
 private:
   bool showingBodyMask() const { return m_showingBodyMask; }
   void clear(QWidget *widget);
   void loadResult3dQuick(ZStackDoc *doc);
+  void loadResult3dQuick(ZSharedPointer<ZStackDoc> doc);
   void downloadSeed(const std::string &seedKey);
   void removeAllSeed();
   void removeAllSideSeed();
-  void updateResult3dQuickFunc();
+//  void updateResult3dQuickFunc();
 
-  void clearResultWindow();
+  void clearQuickResultWindow();
 //  void quickViewFunc();
 //  void showBodyQuickView();
 //  void showResultQuickView();
   void showQuickView(Z3DWindow *window);
   void result3dQuickFunc();
+  void quitResultUpdate();
+  void cancelResultUpdate();
 
   int getMinObjSize() const { return m_minObjSize; }
   bool keepingMainSeed() const { return m_keepingMainSeed; }
@@ -278,15 +299,16 @@ private:
   uint64_t m_bodyId;
   ZStackFrame *m_dataFrame;
   ZSharedPointer<ZStackDoc> m_doc;
+  ZSharedPointer<ZStackDoc> m_quickResultDoc;
 //  Z3DWindow *m_bodyWindow;
-  Z3DWindow *m_resultWindow;
-  Z3DWindow *m_quickResultWindow;
-  Z3DWindow *m_quickViewWindow;
+//  Z3DWindow *m_resultWindow; //Result window with split volumes * obsolete
+  Z3DWindow *m_quickResultWindow; //Result window with split surfaces
+//  Z3DWindow *m_quickViewWindow; //Obsolete
 
   size_t m_minObjSize;
   bool m_keepingMainSeed;
   bool m_runningCca;
-  FlyEM::EBodySplitMode m_splitMode;
+  flyem::EBodySplitMode m_splitMode;
 
 //  ZFlyEmBookmarkArray *m_bookmarkArray; //aggregation
 
@@ -296,10 +318,15 @@ private:
   size_t m_skelThre;
 
   ZThreadFutureMap m_futureMap;
+  QTimer *m_timer;
 
   QMutex m_splitWindowMutex;
+  bool m_cancelSplitQuick = false;
+  bool m_splitUpdated = false;
 
   ZProgressSignal *m_progressSignal;
+
+  static const char* THREAD_RESULT_QUICK;
 };
 
 template <typename T>

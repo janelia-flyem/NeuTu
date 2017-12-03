@@ -26,7 +26,7 @@ void ZFlyEmOrthoMvc::init()
 }
 
 ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc, NeuTube::EAxis axis)
+    QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc, neutube::EAxis axis)
 {
   ZFlyEmOrthoMvc *frame = new ZFlyEmOrthoMvc(parent);
 
@@ -38,12 +38,15 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   frame->getView()->setHoverFocus(true);
   frame->updateDvidTargetFromDoc();
   frame->getPresenter()->useHighContrastProtocal(true);
+
+  ZStackView *view = frame->getView();
+
   QList<ZDvidSynapseEnsemble*> seList = doc->getDvidSynapseEnsembleList();
   for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
        iter != seList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
-    if (se->getSliceAxis() == frame->getView()->getSliceAxis()) {
-      se->attachView(frame->getView());
+    if (se->getSliceAxis() == view->getSliceAxis()) {
+      se->attachView(view);
     }
   }
 
@@ -51,7 +54,9 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   for (QList<ZFlyEmToDoList*>::iterator iter = todoList.begin();
        iter != todoList.end(); ++iter) {
     ZFlyEmToDoList *obj = *iter;
-    obj->attachView(frame->getView());
+    if (obj->getSliceAxis() == view->getSliceAxis()) {
+      obj->attachView(view);
+    }
   }
 
   connect(frame->getPresenter(), SIGNAL(savingStack()),
@@ -66,9 +71,23 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
 }
 
 ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    const ZDvidTarget &target, NeuTube::EAxis axis)
+    const ZDvidTarget &target, neutube::EAxis axis)
 {
   ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc;
+//  doc->setTag(NeuTube::Document::FLYEM_DVID);
+  ZFlyEmOrthoMvc *mvc =
+      ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);
+
+  mvc->setDvidTarget(target);
+
+  return mvc;
+}
+
+ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
+    const ZDvidTarget &target, neutube::EAxis axis,
+    int width, int height, int depth)
+{
+  ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc(width, height, depth);
 //  doc->setTag(NeuTube::Document::FLYEM_DVID);
   ZFlyEmOrthoMvc *mvc =
       ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);

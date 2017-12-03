@@ -37,6 +37,7 @@ public:
   int getWidth() const;
   int getHeight() const;
   int getDepth() const;
+  int getDsIntv() const;
 
   void setOffset(int x, int y, int z);
   void setWidth(int width);
@@ -45,6 +46,9 @@ public:
 
   bool isFullRange() const;
   bool isSparse() const;
+
+  void makeGrayscaleExportAppearance();
+  void makeBodyExportAppearance();
 
 private slots:
   void useCurrentOffset();

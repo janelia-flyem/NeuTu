@@ -31,6 +31,13 @@ TEST(ZVoxelGraphics, paint)
   ASSERT_EQ(0, line->getZ(1));
   delete line;
 
+  v1.invalidate();
+  ASSERT_EQ(NULL, ZVoxelGraphics::createLineObject(v1, v2));
+
+  v1.set(1, 1, 1);
+  v2.invalidate();
+  ASSERT_EQ(NULL, ZVoxelGraphics::createLineObject(v1, v2));
+
   v1.set(1, 1, 1);
   v2.set(5, 5, 5);
   line = ZVoxelGraphics::createLineObject(v1, v2);

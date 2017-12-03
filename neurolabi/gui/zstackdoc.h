@@ -208,7 +208,7 @@ public: //attributes
    * \brief The offset from stack space to data space
    */
   ZIntPoint getStackOffset() const;
-  int getStackOffset(NeuTube::EAxis axis) const;
+  int getStackOffset(neutube::EAxis axis) const;
   void setStackOffset(int x, int y, int z);
   void setStackOffset(const ZIntPoint &offset);
   void setStackOffset(const ZPoint &offset);
@@ -424,6 +424,8 @@ public:
   void removeSelectedObject(bool deleteObject = false);
   void removeObject(
       ZStackObject::EType type, bool deleteObject = false);
+  void removeObject(const QSet<ZStackObject*> &objSet, bool deleteObject = false);
+  void removeObject(const std::set<ZStackObject*> &objSet, bool deleteObject = false);
 
   TStackObjectList takeObject(
       ZStackObject::EType type, const std::string &source);
@@ -450,7 +452,7 @@ public:
 
   //QString toString();
   QStringList toStringList() const;
-  virtual QString rawDataInfo(double cx, double cy, int z, NeuTube::EAxis axis) const;
+  virtual QString rawDataInfo(double cx, double cy, int z, neutube::EAxis axis) const;
   QString getTitle() const;
 
   ZCurve locsegProfileCurve(int option) const;
@@ -618,11 +620,11 @@ public:
   ZSwcTree* nodeToSwcTree(const Swc_Tree_Node *node) const;
 
   ZStackObject *hitTest(double x, double y, double z);
-  ZStackObject *hitTest(double x, double y, NeuTube::EAxis sliceAxis);
+  ZStackObject *hitTest(double x, double y, neutube::EAxis sliceAxis);
 //  ZStackObject *hitTestWidget(int x, int y);
 
   ZStackObject *hitTest(
-      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, NeuTube::EAxis axis);
+      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutube::EAxis axis);
 
 //  Swc_Tree_Node *swcHitTest(double x, double y) const;
 //  Swc_Tree_Node *swcHitTest(double x, double y, double z) const;
@@ -809,10 +811,10 @@ public:
   void selectNoisyTrees();
 
 public:
-  inline NeuTube::Document::ETag getTag() const { return m_tag; }
-  inline void setTag(NeuTube::Document::ETag tag) { m_tag = tag; }
-  void setStackBackground(NeuTube::EImageBackground bg);
-  inline NeuTube::EImageBackground getStackBackground() const {
+  inline neutube::Document::ETag getTag() const { return m_tag; }
+  inline void setTag(neutube::Document::ETag tag) { m_tag = tag; }
+  void setStackBackground(neutube::EImageBackground bg);
+  inline neutube::EImageBackground getStackBackground() const {
     return m_stackBackground;
   }
 
@@ -1066,7 +1068,9 @@ public slots: //undoable commands
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
   virtual bool executeRemoveObjectCommand(ZStackObject *obj);
+  virtual bool executeRemoveObjectCommand(ZStackObjectRole::TRole role);
   virtual bool executeRemoveSelectedObjectCommand();
+  virtual bool executeRemoveSelectedObjectCommand(ZStackObjectRole::TRole role);
   //bool executeRemoveUnselectedObjectCommand();
   virtual bool executeMoveObjectCommand(
       double x, double y, double z,
@@ -1167,6 +1171,7 @@ public slots:
   void selectNeighborSwcNode();
 
   void showSeletedSwcNodeLength(double *resolution = NULL);
+  void showSeletedSwcNodeDist(double *resolution = NULL);
   void showSeletedSwcNodeScaledLength();
   void showSwcSummary();
 
@@ -1356,8 +1361,8 @@ private:
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
-  NeuTube::Document::ETag m_tag;
-  NeuTube::EImageBackground m_stackBackground;
+  neutube::Document::ETag m_tag;
+  neutube::EImageBackground m_stackBackground;
 
   ResolutionDialog *m_resDlg;
   ZStackFactory *m_stackFactory;
@@ -1616,59 +1621,6 @@ void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
   }
   endObjectModifiedMode();
   notifyObjectModified();
-}
-
-template <class InputIterator>
-void ZStackDoc::removeObjectP(
-    InputIterator first, InputIterator last, bool deleting)
-{
-//  TStackObjectList objList = m_objectGroup.take(type);
-  m_objectGroup.take(first, last);
-  for (TStackObjectList::iterator iter = first; iter != last; ++iter) {
-//    role.addRole(m_playerList.removePlayer(*iter));
-    ZStackObject *obj = *iter;
-
-#ifdef _DEBUG_
-    std::cout << "Removing object: " << obj << std::endl;
-#endif
-
-    bufferObjectModified(obj);
-    m_playerList.removePlayer(obj);
-
-    if (deleting) {
-      delete obj;
-    }
-  }
-
-  notifyObjectModified();
-#if 0
-//  QSet<ZStackObject::EType> typeSet;
-//  QSet<ZStackObject::ETarget> targetSet;
-
-//  ZStackObjectRole role;
-
-  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-  for (InputIterator iter = first; iter != last; ++iter) {
-    ZStackObject *obj = *iter;
-//    role.addRole(m_playerList.removePlayer(obj));
-//    typeSet.insert(obj->getType());
-//    targetSet.insert(obj->getTarget());
-    processObjectModified(obj);
-    if (deleting) {
-      delete obj;
-    }
-  }
-  endObjectModifiedMode();
-
-  notifyObjectModified();
-#endif
-  /*
-  if (first != last) {
-    processObjectModified(typeSet);
-    processObjectModified(targetSet);
-    notifyPlayerChanged(role);
-  }
-  */
 }
 
 template<typename T>

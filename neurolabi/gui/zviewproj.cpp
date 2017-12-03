@@ -62,7 +62,7 @@ void ZViewProj::setOffset(int x0, int y0)
   m_x0 = x0;
   m_y0 = y0;
   deprecateViewPort();
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "setOffset: " << m_x0 << " " << m_y0 << std::endl;
 #endif
 }
@@ -171,14 +171,15 @@ void ZViewProj::setViewPort(const QRect &rect)
 
 void ZViewProj::zoomTo(int x, int y, int width)
 {
-  int radius = width / 2;
+//  int radius = width / 2;
 
   double zoom = std::min((double) (m_widgetRect.width()) / width,
                          (double) (m_widgetRect.height()) / width);
 
   if (zoom > getZoom()) {
-    setOffset(x - radius, y - radius);
+//    setOffset(x - radius, y - radius);
     setZoom(zoom);
+    setViewCenter(x, y);
   } else {
     setViewCenter(x, y);
   }

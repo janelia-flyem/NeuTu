@@ -89,10 +89,10 @@ void ZUndoCommand::startUndo()
   logUndoCommand();
 }
 
-void ZUndoCommand::setSaved(NeuTube::EDocumentableType type, bool state)
+void ZUndoCommand::setSaved(neutube::EDocumentableType type, bool state)
 {
   switch (type) {
-  case NeuTube::Documentable_SWC:
+  case neutube::Documentable_SWC:
     m_isSwcSaved = state;
     break;
   default:
@@ -100,10 +100,10 @@ void ZUndoCommand::setSaved(NeuTube::EDocumentableType type, bool state)
   }
 }
 
-bool ZUndoCommand::isSaved(NeuTube::EDocumentableType type) const
+bool ZUndoCommand::isSaved(neutube::EDocumentableType type) const
 {
   switch (type) {
-  case NeuTube::Documentable_SWC:
+  case neutube::Documentable_SWC:
     return m_isSwcSaved;
   default:
     return false;
@@ -540,7 +540,7 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
   if (ZStackObjectRole(role).hasRole(ZStackObjectRole::ROLE_ROI)) {
     m_tree->useCosmeticPen(true);
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
-    m_tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
+    m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
   }
 
@@ -1862,29 +1862,48 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::redo()
 
 ZStackDocCommand::ObjectEdit::RemoveObject::RemoveObject(
     ZStackDoc *doc, ZStackObject *obj, QUndoCommand *parent) :
-  ZUndoCommand(parent), m_doc(doc), m_obj(obj), m_isInDoc(true)
+  ZUndoCommand(parent), m_doc(doc), m_isInDoc(true)
 {
   setText(QObject::tr("Remove object"));
+  if (obj != NULL) {
+    m_objSet.insert(obj);
+  }
 }
 
 ZStackDocCommand::ObjectEdit::RemoveObject::~RemoveObject()
 {
   if (!m_isInDoc) {
-    delete m_obj;
+    foreach (ZStackObject *obj, m_objSet) {
+      delete obj;
+    }
   }
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::setRemoval(
+    const QList<ZStackObject *> &objList)
+{
+  m_objSet = QSet<ZStackObject*>::fromList(objList);
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::addRemoval(ZStackObject *obj)
+{
+  m_objSet.insert(obj);
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveObject::redo()
 {
-  m_obj->setSelected(false);
-  m_doc->removeObject(m_obj, false);
+  m_doc->removeObject(m_objSet, false);
+
+  foreach (ZStackObject *obj, m_objSet) {
+    obj->setSelected(false);
+  }
   m_isInDoc = false;
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveObject::undo()
 {
   startUndo();
-  m_doc->addObject(m_obj, false);
+  m_doc->addObjectFast(m_objSet.begin(), m_objSet.end());
   m_isInDoc = true;
 }
 

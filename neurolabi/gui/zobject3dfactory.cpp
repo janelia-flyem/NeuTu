@@ -265,7 +265,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 }
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
-    const ZStack &stack, NeuTube::EAxis sliceAxis)
+    const ZStack &stack, neutube::EAxis sliceAxis)
 {
   ZObject3dScanArray *objArray = NULL;
 
@@ -372,7 +372,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 }
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
-    const ZStack &stack, NeuTube::EAxis axis, bool foreground,
+    const ZStack &stack, neutube::EAxis axis, bool foreground,
     ZObject3dScanArray *out)
 {
   if (stack.kind() != GREY && stack.kind() != GREY16) {
@@ -445,7 +445,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
 
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
-    const ZArray &array, NeuTube::EAxis axis, bool foreground,
+    const ZArray &array, neutube::EAxis axis, bool foreground,
     ZObject3dScanArray *out)
 {
   if (out == NULL) {

@@ -27,6 +27,7 @@ const char* ZDvidData::m_synapseName = ""; //No default
 const char* ZDvidData::m_neutuConfigName = "neutu_config";
 const char* ZDvidData::m_labelszName = "labelsz";
 const char* ZDvidData::m_meshName = "meshes";
+const char* ZDvidData::m_sparsevolSizeName = "sparsevol-size";
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -92,6 +93,8 @@ std::string ZDvidData::GetName(ERole role)
     return m_todoListName;
   case ROLE_LABELSZ:
     return m_labelszName;
+  case ROLE_SPARSEVOL_SIZE:
+    return m_sparsevolSizeName;
   case ROLE_NEUTU_CONFIG:
     return m_neutuConfigName;
   case ROLE_RESULT_KEY:

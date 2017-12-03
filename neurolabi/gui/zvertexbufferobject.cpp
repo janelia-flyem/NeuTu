@@ -8,7 +8,11 @@ ZVertexBufferObject::ZVertexBufferObject(GLsizei n)
 
 ZVertexBufferObject::~ZVertexBufferObject()
 {
-  glDeleteBuffers(m_arrays.size(), m_arrays.data());
+  if (!m_arrays.empty()) {
+    std::cout << "Deleting gl buffers: " << m_arrays.size() << " " << m_arrays.data() << std::endl;
+    glDeleteBuffers(m_arrays.size(), m_arrays.data());
+    std::cout << "Buffers deleted." << std::endl;
+  }
 }
 
 void ZVertexBufferObject::bind(GLenum target, size_t idx)
