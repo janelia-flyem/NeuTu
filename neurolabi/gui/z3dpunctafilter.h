@@ -90,7 +90,8 @@ private:
 
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllPuncta;
-  std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare> m_sourceColorMapper;
+  std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare>
+  m_sourceColorMapper;
   ZColorMapParameter m_colorMapScore;
   ZColorMapParameter m_colorMapMeanIntensity;
   ZColorMapParameter m_colorMapMaxIntensity;

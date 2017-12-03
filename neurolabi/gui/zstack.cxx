@@ -494,22 +494,11 @@ bool ZStack::isDeprecated(EComponent component) const
 void ZStack::clear()
 {
   deprecate(ZStack::MC_STACK);
+  clearChannelColors();
+}
 
-  /*
-  if (m_stack != NULL) {
-    m_delloc(m_stack);
-  }
-  */
-
-  /*
-  for (size_t i=0; i<m_singleChannelStackVector.size(); i++) {
-    if (m_singleChannelStackVector[i] != NULL) {
-      delete m_singleChannelStackVector[i];
-    }
-  }
-  m_singleChannelStackVector.clear();
-*/
-
+void ZStack::clearChannelColors()
+{
 #ifdef _NEUTUBE_
   for (size_t i=0; i<m_channelColors.size(); ++i)
     delete m_channelColors[i];
@@ -522,24 +511,31 @@ void ZStack::setChannelNumber(int nchannel)
   C_Stack::setChannelNumber(m_stack, nchannel);
 }
 
+void ZStack::useChannelColors(bool on)
+{
+  m_usingChannelColors = on;
+}
+
 void ZStack::initChannelColors()
 {
 #ifdef _NEUTUBE_
-  if (m_channelColors.size() == (size_t)channelNumber()) {
-    return;
-  }
-  for (int i=0; i<channelNumber(); ++i) {
-    m_channelColors.push_back(new ZVec3Parameter(QString("Ch%1").arg(i+1),
-                                                 glm::vec3(0.f)));
-    m_channelColors[i]->setStyle("COLOR");
-  }
-  if (channelNumber() == 1)
-    m_channelColors[0]->set(glm::vec3(1.f,1.f,1.f));
-  else {
-    m_channelColors[0]->set(glm::vec3(1.f,0.f,0.f));
-    m_channelColors[1]->set(glm::vec3(0.f,1.f,0.f));
-    if (channelNumber() > 2)
-      m_channelColors[2]->set(glm::vec3(0.f,0.f,1.f));
+  if (m_usingChannelColors) {
+    if (m_channelColors.size() == (size_t)channelNumber()) {
+      return;
+    }
+    for (int i=0; i<channelNumber(); ++i) {
+      m_channelColors.push_back(new ZVec3Parameter(QString("Ch%1").arg(i+1),
+                                                   glm::vec3(0.f)));
+      m_channelColors[i]->setStyle("COLOR");
+    }
+    if (channelNumber() == 1)
+      m_channelColors[0]->set(glm::vec3(1.f,1.f,1.f));
+    else {
+      m_channelColors[0]->set(glm::vec3(1.f,0.f,0.f));
+      m_channelColors[1]->set(glm::vec3(0.f,1.f,0.f));
+      if (channelNumber() > 2)
+        m_channelColors[2]->set(glm::vec3(0.f,0.f,1.f));
+    }
   }
 #endif
 }
@@ -842,10 +838,10 @@ void* ZStack::projection(
 }
 
 void* ZStack::projection(
-    NeuTube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
+    neutube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
 {
   ZSingleChannelStack::Proj_Mode mode = ZSingleChannelStack::MAX_PROJ;
-  if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+  if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
     mode = ZSingleChannelStack::MIN_PROJ;
   }
 
@@ -2271,16 +2267,6 @@ void ZStack::downsampleMinIgnoreZero(int xintv, int yintv, int zintv)
     setData(result);
   }
 }
-
-
-#define ZSTACK_SWAP(v1, v2, T) \
-{\
-  T tmp;\
-  tmp = v1;\
-  v1 = v2;\
-  v2 = tmp;\
-}
-
 
 void ZStack::swapData(ZStack *stack)
 {

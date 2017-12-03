@@ -1,5 +1,6 @@
-command: /Users/zhaot/Work/neutube/neurolabi/neuTube_Debug_FlyEM/neutu_d.app/Contents/MacOS/neutu_d
+command: /Users/zhaot/Work/neutube/neurolabi/neuTube_Debug_FlyEM_Qt5/neutu_d.app/Contents/MacOS/neutu_d
 task_server:
   host: zhaot-ws1
   port: 9000
   uuid: 194d
+commit: True

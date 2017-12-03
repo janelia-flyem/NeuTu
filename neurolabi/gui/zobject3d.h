@@ -47,7 +47,7 @@ public:
   virtual bool load(const char *filePath);
   virtual void display(
       ZPainter &painter, int slice, EDisplayStyle option,
-      NeuTube::EAxis sliceAxis) const;
+      neutube::EAxis sliceAxis) const;
 
 public:
   /*!
@@ -87,6 +87,7 @@ public:
    * \a srcOffset is the voxel index offset of \a obj for the start of appending.
    */
   void append(const ZObject3d &obj, size_t srcOffset = 0);
+  void append(const ZObject3d *obj, size_t srcOffset = 0);
 
   /*!
    * \brief Append an object from the backward direction

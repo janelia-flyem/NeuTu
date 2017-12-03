@@ -9,6 +9,14 @@ ZThreadFutureMap::~ZThreadFutureMap()
   waitForFinished();
 }
 
+void ZThreadFutureMap::waitForFinished(const QString &id)
+{
+  QFuture<void> *future = getFuture(id);
+  if (future != NULL) {
+    future->waitForFinished();
+  }
+}
+
 void ZThreadFutureMap::waitForFinished()
 {
   for (iterator iter = begin(); iter != end(); ++iter) {

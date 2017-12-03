@@ -27,6 +27,7 @@ ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidGraySlice)
 void ZDvidGraySlice::clear()
 { 
   m_reader.clear();
+  invalidatePixmap();
 //  delete m_reader;
 //  m_reader = NULL;
 //  m_dvidTarget.clear();
@@ -35,21 +36,82 @@ void ZDvidGraySlice::clear()
 
 void ZDvidGraySlice::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis != NeuTube::Z_AXIS) {
+  if (sliceAxis != neutube::Z_AXIS) {
     return;
   }
   //if (!m_image.isNull()) {
-    int z = painter.getZOffset() + slice;
-    //m_latestZ = z;
+  int z = painter.getZOffset() + slice;
+  //m_latestZ = z;
 
-    const_cast<ZDvidGraySlice&>(*this).update(z);
+  const_cast<ZDvidGraySlice&>(*this).update(z);
 
-    if (z == getZ() && !m_image.isNull()) {
-//      painter.drawImage(getX(), getY(), m_image);
-      painter.drawPixmap(getX(), getY(), m_pixmap);
-    }
+  if (z == getZ() && !m_image.isNull()) {
+    const_cast<ZDvidGraySlice&>(*this).updatePixmap();
+    painter.drawPixmap(getX(), getY(), m_pixmap);
+  }
+}
+
+void ZDvidGraySlice::updateContrast(bool highContrast)
+{
+  m_usingContrastProtocol = highContrast;
+  updateContrast();
+}
+
+void ZDvidGraySlice::updateContrast(const ZJsonObject &obj)
+{
+  m_contrastProtocal.load(obj);
+  updateContrast();
+}
+
+void ZDvidGraySlice::updateContrast()
+{
+  m_image.setContrastProtocol(m_contrastProtocal);
+  m_image.updateContrast(m_usingContrastProtocol);
+  invalidatePixmap();
+#if 0
+  if (!m_contrastProtocal.isEmpty()) {
+    m_image.enhanceContrast(false);
+  } else {
+    m_image.enhanceContrast(true);
+  }
+#endif
+}
+
+bool ZDvidGraySlice::hasLowresRegion() const
+{
+  if (m_zoom > 0) {
+    return true;
+  }
+
+  QRect viewport = m_currentViewParam.getViewPort();
+  if (viewport.width() > m_centerCutWidth ||
+      viewport.height() > m_centerCutHeight) {
+    return true;
+  }
+
+  return false;
+}
+
+void ZDvidGraySlice::invalidatePixmap()
+{
+  m_isPixmapValid = false;
+}
+
+void ZDvidGraySlice::validatePixmap(bool v)
+{
+  m_isPixmapValid = v;
+}
+
+bool ZDvidGraySlice::isPixmapValid() const
+{
+  return m_isPixmapValid;
+}
+
+void ZDvidGraySlice::validatePixmap()
+{
+  m_isPixmapValid = true;
 }
 
 void ZDvidGraySlice::updateImage(const ZStack *stack)
@@ -60,6 +122,7 @@ void ZDvidGraySlice::updateImage(const ZStack *stack)
   }
   m_image.setOffset(-stack->getOffset().getX(), -stack->getOffset().getY());
   m_image.setData(stack->array8());
+  updateContrast();
 }
 
 void ZDvidGraySlice::saveImage(const std::string &path)
@@ -92,27 +155,25 @@ void ZDvidGraySlice::updateImage()
       m_image.setData((uint8_t*) buffer.data()/*, 1.5, 0*/);
     }
   }
+  updateContrast();
 }
 
 void ZDvidGraySlice::updatePixmap()
 {
-  m_pixmap.detach();
-  m_pixmap.convertFromImage(m_image);
-  double scale = 1.0 / getScale();
-  m_pixmap.setScale(scale, scale);
-  m_pixmap.setOffset(-getX(), -getY());
+  if (!isPixmapValid()) {
+    m_pixmap.detach();
+    m_pixmap.convertFromImage(m_image);
+    double scale = 1.0 / getScale();
+    m_pixmap.setScale(scale, scale);
+    m_pixmap.setOffset(-getX(), -getY());
+    validatePixmap();
+  }
 }
 
 void ZDvidGraySlice::setBoundBox(const ZRect2d &rect)
 {
   m_currentViewParam.setViewPort(
         QRect(rect.getX0(), rect.getY0(), rect.getWidth(), rect.getHeight()));
-  /*
-  m_x = rect.getX0();
-  m_y = rect.getY0();
-  m_width = rect.getWidth();
-  m_height = rect.getHeight();
-  */
 }
 
 #if 0
@@ -127,11 +188,8 @@ bool ZDvidGraySlice::isRegionConsistent() const
 void ZDvidGraySlice::update(int z)
 {
   if (getZ() != z) {
-
-//    m_z = z;
     m_currentViewParam.setZ(z);
     updateImage();
-    updatePixmap();
   }
 }
 
@@ -154,8 +212,6 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
     int width = viewParam.getViewPort().width();
     int height = viewParam.getViewPort().height();
     int area = width * height;
-    //  const int maxWidth = 512;
-    //  const int maxHeight = 512;
     if (area > m_maxWidth * m_maxHeight) {
       if (width > m_maxWidth) {
         width = m_maxWidth;
@@ -190,6 +246,11 @@ void ZDvidGraySlice::setZoom(int zoom)
   m_zoom = zoom;
 }
 
+void ZDvidGraySlice::setContrastProtocol(const ZContrastProtocol &cp)
+{
+  m_contrastProtocal = cp;
+}
+
 int ZDvidGraySlice::getScale() const
 {
   return misc::GetZoomScale(getZoom());
@@ -201,7 +262,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
-  if (m_sliceAxis != NeuTube::Z_AXIS) {
+  if (m_sliceAxis != neutube::Z_AXIS) {
     return;
   }
 
@@ -221,10 +282,13 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 
 
 #if defined(_ENABLE_LOWTIS_)
-    int cx = 256;
-    int cy = 256;
+    int cx = m_centerCutWidth;
+    int cy = m_centerCutHeight;
     int z = box.getFirstCorner().getZ();
-    int zoom = m_zoom + 1;
+    int zoom = m_zoom;
+    if (hasLowresRegion()) {
+      ++zoom;
+    }
     int scale = misc::GetZoomScale(zoom);
     int remain = z % scale;
     ZStack *stack = m_reader.readGrayScaleLowtis(
@@ -268,8 +332,6 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 #endif
     updateImage(stack);
     delete stack;
-
-    updatePixmap();
   }
 }
 

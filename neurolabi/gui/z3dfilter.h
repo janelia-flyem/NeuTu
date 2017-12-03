@@ -151,7 +151,7 @@ protected:
 
   void addParameter(ZParameter& para, State inv = State::AllResultInvalid);
 
-  void removeParameter(ZParameter& para);
+  void removeParameter(const ZParameter& para);
 
   // listen to some events
   void addEventListener(ZEventListenerParameter& para);

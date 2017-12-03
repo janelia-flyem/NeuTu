@@ -464,6 +464,17 @@ bool ZStackObjectGroup::removeObject(
   return removeObjectUnsync(objSet, deleting);
 }
 
+bool ZStackObjectGroup::removeFirstObject(bool deleting)
+{
+  QMutexLocker locker(&m_mutex);
+
+  if (!isEmpty()) {
+    return removeObjectUnsync(m_objectList.first(), deleting);
+  }
+
+  return false;
+}
+
 bool ZStackObjectGroup::removeSelectedUnsync(bool deleting)
 {
   ZOUT(LTRACE(), 6) << "Removing seleted objects. Deleting" << deleting;

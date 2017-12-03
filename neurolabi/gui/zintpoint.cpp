@@ -18,7 +18,7 @@ ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 
 bool ZIntPoint::IsNormalDimIndex(int index)
 {
-  return index >= NeuTube::DIM_MIN_NORMAL_INDEX;
+  return index >= neutube::DIM_MIN_NORMAL_INDEX;
 }
 
 ZIntPoint::ZIntPoint(int x, int y, int z)
@@ -100,39 +100,87 @@ bool ZIntPoint::operator !=(const ZIntPoint &pt) const
 
 ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2)
 {
+  if (!pt1.isValid()) {
+    return pt1;
+  }
+  if (!pt2.isValid()) {
+    return pt2;
+  }
+
   return ZIntPoint(pt1.getX() + pt2.getX(), pt1.getY() + pt2.getY(),
                    pt1.getZ() + pt2.getZ());
 }
 
 ZIntPoint operator + (const ZIntPoint &pt1, int v)
 {
+  if (!pt1.isValid()) {
+    return pt1;
+  }
+  if (!ZIntPoint::IsValid(v)) {
+    return ZIntPoint(v, v, v);
+  }
+
   return ZIntPoint(pt1.getX() + v, pt1.getY() + v, pt1.getZ() + v);
 }
 
 ZIntPoint operator * (const ZIntPoint &pt1, const ZIntPoint &pt2)
 {
+  if (!pt1.isValid()) {
+    return pt1;
+  }
+  if (!pt2.isValid()) {
+    return pt2;
+  }
+
   return ZIntPoint(pt1.getX() * pt2.getX(), pt1.getY() * pt2.getY(),
                    pt1.getZ() * pt2.getZ());
 }
 
 ZIntPoint operator * (const ZIntPoint &pt1, int v)
 {
+  if (!pt1.isValid()) {
+    return pt1;
+  }
+  if (!ZIntPoint::IsValid(v)) {
+    return ZIntPoint(v, v, v);
+  }
+
   return ZIntPoint(pt1.getX() * v, pt1.getY() * v, pt1.getZ() * v);
 }
 
 ZIntPoint operator - (const ZIntPoint &pt1, int v)
 {
+  if (!pt1.isValid()) {
+    return pt1;
+  }
+  if (!ZIntPoint::IsValid(v)) {
+    return ZIntPoint(v, v, v);
+  }
+
   return ZIntPoint(pt1.getX() - v, pt1.getY() - v, pt1.getZ() - v);
 }
 
 ZIntPoint operator - (const ZIntPoint &pt1, const ZIntPoint &pt2)
 {
+  if (!pt1.isValid()) {
+    return pt1;
+  }
+  if (!pt2.isValid()) {
+    return pt2;
+  }
   return ZIntPoint(pt1.getX() - pt2.getX(),  pt1.getY() - pt2.getY(),
                    pt1.getZ() - pt2.getZ());
 }
 
 ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2)
 {
+  if (!pt1.isValid()) {
+    return pt1;
+  }
+  if (!pt2.isValid()) {
+    return pt2;
+  }
+
   if (pt2.getX() == 0 || pt2.getY() == 0 || pt2.getZ() == 0) {
     return ZIntPoint(0, 0, 0);
   }
@@ -143,6 +191,13 @@ ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2)
 
 ZIntPoint operator / (const ZIntPoint &pt1, int scale)
 {
+  if (!pt1.isValid()) {
+    return pt1;
+  }
+  if (!ZIntPoint::IsValid(scale)) {
+    return ZIntPoint(scale, scale, scale);
+  }
+
   if (scale == 0) {
     return ZIntPoint(0, 0, 0);
   }
@@ -161,6 +216,10 @@ std::string ZIntPoint::toString() const
 
 ZIntPoint ZIntPoint::operator - () const
 {
+  if (!isValid()) {
+    return *this;
+  }
+
   return ZIntPoint(-getX(), -getY(), -getZ());
 }
 
@@ -187,6 +246,14 @@ double ZIntPoint::distanceTo(double x, double y, double z) const
 
 ZIntPoint& ZIntPoint::operator *=(const ZIntPoint &pt)
 {
+  if (!pt.isValid()) {
+    invalidate();
+  }
+
+  if (!isValid()) {
+    return *this;
+  }
+
   m_x *= pt.m_x;
   m_y *= pt.m_y;
   m_z *= pt.m_z;
@@ -196,6 +263,14 @@ ZIntPoint& ZIntPoint::operator *=(const ZIntPoint &pt)
 
 ZIntPoint& ZIntPoint::operator /=(const ZIntPoint &pt)
 {
+  if (!pt.isValid()) {
+    invalidate();
+  }
+
+  if (!isValid()) {
+    return *this;
+  }
+
   m_x /= pt.m_x;
   m_y /= pt.m_y;
   m_z /= pt.m_z;
@@ -205,6 +280,14 @@ ZIntPoint& ZIntPoint::operator /=(const ZIntPoint &pt)
 
 ZIntPoint& ZIntPoint::operator +=(const ZIntPoint &pt)
 {
+  if (!pt.isValid()) {
+    invalidate();
+  }
+
+  if (!isValid()) {
+    return *this;
+  }
+
   m_x += pt.m_x;
   m_y += pt.m_y;
   m_z += pt.m_z;
@@ -214,6 +297,14 @@ ZIntPoint& ZIntPoint::operator +=(const ZIntPoint &pt)
 
 ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
 {
+  if (!pt.isValid()) {
+    invalidate();
+  }
+
+  if (!isValid()) {
+    return *this;
+  }
+
   m_x -= pt.getX();
   m_y -= pt.getY();
   m_z -= pt.getZ();
@@ -221,24 +312,24 @@ ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
   return *this;
 }
 
-void ZIntPoint::shiftSliceAxis(NeuTube::EAxis axis)
+void ZIntPoint::shiftSliceAxis(neutube::EAxis axis)
 {
   ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
-void ZIntPoint::shiftSliceAxisInverse(NeuTube::EAxis axis)
+void ZIntPoint::shiftSliceAxisInverse(neutube::EAxis axis)
 {
   ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
-int ZIntPoint::getSliceCoord(NeuTube::EAxis axis) const
+int ZIntPoint::getSliceCoord(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_x;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_y;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_z;
   }
 
@@ -248,6 +339,11 @@ int ZIntPoint::getSliceCoord(NeuTube::EAxis axis) const
 void ZIntPoint::invalidate()
 {
   set(INT_MIN, INT_MIN, INT_MIN);
+}
+
+bool ZIntPoint::IsValid(int x)
+{
+  return x != INT_MIN;
 }
 
 bool ZIntPoint::isValid() const

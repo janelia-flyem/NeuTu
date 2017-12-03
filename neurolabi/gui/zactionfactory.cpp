@@ -73,6 +73,10 @@ QAction* ZActionFactory::makeAction(
     doc->connect(action, SIGNAL(triggered()),
             doc, SLOT(showSeletedSwcNodeScaledLength()));
     break;
+  case ACTION_MEASURE_SWC_NODE_DIST:
+    action = new QAction("Measure Distance", parent);
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(showSeletedSwcNodeDist()));
+    break;
   case ACTION_DELETE_SWC_NODE:
     action = new QAction("Delete", parent);
     action->setShortcut(Qt::Key_X);
@@ -281,6 +285,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
       action->setShortcuts(QKeySequence::Redo);
     }
   }
+    break;
+  case ACTION_TEST:
+    action = new QAction("Test", parent);
+    action->setIcon(QIcon(":/images/test.png"));
     break;
   case ACTION_ADD_SWC_NODE:
     action = new QAction("Add Neuron Node", parent);
@@ -552,6 +560,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;
+  case ACTION_SHOW_ORTHO_BIG:
+    action = new QAction("Show orthogonal view (1024)", parent);
+    break;
   case ACTION_COPY_POSITION:
     action = new QAction("Copy position", parent);
     break;
@@ -575,7 +586,7 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_ACTIVATE_LOCATE:
     action = new QAction("Locate", parent);
-    action->setIcon(QIcon(":/images/binoculars.png"));
+    action->setIcon(QIcon(":/images/locate.png"));
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
@@ -631,6 +642,10 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setToolTip("Rewrite segmentation in the current ROI. "
                        "Mainly used for fixing sync errors.");
     break;
+  case ACTION_REFRESH_SEGMENTATION:
+    action = new QAction("Refresh segmentation", parent);
+    action->setToolTip("Refresh segmentation to get the latest data from DVID");
+    break;
   case ACTION_FLYEM_UPDATE_BODY:
     action = new QAction("Update Bodies", parent);
     action->setToolTip("Update bodies from DVID");
@@ -660,6 +675,19 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Save Split Task", parent);
     action->setIcon(QIcon(":/images/save_seed2.png"));
     action->setToolTip("Save the split task defined by current seeds.");
+    break;
+  case ACTION_DELETE_SPLIT_SEED:
+    action = new QAction("Delete Seeds", parent);
+    action->setIcon(QIcon(":/images/delete_seed.png"));
+    action->setToolTip("Delete all seeds for splitting");
+    break;
+  case ACTION_DELETE_SELECTED_SPLIT_SEED:
+    action = new QAction("Delete Seleted Seeds", parent);
+    action->setIcon(QIcon(":/images/delete_selected_seed.png"));
+    action->setToolTip("Delete selected seeds for splitting");
+    break;
+  case ACTION_MEASURE_SWC_NODE_DIST:
+    action = new QAction("Measure Distance", parent);
     break;
   default:
     break;

@@ -71,6 +71,7 @@ CONFIG(debug, debug|release) {
     }
     DEFINES += _DEBUG_ _ADVANCED_ PROJECT_PATH=\"\\\"$$PWD\\\"\"
 } else {
+    QMAKE_CXXFLAGS += -g
     TARGET = neuTube
     contains(CONFIG, neu3) {
       TARGET = neu3
@@ -190,7 +191,11 @@ unix {
             -framework ApplicationServices \
             -framework CoreFoundation
 
-        ICON = images/app.icns
+        contains(DEFINES, _FLYEM_) {
+            ICON = images/app2.icns
+        } else {
+          ICON = images/app.icns
+        }
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
@@ -253,7 +258,12 @@ unix {
             QMAKE_CXXFLAGS += -m64
         }
         QMAKE_CXXFLAGS += -fext-numeric-literals -msse3
-        RC_FILE = images/app.icns
+        contains(DEFINES, _FLYEM_) {
+            RC_FILE = images/app2.icns
+        } else {
+            RC_FILE = images/app.icns
+        }
+
     }
 }
 
@@ -804,12 +814,18 @@ HEADERS += mainwindow.h \
     protocols/taskbodyreview.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
+    protocols/bodyprefetchqueue.h \
     flyem/zflyembody3ddoccommand.h \
     flyem/zflyembody3ddocmenufactory.h \
     zopenglwidget.h \
     misc/zvtkutil.h \
     zstackdocaccessor.h \
-    widgets/zpythonprocess.h
+    zcontrastprotocol.h \
+    dialogs/zflyemmergeuploaddialog.h \
+    zmeshfactory.h \
+    flyem/zflyemmeshfactory.h \
+    widgets/zpythonprocess.h \
+    zstackptr.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -914,7 +930,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zbodylistwidget.ui \
     widgets/flyembodyinfowidget.ui \
     neu3window.ui \
-    widgets/taskprotocolwindow.ui
+    widgets/taskprotocolwindow.ui \
+    dialogs/zflyemmergeuploaddialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1407,6 +1424,7 @@ SOURCES += main.cpp \
     protocols/taskbodyreview.cpp \
     protocols/tasktesttask.cpp \
     protocols/tasksplitseeds.cpp \
+    protocols/bodyprefetchqueue.cpp \
     flyem/zflyembody3ddoccommand.cpp \
     flyem/zflyembody3ddocmenufactory.cpp \
     zopenglwidget.cpp \
@@ -1414,7 +1432,12 @@ SOURCES += main.cpp \
     dvid/zdvidpath.cpp \
     misc/zvtkutil.cpp \
     zstackdocaccessor.cpp \
-    widgets/zpythonprocess.cpp
+    zcontrastprotocol.cpp \
+    dialogs/zflyemmergeuploaddialog.cpp \
+    zmeshfactory.cpp \
+    flyem/zflyemmeshfactory.cpp \
+    widgets/zpythonprocess.cpp \
+    zstackptr.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

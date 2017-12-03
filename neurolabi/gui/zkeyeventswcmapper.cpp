@@ -1,7 +1,7 @@
 #include "zkeyeventswcmapper.h"
 #include <QKeyEvent>
 
-ZKeyEventSwcMapper::ZKeyEventSwcMapper(NeuTube::Document::ETag tag) :
+ZKeyEventSwcMapper::ZKeyEventSwcMapper(neutube::Document::ETag tag) :
   m_docTag(tag)
 {
   initKeyMap();
@@ -72,7 +72,7 @@ ZSwcTree::EOperation ZKeyEventSwcMapper::getOperation(QKeyEvent *event)
   return operation;
 }
 
-void ZKeyEventSwcMapper::setTag(NeuTube::Document::ETag tag)
+void ZKeyEventSwcMapper::setTag(neutube::Document::ETag tag)
 {
   m_docTag = tag;
   updateKeyMap();
@@ -80,8 +80,8 @@ void ZKeyEventSwcMapper::setTag(NeuTube::Document::ETag tag)
 
 void ZKeyEventSwcMapper::updateKeyMap()
 {
-  if (m_docTag == NeuTube::Document::FLYEM_SPLIT ||
-      m_docTag == NeuTube::Document::FLYEM_PROOFREAD) {
+  if (m_docTag == neutube::Document::FLYEM_SPLIT ||
+      m_docTag == neutube::Document::FLYEM_PROOFREAD) {
     m_plainKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_NULL;
     m_plainKeyMap[Qt::Key_R] = ZSwcTree::OPERATION_NULL;
     m_controlKeyMap[Qt::Key_G] = ZSwcTree::OPERATION_ADD_NODE;

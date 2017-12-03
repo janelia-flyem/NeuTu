@@ -20,6 +20,7 @@
 #include "zstackdocdatabuffer.h"
 #include "zstackframe.h"
 #include "zcolorscheme.h"
+#include "zobject3dscanarray.h"
 #include "flyem/zstackwatershedcontainer.h"
 
 ZMultiscaleWaterShedModule::ZMultiscaleWaterShedModule(QObject *parent) :
@@ -87,6 +88,8 @@ void ZWaterShedWindow::onOk()
   if(!src)return;
   int scale=spin_step->value();
 
+  doc->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
+
   ZStackWatershedContainer container(src);
   int i=0;
   for(ZSwcTree* tree:doc->getSwcArray()){
@@ -112,9 +115,22 @@ void ZWaterShedWindow::onOk()
 #endif
   container.setAlgorithm(algorithms->currentText());
   container.run();
-#ifdef _DEBUG_
-  std::cout<<"----------multiscale segmentation total run time:"<<time.elapsed()/1000.0<<std::endl;
-#endif
+
+  std::cout<<"+++++++++++++multiscale watershed total run time:"<<time.elapsed()/1000.0<<std::endl;
+
+  ZObject3dScanArray result;
+  container.makeSplitResult(1, &result);
+  for (ZObject3dScanArray::iterator iter = result.begin();
+       iter != result.end(); ++iter) {
+    ZObject3dScan *obj = *iter;
+    doc->getDataBuffer()->addUpdate(
+          obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+  }
+  doc->getDataBuffer()->deliver();
+  result.shallowClear();
+
+#if 0
+=======
   ZStack* result=container.getResultStack()->clone();
 
   if(result){
@@ -156,6 +172,7 @@ void ZWaterShedWindow::onOk()
     ZSandbox::GetMainWindow()->presentStackFrame(frame);
     //delete result;
   }
+#endif
 }
 
 

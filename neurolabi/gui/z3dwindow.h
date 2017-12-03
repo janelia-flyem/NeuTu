@@ -12,6 +12,7 @@
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
 #include "z3ddef.h"
+#include "zintpointarray.h"
 //#include "zstackviewparam.h"
 
 #include <QMainWindow>
@@ -27,6 +28,8 @@
 #include <map>
 #include <QDir>
 
+class QSlider;
+class QDoubleSpinBox;
 class ZStackDoc;
 class Z3DTrackballInteractionHandler;
 class Z3DPunctaFilter;
@@ -209,6 +212,8 @@ signals:
   void locating2DViewTriggered(int x, int y, int z, int width);
   void croppingSwcInRoi();
   void savingSplitTask();
+  void deletingSplitSeed();
+  void deletingSelectedSplitSeed();
   void savingSplitTask(uint64_t bodyId);
 
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
@@ -219,6 +224,7 @@ signals:
   void showingPuncta(bool);
   void showingTodo(bool);
   void keyPressed(QKeyEvent *event);
+  void testing();
 
 public slots:
   void resetCamera()
@@ -239,9 +245,11 @@ public slots:
   void resetCameraClippingRange() // // Reset the camera clipping range to include this entire bounding box
   { m_view->resetCameraClippingRange(); }
 
+  void zoomToSelectedMeshes();
+
 //  void updateDecorationDisplay();
 
-  void selectdObjectChangedFrom3D(ZStackObject *p, bool append);
+  void selectedObjectChangedFrom3D(ZStackObject *p, bool append);
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
   void selectedMeshChangedFrom3D(ZMesh* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
@@ -274,6 +282,7 @@ public slots:
   void tranlateSelectedSwcNode();
   void changeSelectedSwcNodeSize();
   void showSeletedSwcNodeLength();
+  void showSeletedSwcNodeDist();
 
   void showPuncta(bool on);
   void showTodo(bool on);
@@ -298,6 +307,8 @@ public slots:
   void changeSelectedPunctaColor();
 
   void saveSplitTask();
+  void deleteSplitSeed();
+  void deleteSelectedSplitSeed();
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -371,6 +382,8 @@ public slots:
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 
+  void setMeshOpacity(double opacity);
+
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
   virtual void dropEvent(QDropEvent *event);
@@ -425,6 +438,16 @@ private:
   ZLineSegment getStackSeg(const ZLineSegment &seg, const ZCuboid &rbox) const;
 
   std::vector<ZPoint> getRayIntersection(int x, int y, uint64_t *id = NULL);
+
+  ZObject3d* createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke);
+  ZObject3d* createPolyplaneFrom3dPaintForVolume(ZStroke2d *stroke);
+  std::string updatePolyLinePairList(
+      const ZStroke2d *stroke,
+      std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > &polylinePairList);
+
+private:
+  ZCuboid getRayBoundbox() const;
+  ZLineSegment getRaySegment(int x, int y, std::string &source) const;
 
 private:
   QTabWidget* createBasicSettingTabWidget();
@@ -539,7 +562,9 @@ private:
 
   QString m_lastOpenedFilePath;
 
-  QToolBar *m_toolBar;
+  QToolBar *m_toolBar = NULL;
+//  QSlider *m_meshOpacitySlider = NULL;
+  QDoubleSpinBox *m_meshOpacitySpinBox = NULL;
 
   mutable QMutex m_filterMutex;
   ZSwcIsolationDialog *m_swcIsolationDlg;

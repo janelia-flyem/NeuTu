@@ -31,6 +31,8 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
           &Z3DBoundedFilter::updateAxisAlignedBoundBox);
   connect(&m_rendererBase, &Z3DRendererBase::sizeScaleChanged, this,
           &Z3DBoundedFilter::updateBoundBox);
+  connect(&m_rendererBase, SIGNAL(opacityChanged(double)),
+          this, SIGNAL(opacityChanged(double)));
 
   m_xCut.setSingleStep(1);
   m_yCut.setSingleStep(1);
@@ -109,6 +111,19 @@ void Z3DBoundedFilter::renderSelectionBox(Z3DEye eye)
     m_rendererBase.render(eye, m_selectionBoundBoxRenderer);
     m_rendererBase.setClipEnabled(true);
   }
+}
+
+void Z3DBoundedFilter::setOpacity(float o)
+{
+  m_rendererBase.setOpacity(o);
+//  emit opacityChanged(o);
+}
+
+void Z3DBoundedFilter::setOpacityQuitely(float o)
+{
+  blockSignals(true);
+  m_rendererBase.setOpacity(o);
+  blockSignals(false);
 }
 
 glm::vec3 Z3DBoundedFilter::getViewCoord(double x, double y, double z, double w, double h)
@@ -270,7 +285,7 @@ void Z3DBoundedFilter::rayUnderScreenPoint(
 
   glm::ivec4 viewport(0, 0, width, height);
 
-  v1 = glm::unProject(glm::dvec3(x, height - y, 0.f), modelview, projection, viewport);
+  v1 = glm::unProject(glm::dvec3(x, height - y, -1.0f), modelview, projection, viewport);
   v2 = glm::unProject(glm::dvec3(x, height - y, 1.f), modelview, projection, viewport);
   v2 = glm::normalize(v2 - v1) + v1;
 }

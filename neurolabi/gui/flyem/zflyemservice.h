@@ -9,7 +9,7 @@
 #include "zflyem.h"
 #include "flyem/zflyemcoordinateconverter.h"
 
-namespace FlyEm {
+namespace flyem {
 namespace Service {
 class FaceOrphanOverlap {
 public:

@@ -92,6 +92,13 @@ void ZObject3d::append(const ZObject3d &obj, size_t srcOffset)
                       obj.m_voxelArray.end());
 }
 
+void ZObject3d::append(const ZObject3d *obj, size_t srcOffset)
+{
+  if (obj != NULL) {
+    append(*obj, srcOffset);
+  }
+}
+
 void ZObject3d::appendBackward(const ZObject3d &obj, size_t srcOffset)
 {
   size_t voxelNumber = obj.size();
@@ -160,7 +167,7 @@ bool ZObject3d::load(const char *filePath)
 
 void ZObject3d::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {  
   UNUSED_PARAMETER(option);
 
@@ -179,7 +186,7 @@ void ZObject3d::display(
   std::vector<QPoint> pointArray;
 
   switch (sliceAxis) {
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     if (slice < 0) {
       for (size_t i = 0; i < obj->size; i++) {
         pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
@@ -192,8 +199,8 @@ void ZObject3d::display(
       }
     }
     break;
-  case NeuTube::X_AXIS:
-  case NeuTube::Y_AXIS:
+  case neutube::X_AXIS:
+  case neutube::Y_AXIS:
     if (slice < 0) {
       for (size_t i = 0; i < obj->size; i++) {
         ZIntPoint pt(obj->voxels[i][0], obj->voxels[i][1], obj->voxels[i][2]);

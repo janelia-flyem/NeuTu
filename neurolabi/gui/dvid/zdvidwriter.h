@@ -50,6 +50,10 @@ public:
     return m_reader.getDvidTarget();
   }
 
+  const ZDvidReader& getDvidReader() const {
+    return m_reader;
+  }
+
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   bool isSwcWrittable();
 
@@ -96,6 +100,9 @@ public:
 
   void mergeBody(const std::string &dataName, uint64_t targetId,
                  const std::vector<uint64_t> &bodyId);
+  void mergeBody(const std::string &dataName,
+                 const std::vector<uint64_t> &bodyId,
+                 bool mergingToLargest);
 
   /*!
    * \brief Create a new keyvalue data in DVID.
@@ -230,6 +237,7 @@ public:
       const QString &group, const QByteArray &task, bool head);
   std::string writeServiceTask(const QString &group, const ZJsonObject &task);
   void writeSplitTask(const QString &key, const ZJsonObject &task);
+  void deleteSplitTask(const QString &key);
 //  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:

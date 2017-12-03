@@ -360,7 +360,13 @@ void ZROIWidget::updateROIs()
               qDebug()<<"~~~color is changed"<<color;
 
               colorModified[i] = false;
-              m_window->getDocument()->getObject(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i])->setColor(color);
+              ZStackObject *obj = m_window->getDocument()->getObject(
+                    ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i]);
+              ZCubeArray *ca = dynamic_cast<ZCubeArray*>(obj);
+              if (ca != NULL) {
+                ca->setColor(color);
+                ca->pushObjectColor();
+              }
             }
             m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], true);
           }

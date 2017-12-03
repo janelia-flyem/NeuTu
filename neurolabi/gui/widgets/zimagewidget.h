@@ -200,11 +200,11 @@ public:
     return m_paintBlocked;
   }
 
-  void setSliceAxis(NeuTube::EAxis axis) {
+  void setSliceAxis(neutube::EAxis axis) {
     m_sliceAxis = axis;
   }
 
-  NeuTube::EAxis getSliceAxis() const {
+  neutube::EAxis getSliceAxis() const {
     return m_sliceAxis;
   }
 
@@ -305,7 +305,7 @@ private:
 
   ZViewProj m_viewProj;
 
-  NeuTube::EAxis m_sliceAxis;
+  neutube::EAxis m_sliceAxis;
 //  QSize m_canvasSize;
 
   bool m_freeMoving;

@@ -20,6 +20,13 @@ public:
 
   bool hasThreadAlive() const;
 
+  /*!
+   * \brief Wait the thread with a certain ID to be finished.
+   *
+   * \param id The ID of the thread to be waited.
+   */
+  void waitForFinished(const QString &id);
+
   void waitForFinished();
 
 };

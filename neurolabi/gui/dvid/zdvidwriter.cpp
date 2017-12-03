@@ -356,8 +356,40 @@ void ZDvidWriter::mergeBody(const std::string &dataName,
   ZJsonArray mergeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
   mergeArray.append(jsonArray);
 */
+  LINFO() << "Merging" << jsonArray.dumpString(0);
+
   ZDvidUrl dvidUrl(getDvidTarget());
   writeJson(dvidUrl.getMergeUrl(dataName), jsonArray, "[]");
+}
+
+void ZDvidWriter::mergeBody(
+    const std::string &dataName, const std::vector<uint64_t> &bodyId,
+    bool mergingToLargest)
+{
+  if (bodyId.size() > 1) {
+    uint64_t target = bodyId[0];
+    std::vector<uint64_t> merged;
+    if (mergingToLargest) {
+      int maxSize = 0;
+      for (uint64_t id : bodyId) {
+        int bodySize = m_reader.readBodyBlockCount(id);
+        if (bodySize > maxSize) {
+          bodySize = maxSize;
+          target = id;
+        }
+      }
+      for (uint64_t id : bodyId) {
+        if (id != target) {
+          merged.push_back(id);
+        }
+      }
+    } else {
+      for (size_t i = 1; i < bodyId.size(); ++i) {
+        merged.push_back(bodyId[i]);
+      }
+    }
+    mergeBody(dataName, target, merged);
+  }
 }
 
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
@@ -422,34 +454,44 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
 void ZDvidWriter::syncAnnotationToLabel(
     const std::string &name, const std::string &queryString)
 {
-  ZDvidUrl url(getDvidTarget());
-  ZJsonObject jsonObj;
-  jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
-                   getDvidTarget().getBodyLabelName());
+  if (!getDvidTarget().getLabelBlockName().empty()) {
+    ZDvidUrl url(getDvidTarget());
+    ZJsonObject jsonObj;
+    if (getDvidTarget().getLabelBlockName() == getDvidTarget().getBodyLabelName()) {
+      jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName());
+    } else {
+      jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
+                       getDvidTarget().getBodyLabelName());
+    }
 #ifdef _DEBUG_
-  std::cout << jsonObj.dumpString(0) << std::endl;
+    std::cout << jsonObj.dumpString(0) << std::endl;
 #endif
 
-  post(url.getAnnotationSyncUrl(name, queryString), jsonObj);
+    post(url.getAnnotationSyncUrl(name, queryString), jsonObj);
+  }
 }
 
 void ZDvidWriter::syncData(
     const std::string &dataName, const std::string &syncDataName,
     const std::string &queryString)
 {
-  ZDvidUrl url(getDvidTarget());
-  ZJsonObject jsonObj;
-  jsonObj.setEntry("sync", syncDataName);
-  post(url.getDataSyncUrl(dataName, queryString), jsonObj);
+  if (!syncDataName.empty()) {
+    ZDvidUrl url(getDvidTarget());
+    ZJsonObject jsonObj;
+    jsonObj.setEntry("sync", syncDataName);
+    post(url.getDataSyncUrl(dataName, queryString), jsonObj);
+  }
 }
 
 void ZDvidWriter::syncLabelsz(
     const std::string &dataName, const std::string &annotationName)
 {
-  ZDvidUrl url(getDvidTarget());
-  ZJsonObject jsonObj;
-  jsonObj.setEntry("sync", annotationName);
-  post(url.getLabelszSyncUrl(dataName), jsonObj);
+  if (!annotationName.empty()) {
+    ZDvidUrl url(getDvidTarget());
+    ZJsonObject jsonObj;
+    jsonObj.setEntry("sync", annotationName);
+    post(url.getLabelszSyncUrl(dataName), jsonObj);
+  }
 }
 
 void ZDvidWriter::syncSynapseLabelsz()
@@ -991,6 +1033,12 @@ void ZDvidWriter::writeSplitTask(const QString &key, const ZJsonObject &task)
         ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY), key.toStdString(), task);
 }
 
+void ZDvidWriter::deleteSplitTask(const QString &key)
+{
+  deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
+            key.toStdString());
+}
+
 /*
 std::string ZDvidWriter::transferLocalSplitTaskToServer(const ZJsonObject &task)
 {
@@ -1365,7 +1413,7 @@ uint64_t ZDvidWriter::writeCoarseSplit(const ZObject3dScan &obj, uint64_t oldLab
 void ZDvidWriter::writeMergeOperation(const QMap<uint64_t, uint64_t> &bodyMap)
 {
   std::string url = ZDvidUrl(getDvidTarget()).getMergeOperationUrl(
-        NeuTube::GetCurrentUserName());
+        neutube::GetCurrentUserName());
 
   if (!url.empty()) {
     if (!bodyMap.isEmpty()) {

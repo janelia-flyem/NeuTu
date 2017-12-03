@@ -251,7 +251,7 @@ void Z3DPunctaFilter::prepareData()
   colorScheme.setColorScheme(ZColorScheme::PUNCTUM_TYPE_COLOR);
 
   std::map<QString, int, QStringNaturalCompare> sourceTypeMapper;
-  for (auto punctum : m_origPunctaList) {
+  for (ZPunctum *punctum : m_origPunctaList) {
     sourceTypeMapper[punctum->getSource().c_str()] = punctum->getTypeFromSource();
   }
   // do nothing if sources don't change
@@ -280,24 +280,51 @@ void Z3DPunctaFilter::prepareData()
     std::set_difference(sourceTypeMapper.begin(), sourceTypeMapper.end(),
                         m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
                         std::inserter(newSources, newSources.end()),
-                        _KeyLess());
+                        QStringKeyNaturalLess());
+#ifdef _DEBUG_
+    std::cout << "sourceTypeMapper" << std::endl;
+    for (std::map<QString, int, QStringNaturalCompare>::const_iterator iter = sourceTypeMapper.begin();
+         iter != sourceTypeMapper.end(); ++iter) {
+      qDebug() << " " << iter->first << iter->second;
+    }
+    std::cout << "m_sourceColorMapper" << std::endl;
+    for (std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare>::const_iterator iter = m_sourceColorMapper.begin();
+         iter != m_sourceColorMapper.end(); ++iter) {
+      qDebug() << " " << iter->first;
+    }
+    std::cout << "newSources" << std::endl;
+    for ( std::map<QString, int, QStringNaturalCompare>::const_iterator iter = newSources.begin();
+         iter != newSources.end(); ++iter) {
+      qDebug() << " " << iter->first << iter->second;
+    }
+#endif
+
     for (const auto& kv : newSources) {
       QString guiname = QString("Source: %1").arg(kv.first);
+
+      if (m_sourceColorMapper.count(kv.first) > 0) {
+        LOG(FATAL) << "Parameter check failed:" << kv.first;
+      }
+
       if (kv.second >= 0) {
         QColor color = colorScheme.getColor(kv.second);
-        m_sourceColorMapper.insert(std::make_pair(kv.first,
-                                                  std::make_unique<ZVec4Parameter>(guiname,
-                                                                                   glm::vec4(color.redF(),
-                                                                                             color.greenF(),
-                                                                                             color.blueF(),
-                                                                                             color.alphaF()))));
+        m_sourceColorMapper.insert(
+              std::make_pair(kv.first,
+                             std::make_unique<ZVec4Parameter>(
+                               guiname,
+                               glm::vec4(color.redF(),
+                                         color.greenF(),
+                                         color.blueF(),
+                                         color.alphaF()))));
       } else {
-        m_sourceColorMapper.insert(std::make_pair(kv.first,
-                                                  std::make_unique<ZVec4Parameter>(guiname,
-                                                                                   glm::vec4(ZRandom::instance().randReal<float>(),
-                                                                                             ZRandom::instance().randReal<float>(),
-                                                                                             ZRandom::instance().randReal<float>(),
-                                                                                             1.f))));
+        m_sourceColorMapper.insert(
+              std::make_pair(kv.first,
+                             std::make_unique<ZVec4Parameter>(
+                               guiname,
+                               glm::vec4(ZRandom::instance().randReal<float>(),
+                                         ZRandom::instance().randReal<float>(),
+                                         ZRandom::instance().randReal<float>(),
+                                         1.f))));
       }
       m_sourceColorMapper[kv.first]->setStyle("COLOR");
       connect(m_sourceColorMapper[kv.first].get(), &ZVec4Parameter::valueChanged,
@@ -427,6 +454,7 @@ void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int)
   if (e->type() == QEvent::MouseButtonPress) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
+
     const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
     if (!obj) {
       return;

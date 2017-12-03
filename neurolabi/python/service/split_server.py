@@ -21,7 +21,9 @@ taskServer = config['task_server']
 
 taskEnv = dvidenv.DvidEnv(host = taskServer['host'], port=taskServer['port'], uuid=taskServer['uuid'])
 split = bodysplit.BodySplit(config['command'], taskEnv)
+split.set_committing(config.get('commit', False))
 print(split._neutu)
+print(split._commit)
 #split.run('task__http-++emdata1.int.janelia.org-8500+api+node+b6bc+bodies+sparsevol+12007338')
 
 dc = dvidio.DvidClient(env = taskEnv)

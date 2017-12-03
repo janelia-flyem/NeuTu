@@ -8,7 +8,7 @@
 
 ZSwcPositionAdjuster::ZSwcPositionAdjuster() :
   m_signal(NULL), m_mask(NULL), m_workspace(NULL),
-  m_background(NeuTube::IMAGE_BACKGROUND_DARK)
+  m_background(neutube::IMAGE_BACKGROUND_DARK)
 {
 }
 
@@ -52,7 +52,7 @@ void ZSwcPositionAdjuster::adjustPosition(ZSwcPath &swcPath)
     mask->array[targetIndex] = 2;
     stackGraph.setGroupMaskAcrossZ(mask, C_Stack::depth(m_signal));
 
-    if (m_background == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+    if (m_background == neutube::IMAGE_BACKGROUND_BRIGHT) {
       stackGraph.setWeightFunction(Stack_Voxel_Weight);
     } else {
       stackGraph.setWeightFunction(Stack_Voxel_Weight_R);
@@ -83,7 +83,7 @@ void ZSwcPositionAdjuster::adjustPosition(ZSwcPath &swcPath)
         voxelArray.append(ZVoxel(x, y, z));
       }
 
-      if (!voxelArray.empty()) {
+      if (!voxelArray.isEmpty()) {
         size_t currentIndex = 0;
         const std::vector<ZVoxel> &voxelData = voxelArray.getInternalData();
         for (ZSwcPath::iterator iter = swcPath.begin(); iter != swcPath.end(); ++iter) {

@@ -92,7 +92,7 @@ public:
   void updateSelection();
 #endif
 
-  std::set<uint64_t> getSelection(NeuTube::EBodyLabelType labelType) const;
+  std::set<uint64_t> getSelection(neutube::EBodyLabelType labelType) const;
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
@@ -137,7 +137,7 @@ signals:
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
   void coarseBodyWindowCreatedInThread();
-  void checkingInBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  void checkingInBody(uint64_t bodyId, flyem::EBodySplitMode mode);
 
   /*
   void messageGenerated(QString, bool appending = true);
@@ -150,7 +150,7 @@ public slots:
   void shallowClear();
   void mergeBody();
   void setLoadingLabel(bool state);
-  void uploadResult();
+  void uploadResult(bool mergingToLargest);
   void saveMergeOperation();
 //  void update3DBodyView(const ZStackObjectSelector &selector);
 //  void update3DBodyView(
@@ -175,7 +175,7 @@ private:
 //  void update3DBodyViewPlane(
 //      const ZDvidInfo &dvidInfo, const ZStackViewParam &viewParam);
 //  void update3DBodyViewBox(const ZDvidInfo &dvidInfo);
-  void uploadResultFunc();
+  void uploadResultFunc(bool mergingToLargest);
 //  void makeCoarseBodyWindow(ZStackDoc *doc);
 //  void makeBodyWindow();
   void connectSignalSlot();
@@ -184,6 +184,10 @@ private:
 
   void mergeBodyAnnotation(
       uint64_t targetId, const std::vector<uint64_t> &bodyId);
+
+  uint64_t getTargetId(
+      uint64_t targetId, const std::vector<uint64_t> &bodyId,
+      bool mergingToLargest);
 
   //void updateSelection();
 

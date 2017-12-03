@@ -6,7 +6,10 @@
 
 #include "tz_stack_watershed.h"
 #include "zintcuboid.h"
+#include "zstackptr.h"
+
 #include <QString>
+
 class ZStack;
 class ZObject3dScan;
 class ZStroke2d;
@@ -76,9 +79,13 @@ public:
   void setAlgorithm(const QString &algorithm){
     m_algorithm=algorithm;
   }
-  ZStack* getResultStack() const {
-    return m_result;
+
+  ZStackPtr getResultStack() const {
+    return m_result.front();
   }
+
+
+  bool hasResult() const;
 
   void useSeedRange(bool on);
   bool usingSeedRange() const;
@@ -95,6 +102,13 @@ public:
   void printState() const;
 
   ZIntCuboid& getRange();
+
+  void setCcaPost(bool on) {
+    m_ccaPost = on;
+  }
+  bool ccaPost() const {
+    return m_ccaPost;
+  }
 
 private:
   void init();
@@ -126,7 +140,7 @@ private:
 private:
   ZStack *m_stack;
   ZSparseStack *m_spStack;
-  ZStack *m_result;
+  std::vector<ZStackPtr> m_result;
   Stack_Watershed_Workspace *m_workspace;
 //  ZIntPoint m_sourceOffset;
   ZIntCuboid m_range;
@@ -136,7 +150,7 @@ private:
   bool m_floodingZero;
   int m_channel;
   bool m_usingSeedRange = false;
-
+  bool m_ccaPost = true;
   int m_scale;
   QString m_algorithm;
 };

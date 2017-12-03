@@ -35,7 +35,7 @@ signals:
   void splitTriggered(uint64_t bodyId);
   void splitTriggered();
   void labelSizeChanged(int width, int height);
-  void showingFullSegmentation();
+  void showingFullSegmentation(bool on);
   void coarseBodyViewTriggered();
   void skeletonViewTriggered();
   void meshViewTriggered();
@@ -59,6 +59,7 @@ signals:
   void exportingSelectedBodyStack();
   void skeletonizingSelectedBody();
   void showingInfo();
+  void reportingBodyCorruption();
 
 public slots:
   void setInfo(const QString &info);
@@ -74,7 +75,7 @@ private slots:
   void setSegmentSize();
   void incSegmentSize();
   void decSegmentSize();
-  void showFullSegmentation();
+  void showFullSegmentation(bool on);
   void goToPosition();
   void goToBody();
   void selectBody();

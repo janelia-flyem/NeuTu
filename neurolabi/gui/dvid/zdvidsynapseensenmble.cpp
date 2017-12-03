@@ -27,8 +27,8 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
   m_dvidTarget = target;
   if (m_reader.open(target)) {
     m_writer.open(target);
-    m_dvidInfo = m_reader.readGrayScaleInfo();
-    m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
+//    m_dvidInfo = m_reader.readGrayScaleInfo();
+
 //    m_startY = m_dvidInfo.getStartCoordinates().getY();
   }
 }
@@ -36,6 +36,7 @@ void ZDvidSynapseEnsemble::setDvidTarget(const ZDvidTarget &target)
 void ZDvidSynapseEnsemble::setDvidInfo(const ZDvidInfo &info)
 {
   m_dvidInfo = info;
+  m_startZ = m_dvidInfo.getStartCoordinates().getSliceCoord(m_sliceAxis);
 }
 
 void ZDvidSynapseEnsemble::init()
@@ -44,8 +45,8 @@ void ZDvidSynapseEnsemble::init()
   m_type = TYPE_DVID_SYNAPE_ENSEMBLE;
   m_view = NULL;
   m_maxPartialArea = 1024 * 1024;
-  m_sliceAxis = NeuTube::Z_AXIS;
-  addVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT);
+  m_sliceAxis = neutube::Z_AXIS;
+  addVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
   m_dataFetcher = NULL;
   m_isReady = false;
 }
@@ -75,7 +76,7 @@ ZIntCuboid ZDvidSynapseEnsemble::updateUnsync(const ZIntCuboid &box)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, FlyEM::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, flyem::LOAD_NO_PARTNER);
         addSynapseUnsync(synapse, DATA_LOCAL);
       }
     }
@@ -176,7 +177,7 @@ void ZDvidSynapseEnsemble::downloadUnsync(int z)
           viewPort.left(), viewPort.top(), blockBox.getFirstCorner().getZ(),
           viewPort.right(), viewPort.bottom(), blockBox.getLastCorner().getZ());
     box.shiftSliceAxisInverse(m_sliceAxis);
-    if (m_dataFetcher == NULL || getSliceAxis() == NeuTube::Z_AXIS) {
+    if (m_dataFetcher == NULL || getSliceAxis() == neutube::Z_AXIS) {
       syncedFetch(box, startZ, endZ, false);
       /*
       updateUnsync(box);
@@ -331,7 +332,7 @@ void ZDvidSynapseEnsemble::downloadForLabelUnsync(uint64_t label)
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZDvidSynapse synapse;
-    synapse.loadJsonObject(synapseJson, FlyEM::LOAD_PARTNER_LOCATION);
+    synapse.loadJsonObject(synapseJson, flyem::LOAD_PARTNER_LOCATION);
     if (synapse.isValid()) {
       addSynapse(synapse, DATA_LOCAL);
     }
@@ -696,7 +697,7 @@ void ZDvidSynapseEnsemble::updateFromCacheUnsync(int z)
 
 void ZDvidSynapseEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
   QMutexLocker locker(&m_dataMutex);
 
@@ -732,7 +733,7 @@ void ZDvidSynapseEnsemble::display(
 
           if (!ready && m_view != NULL) {
             ready = synapseSlice.isReady(
-                  m_view->getViewPort(NeuTube::COORD_STACK), rangeRect);
+                  m_view->getViewPort(neutube::COORD_STACK), rangeRect);
           }
           if (!ready) {
             int blockZ = m_dvidInfo.getBlockIndexZ(z);
@@ -771,7 +772,7 @@ void ZDvidSynapseEnsemble::display(
           if (!synapse.isSelected()) {
             EDisplayStyle tmpOption = option;
             if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN &&
-                hasVisualEffect(NeuTube::Display::VE_GROUP_HIGHLIGHT)) {
+                hasVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT)) {
               tmpOption = SKELETON;
             }
             synapse.display(painter, slice, tmpOption, sliceAxis);
@@ -983,7 +984,7 @@ void ZDvidSynapseEnsemble::updatePartner(ZDvidSynapse &synapse)
 
     if (!objArray.isEmpty()) {
       ZJsonObject obj(objArray.value(0));
-      synapse.loadJsonObject(obj, FlyEM::LOAD_PARTNER_RELJSON);
+      synapse.loadJsonObject(obj, flyem::LOAD_PARTNER_RELJSON);
       synapse.updatePartner();
       synapse.updatePartnerProperty(m_reader);
 #if 0
@@ -1325,7 +1326,7 @@ ZDvidSynapseEnsemble::SynapseSlice::getMap(int y, EAdjustment adjust)
 }
 
 void ZDvidSynapseEnsemble::SynapseSlice::addSynapse(
-    const ZDvidSynapse &synapse, NeuTube::EAxis sliceAxis)
+    const ZDvidSynapse &synapse, neutube::EAxis sliceAxis)
 {
   ZIntPoint center = synapse.getPosition();
   center.shiftSliceAxis(sliceAxis);

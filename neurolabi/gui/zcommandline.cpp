@@ -227,7 +227,7 @@ int ZCommandLine::runBoundaryOrphan()
 
   std::vector<int> synapseCount;
   if (!m_synapseFile.empty()) {
-    FlyEm::ZSynapseAnnotationArray synapseAnnotation;
+    flyem::ZSynapseAnnotationArray synapseAnnotation;
     synapseAnnotation.loadJson(m_synapseFile);
     synapseCount = synapseAnnotation.countSynapse();
   }
@@ -410,12 +410,12 @@ int ZCommandLine::runObjectOverlap()
 int ZCommandLine::runSynapseObjectList()
 {
   std::set<int> bodySet;
-  FlyEm::ZSynapseAnnotationArray synaseArray;
+  flyem::ZSynapseAnnotationArray synaseArray;
   if (!synaseArray.loadJson(m_input[0])) {
     return 1;
   }
 
-  for (FlyEm::SynapseLocation *location = synaseArray.beginSynapseLocation();
+  for (flyem::SynapseLocation *location = synaseArray.beginSynapseLocation();
        location != NULL; location = synaseArray.nextSynapseLocation()) {
     bodySet.insert(location->bodyId());
   }
@@ -1179,7 +1179,7 @@ int ZCommandLine::skeletonizeFile()
   if (!fexist(m_input[0].c_str())) {
     m_reporter.report("Skeletonization Failed",
                       "The input file " + m_input[0] + " seems not exist.",
-        NeuTube::MSG_ERROR);
+        neutube::MSG_ERROR);
     return 1;
   }
 
@@ -1205,7 +1205,7 @@ int ZCommandLine::skeletonizeFile()
     if (m_output.empty()) {
       m_reporter.report("Skeletonization Failed",
                         "The input is not a binary image.",
-                        NeuTube::MSG_ERROR);
+                        neutube::MSG_ERROR);
       return 1;
     }
     ZStack stack;
@@ -1227,7 +1227,7 @@ int ZCommandLine::skeletonizeFile()
     m_reporter.report(
           "Skeletonization Failed",
           "Unrecognized output: " + m_input[0],
-        NeuTube::MSG_ERROR);
+        neutube::MSG_ERROR);
 //      std::cout << "Unrecognized output: " << m_input[0] << std::endl;
   }
 

@@ -6,6 +6,7 @@
 #include "zdvidreader.h"
 #include "zstackviewparam.h"
 #include "zpixmap.h"
+#include "zcontrastprotocol.h"
 
 //#include "zdvidtarget.h"
 
@@ -21,7 +22,7 @@ public:
   ~ZDvidGraySlice();
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);
@@ -64,6 +65,14 @@ public:
   int getScale() const;
 
   void setZoom(int zoom);
+  void setContrastProtocol(const ZContrastProtocol &cp);
+  void updateContrast(bool highContrast);
+  void updateContrast(const ZJsonObject &obj);
+
+  /*!
+   * \brief Check if the slice has any low-resolution region.
+   */
+  bool hasLowresRegion() const;
 
 
 public: //for testing
@@ -75,6 +84,11 @@ private:
   void updateImage(const ZStack *stack);
   void forceUpdate(const ZStackViewParam &viewParam);
   void updatePixmap();
+  void updateContrast();
+  void invalidatePixmap();
+  void validatePixmap(bool v);
+  void validatePixmap();
+  bool isPixmapValid() const;
 
   /*!
    * \brief Check if the regions of the image and the slice are consistent.
@@ -84,13 +98,12 @@ private:
 private:
   ZImage m_image;
   ZPixmap m_pixmap;
+  bool m_isPixmapValid = false;
+
+  bool m_usingContrastProtocol = false;
+  ZContrastProtocol m_contrastProtocal;
 
   QMutex m_pixmapMutex;
-//  int m_x;
-//  int m_y;
-//  int m_z;
-//  int m_width;
-//  int m_height;
   ZStackViewParam m_currentViewParam;
 
   int m_zoom;
@@ -98,8 +111,10 @@ private:
   int m_maxWidth;
   int m_maxHeight;
 
+  int m_centerCutWidth = 256;
+  int m_centerCutHeight = 256;
+
   ZDvidReader m_reader;
-//  ZDvidTarget m_dvidTarget;
 };
 
 #endif // ZDVIDGRAYSLICE_H

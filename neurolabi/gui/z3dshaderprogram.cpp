@@ -431,6 +431,8 @@ void Z3DShaderProgram::storeUniformLocations()
   m_useCustomColorUniform = (it == m_uniforms.end()) ? nullptr : &(it->second);
   it = m_uniforms.find("region");
   m_regionUniform = (it == m_uniforms.end()) ? nullptr : &(it->second);
+  it = m_uniforms.find("use_two_sided_lighting");
+  m_useTwoSidedLightingUniform = (it == m_uniforms.end()) ? nullptr : &(it->second);
 }
 
 void Z3DShaderProgram::storeAttributeLocations()

@@ -37,9 +37,9 @@ void ZPuncta::sort() const
 }
 
 void ZPuncta::display(ZPainter &painter, int slice, EDisplayStyle option,
-                      NeuTube::EAxis sliceAxis) const
+                      neutube::EAxis sliceAxis) const
 {
-  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != NeuTube::Z_AXIS) {
+  if (m_puncta.isEmpty() || slice < 0 || sliceAxis != neutube::Z_AXIS) {
     return;
   }
 
@@ -88,7 +88,7 @@ void ZPuncta::setSorted(bool state) const
 bool ZPuncta::load(const ZJsonObject &obj, double radius)
 {
   clear();
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(obj);
   std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
   addPunctum(puncta.begin(), puncta.end());
@@ -163,7 +163,7 @@ void ZPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZPuncta::pushVisualEffect(NeuTube::Display::TVisualEffect effect)
+void ZPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
 {
   for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

@@ -151,6 +151,8 @@ void ZStackWatershed::AddSeed(
     uint8_t *array = C_Stack::array8(ws->mask);
     size_t area = C_Stack::area(ws->mask);
     int width = C_Stack::width(ws->mask);
+    int height = C_Stack::height(ws->mask);
+    int depth = C_Stack::depth(ws->mask);
 
     for (size_t i = 0; i < seed->size(); ++i) {
       int x = seed->getX(i);
@@ -162,7 +164,12 @@ void ZStackWatershed::AddSeed(
       x -= offset.getX();
       y -= offset.getY();
       z -= offset.getZ();
-      array[z * area + y * width + x] = label;
+      if (x >= 0 && x < width && y >= 0 && y <= height && z >= 0 && z <= depth) {
+        uint8_t *p = array + z * area + y * width + x;
+        if (*p != STACK_WATERSHED_BARRIER) {
+          *p = label;
+        }
+      }
     }
   }
 }

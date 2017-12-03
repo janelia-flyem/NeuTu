@@ -99,9 +99,9 @@ void ZDvidTileEnsemble::updateContrast()
       ZDvidTile *tile = tileIter->second;
       if (tile != NULL) {
         if (m_highContrast) {
-          tile->addVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+          tile->addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
         } else {
-          tile->removeVisualEffect(NeuTube::Display::Image::VE_HIGH_CONTRAST);
+          tile->removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
         }
       }
     }
@@ -339,9 +339,9 @@ bool ZDvidTileEnsemble::update(
 
       if (m_dataFetcher != NULL && m_dvidTarget.isTileLowQuality()) {
         QRect highresViewPort =
-            m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+            m_view->getViewParameter(neutube::COORD_STACK).getViewPort();
         if (highresViewPort.width() < 1024 || highresViewPort.height() < 1024) {
-          int z = m_view->getZ(NeuTube::COORD_STACK);
+          int z = m_view->getZ(neutube::COORD_STACK);
           QPoint center = highresViewPort.center();
           int width = 512;
           int height = 512;
@@ -430,7 +430,7 @@ bool ZDvidTileEnsemble::update(
 
 void ZDvidTileEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
   if (m_view == NULL) {
     return;
@@ -476,8 +476,10 @@ void ZDvidTileEnsemble::display(
     }
   }
 
+  /*
   QRect highresViewPort =
       m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+      */
 //  if (highresViewPort.width() > 256 || highresViewPort.height() > 256) {
     const_cast<ZDvidTileEnsemble&>(*this).update(
           tileIndices, resLevel, painter.getZ(slice));

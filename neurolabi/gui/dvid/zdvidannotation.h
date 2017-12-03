@@ -39,7 +39,7 @@ public:
 
   const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   void setPosition(int x, int y, int z);
   void setPosition(const ZIntPoint &pos);
@@ -81,12 +81,12 @@ public:
   int getZ() const;
 
   using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  bool hit(double x, double y, NeuTube::EAxis axis);
+  bool hit(double x, double y, neutube::EAxis axis);
   bool hit(double x, double y, double z);
 
   void loadJsonObject(
       const ZJsonObject &obj,
-      FlyEM::EDvidAnnotationLoadMode mode);
+      flyem::EDvidAnnotationLoadMode mode);
   ZJsonObject toJsonObject() const;
 
   void clearPartner();
@@ -194,8 +194,8 @@ public: //Json APIs
   static EKind GetKind(const ZJsonObject &json);
 
 protected:
-  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
-  double getRadius(int z, NeuTube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
+  double getRadius(int z, neutube::EAxis sliceAxis) const;
 
 private:
   void init();

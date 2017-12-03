@@ -14,7 +14,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
                                                     ZRandom::instance().randReal<float>(),
                                                     1.f))
   , m_selectMeshEvent("Select Mesh", false)
-  , m_pressedMesh(nullptr)
+//  , m_pressedMesh(nullptr)
   , m_dataIsInvalid(false)
 {
   m_singleColorForAllMesh.setStyle("COLOR");
@@ -31,19 +31,28 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
 
   addParameter(m_singleColorForAllMesh);
 
-  m_selectMeshEvent.listenTo("select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
-  m_selectMeshEvent.listenTo("select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
-  m_selectMeshEvent.listenTo("select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonDblClick);
-  m_selectMeshEvent.listenTo("select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonDblClick);
-  m_selectMeshEvent.listenTo("append select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonPress);
-  m_selectMeshEvent.listenTo("append select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonRelease);
-  connect(&m_selectMeshEvent, &ZEventListenerParameter::mouseEventTriggered, this, &Z3DMeshFilter::selectMesh);
+  m_selectMeshEvent.listenTo(
+        "select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonPress);
+  m_selectMeshEvent.listenTo(
+        "select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonRelease);
+  m_selectMeshEvent.listenTo(
+        "select mesh", Qt::LeftButton, Qt::NoModifier, QEvent::MouseButtonDblClick);
+  m_selectMeshEvent.listenTo(
+        "select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonDblClick);
+  m_selectMeshEvent.listenTo(
+        "append select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonPress);
+  m_selectMeshEvent.listenTo(
+        "append select mesh", Qt::LeftButton, Qt::ControlModifier, QEvent::MouseButtonRelease);
+  connect(&m_selectMeshEvent, &ZEventListenerParameter::mouseEventTriggered,
+          this, &Z3DMeshFilter::selectMesh);
   addEventListener(m_selectMeshEvent);
 
   adjustWidgets();
 
   addParameter(m_meshRenderer.wireframeModePara());
   addParameter(m_meshRenderer.wireframeColorPara());
+
+  addParameter(m_meshRenderer.useTwoSidedLightingPara());
 }
 
 void Z3DMeshFilter::process(Z3DEye)
@@ -93,8 +102,9 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
     m_widgetsGroup = std::make_shared<ZWidgetsGroup>("Mesh", 1);
     m_widgetsGroup->addChild(m_visible, 1);
     m_widgetsGroup->addChild(m_stayOnTop, 1);
-    m_widgetsGroup->addChild(m_colorMode, 1);
-    m_widgetsGroup->addChild(m_singleColorForAllMesh, 1);
+    m_widgetsGroup->addChild(m_meshRenderer.useTwoSidedLightingPara(), 1);
+    m_widgetsGroup->addChild(m_colorMode, 2);
+    m_widgetsGroup->addChild(m_singleColorForAllMesh, 2);
 
     for (const auto& kv : m_sourceColorMapper) {
       m_widgetsGroup->addChild(*kv.second, 2);
@@ -112,7 +122,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
         //        m_widgetsGroup->addChild(*pb, 2);
       }
       else if (para->name() == "Opacity")
-        m_widgetsGroup->addChild(*para, 5);
+        m_widgetsGroup->addChild(*para, 1);
       else if (para->name() != "Size Scale")
         m_widgetsGroup->addChild(*para, 7);
     }
@@ -189,7 +199,7 @@ void Z3DMeshFilter::prepareData()
     std::set_difference(allSources.begin(), allSources.end(),
                         m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
                         std::inserter(newSources, newSources.end()),
-                        _KeyLess());
+                        QStringKeyNaturalLess());
     for (const auto& kv : newSources) {
       QString guiname = QString("Source: %1").arg(kv);
       m_sourceColorMapper.insert(std::make_pair(kv,
@@ -314,42 +324,76 @@ void Z3DMeshFilter::adjustWidgets()
   }
 }
 
-void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int h)
+bool Z3DMeshFilter::hitObject(int x, int y)
 {
-  Q_UNUSED(h)
+  const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(x, y));
+  if (obj != NULL) {
+    return true;
+  }
+
+  return false;
+}
+
+std::vector<bool> Z3DMeshFilter::hitObject(
+    const std::vector<std::pair<int, int> > &ptArray)
+{
+  std::vector<bool> hitArray(ptArray.size(), false);
+
+  std::vector<const void*> objArray =
+      pickingManager().objectAtWidgetPos(ptArray);
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    if (objArray[i] != NULL) {
+      hitArray[i] = true;
+    }
+  }
+
+  return hitArray;
+}
+
+
+void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
+{
+#ifdef _DEBUG_
+  std::cout << "Selecting graph" << std::endl;
+#endif
+
   if (m_meshList.empty())
     return;
 
   e->ignore();
-  // Mouse button pressend
-  // can not accept the event in button press, because we don't know if it is a selection or interaction
-  if (e->type() == QEvent::MouseButtonPress) {
-    m_startCoord.x = e->x();
-    m_startCoord.y = e->y();
-    const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
-    if (!obj) {
-      return;
+  switch (e->type()) {
+  case QEvent::MouseButtonPress:
+    if (e->type() == QEvent::MouseButtonPress) { //Record mouse position for movement check
+      m_startCoord.x = e->x();
+      m_startCoord.y = e->y();
     }
-
-    // Check if any point was selected...
-    for (auto m : m_meshList)
-      if (m == obj) {
-        m_pressedMesh = m;
-        break;
-      }
-    return;
-  }
-
-  if (e->type() == QEvent::MouseButtonRelease) {
+    break;
+  case QEvent::MouseButtonRelease:
     if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
-      if (e->modifiers() == Qt::ControlModifier)
-        emit meshSelected(m_pressedMesh, true);
-      else
-        emit meshSelected(m_pressedMesh, false);
-      if (m_pressedMesh)
+      const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
+      ZMesh *hitMesh = NULL;
+      if (obj != NULL) {
+        // Check if any point was selected...
+        for (auto m : m_meshList) {
+          if (m == obj) {
+            hitMesh = m;
+            break;
+          }
+        }
+      }
+
+      if (e->modifiers() == Qt::ControlModifier) {
+        emit meshSelected(hitMesh, true);
+      } else {
+        emit meshSelected(hitMesh, false);
+      }
+
+      if (hitMesh != NULL) {
         e->accept();
+      }
     }
-    m_pressedMesh = nullptr;
+  default:
+    break;
   }
 }
 
