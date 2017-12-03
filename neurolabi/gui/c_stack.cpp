@@ -469,7 +469,49 @@ Stack* C_Stack::resize(const Stack *stack, int width, int height, int depth)
   DOWNSAMPLE_GENERAL(srcArray, dstArray, (*srcArray < *dstArray))
 
 #define DOWNSAMPLE_MIN_IGNORE_ZERO(srcArray, dstArray) \
-  DOWNSAMPLE_GENERAL(srcArray, dstArray, (((*srcArray < *dstArray)&&(*srcArray!=0))||(*dstArray==0)))
+{\
+  bool has_zero=false,all_zero=true;\
+  for (int z = 0; z < d; ++z) {\
+    for (int y = 0; y < h; ++y) {\
+      for (int x = 0; x < w; ++x) {\
+        if(*srcArray)all_zero=false;\
+        else has_zero=true;\
+        if ((xCounter + yCounter + zCounter) == 0)\
+        {\
+          if(has_zero&&!all_zero)*(dstArray-1)=1;\
+        }\
+        if ((((*srcArray < *dstArray)&&(*srcArray!=0))||(*dstArray==0)) || (xCounter + yCounter + zCounter) == 0) {\
+          has_zero=false;all_zero=true;\
+          *dstArray = *srcArray;\
+        }\
+        ++srcArray;\
+        if (++xCounter > xintv) {\
+          xCounter = 0;\
+          ++dstArray;\
+        }\
+      }\
+      if (xCounter != 0) {\
+        ++dstArray;\
+      }\
+      if (++yCounter > yintv) {\
+        yCounter = 0;\
+      } else {\
+        dstArray -= swidth;\
+      }\
+      xCounter = 0;\
+    }\
+    if (yCounter != 0) {\
+      dstArray += swidth;\
+    }\
+    if (++zCounter > zintv) {\
+      zCounter = 0;\
+    } else {\
+      dstArray -= outArea;\
+    }\
+    xCounter = 0;\
+    yCounter = 0;\
+  }\
+}
 
 Stack* C_Stack::downsampleMax(
     const Stack *stack, int xintv, int yintv, int zintv, Stack *out)

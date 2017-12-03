@@ -14,6 +14,12 @@
 #include "zobject3d.h"
 #include "zintcuboid.h"
 #include "widgets/zpythonprocess.h"
+#ifdef _DEBUG_
+#include "zstackframe.h"
+#include "sandbox/zsandbox.h"
+#include "mainwindow.h"
+#include "zstackdocdatabuffer.h"
+#endif
 #undef ASCII
 #undef BOOL
 #undef TRUE
@@ -87,7 +93,6 @@ ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
 {
   int index=1;
   unsigned char index_map[256][256]={0};
-
   const Stack *originalStack = stack.c_stack();
   ZStack *mask = ZStackFactory::MakeZeroStack(stack.width(), stack.height(), stack.depth());
   Stack *maskStack = mask->c_stack();
@@ -105,8 +110,8 @@ ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
   {
     for (int y = 0; y <= height-1; ++y)
     {
-      offset=z*slice+y*width+1;
-      for (int x = 1; x <= width-1; ++x,++offset)
+      offset=z*slice+y*width+2;
+      for (int x = 2; x <= width-2; ++x,++offset)
       {
         uint8_t v=originalArray[offset],t=originalArray[offset - 1];
         if(v==0||t==0||v==t)
@@ -117,11 +122,11 @@ ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
         }
         if(index_map[v][t])
         {
-          maskArray[offset] = maskArray[offset-1]=index_map[v][t];
+          maskArray[offset] = maskArray[offset-1]=maskArray[offset-2]=maskArray[offset+1]=index_map[v][t];
         }
         else
         {
-          maskArray[offset] =maskArray[offset-1]= index_map[v][t]=index++;
+         maskArray[offset] = maskArray[offset-1]=maskArray[offset-2]=maskArray[offset+1]= index_map[v][t]=index++;
         }
       }
     }
@@ -131,8 +136,8 @@ ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
   {
     for (int x = 0; x <= width-1; ++x)
     {
-      offset = slice * z + x + width;
-      for (int y = 1; y <= height-1; ++y,offset += width)
+      offset = slice * z + x + 2*width;
+      for (int y = 2; y <= height-2; ++y,offset += width)
       {
         uint8_t v=originalArray[offset],t=originalArray[offset - width];
         if(v==0||t==0||v==t)
@@ -144,11 +149,11 @@ ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
 
         if(index_map[v][t])
         {
-          maskArray[offset] = maskArray[offset-width]=index_map[v][t];
+          maskArray[offset] = maskArray[offset-width]=maskArray[offset-2*width]=maskArray[offset+width]=index_map[v][t];
         }
         else
         {
-          maskArray[offset] =maskArray[offset-width]= index_map[v][t]=index++;
+          maskArray[offset] = maskArray[offset-width]=maskArray[offset-2*width]=maskArray[offset+width]= index_map[v][t]=index++;
         }
       }
     }
@@ -158,8 +163,8 @@ ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
   {
     for (int x = 0; x <=width-1; ++x)
     {
-      offset = width * y + x + slice;
-      for (int z = 1; z <= depth-1; ++z,offset += slice)
+      offset = width * y + x + 2*slice;
+      for (int z = 2; z <= depth-2; ++z,offset += slice)
       {
         uint8_t v=originalArray[offset],t=originalArray[offset - slice];
         if(v==0||t==0||v==t)
@@ -170,16 +175,31 @@ ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
         }
         if(index_map[v][t])
         {
-          maskArray[offset] = maskArray[offset-slice]=index_map[v][t];
+          maskArray[offset] = maskArray[offset-slice]=maskArray[offset-2*slice]=maskArray[offset+slice]=index_map[v][t];
         }
         else
         {
-          maskArray[offset] =maskArray[offset-slice]= index_map[v][t]=index++;
+          maskArray[offset] = maskArray[offset-slice]=maskArray[offset-2*slice]=maskArray[offset+slice]= index_map[v][t]=index++;
         }
       }
     }
   }
   return mask;
+}
+
+
+void ZStackMultiScaleWatershed::computeSeeds(ZStack* sampled_stack,std::vector<ZObject3d*>& seeds)
+{
+  int width=sampled_stack->getDsIntv().getX();
+  int height=sampled_stack->getDsIntv().getY();
+  int depth=sampled_stack->getDsIntv().getZ();
+  ZStack* boundary_map=getBoundaryMap(*sampled_stack);
+  ZStack* sds=new ZStack(GREY,width,height,depth,1);
+  generateSeeds(sds,width,height,depth,boundary_map,sampled_stack);
+  seeds.clear();
+  seeds=ZObject3dFactory::MakeObject3dArray(*sds);
+  delete sds;
+  delete boundary_map;
 }
 
 
@@ -209,11 +229,11 @@ void ZStackMultiScaleWatershed::generateSeeds(ZStack* seed,int width,int height,
         {
           if(pboundary[_offset-1])// left voxel is on the boundary
           {
-            addSeedX(seed,x*step,y*step,std::min(height,(y+1)*step),z*step,std::min(depth,(z+1)*step),pstack[_offset]);
+            addSeedX(seed,x*step+step-1,y*step,std::min(height,(y+1)*step),z*step,std::min(depth,(z+1)*step),pstack[_offset]);
           }
           if(pboundary[_offset+1])//right voxel is on the boundary
           {
-            addSeedX(seed,x*step+step-1,y*step,std::min(height,(y+1)*step),z*step,std::min(depth,(z+1)*step),pstack[_offset]);
+            addSeedX(seed,x*step,y*step,std::min(height,(y+1)*step),z*step,std::min(depth,(z+1)*step),pstack[_offset]);
           }
         }
       }
@@ -232,11 +252,11 @@ void ZStackMultiScaleWatershed::generateSeeds(ZStack* seed,int width,int height,
         {
           if(pboundary[_offset-s_width])
           {
-            addSeedY(seed,y*step,x*step,std::min(width,(x+1)*step),z*step,std::min(depth,(z+1)*step),pstack[_offset]);
+            addSeedY(seed,y*step+step-1,x*step,std::min(width,(x+1)*step),z*step,std::min(depth,(z+1)*step),pstack[_offset]);
           }
           if(pboundary[_offset+s_width])
           {
-            addSeedY(seed,y*step+step-1,x*step,std::min(width,(x+1)*step),z*step,std::min(depth,(z+1)*step),pstack[_offset]);
+            addSeedY(seed,y*step,x*step,std::min(width,(x+1)*step),z*step,std::min(depth,(z+1)*step),pstack[_offset]);
           }
         }
       }
@@ -256,11 +276,11 @@ void ZStackMultiScaleWatershed::generateSeeds(ZStack* seed,int width,int height,
         {
           if(pboundary[_offset-s_slice])
           {
-            addSeedZ(seed,z*step,x*step,std::min(width,(x+1)*step),y*step,std::min((y+1)*step,height),pstack[_offset]);
+            addSeedZ(seed,z*step+step-1,x*step,std::min(width,(x+1)*step),y*step,std::min((y+1)*step,height),pstack[_offset]);
           }
           if(pboundary[_offset+s_slice])
           {
-            addSeedZ(seed,z*step+step-1,x*step,std::min(width,(x+1)*step),y*step,std::min((y+1)*step,height),pstack[_offset]);
+            addSeedZ(seed,z*step,x*step,std::min(width,(x+1)*step),y*step,std::min((y+1)*step,height),pstack[_offset]);
           }
         }
       }
@@ -444,7 +464,6 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
 #ifdef _DEBUG_
   std::cout<<"----------# total voxels:"<<recovered->getVoxelNumber()<<std::endl;
 #endif
-
   delete seed;
   delete result;
   delete boundary_map;
@@ -478,6 +497,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
   time.start();
 #endif
   sampled->downsampleMinIgnoreZero(m_scale-1,m_scale-1,m_scale-1);
+  //sampled->downsampleMean(m_scale-1,m_scale-1,m_scale-1);
 #ifdef _DEBUG_
   std::cout<<"----------downsample time:"<<time.elapsed()/1000.0<<std::endl;
 #endif
@@ -508,17 +528,114 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     python.run();
     sampled_watershed->load(working_dir.toStdString()+"/result.tif");
   }
+  else if(algorithm=="power_watershed"){
+    const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/power_watershed";
+    sampled->setOffset(0,0,0);
+    seed->setOffset(0,0,0);
+    sampled->save(working_dir.toStdString()+"/data.tif");
+    seed->save(working_dir.toStdString()+"/seed.tif");
 
+    ZPythonProcess python;
+    python.setWorkDir(working_dir);
+    python.setScript(working_dir+"/power_watershed.py");
+    python.addArg(working_dir+"/data.tif");
+    python.addArg(working_dir+"/seed.tif");
+    python.addArg(working_dir+"/result.tif");
+    python.addArg("2");
+    sampled_watershed=new ZStack();
+    python.run();
+    sampled_watershed->load(working_dir.toStdString()+"/result.tif");
+  }
+  else if(algorithm=="MSF_Cruskal"){
+    const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/power_watershed";
+    sampled->setOffset(0,0,0);
+    seed->setOffset(0,0,0);
+    sampled->save(working_dir.toStdString()+"/data.tif");
+    seed->save(working_dir.toStdString()+"/seed.tif");
+
+    ZPythonProcess python;
+    python.setWorkDir(working_dir);
+    python.setScript(working_dir+"/power_watershed.py");
+    python.addArg(working_dir+"/data.tif");
+    python.addArg(working_dir+"/seed.tif");
+    python.addArg(working_dir+"/result.tif");
+    python.addArg("1");
+    sampled_watershed=new ZStack();
+    python.run();
+    sampled_watershed->load(working_dir.toStdString()+"/result.tif");
+  }
+  else if(algorithm=="MSF_Prime"){
+    const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/power_watershed";
+    sampled->setOffset(0,0,0);
+    seed->setOffset(0,0,0);
+    sampled->save(working_dir.toStdString()+"/data.tif");
+    seed->save(working_dir.toStdString()+"/seed.tif");
+
+    ZPythonProcess python;
+    python.setWorkDir(working_dir);
+    python.setScript(working_dir+"/power_watershed.py");
+    python.addArg(working_dir+"/data.tif");
+    python.addArg(working_dir+"/seed.tif");
+    python.addArg(working_dir+"/result.tif");
+    python.addArg("3");
+    sampled_watershed=new ZStack();
+    python.run();
+    sampled_watershed->load(working_dir.toStdString()+"/result.tif");
+  }
 #ifdef _DEBUG_
   std::cout<<"----------downsample seg time:"<<time.elapsed()/1000.0<<std::endl;
+  ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(sampled);
+  std::vector<ZObject3dScan*> objArray =
+      ZObject3dFactory::MakeObject3dScanPointerArray(*sampled_watershed, 1, false);
+  ZColorScheme colorScheme;
+  colorScheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+  int colorIndex = 0;
+
+  for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
+       iter != objArray.end(); ++iter)
+  {
+    ZObject3dScan *obj = *iter;
+
+    if (obj != NULL && !obj->isEmpty())
+    {
+      QColor color = colorScheme.getColor(colorIndex++);
+      color.setAlpha(164);
+      obj->setColor(color);
+      frame->document()->getDataBuffer()->addUpdate(
+            obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+      frame->document()->getDataBuffer()->deliver();
+    }
+  }
+  ZSandbox::GetMainWindow()->addStackFrame(frame);
+  ZSandbox::GetMainWindow()->presentStackFrame(frame);
 #endif
 
 
   if(sampled_watershed){
     rv=upSampleAndRecoverBoundary(sampled_watershed,src);
+#ifdef _DEBUG_
+    std::vector<ZObject3d*> sds;
+    ZStack* ss=src->clone();
+    ss->setOffset(0,0,0);
+    sampled_watershed->setDsIntv(src->width(),src->height(),src->depth());
+    computeSeeds(sampled_watershed,sds);
+    int label=10;
+    for(auto x:sds)
+    {
+      x->labelStack(ss,label);
+      label+=20;
+    }
+    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(ss);
+    ZSandbox::GetMainWindow()->addStackFrame(frame);
+    ZSandbox::GetMainWindow()->presentStackFrame(frame);
+#else
+
+#endif
     delete sampled_watershed;
   }
+#ifndef _DEBUG_
   delete sampled;
+#endif
   delete seed;
   return rv;
 }

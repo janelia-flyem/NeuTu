@@ -31,7 +31,7 @@ public:
   ZStack* getBoundaryMap(const ZStack& stack);
   ZStack* upSample(int width,int height,int depth,ZStack* sampled);
   ZStack* upSampleAndRecoverBoundary(ZStack* sampled_watershed,ZStack* src);
-
+  void computeSeeds(ZStack* sampled_stack,std::vector<ZObject3d*>& seeds);
 private:
   ZStack* toSeedStack(std::vector<ZObject3d*>& seeds,int width,int height,int depth,ZIntPoint offset);
   inline void addSeedX(ZStack* pSeed,int x,int sy,int ey,int sz,int ez,uint8_t v);
