@@ -15,3 +15,4 @@ ZStackPtr ZStackPtr::Make()
 {
   return ZStackPtr(new ZStack);
 }
+

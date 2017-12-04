@@ -449,6 +449,14 @@ TEST(ZStackArray, Basic)
   ZStack *stack3 = ZStackFactory::MakeVirtualStack(5, 5, 5);
   stack1->setDsIntv(1, 0, 0);
 
+  sa.append(stack1);
+  sa.append(stack2);
+  sa.append(stack3);
+
+  sa.sort(zstack::DsIntvGreaterThan());
+  ASSERT_EQ(stack3, sa[0].get());
+  ASSERT_EQ(stack2, sa[1].get());
+  ASSERT_EQ(stack1, sa[2].get());
 }
 
 #endif
