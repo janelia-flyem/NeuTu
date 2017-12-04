@@ -9357,9 +9357,9 @@ void ZStackDoc::reloadData(ZStackDocReader &reader)
 }
 
 
-std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
+ZStackArray ZStackDoc::createWatershedMask(bool selectedOnly) const
 {
-  std::vector<ZStack*> maskArray;
+  ZStackArray maskArray;
 
   int numberOfSelected = 0;
 
@@ -9427,7 +9427,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
             if (boxDist < 100) {
               ZStack *stack = player->toStack();
               if (stack != NULL) {
-                maskArray.push_back(stack);
+                maskArray.append(stack);
               }
             }
           }
@@ -9442,7 +9442,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
           ((numberOfSelected == 0) || player->getData()->isSelected())) {
         ZStack *stack = player->toStack();
         if (stack != NULL) {
-          maskArray.push_back(stack);
+          maskArray.append(stack);
         }
       }
     }

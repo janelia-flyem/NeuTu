@@ -5008,21 +5008,21 @@ void MainWindow::on_actionMask_SWC_triggered()
         LINFO() << "Skeletonizing projected mask ...";
         mask = frame->getStrokeMask(neutube::COLOR_RED);
         if (mask != NULL) {
-          maskArray.push_back(mask);
+          maskArray.append(mask);
         }
         mask = frame->getStrokeMask(neutube::COLOR_GREEN);
         if (mask != NULL) {
-          maskArray.push_back(mask);
+          maskArray.append(mask);
         }
         mask = frame->getStrokeMask(neutube::COLOR_BLUE);
         if (mask != NULL) {
-          maskArray.push_back(mask);
+          maskArray.append(mask);
         }
       } else {
         LINFO() << "Skeletonizing mask ...";
         mask = frame->getStrokeMask();
         if (mask != NULL) {
-          maskArray.push_back(mask);
+          maskArray.append(mask);
         }
       }
 

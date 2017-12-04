@@ -87,6 +87,7 @@ class ZDvidSparseStack;
 class ZStackDocDataBuffer;
 class ZStackDocKeyProcessor;
 class QKeyEvent;
+class ZStackArray;
 
 /*!
  * \brief The class of stack document
@@ -1281,7 +1282,7 @@ protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
-  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
+  virtual ZStackArray createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
   void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();

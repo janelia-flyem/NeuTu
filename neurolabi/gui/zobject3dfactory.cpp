@@ -11,6 +11,8 @@
 #include "zarray.h"
 #include "zrandomgenerator.h"
 #include "zintcuboid.h"
+#include "zstackarray.h"
+#include "zstackutil.h"
 
 #if defined(_QT_GUI_USED_)
 #  include "zstroke2d.h"
@@ -259,9 +261,103 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
         delete obj;
       }
     }
+    delete bodySet;
   }
 
   return objArray;
+}
+
+void ZObject3dFactory::AdjustResolution(
+      std::map<uint64_t, ZObject3dScan*> &lowResSet,
+      std::map<uint64_t, ZObject3dScan*> &highResSet)
+{
+  for (auto &lowResIter : lowResSet) {
+    uint64_t lowResBodyId = lowResIter.first;
+    ZObject3dScan *lowResBody = lowResIter.second;
+    for (auto &highResIter : highResSet) {
+      uint64_t highResBodyId = highResIter.first;
+      ZObject3dScan *highResBody = highResIter.second;
+      if (lowResBodyId != highResBodyId) {
+        lowResBody->subtractSliently(*highResBody);
+      }
+    }
+    for (auto &highResIter : highResSet) {
+      uint64_t highResBodyId = highResIter.first;
+      ZObject3dScan *highResBody = highResIter.second;
+      if (lowResBodyId == highResBodyId) {
+        lowResBody->unify(*highResBody);
+      }
+    }
+  }
+}
+
+std::map<uint64_t, ZObject3dScan*>* ZObject3dFactory::ExtractAllForegroundObject(ZStack &stack, bool upsampling)
+{
+  std::map<uint64_t, ZObject3dScan*> *bodySet =
+      ZObject3dScan::extractAllForegroundObject(
+        stack.array8(), stack.width(), stack.height(), stack.depth(),
+        neutube::Z_AXIS);
+  if (bodySet != NULL) {
+    for (auto &bodyIter : *bodySet) {
+      ZObject3dScan *body = bodyIter.second;
+      body->translate(stack.getOffset());
+      if (upsampling) {
+        body->upSample(stack.getDsIntv());
+      }
+    }
+  }
+
+  return bodySet;
+}
+
+void ZObject3dFactory::DeleteObjectMap(std::map<uint64_t, ZObject3dScan *> *bodySet)
+{
+  if (bodySet != NULL) {
+    for (auto &bodyIter : *bodySet) {
+      ZObject3dScan *body = bodyIter.second;
+      delete body;
+    }
+    delete bodySet;
+  }
+}
+
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
+    ZStackArray &stackArray)
+{
+  ZObject3dScanArray *result = NULL;
+
+  if (!stackArray.empty()) {
+    stackArray.sort(zstack::DsIntvGreaterThan());
+    ZStackPtr stack = stackArray[0];
+
+    std::map<uint64_t, ZObject3dScan*> *bodySet =
+        ExtractAllForegroundObject(*stack, true);
+
+    for (size_t i = 1; i < stackArray.size(); ++i) {
+      stack = stackArray[i];
+      std::map<uint64_t, ZObject3dScan*> *highResBodySet =
+          ExtractAllForegroundObject(*stack, true);
+      if (highResBodySet != NULL) {
+        AdjustResolution(*bodySet, *highResBodySet);
+        DeleteObjectMap(highResBodySet);
+      }
+    }
+
+    result = new ZObject3dScanArray;
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter) {
+      ZObject3dScan *obj = iter->second;
+      if (iter->first > 0) {
+        obj->setLabel(iter->first);
+        obj->setDsIntv(0);
+        result->append(obj);
+      } else {
+        delete obj;
+      }
+    }
+  }
+
+  return result;
 }
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(

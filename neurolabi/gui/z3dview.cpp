@@ -126,7 +126,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DView::axisWidgetsGroup()
 void Z3DView::updateBoundBox()
 {
   m_boundBox.reset();
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Updating bounding box:" << std::endl;
 #endif
   for (Z3DBoundedFilter* flt : m_allFilters) {
