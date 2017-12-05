@@ -42,6 +42,9 @@ public:
 
   void setColorMode(const std::string &mode);
 
+  bool hitObject(int x, int y);
+  std::vector<bool> hitObject(const std::vector<std::pair<int, int> > &ptArray);
+
 signals:
 
   void meshSelected(ZMesh*, bool append);
@@ -90,7 +93,7 @@ private:
 
   ZEventListenerParameter m_selectMeshEvent;
   glm::ivec2 m_startCoord;
-  ZMesh* m_pressedMesh;
+//  ZMesh* m_pressedMesh;
 
   // generate and save to speed up bound box rendering for big mesh
   std::map<ZMesh*, ZBBox<glm::dvec3>> m_meshBoundboxMapper;

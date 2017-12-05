@@ -156,7 +156,7 @@ void ZStackPresenter::init()
 
   m_highlightDecoration.setRadius(5.0);
   m_highlightDecoration.setColor(QColor(255, 255, 255, 160));
-  m_highlightDecoration.setVisualEffect(NeuTube::Display::Sphere::VE_FORCE_FILL);
+  m_highlightDecoration.setVisualEffect(neutube::display::Sphere::VE_FORCE_FILL);
   m_highlightDecorationList.append(&m_highlightDecoration);
   m_highlight = false;
 
@@ -202,7 +202,7 @@ ZStackDocMenuFactory* ZStackPresenter::getMenuFactory()
 {
   if (m_menuFactory == NULL) {
     m_menuFactory = new ZStackDocMenuFactory;
-    m_menuFactory->setAdminState(NeuTube::IsAdminUser());
+    m_menuFactory->setAdminState(neutube::IsAdminUser());
   }
 
   return m_menuFactory;
@@ -402,6 +402,10 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_SHOW_ORTHO:
       connect(action, SIGNAL(triggered()),
               this, SLOT(notifyOrthoViewTriggered()));
+      break;
+    case ZActionFactory::ACTION_SHOW_ORTHO_BIG:
+      connect(action, SIGNAL(triggered()),
+              this, SLOT(notifyOrthoViewBigTriggered()));
       break;
     case ZActionFactory::ACTION_COPY_POSITION:
       connect(action, SIGNAL(triggered()), this, SLOT(copyCurrentPosition()));
@@ -985,7 +989,7 @@ void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
     ZStroke2d *stroke = dynamic_cast<ZStroke2d*>(obj);
     if (stroke != NULL) {
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-      ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+      ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
       currentStackPos.shiftSliceAxis(getSliceAxis());
 
       stroke->setLast(currentStackPos.x(), currentStackPos.y());
@@ -993,7 +997,7 @@ void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
 
     switch (role) {
     case ROLE_SWC:
-      if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
+      if (buddyDocument()->getTag() == neutube::Document::FLYEM_ROI) {
         obj->useCosmeticPen(true);
       } else {
         obj->useCosmeticPen(false);
@@ -1847,7 +1851,7 @@ bool ZStackPresenter::processKeyPressEventOther(QKeyEvent *event)
     break;
   case Qt::Key_Space:
     if (GET_APPLICATION_NAME == "FlyEM") {
-      if (buddyDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
+      if (buddyDocument()->getTag() != neutube::Document::FLYEM_PROOFREAD) {
         if (event->modifiers() == Qt::ShiftModifier) {
           ZOUT(LTRACE(), 5) << "Starting watershed ...";
           buddyDocument()->runSeededWatershed();
@@ -1959,7 +1963,7 @@ void ZStackPresenter::setObjectVisible(bool v)
     if (v) {
       ZStackDoc::ActiveViewObjectUpdater updater(getSharedBuddyDocument());
       updater.exclude(ZStackObject::TYPE_DVID_TILE_ENSEMBLE);
-      updater.update(buddyView()->getViewParameter(NeuTube::COORD_STACK));
+      updater.update(buddyView()->getViewParameter(neutube::COORD_STACK));
     }
 
     buddyView()->paintObject();
@@ -2181,7 +2185,7 @@ void ZStackPresenter::markPuncta()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
         Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
   buddyDocument()->markPunctum(currentStackPos.x(), currentStackPos.y(),
                                currentStackPos.z());
 
@@ -2449,7 +2453,7 @@ void ZStackPresenter::tryDrawRectMode(double x, double y)
         interactiveContext().isStrokeEditModeOff()) {
       enterDrawRectMode(x, y);
     }
-  } else if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+  } else if (buddyDocument()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
     if ((interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_OFF /*||
          interactiveContext().swcEditMode() == ZInteractiveContext::SWC_EDIT_SELECT*/) &&
         interactiveContext().tubeEditMode() == ZInteractiveContext::TUBE_EDIT_OFF &&
@@ -2647,7 +2651,7 @@ void ZStackPresenter::updateCursor()
              ZInteractiveContext::SYNAPSE_ADD_POST ||
              interactiveContext().synapseEditMode() ==
              ZInteractiveContext::SYNAPSE_MOVE){
-    if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
+    if (buddyDocument()->getTag() == neutube::Document::FLYEM_ROI) {
       buddyView()->setScreenCursor(Qt::PointingHandCursor);
     } else {
       buddyView()->setScreenCursor(Qt::PointingHandCursor);
@@ -2709,6 +2713,17 @@ void ZStackPresenter::notifyOrthoViewTriggered()
   emit orthoViewTriggered(pt.x(), pt.y(), pt.z());
 }
 
+void ZStackPresenter::notifyOrthoViewBigTriggered()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getStackPosition();
+
+//  ZPoint pt = getLastMousePosInStack();
+
+  emit orthoViewBigTriggered(pt.x(), pt.y(), pt.z());
+}
+
 void ZStackPresenter::copyCurrentPosition()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
@@ -2753,7 +2768,7 @@ void ZStackPresenter::notifyBodyAnnotationTriggered()
 
 void ZStackPresenter::notifyBodyCheckinTriggered()
 {
-  emit bodyCheckinTriggered(FlyEM::BODY_SPLIT_NONE);
+  emit bodyCheckinTriggered(flyem::BODY_SPLIT_NONE);
 }
 
 void ZStackPresenter::notifyBodyForceCheckinTriggered()
@@ -2763,7 +2778,7 @@ void ZStackPresenter::notifyBodyForceCheckinTriggered()
 
 void ZStackPresenter::notifyBodyCheckoutTriggered()
 {
-  emit bodyCheckoutTriggered(FlyEM::BODY_SPLIT_NONE);
+  emit bodyCheckoutTriggered(flyem::BODY_SPLIT_NONE);
 }
 
 void ZStackPresenter::selectDownstreamNode()
@@ -2877,7 +2892,7 @@ bool ZStackPresenter::hasDrawable(ZStackObject::ETarget target) const
   return false;
 }
 
-NeuTube::EAxis ZStackPresenter::getSliceAxis() const
+neutube::EAxis ZStackPresenter::getSliceAxis() const
 {
   return buddyView()->getSliceAxis();
 }
@@ -2893,7 +2908,7 @@ static void SyncDvidLabelSliceSelection(
     if (buddySlice != labelSlice) {
       const std::set<uint64_t> &selectedSet =
           labelSlice->getSelectedOriginal();
-      buddySlice->setSelection(selectedSet, NeuTube::BODY_LABEL_ORIGINAL);
+      buddySlice->setSelection(selectedSet, neutube::BODY_LABEL_ORIGINAL);
     }
   }
 }
@@ -2906,8 +2921,8 @@ bool ZStackPresenter::process(ZStackOperator &op)
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
   ZIntPoint widgetPos = event.getPosition();
   QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
-  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
-  ZPoint currentRawStackPos = event.getPosition(NeuTube::COORD_RAW_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+  ZPoint currentRawStackPos = event.getPosition(neutube::COORD_RAW_STACK);
 
   buddyDocument()->getObjectGroup().resetSelection();
 
@@ -2974,9 +2989,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     buddyDocument()->notifySwcTreeNodeSelectionChanged();
 
     if (buddyDocument()->getSelectedSwcNodeNumber() == 1) {
-      if (buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION) {
+      if (buddyDocument()->getTag() != neutube::Document::BIOCYTIN_PROJECTION) {
         if (NeutubeConfig::getInstance().getApplication() == "Biocytin" ||
-            buddyDocument()->getTag() == NeuTube::Document::FLYEM_PROOFREAD) {
+            buddyDocument()->getTag() == neutube::Document::FLYEM_PROOFREAD) {
           enterSwcExtendMode();
         }
       }
@@ -3084,7 +3099,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   {
     ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
     ZStackObjectRole::TRole role = ZStackObjectRole::ROLE_NONE;
-    if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI ||
+    if (buddyDocument()->getTag() == neutube::Document::FLYEM_ROI ||
         paintingRoi()) {
       role = ZStackObjectRole::ROLE_ROI;
     }
@@ -3092,7 +3107,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
           m_mouseEventProcessor.getLatestStackPosition(),
           stroke->getWidth() / 2.0, role)) {
       //status = MOUSE_COMMAND_EXECUTED;
-      if (buddyDocument()->getTag() == NeuTube::Document::FLYEM_ROI) {
+      if (buddyDocument()->getTag() == neutube::Document::FLYEM_ROI) {
         buddyDocument()->selectSwcTreeNode(
               m_mouseEventProcessor.getLatestStackPosition(), false);
         enterSwcExtendMode();
@@ -3359,7 +3374,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
         labelSlice->recordSelection();
         labelSlice->toggleHitSelection(
               labelSlice->hasVisualEffect(
-                NeuTube::Display::LabelField::VE_HIGHLIGHT_SELECTED));
+                neutube::display::LabelField::VE_HIGHLIGHT_SELECTED));
         labelSlice->processSelection();
         SyncDvidLabelSliceSelection(buddyDocument(), labelSlice);
         interactionEvent.setEvent(
@@ -3404,7 +3419,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   case ZStackOperator::OP_MOVE_OBJECT:
   {
     ZPoint offset = op.getMouseEventRecorder()->
-        getPositionOffset(NeuTube::COORD_STACK);
+        getPositionOffset(neutube::COORD_STACK);
 
     buddyDocument()->executeMoveObjectCommand(offset.x(), offset.y(), 0, glm::mat4(1.f), glm::mat4(1.f));
   }
@@ -3416,7 +3431,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
       grabButton = Qt::LeftButton;
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-          grabButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
+          grabButton, ZMouseEvent::ACTION_PRESS, neutube::COORD_STACK);
     grabPosition.shiftSliceAxis(getSliceAxis());
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
@@ -3445,7 +3460,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     m_interactiveContext.blockContextMenu();
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::RightButton, ZMouseEvent::ACTION_PRESS,
-          NeuTube::COORD_WIDGET);
+          neutube::COORD_WIDGET);
     m_interactiveContext.setExploreMode(
           ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE);
 //    buddyView()->blockViewChangeEvent(true);
@@ -3458,7 +3473,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     m_interactiveContext.blockContextMenu();
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           Qt::RightButton, ZMouseEvent::ACTION_PRESS,
-          NeuTube::COORD_WIDGET);
+          neutube::COORD_WIDGET);
     m_interactiveContext.setExploreMode(
           ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE);
     decreaseZoomRatio(grabPosition.x(), grabPosition.y());
@@ -3512,7 +3527,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     ZRect2d *rect = dynamic_cast<ZRect2d*>(obj);
     if (rect != NULL) {
       ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
-            Qt::LeftButton, ZMouseEvent::ACTION_PRESS, NeuTube::COORD_STACK);
+            Qt::LeftButton, ZMouseEvent::ACTION_PRESS, neutube::COORD_STACK);
       grabPosition.shiftSliceAxis(getSliceAxis());
       ZPoint shiftedStackPos = currentStackPos;
       shiftedStackPos.shiftSliceAxis(getSliceAxis());
@@ -3611,7 +3626,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_SLICE);
     break;
   case ZStackOperator::OP_STACK_VIEW_PROJECTION:
-    if (buddyDocument()->getTag() != NeuTube::Document::BIOCYTIN_PROJECTION) {
+    if (buddyDocument()->getTag() != neutube::Document::BIOCYTIN_PROJECTION) {
       interactiveContext().setViewMode(ZInteractiveContext::VIEW_PROJECT);
       interactionEvent.setEvent(ZInteractionEvent::EVENT_VIEW_PROJECTION);
     }
@@ -3743,8 +3758,8 @@ void ZStackPresenter::acceptActiveStroke()
     if (newStroke->getPointNumber() == 1 &&
         m_mouseEventProcessor.getLatestMouseEvent().getModifiers() ==
         Qt::ShiftModifier &&
-        buddyDocument()->getTag() != NeuTube::Document::FLYEM_SPLIT &&
-        buddyDocument()->getTag() != NeuTube::Document::FLYEM_PROOFREAD) {
+        buddyDocument()->getTag() != neutube::Document::FLYEM_SPLIT &&
+        buddyDocument()->getTag() != neutube::Document::FLYEM_PROOFREAD) {
       if (!buddyDocument()->getStrokeList().empty()) {
         LINFO() << "Compute stroke path";
         ZPoint start;
@@ -3754,7 +3769,7 @@ void ZStackPresenter::acceptActiveStroke()
         buddyDocument()->mapToStackCoord(&start);
         buddyDocument()->mapToStackCoord(&end);
 
-        int z0 = buddyView()->getZ(NeuTube::COORD_STACK);
+        int z0 = buddyView()->getZ(neutube::COORD_STACK);
 //        int z0 = buddyView()->sliceIndex();
 //        int z1 = z0;
         start.setZ(0);
@@ -3772,7 +3787,7 @@ void ZStackPresenter::acceptActiveStroke()
 
         Stack_Graph_Workspace *sgw = New_Stack_Graph_Workspace();
         if (buddyDocument()->getStackBackground() ==
-            NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+            neutube::IMAGE_BACKGROUND_BRIGHT) {
           sgw->wf = Stack_Voxel_Weight;
         } else {
           sgw->wf = Stack_Voxel_Weight_I;
@@ -3798,7 +3813,7 @@ void ZStackPresenter::acceptActiveStroke()
         //sgw->wf = Stack_Voxel_Weight;
 
         int channel = 0;
-        if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION &&
+        if (buddyDocument()->getTag() == neutube::Document::BIOCYTIN_PROJECTION &&
             signal->channelNumber() > 1) {
           channel = 1;
         }
@@ -3850,7 +3865,7 @@ void ZStackPresenter::acceptActiveStroke()
 
   newStroke->setZOrder(m_zOrder++);
   newStroke->setRole(role);
-  if (buddyDocument()->getTag() == NeuTube::Document::BIOCYTIN_PROJECTION) {
+  if (buddyDocument()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
     newStroke->setPenetrating(true);
   }
   buddyDocument()->executeAddObjectCommand(newStroke);
@@ -3909,11 +3924,11 @@ void ZStackPresenter::testBiocytinProjectionMask()
   m_mouseEventProcessor.getRecorder().record(event);
   acceptActiveStroke();
 
-  ZStack *stack = buddyView()->getStrokeMask(NeuTube::COLOR_RED);
+  ZStack *stack = buddyView()->getStrokeMask(neutube::COLOR_RED);
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
   delete stack;
 
-  stack = buddyView()->getStrokeMask(NeuTube::COLOR_GREEN);
+  stack = buddyView()->getStrokeMask(neutube::COLOR_GREEN);
   stack->save(GET_TEST_DATA_DIR + "/test2.tif");
 
 
@@ -3950,7 +3965,7 @@ ZStackObject* ZStackPresenter::getActiveObject(EObjectRole role) const
   return m_activeObjectMap[role];
 }
 
-void ZStackPresenter::setSliceAxis(NeuTube::EAxis axis)
+void ZStackPresenter::setSliceAxis(neutube::EAxis axis)
 {
   m_interactiveContext.setSliceAxis(axis);
   for (QList<ZStackObject*>::iterator iter = m_activeDecorationList.begin();

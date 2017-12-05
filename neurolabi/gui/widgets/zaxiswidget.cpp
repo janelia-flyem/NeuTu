@@ -14,16 +14,16 @@ ZAxisWidget::~ZAxisWidget()
 }
 
 
-NeuTube::EAxis ZAxisWidget::getAxis() const
+neutube::EAxis ZAxisWidget::getAxis() const
 {
   switch (ui->axisComboBox->currentIndex()) {
   case 0:
-    return NeuTube::X_AXIS;
+    return neutube::X_AXIS;
   case 1:
-    return NeuTube::Y_AXIS;
+    return neutube::Y_AXIS;
   case 2:
-    return NeuTube::Z_AXIS;
+    return neutube::Z_AXIS;
   }
 
-  return NeuTube::X_AXIS;
+  return neutube::X_AXIS;
 }

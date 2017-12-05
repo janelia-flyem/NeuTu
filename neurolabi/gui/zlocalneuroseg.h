@@ -29,7 +29,7 @@ public:
 
 public:
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis axis) const;
+               neutube::EAxis axis) const;
   void display(QImage *image, int n, Palette_Color color,
                EDisplayStyle style = NORMAL, int label = 0) const;
   void display(ZPainter &painter, int sliceIndex, EDisplayStyle option,

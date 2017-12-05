@@ -8,7 +8,7 @@
 #include "zpointarray.h"
 #include "zlinesegmentarray.h"
 
-namespace FlyEm {
+namespace flyem {
 
 class ZHotSpotArray : public std::vector<ZHotSpot*>
 {
@@ -17,7 +17,7 @@ public:
   ~ZHotSpotArray();
 
 public:
-  void append(FlyEm::ZHotSpot *hotSpot);
+  void append(flyem::ZHotSpot *hotSpot);
   void concat(ZHotSpotArray *spotArray);
   std::string toString() const;
   void print() const;

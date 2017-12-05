@@ -189,7 +189,7 @@ ZSharedPointer<libdvid::DVIDConnection> ZDvid::MakeDvidConnection(
 ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget &target)
 {
   lowtis::DVIDLabelblkConfig config;
-  config.username = NeuTube::GetCurrentUserName();
+  config.username = neutube::GetCurrentUserName();
   config.dvid_server = target.getAddressWithPort();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getLabelBlockName();
@@ -201,7 +201,7 @@ ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget 
 lowtis::ImageService* ZDvid::MakeLowtisServicePtr(const ZDvidTarget &target)
 {
   lowtis::DVIDLabelblkConfig config;
-  config.username = NeuTube::GetCurrentUserName();
+  config.username = neutube::GetCurrentUserName();
   config.dvid_server = target.getAddressWithPort();
   config.dvid_uuid = target.getUuid();
   config.datatypename = target.getLabelBlockName();

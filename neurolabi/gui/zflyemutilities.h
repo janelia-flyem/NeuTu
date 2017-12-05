@@ -9,7 +9,7 @@
 class ZIntPoint;
 class ZStack;
 
-namespace FlyEm
+namespace flyem
 {
 
 double GetFlyEmRoiMarkerRadius(double s);

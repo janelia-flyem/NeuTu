@@ -4,12 +4,16 @@
 #include <QWidget>
 
 class ZClickableColorLabel;
+class QGroupBox;
 
 class ZPaintLabelWidget : public QWidget
 {
   Q_OBJECT
 public:
   explicit ZPaintLabelWidget(QWidget *parent = 0);
+  void setTitle(const QString &title);
+
+  QSize minimumSizeHint() const;
 
 signals:
 
@@ -22,6 +26,7 @@ public slots:
 private:
   const static int m_maxLabel;
   ZClickableColorLabel *m_colorLabel;
+  QGroupBox *m_groupBox = NULL;
 };
 
 #endif // ZPAINTLABELWIDGET_H

@@ -407,7 +407,7 @@ Z3DGraph ZStroke2dPlayer::get3DGraph() const
         stroke->getPoint(&x, &y, i);
         ZStackBall stackBall(x, y, z, radius);
         stackBall.setColor(stroke->getColor());
-        graph.addNode(stackBall);
+        graph.connectNode(stackBall, GRAPH_LINE);
 //        graph.addNode(x, y, z, radius);
       }
     }
@@ -585,7 +585,7 @@ Z3DGraph ZObject3dPlayer::get3DGraph() const
 
   const ZObject3d *obj = getCompleteData();
   if (obj != NULL) {
-    graph.importObject3d(*obj, 1.0);
+    graph.importObject3d(*obj, 2.0);
   }
 
   return graph;

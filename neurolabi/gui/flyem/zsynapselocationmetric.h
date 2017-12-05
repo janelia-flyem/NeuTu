@@ -3,7 +3,7 @@
 
 #include "zsynapseannotation.h"
 
-namespace FlyEm {
+namespace flyem {
 class ZSynapseLocationMetric
 {
 public:

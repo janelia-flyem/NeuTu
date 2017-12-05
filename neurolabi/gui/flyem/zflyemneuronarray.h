@@ -20,7 +20,7 @@ public:
    */
   void importBodyDir(const std::string &dirPath);
 
-  void setSynapseAnnotation(FlyEm::ZSynapseAnnotationArray *annotation);
+  void setSynapseAnnotation(flyem::ZSynapseAnnotationArray *annotation);
 
   void exportIdPosition(const std::string &filePath,
                         const ZFlyEmNeuronFilter &filter);

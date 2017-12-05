@@ -18,19 +18,19 @@ public:
 
   ZWidgetMessage(ETarget target = TARGET_TEXT_APPENDING);
   explicit ZWidgetMessage(const std::string &msg,
-                 NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
+                 neutube::EMessageType type = neutube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
   explicit ZWidgetMessage(const char *msg,
-                 NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
+                 neutube::EMessageType type = neutube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
   explicit ZWidgetMessage(const QString &msg,
-                 NeuTube::EMessageType type = NeuTube::MSG_INFORMATION,
+                 neutube::EMessageType type = neutube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
 
   QString toHtmlString() const;
-  static QString ToHtmlString(const QString &msg, NeuTube::EMessageType type);
+  static QString ToHtmlString(const QString &msg, neutube::EMessageType type);
   static QString ToHtmlString(const QStringList &msgList,
-                              NeuTube::EMessageType type);
+                              neutube::EMessageType type);
   QString toPlainString() const;
 
   inline bool isAppending() const { return m_target == TARGET_TEXT_APPENDING; }
@@ -39,7 +39,7 @@ public:
     return m_target;
   }
 
-  inline NeuTube::EMessageType getType() const {
+  inline neutube::EMessageType getType() const {
     return m_type;
   }
 
@@ -47,7 +47,7 @@ public:
     m_target = target;
   }
 
-  inline void setType(NeuTube::EMessageType type) {
+  inline void setType(neutube::EMessageType type) {
     m_type = type;
   }
 
@@ -73,7 +73,7 @@ public:
 private:
   QString m_title;
   QStringList m_message;
-  NeuTube::EMessageType m_type;
+  neutube::EMessageType m_type;
 //  bool m_appending;
   ETarget m_target;
 };

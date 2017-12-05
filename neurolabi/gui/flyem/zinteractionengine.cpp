@@ -21,7 +21,7 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_exploreMarker.setRadius(5.0);
   m_exploreMarker.setZ(0);
   m_exploreMarker.useCosmeticPen(true);
-  m_exploreMarker.addVisualEffect(NeuTube::Display::Sphere::VE_CROSS_CENTER);
+  m_exploreMarker.addVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER);
 
   m_namedDecorationList.append(&m_stroke);
   m_namedDecorationList.append(&m_rayMarker);
@@ -110,7 +110,7 @@ bool ZInteractionEngine::processMouseReleaseEvent(
 
     if (mouseReleaseSuppressed()) {
       suppressMouseRelease(false);
-      processed = true;
+//      processed = true;
     } else {
       if (isStateOn(STATE_MARK)) {
         emit shootingTodo(event->x(), event->y());

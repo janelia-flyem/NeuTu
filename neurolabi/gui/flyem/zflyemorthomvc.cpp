@@ -26,7 +26,7 @@ void ZFlyEmOrthoMvc::init()
 }
 
 ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc, NeuTube::EAxis axis)
+    QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc, neutube::EAxis axis)
 {
   ZFlyEmOrthoMvc *frame = new ZFlyEmOrthoMvc(parent);
 
@@ -71,9 +71,23 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
 }
 
 ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
-    const ZDvidTarget &target, NeuTube::EAxis axis)
+    const ZDvidTarget &target, neutube::EAxis axis)
 {
   ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc;
+//  doc->setTag(NeuTube::Document::FLYEM_DVID);
+  ZFlyEmOrthoMvc *mvc =
+      ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);
+
+  mvc->setDvidTarget(target);
+
+  return mvc;
+}
+
+ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
+    const ZDvidTarget &target, neutube::EAxis axis,
+    int width, int height, int depth)
+{
+  ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc(width, height, depth);
 //  doc->setTag(NeuTube::Document::FLYEM_DVID);
   ZFlyEmOrthoMvc *mvc =
       ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);

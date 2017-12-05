@@ -4,7 +4,7 @@
 #include <sstream>
 #include "zjsonparser.h"
 
-using namespace FlyEm;
+using namespace flyem;
 using namespace std;
 
 ZSynapseAnnotationMetadata::ZSynapseAnnotationMetadata() : m_version(0)

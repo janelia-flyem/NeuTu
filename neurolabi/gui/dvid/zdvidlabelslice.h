@@ -40,11 +40,12 @@ public:
   void update();
 
   void updateFullView(const ZStackViewParam &viewParam);
+  void disableFullView();
 
-  void setSliceAxis(NeuTube::EAxis sliceAxis);
+  void setSliceAxis(neutube::EAxis sliceAxis);
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   const std::string& className() const;
 
@@ -64,35 +65,35 @@ public:
 
 
   void setSelection(
-      const std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
-  void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
-  void xorSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
-  void removeSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+      const std::set<uint64_t> &selected, neutube::EBodyLabelType labelType);
+  void addSelection(uint64_t bodyId, neutube::EBodyLabelType labelType);
+  void xorSelection(uint64_t bodyId, neutube::EBodyLabelType labelType);
+  void removeSelection(uint64_t bodyId, neutube::EBodyLabelType labelType);
 
   template <typename InputIterator>
   void addSelection(const InputIterator &begin, const InputIterator &end,
-                    NeuTube::EBodyLabelType labelType);
+                    neutube::EBodyLabelType labelType);
 
   template <typename InputIterator>
   void setSelection(const InputIterator &begin, const InputIterator &end,
-                    NeuTube::EBodyLabelType labelType);
+                    neutube::EBodyLabelType labelType);
 
 
   template <typename InputIterator>
   void xorSelection(const InputIterator &begin, const InputIterator &end,
-                    NeuTube::EBodyLabelType labelType);
+                    neutube::EBodyLabelType labelType);
 
   template <typename InputIterator>
   void xorSelectionGroup(const InputIterator &begin, const InputIterator &end,
-                         NeuTube::EBodyLabelType labelType);
+                         neutube::EBodyLabelType labelType);
 
   inline const std::set<uint64_t>& getSelectedOriginal() const {
     return m_selectedOriginal;
   }
 
-  std::set<uint64_t> getSelected(NeuTube::EBodyLabelType labelType) const;
+  std::set<uint64_t> getSelected(neutube::EBodyLabelType labelType) const;
 
-  bool isBodySelected(uint64_t bodyId, NeuTube::EBodyLabelType labelType) const;
+  bool isBodySelected(uint64_t bodyId, neutube::EBodyLabelType labelType) const;
 
   void setBodyMerger(ZFlyEmBodyMerger *bodyMerger);
   void updateLabelColor();
@@ -101,13 +102,13 @@ public:
     return m_objColorSheme;
   }
 
-  QColor getLabelColor(uint64_t label, NeuTube::EBodyLabelType labelType) const;
-  QColor getLabelColor(int64_t label, NeuTube::EBodyLabelType labelType) const;
+  QColor getLabelColor(uint64_t label, neutube::EBodyLabelType labelType) const;
+  QColor getLabelColor(int64_t label, neutube::EBodyLabelType labelType) const;
 
   uint64_t getMappedLabel(const ZObject3dScan &obj) const;
   uint64_t getMappedLabel(uint64_t label) const;
   uint64_t getMappedLabel(
-      uint64_t label, NeuTube::EBodyLabelType labelType) const;
+      uint64_t label, neutube::EBodyLabelType labelType) const;
 
   std::set<uint64_t> getOriginalLabelSet(uint64_t mappedLabel) const;
 
@@ -160,7 +161,7 @@ private:
 //  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
-            NeuTube::EAxis sliceAxis = NeuTube::Z_AXIS);
+            neutube::EAxis sliceAxis = neutube::Z_AXIS);
   QColor getCustomColor(uint64_t label) const;
 
   void paintBufferUnsync();
@@ -222,7 +223,7 @@ private:
 template <typename InputIterator>
 void ZDvidLabelSlice::xorSelection(
     const InputIterator &begin, const InputIterator &end,
-    NeuTube::EBodyLabelType labelType)
+    neutube::EBodyLabelType labelType)
 {
   std::set<uint64_t> labelSet;
 
@@ -232,14 +233,14 @@ void ZDvidLabelSlice::xorSelection(
 
   for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
        iter != labelSet.end(); ++iter) {
-    xorSelection(*iter, NeuTube::BODY_LABEL_MAPPED);
+    xorSelection(*iter, neutube::BODY_LABEL_MAPPED);
   }
 }
 
 template <typename InputIterator>
 void ZDvidLabelSlice::addSelection(
     const InputIterator &begin, const InputIterator &end,
-    NeuTube::EBodyLabelType labelType)
+    neutube::EBodyLabelType labelType)
 {
   std::set<uint64_t> labelSet;
 
@@ -249,14 +250,14 @@ void ZDvidLabelSlice::addSelection(
 
   for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
        iter != labelSet.end(); ++iter) {
-    addSelection(*iter, NeuTube::BODY_LABEL_MAPPED);
+    addSelection(*iter, neutube::BODY_LABEL_MAPPED);
   }
 }
 
 template <typename InputIterator>
 void ZDvidLabelSlice::setSelection(
     const InputIterator &begin, const InputIterator &end,
-    NeuTube::EBodyLabelType labelType)
+    neutube::EBodyLabelType labelType)
 {
   clearSelection();
   addSelection(begin, end, labelType);
@@ -266,19 +267,19 @@ void ZDvidLabelSlice::setSelection(
 template <typename InputIterator>
 void ZDvidLabelSlice::xorSelectionGroup(
     const InputIterator &begin, const InputIterator &end,
-    NeuTube::EBodyLabelType labelType)
+    neutube::EBodyLabelType labelType)
 {
   std::set<uint64_t> labelSet; //original label set
 
   switch (labelType) {
-  case NeuTube::BODY_LABEL_MAPPED:
+  case neutube::BODY_LABEL_MAPPED:
     for (InputIterator iter = begin; iter != end; ++iter) {
 //      uint64_t label = getMappedLabel(*iter, labelType);
       std::set<uint64_t> sourceLabel = getOriginalLabelSet(*iter);
       labelSet.insert(sourceLabel.begin(), sourceLabel.end());
     }
     break;
-  case NeuTube::BODY_LABEL_ORIGINAL:
+  case neutube::BODY_LABEL_ORIGINAL:
     for (InputIterator iter = begin; iter != end; ++iter) {
       uint64_t label = *iter;
       labelSet.insert(label);

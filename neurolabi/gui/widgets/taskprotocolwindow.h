@@ -26,6 +26,9 @@ public:
 
     BodyPrefetchQueue *getPrefetchQueue() const;
 
+public:
+    void test();
+
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
@@ -33,6 +36,8 @@ signals:
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
     void prefetchBody(QSet<uint64_t> bodyIDs);
     void prefetchBody(uint64_t bodyID);
+    void unprefetchBody(QSet<uint64_t> bodyIDs);
+    void clearBodyQueue();
 
 private slots:
     void onNextButton();
@@ -45,11 +50,34 @@ private slots:
     void applicationQuitting();
 
 private:
+    /*!
+     * \brief Get the previous index.
+     * \param currentIndex The currentIndex.
+     * \return (\a currentIndex - 1) if both \a currentIndex and
+     *         (\a currentIndex - 1) is valid. It returns the last
+     *         index if \a currentIndex is 0 and there are more than one tasks.
+     *         It returns -1 in other cases.
+     */
+    int getPrevIndex(int currentIndex) const;
+
+    /*!
+     * \brief Get the next index.
+     * \param currentIndex The currentIndex.
+     * \return (\a currentIndex + 1) if both \a currentIndex and
+     *         (\a currentIndex + 1) is valid. It returns 0 if
+     *         \a currentIndex is the last index and not 0. It returns -1 in
+     *          other cases.
+     */
+    int getNextIndex(int currentIndex) const;
+
+private:
     static const QString KEY_DESCRIPTION;
     static const QString VALUE_DESCRIPTION;
     static const QString KEY_VERSION;
     static const int currentVersion;
     static const QString KEY_ID;
+    static const QString KEY_DVID_SERVER;
+    static const QString KEY_UUID;
     static const QString KEY_TASKLIST;
     static const QString KEY_TASKTYPE;
     static const QString PROTOCOL_INSTANCE;
@@ -69,6 +97,8 @@ private:
 
     Ui::TaskProtocolWindow *ui;
     QString m_ID;
+    QString m_DVIDServer;
+    QString m_UUID;
     QList<QSharedPointer<TaskProtocolTask>> m_taskList;
     ZFlyEmProofDoc * m_proofDoc;
     ZFlyEmBody3dDoc * m_body3dDoc;
@@ -105,6 +135,8 @@ private:
     void prefetch(uint64_t bodyID);
     void prefetch(QSet<uint64_t> bodyIDs);
     void prefetchForTaskIndex(int index);
+    bool checkDVIDTarget();
+    void unprefetchForTaskIndex(int index);
 };
 
 #endif // TASKPROTOCOLWINDOW_H

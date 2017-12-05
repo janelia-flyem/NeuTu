@@ -13,9 +13,9 @@ class ZStackViewParam
 {
 public:
   ZStackViewParam();
-  ZStackViewParam(NeuTube::ECoordinateSystem coordSys);
+  ZStackViewParam(neutube::ECoordinateSystem coordSys);
 
-  inline NeuTube::ECoordinateSystem getCoordinateSystem() const {
+  inline neutube::ECoordinateSystem getCoordinateSystem() const {
     return m_coordSys;
   }
 
@@ -28,7 +28,7 @@ public:
   QRect getViewPort() const;
   QRectF getProjRect() const;
 
-  inline NeuTube::View::EExploreAction getExploreAction() const {
+  inline neutube::View::EExploreAction getExploreAction() const {
     return m_action;
   }
 
@@ -41,9 +41,9 @@ public:
   double getZoomRatio() const;
 
   void setViewPort(double x0, double y0, double x1, double y1);
-  void setExploreAction(NeuTube::View::EExploreAction action);
-  void setSliceAxis(NeuTube::EAxis sliceAxis);
-  NeuTube::EAxis getSliceAxis() const;
+  void setExploreAction(neutube::View::EExploreAction action);
+  void setSliceAxis(neutube::EAxis sliceAxis);
+  neutube::EAxis getSliceAxis() const;
 
   bool operator ==(const ZStackViewParam &param) const;
   bool operator !=(const ZStackViewParam &param) const;
@@ -73,16 +73,16 @@ public:
   }
 
 private:
-  void init(NeuTube::ECoordinateSystem coordSys);
+  void init(neutube::ECoordinateSystem coordSys);
 
 private:
   int m_z;
   ZViewProj m_viewProj;
 //  QRect m_viewPort;
 //  QRectF m_projRect;
-  NeuTube::ECoordinateSystem m_coordSys;
-  NeuTube::View::EExploreAction m_action;
-  NeuTube::EAxis m_sliceAxis;
+  neutube::ECoordinateSystem m_coordSys;
+  neutube::View::EExploreAction m_action;
+  neutube::EAxis m_sliceAxis;
   bool m_fixingZ;
 };
 

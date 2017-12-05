@@ -33,7 +33,7 @@ public:
   void showData(bool on);
   bool showingData() const;
 
-  void enableSplit(FlyEM::EBodySplitMode mode);
+  void enableSplit(flyem::EBodySplitMode mode);
   void disableSplit();
   void setSplitEnabled(bool s);
 
@@ -41,16 +41,16 @@ public:
   bool processCustomOperator(
       const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
-  FlyEM::EBodySplitMode getSplitMode() const {
+  flyem::EBodySplitMode getSplitMode() const {
     return m_splitMode;
   }
 
   inline bool isSplitWindow() const {
-    return m_splitMode != FlyEM::BODY_SPLIT_NONE;
+    return m_splitMode != flyem::BODY_SPLIT_NONE;
 //    return m_splitWindowMode;
   }
 
-  void setSplitMode(FlyEM::EBodySplitMode mode) {
+  void setSplitMode(flyem::EBodySplitMode mode) {
     m_splitMode = mode;
   }
 
@@ -154,7 +154,7 @@ private:
 
 private:
   bool m_isHightlightMode;
-  FlyEM::EBodySplitMode m_splitMode;
+  flyem::EBodySplitMode m_splitMode;
 //  bool m_splitWindowMode;
   bool m_highTileContrast;
   bool m_smoothTransform;

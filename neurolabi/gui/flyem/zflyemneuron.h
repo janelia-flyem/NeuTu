@@ -171,7 +171,7 @@ public:
   std::vector<ZPunctum*> getSynapse() const;
   std::vector<ZPunctum*> getSynapse(uint64_t buddyBodyId) const;
 #endif
-  inline void setSynapseAnnotation(FlyEm::ZSynapseAnnotationArray *annotation) {
+  inline void setSynapseAnnotation(flyem::ZSynapseAnnotationArray *annotation) {
     m_synapseAnnotation = annotation;
   }
 
@@ -288,7 +288,7 @@ private:
   mutable ZSwcTree *m_buddyModel;
   mutable ZObject3dScan *m_body;
   mutable std::vector<const ZFlyEmNeuron*> m_matched;
-  const FlyEm::ZSynapseAnnotationArray *m_synapseAnnotation;
+  const flyem::ZSynapseAnnotationArray *m_synapseAnnotation;
   mutable size_t m_bodyVolume;
 
   static const char *m_idKey;

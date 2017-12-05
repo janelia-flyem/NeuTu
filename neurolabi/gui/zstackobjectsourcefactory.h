@@ -19,8 +19,8 @@ public:
   static std::string MakeFlyEmBodySource(
       uint64_t bodyId, int zoom, const std::string &tag);
   static std::string MakeFlyEmBodySource(
-      uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
-  static std::string GetBodyTypeName(FlyEM::EBodyType bodyType);
+      uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
+  static std::string GetBodyTypeName(flyem::EBodyType bodyType);
   static std::string MakeFlyEmBodyDiffSource();
   static bool IsBodyDiffSource(const std::string &source);
   static std::string MakeFlyEmBodyDiffSource(
@@ -29,12 +29,12 @@ public:
   static std::string ExtractBodyStrFromFlyEmBodySource(const std::string &source);
   static uint64_t ExtractIdFromFlyEmBodySource(const std::string &source);
   static int ExtractZoomFromFlyEmBodySource(const std::string &source);
-  static FlyEM::EBodyType ExtractBodyTypeFromFlyEmBodySource(
+  static flyem::EBodyType ExtractBodyTypeFromFlyEmBodySource(
       const std::string &source);
 
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
-  static std::string MakeDvidLabelSliceSource(NeuTube::EAxis axis);
+  static std::string MakeDvidLabelSliceSource(neutube::EAxis axis);
   static std::string MakeDvidGraySliceSource();
   static std::string MakeSplitObjectSource();
   static std::string MakeSplitResultSource();
@@ -55,9 +55,9 @@ public:
   static std::string MakeFlyEmExtNeuronClass();
   static std::string MakeStackBoundBoxSource();
   static std::string MakeDvidSynapseEnsembleSource();
-  static std::string MakeDvidSynapseEnsembleSource(NeuTube::EAxis axis);
+  static std::string MakeDvidSynapseEnsembleSource(neutube::EAxis axis);
   static std::string MakeTodoListEnsembleSource();
-  static std::string MakeTodoListEnsembleSource(NeuTube::EAxis axis);
+  static std::string MakeTodoListEnsembleSource(neutube::EAxis axis);
   static std::string MakeTodoPunctaSource();
   static std::string MakeTodoPunctaSource(uint64_t bodyId);
   static std::string MakeCrossHairSource();

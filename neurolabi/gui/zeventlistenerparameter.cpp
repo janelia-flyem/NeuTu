@@ -53,6 +53,10 @@ void ZEventListenerParameter::sendEvent(QEvent* e, int w, int h)
         break;
     }
     if (accept) {
+#ifdef _DEBUG_2
+      qDebug() << "ZEventListenerParameter::sendEvent" << name();
+#endif
+
       emit eventTriggered(e, w, h);
       emit mouseEventTriggered(mouseEvent, w, h);
 

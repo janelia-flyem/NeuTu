@@ -171,8 +171,8 @@ public:
   void setUniqueMode(EUniqueMode mode);
   //void setView(const QRect &projRegion, const QRect &viewPort);
 
-  NeuTube::EAxis getSliceAxis() const { return m_sliceAxis; }
-  void setSliceAxis(NeuTube::EAxis axis) { m_sliceAxis = axis; }
+  neutube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(neutube::EAxis axis) { m_sliceAxis = axis; }
 
   void setAcceptingRect(bool on) { m_acceptingRect = on; }
   bool acceptingRect() const { return m_acceptingRect; }
@@ -197,7 +197,7 @@ private:
   bool m_blockingContextMenu;
   bool m_acceptingRect;
   bool m_rectSpan;
-  NeuTube::EAxis m_sliceAxis;
+  neutube::EAxis m_sliceAxis;
   int m_keyIndex;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;
