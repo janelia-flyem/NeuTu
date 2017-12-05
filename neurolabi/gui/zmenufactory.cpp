@@ -205,6 +205,7 @@ QMenu* ZMenuFactory::makeSynapseContextMenu(
   return menu;
 }
 
+#if 0
 QMenu* ZMenuFactory::makeContextMenu(
     ZStackPresenter * /*presenter*/, QWidget * /*parentWidget*/, QMenu *menu)
 {
@@ -259,6 +260,10 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
         actionList.append(ZActionFactory::ACTION_DESELECT_BODY);
       }
 
+      if (swcNodeCount == 2) {
+        actionList.append(ZActionFactory::ACTION_MEASURE_SWC_NODE_DIST;
+      }
+
       if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
           doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE) {
         actionList.append(ZActionFactory::ACTION_FLYEM_UPDATE_BODY);
@@ -279,3 +284,4 @@ QMenu* ZMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
   return menu;
 }
+#endif

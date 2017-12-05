@@ -10,9 +10,9 @@ class ZDvidInfo;
 class ZFlyEmDataInfo
 {
 public:
-  ZFlyEmDataInfo(FlyEm::EDataSet dataSet);
+  ZFlyEmDataInfo(flyem::EDataSet dataSet);
 
-  void configure(FlyEm::EDataSet dataSet);
+  void configure(flyem::EDataSet dataSet);
   void configure(const ZDvidInfo &info);
 
   inline const std::vector<int>& getStackSize() const {
@@ -48,7 +48,7 @@ public:
   std::string getDvidAddressWithPort() const;
 
 private:
-  FlyEm::EDataSet m_dataSet;
+  flyem::EDataSet m_dataSet;
   std::vector<int> m_stackSize;
   std::vector<double> m_voxelResolution;
   std::vector<int> m_startCoordinates;

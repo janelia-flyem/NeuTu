@@ -63,7 +63,7 @@ ZIntCuboid ZFlyEmToDoList::update(const ZIntCuboid &box)
       ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (itemJson.hasKey("Pos")) {
         ZFlyEmToDoItem item;
-        item.loadJsonObject(itemJson, FlyEM::LOAD_PARTNER_RELJSON);
+        item.loadJsonObject(itemJson, flyem::LOAD_PARTNER_RELJSON);
         addItem(item, DATA_LOCAL);
       }
     }

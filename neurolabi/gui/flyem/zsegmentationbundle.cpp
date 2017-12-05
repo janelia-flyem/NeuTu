@@ -12,7 +12,7 @@
 
 using namespace std;
 
-FlyEm::ZGalaPredictionEntry::ZGalaPredictionEntry() :
+flyem::ZGalaPredictionEntry::ZGalaPredictionEntry() :
   m_preserve(false), m_falseEdge(false), m_size1(0), m_size2(0),
   m_weight(0.0), m_node1(-1), m_node2(-1)
 {
@@ -21,7 +21,7 @@ FlyEm::ZGalaPredictionEntry::ZGalaPredictionEntry() :
   m_location[2] = 0;
 }
 
-void FlyEm::ZGalaPredictionEntry::loadJsonObject(json_t *obj)
+void flyem::ZGalaPredictionEntry::loadJsonObject(json_t *obj)
 {
   const char *key;
   json_t *value;
@@ -48,13 +48,13 @@ void FlyEm::ZGalaPredictionEntry::loadJsonObject(json_t *obj)
   }
 }
 
-void FlyEm::ZGalaPredictionEntry::print()
+void flyem::ZGalaPredictionEntry::print()
 {
   cout << getFirstNode() << " - " << getSecondNode() << ": " << getWeight()
        << endl;
 }
 
-FlyEm::ZSegmentationBundle::ZSegmentationBundle() :
+flyem::ZSegmentationBundle::ZSegmentationBundle() :
   m_greyScaleStack(NULL), m_superpixelStack(NULL), m_superpixelMap(NULL),
   m_bodyStack(NULL),
   m_bodyBoundaryStack(NULL), m_bodyGraph(NULL), m_bodyList(NULL),
@@ -63,7 +63,7 @@ FlyEm::ZSegmentationBundle::ZSegmentationBundle() :
 {
 }
 
-FlyEm::ZSegmentationBundle::~ZSegmentationBundle()
+flyem::ZSegmentationBundle::~ZSegmentationBundle()
 {
   delete m_greyScaleStack;
   delete m_superpixelStack;
@@ -78,33 +78,33 @@ FlyEm::ZSegmentationBundle::~ZSegmentationBundle()
   delete m_bodyBorderObject;
 }
 
-void FlyEm::ZSegmentationBundle::setGreyScaleSource(const ZStackFile &file)
+void flyem::ZSegmentationBundle::setGreyScaleSource(const ZStackFile &file)
 {
   deprecate(GREY_SCALE_STACK);
   m_greyScaleFile = file;
 }
 
-void FlyEm::ZSegmentationBundle::setSuperpixelSource(const ZStackFile &file)
+void flyem::ZSegmentationBundle::setSuperpixelSource(const ZStackFile &file)
 {
   deprecate(SUPERPIXEL_STACK);
   m_superpixelFile = file;
 }
 
-void FlyEm::ZSegmentationBundle::setSuperpixelMapSource(
+void flyem::ZSegmentationBundle::setSuperpixelMapSource(
     const std::string &filePath)
 {
   deprecate(SUPERPIXEL_MAP);
   m_superpixelMapPath = filePath;
 }
 
-void FlyEm::ZSegmentationBundle::setSegmentMapSource(
+void flyem::ZSegmentationBundle::setSegmentMapSource(
     const std::string &filePath)
 {
   deprecate(SUPERPIXEL_MAP);
   m_segmentMapPath = filePath;
 }
 
-ZStack* FlyEm::ZSegmentationBundle::getGreyScaleStack()
+ZStack* flyem::ZSegmentationBundle::getGreyScaleStack()
 {
   if (isDeprecated(GREY_SCALE_STACK)) {
     m_greyScaleStack = m_greyScaleFile.readStack();
@@ -113,12 +113,12 @@ ZStack* FlyEm::ZSegmentationBundle::getGreyScaleStack()
   return m_greyScaleStack;
 }
 
-ZStack*& FlyEm::ZSegmentationBundle::getGreyScaleStackRef()
+ZStack*& flyem::ZSegmentationBundle::getGreyScaleStackRef()
 {
   return m_greyScaleStack;
 }
 
-ZStack* FlyEm::ZSegmentationBundle::getSuperpixelStack()
+ZStack* flyem::ZSegmentationBundle::getSuperpixelStack()
 {
   if (isDeprecated(SUPERPIXEL_STACK)) {
     m_superpixelStack = m_superpixelFile.readStack();
@@ -127,7 +127,7 @@ ZStack* FlyEm::ZSegmentationBundle::getSuperpixelStack()
   return m_superpixelStack;
 }
 
-ZSuperpixelMapArray* FlyEm::ZSegmentationBundle::getSuperpixelMap()
+ZSuperpixelMapArray* flyem::ZSegmentationBundle::getSuperpixelMap()
 {
   if (isDeprecated(SUPERPIXEL_MAP)) {
     m_superpixelMap = new ZSuperpixelMapArray;
@@ -140,7 +140,7 @@ ZSuperpixelMapArray* FlyEm::ZSegmentationBundle::getSuperpixelMap()
   return m_superpixelMap;
 }
 
-void FlyEm::ZSegmentationBundle::trimSuperpixelMap()
+void flyem::ZSegmentationBundle::trimSuperpixelMap()
 {
   ZSuperpixelMapArray *superpixelMap =  getSuperpixelMap();
   if (superpixelMap != NULL) {
@@ -161,7 +161,7 @@ void FlyEm::ZSegmentationBundle::trimSuperpixelMap()
       for (int z = 0; z < superpixelStack->depth(); ++z) {
         for (size_t voxelIndex = 0; voxelIndex < planeVoxelNumber; ++voxelIndex) {
           uint8_t *codeArray = superpixelStack->array8() + z * planeByteNumber;
-          int superpixelId = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+          int superpixelId = flyem::ZSegmentationAnalyzer::channelCodeToId(
                 codeArray, superpixelStack->channelNumber(), voxelIndex,
                 voxelNumber);
           superpixelSet[z].insert(superpixelSet[z].end(), superpixelId);
@@ -199,7 +199,7 @@ void FlyEm::ZSegmentationBundle::trimSuperpixelMap()
   }
 }
 
-void FlyEm::ZSegmentationBundle::compressBodyId(int startId)
+void flyem::ZSegmentationBundle::compressBodyId(int startId)
 {
   ZSuperpixelMapArray *superpixelMap =  getSuperpixelMap();
   if (superpixelMap != NULL) {
@@ -208,7 +208,7 @@ void FlyEm::ZSegmentationBundle::compressBodyId(int startId)
   }
 }
 
-bool FlyEm::ZSegmentationBundle::isDeprecated(EComponent component) const
+bool flyem::ZSegmentationBundle::isDeprecated(EComponent component) const
 {
   bool state = false;
 
@@ -262,7 +262,7 @@ bool FlyEm::ZSegmentationBundle::isDeprecated(EComponent component) const
   return state;
 }
 
-void FlyEm::ZSegmentationBundle::deprecateDependent(EComponent component)
+void flyem::ZSegmentationBundle::deprecateDependent(EComponent component)
 {
   switch (component) {
   case GREY_SCALE_STACK:
@@ -303,7 +303,7 @@ void FlyEm::ZSegmentationBundle::deprecateDependent(EComponent component)
   }
 }
 
-void FlyEm::ZSegmentationBundle::deprecate(EComponent component)
+void flyem::ZSegmentationBundle::deprecate(EComponent component)
 {
   deprecateDependent(component);
 
@@ -369,7 +369,7 @@ void FlyEm::ZSegmentationBundle::deprecate(EComponent component)
   }
 }
 
-ZStack* FlyEm::ZSegmentationBundle::getPixelClassfication()
+ZStack* flyem::ZSegmentationBundle::getPixelClassfication()
 {
   if (m_pixelClassification == NULL) {
     string filePath = getPixelClassficationPath();
@@ -384,7 +384,7 @@ ZStack* FlyEm::ZSegmentationBundle::getPixelClassfication()
   return m_pixelClassification;
 }
 
-ZStack* FlyEm::ZSegmentationBundle::getBodyStack()
+ZStack* flyem::ZSegmentationBundle::getBodyStack()
 {
   if (getSuperpixelStack() == NULL) {
     cout << "FlyEm::ZSegmentationBundle::createBodyStack() failed because "
@@ -408,12 +408,12 @@ ZStack* FlyEm::ZSegmentationBundle::getBodyStack()
   return m_bodyStack;
 }
 
-ZStack*& FlyEm::ZSegmentationBundle::getBodyStackRef()
+ZStack*& flyem::ZSegmentationBundle::getBodyStackRef()
 {
   return m_bodyStack;
 }
 
-ZStack* FlyEm::ZSegmentationBundle::getBodyBoundaryStack()
+ZStack* flyem::ZSegmentationBundle::getBodyBoundaryStack()
 {
   if (m_superpixelStack == NULL) {
     cout << "FlyEm::ZSegmentationBundle::getBodyBoundaryStack() failed because "
@@ -477,28 +477,28 @@ ZStack* FlyEm::ZSegmentationBundle::getBodyBoundaryStack()
   return m_bodyBoundaryStack;
 }
 
-bool FlyEm::ZSegmentationBundle::isGreyScaleTag(const std::string &tag)
+bool flyem::ZSegmentationBundle::isGreyScaleTag(const std::string &tag)
 {
   return (tag == "greyscale") || (tag == "grayscale");
 }
 
-bool FlyEm::ZSegmentationBundle::isSuperpixelMapTag(const std::string &tag)
+bool flyem::ZSegmentationBundle::isSuperpixelMapTag(const std::string &tag)
 {
   return (tag == "superpixel_map") || (tag == "superpixelmap") ||
       (tag == "superpixel map");
 }
 
-bool FlyEm::ZSegmentationBundle::isSuperpixelTag(const std::string &tag)
+bool flyem::ZSegmentationBundle::isSuperpixelTag(const std::string &tag)
 {
   return tag == "superpixel";
 }
 
-bool FlyEm::ZSegmentationBundle::isSegmentMapTag(const std::string &tag)
+bool flyem::ZSegmentationBundle::isSegmentMapTag(const std::string &tag)
 {
   return tag == "segmentmap" || tag == "segment_map" || tag == "segment map";
 }
 
-void FlyEm::ZSegmentationBundle::importJsonFile(const std::string &filePath)
+void flyem::ZSegmentationBundle::importJsonFile(const std::string &filePath)
 {
   ZJsonObject rootObject;
   rootObject.load(filePath);
@@ -527,7 +527,7 @@ void FlyEm::ZSegmentationBundle::importJsonFile(const std::string &filePath)
   deprecate(ALL_COMPONENT);
 }
 
-ZStack* FlyEm::ZSegmentationBundle::deliverGreyScaleStack()
+ZStack* flyem::ZSegmentationBundle::deliverGreyScaleStack()
 {
   ZStack *stack = getGreyScaleStack();
 
@@ -536,7 +536,7 @@ ZStack* FlyEm::ZSegmentationBundle::deliverGreyScaleStack()
   return stack;
 }
 
-ZStack* FlyEm::ZSegmentationBundle::deliverBodyStack()
+ZStack* flyem::ZSegmentationBundle::deliverBodyStack()
 {
   ZStack *stack = getBodyStack();
   //To avoid deprecateBodyStack() deleting the returned stack
@@ -547,7 +547,7 @@ ZStack* FlyEm::ZSegmentationBundle::deliverBodyStack()
   return stack;
 }
 
-ZGraph* FlyEm::ZSegmentationBundle::deliverBodyGraph()
+ZGraph* flyem::ZSegmentationBundle::deliverBodyGraph()
 {
   ZGraph *graph = getBodyGraph();
   m_bodyGraph = NULL;
@@ -556,7 +556,7 @@ ZGraph* FlyEm::ZSegmentationBundle::deliverBodyGraph()
   return graph;
 }
 
-void FlyEm::ZSegmentationBundle::print()
+void flyem::ZSegmentationBundle::print()
 {
   cout << "Grey scale file:" << endl;
   m_greyScaleFile.print();
@@ -568,7 +568,7 @@ void FlyEm::ZSegmentationBundle::print()
   cout << "Segment to body map: " << m_segmentMapPath << endl;
 }
 
-ZGraph* FlyEm::ZSegmentationBundle::getBodyGraph()
+ZGraph* flyem::ZSegmentationBundle::getBodyGraph()
 {
   if (isDeprecated(BODY_GRAPH)) {
     m_bodyGraph  = new ZGraph(ZGraph::UNDIRECTED_WITH_WEIGHT);
@@ -605,10 +605,10 @@ ZGraph* FlyEm::ZSegmentationBundle::getBodyGraph()
                   *(bodyStack->array8(c) + neighborVoxelIndex);
             }
             int id1 =
-                FlyEm::ZSegmentationAnalyzer::channelCodeToId(channelCode1);
+                flyem::ZSegmentationAnalyzer::channelCodeToId(channelCode1);
 
             int id2 =
-                FlyEm::ZSegmentationAnalyzer::channelCodeToId(channelCode2);
+                flyem::ZSegmentationAnalyzer::channelCodeToId(channelCode2);
             m_bodyGraph->addEdge(id1, id2);
           }
         }
@@ -619,7 +619,7 @@ ZGraph* FlyEm::ZSegmentationBundle::getBodyGraph()
   return m_bodyGraph;
 }
 
-vector<int>* FlyEm::ZSegmentationBundle::getBodyList()
+vector<int>* flyem::ZSegmentationBundle::getBodyList()
 {
   if (isDeprecated(BODY_LIST)) {
     m_bodyList = new vector<int>;
@@ -628,7 +628,7 @@ vector<int>* FlyEm::ZSegmentationBundle::getBodyList()
     ZStack *bodyStack = getBodyStack();
     size_t volume = bodyStack->getVoxelNumber();
     for (size_t voxelIndex = 0; voxelIndex < volume; voxelIndex++) {
-      int id = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+      int id = flyem::ZSegmentationAnalyzer::channelCodeToId(
             bodyStack->color(voxelIndex));
 
       if (m_bodyIndexMap->count(id) == 0) {
@@ -641,7 +641,7 @@ vector<int>* FlyEm::ZSegmentationBundle::getBodyList()
   return m_bodyList;
 }
 
-map<int, size_t>* FlyEm::ZSegmentationBundle::getBodyIndexMap()
+map<int, size_t>* flyem::ZSegmentationBundle::getBodyIndexMap()
 {
   if (isDeprecated(BODY_INDEX_MAP)) {
     vector<int> *bodyList = getBodyList();
@@ -659,7 +659,7 @@ map<int, size_t>* FlyEm::ZSegmentationBundle::getBodyIndexMap()
   return m_bodyIndexMap;
 }
 
-set<int> FlyEm::ZSegmentationBundle::getAllOrphanBody()
+set<int> flyem::ZSegmentationBundle::getAllOrphanBody()
 {
   set<int> orphanSet;
 
@@ -681,7 +681,7 @@ set<int> FlyEm::ZSegmentationBundle::getAllOrphanBody()
   for (int k = 0; k < 2; ++k) {
     for (z = 0; z < depth; ++z) {
       for (y = 0; y < height; ++y) {
-        int channelId = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+        int channelId = flyem::ZSegmentationAnalyzer::channelCodeToId(
               bodyStack->color(voxelIndex));
         isEdgeBody[(*bodyIndexMap)[channelId]] = true;
 
@@ -706,7 +706,7 @@ set<int> FlyEm::ZSegmentationBundle::getAllOrphanBody()
   for (int k = 0; k < 2; ++k) {
     for (z = 0; z < depth; ++z) {
       for (x = 0; x < height; ++x) {
-        int channelId = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+        int channelId = flyem::ZSegmentationAnalyzer::channelCodeToId(
               bodyStack->color(voxelIndex));
         isEdgeBody[(*bodyIndexMap)[channelId]] = true;
 #ifdef _DEBUG_
@@ -730,7 +730,7 @@ set<int> FlyEm::ZSegmentationBundle::getAllOrphanBody()
   for (int k = 0; k < 2; ++k) {
     for (y = 0; y < depth; ++y) {
       for (x = 0; x < height; ++x) {
-        int channelId = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+        int channelId = flyem::ZSegmentationAnalyzer::channelCodeToId(
               bodyStack->color(voxelIndex));
         isEdgeBody[(*bodyIndexMap)[channelId]] = true;
 #ifdef _DEBUG_
@@ -758,7 +758,7 @@ set<int> FlyEm::ZSegmentationBundle::getAllOrphanBody()
   return orphanSet;
 }
 
-ZObject3d* FlyEm::ZSegmentationBundle::getBodyObject(int id)
+ZObject3d* flyem::ZSegmentationBundle::getBodyObject(int id)
 {
   map<int, size_t> *bodyIndexMap = getBodyIndexMap();
   ZObject3dArray *objectArray = getBodyObject();
@@ -774,7 +774,7 @@ ZObject3d* FlyEm::ZSegmentationBundle::getBodyObject(int id)
   return (*objectArray)[(*bodyIndexMap)[id]];
 }
 
-ZObject3d* FlyEm::ZSegmentationBundle::getBodyBoundaryObject(int id)
+ZObject3d* flyem::ZSegmentationBundle::getBodyBoundaryObject(int id)
 {
   map<int, size_t> *bodyIndexMap = getBodyIndexMap();
   ZObject3dArray *objectArray = getBodyBoundaryObject();
@@ -790,7 +790,7 @@ ZObject3d* FlyEm::ZSegmentationBundle::getBodyBoundaryObject(int id)
   return (*objectArray)[(*bodyIndexMap)[id]];
 }
 
-ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyObject()
+ZObject3dArray* flyem::ZSegmentationBundle::getBodyObject()
 {
   if (isDeprecated(BODY_OBJECT)) {
     cout << "Constructing body objects ..." << endl;
@@ -810,7 +810,7 @@ ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyObject()
     for (int z = 0; z < depth; ++z) {
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-          int id = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+          int id = flyem::ZSegmentationAnalyzer::channelCodeToId(
                 bodyStack->color(voxelIndex));
           size_t objectIndex = (*bodyIndexMap)[id];
 
@@ -829,7 +829,7 @@ ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyObject()
   return m_bodyObject;
 }
 
-ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyBoundaryObject()
+ZObject3dArray* flyem::ZSegmentationBundle::getBodyBoundaryObject()
 {
   if (isDeprecated(BODY_BOUNDARY_OBJECT)) {
     cout << "Constructing body boundaries ..." << endl;
@@ -850,7 +850,7 @@ ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyBoundaryObject()
     for (int z = 0; z < depth; ++z) {
       for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-          int id = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+          int id = flyem::ZSegmentationAnalyzer::channelCodeToId(
                 bodyStack->color(voxelIndex));
           int objectIndex = (*bodyIndexMap)[id];
 
@@ -871,7 +871,7 @@ ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyBoundaryObject()
   return m_bodyBoundaryObject;
 }
 
-ZObject3d* FlyEm::ZSegmentationBundle::getBodyBorderObject(int id1, int id2)
+ZObject3d* flyem::ZSegmentationBundle::getBodyBorderObject(int id1, int id2)
 {
   ZObject3dArray *objArray =  getBodyBorderObject();
   ZGraph *bodyGraph = getBodyGraph();
@@ -945,7 +945,7 @@ ZObject3d* FlyEm::ZSegmentationBundle::getBodyBorderObject(int id1, int id2)
   */
 }
 
-ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyBorderObject()
+ZObject3dArray* flyem::ZSegmentationBundle::getBodyBorderObject()
 {
   if (isDeprecated(BODY_BORDER_OBJECT)) {
     cout << "Constructing body borders ..." << endl;
@@ -986,9 +986,9 @@ ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyBorderObject()
                   *(bodyStack->array8(c) + neighborVoxelIndex);
             }
             int id1 =
-                FlyEm::ZSegmentationAnalyzer::channelCodeToId(channelCode1);
+                flyem::ZSegmentationAnalyzer::channelCodeToId(channelCode1);
             int id2 =
-                FlyEm::ZSegmentationAnalyzer::channelCodeToId(channelCode2);
+                flyem::ZSegmentationAnalyzer::channelCodeToId(channelCode2);
             size_t edgeIndex = graph->getEdgeIndex(id1, id2);
 
             if ((*m_bodyBorderObject)[edgeIndex] == NULL) {
@@ -1015,34 +1015,34 @@ ZObject3dArray* FlyEm::ZSegmentationBundle::getBodyBorderObject()
   return m_bodyBorderObject;
 }
 
-string FlyEm::ZSegmentationBundle::getHostDir()
+string flyem::ZSegmentationBundle::getHostDir()
 {
   ZString str(m_superpixelMapPath);
 
   return str.dirPath();
 }
 
-string FlyEm::ZSegmentationBundle::getGalaSegmentationPath()
+string flyem::ZSegmentationBundle::getGalaSegmentationPath()
 {
   return getHostDir() + "/gala-segmentation/seg_data/agglom-0-graphv1.json";
 }
 
-string FlyEm::ZSegmentationBundle::getBcfPath()
+string flyem::ZSegmentationBundle::getBcfPath()
 {
   return getHostDir() + "/Bcf";
 }
 
-string FlyEm::ZSegmentationBundle::getBcfPath(const string &setName)
+string flyem::ZSegmentationBundle::getBcfPath(const string &setName)
 {
   return getBcfPath() + "/" + setName + ".h5";
 }
 
-string FlyEm::ZSegmentationBundle::getPixelClassficationPath()
+string flyem::ZSegmentationBundle::getPixelClassficationPath()
 {
   return getHostDir() + "/gala-pixel-output.json";
 }
 
-const vector<double>& FlyEm::ZSegmentationBundle::getGalaProbability()
+const vector<double>& flyem::ZSegmentationBundle::getGalaProbability()
 {
   if (isDeprecated(GALA_PREDICTION)) {
     ZGraph *bodyGraph = getBodyGraph();
@@ -1077,7 +1077,7 @@ const vector<double>& FlyEm::ZSegmentationBundle::getGalaProbability()
   return m_galaProbability;
 }
 
-double FlyEm::ZSegmentationBundle::getGalaProbability(int id1, int id2)
+double flyem::ZSegmentationBundle::getGalaProbability(int id1, int id2)
 {
   ZGraph *bodyGraph = getBodyGraph();
 
@@ -1087,7 +1087,7 @@ double FlyEm::ZSegmentationBundle::getGalaProbability(int id1, int id2)
   return gala[edgeIndex];
 }
 
-double FlyEm::ZSegmentationBundle::getBoundaryProbability(int id1, int id2)
+double flyem::ZSegmentationBundle::getBoundaryProbability(int id1, int id2)
 {
   ZStack *stack = getPixelClassfication();
   double intensity = 0.0;
@@ -1101,7 +1101,7 @@ double FlyEm::ZSegmentationBundle::getBoundaryProbability(int id1, int id2)
   return intensity;
 }
 
-double FlyEm::ZSegmentationBundle::getMitoProbability(int id)
+double flyem::ZSegmentationBundle::getMitoProbability(int id)
 {
   ZStack *stack = getPixelClassfication();
   double intensity = 0.0;
@@ -1115,7 +1115,7 @@ double FlyEm::ZSegmentationBundle::getMitoProbability(int id)
   return intensity;
 }
 
-double FlyEm::ZSegmentationBundle::getCytoProbability(int id)
+double flyem::ZSegmentationBundle::getCytoProbability(int id)
 {
   ZStack *stack = getPixelClassfication();
   double intensity = 0.0;
@@ -1129,12 +1129,12 @@ double FlyEm::ZSegmentationBundle::getCytoProbability(int id)
   return intensity;
 }
 
-int FlyEm::ZSegmentationBundle::getBodySize(int id)
+int flyem::ZSegmentationBundle::getBodySize(int id)
 {
   return getBodyObject(id)->size();
 }
 
-bool FlyEm::ZSegmentationBundle::isImportantBorder(int id1, int id2)
+bool flyem::ZSegmentationBundle::isImportantBorder(int id1, int id2)
 {
   const int bodySizeThresh = 5000;
 
@@ -1150,7 +1150,7 @@ bool FlyEm::ZSegmentationBundle::isImportantBorder(int id1, int id2)
   return isImportant;
 }
 
-vector<int>& FlyEm::ZSegmentationBundle::getGroundLabel()
+vector<int>& flyem::ZSegmentationBundle::getGroundLabel()
 {
   if (isDeprecated(GROUND_LABEL)) {
     loadGroundLabel();
@@ -1159,12 +1159,12 @@ vector<int>& FlyEm::ZSegmentationBundle::getGroundLabel()
   return m_groundLabel;
 }
 
-string FlyEm::ZSegmentationBundle::getGroundLabelPath()
+string flyem::ZSegmentationBundle::getGroundLabelPath()
 {
   return getHostDir() + "/body_connection_label.txt";
 }
 
-void FlyEm::ZSegmentationBundle::loadGroundLabel()
+void flyem::ZSegmentationBundle::loadGroundLabel()
 {
   FILE *fp  = fopen(getGroundLabelPath().c_str(), "r");
 
@@ -1186,7 +1186,7 @@ void FlyEm::ZSegmentationBundle::loadGroundLabel()
   }
 }
 
-void FlyEm::ZSegmentationBundle::saveGroundLabel()
+void flyem::ZSegmentationBundle::saveGroundLabel()
 {
   FILE *fp  = fopen(getGroundLabelPath().c_str(), "w");
 

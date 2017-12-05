@@ -33,7 +33,7 @@ void ZPaintLabelWidget::init(int maxLabel)
     layout->addWidget(labelWidget);
   }
   m_groupBox->setLayout(layout);
-  setStyleSheet(FlyEm::GROUP_BOX_STYLE);
+  setStyleSheet(flyem::GROUP_BOX_STYLE);
 }
 
 ZClickableColorLabel* ZPaintLabelWidget::makeColorWidget(

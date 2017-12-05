@@ -590,7 +590,7 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 
         for (std::set<uint64_t>::const_iterator iter = bodySet.begin();
              iter != bodySet.end(); ++iter) {
-          emit checkingInBody(*iter, FlyEM::BODY_SPLIT_NONE);
+          emit checkingInBody(*iter, flyem::BODY_SPLIT_NONE);
         }
 
         getProgressSignal()->advanceProgress(0.1);

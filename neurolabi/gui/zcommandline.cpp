@@ -227,7 +227,7 @@ int ZCommandLine::runBoundaryOrphan()
 
   std::vector<int> synapseCount;
   if (!m_synapseFile.empty()) {
-    FlyEm::ZSynapseAnnotationArray synapseAnnotation;
+    flyem::ZSynapseAnnotationArray synapseAnnotation;
     synapseAnnotation.loadJson(m_synapseFile);
     synapseCount = synapseAnnotation.countSynapse();
   }
@@ -410,12 +410,12 @@ int ZCommandLine::runObjectOverlap()
 int ZCommandLine::runSynapseObjectList()
 {
   std::set<int> bodySet;
-  FlyEm::ZSynapseAnnotationArray synaseArray;
+  flyem::ZSynapseAnnotationArray synaseArray;
   if (!synaseArray.loadJson(m_input[0])) {
     return 1;
   }
 
-  for (FlyEm::SynapseLocation *location = synaseArray.beginSynapseLocation();
+  for (flyem::SynapseLocation *location = synaseArray.beginSynapseLocation();
        location != NULL; location = synaseArray.nextSynapseLocation()) {
     bodySet.insert(location->bodyId());
   }

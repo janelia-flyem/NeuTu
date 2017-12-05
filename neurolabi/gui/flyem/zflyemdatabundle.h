@@ -60,7 +60,7 @@ public:
   const ZFlyEmNeuron* getNeuronFromName(const std::string &name) const;
 
 
-  FlyEm::ZSynapseAnnotationArray *getSynapseAnnotation() const;
+  flyem::ZSynapseAnnotationArray *getSynapseAnnotation() const;
   void importSynpaseAnnotation(const std::string &filePath);
   std::map<int, QColor> *getColorMap() const;
   inline const std::map<std::string, double>& getMatchThresholdMap() const {
@@ -199,7 +199,7 @@ private:
   std::string m_source;
   std::map<std::string, double> m_matchThreshold;
 
-  mutable FlyEm::ZSynapseAnnotationArray *m_synaseAnnotation;
+  mutable flyem::ZSynapseAnnotationArray *m_synaseAnnotation;
   mutable std::map<int, QColor> *m_colorMap;
 
   static const char *m_synapseKey;

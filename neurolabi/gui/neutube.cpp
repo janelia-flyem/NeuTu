@@ -24,7 +24,7 @@ void neutube::RegisterMetaType()
   qRegisterMetaType<ZWidgetMessage>("ZWidgetMessage");
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
   qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
-  qRegisterMetaType<FlyEM::EBodySplitMode>("FlyEM::EBodySplitMode");
+  qRegisterMetaType<flyem::EBodySplitMode>("flyem::EBodySplitMode");
 }
 
 ZMessageReporter* neutube::getMessageReporter()

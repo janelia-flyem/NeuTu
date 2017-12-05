@@ -822,7 +822,8 @@ HEADERS += mainwindow.h \
     zstackdocaccessor.h \
     zcontrastprotocol.h \
     dialogs/zflyemmergeuploaddialog.h \
-    zmeshfactory.h
+    zmeshfactory.h \
+    flyem/zflyemmeshfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1431,7 +1432,8 @@ SOURCES += main.cpp \
     zstackdocaccessor.cpp \
     zcontrastprotocol.cpp \
     dialogs/zflyemmergeuploaddialog.cpp \
-    zmeshfactory.cpp
+    zmeshfactory.cpp \
+    flyem/zflyemmeshfactory.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

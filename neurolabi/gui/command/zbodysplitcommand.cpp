@@ -3,8 +3,6 @@
 #include <QUrl>
 #include <QDateTime>
 
-#define _NEUTU_USE_REF_KEY_
-
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"

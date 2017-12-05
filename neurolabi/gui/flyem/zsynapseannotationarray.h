@@ -18,7 +18,7 @@ class ZWeightedPointArray;
 class ZPointArray;
 class ZStackBall;
 
-namespace FlyEm {
+namespace flyem {
 
 class WeightedIntPair {
 public:

@@ -5,7 +5,7 @@
 #include <utility>
 #include "zsharedpointer.h"
 
-namespace FlyEm {
+namespace flyem {
 class ZIntCuboidComposition
 {
 public:

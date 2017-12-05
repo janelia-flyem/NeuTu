@@ -161,7 +161,7 @@ public:
 
   ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
-      const ZIntCuboid &roi, FlyEM::EBodySplitMode mode) const;
+      const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
 
   void enhanceTileContrast(bool highContrast);
 
@@ -228,9 +228,9 @@ public:
 public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
-  void runSplit(FlyEM::EBodySplitMode mode);
-  void runFullSplit(FlyEM::EBodySplitMode mode);
-  void runLocalSplit(FlyEM::EBodySplitMode mode);
+  void runSplit(flyem::EBodySplitMode mode);
+  void runFullSplit(flyem::EBodySplitMode mode);
+  void runLocalSplit(flyem::EBodySplitMode mode);
   void exitSplit();
 
   bool isSplitRunning() const;
@@ -386,6 +386,25 @@ public:
   void loadSplitTaskFromService();
   void commitSplitFromService();
 
+  const ZSharedPointer<ZFlyEmBodyColorScheme>& getActiveBodyColorMap() const {
+    return m_activeBodyColorMap;
+  }
+  const QMap<ZFlyEmBodyColorOption::EColorOption,
+  ZSharedPointer<ZFlyEmBodyColorScheme> > &getColorMapConfig() const {
+    return m_colorMapConfig;
+  }
+
+  void setActiveBodyColorMap(const ZSharedPointer<ZFlyEmBodyColorScheme>& colorMap) {
+    m_activeBodyColorMap = colorMap;
+  }
+  void setColorMapConfig(const QMap<ZFlyEmBodyColorOption::EColorOption,
+                         ZSharedPointer<ZFlyEmBodyColorScheme> > &config) {
+    m_colorMapConfig = config;
+  }
+
+  void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
+  void updateBodyColor(ZSharedPointer<ZFlyEmBodyColorScheme> colorMap);
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -411,6 +430,7 @@ signals:
   void bodyMapReady();
   void todoModified(uint64_t bodyId);
   void requestingBodyLock(uint64_t bodyId, bool locking);
+  void bodyColorUpdated(ZFlyEmProofDoc*);
 
 public slots: //Commands
   void repairSelectedSynapses();
@@ -471,15 +491,15 @@ public slots:
   void unverifySelectedSynapse();
 
   void deselectMappedBodyWithOriginalId(const std::set<uint64_t> &bodySet);
-  void checkInSelectedBody(FlyEM::EBodySplitMode mode);
+  void checkInSelectedBody(flyem::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
-  void checkOutBody(FlyEM::EBodySplitMode mode);
-  bool checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  void checkOutBody(flyem::EBodySplitMode mode);
+  bool checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode);
 //  bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(
-      uint64_t bodyId, FlyEM::EBodySplitMode mode);
+      uint64_t bodyId, flyem::EBodySplitMode mode);
   bool checkBodyWithMessage(
-      uint64_t bodyId, bool checkingOut, FlyEM::EBodySplitMode mode);
+      uint64_t bodyId, bool checkingOut, flyem::EBodySplitMode mode);
 
   void downloadBookmark(int x, int y, int z);  
   void rewriteSegmentation();
@@ -540,12 +560,10 @@ private:
   template<typename T>
   ZSharedPointer<T> getColorScheme(ZFlyEmBodyColorOption::EColorOption type);
 
-  void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
-
-  void runSplitFunc(FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range);
-  void runSplitFunc(FlyEM::EBodySplitMode mode);
-  void localSplitFunc(FlyEM::EBodySplitMode mode);
-  void runFullSplitFunc(FlyEM::EBodySplitMode mode);
+  void runSplitFunc(flyem::EBodySplitMode mode, flyem::EBodySplitRange range);
+  void runSplitFunc(flyem::EBodySplitMode mode);
+  void localSplitFunc(flyem::EBodySplitMode mode);
+  void runFullSplitFunc(flyem::EBodySplitMode mode);
   ZIntCuboid estimateSplitRoi();
   ZIntCuboid estimateSplitRoi(const ZStackArray &seedMask);
   ZIntCuboid estimateLocalSplitRoi();
@@ -597,6 +615,7 @@ protected:
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<ZFlyEmBodyColorOption::EColorOption,
   ZSharedPointer<ZFlyEmBodyColorScheme> > m_colorMapConfig;
+
   QMap<uint64_t, ZFlyEmBodyAnnotation> m_annotationMap; //for Original ID
 
   mutable ZFlyEmMB6Analyzer m_analyzer;

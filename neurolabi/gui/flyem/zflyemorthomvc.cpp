@@ -83,6 +83,20 @@ ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
   return mvc;
 }
 
+ZFlyEmOrthoMvc* ZFlyEmOrthoMvc::Make(
+    const ZDvidTarget &target, neutube::EAxis axis,
+    int width, int height, int depth)
+{
+  ZFlyEmOrthoDoc *doc = new ZFlyEmOrthoDoc(width, height, depth);
+//  doc->setTag(NeuTube::Document::FLYEM_DVID);
+  ZFlyEmOrthoMvc *mvc =
+      ZFlyEmOrthoMvc::Make(NULL, ZSharedPointer<ZFlyEmOrthoDoc>(doc), axis);
+
+  mvc->setDvidTarget(target);
+
+  return mvc;
+}
+
 ZFlyEmOrthoDoc* ZFlyEmOrthoMvc::getCompleteDocument() const
 {
   return qobject_cast<ZFlyEmOrthoDoc*>(getDocument().get());

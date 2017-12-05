@@ -7,7 +7,7 @@
 #include "tz_math.h"
 #include "flyem/zflyemcoordinateconverter.h"
 
-void FlyEm::ZGeometry::print() const
+void flyem::ZGeometry::print() const
 {
   std::cout << toLineCompositer().toString(2) << std::endl;
   /*
@@ -18,12 +18,12 @@ void FlyEm::ZGeometry::print() const
 
 
 /******************ZPointGeometry*******************/
-void FlyEm::ZPointGeometry::setCenter(double x, double y, double z)
+void flyem::ZPointGeometry::setCenter(double x, double y, double z)
 {
   m_center.set(x, y, z);
 }
 
-ZTextLineCompositer FlyEm::ZPointGeometry::toLineCompositer() const
+ZTextLineCompositer flyem::ZPointGeometry::toLineCompositer() const
 {
   ZTextLineCompositer compositer;
   compositer.appendLine("Point: " + m_center.toString());
@@ -31,7 +31,7 @@ ZTextLineCompositer FlyEm::ZPointGeometry::toLineCompositer() const
   return compositer;
 }
 
-ZJsonObject FlyEm::ZPointGeometry::toJsonObject() const
+ZJsonObject flyem::ZPointGeometry::toJsonObject() const
 {
   ZJsonObject obj;
   double coords[3];
@@ -43,7 +43,7 @@ ZJsonObject FlyEm::ZPointGeometry::toJsonObject() const
   return obj;
 }
 
-ZPointArray FlyEm::ZPointGeometry::toPointArray() const
+ZPointArray flyem::ZPointGeometry::toPointArray() const
 {
   ZPointArray ptArray;
 
@@ -52,24 +52,24 @@ ZPointArray FlyEm::ZPointGeometry::toPointArray() const
   return ptArray;
 }
 
-ZLineSegmentArray FlyEm::ZPointGeometry::toLineSegmentArray() const
+ZLineSegmentArray flyem::ZPointGeometry::toLineSegmentArray() const
 {
   return ZLineSegmentArray();
 }
 //////////////////ZPointGeometry//////////////////////////
 
 /******************ZCurveGeometry*******************/
-void FlyEm::ZCurveGeometry::appendPoint(double x, double y, double z)
+void flyem::ZCurveGeometry::appendPoint(double x, double y, double z)
 {
   m_curve.append(x, y, z);
 }
 
-void FlyEm::ZCurveGeometry::appendPoint(const ZPoint &pt)
+void flyem::ZCurveGeometry::appendPoint(const ZPoint &pt)
 {
   m_curve.append(pt);
 }
 
-ZTextLineCompositer FlyEm::ZCurveGeometry::toLineCompositer() const
+ZTextLineCompositer flyem::ZCurveGeometry::toLineCompositer() const
 {
   ZTextLineCompositer compositer;
   compositer.appendLine("Curve: ");
@@ -81,7 +81,7 @@ ZTextLineCompositer FlyEm::ZCurveGeometry::toLineCompositer() const
   return compositer;
 }
 
-ZJsonObject FlyEm::ZCurveGeometry::toJsonObject() const
+ZJsonObject flyem::ZCurveGeometry::toJsonObject() const
 {
   ZJsonObject obj;
   ZJsonArray ptArray(obj.setArrayEntry("curve"), ZJsonValue::SET_INCREASE_REF_COUNT);
@@ -95,27 +95,27 @@ ZJsonObject FlyEm::ZCurveGeometry::toJsonObject() const
   return obj;
 }
 
-size_t FlyEm::ZCurveGeometry::getAnchorNumber() const
+size_t flyem::ZCurveGeometry::getAnchorNumber() const
 {
   return m_curve.size();
 }
 
-const ZPoint& FlyEm::ZCurveGeometry::getAnchor(size_t index) const
+const ZPoint& flyem::ZCurveGeometry::getAnchor(size_t index) const
 {
   return m_curve[index];
 }
 
-void FlyEm::ZCurveGeometry::setAnchor(const ZPointArray &curve)
+void flyem::ZCurveGeometry::setAnchor(const ZPointArray &curve)
 {
   m_curve = curve;
 }
 
-ZPointArray FlyEm::ZCurveGeometry::toPointArray() const
+ZPointArray flyem::ZCurveGeometry::toPointArray() const
 {
   return m_curve;
 }
 
-ZLineSegmentArray FlyEm::ZCurveGeometry::toLineSegmentArray() const
+ZLineSegmentArray flyem::ZCurveGeometry::toLineSegmentArray() const
 {
   ZLineSegmentArray lineArray;
   for (size_t i = 1; i < m_curve.size(); ++i) {
@@ -127,12 +127,12 @@ ZLineSegmentArray FlyEm::ZCurveGeometry::toLineSegmentArray() const
 
 //////////////////ZCurveGeometry//////////////////////////
 
-void FlyEm::ZStructureInfo::print() const
+void flyem::ZStructureInfo::print() const
 {
   std::cout << toLineCompositer().toString(2) << std::endl;
 }
 
-ZTextLineCompositer FlyEm::ZStructureInfo::toLineCompositer() const
+ZTextLineCompositer flyem::ZStructureInfo::toLineCompositer() const
 {
   ZTextLineCompositer compositer;
   compositer.appendLine("Structure:");
@@ -152,7 +152,7 @@ ZTextLineCompositer FlyEm::ZStructureInfo::toLineCompositer() const
   return compositer;
 }
 
-std::string FlyEm::ZStructureInfo::getTypeString() const
+std::string flyem::ZStructureInfo::getTypeString() const
 {
   switch (m_type) {
   case TYPE_MERGE:
@@ -166,7 +166,7 @@ std::string FlyEm::ZStructureInfo::getTypeString() const
   return "";
 }
 
-ZJsonObject FlyEm::ZStructureInfo::toJsonObject() const
+ZJsonObject flyem::ZStructureInfo::toJsonObject() const
 {
   ZJsonObject obj;
   obj.setEntry("type", getTypeString());
@@ -176,25 +176,25 @@ ZJsonObject FlyEm::ZStructureInfo::toJsonObject() const
   return obj;
 }
 
-FlyEm::ZHotSpot::ZHotSpot() :
+flyem::ZHotSpot::ZHotSpot() :
   m_geometry(NULL), m_guidance(NULL), m_structInfo(NULL),
   m_confidence(0), m_type(TYPE_POINT)
 {
 }
 
-FlyEm::ZHotSpot::~ZHotSpot()
+flyem::ZHotSpot::~ZHotSpot()
 {
   delete m_geometry;
   delete m_guidance;
   delete m_structInfo;
 }
 
-void FlyEm::ZHotSpot::print() const
+void flyem::ZHotSpot::print() const
 {
   std::cout << toLineCompositer().toString(2) << std::endl;
 }
 
-ZTextLineCompositer FlyEm::ZHotSpot::toLineCompositer() const
+ZTextLineCompositer flyem::ZHotSpot::toLineCompositer() const
 {
   ZTextLineCompositer compositer;
   compositer.appendLine("Hot Spot:");
@@ -224,7 +224,7 @@ ZTextLineCompositer FlyEm::ZHotSpot::toLineCompositer() const
   return compositer;
 }
 
-void FlyEm::ZHotSpot::setGeometry(FlyEm::ZGeometry *geometry)
+void flyem::ZHotSpot::setGeometry(flyem::ZGeometry *geometry)
 {
   if (m_geometry != NULL) {
     delete m_geometry;
@@ -233,7 +233,7 @@ void FlyEm::ZHotSpot::setGeometry(FlyEm::ZGeometry *geometry)
   m_geometry = geometry;
 }
 
-void FlyEm::ZHotSpot::setGuidance(ZGeometry *geometry)
+void flyem::ZHotSpot::setGuidance(ZGeometry *geometry)
 {
   if (m_guidance != NULL) {
     delete m_guidance;
@@ -242,7 +242,7 @@ void FlyEm::ZHotSpot::setGuidance(ZGeometry *geometry)
   m_guidance = geometry;
 }
 
-void FlyEm::ZHotSpot::setStructure(ZStructureInfo *structure)
+void flyem::ZHotSpot::setStructure(ZStructureInfo *structure)
 {
   if (m_structInfo != NULL) {
     delete m_structInfo;
@@ -251,7 +251,7 @@ void FlyEm::ZHotSpot::setStructure(ZStructureInfo *structure)
   m_structInfo = structure;
 }
 
-std::string FlyEm::ZHotSpot::getTypeString() const
+std::string flyem::ZHotSpot::getTypeString() const
 {
   switch (m_type) {
   case TYPE_POINT:
@@ -267,7 +267,7 @@ std::string FlyEm::ZHotSpot::getTypeString() const
   return "";
 }
 
-ZJsonObject FlyEm::ZHotSpot::toJsonObject() const
+ZJsonObject flyem::ZHotSpot::toJsonObject() const
 {
   ZJsonObject obj;
   obj.setEntry("confidence", m_confidence);
@@ -288,7 +288,7 @@ ZJsonObject FlyEm::ZHotSpot::toJsonObject() const
   return obj;
 }
 
-ZPointArray FlyEm::ZHotSpot::toPointArray() const
+ZPointArray flyem::ZHotSpot::toPointArray() const
 {
   ZPointArray ptArray;
   if (m_geometry != NULL) {
@@ -302,7 +302,7 @@ ZPointArray FlyEm::ZHotSpot::toPointArray() const
   return ptArray;
 }
 
-ZLineSegmentArray FlyEm::ZHotSpot::toLineSegmentArray() const
+ZLineSegmentArray flyem::ZHotSpot::toLineSegmentArray() const
 {
   ZLineSegmentArray lineArray;
   if (m_geometry != NULL) {
@@ -316,7 +316,7 @@ ZLineSegmentArray FlyEm::ZHotSpot::toLineSegmentArray() const
   return lineArray;
 }
 
-ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
+ZJsonObject flyem::ZHotSpot::toRavelerJsonObject(
     const double *resolution, const int *imageSize) const
 {
   ZJsonObject obj;
@@ -378,7 +378,7 @@ ZJsonObject FlyEm::ZHotSpot::toRavelerJsonObject(
   return obj;
 }
 
-bool FlyEm::ZHotSpot::compareConfidence(
+bool flyem::ZHotSpot::compareConfidence(
     const ZHotSpot *spot1, const ZHotSpot *spot2)
 {
   return spot1->getConfidence() > spot2->getConfidence();

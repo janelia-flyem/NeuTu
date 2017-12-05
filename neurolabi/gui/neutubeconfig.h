@@ -73,6 +73,12 @@ public:
   bool parallelTileFetching() const;
   void setParallelTileFetching(bool on);
 
+  void setAdvancedMode(bool on);
+  bool isAdvancedMode() const;
+
+  static void SetAdvancedMode(bool on);
+  static bool IsAdvancedMode();
+
   static void EnableProfileLogging(bool on);
   static bool LoggingProfile();
 
@@ -437,6 +443,7 @@ private:
   bool m_usingNativeDialog;
   bool m_loggingProfile;
   int m_verboseLevel;
+  bool m_advancedMode = false;
 
   ZMessageReporter *m_messageReporter; //Obsolete
 

@@ -8,6 +8,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "z3dwindow.h"
 #include "zintcuboidobj.h"
+#include "neutubeconfig.h"
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -207,6 +208,11 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
         actionList.append(ZActionFactory::ACTION_SEPARATOR);
       }
       actionList.append(ZActionFactory::ACTION_SHOW_ORTHO);
+
+      if (NeutubeConfig::IsAdvancedMode()) {
+        actionList.append(ZActionFactory::ACTION_SHOW_ORTHO_BIG);
+      }
+
       actionList.append(ZActionFactory::ACTION_SEPARATOR);
       actionList.append(ZActionFactory::ACTION_COPY_POSITION);
 

@@ -306,12 +306,15 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
   }
 
   connectAction(m_doc.get(), SIGNAL(stackLoaded()), this, SIGNAL(stackLoaded()));
+//  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
+//          m_view, SLOT(updateChannelControl()));
+//  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
+//          m_view, SLOT(updateThresholdSlider()));
+//  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
+//          m_view, SLOT(updateSlider()));
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
-          m_view, SLOT(updateChannelControl()));
-  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
-          m_view, SLOT(updateThresholdSlider()));
-  connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
-          m_view, SLOT(updateSlider()));
+                m_view, SLOT(updateStackWidget()));
+
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_presenter, SLOT(updateStackBc()));
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
@@ -1703,7 +1706,7 @@ void ZStackFrame::loadRoi(const QString &filePath, bool isExclusive)
     if (isExclusive) {
       clearDecoration();
     }
-    obj->addVisualEffect(neutube::Display::SparseObject::VE_FORCE_SOLID);
+    obj->addVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID);
     addDecoration(obj);
     updateView();
 

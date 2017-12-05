@@ -454,6 +454,7 @@ void Z3DPunctaFilter::selectPuncta(QMouseEvent *e, int, int)
   if (e->type() == QEvent::MouseButtonPress) {
     m_startCoord.x = e->x();
     m_startCoord.y = e->y();
+
     const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
     if (!obj) {
       return;

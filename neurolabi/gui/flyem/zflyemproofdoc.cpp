@@ -131,8 +131,8 @@ void ZFlyEmProofDoc::connectSignalSlot()
 
 //    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
 //            this, SLOT(updateDvidLabelObject()));
-    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, FlyEM::EBodySplitMode)),
-            this, SLOT(checkInBodyWithMessage(uint64_t, FlyEM::EBodySplitMode)));
+    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, flyem::EBodySplitMode)),
+            this, SLOT(checkInBodyWithMessage(uint64_t, flyem::EBodySplitMode)));
     connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
             this, SLOT(updateDvidLabelObjectSliently()));
 
@@ -480,7 +480,7 @@ void ZFlyEmProofDoc::mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor)
         for (std::set<uint64_t>::const_iterator iter = selected.begin();
              iter != selected.end(); ++iter) {
           if (supervisor != NULL) {
-            if (supervisor->checkOut(*iter, FlyEM::BODY_SPLIT_NONE)) {
+            if (supervisor->checkOut(*iter, flyem::BODY_SPLIT_NONE)) {
               labelSet.insert(*iter);
             } else {
               labelSet.clear();
@@ -621,7 +621,7 @@ void ZFlyEmProofDoc::mergeSelected(ZFlyEmSupervisor *supervisor)
         for (std::set<uint64_t>::const_iterator iter = selected.begin();
              iter != selected.end(); ++iter) {
           if (supervisor != NULL) {
-            if (supervisor->checkOut(*iter, FlyEM::BODY_SPLIT_NONE)) {
+            if (supervisor->checkOut(*iter, flyem::BODY_SPLIT_NONE)) {
               labelSet.insert(*iter);
             } else {
               labelSet.clear();
@@ -873,7 +873,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
         obj->useCosmeticPen(true);
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
         //          obj->setDsIntv(31, 31, 31);
-        obj->addVisualEffect(neutube::Display::SparseObject::VE_PLANE_BOUNDARY);
+        obj->addVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
 //        obj->setHittable(false);
         obj->setHitProtocal(ZStackObject::HIT_NONE);
         //      addObject(obj);
@@ -1569,9 +1569,9 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
        iter != synapseList.end(); ++iter) {
     ZDvidSynapseEnsemble *se = *iter;
     if (on) {
-      se->addVisualEffect(neutube::Display::VE_GROUP_HIGHLIGHT);
+      se->addVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
     } else {
-      se->removeVisualEffect(neutube::Display::VE_GROUP_HIGHLIGHT);
+      se->removeVisualEffect(neutube::display::VE_GROUP_HIGHLIGHT);
     }
     processObjectModified(se);
   }
@@ -1592,7 +1592,7 @@ bool ZFlyEmProofDoc::checkInBody(uint64_t bodyId)
 */
 
 bool ZFlyEmProofDoc::checkBodyWithMessage(
-    uint64_t bodyId, bool checkingOut, FlyEM::EBodySplitMode mode)
+    uint64_t bodyId, bool checkingOut, flyem::EBodySplitMode mode)
 {
   bool succ = true;
 
@@ -1606,7 +1606,7 @@ bool ZFlyEmProofDoc::checkBodyWithMessage(
 }
 
 bool ZFlyEmProofDoc::checkInBodyWithMessage(
-    uint64_t bodyId, FlyEM::EBodySplitMode mode)
+    uint64_t bodyId, flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     if (bodyId > 0) {
@@ -1625,7 +1625,7 @@ bool ZFlyEmProofDoc::checkInBodyWithMessage(
   return true;
 }
 
-bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId, FlyEM::EBodySplitMode mode)
+bool ZFlyEmProofDoc::checkOutBody(uint64_t bodyId, flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     return getSupervisor()->checkOut(bodyId, mode);
@@ -1667,7 +1667,7 @@ void ZFlyEmProofDoc::makeAction(ZActionFactory::EAction item)
 }
 */
 
-void ZFlyEmProofDoc::checkInSelectedBody(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofDoc::checkInSelectedBody(flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -1719,7 +1719,7 @@ void ZFlyEmProofDoc::checkInSelectedBodyAdmin()
   }
 }
 
-void ZFlyEmProofDoc::checkOutBody(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofDoc::checkOutBody(flyem::EBodySplitMode mode)
 {
   if (getSupervisor() != NULL) {
     std::set<uint64_t> bodyIdArray =
@@ -2071,7 +2071,7 @@ void ZFlyEmProofDoc::loadSplitFromService()
     obj->setColor(getSeedColor(obj->getLabel()));
     obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
     obj->setHitProtocal(ZStackObject::HIT_NONE);
-    obj->setVisualEffect(neutube::Display::SparseObject::VE_PLANE_BOUNDARY);
+    obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
     obj->setProjectionVisible(false);
     obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
     obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
@@ -2324,7 +2324,7 @@ void ZFlyEmProofDoc::downloadSynapseFunc()
     ZJsonObject jsonObj;
     jsonObj.decodeString(reader.getBuffer());
     if (!jsonObj.isEmpty()) {
-      FlyEm::ZSynapseAnnotationArray synapseArray;
+      flyem::ZSynapseAnnotationArray synapseArray;
       synapseArray.loadJson(jsonObj);
       const double radius = 5.0;
       std::vector<ZStackBall*> puncta = synapseArray.toTBarBall(radius);
@@ -2425,8 +2425,8 @@ void ZFlyEmProofDoc::decorateTBar(ZPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 255, 0));
-  puncta->pushVisualEffect(neutube::Display::Sphere::VE_CROSS_CENTER |
-                           neutube::Display::Sphere::VE_OUT_FOCUS_DIM);
+  puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
+                           neutube::display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
@@ -2434,8 +2434,8 @@ void ZFlyEmProofDoc::decoratePsd(ZPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 0, 255));
-  puncta->pushVisualEffect(neutube::Display::Sphere::VE_CROSS_CENTER |
-                           neutube::Display::Sphere::VE_OUT_FOCUS_DIM);
+  puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
+                           neutube::display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 void ZFlyEmProofDoc::decorateTBar(ZSlicedPuncta *puncta)
@@ -2443,8 +2443,8 @@ void ZFlyEmProofDoc::decorateTBar(ZSlicedPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmTBarSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 255, 0));
-  puncta->pushVisualEffect(neutube::Display::Sphere::VE_CROSS_CENTER |
-                           neutube::Display::Sphere::VE_OUT_FOCUS_DIM);
+  puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
+                           neutube::display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
@@ -2452,8 +2452,8 @@ void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
   puncta->setSource(ZStackObjectSourceFactory::MakeFlyEmPsdSource());
   puncta->pushCosmeticPen(true);
   puncta->pushColor(QColor(0, 0, 255));
-  puncta->pushVisualEffect(neutube::Display::Sphere::VE_CROSS_CENTER |
-                           neutube::Display::Sphere::VE_OUT_FOCUS_DIM);
+  puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
+                           neutube::display::Sphere::VE_OUT_FOCUS_DIM);
 }
 
 std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(ZObject3dScan &body)
@@ -2563,7 +2563,7 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
   ZDvidReader &reader = m_synapseReader;
   if (reader.isReady()) {
     std::vector<ZDvidSynapse> synapseArray =
-        reader.readSynapse(bodyId, FlyEM::LOAD_PARTNER_RELJSON);
+        reader.readSynapse(bodyId, flyem::LOAD_PARTNER_RELJSON);
 
     std::vector<ZPunctum*> &tbar = synapse.first;
     std::vector<ZPunctum*> &psd = synapse.second;
@@ -2602,7 +2602,7 @@ std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId)
       ZFlyEmToDoItem *item = new ZFlyEmToDoItem;
 
       ZJsonObject objJson(annotationJson.value(i));
-      item->loadJsonObject(objJson, FlyEM::LOAD_NO_PARTNER);
+      item->loadJsonObject(objJson, flyem::LOAD_NO_PARTNER);
 
       item->setBodyId(bodyId);
 
@@ -2633,7 +2633,7 @@ std::vector<ZPunctum*> ZFlyEmProofDoc::getTodoPuncta(uint64_t bodyId)
       ZFlyEmToDoItem item;
 
       ZJsonObject objJson(annotationJson.value(i));
-      item.loadJsonObject(objJson, FlyEM::LOAD_PARTNER_RELJSON);
+      item.loadJsonObject(objJson, flyem::LOAD_PARTNER_RELJSON);
 
       ZPunctum *punctum = new ZPunctum(item.getPosition(), radius);
       punctum->setColor(item.getDisplayColor());
@@ -2975,7 +2975,7 @@ void ZFlyEmProofDoc::exitSplit()
   m_futureMap.waitForFinished(THREAD_SPLIT);
 }
 
-void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofDoc::runSplit(flyem::EBodySplitMode mode)
 {
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -3004,7 +3004,7 @@ void ZFlyEmProofDoc::runSplit(FlyEM::EBodySplitMode mode)
   }
 }
 
-void ZFlyEmProofDoc::runFullSplit(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofDoc::runFullSplit(flyem::EBodySplitMode mode)
 {
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
@@ -3066,23 +3066,23 @@ void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
 }
 #endif
 
-void ZFlyEmProofDoc::runSplitFunc(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofDoc::runSplitFunc(flyem::EBodySplitMode mode)
 {
-  runSplitFunc(mode, FlyEM::RANGE_SEED);
+  runSplitFunc(mode, flyem::RANGE_SEED);
 }
 
-void ZFlyEmProofDoc::runLocalSplit(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofDoc::runLocalSplit(flyem::EBodySplitMode mode)
 {
-  runSplitFunc(mode, FlyEM::RANGE_LOCAL);
+  runSplitFunc(mode, flyem::RANGE_LOCAL);
 }
 
-void ZFlyEmProofDoc::runFullSplitFunc(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofDoc::runFullSplitFunc(flyem::EBodySplitMode mode)
 {
-  runSplitFunc(mode, FlyEM::RANGE_FULL);
+  runSplitFunc(mode, flyem::RANGE_FULL);
 }
 
 void ZFlyEmProofDoc::runSplitFunc(
-    FlyEM::EBodySplitMode mode, FlyEM::EBodySplitRange range)
+    flyem::EBodySplitMode mode, flyem::EBodySplitRange range)
 {
   getProgressSignal()->startProgress("Splitting ...");
 
@@ -3103,13 +3103,13 @@ void ZFlyEmProofDoc::runSplitFunc(
       signalStack = NULL;
       ZOUT(LINFO(), 3) << "Retrieving signal stack";
       switch (range) {
-      case FlyEM::RANGE_SEED:
+      case flyem::RANGE_SEED:
         cuboid = estimateSplitRoi(seedMask);
         break;
-      case FlyEM::RANGE_LOCAL:
+      case flyem::RANGE_LOCAL:
         cuboid = estimateLocalSplitRoi();
         break;
-      case FlyEM::RANGE_FULL:
+      case flyem::RANGE_FULL:
         break;
       }
 
@@ -3279,7 +3279,7 @@ ZIntCuboid ZFlyEmProofDoc::estimateSplitRoi()
 }
 
 ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
-    const ZIntCuboid &roi, FlyEM::EBodySplitMode mode) const
+    const ZIntCuboid &roi, flyem::EBodySplitMode mode) const
 {
   ZDvidSparseStack *stack = NULL;
 
@@ -3296,8 +3296,8 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack(
         m_splitSource = ZSharedPointer<ZDvidSparseStack>(
               originalStack->getCrop(roi));
 
-        bool cont = true;
-        if (mode == FlyEM::BODY_SPLIT_OFFLINE) {
+        bool cont = originalStack->prefetching();
+        if (mode == flyem::BODY_SPLIT_OFFLINE) {
           cont = false;
         }
 
@@ -3447,11 +3447,14 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
 }
 #endif
 
-void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
+void ZFlyEmProofDoc::updateBodyColor(
+    ZSharedPointer<ZFlyEmBodyColorScheme> colorMap)
 {
-  ZDvidLabelSlice *slice = getDvidLabelSlice(neutube::Z_AXIS);
-  if (slice != NULL) {
-    ZSharedPointer<ZFlyEmBodyColorScheme> colorMap = getColorScheme(type);
+  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+  beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
     if (colorMap.get() != NULL) {
       colorMap->update();
       slice->setCustomColorMap(colorMap);
@@ -3461,8 +3464,15 @@ void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
     slice->paintBuffer();
 
     processObjectModified(slice);
-    notifyObjectModified();
   }
+  endObjectModifiedMode();
+  notifyObjectModified();
+}
+
+void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
+{
+  ZSharedPointer<ZFlyEmBodyColorScheme> colorMap = getColorScheme(type);
+  updateBodyColor(colorMap);
 }
 
 void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
@@ -3578,6 +3588,7 @@ void ZFlyEmProofDoc::activateBodyColorMap(
   if (!isActive(option)) {
     updateBodyColor(option);
     m_activeBodyColorMap = getColorScheme(option);
+    emit bodyColorUpdated(this);
   }
 }
 

@@ -28,7 +28,7 @@ public:
 
   void setSubstackRegion(const ZIntCuboidArray &roi);
   void setSubstackRegion(const ZIntCuboidArray &roi,
-                         const FlyEm::SubstackRegionCalbration &calbr);
+                         const flyem::SubstackRegionCalbration &calbr);
 
   /*!
    * \brief Label SWC node that is out of range.
@@ -59,22 +59,22 @@ public:
    */
   bool isInternalFaceOrphan(const ZObject3dScan &obj);
 
-  FlyEm::ZHotSpotArray& computeHotSpot(const ZSwcTree *tree, ZObject3dScan *obj, double xRes, double yRes,
+  flyem::ZHotSpotArray& computeHotSpot(const ZSwcTree *tree, ZObject3dScan *obj, double xRes, double yRes,
       double zRes, double lengthThre);
 
-  FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron &neuron);
-  FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron);
+  flyem::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron &neuron);
+  flyem::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron);
 
-  FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron &neuron,
+  flyem::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron &neuron,
                                        std::vector<ZFlyEmNeuron>& neuronArray);
-  FlyEm::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron,
+  flyem::ZHotSpotArray& computeHotSpot(const ZFlyEmNeuron *neuron,
                                        std::vector<ZFlyEmNeuron>& neuronArray);
 
-  FlyEm::ZHotSpotArray& computeHotSpotForSplit(const ZFlyEmNeuron &neuron);
+  flyem::ZHotSpotArray& computeHotSpotForSplit(const ZFlyEmNeuron &neuron);
 
 private:
   ZIntCuboidArray m_substackRegion;
-  FlyEm::ZHotSpotArray m_hotSpotArray;
+  flyem::ZHotSpotArray m_hotSpotArray;
 //  ZFlyEmCoordinateConverter::ESpace m_targetSpace;
 };
 

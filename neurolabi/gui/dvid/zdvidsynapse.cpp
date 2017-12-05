@@ -125,7 +125,7 @@ bool ZDvidSynapse::isProtocolVerified(const ZDvidTarget &target) const
              iter != psdArray.end(); ++iter) {
           const ZIntPoint &pt = *iter;
           ZDvidSynapse synapse =
-              reader.readSynapse(pt, FlyEM::LOAD_NO_PARTNER);
+              reader.readSynapse(pt, flyem::LOAD_NO_PARTNER);
           if (!synapse.isVerified()) {
             v = false;
             break;
@@ -345,7 +345,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
     color.setRgb(255, 255, 0, 255);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(neutube::Display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
@@ -476,7 +476,7 @@ void ZDvidSynapse::display(ZPainter &painter, int slice, EDisplayStyle option,
         line.setFocusColor(QColor(255, 0, 255));
       }
 
-      line.setVisualEffect(neutube::Display::Line::VE_LINE_PROJ);
+      line.setVisualEffect(neutube::display::Line::VE_LINE_PROJ);
       line.display(painter, slice, option, sliceAxis);
 
       /*
@@ -572,7 +572,7 @@ void ZDvidSynapse::updatePartnerProperty(ZDvidReader &reader)
   if (reader.good()) {
     for (size_t i = 0; i < m_partnerHint.size(); ++i) {
       ZDvidSynapse synapse =
-          reader.readSynapse(m_partnerHint[i], FlyEM::LOAD_PARTNER_LOCATION);
+          reader.readSynapse(m_partnerHint[i], flyem::LOAD_PARTNER_LOCATION);
       if (synapse.isValid()) {
         if (synapse.hasPartner(getPosition())) {
           m_isPartnerVerified[i] = synapse.isVerified();

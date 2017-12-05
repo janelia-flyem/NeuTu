@@ -200,6 +200,14 @@ public:
 
   std::vector<ZMesh> split(size_t numTriangle = 100000) const;
 
+  /*!
+   * \brief Generate normals if the normals are not ready.
+   */
+  void prepareNormals(bool useAreaWeight = true);
+
+  /*!
+   * \brief Recompute normals.
+   */
   void generateNormals(bool useAreaWeight = true);
 
   //double volume() const;

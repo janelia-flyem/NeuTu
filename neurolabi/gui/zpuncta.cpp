@@ -88,7 +88,7 @@ void ZPuncta::setSorted(bool state) const
 bool ZPuncta::load(const ZJsonObject &obj, double radius)
 {
   clear();
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(obj);
   std::vector<ZPunctum*> puncta = synapseArray.toTBarPuncta(radius);
   addPunctum(puncta.begin(), puncta.end());
@@ -163,7 +163,7 @@ void ZPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZPuncta::pushVisualEffect(neutube::Display::TVisualEffect effect)
+void ZPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
 {
   for (QList<ZPunctum*>::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

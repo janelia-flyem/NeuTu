@@ -1,4 +1,4 @@
-#define _NEUTU_USE_REF_KEY_
+//#define _NEUTU_USE_REF_KEY_
 #include "zdvidreader.h"
 
 #include <vector>
@@ -841,7 +841,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlockOld(
 
 std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
     const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-    int blockNumber)
+    int blockNumber, int zoom)
 {
   std::vector<ZStack*> stackArray(blockNumber, NULL);
 
@@ -861,7 +861,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
         std::cout << blockNumber << std::endl;
 #endif
       libdvid::GrayscaleBlocks blocks = m_service->get_grayblocks(
-            getDvidTarget().getGrayScaleName(), blockCoords, blockNumber);
+            getDvidTarget().getGrayScaleName(zoom), blockCoords, blockNumber);
 #ifdef _DEBUG_
         std::cout << "one read done" << std::endl;
 #endif
@@ -1061,6 +1061,7 @@ ZStack* ZDvidReader::readGrayScaleOld(
 }
 #endif
 
+
 ZStack* ZDvidReader::readGrayScale(
     int x0, int y0, int z0, int width, int height, int depth, int zoom) const
 {
@@ -1068,7 +1069,7 @@ ZStack* ZDvidReader::readGrayScale(
 
   return readGrayScale(getDvidTarget().getGrayScaleName(zoom),
                      x0 / zoomRatio, y0 / zoomRatio, z0 / zoomRatio,
-                      width / zoomRatio, height / zoomRatio, depth);
+                      width / zoomRatio, height / zoomRatio, depth / zoomRatio);
 }
 
 ZStack* ZDvidReader::readGrayScale(
@@ -2043,7 +2044,7 @@ ZIntPoint ZDvidReader::readPosition(uint64_t bodyId, int x, int y, int z) const
   pt.invalidate();
 
   if (found) {
-    pt = FlyEm::FindClosestBg(stack, x, y, z);
+    pt = flyem::FindClosestBg(stack, x, y, z);
   }
 
   delete label;
@@ -2608,6 +2609,14 @@ void ZDvidReader::updateMaxLabelZoom()
       if (!v.isEmpty()) {
         m_dvidTarget.setMaxLabelZoom(v.toInteger());
       }
+#if 0
+      else { //temporary hack!!!
+        if (getDvidTarget().getUuid() == "c140") {
+          m_dvidTarget.setMaxLabelZoom(7);
+        }
+      }
+#endif
+
 //      if (infoJson.hasKey("Extended")) {
 //        ZJsonObject extJson(infoJson.value("Extended"));
 
@@ -3236,7 +3245,7 @@ ZJsonObject ZDvidReader::readSynapseJson(int x, int y, int z) const
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    const ZIntCuboid &box, FlyEM::EDvidAnnotationLoadMode mode) const
+    const ZIntCuboid &box, flyem::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
   ZJsonArray obj = readJsonArray(dvidUrl.getSynapseUrl(box));
@@ -3288,12 +3297,12 @@ ZJsonArray ZDvidReader::readSynapseLabelszThreshold(int threshold, ZDvid::ELabel
 }
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
-    uint64_t label, FlyEM::EDvidAnnotationLoadMode mode) const
+    uint64_t label, flyem::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   ZJsonArray obj = readJsonArray(
-        dvidUrl.getSynapseUrl(label, mode != FlyEM::LOAD_NO_PARTNER));
+        dvidUrl.getSynapseUrl(label, mode != flyem::LOAD_NO_PARTNER));
 
   std::vector<ZDvidSynapse> synapseArray(obj.size());
 
@@ -3308,12 +3317,12 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 
 std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
     uint64_t label, const ZDvidRoi &roi,
-    FlyEM::EDvidAnnotationLoadMode mode) const
+    flyem::EDvidAnnotationLoadMode mode) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   ZJsonArray obj = readJsonArray(
-        dvidUrl.getSynapseUrl(label, mode != FlyEM::LOAD_NO_PARTNER));
+        dvidUrl.getSynapseUrl(label, mode != flyem::LOAD_NO_PARTNER));
 
   std::vector<ZDvidSynapse> synapseArray;
 
@@ -3331,7 +3340,7 @@ std::vector<ZDvidSynapse> ZDvidReader::readSynapse(
 }
 
 ZDvidSynapse ZDvidReader::readSynapse(
-    int x, int y, int z, FlyEM::EDvidAnnotationLoadMode mode) const
+    int x, int y, int z, flyem::EDvidAnnotationLoadMode mode) const
 {
   std::vector<ZDvidSynapse> synapseArray =
       readSynapse(ZIntCuboid(x, y, z, x, y, z), mode);
@@ -3347,7 +3356,7 @@ ZDvidSynapse ZDvidReader::readSynapse(
 }
 
 ZDvidSynapse ZDvidReader::readSynapse(
-    const ZIntPoint &pt, FlyEM::EDvidAnnotationLoadMode mode) const
+    const ZIntPoint &pt, flyem::EDvidAnnotationLoadMode mode) const
 {
   return readSynapse(pt.getX(), pt.getY(), pt.getZ(), mode);
 }
@@ -3519,7 +3528,7 @@ std::vector<ZFlyEmToDoItem> ZDvidReader::readToDoItem(
   for (size_t i = 0; i < obj.size(); ++i) {
     ZJsonObject itemJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZFlyEmToDoItem &item = itemArray[i];
-    item.loadJsonObject(itemJson, FlyEM::LOAD_PARTNER_RELJSON);
+    item.loadJsonObject(itemJson, flyem::LOAD_PARTNER_RELJSON);
   }
 
   return itemArray;

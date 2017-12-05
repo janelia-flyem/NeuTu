@@ -217,7 +217,7 @@ public slots:
   void updateQualityControl();
 
 private:
-  FlyEm::ZSynapseAnnotationArray *getSynapseAnnotation();
+  flyem::ZSynapseAnnotationArray *getSynapseAnnotation();
   std::string getName(int bodyId) const;
   std::string getName(int bodyId, int bundleIndex) const;
   std::string getName(const std::pair<int, int> &bodyId) const;

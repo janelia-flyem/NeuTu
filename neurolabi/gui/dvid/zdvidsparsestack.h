@@ -69,6 +69,7 @@ public:
     return m_dvidReader.getDvidTarget();
   }
 
+  bool prefetching() const { return m_prefectching; }
 
   int getValue(int x, int y, int z) const;
 
@@ -150,6 +151,7 @@ private:
   ZSparseStack m_sparseStack;
   ZDvidTarget m_dvidTarget;
   bool m_isValueFilled;
+  bool m_prefectching = false;
   uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;

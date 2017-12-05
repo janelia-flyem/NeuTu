@@ -1401,9 +1401,9 @@ void FlyEmBodyInfoDialog::retrieveIOBodiesDvid(uint64_t bodyID) {
         if (ui->roiComboBox->currentIndex() > 0) {
           synapses = reader.readSynapse(
                 bodyID, *getRoi(ui->roiComboBox->currentText()),
-                FlyEM::LOAD_PARTNER_LOCATION);
+                flyem::LOAD_PARTNER_LOCATION);
         } else {
-          synapses = reader.readSynapse(bodyID, FlyEM::LOAD_PARTNER_LOCATION);
+          synapses = reader.readSynapse(bodyID, flyem::LOAD_PARTNER_LOCATION);
         }
 
         // std::cout << "read synapses: " << spottimer.restart() / 1000.0 << "s" << std::endl;

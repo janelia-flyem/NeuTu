@@ -98,6 +98,11 @@ int ZFlyEmGrayscaleDialog::getDepth() const
   return ui->depthSpinBox->value();
 }
 
+int ZFlyEmGrayscaleDialog::getDsIntv() const
+{
+  return ui->downsampleSpinBox->value() - 1;
+}
+
 void ZFlyEmGrayscaleDialog::setOffset(int x, int y, int z)
 {
   ui->xSpinBox->setValue(x);
@@ -187,7 +192,21 @@ void ZFlyEmGrayscaleDialog::updateWidget()
   ui->offsetPushButton->setEnabled(rangeAjustable);
 }
 
+void ZFlyEmGrayscaleDialog::makeBodyExportAppearance()
+{
+  ui->downsampleSpinBox->setVisible(false);
+  ui->downsampleLabel->setVisible(false);
+  ui->sparseCheckBox->setVisible(true);
+  ui->fullRangeCheckBox->setVisible(true);
+}
 
+void ZFlyEmGrayscaleDialog::makeGrayscaleExportAppearance()
+{
+  ui->downsampleSpinBox->setVisible(true);
+  ui->downsampleLabel->setVisible(true);
+  ui->sparseCheckBox->setVisible(false);
+  ui->fullRangeCheckBox->setVisible(false);
+}
 
 
 

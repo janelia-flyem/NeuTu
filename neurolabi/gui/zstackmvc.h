@@ -77,6 +77,7 @@ public:
   ZIntPoint getViewCenter() const;
   double getWidthZoomRatio() const;
   double getHeightZoomRatio() const;
+  QSize getViewScreenSize() const;
 
   void toggleStressTest();
   virtual void stressTest(ZStressTestOptionDialog *dlg);

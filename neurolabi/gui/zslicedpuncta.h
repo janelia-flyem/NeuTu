@@ -35,7 +35,7 @@ public:
 
   void pushCosmeticPen(bool state);
   void pushColor(const QColor &color);
-  void pushVisualEffect(neutube::Display::TVisualEffect effect);
+  void pushVisualEffect(neutube::display::TVisualEffect effect);
 
   QList<ZStackBall*> getPunctaOnSlice(int z);
 

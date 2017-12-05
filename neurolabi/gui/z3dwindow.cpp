@@ -376,6 +376,14 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_DESELECT_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(deselectBody()));
     break;
+  case ZActionFactory::ACTION_MEASURE_SWC_NODE_DIST:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(showSeletedSwcNodeDist()));
+    break;
+  case ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(showSeletedSwcNodeLength()));
+    break;
   case ZActionFactory::ACTION_DELETE_SELECTED:
     if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
       action = m_actionLibrary->getAction(
@@ -3196,6 +3204,11 @@ void Z3DWindow::activateTodoAction()
 void Z3DWindow::activateLocateAction()
 {
   getCanvas()->getInteractionEngine()->enterLocateMode();
+}
+
+void Z3DWindow::showSeletedSwcNodeDist()
+{
+  getDocument()->showSeletedSwcNodeDist();
 }
 
 void Z3DWindow::showSeletedSwcNodeLength()

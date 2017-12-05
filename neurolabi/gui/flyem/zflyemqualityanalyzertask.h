@@ -17,7 +17,7 @@ public:
 
   int getSourceId() const;
   int getTargetId() const;
-  inline FlyEm::ZHotSpotArray* getHotSpot() { return &m_hotSpotArray; }
+  inline flyem::ZHotSpotArray* getHotSpot() { return &m_hotSpotArray; }
 
   inline ZFlyEmNeuron* getSource() const {
     return m_source;
@@ -35,7 +35,7 @@ public:
 private:
   ZFlyEmNeuron *m_source;
   ZFlyEmDataBundle *m_dataBundle;
-  FlyEm::ZHotSpotArray m_hotSpotArray;
+  flyem::ZHotSpotArray m_hotSpotArray;
 };
 
 #endif // ZFLYEMQUALITYANALYZERTASK_H

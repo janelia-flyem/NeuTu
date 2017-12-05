@@ -1898,11 +1898,11 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   QPen pen(m_color);
 
 
-  if (hasVisualEffect(neutube::Display::SparseObject::VE_PLANE_BOUNDARY)) {
+  if (hasVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY)) {
     style = ZStackObject::BOUNDARY;
   }
 
-  if (hasVisualEffect(neutube::Display::SparseObject::VE_FORCE_SOLID)) {
+  if (hasVisualEffect(neutube::display::SparseObject::VE_FORCE_SOLID)) {
     style = ZStackObject::SOLID;
   }
 
