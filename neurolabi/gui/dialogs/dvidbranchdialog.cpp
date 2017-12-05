@@ -252,11 +252,7 @@ void DvidBranchDialog::loadNode(QString branchName) {
 
     // rest is from the specific node:
     QJsonObject nodeJson = m_branchMap[m_branchName];
-    ui->UUIDBox->setText(nodeJson[KEY_UUID].toString());
-    // move to the front if the UUID is too long
-    ui->UUIDBox->setCursorPosition(0);
-
-    // or maybe I should just truncate it to 5 or 6 characters?
+    ui->UUIDBox->setText(nodeJson[KEY_UUID].toString().left(4));
 
 
 
