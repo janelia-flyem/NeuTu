@@ -109,10 +109,10 @@ void ZWaterShedWindow::onOk()
       container.addSeed(*stroke);
   }
   container.setScale(scale);
-#ifdef _DEBUG_
+
   QTime time;
   time.start();
-#endif
+
   container.setAlgorithm(algorithms->currentText());
   container.run();
 
@@ -128,7 +128,9 @@ void ZWaterShedWindow::onOk()
   }
   doc->getDataBuffer()->deliver();
   result.shallowClear();
-
+  ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(container.getResultStack()->clone());
+  ZSandbox::GetMainWindow()->addStackFrame(frame);
+  ZSandbox::GetMainWindow()->presentStackFrame(frame);
 #if 0
 =======
   ZStack* result=container.getResultStack()->clone();

@@ -523,7 +523,7 @@ void ZStackWatershedContainer::run()
   deprecate(COMP_RESULT);
   Stack *source = getSource();
   if (source != NULL) {
-      if(m_scale==1){
+     /* if(m_scale==1){
         updateSeedMask();
         getWorkspace()->conn=6;
         Stack *out = C_Stack::watershed(source, getWorkspace());
@@ -532,7 +532,7 @@ void ZStackWatershedContainer::run()
         stack->setOffset(getSourceOffset());
         m_result.push_back(stack);
       }
-      else{
+      else*/{
         ZStackMultiScaleWatershed watershed;
         ZStackPtr stack = ZStackPtr(
               watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm));
