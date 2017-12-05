@@ -254,6 +254,23 @@ void DvidBranchDialog::loadNode(QString branchName) {
     QJsonObject nodeJson = m_branchMap[m_branchName];
     ui->UUIDBox->setText(nodeJson[KEY_UUID].toString().left(4));
 
+    // check for default settings
+    ZJsonObject defaultsJson;
+    defaultsJson = m_reader.readDefaultDataSetting();
+    QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(defaultsJson.dumpString()).toUtf8());
+    QJsonObject defaults = doc.object();
+
+    // should make these keys constants?
+    if (defaults.contains("segmentation")) {
+        ui->labelsBox->setText(defaults["segmentation"].toString());
+    }
+    if (defaults.contains("grayscale")) {
+        ui->grayscaleBox->setText(defaults["grayscale"].toString());
+    }
+    if (defaults.contains("synapses")) {
+        ui->synapsesBox->setText(defaults["synapses"].toString());
+    }
+
 
 
 }
@@ -265,6 +282,10 @@ void DvidBranchDialog::clearNode() {
     ui->serverBox->clear();
     ui->portBox->clear();
     ui->UUIDBox->clear();
+
+    ui->labelsBox->clear();
+    ui->grayscaleBox->clear();
+    ui->synapsesBox->clear();
 }
 
 /*
