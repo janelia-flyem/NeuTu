@@ -37,6 +37,37 @@
 # undef CHECK_GT
 #endif
 
+#if defined(DCHECK_EQ)
+# undef DCHECK_EQ
+#endif
+
+#if defined(DCHECK_NE)
+# undef DCHECK_NE
+#endif
+
+#if defined(DCHECK_LE)
+# undef DCHECK_LE
+#endif
+
+#if defined(DCHECK_LT)
+# undef DCHECK_LT
+#endif
+
+#if defined(DCHECK_GE)
+# undef DCHECK_GE
+#endif
+
+#if defined(DCHECK_GT)
+# undef DCHECK_GT
+#endif
+
+#if defined(CHECK_NOTNULL)
+# undef CHECK_NOTNULL
+#endif
+
+#if defined(DCHECK_NOTNULL)
+# undef DCHECK_NOTNULL
+#endif
 
 #include "QsLog.h"
 

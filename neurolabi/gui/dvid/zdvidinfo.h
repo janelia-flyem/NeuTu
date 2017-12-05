@@ -151,6 +151,8 @@ private:
    */
   static int BlockIndexToCoord(int index, int s);
 
+  void setExtents(const ZJsonObject &obj);
+
 private:
   std::vector<int> m_stackSize;
   //std::vector<double> m_voxelResolution;

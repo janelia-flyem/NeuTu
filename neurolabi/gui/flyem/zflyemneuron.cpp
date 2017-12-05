@@ -559,7 +559,7 @@ std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse(
 {
   std::vector<ZPunctum*> synapse;
   if (m_synapseAnnotation != NULL) {
-    FlyEm::SynapseAnnotationConfig config;
+    flyem::SynapseAnnotationConfig config;
     config.startNumber = m_synapseAnnotation->getMetaData().getSourceZOffset();
     config.height = m_synapseAnnotation->getMetaData().getSourceYDim();
     config.xResolution = m_synapseAnnotation->getMetaData().getXResolution();
@@ -569,8 +569,8 @@ std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse(
     config.swcDownsample2 = 1;
     config.sizeScale = m_synapseScale;
 
-    FlyEm::SynapseDisplayConfig displayConfig;
-    displayConfig.mode = FlyEm::SynapseDisplayConfig::HALF_SYNAPSE;
+    flyem::SynapseDisplayConfig displayConfig;
+    displayConfig.mode = flyem::SynapseDisplayConfig::HALF_SYNAPSE;
     displayConfig.tBarColor.red = 255;
     displayConfig.tBarColor.green = 255;
     displayConfig.tBarColor.blue = 0;
@@ -581,7 +581,7 @@ std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse(
     displayConfig.buddyBodyId = buddyBodyId;
 
     return m_synapseAnnotation->toPuncta(
-          config, FlyEm::SynapseLocation::PHYSICAL_SPACE, displayConfig);
+          config, flyem::SynapseLocation::PHYSICAL_SPACE, displayConfig);
   }
 
   return synapse;

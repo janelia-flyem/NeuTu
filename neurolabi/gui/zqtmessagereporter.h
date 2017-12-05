@@ -12,7 +12,7 @@ public:
   ZQtMessageReporter(QWidget *parent);
   virtual ~ZQtMessageReporter();
   virtual void report(const std::string &title, const std::string &message,
-                      NeuTube::EMessageType msgType);
+                      neutube::EMessageType msgType);
 
 private:
   QWidget *m_parent;

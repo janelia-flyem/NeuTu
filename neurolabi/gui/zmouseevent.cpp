@@ -5,19 +5,19 @@ ZMouseEvent::ZMouseEvent() : m_buttons(Qt::NoButton),
   m_action(ZMouseEvent::ACTION_NONE), m_modifiers(Qt::NoModifier),
   m_isInStack(false)
 {
-  m_sliceAxis = NeuTube::Z_AXIS;
+  m_sliceAxis = neutube::Z_AXIS;
 }
 
-ZPoint ZMouseEvent::getPosition(NeuTube::ECoordinateSystem cs) const
+ZPoint ZMouseEvent::getPosition(neutube::ECoordinateSystem cs) const
 {
   switch (cs) {
-  case NeuTube::COORD_WIDGET:
+  case neutube::COORD_WIDGET:
     return m_position.toPoint();
-  case NeuTube::COORD_STACK:
+  case neutube::COORD_STACK:
     return m_stackPosition;
-  case NeuTube::COORD_RAW_STACK:
+  case neutube::COORD_RAW_STACK:
     return m_rawStackPosition;
-  case NeuTube::COORD_SCREEN:
+  case neutube::COORD_SCREEN:
     return m_globalPosition.toPoint();
   default:
     break;
@@ -61,12 +61,12 @@ void ZMouseEvent::set(QMouseEvent *event, EAction action, int z)
   }
 }
 
-NeuTube::EAxis ZMouseEvent::getSliceAxis() const
+neutube::EAxis ZMouseEvent::getSliceAxis() const
 {
   return m_sliceAxis;
 }
 
-void ZMouseEvent::setSliceAxis(NeuTube::EAxis axis)
+void ZMouseEvent::setSliceAxis(neutube::EAxis axis)
 {
   m_sliceAxis = axis;
 }

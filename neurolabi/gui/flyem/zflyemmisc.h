@@ -40,7 +40,6 @@ ZMesh* MakeRoiMesh(
 
 ZMesh* MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsIntv);
 
-
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo);
 //void Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader);
 void Decorate3dBodyWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo,
@@ -57,7 +56,7 @@ void SubtractBodyWithBlock(
     const ZDvidInfo& dvidInfo);
 
 void MakeTriangle(const QRectF &rect, QPointF *ptArray,
-                  NeuTube::ECardinalDirection direction);
+                  neutube::ECardinalDirection direction);
 void MakeStar(const QRectF &rect, QPointF *ptArray);
 void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
 

@@ -82,7 +82,7 @@ public:
 
   void clear();
 
-  inline void setBackgroundType(NeuTube::EImageBackground bg) {
+  inline void setBackgroundType(neutube::EImageBackground bg) {
     m_backgroundType = bg;
   }
 
@@ -208,7 +208,7 @@ private:
   Trace_Workspace *m_traceWorkspace;
   Connection_Test_Workspace *m_connWorkspace;
   ZSwcConnector *m_swcConnector;
-  NeuTube::EImageBackground m_backgroundType;
+  neutube::EImageBackground m_backgroundType;
   ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
 //  double m_stackOffset[3];

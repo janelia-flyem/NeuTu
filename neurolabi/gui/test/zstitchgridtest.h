@@ -7,7 +7,7 @@
 
 #ifdef _USE_GTEST_
 TEST(ZStitchGrid, Basic) {
-  FlyEm::ZStitchGrid grid;
+  flyem::ZStitchGrid grid;
 
   grid.setGridNumber(3, 3, 3);
   grid.setInterval(5, 5, 5);

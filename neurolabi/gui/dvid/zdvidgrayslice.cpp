@@ -36,9 +36,9 @@ void ZDvidGraySlice::clear()
 
 void ZDvidGraySlice::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
-    NeuTube::EAxis sliceAxis) const
+    neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis != NeuTube::Z_AXIS) {
+  if (sliceAxis != neutube::Z_AXIS) {
     return;
   }
   //if (!m_image.isNull()) {
@@ -77,6 +77,21 @@ void ZDvidGraySlice::updateContrast()
     m_image.enhanceContrast(true);
   }
 #endif
+}
+
+bool ZDvidGraySlice::hasLowresRegion() const
+{
+  if (m_zoom > 0) {
+    return true;
+  }
+
+  QRect viewport = m_currentViewParam.getViewPort();
+  if (viewport.width() > m_centerCutWidth ||
+      viewport.height() > m_centerCutHeight) {
+    return true;
+  }
+
+  return false;
 }
 
 void ZDvidGraySlice::invalidatePixmap()
@@ -247,7 +262,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
-  if (m_sliceAxis != NeuTube::Z_AXIS) {
+  if (m_sliceAxis != neutube::Z_AXIS) {
     return;
   }
 
@@ -267,10 +282,13 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 
 
 #if defined(_ENABLE_LOWTIS_)
-    int cx = 256;
-    int cy = 256;
+    int cx = m_centerCutWidth;
+    int cy = m_centerCutHeight;
     int z = box.getFirstCorner().getZ();
-    int zoom = m_zoom + 1;
+    int zoom = m_zoom;
+    if (hasLowresRegion()) {
+      ++zoom;
+    }
     int scale = misc::GetZoomScale(zoom);
     int remain = z % scale;
     ZStack *stack = m_reader.readGrayScaleLowtis(

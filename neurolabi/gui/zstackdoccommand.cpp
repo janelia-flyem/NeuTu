@@ -89,10 +89,10 @@ void ZUndoCommand::startUndo()
   logUndoCommand();
 }
 
-void ZUndoCommand::setSaved(NeuTube::EDocumentableType type, bool state)
+void ZUndoCommand::setSaved(neutube::EDocumentableType type, bool state)
 {
   switch (type) {
-  case NeuTube::Documentable_SWC:
+  case neutube::Documentable_SWC:
     m_isSwcSaved = state;
     break;
   default:
@@ -100,10 +100,10 @@ void ZUndoCommand::setSaved(NeuTube::EDocumentableType type, bool state)
   }
 }
 
-bool ZUndoCommand::isSaved(NeuTube::EDocumentableType type) const
+bool ZUndoCommand::isSaved(neutube::EDocumentableType type) const
 {
   switch (type) {
-  case NeuTube::Documentable_SWC:
+  case neutube::Documentable_SWC:
     return m_isSwcSaved;
   default:
     return false;
@@ -540,7 +540,7 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
   if (ZStackObjectRole(role).hasRole(ZStackObjectRole::ROLE_ROI)) {
     m_tree->useCosmeticPen(true);
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
-    m_tree->removeVisualEffect(NeuTube::Display::SwcTree::VE_FULL_SKELETON);
+    m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
   }
 
@@ -1883,6 +1883,11 @@ void ZStackDocCommand::ObjectEdit::RemoveObject::setRemoval(
     const QList<ZStackObject *> &objList)
 {
   m_objSet = QSet<ZStackObject*>::fromList(objList);
+}
+
+void ZStackDocCommand::ObjectEdit::RemoveObject::addRemoval(ZStackObject *obj)
+{
+  m_objSet.insert(obj);
 }
 
 void ZStackDocCommand::ObjectEdit::RemoveObject::redo()

@@ -838,10 +838,10 @@ void* ZStack::projection(
 }
 
 void* ZStack::projection(
-    NeuTube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
+    neutube::EImageBackground bg, ZSingleChannelStack::Stack_Axis axis, int c)
 {
   ZSingleChannelStack::Proj_Mode mode = ZSingleChannelStack::MAX_PROJ;
-  if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+  if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
     mode = ZSingleChannelStack::MIN_PROJ;
   }
 

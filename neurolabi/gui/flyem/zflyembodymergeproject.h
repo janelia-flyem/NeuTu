@@ -92,7 +92,7 @@ public:
   void updateSelection();
 #endif
 
-  std::set<uint64_t> getSelection(NeuTube::EBodyLabelType labelType) const;
+  std::set<uint64_t> getSelection(neutube::EBodyLabelType labelType) const;
 
   //void setSelectionFromOriginal(const std::set<uint64_t> &selected);
 
@@ -137,7 +137,7 @@ signals:
   void dvidLabelChanged();
   void messageGenerated(const ZWidgetMessage&);
   void coarseBodyWindowCreatedInThread();
-  void checkingInBody(uint64_t bodyId, FlyEM::EBodySplitMode mode);
+  void checkingInBody(uint64_t bodyId, flyem::EBodySplitMode mode);
 
   /*
   void messageGenerated(QString, bool appending = true);

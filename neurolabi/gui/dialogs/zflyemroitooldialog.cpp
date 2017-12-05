@@ -128,7 +128,7 @@ void ZFlyEmRoiToolDialog::dump(const ZWidgetMessage &msg)
 
 void ZFlyEmRoiToolDialog::dump(const QString &msg)
 {
-  dump(ZWidgetMessage(msg, NeuTube::MSG_INFORMATION,
+  dump(ZWidgetMessage(msg, neutube::MSG_INFORMATION,
                       ZWidgetMessage::TARGET_TEXT_APPENDING));
 }
 

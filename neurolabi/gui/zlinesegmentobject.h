@@ -13,10 +13,10 @@ class ZLineSegmentObject : public ZStackObject
 public:
   ZLineSegmentObject();
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
 
-  bool isSliceVisible(int z, NeuTube::EAxis sliceAxis) const;
+  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
 
 
   double getLowerX() const;
@@ -42,7 +42,7 @@ public:
 private:
   void computePlaneInersection(QPointF &lineStart, QPointF &lineEnd,
                                bool &visible, int ataFocus,
-                               NeuTube::EAxis sliceAxis) const;
+                               neutube::EAxis sliceAxis) const;
 
 private:
   ZLineSegment m_segment;

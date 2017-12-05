@@ -19,11 +19,11 @@ public:
   */
 
   virtual void report(const std::string &title, const std::string &message,
-                      NeuTube::EMessageType msgType);
+                      neutube::EMessageType msgType);
 
   static void report(std::ostream &stream,
                      const std::string &title, const std::string &message,
-                     NeuTube::EMessageType msgType);
+                     neutube::EMessageType msgType);
 
 private:
   static int m_count;

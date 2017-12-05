@@ -27,7 +27,7 @@ public:
 
   const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   static ZStackObject::EType GetType() {
     return ZStackObject::TYPE_FLYEM_TODO_ITEM;

@@ -17,7 +17,7 @@ public:
 public:
   inline void setSignal(
       Stack *signal,
-      NeuTube::EImageBackground background = NeuTube::IMAGE_BACKGROUND_DARK)
+      neutube::EImageBackground background = neutube::IMAGE_BACKGROUND_DARK)
   {
     C_Stack::kill(m_mask);
     Kill_Sp_Grow_Workspace(m_workspace);
@@ -34,7 +34,7 @@ private:
   Stack *m_signal;
   Stack *m_mask;
   Sp_Grow_Workspace *m_workspace;
-  NeuTube::EImageBackground m_background;
+  neutube::EImageBackground m_background;
 };
 
 #endif // ZSWCPOSITIONADJUSTER_H

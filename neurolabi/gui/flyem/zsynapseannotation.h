@@ -11,7 +11,7 @@
 #include "tz_swc_tree.h"
 #include "zjsonobject.h"
 
-namespace FlyEm {
+namespace flyem {
 
 struct SynapseAnnotationConfig {
   int width;

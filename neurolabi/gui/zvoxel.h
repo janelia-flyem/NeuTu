@@ -47,7 +47,7 @@ public:
 
   void print() const;
 
-  void shiftSliceAxis(NeuTube::EAxis axis);
+  void shiftSliceAxis(neutube::EAxis axis);
 
 private:
   int m_x;

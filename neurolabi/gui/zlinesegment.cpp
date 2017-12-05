@@ -84,7 +84,7 @@ ZPoint ZLineSegment::getInterpolation(double ds) const
   return m_start + getDirection() * ds;
 }
 
-void ZLineSegment::shiftSliceAxis(NeuTube::EAxis axis)
+void ZLineSegment::shiftSliceAxis(neutube::EAxis axis)
 {
   m_start.shiftSliceAxis(axis);
   m_end.shiftSliceAxis(axis);

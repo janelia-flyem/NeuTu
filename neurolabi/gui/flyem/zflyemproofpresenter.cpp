@@ -40,7 +40,7 @@ void ZFlyEmProofPresenter::init()
 {
   m_isHightlightMode = false;
 //  m_splitWindowMode = false;
-  m_splitMode = FlyEM::BODY_SPLIT_NONE;
+  m_splitMode = flyem::BODY_SPLIT_NONE;
   m_highTileContrast = false;
   m_smoothTransform = false;
   m_showingData = false;
@@ -192,7 +192,7 @@ ZStackDocMenuFactory* ZFlyEmProofPresenter::getMenuFactory()
 {
   if (m_menuFactory == NULL) {
     m_menuFactory = new ZFlyEmProofDocMenuFactory;
-    m_menuFactory->setAdminState(NeuTube::IsAdminUser());
+    m_menuFactory->setAdminState(neutube::IsAdminUser());
   }
 
   return m_menuFactory;
@@ -522,9 +522,9 @@ bool ZFlyEmProofPresenter::isSplitOn() const
   return getAction(ZActionFactory::ACTION_PAINT_STROKE)->isEnabled();
 }
 
-void ZFlyEmProofPresenter::enableSplit(FlyEM::EBodySplitMode mode)
+void ZFlyEmProofPresenter::enableSplit(flyem::EBodySplitMode mode)
 {
-  if (mode == FlyEM::BODY_SPLIT_NONE) {
+  if (mode == flyem::BODY_SPLIT_NONE) {
     disableSplit();
   } else {
     setSplitMode(mode);
@@ -534,7 +534,7 @@ void ZFlyEmProofPresenter::enableSplit(FlyEM::EBodySplitMode mode)
 
 void ZFlyEmProofPresenter::disableSplit()
 {
-  setSplitMode(FlyEM::BODY_SPLIT_NONE);
+  setSplitMode(flyem::BODY_SPLIT_NONE);
   setSplitEnabled(false);
 }
 
@@ -579,7 +579,7 @@ void ZFlyEmProofPresenter::tryAddSynapse(
   synapse.setKind(kind);
   synapse.setDefaultRadius();
   synapse.setDefaultColor();
-  synapse.setUserName(NeuTube::GetCurrentUserName());
+  synapse.setUserName(neutube::GetCurrentUserName());
   getCompleteDocument()->executeAddSynapseCommand(synapse, tryingLink);
 //  getCompleteDocument()->addSynapse(pt, kind);
 }
@@ -722,12 +722,12 @@ void ZFlyEmProofPresenter::addActiveStrokeAsBookmark()
     double radius = stroke->getWidth() / 2.0;
 
     ZFlyEmBookmark *bookmark = new ZFlyEmBookmark;
-    ZIntPoint pos(x, y, buddyView()->getZ(NeuTube::COORD_STACK));
+    ZIntPoint pos(x, y, buddyView()->getZ(neutube::COORD_STACK));
     pos.shiftSliceAxisInverse(getSliceAxis());
     bookmark->setLocation(pos);
     bookmark->setRadius(radius);
     bookmark->setCustom(true);
-    bookmark->setUser(NeuTube::GetCurrentUserName().c_str());
+    bookmark->setUser(neutube::GetCurrentUserName().c_str());
     bookmark->addUserTag();
     ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(buddyDocument());
     if (doc != NULL) {
@@ -745,7 +745,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
     const ZStackOperator &op, ZInteractionEvent *e)
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
 
   bool processed = true;
 
@@ -753,7 +753,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
   case ZStackOperator::OP_CUSTOM_MOUSE_RELEASE:
     if (isHighlight()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-      ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+      ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
       ZIntPoint pos = currentStackPos.toIntPoint();
       emit selectingBodyAt(pos.getX(), pos.getY(), pos.getZ());
     }
@@ -918,13 +918,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, NeuTube::BODY_LABEL_ORIGINAL);
+          bodySet, neutube::BODY_LABEL_ORIGINAL);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT:
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          NeuTube::BODY_LABEL_MAPPED);
+          neutube::BODY_LABEL_MAPPED);
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       uint64_t label = labelSlice->getHitLabel();
@@ -938,13 +938,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, NeuTube::BODY_LABEL_MAPPED);
+          bodySet, neutube::BODY_LABEL_MAPPED);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_TOGGLE_SELECT_SINGLE:
   { //Deselect all other bodies. Select the hit body if it is not selected.
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          NeuTube::BODY_LABEL_MAPPED);
+          neutube::BODY_LABEL_MAPPED);
     std::set<uint64_t> newBodySet;
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
@@ -957,13 +957,13 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          newBodySet, NeuTube::BODY_LABEL_MAPPED);
+          newBodySet, neutube::BODY_LABEL_MAPPED);
   }
     break;
   case ZStackOperator::OP_DVID_LABEL_SLICE_SELECT_MULTIPLE:
   {
     std::set<uint64_t> bodySet = getCompleteDocument()->getSelectedBodySet(
-          NeuTube::BODY_LABEL_MAPPED);
+          neutube::BODY_LABEL_MAPPED);
     if (op.getHitObject<ZDvidLabelSlice>() != NULL) {
       ZDvidLabelSlice *labelSlice =  op.getHitObject<ZDvidLabelSlice>();
       uint64_t label = labelSlice->getHitLabel();
@@ -973,7 +973,7 @@ bool ZFlyEmProofPresenter::processCustomOperator(
       }
     }
     getCompleteDocument()->setSelectedBody(
-          bodySet, NeuTube::BODY_LABEL_MAPPED);
+          bodySet, neutube::BODY_LABEL_MAPPED);
   }
     break;
   case ZStackOperator::OP_TOGGLE_SEGMENTATION:
@@ -1053,7 +1053,7 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
 bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
   return updateActiveObjectForSynapseMove(currentStackPos);
 }
 
@@ -1092,7 +1092,7 @@ bool ZFlyEmProofPresenter::updateActiveObjectForSynapseMove(
 void ZFlyEmProofPresenter::updateActiveObjectForSynapseAdd()
 {
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZPoint currentStackPos = event.getPosition(NeuTube::COORD_STACK);
+  ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
   updateActiveObjectForSynapseAdd(currentStackPos);
 }
 

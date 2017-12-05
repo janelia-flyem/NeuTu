@@ -23,7 +23,7 @@ public:
   }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
-               NeuTube::EAxis sliceAxis) const;
+               neutube::EAxis sliceAxis) const;
 
   const std::string& className() const;
 
@@ -69,6 +69,7 @@ public:
     return m_dvidReader.getDvidTarget();
   }
 
+  bool prefetching() const { return m_prefectching; }
 
   int getValue(int x, int y, int z) const;
 
@@ -100,7 +101,7 @@ public:
 //  void downloadBodyMask(ZDvidReader &reader);
 
   bool hit(double x, double y, double z);
-  bool hit(double x, double y, NeuTube::EAxis axis);
+  bool hit(double x, double y, neutube::EAxis axis);
 
   bool isEmpty() const;
 
@@ -150,6 +151,7 @@ private:
   ZSparseStack m_sparseStack;
   ZDvidTarget m_dvidTarget;
   bool m_isValueFilled;
+  bool m_prefectching = false;
   uint64_t m_label;
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;

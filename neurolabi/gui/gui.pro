@@ -191,7 +191,11 @@ unix {
             -framework ApplicationServices \
             -framework CoreFoundation
 
-        ICON = images/app.icns
+        contains(DEFINES, _FLYEM_) {
+            ICON = images/app2.icns
+        } else {
+          ICON = images/app.icns
+        }
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
@@ -254,7 +258,12 @@ unix {
             QMAKE_CXXFLAGS += -m64
         }
         QMAKE_CXXFLAGS += -fext-numeric-literals -msse3
-        RC_FILE = images/app.icns
+        contains(DEFINES, _FLYEM_) {
+            RC_FILE = images/app2.icns
+        } else {
+            RC_FILE = images/app.icns
+        }
+
     }
 }
 
@@ -813,7 +822,9 @@ HEADERS += mainwindow.h \
     misc/zvtkutil.h \
     zstackdocaccessor.h \
     zcontrastprotocol.h \
-    dialogs/zflyemmergeuploaddialog.h
+    dialogs/zflyemmergeuploaddialog.h \
+    zmeshfactory.h \
+    flyem/zflyemmeshfactory.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1423,7 +1434,9 @@ SOURCES += main.cpp \
     misc/zvtkutil.cpp \
     zstackdocaccessor.cpp \
     zcontrastprotocol.cpp \
-    dialogs/zflyemmergeuploaddialog.cpp
+    dialogs/zflyemmergeuploaddialog.cpp \
+    zmeshfactory.cpp \
+    flyem/zflyemmeshfactory.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

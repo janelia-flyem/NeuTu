@@ -163,9 +163,20 @@ make -j${THREAD_COUNT}
 
 bin_dir=.
 app_name=neuTube
+
 if [ $edition = "flyem" ]
 then
   app_name=neutu
+fi
+
+if [ $edition = "neu3" ]
+then
+  app_name=neu3
+fi
+
+if [ $debug_config = "debug" ]
+then
+  app_name=${app_name}_d
 fi
 
 if [ -d $bin_dir/$app_name.app ]

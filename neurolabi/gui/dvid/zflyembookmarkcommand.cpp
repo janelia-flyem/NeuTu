@@ -139,7 +139,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::RemoveBookmark::undo()
         m_isInDoc = true;
       } else {
         m_doc->notify(ZWidgetMessage("Failed to undo bookmark deletion",
-                                     NeuTube::MSG_WARNING));
+                                     neutube::MSG_WARNING));
       }
     }
   }
@@ -187,7 +187,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::AddBookmark::redo()
         m_isInDoc = true;
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
-                                     NeuTube::MSG_WARNING));
+                                     neutube::MSG_WARNING));
       }
     }
   }
@@ -248,7 +248,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::redo()
         m_doc->notifyBookmarkEdited(m_bookmark);
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
-                                     NeuTube::MSG_WARNING));
+                                     neutube::MSG_WARNING));
       }
     }
   }
@@ -266,7 +266,7 @@ void ZStackDocCommand::FlyEmBookmarkEdit::ChangeBookmark::undo()
         m_doc->notifyBookmarkEdited(m_bookmark);
       } else {
         m_doc->notify(ZWidgetMessage("Failed to save bookmark to DVID",
-                                     NeuTube::MSG_WARNING));
+                                     neutube::MSG_WARNING));
       }
     }
   }

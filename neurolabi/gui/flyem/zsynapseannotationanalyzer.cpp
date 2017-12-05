@@ -6,7 +6,7 @@
 #include "zfiletype.h"
 #include "zjsonparser.h"
 
-using namespace FlyEm;
+using namespace flyem;
 using namespace std;
 
 ZSynapseAnnotationAnalyzer::ZSynapseAnnotationAnalyzer() :
@@ -175,7 +175,7 @@ void ZSynapseAnnotationAnalyzer::loadConfig(string filePath)
   }
 }
 
-void FlyEm::ZSynapseAnnotationAnalyzer::print()
+void flyem::ZSynapseAnnotationAnalyzer::print()
 {
   m_config.print();
   cout << "Synapse geometric range:" << endl;

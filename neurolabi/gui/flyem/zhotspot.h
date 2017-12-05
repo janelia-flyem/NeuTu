@@ -8,7 +8,7 @@
 #include "zpointarray.h"
 #include "zlinesegmentarray.h"
 
-namespace FlyEm {
+namespace flyem {
 
 class ZGeometry {
 public:
