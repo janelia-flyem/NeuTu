@@ -40,7 +40,9 @@ private:
     Ui::DvidBranchDialog *ui;
     ZDvidReader m_reader;
     QStringListModel * m_repoModel;
+    QString m_repoName;
     QStringListModel * m_branchModel;
+    QString m_branchName;
     QMap<QString, QJsonObject> m_repoMap;
     QMap<QString, QJsonObject> m_branchMap;
 
@@ -49,6 +51,8 @@ private:
     void loadBranches(QString repoName);
     QStringList findBranches(QJsonObject nodeJson);
     void showError(QString title, QString message);
+    void loadNode(QString branchName);
+    void clearNode();
 };
 
 #endif // DVIDBRANCHDIALOG_H

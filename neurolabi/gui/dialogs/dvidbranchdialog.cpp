@@ -123,6 +123,7 @@ QJsonObject DvidBranchDialog::loadDatasetsFromFile() {
 }
 
 void DvidBranchDialog::onRepoClicked(QModelIndex modelIndex) {
+    clearNode();
     loadBranches(m_repoModel->data(modelIndex, Qt::DisplayRole).toString());
 }
 
@@ -132,6 +133,8 @@ void DvidBranchDialog::onRepoClicked(QModelIndex modelIndex) {
 void DvidBranchDialog::loadBranches(QString repoName) {
     LINFO() << "Loading branches from DVID repo" << repoName.toStdString();
 
+    m_repoName = repoName;
+
     // clear model; use it as a loading message, too
     QStringList branchNames;
     branchNames.append(MESSAGE_LOADING);
@@ -140,9 +143,9 @@ void DvidBranchDialog::loadBranches(QString repoName) {
 
     // read repo info, in this thread; there's nothing else the user can do
     //  but wait at this point anyway
-    ZDvidTarget target(m_repoMap[repoName][KEY_SERVER].toString().toStdString(),
-        m_repoMap[repoName][KEY_UUID].toString().toStdString(),
-        m_repoMap[repoName][KEY_PORT].toInt());
+    ZDvidTarget target(m_repoMap[m_repoName][KEY_SERVER].toString().toStdString(),
+        m_repoMap[m_repoName][KEY_UUID].toString().toStdString(),
+        m_repoMap[m_repoName][KEY_PORT].toInt());
     if (!m_reader.open(target)) {
         QMessageBox errorBox;
         errorBox.setText("Error connecting to DVID");
@@ -229,20 +232,43 @@ QStringList DvidBranchDialog::findBranches(QJsonObject nodeJson) {
 }
 
 void DvidBranchDialog::onBranchClicked(QModelIndex modelIndex) {
+    loadNode(m_branchModel->data(modelIndex, Qt::DisplayRole).toString());
+}
 
-    QString branchName = m_branchModel->data(modelIndex, Qt::DisplayRole).toString();
-
+/*
+ * given branch name, load the data for the node into the third column of the UI
+ */
+void DvidBranchDialog::loadNode(QString branchName) {
     // this is kind of ad hoc: filter out the loading message
     if (branchName == MESSAGE_LOADING) {
         return;
     }
 
-    LINFO() << "branch clicked:" << branchName;
+    m_branchName = branchName;
 
-    // given chosen branch, retrieve values to fill in for last window
+    // server and port are from repo:
+    ui->serverBox->setText(m_repoMap[m_repoName][KEY_SERVER].toString());
+    ui->portBox->setValue(m_repoMap[m_repoName][KEY_PORT].toInt());
+
+    // rest is from the specific node:
+    QJsonObject nodeJson = m_branchMap[m_branchName];
+    ui->UUIDBox->setText(nodeJson[KEY_UUID].toString());
+    // move to the front if the UUID is too long
+    ui->UUIDBox->setCursorPosition(0);
+
+    // or maybe I should just truncate it to 5 or 6 characters?
 
 
 
+}
+
+/*
+ * clear the info in the third column of the UI
+ */
+void DvidBranchDialog::clearNode() {
+    ui->serverBox->clear();
+    ui->portBox->clear();
+    ui->UUIDBox->clear();
 }
 
 /*
