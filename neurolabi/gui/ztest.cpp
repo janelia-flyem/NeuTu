@@ -24916,7 +24916,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
   ZStack *stack1 = ZStackFactory::MakeZeroStack(2, 3, 1, 1);
   stack1->setDsIntv(1, 1, 0);
 
@@ -24953,6 +24953,72 @@ void ZTest::test(MainWindow *host)
     obj->print();
   }
 
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZStackWatershedContainer container(frame->document()->getStack());
+  ZStroke2d seed1;
+  seed1.set(2959, 4101);
+  seed1.setZ(3201);
+  seed1.setWidth(10);
+  seed1.setLabel(1);
+  container.addSeed(seed1);
+
+  ZStroke2d seed2;
+  seed2.set(3038, 4085);
+  seed2.setZ(3201);
+  seed2.setWidth(10);
+  seed2.setLabel(2);
+  container.addSeed(seed2);
+
+  container.run();
+  ZObject3dScanArray *objArray = container.makeSplitResult(1, NULL);
+  for (ZObject3dScan *obj : *objArray) {
+    frame->document()->addObject(obj);
+  }
+  objArray->shallowClear();
+  delete objArray;
+
+#endif
+
+#if 1
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_BENCHMARK_DIR + "/test.zss");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZStackWatershedContainer container(frame->document()->getSparseStack());
+  ZStroke2d *seed1 = new ZStroke2d;
+  seed1->set(4263, 4485);
+  seed1->setZ(7264);
+  seed1->setWidth(10);
+  seed1->setLabel(2);
+  seed1->setPenetrating(false);
+  container.addSeed(*seed1);
+
+  ZStroke2d *seed2 = new ZStroke2d;
+  seed2->set(4295, 4496);
+  seed2->setZ(7264);
+  seed2->setWidth(10);
+  seed2->setLabel(1);
+  seed2->setPenetrating(false);
+  container.addSeed(*seed2);
+
+  frame->document()->addObject(seed1);
+  frame->document()->addObject(seed2);
+
+  container.run();
+  ZObject3dScanArray *objArray = container.makeSplitResult(1, NULL);
+  for (ZObject3dScan *obj : *objArray) {
+    frame->document()->addObject(obj);
+  }
+  objArray->shallowClear();
+  delete objArray;
 #endif
 
   std::cout << "Done." << std::endl;

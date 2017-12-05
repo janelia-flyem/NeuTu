@@ -7,6 +7,7 @@
 #include "tz_stack_watershed.h"
 #include "zintcuboid.h"
 #include "zstackptr.h"
+#include "zstackarray.h"
 
 #include <QString>
 
@@ -27,6 +28,9 @@ class ZSwcTree;
  * container.addSeed(seed2);
  * container.run();
  * ZObject3dScanArray *result = container.makeSplitResult();
+ *
+ * Note that the class is not designed for reuse, i.e. each container object
+ * can only be used for one stack data.
  */
 class ZStackWatershedContainer
 {
@@ -84,6 +88,10 @@ public:
     return m_result.front();
   }
 
+  ZStackArray getResult() const {
+    return m_result;
+  }
+
 
   bool hasResult() const;
 
@@ -109,6 +117,8 @@ public:
   bool ccaPost() const {
     return m_ccaPost;
   }
+
+  void test();
 
 private:
   void init();
@@ -137,10 +147,17 @@ private:
   void updateRange();
   void updateSeedMask();
 
+  ZObject3dScan* processSplitResult(
+      const ZObject3dScan &obj, ZObject3dScan *remainBody);
+  void assignComponent(
+      ZObject3dScan &remainBody, ZObject3dScan &mainBody,
+      ZObject3dScanArray *result);
+  void configResult(ZObject3dScanArray *result);
+
 private:
   ZStack *m_stack;
   ZSparseStack *m_spStack;
-  std::vector<ZStackPtr> m_result;
+  ZStackArray m_result;
   Stack_Watershed_Workspace *m_workspace;
 //  ZIntPoint m_sourceOffset;
   ZIntCuboid m_range;
@@ -150,8 +167,9 @@ private:
   bool m_floodingZero;
   int m_channel;
   bool m_usingSeedRange = false;
-  bool m_ccaPost = true;
+  bool m_ccaPost = true; //connected component analysis as post-processing
   int m_scale;
+  size_t m_minIsolationSize = 50;
   QString m_algorithm;
 };
 

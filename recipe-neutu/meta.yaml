@@ -1,5 +1,9 @@
 package:
+  {% if NEUTU_TARGET is defined %}
+    name: neutu
+  {% else %}
     name: {{NEUTU_TARGET}}
+  {% endif %}
 
   {% if GIT_DESCRIBE_NUMBER|int == 0 %}
     version: "{{GIT_DESCRIBE_TAG}}"

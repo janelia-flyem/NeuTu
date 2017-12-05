@@ -67,6 +67,18 @@ void ZStackArray::downsampleMax(int xIntv, int yIntv, int zIntv)
   }
 }
 
+void ZStackArray::pushDsIntv(int dx, int dy, int dz)
+{
+  for (ZStackPtr &stack : *this) {
+    stack->pushDsIntv(dx, dy, dz);
+  }
+}
+
+void ZStackArray::pushDsIntv(const ZIntPoint &dsIntv)
+{
+  pushDsIntv(dsIntv.getX(), dsIntv.getY() ,dsIntv.getZ());
+}
+
 void ZStackArray::append(const ZStackPtr &stack)
 {
   push_back(stack);
@@ -77,6 +89,11 @@ void ZStackArray::append(ZStack *stack)
   if (stack != NULL) {
     push_back(ZStackPtr(stack));
   }
+}
+
+void ZStackArray::append(const ZStackArray &stackArray)
+{
+  insert(end(), stackArray.begin(), stackArray.end());
 }
 
 std::vector<ZStack*> ZStackArray::toRawArray() const
