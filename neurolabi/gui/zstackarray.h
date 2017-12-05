@@ -8,6 +8,7 @@
 #include "zstackptr.h"
 
 class ZIntCuboid;
+class ZIntPoint;
 
 class ZStackArray : public std::vector<ZStackPtr>
 {
@@ -33,6 +34,9 @@ public:
 
   void downsampleMax(int xIntv, int yIntv, int zIntv);
 
+  void pushDsIntv(int dx, int dy, int dz);
+  void pushDsIntv(const ZIntPoint &dsIntv);
+
   /*!
    * \brief Append a stack.
    *
@@ -43,6 +47,7 @@ public:
    */
   void append(ZStack *stack);
   void append(const ZStackPtr &stack);
+  void append(const ZStackArray &stackArray);
 
   template <class InputIterator>
   void append(const InputIterator &first, const InputIterator &last);
