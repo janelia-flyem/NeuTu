@@ -69,6 +69,9 @@ ZWaterShedWindow::ZWaterShedWindow(QWidget *parent) :
   algorithms=new QComboBox;
   algorithms->addItem("watershed");
   algorithms->addItem("random_walker");
+  algorithms->addItem("power_watershed");
+  algorithms->addItem("MSF_Cruskal");
+  algorithms->addItem("MSF_Prime");
   lay->addWidget(algorithms,1,0,1,2);
   this->setLayout(lay);
   this->move(300,200);
@@ -106,10 +109,10 @@ void ZWaterShedWindow::onOk()
       container.addSeed(*stroke);
   }
   container.setScale(scale);
-#ifdef _DEBUG_
+
   QTime time;
   time.start();
-#endif
+
   container.setAlgorithm(algorithms->currentText());
   container.run();
 
@@ -125,7 +128,9 @@ void ZWaterShedWindow::onOk()
   }
   doc->getDataBuffer()->deliver();
   result.shallowClear();
-
+  ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(container.getResultStack()->clone());
+  ZSandbox::GetMainWindow()->addStackFrame(frame);
+  ZSandbox::GetMainWindow()->presentStackFrame(frame);
 #if 0
 =======
   ZStack* result=container.getResultStack()->clone();
