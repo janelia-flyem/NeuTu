@@ -1,4 +1,4 @@
-#define _NEUTU_USE_REF_KEY_
+//#define _NEUTU_USE_REF_KEY_
 #include "ztest.h"
 
 #include <QFile>
@@ -326,6 +326,7 @@
 #include "widgets/zbodylistwidget.h"
 #include "zcontrastprotocol.h"
 #include "zmeshfactory.h"
+#include "widgets/taskprotocolwindow.h"
 
 using namespace std;
 
@@ -21701,22 +21702,23 @@ void ZTest::test(MainWindow *host)
   std::cout << sizeof(std::vector<std::string>) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+//  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.set("emdata2.int.janelia.org", "40c2", 7000);
   ZDvidWriter writer;
   writer.open(target);
 
-//  ZJsonObject obj = writer.getDvidReader().readDataMap();
+  ZJsonObject obj = writer.getDvidReader().readDataMap();
 
-  ZJsonObject labelszObj;
+  ZJsonObject labelszObj(obj.value("roi_synapse_labelsz"));
 
-  labelszObj.setEntry("ROI_LOP_15", "annot_synapse_010417_ROI_LOP_15");
-  labelszObj.setEntry("ROI_LOP_40", "annot_synapse_010417_ROI_LOP_40");
+//  labelszObj.setEntry("ROI_LOP_15", "annot_synapse_010417_ROI_LOP_15");
+//  labelszObj.setEntry("ROI_LOP_40", "annot_synapse_010417_ROI_LOP_40");
   labelszObj.setEntry("ROI_chiasm_body2", "annot_synapse_ROI_chiasm_body2");
 
-  ZJsonObject obj;
-  obj.setEntry("roi_synapse_labelsz", labelszObj);
+//  ZJsonObject obj;
+//  obj.setEntry("roi_synapse_labelsz", labelszObj);
 
   writer.writeDataMap(obj);
 #endif
@@ -24833,6 +24835,36 @@ void ZTest::test(MainWindow *host)
   stroke.decimate();
 
   stroke.print();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setBodyLabelName("labels");
+
+  ZFlyEmProofDoc *doc = new ZFlyEmProofDoc(host);
+  doc->setDvidTarget(target);
+
+  TaskProtocolWindow *window = new TaskProtocolWindow(doc, NULL, host);
+  window->test();
+
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("127.0.0.1", "0f59", 8000);
+  target.setGrayScaleName("grayscalejpeg");
+  ZDvidReader reader;
+  reader.open(target);
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  std::cout << "Bound box: " << dvidInfo.getDataRange().toString() << std::endl;
+
+  ZStack *stack = reader.readGrayScale(10000, 3000, 10000, 256, 256, 256, 0);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+
+  ZStack *stack2 = reader.readGrayScale(10000, 3000, 10000, 256, 256, 256, 1);
+  stack2->save(GET_TEST_DATA_DIR + "/test2.tif");
+
 #endif
 
   std::cout << "Done." << std::endl;

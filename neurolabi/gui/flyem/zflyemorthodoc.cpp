@@ -11,15 +11,21 @@
 ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(QObject *parent) :
   ZFlyEmProofDoc(parent)
 {
-  init();
+  init(256, 256, 256);
 }
 
-void ZFlyEmOrthoDoc::init()
+ZFlyEmOrthoDoc::ZFlyEmOrthoDoc(int width, int height, int depth, QObject *parent) :
+  ZFlyEmProofDoc(parent)
+{
+  init(width, height, depth);
+}
+
+void ZFlyEmOrthoDoc::init(int width, int height, int depth)
 {
   setTag(neutube::Document::FLYEM_ORTHO);
-  m_width = 256;
-  m_height = 256;
-  m_depth = 256;
+  m_width = width;
+  m_height = height;
+  m_depth = depth;
 
   setRoutineCheck(false);
 
@@ -27,6 +33,13 @@ void ZFlyEmOrthoDoc::init()
   crossHair->setCenter(m_width / 2, m_height / 2, m_depth / 2);
   crossHair->setSource(ZStackObjectSourceFactory::MakeCrossHairSource());
   addObject(crossHair);
+}
+
+void ZFlyEmOrthoDoc::setSize(int width, int height, int depth)
+{
+  m_width = width;
+  m_height = height;
+  m_depth = depth;
 }
 
 ZCrossHair* ZFlyEmOrthoDoc::getCrossHair() const
@@ -44,6 +57,11 @@ void ZFlyEmOrthoDoc::setCrossHairCenter(double x, double y, neutube::EAxis axis)
   //Transform back to the world space
   center.shiftSliceAxisInverse(axis);
 
+  getCrossHair()->setCenter(center);
+}
+
+void ZFlyEmOrthoDoc::setCrossHairCenter(const ZIntPoint &center)
+{
   getCrossHair()->setCenter(center);
 }
 
@@ -107,7 +125,7 @@ void ZFlyEmOrthoDoc::updateStack(const ZIntPoint &center)
       ZJsonObject synapseJson(obj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (synapseJson.hasKey("Pos")) {
         ZDvidSynapse synapse;
-        synapse.loadJsonObject(synapseJson, FlyEM::LOAD_NO_PARTNER);
+        synapse.loadJsonObject(synapseJson, flyem::LOAD_NO_PARTNER);
         for (QList<ZDvidSynapseEnsemble*>::iterator iter = seList.begin();
              iter != seList.end(); ++iter) {
           ZDvidSynapseEnsemble *se = *iter;

@@ -104,9 +104,9 @@ void ZStackView::init()
   m_infoLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   m_infoLabel->setFocusPolicy(Qt::NoFocus);
 
-  m_msgLabel = new QLabel(this);
-  m_msgLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
-  m_msgLabel->setFocusPolicy(Qt::NoFocus);
+  m_stackLabel = new QLabel(this);
+  m_stackLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  m_stackLabel->setFocusPolicy(Qt::NoFocus);
 
   m_activeLabel = new QLabel(this);
   m_activeLabel->setWindowFlags(Qt::FramelessWindowHint);
@@ -133,14 +133,14 @@ void ZStackView::init()
   m_channelControlLayout = new QHBoxLayout;
 
   m_secondTopLayout->addLayout(m_channelControlLayout);
-  m_secondTopLayout->addWidget(m_msgLabel);
+  m_secondTopLayout->addWidget(m_stackLabel);
 //  m_msgLabel->setText("test");
   m_secondTopLayout->addWidget(m_progress);
 //  m_secondTopLayout->addWidget(m_zSpinBox);
 
-  m_secondTopLayout->addSpacerItem(new QSpacerItem(1, m_progress->height(),
-                                               QSizePolicy::Preferred,
-                                               QSizePolicy::Fixed));
+//  m_secondTopLayout->addSpacerItem(new QSpacerItem(1, 1,
+//                                               QSizePolicy::Expanding,
+//                                               QSizePolicy::Fixed));
 
 
   m_layout = new QVBoxLayout;
@@ -254,13 +254,32 @@ void ZStackView::resetViewProj()
         box.getWidth(), box.getHeight());
 }
 
-void ZStackView::setInfo(QString info)
+void ZStackView::setInfo(const QString &info)
 {
   if (m_infoLabel != NULL) {
     m_infoLabel->setText(info);
 //    m_infoLabel->update();
   }
 }
+
+void ZStackView::setInfo()
+{
+  if (m_infoLabel != NULL) {
+    ZIntCuboid box = getViewBoundBox();
+    setInfo(QString("%1 x %2 => %3 x %4").arg(box.getWidth()).
+            arg(box.getHeight()).
+            arg(m_imageWidget->screenSize().width()).
+            arg(m_imageWidget->screenSize().height()));
+  }
+}
+
+void ZStackView::setStackInfo(const QString &info)
+{
+  if (m_stackLabel != NULL) {
+    m_stackLabel->setText(info);
+  }
+}
+
 
 bool ZStackView::event(QEvent *event)
 {
@@ -325,18 +344,18 @@ void ZStackView::connectSignalSlot()
 
 void ZStackView::updateZSpinBoxValue()
 {
-  m_zSpinBox->setValue(getCurrentZ());
-}
+#if 0
+  int z0 = buddyDocument()->getStackOffset(m_sliceAxis);
+  int prevIndex = m_zSpinBox->getValue() - z0;
+  int currentIndex = getCurrentZ() - z0;
+  int newPos = m_sliceStrategy->scroll(prevIndex, currentIndex - prevIndex);
+#ifdef _DEBUG_
+  std::cout << "Scrolling: " << currentIndex << " " << prevIndex << " "
+            << newPos << std::endl;
+#endif
+#endif
 
-void ZStackView::setInfo()
-{
-  if (m_infoLabel != NULL) {
-    ZIntCuboid box = getViewBoundBox();
-    setInfo(QString("%1 x %2 => %3 x %4").arg(box.getWidth()).
-            arg(box.getHeight()).
-            arg(m_imageWidget->screenSize().width()).
-            arg(m_imageWidget->screenSize().height()));
-  }
+  m_zSpinBox->setValue(getCurrentZ());
 }
 
 double ZStackView::getCanvasWidthZoomRatio() const
@@ -430,6 +449,7 @@ void ZStackView::reset(bool updatingScreen)
       hideThresholdControl();
     }
   }
+  updateStackInfo();
   setInfo();
 }
 
@@ -472,6 +492,25 @@ void ZStackView::updateViewBox()
   setSliceIndexQuietly(m_depthControl->maximum() / 2);
   processViewChange(true, true);
 }
+
+void ZStackView::updateStackWidget()
+{
+  updateChannelControl();
+  updateThresholdSlider();
+  updateSlider();
+  updateStackInfo();
+}
+
+void ZStackView::updateStackInfo()
+{
+  ZStack *stack = stackData();
+  if (stack != NULL) {
+    setStackInfo(stack->getBoundBox().toString().c_str());
+  } else {
+    setStackInfo("");
+  }
+}
+
 
 void ZStackView::updateChannelControl()
 {  
@@ -1346,6 +1385,11 @@ QSize ZStackView::getCanvasSize() const
   }
 
   return size;
+}
+
+QSize ZStackView::getScreenSize() const
+{
+  return m_imageWidget->size();
 }
 
 void ZStackView::resetCanvasWithStack(
@@ -3084,7 +3128,7 @@ void ZStackView::paintObject(const QSet<ZStackObject::ETarget> &targetSet)
 
 void ZStackView::dump(const QString &msg)
 {
-  m_msgLabel->setText(msg);
+  m_stackLabel->setText(msg);
 }
 
 void ZStackView::highlightPosition(const ZIntPoint &pt)
@@ -3096,7 +3140,7 @@ void ZStackView::highlightPosition(int x, int y, int z)
 {
   ZStackBall *ball = new ZStackBall(x, y, z, 5.0);
   ball->setColor(255, 0, 0);
-  ball->addVisualEffect(neutube::Display::Sphere::VE_GRADIENT_FILL);
+  ball->addVisualEffect(neutube::display::Sphere::VE_GRADIENT_FILL);
 //  ball->display(m_objectCanvasPainter, sliceIndex(), ZStackObject::SOLID);
 
   buddyPresenter()->setHighlight(true);

@@ -33,11 +33,12 @@ public:
   virtual QMenu* makeSynapseContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
+  /*
   virtual QMenu* makeContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
   virtual QMenu* makeContextMenu(Z3DWindow *window, QMenu *menu);
-
+*/
 protected:
   void addAction(
       const QList<ZActionFactory::EAction> &actionList,

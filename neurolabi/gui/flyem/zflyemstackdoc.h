@@ -50,7 +50,7 @@ public:
   std::vector<ZObject3d*> getNeighborBodyObject(int id);
   std::map<int,size_t>* getBodyIndexMap();
 
-  inline FlyEm::ZSegmentationBundle* getSegmentationBundle() {
+  inline flyem::ZSegmentationBundle* getSegmentationBundle() {
     return &m_segmentationBundle;
   }
 
@@ -65,9 +65,9 @@ private:
   //ZGraph *m_bodyGraph;
   //std::map<int, int> m_bodyIndexMap;
   //std::vector<ZObject3d> m_bodyObject;
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   //ZSuperpixelMapArray m_superpixelMap;
-  mutable FlyEm::ZSegmentationBundle m_segmentationBundle;
+  mutable flyem::ZSegmentationBundle m_segmentationBundle;
 };
 
 #endif // ZFLYEMSTACKDOC_H

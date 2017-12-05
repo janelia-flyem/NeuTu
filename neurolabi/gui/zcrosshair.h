@@ -31,6 +31,7 @@ public:
 
   void setCenter(double x, double y, double z);
   void setCenter(const ZPoint &center);
+  void setCenter(const ZIntPoint &center);
 //  void setCenter(double x, double y);
   void setX(double x);
   void setY(double y);

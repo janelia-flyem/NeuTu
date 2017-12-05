@@ -20,12 +20,12 @@
 
 using namespace std;
 
-map<string, FlyEm::ZSegmentationAnalyzer::BcfSet>
-FlyEm::ZSegmentationAnalyzer::m_bcfSetNameMap =
-    FlyEm::ZSegmentationAnalyzer::createBcfSetNameMap();
+map<string, flyem::ZSegmentationAnalyzer::BcfSet>
+flyem::ZSegmentationAnalyzer::m_bcfSetNameMap =
+    flyem::ZSegmentationAnalyzer::createBcfSetNameMap();
 
-map<string, FlyEm::ZSegmentationAnalyzer::BcfSet>
-FlyEm::ZSegmentationAnalyzer::createBcfSetNameMap()
+map<string, flyem::ZSegmentationAnalyzer::BcfSet>
+flyem::ZSegmentationAnalyzer::createBcfSetNameMap()
 {
   map<string, BcfSet> bcfMap;
   bcfMap["Body_Grow"] = BCF_BODY_GROW;
@@ -43,11 +43,11 @@ FlyEm::ZSegmentationAnalyzer::createBcfSetNameMap()
   return bcfMap;
 }
 
-FlyEm::ZSegmentationAnalyzer::ZSegmentationAnalyzer()
+flyem::ZSegmentationAnalyzer::ZSegmentationAnalyzer()
 {
 }
 
-vector<uint8_t> FlyEm::ZSegmentationAnalyzer::idToChannelCode(
+vector<uint8_t> flyem::ZSegmentationAnalyzer::idToChannelCode(
     int id, int channelNumber)
 {
   vector<uint8_t> channelCode(channelNumber);
@@ -60,7 +60,7 @@ vector<uint8_t> FlyEm::ZSegmentationAnalyzer::idToChannelCode(
   return channelCode;
 }
 
-int FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+int flyem::ZSegmentationAnalyzer::channelCodeToId(
     const std::vector<uint8_t> &channelCode)
 {
   int id = 0;
@@ -72,7 +72,7 @@ int FlyEm::ZSegmentationAnalyzer::channelCodeToId(
   return id;
 }
 
-int FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+int flyem::ZSegmentationAnalyzer::channelCodeToId(
     const std::vector<double> &channelCode)
 {
   int id = 0;
@@ -84,7 +84,7 @@ int FlyEm::ZSegmentationAnalyzer::channelCodeToId(
   return id;
 }
 
-int FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+int flyem::ZSegmentationAnalyzer::channelCodeToId(
     const uint8_t *array, int channelNumber,
     size_t index, size_t stride)
 {
@@ -97,7 +97,7 @@ int FlyEm::ZSegmentationAnalyzer::channelCodeToId(
   return id;
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::computeTouchFeature(
+vector<double> flyem::ZSegmentationAnalyzer::computeTouchFeature(
     Stack *stack, const vector<int> &seed)
 {
   vector<double> feat;
@@ -128,7 +128,7 @@ vector<double> FlyEm::ZSegmentationAnalyzer::computeTouchFeature(
   return feat;
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstTouchFeature(
+vector<double> flyem::ZSegmentationAnalyzer::computeRayburstTouchFeature(
     Stack **stack, std::vector<int> seed[])
 {
   vector<double> direction[2];
@@ -146,7 +146,7 @@ vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstTouchFeature(
   return feature;
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstTouchFeature(
+vector<double> flyem::ZSegmentationAnalyzer::computeRayburstTouchFeature(
     Stack **stack, std::vector<int> seed)
 {
   vector<double> direction[2];
@@ -169,7 +169,7 @@ vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstTouchFeature(
   return feature;
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstDirection(
+vector<double> flyem::ZSegmentationAnalyzer::computeRayburstDirection(
     const Stack *stack, const int *seedArray, size_t seedNumber)
 {
   double currentLength = 0;
@@ -193,7 +193,7 @@ vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstDirection(
   return direction;
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstDirection(
+vector<double> flyem::ZSegmentationAnalyzer::computeRayburstDirection(
     const Stack *stack, int seed)
 {
   uint8_t *array8 = C_Stack::array8(stack);
@@ -287,7 +287,7 @@ vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstDirection(
   return result;
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
+vector<double> flyem::ZSegmentationAnalyzer::touchFeature(
     const ZStack &stack, int id1, int id2)
 {
   vector<int> seedArray[2];
@@ -357,8 +357,8 @@ vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
   return feature;
 }
 
-std::vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
-    FlyEm::ZSegmentationBundle &bundle, int id1, int id2)
+std::vector<double> flyem::ZSegmentationAnalyzer::touchFeature(
+    flyem::ZSegmentationBundle &bundle, int id1, int id2)
 {
   ZStack *bodyStack = bundle.getBodyStack();
 
@@ -394,7 +394,7 @@ std::vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
 }
 
 std::vector<std::vector<double> >
-FlyEm::ZSegmentationAnalyzer::touchFeature(FlyEm::ZSegmentationBundle &bundle)
+flyem::ZSegmentationAnalyzer::touchFeature(flyem::ZSegmentationBundle &bundle)
 {
   ZGraph *bodyGraph = bundle.getBodyGraph();
 
@@ -413,8 +413,8 @@ FlyEm::ZSegmentationAnalyzer::touchFeature(FlyEm::ZSegmentationBundle &bundle)
 }
 
 std::vector<std::vector<double> >
-FlyEm::ZSegmentationAnalyzer::computeBcf(
-    FlyEm::ZSegmentationBundle &bundle, BcfSet setName)
+flyem::ZSegmentationAnalyzer::computeBcf(
+    flyem::ZSegmentationBundle &bundle, BcfSet setName)
 {
   ZGraph *bodyGraph = bundle.getBodyGraph();
 
@@ -433,8 +433,8 @@ FlyEm::ZSegmentationAnalyzer::computeBcf(
 }
 
 std::vector<std::vector<double> >
-FlyEm::ZSegmentationAnalyzer::computeBcf(
-    FlyEm::ZSegmentationBundle &bundle, const std::vector<string> &setName)
+flyem::ZSegmentationAnalyzer::computeBcf(
+    flyem::ZSegmentationBundle &bundle, const std::vector<string> &setName)
 {
   ZGraph *bodyGraph = bundle.getBodyGraph();
 
@@ -452,12 +452,12 @@ FlyEm::ZSegmentationAnalyzer::computeBcf(
   return feature;
 }
 
-void FlyEm::ZSegmentationAnalyzer::generateBcf(
-    FlyEm::ZSegmentationBundle &bundle, const string &setName)
+void flyem::ZSegmentationAnalyzer::generateBcf(
+    flyem::ZSegmentationBundle &bundle, const string &setName)
 {
   if (!fexist(bundle.getBcfPath(setName).c_str())) {
     vector<vector<double> > feature =
-        FlyEm::ZSegmentationAnalyzer::computeBcf(bundle, setName);
+        flyem::ZSegmentationAnalyzer::computeBcf(bundle, setName);
 #if defined(_WIN32) || defined(_WIN64)
     _mkdir(bundle.getBcfPath().c_str());
 #else
@@ -485,7 +485,7 @@ void FlyEm::ZSegmentationAnalyzer::generateBcf(
   }
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
+vector<double> flyem::ZSegmentationAnalyzer::touchFeature(
     const ZStack &stack, int id1, int id2, const ZStack &mask)
 {
   vector<int> seedArray[2];
@@ -575,13 +575,13 @@ vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
   return feature;
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
+vector<double> flyem::ZSegmentationAnalyzer::touchFeature(
     const ZStack &stack, const vector<double> &c1, const vector<double> &c2)
 {
   return touchFeature(stack, channelCodeToId(c1), channelCodeToId(c2));
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
+vector<double> flyem::ZSegmentationAnalyzer::touchFeature(
     const ZStack &stack, const vector<double> &c1, const vector<double> &c2,
     const ZStack &mask)
 {
@@ -589,7 +589,7 @@ vector<double> FlyEm::ZSegmentationAnalyzer::touchFeature(
 }
 
 
-vector<vector<double> > FlyEm::ZSegmentationAnalyzer::touchFeature(
+vector<vector<double> > flyem::ZSegmentationAnalyzer::touchFeature(
     const ZStack &stack, const ZGraph &bodyGraph)
 {
   vector<vector<double> > feature;
@@ -606,7 +606,7 @@ vector<vector<double> > FlyEm::ZSegmentationAnalyzer::touchFeature(
   return feature;
 }
 
-vector<vector<double> > FlyEm::ZSegmentationAnalyzer::touchFeature(
+vector<vector<double> > flyem::ZSegmentationAnalyzer::touchFeature(
     const ZStack &stack, const ZGraph &bodyGraph, const ZStack &mask)
 {
   vector<vector<double> > feature;
@@ -629,7 +629,7 @@ vector<vector<double> > FlyEm::ZSegmentationAnalyzer::touchFeature(
   return feature;
 }
 
-ZIntPairMap FlyEm::ZSegmentationAnalyzer::computeOverlap(
+ZIntPairMap flyem::ZSegmentationAnalyzer::computeOverlap(
     ZStack *stack1, ZStack *stack2, ZStack *excluded)
 {
   ZIntPairMap overlap;
@@ -657,7 +657,7 @@ ZIntPairMap FlyEm::ZSegmentationAnalyzer::computeOverlap(
   return overlap;
 }
 
-ZIntMap FlyEm::ZSegmentationAnalyzer::computeBodySize(ZStack *stack,
+ZIntMap flyem::ZSegmentationAnalyzer::computeBodySize(ZStack *stack,
                                                       ZStack *excluded)
 {
   ZIntMap bodySize;
@@ -681,7 +681,7 @@ ZIntMap FlyEm::ZSegmentationAnalyzer::computeBodySize(ZStack *stack,
   return bodySize;
 }
 
-map<int, double> FlyEm::ZSegmentationAnalyzer::computeAverageIntensity(
+map<int, double> flyem::ZSegmentationAnalyzer::computeAverageIntensity(
     ZStack *bodyStack, ZStack *intensityStack)
 {
   map<int, double> intensity;
@@ -709,7 +709,7 @@ map<int, double> FlyEm::ZSegmentationAnalyzer::computeAverageIntensity(
   return intensity;
 }
 
-ZIntMap FlyEm::ZSegmentationAnalyzer::inferBodyCorrespondence(
+ZIntMap flyem::ZSegmentationAnalyzer::inferBodyCorrespondence(
     const ZIntPairMap &overlap, const ZIntMap &bodySize)
 {
   ZIntMap corr;
@@ -730,8 +730,8 @@ ZIntMap FlyEm::ZSegmentationAnalyzer::inferBodyCorrespondence(
   return corr;
 }
 
-std::vector<double> FlyEm::ZSegmentationAnalyzer::computeTouchFeature(
-    FlyEm::ZSegmentationBundle &bundle, int id1, int id2)
+std::vector<double> flyem::ZSegmentationAnalyzer::computeTouchFeature(
+    flyem::ZSegmentationBundle &bundle, int id1, int id2)
 {
   ZStack *bodyStack = bundle.getBodyStack();
 
@@ -763,7 +763,7 @@ std::vector<double> FlyEm::ZSegmentationAnalyzer::computeTouchFeature(
   return feature;
 }
 
-vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstTouchFeature(
+vector<double> flyem::ZSegmentationAnalyzer::computeRayburstTouchFeature(
     ZSegmentationBundle &bundle, int id1, int id2)
 {
   ZStack *bodyStack = bundle.getBodyStack();
@@ -791,8 +791,8 @@ vector<double> FlyEm::ZSegmentationAnalyzer::computeRayburstTouchFeature(
 }
 
 
-std::vector<double> FlyEm::ZSegmentationAnalyzer::computeBoundaryGrowFeature(
-      FlyEm::ZSegmentationBundle &bundle, int id1, int id2)
+std::vector<double> flyem::ZSegmentationAnalyzer::computeBoundaryGrowFeature(
+      flyem::ZSegmentationBundle &bundle, int id1, int id2)
 {
   std::vector<double> feature;
 
@@ -819,8 +819,8 @@ std::vector<double> FlyEm::ZSegmentationAnalyzer::computeBoundaryGrowFeature(
   return feature;
 }
 
-double FlyEm::ZSegmentationAnalyzer::computeBorderIntensity(
-    FlyEm::ZSegmentationBundle &bundle, int id1, int id2)
+double flyem::ZSegmentationAnalyzer::computeBorderIntensity(
+    flyem::ZSegmentationBundle &bundle, int id1, int id2)
 {
   ZStack *greyStack = bundle.getGreyScaleStack();
   ZObject3d *border = bundle.getBodyBorderObject(id1, id2);
@@ -830,8 +830,8 @@ double FlyEm::ZSegmentationAnalyzer::computeBorderIntensity(
   return intensity;
 }
 
-double FlyEm::ZSegmentationAnalyzer::computeBodyIntensity(
-    FlyEm::ZSegmentationBundle &bundle, int id)
+double flyem::ZSegmentationAnalyzer::computeBodyIntensity(
+    flyem::ZSegmentationBundle &bundle, int id)
 {
   ZStack *greyStack = bundle.getGreyScaleStack();
   ZObject3d *obj = bundle.getBodyObject(id);
@@ -841,8 +841,8 @@ double FlyEm::ZSegmentationAnalyzer::computeBodyIntensity(
   return intensity;
 }
 
-std::vector<double> FlyEm::ZSegmentationAnalyzer::computeBcf(
-    FlyEm::ZSegmentationBundle &bundle, int id1, int id2,
+std::vector<double> flyem::ZSegmentationAnalyzer::computeBcf(
+    flyem::ZSegmentationBundle &bundle, int id1, int id2,
     BcfSet setName)
 {
   std::vector<double> feature;
@@ -903,8 +903,8 @@ std::vector<double> FlyEm::ZSegmentationAnalyzer::computeBcf(
   return feature;
 }
 
-std::vector<double> FlyEm::ZSegmentationAnalyzer::computeBcf(
-    FlyEm::ZSegmentationBundle &bundle, int id1, int id2,
+std::vector<double> flyem::ZSegmentationAnalyzer::computeBcf(
+    flyem::ZSegmentationBundle &bundle, int id1, int id2,
     const vector<BcfSet> &setName)
 {
   std::vector<double> feature;
@@ -917,8 +917,8 @@ std::vector<double> FlyEm::ZSegmentationAnalyzer::computeBcf(
   return feature;
 }
 
-std::vector<double> FlyEm::ZSegmentationAnalyzer::computeBcf(
-    FlyEm::ZSegmentationBundle &bundle, int id1, int id2,
+std::vector<double> flyem::ZSegmentationAnalyzer::computeBcf(
+    flyem::ZSegmentationBundle &bundle, int id1, int id2,
     const vector<string> &setName)
 {
   std::vector<double> feature;
@@ -934,8 +934,8 @@ std::vector<double> FlyEm::ZSegmentationAnalyzer::computeBcf(
 
 
 std::vector<std::vector<double> >
-FlyEm::ZSegmentationAnalyzer::computeBcf(
-    FlyEm::ZSegmentationBundle &bundle, const string &setName)
+flyem::ZSegmentationAnalyzer::computeBcf(
+    flyem::ZSegmentationBundle &bundle, const string &setName)
 {
   return computeBcf(bundle, m_bcfSetNameMap[setName]);
   /*

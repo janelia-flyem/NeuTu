@@ -39,7 +39,7 @@ void ZFlyEmBookmark::init()
 //  m_bookmarkRole = ROLE_ASSIGNED;
   m_isInTable = true;
 
-  m_visualEffect = neutube::Display::Sphere::VE_DOT_CENTER;
+  m_visualEffect = neutube::display::Sphere::VE_DOT_CENTER;
   setColor(255, 0, 0);
   setRadius(5.0);
 //  setHittable(false);

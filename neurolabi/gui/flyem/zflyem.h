@@ -4,7 +4,7 @@
 #include "tz_utilities.h"
 #include "tz_cdefs.h"
 
-namespace FlyEm {
+namespace flyem {
 
 enum EDataSet {
   DATA_TEM, DATA_FIB19, DATA_FIB25, DATA_FIB25_7C, DATA_UNKOWN

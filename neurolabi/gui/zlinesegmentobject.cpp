@@ -85,8 +85,8 @@ void ZLineSegmentObject::display(
     double dz2 = segment.getUpperZ() - z;
 
     bool fullLinePainting =
-        (hasVisualEffect(neutube::Display::Line::VE_LINE_PROJ) ||
-         hasVisualEffect(neutube::Display::Line::VE_LINE_FADING_PROJ) ||
+        (hasVisualEffect(neutube::display::Line::VE_LINE_PROJ) ||
+         hasVisualEffect(neutube::display::Line::VE_LINE_FADING_PROJ) ||
          isProj || (dz1 * dz2 <= 0));
     bool intersectPainting = !isProj && (dz1 * dz2 <= 0);
     if (intersectPainting) {
@@ -103,7 +103,7 @@ void ZLineSegmentObject::display(
                           lineColor.valueF(), lineColor.alphaF() * 0.5);
         //Whole line is out of focus
         if (dz1 * dz2 > 0) {
-          if (hasVisualEffect(neutube::Display::Line::VE_LINE_FADING_PROJ)) {
+          if (hasVisualEffect(neutube::display::Line::VE_LINE_FADING_PROJ)) {
             double deltaZ = std::min(fabs(dz1), fabs(dz2));
             double alphaRatio = 1.0 / deltaZ;
             if (alphaRatio >= 0.1) {
@@ -121,7 +121,7 @@ void ZLineSegmentObject::display(
         pen.setColor(lineColor);
         if (lineColor.alpha() > 0) {
           if (!intersectPainting &&
-              hasVisualEffect(neutube::Display::Line::VE_LINE_PROJ)) {
+              hasVisualEffect(neutube::display::Line::VE_LINE_PROJ)) {
             pen.setStyle(Qt::DotLine);
           }
         }
@@ -155,8 +155,8 @@ void ZLineSegmentObject::display(
 bool ZLineSegmentObject::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 {
   if (isVisible()) {
-    if (hasVisualEffect(neutube::Display::Line::VE_LINE_PROJ) ||
-        hasVisualEffect(neutube::Display::Line::VE_LINE_FADING_PROJ)) {
+    if (hasVisualEffect(neutube::display::Line::VE_LINE_PROJ) ||
+        hasVisualEffect(neutube::display::Line::VE_LINE_FADING_PROJ)) {
       return true;
     }
 

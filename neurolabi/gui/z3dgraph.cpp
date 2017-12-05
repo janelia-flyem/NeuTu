@@ -26,14 +26,6 @@ Z3DGraphNode::Z3DGraphNode(const ZPoint &center, double radius)
   set(center.x(), center.y(), center.z(), radius);
 }
 
-Z3DGraphNode::Z3DGraphNode(const Z3DGraphNode &node)
-{
-  m_center = node.m_center;
-  m_radius = node.m_radius;
-  m_color = node.m_color;
-  m_shape = node.m_shape;
-}
-
 void Z3DGraphNode::set(double x, double y, double z, double r)
 {
   m_center.set(x, y, z);
@@ -83,6 +75,16 @@ void Z3DGraphNode::setZ(double z)
 void Z3DGraphNode::setRadius(double r)
 {
   m_radius = r;
+}
+
+void Z3DGraphNode::setText(const QString &text)
+{
+  m_text = text;
+}
+
+const QString& Z3DGraphNode::getText() const
+{
+  return m_text;
 }
 
 void Z3DGraphNode::loadJsonObject(json_t *obj)

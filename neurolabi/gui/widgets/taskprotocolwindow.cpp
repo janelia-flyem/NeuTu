@@ -9,7 +9,8 @@
 #include <QJsonObject>
 #include <QsLog.h>
 
-#include "neutube.h"
+#include "neutube_def.h"
+#include "neutubeconfig.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
@@ -161,6 +162,59 @@ void TaskProtocolWindow::onPrevButton() {
     updateCurrentTaskLabel();
     updateBodyWindow();
     updateLabel();
+}
+
+void TaskProtocolWindow::test()
+{
+  QJsonObject json =
+      loadJsonFromFile((GET_TEST_DATA_DIR + "/_system/neu3_protocol.json").c_str());
+  startProtocol(json, false);
+
+  std::cout << "#Tasks: " << m_taskList.size() << std::endl;
+  for (int i = -1; i <= m_taskList.size() + 1; ++i) {
+    std::cout << "Prev index of " << i << ": " << getPrevIndex(i) << std::endl;
+    std::cout << "Next index of " << i << ": " << getNextIndex(i) << std::endl;
+  }
+  int index = 0;
+  for (int i = 0; i < 5; ++i) {
+    std::cout << "Prev index of " << index << ": " << getPrevIndex(index) << std::endl;
+    index = getPrevIndex(index);
+  }
+
+  index = 0;
+  for (int i = 0; i < 5; ++i) {
+    std::cout << "Next index of " << index << ": " << getNextIndex(index) << std::endl;
+    index = getNextIndex(index);
+  }
+
+  m_currentTaskIndex = 0;
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Prev uncompleted (" << m_currentTaskIndex << "): ";
+    m_currentTaskIndex = getPrevUncompleted();
+    std::cout << m_currentTaskIndex << std::endl;
+  }
+
+  m_currentTaskIndex = 0;
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Next uncompleted (" << m_currentTaskIndex << "): ";
+    m_currentTaskIndex = getNextUncompleted();
+    std::cout << m_currentTaskIndex << std::endl;
+  }
+
+  m_taskList[0]->setCompleted(true);
+  m_currentTaskIndex = 0;
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Prev uncompleted (" << m_currentTaskIndex << "): ";
+    m_currentTaskIndex = getPrevUncompleted();
+    std::cout << m_currentTaskIndex << std::endl;
+  }
+
+  m_currentTaskIndex = 0;
+  for (int i = 0; i < 3; ++i) {
+    std::cout << "Next uncompleted (" << m_currentTaskIndex << "): ";
+    m_currentTaskIndex = getNextUncompleted();
+    std::cout << m_currentTaskIndex << std::endl;
+  }
 }
 
 void TaskProtocolWindow::onNextButton() {
@@ -390,22 +444,28 @@ int TaskProtocolWindow::getFirstUncompleted() {
  * returns index of previous task before current task
  */
 int TaskProtocolWindow::getPrev() {
+  return getPrevIndex(m_currentTaskIndex);
+  /*
     int index = m_currentTaskIndex - 1;
     if (index < 0) {
         index = m_taskList.size() - 1;
     }
     return index;
+    */
 }
 
 /*
  * returns index of next task after current task
  */
 int TaskProtocolWindow::getNext() {
+  return getNextIndex(m_currentTaskIndex);
+  /*
     int index = m_currentTaskIndex + 1;
     if (index >= m_taskList.size()) {
         index = 0;
     }
     return index;
+    */
 }
 
 /*
@@ -414,48 +474,65 @@ int TaskProtocolWindow::getNext() {
  */
 int TaskProtocolWindow::getPrevUncompleted() {
     int startIndex = m_currentTaskIndex;
-    int index = startIndex - 1;
-    while (index != startIndex) {
-        if (index < 0) {
-            index = m_taskList.size() - 1;
-            continue;
+    int index = getPrevIndex(startIndex);
+    while (index >= 0) {
+      if (!m_taskList[index]->completed()) {
+        break;
+      } else {
+        index = getPrevIndex(index);
+        if (index == m_currentTaskIndex) {
+          index = -1;
+          break;
         }
-        if (!m_taskList[index]->completed()) {
-            return index;
-        }
-        index--;
+      }
     }
-    // we're back at current index
-    if (m_taskList[index]->completed()) {
-        return -1;
-    } else {
-        return index;
-    }
+
+    return index;
 }
 
+int TaskProtocolWindow::getPrevIndex(int currentIndex) const
+{
+  int index = -1;
+  if (currentIndex > 0 && currentIndex < m_taskList.size()) {
+    index = currentIndex - 1;
+  } else if (currentIndex == 0 && m_taskList.size() > 1) {
+    index = m_taskList.size() - 1;
+  }
+
+  return index;
+}
+
+int TaskProtocolWindow::getNextIndex(int currentIndex) const
+{
+  int index =  currentIndex + 1;
+  if (index == m_taskList.size() && currentIndex >= 0) {
+    index = 0;
+  } else if (index <= 0 || index >= m_taskList.size()) {
+    index = -1;
+  }
+
+  return index;
+}
 /*
  * returns index of next uncompleted task after current
  * task, or -1
  */
 int TaskProtocolWindow::getNextUncompleted() {
-    int startIndex = m_currentTaskIndex;
-    int index = startIndex + 1;
-    while (index != startIndex) {
-        if (index >= m_taskList.size()) {
-            index = 0;
-            continue;
-        }
-        if (!m_taskList[index]->completed()) {
-            return index;
-        }
-        index++;
-    }
-    // we're back at current index
-    if (m_taskList[index]->completed()) {
-        return -1;
+  int startIndex = m_currentTaskIndex;
+  int index = getNextIndex(startIndex);
+  while (index >= 0) {
+    if (!m_taskList[index]->completed()) {
+      break;
     } else {
-        return index;
+      index = getNextIndex(index);
+      if (index == m_currentTaskIndex) {
+        index = -1;
+        break;
+      }
     }
+  }
+
+  return index;
 }
 
 /*

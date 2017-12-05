@@ -47,17 +47,54 @@ bool ZDvidInfo::isValid() const
   return (m_stackSize[0] > 0 && m_stackSize[1] > 0 && m_stackSize[2] > 0);
 }
 
+void ZDvidInfo::setExtents(const ZJsonObject &obj)
+{
+  if (obj.hasKey(m_minPointKey)) {
+    ZJsonArray array(obj[m_minPointKey], ZJsonValue::SET_INCREASE_REF_COUNT);
+    std::vector<int> startCoordinates = array.toIntegerArray();
+    if (startCoordinates.size() == 3) {
+      m_startCoordinates.set(startCoordinates);
+    } else {
+      m_startCoordinates.set(0, 0, 0);
+    }
+  }
+
+  if (obj.hasKey(m_maxPointKey)) {
+    ZJsonArray array(obj[m_maxPointKey], ZJsonValue::SET_INCREASE_REF_COUNT);
+    std::vector<int> endCoordinates = array.toIntegerArray();
+    if (endCoordinates.size() == 3) {
+      for (int i = 0; i < 3; ++i) {
+        m_stackSize[i] =  endCoordinates[i] - m_startCoordinates[i] + 1;
+      }
+    } else {
+      for (int i = 0; i < 3; ++i) {
+        m_stackSize[i] = 0;
+      }
+    }
+  }
+}
+
 void ZDvidInfo::set(const ZJsonObject &rootObj)
 {
   clear();
   if (!rootObj.isEmpty()) {
     ZJsonObject obj;
+
+    if (rootObj.hasKey("Extents")) {
+      obj.set(rootObj.value("Extents"));
+      setExtents(obj);
+    }
+
     if (rootObj.hasKey("Extended")) {
       obj.set(rootObj.value("Extended"));
     } else {
       obj = rootObj;
     }
 
+    if (getDataRange().getVolume() == 0) {
+      setExtents(obj);
+    }
+    /*
     if (obj.hasKey(m_minPointKey)) {
       ZJsonArray array(obj[m_minPointKey], ZJsonValue::SET_INCREASE_REF_COUNT);
       std::vector<int> startCoordinates = array.toIntegerArray();
@@ -81,6 +118,7 @@ void ZDvidInfo::set(const ZJsonObject &rootObj)
         }
       }
     }
+    */
 
     if (obj.hasKey(m_blockMinIndexKey)) {
       ZJsonArray array(obj[m_blockMinIndexKey], ZJsonValue::SET_INCREASE_REF_COUNT);

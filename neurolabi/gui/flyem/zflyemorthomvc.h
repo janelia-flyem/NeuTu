@@ -15,6 +15,9 @@ public:
       QWidget *parent, ZSharedPointer<ZFlyEmOrthoDoc> doc,
       neutube::EAxis axis = neutube::Z_AXIS);
   static ZFlyEmOrthoMvc* Make(const ZDvidTarget &target, neutube::EAxis axis);
+  static ZFlyEmOrthoMvc* Make(
+      const ZDvidTarget &target, neutube::EAxis axis,
+      int width, int height, int depth);
 
   ZFlyEmOrthoDoc* getCompleteDocument() const;
 

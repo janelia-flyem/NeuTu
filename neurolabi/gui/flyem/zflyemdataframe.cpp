@@ -251,9 +251,9 @@ static size_t get_index(map<int, size_t> &bodyMap, int bodyId)
 }
 */
 
-FlyEm::ZSynapseAnnotationArray *ZFlyEmDataFrame::getSynapseAnnotation()
+flyem::ZSynapseAnnotationArray *ZFlyEmDataFrame::getSynapseAnnotation()
 {
-  FlyEm::ZSynapseAnnotationArray *annotation = NULL;
+  flyem::ZSynapseAnnotationArray *annotation = NULL;
   foreach (ZFlyEmDataBundle *data, m_dataArray) {
     annotation = data->getSynapseAnnotation();
     if (annotation != NULL) {
@@ -2521,10 +2521,10 @@ void ZFlyEmDataFrame::exportSideBoundaryAnalysis(
   ZFlyEmDataBundle *dataBundle = getMasterData();
   ZFlyEmNeuronArray &neuronArray = dataBundle->getNeuronArray();
 
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(synapsePath.toStdString());
 
-  FlyEm::ZSubstackRoi roi;
+  flyem::ZSubstackRoi roi;
   roi.importJsonFile(substackPath.toStdString());
 
   ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();

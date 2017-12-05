@@ -242,6 +242,19 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
         doc->getTag() == neutube::Document::FLYEM_SKELETON) {
       int swcNodeCount = doc->getSelectedSwcNodeNumber();
 
+      if (swcNodeCount == 2) {
+        if (!actionList.isEmpty()) {
+          actionList.append(ZActionFactory::ACTION_SEPARATOR);
+        }
+        actionList.append(ZActionFactory::ACTION_MEASURE_SWC_NODE_DIST);
+      }
+
+      if (swcNodeCount >= 2) {
+        if (doc->getTag() == neutube::Document::FLYEM_SKELETON) {
+          actionList.append(ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH);
+        }
+      }
+
       if (swcNodeCount == 1) {
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
         actionList.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);

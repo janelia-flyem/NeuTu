@@ -95,9 +95,9 @@ void ZProofreadWindow::init()
 
   m_controlForm = new FlyEmProofControlForm;
   m_controlForm->getUserBookmarkView()->setBookmarkModel(
-        m_mainMvc->getUserBookmarkModel(FlyEM::PR_NORMAL));
+        m_mainMvc->getUserBookmarkModel(flyem::PR_NORMAL));
   m_controlForm->getAssignedBookmarkView()->setBookmarkModel(
-        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_NORMAL));
+        m_mainMvc->getAssignedBookmarkModel(flyem::PR_NORMAL));
   m_mainMvc->registerBookmarkView(m_controlForm->getUserBookmarkView());
   m_mainMvc->registerBookmarkView(m_controlForm->getAssignedBookmarkView());
   m_controlForm->getAssignedBookmarkView()->enableDeletion(false);
@@ -106,9 +106,9 @@ void ZProofreadWindow::init()
 
   m_splitControlForm = new FlyEmSplitControlForm;
   m_splitControlForm->getUserBookmarkView()->setBookmarkModel(
-        m_mainMvc->getUserBookmarkModel(FlyEM::PR_SPLIT));
+        m_mainMvc->getUserBookmarkModel(flyem::PR_SPLIT));
   m_splitControlForm->getAssignedBookmarkView()->setBookmarkModel(
-        m_mainMvc->getAssignedBookmarkModel(FlyEM::PR_SPLIT));
+        m_mainMvc->getAssignedBookmarkModel(flyem::PR_SPLIT));
   m_mainMvc->registerBookmarkView(m_splitControlForm->getUserBookmarkView());
   m_mainMvc->registerBookmarkView(m_splitControlForm->getAssignedBookmarkView());
   m_splitControlForm->getAssignedBookmarkView()->enableDeletion(false);
@@ -131,7 +131,7 @@ void ZProofreadWindow::init()
   connectMessagePipe(m_mainMvc);
   connectMessagePipe(m_mainMvc->getDocument().get());
 
-  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, FlyEM::EBodySplitMode)),
+  connect(m_mainMvc, SIGNAL(splitBodyLoaded(uint64_t, flyem::EBodySplitMode)),
           this, SLOT(presentSplitInterface(uint64_t)));
   connect(m_mainMvc, SIGNAL(dvidTargetChanged(ZDvidTarget)),
           this, SLOT(updateDvidTargetWidget(ZDvidTarget)));
@@ -173,7 +173,7 @@ void ZProofreadWindow::init()
 
   m_defaultPal = palette(); //This has to be the last line to avoid crash
 
-  setStyleSheet(FlyEm::GROUP_BOX_STYLE);
+  setStyleSheet(flyem::GROUP_BOX_STYLE);
 }
 
 ZProofreadWindow* ZProofreadWindow::Make(QWidget *parent)
@@ -527,7 +527,7 @@ void ZProofreadWindow::operateDvid()
   m_dvidOpDlg->raise();
 }
 
-void ZProofreadWindow::launchSplit(uint64_t bodyId, FlyEM::EBodySplitMode mode)
+void ZProofreadWindow::launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode)
 {
 //  emit progressStarted("Launching split ...");
   dump("Launching split ...", false);
@@ -563,9 +563,9 @@ void ZProofreadWindow::launchSplit()
       m_mainMvc->notifySplitTriggered();
     } else {*/
       if (m_bodySplitDlg->getBodyId() > 0) {
-        FlyEM::EBodySplitMode mode = FlyEM::BODY_SPLIT_ONLINE;
+        flyem::EBodySplitMode mode = flyem::BODY_SPLIT_ONLINE;
         if (m_bodySplitDlg->isOfflineSplit()) {
-          mode = FlyEM::BODY_SPLIT_OFFLINE;
+          mode = flyem::BODY_SPLIT_OFFLINE;
         }
         launchSplit(m_bodySplitDlg->getBodyId(), mode);
       }

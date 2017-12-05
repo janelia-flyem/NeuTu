@@ -1846,7 +1846,7 @@ void ZStackDoc::importFlyEmNetwork(const char *filePath)
     delete m_swcNetwork;
   }
 
-  FlyEm::ZNeuronNetwork flyemNetwork;
+  flyem::ZNeuronNetwork flyemNetwork;
   flyemNetwork.import(filePath);
   flyemNetwork.layoutSwc();
   m_swcNetwork = flyemNetwork.toSwcNetwork();
@@ -4880,7 +4880,7 @@ bool ZStackDoc::enhanceLine()
 bool ZStackDoc::importSynapseAnnotation(const std::string &filePath,
                                         int s)
 {
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   if (synapseArray.loadJson(filePath)) {
     std::vector<ZPunctum*> puncta;
     switch (s) {
@@ -8723,6 +8723,37 @@ void ZStackDoc::showSeletedSwcNodeLength(double *resolution)
   dlg.exec();
 }
 
+void ZStackDoc::showSeletedSwcNodeDist(double *resolution)
+{
+  std::set<Swc_Tree_Node*> nodeSet = getSelectedSwcNodeSet();
+
+  InformationDialog dlg;
+
+  std::ostringstream textStream;
+
+  if (nodeSet.size() == 2) {
+    std::set<Swc_Tree_Node*>::const_iterator iter = nodeSet.begin();
+    Swc_Tree_Node *tn1 = *iter;
+    ++iter;
+    Swc_Tree_Node *tn2 = *iter;
+
+    if (!SwcTreeNode::isConnected(tn1, tn2)) {
+      double dist = 0.0;
+      if (resolution == NULL) {
+        dist = SwcTreeNode::distance(tn1, tn2);
+      } else {
+        dist = SwcTreeNode::scaledDistance(tn1, tn2, resolution[0],
+            resolution[1], resolution[2]);
+      }
+      textStream << "<p>Euclidean distance between the two selected nodes: "
+                 << dist << "</p>";
+    }
+  }
+
+  dlg.setText(textStream.str());
+  dlg.exec();
+}
+
 void ZStackDoc::showSwcSummary()
 {
   InformationDialog dlg;
@@ -9472,7 +9503,7 @@ void ZStackDoc::updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv)
                 ZStackObjectSourceFactory::MakeWatershedBoundarySource(
                   obj->getLabel()));
           obj->setHitProtocal(ZStackObject::HIT_NONE);
-          obj->setVisualEffect(neutube::Display::SparseObject::VE_PLANE_BOUNDARY);
+          obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
           obj->setProjectionVisible(false);
           obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
           obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);
@@ -10260,9 +10291,9 @@ void ZStackDoc::showSwcFullSkeleton(bool state)
        iter != objList.end(); ++iter) {
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
     if (state) {
-      tree->addVisualEffect(neutube::Display::SwcTree::VE_FULL_SKELETON);
+      tree->addVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
     } else {
-      tree->removeVisualEffect(neutube::Display::SwcTree::VE_FULL_SKELETON);
+      tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
     }
     bufferObjectModified(tree->getTarget());
   }

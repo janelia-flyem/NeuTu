@@ -86,7 +86,7 @@ public:
 
   void loadJsonObject(
       const ZJsonObject &obj,
-      FlyEM::EDvidAnnotationLoadMode mode);
+      flyem::EDvidAnnotationLoadMode mode);
   ZJsonObject toJsonObject() const;
 
   void clearPartner();

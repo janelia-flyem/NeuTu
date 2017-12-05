@@ -81,7 +81,7 @@ private:
   mutable ZIntCuboidFaceArray m_borderFace;
 };
 
-namespace FlyEm {
+namespace flyem {
 class SubstackRegionCalbration {
 public:
   SubstackRegionCalbration();

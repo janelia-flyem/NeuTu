@@ -382,6 +382,7 @@ public slots:
   void notifyBodyCheckoutTriggered();
 
   void notifyOrthoViewTriggered();
+  void notifyOrthoViewBigTriggered();
 
   void slotTest();
 
@@ -422,9 +423,9 @@ signals:
   void mousePositionCaptured(double x, double y, double z);
   void bodySplitTriggered();
   void bodyAnnotationTriggered();
-  void bodyCheckinTriggered(FlyEM::EBodySplitMode mode);
+  void bodyCheckinTriggered(flyem::EBodySplitMode mode);
   void bodyForceCheckinTriggered();
-  void bodyCheckoutTriggered(FlyEM::EBodySplitMode mode);
+  void bodyCheckoutTriggered(flyem::EBodySplitMode mode);
   void labelSliceSelectionChanged();
   void objectVisibleTurnedOn();
   void exitingRectEdit();
@@ -436,6 +437,7 @@ signals:
   void bodyMergeTriggered();
   void bodyUnmergeTriggered();
   void orthoViewTriggered(double x, double y, double z);
+  void orthoViewBigTriggered(double x, double y, double z);
   void checkingBookmark();
   void uncheckingBookmark();
   void savingStack();

@@ -42,7 +42,7 @@ public:
   public:
     enum EAction {
       ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_FORCE_ADD,
-      ACTION_UPDATE
+      ACTION_UPDATE, ACTION_CACHE
     };
 
     typedef uint64_t TUpdateFlag;
@@ -134,15 +134,15 @@ public:
     int m_resLevel;
   };
 
-  void setBodyType(FlyEM::EBodyType type);
-  FlyEM::EBodyType getBodyType() const { return m_bodyType; }
+  void setBodyType(flyem::EBodyType type);
+  flyem::EBodyType getBodyType() const { return m_bodyType; }
 
   QSet<uint64_t> getBodySet() const { return m_bodySet; }
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
-  void updateBody(uint64_t bodyId, const QColor &color, FlyEM::EBodyType type);
+  void updateBody(uint64_t bodyId, const QColor &color, flyem::EBodyType type);
 
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
@@ -161,7 +161,7 @@ public:
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
-  void addEvent(const BodyEvent &event);
+  void addEvent(const BodyEvent &event, QMutex *mutex = NULL);
 
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
@@ -245,6 +245,8 @@ public slots:
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
 
+  void cacheObject(ZStackObject *obj);
+
 signals:
   void bodyRemoved(uint64_t bodyId);
 
@@ -255,28 +257,28 @@ protected:
 private:
   ZStackObject* retriveBodyObject(
       uint64_t bodyId, int zoom,
-      FlyEM::EBodyType bodyType, ZStackObject::EType objType);
+      flyem::EBodyType bodyType, ZStackObject::EType objType);
   ZStackObject* retriveBodyObject(uint64_t bodyId, int zoom);
-  ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
-  ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  ZSwcTree* retrieveBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
+  ZSwcTree* getBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
   ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
-  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, FlyEM::EBodyType bodyType);
+  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
   ZMesh* makeBodyMeshModel(uint64_t bodyId, int zoom);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
-      FlyEM::EBodyType bodyType);
+      flyem::EBodyType bodyType);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, uint64_t bodyId2, ZDvidReader &diffReader, int zoom,
-      FlyEM::EBodyType bodyType);
+      flyem::EBodyType bodyType);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       const ZIntPoint &pt, ZDvidReader &diffReader,
-      int zoom, FlyEM::EBodyType bodyType);
+      int zoom, flyem::EBodyType bodyType);
 
   void updateDvidInfo();
 
@@ -331,9 +333,12 @@ private:
   int getMinResLevel() const;
   void removeDiffBody();
 
+  ZStackObject* takeObjectFromCache(
+      ZStackObject::EType type, const std::string &source);
+
 private:
   QSet<uint64_t> m_bodySet;
-  FlyEM::EBodyType m_bodyType = FlyEM::BODY_FULL;
+  flyem::EBodyType m_bodyType = flyem::BODY_FULL;
   QSet<uint64_t> m_selectedBodySet;
 
   bool m_quitting = false;
@@ -360,6 +365,8 @@ private:
 
 //  QList<ZStackObject*> m_garbageList;
   QMap<ZStackObject*, ObjectStatus> m_garbageMap;
+  ZStackObjectGroup m_objCache;
+  int m_objCacheCapacity;
   QMap<uint64_t, int> m_bodyUpdateMap;
 //  QSet<uint64_t> m_unrecycableSet;
 

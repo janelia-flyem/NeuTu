@@ -170,8 +170,10 @@ public:
   ZStack* readGrayScale(
       const std::string &dataName,
       int x0, int y0, int z0, int width, int height, int depth) const;
+
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth, int zoom) const;
+
 #if 0
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;
@@ -181,7 +183,7 @@ public:
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
   std::vector<ZStack*> readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-      int blockNumber);
+      int blockNumber, int zoom = 0);
 
 //  QString readInfo(const QString &dataName) const;
 
@@ -359,20 +361,20 @@ public:
   std::vector<ZIntPoint> readSynapsePosition(const ZIntCuboid &box) const;
   std::vector<ZDvidSynapse> readSynapse(
       const ZIntCuboid &box,
-      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label,
-      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
   std::vector<ZDvidSynapse> readSynapse(
       uint64_t label, const ZDvidRoi &roi,
-      FlyEM::EDvidAnnotationLoadMode mode) const;
+      flyem::EDvidAnnotationLoadMode mode) const;
 
   ZDvidSynapse readSynapse(
       int x, int y, int z,
-      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
   ZDvidSynapse readSynapse(
       const ZIntPoint &pt,
-      FlyEM::EDvidAnnotationLoadMode mode = FlyEM::LOAD_NO_PARTNER) const;
+      flyem::EDvidAnnotationLoadMode mode = flyem::LOAD_NO_PARTNER) const;
   ZJsonObject readSynapseJson(int x, int y, int z) const;
   ZJsonObject readSynapseJson(const ZIntPoint &pt) const;
   template <typename InputIterator>

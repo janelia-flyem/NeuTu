@@ -8,7 +8,7 @@
 #include "zsynapselocationmatcher.h"
 #include "zsynapselocationmetric.h"
 
-using namespace FlyEm;
+using namespace flyem;
 using namespace std;
 
 SynapseLocation::SynapseLocation(EType type)

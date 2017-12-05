@@ -655,7 +655,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
       obj->setObjectClass(ZStackObjectSourceFactory::MakeSplitResultSource());
       obj->setSource(ZStackObjectSourceFactory::MakeSplitResultSource());
       obj->setHitProtocal(ZStackObject::HIT_NONE);
-      obj->setVisualEffect(neutube::Display::SparseObject::VE_PLANE_BOUNDARY);
+      obj->setVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
       obj->setProjectionVisible(false);
       obj->setRole(ZStackObjectRole::ROLE_TMP_RESULT);
       obj->addRole(ZStackObjectRole::ROLE_SEGMENTATION);

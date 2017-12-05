@@ -96,7 +96,7 @@ void ZDvidAnnotation::display(ZPainter &painter, int slice, EDisplayStyle /*opti
     color.setRgb(255, 255, 0);
     pen.setColor(color);
     pen.setCosmetic(true);
-  } else if (hasVisualEffect(neutube::Display::Sphere::VE_BOUND_BOX)) {
+  } else if (hasVisualEffect(neutube::display::Sphere::VE_BOUND_BOX)) {
     drawingBoundBox = true;
     pen.setStyle(Qt::SolidLine);
     pen.setCosmetic(m_usingCosmeticPen);
@@ -334,7 +334,7 @@ void ZDvidAnnotation::updatePartner()
 
 void ZDvidAnnotation::loadJsonObject(
     const ZJsonObject &obj,
-    FlyEM::EDvidAnnotationLoadMode mode)
+    flyem::EDvidAnnotationLoadMode mode)
 {
   clear();
   if (obj.hasKey("Pos")) {
@@ -356,14 +356,14 @@ void ZDvidAnnotation::loadJsonObject(
       }
     }
 
-    if (mode != FlyEM::LOAD_NO_PARTNER) {
+    if (mode != flyem::LOAD_NO_PARTNER) {
       if (obj.hasKey("Rels")) {
         ZJsonArray jsonArray(obj.value("Rels"));
         switch (mode) {
-        case FlyEM::LOAD_PARTNER_RELJSON:
+        case flyem::LOAD_PARTNER_RELJSON:
           m_relJson = jsonArray;
           break;
-        case FlyEM::LOAD_PARTNER_LOCATION:
+        case flyem::LOAD_PARTNER_LOCATION:
 //          m_relJson = jsonArray;
           updatePartner(jsonArray);
 #if 0

@@ -132,6 +132,8 @@ public:
   bool removeObject(ZStackObject::EType type, bool deleting = true);
   bool removeObject(const TStackObjectSet &objSet, bool deleting = true);
 
+  bool removeFirstObject(bool deleting = true);
+
   bool removeSelected(bool deleting = true);
   bool removeSelected(ZStackObject::EType type, bool deleting = true);
 

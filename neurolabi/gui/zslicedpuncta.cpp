@@ -88,7 +88,7 @@ void ZSlicedPuncta::clear()
 bool ZSlicedPuncta::load(const ZJsonObject &obj, double radius)
 {
   clear();
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(obj);
   std::vector<ZStackBall*> puncta = synapseArray.toTBarBall(radius);
   addPunctum(puncta.begin(), puncta.end());
@@ -169,7 +169,7 @@ void ZSlicedPuncta::pushColor(const QColor &color)
   }
 }
 
-void ZSlicedPuncta::pushVisualEffect(neutube::Display::TVisualEffect effect)
+void ZSlicedPuncta::pushVisualEffect(neutube::display::TVisualEffect effect)
 {
   for (QVector<QList<ZStackBall*> >::iterator iter = m_puncta.begin();
        iter != m_puncta.end(); ++iter) {

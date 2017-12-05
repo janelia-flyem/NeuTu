@@ -38,7 +38,7 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
     vector<int>::iterator vertexArrayIter = vertexArray.begin();
     for (vector<vector<double> >::const_iterator iter = selected->begin();
          iter != selected->end(); ++iter, ++vertexArrayIter) {
-      *vertexArrayIter = FlyEm::ZSegmentationAnalyzer::channelCodeToId(*iter);
+      *vertexArrayIter = flyem::ZSegmentationAnalyzer::channelCodeToId(*iter);
     }
 
     set<int> neighborSet = graph->getNeighborSet(vertexArray);
@@ -50,7 +50,7 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
     for (set<int>::const_iterator iter = neighborSet.begin();
          iter != neighborSet.end(); ++iter, ++index) {
       vector<uint8_t> channelCode =
-          FlyEm::ZSegmentationAnalyzer::idToChannelCode(*iter, channelNumber);
+          flyem::ZSegmentationAnalyzer::idToChannelCode(*iter, channelNumber);
 
       for (size_t i = 0; i < channelNumber; i++) {
         (*selected)[index][i] = channelCode[i];
@@ -74,7 +74,7 @@ QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutube::EAxis ax
     int wz = z;
     ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
 //    ZGeometry::shiftSliceAxis(wx, wy, wz, axis);
-    uint64_t bodyId = FlyEm::ZSegmentationAnalyzer::channelCodeToId(
+    uint64_t bodyId = flyem::ZSegmentationAnalyzer::channelCodeToId(
           segmentation->color(wx, wy, wz));
 
 #ifdef _DEBUG_2
@@ -237,14 +237,14 @@ void ZFlyEmStackDoc::deprecate(EComponent component)
     ZStackDoc::deprecate(component);
     break;
   case STACK_SEGMENTATION:
-    m_segmentationBundle.deprecate(FlyEm::ZSegmentationBundle::BODY_STACK);
+    m_segmentationBundle.deprecate(flyem::ZSegmentationBundle::BODY_STACK);
     break;
   case SEGMENTATION_OBJECT:
     break;
   case SEGMENTATION_INDEX_MAP:
     break;
   case SEGMENTATION_GRAPH:
-    m_segmentationBundle.deprecate(FlyEm::ZSegmentationBundle::BODY_GRAPH);
+    m_segmentationBundle.deprecate(flyem::ZSegmentationBundle::BODY_GRAPH);
     break;
   default:
     break;
@@ -258,16 +258,16 @@ bool ZFlyEmStackDoc::isDeprecated(EComponent component)
     return ZStackDoc::isDeprecated(component);
   case STACK_SEGMENTATION:
     return m_segmentationBundle.isDeprecated(
-          FlyEm::ZSegmentationBundle::BODY_STACK);
+          flyem::ZSegmentationBundle::BODY_STACK);
   case SEGMENTATION_OBJECT:
     return m_segmentationBundle.isDeprecated(
-          FlyEm::ZSegmentationBundle::BODY_STACK);
+          flyem::ZSegmentationBundle::BODY_STACK);
   case SEGMENTATION_INDEX_MAP:
     return m_segmentationBundle.isDeprecated(
-          FlyEm::ZSegmentationBundle::BODY_INDEX_MAP);
+          flyem::ZSegmentationBundle::BODY_INDEX_MAP);
   case SEGMENTATION_GRAPH:
     return m_segmentationBundle.isDeprecated(
-          FlyEm::ZSegmentationBundle::BODY_GRAPH);
+          flyem::ZSegmentationBundle::BODY_GRAPH);
   default:
     break;
   }
