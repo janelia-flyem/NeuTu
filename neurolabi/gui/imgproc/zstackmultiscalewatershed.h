@@ -27,16 +27,15 @@ public:
 public:
   void setScale(int scale){m_scale=scale;}
   ZStack* labelAreaNeedUpdate(ZStack* boundary_map,ZStack* seed,ZIntCuboid& boundbox,ZStack* src=NULL);
-  void generateSeeds(ZStack* seed,int width,int height,int depth,const ZStack* boundary_map,const ZStack* stack);
+  void generateSeeds(ZStack* seed,const ZStack* boundary_map,const ZStack* stack);
   ZStack* getBoundaryMap(const ZStack& stack);
   ZStack* upSample(int width,int height,int depth,ZStack* sampled);
   ZStack* upSampleAndRecoverBoundary(ZStack* sampled_watershed,ZStack* src);
-
+  void computeSeeds(ZStack* sampled_stack,std::vector<ZObject3d*>& seeds);
 private:
   ZStack* toSeedStack(std::vector<ZObject3d*>& seeds,int width,int height,int depth,ZIntPoint offset);
-  inline void addSeedX(ZStack* pSeed,int x,int sy,int ey,int sz,int ez,uint8_t v);
-  inline void addSeedY(ZStack* pSeed,int y,int sx,int ex,int sz,int ez,uint8_t v);
-  inline void addSeedZ(ZStack* pSeed,int z,int sx,int ex,int sy,int ez,uint8_t v);
+  inline void addSeed(ZStack* pSeed,int sx,int ex,int sy,int ey,int sz,int ez,uint8_t v);
+  bool checkNeighbors(const uint8_t* pboundary, const uint8_t* pstack,int x,int y, int z,int width,int height,int depth);
 private:
   int m_scale;
 };
