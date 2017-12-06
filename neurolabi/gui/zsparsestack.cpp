@@ -204,7 +204,8 @@ ZStack* ZSparseStack::makeIsoDsStack(size_t maxVolume)
   return out;
 }
 
-ZStack* ZSparseStack::makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
+ZStack* ZSparseStack::makeStack(
+    const ZIntCuboid &box, size_t maxVolume, ZIntPoint *dsIntv)
 {
   ZStack *out = NULL;
   if (m_objectMask != NULL && m_stackGrid != NULL) {
@@ -214,7 +215,7 @@ ZStack* ZSparseStack::makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
     }
     if (!m_objectMask->isEmpty() && !cuboid.isEmpty()) {
       size_t volume = cuboid.getVolume();
-      double dsRatio = (double) volume / MAX_STACK_VOLUME;
+      double dsRatio = (double) volume / maxVolume;
       ZObject3dScan *obj = m_objectMask->subobject(cuboid, NULL, NULL);
 
       if (dsRatio > 1.0) {
@@ -250,6 +251,11 @@ ZStack* ZSparseStack::makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
   }
 
   return out;
+}
+
+ZStack* ZSparseStack::makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv)
+{
+  return makeStack(box, MAX_STACK_VOLUME, dsIntv);
 }
 
 ZStack* ZSparseStack::getStack()

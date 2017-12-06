@@ -734,7 +734,11 @@ void ZStackMultiScaleWatershed::addSeed(ZStack* pSeed,int sx,int ex,int sy,int e
   for(int z=sz;z<std::min(depth,ez);++z){
     for(int y=sy;y<std::min(height,ey);++y){
       for(int x=sx;x<std::min(width,ex);++x){
-        p[x+width*y+slice*z]=v;
+        if (IS_IN_CLOSE_RANGE(x, 0, width - 1) &&
+            IS_IN_CLOSE_RANGE(y, 0, height - 1) &&
+            IS_IN_CLOSE_RANGE(z, 0, depth - 1)) {
+          p[x+width*y+slice*z]=v;
+        }
       }
     }
   }

@@ -35,6 +35,7 @@ public:
   const ZStack* getStack() const;
 
   ZStack *makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv = NULL);
+  ZStack *makeStack(const ZIntCuboid &box, size_t maxVolume, ZIntPoint *dsIntv);
 
 //  Stack* makeRawStack(const ZIntCuboid &box);
 

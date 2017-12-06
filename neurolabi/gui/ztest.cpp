@@ -24986,6 +24986,14 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  for (int i = 1; i < 1000; i *= 2) {
+    int s = misc::getIsoDsIntvFor3DVolume(i, true);
+    std::cout << i << " <= " <<  s << "^3 = " << (s+1)*(s+1)*(s+1) << std::endl;
+  }
+//  std::cout <<  misc::getIsoDsIntvFor3DVolume(512, true);
+#endif
+
 #if 1
   ZStackFrame *frame = ZStackFrame::Make(NULL);
   frame->load(GET_BENCHMARK_DIR + "/test.zss");
@@ -25012,13 +25020,31 @@ void ZTest::test(MainWindow *host)
   frame->document()->addObject(seed1);
   frame->document()->addObject(seed2);
 
+  container.setMaxVolume(100*100*100);
+  container.setRefiningBorder(true);
   container.run();
+
+#if 0
+  std::vector<ZObject3d*> seedArray =
+      ZStackWatershedContainer::MakeBorderSeed(*(container.getResultStack()));
+
+  for (ZObject3d *obj : seedArray) {
+    if (obj != NULL) {
+//      obj->print();
+      obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
+      frame->document()->addObject(obj);
+    }
+  }
+#endif
+
+#if 1
   ZObject3dScanArray *objArray = container.makeSplitResult(1, NULL);
   for (ZObject3dScan *obj : *objArray) {
     frame->document()->addObject(obj);
   }
   objArray->shallowClear();
   delete objArray;
+#endif
 #endif
 
   std::cout << "Done." << std::endl;

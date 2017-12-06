@@ -557,12 +557,33 @@ int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
     return 0;
   }
 
-  int s = int(std::ceil(Cube_Root(dsRatio)));
+  if (powed) {
+    if (dsRatio <= 8) {
+      return 1;
+    } else if (dsRatio <= 27) {
+      return 2;
+    } else if (dsRatio <= 64) {
+      return 3;
+    }
+  }
+
+  int s = int(std::ceil(Cube_Root(dsRatio))); //upper bound of interval
 
   if (powed) {
     int k, m;
     pow2decomp(s, &k, &m);
-    s = iround(std::pow((double) 2, k + 1));
+    if (m > 1) {
+      ++k;
+    }
+    s = iround(std::pow((double) 2, k));
+
+    if (s * s * s >= dsRatio * 8) { //Dealing with rounding error
+      s /= 2;
+    }
+  } else {
+    if ((s - 1) * (s - 1) * (s - 1) >= dsRatio) { //Dealing with rounding error
+      --s;
+    }
   }
 
   s -= 1;
