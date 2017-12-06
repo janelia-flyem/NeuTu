@@ -37,7 +37,7 @@ private:
   inline void addSeed(ZStack* pSeed,int sx,int ex,int sy,int ey,int sz,int ez,uint8_t v);
   bool checkNeighbors(const uint8_t* pboundary, const uint8_t* pstack,int x,int y, int z,int width,int height,int depth);
 private:
-  int m_scale;
+  int m_scale = 1;
 };
 
 #endif // ZSTACKMULTISCALEWATERSHED_H

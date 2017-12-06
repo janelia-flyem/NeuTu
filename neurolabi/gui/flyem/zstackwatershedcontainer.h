@@ -18,6 +18,8 @@ class ZObject3d;
 class ZSparseStack;
 class ZObject3dScanArray;
 class ZSwcTree;
+class ZStackPtr;
+
 /*!
  * \brief The wrapper class for running watershed split
  *
@@ -64,6 +66,7 @@ public:
   void addSeed(const ZStroke2d &seed);
   void addSeed(const ZObject3d &seed);
   void addSeed(const ZSwcTree &seed);
+  void consumeSeed(const ZObject3d *seed);
 
   void setRange(const ZIntCuboid &range);
   void setRange(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
@@ -118,6 +121,20 @@ public:
     return m_ccaPost;
   }
 
+  const std::vector<ZObject3d*>& getSeedArray() const {
+    return m_seedArray;
+  }
+
+  void setRefiningBorder(bool on) {
+    m_refiningBorder = on;
+  }
+
+  void setMaxVolume(size_t v) {
+    m_maxStackVolume = v;
+  }
+
+  static std::vector<ZObject3d*> MakeBorderSeed(const ZStack &stack);
+
   void test();
 
 private:
@@ -154,6 +171,9 @@ private:
       ZObject3dScanArray *result);
   void configResult(ZObject3dScanArray *result);
 
+  static ZStackPtr MakeBoundaryStack(
+      const ZStack &stack, int conn, ZIntCuboid &boundaryBox);
+
 private:
   ZStack *m_stack;
   ZSparseStack *m_spStack;
@@ -167,9 +187,11 @@ private:
   bool m_floodingZero;
   int m_channel;
   bool m_usingSeedRange = false;
+  bool m_refiningBorder = true;
   bool m_ccaPost = true; //connected component analysis as post-processing
   int m_scale;
   size_t m_minIsolationSize = 50;
+  size_t m_maxStackVolume = 923741823;
   QString m_algorithm;
 };
 
