@@ -108,6 +108,15 @@ TEST(ZIntPoint, Operator)
 
   pt1 =  ZIntPoint(10, 20, 30) / ZIntPoint(1, 2, 3);
   ASSERT_EQ(pt1, ZIntPoint(10, 10, 10));
+
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(2, 2, 2)));
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 2, 1)));
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 1, 2)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 1, 1)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 1, 1)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 2, 0)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 1, 2)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 2, 2)));
 }
 
 #endif

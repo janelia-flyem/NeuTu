@@ -321,6 +321,19 @@ void ZObject3dFactory::DeleteObjectMap(std::map<uint64_t, ZObject3dScan *> *body
   }
 }
 
+void ZObject3dFactory::CombineObjectMap(
+    std::map<uint64_t, ZObject3dScan *> *masterBodySet,
+    std::map<uint64_t, ZObject3dScan *> *bodySet)
+{
+  for (auto &body : *bodySet) {
+    if (masterBodySet->count(body.first) > 0) {
+      (*masterBodySet)[body.first]->concat(*(body.second));
+    } else {
+      (*masterBodySet)[body.first] = body.second;
+    }
+  }
+}
+
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
     ZStackArray &stackArray)
 {
@@ -333,15 +346,20 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
     std::map<uint64_t, ZObject3dScan*> *bodySet =
         ExtractAllForegroundObject(*stack, true);
 
+    std::map<uint64_t, ZObject3dScan*> *allHighResBodySet =
+        new std::map<uint64_t, ZObject3dScan*>;
     for (size_t i = 1; i < stackArray.size(); ++i) {
       stack = stackArray[i];
       std::map<uint64_t, ZObject3dScan*> *highResBodySet =
           ExtractAllForegroundObject(*stack, true);
-      if (highResBodySet != NULL) {
-        AdjustResolution(*bodySet, *highResBodySet);
-        DeleteObjectMap(highResBodySet);
-      }
+      CombineObjectMap(allHighResBodySet, highResBodySet);
+      delete highResBodySet;
     }
+
+    if (!allHighResBodySet->empty()) {
+      AdjustResolution(*bodySet, *allHighResBodySet);
+    }
+    DeleteObjectMap(allHighResBodySet);
 
     result = new ZObject3dScanArray;
     for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
@@ -355,6 +373,7 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
         delete obj;
       }
     }
+    delete bodySet;
   }
 
   return result;

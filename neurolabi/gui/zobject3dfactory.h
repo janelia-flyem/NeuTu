@@ -89,6 +89,9 @@ private:
   static std::map<uint64_t, ZObject3dScan*>* ExtractAllForegroundObject(
       ZStack &stack, bool upsampling);
   static void DeleteObjectMap(std::map<uint64_t, ZObject3dScan*> *bodySet);
+  static void CombineObjectMap(
+      std::map<uint64_t, ZObject3dScan*> *masterBodySet,
+      std::map<uint64_t, ZObject3dScan*> *bodySet);
 };
 
 #endif // ZOBJECT3DFACTORY_H
