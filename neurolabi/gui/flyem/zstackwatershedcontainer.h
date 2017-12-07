@@ -55,6 +55,12 @@ public:
     COMP_SEED_ARRAY, COMP_RANGE, COMP_SOURCE, COMP_WORKSPACE, COMP_RESULT
   };
 
+  enum ERangeOption {
+    RANGE_FULL, //Full range
+    RANGE_SEED_ROI, //ROI expanded from seeds
+    RANGE_SEED_BOUND //Exact seed bound
+  };
+
   bool isDeprecated(EComponent component) const;
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
@@ -74,6 +80,8 @@ public:
 
   void exportMask(const std::string &filePath);
   void exportSource(const std::string &filePath);
+
+  ZIntCuboid getDataRange() const;
 
   void setFloodFillingZero(bool on) {
     m_floodingZero = on;
@@ -98,9 +106,12 @@ public:
 
   bool hasResult() const;
 
-  void useSeedRange(bool on);
+  void setRangeOption(ERangeOption option);
+  ERangeOption getRangeOption() const;
+//  void useSeedRange(bool on);
   bool usingSeedRange() const;
 //  void expandRange(const ZIntCuboid &box);
+
 
   ZObject3dScanArray* makeSplitResult(
       uint64_t minLabel, ZObject3dScanArray *result);
@@ -148,6 +159,7 @@ private:
   void clearSeed();
   Stack* getSource();
   ZStack* getSourceStack();
+  ZIntPoint estimateDsIntv(const ZIntCuboid &box) const;
   void expandSeedArray(ZObject3d *obj);
   void expandSeedArray(const std::vector<ZObject3d*> &objArray);
 
@@ -162,6 +174,8 @@ private:
   ZIntPoint getSourceDsIntv();
 
   void updateRange();
+  ZIntCuboid getRangeUpdate() const;
+  ZIntCuboid getRangeUpdate(const ZIntCuboid &dataRange) const;
   void updateSeedMask();
 
   ZObject3dScan* processSplitResult(
@@ -173,6 +187,9 @@ private:
 
   static ZStackPtr MakeBoundaryStack(
       const ZStack &stack, int conn, ZIntCuboid &boundaryBox);
+  static ZIntCuboid GetSeedRange(const std::vector<ZObject3d*> &seedArray);
+  static std::vector<ZObject3d*> MakeBorderSeed(
+      const ZStack &stack, const ZStack &boundaryStack, const ZIntCuboid &range);
 
 private:
   ZStack *m_stack;
@@ -186,7 +203,8 @@ private:
 
   bool m_floodingZero;
   int m_channel;
-  bool m_usingSeedRange = false;
+//  bool m_usingSeedRange = false;
+  ERangeOption m_rangeOption = RANGE_FULL;
   bool m_refiningBorder = true;
   bool m_ccaPost = true; //connected component analysis as post-processing
   int m_scale;

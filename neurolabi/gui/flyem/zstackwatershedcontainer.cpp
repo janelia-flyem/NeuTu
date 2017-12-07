@@ -14,6 +14,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "imgproc/zstackmultiscalewatershed.h"
 #include "zstackfactory.h"
+#include "misc/miscutility.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -55,7 +56,7 @@ void ZStackWatershedContainer::init()
 //  m_result = NULL;
   m_channel = 0;
   m_floodingZero = false;
-  m_usingSeedRange = false;
+//  m_usingSeedRange = false;
   m_scale=1;
 }
 
@@ -134,6 +135,25 @@ ZIntPoint ZStackWatershedContainer::getSourceDsIntv()
   return dsIntv;
 }
 
+void ZStackWatershedContainer::setRangeOption(ERangeOption option)
+{
+  if (m_rangeOption != option) {
+    deprecate(COMP_RANGE);
+    m_rangeOption = option;
+  }
+}
+
+ZStackWatershedContainer::ERangeOption ZStackWatershedContainer::getRangeOption() const
+{
+  return m_rangeOption;
+}
+
+bool ZStackWatershedContainer::usingSeedRange() const
+{
+  return m_rangeOption == RANGE_SEED_BOUND || m_rangeOption == RANGE_SEED_ROI;
+}
+
+/*
 void ZStackWatershedContainer::useSeedRange(bool on)
 {
   if (m_usingSeedRange != on) {
@@ -141,12 +161,7 @@ void ZStackWatershedContainer::useSeedRange(bool on)
   }
   m_usingSeedRange = on;
 }
-
-bool ZStackWatershedContainer::usingSeedRange() const
-{
-  return m_usingSeedRange;
-}
-
+*/
 /*
 void ZStackWatershedContainer::expandRange(const ZIntCuboid &box)
 {
@@ -229,14 +244,20 @@ void ZStackWatershedContainer::deprecateDependent(EComponent component)
 
 void ZStackWatershedContainer::expandSeedArray(ZObject3d *obj)
 {
-  m_seedArray.push_back(obj);
-  deprecateDependent(COMP_SEED_ARRAY);
+  if(obj != NULL) {
+    m_seedArray.push_back(obj);
+    deprecateDependent(COMP_SEED_ARRAY);
+  }
 }
 
-void ZStackWatershedContainer::expandSeedArray(const std::vector<ZObject3d *> &objArray)
+void ZStackWatershedContainer::expandSeedArray(
+    const std::vector<ZObject3d *> &objArray)
 {
-  m_seedArray.insert(m_seedArray.end(), objArray.begin(), objArray.end());
-  deprecateDependent(COMP_SEED_ARRAY);
+  for (ZObject3d *obj : objArray) {
+    expandSeedArray(obj);
+  }
+//  m_seedArray.insert(m_seedArray.end(), objArray.begin(), objArray.end());
+//  deprecateDependent(COMP_SEED_ARRAY);
 }
 
 void ZStackWatershedContainer::addSeed(const ZObject3dScan &seed)
@@ -479,6 +500,34 @@ void ZStackWatershedContainer::setRange(
 #endif
 }
 
+ZIntCuboid ZStackWatershedContainer::getDataRange() const
+{
+  if (m_stack != NULL) {
+    return m_stack->getBoundBox();
+  } else if (m_spStack != NULL) {
+    return m_spStack->getBoundBox();
+  }
+
+  return ZIntCuboid();
+}
+
+ZIntPoint ZStackWatershedContainer::estimateDsIntv(const ZIntCuboid &box) const
+{
+  ZIntPoint dsIntv;
+
+  ZIntCuboid range = box;
+  range.intersect(getRangeUpdate(box));
+
+  size_t volume = range.getVolume();
+  double dsRatio = (double) volume / m_maxStackVolume;
+
+  if (dsRatio > 1.0) {
+    dsIntv = misc::getDsIntvFor3DVolume(dsRatio);
+  }
+
+  return dsIntv;
+}
+
 ZStack* ZStackWatershedContainer::getSourceStack()
 {
   ZIntCuboid range = getRange();
@@ -542,16 +591,44 @@ void ZStackWatershedContainer::run()
       m_result.push_back(stack);
 
       if (m_refiningBorder && !getSourceStack()->getDsIntv().isZero()) {
-        ZStackWatershedContainer container(m_stack, m_spStack);
-        container.setRefiningBorder(false);
-        std::vector<ZObject3d*> newSeeds = MakeBorderSeed(*stack);
+        ZIntCuboid dataRange = getRange();
 
-        for (ZObject3d *seed : newSeeds) {
-          container.consumeSeed(seed);
+        ZIntCuboid boundaryBox;
+        ZStackPtr boundaryStack = MakeBoundaryStack(*stack, 26, boundaryBox);
+
+        //Extract components from the boundary stack
+        ZObject3dScan boundaryObject;
+        boundaryObject.loadStack(boundaryStack->c_stack());
+//            ZObject3dFactory::MakeObject3dScan(*boundaryStack);
+        std::vector<ZObject3dScan> boundaryArray =
+            boundaryObject.getConnectedComponent(ZObject3dScan::ACTION_NONE);
+
+#if 0
+        boundaryStack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+        //For each component
+        for (const ZObject3dScan &subbound : boundaryArray) {
+          //  Compute split
+          ZStackWatershedContainer container(m_stack, m_spStack);
+//          container.useSeedRange(true);
+          container.setRangeOption(RANGE_SEED_BOUND);
+          container.setRefiningBorder(false);
+
+          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
+                *stack, *boundaryStack, subbound.getBoundBox());
+//          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(*stack);
+          for (ZObject3d *seed : newSeeds) {
+            container.consumeSeed(seed);
+          }
+
+          ZIntPoint dsIntv = container.estimateDsIntv(dataRange);
+          if (dsIntv.definiteLessThan(getSourceStack()->getDsIntv())) {
+            container.run();
+            ZStackArray newResult = container.getResult();
+            m_result.append(newResult);
+          }
         }
-        container.run();
-        ZStackArray newResult = container.getResult();
-        m_result.append(newResult);
       }
     } else {
       ZStackMultiScaleWatershed watershed;
@@ -592,6 +669,17 @@ inline static int BorderSeedTest(
   }
 
   return state;
+}
+
+ZIntCuboid ZStackWatershedContainer::GetSeedRange(
+    const std::vector<ZObject3d *> &seedArray)
+{
+  ZIntCuboid box;
+  for (ZObject3d *obj : seedArray) {
+    box.join(obj->getBoundBox());
+  }
+
+  return box;
 }
 
 ZStackPtr ZStackWatershedContainer::MakeBoundaryStack(
@@ -639,11 +727,100 @@ ZStackPtr ZStackWatershedContainer::MakeBoundaryStack(
 }
 
 std::vector<ZObject3d*> ZStackWatershedContainer::MakeBorderSeed(
+      const ZStack &stack, const ZStack &boundaryStack, const ZIntCuboid &range)
+{
+  std::vector<ZObject3d*> result;
+
+  if (!stack.getDsIntv().isZero()) {
+    int sx = stack.getDsIntv().getX() + 1;
+    int sy = stack.getDsIntv().getY() + 1;
+    int sz = stack.getDsIntv().getZ() + 1;
+    int width = stack.width();
+    int height = stack.height();
+    int depth = stack.depth();
+
+    ZIntCuboid boundaryBox = range;
+    const uint8_t *boundaryArray = boundaryStack.array8();
+    const uint8_t *array = stack.array8();
+
+    boundaryBox.scale(ZIntPoint(sx, sy, sz));
+    boundaryBox.expand(1, 1, 1);
+    boundaryBox.intersect(
+          ZIntCuboid(0, 0, 0, width * sx - 1, height * sy - 1, depth * sz - 1));
+
+    int bx0 = boundaryBox.getFirstCorner().getX();
+    int by0 = boundaryBox.getFirstCorner().getY();
+    int bz0 = boundaryBox.getFirstCorner().getZ();
+
+    int bx1 = boundaryBox.getLastCorner().getX();
+    int by1 = boundaryBox.getLastCorner().getY();
+    int bz1 = boundaryBox.getLastCorner().getZ();
+
+    int x0 = stack.getOffset().getX() * sx;
+    int y0 = stack.getOffset().getY() * sy;
+    int z0 = stack.getOffset().getZ() * sz;
+
+
+    //For each voxel in the boundary box
+    for (int z = bz0; z <= bz1; ++z) {
+      for (int y = by0; y <= by1; ++y) {
+        for (int x = bx0; x <= bx1; ++x) {
+#ifdef _DEBUG_2
+          std::cout << "Checking " << x << " " << y << " " << z << std::endl;
+#endif
+          ssize_t index = C_Stack::indexFromCoord(
+                x / sx, y / sy, z / sz, width, height, depth);
+          uint8_t label = array[index];
+          if (label > 0 && boundaryArray[index] == 0) {
+            int state = 1;
+            state = BorderSeedTest((x - 1) / sx, y / sy, z / sz,
+                                   width, height, depth, label,
+                                   array, boundaryArray, state);
+            state = BorderSeedTest((x + 1) / sx, y / sy, z / sz,
+                                   width, height, depth, label,
+                                   array, boundaryArray, state);
+            state = BorderSeedTest(x / sx, (y - 1) / sy, z / sz,
+                                   width, height, depth, label,
+                                   array, boundaryArray, state);
+            state = BorderSeedTest(x / sx, (y + 1) / sy, z / sz,
+                                   width, height, depth, label,
+                                   array, boundaryArray, state);
+            state = BorderSeedTest(x / sx, y / sy, (z - 1) / sz,
+                                   width, height, depth, label,
+                                   array, boundaryArray, state);
+            state = BorderSeedTest(x / sx, y / sy, (z + 1) / sz,
+                                   width, height, depth, label,
+                                   array, boundaryArray, state);
+            if (state == 2) {
+              if (result.size() <= label) {
+                result.resize(label + 1, NULL);
+              }
+              if (result[label] == NULL) {
+                result[label] = new ZObject3d;
+                result[label]->setLabel(label);
+              }
+              ZObject3d *obj = result[label];
+              obj->append(x + x0, y + y0, z + z0);
+            }
+          }
+        } //x loop
+      }
+    } //z loop
+  }
+
+  return result;
+}
+
+std::vector<ZObject3d*> ZStackWatershedContainer::MakeBorderSeed(
     const ZStack &stack)
 {
   std::vector<ZObject3d*> result;
 
   if (!stack.getDsIntv().isZero()) {
+    ZIntCuboid boundaryBox;
+    ZStackPtr boundaryStack = MakeBoundaryStack(stack, 26, boundaryBox);
+    result = MakeBorderSeed(stack, *boundaryStack, boundaryBox);
+#if 0
     int sx = stack.getDsIntv().getX() + 1;
     int sy = stack.getDsIntv().getY() + 1;
     int sz = stack.getDsIntv().getZ() + 1;
@@ -720,6 +897,7 @@ std::vector<ZObject3d*> ZStackWatershedContainer::MakeBorderSeed(
         } //x loop
       }
     }
+#endif
   }
 
   return result;
@@ -962,28 +1140,43 @@ void ZStackWatershedContainer::printState() const
   }
 }
 
-void ZStackWatershedContainer::updateRange()
+ZIntCuboid ZStackWatershedContainer::getRangeUpdate(
+    const ZIntCuboid &dataRange) const
 {
-  if (m_spStack != NULL) {
-    m_range = m_spStack->getBoundBox();
-  } else if (m_stack != NULL) {
-    m_range = m_stack->getBoundBox();
-  }
+  ZIntCuboid range = dataRange;
 
-  if (usingSeedRange()) {
-    ZIntCuboid seedBox;
-    for (ZObject3d *seed : m_seedArray) {
-      seedBox.join(seed->getBoundBox());
-    }
-
-    if (!seedBox.isEmpty()) {
-      seedBox = ZFlyEmMisc::EstimateSplitRoi(seedBox);
-
-      if (m_range.isEmpty()) {
-        m_range = seedBox;
-      } else {
-        m_range.intersect(seedBox);
+//  if (usingSeedRange()) {
+  if (m_rangeOption == RANGE_SEED_BOUND || m_rangeOption == RANGE_SEED_ROI) {
+    ZIntCuboid seedBox = GetSeedRange(m_seedArray);
+    if (m_rangeOption == RANGE_SEED_ROI) {
+      if (!seedBox.isEmpty()) {
+        seedBox = ZFlyEmMisc::EstimateSplitRoi(seedBox);
       }
     }
+
+    if (range.isEmpty()) {
+      range = seedBox;
+    } else {
+      range.intersect(seedBox);
+    }
   }
+
+  return range;
+}
+
+ZIntCuboid ZStackWatershedContainer::getRangeUpdate() const
+{
+  ZIntCuboid range;
+  if (m_spStack != NULL) {
+    range = m_spStack->getBoundBox();
+  } else if (m_stack != NULL) {
+    range = m_stack->getBoundBox();
+  }
+
+  return getRangeUpdate(range);
+}
+
+void ZStackWatershedContainer::updateRange()
+{
+  m_range = getRangeUpdate();
 }

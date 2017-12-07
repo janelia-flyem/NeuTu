@@ -24996,35 +24996,56 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZStackFrame *frame = ZStackFrame::Make(NULL);
-  frame->load(GET_BENCHMARK_DIR + "/test.zss");
+//  frame->load(GET_BENCHMARK_DIR + "/test.zss");
+  frame->load(GET_TEST_DATA_DIR + "/_system/split_test/body2.zss");
   host->addStackFrame(frame);
   host->presentStackFrame(frame);
 
   ZStackWatershedContainer container(frame->document()->getSparseStack());
   ZStroke2d *seed1 = new ZStroke2d;
-  seed1->set(4263, 4485);
-  seed1->setZ(7264);
+  seed1->set(3930, 6265);
+  seed1->setZ(6044);
   seed1->setWidth(10);
   seed1->setLabel(2);
   seed1->setPenetrating(false);
   container.addSeed(*seed1);
 
   ZStroke2d *seed2 = new ZStroke2d;
-  seed2->set(4295, 4496);
-  seed2->setZ(7264);
+//  seed2->set(4295, 4496);
+//  seed2->setZ(7264);
+  seed2->set(3898, 6279);
+  seed2->setZ(6044);
   seed2->setWidth(10);
   seed2->setLabel(1);
   seed2->setPenetrating(false);
   container.addSeed(*seed2);
 
+  ZStroke2d *seed3 = new ZStroke2d;
+  seed3->set(3837, 5700);
+  seed3->setZ(7289);
+  seed3->setWidth(10);
+  seed3->setLabel(1);
+  seed3->setPenetrating(false);
+  container.addSeed(*seed3);
+
+  ZStroke2d *seed4 = new ZStroke2d;
+  seed4->set(3883, 5739);
+  seed4->setZ(7289);
+  seed4->setWidth(10);
+  seed4->setLabel(2);
+  seed4->setPenetrating(false);
+  container.addSeed(*seed4);
+
   frame->document()->addObject(seed1);
   frame->document()->addObject(seed2);
+  frame->document()->addObject(seed3);
+  frame->document()->addObject(seed4);
 
-  container.setMaxVolume(100*100*100);
+//  container.setMaxVolume(100*100*100);
   container.setRefiningBorder(true);
   container.run();
 
-#if 0
+#  if 0
   std::vector<ZObject3d*> seedArray =
       ZStackWatershedContainer::MakeBorderSeed(*(container.getResultStack()));
 
@@ -25035,16 +25056,16 @@ void ZTest::test(MainWindow *host)
       frame->document()->addObject(obj);
     }
   }
-#endif
+#  endif
 
-#if 1
+#  if 1
   ZObject3dScanArray *objArray = container.makeSplitResult(1, NULL);
   for (ZObject3dScan *obj : *objArray) {
     frame->document()->addObject(obj);
   }
   objArray->shallowClear();
   delete objArray;
-#endif
+#  endif
 #endif
 
   std::cout << "Done." << std::endl;
