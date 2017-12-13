@@ -24,13 +24,14 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
 
     m_reader.setVerbose(false);
 
+    // UI configuration
+    ui->todoBox->setPlaceholderText("default");
+    ui->bodyLabelBox->setPlaceholderText("default");
+    ui->ROIBox->setPlaceholderText("none");
+
     // UI connections
     connect(ui->repoListView, SIGNAL(clicked(QModelIndex)), this, SLOT(onRepoClicked(QModelIndex)));
     connect(ui->branchListView, SIGNAL(clicked(QModelIndex)), this, SLOT(onBranchClicked(QModelIndex)));
-
-
-    // data load connections
-
 
     // models & related
     m_repoModel = new QStringListModel();
@@ -39,20 +40,8 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     m_branchModel = new QStringListModel();
     ui->branchListView->setModel(m_branchModel);
 
-
-
     // populate first panel with server data
     loadDatasets();
-
-
-
-
-
-
-
-
-
-
 
 }
 
@@ -65,6 +54,7 @@ const QString DvidBranchDialog::KEY_UUID = "UUID";
 const QString DvidBranchDialog::KEY_DESCRIPTION = "description";
 const QString DvidBranchDialog::KEY_DAG = "DAG";
 const QString DvidBranchDialog::KEY_NODES = "Nodes";
+const QString DvidBranchDialog::KEY_NOTE = "Note";
 
 const QString DvidBranchDialog::MESSAGE_LOADING = "Loading...";
 
@@ -72,6 +62,9 @@ const QString DvidBranchDialog::MESSAGE_LOADING = "Loading...";
  * load stored dataset list into the first panel of the UI
  */
 void DvidBranchDialog::loadDatasets() {
+    // also functions as a reset
+    clearNode();
+
     // for now, load from file; probably should be from
     //  DVID, some other db, or a Fly EM service of some kind
     QJsonObject jsonData = loadDatasetsFromFile();
@@ -149,7 +142,9 @@ void DvidBranchDialog::loadBranches(QString repoName) {
     if (!m_reader.open(target)) {
         QMessageBox errorBox;
         errorBox.setText("Error connecting to DVID");
-        errorBox.setInformativeText("Could not open DVID!  Check server information!");
+        errorBox.setInformativeText("Could not conenct to DVID at " +
+            QString::fromStdString(target.getAddressWithPort()) +
+            "!  Check server information!");
         errorBox.setStandardButtons(QMessageBox::Ok);
         errorBox.setIcon(QMessageBox::Warning);
         errorBox.exec();
@@ -253,6 +248,7 @@ void DvidBranchDialog::loadNode(QString branchName) {
     // rest is from the specific node:
     QJsonObject nodeJson = m_branchMap[m_branchName];
     ui->UUIDBox->setText(nodeJson[KEY_UUID].toString().left(4));
+    setComment(nodeJson[KEY_NOTE].toString());
 
     // check for default settings
     ZJsonObject defaultsJson;
@@ -283,9 +279,27 @@ void DvidBranchDialog::clearNode() {
     ui->portBox->clear();
     ui->UUIDBox->clear();
 
+    setComment("");
+
     ui->labelsBox->clear();
     ui->grayscaleBox->clear();
     ui->synapsesBox->clear();
+
+    ui->ROIBox->clear();
+    ui->tilesBox->clear();
+    ui->tilesCheckBox->setChecked(false);
+    ui->todoBox->clear();
+    ui->bodyLabelBox->clear();
+
+    ui->librarianBox->clear();
+    ui->librarianCheckBox->setChecked(false);
+}
+
+/*
+ * set the comment string on the node
+ */
+void DvidBranchDialog::setComment(QString comment) {
+    ui->commentLabel->setText("Comment: " + comment);
 }
 
 /*
