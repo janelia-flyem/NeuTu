@@ -269,6 +269,13 @@ void DvidBranchDialog::loadNode(QString branchName) {
     if (defaults.contains("synapses")) {
         ui->synapsesBox->setText(defaults["synapses"].toString());
     }
+    if (defaults.contains("todos")) {
+        ui->todoBox->setText(defaults["todos"].toString());
+    }
+    if (defaults.contains("bodies")) {
+        ui->bodyLabelBox->setText(defaults["bodies"].toString());
+    }
+
 
 #if defined(_FLYEM_)
     ui->librarianCheckBox->setChecked(true);
