@@ -290,7 +290,7 @@ void DvidBranchDialog::loadNode(QString branchName) {
  */
 void DvidBranchDialog::clearNode() {
     ui->serverBox->clear();
-    ui->portBox->clear();
+    ui->portBox->setValue(8000);
     ui->UUIDBox->clear();
 
     ui->commentBox->clear();
@@ -304,6 +304,16 @@ void DvidBranchDialog::clearNode() {
     ui->tilesCheckBox->setChecked(false);
     ui->todoBox->clear();
     ui->bodyLabelBox->clear();
+
+    ui->grayscaleSourceCheckBox->setChecked(true);
+    ui->grayscaleServerBox->clear();
+    ui->grayscalePortBox->setValue(8000);
+    ui->grayscaleUUIDBox->clear();
+
+    ui->tileSourceCheckBox->setChecked(true);
+    ui->tileServerBox->clear();
+    ui->tilePortBox->setValue(8000);
+    ui->tileUUIDBox->clear();
 
     ui->librarianBox->clear();
     ui->librarianCheckBox->setChecked(false);
