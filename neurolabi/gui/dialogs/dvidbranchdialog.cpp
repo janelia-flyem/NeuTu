@@ -15,6 +15,7 @@
 #include <QsLog.h>
 
 #include "dvid/zdvidtarget.h"
+#include "neutubeconfig.h"
 
 DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     QDialog(parent),
@@ -248,7 +249,9 @@ void DvidBranchDialog::loadNode(QString branchName) {
     // rest is from the specific node:
     QJsonObject nodeJson = m_branchMap[m_branchName];
     ui->UUIDBox->setText(nodeJson[KEY_UUID].toString().left(4));
-    setComment(nodeJson[KEY_NOTE].toString());
+    ui->commentBox->setText(nodeJson[KEY_NOTE].toString());
+    ui->commentBox->setCursorPosition(0);
+    ui->commentBox->setToolTip(nodeJson[KEY_NOTE].toString());
 
     // check for default settings
     ZJsonObject defaultsJson;
@@ -267,6 +270,10 @@ void DvidBranchDialog::loadNode(QString branchName) {
         ui->synapsesBox->setText(defaults["synapses"].toString());
     }
 
+#if defined(_FLYEM_)
+    ui->librarianCheckBox->setChecked(true);
+    ui->librarianBox->setText(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultLibrarian()));
+#endif
 
 
 }
@@ -279,7 +286,7 @@ void DvidBranchDialog::clearNode() {
     ui->portBox->clear();
     ui->UUIDBox->clear();
 
-    setComment("");
+    ui->commentBox->clear();
 
     ui->labelsBox->clear();
     ui->grayscaleBox->clear();
@@ -293,13 +300,6 @@ void DvidBranchDialog::clearNode() {
 
     ui->librarianBox->clear();
     ui->librarianCheckBox->setChecked(false);
-}
-
-/*
- * set the comment string on the node
- */
-void DvidBranchDialog::setComment(QString comment) {
-    ui->commentLabel->setText("Comment: " + comment);
 }
 
 /*
