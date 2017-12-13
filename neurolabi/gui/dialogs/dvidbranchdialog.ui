@@ -219,7 +219,7 @@
          <item>
           <widget class="QLabel" name="label_10">
            <property name="text">
-            <string>To do source:</string>
+            <string>To dos:</string>
            </property>
           </widget>
          </item>
@@ -252,14 +252,14 @@
        <item>
         <widget class="QLabel" name="label_12">
          <property name="text">
-          <string>Grayscale source</string>
+          <string>Grayscale source (placeholder)</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="label_13">
          <property name="text">
-          <string>Tile source</string>
+          <string>Tile source (placeholder)</string>
          </property>
         </widget>
        </item>
