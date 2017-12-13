@@ -34,6 +34,7 @@ private:
     static const QString KEY_DESCRIPTION;
     static const QString KEY_DAG;
     static const QString KEY_NODES;
+    static const QString KEY_NOTE;
 
     static const QString MESSAGE_LOADING;
 
@@ -53,6 +54,7 @@ private:
     void showError(QString title, QString message);
     void loadNode(QString branchName);
     void clearNode();
+    void setComment(QString comment);
 };
 
 #endif // DVIDBRANCHDIALOG_H
