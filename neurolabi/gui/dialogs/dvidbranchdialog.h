@@ -54,7 +54,6 @@ private:
     void showError(QString title, QString message);
     void loadNode(QString branchName);
     void clearNode();
-    void setComment(QString comment);
 };
 
 #endif // DVIDBRANCHDIALOG_H
