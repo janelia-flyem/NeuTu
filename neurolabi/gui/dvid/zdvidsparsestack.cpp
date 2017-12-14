@@ -321,7 +321,7 @@ void ZDvidSparseStack::runFillValueFunc(
         }
       } else {
         QFuture<void> future =
-            QtConcurrent::run(this, &ZDvidSparseStack::fillValue, box, true);
+            QtConcurrent::run(this, &ZDvidSparseStack::fillValue, box, cont);
         m_futureMap[threadId] = future;
       }
     }
@@ -481,7 +481,7 @@ bool ZDvidSparseStack::fillValue(
 
 bool ZDvidSparseStack::fillValue(const ZIntCuboid &box, bool cancelable)
 {
-  return fillValue(box, cancelable, true);
+  return fillValue(box, cancelable, m_prefectching);
 }
 
 bool ZDvidSparseStack::fillValue(bool cancelable)
@@ -540,13 +540,6 @@ bool ZDvidSparseStack::fillValue(bool cancelable)
 
 ZStack* ZDvidSparseStack::getStack()
 {
-  /*
-  cancelFillValueSync();
-
-  if (fillValue()) {
-    m_sparseStack.deprecate(ZSparseStack::STACK);
-  }
-  */
 
   runFillValueFunc(ZIntCuboid(), true);
   m_sparseStack.deprecate(ZSparseStack::STACK);
