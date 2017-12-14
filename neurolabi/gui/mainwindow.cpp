@@ -173,6 +173,7 @@
 #include "dialogs/zdvidbodypositiondialog.h"
 #include "dialogs/ztestoptiondialog.h"
 #include "zobject3dscanarray.h"
+#include "zmeshfactory.h"
 
 #include "z3dcanvas.h"
 #include "zsysteminfo.h"
@@ -8443,4 +8444,12 @@ void MainWindow::on_actionMake_Movie_3_triggered()
   }
 
   makeMovie();
+}
+
+void MainWindow::on_actionView_Segmentation_Meshes_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    frame->viewSegmentationMesh();
+  }
 }

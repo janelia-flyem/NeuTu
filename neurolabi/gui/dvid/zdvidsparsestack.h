@@ -57,9 +57,9 @@ public:
    * \param range Range of the produced stack.
    * \return A new stack in the range.
    */
-  ZStack* makeStack(const ZIntCuboid &range);
+  ZStack* makeStack(const ZIntCuboid &range, bool preservingBorder);
 
-  ZStack* makeIsoDsStack(size_t maxVolume);
+  ZStack* makeIsoDsStack(size_t maxVolume, bool preservingGap);
 
   ZStack* makeDsStack(int xintv, int yintv, int zintv);
 

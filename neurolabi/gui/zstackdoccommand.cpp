@@ -542,6 +542,9 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
     m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
+  } else if (m_doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+    m_tree->useCosmeticPen(true);
+    m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
   }
 
   m_tree->setDataFromNode(m_node);

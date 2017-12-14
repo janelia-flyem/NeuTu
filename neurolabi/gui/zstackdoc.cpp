@@ -110,6 +110,7 @@
 #include "zstackdocdatabuffer.h"
 #include "zstackdockeyprocessor.h"
 #include "zmeshobjsmodel.h"
+#include "flyem/zstackwatershedcontainer.h"
 
 using namespace std;
 
@@ -9533,6 +9534,31 @@ ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
 
 void ZStackDoc::localSeededWatershed()
 {
+  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  if (seedList.size() > 1) {
+    ZStackWatershedContainer container(getStack(), getSparseStack());
+    container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+    container.setCcaPost(false);
+
+
+
+    foreach (ZStackObject *seed, seedList) {
+      container.addSeed(seed);
+    }
+
+    container.run();
+
+    ZObject3dScanArray result;
+    container.makeSplitResult(1, &result);
+    for (ZObject3dScan *obj : result) {
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    result.shallowClear();
+    getDataBuffer()->deliver();
+  }
+
+#if 0
   getProgressSignal()->startProgress("Running local split ...");
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
 //  m_isSegmentationReady = false;
@@ -9614,10 +9640,30 @@ void ZStackDoc::localSeededWatershed()
   }
   getProgressSignal()->endProgress();
   emit labelFieldModified();
+#endif
 }
 
 void ZStackDoc::seededWatershed()
 {
+  ZStackWatershedContainer container(getStack(), getSparseStack());
+
+  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  foreach (ZStackObject *seed, seedList) {
+    container.addSeed(seed);
+  }
+
+  container.run();
+
+  ZObject3dScanArray result;
+  container.makeSplitResult(1, &result);
+  for (ZObject3dScan *obj : result) {
+    getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+  }
+  result.shallowClear();
+  getDataBuffer()->deliver();
+
+#if 0
   getProgressSignal()->startProgress("Splitting ...");
 
   ZOUT(LINFO(), 3) << "Removing old result ...";
@@ -9686,6 +9732,7 @@ void ZStackDoc::seededWatershed()
   }
   getProgressSignal()->endProgress();
   emit labelFieldModified();
+#endif
 }
 
 void ZStackDoc::runLocalSeededWatershed()
@@ -9696,6 +9743,8 @@ void ZStackDoc::runLocalSeededWatershed()
 //  localSeededWatershed();
 
 //  getProgressSignal()->startProgress();
+
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
 
   const QString threadId = "localSeededWatershed";
   if (!m_futureMap.isAlive(threadId)) {
@@ -9714,6 +9763,8 @@ void ZStackDoc::runLocalSeededWatershed()
 
 void ZStackDoc::runSeededWatershed()
 {
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
+
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
 

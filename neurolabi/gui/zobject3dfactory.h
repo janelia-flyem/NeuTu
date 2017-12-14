@@ -81,6 +81,8 @@ public:
   static ZObject3dScan MakeRandomObject3dScan(const ZIntCuboid &box);
 
   static ZObject3dScan MakeObject3dScan(const ZStroke2d &stroke);
+  static ZObject3dScan* MakeBoxObject3dScan(
+      const ZIntCuboid &box, ZObject3dScan *obj);
 
 private:
   static void AdjustResolution(

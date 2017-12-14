@@ -24994,7 +24994,112 @@ void ZTest::test(MainWindow *host)
 //  std::cout <<  misc::getIsoDsIntvFor3DVolume(512, true);
 #endif
 
+#if 0
+  ZStack *stack = new ZStack;
+  stack->load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  ZStackWatershedContainer container(stack);
+  ZStroke2d *seed1 = new ZStroke2d;
+  seed1->set(3930, 6265);
+  seed1->setZ(6044);
+  seed1->setWidth(10);
+  seed1->setLabel(2);
+  seed1->setPenetrating(false);
+  container.addSeed(dynamic_cast<ZStackObject*>(seed1));
+
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/swc/breadth_first.swc");
+  tree.setLabel(1);
+  container.addSeed(dynamic_cast<ZStackObject*>(&tree));
+
+  std::cout << "#seeds: " << container.getSeedArray().size() << std::endl;
+#endif
+
 #if 1
+  ZSparseStack sp;
+  sp.load(GET_TEST_DATA_DIR + "/_system/split_test/body5.zss");
+  ZStack *stack = sp.makeStack(ZIntCuboid(), true);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+//  obj.addSegment(0, 0, 0, 1);
+//  obj.addSegment(0, 0, 3, 4);
+//  ZObject3dScan border = obj.downsampleBorderMask(1, 1, 1);
+//  border.print();
+
+//  obj.addSegment(0, 0, 0, 1);
+//  obj.addSegment(0, 0, 3, 4);
+//  obj.downsampleMin(1, 1, 1);
+//  obj.print();
+
+
+
+  obj.load(GET_TEST_DATA_DIR + "/_system/split_test/body7.zss");
+
+
+//  std::cout << obj.getBoundBox().toString() << std::endl;
+//  ZObject3dScan comp = obj.getComplementObject();
+//  comp.downsampleMax(1, 1, 1);
+//  comp.print();
+//  comp.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+//  ZObject3dScan obj = *this;
+//  obj.downsampleMax(xintv, yintv, zintv);
+
+//  ZObject3dScan border = obj.downsampleBorderMask(1, 1, 1);
+//  border.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+//  obj.downsampleMax(1, 1, 1);
+//  (obj - border).save(GET_TEST_DATA_DIR + "/test2.sobj");
+
+#  if 0
+  obj.downsampleMin(1, 1, 1);
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  obj.load(GET_TEST_DATA_DIR + "/_system/split_test/body.sobj");
+  obj.downsampleMax(1, 1, 1);
+  obj.save(GET_TEST_DATA_DIR + "/test2.sobj");
+#  endif
+
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+//  frame->load(GET_BENCHMARK_DIR + "/test.zss");
+//  frame->load(GET_TEST_DATA_DIR + "/test.zss");
+  frame->load(GET_TEST_DATA_DIR + "/_system/split_test/body7.zss");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZStackWatershedContainer container(frame->document()->getSparseStack());
+
+  ZJsonObject taskJson;
+  taskJson.load(GET_TEST_DATA_DIR + "/_system/split_test/body7.json");
+  QList<ZStackObject*> seedList = ZFlyEmMisc::LoadSplitTask(taskJson);
+  foreach (ZStackObject *seed, seedList) {
+    container.addSeed(seed);
+    frame->document()->addObject(seed);
+  }
+
+#  if 1
+  container.setRefiningBorder(true);
+  container.run();
+
+  ZObject3dScanArray *objArray = container.makeSplitResult(1, NULL);
+  for (ZObject3dScan *obj : *objArray) {
+    frame->document()->addObject(obj);
+  }
+
+//  (*objArray)[0]->save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  objArray->shallowClear();
+  delete objArray;
+#  endif
+
+#endif
+
+#if 0
   ZStackFrame *frame = ZStackFrame::Make(NULL);
 //  frame->load(GET_BENCHMARK_DIR + "/test.zss");
   frame->load(GET_TEST_DATA_DIR + "/_system/split_test/body2.zss");
@@ -25024,7 +25129,7 @@ void ZTest::test(MainWindow *host)
   seed3->set(3837, 5700);
   seed3->setZ(7289);
   seed3->setWidth(10);
-  seed3->setLabel(1);
+  seed3->setLabel(3);
   seed3->setPenetrating(false);
   container.addSeed(*seed3);
 
@@ -25032,7 +25137,7 @@ void ZTest::test(MainWindow *host)
   seed4->set(3883, 5739);
   seed4->setZ(7289);
   seed4->setWidth(10);
-  seed4->setLabel(2);
+  seed4->setLabel(4);
   seed4->setPenetrating(false);
   container.addSeed(*seed4);
 
@@ -25066,6 +25171,17 @@ void ZTest::test(MainWindow *host)
   objArray->shallowClear();
   delete objArray;
 #  endif
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
+
+  ZObject3dScan obj2 = obj.getSlice(190, 250);
+  ZObject3dScan subtracted = obj.subtract(obj2);
+  subtracted.save(GET_TEST_DATA_DIR + "/test.sobj");
+  obj.save(GET_TEST_DATA_DIR + "/test2.sobj");
+
 #endif
 
   std::cout << "Done." << std::endl;

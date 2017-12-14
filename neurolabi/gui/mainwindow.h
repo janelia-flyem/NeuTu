@@ -518,6 +518,8 @@ private slots:
 
   void on_actionMake_Movie_3_triggered();
 
+  void on_actionView_Segmentation_Meshes_triggered();
+
 private:
   void createActions();
   void createFileActions();
