@@ -341,7 +341,16 @@ void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
   if (bodyId == 0) {
     text += "<p>No body loaded.</p>";
   } else {
-    text += QString("<p>Body ID: %2</p>").arg(bodyId);
+    text += QString("<p><i>Body ID</i>: %2</p>").arg(bodyId);
+    text += QString("<p><i>Split workflow</i>: Paint seeds -> Compute splits -> Save splits <p>"
+                    "<p>Instructions: Once seeds are painted, "
+                    "you can use hotkey <b>'Space'</b> (small range), "
+                    "<b>'Shift+Space'</b> (medium range)"
+                    " or <b>Alt+Space</b> (full range) to run the split, "
+                    "which grows regions from the seeds. The red label defines "
+                    "the main region."
+                    "<p><i>Tip</i>: Painting seeds on <font color=green>brighter regions</font> "
+                    "tends to generate better results.</p>");
   }
   ui->infoWidget->setText(text);
 }
