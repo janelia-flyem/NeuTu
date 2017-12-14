@@ -1290,7 +1290,7 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 
     ZDvidSparseStack *spStack = reader.readDvidSparseStack(bodyId, box);
     spStack->shakeOff();
-    stack = spStack->makeIsoDsStack(MAX_INT32);
+    stack = spStack->makeIsoDsStack(MAX_INT32, false);
 
     delete spStack;
   }
@@ -1308,7 +1308,7 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(
   if (reader != NULL) {
     ZDvidSparseStack *spStack = reader->readDvidSparseStack(bodyId, range);
     spStack->shakeOff();
-    stack = spStack->makeIsoDsStack(MAX_INT32);
+    stack = spStack->makeIsoDsStack(MAX_INT32, false);
 
     delete spStack;
   }
@@ -1316,6 +1316,68 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(
   return stack;
 }
 
+QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(const ZJsonObject &taskJson)
+{
+  ZJsonArray seedArrayJson(taskJson.value("seeds"));
+  QList<ZStackObject*> seedList;
+  for (size_t i = 0; i < seedArrayJson.size(); ++i) {
+    ZJsonObject seedJson(seedArrayJson.value(i));
+    if (seedJson.hasKey("type")) {
+//      std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
+      std::string type = ZJsonParser::stringValue(seedJson["type"]);
+      if (type == "ZStroke2d") {
+        ZStroke2d *stroke = new ZStroke2d;
+        stroke->loadJsonObject(ZJsonObject(seedJson.value("data")));
+
+        if (!stroke->isEmpty()) {
+          seedList.append(stroke);
+        } else {
+          delete stroke;
+        }
+      } else if (type == "ZObject3d") {
+        ZObject3d *obj = new ZObject3d;
+        obj->loadJsonObject(ZJsonObject(seedJson.value("data")));
+        if (!obj->isEmpty()) {
+          seedList.append(obj);
+        } else {
+          delete obj;
+        }
+      }
+    }
+  }
+  foreach (ZStackObject *seed, seedList) {
+    seed->addRole(ZStackObjectRole::ROLE_SEED |
+                  ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+    ZLabelColorTable colorTable;
+    seed->setColor(colorTable.getColor(seed->getLabel()));
+  }
+
+  return seedList;
+}
+
+QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(GET_FLYEM_CONFIG.getTaskServer());
+  ZJsonObject taskJson =
+      reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
+                                    taskKey.c_str());
+  if (taskJson.hasKey(neutube::Json::REF_KEY)) {
+    taskJson =
+        reader->readJsonObject(
+          ZJsonParser::stringValue(taskJson[neutube::Json::REF_KEY]));
+  }
+
+  QList<ZStackObject*> seedList = LoadSplitTask(taskJson);
+  foreach (ZStackObject *seed, seedList) {
+    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+  }
+
+  return seedList;
+}
 
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {
@@ -1697,3 +1759,5 @@ QString ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
 
   return errMsg;
 }
+
+

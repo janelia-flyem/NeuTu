@@ -262,6 +262,8 @@ public:
   void createMainWindowActions();
   virtual void processKeyEvent(QKeyEvent *event);
 
+  Z3DWindow* viewSegmentationMesh();
+
 public:
   virtual void stressTest();
 

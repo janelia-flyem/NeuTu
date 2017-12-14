@@ -168,7 +168,13 @@ void ZStackWatershed::AddSeed(
       if (x >= 0 && x < width && y >= 0 && y <= height && z >= 0 && z <= depth) {
         uint8_t *p = array + z * area + y * width + x;
         if (*p != STACK_WATERSHED_BARRIER) {
-          *p = label;
+          if (*p > 0) {
+            if (*p != label ) { //Seed conflict
+              *p = 0;
+            }
+          } else {
+            *p = label;
+          }
         }
       }
     }

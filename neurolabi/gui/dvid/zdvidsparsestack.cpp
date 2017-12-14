@@ -578,7 +578,7 @@ ZStack* ZDvidSparseStack::makeDsStack(int xintv, int yintv, int zintv)
   return m_sparseStack.makeDsStack(xintv, yintv, zintv);
 }
 
-ZStack* ZDvidSparseStack::makeIsoDsStack(size_t maxVolume)
+ZStack* ZDvidSparseStack::makeIsoDsStack(size_t maxVolume, bool preservingGap)
 {
   ZStack *stack = NULL;
 
@@ -588,13 +588,13 @@ ZStack* ZDvidSparseStack::makeIsoDsStack(size_t maxVolume)
 
   runFillValueFunc(ZIntCuboid(), true, false);
   m_sparseStack.deprecate(ZSparseStack::STACK);
-  stack = m_sparseStack.makeIsoDsStack(maxVolume);
+  stack = m_sparseStack.makeIsoDsStack(maxVolume, preservingGap);
 
   return stack;
 }
 
 
-ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range)
+ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range, bool preservingBorder)
 {
   ZStack *stack = NULL;
 
@@ -603,7 +603,7 @@ ZStack* ZDvidSparseStack::makeStack(const ZIntCuboid &range)
   } else {
     runFillValueFunc(range, true, false);
     m_sparseStack.deprecate(ZSparseStack::STACK);
-    stack = m_sparseStack.makeStack(range);
+    stack = m_sparseStack.makeStack(range, preservingBorder);
   }
 
   return stack;
