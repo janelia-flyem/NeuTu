@@ -563,11 +563,9 @@ void ZFlyEmBody3dDoc::saveSplitTask()
       ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
             GET_FLYEM_CONFIG.getTaskServer());
       if (writer != NULL) {
-        ZJsonObject task;
-        ZDvidUrl dvidUrl(getDvidTarget());
-        std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
-        task.setEntry("signal", bodyUrl);
         ZJsonArray seedJson = ZFlyEmMisc::GetSeedJson(this);
+
+        ZDvidUrl dvidUrl(getDvidTarget());
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         if (seedJson.isEmpty()) {
           if (writer->getDvidReader().hasSplitTask(taskKey)) {
@@ -575,7 +573,14 @@ void ZFlyEmBody3dDoc::saveSplitTask()
             std::cout << "Split task deleted: " << taskKey.toStdString() << std::endl;
           }
         } else {
-          task.setEntry("seeds", seedJson);
+          ZJsonArray roiJson;
+          ZJsonObject task = ZFlyEmMisc::MakeSplitTask(
+                getDvidTarget(), bodyId, seedJson, roiJson);
+
+//          std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
+//          task.setEntry("signal", bodyUrl);
+
+//          task.setEntry("seeds", seedJson);
 
           std::string location = writer->writeServiceTask("split", task);
           ZJsonObject taskJson;
