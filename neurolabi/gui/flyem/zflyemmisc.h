@@ -94,6 +94,9 @@ void UploadSyGlassTask(const std::string &filePath, const ZDvidTarget &target);
 
 QList<ZStackObject*> LoadSplitTask(const ZDvidTarget &target, uint64_t bodyId);
 QList<ZStackObject*> LoadSplitTask(const ZJsonObject &taskJson);
+ZJsonObject MakeSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId, ZJsonArray seedJson,
+    ZJsonArray roiJson);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();

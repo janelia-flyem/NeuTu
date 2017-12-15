@@ -1,8 +1,8 @@
 package:
   {% if NEUTU_TARGET is defined %}
-    name: neutu
-  {% else %}
     name: {{NEUTU_TARGET}}
+  {% else %}
+    name: neutu
   {% endif %}
 
   {% if GIT_DESCRIBE_NUMBER|int == 0 %}

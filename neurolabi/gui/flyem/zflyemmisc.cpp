@@ -1379,6 +1379,35 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   return seedList;
 }
 
+ZJsonObject ZFlyEmMisc::MakeSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId,
+    ZJsonArray seedJson, ZJsonArray roiJson)
+{
+  ZJsonObject task;
+
+  ZDvidUrl dvidUrl(target);
+  std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
+  task.setEntry("signal", bodyUrl);
+  task.setEntry("seeds", seedJson);
+
+  if (!roiJson.isEmpty()) {
+    task.setEntry("range", roiJson);
+  }
+
+  if (target.hasGrayScaleData()) {
+    ZJsonObject signalInfo;
+    signalInfo.setEntry(
+          ZDvidTarget::m_grayScaleNameKey, target.getGrayScaleName());
+    ZJsonObject sourceConfig = target.getSourceConfig();
+    if (!sourceConfig.isEmpty()) {
+      signalInfo.setEntry(ZDvidTarget::m_sourceConfigKey, sourceConfig);
+    }
+    task.setEntry("signal info", signalInfo);
+  }
+
+  return task;
+}
+
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {
   QStringList fileList;

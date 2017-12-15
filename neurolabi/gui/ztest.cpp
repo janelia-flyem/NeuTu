@@ -386,7 +386,7 @@ void ZTest::CrashTest()
   delete a;
 #endif
 
-#if 1
+#if 0
   ZSwcTree *obj1 = new ZSwcTree;
   obj1->setSource(ZStackObjectSourceFactory::MakeWatershedBoundarySource(1));
   if (1) {
@@ -398,7 +398,6 @@ void ZTest::CrashTest()
   std::cout << obj1->getType() << std::endl;
   std::cout << obj1->getSource() << std::endl;
 #endif
-
 
 }
 
@@ -25014,7 +25013,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "#seeds: " << container.getSeedArray().size() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZSparseStack sp;
   sp.load(GET_TEST_DATA_DIR + "/_system/split_test/body5.zss");
   ZStack *stack = sp.makeStack(ZIntCuboid(), true);
@@ -25182,6 +25181,40 @@ void ZTest::test(MainWindow *host)
   subtracted.save(GET_TEST_DATA_DIR + "/test.sobj");
   obj.save(GET_TEST_DATA_DIR + "/test2.sobj");
 
+#endif
+
+#if 0
+  ZJsonArray arrayJson;
+  ZJsonValue value(C_Json::makeInteger(1), ZJsonValue::SET_AS_IT_IS);
+  std::cout << "Ref count: " << value.getRefCount() << std::endl;
+  arrayJson.append(value);
+
+  ZJsonArray arrayJson2 = arrayJson;
+
+  std::cout << "Ref count after array appending: " << value.getRefCount() << std::endl;
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "43f", 9000);
+  target.setLabelBlockName("segmentation");
+  target.setBodyLabelName("bodies");
+//  target.setGrayScaleName("grayscalejpeg");
+  target.setGrayScaleSource(ZDvidNode("emdata1.int.janelia.org", "231f", 9001));
+  ZJsonArray seedJson;
+  ZJsonArray roiJson;
+  ZIntCuboid box(1, 2, 3, 10, 20, 30);
+  roiJson = box.toJsonArray();
+
+  ZStroke2d stroke;
+  stroke.append(1, 1);
+  stroke.setLabel(1);
+  ZJsonObject splitJson = ZFlyEmMisc::MakeSplitSeedJson(stroke);
+  seedJson.append(splitJson);
+
+
+  ZJsonObject taskJson = ZFlyEmMisc::MakeSplitTask(target, 1, seedJson, roiJson);
+  std::cout << taskJson.dumpString(2) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

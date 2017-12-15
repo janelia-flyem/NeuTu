@@ -134,7 +134,7 @@ void ZJsonArray::append(json_t *obj)
 void ZJsonArray::append(const ZJsonValue &obj)
 {
   if (obj.getValue() != NULL) {
-    json_incref(obj.getValue());
+//    json_incref(obj.getValue());
     append(obj.getValue());
   }
 }

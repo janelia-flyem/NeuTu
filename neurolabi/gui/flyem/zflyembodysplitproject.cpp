@@ -2437,6 +2437,31 @@ std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
     ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
           GET_FLYEM_CONFIG.getTaskServer());
     if (writer != NULL) {
+      ZJsonArray seedJson = getSeedJson();
+      if (!seedJson.isEmpty()) {
+        ZJsonArray roiJson = getRoiJson();
+        if (roiJson.isEmpty()) {
+          ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
+          if (!range.isEmpty()) {
+            roiJson = range.toJsonArray();
+          }
+        }
+
+        ZJsonObject task = ZFlyEmMisc::MakeSplitTask(
+              getDvidTarget(), bodyId, seedJson, roiJson);
+
+        location = writer->writeServiceTask("split", task);
+        ZJsonObject taskJson;
+        taskJson.setEntry(neutube::Json::REF_KEY, location);
+  //      QUrl url(bodyUrl.c_str());
+        ZDvidUrl dvidUrl(getDvidTarget());
+        QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
+  //      QString("task__") + QUrl::toPercentEncoding(bodyUrl.c_str());
+        writer->writeSplitTask(taskKey, taskJson);
+
+        location = taskKey.toStdString();
+      }
+#if 0
       ZJsonObject task;
       ZDvidUrl dvidUrl(getDvidTarget());
       std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
@@ -2464,16 +2489,8 @@ std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
         signalInfo.setEntry(ZDvidTarget::m_sourceConfigKey, sourceConfig);
       }
       task.setEntry("signal info", signalInfo);
+#endif
 
-      location = writer->writeServiceTask("split", task);
-      ZJsonObject taskJson;
-      taskJson.setEntry(neutube::Json::REF_KEY, location);
-//      QUrl url(bodyUrl.c_str());
-      QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
-//      QString("task__") + QUrl::toPercentEncoding(bodyUrl.c_str());
-      writer->writeSplitTask(taskKey, taskJson);
-
-      location = taskKey.toStdString();
     }
   }
 
