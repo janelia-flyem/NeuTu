@@ -13,6 +13,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
                                                     ZRandom::instance().randReal<float>(),
                                                     ZRandom::instance().randReal<float>(),
                                                     1.f))
+  , m_preserveSourceColors(false)
   , m_selectMeshEvent("Select Mesh", false)
 //  , m_pressedMesh(nullptr)
   , m_dataIsInvalid(false)
@@ -66,6 +67,12 @@ void Z3DMeshFilter::setColorMode(const std::string &mode)
 {
   m_colorMode.select(mode.c_str());
 }
+
+void Z3DMeshFilter::enablePreservingSourceColors(bool on)
+{
+  m_preserveSourceColors = on;
+}
+
 
 void Z3DMeshFilter::setData(const std::vector<ZMesh*>& meshList)
 {
@@ -159,6 +166,26 @@ void Z3DMeshFilter::renderPicking(Z3DEye eye)
   m_rendererBase.renderPicking(eye, m_meshRenderer);
 }
 
+namespace {
+  glm::vec4 randomColorRGB()
+  {
+    // Remember the last hue used, so the next one can continue to rotate through
+    // the range of hues.
+    static qreal hPrev = 0;
+
+    qreal h = hPrev + 0.234 + 0.3 * ZRandom::instance().randReal<float>();
+    h = (h > 1) ? h - 1 : h;
+    hPrev = h;
+
+    qreal s = 0.5 + 0.5 * ZRandom::instance().randReal<float>();
+    qreal l = 0.5 + 0.5 * ZRandom::instance().randReal<float>();
+
+    QColor hsl = QColor::fromHslF(h, s, l);
+    QColor rgb = hsl.toRgb();
+    return glm::vec4(rgb.redF(), rgb.greenF(), rgb.blueF(), 1.0);
+  }
+}
+
 void Z3DMeshFilter::prepareData()
 {
   if (!m_dataIsInvalid)
@@ -184,13 +211,15 @@ void Z3DMeshFilter::prepareData()
       }
     }
 
-    // remove not in use sources
-    for (auto it = m_sourceColorMapper.begin(); it != m_sourceColorMapper.end(); ) {
-      if (allSources.find(it->first) == allSources.end()) {
-        removeParameter(*it->second);
-        it = m_sourceColorMapper.erase(it);
-      } else {
-        ++it;
+    if (!m_preserveSourceColors) {
+      // remove not in use sources
+      for (auto it = m_sourceColorMapper.begin(); it != m_sourceColorMapper.end(); ) {
+        if (allSources.find(it->first) == allSources.end()) {
+         removeParameter(*it->second);
+         it = m_sourceColorMapper.erase(it);
+        } else {
+         ++it;
+        }
       }
     }
 
@@ -202,12 +231,9 @@ void Z3DMeshFilter::prepareData()
                         QStringKeyNaturalLess());
     for (const auto& kv : newSources) {
       QString guiname = QString("Source: %1").arg(kv);
+      auto color = randomColorRGB();
       m_sourceColorMapper.insert(std::make_pair(kv,
-                                                std::make_unique<ZVec4Parameter>(guiname,
-                                                                                 glm::vec4(ZRandom::instance().randReal<float>(),
-                                                                                           ZRandom::instance().randReal<float>(),
-                                                                                           ZRandom::instance().randReal<float>(),
-                                                                                           1.f))));
+                                                std::make_unique<ZVec4Parameter>(guiname, color)));
 
       m_sourceColorMapper[kv]->setStyle("COLOR");
       connect(m_sourceColorMapper[kv].get(), &ZVec4Parameter::valueChanged,

@@ -35,6 +35,9 @@ public:
   ZFlyEmBody3dDoc* getBodyDocument() const;
   ZFlyEmProofDoc* getDataDocument() const;
 
+  static void enableZoomToLoadedBody(bool enable = true);
+  static bool zoomToLoadedBodyEnabled();
+
 public slots:
   void showSynapse(bool on);
   void showTodo(bool on);
@@ -43,6 +46,12 @@ public slots:
    * \brief Remove a body from the current list.
    */
   void removeBody(uint64_t bodyId);
+
+  /*!
+   * \brief Remove all bodies from the current list, which can be more efficient
+   * than removing them one at a time.
+   */
+  void removeAllBodies();
 
   /*!
    * \brief Add a body to the body list.
@@ -84,6 +93,9 @@ private slots:
       QList<ZSwcTree*> selected,QList<ZSwcTree*>deselected);
   void processMeshChangedFrom3D(
       QList<ZMesh*> selected, QList<ZMesh*>deselected);
+
+  void syncBodyListModel();
+
   void test();
 
 private:
@@ -100,6 +112,8 @@ private:
   ZFlyEmProofMvc *m_dataContainer = NULL;
   QToolBar *m_toolBar = NULL;
   ZBodyListWidget *m_bodyListWidget = NULL;
+  bool m_doingBulkUpdate = false;
+  class DoingBulkUpdate;
 };
 
 #endif // NEU3WINDOW_H

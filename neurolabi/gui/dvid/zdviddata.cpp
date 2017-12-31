@@ -28,6 +28,8 @@ const char* ZDvidData::m_neutuConfigName = "neutu_config";
 const char* ZDvidData::m_labelszName = "labelsz";
 const char* ZDvidData::m_meshName = "meshes";
 const char* ZDvidData::m_sparsevolSizeName = "sparsevol-size";
+const char* ZDvidData::m_meshesTarsName = "meshes_tars";
+
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -113,6 +115,8 @@ std::string ZDvidData::GetName(ERole role)
     return GetName(ROLE_SPLIT_TASK_KEY) + "_" + "property";
   case ROLE_MESH:
     return m_meshName;
+  case ROLE_MESHES_TARS:
+    return m_meshesTarsName;
   }
 
   return m_emptyName;

@@ -210,8 +210,8 @@ public slots:
   bool locateBody(uint64_t bodyId);
 //  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
   void addLocateBody(uint64_t bodyId);
-  void selectBody(uint64_t bodyId);
-  void deselectBody(uint64_t bodyId);
+  void selectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
+  void deselectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
   void selectBodyInRoi(bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
   void notifyBodyMergeEdited();

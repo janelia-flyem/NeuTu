@@ -215,6 +215,14 @@ QString TaskProtocolTask::objectToString(QJsonObject json) {
     return jsonString;
 }
 
+void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
+                                    const QSet<uint64_t> &selected)
+{
+  m_visibleBodies = visible;
+  m_selectedBodies = selected;
+  emit(bodiesUpdated());
+}
+
 /*
  * produce the json that holds all the task data
  */

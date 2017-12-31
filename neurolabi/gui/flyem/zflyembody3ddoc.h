@@ -219,6 +219,18 @@ public:
   void enableNodeSeeding(bool on);
   void enableBodySelectionSync(bool on);
 
+  void enableGarbageLifetimeLimit(bool on);
+
+  // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
+  // uses the body's identifier in multiple ways: for multiple meshes, at different
+  // levels in the agglomeration history, and as a key whose associated value is a
+  // tar file of meshes.  These distinct identifiers are created by encoding a
+  // raw body identifier.
+
+  static uint64_t encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
+  static bool encodesTar(uint64_t id);
+  static unsigned int encodedLevel(uint64_t id);
+
 public:
   void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
   void executeRemoveTodoCommand();
@@ -266,7 +278,10 @@ private:
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
-  ZMesh* makeBodyMeshModel(uint64_t bodyId, int zoom);
+
+  bool getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64_t, ZMesh*> &result);
+  ZMesh *readMesh(uint64_t bodyId, int zoom);
+  void makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_t, ZMesh*> &result);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
@@ -318,6 +333,7 @@ private:
 signals:
   void todoVisibleChanged();
   void bodyMeshLoaded();
+  void bodyMeshesAdded();
 
 private slots:
 //  void updateBody();
@@ -376,6 +392,10 @@ private:
 
   QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
+
+  std::map<uint64_t, std::vector<uint64_t>> m_tarIdToMeshIds;
+
+  bool m_limitGarbageLifetime = true;
 
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;

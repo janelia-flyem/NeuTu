@@ -45,6 +45,8 @@ class ZDvidRoi;
 class ZObject3dScanArray;
 class ZMesh;
 
+struct archive;
+
 namespace libdvid{
 class DVIDNodeService;
 class DVIDConnection;
@@ -129,6 +131,14 @@ public:
       uint64_t bodyId, bool canonizing, ZObject3dScan *result);
 
   ZMesh* readMesh(uint64_t bodyId, int zoom);
+
+  /*!
+   * \brief Read meshes from a key-value instance whose values are tar archives of
+   * Draco-compressed meshes
+   */
+  struct archive *readMeshArchiveStart(uint64_t bodyId);
+  ZMesh *readMeshArchiveNext(struct archive *arc);
+  void readMeshArchiveEnd(struct archive *arc);
 
   ZObject3dScan* readBodyDs(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result);
