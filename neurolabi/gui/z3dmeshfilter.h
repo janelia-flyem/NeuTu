@@ -42,6 +42,8 @@ public:
 
   void setColorMode(const std::string &mode);
 
+  void enablePreservingSourceColors(bool on);
+
   bool hitObject(int x, int y);
   std::vector<bool> hitObject(const std::vector<std::pair<int, int> > &ptArray);
 
@@ -81,6 +83,7 @@ private:
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllMesh;
   std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare> m_sourceColorMapper;
+  bool m_preserveSourceColors;
 
   // mesh list used for rendering, it is a subset of m_origMeshList. Some mesh are
   // hidden because they are unchecked from the object model. This allows us to control

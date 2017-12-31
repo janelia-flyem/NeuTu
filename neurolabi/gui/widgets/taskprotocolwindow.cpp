@@ -14,6 +14,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
+#include "protocols/taskbodyhistory.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
@@ -316,6 +317,10 @@ void TaskProtocolWindow::onLoadTasksButton() {
     startProtocol(json, true);
 }
 
+void TaskProtocolWindow::onBodiesUpdated() {
+  updateBodyWindow();
+}
+
 void TaskProtocolWindow::onCompletedStateChanged(int /*state*/) {
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
@@ -604,12 +609,7 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
 void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
-
-        // remove existing bodies; proof doc "selected" corresponds to "visible"
-        //  I'm taking a bit of a guess that I want "MAPPED" (not "ORIGINAL")
-        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED)) {
-            emit bodyRemoved(bodyID);
-        }
+        emit allBodiesRemoved();
 
         QSet<uint64_t> visible = m_taskList[m_currentTaskIndex]->visibleBodies();
         QSet<uint64_t> selected = m_taskList[m_currentTaskIndex]->selectedBodies();
@@ -755,6 +755,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
 
         // this if-else tree will get more awkward with more types...
+        // TODO: Switch to a factory pattern that produces an instance of the appropriate
+        // TaskProtocolTask subclass given the KEY_TASKTYPE value.
 
         // also, need to collect these keys and values better; hard-code this one
         //  for now
@@ -762,6 +764,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         if (taskType == "body review") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
             m_taskList.append(task);
+        } else if (taskType == "body history") {
+          QSharedPointer<TaskProtocolTask> task(new TaskBodyHistory(taskJson.toObject(), m_body3dDoc));
+          m_taskList.append(task);
         } else if (taskType == "split seeds") {
             // I'm not really fond of this task having a different constructor signature, but
             //  neither do I want to pass in both docs to every task just because a few might
@@ -774,6 +779,11 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         } else {
             // unknown task type; log it and move on
             LWARN() << "Task protocol: found unknown task type " << taskType << " in task json; skipping";
+        }
+
+        if (!m_taskList.empty()) {
+          connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
+                  this, SLOT(onBodiesUpdated()));
         }
     }
 

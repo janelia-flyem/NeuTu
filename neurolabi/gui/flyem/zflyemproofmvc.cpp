@@ -732,7 +732,9 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
 
   doc->showSynapse(m_meshWindow->isLayerVisible(Z3DWindow::LAYER_PUNCTA));
   setWindowSignalSlot(m_meshWindow);
-  m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
+  if (windowType != NeuTube3D::TYPE_NEU3) {
+      m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
+  }
   m_meshWindow->readSettings();
   m_meshWindow->syncAction();
 
@@ -4081,20 +4083,24 @@ void ZFlyEmProofMvc::addLocateBody(uint64_t bodyId)
   locateBody(bodyId, true);
 }
 
-void ZFlyEmProofMvc::selectBody(uint64_t bodyId)
+void ZFlyEmProofMvc::selectBody(uint64_t bodyId, bool postponeWindowUpdates)
 {
   getCompleteDocument()->recordBodySelection();
   getCompleteDocument()->selectBody(bodyId);
   getCompleteDocument()->processBodySelection();
-  updateBodySelection();
+  if (!postponeWindowUpdates) {
+    updateBodySelection();
+  }
 }
 
-void ZFlyEmProofMvc::deselectBody(uint64_t bodyId)
+void ZFlyEmProofMvc::deselectBody(uint64_t bodyId, bool postponeWindowUpdates)
 {
   getCompleteDocument()->recordBodySelection();
   getCompleteDocument()->deselectBody(bodyId);
   getCompleteDocument()->processBodySelection();
-  updateBodySelection();
+  if (!postponeWindowUpdates) {
+    updateBodySelection();
+  }
 }
 
 void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)

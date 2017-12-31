@@ -37,6 +37,9 @@ public:
     virtual QString targetString() = 0;    
     virtual QWidget * getTaskWidget();
 
+signals:
+    void bodiesUpdated();
+
 protected:
     static const QString KEY_COMPLETED;
     static const QString KEY_TAGS;
@@ -49,6 +52,8 @@ protected:
     QSet<QString> m_tags;
 
     QString objectToString(QJsonObject json);
+
+    void updateBodies(const QSet<uint64_t> &visible, const QSet<uint64_t> &selected);
 
 private:
     bool loadStandard(QJsonObject json);
