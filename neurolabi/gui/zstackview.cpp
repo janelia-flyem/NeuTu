@@ -1459,6 +1459,10 @@ bool ZStackView::reloadObjectCanvas(bool repaint)
 
 void ZStackView::reloadTileCanvas()
 {
+#ifdef _DEBUG_
+  std::cout << "Before: Tile painter active? " << m_tileCanvasPainter.isActive() << std::endl;
+#endif
+
   QSize canvasSize = getCanvasSize();
 
   if (!canvasSize.isEmpty() &&
@@ -1476,6 +1480,10 @@ void ZStackView::reloadTileCanvas()
       m_imageWidget->setTileCanvas(pixmap);
     }
   }
+
+#ifdef _DEBUG_
+  std::cout << "After: Tile painter active? " << m_tileCanvasPainter.isActive() << std::endl;
+#endif
 }
 
 void ZStackView::updateObjectCanvas()
