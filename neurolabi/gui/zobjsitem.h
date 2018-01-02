@@ -22,7 +22,7 @@ public:
   int row() const;
   ZObjsItem *parent();
 
-  inline void* getActuralData() const { return m_actualObj; }
+  inline void* getActualData() const { return m_actualObj; }
   inline void setItemData(QList<QVariant> &itemData) { m_itemData = itemData; }
   inline QList<QVariant>& getItemData() {return m_itemData;}
 

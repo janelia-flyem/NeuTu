@@ -180,7 +180,7 @@ int ZBodySplitCommand::run(
   ZStackGarbageCollector gc;
   std::pair<ZStack*, ZSparseStack*> data =
       parseSignalPath(signalPath, signalInfo, dataDir, isFile, range, gc);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   ZSparseStack *spStack = data.second;
   if (spStack != NULL) {
     std::cout << "Saving sparse stack ..." << std::endl;

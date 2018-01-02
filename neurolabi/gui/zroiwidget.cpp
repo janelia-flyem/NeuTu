@@ -70,7 +70,7 @@ ZROIWidget::ZROIWidget(const QString & title, QWidget * parent, Qt::WindowFlags 
     setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
     //
-    m_objmodel = new ZROIObjsModel(this);
+//    m_objmodel = new ZROIObjsModel(this);
 }
 
 ZROIWidget::~ZROIWidget()
