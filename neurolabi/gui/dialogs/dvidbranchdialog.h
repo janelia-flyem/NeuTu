@@ -36,6 +36,9 @@ private:
     static const QString KEY_NODES;
     static const QString KEY_NOTE;
 
+    static const int DEFAULT_PORT;
+
+    static const QString DEFAULT_MASTER_NAME;
     static const QString MESSAGE_LOADING;
 
     Ui::DvidBranchDialog *ui;
@@ -54,6 +57,7 @@ private:
     void showError(QString title, QString message);
     void loadNode(QString branchName);
     void clearNode();
+    QString findMasterName(QString prefix, QStringList names);
 };
 
 #endif // DVIDBRANCHDIALOG_H

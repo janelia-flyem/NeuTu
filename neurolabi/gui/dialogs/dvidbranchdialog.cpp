@@ -57,6 +57,9 @@ const QString DvidBranchDialog::KEY_DAG = "DAG";
 const QString DvidBranchDialog::KEY_NODES = "Nodes";
 const QString DvidBranchDialog::KEY_NOTE = "Note";
 
+const int DvidBranchDialog::DEFAULT_PORT = 8000;
+
+const QString DvidBranchDialog::DEFAULT_MASTER_NAME = "master";
 const QString DvidBranchDialog::MESSAGE_LOADING = "Loading...";
 
 /*
@@ -169,7 +172,38 @@ void DvidBranchDialog::loadBranches(QString repoName) {
         branchNames.append(branchName);
     }
 
+    // at this point we have to deal with the very common branch name ""
+    //  (the empty string); usually we interpret that as being the master branch,
+    //  so name it explicitly in the UI; but first check that no other branch is
+    //  already using the name we want to use
+    if (branchNames.contains("")) {
+        QString masterName = DEFAULT_MASTER_NAME;
+        if (branchNames.contains(DEFAULT_MASTER_NAME)) {
+            masterName = findMasterName(DEFAULT_MASTER_NAME, branchNames);
+        }
+
+        // now rename in local data structures (not in DVID)
+        branchNames.removeAll("");
+        branchNames.prepend(masterName);
+
+        m_branchMap[masterName] = m_branchMap[""];
+        m_branchMap.remove("");
+    }
+
     m_branchModel->setStringList(branchNames);
+}
+
+/*
+ * find a branch name not in the input list
+ */
+QString DvidBranchDialog::findMasterName(QString prefix, QStringList names) {
+    int n = 2;
+    QString temp = QString("%1 %2").arg(prefix, QString::number(n));
+    while (names.contains(temp)) {
+        n++;
+        temp = QString("%1 %2").arg(prefix, QString::number(n));
+    }
+    return temp;
 }
 
 /*
@@ -220,6 +254,9 @@ QStringList DvidBranchDialog::findBranches(QJsonObject nodeJson) {
         }
         if (tiplist.size() != 1) {
             LINFO() << "Branch" << branchName.toStdString() << "has indeterminate tip";
+
+            // not sure if I need a dialog here, but it's useful for testing
+            showError("Branch error", "Can't find the tip of branch '" + branchName + "'; it won't be listed.");
         } else {
             UUIDs.append(tiplist[0]);
         }
@@ -276,12 +313,10 @@ void DvidBranchDialog::loadNode(QString branchName) {
         ui->bodyLabelBox->setText(defaults["bodies"].toString());
     }
 
-
 #if defined(_FLYEM_)
     ui->librarianCheckBox->setChecked(true);
     ui->librarianBox->setText(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultLibrarian()));
 #endif
-
 
 }
 
@@ -290,7 +325,7 @@ void DvidBranchDialog::loadNode(QString branchName) {
  */
 void DvidBranchDialog::clearNode() {
     ui->serverBox->clear();
-    ui->portBox->setValue(8000);
+    ui->portBox->setValue(DEFAULT_PORT);
     ui->UUIDBox->clear();
 
     ui->commentBox->clear();
@@ -307,12 +342,12 @@ void DvidBranchDialog::clearNode() {
 
     ui->grayscaleSourceCheckBox->setChecked(true);
     ui->grayscaleServerBox->clear();
-    ui->grayscalePortBox->setValue(8000);
+    ui->grayscalePortBox->setValue(DEFAULT_PORT);
     ui->grayscaleUUIDBox->clear();
 
     ui->tileSourceCheckBox->setChecked(true);
     ui->tileServerBox->clear();
-    ui->tilePortBox->setValue(8000);
+    ui->tilePortBox->setValue(DEFAULT_PORT);
     ui->tileUUIDBox->clear();
 
     ui->librarianBox->clear();
