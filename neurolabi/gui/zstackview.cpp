@@ -1674,6 +1674,10 @@ void ZStackView::updateActiveDecorationCanvas()
 
 void ZStackView::updateNewTileCanvas()
 {
+#ifdef _DEBUG_
+  std::cout << "Updating tile canvas." << std::endl;
+#endif
+
   m_tileCanvasPainter.end();
   m_newTileCanvas = updateProjCanvas(m_newTileCanvas);
   m_imageWidget->setTileCanvas(m_newTileCanvas);
@@ -1966,7 +1970,7 @@ bool ZStackView::paintTileCanvasBuffer()
 //  timer.start();
   if (buddyDocument()->hasObject(ZStackObject::TARGET_TILE_CANVAS)) {
 #ifdef _DEBUG_
-    std::cout << "updating tile canvas ..." << std::endl;
+    std::cout << "Painting tile canvas ..." << std::endl;
 #endif
 //    updateTileCanvas();
 //    updateNewTileCanvas();
@@ -2370,7 +2374,7 @@ void ZStackView::increaseZoomRatio(int x, int y, bool usingRef)
         ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE) {
 //      reloadTileCanvas();
 //      reloadObjectCanvas(true);
-      updateNewTileCanvas();
+//      updateNewTileCanvas();
       processViewChange(true);
 //      paintObjectBuffer(ZStackObject::TARGET_TILE_CANVAS);
 //      paintTileCanvasBuffer();//?
@@ -2399,7 +2403,7 @@ void ZStackView::decreaseZoomRatio(int x, int y, bool usingRef)
 //      reloadTileCanvas();
 //      reloadObjectCanvas(true);
 
-      updateNewTileCanvas();
+//      updateNewTileCanvas();
 
       processViewChange(true);
     }
@@ -2748,6 +2752,14 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
   if (!isViewChangeEventBlocked()) {
     ZStackViewParam param = getViewParameter(neutube::COORD_STACK);
     QSet<ZStackObject::ETarget> targetSet = updateViewData(param);
+
+    updateActiveDecorationCanvas();
+    for (QSet<ZStackObject::ETarget>::const_iterator iter = targetSet.begin();
+         iter != targetSet.end(); ++iter) {
+      updateCanvas(*iter);
+    }
+//    updateNewTileCanvas();
+
     if (redrawing) {
 
       for (QSet<ZStackObject::ETarget>::const_iterator iter = targetSet.begin();
@@ -2809,7 +2821,7 @@ void ZStackView::notifyViewChanged()
 void ZStackView::notifyViewChanged(const ZStackViewParam &param)
 {
   updateActiveDecorationCanvas();
-  updateNewTileCanvas();
+//  updateNewTileCanvas();
 
 #ifdef _DEBUG_2
   std::cout << "Signal: ZStackView::viewChanged" << std::endl;
@@ -3082,6 +3094,25 @@ ZPixmap* ZStackView::getCanvas(ZStackObject::ETarget target)
   }
 
   return NULL;
+}
+
+void ZStackView::updateCanvas(ZStackObject::ETarget target)
+{
+  switch(target) {
+  case ZStackObject::TARGET_OBJECT_CANVAS:
+    updateObjectCanvas();
+    break;
+  case ZStackObject::TARGET_TILE_CANVAS:
+    updateNewTileCanvas();
+    break;
+  case ZStackObject::TARGET_STACK_CANVAS:
+    break;
+  case ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS:
+    updateDynamicObjectCanvas();
+    break;
+  default:
+    break;
+  }
 }
 
 ZPainter* ZStackView::getPainter(ZStackObject::ETarget target)
