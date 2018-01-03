@@ -24,6 +24,7 @@ public:
 private slots:
     void onRepoClicked(QModelIndex modelIndex);
     void onBranchClicked(QModelIndex modelIndex);
+    void toggleDetailsPanel();
 
 private:
     static const QString KEY_REPOS;
@@ -49,6 +50,7 @@ private:
     QString m_branchName;
     QMap<QString, QJsonObject> m_repoMap;
     QMap<QString, QJsonObject> m_branchMap;
+    bool m_detailsVisible;
 
     void loadDatasets();
     QJsonObject loadDatasetsFromFile();
@@ -58,6 +60,8 @@ private:
     void loadNode(QString branchName);
     void clearNode();
     QString findMasterName(QString prefix, QStringList names);
+    void showDetailsPanel();
+    void hideDetailsPanel();
 };
 
 #endif // DVIDBRANCHDIALOG_H
