@@ -78,6 +78,12 @@ bool ZPainter::begin(ZImage *image)
   return false;
 }
 
+bool ZPainter::restart(ZPixmap *pixmap)
+{
+  end();
+  return begin(pixmap);
+}
+
 bool ZPainter::begin(ZPixmap *image)
 {
   m_isPainted = false;
