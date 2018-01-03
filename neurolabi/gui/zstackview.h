@@ -496,6 +496,7 @@ protected:
   void updateActiveDecorationCanvas();
   void updateNewTileCanvas();
   void updatePaintBundle();
+  void updateCanvas(ZStackObject::ETarget target);
 
   ZPainter* getTileCanvasPainter();
 
