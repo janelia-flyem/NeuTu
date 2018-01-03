@@ -33,6 +33,7 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     // UI connections
     connect(ui->repoListView, SIGNAL(clicked(QModelIndex)), this, SLOT(onRepoClicked(QModelIndex)));
     connect(ui->branchListView, SIGNAL(clicked(QModelIndex)), this, SLOT(onBranchClicked(QModelIndex)));
+    connect(ui->detailsButton, SIGNAL(clicked(bool)), this, SLOT(toggleDetailsPanel()));
 
     // models & related
     m_repoModel = new QStringListModel();
@@ -42,6 +43,7 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     ui->branchListView->setModel(m_branchModel);
 
     // populate first panel with server data
+    hideDetailsPanel();
     loadDatasets();
 
 }
@@ -172,10 +174,10 @@ void DvidBranchDialog::loadBranches(QString repoName) {
         branchNames.append(branchName);
     }
 
-    // at this point we have to deal with the very common branch name ""
-    //  (the empty string); usually we interpret that as being the master branch,
-    //  so name it explicitly in the UI; but first check that no other branch is
-    //  already using the name we want to use
+    // at this point we have to deal with the branch name "" (the empty string);
+    //  that is to be interpreted as being the master branch,
+    //  so name it explicitly in the UI (top of list); first,
+    //  check that no other branch is already using the name we want to use
     if (branchNames.contains("")) {
         QString masterName = DEFAULT_MASTER_NAME;
         if (branchNames.contains(DEFAULT_MASTER_NAME)) {
@@ -352,6 +354,33 @@ void DvidBranchDialog::clearNode() {
 
     ui->librarianBox->clear();
     ui->librarianCheckBox->setChecked(false);
+}
+
+/*
+ * toggle the details panel open and closed
+ */
+void DvidBranchDialog::toggleDetailsPanel() {
+    if (m_detailsVisible) {
+        hideDetailsPanel();
+    } else {
+        showDetailsPanel();
+    }
+}
+
+void DvidBranchDialog::showDetailsPanel() {
+    // here and in hide, below, I want the dialog width to adjust
+    //  for adding and removing a third panel of same width as the other two
+    resize(3 * width() / 2, height());
+    ui->detailsWidget->show();
+    ui->detailsButton->setText("<< Details");
+    m_detailsVisible = true;
+}
+
+void DvidBranchDialog::hideDetailsPanel() {
+    resize(2 * width() / 3, height());
+    ui->detailsWidget->hide();
+    ui->detailsButton->setText("Details >>");
+    m_detailsVisible = false;
 }
 
 /*
