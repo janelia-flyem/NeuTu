@@ -101,6 +101,8 @@ inline int type(const Swc_Tree_Node *tn) { return tn->node.type; }
 int label(const Swc_Tree_Node *tn);
 int index(const Swc_Tree_Node *tn);
 
+void print(const Swc_Tree_Node *tn);
+
 /*!
  * \brief Get the lenght of a node
  *

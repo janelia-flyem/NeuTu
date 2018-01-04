@@ -386,6 +386,11 @@ int SwcTreeNode::index(const Swc_Tree_Node *tn)
   return tn->index;
 }
 
+void SwcTreeNode::print(const Swc_Tree_Node *tn)
+{
+  Print_Swc_Tree_Node(tn);
+}
+
 double SwcTreeNode::length(const Swc_Tree_Node *tn)
 {
   return Swc_Tree_Node_Length(tn);

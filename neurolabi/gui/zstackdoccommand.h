@@ -43,6 +43,9 @@ public:
 
   void startUndo();
 
+public: //test funcion
+  virtual bool test() { return true; }
+
 private:
   bool m_isSwcSaved;
   bool m_loggingCommand;
@@ -318,6 +321,8 @@ public:
   void addNode(const std::vector<Swc_Tree_Node*> &nodeArray);
   void redo();
   void undo();
+
+  bool test();
 
 private:
   std::vector<Swc_Tree_Node*> m_nodeArray;
