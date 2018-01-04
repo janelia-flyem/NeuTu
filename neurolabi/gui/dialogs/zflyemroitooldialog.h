@@ -55,6 +55,16 @@ public slots:
   void estimateRoi();
   void createRoiData();
   void estimateRoiVolume();
+  void movePlaneLeft();
+  void movePlaneRight();
+  void movePlaneUp();
+  void movePlaneDown();
+  void movePlaneLeftUp();
+  void movePlaneRightDown();
+  void rotatePlaneClockwise();
+  void rotatePlaneCounterClockwise();
+  void rotatePlane(double theta);
+  void movePlane(double dx, double dy);
 
 signals:
   void projectActivited();
@@ -64,6 +74,9 @@ signals:
   void goingToSlice(int);
   void goingToNearestRoi();
   void estimatingRoi();
+//  void movingPlaneLeft();
+  void movingPlane(double dx, double dy);
+  void rotatingPlane(double theta);
 
 private:
   void init();

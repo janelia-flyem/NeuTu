@@ -2811,6 +2811,19 @@ DEFINE_GET_OBJECT_LIST(getDvidTileEnsembleList, ZDvidTileEnsemble, TYPE_DVID_TIL
 DEFINE_GET_OBJECT_LIST(getDvidSparsevolSliceList, ZDvidSparsevolSlice, TYPE_DVID_SPARSEVOL_SLICE)
 DEFINE_GET_OBJECT_LIST(getMeshList, ZMesh, TYPE_MESH)
 
+QList<ZSwcTree*> ZStackDoc::getSwcList(ZStackObjectRole::TRole role) const
+{
+  QList<ZSwcTree*> result;
+  QList<ZSwcTree*> swcList = getSwcList();
+  foreach (ZSwcTree *tree, swcList) {
+    if (tree->hasRole(role)) {
+      result.append(tree);
+    }
+  }
+
+  return result;
+}
+
 void ZStackDoc::addSparseObjectP(ZSparseObject *obj)
 {
   if (obj == NULL) {
@@ -6679,6 +6692,22 @@ bool ZStackDoc::executeSwcNodeChangeZCommand(double z)
   notifyStatusMessageUpdated(message);
 
   return succ;
+}
+
+bool  ZStackDoc::executeMoveSwcNodeCommand(
+    std::vector<Swc_Tree_Node *> &nodeList, double dx, double dy, double dz)
+{
+  if (!nodeList.empty() && (dx != 0 || dy != 0 || dz != 0)) {
+    ZStackDocCommand::SwcEdit::MoveSwcNode *command =
+        new ZStackDocCommand::SwcEdit::MoveSwcNode(this);
+    command->setOffset(ZPoint(dx, dy, dz));
+    command->addNode(nodeList);
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
 }
 
 bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)

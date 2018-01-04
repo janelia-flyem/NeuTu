@@ -4019,6 +4019,34 @@ void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
   }
 }
 
+void ZFlyEmProofDoc::executeRotateRoiPlaneCommand(int z, double theta)
+{
+  if (theta != 0) {
+    QUndoCommand *allCommand = new QUndoCommand;
+
+    QList<ZSwcTree*> treeList = getSwcList(ZStackObjectRole::ROLE_ROI);
+
+    foreach (ZSwcTree *tree, treeList) {
+      std::vector<Swc_Tree_Node*> subNodeList =  tree->getNodeOnPlane(z);
+      if (!subNodeList.empty()) {
+        ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ *command =
+            new ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ(this, allCommand);
+        command->addNode(subNodeList);
+        command->useNodeCentroid();
+        command->setRotateAngle(theta);
+      }
+    }
+    if (allCommand->childCount() > 0) {
+      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      pushUndoCommand(allCommand);
+      endObjectModifiedMode();
+      notifyObjectModified();
+    } else {
+      delete allCommand;
+    }
+  }
+}
+
 void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
 {
   ZOUT(LTRACE(), 5) << "Copy bookmarks";
