@@ -339,3 +339,12 @@ void ZJsonValue::denull()
     m_data = C_Json::makeJsonNull();
   }
 }
+
+int ZJsonValue::getRefCount() const
+{
+  if (m_data == NULL) {
+    return 0;
+  }
+
+  return m_data->refcount;
+}

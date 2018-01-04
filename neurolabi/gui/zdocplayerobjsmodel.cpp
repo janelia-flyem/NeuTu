@@ -66,7 +66,7 @@ ZDocPlayer* ZDocPlayerObjsModel::getDocPlayer(const QModelIndex &index) const
     ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
     if (item->parent() == m_rootItem) {
-      obj = static_cast<ZDocPlayer*>(item->getActuralData());
+      obj = static_cast<ZDocPlayer*>(item->getActualData());
     }
   }
 

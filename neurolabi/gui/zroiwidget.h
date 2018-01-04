@@ -97,7 +97,7 @@ public:
     QTableWidget *tw_ROIs;
 
     //
-    ZROIObjsModel *m_objmodel;
+//    ZROIObjsModel *m_objmodel;
 };
 
 

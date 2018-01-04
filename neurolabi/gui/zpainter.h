@@ -41,6 +41,10 @@ public:
   bool begin(ZImage *image);
   bool begin(ZPixmap *pixmap);
   bool begin(QPaintDevice *device);
+
+  bool restart(ZPixmap *pixmap);
+  void updateTransform(ZPixmap *pixmap);
+
   bool end();
 
   void attachPainter(QPainter *painter);

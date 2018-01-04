@@ -189,6 +189,7 @@ private:
 
   static const double m_minWidth;
   static const double m_maxWidth;
+  static const double m_zFadeSpan;
 
   const static ZLabelColorTable m_colorTable;
   //const static QVector<QColor> m_colorTable;

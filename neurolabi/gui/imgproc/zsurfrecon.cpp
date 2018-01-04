@@ -1,6 +1,7 @@
-//#include "zstackdoc.h"
 #include <set>
 #include "zsurfrecon.h"
+#include "zstack.hxx"
+#include "zswctree.h"
 
 #if defined(_ENABLE_SURFRECON_)
 void ZSurfRecon::SurfRecon(VoxelSet& in,VoxelSet& out)

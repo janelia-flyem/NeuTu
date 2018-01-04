@@ -49,6 +49,14 @@ public:
   bool operator < (const ZIntPoint &pt) const;
 
   /*!
+   * \brief Check if a point is defintely less than another point
+   *
+   * \return true iff any of the coordinate value than that of \a pt and the
+   * other two coordinate values are not greater than their counterparts of \a pt.
+   */
+  bool definiteLessThan(const ZIntPoint &pt) const;
+
+  /*!
    * \brief Check if tow points are the same.
    *
    * Tow invalid points are considered as the same.

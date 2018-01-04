@@ -355,6 +355,7 @@ void translate(Swc_Tree_Node *tn, const ZIntPoint &pt);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, const ZPoint &center,
             bool inverse = false);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, bool inverse = false);
+void rotateAroundZ(Swc_Tree_Node *tn, double theta, double cx, double cy);
 
 /*!
  *
