@@ -40,6 +40,15 @@ void ZFlyEmRoiToolDialog::init()
   connect(ui->estimateVolumeButton, SIGNAL(clicked()),
           this, SLOT(estimateRoiVolume()));
 
+  connect(ui->movexDecButton, SIGNAL(clicked()), this, SLOT(movePlaneLeft()));
+  connect(ui->movexIncButton, SIGNAL(clicked()), this, SLOT(movePlaneRight()));
+  connect(ui->moveyDecButton, SIGNAL(clicked()), this, SLOT(movePlaneUp()));
+  connect(ui->moveyIncButton, SIGNAL(clicked()), this, SLOT(movePlaneDown()));
+  connect(ui->movexyDecButton, SIGNAL(clicked()), this, SLOT(movePlaneLeftUp()));
+  connect(ui->movexyIncButton, SIGNAL(clicked()), this, SLOT(movePlaneRightDown()));
+  connect(ui->rotateLeftButton, SIGNAL(clicked()), this, SLOT(rotatePlaneCounterClockwise()));
+  connect(ui->rotateRightButton, SIGNAL(clicked()), this, SLOT(rotatePlaneClockwise()));
+
   clear();
   downloadAllProject();
 }
@@ -278,6 +287,56 @@ void ZFlyEmRoiToolDialog::updateRoi()
 void ZFlyEmRoiToolDialog::estimateRoi()
 {
   emit estimatingRoi();
+}
+
+void ZFlyEmRoiToolDialog::movePlaneLeft()
+{
+  movePlane(-1, 0);
+}
+
+void ZFlyEmRoiToolDialog::movePlaneRight()
+{
+  movePlane(1, 0);
+}
+
+void ZFlyEmRoiToolDialog::movePlaneUp()
+{
+  movePlane(0, -1);
+}
+
+void ZFlyEmRoiToolDialog::movePlaneDown()
+{
+  movePlane(0, 1);
+}
+
+void ZFlyEmRoiToolDialog::movePlaneLeftUp()
+{
+  movePlane(-1, -1);
+}
+
+void ZFlyEmRoiToolDialog::movePlaneRightDown()
+{
+  movePlane(1, 1);
+}
+
+void ZFlyEmRoiToolDialog::rotatePlaneClockwise()
+{
+  rotatePlane(0.02);
+}
+
+void ZFlyEmRoiToolDialog::rotatePlaneCounterClockwise()
+{
+  rotatePlane(-0.02);
+}
+
+void ZFlyEmRoiToolDialog::movePlane(double dx, double dy)
+{
+  emit movingPlane(dx, dy);
+}
+
+void ZFlyEmRoiToolDialog::rotatePlane(double theta)
+{
+  emit rotatingPlane(theta);
 }
 
 void ZFlyEmRoiToolDialog::uploadRoi()

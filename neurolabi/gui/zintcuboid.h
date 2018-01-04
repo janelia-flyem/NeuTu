@@ -63,6 +63,12 @@ public:
   void translateX(int dx);
 
   void translate(const ZIntPoint &offset);
+  /*!
+   * \brief Scale the box
+   *
+   * The size of the box will be scaled by \a s.
+   */
+  void scale(const ZIntPoint &s);
 
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
@@ -98,6 +104,8 @@ public:
    * \return The current object after joining.
    */
   ZIntCuboid& join(const ZIntCuboid &cuboid);
+
+  void join(int x, int y, int z);
 
   void joinX(int x);
   void joinY(int y);

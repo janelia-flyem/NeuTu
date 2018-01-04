@@ -67,6 +67,23 @@ void ZIntPoint::set(const std::vector<int> &pt)
   }
 }
 
+bool ZIntPoint::definiteLessThan(const ZIntPoint &pt) const
+{
+  if (getX() < pt.getX()) {
+    return (getY() <= pt.getY()) && (getZ() <= pt.getZ());
+  }
+
+  if (getY() < pt.getY()) {
+    return (getX() <= pt.getX()) && (getZ() <= pt.getZ());
+  }
+
+  if (getZ() < pt.getZ()) {
+    return (getY() <= pt.getY()) && (getX() <= pt.getX());
+  }
+
+  return false;
+}
+
 bool ZIntPoint::operator < (const ZIntPoint &pt) const
 {
   if (getZ() < pt.getZ()) {

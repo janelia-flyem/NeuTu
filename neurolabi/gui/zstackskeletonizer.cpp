@@ -22,6 +22,7 @@
 #include "swc/zswcresampler.h"
 #include "tz_stack_threshold.h"
 #include "zintcuboid.h"
+#include "zstackarray.h"
 
 using namespace std;
 
@@ -51,15 +52,14 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZStack &stack)
   return tree;
 }
 
-ZSwcTree* ZStackSkeletonizer::makeSkeleton(
-    const std::vector<ZStack*> &stackArray)
+ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZStackArray &stackArray)
 {
   ZSwcTree *wholeTree = new ZSwcTree;
 
   int count = 0;
-  for (std::vector<ZStack*>::const_iterator iter = stackArray.begin();
+  for (ZStackArray::const_iterator iter = stackArray.begin();
        iter != stackArray.end(); ++iter) {
-    const ZStack* stack = *iter;
+    const ZStack* stack = iter->get();
     ZSwcTree *tree = makeSkeleton(*stack);
     if (!tree->isEmpty()) {
       wholeTree->merge(tree, true);

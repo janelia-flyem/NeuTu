@@ -33,7 +33,7 @@ ZMesh* ZMeshObjsModel::getMesh(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() == m_rootItem)
-    return ZStackObject::CastVoidPointer<ZMesh>(item->getActuralData());
+    return ZStackObject::CastVoidPointer<ZMesh>(item->getActualData());
   else
     return NULL;
 }

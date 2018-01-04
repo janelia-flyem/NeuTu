@@ -637,7 +637,7 @@ static int ZObject3dSegmentCompare(const void *e1, const void *e2)
 
 void ZObject3dStripe::sort()
 {
-  if (!m_segmentArray.empty()) {
+  if (!m_segmentArray.empty() && !m_isCanonized) {
     qsort(&m_segmentArray[0], m_segmentArray.size() / 2, sizeof(int) * 2,
         ZObject3dSegmentCompare);
   }
@@ -692,25 +692,33 @@ void ZObject3dStripe::canonize()
 
 bool ZObject3dStripe::unify(const ZObject3dStripe &stripe, bool canonizing)
 {
-  if (getY() == stripe.getY() && getZ() == stripe.getZ()) {
-    if (isCanonized() && stripe.isCanonized()) {
-      if (!isEmpty() && !stripe.isEmpty()) {
-        if (m_segmentArray.back() + 1 >= stripe.m_segmentArray.front()) {
-          m_isCanonized = false;
-        }
-      }
-    } else {
-      m_isCanonized = false;
-    }
-
-    m_segmentArray.insert(m_segmentArray.end(), stripe.m_segmentArray.begin(),
-                          stripe.m_segmentArray.end());
-
+  if (isEmpty()) {
+    *this = stripe;
     if (canonizing) {
       canonize();
     }
-
     return true;
+  } else {
+    if (getY() == stripe.getY() && getZ() == stripe.getZ()) {
+      if (isCanonized() && stripe.isCanonized()) {
+        if (!isEmpty() && !stripe.isEmpty()) {
+          if (m_segmentArray.back() + 1 >= stripe.m_segmentArray.front()) {
+            m_isCanonized = false;
+          }
+        }
+      } else {
+        m_isCanonized = false;
+      }
+
+      m_segmentArray.insert(m_segmentArray.end(), stripe.m_segmentArray.begin(),
+                            stripe.m_segmentArray.end());
+
+      if (canonizing) {
+        canonize();
+      }
+
+      return true;
+    }
   }
 
   return false;
@@ -765,6 +773,66 @@ bool ZObject3dStripe::contains(int x, int y, int z) const
   }
 
   return false;
+}
+
+void ZObject3dStripe::remove(int bx0, int bx1)
+{
+  sort();
+
+  if (getMinX() >= bx0 && getMaxX() <= bx1) {
+    m_segmentArray.clear();
+  } else if (getMinX() <= bx1 && getMaxX() >= bx0) {
+    std::vector<int> newSegmentArray;
+    newSegmentArray.resize(m_segmentArray.size() + 2);
+    size_t currentIndex = 0;
+    size_t remainingIndex = 0;
+
+    for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+      int x0 = m_segmentArray[i];
+      int x1 = m_segmentArray[i + 1];
+      remainingIndex = i;
+      if (bx0 > x1) { //||[]
+        newSegmentArray[currentIndex] = x0;
+        newSegmentArray[currentIndex + 1] = x1;
+        currentIndex += 2;
+        remainingIndex = i + 2;
+      } else {
+        if (bx0 <= x0) { //[|
+          if (bx1 < x0) { // []||
+            break;
+          } else if (bx1 < x1) { // [|]|
+            newSegmentArray[currentIndex] =bx1 + 1;
+            newSegmentArray[currentIndex + 1] = x1;
+            currentIndex += 2;
+            remainingIndex = i + 2;
+            break;
+          } else { // [||]
+            remainingIndex = i + 2;
+          }
+        } else if (bx0 <= x1) { // |[|
+          newSegmentArray[currentIndex] = x0;
+          newSegmentArray[currentIndex + 1] = bx0 - 1;
+          currentIndex += 2;
+          remainingIndex = i + 2;
+          if (bx1 < x1) { //|[]|
+            newSegmentArray[currentIndex] = bx1 + 1;
+            newSegmentArray[currentIndex + 1] = x1;
+            currentIndex += 2;
+          }/* else { //|[|]
+        }*/
+        }
+      }
+    }
+
+
+    for (size_t i = remainingIndex; i < m_segmentArray.size(); i++) {
+      newSegmentArray[currentIndex++] = m_segmentArray[i];
+    }
+
+    newSegmentArray.resize(currentIndex);
+
+    m_segmentArray.swap(newSegmentArray);
+  }
 }
 
 void ZObject3dStripe::dilate()
@@ -872,6 +940,18 @@ void ZObject3dStripe::print(int indent) const
     std::cout << "  " << m_segmentArray[i] << " - " << m_segmentArray[i+1] << std::endl;
   }
 }
+
+ZObject3dStripe ZObject3dStripe::getComplement(int x0, int x1)
+{
+  ZObject3dStripe stripe;
+  stripe.setY(getY());
+  stripe.setZ(getZ());
+
+  stripe.addSegment(x0, x1);
+
+  return stripe - (*this);
+}
+
 
 #define MOVE_SEGMENT(seg, nseg, s, start, end) \
   ++seg;\

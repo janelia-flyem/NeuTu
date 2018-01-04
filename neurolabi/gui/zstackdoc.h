@@ -87,6 +87,7 @@ class ZDvidSparseStack;
 class ZStackDocDataBuffer;
 class ZStackDocKeyProcessor;
 class QKeyEvent;
+class ZStackArray;
 
 /*!
  * \brief The class of stack document
@@ -273,6 +274,8 @@ public: //attributes
   QList<ZMesh*> getMeshList() const;
 
   bool hasSwcList();       //to test swctree
+  QList<ZSwcTree*> getSwcList(ZStackObjectRole::TRole role) const;
+
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
   //inline QList<ZPunctum*>* punctaList() {return &m_punctaList;}
   inline ZSwcObjsModel* swcObjsModel() {return m_swcObjsModel;}
@@ -1072,6 +1075,7 @@ public slots: //undoable commands
   virtual bool executeRemoveSelectedObjectCommand();
   virtual bool executeRemoveSelectedObjectCommand(ZStackObjectRole::TRole role);
   //bool executeRemoveUnselectedObjectCommand();
+
   virtual bool executeMoveObjectCommand(
       double x, double y, double z,
       const glm::mat4& punctaTransform, const glm::mat4& swcTransform);
@@ -1096,6 +1100,10 @@ public slots: //undoable commands
   virtual bool executeScaleSwcNodeCommand(
       double sx, double sy, double sz, const ZPoint &center);
   virtual bool executeRotateSwcNodeCommand(double theta, double psi, bool aroundCenter);
+
+  virtual bool executeMoveSwcNodeCommand(
+      std::vector<Swc_Tree_Node*> &nodeList, double dx, double dy, double dz);
+
   virtual bool executeTranslateSelectedSwcNode();
   virtual bool executeDeleteSwcNodeCommand();
   virtual bool executeDeleteUnselectedSwcNodeCommand();
@@ -1281,7 +1289,7 @@ protected:
   virtual void autoSave();
   virtual void customNotifyObjectModified(ZStackObject::EType type);
   void removeRect2dRoi();
-  virtual std::vector<ZStack*> createWatershedMask(bool selectedOnly) const;
+  virtual ZStackArray createWatershedMask(bool selectedOnly) const;
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
   void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();

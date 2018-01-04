@@ -291,6 +291,60 @@ private:
   int m_newType;
 };
 
+class ChangeSwcNodePosition : public ChangeSwcCommand
+{
+public:
+  ChangeSwcNodePosition(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ChangeSwcNodePosition();
+
+  void setNodeOperation(
+      const std::vector<Swc_Tree_Node*> &nodeArray,
+      const std::vector<ZPoint> &newPosition);
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  std::vector<ZPoint> m_newPosition;
+};
+
+class MoveSwcNode : public ChangeSwcCommand
+{
+public:
+  MoveSwcNode(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~MoveSwcNode();
+
+  void setOffset(const ZPoint &offset);
+  void addNode(const std::vector<Swc_Tree_Node*> &nodeArray);
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  ZPoint m_offset;
+};
+
+class RotateSwcNodeAroundZ : public ChangeSwcCommand
+{
+public:
+  RotateSwcNodeAroundZ(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~RotateSwcNodeAroundZ();
+
+  void setRotateCenter(double x, double y);
+  void setRotateAngle(double theta);
+  void useNodeCentroid();
+  void addNode(const std::vector<Swc_Tree_Node*> &nodeArray);
+
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  double m_cx = 0.0;
+  double m_cy = 0.0;
+  double m_theta = 0.0;
+};
+
 class MergeSwcNode : public ChangeSwcCommand
 {
 public:
