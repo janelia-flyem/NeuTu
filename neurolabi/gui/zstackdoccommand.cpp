@@ -903,6 +903,26 @@ void ZStackDocCommand::SwcEdit::MoveSwcNode::undo()
   recover();
 }
 
+bool ZStackDocCommand::SwcEdit::MoveSwcNode::test()
+{
+  std::cout << "Testing ZStackDocCommand::SwcEdit::MoveSwcNode ..." << std::endl;
+  m_nodeArray.clear();
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  setOffset(ZPoint(1, 2, 3));
+  m_nodeArray.push_back(tn);
+  redo();
+  SwcTreeNode::print(tn);
+  undo();
+  SwcTreeNode::print(tn);
+  redo();
+  redo();
+  SwcTreeNode::print(tn);
+  undo();
+  SwcTreeNode::print(tn);
+
+  return true;
+}
+
 ///////////////////////////////////////////////
 ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::RotateSwcNodeAroundZ(
     ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)

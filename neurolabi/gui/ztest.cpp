@@ -327,6 +327,7 @@
 #include "zcontrastprotocol.h"
 #include "zmeshfactory.h"
 #include "widgets/taskprotocolwindow.h"
+#include "zstackdoccommand.h"
 
 using namespace std;
 
@@ -25194,7 +25195,7 @@ void ZTest::test(MainWindow *host)
   std::cout << "Ref count after array appending: " << value.getRefCount() << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "43f", 9000);
   target.setLabelBlockName("segmentation");
@@ -25215,6 +25216,11 @@ void ZTest::test(MainWindow *host)
 
   ZJsonObject taskJson = ZFlyEmMisc::MakeSplitTask(target, 1, seedJson, roiJson);
   std::cout << taskJson.dumpString(2) << std::endl;
+#endif
+
+#if 1
+  ZStackDocCommand::SwcEdit::MoveSwcNode command(new ZStackDoc());
+  command.test();
 #endif
 
   std::cout << "Done." << std::endl;

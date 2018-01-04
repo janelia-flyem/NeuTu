@@ -890,8 +890,9 @@ void ZStackView::resizeEvent(QResizeEvent *event)
   setInfo();
   event->accept();
 
-  updateActiveDecorationCanvas();
-  updateTileCanvas();
+  processViewChange(true, false);
+//  updateActiveDecorationCanvas();
+//  updateTileCanvas();
   //buddyPresenter()->updateInteractiveContext();
 }
 
