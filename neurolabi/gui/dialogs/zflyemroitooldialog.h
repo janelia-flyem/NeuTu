@@ -65,6 +65,14 @@ public slots:
   void rotatePlaneCounterClockwise();
   void rotatePlane(double theta);
   void movePlane(double dx, double dy);
+  void scalePlane(double sx, double sy);
+  void expandPlane();
+  void shrinkPlane();
+  void expandPlaneX();
+  void shrinkPlaneX();
+  void expandPlaneY();
+  void shrinkPlaneY();
+
 
 signals:
   void projectActivited();
@@ -77,6 +85,7 @@ signals:
 //  void movingPlaneLeft();
   void movingPlane(double dx, double dy);
   void rotatingPlane(double theta);
+  void scalingPlane(double sx, double sy);
 
 private:
   void init();

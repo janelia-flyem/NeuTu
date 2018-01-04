@@ -293,6 +293,7 @@ public slots:
 //  void shrinkPlaneRoi();
   void movePlaneRoi(double dx, double dy);
   void rotatePlaneRoi(double theta);
+  void scalePlaneRoi(double sx, double sy);
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);

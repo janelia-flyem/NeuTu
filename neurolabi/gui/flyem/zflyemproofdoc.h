@@ -457,6 +457,7 @@ public slots: //Commands
   void executeRemoveTodoItemCommand();
 
   void executeRotateRoiPlaneCommand(int z, double theta);
+  void executeScaleRoiPlaneCommand(int z, double sx, double sy);
 
 
 public slots:

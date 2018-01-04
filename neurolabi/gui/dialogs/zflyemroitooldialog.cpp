@@ -48,6 +48,12 @@ void ZFlyEmRoiToolDialog::init()
   connect(ui->movexyIncButton, SIGNAL(clicked()), this, SLOT(movePlaneRightDown()));
   connect(ui->rotateLeftButton, SIGNAL(clicked()), this, SLOT(rotatePlaneCounterClockwise()));
   connect(ui->rotateRightButton, SIGNAL(clicked()), this, SLOT(rotatePlaneClockwise()));
+  connect(ui->xyIncButton, SIGNAL(clicked()), this, SLOT(expandPlane()));
+  connect(ui->xyDecButton, SIGNAL(clicked()), this, SLOT(shrinkPlane()));
+  connect(ui->xIncButton, SIGNAL(clicked()), this, SLOT(expandPlaneX()));
+  connect(ui->xDecButton, SIGNAL(clicked()), this, SLOT(shrinkPlaneX()));
+  connect(ui->yIncButton, SIGNAL(clicked()), this, SLOT(expandPlaneY()));
+  connect(ui->yDecButton, SIGNAL(clicked()), this, SLOT(shrinkPlaneY()));
 
   clear();
   downloadAllProject();
@@ -329,6 +335,7 @@ void ZFlyEmRoiToolDialog::rotatePlaneCounterClockwise()
   rotatePlane(-0.02);
 }
 
+
 void ZFlyEmRoiToolDialog::movePlane(double dx, double dy)
 {
   emit movingPlane(dx, dy);
@@ -337,6 +344,41 @@ void ZFlyEmRoiToolDialog::movePlane(double dx, double dy)
 void ZFlyEmRoiToolDialog::rotatePlane(double theta)
 {
   emit rotatingPlane(theta);
+}
+
+void ZFlyEmRoiToolDialog::scalePlane(double sx, double sy)
+{
+  emit scalingPlane(sx, sy);
+}
+
+void ZFlyEmRoiToolDialog::expandPlane()
+{
+  scalePlane(1.1, 1.1);
+}
+
+void ZFlyEmRoiToolDialog::shrinkPlane()
+{
+  scalePlane(1.0/1.1, 1.0/1.1);;
+}
+
+void ZFlyEmRoiToolDialog::expandPlaneX()
+{
+  scalePlane(1.1, 1.0);
+}
+
+void ZFlyEmRoiToolDialog::shrinkPlaneX()
+{
+  scalePlane(1.0/1.1, 1.0);;
+}
+
+void ZFlyEmRoiToolDialog::expandPlaneY()
+{
+  scalePlane(1.0, 1.1);
+}
+
+void ZFlyEmRoiToolDialog::shrinkPlaneY()
+{
+  scalePlane(1.0, 1.0/1.1);;
 }
 
 void ZFlyEmRoiToolDialog::uploadRoi()

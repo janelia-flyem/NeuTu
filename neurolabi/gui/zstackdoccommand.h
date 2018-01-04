@@ -345,6 +345,24 @@ private:
   double m_theta = 0.0;
 };
 
+class ScaleSwcNodeAroundZ : public ChangeSwcCommand
+{
+public:
+  ScaleSwcNodeAroundZ(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ScaleSwcNodeAroundZ();
+
+  void setScale(double sx, double sy);
+  void addNode(const std::vector<Swc_Tree_Node*> &nodeArray);
+
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  double m_scaleX = 1.0;
+  double m_scaleY = 1.0;
+};
+
 class MergeSwcNode : public ChangeSwcCommand
 {
 public:

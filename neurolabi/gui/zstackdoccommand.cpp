@@ -959,6 +959,57 @@ void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::undo()
   recover();
 }
 
+
+///////////////////////////////////////////
+ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::ScaleSwcNodeAroundZ(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Scale SWC nodes around the Z axis"));
+}
+
+ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::~ScaleSwcNodeAroundZ()
+{
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::setScale(
+    double sx, double sy)
+{
+  m_scaleX = sx;
+  m_scaleY = sy;
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::redo()
+{
+  if (m_scaleX != 1.0 || m_scaleY != 1.0) {
+    ZPoint center = SwcTreeNode::centroid(m_nodeArray.begin(), m_nodeArray.end());
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      ZPoint pos = SwcTreeNode::center(tn);
+      pos.setX((pos.x() - center.x()) * m_scaleX + center.x());
+      pos.setY((pos.y() - center.y()) * m_scaleY + center.y());
+
+      SwcTreeNode::setPos(tn, pos);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->notifyObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::undo()
+{
+  startUndo();
+  recover();
+}
+
 /////////////////////////////////////////////
 ZStackDocCommand::SwcEdit::ResolveCrossover::ResolveCrossover(
     ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
