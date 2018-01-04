@@ -2131,6 +2131,23 @@ Swc_Tree_Node* ZSwcTree::queryNode(const ZPoint &pt)
   return Swc_Tree_Closest_Node(data(), pos);
 }
 
+std::vector<Swc_Tree_Node*> ZSwcTree::getNodeOnPlane(int z)
+{
+  std::vector<Swc_Tree_Node*> nodeList;
+
+  DepthFirstIterator iter(this);
+  while (iter.hasNext()) {
+    Swc_Tree_Node *tn = iter.next();
+    if (SwcTreeNode::isRegular(tn)) {
+      if (SwcTreeNode::z(tn) - z < 1) {
+        nodeList.push_back(tn);
+      }
+    }
+  }
+
+  return nodeList;
+}
+
 ZPoint ZSwcTree::computeCentroid() const
 {
   ZPoint center;

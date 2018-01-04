@@ -43,6 +43,7 @@ public:
   bool begin(QPaintDevice *device);
 
   bool restart(ZPixmap *pixmap);
+  void updateTransform(ZPixmap *pixmap);
 
   bool end();
 

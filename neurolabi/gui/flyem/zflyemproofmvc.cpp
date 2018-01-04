@@ -137,6 +137,10 @@ void ZFlyEmProofMvc::init()
   connect(m_roiDlg, SIGNAL(steppingSlice(int)), this, SLOT(stepSlice(int)));
   connect(m_roiDlg, SIGNAL(goingToNearestRoi()), this, SLOT(goToNearestRoi()));
   connect(m_roiDlg, SIGNAL(estimatingRoi()), this, SLOT(estimateRoi()));
+  connect(m_roiDlg, SIGNAL(movingPlane(double,double)),
+          this, SLOT(movePlaneRoi(double, double)));
+  connect(m_roiDlg, SIGNAL(rotatingPlane(double)),
+          this, SLOT(rotatePlaneRoi(double)));
 
 //  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
@@ -3516,6 +3520,25 @@ void ZFlyEmProofMvc::estimateRoi()
   }
 }
 
+void ZFlyEmProofMvc::movePlaneRoi(double dx, double dy)
+{
+  QList<ZSwcTree*> treeList =
+      getDocument()->getSwcList(ZStackObjectRole::ROLE_ROI);
+  int z = getView()->getCurrentZ();
+  std::vector<Swc_Tree_Node*> nodeList;
+  foreach (ZSwcTree *tree, treeList) {
+    std::vector<Swc_Tree_Node*> subNodeList =  tree->getNodeOnPlane(z);
+    nodeList.insert(nodeList.end(), subNodeList.begin(), subNodeList.end());
+  }
+  getDocument()->executeMoveSwcNodeCommand(nodeList, dx, dy, 0);
+}
+
+void ZFlyEmProofMvc::rotatePlaneRoi(double theta)
+{
+  int z = getView()->getCurrentZ();
+  getCompleteDocument()->executeRotateRoiPlaneCommand(z, theta);
+}
+
 void ZFlyEmProofMvc::loadRoiProject()
 {
   updateRoiGlyph();
@@ -3536,12 +3559,19 @@ void ZFlyEmProofMvc::closeRoiProject()
 void ZFlyEmProofMvc::updateRoiGlyph()
 {
   ZOUT(LTRACE(), 5) << "Update ROI glyph";
+  ZUndoCommand *command = new ZUndoCommand;
+
   QList<ZStackObject*> objList =
       getCompleteDocument()->getObjectList(ZStackObjectRole::ROLE_ROI);
   for (QList<ZStackObject*>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    getCompleteDocument()->executeRemoveObjectCommand(obj);
+    new ZStackDocCommand::ObjectEdit::RemoveObject(
+          getDocument().get(), obj, command);
+//    command->setLogMessage("Remove object: " + obj->className());
+//    pushUndoCommand(command);
+
+//    getCompleteDocument()->executeRemoveObjectCommand(obj);
   }
 //  getCompleteDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
@@ -3552,10 +3582,19 @@ void ZFlyEmProofMvc::updateRoiGlyph()
     if (tree != NULL) {
       tree->addRole(ZStackObjectRole::ROLE_ROI);
       tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
-      getCompleteDocument()->executeAddObjectCommand(tree);
+      new ZStackDocCommand::ObjectEdit::AddObject(
+            getDocument().get(), tree, true, command);
+      command->setLogMessage("Update ROI");
+//      getCompleteDocument()->executeAddObjectCommand(tree);
     }
   } else {
     getCompletePresenter()->setPaintingRoi(false);
+  }
+
+  if (command->childCount() > 0) {
+    getDocument()->pushUndoCommand(command);
+  } else {
+    delete command;
   }
 }
 

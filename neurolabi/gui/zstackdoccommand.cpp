@@ -815,6 +815,150 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::undo()
   recover();
 }
 
+///////////////////////////////////
+ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::ChangeSwcNodePosition(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Change SWC node position"));
+}
+
+ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::~ChangeSwcNodePosition()
+{
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::setNodeOperation(
+    const std::vector<Swc_Tree_Node*> &nodeArray,
+    const std::vector<ZPoint> &newPosition)
+{
+  m_nodeArray.clear();
+  m_newPosition.clear();
+
+  if (!m_nodeArray.empty() && (m_nodeArray.size() == newPosition.size())) {
+    m_nodeArray = nodeArray;
+    m_newPosition = newPosition;
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::redo()
+{
+  for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+    Swc_Tree_Node *tn = m_nodeArray[i];
+    if (SwcTreeNode::center(tn) != m_newPosition[i]) {
+      backup(tn);
+      SwcTreeNode::setPos(tn, m_newPosition[i]);
+    }
+  }
+  if (!m_backupSet.empty()) {
+    m_doc->processSwcModified();
+    m_doc->notifyObjectModified();
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::undo()
+{
+  startUndo();
+  recover();
+}
+
+//////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::MoveSwcNode::MoveSwcNode(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Move SWC nodes"));
+}
+
+ZStackDocCommand::SwcEdit::MoveSwcNode::~MoveSwcNode()
+{
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::setOffset(const ZPoint &offset)
+{
+  m_offset = offset;
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::redo()
+{
+  if (m_offset.lengthSqure() != 0) {
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      SwcTreeNode::setPos(tn, SwcTreeNode::center(tn) + m_offset);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->notifyObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::undo()
+{
+  startUndo();
+  recover();
+}
+
+///////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::RotateSwcNodeAroundZ(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Rotate SWC nodes around the Z axis"));
+}
+
+ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::~RotateSwcNodeAroundZ()
+{
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::setRotateCenter(
+    double x, double y)
+{
+  m_cx = x;
+  m_cy = y;
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::setRotateAngle(double theta)
+{
+  m_theta = theta;
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::useNodeCentroid()
+{
+  ZPoint center = SwcTreeNode::centroid(m_nodeArray.begin(), m_nodeArray.end());
+  setRotateCenter(center.x(), center.y());
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::redo()
+{
+  if (m_theta != 0) {
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      SwcTreeNode::rotateAroundZ(tn, m_theta, m_cx, m_cy);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->notifyObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::undo()
+{
+  startUndo();
+  recover();
+}
+
 /////////////////////////////////////////////
 ZStackDocCommand::SwcEdit::ResolveCrossover::ResolveCrossover(
     ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)

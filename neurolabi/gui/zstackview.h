@@ -491,16 +491,15 @@ protected:
   void clearObjectCanvas();
   void clearTileCanvas();
   void updateObjectCanvas();
-//  void updateTileCanvas();
+  void updateTileCanvas();
   void updateDynamicObjectCanvas();
   void updateActiveDecorationCanvas();
-  void updateNewTileCanvas();
   void updatePaintBundle();
   void updateCanvas(ZStackObject::ETarget target);
 
   ZPainter* getTileCanvasPainter();
 
-  ZPixmap* updateProjCanvas(ZPixmap *canvas);
+  ZPixmap* updateProjCanvas(ZPixmap *canvas, ZPainter *painter);
   ZPixmap* updateViewPortCanvas(ZPixmap *canvas);
 
   void connectSignalSlot();
@@ -558,7 +557,7 @@ protected:
   ZPainter m_tileCanvasPainter;
   ZPixmap *m_activeDecorationCanvas;
 //  ZMultiscalePixmap m_tileCanvas;
-  ZPixmap *m_newTileCanvas = NULL;
+  ZPixmap *m_tileCanvas = NULL;
   ZImageWidget *m_imageWidget;
   ZLabeledSpinBoxWidget *m_zSpinBox;
 
