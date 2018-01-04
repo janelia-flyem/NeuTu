@@ -141,6 +141,8 @@ void ZFlyEmProofMvc::init()
           this, SLOT(movePlaneRoi(double, double)));
   connect(m_roiDlg, SIGNAL(rotatingPlane(double)),
           this, SLOT(rotatePlaneRoi(double)));
+  connect(m_roiDlg, SIGNAL(scalingPlane(double,double)),
+          this, SLOT(scalePlaneRoi(double,double)));
 
 //  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
@@ -3537,6 +3539,12 @@ void ZFlyEmProofMvc::rotatePlaneRoi(double theta)
 {
   int z = getView()->getCurrentZ();
   getCompleteDocument()->executeRotateRoiPlaneCommand(z, theta);
+}
+
+void ZFlyEmProofMvc::scalePlaneRoi(double sx, double sy)
+{
+  int z = getView()->getCurrentZ();
+  getCompleteDocument()->executeScaleRoiPlaneCommand(z, sx, sy);
 }
 
 void ZFlyEmProofMvc::loadRoiProject()

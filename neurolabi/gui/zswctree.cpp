@@ -2139,7 +2139,7 @@ std::vector<Swc_Tree_Node*> ZSwcTree::getNodeOnPlane(int z)
   while (iter.hasNext()) {
     Swc_Tree_Node *tn = iter.next();
     if (SwcTreeNode::isRegular(tn)) {
-      if (SwcTreeNode::z(tn) - z < 1) {
+      if (std::fabs(SwcTreeNode::z(tn) - z) < 1) {
         nodeList.push_back(tn);
       }
     }
