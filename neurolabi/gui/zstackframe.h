@@ -122,8 +122,8 @@ public:
   //void exportChainConnectionFeat(const QString &filePath);
   void exportObjectMask(const QString &filePath);
   void exportObjectMask(neutube::EColor color, const QString &filePath);
-  ZStack* getObjectMask();
-  ZStack* getObjectMask(neutube::EColor color);
+//  ZStack* getObjectMask();
+//  ZStack* getObjectMask(neutube::EColor color);
   ZStack* getStrokeMask();
   ZStack* getStrokeMask(neutube::EColor color);
   ZTileManager* getTileManager() {return m_tile;}

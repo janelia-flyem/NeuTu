@@ -136,6 +136,9 @@ public:
   void labelStack(ZStack *stack) const;
   void labelStack(ZStack *stack, int ignoringValue) const;
 
+  void labelProjStack(ZStack *stack) const;
+  void labelProjStack(ZStack *stack, int value) const;
+
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
 
@@ -143,6 +146,9 @@ public:
 
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
+  }
+  bool isPenetrating() const {
+    return m_isPenetrating;
   }
 
   inline void hideStart(bool s) {

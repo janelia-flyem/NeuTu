@@ -95,6 +95,10 @@ private:
   void uploadProjectList();
   int getSliceStep() const;
 
+  double getMoveStep() const;
+  double getRotateStep() const;
+  double getScaleStep() const;
+
 private:
   Ui::ZFlyEmRoiToolDialog *ui;
   QList<ZFlyEmRoiProject*> m_projectList;
