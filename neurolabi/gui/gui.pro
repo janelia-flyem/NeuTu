@@ -824,6 +824,7 @@ HEADERS += mainwindow.h \
     dialogs/zflyemmergeuploaddialog.h \
     zmeshfactory.h \
     flyem/zflyemmeshfactory.h \
+    protocols/taskbodyhistory.h \
     widgets/zpythonprocess.h \
     zstackutil.h \
     zstackptr.h
@@ -1437,6 +1438,7 @@ SOURCES += main.cpp \
     dialogs/zflyemmergeuploaddialog.cpp \
     zmeshfactory.cpp \
     flyem/zflyemmeshfactory.cpp \
+    protocols/taskbodyhistory.cpp \
     widgets/zpythonprocess.cpp \
     zstackutil.cpp \
     zstackptr.cpp

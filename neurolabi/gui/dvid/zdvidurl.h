@@ -57,6 +57,9 @@ public:
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
 
+  std::string getMeshesTarsUrl();
+  std::string getMeshesTarsUrl(uint64_t bodyId);
+
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
   getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const;

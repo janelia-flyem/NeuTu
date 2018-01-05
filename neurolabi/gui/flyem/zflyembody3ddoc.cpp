@@ -1,6 +1,7 @@
 //#define _NEUTU_USE_REF_KEY_
 #include "zflyembody3ddoc.h"
 
+#include <archive.h>
 #include <QtConcurrentRun>
 #include <QMutexLocker>
 #include <QElapsedTimer>
@@ -104,6 +105,11 @@ void ZFlyEmBody3dDoc::enableBodySelectionSync(bool on)
   m_syncyingBodySelection = on;
 }
 
+void ZFlyEmBody3dDoc::enableGarbageLifetimeLimit(bool on)
+{
+  m_limitGarbageLifetime = on;
+}
+
 template<typename T>
 T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
 {
@@ -122,7 +128,7 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
         int dt = currentTime - t;
         if (dt < 0) {
           iter.value().setTimeStamp(0);
-        } else if (dt < OBJECT_ACTIVE_LIFE){
+        } else if (!m_limitGarbageLifetime || (dt < OBJECT_ACTIVE_LIFE)) {
           if (minDt < 0 || minDt > dt) {
             if (iter.key()->getSource() == source) {
               uint64_t bodyId =
@@ -184,6 +190,10 @@ void ZFlyEmBody3dDoc::setUnrecycable(const QSet<uint64_t> &bodySet)
 
 void ZFlyEmBody3dDoc::clearGarbage()
 {
+  if (!m_limitGarbageLifetime) {
+    return;
+  }
+
   QMutexLocker locker(&m_garbageMutex);
 
   ZOUT(LTRACE(), 5) << "Clear garbage objects ..." << m_garbageMap.size();
@@ -923,64 +933,81 @@ ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
 }
 
 void ZFlyEmBody3dDoc::addBodyMeshFunc(
-    uint64_t bodyId, const QColor &color, int resLevel)
+    uint64_t id, const QColor &color, int resLevel)
 {
-  bool loaded =
-      !(getObjectGroup().findSameClass(
-          ZStackObject::TYPE_MESH,
-          ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
-        isEmpty());
-
   emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
-  ZMesh *mesh = makeBodyMeshModel(bodyId, resLevel);
-  emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+  std::map<uint64_t, ZMesh*> meshes;
+  makeBodyMeshModels(id, resLevel, meshes);
+  for (auto it : meshes) {
+    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
 
-  if (mesh != NULL) {
-    resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
-          mesh->getSource());
-  }
+    uint64_t bodyId = it.first;
+    ZMesh *mesh = it.second;
 
-  if (resLevel > getMinResLevel()) {
-    QMutexLocker locker(&m_eventQueueMutex);
-    bool removing = false;
+    if (mesh != NULL) {
+      resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+            mesh->getSource());
+    }
 
-    for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
-         iter != m_eventQueue.end(); ++iter) {
-      BodyEvent &event = *iter;
-      if (event.getBodyId() == bodyId) {
-        if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-          removing = true;
-        } else {
-          removing = false;
+    if (resLevel > getMinResLevel()) {
+      QMutexLocker locker(&m_eventQueueMutex);
+      bool removing = false;
+
+      for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
+           iter != m_eventQueue.end(); ++iter) {
+        BodyEvent &event = *iter;
+        if (event.getBodyId() == bodyId) {
+          if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+            removing = true;
+          } else {
+            removing = false;
+          }
         }
       }
+      if (!removing) {
+        BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel - 1, color);
+        m_eventQueue.enqueue(bodyEvent);
+      }
     }
-    if (!removing) {
-      BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel - 1, color);
-      m_eventQueue.enqueue(bodyEvent);
+
+    if (mesh != NULL) {
+  #ifdef _DEBUG_
+      std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(mesh) << std::endl;
+      std::cout << "Color count: " << mesh->colors().size() << std::endl;
+      std::cout << "Vertex count: " << mesh->vertices().size() << std::endl;
+  #endif
+      mesh->setColor(color);
+      mesh->pushObjectColor();
+
+      updateBodyFunc(bodyId, mesh);
+
+      bool loaded =
+          !(getObjectGroup().findSameClass(
+              ZStackObject::TYPE_MESH,
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
+            isEmpty());
+
+      if (!loaded) {
+        addSynapse(bodyId);
+  //      addTodo(bodyId);
+        updateTodo(bodyId);
+
+        // TODO: As of December, 2017, the following is slow due to access of a desktop server,
+        // http://zhaot-ws1:9000.  This server should be replaced with a faster one.
+        // The problem is most noticeable for the functionality of taskbodyhistory.cpp.
+        loadSplitTask(bodyId);
+      }
+
+      // If the argument ID loads an archive, then makeBodyMeshModels() can create
+      // multiple meshes whose IDs need to be recorded, to make operations like
+      // selection work correctly.
+
+      m_bodySet.insert(mesh->getLabel());
     }
   }
 
-  if (mesh != NULL) {
-#ifdef _DEBUG_
-    std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(mesh) << std::endl;
-    std::cout << "Color count: " << mesh->colors().size() << std::endl;
-    std::cout << "Vertex count: " << mesh->vertices().size() << std::endl;
-#endif
-    mesh->setColor(color);
-    mesh->pushObjectColor();
-
-    updateBodyFunc(bodyId, mesh);
-
-    if (!loaded) {
-      addSynapse(bodyId);
-//      addTodo(bodyId);
-      updateTodo(bodyId);
-      loadSplitTask(bodyId);
-    }
-  }
+  emit bodyMeshesAdded();
 }
-
 
 void ZFlyEmBody3dDoc::addBodyFunc(
     uint64_t bodyId, const QColor &color, int resLevel)
@@ -1732,58 +1759,137 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
   return tree;
 }
 
-ZMesh* ZFlyEmBody3dDoc::makeBodyMeshModel(uint64_t bodyId, int zoom)
+namespace {
+  const uint64_t ENCODING_BASE = 100000000000;
+  const uint64_t ENCODING_TAR = 100;
+}
+
+uint64_t ZFlyEmBody3dDoc::encode(uint64_t rawId, unsigned int level, bool tar)
 {
-  ZMesh *mesh = recoverMeshFromGarbage(bodyId, zoom);
-#if 0 //todo
-  if (mesh == NULL) {
-    std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
-          bodyId, zoom, flyem::BODY_MESH);
-    mesh = dynamic_cast<ZMesh*>(
-          takeObjectFromCache(ZStackObject::TYPE_MESH, source));
-  }
-#endif
+  uint64_t tarEncoding = tar ? ENCODING_TAR : 0;
+  return (level + tarEncoding) * ENCODING_BASE + rawId;
+}
 
-  if (mesh == NULL) {
-    if (bodyId > 0) {
-      int t = m_objectTime.elapsed();
-      mesh = m_dvidReader.readMesh(bodyId, zoom);
+bool ZFlyEmBody3dDoc::encodesTar(uint64_t id) {
+  uint64_t encoded = id / ENCODING_BASE;
+  uint64_t encodedTar = encoded / ENCODING_TAR;
+  return (encodedTar != 0);
+}
 
-      if (mesh == NULL) {
-        bool loaded = false;
-        if (zoom > MAX_RES_LEVEL) {
-            loaded = !(getObjectGroup().findSameClass(
-                ZStackObject::TYPE_MESH,
-                ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
-              isEmpty());
-        }
+unsigned int ZFlyEmBody3dDoc::encodedLevel(uint64_t id) {
+  uint64_t encoded = id / ENCODING_BASE;
+  uint64_t encodedLevel = encoded % ENCODING_TAR;
+  return encodedLevel;
+}
 
-        if (!loaded) { //Now make mesh
-          ZObject3dScan obj;
-          if (zoom == 0) {
-            m_dvidReader.readMultiscaleBody(bodyId, zoom, true, &obj);
-          } else if (zoom == MAX_RES_LEVEL){
-            m_dvidReader.readCoarseBody(bodyId, &obj);
-            obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
-          }
-          mesh = ZMeshFactory::MakeMesh(obj);
+bool ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64_t, ZMesh *> &result)
+{
+  if (encodesTar(bodyId)) {
+    auto it = m_tarIdToMeshIds.find(bodyId);
+    if (it != m_tarIdToMeshIds.end()) {
+      auto meshIds = it->second;
+      std::vector<ZMesh *> recoveredMeshes;
+
+      for (uint64_t meshId : meshIds) {
+        if (ZMesh *mesh = recoverMeshFromGarbage(meshId, 0)) {
+          recoveredMeshes.push_back(mesh);
         }
       }
 
-      if (mesh != NULL) {
-        mesh->prepareNormals();
-        mesh->setTimeStamp(t);
-        mesh->setSource(
-              ZStackObjectSourceFactory::MakeFlyEmBodySource(
-                bodyId, zoom, flyem::BODY_MESH));
-        mesh->setObjectClass(
-              ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+      if (recoveredMeshes.size() == meshIds.size()) {
+        for (ZMesh *mesh : recoveredMeshes) {
+          result[mesh->getLabel()] = mesh;
+        }
+        return true;
+      }
+    }
+    return false;
+  } else {
+    ZMesh *mesh = recoverMeshFromGarbage(bodyId, zoom);
+  #if 0 //todo
+    if (mesh == NULL) {
+      std::string source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
+            bodyId, zoom, flyem::BODY_MESH);
+      mesh = dynamic_cast<ZMesh*>(
+            takeObjectFromCache(ZStackObject::TYPE_MESH, source));
+    }
+  #endif
+    if (mesh) {
+      result[bodyId] = mesh;
+    }
+    return (mesh != nullptr);
+  }
+}
+
+ZMesh *ZFlyEmBody3dDoc::readMesh(uint64_t bodyId, int zoom)
+{
+  ZMesh *mesh = m_dvidReader.readMesh(bodyId, zoom);
+
+  if (mesh == NULL) {
+    bool loaded = false;
+    if (zoom > MAX_RES_LEVEL) {
+        loaded = !(getObjectGroup().findSameClass(
+            ZStackObject::TYPE_MESH,
+            ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
+          isEmpty());
+    }
+
+    if (!loaded) { //Now make mesh
+      ZObject3dScan obj;
+      if (zoom == 0) {
+        m_dvidReader.readMultiscaleBody(bodyId, zoom, true, &obj);
+      } else if (zoom == MAX_RES_LEVEL){
+        m_dvidReader.readCoarseBody(bodyId, &obj);
+        obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
+      }
+      mesh = ZMeshFactory::MakeMesh(obj);
+      if (mesh) {
         mesh->setLabel(bodyId);
       }
     }
   }
 
   return mesh;
+}
+
+namespace {
+  void finalizeMesh(ZMesh *mesh, int zoom, int t)
+  {
+    if (mesh) {
+      uint64_t id = mesh->getLabel();
+      mesh->prepareNormals();
+      mesh->setTimeStamp(t);
+      auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(id, zoom, flyem::BODY_MESH);
+      mesh->setSource(source);
+      auto objClass = ZStackObjectSourceFactory::MakeFlyEmBodySource(id);
+      mesh->setObjectClass(objClass);
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_t, ZMesh*> &result)
+{
+  if ((id == 0) || getCachedMeshes(id, zoom, result)) {
+    return;
+  }
+
+  int t = m_objectTime.elapsed();
+
+  if (encodesTar(id)) {
+    m_tarIdToMeshIds[id].clear();
+    if (struct archive *arc = m_dvidReader.readMeshArchiveStart(id)) {
+      while (ZMesh *mesh = m_dvidReader.readMeshArchiveNext(arc)) {
+        finalizeMesh(mesh, 0, t);
+        result[mesh->getLabel()] = mesh;
+        m_tarIdToMeshIds[id].push_back(mesh->getLabel());
+      }
+      m_dvidReader.readMeshArchiveEnd(arc);
+    }
+  } else {
+    ZMesh *mesh = readMesh(id, zoom);
+    finalizeMesh(mesh, zoom, t);
+    result[id] = mesh;
+  }
 }
 
 const ZDvidInfo& ZFlyEmBody3dDoc::getDvidInfo() const

@@ -69,8 +69,18 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
   connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
           this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
+
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
           this, &Neu3Window::zoomToBodyMesh, Qt::QueuedConnection);
+
+  // Loading an ID that corresponds to an archive trigers the loading of other meshes
+  // and the ZBodyListWidget needs to show them.  The synchronizing of that widget
+  // with the body list is most efficient if it occurs on the single bodyMeshesAdded
+  // signal emitted after all the meshes are loaded, not on the multiple bodyMeshLoaded
+  // signals emitted with each mesh.
+
+  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
+          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
 }
 
 void Neu3Window::initOpenglContext()
@@ -148,7 +158,7 @@ void Neu3Window::createTaskWindow() {
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
     connect(window, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
-    connect(window, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(removeBody(uint64_t)));
+    connect(window, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
     connect(window, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodySelection(QSet<uint64_t>)));
 
@@ -230,19 +240,36 @@ void Neu3Window::addBody(uint64_t bodyId)
   m_bodyListWidget->getModel()->addBody(bodyId);
 }
 
+class Neu3Window::DoingBulkUpdate
+{
+public:
+  DoingBulkUpdate(Neu3Window *w) : m_window(w) { m_window->m_doingBulkUpdate = true; }
+  ~DoingBulkUpdate() { m_window->m_doingBulkUpdate = false; }
+private:
+  Neu3Window *m_window;
+};
+
 void Neu3Window::loadBody(uint64_t bodyId)
 {
-  m_dataContainer->selectBody(bodyId);
+  m_dataContainer->selectBody(bodyId, m_doingBulkUpdate);
 }
 
 void Neu3Window::unloadBody(uint64_t bodyId)
 {
-  m_dataContainer->deselectBody(bodyId);
+  m_dataContainer->deselectBody(bodyId, m_doingBulkUpdate);
 }
 
 void Neu3Window::removeBody(uint64_t bodyId)
 {
   m_bodyListWidget->getModel()->removeBody(bodyId);
+}
+
+void Neu3Window::removeAllBodies()
+{
+  // Supress some expensive and unnecessary updates after each body removal.
+  DoingBulkUpdate doingBulkUpdate(this);
+
+  m_bodyListWidget->getModel()->removeAllBodies();
 }
 
 void Neu3Window::test()
@@ -258,8 +285,26 @@ void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
   getBodyDocument()->setBodyModelSelected(bodySet);
 }
 
+namespace {
+  static bool zoomToLoadedBody = true;
+}
+
+void Neu3Window::enableZoomToLoadedBody(bool enable)
+{
+  zoomToLoadedBody = enable;
+}
+
+bool Neu3Window::zoomToLoadedBodyEnabled()
+{
+  return zoomToLoadedBody;
+}
+
 void Neu3Window::zoomToBodyMesh()
 {
+  if (!zoomToLoadedBodyEnabled()) {
+    return;
+  }
+
   QList<ZMesh*> meshList = getBodyDocument()->getMeshList();
   if (meshList.size() == 1) {
     ZMesh *mesh = meshList.front();
@@ -299,4 +344,31 @@ void Neu3Window::processMeshChangedFrom3D(
   }
 }
 
+void Neu3Window::syncBodyListModel()
+{
+  // Supress some expensive and unnecessary updates after each body removal.
+  DoingBulkUpdate doingBulkUpdate(this);
+
+  QList<ZMesh*> meshList = getBodyDocument()->getMeshList();
+  ZFlyEmBodyListModel *listModel = m_bodyListWidget->getModel();
+
+  QList<int> rowsToRemove;
+  for (int i = 0; i < listModel->rowCount(); i++) {
+    bool found = false;
+    for (ZMesh *mesh : meshList) {
+      if (mesh->getLabel() == listModel->getBodyId(i)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      rowsToRemove.append(i);
+    }
+  }
+  listModel->removeRowList(rowsToRemove);
+
+  for (ZMesh *mesh : meshList) {
+    listModel->addBody(mesh->getLabel());
+  }
+}
 
