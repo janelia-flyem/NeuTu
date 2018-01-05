@@ -827,7 +827,8 @@ HEADERS += mainwindow.h \
     protocols/taskbodyhistory.h \
     widgets/zpythonprocess.h \
     zstackutil.h \
-    zstackptr.h
+    zstackptr.h \
+    dialogs/zflyemproofsettingdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -933,7 +934,8 @@ FORMS += dialogs/settingdialog.ui \
     widgets/flyembodyinfowidget.ui \
     neu3window.ui \
     widgets/taskprotocolwindow.ui \
-    dialogs/zflyemmergeuploaddialog.ui
+    dialogs/zflyemmergeuploaddialog.ui \
+    dialogs/zflyemproofsettingdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1441,7 +1443,8 @@ SOURCES += main.cpp \
     protocols/taskbodyhistory.cpp \
     widgets/zpythonprocess.cpp \
     zstackutil.cpp \
-    zstackptr.cpp
+    zstackptr.cpp \
+    dialogs/zflyemproofsettingdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

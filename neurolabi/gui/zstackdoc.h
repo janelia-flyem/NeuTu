@@ -1315,6 +1315,7 @@ private:
   const T* getFirstUserByType() const;
 
   void updateTraceMask();
+  void prepareSwc(ZSwcTree *tree);
 
 protected:
   ZStackDocKeyProcessor *m_keyProcessor = NULL;
@@ -1383,6 +1384,7 @@ private:
   bool m_isSegmentationReady;
   bool m_hadSegmentationDownsampled = false;
   bool m_autoSaving;
+  bool m_showingFullSwc = false;
 
   //QMutex m_mutex;
 

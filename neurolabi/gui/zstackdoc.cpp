@@ -2560,6 +2560,7 @@ void ZStackDoc::addSwcTreeP(ZSwcTree *obj)
   }
 
   obj->forceVirtualRoot();
+  prepareSwc(obj);
 
   m_objectGroup.add(obj, false);
 
@@ -10365,17 +10366,24 @@ void ZStackDoc::setVisible(ZStackObject::EType type, std::string source, bool vi
   notifyObjectModified();
 }
 
+void ZStackDoc::prepareSwc(ZSwcTree *tree)
+{
+  if (m_showingFullSwc) {
+    tree->addVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+  } else {
+    tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+  }
+}
+
 void ZStackDoc::showSwcFullSkeleton(bool state)
 {
+  m_showingFullSwc = state;
+
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
   for (TStackObjectList::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
-    if (state) {
-      tree->addVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
-    } else {
-      tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
-    }
+    prepareSwc(tree);
     bufferObjectModified(tree->getTarget());
   }
 
