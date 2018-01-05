@@ -261,6 +261,12 @@ int ZDvidGraySlice::getScale() const
   return misc::GetZoomScale(getZoom());
 }
 
+void ZDvidGraySlice::setCenterCut(int width, int height)
+{
+  m_centerCutWidth = width;
+  m_centerCutHeight = height;
+}
+
 void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
 {
   if (viewParam.getSliceAxis() != m_sliceAxis) {

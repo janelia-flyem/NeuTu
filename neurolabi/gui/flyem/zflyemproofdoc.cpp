@@ -951,8 +951,16 @@ void ZFlyEmProofDoc::initGrayscaleSlice()
     slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
     slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
+    prepareGraySlice(slice);
     addObject(slice, true);
   }
+}
+
+void ZFlyEmProofDoc::setGraySliceCenterCut(int width, int height)
+{
+  m_graySliceCenterCutWidth = width;
+  m_graySliceCenterCutHeight = height;
+  prepareGraySlice(getDvidGraySlice());
 }
 
 void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
@@ -2454,6 +2462,13 @@ void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
   puncta->pushColor(QColor(0, 0, 255));
   puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
                            neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+}
+
+void ZFlyEmProofDoc::prepareGraySlice(ZDvidGraySlice *slice)
+{
+  if (slice != NULL) {
+    slice->setCenterCut(m_graySliceCenterCutWidth, m_graySliceCenterCutHeight);
+  }
 }
 
 std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(ZObject3dScan &body)

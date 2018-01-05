@@ -85,6 +85,7 @@
 #include "z3dmeshfilter.h"
 #include "flyem/zflyembody3ddocmenufactory.h"
 #include "dvid/zdvidgrayslice.h"
+#include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/zflyemmergeuploaddialog.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
@@ -128,7 +129,7 @@ void ZFlyEmProofMvc::init()
   m_skeletonUpdateDlg = new ZFlyEmSkeletonUpdateDialog(this);
   m_grayscaleDlg = new ZFlyEmGrayscaleDialog(this);
   m_bodyIdDialog = new FlyEmBodyIdDialog(this);
-
+  m_settingDlg = new ZFlyEmProofSettingDialog(this);
 
   connect(m_roiDlg, SIGNAL(projectActivited()), this, SLOT(loadRoiProject()));
   connect(m_roiDlg, SIGNAL(projectClosed()), this, SLOT(closeRoiProject()));
@@ -310,6 +311,7 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
   BaseConstruct(frame, doc, axis);
 
   frame->getView()->setHoverFocus(true);
+  frame->applySettings();
 
   return frame;
 }
@@ -342,6 +344,11 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
           mvc, SLOT(syncBodySelectionToOrthoWindow()));
 
   return mvc;
+}
+
+void ZFlyEmProofMvc::applySettings()
+{
+  m_settingDlg->applySettings(getCompleteDocument());
 }
 
 void ZFlyEmProofMvc::detachOrthoWindow()
@@ -1414,6 +1421,15 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
             getDvidTarget().getSourceString(false).c_str()),
           neutube::MSG_INFORMATION,
           ZWidgetMessage::TARGET_STATUS_BAR));
+}
+
+void ZFlyEmProofMvc::showSetting()
+{
+  if (m_settingDlg->exec()) {
+    getCompleteDocument()->setGraySliceCenterCut(
+          m_settingDlg->getCenterCutWidth(), m_settingDlg->getCenterCutHeight());
+    getDocument()->showSwcFullSkeleton(m_settingDlg->showingFullSkeleton());
+  }
 }
 
 void ZFlyEmProofMvc::diagnose()
