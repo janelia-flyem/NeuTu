@@ -1238,7 +1238,7 @@ void ZStackFrame::exportChainFileList(const QString &filePath)
 {
   document()->exportChainFileList(filePath.toStdString().c_str());
 }
-
+/*
 ZStack* ZStackFrame::getObjectMask()
 {
   return view()->getObjectMask(1);
@@ -1248,7 +1248,7 @@ ZStack* ZStackFrame::getObjectMask(neutube::EColor color)
 {
   return view()->getObjectMask(color, 1);
 }
-
+*/
 ZStack* ZStackFrame::getStrokeMask()
 {
   return view()->getStrokeMask(1);

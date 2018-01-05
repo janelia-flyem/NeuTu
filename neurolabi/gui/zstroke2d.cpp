@@ -448,7 +448,7 @@ void ZStroke2d::labelGrey(Stack *stack, int label, int ignoringValue) const
 void ZStroke2d::labelGrey(Stack *stack, int label) const
 {
   if (stack == NULL || C_Stack::kind(stack) != GREY ||
-      m_z < 0 || m_z >= C_Stack::depth(stack)) {
+      ((m_z < 0 || m_z >= C_Stack::depth(stack)) && !m_isPenetrating)) {
     return;
   }
 
@@ -723,6 +723,31 @@ void ZStroke2d::labelStack(ZStack *stack) const
     ZStroke2d tmpStroke = *this;
     tmpStroke.downsample(stack->getDsIntv());
     tmpStroke.translate(-stack->getOffset());
+    tmpStroke.labelGrey(stack->c_stack());
+  }
+}
+
+void ZStroke2d::labelProjStack(ZStack *stack) const
+{
+  if (stack != NULL) {
+    ZStroke2d tmpStroke = *this;
+    tmpStroke.downsample(stack->getDsIntv());
+    tmpStroke.translate(-stack->getOffset());
+    tmpStroke.setZ(0);
+    tmpStroke.labelGrey(stack->c_stack());
+  }
+}
+
+void ZStroke2d::labelProjStack(ZStack *stack, int value) const
+{
+  if (stack != NULL) {
+    ZStroke2d tmpStroke = *this;
+    tmpStroke.downsample(stack->getDsIntv());
+    tmpStroke.translate(-stack->getOffset());
+    tmpStroke.setZ(0);
+    if (!tmpStroke.isEraser()) {
+      tmpStroke.setLabel(value);
+    }
     tmpStroke.labelGrey(stack->c_stack());
   }
 }

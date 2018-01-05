@@ -225,12 +225,6 @@ public:
   void paintActiveDecorationBuffer();
   void paintDynamicObjectBuffer();
 
-  ZStack* getObjectMask(uint8_t maskValue);
-
-  /*!
-   * \brief Get object mask of a certain color
-   */
-  ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
 
   ZStack* getStrokeMask(uint8_t maskValue);
   ZStack* getStrokeMask(neutube::EColor color);
@@ -483,7 +477,7 @@ protected:
       ZMultiscalePixmap &canvas, ZPainter *painter);
 
 //  void reloadTileCanvas();
-  bool reloadObjectCanvas(bool repaint = false);
+//  bool reloadObjectCanvas(bool repaint = false);
   void reloadCanvas();
 
   virtual void updateImageCanvas();
@@ -498,6 +492,7 @@ protected:
   void updateCanvas(ZStackObject::ETarget target);
 
   ZPainter* getTileCanvasPainter();
+  ZPainter* getObjectCanvasPainter();
 
   ZPixmap* updateProjCanvas(ZPixmap *canvas, ZPainter *painter);
   ZPixmap* updateViewPortCanvas(ZPixmap *canvas);
@@ -533,6 +528,14 @@ protected:
 private:
   void updateSliceFromZ(int z);
   void recordViewParam();
+  void prepareCanvasPainter(ZPixmap *canvas, ZPainter &canvasPainter);
+
+  ZStack* getObjectMask(uint8_t maskValue);
+
+  /*!
+   * \brief Get object mask of a certain color
+   */
+  ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
 
 protected:
   //ZStackFrame *m_parent;
@@ -541,21 +544,22 @@ protected:
   QLabel *m_infoLabel;
   QLabel *m_stackLabel;
   QLabel *m_activeLabel;
-  ZImage *m_image;
+  ZImage *m_image = NULL;
 //  ZPainter m_imagePainter;
-  ZImage *m_imageMask;
+  ZImage *m_imageMask = NULL;
 //  ZPixmap *m_objectCanvas;
-  ZPixmap *m_dynamicObjectCanvas;
+  ZPixmap *m_dynamicObjectCanvas = NULL;
   double m_dynamicObjectOpacity;
 //  ZPainter m_dynamicObjectCanvasPainter;
 
-  ZMultiscalePixmap m_objectCanvas;
+//  ZMultiscalePixmap m_objectCanvas;
+  ZPixmap *m_objectCanvas = NULL;
   ZPainter m_objectCanvasPainter;
 
   neutube::EAxis m_sliceAxis;
 
   ZPainter m_tileCanvasPainter;
-  ZPixmap *m_activeDecorationCanvas;
+  ZPixmap *m_activeDecorationCanvas = NULL;
 //  ZMultiscalePixmap m_tileCanvas;
   ZPixmap *m_tileCanvas = NULL;
   ZImageWidget *m_imageWidget;

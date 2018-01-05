@@ -183,6 +183,21 @@ int ZFlyEmRoiToolDialog::getSliceStep() const
   return ui->stepSpinBox->value();
 }
 
+double ZFlyEmRoiToolDialog::getMoveStep() const
+{
+  return ui->moveStepSpinBox->value();
+}
+
+double ZFlyEmRoiToolDialog::getScaleStep() const
+{
+  return ui->scaleStepDoubleSpinBox->value() + 1.0;
+}
+
+double ZFlyEmRoiToolDialog::getRotateStep() const
+{
+  return ui->rotateStepDoubleSpinBox->value();
+}
+
 void ZFlyEmRoiToolDialog::prevSlice()
 {
   emit steppingSlice(-ui->stepSpinBox->value());
@@ -297,42 +312,42 @@ void ZFlyEmRoiToolDialog::estimateRoi()
 
 void ZFlyEmRoiToolDialog::movePlaneLeft()
 {
-  movePlane(-1, 0);
+  movePlane(-getMoveStep(), 0);
 }
 
 void ZFlyEmRoiToolDialog::movePlaneRight()
 {
-  movePlane(1, 0);
+  movePlane(getMoveStep(), 0);
 }
 
 void ZFlyEmRoiToolDialog::movePlaneUp()
 {
-  movePlane(0, -1);
+  movePlane(0, -getMoveStep());
 }
 
 void ZFlyEmRoiToolDialog::movePlaneDown()
 {
-  movePlane(0, 1);
+  movePlane(0, getMoveStep());
 }
 
 void ZFlyEmRoiToolDialog::movePlaneLeftUp()
 {
-  movePlane(-1, -1);
+  movePlane(-getMoveStep(), -getMoveStep());
 }
 
 void ZFlyEmRoiToolDialog::movePlaneRightDown()
 {
-  movePlane(1, 1);
+  movePlane(getMoveStep(), getMoveStep());
 }
 
 void ZFlyEmRoiToolDialog::rotatePlaneClockwise()
 {
-  rotatePlane(0.02);
+  rotatePlane(getRotateStep());
 }
 
 void ZFlyEmRoiToolDialog::rotatePlaneCounterClockwise()
 {
-  rotatePlane(-0.02);
+  rotatePlane(-getRotateStep());
 }
 
 
@@ -353,32 +368,33 @@ void ZFlyEmRoiToolDialog::scalePlane(double sx, double sy)
 
 void ZFlyEmRoiToolDialog::expandPlane()
 {
-  scalePlane(1.1, 1.1);
+  scalePlane(getScaleStep(), getScaleStep());
 }
 
 void ZFlyEmRoiToolDialog::shrinkPlane()
 {
-  scalePlane(1.0/1.1, 1.0/1.1);;
+  double scale = 1.0/getScaleStep();
+  scalePlane(scale, scale);
 }
 
 void ZFlyEmRoiToolDialog::expandPlaneX()
 {
-  scalePlane(1.1, 1.0);
+  scalePlane(getScaleStep(), 1.0);
 }
 
 void ZFlyEmRoiToolDialog::shrinkPlaneX()
 {
-  scalePlane(1.0/1.1, 1.0);;
+  scalePlane(1.0/getScaleStep(), 1.0);;
 }
 
 void ZFlyEmRoiToolDialog::expandPlaneY()
 {
-  scalePlane(1.0, 1.1);
+  scalePlane(1.0, getScaleStep());
 }
 
 void ZFlyEmRoiToolDialog::shrinkPlaneY()
 {
-  scalePlane(1.0, 1.0/1.1);;
+  scalePlane(1.0, 1.0/getScaleStep());;
 }
 
 void ZFlyEmRoiToolDialog::uploadRoi()
