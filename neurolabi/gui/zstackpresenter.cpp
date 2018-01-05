@@ -80,7 +80,7 @@ void ZStackPresenter::initActiveObject()
   stroke->setVisible(false);
   stroke->setFilled(true);
   stroke->setPenetrating(true);
-  stroke->hideStart(true);
+  stroke->hideStart(false);
   stroke->setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   addActiveObject(ROLE_STROKE, stroke);
 
@@ -2294,8 +2294,10 @@ void ZStackPresenter::updateSwcExtensionHint()
       ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
       stroke->set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
       stroke->setWidth(SwcTreeNode::radius(tn) * 2.0);
-      QPointF pos = mapFromGlobalToStack(QCursor::pos());
-      stroke->append(pos.x(), pos.y());
+//      QPointF pos = mapFromGlobalToStack(QCursor::pos());
+      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+      ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+      stroke->append(currentStackPos.getX(), currentStackPos.getY());
     }
   }
 }
@@ -2317,11 +2319,16 @@ bool ZStackPresenter::enterSwcExtendMode()
                  "Right click to exit extending mode.");
 
 //      m_stroke.setFilled(false);
-      QPointF pos = mapFromGlobalToStack(QCursor::pos());
+//      QPointF pos = mapFromGlobalToStack(QCursor::pos());
 
       ZStroke2d *stroke = getActiveObject<ZStroke2d>(ROLE_SWC);
       stroke->set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
-      stroke->append(pos.x(), pos.y());
+
+      const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
+      ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
+      stroke->append(currentStackPos.getX(), currentStackPos.getY());
+
+//      stroke->append(pos.x(), pos.y());
       //m_stroke.set(SwcTreeNode::x(tn), SwcTreeNode::y(tn));
       stroke->setWidth(SwcTreeNode::radius(tn) * 2.0);
 

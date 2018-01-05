@@ -370,6 +370,7 @@
       <addaction name="actionExport_Segmentation_Result"/>
       <addaction name="actionHierarchical_Split"/>
       <addaction name="actionSegmentation_Project"/>
+      <addaction name="actionView_Segmentation_Meshes"/>
      </widget>
      <widget class="QMenu" name="menuNew">
       <property name="title">
@@ -1557,6 +1558,11 @@
   <action name="actionMake_Movie_3">
    <property name="text">
     <string>Make Movie</string>
+   </property>
+  </action>
+  <action name="actionView_Segmentation_Meshes">
+   <property name="text">
+    <string>View Segmentation Meshes</string>
    </property>
   </action>
  </widget>

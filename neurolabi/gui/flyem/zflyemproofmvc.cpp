@@ -137,6 +137,12 @@ void ZFlyEmProofMvc::init()
   connect(m_roiDlg, SIGNAL(steppingSlice(int)), this, SLOT(stepSlice(int)));
   connect(m_roiDlg, SIGNAL(goingToNearestRoi()), this, SLOT(goToNearestRoi()));
   connect(m_roiDlg, SIGNAL(estimatingRoi()), this, SLOT(estimateRoi()));
+  connect(m_roiDlg, SIGNAL(movingPlane(double,double)),
+          this, SLOT(movePlaneRoi(double, double)));
+  connect(m_roiDlg, SIGNAL(rotatingPlane(double)),
+          this, SLOT(rotatePlaneRoi(double)));
+  connect(m_roiDlg, SIGNAL(scalingPlane(double,double)),
+          this, SLOT(scalePlaneRoi(double,double)));
 
 //  qRegisterMetaType<ZDvidTarget>("ZDvidTarget");
 
@@ -2683,7 +2689,7 @@ void ZFlyEmProofMvc::exportBodyStack()
             ZDvidSparseStack *sparseStack = NULL;
             sparseStack = reader.readDvidSparseStack(bodyId);
             ZStackWriter stackWriter;
-            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA);
+            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA, true);
             QString fileName = dirName + QString("/%1.tif").arg(bodyId);
             stackWriter.write(fileName.toStdString(), stack);
             delete stack;
@@ -2729,7 +2735,7 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
              sparseStack->getSparseStack()->save(fileName.toStdString());
              emit messageGenerated(fileName + " saved");
           } else {
-            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA);
+            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA, true);
             stackWriter.write(fileName.toStdString(), stack);
             delete stack;
           }
@@ -2739,7 +2745,8 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
              sparseStack->getSparseStack()->save(fileName.toStdString());
              emit messageGenerated(fileName + " saved");
           } else {
-            ZStack *stack = sparseStack->makeStack(m_grayscaleDlg->getBoundBox());
+            ZStack *stack = sparseStack->makeStack(
+                  m_grayscaleDlg->getBoundBox(), true);
             //          stack->save(fileName.toStdString());
             stackWriter.write(fileName.toStdString(), stack);
             delete stack;
@@ -3517,6 +3524,31 @@ void ZFlyEmProofMvc::estimateRoi()
   }
 }
 
+void ZFlyEmProofMvc::movePlaneRoi(double dx, double dy)
+{
+  QList<ZSwcTree*> treeList =
+      getDocument()->getSwcList(ZStackObjectRole::ROLE_ROI);
+  int z = getView()->getCurrentZ();
+  std::vector<Swc_Tree_Node*> nodeList;
+  foreach (ZSwcTree *tree, treeList) {
+    std::vector<Swc_Tree_Node*> subNodeList =  tree->getNodeOnPlane(z);
+    nodeList.insert(nodeList.end(), subNodeList.begin(), subNodeList.end());
+  }
+  getDocument()->executeMoveSwcNodeCommand(nodeList, dx, dy, 0);
+}
+
+void ZFlyEmProofMvc::rotatePlaneRoi(double theta)
+{
+  int z = getView()->getCurrentZ();
+  getCompleteDocument()->executeRotateRoiPlaneCommand(z, theta);
+}
+
+void ZFlyEmProofMvc::scalePlaneRoi(double sx, double sy)
+{
+  int z = getView()->getCurrentZ();
+  getCompleteDocument()->executeScaleRoiPlaneCommand(z, sx, sy);
+}
+
 void ZFlyEmProofMvc::loadRoiProject()
 {
   updateRoiGlyph();
@@ -3537,12 +3569,19 @@ void ZFlyEmProofMvc::closeRoiProject()
 void ZFlyEmProofMvc::updateRoiGlyph()
 {
   ZOUT(LTRACE(), 5) << "Update ROI glyph";
+  ZUndoCommand *command = new ZUndoCommand;
+
   QList<ZStackObject*> objList =
       getCompleteDocument()->getObjectList(ZStackObjectRole::ROLE_ROI);
   for (QList<ZStackObject*>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZStackObject *obj = *iter;
-    getCompleteDocument()->executeRemoveObjectCommand(obj);
+    new ZStackDocCommand::ObjectEdit::RemoveObject(
+          getDocument().get(), obj, command);
+//    command->setLogMessage("Remove object: " + obj->className());
+//    pushUndoCommand(command);
+
+//    getCompleteDocument()->executeRemoveObjectCommand(obj);
   }
 //  getCompleteDocument()->removeObject(ZStackObjectRole::ROLE_ROI, true);
 
@@ -3553,10 +3592,19 @@ void ZFlyEmProofMvc::updateRoiGlyph()
     if (tree != NULL) {
       tree->addRole(ZStackObjectRole::ROLE_ROI);
       tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
-      getCompleteDocument()->executeAddObjectCommand(tree);
+      new ZStackDocCommand::ObjectEdit::AddObject(
+            getDocument().get(), tree, true, command);
+      command->setLogMessage("Update ROI");
+//      getCompleteDocument()->executeAddObjectCommand(tree);
     }
   } else {
     getCompletePresenter()->setPaintingRoi(false);
+  }
+
+  if (command->childCount() > 0) {
+    getDocument()->pushUndoCommand(command);
+  } else {
+    delete command;
   }
 }
 

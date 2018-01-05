@@ -103,6 +103,14 @@ void ZIntCuboid::translate(const ZIntPoint &offset)
   m_lastCorner += offset;
 }
 
+void ZIntCuboid::scale(const ZIntPoint &s)
+{
+  ZIntPoint dim(getWidth(), getHeight(), getDepth());
+
+  m_firstCorner *= s;
+  m_lastCorner = m_firstCorner + dim * s - 1;
+}
+
 ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
   if (!cuboid.isEmpty()) {
@@ -117,6 +125,18 @@ ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
   }
 
   return *this;
+}
+
+void ZIntCuboid::join(int x, int y, int z)
+{
+  if (isEmpty()) {
+    setFirstCorner(x, y, z);
+    setLastCorner(x, y, z);
+  } else {
+    joinX(x);
+    joinY(y);
+    joinZ(z);
+  }
 }
 
 ZIntCuboid &ZIntCuboid::intersect(const ZIntCuboid &cuboid)

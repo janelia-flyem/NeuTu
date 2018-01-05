@@ -39,7 +39,7 @@ ZCubeArray *ZSurfaceObjsModel::getSurface(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() && item->parent()->parent() == m_rootItem)
-    return ZStackObject::CastVoidPointer<ZCubeArray>(item->getActuralData());
+    return ZStackObject::CastVoidPointer<ZCubeArray>(item->getActualData());
 //    return static_cast<ZPunctum*>(item->getObj());
   else
     return NULL;

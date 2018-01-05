@@ -9,6 +9,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 
+#include "zstack.hxx"
 
 ZPixmap::ZPixmap() : m_isVisible(false)
 {
@@ -193,3 +194,68 @@ bool ZPixmap::isFullyActive() const
         QRectF(0, 0, width(), height()));
 }
 
+ZStack* ZPixmap::toPlainStack(neutube::EColor color, uint8_t maskValue)
+{
+  ZStack *stack = new ZStack(GREY, width(), height(), 1, 1);
+  size_t offset = 0;
+  uint8_t *array = stack->array8();
+  QImage image = toImage();
+  for (int y = 0; y < height(); ++y) {
+    for (int x = 0; x < width(); ++x) {
+      QRgb rgb = image.pixel(x, y);
+      bool isForeground = false;
+      switch (color) {
+      case neutube::COLOR_RED:
+        if ((qRed(rgb) > qGreen(rgb)) && (qRed(rgb) > qBlue(rgb))) {
+          isForeground = true;
+        }
+        break;
+      case neutube::COLOR_GREEN:
+        if ((qGreen(rgb) > qRed(rgb)) && (qGreen(rgb) > qBlue(rgb))) {
+          isForeground = true;
+        }
+        break;
+      case neutube::COLOR_BLUE:
+        if ((qBlue(rgb) > qRed(rgb)) && (qBlue(rgb) > qGreen(rgb))) {
+          isForeground = true;
+        }
+        break;
+      default:
+        break;
+      }
+
+      if (isForeground) {
+        array[offset] = maskValue;
+      } else {
+        array[offset] = 0;
+      }
+      ++offset;
+    }
+  }
+
+  return stack;
+}
+
+ZStack* ZPixmap::toPlainStack(uint8_t maskValue)
+{
+  ZStack *stack = NULL;
+
+  QImage image = toImage();
+
+  stack = new ZStack(GREY, width(), height(), 1, 1);
+  size_t offset = 0;
+  uint8_t *array = stack->array8();
+  for (int y = 0; y < height(); ++y) {
+    for (int x = 0; x < width(); ++x) {
+      QRgb rgb = image.pixel(x, y);
+      if (qRed(rgb) > 0 || qGreen(rgb) > 0 || qBlue(rgb) > 0) {
+        array[offset] = maskValue;
+      } else {
+        array[offset] = 0;
+      }
+      ++offset;
+    }
+  }
+
+  return stack;
+}

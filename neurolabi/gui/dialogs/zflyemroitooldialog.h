@@ -55,6 +55,24 @@ public slots:
   void estimateRoi();
   void createRoiData();
   void estimateRoiVolume();
+  void movePlaneLeft();
+  void movePlaneRight();
+  void movePlaneUp();
+  void movePlaneDown();
+  void movePlaneLeftUp();
+  void movePlaneRightDown();
+  void rotatePlaneClockwise();
+  void rotatePlaneCounterClockwise();
+  void rotatePlane(double theta);
+  void movePlane(double dx, double dy);
+  void scalePlane(double sx, double sy);
+  void expandPlane();
+  void shrinkPlane();
+  void expandPlaneX();
+  void shrinkPlaneX();
+  void expandPlaneY();
+  void shrinkPlaneY();
+
 
 signals:
   void projectActivited();
@@ -64,6 +82,10 @@ signals:
   void goingToSlice(int);
   void goingToNearestRoi();
   void estimatingRoi();
+//  void movingPlaneLeft();
+  void movingPlane(double dx, double dy);
+  void rotatingPlane(double theta);
+  void scalingPlane(double sx, double sy);
 
 private:
   void init();
@@ -72,6 +94,10 @@ private:
   bool isValidName(const QString &name) const;
   void uploadProjectList();
   int getSliceStep() const;
+
+  double getMoveStep() const;
+  double getRotateStep() const;
+  double getScaleStep() const;
 
 private:
   Ui::ZFlyEmRoiToolDialog *ui;

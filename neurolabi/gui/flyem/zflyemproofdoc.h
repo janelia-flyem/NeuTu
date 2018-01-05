@@ -456,6 +456,9 @@ public slots: //Commands
   void executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeRemoveTodoItemCommand();
 
+  void executeRotateRoiPlaneCommand(int z, double theta);
+  void executeScaleRoiPlaneCommand(int z, double sx, double sy);
+
 
 public slots:
   void syncMergeWithDvid();

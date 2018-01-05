@@ -121,6 +121,8 @@ public:
 
   std::string getSource() const;
 
+  int getRefCount() const;
+
 protected:
 //  json_error_t m_error;
   json_t *m_data;

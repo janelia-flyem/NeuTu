@@ -110,6 +110,7 @@
 #include "zstackdocdatabuffer.h"
 #include "zstackdockeyprocessor.h"
 #include "zmeshobjsmodel.h"
+#include "flyem/zstackwatershedcontainer.h"
 
 using namespace std;
 
@@ -1528,6 +1529,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
 
     deprecate(STACK);
     mainStack = zstack;
+    mainStack->useChannelColors(true);
     initNeuronTracer();
 
 //    emit stackBoundBoxChanged();
@@ -2808,6 +2810,19 @@ DEFINE_GET_OBJECT_LIST(getDvidLabelSliceList, ZDvidLabelSlice, TYPE_DVID_LABEL_S
 DEFINE_GET_OBJECT_LIST(getDvidTileEnsembleList, ZDvidTileEnsemble, TYPE_DVID_TILE_ENSEMBLE)
 DEFINE_GET_OBJECT_LIST(getDvidSparsevolSliceList, ZDvidSparsevolSlice, TYPE_DVID_SPARSEVOL_SLICE)
 DEFINE_GET_OBJECT_LIST(getMeshList, ZMesh, TYPE_MESH)
+
+QList<ZSwcTree*> ZStackDoc::getSwcList(ZStackObjectRole::TRole role) const
+{
+  QList<ZSwcTree*> result;
+  QList<ZSwcTree*> swcList = getSwcList();
+  foreach (ZSwcTree *tree, swcList) {
+    if (tree->hasRole(role)) {
+      result.append(tree);
+    }
+  }
+
+  return result;
+}
 
 void ZStackDoc::addSparseObjectP(ZSparseObject *obj)
 {
@@ -6679,6 +6694,22 @@ bool ZStackDoc::executeSwcNodeChangeZCommand(double z)
   return succ;
 }
 
+bool  ZStackDoc::executeMoveSwcNodeCommand(
+    std::vector<Swc_Tree_Node *> &nodeList, double dx, double dy, double dz)
+{
+  if (!nodeList.empty() && (dx != 0 || dy != 0 || dz != 0)) {
+    ZStackDocCommand::SwcEdit::MoveSwcNode *command =
+        new ZStackDocCommand::SwcEdit::MoveSwcNode(this);
+    command->setOffset(ZPoint(dx, dy, dz));
+    command->addNode(nodeList);
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
+}
+
 bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
 {
   bool succ = false;
@@ -9356,9 +9387,9 @@ void ZStackDoc::reloadData(ZStackDocReader &reader)
 }
 
 
-std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
+ZStackArray ZStackDoc::createWatershedMask(bool selectedOnly) const
 {
-  std::vector<ZStack*> maskArray;
+  ZStackArray maskArray;
 
   int numberOfSelected = 0;
 
@@ -9426,7 +9457,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
             if (boxDist < 100) {
               ZStack *stack = player->toStack();
               if (stack != NULL) {
-                maskArray.push_back(stack);
+                maskArray.append(stack);
               }
             }
           }
@@ -9441,7 +9472,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
           ((numberOfSelected == 0) || player->getData()->isSelected())) {
         ZStack *stack = player->toStack();
         if (stack != NULL) {
-          maskArray.push_back(stack);
+          maskArray.append(stack);
         }
       }
     }
@@ -9532,6 +9563,31 @@ ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
 
 void ZStackDoc::localSeededWatershed()
 {
+  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  if (seedList.size() > 1) {
+    ZStackWatershedContainer container(getStack(), getSparseStack());
+    container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+    container.setCcaPost(false);
+
+
+
+    foreach (ZStackObject *seed, seedList) {
+      container.addSeed(seed);
+    }
+
+    container.run();
+
+    ZObject3dScanArray result;
+    container.makeSplitResult(1, &result);
+    for (ZObject3dScan *obj : result) {
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    result.shallowClear();
+    getDataBuffer()->deliver();
+  }
+
+#if 0
   getProgressSignal()->startProgress("Running local split ...");
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
 //  m_isSegmentationReady = false;
@@ -9613,10 +9669,30 @@ void ZStackDoc::localSeededWatershed()
   }
   getProgressSignal()->endProgress();
   emit labelFieldModified();
+#endif
 }
 
 void ZStackDoc::seededWatershed()
 {
+  ZStackWatershedContainer container(getStack(), getSparseStack());
+
+  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  foreach (ZStackObject *seed, seedList) {
+    container.addSeed(seed);
+  }
+
+  container.run();
+
+  ZObject3dScanArray result;
+  container.makeSplitResult(1, &result);
+  for (ZObject3dScan *obj : result) {
+    getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+  }
+  result.shallowClear();
+  getDataBuffer()->deliver();
+
+#if 0
   getProgressSignal()->startProgress("Splitting ...");
 
   ZOUT(LINFO(), 3) << "Removing old result ...";
@@ -9685,6 +9761,7 @@ void ZStackDoc::seededWatershed()
   }
   getProgressSignal()->endProgress();
   emit labelFieldModified();
+#endif
 }
 
 void ZStackDoc::runLocalSeededWatershed()
@@ -9695,6 +9772,8 @@ void ZStackDoc::runLocalSeededWatershed()
 //  localSeededWatershed();
 
 //  getProgressSignal()->startProgress();
+
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
 
   const QString threadId = "localSeededWatershed";
   if (!m_futureMap.isAlive(threadId)) {
@@ -9713,6 +9792,8 @@ void ZStackDoc::runLocalSeededWatershed()
 
 void ZStackDoc::runSeededWatershed()
 {
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
+
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
 
