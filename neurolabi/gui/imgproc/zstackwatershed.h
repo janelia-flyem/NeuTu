@@ -11,6 +11,7 @@ class ZIntPoint;
 class ZObject3dScan;
 class ZIntCuboid;
 class ZObject3d;
+class ZStackArray;
 
 /*!
  * \brief The class of running watershed
@@ -29,6 +30,7 @@ public:
    * \return Label feild of the watershed.
    */
   ZStack* run(const ZStack *stack, const std::vector<ZStack *> &seedMask);
+  ZStack* run(const ZStack *stack, const ZStackArray &seedMask);
 
   ZStack* run(const ZStack *stack, const ZStack* seedMask);
 

@@ -45,7 +45,7 @@ ZSwcTree *ZSwcObjsModel::getSwcTree(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() == m_rootItem)
-    return ZStackObject::CastVoidPointer<ZSwcTree>(item->getActuralData());
+    return ZStackObject::CastVoidPointer<ZSwcTree>(item->getActualData());
   else
     return NULL;
 }
@@ -58,7 +58,7 @@ Swc_Tree_Node *ZSwcObjsModel::getSwcTreeNode(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() && item->parent()->parent() == m_rootItem)
-    return static_cast<Swc_Tree_Node*>(item->getActuralData());
+    return static_cast<Swc_Tree_Node*>(item->getActualData());
   else
     return NULL;
 }

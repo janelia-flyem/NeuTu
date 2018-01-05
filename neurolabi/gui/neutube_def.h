@@ -9,6 +9,7 @@
 namespace neutube {
 
 static const uint64_t ONEGIGA = 1073741824;
+static const uint64_t HALFGIGA = 536870912;
 
 enum ESyncOption {
   SYNC, NO_SYNC

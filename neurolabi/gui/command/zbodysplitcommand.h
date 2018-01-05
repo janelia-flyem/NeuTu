@@ -27,7 +27,7 @@ private:
       std::string &splitTaskKey, std::string &splitResultKey,
       std::string &dataDir, bool &isFile);
   std::pair<ZStack *, ZSparseStack*> parseSignalPath(
-      std::string &signalPath, const std::string &dataDir,
+      std::string &signalPath, const ZJsonObject &signalInfo, const std::string &dataDir,
       bool isFile, const ZIntCuboid &range, ZStackGarbageCollector &gc);
   static void LoadSeeds(
       const ZJsonObject &inputJson, ZStackWatershedContainer &container,

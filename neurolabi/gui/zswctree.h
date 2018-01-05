@@ -561,6 +561,8 @@ public:
 
   std::vector<Swc_Tree_Node*> extractLeaf(Swc_Tree_Node *start);
 
+  std::vector<Swc_Tree_Node*> getNodeOnPlane(int z);
+
   Swc_Tree_Node* queryNode(int id,
                            int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST);
   Swc_Tree_Node* queryNode(const ZPoint &pt);

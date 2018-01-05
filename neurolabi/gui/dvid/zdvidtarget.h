@@ -141,6 +141,7 @@ public:
    */
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
+  void updateData(const ZJsonObject &obj);
 
   void loadDvidDataSetting(const ZJsonObject &obj);
   ZJsonObject toDvidDataSetting() const;
@@ -298,6 +299,7 @@ public:
   }
 
   void setSourceConfig(const ZJsonObject &config);
+  const ZJsonObject& getSourceConfig() const;
 
   /*!
    * \brief Set dvid source of grayscale data
@@ -319,6 +321,30 @@ private:
   void init();
   void setSource(const char *key, const ZDvidNode &node);
   ZDvidNode getSource(const char *key) const;
+
+public:
+  const static char* m_commentKey;
+  const static char* m_nameKey;
+  const static char* m_localKey;
+  const static char* m_debugKey;
+  const static char* m_bgValueKey;
+  const static char* m_grayScaleNameKey;
+  const static char* m_bodyLabelNameKey;
+  const static char* m_labelBlockNameKey;
+  const static char* m_multiscale2dNameKey;
+  const static char* m_tileConfigKey;
+  const static char* m_roiListKey;
+  const static char* m_roiNameKey;
+  const static char* m_synapseNameKey;
+  const static char* m_defaultSettingKey;
+  const static char* m_userNameKey;
+  const static char* m_supervisorKey;
+  const static char* m_supervisorServerKey;
+  const static char* m_maxLabelZoomKey;
+  const static char* m_maxGrayscaleZoomKey;
+  const static char* m_synapseLabelszKey;
+  const static char* m_todoListNameKey;
+  const static char* m_sourceConfigKey;
 
 private:
   ZDvidNode m_node;
@@ -354,29 +380,6 @@ private:
   bool m_readOnly; //if the database is readonly
   ZDvid::ENodeStatus m_nodeStatus = ZDvid::NODE_OFFLINE; //Status of the node
   bool m_isInferred = false;
-
-  const static char* m_commentKey;
-  const static char* m_nameKey;
-  const static char* m_localKey;
-  const static char* m_debugKey;
-  const static char* m_bgValueKey;
-  const static char* m_grayScaleNameKey;
-  const static char* m_bodyLabelNameKey;
-  const static char* m_labelBlockNameKey;
-  const static char* m_multiscale2dNameKey;
-  const static char* m_tileConfigKey;
-  const static char* m_roiListKey;
-  const static char* m_roiNameKey;
-  const static char* m_synapseNameKey;
-  const static char* m_defaultSettingKey;
-  const static char* m_userNameKey;
-  const static char* m_supervisorKey;
-  const static char* m_supervisorServerKey;
-  const static char* m_maxLabelZoomKey;
-  const static char* m_maxGrayscaleZoomKey;
-  const static char* m_synapseLabelszKey;
-  const static char* m_todoListNameKey;
-  const static char* m_sourceConfigKey;
 };
 
 #endif // ZDVIDTARGET_H

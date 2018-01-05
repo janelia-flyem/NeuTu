@@ -154,8 +154,7 @@ void ZFlyEmRoiProject::downloadAllRoi()
   if (reader.open(getDvidTarget())) {
     QStringList roiIdArray = reader.readKeys(
           ZDvidData::GetName<QString>(ZDvidData::ROLE_ROI_CURVE),
-          QString("%1").arg(getRoiKey(m_dvidInfo.getMinZ()).c_str()),
-          QString("%1").arg(getRoiKey(m_dvidInfo.getMaxZ()).c_str()));
+          (getName() + "_0").c_str(), (getName() + "_9").c_str());
     foreach (const QString &roiKey, roiIdArray) {
       int roiId = ZString(roiKey.toStdString()).lastInteger();
       downloadRoi(roiId);
@@ -648,16 +647,22 @@ ZClosedCurve* ZFlyEmRoiProject::estimateRoi(int z, ZClosedCurve *result) const
   int minZ = -1;
   int maxZ = -1;
   for (int tz = z + 1; tz < (int) m_curveArray.size(); ++tz) {
-    if (m_curveArray[tz] != NULL) {
-      maxZ = tz;
-      break;
+    ZClosedCurve *curve = m_curveArray[tz];
+    if (curve != NULL) {
+      if (!curve->isEmpty()) {
+        maxZ = tz;
+        break;
+      }
     }
   }
 
   for (int tz = imin2(z - 1, (int) m_curveArray.size() - 1); tz >= 0; --tz) {
-    if (m_curveArray[tz] != NULL) {
-      minZ = tz;
-      break;
+    ZClosedCurve *curve = m_curveArray[tz];
+    if (curve != NULL) {
+      if (!curve->isEmpty()) {
+        minZ = tz;
+        break;
+      }
     }
   }
 
@@ -666,18 +671,24 @@ ZClosedCurve* ZFlyEmRoiProject::estimateRoi(int z, ZClosedCurve *result) const
       minZ = maxZ;
       maxZ = -1;
       for (int tz = minZ + 1; tz < (int) m_curveArray.size(); ++tz) {
-        if (m_curveArray[tz] != NULL) {
-          maxZ = tz;
-          break;
+        ZClosedCurve *curve = m_curveArray[tz];
+        if (curve != NULL) {
+          if (!curve->isEmpty()) {
+            maxZ = tz;
+            break;
+          }
         }
       }
     } else if (maxZ < 0) {
       maxZ = minZ;
       minZ = -1;
       for (int tz = maxZ - 1; tz >= 0; --tz) {
-        if (m_curveArray[tz] != NULL) {
-          minZ = tz;
-          break;
+        ZClosedCurve *curve = m_curveArray[tz];
+        if (curve != NULL) {
+          if (!curve->isEmpty()) {
+            minZ = tz;
+            break;
+          }
         }
       }
     }

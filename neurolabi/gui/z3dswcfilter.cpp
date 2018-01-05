@@ -800,6 +800,10 @@ void Z3DSwcFilter::updateBiocytinWidget()
 
 void Z3DSwcFilter::updateWidgetGroup()
 {
+#ifdef _DEBUG_
+  std::cout << "updateWidgetGroup: " << m_individualTreeColorMapper.size() << std::endl;
+#endif
+
   // update widget group
   if (m_widgetsGroup) {
     std::set<ZParameter*, _ParameterNameComp> cps;
@@ -809,6 +813,7 @@ void Z3DSwcFilter::updateWidgetGroup()
     for (auto p : cps) {
       m_widgetsGroup->addChild(*p, 2);
     }
+
     cps.clear();
     for (const auto& kv : m_individualTreeColorMapper) {
       cps.insert(kv.second.get());
@@ -820,7 +825,8 @@ void Z3DSwcFilter::updateWidgetGroup()
   }
 }
 
-void Z3DSwcFilter::updateColorParameter(const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
+bool Z3DSwcFilter::updateColorParameter(
+    const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
 {
   ZSwcColorScheme colorScheme;
   colorScheme.setColorScheme(ZSwcColorScheme::UNIQUE_COLOR);
@@ -830,6 +836,7 @@ void Z3DSwcFilter::updateColorParameter(const std::map<ZSwcTree *, size_t> &sour
         m_randomTreeColorMapper.begin(), m_randomTreeColorMapper.end(),
         std::inserter(newSources, newSources.end()),
                       _KeyLess());
+  bool updating = !newSources.empty();
   for (const auto& kv : newSources) {
     m_randomTreeColorMapper.insert(
           std::make_pair(kv.first,
@@ -859,9 +866,11 @@ void Z3DSwcFilter::updateColorParameter(const std::map<ZSwcTree *, size_t> &sour
         this, &Z3DSwcFilter::prepareColor);
     addParameter(*m_individualTreeColorMapper[kv.first]);
   }
+
+  return updating;
 }
 
-void Z3DSwcFilter::updateTreeColorParameter(const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
+bool Z3DSwcFilter::updateTreeColorParameter(const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
 {
   // do nothing if sources don't change
   if (sourceIndexMapper.size() != m_randomTreeColorMapper.size() ||
@@ -894,7 +903,11 @@ void Z3DSwcFilter::updateTreeColorParameter(const std::map<ZSwcTree *, size_t> &
         ++it;
       }
     }
+
+    return true;
   }
+
+  return false;
 }
 
 void Z3DSwcFilter::prepareData()
@@ -1002,13 +1015,18 @@ void Z3DSwcFilter::prepareData()
     sourceIndexMapper[m_origSwcList[i]] = i;
   }
 
-  updateTreeColorParameter(sourceIndexMapper);
+  // remove old param
+  bool updatingTreeColorParam = updateTreeColorParameter(sourceIndexMapper);
 
   // create color parameters for new sources
-  updateColorParameter(sourceIndexMapper);
+  bool updatingTreeColorParam2 = updateColorParameter(sourceIndexMapper);
+
+  updatingTreeColorParam = updatingTreeColorParam || updatingTreeColorParam2;
 
 #if 1
-  updateWidgetGroup();
+  if (updatingTreeColorParam) {
+    updateWidgetGroup();
+  }
 #endif
 
   ZOUT(LINFO(), 5) << "Setting renderers ...";
