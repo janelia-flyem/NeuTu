@@ -49,7 +49,8 @@ public:
     ROLE_SPLIT_RESULT_KEY,
     ROLE_SPLIT_TASK_PROPERTY_KEY,
     ROLE_SPLIT_RESULT_PROPERTY_KEY,
-    ROLE_MESH
+    ROLE_MESH,
+    ROLE_MESHES_TARS
   };
 
   enum EType {
@@ -114,6 +115,8 @@ private:
   static const char *m_meshName;
   static const char *m_sparsevolSizeName;
   //static const char *m_keyValueTypeName;
+  static const char *m_meshesTarsName;
+
 
   static const char *m_nullName;
   static const char *m_emptyName;

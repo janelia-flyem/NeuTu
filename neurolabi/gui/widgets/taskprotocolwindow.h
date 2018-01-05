@@ -32,7 +32,8 @@ public:
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
-    void bodyRemoved(uint64_t bodyId);
+    void allBodiesRemoved();
+
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
     void prefetchBody(QSet<uint64_t> bodyIDs);
     void prefetchBody(uint64_t bodyID);
@@ -44,6 +45,7 @@ private slots:
     void onPrevButton();
     void onDoneButton();
     void onLoadTasksButton();    
+    void onBodiesUpdated();
     void onCompletedStateChanged(int state);
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);

@@ -4,10 +4,12 @@
 #include <vector>
 #include <ctime>
 
+#include <archive.h>
+#include <archive_entry.h>
 #include <QThread>
 #include <QElapsedTimer>
-
 #include "QsLog/QsLog.h"
+
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
 #include "zswctree.h"
@@ -636,6 +638,60 @@ ZMesh* ZDvidReader::readMesh(uint64_t bodyId, int zoom)
   m_bufferReader.clearBuffer();
 
   return mesh;
+}
+
+struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+
+  m_bufferReader.read(dvidUrl.getMeshesTarsUrl(bodyId).c_str(), isVerbose());
+  if (m_bufferReader.getStatus() == ZDvidBufferReader::READ_FAILED) {
+    return nullptr;
+  }
+
+  const QByteArray &buffer = m_bufferReader.getBuffer();
+
+  struct archive *arc = archive_read_new();
+  archive_read_support_format_all(arc);
+
+  int result = archive_read_open_memory(arc, buffer.constData(), buffer.size());
+    if (result != ARCHIVE_OK) {
+    return nullptr;
+  }
+
+  return arc;
+}
+
+ZMesh *ZDvidReader::readMeshArchiveNext(struct archive *arc)
+{
+  struct archive_entry *entry;
+  if (archive_read_next_header(arc, &entry) != ARCHIVE_OK) {
+    return nullptr;
+  }
+
+  std::string pathname = archive_entry_pathname(entry);
+  auto i = pathname.find_last_of('.');
+  std::string bodyIdStr = (i != std::string::npos) ? pathname.substr(0, i) : pathname;
+
+  const struct stat *s = archive_entry_stat(entry);
+  size_t size = s->st_size;
+
+  QByteArray buffer(size, 0);
+  archive_read_data(arc, buffer.data(), size);
+
+  std::string format = "drc";
+  ZMesh *mesh = ZMeshIO::instance().loadFromMemory(buffer, format);
+  if (mesh != NULL) {
+    mesh->setLabel(std::stoull(bodyIdStr));
+  }
+
+  return mesh;
+}
+
+void ZDvidReader::readMeshArchiveEnd(struct archive *arc)
+{
+  m_bufferReader.clearBuffer();
+  archive_read_free(arc);
 }
 
 ZObject3dScan* ZDvidReader::readMultiscaleBody(

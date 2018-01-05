@@ -151,6 +151,20 @@ std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
   return getMeshUrl(bodyId, zoom) + "_info";
 }
 
+std::string ZDvidUrl::getMeshesTarsUrl()
+{
+  return getDataUrl(
+        ZDvidData::GetName(ZDvidData::ROLE_MESHES_TARS,
+                           ZDvidData::ROLE_BODY_LABEL,
+                           m_dvidTarget.getBodyLabelName()));
+}
+
+std::string ZDvidUrl::getMeshesTarsUrl(uint64_t bodyId)
+{
+  ZString dataUrl = getMeshesTarsUrl();
+  return GetFullUrl(GetKeyCommandUrl(dataUrl), GetBodyKey(bodyId));
+}
+
 std::string ZDvidUrl::getSkeletonUrl() const
 {
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());

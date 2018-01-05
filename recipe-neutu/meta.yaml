@@ -40,6 +40,7 @@ requirements:
     - assimp
     - glbinding
     - draco
+    - libarchive
 
   run:
     - python >=3.6
@@ -57,7 +58,8 @@ requirements:
     - assimp
     - glbinding
     - draco
-    
+    - libarchive
+   
 about:
   home: http://github.com/janelia-flyem/NeuTu
   license: GPL
