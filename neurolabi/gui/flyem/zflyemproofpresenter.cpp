@@ -348,7 +348,7 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
       } else if (event->modifiers() == Qt::NoModifier) {
         emit runningLocalSplit();
         processed = true;
-      } else if (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
+      } else if (event->modifiers() == Qt::AltModifier) {
         emit runningFullSplit();
         processed = true;
       }

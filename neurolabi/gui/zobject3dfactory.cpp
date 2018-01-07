@@ -724,6 +724,33 @@ std::vector<ZObject3d*> ZObject3dFactory::MakeObject3dArray(const ZStack &stack)
   return objArray;
 }
 
+ZObject3dScan* ZObject3dFactory::MakeBoxObject3dScan(
+    const ZIntCuboid &box, ZObject3dScan *obj)
+{
+  if (obj == NULL) {
+    obj = new ZObject3dScan;
+  } else {
+    obj->clear();
+  }
+
+  int x0 = box.getFirstCorner().getX();
+  int y0 = box.getFirstCorner().getY();
+  int z0 = box.getFirstCorner().getZ();
+
+  int x1 = box.getLastCorner().getX();
+  int y1 = box.getLastCorner().getY();
+  int z1 = box.getLastCorner().getZ();
+
+  for (int z = z0; z <= z1; ++z) {
+    for (int y = y0; y <= y1; ++y) {
+      obj->addSegment(z, y, x0, x1, false);
+    }
+  }
+  obj->setCanonized(true);
+
+  return obj;
+}
+
 #if defined(_QT_GUI_USED_)
 ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZStroke2d &stroke)
 {

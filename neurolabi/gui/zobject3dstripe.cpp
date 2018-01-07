@@ -941,6 +941,18 @@ void ZObject3dStripe::print(int indent) const
   }
 }
 
+ZObject3dStripe ZObject3dStripe::getComplement(int x0, int x1)
+{
+  ZObject3dStripe stripe;
+  stripe.setY(getY());
+  stripe.setZ(getZ());
+
+  stripe.addSegment(x0, x1);
+
+  return stripe - (*this);
+}
+
+
 #define MOVE_SEGMENT(seg, nseg, s, start, end) \
   ++seg;\
   if (seg >= nseg) {\

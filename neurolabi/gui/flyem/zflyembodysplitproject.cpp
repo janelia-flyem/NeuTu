@@ -2444,15 +2444,26 @@ std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
       ZJsonArray seedJson = getSeedJson();
       task.setEntry("seeds", seedJson);
       ZJsonArray roiJson = getRoiJson();
+#if 0
       if (roiJson.isEmpty()) {
         ZIntCuboid range = ZFlyEmMisc::EstimateSplitRoi(getSeedBoundBox());
         if (!range.isEmpty()) {
           roiJson = range.toJsonArray();
         }
       }
+#endif
       if (!roiJson.isEmpty()) {
         task.setEntry("range", roiJson);
       }
+
+      ZJsonObject signalInfo;
+      signalInfo.setEntry(
+            ZDvidTarget::m_grayScaleNameKey, getDvidTarget().getGrayScaleName());
+      ZJsonObject sourceConfig = getDvidTarget().getSourceConfig();
+      if (!sourceConfig.isEmpty()) {
+        signalInfo.setEntry(ZDvidTarget::m_sourceConfigKey, sourceConfig);
+      }
+      task.setEntry("signal info", signalInfo);
 
       location = writer->writeServiceTask("split", task);
       ZJsonObject taskJson;

@@ -2681,7 +2681,7 @@ void ZFlyEmProofMvc::exportBodyStack()
             ZDvidSparseStack *sparseStack = NULL;
             sparseStack = reader.readDvidSparseStack(bodyId);
             ZStackWriter stackWriter;
-            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA);
+            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA, true);
             QString fileName = dirName + QString("/%1.tif").arg(bodyId);
             stackWriter.write(fileName.toStdString(), stack);
             delete stack;
@@ -2727,7 +2727,7 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
              sparseStack->getSparseStack()->save(fileName.toStdString());
              emit messageGenerated(fileName + " saved");
           } else {
-            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA);
+            ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA, true);
             stackWriter.write(fileName.toStdString(), stack);
             delete stack;
           }
@@ -2737,7 +2737,8 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
              sparseStack->getSparseStack()->save(fileName.toStdString());
              emit messageGenerated(fileName + " saved");
           } else {
-            ZStack *stack = sparseStack->makeStack(m_grayscaleDlg->getBoundBox());
+            ZStack *stack = sparseStack->makeStack(
+                  m_grayscaleDlg->getBoundBox(), true);
             //          stack->save(fileName.toStdString());
             stackWriter.write(fileName.toStdString(), stack);
             delete stack;

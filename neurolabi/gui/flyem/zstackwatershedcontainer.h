@@ -19,6 +19,7 @@ class ZSparseStack;
 class ZObject3dScanArray;
 class ZSwcTree;
 class ZStackPtr;
+class ZStackObject;
 
 /*!
  * \brief The wrapper class for running watershed split
@@ -74,6 +75,8 @@ public:
   void addSeed(const ZSwcTree &seed);
   void consumeSeed(const ZObject3d *seed);
 
+  void addSeed(const ZStackObject *seed);
+
   void setRange(const ZIntCuboid &range);
   void setRange(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   void setRange(int x0, int y0, int z0, int x1, int y1, int z1);
@@ -128,9 +131,7 @@ public:
   void setCcaPost(bool on) {
     m_ccaPost = on;
   }
-  bool ccaPost() const {
-    return m_ccaPost;
-  }
+  bool ccaPost() const;
 
   const std::vector<ZObject3d*>& getSeedArray() const {
     return m_seedArray;
@@ -179,7 +180,7 @@ private:
   void updateSeedMask();
 
   ZObject3dScan* processSplitResult(
-      const ZObject3dScan &obj, ZObject3dScan *remainBody);
+      const ZObject3dScan &obj, ZObject3dScan *remainBody, bool adpoting);
   void assignComponent(
       ZObject3dScan &remainBody, ZObject3dScan &mainBody,
       ZObject3dScanArray *result);
@@ -191,14 +192,17 @@ private:
   static std::vector<ZObject3d*> MakeBorderSeed(
       const ZStack &stack, const ZStack &boundaryStack, const ZIntCuboid &range);
 
+  template<class T>
+  bool addSeed(const ZStackObject *obj);
+
 private:
-  ZStack *m_stack;
-  ZSparseStack *m_spStack;
+  ZStack *m_stack = NULL;
+  ZSparseStack *m_spStack = NULL;
   ZStackArray m_result;
-  Stack_Watershed_Workspace *m_workspace;
+  Stack_Watershed_Workspace *m_workspace = NULL;
 //  ZIntPoint m_sourceOffset;
   ZIntCuboid m_range;
-  ZStack *m_source; //Source stack to refer to data in m_stack or m_spStack
+  ZStack *m_source = NULL; //Source stack to refer to data in m_stack or m_spStack
   std::vector<ZObject3d*> m_seedArray;
 
   bool m_floodingZero;
@@ -209,7 +213,7 @@ private:
   bool m_ccaPost = true; //connected component analysis as post-processing
   int m_scale;
   size_t m_minIsolationSize = 50;
-  size_t m_maxStackVolume = 923741823;
+  size_t m_maxStackVolume = neutube::HALFGIGA;
   QString m_algorithm;
 };
 

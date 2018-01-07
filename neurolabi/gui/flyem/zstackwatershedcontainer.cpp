@@ -49,10 +49,6 @@ ZStackWatershedContainer::ZStackWatershedContainer(
 
 void ZStackWatershedContainer::init()
 {
-  m_stack = NULL;
-  m_spStack = NULL;
-  m_source = NULL;
-  m_workspace = NULL;
 //  m_result = NULL;
   m_channel = 0;
   m_floodingZero = false;
@@ -63,10 +59,13 @@ void ZStackWatershedContainer::init()
 void ZStackWatershedContainer::init(ZStack *stack, ZSparseStack *spStack)
 {
   init();
-  m_stack = stack;
-  if (m_stack != NULL) {
-    m_range = m_stack->getBoundBox();
-    m_source = stack;
+
+  if (stack != NULL) {
+    if (stack->hasData()) {
+      m_stack = stack;
+      m_range = m_stack->getBoundBox();
+      m_source = stack;
+    }
   }
 
   m_spStack = spStack;
@@ -258,6 +257,40 @@ void ZStackWatershedContainer::expandSeedArray(
   }
 //  m_seedArray.insert(m_seedArray.end(), objArray.begin(), objArray.end());
 //  deprecateDependent(COMP_SEED_ARRAY);
+}
+
+template <typename T>
+bool ZStackWatershedContainer::addSeed(const ZStackObject *seed)
+{
+  bool added = false;
+  if (added == false) {
+    const T *obj = dynamic_cast<const T*>(seed);
+    if (obj != NULL) {
+      addSeed(*obj);
+      added = true;
+    }
+  }
+
+  return added;
+}
+
+void ZStackWatershedContainer::addSeed(const ZStackObject *seed)
+{
+  if (seed != NULL) {
+    bool added = false;
+    if (added == false) {
+      added = addSeed<ZStroke2d>(seed);
+    }
+    if (added == false) {
+      added = addSeed<ZObject3dScan>(seed);
+    }
+    if (added == false) {
+      added = addSeed<ZObject3d>(seed);
+    }
+    if (added == false) {
+      added = addSeed<ZSwcTree>(seed);
+    }
+  }
 }
 
 void ZStackWatershedContainer::addSeed(const ZObject3dScan &seed)
@@ -533,7 +566,7 @@ ZStack* ZStackWatershedContainer::getSourceStack()
   ZIntCuboid range = getRange();
   if (m_source == NULL) {
     if (m_spStack != NULL) {
-      m_source = m_spStack->makeStack(range, m_maxStackVolume, NULL);
+      m_source = m_spStack->makeStack(range, m_maxStackVolume, true, NULL);
     } else {
       if (range.equals(m_stack->getBoundBox())) {
         m_source = m_stack;
@@ -545,6 +578,7 @@ ZStack* ZStackWatershedContainer::getSourceStack()
               m_stack->c_stack(m_channel),
               corner.getX(), corner.getY(), corner.getZ(),
               m_range.getWidth(), m_range.getHeight(), m_range.getDepth(), NULL);
+        m_source = new ZStack();
         m_source->consume(rawSource);
         m_source->setOffset(m_range.getFirstCorner());
       }
@@ -577,6 +611,8 @@ bool ZStackWatershedContainer::isEmpty() const
 
 void ZStackWatershedContainer::run()
 {
+  std::cout << "Running watershed ..." << std::endl;
+
   deprecate(COMP_RESULT);
   Stack *source = getSource();
   if (source != NULL) {
@@ -589,6 +625,9 @@ void ZStackWatershedContainer::run()
       stack->setOffset(getSourceOffset());
       stack->setDsIntv(getSourceStack()->getDsIntv());
       m_result.push_back(stack);
+
+      std::cout << "Downsampling interval: "
+                << getSourceStack()->getDsIntv().toString() << std::endl;
 
       if (m_refiningBorder && !getSourceStack()->getDsIntv().isZero()) {
         ZIntCuboid dataRange = getRange();
@@ -903,10 +942,19 @@ std::vector<ZObject3d*> ZStackWatershedContainer::MakeBorderSeed(
   return result;
 }
 
+bool ZStackWatershedContainer::ccaPost() const
+{
+  if (m_range.contains(getDataRange())) {
+    return false;
+  }
+
+  return m_ccaPost;
+}
+
 void ZStackWatershedContainer::test()
 {
 #if 1
-  m_source = m_spStack->makeIsoDsStack(100 * 100 * 100);
+  m_source = m_spStack->makeIsoDsStack(100 * 100 * 100, true);
 
   std::cout << "Ds intv: " << m_source->getDsIntv().toString() << std::endl;
 
@@ -970,29 +1018,31 @@ void ZStackWatershedContainer::test()
 }
 
 ZObject3dScan* ZStackWatershedContainer::processSplitResult(
-    const ZObject3dScan &obj, ZObject3dScan *remainBody)
+    const ZObject3dScan &obj, ZObject3dScan *remainBody, bool adpoting)
 {
   ZObject3dScan *currentBody = new ZObject3dScan;
   *currentBody = remainBody->subtract(obj);
   uint64_t splitLabel = obj.getLabel();
   currentBody->setLabel(splitLabel);
 
-  std::vector<ZObject3dScan> ccArray =
-      currentBody->getConnectedComponent(ZObject3dScan::ACTION_NONE);
-  for (std::vector<ZObject3dScan>::iterator iter = ccArray.begin();
-       iter != ccArray.end(); ++iter) {
-    ZObject3dScan &subobj = *iter;
-    bool isAdopted = false;
-    if (subobj.getVoxelNumber() < m_minIsolationSize &&
-        currentBody->getVoxelNumber() / subobj.getVoxelNumber() > 10) {
-      if (remainBody->isAdjacentTo(subobj)) {
-        remainBody->concat(subobj);
-        isAdopted = true;
+  if (adpoting) {
+    std::vector<ZObject3dScan> ccArray =
+        currentBody->getConnectedComponent(ZObject3dScan::ACTION_NONE);
+    for (std::vector<ZObject3dScan>::iterator iter = ccArray.begin();
+         iter != ccArray.end(); ++iter) {
+      ZObject3dScan &subobj = *iter;
+      bool isAdopted = false;
+      if (subobj.getVoxelNumber() < m_minIsolationSize &&
+          currentBody->getVoxelNumber() / subobj.getVoxelNumber() > 10) {
+        if (remainBody->isAdjacentTo(subobj)) {
+          remainBody->concat(subobj);
+          isAdopted = true;
+        }
       }
-    }
 
-    if (!isAdopted) {//Treated as a split region
-      currentBody->concat(subobj);
+      if (!isAdopted) {//Treated as a split region
+        currentBody->concat(subobj);
+      }
     }
   }
 
@@ -1074,10 +1124,16 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
       result = new ZObject3dScanArray;
     }
 
-    ZStackPtr firstStack = m_result.front();
+//    ZStackPtr firstStack = m_result.front();
 
 //    ZIntPoint dsIntv = getSourceDsIntv();
-    ZIntPoint dsIntv = firstStack->getDsIntv();
+    ZIntPoint dsIntv = m_result.front()->getDsIntv();
+
+    ZIntPoint lastDsIntv = m_result.back()->getDsIntv();
+    bool adopting = true;
+    if (lastDsIntv.isZero()) {
+      adopting = false;
+    }
 
     ZObject3dScan mainBody;
 
@@ -1088,7 +1144,11 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     if (ccaPost()) {
       remainBody = *wholeBody;
     } else {
-      wholeBody->subobject(getRange(), NULL, &remainBody);
+      if (getRange().contains(getDataRange())) {
+        remainBody = *wholeBody;
+      } else {
+        wholeBody->subobject(getRange(), NULL, &remainBody);
+      }
     }
 
     for (ZObject3dScanArray::iterator iter = objArray->begin();
@@ -1098,7 +1158,8 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
         std::cout << "Processing label " << obj.getLabel() << std::endl;
 
         if (!dsIntv.isZero()) { //Process downsampled regions
-          ZObject3dScan *currentBody = processSplitResult(obj, &remainBody);
+          ZObject3dScan *currentBody =
+              processSplitResult(obj, &remainBody, adopting);
           result->append(currentBody);
         } else {
           if (ccaPost()) {
@@ -1112,12 +1173,17 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     }
 
     if (ccaPost()) {
-      mainBody.upSample(dsIntv);
+//      mainBody.upSample(dsIntv);
       assignComponent(remainBody, mainBody, result);
     }
     delete objArray;
   } else {
-    result = objArray;
+    if (result == NULL) {
+      result = objArray;
+    } else {
+      result->swap(*objArray);
+      delete objArray;
+    }
   }
 
   configResult(result);
@@ -1145,13 +1211,15 @@ ZIntCuboid ZStackWatershedContainer::getRangeUpdate(
 {
   ZIntCuboid range = dataRange;
 
-//  if (usingSeedRange()) {
-  if (m_rangeOption == RANGE_SEED_BOUND || m_rangeOption == RANGE_SEED_ROI) {
+  if (usingSeedRange()) {
+//  if (m_rangeOption == RANGE_SEED_BOUND || m_rangeOption == RANGE_SEED_ROI) {
     ZIntCuboid seedBox = GetSeedRange(m_seedArray);
     if (m_rangeOption == RANGE_SEED_ROI) {
       if (!seedBox.isEmpty()) {
         seedBox = ZFlyEmMisc::EstimateSplitRoi(seedBox);
       }
+    } else {
+      seedBox.expand(5, 5, 5);
     }
 
     if (range.isEmpty()) {
