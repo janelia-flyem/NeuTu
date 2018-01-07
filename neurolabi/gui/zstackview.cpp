@@ -807,7 +807,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 {
   int numSteps = -event->delta();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_0
   std::cout << "Event time: " << event->timestamp() << std::endl;
   std::cout << "Time to event: " << QDateTime::currentMSecsSinceEpoch() << std::endl;
 #endif
@@ -927,7 +927,7 @@ void ZStackView::redraw(EUpdateOption option)
 
   ZIntCuboid box = getViewBoundBox();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "View box: " << m_sliceAxis << std::endl;
   std::cout << "  " << box.toJsonArray().dumpString(0) << std::endl;;
 #endif
@@ -1930,7 +1930,7 @@ void ZStackView::paintObjectBuffer()
 
 bool ZStackView::paintTileCanvasBuffer()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "ZStackView::paintTileCanvasBuffer" << std::endl;
 #endif
   bool painted = false;

@@ -300,6 +300,8 @@ public:
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
   void downsampleMax(const ZIntPoint &dsIntv);
+  void downsampleMin(int xintv, int yintv, int zintv);
+  ZObject3dScan downsampleBorderMask(int xintv, int yintv, int zintv);
 
   void upSample(int xIntv, int yIntv, int zIntv);
   void upSample(const ZIntPoint &dsIntv);

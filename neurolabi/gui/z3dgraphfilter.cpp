@@ -409,7 +409,7 @@ std::shared_ptr<ZWidgetsGroup> Z3DGraphFilter::widgetsGroup()
 
 void Z3DGraphFilter::selectGraph(QMouseEvent* e, int, int)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Selecting graph" << std::endl;
 #endif
   if (m_graphList.empty()) {

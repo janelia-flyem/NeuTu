@@ -40,6 +40,7 @@
 #include "geometry/zgeometry.h"
 #include "zintcuboid.h"
 #include "zstackwriter.h"
+#include "zobject3dfactory.h"
 
 ///////////////////////////////////////////////////
 
@@ -691,6 +692,12 @@ bool ZObject3dScan::load(const std::string &filePath)
 
       succ = true;
     }
+  } else if (ZFileType::FileType(filePath) == ZFileType::FILE_SPARSE_STACK) {
+    std::ifstream stream(filePath.c_str(), std::ios_base::binary);
+    if (stream.good()) {
+      read(stream);
+      succ = true;
+    }
   }
 
   if (succ) {
@@ -733,19 +740,21 @@ void ZObject3dScan::read(std::istream &stream)
   int stripeNumber = 0;
   stream.read((char*)(&stripeNumber), sizeof(int));
 
-  m_stripeArray.resize(stripeNumber);
-  for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
-       iter != m_stripeArray.end(); ++iter) {
-    iter->read(stream);
-  }
+  if (stripeNumber > 0) {
+    m_stripeArray.resize(stripeNumber);
+    for (std::vector<ZObject3dStripe>::iterator iter = m_stripeArray.begin();
+         iter != m_stripeArray.end(); ++iter) {
+      iter->read(stream);
+    }
 
-  if (isCanonizedActually()) {
-    m_isCanonized = true;
-  } else {
-    m_isCanonized = false;
-  }
+    if (isCanonizedActually()) {
+      m_isCanonized = true;
+    } else {
+      m_isCanonized = false;
+    }
 
-  deprecate(COMPONENT_ALL);
+    deprecate(COMPONENT_ALL);
+  }
 }
 
 bool ZObject3dScan::save(const std::string &filePath) const
@@ -1071,6 +1080,28 @@ void ZObject3dScan::downsample(int xintv, int yintv, int zintv)
                */
 
   processEvent(event);
+}
+
+void ZObject3dScan::downsampleMin(int xintv, int yintv, int zintv)
+{
+  ZObject3dScan comp = getComplementObject();
+  comp.downsampleMax(xintv, yintv, zintv);
+
+  downsampleMax(xintv, yintv, zintv);
+
+  *this = *this - comp;
+}
+
+ZObject3dScan ZObject3dScan::downsampleBorderMask(
+    int xintv, int yintv, int zintv)
+{
+  ZObject3dScan comp = getComplementObject();
+  comp.downsampleMax(xintv, yintv, zintv);
+
+  ZObject3dScan obj = *this;
+  obj.downsampleMax(xintv, yintv, zintv);
+
+  return obj.intersect(comp);
 }
 
 void ZObject3dScan::downsampleMax(const ZIntPoint &dsIntv)
@@ -2791,19 +2822,32 @@ bool ZObject3dScan::equalsLiterally(const ZObject3dScan &obj) const
 
 ZObject3dScan ZObject3dScan::getComplementObject()
 {
+  ZObject3dScan fullObj;
+  ZObject3dFactory::MakeBoxObject3dScan(getBoundBox(), &fullObj);
+
+#ifdef _DEBUG_2
+  fullObj.save(GET_TEST_DATA_DIR + "/test2.sobj");
+#endif
+
+  return (fullObj - *this);
+
+#if 0
   ZObject3dScan compObj;
 
   int offset[3];
   Stack *stack = toStack(offset);
-  Stack_Not(stack, stack);
-  compObj.loadStack(stack);
-  compObj.translate(offset[0], offset[1], offset[2]);
+  if (stack != NULL) {
+    Stack_Not(stack, stack);
+    compObj.loadStack(stack);
+    compObj.translate(offset[0], offset[1], offset[2]);
 
-  C_Stack::kill(stack);
+    C_Stack::kill(stack);
 
-  compObj.copyAttributeFrom(*this);
+    compObj.copyAttributeFrom(*this);
+  }
 
   return compObj;
+#endif
 }
 
 ZObject3dScan ZObject3dScan::getSurfaceObject() const
@@ -3613,6 +3657,14 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
     if (slice2.isEmpty()) {
       remained.concat(slice);
     } else {
+      ZObject3dScan diff = slice - slice2;
+      if (diff.isEmpty()) {
+        subtracted.concat(slice);
+      } else {
+        remained.concat(diff);
+        subtracted.concat(slice - diff);
+      }
+#if 0
       ZStack *plane = slice.toStackObject();
       slice2.addForegroundSlice8(plane); //1: remained; 2: subtracted
 
@@ -3628,6 +3680,7 @@ ZObject3dScan ZObject3dScan::subtract(const ZObject3dScan &obj)
         delete obj;
       }
       delete plane;
+#endif
     }
   }
 
@@ -3746,6 +3799,9 @@ void ZObject3dScan::subtractSliently(const ZObject3dScan &obj)
 
 ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
 {
+  return *this - (*this - obj);
+
+#if 0
   int minZ = std::max(getMinZ(), obj.getMinZ());
   int maxZ = std::min(getMaxZ(), obj.getMaxZ());
 
@@ -3776,6 +3832,7 @@ ZObject3dScan ZObject3dScan::intersect(const ZObject3dScan &obj) const
   result.canonize();
 
   return result;
+#endif
 }
 
 ZObject3dScan* ZObject3dScan::chop(

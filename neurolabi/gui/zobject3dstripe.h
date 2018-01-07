@@ -132,6 +132,8 @@ public:
 
   std::vector<int>& getSegmentArray() { return m_segmentArray; }
 
+  ZObject3dStripe getComplement(int x0, int x1);
+
   /*!
    * \brief Remove voxels within a give range.
    *

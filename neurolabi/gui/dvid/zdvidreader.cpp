@@ -2279,10 +2279,10 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     m_readingTime = timer.elapsed();
     if (NeutubeConfig::GetVerboseLevel() < 5) {
       if (m_readingTime > 10) {
-        LINFO() << "label reading time: " << m_readingTime;
+        LINFO() << "grayscale reading time: " << m_readingTime;
       }
     } else {
-      LINFO() << "label reading time: " << m_readingTime;
+      LINFO() << "grayscale reading time: " << m_readingTime;
     }
   }
 

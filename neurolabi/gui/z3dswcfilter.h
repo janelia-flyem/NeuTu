@@ -164,9 +164,10 @@ private:
   void clearDecorateSwcList();
 
   void updateBiocytinWidget();
-  void updateTreeColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+  bool updateTreeColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
   void updateWidgetGroup();
-  void updateColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+  bool updateColorParameter(
+      const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
 
 private:
   Z3DLineRenderer m_lineRenderer;

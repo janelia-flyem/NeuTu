@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <QList>
+
 #include "zcubearray.h"
 
 #include "dvid/libdvidheader.h"
@@ -89,6 +91,9 @@ void AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj);
 ZJsonArray GetSeedJson(ZStackDoc *doc);
 
 void UploadSyGlassTask(const std::string &filePath, const ZDvidTarget &target);
+
+QList<ZStackObject*> LoadSplitTask(const ZDvidTarget &target, uint64_t bodyId);
+QList<ZStackObject*> LoadSplitTask(const ZJsonObject &taskJson);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();
