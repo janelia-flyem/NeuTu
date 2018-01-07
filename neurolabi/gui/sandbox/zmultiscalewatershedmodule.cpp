@@ -72,6 +72,7 @@ ZWaterShedWindow::ZWaterShedWindow(QWidget *parent) :
   algorithms->addItem("power_watershed");
   algorithms->addItem("MSF_Cruskal");
   algorithms->addItem("MSF_Prime");
+  algorithms->addItem("FFN");
   lay->addWidget(algorithms,1,0,1,2);
   this->setLayout(lay);
   this->move(300,200);
@@ -115,7 +116,11 @@ void ZWaterShedWindow::onOk()
 
   container.setAlgorithm(algorithms->currentText());
   container.run();
-
+  size_t cnt=0;
+  for(size_t i=0;i<src->getVoxelNumber();++i){
+    if(src->array8()[i])cnt++;
+  }
+  std::cout<<"+++++++++++++cnt:"<<cnt<<std::endl;
   std::cout<<"+++++++++++++multiscale watershed total run time:"<<time.elapsed()/1000.0<<std::endl;
 
   ZObject3dScanArray result;
@@ -131,8 +136,8 @@ void ZWaterShedWindow::onOk()
   ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(container.getResultStack()->clone());
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
-#if 0
-=======
+#if 1
+  {
   ZStack* result=container.getResultStack()->clone();
 
   if(result){
@@ -168,11 +173,8 @@ void ZWaterShedWindow::onOk()
     }
     ZSandbox::GetMainWindow()->addStackFrame(frame);
     ZSandbox::GetMainWindow()->presentStackFrame(frame);
-
-    frame=ZSandbox::GetMainWindow()->createStackFrame(result);
-    ZSandbox::GetMainWindow()->addStackFrame(frame);
-    ZSandbox::GetMainWindow()->presentStackFrame(frame);
-    //delete result;
+    delete result;
+  }
   }
 #endif
 }

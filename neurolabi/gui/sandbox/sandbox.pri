@@ -9,7 +9,8 @@ HEADERS += sandbox/zsandbox.h \
     $$PWD/qcustomplot.h \
     $$PWD/zimageinfomodule.h \
     $$PWD/zgradientmagnitudemodule.h \
-    $$PWD/zmultiscalewatershedmodule.h
+    $$PWD/zmultiscalewatershedmodule.h \
+    $$PWD/zshowsegresult.h
 
 SOURCES += sandbox/zsandbox.cpp \
     sandbox/zsurfreconmodule.cpp\
@@ -22,7 +23,8 @@ SOURCES += sandbox/zsandbox.cpp \
     $$PWD/qcustomplot.cpp \
     $$PWD/zimageinfomodule.cpp \
     $$PWD/zgradientmagnitudemodule.cpp \
-    $$PWD/zmultiscalewatershedmodule.cpp
+    $$PWD/zmultiscalewatershedmodule.cpp \
+    $$PWD/zshowsegresult.cpp
 
 contains(CONFIG, surfrecon) {
   HEADERS += \
