@@ -21,6 +21,9 @@ public:
   ZSwcTree* getSwcTree(const QModelIndex &index) const;
   Swc_Tree_Node* getSwcTreeNode(const QModelIndex &index) const;
 
+  //For display testing
+//  QVariant data(const QModelIndex &index, int role) const;
+
 public slots:
   void updateModelData();
 
