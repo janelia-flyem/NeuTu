@@ -672,7 +672,7 @@ void ZStackWatershedContainer::run()
     } else*/ {
       ZStackMultiScaleWatershed watershed;
       ZStackPtr stack = ZStackPtr(
-            watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm));
+            watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));
       stack->setOffset(getSourceOffset());
       m_result.push_back(stack);
     }

@@ -63,9 +63,8 @@ ZWaterShedWindow::ZWaterShedWindow(QWidget *parent) :
   spin_step->setMinimum(1);
   lay->addWidget(spin_step,0,2);
   ok=new QPushButton("OK");
-  cancel=new QPushButton("Cancel");
-  lay->addWidget(cancel,1,2);
-  lay->addWidget(ok,1,3);
+  lay->addWidget(ok,1,4);
+
   algorithms=new QComboBox;
   algorithms->addItem("watershed");
   algorithms->addItem("random_walker");
@@ -74,10 +73,18 @@ ZWaterShedWindow::ZWaterShedWindow(QWidget *parent) :
   algorithms->addItem("MSF_Prime");
   algorithms->addItem("FFN");
   lay->addWidget(algorithms,1,0,1,2);
+
+  ds_method=new QComboBox;
+  ds_method->addItem("Min");
+  ds_method->addItem("Min(ignore zero)");
+  ds_method->addItem("Max");
+  ds_method->addItem("Mean");
+  ds_method->addItem("Edge");
+
+  lay->addWidget(ds_method,1,2,1,2);
   this->setLayout(lay);
   this->move(300,200);
   connect(ok,SIGNAL(clicked()),this,SLOT(onOk()));
-  connect(cancel,SIGNAL(clicked()),this,SLOT(onCancel()));
 }
 
 
@@ -88,15 +95,19 @@ void ZWaterShedWindow::onOk()
   ZStack  *src=doc->getStack();
   if(!src)return;
   int scale=spin_step->value();
-
+  std::cout<<src->width()<<" "<<src->height()<<" "<<src->depth()<<" "<<std::endl;
+  std::cout<<src->array8()[0]<<std::endl;
+  std::cout.flush();
   doc->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
 
   ZStackWatershedContainer container(src);
+
   int i=0;
   for(ZSwcTree* tree:doc->getSwcArray()){
       tree->setType(++i);
       container.addSeed(*tree);
   }
+
   std::map<QString,int> color_indices;
   for(ZStroke2d* stroke:doc->getStrokeList()){
       std::map<QString,int>::iterator p_index=color_indices.find(stroke->getColor().name());
@@ -110,6 +121,7 @@ void ZWaterShedWindow::onOk()
       container.addSeed(*stroke);
   }
   container.setScale(scale);
+  container.setDsMethod(ds_method->currentText());
 
   QTime time;
   time.start();
@@ -117,6 +129,7 @@ void ZWaterShedWindow::onOk()
   container.setAlgorithm(algorithms->currentText());
   container.run();
   size_t cnt=0;
+
   for(size_t i=0;i<src->getVoxelNumber();++i){
     if(src->array8()[i])cnt++;
   }
@@ -136,7 +149,7 @@ void ZWaterShedWindow::onOk()
   ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(container.getResultStack()->clone());
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
-#if 1
+#if 0
   {
   ZStack* result=container.getResultStack()->clone();
 

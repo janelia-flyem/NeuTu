@@ -19,6 +19,7 @@
 #include "mainwindow.h"
 #include "zstackdocdatabuffer.h"
 #include "neutubeconfig.h"
+#include "zdownsamplefilter.h"
 #undef ASCII
 #undef BOOL
 #undef TRUE
@@ -503,7 +504,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
 
 
 #if defined(_QT_GUI_USED_)
-ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seeds,int scale,const QString &algorithm)
+ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seeds,int scale,const QString &algorithm,const QString &dsMethod)
 {
   m_scale=scale;
   ZStack* rv=NULL;
@@ -520,14 +521,44 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
 
 
   //down sample src stack
-  ZStack* sampled=src->clone();
+  ZStack* sampled=NULL;
 
   QTime time;
   time.start();
 
   if(m_scale!=1){
-    sampled->downsampleMinIgnoreZero(m_scale-1,m_scale-1,m_scale-1);
+    ZDownsampleFilter* downsample=NULL;
+    if (dsMethod=="Min"){
+      downsample=new ZMinDsFilter();
+    }
+    else if (dsMethod=="Min(ignore zero)")
+    {
+      downsample=new ZMinIgnoreZeroDsFilter();
+    }
+    else if (dsMethod=="Max")
+    {
+      downsample=new ZMaxDsFilter();
+    }
+    else if (dsMethod=="Mean")
+    {
+      downsample=new ZMeanDsFilter();
+    }
+    else if (dsMethod=="Edge")
+    {
+      downsample=new ZEdgeDsFilter();
+    }
+    downsample->setDsFactor(scale,scale,scale);
+    sampled=downsample->filterStack(*src);
+    delete downsample;
+    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(sampled);
+    ZSandbox::GetMainWindow()->addStackFrame(frame);
+    ZSandbox::GetMainWindow()->presentStackFrame(frame);
   }
+  else
+  {
+    sampled=src->clone();
+  }
+
   //sampled->downsampleMean(m_scale-1,m_scale-1,m_scale-1);
 
   std::cout<<"----------downsample time:"<<time.elapsed()/1000.0<<std::endl;
@@ -710,9 +741,10 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     delete sampled_watershed;
   }
 
-  delete sampled;
+  //delete sampled;
 
   delete seed;
+  rv->setOffset(src->getOffset());
   return rv;
 }
 

@@ -24,6 +24,7 @@ private:
   QPushButton*  cancel;
   QSpinBox*     spin_step;
   QComboBox*   algorithms;
+  QComboBox*   ds_method;
 
 };
 
