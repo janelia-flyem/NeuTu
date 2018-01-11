@@ -15,6 +15,7 @@
 #include "imgproc/zstackmultiscalewatershed.h"
 #include "zstackfactory.h"
 #include "misc/miscutility.h"
+#include "imgproc/zdownsamplefilter.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -612,11 +613,24 @@ bool ZStackWatershedContainer::isEmpty() const
 void ZStackWatershedContainer::run()
 {
   std::cout << "Running watershed ..." << std::endl;
-
   deprecate(COMP_RESULT);
-  Stack *source = getSource();
-  if (source != NULL) {
-    /*if(m_scale==1){
+
+  if(m_stack && m_stack->hasData()){//for normal stack
+    ZStackMultiScaleWatershed watershed;
+    ZStackPtr stack = ZStackPtr(watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));
+    stack->setOffset(getSourceOffset());
+    m_result.push_back(stack);
+  }
+  else if (m_spStack){//for sparse stack
+    if(m_scale!=1){
+      ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod);
+      filter->setDsFactor(m_scale,m_scale,m_scale);
+      m_source=filter->filterStack(*m_spStack);
+      //m_source->save("/home/deli/1.tif");
+      delete filter;
+    }
+    Stack *source = getSource();
+    if (source != NULL){
       updateSeedMask();
       getWorkspace()->conn=6;
       Stack *out = C_Stack::watershed(source, getWorkspace());
@@ -627,54 +641,46 @@ void ZStackWatershedContainer::run()
       m_result.push_back(stack);
 
       std::cout << "Downsampling interval: "
-                << getSourceStack()->getDsIntv().toString() << std::endl;
+                    << getSourceStack()->getDsIntv().toString() << std::endl;
 
       if (m_refiningBorder && !getSourceStack()->getDsIntv().isZero()) {
-        ZIntCuboid dataRange = getRange();
+          ZIntCuboid dataRange = getRange();
 
-        ZIntCuboid boundaryBox;
-        ZStackPtr boundaryStack = MakeBoundaryStack(*stack, 26, boundaryBox);
+          ZIntCuboid boundaryBox;
+          ZStackPtr boundaryStack = MakeBoundaryStack(*stack, 26, boundaryBox);
 
-        //Extract components from the boundary stack
-        ZObject3dScan boundaryObject;
-        boundaryObject.loadStack(boundaryStack->c_stack());
-//            ZObject3dFactory::MakeObject3dScan(*boundaryStack);
-        std::vector<ZObject3dScan> boundaryArray =
-            boundaryObject.getConnectedComponent(ZObject3dScan::ACTION_NONE);
+          //Extract components from the boundary stack
+          ZObject3dScan boundaryObject;
+          boundaryObject.loadStack(boundaryStack->c_stack());
+  //            ZObject3dFactory::MakeObject3dScan(*boundaryStack);
+          std::vector<ZObject3dScan> boundaryArray =
+              boundaryObject.getConnectedComponent(ZObject3dScan::ACTION_NONE);
 
-#if 0
-        boundaryStack->save(GET_TEST_DATA_DIR + "/test.tif");
-#endif
+  #if 0
+          boundaryStack->save(GET_TEST_DATA_DIR + "/test.tif");
+  #endif
+          //For each component
+          for (const ZObject3dScan &subbound : boundaryArray) {
+            //  Compute split
+            ZStackWatershedContainer container(m_stack, m_spStack);
+  //          container.useSeedRange(true);
+            container.setRangeOption(RANGE_SEED_BOUND);
+            container.setRefiningBorder(false);
 
-        //For each component
-        for (const ZObject3dScan &subbound : boundaryArray) {
-          //  Compute split
-          ZStackWatershedContainer container(m_stack, m_spStack);
-//          container.useSeedRange(true);
-          container.setRangeOption(RANGE_SEED_BOUND);
-          container.setRefiningBorder(false);
-
-          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
-                *stack, *boundaryStack, subbound.getBoundBox());
-//          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(*stack);
-          for (ZObject3d *seed : newSeeds) {
-            container.consumeSeed(seed);
-          }
-
-          ZIntPoint dsIntv = container.estimateDsIntv(dataRange);
-          if (dsIntv.definiteLessThan(getSourceStack()->getDsIntv())) {
-            container.run();
-            ZStackArray newResult = container.getResult();
-            m_result.append(newResult);
+            std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
+                  *stack, *boundaryStack, subbound.getBoundBox());
+  //          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(*stack);
+            for (ZObject3d *seed : newSeeds) {
+              container.consumeSeed(seed);
+            }
+            ZIntPoint dsIntv = container.estimateDsIntv(dataRange);
+            if (dsIntv.definiteLessThan(getSourceStack()->getDsIntv())) {
+              container.run();
+              ZStackArray newResult = container.getResult();
+              m_result.append(newResult);
           }
         }
       }
-    } else*/ {
-      ZStackMultiScaleWatershed watershed;
-      ZStackPtr stack = ZStackPtr(
-            watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));
-      stack->setOffset(getSourceOffset());
-      m_result.push_back(stack);
     }
   }
 }

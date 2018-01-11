@@ -554,12 +554,9 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     ZSandbox::GetMainWindow()->addStackFrame(frame);
     ZSandbox::GetMainWindow()->presentStackFrame(frame);
   }
-  else
-  {
+  else{
     sampled=src->clone();
   }
-
-  //sampled->downsampleMean(m_scale-1,m_scale-1,m_scale-1);
 
   std::cout<<"----------downsample time:"<<time.elapsed()/1000.0<<std::endl;
 
@@ -576,7 +573,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
   else if(algorithm=="random_walker"){
     //std::string working_dir = NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR);
         //on QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
-   const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
+    const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
     sampled->setOffset(0,0,0);
     seed->setOffset(0,0,0);
     sampled->save(working_dir.toStdString()+"/data.tif");

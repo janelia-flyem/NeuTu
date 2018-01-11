@@ -21,6 +21,7 @@
 #include "zstackframe.h"
 #include "zcolorscheme.h"
 #include "zobject3dscanarray.h"
+#include "zsparsestack.h"
 #include "flyem/zstackwatershedcontainer.h"
 
 ZMultiscaleWaterShedModule::ZMultiscaleWaterShedModule(QObject *parent) :
@@ -93,14 +94,12 @@ void ZWaterShedWindow::onOk()
   ZStackDoc *doc =ZSandbox::GetCurrentDoc();
   if(!doc)return;
   ZStack  *src=doc->getStack();
-  if(!src)return;
-  int scale=spin_step->value();
-  std::cout<<src->width()<<" "<<src->height()<<" "<<src->depth()<<" "<<std::endl;
-  std::cout<<src->array8()[0]<<std::endl;
-  std::cout.flush();
-  doc->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
+  ZSparseStack* spSrc=doc->getSparseStack();
+  if(!src && !spSrc)return;
 
-  ZStackWatershedContainer container(src);
+  int scale=spin_step->value();
+  doc->removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
+  ZStackWatershedContainer container(src,spSrc);
 
   int i=0;
   for(ZSwcTree* tree:doc->getSwcArray()){
@@ -122,18 +121,17 @@ void ZWaterShedWindow::onOk()
   }
   container.setScale(scale);
   container.setDsMethod(ds_method->currentText());
+  container.setAlgorithm(algorithms->currentText());
 
   QTime time;
   time.start();
-
-  container.setAlgorithm(algorithms->currentText());
   container.run();
-  size_t cnt=0;
+  /*size_t cnt=0;
 
   for(size_t i=0;i<src->getVoxelNumber();++i){
     if(src->array8()[i])cnt++;
   }
-  std::cout<<"+++++++++++++cnt:"<<cnt<<std::endl;
+  std::cout<<"+++++++++++++cnt:"<<cnt<<std::endl;*/
   std::cout<<"+++++++++++++multiscale watershed total run time:"<<time.elapsed()/1000.0<<std::endl;
 
   ZObject3dScanArray result;
@@ -149,47 +147,7 @@ void ZWaterShedWindow::onOk()
   ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(container.getResultStack()->clone());
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
-#if 0
-  {
-  ZStack* result=container.getResultStack()->clone();
 
-  if(result){
-    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(src->clone());
-//    ZSandbox::GetMainWindow()->addStackFrame(frame);
-//    ZSandbox::GetMainWindow()->presentStackFrame(frame);
-
-    std::vector<ZObject3dScan*> objArray =
-        ZObject3dFactory::MakeObject3dScanPointerArray(*result, 1, false);
-
-//    ZStack* edge_obj=new ZStack(result->kind(),result->width(),result->height(),
-//                                result->depth(),result->channelNumber());
-//    frame=ZSandbox::GetMainWindow()->createStackFrame(edge_obj);
-
-    ZColorScheme colorScheme;
-    colorScheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
-    int colorIndex = 0;
-
-    for (std::vector<ZObject3dScan*>::iterator iter = objArray.begin();
-         iter != objArray.end(); ++iter)
-    {
-      ZObject3dScan *obj = *iter;
-
-      if (obj != NULL && !obj->isEmpty())
-      {
-        QColor color = colorScheme.getColor(colorIndex++);
-        color.setAlpha(164);
-        obj->setColor(color);
-        frame->document()->getDataBuffer()->addUpdate(
-              obj,ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-        frame->document()->getDataBuffer()->deliver();
-      }
-    }
-    ZSandbox::GetMainWindow()->addStackFrame(frame);
-    ZSandbox::GetMainWindow()->presentStackFrame(frame);
-    delete result;
-  }
-  }
-#endif
 }
 
 
