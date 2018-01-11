@@ -1,10 +1,83 @@
 #include "cstdlib"
 #include "zdownsamplefilter.h"
 #include "zstack.hxx"
+#include "zsparsestack.h"
+#include "zintcuboid.h"
+#include "zintpoint.h"
 
 ZDownsampleFilter::ZDownsampleFilter()
 {
   m_dsX=m_dsY=m_dsZ=1;
+}
+
+ ZDownsampleFilter* ZDownsampleFilter::create(QString type){
+  if (type=="Min"){
+    return new ZMinDsFilter();
+  }
+  if (type=="Min(ignore zero)"){
+    return new ZMinIgnoreZeroDsFilter();
+  }
+  if (type=="Max"){
+    return new ZMaxDsFilter();
+  }
+  if (type=="Mean"){
+    return new ZMeanDsFilter();
+  }
+  if (type=="Edge"){
+    return new ZEdgeDsFilter();
+  }
+  return nullptr;
+}
+
+ZStack* ZDownsampleFilter::filterStack(const ZSparseStack& spStack)
+{
+
+  ZIntCuboid box=spStack.getBoundBox();
+  int width=box.getWidth(),height=box.getHeight(),depth=box.getDepth();
+
+  int x=(width+m_dsX-1)/m_dsX;
+  int y=(height+m_dsY-1)/m_dsY;
+  int z=(depth+m_dsZ-1)/m_dsZ;
+
+  ZStack* rv=new ZStack(GREY,x,y,z,1);
+  ZIntPoint offset=box.getFirstCorner();
+  rv->setOffset(offset.m_x/m_dsX,offset.m_y/m_dsY,offset.m_z/m_dsZ);
+  rv->setDsIntv(m_dsX-1,m_dsY-1,m_dsZ-1);
+
+  int ofx=offset.m_x,ofy=offset.m_y,ofz=offset.m_z;
+  uint8_t* pDst=rv->array8();
+  uint8_t *pCur=pDst;
+
+  int size_buffer=m_dsX*m_dsY*m_dsZ;
+  double* buffer=new double[size_buffer];
+
+  for (int k=0;k<z;++k)
+  {
+    int startZ=k*m_dsZ,endZ=std::min(depth,(k+1)*m_dsZ);
+    m_sZ=endZ-startZ;
+    for(int j=0;j<y;++j)
+    {
+      int startY=j*m_dsY,endY=std::min(height,(j+1)*m_dsY);
+      m_sY=endY-startY;
+      for(int i=0;i<x;++i)
+      {
+        int startX=i*m_dsX,endX=std::min(width,(i+1)*m_dsX);
+        m_sX=endX-startX;
+        int index=0;
+        for (int kk=startZ;kk<endZ;++kk)
+        {
+          for(int jj=startY;jj<endY;++jj)
+          {
+            spStack.getLineValue(startX+ofx,jj+ofy,kk+ofz,m_sX,buffer+index);
+            index+=m_sX;
+          }
+        }
+        *pCur++=(uint8)filter(buffer);
+      }
+    }
+  }
+  delete buffer;
+  return rv;
 }
 
 ZStack* ZDownsampleFilter::filterStack(const ZStack& stack)
@@ -14,11 +87,11 @@ ZStack* ZDownsampleFilter::filterStack(const ZStack& stack)
   int x=(width+m_dsX-1)/m_dsX;
   int y=(height+m_dsY-1)/m_dsY;
   int z=(depth+m_dsZ-1)/m_dsZ;
-
   ZStack* rv=new ZStack(GREY,x,y,z,1);
   rv->setOffset(stack.getOffset().m_x/m_dsX,
                 stack.getOffset().m_y/m_dsY,
                 stack.getOffset().m_z/m_dsZ);
+  rv->setDsIntv(m_dsX-1,m_dsY-1,m_dsZ-1);
 
   const uint8_t* pSrc=stack.array8();
   uint8_t* pDst=rv->array8();

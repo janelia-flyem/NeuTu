@@ -133,6 +133,15 @@ ZStack* ZStackBlockGrid::getStack(const ZIntPoint &blockIndex) const
   return stack;
 }
 
+
+bool ZStackBlockGrid::hasStack(int x,int y,int z) const
+{
+  Location location = getLocation(x, y, z);
+  int index = getHashIndex(location.getBlockIndex());
+  return index>=0 && index < (int) m_stackArray.size();
+}
+
+
 int ZStackBlockGrid::getValue(int x, int y, int z) const
 {
   Location location = getLocation(x, y, z);

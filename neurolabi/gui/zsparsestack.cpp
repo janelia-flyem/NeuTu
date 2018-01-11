@@ -1,7 +1,7 @@
 #include "zsparsestack.h"
 
 #include <fstream>
-
+#include <iostream>
 #include "zstack.hxx"
 #include "neutubeconfig.h"
 #include "misc/miscutility.h"
@@ -77,6 +77,42 @@ void ZSparseStack::setBaseValue(int baseValue)
     deprecate(STACK);
     m_baseValue = baseValue;
   }
+}
+
+void ZSparseStack::getLineValue(int x,int y,int z,int cnt,double* buffer) const
+{
+  int width=m_stackGrid->getBlockSize().getX();
+  double *dst=buffer;
+  double base_value=m_baseValue;
+  memset(dst,0,sizeof(double)*cnt);
+  int num=0;
+  if(m_stackGrid){
+    while(num<cnt){
+      ZStackBlockGrid::Location location = m_stackGrid->getLocation(x+num, y, z);
+      int ofx=location.getLocalPosition().getX();
+      ZStack *stack = m_stackGrid->getStack(location.getBlockIndex());
+      if(stack!=NULL){
+        int ofy=location.getLocalPosition().getY();
+        int ofz=location.getLocalPosition().getZ();
+        for(int j=0;j<width-ofx && num <cnt;++j,++num){
+          *(dst+num)=(double)stack->getIntValueLocal(ofx+j,ofy,ofz)+base_value;
+        }
+      }
+      else{
+        num+=width-ofx;
+      }
+    }
+  }
+}
+
+double ZSparseStack::getValue(int x,int y,int z) const
+{
+  double base_value=m_baseValue;
+
+  if(m_stackGrid){
+    return m_stackGrid->getValue(x,y,z)+base_value;
+  }
+  return 0.0;
 }
 
 void ZSparseStack::assignStackValue(
