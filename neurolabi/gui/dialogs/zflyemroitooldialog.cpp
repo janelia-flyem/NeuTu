@@ -31,6 +31,7 @@ void ZFlyEmRoiToolDialog::init()
           this, SIGNAL(showing3DRoiCurve()));
   connect(ui->uploadPushButton, SIGNAL(clicked()), this, SLOT(uploadRoi()));
   connect(ui->newPushButton, SIGNAL(clicked()), this, SLOT(newProject()));
+  connect(ui->clonePushButton, SIGNAL(clicked()), this, SLOT(cloneProject()));
   connect(ui->nearestPushButton, SIGNAL(clicked()),
           this, SIGNAL(goingToNearestRoi()));
   connect(ui->prevPushButton, SIGNAL(clicked()), this, SLOT(prevSlice()));
@@ -114,6 +115,7 @@ ZFlyEmRoiProject* ZFlyEmRoiToolDialog::newProject(const QString &name)
   return project;
 }
 
+
 void ZFlyEmRoiToolDialog::newProject()
 {
   bool ok;
@@ -133,6 +135,33 @@ void ZFlyEmRoiToolDialog::newProject()
       }
     }
 //    updateWidget();
+  }
+}
+
+void ZFlyEmRoiToolDialog::cloneProject(const QString &name)
+{
+  if (isValidName(name)) {
+    ZFlyEmRoiProject *project = m_project->clone(name.toStdString());
+    appendProject(project);
+    openProject(ui->projectComboBox->count() - 1);
+    uploadProjectList();
+  } else {
+    QMessageBox::warning(
+              this, "Failed to Clone A Project",
+              "Invalid project name: no space is allowed; "
+              "no duplicated name is allowed.",
+              QMessageBox::Ok);
+  }
+}
+
+void ZFlyEmRoiToolDialog::cloneProject()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("Clone ROI Project"),
+                                       tr("Project name:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok && !text.isEmpty()) {
+    cloneProject(text);
   }
 }
 
