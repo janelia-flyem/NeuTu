@@ -217,7 +217,7 @@ void ZFlyEmBodySplitProject::showDataFrame3d()
 
       ZWindowFactory factory;
       //factory.setParentWidget(parent);
-      window = factory.make3DWindow(getSharedDocument(), Z3DWindow::INIT_NORMAL);
+      window = factory.make3DWindow(getSharedDocument(), Z3DView::INIT_NORMAL);
       window->setWindowTitle(getDocument()->getTitle());
 
       //getDocument()->registerUser(window);
@@ -439,87 +439,6 @@ void ZFlyEmBodySplitProject::startResultQuickView()
   startQuickView(m_quickResultWindow);
 }
 
-#if 0
-void ZFlyEmBodySplitProject::startBodyQuickView()
-{
-  startQuickView(m_quickViewWindow);
-#if 0
-  if (m_quickViewWindow != NULL) {
-    m_quickViewWindow->setYZView();
-    const TStackObjectList &objList =
-        m_quickViewWindow->getDocument()->getObjectList(ZStackObject::TYPE_SWC);
-
-    ZCuboid boundBox;
-    for (TStackObjectList::const_iterator iter = objList.begin();
-         iter != objList.end(); ++iter) {
-      ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
-      if (tree != NULL) {
-        if (boundBox.isValid()) {
-          boundBox.bind(tree->getBoundBox());
-        } else {
-          boundBox = tree->getBoundBox();
-        }
-      }
-    }
-    m_quickViewWindow->gotoPosition(boundBox.toCornerVector(), 0);
-//    m_quickViewWindow->setYZView();
-    showBodyQuickView();
-  }
-#endif
-}
-#endif
-
-#if 0
-void ZFlyEmBodySplitProject::showBodyQuickView()
-{
-  if (m_quickViewWindow == NULL) {
-    ZWindowFactory factory;
-    factory.setWindowTitle("Quick View");
-
-    ZStackDoc *doc = new ZStackDoc;
-    doc->setTag(NeuTube::Document::FLYEM_BODY_DISPLAY);
-    m_quickViewWindow = factory.make3DWindow(doc);
-
-    const QString threadId = "quickViewFunc";
-    if (!m_futureMap.isAlive(threadId)) {
-      m_futureMap.removeDeadThread();
-      QFuture<void> future =
-          QtConcurrent::run(this, &ZFlyEmBodySplitProject::quickViewFunc);
-      m_futureMap[threadId] = future;
-    }
-  } else {
-//    showBodyQuickView();
-    showQuickView(m_quickViewWindow);
-  }
-}
-#endif
-
-#if 0
-void ZFlyEmBodySplitProject::showSkeleton(ZSwcTree *tree)
-{
-  if (tree != NULL) {
-    if (m_quickViewWindow == NULL) {
-      ZWindowFactory factory;
-      factory.setWindowTitle("Quick View");
-      ZStackDoc *doc = new ZStackDoc;
-      doc->addObject(tree);
-      m_quickViewWindow = factory.make3DWindow(doc);
-      connect(m_quickViewWindow, SIGNAL(destroyed()),
-              this, SLOT(shallowClearQuickViewWindow()));
-    } else {
-      m_quickViewWindow->getDocument()->beginObjectModifiedMode(
-            ZStackDoc::OBJECT_MODIFIED_CACHE);
-      m_quickViewWindow->getDocument()->removeAllSwcTree();
-      m_quickViewWindow->getDocument()->addObject(tree);
-      m_quickViewWindow->getDocument()->endObjectModifiedMode();
-      m_quickViewWindow->getDocument()->notifyObjectModified();
-    }
-
-    m_quickViewWindow->show();
-    m_quickViewWindow->raise();
-  }
-}
-#endif
 
 void ZFlyEmBodySplitProject::updateSplitQuick()
 {
@@ -2661,7 +2580,7 @@ void ZFlyEmBodySplitProject::removeAllSideSeed()
     getDocument()->removeObject(*iter);
   }
   getDocument()->endObjectModifiedMode();
-  getDocument()->notifyObjectModified();
+  getDocument()->processObjectModified();
 
   /*
   getDocument()->getObjectGroup().removeObject(

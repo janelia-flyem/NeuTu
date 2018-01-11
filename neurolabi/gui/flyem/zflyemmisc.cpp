@@ -755,7 +755,7 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
     window->getDocument()->addObject(graph, true);
     window->resetCamera();
     if (window->isBackgroundOn()) {
-      window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+      window->setOpacity(neutube3d::LAYER_GRAPH, 0.4);
     }
   }
 }

@@ -20,8 +20,10 @@ public:
   void setMeshColor(const glm::vec4& col)
   { m_singleColorForAllMesh.set(col); }
 
+  /*
   bool isFixed() const
   { return m_meshList[0]->numVertices() == 96957; }
+  */
 
   virtual void process(Z3DEye eye) override;
 

@@ -839,7 +839,7 @@ void ZFlyEmBody3dDoc::updateBody(
     }
   }
   endObjectModifiedMode();
-  notifyObjectModified(true);
+  processObjectModified();
 }
 
 ZSwcTree* ZFlyEmBody3dDoc::getBodyModel(
@@ -2186,7 +2186,7 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
   }
   m_bodySet.clear();
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmBody3dDoc::mergeBodyModel(const ZFlyEmBodyMerger &merger)

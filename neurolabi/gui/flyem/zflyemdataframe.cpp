@@ -1161,7 +1161,7 @@ void ZFlyEmDataFrame::process()
       doc->addObject(originalTree2);
       doc->addObject(matchingSwc);
       doc->endObjectModifiedMode();
-      doc->notifyObjectModified();
+      doc->processObjectModified();
 
 
       ZWindowFactory factory;
@@ -1307,7 +1307,7 @@ void ZFlyEmDataFrame::showModel() const
         doc->addObject(*iter);
       }
       doc->endObjectModifiedMode();
-      doc->notifyObjectModified();
+      doc->processObjectModified();
 //      doc->blockSignals(false);
 //      doc->swcObjsModel()->updateModelData();
 //      doc->punctaObjsModel()->updateModelData();
@@ -1410,7 +1410,7 @@ void ZFlyEmDataFrame::showConnection() const
       }
 
       doc->endObjectModifiedMode();
-      doc->notifyObjectModified();
+      doc->processObjectModified();
 
 //      doc->blockSignals(false);
 //      doc->swcObjsModel()->updateModelData();
@@ -2140,7 +2140,7 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
         }
 
         doc->endObjectModifiedMode();
-        doc->notifyObjectModified();
+        doc->processObjectModified();
 //        doc->blockSignals(false);
 
         if (doc->getSwcList().size() > 1) {

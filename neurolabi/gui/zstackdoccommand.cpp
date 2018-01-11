@@ -150,7 +150,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcCommand::recover()
   m_doc->deprecateTraceMask();
 
   m_doc->processSwcModified();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 void ZStackDocCommand::SwcEdit::ChangeSwcCommand::undo()
@@ -295,7 +295,7 @@ void ZStackDocCommand::SwcEdit::TranslateRoot::undo()
   m_doc->updateVirtualStackSize();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
 }
@@ -361,7 +361,7 @@ void ZStackDocCommand::SwcEdit::Rescale::undo()
   m_doc->updateVirtualStackSize();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
@@ -385,7 +385,7 @@ void ZStackDocCommand::SwcEdit::Rescale::redo()
   m_doc->updateVirtualStackSize();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
 }
@@ -423,7 +423,7 @@ void ZStackDocCommand::SwcEdit::RescaleRadius::undo()
   m_doc->updateVirtualStackSize();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->blockSignals(false);
 
@@ -472,7 +472,7 @@ void ZStackDocCommand::SwcEdit::ReduceNodeNumber::undo()
   m_swcList.clear();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->blockSignals(false);
 
 //  m_doc->notifySwcModified();
@@ -575,7 +575,7 @@ void ZStackDocCommand::SwcEdit::AddSwcNode::undo()
   m_treeInDoc = false;
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->notifySwcModified();
 }
 
@@ -755,7 +755,7 @@ void ZStackDocCommand::SwcEdit::MergeSwcNode::redo()
       //m_doc->selectedSwcTreeNodes()->clear();
 
       m_doc->processSwcModified();
-      m_doc->notifyObjectModified();
+      m_doc->processObjectModified();
 
       m_doc->deprecateTraceMask();
     }
@@ -805,7 +805,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::redo()
   }
   if (!m_backupSet.empty()) {
     m_doc->processSwcModified();
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
 }
 
@@ -850,7 +850,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::redo()
   }
   if (!m_backupSet.empty()) {
     m_doc->processSwcModified();
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
 }
 
@@ -892,7 +892,7 @@ void ZStackDocCommand::SwcEdit::MoveSwcNode::redo()
     }
     if (!m_backupSet.empty()) {
       m_doc->processSwcModified();
-      m_doc->notifyObjectModified();
+      m_doc->processObjectModified();
     }
   }
 }
@@ -968,7 +968,7 @@ void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::redo()
     }
     if (!m_backupSet.empty()) {
       m_doc->processSwcModified();
-      m_doc->notifyObjectModified();
+      m_doc->processObjectModified();
     }
   }
 }
@@ -1019,7 +1019,7 @@ void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::redo()
     }
     if (!m_backupSet.empty()) {
       m_doc->processSwcModified();
-      m_doc->notifyObjectModified();
+      m_doc->processObjectModified();
     }
   }
 }
@@ -1108,7 +1108,7 @@ void ZStackDocCommand::SwcEdit::ResolveCrossover::redo()
         m_doc->deprecateTraceMask();
 
         m_doc->processSwcModified();
-        m_doc->notifyObjectModified();
+        m_doc->processObjectModified();
       }
     }
   }
@@ -1155,7 +1155,7 @@ void ZStackDocCommand::SwcEdit::ExtendSwcNode::undo()
 //  m_doc->notifySwcModified();
 
   m_doc->processSwcModified();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
   m_doc->notifySwcTreeNodeSelectionChanged();
   m_nodeInDoc = false;
@@ -1174,7 +1174,7 @@ void ZStackDocCommand::SwcEdit::ExtendSwcNode::redo()
 //  m_doc->notifySwcModified();
 
   m_doc->processSwcModified();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
   m_doc->notifySwcTreeNodeSelectionChanged();
 
   m_nodeInDoc = true;
@@ -1417,7 +1417,7 @@ void ZStackDocCommand::SwcEdit::CompositeCommand::redo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
@@ -1434,7 +1434,7 @@ void ZStackDocCommand::SwcEdit::CompositeCommand::undo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
@@ -1906,7 +1906,7 @@ void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::undo()
     }
     m_emptyTreeSet.clear();
     m_doc->endObjectModifiedMode();
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
 }
 
@@ -2000,7 +2000,7 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
   }
 
   doc->endObjectModifiedMode();
-  doc->notifyObjectModified();
+  doc->processObjectModified();
 //  doc->blockSignals(false);
 
 //  notifyObjectChanged(m_selectedObject);
@@ -2018,7 +2018,7 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::notifyObjectChanged(
     doc->processObjectModified(*iter);
   }
   doc->endObjectModifiedMode();
-  doc->notifyObjectModified();
+  doc->processObjectModified();
 
   /*
   ZStackObjectRole role;
@@ -2346,7 +2346,7 @@ void ZStackDocCommand::TubeEdit::CutSegment::undo()
 //  m_doc->notifyChainModified();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 
@@ -2376,7 +2376,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::redo()
   }
   m_doc->getSelected(ZStackObject::TYPE_LOCSEG_CHAIN).clear();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
   //m_doc->selectedChains()->clear();
 }
 
@@ -2399,7 +2399,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::undo()
 //  m_doc->notifyChainModified();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 ZStackDocCommand::TubeEdit::RemoveSmall::RemoveSmall(
@@ -2429,7 +2429,7 @@ void ZStackDocCommand::TubeEdit::RemoveSmall::undo()
   m_chainList.clear();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 void ZStackDocCommand::TubeEdit::RemoveSmall::redo()
@@ -2447,7 +2447,7 @@ void ZStackDocCommand::TubeEdit::RemoveSmall::redo()
   }
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  if (!m_chainList.empty())
 //    m_doc->notifyChainModified();
 }
@@ -2477,7 +2477,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::redo()
   }
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  if (!m_chainList.empty()) {
 //    m_doc->notifyChainModified();
@@ -2498,7 +2498,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::undo()
   m_chainList.clear();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 ZStackDocCommand::ObjectEdit::MoveSelected::MoveSelected(
@@ -2551,7 +2551,7 @@ void ZStackDocCommand::ObjectEdit::AddObject::redo()
   m_doc->addObject(m_obj, false);
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
   m_isInDoc = true;
 }
@@ -2570,7 +2570,7 @@ void ZStackDocCommand::ObjectEdit::AddObject::undo()
   m_uniqueObjectList.clear();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
   m_isInDoc = false;
 }
@@ -2640,7 +2640,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::undo()
   m_doc->blockSignals(false);
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  if (m_swcMoved)
 //    m_doc->notifySwcModified();
@@ -2698,7 +2698,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::redo()
   }
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  if (m_swcMoved)
 //    m_doc->notifySwcModified();
@@ -2788,7 +2788,7 @@ void ZStackDocCommand::StrokeEdit::CompositeCommand::redo()
   m_doc->endObjectModifiedMode();
 //  m_doc->blockSignals(false);
 
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->notifyStrokeModified();
 }
@@ -2802,7 +2802,7 @@ void ZStackDocCommand::StrokeEdit::CompositeCommand::undo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->blockSignals(false);
 //  m_doc->notifyStrokeModified();
 }

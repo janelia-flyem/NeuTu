@@ -26,7 +26,7 @@ void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::redo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
   m_isExecuted = true;
 }
@@ -39,7 +39,7 @@ void ZStackDocCommand::DvidSynapseEdit::CompositeCommand::undo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
   m_isExecuted = false;
 }
@@ -273,7 +273,7 @@ void ZStackDocCommand::DvidSynapseEdit::RemoveSynapse::undo()
           synapse.loadJsonObject(m_synapseBackup);
           se->addSynapse(synapse, ZDvidSynapseEnsemble::DATA_LOCAL);
           m_doc->processObjectModified(se);
-          m_doc->notifyObjectModified();
+          m_doc->processObjectModified();
         }
       }
     }
@@ -410,7 +410,7 @@ void ZStackDocCommand::DvidSynapseEdit::AddSynapse::redo()
   if (se != NULL) {
     se->addSynapse(m_synapse, ZDvidSynapseEnsemble::DATA_GLOBAL);
     m_doc->processObjectModified(se);
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
   */
 }
@@ -429,7 +429,7 @@ void ZStackDocCommand::DvidSynapseEdit::AddSynapse::undo()
     se->removeSynapse(
           m_synapse.getPosition(), ZDvidSynapseEnsemble::DATA_GLOBAL);
     m_doc->processObjectModified(se);
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
   */
 }
@@ -479,7 +479,7 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::redo()
   if (se != NULL) {
     se->moveSynapse(m_from, m_to);
     m_doc->processObjectModified(se);
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
   */
 }
@@ -515,7 +515,7 @@ void ZStackDocCommand::DvidSynapseEdit::MoveSynapse::undo()
   if (se != NULL) {
     se->moveSynapse(m_to, m_from);
     m_doc->processObjectModified(se);
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
   */
 }
@@ -908,7 +908,7 @@ void ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse::redo()
 #endif
 
         m_doc->processObjectModified(se);
-        m_doc->notifyObjectModified();
+        m_doc->processObjectModified();
       }
     }
   }
@@ -942,7 +942,7 @@ void ZStackDocCommand::DvidSynapseEdit::UnlinkSynapse::undo()
         }
 
         m_doc->processObjectModified(se);
-        m_doc->notifyObjectModified();
+        m_doc->processObjectModified();
       }
     }
   }

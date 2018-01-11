@@ -142,8 +142,8 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 {
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(processStackChange(bool)));
-  connectAction(m_doc.get(), SIGNAL(objectModified()),
-                m_view, SLOT(paintObject()));
+//  connectAction(m_doc.get(), SIGNAL(objectModified()),
+//                m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
           m_view, SLOT(paintObject(ZStackObject::ETarget)));
   connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),

@@ -3334,7 +3334,7 @@ void MainWindow::on_actionSkeletonization_triggered()
       if (wholeTree != NULL) {
         wholeTree->addComment("skeleton");
         frame->executeAddObjectCommand(wholeTree);
-        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         report("Skeletonization failed", "No SWC tree generated.",
@@ -3693,7 +3693,7 @@ void MainWindow::on_actionAddSWC_triggered()
       frame->load(fileList);
       if (NeutubeConfig::getInstance().getMainWindowConfig().
           isExpandSwcWith3DWindow()) {
-        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       }
     }
@@ -3787,7 +3787,7 @@ void MainWindow::on_actionSynapse_Annotation_triggered()
 //      doc->notifyPunctumModified();
 
       doc->endObjectModifiedMode();
-      doc->notifyObjectModified();
+      doc->processObjectModified();
 
       m_3dWindowFactory.open3DWindow(doc);
       /*
@@ -4197,7 +4197,7 @@ void MainWindow::on_actionTem_Paper_Volume_Rendering_triggered()
       academy->loadFile((*inputIter).c_str());
 
       double zScale = 1.125;
-      Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::INIT_NORMAL);
+      Z3DWindow *stage = new Z3DWindow(academy, Z3DView::INIT_NORMAL);
       stage->getVolumeFilter()->setZScale(zScale);
       stage->getVolumeFilter()->hideBoundBox();
 
@@ -4641,7 +4641,7 @@ void MainWindow::on_actionOpen_3D_View_Without_Volume_triggered()
 {
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
-    ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+    ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
 //    frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
   }
 }
@@ -5189,7 +5189,7 @@ void MainWindow::on_actionMask_SWC_triggered()
 //        swcFrame->document()->notifySwcModified();
 
         if (frame != stackFrame) {
-          ZWindowFactory::Open3DWindow(swcFrame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+          ZWindowFactory::Open3DWindow(swcFrame, Z3DView::INIT_EXCLUDE_VOLUME);
 //          swcFrame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
           if (swcFrame != stackFrame) {
             delete swcFrame;
@@ -5240,7 +5240,7 @@ void MainWindow::expandCurrentFrame()
       if (swcLoaded) {
         if (NeutubeConfig::getInstance().getMainWindowConfig().
             isExpandSwcWith3DWindow()) {
-          ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+          ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
 //          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
         }
       }
@@ -5855,7 +5855,7 @@ void MainWindow::on_actionTiles_triggered()
         frame->load(frame->swcFilename);
         if (NeutubeConfig::getInstance().getMainWindowConfig().
             isExpandSwcWith3DWindow()) {
-          ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+          ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
 //          frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
         }
     }

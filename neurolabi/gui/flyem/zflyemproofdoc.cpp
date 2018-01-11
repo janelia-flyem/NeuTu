@@ -682,7 +682,7 @@ void ZFlyEmProofDoc::annotateBody(
       }
     }
 
-    notifyObjectModified();
+    processObjectModified();
   }
   if (writer.getStatusCode() == 200) {
     if (getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL).count(bodyId) > 0) {
@@ -1039,7 +1039,7 @@ void ZFlyEmProofDoc::updateDvidTargetForObject()
   UpdateDvidTargetForObject<ZDvidTileEnsemble>(this);
   UpdateDvidTargetForObject<ZFlyEmToDoList>(this);
 //  endObjectModifiedMode();
-//  notifyObjectModified();
+//  processObjectModified();
 }
 
 
@@ -1195,7 +1195,7 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
     }
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
@@ -1225,7 +1225,7 @@ void ZFlyEmProofDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
     }
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::setTodoItemToNormal()
@@ -1265,7 +1265,7 @@ void ZFlyEmProofDoc::tryMoveSelectedSynapse(
         }
       }
 
-      notifyObjectModified();
+      processObjectModified();
     }
   }
 }
@@ -1333,7 +1333,7 @@ void ZFlyEmProofDoc::annotateSynapse(
 
     notifySynapseEdited(pt);
 
-    notifyObjectModified();
+    processObjectModified();
   }
 }
 
@@ -1370,7 +1370,7 @@ void ZFlyEmProofDoc::addSynapse(
     processObjectModified(se);
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::removeSynapse(
@@ -1385,7 +1385,7 @@ void ZFlyEmProofDoc::removeSynapse(
     processObjectModified(se);
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::removeTodoItem(
@@ -1403,7 +1403,7 @@ void ZFlyEmProofDoc::removeTodoItem(
 
   notifyTodoItemModified(pos);
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::addTodoItem(const ZIntPoint &pos)
@@ -1429,7 +1429,7 @@ void ZFlyEmProofDoc::addTodoItem(
 
   notifyTodoItemModified(item.getPosition());
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::addSynapse(
@@ -1446,7 +1446,7 @@ void ZFlyEmProofDoc::addSynapse(
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::moveSynapse(
@@ -1466,7 +1466,7 @@ void ZFlyEmProofDoc::moveSynapse(
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::syncSynapse(const ZIntPoint &pt)
@@ -1482,7 +1482,7 @@ void ZFlyEmProofDoc::syncSynapse(const ZIntPoint &pt)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::repairSynapse(const ZIntPoint &pt)
@@ -1550,7 +1550,7 @@ void ZFlyEmProofDoc::updateSynapsePartner(const ZIntPoint &pos)
     processObjectModified(se);
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
@@ -1566,7 +1566,7 @@ void ZFlyEmProofDoc::updateSynapsePartner(const std::set<ZIntPoint> &posArray)
     processObjectModified(se);
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::highlightPsd(bool on)
@@ -1585,7 +1585,7 @@ void ZFlyEmProofDoc::highlightPsd(bool on)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 /*
@@ -1780,7 +1780,7 @@ void ZFlyEmProofDoc::verifySelectedSynapse()
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
     processObjectModified(se);
   }
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::unverifySelectedSynapse()
@@ -1802,7 +1802,7 @@ void ZFlyEmProofDoc::unverifySelectedSynapse()
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
     processObjectModified(se);
   }
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::deleteSelectedSynapse()
@@ -1821,7 +1821,7 @@ void ZFlyEmProofDoc::deleteSelectedSynapse()
     scope = ZDvidSynapseEnsemble::DATA_LOCAL;
     processObjectModified(se);
   }
-  notifyObjectModified();
+  processObjectModified();
 
   /*
   ZDvidSynapseEnsemble *se = getDvidSynapseEnsemble();
@@ -1840,7 +1840,7 @@ void ZFlyEmProofDoc::deleteSelectedSynapse()
 
     if (changed) {
       processObjectModified(se);
-      notifyObjectModified();
+      processObjectModified();
     }
   }
   */
@@ -1886,7 +1886,7 @@ void ZFlyEmProofDoc::updateBodyObject()
     //slice->updateSelection();
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::clearData()
@@ -1990,7 +1990,7 @@ void ZFlyEmProofDoc::downloadBodyMask()
 {
   if (getBodyForSplit() != NULL) {
     getBodyForSplit()->downloadBodyMask();
-    notifyObjectModified();
+    processObjectModified();
   }
 }
 */
@@ -2062,7 +2062,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
     }
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::loadSplitFromService()
@@ -2192,7 +2192,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(neutube::EAxis axis)
   }
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::updateDvidLabelObjectSliently()
@@ -2214,7 +2214,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice()
     processObjectModified(obj);
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 #endif
 
@@ -2227,7 +2227,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(EObjectModifiedMode updateMode)
   updateDvidLabelObject(neutube::Z_AXIS);
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   cleanBodyAnnotationMap();
 }
@@ -2291,7 +2291,7 @@ void ZFlyEmProofDoc::downloadBookmark()
       }
     }
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
 
     if (bookmarkCount == 0) {
       ZDvidUrl url(getDvidTarget());
@@ -2314,7 +2314,7 @@ void ZFlyEmProofDoc::downloadBookmark()
           m_dvidWriter.writeBookmark(*bookmark);
         }
         endObjectModifiedMode();
-        notifyObjectModified();
+        processObjectModified();
       }
     }
   }
@@ -2372,7 +2372,7 @@ void ZFlyEmProofDoc::downloadTodo(int x, int y, int z)
     processObjectModified(td);
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
@@ -2387,7 +2387,7 @@ void ZFlyEmProofDoc::downloadSynapse(int x, int y, int z)
     processObjectModified(se);
   }
 //  endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::downloadSynapse()
@@ -2819,7 +2819,7 @@ QList<ZFlyEmBookmark*> ZFlyEmProofDoc::importFlyEmBookmark(
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 
   m_loadingAssignedBookmark = false;
 
@@ -2923,14 +2923,14 @@ void ZFlyEmProofDoc::enhanceTileContrast(bool highContrast)
     tile->enhanceContrast(highContrast);
     if (!tile->isEmpty()) {
       bufferObjectModified(tile->getTarget());
-      notifyObjectModified();
+      processObjectModified();
     }
   } else {
     ZDvidGraySlice *slice = getDvidGraySlice();
     if (slice != NULL) {
       slice->updateContrast(highContrast);
       bufferObjectModified(slice->getTarget());
-      notifyObjectModified();
+      processObjectModified();
     }
   }
 }
@@ -2968,7 +2968,7 @@ void ZFlyEmProofDoc::setLabelSliceAlpha(int alpha)
     processObjectModified(slice->getTarget());
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 */
 
@@ -3230,7 +3230,7 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
 //  processObjectModified(roi);
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 ZIntCuboid ZFlyEmProofDoc::estimateLocalSplitRoi()
@@ -3457,7 +3457,7 @@ void ZFlyEmProofDoc::useBodyNameMap(bool on)
     }
 
     processObjectModified(getDvidLabelSlice());
-    notifyObjectModified();
+    processObjectModified();
   }
 }
 #endif
@@ -3481,7 +3481,7 @@ void ZFlyEmProofDoc::updateBodyColor(
     processObjectModified(slice);
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
@@ -3930,7 +3930,7 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
   if (bookmark != NULL) {
     if (bookmark->isCustom()) {
       processObjectModified(bookmark);
-      notifyObjectModified();
+      processObjectModified();
       emit userBookmarkModified();
     }
   }
@@ -4030,7 +4030,7 @@ void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
     beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
     pushUndoCommand(command);
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
   }
 }
 
@@ -4055,7 +4055,7 @@ void ZFlyEmProofDoc::executeRotateRoiPlaneCommand(int z, double theta)
       beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
       pushUndoCommand(allCommand);
       endObjectModifiedMode();
-      notifyObjectModified();
+      processObjectModified();
     } else {
       delete allCommand;
     }
@@ -4083,7 +4083,7 @@ void ZFlyEmProofDoc::executeScaleRoiPlaneCommand(int z, double sx, double sy)
       beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
       pushUndoCommand(allCommand);
       endObjectModifiedMode();
-      notifyObjectModified();
+      processObjectModified();
     } else {
       delete allCommand;
     }
@@ -4102,7 +4102,7 @@ void ZFlyEmProofDoc::copyBookmarkFrom(const ZFlyEmProofDoc *doc)
     addObject(bookmark->clone(), false);
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZFlyEmProofDoc::notifySynapseEdited(const ZDvidSynapse &synapse)

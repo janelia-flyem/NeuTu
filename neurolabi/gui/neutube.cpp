@@ -10,8 +10,11 @@
 #include "neutubeconfig.h"
 #include "zlogmessagereporter.h"
 #include "dvid/zdvidtarget.h"
-#include "zstackdoc.h"
+#include "zstackdocptr.h"
 #include "zwidgetmessage.h"
+#include "swctreenode.h"
+#include "zstackobjectrole.h"
+#include "zstackobjectinfo.h"
 
 void neutube::RegisterMetaType()
 {
@@ -25,6 +28,8 @@ void neutube::RegisterMetaType()
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
   qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
   qRegisterMetaType<flyem::EBodySplitMode>("flyem::EBodySplitMode");
+  qRegisterMetaType<ZStackObjectInfo>("ZStackObjectInfo");
+  qRegisterMetaType<ZStackObjectInfoSet>("ZStackObjectInfoSet");
 }
 
 ZMessageReporter* neutube::getMessageReporter()

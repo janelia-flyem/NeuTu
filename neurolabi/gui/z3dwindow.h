@@ -67,64 +67,49 @@ class Z3DBoundedFilter;
 class ZComboEditDialog;
 class ZFlyEmBodyComparisonDialog;
 class ZStackDocMenuFactory;
+class ZLineSegment;
+class ZObject3d;
 
 
 class Z3DWindow : public QMainWindow
 {
   Q_OBJECT
 public:
-  enum EInitMode {
-    INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
-  };
-
-  enum ERendererLayer {
-    LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_SURFACE, LAYER_VOLUME,
-    LAYER_TODO, LAYER_MESH
-  };
-
-  explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, EInitMode initMode,
-                     NeuTube3D::EWindowType windowType = NeuTube3D::TYPE_GENERAL,
+  explicit Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DView::EInitMode initMode,
+                     neutube3d::EWindowType windowType = neutube3d::TYPE_GENERAL,
                      bool stereoView = false, QWidget *parent = 0);
   virtual ~Z3DWindow();
 
 public: //Creators
   static Z3DWindow* Make(ZStackDoc* doc, QWidget *parent,
-                         Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
   static Z3DWindow* Open(ZStackDoc* doc, QWidget *parent,
-                         Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
   static Z3DWindow* Make(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
-                         Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
+                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
   static Z3DWindow* Open(ZSharedPointer<ZStackDoc> doc, QWidget *parent,
-                         Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
-
-public: //utilties
-  static std::string GetLayerString(ERendererLayer layer);
-
-public: //properties
-  void setZScale(ERendererLayer layer, double scale);
-  void setScale(ERendererLayer layer, double sx, double sy, double sz);
-  void setZScale(double scale);
-  void setScale(double sx, double sy, double sz);
-  void setOpacity(ERendererLayer layer, double opacity);
-//  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
-  void setLayerVisible(ERendererLayer layer, bool visible);
-  bool isLayerVisible(ERendererLayer layer) const;
-
+                         Z3DView::EInitMode mode = Z3DView::INIT_NORMAL);
+public:
   void configure(const ZJsonObject &obj);
 
-  NeuTube3D::EWindowType getWindowType() const {
+  neutube3d::EWindowType getWindowType() const {
     return m_windowType;
   }
 
-  void setWindowType(NeuTube3D::EWindowType type) {
+  void setWindowType(neutube3d::EWindowType type) {
     m_windowType = type;
   }
 
   void writeSettings();
   void readSettings();
-  void setCutBox(ERendererLayer layer, const ZIntCuboid &box);
-  void resetCutBox(ERendererLayer layer);
+  void setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box);
+  void resetCutBox(neutube3d::ERendererLayer layer);
 
+  bool isLayerVisible(neutube3d::ERendererLayer layer) const;
+
+  void setZScale(double s);
+  void setLayerVisible(neutube3d::ERendererLayer layer, bool visible);
+  void setOpacity(neutube3d::ERendererLayer layer, double opacity);
 
 public: //Camera adjustment
   void gotoPosition(const ZCuboid& bound);
@@ -133,22 +118,21 @@ public: //Camera adjustment
 public: //Components
   Z3DTrackballInteractionHandler* getInteractionHandler() { return &m_view->interactionHandler(); }
   Z3DCameraParameter* getCamera() { return &m_view->camera(); }
-  inline Z3DPunctaFilter* getPunctaFilter() const { return &m_view->punctaFilter(); }
-  inline Z3DMeshFilter* getMeshFilter() const { return &m_view->meshFilter(); }
-  inline Z3DSwcFilter* getSwcFilter() const { return &m_view->swcFilter(); }
-  inline Z3DVolumeFilter* getVolumeFilter() const { return &m_view->volumeFilter(); }
+  inline Z3DPunctaFilter* getPunctaFilter() const { return m_view->getPunctaFilter(); }
+  inline Z3DMeshFilter* getMeshFilter() const { return m_view->getMeshFilter(); }
+  inline Z3DSwcFilter* getSwcFilter() const { return m_view->getSwcFilter(); }
+  inline Z3DVolumeFilter* getVolumeFilter() const { return m_view->getVolumeFilter(); }
   inline Z3DCanvas* getCanvas() { return &m_view->canvas(); }
   inline const Z3DCanvas* getCanvas() const { return &m_view->canvas(); }
 
-  Z3DGeometryFilter* getFilter(ERendererLayer layer) const;
-  Z3DBoundedFilter& getBoundedFilter(ERendererLayer layer) const;
+  Z3DGeometryFilter* getFilter(neutube3d::ERendererLayer layer) const;
+  Z3DBoundedFilter* getBoundedFilter(neutube3d::ERendererLayer layer) const;
 
-  inline Z3DGraphFilter* getGraphFilter() const { return &m_view->graphFilter(); }
-  inline Z3DSurfaceFilter* getSurfaceFilter() const { return &m_view->surfaceFilter(); }
-  inline ZFlyEmTodoListFilter* getTodoFilter() const { return &m_view->todoFilter(); }
+  inline Z3DGraphFilter* getGraphFilter() const { return m_view->getGraphFilter(); }
+  inline Z3DSurfaceFilter* getSurfaceFilter() const { return m_view->getSurfaceFilter(); }
+  inline ZFlyEmTodoListFilter* getTodoFilter() const { return m_view->getTodoFilter(); }
   inline Z3DCompositor* getCompositor() const { return &m_view->compositor(); }
 
-  QPointF getScreenProjection(double x, double y, double z, ERendererLayer layer);
 
   /*!
    * \brief Get the document associated with the window
@@ -169,6 +153,8 @@ public:
   ZRect2d getRectRoi() const;
   void removeRectRoi();
 
+  bool isProjectedInRectRoi(const ZIntPoint &pt) const;
+
 public: //controls
   void createToolBar();
   void hideControlPanel();
@@ -185,8 +171,8 @@ public: //controls
   ZROIWidget * getROIsDockWidget();
 
   //Configuration
-  void configureLayer(ERendererLayer layer, const ZJsonObject &obj);
-  ZJsonObject getConfigJson(ERendererLayer layer) const;
+  void configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj);
+//  ZJsonObject getConfigJson(neutube3d::ERendererLayer layer) const;
 
   void skipKeyEvent(bool on);
 
@@ -457,9 +443,7 @@ private:
   void updateContextMenu(const QString &group);
 
 private:
-  NeuTube3D::EWindowType m_windowType;
-
-  QList<ERendererLayer> m_layerList;
+  neutube3d::EWindowType m_windowType;
 
   // menu
   std::map<QString, QMenu*> m_contextMenuGroup;
