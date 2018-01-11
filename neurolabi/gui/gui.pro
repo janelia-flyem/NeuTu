@@ -828,7 +828,13 @@ HEADERS += mainwindow.h \
     widgets/zpythonprocess.h \
     zstackutil.h \
     zstackptr.h \
-    dialogs/zflyemproofsettingdialog.h
+    dialogs/zflyemproofsettingdialog.h \
+    widgets/zroilistview.h \
+    flyem/zflyemroiobjsmodel.h \
+    zstackdocptr.h \
+    z3dstackdocfilter.h \
+    zstackdoc3dhelper.h \
+    zstackobjectinfo.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1444,7 +1450,12 @@ SOURCES += main.cpp \
     widgets/zpythonprocess.cpp \
     zstackutil.cpp \
     zstackptr.cpp \
-    dialogs/zflyemproofsettingdialog.cpp
+    dialogs/zflyemproofsettingdialog.cpp \
+    widgets/zroilistview.cpp \
+    flyem/zflyemroiobjsmodel.cpp \
+    z3dstackdocfilter.cpp \
+    zstackdoc3dhelper.cpp \
+    zstackobjectinfo.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

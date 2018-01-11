@@ -44,6 +44,7 @@ public:
     m_role &= ~role;
   }
 
+  bool operator== (const ZStackObjectRole &role) const;
 
   /*!
    * \brief Check if the object has specific roles.

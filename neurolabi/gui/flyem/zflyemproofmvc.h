@@ -148,8 +148,8 @@ public:
   void diagnose();
   void showSetting();
 
-  Z3DWindow* makeExternalSkeletonWindow(NeuTube3D::EWindowType windowType);
-  Z3DWindow* makeExternalMeshWindow(NeuTube3D::EWindowType windowType);
+  Z3DWindow* makeExternalSkeletonWindow(neutube3d::EWindowType windowType);
+  Z3DWindow* makeExternalMeshWindow(neutube3d::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
   Z3DWindow* makeMeshWindow();
 
@@ -421,7 +421,7 @@ private:
   void makeBigOrthoWindow();
   void makeOrthoWindow(int width, int height, int depth);
 
-  ZWindowFactory makeExternalWindowFactory(NeuTube3D::EWindowType windowType);
+  ZWindowFactory makeExternalWindowFactory(neutube3d::EWindowType windowType);
 
   ZFlyEmBody3dDoc *makeBodyDoc(flyem::EBodyType bodyType);
 

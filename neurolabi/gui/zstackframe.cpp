@@ -321,10 +321,10 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
           m_presenter, SLOT(updateStackBc()));
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
           m_view, SLOT(redraw()));
-  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
+//  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
           m_view, SLOT(paintObject(ZStackObject::ETarget)));
-  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
+//  connectAction(m_doc.get(), SIGNAL(objectModified()), m_view, SLOT(paintObject()));
   connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
           m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));
   connectAction(m_doc.get(), SIGNAL(cleanChanged(bool)),
@@ -757,7 +757,7 @@ void ZStackFrame::dropEvent(QDropEvent *event)
   if (!nonImageUrls.isEmpty()) {
     load(nonImageUrls);
     if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
-      ZWindowFactory::Open3DWindow(this, Z3DWindow::INIT_EXCLUDE_VOLUME);
+      ZWindowFactory::Open3DWindow(this, Z3DView::INIT_EXCLUDE_VOLUME);
 //      open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
     }
   }
@@ -1653,7 +1653,7 @@ void ZStackFrame::importPointList(const QString &filePath)
       document()->addObject(punctum);
     }
     document()->endObjectModifiedMode();
-    document()->notifyObjectModified();
+    document()->processObjectModified();
 //    document()->notifyPunctumModified();
   }
 }
@@ -1901,7 +1901,7 @@ void ZStackFrame::MessageProcessor::processMessage(
     if (frame != NULL) {
       if (frame->document()->getTag() == neutube::Document::BIOCYTIN_STACK ||
           frame->document()->getTag() == neutube::Document::BIOCYTIN_PROJECTION) {
-        ZWindowFactory::Open3DWindow(frame, Z3DWindow::INIT_EXCLUDE_VOLUME);
+        ZWindowFactory::Open3DWindow(frame, Z3DView::INIT_EXCLUDE_VOLUME);
 //        frame->open3DWindow(Z3DWindow::INIT_EXCLUDE_VOLUME);
       } else {
         ZWindowFactory::Open3DWindow(frame);

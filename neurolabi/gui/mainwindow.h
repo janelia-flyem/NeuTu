@@ -18,7 +18,7 @@
 #include "dialogs/autosaveswclistdialog.h"
 #include "zactionactivator.h"
 #include "dialogs/flyemneuronthumbnaildialog.h"
-#include "zstackdoc.h"
+#include "zstackdocptr.h"
 #include "newprojectmainwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "zmessageprocessor.h"
@@ -28,6 +28,7 @@ class ZStackFrame;
 class QMdiArea;
 class QActionGroup;
 class ZStackDoc;
+class ZStackDocReader;
 class QProgressDialog;
 class BcAdjustDialog;
 class QUndoGroup;

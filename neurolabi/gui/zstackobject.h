@@ -96,6 +96,7 @@ public:
   };
 
   enum ETarget {
+    TARGET_NULL,
     TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS,
     TARGET_3D_ONLY, TARGET_DYNAMIC_OBJECT_CANVAS
   };
@@ -403,7 +404,11 @@ protected:
 //  static const char *m_nodeAdapterId;
 };
 
-typedef ZSharedPointer<ZStackObject> ZStackObjectPtr;
+class ZStackObjectPtr : public ZSharedPointer<ZStackObject>
+{
+public:
+  ZStackObjectPtr(ZStackObject *obj) : ZSharedPointer<ZStackObject>(obj) {}
+};
 
 template <typename T>
 T* ZStackObject::CastVoidPointer(void *p)

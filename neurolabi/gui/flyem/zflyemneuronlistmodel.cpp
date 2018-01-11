@@ -254,7 +254,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
   }
 
   doc->endObjectModifiedMode();
-  doc->notifyObjectModified();
+  doc->processObjectModified();
 //  doc->blockSignals(false);
 //  doc->swcObjsModel()->updateModelData();
 //  doc->punctaObjsModel()->updateModelData();

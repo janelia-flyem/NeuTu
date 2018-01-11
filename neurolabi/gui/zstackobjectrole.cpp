@@ -29,3 +29,8 @@ void ZStackObjectRole::clear()
 {
   m_role = ZStackObjectRole::ROLE_NONE;
 }
+
+bool ZStackObjectRole::operator ==(const ZStackObjectRole &role) const
+{
+  return m_role == role.m_role;
+}

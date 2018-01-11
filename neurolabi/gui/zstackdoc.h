@@ -49,6 +49,7 @@
 #include "zsharedpointer.h"
 #include "zactionfactory.h"
 #include "zmesh.h"
+#include "zstackobjectinfo.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -88,6 +89,7 @@ class ZStackDocDataBuffer;
 class ZStackDocKeyProcessor;
 class QKeyEvent;
 class ZStackArray;
+class ZStackObjectInfo;
 
 /*!
  * \brief The class of stack document
@@ -882,32 +884,38 @@ public:
   void updatePreviewSwc();
   */
 
-  void clearObjectModifiedTypeBuffer(bool sync = true);
-  void clearObjectModifiedTargetBuffer(bool sync = true);
-  void clearObjectModifiedRoleBuffer(bool sync = true);
+//  void clearObjectModifiedTypeBuffer(bool sync = true);
+//  void clearObjectModifiedTargetBuffer(bool sync = true);
+//  void clearObjectModifiedRoleBuffer(bool sync = true);
+//  void clearObjectModifiedBuffer(bool sync = true);
 
   EObjectModifiedMode getObjectModifiedMode();
   void beginObjectModifiedMode(EObjectModifiedMode mode);
   void endObjectModifiedMode();
 
-  void notifyObjectModified(bool sync = true);
+//  void notifyObjectModified(bool sync = true);
   void notifyObjectModified(ZStackObject::EType type);
 
   void bufferObjectModified(ZStackObject::EType type, bool sync = true);
   void bufferObjectModified(ZStackObject::ETarget target, bool sync = true);
-  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet,
-                            bool sync = true);
-  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
-                            bool sync = true);
+//  void bufferObjectModified(const QSet<ZStackObject::EType> &typeSet,
+//                            bool sync = true);
+//  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
+//                            bool sync = true);
   void bufferObjectModified(ZStackObject *obj, bool sync = true);
   void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
   void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
+  void bufferObjectModified(const ZStackObjectInfo &info, bool sync = true);
+  void bufferObjectModified(
+      const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
 
 
+  void processObjectModified();
+  void processObjectModified(const ZStackObjectInfo &info, bool sync = true);
   void processObjectModified(ZStackObject::EType type, bool sync = true);
   void processObjectModified(ZStackObject::ETarget target, bool sync = true);
-  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
-                             bool sync = true);
+//  void processObjectModified(const QSet<ZStackObject::EType> &typeSet,
+//                             bool sync = true);
   void processObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
                              bool sync = true);
   void processObjectModified(ZStackObject *obj, bool sync = true);
@@ -915,6 +923,7 @@ public:
   void processObjectModified(const ZStackObjectRole &role, bool sync = true);
 
   void processSwcModified();
+  void clearObjectModifiedBuffer(bool sync);
 
   /*!
    * \brief Notify any connect slots about the modification of SWC objects
@@ -938,6 +947,7 @@ public:
   void notify3DGraphModified();
   void notify3DCubeModified();
   void notifyTodoModified();
+
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
 
@@ -1235,6 +1245,8 @@ signals:
   void objectModified();
   void objectModified(ZStackObject::ETarget);
   void objectModified(QSet<ZStackObject::ETarget>);
+  void objectModified(ZStackObjectInfoSet);
+  void objectModified(ZStackObjectInfo);
 
   void stackTargetModified();
   void swcNetworkModified();
@@ -1392,12 +1404,16 @@ private:
 
   ZProgressSignal *m_progressSignal;
 
-  QSet<ZStackObject::ETarget> m_objectModifiedTargetBuffer;
-  QMutex m_objectModifiedTargetBufferMutex;
-  QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
-  QMutex m_objectModifiedTypeBufferMutex;
-  ZStackObjectRole m_objectModifiedRoleBuffer;
-  QMutex m_objectModifiedRoleBufferMutex;
+  ZStackObjectInfoSet m_objectModifiedBuffer;
+  QMutex m_objectModifiedBufferMutex;
+
+//  QSet<ZStackObject::ETarget> m_objectModifiedTargetBuffer;
+//  QMutex m_objectModifiedTargetBufferMutex;
+//  QSet<ZStackObject::EType> m_objectModifiedTypeBuffer;
+//  QMutex m_objectModifiedTypeBufferMutex;
+//  ZStackObjectRole m_objectModifiedRoleBuffer;
+//  QMutex m_objectModifiedRoleBufferMutex;
+
   QStack<EObjectModifiedMode> m_objectModifiedMode;
   QMutex m_objectModifiedModeMutex;
 
@@ -1413,8 +1429,6 @@ protected:
   ZThreadFutureMap m_futureMap;
   ZStackDocDataBuffer *m_dataBuffer;
 };
-
-typedef ZSharedPointer<ZStackDoc> ZStackDocPtr;
 
 //   template  //
 template <class InputIterator>
@@ -1630,7 +1644,7 @@ void ZStackDoc::addObjectFast(InputIterator first, InputIterator last)
     addObjectFast(obj);
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 template<typename T>
