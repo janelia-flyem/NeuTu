@@ -14,7 +14,7 @@
 #include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
 #include "zstackpresenter.h"
-#include "dialogs/zdviddialog.h"
+#include "dialogs/zdvidtargetproviderdialog.h"
 #include "dvid/zdvidreader.h"
 #include "zstackobjectsourcefactory.h"
 #include "dvid/zdvidsparsestack.h"
@@ -171,12 +171,12 @@ void ZFlyEmProofMvc::init()
 #endif
 }
 
-void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
+void ZFlyEmProofMvc::setDvidDialog(ZDvidTargetProviderDialog *dlg)
 {
   m_dvidDlg = dlg;
 }
 
-ZDvidDialog* ZFlyEmProofMvc::getDvidDialog() const
+ZDvidTargetProviderDialog* ZFlyEmProofMvc::getDvidDialog() const
 {
   return m_dvidDlg;
 }
@@ -1445,7 +1445,6 @@ void ZFlyEmProofMvc::diagnose()
 
 void ZFlyEmProofMvc::setDvidTarget()
 {
-//  m_dvidDlg = new ZDvidDialog(this);
   if (m_dvidDlg == NULL) {
     m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
   }

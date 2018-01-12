@@ -18,7 +18,7 @@
 #include "neutubeconfig.h"
 
 DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
-    QDialog(parent),
+    ZDvidTargetProviderDialog(parent),
     ui(new Ui::DvidBranchDialog)
 {
     ui->setupUi(this);
@@ -320,6 +320,18 @@ void DvidBranchDialog::loadNode(QString branchName) {
     ui->librarianBox->setText(QString::fromStdString(GET_FLYEM_CONFIG.getDefaultLibrarian()));
 #endif
 
+}
+
+ZDvidTarget &DvidBranchDialog::getDvidTarget() {
+
+
+    // need to do this properly, getting all fields from the UI:
+    m_dvidTarget.setServer("emdata3.int.janelia.org");
+    m_dvidTarget.setUuid("100e7");
+    m_dvidTarget.setPort(8000);
+
+
+    return m_dvidTarget;
 }
 
 /*

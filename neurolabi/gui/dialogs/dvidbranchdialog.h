@@ -8,18 +8,22 @@
 #include <QStringListModel>
 
 #include "dvid/zdvidreader.h"
+#include "dvid/zdvidtarget.h"
+#include "zdvidtargetproviderdialog.h"
 
 namespace Ui {
 class DvidBranchDialog;
 }
 
-class DvidBranchDialog : public QDialog
+class DvidBranchDialog : public ZDvidTargetProviderDialog
 {
     Q_OBJECT
 
 public:
     explicit DvidBranchDialog(QWidget *parent = 0);
     ~DvidBranchDialog();
+
+    ZDvidTarget& getDvidTarget();
 
 private slots:
     void onRepoClicked(QModelIndex modelIndex);
@@ -44,6 +48,7 @@ private:
 
     Ui::DvidBranchDialog *ui;
     ZDvidReader m_reader;
+    ZDvidTarget m_dvidTarget;
     QStringListModel * m_repoModel;
     QString m_repoName;
     QStringListModel * m_branchModel;

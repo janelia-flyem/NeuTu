@@ -64,7 +64,7 @@ void DvidOperateDialog::on_creatDataPushButton_clicked()
   }
 }
 
-void DvidOperateDialog::setDvidDialog(ZDvidDialog *dlg)
+void DvidOperateDialog::setDvidDialog(ZDvidTargetProviderDialog *dlg)
 {
   m_dvidDlg = dlg;
   updateDvidTarget();

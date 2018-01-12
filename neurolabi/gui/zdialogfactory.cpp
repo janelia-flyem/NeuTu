@@ -7,6 +7,8 @@
 
 #include "zwidgetfactory.h"
 #include "dialogs/zdviddialog.h"
+#include "dialogs/dvidbranchdialog.h"
+#include "dialogs/zdvidtargetproviderdialog.h"
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "zparameterarray.h"
@@ -46,19 +48,23 @@ ZDialogFactory::~ZDialogFactory()
 
 }
 
-ZDvidDialog* ZDialogFactory::makeDvidDialog(QWidget *parent)
+ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(QWidget *parent, ZDvidDialogType dialogType)
 {
-  ZDvidDialog *dlg = new ZDvidDialog(parent);
-  /*
-  dlg->loadConfig(ZString::fullPath(GET_APPLICATION_DIR,
-                                    "json", "", "flyem_config.json"));
-                                    */
+  ZDvidTargetProviderDialog *dlg;
+  if (dialogType == ORIGINAL) {
+    dlg = new ZDvidDialog(parent);
+  } else if (dialogType == BRANCH_BROWSER) {
+    dlg = new DvidBranchDialog(parent);
+  } else {
+      // should never happen, but make the compiler happy:
+      dlg = new ZDvidDialog(parent);
+  }
 
   return dlg;
 }
 
 DvidImageDialog* ZDialogFactory::makeDvidImageDialog(
-    ZDvidDialog *dvidDlg, QWidget *parent)
+    ZDvidTargetProviderDialog *dvidDlg, QWidget *parent)
 {
   DvidImageDialog *dlg = new DvidImageDialog(parent);
   if (dvidDlg != NULL) {

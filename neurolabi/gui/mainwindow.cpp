@@ -124,7 +124,7 @@
 #include "dialogs/flyemhotspotdialog.h"
 #include "dvid/zdvidinfo.h"
 #include "zswctreenodearray.h"
-#include "dialogs/zdviddialog.h"
+#include "dialogs/zdvidtargetproviderdialog.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidfilter.h"
 #include "dialogs/flyembodyfilterdialog.h"
