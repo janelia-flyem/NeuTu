@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include <string>
+
+#include "zdvidtargetproviderdialog.h"
 #include "dvid/zdvidtarget.h"
 
 namespace Ui {
@@ -14,7 +16,7 @@ class ZDvidAdvancedDialog;
 class QLabel;
 class QLineEdit;
 
-class ZDvidDialog : public QDialog
+class ZDvidDialog : public ZDvidTargetProviderDialog
 {
   Q_OBJECT
 

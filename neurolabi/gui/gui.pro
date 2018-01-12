@@ -510,6 +510,7 @@ HEADERS += mainwindow.h \
     dvid/zdvidreader.h \
     dialogs/flyembodyiddialog.h \
     dialogs/zdviddialog.h \
+    dialogs/zdvidtargetproviderdialog.h \
     dialogs/flyembodyfilterdialog.h \
     flyem/zskeletonizeservice.h \
     zflyemdvidreader.h \
@@ -825,6 +826,7 @@ HEADERS += mainwindow.h \
     dialogs/zflyemmergeuploaddialog.h \
     zmeshfactory.h \
     flyem/zflyemmeshfactory.h
+    
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1125,6 +1127,7 @@ SOURCES += main.cpp \
     dvid/zdvidreader.cpp \
     dialogs/flyembodyiddialog.cpp \
     dialogs/zdviddialog.cpp \
+    dialogs/zdvidtargetproviderdialog.cpp \
     dialogs/flyembodyfilterdialog.cpp \
     flyem/zskeletonizeservice.cpp \
     zflyemdvidreader.cpp \
@@ -1437,6 +1440,7 @@ SOURCES += main.cpp \
     dialogs/zflyemmergeuploaddialog.cpp \
     zmeshfactory.cpp \
     flyem/zflyemmeshfactory.cpp
+    
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
