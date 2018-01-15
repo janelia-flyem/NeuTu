@@ -626,7 +626,6 @@ void ZStackWatershedContainer::run()
       ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod);
       filter->setDsFactor(m_scale,m_scale,m_scale);
       m_source=filter->filterStack(*m_spStack);
-      //m_source->save("/home/deli/1.tif");
       delete filter;
     }
     Stack *source = getSource();

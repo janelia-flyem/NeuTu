@@ -596,7 +596,6 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     seed->setOffset(0,0,0);
     sampled->save(working_dir.toStdString()+"/data.tif");
     seed->save(working_dir.toStdString()+"/seed.tif");
-
     ZPythonProcess python;
     python.setWorkDir(working_dir);
     python.setScript(working_dir+"/power_watershed.py");
@@ -614,7 +613,6 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     seed->setOffset(0,0,0);
     sampled->save(working_dir.toStdString()+"/data.tif");
     seed->save(working_dir.toStdString()+"/seed.tif");
-
     ZPythonProcess python;
     python.setWorkDir(working_dir);
     python.setScript(working_dir+"/power_watershed.py");
@@ -650,22 +648,30 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     //seed->setOffset(0,0,0);
     sampled->save(working_dir.toStdString()+"/data.tif");
     //seed->save(working_dir.toStdString()+"/seed.tif");
-
+    std::ofstream out(working_dir.toStdString()+"/seed.txt");
+    for(int k=0;k<seed->depth();++k){
+      for(int j=0;j<seed->height();++j){
+        for(int i=0;i<seed->width();++i){
+          if(seed->array8()[i+j*seed->width()+k*seed->width()*seed->height()]){
+            out<<k<<" "<<j<<" "<<i<<std::endl;
+          }
+        }
+      }
+    }
     ZPythonProcess python;
     python.setWorkDir(working_dir);
     python.setScript(working_dir+"/ffn.py");
     python.addArg(working_dir+"/data.tif");
-    //python.addArg(working_dir+"/seed.tif");
     python.addArg(working_dir+"/result.tif");
-    //python.addArg("3");
+    python.addArg(working_dir+"/seed.txt");
     sampled_watershed=new ZStack();
     python.run();
     ZStack* middle_result=new ZStack();
 
-    middle_result->load(working_dir.toStdString()+"/result.tif");
+    sampled_watershed->load(working_dir.toStdString()+"/result.tif");
 
-    sampled_watershed=watershed.run(sampled,middle_result);
-    delete middle_result;
+    //sampled_watershed=watershed.run(sampled,middle_result);
+    //delete middle_result;
   }
   std::cout<<"----------downsample seg time:"<<time.elapsed()/1000.0<<std::endl;
 

@@ -3,10 +3,10 @@ import numpy as np
 import requests
 import npz2tiff 
 
-SERVER_URL=r'http://10.0.10.2:8080/segmentation/ffn'
+SERVER_URL=r'http://10.14.111.154:4321/segmentation/ffn'
 
-def run(fname,output_name):
-    data={'stack':open(fname,'rb')}
+def run(fname,output_name,seed_file):
+    data={'stack':open(fname,'rb'),'seed':open(seed_file,'r')}
     r=requests.post(SERVER_URL,files=data)
     with open('./tmp.npz','wb') as f:
         f.write(r.content)
@@ -16,4 +16,5 @@ def run(fname,output_name):
 if __name__=='__main__':
     fname=sys.argv[1]
     output_name=sys.argv[2]
-    run(fname,output_name)
+    seed_file=sys.argv[3]
+    run(fname,output_name,seed_file)
