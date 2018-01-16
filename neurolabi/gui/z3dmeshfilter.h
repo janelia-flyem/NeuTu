@@ -49,6 +49,9 @@ public:
   bool hitObject(int x, int y);
   std::vector<bool> hitObject(const std::vector<std::pair<int, int> > &ptArray);
 
+  // Meshes not mentioned in meshIdToColorIndex will get indexedColors[0].
+  void setColorIndexing(const std::vector<glm::vec4> &indexedColors,
+                        const std::map<uint64_t, std::size_t> &meshIdToColorIndex);
 signals:
 
   void meshSelected(ZMesh*, bool append);
@@ -107,6 +110,9 @@ private:
   bool m_dataIsInvalid;
 
   std::vector<ZMesh*> m_origMeshList;
+
+  std::vector<glm::vec4> m_indexedColors;
+  std::map<uint64_t, std::size_t> m_meshIDToColorIndex;
 };
 
 #endif // Z3DMESHFILTER_H
