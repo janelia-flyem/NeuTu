@@ -46,12 +46,18 @@ public:
     ~ZROIWidget();
 
 public:
-    void getROIs(Z3DWindow *window,
-                 const ZDvidInfo &dvidInfo,
-                 std::vector<std::string> roiList,
-                 std::vector<ZObject3dScan> loadedROIs,
-                 std::vector<std::string> roiSourceList);
+    void loadROIs(Z3DWindow *window,
+//                  const ZDvidInfo &dvidInfo,
+                  std::vector<std::string> roiList,
+                  std::vector<ZSharedPointer<ZMesh> > loadedROIs,
+                  std::vector<std::string> roiSourceList);
+    void loadROIs(std::vector<std::string> roiList,
+                  std::vector<ZSharedPointer<ZMesh> > loadedROIs,
+                  std::vector<std::string> roiSourceList);
     void makeGUI();
+    Z3DWindow* getParentWindow() const {
+      return m_window;
+    }
 
 signals:
     void toBeClosed();
@@ -77,11 +83,11 @@ private:
 public:
     //
     Z3DWindow *m_window;
-    ZDvidInfo m_dvidInfo;
+//    ZDvidInfo m_dvidInfo;
 
     //
     std::vector<std::string> m_roiList;
-    std::vector<ZObject3dScan> m_loadedROIs;
+    std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
     QColor defaultColor;
     std::vector<std::string> m_roiSourceList;
     std::vector<bool> colorModified;
@@ -90,8 +96,8 @@ public:
     //
     QCheckBox *selectAll;
 
-    QSpinBox *m_dsIntvWidget;
-    QPushButton *m_updateButton;
+//    QSpinBox *m_dsIntvWidget = NULL;
+//    QPushButton *m_updateButton;
     QLabel *l_opacity;
     QSlider *s_opacity;
     QTableWidget *tw_ROIs;

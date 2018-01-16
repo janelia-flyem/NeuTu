@@ -24,7 +24,8 @@ ZFlyEmTodoListFilter::ZFlyEmTodoListFilter(Z3DGlobalParameters& globalParas, QOb
                                 Qt::ControlModifier, QEvent::MouseButtonPress);
   m_selectItemEvent.listenTo("select todo item", Qt::LeftButton,
                                 Qt::ControlModifier, QEvent::MouseButtonRelease);
-  connect(&m_selectItemEvent, &ZEventListenerParameter::mouseEventTriggered, this, &ZFlyEmTodoListFilter::selectObject);
+  connect(&m_selectItemEvent, &ZEventListenerParameter::mouseEventTriggered,
+          this, &ZFlyEmTodoListFilter::selectObject);
   addEventListener(m_selectItemEvent);
 
 
@@ -452,15 +453,17 @@ void ZFlyEmTodoListFilter::selectObject(QMouseEvent *e, int, int /*h*/)
   }
 
   if (e->type() == QEvent::MouseButtonRelease) {
-    if ((std::abs(e->x() - m_startCoord.x) < 2) &&
-        (std::abs(m_startCoord.y - e->y()) < 2)) {
-      if (e->modifiers() == Qt::ControlModifier)
-        emit objectSelected(dynamic_cast<ZStackObject*>(m_pressedItem), true);
-      else
-        emit objectSelected(dynamic_cast<ZStackObject*>(m_pressedItem), false);
-      e->accept();
+    if (m_pressedItem != NULL) {
+      if ((std::abs(e->x() - m_startCoord.x) < 2) &&
+          (std::abs(m_startCoord.y - e->y()) < 2)) {
+        if (e->modifiers() == Qt::ControlModifier)
+          emit objectSelected(dynamic_cast<ZStackObject*>(m_pressedItem), true);
+        else
+          emit objectSelected(dynamic_cast<ZStackObject*>(m_pressedItem), false);
+        e->accept();
+      }
+      m_pressedItem = NULL;
     }
-    m_pressedItem = NULL;
   }
 }
 

@@ -394,6 +394,7 @@ protected:
 
 private slots:
 //  void updateDvidLabelObject();
+  void roiToggled(bool on);
 
 private:
   void init();
@@ -411,6 +412,7 @@ private:
 //  void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
   void loadROIFunc();
+  void loadRoi(const ZDvidReader &reader, const std::string &roiName);
 
   void makeCoarseBodyWindow();
   void makeBodyWindow();
@@ -508,7 +510,8 @@ protected:
   bool m_ROILoaded;
 
   std::vector<std::string> m_roiList;
-  std::vector<ZObject3dScan> m_loadedROIs;
+  std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
+//  std::vector<ZObject3dScan> m_loadedROIs;
   std::vector<std::string> m_roiSourceList;
 
   //Data fetching

@@ -83,32 +83,39 @@ void ZROIWidget::closeEvent(QCloseEvent * /*event*/)
     emit toBeClosed();
 }
 
-void ZROIWidget::getROIs(Z3DWindow *window,
-                         const ZDvidInfo &dvidInfo,
+void ZROIWidget::loadROIs(Z3DWindow *window,
+//                         const ZDvidInfo &dvidInfo,
                          std::vector<std::string> roiList,
-                         std::vector<ZObject3dScan> loadedROIs,
+                         std::vector<ZSharedPointer<ZMesh> > loadedROIs,
                          std::vector<std::string> roiSourceList)
 {
     //
     m_window = window;
-    m_dvidInfo =  dvidInfo;
-    m_roiList = roiList;
-    m_loadedROIs = loadedROIs;
-    m_roiSourceList = roiSourceList;
+//    m_dvidInfo =  dvidInfo;
+    loadROIs(roiList, loadedROIs, roiSourceList);
+}
 
-    //
-    size_t N = m_roiList.size();
+void ZROIWidget::loadROIs(std::vector<std::string> roiList,
+                          std::vector<ZSharedPointer<ZMesh> > loadedROIs,
+                          std::vector<std::string> roiSourceList)
+{
+  m_roiList = roiList;
+  m_loadedROIs = loadedROIs;
+  m_roiSourceList = roiSourceList;
 
-    //
-    if (window != NULL)
-    {
-        for(size_t i=0; i<N; i++)
-            colorModified.push_back(false);
+  //
+  size_t N = m_roiList.size();
 
-        //
-        makeGUI();
+  //
+  if (m_window != NULL)
+  {
+      for(size_t i=0; i<N; i++)
+          colorModified.push_back(false);
 
-    }
+      //
+      makeGUI();
+
+  }
 }
 
 void ZROIWidget::makeGUI()
@@ -121,7 +128,7 @@ void ZROIWidget::makeGUI()
     selectAll->setChecked(false);
 
     //
-    double alpha = 0;
+    double alpha = m_window->getFilter(neutube3d::LAYER_ROI)->opacity();
  //   double alpha = m_window->getSurfaceFilter()->getOpacity();
     l_opacity = new QLabel(tr(" Opacity: %1").arg(alpha));
     s_opacity = new QSlider(Qt::Horizontal);
@@ -191,8 +198,8 @@ void ZROIWidget::makeGUI()
     //this->setWidget(tw_ROIs);
     QVBoxLayout *layout = new QVBoxLayout();
 
+#if 0
     QHBoxLayout *controlLayout = new QHBoxLayout();
-
 
     m_dsIntvWidget = new QSpinBox(this);
     m_dsIntvWidget->setRange(0, 5);
@@ -202,9 +209,11 @@ void ZROIWidget::makeGUI()
 
     m_updateButton = new QPushButton();
     m_updateButton->setText(tr("Update"));
+
     controlLayout->addWidget(m_updateButton);
 
     layout->addLayout(controlLayout);
+#endif
     layout->addWidget(selectAll);
     layout->addWidget(horizontalGroupBox);
 
@@ -223,7 +232,7 @@ void ZROIWidget::makeGUI()
 
 
     connect(selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
-    connect(m_updateButton, SIGNAL(clicked()), this, SLOT(updateSelectedROIs()));
+//    connect(m_updateButton, SIGNAL(clicked()), this, SLOT(updateSelectedROIs()));
 
     //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
 
@@ -267,7 +276,8 @@ void ZROIWidget::updateROISelections(QModelIndex idx)
 
 int ZROIWidget::getDsIntv() const
 {
-  return m_dsIntvWidget->value();
+  return 0;
+//  return m_dsIntvWidget->value();
 }
 
 void ZROIWidget::updateSelection()
@@ -304,12 +314,16 @@ void ZROIWidget::updateSelectedROIs()
       if(it->checkState()==Qt::Checked)
       {
         QColor color = tw_ROIs->item(i,1)->foreground().color();
+        ZMesh *mesh = new ZMesh(*m_loadedROIs.at(i));
+        mesh->setColor(color);
+        mesh->pushObjectColor();
+        m_window->getDocument()->addObject(mesh);
 
-        ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(
-              m_loadedROIs.at(i), color, getDsIntv());
-        cubes->setSource(m_roiSourceList[i]);
-        cubes->setColor(color);
-        m_window->getDocument()->addObject(cubes, true);
+//        ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(
+//              m_loadedROIs.at(i), color, getDsIntv());
+//        cubes->setSource(m_roiSourceList[i]);
+//        cubes->setColor(color);
+//        m_window->getDocument()->addObject(cubes, true);
       }
     }
     m_window->getDocument()->blockSignals(false);
@@ -320,69 +334,68 @@ void ZROIWidget::updateSelectedROIs()
 
 void ZROIWidget::updateROIs()
 {
-  // render selected ROIs
-  ZDvidReader reader;
-  ZDvidTarget target(m_dvidInfo.getDvidAddress(),
-                     m_dvidInfo.getDvidUuid(),
-                     m_dvidInfo.getDvidPort());
+  if (m_window == NULL) {
+    return;
+  }
 
-  if (reader.open(target)) {
-    m_window->getDocument()->blockSignals(true);
-    for(int i=0; i<tw_ROIs->rowCount(); i++)
-    {
+  // render selected ROIs
+//    m_window->getDocument()->blockSignals(true);
+    for(int i=0; i<tw_ROIs->rowCount(); i++) {
       QTableWidgetItem *it = tw_ROIs->item(i, 0);
 
-      if(it->checkState()==Qt::Checked)
-      {
-        if(m_window != NULL)
-        {
-          QColor color = tw_ROIs->item(i,1)->foreground().color();
+#ifdef _DEBUG_
+      std::cout << "Updating ROI: " << m_roiList[i] << std::endl;
+#endif
 
-          if(m_window->getDocument()->hasObject(
-               ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i])==false)
-          {
-            ZIntPoint blockSize = reader.readRoiBlockSize(m_roiList[i]);
+      ZStackObject *obj = m_window->getDocument()->getObject(
+            ZStackObject::TYPE_MESH, m_roiSourceList[i]);
+      ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
 
-            ZDvidInfo dvidInfo = m_dvidInfo;
-            dvidInfo.setBlockSize(blockSize.getX(), blockSize.getY(),
-                                  blockSize.getZ());
+      if(it->checkState()==Qt::Checked) { //visible meshes
+        QColor color = tw_ROIs->item(i,1)->foreground().color();
 
-            ZCubeArray *cubes = ZFlyEmMisc::MakeRoiCube(
-                  m_loadedROIs.at(i), color, getDsIntv());
-            cubes->setSource(m_roiSourceList[i]);
-            cubes->setColor(color);
-            m_window->getDocument()->addObject(cubes, true);
+        bool addingMesh = false;
+        bool meshUpdated = false;
+//        bool updatingColor = colorModified[i];
+//        colorModified[i] = false;
+
+        if (mesh == NULL) {
+          mesh = new ZMesh(*m_loadedROIs.at(i));
+          mesh->setSource(m_roiSourceList[i]);
+          addingMesh = true;
+        }
+
+        if (mesh != NULL) {
+          if (mesh->getColor() != color || addingMesh) {
+            mesh->setColor(color);
+            mesh->pushObjectColor();
+            meshUpdated = true;
           }
-          else
-          {
-            if(colorModified[i] == true)
-            {
-              qDebug()<<"~~~color is changed"<<color;
-
-              colorModified[i] = false;
-              ZStackObject *obj = m_window->getDocument()->getObject(
-                    ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i]);
-              ZCubeArray *ca = dynamic_cast<ZCubeArray*>(obj);
-              if (ca != NULL) {
-                ca->setColor(color);
-                ca->pushObjectColor();
-              }
-            }
-            m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], true);
+          if (!mesh->isVisible()) {
+            mesh->setVisible(true);
+            meshUpdated = true;
+          }
+          if (addingMesh) {
+            m_window->getDocument()->addObject(mesh);
+          } else if (meshUpdated) {
+#ifdef _DEBUG_
+            std::cout << "ROI color: " << mesh->getColor().red() << std::endl;
+#endif
+            m_window->getDocument()->bufferObjectModified(mesh);
           }
         }
-      }
-      else
-      {
-        if(m_window != NULL)
-        {
-          m_window->getDocument()->setVisible(ZStackObject::TYPE_3D_CUBE, m_roiSourceList[i], false);
+      } else {
+        if (mesh != NULL) {
+          if (mesh->isVisible()) {
+            mesh->setVisible(false);
+            m_window->getDocument()->bufferObjectModified(mesh);
+          }
         }
       }
     }
-    m_window->getDocument()->blockSignals(false);
-    m_window->getDocument()->notify3DCubeModified();
-  }
+    m_window->getDocument()->processObjectModified();
+//    m_window->getDocument()->blockSignals(false);
+//    m_window->getDocument()->notify3DCubeModified();
 }
 
 void ZROIWidget::updateROISelections(int row, int column)
@@ -456,7 +469,8 @@ void ZROIWidget::updateSlider(int v)
 
     if(m_window)
     {
-        m_window->getSurfaceFilter()->setOpacity(alpha);
+      m_window->setOpacity(neutube3d::LAYER_ROI, alpha);
+//        m_window->get()->setOpacity(alpha);
     }
 }
 

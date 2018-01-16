@@ -4,6 +4,7 @@
 #include <QTabWidget>
 
 class Z3DWindow;
+class ZROIWidget;
 
 #define WINDOW3D_COUNT 5
 
@@ -18,6 +19,7 @@ public:
     void addWindow(int index, Z3DWindow *window, const QString &title);
     int getTabIndex(int index);
     int getRealIndex(int index);
+    Z3DWindow* getCurrentWindow() const;
 
 public slots:
     void closeWindow(int index);
@@ -32,7 +34,7 @@ public slots:
 
     void settingsPanel(bool v);
     void objectsPanel(bool v);
-    void roiPanel(bool v);
+    ZROIWidget *roiPanel(bool v);
     void showGraph(bool v);
 
     void resetSettingsButton();

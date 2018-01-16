@@ -328,6 +328,7 @@
 #include "zmeshfactory.h"
 #include "widgets/taskprotocolwindow.h"
 #include "zstackdoccommand.h"
+#include "zstackobjectinfo.h"
 
 using namespace std;
 
@@ -25218,9 +25219,30 @@ void ZTest::test(MainWindow *host)
   std::cout << taskJson.dumpString(2) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZStackDocCommand::SwcEdit::MoveSwcNode command(new ZStackDoc());
   command.test();
+#endif
+
+#if 1
+  ZStackObjectInfo objInfo;
+  objInfo.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
+  objInfo.print();
+
+  ZStackObjectInfoSet infoSet;
+  infoSet.add(objInfo);
+  infoSet.add(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+  infoSet.add(ZStackObject::TARGET_OBJECT_CANVAS);
+  infoSet.add(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+  infoSet.add(ZStackObject::TYPE_3D_CUBE);
+  ZSwcTree tree;
+  infoSet.add(tree);
+  infoSet.add(tree);
+
+  tree.setRole(ZStackObjectRole::ROLE_3DPAINT);
+  infoSet.add(tree);
+
+  infoSet.print();
 #endif
 
   std::cout << "Done." << std::endl;

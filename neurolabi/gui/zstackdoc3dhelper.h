@@ -5,12 +5,12 @@
 #include <QMap>
 
 #include "z3ddef.h"
+#include "zstackobjectptr.h"
 
 class ZSwcTree;
 class Z3DView;
 class ZStackObject;
 class ZStackObjectInfoSet;
-class ZStackObjectPtr;
 
 /*!
  * \brief The class of helping managing data for 3D visualization
@@ -40,6 +40,7 @@ public:
 
 private:
   void addObject(neutube3d::ERendererLayer layer, ZStackObject *obj);
+  void addObject(neutube3d::ERendererLayer layer, ZStackObjectPtr obj);
   void resetObjectAdapter(neutube3d::ERendererLayer layer);
 
 

@@ -334,8 +334,8 @@ public:
 
   int readCoarseBodySize(uint64_t bodyId) const;
 
-  ZObject3dScan readRoi(const std::string &dataName);
-  ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result);
+  ZObject3dScan readRoi(const std::string &dataName) const;
+  ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result) const;
   ZDvidRoi* readRoi(const std::string &dataName, ZDvidRoi *roi);
   ZJsonArray readRoiJson(const std::string &dataName);
 

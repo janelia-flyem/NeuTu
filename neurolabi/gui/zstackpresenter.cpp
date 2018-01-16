@@ -34,6 +34,7 @@
 #include "zstackdocselector.h"
 #include "zglobal.h"
 #include "zstackdockeyprocessor.h"
+#include "zstackobjectinfo.h"
 
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
@@ -2300,6 +2301,11 @@ void ZStackPresenter::updateSwcExtensionHint()
       stroke->append(currentStackPos.getX(), currentStackPos.getY());
     }
   }
+}
+
+void ZStackPresenter::processObjectModified(const ZStackObjectInfoSet &objSet)
+{
+  buddyView()->paintObject(objSet.getTarget());
 }
 
 void ZStackPresenter::notifyUser(const QString &msg)

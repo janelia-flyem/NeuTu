@@ -87,6 +87,7 @@
 #include "dvid/zdvidgrayslice.h"
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/zflyemmergeuploaddialog.h"
+#include "zmeshfactory.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -274,7 +275,7 @@ void ZFlyEmProofMvc::initBodyWindow()
 
   m_bodyViewWindow->roiAction = m_bodyViewWindow->toolBar->addAction("ROIs");
   connect(m_bodyViewWindow->roiAction, SIGNAL(toggled(bool)),
-          m_bodyViewers, SLOT(roiPanel(bool)));
+          this, SLOT(roiToggled(bool)));
   m_bodyViewWindow->roiAction->setCheckable(true);
   m_bodyViewWindow->roiAction->setChecked(false);
 
@@ -687,8 +688,8 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
           m_coarseBodyWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-      m_coarseBodyWindow->getROIsDockWidget()->getROIs(
-            m_coarseBodyWindow, getDvidInfo(), m_roiList,
+      m_coarseBodyWindow->getROIsDockWidget()->loadROIs(
+            m_coarseBodyWindow, m_roiList,
             m_loadedROIs, m_roiSourceList);
     }
   }
@@ -714,8 +715,8 @@ void ZFlyEmProofMvc::makeBodyWindow()
           m_bodyWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded)
-        m_bodyWindow->getROIsDockWidget()->getROIs(
-              m_bodyWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+        m_bodyWindow->getROIsDockWidget()->loadROIs(
+              m_bodyWindow, m_roiList, m_loadedROIs,
               m_roiSourceList);
   }
 }
@@ -745,9 +746,12 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
 
   doc->showSynapse(m_meshWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
   setWindowSignalSlot(m_meshWindow);
+  m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
+  /*
   if (windowType != neutube3d::TYPE_NEU3) {
       m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
   }
+  */
   m_meshWindow->readSettings();
   m_meshWindow->syncAction();
 
@@ -757,8 +761,8 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
           m_doc->getParentMvc()->getView()->getViewParameter(), false);
 
     if(m_ROILoaded) {
-        m_meshWindow->getROIsDockWidget()->getROIs(
-              m_skeletonWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+        m_meshWindow->getROIsDockWidget()->loadROIs(
+              m_skeletonWindow, m_roiList, m_loadedROIs,
               m_roiSourceList);
     }
   }
@@ -793,8 +797,8 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalSkeletonWindow(
           m_skeletonWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-        m_skeletonWindow->getROIsDockWidget()->getROIs(
-              m_skeletonWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+        m_skeletonWindow->getROIsDockWidget()->loadROIs(
+              m_skeletonWindow, m_roiList, m_loadedROIs,
               m_roiSourceList);
     }
   }
@@ -854,8 +858,8 @@ Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
           m_meshWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-        m_meshWindow->getROIsDockWidget()->getROIs(
-              m_skeletonWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+        m_meshWindow->getROIsDockWidget()->loadROIs(
+              m_skeletonWindow, m_roiList, m_loadedROIs,
               m_roiSourceList);
     }
   }
@@ -884,8 +888,8 @@ void ZFlyEmProofMvc::makeSkeletonWindow()
           m_skeletonWindow, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-        m_skeletonWindow->getROIsDockWidget()->getROIs(
-              m_skeletonWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+        m_skeletonWindow->getROIsDockWidget()->loadROIs(
+              m_skeletonWindow, m_roiList, m_loadedROIs,
               m_roiSourceList);
     }
   }
@@ -912,9 +916,18 @@ void ZFlyEmProofMvc::makeExternalNeuronWindow()
           m_doc->getParentMvc()->getView()->getViewParameter());
 
     if(m_ROILoaded)
-        m_externalNeuronWindow->getROIsDockWidget()->getROIs(
-              m_externalNeuronWindow, getDvidInfo(), m_roiList,
+        m_externalNeuronWindow->getROIsDockWidget()->loadROIs(
+              m_externalNeuronWindow, m_roiList,
               m_loadedROIs, m_roiSourceList);
+  }
+}
+
+void ZFlyEmProofMvc::roiToggled(bool on)
+{
+  ZROIWidget *widget = m_bodyViewers->roiPanel(on);
+  if (on && widget != NULL) {
+    widget->loadROIs(
+          m_bodyViewers->getCurrentWindow(), m_roiList, m_loadedROIs, m_roiSourceList);
   }
 }
 
@@ -4600,6 +4613,28 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 }
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
+void ZFlyEmProofMvc::loadRoi(const ZDvidReader &reader, const std::string &roiName)
+{
+  if (!roiName.empty()) {
+    ZObject3dScan roi;
+    reader.readRoi(roiName, &roi);
+    if (!roi.isEmpty()) {
+      ZMesh *mesh = ZMeshFactory::MakeMesh(roi);
+      std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+      mesh->setSource(ZStackObjectSourceFactory::MakeFlyEmRoiSource(source));
+      mesh->addRole(ZStackObjectRole::ROLE_ROI);
+      m_loadedROIs.emplace_back(mesh);
+      m_roiList.push_back(roiName);
+      m_roiSourceList.push_back(source);
+
+      //      m_loadedROIs.push_back(roi);
+      //      std::string source =
+      //          ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+      //      m_roiSourceList.push_back(source);
+    }
+  }
+}
+
 void ZFlyEmProofMvc::loadROIFunc()
 {
   //
@@ -4638,6 +4673,8 @@ void ZFlyEmProofMvc::loadROIFunc()
           }
         }
 
+        loadRoi(reader, roiName);
+#if 0
         if (!roiName.empty()) {
           ZObject3dScan roi = reader.readRoi(roiName);
           if (!roi.isEmpty()) {
@@ -4649,11 +4686,11 @@ void ZFlyEmProofMvc::loadROIFunc()
             m_roiSourceList.push_back(source);
           }
         }
+#endif
       }
     }
 
     m_ROILoaded = true;
-
     emit roiLoaded();
   }
 }
@@ -4663,35 +4700,35 @@ void ZFlyEmProofMvc::updateRoiWidget()
   //
   if(m_coarseBodyWindow)
   {
-    m_coarseBodyWindow->getROIsDockWidget()->getROIs(
-          m_coarseBodyWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+    m_coarseBodyWindow->getROIsDockWidget()->loadROIs(
+          m_coarseBodyWindow, m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
 
   if(m_bodyWindow)
   {
-    m_bodyWindow->getROIsDockWidget()->getROIs(
-          m_bodyWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+    m_bodyWindow->getROIsDockWidget()->loadROIs(
+          m_bodyWindow, m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
 
   if(m_externalNeuronWindow)
   {
-    m_externalNeuronWindow->getROIsDockWidget()->getROIs(
-          m_externalNeuronWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+    m_externalNeuronWindow->getROIsDockWidget()->loadROIs(
+          m_externalNeuronWindow, m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
 
   if(m_skeletonWindow)
   {
-    m_skeletonWindow->getROIsDockWidget()->getROIs(
-          m_skeletonWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+    m_skeletonWindow->getROIsDockWidget()->loadROIs(
+          m_skeletonWindow, m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
 
   if (m_meshWindow) {
-    m_meshWindow->getROIsDockWidget()->getROIs(
-          m_meshWindow, getDvidInfo(), m_roiList, m_loadedROIs,
+    m_meshWindow->getROIsDockWidget()->loadROIs(
+          m_meshWindow, m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
 }

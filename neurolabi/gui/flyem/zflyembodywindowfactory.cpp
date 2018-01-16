@@ -10,13 +10,19 @@ ZFlyEmBodyWindowFactory::ZFlyEmBodyWindowFactory()
 void ZFlyEmBodyWindowFactory::configure(Z3DWindow *window)
 {
   if (window != NULL) {
-    window->getGraphFilter()->setStayOnTop(false);
+    if (window->getGraphFilter() != NULL) {
+      window->getGraphFilter()->setStayOnTop(false);
+    }
 
-    window->getSwcFilter()->setRenderingPrimitive("Sphere");
-    window->getSwcFilter()->setColorMode("Intrinsic");
-    window->getSwcFilter()->setStayOnTop(false);
+    if (window->getSwcFilter() != NULL) {
+      window->getSwcFilter()->setRenderingPrimitive("Sphere");
+      window->getSwcFilter()->setColorMode("Intrinsic");
+      window->getSwcFilter()->setStayOnTop(false);
+    }
 
-    window->getPunctaFilter()->setStayOnTop(false);
-    window->getPunctaFilter()->setColorMode("Original Point Color");
+    if (window->getPunctaFilter() != NULL) {
+      window->getPunctaFilter()->setStayOnTop(false);
+      window->getPunctaFilter()->setColorMode("Original Point Color");
+    }
   }
 }

@@ -5,6 +5,7 @@
 #include "zmesh.h"
 #include "QsLog.h"
 #include "neutubeconfig.h"
+#include "zstackdocproxy.h"
 
 ZMeshObjsModel::ZMeshObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -57,7 +58,8 @@ void ZMeshObjsModel::setupModelData(ZObjsItem *parent)
   QList<QVariant> data;
 
   m_meshToRow.clear();
-  QList<ZMesh*> meshList = m_doc->getMeshList();
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(m_doc);
+//      m_doc->getMeshList();
   for (int i=0; i<meshList.size(); i++) {
     data.clear();
     ZMesh *mesh = meshList.at(i);

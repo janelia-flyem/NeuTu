@@ -90,6 +90,42 @@ QWidget* Z3DView::axisWidget()
   return m_compositor->axisWidgetsGroup()->createWidget(false);
 }
 
+
+template <typename T>
+std::shared_ptr<ZWidgetsGroup> Z3DView::getWidgetsGroup(T *filter)
+{
+  if (filter != NULL) {
+    return filter->widgetsGroup();
+  }
+
+  return std::shared_ptr<ZWidgetsGroup>();
+}
+
+std::shared_ptr<ZWidgetsGroup> Z3DView::getWidgetsGroup(
+    neutube3d::ERendererLayer layer)
+{
+  switch (layer) {
+  case neutube3d::LAYER_GRAPH:
+    return getWidgetsGroup(getGraphFilter());
+  case neutube3d::LAYER_MESH:
+    return getWidgetsGroup(getMeshFilter());
+  case neutube3d::LAYER_PUNCTA:
+    return getWidgetsGroup(getPunctaFilter());
+  case neutube3d::LAYER_ROI:
+    return getWidgetsGroup(getRoiFilter());
+  case neutube3d::LAYER_SURFACE:
+    return getWidgetsGroup(getSurfaceFilter());
+  case neutube3d::LAYER_SWC:
+    return getWidgetsGroup(getSwcFilter());
+  case neutube3d::LAYER_TODO:
+    return getWidgetsGroup(getTodoFilter());
+  case neutube3d::LAYER_VOLUME:
+    return getWidgetsGroup(getVolumeFilter());
+  }
+
+  return std::shared_ptr<ZWidgetsGroup>();
+}
+
 std::shared_ptr<ZWidgetsGroup> Z3DView::globalParasWidgetsGroup()
 {
   return m_globalParas->widgetsGroup(true);
@@ -338,17 +374,28 @@ void Z3DView::init()
     m_canvas->addEventListenerToBack(*m_compositor);
 
     // build network
-    initVolumeFilter();
-    initPunctaFilter();
-    initSwcFilter();
-    initMeshFilter();
-    initGraphFilter();
-
+    const NeutubeConfig &config = NeutubeConfig::getInstance();
+    if (config.getZ3DWindowConfig().isVolumeOn()) {
+      addFilter(neutube3d::LAYER_VOLUME);
+    }
+    if (config.getZ3DWindowConfig().isSwcsOn()) {
+      addFilter(neutube3d::LAYER_SWC);
+    }
+#if !defined(_NEUTUBE_LIGHT_)
+    if (config.getZ3DWindowConfig().isPunctaOn()) {
+      addFilter(neutube3d::LAYER_PUNCTA);
+    }
+#endif
 #if defined _FLYEM_
-    initTodoFilter();
+    addFilter(neutube3d::LAYER_TODO);
+//    addFilter(neutube3d::LAYER_SURFACE);
 #endif
 
-    initSurfaceFilter();
+    addFilter(neutube3d::LAYER_GRAPH);
+    addFilter(neutube3d::LAYER_MESH);
+//    addFilter(neutube3d::LAYER_ROI);
+
+//    initSurfaceFilter();
 
     connect(m_doc, SIGNAL(objectModified(ZStackObjectInfoSet)),
             this, SLOT(processObjectModified(ZStackObjectInfoSet)));
@@ -364,6 +411,7 @@ void Z3DView::init()
       updateDocData(layer);
     }
 
+#if 0
     // puncta
     m_docHelper.updatePunctaData();
     connect(m_doc, &ZStackDoc::punctaModified, this, &Z3DView::punctaDataChanged);
@@ -384,9 +432,10 @@ void Z3DView::init()
     // surface
     surfaceDataChanged();
     connect(m_doc, &ZStackDoc::cube3dModified, this, &Z3DView::surfaceDataChanged);
+#endif
 
     connect(m_doc, &ZStackDoc::objectSelectionChanged, this, &Z3DView::objectSelectionChanged);
-    connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
+//    connect(m_doc, &ZStackDoc::graphVisibleStateChanged, this, &Z3DView::graph3DDataChanged); // todo: fix this?
 
     if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
       m_compositor->setShowAxis(false);
@@ -419,6 +468,36 @@ void Z3DView::init()
   }
 }
 
+void Z3DView::addFilter(neutube3d::ERendererLayer layer)
+{
+  switch (layer) {
+  case neutube3d::LAYER_GRAPH:
+    initGraphFilter();
+    break;
+  case neutube3d::LAYER_MESH:
+    initMeshFilter();
+    break;
+  case neutube3d::LAYER_PUNCTA:
+    initPunctaFilter();
+    break;
+  case neutube3d::LAYER_ROI:
+    initRoiFilter();
+    break;
+  case neutube3d::LAYER_SURFACE:
+    initSurfaceFilter();
+    break;
+  case neutube3d::LAYER_SWC:
+    initSwcFilter();
+    break;
+  case neutube3d::LAYER_TODO:
+    initTodoFilter();
+    break;
+  case neutube3d::LAYER_VOLUME:
+    initVolumeFilter();
+    break;
+  }
+}
+
 void Z3DView::initVolumeFilter()
 {
   m_volumeFilter.reset(new Z3DVolumeFilter(*m_globalParas));
@@ -438,6 +517,7 @@ void Z3DView::initVolumeFilter()
 void Z3DView::initPunctaFilter()
 {
   m_punctaFilter.reset(new Z3DPunctaFilter(*m_globalParas));
+  m_punctaFilter->setListenerName("Puncta filter");
   m_punctaFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_punctaFilter.get(), &Z3DPunctaFilter::boundBoxChanged,
           this, &Z3DView::updateBoundBox);
@@ -456,6 +536,7 @@ void Z3DView::initPunctaFilter()
 void Z3DView::initSwcFilter()
 {
   m_swcFilter.reset(new Z3DSwcFilter(*m_globalParas));
+  m_swcFilter->setListenerName("SWC filter");
   m_swcFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_swcFilter.get(), &Z3DSwcFilter::boundBoxChanged,
           this, &Z3DView::updateBoundBox);
@@ -477,6 +558,7 @@ void Z3DView::initSwcFilter()
 void Z3DView::initMeshFilter()
 {
   m_meshFilter.reset(new Z3DMeshFilter(*m_globalParas));
+  m_meshFilter->setListenerName("Mesh filter");
   m_meshFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_meshFilter.get(), &Z3DMeshFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_meshFilter.get(), &Z3DMeshFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
@@ -493,9 +575,17 @@ void Z3DView::initMeshFilter()
 void Z3DView::initRoiFilter()
 {
   m_roiFilter.reset(new Z3DMeshFilter(*m_globalParas));
-  m_roiFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
-  connect(m_roiFilter.get(), &Z3DMeshFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
-  connect(m_roiFilter.get(), &Z3DMeshFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
+  m_roiFilter->setControlName("ROI");
+  m_roiFilter->setListenerName("ROI filter");
+  m_roiFilter->outputPort("GeometryFilter")->connect(
+        m_compositor->inputPort("GeometryFilters"));
+  m_roiFilter->setOpacity(0.2);
+  m_roiFilter->setColorMode("Mesh Color");
+  m_roiFilter->setMaterialSpecular(glm::vec4(0, 0, 0, 0));
+  connect(m_roiFilter.get(), &Z3DMeshFilter::boundBoxChanged,
+          this, &Z3DView::updateBoundBox);
+  connect(m_roiFilter.get(), &Z3DMeshFilter::objVisibleChanged,
+          this, &Z3DView::updateBoundBox);
   m_canvas->addEventListenerToBack(*m_roiFilter);
   m_allFilters.push_back(m_roiFilter.get());
 
@@ -509,6 +599,7 @@ void Z3DView::initRoiFilter()
 void Z3DView::initGraphFilter()
 {
   m_graphFilter.reset(new Z3DGraphFilter(*m_globalParas));
+  m_graphFilter->setListenerName("Graph filter");
   m_graphFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_graphFilter.get(), &Z3DGraphFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_graphFilter.get(), &Z3DGraphFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
@@ -520,6 +611,7 @@ void Z3DView::initGraphFilter()
 void Z3DView::initTodoFilter()
 {
   m_todoFilter.reset(new ZFlyEmTodoListFilter(*m_globalParas));
+  m_todoFilter->setListenerName("Todo filter");
   m_todoFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
   connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::boundBoxChanged, this, &Z3DView::updateBoundBox);
   connect(m_todoFilter.get(), &ZFlyEmTodoListFilter::objVisibleChanged, this, &Z3DView::updateBoundBox);
@@ -642,7 +734,7 @@ void Z3DView::volumeDataChanged()
 {
   updateVolumeData();
 }
-
+#if 0
 void Z3DView::punctaDataChanged()
 {
   m_docHelper.updatePunctaData();
@@ -672,6 +764,7 @@ void Z3DView::todoDataChanged()
 {
   m_docHelper.updateTodoData();
 }
+#endif
 
 Z3DGeometryFilter* Z3DView::getFilter(neutube3d::ERendererLayer layer) const
 {
@@ -688,6 +781,8 @@ Z3DGeometryFilter* Z3DView::getFilter(neutube3d::ERendererLayer layer) const
     return getSurfaceFilter();
   case neutube3d::LAYER_MESH:
     return getMeshFilter();
+  case neutube3d::LAYER_ROI:
+    return getRoiFilter();
   default:
     break;
   }
@@ -800,10 +895,12 @@ void Z3DView::updateDocData(neutube3d::ERendererLayer layer)
   }
 }
 
+/*
 void Z3DView::surfaceDataChanged()
 {
   m_docHelper.updateSurfaceData();
 }
+*/
 
 void Z3DView::objectSelectionChanged(const QList<ZStackObject*>& selected,
                                      const QList<ZStackObject*>& deselected)

@@ -13,6 +13,8 @@
 #include "zfiletype.h"
 #include "zswcnetwork.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "zmeshfactory.h"
+#include "zstackdocproxy.h"
 
 ZStackDoc3dHelper::ZStackDoc3dHelper()
 {
@@ -80,6 +82,15 @@ void ZStackDoc3dHelper::addObject(neutube3d::ERendererLayer layer, ZStackObject 
   m_objectAdapter[layer].append(ZStackObjectPtr(obj));
 }
 
+void ZStackDoc3dHelper::addObject(
+    neutube3d::ERendererLayer layer, ZStackObjectPtr obj)
+{
+  if (!m_objectAdapter.contains(layer)) {
+    m_objectAdapter[layer] = QList<ZStackObjectPtr>();
+  }
+  m_objectAdapter[layer].append(obj);
+}
+
 void ZStackDoc3dHelper::resetObjectAdapter(neutube3d::ERendererLayer layer)
 {
   m_objectAdapter.remove(layer);
@@ -141,16 +152,19 @@ void ZStackDoc3dHelper::updateMeshData()
 {
   Z3DMeshFilter *filter = m_view->getMeshFilter();
   if (filter != NULL) {
-    QList<ZMesh*> meshList = m_view->getDocument()->getMeshList();
 
-    QList<ZMesh*> filteredMeshList;
-    foreach(ZMesh *mesh, meshList) {
-      if (!mesh->hasRole(ZStackObjectRole::ROLE_ROI)) {
-        filteredMeshList.append(mesh);
-      }
-    }
+    QList<ZMesh*> meshList =
+        ZStackDocProxy::GetGeneralMeshList(m_view->getDocument());
+//        = m_view->getDocument()->getMeshList();
 
-    filter->setData(filteredMeshList);
+//    QList<ZMesh*> filteredMeshList;
+//    foreach(ZMesh *mesh, meshList) {
+//      if (!mesh->hasRole(ZStackObjectRole::ROLE_ROI)) {
+//        filteredMeshList.append(mesh);
+//      }
+//    }
+
+    filter->setData(meshList);
   }
 }
 
@@ -158,12 +172,28 @@ void ZStackDoc3dHelper::updateRoiData()
 {
   Z3DMeshFilter *filter = m_view->getRoiFilter();
   if (filter != NULL) {
-    QList<ZMesh*> meshList = m_view->getDocument()->getMeshList();
+//    QList<ZMesh*> meshList = m_view->getDocument()->getMeshList();
 
-    QList<ZMesh*> filteredMeshList;
-    foreach(ZMesh *mesh, meshList) {
-      if (mesh->hasRole(ZStackObjectRole::ROLE_ROI)) {
-        filteredMeshList.append(mesh);
+    QList<ZMesh*> filteredMeshList =
+        ZStackDocProxy::GetRoiMeshList(m_view->getDocument());
+//    foreach(ZMesh *mesh, meshList) {
+//      if (mesh->hasRole(ZStackObjectRole::ROLE_ROI)) {
+//        filteredMeshList.append(mesh);
+//      }
+//    }
+
+    QList<ZObject3dScan*> objList =
+        m_view->getDocument()->getObjectList<ZObject3dScan>();
+    foreach(ZObject3dScan *obj, objList) {
+      if (obj->hasRole(ZStackObjectRole::ROLE_ROI)) {
+        ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
+        if (mesh != NULL) {
+          mesh->setColor(obj->getColor());
+          mesh->pushObjectColor();
+          mesh->setVisible(obj->isVisible());
+          addObject(neutube3d::LAYER_ROI, mesh);
+          filteredMeshList.append(mesh);
+        }
       }
     }
 

@@ -24,6 +24,12 @@ void ZStackObjectInfo::set(const ZStackObject &obj)
   setRole(obj.getRole());
 }
 
+void ZStackObjectInfo::print() const
+{
+  std::cout << "Object info: " << "Type " << m_type << "; Target "
+            << m_target << "; Role " << m_role.getRole() << std::endl;
+}
+
 ///////////////////////////////////
 
 ZStackObjectInfoSet::ZStackObjectInfoSet()
@@ -112,4 +118,22 @@ QSet<ZStackObject::EType> ZStackObjectInfoSet::getType() const
   }
 
   return typeSet;
+}
+
+QSet<ZStackObject::ETarget> ZStackObjectInfoSet::getTarget() const
+{
+  QSet<ZStackObject::ETarget> targetSet;
+  foreach (const ZStackObjectInfo &info, *this) {
+    targetSet.insert(info.getTarget());
+  }
+
+  return targetSet;
+}
+
+
+void ZStackObjectInfoSet::print() const
+{
+  foreach (const ZStackObjectInfo &info, *this) {
+    info.print();
+  }
 }

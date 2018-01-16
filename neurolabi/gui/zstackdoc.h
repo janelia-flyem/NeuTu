@@ -123,7 +123,8 @@ public:
   };
 
   enum EDocumentDataType {
-    SWC_DATA, PUNCTA_DATA, STACK_DATA, NETWORK_DATA
+    DATA_SWC, DATA_PUNCTA, DATA_STACK, DATA_NETWORK, DATA_GRAPH, DATA_ROI,
+    DATA_SEED, DATA_TODO
   };
 
   enum EObjectModifiedMode {
@@ -1065,6 +1066,8 @@ public:
     QSet<ZStackObject::ETarget> m_excludeTarget;
     QSet<ZStackObject::ETarget> m_updatedTarget;
   };
+
+  void addObjectUnsync(ZStackObject *obj, bool uniqueSource = true);
 
 public slots: //undoable commands
   /*!

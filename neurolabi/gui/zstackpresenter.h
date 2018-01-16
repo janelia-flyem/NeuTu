@@ -38,6 +38,7 @@ class ZStackOperator;
 class ZStackMvc;
 class ZKeyOperationConfig;
 class ZStackDocMenuFactory;
+class ZStackObjectInfoSet;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -418,6 +419,8 @@ public slots:
   const Swc_Tree_Node* getSelectedSwcNode() const;
 
   void updateSwcExtensionHint();
+
+  void processObjectModified(const ZStackObjectInfoSet &objSet);
 
 signals:
   void mousePositionCaptured(double x, double y, double z);

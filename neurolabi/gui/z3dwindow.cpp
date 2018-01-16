@@ -874,32 +874,6 @@ void Z3DWindow::fillDockWindows()
   connect(loadViewAction, SIGNAL(triggered()), this, SLOT(loadView()));
   cameraMenu->addAction(loadViewAction);
 
-  // reset camera button and some other utils
-//  QPushButton *resetCameraButton = new QPushButton(tr("Reset Camera"));
-//  resetCameraButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-//  connect(resetCameraButton, SIGNAL(clicked()), this, SLOT(resetCamera()));
-
-#if 0
-  QPushButton *flipViewButton = new QPushButton(tr("Back view"));
-  flipViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(flipViewButton, SIGNAL(clicked()), this, SLOT(flipView()));
-
-#  ifdef _DEBUG_
-  QPushButton *recordViewButton = new QPushButton(tr("Record view"));
-  recordViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(recordViewButton, SIGNAL(clicked()), this, SLOT(recordView()));
-
-  QPushButton *saveViewButton = new QPushButton(tr("Save view"));
-  saveViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(saveViewButton, SIGNAL(clicked()), this, SLOT(saveView()));
-
-//  QPushButton *diffViewButton = new QPushButton(tr("Calculate view difference"));
-//  diffViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-//  connect(diffViewButton, SIGNAL(clicked()), this, SLOT(diffView()));
-#  endif
-
-#endif
-
   const NeutubeConfig &config = NeutubeConfig::getInstance();
   if (config.getZ3DWindowConfig().isUtilsOn()) {
     auto utils = m_view->globalParasWidgetsGroup();
@@ -909,42 +883,39 @@ void Z3DWindow::fillDockWindows()
 
   m_widgetsGroup->addChild(m_view->captureWidgetsGroup());
 
+  const QList<neutube3d::ERendererLayer>& layerList = m_view->getLayerList();
+  foreach (neutube3d::ERendererLayer layer, layerList) {
+    m_widgetsGroup->addChild(m_view->getWidgetsGroup(layer));
+  }
+#if 0
   //volume
-  if (config.getZ3DWindowConfig().isVolumeOn()) {
+
+  if (getVolumeFilter() != NULL) {
     m_widgetsGroup->addChild(getVolumeFilter()->widgetsGroup());
   }
 
-  if (config.getZ3DWindowConfig().isGraphOn()) {
-#if defined(_FLYEM_)
-    //graph
-    m_widgetsGroup->addChild(getGraphFilter()->widgetsGroup());
-#endif
-  }
-
-  if (config.getZ3DWindowConfig().isGraphOn()) {
-#if defined(_FLYEM_)
-    m_widgetsGroup->addChild(getSurfaceFilter()->widgetsGroup());
-#endif
-  }
-
-#if defined(_FLYEM_)
-  m_widgetsGroup->addChild(getTodoFilter()->widgetsGroup());
-#endif
-
-  if (config.getZ3DWindowConfig().isSwcsOn()) {
-    //swc
+  if (getSwcFilter() != NULL) {
     m_widgetsGroup->addChild(getSwcFilter()->widgetsGroup());
   }
 
-  if (config.getZ3DWindowConfig().isMeshOn()) {
-    //mesh
+  if (getPunctaFilter() != NULL) {
+    m_widgetsGroup->addChild(getPunctaFilter()->widgetsGroup());
+  }
+
+  if (getMeshFilter() != NULL) {
     m_widgetsGroup->addChild(getMeshFilter()->widgetsGroup());
   }
 
-#if !defined(_NEUTUBE_LIGHT_)
-  //puncta
-  if (config.getZ3DWindowConfig().isPunctaOn()) {
-    m_widgetsGroup->addChild(getPunctaFilter()->widgetsGroup());
+  if (getGraphFilter() != NULL) {
+    m_widgetsGroup->addChild(getGraphFilter()->widgetsGroup());
+  }
+
+  if (getSurfaceFilter() != NULL) {
+    m_widgetsGroup->addChild(getSurfaceFilter()->widgetsGroup());
+  }
+
+  if (getTodoFilter() != NULL) {
+    m_widgetsGroup->addChild(getTodoFilter()->widgetsGroup());
   }
 #endif
 
@@ -958,8 +929,10 @@ void Z3DWindow::fillDockWindows()
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
 
-  connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()), Qt::QueuedConnection);
-  connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
+  connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()),
+          this, SLOT(updateSettingsDockWidget()), Qt::QueuedConnection);
+  connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)),
+          this, SLOT(openAdvancedSetting(QString)));
 
   customizeDockWindows(tabs);
 

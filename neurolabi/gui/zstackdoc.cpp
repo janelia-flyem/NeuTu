@@ -8011,6 +8011,18 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
   processObjectModified();
 }
 
+void ZStackDoc::addObjectUnsync(ZStackObject *obj, bool uniqueSource)
+{
+  if (obj != NULL) {
+    if (uniqueSource) {
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    } else {
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    getDataBuffer()->deliver();
+  }
+}
+
 void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
 {
   //QMutexLocker locker(&m_mutex);
@@ -8763,10 +8775,10 @@ bool ZStackDoc::hasMultipleSelectedSwcNode() const
 void ZStackDoc::updateModelData(EDocumentDataType type)
 {
   switch (type) {
-  case SWC_DATA:
+  case DATA_SWC:
     swcObjsModel()->updateModelData();
     break;
-  case PUNCTA_DATA:
+  case DATA_PUNCTA:
     punctaObjsModel()->updateModelData();
     break;
   default:

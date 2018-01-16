@@ -3140,7 +3140,7 @@ ZJsonArray ZDvidReader::readRoiJson(const std::string &dataName)
 }
 
 ZObject3dScan* ZDvidReader::readRoi(
-    const std::string &dataName, ZObject3dScan *result)
+    const std::string &dataName, ZObject3dScan *result) const
 {
   ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -3163,7 +3163,7 @@ ZObject3dScan* ZDvidReader::readRoi(
   return result;
 }
 
-ZObject3dScan ZDvidReader::readRoi(const std::string &dataName)
+ZObject3dScan ZDvidReader::readRoi(const std::string &dataName) const
 {
   ZObject3dScan obj;
   readRoi(dataName, &obj);

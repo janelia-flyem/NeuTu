@@ -18,9 +18,9 @@ public:
   static const TState STATE_MODIFIED = BIT_FLAG(1);
   static const TState STATE_ADDED = BIT_FLAG(2);
   static const TState STATE_REMOVED = BIT_FLAG(3);
-  static const TState STATE_VISIBITLITY = BIT_FLAG(4);
-  static const TState STATE_COLOR = BIT_FLAG(5);
-  static const TState STATE_ROLE = BIT_FLAG(6);
+  static const TState STATE_VISIBITLITY_CHANGED = BIT_FLAG(4);
+  static const TState STATE_COLOR_CHANGED = BIT_FLAG(5);
+  static const TState STATE_ROLE_CHANGED = BIT_FLAG(6);
 
   void setType(ZStackObject::EType type) {
     m_type = type;
@@ -50,6 +50,8 @@ public:
 
   bool operator == (const ZStackObjectInfo &info) const;
 
+  void print() const;
+
 private:
   ZStackObject::EType m_type = ZStackObject::TYPE_UNIDENTIFIED;
   ZStackObject::ETarget m_target = ZStackObject::TARGET_NULL;
@@ -68,6 +70,8 @@ public:
   bool contains(ZStackObjectRole::TRole role) const;
 
   QSet<ZStackObject::EType> getType() const;
+  QSet<ZStackObject::ETarget> getTarget() const;
+
 
   void add(const ZStackObject &obj);
 
@@ -76,6 +80,8 @@ public:
   void add(ZStackObjectRole::TRole role);
   void add(const ZStackObjectInfo &info);
   void add(const QSet<ZStackObject::ETarget> &targetSet);
+
+  void print() const;
 };
 
 
