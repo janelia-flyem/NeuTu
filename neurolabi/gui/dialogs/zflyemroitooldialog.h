@@ -46,6 +46,7 @@ public:
 public slots:
   void openProject(int index);
   void newProject();
+  void cloneProject();
   void dump(const ZWidgetMessage &msg);
   void dump(const QString &msg);
   void processMessage(const ZWidgetMessage &msg);
@@ -91,6 +92,7 @@ private:
   void init();
   ZFlyEmRoiProject* newProject(const QString &name);
   ZFlyEmRoiProject* newProjectWithoutCheck(const QString &name);
+  void cloneProject(const QString &name);
   bool isValidName(const QString &name) const;
   void uploadProjectList();
   int getSliceStep() const;
