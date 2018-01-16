@@ -23,7 +23,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   connect(&m_singleColorForAllMesh, &ZVec4Parameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
 
   // Color Mode
-  m_colorMode.addOptions("Mesh Color", "Single Color", "Mesh Source");
+  m_colorMode.addOptions("Mesh Color", "Single Color", "Mesh Source", "Indexed Color");
   m_colorMode.select("Mesh Source");
 
   connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
@@ -339,6 +339,20 @@ void Z3DMeshFilter::prepareColor()
     m_meshRenderer.setColorSource("CustomColor");
   } else if (m_colorMode.isSelected("Mesh Color")) {
     m_meshRenderer.setColorSource("MeshColor");
+  } else if (m_colorMode.isSelected("Indexed Color")) {
+    glm::vec4 defaultColor = m_indexedColors.size() > 1 ? m_indexedColors[0] : glm::vec4(1, 1, 1, 1);
+    for (size_t i = 0; i < m_meshList.size(); ++i) {
+      auto it = m_meshIDToColorIndex.find(m_meshList[i]->getLabel());
+      glm::vec4 color = defaultColor;
+      if (it != m_meshIDToColorIndex.end()) {
+        if (m_indexedColors.size() > it->second) {
+          color = m_indexedColors[it->second];
+        }
+      }
+      m_meshColors.push_back(color);
+    }
+    m_meshRenderer.setDataColors(&m_meshColors);
+    m_meshRenderer.setColorSource("CustomColor");
   }
 }
 
@@ -375,6 +389,14 @@ std::vector<bool> Z3DMeshFilter::hitObject(
   }
 
   return hitArray;
+}
+
+void Z3DMeshFilter::setColorIndexing(const std::vector<glm::vec4> &indexedColors,
+                                     const std::map<uint64_t, std::size_t> &meshIdToColorIndex)
+{
+  m_indexedColors = indexedColors;
+  m_meshIDToColorIndex = meshIdToColorIndex;
+  updateMeshVisibleState();
 }
 
 

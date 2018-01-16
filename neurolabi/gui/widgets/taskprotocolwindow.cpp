@@ -15,6 +15,7 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskbodyhistory.h"
+#include "protocols/taskbodycleave.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
@@ -406,8 +407,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
-    if (save) {
-        saveState();
+    if (save && (m_currentTaskIndex >= 0)) {
+      saveState();
     }
 
     // load first task; enable UI and go
@@ -766,6 +767,9 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             m_taskList.append(task);
         } else if (taskType == "body history") {
           QSharedPointer<TaskProtocolTask> task(new TaskBodyHistory(taskJson.toObject(), m_body3dDoc));
+          m_taskList.append(task);
+        } else if (taskType == "body cleave") {
+          QSharedPointer<TaskProtocolTask> task(new TaskBodyCleave(taskJson.toObject(), m_body3dDoc));
           m_taskList.append(task);
         } else if (taskType == "split seeds") {
             // I'm not really fond of this task having a different constructor signature, but
