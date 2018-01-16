@@ -10,6 +10,7 @@ class Neu3Window;
 class Z3DWindow;
 class Z3DCanvas;
 class ZFlyEmProofMvc;
+class QProgressDialog;
 class QToolBar;
 class ZFlyEmBody3dDoc;
 class ZFlyEmProofDoc;
@@ -96,6 +97,10 @@ private slots:
 
   void syncBodyListModel();
 
+  void meshArchiveLoadingStarted();
+  void meshArchiveLoadingProgress(float fraction);
+  void meshArchiveLoadingEnded();
+
   void test();
 
 private:
@@ -107,13 +112,14 @@ private:
 private:
   Ui::Neu3Window *ui;
 
-  Z3DCanvas *m_sharedContext = NULL;
-  Z3DWindow *m_3dwin = NULL;
-  ZFlyEmProofMvc *m_dataContainer = NULL;
-  QToolBar *m_toolBar = NULL;
-  ZBodyListWidget *m_bodyListWidget = NULL;
+  Z3DCanvas *m_sharedContext = nullptr;
+  Z3DWindow *m_3dwin = nullptr;
+  ZFlyEmProofMvc *m_dataContainer = nullptr;
+  QToolBar *m_toolBar = nullptr;
+  ZBodyListWidget *m_bodyListWidget = nullptr;
   bool m_doingBulkUpdate = false;
   class DoingBulkUpdate;
+  QProgressDialog *m_progressDialog = nullptr;
 };
 
 #endif // NEU3WINDOW_H
