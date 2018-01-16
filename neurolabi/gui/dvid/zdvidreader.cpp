@@ -642,6 +642,14 @@ ZMesh* ZDvidReader::readMesh(uint64_t bodyId, int zoom)
 
 struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId)
 {
+  size_t bytesTotal;
+  return readMeshArchiveStart(bodyId, bytesTotal);
+}
+
+struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal)
+{
+  bytesTotal = 0;
+
   ZDvidUrl dvidUrl(getDvidTarget());
 
   m_bufferReader.read(dvidUrl.getMeshesTarsUrl(bodyId).c_str(), isVerbose());
@@ -659,11 +667,20 @@ struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId)
     return nullptr;
   }
 
+  bytesTotal = buffer.size();
   return arc;
 }
 
 ZMesh *ZDvidReader::readMeshArchiveNext(struct archive *arc)
 {
+  size_t bytesJustRead;
+  return readMeshArchiveNext(arc, bytesJustRead);
+}
+
+ZMesh *ZDvidReader::readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead)
+{
+  bytesJustRead = 0;
+
   struct archive_entry *entry;
   if (archive_read_next_header(arc, &entry) != ARCHIVE_OK) {
     return nullptr;
@@ -685,6 +702,7 @@ ZMesh *ZDvidReader::readMeshArchiveNext(struct archive *arc)
     mesh->setLabel(std::stoull(bodyIdStr));
   }
 
+  bytesJustRead = size;
   return mesh;
 }
 

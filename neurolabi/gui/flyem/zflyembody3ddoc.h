@@ -335,6 +335,10 @@ signals:
   void bodyMeshLoaded();
   void bodyMeshesAdded();
 
+  void meshArchiveLoadingStarted();
+  void meshArchiveLoadingProgress(float fraction);
+  void meshArchiveLoadingEnded();
+
 private slots:
 //  void updateBody();
   void processEvent();

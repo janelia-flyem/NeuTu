@@ -3,6 +3,8 @@
 #include <QDockWidget>
 #include <QMessageBox>
 
+#include <QProgressDialog>
+
 #include "ui_neu3window.h"
 #include "z3dwindow.h"
 #include "zstackdoc.h"
@@ -73,6 +75,13 @@ void Neu3Window::connectSignalSlot()
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
           this, &Neu3Window::zoomToBodyMesh, Qt::QueuedConnection);
 
+  connect(getBodyDocument(), SIGNAL(meshArchiveLoadingStarted()),
+          this, SLOT(meshArchiveLoadingStarted()));
+  connect(getBodyDocument(), SIGNAL(meshArchiveLoadingProgress(float)),
+          this, SLOT(meshArchiveLoadingProgress(float)));
+  connect(getBodyDocument(), SIGNAL(meshArchiveLoadingEnded()),
+          this, SLOT(meshArchiveLoadingEnded()));
+
   // Loading an ID that corresponds to an archive trigers the loading of other meshes
   // and the ZBodyListWidget needs to show them.  The synchronizing of that widget
   // with the body list is most efficient if it occurs on the single bodyMeshesAdded
@@ -137,9 +146,9 @@ void Neu3Window::createDockWidget()
   connect(m_bodyListWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
           this, SLOT(setBodySelection(QSet<uint64_t>)));
   connect(this, SIGNAL(bodySelected(uint64_t)),
-          m_bodyListWidget, SLOT(selectBodySliently(uint64_t)));
+          m_bodyListWidget, SLOT(selectBody(uint64_t)));
   connect(this, SIGNAL(bodyDeselected(uint64_t)),
-          m_bodyListWidget, SLOT(deselectBodySliently(uint64_t)));
+          m_bodyListWidget, SLOT(deselectBody(uint64_t)));
   connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
           m_bodyListWidget, SLOT(removeBody(uint64_t)));
 
@@ -372,3 +381,28 @@ void Neu3Window::syncBodyListModel()
   }
 }
 
+static const int PROGRESS_MAX = 100;
+
+void Neu3Window::meshArchiveLoadingStarted()
+{
+  if (!m_progressDialog) {
+    m_progressDialog = new QProgressDialog("Loading meshes", QString(), 0, PROGRESS_MAX, this);
+    m_progressDialog->setWindowModality(Qt::WindowModal);
+    m_progressDialog->setMinimumDuration(0);
+    m_progressDialog->setValue(0);
+  }
+}
+
+void Neu3Window::meshArchiveLoadingProgress(float fraction)
+{
+  if (m_progressDialog) {
+    m_progressDialog->setValue(fraction * PROGRESS_MAX);
+  }
+}
+
+void Neu3Window::meshArchiveLoadingEnded()
+{
+  if (m_progressDialog) {
+    m_progressDialog->setValue(PROGRESS_MAX);
+  }
+}

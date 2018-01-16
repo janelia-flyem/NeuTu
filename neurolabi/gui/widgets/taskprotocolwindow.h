@@ -106,7 +106,7 @@ private:
     ZFlyEmBody3dDoc * m_body3dDoc;
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
-    int m_currentTaskIndex;
+    int m_currentTaskIndex = -1;
     QWidget * m_currentTaskWidget = NULL;
     bool m_nodeLocked;
     BodyPrefetchQueue * m_prefetchQueue;
