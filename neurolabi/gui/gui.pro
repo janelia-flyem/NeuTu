@@ -825,6 +825,7 @@ HEADERS += mainwindow.h \
     zmeshfactory.h \
     flyem/zflyemmeshfactory.h \
     protocols/taskbodyhistory.h \
+    protocols/taskbodycleave.h \
     widgets/zpythonprocess.h \
     zstackutil.h \
     zstackptr.h \
@@ -1441,6 +1442,7 @@ SOURCES += main.cpp \
     zmeshfactory.cpp \
     flyem/zflyemmeshfactory.cpp \
     protocols/taskbodyhistory.cpp \
+    protocols/taskbodycleave.cpp \
     widgets/zpythonprocess.cpp \
     zstackutil.cpp \
     zstackptr.cpp \

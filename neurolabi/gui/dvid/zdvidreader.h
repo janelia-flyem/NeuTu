@@ -137,7 +137,9 @@ public:
    * Draco-compressed meshes
    */
   struct archive *readMeshArchiveStart(uint64_t bodyId);
+  struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal);
   ZMesh *readMeshArchiveNext(struct archive *arc);
+  ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead);
   void readMeshArchiveEnd(struct archive *arc);
 
   ZObject3dScan* readBodyDs(
