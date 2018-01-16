@@ -3,6 +3,8 @@
 #if _QT_GUI_USED_
 #include <QPixmap>
 #include <QPainter>
+#include "zpixmap.h"
+#include "zpainter.h"
 #endif
 
 #include <algorithm>
@@ -752,3 +754,112 @@ ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 
   return stack;
 }
+
+ZStack* ZStackFactory::MakeStrokeMask(const std::vector<ZStroke2d *> strokeList)
+{
+  ZStack *stack = NULL;
+
+#if _QT_GUI_USED_
+  ZIntCuboid box;
+  for (ZStroke2d *stroke : strokeList) {
+    ZIntCuboid subbox;
+    stroke->boundBox(&subbox);
+    box.join(subbox);
+  }
+  if (!box.isEmpty()) {
+    box.expandX(1);
+    box.expandY(1);
+    stack = MakeZeroStack(GREY, box);
+  }
+  for (ZStroke2d *stroke : strokeList) {
+    stroke->labelStack(stack);
+  }
+#endif
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeStrokeProjMask(const std::vector<ZStroke2d *> strokeList)
+{
+  ZStack *stack = NULL;
+
+#if _QT_GUI_USED_
+  ZIntCuboid box;
+  for (ZStroke2d *stroke : strokeList) {
+    ZIntCuboid subbox;
+    stroke->boundBox(&subbox);
+    box.join(subbox);
+  }
+  if (!box.isEmpty()) {
+    box.setFirstZ(0);
+    box.setLastZ(0);
+    box.expandX(1);
+    box.expandY(1);
+    stack = MakeZeroStack(GREY, box);
+  }
+  for (ZStroke2d *stroke : strokeList) {
+    stroke->labelProjStack(stack);
+  }
+#endif
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeStrokeProjMask(
+    const std::vector<ZStroke2d *> strokeList, int value)
+{
+  ZStack *stack = NULL;
+
+#if _QT_GUI_USED_
+  ZIntCuboid box;
+  for (ZStroke2d *stroke : strokeList) {
+    ZIntCuboid subbox;
+    stroke->boundBox(&subbox);
+    box.join(subbox);
+  }
+  if (!box.isEmpty()) {
+    box.setFirstZ(0);
+    box.setLastZ(0);
+    box.expandX(1);
+    box.expandY(1);
+    stack = MakeZeroStack(GREY, box);
+  }
+  for (ZStroke2d *stroke : strokeList) {
+    stroke->labelProjStack(stack, value);
+  }
+#endif
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeStrokeMask(
+    const std::vector<ZStroke2d *> strokeList, int z)
+{
+  ZStack *stack = NULL;
+
+#if _QT_GUI_USED_
+  ZIntCuboid box;
+  for (ZStroke2d *stroke : strokeList) {
+    ZIntCuboid subbox;
+    if (stroke->getZ() == z || stroke->isPenetrating()) {
+      stroke->boundBox(&subbox);
+      box.join(subbox);
+    }
+  }
+  if (!box.isEmpty()) {
+    box.setFirstZ(z);
+    box.setLastZ(z);
+    box.expandX(1);
+    box.expandY(1);
+    stack = MakeZeroStack(GREY, box);
+  }
+  for (ZStroke2d *stroke : strokeList) {
+    if (stroke->getZ() == z || stroke->isPenetrating()) {
+      stroke->labelStack(stack);
+    }
+  }
+#endif
+
+  return stack;
+}
+

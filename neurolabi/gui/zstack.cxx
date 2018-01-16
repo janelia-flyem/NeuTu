@@ -2268,16 +2268,6 @@ void ZStack::downsampleMinIgnoreZero(int xintv, int yintv, int zintv)
   }
 }
 
-
-#define ZSTACK_SWAP(v1, v2, T) \
-{\
-  T tmp;\
-  tmp = v1;\
-  v1 = v2;\
-  v2 = tmp;\
-}
-
-
 void ZStack::swapData(ZStack *stack)
 {
   std::swap(m_stack, stack->m_stack);

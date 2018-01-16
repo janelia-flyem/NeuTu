@@ -951,8 +951,16 @@ void ZFlyEmProofDoc::initGrayscaleSlice()
     slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
     slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
     slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
+    prepareGraySlice(slice);
     addObject(slice, true);
   }
+}
+
+void ZFlyEmProofDoc::setGraySliceCenterCut(int width, int height)
+{
+  m_graySliceCenterCutWidth = width;
+  m_graySliceCenterCutHeight = height;
+  prepareGraySlice(getDvidGraySlice());
 }
 
 void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
@@ -2454,6 +2462,13 @@ void ZFlyEmProofDoc::decoratePsd(ZSlicedPuncta *puncta)
   puncta->pushColor(QColor(0, 0, 255));
   puncta->pushVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER |
                            neutube::display::Sphere::VE_OUT_FOCUS_DIM);
+}
+
+void ZFlyEmProofDoc::prepareGraySlice(ZDvidGraySlice *slice)
+{
+  if (slice != NULL) {
+    slice->setCenterCut(m_graySliceCenterCutWidth, m_graySliceCenterCutHeight);
+  }
 }
 
 std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(ZObject3dScan &body)
@@ -4016,6 +4031,62 @@ void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
     pushUndoCommand(command);
     endObjectModifiedMode();
     notifyObjectModified();
+  }
+}
+
+void ZFlyEmProofDoc::executeRotateRoiPlaneCommand(int z, double theta)
+{
+  if (theta != 0) {
+    QUndoCommand *allCommand = new QUndoCommand;
+
+    QList<ZSwcTree*> treeList = getSwcList(ZStackObjectRole::ROLE_ROI);
+
+    foreach (ZSwcTree *tree, treeList) {
+      std::vector<Swc_Tree_Node*> subNodeList =  tree->getNodeOnPlane(z);
+      if (!subNodeList.empty()) {
+        ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ *command =
+            new ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ(this, allCommand);
+        command->addNode(subNodeList);
+        command->useNodeCentroid();
+        command->setRotateAngle(theta);
+      }
+    }
+    if (allCommand->childCount() > 0) {
+      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      pushUndoCommand(allCommand);
+      endObjectModifiedMode();
+      notifyObjectModified();
+    } else {
+      delete allCommand;
+    }
+  }
+}
+
+void ZFlyEmProofDoc::executeScaleRoiPlaneCommand(int z, double sx, double sy)
+{
+  if ((sx != 1.0 || sy != 1.0) && sx > 0.0 && sy > 0.0) {
+    QUndoCommand *allCommand = new QUndoCommand;
+
+    QList<ZSwcTree*> treeList = getSwcList(ZStackObjectRole::ROLE_ROI);
+
+    foreach (ZSwcTree *tree, treeList) {
+      std::vector<Swc_Tree_Node*> subNodeList =  tree->getNodeOnPlane(z);
+      if (!subNodeList.empty()) {
+        ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ *command =
+            new ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ(this, allCommand);
+        command->addNode(subNodeList);
+        command->setScale(sx, sy);
+      }
+    }
+
+    if (allCommand->childCount() > 0) {
+      beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
+      pushUndoCommand(allCommand);
+      endObjectModifiedMode();
+      notifyObjectModified();
+    } else {
+      delete allCommand;
+    }
   }
 }
 

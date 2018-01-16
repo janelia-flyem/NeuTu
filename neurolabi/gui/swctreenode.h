@@ -101,6 +101,8 @@ inline int type(const Swc_Tree_Node *tn) { return tn->node.type; }
 int label(const Swc_Tree_Node *tn);
 int index(const Swc_Tree_Node *tn);
 
+void print(const Swc_Tree_Node *tn);
+
 /*!
  * \brief Get the lenght of a node
  *
@@ -355,6 +357,7 @@ void translate(Swc_Tree_Node *tn, const ZIntPoint &pt);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, const ZPoint &center,
             bool inverse = false);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, bool inverse = false);
+void rotateAroundZ(Swc_Tree_Node *tn, double theta, double cx, double cy);
 
 /*!
  *

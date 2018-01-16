@@ -224,6 +224,11 @@ void ZProofreadWindow::diagnose()
   m_mainMvc->diagnose();
 }
 
+void ZProofreadWindow::showSettings()
+{
+  m_mainMvc->showSetting();
+}
+
 QProgressDialog* ZProofreadWindow::getProgressDialog()
 {
   if (m_progressDlg == NULL) {
@@ -429,6 +434,10 @@ void ZProofreadWindow::createMenu()
   QAction *diagnoseAction = new QAction("Diagnose", this);
   connect(diagnoseAction, SIGNAL(triggered()), this, SLOT(diagnose()));
   m_advancedMenu->addAction(diagnoseAction);
+
+  QAction *settingAction = new QAction(" Settings", this);
+  connect(settingAction, SIGNAL(triggered()), this, SLOT(showSettings()));
+  m_advancedMenu->addAction(settingAction);
 
 
 //  m_viewMenu->setEnabled(false);

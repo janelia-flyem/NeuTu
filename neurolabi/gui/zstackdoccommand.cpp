@@ -542,6 +542,9 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
     m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
+  } else if (m_doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+    m_tree->useCosmeticPen(true);
+    m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
   }
 
   m_tree->setDataFromNode(m_node);
@@ -807,6 +810,221 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::redo()
 }
 
 void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::undo()
+{
+  startUndo();
+  recover();
+}
+
+///////////////////////////////////
+ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::ChangeSwcNodePosition(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Change SWC node position"));
+}
+
+ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::~ChangeSwcNodePosition()
+{
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::setNodeOperation(
+    const std::vector<Swc_Tree_Node*> &nodeArray,
+    const std::vector<ZPoint> &newPosition)
+{
+  m_nodeArray.clear();
+  m_newPosition.clear();
+
+  if (!m_nodeArray.empty() && (m_nodeArray.size() == newPosition.size())) {
+    m_nodeArray = nodeArray;
+    m_newPosition = newPosition;
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::redo()
+{
+  for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+    Swc_Tree_Node *tn = m_nodeArray[i];
+    if (SwcTreeNode::center(tn) != m_newPosition[i]) {
+      backup(tn);
+      SwcTreeNode::setPos(tn, m_newPosition[i]);
+    }
+  }
+  if (!m_backupSet.empty()) {
+    m_doc->processSwcModified();
+    m_doc->notifyObjectModified();
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::undo()
+{
+  startUndo();
+  recover();
+}
+
+//////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::MoveSwcNode::MoveSwcNode(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Move SWC nodes"));
+}
+
+ZStackDocCommand::SwcEdit::MoveSwcNode::~MoveSwcNode()
+{
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::setOffset(const ZPoint &offset)
+{
+  m_offset = offset;
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::redo()
+{
+  if (m_offset.lengthSqure() != 0) {
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      SwcTreeNode::setPos(tn, SwcTreeNode::center(tn) + m_offset);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->notifyObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::undo()
+{
+  startUndo();
+  recover();
+}
+
+bool ZStackDocCommand::SwcEdit::MoveSwcNode::test()
+{
+  std::cout << "Testing ZStackDocCommand::SwcEdit::MoveSwcNode ..." << std::endl;
+  m_nodeArray.clear();
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  setOffset(ZPoint(1, 2, 3));
+  m_nodeArray.push_back(tn);
+  redo();
+  SwcTreeNode::print(tn);
+  undo();
+  SwcTreeNode::print(tn);
+  redo();
+  redo();
+  SwcTreeNode::print(tn);
+  undo();
+  SwcTreeNode::print(tn);
+
+  return true;
+}
+
+///////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::RotateSwcNodeAroundZ(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Rotate SWC nodes around the Z axis"));
+}
+
+ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::~RotateSwcNodeAroundZ()
+{
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::setRotateCenter(
+    double x, double y)
+{
+  m_cx = x;
+  m_cy = y;
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::setRotateAngle(double theta)
+{
+  m_theta = theta;
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::useNodeCentroid()
+{
+  ZPoint center = SwcTreeNode::centroid(m_nodeArray.begin(), m_nodeArray.end());
+  setRotateCenter(center.x(), center.y());
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::redo()
+{
+  if (m_theta != 0) {
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      SwcTreeNode::rotateAroundZ(tn, m_theta, m_cx, m_cy);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->notifyObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::undo()
+{
+  startUndo();
+  recover();
+}
+
+
+///////////////////////////////////////////
+ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::ScaleSwcNodeAroundZ(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Scale SWC nodes around the Z axis"));
+}
+
+ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::~ScaleSwcNodeAroundZ()
+{
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::setScale(
+    double sx, double sy)
+{
+  m_scaleX = sx;
+  m_scaleY = sy;
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::redo()
+{
+  if (m_scaleX != 1.0 || m_scaleY != 1.0) {
+    ZPoint center = SwcTreeNode::centroid(m_nodeArray.begin(), m_nodeArray.end());
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      ZPoint pos = SwcTreeNode::center(tn);
+      pos.setX((pos.x() - center.x()) * m_scaleX + center.x());
+      pos.setY((pos.y() - center.y()) * m_scaleY + center.y());
+
+      SwcTreeNode::setPos(tn, pos);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->notifyObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::undo()
 {
   startUndo();
   recover();

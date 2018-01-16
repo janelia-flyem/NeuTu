@@ -464,6 +464,7 @@ void FlyEmBodySplitProjectDialog::updateWidget()
     text += QString("<p>Body ID: %2</p>").
           arg(m_project.getBodyId());
   }
+
   ui->infoWidget->setText(text);
 
   updateBookmarkTable();

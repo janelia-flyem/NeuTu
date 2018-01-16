@@ -72,6 +72,8 @@ public:
     return m_labelInfo;
   }
 
+  void setGraySliceCenterCut(int width, int height);
+
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
   ZDvidGraySlice* getDvidGraySlice() const;
@@ -456,6 +458,9 @@ public slots: //Commands
   void executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeRemoveTodoItemCommand();
 
+  void executeRotateRoiPlaneCommand(int z, double theta);
+  void executeScaleRoiPlaneCommand(int z, double sx, double sy);
+
 
 public slots:
   void syncMergeWithDvid();
@@ -532,6 +537,8 @@ private:
   void decorateTBar(ZSlicedPuncta *puncta);
   void decoratePsd(ZSlicedPuncta *puncta);
   void loadRoiFunc();
+
+  void prepareGraySlice(ZDvidGraySlice *slice);
 
   std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
 
@@ -611,6 +618,10 @@ protected:
   QString m_mergeAutoSavePath;
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
+
+  //Data settings
+  int m_graySliceCenterCutWidth = 256;
+  int m_graySliceCenterCutHeight = 256;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<ZFlyEmBodyColorOption::EColorOption,

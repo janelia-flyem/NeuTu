@@ -554,6 +554,7 @@ void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
 #endif
   setCanvasRegion(x0, y0, w, h);
   m_viewProj.setWidgetRect(rect());
+  m_viewProj.maximizeViewPort();
   m_isReady = false;
 
   updateView();

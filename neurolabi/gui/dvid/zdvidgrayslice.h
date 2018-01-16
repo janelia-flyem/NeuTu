@@ -74,6 +74,7 @@ public:
    */
   bool hasLowresRegion() const;
 
+  void setCenterCut(int width, int height);
 
 public: //for testing
   void saveImage(const std::string &path);

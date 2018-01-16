@@ -60,7 +60,8 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
 
 std::pair<ZStack*, ZSparseStack*>
 ZBodySplitCommand::parseSignalPath(
-    std::string &signalPath, const std::string &dataDir, bool isFile,
+    std::string &signalPath, const ZJsonObject &signalInfo,
+    const std::string &dataDir, bool isFile,
     const ZIntCuboid &range, ZStackGarbageCollector &gc)
 {
   ZSparseStack *spStack = NULL;
@@ -68,17 +69,39 @@ ZBodySplitCommand::parseSignalPath(
 
   QUrl signalUrl(signalPath.c_str());
   if (signalUrl.scheme() == "http") { //Sparse stack
-    ZDvidReader *reader =
-        ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
-    if (reader != NULL) {
-      m_bodyId = ZDvidUrl::GetBodyId(signalPath);
-      ZDvidSparseStack *dvidStack =
-          dvidStack = reader->readDvidSparseStack(m_bodyId);
-      spStack = dvidStack->getSparseStack(range);
-      gc.registerObject(dvidStack);
+    m_bodyId = ZDvidUrl::GetBodyId(signalPath);
+    if (m_bodyId > 0) {
+      ZDvidReader reader;
+      ZDvidTarget target;
+      target.setFromUrl(signalPath);
+      if (!signalInfo.isEmpty()) {
+        target.updateData(signalInfo);
+      }
+      reader.open(target);
+      if (reader.isReady()) {
+        ZDvidSparseStack *dvidStack =
+            dvidStack = reader.readDvidSparseStack(m_bodyId);
+        spStack = dvidStack->getSparseStack(range);
+        gc.registerObject(dvidStack);
+      }
+    }
+
+//    ZDvidReader *reader =
+//        ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
+//    if (read) {
+//      if (!signalInfo.isEmpty()) {
+//        if (signalInfo.hasKey(ZDvidTarget::m_sourceConfigKey)) {
+//          reader->getDvidTarget();
+//        }
+//      }
+
+//      ZDvidSparseStack *dvidStack =
+//          dvidStack = reader->readDvidSparseStack(m_bodyId);
+//      spStack = dvidStack->getSparseStack(range);
+//      gc.registerObject(dvidStack);
 //      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
 //      gc.registerObject(spStack);
-    }
+//    }
   } else {
     if (isFile) {
       signalPath = ZString(signalPath).absolutePath(dataDir);
@@ -141,6 +164,11 @@ int ZBodySplitCommand::run(
   std::string signalPath = ZJsonParser::stringValue(inputJson["signal"]);
   std::cout << "Signal: " << signalPath << std::endl;
 
+  ZJsonObject signalInfo;
+  if (inputJson.hasKey("signal info")) {
+    signalInfo.set(inputJson.value("signal info"));
+  }
+
   ZIntCuboid range;
 
   if (inputJson.hasKey("range")) {
@@ -151,13 +179,22 @@ int ZBodySplitCommand::run(
 
   ZStackGarbageCollector gc;
   std::pair<ZStack*, ZSparseStack*> data =
-      parseSignalPath(signalPath, dataDir, isFile, range, gc);
-//  ZSparseStack *spStack = data.second;
+      parseSignalPath(signalPath, signalInfo, dataDir, isFile, range, gc);
+#ifdef _DEBUG_2
+  ZSparseStack *spStack = data.second;
+  if (spStack != NULL) {
+    std::cout << "Saving sparse stack ..." << std::endl;
+    spStack->save(GET_TEST_DATA_DIR + "/test.zss");
+    spStack->getObjectMask()->save(GET_TEST_DATA_DIR + "/test.sobj");
+  }
+#endif
+
 //  ZStack *signalStack = data.first;
 
 
   ZStackWatershedContainer container(data);
 
+  container.setRefiningBorder(true);
   container.setCcaPost(true);
 
   if (!container.isEmpty()) {
@@ -266,8 +303,8 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
 void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
     const std::string &splitTaskKey, const std::string &signalPath, bool committing)
 {
-  ZStack *resultStack = container.getResultStack();
-  if (resultStack != NULL) {
+//  ZStack *resultStack = container.getResultStack();
+  if (container.hasResult()) {
     QUrl outputUrl(output.c_str());
     ZObject3dScanArray *result = container.makeSplitResult(2, NULL);
 
@@ -345,7 +382,7 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
 //      }
     } else {
       ZStackWriter writer;
-      writer.write(output, resultStack);
+      writer.write(output, container.getResultStack().get());
     }
 
 //      delete result;

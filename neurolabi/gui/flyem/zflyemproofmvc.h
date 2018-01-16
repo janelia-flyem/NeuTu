@@ -49,6 +49,7 @@ class ZDvidLabelSlice;
 class ZFlyEmGrayscaleDialog;
 class FlyEmBodyIdDialog;
 class ZFlyEmMergeUploadDialog;
+class ZFlyEmProofSettingDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -145,6 +146,7 @@ public:
   }
 
   void diagnose();
+  void showSetting();
 
   Z3DWindow* makeExternalSkeletonWindow(NeuTube3D::EWindowType windowType);
   Z3DWindow* makeExternalMeshWindow(NeuTube3D::EWindowType windowType);
@@ -287,7 +289,13 @@ public slots:
   void loadRoiProject();
   void closeRoiProject();
   void updateRoiGlyph();
+
   void estimateRoi();
+//  void expandPlaneRoi();
+//  void shrinkPlaneRoi();
+  void movePlaneRoi(double dx, double dy);
+  void rotatePlaneRoi(double theta);
+  void scalePlaneRoi(double sx, double sy);
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
@@ -440,6 +448,7 @@ private:
   ZDvidSparseStack* updateBodyForSplit(uint64_t bodyId, ZDvidReader &reader);
 
   void prepareTile(ZDvidTileEnsemble *te);
+  void applySettings();
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 
@@ -476,6 +485,7 @@ protected:
   ZFlyEmGrayscaleDialog *m_grayscaleDlg;
   FlyEmBodyIdDialog *m_bodyIdDialog;
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
+  ZFlyEmProofSettingDialog *m_settingDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

@@ -42,6 +42,8 @@
 #include "zmessagemanager.h"
 #include "zdialogfactory.h"
 #include "zobject3dfactory.h"
+#include "zmeshfactory.h"
+#include "z3dmeshfilter.h"
 
 #ifdef _DEBUG_2
 #include "dvid/zdvidgrayslicescrollstrategy.h"
@@ -609,6 +611,41 @@ int ZStackFrame::importImageSequence(const char *filePath)
   m_view->reset();
 
   return SUCCESS;
+}
+
+Z3DWindow* ZStackFrame::viewSegmentationMesh()
+{
+  Z3DWindow *window = NULL;
+
+  QList<ZStackObject*> objList =
+      document()->getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
+  if (!objList.isEmpty()) {
+    QList<ZMesh*> meshList;
+    foreach (ZStackObject *obj, objList) {
+      ZObject3dScan *region = dynamic_cast<ZObject3dScan*>(obj);
+      if (region != NULL) {
+        ZMesh *mesh = ZMeshFactory::MakeMesh(*region);
+        if (mesh != NULL) {
+          if (!mesh->empty()) {
+            mesh->setColor(region->getColor());
+            mesh->pushObjectColor();
+            meshList.append(mesh);
+          }
+        }
+      }
+    }
+    if (!meshList.isEmpty()) {
+      ZStackFrame *newFrame = ZStackFrame::Make(NULL);
+      newFrame->document()->addMesh(meshList);
+      window = ZWindowFactory::Open3DWindow(newFrame);
+      if (window != NULL) {
+        window->getMeshFilter()->setColorMode("Mesh Color");
+      }
+      delete newFrame;
+    }
+  }
+
+  return window;
 }
 
 void ZStackFrame::saveTraceProject(const QString &filePath,
@@ -1201,7 +1238,7 @@ void ZStackFrame::exportChainFileList(const QString &filePath)
 {
   document()->exportChainFileList(filePath.toStdString().c_str());
 }
-
+/*
 ZStack* ZStackFrame::getObjectMask()
 {
   return view()->getObjectMask(1);
@@ -1211,7 +1248,7 @@ ZStack* ZStackFrame::getObjectMask(neutube::EColor color)
 {
   return view()->getObjectMask(color, 1);
 }
-
+*/
 ZStack* ZStackFrame::getStrokeMask()
 {
   return view()->getStrokeMask(1);

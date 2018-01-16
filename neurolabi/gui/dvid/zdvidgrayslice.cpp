@@ -7,6 +7,7 @@
 #include "misc/miscutility.h"
 #include "imgproc/zstackprocessor.h"
 #include "zintcuboid.h"
+#include "neutubeconfig.h"
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
@@ -123,6 +124,10 @@ void ZDvidGraySlice::updateImage(const ZStack *stack)
   m_image.setOffset(-stack->getOffset().getX(), -stack->getOffset().getY());
   m_image.setData(stack->array8());
   updateContrast();
+
+#ifdef _DEBUG_2
+  m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
+#endif
 }
 
 void ZDvidGraySlice::saveImage(const std::string &path)
@@ -254,6 +259,12 @@ void ZDvidGraySlice::setContrastProtocol(const ZContrastProtocol &cp)
 int ZDvidGraySlice::getScale() const
 {
   return misc::GetZoomScale(getZoom());
+}
+
+void ZDvidGraySlice::setCenterCut(int width, int height)
+{
+  m_centerCutWidth = width;
+  m_centerCutHeight = height;
 }
 
 void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)

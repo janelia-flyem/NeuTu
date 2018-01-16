@@ -9,6 +9,8 @@
 #include "zsttransform.h"
 #include "neutube.h"
 
+class ZStack;
+
 class ZPixmap : public QPixmap
 {
 public:
@@ -41,6 +43,19 @@ public:
   QRectF getActiveArea(neutube::ECoordinateSystem coord) const;
   bool isFullyActive() const;
   void matchProj();
+
+  /*!
+   * \brief Convert the foreground of the pixmap to a stack without transformation
+   * \param maskValue Resulted value.
+   */
+  ZStack* toPlainStack(uint8_t maskValue);
+
+  /*!
+   * \brief Convert pixels with a certain color in the pixmap to a stack without transformation
+   * \param color Source color.
+   * \param maskValue Resulted value.
+   */
+  ZStack* toPlainStack(neutube::EColor color, uint8_t maskValue);
 
 private:
   void cleanFunc(QPixmap *pixmap);
