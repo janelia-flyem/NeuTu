@@ -9,10 +9,23 @@ class ZBrowserOpener
 {
 public:
   ZBrowserOpener();
-
+  ZBrowserOpener(QString browser,bool path=false){
+    if(path){
+      setBrowserPath(browser);
+    }
+    else{
+      findBrowser(browser);
+    }
+  }
 public:
-  static void open(const QString& url);
-  static void open(const QUrl& url);
+  bool findBrowser(QString brower_name);
+  void setBrowserPath(QString brower_path){
+    m_brower_path=brower_path;
+  }
+  void open(const QString& url);
+  void open(const QUrl& url);
+private:
+  QString m_brower_path;
 };
 
 

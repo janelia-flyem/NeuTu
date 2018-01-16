@@ -197,35 +197,33 @@ double ZMeanDsFilter::filter(double *buffer)
 
 double ZEdgeDsFilter::filter(double *buffer)
 {
-  const double sigma_x=3.0,sigma_y=3.0,sigma_z=1.0;
-  const double sigma_x2=sigma_x*sigma_x;
-  const double sigma_y2=sigma_y*sigma_y;
-  const double sigma_z2=sigma_z*sigma_z;
-  const double sigma_x4=sigma_x2*sigma_x2;
-  const double sigma_y4=sigma_y2*sigma_y2;
-  const double sigma_z4=sigma_z2*sigma_z2;
-
   int center_x=m_sX/2,center_y=m_sY/2,center_z=m_sZ/2;
   if(buffer[center_z*m_sX*m_sY+center_y*m_sX+center_x]==0){
     return 0.0;
   }
 
-  double rv=0;
-  double sum=0.0;
+  if(m_sX==1 || m_sY==1 || m_sZ==1){
+    return 0.0;
+  }
+  double sigx=(m_sX-1)/6.0,sigy=(m_sY-1)/6.0,sigz=(m_sZ-1)/6.0;
+  double sigx2=sigx*sigx,sigy2=sigy*sigy,sigz2=sigz*sigz;
+
+  double weight=0.0;
+  double rv=0.0;
+  int off=0;
+
   for(int k=0;k<m_sZ;++k){
     double z=k-center_z;
     for(int j=0;j<m_sY;++j){
       double y=j-center_y;
       for(int i=0;i<m_sX;++i){
         double x=i-center_x;
-        double factor=(x*x/sigma_x4-1/sigma_x2 +
-                       y*y/sigma_y4-1/sigma_y2 +
-                       z*z/sigma_z4-1/sigma_z2)*
-                       std::exp(-x*x/(2*sigma_x2)-y*y/(2*sigma_y2)-z*z/(2*sigma_z2));
-        sum+=factor;
-        rv+=factor*buffer[k*m_sX*m_sY+j*m_sX+i];
+        double factor=(1-x*x/(3*sigx2)-y*y/(3*sigy2)-z*z/(3*sigz2));
+        factor*=std::exp(-0.5*((x*x)/sigx2+(y*y)/sigy2+(z*z)/sigz2));
+        weight+=std::abs(factor);
+        rv+=factor*buffer[off++];
       }
     }
   }
-  return rv/sum;
+  return std::abs(rv/weight);
 }
