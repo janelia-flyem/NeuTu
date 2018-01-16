@@ -13,6 +13,15 @@ class Z3DCanvasEventListener
 {
 public:
   virtual void onEvent(QEvent *e, int w, int h) = 0;
+  void setListenerName(const std::string &name) {
+    m_name = name;
+  }
+  std::string getListnerName() const {
+    return m_name;
+  }
+
+private:
+  std::string m_name;
 };
 
 #endif // Z3DCANVASEVENTLISTENER_H

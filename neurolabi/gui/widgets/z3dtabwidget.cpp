@@ -141,34 +141,48 @@ void Z3DTabWidget::objectsPanel(bool v)
     }
 }
 
-void Z3DTabWidget::roiPanel(bool v)
+Z3DWindow* Z3DTabWidget::getCurrentWindow() const
 {
-    int index = this->currentIndex();
+  int index = this->currentIndex();
 
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
+  Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
 
-    if(cur3Dwin)
+  return cur3Dwin;
+}
+
+ZROIWidget* Z3DTabWidget::roiPanel(bool v)
+{
+  ZROIWidget* roiWidget = NULL;
+
+  int index = this->currentIndex();
+
+  Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
+
+  if(cur3Dwin)
+  {
+    //
+    bool checked = cur3Dwin->getButtonStatus(3);
+
+    if(checked != v)
     {
-        //
-        bool checked = cur3Dwin->getButtonStatus(3);
-
-        if(checked != v)
-        {
-            cur3Dwin->setButtonStatus(3,v);
-            buttonStatus[getRealIndex(index)][3] = v;
-            cur3Dwin->getROIsDockWidget()->toggleViewAction()->trigger();
-        }
-        else
-        {
-            cur3Dwin->getROIsDockWidget()->setVisible(v);
-        }
+      cur3Dwin->setButtonStatus(3,v);
+      buttonStatus[getRealIndex(index)][3] = v;
+      roiWidget = cur3Dwin->getROIsDockWidget();
+      roiWidget->toggleViewAction()->trigger();
     }
-
-    if(v)
+    else
     {
-        emit buttonROIsClicked();
+      roiWidget = cur3Dwin->getROIsDockWidget();
+      roiWidget->setVisible(v);
     }
+  }
 
+  if(v)
+  {
+    emit buttonROIsClicked();
+  }
+
+  return roiWidget;
 }
 
 void Z3DTabWidget::resetSettingsButton()
@@ -269,7 +283,9 @@ void Z3DTabWidget::updateWindow(int index)
 
             // show graph
             buttonChecked = w->getButtonStatus(0);
-            w->getGraphFilter()->setVisible(buttonChecked);
+            if (w->getGraphFilter() != NULL) {
+              w->getGraphFilter()->setVisible(buttonChecked);
+            }
             buttonStatus[cur][0] = buttonChecked;
 
             if(preIndex>-1)

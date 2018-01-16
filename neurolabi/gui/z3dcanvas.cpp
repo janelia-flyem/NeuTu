@@ -107,6 +107,9 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
+#ifdef _DEBUG_
+  std::cout << "Z3DCanvas::mouseReleaseEvent" << std::endl;
+#endif
   if (!m_interaction.processMouseReleaseEvent(e)) {
     broadcastEvent(e, width(), height());
   }
@@ -257,7 +260,11 @@ void Z3DCanvas::clearEventListeners()
 void Z3DCanvas::broadcastEvent(QEvent *e, int w, int h)
 {
   getGLFocus();
+  std::cout << m_listeners.size() << " listeners" << std::endl;
   for (size_t i = 0 ; i < m_listeners.size() ; ++i) {
+#ifdef _DEBUG_
+    std::cout << "  Listener: " << m_listeners[i]->getListnerName() << std::endl;
+#endif
     m_listeners[i]->onEvent(e, w, h);
     if (e->isAccepted()) {
       break;

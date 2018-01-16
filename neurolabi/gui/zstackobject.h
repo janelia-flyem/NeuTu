@@ -404,11 +404,6 @@ protected:
 //  static const char *m_nodeAdapterId;
 };
 
-class ZStackObjectPtr : public ZSharedPointer<ZStackObject>
-{
-public:
-  ZStackObjectPtr(ZStackObject *obj) : ZSharedPointer<ZStackObject>(obj) {}
-};
 
 template <typename T>
 T* ZStackObject::CastVoidPointer(void *p)

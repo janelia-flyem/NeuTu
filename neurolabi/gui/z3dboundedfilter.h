@@ -154,6 +154,18 @@ public:
   void setOpacity(float o);
   void setOpacityQuitely(float o);
 
+  void setMaterialSpecular(const glm::vec4 &v) {
+    m_rendererBase.setMaterialSpecular(v);
+  }
+
+  std::string getControlName() const {
+    return m_controlName;
+  }
+
+  void setControlName(const std::string &name) {
+    m_controlName = name;
+  }
+
   glm::mat4 coordTransform() const
   { return m_rendererBase.coordTransform(); }
 
@@ -285,6 +297,7 @@ protected:
   bool m_canUpdateClipPlane;
 
   bool m_isSelected;
+  std::string m_controlName;
 
 private:
   glm::ivec2 m_lastMousePosition;

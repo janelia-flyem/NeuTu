@@ -18,6 +18,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
 //  , m_pressedMesh(nullptr)
   , m_dataIsInvalid(false)
 {
+  setControlName("Mesh");
   m_singleColorForAllMesh.setStyle("COLOR");
   connect(&m_singleColorForAllMesh, &ZVec4Parameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
 
@@ -106,7 +107,7 @@ bool Z3DMeshFilter::isReady(Z3DEye eye) const
 std::shared_ptr<ZWidgetsGroup> Z3DMeshFilter::widgetsGroup()
 {
   if (!m_widgetsGroup) {
-    m_widgetsGroup = std::make_shared<ZWidgetsGroup>("Mesh", 1);
+    m_widgetsGroup = std::make_shared<ZWidgetsGroup>(getControlName().c_str(), 1);
     m_widgetsGroup->addChild(m_visible, 1);
     m_widgetsGroup->addChild(m_stayOnTop, 1);
     m_widgetsGroup->addChild(m_meshRenderer.useTwoSidedLightingPara(), 1);
@@ -380,7 +381,9 @@ std::vector<bool> Z3DMeshFilter::hitObject(
 void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
 {
 #ifdef _DEBUG_
-  std::cout << "Selecting graph" << std::endl;
+  std::cout << "Selecting graph in " << this << std::endl;
+  std::cout << "Original mesh count: " << m_origMeshList.size() << std::endl;
+  std::cout << "Mesh count: " << m_meshList.size() << std::endl;
 #endif
 
   if (m_meshList.empty())

@@ -148,6 +148,11 @@ public:
 
   QWidget* axisWidget();
 
+  template <typename T>
+  std::shared_ptr<ZWidgetsGroup> getWidgetsGroup(T *filter);
+
+  std::shared_ptr<ZWidgetsGroup> getWidgetsGroup(neutube3d::ERendererLayer layer);
+
   std::shared_ptr<ZWidgetsGroup> globalParasWidgetsGroup();
 
   std::shared_ptr<ZWidgetsGroup> captureWidgetsGroup();
@@ -208,13 +213,13 @@ private:
   void createActions();
 
   void volumeDataChanged();
-  void punctaDataChanged();
-  void swcDataChanged();
-  void meshDataChanged();
-  void swcNetworkDataChanged();
-  void graph3DDataChanged();
-  void todoDataChanged();
-  void surfaceDataChanged();
+//  void punctaDataChanged();
+//  void swcDataChanged();
+//  void meshDataChanged();
+//  void swcNetworkDataChanged();
+//  void graph3DDataChanged();
+//  void todoDataChanged();
+//  void surfaceDataChanged();
   void objectSelectionChanged(const QList<ZStackObject*>& selected,
                               const QList<ZStackObject*>& deselected);
 
@@ -226,6 +231,8 @@ private:
   void initTodoFilter();
   void initSurfaceFilter();
   void initRoiFilter();
+
+  void addFilter(neutube3d::ERendererLayer layer);
 
   void updateVolumeData();
 

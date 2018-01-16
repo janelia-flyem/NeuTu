@@ -57,7 +57,7 @@ void ZFlyEmBodyListView::setIndexSelection(
     }
   }
 
-  if (silent) {
+  if (!silent) {
     processSelectionChange();
   }
 }

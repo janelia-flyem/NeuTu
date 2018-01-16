@@ -175,6 +175,8 @@ void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 
   connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
                 m_view, SLOT(updateViewBox()));
+  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObjectInfoSet)),
+                m_presenter, SLOT(processObjectModified(ZStackObjectInfoSet)));
 }
 
 void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
