@@ -173,6 +173,7 @@
 #include "dialogs/zdvidbodypositiondialog.h"
 #include "dialogs/ztestoptiondialog.h"
 #include "zobject3dscanarray.h"
+#include "zmeshfactory.h"
 
 #include "z3dcanvas.h"
 #include "zsysteminfo.h"
@@ -5008,21 +5009,21 @@ void MainWindow::on_actionMask_SWC_triggered()
         LINFO() << "Skeletonizing projected mask ...";
         mask = frame->getStrokeMask(neutube::COLOR_RED);
         if (mask != NULL) {
-          maskArray.push_back(mask);
+          maskArray.append(mask);
         }
         mask = frame->getStrokeMask(neutube::COLOR_GREEN);
         if (mask != NULL) {
-          maskArray.push_back(mask);
+          maskArray.append(mask);
         }
         mask = frame->getStrokeMask(neutube::COLOR_BLUE);
         if (mask != NULL) {
-          maskArray.push_back(mask);
+          maskArray.append(mask);
         }
       } else {
         LINFO() << "Skeletonizing mask ...";
         mask = frame->getStrokeMask();
         if (mask != NULL) {
-          maskArray.push_back(mask);
+          maskArray.append(mask);
         }
       }
 
@@ -8443,4 +8444,12 @@ void MainWindow::on_actionMake_Movie_3_triggered()
   }
 
   makeMovie();
+}
+
+void MainWindow::on_actionView_Segmentation_Meshes_triggered()
+{
+  ZStackFrame *frame = currentStackFrame();
+  if (frame != NULL) {
+    frame->viewSegmentationMesh();
+  }
 }

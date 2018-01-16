@@ -2,6 +2,7 @@
 #define ZOBJECT3DFACTORY_H
 
 #include <vector>
+#include <map>
 
 #include "tz_cdefs.h"
 #include "neutube_def.h"
@@ -15,6 +16,7 @@ class ZClosedCurve;
 class ZArray;
 class ZIntCuboid;
 class ZStroke2d;
+class ZStackArray;
 
 class ZObject3dFactory
 {
@@ -38,6 +40,9 @@ public:
 
   static std::vector<ZObject3dScan*> MakeObject3dScanPointerArray(
       const ZStack &stack, int yStep = 1, bool boundaryOnly = true);
+
+  static ZObject3dScanArray* MakeObject3dScanArray(
+      ZStackArray &stackArray);
 
   /*!
    * \brief Extract objects from a stack
@@ -76,6 +81,19 @@ public:
   static ZObject3dScan MakeRandomObject3dScan(const ZIntCuboid &box);
 
   static ZObject3dScan MakeObject3dScan(const ZStroke2d &stroke);
+  static ZObject3dScan* MakeBoxObject3dScan(
+      const ZIntCuboid &box, ZObject3dScan *obj);
+
+private:
+  static void AdjustResolution(
+      std::map<uint64_t, ZObject3dScan*> &lowResSet,
+      std::map<uint64_t, ZObject3dScan*> &highResSet);
+  static std::map<uint64_t, ZObject3dScan*>* ExtractAllForegroundObject(
+      ZStack &stack, bool upsampling);
+  static void DeleteObjectMap(std::map<uint64_t, ZObject3dScan*> *bodySet);
+  static void CombineObjectMap(
+      std::map<uint64_t, ZObject3dScan*> *masterBodySet,
+      std::map<uint64_t, ZObject3dScan*> *bodySet);
 };
 
 #endif // ZOBJECT3DFACTORY_H

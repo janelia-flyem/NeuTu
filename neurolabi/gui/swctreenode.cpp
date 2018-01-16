@@ -23,6 +23,7 @@
 #include "tz_stack_objlabel.h"
 #include "imgproc/zstackprocessor.h"
 #include "zstack.hxx"
+#include "tz_3dgeom.h"
 
 using namespace std;
 
@@ -385,6 +386,11 @@ int SwcTreeNode::index(const Swc_Tree_Node *tn)
   return tn->index;
 }
 
+void SwcTreeNode::print(const Swc_Tree_Node *tn)
+{
+  Print_Swc_Tree_Node(tn);
+}
+
 double SwcTreeNode::length(const Swc_Tree_Node *tn)
 {
   return Swc_Tree_Node_Length(tn);
@@ -542,6 +548,21 @@ void SwcTreeNode::rotate(
   if (tn != NULL) {
     Geo3d_Rotate_Coordinate(&(tn->node.x), &(tn->node.y), &(tn->node.z),
                             theta, psi, inverse);
+  }
+}
+
+void SwcTreeNode::rotateAroundZ(
+    Swc_Tree_Node *tn, double theta, double cx, double cy)
+{
+  if (tn != NULL) {
+    translate(tn, -cx, -cy, 0);
+    double pos[3];
+    pos[0] = x(tn);
+    pos[1] = y(tn);
+    pos[2] = z(tn);
+    Rotate_Z(pos, pos, 1, theta, false);
+    SwcTreeNode::setPos(tn, pos[0], pos[1], pos[2]);
+    translate(tn, cx, cy, 0);
   }
 }
 

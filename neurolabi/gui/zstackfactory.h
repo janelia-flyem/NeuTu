@@ -85,6 +85,12 @@ public:
 
   static ZStack* CompositeForeground(const ZStack &stack1, const ZStack &stack2);
 
+  static ZStack* MakeStrokeMask(const std::vector<ZStroke2d*> strokeList);
+  static ZStack* MakeStrokeProjMask(const std::vector<ZStroke2d*> strokeList);
+  static ZStack* MakeStrokeProjMask(
+      const std::vector<ZStroke2d*> strokeList, int value);
+  static ZStack* MakeStrokeMask(const std::vector<ZStroke2d*> strokeList, int z);
+
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);
 };

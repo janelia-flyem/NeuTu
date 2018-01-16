@@ -31,6 +31,7 @@ void ZFlyEmRoiToolDialog::init()
           this, SIGNAL(showing3DRoiCurve()));
   connect(ui->uploadPushButton, SIGNAL(clicked()), this, SLOT(uploadRoi()));
   connect(ui->newPushButton, SIGNAL(clicked()), this, SLOT(newProject()));
+  connect(ui->clonePushButton, SIGNAL(clicked()), this, SLOT(cloneProject()));
   connect(ui->nearestPushButton, SIGNAL(clicked()),
           this, SIGNAL(goingToNearestRoi()));
   connect(ui->prevPushButton, SIGNAL(clicked()), this, SLOT(prevSlice()));
@@ -39,6 +40,21 @@ void ZFlyEmRoiToolDialog::init()
   connect(ui->dvidRoiPushButton, SIGNAL(clicked()), this, SLOT(createRoiData()));
   connect(ui->estimateVolumeButton, SIGNAL(clicked()),
           this, SLOT(estimateRoiVolume()));
+
+  connect(ui->movexDecButton, SIGNAL(clicked()), this, SLOT(movePlaneLeft()));
+  connect(ui->movexIncButton, SIGNAL(clicked()), this, SLOT(movePlaneRight()));
+  connect(ui->moveyDecButton, SIGNAL(clicked()), this, SLOT(movePlaneUp()));
+  connect(ui->moveyIncButton, SIGNAL(clicked()), this, SLOT(movePlaneDown()));
+  connect(ui->movexyDecButton, SIGNAL(clicked()), this, SLOT(movePlaneLeftUp()));
+  connect(ui->movexyIncButton, SIGNAL(clicked()), this, SLOT(movePlaneRightDown()));
+  connect(ui->rotateLeftButton, SIGNAL(clicked()), this, SLOT(rotatePlaneCounterClockwise()));
+  connect(ui->rotateRightButton, SIGNAL(clicked()), this, SLOT(rotatePlaneClockwise()));
+  connect(ui->xyIncButton, SIGNAL(clicked()), this, SLOT(expandPlane()));
+  connect(ui->xyDecButton, SIGNAL(clicked()), this, SLOT(shrinkPlane()));
+  connect(ui->xIncButton, SIGNAL(clicked()), this, SLOT(expandPlaneX()));
+  connect(ui->xDecButton, SIGNAL(clicked()), this, SLOT(shrinkPlaneX()));
+  connect(ui->yIncButton, SIGNAL(clicked()), this, SLOT(expandPlaneY()));
+  connect(ui->yDecButton, SIGNAL(clicked()), this, SLOT(shrinkPlaneY()));
 
   clear();
   downloadAllProject();
@@ -99,6 +115,7 @@ ZFlyEmRoiProject* ZFlyEmRoiToolDialog::newProject(const QString &name)
   return project;
 }
 
+
 void ZFlyEmRoiToolDialog::newProject()
 {
   bool ok;
@@ -118,6 +135,33 @@ void ZFlyEmRoiToolDialog::newProject()
       }
     }
 //    updateWidget();
+  }
+}
+
+void ZFlyEmRoiToolDialog::cloneProject(const QString &name)
+{
+  if (isValidName(name)) {
+    ZFlyEmRoiProject *project = m_project->clone(name.toStdString());
+    appendProject(project);
+    openProject(ui->projectComboBox->count() - 1);
+    uploadProjectList();
+  } else {
+    QMessageBox::warning(
+              this, "Failed to Clone A Project",
+              "Invalid project name: no space is allowed; "
+              "no duplicated name is allowed.",
+              QMessageBox::Ok);
+  }
+}
+
+void ZFlyEmRoiToolDialog::cloneProject()
+{
+  bool ok;
+  QString text = QInputDialog::getText(this, tr("Clone ROI Project"),
+                                       tr("Project name:"), QLineEdit::Normal,
+                                       "", &ok);
+  if (ok && !text.isEmpty()) {
+    cloneProject(text);
   }
 }
 
@@ -166,6 +210,21 @@ bool ZFlyEmRoiToolDialog::appendProject(ZFlyEmRoiProject *project)
 int ZFlyEmRoiToolDialog::getSliceStep() const
 {
   return ui->stepSpinBox->value();
+}
+
+double ZFlyEmRoiToolDialog::getMoveStep() const
+{
+  return ui->moveStepSpinBox->value();
+}
+
+double ZFlyEmRoiToolDialog::getScaleStep() const
+{
+  return ui->scaleStepDoubleSpinBox->value() + 1.0;
+}
+
+double ZFlyEmRoiToolDialog::getRotateStep() const
+{
+  return ui->rotateStepDoubleSpinBox->value();
 }
 
 void ZFlyEmRoiToolDialog::prevSlice()
@@ -278,6 +337,93 @@ void ZFlyEmRoiToolDialog::updateRoi()
 void ZFlyEmRoiToolDialog::estimateRoi()
 {
   emit estimatingRoi();
+}
+
+void ZFlyEmRoiToolDialog::movePlaneLeft()
+{
+  movePlane(-getMoveStep(), 0);
+}
+
+void ZFlyEmRoiToolDialog::movePlaneRight()
+{
+  movePlane(getMoveStep(), 0);
+}
+
+void ZFlyEmRoiToolDialog::movePlaneUp()
+{
+  movePlane(0, -getMoveStep());
+}
+
+void ZFlyEmRoiToolDialog::movePlaneDown()
+{
+  movePlane(0, getMoveStep());
+}
+
+void ZFlyEmRoiToolDialog::movePlaneLeftUp()
+{
+  movePlane(-getMoveStep(), -getMoveStep());
+}
+
+void ZFlyEmRoiToolDialog::movePlaneRightDown()
+{
+  movePlane(getMoveStep(), getMoveStep());
+}
+
+void ZFlyEmRoiToolDialog::rotatePlaneClockwise()
+{
+  rotatePlane(getRotateStep());
+}
+
+void ZFlyEmRoiToolDialog::rotatePlaneCounterClockwise()
+{
+  rotatePlane(-getRotateStep());
+}
+
+
+void ZFlyEmRoiToolDialog::movePlane(double dx, double dy)
+{
+  emit movingPlane(dx, dy);
+}
+
+void ZFlyEmRoiToolDialog::rotatePlane(double theta)
+{
+  emit rotatingPlane(theta);
+}
+
+void ZFlyEmRoiToolDialog::scalePlane(double sx, double sy)
+{
+  emit scalingPlane(sx, sy);
+}
+
+void ZFlyEmRoiToolDialog::expandPlane()
+{
+  scalePlane(getScaleStep(), getScaleStep());
+}
+
+void ZFlyEmRoiToolDialog::shrinkPlane()
+{
+  double scale = 1.0/getScaleStep();
+  scalePlane(scale, scale);
+}
+
+void ZFlyEmRoiToolDialog::expandPlaneX()
+{
+  scalePlane(getScaleStep(), 1.0);
+}
+
+void ZFlyEmRoiToolDialog::shrinkPlaneX()
+{
+  scalePlane(1.0/getScaleStep(), 1.0);;
+}
+
+void ZFlyEmRoiToolDialog::expandPlaneY()
+{
+  scalePlane(1.0, getScaleStep());
+}
+
+void ZFlyEmRoiToolDialog::shrinkPlaneY()
+{
+  scalePlane(1.0, 1.0/getScaleStep());;
 }
 
 void ZFlyEmRoiToolDialog::uploadRoi()

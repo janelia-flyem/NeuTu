@@ -327,6 +327,7 @@
 #include "zcontrastprotocol.h"
 #include "zmeshfactory.h"
 #include "widgets/taskprotocolwindow.h"
+#include "zstackdoccommand.h"
 
 using namespace std;
 
@@ -386,7 +387,7 @@ void ZTest::CrashTest()
   delete a;
 #endif
 
-#if 1
+#if 0
   ZSwcTree *obj1 = new ZSwcTree;
   obj1->setSource(ZStackObjectSourceFactory::MakeWatershedBoundarySource(1));
   if (1) {
@@ -398,7 +399,6 @@ void ZTest::CrashTest()
   std::cout << obj1->getType() << std::endl;
   std::cout << obj1->getSource() << std::endl;
 #endif
-
 
 }
 
@@ -24838,6 +24838,46 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+<<<<<<< HEAD
+  ZObject3dScan *obj = new ZObject3dScan;
+  obj->addStripe(0, 0);
+  obj->addSegment(0, 1, false);
+  obj->addSegment(0, 5, false);
+  obj->addSegment(0, 8, false);
+  obj->addStripe(0, 2);
+  obj->addSegment(3, 3, false);
+  obj->addSegment(0, 1, false);
+  obj->addStripe(0, 1);
+  obj->addSegment(5, 7, false);
+
+//  obj->sort();
+//  obj->sortedCanonize();
+//  obj->isEmpty();
+  obj->canonize();
+#endif
+
+#if 0
+  ZObject3dStripe stripe;
+  stripe.setY(0);
+  stripe.setZ(0);
+  stripe.addSegment(0, 2);
+  stripe.addSegment(4, 6);
+  stripe.addSegment(8, 10);
+  stripe.remove(5, 8);
+  stripe.print();
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
+  ZIntCuboid box;
+  box.set(ZIntPoint(276, 784, 182), ZIntPoint(293, 798, 186));
+  obj.remove(box);
+
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "b6bc", 8500);
   target.setBodyLabelName("labels");
@@ -24850,7 +24890,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("127.0.0.1", "0f59", 8000);
   target.setGrayScaleName("grayscalejpeg");
@@ -24865,6 +24905,322 @@ void ZTest::test(MainWindow *host)
   ZStack *stack2 = reader.readGrayScale(10000, 3000, 10000, 256, 256, 256, 1);
   stack2->save(GET_TEST_DATA_DIR + "/test2.tif");
 
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
+  ZObject3dScan obj2 = obj;
+  tic();
+  ZObject3dScan obj3 = obj - obj2;
+  ptoc();
+#endif
+
+#if 0
+  ZStack *stack1 = ZStackFactory::MakeZeroStack(2, 3, 1, 1);
+  stack1->setDsIntv(1, 1, 0);
+
+  stack1->setIntValue(0, 0, 0, 0, 1);
+  stack1->setIntValue(0, 1, 0, 0, 1);
+  stack1->setIntValue(0, 2, 0, 0, 1);
+
+  stack1->setIntValue(1, 0, 0, 0, 2);
+  stack1->setIntValue(1, 1, 0, 0, 2);
+  stack1->setIntValue(1, 2, 0, 0, 2);
+
+  ZStackArray stackArray;
+  stackArray.append(stack1);
+
+  ZStack *stack2 = ZStackFactory::MakeZeroStack(4, 6, 1, 1);
+  stack2->setIntValue(1, 1, 0, 0, 1);
+  stack2->setIntValue(0, 2, 0, 0, 1);
+  stack2->setIntValue(0, 3, 0, 0, 1);
+  stack2->setIntValue(1, 4, 0, 0, 1);
+
+  stack2->setIntValue(2, 1, 0, 0, 2);
+  stack2->setIntValue(1, 2, 0, 0, 2);
+  stack2->setIntValue(1, 3, 0, 0, 2);
+  stack2->setIntValue(2, 4, 0, 0, 2);
+  stackArray.append(stack2);
+
+//  ZStack *stack2 = ZStackFactory::MakeZeroStack(GREY, 2, 3, 1);
+  ZObject3dScanArray *objArray =
+      ZObject3dFactory::MakeObject3dScanArray(stackArray);
+
+  for (size_t i = 0; i < objArray->size(); ++i) {
+    ZObject3dScan *obj = (*objArray)[i];
+    std::cout << "Label: " << obj->getLabel() << std::endl;
+    obj->print();
+  }
+
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+  frame->load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZStackWatershedContainer container(frame->document()->getStack());
+  ZStroke2d seed1;
+  seed1.set(2959, 4101);
+  seed1.setZ(3201);
+  seed1.setWidth(10);
+  seed1.setLabel(1);
+  container.addSeed(seed1);
+
+  ZStroke2d seed2;
+  seed2.set(3038, 4085);
+  seed2.setZ(3201);
+  seed2.setWidth(10);
+  seed2.setLabel(2);
+  container.addSeed(seed2);
+
+  container.run();
+  ZObject3dScanArray *objArray = container.makeSplitResult(1, NULL);
+  for (ZObject3dScan *obj : *objArray) {
+    frame->document()->addObject(obj);
+  }
+  objArray->shallowClear();
+  delete objArray;
+
+#endif
+
+#if 0
+  for (int i = 1; i < 1000; i *= 2) {
+    int s = misc::getIsoDsIntvFor3DVolume(i, true);
+    std::cout << i << " <= " <<  s << "^3 = " << (s+1)*(s+1)*(s+1) << std::endl;
+  }
+//  std::cout <<  misc::getIsoDsIntvFor3DVolume(512, true);
+#endif
+
+#if 0
+  ZStack *stack = new ZStack;
+  stack->load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  ZStackWatershedContainer container(stack);
+  ZStroke2d *seed1 = new ZStroke2d;
+  seed1->set(3930, 6265);
+  seed1->setZ(6044);
+  seed1->setWidth(10);
+  seed1->setLabel(2);
+  seed1->setPenetrating(false);
+  container.addSeed(dynamic_cast<ZStackObject*>(seed1));
+
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/swc/breadth_first.swc");
+  tree.setLabel(1);
+  container.addSeed(dynamic_cast<ZStackObject*>(&tree));
+
+  std::cout << "#seeds: " << container.getSeedArray().size() << std::endl;
+#endif
+
+#if 0
+  ZSparseStack sp;
+  sp.load(GET_TEST_DATA_DIR + "/_system/split_test/body5.zss");
+  ZStack *stack = sp.makeStack(ZIntCuboid(), true);
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+//  obj.addSegment(0, 0, 0, 1);
+//  obj.addSegment(0, 0, 3, 4);
+//  ZObject3dScan border = obj.downsampleBorderMask(1, 1, 1);
+//  border.print();
+
+//  obj.addSegment(0, 0, 0, 1);
+//  obj.addSegment(0, 0, 3, 4);
+//  obj.downsampleMin(1, 1, 1);
+//  obj.print();
+
+
+
+  obj.load(GET_TEST_DATA_DIR + "/_system/split_test/body7.zss");
+
+
+//  std::cout << obj.getBoundBox().toString() << std::endl;
+//  ZObject3dScan comp = obj.getComplementObject();
+//  comp.downsampleMax(1, 1, 1);
+//  comp.print();
+//  comp.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+//  ZObject3dScan obj = *this;
+//  obj.downsampleMax(xintv, yintv, zintv);
+
+//  ZObject3dScan border = obj.downsampleBorderMask(1, 1, 1);
+//  border.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+//  obj.downsampleMax(1, 1, 1);
+//  (obj - border).save(GET_TEST_DATA_DIR + "/test2.sobj");
+
+#  if 0
+  obj.downsampleMin(1, 1, 1);
+  obj.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  obj.load(GET_TEST_DATA_DIR + "/_system/split_test/body.sobj");
+  obj.downsampleMax(1, 1, 1);
+  obj.save(GET_TEST_DATA_DIR + "/test2.sobj");
+#  endif
+
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+//  frame->load(GET_BENCHMARK_DIR + "/test.zss");
+//  frame->load(GET_TEST_DATA_DIR + "/test.zss");
+  frame->load(GET_TEST_DATA_DIR + "/_system/split_test/body7.zss");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZStackWatershedContainer container(frame->document()->getSparseStack());
+
+  ZJsonObject taskJson;
+  taskJson.load(GET_TEST_DATA_DIR + "/_system/split_test/body7.json");
+  QList<ZStackObject*> seedList = ZFlyEmMisc::LoadSplitTask(taskJson);
+  foreach (ZStackObject *seed, seedList) {
+    container.addSeed(seed);
+    frame->document()->addObject(seed);
+  }
+
+#  if 1
+  container.setRefiningBorder(true);
+  container.run();
+
+  ZObject3dScanArray *objArray = container.makeSplitResult(1, NULL);
+  for (ZObject3dScan *obj : *objArray) {
+    frame->document()->addObject(obj);
+  }
+
+//  (*objArray)[0]->save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  objArray->shallowClear();
+  delete objArray;
+#  endif
+
+#endif
+
+#if 0
+  ZStackFrame *frame = ZStackFrame::Make(NULL);
+//  frame->load(GET_BENCHMARK_DIR + "/test.zss");
+  frame->load(GET_TEST_DATA_DIR + "/_system/split_test/body2.zss");
+  host->addStackFrame(frame);
+  host->presentStackFrame(frame);
+
+  ZStackWatershedContainer container(frame->document()->getSparseStack());
+  ZStroke2d *seed1 = new ZStroke2d;
+  seed1->set(3930, 6265);
+  seed1->setZ(6044);
+  seed1->setWidth(10);
+  seed1->setLabel(2);
+  seed1->setPenetrating(false);
+  container.addSeed(*seed1);
+
+  ZStroke2d *seed2 = new ZStroke2d;
+//  seed2->set(4295, 4496);
+//  seed2->setZ(7264);
+  seed2->set(3898, 6279);
+  seed2->setZ(6044);
+  seed2->setWidth(10);
+  seed2->setLabel(1);
+  seed2->setPenetrating(false);
+  container.addSeed(*seed2);
+
+  ZStroke2d *seed3 = new ZStroke2d;
+  seed3->set(3837, 5700);
+  seed3->setZ(7289);
+  seed3->setWidth(10);
+  seed3->setLabel(3);
+  seed3->setPenetrating(false);
+  container.addSeed(*seed3);
+
+  ZStroke2d *seed4 = new ZStroke2d;
+  seed4->set(3883, 5739);
+  seed4->setZ(7289);
+  seed4->setWidth(10);
+  seed4->setLabel(4);
+  seed4->setPenetrating(false);
+  container.addSeed(*seed4);
+
+  frame->document()->addObject(seed1);
+  frame->document()->addObject(seed2);
+  frame->document()->addObject(seed3);
+  frame->document()->addObject(seed4);
+
+//  container.setMaxVolume(100*100*100);
+  container.setRefiningBorder(true);
+  container.run();
+
+#  if 0
+  std::vector<ZObject3d*> seedArray =
+      ZStackWatershedContainer::MakeBorderSeed(*(container.getResultStack()));
+
+  for (ZObject3d *obj : seedArray) {
+    if (obj != NULL) {
+//      obj->print();
+      obj->setColor(ZStroke2d::GetLabelColor(obj->getLabel()));
+      frame->document()->addObject(obj);
+    }
+  }
+#  endif
+
+#  if 1
+  ZObject3dScanArray *objArray = container.makeSplitResult(1, NULL);
+  for (ZObject3dScan *obj : *objArray) {
+    frame->document()->addObject(obj);
+  }
+  objArray->shallowClear();
+  delete objArray;
+#  endif
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
+
+  ZObject3dScan obj2 = obj.getSlice(190, 250);
+  ZObject3dScan subtracted = obj.subtract(obj2);
+  subtracted.save(GET_TEST_DATA_DIR + "/test.sobj");
+  obj.save(GET_TEST_DATA_DIR + "/test2.sobj");
+
+#endif
+
+#if 0
+  ZJsonArray arrayJson;
+  ZJsonValue value(C_Json::makeInteger(1), ZJsonValue::SET_AS_IT_IS);
+  std::cout << "Ref count: " << value.getRefCount() << std::endl;
+  arrayJson.append(value);
+
+  ZJsonArray arrayJson2 = arrayJson;
+
+  std::cout << "Ref count after array appending: " << value.getRefCount() << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "43f", 9000);
+  target.setLabelBlockName("segmentation");
+  target.setBodyLabelName("bodies");
+//  target.setGrayScaleName("grayscalejpeg");
+  target.setGrayScaleSource(ZDvidNode("emdata1.int.janelia.org", "231f", 9001));
+  ZJsonArray seedJson;
+  ZJsonArray roiJson;
+  ZIntCuboid box(1, 2, 3, 10, 20, 30);
+  roiJson = box.toJsonArray();
+
+  ZStroke2d stroke;
+  stroke.append(1, 1);
+  stroke.setLabel(1);
+  ZJsonObject splitJson = ZFlyEmMisc::MakeSplitSeedJson(stroke);
+  seedJson.append(splitJson);
+
+
+  ZJsonObject taskJson = ZFlyEmMisc::MakeSplitTask(target, 1, seedJson, roiJson);
+  std::cout << taskJson.dumpString(2) << std::endl;
+#endif
+
+#if 1
+  ZStackDocCommand::SwcEdit::MoveSwcNode command(new ZStackDoc());
+  command.test();
 #endif
 
   std::cout << "Done." << std::endl;

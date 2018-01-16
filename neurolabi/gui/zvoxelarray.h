@@ -56,7 +56,6 @@ public:
     m_voxelArray.clear();
   }
 
-
   inline double value(size_t index) { return m_voxelArray[index].value(); }
   inline void setValue(size_t index, double v) {
     m_voxelArray[index].setValue(v);
@@ -79,9 +78,11 @@ public:
     return m_voxelArray.size();
   }
 
+  /*
   bool empty() const {
     return m_voxelArray.empty();
   }
+  */
 
   bool isEmpty() const{
     return m_voxelArray.empty();

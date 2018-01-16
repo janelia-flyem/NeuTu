@@ -17,6 +17,22 @@ ZSwcObjsModel::~ZSwcObjsModel()
 {
 }
 
+#if 0
+QVariant ZSwcObjsModel::data(const QModelIndex &index, int role) const
+{
+  if (role == Qt::ForegroundRole) {
+    ZSwcTree *tree = getSwcTree(index);
+    if (tree != NULL) {
+      return tree->getColor();
+    }
+  } else {
+    return ZObjsModel::data(index, role);
+  }
+
+  return QVariant();
+}
+#endif
+
 QModelIndex ZSwcObjsModel::getIndex(ZSwcTree *tree, int col) const
 {
   std::map<ZSwcTree*, int>::const_iterator swc2rIt = m_swcToRow.find(tree);
@@ -45,7 +61,7 @@ ZSwcTree *ZSwcObjsModel::getSwcTree(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() == m_rootItem)
-    return ZStackObject::CastVoidPointer<ZSwcTree>(item->getActuralData());
+    return ZStackObject::CastVoidPointer<ZSwcTree>(item->getActualData());
   else
     return NULL;
 }
@@ -58,7 +74,7 @@ Swc_Tree_Node *ZSwcObjsModel::getSwcTreeNode(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() && item->parent()->parent() == m_rootItem)
-    return static_cast<Swc_Tree_Node*>(item->getActuralData());
+    return static_cast<Swc_Tree_Node*>(item->getActualData());
   else
     return NULL;
 }
@@ -96,37 +112,12 @@ void ZSwcObjsModel::setupModelData(ZObjsItem *parent)
     data << QString("Neuron %1").arg(i+1)
          << QString::fromStdString(swcTree->getSource());
 
-    ZObjsItem *nodeParent = new ZObjsItem(data, swcTree, parent);
-    nodeParent->setCheckState(swcTree->isVisible() ? Qt::Checked : Qt::Unchecked);
-    nodeParent->setToolTip(QString("Neuron %1: %2").arg(i + 1).arg(
+    ZObjsItem *item = new ZObjsItem(data, swcTree, parent);
+    item->setCheckState(swcTree->isVisible() ? Qt::Checked : Qt::Unchecked);
+    item->setToolTip(QString("Neuron %1: %2").arg(i + 1).arg(
                              QString::fromStdString(swcTree->getSource())));
-    parent->appendChild(nodeParent);
+    parent->appendChild(item);
     m_swcToRow[swcTree] = i;
-
-#if 0
-    data << QString("swc %1").arg(i+1) << "id" << "type" << "radius" << "x" << "y" << "z" <<
-            "parent_id" << "label" << "weight" << "feature" << "index" << QString::fromStdString(swcTree->source());
-    ZObjsItem *nodeParent = new ZObjsItem(data, swcTree, parent);
-    nodeParent->setCheckState(swcTree->isVisible() ? Qt::Checked : Qt::Unchecked);
-    nodeParent->setToolTip(QString("source: %1").arg(QString::fromStdString(swcTree->source())));
-    parent->appendChild(nodeParent);
-    m_swcToRow[swcTree] = i;
-
-    swcTree->updateIterator(1);   //depth first
-    int row = 0;
-    for (Swc_Tree_Node *tn = swcTree->begin(); tn != swcTree->end(); tn = swcTree->next()) {
-      if (!Swc_Tree_Node_Is_Virtual(tn)) {
-        data.clear();
-        m_swcTreeNodeToSwc[tn] = swcTree;
-        m_swcTreeNodeToRow[tn] = row++;
-        data << "" << tn->node.id << tn->node.type << tn->node.d << tn->node.x << tn->node.y << tn->node.z <<
-                tn->node.parent_id << tn->node.label << tn->weight << tn->feature << tn->index << "";
-        ZObjsItem *node = new ZObjsItem(data, tn, nodeParent);
-        node->setToolTip(QString("swc node from: %1").arg(QString::fromStdString(swcTree->source())));
-        nodeParent->appendChild(node);
-      }
-    }
-#endif
   }
 }
 

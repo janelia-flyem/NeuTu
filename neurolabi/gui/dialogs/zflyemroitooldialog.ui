@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>447</width>
-    <height>424</height>
+    <width>511</width>
+    <height>432</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -314,6 +314,28 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="scaleStepDoubleSpinBox">
+           <property name="toolTip">
+            <string>Scale Step</string>
+           </property>
+           <property name="decimals">
+            <number>3</number>
+           </property>
+           <property name="minimum">
+            <double>0.001000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.010000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.050000000000000</double>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
@@ -439,6 +461,19 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QSpinBox" name="moveStepSpinBox">
+           <property name="toolTip">
+            <string>Move Step</string>
+           </property>
+           <property name="statusTip">
+            <string/>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
@@ -496,6 +531,28 @@
                <width>16</width>
                <height>16</height>
               </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="rotateStepDoubleSpinBox">
+             <property name="toolTip">
+              <string>Rotate Step</string>
+             </property>
+             <property name="decimals">
+              <number>3</number>
+             </property>
+             <property name="minimum">
+              <double>0.002000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>1.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.002000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.020000000000000</double>
              </property>
             </widget>
            </item>

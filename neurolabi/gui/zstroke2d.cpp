@@ -21,6 +21,7 @@ const double ZStroke2d::m_maxWidth = 1000.0;
 #else
 const double ZStroke2d::m_maxWidth = 100.0;
 #endif
+const double ZStroke2d::m_zFadeSpan = 30.0;
 //const QVector<QColor> ZStroke2d::m_colorTable = ZStroke2d::constructColorTable();
 //const QColor ZStroke2d::m_blackColor = Qt::black;
 const ZLabelColorTable ZStroke2d::m_colorTable;
@@ -192,13 +193,17 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
 
   if (!m_pointArray.empty()) {
     if (m_pointArray.size() == 1) {
-      if (m_isFilled) {
+      if (m_isFilled && (m_z == z || m_isPenetrating)) {
         painter.setPen(Qt::NoPen);
         painter.setBrush(brush);
       } else {
         pen.setWidthF(getPenWidth());
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
+        if(!m_isPenetrating) {
+          double dz = std::min(m_zFadeSpan, std::fabs(m_z - z));
+          painter.setOpacity(1.0 - dz / m_zFadeSpan);
+        }
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       }
 //      qDebug() << "Painter transform: " << painter.getTransform();
@@ -206,7 +211,7 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
       painter.drawEllipse(QPointF(m_pointArray[0]), radius, radius);
     } else {
 
-      if (m_isFilled) {
+      if (m_isFilled && (m_z == z || m_isPenetrating)) {
         pen.setCapStyle(Qt::RoundCap);
         pen.setWidthF(m_width);
         painter.setPen(pen);
@@ -217,7 +222,12 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
         pen.setWidthF(getPenWidth());
         painter.setPen(pen);
         painter.setBrush(Qt::NoBrush);
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+        if(!m_isPenetrating) {
+          double dz = std::min(m_zFadeSpan, std::fabs(m_z - z));
+          painter.setOpacity(1.0 - dz / m_zFadeSpan);
+          painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        }
 
         for (size_t i =0; i < m_pointArray.size(); ++i) {
           if (i == 0) {
@@ -226,8 +236,10 @@ void ZStroke2d::display(ZPainter &painter, int slice, EDisplayStyle option,
                     QPointF(m_pointArray[i]), radius, radius);
             }
           } else {
-            painter.drawEllipse(
-                  QPointF(m_pointArray[i]), radius, radius);
+            if (m_z == z || m_isPenetrating || (i == m_pointArray.size() - 1)) {
+              painter.drawEllipse(
+                    QPointF(m_pointArray[i]), radius, radius);
+            }
             painter.drawLine(m_pointArray[i-1], m_pointArray[i]);
           }
         }
@@ -436,7 +448,7 @@ void ZStroke2d::labelGrey(Stack *stack, int label, int ignoringValue) const
 void ZStroke2d::labelGrey(Stack *stack, int label) const
 {
   if (stack == NULL || C_Stack::kind(stack) != GREY ||
-      m_z < 0 || m_z >= C_Stack::depth(stack)) {
+      ((m_z < 0 || m_z >= C_Stack::depth(stack)) && !m_isPenetrating)) {
     return;
   }
 
@@ -715,6 +727,31 @@ void ZStroke2d::labelStack(ZStack *stack) const
   }
 }
 
+void ZStroke2d::labelProjStack(ZStack *stack) const
+{
+  if (stack != NULL) {
+    ZStroke2d tmpStroke = *this;
+    tmpStroke.downsample(stack->getDsIntv());
+    tmpStroke.translate(-stack->getOffset());
+    tmpStroke.setZ(0);
+    tmpStroke.labelGrey(stack->c_stack());
+  }
+}
+
+void ZStroke2d::labelProjStack(ZStack *stack, int value) const
+{
+  if (stack != NULL) {
+    ZStroke2d tmpStroke = *this;
+    tmpStroke.downsample(stack->getDsIntv());
+    tmpStroke.translate(-stack->getOffset());
+    tmpStroke.setZ(0);
+    if (!tmpStroke.isEraser()) {
+      tmpStroke.setLabel(value);
+    }
+    tmpStroke.labelGrey(stack->c_stack());
+  }
+}
+
 void ZStroke2d::labelStack(ZStack *stack, int ignoringValue) const
 {
   if (stack != NULL) {
@@ -847,7 +884,7 @@ double ZStroke2d::pointLinesegDistance(
 bool ZStroke2d::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 {
   if (isVisible() && !isEmpty() && (sliceAxis == getSliceAxis())) {
-    if (m_isPenetrating || m_z == z) {
+    if (m_isPenetrating || (std::fabs(m_z - z) < m_zFadeSpan)) {
       return true;
     }
   }

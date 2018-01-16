@@ -343,6 +343,10 @@ void Z3DVolumeFilter::exitZoomInView()
 
 bool Z3DVolumeFilter::volumeNeedDownsample() const
 {
+  if (m_imgPack == NULL) {
+    return false;
+  }
+
   int maxTextureSize = 100;
   if (m_imgPack->depth() > 1)
     maxTextureSize = Z3DGpuInfo::instance().max3DTextureSize();
