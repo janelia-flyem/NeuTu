@@ -1915,13 +1915,30 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_
 
   if (encodesTar(id)) {
     m_tarIdToMeshIds[id].clear();
-    if (struct archive *arc = m_dvidReader.readMeshArchiveStart(id)) {
-      while (ZMesh *mesh = m_dvidReader.readMeshArchiveNext(arc)) {
+
+    emit meshArchiveLoadingStarted();
+    // It is challenging to emit progress updates as m_dvidReader reads the data for the
+    // tar archive, so just initialize the progress meter to show ani ntermediate status.
+    const float PROGRESS_FRACTION_START = 1 / 3.0;
+    emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
+
+    size_t bytesTotal;
+    size_t bytesRead = 0;
+    if (struct archive *arc = m_dvidReader.readMeshArchiveStart(id, bytesTotal)) {
+      size_t bytesJustRead;
+      while (ZMesh *mesh = m_dvidReader.readMeshArchiveNext(arc, bytesJustRead)) {
         finalizeMesh(mesh, 0, t);
         result[mesh->getLabel()] = mesh;
         m_tarIdToMeshIds[id].push_back(mesh->getLabel());
+
+        bytesRead += bytesJustRead;
+        float fraction = float(bytesRead) / bytesTotal;
+        float progressFraction = PROGRESS_FRACTION_START + (1 - PROGRESS_FRACTION_START) * fraction;
+        emit meshArchiveLoadingProgress(progressFraction);
       }
       m_dvidReader.readMeshArchiveEnd(arc);
+
+      emit meshArchiveLoadingEnded();
     }
   } else {
     ZMesh *mesh = readMesh(id, zoom);

@@ -824,7 +824,8 @@ HEADERS += mainwindow.h \
     dialogs/zflyemmergeuploaddialog.h \
     zmeshfactory.h \
     flyem/zflyemmeshfactory.h \
-    protocols/taskbodyhistory.h
+    protocols/taskbodyhistory.h \
+    protocols/taskbodycleave.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1435,7 +1436,8 @@ SOURCES += main.cpp \
     dialogs/zflyemmergeuploaddialog.cpp \
     zmeshfactory.cpp \
     flyem/zflyemmeshfactory.cpp \
-    protocols/taskbodyhistory.cpp
+    protocols/taskbodyhistory.cpp \
+    protocols/taskbodycleave.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
