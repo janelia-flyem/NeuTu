@@ -15,6 +15,8 @@
 #include <QsLog.h>
 
 #include "dvid/zdvidtarget.h"
+#include "dvid/zdvidnode.h"
+#include "dialogs/zdviddialog.h"
 #include "neutubeconfig.h"
 
 DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
@@ -34,6 +36,7 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     connect(ui->repoListView, SIGNAL(clicked(QModelIndex)), this, SLOT(onRepoClicked(QModelIndex)));
     connect(ui->branchListView, SIGNAL(clicked(QModelIndex)), this, SLOT(onBranchClicked(QModelIndex)));
     connect(ui->detailsButton, SIGNAL(clicked(bool)), this, SLOT(toggleDetailsPanel()));
+    connect(ui->oldDialogButton, SIGNAL(clicked(bool)), this, SLOT(launchOldDialog()));
 
     // models & related
     m_repoModel = new QStringListModel();
@@ -324,12 +327,54 @@ void DvidBranchDialog::loadNode(QString branchName) {
 
 ZDvidTarget &DvidBranchDialog::getDvidTarget() {
 
+    m_dvidTarget.clear();
 
-    // need to do this properly, getting all fields from the UI:
-    m_dvidTarget.setServer("emdata3.int.janelia.org");
-    m_dvidTarget.setUuid("100e7");
-    m_dvidTarget.setPort(8000);
 
+    // hard-coded test
+    // m_dvidTarget.setServer("emdata3.int.janelia.org");
+    // m_dvidTarget.setUuid("100e7");
+    // m_dvidTarget.setPort(8000);
+
+    m_dvidTarget.setServer(ui->serverBox->text().toStdString());
+    m_dvidTarget.setUuid(ui->UUIDBox->text().toStdString());
+    m_dvidTarget.setPort(ui->portBox->text().toInt());
+
+    m_dvidTarget.setComment(ui->commentBox->text().toStdString());
+
+    m_dvidTarget.setLabelBlockName(ui->labelsBox->text().toStdString());
+    m_dvidTarget.setGrayScaleName(ui->grayscaleBox->text().toStdString());
+    m_dvidTarget.setSynapseName(ui->synapsesBox->text().toStdString());
+
+    m_dvidTarget.setMultiscale2dName(ui->tilesBox->text().toStdString());
+    m_dvidTarget.configTile(ui->tilesBox->text().toStdString(), ui->tilesCheckBox->isChecked());
+    m_dvidTarget.setRoiName(ui->ROIBox->text().toStdString());
+
+    m_dvidTarget.setTodoListName(ui->todoBox->text().toStdString());
+    m_dvidTarget.setBodyLabelName(ui->bodyLabelBox->text().toStdString());
+
+    if (!ui->grayscaleSourceCheckBox->isChecked()) {
+        ZDvidNode grayscaleNode;
+        grayscaleNode.setServer(ui->grayscaleServerBox->text().toStdString());
+        grayscaleNode.setPort(ui->grayscalePortBox->text().toInt());
+        grayscaleNode.setUuid(ui->grayscaleUUIDBox->text().toStdString());
+        m_dvidTarget.setGrayScaleSource(grayscaleNode);
+    }
+
+    if (!ui->tileSourceCheckBox->isChecked()) {
+        ZDvidNode tileNode;
+        tileNode.setServer(ui->tileServerBox->text().toStdString());
+        tileNode.setPort(ui->tilePortBox->text().toInt());
+        tileNode.setUuid(ui->tileUUIDBox->text().toStdString());
+        m_dvidTarget.setTileSource(tileNode);
+    }
+
+    if (ui->librarianCheckBox->isChecked()) {
+        m_dvidTarget.setSupervisorServer(ui->librarianBox->text().toStdString());
+    }
+
+    if (ui->readOnlyCheckBox->isChecked()) {
+        m_dvidTarget.setReadOnly(true);
+    }
 
     return m_dvidTarget;
 }
@@ -366,6 +411,58 @@ void DvidBranchDialog::clearNode() {
 
     ui->librarianBox->clear();
     ui->librarianCheckBox->setChecked(false);
+}
+
+/*
+ * launch the old dialog and forward its value to this dialog
+ */
+void DvidBranchDialog::launchOldDialog() {
+
+    // pop up the old dialog and transfer values to the UI, if user clicks OK
+
+    ZDvidDialog * dialog = new ZDvidDialog(NULL);
+    if (dialog->exec()) {
+        clearNode();
+        ZDvidTarget target = dialog->getDvidTarget();
+
+        ui->serverBox->setText(QString::fromStdString(target.getAddress()));
+        ui->portBox->setValue(target.getPort());
+        ui->UUIDBox->setText(QString::fromStdString(target.getUuid()));
+
+        ui->commentBox->setText(QString::fromStdString(target.getComment()));
+
+        ui->labelsBox->setText(QString::fromStdString(target.getLabelBlockName()));
+        ui->grayscaleBox->setText(QString::fromStdString(target.getGrayScaleName()));
+        ui->synapsesBox->setText(QString::fromStdString(target.getSynapseName()));
+
+        ui->ROIBox->setText(QString::fromStdString(target.getRoiName()));
+        ui->tilesBox->setText(QString::fromStdString(target.getMultiscale2dName()));
+        ui->tilesCheckBox->setChecked(target.isLowQualityTile(target.getMultiscale2dName()));
+        ui->todoBox->setText(QString::fromStdString(target.getTodoListName()));
+        ui->bodyLabelBox->setText(QString::fromStdString(target.getBodyLabelName()));
+
+        if (target.getGrayScaleSource().isValid()) {
+            ui->grayscaleSourceCheckBox->setChecked(true);
+            ui->grayscaleServerBox->setText(QString::fromStdString(target.getGrayScaleSource().getAddress()));
+            ui->grayscalePortBox->setValue(target.getGrayScaleSource().getPort());
+            ui->grayscaleUUIDBox->setText(QString::fromStdString(target.getGrayScaleSource().getUuid()));
+        }
+
+        if (target.getTileSource().isValid()) {
+            ui->tileSourceCheckBox->setChecked(true);
+            ui->tileServerBox->setText(QString::fromStdString(target.getTileSource().getAddress()));
+            ui->tilePortBox->setValue(target.getTileSource().getPort());
+            ui->tileUUIDBox->setText(QString::fromStdString(target.getTileSource().getUuid()));
+        }
+
+        if (target.isSupervised()) {
+            ui->librarianCheckBox->setChecked(true);
+            ui->librarianBox->setText(QString::fromStdString(target.getSupervisor()));
+        }
+
+    }
+    delete dialog;
+
 }
 
 /*

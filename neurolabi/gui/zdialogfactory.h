@@ -31,7 +31,7 @@ public:
       BRANCH_BROWSER
   };
 
-  static ZDvidTargetProviderDialog* makeDvidDialog(QWidget *parent = 0, ZDvidDialogType type = ORIGINAL);
+  static ZDvidTargetProviderDialog* makeDvidDialog(QWidget *parent = 0, ZDvidDialogType type = BRANCH_BROWSER);
   static QDialog* makeTestDialog(QWidget *parent = 0);
   static QDialog* makeStackDialog(QWidget *parent = 0);
   static DvidImageDialog *makeDvidImageDialog(
