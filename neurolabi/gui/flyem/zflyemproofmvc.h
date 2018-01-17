@@ -147,11 +147,16 @@ public:
 
   void diagnose();
   void showSetting();
+  void setExiting(bool exiting) {
+    m_exiting = exiting;
+  }
 
   Z3DWindow* makeExternalSkeletonWindow(neutube3d::EWindowType windowType);
   Z3DWindow* makeExternalMeshWindow(neutube3d::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
   Z3DWindow* makeMeshWindow();
+
+  void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
 
 signals:
   void launchingSplit(const QString &message);
@@ -517,6 +522,8 @@ protected:
   //Data fetching
   ZFlyEmSynapseDataFetcher *m_seFetcher;
   ZFlyEmSynapseDataUpdater *m_seUpdater;
+
+  bool m_exiting = false;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };

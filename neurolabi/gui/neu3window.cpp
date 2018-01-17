@@ -26,6 +26,8 @@
 #include "widgets/zbodylistwidget.h"
 #include "widgets/taskprotocolwindow.h"
 #include "flyem/zflyembodylistmodel.h"
+#include "zroiwidget.h"
+#include "zstackdocproxy.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -38,6 +40,10 @@ Neu3Window::Neu3Window(QWidget *parent) :
 
 Neu3Window::~Neu3Window()
 {
+  if (m_dataContainer != NULL) {
+    m_dataContainer->setExiting(true);
+  }
+
   delete ui;
 }
 
@@ -57,6 +63,7 @@ void Neu3Window::initialize()
 
   createDockWidget();
   createTaskWindow();
+  createRoiWidget();
   createToolBar();
 
   connectSignalSlot();
@@ -90,6 +97,7 @@ void Neu3Window::connectSignalSlot()
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
           this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+  connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
 }
 
 void Neu3Window::initOpenglContext()
@@ -121,6 +129,8 @@ bool Neu3Window::loadDvidTarget()
         arg(dlg->getDvidTarget().getSourceString(false).c_str()).
         arg(dlg->getDvidTarget().getLabelBlockName().c_str());
     setWindowTitle(windowTitle);
+
+    m_dataContainer->getROIs();
   }
 
   delete dlg;
@@ -130,7 +140,7 @@ bool Neu3Window::loadDvidTarget()
 
 void Neu3Window::createDockWidget()
 {
-  QDockWidget *dockWidget = new QDockWidget(this);
+  QDockWidget *dockWidget = new QDockWidget("Bodies", this);
 
 #if 0
   FlyEmBodyInfoDialog *widget = m_dataContainer->getBodyInfoDlg();
@@ -146,9 +156,9 @@ void Neu3Window::createDockWidget()
   connect(m_bodyListWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
           this, SLOT(setBodySelection(QSet<uint64_t>)));
   connect(this, SIGNAL(bodySelected(uint64_t)),
-          m_bodyListWidget, SLOT(selectBody(uint64_t)));
+          m_bodyListWidget, SLOT(selectBodySliently(uint64_t)));
   connect(this, SIGNAL(bodyDeselected(uint64_t)),
-          m_bodyListWidget, SLOT(deselectBody(uint64_t)));
+          m_bodyListWidget, SLOT(deselectBodySliently(uint64_t)));
   connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
           m_bodyListWidget, SLOT(removeBody(uint64_t)));
 
@@ -161,7 +171,7 @@ void Neu3Window::createDockWidget()
 }
 
 void Neu3Window::createTaskWindow() {
-    QDockWidget *dockWidget = new QDockWidget(this);
+    QDockWidget *dockWidget = new QDockWidget("Tasks", this);
     TaskProtocolWindow *window = new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
     // add connections here; for now, I'm connecting up the same way
@@ -180,6 +190,22 @@ void Neu3Window::createTaskWindow() {
     dockWidget->setFeatures(
           QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
     addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+}
+
+void Neu3Window::createRoiWidget() {
+//    QDockWidget *dockWidget = new QDockWidget(this);
+    m_roiWidget = new ZROIWidget("ROI", this);
+
+//    dockWidget->setWidget(widget);
+    m_roiWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
+    m_roiWidget->setFeatures(
+          QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+    addDockWidget(Qt::LeftDockWidgetArea, m_roiWidget);
+}
+
+void Neu3Window::updateRoiWidget()
+{
+  m_dataContainer->updateRoiWidget(m_roiWidget, m_3dwin);
 }
 
 void Neu3Window::createToolBar()
@@ -358,16 +384,21 @@ void Neu3Window::syncBodyListModel()
   // Supress some expensive and unnecessary updates after each body removal.
   DoingBulkUpdate doingBulkUpdate(this);
 
-  QList<ZMesh*> meshList = getBodyDocument()->getMeshList();
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+//      getBodyDocument()->getMeshList();
   ZFlyEmBodyListModel *listModel = m_bodyListWidget->getModel();
 
+
   QList<int> rowsToRemove;
+  //Remove rows that are not in the document
   for (int i = 0; i < listModel->rowCount(); i++) {
     bool found = false;
     for (ZMesh *mesh : meshList) {
-      if (mesh->getLabel() == listModel->getBodyId(i)) {
-        found = true;
-        break;
+      if (mesh->getLabel() > 0) {
+        if (mesh->getLabel() == listModel->getBodyId(i)) {
+          found = true;
+          break;
+        }
       }
     }
     if (!found) {
@@ -377,7 +408,9 @@ void Neu3Window::syncBodyListModel()
   listModel->removeRowList(rowsToRemove);
 
   for (ZMesh *mesh : meshList) {
-    listModel->addBody(mesh->getLabel());
+    if (mesh->getLabel() > 0) {
+      listModel->addBody(mesh->getLabel());
+    }
   }
 }
 
@@ -386,7 +419,8 @@ static const int PROGRESS_MAX = 100;
 void Neu3Window::meshArchiveLoadingStarted()
 {
   if (!m_progressDialog) {
-    m_progressDialog = new QProgressDialog("Loading meshes", QString(), 0, PROGRESS_MAX, this);
+    m_progressDialog =
+        new QProgressDialog("Loading meshes", QString(), 0, PROGRESS_MAX, this);
     m_progressDialog->setWindowModality(Qt::WindowModal);
     m_progressDialog->setMinimumDuration(0);
     m_progressDialog->setValue(0);

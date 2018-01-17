@@ -90,6 +90,7 @@ class ZStackDocKeyProcessor;
 class QKeyEvent;
 class ZStackArray;
 class ZStackObjectInfo;
+class ZRoiObjsModel;
 
 /*!
  * \brief The class of stack document
@@ -288,6 +289,7 @@ public: //attributes
   inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
   inline ZSurfaceObjsModel* surfaceObjsModel() { return m_surfaceObjsModel; }
   inline ZMeshObjsModel* meshObjsModel() { return m_meshObjsModel; }
+  inline ZRoiObjsModel* roiObjsModel() { return m_roiObjsModel; }
 
   void updatePunctaObjsModel(ZPunctum *punctum);
 
@@ -792,6 +794,7 @@ public:
   void setVisible(ZStackObject::EType type, bool visible);
   void setVisible(ZStackObjectRole::TRole role, bool visible);
   void setVisible(ZStackObject::EType type, std::string source, bool visible);
+  void setVisible(ZStackObject *obj, bool visible);
 
   template <typename T>
   QList<T*> getSelectedObjectList() const;
@@ -1358,6 +1361,7 @@ private:
   ZGraphObjsModel *m_graphObjsModel;
   ZSurfaceObjsModel *m_surfaceObjsModel;
   ZMeshObjsModel *m_meshObjsModel;
+  ZRoiObjsModel *m_roiObjsModel;
 
   //Parent frame
   ZStackFrame *m_parentFrame;

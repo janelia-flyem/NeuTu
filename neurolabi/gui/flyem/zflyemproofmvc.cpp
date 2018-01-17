@@ -102,6 +102,8 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
             << getDvidTarget().getAddressWithPort();
   }
 
+  m_exiting = true;
+  m_futureMap.waitForFinished();
   exitCurrentDoc();
 
   closeAllAssociatedWindow();
@@ -4662,6 +4664,10 @@ void ZFlyEmProofMvc::loadROIFunc()
 
       for(std::size_t i=0; i<keys.size(); i++)
       {
+        if (m_exiting) {
+          return;
+        }
+
         std::string roiName = keys.at(i);
         ZJsonObject roiJson(insList.value(roiName.c_str()));
         if (roiJson.hasKey("Base")) {
@@ -4693,6 +4699,11 @@ void ZFlyEmProofMvc::loadROIFunc()
     m_ROILoaded = true;
     emit roiLoaded();
   }
+}
+
+void ZFlyEmProofMvc::updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const
+{
+  widget->loadROIs(win, m_roiList, m_loadedROIs, m_roiSourceList);
 }
 
 void ZFlyEmProofMvc::updateRoiWidget()

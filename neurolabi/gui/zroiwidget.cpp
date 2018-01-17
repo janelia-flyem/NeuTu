@@ -57,7 +57,7 @@ bool ZROIObjsModel::needCheckbox(const QModelIndex &index) const
 ZROIWidget::ZROIWidget(QWidget *parent) : QDockWidget(parent)
 {
     m_roiList.clear();
-    defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
+    m_defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
 
     setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 }
@@ -65,7 +65,7 @@ ZROIWidget::ZROIWidget(QWidget *parent) : QDockWidget(parent)
 ZROIWidget::ZROIWidget(const QString & title, QWidget * parent, Qt::WindowFlags flags) : QDockWidget(title, parent, flags)
 {
     m_roiList.clear();
-    defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
+    m_defaultColor.setRgbF(0.5f, 0.25f, 0.25f, 1.0f);
 
     setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
@@ -110,7 +110,7 @@ void ZROIWidget::loadROIs(std::vector<std::string> roiList,
   if (m_window != NULL)
   {
       for(size_t i=0; i<N; i++)
-          colorModified.push_back(false);
+          m_colorModified.push_back(false);
 
       //
       makeGUI();
@@ -124,23 +124,23 @@ void ZROIWidget::makeGUI()
         return;
 
     //
-    selectAll = new QCheckBox("Select All");
-    selectAll->setChecked(false);
+    m_selectAll = new QCheckBox("Select All");
+    m_selectAll->setChecked(false);
 
     //
     double alpha = m_window->getFilter(neutube3d::LAYER_ROI)->opacity();
  //   double alpha = m_window->getSurfaceFilter()->getOpacity();
-    l_opacity = new QLabel(tr(" Opacity: %1").arg(alpha));
-    s_opacity = new QSlider(Qt::Horizontal);
-    s_opacity->setRange(0,100);
-    s_opacity->setValue(alpha*100);
+    m_opacityLabel = new QLabel(tr(" Opacity: %1").arg(alpha));
+    m_opacitySlider = new QSlider(Qt::Horizontal);
+    m_opacitySlider->setRange(0,100);
+    m_opacitySlider->setValue(alpha*100);
 
     //
     QHBoxLayout *hLayout = new QHBoxLayout;
-    hLayout->addWidget(selectAll);
-    hLayout->addStretch();
-    hLayout->addWidget(l_opacity);
-    hLayout->addWidget(s_opacity);
+//    hLayout->addWidget(m_selectAll);
+//    hLayout->addStretch();
+    hLayout->addWidget(m_opacityLabel);
+    hLayout->addWidget(m_opacitySlider);
 
     QGroupBox *horizontalGroupBox = new QGroupBox();
     horizontalGroupBox->setLayout(hLayout);
@@ -214,9 +214,13 @@ void ZROIWidget::makeGUI()
 
     layout->addLayout(controlLayout);
 #endif
-    layout->addWidget(selectAll);
-    layout->addWidget(horizontalGroupBox);
 
+    QHBoxLayout *controlLayout = new QHBoxLayout();
+
+    controlLayout->addWidget(m_selectAll);
+    controlLayout->addWidget(horizontalGroupBox);
+
+    layout->addLayout(controlLayout);
     layout->addWidget(tw_ROIs);
 
     QGroupBox *group = new QGroupBox();
@@ -231,12 +235,12 @@ void ZROIWidget::makeGUI()
     connect(tw_ROIs, SIGNAL(clicked(QModelIndex)), this, SLOT(updateROISelections(QModelIndex)));
 
 
-    connect(selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
+    connect(m_selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
 //    connect(m_updateButton, SIGNAL(clicked()), this, SLOT(updateSelectedROIs()));
 
     //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
 
-    connect(s_opacity,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
+    connect(m_opacitySlider,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
     connect(m_window->getSurfaceFilter(),SIGNAL(opacityValueChanged(double)),this,SLOT(updateOpacity(double)));
 }
 
@@ -282,7 +286,7 @@ int ZROIWidget::getDsIntv() const
 
 void ZROIWidget::updateSelection()
 {
-    if(selectAll->isChecked())
+    if(m_selectAll->isChecked())
     {
         for(int i=0; i<tw_ROIs->rowCount(); i++)
         {
@@ -442,7 +446,7 @@ void ZROIWidget::updateROIColors(int row, int column)
         QBrush brush(newcolor);
         item->setForeground(brush);
 
-        colorModified[row] = true;
+        m_colorModified[row] = true;
 
         //
         updateROIs();
@@ -465,7 +469,7 @@ void ZROIWidget::updateROIRendering(QTableWidgetItem* item)
 void ZROIWidget::updateSlider(int v)
 {
     double alpha = double( v / 100.0 );
-    l_opacity->setText(tr(" Opacity: %1").arg(alpha));
+    m_opacityLabel->setText(tr(" Opacity: %1").arg(alpha));
 
     if(m_window)
     {
@@ -477,8 +481,8 @@ void ZROIWidget::updateSlider(int v)
 void ZROIWidget::updateOpacity(double v)
 {
     int opacityVal = 100*v;
-    s_opacity->setValue(opacityVal);
-    l_opacity->setText(tr(" Opacity: %1").arg(v));
+    m_opacitySlider->setValue(opacityVal);
+    m_opacityLabel->setText(tr(" Opacity: %1").arg(v));
 }
 
 

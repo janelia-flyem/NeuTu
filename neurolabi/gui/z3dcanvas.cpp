@@ -260,9 +260,11 @@ void Z3DCanvas::clearEventListeners()
 void Z3DCanvas::broadcastEvent(QEvent *e, int w, int h)
 {
   getGLFocus();
+#ifdef _DEBUG_2
   std::cout << m_listeners.size() << " listeners" << std::endl;
+#endif
   for (size_t i = 0 ; i < m_listeners.size() ; ++i) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "  Listener: " << m_listeners[i]->getListnerName() << std::endl;
 #endif
     m_listeners[i]->onEvent(e, w, h);

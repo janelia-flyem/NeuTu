@@ -17,6 +17,7 @@ class ZFlyEmProofDoc;
 class ZSwcTree;
 class ZMesh;
 class ZBodyListWidget;
+class ZROIWidget;
 
 /*!
  * \brief The class of the main window for Neu3
@@ -101,11 +102,14 @@ private slots:
   void meshArchiveLoadingProgress(float fraction);
   void meshArchiveLoadingEnded();
 
+  void updateRoiWidget();
+
   void test();
 
 private:
   void createDockWidget();
   void createTaskWindow();
+  void createRoiWidget();
   void createToolBar();
   void connectSignalSlot();
 
@@ -117,6 +121,7 @@ private:
   ZFlyEmProofMvc *m_dataContainer = nullptr;
   QToolBar *m_toolBar = nullptr;
   ZBodyListWidget *m_bodyListWidget = nullptr;
+  ZROIWidget *m_roiWidget = nullptr;
   bool m_doingBulkUpdate = false;
   class DoingBulkUpdate;
   QProgressDialog *m_progressDialog = nullptr;

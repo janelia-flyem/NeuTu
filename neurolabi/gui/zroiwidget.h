@@ -54,7 +54,7 @@ public:
     void loadROIs(std::vector<std::string> roiList,
                   std::vector<ZSharedPointer<ZMesh> > loadedROIs,
                   std::vector<std::string> roiSourceList);
-    void makeGUI();
+
     Z3DWindow* getParentWindow() const {
       return m_window;
     }
@@ -79,6 +79,7 @@ protected:
 
 private:
     int getDsIntv() const;
+    void makeGUI();
 
 public:
     //
@@ -88,18 +89,18 @@ public:
     //
     std::vector<std::string> m_roiList;
     std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
-    QColor defaultColor;
+    QColor m_defaultColor;
     std::vector<std::string> m_roiSourceList;
-    std::vector<bool> colorModified;
+    std::vector<bool> m_colorModified;
     std::vector<bool> m_checkStatus;
 
     //
-    QCheckBox *selectAll;
+    QCheckBox *m_selectAll;
 
 //    QSpinBox *m_dsIntvWidget = NULL;
 //    QPushButton *m_updateButton;
-    QLabel *l_opacity;
-    QSlider *s_opacity;
+    QLabel *m_opacityLabel;
+    QSlider *m_opacitySlider;
     QTableWidget *tw_ROIs;
 
     //
