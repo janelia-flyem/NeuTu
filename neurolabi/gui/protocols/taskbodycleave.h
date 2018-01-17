@@ -45,9 +45,10 @@ private:
   int m_maxLevel;
 
   // The cleave index assignments created by the last cleaving operation (initially empty).
-  std::map<uint64_t, std::size_t> m_meshIdToLastCleaveIndex;
+  std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndex;
 
-  // The cleave index assignments specified by the user, to be used for the next cleaving operation.
+  // The cleave index assignments specified by the user, to be used as seeds for the next
+  // cleaving operation.
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndex;
 
   QNetworkAccessManager *m_networkManager;
