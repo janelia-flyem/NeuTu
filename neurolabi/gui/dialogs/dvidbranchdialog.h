@@ -29,6 +29,7 @@ private slots:
     void onRepoClicked(QModelIndex modelIndex);
     void onBranchClicked(QModelIndex modelIndex);
     void toggleDetailsPanel();
+    void launchOldDialog();
 
 private:
     static const QString KEY_REPOS;
