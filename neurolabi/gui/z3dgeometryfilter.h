@@ -26,6 +26,14 @@ public:
 
   virtual ZJsonObject getConfigJson() const;
 
+  void enablePicking(bool on) {
+    m_pickingEnabled = on;
+  }
+
+  bool pickingEnabled() const {
+    return m_pickingEnabled;
+  }
+
 protected:
   virtual void process(Z3DEye /*eye*/) override
   {}
@@ -54,6 +62,7 @@ protected:
 
   ZBoolParameter m_stayOnTop;
   bool m_pickingObjectsRegistered;
+  bool m_pickingEnabled = true;
 };
 
 #endif // Z3DGEOMETRYFILTER_H

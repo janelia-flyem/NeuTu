@@ -393,7 +393,7 @@ void Z3DView::init()
 
     addFilter(neutube3d::LAYER_GRAPH);
     addFilter(neutube3d::LAYER_MESH);
-//    addFilter(neutube3d::LAYER_ROI);
+    addFilter(neutube3d::LAYER_ROI);
 
 //    initSurfaceFilter();
 

@@ -110,6 +110,7 @@
 #include "zstackdocdatabuffer.h"
 #include "zstackdockeyprocessor.h"
 #include "zmeshobjsmodel.h"
+#include "zroiobjsmodel.h"
 #include "flyem/zstackwatershedcontainer.h"
 
 using namespace std;
@@ -177,6 +178,7 @@ void ZStackDoc::init()
   m_graphObjsModel = new ZGraphObjsModel(this, this);
   m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
   m_meshObjsModel = new ZMeshObjsModel(this, this);
+  m_roiObjsModel = new ZRoiObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
   connectSignalSlot();
@@ -327,6 +329,8 @@ void ZStackDoc::connectSignalSlot()
   connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
+  connect(this, SIGNAL(objectModified(ZStackObjectInfoSet)),
+          m_roiObjsModel, SLOT(processObjectModified(ZStackObjectInfoSet)));
   connect(this, SIGNAL(meshModified()), m_meshObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
@@ -10447,6 +10451,15 @@ void ZStackDoc::setVisible(ZStackObject::EType type, std::string source, bool vi
   }
 
   processObjectModified();
+}
+
+void ZStackDoc::setVisible(ZStackObject *obj, bool visible)
+{
+  if (obj->isVisible() != visible) {
+    obj->setVisible(visible);
+    bufferObjectModified(obj);
+    processObjectModified(obj);
+  }
 }
 
 void ZStackDoc::prepareSwc(ZSwcTree *tree)

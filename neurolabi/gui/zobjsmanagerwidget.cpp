@@ -11,6 +11,7 @@
 #include "zgraphobjsmodel.h"
 #include "zsurfaceobjsmodel.h"
 #include "zmeshobjsmodel.h"
+#include "zroiobjsmodel.h"
 #include "QsLog/QsLog.h"
 #include "neutubeconfig.h"
 
@@ -213,7 +214,8 @@ void ZObjsManagerWidget::punctaSelectionChanged(QList<ZPunctum *> selected, QLis
   }
 }
 
-void ZObjsManagerWidget::meshSelectionChanged(QList<ZMesh*> selected, QList<ZMesh*> deselected)
+void ZObjsManagerWidget::meshSelectionChanged(
+    QList<ZMesh*> selected, QList<ZMesh*> deselected)
 {
   if (!selected.empty() && m_meshObjsTreeView != NULL) {
     QItemSelection is;
@@ -355,6 +357,14 @@ void ZObjsManagerWidget::createWidget()
     m_seedObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_seedObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     tabs->addTab(m_seedObjsTreeView, "Seeds");
+
+    m_roiObjsTreeView = new QTreeView(this);
+    m_roiObjsTreeView->setSortingEnabled(false);
+    m_roiObjsTreeView->setExpandsOnDoubleClick(false);
+    m_roiObjsTreeView->setModel(m_doc->roiObjsModel());
+    m_roiObjsTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_roiObjsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    tabs->addTab(m_roiObjsTreeView, "ROI");
   }
 
   m_graphObjsTreeView = new QTreeView(this);

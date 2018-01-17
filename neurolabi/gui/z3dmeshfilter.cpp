@@ -259,22 +259,24 @@ void Z3DMeshFilter::prepareData()
 
 void Z3DMeshFilter::registerPickingObjects()
 {
-  if (!m_pickingObjectsRegistered) {
-    for (auto mesh : m_meshList) {
-      pickingManager().registerObject(mesh);
+  if (pickingEnabled()) {
+    if (!m_pickingObjectsRegistered) {
+      for (auto mesh : m_meshList) {
+        pickingManager().registerObject(mesh);
+      }
+      m_registeredMeshList = m_meshList;
+      m_meshPickingColors.clear();
+      for (auto mesh : m_meshList) {
+        glm::col4 pickingColor = pickingManager().colorOfObject(mesh);
+        glm::vec4 fPickingColor(pickingColor[0] / 255.f, pickingColor[1] / 255.f, pickingColor[2] / 255.f,
+            pickingColor[3] / 255.f);
+        m_meshPickingColors.push_back(fPickingColor);
+      }
+      m_meshRenderer.setDataPickingColors(&m_meshPickingColors);
     }
-    m_registeredMeshList = m_meshList;
-    m_meshPickingColors.clear();
-    for (auto mesh : m_meshList) {
-      glm::col4 pickingColor = pickingManager().colorOfObject(mesh);
-      glm::vec4 fPickingColor(pickingColor[0] / 255.f, pickingColor[1] / 255.f, pickingColor[2] / 255.f,
-                              pickingColor[3] / 255.f);
-      m_meshPickingColors.push_back(fPickingColor);
-    }
-    m_meshRenderer.setDataPickingColors(&m_meshPickingColors);
-  }
 
-  m_pickingObjectsRegistered = true;
+    m_pickingObjectsRegistered = true;
+  }
 }
 
 void Z3DMeshFilter::deregisterPickingObjects()
@@ -380,11 +382,13 @@ std::vector<bool> Z3DMeshFilter::hitObject(
 {
   std::vector<bool> hitArray(ptArray.size(), false);
 
-  std::vector<const void*> objArray =
-      pickingManager().objectAtWidgetPos(ptArray);
-  for (size_t i = 0; i < objArray.size(); ++i) {
-    if (objArray[i] != NULL) {
-      hitArray[i] = true;
+  if (pickingEnabled()) {
+    std::vector<const void*> objArray =
+        pickingManager().objectAtWidgetPos(ptArray);
+    for (size_t i = 0; i < objArray.size(); ++i) {
+      if (objArray[i] != NULL) {
+        hitArray[i] = true;
+      }
     }
   }
 
@@ -408,7 +412,7 @@ void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
   std::cout << "Mesh count: " << m_meshList.size() << std::endl;
 #endif
 
-  if (m_meshList.empty())
+  if (m_meshList.empty() || !pickingEnabled())
     return;
 
   e->ignore();
