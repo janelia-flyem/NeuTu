@@ -42,7 +42,7 @@ bool ZStackDoc3dHelper::dataUpdateRequired(
         objInfo.contains(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
     break;
   case neutube3d::LAYER_MESH:
-    foreach (const ZStackObjectInfo &info, objInfo) {
+    foreach (const ZStackObjectInfo &info, objInfo.keys()) {
       if (info.getType() == ZStackObject::TYPE_MESH &&
           !info.getRole().hasRole(ZStackObjectRole::ROLE_ROI)) {
         updating = true;

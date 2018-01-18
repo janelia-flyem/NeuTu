@@ -51,7 +51,7 @@ void ZRoiObjsModel::updateModelData()
 
 void ZRoiObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
-  foreach (const ZStackObjectInfo &info, infoSet) {
+  foreach (const ZStackObjectInfo &info, infoSet.keys()) {
     if (info.getRole() == ZStackObjectRole::ROLE_ROI) {
       updateModelData();
       break;

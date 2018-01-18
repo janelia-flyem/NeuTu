@@ -130,7 +130,9 @@ public:
   ZObject3dScan* readBody(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result);
 
-  ZMesh* readMesh(uint64_t bodyId, int zoom);
+  ZMesh* readMesh(uint64_t bodyId, int zoom) const;
+  ZMesh* readMesh(const std::string &data, const std::string &key) const;
+  ZMesh* readMeshFromUrl(const std::string &url) const;
 
   /*!
    * \brief Read meshes from a key-value instance whose values are tar archives of

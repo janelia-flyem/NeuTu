@@ -102,7 +102,7 @@ ZFlyEmProofMvc::~ZFlyEmProofMvc()
             << getDvidTarget().getAddressWithPort();
   }
 
-  m_exiting = true;
+  m_quitting = true;
   m_futureMap.waitForFinished();
   exitCurrentDoc();
 
@@ -291,7 +291,7 @@ void ZFlyEmProofMvc::initBodyWindow()
   connect(m_bodyViewers, SIGNAL(buttonROIsToggled(bool)),
           m_bodyViewWindow, SLOT(updateButtonROIs(bool)));
   connect(m_bodyViewers, SIGNAL(buttonROIsClicked()),
-          this, SLOT(getROIs()));
+          this, SLOT(retrieveRois()));
 
   connect(m_bodyViewers, SIGNAL(currentChanged(int)), m_bodyViewers, SLOT(updateTabs(int)));
 
@@ -4615,25 +4615,108 @@ void ZFlyEmProofMvc::dropEvent(QDropEvent *event)
 }
 //void ZFlyEmProofMvc::toggleEdgeMode(bool edgeOn)
 
-void ZFlyEmProofMvc::loadRoi(const ZDvidReader &reader, const std::string &roiName)
+void ZFlyEmProofMvc::loadRoi(
+    const ZDvidReader &reader, const std::string &roiName,
+    const std::string &key, const std::string &source)
 {
-  if (!roiName.empty()) {
-    ZObject3dScan roi;
-    reader.readRoi(roiName, &roi);
-    if (!roi.isEmpty()) {
-      ZMesh *mesh = ZMeshFactory::MakeMesh(roi);
-      std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-      mesh->setSource(ZStackObjectSourceFactory::MakeFlyEmRoiSource(source));
-      mesh->addRole(ZStackObjectRole::ROLE_ROI);
-      m_loadedROIs.emplace_back(mesh);
-      m_roiList.push_back(roiName);
-      m_roiSourceList.push_back(source);
+  if (!roiName.empty() && !key.empty()) {
+    ZMesh *mesh = NULL;
 
-      //      m_loadedROIs.push_back(roi);
-      //      std::string source =
-      //          ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-      //      m_roiSourceList.push_back(source);
+#ifdef _DEBUG_
+    std::cout << "Add ROI: " << "from " << key << " (" << source << ")"
+              << " as " << roiName << std::endl;
+#endif
+
+    if (source == "roi") {
+      ZObject3dScan roi;
+      reader.readRoi(key, &roi);
+      if (!roi.isEmpty()) {
+        mesh = ZMeshFactory::MakeMesh(roi);
+
+        //      m_loadedROIs.push_back(roi);
+        //      std::string source =
+        //          ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+        //      m_roiSourceList.push_back(source);
+      }
+    } else if (source == "mesh") {
+      mesh = reader.readMesh("roi_data", key);
     }
+
+    loadRoiMesh(mesh, roiName);
+  }
+}
+
+void ZFlyEmProofMvc::loadRoiMesh(ZMesh *mesh, const std::string &roiName)
+{
+  if (mesh != NULL) {
+    std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
+    mesh->setSource(ZStackObjectSourceFactory::MakeFlyEmRoiSource(source));
+    mesh->addRole(ZStackObjectRole::ROLE_ROI);
+    m_loadedROIs.emplace_back(mesh);
+    m_roiList.push_back(roiName);
+    m_roiSourceList.push_back(source);
+  }
+}
+
+void ZFlyEmProofMvc::loadRoiFromRoiData(const ZDvidReader &reader)
+{
+  ZJsonObject meta = reader.readInfo();
+
+  //
+  ZJsonValue datains = meta.value("DataInstances");
+
+  if(datains.isObject())
+  {
+    ZJsonObject insList(datains);
+    std::vector<std::string> keys = insList.getAllKey();
+
+    for(std::size_t i=0; i<keys.size(); i++)
+    {
+      if (m_quitting) {
+        return;
+      }
+
+      std::string roiName = keys.at(i);
+      ZJsonObject roiJson(insList.value(roiName.c_str()));
+      if (roiJson.hasKey("Base")) {
+        ZJsonObject baseJson(roiJson.value("Base"));
+        std::string typeName =
+            ZJsonParser::stringValue(baseJson["TypeName"]);
+        if (typeName != "roi") {
+          roiName = "";
+        }
+      }
+
+      loadRoi(reader, roiName, roiName, "roi");
+    }
+  }
+}
+
+void ZFlyEmProofMvc::loadRoiFromRefData(
+    const ZDvidReader &reader, const std::string &roiName)
+{
+#ifdef _DEBUG_
+  std::cout << "Load ROIs from ROI data" << std::endl;
+#endif
+//  ZMesh *mesh = NULL;
+
+  //Scheme: {"->": {"type": type, "key", data}}
+  ZJsonObject roiInfo = reader.readJsonObjectFromKey(
+        ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY).c_str(), roiName.c_str());
+  if (roiInfo.hasKey(neutube::Json::REF_KEY)) {
+    ZJsonObject jsonObj(roiInfo.value(neutube::Json::REF_KEY));
+
+    std::string type = ZJsonParser::stringValue(jsonObj["type"]);
+    std::string key = ZJsonParser::stringValue(jsonObj["data"]);
+    if (key.empty()) {
+      key = roiName;
+    }
+
+    if (type.empty()) {
+      type = "mesh";
+    }
+
+    loadRoi(reader, roiName, key, type);
   }
 }
 
@@ -4652,48 +4735,14 @@ void ZFlyEmProofMvc::loadROIFunc()
   //
   ZDvidReader reader;
   if (reader.open(getDvidTarget())) {
-    ZJsonObject meta = reader.readInfo();
-
-    //
-    ZJsonValue datains = meta.value("DataInstances");
-
-    if(datains.isObject())
-    {
-      ZJsonObject insList(datains);
-      std::vector<std::string> keys = insList.getAllKey();
-
-      for(std::size_t i=0; i<keys.size(); i++)
-      {
-        if (m_exiting) {
-          return;
-        }
-
-        std::string roiName = keys.at(i);
-        ZJsonObject roiJson(insList.value(roiName.c_str()));
-        if (roiJson.hasKey("Base")) {
-          ZJsonObject baseJson(roiJson.value("Base"));
-          std::string typeName =
-              ZJsonParser::stringValue(baseJson["TypeName"]);
-          if (typeName != "roi") {
-            roiName = "";
-          }
-        }
-
-        loadRoi(reader, roiName);
-#if 0
-        if (!roiName.empty()) {
-          ZObject3dScan roi = reader.readRoi(roiName);
-          if (!roi.isEmpty()) {
-            m_roiList.push_back(roiName);
-            m_loadedROIs.push_back(roi);
-
-            std::string source =
-                ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
-            m_roiSourceList.push_back(source);
-          }
-        }
-#endif
+    QStringList keyList = reader.readKeys(
+          ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY).c_str());
+    if (!keyList.isEmpty()) {
+      foreach (const QString &key, keyList) {
+        loadRoiFromRefData(reader, key.toStdString());
       }
+    } else {
+      loadRoiFromRoiData(reader);
     }
 
     m_ROILoaded = true;
@@ -4752,7 +4801,7 @@ void ZFlyEmProofMvc::showInfoDialog()
   m_infoDlg->raise();
 }
 
-void ZFlyEmProofMvc::getROIs()
+void ZFlyEmProofMvc::retrieveRois()
 {
   const QString threadId = "ZFlyEmProofMvc::loadROIFunc()";
   if (!m_futureMap.isAlive(threadId)) {

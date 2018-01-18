@@ -130,7 +130,7 @@ bool Neu3Window::loadDvidTarget()
         arg(dlg->getDvidTarget().getLabelBlockName().c_str());
     setWindowTitle(windowTitle);
 
-    m_dataContainer->getROIs();
+    m_dataContainer->retrieveRois();
   }
 
   delete dlg;
@@ -140,7 +140,7 @@ bool Neu3Window::loadDvidTarget()
 
 void Neu3Window::createDockWidget()
 {
-  QDockWidget *dockWidget = new QDockWidget("Bodies", this);
+  m_bodyListDock = new QDockWidget("Bodies", this);
 
 #if 0
   FlyEmBodyInfoDialog *widget = m_dataContainer->getBodyInfoDlg();
@@ -162,17 +162,18 @@ void Neu3Window::createDockWidget()
   connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
           m_bodyListWidget, SLOT(removeBody(uint64_t)));
 
-  dockWidget->setWidget(m_bodyListWidget);
+  m_bodyListDock->setWidget(m_bodyListWidget);
 
-  dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
-  dockWidget->setFeatures(
+  m_bodyListDock->setAllowedAreas(Qt::LeftDockWidgetArea);
+  m_bodyListDock->setFeatures(
         QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-  addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+  addDockWidget(Qt::LeftDockWidgetArea, m_bodyListDock);
 }
 
 void Neu3Window::createTaskWindow() {
     QDockWidget *dockWidget = new QDockWidget("Tasks", this);
-    TaskProtocolWindow *window = new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
+    TaskProtocolWindow *window =
+        new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
@@ -200,7 +201,8 @@ void Neu3Window::createRoiWidget() {
     m_roiWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
     m_roiWidget->setFeatures(
           QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-    addDockWidget(Qt::LeftDockWidgetArea, m_roiWidget);
+//    addDockWidget(Qt::LeftDockWidgetArea, m_roiWidget);
+    tabifyDockWidget(m_bodyListDock, m_roiWidget);
 }
 
 void Neu3Window::updateRoiWidget()
@@ -392,17 +394,21 @@ void Neu3Window::syncBodyListModel()
   QList<int> rowsToRemove;
   //Remove rows that are not in the document
   for (int i = 0; i < listModel->rowCount(); i++) {
-    bool found = false;
-    for (ZMesh *mesh : meshList) {
-      if (mesh->getLabel() > 0) {
-        if (mesh->getLabel() == listModel->getBodyId(i)) {
-          found = true;
-          break;
+    if (listModel->getBodyId(i) == 0) {
+      rowsToRemove.append(i);
+    } else {
+      bool found = false;
+      for (ZMesh *mesh : meshList) {
+        if (mesh->getLabel() > 0) {
+          if (mesh->getLabel() == listModel->getBodyId(i)) {
+            found = true;
+            break;
+          }
         }
       }
-    }
-    if (!found) {
-      rowsToRemove.append(i);
+      if (!found) {
+        rowsToRemove.append(i);
+      }
     }
   }
   listModel->removeRowList(rowsToRemove);

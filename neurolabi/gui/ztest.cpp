@@ -25224,7 +25224,7 @@ void ZTest::test(MainWindow *host)
   command.test();
 #endif
 
-#if 1
+#if 0
   ZStackObjectInfo objInfo;
   objInfo.setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   objInfo.print();
@@ -25235,6 +25235,7 @@ void ZTest::test(MainWindow *host)
   infoSet.add(ZStackObject::TARGET_OBJECT_CANVAS);
   infoSet.add(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
   infoSet.add(ZStackObject::TYPE_3D_CUBE);
+  infoSet.add(ZStackObject::TYPE_3D_CUBE, ZStackObjectInfo::STATE_ADDED);
   ZSwcTree tree;
   infoSet.add(tree);
   infoSet.add(tree);
@@ -25243,6 +25244,15 @@ void ZTest::test(MainWindow *host)
   infoSet.add(tree);
 
   infoSet.print();
+#endif
+
+#if 1
+  ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
+  ZDvidReader reader;
+  reader.open(target);
+  ZObject3dScan obj = reader.readRoi("PB");
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
 #endif
 
   std::cout << "Done." << std::endl;

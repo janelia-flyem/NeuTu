@@ -593,8 +593,11 @@ void ZFlyEmBody3dDoc::saveSplitTask()
 //          task.setEntry("seeds", seedJson);
 
           std::string location = writer->writeServiceTask("split", task);
+
+          //Save the entry point
           ZJsonObject taskJson;
           taskJson.setEntry(neutube::Json::REF_KEY, location);
+          taskJson.setEntry("user", neutube::GetCurrentUserName());
           writer->writeSplitTask(taskKey, taskJson);
 
           std::cout << "Split task saved @" << taskKey.toStdString() << std::endl;

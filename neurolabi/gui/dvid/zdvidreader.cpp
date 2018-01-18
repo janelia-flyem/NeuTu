@@ -614,28 +614,54 @@ ZObject3dScanArray* ZDvidReader::readBody(const std::set<uint64_t> &bodySet)
   return objArray;
 }
 
-ZMesh* ZDvidReader::readMesh(uint64_t bodyId, int zoom)
+ZMesh* ZDvidReader::readMeshFromUrl(const std::string &url) const
 {
-  ZMesh *mesh = NULL;
+  ZDvidTarget target;
+  target.setFromUrl(url);
+  if (target.getAddressWithPort() != getDvidTarget().getAddressWithPort() ||
+      target.getUuid() != getDvidTarget().getUuid()) {
+    LWARN() << "Unmatched target";
+    return NULL;
+  }
 
-  ZDvidUrl dvidUrl(getDvidTarget());
+  ZMesh *mesh = NULL;
 
   std::string format = "obj";
 
-  ZJsonObject infoJson = readJsonObject(dvidUrl.getMeshInfoUrl(bodyId, zoom));
+  ZJsonObject infoJson = readJsonObject(url);
   if (infoJson.hasKey("format")) {
     format = ZJsonParser::stringValue(infoJson["format"]);
   }
 
-  m_bufferReader.read(dvidUrl.getMeshUrl(bodyId, zoom).c_str(), isVerbose());
+  m_bufferReader.read(url.c_str(), isVerbose());
   if (m_bufferReader.getStatus() != ZDvidBufferReader::READ_FAILED) {
     const QByteArray &buffer = m_bufferReader.getBuffer();
     mesh = ZMeshIO::instance().loadFromMemory(buffer, format);
-    if (mesh != NULL) {
-      mesh->setLabel(bodyId);
-    }
   }
   m_bufferReader.clearBuffer();
+
+  return mesh;
+}
+
+ZMesh* ZDvidReader::readMesh(uint64_t bodyId, int zoom) const
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string meshUrl = dvidUrl.getMeshInfoUrl(bodyId, zoom);
+  ZMesh *mesh = readMeshFromUrl(meshUrl);
+
+  if (mesh != NULL) {
+    mesh->setLabel(bodyId);
+  }
+
+  return mesh;
+}
+
+ZMesh* ZDvidReader::readMesh(const std::string &data, const std::string &key)
+const
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string meshUrl = dvidUrl.getKeyUrl(data, key);
+  ZMesh *mesh = readMeshFromUrl(meshUrl);
 
   return mesh;
 }
