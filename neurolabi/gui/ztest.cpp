@@ -25246,13 +25246,30 @@ void ZTest::test(MainWindow *host)
   infoSet.print();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
   ZDvidReader reader;
   reader.open(target);
   ZObject3dScan obj = reader.readRoi("PB");
   ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
   mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+#endif
+
+#if 1
+  ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_02655_cut.obj",
+        "hkcut_33-34");
+#endif
+
+#if 0
+  ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.deleteKey("rois", "hkcut_34");
 #endif
 
   std::cout << "Done." << std::endl;

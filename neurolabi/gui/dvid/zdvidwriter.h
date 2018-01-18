@@ -227,6 +227,9 @@ public:
   bool good() const;
 
   void writeData(const std::string &dest, const QByteArray &data);
+  void writeDataToKeyValue(
+      const std::string &dataName, const std::string &key,
+      const QByteArray &data);
 
   std::string writeServiceResult(
       const QString &group, const QByteArray &data, bool head);
@@ -238,6 +241,16 @@ public:
   std::string writeServiceTask(const QString &group, const ZJsonObject &task);
   void writeSplitTask(const QString &key, const ZJsonObject &task);
   void deleteSplitTask(const QString &key);
+
+  /*!
+   * \brief Upload a mesh as a ROI
+   *
+   * It will create a reference for the ROI.
+   *
+   * \param meshPath The path of the mesh file.
+   * \param name Name of the ROI
+   */
+  void uploadRoiMesh(const std::string &meshPath, const std::string &name);
 //  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:

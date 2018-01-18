@@ -4107,6 +4107,12 @@ void Z3DWindow::setOpacity(neutube3d::ERendererLayer layer, double opacity)
   }
 }
 
+void Z3DWindow::setOpacityQuietly(
+    neutube3d::ERendererLayer layer, double opacity)
+{
+  m_view->setOpacityQuietly(layer, opacity);
+}
+
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
   ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),

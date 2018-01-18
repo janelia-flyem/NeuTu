@@ -103,18 +103,9 @@ void ZROIWidget::loadROIs(std::vector<std::string> roiList,
   m_loadedROIs = loadedROIs;
   m_roiSourceList = roiSourceList;
 
-  //
-  size_t N = m_roiList.size();
-
-  //
-  if (m_window != NULL)
-  {
-      for(size_t i=0; i<N; i++)
-          m_colorModified.push_back(false);
-
-      //
-      makeGUI();
-
+  if (m_window != NULL) {
+    m_colorModified.resize(m_roiList.size(), false);
+    makeGUI();
   }
 }
 
@@ -194,26 +185,7 @@ void ZROIWidget::makeGUI()
         m_checkStatus.push_back(checked);
     }
 
-    //
-    //this->setWidget(tw_ROIs);
     QVBoxLayout *layout = new QVBoxLayout();
-
-#if 0
-    QHBoxLayout *controlLayout = new QHBoxLayout();
-
-    m_dsIntvWidget = new QSpinBox(this);
-    m_dsIntvWidget->setRange(0, 5);
-    m_dsIntvWidget->setValue(1);
-    controlLayout->addWidget(new QLabel(tr("Downsample"), this));
-    controlLayout->addWidget(m_dsIntvWidget);
-
-    m_updateButton = new QPushButton();
-    m_updateButton->setText(tr("Update"));
-
-    controlLayout->addWidget(m_updateButton);
-
-    layout->addLayout(controlLayout);
-#endif
 
     QHBoxLayout *controlLayout = new QHBoxLayout();
 
@@ -226,22 +198,22 @@ void ZROIWidget::makeGUI()
     QGroupBox *group = new QGroupBox();
     group->setLayout(layout);
 
+#ifdef _DEBUG_
+    std::cout << "Set ROI widget" << std::endl;
+#endif
+
     this->setWidget(group);
 
     //
     //connect(tw_ROIs, SIGNAL(cellClicked(int,int)), this, SLOT(updateROISelections(int,int)));
-    connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(updateROIColors(int,int)));
-
-    connect(tw_ROIs, SIGNAL(clicked(QModelIndex)), this, SLOT(updateROISelections(QModelIndex)));
-
-
+    connect(tw_ROIs, SIGNAL(cellDoubleClicked(int,int)),
+            this, SLOT(updateROIColors(int,int)));
+    connect(tw_ROIs, SIGNAL(clicked(QModelIndex)),
+            this, SLOT(updateROISelections(QModelIndex)));
     connect(m_selectAll, SIGNAL(clicked()), this, SLOT(updateSelection()));
-//    connect(m_updateButton, SIGNAL(clicked()), this, SLOT(updateSelectedROIs()));
-
-    //connect(tw_ROIs, SIGNAL(itemActivated(QTableWidgetItem *)), this, SLOT(updateROIRendering(QTableWidgetItem*)));
-
     connect(m_opacitySlider,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
-    connect(m_window->getSurfaceFilter(),SIGNAL(opacityValueChanged(double)),this,SLOT(updateOpacity(double)));
+    connect(m_window->getFilter(neutube3d::LAYER_ROI), SIGNAL(opacityChanged(double)),
+            this,SLOT(updateOpacity(double)));
 }
 
 
@@ -473,7 +445,7 @@ void ZROIWidget::updateSlider(int v)
 
     if(m_window)
     {
-      m_window->setOpacity(neutube3d::LAYER_ROI, alpha);
+      m_window->setOpacityQuietly(neutube3d::LAYER_ROI, alpha);
 //        m_window->get()->setOpacity(alpha);
     }
 }

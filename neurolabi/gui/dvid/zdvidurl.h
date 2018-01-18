@@ -54,6 +54,7 @@ public:
   std::string getMeshUrl();
   std::string getMeshUrl(uint64_t bodyId, int zoom);
   std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
+  static std::string GetMeshInfoUrl(const std::string &meshUrl);
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
 
@@ -172,6 +173,12 @@ public:
   std::string getBranchUrl() const;
 
   std::string getRoiUrl(const std::string &dataName) const;
+  std::string getRoiMeshUrl(const std::string &key) const;
+
+  /*!
+   * \brief Get the url for an roi that will be listed in GUI.
+   */
+  std::string getManagedRoiUrl(const std::string &key) const;
 
   std::string getBookmarkKeyUrl() const;
   std::string getBookmarkKeyUrl(int x, int y, int z) const;
