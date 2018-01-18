@@ -63,6 +63,8 @@ public:
    */
   ZStack* getSlice(int z) const;
 
+  double getValue(int x,int y,int z) const ;
+  void getLineValue(int x,int y,int z,int cnt,double* buffer) const ;
   /*!
    * \brief Get the maximum intensity projection of the sparse stack
    *

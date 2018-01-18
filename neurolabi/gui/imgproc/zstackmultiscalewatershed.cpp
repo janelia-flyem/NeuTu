@@ -19,6 +19,7 @@
 #include "mainwindow.h"
 #include "zstackdocdatabuffer.h"
 #include "neutubeconfig.h"
+#include "zdownsamplefilter.h"
 #undef ASCII
 #undef BOOL
 #undef TRUE
@@ -503,7 +504,7 @@ ZStack* ZStackMultiScaleWatershed::upSampleAndRecoverBoundary(ZStack* sampled_wa
 
 
 #if defined(_QT_GUI_USED_)
-ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seeds,int scale,const QString &algorithm)
+ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seeds,int scale,const QString &algorithm,const QString &dsMethod)
 {
   m_scale=scale;
   ZStack* rv=NULL;
@@ -520,15 +521,42 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
 
 
   //down sample src stack
-  ZStack* sampled=src->clone();
+  ZStack* sampled=NULL;
 
   QTime time;
   time.start();
 
   if(m_scale!=1){
-    sampled->downsampleMinIgnoreZero(m_scale-1,m_scale-1,m_scale-1);
+    ZDownsampleFilter* downsample=NULL;
+    if (dsMethod=="Min"){
+      downsample=new ZMinDsFilter();
+    }
+    else if (dsMethod=="Min(ignore zero)")
+    {
+      downsample=new ZMinIgnoreZeroDsFilter();
+    }
+    else if (dsMethod=="Max")
+    {
+      downsample=new ZMaxDsFilter();
+    }
+    else if (dsMethod=="Mean")
+    {
+      downsample=new ZMeanDsFilter();
+    }
+    else if (dsMethod=="Edge")
+    {
+      downsample=new ZEdgeDsFilter();
+    }
+    downsample->setDsFactor(scale,scale,scale);
+    sampled=downsample->filterStack(*src);
+    delete downsample;
+    ZStackFrame *frame=ZSandbox::GetMainWindow()->createStackFrame(sampled);
+    ZSandbox::GetMainWindow()->addStackFrame(frame);
+    ZSandbox::GetMainWindow()->presentStackFrame(frame);
   }
-  //sampled->downsampleMean(m_scale-1,m_scale-1,m_scale-1);
+  else{
+    sampled=src->clone();
+  }
 
   std::cout<<"----------downsample time:"<<time.elapsed()/1000.0<<std::endl;
 
@@ -543,23 +571,24 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
   }
 
   else if(algorithm=="random_walker"){
-    std::string working_dir = NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR);
+    //std::string working_dir = NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR);
         //on QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
+    const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/random_walker";
     sampled->setOffset(0,0,0);
     seed->setOffset(0,0,0);
-    sampled->save(working_dir+"/data.tif");
-    seed->save(working_dir+"/seed.tif");
+    sampled->save(working_dir.toStdString()+"/data.tif");
+    seed->save(working_dir.toStdString()+"/seed.tif");
 
     ZPythonProcess python;
-    python.setWorkDir(working_dir.c_str());
-    python.setScript((working_dir+"/random_walker.py").c_str());
-    python.addArg((working_dir+"/data.tif").c_str());
-    python.addArg((working_dir+"/seed.tif").c_str());
-    python.addArg((working_dir+"/result.tif").c_str());
+    python.setWorkDir(working_dir);
+    python.setScript(working_dir+"/random_walker.py");
+    python.addArg(working_dir+"/data.tif");
+    python.addArg(working_dir+"/seed.tif");
+    python.addArg(working_dir+"/result.tif");
 
     sampled_watershed=new ZStack();
     python.run();
-    sampled_watershed->load(working_dir+"/result.tif");
+    sampled_watershed->load(working_dir.toStdString()+"/result.tif");
   }
   else if(algorithm=="power_watershed"){
     const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/power_watershed";
@@ -567,7 +596,6 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     seed->setOffset(0,0,0);
     sampled->save(working_dir.toStdString()+"/data.tif");
     seed->save(working_dir.toStdString()+"/seed.tif");
-
     ZPythonProcess python;
     python.setWorkDir(working_dir);
     python.setScript(working_dir+"/power_watershed.py");
@@ -585,7 +613,6 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     seed->setOffset(0,0,0);
     sampled->save(working_dir.toStdString()+"/data.tif");
     seed->save(working_dir.toStdString()+"/seed.tif");
-
     ZPythonProcess python;
     python.setWorkDir(working_dir);
     python.setScript(working_dir+"/power_watershed.py");
@@ -614,6 +641,37 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     sampled_watershed=new ZStack();
     python.run();
     sampled_watershed->load(working_dir.toStdString()+"/result.tif");
+  }
+  else if(algorithm=="FFN"){
+    const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/ffn";
+    sampled->setOffset(0,0,0);
+    //seed->setOffset(0,0,0);
+    sampled->save(working_dir.toStdString()+"/data.tif");
+    //seed->save(working_dir.toStdString()+"/seed.tif");
+    std::ofstream out(working_dir.toStdString()+"/seed.txt");
+    for(int k=0;k<seed->depth();++k){
+      for(int j=0;j<seed->height();++j){
+        for(int i=0;i<seed->width();++i){
+          if(seed->array8()[i+j*seed->width()+k*seed->width()*seed->height()]){
+            out<<k<<" "<<j<<" "<<i<<std::endl;
+          }
+        }
+      }
+    }
+    ZPythonProcess python;
+    python.setWorkDir(working_dir);
+    python.setScript(working_dir+"/ffn.py");
+    python.addArg(working_dir+"/data.tif");
+    python.addArg(working_dir+"/result.tif");
+    python.addArg(working_dir+"/seed.txt");
+    sampled_watershed=new ZStack();
+    python.run();
+    ZStack* middle_result=new ZStack();
+
+    sampled_watershed->load(working_dir.toStdString()+"/result.tif");
+
+    //sampled_watershed=watershed.run(sampled,middle_result);
+    //delete middle_result;
   }
   std::cout<<"----------downsample seg time:"<<time.elapsed()/1000.0<<std::endl;
 
@@ -655,7 +713,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
       rv=sampled_watershed->clone();
     }
 
-#if 1 //show seeds
+#if 0 //show seeds
     {
       std::vector<ZObject3d*> sds;
       ZStack* ss=src->clone();
@@ -686,9 +744,10 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     delete sampled_watershed;
   }
 
-  delete sampled;
+  //delete sampled;
 
   delete seed;
+  rv->setOffset(src->getOffset());
   return rv;
 }
 
