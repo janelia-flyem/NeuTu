@@ -51,7 +51,8 @@ public:
     ROLE_SPLIT_RESULT_PROPERTY_KEY,
     ROLE_MESH,
     ROLE_MESHES_TARS,
-    ROLE_ROI_KEY
+    ROLE_ROI_KEY,
+    ROLE_ROI_DATA_KEY
   };
 
   enum EType {
@@ -118,6 +119,7 @@ private:
   //static const char *m_keyValueTypeName;
   static const char *m_meshesTarsName;
   static const char *m_roiKeyName;
+  static const char *m_roiDataKeyName;
 
 
   static const char *m_nullName;

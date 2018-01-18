@@ -4639,7 +4639,8 @@ void ZFlyEmProofMvc::loadRoi(
         //      m_roiSourceList.push_back(source);
       }
     } else if (source == "mesh") {
-      mesh = reader.readMesh("roi_data", key);
+      mesh = reader.readMesh(
+            ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY), key);
     }
 
     loadRoiMesh(mesh, roiName);
@@ -4649,6 +4650,10 @@ void ZFlyEmProofMvc::loadRoi(
 void ZFlyEmProofMvc::loadRoiMesh(ZMesh *mesh, const std::string &roiName)
 {
   if (mesh != NULL) {
+#ifdef _DEBUG_
+    std::cout << "ROI mesh: " << mesh->vertices().size()
+              << " vertices." << std::endl;
+#endif
     std::string source = ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName);
     mesh->setSource(ZStackObjectSourceFactory::MakeFlyEmRoiSource(source));
     mesh->addRole(ZStackObjectRole::ROLE_ROI);
@@ -4707,7 +4712,7 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
     ZJsonObject jsonObj(roiInfo.value(neutube::Json::REF_KEY));
 
     std::string type = ZJsonParser::stringValue(jsonObj["type"]);
-    std::string key = ZJsonParser::stringValue(jsonObj["data"]);
+    std::string key = ZJsonParser::stringValue(jsonObj["key"]);
     if (key.empty()) {
       key = roiName;
     }
@@ -4746,6 +4751,9 @@ void ZFlyEmProofMvc::loadROIFunc()
     }
 
     m_ROILoaded = true;
+#ifdef _DEBUG_
+    std::cout << "ROI loaded." << std::endl;
+#endif
     emit roiLoaded();
   }
 }

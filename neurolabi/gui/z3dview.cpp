@@ -828,6 +828,14 @@ void Z3DView::setOpacity(neutube3d::ERendererLayer layer, double opacity)
   }
 }
 
+void Z3DView::setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity)
+{
+  Z3DBoundedFilter *filter = getBoundedFilter(layer);
+  if (filter != NULL) {
+    filter->setOpacityQuitely(opacity);
+  }
+}
+
 void Z3DView::setLayerVisible(neutube3d::ERendererLayer layer, bool visible)
 {
   Z3DBoundedFilter *filter = getBoundedFilter(layer);

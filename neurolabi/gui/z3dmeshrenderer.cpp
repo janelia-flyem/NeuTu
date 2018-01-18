@@ -121,7 +121,7 @@ void Z3DMeshRenderer::prepareMesh()
     return;
   }
   m_splitCount.resize(m_meshPt->size());
-  size_t numTriThre = 1000000;
+  size_t numTriThre = 5000000;
   for (auto mesh : *m_meshPt) {
     if (mesh->numTriangles() > numTriThre) {
       m_meshNeedSplit = true;

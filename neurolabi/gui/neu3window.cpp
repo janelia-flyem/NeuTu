@@ -67,6 +67,8 @@ void Neu3Window::initialize()
   createToolBar();
 
   connectSignalSlot();
+
+  m_dataContainer->retrieveRois();
 }
 
 void Neu3Window::connectSignalSlot()
@@ -129,8 +131,6 @@ bool Neu3Window::loadDvidTarget()
         arg(dlg->getDvidTarget().getSourceString(false).c_str()).
         arg(dlg->getDvidTarget().getLabelBlockName().c_str());
     setWindowTitle(windowTitle);
-
-    m_dataContainer->retrieveRois();
   }
 
   delete dlg;

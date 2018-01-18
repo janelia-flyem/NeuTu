@@ -628,7 +628,7 @@ ZMesh* ZDvidReader::readMeshFromUrl(const std::string &url) const
 
   std::string format = "obj";
 
-  ZJsonObject infoJson = readJsonObject(url);
+  ZJsonObject infoJson = readJsonObject(ZDvidUrl::GetMeshInfoUrl(url));
   if (infoJson.hasKey("format")) {
     format = ZJsonParser::stringValue(infoJson["format"]);
   }
@@ -646,7 +646,7 @@ ZMesh* ZDvidReader::readMeshFromUrl(const std::string &url) const
 ZMesh* ZDvidReader::readMesh(uint64_t bodyId, int zoom) const
 {
   ZDvidUrl dvidUrl(getDvidTarget());
-  std::string meshUrl = dvidUrl.getMeshInfoUrl(bodyId, zoom);
+  std::string meshUrl = dvidUrl.getMeshUrl(bodyId, zoom);
   ZMesh *mesh = readMeshFromUrl(meshUrl);
 
   if (mesh != NULL) {

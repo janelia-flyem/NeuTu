@@ -261,6 +261,13 @@ void ZDvidWriter::writeData(const std::string &dest, const QByteArray &data)
   post(dest, data, false);
 }
 
+void ZDvidWriter::writeDataToKeyValue(
+    const std::string &dataName, const std::string &key, const QByteArray &data)
+{
+  ZDvidUrl url(getDvidTarget());
+  writeData(url.getKeyUrl(dataName, key), data);
+}
+
 void ZDvidWriter::writeUrl(const std::string &url, const std::string &method)
 {
   /*
@@ -1037,6 +1044,45 @@ void ZDvidWriter::deleteSplitTask(const QString &key)
 {
   deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
             key.toStdString());
+}
+
+void ZDvidWriter::uploadRoiMesh(
+    const std::string &meshPath, const std::string &name)
+{
+  QFile file(meshPath.c_str());
+  std::string format;
+  if (ZString(meshPath).endsWith(".obj", ZString::CASE_INSENSITIVE)) {
+    format = "obj";
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+  } else if (ZString(meshPath).endsWith(".drc", ZString::CASE_INSENSITIVE)) {
+    format = "drc";
+    file.open(QIODevice::ReadOnly);
+  }
+
+  QByteArray data;
+  if (file.isOpen()) {
+    data = file.readAll();
+  }
+
+  if (!data.isEmpty()) {
+    ZDvidUrl dvidUrl(getDvidTarget());
+    QString key = ZDvidPath::GetHashKey(data, false);
+    std::string url = dvidUrl.getKeyUrl(
+          ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY), key.toStdString());
+    writeData(url, data);
+    if (format == "drc") {
+      ZJsonObject infoJson;
+      infoJson.setEntry("format", "drc");
+      writeJson(ZDvidUrl::GetMeshInfoUrl(url), infoJson);
+    }
+
+    //Write reference
+    ZJsonObject refJson;
+    ZJsonObject roiJson;
+    roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+    refJson.setEntry("key", key.toStdString());
+    writeJson(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), name, roiJson);
+  }
 }
 
 /*

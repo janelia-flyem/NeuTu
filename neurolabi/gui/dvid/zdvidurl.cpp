@@ -148,7 +148,13 @@ std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
 
 std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
 {
-  return getMeshUrl(bodyId, zoom) + "_info";
+  return GetMeshInfoUrl(getMeshUrl(bodyId, zoom));
+}
+
+std::string ZDvidUrl::GetMeshInfoUrl(const std::string &meshUrl)
+{
+  //Not a conflict-free of assigning a url, but we'll live with it for now.
+  return meshUrl + "_info";
 }
 
 std::string ZDvidUrl::getMeshesTarsUrl()
@@ -936,6 +942,16 @@ std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 std::string ZDvidUrl::getRoiUrl(const std::string &dataName) const
 {
   return GetFullUrl(getDataUrl(dataName), m_roiCommand);
+}
+
+std::string ZDvidUrl::getManagedRoiUrl(const std::string &key) const
+{
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), key);
+}
+
+std::string ZDvidUrl::getRoiMeshUrl(const std::string &key) const
+{
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY), key);
 }
 
 std::string ZDvidUrl::getAnnotationUrl(const std::string &dataName) const

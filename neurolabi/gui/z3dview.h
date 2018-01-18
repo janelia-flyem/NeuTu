@@ -53,6 +53,7 @@ public: //properties
   void setZScale(double scale);
   void setScale(double sx, double sy, double sz);
   void setOpacity(neutube3d::ERendererLayer layer, double opacity);
+  void setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity);
 //  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void setLayerVisible(neutube3d::ERendererLayer layer, bool visible);
   bool isLayerVisible(neutube3d::ERendererLayer layer) const;

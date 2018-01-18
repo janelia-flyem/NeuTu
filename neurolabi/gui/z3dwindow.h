@@ -110,6 +110,7 @@ public:
   void setZScale(double s);
   void setLayerVisible(neutube3d::ERendererLayer layer, bool visible);
   void setOpacity(neutube3d::ERendererLayer layer, double opacity);
+  void setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity);
 
 public: //Camera adjustment
   void gotoPosition(const ZCuboid& bound);
