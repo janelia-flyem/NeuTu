@@ -148,7 +148,7 @@ public:
   void diagnose();
   void showSetting();
   void setExiting(bool exiting) {
-    m_exiting = exiting;
+    m_quitting = exiting;
   }
 
   Z3DWindow* makeExternalSkeletonWindow(neutube3d::EWindowType windowType);
@@ -333,7 +333,7 @@ public slots:
 
 //  void syncMergeWithDvid();
 
-  void getROIs();
+  void retrieveRois();
   void updateLatencyWidget(int t);
 
   void suppressObjectVisible();
@@ -417,7 +417,12 @@ private:
 //  void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
   void loadROIFunc();
-  void loadRoi(const ZDvidReader &reader, const std::string &roiName);
+  void loadRoi(
+      const ZDvidReader &reader, const std::string &roiName,
+      const std::string &key, const std::string &source);
+  void loadRoiFromRoiData(const ZDvidReader &reader);
+  void loadRoiFromRefData(const ZDvidReader &reader, const std::string &roiName);
+  void loadRoiMesh(ZMesh *mesh, const std::string &roiName);
 
   void makeCoarseBodyWindow();
   void makeBodyWindow();
@@ -523,7 +528,7 @@ protected:
   ZFlyEmSynapseDataFetcher *m_seFetcher;
   ZFlyEmSynapseDataUpdater *m_seUpdater;
 
-  bool m_exiting = false;
+  bool m_quitting = false;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };

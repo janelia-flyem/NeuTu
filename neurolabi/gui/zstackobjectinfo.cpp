@@ -1,4 +1,5 @@
 #include "zstackobjectinfo.h"
+#include <sstream>
 
 uint qHash(const ZStackObjectInfo &info)
 {
@@ -26,9 +27,17 @@ void ZStackObjectInfo::set(const ZStackObject &obj)
 
 void ZStackObjectInfo::print() const
 {
-  std::cout << "Object info: " << "Type " << m_type << "; Target "
-            << m_target << "; Role " << m_role.getRole() << std::endl;
+  std::cout << toString()  << std::endl;
 }
+
+std::string ZStackObjectInfo::toString() const
+{
+  std::ostringstream stream;
+  stream << "Object info: " << "Type " << m_type << "; Target "
+         << m_target << "; Role " << m_role.getRole();
+  return stream.str();
+}
+
 
 ///////////////////////////////////
 
@@ -39,7 +48,10 @@ ZStackObjectInfoSet::ZStackObjectInfoSet()
 
 bool ZStackObjectInfoSet::contains(ZStackObject::ETarget target) const
 {
-  foreach (const ZStackObjectInfo &info, *this) {
+  QHashIterator<ZStackObjectInfo, ZStackObjectInfo::TState> iter(*this);
+  while (iter.hasNext()) {
+    iter.next();
+    const ZStackObjectInfo &info = iter.key();
     if (info.getTarget() == target) {
       return true;
     }
@@ -50,7 +62,7 @@ bool ZStackObjectInfoSet::contains(ZStackObject::ETarget target) const
 
 bool ZStackObjectInfoSet::contains(ZStackObject::EType type) const
 {
-  foreach (const ZStackObjectInfo &info, *this) {
+  foreach (const ZStackObjectInfo &info, keys()) {
     if (info.getType() == type) {
       return true;
     }
@@ -61,7 +73,7 @@ bool ZStackObjectInfoSet::contains(ZStackObject::EType type) const
 
 bool ZStackObjectInfoSet::contains(ZStackObjectRole::TRole role) const
 {
-  foreach (const ZStackObjectInfo &info, *this) {
+  foreach (const ZStackObjectInfo &info, keys()) {
     if (info.getRole() == role) {
       return true;
     }
@@ -70,18 +82,33 @@ bool ZStackObjectInfoSet::contains(ZStackObjectRole::TRole role) const
   return false;
 }
 
+bool ZStackObjectInfoSet::contains(const ZStackObjectInfo &info) const
+{
+  return QHash<ZStackObjectInfo, ZStackObjectInfo::TState>::contains(info);
+}
+
+void ZStackObjectInfoSet::add(
+    const ZStackObjectInfo &info, ZStackObjectInfo::TState state)
+{
+  if (contains(info)) {
+    (*this)[info] |= state;
+  } else {
+    (*this)[info] = state;
+  }
+}
+
 void ZStackObjectInfoSet::add(const ZStackObject &obj)
 {
   ZStackObjectInfo info;
   info.set(obj);
-  insert(info);
+  add(info);
 }
 
 void ZStackObjectInfoSet::add(ZStackObject::ETarget target)
 {
   ZStackObjectInfo info;
   info.setTarget(target);
-  insert(info);
+  add(info);
 }
 
 void ZStackObjectInfoSet::add(const QSet<ZStackObject::ETarget> &targetSet)
@@ -91,29 +118,32 @@ void ZStackObjectInfoSet::add(const QSet<ZStackObject::ETarget> &targetSet)
   }
 }
 
-void ZStackObjectInfoSet::add(ZStackObject::EType type)
+void ZStackObjectInfoSet::add(
+    ZStackObject::EType type, ZStackObjectInfo::TState state)
 {
   ZStackObjectInfo info;
   info.setType(type);
-  insert(info);
+  add(info, state);
 }
 
 void ZStackObjectInfoSet::add(ZStackObjectRole::TRole role)
 {
-  ZStackObjectInfo info;
-  info.setRole(ZStackObjectRole(role));
-  insert(info);
+  ZStackObjectInfo info;  info.setRole(ZStackObjectRole(role));
+
+  add(info);
 }
 
 void ZStackObjectInfoSet::add(const ZStackObjectInfo &info)
 {
-  insert(info);
+  if (!contains(info)) {
+    (*this)[info] = ZStackObjectInfo::STATE_UNKNOWN;
+  }
 }
 
 QSet<ZStackObject::EType> ZStackObjectInfoSet::getType() const
 {
   QSet<ZStackObject::EType> typeSet;
-  foreach (const ZStackObjectInfo &info, *this) {
+  foreach (const ZStackObjectInfo &info, keys()) {
     typeSet.insert(info.getType());
   }
 
@@ -123,7 +153,7 @@ QSet<ZStackObject::EType> ZStackObjectInfoSet::getType() const
 QSet<ZStackObject::ETarget> ZStackObjectInfoSet::getTarget() const
 {
   QSet<ZStackObject::ETarget> targetSet;
-  foreach (const ZStackObjectInfo &info, *this) {
+  foreach (const ZStackObjectInfo &info, keys()) {
     targetSet.insert(info.getTarget());
   }
 
@@ -133,7 +163,10 @@ QSet<ZStackObject::ETarget> ZStackObjectInfoSet::getTarget() const
 
 void ZStackObjectInfoSet::print() const
 {
-  foreach (const ZStackObjectInfo &info, *this) {
-    info.print();
+  QHashIterator<ZStackObjectInfo, ZStackObjectInfo::TState> iter(*this);
+  while (iter.hasNext()) {
+    iter.next();
+    const ZStackObjectInfo &info = iter.key();
+    std::cout << info.toString() << " => " << iter.value() << std::endl;
   }
 }

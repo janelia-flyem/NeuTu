@@ -121,6 +121,7 @@ private:
   ZFlyEmProofMvc *m_dataContainer = nullptr;
   QToolBar *m_toolBar = nullptr;
   ZBodyListWidget *m_bodyListWidget = nullptr;
+  QDockWidget *m_bodyListDock = nullptr;
   ZROIWidget *m_roiWidget = nullptr;
   bool m_doingBulkUpdate = false;
   class DoingBulkUpdate;
