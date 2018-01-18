@@ -98,6 +98,10 @@ public:
     m_algorithm=algorithm;
   }
 
+  void setDsMethod(const QString & method){
+    m_dsMethod=method;
+  }
+
   ZStackPtr getResultStack() const {
     return m_result.front();
   }
@@ -215,6 +219,7 @@ private:
   size_t m_minIsolationSize = 50;
   size_t m_maxStackVolume = neutube::HALFGIGA;
   QString m_algorithm;
+  QString m_dsMethod;
 };
 
 #endif // ZSTACKWATERSHEDCONTAINER_H

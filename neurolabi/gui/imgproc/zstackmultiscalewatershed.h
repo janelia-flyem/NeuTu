@@ -20,8 +20,8 @@ public:
   ~ZStackMultiScaleWatershed();
 public:
 #if defined(_QT_GUI_USED_)
-  ZStack* run(ZStack *src,std::vector<ZObject3d*>& seeds,int scale,const QString &algorithm);
-  ZStack* run(ZStack *src,std::vector<ZObject3d*>& seeds,const QString &algorithm);
+  ZStack* run(ZStack *src,std::vector<ZObject3d*>& seeds,int scale,const QString &algorithm,const QString &dsMethod);
+  ZStack* run(ZStack *src,std::vector<ZObject3d*>& seeds,const QString &algorithm,const QString &dsMethod);
 #endif
 
 public:

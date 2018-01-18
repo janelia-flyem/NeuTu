@@ -25,7 +25,7 @@ def rw(input_file,seed_file,output_file):
     data=readTiff(input_file).astype(np.float64)
     seed=readTiff(seed_file).astype(np.float64)
     seed[data==0]=-1
-    labels=random_walker(data,seed,mode='bf',tol=1e-10)
+    labels=random_walker(data,seed,mode='cg_mg',tol=1e-10)
     labels[data==0]=0
     writeTiff(output_file,labels.astype(np.int8))
 
