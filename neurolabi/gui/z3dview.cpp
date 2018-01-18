@@ -582,6 +582,7 @@ void Z3DView::initRoiFilter()
   m_roiFilter->setOpacity(0.2);
   m_roiFilter->setColorMode("Mesh Color");
   m_roiFilter->setMaterialSpecular(glm::vec4(0, 0, 0, 0));
+  m_roiFilter->enablePicking(false);
   connect(m_roiFilter.get(), &Z3DMeshFilter::boundBoxChanged,
           this, &Z3DView::updateBoundBox);
   connect(m_roiFilter.get(), &Z3DMeshFilter::objVisibleChanged,
