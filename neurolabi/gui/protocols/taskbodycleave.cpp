@@ -1,5 +1,8 @@
 #include "taskbodycleave.h"
 
+#include "dvid/zdvidreader.h"
+#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "neu3window.h"
 #include "z3dmeshfilter.h"
@@ -56,6 +59,10 @@ namespace {
     return nullptr;
   }
 
+  std::string getOutputInstanceName(const ZDvidTarget &dvidTarget)
+  {
+    return dvidTarget.getBodyLabelName() + "_cleaved";
+  }
 }
 
 //
@@ -95,32 +102,28 @@ class TaskBodyCleave::CleaveCommand : public QUndoCommand
 public:
   CleaveCommand(TaskBodyCleave *task, std::map<uint64_t, std::size_t> meshIdToCleaveIndex) :
     m_task(task),
-    m_meshIdToLastCleaveIndexBefore(task->m_meshIdToLastCleaveIndex),
-    m_meshIdToCleaveIndexBefore(task->m_meshIdToCleaveIndex),
-    m_meshIdToLastCleaveIndexAfter(meshIdToCleaveIndex)
+    m_meshIdToCleaveResultIndexBefore(task->m_meshIdToCleaveResultIndex),
+    m_meshIdToCleaveResultIndexAfter(meshIdToCleaveIndex)
   {
     setText("cleave");
   }
 
   virtual void undo() override
   {
-    m_task->m_meshIdToLastCleaveIndex = m_meshIdToLastCleaveIndexBefore;
-    m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexBefore;
+    m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexBefore;
     m_task->updateColors();
   }
 
   virtual void redo() override
   {
-    m_task->m_meshIdToLastCleaveIndex = m_meshIdToLastCleaveIndexAfter;
-    m_task->m_meshIdToCleaveIndex.clear();
+    m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexAfter;
     m_task->updateColors();
   }
 
 private:
   TaskBodyCleave *m_task;
-  std::map<uint64_t, std::size_t> m_meshIdToLastCleaveIndexBefore;
-  std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexBefore;
-  std::map<uint64_t, std::size_t> m_meshIdToLastCleaveIndexAfter;
+  std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexBefore;
+  std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexAfter;
 
 };
 
@@ -324,6 +327,67 @@ QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
 
 void TaskBodyCleave::onCompleted()
 {
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (!reader.open(m_bodyDoc->getDvidTarget())) {
+    LERROR() << "TaskBodyCleave::onCompleted() could not open DVID target for reading";
+    return;
+  }
+
+  ZDvidWriter writer;
+  if (!writer.open(m_bodyDoc->getDvidTarget())) {
+    LERROR() << "TaskBodyCleave::onCompleted() could not open DVID target for writing";
+    return;
+  }
+
+  std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
+  if (!reader.hasData(instance)) {
+    writer.createKeyvalue(instance);
+  }
+  if (!reader.hasData(instance)) {
+    LERROR() << "TaskBodyCleave::onCompleted() could not create DVID instance \"" << instance << "\"";
+    return;
+  }
+
+  std::map<unsigned int, std::vector<uint64_t>> cleaveIndexToMeshIds;
+  std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveResultIndex);
+  for (auto it : m_meshIdToCleaveIndex) {
+    meshIdToCleaveIndex[it.first] = it.second;
+  }
+  for (auto itMesh : meshIdToCleaveIndex) {
+    unsigned int cleaveIndex = itMesh.second;
+    auto itCleave = cleaveIndexToMeshIds.find(cleaveIndex);
+    if (itCleave == cleaveIndexToMeshIds.end()) {
+      cleaveIndexToMeshIds[cleaveIndex] = std::vector<uint64_t>();
+    }
+    uint64_t id = itMesh.first;
+    cleaveIndexToMeshIds[cleaveIndex].push_back(id);
+  }
+
+  // The output is JSON, an array of arrays, where each inner array is the super voxels in a cleaved body.
+
+  QJsonArray json;
+  for (auto itCleave : cleaveIndexToMeshIds) {
+    QJsonArray jsonForCleaveIndex;
+
+    // Sort the super voxel IDs, since one of the main uses of this output is inspection by a human.
+
+    std::vector<uint64_t> ids(itCleave.second);
+    std::sort(ids.begin(), ids.end());
+
+    for (auto itMesh : ids) {
+      jsonForCleaveIndex.append(QJsonValue(qint64(itMesh)));
+    }
+    json.append(jsonForCleaveIndex);
+  }
+
+  QJsonDocument jsonDoc(json);
+  std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
+  std::string key(std::to_string(m_bodyId));
+  writer.writeJsonString(instance, key, jsonStr);
+
+  //
+
   Neu3Window::enableZoomToLoadedBody(true);
 
   m_bodyDoc->enableGarbageLifetimeLimit(true);
@@ -403,7 +467,7 @@ void TaskBodyCleave::buildTaskWidget()
 void TaskBodyCleave::updateColors()
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
-    std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToLastCleaveIndex);
+    std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveResultIndex);
 
     for (auto it : m_meshIdToCleaveIndex) {
       meshIdToCleaveIndex[it.first] = it.second;
