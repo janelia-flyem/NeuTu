@@ -69,7 +69,7 @@ void TaskProtocolTask::onCompleted() {
 
 /*
  * subclasses may optionally implement this method to
- * do something when the task about to be moved away from
+ * do something when a task is about to be moved away from
  * via "next" button
  */
 void TaskProtocolTask::beforeNext() {
@@ -78,12 +78,22 @@ void TaskProtocolTask::beforeNext() {
 
 /*
  * subclasses may optionally implement this method to
- * do something when the task about to be moved away from
+ * do something when a task is about to be moved away from
  * via "prev" button
  */
 void TaskProtocolTask::beforePrev() {
     // nothing
 }
+
+/*
+ * subclasses may optionally implement this method to
+ * do something in the task that is active when the "done" button
+ * is pressed
+ */
+void TaskProtocolTask::beforeDone() {
+  // nothing
+}
+
 
 /*
  * subclasses may optionally implement this method to

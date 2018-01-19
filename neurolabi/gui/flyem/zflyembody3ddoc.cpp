@@ -110,6 +110,11 @@ void ZFlyEmBody3dDoc::enableGarbageLifetimeLimit(bool on)
   m_limitGarbageLifetime = on;
 }
 
+bool ZFlyEmBody3dDoc::garbageLifetimeLimitEnabled() const
+{
+  return m_limitGarbageLifetime;
+}
+
 template<typename T>
 T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
 {

@@ -220,6 +220,7 @@ public:
   void enableBodySelectionSync(bool on);
 
   void enableGarbageLifetimeLimit(bool on);
+  bool garbageLifetimeLimitEnabled() const;
 
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
   // uses the body's identifier in multiple ways: for multiple meshes, at different

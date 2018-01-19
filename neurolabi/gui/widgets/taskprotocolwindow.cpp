@@ -276,6 +276,10 @@ void TaskProtocolWindow::onDoneButton() {
         return;
     }
 
+    if (m_currentTaskIndex >= 0) {
+      m_taskList[m_currentTaskIndex]->beforeDone();
+    }
+
     // new key is old key + either identifier or datetime stamp
     QString key;
     if (m_ID.size() > 0) {
