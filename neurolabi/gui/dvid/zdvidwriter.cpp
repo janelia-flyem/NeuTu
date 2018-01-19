@@ -1046,6 +1046,17 @@ void ZDvidWriter::deleteSplitTask(const QString &key)
             key.toStdString());
 }
 
+void ZDvidWriter::writeRoiRef(
+    const std::string &roiName, const std::string &key, const std::string &type)
+{
+  ZJsonObject refJson;
+  ZJsonObject roiJson;
+  roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+  refJson.setEntry("key", key);
+  refJson.setEntry("type", type);
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), roiName, roiJson);
+}
+
 void ZDvidWriter::uploadRoiMesh(
     const std::string &meshPath, const std::string &name)
 {
@@ -1082,6 +1093,8 @@ void ZDvidWriter::uploadRoiMesh(
     roiJson.setEntry(neutube::Json::REF_KEY, refJson);
     refJson.setEntry("key", key.toStdString());
     writeJson(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), name, roiJson);
+  } else {
+    LWARN() << "Failed to upload mesh. No data found.";
   }
 }
 

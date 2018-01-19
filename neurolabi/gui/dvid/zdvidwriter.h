@@ -77,6 +77,9 @@ public:
                  const std::string &emptyValueString = "");
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
   void writeRoi(const ZObject3dScan &roi, const std::string &roiName);
+  void writeRoiRef(
+      const std::string &roiName, const std::string &key,
+      const std::string &type);
 
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
 
