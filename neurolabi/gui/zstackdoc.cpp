@@ -5980,8 +5980,10 @@ void ZStackDoc::processObjectModified()
       notifyObjectModified(type);
     }
 
-    emit objectModified(m_objectModifiedBuffer);
-    m_objectModifiedBuffer.clear();
+    if (!m_objectModifiedBuffer.isEmpty()) {
+      emit objectModified(m_objectModifiedBuffer);
+      m_objectModifiedBuffer.clear();
+    }
   }
 }
 

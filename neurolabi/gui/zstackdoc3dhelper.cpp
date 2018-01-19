@@ -23,6 +23,10 @@ ZStackDoc3dHelper::ZStackDoc3dHelper()
 
 void ZStackDoc3dHelper::processObjectModified(const ZStackObjectInfoSet &objInfo)
 {
+#ifdef _DEBUG_
+  std::cout << "Processing object modification: " << std::endl;
+  objInfo.print();
+#endif
   const QList<neutube3d::ERendererLayer>& layerList = m_view->getLayerList();
   foreach (neutube3d::ERendererLayer layer, layerList) {
     if (dataUpdateRequired(layer, objInfo)) {

@@ -74,7 +74,7 @@ bool ZStackObjectInfoSet::contains(ZStackObject::EType type) const
 bool ZStackObjectInfoSet::contains(ZStackObjectRole::TRole role) const
 {
   foreach (const ZStackObjectInfo &info, keys()) {
-    if (info.getRole() == role) {
+    if (info.getRole().hasRole(role)) {
       return true;
     }
   }
