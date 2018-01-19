@@ -63,6 +63,48 @@ namespace {
   {
     return dvidTarget.getBodyLabelName() + "_cleaved";
   }
+
+  // All the TaskBodyCleave instances loaded from one JSON file need certain changes
+  // to some settings until all of them are done.  This code manages making those
+  // changes and restore the changed values when the tasks are done.
+
+  static bool applyOverallSettingsNeeded = true;
+  static bool zoomToLoadedBodyEnabled;
+  static bool garbageLifetimeLimitEnabled;
+  static bool preservingSourceColorEnabled;
+
+  void applyOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
+  {
+    if (applyOverallSettingsNeeded) {
+      applyOverallSettingsNeeded = false;
+
+      zoomToLoadedBodyEnabled = Neu3Window::zoomToLoadedBodyEnabled();
+
+      garbageLifetimeLimitEnabled = bodyDoc->garbageLifetimeLimitEnabled();
+      bodyDoc->enableGarbageLifetimeLimit(false);
+
+      if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
+        preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
+        filter->enablePreservingSourceColors(true);
+      }
+    }
+  }
+
+  void restoreOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
+  {
+    if (!applyOverallSettingsNeeded) {
+      applyOverallSettingsNeeded = true;
+
+      Neu3Window::enableZoomToLoadedBody(zoomToLoadedBodyEnabled);
+
+      bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
+
+      if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
+        filter->enablePreservingSourceColors(preservingSourceColorEnabled);
+      }
+    }
+  }
+
 }
 
 //
@@ -133,18 +175,14 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
 {
   m_bodyDoc = bodyDoc;
 
+  applyOverallSettings(bodyDoc);
+
   loadJson(json);
   buildTaskWidget();
 
   m_networkManager = new QNetworkAccessManager(m_widget);
   connect(m_networkManager, SIGNAL(finished(QNetworkReply*)),
           this, SLOT(onNetworkReplyFinished(QNetworkReply*)));
-
-  Neu3Window::enableZoomToLoadedBody(true);
-
-  if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
-    filter->enablePreservingSourceColors(true);
-  }
 }
 
 QString TaskBodyCleave::tasktype()
@@ -162,31 +200,49 @@ QString TaskBodyCleave::targetString()
   return QString::number(m_bodyId);
 }
 
+void TaskBodyCleave::beforeNext()
+{
+  applyPerTaskSettings();
+}
+
+void TaskBodyCleave::beforePrev()
+{
+  applyPerTaskSettings();
+}
+
+void TaskBodyCleave::beforeDone()
+{
+  restoreOverallSettings(m_bodyDoc);
+}
+
 QWidget *TaskBodyCleave::getTaskWidget()
 {
+  applyPerTaskSettings();
   return m_widget;
 }
 
 void TaskBodyCleave::updateLevel(int level)
 {
+  bool showingCleaving = m_showCleavingCheckBox->isChecked();
+  enableCleavingUI(showingCleaving && (level == 0));
+
+  // See the comment in applyPerTaskSettings().
+
   Neu3Window::enableZoomToLoadedBody(false);
-  m_bodyDoc->enableGarbageLifetimeLimit(false);
 
   QSet<uint64_t> visible({ ZFlyEmBody3dDoc::encode(m_bodyId, level) });
-
   updateBodies(visible, QSet<uint64_t>());
 }
 
 void TaskBodyCleave::onShowCleavingChanged(bool show)
 {
-  if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
-    if (show) {
-      m_levelSlider->setValue(0);
-      filter->setColorMode("Indexed Color");
-    } else {
-      filter->setColorMode("Mesh Source");
-    }
+  if (show) {
+    // Cleaving works on super voxels, which are what are displayed at level 0.
+    m_levelSlider->setValue(0);
   }
+
+  enableCleavingUI(show);
+  applyColorMode(show);
 }
 
 void TaskBodyCleave::onChosenCleaveIndexChanged()
@@ -314,7 +370,8 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
     }
 
   } else {
-    std::cerr << "** error \"" << reply->errorString().toStdString() << "\" **\n";
+    LERROR() << "TaskBodyCleave::onNetworkReplyFinished() error: \""
+             << reply->errorString().toStdString() << "\"";
   }
 
   reply->deleteLater();
@@ -385,12 +442,6 @@ void TaskBodyCleave::onCompleted()
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
   std::string key(std::to_string(m_bodyId));
   writer.writeJsonString(instance, key, jsonStr);
-
-  //
-
-  Neu3Window::enableZoomToLoadedBody(true);
-
-  m_bodyDoc->enableGarbageLifetimeLimit(true);
 }
 
 std::size_t TaskBodyCleave::chosenCleaveIndex() const
@@ -411,14 +462,12 @@ void TaskBodyCleave::buildTaskWidget()
 
   connect(m_levelSlider, SIGNAL(valueChanged(int)), this, SLOT(updateLevel(int)));
 
-  m_levelSlider->setValue(m_maxLevel);
-
   QHBoxLayout *sliderLayout = new QHBoxLayout;
   sliderLayout->addWidget(sliderLabel);
   sliderLayout->addWidget(m_levelSlider);
 
-  QCheckBox *showCleavingCheckBox = new QCheckBox("Show cleaving", m_widget);
-  connect(showCleavingCheckBox, SIGNAL(clicked(bool)), this, SLOT(onShowCleavingChanged(bool)));
+  m_showCleavingCheckBox = new QCheckBox("Show cleaving", m_widget);
+  connect(m_showCleavingCheckBox, SIGNAL(clicked(bool)), this, SLOT(onShowCleavingChanged(bool)));
 
   m_cleaveIndexComboBox = new QComboBox(m_widget);
   QSize iconSizeDefault = m_cleaveIndexComboBox->iconSize();
@@ -431,37 +480,39 @@ void TaskBodyCleave::buildTaskWidget()
     m_cleaveIndexComboBox->addItem(icon, "Cleaved body " + QString::number(i));
   }
 
-  QPushButton *buttonAdd = new QPushButton("Add selection", m_widget);
-  connect(buttonAdd, SIGNAL(clicked(bool)), this, SLOT(onAddToChosenCleaveBody()));
+  m_buttonAdd = new QPushButton("Add selection", m_widget);
+  connect(m_buttonAdd, SIGNAL(clicked(bool)), this, SLOT(onAddToChosenCleaveBody()));
 
-  QPushButton *buttonRemove = new QPushButton("Remove selection", m_widget);
-  connect(buttonRemove, SIGNAL(clicked(bool)), this, SLOT(onRemoveFromChosenCleaveBody()));
+  m_buttonRemove = new QPushButton("Remove selection", m_widget);
+  connect(m_buttonRemove, SIGNAL(clicked(bool)), this, SLOT(onRemoveFromChosenCleaveBody()));
 
-  QPushButton *buttonCleave = new QPushButton("Cleave", m_widget);
-  connect(buttonCleave, SIGNAL(clicked(bool)), this, SLOT(onCleave()));
+  m_buttonCleave = new QPushButton("Cleave", m_widget);
+  connect(m_buttonCleave, SIGNAL(clicked(bool)), this, SLOT(onCleave()));
 
   QHBoxLayout *familiesLayout = new QHBoxLayout;
-  familiesLayout->addWidget(showCleavingCheckBox);
+  familiesLayout->addWidget(m_showCleavingCheckBox);
   familiesLayout->addWidget(m_cleaveIndexComboBox);
-  familiesLayout->addWidget(buttonAdd);
-  familiesLayout->addWidget(buttonRemove);
+  familiesLayout->addWidget(m_buttonAdd);
+  familiesLayout->addWidget(m_buttonRemove);
 
   QVBoxLayout *layout = new QVBoxLayout;
   layout->addLayout(sliderLayout);
   layout->addLayout(familiesLayout);
-  layout->addWidget(buttonCleave);
+  layout->addWidget(m_buttonCleave);
 
   m_widget->setLayout(layout);
 
   // These explicit shortcuts seem to work better than shorcuts set on the buttons.
 
-  QShortcut *shortcutToggle = new QShortcut(Qt::Key_Space, m_widget);
-  connect(shortcutToggle, SIGNAL(activated()), this, SLOT(onToggleInChosenCleaveBody()));
+  m_shortcutToggle = new QShortcut(Qt::Key_Space, m_widget);
+  connect(m_shortcutToggle, SIGNAL(activated()), this, SLOT(onToggleInChosenCleaveBody()));
 
   for (int i = 0; i < m_cleaveIndexComboBox->count(); i++) {
     QShortcut *shortcut = new QShortcut(QString::number(i + 1), m_widget);
     connect(shortcut, SIGNAL(activated()), this, SLOT(onChosenCleaveIndexChanged()));
   }
+
+  m_levelSlider->setValue(m_maxLevel);
 }
 
 void TaskBodyCleave::updateColors()
@@ -475,6 +526,49 @@ void TaskBodyCleave::updateColors()
 
     filter->setColorIndexing(INDEX_COLORS, meshIdToCleaveIndex);
   }
+}
+
+void TaskBodyCleave::applyPerTaskSettings()
+{
+  // When the overall body is first loaded, the user probably wants the view to zoom to it.
+  // But when the user is going back and forth between history levels for the body, the
+  // user may have set the view to an area of interest, and it would be annoying to have
+  // zooming destroy that view.  So try a heuristic solution.  When the a task starts (or
+  // resumes) at the history level of the overall body, enable zooming.  And when the user
+  // changes the level, disable zooming (in the updateLevel() function).
+
+  bool doZoom = (m_levelSlider->value() == m_maxLevel);
+  Neu3Window::enableZoomToLoadedBody(doZoom);
+
+  // The SetCleaveIndicesCommand and CleaveCommand instances on the undo stack contain information
+  // particular to the task that was current when the commands were issued.  So the undo stack will
+  // not make sense when switching to another task, and the easiest solution is to clear it.
+
+  m_bodyDoc->undoStack()->clear();
+
+  bool showingCleaving = m_showCleavingCheckBox->isChecked();
+  applyColorMode(showingCleaving);
+}
+
+void TaskBodyCleave::applyColorMode(bool showingCleaving)
+{
+  if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
+    if (showingCleaving) {
+      filter->setColorMode("Indexed Color");
+      updateColors();
+    } else {
+      filter->setColorMode("Mesh Source");
+    }
+  }
+}
+
+void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
+{
+  m_cleaveIndexComboBox->setEnabled(showingCleaving);
+  m_buttonAdd->setEnabled(showingCleaving);
+  m_buttonRemove->setEnabled(showingCleaving);
+  m_buttonCleave->setEnabled(showingCleaving);
+  m_shortcutToggle->setEnabled(showingCleaving);
 }
 
 bool TaskBodyCleave::loadSpecific(QJsonObject json)
