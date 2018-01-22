@@ -57,6 +57,7 @@ public: //properties
 //  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   void setLayerVisible(neutube3d::ERendererLayer layer, bool visible);
   bool isLayerVisible(neutube3d::ERendererLayer layer) const;
+  void setFront(neutube3d::ERendererLayer layer, bool on);
 
   void configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj);
   ZJsonObject getConfigJson(neutube3d::ERendererLayer layer) const;

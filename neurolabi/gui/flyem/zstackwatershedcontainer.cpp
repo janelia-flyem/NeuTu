@@ -615,6 +615,7 @@ void ZStackWatershedContainer::run()
   std::cout << "Running watershed ..." << std::endl;
   deprecate(COMP_RESULT);
 
+  //Todo: unified processing for dense and sparse stacks
   if(m_stack && m_stack->hasData()){//for normal stack
     ZStackMultiScaleWatershed watershed;
     ZStackPtr stack = ZStackPtr(watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));

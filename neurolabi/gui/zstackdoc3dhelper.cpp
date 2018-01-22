@@ -159,14 +159,25 @@ void ZStackDoc3dHelper::updateMeshData()
 
     QList<ZMesh*> meshList =
         ZStackDocProxy::GetGeneralMeshList(m_view->getDocument());
-//        = m_view->getDocument()->getMeshList();
 
-//    QList<ZMesh*> filteredMeshList;
-//    foreach(ZMesh *mesh, meshList) {
-//      if (!mesh->hasRole(ZStackObjectRole::ROLE_ROI)) {
-//        filteredMeshList.append(mesh);
-//      }
-//    }
+#if 0
+    resetObjectAdapter(neutube3d::LAYER_MESH);
+    QList<ZObject3dScan*> objList =
+        m_view->getDocument()->getObjectList<ZObject3dScan>();
+    foreach(ZObject3dScan *obj, objList) {
+      if (obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
+        ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
+        if (mesh != NULL) {
+          mesh->setColor(obj->getColor());
+          mesh->pushObjectColor();
+          mesh->setVisible(obj->isVisible());
+          mesh->setSelectable(false);
+          addObject(neutube3d::LAYER_MESH, mesh);
+          meshList.append(mesh);
+        }
+      }
+    }
+#endif
 
     filter->setData(meshList);
   }
@@ -186,6 +197,7 @@ void ZStackDoc3dHelper::updateRoiData()
 //      }
 //    }
 
+    resetObjectAdapter(neutube3d::LAYER_ROI);
     QList<ZObject3dScan*> objList =
         m_view->getDocument()->getObjectList<ZObject3dScan>();
     foreach(ZObject3dScan *obj, objList) {

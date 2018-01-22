@@ -169,7 +169,7 @@ public:
   bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber,
                               int xIntv, int yIntv, int zIntv);
 
-  bool importDvidRoi(const ZJsonArray &obj);
+  bool importDvidRoi(const ZJsonArray &obj, bool appending = false);
   bool importDvidRoi(const std::string &filePath);
 
   template<class T>

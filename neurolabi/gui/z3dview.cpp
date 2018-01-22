@@ -857,6 +857,14 @@ bool Z3DView::isLayerVisible(neutube3d::ERendererLayer layer) const
   return v;
 }
 
+void Z3DView::setFront(neutube3d::ERendererLayer layer, bool on)
+{
+  Z3DGeometryFilter *filter = getFilter(layer);
+  if (filter != NULL) {
+    filter->setStayOnTop(on);
+  }
+}
+
 void Z3DView::setZScale(double scale)
 {
   foreach (neutube3d::ERendererLayer layer, m_layerList) {

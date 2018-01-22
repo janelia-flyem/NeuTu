@@ -80,6 +80,9 @@ public:
   void writeRoiRef(
       const std::string &roiName, const std::string &key,
       const std::string &type);
+  void writeRoiRef(
+      const std::string &roiName, const std::vector<std::string> &keyList,
+      const std::string &type);
 
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
 

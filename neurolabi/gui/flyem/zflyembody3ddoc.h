@@ -104,6 +104,7 @@ public:
     static const TUpdateFlag UPDATE_ADD_SYNAPSE;
     static const TUpdateFlag UPDATE_ADD_TODO_ITEM;
     static const TUpdateFlag UPDATE_MULTIRES;
+    static const TUpdateFlag UPDATE_SEGMENTATION;
 
   private:
     EAction m_action;
@@ -150,6 +151,7 @@ public:
   void addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
   void addTodoSliently(const ZFlyEmToDoItem &item);
   void addTodo(const QList<ZFlyEmToDoItem> &itemList);
+  void updateSegmentation();
   void removeTodo(ZFlyEmToDoItem &item, uint64_t bodyId);
   void removeTodo(const QList<ZFlyEmToDoItem> &itemList);
   void removeTodo(int x, int y, int z);
@@ -221,6 +223,8 @@ public:
 
   void enableGarbageLifetimeLimit(bool on);
 
+  ZMesh *readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
+
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
   // uses the body's identifier in multiple ways: for multiple meshes, at different
   // levels in the agglomeration history, and as a key whose associated value is a
@@ -257,6 +261,8 @@ public slots:
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
 
+  void processObjectModifiedFromDataDoc(const ZStackObjectInfoSet &objInfo);
+
   void cacheObject(ZStackObject *obj);
 
 signals:
@@ -276,11 +282,12 @@ private:
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
   ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
 
+  ZMesh *readMesh(uint64_t bodyId, int zoom);
+
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
 
   bool getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64_t, ZMesh*> &result);
-  ZMesh *readMesh(uint64_t bodyId, int zoom);
   void makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_t, ZMesh*> &result);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(

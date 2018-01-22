@@ -261,12 +261,16 @@ void Z3DMeshFilter::registerPickingObjects()
 {
   if (pickingEnabled()) {
     if (!m_pickingObjectsRegistered) {
-      for (auto mesh : m_meshList) {
-        pickingManager().registerObject(mesh);
+      m_registeredMeshList.clear();
+      for (ZMesh* mesh : m_meshList) {
+        if (mesh->isSelectable()) {
+          pickingManager().registerObject(mesh);
+          m_registeredMeshList.push_back(mesh);
+        }
       }
-      m_registeredMeshList = m_meshList;
+//      m_registeredMeshList = m_meshList;
       m_meshPickingColors.clear();
-      for (auto mesh : m_meshList) {
+      for (ZMesh* mesh : m_registeredMeshList) {
         glm::col4 pickingColor = pickingManager().colorOfObject(mesh);
         glm::vec4 fPickingColor(pickingColor[0] / 255.f, pickingColor[1] / 255.f, pickingColor[2] / 255.f,
             pickingColor[3] / 255.f);

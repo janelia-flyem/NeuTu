@@ -32,6 +32,7 @@ NeutubeConfig::NeutubeConfig()
 {
   init();
 }
+
 /*
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
   m_segmentationClassifThreshold(0.5), m_isSettingOn(true)
@@ -47,6 +48,8 @@ NeutubeConfig::~NeutubeConfig()
 #ifdef _QT_GUI_USED_
 //  delete m_traceStream;
 #endif
+
+  LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 }
 
 void NeutubeConfig::init()
@@ -428,7 +431,11 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
     return m_logDestDir;
   case LOG_FILE:
 #ifdef _QT_GUI_USED_
-    return QDir(getPath(LOG_DIR).c_str()).filePath("log.txt").toStdString();
+  {
+    QString fileName = QString((GET_SOFTWARE_NAME + "_log.txt").c_str()).toLower();
+
+    return QDir(getPath(LOG_DIR).c_str()).filePath(fileName).toStdString();
+  }
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log.txt");
 #endif

@@ -1054,6 +1054,30 @@ void ZDvidWriter::writeRoiRef(
   roiJson.setEntry(neutube::Json::REF_KEY, refJson);
   refJson.setEntry("key", key);
   refJson.setEntry("type", type);
+
+#ifdef _DEBUG_
+  std::cout << "ROI json: " << std::endl;
+  roiJson.print();
+#endif
+
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), roiName, roiJson);
+}
+
+void ZDvidWriter::writeRoiRef(
+    const std::string &roiName, const std::vector<std::string> &keyList,
+    const std::string &type)
+{
+  ZJsonObject refJson;
+  ZJsonObject roiJson;
+  roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+  refJson.setEntry("type", type);
+  refJson.setEntry("key", keyList);
+
+#ifdef _DEBUG_
+  std::cout << "ROI json: " << std::endl;
+  roiJson.print();
+#endif
+
   writeJson(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), roiName, roiJson);
 }
 

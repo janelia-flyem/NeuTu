@@ -128,7 +128,7 @@ public:
   ZSwcTree *readSwc(uint64_t bodyId) const;
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
   ZObject3dScan* readBody(
-      uint64_t bodyId, bool canonizing, ZObject3dScan *result);
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
 
   ZMesh* readMesh(uint64_t bodyId, int zoom) const;
   ZMesh* readMesh(const std::string &data, const std::string &key) const;
@@ -152,18 +152,18 @@ public:
       bool canonizing, ZObject3dScan *result);
 
   ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
-                          bool canonizing, ZObject3dScan *result);
+                          bool canonizing, ZObject3dScan *result) const;
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result);
+                          neutube::EAxis axis, ZObject3dScan *result) const;
   ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
 
-  ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result);
+  ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
   ZObject3dScan* readMultiscaleBody(
-      uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result);
+      uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result) const;
 
-  ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet);
+  ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet) const;
 
   /*!
    * \brief Check the number of blocks of a body
@@ -339,7 +339,8 @@ public:
   int readCoarseBodySize(uint64_t bodyId) const;
 
   ZObject3dScan readRoi(const std::string &dataName) const;
-  ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result) const;
+  ZObject3dScan* readRoi(
+      const std::string &dataName, ZObject3dScan *result, bool appending = false) const;
   ZDvidRoi* readRoi(const std::string &dataName, ZDvidRoi *roi);
   ZJsonArray readRoiJson(const std::string &dataName);
 

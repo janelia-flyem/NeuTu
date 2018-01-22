@@ -161,6 +161,8 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
     if (mode == INTERACT_FREE) {
       if (exploreMode() == EXPLORE_LOCAL) {
         mode = INTERACT_EXPLORE_LOCAL;
+      } else if (exploreMode() == EXPLORE_EXTERNALLY) {
+        mode = INTERACT_EXPLORE_EXTERNALLY;
       }
     }
 

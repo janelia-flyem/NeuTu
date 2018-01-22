@@ -686,6 +686,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/delete_selected_seed.png"));
     action->setToolTip("Delete selected seeds for splitting");
     break;
+  case ACTION_VIEW_DATA_EXTERNALLY:
+    action = new QAction("View data externally", parent);
+    action->setIcon(QIcon(":/images/binoculars.png"));
+    action->setToolTip("View grayscale/segmentation in an external browser (default in Chrome) ");
+    break;
+    break;
   case ACTION_MEASURE_SWC_NODE_DIST:
     action = new QAction("Measure Distance", parent);
     break;

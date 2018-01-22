@@ -10,7 +10,7 @@ class ZDownsampleFilter
 {
 public:
   ZDownsampleFilter();
-  ~ZDownsampleFilter(){}
+  virtual ~ZDownsampleFilter(){}
 public:
   virtual ZStack* filterStack(const ZStack& stack);
   virtual ZStack* filterStack(const ZSparseStack& spStack);

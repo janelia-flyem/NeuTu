@@ -82,7 +82,8 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
             ZInteractiveContext::TODO_ADD_ITEM) {
     m_rayMarker.set(event->x(), event->y());
     emit decorationUpdated();
-  } else if (m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_LOCAL) {
+  } else if (m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_LOCAL ||
+             m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_EXTERNALLY) {
     m_exploreMarker.setCenter(event->x(), event->y(), 0);
     emit decorationUpdated();
   }
@@ -117,6 +118,9 @@ bool ZInteractionEngine::processMouseReleaseEvent(
         processed = true;
       } else if (isStateOn(STATE_LOCATE)) {
         emit locating(event->x(), event->y());
+        processed = true;
+      } else if (isStateOn(STATE_BROWSE)) {
+        emit browsing(event->x(), event->y());
         processed = true;
       }
     }
@@ -400,6 +404,15 @@ void ZInteractionEngine::enterLocateMode()
   emit decorationUpdated();
 }
 
+void ZInteractionEngine::enterBrowseMode()
+{
+  exitEditMode();
+  m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_EXTERNALLY);
+  m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
+  m_exploreMarker.setVisible(true);
+  emit decorationUpdated();
+}
+
 void ZInteractionEngine::enterPaintRect()
 {
   exitEditMode();
@@ -524,6 +537,9 @@ bool ZInteractionEngine::isStateOn(EState status) const
   case STATE_LOCATE:
     return m_interactiveContext.exploreMode() ==
         ZInteractiveContext::EXPLORE_LOCAL;
+  case STATE_BROWSE:
+    return m_interactiveContext.exploreMode() ==
+        ZInteractiveContext::EXPLORE_EXTERNALLY;
   }
 
   return false;

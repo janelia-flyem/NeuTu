@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#include "zsharedpointer.h"
+
 class ZIntPoint;
 class ZPoint;
 class ZGlobalData;
@@ -11,6 +13,7 @@ class ZDvidReader;
 class ZDvidWriter;
 class ZDvidSparseStack;
 class ZDvidTarget;
+class ZBrowserOpener;
 
 class ZGlobal
 {
@@ -46,6 +49,7 @@ public:
 
 public:
   ZDvidSparseStack* readDvidSparseStack(const std::string &url) const;
+  ZBrowserOpener* getBrowserOpener() const;
 
 private:
   template<typename T>
@@ -62,6 +66,7 @@ private:
 
 private:
   ZGlobalData *m_data;
+  ZSharedPointer<ZBrowserOpener> m_browserOpener;
 };
 
 #endif // ZGLOBAL_H

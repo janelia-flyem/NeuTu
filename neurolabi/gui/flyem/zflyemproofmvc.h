@@ -420,6 +420,10 @@ private:
   void loadRoi(
       const ZDvidReader &reader, const std::string &roiName,
       const std::string &key, const std::string &source);
+  void loadRoi(
+      const ZDvidReader &reader, const std::string &roiName,
+      const std::vector<std::string> &keyList, const std::string &source);
+
   void loadRoiFromRoiData(const ZDvidReader &reader);
   void loadRoiFromRefData(const ZDvidReader &reader, const std::string &roiName);
   void loadRoiMesh(ZMesh *mesh, const std::string &roiName);

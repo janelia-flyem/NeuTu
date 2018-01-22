@@ -329,6 +329,8 @@
 #include "widgets/taskprotocolwindow.h"
 #include "zstackdoccommand.h"
 #include "zstackobjectinfo.h"
+#include "sandbox/zbrowseropener.h"
+#include "widgets/zpythonprocess.h"
 
 using namespace std;
 
@@ -25259,13 +25261,100 @@ void ZTest::test(MainWindow *host)
   ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
   ZDvidWriter writer;
   writer.open(target);
+
   writer.uploadRoiMesh(
         GET_TEST_DATA_DIR +
         "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_07920_cut.obj",
         "hkcut_31-32");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_10600_cut.obj",
+        "hkcut_30-31");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_13229_cut.obj",
+        "hkcut_29-30");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_15895_cut.obj",
+        "hkcut_28-29");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_18489_cut.obj",
+        "hkcut_27-28");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_21204_cut.obj",
+        "hkcut_26-27");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_24041_cut.obj",
+        "hkcut_25-26");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_26853_cut.obj",
+        "hkcut_24-25");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_29743_cut.obj",
+        "hkcut_23-24");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_32360_cut.obj",
+        "hkcut_22-23");
+#endif
+
+#if 0
+  ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
+  ZDvidWriter writer;
+  writer.open(target);
+  std::vector<std::string> keyList;
+  keyList.push_back("PB");
+  keyList.push_back("PB2");
+  keyList.push_back("PB3");
+  keyList.push_back("PB4");
+
+  writer.writeRoiRef("PB", keyList, "roi");
 #endif
 
 #if 1
+  ZJsonObject roiJson;
+  roiJson.load(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/roi.json");
+  ZDvidTarget target;
+  target.loadJsonObject(ZJsonObject(roiJson.value("dvid")));
+
+
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZJsonArray roiArray(roiJson.value("rois"));
+  for (size_t i = 0; i < roiArray.size(); ++i) {
+    ZJsonObject roiJson(roiArray.value(i));
+    std::string name = ZJsonParser::stringValue(roiJson["name"]);
+    std::string type = ZJsonParser::stringValue(roiJson["type"]);
+
+    if (ZJsonParser::isArray(roiJson["key"])) {
+      std::vector<std::string> keyList;
+      ZJsonArray keyJson(roiJson.value("key"));
+      for (size_t j = 0; j < keyJson.size(); ++j) {
+        keyList.push_back(ZJsonParser::stringValue(keyJson.at(j)));
+      }
+      writer.writeRoiRef(name, keyList, type);
+    } else {
+      std::string key = ZJsonParser::stringValue(roiJson["key"]);
+      writer.writeRoiRef(name, key, type);
+    }
+  }
+
 #endif
 
 #if 0
@@ -25273,6 +25362,34 @@ void ZTest::test(MainWindow *host)
   ZDvidWriter writer;
   writer.open(target);
   writer.deleteKey("rois", "hkcut_34");
+#endif
+
+#if 0
+  QProcess process;
+
+  QStringList args;
+  args << "python";
+  process.start("which", args);
+
+  process.waitForFinished();
+  qDebug() << process.readAllStandardOutput();
+#endif
+
+#if 0
+  ZPythonProcess python;
+
+  python.runScript("/Users/zhaot/Work/neutube/neurolabi/python/testjson.py");
+  python.printOutputSummary();
+#endif
+
+#if 0
+  ZBrowserOpener bo;
+  bo.updateChromeBrowser();
+  qDebug() << bo.getBrowserPath();
+//  bo.open("emdata2.int.janelia.org");
+  bo.open("emdata2.int.janelia.org/neuroglancer/#!{'layers':{'grayscale':{'type':'image'_'source':'dvid://http://127.0.0.1:8000/a89e/grayscalejpeg'}}_'navigation':{'pose':{'position':{'voxelSize':[8_8_8]_'voxelCoordinates':[12105_7894_11286]}}_'zoomFactor':8}_'perspectiveOrientation':[-0.3254986107349396_0.3294858932495117_-0.10295828431844711_0.8802781701087952]_'perspectiveZoom':64}");
+
+//  bo.open("emdata2.int.janelia.org/neuroglancer/#!{'\"'\"'layers'\"'\"':{'\"'\"'grayscale'\"'\"':{'\"'\"'type'\"'\"':'\"'\"'image'\"'\"'_'\"'\"'source'\"'\"':'\"'\"'dvid://http://emdata2.int.janelia.org:80/e932474289bc4b048b001d2aa0b4219c/grayscale'\"'\"'}}_'\"'\"'navigation'\"'\"':{'\"'\"'pose'\"'\"':{'\"'\"'position'\"'\"':{'\"'\"'voxelSize'\"'\"':[8_8_8]_'\"'\"'voxelCoordinates'\"'\"':[9280_5408_11264]}}_'\"'\"'zoomFactor'\"'\"':8}_'\"'\"'perspectiveOrientation'\"'\"':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'\"'\"'perspectiveZoom'\"'\"':64}");
 #endif
 
   std::cout << "Done." << std::endl;

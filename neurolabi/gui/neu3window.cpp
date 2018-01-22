@@ -28,6 +28,9 @@
 #include "flyem/zflyembodylistmodel.h"
 #include "zroiwidget.h"
 #include "zstackdocproxy.h"
+#include "zglobal.h"
+#include "sandbox/zbrowseropener.h"
+#include "flyem/zflyemmisc.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -76,6 +79,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(showingPuncta(bool)), this, SLOT(showSynapse(bool)));
   connect(m_3dwin, SIGNAL(showingTodo(bool)), this, SLOT(showTodo(bool)));
   connect(m_3dwin, SIGNAL(testing()), this, SLOT(test()));
+  connect(m_3dwin, SIGNAL(browsing(double,double,double)),
+          this, SLOT(browse(double,double,double)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
   connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
@@ -151,8 +156,10 @@ void Neu3Window::createDockWidget()
 
   m_bodyListWidget = new ZBodyListWidget(this);
 
-  connect(m_bodyListWidget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(loadBody(uint64_t)));
-  connect(m_bodyListWidget, SIGNAL(bodyRemoved(uint64_t)), this, SLOT(unloadBody(uint64_t)));
+  connect(m_bodyListWidget, SIGNAL(bodyAdded(uint64_t)),
+          this, SLOT(loadBody(uint64_t)));
+  connect(m_bodyListWidget, SIGNAL(bodyRemoved(uint64_t)),
+          this, SLOT(unloadBody(uint64_t)));
   connect(m_bodyListWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
           this, SLOT(setBodySelection(QSet<uint64_t>)));
   connect(this, SIGNAL(bodySelected(uint64_t)),
@@ -208,6 +215,13 @@ void Neu3Window::createRoiWidget() {
 void Neu3Window::updateRoiWidget()
 {
   m_dataContainer->updateRoiWidget(m_roiWidget, m_3dwin);
+}
+
+void Neu3Window::browse(double x, double y, double z)
+{
+  ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+  bo->open(ZFlyEmMisc::GetNeuroglancerPath(
+             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z)));
 }
 
 void Neu3Window::createToolBar()

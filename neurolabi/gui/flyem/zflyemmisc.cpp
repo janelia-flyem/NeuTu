@@ -1270,6 +1270,23 @@ ZIntCuboid ZFlyEmMisc::EstimateSplitRoi(const ZIntCuboid &boundBox)
   return newBox;
 }
 
+QString ZFlyEmMisc::GetNeuroglancerPath(const ZDvidTarget &target, const ZIntPoint &pos)
+{
+  QString path = QString("emdata2.int.janelia.org/neuroglancer/#!{'layers':"
+                         "{'grayscale':{'type':'image'_'source':'dvid://"
+                         "http://%1/%2/%3'}}_'navigation':{'pose':{'position':"
+                         "{'voxelSize':[8_8_8]_'voxelCoordinates':[%4_%5_%6]}}_"
+                         "'zoomFactor':8}_'perspectiveOrientation':"
+                         "[-0.3254_0.3294_-0.1029_0.8802]_"
+                         "'perspectiveZoom':64}").
+      arg(target.getGrayScaleSource().getAddressWithPort().c_str()).
+      arg(target.getUuid().c_str()).arg(target.getGrayScaleName().c_str()).
+      arg(pos.getX()).arg(pos.getY()).arg(pos.getZ());
+
+  return path;
+}
+
+
 ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 {
   ZDvidTarget target;

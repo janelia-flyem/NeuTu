@@ -666,7 +666,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
     python.addArg(working_dir+"/seed.txt");
     sampled_watershed=new ZStack();
     python.run();
-    ZStack* middle_result=new ZStack();
+//    ZStack* middle_result=new ZStack();
 
     sampled_watershed->load(working_dir.toStdString()+"/result.tif");
 

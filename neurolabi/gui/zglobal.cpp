@@ -10,6 +10,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "zdvidutil.h"
+#include "sandbox/zbrowseropener.h"
 
 #include "neutubeconfig.h"
 
@@ -32,12 +33,19 @@ ZGlobalData::ZGlobalData()
 ZGlobal::ZGlobal()
 {
   m_data = new ZGlobalData;
+  m_browserOpener = ZSharedPointer<ZBrowserOpener>(new ZBrowserOpener);
 }
 
 ZGlobal::~ZGlobal()
 {
   delete m_data;
   m_data = NULL;
+}
+
+
+ZBrowserOpener* ZGlobal::getBrowserOpener() const
+{
+  return m_browserOpener.get();
 }
 
 void ZGlobal::setStackPosition(int x, int y, int z)

@@ -40,6 +40,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
     m_prefetchQueue = new BodyPrefetchQueue();
     m_prefetchThread = new QThread();
+    m_prefetchQueue->setDocument(m_body3dDoc);
 
     m_prefetchQueue->moveToThread(m_prefetchThread);
     connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));

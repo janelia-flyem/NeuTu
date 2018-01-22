@@ -362,6 +362,8 @@ void ZStackFrame::updateDocSignalSlot(FConnectAction connectAction)
 
   connectAction(m_view, SIGNAL(closingChildFrame()),
                 this, SLOT(closeAllChildFrame()));
+  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObjectInfoSet)),
+                m_presenter, SLOT(processObjectModified(ZStackObjectInfoSet)));
 }
 
 void ZStackFrame::updateSignalSlot(FConnectAction connectAction)
