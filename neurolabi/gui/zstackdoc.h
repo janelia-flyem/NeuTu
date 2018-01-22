@@ -1071,6 +1071,8 @@ public:
   };
 
   void addObjectUnsync(ZStackObject *obj, bool uniqueSource = true);
+  ZStackObject* takeObjectFromBuffer(
+      ZStackObject::EType type, const std::string &source);
 
 public slots: //undoable commands
   /*!
@@ -1083,6 +1085,8 @@ public slots: //undoable commands
    */
   void addObject(ZStackObject *obj, bool uniqueSource = true);
   void addObject(ZStackObject *obj, int zOrder, bool uniqueSource);
+
+  void addBufferObject(ZStackObject *obj);
 
   virtual bool executeAddObjectCommand(ZStackObject *obj,
                                bool uniqueSource = true);
@@ -1351,6 +1355,7 @@ private:
   ZSwcNetwork *m_swcNetwork;
 
   ZStackObjectGroup m_objectGroup;
+  ZStackObjectGroup m_bufferObjectGroup;
   //Swc_Tree_Node *m_lastAddedSwcNode;
 
   //model-view structure for obj list and edit

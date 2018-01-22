@@ -81,6 +81,7 @@
 #include "dialogs/zflyembodycomparisondialog.h"
 #include "z3dmeshfilter.h"
 #include "zstackobjectsourcefactory.h"
+#include "sandbox/zbrowseropener.h"
 
 #include <QDesktopWidget>
 #include <QMenuBar>
@@ -202,6 +203,7 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
   }
 
 #if defined(_DEBUG_) && defined(_NEU3_)
@@ -298,6 +300,8 @@ void Z3DWindow::init()
           this, SLOT(shootTodo(int,int)));
   connect(getCanvas(), SIGNAL(locating(int, int)),
           this, SLOT(locateWithRay(int, int)));
+  connect(getCanvas(), SIGNAL(browsing(int,int)),
+          this, SLOT(browseWithRay(int, int)));
 
   m_swcIsolationDlg = new ZSwcIsolationDialog(this);
   if (getDocument() != NULL) {
@@ -423,6 +427,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_TEST:
     action = m_actionLibrary->getAction(item, this, SLOT(test()));
+    break;
+  case ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY:
+    action = m_actionLibrary->getAction(item, this, SLOT(viewDataExternally()));
     break;
   default:  
     break;
@@ -3261,6 +3268,19 @@ void Z3DWindow::test()
 
 }
 
+void Z3DWindow::viewDataExternally()
+{
+  ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+  bo->updateChromeBrowser();
+  if (bo->getBrowserPath().isEmpty()) {
+    ZDialogFactory::Warn(
+          "Chrome Not Found",
+          "The path to Google Chrome has not be set correctly. "
+          "The default browser will be used.", this);
+  }
+  getCanvas()->getInteractionEngine()->enterBrowseMode();
+}
+
 void Z3DWindow::breakSelectedSwc()
 {
   m_doc->executeBreakForestCommand();
@@ -3575,6 +3595,15 @@ void Z3DWindow::locateWithRay(int x, int y)
   if (!intersection.empty()) {
     ZPoint &pt = intersection.front();
     m_view->gotoPosition(pt.x(), pt.y(), pt.z());
+  }
+}
+
+void Z3DWindow::browseWithRay(int x, int y)
+{
+  std::vector<ZPoint> intersection = getRayIntersection(x, y);
+  if (!intersection.empty()) {
+    ZPoint &pt = intersection.front();
+    emit browsing(pt.x(), pt.y(), pt.z());
   }
 }
 
@@ -4111,6 +4140,11 @@ void Z3DWindow::setOpacityQuietly(
     neutube3d::ERendererLayer layer, double opacity)
 {
   m_view->setOpacityQuietly(layer, opacity);
+}
+
+void Z3DWindow::setFront(neutube3d::ERendererLayer layer, bool on)
+{
+  m_view->setFront(layer, on);
 }
 
 void Z3DWindow::gotoPosition(const ZCuboid& bound)

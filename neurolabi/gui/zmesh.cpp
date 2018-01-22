@@ -242,6 +242,8 @@ void ZMesh::interpolate(const ZMesh& ref)
         m_colors.emplace_back(0.0);
     }
   }
+
+  validateObbTree(false);
 }
 
 void ZMesh::clear()
@@ -393,6 +395,8 @@ void ZMesh::transformVerticesByMatrix(const glm::mat4& tfmat)
   for (size_t i = 0; i < m_vertices.size(); ++i) {
     m_vertices[i] = glm::applyMatrix(tfmat, m_vertices[i]);
   }
+
+  validateObbTree(false);
 }
 
 std::vector<ZMesh> ZMesh::split(size_t numTriangle) const
@@ -493,7 +497,7 @@ ZMeshProperties ZMesh::properties() const
   return res;
 }
 
-void ZMesh::logProperties(const ZMeshProperties& prop, const QString& str)
+void ZMesh::LogProperties(const ZMeshProperties& prop, const QString& str)
 {
   LOG(INFO) << "";
   if (!str.isEmpty()) {
@@ -1085,7 +1089,7 @@ ZMesh ZMesh::CreateCubesWithNormal(const std::vector<glm::vec3>& coordLlfs,
   return cubes;
 }
 
-ZMesh ZMesh::createCube(const glm::vec3& coordLlf, const glm::vec3& coordUrb,
+ZMesh ZMesh::CreateCube(const glm::vec3& coordLlf, const glm::vec3& coordUrb,
                         const glm::vec3& texLlf, const glm::vec3& texUrb)
 {
   ZMesh cube(GL_TRIANGLE_STRIP);
@@ -1117,7 +1121,7 @@ ZMesh ZMesh::createCube(const glm::vec3& coordLlf, const glm::vec3& coordUrb,
   return cube;
 }
 
-ZMesh ZMesh::createCubeSlice(float coordIn3rdDim, float texCoordIn3rdDim, int alongDim,
+ZMesh ZMesh::CreateCubeSlice(float coordIn3rdDim, float texCoordIn3rdDim, int alongDim,
                              const glm::vec2& coordlow, const glm::vec2& coordhigh,
                              const glm::vec2& texlow, const glm::vec2& texhigh)
 {
@@ -1158,7 +1162,7 @@ ZMesh ZMesh::createCubeSlice(float coordIn3rdDim, float texCoordIn3rdDim, int al
   return quad;
 }
 
-ZMesh ZMesh::createCubeSliceWith2DTexture(float coordIn3rdDim, int alongDim,
+ZMesh ZMesh::CreateCubeSliceWith2DTexture(float coordIn3rdDim, int alongDim,
                                           const glm::vec2& coordlow, const glm::vec2& coordhigh,
                                           const glm::vec2& texlow, const glm::vec2& texhigh)
 {
@@ -1191,7 +1195,7 @@ ZMesh ZMesh::createCubeSliceWith2DTexture(float coordIn3rdDim, int alongDim,
   return quad;
 }
 
-ZMesh ZMesh::createImageSlice(float coordIn3rdDim, const glm::vec2& coordlow,
+ZMesh ZMesh::CreateImageSlice(float coordIn3rdDim, const glm::vec2& coordlow,
                               const glm::vec2& coordhigh, const glm::vec2& texlow, const glm::vec2& texhigh)
 {
   ZMesh quad(GL_TRIANGLE_STRIP);
@@ -1212,7 +1216,7 @@ ZMesh ZMesh::createImageSlice(float coordIn3rdDim, const glm::vec2& coordlow,
   return quad;
 }
 
-ZMesh ZMesh::createCubeSerieSlices(int numSlices, int alongDim, const glm::vec3& coordfirst,
+ZMesh ZMesh::CreateCubeSerieSlices(int numSlices, int alongDim, const glm::vec3& coordfirst,
                                    const glm::vec3& coordlast, const glm::vec3& texfirst, const glm::vec3& texlast)
 {
   ZMesh quad(GL_TRIANGLES);
@@ -1275,7 +1279,7 @@ ZMesh ZMesh::createCubeSerieSlices(int numSlices, int alongDim, const glm::vec3&
   return quad;
 }
 
-ZMesh ZMesh::createSphereMesh(const glm::vec3& center, float radius,
+ZMesh ZMesh::CreateSphereMesh(const glm::vec3& center, float radius,
                               int thetaResolution, int phiResolution,
                               float startTheta, float endTheta,
                               float startPhi, float endPhi)
@@ -1297,7 +1301,7 @@ ZMesh ZMesh::createSphereMesh(const glm::vec3& center, float radius,
   return vtkPolyDataToMesh(sphereSource->GetOutput());
 }
 
-ZMesh ZMesh::createTubeMesh(const std::vector<glm::vec3>& line, const std::vector<float>& radius,
+ZMesh ZMesh::CreateTubeMesh(const std::vector<glm::vec3>& line, const std::vector<float>& radius,
                             int numberOfSides, bool capping)
 {
   CHECK(line.size() == radius.size());
@@ -1341,7 +1345,7 @@ ZMesh ZMesh::createTubeMesh(const std::vector<glm::vec3>& line, const std::vecto
   return vtkPolyDataToMesh(triangleFilter->GetOutput());
 }
 
-ZMesh ZMesh::createConeMesh(glm::vec3 base, float baseRadius, glm::vec3 top, float topRadius,
+ZMesh ZMesh::CreateConeMesh(glm::vec3 base, float baseRadius, glm::vec3 top, float topRadius,
                             int numberOfSides, bool capping)
 {
   CHECK(baseRadius >= 0 && topRadius >= 0 && numberOfSides > 2);
@@ -1485,19 +1489,44 @@ ZMesh ZMesh::FromZCubeArray(const ZCubeArray& ca)
 #endif
 }
 
-ZMesh ZMesh::merge(const std::vector<ZMesh>& meshes)
+ZMesh ZMesh::Merge(const std::vector<ZMesh>& meshes)
 {
   ZMesh res;
   if (meshes.empty())
     return res;
-  vtkSmartPointer<vtkAppendPolyData> appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
+
+  vtkSmartPointer<vtkAppendPolyData> appendFilter =
+      vtkSmartPointer<vtkAppendPolyData>::New();
   std::vector<vtkSmartPointer<vtkPolyData>> polys(meshes.size());
   for (size_t i = 0; i < meshes.size(); ++i) {
     polys[i] = meshToVtkPolyData(meshes[i]);
     appendFilter->AddInputData(polys[i]);
   }
 
-  vtkSmartPointer<vtkCleanPolyData> cleanFilter = vtkSmartPointer<vtkCleanPolyData>::New();
+  vtkSmartPointer<vtkCleanPolyData> cleanFilter =
+      vtkSmartPointer<vtkCleanPolyData>::New();
+  cleanFilter->SetInputConnection(appendFilter->GetOutputPort());
+
+  cleanFilter->Update();
+  return vtkPolyDataToMesh(cleanFilter->GetOutput());
+}
+
+ZMesh ZMesh::Merge(const std::vector<ZMesh*>& meshes)
+{
+  ZMesh res;
+  if (meshes.empty())
+    return res;
+
+  vtkSmartPointer<vtkAppendPolyData> appendFilter =
+      vtkSmartPointer<vtkAppendPolyData>::New();
+  std::vector<vtkSmartPointer<vtkPolyData>> polys(meshes.size());
+  for (size_t i = 0; i < meshes.size(); ++i) {
+    polys[i] = meshToVtkPolyData(*meshes[i]);
+    appendFilter->AddInputData(polys[i]);
+  }
+
+  vtkSmartPointer<vtkCleanPolyData> cleanFilter =
+      vtkSmartPointer<vtkCleanPolyData>::New();
   cleanFilter->SetInputConnection(appendFilter->GetOutputPort());
 
   cleanFilter->Update();

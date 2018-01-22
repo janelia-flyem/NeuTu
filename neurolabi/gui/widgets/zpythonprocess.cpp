@@ -31,14 +31,14 @@ void ZPythonProcess::addArg(const QString &arg)
   m_args.push_back(arg);
 }
 
-bool ZPythonProcess::run()
+bool ZPythonProcess::runScript(const QString &script)
 {
-  if (m_pythonPath.isEmpty() || m_script.isEmpty()) {
+  if (m_pythonPath.isEmpty() || script.isEmpty()) {
     return false;
   }
 
   QStringList args;
-  args<<m_script;
+  args << script;
   for(auto arg:m_args){
     args<<arg;
   }
@@ -56,14 +56,20 @@ bool ZPythonProcess::run()
   return true;
 }
 
+bool ZPythonProcess::run()
+{
+  return runScript(m_script);
+}
+
 void ZPythonProcess::parsePythonOutput()
 {
   m_output.clear();
 
   QString output = m_process.readAllStandardOutput();
 
-  qDebug() << output.size();
-  qDebug() << output;
+
+//  qDebug() << output.size();
+//  qDebug() << output;
 
   int startIndex = output.indexOf("@<json>") + 7;
   int endIndex = output.indexOf("</json>@");

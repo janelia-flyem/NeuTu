@@ -4374,9 +4374,11 @@ bool ZObject3dScan::importDvidRoi(const std::string &filePath)
   return importDvidRoi(objJson);
 }
 
-bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj)
+bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj, bool appending)
 {
-  clear();
+  if (!appending) {
+    clear();
+  }
 
   if (obj.isEmpty()) {
     return false;
@@ -4403,7 +4405,7 @@ bool ZObject3dScan::importDvidRoi(const ZJsonArray &obj)
       int y = ZJsonParser::integerValue(subarray.at(1));
       int x0 = ZJsonParser::integerValue(subarray.at(2));
       int x1 = ZJsonParser::integerValue(subarray.at(3));
-      addSegment(z, y, x0, x1);
+      addSegment(z, y, x0, x1, false);
     }
   }
 

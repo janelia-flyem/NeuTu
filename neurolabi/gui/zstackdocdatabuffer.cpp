@@ -12,7 +12,8 @@ ZStackDocObjectUpdate::ZStackDocObjectUpdate(ZStackObject *obj, EAction action)
 
 ZStackDocObjectUpdate::~ZStackDocObjectUpdate()
 {
-  if (m_action == ACTION_ADD_NONUNIQUE && m_action == ACTION_ADD_UNIQUE) {
+  if (m_action == ACTION_ADD_NONUNIQUE || m_action == ACTION_ADD_UNIQUE ||
+      m_action == ACTION_ADD_BUFFER) {
     delete m_obj;
   }
 }
@@ -52,6 +53,9 @@ void ZStackDocObjectUpdate::print() const
     break;
   case ACTION_DESELECT:
     std::cout << "Deselect";
+    break;
+  case ACTION_ADD_BUFFER:
+    std::cout << "Add to buffer";
     break;
   default:
     std::cout << "Unknown action:";

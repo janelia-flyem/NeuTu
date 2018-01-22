@@ -111,6 +111,7 @@ public:
   void setLayerVisible(neutube3d::ERendererLayer layer, bool visible);
   void setOpacity(neutube3d::ERendererLayer layer, double opacity);
   void setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity);
+  void setFront(neutube3d::ERendererLayer layer, bool on);
 
 public: //Camera adjustment
   void gotoPosition(const ZCuboid& bound);
@@ -202,6 +203,7 @@ signals:
   void deletingSplitSeed();
   void deletingSelectedSplitSeed();
   void savingSplitTask(uint64_t bodyId);
+  void viewingDataExternally();
 
   void addingTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId);
   void addingToMergeMarker(int x, int y, int z, uint64_t bodyId);
@@ -212,6 +214,7 @@ signals:
   void showingTodo(bool);
   void keyPressed(QKeyEvent *event);
   void testing();
+  void browsing(double x, double y, double z);
 
 public slots:
   void resetCamera()
@@ -296,6 +299,7 @@ public slots:
   void saveSplitTask();
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
+  void viewDataExternally();
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -366,6 +370,7 @@ public slots:
   void updateCuttingBox();
   void shootTodo(int x, int y);
   void locateWithRay(int x, int y);
+  void browseWithRay(int x, int y);
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 

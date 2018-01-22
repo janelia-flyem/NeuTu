@@ -751,6 +751,9 @@ void ZStackDoc::processDataBuffer()
       case ZStackDocObjectUpdate::ACTION_EXPEL:
         removeObject(u->getObject(), false);
         break;
+      case ZStackDocObjectUpdate::ACTION_ADD_BUFFER:
+        addBufferObject(u->getObject());
+        break;
       case ZStackDocObjectUpdate::ACTION_KILL:
         killObject(u->getObject());
         break;
@@ -8027,6 +8030,47 @@ void ZStackDoc::addObjectUnsync(ZStackObject *obj, bool uniqueSource)
     }
     getDataBuffer()->deliver();
   }
+}
+
+ZStackObject* ZStackDoc::takeObjectFromBuffer(
+    ZStackObject::EType type, const string &source)
+{
+  TStackObjectList objList = m_bufferObjectGroup.takeSameSource(type, source);
+
+  ZStackObject *obj = NULL;
+  if (!objList.isEmpty()) {
+    obj = objList.back();
+  }
+
+  return obj;
+}
+
+void ZStackDoc::addBufferObject(ZStackObject *obj)
+{
+  if (obj == NULL) {
+    return;
+  }
+
+  QMutexLocker locker(m_bufferObjectGroup.getMutex());
+
+  if (m_bufferObjectGroup.containsUnsync(obj)) {
+    return;
+  }
+
+  TStackObjectList objList;
+
+  if (!obj->getSource().empty()) {
+    objList = m_bufferObjectGroup.takeSameSourceUnsync(
+          obj->getType(), obj->getSource());
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZStackObject *oldObj = *iter;
+      if (oldObj != obj) {
+        delete oldObj;
+      }
+    }
+  }
+  m_bufferObjectGroup.addUnsync(obj, true);
 }
 
 void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)

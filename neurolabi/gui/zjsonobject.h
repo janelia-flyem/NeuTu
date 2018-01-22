@@ -81,6 +81,17 @@ public:
   void setEntry(const char *key, const char *value);
   void setEntry(const std::string &key, const std::string &value);
 
+  /*!
+   * \brief Set an entry to a string array
+   *
+   * Nothing will be done if \a value is empty. Any empty string in \a value
+   * will also be ignored.
+   *
+   * \param key Key of the entry
+   * \param value String array of the entry
+   */
+  void setEntry(const char *key, const std::vector<std::string> &value);
+
   void setNonEmptyEntry(const char *key, const std::string &value);
 
   /*!

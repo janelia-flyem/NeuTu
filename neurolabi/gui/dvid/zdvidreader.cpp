@@ -253,7 +253,7 @@ void ZDvidReader::testApiLoad()
 
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int z, neutube::EAxis axis, bool canonizing,
-    ZObject3dScan *result)
+    ZObject3dScan *result) const
 {
   if (result != NULL) {
     result->clear();
@@ -291,7 +291,7 @@ ZObject3dScan *ZDvidReader::readBody(
 }
 
 ZObject3dScan* ZDvidReader::readBodyWithPartition(
-    uint64_t bodyId, ZObject3dScan *result)
+    uint64_t bodyId, ZObject3dScan *result) const
 {
   if (result != NULL) {
     result->clear();
@@ -341,7 +341,7 @@ ZObject3dScan* ZDvidReader::readBodyWithPartition(
 
 ZObject3dScan *ZDvidReader::readBody(
     uint64_t bodyId, int minZ, int maxZ, bool canonizing, neutube::EAxis axis,
-    ZObject3dScan *result)
+    ZObject3dScan *result) const
 {
   if (result != NULL) {
     result->clear();
@@ -527,7 +527,7 @@ QByteArray ZDvidReader::readDataFromEndpoint(
 }
 
 ZObject3dScan *ZDvidReader::readBody(
-    uint64_t bodyId, bool canonizing, ZObject3dScan *result)
+    uint64_t bodyId, bool canonizing, ZObject3dScan *result) const
 {
   if (result != NULL) {
     result->clear();
@@ -596,7 +596,7 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
-ZObject3dScanArray* ZDvidReader::readBody(const std::set<uint64_t> &bodySet)
+ZObject3dScanArray* ZDvidReader::readBody(const std::set<uint64_t> &bodySet) const
 {
   ZObject3dScanArray *objArray = NULL;
 
@@ -739,7 +739,7 @@ void ZDvidReader::readMeshArchiveEnd(struct archive *arc)
 }
 
 ZObject3dScan* ZDvidReader::readMultiscaleBody(
-    uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result)
+    uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result) const
 {
   if (result != NULL) {
     result->clear();
@@ -3184,7 +3184,7 @@ ZJsonArray ZDvidReader::readRoiJson(const std::string &dataName)
 }
 
 ZObject3dScan* ZDvidReader::readRoi(
-    const std::string &dataName, ZObject3dScan *result) const
+    const std::string &dataName, ZObject3dScan *result, bool appending) const
 {
   ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
@@ -3198,7 +3198,7 @@ ZObject3dScan* ZDvidReader::readRoi(
   if (result == NULL) {
     result = new ZObject3dScan;
   }
-  result->importDvidRoi(array);
+  result->importDvidRoi(array, appending);
 
   ZIntPoint blockSize = readRoiBlockSize(dataName);
   result->setDsIntv(blockSize.getX() - 1, blockSize.getY() - 1,

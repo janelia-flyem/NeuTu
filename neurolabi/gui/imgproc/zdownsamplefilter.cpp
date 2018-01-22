@@ -76,7 +76,7 @@ ZStack* ZDownsampleFilter::filterStack(const ZSparseStack& spStack)
       }
     }
   }
-  delete buffer;
+  delete []buffer;
   return rv;
 }
 
@@ -130,7 +130,7 @@ ZStack* ZDownsampleFilter::filterStack(const ZStack& stack)
       }
     }
   }
-  delete buffer;
+  delete []buffer;
   return rv;
 }
 

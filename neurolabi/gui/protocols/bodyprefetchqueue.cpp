@@ -2,6 +2,10 @@
 
 #include <QsLog.h>
 #include <QMutexLocker>
+#include "flyem/zflyembody3ddoc.h"
+
+#include "zstackdocdatabuffer.h"
+#include "zstackobjectsourcefactory.h"
 
 /*
  * this queue should be moved into its own thread after creation; see
@@ -53,6 +57,14 @@ void BodyPrefetchQueue::add(QSet<uint64_t> bodyIDs) {
     foreach (uint64_t bodyID, bodyIDs) {
         m_queue.enqueue(bodyID);
         LINFO() << "BodyPrefetchQueue: added body:" << bodyID;
+        ZMesh *mesh = m_doc->readMesh(m_reader, bodyID, 0);
+        if (mesh != NULL) {
+          auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyID, 0, flyem::BODY_MESH);
+          mesh->setSource(source);
+
+          m_doc->getDataBuffer()->addUpdate(
+                mesh, ZStackDocObjectUpdate::ACTION_ADD_BUFFER);
+        }
     }
     if (wasEmpty) {
         m_queueHasItems.wakeAll();
@@ -103,4 +115,11 @@ void BodyPrefetchQueue::finish() {
     // do I need to grab the lock here?
     QMutexLocker locker(&m_queueLock);
     emit finished();
+}
+
+
+void BodyPrefetchQueue::setDocument(ZFlyEmBody3dDoc *doc)
+{
+  m_doc = doc;
+  m_reader.open(m_doc->getDvidTarget());
 }

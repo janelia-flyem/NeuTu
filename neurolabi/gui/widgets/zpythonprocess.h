@@ -23,17 +23,19 @@ public:
   /*!
    * \brief Set the script
    *
-   * \param The main Matlab script
+   * \param The main Python script
    */
   void setScript(const QString &script);
 
   void addArg(const QString &arg);
   /*!
-   * \brief Run the matlab program
+   * \brief Run the python program
    *
    * \return true iff the Matlab program can be launched.
    */
   bool run();
+
+  bool runScript(const QString &script);
 
   /*!
    * \brief Print output.
@@ -41,9 +43,9 @@ public:
   void printOutputSummary() const;
 
   /*!
-   * \brief Find the executable path of Matlab
+   * \brief Find the executable path of Python
    *
-   * \return true iff Matlab is found.
+   * \return true iff python is found.
    */
   bool findPython();
 

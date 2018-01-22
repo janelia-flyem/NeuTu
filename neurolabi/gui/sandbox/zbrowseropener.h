@@ -20,12 +20,23 @@ public:
 public:
   bool findBrowser(QString brower_name);
   void setBrowserPath(QString brower_path){
-    m_brower_path=brower_path;
+    m_browerPath=brower_path;
   }
   void open(const QString& url);
   void open(const QUrl& url);
+
+  bool setChromeBrowser();
+  const QString& getBrowserPath() const {
+    return m_browerPath;
+  }
+
+  /*!
+   * \brief Try to set the browser to chrome if it is not set.
+   */
+  void updateChromeBrowser();
+
 private:
-  QString m_brower_path;
+  QString m_browerPath;
 };
 
 

@@ -103,6 +103,7 @@ private slots:
   void meshArchiveLoadingEnded();
 
   void updateRoiWidget();
+  void browse(double x, double y, double z);
 
   void test();
 

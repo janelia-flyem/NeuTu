@@ -1,4 +1,6 @@
 #include <iostream>
+#include <QFile>
+
 #include "qaction.h"
 #include "zbrowseropener.h"
 #include "qdesktopservices.h"
@@ -19,27 +21,59 @@ void ZBrowserOpener::open(const QString& url)
 
 void ZBrowserOpener::open(const QUrl& url)
 {
-  if(m_brower_path==""){
+  if(m_browerPath==""){
     QDesktopServices::openUrl(url);
-  }
-  else{
-    system((m_brower_path+" "+url.toString()).toStdString().c_str());
+  } else{
+    QProcess process;
+    QStringList args;
+    args << url.toString();
+#ifdef _DEBUG_
+    std::cout << "URL: " << args[0].toStdString() << std::endl;
+#endif
+    process.start(m_browerPath, args);
+    process.waitForFinished();
+//    system((m_brower_path+" "+url.toString()).toStdString().c_str());
   }
 }
 
 bool ZBrowserOpener::findBrowser(QString browser_name)
 {
-  QString find_cmd="find / -executable -type f -or -type l -name \""+browser_name+"\"  -print";
+//  QString find_cmd="find / -executable -type f -or -type l -name \""+browser_name+"\"  -print";
+  QString find_cmd = "which " + browser_name;
   QProcess process;
   process.start(find_cmd);
   while(!process.waitForFinished());
   QString output=(process.readAllStandardOutput().toStdString().c_str());
   int index=output.indexOf('\n');
   if(index!=-1){
-    m_brower_path=output.left(index);
+    m_browerPath=output.left(index);
     return true;
   }
   return false;
+}
+
+bool ZBrowserOpener::setChromeBrowser()
+{
+#if defined(__APPLE__)
+  m_browerPath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+#elif defined(_LINUX_)
+  m_browerPath = findBrowser("google-chrome");
+#endif
+
+  QFile file(m_browerPath);
+  if (!file.exists()) {
+    m_browerPath.clear();
+    return false;
+  }
+
+  return true;
+}
+
+void ZBrowserOpener::updateChromeBrowser()
+{
+  if (m_browerPath.isEmpty()) {
+    setChromeBrowser();
+  }
 }
 
 ZBrowserOpenerModule::ZBrowserOpenerModule(QObject *parent) :
