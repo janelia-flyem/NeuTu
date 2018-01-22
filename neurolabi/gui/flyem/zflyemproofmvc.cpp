@@ -710,10 +710,12 @@ void ZFlyEmProofMvc::makeBodyWindow()
   setWindowSignalSlot(m_bodyWindow);
 
   m_bodyWindow->setOpacity(neutube3d::LAYER_MESH, 0.2);
-  m_bodyWindow->setFront(neutube3d::LAYER_MESH, true);
+//  m_bodyWindow->setFront(neutube3d::LAYER_MESH, true);
+
   m_bodyWindow->getMeshFilter()->setColorMode("Mesh Color");
   m_bodyWindow->setWindowType(neutube3d::TYPE_BODY);
   m_bodyWindow->readSettings();
+  m_bodyWindow->getMeshFilter()->setStayOnTop(true);
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
