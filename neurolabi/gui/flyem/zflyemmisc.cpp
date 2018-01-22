@@ -1280,7 +1280,7 @@ QString ZFlyEmMisc::GetNeuroglancerPath(const ZDvidTarget &target, const ZIntPoi
                          "[-0.3254_0.3294_-0.1029_0.8802]_"
                          "'perspectiveZoom':64}").
       arg(target.getGrayScaleSource().getAddressWithPort().c_str()).
-      arg(target.getUuid().c_str()).arg(target.getGrayScaleName().c_str()).
+      arg(target.getGrayScaleSource().getUuid().c_str()).arg(target.getGrayScaleName().c_str()).
       arg(pos.getX()).arg(pos.getY()).arg(pos.getZ());
 
   return path;

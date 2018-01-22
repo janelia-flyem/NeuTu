@@ -25257,10 +25257,20 @@ void ZTest::test(MainWindow *host)
   mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
 #endif
 
-#if 0
-  ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
+#if 1
+  ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
   ZDvidWriter writer;
   writer.open(target);
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_02655_cut.obj",
+        "hkcut_34");
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR +
+        "/_flyem/FIB/hemibrain/Hemi_Brain_Hot_Knife_Cut_Meshes/hb_hk_05251_cut.obj",
+        "hkcut_32-33");
 
   writer.uploadRoiMesh(
         GET_TEST_DATA_DIR +
@@ -25326,7 +25336,7 @@ void ZTest::test(MainWindow *host)
   writer.writeRoiRef("PB", keyList, "roi");
 #endif
 
-#if 1
+#if 0
   ZJsonObject roiJson;
   roiJson.load(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/roi.json");
   ZDvidTarget target;
