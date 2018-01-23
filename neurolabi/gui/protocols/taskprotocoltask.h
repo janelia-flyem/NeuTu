@@ -22,6 +22,7 @@ public:
 
     virtual void beforeNext();
     virtual void beforePrev();
+    virtual void beforeDone();
 
     bool loadJson(QJsonObject json);
     QJsonObject toJson();
