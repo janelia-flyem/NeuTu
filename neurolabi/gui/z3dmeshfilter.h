@@ -45,6 +45,7 @@ public:
   void setColorMode(const std::string &mode);
 
   void enablePreservingSourceColors(bool on);
+  bool preservingSourceColorsEnabled() const;
 
   bool hitObject(int x, int y);
   std::vector<bool> hitObject(const std::vector<std::pair<int, int> > &ptArray);
