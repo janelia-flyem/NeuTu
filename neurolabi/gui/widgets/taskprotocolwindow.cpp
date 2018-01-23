@@ -368,6 +368,7 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
         updateBodyWindow();
         updateLabel();
     }
+    updateButtonsEnabled();
 }
 
 /*
@@ -604,8 +605,21 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             ui->verticalLayout_3->addWidget(m_currentTaskWidget);
             // ui->horizontalLayout->addWidget(m_currentTaskWidget);
             m_currentTaskWidget->setVisible(true);
+            updateButtonsEnabled();
         }
     }
+}
+
+/*
+ * ensures that the "Next" and "Prev" buttons are enabled only when there are
+ * next or previous tasks to go to
+ */
+void TaskProtocolWindow::updateButtonsEnabled()
+{
+  bool nextPrevEnabled = ((m_taskList.size() > 1) &&
+                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
+  ui->nextButton->setEnabled(nextPrevEnabled);
+  ui->prevButton->setEnabled(nextPrevEnabled);
 }
 
 /*
