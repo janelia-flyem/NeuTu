@@ -126,6 +126,7 @@ private:
     void startProtocol(QJsonObject json, bool save);
     void updateLabel();
     void updateCurrentTaskLabel();
+    void updateButtonsEnabled();
     int getFirstUncompleted();
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
