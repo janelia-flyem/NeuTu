@@ -222,6 +222,7 @@ public:
   void enableBodySelectionSync(bool on);
 
   void enableGarbageLifetimeLimit(bool on);
+  bool garbageLifetimeLimitEnabled() const;
 
   ZMesh *readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 

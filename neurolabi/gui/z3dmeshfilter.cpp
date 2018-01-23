@@ -74,6 +74,10 @@ void Z3DMeshFilter::enablePreservingSourceColors(bool on)
   m_preserveSourceColors = on;
 }
 
+bool Z3DMeshFilter::preservingSourceColorsEnabled() const
+{
+  return m_preserveSourceColors;
+}
 
 void Z3DMeshFilter::setData(const std::vector<ZMesh*>& meshList)
 {
