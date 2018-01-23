@@ -185,6 +185,7 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SHOW_TODO));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TODO_ITEM));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
   }
 
   if (getWindowType() == neutube3d::TYPE_NEU3) {
@@ -203,7 +204,6 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
-    m_toolBar->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
   }
 
 #if defined(_DEBUG_) && defined(_NEU3_)
@@ -4096,7 +4096,10 @@ Z3DBoundedFilter* Z3DWindow::getBoundedFilter(neutube3d::ERendererLayer layer) c
 void Z3DWindow::updateCuttingBox()
 {
   if (m_cuttingStackBound) {
-    m_view->setCutBox(neutube3d::LAYER_SWC, getDocument()->getStack()->getBoundBox());
+    if (getDocument()->hasStack()) {
+      m_view->setCutBox(
+            neutube3d::LAYER_SWC, getDocument()->getStack()->getBoundBox());
+    }
   } else {
     m_view->resetCutBox(neutube3d::LAYER_SWC);
   }

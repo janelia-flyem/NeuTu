@@ -2548,9 +2548,9 @@ ZPoint ZObject3dScan::getCentroid() const
   return center;
 }
 
-ZObject3dScan ZObject3dScan::makeZProjection(int minZ, int maxZ)
+ZObject3dScan ZObject3dScan::makeZProjection(int minZ, int maxZ, int destZ)
 {
-  return getSlice(minZ, maxZ).makeZProjection();
+  return getSlice(minZ, maxZ).makeZProjection(destZ);
 }
 
 ZHistogram ZObject3dScan::getRadialHistogram(int z) const
@@ -2593,10 +2593,15 @@ const ZObject3dScan *ZObject3dScan::getZProjection() const
 
 void ZObject3dScan::makeZProjection(ZObject3dScan *obj) const
 {
+  makeZProjection(obj, 0);
+}
+
+void ZObject3dScan::makeZProjection(ZObject3dScan *obj, int z) const
+{
   if (obj != NULL) {
     obj->clear();
     for (size_t i = 0; i < getStripeNumber(); ++i) {
-      obj->addStripe(0, m_stripeArray[i].getY());
+      obj->addStripe(z, m_stripeArray[i].getY());
       int nseg = m_stripeArray[i].getSegmentNumber();
       for (int j = 0; j < nseg; ++j) {
         int x1 = m_stripeArray[i].getSegmentStart(j);
@@ -2610,11 +2615,11 @@ void ZObject3dScan::makeZProjection(ZObject3dScan *obj) const
   }
 }
 
-ZObject3dScan ZObject3dScan::makeZProjection() const
+ZObject3dScan ZObject3dScan::makeZProjection(int destZ) const
 {
   ZObject3dScan proj;
 
-  makeZProjection(&proj);
+  makeZProjection(&proj, destZ);
 
   return proj;
 }

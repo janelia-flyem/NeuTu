@@ -57,7 +57,7 @@ bool ZBrowserOpener::setChromeBrowser()
 #if defined(__APPLE__)
   m_browerPath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 #elif defined(_LINUX_)
-  m_browerPath = findBrowser("google-chrome");
+  findBrowser("google-chrome");
 #endif
 
   QFile file(m_browerPath);

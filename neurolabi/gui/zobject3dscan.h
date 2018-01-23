@@ -431,8 +431,8 @@ public:
 
   ZHistogram getRadialHistogram(int z) const;
 
-  ZObject3dScan makeZProjection() const;
-  ZObject3dScan makeZProjection(int minZ, int maxZ);
+  ZObject3dScan makeZProjection(int destZ = 0) const;
+  ZObject3dScan makeZProjection(int minZ, int maxZ, int destZ = 0);
 
   ZObject3dScan makeYProjection() const;
 
@@ -690,6 +690,7 @@ private:
   int subtractForegroundSlice8(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
+  void makeZProjection(ZObject3dScan *obj, int z) const;
 
   void pushDsIntv(int xintv, int yintv, int zintv);
   void popDsIntv(int xintv, int yintv, int zintv);

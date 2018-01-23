@@ -25252,12 +25252,78 @@ void ZTest::test(MainWindow *host)
   ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
   ZDvidReader reader;
   reader.open(target);
-  ZObject3dScan obj = reader.readRoi("PB");
+  ZObject3dScan obj = reader.readRoi("FB");
+  ZObject3dScan slice = obj.makeZProjection(687, 687, 688);
+  obj.unify(slice);
+  ZObject3dScan obj2 = reader.readRoi("FB2");
+  ZObject3dScan obj3 = reader.readRoi("FB3");
+  obj.unify(obj2);
+  obj.unify(obj3);
   ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
   mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
 #endif
 
+
+#if 0
+  ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj = reader.readRoi("PB");
+  ZObject3dScan obj2 = reader.readRoi("PB2");
+  obj.unify(obj2);
+  ZObject3dScan obj3 = reader.readRoi("PB3");
+  ZObject3dScan slice = obj3.makeZProjection(464, 464, 463);
+  obj3.unify(slice);
+//  slice = obj.makeZProjection(464, 464, 462);
+//  obj3.unify(slice);
+  obj.unify(obj3);
+  ZObject3dScan obj4 = reader.readRoi("PB4");
+  obj.unify(obj4);
+
+  ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+  mesh->save((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/PB.obj").c_str());
+#endif
+
+#if 0
+  ZDvidTarget target("emdata3.int.janelia.org", "1d1d", 8000);
+  ZDvidReader reader;
+  reader.open(target);
+  {
+    ZObject3dScan obj = reader.readRoi("PB");
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/PB1.obj").c_str());
+  }
+
+  {
+    ZObject3dScan obj = reader.readRoi("PB2");
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/PB2.obj").c_str());
+  }
+
+  {
+    ZObject3dScan obj = reader.readRoi("PB3");
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/PB3.obj").c_str());
+  }
+
+  {
+    ZObject3dScan obj = reader.readRoi("PB4");
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save((GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/PB4.obj").c_str());
+  }
+#endif
+
 #if 1
+  ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.uploadRoiMesh(
+        GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/FB_dec.obj", "FB");
+#endif
+
+#if 0
   ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
   ZDvidWriter writer;
   writer.open(target);
