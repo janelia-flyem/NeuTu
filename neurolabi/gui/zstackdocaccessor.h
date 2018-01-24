@@ -20,8 +20,11 @@ public:
       ZStackDoc *doc, ZStackObject *obj, bool deleteObject);
   static void RemoveObject(
       ZStackDoc *doc, ZStackObject::EType type, bool deleteObject);
+  static void RemoveObject(
+      ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject);
   static void RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject);
   static void AddObject(ZStackDoc *doc, ZStackObject *obj);
+  static void AddObject(ZStackDoc *doc, const QList<ZStackObject*> &objList);
 
 private:
   static ZStackDocObjectUpdate::EAction GetRemoveAction(bool deleteObject);

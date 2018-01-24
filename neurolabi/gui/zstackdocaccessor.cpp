@@ -30,7 +30,22 @@ void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObject::EType type, bool deleteObject)
 {
   if (doc != NULL) {
-    TStackObjectList objList = doc->takeObject(type);
+    TStackObjectList objList = doc->getObjectList(type);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
+void ZStackDocAccessor::RemoveObject(
+    ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject)
+{
+  if (doc != NULL) {
+    TStackObjectList objList = doc->getObjectList(role);
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
       doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
@@ -51,6 +66,15 @@ void ZStackDocAccessor::AddObject(ZStackDoc *doc, ZStackObject *obj)
   if (doc != NULL && obj != NULL) {
     doc->getDataBuffer()->addUpdate(
           obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    doc->getDataBuffer()->deliver();
+  }
+}
+
+void ZStackDocAccessor::AddObject(ZStackDoc *doc, const QList<ZStackObject *> &objList)
+{
+  if (doc != NULL && !objList.isEmpty()) {
+    doc->getDataBuffer()->addUpdate(
+          objList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     doc->getDataBuffer()->deliver();
   }
 }

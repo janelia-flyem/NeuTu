@@ -30,7 +30,7 @@ public:
   void setIndexSelectionSliently(const QModelIndex &index, bool selected);
 
 signals:
-  void bodySelectionChanged(QSet<uint64_t> selectedSet);
+  void bodyItemSelectionChanged(QSet<uint64_t> selectedSet);
 
 public slots:
 

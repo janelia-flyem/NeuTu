@@ -50,6 +50,9 @@ public:
 
   ~ZStackWatershedContainer();
 
+  //For late binding only
+  void setData(ZStack *stack, ZSparseStack *spStack);
+
   bool isEmpty() const;
 
   enum EComponent {

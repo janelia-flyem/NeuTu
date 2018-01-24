@@ -153,4 +153,11 @@ void ZIntCuboidObj::join(const ZIntCuboid &cuboid)
   m_cuboid.join(cuboid);
 }
 
+void ZIntCuboidObj::boundBox(ZIntCuboid *box) const
+{
+  if (box != NULL) {
+    *box = getCuboid();
+  }
+}
+
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)

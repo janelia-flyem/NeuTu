@@ -79,7 +79,7 @@ public slots:
    *
    * A body absent from \a bodySet will be set to unselected.
    */
-  void setBodySelection(const QSet<uint64_t> &bodySet);
+  void setBodyItemSelection(const QSet<uint64_t> &bodySet);
 
   void zoomToBodyMesh();
 
@@ -104,6 +104,8 @@ private slots:
 
   void updateRoiWidget();
   void browse(double x, double y, double z);
+  void processKeyPressed(QKeyEvent* event);
+  void updateBodyState();
 
   void test();
 

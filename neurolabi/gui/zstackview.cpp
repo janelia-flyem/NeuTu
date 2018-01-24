@@ -1702,6 +1702,7 @@ void ZStackView::prepareCanvasPainter(ZPixmap *canvas, ZPainter &canvasPainter)
         canvasPainter.restart(canvas);
       }
     }
+    canvasPainter.setZOffset(buddyDocument()->getStackOffset().getZ());
   }
 }
 

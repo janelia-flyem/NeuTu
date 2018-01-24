@@ -266,6 +266,8 @@ public slots:
 
   void cacheObject(ZStackObject *obj);
 
+  void processBodySelectionChange();
+
 signals:
   void bodyRemoved(uint64_t bodyId);
 

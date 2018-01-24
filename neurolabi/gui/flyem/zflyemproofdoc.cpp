@@ -248,19 +248,6 @@ void ZFlyEmProofDoc::addSelectedBody(
   std::set<uint64_t> currentSelected = getSelectedBodySet(labelType);
   currentSelected.insert(selected.begin(), selected.end());
   setSelectedBody(currentSelected, labelType);
-#if 0
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-  if (!sliceList.isEmpty()) {
-    if (!selected.empty()) {
-      for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-           iter != sliceList.end(); ++iter) {
-        ZDvidLabelSlice *slice = *iter;
-        slice->addSelection(selected.begin(), selected.end(), labelType);
-      }
-      emit bodySelectionChanged();
-    }
-  }
-#endif
 }
 
 void ZFlyEmProofDoc::setSelectedBody(
@@ -3108,10 +3095,68 @@ void ZFlyEmProofDoc::runSplitFunc(
 
   getProgressSignal()->advanceProgress(0.1);
 
-  ZStackArray seedMask = createWatershedMask(true);
+  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+  if (seedList.size() > 1) {
+    ZStackWatershedContainer container(NULL, NULL);
+    foreach (ZStackObject *seed, seedList) {
+      container.addSeed(seed);
+    }
 
-  if (!seedMask.empty()) {
-    ZStack *signalStack = getStack();
+    switch (range) {
+    case flyem::RANGE_SEED:
+      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_ROI);
+      break;
+    case flyem::RANGE_LOCAL:
+      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+      break;
+    case flyem::RANGE_FULL:
+      container.setRangeOption(ZStackWatershedContainer::RANGE_FULL);
+      break;
+    }
+
+    if (range == flyem::RANGE_SEED || range == flyem::RANGE_FULL) {
+      ZIntCuboidObj *roi = getSplitRoi();
+      if (roi != NULL) {
+        ZIntCuboid box;
+        roi->boundBox(&box);
+        container.setRange(box);
+      }
+    }
+
+    ZDvidSparseStack *sparseStack =
+        getDvidSparseStack(container.getRange(), mode);
+    container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
+
+    container.run();
+
+    setHadSegmentationSampled(container.computationDowsampled());
+    ZObject3dScanArray result;
+    container.makeSplitResult(1, &result);
+    for (ZObject3dScanArray::iterator iter = result.begin();
+         iter != result.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+      getDataBuffer()->addUpdate(
+            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    getDataBuffer()->deliver();
+
+    result.shallowClear();
+
+    setSegmentationReady(true);
+    emit segmentationUpdated();
+
+    ZOUT(LINFO(), 3) << "Segmentation ready";
+
+    emit messageGenerated(
+          ZWidgetMessage(
+            ZWidgetMessage::appendTime("Split done. Ready to upload.")));
+  }
+#if 0
+//  ZStackArray seedMask = createWatershedMask(true);
+
+//  if (!seedMask.empty()) {
+  if (seedList.size() > 1)
+//    ZStack *signalStack = getStack();
     ZDvidSparseStack *sparseStack = NULL;
     ZIntCuboid cuboid;
     if (signalStack->isVirtual()) {
@@ -3171,7 +3216,7 @@ void ZFlyEmProofDoc::runSplitFunc(
           ZWidgetMessage(
             ZWidgetMessage::appendTime("Split done. Ready to upload.")));
   }
-
+#endif
   getProgressSignal()->endProgress();
 }
 
