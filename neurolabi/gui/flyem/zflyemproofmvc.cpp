@@ -551,6 +551,9 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
   connect(getCompleteDocument(), SIGNAL(bodyMergeUploadedExternally()),
           this, SLOT(updateBookmarkTable()));
 
+  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          doc, SLOT(processBodySelectionChange()));
+
   ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
   return doc;
@@ -1825,7 +1828,8 @@ void ZFlyEmProofMvc::selectBody()
         getCompleteDocument()->recordBodySelection();
         getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
         getCompleteDocument()->processBodySelection();
-        updateBodySelection();
+        getCompleteDocument()->notifyBodySelectionChanged();
+//        updateBodySelection();
       }
 #if 0
       for (std::vector<uint64_t>::const_iterator iter = bodyArray.begin();
@@ -1948,6 +1952,7 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
     std::vector<uint64_t> selected =
         labelSlice->getSelector().getSelectedList();
     if (selected.size() > 0) {
+      //Process annotations of the selected bodies
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();
       if (reader.isReady()) {
         ZFlyEmBodyAnnotation finalAnnotation;
@@ -2080,25 +2085,27 @@ void ZFlyEmProofMvc::updateBodySelection()
 //    const std::set<uint64_t> &selected = slice->getSelectedOriginal();
 //    getCompleteDocument()->getMergeProject()->setSelection(
 //          selected, neutube::BODY_LABEL_ORIGINAL);
-    updateCoarseBodyWindow();
-    updateBodyWindow();
-    updateSkeletonWindow();
-    updateMeshWindow();
+//    updateCoarseBodyWindow();
+//    updateBodyWindow();
+//    updateSkeletonWindow();
+//    updateMeshWindow();
 //    m_mergeProject.update3DBodyView();
-    getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
-    ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getDvidLabelSlice(
-          getView()->getSliceAxis());
-    if (tmpSlice != NULL) {
-      if (getCompletePresenter()->isHighlight()) {
-        highlightSelectedObject(tmpSlice, true);
-      } else {
-        tmpSlice->paintBuffer();
+    if (!isHidden()) {
+      getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getDvidLabelSlice(
+            getView()->getSliceAxis());
+      if (tmpSlice != NULL) {
+        if (getCompletePresenter()->isHighlight()) {
+          highlightSelectedObject(tmpSlice, true);
+        } else {
+          tmpSlice->paintBuffer();
+        }
+        getCompleteDocument()->processObjectModified(tmpSlice, true);
       }
-      getCompleteDocument()->processObjectModified(tmpSlice, true);
-    }
 
-    getCompleteDocument()->endObjectModifiedMode();
-    getCompleteDocument()->processObjectModified();
+      getCompleteDocument()->endObjectModifiedMode();
+      getCompleteDocument()->processObjectModified();
+    }
     processLabelSliceSelectionChange();
   }
 }
@@ -3797,7 +3804,8 @@ void ZFlyEmProofMvc::addSelectionAt(int x, int y, int z)
           slice->processSelection();
         }
       }
-      updateBodySelection();
+      getCompleteDocument()->notifyBodySelectionChanged();
+//      updateBodySelection();
     }
   }
 }
@@ -3860,7 +3868,8 @@ void ZFlyEmProofMvc::deselectAllBody()
         slice->processSelection();
       }
     }
-    updateBodySelection();
+//    updateBodySelection();
+    getCompleteDocument()->notifyBodySelectionChanged();
   }
 }
 
@@ -4060,9 +4069,10 @@ void ZFlyEmProofMvc::selectBody(QList<uint64_t> bodyIdList)
               neutube::BODY_LABEL_MAPPED);
       }
       slice->processSelection();
-      processLabelSliceSelectionChange();
+//      processLabelSliceSelectionChange();
     }
-    updateBodySelection();
+//    updateBodySelection();
+    getCompleteDocument()->notifyBodySelectionChanged();
   }
 }
 
@@ -4137,7 +4147,8 @@ bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
           slice->processSelection();
 //          processLabelSliceSelectionChange(); //will be called in updateBodySelection
         }
-        updateBodySelection();
+//        updateBodySelection();
+        getCompleteDocument()->notifyBodySelectionChanged();
         zoomTo(pt);
       } else {
         emit messageGenerated(ZWidgetMessage("Failed to zoom into the body",
@@ -4173,7 +4184,8 @@ void ZFlyEmProofMvc::selectBody(uint64_t bodyId, bool postponeWindowUpdates)
   getCompleteDocument()->selectBody(bodyId);
   getCompleteDocument()->processBodySelection();
   if (!postponeWindowUpdates) {
-    updateBodySelection();
+//    updateBodySelection();
+    getCompleteDocument()->notifyBodySelectionChanged();
   }
 }
 
@@ -4183,7 +4195,8 @@ void ZFlyEmProofMvc::deselectBody(uint64_t bodyId, bool postponeWindowUpdates)
   getCompleteDocument()->deselectBody(bodyId);
   getCompleteDocument()->processBodySelection();
   if (!postponeWindowUpdates) {
-    updateBodySelection();
+//    updateBodySelection();
+    getCompleteDocument()->notifyBodySelectionChanged();
   }
 }
 
@@ -4667,6 +4680,9 @@ void ZFlyEmProofMvc::loadRoi(
     if (source == "roi") {
       ZObject3dScan roi;
       for (const std::string &key : keyList) {
+        if (m_quitting) {
+          return;
+        }
         reader.readRoi(key, &roi, true);
       }
       if (!roi.isEmpty()) {
@@ -4684,6 +4700,9 @@ void ZFlyEmProofMvc::loadRoi(
       } else {
         std::vector<ZMesh*> meshList;
         for (const std::string &key : keyList) {
+          if (m_quitting) {
+            return;
+          }
           ZMesh *submesh = reader.readMesh(
                 ZDvidData::GetName(ZDvidData::ROLE_ROI_DATA_KEY), key);
           if (submesh != NULL) {

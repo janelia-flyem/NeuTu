@@ -29,6 +29,7 @@
 #include "zstroke2d.h"
 #include "zobject3d.h"
 #include "zmeshfactory.h"
+#include "zstackdocaccessor.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -1295,6 +1296,11 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
     getDataBuffer()->addUpdate(
           seedList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     getDataBuffer()->deliver();
+
+    ZStackDocAccessor::RemoveObject(
+          getDataDocument(), ZStackObjectRole::ROLE_SEED, false);
+    //A dangerous way to share objects. Need object clone or shared pointer.
+    ZStackDocAccessor::AddObject(getDataDocument(), seedList);
   }
 }
 
@@ -2007,6 +2013,14 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
   if (m_dvidReader.isReady()) {
     m_dvidInfo = m_dvidReader.readLabelInfo();
   }
+}
+
+void ZFlyEmBody3dDoc::processBodySelectionChange()
+{
+  std::set<uint64_t> bodySet =
+      getDataDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+
+  addBodyChangeEvent(bodySet.begin(), bodySet.end());
 }
 
 /*

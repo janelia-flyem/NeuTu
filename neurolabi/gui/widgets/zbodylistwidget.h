@@ -36,18 +36,18 @@ public:
   ZFlyEmBodyListModel* getModel() const;
 
 public slots:
-  void selectBody(uint64_t bodyId);
-  void deselectBody(uint64_t bodyId);
+  void selectBodyItem(uint64_t bodyId);
+  void deselectBodyItem(uint64_t bodyId);
 
-  void selectBodySliently(uint64_t bodyId);
-  void deselectBodySliently(uint64_t bodyId);
+  void selectBodyItemSliently(uint64_t bodyId);
+  void deselectBodyItemSliently(uint64_t bodyId);
 
   void removeBody(uint64_t bodyId);
 
 signals:
   void bodyAdded(uint64_t bodyId);
   void bodyRemoved(uint64_t bodyId);
-  void bodySelectionChanged(QSet<uint64_t> selectedSet);
+  void bodyItemSelectionChanged(QSet<uint64_t> selectedSet);
 
 private slots:
   void addString();

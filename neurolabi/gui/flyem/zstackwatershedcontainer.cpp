@@ -48,6 +48,12 @@ ZStackWatershedContainer::ZStackWatershedContainer(
   init(data.first, data.second);
 }
 
+void ZStackWatershedContainer::setData(ZStack *stack, ZSparseStack *spStack)
+{
+  m_stack = stack;
+  m_spStack = spStack;
+}
+
 void ZStackWatershedContainer::init()
 {
 //  m_result = NULL;

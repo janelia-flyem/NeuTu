@@ -81,6 +81,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(testing()), this, SLOT(test()));
   connect(m_3dwin, SIGNAL(browsing(double,double,double)),
           this, SLOT(browse(double,double,double)));
+  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
+          this, SLOT(processKeyPressed(QKeyEvent*)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
   connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
@@ -105,6 +107,23 @@ void Neu3Window::connectSignalSlot()
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
           this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
+  connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          this, SLOT(updateBodyState()));
+}
+
+void Neu3Window::updateBodyState()
+{
+#ifdef _DEBUG_
+  std::cout << "Update state: "
+            << m_dataContainer->getCompleteDocument()->getSelectedBodySet(
+                 neutube::BODY_LABEL_ORIGINAL).size() << " bodies" << std::endl;
+#endif
+  if (m_dataContainer->getCompleteDocument()->getSelectedBodySet(
+        neutube::BODY_LABEL_ORIGINAL).size() == 1) {
+    m_dataContainer->enableSplit(flyem::BODY_SPLIT_ONLINE);
+  } else {
+    m_dataContainer->disableSplit();
+  }
 }
 
 void Neu3Window::initOpenglContext()
@@ -131,6 +150,7 @@ bool Neu3Window::loadDvidTarget()
   if (dlg->exec()) {
     m_dataContainer = ZFlyEmProofMvc::Make(
           dlg->getDvidTarget(), ZStackMvc::ROLE_DOCUMENT);
+    m_dataContainer->hide();
     succ = true;
     QString windowTitle = QString("%1 [%2]").
         arg(dlg->getDvidTarget().getSourceString(false).c_str()).
@@ -160,12 +180,12 @@ void Neu3Window::createDockWidget()
           this, SLOT(loadBody(uint64_t)));
   connect(m_bodyListWidget, SIGNAL(bodyRemoved(uint64_t)),
           this, SLOT(unloadBody(uint64_t)));
-  connect(m_bodyListWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
-          this, SLOT(setBodySelection(QSet<uint64_t>)));
+  connect(m_bodyListWidget, SIGNAL(bodyItemSelectionChanged(QSet<uint64_t>)),
+          this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
   connect(this, SIGNAL(bodySelected(uint64_t)),
-          m_bodyListWidget, SLOT(selectBodySliently(uint64_t)));
+          m_bodyListWidget, SLOT(selectBodyItemSliently(uint64_t)));
   connect(this, SIGNAL(bodyDeselected(uint64_t)),
-          m_bodyListWidget, SLOT(deselectBodySliently(uint64_t)));
+          m_bodyListWidget, SLOT(deselectBodyItemSliently(uint64_t)));
   connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
           m_bodyListWidget, SLOT(removeBody(uint64_t)));
 
@@ -187,7 +207,7 @@ void Neu3Window::createTaskWindow() {
     connect(window, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
     connect(window, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
     connect(window, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
-            this, SLOT(setBodySelection(QSet<uint64_t>)));
+            this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
 
     // start up the TaskWindow UI (must come after connections are
     //  established!)
@@ -241,6 +261,11 @@ void Neu3Window::createToolBar()
 }
 
 void Neu3Window::keyPressEvent(QKeyEvent *event)
+{
+  processKeyPressed(event);
+}
+
+void Neu3Window::processKeyPressed(QKeyEvent *event)
 {
   if (m_dataContainer != NULL) {
     m_dataContainer->processKeyEvent(event);
@@ -328,7 +353,7 @@ void Neu3Window::test()
   m_bodyListWidget->getModel()->addBody(1);
 }
 
-void Neu3Window::setBodySelection(const QSet<uint64_t> &bodySet)
+void Neu3Window::setBodyItemSelection(const QSet<uint64_t> &bodySet)
 {
   std::set<uint64_t> tmpBodySet;
   tmpBodySet.insert(bodySet.begin(), bodySet.end());

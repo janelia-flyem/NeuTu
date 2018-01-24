@@ -47,6 +47,8 @@ public:
     m_cuboid = box;
   }
 
+  void boundBox(ZIntCuboid *box) const;
+
   void join(const ZIntCuboid &cuboid);
 
 

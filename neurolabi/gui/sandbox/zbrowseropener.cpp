@@ -30,8 +30,8 @@ void ZBrowserOpener::open(const QUrl& url)
 #ifdef _DEBUG_
     std::cout << "URL: " << args[0].toStdString() << std::endl;
 #endif
-    process.start(m_browerPath, args);
-    process.waitForFinished();
+    process.startDetached(m_browerPath, args);
+//    process.waitForFinished();
 //    system((m_brower_path+" "+url.toString()).toStdString().c_str());
   }
 }
