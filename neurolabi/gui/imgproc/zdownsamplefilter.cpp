@@ -197,33 +197,80 @@ double ZMeanDsFilter::filter(double *buffer)
 
 double ZEdgeDsFilter::filter(double *buffer)
 {
-  int center_x=m_sX/2,center_y=m_sY/2,center_z=m_sZ/2;
-  if(buffer[center_z*m_sX*m_sY+center_y*m_sX+center_x]==0){
-    return 0.0;
-  }
+  /*
+  double sig=2.0;
+  double sig2 = sig * sig;
+  double center_x=m_sX/2.0,center_y=m_sY/2.0,center_z=m_sZ/2.0;
 
-  if(m_sX==1 || m_sY==1 || m_sZ==1){
-    return 0.0;
-  }
-  double sigx=(m_sX-1)/6.0,sigy=(m_sY-1)/6.0,sigz=(m_sZ-1)/6.0;
-  double sigx2=sigx*sigx,sigy2=sigy*sigy,sigz2=sigz*sigz;
+  size_t offset = 0;
+  double weight = 0.0;
+  double factor[20*20*20];*/
 
-  double weight=0.0;
-  double rv=0.0;
-  int off=0;
-
-  for(int k=0;k<m_sZ;++k){
-    double z=k-center_z;
-    for(int j=0;j<m_sY;++j){
-      double y=j-center_y;
-      for(int i=0;i<m_sX;++i){
-        double x=i-center_x;
-        double factor=(1-x*x/(3*sigx2)-y*y/(3*sigy2)-z*z/(3*sigz2));
-        factor*=std::exp(-0.5*((x*x)/sigx2+(y*y)/sigy2+(z*z)/sigz2));
-        weight+=std::abs(factor);
-        rv+=factor*buffer[off++];
+  /*
+  for (k = 0; k < filter->dim[2]; k++) {
+    for (j = 0; j < filter->dim[1]; j++) {
+      for (i = 0; i < filter->dim[0]; i++) {
+  coord[0] = ((double) i) - wndsize;
+  coord[1] = ((double) j) - wndsize;
+  coord[2] = ((double) k) - wndsize;
+  r = coord[0] * coord[0] + coord[1] * coord[1] +
+     coord[2] * coord[2];
+  r = r / sigma2;
+  filter->array[offset] = (1.0 - r / 3) * exp(-r / 2);
+  weight += fabs(filter->array[offset]);
+  offset++;
       }
     }
   }
-  return std::abs(rv/weight);
+
+  size_t idx;
+  for (idx = 0; idx < offset; idx++) {
+    filter->array[idx] /= weight;
+  }   */
+  /*
+  for (int k = 0; k < m_sZ; k++) {
+    double z=((double) k) - center_z;
+    for (int j = 0; j < m_sY; j++) {
+      double y= ((double) j) - center_y;
+      for (int i = 0; i < m_sX; i++) {
+        double x = ((double) i) - center_x;
+        double r=x*x+y*y+z*z;
+        r=r/sig2;
+        factor[offset] = (1.0 - r/3.0) * std::exp(-r/2.0);
+        weight += std::fabs(factor[offset]);
+        offset++;
+       }
+     }
+   }
+
+  size_t idx;
+  for (idx = 0; idx < offset; idx++) {
+      factor[idx]/= weight;
+  }
+
+  double rv=0.0;
+
+  for (idx = 0; idx < offset; idx++) {
+      rv+=factor[idx]*buffer[idx];
+  }
+  return std::fabs(rv);*/
+  size_t cnt=m_sX*m_sY*m_sZ;
+  double aver=0;
+  for(size_t i=0;i<cnt;++i){
+    aver+=buffer[i];
+  }
+  aver/=cnt;
+  double stddev=0.0;
+  for(size_t i=0;i<cnt;++i){
+    stddev+=(buffer[i]-aver)*(buffer[i]-aver);
+  }
+  stddev/=cnt;
+  stddev=std::sqrt(stddev);
+  if(stddev>255){
+    stddev=255;
+  }
+  if(aver==0.0){
+    return stddev;
+  }
+  return 255-stddev;
 }
