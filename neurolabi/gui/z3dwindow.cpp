@@ -282,6 +282,8 @@ void Z3DWindow::init()
             this, SLOT(selectTerminalBranchInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
           this, SLOT(cropSwcInRoi()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBodyLocal()),
+          this, SIGNAL(runningLocalSplit()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(deletingSelected()),
           this, SLOT(deleteSelected()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),

@@ -191,7 +191,7 @@ private:
   void assignComponent(
       ZObject3dScan &remainBody, ZObject3dScan &mainBody,
       ZObject3dScanArray *result);
-  void configResult(ZObject3dScanArray *result);
+  void configureResult(ZObject3dScanArray *result);
 
   static ZStackPtr MakeBoundaryStack(
       const ZStack &stack, int conn, ZIntCuboid &boundaryBox);

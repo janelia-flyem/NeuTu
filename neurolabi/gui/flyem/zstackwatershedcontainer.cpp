@@ -1097,7 +1097,7 @@ void ZStackWatershedContainer::assignComponent(
   }
 }
 
-void ZStackWatershedContainer::configResult(ZObject3dScanArray *result)
+void ZStackWatershedContainer::configureResult(ZObject3dScanArray *result)
 {
   if (result != NULL) {
     for (ZObject3dScanArray::iterator iter = result->begin();
@@ -1198,7 +1198,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     }
   }
 
-  configResult(result);
+  configureResult(result);
 
   return result;
 }

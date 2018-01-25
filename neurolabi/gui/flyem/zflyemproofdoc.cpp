@@ -3078,6 +3078,13 @@ void ZFlyEmProofDoc::runLocalSplit(flyem::EBodySplitMode mode)
   runSplitFunc(mode, flyem::RANGE_LOCAL);
 }
 
+/*
+void ZFlyEmProofDoc::runLocalSplit()
+{
+  runLocalSplit(flyem::BODY_SPLIT_ONLINE);
+}
+*/
+
 void ZFlyEmProofDoc::runFullSplitFunc(flyem::EBodySplitMode mode)
 {
   runSplitFunc(mode, flyem::RANGE_FULL);
@@ -3433,6 +3440,21 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
   }
 
   return stack;
+}
+
+ZDvidSparseStack* ZFlyEmProofDoc::getCachedBodyForSplit(uint64_t bodyId) const
+{
+  const ZDvidSparseStack *body = getBodyForSplit();
+
+  ZOUT(LINFO(), 3) << "Get body for split:" << body;
+
+  if (body != NULL) {
+    if (body->getLabel() != bodyId) {
+      body = NULL;
+    }
+  }
+
+  return const_cast<ZDvidSparseStack*>(body);
 }
 
 void ZFlyEmProofDoc::deprecateSplitSource()

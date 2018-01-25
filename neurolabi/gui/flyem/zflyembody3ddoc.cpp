@@ -30,6 +30,7 @@
 #include "zobject3d.h"
 #include "zmeshfactory.h"
 #include "zstackdocaccessor.h"
+#include "zstackwatershedcontainer.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -768,6 +769,27 @@ ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
   return ZStackObject::TYPE_SWC;
 }
 
+bool ZFlyEmBody3dDoc::loadDvidSparseStack()
+{
+//  return getDataDocument()->getDvidSparseStack();
+
+  if (m_bodySet.size() == 1) {
+    uint64_t bodyId = *(m_bodySet.begin());
+    ZDvidSparseStack *body = getDataDocument()->getCachedBodyForSplit(bodyId);
+
+    if (body == NULL) {
+      if (body->getLabel() != bodyId) {
+        body = getBodyReader().readDvidSparseStackAsync(bodyId);
+        body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+        getDataDocument()->addObject(body, true);
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 void ZFlyEmBody3dDoc::updateBodyModelSelection()
 {
   QList<ZSwcTree*> swcList = getSwcList();
@@ -1052,7 +1074,9 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     }
   }
 
-  emit bodyMeshesAdded();
+  if (encodesTar(id)) {
+     emit bodyMeshesAdded();
+   }
 }
 
 void ZFlyEmBody3dDoc::addBodyFunc(
@@ -2037,6 +2061,43 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
       getDataDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
 
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
+}
+
+void ZFlyEmBody3dDoc::runLocalSplit()
+{
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+
+  if (loadDvidSparseStack()) {
+    QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+    if (seedList.size() > 1) {
+      ZStackWatershedContainer container(NULL, NULL);
+      foreach (ZStackObject *seed, seedList) {
+        container.addSeed(seed);
+      }
+
+      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+
+      ZDvidSparseStack *sparseStack =
+          getDataDocument()->getDvidSparseStack(
+            container.getRange(), flyem::BODY_SPLIT_ONLINE);
+      container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
+
+      container.run();
+
+      setHadSegmentationSampled(container.computationDowsampled());
+      ZObject3dScanArray result;
+      container.makeSplitResult(1, &result);
+      for (ZObject3dScanArray::iterator iter = result.begin();
+           iter != result.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        getDataBuffer()->addUpdate(
+              obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+      }
+      getDataBuffer()->deliver();
+
+      result.shallowClear();
+    }
+  }
 }
 
 /*

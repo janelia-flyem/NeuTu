@@ -175,10 +175,10 @@ public:
 
   ZStack* readThumbnail(uint64_t bodyId);
 
-  ZSparseStack* readSparseStack(uint64_t bodyId);
-  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
-  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range);
-  ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
+  ZSparseStack* readSparseStack(uint64_t bodyId) const;
+  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
+  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
+  ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId) const;
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(
@@ -192,12 +192,12 @@ public:
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;
 #endif
-  ZStack* readGrayScale(const ZIntCuboid &cuboid);
+  ZStack* readGrayScale(const ZIntCuboid &cuboid) const;
   ZStack* readGrayScaleBlock(
-      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo) const;
   std::vector<ZStack*> readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-      int blockNumber, int zoom = 0);
+      int blockNumber, int zoom = 0) const;
 
 //  QString readInfo(const QString &dataName) const;
 
@@ -493,7 +493,7 @@ private:
 
   std::vector<ZStack*> readGrayScaleBlockOld(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-      int blockNumber);
+      int blockNumber) const;
 
   void clearBuffer() const;
 

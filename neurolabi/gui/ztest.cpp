@@ -156,6 +156,7 @@
 #include "z3dcompositor.h"
 #include "zjsonfactory.h"
 #include "z3dvolumeraycasterrenderer.h"
+#include "flyem/zproofreadwindow.h"
 #include "z3dpunctafilter.h"
 #include "tz_stack.h"
 #include "zswclayerfeatureanalyzer.h"
@@ -21883,9 +21884,17 @@ void ZTest::test(MainWindow *host)
   std::cout << tree.toString() << std::endl;
 #endif
 
-#if 0
-  host->startProofread();
+#if 1
+  ZProofreadWindow *proofreadWindow = host->startProofread();
+  ZDvidTarget target("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  target.setGrayScaleName("grayscale");
 
+  proofreadWindow->getMainMvc()->setDvidTarget(target);
+  std::vector<uint64_t> bodyIdArray;
+  bodyIdArray.push_back(1);
+  proofreadWindow->getMainMvc()->exportNeuronScreenshot(
+        bodyIdArray, 512, 512, GET_TEST_DATA_DIR.c_str());
 #endif
 
 #if 0
@@ -25314,7 +25323,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
   ZDvidWriter writer;
   writer.open(target);

@@ -876,7 +876,7 @@ ZStack* ZDvidReader::readThumbnail(uint64_t bodyId)
   return stack;
 }
 
-ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
+ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid) const
 {
   return readGrayScale(cuboid.getFirstCorner().getX(),
                        cuboid.getFirstCorner().getY(),
@@ -887,7 +887,7 @@ ZStack* ZDvidReader::readGrayScale(const ZIntCuboid &cuboid)
 
 std::vector<ZStack*> ZDvidReader::readGrayScaleBlockOld(
     const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-    int blockNumber)
+    int blockNumber) const
 {
   std::vector<ZStack*> stackArray(blockNumber, NULL);
 
@@ -941,7 +941,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlockOld(
 
 std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
     const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-    int blockNumber, int zoom)
+    int blockNumber, int zoom) const
 {
   std::vector<ZStack*> stackArray(blockNumber, NULL);
 
@@ -998,7 +998,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
 }
 
 ZStack* ZDvidReader::readGrayScaleBlock(
-    const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo)
+    const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo) const
 {
   ZDvidBufferReader &bufferReader = m_bufferReader;
   ZDvidUrl dvidUrl(getDvidTarget());
@@ -1027,7 +1027,7 @@ ZStack* ZDvidReader::readGrayScaleBlock(
   return stack;
 }
 
-ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId)
+ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
   spStack->setDvidTarget(getDvidTarget());
@@ -1037,7 +1037,7 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId)
   return spStack;
 }
 
-ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range)
+ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
   spStack->setDvidTarget(getDvidTarget());
@@ -1052,7 +1052,7 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId, const ZIntCu
   return spStack;
 }
 
-ZDvidSparseStack* ZDvidReader::readDvidSparseStackAsync(uint64_t bodyId)
+ZDvidSparseStack* ZDvidReader::readDvidSparseStackAsync(uint64_t bodyId) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
   spStack->setLabel(bodyId);
@@ -1063,7 +1063,7 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStackAsync(uint64_t bodyId)
   return spStack;
 }
 
-ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId)
+ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId) const
 {
   ZSparseStack *spStack = NULL;
 
