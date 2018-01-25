@@ -1,6 +1,7 @@
 #include "zflyembodylistmodel.h"
 
 #include <QDebug>
+#include <iostream>
 
 #include "zstring.h"
 
@@ -122,16 +123,26 @@ void ZFlyEmBodyListModel::processChangedRows(
     } else {
       newSet.insert(bodyId);
       m_bodySet.insert(bodyId);
-      emit bodyAdded(bodyId);
     }
   }
 
   foreach (uint64_t bodyId, m_backupSet) {
     if (!newSet.contains(bodyId) && m_bodySet.contains(bodyId)) {
       m_bodySet.remove(bodyId);
+#ifdef _DEBUG_
+      std::cout << "emit bodyRemoved: " << bodyId << std::endl;
+#endif
       emit bodyRemoved(bodyId);
     }
   }
+
+  foreach (uint64_t bodyId, m_bodySet) {
+#ifdef _DEBUG_
+      std::cout << "emit bodyAdded: " << bodyId << std::endl;
+#endif
+    emit bodyAdded(bodyId);
+  }
+
   m_backupSet.clear();
 
   removeRowList(removingList);
@@ -161,6 +172,9 @@ void ZFlyEmBodyListModel::processInsertedRows(
       removingList.append(r);
     } else {
       m_bodySet.insert(bodyId);
+#ifdef _DEBUG_
+      std::cout << "emit bodyRemoved: " << bodyId << std::endl;
+#endif
       emit bodyAdded(bodyId);
     }
   }
@@ -174,6 +188,9 @@ bool ZFlyEmBodyListModel::removeRows(int row, int count, const QModelIndex &pare
     uint64_t bodyId = getBodyId(row + i);
     if (m_bodySet.contains(bodyId)) {
       m_bodySet.remove(bodyId);
+#ifdef _DEBUG_
+      std::cout << "emit bodyAdded: " << bodyId << std::endl;
+#endif
       emit bodyRemoved(bodyId);
     }
   }

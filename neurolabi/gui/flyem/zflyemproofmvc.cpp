@@ -4183,6 +4183,9 @@ void ZFlyEmProofMvc::selectBody(uint64_t bodyId, bool postponeWindowUpdates)
   getCompleteDocument()->recordBodySelection();
   getCompleteDocument()->selectBody(bodyId);
   getCompleteDocument()->processBodySelection();
+#ifdef _DEBUG_
+  qDebug() << "ZFlyEmProofMvc::selectBody " << bodyId;
+#endif
   if (!postponeWindowUpdates) {
 //    updateBodySelection();
     getCompleteDocument()->notifyBodySelectionChanged();
@@ -4194,6 +4197,10 @@ void ZFlyEmProofMvc::deselectBody(uint64_t bodyId, bool postponeWindowUpdates)
   getCompleteDocument()->recordBodySelection();
   getCompleteDocument()->deselectBody(bodyId);
   getCompleteDocument()->processBodySelection();
+#ifdef _DEBUG_
+  qDebug() << "ZFlyEmProofMvc::deselectBody " << bodyId;
+#endif
+
   if (!postponeWindowUpdates) {
 //    updateBodySelection();
     getCompleteDocument()->notifyBodySelectionChanged();

@@ -730,14 +730,30 @@ void ZFlyEmBody3dDoc::processEventFunc()
     }
   }
 
+  //Process removing events first
   for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
        iter != actionMap.end(); ++iter) {
     const BodyEvent &event = iter.value();
-    processEventFunc(event);
+    if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+      processEventFunc(event);
+    }
     if (m_quitting) {
       break;
     }
   }
+
+  //Process other events
+  for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
+       iter != actionMap.end(); ++iter) {
+    const BodyEvent &event = iter.value();
+    if (event.getAction() != BodyEvent::ACTION_REMOVE) {
+      processEventFunc(event);
+    }
+    if (m_quitting) {
+      break;
+    }
+  }
+
 
 //  emit messageGenerated(ZWidgetMessage("3D Body view updated."));
   std::cout << "====Processing done====" << std::endl;
@@ -1297,10 +1313,10 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
           seedList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     getDataBuffer()->deliver();
 
-    ZStackDocAccessor::RemoveObject(
-          getDataDocument(), ZStackObjectRole::ROLE_SEED, false);
+//    ZStackDocAccessor::RemoveObject(
+//          getDataDocument(), ZStackObjectRole::ROLE_SEED, false);
     //A dangerous way to share objects. Need object clone or shared pointer.
-    ZStackDocAccessor::AddObject(getDataDocument(), seedList);
+//    ZStackDocAccessor::AddObject(getDataDocument(), seedList);
   }
 }
 
