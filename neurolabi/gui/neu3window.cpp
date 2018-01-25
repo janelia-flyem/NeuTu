@@ -81,8 +81,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(testing()), this, SLOT(test()));
   connect(m_3dwin, SIGNAL(browsing(double,double,double)),
           this, SLOT(browse(double,double,double)));
-  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
-          this, SLOT(processKeyPressed(QKeyEvent*)));
+//  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
+//          this, SLOT(processKeyPressed(QKeyEvent*)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
   connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
@@ -266,11 +266,9 @@ void Neu3Window::keyPressEvent(QKeyEvent *event)
   processKeyPressed(event);
 }
 
-void Neu3Window::processKeyPressed(QKeyEvent *event)
+void Neu3Window::processKeyPressed(QKeyEvent */*event*/)
 {
-  if (m_dataContainer != NULL) {
-    m_dataContainer->processKeyEvent(event);
-  }
+
 }
 
 void Neu3Window::showSynapse(bool on)

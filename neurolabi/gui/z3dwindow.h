@@ -215,6 +215,7 @@ signals:
   void keyPressed(QKeyEvent *event);
   void testing();
   void browsing(double x, double y, double z);
+  void runningLocalSplit();
 
 public slots:
   void resetCamera()

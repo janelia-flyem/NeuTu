@@ -121,6 +121,7 @@ signals:
   void selectingUpstreamSwcNode();
   void selectingConnectedSwcNode();
   void croppingSwc();
+  void splittingBodyLocal();
   void shootingTodo(int x, int y);
   void deletingSelected();
   void locating(int x, int y);

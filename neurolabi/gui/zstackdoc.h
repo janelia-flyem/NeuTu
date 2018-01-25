@@ -275,6 +275,8 @@ public: //attributes
   QList<ZDvidTileEnsemble*> getDvidTileEnsembleList() const;
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
   virtual ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack(
+      const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
   QList<ZMesh*> getMeshList() const;
 
   bool hasSwcList();       //to test swctree

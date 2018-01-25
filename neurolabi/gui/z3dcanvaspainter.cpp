@@ -203,6 +203,7 @@ bool Z3DCanvasPainter::renderToImage(const QString& filename, int width, int hei
     m_leftEyeInport.setExpectedSize(glm::uvec2(tileSize, tileSize));
     m_rightEyeInport.setExpectedSize(glm::uvec2(tileSize, tileSize));
     globalCameraPara().viewportChanged(glm::uvec2(width, height));
+    m_canvas.getGLFocus();
     emit requestUpstreamSizeChange(this);
 
     m_tiledRendering = true;
