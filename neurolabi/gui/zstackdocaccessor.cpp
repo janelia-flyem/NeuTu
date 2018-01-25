@@ -30,13 +30,16 @@ void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObject::EType type, bool deleteObject)
 {
   if (doc != NULL) {
-    TStackObjectList objList = doc->getObjectList(type);
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
-    }
-    if (!objList.isEmpty()) {
-      doc->getDataBuffer()->deliver();
+    {
+      QMutexLocker(doc->getObjectGroup().getMutex());
+      TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(type);
+      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+           ++iter) {
+        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
+      }
+      if (!objList.isEmpty()) {
+        doc->getDataBuffer()->deliver();
+      }
     }
   }
 }
@@ -45,13 +48,16 @@ void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject)
 {
   if (doc != NULL) {
-    TStackObjectList objList = doc->getObjectList(role);
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
-    }
-    if (!objList.isEmpty()) {
-      doc->getDataBuffer()->deliver();
+    {
+      QMutexLocker(doc->getObjectGroup().getMutex());
+      TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(role);
+      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+           ++iter) {
+        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
+      }
+      if (!objList.isEmpty()) {
+        doc->getDataBuffer()->deliver();
+      }
     }
   }
 }

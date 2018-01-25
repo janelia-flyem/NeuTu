@@ -25314,7 +25314,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
   ZDvidWriter writer;
   writer.open(target);

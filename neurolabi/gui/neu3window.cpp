@@ -104,8 +104,9 @@ void Neu3Window::connectSignalSlot()
   // signal emitted after all the meshes are loaded, not on the multiple bodyMeshLoaded
   // signals emitted with each mesh.
 
-  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
-          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+  //Disabled to void race condition
+//  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
+//          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));

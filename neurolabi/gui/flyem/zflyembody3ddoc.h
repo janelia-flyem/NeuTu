@@ -48,6 +48,12 @@ public:
     typedef uint64_t TUpdateFlag;
 
   public:
+    struct ComparePriority {
+      bool operator() (const BodyEvent &e1, const BodyEvent &e2) {
+        return (e1.getPriority() < e2.getPriority());
+      }
+    };
+
     BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), /*m_refreshing(false),*/
     m_updateFlag(0), m_resLevel(0) {}
     BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
@@ -99,6 +105,8 @@ public:
 
     void print() const;
 
+    int getPriority() const { return m_priority; }
+
   public:
     static const TUpdateFlag UPDATE_CHANGE_COLOR;
     static const TUpdateFlag UPDATE_ADD_SYNAPSE;
@@ -113,6 +121,7 @@ public:
 //    bool m_refreshing;
     TUpdateFlag m_updateFlag;
     int m_resLevel;
+    int m_priority = 0; //lower number means higher priority
   };
 
   class ObjectStatus {
