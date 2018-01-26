@@ -91,7 +91,11 @@ void ZStackObjectInfoSet::add(
     const ZStackObjectInfo &info, ZStackObjectInfo::TState state)
 {
   if (contains(info)) {
-    (*this)[info] |= state;
+    if (state == ZStackObjectInfo::STATE_UNKNOWN) {
+      (*this)[info] = ZStackObjectInfo::STATE_UNKNOWN;
+    } else {
+      (*this)[info] |= state;
+    }
   } else {
     (*this)[info] = state;
   }

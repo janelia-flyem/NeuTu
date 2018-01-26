@@ -18,6 +18,7 @@ class ZSwcTree;
 class ZMesh;
 class ZBodyListWidget;
 class ZROIWidget;
+class FlyEmSettingDialog;
 
 /*!
  * \brief The class of the main window for Neu3
@@ -106,6 +107,7 @@ private slots:
   void browse(double x, double y, double z);
   void processKeyPressed(QKeyEvent* event);
   void updateBodyState();
+  void setOption();
 
   void test();
 
@@ -129,6 +131,7 @@ private:
   bool m_doingBulkUpdate = false;
   class DoingBulkUpdate;
   QProgressDialog *m_progressDialog = nullptr;
+  FlyEmSettingDialog *m_flyemSettingDlg = nullptr;
 };
 
 #endif // NEU3WINDOW_H

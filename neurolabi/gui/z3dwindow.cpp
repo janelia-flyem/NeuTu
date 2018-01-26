@@ -211,6 +211,14 @@ void Z3DWindow::createToolBar()
 #endif
 }
 
+void Z3DWindow::configureMenuForNeu3()
+{
+  m_helpAction->setVisible(false);
+  QAction *settingAction = new QAction("&Settings", this);
+  m_helpMenu->addAction(settingAction);
+  connect(settingAction, SIGNAL(triggered()), this, SIGNAL(settingTriggered()));
+}
+
 void Z3DWindow::zoomToSelectedSwcNodes()
 {
   std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
@@ -459,8 +467,8 @@ void Z3DWindow::createActions()
   m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
   m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
 
-  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
-  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
+//  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
+//  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
 
   m_helpAction = new QAction("Help", this);
   connect(m_helpAction, SIGNAL(triggered()), this, SLOT(help()));
@@ -663,7 +671,7 @@ void Z3DWindow::createMenus()
   m_editMenu->addAction(m_undoAction);
   m_editMenu->addAction(m_redoAction);
   m_editMenu->addSeparator();
-  m_editMenu->addAction(m_markSwcSomaAction);
+//  m_editMenu->addAction(m_markSwcSomaAction);
 
   m_helpMenu->addAction(m_helpAction);
 

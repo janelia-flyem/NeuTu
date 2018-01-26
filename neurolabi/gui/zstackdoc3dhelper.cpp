@@ -47,8 +47,10 @@ bool ZStackDoc3dHelper::dataUpdateRequired(
     break;
   case neutube3d::LAYER_MESH:
     foreach (const ZStackObjectInfo &info, objInfo.keys()) {
-      if (info.getType() == ZStackObject::TYPE_MESH &&
-          !info.getRole().hasRole(ZStackObjectRole::ROLE_ROI)) {
+      if ((info.getType() == ZStackObject::TYPE_MESH &&
+          !info.getRole().hasRole(ZStackObjectRole::ROLE_ROI)) ||
+          (info.getType() == ZStackObject::TYPE_OBJECT3D_SCAN &&
+           info.getRole().hasRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR))) {
         updating = true;
         break;
       }
@@ -160,12 +162,12 @@ void ZStackDoc3dHelper::updateMeshData()
     QList<ZMesh*> meshList =
         ZStackDocProxy::GetGeneralMeshList(m_view->getDocument());
 
-#if 0
+#if 1
     resetObjectAdapter(neutube3d::LAYER_MESH);
     QList<ZObject3dScan*> objList =
         m_view->getDocument()->getObjectList<ZObject3dScan>();
     foreach(ZObject3dScan *obj, objList) {
-      if (obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
+      if (obj->hasRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR)) {
         ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
         if (mesh != NULL) {
           mesh->setColor(obj->getColor());

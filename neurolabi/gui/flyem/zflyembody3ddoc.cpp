@@ -773,21 +773,38 @@ bool ZFlyEmBody3dDoc::loadDvidSparseStack()
 {
 //  return getDataDocument()->getDvidSparseStack();
 
+  bool loaded = false;
+
   if (m_bodySet.size() == 1) {
     uint64_t bodyId = *(m_bodySet.begin());
     ZDvidSparseStack *body = getDataDocument()->getCachedBodyForSplit(bodyId);
 
-    if (body == NULL) {
+    if (body != NULL) {
       if (body->getLabel() != bodyId) {
-        body = getBodyReader().readDvidSparseStackAsync(bodyId);
-        body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-        getDataDocument()->addObject(body, true);
-        return true;
+        body = NULL;
       }
     }
+
+    if (body == NULL) {
+#ifdef _DEBUG_
+      std::cout << "Reading body " << bodyId << " ..." << std::endl;
+#endif
+      body = getBodyReader().readDvidSparseStackAsync(bodyId);
+      body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+      getDataDocument()->addObject(body, true);
+    } else {
+#ifdef _DEBUG_
+      std::cout << "Body obtained from cache." << std::endl;
+#endif
+    }
+    loaded = true;
+  } else {
+#ifdef _DEBUG_
+      std::cout << "Skip body loading because there are more than one bodies selecteds." << std::endl;
+#endif
   }
 
-  return false;
+  return loaded;
 }
 
 void ZFlyEmBody3dDoc::updateBodyModelSelection()
@@ -2065,6 +2082,8 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
 
 void ZFlyEmBody3dDoc::runLocalSplit()
 {
+  ZOUT(LTRACE(), 5) << "Trying local split ...";
+
   removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
 
   if (loadDvidSparseStack()) {
@@ -2087,16 +2106,23 @@ void ZFlyEmBody3dDoc::runLocalSplit()
       setHadSegmentationSampled(container.computationDowsampled());
       ZObject3dScanArray result;
       container.makeSplitResult(1, &result);
+
+      ZOUT(LTRACE(), 5) << result.size() << "split generated.";
       for (ZObject3dScanArray::iterator iter = result.begin();
            iter != result.end(); ++iter) {
         ZObject3dScan *obj = *iter;
+        obj->addRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR); //For 3D visualization
         getDataBuffer()->addUpdate(
               obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
       }
       getDataBuffer()->deliver();
 
       result.shallowClear();
+    } else {
+      std::cout << "Less than 2 seeds found. Abort." << std::endl;
     }
+  } else {
+    std::cout << "No body loaded for split." << std::endl;
   }
 }
 
