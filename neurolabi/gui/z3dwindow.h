@@ -113,6 +113,8 @@ public:
   void setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity);
   void setFront(neutube3d::ERendererLayer layer, bool on);
 
+  void configureMenuForNeu3();
+
 public: //Camera adjustment
   void gotoPosition(const ZCuboid& bound);
   void zoomToSelectedSwcNodes();
@@ -216,6 +218,8 @@ signals:
   void testing();
   void browsing(double x, double y, double z);
   void runningLocalSplit();
+
+  void settingTriggered();
 
 public slots:
   void resetCamera()

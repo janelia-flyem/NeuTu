@@ -683,6 +683,8 @@ ZJsonObject Z3DView::getSettings() const
 
 void Z3DView::processObjectModified(const ZStackObjectInfoSet &objInfo)
 {
+  ZOUT(LTRACE(), 5) << "Processing object modification in Z3DView ...";
+
   ZStackDoc3dHelper helper;
   helper.attach(this);
   helper.processObjectModified(objInfo);

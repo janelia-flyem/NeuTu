@@ -31,6 +31,7 @@
 #include "zglobal.h"
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zflyemmisc.h"
+#include "dialogs/flyemsettingdialog.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -61,6 +62,12 @@ void Neu3Window::initialize()
   widget->setLayout(layout);
 
   m_3dwin = m_dataContainer->makeNeu3Window();
+//  m_3dwin->menuBar()->hide();
+  m_3dwin->configureMenuForNeu3();
+  connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
+
+  m_flyemSettingDlg = new FlyEmSettingDialog(this);
+  connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(setOption()));
 
   setCentralWidget(m_3dwin);
 
@@ -104,9 +111,8 @@ void Neu3Window::connectSignalSlot()
   // signal emitted after all the meshes are loaded, not on the multiple bodyMeshLoaded
   // signals emitted with each mesh.
 
-  //Disabled to void race condition
-//  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
-//          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
+          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
@@ -162,6 +168,12 @@ bool Neu3Window::loadDvidTarget()
   delete dlg;
 
   return succ;
+}
+
+void Neu3Window::setOption()
+{
+  m_flyemSettingDlg->loadSetting();
+  m_flyemSettingDlg->exec();
 }
 
 void Neu3Window::createDockWidget()

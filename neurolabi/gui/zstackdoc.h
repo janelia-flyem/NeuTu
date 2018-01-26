@@ -908,10 +908,14 @@ public:
 //                            bool sync = true);
 //  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
 //                            bool sync = true);
+  void bufferObjectModified(
+      ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
   void bufferObjectModified(ZStackObject *obj, bool sync = true);
   void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
   void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
-  void bufferObjectModified(const ZStackObjectInfo &info, bool sync = true);
+  void bufferObjectModified(
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state,
+      bool sync = true);
   void bufferObjectModified(
       const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
 
