@@ -136,7 +136,7 @@ void ZFlyEmBodyListModel::processChangedRows(
     }
   }
 
-  foreach (uint64_t bodyId, m_bodySet) {
+  foreach (uint64_t bodyId, newSet) {
 #ifdef _DEBUG_
       std::cout << "emit bodyAdded: " << bodyId << std::endl;
 #endif
