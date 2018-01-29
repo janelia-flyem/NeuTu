@@ -135,6 +135,9 @@ public:
   inline Z3DMeshFilter* getRoiFilter() const
   { return m_roiFilter.get(); }
 
+  inline Z3DMeshFilter* getDecorationFilter() const
+  { return m_decorationFilter.get(); }
+
   Z3DGeometryFilter* getFilter(neutube3d::ERendererLayer layer) const;
   Z3DBoundedFilter* getBoundedFilter(neutube3d::ERendererLayer layer) const;
 
@@ -233,6 +236,7 @@ private:
   void initTodoFilter();
   void initSurfaceFilter();
   void initRoiFilter();
+  void initDecorationFilter();
 
   void addFilter(neutube3d::ERendererLayer layer);
 
@@ -271,7 +275,7 @@ private:
   std::unique_ptr<Z3DSurfaceFilter> m_surfaceFilter;
   std::unique_ptr<ZFlyEmTodoListFilter> m_todoFilter;
   std::unique_ptr<Z3DMeshFilter> m_roiFilter;
-//  std::unique_ptr<Z3DGraphFilter> m_decorationFilter;
+  std::unique_ptr<Z3DMeshFilter> m_decorationFilter;
 
   std::unique_ptr<Z3DNetworkEvaluator> m_networkEvaluator;
 

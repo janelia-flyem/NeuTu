@@ -270,7 +270,6 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_PUNCTA_MEANSHIFT_ALL:
       connect(action, SIGNAL(triggered()), this, SLOT(meanshiftAllPuncta()));
       break;
-
       //SWC actions
     case ZActionFactory::ACTION_ADD_SWC_NODE:
       connect(action, SIGNAL(triggered()), this, SLOT(trySwcAddNodeMode()));

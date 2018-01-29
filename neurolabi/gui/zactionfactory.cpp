@@ -200,6 +200,9 @@ QAction* ZActionFactory::makeAction(
   case ACTION_PUNCTA_MEANSHIFT_ALL:
     action = new QAction("Mean Shift All Puncta", parent);
     break;
+  case ACTION_PUNCTA_CHANGE_COLOR:
+    action = new QAction("Change Color of Selected Puncta", parent);
+    break;
   case ACTION_DELETE_SELECTED:
     action = new QAction("Delete Selected Object", parent);
     action->setIcon(QIcon(":/images/delete.png"));

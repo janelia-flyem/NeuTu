@@ -64,18 +64,18 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
   vec3 normalDirection = normalize(ipoint - sphere_center);
 
 #ifdef DYNAMIC_MATERIAL_PROPERTY
-  fragColor = apply_lighting_and_fog(scene_ambient, va_material_shininess, material_ambient, va_material_specular,
+fragColor = apply_lighting_and_fog(scene_ambient, va_material_shininess, material_ambient, va_material_specular,
 #ifdef ANTI_ALIASING
                                      normalDirection, ipoint, color, alpha * edgeAlpha);
 #else
-                                     normalDirection, ipoint, color, alpha);
+                                  normalDirection, ipoint, color, alpha);
 #endif
 #else
-  fragColor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
+fragColor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
 #ifdef ANTI_ALIASING
-                                     normalDirection, ipoint, color, alpha * edgeAlpha);
+                                   normalDirection, ipoint, color, alpha * edgeAlpha);
 #else
-                                     normalDirection, ipoint, color, alpha);
+                                    normalDirection, ipoint, color, alpha);
 #endif
 #endif
 

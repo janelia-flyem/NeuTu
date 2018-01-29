@@ -20,6 +20,7 @@ class ZObject3dScanArray;
 class ZSwcTree;
 class ZStackPtr;
 class ZStackObject;
+class ZGraphPtr;
 
 /*!
  * \brief The wrapper class for running watershed split
@@ -156,6 +157,10 @@ public:
 
   void test();
 
+  ZStackWatershedContainer* makeSubContainer(
+      const std::vector<size_t> &seedIndices, ZStackWatershedContainer *out);
+  std::vector<ZStackWatershedContainer*> makeLocalSeedContainer(size_t maxVolume);
+
 private:
   void init();
   void init(ZStack *stack, ZSparseStack *spStack);
@@ -201,6 +206,10 @@ private:
 
   template<class T>
   bool addSeed(const ZStackObject *obj);
+
+  static size_t ComputeSeedVolume(
+      const ZStackObject &obj1, const ZStackObject &obj2);
+  ZGraphPtr buildSeedGraph(size_t maxVolume) const;
 
 private:
   ZStack *m_stack = NULL;

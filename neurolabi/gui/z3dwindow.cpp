@@ -441,6 +441,10 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY:
     action = m_actionLibrary->getAction(item, this, SLOT(viewDataExternally()));
     break;
+  case ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(changeSelectedPunctaColor()));
+    break;
   default:  
     break;
   }
@@ -703,7 +707,8 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_locatePunctumIn2DAction);
   contextMenu->addAction("Transform selected puncta",
                          this, SLOT(transformSelectedPuncta()));
-  contextMenu->addAction("Change color", this, SLOT(changeSelectedPunctaColor()));
+  contextMenu->addAction(
+        "Change color", this, SLOT(changeSelectedPunctaColor()));
   contextMenu->addAction("Transform all puncta",
                          this, SLOT(transformAllPuncta()));
   contextMenu->addAction("Convert to swc",

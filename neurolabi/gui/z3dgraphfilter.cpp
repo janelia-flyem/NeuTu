@@ -555,7 +555,7 @@ void Z3DGraphFilter::renderPicking(Z3DEye eye)
   if (!m_pickingObjectsRegistered) {
     registerPickingObjects();
   }
-  m_rendererBase.renderPicking(eye, m_sphereRenderer);
+  m_rendererBase.renderPicking(eye, m_lineRenderer, m_sphereRenderer);
 }
 
 void Z3DGraphFilter::configure(const ZJsonObject &obj)

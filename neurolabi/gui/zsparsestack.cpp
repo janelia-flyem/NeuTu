@@ -355,7 +355,11 @@ ZStack* ZSparseStack::makeStack(
 
         delete obj;
       }
+    } else {
+      ZOUT(LTRACE(), 5) << "Invalid range. No stack created.";
     }
+  } else {
+    ZOUT(LTRACE(), 5) << "Object mask or grayscale data missing. No stack created.";
   }
 
   return out;
