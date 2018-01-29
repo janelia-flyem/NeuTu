@@ -526,6 +526,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
             this, SLOT(zoomTo(int, int, int, int)));
     connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
             this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
+
+    window->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
   }
 }
 
@@ -832,7 +834,6 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   window->getGraphFilter()->setStayOnTop(false);
   window->setOpacity(neutube3d::LAYER_MESH, 0.9);
   ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
-  window->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
 
   connect(window, SIGNAL(savingSplitTask()),
           doc, SLOT(saveSplitTask()));
