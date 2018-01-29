@@ -14,6 +14,12 @@ class ZStackObjectInfoSet;
 
 /*!
  * \brief The class of helping managing data for 3D visualization
+ *
+ * ZStackDoc3dHelper is designed to facilitate adding a new layer to 3D
+ * visualization. Data from \a ZStackDoc are partitioned to be rendered in
+ * different layers exclusively, which is done in the function \a updateData.
+ * Another function \a dataUpdateRequired decides if a layer needs to be updated
+ * according to current information of object modification.
  */
 class ZStackDoc3dHelper
 {
@@ -35,6 +41,7 @@ public:
   void updateSurfaceData();
   void updateTodoData();
   void updateMeshData();
+  void updateDecorationData();
   void updateRoiData();
   void updateData(neutube3d::ERendererLayer layer);
 

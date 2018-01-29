@@ -16,6 +16,8 @@
 #include "zstackfactory.h"
 #include "misc/miscutility.h"
 #include "imgproc/zdownsamplefilter.h"
+#include "zstackobjectaccessor.h"
+#include "zgraphptr.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -50,8 +52,12 @@ ZStackWatershedContainer::ZStackWatershedContainer(
 
 void ZStackWatershedContainer::setData(ZStack *stack, ZSparseStack *spStack)
 {
-  m_stack = stack;
-  m_spStack = spStack;
+  if (m_stack != NULL || m_spStack != NULL) {
+    LWARN() << "Invalid initialization!!!";
+  } else {
+    m_stack = stack;
+    m_spStack = spStack;
+  }
 }
 
 void ZStackWatershedContainer::init()
@@ -597,7 +603,14 @@ ZStack* ZStackWatershedContainer::getSourceStack()
 
 Stack* ZStackWatershedContainer::getSource()
 {
-  return getSourceStack()->c_stack(m_channel);
+  ZStack *stack  = getSourceStack();
+  if (stack != NULL) {
+    return stack->c_stack(m_channel);
+  } else {
+    ZOUT(LWARN(), 5) << "Empty source.";
+  }
+
+  return NULL;
 }
 
 bool ZStackWatershedContainer::hasResult() const
@@ -624,7 +637,8 @@ void ZStackWatershedContainer::run()
   //Todo: unified processing for dense and sparse stacks
   if(m_stack && m_stack->hasData()){//for normal stack
     ZStackMultiScaleWatershed watershed;
-    ZStackPtr stack = ZStackPtr(watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));
+    ZStackPtr stack = ZStackPtr(
+          watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));
     stack->setOffset(getSourceOffset());
     m_result.push_back(stack);
   }
@@ -636,7 +650,7 @@ void ZStackWatershedContainer::run()
       delete filter;
     }
     Stack *source = getSource();
-    if (source != NULL){
+    if (source != NULL) {
       updateSeedMask();
       getWorkspace()->conn=6;
       Stack *out = C_Stack::watershed(source, getWorkspace());
@@ -687,6 +701,8 @@ void ZStackWatershedContainer::run()
           }
         }
       }
+    } else {
+      ZOUT(LWARN(), 5) << "No source stack found. Abort watershed.";
     }
   }
 }
@@ -1259,4 +1275,78 @@ ZIntCuboid ZStackWatershedContainer::getRangeUpdate() const
 void ZStackWatershedContainer::updateRange()
 {
   m_range = getRangeUpdate();
+}
+
+ZStackWatershedContainer* ZStackWatershedContainer::makeSubContainer(
+    const std::vector<size_t> &seedIndices, ZStackWatershedContainer *out)
+{
+  ZOUT(LINFO(), 5) << "Making local seed container from"
+                    << seedIndices.size() << "seeds";
+
+  if (out == NULL) {
+    out = new ZStackWatershedContainer(NULL, NULL);
+  }
+  out->setData(m_stack, m_spStack);
+
+  for (size_t index : seedIndices) {
+    if (index < m_seedArray.size()) {
+      out->addSeed(*(m_seedArray[index]));
+    } else {
+      ZOUT(LWARN(), 5) << "Invalid seed index:" << index;
+    }
+  }
+
+  out->setRangeOption(RANGE_SEED_BOUND);
+
+  return out;
+}
+
+std::vector<ZStackWatershedContainer*>
+ZStackWatershedContainer::makeLocalSeedContainer(size_t maxVolume)
+{
+  ZOUT(LINFO(), 5) << "Making local seed containers ...";
+
+  std::vector<ZStackWatershedContainer*> result;
+  ZGraphPtr seedGraph = buildSeedGraph(maxVolume);
+  const std::vector<ZGraph*> &graphList = seedGraph->getConnectedSubgraph();
+  for (const ZGraph *graph : graphList) {
+    std::set<int> vertexSet = graph->getConnectedVertexSet();
+    std::vector<size_t> seedIndices;
+    seedIndices.insert(seedIndices.end(), vertexSet.begin(), vertexSet.end());
+    ZStackWatershedContainer *container = makeSubContainer(seedIndices, NULL);
+    result.push_back(container);
+  }
+
+  return result;
+}
+
+ZGraphPtr ZStackWatershedContainer::buildSeedGraph(size_t maxVolume) const
+{
+  ZGraphPtr graph = ZGraphPtr::Make(ZGraph::UNDIRECTED_WITH_WEIGHT);
+
+  for (size_t i = 0; i < m_seedArray.size(); ++i) {
+    for (size_t j = i + 1; j < m_seedArray.size(); ++j) {
+      ZStackObject *seed1 = m_seedArray[i];
+      ZStackObject *seed2 = m_seedArray[j];
+      if (seed1->getLabel() != seed2->getLabel()) {
+        size_t v = ComputeSeedVolume(*seed1, *seed2);
+        if (v <= maxVolume) {
+          graph->addEdgeFast(i, j, v);
+        }
+      }
+    }
+  }
+
+  return graph;
+}
+
+size_t ZStackWatershedContainer::ComputeSeedVolume(
+    const ZStackObject &obj1, const ZStackObject &obj2)
+{
+  ZIntCuboid box1 = ZStackObjectAccessor::GetIntBoundBox(obj1);
+  ZIntCuboid box2 = ZStackObjectAccessor::GetIntBoundBox(obj2);
+
+  box1.join(box2);
+
+  return box1.getVolume();
 }

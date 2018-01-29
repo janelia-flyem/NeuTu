@@ -4,6 +4,7 @@
 #include "tz_stack_neighborhood.h"
 #include "zintcuboid.h"
 #include "misc/miscutility.h"
+#include "tz_stack_bwmorph.h"
 
 ZMeshFactory::ZMeshFactory()
 {
@@ -34,6 +35,12 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv)
   //For each voxel, create a graph
   int startCoord[3];
   Stack *stack = dsObj.toStackWithMargin(startCoord, 1, 1);
+
+#if 0
+  Stack *out = Stack_Fillhole(stack, NULL, 1);
+  C_Stack::kill(stack);
+  stack = out;
+#endif
 
   size_t offset = 0;
   int i, j, k;

@@ -4902,6 +4902,10 @@ void ZFlyEmProofMvc::showInfoDialog()
 
 void ZFlyEmProofMvc::retrieveRois()
 {
+#ifdef _DEBUG_
+  //Disable roi retrival for debugging
+  return;
+#endif
   const QString threadId = "ZFlyEmProofMvc::loadROIFunc()";
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();

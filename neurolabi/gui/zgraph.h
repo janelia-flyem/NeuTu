@@ -187,6 +187,8 @@ public:
 
   const int* topologicalSort();
 
+  std::set<int> getConnectedVertexSet() const;
+
 private:
   void initWorkspace();
   const Hash_Table* getEdgeTable() const;

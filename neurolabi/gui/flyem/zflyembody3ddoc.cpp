@@ -1064,13 +1064,13 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
       mesh->setColor(color);
       mesh->pushObjectColor();
 
-      updateBodyFunc(bodyId, mesh);
-
       bool loaded =
           !(getObjectGroup().findSameClass(
               ZStackObject::TYPE_MESH,
               ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
             isEmpty());
+
+      updateBodyFunc(bodyId, mesh);
 
       if (!loaded) {
         addSynapse(bodyId);
@@ -2082,7 +2082,7 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
 
 void ZFlyEmBody3dDoc::runLocalSplit()
 {
-  ZOUT(LTRACE(), 5) << "Trying local split ...";
+  ZOUT(LINFO(), 5) << "Trying local split ...";
 
   removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
 
@@ -2101,9 +2101,21 @@ void ZFlyEmBody3dDoc::runLocalSplit()
             container.getRange(), flyem::BODY_SPLIT_ONLINE);
       container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
 
-      container.run();
+      std::vector<ZStackWatershedContainer*> containerList =
+          container.makeLocalSeedContainer(256*256*256);
 
-      setHadSegmentationSampled(container.computationDowsampled());
+      ZOUT(LINFO(), 5) << containerList.size() << "containers";
+      for (ZStackWatershedContainer *subcontainer : containerList) {
+        subcontainer->run();
+        ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
+        delete subcontainer;
+      }
+//      container.run();
+
+//      setHadSegmentationSampled(container.computationDowsampled());
+
+//      ZStackDocAccessor::ParseWatershedContainer(this, &container);
+#if 0
       ZObject3dScanArray result;
       container.makeSplitResult(1, &result);
 
@@ -2118,6 +2130,7 @@ void ZFlyEmBody3dDoc::runLocalSplit()
       getDataBuffer()->deliver();
 
       result.shallowClear();
+#endif
     } else {
       std::cout << "Less than 2 seeds found. Abort." << std::endl;
     }

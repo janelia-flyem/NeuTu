@@ -21893,6 +21893,8 @@ void ZTest::test(MainWindow *host)
   proofreadWindow->getMainMvc()->setDvidTarget(target);
   std::vector<uint64_t> bodyIdArray;
   bodyIdArray.push_back(1);
+  bodyIdArray.push_back(7265504);
+
   proofreadWindow->getMainMvc()->exportNeuronScreenshot(
         bodyIdArray, 512, 512, GET_TEST_DATA_DIR.c_str());
 #endif

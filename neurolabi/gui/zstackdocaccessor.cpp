@@ -1,6 +1,9 @@
 #include "zstackdocaccessor.h"
 
 #include "zstackdoc.h"
+#include "flyem/zstackwatershedcontainer.h"
+#include "zobject3dscanarray.h"
+#include "neutubeconfig.h"
 
 ZStackDocAccessor::ZStackDocAccessor()
 {
@@ -82,5 +85,29 @@ void ZStackDocAccessor::AddObject(ZStackDoc *doc, const QList<ZStackObject *> &o
     doc->getDataBuffer()->addUpdate(
           objList, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
     doc->getDataBuffer()->deliver();
+  }
+}
+
+void ZStackDocAccessor::ParseWatershedContainer(
+    ZStackDoc *doc, ZStackWatershedContainer *container)
+{
+  if (doc != NULL && container != NULL) {
+    ZObject3dScanArray result;
+    container->makeSplitResult(1, &result);
+
+    ZOUT(LTRACE(), 5) << result.size() << "split generated.";
+    QList<ZStackObject *> objList;
+
+    for (ZObject3dScanArray::iterator iter = result.begin();
+         iter != result.end(); ++iter) {
+      ZObject3dScan *obj = *iter;
+      obj->addRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR); //For 3D visualization
+      objList.append(obj);
+//      getDataBuffer()->addUpdate(
+//            obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+//    getDataBuffer()->deliver();
+    AddObject(doc, objList);
+    result.shallowClear();
   }
 }
