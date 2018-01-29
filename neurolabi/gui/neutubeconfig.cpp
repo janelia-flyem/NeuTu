@@ -782,6 +782,24 @@ void NeutubeConfig::SetParallelTileFetching(bool on)
   getInstance().setParallelTileFetching(on);
 }
 
+bool NeutubeConfig::namingSynapse() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("naming_synapse")) {
+    return m_settings.value("naming_synapse").toBool();
+  }
+#endif
+
+  return false;
+}
+
+void NeutubeConfig::setNamingSynapse(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("naming_synapse", on);
+#endif
+}
+
 bool NeutubeConfig::loggingProfile() const
 {
 #ifdef _QT_GUI_USED_
@@ -912,6 +930,16 @@ bool NeutubeConfig::UsingDefaultFlyemConfig()
   }
 
   return true;
+}
+
+bool NeutubeConfig::NamingSynapse()
+{
+  return getInstance().namingSynapse();
+}
+
+void NeutubeConfig::SetNamingSynapse(bool on)
+{
+  getInstance().setNamingSynapse(on);
 }
 
 void NeutubeConfig::SetNeuTuServer(const QString &path)
