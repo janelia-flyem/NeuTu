@@ -2949,9 +2949,11 @@ void Z3DWindow::changeSelectedPunctaColor()
            iter != punctaSet.end(); ++iter) {
         ZPunctum *punctum = *iter;
         punctum->setColor(dlg.currentColor());
+        m_doc->bufferObjectModified(punctum);
       }
+      m_doc->processObjectModified();
 
-      m_doc->notifyPunctumModified();
+//      m_doc->notifyPunctumModified();
     }
   }
 }

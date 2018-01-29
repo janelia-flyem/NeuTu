@@ -640,6 +640,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setToolTip("Cancel the current rectangle ROI");
     action->setIcon(QIcon(":/images/cancel.png"));
     break;
+  case ACTION_PUNCTA_CHANGE_COLOR:
+    action = new QAction("Change Color of Selected Puncta", parent);
+    break;
   case ACTION_REWRITE_SEGMENTATION:
     action = new QAction("Rewrite segmentation", parent);
     action->setToolTip("Rewrite segmentation in the current ROI. "
