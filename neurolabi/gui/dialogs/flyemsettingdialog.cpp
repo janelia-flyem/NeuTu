@@ -60,7 +60,9 @@ void FlyEmSettingDialog::loadSetting()
   std::string dataDir = GET_DATA_DIR;
   ui->dataDirLineEdit->setText(QFileInfo(dataDir.c_str()).absoluteFilePath());
 #if defined(_FLYEM_)
-  ui->defaultConfigFileCheckBox->setChecked(GET_FLYEM_CONFIG.usingDefaultConfig());
+  ui->defaultConfigFileCheckBox->setChecked(
+        GET_FLYEM_CONFIG.usingDefaultConfig());
+  ui->synapseNameCheckBox->setChecked(NeutubeConfig::NamingSynapse());
 #endif
 }
 
@@ -75,6 +77,11 @@ void FlyEmSettingDialog::connectSignalSlot()
 bool FlyEmSettingDialog::usingDefaultConfig() const
 {
   return ui->defaultConfigFileCheckBox->isChecked();
+}
+
+bool FlyEmSettingDialog::namingSynapse() const
+{
+  return ui->synapseNameCheckBox->isChecked();
 }
 
 std::string FlyEmSettingDialog::getNeuTuServer() const
@@ -112,6 +119,7 @@ void FlyEmSettingDialog::update()
     ui->statusLabel->setText("Down");
   }
   GET_FLYEM_CONFIG.setTaskServer(getTaskServer());
+  GET_FLYEM_CONFIG.setAnalyzingMb6(namingSynapse());
 #endif
 
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
@@ -124,6 +132,7 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetDataDir(ui->dataDirLineEdit->text());
   NeutubeConfig::SetFlyEmConfigPath(getConfigPath().c_str());
   NeutubeConfig::UseDefaultFlyEmConfig(usingDefaultConfig());
+  NeutubeConfig::SetNamingSynapse(namingSynapse());
 }
 
 QString FlyEmSettingDialog::shrink(const QString &str, int len)

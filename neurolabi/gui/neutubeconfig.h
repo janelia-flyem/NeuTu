@@ -59,6 +59,8 @@ public:
   static void SetNeuTuServer(const QString &path);
   static QString GetTaskServer();
   static void SetTaskServer(const QString &path);
+  static bool NamingSynapse();
+  static void SetNamingSynapse(bool on);
 
   static void SetDataDir(const QString &dataDir);
 #endif
@@ -72,6 +74,8 @@ public:
   bool autoStatusCheck() const;
   bool parallelTileFetching() const;
   void setParallelTileFetching(bool on);
+  bool namingSynapse() const;
+  void setNamingSynapse(bool on);
 
   void setAdvancedMode(bool on);
   bool isAdvancedMode() const;
