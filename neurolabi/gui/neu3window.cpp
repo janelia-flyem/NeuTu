@@ -104,9 +104,8 @@ void Neu3Window::connectSignalSlot()
   // signal emitted after all the meshes are loaded, not on the multiple bodyMeshLoaded
   // signals emitted with each mesh.
 
-  //Disabled to void race condition
-//  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
-//          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
+          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
@@ -429,7 +428,6 @@ void Neu3Window::syncBodyListModel()
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
 //      getBodyDocument()->getMeshList();
   ZFlyEmBodyListModel *listModel = m_bodyListWidget->getModel();
-
 
   QList<int> rowsToRemove;
   //Remove rows that are not in the document
