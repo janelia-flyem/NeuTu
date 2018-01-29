@@ -440,7 +440,6 @@ void Neu3Window::syncBodyListModel()
 //      getBodyDocument()->getMeshList();
   ZFlyEmBodyListModel *listModel = m_bodyListWidget->getModel();
 
-
   QList<int> rowsToRemove;
   //Remove rows that are not in the document
   for (int i = 0; i < listModel->rowCount(); i++) {

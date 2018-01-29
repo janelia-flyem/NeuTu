@@ -1092,8 +1092,13 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
   }
 
   if (encodesTar(id)) {
-     emit bodyMeshesAdded();
-   }
+
+    // Meshes loaded from an archive are ready at this point, so emit a signal, which
+    // can be used by code that needs to know the IDs of the loaded meshes (instead of
+    // the ID of the archive).
+
+    emit bodyMeshesAdded();
+  }
 }
 
 void ZFlyEmBody3dDoc::addBodyFunc(
