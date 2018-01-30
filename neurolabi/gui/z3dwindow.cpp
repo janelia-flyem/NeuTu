@@ -3620,6 +3620,10 @@ void Z3DWindow::browseWithRay(int x, int y)
   std::vector<ZPoint> intersection = getRayIntersection(x, y);
   if (!intersection.empty()) {
     ZPoint &pt = intersection.front();
+    if (intersection.size() > 1) {
+      pt += intersection[1];
+      pt *= 0.5;
+    }
     emit browsing(pt.x(), pt.y(), pt.z());
   }
 }
