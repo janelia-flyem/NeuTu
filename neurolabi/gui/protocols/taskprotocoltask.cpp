@@ -100,9 +100,16 @@ void TaskProtocolTask::beforeDone() {
  * add UI below the standard UI
  */
 QWidget * TaskProtocolTask::getTaskWidget() {
-    return NULL;
+    return nullptr;
 }
 
+/*
+ * subclasses may optionally implement this method to
+ * add a menu to the main menu bar
+ */
+QMenu * TaskProtocolTask::getTaskMenu() {
+    return nullptr;
+}
 
 // tag methods: standard add, remove, has, get all, clear
 
