@@ -3552,8 +3552,10 @@ bool ZStackPresenter::process(ZStackOperator &op)
 
       rect->setFirstCorner(x0, y0);
       rect->setLastCorner(x1, y1);
-      buddyDocument()->processObjectModified(rect);
+      buddyDocument()->bufferObjectModified(rect);
       buddyDocument()->processObjectModified();
+//      buddyDocument()->processObjectModified(rect);
+//      buddyDocument()->processObjectModified();
     }
   }
     break;
