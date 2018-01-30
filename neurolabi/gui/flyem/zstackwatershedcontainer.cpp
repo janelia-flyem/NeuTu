@@ -1,5 +1,7 @@
 #include "zstackwatershedcontainer.h"
 
+#include <QElapsedTimer>
+
 #include "imgproc/zstackwatershed.h"
 #include "zstack.hxx"
 #include "zobject3d.h"
@@ -579,7 +581,14 @@ ZStack* ZStackWatershedContainer::getSourceStack()
   ZIntCuboid range = getRange();
   if (m_source == NULL) {
     if (m_spStack != NULL) {
-      m_source = m_spStack->makeStack(range, m_maxStackVolume, true, NULL);
+      if (m_scale > 1) {
+        ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod);
+        filter->setDsFactor(m_scale,m_scale,m_scale);
+        m_source=filter->filterStack(*m_spStack);
+        delete filter;
+      } else {
+        m_source = m_spStack->makeStack(range, m_maxStackVolume, true, NULL);
+      }
     } else {
       if (range.equals(m_stack->getBoundBox())) {
         m_source = m_stack;
@@ -634,24 +643,25 @@ void ZStackWatershedContainer::run()
   std::cout << "Running watershed ..." << std::endl;
   deprecate(COMP_RESULT);
 
+  QElapsedTimer timer;
+  timer.start();
+
   //Todo: unified processing for dense and sparse stacks
-  if(m_stack && m_stack->hasData()){//for normal stack
+  if(m_stack && m_stack->hasData() && m_scale > 1){//for normal stack
     ZStackMultiScaleWatershed watershed;
     ZStackPtr stack = ZStackPtr(
           watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));
     stack->setOffset(getSourceOffset());
     m_result.push_back(stack);
-  }
-  else if (m_spStack){//for sparse stack
-    if(m_scale!=1){
-      ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod);
-      filter->setDsFactor(m_scale,m_scale,m_scale);
-      m_source=filter->filterStack(*m_spStack);
-      delete filter;
-    }
+  } else {
     Stack *source = getSource();
     if (source != NULL) {
       updateSeedMask();
+
+#ifdef _DEBUG_2
+      exportMask(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
       getWorkspace()->conn=6;
       Stack *out = C_Stack::watershed(source, getWorkspace());
       ZStackPtr stack = ZStackPtr::Make();
@@ -705,6 +715,8 @@ void ZStackWatershedContainer::run()
       ZOUT(LWARN(), 5) << "No source stack found. Abort watershed.";
     }
   }
+
+  std::cout << "Watershed time: " << timer.elapsed() << "ms" << std::endl;
 }
 
 bool ZStackWatershedContainer::computationDowsampled()

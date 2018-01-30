@@ -773,7 +773,7 @@ ZObject3dScan* ZDvidReader::readMultiscaleBody(
         result->canonize();
       }
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Canonized:" << result->isCanonizedActually() << std::endl;
       //    result->save(GET_TEST_DATA_DIR + "/test.sobj");
 #endif
