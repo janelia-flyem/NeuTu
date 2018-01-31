@@ -285,18 +285,22 @@ void DvidBranchDialog::loadNode(QString branchName) {
     m_branchName = branchName;
 
     // server and port are from repo:
-    ui->serverBox->setText(m_repoMap[m_repoName][KEY_SERVER].toString());
-    ui->portBox->setValue(m_repoMap[m_repoName][KEY_PORT].toInt());
+    QString server = m_repoMap[m_repoName][KEY_SERVER].toString();
+    int port = m_repoMap[m_repoName][KEY_PORT].toInt();
+    ui->serverBox->setText(server);
+    ui->portBox->setValue(port);
 
     // rest is from the specific node:
     QJsonObject nodeJson = m_branchMap[m_branchName];
-    ui->UUIDBox->setText(nodeJson[KEY_UUID].toString().left(4));
+    QString uuid = nodeJson[KEY_UUID].toString().left(4);
+    ui->UUIDBox->setText(uuid);
     ui->commentBox->setText(nodeJson[KEY_NOTE].toString());
     ui->commentBox->setCursorPosition(0);
     ui->commentBox->setToolTip(nodeJson[KEY_NOTE].toString());
 
-    // check for default settings
+    // check for default settings on the branch node (not root)
     ZJsonObject defaultsJson;
+    m_reader.open(server, uuid, port);
     defaultsJson = m_reader.readDefaultDataSetting();
     QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(defaultsJson.dumpString()).toUtf8());
     QJsonObject defaults = doc.object();
@@ -326,14 +330,10 @@ void DvidBranchDialog::loadNode(QString branchName) {
 }
 
 ZDvidTarget &DvidBranchDialog::getDvidTarget() {
-
+    // later inspection reveals m_dvidTarget could be a local
+    //  variable; don't want to mess with it now while I'm
+    //  fixing something else, though
     m_dvidTarget.clear();
-
-
-    // hard-coded test
-    // m_dvidTarget.setServer("emdata3.int.janelia.org");
-    // m_dvidTarget.setUuid("100e7");
-    // m_dvidTarget.setPort(8000);
 
     m_dvidTarget.setServer(ui->serverBox->text().toStdString());
     m_dvidTarget.setUuid(ui->UUIDBox->text().toStdString());
