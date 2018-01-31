@@ -261,7 +261,8 @@ QStringList DvidBranchDialog::findBranches(QJsonObject nodeJson) {
             LINFO() << "Branch" << branchName.toStdString() << "has indeterminate tip";
 
             // not sure if I need a dialog here, but it's useful for testing
-            showError("Branch error", "Can't find the tip of branch '" + branchName + "'; it won't be listed.");
+            showError("Branch error", "Can't find the tip of branch '" + branchName +
+                "' (" + QString::number(tiplist.size()) + " candidates); it won't be listed.");
         } else {
             UUIDs.append(tiplist[0]);
         }
