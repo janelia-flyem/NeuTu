@@ -7,7 +7,15 @@ class ZStackDoc;
 class QWidget;
 class ZActionActivator;
 class ZStackPresenter;
+class QUndoStack;
 
+/*!
+ * \brief The class of producing Qt actions
+ *
+ * The ZActionFactory class is a factory class of producing actions so that they
+ * can be shown consistently in different widgets or windows. Each action is
+ * associated with a key of \a EAction type.
+ */
 class ZActionFactory
 {
 public:
@@ -84,9 +92,12 @@ public:
     ACTION_SEPARATOR
   };
 
+#if 0
   static QAction* makeAction(
       EAction item, const ZStackDoc *doc, QWidget *parent,
       ZActionActivator *activator = NULL, bool positive = true);
+#endif
+
 /*
   static QAction* makeAction(
       EAction item, const ZStackPresenter *presenter, QWidget *parent,
@@ -95,6 +106,11 @@ public:
   static QAction *MakeAction(EAction actionKey, QObject *parent);
 
   virtual QAction* makeAction(EAction actionKey, QObject *parent) const;
+
+  void setUndoStack(QUndoStack *undoStack);
+
+private:
+  QUndoStack *m_undoStack = NULL;
 };
 
 #endif // ZACTIONFACTORY_H

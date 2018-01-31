@@ -27,3 +27,8 @@ QAction* ZActionLibrary::getAction(
 
   return action;
 }
+
+void ZActionLibrary::setUndoStack(QUndoStack *undoStack)
+{
+  m_actionFactory.setUndoStack(undoStack);
+}
