@@ -829,10 +829,10 @@ void Z3DSwcFilter::updateWidgetGroup()
 
 std::shared_ptr<ZVec4Parameter> Z3DSwcFilter::getIndvidualColorParam(int index)
 {
-  if ((int) m_individualTreeColorList.size() <= index) {
-    QColor color = m_individualColorScheme.getColor(index);
+  for (int i = (int) m_individualTreeColorList.size(); i <= index; ++i) {
+    QColor color = m_individualColorScheme.getColor(i);
     std::shared_ptr<ZVec4Parameter> param = std::make_shared<ZVec4Parameter>(
-          QString("Swc %1 Color").arg(index + 1),
+          QString("Swc %1 Color").arg(i + 1),
           glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.f));
     param->setStyle("COLOR");
     connect(param.get(), &ZVec4Parameter::valueChanged,
