@@ -91,6 +91,7 @@ class QKeyEvent;
 class ZStackArray;
 class ZStackObjectInfo;
 class ZRoiObjsModel;
+class ZActionLibrary;
 
 /*!
  * \brief The class of stack document
@@ -1396,7 +1397,9 @@ private:
 //  QAction *m_redoAction;
 
   //  Action map
-  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
+//  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
+
+  ZSharedPointer<ZActionLibrary> m_actionLibrary;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
@@ -1406,7 +1409,7 @@ private:
   ResolutionDialog *m_resDlg;
   ZStackFactory *m_stackFactory;
 
-  ZActionFactory *m_actionFactory;
+//  ZActionFactory *m_actionFactory;
 
 
   bool m_selectionSilent;

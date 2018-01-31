@@ -112,6 +112,7 @@
 #include "zmeshobjsmodel.h"
 #include "zroiobjsmodel.h"
 #include "flyem/zstackwatershedcontainer.h"
+#include "zactionlibrary.h"
 
 using namespace std;
 
@@ -140,7 +141,7 @@ ZStackDoc::~ZStackDoc()
   delete m_undoStack;
   delete m_labelField;
   delete m_stackFactory;
-  delete m_actionFactory;
+//  delete m_actionFactory;
 
   if (m_resDlg != NULL) {
     delete m_resDlg;
@@ -167,7 +168,7 @@ void ZStackDoc::init()
   m_swcNetwork = NULL;
   m_stackFactory = NULL;
 
-  m_actionFactory = new ZActionFactory;
+//  m_actionFactory = new ZActionFactory;
 
   initNeuronTracer();
   m_swcObjsModel = new ZSwcObjsModel(this, this);
@@ -203,6 +204,9 @@ void ZStackDoc::init()
   m_dataBuffer = new ZStackDocDataBuffer(this);
   connect(m_dataBuffer, SIGNAL(delivering()),
           this, SLOT(processDataBuffer()), Qt::QueuedConnection);
+
+  m_actionLibrary = ZSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
+  m_actionLibrary->setUndoStack(m_undoStack);
 }
 
 void ZStackDoc::clearData()
@@ -1555,24 +1559,26 @@ QAction* ZStackDoc::getAction(ZActionFactory::EAction item) const
 {
   const_cast<ZStackDoc&>(*this).makeAction(item);
 
-  return m_actionMap[item];
+  return m_actionLibrary->getAction(item);
 }
 
 void ZStackDoc::makeAction(ZActionFactory::EAction item)
 {
-  if (!m_actionMap.contains(item)) {
-    QAction *action = NULL;
+  if (!m_actionLibrary->contains(item)) {
+    QAction *action = m_actionLibrary->getAction(item);
 
+    /*
     if (item == ZActionFactory::ACTION_UNDO ||
         item == ZActionFactory::ACTION_REDO) {
       action = m_actionFactory->makeAction(item, m_undoStack);
     } else {
       action = m_actionFactory->makeAction(item, this);
     }
+    */
 
     //Additional behaviors
     if (action != NULL) {
-      m_actionMap[item] = action;
+//      m_actionMap[item] = action;
 
       switch (item) {
       case ZActionFactory::ACTION_SELECT_DOWNSTREAM:
