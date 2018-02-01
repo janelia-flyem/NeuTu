@@ -479,8 +479,8 @@ private:
   QAction *m_toggleSmartExtendSelectedSwcNodeAction;
   QAction *m_locateSwcNodeIn2DAction;
 
-  QAction *m_undoAction;
-  QAction *m_redoAction;
+//  QAction *m_undoAction;
+//  QAction *m_redoAction;
   QAction *m_markSwcSomaAction;
   QAction *m_changeSwcNodeTypeAction;
   QAction *m_setSwcRootAction;
@@ -488,10 +488,10 @@ private:
   QAction *m_connectSwcNodeAction;
   QAction *m_connectToSwcNodeAction;
   QAction *m_mergeSwcNodeAction;
-  QAction *m_selectSwcNodeDownstreamAction;
+//  QAction *m_selectSwcNodeDownstreamAction;
   QAction *m_selectSwcConnectionAction;
-  QAction *m_selectSwcNodeBranchAction;
-  QAction *m_selectSwcNodeUpstreamAction;
+//  QAction *m_selectSwcNodeBranchAction;
+//  QAction *m_selectSwcNodeUpstreamAction;
   QAction *m_selectSwcNodeTreeAction;
   QAction *m_selectAllConnectedSwcNodeAction;
   QAction *m_selectAllSwcNodeAction;
