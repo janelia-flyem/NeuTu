@@ -1311,6 +1311,10 @@ void ZFlyEmBody3dDoc::updateSegmentation()
 
 void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
 {
+  if (!m_splitTaskLoadingEnabled) {
+    return;
+  }
+
   QList<ZStackObject*> seedList =
       ZFlyEmMisc::LoadSplitTask(getDvidTarget(), bodyId);
 
@@ -1324,6 +1328,16 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
     //A dangerous way to share objects. Need object clone or shared pointer.
 //    ZStackDocAccessor::AddObject(getDataDocument(), seedList);
   }
+}
+
+void ZFlyEmBody3dDoc::enableSplitTaskLoading(bool enable)
+{
+  m_splitTaskLoadingEnabled = enable;
+}
+
+bool ZFlyEmBody3dDoc::splitTaskLoadingEnabled() const
+{
+  return m_splitTaskLoadingEnabled;
 }
 
 ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
