@@ -445,7 +445,8 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(
           item, this, SLOT(changeSelectedPunctaColor()));
     break;
-  default:  
+  default:
+    action = getDocument()->getAction(item);
     break;
   }
 
@@ -468,8 +469,8 @@ void Z3DWindow::createActions()
   m_actionLibrary = new ZActionLibrary(this);
   m_menuFactory = new ZStackDocMenuFactory;
 
-  m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
-  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
+//  m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
+//  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
 
 //  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
 //  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
@@ -568,20 +569,23 @@ void Z3DWindow::createActions()
           SLOT(selectDownstreamNode()));
           */
 
+  /*
   m_selectSwcNodeDownstreamAction =
       m_doc->getAction(ZActionFactory::ACTION_SELECT_DOWNSTREAM);
 
   m_selectSwcNodeUpstreamAction =
       m_doc->getAction(ZActionFactory::ACTION_SELECT_UPSTREAM);
+      */
 
   /*
   m_selectSwcNodeBranchAction = new QAction("Branch", this);
   connect(m_selectSwcNodeBranchAction, SIGNAL(triggered()), m_doc.get(),
           SLOT(selectBranchNode()));
           */
+  /*
   m_selectSwcNodeBranchAction =
       m_doc->getAction(ZActionFactory::ACTION_SELECT_SWC_BRANCH);
-
+*/
 
   m_selectSwcNodeTreeAction = new QAction("Tree", this);
   connect(m_selectSwcNodeTreeAction, SIGNAL(triggered()), m_doc.get(),
@@ -672,8 +676,8 @@ void Z3DWindow::createMenus()
   m_editMenu = menuBar()->addMenu(tr("&Edit"));
   m_helpMenu = menuBar()->addMenu(tr("&Help"));
 
-  m_editMenu->addAction(m_undoAction);
-  m_editMenu->addAction(m_redoAction);
+  m_editMenu->addAction(getAction(ZActionFactory::ACTION_UNDO));
+  m_editMenu->addAction(getAction(ZActionFactory::ACTION_UNDO));
   m_editMenu->addSeparator();
 //  m_editMenu->addAction(m_markSwcSomaAction);
 
