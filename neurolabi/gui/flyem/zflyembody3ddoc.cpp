@@ -402,6 +402,11 @@ int ZFlyEmBody3dDoc::getMinResLevel() const
   return resLevel;
 }
 
+int ZFlyEmBody3dDoc::getMaxResLevel() const
+{
+  return m_maxResLevel;
+}
+
 void ZFlyEmBody3dDoc::removeDiffBody()
 {
   QList<ZSwcTree*> treeList = getSwcList();
@@ -866,7 +871,7 @@ void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
     if (getBodyType() == flyem::BODY_SKELETON) {
       addBodyFunc(bodyId, color, -1);
     } else {
-      addBodyFunc(bodyId, color, MAX_RES_LEVEL);
+      addBodyFunc(bodyId, color, m_maxResLevel);
     }
   }
 }
@@ -877,15 +882,19 @@ void ZFlyEmBody3dDoc::setBodyType(flyem::EBodyType type)
   switch (m_bodyType) {
   case flyem::BODY_COARSE:
     setTag(neutube::Document::FLYEM_BODY_3D_COARSE);
+    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_FULL:
     setTag(neutube::Document::FLYEM_BODY_3D);
+    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_SKELETON:
     setTag(neutube::Document::FLYEM_SKELETON);
+    setMaxResLevel(0);
     break;
   case flyem::BODY_MESH:
     setTag(neutube::Document::FLYEM_MESH);
+    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_NULL:
     break;
@@ -981,7 +990,7 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
 
   if (event.getAction() == BodyEvent::ACTION_ADD &&
       getBodyType() != flyem::BODY_SKELETON) {
-    event.setResLevel(MAX_RES_LEVEL);
+    event.setResLevel(getMaxResLevel());
   }
 
   addEvent(event);
@@ -993,7 +1002,7 @@ ZSwcTree* ZFlyEmBody3dDoc::getBodyQuickly(uint64_t bodyId)
   ZSwcTree *tree = NULL;
 
   if (getBodyType() == flyem::BODY_FULL) {
-    tree = recoverFullBodyFromGarbage(bodyId, MAX_RES_LEVEL);
+    tree = recoverFullBodyFromGarbage(bodyId, getMaxResLevel());
   }
 
   if (tree == NULL) {
@@ -1116,7 +1125,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
           isEmpty());
 
     ZSwcTree *tree = NULL;
-    if (resLevel == MAX_RES_LEVEL) {
+    if (resLevel == getMaxResLevel() && resLevel > 0) {
       tree = getBodyQuickly(bodyId);
     } else {
       emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
@@ -1956,18 +1965,19 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
   if (mesh == NULL) {
     bool loaded = false;
-    if (zoom > MAX_RES_LEVEL) {
-        loaded = !(getObjectGroup().findSameClass(
-            ZStackObject::TYPE_MESH,
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
-          isEmpty());
+    if (zoom > getMaxResLevel()) {
+      //For zooming level beyond the range, ignore it if the mesh at any level exists.
+      loaded = !(getObjectGroup().findSameClass(
+                   ZStackObject::TYPE_MESH,
+                   ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
+                 isEmpty());
     }
 
-    if (!loaded) { //Now make mesh
+    if (!loaded) { //Now make mesh from sparse vol
       ZObject3dScan obj;
       if (zoom == 0) {
         reader.readMultiscaleBody(bodyId, zoom, true, &obj);
-      } else if (zoom == MAX_RES_LEVEL){
+      } else if (zoom >= getMaxResLevel()){
         reader.readCoarseBody(bodyId, &obj);
         obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
       }
@@ -2085,6 +2095,36 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
 }
 
+void ZFlyEmBody3dDoc::runLocalSplitFunc()
+{
+  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+  if (seedList.size() > 1) {
+    ZStackWatershedContainer container(NULL, NULL);
+    foreach (ZStackObject *seed, seedList) {
+      container.addSeed(seed);
+    }
+
+    container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+
+    ZDvidSparseStack *sparseStack =
+        getDataDocument()->getDvidSparseStack(
+          container.getRange(), flyem::BODY_SPLIT_ONLINE);
+    container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
+
+    std::vector<ZStackWatershedContainer*> containerList =
+        container.makeLocalSeedContainer(256*256*256);
+
+    ZOUT(LINFO(), 5) << containerList.size() << "containers";
+    for (ZStackWatershedContainer *subcontainer : containerList) {
+      subcontainer->run();
+      ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
+      delete subcontainer;
+    }
+  } else {
+    std::cout << "Less than 2 seeds found. Abort." << std::endl;
+  }
+}
+
 void ZFlyEmBody3dDoc::runLocalSplit()
 {
   ZOUT(LINFO(), 5) << "Trying local split ...";
@@ -2092,52 +2132,10 @@ void ZFlyEmBody3dDoc::runLocalSplit()
   removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
 
   if (loadDvidSparseStack()) {
-    QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
-    if (seedList.size() > 1) {
-      ZStackWatershedContainer container(NULL, NULL);
-      foreach (ZStackObject *seed, seedList) {
-        container.addSeed(seed);
-      }
-
-      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
-
-      ZDvidSparseStack *sparseStack =
-          getDataDocument()->getDvidSparseStack(
-            container.getRange(), flyem::BODY_SPLIT_ONLINE);
-      container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
-
-      std::vector<ZStackWatershedContainer*> containerList =
-          container.makeLocalSeedContainer(256*256*256);
-
-      ZOUT(LINFO(), 5) << containerList.size() << "containers";
-      for (ZStackWatershedContainer *subcontainer : containerList) {
-        subcontainer->run();
-        ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
-        delete subcontainer;
-      }
-//      container.run();
-
-//      setHadSegmentationSampled(container.computationDowsampled());
-
-//      ZStackDocAccessor::ParseWatershedContainer(this, &container);
-#if 0
-      ZObject3dScanArray result;
-      container.makeSplitResult(1, &result);
-
-      ZOUT(LTRACE(), 5) << result.size() << "split generated.";
-      for (ZObject3dScanArray::iterator iter = result.begin();
-           iter != result.end(); ++iter) {
-        ZObject3dScan *obj = *iter;
-        obj->addRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR); //For 3D visualization
-        getDataBuffer()->addUpdate(
-              obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
-      }
-      getDataBuffer()->deliver();
-
-      result.shallowClear();
-#endif
-    } else {
-      std::cout << "Less than 2 seeds found. Abort." << std::endl;
+    if (!m_futureMap.isAlive("split")) {
+      QFuture<void> future =
+          QtConcurrent::run(this, &ZFlyEmBody3dDoc::runLocalSplitFunc);
+      m_futureMap["split"] = future;
     }
   } else {
     std::cout << "No body loaded for split." << std::endl;
