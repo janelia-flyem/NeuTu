@@ -42,6 +42,9 @@ private:
     static const QString KEY_NODES;
     static const QString KEY_NOTE;
 
+    static const QString INSTANCE_BRANCHES;
+    static const QString KEY_MASTER;
+
     static const int DEFAULT_PORT;
 
     static const QString DEFAULT_MASTER_NAME;
