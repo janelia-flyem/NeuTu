@@ -268,9 +268,9 @@ void ZDvidSparseStack::setLabel(uint64_t bodyId)
 //  pushLabel();
 }
 
-const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
+ZIntPoint ZDvidSparseStack::getDenseDsIntv() const
 {
-  return m_sparseStack.getDownsampleInterval();
+  return m_sparseStack.getDenseDsIntv();
 }
 
 void ZDvidSparseStack::runFillValueFunc()

@@ -72,14 +72,26 @@ public:
 
   void run();
 
+  /*!
+   * \brief Add a seed.
+   *
+   * It does not take the ownership of \a seed.
+   */
   void addSeed(const ZStack &seed);
   void addSeed(const ZObject3dScan &seed);
   void addSeed(const ZStroke2d &seed);
   void addSeed(const ZObject3d &seed);
   void addSeed(const ZSwcTree &seed);
-  void consumeSeed(const ZObject3d *seed);
 
   void addSeed(const ZStackObject *seed);
+  void addSeed(const std::vector<ZObject3d*> &seed);
+
+
+  /*!
+   * \brief Consume a seed.
+   * It takes the ownership of \a seed.
+   */
+  void consumeSeed(const ZObject3d *seed);
 
   void setRange(const ZIntCuboid &range);
   void setRange(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
@@ -156,10 +168,15 @@ public:
   static std::vector<ZObject3d*> MakeBorderSeed(const ZStack &stack);
 
   void test();
+  static bool Test();
 
   ZStackWatershedContainer* makeSubContainer(
       const std::vector<size_t> &seedIndices, ZStackWatershedContainer *out);
   std::vector<ZStackWatershedContainer*> makeLocalSeedContainer(size_t maxVolume);
+
+  void addResult(const ZStackArray &result);
+
+  void refineBorder();
 
 private:
   void init();
@@ -185,6 +202,7 @@ private:
   void makeMaskStack(ZStack &stack);
 
   ZIntPoint getSourceDsIntv();
+  ZIntPoint getOriginalDsIntv();
 
   void updateRange();
   ZIntCuboid getRangeUpdate() const;
@@ -211,6 +229,9 @@ private:
       const ZStackObject &obj1, const ZStackObject &obj2);
   ZGraphPtr buildSeedGraph(size_t maxVolume) const;
 
+  void refineBorder(const ZStackPtr &stack);
+
+
 private:
   ZStack *m_stack = NULL;
   ZSparseStack *m_spStack = NULL;
@@ -226,6 +247,7 @@ private:
 //  bool m_usingSeedRange = false;
   ERangeOption m_rangeOption = RANGE_FULL;
   bool m_refiningBorder = true;
+  bool m_preservingGap = false; //Preserve gaps while downsampling
   bool m_ccaPost = true; //connected component analysis as post-processing
   int m_scale;
   size_t m_minIsolationSize = 50;

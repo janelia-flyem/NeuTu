@@ -31,6 +31,7 @@ public:
   ZStack* toStackObject() const;
   ZStack* toLabelField() const;
   ZStack* toLabelField(const ZIntCuboid &box) const;
+  ZStack* toColorField() const;
 };
 
 #endif // ZOBJECT3DSCANARRAY_H
