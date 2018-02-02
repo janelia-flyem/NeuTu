@@ -245,6 +245,11 @@ public:
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 
+  void setMaxResLevel(int res) {
+    m_maxResLevel = res;
+  }
+
+
 public:
   void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
   void executeRemoveTodoCommand();
@@ -353,6 +358,7 @@ private:
   void updateBodyModelSelection();
 
   ZStackObject::EType getBodyObjectType() const;
+  void runLocalSplitFunc();
 
 signals:
   void todoVisibleChanged();
@@ -375,6 +381,8 @@ private:
       uint64_t bodyId, int resLevel);
   ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
+  int getMaxResLevel() const;
+
   void removeDiffBody();
 
   ZStackObject* takeObjectFromCache(
@@ -390,6 +398,8 @@ private:
   bool m_showingTodo = true;
   bool m_nodeSeeding = false;
   bool m_syncyingBodySelection = false;
+
+  int m_maxResLevel = 0; //Start resolution level; bigger value means lower resolution
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 

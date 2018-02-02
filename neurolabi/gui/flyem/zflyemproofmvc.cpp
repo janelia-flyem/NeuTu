@@ -856,6 +856,11 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_MESH);
+
+#ifdef _DEBUG_2
+  doc->setMaxResLevel(0);
+#endif
+
   m_meshWindow = m_bodyWindowFactory->make3DWindow(doc);
 
   doc->showSynapse(m_meshWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
