@@ -81,11 +81,11 @@ void DvidBranchDialog::loadDatasets() {
     //  DVID, some other db, or a Fly EM service of some kind
     QJsonObject jsonData = loadDatasetsFromFile();
     if (jsonData.isEmpty()) {
-        showError("Error loading datasets", "Dataset file " + filepath + " did not have expected data!");
+        showError("Error loading datasets", "Dataset file did not have any data!");
         return;
     }
     if (!jsonData.contains(KEY_REPOS)) {
-        showError("Error loading datasets", "Dataset file " + filepath + " did not have expected data!");
+        showError("Error loading datasets", "Dataset file did not have expected data!");
         return;
     }
 
