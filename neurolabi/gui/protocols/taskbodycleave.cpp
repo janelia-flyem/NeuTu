@@ -87,6 +87,7 @@ namespace {
   static bool applyOverallSettingsNeeded = true;
   static bool zoomToLoadedBodyEnabled;
   static bool garbageLifetimeLimitEnabled;
+  static bool splitTaskLoadingEnabled;
   static bool preservingSourceColorEnabled;
 
   void applyOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
@@ -98,6 +99,9 @@ namespace {
 
       garbageLifetimeLimitEnabled = bodyDoc->garbageLifetimeLimitEnabled();
       bodyDoc->enableGarbageLifetimeLimit(false);
+
+      splitTaskLoadingEnabled = bodyDoc->splitTaskLoadingEnabled();
+      bodyDoc->enableSplitTaskLoading(false);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
@@ -114,6 +118,8 @@ namespace {
       Neu3Window::enableZoomToLoadedBody(zoomToLoadedBodyEnabled);
 
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
+
+      bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);

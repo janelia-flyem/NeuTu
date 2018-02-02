@@ -168,7 +168,10 @@ public:
   ZFlyEmToDoItem makeTodoItem(
       int x, int y, int z, bool checked, uint64_t bodyId);
   ZFlyEmToDoItem readTodoItem(int x, int y, int z) const;
+
   void loadSplitTask(uint64_t bodyId);
+  void enableSplitTaskLoading(bool enable);
+  bool splitTaskLoadingEnabled() const;
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
@@ -419,6 +422,7 @@ private:
   std::map<uint64_t, std::vector<uint64_t>> m_tarIdToMeshIds;
 
   bool m_limitGarbageLifetime = true;
+  bool m_splitTaskLoadingEnabled = true;
 
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;
