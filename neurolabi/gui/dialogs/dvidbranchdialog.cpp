@@ -62,6 +62,9 @@ const QString DvidBranchDialog::KEY_DAG = "DAG";
 const QString DvidBranchDialog::KEY_NODES = "Nodes";
 const QString DvidBranchDialog::KEY_NOTE = "Note";
 
+const QString DvidBranchDialog::INSTANCE_BRANCHES = "branches";
+const QString DvidBranchDialog::KEY_MASTER = "master";
+
 const int DvidBranchDialog::DEFAULT_PORT = 8000;
 
 const QString DvidBranchDialog::DEFAULT_MASTER_NAME = "master";
@@ -181,8 +184,8 @@ void DvidBranchDialog::loadBranches(QString repoName) {
     //  that is to be interpreted as being the master branch,
     //  so name it explicitly in the UI (top of list); first,
     //  check that no other branch is already using the name we want to use
+    QString masterName = DEFAULT_MASTER_NAME;
     if (branchNames.contains("")) {
-        QString masterName = DEFAULT_MASTER_NAME;
         if (branchNames.contains(DEFAULT_MASTER_NAME)) {
             masterName = findMasterName(DEFAULT_MASTER_NAME, branchNames);
         }
@@ -193,6 +196,50 @@ void DvidBranchDialog::loadBranches(QString repoName) {
 
         m_branchMap[masterName] = m_branchMap[""];
         m_branchMap.remove("");
+    }
+
+
+    // this is not working yet; doesn't seem to pull up anything on FIB-19,
+    //  which I know has an entry?
+
+
+    if (!m_branchMap.contains(DEFAULT_MASTER_NAME)) {
+        // if it's not there, make a last-ditch effort to get the
+        //  master branch from a key-value we used to store in some
+        //  of the older repos:
+        if (m_reader.hasData(INSTANCE_BRANCHES.toStdString())) {
+            if (m_reader.hasKey(INSTANCE_BRANCHES, KEY_MASTER)) {
+                const QByteArray &rawData = m_reader.readKeyValue(INSTANCE_BRANCHES, KEY_MASTER);
+                QJsonArray UUIDs = QJsonDocument::fromJson(rawData).array();
+                if (UUIDs.size() > 0) {
+                    QString masterUUID = UUIDs.first().toString();
+                    // find it in the list, rename it, and put it at the top; remember that
+                    //  it might not be there, if it's on a branch we didn't find the tip for
+                    //  (in fact, it's likely this is the case) (but double-check that we
+                    //  actually have it!  this list of nodes is hand-curated)
+
+                    // find that UUID in nodeJson; note we have to check one by one because
+                    //  the nodeJson keys aren't abbreviated, like the ones in this instance are
+                    bool found = false;
+                    foreach (QString uuid, nodeJson.keys()) {
+                        if (uuid.startsWith(masterUUID)) {
+                            found = true;
+                            masterUUID = uuid;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        QString currentName = nodeJson[masterUUID].toObject()["Branch"].toString();
+                        if (m_branchMap.contains(currentName)) {
+                            m_branchMap[masterName] = m_branchMap[currentName];
+                            m_branchMap.remove(currentName);
+                        }
+                        branchNames.removeAll(currentName);
+                        branchNames.prepend(masterName);
+                    }
+                }
+            }
+        }
     }
 
     m_branchModel->setStringList(branchNames);
