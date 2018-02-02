@@ -81,11 +81,11 @@ void DvidBranchDialog::loadDatasets() {
     //  DVID, some other db, or a Fly EM service of some kind
     QJsonObject jsonData = loadDatasetsFromFile();
     if (jsonData.isEmpty()) {
-        // need some message in UI?
+        showError("Error loading datasets", "Dataset file " + filepath + " did not have expected data!");
         return;
     }
     if (!jsonData.contains(KEY_REPOS)) {
-        // message?
+        showError("Error loading datasets", "Dataset file " + filepath + " did not have expected data!");
         return;
     }
 
@@ -197,11 +197,6 @@ void DvidBranchDialog::loadBranches(QString repoName) {
         m_branchMap[masterName] = m_branchMap[""];
         m_branchMap.remove("");
     }
-
-
-    // this is not working yet; doesn't seem to pull up anything on FIB-19,
-    //  which I know has an entry?
-
 
     if (!m_branchMap.contains(DEFAULT_MASTER_NAME)) {
         // if it's not there, make a last-ditch effort to get the
