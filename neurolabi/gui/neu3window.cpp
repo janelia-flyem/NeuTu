@@ -366,9 +366,6 @@ void Neu3Window::test()
 
 void Neu3Window::setBodyItemSelection(const QSet<uint64_t> &bodySet)
 {
-  std::set<uint64_t> tmpBodySet;
-  tmpBodySet.insert(bodySet.begin(), bodySet.end());
-
   getBodyDocument()->setBodyModelSelected(bodySet);
 }
 
