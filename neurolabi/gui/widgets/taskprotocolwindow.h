@@ -10,7 +10,6 @@
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltask.h"
 
-
 namespace Ui {
 class TaskProtocolWindow;
 }
@@ -107,7 +106,8 @@ private:
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex = -1;
-    QWidget * m_currentTaskWidget = NULL;
+    QWidget * m_currentTaskWidget = nullptr;
+    QAction * m_currentTaskMenuAction = nullptr;
     bool m_nodeLocked;
     BodyPrefetchQueue * m_prefetchQueue;
     QThread * m_prefetchThread;
@@ -127,6 +127,7 @@ private:
     void updateLabel();
     void updateCurrentTaskLabel();
     void updateButtonsEnabled();
+    void updateMenu(bool add);
     int getFirstUncompleted();
     void showInfo(QString title, QString message);
     void gotoCurrentTask();

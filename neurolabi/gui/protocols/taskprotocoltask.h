@@ -7,6 +7,8 @@
 #include <QJsonObject>
 #include <QSet>
 
+class QMenu;
+
 class TaskProtocolTask: public QObject
 {
     Q_OBJECT
@@ -37,6 +39,7 @@ public:
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
     virtual QWidget * getTaskWidget();
+    virtual QMenu * getTaskMenu();
 
 signals:
     void bodiesUpdated();
