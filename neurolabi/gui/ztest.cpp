@@ -185,47 +185,14 @@
 #include "flyem/zflyembodywindowfactory.h"
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
-#include "test/zjsontest.h"
-#include "test/zswctreetest.h"
-#include "test/zsttransformtest.h"
-#include "test/zobject3dscantest.h"
-#include "test/zswcpathtest.h"
-#include "test/zgraphtest.h"
-#include "test/zstackgraphtest.h"
-#include "test/zstringtest.h"
-#include "test/zobject3dtest.h"
-#include "test/zswcanalyzertest.h"
-#include "test/zellipsoidtest.h"
-#include "test/zstitchgridtest.h"
-#include "test/zcuboidtest.h"
-#include "test/zflyemqualitycontroltest.h"
-#include "test/zflyemsynaseannotationtest.h"
-#include "test/zstackdoctest.h"
-#include "test/ztreetest.h"
-#include "test/zprogresstest.h"
-#include "test/zswctreematchertest.h"
-#include "test/zswctreenodetest.h"
-#include "test/zhistogramtest.h"
-#include "test/zflyemneuronrangetest.h"
+
 #include "swc/zswcterminalsurfacemetric.h"
-#include "test/zflyemneuronfiltertest.h"
-#include "test/zswcmetrictest.h"
-#include "test/zmatrixtest.h"
-#include "test/zobject3dfactorytest.h"
-#include "test/zstacktest.h"
-#include "test/zstackskeletonizertest.h"
-#include "test/zflyembodycoloroptiontest.h"
-#include "test/zflyembodyannotationtest.h"
-#include "test/z3dfiltersettingtest.h"
-#include "test/zpointtest.h"
+
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "z3dmainwindow.h"
 #include "misc/zvtkutil.h"
-#include "test/zswcgeneratortest.h"
-#include "test/zflyemneuronimagefactorytest.h"
-#include "test/zspgrowtest.h"
-#include "test/zflyemneuronmatchtest.h"
+
 #include "ztextlinecompositer.h"
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemcoordinateconverter.h"
@@ -238,36 +205,21 @@
 #include "zstroke2d.h"
 #include "flyem/zflyemservice.h"
 #include "zintset.h"
-#include "test/zvoxelgraphicstest.h"
-#include "test/zdocplayertest.h"
-#include "test/zopenvdbtest.h"
+
 #include "zsparseobject.h"
-#include "test/zdvidtest.h"
-#include "test/zdvidroitest.h"
+
 #include "bigdata/zdvidblockgrid.h"
-#include "test/zblockgridtest.h"
-#include "test/zsparsestacktest.h"
-#include "test/zimagetest.h"
-#include "test/z3dgraphtest.h"
-#include "test/zvoxelarraytest.h"
-#include "test/zxmltest.h"
+
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
-#include "test/zflyemproofdoctest.h"
-#include "test/zflyembody3dtest.h"
-#include "test/zresolutiontest.h"
-#include "test/zviewprojtest.h"
+
 //#include "zcircle.h"
-#include "test/zlinesegmenttest.h"
-#include "test/zdvidiotest.h"
-#include "test/zclosedcurvetest.h"
+
 #include "dvid/libdvidheader.h"
-#include "test/zarraytest.h"
-#include "test/zdvidannotationtest.h"
+
 #include "imgproc/zstackwatershed.h"
 #include "flyem/zflyembodymerger.h"
-#include "test/zflyembodymergertest.h"
-#include "test/zstackobjectgrouptest.h"
+
 #include "tz_int_histogram.h"
 #include "zsegmentationproject.h"
 #include "zstackviewmanager.h"
@@ -306,7 +258,7 @@
 #include "dvid/libdvidheader.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "flyem/zflyemmisc.h"
-#include "test/zgradientmagnitudemoduletest.h"
+
 #include "dialogs/zstresstestoptiondialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
@@ -321,7 +273,7 @@
 #include "dvid/zdvidpath.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "flyem/zserviceconsumer.h"
-#include "test/zdvidresultservicetest.h"
+
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
@@ -332,6 +284,8 @@
 #include "zstackobjectinfo.h"
 #include "sandbox/zbrowseropener.h"
 #include "widgets/zpythonprocess.h"
+
+#include "test/ztestall.h"
 
 using namespace std;
 
@@ -25506,6 +25460,57 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+
+  ZSparseStack spStack;
+  spStack.load(GET_BENCHMARK_DIR + "/test.zss");
+
+  ZSparseStack *stack2 = spStack.downsample(1, 1, 1);
+  stack2->save(GET_TEST_DATA_DIR + "/test.zss");
+
+  ZObject3d seed;
+  ZStackWatershedContainer container2(stack2);
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4266, 4484, 7264, 4267, 4486, 7265), &seed);
+  seed.setLabel(1);
+  container2.addSeed(seed);
+
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4289, 4490, 7264, 4290, 4491, 7265), &seed);
+  seed.setLabel(2);
+  container2.addSeed(seed);
+
+  container2.run();
+  ZObject3dScanArray *result = container2.makeSplitResult(1, NULL);
+
+  ZStack *labelStack = result->toColorField();
+  labelStack->save(GET_TEST_DATA_DIR + "/test2.tif");
+  delete labelStack;
+
+
+  ZStackWatershedContainer container(&spStack);
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4266, 4484, 7264, 4267, 4486, 7265), &seed);
+  seed.setLabel(1);
+  container.addSeed(seed);
+
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4289, 4490, 7264, 4290, 4491, 7265), &seed);
+  seed.setLabel(2);
+  container.addSeed(seed);
+
+  container.addResult(container2.getResult());
+
+  container.refineBorder();
+  container.makeSplitResult(1, result);
+
+
+  labelStack = result->toColorField();
+  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete labelStack;
+
+
+#endif
 
   std::cout << "Done." << std::endl;
 }

@@ -115,6 +115,30 @@ ZStack* ZObject3dScanArray::toLabelField() const
   return stack;
 }
 
+ZStack* ZObject3dScanArray::toColorField() const
+{
+  ZStack *stack = NULL;
+
+  if (!empty()) {
+    ZIntCuboid cuboid = getBoundBox();
+    stack = ZStackFactory::MakeZeroStack(COLOR, cuboid);
+//    int offset[3];
+//    offset[0] = -stack->getOffset().getX();
+//    offset[1] = -stack->getOffset().getY();
+//    offset[2] = -stack->getOffset().getZ();
+//    int label = 1;
+    for (ZObject3dScanArray::const_iterator iter = begin(); iter != end();
+         ++iter) {
+      const ZObject3dScan *obj = *iter;
+      obj->drawStack(
+            stack, obj->getColor().red(), obj->getColor().green(), obj->getColor().blue());
+//      obj->drawStack(stack->c_stack(), label++, offset);
+    }
+  }
+
+  return stack;
+}
+
 ZStack* ZObject3dScanArray::toLabelField(const ZIntCuboid &box) const
 {
   ZStack *stack = NULL;

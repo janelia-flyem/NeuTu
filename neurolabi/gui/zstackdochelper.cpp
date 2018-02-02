@@ -37,7 +37,10 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
     if (cdoc != NULL) {
       ZDvidSparseStack *dvidSparseStack = doc->getDvidSparseStack();
       stack = dvidSparseStack->getStack();
-      m_sparseStackDsIntv = dvidSparseStack->getDownsampleInterval();
+      if (stack != NULL) {
+        m_sparseStackDsIntv = stack->getDsIntv();
+      }
+//      m_sparseStackDsIntv = dvidSparseStack->getDownsampleInterval();
 //      box = cdoc->getSplitRoi()->getCuboid();
 //      stack = doc->getSparseStack()->getStack(box, &m_sparseStackDsIntv);
     }
@@ -46,7 +49,7 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
     if (!spStack->getBoundBox().isEmpty()) {
       stack = const_cast<ZStack*>(spStack->getStack());
     }
-    m_sparseStackDsIntv = spStack->getDownsampleInterval();
+    m_sparseStackDsIntv = spStack->getDenseDsIntv();
   }
 
   return stack;
