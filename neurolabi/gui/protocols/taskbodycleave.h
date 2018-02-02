@@ -7,8 +7,10 @@
 #include <QVector>
 
 class ZFlyEmBody3dDoc;
+class QAction;
 class QCheckBox;
 class QComboBox;
+class QLabel;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QPushButton;
@@ -30,16 +32,18 @@ public:
   virtual void beforeDone() override;
 
   virtual QWidget *getTaskWidget() override;
+  virtual QMenu *getTaskMenu() override;
 
 private slots:
   void updateLevel(int level);
 
-  void onShowCleavingChanged(bool show);
+  void onShowCleavingChanged(int state);
+  void onToggleShowCleaving();
+  void onShowSeedsOnlyChanged(int state);
+  void onToggleShowSeedsOnly();
   void onChosenCleaveIndexChanged();
-  void onAddToChosenCleaveBody();
-  void onRemoveFromChosenCleaveBody();
+  void onSelectBody();
   void onToggleInChosenCleaveBody();
-  void onCleave();
 
   void onNetworkReplyFinished(QNetworkReply *reply);
 
@@ -52,10 +56,14 @@ private:
   QSlider *m_levelSlider;
   QCheckBox *m_showCleavingCheckBox;
   QComboBox *m_cleaveIndexComboBox;
-  QPushButton *m_buttonAdd;
-  QPushButton *m_buttonRemove;
-  QPushButton *m_buttonCleave;
+  QPushButton *m_selectBodyButton;
+  QCheckBox *m_showSeedsOnlyCheckBox;
+  QLabel *m_cleavingStatusLabel;
   QShortcut *m_shortcutToggle;
+  QMenu *m_menu;
+  QAction *m_showSeedsOnlyAction;
+  QAction *m_toggleInBodyAction;
+  std::map<QAction *, int> m_actionToComboBoxIndex;
 
   // The cleave index assignments created by the last cleaving operation (initially empty).
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndex;
@@ -77,6 +85,8 @@ private:
   void applyPerTaskSettings();
   void applyColorMode(bool showingCleaving);
   void enableCleavingUI(bool showingCleaving);
+
+  void cleave();
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;
