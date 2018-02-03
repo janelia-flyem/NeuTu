@@ -127,6 +127,10 @@ int ZBodySplitCommand::run(
 {
   int status = 1;
 
+  if (output.empty()) {
+    std::cout << "No output is spedified. Abort." << std::endl;
+    return status;
+  }
 
   const std::string &inputPath = input.front();
 
@@ -136,10 +140,37 @@ int ZBodySplitCommand::run(
   bool isFile = true;
   std::string dataDir;
   bool commiting = false;
+  bool testing = false;
+  int seedIntv = 0;
 
   if (config.hasKey("commit")) {
     commiting = ZJsonParser::booleanValue(config["commit"]);
   }
+
+  if (config.hasKey("seed_scale")) {
+    seedIntv = ZJsonParser::integerValue(config["seed_scale"]) - 1;
+    if (seedIntv < 0) {
+      seedIntv = 0;
+    }
+  }
+
+#if 0
+  if (config.hasKey("output")) {
+    //Temporary design of output mode:
+    //  "file": output to file for testing purpose
+    //  "server": saving results to the task server
+    //  "commit": committing to dvid
+    std::string outputMode = ZJsonParser::stringValue(config["output"]);
+    if (outputMode == "file") {
+      testing = true;
+    } else if (outputMode == "server") {
+      testing = false;
+    } else if (outputMode == "commit") {
+      testing = false;
+      commiting = true;
+    }
+  }
+#endif
 
   ZDvidReader *reader = ParseInputPath(
        inputPath, inputJson, splitTaskKey, splitResultKey, dataDir, isFile);
@@ -165,8 +196,13 @@ int ZBodySplitCommand::run(
   std::cout << "Signal: " << signalPath << std::endl;
 
   ZJsonObject signalInfo;
-  if (inputJson.hasKey("signal info")) {
-    signalInfo.set(inputJson.value("signal info"));
+  const char *signalInfoKey = "signal info";
+  if (config.hasKey(signalInfoKey)) {
+    signalInfo.set(config.value(signalInfoKey));
+  } else {
+    if (inputJson.hasKey(signalInfoKey)) {
+      signalInfo.set(inputJson.value(signalInfoKey));
+    }
   }
 
   ZIntCuboid range;
@@ -180,12 +216,12 @@ int ZBodySplitCommand::run(
   ZStackGarbageCollector gc;
   std::pair<ZStack*, ZSparseStack*> data =
       parseSignalPath(signalPath, signalInfo, dataDir, isFile, range, gc);
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   ZSparseStack *spStack = data.second;
   if (spStack != NULL) {
     std::cout << "Saving sparse stack ..." << std::endl;
     spStack->save(GET_TEST_DATA_DIR + "/test.zss");
-    spStack->getObjectMask()->save(GET_TEST_DATA_DIR + "/test.sobj");
+//    spStack->getObjectMask()->save(GET_TEST_DATA_DIR + "/test.sobj");
   }
 #endif
 
@@ -203,13 +239,26 @@ int ZBodySplitCommand::run(
     }
 
     LoadSeeds(inputJson, container, dataDir, isFile);
+
+    if (seedIntv > 0) {
+      container.downsampleSeed(seedIntv, seedIntv, seedIntv);
+    }
 #ifdef _DEBUG_2
     container.exportMask(GET_TEST_DATA_DIR + "/test2.tif");
     container.exportSource(GET_TEST_DATA_DIR + "/test3.tif");
 #endif
 
     container.run();
-    processResult(container, output, splitTaskKey, signalPath, commiting);
+
+    if (testing) {
+      ZObject3dScanArray result;
+      container.makeSplitResult(1, &result);
+      ZStack *labelStack = result.toColorField();
+      labelStack->save(output);
+      delete labelStack;
+    } else {
+      processResult(container, output, splitTaskKey, signalPath, commiting);
+    }
 
 #ifdef _DEBUG_2
     resultStack->save(GET_TEST_DATA_DIR + "/test.tif");
@@ -300,8 +349,10 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
   return newBodyIdArray;
 }
 
-void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
-    const std::string &splitTaskKey, const std::string &signalPath, bool committing)
+void ZBodySplitCommand::processResult(
+    ZStackWatershedContainer &container, const std::string &output,
+    const std::string &splitTaskKey, const std::string &signalPath,
+    bool committing)
 {
 //  ZStack *resultStack = container.getResultStack();
   if (container.hasResult()) {
@@ -382,7 +433,12 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
 //      }
     } else {
       ZStackWriter writer;
-      writer.write(output, container.getResultStack().get());
+      ZObject3dScanArray result;
+      container.makeSplitResult(1, &result);
+      ZStack *labelStack = result.toLabelField();
+
+      writer.write(output, labelStack);
+      delete labelStack;
     }
 
 //      delete result;
