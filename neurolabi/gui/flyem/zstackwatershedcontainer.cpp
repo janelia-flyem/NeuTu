@@ -736,6 +736,15 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
   }
 }
 
+void ZStackWatershedContainer::downsampleSeed(int intvx, int intvy, int intvz)
+{
+  if (intvx > 0 || intvy > 0 || intvz > 0) {
+    for (ZObject3d *obj : m_seedArray) {
+      obj->downsample(intvx, intvy, intvz);
+    }
+  }
+}
+
 void ZStackWatershedContainer::run()
 {
   std::cout << "Running watershed ..." << std::endl;
@@ -1303,11 +1312,11 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     }
 
 
-    ZIntPoint sourceDsIntv = getSourceStack()->getDsIntv();
+//    ZIntPoint sourceDsIntv = getSourceStack()->getDsIntv();
     ZIntPoint orgDsIntv = getOriginalDsIntv();
     ZIntPoint lastDsIntv = m_result.back()->getDsIntv();
     bool adopting = true;
-    if (lastDsIntv == sourceDsIntv) {
+    if (lastDsIntv == orgDsIntv) {
       adopting = false;
     }
 

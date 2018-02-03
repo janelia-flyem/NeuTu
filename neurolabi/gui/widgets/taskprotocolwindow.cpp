@@ -639,7 +639,9 @@ void TaskProtocolWindow::updateMenu(bool add) {
         }
         if (add && (m_currentTaskIndex >= 0)) {
             QMenu *menu = m_taskList[m_currentTaskIndex]->getTaskMenu();
-            m_currentTaskMenuAction = window->menuBar()->addMenu(menu);
+            if (menu != NULL) {
+              m_currentTaskMenuAction = window->menuBar()->addMenu(menu);
+            }
         }
     }
 }

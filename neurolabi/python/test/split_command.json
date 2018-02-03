@@ -1,0 +1,18 @@
+{
+  "command": "split_body",
+  "commit": false,
+  "seed_scale": 2,
+  "signal info": 
+  {
+    "gray_scale": "grayscalejpeg_1", 
+    "@source": 
+    {
+      "gray_scale": 
+      {
+        "port": 8600, 
+        "uuid": "a89e", 
+        "address": "emdata3.int.janelia.org"
+      }
+    }
+  }
+}

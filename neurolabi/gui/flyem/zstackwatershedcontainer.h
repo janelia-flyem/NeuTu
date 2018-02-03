@@ -178,6 +178,8 @@ public:
 
   void refineBorder();
 
+  void downsampleSeed(int intvx, int intvy, int intvz);
+
 private:
   void init();
   void init(ZStack *stack, ZSparseStack *spStack);
