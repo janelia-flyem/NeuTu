@@ -254,8 +254,10 @@ public:
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
+  bool showingSynapse() const;
   void addSynapse(bool on);
   void showTodo(bool on);
+  bool showingTodo() const;
   void addTodo(bool on);
   void updateTodo(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
