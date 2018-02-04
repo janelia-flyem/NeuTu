@@ -1171,10 +1171,20 @@ void ZFlyEmBody3dDoc::showSynapse(bool on)
   addSynapse(on);
 }
 
+bool ZFlyEmBody3dDoc::showingSynapse() const
+{
+  return m_showingSynapse;
+}
+
 void ZFlyEmBody3dDoc::showTodo(bool on)
 {
   m_showingTodo = on;
   addTodo(on);
+}
+
+bool ZFlyEmBody3dDoc::showingTodo() const
+{
+  return m_showingTodo;
 }
 
 bool ZFlyEmBody3dDoc::synapseLoaded(uint64_t bodyId) const
