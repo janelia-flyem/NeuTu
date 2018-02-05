@@ -1,6 +1,7 @@
 {
   "command": "split_body",
-  "commit": false,
+  "commit": true,
+  "commit_path": "http://emdata3.int.janelia.org:8300/api/node/2c15/prelim_001_16nm-base/sparsevol/0",
   "seed_scale": 2,
   "signal info": 
   {
