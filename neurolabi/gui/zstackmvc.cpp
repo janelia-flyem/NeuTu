@@ -6,6 +6,7 @@
 #include <QCoreApplication>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QShortcut>
 
 #include "neutubeconfig.h"
 #include "zstackdoc.h"
@@ -33,6 +34,15 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 
   m_testTimer = new QTimer(this);
   m_role = ROLE_WIDGET;
+
+#ifdef _DEBUG_2
+  QShortcut *shortcut = new QShortcut(this);
+//  shortcut->setKey(QKeySequence(Qt::Key_T, Qt::Key_R));
+  shortcut->setKey(Qt::Key_G);
+  shortcut->setContext(Qt::WindowShortcut);
+//  shortcut->setEnabled(false);
+  connect(shortcut, SIGNAL(activated()), this, SLOT(shortcutTest()));
+#endif
 }
 
 ZStackMvc::~ZStackMvc()
@@ -665,4 +675,9 @@ double ZStackMvc::getWidthZoomRatio() const
 double ZStackMvc::getHeightZoomRatio() const
 {
   return getView()->getCanvasHeightZoomRatio();
+}
+
+void ZStackMvc::shortcutTest()
+{
+  std::cout << "Shortcut triggered: ZStackMvc::shortcutTest()" << std::endl;
 }

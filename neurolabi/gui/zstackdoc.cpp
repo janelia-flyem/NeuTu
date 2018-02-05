@@ -207,6 +207,20 @@ void ZStackDoc::init()
 
   m_actionLibrary = ZSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
   m_actionLibrary->setUndoStack(m_undoStack);
+
+#ifdef _DEBUG_
+  QAction *shortcut = new QAction(this);
+//  shortcut->setKey(QKeySequence(Qt::Key_T, Qt::Key_R));
+  shortcut->setShortcut(Qt::Key_G);
+//  shortcut->setContext(Qt::WindowShortcut);
+//  shortcut->setEnabled(false);
+  connect(shortcut, SIGNAL(triggered()), this, SLOT(shortcutTest()));
+#endif
+}
+
+void ZStackDoc::shortcutTest()
+{
+  std::cout << "Shortcut triggered: ZStackDoc::shortcutTest()" << std::endl;
 }
 
 void ZStackDoc::clearData()
