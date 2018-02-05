@@ -248,6 +248,7 @@ public:
   void setMaxResLevel(int res) {
     m_maxResLevel = res;
   }
+  int getMaxResLevel() const;
 
 
 public:
@@ -381,7 +382,6 @@ private:
       uint64_t bodyId, int resLevel);
   ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
-  int getMaxResLevel() const;
 
   void removeDiffBody();
 
