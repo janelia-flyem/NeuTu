@@ -1346,6 +1346,9 @@ private:
   void updateTraceMask();
   void prepareSwc(ZSwcTree *tree);
 
+private slots:
+  void shortcutTest();
+
 protected:
   ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
