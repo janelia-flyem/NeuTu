@@ -28,6 +28,8 @@ public:
   void upsample(int xIntv, int yIntv, int zIntv);
   void translate(int dx, int dy, int dz);
 
+  ZObject3dScanArray makeDownsample(int xintv, int yintv, int zintv) const;
+
   ZStack* toStackObject() const;
   ZStack* toLabelField() const;
   ZStack* toLabelField(const ZIntCuboid &box) const;

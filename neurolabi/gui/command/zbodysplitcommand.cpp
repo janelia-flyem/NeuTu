@@ -139,13 +139,8 @@ int ZBodySplitCommand::run(
   ZJsonObject inputJson;
   bool isFile = true;
   std::string dataDir;
-  bool commiting = false;
-  bool testing = false;
-  int seedIntv = 0;
 
-  if (config.hasKey("commit")) {
-    commiting = ZJsonParser::booleanValue(config["commit"]);
-  }
+  int seedIntv = 0;
 
   if (config.hasKey("seed_scale")) {
     seedIntv = ZJsonParser::integerValue(config["seed_scale"]) - 1;
@@ -153,24 +148,6 @@ int ZBodySplitCommand::run(
       seedIntv = 0;
     }
   }
-
-#if 0
-  if (config.hasKey("output")) {
-    //Temporary design of output mode:
-    //  "file": output to file for testing purpose
-    //  "server": saving results to the task server
-    //  "commit": committing to dvid
-    std::string outputMode = ZJsonParser::stringValue(config["output"]);
-    if (outputMode == "file") {
-      testing = true;
-    } else if (outputMode == "server") {
-      testing = false;
-    } else if (outputMode == "commit") {
-      testing = false;
-      commiting = true;
-    }
-  }
-#endif
 
   ZDvidReader *reader = ParseInputPath(
        inputPath, inputJson, splitTaskKey, splitResultKey, dataDir, isFile);
@@ -192,8 +169,41 @@ int ZBodySplitCommand::run(
     }
   }
 
+  bool commiting = false;
+  bool testing = false;
+
+  if (config.hasKey("commit")) {
+    commiting = ZJsonParser::booleanValue(config["commit"]);
+  }
+
   std::string signalPath = ZJsonParser::stringValue(inputJson["signal"]);
   std::cout << "Signal: " << signalPath << std::endl;
+
+  std::string commitPath = signalPath;
+  if (config.hasKey("commit_path")) {
+    commitPath = ZJsonParser::stringValue(config["commit_path"]);
+  }
+
+#if 0
+  if (config.hasKey("output")) {
+    //Temporary design of output mode:
+    //  "file": output to file for testing purpose
+    //  "server": saving results to the task server
+    //  "commit": committing to dvid (target: signal path)
+    //  "commit_out": committing to dvid (target: output)
+    std::string outputMode = ZJsonParser::stringValue(config["output"]);
+    if (outputMode == "file") {
+      testing = true;
+    } else if (outputMode == "server") {
+      testing = false;
+    } else if (outputMode == "commit") {
+      testing = false;
+      commiting = true;
+
+    }
+  }
+#endif
+
 
   ZJsonObject signalInfo;
   const char *signalInfoKey = "signal info";
@@ -257,7 +267,8 @@ int ZBodySplitCommand::run(
       labelStack->save(output);
       delete labelStack;
     } else {
-      processResult(container, output, splitTaskKey, signalPath, commiting);
+      processResult(
+            container, output, splitTaskKey, signalPath, commiting, commitPath);
     }
 
 #ifdef _DEBUG_2
@@ -349,10 +360,9 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
   return newBodyIdArray;
 }
 
-void ZBodySplitCommand::processResult(
-    ZStackWatershedContainer &container, const std::string &output,
+void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
     const std::string &splitTaskKey, const std::string &signalPath,
-    bool committing)
+    bool committing, const std::string &commitPath)
 {
 //  ZStack *resultStack = container.getResultStack();
   if (container.hasResult()) {
@@ -364,8 +374,9 @@ void ZBodySplitCommand::processResult(
       ZJsonArray resultArray;
 
       if (committing) {
+        std::cout << "Commit path: " << commitPath << std::endl;
         ZDvidWriter *bodyWriter =
-            ZGlobal::GetInstance().getDvidWriterFromUrl(signalPath);
+            ZGlobal::GetInstance().getDvidWriterFromUrl(commitPath);
         std::vector<uint64_t> bodyIdArray = commitResult(result, *bodyWriter);
         ZJsonArray resultArray;
         for (uint64_t bodyId : bodyIdArray) {
