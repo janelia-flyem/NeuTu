@@ -87,6 +87,9 @@ namespace {
   static bool applyOverallSettingsNeeded = true;
   static bool zoomToLoadedBodyEnabled;
   static bool garbageLifetimeLimitEnabled;
+  static bool splitTaskLoadingEnabled;
+  static bool showingTodo;
+  static bool showingSynapse;
   static bool preservingSourceColorEnabled;
 
   void applyOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
@@ -98,6 +101,15 @@ namespace {
 
       garbageLifetimeLimitEnabled = bodyDoc->garbageLifetimeLimitEnabled();
       bodyDoc->enableGarbageLifetimeLimit(false);
+
+      splitTaskLoadingEnabled = bodyDoc->splitTaskLoadingEnabled();
+      bodyDoc->enableSplitTaskLoading(false);
+
+      showingTodo = bodyDoc->showingTodo();
+      bodyDoc->showTodo(false);
+
+      showingSynapse = bodyDoc->showingSynapse();
+      bodyDoc->showSynapse(false);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
@@ -114,6 +126,9 @@ namespace {
       Neu3Window::enableZoomToLoadedBody(zoomToLoadedBodyEnabled);
 
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
+      bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
+      bodyDoc->showTodo(showingTodo);
+      bodyDoc->showSynapse(showingSynapse);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);
@@ -645,9 +660,7 @@ void TaskBodyCleave::cleave()
 
   requestJson["seeds"] = requestJsonSeeds;
 
-  // TODO: Switch to a better server host.
-  QUrl url("http://bergs-ws1.int.janelia.org:5555/compute-cleave");
-
+  QUrl url("http://bergs-ws1.int.janelia.org:5556/compute-cleave");
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 

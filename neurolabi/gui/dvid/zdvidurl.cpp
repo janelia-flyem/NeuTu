@@ -168,7 +168,8 @@ std::string ZDvidUrl::getMeshesTarsUrl()
 std::string ZDvidUrl::getMeshesTarsUrl(uint64_t bodyId)
 {
   ZString dataUrl = getMeshesTarsUrl();
-  return GetFullUrl(GetKeyCommandUrl(dataUrl), GetBodyKey(bodyId));
+  ZString key = GetBodyKey(bodyId) + ".tar";
+  return GetFullUrl(GetKeyCommandUrl(dataUrl), key);
 }
 
 std::string ZDvidUrl::getSkeletonUrl() const
