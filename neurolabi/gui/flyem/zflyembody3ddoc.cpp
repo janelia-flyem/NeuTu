@@ -563,6 +563,13 @@ void ZFlyEmBody3dDoc::setBodyModelSelected(const QSet<uint64_t> &bodySet)
   m_selectedBodySet = bodySet;
 }
 
+void ZFlyEmBody3dDoc::setBodyModelSelected(const QSet<uint64_t> &select,
+                                           const QSet<uint64_t> &deselect)
+{
+  m_selectedBodySet -= deselect;
+  m_selectedBodySet += select;
+}
+
 bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
 {
   return !getObjectGroup().getSelectedSet(

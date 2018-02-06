@@ -98,6 +98,13 @@ void Neu3Window::connectSignalSlot()
   connect(getBodyDocument(), SIGNAL(meshArchiveLoadingEnded()),
           this, SLOT(meshArchiveLoadingEnded()));
 
+#if 0
+  // TODO: For the moment, the following code is disabled, as it introduces a noticeable
+  // slowdown for the large archives of super voxel meshes that can occur in practice.
+  // Without the following code, the ZBodyListWidget will not display the IDs of the meshes
+  // within the archive, but an enormously long list of IDs is not a useful user interface
+  // anyway, and future work should provide a better alternative.
+
   // Loading an ID that corresponds to an archive trigers the loading of other meshes
   // and the ZBodyListWidget needs to show them.  The synchronizing of that widget
   // with the body list is most efficient if it occurs on the single bodyMeshesAdded
@@ -106,6 +113,7 @@ void Neu3Window::connectSignalSlot()
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
           this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+#endif
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
@@ -404,6 +412,25 @@ void Neu3Window::processSwcChangeFrom3D(
 void Neu3Window::processMeshChangedFrom3D(
     QList<ZMesh *> selected, QList<ZMesh *> deselected)
 {
+  QSet<uint64_t> selectedSet;
+  for (ZMesh *mesh : selected) {
+    selectedSet.insert(mesh->getLabel());
+  }
+
+  QSet<uint64_t> deselectedSet;
+  for (ZMesh *mesh : deselected) {
+    deselectedSet.insert(mesh->getLabel());
+  }
+
+  // Make sure to update the ZFlyEmBody3dDoc's notion of selection, to avoid
+  // immediate deselection of a mesh selected by clicking in the 3D view.
+  // If the ZBodyListWidget has a complete list of the bodies it will trigger
+  // the update to ZFlyEmBody3dDoc, but for large sets of bodies loaded from
+  // a tar archive the ZBodyListWidget may not have the complete list (to avoid
+  // performance problems).
+
+  getBodyDocument()->setBodyModelSelected(selectedSet, deselectedSet);
+
   foreach (ZMesh *mesh, selected) {
     if (mesh->getLabel() > 0) {
       emit bodySelected(mesh->getLabel());
