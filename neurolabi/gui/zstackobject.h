@@ -243,7 +243,7 @@ public:
     return m_label;
   }
 */
-  inline std::string getSource() const { return m_source; }
+  inline const std::string &getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
   /*!
@@ -256,13 +256,13 @@ public:
   static bool fromSameSource(const ZStackObject *obj1, const ZStackObject *obj2);
 
 
-  inline std::string getObjectId() const { return m_objectId; }
+  inline const std::string &getObjectId() const { return m_objectId; }
   inline void setObjectId(const std::string &id) { m_objectId = id; }
 
   bool hasSameId(const ZStackObject *obj) const;
   static bool hasSameId(const ZStackObject *obj1, const ZStackObject *obj2);
 
-  inline std::string getObjectClass() const { return m_objectClass; }
+  inline const std::string &getObjectClass() const { return m_objectClass; }
   inline void setObjectClass(const std::string &id) { m_objectClass = id; }
 
 
