@@ -91,6 +91,7 @@ namespace {
   static bool showingTodo;
   static bool showingSynapse;
   static bool preservingSourceColorEnabled;
+  static bool showingSourceColors;
 
   void applyOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
   {
@@ -114,6 +115,13 @@ namespace {
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
         filter->enablePreservingSourceColors(true);
+
+        // For a large set of super voxels, merely showing all the source colors in the
+        // filter's configuration UI can introduce a significant delay, so turn off
+        // that feature (which is not really useful in this context anyway).
+
+        showingSourceColors = filter->showingSourceColors();
+        filter->showSourceColors(false);
       }
     }
   }
@@ -132,6 +140,7 @@ namespace {
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);
+        filter->showSourceColors(showingSourceColors);
       }
     }
   }

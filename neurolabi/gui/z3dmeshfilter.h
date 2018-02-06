@@ -47,6 +47,9 @@ public:
   void enablePreservingSourceColors(bool on);
   bool preservingSourceColorsEnabled() const;
 
+  void showSourceColors(bool show);
+  bool showingSourceColors() const;
+
   bool hitObject(int x, int y);
   std::vector<bool> hitObject(const std::vector<std::pair<int, int> > &ptArray);
 
@@ -91,6 +94,7 @@ private:
   std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare>
   m_sourceColorMapper;
   bool m_preserveSourceColors;
+  bool m_showSourceColors;
 
   // mesh list used for rendering, it is a subset of m_origMeshList. Some mesh are
   // hidden because they are unchecked from the object model. This allows us to control

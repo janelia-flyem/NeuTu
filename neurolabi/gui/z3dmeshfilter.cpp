@@ -14,6 +14,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
                                                     ZRandom::instance().randReal<float>(),
                                                     1.f))
   , m_preserveSourceColors(false)
+  , m_showSourceColors(true)
   , m_selectMeshEvent("Select Mesh", false)
 //  , m_pressedMesh(nullptr)
   , m_dataIsInvalid(false)
@@ -77,6 +78,16 @@ void Z3DMeshFilter::enablePreservingSourceColors(bool on)
 bool Z3DMeshFilter::preservingSourceColorsEnabled() const
 {
   return m_preserveSourceColors;
+}
+
+void Z3DMeshFilter::showSourceColors(bool show)
+{
+  m_showSourceColors = show;
+}
+
+bool Z3DMeshFilter::showingSourceColors() const
+{
+  return m_showSourceColors;
 }
 
 void Z3DMeshFilter::setData(const std::vector<ZMesh*>& meshList)
@@ -247,7 +258,7 @@ void Z3DMeshFilter::prepareData()
     }
 
     // update widget group
-    if (m_widgetsGroup) {
+    if (m_widgetsGroup && m_showSourceColors) {
       for (const auto& kv : m_sourceColorMapper) {
         m_widgetsGroup->addChild(*kv.second, 2);
       }
