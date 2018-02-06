@@ -1034,8 +1034,13 @@ void ZFlyEmBody3dDoc::notifyBodyUpdate(uint64_t bodyId, int resLevel)
 
 void ZFlyEmBody3dDoc::notifyBodyUpdated(uint64_t bodyId, int resLevel)
 {
-  notifyWindowMessageUpdated(
-        QString("Body %1 updated (scale=%2).").arg(bodyId).arg(resLevel));
+  if (resLevel > 0) {
+    notifyWindowMessageUpdated(
+          QString("Body %1 updated (scale=%2).").arg(bodyId).arg(resLevel));
+  } else {
+    notifyWindowMessageUpdated(
+          QString("Body %1 updated.").arg(bodyId));
+  }
 }
 
 void ZFlyEmBody3dDoc::addBodyMeshFunc(
@@ -2112,6 +2117,7 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
 
 void ZFlyEmBody3dDoc::runLocalSplitFunc()
 {
+  notifyWindowMessageUpdated("Running local split ...");
   QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
   if (seedList.size() > 1) {
     ZStackWatershedContainer container(NULL, NULL);
@@ -2135,8 +2141,10 @@ void ZFlyEmBody3dDoc::runLocalSplitFunc()
       ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
       delete subcontainer;
     }
+    notifyWindowMessageUpdated("Local split finished.");
   } else {
-    std::cout << "Less than 2 seeds found. Abort." << std::endl;
+//    std::cout << "Less than 2 seeds found. Abort." << std::endl;
+    notifyWindowMessageUpdated("Less than 2 seeds found. Splitting canceled.");
   }
 }
 
