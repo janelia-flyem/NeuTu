@@ -388,6 +388,9 @@ private:
   ZStackObject* takeObjectFromCache(
       ZStackObject::EType type, const std::string &source);
 
+  void notifyBodyUpdate(uint64_t bodyId, int resLevel);
+  void notifyBodyUpdated(uint64_t bodyId, int resLevel);
+
 private:
   QSet<uint64_t> m_bodySet;
   flyem::EBodyType m_bodyType = flyem::BODY_FULL;

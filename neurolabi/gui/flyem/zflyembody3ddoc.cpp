@@ -1026,14 +1026,27 @@ ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
   return bodyEvent;
 }
 
+void ZFlyEmBody3dDoc::notifyBodyUpdate(uint64_t bodyId, int resLevel)
+{
+  notifyWindowMessageUpdated(
+        QString("Updating body %1 (scale=%2) ...").arg(bodyId).arg(resLevel));
+}
+
+void ZFlyEmBody3dDoc::notifyBodyUpdated(uint64_t bodyId, int resLevel)
+{
+  notifyWindowMessageUpdated(
+        QString("Body %1 updated (scale=%2).").arg(bodyId).arg(resLevel));
+}
+
 void ZFlyEmBody3dDoc::addBodyMeshFunc(
     uint64_t id, const QColor &color, int resLevel)
 {
-  emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+  notifyBodyUpdate(id, resLevel);
+
   std::map<uint64_t, ZMesh*> meshes;
   makeBodyMeshModels(id, resLevel, meshes);
   for (auto it : meshes) {
-    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+//    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
 
     uint64_t bodyId = it.first;
     ZMesh *mesh = it.second;
@@ -1100,6 +1113,8 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     }
   }
 
+  notifyBodyUpdated(id, resLevel);
+
   if (encodesTar(id)) {
 
     // Meshes loaded from an archive are ready at this point, so emit a signal, which
@@ -1128,9 +1143,9 @@ void ZFlyEmBody3dDoc::addBodyFunc(
     if (resLevel == getMaxResLevel() && resLevel > 0) {
       tree = getBodyQuickly(bodyId);
     } else {
-      emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+      notifyBodyUpdate(bodyId, resLevel);
       tree = makeBodyModel(bodyId, resLevel, getBodyType());
-      emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+      notifyBodyUpdated(bodyId, resLevel);
     }
 
     if (tree != NULL) {

@@ -93,6 +93,8 @@ public:
   void setCursor(const QCursor& c)
   { viewport()->setCursor(c); }
 
+  void dump(const QString &message);
+
 signals:
 
   // w and h is physical size not logical size, opengl works in physical pixel
@@ -150,6 +152,8 @@ protected:
 
 private:
   //double devicePixelRatio();
+  void drawText(QPainter &painter, const QString &text);
+  void drawText(QPainter &painter, const QStringList &text);
 
 private slots:
   void updateDecoration();
@@ -163,6 +167,8 @@ private:
 
   ZInteractionEngine m_interaction;
   bool m_updatingDecoration = false;
+
+  QString m_message;
 };
 
 #endif // Z3DCANVAS_H
