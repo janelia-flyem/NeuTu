@@ -155,7 +155,7 @@ int ZBodySplitCommand::run(
   if (!splitTaskKey.empty()) {
     if (!splitResultKey.empty()) {
       if (!forcingUpdate()) {
-        if (ZServiceConsumer::HasSplitResult(reader, splitTaskKey.c_str())) {
+        if (ZServiceConsumer::HasNonemptySplitResult(reader, splitTaskKey.c_str())) {
           std::cout << "The task has already been processed. Please find the result @"
                     << splitResultKey << "."
                     << std::endl;
@@ -226,7 +226,7 @@ int ZBodySplitCommand::run(
   ZStackGarbageCollector gc;
   std::pair<ZStack*, ZSparseStack*> data =
       parseSignalPath(signalPath, signalInfo, dataDir, isFile, range, gc);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   ZSparseStack *spStack = data.second;
   if (spStack != NULL) {
     std::cout << "Saving sparse stack ..." << std::endl;
@@ -365,6 +365,7 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
     bool committing, const std::string &commitPath)
 {
 //  ZStack *resultStack = container.getResultStack();
+  std::cout << "Processing results ..." << std::endl;
   if (container.hasResult()) {
     QUrl outputUrl(output.c_str());
     ZObject3dScanArray *result = container.makeSplitResult(2, NULL);
@@ -434,6 +435,7 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
         }
 
         if (!refJson.isEmpty() && !refPath.isEmpty()) {
+          std::cout << "Writing results to " << refPath.toStdString() << std::endl;
           writer->writeJson(refPath.toStdString(), refJson);
         }
       }

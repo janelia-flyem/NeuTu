@@ -198,6 +198,8 @@ public:
 public slots:
   void processObjectModified(const ZStackObjectInfoSet &objInfo);
 
+  void dump(const QString &message);
+
 signals:
   void networkConstructed();
 

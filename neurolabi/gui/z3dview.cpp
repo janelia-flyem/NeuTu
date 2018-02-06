@@ -722,6 +722,11 @@ void Z3DView::processObjectModified(const ZStackObjectInfoSet &objInfo)
   helper.processObjectModified(objInfo);
 }
 
+void Z3DView::dump(const QString &message)
+{
+  m_canvas->dump(message);
+}
+
 void Z3DView::setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box)
 {
   switch (layer) {

@@ -5589,6 +5589,14 @@ void ZStackDoc::notifyStatusMessageUpdated(const QString &message)
   }
 }
 
+void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
+{
+  emit messageGenerated(
+        ZWidgetMessage(
+          message, neutube::MSG_INFORMATION,
+          ZWidgetMessage::TARGET_CUSTOM_AREA));
+}
+
 void ZStackDoc::notifyPunctumModified()
 {
   emit punctaModified();

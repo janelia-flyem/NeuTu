@@ -69,6 +69,7 @@ class ZFlyEmBodyComparisonDialog;
 class ZStackDocMenuFactory;
 class ZLineSegment;
 class ZObject3d;
+class ZWidgetMessage;
 
 
 class Z3DWindow : public QMainWindow
@@ -380,6 +381,8 @@ public slots:
   void uncheckSelectedTodo();
 
   void setMeshOpacity(double opacity);
+
+  void processMessage(const ZWidgetMessage &msg);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);

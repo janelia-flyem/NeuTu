@@ -39,6 +39,9 @@ public:
   static bool HasSplitResult(const ZDvidReader &reader, const QString taskKey);
   static bool HasSplitResult(const ZDvidReader *reader, const QString taskKey);
 
+  static bool HasNonemptySplitResult(
+      const ZDvidReader *reader, const QString taskKey);
+
 
   static ZJsonObject ReadHeadObject(
       const ZDvidReader &reader, const QString &dataName, const QString &key);
