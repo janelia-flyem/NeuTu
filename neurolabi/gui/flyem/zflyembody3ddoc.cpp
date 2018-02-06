@@ -1235,10 +1235,20 @@ void ZFlyEmBody3dDoc::showSynapse(bool on)
   addSynapse(on);
 }
 
+bool ZFlyEmBody3dDoc::showingSynapse() const
+{
+  return m_showingSynapse;
+}
+
 void ZFlyEmBody3dDoc::showTodo(bool on)
 {
   m_showingTodo = on;
   addTodo(on);
+}
+
+bool ZFlyEmBody3dDoc::showingTodo() const
+{
+  return m_showingTodo;
 }
 
 bool ZFlyEmBody3dDoc::synapseLoaded(uint64_t bodyId) const
@@ -1375,6 +1385,10 @@ void ZFlyEmBody3dDoc::updateSegmentation()
 
 void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
 {
+  if (!m_splitTaskLoadingEnabled) {
+    return;
+  }
+
   QList<ZStackObject*> seedList =
       ZFlyEmMisc::LoadSplitTask(getDvidTarget(), bodyId);
 
@@ -1388,6 +1402,16 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
     //A dangerous way to share objects. Need object clone or shared pointer.
 //    ZStackDocAccessor::AddObject(getDataDocument(), seedList);
   }
+}
+
+void ZFlyEmBody3dDoc::enableSplitTaskLoading(bool enable)
+{
+  m_splitTaskLoadingEnabled = enable;
+}
+
+bool ZFlyEmBody3dDoc::splitTaskLoadingEnabled() const
+{
+  return m_splitTaskLoadingEnabled;
 }
 
 ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
