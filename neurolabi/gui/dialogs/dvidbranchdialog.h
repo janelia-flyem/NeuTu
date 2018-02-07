@@ -32,7 +32,7 @@ private slots:
     void launchOldDialog();
 
 private:
-    static const QString KEY_REPOS;
+    static const QString KEY_DATASETS;
     static const QString KEY_NAME;
     static const QString KEY_SERVER;
     static const QString KEY_PORT;
