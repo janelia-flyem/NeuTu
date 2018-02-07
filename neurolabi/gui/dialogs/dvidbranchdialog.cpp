@@ -53,6 +53,8 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
 
 // constants
 const QString DvidBranchDialog::KEY_DATASETS = "primary";
+const QString DvidBranchDialog::KEY_VERSION = "version";
+const int DvidBranchDialog::SUPPORTED_VERSION = 1;
 const QString DvidBranchDialog::KEY_NAME = "name";
 const QString DvidBranchDialog::KEY_SERVER = "server";
 const QString DvidBranchDialog::KEY_PORT = "port";
@@ -84,8 +86,14 @@ void DvidBranchDialog::loadDatasets() {
         showError("Error loading datasets", "Dataset file did not have any data!");
         return;
     }
-    if (!jsonData.contains(KEY_DATASETS)) {
+    if (!jsonData.contains(KEY_DATASETS) || !jsonData.contains(KEY_VERSION)) {
         showError("Error loading datasets", "Dataset file did not have expected data!");
+        return;
+    }
+
+    // version check
+    if (jsonData[KEY_VERSION].toInt() > SUPPORTED_VERSION) {
+        showError("Error loading datasets", "Dataset file is a newer version than we can handle! Please update NeuTu/Neu3!");
         return;
     }
 
@@ -109,7 +117,7 @@ QJsonObject DvidBranchDialog::loadDatasetsFromFile() {
     QJsonObject empty;
 
     // testing: hard-coded file location
-    QString filepath = "/Users/olbrisd/projects/flyem/NeuTu/testing/test-repos.json";
+    QString filepath = "/Users/olbrisd/projects/flyem/misc-repos/DVID-datasets/datasets.json";
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         showError("Error loading datasets", "Couldn't open dataset file " + filepath + "!");
