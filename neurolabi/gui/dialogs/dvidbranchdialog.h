@@ -33,6 +33,8 @@ private slots:
 
 private:
     static const QString KEY_DATASETS;
+    static const QString KEY_VERSION;
+    static const int SUPPORTED_VERSION;
     static const QString KEY_NAME;
     static const QString KEY_SERVER;
     static const QString KEY_PORT;
