@@ -52,7 +52,7 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
 }
 
 // constants
-const QString DvidBranchDialog::KEY_REPOS = "repos";
+const QString DvidBranchDialog::KEY_DATASETS = "primary";
 const QString DvidBranchDialog::KEY_NAME = "name";
 const QString DvidBranchDialog::KEY_SERVER = "server";
 const QString DvidBranchDialog::KEY_PORT = "port";
@@ -84,14 +84,14 @@ void DvidBranchDialog::loadDatasets() {
         showError("Error loading datasets", "Dataset file did not have any data!");
         return;
     }
-    if (!jsonData.contains(KEY_REPOS)) {
+    if (!jsonData.contains(KEY_DATASETS)) {
         showError("Error loading datasets", "Dataset file did not have expected data!");
         return;
     }
 
     // we'll keep the repo data as json, but index it a bit
     m_repoMap.clear();
-    foreach(QJsonValue value, jsonData[KEY_REPOS].toArray()) {
+    foreach(QJsonValue value, jsonData[KEY_DATASETS].toArray()) {
         QJsonObject repo = value.toObject();
         m_repoMap[repo[KEY_NAME].toString()] = repo;
     }
