@@ -9727,7 +9727,7 @@ void ZStackDoc::localSeededWatershed()
 
   if (seedList.size() > 1) {
     ZStackWatershedContainer container(getStack(), getSparseStack());
-    container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+    container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
     container.setCcaPost(false);
 
 

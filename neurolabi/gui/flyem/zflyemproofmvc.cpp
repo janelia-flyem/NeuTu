@@ -899,7 +899,9 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   connect(window, SIGNAL(deletingSplitSeed()), doc, SLOT(deleteSplitSeed()));
   connect(window, &Z3DWindow::deletingSelectedSplitSeed, doc,
           &ZFlyEmBody3dDoc::deleteSelectedSplitSeed);
-  connect(window, SIGNAL(runningLocalSplit()), doc, SLOT(runLocalSplit()));
+  connect(window, &Z3DWindow::runningLocalSplit,
+          doc, &ZFlyEmBody3dDoc::runLocalSplit);
+  connect(window, &Z3DWindow::runningSplit, doc, &ZFlyEmBody3dDoc::runSplit);
 
   doc->enableNodeSeeding(true);
 //  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),

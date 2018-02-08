@@ -148,6 +148,9 @@ public:
 
   //double distanceTo(const ZIntPoint &pt);
 
+  int computeBlockDistance(const ZIntCuboid &box);
+  double computeDistance(const ZIntCuboid &box);
+
   void shiftSliceAxis(neutube::EAxis axis);
   void shiftSliceAxisInverse(neutube::EAxis axis);
   int getDim(neutube::EAxis axis) const;

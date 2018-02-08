@@ -122,6 +122,7 @@ signals:
   void selectingConnectedSwcNode();
   void croppingSwc();
   void splittingBodyLocal();
+  void splittingBody();
   void shootingTodo(int x, int y);
   void deletingSelected();
   void locating(int x, int y);

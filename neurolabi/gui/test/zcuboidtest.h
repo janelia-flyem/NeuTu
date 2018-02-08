@@ -23,7 +23,7 @@ TEST(ZIntCuboidArray, basic)
   int index = blockArray.hitTest(1, 1, 1);
   EXPECT_EQ(0, index);
 
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_BENCHMARK_DIR + "/flyem/block.txt");
   EXPECT_EQ(216, (int) blockArray.size());
 
   for (size_t i = 0; i < blockArray.size(); ++i) {
@@ -70,7 +70,7 @@ TEST(ZIntCuboidArray, boundBox)
 TEST(ZIntCuboidArray, exportSwc)
 {
   ZIntCuboidArray blockArray;
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_BENCHMARK_DIR + "/flyem/block.txt");
 
 
   //blockArray.exportSwc(GET_TEST_DATA_DIR + "/test.swc");
@@ -96,7 +96,7 @@ TEST(ZIntCuboidArray, removeInvalidCublid)
 TEST(ZIntCuboidArray, range)
 {
   ZIntCuboidArray blockArray;
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_BENCHMARK_DIR + "/flyem/block.txt");
 
   Cuboid_I boundBox = blockArray.getBoundBox();
   //std::cout << blockArray.size() << std::endl;
@@ -355,6 +355,25 @@ TEST(ZIntCuboid, basic)
   ASSERT_EQ(2, box.getFirstCorner().getY());
   ASSERT_EQ(10, box.getHeight());
 
+}
+
+TEST(ZIntCuboid, dist)
+{
+  ZIntCuboid box1;
+  box1.set(0, 0, 0, 10, 20, 30);
+  ZIntCuboid box2;
+  box2.set(10, 20, 40, 20, 30, 50);
+
+  ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 10.0);
+  ASSERT_DOUBLE_EQ(box2.computeDistance(box1), 10.0);
+
+  box2.set(10, 20, 30, 20, 30, 50);
+  ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 0.0);
+
+  box1.set(0, 0, 0, 10, 5, 30);
+  box2.set(0, 20, 30, 10, 30, 50);
+  ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 15.0);
+  ASSERT_DOUBLE_EQ(box2.computeDistance(box1), 15.0);
 }
 
 TEST(ZIntCuboid, hasOverlap)

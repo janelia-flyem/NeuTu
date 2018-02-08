@@ -21,6 +21,7 @@
 #include "zstackobjectaccessor.h"
 #include "zgraphptr.h"
 #include "zstackutil.h"
+#include "zintpoint.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -161,7 +162,7 @@ ZIntPoint ZStackWatershedContainer::getOriginalDsIntv()
   return ZIntPoint(0, 0, 0);
 }
 
-void ZStackWatershedContainer::setRangeOption(ERangeOption option)
+void ZStackWatershedContainer::setRangeHint(ERangeOption option)
 {
   if (m_rangeOption != option) {
     deprecate(COMP_RANGE);
@@ -169,7 +170,7 @@ void ZStackWatershedContainer::setRangeOption(ERangeOption option)
   }
 }
 
-ZStackWatershedContainer::ERangeOption ZStackWatershedContainer::getRangeOption() const
+ZStackWatershedContainer::ERangeOption ZStackWatershedContainer::getRangeHint() const
 {
   return m_rangeOption;
 }
@@ -702,7 +703,7 @@ void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
     //  Compute split
     ZStackWatershedContainer container(m_stack, m_spStack);
 //          container.useSeedRange(true);
-    container.setRangeOption(RANGE_SEED_BOUND);
+    container.setRangeHint(RANGE_SEED_BOUND);
     container.setRefiningBorder(false);
 
     std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
@@ -1298,13 +1299,6 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
   ZObject3dScanArray *objArray =
       ZObject3dFactory::MakeObject3dScanArray(m_result);
 
-#ifdef _DEBUG_2
-  configureResult(objArray);
-  ZStack *labelStack = objArray->toColorField();
-  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
-  delete labelStack;
-#endif
-
   //For sparse stack only for the current version
   if (m_spStack != NULL) {
     if (result == NULL) {
@@ -1315,7 +1309,7 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 //    ZIntPoint sourceDsIntv = getSourceStack()->getDsIntv();
     ZIntPoint orgDsIntv = getOriginalDsIntv();
     ZIntPoint lastDsIntv = m_result.back()->getDsIntv();
-    bool adopting = true;
+    bool adopting = true; //Flag for re-assigning fragments
     if (lastDsIntv == orgDsIntv) {
       adopting = false;
     }
@@ -1392,6 +1386,12 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
   }
 
   configureResult(result);
+
+#ifdef _DEBUG_2
+  ZStack *labelStack = result->toColorField();
+  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete labelStack;
+#endif
 
   return result;
 }
@@ -1473,7 +1473,8 @@ ZStackWatershedContainer* ZStackWatershedContainer::makeSubContainer(
     }
   }
 
-  out->setRangeOption(RANGE_SEED_BOUND);
+  out->setCcaPost(false);
+  out->setRangeHint(RANGE_SEED_BOUND);
 
   return out;
 }
@@ -1485,12 +1486,16 @@ void ZStackWatershedContainer::addResult(const ZStackArray &result)
 }
 
 std::vector<ZStackWatershedContainer*>
-ZStackWatershedContainer::makeLocalSeedContainer(size_t maxVolume)
+ZStackWatershedContainer::makeLocalSeedContainer(double maxDist)
 {
   ZOUT(LINFO(), 5) << "Making local seed containers ...";
 
   std::vector<ZStackWatershedContainer*> result;
-  ZGraphPtr seedGraph = buildSeedGraph(maxVolume);
+  ZGraphPtr seedGraph = buildSeedGraph(maxDist);
+#ifdef _DEBUG_
+  seedGraph->print();
+#endif
+
   const std::vector<ZGraph*> &graphList = seedGraph->getConnectedSubgraph();
   for (const ZGraph *graph : graphList) {
     std::set<int> vertexSet = graph->getConnectedVertexSet();
@@ -1503,7 +1508,7 @@ ZStackWatershedContainer::makeLocalSeedContainer(size_t maxVolume)
   return result;
 }
 
-ZGraphPtr ZStackWatershedContainer::buildSeedGraph(size_t maxVolume) const
+ZGraphPtr ZStackWatershedContainer::buildSeedGraph(double maxDist) const
 {
   ZGraphPtr graph = ZGraphPtr::Make(ZGraph::UNDIRECTED_WITH_WEIGHT);
 
@@ -1512,8 +1517,8 @@ ZGraphPtr ZStackWatershedContainer::buildSeedGraph(size_t maxVolume) const
       ZStackObject *seed1 = m_seedArray[i];
       ZStackObject *seed2 = m_seedArray[j];
       if (seed1->getLabel() != seed2->getLabel()) {
-        size_t v = ComputeSeedVolume(*seed1, *seed2);
-        if (v <= maxVolume) {
+        double v = ComputeSeedDist(*seed1, *seed2);
+        if (v <= maxDist) {
           graph->addEdgeFast(i, j, v);
         }
       }
@@ -1532,4 +1537,13 @@ size_t ZStackWatershedContainer::ComputeSeedVolume(
   box1.join(box2);
 
   return box1.getVolume();
+}
+
+double ZStackWatershedContainer::ComputeSeedDist(
+    const ZStackObject &obj1, const ZStackObject &obj2)
+{
+  ZIntCuboid box1 = ZStackObjectAccessor::GetIntBoundBox(obj1);
+  ZIntCuboid box2 = ZStackObjectAccessor::GetIntBoundBox(obj2);
+
+  return box1.computeDistance(box2);
 }

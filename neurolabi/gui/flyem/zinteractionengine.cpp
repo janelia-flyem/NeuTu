@@ -216,8 +216,12 @@ bool ZInteractionEngine::process(const ZStackOperator &op)
       processed = true;
     }
     break;
-  case ZStackOperator::OP_FLYEM_SPLIT_BODY:
+  case ZStackOperator::OP_FLYEM_SPLIT_BODY_LOCAL:
     emit splittingBodyLocal();
+    processed = true;
+    break;
+  case ZStackOperator::OP_FLYEM_SPLIT_BODY:
+    emit splittingBody();
     processed = true;
     break;
   case ZStackOperator::OP_OBJECT_DELETE_SELECTED:

@@ -3111,13 +3111,13 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     switch (range) {
     case flyem::RANGE_SEED:
-      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_ROI);
+      container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_ROI);
       break;
     case flyem::RANGE_LOCAL:
-      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+      container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
       break;
     case flyem::RANGE_FULL:
-      container.setRangeOption(ZStackWatershedContainer::RANGE_FULL);
+      container.setRangeHint(ZStackWatershedContainer::RANGE_FULL);
       break;
     }
 
