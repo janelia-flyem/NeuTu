@@ -1,0 +1,19 @@
+{
+  "command": "split_body",
+  "commit": true,
+  "commit_path": "http://emdata3.int.janelia.org:8300/api/node/2c15/prelim_001_16nm-base/sparsevol/0",
+  "seed_scale": 2,
+  "signal info": 
+  {
+    "gray_scale": "grayscalejpeg_1", 
+    "@source": 
+    {
+      "gray_scale": 
+      {
+        "port": 8600, 
+        "uuid": "a89e", 
+        "address": "emdata3.int.janelia.org"
+      }
+    }
+  }
+}

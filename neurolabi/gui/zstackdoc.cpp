@@ -5609,6 +5609,14 @@ void ZStackDoc::notifyStatusMessageUpdated(const QString &message)
   }
 }
 
+void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
+{
+  emit messageGenerated(
+        ZWidgetMessage(
+          message, neutube::MSG_INFORMATION,
+          ZWidgetMessage::TARGET_CUSTOM_AREA));
+}
+
 void ZStackDoc::notifyPunctumModified()
 {
   emit punctaModified();
@@ -9739,7 +9747,7 @@ void ZStackDoc::localSeededWatershed()
 
   if (seedList.size() > 1) {
     ZStackWatershedContainer container(getStack(), getSparseStack());
-    container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+    container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
     container.setCcaPost(false);
 
 

@@ -17,12 +17,12 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
+#include <QMenu>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPixmap>
 #include <QPushButton>
-#include <QShortcut>
 #include <QSlider>
 #include <QUndoCommand>
 #include <QUrl>
@@ -35,17 +35,33 @@ namespace {
   static const QString KEY_BODYID = "body ID";
   static const QString KEY_MAXLEVEL = "maximum level";
 
+  static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
+  static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
+  static const QString CLEAVING_STATUS_FAILED = "Cleaving status: failed";
+
+  // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
   static const std::vector<glm::vec4> INDEX_COLORS({
-    glm::vec4(255, 255, 255, 255) / 255.0f,
-    glm::vec4( 88, 121, 163, 255) / 255.0f,
-    glm::vec4(227, 146,  68, 255) / 255.0f,
-    glm::vec4(207,  96,  94, 255) / 255.0f,
-    glm::vec4(134, 181, 177, 255) / 255.0f,
-    glm::vec4(108, 158,  88, 255) / 255.0f,
-    glm::vec4(231, 200,  96, 255) / 255.0f,
-    glm::vec4(166, 125, 159, 255) / 255.0f,
-    glm::vec4(240, 162, 168, 255) / 255.0f,
-    glm::vec4(150, 118,  99, 255) / 255.0f
+    glm::vec4(255, 255, 255, 255) / 255.0f, // white (no body)
+    glm::vec4(230,  25,  75, 255) / 255.0f, // red
+    glm::vec4(255, 225,  25, 255) / 255.0f, // yellow
+    glm::vec4(  0, 130, 200, 255) / 255.0f, // blue
+    glm::vec4(245, 130,  48, 255) / 255.0f, // orange
+    glm::vec4(145,  30, 180, 255) / 255.0f, // purple
+    glm::vec4( 70, 240, 240, 255) / 255.0f, // cyan
+    glm::vec4( 60, 180,  75, 255) / 255.0f, // green
+    glm::vec4(240,  50, 230, 255) / 255.0f, // magenta
+    glm::vec4(210, 245,  60, 255) / 255.0f, // lime
+    glm::vec4(250, 190, 190, 255) / 255.0f, // pink
+    glm::vec4(  0, 128, 128, 255) / 255.0f, // teal
+    glm::vec4(230, 190, 255, 255) / 255.0f, // lavender
+    glm::vec4(170, 110,  40, 255) / 255.0f, // brown
+    glm::vec4(255, 250, 200, 255) / 255.0f, // beige
+    glm::vec4(128,   0,   0, 255) / 255.0f, // maroon
+    glm::vec4(170, 255, 195, 255) / 255.0f, // mint
+    glm::vec4(128, 128,   0, 255) / 255.0f, // olive
+    glm::vec4(255, 215, 180, 255) / 255.0f, // coral
+    glm::vec4(  0,   0, 128, 255) / 255.0f, // navy
+    glm::vec4(128, 128, 128, 255) / 255.0f, // gray
   });
 
   Z3DMeshFilter *getMeshFilter(ZStackDoc *doc)
@@ -71,6 +87,9 @@ namespace {
   static bool applyOverallSettingsNeeded = true;
   static bool zoomToLoadedBodyEnabled;
   static bool garbageLifetimeLimitEnabled;
+  static bool splitTaskLoadingEnabled;
+  static bool showingTodo;
+  static bool showingSynapse;
   static bool preservingSourceColorEnabled;
 
   void applyOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
@@ -82,6 +101,15 @@ namespace {
 
       garbageLifetimeLimitEnabled = bodyDoc->garbageLifetimeLimitEnabled();
       bodyDoc->enableGarbageLifetimeLimit(false);
+
+      splitTaskLoadingEnabled = bodyDoc->splitTaskLoadingEnabled();
+      bodyDoc->enableSplitTaskLoading(false);
+
+      showingTodo = bodyDoc->showingTodo();
+      bodyDoc->showTodo(false);
+
+      showingSynapse = bodyDoc->showingSynapse();
+      bodyDoc->showSynapse(false);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
@@ -98,6 +126,9 @@ namespace {
       Neu3Window::enableZoomToLoadedBody(zoomToLoadedBodyEnabled);
 
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
+      bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
+      bodyDoc->showTodo(showingTodo);
+      bodyDoc->showSynapse(showingSynapse);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);
@@ -192,7 +223,7 @@ QString TaskBodyCleave::tasktype()
 
 QString TaskBodyCleave::actionString()
 {
-  return "Body history:";
+  return "Body cleaving:";
 }
 
 QString TaskBodyCleave::targetString()
@@ -221,6 +252,11 @@ QWidget *TaskBodyCleave::getTaskWidget()
   return m_widget;
 }
 
+QMenu *TaskBodyCleave::getTaskMenu()
+{
+  return m_menu;
+}
+
 void TaskBodyCleave::updateLevel(int level)
 {
   bool showingCleaving = m_showCleavingCheckBox->isChecked();
@@ -234,8 +270,9 @@ void TaskBodyCleave::updateLevel(int level)
   updateBodies(visible, QSet<uint64_t>());
 }
 
-void TaskBodyCleave::onShowCleavingChanged(bool show)
+void TaskBodyCleave::onShowCleavingChanged(int state)
 {
+  bool show = (state != Qt::Unchecked);
   if (show) {
     // Cleaving works on super voxels, which are what are displayed at level 0.
     m_levelSlider->setValue(0);
@@ -245,38 +282,54 @@ void TaskBodyCleave::onShowCleavingChanged(bool show)
   applyColorMode(show);
 }
 
+void TaskBodyCleave::onToggleShowCleaving()
+{
+  m_showCleavingCheckBox->setChecked(!m_showCleavingCheckBox->isChecked());
+}
+
+void TaskBodyCleave::onShowSeedsOnlyChanged(int)
+{
+  updateColors();
+}
+
+void TaskBodyCleave::onToggleShowSeedsOnly()
+{
+  m_showSeedsOnlyCheckBox->setChecked(!m_showSeedsOnlyCheckBox->isChecked());
+}
+
 void TaskBodyCleave::onChosenCleaveIndexChanged()
 {
-  if (QShortcut* shortcut = dynamic_cast<QShortcut*>(QObject::sender())) {
-    int i = shortcut->key().toString().toInt();
-    m_cleaveIndexComboBox->setCurrentIndex(i - 1);
+  if (QAction* action = dynamic_cast<QAction*>(QObject::sender())) {
+    int i = m_actionToComboBoxIndex[action];
+    m_cleaveIndexComboBox->setCurrentIndex(i);
   }
 }
 
-void TaskBodyCleave::onAddToChosenCleaveBody()
+void TaskBodyCleave::onSelectBody()
 {
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
-  std::map<uint64_t, size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
+  m_bodyDoc->deselectAllMesh();
 
-  for (auto it = selectedMeshes.cbegin(); it != selectedMeshes.cend(); it++) {
-    ZMesh *mesh = static_cast<ZMesh*>(*it);
-    meshIdToCleaveIndex[mesh->getLabel()] = chosenCleaveIndex();
+  std::set<uint64_t> toSelect;
+  for (auto it : m_meshIdToCleaveIndex) {
+    if (it.second == chosenCleaveIndex()) {
+      toSelect.insert(it.first);
+    }
+  }
+  if (!m_showSeedsOnlyCheckBox->isChecked()) {
+    for (auto it : m_meshIdToCleaveResultIndex) {
+      if (it.second == chosenCleaveIndex()) {
+        toSelect.insert(it.first);
+      }
+    }
   }
 
-  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex));
-}
-
-void TaskBodyCleave::onRemoveFromChosenCleaveBody()
-{
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
-  std::map<uint64_t, size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
-
-  for (auto it = selectedMeshes.cbegin(); it != selectedMeshes.cend(); it++) {
-    ZMesh *mesh = static_cast<ZMesh*>(*it);
-    meshIdToCleaveIndex.erase(mesh->getLabel());
+  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    if (toSelect.find(mesh->getLabel()) != toSelect.end()) {
+      m_bodyDoc->setMeshSelected(mesh, true);
+    }
   }
-
-  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex));
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
@@ -296,53 +349,13 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
   }
 
   m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex));
-}
 
-void TaskBodyCleave::onCleave()
-{
-  QJsonObject requestJson;
-  requestJson["body-id"] = qint64(m_bodyId);
-
-  std::map<unsigned int, std::vector<uint64_t>> cleaveIndexToMeshIds;
-  for (auto it1 : m_meshIdToCleaveIndex) {
-    unsigned int cleaveIndex = it1.second;
-    auto it2 = cleaveIndexToMeshIds.find(cleaveIndex);
-    if (it2 == cleaveIndexToMeshIds.end()) {
-      cleaveIndexToMeshIds[cleaveIndex] = std::vector<uint64_t>();
-    }
-    uint64_t id = it1.first;
-    cleaveIndexToMeshIds[cleaveIndex].push_back(id);
-  }
-
-  QJsonObject requestJsonSeeds;
-
-  for (auto it : cleaveIndexToMeshIds) {
-    QJsonArray requestJsonSeedsForCleaveIndex;
-    for (uint64_t id : it.second) {
-      requestJsonSeedsForCleaveIndex.append(QJsonValue(qint64(id)));
-    }
-    int cleaveIndex = it.first;
-    requestJsonSeeds[QString::number(cleaveIndex)] = requestJsonSeedsForCleaveIndex;
-  }
-
-  requestJson["seeds"] = requestJsonSeeds;
-
-  // TODO: Switch to a better server host.
-  QUrl url("http://bergs-ws1.int.janelia.org:5555/compute-cleave");
-
-  QNetworkRequest request(url);
-  request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-  QJsonDocument requestJsonDoc(requestJson);
-  QByteArray requestData(requestJsonDoc.toJson());
-
-  m_networkManager->post(request, requestData);
+  cleave();
 }
 
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
   QNetworkReply::NetworkError error = reply->error();
-  std::cerr << "** received cleave reply **\n";
   if (error == QNetworkReply::NoError) {
     QByteArray replyBytes = reply->readAll();
 
@@ -366,10 +379,14 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
         }
 
         m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+
+        m_cleavingStatusLabel->setText(CLEAVING_STATUS_DONE);
       }
     }
 
   } else {
+    m_cleavingStatusLabel->setText(CLEAVING_STATUS_FAILED);
+
     LERROR() << "TaskBodyCleave::onNetworkReplyFinished() error: \""
              << reply->errorString().toStdString() << "\"";
   }
@@ -449,7 +466,6 @@ std::size_t TaskBodyCleave::chosenCleaveIndex() const
   return m_cleaveIndexComboBox->currentIndex() + 1;
 }
 
-
 void TaskBodyCleave::buildTaskWidget()
 {
   m_widget = new QWidget();
@@ -462,12 +478,12 @@ void TaskBodyCleave::buildTaskWidget()
 
   connect(m_levelSlider, SIGNAL(valueChanged(int)), this, SLOT(updateLevel(int)));
 
-  QHBoxLayout *sliderLayout = new QHBoxLayout;
-  sliderLayout->addWidget(sliderLabel);
-  sliderLayout->addWidget(m_levelSlider);
+  QHBoxLayout *historyLayout = new QHBoxLayout;
+  historyLayout->addWidget(sliderLabel);
+  historyLayout->addWidget(m_levelSlider);
 
   m_showCleavingCheckBox = new QCheckBox("Show cleaving", m_widget);
-  connect(m_showCleavingCheckBox, SIGNAL(clicked(bool)), this, SLOT(onShowCleavingChanged(bool)));
+  connect(m_showCleavingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCleavingChanged(int)));
 
   m_cleaveIndexComboBox = new QComboBox(m_widget);
   QSize iconSizeDefault = m_cleaveIndexComboBox->iconSize();
@@ -480,36 +496,71 @@ void TaskBodyCleave::buildTaskWidget()
     m_cleaveIndexComboBox->addItem(icon, "Cleaved body " + QString::number(i));
   }
 
-  m_buttonAdd = new QPushButton("Add selection", m_widget);
-  connect(m_buttonAdd, SIGNAL(clicked(bool)), this, SLOT(onAddToChosenCleaveBody()));
+  m_selectBodyButton = new QPushButton("Select", m_widget);
+  connect(m_selectBodyButton, SIGNAL(clicked(bool)), this, SLOT(onSelectBody()));
 
-  m_buttonRemove = new QPushButton("Remove selection", m_widget);
-  connect(m_buttonRemove, SIGNAL(clicked(bool)), this, SLOT(onRemoveFromChosenCleaveBody()));
+  QHBoxLayout *cleaveLayout1 = new QHBoxLayout;
+  cleaveLayout1->addWidget(m_showCleavingCheckBox);
+  cleaveLayout1->addWidget(m_cleaveIndexComboBox);
+  cleaveLayout1->addWidget(m_selectBodyButton);
 
-  m_buttonCleave = new QPushButton("Cleave", m_widget);
-  connect(m_buttonCleave, SIGNAL(clicked(bool)), this, SLOT(onCleave()));
+  m_showSeedsOnlyCheckBox = new QCheckBox("Show seeds only", m_widget);
+  m_showSeedsOnlyCheckBox->setChecked(false);
+  connect(m_showSeedsOnlyCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowSeedsOnlyChanged(int)));
 
-  QHBoxLayout *familiesLayout = new QHBoxLayout;
-  familiesLayout->addWidget(m_showCleavingCheckBox);
-  familiesLayout->addWidget(m_cleaveIndexComboBox);
-  familiesLayout->addWidget(m_buttonAdd);
-  familiesLayout->addWidget(m_buttonRemove);
+  m_cleavingStatusLabel = new QLabel(CLEAVING_STATUS_DONE, m_widget);
+
+  QHBoxLayout *cleaveLayout2 = new QHBoxLayout;
+  cleaveLayout2->addWidget(m_showSeedsOnlyCheckBox);
+  cleaveLayout2->addWidget(m_cleavingStatusLabel);
 
   QVBoxLayout *layout = new QVBoxLayout;
-  layout->addLayout(sliderLayout);
-  layout->addLayout(familiesLayout);
-  layout->addWidget(m_buttonCleave);
+  layout->addLayout(historyLayout);
+  layout->addLayout(cleaveLayout1);
+  layout->addLayout(cleaveLayout2);
 
   m_widget->setLayout(layout);
 
-  // These explicit shortcuts seem to work better than shorcuts set on the buttons.
+  m_menu = new QMenu("Body Cleaving", m_widget);
 
-  m_shortcutToggle = new QShortcut(Qt::Key_Space, m_widget);
-  connect(m_shortcutToggle, SIGNAL(activated()), this, SLOT(onToggleInChosenCleaveBody()));
+  QAction *showCleavingAction = new QAction("Show Cleaving", m_widget);
+  showCleavingAction->setShortcut(Qt::Key_C);
+  m_menu->addAction(showCleavingAction);
+  connect(showCleavingAction, SIGNAL(triggered()), this, SLOT(onToggleShowCleaving()));
 
-  for (int i = 0; i < m_cleaveIndexComboBox->count(); i++) {
-    QShortcut *shortcut = new QShortcut(QString::number(i + 1), m_widget);
-    connect(shortcut, SIGNAL(activated()), this, SLOT(onChosenCleaveIndexChanged()));
+  m_showSeedsOnlyAction = new QAction("Show Seeds Only", m_widget);
+  m_showSeedsOnlyAction->setShortcut(Qt::Key_S);
+  m_menu->addAction(m_showSeedsOnlyAction);
+  connect(m_showSeedsOnlyAction, SIGNAL(triggered()), this, SLOT(onToggleShowSeedsOnly()));
+
+  m_toggleInBodyAction = new QAction("Toggle Selection in Body", m_widget);
+  m_toggleInBodyAction->setShortcut(Qt::Key_Space);
+  m_menu->addAction(m_toggleInBodyAction);
+  connect(m_toggleInBodyAction, SIGNAL(triggered()), this, SLOT(onToggleInChosenCleaveBody()));
+
+  QMenu *setChosenCleaveIndexMenu = new QMenu("Set Cleaved Body To");
+  m_menu->addMenu(setChosenCleaveIndexMenu);
+
+  const int NUM_DISTINCT_KEYS = 10;
+  int n = std::min(m_cleaveIndexComboBox->count(), 2 * NUM_DISTINCT_KEYS);
+  for (int i = 0; i < n; i++) {
+    // Treat "0" as coming after 9 instead of before 1.
+    int j = i + 1;
+
+    QString key = QString::number(j % NUM_DISTINCT_KEYS);
+    if (j > NUM_DISTINCT_KEYS) {
+      key.prepend("Shift+");
+    }
+
+    QIcon icon = m_cleaveIndexComboBox->itemIcon(i);
+    QAction *action = new QAction(icon, "Cleaved Body " + QString::number(j), m_widget);
+    action->setShortcut(key);
+    setChosenCleaveIndexMenu->addAction(action);
+    connect(action, SIGNAL(triggered()), this, SLOT(onChosenCleaveIndexChanged()));
+
+    // To avoid having to algorithmically invert the mapping of keys to combobox indices
+    // when the shortcut is triggered, just store it.
+    m_actionToComboBoxIndex[action] = i;
   }
 
   m_levelSlider->setValue(m_maxLevel);
@@ -518,7 +569,10 @@ void TaskBodyCleave::buildTaskWidget()
 void TaskBodyCleave::updateColors()
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
-    std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveResultIndex);
+    std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
+    if (!m_showSeedsOnlyCheckBox->isChecked()) {
+      meshIdToCleaveIndex = m_meshIdToCleaveResultIndex;
+    }
 
     for (auto it : m_meshIdToCleaveIndex) {
       meshIdToCleaveIndex[it.first] = it.second;
@@ -565,10 +619,55 @@ void TaskBodyCleave::applyColorMode(bool showingCleaving)
 void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
 {
   m_cleaveIndexComboBox->setEnabled(showingCleaving);
-  m_buttonAdd->setEnabled(showingCleaving);
-  m_buttonRemove->setEnabled(showingCleaving);
-  m_buttonCleave->setEnabled(showingCleaving);
-  m_shortcutToggle->setEnabled(showingCleaving);
+  m_selectBodyButton->setEnabled(showingCleaving);
+  m_showSeedsOnlyCheckBox->setEnabled(showingCleaving);
+  m_cleavingStatusLabel->setEnabled(showingCleaving);
+  m_showSeedsOnlyAction->setEnabled(showingCleaving);
+  m_toggleInBodyAction->setEnabled(showingCleaving);
+  for (auto it : m_actionToComboBoxIndex) {
+    it.first->setEnabled(showingCleaving);
+  }
+}
+
+void TaskBodyCleave::cleave()
+{
+  m_cleavingStatusLabel->setText(CLEAVING_STATUS_IN_PROGRESS);
+
+  QJsonObject requestJson;
+  requestJson["body-id"] = qint64(m_bodyId);
+
+  std::map<unsigned int, std::vector<uint64_t>> cleaveIndexToMeshIds;
+  for (auto it1 : m_meshIdToCleaveIndex) {
+    unsigned int cleaveIndex = it1.second;
+    auto it2 = cleaveIndexToMeshIds.find(cleaveIndex);
+    if (it2 == cleaveIndexToMeshIds.end()) {
+      cleaveIndexToMeshIds[cleaveIndex] = std::vector<uint64_t>();
+    }
+    uint64_t id = it1.first;
+    cleaveIndexToMeshIds[cleaveIndex].push_back(id);
+  }
+
+  QJsonObject requestJsonSeeds;
+
+  for (auto it : cleaveIndexToMeshIds) {
+    QJsonArray requestJsonSeedsForCleaveIndex;
+    for (uint64_t id : it.second) {
+      requestJsonSeedsForCleaveIndex.append(QJsonValue(qint64(id)));
+    }
+    int cleaveIndex = it.first;
+    requestJsonSeeds[QString::number(cleaveIndex)] = requestJsonSeedsForCleaveIndex;
+  }
+
+  requestJson["seeds"] = requestJsonSeeds;
+
+  QUrl url("http://bergs-ws1.int.janelia.org:5556/compute-cleave");
+  QNetworkRequest request(url);
+  request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+  QJsonDocument requestJsonDoc(requestJson);
+  QByteArray requestData(requestJsonDoc.toJson());
+
+  m_networkManager->post(request, requestData);
 }
 
 bool TaskBodyCleave::loadSpecific(QJsonObject json)

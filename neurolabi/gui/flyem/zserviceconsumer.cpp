@@ -125,6 +125,28 @@ bool ZServiceConsumer::HasSplitResult(
   return hasResult;
 }
 
+bool ZServiceConsumer::HasNonemptySplitResult(
+    const ZDvidReader *reader, const QString taskKey)
+{
+  bool hasResult = false;
+  if (reader != NULL) {
+    QByteArray data = reader->readKeyValue(
+          ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_RESULT_KEY),
+          ZDvidUrl::GetResultKeyFromTaskKey(taskKey.toStdString()).c_str());
+    if (!data.isEmpty()) {
+      ZJsonObject jsonObj;
+      jsonObj.decodeString(data.constData());
+      if (jsonObj.hasKey("committed")) {
+        ZJsonArray commitArray(jsonObj.value("committed"));
+        if (commitArray.size() > 0) {
+          hasResult = true;
+        }
+      }
+    }
+  }
+  return hasResult;
+}
+
 QList<ZStackObject*> ZServiceConsumer::ReadSplitTaskSeed(
     const QString &server, const ZDvidTarget &bodySource, uint64_t bodyId)
 {

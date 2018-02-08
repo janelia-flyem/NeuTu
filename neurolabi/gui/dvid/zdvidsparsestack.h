@@ -73,7 +73,7 @@ public:
 
   int getValue(int x, int y, int z) const;
 
-  const ZIntPoint& getDownsampleInterval() const;
+  ZIntPoint getDenseDsIntv() const;
 
   void setDvidTarget(const ZDvidTarget &target);
 

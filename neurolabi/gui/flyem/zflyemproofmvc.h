@@ -141,6 +141,10 @@ public:
       const std::vector<uint64_t> &bodyIdArray, int width, int height,
       const QString &outDir);
 
+  void exportNeuronMeshScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
+
   FlyEmBodyInfoDialog *getBodyInfoDlg() const {
     return m_bodyInfoDlg;
   }

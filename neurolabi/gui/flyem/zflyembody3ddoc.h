@@ -168,7 +168,10 @@ public:
   ZFlyEmToDoItem makeTodoItem(
       int x, int y, int z, bool checked, uint64_t bodyId);
   ZFlyEmToDoItem readTodoItem(int x, int y, int z) const;
+
   void loadSplitTask(uint64_t bodyId);
+  void enableSplitTaskLoading(bool enable);
+  bool splitTaskLoadingEnabled() const;
 
   void addEvent(BodyEvent::EAction action, uint64_t bodyId,
                 BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
@@ -177,7 +180,7 @@ public:
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
 
-  bool hasBody(uint64_t bodyId);
+  bool hasBody(uint64_t bodyId) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -245,17 +248,32 @@ public:
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 
+  void setMaxResLevel(int res) {
+    m_maxResLevel = res;
+  }
+  int getMaxResLevel() const;
+
+
 public:
   void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
   void executeRemoveTodoCommand();
 
 public:
   bool loadDvidSparseStack();
+  bool loadDvidSparseStack(uint64_t bodyId);
+
+  uint64_t protectBodyForSplit();
+
+  bool protectBody(uint64_t bodyId);
+  void releaseBody(uint64_t bodyId);
+  bool isBodyProtected(uint64_t bodyId) const;
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
+  bool showingSynapse() const;
   void addSynapse(bool on);
   void showTodo(bool on);
+  bool showingTodo() const;
   void addTodo(bool on);
   void updateTodo(uint64_t bodyId);
   void setUnrecycable(const QSet<uint64_t> &bodySet);
@@ -280,6 +298,7 @@ public slots:
 
   void processBodySelectionChange();
   void runLocalSplit();
+  void runSplit();
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -353,6 +372,13 @@ private:
   void updateBodyModelSelection();
 
   ZStackObject::EType getBodyObjectType() const;
+  void runLocalSplitFunc();
+  void runSplitFunc();
+
+  /*!
+   * \brief A safe way to get the only body in the document.
+   */
+  uint64_t getSingleBody() const;
 
 signals:
   void todoVisibleChanged();
@@ -375,21 +401,31 @@ private:
       uint64_t bodyId, int resLevel);
   ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
   int getMinResLevel() const;
+
   void removeDiffBody();
 
   ZStackObject* takeObjectFromCache(
       ZStackObject::EType type, const std::string &source);
 
+  void notifyBodyUpdate(uint64_t bodyId, int resLevel);
+  void notifyBodyUpdated(uint64_t bodyId, int resLevel);
+
 private:
   QSet<uint64_t> m_bodySet;
+  mutable QMutex m_BodySetMutex;
+
   flyem::EBodyType m_bodyType = flyem::BODY_FULL;
   QSet<uint64_t> m_selectedBodySet;
+  QSet<uint64_t> m_protectedBodySet;
+  mutable QMutex m_protectedBodySetMutex;
 
   bool m_quitting = false;
   bool m_showingSynapse = true;
   bool m_showingTodo = true;
   bool m_nodeSeeding = false;
   bool m_syncyingBodySelection = false;
+
+  int m_maxResLevel = 0; //Start resolution level; bigger value means lower resolution
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
@@ -418,12 +454,13 @@ private:
 
   QQueue<BodyEvent> m_eventQueue;
 
-  QMutex m_eventQueueMutex;
+  mutable QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
 
   std::map<uint64_t, std::vector<uint64_t>> m_tarIdToMeshIds;
 
   bool m_limitGarbageLifetime = true;
+  bool m_splitTaskLoadingEnabled = true;
 
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;

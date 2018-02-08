@@ -267,6 +267,9 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
   return objArray;
 }
 
+//Add details from high-res bodies to low-res bodies
+//The bodies have been scaled to the same scale
+//Adjustment: Bl(i) - Bh(j!=i) + Bh(i)
 void ZObject3dFactory::AdjustResolution(
       std::map<uint64_t, ZObject3dScan*> &lowResSet,
       std::map<uint64_t, ZObject3dScan*> &highResSet)
@@ -291,7 +294,8 @@ void ZObject3dFactory::AdjustResolution(
   }
 }
 
-std::map<uint64_t, ZObject3dScan*>* ZObject3dFactory::ExtractAllForegroundObject(ZStack &stack, bool upsampling)
+std::map<uint64_t, ZObject3dScan*>* ZObject3dFactory::ExtractAllForegroundObject(
+    ZStack &stack, bool upsampling)
 {
   std::map<uint64_t, ZObject3dScan*> *bodySet =
       ZObject3dScan::extractAllForegroundObject(
@@ -321,6 +325,7 @@ void ZObject3dFactory::DeleteObjectMap(std::map<uint64_t, ZObject3dScan *> *body
   }
 }
 
+//Combine the object map by concatenating objects with the same ID
 void ZObject3dFactory::CombineObjectMap(
     std::map<uint64_t, ZObject3dScan *> *masterBodySet,
     std::map<uint64_t, ZObject3dScan *> *bodySet)
@@ -747,6 +752,34 @@ ZObject3dScan* ZObject3dFactory::MakeBoxObject3dScan(
     }
   }
   obj->setCanonized(true);
+
+  return obj;
+}
+
+ZObject3d* ZObject3dFactory::MakeBoxObject3d(
+    const ZIntCuboid &box, ZObject3d *obj)
+{
+  if (obj == NULL) {
+    obj = new ZObject3d;
+  } else {
+    obj->clear();
+  }
+
+  int x0 = box.getFirstCorner().getX();
+  int y0 = box.getFirstCorner().getY();
+  int z0 = box.getFirstCorner().getZ();
+
+  int x1 = box.getLastCorner().getX();
+  int y1 = box.getLastCorner().getY();
+  int z1 = box.getLastCorner().getZ();
+
+  for (int z = z0; z <= z1; ++z) {
+    for (int y = y0; y <= y1; ++y) {
+      for (int x = x0; x < x1; ++x) {
+        obj->append(x, y, z);
+      }
+    }
+  }
 
   return obj;
 }

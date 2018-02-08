@@ -32,6 +32,7 @@
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zflyemmisc.h"
 #include "dialogs/flyemsettingdialog.h"
+#include "flyem/zflyemdoc3dbodystateaccessor.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -202,6 +203,12 @@ void Neu3Window::createDockWidget()
   connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
           m_bodyListWidget, SLOT(removeBody(uint64_t)));
 
+
+  ZFlyEmDoc3dBodyStateAccessor *sa = new ZFlyEmDoc3dBodyStateAccessor;
+  sa->setDocument(getBodyDocument());
+  //Using an accessor object to decouple ZFlyEmBodyListModel from ZFlyEmBody3dDoc
+  m_bodyListWidget->getModel()->setBodyStateAccessor(sa);
+
   m_bodyListDock->setWidget(m_bodyListWidget);
 
   m_bodyListDock->setAllowedAreas(Qt::LeftDockWidgetArea);
@@ -366,9 +373,6 @@ void Neu3Window::test()
 
 void Neu3Window::setBodyItemSelection(const QSet<uint64_t> &bodySet)
 {
-  std::set<uint64_t> tmpBodySet;
-  tmpBodySet.insert(bodySet.begin(), bodySet.end());
-
   getBodyDocument()->setBodyModelSelected(bodySet);
 }
 

@@ -498,6 +498,65 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
 
 }
 
+void ZFlyEmProofMvc::exportNeuronMeshScreenshot(
+    const std::vector<uint64_t> &bodyIdArray, int width, int height,
+    const QString &outDir)
+{
+  showMeshWindow();
+  glm::vec3 eye = m_meshWindow->getCamera()->get().eye();
+  float nearDist = m_meshWindow->getCamera()->get().nearDist();
+  glm::vec3 upVector = m_meshWindow->getCamera()->get().upVector();
+
+  ZFlyEmBody3dDoc *doc =
+      qobject_cast<ZFlyEmBody3dDoc*>(m_meshWindow->getDocument());
+  int oldMaxResLevel = doc->getMaxResLevel();
+  doc->setMaxResLevel(0);
+
+  std::vector<uint64_t> skippedBodyIdArray;
+  for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
+       iter != bodyIdArray.end(); ++iter) {
+    uint64_t bodyId = *iter;
+
+    if (locateBody(bodyId)) {
+      doc->waitForAllEvent();
+//      QApplication::processEvents();
+
+      m_meshWindow->getCamera()->setEye(eye);
+      m_meshWindow->getCamera()->setUpVector(upVector);
+      m_meshWindow->getCamera()->setNearDist(nearDist);
+//      m_skeletonWindow->raise();
+      //  double eyeDist = eye[0];
+      m_meshWindow->takeScreenShot(
+            QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
+
+      m_meshWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(0, 0, 1));
+      //  m_skeletonWindow->setXZView();
+      //  eye = m_skeletonWindow->getCamera()->getEye();
+      //  eye[1] = m_skeletonWindow->getCamera()->getCenter()[1] - eyeDist;
+      //  m_skeletonWindow->getCamera()->setEye(eye);
+      m_meshWindow->takeScreenShot(
+            QString("%1/%2_xz.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
+
+      m_meshWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(1, 0, 0));
+      m_meshWindow->takeScreenShot(
+            QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
+//      closeSkeletonWindow();
+//      showSkeletonWindow();
+    } else {
+      skippedBodyIdArray.push_back(bodyId);
+    }
+  }
+  doc->setMaxResLevel(oldMaxResLevel);
+
+  emit messageGenerated(
+        ZWidgetMessage(
+          QString("Screenshots created for %1 bodies; %2 bodies skipped").
+          arg(bodyIdArray.size() - skippedBodyIdArray.size()).
+          arg(skippedBodyIdArray.size()), neutube::MSG_INFORMATION));
+
+}
+
+
 void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
 {
   if (window != NULL) {
@@ -840,7 +899,9 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   connect(window, SIGNAL(deletingSplitSeed()), doc, SLOT(deleteSplitSeed()));
   connect(window, &Z3DWindow::deletingSelectedSplitSeed, doc,
           &ZFlyEmBody3dDoc::deleteSelectedSplitSeed);
-  connect(window, SIGNAL(runningLocalSplit()), doc, SLOT(runLocalSplit()));
+  connect(window, &Z3DWindow::runningLocalSplit,
+          doc, &ZFlyEmBody3dDoc::runLocalSplit);
+  connect(window, &Z3DWindow::runningSplit, doc, &ZFlyEmBody3dDoc::runSplit);
 
   doc->enableNodeSeeding(true);
 //  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
@@ -856,6 +917,11 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_MESH);
+
+#ifdef _DEBUG_2
+  doc->setMaxResLevel(0);
+#endif
+
   m_meshWindow = m_bodyWindowFactory->make3DWindow(doc);
 
   doc->showSynapse(m_meshWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));

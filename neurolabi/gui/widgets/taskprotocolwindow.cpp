@@ -3,11 +3,14 @@
 
 #include <QDateTime>
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
 #include <QsLog.h>
+
 
 #include "neutube_def.h"
 #include "neutubeconfig.h"
@@ -19,6 +22,7 @@
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
+#include "z3dwindow.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -608,6 +612,8 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             m_currentTaskWidget->setVisible(true);
             updateButtonsEnabled();
         }
+
+        updateMenu(true);
     }
 }
 
@@ -615,13 +621,31 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * ensures that the "Next" and "Prev" buttons are enabled only when there are
  * next or previous tasks to go to
  */
-void TaskProtocolWindow::updateButtonsEnabled()
-{
-  bool nextPrevEnabled = ((m_taskList.size() > 1) &&
-                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
-  ui->nextButton->setEnabled(nextPrevEnabled);
-  ui->prevButton->setEnabled(nextPrevEnabled);
+void TaskProtocolWindow::updateButtonsEnabled() {
+    bool nextPrevEnabled = ((m_taskList.size() > 1) &&
+                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
+    ui->nextButton->setEnabled(nextPrevEnabled);
+    ui->prevButton->setEnabled(nextPrevEnabled);
 }
+
+/*
+ * removes the task menu from the main menu bar, and if "add" is true
+ * also adds a new menu for the current task
+ */
+void TaskProtocolWindow::updateMenu(bool add) {
+    if (Z3DWindow *window = m_body3dDoc->getParent3DWindow()) {
+        if (m_currentTaskMenuAction) {
+            window->menuBar()->removeAction(m_currentTaskMenuAction);
+        }
+        if (add && (m_currentTaskIndex >= 0)) {
+            QMenu *menu = m_taskList[m_currentTaskIndex]->getTaskMenu();
+            if (menu != NULL) {
+              m_currentTaskMenuAction = window->menuBar()->addMenu(menu);
+            }
+        }
+    }
+}
+
 
 /*
  * update the body view window for current index
@@ -952,6 +976,7 @@ void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {
         ui->taskButtonsWidget->hide();
         ui->taskDetailsWidget->hide();
         ui->tasksProgressWidget->hide();
+        updateMenu(false);
     }
 }
 
