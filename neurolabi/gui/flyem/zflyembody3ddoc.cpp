@@ -1034,8 +1034,13 @@ void ZFlyEmBody3dDoc::notifyBodyUpdate(uint64_t bodyId, int resLevel)
 
 void ZFlyEmBody3dDoc::notifyBodyUpdated(uint64_t bodyId, int resLevel)
 {
-  notifyWindowMessageUpdated(
-        QString("Body %1 updated (scale=%2).").arg(bodyId).arg(resLevel));
+  if (resLevel > 0) {
+    notifyWindowMessageUpdated(
+          QString("Body %1 updated (scale=%2).").arg(bodyId).arg(resLevel));
+  } else {
+    notifyWindowMessageUpdated(
+          QString("Body %1 updated.").arg(bodyId));
+  }
 }
 
 void ZFlyEmBody3dDoc::addBodyMeshFunc(
@@ -1235,10 +1240,20 @@ void ZFlyEmBody3dDoc::showSynapse(bool on)
   addSynapse(on);
 }
 
+bool ZFlyEmBody3dDoc::showingSynapse() const
+{
+  return m_showingSynapse;
+}
+
 void ZFlyEmBody3dDoc::showTodo(bool on)
 {
   m_showingTodo = on;
   addTodo(on);
+}
+
+bool ZFlyEmBody3dDoc::showingTodo() const
+{
+  return m_showingTodo;
 }
 
 bool ZFlyEmBody3dDoc::synapseLoaded(uint64_t bodyId) const
@@ -1375,6 +1390,10 @@ void ZFlyEmBody3dDoc::updateSegmentation()
 
 void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
 {
+  if (!m_splitTaskLoadingEnabled) {
+    return;
+  }
+
   QList<ZStackObject*> seedList =
       ZFlyEmMisc::LoadSplitTask(getDvidTarget(), bodyId);
 
@@ -1388,6 +1407,16 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
     //A dangerous way to share objects. Need object clone or shared pointer.
 //    ZStackDocAccessor::AddObject(getDataDocument(), seedList);
   }
+}
+
+void ZFlyEmBody3dDoc::enableSplitTaskLoading(bool enable)
+{
+  m_splitTaskLoadingEnabled = enable;
+}
+
+bool ZFlyEmBody3dDoc::splitTaskLoadingEnabled() const
+{
+  return m_splitTaskLoadingEnabled;
 }
 
 ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
@@ -2112,31 +2141,39 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
 
 void ZFlyEmBody3dDoc::runLocalSplitFunc()
 {
-  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
-  if (seedList.size() > 1) {
-    ZStackWatershedContainer container(NULL, NULL);
-    foreach (ZStackObject *seed, seedList) {
-      container.addSeed(seed);
-    }
+  notifyWindowMessageUpdated("Starting local split ...");
+  if (loadDvidSparseStack()) {
+    notifyWindowMessageUpdated("Running local split ...");
+    QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+    if (seedList.size() > 1) {
+      ZStackWatershedContainer container(NULL, NULL);
+      foreach (ZStackObject *seed, seedList) {
+        container.addSeed(seed);
+      }
 
-    container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
 
-    ZDvidSparseStack *sparseStack =
-        getDataDocument()->getDvidSparseStack(
-          container.getRange(), flyem::BODY_SPLIT_ONLINE);
-    container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
+      ZDvidSparseStack *sparseStack =
+          getDataDocument()->getDvidSparseStack(
+            container.getRange(), flyem::BODY_SPLIT_ONLINE);
+      container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
 
-    std::vector<ZStackWatershedContainer*> containerList =
-        container.makeLocalSeedContainer(256*256*256);
+      std::vector<ZStackWatershedContainer*> containerList =
+          container.makeLocalSeedContainer(256*256*256);
 
-    ZOUT(LINFO(), 5) << containerList.size() << "containers";
-    for (ZStackWatershedContainer *subcontainer : containerList) {
-      subcontainer->run();
-      ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
-      delete subcontainer;
+      ZOUT(LINFO(), 5) << containerList.size() << "containers";
+      for (ZStackWatershedContainer *subcontainer : containerList) {
+        subcontainer->run();
+        ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
+        delete subcontainer;
+      }
+      notifyWindowMessageUpdated("Local split finished.");
+    } else {
+      //    std::cout << "Less than 2 seeds found. Abort." << std::endl;
+      notifyWindowMessageUpdated("Less than 2 seeds found. Splitting canceled.");
     }
   } else {
-    std::cout << "Less than 2 seeds found. Abort." << std::endl;
+    notifyWindowMessageUpdated("Failed to load body data. Split aborted.");
   }
 }
 
@@ -2146,14 +2183,13 @@ void ZFlyEmBody3dDoc::runLocalSplit()
 
   removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
 
-  if (loadDvidSparseStack()) {
-    if (!m_futureMap.isAlive("split")) {
-      QFuture<void> future =
-          QtConcurrent::run(this, &ZFlyEmBody3dDoc::runLocalSplitFunc);
-      m_futureMap["split"] = future;
-    }
-  } else {
-    std::cout << "No body loaded for split." << std::endl;
+  bool splitStarted = false;
+
+  if (!m_futureMap.isAlive("split")) {
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmBody3dDoc::runLocalSplitFunc);
+    m_futureMap["split"] = future;
+    splitStarted = true;
   }
 }
 

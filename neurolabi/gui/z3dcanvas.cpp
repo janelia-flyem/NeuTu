@@ -189,7 +189,7 @@ void Z3DCanvas::updateDecoration()
 void Z3DCanvas::dump(const QString &message)
 {
   m_message = message;
-  repaint();
+  viewport()->update();
 }
 
 void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
