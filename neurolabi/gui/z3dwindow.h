@@ -219,6 +219,7 @@ signals:
   void testing();
   void browsing(double x, double y, double z);
   void runningLocalSplit();
+  void runningSplit();
 
   void settingTriggered();
 

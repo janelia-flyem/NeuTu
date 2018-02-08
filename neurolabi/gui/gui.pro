@@ -840,7 +840,9 @@ HEADERS += mainwindow.h \
     zstackdocproxy.h \
     zroiobjsmodel.h \
     zstackobjectaccessor.h \
-    zgraphptr.h
+    zgraphptr.h \
+    flyem/zflyembodystateaccessor.h \
+    flyem/zflyemdoc3dbodystateaccessor.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1466,7 +1468,9 @@ SOURCES += main.cpp \
     zstackdocproxy.cpp \
     zroiobjsmodel.cpp \
     zstackobjectaccessor.cpp \
-    zgraphptr.cpp
+    zgraphptr.cpp \
+    flyem/zflyembodystateaccessor.cpp \
+    flyem/zflyemdoc3dbodystateaccessor.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

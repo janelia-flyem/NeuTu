@@ -180,7 +180,7 @@ public:
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
 
-  bool hasBody(uint64_t bodyId);
+  bool hasBody(uint64_t bodyId) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -260,6 +260,13 @@ public:
 
 public:
   bool loadDvidSparseStack();
+  bool loadDvidSparseStack(uint64_t bodyId);
+
+  uint64_t protectBodyForSplit();
+
+  bool protectBody(uint64_t bodyId);
+  void releaseBody(uint64_t bodyId);
+  bool isBodyProtected(uint64_t bodyId) const;
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
@@ -291,6 +298,7 @@ public slots:
 
   void processBodySelectionChange();
   void runLocalSplit();
+  void runSplit();
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -365,6 +373,12 @@ private:
 
   ZStackObject::EType getBodyObjectType() const;
   void runLocalSplitFunc();
+  void runSplitFunc();
+
+  /*!
+   * \brief A safe way to get the only body in the document.
+   */
+  uint64_t getSingleBody() const;
 
 signals:
   void todoVisibleChanged();
@@ -398,8 +412,12 @@ private:
 
 private:
   QSet<uint64_t> m_bodySet;
+  mutable QMutex m_BodySetMutex;
+
   flyem::EBodyType m_bodyType = flyem::BODY_FULL;
   QSet<uint64_t> m_selectedBodySet;
+  QSet<uint64_t> m_protectedBodySet;
+  mutable QMutex m_protectedBodySetMutex;
 
   bool m_quitting = false;
   bool m_showingSynapse = true;
@@ -436,7 +454,7 @@ private:
 
   QQueue<BodyEvent> m_eventQueue;
 
-  QMutex m_eventQueueMutex;
+  mutable QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
 
   std::map<uint64_t, std::vector<uint64_t>> m_tarIdToMeshIds;
