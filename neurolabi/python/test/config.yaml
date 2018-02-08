@@ -1,4 +1,4 @@
-command: /Users/zhaot/Work/neutube/neurolabi/neuTube_Debug_FlyEM_Qt5/neutu_d.app/Contents/MacOS/neutu_d
+command: /groups/flyem/data/shared/test/bin/neutu
 task_server:
   host: zhaot-ws1
   port: 9000
