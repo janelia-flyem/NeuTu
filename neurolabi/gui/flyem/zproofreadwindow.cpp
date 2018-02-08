@@ -279,6 +279,12 @@ void ZProofreadWindow::createMenu()
           this, SLOT(exportNeuronScreenshot()));
   exportMenu->addAction(exportScreenshotAction);
 
+  QAction *exportMeshScreenshotAction = new QAction("Neuron Mesh Screenshot", this);
+  connect(exportMeshScreenshotAction, SIGNAL(triggered()),
+          this, SLOT(exportNeuronMeshScreenshot()));
+  exportMenu->addAction(exportMeshScreenshotAction);
+
+
   QAction *exportGrayscaleAction = new QAction("Grayscale", this);
   connect(exportGrayscaleAction, SIGNAL(triggered()),
           this, SLOT(exportGrayscale()));
@@ -814,6 +820,17 @@ void ZProofreadWindow::exportNeuronScreenshot()
     bodyIdArray.push_back(134974661);
     */
     m_mainMvc->exportNeuronScreenshot(
+          bodyIdArray, m_bodyScreenshotDlg->getFrameWidth(),
+          m_bodyScreenshotDlg->getFrameHeight(),
+          m_bodyScreenshotDlg->getOutputPath());
+  }
+}
+
+void ZProofreadWindow::exportNeuronMeshScreenshot()
+{
+  if (m_bodyScreenshotDlg->exec()) {
+    std::vector<uint64_t> bodyIdArray = m_bodyScreenshotDlg->getBodyIdArray();
+    m_mainMvc->exportNeuronMeshScreenshot(
           bodyIdArray, m_bodyScreenshotDlg->getFrameWidth(),
           m_bodyScreenshotDlg->getFrameHeight(),
           m_bodyScreenshotDlg->getOutputPath());

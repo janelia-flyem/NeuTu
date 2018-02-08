@@ -268,9 +268,9 @@ void ZDvidSparseStack::setLabel(uint64_t bodyId)
 //  pushLabel();
 }
 
-const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
+ZIntPoint ZDvidSparseStack::getDenseDsIntv() const
 {
-  return m_sparseStack.getDownsampleInterval();
+  return m_sparseStack.getDenseDsIntv();
 }
 
 void ZDvidSparseStack::runFillValueFunc()
@@ -433,18 +433,18 @@ bool ZDvidSparseStack::fillValue(
             blockIndex.setX(blockSpan[i]);
             int blockNumber = blockSpan[i + 1] - blockSpan[i] + 1;
             ZOUT(LTRACE(), 5) << "Reading" << blockNumber << "blocks";
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Reading" << blockNumber << "blocks" << std::endl;
 #endif
             std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
                   blockIndex, m_grayscaleInfo, blockNumber);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
 #endif
             grid->consumeStack(blockIndex, stackArray);
             blockCount += stackArray.size();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
 #endif
 #if 0

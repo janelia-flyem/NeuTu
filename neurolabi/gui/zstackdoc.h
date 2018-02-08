@@ -961,6 +961,7 @@ public:
 
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
+  void notifyWindowMessageUpdated(const QString &message);
 
   void notifyProgressStart();
   void notifyProgressEnd();

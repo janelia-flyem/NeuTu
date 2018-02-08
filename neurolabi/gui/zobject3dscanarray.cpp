@@ -3,6 +3,7 @@
 #include "zstack.hxx"
 #include "zintcuboid.h"
 #include "zstackfactory.h"
+#include "misc/miscutility.h"
 
 ZObject3dScanArray::ZObject3dScanArray()
 {
@@ -99,16 +100,48 @@ ZStack* ZObject3dScanArray::toLabelField() const
 
   if (!empty()) {
     ZIntCuboid cuboid = getBoundBox();
-    stack = ZStackFactory::MakeZeroStack(GREY, cuboid);
-    int offset[3];
-    offset[0] = -stack->getOffset().getX();
-    offset[1] = -stack->getOffset().getY();
-    offset[2] = -stack->getOffset().getZ();
-    int label = 1;
+
+    int dsIntv = misc::getIsoDsIntvFor3DVolume(cuboid, neutube::ONEGIGA, false);
+
+    if (dsIntv == 0) {
+      stack = ZStackFactory::MakeZeroStack(GREY, cuboid);
+      int offset[3];
+      offset[0] = -stack->getOffset().getX();
+      offset[1] = -stack->getOffset().getY();
+      offset[2] = -stack->getOffset().getZ();
+      int label = 1;
+      for (ZObject3dScanArray::const_iterator iter = begin(); iter != end();
+           ++iter) {
+        const ZObject3dScan *obj = *iter;
+        obj->drawStack(stack->c_stack(), label++, offset);
+      }
+    } else {
+      ZObject3dScanArray dsObjArray = makeDownsample(dsIntv, dsIntv, dsIntv);
+      stack = dsObjArray.toLabelField();
+    }
+  }
+
+  return stack;
+}
+
+ZStack* ZObject3dScanArray::toColorField() const
+{
+  ZStack *stack = NULL;
+
+  if (!empty()) {
+    ZIntCuboid cuboid = getBoundBox();
+    stack = ZStackFactory::MakeZeroStack(COLOR, cuboid);
+//    int offset[3];
+//    offset[0] = -stack->getOffset().getX();
+//    offset[1] = -stack->getOffset().getY();
+//    offset[2] = -stack->getOffset().getZ();
+//    int label = 1;
     for (ZObject3dScanArray::const_iterator iter = begin(); iter != end();
          ++iter) {
       const ZObject3dScan *obj = *iter;
-      obj->drawStack(stack->c_stack(), label++, offset);
+      obj->drawStack(
+            stack, obj->getColor().red(), obj->getColor().green(), obj->getColor().blue());
+//      obj->drawStack(stack->c_stack(), label++, offset);
     }
   }
 
@@ -155,6 +188,20 @@ void ZObject3dScanArray::downsample(int xintv, int yintv, int zintv)
     ZObject3dScan *obj = *iter;
     obj->downsampleMax(xintv, yintv, zintv);
   }
+}
+
+ZObject3dScanArray ZObject3dScanArray::makeDownsample(
+    int xintv, int yintv, int zintv) const
+{
+  ZObject3dScanArray result;
+  for (ZObject3dScanArray::const_iterator iter = begin(); iter != end(); ++iter) {
+    const ZObject3dScan *obj = *iter;
+    ZObject3dScan *dsObj = new ZObject3dScan(*obj);
+    dsObj->downsampleMax(xintv, yintv, zintv);
+    result.append(dsObj);
+  }
+
+  return result;
 }
 
 void ZObject3dScanArray::upsample(int xintv, int yintv, int zintv)

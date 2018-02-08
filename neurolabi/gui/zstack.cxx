@@ -2156,6 +2156,11 @@ void ZStack::pushDsIntv(int dx, int dy, int dz)
   m_dsIntv.setZ((m_dsIntv.getZ() + 1) * (dz + 1) - 1);
 }
 
+void ZStack::pushDsIntv(const ZIntPoint &dsIntv)
+{
+  pushDsIntv(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+}
+
 void ZStack::downsampleMin(int xintv, int yintv, int zintv)
 {
   if (xintv == 0 && yintv == 0 && zintv == 0) {

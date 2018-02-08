@@ -135,10 +135,13 @@ TEST(ZSparseStack, downsample)
   */
 
   spStack.setObjectMask(obj);
+  spStack.setDsIntv(1, 2, 3);
 
   ZStack *stack2 = spStack.getStack();
+  ASSERT_EQ(ZIntPoint(3, 5, 7), stack2->getDsIntv());
 
-  stack2->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//  stack2->save(GET_TEST_DATA_DIR + "/test.tif");
 }
 
 #endif

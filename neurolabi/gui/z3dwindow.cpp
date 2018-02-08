@@ -82,6 +82,7 @@
 #include "z3dmeshfilter.h"
 #include "zstackobjectsourcefactory.h"
 #include "sandbox/zbrowseropener.h"
+#include "zwidgetmessage.h"
 
 #include <QDesktopWidget>
 #include <QMenuBar>
@@ -126,6 +127,12 @@ Z3DWindow::Z3DWindow(
 
 
   m_view = new Z3DView(m_doc.get(), initMode, stereoView, this);
+
+  ZWidgetMessage::ConnectMessagePipe(m_doc.get(), this);
+  /*
+  connect(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)),
+          this, SLOT(processMessage(ZWidgetMessage)));
+          */
 
   setCentralWidget(getCanvas());
   connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::init);
@@ -292,6 +299,8 @@ void Z3DWindow::init()
           this, SLOT(cropSwcInRoi()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBodyLocal()),
           this, SIGNAL(runningLocalSplit()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBody()),
+          this, SIGNAL(runningSplit()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(deletingSelected()),
           this, SLOT(deleteSelected()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
@@ -3590,6 +3599,13 @@ void Z3DWindow::uncheckSelectedTodo()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     doc->uncheckSelectedTodoItem();
+  }
+}
+
+void Z3DWindow::processMessage(const ZWidgetMessage &msg)
+{
+  if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
+    m_view->dump(msg.toPlainString());
   }
 }
 

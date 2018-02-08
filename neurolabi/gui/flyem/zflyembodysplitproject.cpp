@@ -835,61 +835,6 @@ void ZFlyEmBodySplitProject::resetQuickResultWindow()
   m_quickResultDoc->removeAllSwcTree(true);
 }
 
-#if 0
-void ZFlyEmBodySplitProject::showResult3d()
-{
-  if (getDocument() != NULL) {
-    if (m_resultWindow == NULL) {
-      //emit messageGenerated("Showing results in 3D ...");
-      //ZStackDocReader docReader;
-      ZStackDocLabelStackFactory *factory = new ZStackDocLabelStackFactory;
-      factory->setDocument(getDocument());
-      ZStack *labeled = factory->makeStack();
-      if (labeled != NULL) {
-        //docReader.setStack(labeled);
-        ZStackDoc *doc = new ZStackDoc;
-        doc->loadStack(labeled);
-        doc->setTag(NeuTube::Document::FLYEM_SPLIT);
-        doc->setStackFactory(factory);
-        ZWindowFactory windowFactory;
-        windowFactory.setWindowTitle("Splitting Result");
-        m_resultWindow = windowFactory.make3DWindow(doc);
-
-        //ZStackFrame *newFrame = new ZStackFrame;
-        //newFrame->addDocData(docReader);
-        //newFrame->document()->setTag(NeuTube::Document::FLYEM_SPLIT);
-        //newFrame->document()->setStackFactory(factory);
-
-        connect(getDocument(), SIGNAL(labelFieldModified()),
-                doc, SLOT(reloadStack()));
-        /*
-        m_dataFrame->connect(
-              m_dataFrame->document().get(), SIGNAL(labelFieldModified()),
-              doc, SLOT(reloadStack()));
-              */
-        //m_resultWindow = newFrame->open3DWindow(NULL);
-        if (getDocument()->hasVisibleSparseStack()) {
-          ZIntPoint dsIntv =
-              getDocument()->getConstSparseStack()->getDownsampleInterval();
-          if (dsIntv.getX() != dsIntv.getZ()) {
-            m_resultWindow->getVolumeFilter()->setZScale(
-                  ((float) (dsIntv.getZ() + 1)) / (dsIntv.getX() + 1));
-            m_resultWindow->resetCamera();
-          }
-        }
-        connect(m_resultWindow, SIGNAL(destroyed()),
-                this, SLOT(shallowClearResultWindow()));
-        //delete newFrame;
-      }
-    }
-    m_resultWindow->show();
-    m_resultWindow->raise();
-
-    //emit messageGenerated("Done.");
-  }
-}
-#endif
-
 bool ZFlyEmBodySplitProject::hasDataFrame() const
 {
   return m_dataFrame != NULL;

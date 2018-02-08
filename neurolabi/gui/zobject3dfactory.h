@@ -84,6 +84,8 @@ public:
   static ZObject3dScan* MakeBoxObject3dScan(
       const ZIntCuboid &box, ZObject3dScan *obj);
 
+  static ZObject3d* MakeBoxObject3d(const ZIntCuboid &box, ZObject3d *obj);
+
 private:
   static void AdjustResolution(
       std::map<uint64_t, ZObject3dScan*> &lowResSet,
