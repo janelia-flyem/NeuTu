@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QModelIndex>
+#include <QNetworkReply>
 #include <QStringListModel>
 
 #include "dvid/zdvidreader.h"
@@ -29,12 +30,18 @@ private slots:
     void onRepoClicked(QModelIndex modelIndex);
     void onBranchClicked(QModelIndex modelIndex);
     void toggleDetailsPanel();
-    void launchOldDialog();
+    void launchOldDialog();    
+    void finishLoadingDatasets(QJsonObject jsonData);
+    void finishLoadingDatasetsFromGitHub(QNetworkReply::NetworkError error = QNetworkReply::NoError);
+
+signals:
+    void datasetsFinishedLoading(QJsonObject jsonData);
 
 private:
     static const QString KEY_DATASETS;
     static const QString KEY_VERSION;
     static const int SUPPORTED_VERSION;
+    static const QString URL_DATASETS;
     static const QString KEY_NAME;
     static const QString KEY_SERVER;
     static const QString KEY_PORT;
@@ -51,6 +58,7 @@ private:
 
     static const QString DEFAULT_MASTER_NAME;
     static const QString MESSAGE_LOADING;
+    static const QString MESSAGE_ERROR;
 
     Ui::DvidBranchDialog *ui;
     ZDvidReader m_reader;
@@ -62,9 +70,11 @@ private:
     QMap<QString, QJsonObject> m_repoMap;
     QMap<QString, QJsonObject> m_branchMap;
     bool m_detailsVisible;
+    QNetworkAccessManager * m_networkManager;
+    QNetworkReply * m_datasetReply;
 
     void loadDatasets();
-    QJsonObject loadDatasetsFromFile();
+    void loadDatasetsFromFile();
     void loadBranches(QString repoName);
     QStringList findBranches(QJsonObject nodeJson);
     void showError(QString title, QString message);
@@ -73,6 +83,9 @@ private:
     QString findMasterName(QString prefix, QStringList names);
     void showDetailsPanel();
     void hideDetailsPanel();
+    void displayDatasetError(QString errorMessage);
+    void loadDatasetsFromGitHub();
+    void showEvent(QShowEvent *event);
 };
 
 #endif // DVIDBRANCHDIALOG_H

@@ -9,10 +9,14 @@
 #include <QJsonObject>
 #include <QMessageBox>
 #include <QModelIndex>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QStandardItem>
 #include <QStringList>
 #include <QStringListModel>
 #include <QsLog.h>
+#include <QUrl>
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidnode.h"
@@ -21,11 +25,14 @@
 
 DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     ZDvidTargetProviderDialog(parent),
+    m_datasetReply(NULL),
     ui(new Ui::DvidBranchDialog)
 {
     ui->setupUi(this);
 
     m_reader.setVerbose(false);
+
+    m_networkManager = new QNetworkAccessManager(this);
 
     // UI configuration
     ui->todoBox->setPlaceholderText("default");
@@ -38,6 +45,9 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     connect(ui->detailsButton, SIGNAL(clicked(bool)), this, SLOT(toggleDetailsPanel()));
     connect(ui->oldDialogButton, SIGNAL(clicked(bool)), this, SLOT(launchOldDialog()));
 
+    // data load connections
+    connect(this, SIGNAL(datasetsFinishedLoading(QJsonObject)), this, SLOT(finishLoadingDatasets(QJsonObject)));
+
     // models & related
     m_repoModel = new QStringListModel();
     ui->repoListView->setModel(m_repoModel);
@@ -45,16 +55,15 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     m_branchModel = new QStringListModel();
     ui->branchListView->setModel(m_branchModel);
 
-    // populate first panel with server data
+    // set initial UI state
     hideDetailsPanel();
-    loadDatasets();
-
 }
 
 // constants
 const QString DvidBranchDialog::KEY_DATASETS = "primary";
 const QString DvidBranchDialog::KEY_VERSION = "version";
 const int DvidBranchDialog::SUPPORTED_VERSION = 1;
+const QString DvidBranchDialog::URL_DATASETS = "https://raw.githubusercontent.com/janelia-flyem/DVID-datasets/master/datasets.json";
 const QString DvidBranchDialog::KEY_NAME = "name";
 const QString DvidBranchDialog::KEY_SERVER = "server";
 const QString DvidBranchDialog::KEY_PORT = "port";
@@ -71,29 +80,57 @@ const int DvidBranchDialog::DEFAULT_PORT = 8000;
 
 const QString DvidBranchDialog::DEFAULT_MASTER_NAME = "master";
 const QString DvidBranchDialog::MESSAGE_LOADING = "Loading...";
+const QString DvidBranchDialog::MESSAGE_ERROR = "Error:";
+
+/*
+ * when the dialog is shown, load the dataset list; it turns out that
+ * multiple copies of this dialog are created but rarely/never used,
+ * and we don't want to load data for all of them, so we postpone
+ * it until the dialog is shown
+ */
+void DvidBranchDialog::showEvent(QShowEvent* event) {
+    QWidget::showEvent(event);
+    if (m_repoMap.isEmpty()) {
+        loadDatasets();
+    }
+}
 
 /*
  * load stored dataset list into the first panel of the UI
  */
 void DvidBranchDialog::loadDatasets() {
-    // also functions as a reset
+    // this functions as a UI reset
     clearNode();
 
-    // for now, load from file; probably should be from
-    //  DVID, some other db, or a Fly EM service of some kind
-    QJsonObject jsonData = loadDatasetsFromFile();
+    QStringList datasetNames;
+    datasetNames.append(MESSAGE_LOADING);
+    m_repoModel->setStringList(datasetNames);
+
+    // this call sends a signal when done to finishLoadingDatasets():
+
+    // testing: from file
+    // loadDatasetsFromFile();
+
+    // for real: from GitHub:
+    loadDatasetsFromGitHub();
+}
+
+/*
+ * handle loaded dataset
+ */
+void DvidBranchDialog::finishLoadingDatasets(QJsonObject jsonData) {
     if (jsonData.isEmpty()) {
-        showError("Error loading datasets", "Dataset file did not have any data!");
+        displayDatasetError(MESSAGE_ERROR + " Dataset file did not have any data!");
         return;
     }
     if (!jsonData.contains(KEY_DATASETS) || !jsonData.contains(KEY_VERSION)) {
-        showError("Error loading datasets", "Dataset file did not have expected data!");
+        displayDatasetError(MESSAGE_ERROR + " Dataset file did not have expected data!");
         return;
     }
 
     // version check
     if (jsonData[KEY_VERSION].toInt() > SUPPORTED_VERSION) {
-        showError("Error loading datasets", "Dataset file is a newer version than we can handle! Please update NeuTu/Neu3!");
+        displayDatasetError(MESSAGE_ERROR + " Dataset file is a newer version than we can handle! Please update NeuTu/Neu3!");
         return;
     }
 
@@ -108,36 +145,82 @@ void DvidBranchDialog::loadDatasets() {
     QStringList repoNameList = m_repoMap.keys();
     repoNameList.sort();
     m_repoModel->setStringList(repoNameList);
+
 }
 
 /*
- * load stored dataset from file into json
+ * handle error display from dataset loads
  */
-QJsonObject DvidBranchDialog::loadDatasetsFromFile() {
+void DvidBranchDialog::displayDatasetError(QString errorMessage) {
+    QStringList stringList;
+    stringList.append(errorMessage);
+    m_repoModel->setStringList(stringList);
+}
+
+/*
+ * load stored dataset from file into json; for testing only!
+ * note that errors are silent (you just get empty data back)
+ */
+void DvidBranchDialog::loadDatasetsFromFile() {
     QJsonObject empty;
 
     // testing: hard-coded file location
     QString filepath = "/Users/olbrisd/projects/flyem/misc-repos/DVID-datasets/datasets.json";
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
-        showError("Error loading datasets", "Couldn't open dataset file " + filepath + "!");
-        return empty;
+        emit datasetsFinishedLoading(empty);
+        return;
     }
 
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (doc.isNull() or !doc.isObject()) {
-        showError("Error parsing file", "Couldn't parse file " + filepath + "!");
-        return empty;
+        emit datasetsFinishedLoading(empty);
     } else {
         LINFO() << "Read DVID repo information json from file" + filepath;
-        return doc.object();
+        emit datasetsFinishedLoading(doc.object());
+    }
+}
+
+/*
+ * retrieve the list of datasets from a GitHub repo; this
+ * method initiates the network call
+ */
+void DvidBranchDialog::loadDatasetsFromGitHub() {
+    QUrl requestUrl;
+    requestUrl.setUrl(URL_DATASETS);
+    m_datasetReply = m_networkManager->get(QNetworkRequest(requestUrl));
+    connect(m_datasetReply, SIGNAL(finished()), this, SLOT(finishLoadingDatasetsFromGitHub()));
+}
+
+/* finish retrieving the list of datasets from GitHub;
+ * this method gets the data from the network call and
+ * triggers the last phase of the load
+ */
+void DvidBranchDialog::finishLoadingDatasetsFromGitHub(QNetworkReply::NetworkError error) {
+    if (error != QNetworkReply::NoError) {
+        displayDatasetError(" Error reading dataset list from GitHub; status code: " +
+            m_datasetReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toString());
+    } else {
+        QString stringReply = (QString) m_datasetReply->readAll();
+
+        // check for GitHub returning a "404" string instead of an actual http status:
+        if (stringReply.startsWith("404")) {
+            displayDatasetError(" Dataset file couldn't be found!");
+            return;
+        }
+        QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
+        emit datasetsFinishedLoading(jsonResponse.object());
     }
 }
 
 void DvidBranchDialog::onRepoClicked(QModelIndex modelIndex) {
     clearNode();
-    loadBranches(m_repoModel->data(modelIndex, Qt::DisplayRole).toString());
+    QString repoName = m_repoModel->data(modelIndex, Qt::DisplayRole).toString();
+    if (repoName.startsWith(MESSAGE_ERROR) || repoName == MESSAGE_LOADING) {
+        return;
+    }
+    loadBranches(repoName);
 }
 
 /*
