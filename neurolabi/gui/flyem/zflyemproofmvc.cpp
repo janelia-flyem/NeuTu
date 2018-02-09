@@ -3182,10 +3182,8 @@ void ZFlyEmProofMvc::showFineBody3d()
     m_bodyViewers->addWindow(1, m_bodyWindow, "Body View");
     updateBodyWindow();
     m_bodyWindow->setYZView();
-  }
-  else
-  {
-      m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(1));
+  } else {
+    m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(1));
   }
 
   m_bodyViewWindow->setCurrentWidow(m_bodyWindow);

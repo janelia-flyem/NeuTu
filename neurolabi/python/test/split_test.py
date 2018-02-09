@@ -39,7 +39,7 @@ dc = dvidio.DvidClient(env = taskEnv)
 splitTaskList = dc.read_split_task_keys()
 count = 0
 for task in splitTaskList:
-    if task.startswith('task__http-++emdata3.int.janelia.org-8300+api+node+2c15') or task.startswith('task__http-++emdata3-8300+api+node+2c15'):
+    if task.startswith('task__http-++emdata3.int.janelia.org-8300+api+node+700c') or task.startswith('task__http-++emdata3-8300+api+node+700c'):
         count += 1
         print('>>>>', count, task)
         taskUrl = dvidUrl.get_url(dvidUrl.get_split_task_path(task))

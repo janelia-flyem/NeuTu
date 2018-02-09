@@ -842,7 +842,10 @@ HEADERS += mainwindow.h \
     zstackobjectaccessor.h \
     zgraphptr.h \
     flyem/zflyembodystateaccessor.h \
-    flyem/zflyemdoc3dbodystateaccessor.h
+    flyem/zflyemdoc3dbodystateaccessor.h \
+    misc/zmarchingcube.h \
+    ilastik/marching_cubes.h \
+    ilastik/laplacian_smoothing.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1470,7 +1473,10 @@ SOURCES += main.cpp \
     zstackobjectaccessor.cpp \
     zgraphptr.cpp \
     flyem/zflyembodystateaccessor.cpp \
-    flyem/zflyemdoc3dbodystateaccessor.cpp
+    flyem/zflyemdoc3dbodystateaccessor.cpp \
+    misc/zmarchingcube.cpp \
+    ilastik/marching_cubes.cpp \
+    ilastik/laplacian_smoothing.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

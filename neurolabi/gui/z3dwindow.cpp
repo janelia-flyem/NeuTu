@@ -181,6 +181,7 @@ void Z3DWindow::createToolBar()
   if (getWindowType() == neutube3d::TYPE_COARSE_BODY ||
       getWindowType() == neutube3d::TYPE_BODY ||
       getWindowType() == neutube3d::TYPE_SKELETON ||
+      getWindowType() == neutube3d::TYPE_MESH ||
       getWindowType() == neutube3d::TYPE_NEU3) {
     m_toolBar = addToolBar("View");
     QAction *viewSynapseAction = ZActionFactory::MakeAction(
