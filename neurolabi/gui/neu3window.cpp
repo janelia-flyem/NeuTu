@@ -98,13 +98,6 @@ void Neu3Window::connectSignalSlot()
   connect(getBodyDocument(), SIGNAL(meshArchiveLoadingEnded()),
           this, SLOT(meshArchiveLoadingEnded()));
 
-#if 0
-  // TODO: For the moment, the following code is disabled, as it introduces a noticeable
-  // slowdown for the large archives of super voxel meshes that can occur in practice.
-  // Without the following code, the ZBodyListWidget will not display the IDs of the meshes
-  // within the archive, but an enormously long list of IDs is not a useful user interface
-  // anyway, and future work should provide a better alternative.
-
   // Loading an ID that corresponds to an archive trigers the loading of other meshes
   // and the ZBodyListWidget needs to show them.  The synchronizing of that widget
   // with the body list is most efficient if it occurs on the single bodyMeshesAdded
@@ -113,7 +106,7 @@ void Neu3Window::connectSignalSlot()
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
           this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
-#endif
+
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
@@ -354,6 +347,18 @@ void Neu3Window::removeAllBodies()
   DoingBulkUpdate doingBulkUpdate(this);
 
   m_bodyListWidget->getModel()->removeAllBodies();
+
+  // With the optimized version of syncBodyListModel(), which no longer does the
+  // expensive operation of showing all the meshes from a tar archive in the
+  // ZBodyListWidget, the following steps are necessary.
+
+  ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+  for (ZMesh *mesh : meshList) {
+    dataDoc->deselectBody(mesh->getLabel());
+  }
+
+  getBodyDocument()->processBodySelectionChange();
 }
 
 void Neu3Window::test()
@@ -446,40 +451,22 @@ void Neu3Window::processMeshChangedFrom3D(
 
 void Neu3Window::syncBodyListModel()
 {
-  // Supress some expensive and unnecessary updates after each body removal.
-  DoingBulkUpdate doingBulkUpdate(this);
+  // Do not try to show all the meshes from a tar archive in the ZBodyListWidget,
+  // as the large number of meshes can causes a significant slowdown.
+  // But make sure to do some of the document updates that ZBodyListWidget
+  // would have triggered for each of the meshes, or else they will not function
+  // correctly (e.g., will not be pickable in the 3D view).
 
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-//      getBodyDocument()->getMeshList();
-  ZFlyEmBodyListModel *listModel = m_bodyListWidget->getModel();
-
-  QList<int> rowsToRemove;
-  //Remove rows that are not in the document
-  for (int i = 0; i < listModel->rowCount(); i++) {
-    if (listModel->getBodyId(i) == 0) {
-      rowsToRemove.append(i);
-    } else {
-      bool found = false;
-      for (ZMesh *mesh : meshList) {
-        if (mesh->getLabel() > 0) {
-          if (mesh->getLabel() == listModel->getBodyId(i)) {
-            found = true;
-            break;
-          }
-        }
-      }
-      if (!found) {
-        rowsToRemove.append(i);
-      }
-    }
-  }
-  listModel->removeRowList(rowsToRemove);
-
+  std::set<uint64_t> selected;
   for (ZMesh *mesh : meshList) {
-    if (mesh->getLabel() > 0) {
-      listModel->addBody(mesh->getLabel());
-    }
+    selected.insert(mesh->getLabel());
   }
+
+  ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
+  dataDoc->setSelectedBody(selected, neutube::BODY_LABEL_MAPPED);
+
+  getBodyDocument()->processBodySelectionChange();
 }
 
 static const int PROGRESS_MAX = 100;
