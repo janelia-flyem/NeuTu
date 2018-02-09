@@ -136,6 +136,7 @@
 #include "tz_color.h"
 #include "zhdf5reader.h"
 #include "tz_farray.h"
+#include "misc/zmarchingcube.h"
 #include "zxmldoc.h"
 #include "neutubeconfig.h"
 #include "tz_darray.h"
@@ -25460,7 +25461,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
 
   ZSparseStack spStack;
   spStack.load(GET_BENCHMARK_DIR + "/test.zss");
@@ -25510,6 +25511,17 @@ void ZTest::test(MainWindow *host)
   delete labelStack;
 
 
+#endif
+
+#if 1
+  ZStack stack;
+//  stack.load(GET_BENCHMARK_DIR + "/sphere_bw.tif");
+  stack.load(GET_BENCHMARK_DIR + "/binary/3d/diadem_e1.tif");
+
+  ZMesh mesh;
+  ZMarchingCube::March(stack, &mesh);
+
+  mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
 #endif
 
   std::cout << "Done." << std::endl;

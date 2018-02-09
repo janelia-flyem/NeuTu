@@ -188,6 +188,10 @@ public:
     m_maxStackVolume = v;
   }
 
+  void setPreservingGap(bool on) {
+    m_preservingGap = on;
+  }
+
   void test();
   static bool Test();
 

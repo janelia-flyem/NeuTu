@@ -242,6 +242,7 @@ int ZBodySplitCommand::run(
 
   container.setRefiningBorder(true);
   container.setCcaPost(true);
+  container.setPreservingGap(true);
 
   if (!container.isEmpty()) {
     if (!range.isEmpty()) {

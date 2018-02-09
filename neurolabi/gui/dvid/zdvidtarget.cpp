@@ -385,6 +385,10 @@ ZJsonObject ZDvidTarget::toDvidDataSetting() const
 
 void ZDvidTarget::updateData(const ZJsonObject &obj)
 {
+  if (obj.hasKey("uuid")) {
+    setUuid(ZJsonParser::stringValue(obj["uuid"]));
+  }
+
   if (obj.hasKey(m_bgValueKey)) {
     m_bgValue = ZJsonParser::integerValue(obj[m_bgValueKey]);
   }
