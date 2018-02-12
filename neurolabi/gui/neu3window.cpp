@@ -229,6 +229,10 @@ void Neu3Window::createTaskWindow() {
     connect(window, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
 
+    // make the OpenGL context current in case any task's widget changes any parameters
+    //  of filters or renderers that could trigger rebuilding of glsl code
+    m_sharedContext->getGLFocus();
+
     // start up the TaskWindow UI (must come after connections are
     //  established!)
     window->init();
