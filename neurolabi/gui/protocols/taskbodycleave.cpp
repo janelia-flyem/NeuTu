@@ -423,6 +423,10 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
 QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
 {
+  taskJson[KEY_BODYID] = static_cast<double>(m_bodyId);
+  taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
+  taskJson[KEY_MAXLEVEL] = m_maxLevel;
+
   return taskJson;
 }
 
