@@ -58,6 +58,8 @@ bool ZFlyEmBody3dDocKeyProcessor::processKeyEvent(
   case Qt::Key_Space:
     if (event->modifiers() == Qt::ShiftModifier) {
       m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY);
+    } else if (event->modifiers() == Qt::AltModifier) {
+      m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY_FULL);
     } else {
       m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY_LOCAL);
     }

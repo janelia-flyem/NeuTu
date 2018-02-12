@@ -299,6 +299,7 @@ public slots:
   void processBodySelectionChange();
   void runLocalSplit();
   void runSplit();
+  void runFullSplit();
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -374,6 +375,7 @@ private:
   ZStackObject::EType getBodyObjectType() const;
   void runLocalSplitFunc();
   void runSplitFunc();
+  void runFullSplitFunc();
 
   /*!
    * \brief A safe way to get the only body in the document.

@@ -302,6 +302,8 @@ void Z3DWindow::init()
           this, SIGNAL(runningLocalSplit()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBody()),
           this, SIGNAL(runningSplit()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingFullBody()),
+          this, SIGNAL(runningFullSplit()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(deletingSelected()),
           this, SLOT(deleteSelected()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),

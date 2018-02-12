@@ -123,6 +123,7 @@ signals:
   void croppingSwc();
   void splittingBodyLocal();
   void splittingBody();
+  void splittingFullBody();
   void shootingTodo(int x, int y);
   void deletingSelected();
   void locating(int x, int y);
