@@ -2248,6 +2248,44 @@ void ZFlyEmBody3dDoc::runLocalSplitFunc()
   }
 }
 
+void ZFlyEmBody3dDoc::runFullSplitFunc()
+{
+  notifyWindowMessageUpdated("Starting split ...");
+  uint64_t bodyId = protectBodyForSplit();
+
+  if (bodyId > 0) {
+    if (loadDvidSparseStack(bodyId)) {
+      notifyWindowMessageUpdated("Running full split ...");
+      QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+      if (seedList.size() > 1) {
+        ZStackWatershedContainer container(NULL, NULL);
+        foreach (ZStackObject *seed, seedList) {
+          container.addSeed(seed);
+        }
+
+        container.setRangeHint(ZStackWatershedContainer::RANGE_FULL);
+
+        ZDvidSparseStack *sparseStack =
+            getDataDocument()->getDvidSparseStack(
+              container.getRange(), flyem::BODY_SPLIT_ONLINE);
+        container.setData(
+              NULL, sparseStack->getSparseStack(container.getRange()));
+        container.run();
+        ZStackDocAccessor::ParseWatershedContainer(this, &container);
+        notifyWindowMessageUpdated("Split finished.");
+      } else {
+        //    std::cout << "Less than 2 seeds found. Abort." << std::endl;
+        notifyWindowMessageUpdated("Less than 2 seeds found. Splitting canceled.");
+      }
+    } else {
+      notifyWindowMessageUpdated("Failed to load body data. Split aborted.");
+    }
+    releaseBody(bodyId);
+  } else {
+    notifyWindowMessageUpdated("Failed to secure body data. Split aborted.");
+  }
+}
+
 void ZFlyEmBody3dDoc::runSplitFunc()
 {
   notifyWindowMessageUpdated("Starting split ...");
@@ -2272,17 +2310,6 @@ void ZFlyEmBody3dDoc::runSplitFunc()
               NULL, sparseStack->getSparseStack(container.getRange()));
         container.run();
         ZStackDocAccessor::ParseWatershedContainer(this, &container);
-#if 0
-        std::vector<ZStackWatershedContainer*> containerList =
-            container.makeLocalSeedContainer(512);
-
-        ZOUT(LINFO(), 5) << containerList.size() << "containers";
-        for (ZStackWatershedContainer *subcontainer : containerList) {
-          subcontainer->run();
-          ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
-          delete subcontainer;
-        }
-#endif
         notifyWindowMessageUpdated("Split finished.");
       } else {
         //    std::cout << "Less than 2 seeds found. Abort." << std::endl;
@@ -2317,6 +2344,18 @@ void ZFlyEmBody3dDoc::runSplit()
     removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
     QFuture<void> future =
         QtConcurrent::run(this, &ZFlyEmBody3dDoc::runSplitFunc);
+    m_futureMap["split"] = future;
+  }
+}
+
+void ZFlyEmBody3dDoc::runFullSplit()
+{
+  ZOUT(LINFO(), 5) << "Trying split ...";
+
+  if (!m_futureMap.isAlive("split")) {
+    removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+    QFuture<void> future =
+        QtConcurrent::run(this, &ZFlyEmBody3dDoc::runFullSplitFunc);
     m_futureMap["split"] = future;
   }
 }

@@ -902,6 +902,8 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   connect(window, &Z3DWindow::runningLocalSplit,
           doc, &ZFlyEmBody3dDoc::runLocalSplit);
   connect(window, &Z3DWindow::runningSplit, doc, &ZFlyEmBody3dDoc::runSplit);
+  connect(window, &Z3DWindow::runningFullSplit,
+          doc, &ZFlyEmBody3dDoc::runFullSplit);
 
   doc->enableNodeSeeding(true);
 //  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
