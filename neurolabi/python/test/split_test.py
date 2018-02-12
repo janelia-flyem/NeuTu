@@ -2,6 +2,8 @@ import json
 import yaml
 import argparse
 import subprocess
+import sys
+import re
 
 from pyzem.dvid import dvidenv
 from pyzem.dvid import dvidio
@@ -13,11 +15,25 @@ def runTask(neutu, task, config):
     p.wait()
     return p
 
+def isTask(task, filterReg):
+    if not filterReg:
+        return True
+
+    if filterReg.match(task):
+        return True
+
+    return False
+
 parser = argparse.ArgumentParser(description='Process arguments for running splitting service')
 parser.add_argument('--config', dest='config', type=str, help='Configuration file in YAML format')
+parser.add_argument('--command', dest='command', type=str, help='Command file in Json format')
+parser.add_argument('--filter', dest='filter', type=str, help='Regular expression of filtering tasks')
 parser.add_argument('--info', help='Show task information', action='store_true')
 args=parser.parse_args()
-print(args.config)
+
+print('Arguments:', args)
+
+commandFile = args.command
 
 with open(args.config, 'r') as fp:
     config = yaml.load(fp)
@@ -33,16 +49,23 @@ print(split._neutu)
 print(split._commit)
 print(taskEnv)
 
+taskFilter = args.filter
+
+filterReg = None
+if taskFilter:
+    filterReg = re.compile(taskFilter)
+
 #Read tasks
 dc = dvidio.DvidClient(env = taskEnv)
 #dc.print_split_task()
 splitTaskList = dc.read_split_task_keys()
 count = 0
 for task in splitTaskList:
-    if task.startswith('task__http-++emdata3.int.janelia.org-8300+api+node+700c') or task.startswith('task__http-++emdata3-8300+api+node+700c'):
+    if isTask(task, filterReg):
         count += 1
         print('>>>>', count, task)
-        taskUrl = dvidUrl.get_url(dvidUrl.get_split_task_path(task))
-        runTask(split._neutu, taskUrl, 'split_command.json')
+        if not args.info and commandFile:
+            taskUrl = dvidUrl.get_url(dvidUrl.get_split_task_path(task))
+            runTask(split._neutu, taskUrl, commandFile)
 
 print(count, 'tasks found.')
