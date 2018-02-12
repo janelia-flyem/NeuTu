@@ -337,15 +337,42 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
   std::map<uint64_t, size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
 
+  // The text of the combobox item will be updated to indicate the number of seeds
+  // with the current color, so count them.
+
+  int numSeeds = 0;
+  for (auto it : m_meshIdToCleaveIndex) {
+    if (it.second == chosenCleaveIndex()) {
+      numSeeds++;
+    }
+  }
+
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
     uint64_t id = mesh->getLabel();
+    int change = 0;
     auto itCleave = meshIdToCleaveIndex.find(id);
     if ((itCleave == meshIdToCleaveIndex.end()) || (itCleave->second != chosenCleaveIndex())) {
       meshIdToCleaveIndex[id] = chosenCleaveIndex();
+      change = 1;
     } else {
       meshIdToCleaveIndex.erase(id);
+      change = -1;
     }
+
+    // Update the text to indicate the new number of seeds.
+
+    QString text = m_cleaveIndexComboBox->currentText();
+    int i = text.indexOf(" (");
+    if (i != -1) {
+      text.truncate(i);
+    }
+    numSeeds += change;
+    if (numSeeds > 0) {
+      text += " (" + QString::number(numSeeds);
+      text += (numSeeds == 1) ? " seed)" : " seeds)";
+    }
+    m_cleaveIndexComboBox->setItemText(m_cleaveIndexComboBox->currentIndex(), text);
   }
 
   m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex));
@@ -486,6 +513,9 @@ void TaskBodyCleave::buildTaskWidget()
   connect(m_showCleavingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCleavingChanged(int)));
 
   m_cleaveIndexComboBox = new QComboBox(m_widget);
+  // Let the combo box take as much width as possible, because the item text will be modified
+  // to include the number of seeds set with that color, and we don't want it clipped.
+  m_cleaveIndexComboBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
   QSize iconSizeDefault = m_cleaveIndexComboBox->iconSize();
   QSize iconSize = iconSizeDefault * 0.8;
   for (unsigned int i = 1; i < INDEX_COLORS.size(); i++) {
