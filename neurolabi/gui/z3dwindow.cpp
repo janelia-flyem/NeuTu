@@ -225,6 +225,8 @@ void Z3DWindow::configureMenuForNeu3()
   QAction *settingAction = new QAction("&Settings", this);
   m_helpMenu->addAction(settingAction);
   connect(settingAction, SIGNAL(triggered()), this, SIGNAL(settingTriggered()));
+
+  m_helpMenu->addAction(getAction(ZActionFactory::ACTION_ABOUT));
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -374,10 +376,18 @@ void Z3DWindow::setWindowSize()
   resize(width+500, height);   //500 for dock widgets
 }
 
+void Z3DWindow::about()
+{
+  ZDialogFactory::About(this);
+}
+
 QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
 {
   QAction *action = NULL;
   switch (item) {
+  case ZActionFactory::ACTION_ABOUT:
+    action = m_actionLibrary->getAction(item, this, SLOT(about()));
+    break;
   case ZActionFactory::ACTION_DESELECT_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(deselectBody()));
     break;

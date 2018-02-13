@@ -458,6 +458,10 @@ private:
   // update menu based on context information
   void updateContextMenu(const QString &group);
 
+
+private slots:
+  void about();
+
 private:
   neutube3d::EWindowType m_windowType;
 
