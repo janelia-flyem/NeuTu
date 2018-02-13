@@ -9,6 +9,21 @@ class ZStack;
 class ZFlyEmProofDoc;
 class QColor;
 
+/*!
+ * \brief The helper class for providing miscellaneous information of a ZStackDoc object
+ *
+ * Example:
+ *
+ * ZStacDocHelper helper;
+ * ...
+ * helper.extractCurrentZ(doc);
+ * if (helper.hasCurrentZ()) {
+ *   std::cout << "Current Z position: " << helper.getCurrentZ() << std::endl
+ * } else {
+ *   std::cout << "No information about the current Z position." << std::endl
+ * }
+ *
+ */
 class ZStackDocHelper
 {
 public:

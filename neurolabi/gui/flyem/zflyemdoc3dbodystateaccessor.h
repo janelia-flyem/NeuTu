@@ -15,7 +15,7 @@ public:
   bool isProtected(uint64_t bodyId) const;
 
 private:
-  ZFlyEmBody3dDoc *m_doc;
+  ZFlyEmBody3dDoc *m_doc = nullptr;
 };
 
 #endif // ZFLYEMDOC3DBODYSTATEACCESSOR_H
