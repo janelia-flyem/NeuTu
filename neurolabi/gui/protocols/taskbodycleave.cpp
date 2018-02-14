@@ -143,10 +143,16 @@ namespace {
 class TaskBodyCleave::SetCleaveIndicesCommand : public QUndoCommand
 {
 public:
-  SetCleaveIndicesCommand(TaskBodyCleave *task, std::map<uint64_t, std::size_t> meshIdToCleaveIndex) :
+  SetCleaveIndicesCommand(TaskBodyCleave *task,
+                          std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
+                          int comboBoxIndex,
+                          const QString &comboBoxText) :
     m_task(task),
     m_meshIdToCleaveIndexBefore(task->m_meshIdToCleaveIndex),
-    m_meshIdToCleaveIndexAfter(meshIdToCleaveIndex)
+    m_meshIdToCleaveIndexAfter(meshIdToCleaveIndex),
+    m_comboBoxIndex(comboBoxIndex),
+    m_comboBoxTextBefore(task->m_cleaveIndexComboBox->itemText(m_comboBoxIndex)),
+    m_comboBoxTextAfter(comboBoxText)
   {
     setText("seeding for next cleave");
   }
@@ -155,19 +161,23 @@ public:
   {
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexBefore;
     m_task->updateColors();
+    m_task->m_cleaveIndexComboBox->setItemText(m_comboBoxIndex, m_comboBoxTextBefore);
   }
 
   virtual void redo() override
   {
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexAfter;
     m_task->updateColors();
+    m_task->m_cleaveIndexComboBox->setItemText(m_comboBoxIndex, m_comboBoxTextAfter);
   }
 
 private:
   TaskBodyCleave *m_task;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexBefore;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexAfter;
-
+  int m_comboBoxIndex;
+  QString m_comboBoxTextBefore;
+  QString m_comboBoxTextAfter;
 };
 
 class TaskBodyCleave::CleaveCommand : public QUndoCommand
@@ -197,7 +207,6 @@ private:
   TaskBodyCleave *m_task;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexBefore;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexAfter;
-
 };
 
 //
@@ -347,6 +356,8 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
     }
   }
 
+  QString text = m_cleaveIndexComboBox->currentText();
+
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
     uint64_t id = mesh->getLabel();
@@ -362,7 +373,6 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
 
     // Update the text to indicate the new number of seeds.
 
-    QString text = m_cleaveIndexComboBox->currentText();
     int i = text.indexOf(" (");
     if (i != -1) {
       text.truncate(i);
@@ -372,10 +382,10 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
       text += " (" + QString::number(numSeeds);
       text += (numSeeds == 1) ? " seed)" : " seeds)";
     }
-    m_cleaveIndexComboBox->setItemText(m_cleaveIndexComboBox->currentIndex(), text);
   }
 
-  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex));
+  int i = m_cleaveIndexComboBox->currentIndex();
+  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex, i, text));
 
   cleave();
 }
