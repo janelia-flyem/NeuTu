@@ -699,7 +699,7 @@ void Z3DWindow::createMenus()
   m_helpMenu = menuBar()->addMenu(tr("&Help"));
 
   m_editMenu->addAction(getAction(ZActionFactory::ACTION_UNDO));
-  m_editMenu->addAction(getAction(ZActionFactory::ACTION_UNDO));
+  m_editMenu->addAction(getAction(ZActionFactory::ACTION_REDO));
   m_editMenu->addSeparator();
 //  m_editMenu->addAction(m_markSwcSomaAction);
 
