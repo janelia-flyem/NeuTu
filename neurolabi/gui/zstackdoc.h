@@ -1182,6 +1182,8 @@ public slots: //undoable commands
   void startProgressSlot();
   void endProgressSlot();
 
+  void processMessage(const ZWidgetMessage &msg);
+
   //bool executeAddStrokeCommand(ZStroke2d *stroke);
   //bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
@@ -1403,8 +1405,6 @@ private:
   //  Action map
 //  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 
-  ZSharedPointer<ZActionLibrary> m_actionLibrary;
-
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
   neutube::Document::ETag m_tag;
@@ -1453,6 +1453,7 @@ protected:
   ZSharedPointer<ZStackDoc> m_parentDoc;
   ZThreadFutureMap m_futureMap;
   ZStackDocDataBuffer *m_dataBuffer;
+  ZSharedPointer<ZActionLibrary> m_actionLibrary;
 };
 
 //   template  //

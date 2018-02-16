@@ -31,6 +31,8 @@ public:
 
   ZStack* getSlice(int z, int x0, int y0, int width, int height) const;
 
+  void setLabelType(flyem::EBodyLabelType type);
+
   /*!
    * \brief Get the dense representation of the sparse stack
    *
@@ -85,9 +87,12 @@ public:
   void setMaskColor(const QColor &color);
   void setLabel(uint64_t bodyId);
 
-  void loadBody(uint64_t bodyId, const ZIntCuboid &range, bool canonizing = false);
+  void loadBody(
+      uint64_t bodyId, const ZIntCuboid &range,
+      bool canonizing = false);
 
   uint64_t getLabel() const;
+  flyem::EBodyLabelType getLabelType() const;
 
 //  const ZObject3dScan *getObjectMask() const;
   ZObject3dScan *getObjectMask();
@@ -153,6 +158,7 @@ private:
   bool m_isValueFilled;
   bool m_prefectching = false;
   uint64_t m_label;
+  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
   mutable ZDvidReader m_dvidReader;
   mutable ZDvidReader m_grayScaleReader;
   mutable ZDvidReader m_maskReader;

@@ -136,12 +136,18 @@ int ZDvidSparseStack::getValue(int x, int y, int z) const
   return v;
 }
 
+void ZDvidSparseStack::setLabelType(flyem::EBodyLabelType type)
+{
+  m_labelType = type;
+}
+
 void ZDvidSparseStack::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutube::EAxis sliceAxis) const
 {
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
-          getLabel(), painter.getZ(slice), neutube::Z_AXIS, true, NULL);
+          getLabel(), getLabelType(), painter.getZ(slice),
+          neutube::Z_AXIS, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -219,7 +225,7 @@ void ZDvidSparseStack::loadBody(
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  getMaskReader().readBody(bodyId, range, canonizing, obj);
+  getMaskReader().readBody(bodyId, getLabelType(), range, canonizing, obj);
 
   m_sparseStack.setObjectMask(obj);
   setLabel(bodyId);
@@ -231,7 +237,7 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  getMaskReader().readBody(bodyId, canonizing, obj);
+  getMaskReader().readBody(bodyId, getLabelType(), canonizing, obj);
 
   m_sparseStack.setObjectMask(obj);
   setLabel(bodyId);
@@ -612,6 +618,11 @@ bool ZDvidSparseStack::stackDownsampleRequired()
 uint64_t ZDvidSparseStack::getLabel() const
 {
   return m_label;
+}
+
+flyem::EBodyLabelType ZDvidSparseStack::getLabelType() const
+{
+  return m_labelType;
 }
 
 bool ZDvidSparseStack::loadingObjectMask() const

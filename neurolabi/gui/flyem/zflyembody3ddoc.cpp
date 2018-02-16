@@ -31,10 +31,14 @@
 #include "zmeshfactory.h"
 #include "zstackdocaccessor.h"
 #include "zstackwatershedcontainer.h"
+#include "zstackobjectaccessor.h"
+#include "flyem/zflyembodysplitter.h"
+#include "zactionlibrary.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
 const int ZFlyEmBody3dDoc::MAX_RES_LEVEL = 5;
+const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -53,6 +57,9 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
 
   connectSignalSlot();
   disconnectSwcNodeModelUpdate();
+
+  m_splitter = new ZFlyEmBodySplitter(this);
+  ZWidgetMessage::ConnectMessagePipe(m_splitter, this);
 }
 
 ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
@@ -774,6 +781,95 @@ ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
   return ZStackObject::TYPE_SWC;
 }
 
+uint64_t ZFlyEmBody3dDoc::getSingleBody() const
+{
+  QMutexLocker locker(&m_BodySetMutex);
+
+  uint64_t bodyId = 0;
+  if (m_bodySet.size() == 1) {
+    bodyId = *(m_bodySet.begin());
+  }
+
+  return bodyId;
+}
+
+void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId, flyem::EBodyLabelType type)
+{
+  if (!isSplitActivated()) {
+    uint64_t parentId = bodyId;
+    if (type == flyem::LABEL_SUPERVOXEL) {
+      parentId = m_dvidReader.readParentBodyId(bodyId);
+    }
+
+    if (getDataDocument()->checkOutBody(parentId, flyem::BODY_SPLIT_ONLINE)) {
+      m_splitter->setBody(bodyId, type);
+      emit interactionStateChanged();
+    } else {
+      notifyWindowMessageUpdated("Failed to lock the body for split.");
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::activateSplitForSelected()
+{
+  TStackObjectSet objSet = getSelected(ZStackObject::TYPE_MESH);
+  if (objSet.size() == 1) {
+    ZStackObject *obj = *(objSet.begin());
+    activateSplit(obj->getLabel(), getBodyLabelType());
+  }
+}
+
+void ZFlyEmBody3dDoc::deactivateSplit()
+{
+  if (m_splitter->getBodyId() > 0) {
+    waitForSplitToBeDone();
+
+    uint64_t parentId = m_splitter->getBodyId();
+
+    if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
+      parentId = m_dvidReader.readParentBodyId(m_splitter->getBodyId());
+    }
+    getDataDocument()->checkInBodyWithMessage(
+          parentId, flyem::BODY_SPLIT_ONLINE);
+
+    m_splitter->setBodyId(0);
+    emit interactionStateChanged();
+  }
+}
+
+void ZFlyEmBody3dDoc::makeAction(ZActionFactory::EAction item)
+{
+  if (!m_actionLibrary->contains(item)) {
+    QAction *action = m_actionLibrary->getAction(item);
+    if (action != NULL) {
+      switch (item) {
+      case ZActionFactory::ACTION_START_SPLIT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(activateSplitForSelected()));
+        break;
+      case ZActionFactory::ACTION_COMMIT_SPLIT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(commitSplitResult()));
+        break;
+      default:
+        break;
+      }
+    }
+
+    ZStackDoc::makeAction(item);
+  }
+}
+
+bool ZFlyEmBody3dDoc::isSplitActivated() const
+{
+  return m_splitter->getBodyId() > 0;
+}
+
+bool ZFlyEmBody3dDoc::isSplitFinished() const
+{
+  return m_splitter->getState() == ZFlyEmBodySplitter::STATE_FULL_SPLIT;
+}
+
 bool ZFlyEmBody3dDoc::protectBody(uint64_t bodyId)
 {
   if (bodyId > 0) {
@@ -797,6 +893,8 @@ void ZFlyEmBody3dDoc::releaseBody(uint64_t bodyId)
   QMutexLocker locker(&m_eventQueueMutex);
 
   m_protectedBodySet.remove(bodyId);
+
+  emit interactionStateChanged();
 }
 
 bool ZFlyEmBody3dDoc::isBodyProtected(uint64_t bodyId) const
@@ -806,39 +904,36 @@ bool ZFlyEmBody3dDoc::isBodyProtected(uint64_t bodyId) const
   return m_protectedBodySet.contains(bodyId);
 }
 
-uint64_t ZFlyEmBody3dDoc::getSingleBody() const
-{
-  QMutexLocker locker(&m_BodySetMutex);
-
-  uint64_t bodyId = 0;
-  if (m_bodySet.size() == 1) {
-    bodyId = *(m_bodySet.begin());
-  }
-
-  return bodyId;
-}
 
 uint64_t ZFlyEmBody3dDoc::protectBodyForSplit()
 {
-  uint64_t bodyId = 0;
+  uint64_t bodyId = m_splitter->getBodyId();
 
   QMutexLocker locker(&m_BodySetMutex);
-  if (m_bodySet.size() == 1) {
-    bodyId = *(m_bodySet.begin());
-    if (!protectBody(bodyId)) {
-      bodyId = 0;
+  if (bodyId == 0) {
+    if (m_bodySet.size() == 1) {
+      bodyId = *(m_bodySet.begin());
     }
+  }
+
+  if (!protectBody(bodyId)) {
+    bodyId = 0;
   }
 
   return bodyId;
 }
 
-bool ZFlyEmBody3dDoc::loadDvidSparseStack(uint64_t bodyId)
+ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStack(
+    uint64_t bodyId, flyem::EBodyLabelType type)
 {
+  if (bodyId == 0) {
+    return NULL;
+  }
+
   ZDvidSparseStack *body = getDataDocument()->getCachedBodyForSplit(bodyId);
 
   if (body != NULL) {
-    if (body->getLabel() != bodyId) {
+    if (body->getLabel() != bodyId || body->getLabelType() != type) {
       body = NULL;
     }
   }
@@ -856,21 +951,40 @@ bool ZFlyEmBody3dDoc::loadDvidSparseStack(uint64_t bodyId)
 #endif
   }
 
-  return body != NULL;
+  if (body != NULL) {
+    body->setLabelType(type);
+  }
+
+  return body;
 }
 
-bool ZFlyEmBody3dDoc::loadDvidSparseStack()
+#if 0
+ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStack()
 {
 //  return getDataDocument()->getDvidSparseStack();
 
-  bool loaded = false;
+  ZDvidSparseStack *stack = NULL;
 
   if (m_bodySet.size() == 1) {
     uint64_t bodyId = *(m_bodySet.begin());
-    loaded = loadDvidSparseStack(bodyId);
+    stack = loadDvidSparseStack(bodyId, );
   }
 
-  return loaded;
+  return stack;
+}
+#endif
+
+ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStackForSplit()
+{
+  ZDvidSparseStack *stack = NULL;
+
+  stack = loadDvidSparseStack(
+        m_splitter->getBodyId(), m_splitter->getLabelType());
+  if (stack != NULL) {
+    stack->setLabelType(m_splitter->getLabelType());
+  }
+
+  return stack;
 }
 
 void ZFlyEmBody3dDoc::updateBodyModelSelection()
@@ -2203,6 +2317,7 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
 }
 
+#if 0
 void ZFlyEmBody3dDoc::runLocalSplitFunc()
 {
   notifyWindowMessageUpdated("Starting local split ...");
@@ -2257,7 +2372,7 @@ void ZFlyEmBody3dDoc::runFullSplitFunc()
     if (loadDvidSparseStack(bodyId)) {
       notifyWindowMessageUpdated("Running full split ...");
       QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
-      if (seedList.size() > 1) {
+      if (ZStackObjectAccessor::GetLabelCount(seedList) > 1) {
         ZStackWatershedContainer container(NULL, NULL);
         foreach (ZStackObject *seed, seedList) {
           container.addSeed(seed);
@@ -2274,8 +2389,7 @@ void ZFlyEmBody3dDoc::runFullSplitFunc()
         ZStackDocAccessor::ParseWatershedContainer(this, &container);
         notifyWindowMessageUpdated("Split finished.");
       } else {
-        //    std::cout << "Less than 2 seeds found. Abort." << std::endl;
-        notifyWindowMessageUpdated("Less than 2 seeds found. Splitting canceled.");
+        notifyWindowMessageUpdated("Less than 2 seed labels found. Splitting canceled.");
       }
     } else {
       notifyWindowMessageUpdated("Failed to load body data. Split aborted.");
@@ -2323,16 +2437,24 @@ void ZFlyEmBody3dDoc::runSplitFunc()
     notifyWindowMessageUpdated("Failed to secure body data. Split aborted.");
   }
 }
+#endif
 
 void ZFlyEmBody3dDoc::runLocalSplit()
 {
   ZOUT(LINFO(), 5) << "Trying local split ...";
 
-  if (!m_futureMap.isAlive("split")) {
-    removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
-    QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmBody3dDoc::runLocalSplitFunc);
-    m_futureMap["split"] = future;
+  uint64_t bodyId = protectBodyForSplit();
+
+  if (bodyId > 0) {
+    activateSplit(bodyId, getBodyLabelType());
+    if (isSplitActivated()) {
+      if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
+        removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+        QFuture<void> future =
+            QtConcurrent::run(m_splitter, &ZFlyEmBodySplitter::runLocalSplit);
+        m_futureMap[THREAD_SPLIT_KEY] = future;
+      }
+    }
   }
 }
 
@@ -2340,11 +2462,11 @@ void ZFlyEmBody3dDoc::runSplit()
 {
   ZOUT(LINFO(), 5) << "Trying split ...";
 
-  if (!m_futureMap.isAlive("split")) {
+  if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
     removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
     QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmBody3dDoc::runSplitFunc);
-    m_futureMap["split"] = future;
+        QtConcurrent::run(m_splitter, &ZFlyEmBodySplitter::runSplit);
+    m_futureMap[THREAD_SPLIT_KEY] = future;
   }
 }
 
@@ -2352,12 +2474,50 @@ void ZFlyEmBody3dDoc::runFullSplit()
 {
   ZOUT(LINFO(), 5) << "Trying split ...";
 
-  if (!m_futureMap.isAlive("split")) {
+  if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
     removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
     QFuture<void> future =
-        QtConcurrent::run(this, &ZFlyEmBody3dDoc::runFullSplitFunc);
-    m_futureMap["split"] = future;
+        QtConcurrent::run(m_splitter, &ZFlyEmBodySplitter::runFullSplit);
+    m_futureMap[THREAD_SPLIT_KEY] = future;
   }
+}
+
+void ZFlyEmBody3dDoc::commitSplitResult()
+{
+  notifyWindowMessageUpdated("Uploading splitted bodies");
+
+  QString summary;
+
+  uint64_t remainderId = m_splitter->getBodyId();
+
+  QList<ZStackObject*> objList =
+      getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
+  foreach (ZStackObject *obj, objList) {
+    ZObject3dScan *seg = dynamic_cast<ZObject3dScan*>(obj);
+    if (seg != NULL) {
+      notifyWindowMessageUpdated(QString("Uploading %1/%2"));;
+
+      uint64_t newBodyId = 0;
+      if (m_splitter->getLabelType() == flyem::LABEL_BODY) {
+        newBodyId = m_dvidWriter.writeSplit(*seg, remainderId, 0);
+      } else {
+        std::pair<uint64_t, uint64_t> idPair =
+            m_dvidWriter.writeSupervoxelSplit(*seg, remainderId);
+        remainderId = idPair.first;
+        newBodyId = idPair.second;
+      }
+
+      summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
+          arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
+    }
+  }
+
+  notifyWindowMessageUpdated(summary);
+}
+
+void ZFlyEmBody3dDoc::waitForSplitToBeDone()
+{
+  m_futureMap.waitForFinished(THREAD_SPLIT_KEY);
 }
 
 /*

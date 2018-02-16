@@ -17,7 +17,8 @@
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
 #include "zthreadfuturemap.h"
-#include "zsharedpointer.h"
+//#include "zsharedpointer.h"
+//#include "flyem/zflyembodysplitter.h"
 //#include "flyem/zflyemtodoitem.h"
 
 class ZFlyEmProofDoc;
@@ -25,6 +26,7 @@ class ZFlyEmBodyMerger;
 class ZFlyEmBodyComparisonDialog;
 class ZFlyEmBody3dDocKeyProcessor;
 class ZMesh;
+class ZFlyEmBodySplitter;
 //class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
@@ -253,20 +255,30 @@ public:
   }
   int getMaxResLevel() const;
 
+  void makeAction(ZActionFactory::EAction item) override;
 
 public:
   void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
   void executeRemoveTodoCommand();
 
 public:
-  bool loadDvidSparseStack();
-  bool loadDvidSparseStack(uint64_t bodyId);
+//  ZDvidSparseStack* loadDvidSparseStack();
+  ZDvidSparseStack* loadDvidSparseStack(
+      uint64_t bodyId, flyem::EBodyLabelType type);
+  ZDvidSparseStack* loadDvidSparseStackForSplit();
 
+  /* Disabled for simplifying the splitting workflow. Might be used again in
+   * the future.*/
   uint64_t protectBodyForSplit();
 
   bool protectBody(uint64_t bodyId);
   void releaseBody(uint64_t bodyId);
   bool isBodyProtected(uint64_t bodyId) const;
+
+  void activateSplit(uint64_t bodyId, flyem::EBodyLabelType type);
+  void deactivateSplit();
+  bool isSplitActivated() const;
+  bool isSplitFinished() const;
 
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
@@ -300,9 +312,14 @@ public slots:
   void runLocalSplit();
   void runSplit();
   void runFullSplit();
+  void commitSplitResult();
+
+  void waitForSplitToBeDone();
+  void activateSplitForSelected();
 
 signals:
   void bodyRemoved(uint64_t bodyId);
+  void interactionStateChanged();
 
 protected:
   void autoSave() override {}
@@ -373,9 +390,16 @@ private:
   void updateBodyModelSelection();
 
   ZStackObject::EType getBodyObjectType() const;
+
+  flyem::EBodyLabelType getBodyLabelType() const {
+    return flyem::LABEL_SUPERVOXEL;
+  }
+
+#if 0
   void runLocalSplitFunc();
   void runSplitFunc();
   void runFullSplitFunc();
+#endif
 
   /*!
    * \brief A safe way to get the only body in the document.
@@ -450,6 +474,8 @@ private:
   ZStackObjectGroup m_objCache;
   int m_objCacheCapacity;
   QMap<uint64_t, int> m_bodyUpdateMap;
+
+  ZFlyEmBodySplitter *m_splitter;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;
@@ -467,6 +493,8 @@ private:
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;
   const static int MAX_RES_LEVEL;
+
+  const static char *THREAD_SPLIT_KEY;
 };
 
 template <typename InputIterator>

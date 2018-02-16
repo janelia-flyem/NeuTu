@@ -207,7 +207,14 @@ std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource()
 
 std::string ZStackObjectSourceFactory::MakeSplitObjectSource()
 {
-  return "#.FlyEMSplitObject";
+  std::string source = "#.FlyEMSplitObject";
+  /*
+  if (type == flyem::LABEL_SUPERVOXEL) {
+    source += ".Supervoxel";
+  }
+  */
+
+  return source;
 }
 
 std::string ZStackObjectSourceFactory::MakeSplitResultSource()

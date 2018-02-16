@@ -139,11 +139,19 @@ public:
 
   uint64_t rewriteBody(uint64_t label);
 
+  std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
+      const std::string &dataName, const ZObject3dScan &obj,
+      uint64_t oldLabel);
+  std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
+      const ZObject3dScan &obj, uint64_t oldLabel);
+
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label, uint64_t newBodyId = 0);
   uint64_t writeSplit(const ZObject3dScan &obj,
                       uint64_t oldLabel, uint64_t label,
                       uint64_t newBodyId = 0);
+
+
 
   uint64_t writeSplitMultires(
       const ZObject3dScan &bf, const ZObject3dScan &bs, uint64_t oldLabel);

@@ -127,7 +127,64 @@ public:
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
+
+
+  uint64_t readParentBodyId(uint64_t spId) const {
+    return spId; //mockup implementation
+  }
+
   ZObject3dScan* readBody(
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
+  ZObject3dScan* readBody(
+      uint64_t bodyId, flyem::EBodyLabelType labelType,
+      bool canonizing, ZObject3dScan *result) const;
+
+  ZObject3dScan* readBodyDs(
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result);
+
+  ZObject3dScan* readBodyDs(
+      uint64_t bodyId, int xIntv, int yIntv, int zIntv,
+      bool canonizing, ZObject3dScan *result);
+
+  ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
+                          bool canonizing, ZObject3dScan *result) const;
+  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                          int z, neutube::EAxis axis,
+                          bool canonizing, ZObject3dScan *result) const;
+
+
+  ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
+                          bool canonizing,
+                          neutube::EAxis axis, ZObject3dScan *result) const;
+  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                          int minZ, int maxZ, bool canonizing,
+                          neutube::EAxis axis, ZObject3dScan *result) const;
+
+
+  ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
+      ZObject3dScan *result) const;
+  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                          const ZIntCuboid &box, bool canonizing,
+                          ZObject3dScan *result) const;
+
+  ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
+  ZObject3dScan* readBodyWithPartition(
+      uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *result) const;
+
+  ZObject3dScan* readMultiscaleBody(
+      uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result) const;
+
+  ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet) const;
+
+  /*!
+   * \brief Check the number of blocks of a body
+   *
+   * \return The number of blocks of a body. It returns -1 if the count cannot
+   *         be determined.
+   */
+  int readBodyBlockCount(uint64_t bodyId) const;
+
+  ZObject3dScan* readSupervoxel(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
 
   ZMesh* readMesh(uint64_t bodyId, int zoom) const;
@@ -143,35 +200,6 @@ public:
   ZMesh *readMeshArchiveNext(struct archive *arc);
   ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead);
   void readMeshArchiveEnd(struct archive *arc);
-
-  ZObject3dScan* readBodyDs(
-      uint64_t bodyId, bool canonizing, ZObject3dScan *result);
-
-  ZObject3dScan* readBodyDs(
-      uint64_t bodyId, int xIntv, int yIntv, int zIntv,
-      bool canonizing, ZObject3dScan *result);
-
-  ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
-                          bool canonizing, ZObject3dScan *result) const;
-  ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
-                          bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result) const;
-  ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
-      ZObject3dScan *result) const;
-
-  ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
-  ZObject3dScan* readMultiscaleBody(
-      uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result) const;
-
-  ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet) const;
-
-  /*!
-   * \brief Check the number of blocks of a body
-   *
-   * \return The number of blocks of a body. It returns -1 if the count cannot
-   *         be determined.
-   */
-  int readBodyBlockCount(uint64_t bodyId) const;
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -334,7 +362,12 @@ public:
   ZDvidVersionDag readVersionDag() const;
 
   ZObject3dScan readCoarseBody(uint64_t bodyId) const;
+  ZObject3dScan readCoarseBody(
+      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
+
   ZObject3dScan* readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) const;
+  ZObject3dScan* readCoarseBody(
+      uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *obj) const;
 
   int readCoarseBodySize(uint64_t bodyId) const;
 

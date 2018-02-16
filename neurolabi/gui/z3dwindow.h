@@ -166,6 +166,8 @@ public: //controls
   void hideObjectView();
   void hideStatusBar();
 
+  QToolBar* getToolBar() const;
+
   void setButtonStatus(int index, bool v);
   bool getButtonStatus(int index);
 

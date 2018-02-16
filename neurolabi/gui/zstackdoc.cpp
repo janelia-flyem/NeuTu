@@ -114,6 +114,7 @@
 #include "flyem/zstackwatershedcontainer.h"
 #include "zactionlibrary.h"
 
+
 using namespace std;
 
 ZStackDoc::ZStackDoc(QObject *parent) : QObject(parent)
@@ -6328,6 +6329,11 @@ void ZStackDoc::notify(const QString &msg)
 void ZStackDoc::notifyUpdateLatency(int64_t t)
 {
   emit updatingLatency((int) t);
+}
+
+void ZStackDoc::processMessage(const ZWidgetMessage &msg)
+{
+  emit messageGenerated(msg);
 }
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(

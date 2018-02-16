@@ -25513,7 +25513,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZStack stack;
 //  stack.load(GET_BENCHMARK_DIR + "/sphere_bw.tif");
   stack.load(GET_BENCHMARK_DIR + "/binary/3d/diadem_e1.tif");
@@ -25522,6 +25522,32 @@ void ZTest::test(MainWindow *host)
   ZMarchingCube::March(stack, &mesh);
 
   mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+#endif
+
+#if 1
+  ZIntCuboid box;
+  box.setFirstCorner(0, 0, 0);
+  box.setLastCorner(10, 20, 30);
+
+  std::vector<bool> visible;
+  visible.resize(6, true);
+  visible[0] = false;
+  visible[2] = false;
+  visible[4] = false;
+
+  ZMesh mesh = ZMesh::CreateCuboidFaceMesh(box, visible, QColor(255, 0, 0));
+
+  std::cout << "#vertices: " << mesh.numVertices() << std::endl;
+  std::cout << "#Indices: " << mesh.indices().size() << std::endl;
+//  ZDebugPrintArrayG(mesh.indices(), 0, 36);
+//  mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+
+  QByteArray data = mesh.writeToMemory("obj");
+  std::cout << data.toStdString() << std::endl;
+
+  std::ofstream stream((GET_TEST_DATA_DIR + "/test.obj").c_str());
+  stream.write(data.constData(), data.size());
+
 #endif
 
   std::cout << "Done." << std::endl;

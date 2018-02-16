@@ -97,7 +97,6 @@ unix {
 include(extlib.pri)
 
 CONFIG += rtti exceptions
-
 CONFIG += static_gtest
 
 QT += printsupport
@@ -845,7 +844,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemdoc3dbodystateaccessor.h \
     misc/zmarchingcube.h \
     ilastik/marching_cubes.h \
-    ilastik/laplacian_smoothing.h
+    ilastik/laplacian_smoothing.h \
+    flyem/zflyembodysplitter.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1476,7 +1476,8 @@ SOURCES += main.cpp \
     flyem/zflyemdoc3dbodystateaccessor.cpp \
     misc/zmarchingcube.cpp \
     ilastik/marching_cubes.cpp \
-    ilastik/laplacian_smoothing.cpp
+    ilastik/laplacian_smoothing.cpp \
+    flyem/zflyembodysplitter.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
