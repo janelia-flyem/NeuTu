@@ -3442,6 +3442,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
   return stack;
 }
 
+
 ZDvidSparseStack* ZFlyEmProofDoc::getCachedBodyForSplit(uint64_t bodyId) const
 {
   const ZDvidSparseStack *body = getBodyForSplit();

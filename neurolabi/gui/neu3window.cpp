@@ -33,6 +33,7 @@
 #include "flyem/zflyemmisc.h"
 #include "dialogs/flyemsettingdialog.h"
 #include "flyem/zflyemdoc3dbodystateaccessor.h"
+#include "zactionlibrary.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -40,6 +41,7 @@ Neu3Window::Neu3Window(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  m_actionLibrary = QSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
 //  initialize();
 }
 
@@ -80,6 +82,32 @@ void Neu3Window::initialize()
   connectSignalSlot();
 
   m_dataContainer->retrieveRois();
+
+  QAction *action = getAction(ZActionFactory::ACTION_EXIT_SPLIT);
+  action->setVisible(false);
+  m_3dwin->getToolBar()->addAction(action);
+
+  action = getBodyDocument()->getAction(ZActionFactory::ACTION_COMMIT_SPLIT);
+  action->setVisible(false);
+  m_3dwin->getToolBar()->addAction(action);
+}
+
+QAction* Neu3Window::getAction(ZActionFactory::EAction key)
+{
+  QAction *action = NULL;
+
+  switch (key) {
+  case ZActionFactory::ACTION_EXIT_SPLIT:
+    action = m_actionLibrary->getAction(key, this, SLOT(exitSplit()));
+    break;
+//  case ZActionFactory::ACTION_START_SPLIT:
+//    action = m_actionLibrary->getAction(key, this, SLOT(startSplit()));
+//    break;
+  default:
+    break;
+  }
+
+  return action;
 }
 
 void Neu3Window::connectSignalSlot()
@@ -95,6 +123,9 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
   connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
           this, SLOT(processMeshChangedFrom3D(QList<ZMesh*>,QList<ZMesh*>)));
+
+  connect(getBodyDocument(), SIGNAL(interactionStateChanged()),
+          this, SLOT(updateWidget()));
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
           this, &Neu3Window::zoomToBodyMesh, Qt::QueuedConnection);
@@ -126,12 +157,15 @@ void Neu3Window::updateBodyState()
             << m_dataContainer->getCompleteDocument()->getSelectedBodySet(
                  neutube::BODY_LABEL_ORIGINAL).size() << " bodies" << std::endl;
 #endif
+
+#if 0
   if (m_dataContainer->getCompleteDocument()->getSelectedBodySet(
         neutube::BODY_LABEL_ORIGINAL).size() == 1) {
     m_dataContainer->enableSplit(flyem::BODY_SPLIT_ONLINE);
   } else {
     m_dataContainer->disableSplit();
   }
+#endif
 }
 
 void Neu3Window::initOpenglContext()
@@ -219,14 +253,14 @@ void Neu3Window::createDockWidget()
 
 void Neu3Window::createTaskWindow() {
     QDockWidget *dockWidget = new QDockWidget("Tasks", this);
-    TaskProtocolWindow *window =
+    m_taskProtocolWidget =
         new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
 
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
-    connect(window, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
-    connect(window, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
-    connect(window, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
+    connect(m_taskProtocolWidget, SIGNAL(bodyAdded(uint64_t)), this, SLOT(addBody(uint64_t)));
+    connect(m_taskProtocolWidget, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
+    connect(m_taskProtocolWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
 
     // make the OpenGL context current in case any task's widget changes any parameters
@@ -235,9 +269,9 @@ void Neu3Window::createTaskWindow() {
 
     // start up the TaskWindow UI (must come after connections are
     //  established!)
-    window->init();
+    m_taskProtocolWidget->init();
 
-    dockWidget->setWidget(window);
+    dockWidget->setWidget(m_taskProtocolWidget);
     dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea);
     dockWidget->setFeatures(
           QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
@@ -266,6 +300,34 @@ void Neu3Window::browse(double x, double y, double z)
   ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
   bo->open(ZFlyEmMisc::GetNeuroglancerPath(
              m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z)));
+}
+
+void Neu3Window::updateWidget()
+{
+  QAction *action = getAction(ZActionFactory::ACTION_EXIT_SPLIT);
+
+  if (getBodyDocument()->isSplitActivated()) {
+    action->setVisible(true);
+    m_bodyListWidget->setEnabled(false);
+    m_taskProtocolWidget->setEnabled(false);
+  } else {
+    action->setVisible(false);
+    m_bodyListWidget->setEnabled(true);
+    m_taskProtocolWidget->setEnabled(true);
+  }
+
+  action = getBodyDocument()->getAction(ZActionFactory::ACTION_COMMIT_SPLIT);
+  action->setVisible(getBodyDocument()->isSplitFinished());
+}
+
+void Neu3Window::exitSplit()
+{
+  getBodyDocument()->deactivateSplit();
+}
+
+void Neu3Window::startSplit()
+{
+  getBodyDocument()->activateSplitForSelected();
 }
 
 void Neu3Window::createToolBar()

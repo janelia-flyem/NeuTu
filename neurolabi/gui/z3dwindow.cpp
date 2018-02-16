@@ -176,6 +176,11 @@ void Z3DWindow::createStatusBar()
   statusBar()->showMessage("3D window ready.");
 }
 
+QToolBar* Z3DWindow::getToolBar() const
+{
+  return m_toolBar;
+}
+
 void Z3DWindow::createToolBar()
 {
   if (getWindowType() == neutube3d::TYPE_COARSE_BODY ||

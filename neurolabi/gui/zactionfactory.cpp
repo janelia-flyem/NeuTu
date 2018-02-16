@@ -487,6 +487,15 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_MEASURE_SWC_NODE_DIST:
     action = new QAction("Measure Distance", parent);
     break;
+  case ACTION_EXIT_SPLIT:
+    action = new QAction("Exit Split", parent);
+    break;
+  case ACTION_START_SPLIT:
+    action = new QAction("Start Split", parent);
+    break;
+  case ACTION_COMMIT_SPLIT:
+    action = new QAction("Commit Split", parent);
+    break;
   default:
     break;
   }

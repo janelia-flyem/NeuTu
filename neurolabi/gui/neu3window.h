@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 
+#include "zactionfactory.h"
+
 namespace Ui {
 class Neu3Window;
 }
@@ -19,6 +21,8 @@ class ZMesh;
 class ZBodyListWidget;
 class ZROIWidget;
 class FlyEmSettingDialog;
+class TaskProtocolWindow;
+class ZActionLibrary;
 
 /*!
  * \brief The class of the main window for Neu3
@@ -109,6 +113,10 @@ private slots:
   void updateBodyState();
   void setOption();
 
+  void updateWidget();
+  void exitSplit();
+  void startSplit();
+
   void test();
 
 private:
@@ -117,6 +125,7 @@ private:
   void createRoiWidget();
   void createToolBar();
   void connectSignalSlot();
+  QAction* getAction(ZActionFactory::EAction key);
 
 private:
   Ui::Neu3Window *ui;
@@ -128,10 +137,14 @@ private:
   ZBodyListWidget *m_bodyListWidget = nullptr;
   QDockWidget *m_bodyListDock = nullptr;
   ZROIWidget *m_roiWidget = nullptr;
+  TaskProtocolWindow *m_taskProtocolWidget = nullptr;
+//  QWidget *m_controlWidget = nullptr;
   bool m_doingBulkUpdate = false;
   class DoingBulkUpdate;
   QProgressDialog *m_progressDialog = nullptr;
   FlyEmSettingDialog *m_flyemSettingDlg = nullptr;
+
+  QSharedPointer<ZActionLibrary> m_actionLibrary;
 };
 
 #endif // NEU3WINDOW_H

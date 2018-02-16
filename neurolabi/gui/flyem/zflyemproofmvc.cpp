@@ -2642,7 +2642,8 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
 
   body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);
-  body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+  body->setSource(
+        ZStackObjectSourceFactory::MakeSplitObjectSource());
 //  body->setHittable(false);
   body->setHitProtocal(ZStackObject::HIT_NONE);
   body->setSelectable(false);

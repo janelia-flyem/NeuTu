@@ -72,6 +72,16 @@ public:
 //  std::string getSparsevolUrl() const;
 //  std::string getSparsevolUrl(int bodyId) const;
 
+  std::string getSupervoxelUrl(const std::string &dataName) const;
+  std::string getSupervoxelUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getSupervoxelUrl(uint64_t bodyId) const;
+  std::string getSupervoxelUrl(uint64_t bodyId, int z, neutube::EAxis axis) const;
+  std::string getSupervoxelUrl(
+      uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
+  std::string getSupervoxelUrl(uint64_t bodyId, const ZIntCuboid &box) const;
+  std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom);
+//  std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
+
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId) const;
@@ -86,6 +96,10 @@ public:
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
+
+  std::string getCoarseSupervoxelUrl(const std::string &dataName) const;
+  std::string getCoarseSupervoxelUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getCoarseSupervoxelUrl(uint64_t bodyId) const;
 
   std::string getCoarseSparsevolUrl(const std::string &dataName) const;
   std::string getCoarseSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
@@ -152,6 +166,8 @@ public:
 
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(
+      const std::string &dataName, uint64_t originalLabel) const;
+  std::string getSplitSupervoxelUrl(
       const std::string &dataName, uint64_t originalLabel) const;
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
@@ -297,8 +313,11 @@ private:
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;
+  static const std::string m_supervoxelCommand;
+  static const std::string m_coarseSupervoxelCommand;
   static const std::string m_splitCommand;
   static const std::string m_coarseSplitCommand;
+  static const std::string m_splitSupervoxelCommand;
   static const std::string m_labelCommand;
   static const std::string m_labelArrayCommand;
   static const std::string m_roiCommand;

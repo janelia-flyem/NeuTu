@@ -12,9 +12,14 @@ const std::string ZDvidUrl::m_keysCommand = "keys";
 const std::string ZDvidUrl::m_keyRangeCommand = "keyrange";
 const std::string ZDvidUrl::m_sparsevolCommand = "sparsevol";
 const std::string ZDvidUrl::m_coarseSparsevolCommand = "sparsevol-coarse";
+//const std::string ZDvidUrl::m_supervoxelCommand = "sparsevol-supervoxel";
+const std::string ZDvidUrl::m_supervoxelCommand = "sparsevol"; //Temporary mockup
+const std::string ZDvidUrl::m_coarseSupervoxelCommand = "sparsevol-coarse"; //Temporary mockup
 const std::string ZDvidUrl::m_infoCommand = "info";
 const std::string ZDvidUrl::m_splitCommand = "split";
 const std::string ZDvidUrl::m_coarseSplitCommand = "split-coarse";
+const std::string ZDvidUrl::m_splitSupervoxelCommand= "split"; //Temporary mockup
+//const std::string ZDvidUrl::m_splitSuperVoxelCommand= "split-supervoxel";
 const std::string ZDvidUrl::m_labelCommand = "label";
 const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
@@ -207,6 +212,25 @@ std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)
   return GetFullUrl(dataUrl, m_keyCommand);
 }
 
+std::string ZDvidUrl::getSupervoxelUrl(const std::string &dataName) const
+{
+  return GetFullUrl(getDataUrl(dataName), m_supervoxelCommand);
+}
+
+std::string ZDvidUrl::getSupervoxelUrl(uint64_t bodyId) const
+{
+  return getSupervoxelUrl(bodyId, m_dvidTarget.getBodyLabelName());
+}
+
+std::string ZDvidUrl::getSupervoxelUrl(
+    uint64_t bodyId, const std::string &dataName) const
+{
+  ZString str;
+  str.appendNumber(bodyId);
+
+  return GetFullUrl(getSupervoxelUrl(dataName), str);
+}
+
 std::string ZDvidUrl::getSparsevolUrl(const std::string &dataName) const
 {
   return GetFullUrl(getDataUrl(dataName), m_sparsevolCommand);
@@ -216,6 +240,39 @@ std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId) const
 {
   return getSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
+
+std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const
+{
+  ZString str;
+  str.appendNumber(bodyId);
+
+  return GetFullUrl(getSparsevolUrl(dataName), str);
+}
+
+std::string ZDvidUrl::getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom)
+{
+  std::string url;
+
+  if (m_dvidTarget.usingLabelArray()) {
+    url = getSupervoxelUrl(bodyId);
+    if (zoom > m_dvidTarget.getMaxLabelZoom()) {
+      zoom = m_dvidTarget.getMaxLabelZoom();
+    }
+    ZString option = "?scale=";
+    option.appendNumber(zoom);
+
+    url += option;
+  } else {
+    if (zoom == 0) {
+      url = getSupervoxelUrl(bodyId);
+    } else {
+      url = getSupervoxelUrl(bodyId, m_dvidTarget.getBodyLabelName(zoom));
+    }
+  }
+
+  return url;
+}
+
 
 std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
 {
@@ -275,6 +332,73 @@ std::string ZDvidUrl::getSparsevolUrl(
   return url;
 }
 
+std::string ZDvidUrl::getSupervoxelUrl(
+    uint64_t bodyId, int z, neutube::EAxis axis) const
+{
+  ZString url = getSupervoxelUrl(bodyId);
+
+  if (url.empty()) {
+    return "";
+  }
+
+  switch (axis) {
+  case neutube::Z_AXIS:
+    url += "?minz=";
+    url.appendNumber(z);
+    url += "&maxz=";
+    break;
+  case neutube::X_AXIS:
+    url += "?minx=";
+    url.appendNumber(z);
+    url += "&maxx=";
+    break;
+  case neutube::Y_AXIS:
+    url += "?miny=";
+    url.appendNumber(z);
+    url += "&maxy=";
+    break;
+  }
+
+  url.appendNumber(z);
+
+  url += "&exact=false";
+
+  return url;
+}
+
+std::string ZDvidUrl::getSupervoxelUrl(
+    uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
+{
+  ZString url = getSupervoxelUrl(bodyId);
+
+  if (url.empty()) {
+    return "";
+  }
+
+  switch (axis) {
+  case neutube::Z_AXIS:
+    url += "?minz=";
+    url.appendNumber(minZ);
+    url += "&maxz=";
+    url.appendNumber(maxZ);
+    break;
+  case neutube::X_AXIS:
+    url += "?minx=";
+    url.appendNumber(minZ);
+    url += "&maxx=";
+    url.appendNumber(maxZ);
+    break;
+  case neutube::Y_AXIS:
+    url += "?miny=";
+    url.appendNumber(minZ);
+    url += "&maxy=";
+    url.appendNumber(maxZ);
+    break;
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
 {
@@ -324,6 +448,35 @@ std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
   return url;
 }
 
+std::string ZDvidUrl::getSupervoxelUrl(
+    uint64_t bodyId, const ZIntCuboid &box) const
+{
+  ZString url = getSupervoxelUrl(bodyId);
+
+  if (url.empty()) {
+    return "";
+  }
+
+  if (!box.isEmpty()) {
+    url += "?minx=";
+    url.appendNumber(box.getFirstCorner().getX());
+    url += "&maxx=";
+    url.appendNumber(box.getLastCorner().getX());
+
+    url += "&miny=";
+    url.appendNumber(box.getFirstCorner().getY());
+    url += "&maxy=";
+    url.appendNumber(box.getLastCorner().getY());
+
+    url += "&minz=";
+    url.appendNumber(box.getFirstCorner().getZ());
+    url += "&maxz=";
+    url.appendNumber(box.getLastCorner().getZ());
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, const ZIntCuboid &box) const
 {
@@ -353,18 +506,28 @@ std::string ZDvidUrl::getSparsevolUrl(
   return url;
 }
 
-std::string ZDvidUrl::getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const
+std::string ZDvidUrl::getCoarseSupervoxelUrl(const std::string &dataName) const
 {
-  /*
-  if (bodyId < 0) {
+  return GetFullUrl(getDataUrl(dataName), m_coarseSupervoxelCommand);
+//      ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL_COARSE);
+}
+
+std::string ZDvidUrl::getCoarseSupervoxelUrl(
+    uint64_t bodyId, const std::string &dataName) const
+{
+  if (bodyId == 0) {
     return "";
   }
-  */
 
   ZString str;
   str.appendNumber(bodyId);
 
-  return GetFullUrl(getSparsevolUrl(dataName), str);
+  return GetFullUrl(getCoarseSupervoxelUrl(dataName), str);
+}
+
+std::string ZDvidUrl::getCoarseSupervoxelUrl(uint64_t bodyId) const
+{
+  return getCoarseSparsevolUrl(bodyId, m_dvidTarget.getBodyLabelName());
 }
 
 std::string ZDvidUrl::getCoarseSparsevolUrl(const std::string &dataName) const
@@ -768,6 +931,12 @@ std::string ZDvidUrl::getSplitUrl(
   stream << newLabel;
 
   return url + "?splitlabel=" + stream.str();
+}
+
+std::string ZDvidUrl::getSplitSupervoxelUrl(
+    const std::string &dataName, uint64_t originalLabel) const
+{
+  return getSplitUrl(dataName, originalLabel, m_splitSupervoxelCommand);
 }
 
 std::string ZDvidUrl::getCoarseSplitUrl(

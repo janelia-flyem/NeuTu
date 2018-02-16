@@ -76,8 +76,8 @@ public:
       neutube::EAxis ) const override
   {}
 
-  void setLabel(uint64_t label) override;
-  uint64_t getLabel() const;
+//  void setLabel(uint64_t label) override;
+//  uint64_t getLabel() const;
 
   // qt style read write name filter for filedialog
   static bool canReadFile(const QString& filename);
@@ -92,6 +92,8 @@ public:
   void load(const QString& filename);
 
   void save(const QString& filename, const std::string& format = "") const;
+
+  QByteArray writeToMemory(const std::string &format) const;
 
   ZBBox<glm::dvec3> boundBox() const;
 

@@ -1182,6 +1182,45 @@ uint64_t ZDvidWriter::rewriteBody(uint64_t bodyId)
   return newBodyId;
 }
 
+std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
+    const ZObject3dScan &obj, uint64_t oldLabel)
+{
+  return writeSupervoxelSplit(getDvidTarget().getBodyLabelName(), obj, oldLabel);
+}
+
+std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
+    const std::string &dataName, const ZObject3dScan &obj, uint64_t oldLabel)
+{
+  m_statusCode = 0;
+
+  std::string url = ZDvidUrl(getDvidTarget()).getSplitSupervoxelUrl(
+        dataName, oldLabel);
+
+  QByteArray payload = obj.toDvidPayload();
+  ZString response = post(url, payload, false);
+
+  uint64_t newBodyId = 0;
+  uint64_t remainderId = oldLabel;
+
+  if (!response.empty()) {
+#ifdef _DEBUG_
+    std::cout << response << std::endl;
+#endif
+    ZJsonObject obj;
+    obj.decodeString(response.c_str());
+    if (obj.hasKey("label")) {
+      newBodyId = ZJsonParser::integerValue(obj["label"]);
+      m_statusCode = 200;
+    } else if (obj.hasKey("SplitLabel")) {
+      newBodyId = ZJsonParser::integerValue(obj["SplitLabel"]);
+      remainderId = ZJsonParser::integerValue(obj["RemainLabel"]);
+      m_statusCode = 200;
+    }
+  }
+
+  return std::pair<uint64_t, uint64_t>(remainderId, newBodyId);
+}
+
 uint64_t ZDvidWriter::writeSplit(
     const std::string &dataName, const ZObject3dScan &obj,
     uint64_t oldLabel, uint64_t label, uint64_t newBodyId)
