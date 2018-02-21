@@ -50,6 +50,7 @@
 #include "zstroke2d.h"
 #include "flyem/zflyemmisc.h"
 #include "zstackwatershedcontainer.h"
+#include "zmeshfactory.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -2942,6 +2943,19 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
     if (!slice->refreshReaderBuffer()) {
       notify(ZWidgetMessage("Failed to refresh labels.", neutube::MSG_WARNING));
     }
+  }
+}
+
+void ZFlyEmProofDoc::updateMeshForSelected()
+{
+  const std::set<uint64_t> &bodySet =
+      getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+  for (uint64_t bodyId : bodySet) {
+    ZObject3dScan obj;
+    getDvidReader().readBody(bodyId, true, &obj);
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    getDvidWriter().writeMesh(*mesh, bodyId, 0);
+    delete mesh;
   }
 }
 

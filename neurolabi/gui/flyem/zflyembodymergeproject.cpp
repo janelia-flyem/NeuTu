@@ -549,6 +549,9 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
 #endif
           }
 
+          //Temporary fix for mesh update, which should be moved the remote service
+          m_writer.deleteMesh(newTargetId);
+
           QList<ZDvidLabelSlice*> labelList =
               getDocument()->getDvidLabelSliceList();
           foreach (ZDvidLabelSlice *slice, labelList) {

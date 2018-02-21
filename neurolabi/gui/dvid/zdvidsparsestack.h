@@ -34,6 +34,11 @@ public:
   void setLabelType(flyem::EBodyLabelType type);
 
   /*!
+   * \brief Set the mask of the sparse stack
+   */
+  void setObjectMask(ZObject3dScan *obj);
+
+  /*!
    * \brief Get the dense representation of the sparse stack
    *
    * \return The returned stack is owned by the object.

@@ -261,6 +261,8 @@ public:
 
   static std::string GetBodyKey(uint64_t bodyId);
   static std::string GetSkeletonKey(uint64_t bodyId);
+  static std::string GetMeshKey(uint64_t bodyId);
+  static std::string GetMeshInfoKey(uint64_t bodyId);
 
   void setUuid(const std::string &uuid);
 

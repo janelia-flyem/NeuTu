@@ -2744,6 +2744,11 @@ void ZFlyEmProofMvc::recoverObjectVisible()
   getView()->processDepthSliderValueChange();
 }
 
+void ZFlyEmProofMvc::updateMeshForSelected()
+{
+  getCompleteDocument()->updateMeshForSelected();
+}
+
 void ZFlyEmProofMvc::skeletonizeSelectedBody()
 {
 #if defined(_FLYEM_)

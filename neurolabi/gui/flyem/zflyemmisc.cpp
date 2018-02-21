@@ -1408,6 +1408,15 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   return seedList;
 }
 
+void ZFlyEmMisc::RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriterFromUrl(GET_FLYEM_CONFIG.getTaskServer());
+  writer->deleteKey(ZDvidData::GetTaskName("split"), taskKey);
+}
+
 ZJsonObject ZFlyEmMisc::MakeSplitTask(
     const ZDvidTarget &target, uint64_t bodyId,
     ZJsonArray seedJson, ZJsonArray roiJson)

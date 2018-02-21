@@ -129,14 +129,15 @@ std::string ZDvidUrl::getServerInfoUrl() const
 
 std::string ZDvidUrl::getMeshUrl()
 {
-  return getDataUrl(
-        ZDvidData::GetName(ZDvidData::ROLE_MESH,
-                           ZDvidData::ROLE_BODY_LABEL,
-                           m_dvidTarget.getBodyLabelName()));
+  return getDataUrl(m_dvidTarget.getMeshName());
 }
 
 std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
 {
+  return GetFullUrl(
+        GetKeyCommandUrl(getDataUrl(m_dvidTarget.getMeshName(zoom))),
+        GetMeshKey(bodyId));
+#if 0
   std::string url;
 
   ZString dataUrl = getMeshUrl();
@@ -149,6 +150,7 @@ std::string ZDvidUrl::getMeshUrl(uint64_t bodyId, int zoom)
   }
 
   return url;
+#endif
 }
 
 std::string ZDvidUrl::getMeshInfoUrl(uint64_t bodyId, int zoom)
@@ -1490,6 +1492,16 @@ std::string ZDvidUrl::GetSkeletonKey(uint64_t bodyId)
   stream << bodyId << "_swc";
 
   return stream.str();
+}
+
+std::string ZDvidUrl::GetMeshKey(uint64_t bodyId)
+{
+  return GetBodyKey(bodyId);
+}
+
+std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
+{
+  return GetMeshKey(bodyId) + "_info";
 }
 
 std::string ZDvidUrl::GetServiceResultEndPoint()

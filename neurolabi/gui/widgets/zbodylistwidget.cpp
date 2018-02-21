@@ -74,6 +74,12 @@ void ZBodyListWidget::removeBody(uint64_t bodyId)
   model->removeBody(bodyId);
 }
 
+void ZBodyListWidget::addBody(uint64_t bodyId)
+{
+  ZFlyEmBodyListModel *model = getModel();
+  model->addBody(bodyId);
+}
+
 void ZBodyListWidget::processBodySelectionChange(
     const QSet<uint64_t> &selectedSet)
 {

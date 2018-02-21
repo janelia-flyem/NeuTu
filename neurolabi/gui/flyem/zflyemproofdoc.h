@@ -243,6 +243,8 @@ public:
   void refreshDvidLabelBuffer(unsigned long delay);
 //  void setLabelSliceAlpha(int alpha);
 
+  void updateMeshForSelected();
+
 public:
   void notifyBodyMerged();
   void notifyBodyUnmerged();

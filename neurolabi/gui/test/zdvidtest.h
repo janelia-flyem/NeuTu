@@ -92,6 +92,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ZDvidTarget target("emdata.janelia.org", "bf1");
   target.setLabelBlockName("labels");
   target.setBodyLabelName("bodies");
+  target.setGrayScaleName("grayscale");
 
   //const std::vector<ZDvidTarget> &dvidRepo =
   //    NeutubeConfig::getInstance().getFlyEmConfig().getDvidRepo();
@@ -143,8 +144,12 @@ TEST(ZDvidTest, ZDvidUrl)
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1",
             dvidUrl.getMeshUrl(1, 0));
-  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes_1/key/1",
-            dvidUrl.getMeshUrl(1, 1));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes_2/key/1",
+            dvidUrl.getMeshUrl(1, 2));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes/key/1_info",
+            dvidUrl.getMeshInfoUrl(1, 0));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/meshes_2/key/1_info",
+            dvidUrl.getMeshInfoUrl(1, 2));
 
   ASSERT_EQ("http://emdata.janelia.org/api", dvidUrl.getApiUrl());
 //  std::cout << dvidUrl.getApiUrl() << std::endl;

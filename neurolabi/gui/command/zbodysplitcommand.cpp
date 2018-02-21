@@ -362,7 +362,7 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
 }
 
 void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
-    const std::string &splitTaskKey, const std::string &signalPath,
+    const std::string &splitTaskKey, const std::string &/*signalPath*/,
     bool committing, const std::string &commitPath)
 {
 //  ZStack *resultStack = container.getResultStack();
