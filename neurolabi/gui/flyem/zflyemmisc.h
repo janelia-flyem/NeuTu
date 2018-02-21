@@ -97,6 +97,7 @@ QList<ZStackObject*> LoadSplitTask(const ZJsonObject &taskJson);
 ZJsonObject MakeSplitTask(
     const ZDvidTarget &target, uint64_t bodyId, ZJsonArray seedJson,
     ZJsonArray roiJson);
+void RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId);
 
 QString GetNeuroglancerPath(const ZDvidTarget &target, const ZIntPoint &pos);
 

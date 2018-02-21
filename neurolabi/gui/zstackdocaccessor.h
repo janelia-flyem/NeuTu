@@ -25,6 +25,7 @@ public:
       ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject);
   static void RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject);
   static void AddObject(ZStackDoc *doc, ZStackObject *obj);
+  static void AddObjectUnique(ZStackDoc *doc, ZStackObject *obj);
   static void AddObject(ZStackDoc *doc, const QList<ZStackObject*> &objList);
 
   static void ParseWatershedContainer(

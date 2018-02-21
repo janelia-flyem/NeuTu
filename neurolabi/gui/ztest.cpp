@@ -24823,7 +24823,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   ZObject3dScan *obj = new ZObject3dScan;
   obj->addStripe(0, 0);
   obj->addSegment(0, 1, false);
@@ -25524,7 +25523,7 @@ void ZTest::test(MainWindow *host)
   mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
 #endif
 
-#if 1
+#if 0
   ZIntCuboid box;
   box.setFirstCorner(0, 0, 0);
   box.setLastCorner(10, 20, 30);
@@ -25547,8 +25546,39 @@ void ZTest::test(MainWindow *host)
 
   std::ofstream stream((GET_TEST_DATA_DIR + "/test.obj").c_str());
   stream.write(data.constData(), data.size());
-
 #endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZIntCuboid box;
+  box.setFirstCorner(0, 0, 0);
+  box.setLastCorner(10, 20, 30);
+
+  std::vector<bool> visible;
+  visible.resize(6, true);
+  visible[0] = false;
+  visible[2] = false;
+  visible[4] = false;
+
+  ZMesh mesh = ZMesh::CreateCuboidFaceMesh(box, visible, QColor(255, 0, 0));
+
+  writer.writeMesh(mesh, 2, 0);
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  target.setBodyLabelName("bodies");
+
+  ZFlyEmMisc::RemoveSplitTask(target, 1);
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

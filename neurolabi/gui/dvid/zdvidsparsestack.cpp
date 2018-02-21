@@ -243,6 +243,11 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
   setLabel(bodyId);
 }
 
+void ZDvidSparseStack::setObjectMask(ZObject3dScan *obj)
+{
+  m_sparseStack.setObjectMask(obj);
+}
+
 void ZDvidSparseStack::loadBodyAsync(uint64_t bodyId)
 {
   m_isValueFilled = false;

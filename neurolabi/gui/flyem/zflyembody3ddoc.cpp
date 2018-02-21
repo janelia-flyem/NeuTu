@@ -1586,6 +1586,11 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
   }
 }
 
+void ZFlyEmBody3dDoc::removeSplitTask(uint64_t bodyId)
+{
+  ZFlyEmMisc::RemoveSplitTask(getDvidTarget(), bodyId);
+}
+
 void ZFlyEmBody3dDoc::enableSplitTaskLoading(bool enable)
 {
   m_splitTaskLoadingEnabled = enable;
@@ -2488,28 +2493,69 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   QString summary;
 
-  uint64_t remainderId = m_splitter->getBodyId();
+  uint64_t oldId = m_splitter->getBodyId();
+  uint64_t remainderId = oldId;
+
+  ZObject3dScan *remainObj = new ZObject3dScan;
 
   QList<ZStackObject*> objList =
       getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
   foreach (ZStackObject *obj, objList) {
     ZObject3dScan *seg = dynamic_cast<ZObject3dScan*>(obj);
     if (seg != NULL) {
-      notifyWindowMessageUpdated(QString("Uploading %1/%2"));;
+      if (seg->getLabel() > 1) {
+        notifyWindowMessageUpdated(QString("Uploading %1/%2"));
 
-      uint64_t newBodyId = 0;
-      if (m_splitter->getLabelType() == flyem::LABEL_BODY) {
-        newBodyId = m_dvidWriter.writeSplit(*seg, remainderId, 0);
+        uint64_t newBodyId = 0;
+        if (m_splitter->getLabelType() == flyem::LABEL_BODY) {
+          newBodyId = m_dvidWriter.writeSplit(*seg, remainderId, 0);
+        } else {
+          std::pair<uint64_t, uint64_t> idPair =
+              m_dvidWriter.writeSupervoxelSplit(*seg, remainderId);
+          remainderId = idPair.first;
+          newBodyId = idPair.second;
+        }
+
+        notifyWindowMessageUpdated(QString("Updating mesh ..."));
+        ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
+        m_dvidWriter.writeMesh(*mesh, newBodyId, 0);
+        delete mesh;
+        emit addingBody(newBodyId);
+//        addEvent(BodyEvent::ACTION_ADD, newBodyId);
+
+        summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
+            arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
       } else {
-        std::pair<uint64_t, uint64_t> idPair =
-            m_dvidWriter.writeSupervoxelSplit(*seg, remainderId);
-        remainderId = idPair.first;
-        newBodyId = idPair.second;
+        remainObj->unify(*seg);
       }
-
-      summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
-          arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
     }
+  }
+
+  m_dvidWriter.deleteMesh(oldId);
+  ZMesh* mesh = ZMeshFactory::MakeMesh(*remainObj);
+  m_dvidWriter.writeMesh(*mesh, remainderId, 0);
+//  delete mesh;
+
+  if (remainderId == oldId) { //Update the body if the main ID remain unchanged
+    mesh->setLabel(oldId);
+    mesh->setSource(
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(
+            oldId, 0, flyem::BODY_MESH));
+    ZStackDocAccessor::AddObjectUnique(this, mesh);
+  } else {
+    emit removingBody(oldId);
+    emit addingBody(remainderId);
+    delete mesh;
+  }
+//  addEvent(BodyEvent::ACTION_REMOVE, oldId);
+  ZStackDocAccessor::RemoveObject(
+        this, ZStackObjectRole::ROLE_SEGMENTATION, true);
+
+  m_splitter->setBodyId(remainderId);
+
+  ZDvidSparseStack *sparseStack = getDataDocument()->getDvidSparseStack();
+  if (sparseStack != NULL) {
+    sparseStack->setObjectMask(remainObj);
   }
 
   notifyWindowMessageUpdated(summary);
@@ -2737,6 +2783,17 @@ void ZFlyEmBody3dDoc::dumpGarbage(
 
 void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
 {
+  //Make old conflicted objects unrecyclable
+  for (QMap<ZStackObject*, ObjectStatus>::iterator iter = m_garbageMap.begin();
+       iter != m_garbageMap.end(); ++iter) {
+    ZStackObject *oldObj = iter.key();
+    ObjectStatus &status =iter.value();
+    if (oldObj->getType() == obj->getType() &&
+        oldObj->getSource() == obj->getSource()) {
+      status.setRecycable(false);
+    }
+  }
+
   m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
   m_garbageMap[obj].setRecycable(recycable);
 

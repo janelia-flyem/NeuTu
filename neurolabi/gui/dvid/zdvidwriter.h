@@ -57,6 +57,7 @@ public:
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   bool isSwcWrittable();
 
+  void writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom);
 
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
@@ -129,6 +130,7 @@ public:
                  const QString &minKey, const QString &maxKey);
 
   void deleteSkeleton(uint64_t bodyId);
+  void deleteMesh(uint64_t bodyId);
   void deleteBodyAnnotation(uint64_t bodyId);
 
   void invalidateBody(uint64_t bodyId);

@@ -1,5 +1,5 @@
 {
-  "librarian": "emdata2.int.janelia.org:9100",
+  "librarian": "emdata3.int.janelia.org:9100",
   "mb6_paper": false,
   "task server": "http://zhaot-ws1:9000/api/node/194d",
   "dvid root": {

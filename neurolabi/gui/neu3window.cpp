@@ -236,6 +236,10 @@ void Neu3Window::createDockWidget()
           m_bodyListWidget, SLOT(deselectBodyItemSliently(uint64_t)));
   connect(getBodyDocument(), SIGNAL(bodyRemoved(uint64_t)),
           m_bodyListWidget, SLOT(removeBody(uint64_t)));
+  connect(getBodyDocument(), SIGNAL(addingBody(uint64_t)),
+          this, SLOT(addBody(uint64_t)));
+  connect(getBodyDocument(), SIGNAL(removingBody(uint64_t)),
+          this, SLOT(removeBody(uint64_t)));
 
 
   ZFlyEmDoc3dBodyStateAccessor *sa = new ZFlyEmDoc3dBodyStateAccessor;

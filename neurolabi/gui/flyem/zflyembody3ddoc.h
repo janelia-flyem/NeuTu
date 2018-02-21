@@ -172,6 +172,7 @@ public:
   ZFlyEmToDoItem readTodoItem(int x, int y, int z) const;
 
   void loadSplitTask(uint64_t bodyId);
+  void removeSplitTask(uint64_t bodyId);
   void enableSplitTaskLoading(bool enable);
   bool splitTaskLoadingEnabled() const;
 
@@ -320,6 +321,10 @@ public slots:
 signals:
   void bodyRemoved(uint64_t bodyId);
   void interactionStateChanged();
+
+  //Signals for triggering external body control
+  void addingBody(uint64_t bodyId);
+  void removingBody(uint64_t bodyId);
 
 protected:
   void autoSave() override {}

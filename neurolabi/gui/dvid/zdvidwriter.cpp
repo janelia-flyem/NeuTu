@@ -26,6 +26,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "zdvidutil.h"
 #include "dvid/zdvidpath.h"
+#include "zmesh.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -133,6 +134,21 @@ bool ZDvidWriter::isSwcWrittable()
   writeSwc(0, &testTree);
 
   return getStatusCode() == 200;
+}
+
+void ZDvidWriter::writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string url = dvidUrl.getMeshUrl(bodyId, zoom);
+
+  QByteArray payload = mesh.writeToMemory("obj");
+  post(url, payload, false);
+
+
+  url = ZDvidUrl::GetMeshInfoUrl(url);
+  ZJsonObject infoJson;
+  infoJson.setEntry("format", "obj");
+  post(url, infoJson.dumpString(0), true);
 }
 
 void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
@@ -612,6 +628,12 @@ void ZDvidWriter::deleteSkeleton(uint64_t bodyId)
             ZDvidUrl::GetSkeletonKey(bodyId));
 }
 
+void ZDvidWriter::deleteMesh(uint64_t bodyId)
+{
+  deleteKey(getDvidTarget().getMeshName(), ZDvidUrl::GetMeshKey(bodyId));
+  deleteKey(getDvidTarget().getMeshName(), ZDvidUrl::GetMeshInfoKey(bodyId));
+}
+
 void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
 {
   ZDvidUrl url(getDvidTarget());
@@ -876,6 +898,11 @@ std::string ZDvidWriter::request(
 
 std::string ZDvidWriter::del(const std::string &url)
 {
+#if _DEBUG_2
+  std::cout << "HTTP DELETE: " << url << std::endl;
+#endif
+
+
   return request(url, "DELETE", NULL, 0, false);
 
 #if 0
