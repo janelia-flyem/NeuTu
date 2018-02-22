@@ -4204,6 +4204,13 @@ void Z3DWindow::setFront(neutube3d::ERendererLayer layer, bool on)
   m_view->setFront(layer, on);
 }
 
+/*
+Z3DTransformParameter Z3DWindow::getTransformPara() const
+{
+  return m_view->getTransformPara();
+}
+*/
+
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
   ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),

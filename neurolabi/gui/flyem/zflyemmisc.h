@@ -98,7 +98,8 @@ ZJsonObject MakeSplitTask(
     const ZDvidTarget &target, uint64_t bodyId, ZJsonArray seedJson,
     ZJsonArray roiJson);
 
-QString GetNeuroglancerPath(const ZDvidTarget &target, const ZIntPoint &pos);
+QString GetNeuroglancerPath(
+    const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();

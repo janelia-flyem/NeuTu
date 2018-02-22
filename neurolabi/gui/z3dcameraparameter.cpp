@@ -1,5 +1,8 @@
 #include "z3dcameraparameter.h"
 
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 #include "zwidgetsgroup.h"
 #include "QsLog.h"
 #include "zjsonobject.h"
@@ -295,6 +298,21 @@ void Z3DCameraParameter::setValueSameAs(const ZParameter& rhs)
   //                   src->get().nearDist(), src->get().farDist());
   m_value.setEyeSeparationAngle(src->get().eyeSeparationAngle());
   updatePara();
+}
+
+glm::quat Z3DCameraParameter::getRotation() const
+{
+//  glm::vec3 orig(0, 0, 1);
+//  glm::vec3 dest = glm::normalize(m_eye.get() - m_center.get());
+
+  glm::vec3 upVector = m_upVector.get();
+  upVector.x = -upVector.x;
+  upVector.y = -upVector.y;
+  upVector.z = -upVector.z;
+
+  return glm::conjugate(glm::toQuat(
+        glm::lookAt(m_center.get(), m_eye.get(), upVector)));
+//  return glm::rotation(orig, dest);
 }
 
 void Z3DCameraParameter::set(const ZJsonObject &cameraJson)

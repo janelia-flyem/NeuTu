@@ -194,6 +194,8 @@ public:
     updatePara();
   }
 
+  glm::quat getRotation() const;
+
   void viewportChanged(const glm::uvec2& viewport);
 
   // ZParameter interface
