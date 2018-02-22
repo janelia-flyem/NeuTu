@@ -123,6 +123,7 @@ public: //Camera adjustment
 public: //Components
   Z3DTrackballInteractionHandler* getInteractionHandler() { return &m_view->interactionHandler(); }
   Z3DCameraParameter* getCamera() { return &m_view->camera(); }
+//  Z3DTransformParameter getTransformPara() const;
   inline Z3DPunctaFilter* getPunctaFilter() const { return m_view->getPunctaFilter(); }
   inline Z3DMeshFilter* getMeshFilter() const { return m_view->getMeshFilter(); }
   inline Z3DSwcFilter* getSwcFilter() const { return m_view->getSwcFilter(); }
