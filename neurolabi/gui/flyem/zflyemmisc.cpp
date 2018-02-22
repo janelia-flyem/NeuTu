@@ -1270,7 +1270,8 @@ ZIntCuboid ZFlyEmMisc::EstimateSplitRoi(const ZIntCuboid &boundBox)
   return newBox;
 }
 
-QString ZFlyEmMisc::GetNeuroglancerPath(const ZDvidTarget &target, const ZIntPoint &pos)
+QString ZFlyEmMisc::GetNeuroglancerPath(
+    const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat)
 {
 
   QString path = QString("emdata2.int.janelia.org/neuroglancer/#!{'layers':"
@@ -1289,11 +1290,14 @@ QString ZFlyEmMisc::GetNeuroglancerPath(const ZDvidTarget &target, const ZIntPoi
   }
 
   path += QString("}_'navigation':{'pose':{'position':"
-                         "{'voxelSize':[8_8_8]_'voxelCoordinates':[%1_%2_%3]}}_"
-                         "'zoomFactor':8}_'perspectiveOrientation':"
-                         "[-0.3254_0.3294_-0.1029_0.8802]_"
-                         "'perspectiveZoom':64}").
-      arg(pos.getX()).arg(pos.getY()).arg(pos.getZ());
+                  "{'voxelSize':[8_8_8]_'voxelCoordinates':[%1_%2_%3]}_"
+                  "'orientation':[%4_%5_%6_%7]}_"
+                  "'zoomFactor':8}_"
+                  "'perspectiveOrientation':"
+                  "[-0.3254_0.3294_-0.1029_0.8802]_"
+                  "'perspectiveZoom':64}").
+      arg(pos.getX()).arg(pos.getY()).arg(pos.getZ()).
+      arg(quat.getX()).arg(quat.getY()).arg(quat.getZ()).arg(quat.weight());
 
   return path;
 }
