@@ -1323,7 +1323,9 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 
     ZSwcTree *tree = NULL;
     if (resLevel == getMaxResLevel() && resLevel > 0) {
+      notifyBodyUpdate(bodyId, getMaxResLevel());
       tree = getBodyQuickly(bodyId);
+      notifyBodyUpdated(bodyId, getMaxResLevel());
     } else {
       notifyBodyUpdate(bodyId, resLevel);
       tree = makeBodyModel(bodyId, resLevel, getBodyType());

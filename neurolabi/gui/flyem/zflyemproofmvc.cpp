@@ -618,7 +618,7 @@ ZFlyEmBody3dDoc* ZFlyEmProofMvc::makeBodyDoc(flyem::EBodyType bodyType)
   connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           doc, SLOT(processBodySelectionChange()));
 
-  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
+//  ZWidgetMessage::ConnectMessagePipe(doc, this, false);
 
   return doc;
 }

@@ -302,8 +302,14 @@ void Neu3Window::updateRoiWidget()
 void Neu3Window::browse(double x, double y, double z)
 {
   ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+
+  glm::quat r = m_3dwin->getCamera()->getRotation();
+  ZWeightedPoint rotation;
+  rotation.set(r.x, r.y, r.z);
+  rotation.setWeight(r.w);
+
   bo->open(ZFlyEmMisc::GetNeuroglancerPath(
-             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z)));
+             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z), rotation));
 }
 
 void Neu3Window::updateWidget()

@@ -704,7 +704,7 @@ void Z3DWindow::createMenus()
   m_helpMenu = menuBar()->addMenu(tr("&Help"));
 
   m_editMenu->addAction(getAction(ZActionFactory::ACTION_UNDO));
-  m_editMenu->addAction(getAction(ZActionFactory::ACTION_UNDO));
+  m_editMenu->addAction(getAction(ZActionFactory::ACTION_REDO));
   m_editMenu->addSeparator();
 //  m_editMenu->addAction(m_markSwcSomaAction);
 
@@ -4208,6 +4208,13 @@ void Z3DWindow::setFront(neutube3d::ERendererLayer layer, bool on)
 {
   m_view->setFront(layer, on);
 }
+
+/*
+Z3DTransformParameter Z3DWindow::getTransformPara() const
+{
+  return m_view->getTransformPara();
+}
+*/
 
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
