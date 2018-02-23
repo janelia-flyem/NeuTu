@@ -1,4 +1,5 @@
 #include "zobjsitem.h"
+#include <iostream>
 
 ZObjsItem::ZObjsItem(const QList<QVariant> &data, void *pData, ZObjsItem *parent)
 {
@@ -6,11 +7,18 @@ ZObjsItem::ZObjsItem(const QList<QVariant> &data, void *pData, ZObjsItem *parent
   m_itemData = data;
   m_actualObj = pData;
   m_checkState = Qt::Checked;
+
+#ifdef _DEBUG_
+  std::cout << "Item created: " << this << std::endl;
+#endif
 }
 
 ZObjsItem::~ZObjsItem()
 {
   qDeleteAll(m_childItems);
+#ifdef _DEBUG_
+  std::cout << "Item deleted: " << this << std::endl;
+#endif
 }
 
 void ZObjsItem::appendChild(ZObjsItem *item)

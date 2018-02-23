@@ -1294,7 +1294,7 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
                   "'orientation':[%4_%5_%6_%7]}_"
                   "'zoomFactor':8}_"
                   "'perspectiveOrientation':"
-                  "[-0.3254_0.3294_-0.1029_0.8802]_"
+                  "[%4_%5_%6_%7]_"
                   "'perspectiveZoom':64}").
       arg(pos.getX()).arg(pos.getY()).arg(pos.getZ()).
       arg(quat.getX()).arg(quat.getY()).arg(quat.getZ()).arg(quat.weight());
