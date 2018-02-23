@@ -88,7 +88,7 @@ const
   if (!hasIndex(row, column, parent))
     return QModelIndex();
 
-  ZObjsItem *parentItem;
+  ZObjsItem *parentItem = NULL;
 
   if (!parent.isValid())
     parentItem = m_rootItem;
