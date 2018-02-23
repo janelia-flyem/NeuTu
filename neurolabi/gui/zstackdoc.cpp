@@ -4461,9 +4461,9 @@ void ZStackDoc::setSwcVisible(ZSwcTree *tree, bool visible)
 {
   if (tree->isVisible() != visible) {
     tree->setVisible(visible);
-    bufferObjectModified(tree);
-    processObjectModified();
-//    emit swcVisibleStateChanged(tree, visible);
+//    bufferObjectModified(tree);
+//    processObjectModified();
+    emit swcVisibleStateChanged(tree, visible);
   }
 }
 

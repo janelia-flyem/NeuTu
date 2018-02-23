@@ -1449,8 +1449,17 @@ int ZCommandLine::run(int argc, char *argv[])
     return runGeneral();
     break;
   default:
-    std::cout << "Unknown command" << std::endl;
-    return 1;
+    if (m_input.empty()) {
+      std::cout << "Unknown command" << std::endl;
+      return 1;
+    } else {
+      if (m_input[0] == "version") {
+        std::cout << "Built from: " << _CURRENT_COMMIT_ << std::endl;
+        std::cout << "More information in : " << std::endl
+                  << "  https://github.com/janelia-flyem/NeuTu/commit/" +
+                     std::string(_CURRENT_COMMIT_) << std::endl;
+      }
+    }
   }
 
   return 0;
