@@ -220,7 +220,7 @@ void Z3DView::resetCameraClippingRange()
 
 glm::quat Z3DView::getRotation() const
 {
-  return camera().getRotation();
+  return camera().getNeuroglancerRotation();
 }
 
 bool Z3DView::takeFixedSizeScreenShot(const QString& filename, int width, int height, Z3DScreenShotType sst)

@@ -194,7 +194,7 @@ public:
     updatePara();
   }
 
-  glm::quat getRotation() const;
+  glm::quat getNeuroglancerRotation() const;
 
   void viewportChanged(const glm::uvec2& viewport);
 

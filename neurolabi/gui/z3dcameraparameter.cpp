@@ -300,7 +300,7 @@ void Z3DCameraParameter::setValueSameAs(const ZParameter& rhs)
   updatePara();
 }
 
-glm::quat Z3DCameraParameter::getRotation() const
+glm::quat Z3DCameraParameter::getNeuroglancerRotation() const
 {
 //  glm::vec3 orig(0, 0, 1);
 //  glm::vec3 dest = glm::normalize(m_eye.get() - m_center.get());

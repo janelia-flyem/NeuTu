@@ -303,7 +303,7 @@ void Neu3Window::browse(double x, double y, double z)
 {
   ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
 
-  glm::quat r = m_3dwin->getCamera()->getRotation();
+  glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
   ZWeightedPoint rotation;
   rotation.set(r.x, r.y, r.z);
   rotation.setWeight(r.w);
