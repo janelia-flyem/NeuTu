@@ -1455,9 +1455,10 @@ int ZCommandLine::run(int argc, char *argv[])
     } else {
       if (m_input[0] == "version") {
         std::cout << "Built from: " << _CURRENT_COMMIT_ << std::endl;
-        std::cout << "More information in : " << std::endl
-                  << "  https://github.com/janelia-flyem/NeuTu/commit/" +
-                     std::string(_CURRENT_COMMIT_) << std::endl;
+        std::string url = _CURRENT_COMMIT_;
+        url = "https://github.com/janelia-flyem/NeuTu/commit/" +
+            url.substr(0, 20);
+        std::cout << "More information on: " << std::endl << url << std::endl;
       }
     }
   }
