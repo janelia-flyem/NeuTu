@@ -144,12 +144,22 @@ void NeutubeConfig::updateLogDir()
   if (m_logDir.empty()) {
     ZString dir = getPath(WORKING_DIR);
 #if defined(_QT_GUI_USED_) && defined(_FLYEM_)
+    std::string candidateDir = dir;
+
+    //Check local directry
     if (dir.startsWith("/groups/flyem/")) {
-      m_logDir = "/opt/neutu_log/" + neutube::GetCurrentUserName();
-      m_logDestDir = "/groups/flyem/data/neutu_log/" + neutube::GetCurrentUserName();
-      if (!QDir(m_logDir.c_str()).exists()) {
-        m_logDir = m_logDestDir;
-        m_logDestDir = "";
+      candidateDir = "/opt/neutu_log/" + neutube::GetCurrentUserName();
+      if (QDir(candidateDir.c_str()).exists()) {
+        m_logDir = candidateDir;
+      }
+    }
+
+    //Checking shared directory
+    if (m_logDir.empty()) {
+      candidateDir =
+          "/groups/flyem/data/neutu_log/" + neutube::GetCurrentUserName();
+      if (QDir(candidateDir.c_str()).exists()) {
+        m_logDir = candidateDir;
       }
     }
 #endif
