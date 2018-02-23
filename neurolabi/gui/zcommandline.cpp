@@ -1459,6 +1459,13 @@ int ZCommandLine::run(int argc, char *argv[])
         url = "https://github.com/janelia-flyem/NeuTu/commit/" +
             url.substr(0, 20);
         std::cout << "More information on: " << std::endl << url << std::endl;
+      } else if (m_input[0] == "info") {
+        std::cout << "Working directory:"
+                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR)
+                  << std::endl;
+        std::cout << "Log path: "
+                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE)
+                  << std::endl;
       }
     }
   }
