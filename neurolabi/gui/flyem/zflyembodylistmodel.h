@@ -27,6 +27,8 @@ public:
 
   void setBodyStateAccessor(ZFlyEmBodyStateAccessor *sa);
 
+  QSet<uint64_t> getBodySet() const;
+
 public:
   bool setData(const QModelIndex &index, const QVariant &value, int role);
   bool removeRows(int row, int count, const QModelIndex &parent);

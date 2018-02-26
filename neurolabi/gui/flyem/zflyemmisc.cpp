@@ -1271,7 +1271,8 @@ ZIntCuboid ZFlyEmMisc::EstimateSplitRoi(const ZIntCuboid &boundBox)
 }
 
 QString ZFlyEmMisc::GetNeuroglancerPath(
-    const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat)
+    const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
+    const QSet<uint64_t> &bodySet)
 {
 
   QString path = QString("emdata2.int.janelia.org/neuroglancer/#!{'layers':"
@@ -1283,10 +1284,24 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
 
   if (target.hasLabelBlock()) {
     path += QString("_'segmentation':{'type':'segmentation'_"
-                    "'source':'dvid://http://%1/%2/%3'}").
+                    "'source':'dvid://http://%1/%2/%3'").
         arg(target.getAddressWithPort().c_str()).
         arg(target.getUuid().c_str()).
         arg(target.getLabelBlockName().c_str());
+
+    if (!bodySet.empty()) {
+      path += "_'segments':[";
+      uint64_t firstId = *(bodySet.begin());
+      path += QString("'%1'").arg(firstId);
+
+      foreach (uint64_t bodyId, bodySet) {
+        if (bodyId != firstId) {
+          path += QString("_'%1'").arg(bodyId);
+        }
+      }
+      path += "]";
+    }
+    path += "}";
   }
 
   path += QString("}_'navigation':{'pose':{'position':"
