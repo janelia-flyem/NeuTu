@@ -309,7 +309,8 @@ void Neu3Window::browse(double x, double y, double z)
   rotation.setWeight(r.w);
 
   bo->open(ZFlyEmMisc::GetNeuroglancerPath(
-             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z), rotation));
+             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
+             rotation, m_bodyListWidget->getModel()->getBodySet()));
 }
 
 void Neu3Window::updateWidget()

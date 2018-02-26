@@ -297,3 +297,8 @@ bool ZFlyEmBodyListModel::setData(
 
   return QStringListModel::setData(index, newValue, role);
 }
+
+QSet<uint64_t> ZFlyEmBodyListModel::getBodySet() const
+{
+  return m_bodySet;
+}
