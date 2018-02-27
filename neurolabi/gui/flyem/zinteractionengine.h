@@ -17,7 +17,10 @@ class ZStackDocKeyProcessor;
 class ZStackOperator;
 
 /*!
- * \brief An experimental class of handling GUI interaction
+ * \brief An experimental class of handling GUI interaction, especially for
+ * editing and exploration in 3D. The current implementation wraps
+ * ZInteractiveContext and Z3DTrackballInteractionHandler to simplify APIs
+ * for interaction management.
  */
 class ZInteractionEngine : public QObject, ZUncopyable
 {
@@ -106,6 +109,7 @@ public:
   void showContextMenu();
   void enterPaintStroke();
   void enterMarkTodo();
+  void enterMarkBookmark();
   void enterPaintRect();
   void enterLocateMode();
   void enterBrowseMode();
@@ -132,12 +136,15 @@ signals:
 private:
   void exitPaintStroke();
   void exitMarkTodo();
+  void exitMarkBookmark();
   void exitExplore();
   void exitPaintRect();
   void exitSwcEdit();
   void exitEditMode();
   void saveStroke();
   void commitData();
+
+  void enableRayMarker();
 
   void suppressMouseRelease(bool s);
   bool mouseReleaseSuppressed() const;
@@ -146,7 +153,7 @@ private:
   QList<ZStackObject*> m_unnamedDecorationList; //need to free up
   QList<ZStackObject*> m_namedDecorationList; //no need to free up
 
-  bool m_showObject;
+//  bool m_showObject;
   ZStackObject::EDisplayStyle m_objStyle;
 
   bool m_mouseLeftButtonPressed;
@@ -155,13 +162,13 @@ private:
   int m_cursorRadius;
 
   int m_mouseMovePosition[3];
-  int m_mouseLeftReleasePosition[3];
-  int m_mouseRightReleasePosition[3];
-  int m_mouseLeftPressPosition[3];
-  int m_mouseRightPressPosition[3];
-  int m_mouseLeftDoubleClickPosition[3];
-  QPointF m_grabPosition;
-  QPointF m_lastMouseDataCoord;
+//  int m_mouseLeftReleasePosition[3];
+//  int m_mouseRightReleasePosition[3];
+//  int m_mouseLeftPressPosition[3];
+//  int m_mouseRightPressPosition[3];
+//  int m_mouseLeftDoubleClickPosition[3];
+//  QPointF m_grabPosition;
+//  QPointF m_lastMouseDataCoord;
 
   ZStroke2d m_stroke;
   ZStroke2d m_rayMarker;

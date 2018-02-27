@@ -5,7 +5,7 @@
 #include "zstackdockeyprocessor.h"
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
-  QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),
+  QObject(parent), m_objStyle(ZStackObject::NORMAL),
   m_mouseLeftButtonPressed(false), m_mouseRightButtonPressed(false),
   m_cursorRadius(5), m_isStrokeOn(false),
   m_isKeyEventEnabled(true), m_interactionHandler(NULL)
@@ -399,14 +399,27 @@ void ZInteractionEngine::enterPaintStroke()
   emit decorationUpdated();
 }
 
+void ZInteractionEngine::enableRayMarker()
+{
+  m_rayMarker.set(m_mouseMovePosition[0], m_mouseMovePosition[1]);
+  m_rayMarker.setVisible(true);
+}
+
 void ZInteractionEngine::enterMarkTodo()
 {
   exitEditMode();
 
   m_interactiveContext.setTodoEditMode(ZInteractiveContext::TODO_ADD_ITEM);
-  m_rayMarker.set(m_mouseMovePosition[0], m_mouseMovePosition[1]);
-  m_rayMarker.setVisible(true);
+  enableRayMarker();
+
   emit decorationUpdated();
+}
+
+void ZInteractionEngine::enterMarkBookmark()
+{
+  exitEditMode();
+  m_interactiveContext.setBookmarkEditMode(ZInteractiveContext::BOOKMARK_ADD);
+  enableRayMarker();
 }
 
 void ZInteractionEngine::enterLocateMode()
@@ -469,6 +482,17 @@ void ZInteractionEngine::exitMarkTodo()
   }
 }
 
+void ZInteractionEngine::exitMarkBookmark()
+{
+  if (m_interactiveContext.bookmarkEditMode() !=
+      ZInteractiveContext::BOOKMARK_EDIT_OFF) {
+    m_interactiveContext.setBookmarkEditMode(
+          ZInteractiveContext::BOOKMARK_EDIT_OFF);
+    m_rayMarker.setVisible(false);
+    emit decorationUpdated();
+  }
+}
+
 void ZInteractionEngine::exitExplore()
 {
   if (m_interactiveContext.exploreMode() != ZInteractiveContext::EXPLORE_OFF) {
@@ -486,6 +510,7 @@ void ZInteractionEngine::exitEditMode()
   exitSwcEdit();
   exitPaintStroke();
   exitMarkTodo();
+  exitMarkBookmark();
   exitExplore();
 
 //  m_interactiveContext.setExitingEdit(true);
