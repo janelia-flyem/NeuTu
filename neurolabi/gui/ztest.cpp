@@ -22,6 +22,8 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <QWebEngineView>
+
 #if defined(_QT5_)
 #include <QtConcurrent>
 #else
@@ -25570,7 +25572,7 @@ void ZTest::test(MainWindow *host)
   writer.writeMesh(mesh, 2, 0);
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "b6bc", 8500);
   target.setLabelBlockName("labels");
@@ -25579,6 +25581,11 @@ void ZTest::test(MainWindow *host)
   ZFlyEmMisc::RemoveSplitTask(target, 1);
 #endif
 
+#if 1
+  QWebEngineView *view = new QWebEngineView(NULL);
+  view->setUrl(QUrl("https://janeliascicomp.github.io/SharkViewer/"));
+  view->show();
+#endif
 
   std::cout << "Done." << std::endl;
 }
