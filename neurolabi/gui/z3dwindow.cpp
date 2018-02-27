@@ -3132,6 +3132,11 @@ void Z3DWindow::activateTodoAction()
   getCanvas()->getInteractionEngine()->enterMarkTodo();
 }
 
+void Z3DWindow::activateBookmarkAction()
+{
+  getCanvas()->getInteractionEngine()->enterMarkBookmark();
+}
+
 void Z3DWindow::activateLocateAction()
 {
   getCanvas()->getInteractionEngine()->enterLocateMode();

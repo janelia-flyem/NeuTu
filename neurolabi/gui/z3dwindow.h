@@ -288,6 +288,7 @@ public slots:
   void showPuncta(bool on);
   void showTodo(bool on);
   void activateTodoAction();
+  void activateBookmarkAction();
   void activateLocateAction();
 
   void saveSelectedSwc();
