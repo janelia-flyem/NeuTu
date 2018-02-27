@@ -339,6 +339,8 @@ public slots:
   void addTodoMarker();
   void addToMergeMarker();
   void addToSplitMarker();
+  void setTodoItemToSplit();
+  void setTodoItemToNormal();
   void addDoneMarker();
   void updateBody();
   void compareBody();

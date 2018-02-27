@@ -44,6 +44,14 @@ public:
 
   QColor getDisplayColor() const;
 
+  void removeActionTag();
+
+public:
+  static const char *ACTION_KEY;
+  static const char *ACTION_SPLIT;
+  static const char *ACTION_MERGE;
+  static const char *ACTION_SPLIT_TAG;
+
 private:
   void init();
   void init(EKind kind);

@@ -63,4 +63,5 @@ HEADERS += \
     test/zxmltest.h \
     test/zpointtest.h \
     $$PWD/zwatershedtest.h \
-    $$PWD/ztestall.h
+    $$PWD/ztestall.h \
+    $$PWD/zstackobjectinfotest.h

@@ -22,6 +22,7 @@ public:
   static const TState STATE_VISIBITLITY_CHANGED = BIT_FLAG(4);
   static const TState STATE_COLOR_CHANGED = BIT_FLAG(5);
   static const TState STATE_ROLE_CHANGED = BIT_FLAG(6);
+  static const TState STATE_SOURCE_CHANGED = BIT_FLAG(7);
 
   void setType(ZStackObject::EType type) {
     m_type = type;
@@ -74,6 +75,17 @@ public:
 
   QSet<ZStackObject::EType> getType() const;
   QSet<ZStackObject::ETarget> getTarget() const;
+
+  /*!
+   * \brief Check if a certain type of object has been modified in a certain way.
+   *
+   * It returns true if an object with \a type has modification in \a flag.
+   * Note that STATE_UNKNOWN will be treated as any kind of modification.
+   */
+  bool hasObjectModified(
+      ZStackObject::EType type, ZStackObjectInfo::TState flag) const;
+
+  bool onlyVisibilityChanged(ZStackObject::EType type) const;
 
 
   void add(const ZStackObject &obj);

@@ -1208,7 +1208,7 @@ void ZFlyEmProofDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
       }
     }
     if (!selectedSet.empty()) {
-      processObjectModified(td);
+      bufferObjectModified(td);
       notifyTodoItemModified(ptArray, true);
     }
   }

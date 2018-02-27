@@ -429,6 +429,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_ADD_TODO_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(addToSplitMarker()));
     break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToSplit()));
+    break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToNormal()));
+    break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
     break;
@@ -1899,6 +1905,22 @@ void Z3DWindow::addToSplitMarker()
 void Z3DWindow::addDoneMarker()
 {
   AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, true);
+}
+
+void Z3DWindow::setTodoItemToSplit()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
+  }
+}
+
+void Z3DWindow::setTodoItemToNormal()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(ZFlyEmToDoItem::TO_DO);
+  }
 }
 
 void Z3DWindow::updateBody()

@@ -34,18 +34,26 @@ public:
   ZIntPoint getStackPosition() const;
   ZDvidReader* getDvidReader(const std::string &name) const;
   ZDvidWriter* getDvidWriter(const std::string &name) const;
-  ZDvidReader* getDvidReader(const ZDvidTarget &target) const;
-  ZDvidWriter* getDvidWriter(const ZDvidTarget &target) const;
-  ZDvidReader* getDvidReaderFromUrl(const std::string &url) const;
-  ZDvidWriter* getDvidWriterFromUrl(const std::string &url) const;
+  ZDvidReader* getDvidReader(
+      const ZDvidTarget &target, const std::string &key = "") const;
+  ZDvidWriter* getDvidWriter(
+      const ZDvidTarget &target, const std::string &key = "") const;
+  ZDvidReader* getDvidReaderFromUrl(
+      const std::string &url, const std::string &key = "") const;
+  ZDvidWriter* getDvidWriterFromUrl(
+      const std::string &url, const std::string &key = "") const;
 
 public:
   static ZDvidReader* GetDvidReader(const std::string &name);
   static ZDvidWriter* GetDvidWriter(const std::string &name);
-  static ZDvidReader* GetDvidReader(const ZDvidTarget &target);
-  static ZDvidWriter* GetDvidWriter(const ZDvidTarget &target);
-  static ZDvidReader* GetDvidReaderFromUrl(const std::string &url);
-  static ZDvidWriter* GetDvidWriterFromUrl(const std::string &url);
+  static ZDvidReader* GetDvidReader(
+      const ZDvidTarget &target, const std::string &key = "");
+  static ZDvidWriter* GetDvidWriter(
+      const ZDvidTarget &target, const std::string &key = "");
+  static ZDvidReader* GetDvidReaderFromUrl(
+      const std::string &url, const std::string &key = "");
+  static ZDvidWriter* GetDvidWriterFromUrl(
+      const std::string &url, const std::string &key = "");
 
 public:
   ZDvidSparseStack* readDvidSparseStack(const std::string &url) const;
@@ -58,11 +66,13 @@ private:
 
   template<typename T>
   T* getIODevice(
-      const ZDvidTarget &name, std::map<std::string, T*> &ioMap) const;
+      const ZDvidTarget &name, std::map<std::string, T*> &ioMap,
+      const std::string &key) const;
 
   template<typename T>
   T* getIODeviceFromUrl(
-      const std::string &path, std::map<std::string, T*> &ioMap) const;
+      const std::string &path, std::map<std::string, T*> &ioMap,
+      const std::string &key) const;
 
 private:
   ZGlobalData *m_data;

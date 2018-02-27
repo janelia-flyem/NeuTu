@@ -252,7 +252,7 @@ void ZDvidAnnotation::clear()
 {
   m_position.set(0, 0, 0);
   m_kind = KIND_INVALID;
-  m_tagArray.clear();
+  m_tagSet.clear();
   m_partnerHint.clear();
   m_relJson.clear();
   m_propertyJson.clear();
@@ -352,7 +352,7 @@ void ZDvidAnnotation::loadJsonObject(
     if (obj.hasKey("Tags")) {
       ZJsonArray tagJson(obj["Tags"], ZJsonValue::SET_INCREASE_REF_COUNT);
       for (size_t i = 0; i < tagJson.size(); ++i) {
-        m_tagArray.push_back(ZJsonParser::stringValue(tagJson.at(i)));
+        addTag(ZJsonParser::stringValue(tagJson.at(i)));
       }
     }
 
@@ -446,7 +446,19 @@ bool ZDvidAnnotation::hasPartner(const ZIntPoint &pos)
 
 void ZDvidAnnotation::addTag(const std::string &tag)
 {
-  m_tagArray.push_back(tag);
+  if (!tag.empty()) {
+    m_tagSet.insert(tag);
+  }
+}
+
+void ZDvidAnnotation::removeTag(const std::string &tag)
+{
+  m_tagSet.erase(tag);
+}
+
+bool ZDvidAnnotation::hasTag(const std::string &tag) const
+{
+  return m_tagSet.count(tag) > 0;
 }
 
 ZJsonObject ZDvidAnnotation::MakeRelJson(
@@ -471,10 +483,10 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
   ZJsonValue relJson = m_relJson.clone();
   obj.setEntry("Rels", relJson);
 
-  if (!m_tagArray.empty()) {
+  if (!m_tagSet.empty()) {
     ZJsonArray tagJson;
-    for (std::vector<std::string>::const_iterator iter = m_tagArray.begin();
-         iter != m_tagArray.end(); ++iter) {
+    for (std::set<std::string>::const_iterator iter = m_tagSet.begin();
+         iter != m_tagSet.end(); ++iter) {
       const std::string &tag = *iter;
       tagJson.append(tag);
     }
