@@ -100,6 +100,7 @@ CONFIG += rtti exceptions
 CONFIG += static_gtest
 
 QT += printsupport
+QT += webenginewidgets
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 #_USE_CORE_PROFILE_
