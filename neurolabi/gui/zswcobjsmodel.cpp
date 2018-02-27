@@ -6,6 +6,7 @@
 #include "tz_swc_tree.h"
 #include "QsLog.h"
 #include "neutubeconfig.h"
+#include "zstackobjectinfo.h"
 
 ZSwcObjsModel::ZSwcObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -79,6 +80,15 @@ Swc_Tree_Node *ZSwcObjsModel::getSwcTreeNode(const QModelIndex &index) const
     return NULL;
 }
 
+void ZSwcObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  if (infoSet.hasObjectModified(
+        ZStackObject::TYPE_SWC,
+        ZStackObjectInfo::STATE_ADDED | ZStackObjectInfo::STATE_REMOVED |
+        ZStackObjectInfo::STATE_SOURCE_CHANGED)) {
+    updateModelData();
+  }
+}
 
 void ZSwcObjsModel::updateModelData()
 {

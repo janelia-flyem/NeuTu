@@ -72,6 +72,26 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   item.setAction(ZFlyEmToDoItem::TO_DO);
 //  item.toJsonObject().print();
   ASSERT_EQ(ZFlyEmToDoItem::TO_DO, item.getAction());
+
+  std::string splitTag = std::string(ZFlyEmToDoItem::ACTION_KEY) + ":"
+      + ZFlyEmToDoItem::ACTION_SPLIT_TAG;
+  ASSERT_FALSE(item.hasTag(splitTag));
+
+  item.addTag(splitTag);
+  ASSERT_TRUE(item.hasTag(splitTag));
+
+  item.removeActionTag();
+  ASSERT_FALSE(item.hasTag(splitTag));
+
+  item.setAction(ZFlyEmToDoItem::TO_SPLIT);
+  ASSERT_TRUE(item.hasTag(splitTag));
+
+  item.setChecked(true);
+  ASSERT_FALSE(item.hasTag(splitTag));
+
+  item.setChecked(false);
+  ASSERT_TRUE(item.hasTag(splitTag));
+
 }
 
 TEST(ZDvidAnnotation, Radius)

@@ -294,6 +294,7 @@ public slots:
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
+  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
 
   void recycleObject(ZStackObject *obj) override;
   void killObject(ZStackObject *obj) override;

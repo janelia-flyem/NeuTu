@@ -116,12 +116,13 @@ T* ZGlobal::getIODevice(
 }
 
 template<typename T>
-T* ZGlobal::getIODevice(
-    const ZDvidTarget &target, std::map<std::string, T*> &ioMap) const
+T* ZGlobal::getIODevice(const ZDvidTarget &target,
+                        std::map<std::string, T*> &ioMap,
+                        const std::string &key) const
 {
   T *device = NULL;
   if (target.isValid()) {
-    device = getIODevice(target.getSourceString(true), ioMap);
+    device = getIODevice(target.getSourceString(true) + "$" + key, ioMap);
   }
 
   return device;
@@ -129,14 +130,15 @@ T* ZGlobal::getIODevice(
 
 template<typename T>
 T* ZGlobal::getIODeviceFromUrl(
-    const std::string &path, std::map<std::string, T*> &ioMap) const
+    const std::string &path, std::map<std::string, T*> &ioMap,
+    const std::string &key) const
 {
   T *device = NULL;
 
   QUrl url(path.c_str());
   if (url.scheme() == "http" || url.scheme() == "dvid") {
     ZDvidTarget target = ZDvid::MakeTargetFromUrl(path);
-    return getIODevice(target, ioMap);
+    return getIODevice(target, ioMap, key);
 //    device = getIODevice(target.getSourceString(true), ioMap);
   }
 
@@ -153,24 +155,28 @@ ZDvidWriter* ZGlobal::getDvidWriter(const std::string &name) const
   return getIODevice(name, m_data->m_dvidWriterMap);
 }
 
-ZDvidReader* ZGlobal::getDvidReader(const ZDvidTarget &target) const
+ZDvidReader* ZGlobal::getDvidReader(
+    const ZDvidTarget &target, const std::string &key) const
 {
-  return getIODevice(target, m_data->m_dvidReaderMap);
+  return getIODevice(target, m_data->m_dvidReaderMap, key);
 }
 
-ZDvidWriter* ZGlobal::getDvidWriter(const ZDvidTarget &target) const
+ZDvidWriter* ZGlobal::getDvidWriter(
+    const ZDvidTarget &target, const std::string &key) const
 {
-  return getIODevice(target, m_data->m_dvidWriterMap);
+  return getIODevice(target, m_data->m_dvidWriterMap, key);
 }
 
-ZDvidReader* ZGlobal::getDvidReaderFromUrl(const std::string &url) const
+ZDvidReader* ZGlobal::getDvidReaderFromUrl(
+    const std::string &url, const std::string &key) const
 {
-  return getIODeviceFromUrl(url, m_data->m_dvidReaderMap);
+  return getIODeviceFromUrl(url, m_data->m_dvidReaderMap, key);
 }
 
-ZDvidWriter* ZGlobal::getDvidWriterFromUrl(const std::string &url) const
+ZDvidWriter* ZGlobal::getDvidWriterFromUrl(
+    const std::string &url, const std::string &key) const
 {
-  return getIODeviceFromUrl(url, m_data->m_dvidWriterMap);
+  return getIODeviceFromUrl(url, m_data->m_dvidWriterMap, key);
 }
 
 ZDvidSparseStack* ZGlobal::readDvidSparseStack(const std::string &url) const
@@ -201,22 +207,26 @@ ZDvidWriter* ZGlobal::GetDvidWriter(const std::string &name)
   return GetInstance().getDvidWriter(name);
 }
 
-ZDvidReader* ZGlobal::GetDvidReader(const ZDvidTarget &target)
+ZDvidReader* ZGlobal::GetDvidReader(
+    const ZDvidTarget &target, const std::string &key)
 {
-  return GetInstance().getDvidReader(target);
+  return GetInstance().getDvidReader(target, key);
 }
 
-ZDvidWriter* ZGlobal::GetDvidWriter(const ZDvidTarget &target)
+ZDvidWriter* ZGlobal::GetDvidWriter(
+    const ZDvidTarget &target, const std::string &key)
 {
-  return GetInstance().getDvidWriter(target);
+  return GetInstance().getDvidWriter(target, key);
 }
 
-ZDvidReader* ZGlobal::GetDvidReaderFromUrl(const std::string &url)
+ZDvidReader* ZGlobal::GetDvidReaderFromUrl(
+    const std::string &url, const std::string &key)
 {
-  return GetInstance().getDvidReaderFromUrl(url);
+  return GetInstance().getDvidReaderFromUrl(url, key);
 }
 
-ZDvidWriter* ZGlobal::GetDvidWriterFromUrl(const std::string &url)
+ZDvidWriter* ZGlobal::GetDvidWriterFromUrl(
+    const std::string &url, const std::string &key)
 {
-  return GetInstance().getDvidWriterFromUrl(url);
+  return GetInstance().getDvidWriterFromUrl(url, key);
 }

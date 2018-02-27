@@ -532,9 +532,28 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
   emit todoVisibleChanged();
 }
 
+void ZFlyEmBody3dDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
+{
+  const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
+        ZStackObject::TYPE_FLYEM_TODO_ITEM);
+  for (TStackObjectSet::const_iterator iter = objSet.begin();
+       iter != objSet.end(); ++iter) {
+    ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(*iter);
+    if (item != NULL) {
+      if (action != item->getAction()) {
+        item->setAction(action);
+        m_dvidWriter.writeToDoItem(*item);
+        bufferObjectModified(item);
+      }
+    }
+  }
+
+  processObjectModified();
+}
+
 void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
 {
-  bool changed = false;
+//  bool changed = false;
 
   const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
         ZStackObject::TYPE_FLYEM_TODO_ITEM);
@@ -545,14 +564,16 @@ void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
       if (item->isChecked() != on) {
         item->setChecked(on);
         m_dvidWriter.writeToDoItem(*item);
-        changed = true;
+//        changed = true;
+        bufferObjectModified(item);
       }
     }
   }
+  processObjectModified();
 
-  if (changed) {
-    notifyTodoModified();
-  }
+//  if (changed) {
+//    notifyTodoModified();
+//  }
 }
 
 void ZFlyEmBody3dDoc::checkSelectedTodoItem()

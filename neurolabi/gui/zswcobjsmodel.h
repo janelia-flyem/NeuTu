@@ -6,6 +6,8 @@
 
 class ZStackDoc;
 class ZSwcTree;
+class ZStackObjectInfoSet;
+
 struct _Swc_Tree_Node;
 typedef _Swc_Tree_Node Swc_Tree_Node;
 
@@ -26,6 +28,7 @@ public:
 
 public slots:
   void updateModelData();
+  void processObjectModified(const ZStackObjectInfoSet &infoSet);
 
 protected:
   void setupModelData(ZObjsItem *parent);
