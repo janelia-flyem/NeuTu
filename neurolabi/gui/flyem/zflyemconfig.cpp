@@ -16,6 +16,7 @@ const char* ZFlyEmConfig::LIBRARIAN_KEY = "librarian";
 const char* ZFlyEmConfig::DVID_ROOT_KEY = "dvid root";
 const char* ZFlyEmConfig::MB6_KEY = "mb6_paper";
 const char* ZFlyEmConfig::TASK_SERVER_KEY = "task server";
+const char* ZFlyEmConfig::NEUROGLANCER_KEY = "neuroglancer server";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
@@ -110,6 +111,11 @@ void ZFlyEmConfig::loadConfig()
           setTaskServer(ZJsonParser::stringValue(obj[TASK_SERVER_KEY]));
         }
       }
+
+      if (obj.hasKey(NEUROGLANCER_KEY)) {
+        m_neuroglancerServer = ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+      }
+
 
       if (obj.hasKey(DVID_ROOT_KEY)) {
         ZJsonObject rootJson(obj.value(DVID_ROOT_KEY));
