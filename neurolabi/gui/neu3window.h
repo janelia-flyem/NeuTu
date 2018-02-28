@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "zactionfactory.h"
+#include "zpoint.h"
 
 namespace Ui {
 class Neu3Window;
@@ -23,6 +24,7 @@ class ZROIWidget;
 class FlyEmSettingDialog;
 class TaskProtocolWindow;
 class ZActionLibrary;
+class QWebEngineView;
 
 /*!
  * \brief The class of the main window for Neu3
@@ -117,6 +119,8 @@ private slots:
   void exitSplit();
   void startSplit();
 
+  void updateBrowser();
+
   void test();
 
 private:
@@ -143,6 +147,9 @@ private:
   class DoingBulkUpdate;
   QProgressDialog *m_progressDialog = nullptr;
   FlyEmSettingDialog *m_flyemSettingDlg = nullptr;
+
+  QWebEngineView *m_webView = nullptr;
+  ZPoint m_browsePos;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;
 };

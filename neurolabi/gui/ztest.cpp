@@ -25583,7 +25583,9 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   QWebEngineView *view = new QWebEngineView(NULL);
-  view->setUrl(QUrl("https://janeliascicomp.github.io/SharkViewer/"));
+//  view->setUrl(QUrl("https://janeliascicomp.github.io/SharkViewer/"));
+  QUrl url("http://emdata1.int.janelia.org:8500/neuroglancer/#!{'layers':{'grayscale':{'type':'image'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/grayscale'}_'labels3':{'type':'segmentation'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/labels3'}}_'navigation':{'pose':{'position':{'voxelSize':[8_8_8]_'voxelCoordinates':[4032_5600_7936]}}_'zoomFactor':8}_'perspectiveOrientation':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'perspectiveZoom':64}");
+  view->setUrl(url);
   view->show();
 #endif
 

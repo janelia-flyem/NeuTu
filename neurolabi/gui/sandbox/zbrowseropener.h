@@ -2,6 +2,8 @@
 #define ZBROWSEROPENER_H
 #include "zsandboxmodule.h"
 
+#include <QWebEngineView>
+
 class QUrl;
 class QString;
 
@@ -9,6 +11,7 @@ class ZBrowserOpener
 {
 public:
   ZBrowserOpener();
+  ~ZBrowserOpener();
   ZBrowserOpener(QString browser,bool path=false){
     if(path){
       setBrowserPath(browser);
@@ -35,8 +38,16 @@ public:
    */
   void updateChromeBrowser();
 
+  QString getCurrentUrl() const;
+
+public:
+  static const char* INTERNAL_BROWSER ;
+
 private:
   QString m_browerPath;
+  QWebEngineView *m_webView = NULL; //For testing purpose. Using it in a real
+                                    //situtation may have some thread
+                                    //compatibility problem.
 };
 
 

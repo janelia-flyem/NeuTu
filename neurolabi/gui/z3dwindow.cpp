@@ -137,7 +137,8 @@ Z3DWindow::Z3DWindow(
   setCentralWidget(getCanvas());
   connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::init);
   createDockWindows(); // empty docks
-  connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::fillDockWindows);  // fill in real widgets later
+  connect(m_view, &Z3DView::networkConstructed,
+          this, &Z3DWindow::fillDockWindows);  // fill in real widgets later
 
   setAcceptDrops(true);
   m_mergedContextMenu = new QMenu(this);
@@ -319,6 +320,10 @@ void Z3DWindow::init()
           m_doc.get(), SLOT(selectUpstreamNode()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingConnectedSwcNode()),
           m_doc.get(), SLOT(selectConnectedNode()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(cameraRorated()),
+          this, SLOT(notifyCameraRotation()));
+  connect(&(m_view->interactionHandler()), SIGNAL(cameraRotated()),
+          this, SLOT(notifyCameraRotation()));
 
 
 //  connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
@@ -3271,6 +3276,11 @@ void Z3DWindow::changeSelectedSwcAlpha()
   }
 }
 
+void Z3DWindow::notifyCameraRotation()
+{
+  emit cameraRotated();
+}
+
 void Z3DWindow::test()
 {
 
@@ -3345,6 +3355,7 @@ void Z3DWindow::test()
 
 void Z3DWindow::viewDataExternally()
 {
+#if 0
   ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
   bo->updateChromeBrowser();
   if (bo->getBrowserPath().isEmpty()) {
@@ -3353,6 +3364,8 @@ void Z3DWindow::viewDataExternally()
           "The path to Google Chrome has not be set correctly. "
           "The default browser will be used.", this);
   }
+#endif
+
   getCanvas()->getInteractionEngine()->enterBrowseMode();
 }
 
