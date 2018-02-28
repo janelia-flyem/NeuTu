@@ -25383,7 +25383,7 @@ void ZTest::test(MainWindow *host)
   writer.writeRoiRef("PB", keyList, "roi");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "1d1d", 8100);
   ZDvidWriter writer;
   writer.open(target);
