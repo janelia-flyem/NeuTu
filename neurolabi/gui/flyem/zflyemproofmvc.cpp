@@ -4975,7 +4975,7 @@ void ZFlyEmProofMvc::showInfoDialog()
 
 void ZFlyEmProofMvc::retrieveRois()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   //Disable roi retrival for debugging
   return;
 #endif

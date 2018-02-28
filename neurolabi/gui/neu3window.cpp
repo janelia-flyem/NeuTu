@@ -304,6 +304,7 @@ void Neu3Window::browse(double x, double y, double z)
   ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
 
   glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
+
   ZWeightedPoint rotation;
   rotation.set(r.x, r.y, r.z);
   rotation.setWeight(r.w);
@@ -339,6 +340,15 @@ void Neu3Window::exitSplit()
 void Neu3Window::startSplit()
 {
   getBodyDocument()->activateSplitForSelected();
+=======
+  QString url = ZFlyEmMisc::GetNeuroglancerPath(
+        m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z), rotation);
+
+  if (!url.isEmpty()) {
+    ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+    bo->open(url);
+  }
+>>>>>>> flyem_release_stage
 }
 
 void Neu3Window::createToolBar()
