@@ -340,15 +340,6 @@ void Neu3Window::exitSplit()
 void Neu3Window::startSplit()
 {
   getBodyDocument()->activateSplitForSelected();
-=======
-  QString url = ZFlyEmMisc::GetNeuroglancerPath(
-        m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z), rotation);
-
-  if (!url.isEmpty()) {
-    ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
-    bo->open(url);
-  }
->>>>>>> flyem_release_stage
 }
 
 void Neu3Window::createToolBar()
