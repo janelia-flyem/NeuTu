@@ -121,7 +121,8 @@ public: //Camera adjustment
   void zoomToSelectedSwcNodes();
 
 public: //Components
-  Z3DTrackballInteractionHandler* getInteractionHandler() { return &m_view->interactionHandler(); }
+  Z3DTrackballInteractionHandler* getInteractionHandler() {
+    return &m_view->interactionHandler(); }
   Z3DCameraParameter* getCamera() { return &m_view->camera(); }
 //  Z3DTransformParameter getTransformPara() const;
   inline Z3DPunctaFilter* getPunctaFilter() const { return m_view->getPunctaFilter(); }
@@ -226,6 +227,8 @@ signals:
   void runningFullSplit();
 
   void settingTriggered();
+
+  void cameraRotated();
 
 public slots:
   void resetCamera()
@@ -467,6 +470,7 @@ private:
 
 private slots:
   void about();
+  void notifyCameraRotation();
 
 private:
   neutube3d::EWindowType m_windowType;

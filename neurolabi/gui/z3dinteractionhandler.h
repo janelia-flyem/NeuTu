@@ -121,6 +121,7 @@ public:
 signals:
 
   void objectsMoved(double x, double y, double z);
+  void cameraRotated();
 
 protected:
   void rotateEvent(QMouseEvent* e, int w, int h);

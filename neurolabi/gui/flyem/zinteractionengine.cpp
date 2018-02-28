@@ -536,6 +536,12 @@ void ZInteractionEngine::saveStroke()
   }
 }
 
+void ZInteractionEngine::set3DInteractionHandler(Z3DTrackballInteractionHandler *handler)
+{
+  m_interactionHandler = handler;
+  connect(handler, SIGNAL(cameraRotated()), this, SIGNAL(cameraRotated()));
+}
+
 bool ZInteractionEngine::isStateOn(EState status) const
 {
   switch (status) {

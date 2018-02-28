@@ -1275,7 +1275,7 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
     const QSet<uint64_t> &bodySet)
 {
 
-  QString path = QString("emdata2.int.janelia.org/neuroglancer/#!{'layers':"
+  QString path = QString("http://emdata1.int.janelia.org/neuroglancer/#!{'layers':"
                          "{'grayscale':{'type':'image'_'source':'dvid://"
                          "http://%1/%2/%3'}").
       arg(target.getGrayScaleSource().getAddressWithPort().c_str()).
@@ -1310,7 +1310,7 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
                   "'zoomFactor':8}_"
                   "'perspectiveOrientation':"
                   "[%4_%5_%6_%7]_"
-                  "'perspectiveZoom':64}").
+                  "'perspectiveZoom':64_'layout':'xy'}").
       arg(pos.getX()).arg(pos.getY()).arg(pos.getZ()).
       arg(quat.getX()).arg(quat.getY()).arg(quat.getZ()).arg(quat.weight());
 

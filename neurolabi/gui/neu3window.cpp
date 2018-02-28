@@ -2,7 +2,7 @@
 
 #include <QDockWidget>
 #include <QMessageBox>
-
+#include <QWebEngineView>
 #include <QProgressDialog>
 
 #include "ui_neu3window.h"
@@ -40,8 +40,10 @@ Neu3Window::Neu3Window(QWidget *parent) :
   ui(new Ui::Neu3Window)
 {
   ui->setupUi(this);
+  setAttribute(Qt::WA_DeleteOnClose);
 
   m_actionLibrary = QSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
+  m_webView = new QWebEngineView;
 //  initialize();
 }
 
@@ -50,6 +52,10 @@ Neu3Window::~Neu3Window()
   if (m_dataContainer != NULL) {
     m_dataContainer->setExiting(true);
   }
+
+  m_webView->close();
+  m_webView->deleteLater();
+//  delete m_webView;
 
   delete ui;
 }
@@ -148,6 +154,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
+
+  connect(m_3dwin, SIGNAL(cameraRotated()), this, SLOT(updateBrowser()));
 }
 
 void Neu3Window::updateBodyState()
@@ -299,8 +307,28 @@ void Neu3Window::updateRoiWidget()
   m_dataContainer->updateRoiWidget(m_roiWidget, m_3dwin);
 }
 
+void Neu3Window::updateBrowser()
+{
+  browse(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
+}
+
 void Neu3Window::browse(double x, double y, double z)
 {
+  glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
+  ZWeightedPoint rotation;
+  rotation.set(r.x, r.y, r.z);
+  rotation.setWeight(r.w);
+
+  QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
+             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
+             rotation, m_bodyListWidget->getModel()->getBodySet()));
+  m_browsePos.set(x, y, z);
+
+  m_webView->setUrl(url);
+  m_webView->show();
+  m_webView->raise();
+
+#if 0
   ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
 
   glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
@@ -311,6 +339,7 @@ void Neu3Window::browse(double x, double y, double z)
   bo->open(ZFlyEmMisc::GetNeuroglancerPath(
              m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
              rotation, m_bodyListWidget->getModel()->getBodySet()));
+#endif
 }
 
 void Neu3Window::updateWidget()
@@ -340,6 +369,7 @@ void Neu3Window::startSplit()
 {
   getBodyDocument()->activateSplitForSelected();
 }
+
 
 void Neu3Window::createToolBar()
 {

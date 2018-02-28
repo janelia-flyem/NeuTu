@@ -34,6 +34,7 @@ ZGlobal::ZGlobal()
 {
   m_data = new ZGlobalData;
   m_browserOpener = ZSharedPointer<ZBrowserOpener>(new ZBrowserOpener);
+  m_browserOpener->setBrowserPath(ZBrowserOpener::INTERNAL_BROWSER);
 }
 
 ZGlobal::~ZGlobal()
