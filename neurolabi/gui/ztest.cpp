@@ -25383,6 +25383,14 @@ void ZTest::test(MainWindow *host)
   writer.writeRoiRef("PB", keyList, "roi");
 #endif
 
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "1d1d", 8100);
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.writeRoiRef("pb-lm", "pb-lm", "roi");
+#endif
+
 #if 0
   ZJsonObject roiJson;
   roiJson.load(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/roi.json");
@@ -25570,7 +25578,7 @@ void ZTest::test(MainWindow *host)
   writer.writeMesh(mesh, 2, 0);
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "b6bc", 8500);
   target.setLabelBlockName("labels");
