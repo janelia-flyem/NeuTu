@@ -465,8 +465,6 @@ void Neu3Window::syncBodyListModel()
 
   ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
   dataDoc->setSelectedBody(selected, neutube::BODY_LABEL_MAPPED);
-
-  getBodyDocument()->processBodySelectionChange();
 }
 
 static const int PROGRESS_MAX = 100;
@@ -485,7 +483,12 @@ void Neu3Window::meshArchiveLoadingStarted()
 void Neu3Window::meshArchiveLoadingProgress(float fraction)
 {
   if (m_progressDialog) {
-    m_progressDialog->setValue(fraction * PROGRESS_MAX);
+    // Don't use a fraction of 1, because then both this call and meshArchiveLoadingEnded()
+    // will set the dialog to the maximum value, which seems to cause the dialog to stay open.
+
+    if (fraction < 1.0f) {
+      m_progressDialog->setValue(fraction * PROGRESS_MAX);
+    }
   }
 }
 

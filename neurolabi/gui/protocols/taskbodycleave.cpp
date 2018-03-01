@@ -4,6 +4,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofmvc.h"
 #include "neu3window.h"
 #include "z3dmeshfilter.h"
 #include "z3dwindow.h"
@@ -92,6 +93,7 @@ namespace {
   static bool showingSynapse;
   static bool preservingSourceColorEnabled;
   static bool showingSourceColors;
+  static bool showingAnnotations;
 
   void applyOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
   {
@@ -123,6 +125,9 @@ namespace {
         showingSourceColors = filter->showingSourceColors();
         filter->showSourceColors(false);
       }
+
+      showingAnnotations = ZFlyEmProofMvc::showingAnnotations();
+      ZFlyEmProofMvc::showAnnotations(false);
     }
   }
 
@@ -142,6 +147,8 @@ namespace {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);
         filter->showSourceColors(showingSourceColors);
       }
+
+      ZFlyEmProofMvc::showAnnotations(showingAnnotations);
     }
   }
 

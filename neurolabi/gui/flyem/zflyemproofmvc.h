@@ -158,6 +158,9 @@ public:
 
   void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
 
+  static void showAnnotations(bool show);
+  static bool showingAnnotations();
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
