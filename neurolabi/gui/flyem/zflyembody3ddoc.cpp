@@ -882,12 +882,17 @@ void ZFlyEmBody3dDoc::updateBody(
       }
     }
   } else {
-    ZMesh *mesh = getBodyMesh(bodyId, 0);
-    if (mesh != NULL) {
-      if (mesh->getColor() != color) {
-        mesh->setColor(color);
-        mesh->pushObjectColor();
-        processObjectModified(mesh);
+    // A mesh from a tar archive is never needs its color updated, and checking
+    // for it is a slow loop that is quadratic in the number of meshes.
+
+    if (!fromTar(bodyId)) {
+      ZMesh *mesh = getBodyMesh(bodyId, 0);
+      if (mesh != NULL) {
+        if (mesh->getColor() != color) {
+          mesh->setColor(color);
+          mesh->pushObjectColor();
+          processObjectModified(mesh);
+        }
       }
     }
   }
@@ -1034,21 +1039,26 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
 
       updateBodyFunc(bodyId, mesh);
 
-      bool loaded =
-          !(getObjectGroup().findSameClass(
-              ZStackObject::TYPE_MESH,
-              ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
-            isEmpty());
+      // The findSameClass() function has performance that iis quadratic in the number of meshes,
+      // and is unnecessary for meshes from a tar archive.
 
-      if (!loaded) {
-        addSynapse(bodyId);
-  //      addTodo(bodyId);
-        updateTodo(bodyId);
+      if (!fromTar(id)) {
+        bool loaded =
+            !(getObjectGroup().findSameClass(
+                ZStackObject::TYPE_MESH,
+                ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
+              isEmpty());
 
-        // TODO: As of December, 2017, the following is slow due to access of a desktop server,
-        // http://zhaot-ws1:9000.  This server should be replaced with a faster one.
-        // The problem is most noticeable for the functionality of taskbodyhistory.cpp.
-        loadSplitTask(bodyId);
+        if (!loaded) {
+          addSynapse(bodyId);
+          // addTodo(bodyId);
+          updateTodo(bodyId);
+
+          // TODO: As of December, 2017, the following is slow due to access of a desktop server,
+          // http://zhaot-ws1:9000.  This server should be replaced with a faster one.
+          // The problem is most noticeable for the functionality of taskbodyhistory.cpp.
+          loadSplitTask(bodyId);
+        }
       }
 
       // If the argument ID loads an archive, then makeBodyMeshModels() can create
@@ -1467,18 +1477,29 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
 
   QString threadId = QString("updateBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
-    //TStackObjectList objList = getObjectGroup().findSameSource(
-        //  ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
-    TStackObjectList objList = getObjectGroup().findSameClass(
-          bodyObject->getType(),
-          ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
 
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+    // The findSameClass() function has performance that iis quadratic in the number of meshes,
+    // and is unnecessary for meshes from a tar archive.
+
+    if (!fromTar(bodyId)) {
+        TStackObjectList objList = getObjectGroup().findSameClass(
+              bodyObject->getType(),
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+
+        for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+             ++iter) {
+          getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+        }
+        getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
     }
+    else {
 
-    getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+      // The event name is a bit confusing, but "NONUNIQUE" means that ZStackDoc::addObject()
+      // won't get into a quadratic loop checking that this body is unique, at test that is
+      // not necessary for bodies from tar archives.
+
+      getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
     getDataBuffer()->deliver();
     emit bodyMeshLoaded();
   }
@@ -1901,12 +1922,28 @@ unsigned int ZFlyEmBody3dDoc::encodedLevel(uint64_t id) {
   return encodedLevel;
 }
 
+bool ZFlyEmBody3dDoc::fromTar(uint64_t id) const
+{
+  if (encodesTar(id)) {
+    return true;
+  } else {
+    for (auto const& it : m_tarIdToMeshIds) {
+      auto const& meshIds = it.second;
+      if (meshIds.find(id) != meshIds.end()) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+
 bool ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64_t, ZMesh *> &result)
 {
   if (encodesTar(bodyId)) {
     auto it = m_tarIdToMeshIds.find(bodyId);
     if (it != m_tarIdToMeshIds.end()) {
-      auto meshIds = it->second;
+      auto& meshIds = it->second;
       std::vector<ZMesh *> recoveredMeshes;
 
       for (uint64_t meshId : meshIds) {
@@ -2004,25 +2041,34 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_
     m_tarIdToMeshIds[id].clear();
 
     emit meshArchiveLoadingStarted();
+
     // It is challenging to emit progress updates as m_dvidReader reads the data for the
     // tar archive, so just initialize the progress meter to show ani ntermediate status.
+
     const float PROGRESS_FRACTION_START = 1 / 3.0;
     emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
 
     size_t bytesTotal;
     size_t bytesRead = 0;
     if (struct archive *arc = m_dvidReader.readMeshArchiveStart(id, bytesTotal)) {
-      size_t bytesJustRead;
-      while (ZMesh *mesh = m_dvidReader.readMeshArchiveNext(arc, bytesJustRead)) {
-        finalizeMesh(mesh, 0, t);
-        result[mesh->getLabel()] = mesh;
-        m_tarIdToMeshIds[id].push_back(mesh->getLabel());
+      std::vector<ZMesh*> resultVec;
 
-        bytesRead += bytesJustRead;
-        float fraction = float(bytesRead) / bytesTotal;
+      // When reading the meshes, decompress them in parallel to improve performance.
+      // The following lambda function updates the progress dialog during the decompression.
+
+      auto progress = [=](size_t i, size_t n) {
+        float fraction = float(i) / n;
         float progressFraction = PROGRESS_FRACTION_START + (1 - PROGRESS_FRACTION_START) * fraction;
         emit meshArchiveLoadingProgress(progressFraction);
+      };
+
+      m_dvidReader.readMeshArchiveAsync(arc, resultVec, progress);
+      for (ZMesh *mesh : resultVec) {
+        finalizeMesh(mesh, 0, t);
+        result[mesh->getLabel()] = mesh;
+        m_tarIdToMeshIds[id].insert(mesh->getLabel());
       }
+
       m_dvidReader.readMeshArchiveEnd(arc);
 
       emit meshArchiveLoadingEnded();

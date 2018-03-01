@@ -142,6 +142,14 @@ public:
   struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal);
   ZMesh *readMeshArchiveNext(struct archive *arc);
   ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead);
+
+  /*!
+   * \brief An alternative to repeated calls to readMeshArchiveNext(), which uses
+   * std::async and std::future to decompress the meshes in parallel.
+   */
+  void readMeshArchiveAsync(struct archive *arc, std::vector<ZMesh*>& results,
+                            const std::function<void(size_t, size_t)>& progress = {});
+
   void readMeshArchiveEnd(struct archive *arc);
 
   ZObject3dScan* readBodyDs(

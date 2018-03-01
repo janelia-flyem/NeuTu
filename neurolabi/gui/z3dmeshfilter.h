@@ -91,8 +91,7 @@ private:
 
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllMesh;
-  std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare>
-  m_sourceColorMapper;
+  std::map<QString, std::unique_ptr<ZVec4Parameter>> m_sourceColorMapper;
   bool m_preserveSourceColors;
   bool m_showSourceColors;
 

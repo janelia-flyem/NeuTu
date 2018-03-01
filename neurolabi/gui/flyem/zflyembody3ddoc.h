@@ -248,6 +248,8 @@ public:
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 
+  bool fromTar(uint64_t id) const;
+
 public:
   void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
   void executeRemoveTodoCommand();
@@ -424,7 +426,7 @@ private:
   QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
 
-  std::map<uint64_t, std::vector<uint64_t>> m_tarIdToMeshIds;
+  std::map<uint64_t, std::set<uint64_t>> m_tarIdToMeshIds;
 
   bool m_limitGarbageLifetime = true;
   bool m_splitTaskLoadingEnabled = true;
