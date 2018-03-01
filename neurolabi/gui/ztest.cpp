@@ -25383,7 +25383,7 @@ void ZTest::test(MainWindow *host)
   writer.writeRoiRef("PB", keyList, "roi");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata1.int.janelia.org", "1d1d", 8100);
   ZDvidWriter writer;
   writer.open(target);
@@ -25587,6 +25587,19 @@ void ZTest::test(MainWindow *host)
   ZFlyEmMisc::RemoveSplitTask(target, 1);
 #endif
 
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscalejpeg");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZStack *stack = reader.readGrayScaleLowtis(
+        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 512, 512, 0, 256, 256);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
 
   std::cout << "Done." << std::endl;
 }
