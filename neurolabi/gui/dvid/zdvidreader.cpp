@@ -2662,6 +2662,147 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
   return readGrayScaleLowtis(x0, y0, z0, width, height, zoom, 256, 256);
 }
 
+std::vector<int> ZDvidReader::GetOffset(int x0, int y0, int z0)
+{
+  std::vector<int> offset(3);
+  offset[0] = x0;
+  offset[1] = y0;
+  offset[2] = z0;
+
+  return offset;
+}
+
+std::vector<int> ZDvidReader::GetOffset(
+    int cx, int cy, int cz, int width, int height)
+{
+  std::vector<int> offset(3);
+  offset[0] = cx - width / 2;
+  offset[1] = cy - height / 2;
+  offset[2] = cz;
+
+  return offset;
+}
+
+ZIntCuboid ZDvidReader::GetStackBox(
+    int x0, int y0, int z0, int width, int height, int zoom)
+{
+  int scale = 1;
+  if (zoom > 0) {
+    scale = pow(2, zoom);
+    width /= scale;
+    height /= scale;
+  }
+
+  ZIntCuboid box;
+  box.setFirstCorner(x0 / scale, y0 / scale, z0 / scale);
+  box.setWidth(width);
+  box.setHeight(height);
+  box.setDepth(1);
+
+  return box;
+}
+
+lowtis::ImageService* ZDvidReader::getLowtisServiceGray(int cx, int cy) const
+{
+  if (m_lowtisConfigGray.centercut != std::tuple<int, int>(cx, cy)) {
+    m_lowtisServiceGray.reset();
+  }
+
+  if (m_lowtisServiceGray.get() == NULL) {
+    try {
+      m_lowtisConfigGray.username = neutube::GetCurrentUserName();
+      m_lowtisConfigGray.dvid_server = getDvidTarget().getAddressWithPort();
+      m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
+      m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
+      m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
+      m_lowtisConfigGray.enableprefetch = false;
+
+      m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
+            new lowtis::ImageService(m_lowtisConfigGray));
+
+    } catch (libdvid::DVIDException &e) {
+      m_lowtisServiceGray.reset();
+
+      LERROR() << e.what();
+      setStatusCode(e.getStatus());
+    }
+  }
+
+  return m_lowtisServiceGray.get();
+}
+
+ZStack* ZDvidReader::readGrayScaleLowtis(
+    int x0, int y0, int z0, double vx1, double vy1, double vz1,
+    double vx2, double vy2, double vz2,
+    int width, int height, int zoom, int cx, int cy) const
+{
+  if (getLowtisServiceGray(cx, cy) == NULL) {
+    return NULL;
+  }
+
+  ZStack *stack = NULL;
+
+  qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
+
+
+  QElapsedTimer timer;
+  timer.start();
+  if (m_lowtisServiceGray.get() != NULL) {
+//    m_lowtisService->config.bytedepth = 8;
+
+    ZIntCuboid box = GetStackBox(x0, y0, z0, width, height, zoom);
+
+    stack = new ZStack(GREY, box, 1);
+
+    try {
+      std::vector<int> offset = GetOffset(x0, y0, z0);
+
+      bool centerCut = true;
+      if (zoom == getDvidTarget().getMaxGrayscaleZoom() ||
+          width < cx || height < cy) {
+        centerCut = false;
+      }
+
+      if (zoom >= 1) {
+//        zoom -= 1;
+      }
+
+      std::vector<double> dim1vec;
+      dim1vec.push_back(vx1);
+      dim1vec.push_back(vy1);
+      dim1vec.push_back(vz1);
+
+      std::vector<double> dim2vec;
+      dim2vec.push_back(vx2);
+      dim2vec.push_back(vy2);
+      dim2vec.push_back(vz2);
+
+      m_lowtisServiceGray->retrieve_arbimage(
+            width, height, offset, dim1vec, dim2vec, (char*) stack->array8(),
+            zoom, centerCut);
+
+      setStatusCode(200);
+    } catch (libdvid::DVIDException &e) {
+      LERROR() << e.what();
+      setStatusCode(e.getStatus());
+
+      delete stack;
+      stack = NULL;
+    }
+
+    m_readingTime = timer.elapsed();
+    if (NeutubeConfig::GetVerboseLevel() < 5) {
+      if (m_readingTime > 10) {
+        LINFO() << "grayscale reading time: " << m_readingTime;
+      }
+    } else {
+      LINFO() << "grayscale reading time: " << m_readingTime;
+    }
+  }
+
+  return stack;
+}
+
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {

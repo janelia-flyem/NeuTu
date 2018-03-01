@@ -24,7 +24,10 @@ class ZROIWidget;
 class FlyEmSettingDialog;
 class TaskProtocolWindow;
 class ZActionLibrary;
+
+#if defined(_USE_WEBENGINE_)
 class QWebEngineView;
+#endif
 
 /*!
  * \brief The class of the main window for Neu3
@@ -93,9 +96,11 @@ public slots:
 signals:
   void bodySelected(uint64_t bodyId);
   void bodyDeselected(uint64_t bodyId);
+  void closed();
 
 protected:
   virtual void keyPressEvent(QKeyEvent *event);
+  void closeEvent(QCloseEvent *event);
 
 private slots:
   void processSwcChangeFrom3D(
@@ -120,6 +125,7 @@ private slots:
   void startSplit();
 
   void updateBrowser();
+  void closeWebView();
 
   void test();
 
@@ -130,6 +136,7 @@ private:
   void createToolBar();
   void connectSignalSlot();
   QAction* getAction(ZActionFactory::EAction key);
+  void initWebView();
 
 private:
   Ui::Neu3Window *ui;
@@ -148,7 +155,10 @@ private:
   QProgressDialog *m_progressDialog = nullptr;
   FlyEmSettingDialog *m_flyemSettingDlg = nullptr;
 
+#if defined(_USE_WEBENGINE_)
   QWebEngineView *m_webView = nullptr;
+#endif
+
   ZPoint m_browsePos;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;

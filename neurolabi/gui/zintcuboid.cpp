@@ -404,6 +404,8 @@ int ZIntCuboid::getDim(neutube::EAxis axis) const
     return getHeight();
   case neutube::Z_AXIS:
     return getDepth();
+  case neutube::A_AXIS:
+    break;
   }
 
   return 0;

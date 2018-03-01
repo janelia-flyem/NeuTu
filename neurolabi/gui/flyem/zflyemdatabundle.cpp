@@ -22,6 +22,7 @@
 #include "zfiletype.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "dvid/zdviddata.h"
+#include "tz_math.h"
 
 using namespace std;
 
@@ -683,6 +684,13 @@ void ZFlyEmDataBundle::updateNeuronConnection()
   }
 }
 
+namespace {
+double ComputeOverallResultion(const double *res)
+{
+  return Cube_Root(res[0] * res[1] * res[2]);
+}
+}
+
 double ZFlyEmDataBundle::getImageResolution(neutube::EAxis axis)
 {
   switch (axis) {
@@ -692,6 +700,8 @@ double ZFlyEmDataBundle::getImageResolution(neutube::EAxis axis)
     return m_imageResolution[1];
   case neutube::Z_AXIS:
     return m_imageResolution[2];
+  case neutube::A_AXIS:
+    return ComputeOverallResultion(m_imageResolution);
   }
 
   return 1.0;
@@ -706,6 +716,8 @@ double ZFlyEmDataBundle::getSwcResolution(neutube::EAxis axis)
     return m_swcResolution[1];
   case neutube::Z_AXIS:
     return m_swcResolution[2];
+  case neutube::A_AXIS:
+    return ComputeOverallResultion(m_swcResolution);
   }
 
   return 1.0;
@@ -720,6 +732,8 @@ int ZFlyEmDataBundle::getSourceDimension(neutube::EAxis axis) const
     return m_sourceDimension[1];
   case neutube::Z_AXIS:
     return m_sourceDimension[2];
+  case neutube::A_AXIS:
+    break;
   }
 
   return 0;
@@ -734,6 +748,8 @@ int ZFlyEmDataBundle::getSourceOffset(neutube::EAxis axis) const
     return m_sourceOffset[1];
   case neutube::Z_AXIS:
     return m_sourceOffset[2];
+  case neutube::A_AXIS:
+    break;
   }
 
   return 0;

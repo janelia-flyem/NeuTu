@@ -115,6 +115,9 @@ private:
   int m_centerCutWidth = 256;
   int m_centerCutHeight = 256;
 
+  ZPoint m_v1;
+  ZPoint m_v2;
+
   ZDvidReader m_reader;
 };
 

@@ -1066,6 +1066,7 @@ void ZStackView::paintSingleChannelStackSlice(ZStack *stack, int slice)
 {
   switch (m_sliceAxis) {
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
   {
     void *dataArray = stack->getDataPointer(0, slice);
 

@@ -315,6 +315,16 @@ glm::quat Z3DCameraParameter::getNeuroglancerRotation() const
 //  return glm::rotation(orig, dest);
 }
 
+std::pair<glm::vec3, glm::vec3> Z3DCameraParameter::getLowtisVec() const
+{
+  std::pair<glm::vec3, glm::vec3> ort;
+  ort.second = m_upVector.get();
+  glm::vec3 look = glm::normalize(m_eye.get() - m_center.get());
+  ort.first = glm::cross(look, ort.second);
+
+  return ort;
+}
+
 void Z3DCameraParameter::set(const ZJsonObject &cameraJson)
 {
   if (cameraJson.hasKey("eye")) {

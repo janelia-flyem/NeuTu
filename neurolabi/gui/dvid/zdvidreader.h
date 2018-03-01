@@ -298,6 +298,11 @@ public:
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0,
       int width, int height, int zoom, int cx, int cy) const;
+
+  ZStack *readGrayScaleLowtis(
+      int x0, int y0, int z0, double vx1, double vy1, double vz1,
+      double vx2, double vy2, double vz2,
+      int width, int height, int zoom, int cx, int cy) const;
 #endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
@@ -540,6 +545,14 @@ private:
   void loadDvidDataSetting(const ZJsonObject obj);
 
   bool reportMissingData(const std::string dataName) const;
+
+  static ZIntCuboid GetStackBox(
+      int x0, int y0, int z0, int width, int height, int zoom);
+  static std::vector<int> GetOffset(int x0, int y0, int z0);
+  static std::vector<int> GetOffset(int cx, int cy, int cz, int width, int height);
+
+
+  lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
 
 protected:
   ZDvidTarget m_dvidTarget;
