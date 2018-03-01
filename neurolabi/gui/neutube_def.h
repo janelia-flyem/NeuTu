@@ -49,7 +49,8 @@ enum ESizeHintOption {
 
 //Must have value X=0, Y=1, Z=2 for indexing
 enum EAxis {
-  X_AXIS = 0, Y_AXIS, Z_AXIS
+  X_AXIS = 0, Y_AXIS = 1, Z_AXIS = 2
+  , A_AXIS //arbitrary axis
 };
 
 enum EPlane {

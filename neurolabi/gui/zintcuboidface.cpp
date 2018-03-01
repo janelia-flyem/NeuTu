@@ -141,6 +141,7 @@ bool ZIntCuboidFace::contains(int x, int y, int z) const
     w = y;
     break;
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     u = x;
     v = y;
     w = z;
@@ -242,6 +243,7 @@ ZIntPoint ZIntCuboidFace::getCornerCoordinates(int index) const
     pt.set(corner.getX(), getPlanePosition(), corner.getY());
     break;
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     pt.set(corner.getX(), corner.getY(), getPlanePosition());
     break;
   }
@@ -326,6 +328,7 @@ double ZIntCuboidFace::computeDistance(double x, double y, double z)
     w = y;
     break;
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     u = x;
     v = y;
     w = z;

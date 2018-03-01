@@ -1274,10 +1274,15 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
     const QSet<uint64_t> &bodySet)
 {
+  if (GET_FLYEM_CONFIG.getNeuroglancerServer().empty()) {
+    return "";
+  }
 
-  QString path = QString("http://emdata1.int.janelia.org/neuroglancer/#!{'layers':"
+
+  QString path = QString("http://%1/neuroglancer/#!{'layers':"
                          "{'grayscale':{'type':'image'_'source':'dvid://"
-                         "http://%1/%2/%3'}").
+                         "http://%2/%3/%4'}").
+      arg(GET_FLYEM_CONFIG.getNeuroglancerServer().c_str()).
       arg(target.getGrayScaleSource().getAddressWithPort().c_str()).
       arg(target.getGrayScaleSource().getUuid().c_str()).
       arg(target.getGrayScaleName().c_str());

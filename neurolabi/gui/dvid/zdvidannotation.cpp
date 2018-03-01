@@ -503,6 +503,10 @@ ZJsonObject ZDvidAnnotation::toJsonObject() const
 
 bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 {
+  if (sliceAxis == neutube::A_AXIS) {
+    return false;
+  }
+
   int dz = 0;
   switch (sliceAxis) {
   case neutube::X_AXIS:
@@ -512,6 +516,7 @@ bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
     dz = abs(getPosition().getY() - z);
     break;
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     dz = abs(getPosition().getZ() - z);
     break;
   }
@@ -521,6 +526,10 @@ bool ZDvidAnnotation::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 
 double ZDvidAnnotation::getRadius(int z, neutube::EAxis sliceAxis) const
 {
+  if (sliceAxis == neutube::A_AXIS) {
+    return 0.0;
+  }
+
   int dz = 0;
   switch (sliceAxis) {
   case neutube::X_AXIS:
@@ -530,6 +539,7 @@ double ZDvidAnnotation::getRadius(int z, neutube::EAxis sliceAxis) const
     dz = abs(getPosition().getY() - z);
     break;
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     dz = abs(getPosition().getZ() - z);
     break;
   }

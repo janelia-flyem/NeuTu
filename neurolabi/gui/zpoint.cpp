@@ -386,6 +386,8 @@ double ZPoint::getSliceCoord(neutube::EAxis axis) const
     return m_y;
   case neutube::Z_AXIS:
     return m_z;
+  case neutube::A_AXIS:
+    return 0;
   }
 
   return m_z;

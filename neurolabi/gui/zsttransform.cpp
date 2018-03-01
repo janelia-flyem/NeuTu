@@ -64,6 +64,7 @@ double ZStTransform::getScale(neutube::EAxis axis) const
   case neutube::Y_AXIS:
     return getSy();
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     return getSz();
   }
 
@@ -78,6 +79,7 @@ double ZStTransform::getOffset(neutube::EAxis axis) const
   case neutube::Y_AXIS:
     return getTy();
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     return getTz();
   }
 
@@ -210,6 +212,7 @@ void ZStTransform::estimate(
     m_dy = t;
     break;
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     m_sz = s;
     m_dz = t;
     break;

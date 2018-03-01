@@ -303,6 +303,10 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {
+  if (axis = neutube::A_AXIS) {
+    return "";
+  }
+
   ZString url = getSparsevolUrl(bodyId);
 
   if (url.empty()) {
@@ -324,6 +328,8 @@ std::string ZDvidUrl::getSparsevolUrl(
     url += "?miny=";
     url.appendNumber(z);
     url += "&maxy=";
+    break;
+  case neutube::A_AXIS:
     break;
   }
 
@@ -337,6 +343,10 @@ std::string ZDvidUrl::getSparsevolUrl(
 std::string ZDvidUrl::getSupervoxelUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {
+  if (axis = neutube::A_AXIS) {
+    return "";
+  }
+
   ZString url = getSupervoxelUrl(bodyId);
 
   if (url.empty()) {
@@ -358,6 +368,8 @@ std::string ZDvidUrl::getSupervoxelUrl(
     url += "?miny=";
     url.appendNumber(z);
     url += "&maxy=";
+    break;
+  case neutube::A_AXIS:
     break;
   }
 
@@ -371,6 +383,10 @@ std::string ZDvidUrl::getSupervoxelUrl(
 std::string ZDvidUrl::getSupervoxelUrl(
     uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
 {
+  if (axis == neutube::A_AXIS) {
+    return "";
+  }
+
   ZString url = getSupervoxelUrl(bodyId);
 
   if (url.empty()) {
@@ -396,6 +412,8 @@ std::string ZDvidUrl::getSupervoxelUrl(
     url += "&maxy=";
     url.appendNumber(maxZ);
     break;
+  case neutube::A_AXIS:
+    break;
   }
 
   return url;
@@ -404,6 +422,10 @@ std::string ZDvidUrl::getSupervoxelUrl(
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const
 {
+  if (axis == neutube::A_AXIS) {
+    return "";
+  }
+
   ZString url = getSparsevolUrl(bodyId);
 
   if (url.empty()) {
@@ -428,6 +450,8 @@ std::string ZDvidUrl::getSparsevolUrl(
     url.appendNumber(minZ);
     url += "&maxy=";
     url.appendNumber(maxZ);
+    break;
+  case neutube::A_AXIS:
     break;
   }
 

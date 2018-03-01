@@ -25390,6 +25390,14 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidTarget target("emdata1.int.janelia.org", "1d1d", 8100);
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.writeRoiRef("pb-lm", "pb-lm", "roi");
+#endif
+
+#if 0
   ZJsonObject roiJson;
   roiJson.load(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/roi.json");
   ZDvidTarget target;
@@ -25605,5 +25613,41 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscalejpeg");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZStack *stack = reader.readGrayScaleLowtis(
+        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 512, 512, 0, 256, 256);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 1
+  ZDvidGraySlice slice;
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6", 8700);
+  target.setGrayScaleName("grayscale");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.updateMaxGrayscaleZoom();
+
+  slice.setDvidTarget(reader.getDvidTarget());
+
+  ZStackViewParam param;
+  param.setViewPort(2610, 2354, 2610 + 1024, 2354 + 1024);
+  param.setZ(3197);
+
+  slice.update(param);
+  slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
+  slice.savePixmap(GET_TEST_DATA_DIR + "/test2.tif");
+
+#endif
   std::cout << "Done." << std::endl;
 }

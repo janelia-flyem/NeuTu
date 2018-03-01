@@ -529,6 +529,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
 
   switch (m_sliceAxis) {
   case neutube::Z_AXIS: //XY plane
+  case neutube::A_AXIS: //Arbitrary cutting plane is treated as the same as Z
   for (int z = 0; z < depth; ++z) {
     for (int y = 0; y < height; ++y) {
       int x1 = -1;
@@ -3853,6 +3854,8 @@ ZObject3dScan* ZObject3dScan::chop(
     break;
   case neutube::Z_AXIS:
     return chopZ(v, remain, result);
+    break;
+  case neutube::A_AXIS:
     break;
   }
 

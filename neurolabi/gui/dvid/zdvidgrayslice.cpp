@@ -39,7 +39,7 @@ void ZDvidGraySlice::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutube::EAxis sliceAxis) const
 {
-  if (sliceAxis != neutube::Z_AXIS) {
+  if (sliceAxis != getSliceAxis()) {
     return;
   }
   //if (!m_image.isNull()) {
@@ -296,29 +296,42 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     int cx = m_centerCutWidth;
     int cy = m_centerCutHeight;
     int z = box.getFirstCorner().getZ();
-    int zoom = m_zoom;
-    if (hasLowresRegion()) {
-      ++zoom;
-    }
-    int scale = misc::GetZoomScale(zoom);
-    int remain = z % scale;
-    ZStack *stack = m_reader.readGrayScaleLowtis(
-          box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-          z, box.getWidth(), box.getHeight(),
-          m_zoom, cx, cy);
-    if (scale > 1) {
-      if (remain > 0) {
-//        int z1 = z + scale - remain;
-        int z1 = z - remain + scale;
-        ZStack *stack2 = m_reader.readGrayScaleLowtis(
-              box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-              z1, box.getWidth(), box.getHeight(), m_zoom, cx, cy);
-//        double lambda = double(remain) / scale;
-        ZStackProcessor::IntepolateFovia(
-              stack, stack2, cx, cy, scale, z, z1, z, stack);
-//        ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
-        delete stack2;
+
+
+    ZStack *stack = NULL;
+
+    if (getSliceAxis() == neutube::Z_AXIS) {
+      int zoom = m_zoom;
+      if (hasLowresRegion()) {
+        ++zoom;
       }
+
+      int scale = misc::GetZoomScale(zoom);
+      int remain = z % scale;
+      stack = m_reader.readGrayScaleLowtis(
+            box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+            z, box.getWidth(), box.getHeight(),
+            m_zoom, cx, cy);
+      if (scale > 1) {
+        if (remain > 0) {
+          //        int z1 = z + scale - remain;
+          int z1 = z - remain + scale;
+          ZStack *stack2 = m_reader.readGrayScaleLowtis(
+                box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+                z1, box.getWidth(), box.getHeight(), m_zoom, cx, cy);
+          //        double lambda = double(remain) / scale;
+          ZStackProcessor::IntepolateFovia(
+                stack, stack2, cx, cy, scale, z, z1, z, stack);
+          //        ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
+          delete stack2;
+        }
+      }
+    } else if (getSliceAxis() == neutube::A_AXIS) {
+      stack = m_reader.readGrayScaleLowtis(
+            viewPort.center().x(), viewPort.center().y(), viewParam.getZ(),
+            m_v1.getX(), m_v1.getY(), m_v1.getZ(),
+            m_v2.getX(), m_v2.getY(), m_v2.getZ(),
+            viewPort.width(), viewPort.height(), m_zoom, cx, cy);
     }
 #else
     ZStack *stack = m_reader.readGrayScale(

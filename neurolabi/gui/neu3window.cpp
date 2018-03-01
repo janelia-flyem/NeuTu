@@ -2,8 +2,11 @@
 
 #include <QDockWidget>
 #include <QMessageBox>
-#include <QWebEngineView>
 #include <QProgressDialog>
+
+#if defined(_USE_WEBENGINE_)
+#include <QWebEngineView>
+#endif
 
 #include "ui_neu3window.h"
 #include "z3dwindow.h"
@@ -40,10 +43,8 @@ Neu3Window::Neu3Window(QWidget *parent) :
   ui(new Ui::Neu3Window)
 {
   ui->setupUi(this);
-  setAttribute(Qt::WA_DeleteOnClose);
-
   m_actionLibrary = QSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
-  m_webView = new QWebEngineView;
+
 //  initialize();
 }
 
@@ -52,9 +53,6 @@ Neu3Window::~Neu3Window()
   if (m_dataContainer != NULL) {
     m_dataContainer->setExiting(true);
   }
-
-  m_webView->close();
-  m_webView->deleteLater();
 //  delete m_webView;
 
   delete ui;
@@ -116,6 +114,15 @@ QAction* Neu3Window::getAction(ZActionFactory::EAction key)
   return action;
 }
 
+void Neu3Window::initWebView()
+{
+#if defined(_USE_WEBENGINE_)
+  if (m_webView == NULL) {
+    m_webView = new QWebEngineView;
+  }
+#endif
+}
+
 void Neu3Window::connectSignalSlot()
 {
   connect(m_3dwin, SIGNAL(showingPuncta(bool)), this, SLOT(showSynapse(bool)));
@@ -156,6 +163,7 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(updateBodyState()));
 
   connect(m_3dwin, SIGNAL(cameraRotated()), this, SLOT(updateBrowser()));
+  connect(this, SIGNAL(closed()), this, SLOT(closeWebView()));
 }
 
 void Neu3Window::updateBodyState()
@@ -258,6 +266,7 @@ void Neu3Window::createDockWidget()
   m_bodyListDock->setWidget(m_bodyListWidget);
 
   m_bodyListDock->setAllowedAreas(Qt::LeftDockWidgetArea);
+
   m_bodyListDock->setFeatures(
         QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
   addDockWidget(Qt::LeftDockWidgetArea, m_bodyListDock);
@@ -267,6 +276,11 @@ void Neu3Window::createTaskWindow() {
     QDockWidget *dockWidget = new QDockWidget("Tasks", this);
     m_taskProtocolWidget =
         new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
+
+    /*
+    m_taskProtocolWidget->setWindowFlags(
+          Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
+          */
 
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
@@ -307,9 +321,24 @@ void Neu3Window::updateRoiWidget()
   m_dataContainer->updateRoiWidget(m_roiWidget, m_3dwin);
 }
 
+void Neu3Window::closeWebView()
+{
+#if defined(_USE_WEBENGINE_)
+  if (m_webView != NULL) {
+    m_webView->setAttribute(Qt::WA_DeleteOnClose);
+    m_webView->close();
+    m_webView = NULL;
+  }
+#endif
+}
+
 void Neu3Window::updateBrowser()
 {
-  browse(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
+#if defined(_USE_WEBENGINE_)
+  if (m_webView != NULL) {
+    browse(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
+  }
+#endif
 }
 
 void Neu3Window::browse(double x, double y, double z)
@@ -319,6 +348,8 @@ void Neu3Window::browse(double x, double y, double z)
   rotation.set(r.x, r.y, r.z);
   rotation.setWeight(r.w);
 
+#if defined(_USE_WEBENGINE_)
+  initWebView();
   QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
              m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
              rotation, m_bodyListWidget->getModel()->getBodySet()));
@@ -327,14 +358,8 @@ void Neu3Window::browse(double x, double y, double z)
   m_webView->setUrl(url);
   m_webView->show();
   m_webView->raise();
-
-#if 0
+#else
   ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
-
-  glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
-  ZWeightedPoint rotation;
-  rotation.set(r.x, r.y, r.z);
-  rotation.setWeight(r.w);
 
   bo->open(ZFlyEmMisc::GetNeuroglancerPath(
              m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
@@ -390,6 +415,13 @@ void Neu3Window::createToolBar()
 void Neu3Window::keyPressEvent(QKeyEvent *event)
 {
   processKeyPressed(event);
+}
+
+void Neu3Window::closeEvent(QCloseEvent *event)
+{
+  QMainWindow::closeEvent(event);
+
+  emit closed();
 }
 
 void Neu3Window::processKeyPressed(QKeyEvent */*event*/)
