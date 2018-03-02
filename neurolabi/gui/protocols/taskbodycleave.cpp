@@ -675,8 +675,17 @@ void TaskBodyCleave::cleave()
   }
 
   requestJson["seeds"] = requestJsonSeeds;
+  if (const char* user = std::getenv("USER")) {
+    requestJson["user"] = user;
+  }
 
-  QUrl url("http://bergs-ws1.int.janelia.org:5556/compute-cleave");
+  // TODO: Teporary cleaving sevrver URL.
+  QString server = "http://bergs-ws1.int.janelia.org:5556/compute-cleave";
+  if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
+    server = serverOverride;
+  }
+
+  QUrl url(server);
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
