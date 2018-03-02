@@ -22,8 +22,6 @@
 
 #include "neutube.h"
 #include "zcurve.h"
-#include "zobject3d.h"
-#include "zswctree.h"
 #include "tz_local_neuroseg.h"
 #include "tz_locseg_chain.h"
 #include "tz_trace_defs.h"
@@ -92,6 +90,8 @@ class ZStackArray;
 class ZStackObjectInfo;
 class ZRoiObjsModel;
 class ZActionLibrary;
+class ZSwcTree;
+class ZObject3d;
 
 /*!
  * \brief The class of stack document
@@ -678,6 +678,8 @@ public:
   void setSwcSelected(ZSwcTree* tree, bool select);
   template <class InputIterator>
   void setSwcSelected(InputIterator first, InputIterator last, bool select);
+  void setSwcSelected(const QList<ZSwcTree*> &treeList, bool select);
+
   void deselectAllSwcs();
   void setSwcTreeNodeSelected(Swc_Tree_Node* tn, bool select);
   template <class InputIterator>
@@ -1501,46 +1503,6 @@ void ZStackDoc::setMeshSelected(InputIterator first, InputIterator last, bool se
   notifySelectionChanged(selected, deselected);
 }
 
-template <class InputIterator>
-void ZStackDoc::setSwcSelected(InputIterator first, InputIterator last, bool select)
-{
-  QList<ZSwcTree*> selected;
-  QList<ZSwcTree*> deselected;
-
-  QList<Swc_Tree_Node *> tns;
-  for (InputIterator it = first; it != last; ++it) {
-    ZSwcTree *tree = *it;
-    if (tree->isSelected() != select) {
-      m_objectGroup.setSelected(tree, select);
-      if (select) {
-        selected.append(tree);
-
-        // deselect its nodes
-        if (tree->hasSelectedNode()) {
-          for (std::set<Swc_Tree_Node*>::const_iterator
-               iter = tree->getSelectedNode().begin();
-               iter != tree->getSelectedNode().end(); ++iter) {
-            Swc_Tree_Node* tn = const_cast<Swc_Tree_Node*>(*iter);
-            tns.append(tn);
-          }
-          tree->deselectAllNode();
-        }
-        /*
-        for (std::set<Swc_Tree_Node*>::iterator it = m_selectedSwcTreeNodes.begin();
-             it != m_selectedSwcTreeNodes.end(); ++it) {
-          if (tree == nodeToSwcTree(*it))
-            tns.push_back(*it);
-        }
-        */
-      } else {
-        deselected.push_back(tree);
-      }
-    }
-  }
-
-  notifyDeselected(tns);
-  notifySelectionChanged(selected, deselected);
-}
 
 template <typename T>
 void ZStackDoc::notifySelectionAdded(const std::set<T*> &oldSelected,

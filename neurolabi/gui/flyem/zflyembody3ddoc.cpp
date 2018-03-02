@@ -34,6 +34,7 @@
 #include "zstackobjectaccessor.h"
 #include "flyem/zflyembodysplitter.h"
 #include "zactionlibrary.h"
+#include "dvid/zdvidgrayslice.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -393,6 +394,12 @@ void ZFlyEmBody3dDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
 ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
 {
   return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
+}
+
+ZDvidGraySlice* ZFlyEmBody3dDoc::getArbGraySlice() const
+{
+  ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
+        ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
 }
 
 int ZFlyEmBody3dDoc::getMinResLevel() const

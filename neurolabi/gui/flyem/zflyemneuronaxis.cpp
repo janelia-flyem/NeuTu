@@ -2,6 +2,7 @@
 #include "zerror.h"
 #include "zswctree.h"
 #include "swctreenode.h"
+#include "zpoint.h"
 
 ZFlyEmNeuronAxis::ZFlyEmNeuronAxis()
 {

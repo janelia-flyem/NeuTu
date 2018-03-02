@@ -197,6 +197,8 @@ public:
 
   ZFlyEmProofDoc* getDataDocument() const;
 
+  ZDvidGraySlice* getArbGraySlice() const;
+
   void printEventQueue() const;
 
   void dumpAllBody(bool recycable);

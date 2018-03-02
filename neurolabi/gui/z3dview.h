@@ -73,6 +73,7 @@ public:
   }
 
   void updateDocData(neutube3d::ERendererLayer layer);
+  void updateCustomCanvas(const QImage &image);
 
 public:
   inline QAction* zoomInAction()

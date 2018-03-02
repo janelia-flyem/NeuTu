@@ -95,6 +95,9 @@ public:
 
   void dump(const QString &message);
 
+  void paintCustomRegion(const QImage &image);
+//  void setCustomWidget(QWidget *widget);
+
 signals:
 
   // w and h is physical size not logical size, opengl works in physical pixel
@@ -167,6 +170,8 @@ private:
 
   ZInteractionEngine m_interaction;
   bool m_updatingDecoration = false;
+
+  QPixmap *m_customCanvas = NULL;
 
   QString m_message;
 };

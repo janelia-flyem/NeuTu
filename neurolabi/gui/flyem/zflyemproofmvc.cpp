@@ -88,6 +88,7 @@
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "zmeshfactory.h"
+#include "z3dwindow.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)

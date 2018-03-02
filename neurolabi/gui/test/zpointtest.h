@@ -3,6 +3,7 @@
 
 #include "ztestheader.h"
 #include "zintpoint.h"
+#include "zpoint.h"
 
 #ifdef _USE_GTEST_
 
@@ -13,6 +14,38 @@ TEST(ZIntPoint, Basic)
 
   pt.invalidate();
   ASSERT_FALSE(pt.isValid());
+}
+
+TEST(ZPoint, Basic)
+{
+  ZPoint pt(0, 0, 0);
+  ASSERT_TRUE(pt.isApproxOrigin());
+
+  pt.setX(ZPoint::MIN_DIST * 0.5);
+  ASSERT_TRUE(pt.isApproxOrigin());
+
+  pt.setX(ZPoint::MIN_DIST * 2.0);
+  ASSERT_FALSE(pt.isApproxOrigin());
+}
+
+TEST(ZPoint, Relation)
+{
+  ZPoint pt1(1, 0, 0);
+  ZPoint pt2(0, 1, 0);
+  ASSERT_TRUE(pt1.isPendicularTo(pt2));
+  ASSERT_TRUE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0, 0, 0);
+  ASSERT_FALSE(pt1.isPendicularTo(pt2));
+  ASSERT_FALSE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0.1, 0, 0);
+  ASSERT_TRUE(pt1.isPendicularTo(pt2));
+  ASSERT_TRUE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0.1, 0.1, 0);
+  ASSERT_FALSE(pt1.isPendicularTo(pt2));
+  ASSERT_FALSE(pt2.isPendicularTo(pt1));
 }
 
 TEST(ZIntPoint, Operator)

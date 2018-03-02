@@ -193,6 +193,9 @@ std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
   case neutube::Y_AXIS:
     source += ".Y";
     break;
+  case neutube::A_AXIS:
+    source += ".A";
+    break;
   default:
     break;
   }
@@ -200,9 +203,26 @@ std::string ZStackObjectSourceFactory::MakeDvidLabelSliceSource(
   return source;
 }
 
-std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource()
+std::string ZStackObjectSourceFactory::MakeDvidGraySliceSource(
+    neutube::EAxis axis)
 {
-  return "#.DVIDGraySlice";
+  std::string source =  "#.DVIDGraySlice";
+
+  switch (axis) {
+  case neutube::X_AXIS:
+    source += ".X";
+    break;
+  case neutube::Y_AXIS:
+    source += ".Y";
+    break;
+  case neutube::A_AXIS:
+    source += ".A";
+    break;
+  default:
+    break;
+  }
+
+  return source;
 }
 
 std::string ZStackObjectSourceFactory::MakeSplitObjectSource()
