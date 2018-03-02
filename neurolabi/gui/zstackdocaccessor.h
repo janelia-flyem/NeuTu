@@ -5,6 +5,7 @@
 #include "zstackdocdatabuffer.h"
 
 class ZStackDoc;
+class ZStackWatershedContainer;
 
 /*!
  * \brief The class for accessing data in ZStackDoc in a thread-safe way.
@@ -25,6 +26,9 @@ public:
   static void RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject);
   static void AddObject(ZStackDoc *doc, ZStackObject *obj);
   static void AddObject(ZStackDoc *doc, const QList<ZStackObject*> &objList);
+
+  static void ParseWatershedContainer(
+      ZStackDoc *doc, ZStackWatershedContainer *container);
 
 private:
   static ZStackDocObjectUpdate::EAction GetRemoveAction(bool deleteObject);

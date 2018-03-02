@@ -546,7 +546,7 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
   }
 
   if (tree != NULL) {
-    if (intv > 0) {
+    if (intv > 0 && intv < 7) {
       tree->setSource("oversize");
     }
 
@@ -823,19 +823,25 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
 //            n_in_bound = Stack_Neighbor_Bound_Test_S(
 //                  conn, cwidth, cheight, cdepth, i, j, k, is_in_bound);
             bool isSurface = false;
-//            if (n_in_bound == conn) {
-              for (int n = 0; n < n_in_bound; n++) {
-                if (in_array[offset + neighbor[n]] != in_value) {
-                  isSurface = true;
-                  break;
-                }
-              }
+//            int nbrCount = 0;
+            //            if (n_in_bound == conn) {
+            for (int n = 0; n < n_in_bound; n++) {
+              if (in_array[offset + neighbor[n]] != in_value) {
+                isSurface = true;
+                break;
+
+              }/* else {
+                ++nbrCount;
+              }*/
+            }
+
+
 //            } else {
 //              isSurface = true;
 //            }
 
             if (isSurface) {
-              if (count++ % sparseLevel == 0) {
+              if ((count++ % sparseLevel == 0) /*|| nbrCount < 3*/) {
                 SwcTreeNode::makePointer(
                       (i + stack.getOffset().getX()) * scale.getX(),
                       (j + stack.getOffset().getY()) * scale.getY(),

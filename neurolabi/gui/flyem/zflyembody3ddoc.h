@@ -254,6 +254,9 @@ public:
   void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
   void executeRemoveTodoCommand();
 
+public:
+  bool loadDvidSparseStack();
+
 public slots:
   void showSynapse(bool on);// { m_showingSynapse = on; }
   bool showingSynapse() const;
@@ -286,6 +289,7 @@ public slots:
   void cacheObject(ZStackObject *obj);
 
   void processBodySelectionChange();
+  void runLocalSplit();
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -355,6 +359,7 @@ private:
       uint64_t bodyId, int resLevel, const QColor &color);
 
   ZDvidReader& getBodyReader();
+//  const ZDvidReader& getBodyReader() const;
   void updateBodyModelSelection();
 
   ZStackObject::EType getBodyObjectType() const;

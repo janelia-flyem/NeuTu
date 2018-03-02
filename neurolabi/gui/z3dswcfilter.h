@@ -169,6 +169,8 @@ private:
   bool updateColorParameter(
       const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
 
+  std::shared_ptr<ZVec4Parameter> getIndvidualColorParam(int index);
+
 private:
   Z3DLineRenderer m_lineRenderer;
   Z3DConeRenderer m_coneRenderer;
@@ -178,7 +180,9 @@ private:
   ZStringIntOptionParameter m_renderingPrimitive;
   ZStringIntOptionParameter m_colorMode;
 
-  std::map<ZSwcTree*, std::unique_ptr<ZVec4Parameter>> m_individualTreeColorMapper;
+  std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>> m_individualTreeColorMapper;
+  std::vector<std::shared_ptr<ZVec4Parameter> > m_individualTreeColorList;
+
   std::map<ZSwcTree*, std::unique_ptr<ZVec4Parameter>> m_randomTreeColorMapper;
   std::map<int, std::unique_ptr<ZVec4Parameter>> m_biocytinColorMapper;
   std::map<int, size_t> m_subclassTypeColorMapper;
@@ -232,6 +236,7 @@ private:
 
   InteractionMode m_interactionMode = Select;
   ZSwcColorScheme m_colorScheme;
+  ZSwcColorScheme m_individualColorScheme;
 
   bool m_enableCutting = true;
   bool m_enablePicking = true;

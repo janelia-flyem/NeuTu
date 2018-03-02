@@ -379,18 +379,44 @@ void Z3DGraph::importObject3d(
   m_nodeArray.clear();
   m_edgeArray.clear();
 
+#if 0
+  for (size_t i = 0; i < obj.size(); i += sampleStep) {
+    int x = obj.getX(i);
+    int y = obj.getY(i);
+    int z = obj.getZ(i);
+
+    {
+      Z3DGraphNode n1 = Z3DGraphNode(x - radius, y, z, 0);
+      n1.setColor(obj.getColor());
+      Z3DGraphNode n2 = Z3DGraphNode(x + radius, y, z, 0);
+      n2.setColor(obj.getColor());
+      addEdge(n1, n2, radius * 5.0, GRAPH_LINE);
+    }
+
+    {
+      Z3DGraphNode n1 = Z3DGraphNode(x, y - radius, z, 0);
+      n1.setColor(obj.getColor());
+      Z3DGraphNode n2 = Z3DGraphNode(x, y + radius, z, 0);
+      n2.setColor(obj.getColor());
+      addEdge(n1, n2, radius * 5.0, GRAPH_LINE);
+    }
+  }
+#endif
+
+#if 1
   for (size_t i = 0; i < obj.size(); i += sampleStep) {
     m_nodeArray.push_back(Z3DGraphNode(
                             obj.getX(i), obj.getY(i), obj.getZ(i), radius));
     m_nodeArray.back().setColor(obj.getColor());
   }
+#endif
 }
 
 void Z3DGraph::importObject3d(
     const ZObject3d &obj, double radius)
 {
   const static int maxSampleStep = 3;
-  const static size_t maxNodeNumber = 10000;
+  const static size_t maxNodeNumber = 1000;
   int sampleStep = imin2(maxSampleStep, obj.size() / maxNodeNumber + 1);
   importObject3d(obj, radius, sampleStep);
 }
@@ -418,8 +444,24 @@ void Z3DGraph::addNode(const Z3DGraphNode &node)
 }
 
 void Z3DGraph::addEdge(
+    const Z3DGraphNode &node1, const Z3DGraphNode &node2, double weight,
+    EGraphShape shape)
+{
+  addNode(node1);
+  addNode(node2);
+
+  Z3DGraphEdge edge;
+  edge.useNodeColor(true);
+  edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, weight);
+  edge.setShape(shape);
+  addEdge(edge);
+}
+
+void Z3DGraph::addEdge(
     const Z3DGraphNode &node1, const Z3DGraphNode &node2, EGraphShape shape)
 {
+  addEdge(node1, node2, node1.radius() * 2.0, shape);
+  /*
   addNode(node1);
   addNode(node2);
 
@@ -428,6 +470,7 @@ void Z3DGraph::addEdge(
   edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, node1.radius() * 2.0);
   edge.setShape(shape);
   addEdge(edge);
+  */
 }
 
 void Z3DGraph::addConnectedNode(

@@ -5788,11 +5788,19 @@ void ZStackDoc::bufferObjectModified(
 }
 #endif
 
+void ZStackDoc::bufferObjectModified(
+    ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
+{
+  ZStackObjectInfo info;
+  info.set(*obj);
+  bufferObjectModified(info, state, sync);
+}
+
 void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
 {
   ZStackObjectInfo info;
   info.set(*obj);
-  bufferObjectModified(info, sync);
+  bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
   /*
   bufferObjectModified(obj->getType(), sync);
   bufferObjectModified(obj->getTarget(), sync);
@@ -5810,13 +5818,13 @@ void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
   }
 }
 
-void ZStackDoc::bufferObjectModified(const ZStackObjectInfo &info, bool sync)
+void ZStackDoc::bufferObjectModified(const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
-    m_objectModifiedBuffer.add(info);
+    m_objectModifiedBuffer.add(info, state);
   } else {
-    m_objectModifiedBuffer.add(info);
+    m_objectModifiedBuffer.add(info, state);
   }
 }
 
@@ -5833,9 +5841,14 @@ void ZStackDoc::bufferObjectModified(
 
 void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
 {
+  ZStackObjectInfo info;
+  info.set(*obj);
+  processObjectModified(info, sync);
+  /*
   processObjectModified(obj->getType(), sync);
   processObjectModified(obj->getTarget(), sync);
   processObjectModified(obj->getRole(), sync);
+  */
 }
 
 void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
@@ -5904,8 +5917,12 @@ void ZStackDoc::processObjectModified(ZStackObject::EType type, bool sync)
 
 void ZStackDoc::processSwcModified()
 {
-  processObjectModified(ZStackObject::TYPE_SWC);
-  processObjectModified(ZSwcTree::GetDefaultTarget());
+  ZStackObjectInfo info;
+  info.setType(ZStackObject::TYPE_SWC);
+  info.setTarget(ZSwcTree::GetDefaultTarget());
+  processObjectModified(info);
+//  processObjectModified(ZStackObject::TYPE_SWC);
+//  processObjectModified(ZSwcTree::GetDefaultTarget());
 }
 
 void ZStackDoc::processObjectModified(const ZStackObjectRole &role, bool sync)
@@ -8193,7 +8210,8 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
 
       if (player != NULL) {
         m_playerList.add(player);
-        processObjectModified(obj->getRole().getRole());
+//        processObjectModified(obj);
+////        processObjectModified(obj->getRole().getRole());
       }
     }
   }

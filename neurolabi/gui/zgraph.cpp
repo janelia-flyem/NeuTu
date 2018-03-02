@@ -635,6 +635,18 @@ std::vector<std::vector<int> > ZGraph::getCycle() const
   return allPath;
 }
 
+std::set<int> ZGraph::getConnectedVertexSet() const
+{
+  std::set<int> vertexSet;
+  int edgeCount = getEdgeNumber();
+  for (int i = 0; i < edgeCount; ++i) {
+    vertexSet.insert(getEdgeBegin(i));
+    vertexSet.insert(getEdgeEnd(i));
+  }
+
+  return vertexSet;
+}
+
 
 std::vector<int> ZGraph::getPath(int v1, int v2)
 {

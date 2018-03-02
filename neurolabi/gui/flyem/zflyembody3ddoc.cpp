@@ -30,6 +30,7 @@
 #include "zobject3d.h"
 #include "zmeshfactory.h"
 #include "zstackdocaccessor.h"
+#include "zstackwatershedcontainer.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -775,6 +776,44 @@ ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
   return ZStackObject::TYPE_SWC;
 }
 
+bool ZFlyEmBody3dDoc::loadDvidSparseStack()
+{
+//  return getDataDocument()->getDvidSparseStack();
+
+  bool loaded = false;
+
+  if (m_bodySet.size() == 1) {
+    uint64_t bodyId = *(m_bodySet.begin());
+    ZDvidSparseStack *body = getDataDocument()->getCachedBodyForSplit(bodyId);
+
+    if (body != NULL) {
+      if (body->getLabel() != bodyId) {
+        body = NULL;
+      }
+    }
+
+    if (body == NULL) {
+#ifdef _DEBUG_
+      std::cout << "Reading body " << bodyId << " ..." << std::endl;
+#endif
+      body = getBodyReader().readDvidSparseStackAsync(bodyId);
+      body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+      getDataDocument()->addObject(body, true);
+    } else {
+#ifdef _DEBUG_
+      std::cout << "Body obtained from cache." << std::endl;
+#endif
+    }
+    loaded = true;
+  } else {
+#ifdef _DEBUG_
+      std::cout << "Skip body loading because there are more than one bodies selecteds." << std::endl;
+#endif
+  }
+
+  return loaded;
+}
+
 void ZFlyEmBody3dDoc::updateBodyModelSelection()
 {
   QList<ZSwcTree*> swcList = getSwcList();
@@ -1037,28 +1076,29 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
       mesh->setColor(color);
       mesh->pushObjectColor();
 
-      updateBodyFunc(bodyId, mesh);
-
       // The findSameClass() function has performance that iis quadratic in the number of meshes,
       // and is unnecessary for meshes from a tar archive.
 
-      if (!fromTar(id)) {
-        bool loaded =
-            !(getObjectGroup().findSameClass(
-                ZStackObject::TYPE_MESH,
-                ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
-              isEmpty());
+      bool loaded = fromTar(id);
+      if (!loaded) {
+        loaded =
+          !(getObjectGroup().findSameClass(
+              ZStackObject::TYPE_MESH,
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
+            isEmpty());
+      }
 
-        if (!loaded) {
-          addSynapse(bodyId);
-          // addTodo(bodyId);
-          updateTodo(bodyId);
+      updateBodyFunc(bodyId, mesh);
 
-          // TODO: As of December, 2017, the following is slow due to access of a desktop server,
-          // http://zhaot-ws1:9000.  This server should be replaced with a faster one.
-          // The problem is most noticeable for the functionality of taskbodyhistory.cpp.
-          loadSplitTask(bodyId);
-        }
+      if (!loaded) {
+        addSynapse(bodyId);
+  //      addTodo(bodyId);
+        updateTodo(bodyId);
+
+        // TODO: As of December, 2017, the following is slow due to access of a desktop server,
+        // http://zhaot-ws1:9000.  This server should be replaced with a faster one.
+        // The problem is most noticeable for the functionality of taskbodyhistory.cpp.
+        loadSplitTask(bodyId);
       }
 
       // If the argument ID loads an archive, then makeBodyMeshModels() can create
@@ -1070,6 +1110,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
   }
 
   if (encodesTar(id)) {
+
     // Meshes loaded from an archive are ready at this point, so emit a signal, which
     // can be used by code that needs to know the IDs of the loaded meshes (instead of
     // the ID of the archive).
@@ -1784,7 +1825,7 @@ ZDvidReader& ZFlyEmBody3dDoc::getBodyReader()
 std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
     uint64_t bodyId1, uint64_t bodyId2, ZDvidReader &diffReader, int zoom,
     flyem::EBodyType bodyType)
-{ 
+{
   std::vector<ZSwcTree*> treeArray;
 
   if (bodyId1 > 0 && bodyId2 > 0) {
@@ -2120,6 +2161,65 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
       getDataDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
 
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
+}
+
+void ZFlyEmBody3dDoc::runLocalSplit()
+{
+  ZOUT(LINFO(), 5) << "Trying local split ...";
+
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+
+  if (loadDvidSparseStack()) {
+    QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+    if (seedList.size() > 1) {
+      ZStackWatershedContainer container(NULL, NULL);
+      foreach (ZStackObject *seed, seedList) {
+        container.addSeed(seed);
+      }
+
+      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+
+      ZDvidSparseStack *sparseStack =
+          getDataDocument()->getDvidSparseStack(
+            container.getRange(), flyem::BODY_SPLIT_ONLINE);
+      container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
+
+      std::vector<ZStackWatershedContainer*> containerList =
+          container.makeLocalSeedContainer(256*256*256);
+
+      ZOUT(LINFO(), 5) << containerList.size() << "containers";
+      for (ZStackWatershedContainer *subcontainer : containerList) {
+        subcontainer->run();
+        ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
+        delete subcontainer;
+      }
+//      container.run();
+
+//      setHadSegmentationSampled(container.computationDowsampled());
+
+//      ZStackDocAccessor::ParseWatershedContainer(this, &container);
+#if 0
+      ZObject3dScanArray result;
+      container.makeSplitResult(1, &result);
+
+      ZOUT(LTRACE(), 5) << result.size() << "split generated.";
+      for (ZObject3dScanArray::iterator iter = result.begin();
+           iter != result.end(); ++iter) {
+        ZObject3dScan *obj = *iter;
+        obj->addRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR); //For 3D visualization
+        getDataBuffer()->addUpdate(
+              obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+      }
+      getDataBuffer()->deliver();
+
+      result.shallowClear();
+#endif
+    } else {
+      std::cout << "Less than 2 seeds found. Abort." << std::endl;
+    }
+  } else {
+    std::cout << "No body loaded for split." << std::endl;
+  }
 }
 
 /*
@@ -2476,5 +2576,3 @@ int ZFlyEmBody3dDoc::ObjectStatus::getResLevel() const
 {
   return m_resLevel;
 }
-
-

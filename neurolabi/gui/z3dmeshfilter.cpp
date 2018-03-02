@@ -177,9 +177,11 @@ void Z3DMeshFilter::renderTransparent(Z3DEye eye)
 
 void Z3DMeshFilter::renderPicking(Z3DEye eye)
 {
-  if (!m_pickingObjectsRegistered)
-    registerPickingObjects();
-  m_rendererBase.renderPicking(eye, m_meshRenderer);
+  if (pickingEnabled()) {
+    if (!m_pickingObjectsRegistered)
+      registerPickingObjects();
+    m_rendererBase.renderPicking(eye, m_meshRenderer);
+  }
 }
 
 namespace {
@@ -289,17 +291,19 @@ void Z3DMeshFilter::registerPickingObjects()
     if (!m_pickingObjectsRegistered) {
       m_registeredMeshList.clear();
       for (ZMesh* mesh : m_meshList) {
-        if (mesh->isSelectable()) {
-          pickingManager().registerObject(mesh);
-          m_registeredMeshList.push_back(mesh);
-        }
+        pickingManager().registerObject(mesh);
+        m_registeredMeshList.push_back(mesh);
       }
 //      m_registeredMeshList = m_meshList;
       m_meshPickingColors.clear();
       for (ZMesh* mesh : m_registeredMeshList) {
         glm::col4 pickingColor = pickingManager().colorOfObject(mesh);
-        glm::vec4 fPickingColor(pickingColor[0] / 255.f, pickingColor[1] / 255.f, pickingColor[2] / 255.f,
-            pickingColor[3] / 255.f);
+#ifdef _DEBUG_
+        std::cout << "Mesh picking color: " << pickingColor << std::endl;
+#endif
+        glm::vec4 fPickingColor(
+              pickingColor[0] / 255.f, pickingColor[1] / 255.f,
+              pickingColor[2] / 255.f,  pickingColor[3] / 255.f);
         m_meshPickingColors.push_back(fPickingColor);
       }
       m_meshRenderer.setDataPickingColors(&m_meshPickingColors);
@@ -436,14 +440,15 @@ void Z3DMeshFilter::setColorIndexing(const std::vector<glm::vec4> &indexedColors
 
 void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
 {
+  if (m_meshList.empty() || !pickingEnabled()) {
+    return;
+  }
+
 #ifdef _DEBUG_
   std::cout << "Selecting graph in " << this << std::endl;
   std::cout << "Original mesh count: " << m_origMeshList.size() << std::endl;
   std::cout << "Mesh count: " << m_meshList.size() << std::endl;
 #endif
-
-  if (m_meshList.empty() || !pickingEnabled())
-    return;
 
   e->ignore();
   switch (e->type()) {
@@ -454,7 +459,8 @@ void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
     }
     break;
   case QEvent::MouseButtonRelease:
-    if (std::abs(e->x() - m_startCoord.x) < 2 && std::abs(m_startCoord.y - e->y()) < 2) {
+    if (std::abs(e->x() - m_startCoord.x) < 2
+        && std::abs(m_startCoord.y - e->y()) < 2) {
       const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
       ZMesh *hitMesh = NULL;
       if (obj != NULL) {

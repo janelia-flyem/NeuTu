@@ -239,6 +239,8 @@ public slots:
   void showOrthoWindow(double x, double y, double z);
   void showBigOrthoWindow(double x, double y, double z);
 
+  void closeSkeletonWindow();
+
   void setDvidLabelSliceSize(int width, int height);
   void showFullSegmentation(bool on);
 

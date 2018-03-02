@@ -31,6 +31,7 @@
 #include "zglobal.h"
 #include "sandbox/zbrowseropener.h"
 #include "flyem/zflyemmisc.h"
+#include "dialogs/flyemsettingdialog.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -61,6 +62,12 @@ void Neu3Window::initialize()
   widget->setLayout(layout);
 
   m_3dwin = m_dataContainer->makeNeu3Window();
+//  m_3dwin->menuBar()->hide();
+  m_3dwin->configureMenuForNeu3();
+  connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
+
+  m_flyemSettingDlg = new FlyEmSettingDialog(this);
+  connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(setOption()));
 
   setCentralWidget(m_3dwin);
 
@@ -81,8 +88,8 @@ void Neu3Window::connectSignalSlot()
   connect(m_3dwin, SIGNAL(testing()), this, SLOT(test()));
   connect(m_3dwin, SIGNAL(browsing(double,double,double)),
           this, SLOT(browse(double,double,double)));
-  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
-          this, SLOT(processKeyPressed(QKeyEvent*)));
+//  connect(m_3dwin, SIGNAL(keyPressed(QKeyEvent*)),
+//          this, SLOT(processKeyPressed(QKeyEvent*)));
   connect(getBodyDocument(), SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
           this, SLOT(processSwcChangeFrom3D(QList<ZSwcTree*>,QList<ZSwcTree*>)));
   connect(getBodyDocument(), SIGNAL(meshSelectionChanged(QList<ZMesh*>,QList<ZMesh*>)),
@@ -162,6 +169,12 @@ bool Neu3Window::loadDvidTarget()
   delete dlg;
 
   return succ;
+}
+
+void Neu3Window::setOption()
+{
+  m_flyemSettingDlg->loadSetting();
+  m_flyemSettingDlg->exec();
 }
 
 void Neu3Window::createDockWidget()
@@ -266,11 +279,9 @@ void Neu3Window::keyPressEvent(QKeyEvent *event)
   processKeyPressed(event);
 }
 
-void Neu3Window::processKeyPressed(QKeyEvent *event)
+void Neu3Window::processKeyPressed(QKeyEvent */*event*/)
 {
-  if (m_dataContainer != NULL) {
-    m_dataContainer->processKeyEvent(event);
-  }
+
 }
 
 void Neu3Window::showSynapse(bool on)

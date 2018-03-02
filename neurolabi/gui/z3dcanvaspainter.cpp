@@ -167,8 +167,6 @@ bool Z3DCanvasPainter::renderToImage(const QString& filename, int width, int hei
     return false;
   }
 
-  m_canvas.getGLFocus();
-
   if (m_inport.numValidInputs() == 0) {
     QApplication::processEvents();
   }
@@ -187,6 +185,8 @@ bool Z3DCanvasPainter::renderToImage(const QString& filename, int width, int hei
   const int tileInnerSize = tileSize - 2 * tileBorder;
 
   if (width <= tileSize && height <= tileSize) {
+    m_canvas.getGLFocus();
+
     // resize texture container to desired image dimensions and propagate change
     setOutputSize(glm::uvec2(width, height));
     emit requestUpstreamSizeChange(this);
@@ -199,10 +199,13 @@ bool Z3DCanvasPainter::renderToImage(const QString& filename, int width, int hei
     }
     m_canvas.forceUpdate();
   } else {
+    m_canvas.getGLFocus();
+
     m_inport.setExpectedSize(glm::uvec2(tileSize, tileSize));
     m_leftEyeInport.setExpectedSize(glm::uvec2(tileSize, tileSize));
     m_rightEyeInport.setExpectedSize(glm::uvec2(tileSize, tileSize));
     globalCameraPara().viewportChanged(glm::uvec2(width, height));
+    m_canvas.getGLFocus();
     emit requestUpstreamSizeChange(this);
 
     m_tiledRendering = true;

@@ -27,6 +27,7 @@ private:
   std::string getConfigPath() const;
 
   bool usingDefaultConfig() const;
+  bool namingSynapse() const;
 
   void init();
 

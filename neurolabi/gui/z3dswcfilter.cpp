@@ -66,6 +66,8 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   initSubclassTypeColor();
   initLabelTypeColor();
 
+  m_individualColorScheme.setColorScheme(ZSwcColorScheme::UNIQUE_COLOR);
+
   // rendering primitive
   m_renderingPrimitive.addOptions("Normal", "Line", "Sphere");
   m_renderingPrimitive.select("Sphere");
@@ -825,11 +827,25 @@ void Z3DSwcFilter::updateWidgetGroup()
   }
 }
 
+std::shared_ptr<ZVec4Parameter> Z3DSwcFilter::getIndvidualColorParam(int index)
+{
+  for (int i = (int) m_individualTreeColorList.size(); i <= index; ++i) {
+    QColor color = m_individualColorScheme.getColor(i);
+    std::shared_ptr<ZVec4Parameter> param = std::make_shared<ZVec4Parameter>(
+          QString("Swc %1 Color").arg(i + 1),
+          glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.f));
+    param->setStyle("COLOR");
+    connect(param.get(), &ZVec4Parameter::valueChanged,
+        this, &Z3DSwcFilter::prepareColor);
+    m_individualTreeColorList.push_back(param);
+  }
+
+  return m_individualTreeColorList[index];
+}
+
 bool Z3DSwcFilter::updateColorParameter(
     const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
 {
-  ZSwcColorScheme colorScheme;
-  colorScheme.setColorScheme(ZSwcColorScheme::UNIQUE_COLOR);
   std::map<ZSwcTree*, size_t> newSources;
   std::set_difference(
         sourceIndexMapper.begin(), sourceIndexMapper.end(),
@@ -846,24 +862,15 @@ bool Z3DSwcFilter::updateColorParameter(
                                      ZRandom::instance().randReal<float>(),
                                      ZRandom::instance().randReal<float>(),
                                      1.f))));
-    QColor color = colorScheme.getColor((uint64_t)kv.second);
+
     m_individualTreeColorMapper.insert(
-          std::make_pair(kv.first,
-                         std::make_unique<ZVec4Parameter>(
-                           QString("Swc %1 Color").arg(kv.second + 1),
-                           glm::vec4(color.redF(),
-                                     color.greenF(),
-                                     color.blueF(),
-                                     1.f))));
+          std::make_pair(kv.first, getIndvidualColorParam(kv.second)));
 
     m_randomTreeColorMapper[kv.first]->setStyle("COLOR");
     connect(m_randomTreeColorMapper[kv.first].get(), &ZVec4Parameter::valueChanged,
         this, &Z3DSwcFilter::prepareColor);
-    addParameter(*m_randomTreeColorMapper[kv.first]);
 
-    m_individualTreeColorMapper[kv.first]->setStyle("COLOR");
-    connect(m_individualTreeColorMapper[kv.first].get(), &ZVec4Parameter::valueChanged,
-        this, &Z3DSwcFilter::prepareColor);
+    addParameter(*m_randomTreeColorMapper[kv.first]);
     addParameter(*m_individualTreeColorMapper[kv.first]);
   }
 

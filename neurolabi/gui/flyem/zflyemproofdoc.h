@@ -161,9 +161,11 @@ public:
 //    m_isCustomBookmarkSaved = state;
 //  }
 
-  ZDvidSparseStack* getDvidSparseStack() const;
+  virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
       const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
+
+  ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
   void enhanceTileContrast(bool highContrast);
 
