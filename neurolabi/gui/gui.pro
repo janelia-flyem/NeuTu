@@ -838,7 +838,9 @@ HEADERS += mainwindow.h \
     zstackobjectinfo.h \
     zstackobjectptr.h \
     zstackdocproxy.h \
-    zroiobjsmodel.h
+    zroiobjsmodel.h \
+    zstackobjectaccessor.h \
+    zgraphptr.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1462,7 +1464,9 @@ SOURCES += main.cpp \
     zstackdoc3dhelper.cpp \
     zstackobjectinfo.cpp \
     zstackdocproxy.cpp \
-    zroiobjsmodel.cpp
+    zroiobjsmodel.cpp \
+    zstackobjectaccessor.cpp \
+    zgraphptr.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

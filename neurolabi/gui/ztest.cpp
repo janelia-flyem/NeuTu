@@ -156,6 +156,7 @@
 #include "z3dcompositor.h"
 #include "zjsonfactory.h"
 #include "z3dvolumeraycasterrenderer.h"
+#include "flyem/zproofreadwindow.h"
 #include "z3dpunctafilter.h"
 #include "tz_stack.h"
 #include "zswclayerfeatureanalyzer.h"
@@ -21884,8 +21885,34 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  host->startProofread();
+  ZProofreadWindow *proofreadWindow = host->startProofread();
+  ZDvidTarget target("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  target.setGrayScaleName("grayscale");
 
+  proofreadWindow->getMainMvc()->setDvidTarget(target);
+  std::vector<uint64_t> bodyIdArray;
+  bodyIdArray.push_back(1);
+  bodyIdArray.push_back(7265504);
+
+  proofreadWindow->getMainMvc()->exportNeuronScreenshot(
+        bodyIdArray, 512, 512, GET_TEST_DATA_DIR.c_str());
+#endif
+
+#if 0
+  std::cout << -5 % 2 + 2 << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB25", 7000);
+  target.setLabelBlockName("labels1104");
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.getDvidTarget().print();
+
+  writer.syncAnnotationToLabel("bodies1104_todo");
 #endif
 
 #if 0
@@ -25314,7 +25341,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
   ZDvidWriter writer;
   writer.open(target);
@@ -25467,6 +25494,18 @@ void ZTest::test(MainWindow *host)
 
 //  bo.open("emdata2.int.janelia.org/neuroglancer/#!{'\"'\"'layers'\"'\"':{'\"'\"'grayscale'\"'\"':{'\"'\"'type'\"'\"':'\"'\"'image'\"'\"'_'\"'\"'source'\"'\"':'\"'\"'dvid://http://emdata2.int.janelia.org:80/e932474289bc4b048b001d2aa0b4219c/grayscale'\"'\"'}}_'\"'\"'navigation'\"'\"':{'\"'\"'pose'\"'\"':{'\"'\"'position'\"'\"':{'\"'\"'voxelSize'\"'\"':[8_8_8]_'\"'\"'voxelCoordinates'\"'\"':[9280_5408_11264]}}_'\"'\"'zoomFactor'\"'\"':8}_'\"'\"'perspectiveOrientation'\"'\"':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'\"'\"'perspectiveZoom'\"'\"':64}");
 #endif
+
+#if 0
+  ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
+  target.setLabelBlockName("prelim_001_8nm-base");
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZObject3dScan *obj = reader.readMultiscaleBody(1319932995, 0, true, NULL);
+    obj->save(GET_TEST_DATA_DIR + "/test.sobj");
+    delete obj;
+  }
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

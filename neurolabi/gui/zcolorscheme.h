@@ -28,6 +28,8 @@ public:
     return m_colorTable;
   }
 
+  void setStartIndex(int startIndex);
+
 protected:
   void buildRandomColorTable(int n);
   void buildConvRandomColorTable(int n);
@@ -38,6 +40,7 @@ protected:
 protected:
   EColorScheme m_colorScheme;
   QVector<QColor> m_colorTable;
+  int m_startIndex = 0;
 };
 
 #endif // ZCOLORSCHEME_H

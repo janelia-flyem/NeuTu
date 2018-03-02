@@ -121,6 +121,9 @@ std::shared_ptr<ZWidgetsGroup> Z3DView::getWidgetsGroup(
     return getWidgetsGroup(getTodoFilter());
   case neutube3d::LAYER_VOLUME:
     return getWidgetsGroup(getVolumeFilter());
+  case neutube3d::LAYER_DECORATION:
+    return getWidgetsGroup(getDecorationFilter());
+    break;
   }
 
   return std::shared_ptr<ZWidgetsGroup>();
@@ -394,6 +397,7 @@ void Z3DView::init()
     addFilter(neutube3d::LAYER_GRAPH);
     addFilter(neutube3d::LAYER_MESH);
     addFilter(neutube3d::LAYER_ROI);
+    addFilter(neutube3d::LAYER_DECORATION);
 
 //    initSurfaceFilter();
 
@@ -494,6 +498,9 @@ void Z3DView::addFilter(neutube3d::ERendererLayer layer)
     break;
   case neutube3d::LAYER_VOLUME:
     initVolumeFilter();
+    break;
+  case neutube3d::LAYER_DECORATION:
+    initDecorationFilter();
     break;
   }
 }
@@ -597,6 +604,31 @@ void Z3DView::initRoiFilter()
   m_layerList.append(neutube3d::LAYER_ROI);
 }
 
+void Z3DView::initDecorationFilter()
+{
+  m_decorationFilter.reset(new Z3DMeshFilter(*m_globalParas));
+  m_decorationFilter->setControlName("Decoration");
+  m_decorationFilter->setListenerName("Decoration filter");
+  m_decorationFilter->outputPort("GeometryFilter")->connect(
+        m_compositor->inputPort("GeometryFilters"));
+  m_decorationFilter->setOpacity(0.5);
+  m_decorationFilter->setColorMode("Mesh Color");
+  m_decorationFilter->setMaterialSpecular(glm::vec4(0, 0, 0, 0));
+  m_decorationFilter->enablePicking(false);
+  connect(m_decorationFilter.get(), &Z3DMeshFilter::boundBoxChanged,
+          this, &Z3DView::updateBoundBox);
+  connect(m_decorationFilter.get(), &Z3DMeshFilter::objVisibleChanged,
+          this, &Z3DView::updateBoundBox);
+  m_canvas->addEventListenerToBack(*m_decorationFilter);
+  m_allFilters.push_back(m_decorationFilter.get());
+
+  connect(m_doc, &ZStackDoc::meshSelectionChanged,
+          m_decorationFilter.get(), &Z3DMeshFilter::invalidateResult);
+  connect(m_doc, &ZStackDoc::meshVisibleStateChanged,
+          m_decorationFilter.get(), &Z3DMeshFilter::updateMeshVisibleState);
+  m_layerList.append(neutube3d::LAYER_DECORATION);
+}
+
 void Z3DView::initGraphFilter()
 {
   m_graphFilter.reset(new Z3DGraphFilter(*m_globalParas));
@@ -683,6 +715,8 @@ ZJsonObject Z3DView::getSettings() const
 
 void Z3DView::processObjectModified(const ZStackObjectInfoSet &objInfo)
 {
+  ZOUT(LTRACE(), 5) << "Processing object modification in Z3DView ...";
+
   ZStackDoc3dHelper helper;
   helper.attach(this);
   helper.processObjectModified(objInfo);
@@ -784,6 +818,8 @@ Z3DGeometryFilter* Z3DView::getFilter(neutube3d::ERendererLayer layer) const
     return getMeshFilter();
   case neutube3d::LAYER_ROI:
     return getRoiFilter();
+  case neutube3d::LAYER_DECORATION:
+    return getDecorationFilter();
   default:
     break;
   }
@@ -898,6 +934,8 @@ std::string Z3DView::GetLayerString(neutube3d::ERendererLayer layer)
     return "Mesh";
   case neutube3d::LAYER_ROI:
     return "ROI";
+  case neutube3d::LAYER_DECORATION:
+    return "Decoration";
   }
 
   return "";

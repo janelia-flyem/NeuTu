@@ -458,15 +458,16 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
     uint64_t bodyId = *iter;
 
     if (locateBody(bodyId)) {
+//    if (true) {
       ZFlyEmBody3dDoc *doc =
           qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
       doc->waitForAllEvent();
-      QApplication::processEvents();
+//      QApplication::processEvents();
 
       m_skeletonWindow->getCamera()->setEye(eye);
       m_skeletonWindow->getCamera()->setUpVector(upVector);
       m_skeletonWindow->getCamera()->setNearDist(nearDist);
-      m_skeletonWindow->raise();
+//      m_skeletonWindow->raise();
       //  double eyeDist = eye[0];
       m_skeletonWindow->takeScreenShot(
             QString("%1/%2_yz.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
@@ -482,6 +483,8 @@ void ZFlyEmProofMvc::exportNeuronScreenshot(
       m_skeletonWindow->getCamera()->rotate(-glm::radians(90.f), glm::vec3(1, 0, 0));
       m_skeletonWindow->takeScreenShot(
             QString("%1/%2_xy.tif").arg(outDir).arg(bodyId), width, height, Z3DScreenShotType::MonoView);
+//      closeSkeletonWindow();
+//      showSkeletonWindow();
     } else {
       skippedBodyIdArray.push_back(bodyId);
     }
@@ -523,6 +526,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
             this, SLOT(zoomTo(int, int, int, int)));
     connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
             this, SIGNAL(locating2DViewTriggered(int, int, int, int)));
+
+    window->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
   }
 }
 
@@ -829,13 +834,13 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   window->getGraphFilter()->setStayOnTop(false);
   window->setOpacity(neutube3d::LAYER_MESH, 0.9);
   ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
-  window->setMenuFactory(new ZFlyEmBody3dDocMenuFactory);
 
   connect(window, SIGNAL(savingSplitTask()),
           doc, SLOT(saveSplitTask()));
   connect(window, SIGNAL(deletingSplitSeed()), doc, SLOT(deleteSplitSeed()));
   connect(window, &Z3DWindow::deletingSelectedSplitSeed, doc,
           &ZFlyEmBody3dDoc::deleteSelectedSplitSeed);
+  connect(window, SIGNAL(runningLocalSplit()), doc, SLOT(runLocalSplit()));
 
   doc->enableNodeSeeding(true);
 //  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
@@ -2562,17 +2567,7 @@ void ZFlyEmProofMvc::exitHighlightMode()
 
 ZDvidSparseStack* ZFlyEmProofMvc::getCachedBodyForSplit(uint64_t bodyId)
 {
-  ZDvidSparseStack *body = getCompleteDocument()->getBodyForSplit();
-
-  ZOUT(LINFO(), 3) << "Get body for split:" << body;
-
-  if (body != NULL) {
-    if (body->getLabel() != bodyId) {
-      body = NULL;
-    }
-  }
-
-  return body;
+  return getCompleteDocument()->getCachedBodyForSplit(bodyId);
 }
 
 ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
@@ -3216,6 +3211,11 @@ void ZFlyEmProofMvc::showMeshWindow()
   m_bodyViewWindow->setCurrentWidow(m_meshWindow);
   m_bodyViewWindow->show();
   m_bodyViewWindow->raise();
+}
+
+void ZFlyEmProofMvc::closeSkeletonWindow()
+{
+  m_skeletonWindow->close();
 }
 
 void ZFlyEmProofMvc::showSkeletonWindow()
@@ -4907,6 +4907,10 @@ void ZFlyEmProofMvc::showInfoDialog()
 
 void ZFlyEmProofMvc::retrieveRois()
 {
+#ifdef _DEBUG_
+  //Disable roi retrival for debugging
+  return;
+#endif
   const QString threadId = "ZFlyEmProofMvc::loadROIFunc()";
   if (!m_futureMap.isAlive(threadId)) {
     m_futureMap.removeDeadThread();

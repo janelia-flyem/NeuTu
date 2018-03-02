@@ -16,6 +16,8 @@ public:
   QAction* getAction(
       ZActionFactory::EAction item, QObject *receiver, const char *slot);
 
+  void setUndoStack(QUndoStack *undoStack);
+
 private:
   QObject *m_actionParent;
   ZActionFactory m_actionFactory;

@@ -211,6 +211,14 @@ void Z3DWindow::createToolBar()
 #endif
 }
 
+void Z3DWindow::configureMenuForNeu3()
+{
+  m_helpAction->setVisible(false);
+  QAction *settingAction = new QAction("&Settings", this);
+  m_helpMenu->addAction(settingAction);
+  connect(settingAction, SIGNAL(triggered()), this, SIGNAL(settingTriggered()));
+}
+
 void Z3DWindow::zoomToSelectedSwcNodes()
 {
   std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
@@ -282,6 +290,8 @@ void Z3DWindow::init()
             this, SLOT(selectTerminalBranchInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
           this, SLOT(cropSwcInRoi()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBodyLocal()),
+          this, SIGNAL(runningLocalSplit()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(deletingSelected()),
           this, SLOT(deleteSelected()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
@@ -431,6 +441,10 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY:
     action = m_actionLibrary->getAction(item, this, SLOT(viewDataExternally()));
     break;
+  case ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(changeSelectedPunctaColor()));
+    break;
   default:  
     break;
   }
@@ -457,8 +471,8 @@ void Z3DWindow::createActions()
   m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
   m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
 
-  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
-  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
+//  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
+//  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
 
   m_helpAction = new QAction("Help", this);
   connect(m_helpAction, SIGNAL(triggered()), this, SLOT(help()));
@@ -661,7 +675,7 @@ void Z3DWindow::createMenus()
   m_editMenu->addAction(m_undoAction);
   m_editMenu->addAction(m_redoAction);
   m_editMenu->addSeparator();
-  m_editMenu->addAction(m_markSwcSomaAction);
+//  m_editMenu->addAction(m_markSwcSomaAction);
 
   m_helpMenu->addAction(m_helpAction);
 
@@ -693,7 +707,8 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_locatePunctumIn2DAction);
   contextMenu->addAction("Transform selected puncta",
                          this, SLOT(transformSelectedPuncta()));
-  contextMenu->addAction("Change color", this, SLOT(changeSelectedPunctaColor()));
+  contextMenu->addAction(
+        "Change color", this, SLOT(changeSelectedPunctaColor()));
   contextMenu->addAction("Transform all puncta",
                          this, SLOT(transformAllPuncta()));
   contextMenu->addAction("Convert to swc",
@@ -2934,9 +2949,11 @@ void Z3DWindow::changeSelectedPunctaColor()
            iter != punctaSet.end(); ++iter) {
         ZPunctum *punctum = *iter;
         punctum->setColor(dlg.currentColor());
+        m_doc->bufferObjectModified(punctum);
       }
+      m_doc->processObjectModified();
 
-      m_doc->notifyPunctumModified();
+//      m_doc->notifyPunctumModified();
     }
   }
 }
@@ -3603,6 +3620,10 @@ void Z3DWindow::browseWithRay(int x, int y)
   std::vector<ZPoint> intersection = getRayIntersection(x, y);
   if (!intersection.empty()) {
     ZPoint &pt = intersection.front();
+    if (intersection.size() > 1) {
+      pt += intersection[1];
+      pt *= 0.5;
+    }
     emit browsing(pt.x(), pt.y(), pt.z());
   }
 }

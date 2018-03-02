@@ -275,6 +275,8 @@ public: //attributes
   QList<ZDvidTileEnsemble*> getDvidTileEnsembleList() const;
   QList<ZDvidSparsevolSlice*> getDvidSparsevolSliceList() const;
   virtual ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack(
+      const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
   QList<ZMesh*> getMeshList() const;
 
   bool hasSwcList();       //to test swctree
@@ -906,10 +908,14 @@ public:
 //                            bool sync = true);
 //  void bufferObjectModified(const QSet<ZStackObject::ETarget> &targetSet,
 //                            bool sync = true);
+  void bufferObjectModified(
+      ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
   void bufferObjectModified(ZStackObject *obj, bool sync = true);
   void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
   void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
-  void bufferObjectModified(const ZStackObjectInfo &info, bool sync = true);
+  void bufferObjectModified(
+      const ZStackObjectInfo &info, ZStackObjectInfo::TState state,
+      bool sync = true);
   void bufferObjectModified(
       const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
 
