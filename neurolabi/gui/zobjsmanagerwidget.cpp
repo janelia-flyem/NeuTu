@@ -14,6 +14,7 @@
 #include "zroiobjsmodel.h"
 #include "QsLog/QsLog.h"
 #include "neutubeconfig.h"
+#include "zswctree.h"
 
 #include <QSortFilterProxyModel>
 #include <QHBoxLayout>

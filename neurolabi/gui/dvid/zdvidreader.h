@@ -303,6 +303,10 @@ public:
       int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
       int width, int height, int zoom, int cx, int cy) const;
+
+  ZStack *readGrayScaleLowtis(
+      const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
+      int width, int height, int zoom, int cx, int cy) const;
 #endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,

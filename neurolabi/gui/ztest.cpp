@@ -25593,7 +25593,7 @@ void ZTest::test(MainWindow *host)
   ZFlyEmMisc::RemoveSplitTask(target, 1);
 #endif
 
-#if 1
+#if 0
 
 #if defined(_USE_WEBENGINE_)
   QWebEngineView *view = new QWebEngineView(NULL);
@@ -25630,23 +25630,42 @@ void ZTest::test(MainWindow *host)
   ZDvidGraySlice slice;
 
   ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "2b6", 8700);
-  target.setGrayScaleName("grayscale");
-
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscalejpeg");
   ZDvidReader reader;
   reader.open(target);
 
   reader.updateMaxGrayscaleZoom();
 
   slice.setDvidTarget(reader.getDvidTarget());
+  slice.setSliceAxis(neutube::A_AXIS);
 
+  ZArbSliceViewParam viewParam;
+  viewParam.setSize(1024, 1024);
+  viewParam.setCenter(17216, 19872, 20704);
+  viewParam.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+
+  slice.update(viewParam);
+
+  /*
   ZStackViewParam param;
-  param.setViewPort(2610, 2354, 2610 + 1024, 2354 + 1024);
-  param.setZ(3197);
+  param.setSliceAxis(neutube::A_AXIS);
+  param.setWidgetRect(QRect(0, 0, 1024, 1024));
+  param.setCanvasRect(QRect(17216, 19872, 1024, 1024));
+  param.setViewPort(17216, 19872, 17216 + 1023, 19872 + 1023);
+  param.setZ(20704);
+  */
 
-  slice.update(param);
+//  slice.setArbitraryAxis(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+//  slice.update(param);
   slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
-  slice.savePixmap(GET_TEST_DATA_DIR + "/test2.tif");
+//  slice.savePixmap(GET_TEST_DATA_DIR + "/test2.tif");
+
+  QPixmap canvas(512, 512);
+  QPainter painter(&canvas);
+  painter.drawImage(QRect(0, 0, 512, 512), slice.getImage());
+
+  canvas.save((GET_TEST_DATA_DIR + "/test2.tif").c_str());
 
 #endif
   std::cout << "Done." << std::endl;

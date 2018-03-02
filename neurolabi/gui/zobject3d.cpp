@@ -17,6 +17,8 @@
 #include "zpainter.h"
 #include "zcuboid.h"
 #include "zintcuboid.h"
+#include "zpoint.h"
+#include "zintpoint.h"
 
 using namespace std;
 

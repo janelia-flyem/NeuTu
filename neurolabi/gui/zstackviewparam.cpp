@@ -50,6 +50,16 @@ void ZStackViewParam::setViewPort(const QRect &rect)
   m_viewProj.setViewPort(rect);
 }
 
+void ZStackViewParam::setWidgetRect(const QRect &rect)
+{
+  m_viewProj.setWidgetRect(rect);
+}
+
+void ZStackViewParam::setCanvasRect(const QRect &rect)
+{
+  m_viewProj.setCanvasRect(rect);
+}
+
 void ZStackViewParam::setViewPort(double x0, double y0, double x1, double y1)
 {
   QRect viewPort;

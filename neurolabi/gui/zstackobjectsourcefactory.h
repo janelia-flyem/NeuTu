@@ -35,7 +35,7 @@ public:
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
   static std::string MakeDvidLabelSliceSource(neutube::EAxis axis);
-  static std::string MakeDvidGraySliceSource();
+  static std::string MakeDvidGraySliceSource(neutube::EAxis axis);
   static std::string MakeSplitObjectSource();
   static std::string MakeSplitResultSource();
   static std::string MakeSplitResultSource(int label);

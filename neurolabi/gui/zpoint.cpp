@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 #if defined(_QT_GUI_USED_)
 #include <QPainter>
@@ -18,7 +19,7 @@
 #include "zintpoint.h"
 #include "geometry/zgeometry.h"
 
-const double ZPoint::m_minimalDistance = 1e-5;
+const double ZPoint::MIN_DIST = 1e-5;
 
 ZPoint::ZPoint()
 {
@@ -295,12 +296,28 @@ double ZPoint::cosAngle(const ZPoint &pt) const
 
 bool ZPoint::isApproxOrigin() const
 {
-  return (length() < m_minimalDistance);
+  return (length() < MIN_DIST);
 }
 
 bool ZPoint::approxEquals(const ZPoint &pt) const
 {
-  return (distanceTo(pt) < m_minimalDistance);
+  return (distanceTo(pt) < MIN_DIST);
+}
+
+bool ZPoint::isPendicularTo(const ZPoint &pt) const
+{
+  double len1 = length();
+  double len2 = pt.length();
+
+  if (len1 < MIN_DIST || len2 < MIN_DIST) {
+    return false;
+  }
+
+  if (std::fabs(dot(pt)) < MIN_DIST * MIN_DIST * len1 * len2) {
+    return true;
+  }
+
+  return false;
 }
 
 std::string ZPoint::toString() const

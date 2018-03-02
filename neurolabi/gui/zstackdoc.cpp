@@ -113,7 +113,9 @@
 #include "zroiobjsmodel.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "zactionlibrary.h"
-
+#include "z3dwindow.h"
+#include "zswctree.h"
+#include "zobject3d.h"
 
 using namespace std;
 
@@ -4122,6 +4124,52 @@ void ZStackDoc::setSwcSelected(ZSwcTree *tree, bool select)
       //emit swcSelectionChanged(selected, deselected);
     }
   }
+}
+
+template <class InputIterator>
+void ZStackDoc::setSwcSelected(InputIterator first, InputIterator last, bool select)
+{
+  QList<ZSwcTree*> selected;
+  QList<ZSwcTree*> deselected;
+
+  QList<Swc_Tree_Node *> tns;
+  for (InputIterator it = first; it != last; ++it) {
+    ZSwcTree *tree = *it;
+    if (tree->isSelected() != select) {
+      m_objectGroup.setSelected(tree, select);
+      if (select) {
+        selected.append(tree);
+
+        // deselect its nodes
+        if (tree->hasSelectedNode()) {
+          for (std::set<Swc_Tree_Node*>::const_iterator
+               iter = tree->getSelectedNode().begin();
+               iter != tree->getSelectedNode().end(); ++iter) {
+            Swc_Tree_Node* tn = const_cast<Swc_Tree_Node*>(*iter);
+            tns.append(tn);
+          }
+          tree->deselectAllNode();
+        }
+        /*
+        for (std::set<Swc_Tree_Node*>::iterator it = m_selectedSwcTreeNodes.begin();
+             it != m_selectedSwcTreeNodes.end(); ++it) {
+          if (tree == nodeToSwcTree(*it))
+            tns.push_back(*it);
+        }
+        */
+      } else {
+        deselected.push_back(tree);
+      }
+    }
+  }
+
+  notifyDeselected(tns);
+  notifySelectionChanged(selected, deselected);
+}
+
+void ZStackDoc::setSwcSelected(const QList<ZSwcTree *> &treeList, bool select)
+{
+  setSwcSelected(treeList.begin(), treeList.end(), select);
 }
 
 void ZStackDoc::deselectAllSwcs()

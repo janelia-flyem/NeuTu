@@ -2803,6 +2803,16 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
   return stack;
 }
 
+ZStack *ZDvidReader::readGrayScaleLowtis(
+    const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
+    int width, int height, int zoom, int cx, int cy) const
+{
+  return readGrayScaleLowtis(
+        center.getX(), center.getY(), center.getZ(),
+        v1.getX(), v1.getY(), v1.getZ(), v2.getX(), v2.getY(), v2.getZ(),
+        width, height, zoom, cx, cy);
+}
+
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {

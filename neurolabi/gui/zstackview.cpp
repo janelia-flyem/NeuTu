@@ -14,7 +14,6 @@
 #include "zslider.h"
 #include "zinteractivecontext.h"
 #include "zstack.hxx"
-#include "zstackdoc.h"
 #include "zclickablelabel.h"
 #include "tz_error.h"
 #include "zstackball.h"

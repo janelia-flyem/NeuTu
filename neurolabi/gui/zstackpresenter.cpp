@@ -35,6 +35,7 @@
 #include "zglobal.h"
 #include "zstackdockeyprocessor.h"
 #include "zstackobjectinfo.h"
+#include "zobject3d.h"
 
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)

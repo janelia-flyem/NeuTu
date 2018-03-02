@@ -35,12 +35,16 @@ public:
   void setZ(int z);
   void setViewProj(const ZViewProj &vp);
 
-  void setViewPort(const QRect &rect);
+
 //  void setProjRect(const QRectF &rect);
 
   double getZoomRatio() const;
 
+  void setWidgetRect(const QRect &rect);
+  void setCanvasRect(const QRect &rect);
+
   void setViewPort(double x0, double y0, double x1, double y1);
+  void setViewPort(const QRect &rect);
   void setExploreAction(neutube::View::EExploreAction action);
   void setSliceAxis(neutube::EAxis sliceAxis);
   neutube::EAxis getSliceAxis() const;

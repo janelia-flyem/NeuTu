@@ -37,7 +37,7 @@
 #include "zfileparser.h"
 #include "zjsonfactory.h"
 #include "dvid/zdvidwriter.h"
-
+#include "zobject3d.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
