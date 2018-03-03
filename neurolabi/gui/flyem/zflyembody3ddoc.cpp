@@ -195,9 +195,9 @@ void ZFlyEmBody3dDoc::setUnrecycable(const QSet<uint64_t> &bodySet)
   }
 }
 
-void ZFlyEmBody3dDoc::clearGarbage()
+void ZFlyEmBody3dDoc::clearGarbage(bool force)
 {
-  if (!m_limitGarbageLifetime) {
+  if (!m_limitGarbageLifetime && !force) {
     return;
   }
 
@@ -212,9 +212,9 @@ void ZFlyEmBody3dDoc::clearGarbage()
      iter.next();
      int t = iter.value().getTimeStamp();
      int dt = currentTime - t;
-     if (dt < 0) {
+     if (!force && dt < 0) {
        iter.value().setTimeStamp(0);
-     } else if (dt > OBJECT_GARBAGE_LIFE){
+     } else if (force || dt > OBJECT_GARBAGE_LIFE){
        ZStackObject *obj = iter.key();
        if (obj->getType() == ZStackObject::TYPE_SWC) {
          ZOUT(LTRACE(), 5) << "Deleting SWC object: " << obj << obj->getSource();
