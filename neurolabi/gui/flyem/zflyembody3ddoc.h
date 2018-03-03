@@ -291,6 +291,8 @@ public slots:
   void processBodySelectionChange();
   void runLocalSplit();
 
+  void clearGarbage(bool force = false);
+
 signals:
   void bodyRemoved(uint64_t bodyId);
 
@@ -377,7 +379,6 @@ private slots:
 //  void updateBody();
   void processEvent();
   void processEvent(const BodyEvent &event);
-  void clearGarbage();
 
 private:
   void processEventFunc(const BodyEvent &event);
