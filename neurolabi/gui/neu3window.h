@@ -116,6 +116,7 @@ private slots:
 
   void updateRoiWidget();
   void browse(double x, double y, double z);
+  void browseInPlace(double x, double y, double z);
   void processKeyPressed(QKeyEvent* event);
   void updateBodyState();
   void setOption();
@@ -125,6 +126,9 @@ private slots:
   void startSplit();
 
   void updateBrowser();
+  void updateEmbeddedGrayscale();
+  void hideGrayscale();
+  void processCameraRotation();
   void closeWebView();
 
   void test();

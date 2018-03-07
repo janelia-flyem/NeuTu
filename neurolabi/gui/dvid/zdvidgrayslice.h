@@ -31,7 +31,8 @@ public:
   void clear();
 
   void update(int z);
-  bool update(const ZStackViewParam &viewParam);
+  bool update(const ZStackViewParam &viewParam,
+              const ZArbSliceViewParam &sliceViewParam);
   /*!
    * \brief Update an arbitrary cutting plane
    *
@@ -106,7 +107,9 @@ private:
   void updateImage(const ZStack *stack);
   void forceUpdate(const ZStackViewParam &viewParam);
   void forceUpdate(const QRect &viewPort, int z);
-  void forceUpdate(const ZArbSliceViewParam &viewParam);
+  void forceUpdate(const ZStackViewParam &viewParam,
+                   const ZArbSliceViewParam &sliceViewParam);
+
   void updatePixmap();
   void updateContrast();
   void invalidatePixmap();

@@ -92,6 +92,7 @@ class ZRoiObjsModel;
 class ZActionLibrary;
 class ZSwcTree;
 class ZObject3d;
+class ZArbSliceViewParam;
 
 /*!
  * \brief The class of stack document
@@ -914,6 +915,7 @@ public:
   void bufferObjectModified(
       ZStackObject *obj, ZStackObjectInfo::TState state, bool sync);
   void bufferObjectModified(ZStackObject *obj, bool sync = true);
+  void bufferObjectVisibilityChanged(ZStackObject *obj, bool sync = true);
   void bufferObjectModified(const ZStackObjectRole &role, bool sync = true);
   void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void bufferObjectModified(
@@ -1061,7 +1063,9 @@ public:
 
     void clearState();
 
-    void update(const ZStackViewParam &param);
+    void update(const ZStackViewParam &param, const ZArbSliceViewParam &sliceParam);
+//    void update(const ZArbSliceViewParam &param);
+
     const QSet<ZStackObject::ETarget>& getUpdatedTargetSet() {
       return m_updatedTarget;
     }

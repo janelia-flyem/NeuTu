@@ -27,6 +27,7 @@ class ZFlyEmBodyComparisonDialog;
 class ZFlyEmBody3dDocKeyProcessor;
 class ZMesh;
 class ZFlyEmBodySplitter;
+class ZArbSliceViewParam;
 //class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
@@ -198,6 +199,9 @@ public:
   ZFlyEmProofDoc* getDataDocument() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
+  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);
+  void hideArbGrayslice();
+  void setArbGraySliceVisible(bool v);
 
   void printEventQueue() const;
 
@@ -443,6 +447,8 @@ private:
 
   void notifyBodyUpdate(uint64_t bodyId, int resLevel);
   void notifyBodyUpdated(uint64_t bodyId, int resLevel);
+
+  void initArbGraySlice();
 
 private:
   QSet<uint64_t> m_bodySet;

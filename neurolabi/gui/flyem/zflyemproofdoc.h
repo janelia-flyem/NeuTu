@@ -58,7 +58,7 @@ public:
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
 
-  void setDvidTarget(const ZDvidTarget &target);
+  virtual void setDvidTarget(const ZDvidTarget &target);
 
 //  virtual void updateTileData();
 
@@ -535,6 +535,8 @@ protected:
   void setRoutineCheck(bool on);
   uint64_t getBodyIdForSplit() const;
   QColor getSeedColor(int label) const;
+  void readInfo();
+  void prepareGraySlice(ZDvidGraySlice *slice);
 
 private:
   void connectSignalSlot();
@@ -545,8 +547,6 @@ private:
   void decorateTBar(ZSlicedPuncta *puncta);
   void decoratePsd(ZSlicedPuncta *puncta);
   void loadRoiFunc();
-
-  void prepareGraySlice(ZDvidGraySlice *slice);
 
   std::set<uint64_t> getCurrentSelectedBodyId(neutube::EBodyLabelType type) const;
 
@@ -566,7 +566,7 @@ private:
   void initTileData();
   void initGrayscaleSlice();
 
-  void readInfo();
+
   void updateMaxLabelZoom();
   void updateMaxGrayscaleZoom();
 

@@ -1,5 +1,8 @@
 #include "z3dvolumefilter.h"
 
+#include <QApplication>
+#include <QMessageBox>
+
 #include "z3dgpuinfo.h"
 #include "zeventlistenerparameter.h"
 #include "zmesh.h"
@@ -9,8 +12,7 @@
 #include "zlabelcolortable.h"
 #include "zsparseobject.h"
 #include "zstackdochelper.h"
-#include <QApplication>
-#include <QMessageBox>
+#include "zstackdoc.h"
 
 const size_t Z3DVolumeFilter::m_maxNumOfFullResolutionVolumeSlice = 6;
 

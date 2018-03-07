@@ -853,7 +853,11 @@ HEADERS += mainwindow.h \
     ilastik/marching_cubes.h \
     ilastik/laplacian_smoothing.h \
     flyem/zflyembodysplitter.h \
-    zarbsliceviewparam.h
+    zarbsliceviewparam.h \
+    flyem/zflyemarbdoc.h \
+    flyem/zflyemarbmvc.h \
+    flyem/zflyemarbpresenter.h \
+    flyem/zarbslicescrollstrategy.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1486,7 +1490,11 @@ SOURCES += main.cpp \
     ilastik/marching_cubes.cpp \
     ilastik/laplacian_smoothing.cpp \
     flyem/zflyembodysplitter.cpp \
-    zarbsliceviewparam.cpp
+    zarbsliceviewparam.cpp \
+    flyem/zflyemarbdoc.cpp \
+    flyem/zflyemarbmvc.cpp \
+    flyem/zflyemarbpresenter.cpp \
+    flyem/zarbslicescrollstrategy.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

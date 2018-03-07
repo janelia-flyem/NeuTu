@@ -291,6 +291,7 @@
 #include "zstackobjectinfo.h"
 #include "sandbox/zbrowseropener.h"
 #include "widgets/zpythonprocess.h"
+#include "flyem/zflyemarbmvc.h"
 
 #include "test/ztestall.h"
 
@@ -25627,6 +25628,27 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
+
+
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZFlyEmArbMvc *mvc = ZFlyEmArbMvc::Make(target);
+
+  ZArbSliceViewParam viewParam;
+  viewParam.setSize(1024, 1024);
+  viewParam.setCenter(17216, 19872, 20704);
+  ZPoint v1 = ZPoint(0, 1, 0);
+  ZPoint v2 = ZPoint(0, 0, 1);
+
+  viewParam.setPlane(v1, v2);
+  mvc->show();
+  mvc->updateViewParam(viewParam);
+#endif
+
+
+#if 0
   ZDvidGraySlice slice;
 
   ZDvidTarget target;
@@ -25643,7 +25665,16 @@ void ZTest::test(MainWindow *host)
   ZArbSliceViewParam viewParam;
   viewParam.setSize(1024, 1024);
   viewParam.setCenter(17216, 19872, 20704);
-  viewParam.setPlane(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+  ZPoint v1 = ZPoint(1, 0, 0);
+  ZPoint v2 = ZPoint(0, 1, 0);
+
+  viewParam.setPlane(v1, v2);
+  slice.update(viewParam);
+  slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
+
+  v1.rotate(0.1, 0.2);
+  v2.rotate(0.1, 0.2);
+  viewParam.setPlane(v1, v2);
 
   slice.update(viewParam);
 
@@ -25658,14 +25689,16 @@ void ZTest::test(MainWindow *host)
 
 //  slice.setArbitraryAxis(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
 //  slice.update(param);
-  slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
-//  slice.savePixmap(GET_TEST_DATA_DIR + "/test2.tif");
 
+  slice.savePixmap(GET_TEST_DATA_DIR + "/test2.tif");
+
+  /*
   QPixmap canvas(512, 512);
   QPainter painter(&canvas);
   painter.drawImage(QRect(0, 0, 512, 512), slice.getImage());
 
   canvas.save((GET_TEST_DATA_DIR + "/test2.tif").c_str());
+  */
 
 #endif
   std::cout << "Done." << std::endl;

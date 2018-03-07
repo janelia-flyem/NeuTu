@@ -1,6 +1,8 @@
 #include "zscrollslicestrategy.h"
+#include "zstackviewparam.h"
+#include "zstackview.h"
 
-ZScrollSliceStrategy::ZScrollSliceStrategy()
+ZScrollSliceStrategy::ZScrollSliceStrategy(ZStackView *view) : m_view(view)
 {
   setRange(0, 0);
 }
@@ -29,4 +31,19 @@ int ZScrollSliceStrategy::scroll(int slice, int step) const
   int newSlice = slice + step;
 
   return getValidSlice(newSlice);
+}
+
+ZStackViewParam ZScrollSliceStrategy::scroll(
+    const ZStackViewParam &param, int step) const
+{
+  ZStackViewParam newParam = param;
+  newParam.setSliceIndex(scroll(param.getSliceIndex(), step));
+
+  return newParam;
+}
+
+void ZScrollSliceStrategy::scroll(int step)
+{
+  ZStackViewParam param = scroll(m_view->getViewParameter(), step);
+  m_view->updateViewParam(param);
 }

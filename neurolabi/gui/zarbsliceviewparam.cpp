@@ -37,10 +37,20 @@ bool ZArbSliceViewParam::isValid() const
 QRect ZArbSliceViewParam::getViewPort() const
 {
   QRect rect;
-  rect.moveCenter(QPoint(m_center.getX(), m_center.getY()));
   rect.setSize(QSize(m_width, m_height));
+  rect.moveCenter(QPoint(m_center.getX(), m_center.getY()));
 
   return rect;
+}
+
+int ZArbSliceViewParam::getX0() const
+{
+  return getViewPort().left();
+}
+
+int ZArbSliceViewParam::getY0() const
+{
+  return getViewPort().top();
 }
 
 int ZArbSliceViewParam::getX() const
@@ -73,6 +83,11 @@ ZPoint ZArbSliceViewParam::getPlaneV2() const
   return m_v2;
 }
 
+ZPoint ZArbSliceViewParam::getPlaneNormal() const
+{
+  return m_v1.cross(m_v2);
+}
+
 int ZArbSliceViewParam::getWidth() const
 {
   return m_width;
@@ -82,6 +97,15 @@ int ZArbSliceViewParam::getHeight() const
 {
   return m_height;
 }
+
+void ZArbSliceViewParam::move(double dx, double dy, double dz)
+{
+  if (isValid()) {
+    ZPoint dp = getPlaneV1() * dx + getPlaneV2() * dy + getPlaneNormal() * dz;
+    m_center += dp.toIntPoint();
+  }
+}
+
 
 bool ZArbSliceViewParam::contains(const ZArbSliceViewParam &param)
 {

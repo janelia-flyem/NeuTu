@@ -42,11 +42,11 @@ void ZDvidGraySlice::display(
   if (sliceAxis != getSliceAxis()) {
     return;
   }
-  //if (!m_image.isNull()) {
-  int z = painter.getZOffset() + slice;
-  //m_latestZ = z;
 
-  const_cast<ZDvidGraySlice&>(*this).update(z);
+  int z = painter.getZOffset() + slice;
+  if (getSliceAxis() == neutube::Z_AXIS) {
+    const_cast<ZDvidGraySlice&>(*this).update(z);
+  }
 
   if (z == getZ() && !m_image.isNull()) {
     const_cast<ZDvidGraySlice&>(*this).updatePixmap();
@@ -221,34 +221,39 @@ bool ZDvidGraySlice::validateSize(int *width, int *height)
   return changed;
 }
 
-bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
+bool ZDvidGraySlice::update(const ZStackViewParam &viewParam,
+                            const ZArbSliceViewParam &sliceViewParam)
 {
-  if (viewParam.getSliceAxis() != m_sliceAxis) {
+  if (sliceViewParam.getSliceAxis() != m_sliceAxis) {
     return false;
   }
 
-  if (viewParam.getViewPort().isEmpty()) {
+  if (sliceViewParam.getViewPort().isEmpty()) {
     return false;
   }
 
   bool updated = false;
 
-  ZStackViewParam newViewParam = viewParam;
+  if (getSliceAxis() != neutube::A_AXIS) {
+    ZStackViewParam newViewParam = viewParam;
 
-  int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
-  if (maxZoomLevel < 3) {
-    int width = viewParam.getViewPort().width();
-    int height = viewParam.getViewPort().height();
-    if (validateSize(&width, &height)) {
-      newViewParam.resize(width, height);
+    int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
+    if (maxZoomLevel < 3) {
+      int width = sliceViewParam.getViewPort().width();
+      int height = sliceViewParam.getViewPort().height();
+      if (validateSize(&width, &height)) {
+        newViewParam.resize(width, height);
+      }
     }
-  }
 
-  if (!m_currentViewParam.contains(newViewParam) ||
-      viewParam.getZoomLevel(maxZoomLevel) <
-      m_currentViewParam.getZoomLevel(maxZoomLevel)) {
-    forceUpdate(newViewParam);
-    updated = true;
+    if (!m_currentViewParam.contains(newViewParam) ||
+        sliceViewParam.getZoomLevel(maxZoomLevel) <
+        m_currentViewParam.getZoomLevel(maxZoomLevel)) {
+      forceUpdate(newViewParam);
+      updated = true;
+    }
+  } else {
+
   }
 
   return updated;
@@ -319,8 +324,6 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
   box.setFirstCorner(viewPort.left(), viewPort.top(), z);
   box.setSize(viewPort.width(), viewPort.height(), 1);
 
-
-#if defined(_ENABLE_LOWTIS_)
   int cx = m_centerCutWidth;
   int cy = m_centerCutHeight;
 //  int z = box.getFirstCorner().getZ();
@@ -354,28 +357,25 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
         delete stack2;
       }
     }
-  }
-#else
-  ZStack *stack = m_reader.readGrayScale(
-        box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-        box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(), 1,
-        m_zoom);
+  } else if (getSliceAxis() == neutube::A_AXIS) {
+    //Assume no rotation happens
+    ZArbSliceViewParam sliceViewParam = m_sliceViewParam;
 
-  if (m_zoom > 0) {
-    int z = box.getFirstCorner().getZ();
-    int scale = misc::GetZoomScale(m_zoom);
-    int remain = z % scale;
-    if (remain > 0) {
-      int z1 = z + scale;
-      ZStack *stack2 = m_reader.readGrayScale(
-            box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-            z1, box.getWidth(), box.getHeight(), 1, m_zoom);
-      double lambda = double(remain) / scale;
-      ZStackProcessor::Intepolate(stack, stack2, lambda, stack);
-      delete stack2;
+    if (m_currentViewParam.isValid()) {
+      QPoint oldCenter = m_currentViewParam.getViewPort().center();
+      QPoint newCenter = viewPort.center();
+      int dz = z - m_currentViewParam.getZ();
+      int dx = newCenter.x() - oldCenter.x();
+      int dy = newCenter.y() - oldCenter.y();
+
+      m_sliceViewParam.move(dx, dy, dz);
+    } else {
+      sliceViewParam.setCenter(box.getCenter());
+      sliceViewParam.setSize(box.getWidth(), box.getHeight());
     }
+    forceUpdate(sliceViewParam);
   }
-#endif
+
   updateImage(stack);
   delete stack;
 }
@@ -390,8 +390,6 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
     return;
   }
 
-  m_currentViewParam = viewParam;
-
   if (isVisible()) {
     m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
 //    int zoomRatio = pow(2, zoom);
@@ -401,15 +399,20 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
   } else {
     invalidatePixmap();
   }
+
+  m_currentViewParam = viewParam;
 }
 
-void ZDvidGraySlice::forceUpdate(const ZArbSliceViewParam &viewParam)
+void ZDvidGraySlice::forceUpdate(
+    const ZStackViewParam &viewParam,
+    const ZArbSliceViewParam &sliceViewParam)
 {
-  if (m_sliceAxis != neutube::A_AXIS || !viewParam.isValid()) {
+  if (m_sliceAxis != neutube::A_AXIS || !sliceViewParam.isValid()) {
     return;
   }
 
   m_sliceViewParam = viewParam;
+  m_currentViewParam = viewParam;
   if (isVisible()) {
 //    m_zoom = 0;
     ZStack *stack = m_reader.readGrayScaleLowtis(

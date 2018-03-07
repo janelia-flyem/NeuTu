@@ -23,6 +23,8 @@ public:
     return m_z;
   }
 
+  bool isValid() const;
+
   int getArea() const;
 
   QRect getViewPort() const;
@@ -31,6 +33,13 @@ public:
   inline neutube::View::EExploreAction getExploreAction() const {
     return m_action;
   }
+
+  void setZOffset(int z0) {
+    m_z0 = z0;
+  }
+  int getSliceIndex() const;
+  void setSliceIndex(int index);
+
 
   void setZ(int z);
   void setViewProj(const ZViewProj &vp);
@@ -76,14 +85,14 @@ public:
     return m_viewProj;
   }
 
+
 private:
   void init(neutube::ECoordinateSystem coordSys);
 
 private:
   int m_z;
   ZViewProj m_viewProj;
-//  QRect m_viewPort;
-//  QRectF m_projRect;
+  int m_z0 = 0;
   neutube::ECoordinateSystem m_coordSys;
   neutube::View::EExploreAction m_action;
   neutube::EAxis m_sliceAxis;

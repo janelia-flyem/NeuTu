@@ -24,11 +24,23 @@ public:
   int getY() const;
   int getZ() const;
   ZIntPoint getCenter() const;
+
+  int getX0() const;
+  int getY0() const;
+
   ZPoint getPlaneV1() const;
   ZPoint getPlaneV2() const;
+  ZPoint getPlaneNormal() const;
   int getWidth() const;
   int getHeight() const;
 
+  /*!
+   * \brief Move in the slicing coordinate system.
+   *
+   * (\a dx, \a dy, \a dz) are the moving steps along each slicing axis.
+   * Nothing will be done if the parameter is invalid.
+   */
+  void move(double dx, double dy, double dz);
 
   bool contains(const ZArbSliceViewParam &param);
 

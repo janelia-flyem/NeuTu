@@ -274,6 +274,20 @@ void Z3DView::gotoPosition(const ZBBox<glm::dvec3>& bound, double minRadius)
   camera().resetCamera(bd, Z3DCamera::ResetOption::PreserveViewVector);
 }
 
+void Z3DView::exploreLocal(std::vector<ZPoint> &ptArray)
+{
+  if (ptArray.empty()) {
+    emit cancelingLocalExplore();
+  } else {
+    ZPoint center = ptArray[0];
+    if (ptArray.size() > 1) {
+      center += ptArray[1];
+      center *= 0.5;
+    }
+    emit exploringLocal(center.getX(), center.getY(), center.getZ());
+  }
+}
+
 void Z3DView::flipView()
 {
   camera().flipViewDirection();
