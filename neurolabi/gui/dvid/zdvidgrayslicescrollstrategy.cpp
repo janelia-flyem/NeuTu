@@ -2,7 +2,8 @@
 
 #include "zdvidgrayslice.h"
 
-ZDvidGraySliceScrollStrategy::ZDvidGraySliceScrollStrategy()
+ZDvidGraySliceScrollStrategy::ZDvidGraySliceScrollStrategy(ZStackView *view) :
+  ZScrollSliceStrategy(view)
 {
   m_graySlice = NULL;
 }

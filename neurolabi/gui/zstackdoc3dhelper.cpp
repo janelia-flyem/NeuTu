@@ -304,7 +304,9 @@ void ZStackDoc3dHelper::updateCustomCanvas(ZFlyEmBody3dDoc *doc)
   if (doc != NULL) {
     ZDvidGraySlice *slice = doc->getArbGraySlice();
     if (slice != NULL) {
-      m_view->updateCustomCanvas(slice->getImage());
+      if (slice->isVisible()) {
+        m_view->updateCustomCanvas(slice->getImage());
+      }
     }
   }
 }

@@ -313,7 +313,7 @@ bool ZPoint::isPendicularTo(const ZPoint &pt) const
     return false;
   }
 
-  if (std::fabs(dot(pt)) < MIN_DIST * MIN_DIST * len1 * len2) {
+  if (std::fabs(dot(pt)) < MIN_DIST * len1 * len2) {
     return true;
   }
 

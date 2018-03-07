@@ -200,6 +200,11 @@ void Z3DCanvas::dump(const QString &message)
   viewport()->update();
 }
 
+void Z3DCanvas::updateView()
+{
+  viewport()->update();
+}
+
 void Z3DCanvas::paintCustomRegion(const QImage &image)
 {
   if (m_customCanvas != NULL) {
@@ -209,7 +214,7 @@ void Z3DCanvas::paintCustomRegion(const QImage &image)
     }
   }
 
-  if (m_customCanvas == NULL) {
+  if (m_customCanvas == NULL && !image.isNull()) {
     m_customCanvas = new QPixmap(image.size());
   }
 

@@ -37,6 +37,7 @@
 #include "dialogs/flyemsettingdialog.h"
 #include "flyem/zflyemdoc3dbodystateaccessor.h"
 #include "zactionlibrary.h"
+#include "zarbsliceviewparam.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -162,7 +163,7 @@ void Neu3Window::connectSignalSlot()
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
 
-  connect(m_3dwin, SIGNAL(cameraRotated()), this, SLOT(updateBrowser()));
+  connect(m_3dwin, SIGNAL(cameraRotated()), this, SLOT(processCameraRotation()));
   connect(this, SIGNAL(closed()), this, SLOT(closeWebView()));
 }
 
@@ -332,6 +333,12 @@ void Neu3Window::closeWebView()
 #endif
 }
 
+void Neu3Window::processCameraRotation()
+{
+  updateBrowser();
+  updateEmbeddedGrayscale();
+}
+
 void Neu3Window::updateBrowser()
 {
 #if defined(_USE_WEBENGINE_)
@@ -339,6 +346,30 @@ void Neu3Window::updateBrowser()
     browse(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
   }
 #endif
+}
+
+void Neu3Window::hideGrayscale()
+{
+  getBodyDocument()->hideArbGrayslice();
+}
+
+void Neu3Window::updateEmbeddedGrayscale()
+{
+  browseInPlace(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
+}
+
+void Neu3Window::browseInPlace(double x, double y, double z)
+{
+  std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();
+
+  ZArbSliceViewParam viewParam;
+
+  viewParam.setSize(512, 512);
+  viewParam.setCenter(iround(x), iround(y), iround(z));
+  viewParam.setPlane(ZPoint(ort.first.x, ort.first.y, ort.first.z),
+                     ZPoint(ort.second.x, ort.second.y, ort.second.z));
+
+  getBodyDocument()->updateArbGraySlice(viewParam);
 }
 
 void Neu3Window::browse(double x, double y, double z)

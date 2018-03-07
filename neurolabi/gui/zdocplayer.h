@@ -25,6 +25,8 @@ class ZStackViewParam;
 class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
 class ZDvidGraySlice;
+class ZArbSliceViewParam;
+
 /*!
  * \brief The basic class of manage roles to a stack object
  */
@@ -97,7 +99,8 @@ public:
 
   void enableUpdate(bool on) { m_enableUpdate = on; }
 
-  virtual bool updateData(const ZStackViewParam &/*param*/) const {
+  virtual bool updateData(const ZStackViewParam &/*param*/,
+                          const ZArbSliceViewParam&) const {
     return true;
   }
 
@@ -333,7 +336,9 @@ public:
 
 public:
   QString getTypeName() const { return "DvidGraySlice"; }
-  bool updateData(const ZStackViewParam &viewParam) const;
+  bool updateData(
+      const ZStackViewParam &viewParam,
+      const ZArbSliceViewParam &sliceViewParam) const;
   ZDvidGraySlice *getCompleteData() const;
 };
 

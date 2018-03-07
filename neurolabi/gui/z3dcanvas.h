@@ -96,6 +96,8 @@ public:
   void dump(const QString &message);
 
   void paintCustomRegion(const QImage &image);
+
+  void updateView();
 //  void setCustomWidget(QWidget *widget);
 
 signals:

@@ -2704,6 +2704,10 @@ ZIntCuboid ZDvidReader::GetStackBox(
 
 lowtis::ImageService* ZDvidReader::getLowtisServiceGray(int cx, int cy) const
 {
+  if (!getDvidTarget().hasGrayScaleData()) {
+    return NULL;
+  }
+
   if (m_lowtisConfigGray.centercut != std::tuple<int, int>(cx, cy)) {
     m_lowtisServiceGray.reset();
   }

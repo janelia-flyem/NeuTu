@@ -20,6 +20,7 @@
 #include "zmessageprocessor.h"
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"
+#include "zarbsliceviewparam.h"
 //#include "zstackdoc.h"
 
 class ZStackDoc;
@@ -47,6 +48,7 @@ class QSpacerItem;
 class ZWidgetMessage;
 class ZStTransform;
 class ZScrollSliceStrategy;
+class ZStackViewParam;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -341,6 +343,7 @@ public slots:
   void autoThreshold();
   void setThreshold(int thre);
   void setZ(int z);
+  void setZQuitely(int z);
 
   void displayActiveDecoration(bool display = true);
   void request3DVis();
@@ -415,6 +418,8 @@ public:
   void setViewProj(int x0, int y0, double zoom);
   void setViewProj(const QPoint &pt, double zoom);
   void setViewProj(const ZViewProj &vp);
+  void updateViewParam(const ZStackViewParam &param);
+  void updateViewParam(const ZArbSliceViewParam &param);
 
   ZIntPoint getViewCenter() const;
 
@@ -465,6 +470,12 @@ public: //Change view parameters
 
   void updateContrastProtocal();
 
+public: //View parameters for arbitrary plane
+  ZStackViewParam getViewParameter(const ZArbSliceViewParam &param) const;
+  ZArbSliceViewParam getSliceViewParam() const;
+  void setSliceViewParam(const ZArbSliceViewParam &param);
+  void showArbSliceViewPort();
+
 protected:
   ZIntCuboid getViewBoundBox() const;
   virtual int getDepth() const;
@@ -513,6 +524,7 @@ protected:
   void paintMultipleChannelStackMip(ZStack *stack);
 
   QSet<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
+  QSet<ZStackObject::ETarget> updateViewData();
 
   void init();
 
@@ -536,6 +548,8 @@ private:
    * \brief Get object mask of a certain color
    */
   ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
+
+  void updateDataInfo(const QPoint &widgetPos);
 
 protected:
   //ZStackFrame *m_parent;
@@ -596,6 +610,7 @@ protected:
   ZScrollSliceStrategy *m_sliceStrategy;
 
   ZStackViewParam m_oldViewParam;
+  ZArbSliceViewParam m_sliceViewParam;
 //  ZStackDoc::ActiveViewObjectUpdater m_objectUpdater;
 };
 

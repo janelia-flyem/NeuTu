@@ -1460,7 +1460,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       slice->updateContrast(getCompletePresenter()->highTileContrast());
 
       ZDvidGraySliceScrollStrategy *scrollStrategy =
-          new ZDvidGraySliceScrollStrategy;
+          new ZDvidGraySliceScrollStrategy(getView());
       scrollStrategy->setGraySlice(slice);
 
       getView()->setScrollStrategy(scrollStrategy);

@@ -44,6 +44,8 @@ const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent)
 {
+  initArbGraySlice();
+
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
   m_timer->start();
@@ -396,10 +398,51 @@ ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
   return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
 }
 
+void ZFlyEmBody3dDoc::initArbGraySlice()
+{
+  ZDvidGraySlice *slice = new ZDvidGraySlice();
+  slice->setSliceAxis(neutube::A_AXIS);
+  slice->setTarget(ZStackObject::TARGET_3D_CANVAS);
+  slice->setSource(
+        ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
+  addObject(slice);
+}
+
 ZDvidGraySlice* ZFlyEmBody3dDoc::getArbGraySlice() const
 {
   ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
         ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
+
+  return slice;
+}
+
+void ZFlyEmBody3dDoc::updateArbGraySlice(const ZArbSliceViewParam &viewParam)
+{
+  ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
+        ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
+  if (slice != NULL) {
+    if (slice->update(viewParam)) {
+      bufferObjectModified(slice, ZStackObjectInfo::STATE_MODIFIED);
+      processObjectModified();
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::setArbGraySliceVisible(bool v)
+{
+  ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
+        ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
+  if (slice != NULL) {
+    if (v != slice->isVisible()) {
+      slice->setVisible(v);
+      bufferObjectVisibilityChanged(slice);
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::hideArbGrayslice()
+{
+  setArbGraySliceVisible(false);
 }
 
 int ZFlyEmBody3dDoc::getMinResLevel() const
@@ -2341,6 +2384,10 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
 
   if (m_dvidReader.isReady()) {
     m_dvidInfo = m_dvidReader.readLabelInfo();
+    ZDvidGraySlice *slice = getArbGraySlice();
+    if (slice != NULL) {
+      slice->setDvidTarget(m_dvidReader.getDvidTarget());
+    }
   }
 }
 

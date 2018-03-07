@@ -39,6 +39,16 @@ void ZStackViewParam::setZ(int z)
   m_z = z;
 }
 
+int ZStackViewParam::getSliceIndex() const
+{
+  return m_z - m_z0;
+}
+
+void ZStackViewParam::setSliceIndex(int index)
+{
+  m_z = index + m_z0;
+}
+
 void ZStackViewParam::setViewProj(const ZViewProj &vp)
 {
   m_viewProj = vp;
@@ -126,6 +136,11 @@ void ZStackViewParam::resize(int width, int height)
   viewPort.setSize(QSize(width, height));
   viewPort.moveCenter(oldCenter);
   m_viewProj.setViewPort(viewPort);
+}
+
+bool ZStackViewParam::isValid() const
+{
+  return m_viewProj.isValid();
 }
 
 int ZStackViewParam::getArea() const

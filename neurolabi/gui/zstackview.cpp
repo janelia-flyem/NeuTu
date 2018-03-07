@@ -39,6 +39,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "zstackviewlocator.h"
 #include "zscrollslicestrategy.h"
+#include "zarbsliceviewparam.h"
 
 using namespace std;
 
@@ -198,7 +199,7 @@ void ZStackView::init()
   setViewPortFrozen(false);
   blockViewChangeEvent(false);
 
-  m_sliceStrategy = new ZScrollSliceStrategy;
+  m_sliceStrategy = new ZScrollSliceStrategy(this);
 }
 
 void ZStackView::enableMessageManager()
@@ -265,6 +266,22 @@ void ZStackView::setStackInfo(const QString &info)
 {
   if (m_stackLabel != NULL) {
     m_stackLabel->setText(info);
+  }
+}
+
+void ZStackView::updateDataInfo(const QPoint &widgetPos)
+{
+  if (getSliceAxis() != neutube::A_AXIS) {
+    int z = sliceIndex();
+    if (buddyPresenter()->interactiveContext().isProjectView()) {
+      z = -1;
+    }
+
+    QPointF pos = imageWidget()->canvasCoordinate(widgetPos);
+    ZPoint pt = ZPoint(pos.x(), pos.y(), z);
+    //          pt.shiftSliceAxisInverse(getSliceAxis());
+    setInfo(buddyDocument()->rawDataInfo(
+              pt.x(), pt.y(), pt.z(), getSliceAxis()));
   }
 }
 
@@ -602,7 +619,15 @@ int ZStackView::getCurrentZ() const
 
 void ZStackView::setZ(int z)
 {
-  setSliceIndex(
+  if (z != getZ(neutube::COORD_STACK)) {
+    setSliceIndex(
+          z - buddyDocument()->getStackOffset(m_sliceAxis));
+  }
+}
+
+void ZStackView::setZQuitely(int z)
+{
+  setSliceIndexQuietly(
         z - buddyDocument()->getStackOffset(m_sliceAxis));
 }
 
@@ -841,9 +866,18 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
         }
 
         int step = numSteps * ratio;
-        int newPos = m_sliceStrategy->scroll(sliceIndex(), step);
+//        int newPos = m_sliceStrategy->scroll(sliceIndex(), step);
+        /*
+        ZStackViewParam param =
+            m_sliceStrategy->scroll(getViewParameter(), step);
+        updateViewParam(param);
+        */
 
+        m_sliceStrategy->scroll(step);
 
+        updateDataInfo(event->pos());
+
+#if 0
 //        int newPos = m_depthControl->value() + numSteps * ratio;
         if ((newPos >= m_depthControl->minimum()) &&
             (newPos <= m_depthControl->maximum())) {
@@ -861,6 +895,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
           setInfo(buddyDocument()->rawDataInfo(
                     pt.x(), pt.y(), pt.z(), getSliceAxis()));
         }
+#endif
       }
       setAttribute(Qt::WA_TransparentForMouseEvents, false);
     }
@@ -2453,9 +2488,34 @@ void ZStackView::setViewProj(const QPoint &pt, double zoom)
 
 void ZStackView::setViewProj(const ZViewProj &vp)
 {
-  recordViewParam();
-  m_imageWidget->setViewProj(vp);
+  if (m_imageWidget->getViewProj() != vp) {
+    recordViewParam();
+    m_imageWidget->setViewProj(vp);
+    processViewChange(true);
+  }
+}
+
+void ZStackView::updateViewParam(const ZStackViewParam &param)
+{
+  if (param.getSliceAxis() == getSliceAxis()) {
+    if (getViewParameter() != param) {
+      recordViewParam();
+      if (m_imageWidget->getViewProj() != param.getViewProj()) {
+        m_imageWidget->setViewProj(param.getViewProj());
+      }
+      setZQuitely(param.getZ());
+      processViewChange(true);
+      updateImageScreen(UPDATE_DIRECT);
+    }
+  }
+}
+
+
+void ZStackView::updateViewParam(const ZArbSliceViewParam &param)
+{
+  setSliceViewParam(param);
   processViewChange(true);
+//  updateViewParam(getViewParameter(param));
 }
 
 ZStackViewParam ZStackView::getViewParameter(
@@ -2468,9 +2528,37 @@ ZStackViewParam ZStackView::getViewParameter(
 //  param.setProjRect(getProjRegion());
   param.setExploreAction(action);
   param.setSliceAxis(m_sliceAxis);
+  param.setZOffset(
+        buddyDocument()->getStackOffset().getSliceCoord(getSliceAxis()));;
   //param.setViewPort(imageWidget()->viewPort());
 
   return param;
+}
+
+ZStackViewParam ZStackView::getViewParameter(const ZArbSliceViewParam &param) const
+{
+  ZStackViewParam viewParam = getViewParameter();
+  viewParam.setZ(param.getZ());
+  viewParam.setViewPort(param.getViewPort());
+  viewParam.setSliceAxis(neutube::A_AXIS);
+
+  return viewParam;
+}
+
+ZArbSliceViewParam ZStackView::getSliceViewParam() const
+{
+  return m_sliceViewParam;
+}
+
+void ZStackView::setSliceViewParam(const ZArbSliceViewParam &param)
+{
+  m_sliceViewParam = param;
+}
+
+void ZStackView::showArbSliceViewPort()
+{
+  setViewPort(m_sliceViewParam.getViewPort());
+  updateViewData();
 }
 
 ZStTransform ZStackView::getViewTransform() const
@@ -2679,6 +2767,27 @@ QSet<ZStackObject::ETarget> ZStackView::updateViewData(
   return updater.getUpdatedTargetSet();
 }
 
+QSet<ZStackObject::ETarget> ZStackView::updateViewData()
+{
+  ZStackDoc::ActiveViewObjectUpdater updater(buddyDocument());
+  if (buddyPresenter()->isObjectVisible()) {
+//  QSet<ZStackObject::ETarget> targetSet =
+    if (buddyPresenter()->interactiveContext().exploreMode() ==
+        ZInteractiveContext::EXPLORE_ZOOM_IN_IMAGE ||
+        buddyPresenter()->interactiveContext().exploreMode() ==
+        ZInteractiveContext::EXPLORE_ZOOM_OUT_IMAGE) {
+      updater.exclude(ZStackObject::TYPE_DVID_LABEL_SLICE);
+    }
+  } else {
+    updater.exclude(ZStackObject::TARGET_OBJECT_CANVAS);
+    updater.exclude(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+  }
+
+  updater.update(getViewParameter(), getSliceViewParam());
+
+  return updater.getUpdatedTargetSet();
+}
+
 bool ZStackView::isViewChanged(const ZStackViewParam &param) const
 {
   ZStackViewParam currentParam = getViewParameter(neutube::COORD_STACK);
@@ -2698,8 +2807,8 @@ void ZStackView::processViewChange(bool redrawing)
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 {
   if (!isViewChangeEventBlocked()) {
-    ZStackViewParam param = getViewParameter(neutube::COORD_STACK);
-    QSet<ZStackObject::ETarget> targetSet = updateViewData(param);
+//    ZStackViewParam param = getViewParameter(neutube::COORD_STACK);
+    QSet<ZStackObject::ETarget> targetSet = updateViewData();
 
     updateActiveDecorationCanvas();
     for (QSet<ZStackObject::ETarget>::const_iterator iter = targetSet.begin();
@@ -2739,7 +2848,7 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
     paintObjectBuffer(ZStackObject::TARGET_TILE_CANVAS);
 #endif
 
-    notifyViewChanged(param); //?
+    notifyViewChanged(getViewParameter()); //?
   }
 }
 
