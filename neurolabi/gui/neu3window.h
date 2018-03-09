@@ -24,6 +24,9 @@ class ZROIWidget;
 class FlyEmSettingDialog;
 class TaskProtocolWindow;
 class ZActionLibrary;
+class ZFlyEmArbMvc;
+class ZArbSliceViewParam;
+class ZNeu3SliceViewDialog;
 
 #if defined(_USE_WEBENGINE_)
 class QWebEngineView;
@@ -49,6 +52,10 @@ public:
 
   static void enableZoomToLoadedBody(bool enable = true);
   static bool zoomToLoadedBodyEnabled();
+
+  enum EBrowseMode {
+    BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER
+  };
 
 public slots:
   void showSynapse(bool on);
@@ -125,22 +132,40 @@ private slots:
   void exitSplit();
   void startSplit();
 
-  void updateBrowser();
+//  void updateBrowser();
   void updateEmbeddedGrayscale();
+  void updateGrayscaleWidget();
+  void updateSliceBrowser();
+
   void hideGrayscale();
   void processCameraRotation();
-  void closeWebView();
+//  void closeWebView();
+
+  void updateSliceViewGraph(const ZArbSliceViewParam &param);
+  void removeSliceViewGraph();
+
+  void processSliceDockVisibility(bool on);
 
   void test();
 
 private:
   void createDockWidget();
+  void initNativeSliceBrowser();
   void createTaskWindow();
   void createRoiWidget();
   void createToolBar();
   void connectSignalSlot();
   QAction* getAction(ZActionFactory::EAction key);
   void initWebView();
+  void initGrayscaleWidget();
+  ZArbSliceViewParam getSliceViewParam(double x, double y, double z) const;
+  ZArbSliceViewParam getSliceViewParam(const ZPoint &center) const;
+
+  void startBrowser(EBrowseMode mode);
+  void endBrowse();
+  void updateWebView();
+
+  QDockWidget* getSliceViewDoc() const;
 
 private:
   Ui::Neu3Window *ui;
@@ -151,6 +176,7 @@ private:
   QToolBar *m_toolBar = nullptr;
   ZBodyListWidget *m_bodyListWidget = nullptr;
   QDockWidget *m_bodyListDock = nullptr;
+  QDockWidget *m_nativeSliceDock = nullptr;
   ZROIWidget *m_roiWidget = nullptr;
   TaskProtocolWindow *m_taskProtocolWidget = nullptr;
 //  QWidget *m_controlWidget = nullptr;
@@ -158,12 +184,16 @@ private:
   class DoingBulkUpdate;
   QProgressDialog *m_progressDialog = nullptr;
   FlyEmSettingDialog *m_flyemSettingDlg = nullptr;
+  ZNeu3SliceViewDialog *m_browseOptionDlg = nullptr;
 
+  QDockWidget *m_webSliceDock = nullptr;
 #if defined(_USE_WEBENGINE_)
   QWebEngineView *m_webView = nullptr;
 #endif
+  ZFlyEmArbMvc *m_sliceWidget = nullptr;
 
   ZPoint m_browsePos;
+  EBrowseMode m_browseMode = BROWSE_NONE;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;
 };

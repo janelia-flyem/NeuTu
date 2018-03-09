@@ -4,6 +4,7 @@
 
 #include "geometry/zgeometry.h"
 #include "tz_math.h"
+#include "zarbsliceviewparam.h"
 
 ZStackViewParam::ZStackViewParam()
 {
@@ -93,20 +94,33 @@ void ZStackViewParam::setExploreAction(neutube::View::EExploreAction action)
 
 bool ZStackViewParam::operator ==(const ZStackViewParam &param) const
 {
+  if (getSliceAxis() != param.getSliceAxis()) {
+    return false;
+  }
+
+  if (getSliceAxis() == neutube::A_AXIS) {
+    if (getSliceViewParam() != param.getSliceViewParam()) {
+      return false;
+    }
+  }
+
   return m_z == param.m_z && m_coordSys == param.m_coordSys &&
       getViewPort() == param.getViewPort();
 }
 
 bool ZStackViewParam::operator !=(const ZStackViewParam &param) const
 {
-  return m_z != param.m_z || m_coordSys != param.m_coordSys ||
-      getViewPort() != param.getViewPort();
+  return !(*this == param);
 }
 
 bool ZStackViewParam::contains(const ZStackViewParam &param) const
 {
-  if (m_z == param.m_z) {
-    return getViewPort().contains(param.getViewPort());
+  if (getSliceAxis() == param.getSliceAxis()) {
+    if (getSliceAxis() == neutube::A_AXIS) {
+      return getSliceViewParam().contains(param.getSliceViewParam());
+    } else if (m_z == param.m_z) {
+      return getViewPort().contains(param.getViewPort());
+    }
   }
 
   return false;
@@ -177,6 +191,46 @@ int ZStackViewParam::getZoomLevel(int maxLevel) const
   }
 
   return zoom;
+}
+
+ZArbSliceViewParam ZStackViewParam::getSliceViewParam() const
+{
+  ZArbSliceViewParam param;
+  param.setCenter(m_center);
+  param.setPlane(m_v1, m_v2);
+  QRect viewPort = getViewPort();
+  param.setSize(viewPort.width(), viewPort.height());
+
+  return param;
+}
+
+void ZStackViewParam::setArbSliceCenter(const ZIntPoint &pt)
+{
+  m_center = pt;
+}
+
+void ZStackViewParam::setArbSlicePlane(const ZPoint &v1, const ZPoint &v2)
+{
+  m_v1 = v1;
+  m_v2 = v2;
+}
+
+void ZStackViewParam::setArbSliceView(const ZArbSliceViewParam &param)
+{
+  setArbSliceCenter(param.getCenter());
+  setArbSlicePlane(param.getPlaneV1(), param.getPlaneV2());
+  if (!param.getViewPort().isEmpty()) {
+    setViewPort(param.getViewPort());
+  }
+}
+
+void ZStackViewParam::moveSlice(int step)
+{
+  m_z += step;
+  if (m_sliceAxis == neutube::A_AXIS) {
+    ZPoint dp = m_v1.cross(m_v2) * step;
+    m_center += dp.toIntPoint();
+  }
 }
 
 double ZStackViewParam::getZoomRatio() const

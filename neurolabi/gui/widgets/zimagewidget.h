@@ -216,6 +216,8 @@ public:
     m_smoothDisplay = on;
   }
 
+  void hideZoomHint();
+
   void showCrossHair(bool on);
   void updateCrossHair(int x, int y);
 
@@ -312,6 +314,7 @@ private:
   bool m_hoverFocus;
   bool m_smoothDisplay;
   bool m_showingCrossHair;
+  bool m_showingZoomHint = true;
   bool m_isReady;
   QPoint m_hairCenter;
 };

@@ -31,8 +31,7 @@ public:
   void clear();
 
   void update(int z);
-  bool update(const ZStackViewParam &viewParam,
-              const ZArbSliceViewParam &sliceViewParam);
+  bool update(const ZStackViewParam &viewParam);
   /*!
    * \brief Update an arbitrary cutting plane
    *
@@ -103,12 +102,11 @@ public: //for testing
 //  void test();
 
 private:
-  void updateImage();
+//  void updateImage();
   void updateImage(const ZStack *stack);
   void forceUpdate(const ZStackViewParam &viewParam);
   void forceUpdate(const QRect &viewPort, int z);
-  void forceUpdate(const ZStackViewParam &viewParam,
-                   const ZArbSliceViewParam &sliceViewParam);
+  void forceUpdate(const ZArbSliceViewParam &sliceViewParam);
 
   void updatePixmap();
   void updateContrast();
@@ -135,7 +133,7 @@ private:
   QMutex m_pixmapMutex;
   ZStackViewParam m_currentViewParam;
 
-  ZArbSliceViewParam m_sliceViewParam; //Only useful for A_AXIS
+//  ZArbSliceViewParam m_sliceViewParam; //Only useful for A_AXIS
 
   int m_zoom;
 

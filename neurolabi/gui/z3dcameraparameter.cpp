@@ -305,10 +305,10 @@ glm::quat Z3DCameraParameter::getNeuroglancerRotation() const
 //  glm::vec3 orig(0, 0, 1);
 //  glm::vec3 dest = glm::normalize(m_eye.get() - m_center.get());
 
-  glm::vec3 upVector = m_upVector.get();
-  upVector.x = -upVector.x;
-  upVector.y = -upVector.y;
-  upVector.z = -upVector.z;
+  glm::vec3 upVector = -m_upVector.get();
+//  upVector.x = -upVector.x;
+//  upVector.y = -upVector.y;
+//  upVector.z = -upVector.z;
 
   return glm::conjugate(glm::toQuat(
         glm::lookAt(m_center.get(), m_eye.get(), upVector)));
@@ -318,9 +318,9 @@ glm::quat Z3DCameraParameter::getNeuroglancerRotation() const
 std::pair<glm::vec3, glm::vec3> Z3DCameraParameter::getLowtisVec() const
 {
   std::pair<glm::vec3, glm::vec3> ort;
-  ort.second = m_upVector.get();
-  glm::vec3 look = glm::normalize(m_eye.get() - m_center.get());
-  ort.first = glm::cross(look, ort.second);
+  ort.second = -m_upVector.get();
+  glm::vec3 look = glm::normalize(m_center.get() - m_eye.get());
+  ort.first = glm::cross(ort.second, look);
 
   return ort;
 }

@@ -86,9 +86,9 @@ public:
   void setRole(ERole role);
 
 signals:
-  void stackChanged();
-  void objectChanged();
-  void objectSelectionChanged();
+//  void stackChanged();
+//  void objectChanged();
+//  void objectSelectionChanged();
   void messageGenerated(const ZWidgetMessage&);
   void viewChanged();
 
