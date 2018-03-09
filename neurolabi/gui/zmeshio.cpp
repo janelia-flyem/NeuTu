@@ -513,6 +513,47 @@ void ZMeshIO::save(const ZMesh& mesh, const QString& filename, std::string forma
   }
 }
 
+QByteArray ZMeshIO::writeToMemory(const ZMesh& mesh, std::string format) const
+{
+  QByteArray result;
+
+  try {
+    CHECK(m_writeFormats.contains(format));
+
+    auto sc = std::make_unique<aiScene>();
+    sc->mRootNode = new aiNode;
+    sc->mRootNode->mName.Set("modelName");
+
+    // Create nodes for the whole scene
+    std::vector<aiMesh*> meshArray;
+    createNodes(mesh, sc->mRootNode, sc.get(), meshArray);
+
+    // Create mesh pointer buffer for this scene
+    if (sc->mNumMeshes > 0) {
+      sc->mMeshes = new aiMesh* [meshArray.size()];
+      for (size_t index = 0; index < meshArray.size(); index++) {
+        sc->mMeshes[index] = meshArray[index];
+      }
+    }
+
+    //
+    createMaterials(sc.get());
+
+    Assimp::Exporter exporter;
+    const aiExportDataBlob *blob = exporter.ExportToBlob(sc.get(), format);
+    if (blob == NULL) {
+      throw ZIOException(exporter.GetErrorString());
+    } else {
+      result.append(static_cast<const char*>(blob->data), blob->size);
+    }
+  }
+  catch (const ZException& e) {
+    throw ZIOException(QString("Can not save mesh: %1").arg(e.what()));
+  }
+
+  return result;
+}
+
 void ZMeshIO::readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>& normals,
                                  std::vector<glm::vec3>& vertices, std::vector<GLuint>& indices) const
 {

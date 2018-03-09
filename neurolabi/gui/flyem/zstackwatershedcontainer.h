@@ -34,13 +34,14 @@ class ZGraphPtr;
  * ZObject3dScanArray *result = container.makeSplitResult();
  *
  * Note that the class is not designed for reuse, i.e. each container object
- * can only be used for one stack data.
+ * can only be associated with a signal stack once.
  */
 class ZStackWatershedContainer
 {
 public:
   ZStackWatershedContainer(ZStack *stack);
   ZStackWatershedContainer(ZSparseStack *stack);
+
   /*!
    * \brief A convenient constructor for setting stacks
    *
@@ -50,11 +51,6 @@ public:
   ZStackWatershedContainer(const std::pair<ZStack*, ZSparseStack*> &data);
 
   ~ZStackWatershedContainer();
-
-  //For late binding only
-  void setData(ZStack *stack, ZSparseStack *spStack);
-
-  bool isEmpty() const;
 
   enum EComponent {
     COMP_SEED_ARRAY, COMP_RANGE, COMP_SOURCE, COMP_WORKSPACE, COMP_RESULT
@@ -66,29 +62,75 @@ public:
     RANGE_SEED_BOUND //Exact seed bound
   };
 
+
+  //For late binding only
+  void setData(ZStack *stack, ZSparseStack *spStack);
+
+  /*!
+   * \brief Returns true iff there is no associated stack.
+   */
+  bool isEmpty() const;
+
   bool isDeprecated(EComponent component) const;
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
 
   void run();
 
+  /*!
+   * \brief Add a seed.
+   *
+   * It does not take the ownership of \a seed.
+   */
   void addSeed(const ZStack &seed);
   void addSeed(const ZObject3dScan &seed);
   void addSeed(const ZStroke2d &seed);
   void addSeed(const ZObject3d &seed);
   void addSeed(const ZSwcTree &seed);
-  void consumeSeed(const ZObject3d *seed);
 
   void addSeed(const ZStackObject *seed);
+  void addSeed(const std::vector<ZObject3d*> &seed);
 
+
+  /*!
+   * \brief Consume a seed.
+   * It takes the ownership of \a seed.
+   */
+  void consumeSeed(const ZObject3d *seed);
+
+  /*!
+   * \brief Set the explicit range.
+   *
+   * The watershed computation will be constrained in \a range when it is not
+   * empty.
+   *
+   * \param range Range of running watershed.
+   */
   void setRange(const ZIntCuboid &range);
   void setRange(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   void setRange(int x0, int y0, int z0, int x1, int y1, int z1);
 
+  /*!
+   * \brief Get the range of watershed computation.
+   */
+  ZIntCuboid& getRange();
+
+  /*!
+   * \brief Set the hint of watershed range.
+   *
+   * The option takes effect only when the explicit range is empty.
+   */
+  void setRangeHint(ERangeOption option);
+  ERangeOption getRangeHint() const;
+  bool usingSeedRange() const;
+
+  /*!
+   * \brief Get the bound box of the associated stack.
+   */
+  ZIntCuboid getDataRange() const;
+
   void exportMask(const std::string &filePath);
   void exportSource(const std::string &filePath);
-
-  ZIntCuboid getDataRange() const;
 
   void setFloodFillingZero(bool on) {
     m_floodingZero = on;
@@ -106,35 +148,28 @@ public:
     m_dsMethod=method;
   }
 
-  ZStackPtr getResultStack() const {
-    return m_result.front();
-  }
+  void printState() const;
 
   ZStackArray getResult() const {
     return m_result;
   }
 
-
   bool hasResult() const;
 
-  void setRangeOption(ERangeOption option);
-  ERangeOption getRangeOption() const;
-//  void useSeedRange(bool on);
-  bool usingSeedRange() const;
-//  void expandRange(const ZIntCuboid &box);
+  void addResult(const ZStackArray &result);
 
+  /*!
+   * \brief Get the first result stack.
+   *
+   * Obsolete function. To be removed.
+   */
+  ZStackPtr getResultStack() const {
+    return m_result.front();
+  }
 
   ZObject3dScanArray* makeSplitResult(
       uint64_t minLabel, ZObject3dScanArray *result);
 
-  /*!
-   * \brief Check if the actual computation is done in the downsampled space.
-   */
-  bool computationDowsampled();
-
-  void printState() const;
-
-  ZIntCuboid& getRange();
 
   void setCcaPost(bool on) {
     m_ccaPost = on;
@@ -153,13 +188,25 @@ public:
     m_maxStackVolume = v;
   }
 
-  static std::vector<ZObject3d*> MakeBorderSeed(const ZStack &stack);
+  void setPreservingGap(bool on) {
+    m_preservingGap = on;
+  }
 
   void test();
+  static bool Test();
 
   ZStackWatershedContainer* makeSubContainer(
       const std::vector<size_t> &seedIndices, ZStackWatershedContainer *out);
-  std::vector<ZStackWatershedContainer*> makeLocalSeedContainer(size_t maxVolume);
+  std::vector<ZStackWatershedContainer*> makeLocalSeedContainer(double maxDist);
+
+  void refineBorder();
+
+  void downsampleSeed(int intvx, int intvy, int intvz);
+
+  /*!
+   * \brief Check if the actual computation is done in the downsampled space.
+   */
+  bool computationDowsampled();
 
 private:
   void init();
@@ -185,6 +232,7 @@ private:
   void makeMaskStack(ZStack &stack);
 
   ZIntPoint getSourceDsIntv();
+  ZIntPoint getOriginalDsIntv();
 
   void updateRange();
   ZIntCuboid getRangeUpdate() const;
@@ -204,12 +252,18 @@ private:
   static std::vector<ZObject3d*> MakeBorderSeed(
       const ZStack &stack, const ZStack &boundaryStack, const ZIntCuboid &range);
 
+  static std::vector<ZObject3d*> MakeBorderSeed(const ZStack &stack);
+
   template<class T>
   bool addSeed(const ZStackObject *obj);
 
   static size_t ComputeSeedVolume(
       const ZStackObject &obj1, const ZStackObject &obj2);
-  ZGraphPtr buildSeedGraph(size_t maxVolume) const;
+  static double ComputeSeedDist(
+      const ZStackObject &obj1, const ZStackObject &obj2);
+  ZGraphPtr buildSeedGraph(double maxDist) const;
+
+  void refineBorder(const ZStackPtr &stack);
 
 private:
   ZStack *m_stack = NULL;
@@ -226,6 +280,7 @@ private:
 //  bool m_usingSeedRange = false;
   ERangeOption m_rangeOption = RANGE_FULL;
   bool m_refiningBorder = true;
+  bool m_preservingGap = false; //Preserve gaps while downsampling
   bool m_ccaPost = true; //connected component analysis as post-processing
   int m_scale;
   size_t m_minIsolationSize = 50;

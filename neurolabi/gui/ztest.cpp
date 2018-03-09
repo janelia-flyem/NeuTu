@@ -136,6 +136,7 @@
 #include "tz_color.h"
 #include "zhdf5reader.h"
 #include "tz_farray.h"
+#include "misc/zmarchingcube.h"
 #include "zxmldoc.h"
 #include "neutubeconfig.h"
 #include "tz_darray.h"
@@ -185,47 +186,14 @@
 #include "flyem/zflyembodywindowfactory.h"
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
-#include "test/zjsontest.h"
-#include "test/zswctreetest.h"
-#include "test/zsttransformtest.h"
-#include "test/zobject3dscantest.h"
-#include "test/zswcpathtest.h"
-#include "test/zgraphtest.h"
-#include "test/zstackgraphtest.h"
-#include "test/zstringtest.h"
-#include "test/zobject3dtest.h"
-#include "test/zswcanalyzertest.h"
-#include "test/zellipsoidtest.h"
-#include "test/zstitchgridtest.h"
-#include "test/zcuboidtest.h"
-#include "test/zflyemqualitycontroltest.h"
-#include "test/zflyemsynaseannotationtest.h"
-#include "test/zstackdoctest.h"
-#include "test/ztreetest.h"
-#include "test/zprogresstest.h"
-#include "test/zswctreematchertest.h"
-#include "test/zswctreenodetest.h"
-#include "test/zhistogramtest.h"
-#include "test/zflyemneuronrangetest.h"
+
 #include "swc/zswcterminalsurfacemetric.h"
-#include "test/zflyemneuronfiltertest.h"
-#include "test/zswcmetrictest.h"
-#include "test/zmatrixtest.h"
-#include "test/zobject3dfactorytest.h"
-#include "test/zstacktest.h"
-#include "test/zstackskeletonizertest.h"
-#include "test/zflyembodycoloroptiontest.h"
-#include "test/zflyembodyannotationtest.h"
-#include "test/z3dfiltersettingtest.h"
-#include "test/zpointtest.h"
+
 #include "zswcgenerator.h"
 #include "zrect2d.h"
 #include "z3dmainwindow.h"
 #include "misc/zvtkutil.h"
-#include "test/zswcgeneratortest.h"
-#include "test/zflyemneuronimagefactorytest.h"
-#include "test/zspgrowtest.h"
-#include "test/zflyemneuronmatchtest.h"
+
 #include "ztextlinecompositer.h"
 #include "zstackskeletonizer.h"
 #include "flyem/zflyemcoordinateconverter.h"
@@ -238,36 +206,21 @@
 #include "zstroke2d.h"
 #include "flyem/zflyemservice.h"
 #include "zintset.h"
-#include "test/zvoxelgraphicstest.h"
-#include "test/zdocplayertest.h"
-#include "test/zopenvdbtest.h"
+
 #include "zsparseobject.h"
-#include "test/zdvidtest.h"
-#include "test/zdvidroitest.h"
+
 #include "bigdata/zdvidblockgrid.h"
-#include "test/zblockgridtest.h"
-#include "test/zsparsestacktest.h"
-#include "test/zimagetest.h"
-#include "test/z3dgraphtest.h"
-#include "test/zvoxelarraytest.h"
-#include "test/zxmltest.h"
+
 #include "flyem/zflyembookmark.h"
 #include "flyem/zflyembookmarkarray.h"
-#include "test/zflyemproofdoctest.h"
-#include "test/zflyembody3dtest.h"
-#include "test/zresolutiontest.h"
-#include "test/zviewprojtest.h"
+
 //#include "zcircle.h"
-#include "test/zlinesegmenttest.h"
-#include "test/zdvidiotest.h"
-#include "test/zclosedcurvetest.h"
+
 #include "dvid/libdvidheader.h"
-#include "test/zarraytest.h"
-#include "test/zdvidannotationtest.h"
+
 #include "imgproc/zstackwatershed.h"
 #include "flyem/zflyembodymerger.h"
-#include "test/zflyembodymergertest.h"
-#include "test/zstackobjectgrouptest.h"
+
 #include "tz_int_histogram.h"
 #include "zsegmentationproject.h"
 #include "zstackviewmanager.h"
@@ -306,7 +259,7 @@
 #include "dvid/libdvidheader.h"
 #include "dialogs/zflyemsplituploadoptiondialog.h"
 #include "flyem/zflyemmisc.h"
-#include "test/zgradientmagnitudemoduletest.h"
+
 #include "dialogs/zstresstestoptiondialog.h"
 #include "flyem/zdvidtileupdatetaskmanager.h"
 #include "zflyemutilities.h"
@@ -321,7 +274,7 @@
 #include "dvid/zdvidpath.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "flyem/zserviceconsumer.h"
-#include "test/zdvidresultservicetest.h"
+
 #include "widgets/ztextedit.h"
 #include "dialogs/stringlistdialog.h"
 #include "widgets/zbodylistwidget.h"
@@ -332,6 +285,8 @@
 #include "zstackobjectinfo.h"
 #include "sandbox/zbrowseropener.h"
 #include "widgets/zpythonprocess.h"
+
+#include "test/ztestall.h"
 
 using namespace std;
 
@@ -24868,7 +24823,6 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-<<<<<<< HEAD
   ZObject3dScan *obj = new ZObject3dScan;
   obj->addStripe(0, 0);
   obj->addSegment(0, 1, false);
@@ -25429,6 +25383,14 @@ void ZTest::test(MainWindow *host)
   writer.writeRoiRef("PB", keyList, "roi");
 #endif
 
+#if 1
+  ZDvidTarget target("emdata1.int.janelia.org", "1d1d", 8100);
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.writeRoiRef("pb-lm", "pb-lm", "roi");
+#endif
+
 #if 0
   ZJsonObject roiJson;
   roiJson.load(GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/roi.json");
@@ -25504,6 +25466,125 @@ void ZTest::test(MainWindow *host)
     obj->save(GET_TEST_DATA_DIR + "/test.sobj");
     delete obj;
   }
+#endif
+
+#if 0
+
+  ZSparseStack spStack;
+  spStack.load(GET_BENCHMARK_DIR + "/test.zss");
+
+  ZSparseStack *stack2 = spStack.downsample(1, 1, 1);
+  stack2->save(GET_TEST_DATA_DIR + "/test.zss");
+
+  ZObject3d seed;
+  ZStackWatershedContainer container2(stack2);
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4266, 4484, 7264, 4267, 4486, 7265), &seed);
+  seed.setLabel(1);
+  container2.addSeed(seed);
+
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4289, 4490, 7264, 4290, 4491, 7265), &seed);
+  seed.setLabel(2);
+  container2.addSeed(seed);
+
+  container2.run();
+  ZObject3dScanArray *result = container2.makeSplitResult(1, NULL);
+
+  ZStack *labelStack = result->toColorField();
+  labelStack->save(GET_TEST_DATA_DIR + "/test2.tif");
+  delete labelStack;
+
+
+  ZStackWatershedContainer container(&spStack);
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4266, 4484, 7264, 4267, 4486, 7265), &seed);
+  seed.setLabel(1);
+  container.addSeed(seed);
+
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4289, 4490, 7264, 4290, 4491, 7265), &seed);
+  seed.setLabel(2);
+  container.addSeed(seed);
+
+  container.addResult(container2.getResult());
+
+  container.refineBorder();
+  container.makeSplitResult(1, result);
+
+
+  labelStack = result->toColorField();
+  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete labelStack;
+
+
+#endif
+
+#if 0
+  ZStack stack;
+//  stack.load(GET_BENCHMARK_DIR + "/sphere_bw.tif");
+  stack.load(GET_BENCHMARK_DIR + "/binary/3d/diadem_e1.tif");
+
+  ZMesh mesh;
+  ZMarchingCube::March(stack, &mesh);
+
+  mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+#endif
+
+#if 0
+  ZIntCuboid box;
+  box.setFirstCorner(0, 0, 0);
+  box.setLastCorner(10, 20, 30);
+
+  std::vector<bool> visible;
+  visible.resize(6, true);
+  visible[0] = false;
+  visible[2] = false;
+  visible[4] = false;
+
+  ZMesh mesh = ZMesh::CreateCuboidFaceMesh(box, visible, QColor(255, 0, 0));
+
+  std::cout << "#vertices: " << mesh.numVertices() << std::endl;
+  std::cout << "#Indices: " << mesh.indices().size() << std::endl;
+//  ZDebugPrintArrayG(mesh.indices(), 0, 36);
+//  mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+
+  QByteArray data = mesh.writeToMemory("obj");
+  std::cout << data.toStdString() << std::endl;
+
+  std::ofstream stream((GET_TEST_DATA_DIR + "/test.obj").c_str());
+  stream.write(data.constData(), data.size());
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  ZIntCuboid box;
+  box.setFirstCorner(0, 0, 0);
+  box.setLastCorner(10, 20, 30);
+
+  std::vector<bool> visible;
+  visible.resize(6, true);
+  visible[0] = false;
+  visible[2] = false;
+  visible[4] = false;
+
+  ZMesh mesh = ZMesh::CreateCuboidFaceMesh(box, visible, QColor(255, 0, 0));
+
+  writer.writeMesh(mesh, 2, 0);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setLabelBlockName("labels");
+  target.setBodyLabelName("bodies");
+
+  ZFlyEmMisc::RemoveSplitTask(target, 1);
 #endif
 
 

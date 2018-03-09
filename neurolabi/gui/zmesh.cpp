@@ -50,6 +50,7 @@ void ZMesh::swap(ZMesh& rhs) noexcept
   validateObbTree(false);
 }
 
+/*
 void ZMesh::setLabel(uint64_t label)
 {
   m_label = label;
@@ -59,6 +60,7 @@ uint64_t ZMesh::getLabel() const
 {
   return m_label;
 }
+*/
 
 bool ZMesh::canReadFile(const QString& filename)
 {
@@ -90,6 +92,11 @@ void ZMesh::load(const QString& filename)
 void ZMesh::save(const QString& filename, const std::string& format) const
 {
   ZMeshIO::instance().save(*this, filename, format);
+}
+
+QByteArray ZMesh::writeToMemory(const std::string &format) const
+{
+  return ZMeshIO::instance().writeToMemory(*this, format);
 }
 
 ZBBox<glm::dvec3> ZMesh::boundBox() const

@@ -70,6 +70,16 @@ void ZStackDocAccessor::RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject)
   RemoveObject(doc, ZStackObject::TYPE_SWC, deleteObject);
 }
 
+void ZStackDocAccessor::AddObjectUnique(ZStackDoc *doc, ZStackObject *obj)
+{
+  if (doc != NULL && obj != NULL) {
+    doc->getDataBuffer()->addUpdate(
+          obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    doc->getDataBuffer()->deliver();
+  }
+}
+
+
 void ZStackDocAccessor::AddObject(ZStackDoc *doc, ZStackObject *obj)
 {
   if (doc != NULL && obj != NULL) {

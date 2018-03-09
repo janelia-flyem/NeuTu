@@ -385,6 +385,10 @@ ZJsonObject ZDvidTarget::toDvidDataSetting() const
 
 void ZDvidTarget::updateData(const ZJsonObject &obj)
 {
+  if (obj.hasKey("uuid")) {
+    setUuid(ZJsonParser::stringValue(obj["uuid"]));
+  }
+
   if (obj.hasKey(m_bgValueKey)) {
     m_bgValue = ZJsonParser::integerValue(obj[m_bgValueKey]);
   }
@@ -792,6 +796,24 @@ std::string ZDvidTarget::getSkeletonName() const
 {
   return ZDvidData::GetName(ZDvidData::ROLE_SKELETON, ZDvidData::ROLE_BODY_LABEL,
                             getBodyLabelName());
+}
+
+std::string ZDvidTarget::getMeshName() const
+{
+  return ZDvidData::GetName(ZDvidData::ROLE_MESH,
+                            ZDvidData::ROLE_BODY_LABEL,
+                            getBodyLabelName());
+}
+
+std::string ZDvidTarget::getMeshName(int zoom) const
+{
+  ZString name = getMeshName();
+  if (!name.empty() && zoom > 0) {
+    name += "_";
+    name.appendNumber(zoom);
+  }
+
+  return name;
 }
 
 std::string ZDvidTarget::getThumbnailName() const

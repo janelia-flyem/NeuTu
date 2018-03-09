@@ -207,6 +207,8 @@ public:
    */
   void upSample(int xIntv, int yIntv, int zIntv);
 
+  void downsample(int xIntv, int yIntv, int zIntv);
+
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &jsonObj);
 

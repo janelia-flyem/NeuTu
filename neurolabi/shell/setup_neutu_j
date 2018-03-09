@@ -50,7 +50,7 @@ initdir $install_dir
 bindir=$install_dir/bin
 initdir $bindir
 
-prog_array=("neutu" "neu3" "debug_neutu")
+prog_array=("neutu" "neu3" "debug_neutu" "debug_neu3")
 for prog in ${prog_array[@]} 
 do
   installprog $prog $bindir

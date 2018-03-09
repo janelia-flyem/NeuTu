@@ -159,6 +159,9 @@ private:
   void construct(ZSharedPointer<ZStackDoc> doc,
                  neutube::EAxis axis = neutube::Z_AXIS);
 
+private slots:
+  void shortcutTest();
+
 protected:
   ZSharedPointer<ZStackDoc> m_doc;
   ZStackPresenter *m_presenter;

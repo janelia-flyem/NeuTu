@@ -69,6 +69,7 @@ class ZFlyEmBodyComparisonDialog;
 class ZStackDocMenuFactory;
 class ZLineSegment;
 class ZObject3d;
+class ZWidgetMessage;
 
 
 class Z3DWindow : public QMainWindow
@@ -122,6 +123,7 @@ public: //Camera adjustment
 public: //Components
   Z3DTrackballInteractionHandler* getInteractionHandler() { return &m_view->interactionHandler(); }
   Z3DCameraParameter* getCamera() { return &m_view->camera(); }
+//  Z3DTransformParameter getTransformPara() const;
   inline Z3DPunctaFilter* getPunctaFilter() const { return m_view->getPunctaFilter(); }
   inline Z3DMeshFilter* getMeshFilter() const { return m_view->getMeshFilter(); }
   inline Z3DSwcFilter* getSwcFilter() const { return m_view->getSwcFilter(); }
@@ -164,6 +166,8 @@ public: //controls
   void hideControlPanel();
   void hideObjectView();
   void hideStatusBar();
+
+  QToolBar* getToolBar() const;
 
   void setButtonStatus(int index, bool v);
   bool getButtonStatus(int index);
@@ -218,6 +222,8 @@ signals:
   void testing();
   void browsing(double x, double y, double z);
   void runningLocalSplit();
+  void runningSplit();
+  void runningFullSplit();
 
   void settingTriggered();
 
@@ -282,6 +288,7 @@ public slots:
   void showPuncta(bool on);
   void showTodo(bool on);
   void activateTodoAction();
+  void activateBookmarkAction();
   void activateLocateAction();
 
   void saveSelectedSwc();
@@ -332,6 +339,8 @@ public slots:
   void addTodoMarker();
   void addToMergeMarker();
   void addToSplitMarker();
+  void setTodoItemToSplit();
+  void setTodoItemToNormal();
   void addDoneMarker();
   void updateBody();
   void compareBody();
@@ -380,6 +389,8 @@ public slots:
   void uncheckSelectedTodo();
 
   void setMeshOpacity(double opacity);
+
+  void processMessage(const ZWidgetMessage &msg);
 
 protected:
   virtual void dragEnterEvent(QDragEnterEvent *event);
@@ -453,6 +464,10 @@ private:
   // update menu based on context information
   void updateContextMenu(const QString &group);
 
+
+private slots:
+  void about();
+
 private:
   neutube3d::EWindowType m_windowType;
 
@@ -479,8 +494,8 @@ private:
   QAction *m_toggleSmartExtendSelectedSwcNodeAction;
   QAction *m_locateSwcNodeIn2DAction;
 
-  QAction *m_undoAction;
-  QAction *m_redoAction;
+//  QAction *m_undoAction;
+//  QAction *m_redoAction;
   QAction *m_markSwcSomaAction;
   QAction *m_changeSwcNodeTypeAction;
   QAction *m_setSwcRootAction;
@@ -488,10 +503,10 @@ private:
   QAction *m_connectSwcNodeAction;
   QAction *m_connectToSwcNodeAction;
   QAction *m_mergeSwcNodeAction;
-  QAction *m_selectSwcNodeDownstreamAction;
+//  QAction *m_selectSwcNodeDownstreamAction;
   QAction *m_selectSwcConnectionAction;
-  QAction *m_selectSwcNodeBranchAction;
-  QAction *m_selectSwcNodeUpstreamAction;
+//  QAction *m_selectSwcNodeBranchAction;
+//  QAction *m_selectSwcNodeUpstreamAction;
   QAction *m_selectSwcNodeTreeAction;
   QAction *m_selectAllConnectedSwcNodeAction;
   QAction *m_selectAllSwcNodeAction;

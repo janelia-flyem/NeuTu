@@ -57,6 +57,7 @@ public:
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   bool isSwcWrittable();
 
+  void writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom);
 
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
@@ -129,6 +130,7 @@ public:
                  const QString &minKey, const QString &maxKey);
 
   void deleteSkeleton(uint64_t bodyId);
+  void deleteMesh(uint64_t bodyId);
   void deleteBodyAnnotation(uint64_t bodyId);
 
   void invalidateBody(uint64_t bodyId);
@@ -139,11 +141,19 @@ public:
 
   uint64_t rewriteBody(uint64_t label);
 
+  std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
+      const std::string &dataName, const ZObject3dScan &obj,
+      uint64_t oldLabel);
+  std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
+      const ZObject3dScan &obj, uint64_t oldLabel);
+
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label, uint64_t newBodyId = 0);
   uint64_t writeSplit(const ZObject3dScan &obj,
                       uint64_t oldLabel, uint64_t label,
                       uint64_t newBodyId = 0);
+
+
 
   uint64_t writeSplitMultires(
       const ZObject3dScan &bf, const ZObject3dScan &bs, uint64_t oldLabel);

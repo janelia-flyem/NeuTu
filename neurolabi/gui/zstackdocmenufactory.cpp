@@ -213,7 +213,6 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(
   return menu;
 }
 
-
 QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 {
   ZStackDoc *doc = window->getDocument();
@@ -231,6 +230,12 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
         doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE ||
         doc->getTag() == neutube::Document::FLYEM_SKELETON) {
       actionList.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
+    } else if (doc->getTag() == neutube::Document::FLYEM_MESH) {
+#if defined(_NEU3_)
+      if (doc->getSelected(ZStackObject::TYPE_MESH).size() == 1) {
+        actionList.append(ZActionFactory::ACTION_START_SPLIT);
+      }
+#endif
     }
 
     if (doc->getTag() == neutube::Document::FLYEM_BODY_3D) {

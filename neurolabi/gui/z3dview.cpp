@@ -218,6 +218,11 @@ void Z3DView::resetCameraClippingRange()
   m_lock = false;
 }
 
+glm::quat Z3DView::getRotation() const
+{
+  return camera().getNeuroglancerRotation();
+}
+
 bool Z3DView::takeFixedSizeScreenShot(const QString& filename, int width, int height, Z3DScreenShotType sst)
 {
   bool res = true;
@@ -720,6 +725,11 @@ void Z3DView::processObjectModified(const ZStackObjectInfoSet &objInfo)
   ZStackDoc3dHelper helper;
   helper.attach(this);
   helper.processObjectModified(objInfo);
+}
+
+void Z3DView::dump(const QString &message)
+{
+  m_canvas->dump(message);
 }
 
 void Z3DView::setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box)

@@ -61,4 +61,7 @@ HEADERS += \
     test/z3dfiltersettingtest.h \
     test/zdvidresultservicetest.h \
     test/zxmltest.h \
-    test/zpointtest.h
+    test/zpointtest.h \
+    $$PWD/zwatershedtest.h \
+    $$PWD/ztestall.h \
+    $$PWD/zstackobjectinfotest.h

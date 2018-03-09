@@ -109,7 +109,7 @@ void ZSwcTree::setStructrualMode(EStructrualMode mode)
     setColorScheme(COLOR_NORMAL);
   }
 }
-
+/*
 void ZSwcTree::setLabel(uint64_t label)
 {
   m_label = label;
@@ -119,6 +119,7 @@ uint64_t ZSwcTree::getLabel() const
 {
   return m_label;
 }
+*/
 
 void swap(ZSwcTree &first, ZSwcTree &second)
 {

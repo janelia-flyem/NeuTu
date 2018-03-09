@@ -26,6 +26,7 @@
 #include "dvid/zdvidbufferreader.h"
 #include "zdvidutil.h"
 #include "dvid/zdvidpath.h"
+#include "zmesh.h"
 
 ZDvidWriter::ZDvidWriter(QObject *parent) :
   QObject(parent)
@@ -133,6 +134,21 @@ bool ZDvidWriter::isSwcWrittable()
   writeSwc(0, &testTree);
 
   return getStatusCode() == 200;
+}
+
+void ZDvidWriter::writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom)
+{
+  ZDvidUrl dvidUrl(getDvidTarget());
+  std::string url = dvidUrl.getMeshUrl(bodyId, zoom);
+
+  QByteArray payload = mesh.writeToMemory("obj");
+  post(url, payload, false);
+
+
+  url = ZDvidUrl::GetMeshInfoUrl(url);
+  ZJsonObject infoJson;
+  infoJson.setEntry("format", "obj");
+  post(url, infoJson.dumpString(0), true);
 }
 
 void ZDvidWriter::writeThumbnail(uint64_t bodyId, ZStack *stack)
@@ -612,6 +628,12 @@ void ZDvidWriter::deleteSkeleton(uint64_t bodyId)
             ZDvidUrl::GetSkeletonKey(bodyId));
 }
 
+void ZDvidWriter::deleteMesh(uint64_t bodyId)
+{
+  deleteKey(getDvidTarget().getMeshName(), ZDvidUrl::GetMeshKey(bodyId));
+  deleteKey(getDvidTarget().getMeshName(), ZDvidUrl::GetMeshInfoKey(bodyId));
+}
+
 void ZDvidWriter::deleteBodyAnnotation(uint64_t bodyId)
 {
   ZDvidUrl url(getDvidTarget());
@@ -876,6 +898,11 @@ std::string ZDvidWriter::request(
 
 std::string ZDvidWriter::del(const std::string &url)
 {
+#if _DEBUG_2
+  std::cout << "HTTP DELETE: " << url << std::endl;
+#endif
+
+
   return request(url, "DELETE", NULL, 0, false);
 
 #if 0
@@ -1180,6 +1207,45 @@ uint64_t ZDvidWriter::rewriteBody(uint64_t bodyId)
   }
 
   return newBodyId;
+}
+
+std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
+    const ZObject3dScan &obj, uint64_t oldLabel)
+{
+  return writeSupervoxelSplit(getDvidTarget().getBodyLabelName(), obj, oldLabel);
+}
+
+std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
+    const std::string &dataName, const ZObject3dScan &obj, uint64_t oldLabel)
+{
+  m_statusCode = 0;
+
+  std::string url = ZDvidUrl(getDvidTarget()).getSplitSupervoxelUrl(
+        dataName, oldLabel);
+
+  QByteArray payload = obj.toDvidPayload();
+  ZString response = post(url, payload, false);
+
+  uint64_t newBodyId = 0;
+  uint64_t remainderId = oldLabel;
+
+  if (!response.empty()) {
+#ifdef _DEBUG_
+    std::cout << response << std::endl;
+#endif
+    ZJsonObject obj;
+    obj.decodeString(response.c_str());
+    if (obj.hasKey("label")) {
+      newBodyId = ZJsonParser::integerValue(obj["label"]);
+      m_statusCode = 200;
+    } else if (obj.hasKey("SplitLabel")) {
+      newBodyId = ZJsonParser::integerValue(obj["SplitLabel"]);
+      remainderId = ZJsonParser::integerValue(obj["RemainLabel"]);
+      m_statusCode = 200;
+    }
+  }
+
+  return std::pair<uint64_t, uint64_t>(remainderId, newBodyId);
 }
 
 uint64_t ZDvidWriter::writeSplit(

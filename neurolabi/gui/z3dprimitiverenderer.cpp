@@ -55,8 +55,9 @@ void Z3DPrimitiveRenderer::renderScreenQuad(const ZVertexArrayObject& vao, const
   vao.release();
 }
 
-void Z3DPrimitiveRenderer::renderTriangleList(const ZVertexArrayObject& vao, const Z3DShaderProgram& shader,
-                                              const ZMesh& mesh)
+void Z3DPrimitiveRenderer::renderTriangleList(
+    const ZVertexArrayObject& vao, const Z3DShaderProgram& shader,
+    const ZMesh& mesh)
 {
   if (mesh.empty() || !shader.isLinked())
     return;

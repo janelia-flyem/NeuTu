@@ -60,6 +60,10 @@ public:
     return m_defaultLibrarian;
   }
 
+  std::string getNeuroglancerServer() const {
+    return m_neuroglancerServer;
+  }
+
 #ifdef _QT_GUI_USED_
   ZNeutuService& getNeutuService() {
     return m_neutuService;
@@ -110,6 +114,7 @@ private:
   bool m_usingDefaultConfig;
   std::string m_defaultLibrarian;
   std::string m_userName;
+  std::string m_neuroglancerServer;
 
   bool m_analyzingMb6;
 //  std::string m_neutuServer;
@@ -120,6 +125,7 @@ private:
   const static char *LIBRARIAN_KEY;
   const static char *MB6_KEY;
   const static char *TASK_SERVER_KEY;
+  const static char *NEUROGLANCER_KEY;
 };
 
 #endif // ZFLYEMCONFIG_H

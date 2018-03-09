@@ -91,6 +91,7 @@ class QKeyEvent;
 class ZStackArray;
 class ZStackObjectInfo;
 class ZRoiObjsModel;
+class ZActionLibrary;
 
 /*!
  * \brief The class of stack document
@@ -960,6 +961,7 @@ public:
 
   void notifyActiveViewModified();
   void notifyStatusMessageUpdated(const QString &message);
+  void notifyWindowMessageUpdated(const QString &message);
 
   void notifyProgressStart();
   void notifyProgressEnd();
@@ -1180,6 +1182,8 @@ public slots: //undoable commands
   void startProgressSlot();
   void endProgressSlot();
 
+  void processMessage(const ZWidgetMessage &msg);
+
   //bool executeAddStrokeCommand(ZStroke2d *stroke);
   //bool executeAddStrokeCommand(const QList<ZStroke2d*> &strokeList);
 
@@ -1345,6 +1349,9 @@ private:
   void updateTraceMask();
   void prepareSwc(ZSwcTree *tree);
 
+private slots:
+  void shortcutTest();
+
 protected:
   ZStackDocKeyProcessor *m_keyProcessor = NULL;
 
@@ -1396,7 +1403,7 @@ private:
 //  QAction *m_redoAction;
 
   //  Action map
-  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
+//  QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 
@@ -1406,7 +1413,7 @@ private:
   ResolutionDialog *m_resDlg;
   ZStackFactory *m_stackFactory;
 
-  ZActionFactory *m_actionFactory;
+//  ZActionFactory *m_actionFactory;
 
 
   bool m_selectionSilent;
@@ -1446,6 +1453,7 @@ protected:
   ZSharedPointer<ZStackDoc> m_parentDoc;
   ZThreadFutureMap m_futureMap;
   ZStackDocDataBuffer *m_dataBuffer;
+  ZSharedPointer<ZActionLibrary> m_actionLibrary;
 };
 
 //   template  //

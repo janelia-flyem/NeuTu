@@ -161,9 +161,11 @@ public:
 //    m_isCustomBookmarkSaved = state;
 //  }
 
-  virtual ZDvidSparseStack* getDvidSparseStack() const;
+//  virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
       const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
+
+  ZDvidSparseStack* getDvidSparseStack() const;
 
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
@@ -240,6 +242,8 @@ public:
   bool isSplitRunning() const;
   void refreshDvidLabelBuffer(unsigned long delay);
 //  void setLabelSliceAlpha(int alpha);
+
+  void updateMeshForSelected();
 
 public:
   void notifyBodyMerged();
@@ -505,6 +509,8 @@ public slots:
 //  bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(
       uint64_t bodyId, flyem::EBodySplitMode mode);
+
+
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, flyem::EBodySplitMode mode);
 

@@ -20,6 +20,8 @@
 #include "imgproc/zdownsamplefilter.h"
 #include "zstackobjectaccessor.h"
 #include "zgraphptr.h"
+#include "zstackutil.h"
+#include "zintpoint.h"
 
 ZStackWatershedContainer::ZStackWatershedContainer(ZStack *stack)
 {
@@ -149,7 +151,18 @@ ZIntPoint ZStackWatershedContainer::getSourceDsIntv()
   return dsIntv;
 }
 
-void ZStackWatershedContainer::setRangeOption(ERangeOption option)
+ZIntPoint ZStackWatershedContainer::getOriginalDsIntv()
+{
+  if (m_stack != NULL) {
+    return m_stack->getDsIntv();
+  } else if (m_spStack != NULL) {
+    return m_spStack->getDsIntv();
+  }
+
+  return ZIntPoint(0, 0, 0);
+}
+
+void ZStackWatershedContainer::setRangeHint(ERangeOption option)
 {
   if (m_rangeOption != option) {
     deprecate(COMP_RANGE);
@@ -157,7 +170,7 @@ void ZStackWatershedContainer::setRangeOption(ERangeOption option)
   }
 }
 
-ZStackWatershedContainer::ERangeOption ZStackWatershedContainer::getRangeOption() const
+ZStackWatershedContainer::ERangeOption ZStackWatershedContainer::getRangeHint() const
 {
   return m_rangeOption;
 }
@@ -305,6 +318,13 @@ void ZStackWatershedContainer::addSeed(const ZStackObject *seed)
     if (added == false) {
       added = addSeed<ZSwcTree>(seed);
     }
+  }
+}
+
+void ZStackWatershedContainer::addSeed(const std::vector<ZObject3d *> &seed)
+{
+  for (const ZObject3d *obj : seed) {
+    addSeed(*obj);
   }
 }
 
@@ -584,12 +604,13 @@ ZStack* ZStackWatershedContainer::getSourceStack()
       if (m_scale > 1) {
         ZDownsampleFilter* filter=ZDownsampleFilter::create(m_dsMethod);
         filter->setDsFactor(m_scale,m_scale,m_scale);
-        m_source=filter->filterStack(*m_spStack);
+        m_source = filter->filterStack(*m_spStack);
+        m_source->pushDsIntv(m_spStack->getDsIntv());
         delete filter;
       } else {
-        m_source = m_spStack->makeStack(range, m_maxStackVolume, true, NULL);
+        m_source = m_spStack->makeStack(range, m_maxStackVolume, m_preservingGap);
       }
-    } else {
+    } else if (m_stack != NULL){
       if (range.equals(m_stack->getBoundBox())) {
         m_source = m_stack;
       } else {
@@ -638,10 +659,102 @@ bool ZStackWatershedContainer::isEmpty() const
   return (m_stack == NULL) && (m_spStack ==NULL);
 }
 
+void ZStackWatershedContainer::refineBorder()
+{
+  if (!m_result.empty()) {
+    if (m_result.size() > 1) {
+      m_result.sort(zstack::DsIntvGreaterThan());
+    }
+
+    ZIntPoint lastDsIntv = m_result.back()->getDsIntv();
+    ZIntPoint orgDsIntv = getOriginalDsIntv();
+    if (orgDsIntv.definiteLessThan(lastDsIntv)) {
+      //Refine the border only when the smallest downsampling scale of the result is
+      //bigger than that of the source
+      ZStackArray currentResult = m_result;
+      for (const ZStackPtr &result : currentResult) {
+        if (result->getDsIntv() == lastDsIntv) {
+          refineBorder(result);
+        }
+      }
+    }
+  }
+}
+
+void ZStackWatershedContainer::refineBorder(const ZStackPtr &stack)
+{
+  ZIntCuboid dataRange = getRange();
+
+  ZIntCuboid boundaryBox;
+  ZStackPtr boundaryStack = MakeBoundaryStack(*stack, 26, boundaryBox);
+
+  //Extract components from the boundary stack
+  ZObject3dScan boundaryObject;
+  boundaryObject.loadStack(boundaryStack->c_stack());
+
+  std::vector<ZObject3dScan> boundaryArray =
+      boundaryObject.getConnectedComponent(ZObject3dScan::ACTION_NONE);
+
+#if 0
+  boundaryStack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+  //For each component
+  for (const ZObject3dScan &subbound : boundaryArray) {
+    //  Compute split
+    ZStackWatershedContainer container(m_stack, m_spStack);
+//          container.useSeedRange(true);
+    container.setRangeHint(RANGE_SEED_BOUND);
+    container.setRefiningBorder(false);
+
+    std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
+          *stack, *boundaryStack, subbound.getBoundBox());
+    //          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(*stack);
+    for (ZObject3d *seed : newSeeds) {
+      container.consumeSeed(seed);
+    }
+    ZIntPoint dsIntv = container.estimateDsIntv(dataRange);
+    if (dsIntv.definiteLessThan(stack->getDsIntv())) {
+      container.run();
+      ZStackArray newResult = container.getResult();
+
+#ifdef _DEBUG_2
+      for (ZStackPtr stack : newResult) {
+        stack->printInfo();
+        stack->save(GET_TEST_DATA_DIR + "/test.tif");
+      }
+#endif
+
+#ifdef _DEBUG_2
+      ZObject3dScanArray result;
+      container.makeSplitResult(1, &result);
+      ZStack *labelStack = result.toColorField();
+      labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+      delete labelStack;
+#endif
+
+      m_result.append(newResult);
+    }
+  }
+}
+
+void ZStackWatershedContainer::downsampleSeed(int intvx, int intvy, int intvz)
+{
+  if (intvx > 0 || intvy > 0 || intvz > 0) {
+    for (ZObject3d *obj : m_seedArray) {
+      obj->downsample(intvx, intvy, intvz);
+    }
+  }
+}
+
 void ZStackWatershedContainer::run()
 {
   std::cout << "Running watershed ..." << std::endl;
   deprecate(COMP_RESULT);
+
+  if (m_seedArray.size() < 2) {
+    std::cout << "No valid seed found. Abort" << std::endl;
+    return;
+  }
 
   QElapsedTimer timer;
   timer.start();
@@ -662,54 +775,21 @@ void ZStackWatershedContainer::run()
       exportMask(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
-      getWorkspace()->conn=6;
-      Stack *out = C_Stack::watershed(source, getWorkspace());
-      ZStackPtr stack = ZStackPtr::Make();
-      stack->consume(out);
-      stack->setOffset(getSourceOffset());
-      stack->setDsIntv(getSourceStack()->getDsIntv());
-      m_result.push_back(stack);
+      if (m_result.empty()) {
+        getWorkspace()->conn=6;
+        Stack *out = C_Stack::watershed(source, getWorkspace());
+        ZStackPtr stack = ZStackPtr::Make();
+        stack->consume(out);
+        stack->setOffset(getSourceOffset());
+        stack->setDsIntv(getSourceStack()->getDsIntv());
+        m_result.push_back(stack);
+      }
 
       std::cout << "Downsampling interval: "
                     << getSourceStack()->getDsIntv().toString() << std::endl;
 
-      if (m_refiningBorder && !getSourceStack()->getDsIntv().isZero()) {
-          ZIntCuboid dataRange = getRange();
-
-          ZIntCuboid boundaryBox;
-          ZStackPtr boundaryStack = MakeBoundaryStack(*stack, 26, boundaryBox);
-
-          //Extract components from the boundary stack
-          ZObject3dScan boundaryObject;
-          boundaryObject.loadStack(boundaryStack->c_stack());
-  //            ZObject3dFactory::MakeObject3dScan(*boundaryStack);
-          std::vector<ZObject3dScan> boundaryArray =
-              boundaryObject.getConnectedComponent(ZObject3dScan::ACTION_NONE);
-
-  #if 0
-          boundaryStack->save(GET_TEST_DATA_DIR + "/test.tif");
-  #endif
-          //For each component
-          for (const ZObject3dScan &subbound : boundaryArray) {
-            //  Compute split
-            ZStackWatershedContainer container(m_stack, m_spStack);
-  //          container.useSeedRange(true);
-            container.setRangeOption(RANGE_SEED_BOUND);
-            container.setRefiningBorder(false);
-
-            std::vector<ZObject3d*> newSeeds = MakeBorderSeed(
-                  *stack, *boundaryStack, subbound.getBoundBox());
-  //          std::vector<ZObject3d*> newSeeds = MakeBorderSeed(*stack);
-            for (ZObject3d *seed : newSeeds) {
-              container.consumeSeed(seed);
-            }
-            ZIntPoint dsIntv = container.estimateDsIntv(dataRange);
-            if (dsIntv.definiteLessThan(getSourceStack()->getDsIntv())) {
-              container.run();
-              ZStackArray newResult = container.getResult();
-              m_result.append(newResult);
-          }
-        }
+      if (m_refiningBorder/* && !getSourceStack()->getDsIntv().isZero()*/) {
+        refineBorder();
       }
     } else {
       ZOUT(LWARN(), 5) << "No source stack found. Abort watershed.";
@@ -801,6 +881,8 @@ ZStackPtr ZStackWatershedContainer::MakeBoundaryStack(
       }
     }
   }
+
+  boundaryStack->setDsIntv(stack.getDsIntv());
 
   return boundaryStack;
 }
@@ -899,84 +981,6 @@ std::vector<ZObject3d*> ZStackWatershedContainer::MakeBorderSeed(
     ZIntCuboid boundaryBox;
     ZStackPtr boundaryStack = MakeBoundaryStack(stack, 26, boundaryBox);
     result = MakeBorderSeed(stack, *boundaryStack, boundaryBox);
-#if 0
-    int sx = stack.getDsIntv().getX() + 1;
-    int sy = stack.getDsIntv().getY() + 1;
-    int sz = stack.getDsIntv().getZ() + 1;
-    int width = stack.width();
-    int height = stack.height();
-    int depth = stack.depth();
-
-    //Label boundary
-    ZIntCuboid boundaryBox;
-    ZStackPtr boundaryStack = MakeBoundaryStack(stack, 26, boundaryBox);
-    uint8_t *boundaryArray = boundaryStack->array8();
-    const uint8_t *array = stack.array8();
-
-    boundaryBox.scale(ZIntPoint(sx, sy, sz));
-    boundaryBox.expand(1, 1, 1);
-    boundaryBox.intersect(
-          ZIntCuboid(0, 0, 0, width * sx - 1, height * sy - 1, depth * sz - 1));
-
-    int bx0 = boundaryBox.getFirstCorner().getX();
-    int by0 = boundaryBox.getFirstCorner().getY();
-    int bz0 = boundaryBox.getFirstCorner().getZ();
-
-    int bx1 = boundaryBox.getLastCorner().getX();
-    int by1 = boundaryBox.getLastCorner().getY();
-    int bz1 = boundaryBox.getLastCorner().getZ();
-
-    int x0 = stack.getOffset().getX() * sx;
-    int y0 = stack.getOffset().getY() * sy;
-    int z0 = stack.getOffset().getZ() * sz;
-
-
-    //For each voxel in the boundary box
-    for (int z = bz0; z <= bz1; ++z) {
-      for (int y = by0; y <= by1; ++y) {
-        for (int x = bx0; x <= bx1; ++x) {
-#ifdef _DEBUG_2
-          std::cout << "Checking " << x << " " << y << " " << z << std::endl;
-#endif
-          ssize_t index = C_Stack::indexFromCoord(
-                x / sx, y / sy, z / sz, width, height, depth);
-          uint8_t label = array[index];
-          if (label > 0 && boundaryArray[index] == 0) {
-            int state = 1;
-            state = BorderSeedTest((x - 1) / sx, y / sy, z / sz,
-                                   width, height, depth, label,
-                                   array, boundaryArray, state);
-            state = BorderSeedTest((x + 1) / sx, y / sy, z / sz,
-                                   width, height, depth, label,
-                                   array, boundaryArray, state);
-            state = BorderSeedTest(x / sx, (y - 1) / sy, z / sz,
-                                   width, height, depth, label,
-                                   array, boundaryArray, state);
-            state = BorderSeedTest(x / sx, (y + 1) / sy, z / sz,
-                                   width, height, depth, label,
-                                   array, boundaryArray, state);
-            state = BorderSeedTest(x / sx, y / sy, (z - 1) / sz,
-                                   width, height, depth, label,
-                                   array, boundaryArray, state);
-            state = BorderSeedTest(x / sx, y / sy, (z + 1) / sz,
-                                   width, height, depth, label,
-                                   array, boundaryArray, state);
-            if (state == 2) {
-              if (result.size() <= label) {
-                result.resize(label + 1, NULL);
-              }
-              if (result[label] == NULL) {
-                result[label] = new ZObject3d;
-                result[label]->setLabel(label);
-              }
-              ZObject3d *obj = result[label];
-              obj->append(x + x0, y + y0, z + z0);
-            }
-          }
-        } //x loop
-      }
-    }
-#endif
   }
 
   return result;
@@ -989,6 +993,141 @@ bool ZStackWatershedContainer::ccaPost() const
   }
 
   return m_ccaPost;
+}
+
+bool ZStackWatershedContainer::Test()
+{
+  ZStackWatershedContainer container(NULL, NULL);
+  container.run();
+
+  ZStack stack;
+  stack.load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  container.setData(&stack, NULL);
+  container.run();
+
+  ZObject3d seed;
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(2908, 4081, 3201, 2909, 4082, 3202), &seed);
+  seed.setLabel(1);
+  container.addSeed(seed);
+
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(3033, 4095, 3201, 3304, 4096, 3202), &seed);
+  seed.setLabel(2);
+  container.addSeed(seed);
+
+  container.setFloodFillingZero(true);
+  container.run();
+
+  ZObject3dScanArray *result = container.makeSplitResult(1, NULL);
+  if (result->size() != 2) {
+    std::cout << "Unexpected region count: " << result->size() << std::endl;
+    return false;
+  }
+
+  size_t voxelCount = 0;
+  for (const ZObject3dScan *obj : *result) {
+    voxelCount += obj->getVoxelNumber();
+    std::cout << "Region size: " << obj->getVoxelNumber() << std::endl;
+  }
+
+  if (voxelCount != stack.getVoxelNumber()) {
+    std::cout << "Unexpected voxel count: " << voxelCount << std::endl;
+    return false;
+  }
+
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(2924, 4187, 3201, 2925, 4188, 3202), &seed);
+  seed.setLabel(3);
+  container.addSeed(seed);
+
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(3095, 4195, 3201, 3096, 4196, 3202), &seed);
+  seed.setLabel(4);
+  container.addSeed(seed);
+
+  container.run();
+
+  container.makeSplitResult(1, result);
+  if (result->size() != 4) {
+    std::cout << "Unexpected region count: " << result->size() << std::endl;
+    return false;
+  }
+
+  {
+    ZStack *stack2 = stack.clone();
+    stack2->downsampleMin(2, 2, 2);
+    stack2->setDsIntv(2, 2, 2);
+    ZStackWatershedContainer container2(stack2);
+    container2.setFloodFillingZero(true);
+    container2.addSeed(container.getSeedArray());
+    container2.run();
+    container2.makeSplitResult(1, result);
+/*
+    ZStack *labelStack = result->toColorField();
+    labelStack->save(GET_TEST_DATA_DIR + "/test2.tif");
+    delete labelStack;
+*/
+    container.clearResult();
+    container.addResult(container2.getResult());
+
+    delete stack2;
+  }
+
+  container.refineBorder();
+  container.makeSplitResult(1, result);
+  if (result->size() != 4) {
+    std::cout << "Unexpected region count: " << result->size() << std::endl;
+    return false;
+  }
+
+  ZSparseStack spStack;
+  spStack.load(GET_BENCHMARK_DIR + "/test.zss");
+
+  ZStackWatershedContainer container2(&spStack);
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4266, 4484, 7264, 4267, 4486, 7265), &seed);
+  seed.setLabel(1);
+  container2.addSeed(seed);
+
+  ZObject3dFactory::MakeBoxObject3d(
+        ZIntCuboid(4289, 4490, 7264, 4290, 4491, 7265), &seed);
+  seed.setLabel(2);
+  container2.addSeed(seed);
+
+
+
+  {
+    ZSparseStack *stack2 = spStack.downsample(1, 1, 1);
+    stack2->save(GET_TEST_DATA_DIR + "/test.zss");
+
+    ZStackWatershedContainer container3(stack2);
+//    container3.setFloodFillingZero(true);
+    container3.addSeed(container2.getSeedArray());
+    container3.run();
+    container3.makeSplitResult(1, result);
+
+    ZStack *labelStack = result->toColorField();
+    labelStack->save(GET_TEST_DATA_DIR + "/test2.tif");
+    delete labelStack;
+
+    container2.clearResult();
+    container2.addResult(container3.getResult());
+
+    delete stack2;
+  }
+
+  container2.refineBorder();
+//  container2.run();
+  container2.makeSplitResult(1, result);
+
+  ZStack *labelStack = result->toColorField();
+  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete labelStack;
+
+  delete result;
+
+  return true;
 }
 
 void ZStackWatershedContainer::test()
@@ -1147,31 +1286,31 @@ void ZStackWatershedContainer::configureResult(ZObject3dScanArray *result)
 ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
     ZObject3dScanArray *result)
 {
+  if (result != NULL) {
+    result->clearAll();
+  }
+
   if (m_result.empty()) {
     return result;
   }
 
+  //Extract labeled regions
+  //m_result will be sorted from low res to high res
   ZObject3dScanArray *objArray =
       ZObject3dFactory::MakeObject3dScanArray(m_result);
 
   //For sparse stack only for the current version
   if (m_spStack != NULL) {
-    //Extract labeled regions
-//    ZObject3dScanArray *objArray = ZObject3dFactory::MakeObject3dScanArray(
-//          *(resultStack), neutube::Z_AXIS, true, NULL);
-
     if (result == NULL) {
       result = new ZObject3dScanArray;
     }
 
-//    ZStackPtr firstStack = m_result.front();
 
-//    ZIntPoint dsIntv = getSourceDsIntv();
-    ZIntPoint dsIntv = m_result.front()->getDsIntv();
-
+//    ZIntPoint sourceDsIntv = getSourceStack()->getDsIntv();
+    ZIntPoint orgDsIntv = getOriginalDsIntv();
     ZIntPoint lastDsIntv = m_result.back()->getDsIntv();
-    bool adopting = true;
-    if (lastDsIntv.isZero()) {
+    bool adopting = true; //Flag for re-assigning fragments
+    if (lastDsIntv == orgDsIntv) {
       adopting = false;
     }
 
@@ -1179,6 +1318,10 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
 
     //The whole object
     ZObject3dScan *wholeBody = m_spStack->getObjectMask();
+
+#ifdef _DEBUG_2
+    wholeBody->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
 
     ZObject3dScan remainBody;
     if (ccaPost()) {
@@ -1191,16 +1334,25 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
       }
     }
 
+    //Most downsampling
+    ZIntPoint dsIntv = m_result.front()->getDsIntv();
     for (ZObject3dScanArray::iterator iter = objArray->begin();
          iter != objArray->end(); ++iter) {
       ZObject3dScan &obj = **iter;
       if (obj.getLabel() >= minLabel) {
         std::cout << "Processing label " << obj.getLabel() << std::endl;
 
-        if (!dsIntv.isZero()) { //Process downsampled regions
+//        if (!dsIntv.isZero()) { //Process downsampled regions
+        if (dsIntv != orgDsIntv) {
           ZObject3dScan *currentBody =
               processSplitResult(obj, &remainBody, adopting);
           result->append(currentBody);
+#ifdef _DEBUG_2
+          std::cout << "Voxel count: " << currentBody->getVoxelNumber() << std::endl;
+          std::cout << currentBody->getLabel() << std::endl;
+          currentBody->save(GET_TEST_DATA_DIR + "/test.sobj");
+#endif
+
         } else {
           if (ccaPost()) {
             remainBody.subtractSliently(obj);
@@ -1211,6 +1363,13 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
         mainBody.concat(obj);
       }
     }
+
+#ifdef _DEBUG_2
+  configureResult(result);
+  ZStack *labelStack = result->toColorField();
+  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete labelStack;
+#endif
 
     if (ccaPost()) {
 //      mainBody.upSample(dsIntv);
@@ -1227,6 +1386,12 @@ ZObject3dScanArray* ZStackWatershedContainer::makeSplitResult(uint64_t minLabel,
   }
 
   configureResult(result);
+
+#ifdef _DEBUG_2
+  ZStack *labelStack = result->toColorField();
+  labelStack->save(GET_TEST_DATA_DIR + "/test.tif");
+  delete labelStack;
+#endif
 
   return result;
 }
@@ -1308,18 +1473,29 @@ ZStackWatershedContainer* ZStackWatershedContainer::makeSubContainer(
     }
   }
 
-  out->setRangeOption(RANGE_SEED_BOUND);
+  out->setCcaPost(false);
+  out->setRangeHint(RANGE_SEED_BOUND);
 
   return out;
 }
 
+void ZStackWatershedContainer::addResult(const ZStackArray &result)
+{
+  m_result.append(result);
+  deprecateDependent(COMP_RESULT);
+}
+
 std::vector<ZStackWatershedContainer*>
-ZStackWatershedContainer::makeLocalSeedContainer(size_t maxVolume)
+ZStackWatershedContainer::makeLocalSeedContainer(double maxDist)
 {
   ZOUT(LINFO(), 5) << "Making local seed containers ...";
 
   std::vector<ZStackWatershedContainer*> result;
-  ZGraphPtr seedGraph = buildSeedGraph(maxVolume);
+  ZGraphPtr seedGraph = buildSeedGraph(maxDist);
+#ifdef _DEBUG_
+  seedGraph->print();
+#endif
+
   const std::vector<ZGraph*> &graphList = seedGraph->getConnectedSubgraph();
   for (const ZGraph *graph : graphList) {
     std::set<int> vertexSet = graph->getConnectedVertexSet();
@@ -1332,7 +1508,7 @@ ZStackWatershedContainer::makeLocalSeedContainer(size_t maxVolume)
   return result;
 }
 
-ZGraphPtr ZStackWatershedContainer::buildSeedGraph(size_t maxVolume) const
+ZGraphPtr ZStackWatershedContainer::buildSeedGraph(double maxDist) const
 {
   ZGraphPtr graph = ZGraphPtr::Make(ZGraph::UNDIRECTED_WITH_WEIGHT);
 
@@ -1341,8 +1517,8 @@ ZGraphPtr ZStackWatershedContainer::buildSeedGraph(size_t maxVolume) const
       ZStackObject *seed1 = m_seedArray[i];
       ZStackObject *seed2 = m_seedArray[j];
       if (seed1->getLabel() != seed2->getLabel()) {
-        size_t v = ComputeSeedVolume(*seed1, *seed2);
-        if (v <= maxVolume) {
+        double v = ComputeSeedDist(*seed1, *seed2);
+        if (v <= maxDist) {
           graph->addEdgeFast(i, j, v);
         }
       }
@@ -1361,4 +1537,13 @@ size_t ZStackWatershedContainer::ComputeSeedVolume(
   box1.join(box2);
 
   return box1.getVolume();
+}
+
+double ZStackWatershedContainer::ComputeSeedDist(
+    const ZStackObject &obj1, const ZStackObject &obj2)
+{
+  ZIntCuboid box1 = ZStackObjectAccessor::GetIntBoundBox(obj1);
+  ZIntCuboid box2 = ZStackObjectAccessor::GetIntBoundBox(obj2);
+
+  return box1.computeDistance(box2);
 }

@@ -186,6 +186,12 @@ void Z3DCanvas::updateDecoration()
   m_updatingDecoration = false;
 }
 
+void Z3DCanvas::dump(const QString &message)
+{
+  m_message = message;
+  viewport()->update();
+}
+
 void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 {
   if (!m_updatingDecoration) {
@@ -210,26 +216,67 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
   painter->drawRect(QRect(10, 10, 40, 60));
 #endif
 
+  QStringList text;
+  if (!m_message.isEmpty()) {
+    text.append(m_message);
+  }
   if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
-    painter->setPen(QColor(255, 255, 255));
-    QFont font("Helvetica [Cronyx]", 24);
-    painter->setFont(font);
-    painter->drawText(
-          QRectF(10, 10, 300, 200),
-          "Selection mode on: \n"
-          "  1: downstream;\n"
-          "  2: upstream;\n"
-          "  3: connected nodes;\n"
-          "  4: inverse selection;\n"
-          "  5: select small trees;");
+    text.append("Selection mode on:");
+    text.append("  1: downstream;");
+    text.append("  2: upstream;");
+    text.append("  3: connected nodes;");
+    text.append("  4: inverse selection;");
+    text.append("  5: select small trees;");
   }
 
-  //painter->drawRect(QRect(10, 10, 40, 60));
+
+  drawText(*painter, text);
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 9, 0) && defined(_USE_CORE_PROFILE_)
   glGetError(); //error from qt
 #endif
 }
+
+void Z3DCanvas::drawText(QPainter &painter, const QStringList &text)
+{
+  if (!text.empty()) {
+    int maxLength = 0;
+    QString compText;
+    foreach (const QString &str, text) {
+      if (str.length() > maxLength) {
+        maxLength = str.length();
+      }
+      compText += str + "\n";
+    }
+
+    maxLength = std::min(maxLength, 80);
+
+    int width = maxLength * 8;
+    int height = text.length() * 20;
+
+    if (width > 0 && height > 0) {
+      QPixmap pixmap(width, height);
+      pixmap.fill(QColor(0, 0, 0, 64));
+
+      QPainter bufferPainter(&pixmap);
+      bufferPainter.setPen(QColor(64, 200, 64));
+
+      //    bufferPainter.fillRect(pixmap.rect(), QColor(0, 0, 0, 0));
+      bufferPainter.drawText(QRectF(10, 1, width, height), compText);
+      painter.drawPixmap(0, 0, pixmap);
+    }
+  }
+}
+
+void Z3DCanvas::drawText(QPainter &painter, const QString &text)
+{
+  if (!text.isEmpty()) {
+    QStringList textList;
+    textList.append(text);
+    drawText(painter, text);
+  }
+}
+
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)
 {

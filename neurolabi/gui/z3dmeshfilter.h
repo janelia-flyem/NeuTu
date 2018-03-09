@@ -51,6 +51,12 @@ public:
   bool showingSourceColors() const;
 
   bool hitObject(int x, int y);
+
+  /*!
+   * \brief hitObject
+   * \param ptArray
+   * \return
+   */
   std::vector<bool> hitObject(const std::vector<std::pair<int, int> > &ptArray);
 
   // Meshes not mentioned in meshIdToColorIndex will get indexedColors[0].

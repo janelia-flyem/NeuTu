@@ -376,7 +376,8 @@ void Z3DMeshFilter::prepareColor()
   } else if (m_colorMode.isSelected("Mesh Color")) {
     m_meshRenderer.setColorSource("MeshColor");
   } else if (m_colorMode.isSelected("Indexed Color")) {
-    glm::vec4 defaultColor = m_indexedColors.size() > 1 ? m_indexedColors[0] : glm::vec4(1, 1, 1, 1);
+    glm::vec4 defaultColor =
+        m_indexedColors.size() > 1 ? m_indexedColors[0] : glm::vec4(1, 1, 1, 1);
     for (size_t i = 0; i < m_meshList.size(); ++i) {
       auto it = m_meshIDToColorIndex.find(m_meshList[i]->getLabel());
       glm::vec4 color = defaultColor;

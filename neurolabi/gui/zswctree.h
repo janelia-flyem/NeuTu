@@ -212,8 +212,8 @@ public:
    */
   bool isForest() const;
 
-  void setLabel(uint64_t label);
-  uint64_t getLabel() const;
+//  void setLabel(uint64_t label);
+//  uint64_t getLabel() const;
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,

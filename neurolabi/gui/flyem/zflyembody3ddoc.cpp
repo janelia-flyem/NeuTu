@@ -31,10 +31,14 @@
 #include "zmeshfactory.h"
 #include "zstackdocaccessor.h"
 #include "zstackwatershedcontainer.h"
+#include "zstackobjectaccessor.h"
+#include "flyem/zflyembodysplitter.h"
+#include "zactionlibrary.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
 const int ZFlyEmBody3dDoc::MAX_RES_LEVEL = 5;
+const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent)
@@ -53,6 +57,9 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
 
   connectSignalSlot();
   disconnectSwcNodeModelUpdate();
+
+  m_splitter = new ZFlyEmBodySplitter(this);
+  ZWidgetMessage::ConnectMessagePipe(m_splitter, this);
 }
 
 ZFlyEmBody3dDoc::~ZFlyEmBody3dDoc()
@@ -402,6 +409,11 @@ int ZFlyEmBody3dDoc::getMinResLevel() const
   return resLevel;
 }
 
+int ZFlyEmBody3dDoc::getMaxResLevel() const
+{
+  return m_maxResLevel;
+}
+
 void ZFlyEmBody3dDoc::removeDiffBody()
 {
   QList<ZSwcTree*> treeList = getSwcList();
@@ -520,9 +532,28 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
   emit todoVisibleChanged();
 }
 
+void ZFlyEmBody3dDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
+{
+  const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
+        ZStackObject::TYPE_FLYEM_TODO_ITEM);
+  for (TStackObjectSet::const_iterator iter = objSet.begin();
+       iter != objSet.end(); ++iter) {
+    ZFlyEmToDoItem *item = dynamic_cast<ZFlyEmToDoItem*>(*iter);
+    if (item != NULL) {
+      if (action != item->getAction()) {
+        item->setAction(action);
+        m_dvidWriter.writeToDoItem(*item);
+        bufferObjectModified(item);
+      }
+    }
+  }
+
+  processObjectModified();
+}
+
 void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
 {
-  bool changed = false;
+//  bool changed = false;
 
   const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
         ZStackObject::TYPE_FLYEM_TODO_ITEM);
@@ -533,14 +564,16 @@ void ZFlyEmBody3dDoc::setSelectedTodoItemChecked(bool on)
       if (item->isChecked() != on) {
         item->setChecked(on);
         m_dvidWriter.writeToDoItem(*item);
-        changed = true;
+//        changed = true;
+        bufferObjectModified(item);
       }
     }
   }
+  processObjectModified();
 
-  if (changed) {
-    notifyTodoModified();
-  }
+//  if (changed) {
+//    notifyTodoModified();
+//  }
 }
 
 void ZFlyEmBody3dDoc::checkSelectedTodoItem()
@@ -776,42 +809,210 @@ ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
   return ZStackObject::TYPE_SWC;
 }
 
-bool ZFlyEmBody3dDoc::loadDvidSparseStack()
+uint64_t ZFlyEmBody3dDoc::getSingleBody() const
 {
-//  return getDataDocument()->getDvidSparseStack();
+  QMutexLocker locker(&m_BodySetMutex);
 
-  bool loaded = false;
-
+  uint64_t bodyId = 0;
   if (m_bodySet.size() == 1) {
-    uint64_t bodyId = *(m_bodySet.begin());
-    ZDvidSparseStack *body = getDataDocument()->getCachedBodyForSplit(bodyId);
+    bodyId = *(m_bodySet.begin());
+  }
 
-    if (body != NULL) {
-      if (body->getLabel() != bodyId) {
-        body = NULL;
+  return bodyId;
+}
+
+void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId, flyem::EBodyLabelType type)
+{
+  if (!isSplitActivated()) {
+    uint64_t parentId = bodyId;
+    if (type == flyem::LABEL_SUPERVOXEL) {
+      parentId = m_dvidReader.readParentBodyId(bodyId);
+    }
+
+    if (getDataDocument()->checkOutBody(parentId, flyem::BODY_SPLIT_ONLINE)) {
+      m_splitter->setBody(bodyId, type);
+      emit interactionStateChanged();
+    } else {
+      notifyWindowMessageUpdated("Failed to lock the body for split.");
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::activateSplitForSelected()
+{
+  TStackObjectSet objSet = getSelected(ZStackObject::TYPE_MESH);
+  if (objSet.size() == 1) {
+    ZStackObject *obj = *(objSet.begin());
+    activateSplit(obj->getLabel(), getBodyLabelType());
+  }
+}
+
+void ZFlyEmBody3dDoc::deactivateSplit()
+{
+  if (m_splitter->getBodyId() > 0) {
+    waitForSplitToBeDone();
+
+    uint64_t parentId = m_splitter->getBodyId();
+
+    if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
+      parentId = m_dvidReader.readParentBodyId(m_splitter->getBodyId());
+    }
+    getDataDocument()->checkInBodyWithMessage(
+          parentId, flyem::BODY_SPLIT_ONLINE);
+
+    m_splitter->setBodyId(0);
+    emit interactionStateChanged();
+  }
+}
+
+void ZFlyEmBody3dDoc::makeAction(ZActionFactory::EAction item)
+{
+  if (!m_actionLibrary->contains(item)) {
+    QAction *action = m_actionLibrary->getAction(item);
+    if (action != NULL) {
+      switch (item) {
+      case ZActionFactory::ACTION_START_SPLIT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(activateSplitForSelected()));
+        break;
+      case ZActionFactory::ACTION_COMMIT_SPLIT:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(commitSplitResult()));
+        break;
+      default:
+        break;
       }
     }
 
-    if (body == NULL) {
-#ifdef _DEBUG_
-      std::cout << "Reading body " << bodyId << " ..." << std::endl;
-#endif
-      body = getBodyReader().readDvidSparseStackAsync(bodyId);
-      body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
-      getDataDocument()->addObject(body, true);
-    } else {
-#ifdef _DEBUG_
-      std::cout << "Body obtained from cache." << std::endl;
-#endif
+    ZStackDoc::makeAction(item);
+  }
+}
+
+bool ZFlyEmBody3dDoc::isSplitActivated() const
+{
+  return m_splitter->getBodyId() > 0;
+}
+
+bool ZFlyEmBody3dDoc::isSplitFinished() const
+{
+  return m_splitter->getState() == ZFlyEmBodySplitter::STATE_FULL_SPLIT;
+}
+
+bool ZFlyEmBody3dDoc::protectBody(uint64_t bodyId)
+{
+  if (bodyId > 0) {
+    QMutexLocker locker(&m_eventQueueMutex);
+    QMap<uint64_t, BodyEvent> actionMap = makeEventMap(false, m_bodySet);
+    if (actionMap.contains(bodyId)) {
+      if (actionMap[bodyId].getAction() == BodyEvent::ACTION_REMOVE) {
+        //Cannot protected a body to be removed
+        return false;
+      }
     }
-    loaded = true;
+
+    m_protectedBodySet.insert(bodyId);
+  }
+
+  return true;
+}
+
+void ZFlyEmBody3dDoc::releaseBody(uint64_t bodyId)
+{
+  QMutexLocker locker(&m_eventQueueMutex);
+
+  m_protectedBodySet.remove(bodyId);
+
+  emit interactionStateChanged();
+}
+
+bool ZFlyEmBody3dDoc::isBodyProtected(uint64_t bodyId) const
+{
+  QMutexLocker locker(&m_eventQueueMutex);
+
+  return m_protectedBodySet.contains(bodyId);
+}
+
+
+uint64_t ZFlyEmBody3dDoc::protectBodyForSplit()
+{
+  uint64_t bodyId = m_splitter->getBodyId();
+
+  QMutexLocker locker(&m_BodySetMutex);
+  if (bodyId == 0) {
+    if (m_bodySet.size() == 1) {
+      bodyId = *(m_bodySet.begin());
+    }
+  }
+
+  if (!protectBody(bodyId)) {
+    bodyId = 0;
+  }
+
+  return bodyId;
+}
+
+ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStack(
+    uint64_t bodyId, flyem::EBodyLabelType type)
+{
+  if (bodyId == 0) {
+    return NULL;
+  }
+
+  ZDvidSparseStack *body = getDataDocument()->getCachedBodyForSplit(bodyId);
+
+  if (body != NULL) {
+    if (body->getLabel() != bodyId || body->getLabelType() != type) {
+      body = NULL;
+    }
+  }
+
+  if (body == NULL) {
+#ifdef _DEBUG_
+    std::cout << "Reading body " << bodyId << " ..." << std::endl;
+#endif
+    body = getBodyReader().readDvidSparseStackAsync(bodyId);
+    body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
+    getDataDocument()->addObject(body, true);
   } else {
 #ifdef _DEBUG_
-      std::cout << "Skip body loading because there are more than one bodies selecteds." << std::endl;
+    std::cout << "Body obtained from cache." << std::endl;
 #endif
   }
 
-  return loaded;
+  if (body != NULL) {
+    body->setLabelType(type);
+  }
+
+  return body;
+}
+
+#if 0
+ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStack()
+{
+//  return getDataDocument()->getDvidSparseStack();
+
+  ZDvidSparseStack *stack = NULL;
+
+  if (m_bodySet.size() == 1) {
+    uint64_t bodyId = *(m_bodySet.begin());
+    stack = loadDvidSparseStack(bodyId, );
+  }
+
+  return stack;
+}
+#endif
+
+ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStackForSplit()
+{
+  ZDvidSparseStack *stack = NULL;
+
+  stack = loadDvidSparseStack(
+        m_splitter->getBodyId(), m_splitter->getLabelType());
+  if (stack != NULL) {
+    stack->setLabelType(m_splitter->getLabelType());
+  }
+
+  return stack;
 }
 
 void ZFlyEmBody3dDoc::updateBodyModelSelection()
@@ -861,19 +1062,21 @@ void ZFlyEmBody3dDoc::processEvent()
   }
 }
 
-bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId)
+bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId) const
 {
+  QMutexLocker locker(&m_BodySetMutex);
   return m_bodySet.contains(bodyId);
 }
 
 void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
 {
-  if (!hasBody(bodyId)) {
+  QMutexLocker locker(&m_BodySetMutex);
+  if (!m_bodySet.contains(bodyId)) {
     m_bodySet.insert(bodyId);
     if (getBodyType() == flyem::BODY_SKELETON) {
       addBodyFunc(bodyId, color, -1);
     } else {
-      addBodyFunc(bodyId, color, MAX_RES_LEVEL);
+      addBodyFunc(bodyId, color, m_maxResLevel);
     }
   }
 }
@@ -884,15 +1087,19 @@ void ZFlyEmBody3dDoc::setBodyType(flyem::EBodyType type)
   switch (m_bodyType) {
   case flyem::BODY_COARSE:
     setTag(neutube::Document::FLYEM_BODY_3D_COARSE);
+    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_FULL:
     setTag(neutube::Document::FLYEM_BODY_3D);
+    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_SKELETON:
     setTag(neutube::Document::FLYEM_SKELETON);
+    setMaxResLevel(0);
     break;
   case flyem::BODY_MESH:
     setTag(neutube::Document::FLYEM_MESH);
+    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_NULL:
     break;
@@ -993,7 +1200,7 @@ void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
 
   if (event.getAction() == BodyEvent::ACTION_ADD &&
       getBodyType() != flyem::BODY_SKELETON) {
-    event.setResLevel(MAX_RES_LEVEL);
+    event.setResLevel(getMaxResLevel());
   }
 
   addEvent(event);
@@ -1005,7 +1212,7 @@ ZSwcTree* ZFlyEmBody3dDoc::getBodyQuickly(uint64_t bodyId)
   ZSwcTree *tree = NULL;
 
   if (getBodyType() == flyem::BODY_FULL) {
-    tree = recoverFullBodyFromGarbage(bodyId, MAX_RES_LEVEL);
+    tree = recoverFullBodyFromGarbage(bodyId, getMaxResLevel());
   }
 
   if (tree == NULL) {
@@ -1029,14 +1236,32 @@ ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
   return bodyEvent;
 }
 
+void ZFlyEmBody3dDoc::notifyBodyUpdate(uint64_t bodyId, int resLevel)
+{
+  notifyWindowMessageUpdated(
+        QString("Updating body %1 (scale=%2) ...").arg(bodyId).arg(resLevel));
+}
+
+void ZFlyEmBody3dDoc::notifyBodyUpdated(uint64_t bodyId, int resLevel)
+{
+  if (resLevel > 0) {
+    notifyWindowMessageUpdated(
+          QString("Body %1 updated (scale=%2).").arg(bodyId).arg(resLevel));
+  } else {
+    notifyWindowMessageUpdated(
+          QString("Body %1 updated.").arg(bodyId));
+  }
+}
+
 void ZFlyEmBody3dDoc::addBodyMeshFunc(
     uint64_t id, const QColor &color, int resLevel)
 {
-  emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+  notifyBodyUpdate(id, resLevel);
+
   std::map<uint64_t, ZMesh*> meshes;
   makeBodyMeshModels(id, resLevel, meshes);
   for (auto it : meshes) {
-    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+//    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
 
     uint64_t bodyId = it.first;
     ZMesh *mesh = it.second;
@@ -1109,6 +1334,8 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     }
   }
 
+  notifyBodyUpdated(id, resLevel);
+
   if (encodesTar(id)) {
 
     // Meshes loaded from an archive are ready at this point, so emit a signal, which
@@ -1134,12 +1361,14 @@ void ZFlyEmBody3dDoc::addBodyFunc(
           isEmpty());
 
     ZSwcTree *tree = NULL;
-    if (resLevel == MAX_RES_LEVEL) {
+    if (resLevel == getMaxResLevel() && resLevel > 0) {
+      notifyBodyUpdate(bodyId, getMaxResLevel());
       tree = getBodyQuickly(bodyId);
+      notifyBodyUpdated(bodyId, getMaxResLevel());
     } else {
-      emit messageGenerated(ZWidgetMessage("Syncing 3D Body view ..."));
+      notifyBodyUpdate(bodyId, resLevel);
       tree = makeBodyModel(bodyId, resLevel, getBodyType());
-      emit messageGenerated(ZWidgetMessage("3D Body view synced"));
+      notifyBodyUpdated(bodyId, resLevel);
     }
 
     if (tree != NULL) {
@@ -1398,6 +1627,11 @@ void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)
   }
 }
 
+void ZFlyEmBody3dDoc::removeSplitTask(uint64_t bodyId)
+{
+  ZFlyEmMisc::RemoveSplitTask(getDvidTarget(), bodyId);
+}
+
 void ZFlyEmBody3dDoc::enableSplitTaskLoading(bool enable)
 {
   m_splitTaskLoadingEnabled = enable;
@@ -1508,6 +1742,7 @@ void ZFlyEmBody3dDoc::addTodo(int x, int y, int z, bool checked, uint64_t bodyId
 
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
+  QMutexLocker locker(&m_BodySetMutex);
   m_bodySet.remove(bodyId);
   removeBodyFunc(bodyId, true);
 }
@@ -2025,18 +2260,19 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
   if (mesh == NULL) {
     bool loaded = false;
-    if (zoom > MAX_RES_LEVEL) {
-        loaded = !(getObjectGroup().findSameClass(
-            ZStackObject::TYPE_MESH,
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
-          isEmpty());
+    if (zoom > getMaxResLevel()) {
+      //For zooming level beyond the range, ignore it if the mesh at any level exists.
+      loaded = !(getObjectGroup().findSameClass(
+                   ZStackObject::TYPE_MESH,
+                   ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
+                 isEmpty());
     }
 
-    if (!loaded) { //Now make mesh
+    if (!loaded) { //Now make mesh from sparse vol
       ZObject3dScan obj;
       if (zoom == 0) {
         reader.readMultiscaleBody(bodyId, zoom, true, &obj);
-      } else if (zoom == MAX_RES_LEVEL){
+      } else if (zoom >= getMaxResLevel()){
         reader.readCoarseBody(bodyId, &obj);
         obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
       }
@@ -2163,63 +2399,248 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
 }
 
+#if 0
+void ZFlyEmBody3dDoc::runLocalSplitFunc()
+{
+  notifyWindowMessageUpdated("Starting local split ...");
+  uint64_t bodyId = protectBodyForSplit();
+
+  if (bodyId > 0) {
+    if (loadDvidSparseStack(bodyId)) {
+      notifyWindowMessageUpdated("Running local split ...");
+      QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+      if (seedList.size() > 1) {
+        ZStackWatershedContainer container(NULL, NULL);
+        foreach (ZStackObject *seed, seedList) {
+          container.addSeed(seed);
+        }
+
+        container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
+
+        ZDvidSparseStack *sparseStack =
+            getDataDocument()->getDvidSparseStack(
+              container.getRange(), flyem::BODY_SPLIT_ONLINE);
+        container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
+
+        std::vector<ZStackWatershedContainer*> containerList =
+            container.makeLocalSeedContainer(256);
+
+        ZOUT(LINFO(), 5) << containerList.size() << "containers";
+        for (ZStackWatershedContainer *subcontainer : containerList) {
+          subcontainer->run();
+          ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
+          delete subcontainer;
+        }
+        notifyWindowMessageUpdated("Local split finished.");
+      } else {
+        //    std::cout << "Less than 2 seeds found. Abort." << std::endl;
+        notifyWindowMessageUpdated("Less than 2 seeds found. Splitting canceled.");
+      }
+    } else {
+      notifyWindowMessageUpdated("Failed to load body data. Split aborted.");
+    }
+    releaseBody(bodyId);
+  } else {
+    notifyWindowMessageUpdated("Failed to secure body data. Split aborted.");
+  }
+}
+
+void ZFlyEmBody3dDoc::runFullSplitFunc()
+{
+  notifyWindowMessageUpdated("Starting split ...");
+  uint64_t bodyId = protectBodyForSplit();
+
+  if (bodyId > 0) {
+    if (loadDvidSparseStack(bodyId)) {
+      notifyWindowMessageUpdated("Running full split ...");
+      QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+      if (ZStackObjectAccessor::GetLabelCount(seedList) > 1) {
+        ZStackWatershedContainer container(NULL, NULL);
+        foreach (ZStackObject *seed, seedList) {
+          container.addSeed(seed);
+        }
+
+        container.setRangeHint(ZStackWatershedContainer::RANGE_FULL);
+
+        ZDvidSparseStack *sparseStack =
+            getDataDocument()->getDvidSparseStack(
+              container.getRange(), flyem::BODY_SPLIT_ONLINE);
+        container.setData(
+              NULL, sparseStack->getSparseStack(container.getRange()));
+        container.run();
+        ZStackDocAccessor::ParseWatershedContainer(this, &container);
+        notifyWindowMessageUpdated("Split finished.");
+      } else {
+        notifyWindowMessageUpdated("Less than 2 seed labels found. Splitting canceled.");
+      }
+    } else {
+      notifyWindowMessageUpdated("Failed to load body data. Split aborted.");
+    }
+    releaseBody(bodyId);
+  } else {
+    notifyWindowMessageUpdated("Failed to secure body data. Split aborted.");
+  }
+}
+
+void ZFlyEmBody3dDoc::runSplitFunc()
+{
+  notifyWindowMessageUpdated("Starting split ...");
+  uint64_t bodyId = protectBodyForSplit();
+
+  if (bodyId > 0) {
+    if (loadDvidSparseStack(bodyId)) {
+      notifyWindowMessageUpdated("Running split ...");
+      QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+      if (seedList.size() > 1) {
+        ZStackWatershedContainer container(NULL, NULL);
+        foreach (ZStackObject *seed, seedList) {
+          container.addSeed(seed);
+        }
+
+        container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_ROI);
+
+        ZDvidSparseStack *sparseStack =
+            getDataDocument()->getDvidSparseStack(
+              container.getRange(), flyem::BODY_SPLIT_ONLINE);
+        container.setData(
+              NULL, sparseStack->getSparseStack(container.getRange()));
+        container.run();
+        ZStackDocAccessor::ParseWatershedContainer(this, &container);
+        notifyWindowMessageUpdated("Split finished.");
+      } else {
+        //    std::cout << "Less than 2 seeds found. Abort." << std::endl;
+        notifyWindowMessageUpdated("Less than 2 seeds found. Splitting canceled.");
+      }
+    } else {
+      notifyWindowMessageUpdated("Failed to load body data. Split aborted.");
+    }
+    releaseBody(bodyId);
+  } else {
+    notifyWindowMessageUpdated("Failed to secure body data. Split aborted.");
+  }
+}
+#endif
+
 void ZFlyEmBody3dDoc::runLocalSplit()
 {
   ZOUT(LINFO(), 5) << "Trying local split ...";
 
-  removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+  uint64_t bodyId = protectBodyForSplit();
 
-  if (loadDvidSparseStack()) {
-    QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
-    if (seedList.size() > 1) {
-      ZStackWatershedContainer container(NULL, NULL);
-      foreach (ZStackObject *seed, seedList) {
-        container.addSeed(seed);
+  if (bodyId > 0) {
+    activateSplit(bodyId, getBodyLabelType());
+    if (isSplitActivated()) {
+      if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
+        removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+        QFuture<void> future =
+            QtConcurrent::run(m_splitter, &ZFlyEmBodySplitter::runLocalSplit);
+        m_futureMap[THREAD_SPLIT_KEY] = future;
       }
-
-      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
-
-      ZDvidSparseStack *sparseStack =
-          getDataDocument()->getDvidSparseStack(
-            container.getRange(), flyem::BODY_SPLIT_ONLINE);
-      container.setData(NULL, sparseStack->getSparseStack(container.getRange()));
-
-      std::vector<ZStackWatershedContainer*> containerList =
-          container.makeLocalSeedContainer(256*256*256);
-
-      ZOUT(LINFO(), 5) << containerList.size() << "containers";
-      for (ZStackWatershedContainer *subcontainer : containerList) {
-        subcontainer->run();
-        ZStackDocAccessor::ParseWatershedContainer(this, subcontainer);
-        delete subcontainer;
-      }
-//      container.run();
-
-//      setHadSegmentationSampled(container.computationDowsampled());
-
-//      ZStackDocAccessor::ParseWatershedContainer(this, &container);
-#if 0
-      ZObject3dScanArray result;
-      container.makeSplitResult(1, &result);
-
-      ZOUT(LTRACE(), 5) << result.size() << "split generated.";
-      for (ZObject3dScanArray::iterator iter = result.begin();
-           iter != result.end(); ++iter) {
-        ZObject3dScan *obj = *iter;
-        obj->addRole(ZStackObjectRole::ROLE_3DMESH_DECORATOR); //For 3D visualization
-        getDataBuffer()->addUpdate(
-              obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
-      }
-      getDataBuffer()->deliver();
-
-      result.shallowClear();
-#endif
-    } else {
-      std::cout << "Less than 2 seeds found. Abort." << std::endl;
     }
-  } else {
-    std::cout << "No body loaded for split." << std::endl;
   }
+}
+
+void ZFlyEmBody3dDoc::runSplit()
+{
+  ZOUT(LINFO(), 5) << "Trying split ...";
+
+  if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
+    removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+    QFuture<void> future =
+        QtConcurrent::run(m_splitter, &ZFlyEmBodySplitter::runSplit);
+    m_futureMap[THREAD_SPLIT_KEY] = future;
+  }
+}
+
+void ZFlyEmBody3dDoc::runFullSplit()
+{
+  ZOUT(LINFO(), 5) << "Trying split ...";
+
+  if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
+    removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
+    QFuture<void> future =
+        QtConcurrent::run(m_splitter, &ZFlyEmBodySplitter::runFullSplit);
+    m_futureMap[THREAD_SPLIT_KEY] = future;
+  }
+}
+
+void ZFlyEmBody3dDoc::commitSplitResult()
+{
+  notifyWindowMessageUpdated("Uploading splitted bodies");
+
+  QString summary;
+
+  uint64_t oldId = m_splitter->getBodyId();
+  uint64_t remainderId = oldId;
+
+  ZObject3dScan *remainObj = new ZObject3dScan;
+
+  QList<ZStackObject*> objList =
+      getObjectList(ZStackObjectRole::ROLE_SEGMENTATION);
+  foreach (ZStackObject *obj, objList) {
+    ZObject3dScan *seg = dynamic_cast<ZObject3dScan*>(obj);
+    if (seg != NULL) {
+      if (seg->getLabel() > 1) {
+        notifyWindowMessageUpdated(QString("Uploading %1/%2"));
+
+        uint64_t newBodyId = 0;
+        if (m_splitter->getLabelType() == flyem::LABEL_BODY) {
+          newBodyId = m_dvidWriter.writeSplit(*seg, remainderId, 0);
+        } else {
+          std::pair<uint64_t, uint64_t> idPair =
+              m_dvidWriter.writeSupervoxelSplit(*seg, remainderId);
+          remainderId = idPair.first;
+          newBodyId = idPair.second;
+        }
+
+        notifyWindowMessageUpdated(QString("Updating mesh ..."));
+        ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
+        m_dvidWriter.writeMesh(*mesh, newBodyId, 0);
+        delete mesh;
+        emit addingBody(newBodyId);
+//        addEvent(BodyEvent::ACTION_ADD, newBodyId);
+
+        summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
+            arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
+      } else {
+        remainObj->unify(*seg);
+      }
+    }
+  }
+
+  m_dvidWriter.deleteMesh(oldId);
+  ZMesh* mesh = ZMeshFactory::MakeMesh(*remainObj);
+  m_dvidWriter.writeMesh(*mesh, remainderId, 0);
+//  delete mesh;
+
+  if (remainderId == oldId) { //Update the body if the main ID remain unchanged
+    mesh->setLabel(oldId);
+    mesh->setSource(
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(
+            oldId, 0, flyem::BODY_MESH));
+    ZStackDocAccessor::AddObjectUnique(this, mesh);
+  } else {
+    emit removingBody(oldId);
+    emit addingBody(remainderId);
+    delete mesh;
+  }
+//  addEvent(BodyEvent::ACTION_REMOVE, oldId);
+  ZStackDocAccessor::RemoveObject(
+        this, ZStackObjectRole::ROLE_SEGMENTATION, true);
+
+  m_splitter->setBodyId(remainderId);
+
+  ZDvidSparseStack *sparseStack = getDataDocument()->getDvidSparseStack();
+  if (sparseStack != NULL) {
+    sparseStack->setObjectMask(remainObj);
+  }
+
+  notifyWindowMessageUpdated(summary);
+}
+
+void ZFlyEmBody3dDoc::waitForSplitToBeDone()
+{
+  m_futureMap.waitForFinished(THREAD_SPLIT_KEY);
 }
 
 /*
@@ -2439,6 +2860,17 @@ void ZFlyEmBody3dDoc::dumpGarbage(
 
 void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
 {
+  //Make old conflicted objects unrecyclable
+  for (QMap<ZStackObject*, ObjectStatus>::iterator iter = m_garbageMap.begin();
+       iter != m_garbageMap.end(); ++iter) {
+    ZStackObject *oldObj = iter.key();
+    ObjectStatus &status =iter.value();
+    if (oldObj->getType() == obj->getType() &&
+        oldObj->getSource() == obj->getSource()) {
+      status.setRecycable(false);
+    }
+  }
+
   m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
   m_garbageMap[obj].setRecycable(recycable);
 

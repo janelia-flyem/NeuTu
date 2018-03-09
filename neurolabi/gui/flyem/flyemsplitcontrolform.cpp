@@ -54,6 +54,8 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(bodyViewTriggered()));
   connect(ui->coarseBodyViewPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
+  connect(ui->meshPushButton, SIGNAL(clicked()),
+          this, SIGNAL(meshViewTriggered()));
 //  connect(ui->viewSplitPushButton, SIGNAL(clicked()),
 //          this, SIGNAL(splitViewTriggered()));
   connect(ui->loadBodyPushButton, SIGNAL(clicked()),
