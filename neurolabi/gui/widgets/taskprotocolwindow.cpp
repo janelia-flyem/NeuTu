@@ -70,6 +70,8 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
+    ui->nextButton->setShortcut(Qt::Key_E);
+    ui->prevButton->setShortcut(Qt::Key_Q);
 }
 
 // constants
@@ -639,7 +641,9 @@ void TaskProtocolWindow::updateMenu(bool add) {
         }
         if (add && (m_currentTaskIndex >= 0)) {
             QMenu *menu = m_taskList[m_currentTaskIndex]->getTaskMenu();
-            m_currentTaskMenuAction = window->menuBar()->addMenu(menu);
+            if (menu != NULL) {
+              m_currentTaskMenuAction = window->menuBar()->addMenu(menu);
+            }
         }
     }
 }

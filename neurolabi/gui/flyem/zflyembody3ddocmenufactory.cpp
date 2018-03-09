@@ -22,6 +22,8 @@ QMenu* ZFlyEmBody3dDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *men
     if (doc->hasTodoItemSelected()) {
       actionList.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
       actionList.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
+      actionList.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL);
+      actionList.append(ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT);
     }
 
     if (doc->hasSelectedPuncta()) {

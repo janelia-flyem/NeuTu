@@ -564,6 +564,7 @@ public: /* processing routines */
 //  inline const ZResolution& getResolution() const { return m_resolution; }
 
   void pushDsIntv(int dx, int dy, int dz);
+  void pushDsIntv(const ZIntPoint &dsIntv);
 
   ZIntPoint getDsIntv() const {
     return m_dsIntv;

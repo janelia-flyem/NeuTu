@@ -159,10 +159,16 @@ namespace {
 class TaskBodyCleave::SetCleaveIndicesCommand : public QUndoCommand
 {
 public:
-  SetCleaveIndicesCommand(TaskBodyCleave *task, std::map<uint64_t, std::size_t> meshIdToCleaveIndex) :
+  SetCleaveIndicesCommand(TaskBodyCleave *task,
+                          std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
+                          int comboBoxIndex,
+                          const QString &comboBoxText) :
     m_task(task),
     m_meshIdToCleaveIndexBefore(task->m_meshIdToCleaveIndex),
-    m_meshIdToCleaveIndexAfter(meshIdToCleaveIndex)
+    m_meshIdToCleaveIndexAfter(meshIdToCleaveIndex),
+    m_comboBoxIndex(comboBoxIndex),
+    m_comboBoxTextBefore(task->m_cleaveIndexComboBox->itemText(m_comboBoxIndex)),
+    m_comboBoxTextAfter(comboBoxText)
   {
     setText("seeding for next cleave");
   }
@@ -171,19 +177,23 @@ public:
   {
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexBefore;
     m_task->updateColors();
+    m_task->m_cleaveIndexComboBox->setItemText(m_comboBoxIndex, m_comboBoxTextBefore);
   }
 
   virtual void redo() override
   {
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexAfter;
     m_task->updateColors();
+    m_task->m_cleaveIndexComboBox->setItemText(m_comboBoxIndex, m_comboBoxTextAfter);
   }
 
 private:
   TaskBodyCleave *m_task;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexBefore;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexAfter;
-
+  int m_comboBoxIndex;
+  QString m_comboBoxTextBefore;
+  QString m_comboBoxTextAfter;
 };
 
 class TaskBodyCleave::CleaveCommand : public QUndoCommand
@@ -213,7 +223,6 @@ private:
   TaskBodyCleave *m_task;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexBefore;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexAfter;
-
 };
 
 //
@@ -365,18 +374,46 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
   std::map<uint64_t, size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
 
-  for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
-    ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
-    uint64_t id = mesh->getLabel();
-    auto itCleave = meshIdToCleaveIndex.find(id);
-    if ((itCleave == meshIdToCleaveIndex.end()) || (itCleave->second != chosenCleaveIndex())) {
-      meshIdToCleaveIndex[id] = chosenCleaveIndex();
-    } else {
-      meshIdToCleaveIndex.erase(id);
+  // The text of the combobox item will be updated to indicate the number of seeds
+  // with the current color, so count them.
+
+  int numSeeds = 0;
+  for (auto it : m_meshIdToCleaveIndex) {
+    if (it.second == chosenCleaveIndex()) {
+      numSeeds++;
     }
   }
 
-  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex));
+  QString text = m_cleaveIndexComboBox->currentText();
+
+  for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
+    ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
+    uint64_t id = mesh->getLabel();
+    int change = 0;
+    auto itCleave = meshIdToCleaveIndex.find(id);
+    if ((itCleave == meshIdToCleaveIndex.end()) || (itCleave->second != chosenCleaveIndex())) {
+      meshIdToCleaveIndex[id] = chosenCleaveIndex();
+      change = 1;
+    } else {
+      meshIdToCleaveIndex.erase(id);
+      change = -1;
+    }
+
+    // Update the text to indicate the new number of seeds.
+
+    int i = text.indexOf(" (");
+    if (i != -1) {
+      text.truncate(i);
+    }
+    numSeeds += change;
+    if (numSeeds > 0) {
+      text += " (" + QString::number(numSeeds);
+      text += (numSeeds == 1) ? " seed)" : " seeds)";
+    }
+  }
+
+  int i = m_cleaveIndexComboBox->currentIndex();
+  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex, i, text));
 
   cleave();
 }
@@ -424,6 +461,10 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
 QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
 {
+  taskJson[KEY_BODYID] = static_cast<double>(m_bodyId);
+  taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
+  taskJson[KEY_MAXLEVEL] = m_maxLevel;
+
   return taskJson;
 }
 
@@ -514,6 +555,9 @@ void TaskBodyCleave::buildTaskWidget()
   connect(m_showCleavingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCleavingChanged(int)));
 
   m_cleaveIndexComboBox = new QComboBox(m_widget);
+  // Let the combo box take as much width as possible, because the item text will be modified
+  // to include the number of seeds set with that color, and we don't want it clipped.
+  m_cleaveIndexComboBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
   QSize iconSizeDefault = m_cleaveIndexComboBox->iconSize();
   QSize iconSize = iconSizeDefault * 0.8;
   for (unsigned int i = 1; i < INDEX_COLORS.size(); i++) {

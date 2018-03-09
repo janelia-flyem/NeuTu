@@ -50,6 +50,7 @@
 #include "zstroke2d.h"
 #include "flyem/zflyemmisc.h"
 #include "zstackwatershedcontainer.h"
+#include "zmeshfactory.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -1207,7 +1208,7 @@ void ZFlyEmProofDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
       }
     }
     if (!selectedSet.empty()) {
-      processObjectModified(td);
+      bufferObjectModified(td);
       notifyTodoItemModified(ptArray, true);
     }
   }
@@ -2945,6 +2946,19 @@ void ZFlyEmProofDoc::refreshDvidLabelBuffer(unsigned long delay)
   }
 }
 
+void ZFlyEmProofDoc::updateMeshForSelected()
+{
+  const std::set<uint64_t> &bodySet =
+      getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+  for (uint64_t bodyId : bodySet) {
+    ZObject3dScan obj;
+    getDvidReader().readBody(bodyId, true, &obj);
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    getDvidWriter().writeMesh(*mesh, bodyId, 0);
+    delete mesh;
+  }
+}
+
 /*
 void ZFlyEmProofDoc::setLabelSliceAlpha(int alpha)
 {
@@ -3111,13 +3125,13 @@ void ZFlyEmProofDoc::runSplitFunc(
 
     switch (range) {
     case flyem::RANGE_SEED:
-      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_ROI);
+      container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_ROI);
       break;
     case flyem::RANGE_LOCAL:
-      container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+      container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
       break;
     case flyem::RANGE_FULL:
-      container.setRangeOption(ZStackWatershedContainer::RANGE_FULL);
+      container.setRangeHint(ZStackWatershedContainer::RANGE_FULL);
       break;
     }
 
@@ -3441,6 +3455,7 @@ ZDvidSparseStack* ZFlyEmProofDoc::getDvidSparseStack() const
 
   return stack;
 }
+
 
 ZDvidSparseStack* ZFlyEmProofDoc::getCachedBodyForSplit(uint64_t bodyId) const
 {

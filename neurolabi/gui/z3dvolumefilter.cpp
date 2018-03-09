@@ -2058,23 +2058,6 @@ void Z3DVolumeFilter::readSparseStack(const ZStackDoc* doc, std::vector<std::uni
     height /= dsIntv2.getY() + 1;
     depth /= dsIntv2.getZ() + 1;
 
-
-    /*
-    ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box);
-
-    size_t volume = (size_t) width * height *depth * nchannel;
-    if (volume > m_maxVoxelNumber) {
-      //Downsample big stack
-      //m_isVolumeDownsampled.set(true);
-      double scale = std::sqrt((double) (m_maxVoxelNumber) / volume);
-      height = (int)(height * scale);
-      width = (int)(width * scale);
-
-      widthScale *= scale;
-      heightScale *= scale;
-    }
-    */
-
     for (size_t i=0; i<nchannel; i++) {
       const Stack *stack = stackData->c_stack(i);
       Stack *stack2 = NULL;

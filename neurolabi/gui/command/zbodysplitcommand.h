@@ -35,7 +35,7 @@ private:
   void processResult(
       ZStackWatershedContainer &container, const std::string &output,
       const std::string &splitTaskKey, const std::string &signalPath,
-      bool committing);
+      bool committing, const std::string &commitPath);
   std::vector<uint64_t> commitResult(
       ZObject3dScanArray *objArray, ZDvidWriter &writer);
 

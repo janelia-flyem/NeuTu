@@ -47,6 +47,8 @@ public:
 
   static void Notify3DDisabled(QWidget *parent);
 
+  static void About(QWidget *parent);
+
 private:
   QWidget *m_parentWidget;
   static QString m_currentOpenFileName;

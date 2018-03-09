@@ -141,6 +141,10 @@ public:
       const std::vector<uint64_t> &bodyIdArray, int width, int height,
       const QString &outDir);
 
+  void exportNeuronMeshScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
+
   FlyEmBodyInfoDialog *getBodyInfoDlg() const {
     return m_bodyInfoDlg;
   }
@@ -387,6 +391,7 @@ protected slots:
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
+  void updateMeshForSelected();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
   void showInfoDialog();
@@ -606,6 +611,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),
           this, SLOT(skeletonizeSelectedBody()));
+  connect(panel, SIGNAL(updatingMeshForSelectedBody()),
+          this, SLOT(updateMeshForSelected()));
   connect(panel, SIGNAL(reportingBodyCorruption()),
           this, SLOT(reportBodyCorruption()));
   connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
@@ -620,6 +627,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(splitQuickViewTriggered()),
           this, SLOT(showSplitQuickView()));
   connect(panel, SIGNAL(bodyViewTriggered()), this, SLOT(showBody3d()));
+  connect(panel, SIGNAL(meshViewTriggered()), this, SLOT(showMeshWindow()));
 //  connect(panel, SIGNAL(splitViewTriggered()), this, SLOT(showSplit3d()));
 
   connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));

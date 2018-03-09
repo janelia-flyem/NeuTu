@@ -40,7 +40,8 @@ requirements:
     - assimp
     - glbinding
     - draco
-    - libarchive
+    - libarchive 3.3.2
+    - libiconv >=1.15
 
   run:
     - python >=3.6
@@ -58,7 +59,8 @@ requirements:
     - assimp
     - glbinding
     - draco
-    - libarchive
+    - libarchive 3.3.2
+    - libiconv >=1.15
    
 about:
   home: http://github.com/janelia-flyem/NeuTu

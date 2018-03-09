@@ -82,6 +82,7 @@
 #include "z3dmeshfilter.h"
 #include "zstackobjectsourcefactory.h"
 #include "sandbox/zbrowseropener.h"
+#include "zwidgetmessage.h"
 
 #include <QDesktopWidget>
 #include <QMenuBar>
@@ -127,6 +128,12 @@ Z3DWindow::Z3DWindow(
 
   m_view = new Z3DView(m_doc.get(), initMode, stereoView, this);
 
+  ZWidgetMessage::ConnectMessagePipe(m_doc.get(), this);
+  /*
+  connect(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)),
+          this, SLOT(processMessage(ZWidgetMessage)));
+          */
+
   setCentralWidget(getCanvas());
   connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::init);
   createDockWindows(); // empty docks
@@ -169,11 +176,17 @@ void Z3DWindow::createStatusBar()
   statusBar()->showMessage("3D window ready.");
 }
 
+QToolBar* Z3DWindow::getToolBar() const
+{
+  return m_toolBar;
+}
+
 void Z3DWindow::createToolBar()
 {
   if (getWindowType() == neutube3d::TYPE_COARSE_BODY ||
       getWindowType() == neutube3d::TYPE_BODY ||
       getWindowType() == neutube3d::TYPE_SKELETON ||
+      getWindowType() == neutube3d::TYPE_MESH ||
       getWindowType() == neutube3d::TYPE_NEU3) {
     m_toolBar = addToolBar("View");
     QAction *viewSynapseAction = ZActionFactory::MakeAction(
@@ -217,6 +230,8 @@ void Z3DWindow::configureMenuForNeu3()
   QAction *settingAction = new QAction("&Settings", this);
   m_helpMenu->addAction(settingAction);
   connect(settingAction, SIGNAL(triggered()), this, SIGNAL(settingTriggered()));
+
+  m_helpMenu->addAction(getAction(ZActionFactory::ACTION_ABOUT));
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -292,6 +307,10 @@ void Z3DWindow::init()
           this, SLOT(cropSwcInRoi()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBodyLocal()),
           this, SIGNAL(runningLocalSplit()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBody()),
+          this, SIGNAL(runningSplit()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingFullBody()),
+          this, SIGNAL(runningFullSplit()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(deletingSelected()),
           this, SLOT(deleteSelected()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
@@ -362,10 +381,18 @@ void Z3DWindow::setWindowSize()
   resize(width+500, height);   //500 for dock widgets
 }
 
+void Z3DWindow::about()
+{
+  ZDialogFactory::About(this);
+}
+
 QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
 {
   QAction *action = NULL;
   switch (item) {
+  case ZActionFactory::ACTION_ABOUT:
+    action = m_actionLibrary->getAction(item, this, SLOT(about()));
+    break;
   case ZActionFactory::ACTION_DESELECT_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(deselectBody()));
     break;
@@ -401,6 +428,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_ADD_TODO_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(addToSplitMarker()));
+    break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToSplit()));
+    break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToNormal()));
     break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
@@ -445,7 +478,8 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(
           item, this, SLOT(changeSelectedPunctaColor()));
     break;
-  default:  
+  default:
+    action = getDocument()->getAction(item);
     break;
   }
 
@@ -468,8 +502,8 @@ void Z3DWindow::createActions()
   m_actionLibrary = new ZActionLibrary(this);
   m_menuFactory = new ZStackDocMenuFactory;
 
-  m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
-  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
+//  m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
+//  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
 
 //  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
 //  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
@@ -568,20 +602,23 @@ void Z3DWindow::createActions()
           SLOT(selectDownstreamNode()));
           */
 
+  /*
   m_selectSwcNodeDownstreamAction =
       m_doc->getAction(ZActionFactory::ACTION_SELECT_DOWNSTREAM);
 
   m_selectSwcNodeUpstreamAction =
       m_doc->getAction(ZActionFactory::ACTION_SELECT_UPSTREAM);
+      */
 
   /*
   m_selectSwcNodeBranchAction = new QAction("Branch", this);
   connect(m_selectSwcNodeBranchAction, SIGNAL(triggered()), m_doc.get(),
           SLOT(selectBranchNode()));
           */
+  /*
   m_selectSwcNodeBranchAction =
       m_doc->getAction(ZActionFactory::ACTION_SELECT_SWC_BRANCH);
-
+*/
 
   m_selectSwcNodeTreeAction = new QAction("Tree", this);
   connect(m_selectSwcNodeTreeAction, SIGNAL(triggered()), m_doc.get(),
@@ -672,8 +709,8 @@ void Z3DWindow::createMenus()
   m_editMenu = menuBar()->addMenu(tr("&Edit"));
   m_helpMenu = menuBar()->addMenu(tr("&Help"));
 
-  m_editMenu->addAction(m_undoAction);
-  m_editMenu->addAction(m_redoAction);
+  m_editMenu->addAction(getAction(ZActionFactory::ACTION_UNDO));
+  m_editMenu->addAction(getAction(ZActionFactory::ACTION_REDO));
   m_editMenu->addSeparator();
 //  m_editMenu->addAction(m_markSwcSomaAction);
 
@@ -1868,6 +1905,22 @@ void Z3DWindow::addToSplitMarker()
 void Z3DWindow::addDoneMarker()
 {
   AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, true);
+}
+
+void Z3DWindow::setTodoItemToSplit()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
+  }
+}
+
+void Z3DWindow::setTodoItemToNormal()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(ZFlyEmToDoItem::TO_DO);
+  }
 }
 
 void Z3DWindow::updateBody()
@@ -3101,6 +3154,11 @@ void Z3DWindow::activateTodoAction()
   getCanvas()->getInteractionEngine()->enterMarkTodo();
 }
 
+void Z3DWindow::activateBookmarkAction()
+{
+  getCanvas()->getInteractionEngine()->enterMarkBookmark();
+}
+
 void Z3DWindow::activateLocateAction()
 {
   getCanvas()->getInteractionEngine()->enterLocateMode();
@@ -3586,6 +3644,13 @@ void Z3DWindow::uncheckSelectedTodo()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     doc->uncheckSelectedTodoItem();
+  }
+}
+
+void Z3DWindow::processMessage(const ZWidgetMessage &msg)
+{
+  if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
+    m_view->dump(msg.toPlainString());
   }
 }
 
@@ -4170,6 +4235,13 @@ void Z3DWindow::setFront(neutube3d::ERendererLayer layer, bool on)
 {
   m_view->setFront(layer, on);
 }
+
+/*
+Z3DTransformParameter Z3DWindow::getTransformPara() const
+{
+  return m_view->getTransformPara();
+}
+*/
 
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {

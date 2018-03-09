@@ -106,6 +106,9 @@ public:
   Z3DTransformParameter& coordTransformPara()
   { return m_coordTransform; }
 
+  const Z3DTransformParameter& coordTransformPara() const
+  { return m_coordTransform; }
+
   ZFloatParameter& opacityPara()
   { return m_opacity; }
 

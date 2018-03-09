@@ -76,6 +76,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action = new QAction("Test", parent);
     action->setIcon(QIcon(":/images/test.png"));
     break;
+  case ACTION_ABOUT:
+    action = new QAction("About", parent);
+    break;
   case ACTION_ADD_SWC_NODE:
     action = new QAction("Add Neuron Node", parent);
     action->setStatusTip("Add an isolated neuron node.");
@@ -483,6 +486,15 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_MEASURE_SWC_NODE_DIST:
     action = new QAction("Measure Distance", parent);
+    break;
+  case ACTION_EXIT_SPLIT:
+    action = new QAction("Exit Split", parent);
+    break;
+  case ACTION_START_SPLIT:
+    action = new QAction("Start Split", parent);
+    break;
+  case ACTION_COMMIT_SPLIT:
+    action = new QAction("Commit Split", parent);
     break;
   default:
     break;

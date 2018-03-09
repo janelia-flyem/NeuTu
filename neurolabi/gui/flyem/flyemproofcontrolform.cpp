@@ -227,6 +227,11 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(skeletonizeSelectedBody()));
   bodyMenu->addAction(skeletonizeAction);
 
+  QAction *meshAction = new QAction("Update Meshes for Selected", this);
+  connect(meshAction, SIGNAL(triggered()),
+          this, SLOT(updateMeshForSelectedBody()));
+  bodyMenu->addAction(meshAction);
+
   QAction *exportBodyStackAction = new QAction("Export Body Stack", this);
   connect(exportBodyStackAction, SIGNAL(triggered()),
           this, SLOT(exportSelectedBodyStack()));
@@ -273,6 +278,11 @@ void FlyEmProofControlForm::exportSelectedBodyLevel()
 void FlyEmProofControlForm::skeletonizeSelectedBody()
 {
   emit skeletonizingSelectedBody();
+}
+
+void FlyEmProofControlForm::updateMeshForSelectedBody()
+{
+  emit updatingMeshForSelectedBody();
 }
 
 void FlyEmProofControlForm::exportGrayscale()

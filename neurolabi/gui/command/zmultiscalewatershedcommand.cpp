@@ -18,7 +18,7 @@ ZMultiscaleWatershedCommand::ZMultiscaleWatershedCommand()
 
 int ZMultiscaleWatershedCommand::run(const std::vector<std::string> &/*input*/,
     const std::string &/*output*/,
-    const ZJsonObject &config)
+    const ZJsonObject &/*config*/)
 {
 /*
     #if defined(_ENABLE_SURFRECON_)

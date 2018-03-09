@@ -90,14 +90,14 @@
       <item>
        <widget class="QPushButton" name="prevButton">
         <property name="text">
-         <string>Prev</string>
+         <string>Prev (Q)</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="nextButton">
         <property name="text">
-         <string>Next</string>
+         <string>Next (E)</string>
         </property>
        </widget>
       </item>

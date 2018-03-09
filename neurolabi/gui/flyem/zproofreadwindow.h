@@ -81,6 +81,7 @@ public slots:
   void exploreBody();
 
   void exportNeuronScreenshot();
+  void exportNeuronMeshScreenshot();
   void exportGrayscale();
   void exportBodyStack();
 

@@ -127,6 +127,10 @@ int ZBodySplitCommand::run(
 {
   int status = 1;
 
+  if (output.empty()) {
+    std::cout << "No output is spedified. Abort." << std::endl;
+    return status;
+  }
 
   const std::string &inputPath = input.front();
 
@@ -135,10 +139,14 @@ int ZBodySplitCommand::run(
   ZJsonObject inputJson;
   bool isFile = true;
   std::string dataDir;
-  bool commiting = false;
 
-  if (config.hasKey("commit")) {
-    commiting = ZJsonParser::booleanValue(config["commit"]);
+  int seedIntv = 0;
+
+  if (config.hasKey("seed_scale")) {
+    seedIntv = ZJsonParser::integerValue(config["seed_scale"]) - 1;
+    if (seedIntv < 0) {
+      seedIntv = 0;
+    }
   }
 
   ZDvidReader *reader = ParseInputPath(
@@ -147,7 +155,7 @@ int ZBodySplitCommand::run(
   if (!splitTaskKey.empty()) {
     if (!splitResultKey.empty()) {
       if (!forcingUpdate()) {
-        if (ZServiceConsumer::HasSplitResult(reader, splitTaskKey.c_str())) {
+        if (ZServiceConsumer::HasNonemptySplitResult(reader, splitTaskKey.c_str())) {
           std::cout << "The task has already been processed. Please find the result @"
                     << splitResultKey << "."
                     << std::endl;
@@ -161,12 +169,50 @@ int ZBodySplitCommand::run(
     }
   }
 
+  bool commiting = false;
+  bool testing = false;
+
+  if (config.hasKey("commit")) {
+    commiting = ZJsonParser::booleanValue(config["commit"]);
+  }
+
   std::string signalPath = ZJsonParser::stringValue(inputJson["signal"]);
   std::cout << "Signal: " << signalPath << std::endl;
 
+  std::string commitPath = signalPath;
+  if (config.hasKey("commit_path")) {
+    commitPath = ZJsonParser::stringValue(config["commit_path"]);
+  }
+
+#if 0
+  if (config.hasKey("output")) {
+    //Temporary design of output mode:
+    //  "file": output to file for testing purpose
+    //  "server": saving results to the task server
+    //  "commit": committing to dvid (target: signal path)
+    //  "commit_out": committing to dvid (target: output)
+    std::string outputMode = ZJsonParser::stringValue(config["output"]);
+    if (outputMode == "file") {
+      testing = true;
+    } else if (outputMode == "server") {
+      testing = false;
+    } else if (outputMode == "commit") {
+      testing = false;
+      commiting = true;
+
+    }
+  }
+#endif
+
+
   ZJsonObject signalInfo;
-  if (inputJson.hasKey("signal info")) {
-    signalInfo.set(inputJson.value("signal info"));
+  const char *signalInfoKey = "signal info";
+  if (config.hasKey(signalInfoKey)) {
+    signalInfo.set(config.value(signalInfoKey));
+  } else {
+    if (inputJson.hasKey(signalInfoKey)) {
+      signalInfo.set(inputJson.value(signalInfoKey));
+    }
   }
 
   ZIntCuboid range;
@@ -185,7 +231,7 @@ int ZBodySplitCommand::run(
   if (spStack != NULL) {
     std::cout << "Saving sparse stack ..." << std::endl;
     spStack->save(GET_TEST_DATA_DIR + "/test.zss");
-    spStack->getObjectMask()->save(GET_TEST_DATA_DIR + "/test.sobj");
+//    spStack->getObjectMask()->save(GET_TEST_DATA_DIR + "/test.sobj");
   }
 #endif
 
@@ -196,6 +242,7 @@ int ZBodySplitCommand::run(
 
   container.setRefiningBorder(true);
   container.setCcaPost(true);
+  container.setPreservingGap(true);
 
   if (!container.isEmpty()) {
     if (!range.isEmpty()) {
@@ -203,13 +250,27 @@ int ZBodySplitCommand::run(
     }
 
     LoadSeeds(inputJson, container, dataDir, isFile);
+
+    if (seedIntv > 0) {
+      container.downsampleSeed(seedIntv, seedIntv, seedIntv);
+    }
 #ifdef _DEBUG_2
     container.exportMask(GET_TEST_DATA_DIR + "/test2.tif");
     container.exportSource(GET_TEST_DATA_DIR + "/test3.tif");
 #endif
 
     container.run();
-    processResult(container, output, splitTaskKey, signalPath, commiting);
+
+    if (testing) {
+      ZObject3dScanArray result;
+      container.makeSplitResult(1, &result);
+      ZStack *labelStack = result.toColorField();
+      labelStack->save(output);
+      delete labelStack;
+    } else {
+      processResult(
+            container, output, splitTaskKey, signalPath, commiting, commitPath);
+    }
 
 #ifdef _DEBUG_2
     resultStack->save(GET_TEST_DATA_DIR + "/test.tif");
@@ -301,9 +362,11 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
 }
 
 void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
-    const std::string &splitTaskKey, const std::string &signalPath, bool committing)
+    const std::string &splitTaskKey, const std::string &/*signalPath*/,
+    bool committing, const std::string &commitPath)
 {
 //  ZStack *resultStack = container.getResultStack();
+  std::cout << "Processing results ..." << std::endl;
   if (container.hasResult()) {
     QUrl outputUrl(output.c_str());
     ZObject3dScanArray *result = container.makeSplitResult(2, NULL);
@@ -313,8 +376,9 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
       ZJsonArray resultArray;
 
       if (committing) {
+        std::cout << "Commit path: " << commitPath << std::endl;
         ZDvidWriter *bodyWriter =
-            ZGlobal::GetInstance().getDvidWriterFromUrl(signalPath);
+            ZGlobal::GetInstance().getDvidWriterFromUrl(commitPath);
         std::vector<uint64_t> bodyIdArray = commitResult(result, *bodyWriter);
         ZJsonArray resultArray;
         for (uint64_t bodyId : bodyIdArray) {
@@ -372,6 +436,7 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
         }
 
         if (!refJson.isEmpty() && !refPath.isEmpty()) {
+          std::cout << "Writing results to " << refPath.toStdString() << std::endl;
           writer->writeJson(refPath.toStdString(), refJson);
         }
       }
@@ -382,7 +447,12 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
 //      }
     } else {
       ZStackWriter writer;
-      writer.write(output, container.getResultStack().get());
+      ZObject3dScanArray result;
+      container.makeSplitResult(1, &result);
+      ZStack *labelStack = result.toLabelField();
+
+      writer.write(output, labelStack);
+      delete labelStack;
     }
 
 //      delete result;

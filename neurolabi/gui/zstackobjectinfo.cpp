@@ -71,6 +71,52 @@ bool ZStackObjectInfoSet::contains(ZStackObject::EType type) const
   return false;
 }
 
+bool ZStackObjectInfoSet::hasObjectModified(
+    ZStackObject::EType type, ZStackObjectInfo::TState flag) const
+{
+  if (flag == ZStackObjectInfo::STATE_UNKNOWN) {
+    return contains(type);
+  } else {
+    for (ZStackObjectInfoSet::const_iterator iter = begin(); iter != end();
+         ++iter) {
+      const ZStackObjectInfo &info = iter.key();
+      if (info.getType() == type) {
+        ZStackObjectInfo::TState state = iter.value();
+        if (state == ZStackObjectInfo::STATE_UNKNOWN) {
+          return true;
+        } else {
+          if ((state & flag) != 0) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+bool ZStackObjectInfoSet::onlyVisibilityChanged(ZStackObject::EType type) const
+{
+  bool changed = false;
+
+  for (ZStackObjectInfoSet::const_iterator iter = begin(); iter != end();
+       ++iter) {
+    const ZStackObjectInfo &info = iter.key();
+    if (info.getType() == type) {
+      ZStackObjectInfo::TState state = iter.value();
+      if (state == ZStackObjectInfo::STATE_VISIBITLITY_CHANGED) {
+        changed = true;
+      } else {
+        changed = false;
+        break;
+      }
+    }
+  }
+
+  return changed;
+}
+
 bool ZStackObjectInfoSet::contains(ZStackObjectRole::TRole role) const
 {
   foreach (const ZStackObjectInfo &info, keys()) {
@@ -158,7 +204,9 @@ QSet<ZStackObject::ETarget> ZStackObjectInfoSet::getTarget() const
 {
   QSet<ZStackObject::ETarget> targetSet;
   foreach (const ZStackObjectInfo &info, keys()) {
-    targetSet.insert(info.getTarget());
+    if (info.getTarget() != ZStackObject::TARGET_NULL) {
+      targetSet.insert(info.getTarget());
+    }
   }
 
   return targetSet;

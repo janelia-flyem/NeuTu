@@ -136,12 +136,18 @@ int ZDvidSparseStack::getValue(int x, int y, int z) const
   return v;
 }
 
+void ZDvidSparseStack::setLabelType(flyem::EBodyLabelType type)
+{
+  m_labelType = type;
+}
+
 void ZDvidSparseStack::display(
     ZPainter &painter, int slice, EDisplayStyle option, neutube::EAxis sliceAxis) const
 {
   if (loadingObjectMask()) {
     ZObject3dScan *obj = m_dvidReader.readBody(
-          getLabel(), painter.getZ(slice), neutube::Z_AXIS, true, NULL);
+          getLabel(), getLabelType(), painter.getZ(slice),
+          neutube::Z_AXIS, true, NULL);
     obj->setColor(getColor());
     obj->display(painter, slice, option, sliceAxis);
     delete obj;
@@ -219,7 +225,7 @@ void ZDvidSparseStack::loadBody(
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  getMaskReader().readBody(bodyId, range, canonizing, obj);
+  getMaskReader().readBody(bodyId, getLabelType(), range, canonizing, obj);
 
   m_sparseStack.setObjectMask(obj);
   setLabel(bodyId);
@@ -231,10 +237,15 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  getMaskReader().readBody(bodyId, canonizing, obj);
+  getMaskReader().readBody(bodyId, getLabelType(), canonizing, obj);
 
   m_sparseStack.setObjectMask(obj);
   setLabel(bodyId);
+}
+
+void ZDvidSparseStack::setObjectMask(ZObject3dScan *obj)
+{
+  m_sparseStack.setObjectMask(obj);
 }
 
 void ZDvidSparseStack::loadBodyAsync(uint64_t bodyId)
@@ -268,9 +279,9 @@ void ZDvidSparseStack::setLabel(uint64_t bodyId)
 //  pushLabel();
 }
 
-const ZIntPoint& ZDvidSparseStack::getDownsampleInterval() const
+ZIntPoint ZDvidSparseStack::getDenseDsIntv() const
 {
-  return m_sparseStack.getDownsampleInterval();
+  return m_sparseStack.getDenseDsIntv();
 }
 
 void ZDvidSparseStack::runFillValueFunc()
@@ -433,18 +444,18 @@ bool ZDvidSparseStack::fillValue(
             blockIndex.setX(blockSpan[i]);
             int blockNumber = blockSpan[i + 1] - blockSpan[i] + 1;
             ZOUT(LTRACE(), 5) << "Reading" << blockNumber << "blocks";
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Reading" << blockNumber << "blocks" << std::endl;
 #endif
             std::vector<ZStack*> stackArray = reader.readGrayScaleBlock(
                   blockIndex, m_grayscaleInfo, blockNumber);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
 #endif
             grid->consumeStack(blockIndex, stackArray);
             blockCount += stackArray.size();
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Reading" << blockNumber << "blocks done" << std::endl;
 #endif
 #if 0
@@ -612,6 +623,11 @@ bool ZDvidSparseStack::stackDownsampleRequired()
 uint64_t ZDvidSparseStack::getLabel() const
 {
   return m_label;
+}
+
+flyem::EBodyLabelType ZDvidSparseStack::getLabelType() const
+{
+  return m_labelType;
 }
 
 bool ZDvidSparseStack::loadingObjectMask() const

@@ -345,6 +345,44 @@ bool ZIntCuboid::hasOverlap(const ZIntCuboid &box) const
   return true;
 }
 
+namespace {
+
+int ComputeRangeDist(int x0, int x1, int y0, int y1)
+{
+  return imax3(0, x0 - y1, y0 - x1);
+}
+
+}
+
+int ZIntCuboid::computeBlockDistance(const ZIntCuboid &box)
+{
+  return imax3(
+        ComputeRangeDist(
+          getFirstCorner().getX(), getLastCorner().getX(),
+          box.getFirstCorner().getX(), box.getLastCorner().getX()),
+        ComputeRangeDist(
+          getFirstCorner().getY(), getLastCorner().getY(),
+          box.getFirstCorner().getY(), box.getLastCorner().getY()),
+        ComputeRangeDist(
+          getFirstCorner().getZ(), getLastCorner().getZ(),
+          box.getFirstCorner().getZ(), box.getLastCorner().getZ()));
+}
+
+double ZIntCuboid::computeDistance(const ZIntCuboid &box)
+{
+  double xDist = ComputeRangeDist(
+        getFirstCorner().getX(), getLastCorner().getX(),
+        box.getFirstCorner().getX(), box.getLastCorner().getX());
+  double yDist = ComputeRangeDist(
+        getFirstCorner().getY(), getLastCorner().getY(),
+        box.getFirstCorner().getY(), box.getLastCorner().getY());
+  double zDist = ComputeRangeDist(
+        getFirstCorner().getZ(), getLastCorner().getZ(),
+        box.getFirstCorner().getZ(), box.getLastCorner().getZ());
+
+  return sqrt(xDist * xDist + yDist * yDist + zDist * zDist);
+}
+
 void ZIntCuboid::shiftSliceAxis(neutube::EAxis axis)
 {
   m_firstCorner.shiftSliceAxis(axis);

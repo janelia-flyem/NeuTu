@@ -112,6 +112,8 @@
 #include "zmeshobjsmodel.h"
 #include "zroiobjsmodel.h"
 #include "flyem/zstackwatershedcontainer.h"
+#include "zactionlibrary.h"
+
 
 using namespace std;
 
@@ -140,7 +142,7 @@ ZStackDoc::~ZStackDoc()
   delete m_undoStack;
   delete m_labelField;
   delete m_stackFactory;
-  delete m_actionFactory;
+//  delete m_actionFactory;
 
   if (m_resDlg != NULL) {
     delete m_resDlg;
@@ -167,7 +169,7 @@ void ZStackDoc::init()
   m_swcNetwork = NULL;
   m_stackFactory = NULL;
 
-  m_actionFactory = new ZActionFactory;
+//  m_actionFactory = new ZActionFactory;
 
   initNeuronTracer();
   m_swcObjsModel = new ZSwcObjsModel(this, this);
@@ -203,6 +205,23 @@ void ZStackDoc::init()
   m_dataBuffer = new ZStackDocDataBuffer(this);
   connect(m_dataBuffer, SIGNAL(delivering()),
           this, SLOT(processDataBuffer()), Qt::QueuedConnection);
+
+  m_actionLibrary = ZSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
+  m_actionLibrary->setUndoStack(m_undoStack);
+
+#ifdef _DEBUG_
+  QAction *shortcut = new QAction(this);
+//  shortcut->setKey(QKeySequence(Qt::Key_T, Qt::Key_R));
+  shortcut->setShortcut(Qt::Key_G);
+//  shortcut->setContext(Qt::WindowShortcut);
+//  shortcut->setEnabled(false);
+  connect(shortcut, SIGNAL(triggered()), this, SLOT(shortcutTest()));
+#endif
+}
+
+void ZStackDoc::shortcutTest()
+{
+  std::cout << "Shortcut triggered: ZStackDoc::shortcutTest()" << std::endl;
 }
 
 void ZStackDoc::clearData()
@@ -1555,24 +1574,26 @@ QAction* ZStackDoc::getAction(ZActionFactory::EAction item) const
 {
   const_cast<ZStackDoc&>(*this).makeAction(item);
 
-  return m_actionMap[item];
+  return m_actionLibrary->getAction(item);
 }
 
 void ZStackDoc::makeAction(ZActionFactory::EAction item)
 {
-  if (!m_actionMap.contains(item)) {
-    QAction *action = NULL;
+  if (!m_actionLibrary->contains(item)) {
+    QAction *action = m_actionLibrary->getAction(item);
 
+    /*
     if (item == ZActionFactory::ACTION_UNDO ||
         item == ZActionFactory::ACTION_REDO) {
       action = m_actionFactory->makeAction(item, m_undoStack);
     } else {
       action = m_actionFactory->makeAction(item, this);
     }
+    */
 
     //Additional behaviors
     if (action != NULL) {
-      m_actionMap[item] = action;
+//      m_actionMap[item] = action;
 
       switch (item) {
       case ZActionFactory::ACTION_SELECT_DOWNSTREAM:
@@ -4441,9 +4462,13 @@ void ZStackDoc::setSwcVisible(ZSwcTree *tree, bool visible)
 {
   if (tree->isVisible() != visible) {
     tree->setVisible(visible);
-    bufferObjectModified(tree);
+    /*
+    ZStackObjectInfo info;
+    info.set(*tree);
+    bufferObjectModified(info, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
     processObjectModified();
-//    emit swcVisibleStateChanged(tree, visible);
+    */
+    emit swcVisibleStateChanged(tree, visible);
   }
 }
 
@@ -5589,6 +5614,14 @@ void ZStackDoc::notifyStatusMessageUpdated(const QString &message)
   }
 }
 
+void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
+{
+  emit messageGenerated(
+        ZWidgetMessage(
+          message, neutube::MSG_INFORMATION,
+          ZWidgetMessage::TARGET_CUSTOM_AREA));
+}
+
 void ZStackDoc::notifyPunctumModified()
 {
   emit punctaModified();
@@ -6300,6 +6333,11 @@ void ZStackDoc::notify(const QString &msg)
 void ZStackDoc::notifyUpdateLatency(int64_t t)
 {
   emit updatingLatency((int) t);
+}
+
+void ZStackDoc::processMessage(const ZWidgetMessage &msg)
+{
+  emit messageGenerated(msg);
 }
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
@@ -9719,7 +9757,7 @@ void ZStackDoc::localSeededWatershed()
 
   if (seedList.size() > 1) {
     ZStackWatershedContainer container(getStack(), getSparseStack());
-    container.setRangeOption(ZStackWatershedContainer::RANGE_SEED_BOUND);
+    container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
     container.setCcaPost(false);
 
 

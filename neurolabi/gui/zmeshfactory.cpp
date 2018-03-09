@@ -5,6 +5,7 @@
 #include "zintcuboid.h"
 #include "misc/miscutility.h"
 #include "tz_stack_bwmorph.h"
+#include "misc/zmarchingcube.h"
 
 ZMeshFactory::ZMeshFactory()
 {
@@ -28,6 +29,18 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv)
     dsObj.downsampleMax(dsIntv, dsIntv, dsIntv);
   }
 
+  ZStack *stack = dsObj.toStackObjectWithMargin(1, 1);
+  ZMesh *mesh = ZMarchingCube::March(*stack, NULL);
+
+  if (dsIntv > 0 && mesh != NULL) {
+    mesh->setSource("oversize");
+  }
+
+  delete stack;
+
+  return mesh;
+
+#if 0
 //  dsObj.fillHole();
 
   ZMesh *mesh = new ZMesh;
@@ -128,4 +141,5 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv)
   mesh->createCubesWithoutNormal(coordLlfs, coordUrbs, faceVisbility, NULL);
 
   return mesh;
+#endif
 }

@@ -176,6 +176,10 @@ public:
   void resetCameraCenter();
   void resetCameraClippingRange(); // Reset the camera clipping range to include this entire bounding box
 
+//  Z3DTransformParameter getTransformPara() const;
+
+  glm::quat getRotation() const;
+
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(const ZBBox<glm::dvec3>& bound, double minRadius = 64);
 
@@ -197,6 +201,8 @@ public:
 
 public slots:
   void processObjectModified(const ZStackObjectInfoSet &objInfo);
+
+  void dump(const QString &message);
 
 signals:
   void networkConstructed();

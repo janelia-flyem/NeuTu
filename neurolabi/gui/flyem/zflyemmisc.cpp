@@ -1270,30 +1270,53 @@ ZIntCuboid ZFlyEmMisc::EstimateSplitRoi(const ZIntCuboid &boundBox)
   return newBox;
 }
 
-QString ZFlyEmMisc::GetNeuroglancerPath(const ZDvidTarget &target, const ZIntPoint &pos)
+QString ZFlyEmMisc::GetNeuroglancerPath(
+    const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
+    const QSet<uint64_t> &bodySet)
 {
+  if (GET_FLYEM_CONFIG.getNeuroglancerServer().empty()) {
+    return "";
+  }
 
-  QString path = QString("emdata2.int.janelia.org/neuroglancer/#!{'layers':"
+  QString path = QString("http://%1/neuroglancer/#!{'layers':"
                          "{'grayscale':{'type':'image'_'source':'dvid://"
-                         "http://%1/%2/%3'}").
+                         "http://%2/%3/%4'}").
+      arg(GET_FLYEM_CONFIG.getNeuroglancerServer().c_str()).
       arg(target.getGrayScaleSource().getAddressWithPort().c_str()).
       arg(target.getGrayScaleSource().getUuid().c_str()).
       arg(target.getGrayScaleName().c_str());
 
   if (target.hasLabelBlock()) {
     path += QString("_'segmentation':{'type':'segmentation'_"
-                    "'source':'dvid://http://%1/%2/%3'}").
+                    "'source':'dvid://http://%1/%2/%3'").
         arg(target.getAddressWithPort().c_str()).
         arg(target.getUuid().c_str()).
         arg(target.getLabelBlockName().c_str());
+
+    if (!bodySet.empty()) {
+      path += "_'segments':[";
+      uint64_t firstId = *(bodySet.begin());
+      path += QString("'%1'").arg(firstId);
+
+      foreach (uint64_t bodyId, bodySet) {
+        if (bodyId != firstId) {
+          path += QString("_'%1'").arg(bodyId);
+        }
+      }
+      path += "]";
+    }
+    path += "}";
   }
 
   path += QString("}_'navigation':{'pose':{'position':"
-                         "{'voxelSize':[8_8_8]_'voxelCoordinates':[%1_%2_%3]}}_"
-                         "'zoomFactor':8}_'perspectiveOrientation':"
-                         "[-0.3254_0.3294_-0.1029_0.8802]_"
-                         "'perspectiveZoom':64}").
-      arg(pos.getX()).arg(pos.getY()).arg(pos.getZ());
+                  "{'voxelSize':[8_8_8]_'voxelCoordinates':[%1_%2_%3]}_"
+                  "'orientation':[%4_%5_%6_%7]}_"
+                  "'zoomFactor':8}_"
+                  "'perspectiveOrientation':"
+                  "[%4_%5_%6_%7]_"
+                  "'perspectiveZoom':64}").
+      arg(pos.getX()).arg(pos.getY()).arg(pos.getZ()).
+      arg(quat.getX()).arg(quat.getY()).arg(quat.getZ()).arg(quat.weight());
 
   return path;
 }
@@ -1406,6 +1429,15 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   }
 
   return seedList;
+}
+
+void ZFlyEmMisc::RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriterFromUrl(GET_FLYEM_CONFIG.getTaskServer());
+  writer->deleteKey(ZDvidData::GetTaskName("split"), taskKey);
 }
 
 ZJsonObject ZFlyEmMisc::MakeSplitTask(
