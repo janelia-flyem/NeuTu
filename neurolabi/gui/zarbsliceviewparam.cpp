@@ -1,5 +1,6 @@
 #include "zarbsliceviewparam.h"
 #include <QRect>
+#include <cmath>
 
 ZArbSliceViewParam::ZArbSliceViewParam()
 {
@@ -106,12 +107,32 @@ void ZArbSliceViewParam::move(double dx, double dy, double dz)
   }
 }
 
+bool ZArbSliceViewParam::operator ==(const ZArbSliceViewParam &param) const
+{
+  return (m_v1.approxEquals(param.m_v1) && m_v2.approxEquals(param.m_v2) &&
+          m_center== param.m_center && m_width == param.m_width &&
+          m_height == param.m_height);
+}
+
+bool ZArbSliceViewParam::operator !=(const ZArbSliceViewParam &param) const
+{
+  return !(*this == param);
+}
+
+bool ZArbSliceViewParam::hasSamePlaneCenter(const ZArbSliceViewParam &param) const
+{
+  return (m_v1.approxEquals(param.m_v1) && m_v2.approxEquals(param.m_v2) &&
+          m_center== param.m_center);
+}
 
 bool ZArbSliceViewParam::contains(const ZArbSliceViewParam &param)
 {
-  if (m_v1.approxEquals(param.m_v1) && m_v2.approxEquals(param.m_v2) &&
-      m_center.getZ() == param.m_center.getZ()) {
-    return getViewPort().contains(param.getViewPort());
+  if (m_v1.approxEquals(param.m_v1) && m_v2.approxEquals(param.m_v2)) {
+    ZPoint dc = (m_center - param.m_center).toPoint();
+    ZPoint normal = m_v1.cross(m_v2);
+    if (std::fabs(dc.dot(normal)) <= ZPoint::MIN_DIST) {
+      return getViewPort().contains(param.getViewPort());
+    }
   }
 
   return false;

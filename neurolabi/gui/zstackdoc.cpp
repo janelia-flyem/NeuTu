@@ -10209,8 +10209,7 @@ void ZStackDoc::ActiveViewObjectUpdater::SetUpdateEnabled(
   }
 }
 
-void ZStackDoc::ActiveViewObjectUpdater::update(
-    const ZStackViewParam &param, const ZArbSliceViewParam &sliceParam)
+void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
 {
 //  m_updatedTarget.clear();
   if (m_doc.get() != NULL) {
@@ -10223,7 +10222,7 @@ void ZStackDoc::ActiveViewObjectUpdater::update(
       if (!m_excludeSet.contains(obj->getType()) &&
           !m_excludeTarget.contains(obj->getTarget()) &&
           obj->isVisible()) {
-        if (player->updateData(param, sliceParam)) {
+        if (player->updateData(param)) {
           m_updatedTarget.insert(obj->getTarget());
           if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE) {
             ZDvidLabelSlice *labelSlice = dynamic_cast<ZDvidLabelSlice*>(obj);

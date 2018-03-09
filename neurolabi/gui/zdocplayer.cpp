@@ -688,16 +688,14 @@ ZDvidGraySlice* ZDvidGraySlicePlayer::getCompleteData() const
   return dynamic_cast<ZDvidGraySlice*>(m_data);
 }
 
-bool ZDvidGraySlicePlayer::updateData(
-    const ZStackViewParam &viewParam,
-    const ZArbSliceViewParam &sliceViewParam) const
+bool ZDvidGraySlicePlayer::updateData(const ZStackViewParam &viewParam) const
 {
   bool updated = false;
   if (m_enableUpdate) {
     ZDvidGraySlice *obj = getCompleteData();
     if (obj != NULL) {
       if (obj->isVisible()) {
-        updated = obj->update(viewParam, sliceViewParam);
+        updated = obj->update(viewParam);
       }
     }
   }
@@ -721,8 +719,7 @@ ZDvidLabelSlice* ZDvidLabelSlicePlayer::getCompleteData() const
 }
 
 bool ZDvidLabelSlicePlayer::updateData(
-    const ZStackViewParam &viewParam,
-    const ZArbSliceViewParam &/*sliceViewParam*/) const
+    const ZStackViewParam &viewParam) const
 {
   bool updated = false;
   if (m_enableUpdate) {
@@ -750,8 +747,7 @@ ZDvidSparsevolSlice* ZDvidSparsevolSlicePlayer::getCompleteData() const
 }
 
 bool ZDvidSparsevolSlicePlayer::updateData(
-    const ZStackViewParam &viewParam,
-    const ZArbSliceViewParam &/*sliceViewParam*/) const
+    const ZStackViewParam &viewParam) const
 {
   bool updated = false;
   if (m_enableUpdate) {

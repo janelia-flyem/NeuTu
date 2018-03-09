@@ -857,7 +857,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemarbdoc.h \
     flyem/zflyemarbmvc.h \
     flyem/zflyemarbpresenter.h \
-    flyem/zarbslicescrollstrategy.h
+    flyem/zarbslicescrollstrategy.h \
+    dialogs/zneu3sliceviewdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -964,7 +965,8 @@ FORMS += dialogs/settingdialog.ui \
     neu3window.ui \
     widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \
-    dialogs/zflyemproofsettingdialog.ui
+    dialogs/zflyemproofsettingdialog.ui \
+    dialogs/zneu3sliceviewdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1494,7 +1496,8 @@ SOURCES += main.cpp \
     flyem/zflyemarbdoc.cpp \
     flyem/zflyemarbmvc.cpp \
     flyem/zflyemarbpresenter.cpp \
-    flyem/zarbslicescrollstrategy.cpp
+    flyem/zarbslicescrollstrategy.cpp \
+    dialogs/zneu3sliceviewdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

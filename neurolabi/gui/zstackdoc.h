@@ -1063,7 +1063,7 @@ public:
 
     void clearState();
 
-    void update(const ZStackViewParam &param, const ZArbSliceViewParam &sliceParam);
+    void update(const ZStackViewParam &param);
 //    void update(const ZArbSliceViewParam &param);
 
     const QSet<ZStackObject::ETarget>& getUpdatedTargetSet() {

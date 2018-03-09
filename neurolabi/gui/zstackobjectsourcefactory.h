@@ -43,6 +43,7 @@ public:
   static std::string MakeFlyEmBoundBoxSource();
   static std::string MakeFlyEmRoiSource(const std::string &roiName);
   static std::string MakeFlyEmPlaneObjectSource();
+  static std::string MakeSlicViewObjectSource();
   static std::string MakeFlyEmSynapseSource();
   static std::string MakeFlyEmTBarSource();
   static std::string MakeFlyEmTBarSource(uint64_t bodyId);

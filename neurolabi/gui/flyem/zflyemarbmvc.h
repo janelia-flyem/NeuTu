@@ -23,6 +23,11 @@ public:
   void setDvidTarget(const ZDvidTarget &target);
 
   void updateViewParam(const ZArbSliceViewParam &param);
+  void resetViewParam(const ZArbSliceViewParam &param);
+  void processViewChangeCustom(const ZStackViewParam &viewParam);
+
+signals:
+  void sliceViewChanged(const ZArbSliceViewParam &param);
 
 protected:
   void createPresenter();

@@ -8,7 +8,9 @@ class ZArbSliceScrollStrategy : public ZScrollSliceStrategy
 public:
   ZArbSliceScrollStrategy(ZStackView *view);
 
-  void scroll(int step);
+  ZStackViewParam scroll(const ZStackViewParam &param, int step) const;
+
+//  void scroll(int step);
 };
 
 #endif // ZARBSLICESCROLLSTRATEGY_H

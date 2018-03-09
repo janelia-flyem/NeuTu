@@ -270,6 +270,11 @@ std::string ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource()
   return "#.FlyEMPlaneObject";
 }
 
+std::string ZStackObjectSourceFactory::MakeSlicViewObjectSource()
+{
+  return "#.SlicViewObject";
+}
+
 std::string ZStackObjectSourceFactory::MakeFlyEmSynapseSource()
 {
   return "#.FlyEMSynapse";

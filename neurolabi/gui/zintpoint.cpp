@@ -349,7 +349,7 @@ int ZIntPoint::getSliceCoord(neutube::EAxis axis) const
   case neutube::Z_AXIS:
     return m_z;
   case neutube::A_AXIS:
-    return 0;
+    return m_z;
   }
 
   return m_z;

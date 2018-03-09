@@ -99,8 +99,7 @@ public:
 
   void enableUpdate(bool on) { m_enableUpdate = on; }
 
-  virtual bool updateData(const ZStackViewParam &/*param*/,
-                          const ZArbSliceViewParam&) const {
+  virtual bool updateData(const ZStackViewParam &/*param*/) const {
     return true;
   }
 
@@ -336,9 +335,7 @@ public:
 
 public:
   QString getTypeName() const { return "DvidGraySlice"; }
-  bool updateData(
-      const ZStackViewParam &viewParam,
-      const ZArbSliceViewParam &sliceViewParam) const;
+  bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidGraySlice *getCompleteData() const;
 };
 

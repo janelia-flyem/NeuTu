@@ -5,6 +5,10 @@
 #include "neutube_def.h"
 
 #include "zviewproj.h"
+#include "zintpoint.h"
+#include "zpoint.h"
+
+class ZArbSliceViewParam;
 
 /*!
  * \brief The class of stack view parameter
@@ -86,6 +90,12 @@ public:
   }
 
 
+  ZArbSliceViewParam getSliceViewParam() const;
+  void setArbSliceCenter(const ZIntPoint &pt);
+  void setArbSlicePlane(const ZPoint &v1, const ZPoint &v2);
+  void setArbSliceView(const ZArbSliceViewParam &param);
+  void moveSlice(int step);
+
 private:
   void init(neutube::ECoordinateSystem coordSys);
 
@@ -97,6 +107,11 @@ private:
   neutube::View::EExploreAction m_action;
   neutube::EAxis m_sliceAxis;
   bool m_fixingZ;
+
+  //For arb slice (m_sliceAxis is neutube::A_AXIS)
+  ZIntPoint m_center;
+  ZPoint m_v1;
+  ZPoint m_v2;
 };
 
 #endif // ZSTACKVIEWPARAM_H

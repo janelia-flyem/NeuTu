@@ -22,6 +22,10 @@ public:
   static void RemoveObject(
       ZStackDoc *doc, ZStackObject::EType type, bool deleteObject);
   static void RemoveObject(
+      ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
+      bool deleteObject);
+
+  static void RemoveObject(
       ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject);
   static void RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject);
   static void AddObject(ZStackDoc *doc, ZStackObject *obj);

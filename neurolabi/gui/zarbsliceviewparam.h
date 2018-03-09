@@ -44,6 +44,11 @@ public:
 
   bool contains(const ZArbSliceViewParam &param);
 
+  bool operator ==(const ZArbSliceViewParam &param) const;
+  bool operator !=(const ZArbSliceViewParam &param) const;
+
+  bool hasSamePlaneCenter(const ZArbSliceViewParam &param) const;
+
   bool isValid() const;
 
 private:

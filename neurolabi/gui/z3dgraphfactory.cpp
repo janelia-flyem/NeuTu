@@ -95,6 +95,49 @@ Z3DGraph* Z3DGraphFactory::MakeGrid(
   return graph;
 }
 
+Z3DGraph* Z3DGraphFactory::MakeQuadDiag(const ZPoint &pt1, const ZPoint &pt2,
+                                        const ZPoint &pt3, const ZPoint &pt4)
+{
+  Z3DGraph *graph = new Z3DGraph;
+  Z3DGraphNode node(pt1, 0.0);
+  node.setColor(QColor(0, 0, 255));
+  graph->addNode(node);
+
+  node.setCenter(pt2);
+  graph->addNode(node);
+
+  node.setCenter(pt3);
+  graph->addNode(node);
+
+  node.setCenter(pt4);
+  graph->addNode(node);
+
+  Z3DGraphEdge edge;
+  edge.useNodeColor(true);
+  edge.setShape(GRAPH_LINE);
+  edge.setWidth(2.0);
+
+  edge.setConnection(0, 1);
+  graph->addEdge(edge);
+
+  edge.setConnection(1, 2);
+  graph->addEdge(edge);
+
+  edge.setConnection(2, 3);
+  graph->addEdge(edge);
+
+  edge.setConnection(0, 3);
+  graph->addEdge(edge);
+
+  edge.setConnection(0, 2);
+  graph->addEdge(edge);
+
+  edge.setConnection(1, 3);
+  graph->addEdge(edge);
+
+  return graph;
+}
+
 Z3DGraph* Z3DGraphFactory::MakeBox(const ZCuboid &box, double radius)
 {
   Z3DGraph *graph = new Z3DGraph;
