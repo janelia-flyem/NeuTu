@@ -641,6 +641,14 @@ void ZMeshIO::readDracoMeshFromMemory(
     std::unique_ptr<draco::Mesh> in_mesh = std::move(statusor).value();
     if (in_mesh) {
       msh = in_mesh.get();
+
+      // Draco encoding may cause duplication of vertices data.
+      // De-duplicate after decoding.
+      // Note: These functions are not defined unless you build with a special preprocessor definition:
+      //       Make sure NeuTu is built with -D DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED=1
+      msh->DeduplicateAttributeValues();
+      msh->DeduplicatePointIds();
+
       pc = std::move(in_mesh);
     }
   } else if (geom_type == draco::POINT_CLOUD) {
