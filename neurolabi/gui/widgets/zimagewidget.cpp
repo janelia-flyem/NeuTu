@@ -546,8 +546,12 @@ void ZImageWidget::paintCrossHair()
   painter.setPen(QPen(QColor(0, 0, 255, 64)));
   int x1 = m_viewProj.getWidgetRect().right();
   int y1 = m_viewProj.getWidgetRect().bottom();
-  painter.drawLine(QPoint(0, 0), QPoint(x1, y1));
-  painter.drawLine(QPoint(x1, 0), QPoint(0, y1));
+
+  double cx = x1 * 0.5;
+  double cy = y1 * 0.5;
+
+  painter.drawLine(QPointF(cx, 0), QPointF(cx, y1));
+  painter.drawLine(QPointF(0, cy), QPointF(x1, cy));
 }
 
 QSize ZImageWidget::minimumSizeHint() const

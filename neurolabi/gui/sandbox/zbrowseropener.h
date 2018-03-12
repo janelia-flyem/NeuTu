@@ -2,7 +2,9 @@
 #define ZBROWSEROPENER_H
 #include "zsandboxmodule.h"
 
+#if defined(_USE_WEBENGINE_)
 #include <QWebEngineView>
+#endif
 
 class QUrl;
 class QString;
@@ -45,9 +47,11 @@ public:
 
 private:
   QString m_browerPath;
+#if defined(_USE_WEBENGINE_)
   QWebEngineView *m_webView = NULL; //For testing purpose. Using it in a real
                                     //situtation may have some thread
                                     //compatibility problem.
+#endif
 };
 
 
