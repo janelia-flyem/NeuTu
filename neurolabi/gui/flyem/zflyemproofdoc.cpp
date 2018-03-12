@@ -878,7 +878,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 {
   ZStackObject *obj = getObject(ZStackObject::TYPE_DVID_GRAY_SLICE,
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
 
   return dynamic_cast<ZDvidGraySlice*>(obj);
 }
@@ -937,7 +937,8 @@ void ZFlyEmProofDoc::initGrayscaleSlice()
   if (getDvidTarget().hasGrayScaleData()) {
     ZDvidGraySlice *slice = new ZDvidGraySlice;
     slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
-    slice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+    slice->setSource(
+          ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
     slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
     prepareGraySlice(slice);
     addObject(slice, true);

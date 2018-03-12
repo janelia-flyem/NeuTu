@@ -356,6 +356,7 @@ void ZImage::setData(
 
   switch (sliceAxis) {
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
   {
     data += (size_t) area * slice;
     if (isIndexed8()) {
@@ -457,6 +458,7 @@ void ZImage::setData(
 
   switch (sliceAxis) {
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
   {
     data += (size_t) area * slice;
     if (format() == Format_Indexed8) {

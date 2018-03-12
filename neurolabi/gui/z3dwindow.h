@@ -1,9 +1,21 @@
 #ifndef Z3DWINDOW_H
 #define Z3DWINDOW_H
 
-#include "z3dview.h"
+#include <vector>
+#include <set>
+#include <map>
 
-#include "zparameter.h"
+#include <QMainWindow>
+#include <QTabWidget>
+#include <QTabBar>
+#include <QToolBar>
+#include <QIcon>
+#include <QAction>
+#include <QMutex>
+#include <QDir>
+
+#include "z3dview.h"
+//#include "zparameter.h"
 #include "znumericparameter.h"
 #include "zglmutils.h"
 #include "z3dcameraparameter.h"
@@ -13,20 +25,6 @@
 #include "zactionfactory.h"
 #include "z3ddef.h"
 #include "zintpointarray.h"
-//#include "zstackviewparam.h"
-
-#include <QMainWindow>
-#include <QTabWidget>
-#include <QTabBar>
-#include <QToolBar>
-#include <QIcon>
-#include <QAction>
-#include <QMutex>
-
-#include <vector>
-#include <set>
-#include <map>
-#include <QDir>
 
 class QSlider;
 class QDoubleSpinBox;
@@ -121,7 +119,8 @@ public: //Camera adjustment
   void zoomToSelectedSwcNodes();
 
 public: //Components
-  Z3DTrackballInteractionHandler* getInteractionHandler() { return &m_view->interactionHandler(); }
+  Z3DTrackballInteractionHandler* getInteractionHandler() {
+    return &m_view->interactionHandler(); }
   Z3DCameraParameter* getCamera() { return &m_view->camera(); }
 //  Z3DTransformParameter getTransformPara() const;
   inline Z3DPunctaFilter* getPunctaFilter() const { return m_view->getPunctaFilter(); }
@@ -226,6 +225,8 @@ signals:
   void runningFullSplit();
 
   void settingTriggered();
+
+  void cameraRotated();
 
 public slots:
   void resetCamera()
@@ -467,6 +468,7 @@ private:
 
 private slots:
   void about();
+  void notifyCameraRotation();
 
 private:
   neutube3d::EWindowType m_windowType;

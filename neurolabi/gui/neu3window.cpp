@@ -2,8 +2,11 @@
 
 #include <QDockWidget>
 #include <QMessageBox>
-
 #include <QProgressDialog>
+
+#if defined(_USE_WEBENGINE_)
+#include <QWebEngineView>
+#endif
 
 #include "ui_neu3window.h"
 #include "z3dwindow.h"
@@ -34,14 +37,19 @@
 #include "dialogs/flyemsettingdialog.h"
 #include "flyem/zflyemdoc3dbodystateaccessor.h"
 #include "zactionlibrary.h"
+#include "zarbsliceviewparam.h"
+#include "flyem/zflyemarbmvc.h"
+#include "zstackdocaccessor.h"
+#include "zstackobjectsourcefactory.h"
+#include "dialogs/zneu3sliceviewdialog.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::Neu3Window)
 {
   ui->setupUi(this);
-
   m_actionLibrary = QSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
+
 //  initialize();
 }
 
@@ -50,6 +58,7 @@ Neu3Window::~Neu3Window()
   if (m_dataContainer != NULL) {
     m_dataContainer->setExiting(true);
   }
+//  delete m_webView;
 
   delete ui;
 }
@@ -71,6 +80,8 @@ void Neu3Window::initialize()
 
   m_flyemSettingDlg = new FlyEmSettingDialog(this);
   connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(setOption()));
+
+  m_browseOptionDlg = new ZNeu3SliceViewDialog(this);
 
   setCentralWidget(m_3dwin);
 
@@ -110,6 +121,15 @@ QAction* Neu3Window::getAction(ZActionFactory::EAction key)
   return action;
 }
 
+void Neu3Window::initGrayscaleWidget()
+{
+  if (m_sliceWidget == NULL) {
+    m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
+    connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
+            this, SLOT(updateSliceViewGraph(ZArbSliceViewParam)));
+  }
+}
+
 void Neu3Window::connectSignalSlot()
 {
   connect(m_3dwin, SIGNAL(showingPuncta(bool)), this, SLOT(showSynapse(bool)));
@@ -145,9 +165,13 @@ void Neu3Window::connectSignalSlot()
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
           this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
+
+  connect(m_3dwin, SIGNAL(cameraRotated()), this, SLOT(processCameraRotation()));
+//  connect(this, SIGNAL(closed()), this, SLOT(closeWebView()));
 }
 
 void Neu3Window::updateBodyState()
@@ -250,15 +274,64 @@ void Neu3Window::createDockWidget()
   m_bodyListDock->setWidget(m_bodyListWidget);
 
   m_bodyListDock->setAllowedAreas(Qt::LeftDockWidgetArea);
+
   m_bodyListDock->setFeatures(
         QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
   addDockWidget(Qt::LeftDockWidgetArea, m_bodyListDock);
+}
+
+void Neu3Window::initNativeSliceBrowser()
+{
+  if (m_nativeSliceDock == NULL) {
+    m_nativeSliceDock = new QDockWidget("Grayscale", this);
+    connect(m_nativeSliceDock, SIGNAL(visibilityChanged(bool)),
+            this, SLOT(processSliceDockVisibility(bool)));
+
+    initGrayscaleWidget();
+
+    m_nativeSliceDock->setWidget(m_sliceWidget);
+    m_nativeSliceDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    m_nativeSliceDock->setFeatures(
+          QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable |
+          QDockWidget::DockWidgetClosable);
+    addDockWidget(Qt::NoDockWidgetArea, m_nativeSliceDock);
+    m_nativeSliceDock->setFloating(true);
+    m_nativeSliceDock->setAllowedAreas(Qt::NoDockWidgetArea);
+  }
+
+  m_browseWidth = DEFAULT_BROWSE_WIDTH;
+  m_browseHeight = DEFAULT_BROWSE_HEIGHT;
+}
+
+void Neu3Window::initWebView()
+{
+#if defined(_USE_WEBENGINE_)
+  if (m_webSliceDock == NULL) {
+    m_webSliceDock = new QDockWidget("Grayscale", this);
+    connect(m_webSliceDock, SIGNAL(visibilityChanged(bool)),
+            this, SLOT(processSliceDockVisibility(bool)));
+    m_webView = new QWebEngineView(m_webSliceDock);
+    m_webSliceDock->setWidget(m_webView);
+    m_webSliceDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    m_webSliceDock->setFeatures(
+          QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable |
+          QDockWidget::DockWidgetClosable);
+    addDockWidget(Qt::NoDockWidgetArea, m_webSliceDock);
+    m_webSliceDock->setFloating(true);
+    m_webSliceDock->setAllowedAreas(Qt::NoDockWidgetArea);
+  }
+#endif
 }
 
 void Neu3Window::createTaskWindow() {
     QDockWidget *dockWidget = new QDockWidget("Tasks", this);
     m_taskProtocolWidget =
         new TaskProtocolWindow(getDataDocument(), getBodyDocument(), this);
+
+    /*
+    m_taskProtocolWidget->setWindowFlags(
+          Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
+          */
 
     // add connections here; for now, I'm connecting up the same way
     //  Ting connected the ZBodyListWidget, down to reusing the names
@@ -299,19 +372,242 @@ void Neu3Window::updateRoiWidget()
   m_dataContainer->updateRoiWidget(m_roiWidget, m_3dwin);
 }
 
+/*
+void Neu3Window::closeWebView()
+{
+#if defined(_USE_WEBENGINE_)
+  if (m_webView != NULL) {
+    m_webView->setAttribute(Qt::WA_DeleteOnClose);
+    m_webView->close();
+    m_webView = NULL;
+  }
+#endif
+}
+*/
+
+void Neu3Window::processSliceDockVisibility(bool on)
+{
+  if (on == false) {
+    endBrowse();
+  }
+}
+
+void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
+{
+  if (param.isValid()) {
+    Z3DGraph *graph = ZFlyEmMisc::MakeSliceViewGraph(param);
+
+    ZStackDocAccessor::AddObjectUnique(getBodyDocument(), graph);
+
+    m_browsePos = param.getCenter().toPoint();
+  }
+}
+
+void Neu3Window::removeSliceViewGraph()
+{
+  ZStackDocAccessor::RemoveObject(
+        getBodyDocument(), ZStackObject::TYPE_3D_GRAPH,
+        ZStackObjectSourceFactory::MakeSlicViewObjectSource(), true);
+}
+
+void Neu3Window::updateBrowseSize()
+{
+  if (m_browseMode == BROWSE_NATIVE) {
+    if (m_sliceWidget != NULL) {
+      QRect rect = m_sliceWidget->getViewPort();
+      m_browseWidth = rect.width();
+      m_browseHeight = rect.height();
+    }
+  }
+}
+
+void Neu3Window::processCameraRotation()
+{
+  updateBrowseSize();
+  updateSliceBrowser();
+//  updateBrowser();
+//  updateEmbeddedGrayscale();
+//  updateGrayscaleWidget();
+}
+
+void Neu3Window::updateSliceBrowser()
+{
+  switch (m_browseMode) {
+  case BROWSE_NATIVE:
+    if (m_nativeSliceDock != NULL) {
+      m_nativeSliceDock->show();
+      m_sliceWidget->resetViewParam(getSliceViewParam(m_browsePos));
+    }
+    break;
+  case BROWSE_NEUROGLANCER:
+    if (m_webSliceDock != NULL) {
+      m_webSliceDock->show();
+      updateWebView();
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+void Neu3Window::updateWebView()
+{
+#if defined(_USE_WEBENGINE_)
+  if (m_webView != NULL) {
+    glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
+    ZWeightedPoint rotation;
+    rotation.set(r.x, r.y, r.z);
+    rotation.setWeight(r.w);
+
+    QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
+               m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
+               rotation, m_bodyListWidget->getModel()->getBodySet()));
+
+
+    m_webView->setUrl(url);
+  }
+#endif
+}
+
+/*
+void Neu3Window::updateBrowser()
+{
+#if defined(_USE_WEBENGINE_)
+  if (m_webView != NULL) {
+    browse(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
+  }
+#endif
+}
+*/
+
+void Neu3Window::updateGrayscaleWidget()
+{
+  if (m_sliceWidget != NULL) {
+    browse(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
+  }
+}
+
+void Neu3Window::hideGrayscale()
+{
+  getBodyDocument()->hideArbGrayslice();
+}
+
+void Neu3Window::updateEmbeddedGrayscale()
+{
+  browseInPlace(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
+}
+
+ZArbSliceViewParam Neu3Window::getSliceViewParam(double x, double y, double z) const
+{
+  ZArbSliceViewParam viewParam;
+  viewParam.setSize(m_browseWidth, m_browseHeight);
+  viewParam.setCenter(iround(x), iround(y), iround(z));
+
+  std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();
+  viewParam.setPlane(ZPoint(ort.first.x, ort.first.y, ort.first.z),
+                     ZPoint(ort.second.x, ort.second.y, ort.second.z));
+
+  return viewParam;
+}
+
+ZArbSliceViewParam Neu3Window::getSliceViewParam(const ZPoint &center) const
+{
+  return getSliceViewParam(center.x(), center.y(), center.z());
+}
+
+void Neu3Window::browseInPlace(double x, double y, double z)
+{
+  getBodyDocument()->updateArbGraySlice(getSliceViewParam(x, y, z));
+}
+
 void Neu3Window::browse(double x, double y, double z)
 {
-  ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+  m_browsePos.set(x, y, z);
 
+  if (m_browseMode == BROWSE_NONE) {
+    if (m_browseOptionDlg->exec()) {
+      startBrowser(m_browseOptionDlg->getBrowseMode());
+    }
+  } else {
+    updateSliceBrowser();
+  }
+
+#if 0
+#if 1
+//  initGrayscaleWidget();
+  createGrayscaleWidget();
+  m_grayscaleWidget->show();
+  m_grayscaleWidget->resetViewParam(getSliceViewParam(x, y, z));
+  m_grayscaleWidget->raise();
+#else
   glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
-
   ZWeightedPoint rotation;
   rotation.set(r.x, r.y, r.z);
   rotation.setWeight(r.w);
 
+#if defined(_USE_WEBENGINE_)
+  initWebView();
+  QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
+             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
+             rotation, m_bodyListWidget->getModel()->getBodySet()));
+
+
+  m_webView->setUrl(url);
+  m_webView->show();
+  m_webView->raise();
+#else
+  ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+
   bo->open(ZFlyEmMisc::GetNeuroglancerPath(
              m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
              rotation, m_bodyListWidget->getModel()->getBodySet()));
+#endif
+#endif
+
+  m_browsePos.set(x, y, z);
+#endif
+}
+
+void Neu3Window::startBrowser(EBrowseMode mode)
+{
+  m_browseMode = mode;
+
+  switch (mode) {
+  case BROWSE_NATIVE:
+  {
+    initNativeSliceBrowser();
+    updateSliceBrowser();
+  }
+    break;
+  case BROWSE_NEUROGLANCER:
+  {
+  #if defined(_USE_WEBENGINE_)
+    initWebView();
+    updateSliceBrowser();
+  #else
+    m_browseMode = BROWSE_NONE;
+    glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
+    ZWeightedPoint rotation;
+    rotation.set(r.x, r.y, r.z);
+    rotation.setWeight(r.w);
+
+    ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+
+    bo->open(ZFlyEmMisc::GetNeuroglancerPath(
+               m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
+               rotation, m_bodyListWidget->getModel()->getBodySet()));
+  #endif
+  }
+    break;
+  default:
+    break;
+  }
+}
+
+void Neu3Window::endBrowse()
+{
+  m_browseMode = BROWSE_NONE;
+  removeSliceViewGraph();
 }
 
 void Neu3Window::updateWidget()
@@ -342,6 +638,7 @@ void Neu3Window::startSplit()
   getBodyDocument()->activateSplitForSelected();
 }
 
+
 void Neu3Window::createToolBar()
 {
   /*
@@ -361,6 +658,13 @@ void Neu3Window::createToolBar()
 void Neu3Window::keyPressEvent(QKeyEvent *event)
 {
   processKeyPressed(event);
+}
+
+void Neu3Window::closeEvent(QCloseEvent *event)
+{
+  QMainWindow::closeEvent(event);
+
+  emit closed();
 }
 
 void Neu3Window::processKeyPressed(QKeyEvent */*event*/)
@@ -442,6 +746,18 @@ void Neu3Window::removeAllBodies()
   DoingBulkUpdate doingBulkUpdate(this);
 
   m_bodyListWidget->getModel()->removeAllBodies();
+
+  // With the optimized version of syncBodyListModel(), which no longer does the
+  // expensive operation of showing all the meshes from a tar archive in the
+  // ZBodyListWidget, the following steps are necessary.
+
+  ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+  for (ZMesh *mesh : meshList) {
+    dataDoc->deselectBody(mesh->getLabel());
+  }
+
+  getBodyDocument()->processBodySelectionChange();
 }
 
 void Neu3Window::test()
@@ -500,6 +816,25 @@ void Neu3Window::processSwcChangeFrom3D(
 void Neu3Window::processMeshChangedFrom3D(
     QList<ZMesh *> selected, QList<ZMesh *> deselected)
 {
+  QSet<uint64_t> selectedSet;
+  for (ZMesh *mesh : selected) {
+    selectedSet.insert(mesh->getLabel());
+  }
+
+  QSet<uint64_t> deselectedSet;
+  for (ZMesh *mesh : deselected) {
+    deselectedSet.insert(mesh->getLabel());
+  }
+
+  // Make sure to update the ZFlyEmBody3dDoc's notion of selection, to avoid
+  // immediate deselection of a mesh selected by clicking in the 3D view.
+  // If the ZBodyListWidget has a complete list of the bodies it will trigger
+  // the update to ZFlyEmBody3dDoc, but for large sets of bodies loaded from
+  // a tar archive the ZBodyListWidget may not have the complete list (to avoid
+  // performance problems).
+
+  getBodyDocument()->setBodyModelSelected(selectedSet, deselectedSet);
+
   foreach (ZMesh *mesh, selected) {
     if (mesh->getLabel() > 0) {
       emit bodySelected(mesh->getLabel());
@@ -515,40 +850,20 @@ void Neu3Window::processMeshChangedFrom3D(
 
 void Neu3Window::syncBodyListModel()
 {
-  // Supress some expensive and unnecessary updates after each body removal.
-  DoingBulkUpdate doingBulkUpdate(this);
+  // Do not try to show all the meshes from a tar archive in the ZBodyListWidget,
+  // as the large number of meshes can causes a significant slowdown.
+  // But make sure to do some of the document updates that ZBodyListWidget
+  // would have triggered for each of the meshes, or else they will not function
+  // correctly (e.g., will not be pickable in the 3D view).
 
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-//      getBodyDocument()->getMeshList();
-  ZFlyEmBodyListModel *listModel = m_bodyListWidget->getModel();
-
-  QList<int> rowsToRemove;
-  //Remove rows that are not in the document
-  for (int i = 0; i < listModel->rowCount(); i++) {
-    if (listModel->getBodyId(i) == 0) {
-      rowsToRemove.append(i);
-    } else {
-      bool found = false;
-      for (ZMesh *mesh : meshList) {
-        if (mesh->getLabel() > 0) {
-          if (mesh->getLabel() == listModel->getBodyId(i)) {
-            found = true;
-            break;
-          }
-        }
-      }
-      if (!found) {
-        rowsToRemove.append(i);
-      }
-    }
-  }
-  listModel->removeRowList(rowsToRemove);
-
+  std::set<uint64_t> selected;
   for (ZMesh *mesh : meshList) {
-    if (mesh->getLabel() > 0) {
-      listModel->addBody(mesh->getLabel());
-    }
+    selected.insert(mesh->getLabel());
   }
+
+  ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
+  dataDoc->setSelectedBody(selected, neutube::BODY_LABEL_MAPPED);
 }
 
 static const int PROGRESS_MAX = 100;
@@ -567,7 +882,12 @@ void Neu3Window::meshArchiveLoadingStarted()
 void Neu3Window::meshArchiveLoadingProgress(float fraction)
 {
   if (m_progressDialog) {
-    m_progressDialog->setValue(fraction * PROGRESS_MAX);
+    // Don't use a fraction of 1, because then both this call and meshArchiveLoadingEnded()
+    // will set the dialog to the maximum value, which seems to cause the dialog to stay open.
+
+    if (fraction < 1.0f) {
+      m_progressDialog->setValue(fraction * PROGRESS_MAX);
+    }
   }
 }
 

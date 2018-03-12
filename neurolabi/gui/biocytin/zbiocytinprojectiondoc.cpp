@@ -1,5 +1,6 @@
 #include "zbiocytinprojectiondoc.h"
 #include "zstackframe.h"
+#include "zswctree.h"
 
 ZBiocytinProjectionDoc::ZBiocytinProjectionDoc(QObject *parent) :
   ZStackDoc(parent)

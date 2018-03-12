@@ -61,9 +61,7 @@ public:
     return m_interactiveContext;
   }
 
-  inline void set3DInteractionHandler(Z3DTrackballInteractionHandler *handler) {
-    m_interactionHandler = handler;
-  }
+  void set3DInteractionHandler(Z3DTrackballInteractionHandler *handler);
 
   bool hasObjectToShow() const;
   void setObjectVisible(bool v);
@@ -132,6 +130,7 @@ signals:
   void deletingSelected();
   void locating(int x, int y);
   void browsing(int x, int y);
+  void cameraRotated();
 
 private:
   void exitPaintStroke();

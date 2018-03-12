@@ -7,14 +7,16 @@
 
 #include "zsharedpointer.h"
 //#include "zstackdoc.h"
-#include "z3dwindow.h"
+//#include "z3dwindow.h"
 #include "z3ddef.h"
+#include "z3dview.h"
 
 class ZStackFrame;
 class QDialog;
 class ZScalableStack;
 class ZSwcTree;
 class ZStackDoc;
+class Z3DWindow;
 
 /*!
  * \brief The factory class of creating windows

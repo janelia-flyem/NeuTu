@@ -113,7 +113,9 @@
 #include "zroiobjsmodel.h"
 #include "flyem/zstackwatershedcontainer.h"
 #include "zactionlibrary.h"
-
+#include "z3dwindow.h"
+#include "zswctree.h"
+#include "zobject3d.h"
 
 using namespace std;
 
@@ -4124,6 +4126,52 @@ void ZStackDoc::setSwcSelected(ZSwcTree *tree, bool select)
   }
 }
 
+template <class InputIterator>
+void ZStackDoc::setSwcSelected(InputIterator first, InputIterator last, bool select)
+{
+  QList<ZSwcTree*> selected;
+  QList<ZSwcTree*> deselected;
+
+  QList<Swc_Tree_Node *> tns;
+  for (InputIterator it = first; it != last; ++it) {
+    ZSwcTree *tree = *it;
+    if (tree->isSelected() != select) {
+      m_objectGroup.setSelected(tree, select);
+      if (select) {
+        selected.append(tree);
+
+        // deselect its nodes
+        if (tree->hasSelectedNode()) {
+          for (std::set<Swc_Tree_Node*>::const_iterator
+               iter = tree->getSelectedNode().begin();
+               iter != tree->getSelectedNode().end(); ++iter) {
+            Swc_Tree_Node* tn = const_cast<Swc_Tree_Node*>(*iter);
+            tns.append(tn);
+          }
+          tree->deselectAllNode();
+        }
+        /*
+        for (std::set<Swc_Tree_Node*>::iterator it = m_selectedSwcTreeNodes.begin();
+             it != m_selectedSwcTreeNodes.end(); ++it) {
+          if (tree == nodeToSwcTree(*it))
+            tns.push_back(*it);
+        }
+        */
+      } else {
+        deselected.push_back(tree);
+      }
+    }
+  }
+
+  notifyDeselected(tns);
+  notifySelectionChanged(selected, deselected);
+}
+
+void ZStackDoc::setSwcSelected(const QList<ZSwcTree *> &treeList, bool select)
+{
+  setSwcSelected(treeList.begin(), treeList.end(), select);
+}
+
 void ZStackDoc::deselectAllSwcs()
 {
   //QList<ZSwcTree*> selected;
@@ -5839,6 +5887,11 @@ void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
   bufferObjectModified(obj->getTarget(), sync);
   bufferObjectModified(obj->getRole(), sync);
   */
+}
+
+void ZStackDoc::bufferObjectVisibilityChanged(ZStackObject *obj, bool sync)
+{
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED, sync);
 }
 
 void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
@@ -10158,7 +10211,7 @@ void ZStackDoc::ActiveViewObjectUpdater::SetUpdateEnabled(
 
 void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
 {
-  m_updatedTarget.clear();
+//  m_updatedTarget.clear();
   if (m_doc.get() != NULL) {
     QList<ZDocPlayer *> playerList =
         m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
@@ -10182,6 +10235,29 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
     }
   }
 }
+
+/*
+void ZStackDoc::ActiveViewObjectUpdater::update(const ZArbSliceViewParam &param)
+{
+//  m_updatedTarget.clear();
+  if (m_doc.get() != NULL) {
+    QList<ZDocPlayer *> playerList =
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
+      ZDocPlayer *player = *iter;
+      ZStackObject *obj = player->getData();
+      if (!m_excludeSet.contains(obj->getType()) &&
+          !m_excludeTarget.contains(obj->getTarget()) &&
+          obj->isVisible()) {
+        if (player->updateData(param)) {
+          m_updatedTarget.insert(obj->getTarget());
+        }
+      }
+    }
+  }
+}
+*/
 
 /*
 QSet<ZStackObject::ETarget>

@@ -35,6 +35,7 @@
 #include "zerror.h"
 #include "zclosedcurve.h"
 #include "zintpoint.h"
+#include "zpoint.h"
 #include "zpainter.h"
 #include "zintcuboid.h"
 #include "zstack.hxx"

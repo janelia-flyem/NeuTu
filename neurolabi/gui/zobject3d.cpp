@@ -17,6 +17,8 @@
 #include "zpainter.h"
 #include "zcuboid.h"
 #include "zintcuboid.h"
+#include "zpoint.h"
+#include "zintpoint.h"
 
 using namespace std;
 
@@ -171,6 +173,10 @@ void ZObject3d::display(
 {  
   UNUSED_PARAMETER(option);
 
+  if (sliceAxis == neutube::A_AXIS) {
+    return;
+  }
+
   if (slice < 0 && !isProjectionVisible()) {
     return;
   }
@@ -216,6 +222,8 @@ void ZObject3d::display(
         }
       }
     }
+    break;
+  case neutube::A_AXIS:
     break;
   }
 

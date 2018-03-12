@@ -11,6 +11,7 @@ class ZSwcTree;
 class Z3DView;
 class ZStackObject;
 class ZStackObjectInfoSet;
+class ZFlyEmBody3dDoc;
 
 /*!
  * \brief The class of helping managing data for 3D visualization
@@ -44,6 +45,9 @@ public:
   void updateDecorationData();
   void updateRoiData();
   void updateData(neutube3d::ERendererLayer layer);
+
+  void updateCustomCanvas(ZFlyEmBody3dDoc *doc);
+  void updateCustomCanvas();
 
 private:
   void addObject(neutube3d::ERendererLayer layer, ZStackObject *obj);

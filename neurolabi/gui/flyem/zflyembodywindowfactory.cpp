@@ -2,6 +2,7 @@
 #include "z3dgraphfilter.h"
 #include "z3dswcfilter.h"
 #include "z3dpunctafilter.h"
+#include "z3dwindow.h"
 
 ZFlyEmBodyWindowFactory::ZFlyEmBodyWindowFactory()
 {

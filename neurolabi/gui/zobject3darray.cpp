@@ -11,6 +11,7 @@
 #include "tz_darray.h"
 #include "zstackfactory.h"
 #include "zintcuboid.h"
+#include "zpoint.h"
 
 using namespace std;
 

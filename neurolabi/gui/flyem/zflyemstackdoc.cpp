@@ -7,6 +7,7 @@
 #include "tz_stack_neighborhood.h"
 #include "zstring.h"
 #include "swctreenode.h"
+#include "zswctree.h"
 
 using namespace std;
 

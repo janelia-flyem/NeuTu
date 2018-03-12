@@ -15,6 +15,7 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "zmeshfactory.h"
 #include "zstackdocproxy.h"
+#include "dvid/zdvidgrayslice.h"
 
 ZStackDoc3dHelper::ZStackDoc3dHelper()
 {
@@ -35,6 +36,10 @@ void ZStackDoc3dHelper::processObjectModified(const ZStackObjectInfoSet &objInfo
 #endif
       m_view->updateDocData(layer);
     }
+  }
+
+  if (objInfo.contains(ZStackObject::TARGET_3D_CANVAS)) {
+    updateCustomCanvas();
   }
 }
 
@@ -284,6 +289,25 @@ void ZStackDoc3dHelper::updateData(neutube3d::ERendererLayer layer)
     break;
   default:
     break;
+  }
+}
+
+void ZStackDoc3dHelper::updateCustomCanvas()
+{
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(m_view->getDocument());
+
+  updateCustomCanvas(doc);
+}
+
+void ZStackDoc3dHelper::updateCustomCanvas(ZFlyEmBody3dDoc *doc)
+{
+  if (doc != NULL) {
+    ZDvidGraySlice *slice = doc->getArbGraySlice();
+    if (slice != NULL) {
+      if (slice->isVisible()) {
+        m_view->updateCustomCanvas(slice->getImage());
+      }
+    }
   }
 }
 

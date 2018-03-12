@@ -199,6 +199,14 @@ public:
   struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal);
   ZMesh *readMeshArchiveNext(struct archive *arc);
   ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead);
+
+  /*!
+   * \brief An alternative to repeated calls to readMeshArchiveNext(), which uses
+   * std::async and std::future to decompress the meshes in parallel.
+   */
+  void readMeshArchiveAsync(struct archive *arc, std::vector<ZMesh*>& results,
+                            const std::function<void(size_t, size_t)>& progress = {});
+
   void readMeshArchiveEnd(struct archive *arc);
 
   ZStack* readThumbnail(uint64_t bodyId);
@@ -297,6 +305,15 @@ public:
                               int width, int height, int zoom = 0) const;
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0,
+      int width, int height, int zoom, int cx, int cy) const;
+
+  ZStack *readGrayScaleLowtis(
+      int x0, int y0, int z0, double vx1, double vy1, double vz1,
+      double vx2, double vy2, double vz2,
+      int width, int height, int zoom, int cx, int cy) const;
+
+  ZStack *readGrayScaleLowtis(
+      const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
       int width, int height, int zoom, int cx, int cy) const;
 #endif
   /*
@@ -540,6 +557,14 @@ private:
   void loadDvidDataSetting(const ZJsonObject obj);
 
   bool reportMissingData(const std::string dataName) const;
+
+  static ZIntCuboid GetStackBox(
+      int x0, int y0, int z0, int width, int height, int zoom);
+  static std::vector<int> GetOffset(int x0, int y0, int z0);
+  static std::vector<int> GetOffset(int cx, int cy, int cz, int width, int height);
+
+
+  lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
 
 protected:
   ZDvidTarget m_dvidTarget;

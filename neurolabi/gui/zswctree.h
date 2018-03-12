@@ -14,7 +14,7 @@
 
 #include "tz_swc_tree.h"
 #include "zstackobject.h"
-#include "zpoint.h"
+//#include "zpoint.h"
 #include "zswcpath.h"
 #include "zcuboid.h"
 #include "zuncopyable.h"
@@ -28,6 +28,7 @@ class QPointF;
 class ZClosedCurve;
 class ZRect2d;
 class ZJsonObject;
+class ZPoint;
 
 //! SWC tree class
 /*!

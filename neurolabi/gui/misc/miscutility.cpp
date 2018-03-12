@@ -162,6 +162,7 @@ static int ComputeLightIntensity(
       norm = fabs(dy / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     case neutube::Z_AXIS:
+    case neutube::A_AXIS:
       norm = fabs(dz / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     }
@@ -198,6 +199,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     outHeight = depth;
     break;
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     outWidth = width;
     outHeight = height;
     break;
@@ -252,6 +254,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     }
   }
   break;
+  case neutube::A_AXIS:
   case neutube::Z_AXIS:
   for (int y = 0; y < C_Stack::height(stack); ++y) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {

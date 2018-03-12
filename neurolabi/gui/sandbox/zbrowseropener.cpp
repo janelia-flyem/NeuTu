@@ -8,9 +8,20 @@
 #include "qstringlist.h"
 #include "qprocess.h"
 
+const char* ZBrowserOpener::INTERNAL_BROWSER = "QWebEngine";
+
 ZBrowserOpener::ZBrowserOpener()
 {
+}
 
+ZBrowserOpener::~ZBrowserOpener()
+{
+#if defined(_USE_WEBENGINE_)
+  if (m_webView != NULL) {
+    m_webView->close();
+    delete m_webView;
+  }
+#endif
 }
 
 void ZBrowserOpener::open(const QString& url)
@@ -21,7 +32,16 @@ void ZBrowserOpener::open(const QString& url)
 
 void ZBrowserOpener::open(const QUrl& url)
 {
-  if(m_browerPath==""){
+  if (m_browerPath == INTERNAL_BROWSER) {
+#if defined(_USE_WEBENGINE_)
+    if (m_webView == NULL) {
+      m_webView = new QWebEngineView;
+    }
+    qDebug() << "URL: " << url;
+    m_webView->setUrl(url);
+    m_webView->show();
+#endif
+  } else if (m_browerPath.isEmpty()) {
     QDesktopServices::openUrl(url);
   } else{
     QProcess process;
@@ -31,13 +51,17 @@ void ZBrowserOpener::open(const QUrl& url)
     std::cout << "URL: " << args[0].toStdString() << std::endl;
 #endif
     process.startDetached(m_browerPath, args);
-//    process.waitForFinished();
-//    system((m_brower_path+" "+url.toString()).toStdString().c_str());
+    //    process.waitForFinished();
+    //    system((m_brower_path+" "+url.toString()).toStdString().c_str());
   }
 }
 
 bool ZBrowserOpener::findBrowser(QString browser_name)
 {
+  if (browser_name == INTERNAL_BROWSER) {
+    return true;
+  }
+
 //  QString find_cmd="find / -executable -type f -or -type l -name \""+browser_name+"\"  -print";
   QString find_cmd = "which " + browser_name;
   QProcess process;

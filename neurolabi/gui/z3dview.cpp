@@ -4,6 +4,8 @@
 #include <QProgressDialog>
 #include <QMainWindow>
 #include <QScrollArea>
+#include <QLabel>
+
 #include <boost/math/constants/constants.hpp>
 
 #include "z3dcanvas.h"
@@ -272,6 +274,20 @@ void Z3DView::gotoPosition(const ZBBox<glm::dvec3>& bound, double minRadius)
   camera().resetCamera(bd, Z3DCamera::ResetOption::PreserveViewVector);
 }
 
+void Z3DView::exploreLocal(std::vector<ZPoint> &ptArray)
+{
+  if (ptArray.empty()) {
+    emit cancelingLocalExplore();
+  } else {
+    ZPoint center = ptArray[0];
+    if (ptArray.size() > 1) {
+      center += ptArray[1];
+      center *= 0.5;
+    }
+    emit exploringLocal(center.getX(), center.getY(), center.getZ());
+  }
+}
+
 void Z3DView::flipView()
 {
   camera().flipViewDirection();
@@ -470,6 +486,10 @@ void Z3DView::init()
 #endif
 
     emit networkConstructed();
+
+#ifdef _DEBUG_2
+    m_canvas->setCustomWidget(new QLabel("test"));
+#endif
   }
   catch (const ZException& e) {
     LOG(ERROR) << "Failed to init 3DView: " << e.what();
@@ -958,6 +978,11 @@ void Z3DView::updateDocData(neutube3d::ERendererLayer layer)
   } else {
     m_docHelper.updateData(layer);
   }
+}
+
+void Z3DView::updateCustomCanvas(const QImage &image)
+{
+  canvas().paintCustomRegion(image);
 }
 
 /*

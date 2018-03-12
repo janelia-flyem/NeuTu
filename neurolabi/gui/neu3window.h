@@ -4,6 +4,7 @@
 #include <QMainWindow>
 
 #include "zactionfactory.h"
+#include "zpoint.h"
 
 namespace Ui {
 class Neu3Window;
@@ -23,6 +24,13 @@ class ZROIWidget;
 class FlyEmSettingDialog;
 class TaskProtocolWindow;
 class ZActionLibrary;
+class ZFlyEmArbMvc;
+class ZArbSliceViewParam;
+class ZNeu3SliceViewDialog;
+
+#if defined(_USE_WEBENGINE_)
+class QWebEngineView;
+#endif
 
 /*!
  * \brief The class of the main window for Neu3
@@ -44,6 +52,10 @@ public:
 
   static void enableZoomToLoadedBody(bool enable = true);
   static bool zoomToLoadedBodyEnabled();
+
+  enum EBrowseMode {
+    BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER
+  };
 
 public slots:
   void showSynapse(bool on);
@@ -91,9 +103,11 @@ public slots:
 signals:
   void bodySelected(uint64_t bodyId);
   void bodyDeselected(uint64_t bodyId);
+  void closed();
 
 protected:
   virtual void keyPressEvent(QKeyEvent *event);
+  void closeEvent(QCloseEvent *event);
 
 private slots:
   void processSwcChangeFrom3D(
@@ -109,6 +123,7 @@ private slots:
 
   void updateRoiWidget();
   void browse(double x, double y, double z);
+  void browseInPlace(double x, double y, double z);
   void processKeyPressed(QKeyEvent* event);
   void updateBodyState();
   void setOption();
@@ -117,15 +132,41 @@ private slots:
   void exitSplit();
   void startSplit();
 
+//  void updateBrowser();
+  void updateEmbeddedGrayscale();
+  void updateGrayscaleWidget();
+  void updateSliceBrowser();
+
+  void hideGrayscale();
+  void processCameraRotation();
+//  void closeWebView();
+
+  void updateSliceViewGraph(const ZArbSliceViewParam &param);
+  void removeSliceViewGraph();
+
+  void processSliceDockVisibility(bool on);
+
   void test();
 
 private:
   void createDockWidget();
+  void initNativeSliceBrowser();
   void createTaskWindow();
   void createRoiWidget();
   void createToolBar();
   void connectSignalSlot();
   QAction* getAction(ZActionFactory::EAction key);
+  void initWebView();
+  void initGrayscaleWidget();
+  ZArbSliceViewParam getSliceViewParam(double x, double y, double z) const;
+  ZArbSliceViewParam getSliceViewParam(const ZPoint &center) const;
+
+  void startBrowser(EBrowseMode mode);
+  void endBrowse();
+  void updateWebView();
+  void updateBrowseSize();
+
+  QDockWidget* getSliceViewDoc() const;
 
 private:
   Ui::Neu3Window *ui;
@@ -136,6 +177,7 @@ private:
   QToolBar *m_toolBar = nullptr;
   ZBodyListWidget *m_bodyListWidget = nullptr;
   QDockWidget *m_bodyListDock = nullptr;
+  QDockWidget *m_nativeSliceDock = nullptr;
   ZROIWidget *m_roiWidget = nullptr;
   TaskProtocolWindow *m_taskProtocolWidget = nullptr;
 //  QWidget *m_controlWidget = nullptr;
@@ -143,6 +185,20 @@ private:
   class DoingBulkUpdate;
   QProgressDialog *m_progressDialog = nullptr;
   FlyEmSettingDialog *m_flyemSettingDlg = nullptr;
+  ZNeu3SliceViewDialog *m_browseOptionDlg = nullptr;
+
+  QDockWidget *m_webSliceDock = nullptr;
+#if defined(_USE_WEBENGINE_)
+  QWebEngineView *m_webView = nullptr;
+#endif
+  ZFlyEmArbMvc *m_sliceWidget = nullptr;
+
+  ZPoint m_browsePos;
+  constexpr static int DEFAULT_BROWSE_WIDTH = 512;
+  constexpr static int DEFAULT_BROWSE_HEIGHT = 512;
+  int m_browseWidth = DEFAULT_BROWSE_WIDTH;
+  int m_browseHeight = DEFAULT_BROWSE_HEIGHT;
+  EBrowseMode m_browseMode = BROWSE_NONE;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;
 };

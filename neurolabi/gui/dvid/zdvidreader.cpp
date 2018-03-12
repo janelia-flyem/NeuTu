@@ -43,6 +43,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
+#include <future>
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -996,6 +997,51 @@ ZMesh *ZDvidReader::readMeshArchiveNext(struct archive *arc, size_t &bytesJustRe
 
   bytesJustRead = size;
   return mesh;
+}
+
+void ZDvidReader::readMeshArchiveAsync(archive *arc, std::vector<ZMesh *> &results,
+                                       const std::function<void(size_t, size_t)>& progress)
+{
+    std::vector<std::future<ZMesh*>> futures;
+
+    struct archive_entry *entry;
+    while (archive_read_next_header(arc, &entry) == ARCHIVE_OK) {
+      std::string pathname = archive_entry_pathname(entry);
+      auto i = pathname.find_last_of('.');
+      std::string bodyIdStr = (i != std::string::npos) ? pathname.substr(0, i) : pathname;
+
+      const struct stat *s = archive_entry_stat(entry);
+      size_t size = s->st_size;
+
+      QByteArray buffer(size, 0);
+      archive_read_data(arc, buffer.data(), size);
+
+      // Decompress each mesh in its own asynchronous task, in the hopes that there are
+      // enough threads running in parallel to reduce the overall time for all meshes.
+
+      futures.push_back(std::async(std::launch::async, [buffer, bodyIdStr]{
+        ZMesh *mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
+        if (mesh != NULL) {
+          mesh->setLabel(std::stoull(bodyIdStr));
+        }
+        return mesh;
+      }));
+    }
+
+    // Process the results of the asynchronous tasks.
+
+    size_t count = 0;
+    for (auto &future : futures) {
+      ZMesh *mesh = future.get();
+      if (mesh) {
+        results.push_back(mesh);
+      }
+
+      count++;
+      if (progress) {
+        progress(count, futures.size());
+      }
+    }
 }
 
 void ZDvidReader::readMeshArchiveEnd(struct archive *arc)
@@ -2660,6 +2706,161 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
   return readGrayScaleLowtis(x0, y0, z0, width, height, zoom, 256, 256);
+}
+
+std::vector<int> ZDvidReader::GetOffset(int x0, int y0, int z0)
+{
+  std::vector<int> offset(3);
+  offset[0] = x0;
+  offset[1] = y0;
+  offset[2] = z0;
+
+  return offset;
+}
+
+std::vector<int> ZDvidReader::GetOffset(
+    int cx, int cy, int cz, int width, int height)
+{
+  std::vector<int> offset(3);
+  offset[0] = cx - width / 2;
+  offset[1] = cy - height / 2;
+  offset[2] = cz;
+
+  return offset;
+}
+
+ZIntCuboid ZDvidReader::GetStackBox(
+    int x0, int y0, int z0, int width, int height, int zoom)
+{
+  int scale = 1;
+  if (zoom > 0) {
+    scale = pow(2, zoom);
+    width /= scale;
+    height /= scale;
+  }
+
+  ZIntCuboid box;
+  box.setFirstCorner(x0 / scale, y0 / scale, z0 / scale);
+  box.setWidth(width);
+  box.setHeight(height);
+  box.setDepth(1);
+
+  return box;
+}
+
+lowtis::ImageService* ZDvidReader::getLowtisServiceGray(int cx, int cy) const
+{
+  if (!getDvidTarget().hasGrayScaleData()) {
+    return NULL;
+  }
+
+  if (m_lowtisConfigGray.centercut != std::tuple<int, int>(cx, cy)) {
+    m_lowtisServiceGray.reset();
+  }
+
+  if (m_lowtisServiceGray.get() == NULL) {
+    try {
+      m_lowtisConfigGray.username = neutube::GetCurrentUserName();
+      m_lowtisConfigGray.dvid_server = getDvidTarget().getAddressWithPort();
+      m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
+      m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
+      m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
+      m_lowtisConfigGray.enableprefetch = false;
+
+      m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
+            new lowtis::ImageService(m_lowtisConfigGray));
+
+    } catch (libdvid::DVIDException &e) {
+      m_lowtisServiceGray.reset();
+
+      LERROR() << e.what();
+      setStatusCode(e.getStatus());
+    }
+  }
+
+  return m_lowtisServiceGray.get();
+}
+
+ZStack* ZDvidReader::readGrayScaleLowtis(
+    int x0, int y0, int z0, double vx1, double vy1, double vz1,
+    double vx2, double vy2, double vz2,
+    int width, int height, int zoom, int cx, int cy) const
+{
+  if (getLowtisServiceGray(cx, cy) == NULL) {
+    return NULL;
+  }
+
+  ZStack *stack = NULL;
+
+  qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
+
+
+  QElapsedTimer timer;
+  timer.start();
+  if (m_lowtisServiceGray.get() != NULL) {
+//    m_lowtisService->config.bytedepth = 8;
+
+    ZIntCuboid box = GetStackBox(x0, y0, z0, width, height, zoom);
+
+    stack = new ZStack(GREY, box, 1);
+
+    try {
+      std::vector<int> offset = GetOffset(x0, y0, z0);
+
+      bool centerCut = true;
+      if (zoom == getDvidTarget().getMaxGrayscaleZoom() ||
+          width < cx || height < cy) {
+        centerCut = false;
+      }
+
+      if (zoom >= 1) {
+//        zoom -= 1;
+      }
+
+      std::vector<double> dim1vec;
+      dim1vec.push_back(vx1);
+      dim1vec.push_back(vy1);
+      dim1vec.push_back(vz1);
+
+      std::vector<double> dim2vec;
+      dim2vec.push_back(vx2);
+      dim2vec.push_back(vy2);
+      dim2vec.push_back(vz2);
+
+      m_lowtisServiceGray->retrieve_arbimage(
+            width, height, offset, dim1vec, dim2vec, (char*) stack->array8(),
+            zoom, centerCut);
+
+      setStatusCode(200);
+    } catch (libdvid::DVIDException &e) {
+      LERROR() << e.what();
+      setStatusCode(e.getStatus());
+
+      delete stack;
+      stack = NULL;
+    }
+
+    m_readingTime = timer.elapsed();
+    if (NeutubeConfig::GetVerboseLevel() < 5) {
+      if (m_readingTime > 10) {
+        LINFO() << "grayscale reading time: " << m_readingTime;
+      }
+    } else {
+      LINFO() << "grayscale reading time: " << m_readingTime;
+    }
+  }
+
+  return stack;
+}
+
+ZStack *ZDvidReader::readGrayScaleLowtis(
+    const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
+    int width, int height, int zoom, int cx, int cy) const
+{
+  return readGrayScaleLowtis(
+        center.getX(), center.getY(), center.getZ(),
+        v1.getX(), v1.getY(), v1.getZ(), v2.getX(), v2.getY(), v2.getZ(),
+        width, height, zoom, cx, cy);
 }
 
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,

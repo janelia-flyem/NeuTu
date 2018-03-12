@@ -2635,7 +2635,8 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::undo()
   m_doc->blockSignals(true);
   m_doc->deselectAllObject();
   m_doc->setPunctumSelected(m_punctaList.begin(), m_punctaList.end(), true);
-  m_doc->setSwcSelected(m_swcList.begin(), m_swcList.end(), true);
+  m_doc->setSwcSelected(m_swcList, true);
+  //  m_doc->setSwcSelected(m_swcList.begin(), m_swcList.end(), true);
   m_doc->setSwcTreeNodeSelected(m_swcNodeList.begin(), m_swcNodeList.end(), true);
   m_doc->blockSignals(false);
 
