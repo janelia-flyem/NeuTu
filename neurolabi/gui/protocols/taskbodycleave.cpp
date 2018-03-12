@@ -4,6 +4,7 @@
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofmvc.h"
 #include "neu3window.h"
 #include "z3dmeshfilter.h"
 #include "z3dwindow.h"
@@ -91,6 +92,8 @@ namespace {
   static bool showingTodo;
   static bool showingSynapse;
   static bool preservingSourceColorEnabled;
+  static bool showingSourceColors;
+  static bool showingAnnotations;
 
   void applyOverallSettings(ZFlyEmBody3dDoc* bodyDoc)
   {
@@ -114,7 +117,17 @@ namespace {
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
         filter->enablePreservingSourceColors(true);
+
+        // For a large set of super voxels, merely showing all the source colors in the
+        // filter's configuration UI can introduce a significant delay, so turn off
+        // that feature (which is not really useful in this context anyway).
+
+        showingSourceColors = filter->showingSourceColors();
+        filter->showSourceColors(false);
       }
+
+      showingAnnotations = ZFlyEmProofMvc::showingAnnotations();
+      ZFlyEmProofMvc::showAnnotations(false);
     }
   }
 
@@ -132,7 +145,10 @@ namespace {
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);
+        filter->showSourceColors(showingSourceColors);
       }
+
+      ZFlyEmProofMvc::showAnnotations(showingAnnotations);
     }
   }
 
@@ -243,11 +259,23 @@ QString TaskBodyCleave::targetString()
 void TaskBodyCleave::beforeNext()
 {
   applyPerTaskSettings();
+
+  // Clear the mesh cache when changing tasks so it does not grow without bound
+  // during an assignment, which causes a performance degradation.  The assumption
+  // is that improving performance as a user progresses through an assignment is
+  // more important than eliminating the need to reload meshses if the user goes
+  // back to a previous task.
+
+  m_bodyDoc->clearGarbage(true);
 }
 
 void TaskBodyCleave::beforePrev()
 {
   applyPerTaskSettings();
+
+  // See the comment in beforeNext().
+
+  m_bodyDoc->clearGarbage(true);
 }
 
 void TaskBodyCleave::beforeDone()
@@ -703,8 +731,17 @@ void TaskBodyCleave::cleave()
   }
 
   requestJson["seeds"] = requestJsonSeeds;
+  if (const char* user = std::getenv("USER")) {
+    requestJson["user"] = user;
+  }
 
-  QUrl url("http://bergs-ws1.int.janelia.org:5556/compute-cleave");
+  // TODO: Teporary cleaving sevrver URL.
+  QString server = "http://bergs-ws1.int.janelia.org:5556/compute-cleave";
+  if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
+    server = serverOverride;
+  }
+
+  QUrl url(server);
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
