@@ -16,10 +16,12 @@ ZBrowserOpener::ZBrowserOpener()
 
 ZBrowserOpener::~ZBrowserOpener()
 {
+#if defined(_USE_WEBENGINE_)
   if (m_webView != NULL) {
     m_webView->close();
     delete m_webView;
   }
+#endif
 }
 
 void ZBrowserOpener::open(const QString& url)
@@ -31,12 +33,14 @@ void ZBrowserOpener::open(const QString& url)
 void ZBrowserOpener::open(const QUrl& url)
 {
   if (m_browerPath == INTERNAL_BROWSER) {
+#if defined(_USE_WEBENGINE_)
     if (m_webView == NULL) {
       m_webView = new QWebEngineView;
     }
     qDebug() << "URL: " << url;
     m_webView->setUrl(url);
     m_webView->show();
+#endif
   } else if (m_browerPath.isEmpty()) {
     QDesktopServices::openUrl(url);
   } else{

@@ -657,6 +657,11 @@ void ZStackMvc::zoomToL1(int x, int y, int z)
   */
 }
 
+QRect ZStackMvc::getViewPort() const
+{
+  return getView()->getViewPort(neutube::COORD_STACK);
+}
+
 ZIntPoint ZStackMvc::getViewCenter() const
 {
   return getView()->getViewCenter();

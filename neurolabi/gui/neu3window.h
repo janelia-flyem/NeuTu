@@ -164,6 +164,7 @@ private:
   void startBrowser(EBrowseMode mode);
   void endBrowse();
   void updateWebView();
+  void updateBrowseSize();
 
   QDockWidget* getSliceViewDoc() const;
 
@@ -193,6 +194,10 @@ private:
   ZFlyEmArbMvc *m_sliceWidget = nullptr;
 
   ZPoint m_browsePos;
+  constexpr static int DEFAULT_BROWSE_WIDTH = 512;
+  constexpr static int DEFAULT_BROWSE_HEIGHT = 512;
+  int m_browseWidth = DEFAULT_BROWSE_WIDTH;
+  int m_browseHeight = DEFAULT_BROWSE_HEIGHT;
   EBrowseMode m_browseMode = BROWSE_NONE;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;

@@ -138,6 +138,64 @@ Z3DGraph* Z3DGraphFactory::MakeQuadDiag(const ZPoint &pt1, const ZPoint &pt2,
   return graph;
 }
 
+Z3DGraph* Z3DGraphFactory::MakeQuadCross(const ZPoint &pt1, const ZPoint &pt2,
+                                         const ZPoint &pt3, const ZPoint &pt4)
+{
+  Z3DGraph *graph = new Z3DGraph;
+  Z3DGraphNode node(pt1, 0.0);
+  node.setColor(QColor(0, 0, 255));
+  graph->addNode(node);
+
+  node.setCenter(pt2);
+  graph->addNode(node);
+
+  node.setCenter(pt3);
+  graph->addNode(node);
+
+  node.setCenter(pt4);
+  graph->addNode(node);
+
+  node.setCenter((pt1 + pt2) * 0.5);
+  graph->addNode(node);
+
+  node.setCenter((pt2 + pt3) * 0.5);
+  graph->addNode(node);
+
+  node.setCenter((pt3 + pt4) * 0.5);
+  graph->addNode(node);
+
+  node.setCenter((pt4 + pt1) * 0.5);
+  graph->addNode(node);
+
+
+  Z3DGraphEdge edge;
+  edge.useNodeColor(true);
+  edge.setShape(GRAPH_LINE);
+  edge.setWidth(2.0);
+
+  edge.setConnection(0, 1);
+  graph->addEdge(edge);
+
+  edge.setConnection(1, 2);
+  graph->addEdge(edge);
+
+  edge.setConnection(2, 3);
+  graph->addEdge(edge);
+
+  edge.setConnection(0, 3);
+  graph->addEdge(edge);
+
+  edge.setWidth(5.0);
+  edge.setConnection(4, 6);
+  graph->addEdge(edge);
+
+  edge.setConnection(5, 7);
+  graph->addEdge(edge);
+
+  return graph;
+}
+
+
 Z3DGraph* Z3DGraphFactory::MakeBox(const ZCuboid &box, double radius)
 {
   Z3DGraph *graph = new Z3DGraph;

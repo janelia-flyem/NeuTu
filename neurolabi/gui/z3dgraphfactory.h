@@ -20,6 +20,8 @@ public:
   static Z3DGraph* MakeBox(const ZIntCuboid &box, double radius = 1.0);
   static Z3DGraph* MakeQuadDiag(const ZPoint &pt1, const ZPoint &pt2,
                                 const ZPoint &pt3, const ZPoint &pt4);
+  static Z3DGraph* MakeQuadCross(const ZPoint &pt1, const ZPoint &pt2,
+                                 const ZPoint &pt3, const ZPoint &pt4);
 
   Z3DGraph* makeBox(const ZIntCuboid &box);
   Z3DGraph* makeBox(const ZCuboid &box);

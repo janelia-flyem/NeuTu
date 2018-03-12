@@ -298,6 +298,9 @@ void Neu3Window::initNativeSliceBrowser()
     m_nativeSliceDock->setFloating(true);
     m_nativeSliceDock->setAllowedAreas(Qt::NoDockWidgetArea);
   }
+
+  m_browseWidth = DEFAULT_BROWSE_WIDTH;
+  m_browseHeight = DEFAULT_BROWSE_HEIGHT;
 }
 
 void Neu3Window::initWebView()
@@ -407,8 +410,20 @@ void Neu3Window::removeSliceViewGraph()
         ZStackObjectSourceFactory::MakeSlicViewObjectSource(), true);
 }
 
+void Neu3Window::updateBrowseSize()
+{
+  if (m_browseMode == BROWSE_NATIVE) {
+    if (m_sliceWidget != NULL) {
+      QRect rect = m_sliceWidget->getViewPort();
+      m_browseWidth = rect.width();
+      m_browseHeight = rect.height();
+    }
+  }
+}
+
 void Neu3Window::processCameraRotation()
 {
+  updateBrowseSize();
   updateSliceBrowser();
 //  updateBrowser();
 //  updateEmbeddedGrayscale();
@@ -485,7 +500,7 @@ void Neu3Window::updateEmbeddedGrayscale()
 ZArbSliceViewParam Neu3Window::getSliceViewParam(double x, double y, double z) const
 {
   ZArbSliceViewParam viewParam;
-  viewParam.setSize(512, 512);
+  viewParam.setSize(m_browseWidth, m_browseHeight);
   viewParam.setCenter(iround(x), iround(y), iround(z));
 
   std::pair<glm::vec3, glm::vec3> ort = m_3dwin->getCamera()->getLowtisVec();

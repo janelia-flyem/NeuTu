@@ -230,7 +230,7 @@ Z3DGraph* ZFlyEmMisc::MakeSliceViewGraph(const ZArbSliceViewParam &param)
     ZPoint pt3 = center + param.getPlaneV1() * rx + param.getPlaneV2() * ry;
     ZPoint pt4 = center - param.getPlaneV1() * rx + param.getPlaneV2() * ry;
 
-    graph = Z3DGraphFactory::MakeQuadDiag(pt1, pt2, pt3, pt4);
+    graph = Z3DGraphFactory::MakeQuadCross(pt1, pt2, pt3, pt4);
     graph->setSource(ZStackObjectSourceFactory::MakeSlicViewObjectSource());
   }
 
