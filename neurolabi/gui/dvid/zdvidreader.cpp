@@ -43,6 +43,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
+#include <future>
 
 ZDvidReader::ZDvidReader(QObject *parent) :
   QObject(parent), m_verbose(true)
@@ -996,6 +997,51 @@ ZMesh *ZDvidReader::readMeshArchiveNext(struct archive *arc, size_t &bytesJustRe
 
   bytesJustRead = size;
   return mesh;
+}
+
+void ZDvidReader::readMeshArchiveAsync(archive *arc, std::vector<ZMesh *> &results,
+                                       const std::function<void(size_t, size_t)>& progress)
+{
+    std::vector<std::future<ZMesh*>> futures;
+
+    struct archive_entry *entry;
+    while (archive_read_next_header(arc, &entry) == ARCHIVE_OK) {
+      std::string pathname = archive_entry_pathname(entry);
+      auto i = pathname.find_last_of('.');
+      std::string bodyIdStr = (i != std::string::npos) ? pathname.substr(0, i) : pathname;
+
+      const struct stat *s = archive_entry_stat(entry);
+      size_t size = s->st_size;
+
+      QByteArray buffer(size, 0);
+      archive_read_data(arc, buffer.data(), size);
+
+      // Decompress each mesh in its own asynchronous task, in the hopes that there are
+      // enough threads running in parallel to reduce the overall time for all meshes.
+
+      futures.push_back(std::async(std::launch::async, [buffer, bodyIdStr]{
+        ZMesh *mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
+        if (mesh != NULL) {
+          mesh->setLabel(std::stoull(bodyIdStr));
+        }
+        return mesh;
+      }));
+    }
+
+    // Process the results of the asynchronous tasks.
+
+    size_t count = 0;
+    for (auto &future : futures) {
+      ZMesh *mesh = future.get();
+      if (mesh) {
+        results.push_back(mesh);
+      }
+
+      count++;
+      if (progress) {
+        progress(count, futures.size());
+      }
+    }
 }
 
 void ZDvidReader::readMeshArchiveEnd(struct archive *arc)

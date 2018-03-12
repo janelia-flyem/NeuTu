@@ -165,6 +165,7 @@ void Neu3Window::connectSignalSlot()
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
           this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
           this, SLOT(updateBodyState()));
@@ -730,6 +731,18 @@ void Neu3Window::removeAllBodies()
   DoingBulkUpdate doingBulkUpdate(this);
 
   m_bodyListWidget->getModel()->removeAllBodies();
+
+  // With the optimized version of syncBodyListModel(), which no longer does the
+  // expensive operation of showing all the meshes from a tar archive in the
+  // ZBodyListWidget, the following steps are necessary.
+
+  ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+  for (ZMesh *mesh : meshList) {
+    dataDoc->deselectBody(mesh->getLabel());
+  }
+
+  getBodyDocument()->processBodySelectionChange();
 }
 
 void Neu3Window::test()
@@ -788,6 +801,25 @@ void Neu3Window::processSwcChangeFrom3D(
 void Neu3Window::processMeshChangedFrom3D(
     QList<ZMesh *> selected, QList<ZMesh *> deselected)
 {
+  QSet<uint64_t> selectedSet;
+  for (ZMesh *mesh : selected) {
+    selectedSet.insert(mesh->getLabel());
+  }
+
+  QSet<uint64_t> deselectedSet;
+  for (ZMesh *mesh : deselected) {
+    deselectedSet.insert(mesh->getLabel());
+  }
+
+  // Make sure to update the ZFlyEmBody3dDoc's notion of selection, to avoid
+  // immediate deselection of a mesh selected by clicking in the 3D view.
+  // If the ZBodyListWidget has a complete list of the bodies it will trigger
+  // the update to ZFlyEmBody3dDoc, but for large sets of bodies loaded from
+  // a tar archive the ZBodyListWidget may not have the complete list (to avoid
+  // performance problems).
+
+  getBodyDocument()->setBodyModelSelected(selectedSet, deselectedSet);
+
   foreach (ZMesh *mesh, selected) {
     if (mesh->getLabel() > 0) {
       emit bodySelected(mesh->getLabel());
@@ -803,40 +835,20 @@ void Neu3Window::processMeshChangedFrom3D(
 
 void Neu3Window::syncBodyListModel()
 {
-  // Supress some expensive and unnecessary updates after each body removal.
-  DoingBulkUpdate doingBulkUpdate(this);
+  // Do not try to show all the meshes from a tar archive in the ZBodyListWidget,
+  // as the large number of meshes can causes a significant slowdown.
+  // But make sure to do some of the document updates that ZBodyListWidget
+  // would have triggered for each of the meshes, or else they will not function
+  // correctly (e.g., will not be pickable in the 3D view).
 
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-//      getBodyDocument()->getMeshList();
-  ZFlyEmBodyListModel *listModel = m_bodyListWidget->getModel();
-
-  QList<int> rowsToRemove;
-  //Remove rows that are not in the document
-  for (int i = 0; i < listModel->rowCount(); i++) {
-    if (listModel->getBodyId(i) == 0) {
-      rowsToRemove.append(i);
-    } else {
-      bool found = false;
-      for (ZMesh *mesh : meshList) {
-        if (mesh->getLabel() > 0) {
-          if (mesh->getLabel() == listModel->getBodyId(i)) {
-            found = true;
-            break;
-          }
-        }
-      }
-      if (!found) {
-        rowsToRemove.append(i);
-      }
-    }
-  }
-  listModel->removeRowList(rowsToRemove);
-
+  std::set<uint64_t> selected;
   for (ZMesh *mesh : meshList) {
-    if (mesh->getLabel() > 0) {
-      listModel->addBody(mesh->getLabel());
-    }
+    selected.insert(mesh->getLabel());
   }
+
+  ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
+  dataDoc->setSelectedBody(selected, neutube::BODY_LABEL_MAPPED);
 }
 
 static const int PROGRESS_MAX = 100;
@@ -855,7 +867,12 @@ void Neu3Window::meshArchiveLoadingStarted()
 void Neu3Window::meshArchiveLoadingProgress(float fraction)
 {
   if (m_progressDialog) {
-    m_progressDialog->setValue(fraction * PROGRESS_MAX);
+    // Don't use a fraction of 1, because then both this call and meshArchiveLoadingEnded()
+    // will set the dialog to the maximum value, which seems to cause the dialog to stay open.
+
+    if (fraction < 1.0f) {
+      m_progressDialog->setValue(fraction * PROGRESS_MAX);
+    }
   }
 }
 
