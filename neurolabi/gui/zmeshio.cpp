@@ -148,7 +148,7 @@ void getDracoNormals(const PointCloud& pc, std::vector<glm::vec3>& normals)
     return; // no normal
   }
   if (att->num_components() == 3) {
-    PointIndex num_points = pc.num_points();
+    PointIndex num_points(pc.num_points());
     normals.resize(num_points.value());
     for (PointIndex i(0); i < num_points; ++i) {
       if (!att->ConvertValue<float, 3>(att->mapped_index(i), &normals[i.value()][0])) {
