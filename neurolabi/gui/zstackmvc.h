@@ -78,6 +78,7 @@ public:
   double getWidthZoomRatio() const;
   double getHeightZoomRatio() const;
   QSize getViewScreenSize() const;
+  QRect getViewPort() const;
 
   void toggleStressTest();
   virtual void stressTest(ZStressTestOptionDialog *dlg);
@@ -86,9 +87,9 @@ public:
   void setRole(ERole role);
 
 signals:
-  void stackChanged();
-  void objectChanged();
-  void objectSelectionChanged();
+//  void stackChanged();
+//  void objectChanged();
+//  void objectSelectionChanged();
   void messageGenerated(const ZWidgetMessage&);
   void viewChanged();
 

@@ -32,6 +32,8 @@ void ZFlyEmNeuronImageFactory::setSizePolicy(
   case neutube::Z_AXIS:
     m_sizePolicy[2] = policy;
     break;
+  case neutube::A_AXIS:
+    break;
   }
 }
 
@@ -44,6 +46,8 @@ int ZFlyEmNeuronImageFactory::getSourceDimension(neutube::EAxis axis) const
     return m_sourceDimension[1];
   case neutube::Z_AXIS:
     return m_sourceDimension[2];
+  case neutube::A_AXIS:
+    break;
   }
 
   return 0;

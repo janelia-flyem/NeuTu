@@ -100,6 +100,13 @@ CONFIG += rtti exceptions
 CONFIG += static_gtest
 
 QT += printsupport
+qtHaveModule(webenginewidgets) {
+  QT += webenginewidgets
+  DEFINES += _USE_WEBENGINE_
+} else {
+  QT += webkitwidgets
+  DEFINES += _USE_WEBKIT_
+}
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 #_USE_CORE_PROFILE_
@@ -845,7 +852,13 @@ HEADERS += mainwindow.h \
     misc/zmarchingcube.h \
     ilastik/marching_cubes.h \
     ilastik/laplacian_smoothing.h \
-    flyem/zflyembodysplitter.h
+    flyem/zflyembodysplitter.h \
+    zarbsliceviewparam.h \
+    flyem/zflyemarbdoc.h \
+    flyem/zflyemarbmvc.h \
+    flyem/zflyemarbpresenter.h \
+    flyem/zarbslicescrollstrategy.h \
+    dialogs/zneu3sliceviewdialog.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -952,7 +965,8 @@ FORMS += dialogs/settingdialog.ui \
     neu3window.ui \
     widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \
-    dialogs/zflyemproofsettingdialog.ui
+    dialogs/zflyemproofsettingdialog.ui \
+    dialogs/zneu3sliceviewdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1477,7 +1491,13 @@ SOURCES += main.cpp \
     misc/zmarchingcube.cpp \
     ilastik/marching_cubes.cpp \
     ilastik/laplacian_smoothing.cpp \
-    flyem/zflyembodysplitter.cpp
+    flyem/zflyembodysplitter.cpp \
+    zarbsliceviewparam.cpp \
+    flyem/zflyemarbdoc.cpp \
+    flyem/zflyemarbmvc.cpp \
+    flyem/zflyemarbpresenter.cpp \
+    flyem/zarbslicescrollstrategy.cpp \
+    dialogs/zneu3sliceviewdialog.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

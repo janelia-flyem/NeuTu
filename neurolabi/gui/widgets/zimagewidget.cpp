@@ -188,7 +188,11 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     painter.end();
 
     paintObject();
-    paintZoomHint();
+    if (m_showingZoomHint) {
+      paintZoomHint();
+    } else {
+      paintCrossHair();
+    }
     //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
 }
@@ -487,6 +491,12 @@ void ZImageWidget::paintObject()
 
 }
 
+void ZImageWidget::hideZoomHint()
+{
+  m_showingZoomHint = false;
+  update();
+}
+
 void ZImageWidget::showCrossHair(bool on)
 {
   m_showingCrossHair = on;
@@ -524,6 +534,25 @@ void ZImageWidget::paintZoomHint()
   }
 }
 
+void ZImageWidget::paintCrossHair()
+{
+  QPainter painter;
+  if (!painter.begin(this)) {
+    std::cout << "......failed to begin painter" << std::endl;
+    return;
+  }
+
+  painter.setRenderHint(QPainter::Antialiasing, true);
+  painter.setPen(QPen(QColor(0, 0, 255, 64)));
+  int x1 = m_viewProj.getWidgetRect().right();
+  int y1 = m_viewProj.getWidgetRect().bottom();
+
+  double cx = x1 * 0.5;
+  double cy = y1 * 0.5;
+
+  painter.drawLine(QPointF(cx, 0), QPointF(cx, y1));
+  painter.drawLine(QPointF(0, cy), QPointF(x1, cy));
+}
 
 QSize ZImageWidget::minimumSizeHint() const
 {

@@ -34,6 +34,7 @@
 #include "zstackobjectaccessor.h"
 #include "flyem/zflyembodysplitter.h"
 #include "zactionlibrary.h"
+#include "dvid/zdvidgrayslice.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -43,6 +44,8 @@ const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent)
 {
+  initArbGraySlice();
+
   m_timer = new QTimer(this);
   m_timer->setInterval(200);
   m_timer->start();
@@ -202,9 +205,9 @@ void ZFlyEmBody3dDoc::setUnrecycable(const QSet<uint64_t> &bodySet)
   }
 }
 
-void ZFlyEmBody3dDoc::clearGarbage()
+void ZFlyEmBody3dDoc::clearGarbage(bool force)
 {
-  if (!m_limitGarbageLifetime) {
+  if (!m_limitGarbageLifetime && !force) {
     return;
   }
 
@@ -219,9 +222,9 @@ void ZFlyEmBody3dDoc::clearGarbage()
      iter.next();
      int t = iter.value().getTimeStamp();
      int dt = currentTime - t;
-     if (dt < 0) {
+     if (!force && dt < 0) {
        iter.value().setTimeStamp(0);
-     } else if (dt > OBJECT_GARBAGE_LIFE){
+     } else if (force || dt > OBJECT_GARBAGE_LIFE){
        ZStackObject *obj = iter.key();
        if (obj->getType() == ZStackObject::TYPE_SWC) {
          ZOUT(LTRACE(), 5) << "Deleting SWC object: " << obj << obj->getSource();
@@ -393,6 +396,53 @@ void ZFlyEmBody3dDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
 ZFlyEmProofDoc* ZFlyEmBody3dDoc::getDataDocument() const
 {
   return qobject_cast<ZFlyEmProofDoc*>(m_dataDoc.get());
+}
+
+void ZFlyEmBody3dDoc::initArbGraySlice()
+{
+  ZDvidGraySlice *slice = new ZDvidGraySlice();
+  slice->setSliceAxis(neutube::A_AXIS);
+  slice->setTarget(ZStackObject::TARGET_3D_CANVAS);
+  slice->setSource(
+        ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
+  addObject(slice);
+}
+
+ZDvidGraySlice* ZFlyEmBody3dDoc::getArbGraySlice() const
+{
+  ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
+        ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
+
+  return slice;
+}
+
+void ZFlyEmBody3dDoc::updateArbGraySlice(const ZArbSliceViewParam &viewParam)
+{
+  ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
+        ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
+  if (slice != NULL) {
+    if (slice->update(viewParam)) {
+      bufferObjectModified(slice, ZStackObjectInfo::STATE_MODIFIED);
+      processObjectModified();
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::setArbGraySliceVisible(bool v)
+{
+  ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
+        ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
+  if (slice != NULL) {
+    if (v != slice->isVisible()) {
+      slice->setVisible(v);
+      bufferObjectVisibilityChanged(slice);
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::hideArbGrayslice()
+{
+  setArbGraySliceVisible(false);
 }
 
 int ZFlyEmBody3dDoc::getMinResLevel() const
@@ -595,6 +645,13 @@ void ZFlyEmBody3dDoc::setSeedType(int type)
 void ZFlyEmBody3dDoc::setBodyModelSelected(const QSet<uint64_t> &bodySet)
 {
   m_selectedBodySet = bodySet;
+}
+
+void ZFlyEmBody3dDoc::setBodyModelSelected(const QSet<uint64_t> &select,
+                                           const QSet<uint64_t> &deselect)
+{
+  m_selectedBodySet -= deselect;
+  m_selectedBodySet += select;
 }
 
 bool ZFlyEmBody3dDoc::hasTodoItemSelected() const
@@ -1121,12 +1178,17 @@ void ZFlyEmBody3dDoc::updateBody(
       }
     }
   } else {
-    ZMesh *mesh = getBodyMesh(bodyId, 0);
-    if (mesh != NULL) {
-      if (mesh->getColor() != color) {
-        mesh->setColor(color);
-        mesh->pushObjectColor();
-        processObjectModified(mesh);
+    // A mesh from a tar archive is never needs its color updated, and checking
+    // for it is a slow loop that is quadratic in the number of meshes.
+
+    if (!fromTar(bodyId)) {
+      ZMesh *mesh = getBodyMesh(bodyId, 0);
+      if (mesh != NULL) {
+        if (mesh->getColor() != color) {
+          mesh->setColor(color);
+          mesh->pushObjectColor();
+          processObjectModified(mesh);
+        }
       }
     }
   }
@@ -1289,11 +1351,17 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
       mesh->setColor(color);
       mesh->pushObjectColor();
 
-      bool loaded =
+      // The findSameClass() function has performance that iis quadratic in the number of meshes,
+      // and is unnecessary for meshes from a tar archive.
+
+      bool loaded = fromTar(id);
+      if (!loaded) {
+        loaded =
           !(getObjectGroup().findSameClass(
               ZStackObject::TYPE_MESH,
               ZStackObjectSourceFactory::MakeFlyEmBodySource(mesh->getLabel())).
             isEmpty());
+      }
 
       updateBodyFunc(bodyId, mesh);
 
@@ -1735,18 +1803,29 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
 
   QString threadId = QString("updateBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
-    //TStackObjectList objList = getObjectGroup().findSameSource(
-        //  ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
-    TStackObjectList objList = getObjectGroup().findSameClass(
-          bodyObject->getType(),
-          ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
 
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+    // The findSameClass() function has performance that iis quadratic in the number of meshes,
+    // and is unnecessary for meshes from a tar archive.
+
+    if (!fromTar(bodyId)) {
+        TStackObjectList objList = getObjectGroup().findSameClass(
+              bodyObject->getType(),
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+
+        for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+             ++iter) {
+          getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+        }
+        getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
     }
+    else {
 
-    getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+      // The event name is a bit confusing, but "NONUNIQUE" means that ZStackDoc::addObject()
+      // won't get into a quadratic loop checking that this body is unique, at test that is
+      // not necessary for bodies from tar archives.
+
+      getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
     getDataBuffer()->deliver();
     emit bodyMeshLoaded();
   }
@@ -2031,7 +2110,7 @@ ZDvidReader& ZFlyEmBody3dDoc::getBodyReader()
 std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
     uint64_t bodyId1, uint64_t bodyId2, ZDvidReader &diffReader, int zoom,
     flyem::EBodyType bodyType)
-{ 
+{
   std::vector<ZSwcTree*> treeArray;
 
   if (bodyId1 > 0 && bodyId2 > 0) {
@@ -2169,12 +2248,28 @@ unsigned int ZFlyEmBody3dDoc::encodedLevel(uint64_t id) {
   return encodedLevel;
 }
 
+bool ZFlyEmBody3dDoc::fromTar(uint64_t id) const
+{
+  if (encodesTar(id)) {
+    return true;
+  } else {
+    for (auto const& it : m_tarIdToMeshIds) {
+      auto const& meshIds = it.second;
+      if (meshIds.find(id) != meshIds.end()) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+
 bool ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64_t, ZMesh *> &result)
 {
   if (encodesTar(bodyId)) {
     auto it = m_tarIdToMeshIds.find(bodyId);
     if (it != m_tarIdToMeshIds.end()) {
-      auto meshIds = it->second;
+      auto& meshIds = it->second;
       std::vector<ZMesh *> recoveredMeshes;
 
       for (uint64_t meshId : meshIds) {
@@ -2273,25 +2368,34 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_
     m_tarIdToMeshIds[id].clear();
 
     emit meshArchiveLoadingStarted();
+
     // It is challenging to emit progress updates as m_dvidReader reads the data for the
     // tar archive, so just initialize the progress meter to show ani ntermediate status.
+
     const float PROGRESS_FRACTION_START = 1 / 3.0;
     emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
 
     size_t bytesTotal;
     size_t bytesRead = 0;
     if (struct archive *arc = m_dvidReader.readMeshArchiveStart(id, bytesTotal)) {
-      size_t bytesJustRead;
-      while (ZMesh *mesh = m_dvidReader.readMeshArchiveNext(arc, bytesJustRead)) {
-        finalizeMesh(mesh, 0, t);
-        result[mesh->getLabel()] = mesh;
-        m_tarIdToMeshIds[id].push_back(mesh->getLabel());
+      std::vector<ZMesh*> resultVec;
 
-        bytesRead += bytesJustRead;
-        float fraction = float(bytesRead) / bytesTotal;
+      // When reading the meshes, decompress them in parallel to improve performance.
+      // The following lambda function updates the progress dialog during the decompression.
+
+      auto progress = [=](size_t i, size_t n) {
+        float fraction = float(i) / n;
         float progressFraction = PROGRESS_FRACTION_START + (1 - PROGRESS_FRACTION_START) * fraction;
         emit meshArchiveLoadingProgress(progressFraction);
+      };
+
+      m_dvidReader.readMeshArchiveAsync(arc, resultVec, progress);
+      for (ZMesh *mesh : resultVec) {
+        finalizeMesh(mesh, 0, t);
+        result[mesh->getLabel()] = mesh;
+        m_tarIdToMeshIds[id].insert(mesh->getLabel());
       }
+
       m_dvidReader.readMeshArchiveEnd(arc);
 
       emit meshArchiveLoadingEnded();
@@ -2334,6 +2438,10 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
 
   if (m_dvidReader.isReady()) {
     m_dvidInfo = m_dvidReader.readLabelInfo();
+    ZDvidGraySlice *slice = getArbGraySlice();
+    if (slice != NULL) {
+      slice->setDvidTarget(m_dvidReader.getDvidTarget());
+    }
   }
 }
 
@@ -2954,5 +3062,3 @@ int ZFlyEmBody3dDoc::ObjectStatus::getResLevel() const
 {
   return m_resLevel;
 }
-
-

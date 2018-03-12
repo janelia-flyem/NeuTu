@@ -25,6 +25,8 @@ class ZStackViewParam;
 class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
 class ZDvidGraySlice;
+class ZArbSliceViewParam;
+
 /*!
  * \brief The basic class of manage roles to a stack object
  */

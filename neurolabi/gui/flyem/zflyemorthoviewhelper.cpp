@@ -148,6 +148,10 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
     ZPoint mappedCrossCenter = getCrossCenter();
     neutube::EAxis slaveAxis = mvc->getView()->getSliceAxis();
 
+    if (slaveAxis == neutube::A_AXIS) {
+      return;
+    }
+
     ZCrossHair *refCross = mvc->getCompleteDocument()->getCrossHair();
 
     ZPoint refCenter = refCross->getCenter();
@@ -176,6 +180,8 @@ void ZFlyEmOrthoViewHelper::syncViewPort(ZFlyEmOrthoMvc *mvc)
             QPoint(mappedCrossCenter.getX(), mappedCrossCenter.getZ()),
             refCrossPos);
 //      mvc->getView()->setZ(mappedCrossCenter.getY());
+      break;
+    case neutube::A_AXIS:
       break;
     }
 

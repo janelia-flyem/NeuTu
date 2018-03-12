@@ -387,6 +387,10 @@ void ZFlyEmOrthoWidget::endCrossHairSync()
 
 void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 {
+  if (mvc->getView()->getSliceAxis() == neutube::A_AXIS) {
+    return;
+  }
+
   beginCrossHairSync();
 
   ZFlyEmOrthoViewHelper helper;
@@ -405,6 +409,8 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_yzMvc);
     break;
+  case neutube::A_AXIS:
+    break;
   }
 
   endCrossHairSync();
@@ -412,6 +418,10 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 {
+  if (mvc->getView()->getSliceAxis() == neutube::A_AXIS) {
+    return;
+  }
+
   beginViewSync();
 
   ZFlyEmOrthoViewHelper helper;
@@ -436,6 +446,8 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
     helper.syncViewPort(m_yzMvc);
 //    m_xyMvc->zoomWithWidthAligned(mvc->getView());
 //    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
+    break;
+  case neutube::A_AXIS:
     break;
   }
 

@@ -22,6 +22,12 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if defined(_USE_WEBENGINE_)
+#include <QWebEngineView>
+#else
+#include <QWebKit>
+#endif
+
 #if defined(_QT5_)
 #include <QtConcurrent>
 #else
@@ -285,6 +291,7 @@
 #include "zstackobjectinfo.h"
 #include "sandbox/zbrowseropener.h"
 #include "widgets/zpythonprocess.h"
+#include "flyem/zflyemarbmvc.h"
 
 #include "test/ztestall.h"
 
@@ -25587,6 +25594,112 @@ void ZTest::test(MainWindow *host)
   ZFlyEmMisc::RemoveSplitTask(target, 1);
 #endif
 
+#if 0
 
+#if defined(_USE_WEBENGINE_)
+  QWebEngineView *view = new QWebEngineView(NULL);
+//  view->setUrl(QUrl("https://janeliascicomp.github.io/SharkViewer/"));
+  QUrl url("http://emdata1.int.janelia.org:8500/neuroglancer/#!{'layers':{'grayscale':{'type':'image'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/grayscale'}_'labels3':{'type':'segmentation'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/labels3'}}_'navigation':{'pose':{'position':{'voxelSize':[8_8_8]_'voxelCoordinates':[4032_5600_7936]}}_'zoomFactor':8}_'perspectiveOrientation':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'perspectiveZoom':64}");
+  view->setUrl(url);
+  view->show();
+#endif
+
+#if defined(_USE_WEBKIT_)
+  QWebView view;
+  QUrl url("http://emdata1.int.janelia.org:8500/neuroglancer/#!{'layers':{'grayscale':{'type':'image'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/grayscale'}_'labels3':{'type':'segmentation'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/labels3'}}_'navigation':{'pose':{'position':{'voxelSize':[8_8_8]_'voxelCoordinates':[4032_5600_7936]}}_'zoomFactor':8}_'perspectiveOrientation':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'perspectiveZoom':64}");
+  view->setUrl(url);
+  view->show();
+#endif
+
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscalejpeg");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZStack *stack = reader.readGrayScaleLowtis(
+        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 512, 512, 0, 256, 256);
+
+  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+#endif
+
+#if 1
+
+
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZFlyEmArbMvc *mvc = ZFlyEmArbMvc::Make(target);
+
+  ZArbSliceViewParam viewParam;
+  viewParam.setSize(1024, 1024);
+  viewParam.setCenter(17216, 19872, 20704);
+  ZPoint v1 = ZPoint(0, 1, 0);
+  ZPoint v2 = ZPoint(0, 0, 1);
+
+  viewParam.setPlane(v1, v2);
+  mvc->show();
+  mvc->updateViewParam(viewParam);
+#endif
+
+
+#if 0
+  ZDvidGraySlice slice;
+
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscalejpeg");
+  ZDvidReader reader;
+  reader.open(target);
+
+  reader.updateMaxGrayscaleZoom();
+
+  slice.setDvidTarget(reader.getDvidTarget());
+  slice.setSliceAxis(neutube::A_AXIS);
+
+  ZArbSliceViewParam viewParam;
+  viewParam.setSize(1024, 1024);
+  viewParam.setCenter(17216, 19872, 20704);
+  ZPoint v1 = ZPoint(1, 0, 0);
+  ZPoint v2 = ZPoint(0, 1, 0);
+
+  viewParam.setPlane(v1, v2);
+  slice.update(viewParam);
+  slice.saveImage(GET_TEST_DATA_DIR + "/test.tif");
+
+  v1.rotate(0.1, 0.2);
+  v2.rotate(0.1, 0.2);
+  viewParam.setPlane(v1, v2);
+
+  slice.update(viewParam);
+
+  /*
+  ZStackViewParam param;
+  param.setSliceAxis(neutube::A_AXIS);
+  param.setWidgetRect(QRect(0, 0, 1024, 1024));
+  param.setCanvasRect(QRect(17216, 19872, 1024, 1024));
+  param.setViewPort(17216, 19872, 17216 + 1023, 19872 + 1023);
+  param.setZ(20704);
+  */
+
+//  slice.setArbitraryAxis(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+//  slice.update(param);
+
+  slice.savePixmap(GET_TEST_DATA_DIR + "/test2.tif");
+
+  /*
+  QPixmap canvas(512, 512);
+  QPainter painter(&canvas);
+  painter.drawImage(QRect(0, 0, 512, 512), slice.getImage());
+
+  canvas.save((GET_TEST_DATA_DIR + "/test2.tif").c_str());
+  */
+
+#endif
   std::cout << "Done." << std::endl;
 }

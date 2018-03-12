@@ -28,12 +28,14 @@ class ZStack;
 class ZVaa3dMarker;
 class ZObject3d;
 class ZMesh;
+class ZArbSliceViewParam;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
 
 Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);
 Z3DGraph* MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo);
+Z3DGraph* MakeSliceViewGraph(const ZArbSliceViewParam &param);
 Z3DGraph* MakeRoiGraph(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo);
 ZCubeArray* MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv);

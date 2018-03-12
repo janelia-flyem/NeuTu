@@ -88,6 +88,7 @@
 #include "dialogs/zflyemproofsettingdialog.h"
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "zmeshfactory.h"
+#include "z3dwindow.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -1459,7 +1460,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       slice->updateContrast(getCompletePresenter()->highTileContrast());
 
       ZDvidGraySliceScrollStrategy *scrollStrategy =
-          new ZDvidGraySliceScrollStrategy;
+          new ZDvidGraySliceScrollStrategy(getView());
       scrollStrategy->setGraySlice(slice);
 
       getView()->setScrollStrategy(scrollStrategy);
@@ -2019,6 +2020,11 @@ void ZFlyEmProofMvc::highlightSelectedObject(bool hl)
 
 void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 {
+  if (!showingAnnotations()) {
+    // Checking for annotations can be very slow, so allow clients to disable it when not needed.
+    return;
+  }
+
   ZDvidLabelSlice *labelSlice =
       getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
   if (labelSlice != NULL){
@@ -2072,7 +2078,6 @@ void ZFlyEmProofMvc::processLabelSliceSelectionChange()
 #ifdef _DEBUG_
   getCompleteDocument()->verifyBodyAnnotationMap();
 #endif
-
 }
 
 
@@ -5005,3 +5010,19 @@ void ZFlyEmProofMvc::processSynapseMoving(
     m_protocolSwitcher->processSynapseMoving(from, to);
   }
 }
+
+namespace {
+  bool s_showAnnotations = true;
+}
+
+void ZFlyEmProofMvc::showAnnotations(bool show)
+{
+  s_showAnnotations = show;
+}
+
+bool ZFlyEmProofMvc::showingAnnotations()
+{
+  return s_showAnnotations;
+}
+
+

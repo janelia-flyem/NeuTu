@@ -20,6 +20,8 @@
 #include "zmessageprocessor.h"
 #include "zpainter.h"
 #include "zmultiscalepixmap.h"
+#include "zarbsliceviewparam.h"
+
 //#include "zstackdoc.h"
 
 class ZStackDoc;
@@ -47,6 +49,7 @@ class QSpacerItem;
 class ZWidgetMessage;
 class ZStTransform;
 class ZScrollSliceStrategy;
+class ZStackViewParam;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -74,6 +77,12 @@ public:
    * and channel controls with stack update in the document.
    */
   void reset(bool updatingScreen = true);
+
+  enum EMode {
+    MODE_NORMAL, MODE_IMAGE_ONLY, MODE_PLAIN_IMAGE
+  };
+
+  void configure(EMode mode);
 
   enum EUpdateOption {
     UPDATE_NONE, //No update
@@ -272,6 +281,9 @@ public:
   void zoomTo(int x, int y, int z, int w);
 
   void printViewParam() const;
+  void setMaxViewPort(int s) {
+    m_maxViewPort = s;
+  }
 
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
@@ -341,6 +353,7 @@ public slots:
   void autoThreshold();
   void setThreshold(int thre);
   void setZ(int z);
+  void setZQuitely(int z);
 
   void displayActiveDecoration(bool display = true);
   void request3DVis();
@@ -391,8 +404,9 @@ public:
       neutube::ECoordinateSystem coordSys = neutube::COORD_STACK) const;
 
   QRect getViewPort(neutube::ECoordinateSystem coordSys) const;
+  ZStackViewParam getViewParameter() const;
   ZStackViewParam getViewParameter(
-      neutube::ECoordinateSystem coordSys = neutube::COORD_STACK,
+      neutube::ECoordinateSystem coordSys,
       neutube::View::EExploreAction action = neutube::View::EXPLORE_UNKNOWN) const;
 
   QRectF getProjRegion() const;
@@ -415,6 +429,9 @@ public:
   void setViewProj(int x0, int y0, double zoom);
   void setViewProj(const QPoint &pt, double zoom);
   void setViewProj(const ZViewProj &vp);
+  void updateViewParam(const ZStackViewParam &param);
+  void updateViewParam(const ZArbSliceViewParam &param);
+  void resetViewParam(const ZArbSliceViewParam &param);
 
   ZIntPoint getViewCenter() const;
 
@@ -465,6 +482,12 @@ public: //Change view parameters
 
   void updateContrastProtocal();
 
+public: //View parameters for arbitrary plane
+  ZStackViewParam getViewParameter(const ZArbSliceViewParam &param) const;
+  ZArbSliceViewParam getSliceViewParam() const;
+//  void setSliceViewParam(const ZArbSliceViewParam &param);
+//  void showArbSliceViewPort();
+
 protected:
   ZIntCuboid getViewBoundBox() const;
   virtual int getDepth() const;
@@ -513,6 +536,7 @@ protected:
   void paintMultipleChannelStackMip(ZStack *stack);
 
   QSet<ZStackObject::ETarget> updateViewData(const ZStackViewParam &param);
+  QSet<ZStackObject::ETarget> updateViewData();
 
   void init();
 
@@ -526,8 +550,15 @@ protected:
   bool event(QEvent *event);
 
 private:
+//  void hideTopLayout();
+//  void hideSecondTopLayout();
+//  void hideChannelControlLayout();
+//  void hideZControlLayout();
+  void hideLayout(QLayout *layout);
+
   void updateSliceFromZ(int z);
   void recordViewParam();
+  void updateSliceViewParam();
   void prepareCanvasPainter(ZPixmap *canvas, ZPainter &canvasPainter);
 
   ZStack* getObjectMask(uint8_t maskValue);
@@ -536,6 +567,24 @@ private:
    * \brief Get object mask of a certain color
    */
   ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
+
+  void updateDataInfo(const QPoint &widgetPos);
+//  void setCentralView(int width, int height);
+
+  class ViewParamRecordOnce {
+  public:
+    ViewParamRecordOnce(ZStackView *view) : m_view(view) {
+      view->m_viewParamRecorded = false;
+      view->m_viewParamRecordOnce = true;
+    }
+    ~ViewParamRecordOnce() {
+      m_view->m_viewParamRecorded = false;
+      m_view->m_viewParamRecordOnce = false;
+    }
+
+  private:
+    ZStackView *m_view = nullptr;
+  };
 
 protected:
   //ZStackFrame *m_parent;
@@ -596,7 +645,12 @@ protected:
   ZScrollSliceStrategy *m_sliceStrategy;
 
   ZStackViewParam m_oldViewParam;
-//  ZStackDoc::ActiveViewObjectUpdater m_objectUpdater;
+  bool m_viewParamRecorded = false;
+  bool m_viewParamRecordOnce = false;
+  ZArbSliceViewParam m_sliceViewParam;
+  int m_maxViewPort = 0;
+
+//  ZStackViewParam m_currentViewParam;
 };
 
 #endif

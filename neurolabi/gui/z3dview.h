@@ -73,6 +73,7 @@ public:
   }
 
   void updateDocData(neutube3d::ERendererLayer layer);
+  void updateCustomCanvas(const QImage &image);
 
 public:
   inline QAction* zoomInAction()
@@ -182,6 +183,7 @@ public:
 
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(const ZBBox<glm::dvec3>& bound, double minRadius = 64);
+  void exploreLocal(std::vector<ZPoint> &ptArray);
 
   void flipView(); //Look from the oppsite side
   void setXZView();
@@ -206,6 +208,8 @@ public slots:
 
 signals:
   void networkConstructed();
+  void cancelingLocalExplore();
+  void exploringLocal(double x, double y, double z);
 
 private:
   void zoomIn();

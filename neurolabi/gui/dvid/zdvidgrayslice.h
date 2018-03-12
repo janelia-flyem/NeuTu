@@ -5,6 +5,7 @@
 #include "zimage.h"
 #include "zdvidreader.h"
 #include "zstackviewparam.h"
+#include "zarbsliceviewparam.h"
 #include "zpixmap.h"
 #include "zcontrastprotocol.h"
 
@@ -21,12 +22,22 @@ public:
   ZDvidGraySlice();
   ~ZDvidGraySlice();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_GRAY_SLICE;
+  }
+
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutube::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);
   bool update(const ZStackViewParam &viewParam);
+  /*!
+   * \brief Update an arbitrary cutting plane
+   *
+   * It only takes effect only when the axis is neutube::A_AXIS.
+   */
+  bool update(const ZArbSliceViewParam &viewParam);
 
 //  void loadDvidSlice(const QByteArray &buffer, int z);
 
@@ -76,20 +87,35 @@ public:
 
   void setCenterCut(int width, int height);
 
+  const ZPixmap& getPixmap() const {
+    return m_pixmap;
+  }
+
+  const ZImage& getImage() const {
+    return m_image;
+  }
+//  void setArbitraryAxis(const ZPoint &v1, const ZPoint &v2);
+
 public: //for testing
   void saveImage(const std::string &path);
   void savePixmap(const std::string &path);
+//  void test();
 
 private:
-  void updateImage();
+//  void updateImage();
   void updateImage(const ZStack *stack);
   void forceUpdate(const ZStackViewParam &viewParam);
+  void forceUpdate(const QRect &viewPort, int z);
+  void forceUpdate(const ZArbSliceViewParam &sliceViewParam);
+
   void updatePixmap();
   void updateContrast();
   void invalidatePixmap();
   void validatePixmap(bool v);
   void validatePixmap();
   bool isPixmapValid() const;
+
+  bool validateSize(int *width, int *height);
 
   /*!
    * \brief Check if the regions of the image and the slice are consistent.
@@ -107,6 +133,8 @@ private:
   QMutex m_pixmapMutex;
   ZStackViewParam m_currentViewParam;
 
+//  ZArbSliceViewParam m_sliceViewParam; //Only useful for A_AXIS
+
   int m_zoom;
 
   int m_maxWidth;
@@ -114,6 +142,9 @@ private:
 
   int m_centerCutWidth = 256;
   int m_centerCutHeight = 256;
+
+//  ZPoint m_v1;
+//  ZPoint m_v2;
 
   ZDvidReader m_reader;
 };

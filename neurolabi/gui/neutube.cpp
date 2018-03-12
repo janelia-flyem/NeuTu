@@ -15,6 +15,8 @@
 #include "swctreenode.h"
 #include "zstackobjectrole.h"
 #include "zstackobjectinfo.h"
+#include "zstackviewparam.h"
+#include "zarbsliceviewparam.h"
 
 void neutube::RegisterMetaType()
 {
@@ -30,6 +32,8 @@ void neutube::RegisterMetaType()
   qRegisterMetaType<flyem::EBodySplitMode>("flyem::EBodySplitMode");
   qRegisterMetaType<ZStackObjectInfo>("ZStackObjectInfo");
   qRegisterMetaType<ZStackObjectInfoSet>("ZStackObjectInfoSet");
+  qRegisterMetaType<ZStackViewParam>("ZStackViewParam");
+  qRegisterMetaType<ZArbSliceViewParam>("ZArbSliceViewParam");
 }
 
 ZMessageReporter* neutube::getMessageReporter()

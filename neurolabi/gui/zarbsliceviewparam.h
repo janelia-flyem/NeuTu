@@ -1,0 +1,62 @@
+#ifndef ZARBSLICEVIEWPARAM_H
+#define ZARBSLICEVIEWPARAM_H
+
+#include "zintpoint.h"
+#include "zpoint.h"
+
+class QRect;
+
+/*!
+ * \brief The class of managing parameters of viewing an arbitrarily cut slice.
+ */
+class ZArbSliceViewParam
+{
+public:
+  ZArbSliceViewParam();
+
+  void setCenter(const ZIntPoint &center);
+  void setCenter(int x, int y, int z);
+  void setPlane(const ZPoint &v1, const ZPoint &v2);
+  void setSize(int width, int height);
+
+  QRect getViewPort() const;
+  int getX() const;
+  int getY() const;
+  int getZ() const;
+  ZIntPoint getCenter() const;
+
+  int getX0() const;
+  int getY0() const;
+
+  ZPoint getPlaneV1() const;
+  ZPoint getPlaneV2() const;
+  ZPoint getPlaneNormal() const;
+  int getWidth() const;
+  int getHeight() const;
+
+  /*!
+   * \brief Move in the slicing coordinate system.
+   *
+   * (\a dx, \a dy, \a dz) are the moving steps along each slicing axis.
+   * Nothing will be done if the parameter is invalid.
+   */
+  void move(double dx, double dy, double dz);
+
+  bool contains(const ZArbSliceViewParam &param);
+
+  bool operator ==(const ZArbSliceViewParam &param) const;
+  bool operator !=(const ZArbSliceViewParam &param) const;
+
+  bool hasSamePlaneCenter(const ZArbSliceViewParam &param) const;
+
+  bool isValid() const;
+
+private:
+  int m_width = 0;
+  int m_height = 0;
+  ZIntPoint m_center;
+  ZPoint m_v1;
+  ZPoint m_v2;
+};
+
+#endif // ZARBSLICEVIEWPARAM_H

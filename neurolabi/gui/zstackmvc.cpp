@@ -60,7 +60,7 @@ ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
 }
 
 ZStackMvc* ZStackMvc::Make(
-    QWidget *parent, ztr1::shared_ptr<ZStackDoc> doc, neutube::EAxis axis)
+    QWidget *parent, ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
@@ -71,7 +71,7 @@ ZStackMvc* ZStackMvc::Make(
   return frame;
 }
 
-void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, neutube::EAxis axis)
+void ZStackMvc::construct(ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
 {
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView(axis);
@@ -655,6 +655,11 @@ void ZStackMvc::zoomToL1(int x, int y, int z)
   }
   zoomTo(x, y, z, width);
   */
+}
+
+QRect ZStackMvc::getViewPort() const
+{
+  return getView()->getViewPort(neutube::COORD_STACK);
 }
 
 ZIntPoint ZStackMvc::getViewCenter() const

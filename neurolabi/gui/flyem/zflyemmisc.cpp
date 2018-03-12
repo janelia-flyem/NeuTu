@@ -37,7 +37,8 @@
 #include "zfileparser.h"
 #include "zjsonfactory.h"
 #include "dvid/zdvidwriter.h"
-
+#include "zobject3d.h"
+#include "zarbsliceviewparam.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -212,6 +213,25 @@ Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
       graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
     }
+  }
+
+  return graph;
+}
+
+Z3DGraph* ZFlyEmMisc::MakeSliceViewGraph(const ZArbSliceViewParam &param)
+{
+  Z3DGraph *graph = NULL;
+  if (param.isValid()) {
+    ZPoint center = param.getCenter().toPoint();
+    int rx = param.getWidth() / 2;
+    int ry = param.getHeight() / 2;
+    ZPoint pt1 = center - param.getPlaneV1() * rx - param.getPlaneV2() * ry;
+    ZPoint pt2 = center + param.getPlaneV1() * rx - param.getPlaneV2() * ry;
+    ZPoint pt3 = center + param.getPlaneV1() * rx + param.getPlaneV2() * ry;
+    ZPoint pt4 = center - param.getPlaneV1() * rx + param.getPlaneV2() * ry;
+
+    graph = Z3DGraphFactory::MakeQuadCross(pt1, pt2, pt3, pt4);
+    graph->setSource(ZStackObjectSourceFactory::MakeSlicViewObjectSource());
   }
 
   return graph;
@@ -1278,6 +1298,7 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
     return "";
   }
 
+
   QString path = QString("http://%1/neuroglancer/#!{'layers':"
                          "{'grayscale':{'type':'image'_'source':'dvid://"
                          "http://%2/%3/%4'}").
@@ -1314,7 +1335,7 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
                   "'zoomFactor':8}_"
                   "'perspectiveOrientation':"
                   "[%4_%5_%6_%7]_"
-                  "'perspectiveZoom':64}").
+                  "'perspectiveZoom':64_'layout':'xy'}").
       arg(pos.getX()).arg(pos.getY()).arg(pos.getZ()).
       arg(quat.getX()).arg(quat.getY()).arg(quat.getZ()).arg(quat.weight());
 

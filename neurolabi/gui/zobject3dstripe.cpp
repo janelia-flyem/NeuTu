@@ -404,6 +404,7 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, neutube::EAxis axis,
 {
   switch (axis) {
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     drawStack(stack, v, offset);
     break;
   case neutube::X_AXIS:

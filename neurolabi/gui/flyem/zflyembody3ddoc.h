@@ -27,6 +27,7 @@ class ZFlyEmBodyComparisonDialog;
 class ZFlyEmBody3dDocKeyProcessor;
 class ZMesh;
 class ZFlyEmBodySplitter;
+class ZArbSliceViewParam;
 //class ZFlyEmToDoItem;
 
 class ZFlyEmBody3dDoc : public ZStackDoc
@@ -197,6 +198,11 @@ public:
 
   ZFlyEmProofDoc* getDataDocument() const;
 
+  ZDvidGraySlice* getArbGraySlice() const;
+  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);
+  void hideArbGrayslice();
+  void setArbGraySliceVisible(bool v);
+
   void printEventQueue() const;
 
   void dumpAllBody(bool recycable);
@@ -251,6 +257,8 @@ public:
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 
+  bool fromTar(uint64_t id) const;
+
   void setMaxResLevel(int res) {
     m_maxResLevel = res;
   }
@@ -302,6 +310,9 @@ public slots:
   void setSeedType(int type);
 
   void setBodyModelSelected(const QSet<uint64_t> &bodySet);
+  void setBodyModelSelected(const QSet<uint64_t> &select,
+                            const QSet<uint64_t> &deselect);
+
   void saveSplitTask();
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
@@ -318,6 +329,8 @@ public slots:
 
   void waitForSplitToBeDone();
   void activateSplitForSelected();
+
+  void clearGarbage(bool force = false);
 
 signals:
   void bodyRemoved(uint64_t bodyId);
@@ -425,7 +438,6 @@ private slots:
 //  void updateBody();
   void processEvent();
   void processEvent(const BodyEvent &event);
-  void clearGarbage();
 
 private:
   void processEventFunc(const BodyEvent &event);
@@ -441,6 +453,8 @@ private:
 
   void notifyBodyUpdate(uint64_t bodyId, int resLevel);
   void notifyBodyUpdated(uint64_t bodyId, int resLevel);
+
+  void initArbGraySlice();
 
 private:
   QSet<uint64_t> m_bodySet;
@@ -491,7 +505,7 @@ private:
   mutable QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
 
-  std::map<uint64_t, std::vector<uint64_t>> m_tarIdToMeshIds;
+  std::map<uint64_t, std::set<uint64_t>> m_tarIdToMeshIds;
 
   bool m_limitGarbageLifetime = true;
   bool m_splitTaskLoadingEnabled = true;

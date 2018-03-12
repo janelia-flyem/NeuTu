@@ -154,6 +154,10 @@ void ZLineSegmentObject::display(
 
 bool ZLineSegmentObject::isSliceVisible(int z, neutube::EAxis sliceAxis) const
 {
+  if (getSliceAxis() == neutube::A_AXIS) {
+    return false;
+  }
+
   if (isVisible()) {
     if (hasVisualEffect(neutube::display::Line::VE_LINE_PROJ) ||
         hasVisualEffect(neutube::display::Line::VE_LINE_FADING_PROJ)) {
@@ -167,6 +171,8 @@ bool ZLineSegmentObject::isSliceVisible(int z, neutube::EAxis sliceAxis) const
       return getLowerY() <= z && getUpperY() >= z;
     case neutube::Z_AXIS:
       return getLowerZ() <= z && getUpperZ() >= z;
+    case neutube::A_AXIS:
+      break;
     }
   }
 

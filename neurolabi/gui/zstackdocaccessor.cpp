@@ -48,6 +48,27 @@ void ZStackDocAccessor::RemoveObject(
 }
 
 void ZStackDocAccessor::RemoveObject(
+    ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
+    bool deleteObject)
+{
+  if (doc != NULL) {
+    {
+      QMutexLocker(doc->getObjectGroup().getMutex());
+      TStackObjectList objList =
+          doc->getObjectGroup().findSameSourceUnsync(type, source);
+      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+           ++iter) {
+        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(deleteObject));
+      }
+      if (!objList.isEmpty()) {
+        doc->getDataBuffer()->deliver();
+      }
+    }
+  }
+}
+
+
+void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject)
 {
   if (doc != NULL) {

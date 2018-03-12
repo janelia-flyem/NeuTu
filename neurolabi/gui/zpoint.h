@@ -82,8 +82,18 @@ public:
   double cosAngle(const ZPoint &pt) const;
   ZPoint cross(const ZPoint &pt) const;
 
+  /*!
+   * \brief Check if a point is an approximate origin point.
+   */
   bool isApproxOrigin() const;
   bool approxEquals(const ZPoint &pt) const;
+
+  /*!
+   * \brief Check if two points (vector to the origin) are perpendicular.
+   *
+   * An approximate origin point is not perpendicular to any other point.
+   */
+  bool isPendicularTo(const ZPoint &pt) const;
 
   std::string toString() const;
   std::string toJsonString() const;
@@ -108,7 +118,7 @@ public:
   virtual void save(const char *filePath);
   virtual void load(const char *filePath);
 
-  static inline double minimalDistance() { return m_minimalDistance; }
+  static inline double minimalDistance() { return MIN_DIST; }
 
   struct ZCompare {
     bool operator() (const ZPoint &pt1, const ZPoint &pt2) {
@@ -133,12 +143,13 @@ public:
 
   double getSliceCoord(neutube::EAxis axis) const;
 
+public:
+  const static double MIN_DIST;
+
 private:
   double m_x;
   double m_y;
   double m_z;
-
-  const static double m_minimalDistance;
 };
 
 #endif // ZPOINT_H

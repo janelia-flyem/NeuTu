@@ -718,7 +718,8 @@ ZDvidLabelSlice* ZDvidLabelSlicePlayer::getCompleteData() const
   return dynamic_cast<ZDvidLabelSlice*>(m_data);
 }
 
-bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
+bool ZDvidLabelSlicePlayer::updateData(
+    const ZStackViewParam &viewParam) const
 {
   bool updated = false;
   if (m_enableUpdate) {
@@ -745,7 +746,8 @@ ZDvidSparsevolSlice* ZDvidSparsevolSlicePlayer::getCompleteData() const
   return dynamic_cast<ZDvidSparsevolSlice*>(m_data);
 }
 
-bool ZDvidSparsevolSlicePlayer::updateData(const ZStackViewParam &viewParam) const
+bool ZDvidSparsevolSlicePlayer::updateData(
+    const ZStackViewParam &viewParam) const
 {
   bool updated = false;
   if (m_enableUpdate) {

@@ -2336,7 +2336,7 @@ void ZFlyEmBodySplitProject::viewFullGrayscale(bool viewing)
       ZStackObject *obj =
           frame->document()->getObjectGroup().findFirstSameSource(
             ZStackObject::TYPE_DVID_GRAY_SLICE,
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
       if (obj != NULL) {
         obj->setVisible(false);
         frame->updateView();
@@ -2368,12 +2368,13 @@ void ZFlyEmBodySplitProject::viewFullGrayscale()
       ZDvidGraySlice *graySlice = dynamic_cast<ZDvidGraySlice*>(
             frame->document()->getObjectGroup().findFirstSameSource(
               ZStackObject::TYPE_DVID_GRAY_SLICE,
-              ZStackObjectSourceFactory::MakeDvidGraySliceSource()));
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS)));
 
       if (graySlice == NULL) {
         graySlice = new ZDvidGraySlice();
         graySlice->setDvidTarget(getDvidTarget());
-        graySlice->setSource(ZStackObjectSourceFactory::MakeDvidGraySliceSource());
+        graySlice->setSource(
+              ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
         frame->document()->addObject(graySlice, false);
       }
 

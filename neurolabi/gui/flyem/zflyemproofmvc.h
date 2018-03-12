@@ -50,6 +50,7 @@ class ZFlyEmGrayscaleDialog;
 class FlyEmBodyIdDialog;
 class ZFlyEmMergeUploadDialog;
 class ZFlyEmProofSettingDialog;
+class ZROIWidget;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -161,6 +162,9 @@ public:
   Z3DWindow* makeMeshWindow();
 
   void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
+
+  static void showAnnotations(bool show);
+  static bool showingAnnotations();
 
 signals:
   void launchingSplit(const QString &message);

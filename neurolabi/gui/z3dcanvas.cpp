@@ -186,9 +186,43 @@ void Z3DCanvas::updateDecoration()
   m_updatingDecoration = false;
 }
 
+/*
+void Z3DCanvas::setCustomWidget(QWidget *widget)
+{
+  widget->setParent(this);
+//  widget->setGeometry(QRect(0, 512, 512, 512));
+}
+*/
+
 void Z3DCanvas::dump(const QString &message)
 {
   m_message = message;
+  viewport()->update();
+}
+
+void Z3DCanvas::updateView()
+{
+  viewport()->update();
+}
+
+void Z3DCanvas::paintCustomRegion(const QImage &image)
+{
+  if (m_customCanvas != NULL) {
+    if (m_customCanvas->size() != image.size()) {
+      delete m_customCanvas;
+      m_customCanvas = NULL;
+    }
+  }
+
+  if (m_customCanvas == NULL && !image.isNull()) {
+    m_customCanvas = new QPixmap(image.size());
+  }
+
+  if (m_customCanvas != NULL) {
+    QPainter painter(m_customCanvas);
+    painter.drawImage(m_customCanvas->rect(), image);
+  }
+
   viewport()->update();
 }
 
@@ -198,6 +232,15 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
     QGraphicsView::drawBackground(painter, rect);
   }
   //m_3dScene->drawBackground(painter, rect);
+
+  if (m_customCanvas != NULL) {
+    double projWidth = width() * 0.25;
+    double projHeight =
+        projWidth / m_customCanvas->width() * m_customCanvas->height();
+
+    painter->drawPixmap(QRectF(width() - projWidth, 0, projWidth, projHeight),
+                        *m_customCanvas, m_customCanvas->rect());
+  }
 
 #if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();

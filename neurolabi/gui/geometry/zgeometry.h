@@ -41,6 +41,8 @@ void ZGeometry::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
     break;
   case neutube::Z_AXIS:
     break;
+  case neutube::A_AXIS:
+    break;
   }
 }
 
@@ -56,6 +58,8 @@ void ZGeometry::shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis)
     std::swap(y, z);
     break;
   case neutube::Z_AXIS:
+    break;
+  case neutube::A_AXIS:
     break;
   }
 }
