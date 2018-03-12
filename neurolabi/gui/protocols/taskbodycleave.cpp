@@ -109,7 +109,7 @@ namespace {
       bodyDoc->enableSplitTaskLoading(false);
 
       showingTodo = bodyDoc->showingTodo();
-      bodyDoc->showTodo(false);
+//      bodyDoc->showTodo(false);
 
       showingSynapse = bodyDoc->showingSynapse();
       bodyDoc->showSynapse(false);
