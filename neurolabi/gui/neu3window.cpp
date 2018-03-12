@@ -594,7 +594,7 @@ void Neu3Window::startBrowser(EBrowseMode mode)
     ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
 
     bo->open(ZFlyEmMisc::GetNeuroglancerPath(
-               m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
+               m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, m_bodyListWidget->getModel()->getBodySet()));
   #endif
   }
