@@ -1781,6 +1781,10 @@ void ZFlyEmProofMvc::customInit()
             m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
     connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
             this, SLOT(zoomToL1(int,int,int)));
+    connect(m_protocolSwitcher, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+            getCompleteDocument(), SLOT(updateProtocolColorMap(ZFlyEmSequencerColorScheme)));
+    connect(m_protocolSwitcher, SIGNAL(activateColorMap(QString)),
+            this, SLOT(changeColorMap(QString)));
   }
 
   m_paintLabelWidget = new ZPaintLabelWidget();
