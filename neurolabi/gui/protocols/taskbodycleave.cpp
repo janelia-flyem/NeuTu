@@ -19,6 +19,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -483,51 +484,27 @@ void TaskBodyCleave::onCompleted()
     return;
   }
 
-  std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
-  if (!reader.hasData(instance)) {
-    writer.createKeyvalue(instance);
-  }
-  if (!reader.hasData(instance)) {
-    LERROR() << "TaskBodyCleave::onCompleted() could not create DVID instance \"" << instance << "\"";
-    return;
-  }
-
   std::map<unsigned int, std::vector<uint64_t>> cleaveIndexToMeshIds;
   std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveResultIndex);
   for (auto it : m_meshIdToCleaveIndex) {
     meshIdToCleaveIndex[it.first] = it.second;
   }
-  for (auto itMesh : meshIdToCleaveIndex) {
-    unsigned int cleaveIndex = itMesh.second;
+  for (auto pair : meshIdToCleaveIndex) {
+    unsigned int cleaveIndex = pair.second;
     auto itCleave = cleaveIndexToMeshIds.find(cleaveIndex);
     if (itCleave == cleaveIndexToMeshIds.end()) {
       cleaveIndexToMeshIds[cleaveIndex] = std::vector<uint64_t>();
     }
-    uint64_t id = itMesh.first;
+    uint64_t id = pair.first;
     cleaveIndexToMeshIds[cleaveIndex].push_back(id);
   }
 
-  // The output is JSON, an array of arrays, where each inner array is the super voxels in a cleaved body.
-
-  QJsonArray json;
-  for (auto itCleave : cleaveIndexToMeshIds) {
-    QJsonArray jsonForCleaveIndex;
-
-    // Sort the super voxel IDs, since one of the main uses of this output is inspection by a human.
-
-    std::vector<uint64_t> ids(itCleave.second);
-    std::sort(ids.begin(), ids.end());
-
-    for (auto itMesh : ids) {
-      jsonForCleaveIndex.append(QJsonValue(qint64(itMesh)));
-    }
-    json.append(jsonForCleaveIndex);
+  for (auto &pair : cleaveIndexToMeshIds) {
+    std::sort(pair.second.begin(), pair.second.end());
   }
 
-  QJsonDocument jsonDoc(json);
-  std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
-  std::string key(std::to_string(m_bodyId));
-  writer.writeJsonString(instance, key, jsonStr);
+  writeOutput(reader, writer, cleaveIndexToMeshIds);
+  writeAuxiliaryOutput(reader, writer, cleaveIndexToMeshIds);
 }
 
 std::size_t TaskBodyCleave::chosenCleaveIndex() const
@@ -749,6 +726,76 @@ void TaskBodyCleave::cleave()
   QByteArray requestData(requestJsonDoc.toJson());
 
   m_networkManager->post(request, requestData);
+}
+
+void TaskBodyCleave::writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
+                                 const std::map<unsigned int, std::vector<uint64_t> > &cleaveIndexToMeshIds)
+{
+  std::string instance = writer.getDvidTarget().getBodyLabelName();
+  ZDvidUrl url(writer.getDvidTarget());
+  std::string urlBase = url.getNodeUrl() + "/" + instance + "/cleave/" + std::to_string(m_bodyId) + "?cleavelabel=";
+
+  for (const auto &pair : cleaveIndexToMeshIds) {
+    const std::vector<uint64_t> &ids = pair.second;
+
+    // Skip the cleave index whose super voxels contain the one with the same ID as the overall body.
+    // Those super voxels will stay with the overall body, while the super voxels for other cleave indices
+    // will be cleaved off into new bodies.  Note that the vector of super voxel IDs is sorted in ascending
+    // order, and by convention, the ID of the overall body is the lowest of the IDs of its super voxels.
+    // So we need check only the first super voxel ID in the vector.
+
+    if (ids[0] != m_bodyId) {
+      uint64_t newBodyId = ids[0];
+
+      // When cleaving off super voxels to create a new body, the ID of that new body is the lowest of the
+      // super voxel IDs for that body, per the convention mentioned above.
+
+      std::string urlCleave = urlBase + std::to_string(newBodyId);
+
+      ZJsonArray jsonBody;
+      for (uint64_t id : ids) {
+        jsonBody.append(ZJsonValue(double(id)));
+      }
+
+      writer.post(urlCleave, jsonBody);
+      if (! writer.isStatusOk()) {
+        QString title = "Writing of cleaving results failed";
+        QString text = "Error code: " + QString::number(writer.getStatusCode()) + "\n" +
+            "URL: " + QString(urlCleave.c_str());
+        QMessageBox::warning(m_bodyDoc->getParent3DWindow(), title, text);
+        return;
+      }
+    }
+  }
+}
+
+void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
+                                          const std::map<unsigned int, std::vector<uint64_t> > &cleaveIndexToMeshIds)
+{
+  std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
+  if (!reader.hasData(instance)) {
+    writer.createKeyvalue(instance);
+  }
+  if (!reader.hasData(instance)) {
+    LERROR() << "TaskBodyCleave::onCompleted() could not create DVID instance \"" << instance << "\"";
+    return;
+  }
+
+  // The output is JSON, an array of arrays, where each inner array is the super voxels in a cleaved body.
+
+  QJsonArray json;
+  for (const auto &pair : cleaveIndexToMeshIds) {
+    QJsonArray jsonForCleaveIndex;
+    for (uint64_t id : pair.second) {
+      jsonForCleaveIndex.append(QJsonValue(qint64(id)));
+    }
+    json.append(jsonForCleaveIndex);
+  }
+
+  QJsonDocument jsonDoc(json);
+  std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
+  std::string key(std::to_string(m_bodyId));
+  writer.writeJsonString(instance, key, jsonStr);
 }
 
 bool TaskBodyCleave::loadSpecific(QJsonObject json)
