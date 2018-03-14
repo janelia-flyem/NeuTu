@@ -6,6 +6,8 @@
 
 #include <QVector>
 
+class ZDvidReader;
+class ZDvidWriter;
 class ZFlyEmBody3dDoc;
 class QAction;
 class QCheckBox;
@@ -87,6 +89,11 @@ private:
   void enableCleavingUI(bool showingCleaving);
 
   void cleave();
+
+  void writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
+                   const std::map<unsigned int, std::vector<uint64_t>> &cleaveIndexToMeshIds);
+  void writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
+                            const std::map<unsigned int, std::vector<uint64_t>> &cleaveIndexToMeshIds);
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;
