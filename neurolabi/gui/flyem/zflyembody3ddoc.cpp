@@ -1910,6 +1910,15 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
       emit bodyRemoved(bodyId);
     } else {
       LWARN() << "No object found for" << bodyId;
+#ifdef _DEBUG_
+      LINFO() << "Current sources:";
+
+      TStackObjectList objList = getObjectGroup().getObjectList(
+            getBodyObjectType());
+      for (const ZStackObject *obj : objList) {
+        LINFO() << obj->getObjectClass() << obj->getSource();
+      }
+#endif
     }
 
     if (removingAnnotation) {
