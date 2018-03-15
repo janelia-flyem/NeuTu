@@ -103,9 +103,6 @@ QT += printsupport
 qtHaveModule(webenginewidgets) {
   QT += webenginewidgets
   DEFINES += _USE_WEBENGINE_
-} else {
-  QT += webkitwidgets
-  DEFINES += _USE_WEBKIT_
 }
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
