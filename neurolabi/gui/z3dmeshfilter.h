@@ -63,9 +63,13 @@ public:
   // Meshes not mentioned in meshIdToColorIndex will get indexedColors[0].
   void setColorIndexing(const std::vector<glm::vec4> &indexedColors,
                         const std::map<uint64_t, std::size_t> &meshIdToColorIndex);
-signals:
 
+  void emitDumpParaGarbage();
+  void dumpParamGarbage();
+
+signals:
   void meshSelected(ZMesh*, bool append);
+  void clearingParamGarbage();
 
 protected:
   void prepareColor();
@@ -103,6 +107,7 @@ private:
       const std::set<QString, QStringNaturalCompare> &allSources) const;
   void removeSourceColorWidget();
   void addSourceColorWidget();
+  void updateWidgetGroup();
 
 private slots:
   void processColorModeChange();
@@ -112,8 +117,9 @@ private:
 
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllMesh;
-  std::map<QString, std::unique_ptr<ZVec4Parameter>, QStringNaturalCompare>
+  std::map<QString, std::shared_ptr<ZVec4Parameter>, QStringNaturalCompare>
   m_sourceColorMapper;
+  std::vector<std::shared_ptr<ZVec4Parameter>> m_paramGarbage;
   bool m_preserveSourceColors;
   bool m_showSourceColors;
 

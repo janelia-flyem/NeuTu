@@ -994,7 +994,7 @@ void Z3DWindow::fillDockWindows()
   m_settingsDockWidget->setWidget(tabs);
 
   connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()),
-          this, SLOT(updateSettingsDockWidget())/*, Qt::QueuedConnection*/);
+          this, SLOT(updateSettingsDockWidget()), Qt::QueuedConnection);
   connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)),
           this, SLOT(openAdvancedSetting(QString)));
 
@@ -1006,6 +1006,8 @@ void Z3DWindow::fillDockWindows()
   connect(omw, SIGNAL(punctaDoubleClicked(ZPunctum*)), this, SLOT(punctaDoubleClicked(ZPunctum*)));
   connect(omw, SIGNAL(meshDoubleClicked(ZMesh*)), this, SLOT(meshDoubleClicked(ZMesh*)));
   m_objectsDockWidget->setWidget(omw);
+
+//  getMeshFilter()->emitDumpParaGarbage();
 }
 
 int Z3DWindow::channelNumber()

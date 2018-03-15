@@ -59,6 +59,9 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   addParameter(m_meshRenderer.wireframeColorPara());
 
   addParameter(m_meshRenderer.useTwoSidedLightingPara());
+
+  connect(this, SIGNAL(clearingParamGarbage()), this, SLOT(dumpParamGarbage()),
+          Qt::QueuedConnection);
 }
 
 void Z3DMeshFilter::process(Z3DEye)
@@ -80,6 +83,17 @@ void Z3DMeshFilter::processColorModeChange()
   }
   prepareColor();
   adjustWidgets();
+}
+
+void Z3DMeshFilter::dumpParamGarbage()
+{
+  LINFO() << "Dumping garbage";
+  m_paramGarbage.clear();
+}
+
+void Z3DMeshFilter::emitDumpParaGarbage()
+{
+  emit clearingParamGarbage();
 }
 
 void Z3DMeshFilter::enablePreservingSourceColors(bool on)
@@ -227,6 +241,7 @@ void Z3DMeshFilter::removeOldColorParameter(
     for (auto it = m_sourceColorMapper.begin(); it != m_sourceColorMapper.end(); ) {
       if (allSources.find(it->first) == allSources.end()) {
         removeParameter(*it->second);
+        m_paramGarbage.push_back(it->second);
         it = m_sourceColorMapper.erase(it);
       } else {
         ++it;
@@ -258,7 +273,7 @@ void Z3DMeshFilter::addSourceColor(const QString &source)
 
   m_sourceColorMapper.insert(
         std::make_pair(source,
-                       std::make_unique<ZVec4Parameter>(guiname, color)));
+                       std::make_shared<ZVec4Parameter>(guiname, color)));
 
   m_sourceColorMapper[source]->setStyle("COLOR");
   connect(m_sourceColorMapper[source].get(), &ZVec4Parameter::valueChanged,
@@ -310,13 +325,19 @@ void Z3DMeshFilter::removeSourceColorWidget()
   }
 }
 
+void Z3DMeshFilter::updateWidgetGroup()
+{
+  m_widgetsGroup->emitWidgetsGroupChangedSignal();
+  emitDumpParaGarbage();
+}
+
 void Z3DMeshFilter::addSourceColorWidget()
 {
   if (m_widgetsGroup) {
     for (const auto& kv : m_sourceColorMapper) {
       m_widgetsGroup->addChild(*kv.second, 2);
     }
-    m_widgetsGroup->emitWidgetsGroupChangedSignal();
+    updateWidgetGroup();
   }
 }
 
@@ -345,7 +366,7 @@ void Z3DMeshFilter::updateSourceColorMapper()
         QString guiname = QString("Source: %1").arg(kv);
         auto color = randomColorRGB();
         m_sourceColorMapper.insert(
-              std::make_pair(kv, std::make_unique<ZVec4Parameter>(guiname, color)));
+              std::make_pair(kv, std::make_shared<ZVec4Parameter>(guiname, color)));
 
         m_sourceColorMapper[kv]->setStyle("COLOR");
       }
