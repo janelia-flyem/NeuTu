@@ -2198,6 +2198,7 @@ bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
   return true;
 }
 */
+
 uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
 {
   uint64_t bodyId = 0;
@@ -2212,11 +2213,11 @@ uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
   int y = 0;
   int z = 0;
 
+  ZDvidReader::PauseVerbose pv(&getCompleteDocument()->getDvidReader());
   while (bodyId == 0) {
     x = rand.rndint(minX, maxX);
     y = rand.rndint(minY, maxY);
     z = rand.rndint(minZ, maxZ);
-
     bodyId = getCompleteDocument()->getDvidReader().readBodyIdAt(x, y, z);
   }
 

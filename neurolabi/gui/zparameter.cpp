@@ -11,14 +11,14 @@ ZParameter::ZParameter(const QString& name, QObject* parent)
   , m_name(name)
 {
   addStyle("DEFAULT");
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   std::cout << "Constructing ZParameter " << name.toStdString() << " " << this << std::endl;
 #endif
 }
 
 ZParameter::~ZParameter()
 {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   std::cout << "Destroying ZParameter " << m_name.toStdString() << " " << this << std::endl;
 #endif
 }

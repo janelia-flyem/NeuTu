@@ -416,6 +416,7 @@ ZDvidGraySlice* ZFlyEmBody3dDoc::getArbGraySlice() const
   return slice;
 }
 
+/*
 void ZFlyEmBody3dDoc::updateArbGraySlice(const ZArbSliceViewParam &viewParam)
 {
   ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
@@ -427,6 +428,7 @@ void ZFlyEmBody3dDoc::updateArbGraySlice(const ZArbSliceViewParam &viewParam)
     }
   }
 }
+*/
 
 void ZFlyEmBody3dDoc::setArbGraySliceVisible(bool v)
 {
@@ -1900,11 +1902,14 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
          ++iter) {
 //      removeObject(*iter, false);
 //      dumpGarbageUnsync(*iter, true);
+      LINFO() << "Put" << (*iter)->getSource() << " in recycle";
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
     }
 
     if (!objList.isEmpty()) {
       emit bodyRemoved(bodyId);
+    } else {
+      LWARN() << "No object found for" << bodyId;
     }
 
     if (removingAnnotation) {
@@ -2098,6 +2103,15 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
 
 }
 
+QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
+{
+  QSet<uint64_t> bodySet;
+  foreach (uint64_t bodyId, m_bodySet) {
+    bodySet.insert(unencode(bodyId));
+  }
+  return bodySet;
+}
+
 ZDvidReader& ZFlyEmBody3dDoc::getBodyReader()
 {
   if (!m_bodyReader.isReady()) {
@@ -2234,6 +2248,11 @@ uint64_t ZFlyEmBody3dDoc::encode(uint64_t rawId, unsigned int level, bool tar)
 {
   uint64_t tarEncoding = tar ? ENCODING_TAR : 0;
   return (level + tarEncoding) * ENCODING_BASE + rawId;
+}
+
+uint64_t ZFlyEmBody3dDoc::unencode(uint64_t encodedId)
+{
+  return encodedId % ENCODING_BASE;
 }
 
 bool ZFlyEmBody3dDoc::encodesTar(uint64_t id) {

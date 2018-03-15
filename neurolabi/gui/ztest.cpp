@@ -24721,23 +24721,46 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::map<QString, int> map1;
+  std::map<QString, int/*,QStringNaturalCompare*/> map1;
   map1["#.FlyEMSynapse.Psd#43"] = 1;
   map1["#.FlyEMSynapse.Psd#18110738494"] = 2;
   map1["#.FlyEMSynapse.TBar#43"] = 3;
   map1["#.FlyEMSynapse.TBar#18110738494"] = 4;
 
-  std::map<QString, std::string> map2;
-  map2["#.FlyEMSynapse.Psd#18110738494"] = "1";
+  std::map<QString, std::string/*,QStringNaturalCompare*/> map2;
+  map2["#.FlyEMSynapse.Psd#43"] = "1";
   map2["#.FlyEMSynapse.TBar#18110738494"] = "2";
 
   std::map<QString, int> map3;
   std::set_difference(map1.begin(), map1.end(), map2.begin(), map2.end(),
                       std::inserter(map3, map3.end()), QStringKeyNaturalLess());
 
+  std::cout << "Wrong set difference" << std::endl;
   std::cout << map3.size() << std::endl;
   for (const auto &m : map3) {
     qDebug() << m.first << m.second;
+  }
+#endif
+
+#if 1
+  std::set<QString, QStringNaturalCompare> set1;
+  set1.insert("#.FlyEMSynapse.Psd#43");
+  set1.insert("#.FlyEMSynapse.Psd#18110738494");
+  set1.insert("#.FlyEMSynapse.TBar#43");
+  set1.insert("#.FlyEMSynapse.TBar#18110738494");
+
+  std::map<QString, std::string, QStringNaturalCompare> map2;
+  map2["#.FlyEMSynapse.Psd#43"] = "1";
+  map2["#.FlyEMSynapse.TBar#18110738494"] = "2";
+  map2["#.FlyEMSynapse.TBar#18"] = "3";
+
+  std::set<QString, QStringNaturalCompare> set3;
+  std::set_difference(set1.begin(), set1.end(), map2.begin(), map2.end(),
+                      std::inserter(set3, set3.end()), QStringKeyNaturalLess());
+
+  std::cout << set3.size() << std::endl;
+  for (const auto &m : set3) {
+    qDebug() << m;
   }
 #endif
 
@@ -25599,7 +25622,14 @@ void ZTest::test(MainWindow *host)
 #if defined(_USE_WEBENGINE_)
   QWebEngineView *view = new QWebEngineView(NULL);
 //  view->setUrl(QUrl("https://janeliascicomp.github.io/SharkViewer/"));
-  QUrl url("http://emdata1.int.janelia.org:8500/neuroglancer/#!{'layers':{'grayscale':{'type':'image'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/grayscale'}_'labels3':{'type':'segmentation'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/labels3'}}_'navigation':{'pose':{'position':{'voxelSize':[8_8_8]_'voxelCoordinates':[4032_5600_7936]}}_'zoomFactor':8}_'perspectiveOrientation':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'perspectiveZoom':64}");
+  QUrl url("http://emdata1.int.janelia.org:8500/neuroglancer/#!"
+           "{'layers':{'grayscale':{"
+           "'type':'image'_'source':"
+           "'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/grayscale'}_"
+           "'labels3':{'type':'segmentation'_"
+           "'source':'dvid://http://emdata1.int.janelia.org:8500/"
+           "babdf6dbc23e44a69953a66e2260ff0a/labels3'_'segments':['100032978448']}}"
+           "_'navigation':{'pose':{'position':{'voxelSize':[8_8_8]_'voxelCoordinates':[4032_5600_7936]}}_'zoomFactor':8}_'perspectiveOrientation':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'perspectiveZoom':64}");
   view->setUrl(url);
   view->show();
 #endif
@@ -25627,9 +25657,7 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
-#if 1
-
-
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
@@ -25639,8 +25667,8 @@ void ZTest::test(MainWindow *host)
   ZArbSliceViewParam viewParam;
   viewParam.setSize(1024, 1024);
   viewParam.setCenter(17216, 19872, 20704);
-  ZPoint v1 = ZPoint(0, 1, 0);
-  ZPoint v2 = ZPoint(0, 0, 1);
+  ZPoint v1 = ZPoint(1, 0, 0);
+  ZPoint v2 = ZPoint(0, 1, 0);
 
   viewParam.setPlane(v1, v2);
   mvc->show();

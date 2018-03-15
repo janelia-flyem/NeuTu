@@ -307,6 +307,9 @@ public:
       int x0, int y0, int z0,
       int width, int height, int zoom, int cx, int cy) const;
 
+  /*!
+   * (\a x0, \a y0, \a z0) is the retrieval center.
+   */
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
@@ -516,6 +519,21 @@ public:
 
   bool hasSplitTask(const QString &key) const;
 
+  class PauseVerbose {
+  public:
+    PauseVerbose(ZDvidReader *reader) : m_reader(reader) {
+      m_verbose = m_reader->isVerbose();
+      m_reader->setVerbose(false);
+    }
+
+    ~PauseVerbose() {
+      m_reader->setVerbose(m_verbose);
+    }
+
+  private:
+    ZDvidReader *m_reader;
+    bool m_verbose;
+  };
 
 signals:
   void readingDone();
@@ -559,6 +577,8 @@ private:
   bool reportMissingData(const std::string dataName) const;
 
   static ZIntCuboid GetStackBox(
+      int x0, int y0, int z0, int width, int height, int zoom);
+  static ZIntCuboid GetStackBoxAtCenter(
       int x0, int y0, int z0, int width, int height, int zoom);
   static std::vector<int> GetOffset(int x0, int y0, int z0);
   static std::vector<int> GetOffset(int cx, int cy, int cz, int width, int height);
