@@ -24,8 +24,6 @@
 #include <sys/types.h>
 #if defined(_USE_WEBENGINE_)
 #include <QWebEngineView>
-#else
-#include <QWebKit>
 #endif
 
 #if defined(_QT5_)
