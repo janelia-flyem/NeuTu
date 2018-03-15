@@ -2748,6 +2748,28 @@ ZIntCuboid ZDvidReader::GetStackBox(
   return box;
 }
 
+ZIntCuboid ZDvidReader::GetStackBoxAtCenter(
+    int x0, int y0, int z0, int width, int height, int zoom)
+{
+  x0 -= width / 2;
+  y0 -= height / 2;
+
+  int scale = 1;
+  if (zoom > 0) {
+    scale = pow(2, zoom);
+    width /= scale;
+    height /= scale;
+  }
+
+  ZIntCuboid box;
+  box.setFirstCorner(x0 / scale, y0 / scale, z0 / scale);
+  box.setWidth(width);
+  box.setHeight(height);
+  box.setDepth(1);
+
+  return box;
+}
+
 lowtis::ImageService* ZDvidReader::getLowtisServiceGray(int cx, int cy) const
 {
   if (!getDvidTarget().hasGrayScaleData()) {
@@ -2794,13 +2816,12 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 
   qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
 
-
   QElapsedTimer timer;
   timer.start();
   if (m_lowtisServiceGray.get() != NULL) {
 //    m_lowtisService->config.bytedepth = 8;
 
-    ZIntCuboid box = GetStackBox(x0, y0, z0, width, height, zoom);
+    ZIntCuboid box = GetStackBoxAtCenter(x0, y0, z0, width, height, zoom);
 
     stack = new ZStack(GREY, box, 1);
 
@@ -2809,7 +2830,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 
       bool centerCut = true;
       if (zoom == getDvidTarget().getMaxGrayscaleZoom() ||
-          width < cx || height < cy) {
+          box.getWidth() < cx || box.getHeight() < cy) {
         centerCut = false;
       }
 
@@ -2827,9 +2848,17 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
       dim2vec.push_back(vy2);
       dim2vec.push_back(vz2);
 
+#ifdef _DEBUG_
+      std::cout << "Stack info:";
+      stack->printInfo();
+
+      std::cout << "Reading size:" << box.getWidth() << "x" << box.getHeight()
+                << std::endl;
+#endif
+
       m_lowtisServiceGray->retrieve_arbimage(
-            width, height, offset, dim1vec, dim2vec, (char*) stack->array8(),
-            zoom, centerCut);
+            box.getWidth(), box.getHeight(), offset, dim1vec, dim2vec,
+            (char*) stack->array8(), zoom, centerCut);
 
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {

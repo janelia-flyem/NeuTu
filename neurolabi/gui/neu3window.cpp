@@ -3,6 +3,7 @@
 #include <QDockWidget>
 #include <QMessageBox>
 #include <QProgressDialog>
+#include <QTimer>
 
 #if defined(_USE_WEBENGINE_)
 #include <QWebEngineView>
@@ -42,6 +43,7 @@
 #include "zstackdocaccessor.h"
 #include "zstackobjectsourcefactory.h"
 #include "dialogs/zneu3sliceviewdialog.h"
+#include "zrandomgenerator.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -50,6 +52,9 @@ Neu3Window::Neu3Window(QWidget *parent) :
   ui->setupUi(this);
   m_actionLibrary = QSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
 
+  m_testTimer = new QTimer(this);
+//  m_testTimer->setInterval(1000);
+  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyChange()));
 //  initialize();
 }
 
@@ -461,7 +466,7 @@ void Neu3Window::updateWebView()
 
     QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
-               rotation, m_bodyListWidget->getModel()->getBodySet()));
+               rotation, getBodyDocument()->getUnencodedBodySet()));
 
 
     m_webView->setUrl(url);
@@ -492,10 +497,12 @@ void Neu3Window::hideGrayscale()
   getBodyDocument()->hideArbGrayslice();
 }
 
+/*
 void Neu3Window::updateEmbeddedGrayscale()
 {
   browseInPlace(m_browsePos.getX(), m_browsePos.getY(), m_browsePos.getZ());
 }
+*/
 
 ZArbSliceViewParam Neu3Window::getSliceViewParam(double x, double y, double z) const
 {
@@ -515,10 +522,12 @@ ZArbSliceViewParam Neu3Window::getSliceViewParam(const ZPoint &center) const
   return getSliceViewParam(center.x(), center.y(), center.z());
 }
 
+/*
 void Neu3Window::browseInPlace(double x, double y, double z)
 {
   getBodyDocument()->updateArbGraySlice(getSliceViewParam(x, y, z));
 }
+*/
 
 void Neu3Window::browse(double x, double y, double z)
 {
@@ -762,7 +771,38 @@ void Neu3Window::removeAllBodies()
 
 void Neu3Window::test()
 {
-  m_bodyListWidget->getModel()->addBody(1);
+  if (m_testTimer->isActive()) {
+    m_testTimer->stop();
+  } else {
+    m_testTimer->start();
+  }
+//  m_bodyListWidget->getModel()->addBody(1);
+//  testBodyChange();
+}
+
+void Neu3Window::testBodyChange()
+{
+  m_3dwin->setColorMode(neutube3d::LAYER_MESH, "Mesh Source");
+  static ZRandomGenerator rand;
+
+  QSet<uint64_t> bodySet = m_bodyListWidget->getModel()->getBodySet();
+  if (rand.rndint(10) % 2 ==0) {
+    for (uint64_t bodyId : bodySet) {
+      if (rand.rndint(bodySet.size()) == 1) {
+        m_bodyListWidget->removeBody(bodyId);
+        break;
+      }
+    }
+//    std::set<uint64_t> getBodyDocument()->getBodySet();
+  } else {
+    if (bodySet.size() < 10) {
+      ZIntPoint pos;
+      uint64_t bodyId = m_dataContainer->getRandomBodyId(rand, &pos);
+      if (!bodySet.contains(bodyId)) {
+        m_bodyListWidget->addBody(bodyId);
+      }
+    }
+  }
 }
 
 void Neu3Window::setBodyItemSelection(const QSet<uint64_t> &bodySet)

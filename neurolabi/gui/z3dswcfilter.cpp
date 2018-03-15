@@ -877,7 +877,8 @@ bool Z3DSwcFilter::updateColorParameter(
   return updating;
 }
 
-bool Z3DSwcFilter::updateTreeColorParameter(const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
+bool Z3DSwcFilter::updateTreeColorParameter(
+    const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
 {
   // do nothing if sources don't change
   if (sourceIndexMapper.size() != m_randomTreeColorMapper.size() ||

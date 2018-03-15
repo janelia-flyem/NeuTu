@@ -37,7 +37,7 @@ public:
    *
    * It only takes effect only when the axis is neutube::A_AXIS.
    */
-  bool update(const ZArbSliceViewParam &viewParam);
+//  bool update(const ZArbSliceViewParam &viewParam);
 
 //  void loadDvidSlice(const QByteArray &buffer, int z);
 
@@ -116,6 +116,8 @@ private:
   bool isPixmapValid() const;
 
   bool validateSize(int *width, int *height);
+  template<typename T>
+  int updateParam(T *param);
 
   /*!
    * \brief Check if the regions of the image and the slice are consistent.

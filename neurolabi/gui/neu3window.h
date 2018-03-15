@@ -123,7 +123,7 @@ private slots:
 
   void updateRoiWidget();
   void browse(double x, double y, double z);
-  void browseInPlace(double x, double y, double z);
+//  void browseInPlace(double x, double y, double z);
   void processKeyPressed(QKeyEvent* event);
   void updateBodyState();
   void setOption();
@@ -133,7 +133,7 @@ private slots:
   void startSplit();
 
 //  void updateBrowser();
-  void updateEmbeddedGrayscale();
+//  void updateEmbeddedGrayscale();
   void updateGrayscaleWidget();
   void updateSliceBrowser();
 
@@ -147,6 +147,7 @@ private slots:
   void processSliceDockVisibility(bool on);
 
   void test();
+  void testBodyChange();
 
 private:
   void createDockWidget();
@@ -201,6 +202,7 @@ private:
   EBrowseMode m_browseMode = BROWSE_NONE;
 
   QSharedPointer<ZActionLibrary> m_actionLibrary;
+  QTimer *m_testTimer;
 };
 
 #endif // NEU3WINDOW_H

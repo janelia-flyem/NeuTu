@@ -994,7 +994,7 @@ void Z3DWindow::fillDockWindows()
   m_settingsDockWidget->setWidget(tabs);
 
   connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()),
-          this, SLOT(updateSettingsDockWidget()), Qt::QueuedConnection);
+          this, SLOT(updateSettingsDockWidget())/*, Qt::QueuedConnection*/);
   connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)),
           this, SLOT(openAdvancedSetting(QString)));
 
@@ -4247,6 +4247,24 @@ void Z3DWindow::setOpacityQuietly(
 void Z3DWindow::setFront(neutube3d::ERendererLayer layer, bool on)
 {
   m_view->setFront(layer, on);
+}
+
+void Z3DWindow::setColorMode(
+    neutube3d::ERendererLayer layer, const std::string &mode)
+{
+  switch (layer) {
+  case neutube3d::LAYER_MESH:
+    getMeshFilter()->setColorMode(mode);
+    break;
+  case neutube3d::LAYER_SWC:
+    getSwcFilter()->setColorMode(mode);
+    break;
+  case neutube3d::LAYER_PUNCTA:
+    getPunctaFilter()->setColorMode(mode);
+    break;
+  default:
+    break;
+  }
 }
 
 /*

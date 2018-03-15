@@ -1314,7 +1314,7 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
         arg(target.getUuid().c_str()).
         arg(target.getLabelBlockName().c_str());
 
-    if (!bodySet.empty()) {
+    if (!bodySet.empty() && bodySet.size() < 4) {
       path += "_'segments':[";
       uint64_t firstId = *(bodySet.begin());
       path += QString("'%1'").arg(firstId);

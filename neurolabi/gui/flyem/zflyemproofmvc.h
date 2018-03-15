@@ -166,6 +166,8 @@ public:
   static void showAnnotations(bool show);
   static bool showingAnnotations();
 
+  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
+
 signals:
   void launchingSplit(const QString &message);
   void launchingSplit(uint64_t bodyId);
@@ -467,9 +469,6 @@ private:
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
-
-  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
-
   void exitHighlightMode();
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId);
   ZDvidSparseStack* updateBodyForSplit(uint64_t bodyId, ZDvidReader &reader);
