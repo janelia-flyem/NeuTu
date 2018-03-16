@@ -1031,8 +1031,11 @@ void ZDvidReader::readMeshArchiveAsync(archive *arc, std::vector<ZMesh *> &resul
       // enough threads running in parallel to reduce the overall time for all meshes.
 
       futures.push_back(std::async(std::launch::async, [buffer, bodyIdStr]{
-        ZMesh *mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
-        if (mesh != NULL) {
+        ZMesh *mesh = nullptr;
+        try {
+          mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
+        } catch (...) {}
+        if (mesh) {
           mesh->setLabel(std::stoull(bodyIdStr));
         }
         return mesh;
