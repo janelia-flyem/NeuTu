@@ -595,8 +595,8 @@ void SynapsePredictionProtocol::moveSynapse(
 }
 
 void SynapsePredictionProtocol::updateLabels() {
-    // currently we update all labels and the PSD table at once
-
+    // currently we update all labels here while calling methods
+    //  to do the table and color map
 
     // current presynaptic sites labels:
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
@@ -634,6 +634,7 @@ void SynapsePredictionProtocol::updateLabels() {
         ui->postTableLabel->setText(QString("PSDs (%1/%2 verified)").arg(nPSDverified).arg(synapse.size() - 1));
 
         updateSitesTable(synapse);
+        updateColorMap(synapse);
     } else {
         ui->preLocationLabel->setText(QString("(--, --, --)"));
         ui->preConfLabel->setText(QString("Confidence: --"));
@@ -866,6 +867,39 @@ void SynapsePredictionProtocol::setupColorList() {
                     << QColor(128, 255, 0)  // yellow-green
                     << QColor(0, 255, 255)  // light blue
                     ;
+
+}
+
+void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapses) {
+    // remember, the first element of the incoming vector is the pre-synaptic
+    //  element (the T-bar)
+
+    if (synapses.size() < 2) {
+        // no post-synaptic elements
+        return;
+    }
+
+
+
+    // get body IDs for all locations
+
+
+
+
+
+    // if we don't have body IDs (no segmentation), we're done
+
+
+
+    // poke in colors for each post-synaptic element that is verified
+    // NOTE: index into the color array with index of each element in full
+    //  list not verified list; we don't want colors switching when we verify
+    //  a new element
+    m_colorScheme.clear();
+
+
+
+
 
 }
 
