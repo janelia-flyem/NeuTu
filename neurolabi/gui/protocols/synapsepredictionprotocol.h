@@ -66,6 +66,7 @@ private:
     static const std::string KEY_PROTOCOL_RANGE;
     static const std::string KEY_BODYID;
     static const int fileVersion;
+    static const QColor COLOR_DEFAULT;
 
     enum SitesTableColumns {
         SITES_STATUS_COLUMN,
@@ -84,6 +85,8 @@ private:
     int m_currentFinishedIndex;
     ZIntCuboid m_protocolRange;
     uint64_t  m_bodyID;
+    QList<QColor> m_postColorList;
+    ZFlyEmSequencerColorScheme m_colorScheme;
 
     void saveState();
     void updateLabels();
@@ -96,8 +99,10 @@ private:
     std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
     static bool sortXY(const ZIntPoint &p1, const ZIntPoint &p2);
     static bool compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2);
-    void variationError(std::string variation);
-
+    void variationError(std::string variation);    
+    void setupColorList();
+    void enableProtocolColorMap();
+    void disableProtocolColorMap();
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H

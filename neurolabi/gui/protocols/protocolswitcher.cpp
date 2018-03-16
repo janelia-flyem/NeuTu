@@ -551,7 +551,7 @@ void ProtocolSwitcher::connectProtocolSignals() {
     // interaction connects
     connect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
     connect(m_activeProtocol, SIGNAL(requestColorMapChange(ZFlyEmSequencerColorScheme)),
-        this, SLOT(updateColorMapRequested(ZFlyEmBodyColorScheme)));
+        this, SLOT(updateColorMapRequested(ZFlyEmSequencerColorScheme)));
     connect(m_activeProtocol, SIGNAL(requestActivateColorMap()), this, SLOT(activateProtocolColorMap()));
     connect(m_activeProtocol, SIGNAL(requestDeactivateColorMap()), this, SLOT(deactivateProtocolColorMap()));
 }
@@ -566,7 +566,7 @@ void ProtocolSwitcher::disconnectProtocolSignals() {
     // interaction connects
     disconnect(m_activeProtocol, SIGNAL(requestDisplayPoint(int,int,int)), this, SLOT(displayPointRequested(int,int,int)));
     disconnect(m_activeProtocol, SIGNAL(requestColorMapChange(ZFlyEmSequencerColorScheme)),
-        this, SLOT(updateColorMapRequested(ZFlyEmBodyColorScheme)));
+        this, SLOT(updateColorMapRequested(ZFlyEmSequencerColorScheme)));
     disconnect(m_activeProtocol, SIGNAL(requestActivateColorMap()), this, SLOT(activateProtocolColorMap()));
     disconnect(m_activeProtocol, SIGNAL(requestDeactivateColorMap()), this, SLOT(deactivateProtocolColorMap()));
 }
