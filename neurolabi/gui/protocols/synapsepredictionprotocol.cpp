@@ -60,6 +60,8 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
             this, SLOT(onDoubleClickSitesTable(QModelIndex)));
 
     // misc UI setup
+    setupColorList();
+
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
     m_currentPendingIndex = 0;
@@ -73,7 +75,7 @@ const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
 const std::string SynapsePredictionProtocol::KEY_PROTOCOL_RANGE = "range";
 const std::string SynapsePredictionProtocol::KEY_BODYID= "body ID";
 const int SynapsePredictionProtocol::fileVersion = 2;
-
+const QColor SynapsePredictionProtocol::COLOR_DEFAULT = QColor(0, 0, 0);      // no color
 
 /*
  * start the protocol anew; returns success status;
@@ -146,6 +148,9 @@ bool SynapsePredictionProtocol::initialize() {
         variationError(m_variation);
         return false;
     }
+
+    // initial color map is nothing
+    enableProtocolColorMap();
 
     // generate pending/finished lists from user input
     // throw this into a thread?
@@ -304,6 +309,8 @@ void SynapsePredictionProtocol::onCompleteButton() {
         saveState();
         emit protocolCompleting();
     }
+    // restore original color map
+    disableProtocolColorMap();
 }
 
 void SynapsePredictionProtocol::onRefreshButton()
@@ -359,6 +366,9 @@ void SynapsePredictionProtocol::onDetailsButton() {
 }
 
 void SynapsePredictionProtocol::onExitButton() {
+    // restore original color map
+    disableProtocolColorMap();
+
     // exit protocol; can be reopened and worked on later
     emit protocolExiting();
 }
@@ -456,6 +466,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
         saveState();
     }
 
+    enableProtocolColorMap();
     onFirstButton();
 }
 
@@ -836,6 +847,40 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
         }
     }
     return result;
+}
+
+void SynapsePredictionProtocol::setupColorList() {
+    // these are the colors I used in Raveler for its PSD protocol; they're
+    //  chosen to be fairly bright
+    m_postColorList.clear();
+    m_postColorList << QColor(255, 0, 0)     // red
+                    << QColor(0, 255, 0)     // green
+                    << QColor(0, 128, 255)   // blue
+                    << QColor(128, 0, 255)   // purple
+                    << QColor(255, 128, 0)   // orange
+                    << QColor(0, 255, 128)   // blue-green
+                    << QColor(0, 0, 255)     // dark blue
+                    << QColor(255, 0, 128)   // purple-red
+                    << QColor(255, 255, 0)   // yellow
+                    << QColor(255, 0, 255)  // pink-purple
+                    << QColor(128, 255, 0)  // yellow-green
+                    << QColor(0, 255, 255)  // light blue
+                    ;
+
+}
+
+/*
+ * when you enter the protocol, switch to the protocol color map
+ */
+void SynapsePredictionProtocol::enableProtocolColorMap() {
+    m_colorScheme.clear();
+    m_colorScheme.setDefaultColor(COLOR_DEFAULT);
+    emit requestColorMapChange(m_colorScheme);
+    emit requestActivateColorMap();
+}
+
+void SynapsePredictionProtocol::disableProtocolColorMap() {
+    emit requestDeactivateColorMap();
 }
 
 void SynapsePredictionProtocol::setSitesHeaders(QStandardItemModel * model) {
