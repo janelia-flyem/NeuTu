@@ -95,7 +95,8 @@ private:
     void loadInitialSynapseList();
     void setSitesHeaders(QStandardItemModel * model);
     void clearSitesTable();
-    void updateSitesTable(std::vector<ZDvidSynapse>);
+    void updateSitesTable(std::vector<ZDvidSynapse> synapses);
+    void updateColorMap(std::vector<ZDvidSynapse> synapses);
     std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
     static bool sortXY(const ZIntPoint &p1, const ZIntPoint &p2);
     static bool compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2);
