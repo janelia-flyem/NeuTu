@@ -1024,7 +1024,7 @@ void ZDvidReader::readMeshArchiveAsync(archive *arc, std::vector<ZMesh *> &resul
         try {
           mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
         } catch (...) {}
-        if (mesh != NULL) {
+        if (mesh) {
           mesh->setLabel(std::stoull(bodyIdStr));
         }
         return mesh;
