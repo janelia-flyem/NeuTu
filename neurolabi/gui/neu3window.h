@@ -57,6 +57,8 @@ public:
     BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER
   };
 
+  QProgressDialog* getProgressDialog();
+
 public slots:
   void showSynapse(bool on);
   void showTodo(bool on);

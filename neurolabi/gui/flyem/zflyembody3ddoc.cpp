@@ -2770,7 +2770,7 @@ void ZFlyEmBody3dDoc::compareBody(ZDvidReader &diffReader, const ZIntPoint &pt)
 #ifdef _DEBUG_
     std::cout << "Diff body target: " << std::endl;
     diffReader.getDvidTarget().print();
-    std::cout << diffReader.getDvidTarget().getLabelBlockName() << std::endl;
+    std::cout << diffReader.getDvidTarget().getSegmentationName() << std::endl;
 #endif
 
 #if 0
@@ -2878,7 +2878,7 @@ void ZFlyEmBody3dDoc::compareBody(const ZFlyEmBodyComparisonDialog *dlg)
     target.setUuid(dlg->getUuid());
     if (dlg->usingCustomSegmentation()) {
       target.useDefaultDataSetting(false);
-      target.setLabelBlockName(dlg->getSegmentation());
+      target.setSegmentationName(dlg->getSegmentation());
     } else if (dlg->usingSameSegmentation()) {
       target.useDefaultDataSetting(false);
     } else if (dlg->usingDefaultSegmentation()) {
@@ -2910,7 +2910,7 @@ void ZFlyEmBody3dDoc::compareBody(const std::string &uuid)
 
 #ifdef _DEBUG_
     std::cout << "Diff body target: " << std::endl;
-    std::cout << target.getLabelBlockName() << std::endl;
+    std::cout << target.getSegmentationName() << std::endl;
 #endif
 
       ZDvidReader diffReader;

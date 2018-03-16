@@ -323,9 +323,9 @@ MainWindow::MainWindow(QWidget *parent) :
   m_stackViewManager = new ZStackViewManager(this);
   m_flyemDataLoader = new ZFlyEmDataLoader(this);
 
-  m_progressManager = new ZProgressManager(this);
-  m_specialProgressReporter.setProgressBar(getProgressBar());
-  m_progressManager->setProgressReporter(&m_specialProgressReporter);
+//  m_progressManager = new ZProgressManager(this);
+//  m_specialProgressReporter.setProgressBar(getProgressBar());
+//  m_progressManager->setProgressReporter(&m_specialProgressReporter);
 
   m_3dWindowFactory.setParentWidget(this);
 
@@ -7751,7 +7751,7 @@ void MainWindow::generateMBKcCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -7833,7 +7833,7 @@ void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -7917,7 +7917,7 @@ void MainWindow::generateMBPAMCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -7965,7 +7965,7 @@ void MainWindow::generateMBONCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -8013,7 +8013,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));

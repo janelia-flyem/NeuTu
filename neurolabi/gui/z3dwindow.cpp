@@ -993,6 +993,7 @@ void Z3DWindow::fillDockWindows()
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
 
+  //Use QueuedConnection to avoid a strange crash
   connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()),
           this, SLOT(updateSettingsDockWidget()), Qt::QueuedConnection);
   connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)),

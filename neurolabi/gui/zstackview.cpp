@@ -252,7 +252,7 @@ void ZStackView::resetViewProj()
   ZIntCuboid box = getViewBoundBox();
   m_imageWidget->resetViewProj(
         box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-        box.getWidth(), box.getHeight());
+        box.getWidth(), box.getHeight(), m_defaultViewPort);
 }
 
 void ZStackView::setInfo(const QString &info)

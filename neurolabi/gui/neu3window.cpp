@@ -44,6 +44,7 @@
 #include "zstackobjectsourcefactory.h"
 #include "dialogs/zneu3sliceviewdialog.h"
 #include "zrandomgenerator.h"
+#include "zqtbarprogressreporter.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -132,6 +133,9 @@ void Neu3Window::initGrayscaleWidget()
     m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
             this, SLOT(updateSliceViewGraph(ZArbSliceViewParam)));
+
+    m_sliceWidget->setDefaultViewPort(
+          getSliceViewParam(m_browsePos).getViewPort());
   }
 }
 
@@ -217,6 +221,8 @@ bool Neu3Window::loadDvidTarget()
 {
   bool succ = false;
 
+//  ZProgressReporter reporter;
+
   ZDvidDialog *dlg = new ZDvidDialog(NULL);
   if (dlg->exec()) {
     m_dataContainer = ZFlyEmProofMvc::Make(
@@ -225,7 +231,7 @@ bool Neu3Window::loadDvidTarget()
     succ = true;
     QString windowTitle = QString("%1 [%2]").
         arg(dlg->getDvidTarget().getSourceString(false).c_str()).
-        arg(dlg->getDvidTarget().getLabelBlockName().c_str());
+        arg(dlg->getDvidTarget().getSegmentationName().c_str());
     setWindowTitle(windowTitle);
   }
 
@@ -441,7 +447,9 @@ void Neu3Window::updateSliceBrowser()
   case BROWSE_NATIVE:
     if (m_nativeSliceDock != NULL) {
       m_nativeSliceDock->show();
-      m_sliceWidget->resetViewParam(getSliceViewParam(m_browsePos));
+      ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+      m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
+      m_sliceWidget->resetViewParam(viewParam);
     }
     break;
   case BROWSE_NEUROGLANCER:
@@ -908,7 +916,7 @@ void Neu3Window::syncBodyListModel()
 
 static const int PROGRESS_MAX = 100;
 
-void Neu3Window::meshArchiveLoadingStarted()
+QProgressDialog* Neu3Window::getProgressDialog()
 {
   if (!m_progressDialog) {
     m_progressDialog =
@@ -917,6 +925,13 @@ void Neu3Window::meshArchiveLoadingStarted()
     m_progressDialog->setMinimumDuration(0);
     m_progressDialog->setValue(0);
   }
+
+  return m_progressDialog;
+}
+
+void Neu3Window::meshArchiveLoadingStarted()
+{
+  getProgressDialog();
 }
 
 void Neu3Window::meshArchiveLoadingProgress(float fraction)

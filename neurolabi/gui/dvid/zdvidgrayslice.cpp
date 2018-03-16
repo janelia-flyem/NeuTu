@@ -325,19 +325,6 @@ void ZDvidGraySlice::setCenterCut(int width, int height)
   m_centerCutHeight = height;
 }
 
-/*
-void ZDvidGraySlice::setArbitraryAxis(const ZPoint &v1, const ZPoint &v2)
-{
-  m_sliceAxis = neutube::A_AXIS;
-  if (v1.isPendicularTo(v2)) {
-    m_v1 = v1;
-    m_v2 = v2;
-    m_v1.normalize();
-    m_v2.normalize();
-  }
-}
-*/
-
 void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
 {
   ZIntCuboid box;

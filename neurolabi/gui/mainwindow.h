@@ -768,8 +768,8 @@ private:
   //QSettings m_settings;
   QString m_version;
 
-  ZProgressManager *m_progressManager;
-  ZQtBarProgressReporter m_specialProgressReporter;
+//  ZProgressManager *m_progressManager;
+//  ZQtBarProgressReporter m_specialProgressReporter;
 
   ZMessageManager *m_messageManager;
   ZTestDialog *m_testDlg;

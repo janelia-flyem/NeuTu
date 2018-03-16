@@ -60,6 +60,7 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
 
   addParameter(m_meshRenderer.useTwoSidedLightingPara());
 
+  //Use queued connection to work in the right order with updateSettingsDockWidget in Z3DWindow
   connect(this, SIGNAL(clearingParamGarbage()), this, SLOT(dumpParamGarbage()),
           Qt::QueuedConnection);
 }
