@@ -477,13 +477,13 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
 void ZDvidWriter::syncAnnotationToLabel(
     const std::string &name, const std::string &queryString)
 {
-  if (!getDvidTarget().getLabelBlockName().empty()) {
+  if (!getDvidTarget().getSegmentationName().empty()) {
     ZDvidUrl url(getDvidTarget());
     ZJsonObject jsonObj;
-    if (getDvidTarget().getLabelBlockName() == getDvidTarget().getBodyLabelName()) {
-      jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName());
+    if (getDvidTarget().getSegmentationName() == getDvidTarget().getBodyLabelName()) {
+      jsonObj.setEntry("sync", getDvidTarget().getSegmentationName());
     } else {
-      jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
+      jsonObj.setEntry("sync", getDvidTarget().getSegmentationName() + "," +
                        getDvidTarget().getBodyLabelName());
     }
 #ifdef _DEBUG_

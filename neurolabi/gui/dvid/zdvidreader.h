@@ -535,15 +535,12 @@ public:
     bool m_verbose;
   };
 
-signals:
-  void readingDone();
-
-public slots:
+//public slots:
 //  void slotTest();
 //  void startReading();
 //  void endReading();
 
-  std::set<uint64_t> readBodyId(const QString sizeRange);
+//  std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
   ZDvidReader(const ZDvidReader&);

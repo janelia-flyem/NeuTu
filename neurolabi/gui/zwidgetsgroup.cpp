@@ -264,7 +264,8 @@ bool ZWidgetsGroup::operator<(const ZWidgetsGroup& other) const
 
 void ZWidgetsGroup::sortChildGroups()
 {
-  std::stable_sort(m_childGroups.begin(), m_childGroups.end(), widgetGroupPtVisibleLevelLessThan);
+  std::stable_sort(m_childGroups.begin(), m_childGroups.end(),
+                   widgetGroupPtVisibleLevelLessThan);
   m_isSorted = true;
 }
 

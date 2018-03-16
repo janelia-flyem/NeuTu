@@ -33,7 +33,7 @@ public:
    *
    * The old settings will be cleared no matter what.
    *
-   * \param sourceString Format: http:host:port:node:labelblk_name.
+   * \param sourceString Format: http:host:port:node:segmentation_name.
    */
   void setFromSourceString(const std::string &sourceString);
 
@@ -179,18 +179,25 @@ public:
   void setNullBodyLabelName();
 
   bool hasBodyLabel() const;
-  bool hasLabelBlock() const;
-  bool usingLabelArray() const;
-  void useLabelArray(bool on);
+  bool hasSegmentation() const;
+//  bool usingLabelArray() const;
+//  bool usingLabelMap() const;
+  ZDvidData::EType getSegmentationType() const;
+  void setSegmentationType(ZDvidData::EType type);
+  bool segmentationAsBodyLabel() const;
+  bool hasSparsevolSizeApi() const;
+  bool hasMultiscaleSegmentation() const;
+//  void useLabelArray(bool on);
+//  void useLabelMap(bool on);
 
   static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
-  std::string getLabelBlockName() const;
-  std::string getLabelBlockName(int zoom) const;
-  std::string getValidLabelBlockName(int zoom) const;
-  void setLabelBlockName(const std::string &name);
+  std::string getSegmentationName() const;
+  std::string getSegmentationName(int zoom) const;
+  std::string getValidSegmentationName(int zoom) const;
+  void setSegmentationName(const std::string &name);
 
-  void setNullLabelBlockName();
+  void setNullSegmentationName();
 
   std::string getBodyInfoName() const;
 
@@ -332,7 +339,7 @@ public:
   const static char* m_bgValueKey;
   const static char* m_grayScaleNameKey;
   const static char* m_bodyLabelNameKey;
-  const static char* m_labelBlockNameKey;
+  const static char* m_segmentationNameKey;
   const static char* m_multiscale2dNameKey;
   const static char* m_tileConfigKey;
   const static char* m_roiListKey;
@@ -354,7 +361,7 @@ private:
   std::string m_comment;
   std::string m_localFolder;
   std::string m_bodyLabelName;
-  std::string m_labelBlockName;
+  std::string m_segmentationName;
   std::string m_multiscale2dName; //default lossless tile name
   ZJsonObject m_tileConfig; //used when m_multiscale2dName is empty
   ZJsonObject m_sourceConfig;
@@ -371,7 +378,9 @@ private:
   int m_maxGrayscaleZoom;
   bool m_usingMultresBodyLabel;
   bool m_usingDefaultSetting;
-  bool m_usingLabelArray = false;
+  ZDvidData::EType m_segmentationType = ZDvidData::TYPE_LABELBLK;
+//  bool m_usingLabelArray = false;
+//  bool m_usingLabelMap = false;
   bool m_isDefaultBodyLabel = false;
 //  std::string m_userName;
 //  std::string m_tileName;

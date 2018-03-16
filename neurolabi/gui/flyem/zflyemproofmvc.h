@@ -113,42 +113,7 @@ public:
   }
   */
 
-//  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
-//  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
-//  QSortFilterProxyModel* getAssignedBookmarkProxy() const;
-//  QSortFilterProxyModel* getUserBookmarkProxy() const;
 
-  ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
-     flyem::EProofreadingMode mode) const {
-    return m_assignedBookmarkModel[mode];
-  }
-
-  ZFlyEmBookmarkListModel* getUserBookmarkModel(
-     flyem::EProofreadingMode mode) const {
-    return m_userBookmarkModel[mode];
-  }
-
-  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
-  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
-
-  void registerBookmarkView(ZFlyEmBookmarkView *view);
-
-  void exportGrayscale();
-  void exportGrayscale(const ZIntCuboid &box, int dsIntv, const QString &fileName);
-  void exportBodyStack();
-
-  //exploratory code
-  void exportNeuronScreenshot(
-      const std::vector<uint64_t> &bodyIdArray, int width, int height,
-      const QString &outDir);
-
-  void exportNeuronMeshScreenshot(
-      const std::vector<uint64_t> &bodyIdArray, int width, int height,
-      const QString &outDir);
-
-  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
-    return m_bodyInfoDlg;
-  }
 
   void diagnose();
   void showSetting();
@@ -167,6 +132,40 @@ public:
   static bool showingAnnotations();
 
   uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
+
+  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
+    return m_bodyInfoDlg;
+  }
+
+public: //bookmark functions
+    ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
+       flyem::EProofreadingMode mode) const {
+      return m_assignedBookmarkModel[mode];
+    }
+
+    ZFlyEmBookmarkListModel* getUserBookmarkModel(
+       flyem::EProofreadingMode mode) const {
+      return m_userBookmarkModel[mode];
+    }
+
+    ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
+    ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
+
+    void registerBookmarkView(ZFlyEmBookmarkView *view);
+
+public: //Export functions
+  void exportGrayscale();
+  void exportGrayscale(const ZIntCuboid &box, int dsIntv, const QString &fileName);
+  void exportBodyStack();
+
+  //exploratory code
+  void exportNeuronScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
+
+  void exportNeuronMeshScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
 
 signals:
   void launchingSplit(const QString &message);
@@ -475,6 +474,7 @@ private:
 
   void prepareTile(ZDvidTileEnsemble *te);
   void applySettings();
+  void connectSignalSlot();
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 

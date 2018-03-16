@@ -185,19 +185,24 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 void ZDvidReader::updateSegmentationData()
 {
   std::string typeName;
-  if (getDvidTarget().hasLabelBlock()) {
-    typeName = getType(getDvidTarget().getLabelBlockName());
+  if (getDvidTarget().hasSegmentation()) {
+    typeName = getType(getDvidTarget().getSegmentationName());
   } else {
     typeName = getType(getDvidTarget().getBodyLabelName());
   }
-  getDvidTarget().useLabelArray(typeName == "labelarray");
+
+  if (typeName == "labelarray") {
+    getDvidTarget().setSegmentationType(ZDvidData::TYPE_LABELARRAY);
+  } else if (typeName == "labelmap") {
+    getDvidTarget().setSegmentationType(ZDvidData::TYPE_LABELMAP);
+  }
 
   if (getDvidTarget().getBodyLabelName().empty()) {
     syncBodyLabelName();
   }
-  if (!getDvidTarget().hasLabelBlock()) {
-    if (getDvidTarget().usingLabelArray()) {
-      getDvidTarget().setLabelBlockName(getDvidTarget().getBodyLabelName());
+  if (!getDvidTarget().hasSegmentation()) {
+    if (getDvidTarget().segmentationAsBodyLabel()) {
+      getDvidTarget().setSegmentationName(getDvidTarget().getBodyLabelName());
     }
   }
 }
@@ -945,7 +950,13 @@ struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, size_t &bytes
 
   ZDvidUrl dvidUrl(getDvidTarget());
 
-  m_bufferReader.read(dvidUrl.getMeshesTarsUrl(bodyId).c_str(), isVerbose());
+  std::string tarUrl = dvidUrl.getMeshesTarsUrl(bodyId);
+  if (tarUrl.empty()) {
+    LWARN() << "Empty mesh archive url for" << bodyId;
+  } else {
+    LINFO() << "Reading mesh archive:" << tarUrl;
+  }
+  m_bufferReader.read(tarUrl.c_str(), isVerbose());
   if (m_bufferReader.getStatus() == ZDvidBufferReader::READ_FAILED) {
     return nullptr;
   }
@@ -1703,8 +1714,8 @@ QString ZDvidReader::readInfo(const QString &dataName) const
 std::string ZDvidReader::readBodyLabelName() const
 {
   std::string name;
-  if (getDvidTarget().hasLabelBlock()) {
-    ZJsonObject dataInfo = readInfo(getDvidTarget().getLabelBlockName());
+  if (getDvidTarget().hasSegmentation()) {
+    ZJsonObject dataInfo = readInfo(getDvidTarget().getSegmentationName());
     if (dataInfo.hasKey("Base")) {
       ZJsonObject baseObj(dataInfo.value("Base"));
       if (baseObj.hasKey("Syncs")) {
@@ -1726,9 +1737,9 @@ std::string ZDvidReader::readBodyLabelName() const
 
 void ZDvidReader::syncBodyLabelName()
 {
-  if (getDvidTarget().hasLabelBlock()) {
-    if (getDvidTarget().usingLabelArray()) {
-      getDvidTarget().setBodyLabelName(getDvidTarget().getLabelBlockName());
+  if (getDvidTarget().hasSegmentation()) {
+    if (getDvidTarget().segmentationAsBodyLabel()) {
+      getDvidTarget().setBodyLabelName(getDvidTarget().getSegmentationName());
     } else {
       getDvidTarget().setBodyLabelName(readBodyLabelName());
     }
@@ -1761,6 +1772,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(
   return bodySet;
 }
 
+#if 0
 std::set<uint64_t> ZDvidReader::readBodyId(const QString /*sizeRange*/)
 {
   std::set<uint64_t> bodySet;
@@ -1795,6 +1807,7 @@ std::set<uint64_t> ZDvidReader::readBodyId(const QString /*sizeRange*/)
 #endif
   return bodySet;
 }
+#endif
 
 std::set<uint64_t> ZDvidReader::readBodyId(const ZDvidFilter &filter)
 {
@@ -2209,7 +2222,7 @@ ZDvidInfo ZDvidReader::readGrayScaleInfo() const
 
 ZDvidInfo ZDvidReader::readLabelInfo() const
 {
-  return readDataInfo(getDvidTarget().getLabelBlockName());
+  return readDataInfo(getDvidTarget().getSegmentationName());
 }
 
 bool ZDvidReader::hasData(const std::string &dataName) const
@@ -2470,7 +2483,7 @@ ZArray* ZDvidReader::readLabels64(
 {
   int zoomRatio = pow(2, zoom);
 
-  return readLabels64(getDvidTarget().getValidLabelBlockName(zoom),
+  return readLabels64(getDvidTarget().getValidSegmentationName(zoom),
                      x0 / zoomRatio, y0 / zoomRatio, z0 / zoomRatio,
                       width / zoomRatio, height / zoomRatio, depth);
 }
@@ -2478,7 +2491,7 @@ ZArray* ZDvidReader::readLabels64(
 ZArray* ZDvidReader::readLabels64Raw(
     int x0, int y0, int z0, int width, int height, int depth, int zoom) const
 {
-  return readLabels64(getDvidTarget().getValidLabelBlockName(zoom),
+  return readLabels64(getDvidTarget().getValidSegmentationName(zoom),
                      x0, y0, z0, width, height, depth);
 }
 
@@ -2895,7 +2908,7 @@ ZStack *ZDvidReader::readGrayScaleLowtis(
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
-  if (!getDvidTarget().hasLabelBlock()) {
+  if (!getDvidTarget().hasSegmentation()) {
     return NULL;
   }
 
@@ -2917,7 +2930,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
       m_lowtisConfig.username = neutube::GetCurrentUserName();
       m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
       m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
-      m_lowtisConfig.datatypename = getDvidTarget().getLabelBlockName();
+      m_lowtisConfig.datatypename = getDvidTarget().getSegmentationName();
       m_lowtisConfig.enableprefetch = false;
 
       m_lowtisService = ZSharedPointer<lowtis::ImageService>(
@@ -3185,7 +3198,7 @@ void ZDvidReader::updateMaxLabelZoom(
     int level = 1;
     while (level < 50) {
       if (ZDvid::IsDataValid(
-            m_dvidTarget.getLabelBlockName(level), m_dvidTarget, infoJson, dag)) {
+            m_dvidTarget.getSegmentationName(level), m_dvidTarget, infoJson, dag)) {
         maxLabelLevel = level;
       } else {
         break;
@@ -3199,8 +3212,8 @@ void ZDvidReader::updateMaxLabelZoom(
 void ZDvidReader::updateMaxLabelZoom()
 {
   if (m_dvidTarget.isValid()) {
-    if (getDvidTarget().usingLabelArray()) {
-      ZJsonObject infoJson = readInfo(getDvidTarget().getLabelBlockName());
+    if (getDvidTarget().hasMultiscaleSegmentation()) {
+      ZJsonObject infoJson = readInfo(getDvidTarget().getSegmentationName());
       ZJsonValue v = infoJson.value({"Extended", "MaxDownresLevel"});
       if (!v.isEmpty()) {
         m_dvidTarget.setMaxLabelZoom(v.toInteger());
@@ -3218,7 +3231,7 @@ void ZDvidReader::updateMaxLabelZoom()
 
 //      }
     } else {
-      if (getDvidTarget().hasLabelBlock()) {
+      if (getDvidTarget().hasSegmentation()) {
         ZJsonObject infoJson = readInfo();
         ZDvidVersionDag dag = readVersionDag();
         updateMaxLabelZoom(infoJson, dag);
@@ -4338,7 +4351,7 @@ int ZDvidReader::checkProofreadingData() const
 
   std::cout << "Checking proofreading status" << std::endl;
   missing += reportMissingData(getDvidTarget().getTodoListName());
-  missing += reportMissingData(getDvidTarget().getLabelBlockName());
+  missing += reportMissingData(getDvidTarget().getSegmentationName());
   missing += reportMissingData(getDvidTarget().getBodyLabelName());
   missing += reportMissingData(getDvidTarget().getBodyAnnotationName());
   missing += reportMissingData(getDvidTarget().getSkeletonName());

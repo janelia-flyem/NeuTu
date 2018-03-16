@@ -17,7 +17,7 @@ const char* ZDvidTarget::m_localKey = "local";
 const char* ZDvidTarget::m_debugKey = "debug";
 const char* ZDvidTarget::m_bgValueKey = "background";
 const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
-const char* ZDvidTarget::m_labelBlockNameKey = "label_block";
+const char* ZDvidTarget::m_segmentationNameKey = "label_block";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
 const char* ZDvidTarget::m_tileConfigKey = "multires_tile_config";
@@ -66,7 +66,7 @@ void ZDvidTarget::init()
   m_usingDefaultSetting = false;
 
   setDefaultMultiscale2dName();
-  setLabelBlockName("*");
+  setSegmentationName("*");
 //  m_multiscale2dName = ZDvidData::GetName(ZDvidData::ROLE_MULTISCALE_2D);
 }
 
@@ -102,7 +102,7 @@ void ZDvidTarget::clear()
   m_comment = "";
   m_localFolder = "";
   m_bodyLabelName = "*";
-  m_labelBlockName = "*";
+  m_segmentationName = "*";
 
   m_grayScaleName = "";
   m_synapseLabelszName = "";
@@ -295,7 +295,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setNonEmptyEntry(m_localKey, m_localFolder);
   obj.setEntry(m_bgValueKey, m_bgValue);
   obj.setNonEmptyEntry(m_bodyLabelNameKey, m_bodyLabelName);
-  obj.setNonEmptyEntry(m_labelBlockNameKey, m_labelBlockName);
+  obj.setNonEmptyEntry(m_segmentationNameKey, m_segmentationName);
   obj.setEntry(m_maxLabelZoomKey, m_maxLabelZoom);
   obj.setEntry(m_maxGrayscaleZoomKey, getMaxGrayscaleZoom());
   obj.setNonEmptyEntry(m_grayScaleNameKey, m_grayScaleName);
@@ -349,7 +349,7 @@ void ZDvidTarget::setSynapseLabelszName(const std::string &name)
 void ZDvidTarget::loadDvidDataSetting(const ZJsonObject &obj)
 {
   if (obj.hasKey("segmentation")) {
-    setLabelBlockName(ZJsonParser::stringValue(obj["segmentation"]));
+    setSegmentationName(ZJsonParser::stringValue(obj["segmentation"]));
   }
   if (obj.hasKey("bodies")) {
     setBodyLabelName(ZJsonParser::stringValue(obj["bodies"]));
@@ -370,7 +370,7 @@ ZJsonObject ZDvidTarget::toDvidDataSetting() const
 {
   ZJsonObject obj;
 
-  obj.setEntry("segmentation", getLabelBlockName());
+  obj.setEntry("segmentation", getSegmentationName());
   obj.setEntry("synapses", getSynapseName());
   obj.setEntry("bodies", getBodyLabelName());
   obj.setEntry("skeletons", getSkeletonName());
@@ -395,8 +395,8 @@ void ZDvidTarget::updateData(const ZJsonObject &obj)
   if (obj.hasKey(m_bodyLabelNameKey)) {
     setBodyLabelName(ZJsonParser::stringValue(obj[m_bodyLabelNameKey]));
   }
-  if (obj.hasKey(m_labelBlockNameKey)) {
-    setLabelBlockName(ZJsonParser::stringValue(obj[m_labelBlockNameKey]));
+  if (obj.hasKey(m_segmentationNameKey)) {
+    setSegmentationName(ZJsonParser::stringValue(obj[m_segmentationNameKey]));
   }
   if (obj.hasKey(m_grayScaleNameKey)) {
     setGrayScaleName(ZJsonParser::stringValue(obj[m_grayScaleNameKey]));
@@ -564,14 +564,20 @@ bool ZDvidTarget::hasBodyLabel() const
   return !getBodyLabelName().empty();
 }
 
-bool ZDvidTarget::hasLabelBlock() const
+bool ZDvidTarget::hasSegmentation() const
 {
-  return !getLabelBlockName().empty();
+  return !getSegmentationName().empty();
 }
 
+/*
 bool ZDvidTarget::usingLabelArray() const
 {
   return m_usingLabelArray;
+}
+
+bool ZDvidTarget::usingLabelMap() const
+{
+  return m_usingLabelMap;
 }
 
 void ZDvidTarget::useLabelArray(bool on)
@@ -579,15 +585,53 @@ void ZDvidTarget::useLabelArray(bool on)
   m_usingLabelArray = on;
 }
 
-std::string ZDvidTarget::getLabelBlockName() const
+void ZDvidTarget::useLabelMap(bool on)
+{
+  m_usingLabelArray = on;
+}
+*/
+
+bool ZDvidTarget::segmentationAsBodyLabel() const
+{
+  return getSegmentationType() == ZDvidData::TYPE_LABELARRAY ||
+      getSegmentationType() == ZDvidData::TYPE_LABELMAP;
+}
+
+bool ZDvidTarget::hasSparsevolSizeApi() const
+{
+  return getSegmentationType() == ZDvidData::TYPE_LABELARRAY ||
+      getSegmentationType() == ZDvidData::TYPE_LABELMAP;
+}
+
+bool ZDvidTarget::hasMultiscaleSegmentation() const
+{
+  if (hasSegmentation()) {
+    return getSegmentationType() == ZDvidData::TYPE_LABELARRAY ||
+        getSegmentationType() == ZDvidData::TYPE_LABELMAP;
+  }
+
+  return false;
+}
+
+void ZDvidTarget::setSegmentationType(ZDvidData::EType type)
+{
+  m_segmentationType = type;
+}
+
+ZDvidData::EType ZDvidTarget::getSegmentationType() const
+{
+  return m_segmentationType;
+}
+
+std::string ZDvidTarget::getSegmentationName() const
 { 
-  if (m_labelBlockName.empty()) {
+  if (m_segmentationName.empty()) {
     return ZDvidData::GetName(ZDvidData::ROLE_LABEL_BLOCK);
-  } else if (ZDvidData::IsNullName(m_labelBlockName)) {
+  } else if (ZDvidData::IsNullName(m_segmentationName)) {
     return "";
   }
 
-  return m_labelBlockName;
+  return m_segmentationName;
 }
 
 std::string ZDvidTarget::GetMultiscaleDataName(
@@ -602,9 +646,9 @@ std::string ZDvidTarget::GetMultiscaleDataName(
   return name;
 }
 
-std::string ZDvidTarget::getLabelBlockName(int zoom) const
+std::string ZDvidTarget::getSegmentationName(int zoom) const
 {
-  return GetMultiscaleDataName(getLabelBlockName(), zoom);
+  return GetMultiscaleDataName(getSegmentationName(), zoom);
   /*
   std::string name = getLabelBlockName();
   if (!name.empty() && zoom > 0) {
@@ -629,18 +673,18 @@ std::string ZDvidTarget::getValidGrayScaleName(int zoom) const
   return getGrayScaleName(zoom);
 }
 
-std::string ZDvidTarget::getValidLabelBlockName(int zoom) const
+std::string ZDvidTarget::getValidSegmentationName(int zoom) const
 {
   if (zoom < 0 || zoom > getMaxLabelZoom()) {
     return "";
   }
 
-  return getLabelBlockName(zoom);
+  return getSegmentationName(zoom);
 }
 
-void ZDvidTarget::setLabelBlockName(const std::string &name)
+void ZDvidTarget::setSegmentationName(const std::string &name)
 {
-  m_labelBlockName = name;
+  m_segmentationName = name;
 }
 
 std::string ZDvidTarget::getMultiscale2dName() const
@@ -715,9 +759,9 @@ void ZDvidTarget::setNullBodyLabelName()
   setBodyLabelName("*");
 }
 
-void ZDvidTarget::setNullLabelBlockName()
+void ZDvidTarget::setNullSegmentationName()
 {
-  setLabelBlockName("*");
+  setSegmentationName("*");
 }
 
 void ZDvidTarget::setMultiscale2dName(const std::string &name)

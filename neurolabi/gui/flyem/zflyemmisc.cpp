@@ -1307,12 +1307,12 @@ QString ZFlyEmMisc::GetNeuroglancerPath(
       arg(target.getGrayScaleSource().getUuid().c_str()).
       arg(target.getGrayScaleName().c_str());
 
-  if (target.hasLabelBlock()) {
+  if (target.hasSegmentation()) {
     path += QString("_'segmentation':{'type':'segmentation'_"
                     "'source':'dvid://http://%1/%2/%3'").
         arg(target.getAddressWithPort().c_str()).
         arg(target.getUuid().c_str()).
-        arg(target.getLabelBlockName().c_str());
+        arg(target.getSegmentationName().c_str());
 
     if (!bodySet.empty() && bodySet.size() < 4) {
       path += "_'segments':[";
@@ -1766,7 +1766,7 @@ ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses_10062016");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   return target;

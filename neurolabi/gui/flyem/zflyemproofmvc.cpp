@@ -329,25 +329,30 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
   mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
   mvc->setDvidTarget(target);
 
-  connect(mvc->getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
-          mvc, SLOT(showOrthoWindow(double,double,double)));
-  connect(mvc->getPresenter(), SIGNAL(orthoViewBigTriggered(double,double,double)),
-          mvc, SLOT(showBigOrthoWindow(double,double,double)));
-  connect(mvc->getDocument().get(), SIGNAL(updatingLatency(int)),
-          mvc, SLOT(updateLatencyWidget(int)));
-  connect(mvc->getView(), SIGNAL(sliceSliderPressed()),
-          mvc, SLOT(suppressObjectVisible()));
-  connect(mvc->getView(), SIGNAL(sliceSliderReleased()),
-          mvc, SLOT(recoverObjectVisible()));
-  connect(mvc, SIGNAL(roiLoaded()), mvc, SLOT(updateRoiWidget()));
-  connect(mvc->getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
-          mvc->m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
-  connect(mvc->getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
-          mvc->m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
-  connect(mvc->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
-          mvc, SLOT(syncBodySelectionToOrthoWindow()));
+  mvc->connectSignalSlot();
 
   return mvc;
+}
+
+void ZFlyEmProofMvc::connectSignalSlot()
+{
+  connect(getPresenter(), SIGNAL(orthoViewTriggered(double,double,double)),
+          this, SLOT(showOrthoWindow(double,double,double)));
+  connect(getPresenter(), SIGNAL(orthoViewBigTriggered(double,double,double)),
+          this, SLOT(showBigOrthoWindow(double,double,double)));
+  connect(getDocument().get(), SIGNAL(updatingLatency(int)),
+          this, SLOT(updateLatencyWidget(int)));
+  connect(getView(), SIGNAL(sliceSliderPressed()),
+          this, SLOT(suppressObjectVisible()));
+  connect(getView(), SIGNAL(sliceSliderReleased()),
+          this, SLOT(recoverObjectVisible()));
+  connect(this, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
+  connect(getCompleteDocument(), SIGNAL(synapseVerified(int,int,int,bool)),
+          m_protocolSwitcher, SLOT(processSynapseVerification(int, int, int, bool)));
+  connect(getCompleteDocument(), SIGNAL(synapseMoved(ZIntPoint,ZIntPoint)),
+          m_protocolSwitcher, SLOT(processSynapseMoving(ZIntPoint,ZIntPoint)));
+  connect(getCompleteDocument(), SIGNAL(bodySelectionChanged()),
+          this, SLOT(syncBodySelectionToOrthoWindow()));
 }
 
 void ZFlyEmProofMvc::applySettings()
@@ -1465,16 +1470,12 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
       getView()->setScrollStrategy(scrollStrategy);
     }
-  }
 
-  //    getCompleteDocument()->beginObjectModifiedMode(
-  //          ZStackDoc::OBJECT_MODIFIED_CACHE);
-  //    getCompleteDocument()->updateTileData();
-  //    getCompleteDocument()->endObjectModifiedMode();
-  QList<ZDvidTileEnsemble*> teList =
-      getCompleteDocument()->getDvidTileEnsembleList();
-  foreach (ZDvidTileEnsemble *te, teList) {
-    prepareTile(te);
+    QList<ZDvidTileEnsemble*> teList =
+        getCompleteDocument()->getDvidTileEnsembleList();
+    foreach (ZDvidTileEnsemble *te, teList) {
+      prepareTile(te);
+    }
   }
 
   getView()->reset(false);
