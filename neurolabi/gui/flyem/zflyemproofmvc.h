@@ -67,6 +67,7 @@ public:
       neutube::EAxis axis = neutube::Z_AXIS, ERole role = ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
       const ZDvidTarget &target, ERole role = ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(ERole role = ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;

@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QTimer>
+#include <QtConcurrent>
 
 #if defined(_USE_WEBENGINE_)
 #include <QWebEngineView>
@@ -225,8 +226,12 @@ bool Neu3Window::loadDvidTarget()
 
   ZDvidDialog *dlg = new ZDvidDialog(NULL);
   if (dlg->exec()) {
-    m_dataContainer = ZFlyEmProofMvc::Make(
-          dlg->getDvidTarget(), ZStackMvc::ROLE_DOCUMENT);
+    m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ROLE_DOCUMENT);
+    m_dataContainer->getProgressSignal()->connectSlot(this);
+    QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvidTarget,
+                      dlg->getDvidTarget());
+//    m_dataContainer->setDvidTarget(dlg->getDvidTarget());
+
     m_dataContainer->hide();
     succ = true;
     QString windowTitle = QString("%1 [%2]").
@@ -920,7 +925,7 @@ QProgressDialog* Neu3Window::getProgressDialog()
 {
   if (!m_progressDialog) {
     m_progressDialog =
-        new QProgressDialog("Loading meshes", QString(), 0, PROGRESS_MAX, this);
+        new QProgressDialog("Loading ...", QString(), 0, PROGRESS_MAX, this);
     m_progressDialog->setWindowModality(Qt::WindowModal);
     m_progressDialog->setMinimumDuration(0);
     m_progressDialog->setValue(0);
@@ -951,4 +956,40 @@ void Neu3Window::meshArchiveLoadingEnded()
   if (m_progressDialog) {
     m_progressDialog->setValue(PROGRESS_MAX);
   }
+}
+
+void Neu3Window::startProgress(const QString &title, int nticks)
+{
+  getProgressDialog()->setRange(0, nticks);
+  startProgress(title);
+}
+
+void Neu3Window::startProgress(const QString &title)
+{
+  getProgressDialog()->setLabelText(title);
+  startProgress();
+}
+
+void Neu3Window::startProgress()
+{
+  getProgressDialog()->show();
+}
+
+void Neu3Window::startProgress(double /*alpha*/)
+{
+  //Do nothing because it is the root progress
+}
+
+void Neu3Window::advanceProgress(double dp)
+{
+  if (getProgressDialog()->value() < getProgressDialog()->maximum()) {
+    int range = getProgressDialog()->maximum() - getProgressDialog()->minimum();
+    getProgressDialog()->setValue(
+          getProgressDialog()->value() + iround(dp * range));
+  }
+}
+
+void Neu3Window::endProgress()
+{
+  getProgressDialog()->reset();
 }

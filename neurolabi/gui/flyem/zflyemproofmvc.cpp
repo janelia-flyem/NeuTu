@@ -322,12 +322,20 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
 {
+  ZFlyEmProofMvc *mvc = Make(role);
+
+  mvc->setDvidTarget(target);
+
+  return mvc;
+}
+
+ZFlyEmProofMvc* ZFlyEmProofMvc::Make(ERole role)
+{
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
 //  doc->setTag(neutube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc = ZFlyEmProofMvc::Make(
         NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), neutube::Z_AXIS, role);
   mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
-  mvc->setDvidTarget(target);
 
   mvc->connectSignalSlot();
 
