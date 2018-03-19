@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <ctime>
+#include <future>
 
 #include <archive.h>
 #include <archive_entry.h>
@@ -43,10 +44,10 @@
 #include "zstackobjectsourcefactory.h"
 #include "zstroke2d.h"
 #include "zobject3d.h"
-#include <future>
+#include "znetbufferreader.h"
 
-ZDvidReader::ZDvidReader(QObject *parent) :
-  QObject(parent), m_verbose(true)
+ZDvidReader::ZDvidReader(/*QObject *parent*/) :
+  /*QObject(parent),*/ m_verbose(true)
 {
   init();
 }
@@ -738,7 +739,7 @@ ZObject3dScan *ZDvidReader::readSupervoxel(
 
     std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
-    if (reader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+    if (reader.getStatus() != neutube::READ_FAILED) {
       timer.start();
       const QByteArray &buffer = reader.getBuffer();
       result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -786,7 +787,7 @@ ZObject3dScan *ZDvidReader::readBody(
 
     std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
-    if (reader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+    if (reader.getStatus() != neutube::READ_FAILED) {
       timer.start();
       const QByteArray &buffer = reader.getBuffer();
       result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -844,7 +845,7 @@ ZObject3dScan *ZDvidReader::readBody(
 
     std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
-    if (reader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+    if (reader.getStatus() != neutube::READ_FAILED) {
       timer.start();
       const QByteArray &buffer = reader.getBuffer();
       result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -906,7 +907,7 @@ ZMesh* ZDvidReader::readMeshFromUrl(const std::string &url) const
   }
 
   m_bufferReader.read(url.c_str(), isVerbose());
-  if (m_bufferReader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+  if (m_bufferReader.getStatus() != neutube::READ_FAILED) {
     const QByteArray &buffer = m_bufferReader.getBuffer();
     mesh = ZMeshIO::instance().loadFromMemory(buffer, format);
   }
@@ -957,7 +958,7 @@ struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, size_t &bytes
     LINFO() << "Reading mesh archive:" << tarUrl;
   }
   m_bufferReader.read(tarUrl.c_str(), isVerbose());
-  if (m_bufferReader.getStatus() == ZDvidBufferReader::READ_FAILED) {
+  if (m_bufferReader.getStatus() == neutube::READ_FAILED) {
     return nullptr;
   }
 
@@ -1091,7 +1092,7 @@ ZObject3dScan* ZDvidReader::readMultiscaleBody(
 
     std::cout << "Body reading time: " << timer.elapsed() << std::endl;
 
-    if (reader.getStatus() != ZDvidBufferReader::READ_FAILED) {
+    if (reader.getStatus() != neutube::READ_FAILED) {
       timer.start();
       const QByteArray &buffer = reader.getBuffer();
       result->importDvidObjectBuffer(buffer.data(), buffer.size());
@@ -1238,7 +1239,7 @@ std::vector<ZStack*> ZDvidReader::readGrayScaleBlockOld(
   tic();
 #endif
 
-  if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
+  if (bufferReader.getStatus() == neutube::READ_OK) {
     const QByteArray &data = bufferReader.getBuffer();
     if (data.length() > 0) {
 //      int realBlockNumber = *((int*) data.constData());
@@ -1334,7 +1335,7 @@ ZStack* ZDvidReader::readGrayScaleBlock(
                     isVerbose());
   setStatusCode(bufferReader.getStatusCode());
   ZStack *stack = NULL;
-  if (bufferReader.getStatus() == ZDvidBufferReader::READ_OK) {
+  if (bufferReader.getStatus() == neutube::READ_OK) {
     const QByteArray &data = bufferReader.getBuffer();
     int realBlockNumber = *((int*) data.constData());
 
@@ -2231,11 +2232,11 @@ ZDvidInfo ZDvidReader::readLabelInfo() const
 bool ZDvidReader::hasData(const std::string &dataName) const
 {
   if (dataName.empty()) {
-    return true;
+    return false;
   }
 
   ZDvidUrl dvidUrl(m_dvidTarget);
-  ZDvidBufferReader bufferReader;
+  ZNetBufferReader bufferReader;
   return bufferReader.isReadable(dvidUrl.getInfoUrl(dataName).c_str());
 }
 
@@ -2245,7 +2246,7 @@ std::string ZDvidReader::getType(const std::string &dataName) const
 
   if (!dataName.empty()) {
     ZDvidUrl dvidUrl(m_dvidTarget);
-    ZDvidBufferReader bufferReader;
+    ZDvidBufferReader &bufferReader = m_bufferReader;
 
     bufferReader.read(dvidUrl.getInfoUrl(dataName).c_str());
 
@@ -3083,7 +3084,7 @@ ZIntPoint ZDvidReader::readBodyLocation(uint64_t bodyId) const
 
 bool ZDvidReader::hasSparseVolume(uint64_t bodyId) const
 {
-  ZDvidBufferReader bufferReader;
+  ZNetBufferReader bufferReader;
   ZDvidUrl dvidUrl(m_dvidTarget);
 
   return  bufferReader.isReadable(
@@ -3094,7 +3095,7 @@ bool ZDvidReader::hasCoarseSparseVolume(uint64_t bodyId) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
 
-  ZDvidBufferReader reader;
+  ZNetBufferReader reader;
   reader.readPartial(
         dvidUrl.getCoarseSparsevolUrl(
           bodyId, getDvidTarget().getBodyLabelName()).c_str(),
@@ -3122,7 +3123,7 @@ bool ZDvidReader::hasBodyInfo(uint64_t bodyId) const
 {
   ZDvidUrl dvidUrl(m_dvidTarget);
 
-  ZDvidBufferReader bufferReader;
+  ZNetBufferReader bufferReader;
 
   return  bufferReader.isReadable(
         dvidUrl.getBodyInfoUrl(bodyId, m_dvidTarget.getBodyLabelName()).c_str());
@@ -3440,7 +3441,7 @@ ZObject3dScan* ZDvidReader::readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) 
                 bodyId, m_dvidTarget.getBodyLabelName()).c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
 
-  if (reader.getStatus() == ZDvidBufferReader::READ_OK) {
+  if (reader.getStatus() == neutube::READ_OK) {
     if (obj == NULL) {
       obj = new ZObject3dScan;
     }
@@ -3477,7 +3478,7 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
   reader.read(url.c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
 
-  if (reader.getStatus() == ZDvidBufferReader::READ_OK) {
+  if (reader.getStatus() == neutube::READ_OK) {
     if (obj == NULL) {
       obj = new ZObject3dScan;
     }
@@ -3554,7 +3555,7 @@ int ZDvidReader::readCoarseBodySize(uint64_t bodyId) const
                 bodyId, m_dvidTarget.getBodyLabelName()).c_str(), isVerbose());
   setStatusCode(reader.getStatusCode());
 
-  if (reader.getStatus() == ZDvidBufferReader::READ_OK) {
+  if (reader.getStatus() == neutube::READ_OK) {
     count = ZObject3dScan::CountVoxelNumber(
           reader.getBuffer().data(), reader.getBuffer().size());
   }

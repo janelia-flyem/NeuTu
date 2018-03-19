@@ -106,6 +106,7 @@ signals:
   void bodySelected(uint64_t bodyId);
   void bodyDeselected(uint64_t bodyId);
   void closed();
+  void dvidLoaded();
 
 protected:
   virtual void keyPressEvent(QKeyEvent *event);
@@ -150,6 +151,14 @@ private slots:
 
   void test();
   void testBodyChange();
+
+  //progress interface
+  void startProgress(const QString &title, int nticks);
+  void startProgress(const QString &title);
+  void startProgress();
+  void startProgress(double alpha);
+  void advanceProgress(double dp);
+  void endProgress();
 
 private:
   void createDockWidget();

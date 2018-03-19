@@ -25727,5 +25727,30 @@ void ZTest::test(MainWindow *host)
   */
 
 #endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  target.setBodyLabelName("bodies");
+
+  QFuture<ZDvidReader*> future = QtConcurrent::run(
+        [&](const ZDvidTarget &target) {
+    ZDvidReader *reader = new ZDvidReader;
+    reader->open(target);
+    return reader;
+  }, target);
+
+  future.waitForFinished();
+
+  ZDvidReader *reader = future.result();
+  std::cout << reader->hasData("labels") << std::endl;
+  std::cout << reader->hasData("labels10") << std::endl;
+  std::cout << reader->hasCoarseSparseVolume(1) << std::endl;
+  std::cout << reader->hasCoarseSparseVolume(2) << std::endl;
+  std::cout << reader->hasCoarseSparseVolume(12345678) << std::endl;
+
+#endif
+
   std::cout << "Done." << std::endl;
 }
