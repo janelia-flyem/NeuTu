@@ -164,6 +164,7 @@ void ZFlyEmBodySplitProject::shallowClearBodyWindow()
 */
 void ZFlyEmBodySplitProject::setDvidTarget(const ZDvidTarget &target)
 {
+  LINFO() << "Setting dvid env in ZFlyEmBodySplitProject";
   m_reader.open(target);
 
 #if 0

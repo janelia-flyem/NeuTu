@@ -102,6 +102,8 @@ public slots:
 
   void zoomToBodyMesh();
 
+  void start();
+
 signals:
   void bodySelected(uint64_t bodyId);
   void bodyDeselected(uint64_t bodyId);

@@ -1442,7 +1442,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
+  LINFO() << "Setting dvid env in ZFlyEmProofMvc";
 
+  getProgressSignal()->startProgress("Loading data ...");
 
   ZDvidReader reader;
   if (!reader.open(target)) {
@@ -1450,12 +1452,11 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
           ZWidgetMessage("Failed to open the database.",
                          neutube::MSG_WARNING,
                          ZWidgetMessage::TARGET_DIALOG));
+    getProgressSignal()->endProgress();
     return;
   }
 
   exitCurrentDoc();
-
-  getProgressSignal()->startProgress("Loading data ...");
 
   clear();
   getProgressSignal()->advanceProgress(0.1);
@@ -1465,9 +1466,11 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 
   if (getRole() == ROLE_WIDGET) {
+    LINFO() << "Set contrast";
     ZJsonObject contrastObj = reader.readContrastProtocal();
     getPresenter()->setHighContrastProtocal(contrastObj);
 
+    LINFO() << "Init grayslice";
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
     if (slice != NULL) {
       slice->updateContrast(getCompletePresenter()->highTileContrast());
@@ -1479,6 +1482,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       getView()->setScrollStrategy(scrollStrategy);
     }
 
+    LINFO() << "Init tiles";
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
@@ -1500,6 +1504,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   if (getRole() == ROLE_WIDGET) {
     if (getDvidTarget().isValid()) {
+      LINFO() << "Download annotations";
       getCompleteDocument()->downloadSynapse();
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
@@ -1507,11 +1512,12 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
   }
 
-  getProgressSignal()->advanceProgress(0.5);
+  getProgressSignal()->advanceProgress(0.1);
 
   emit dvidTargetChanged(getDvidTarget());
 
   if (getRole() == ROLE_WIDGET) {
+    LINFO() << "Set ROI dialog";
     m_roiDlg->clear();
     m_roiDlg->updateDvidTarget();
     m_roiDlg->downloadAllProject();
@@ -1527,6 +1533,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
             getDvidTarget().getSourceString(false).c_str()),
           neutube::MSG_INFORMATION,
           ZWidgetMessage::TARGET_STATUS_BAR));
+
+  LINFO() << "DVID Ready";
+  emit dvidReady();
 }
 
 void ZFlyEmProofMvc::showSetting()
@@ -1764,27 +1773,26 @@ void ZFlyEmProofMvc::customInit()
 
   disableSplit();
 
-
-  // connections to body info dialog (aka "sequencer")
-  if (m_bodyInfoDlg != NULL) {
-    connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
-            this, SLOT(locateBody(uint64_t)));
-    connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
-            this, SLOT(addLocateBody(uint64_t)));
-    connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
-            this, SLOT(selectBody(QList<uint64_t>)));
-    connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-            m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
-    connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
-            this, SLOT(prepareBodyMap(ZJsonValue)));
-    connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
-            getCompleteDocument(),
-            SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
-    connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
-            this, SLOT(zoomTo(int,int,int)));
-  }
-
   if (getRole() == ROLE_WIDGET) {
+    // connections to body info dialog (aka "sequencer")
+    if (m_bodyInfoDlg != NULL) {
+      connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
+              this, SLOT(locateBody(uint64_t)));
+      connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
+              this, SLOT(addLocateBody(uint64_t)));
+      connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+              this, SLOT(selectBody(QList<uint64_t>)));
+      connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+              m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+      connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
+              this, SLOT(prepareBodyMap(ZJsonValue)));
+      connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+              getCompleteDocument(),
+              SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
+      connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
+              this, SLOT(zoomTo(int,int,int)));
+    }
+
     // connections to protocols
     connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
             m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));

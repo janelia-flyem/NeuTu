@@ -189,7 +189,7 @@ signals:
   void highlightModeChanged();
   void roiLoaded();
   void locating2DViewTriggered(int x, int y, int z, int width);
-
+  void dvidReady();
 
 public slots:
   void mergeSelected();
