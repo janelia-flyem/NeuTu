@@ -57,8 +57,6 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
     connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
-    m_prefetchThread->start();
-
 
     // UI connections
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
@@ -142,6 +140,8 @@ void TaskProtocolWindow::init() {
         // otherwise, show the load task file button
         setWindowConfiguration(LOAD_BUTTON);
     }
+
+    m_prefetchThread->start();
 }
 
 void TaskProtocolWindow::onPrevButton() {

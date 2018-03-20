@@ -1,8 +1,8 @@
 #include "znetbufferreader.h"
 
 #include <QNetworkAccessManager>
-#include <QNetworkReply>
 #include <QEventLoop>
+#include <QTimer>
 
 ZNetBufferReader::ZNetBufferReader(QObject *parent) : QObject(parent)
 {
@@ -17,7 +17,7 @@ void ZNetBufferReader::_init()
   connect(this, &ZNetBufferReader::readingCanceled,
           this, &ZNetBufferReader::cancelReading);
   connect(this, &ZNetBufferReader::readingDone,
-          m_eventLoop, &ZNetBufferReader::quit);
+          m_eventLoop, &QEventLoop::quit);
   connect(this, &ZNetBufferReader::checkingStatus,
           this, &ZNetBufferReader::waitForReading);
 }
@@ -104,15 +104,55 @@ bool ZNetBufferReader::hasHead(const QString &url)
 
   waitForReading();
 
-  return m_status == READ_OK;
+  return m_status == neutube::READ_OK;
 }
 
+bool ZNetBufferReader::isReadable(const QString &url)
+{
+  QTimer::singleShot(15000, this, SLOT(handleTimeout()));
+
+  startReading();
+
+  qDebug() << url;
+
+
+  resetNetworkReply();
+  m_networkReply = getNetworkAccessManager()->get(QNetworkRequest(url));
+  connectNetworkReply();
+  connect(m_networkReply, SIGNAL(readyRead()), this, SLOT(finishReading()));
+
+  waitForReading();
+
+  return m_status == neutube::READ_OK;
+}
 
 void ZNetBufferReader::startReading()
 {
   m_isReadingDone = false;
   m_buffer.clear();
   m_status = neutube::READ_OK;
+}
+
+void ZNetBufferReader::endReading(neutube::EReadStatus status)
+{
+  m_status = status;
+  m_isReadingDone = true;
+
+  if (m_networkReply != NULL) {
+    QVariant statusCode = m_networkReply->attribute(
+          QNetworkRequest::HttpStatusCodeAttribute);
+#ifdef _DEBUG_
+    qDebug() << "Status code: " << statusCode;
+#endif
+    m_statusCode = statusCode.toInt();
+    if (m_statusCode != 200) {
+      m_status = neutube::READ_BAD_RESPONSE;
+    }
+    m_networkReply->deleteLater();
+    m_networkReply = NULL;
+  }
+
+  emit readingDone();
 }
 
 bool ZNetBufferReader::isReadingDone() const
@@ -163,32 +203,13 @@ void ZNetBufferReader::cancelReading()
   endReading(neutube::READ_CANCELED);
 }
 
-void ZNetBufferReader::endReading(EStatus status)
-{
-  m_status = status;
-  m_isReadingDone = true;
-
-  if (m_networkReply != NULL) {
-    QVariant statusCode = m_networkReply->attribute(
-          QNetworkRequest::HttpStatusCodeAttribute);
-#ifdef _DEBUG_
-    qDebug() << "Status code: " << statusCode;
-#endif
-    m_statusCode = statusCode.toInt();
-    if (m_statusCode != 200) {
-      m_status = neutube::READ_BAD_RESPONSE;
-    }
-    m_networkReply->deleteLater();
-    m_networkReply = NULL;
-  }
-
-  emit readingDone();
-}
-
-neutube::EReadStatus ZDvidBufferReader::getStatus() const
+neutube::EReadStatus ZNetBufferReader::getStatus() const
 {
   return m_status;
 }
 
-
+void ZNetBufferReader::clearBuffer()
+{
+  m_buffer.clear();
+}
 

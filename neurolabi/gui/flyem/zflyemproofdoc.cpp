@@ -721,6 +721,7 @@ const ZDvidTarget& ZFlyEmProofDoc::getDvidTarget() const
 
 void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
+  LINFO() << "Setting dvid env in ZFlyEmProofDoc";
   if (m_dvidReader.open(target)) {
     m_dvidWriter.open(target);
     m_synapseReader.openRaw(m_dvidReader.getDvidTarget());

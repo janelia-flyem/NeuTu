@@ -202,6 +202,14 @@ void Neu3Window::updateBodyState()
 #endif
 }
 
+void Neu3Window::start()
+{
+  show();
+  initialize();
+  raise();
+  showMaximized();
+}
+
 void Neu3Window::initOpenglContext()
 {
   m_sharedContext = new Z3DCanvas("Init Canvas", 32, 32, this);
@@ -228,6 +236,8 @@ bool Neu3Window::loadDvidTarget()
   if (dlg->exec()) {
     m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ROLE_DOCUMENT);
     m_dataContainer->getProgressSignal()->connectSlot(this);
+    connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
+            this, &Neu3Window::start);
     QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvidTarget,
                       dlg->getDvidTarget());
 //    m_dataContainer->setDvidTarget(dlg->getDvidTarget());

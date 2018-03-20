@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QNetworkReply>
 
 #include "neutube_def.h"
 
@@ -57,6 +58,9 @@ private slots:
 
 private:
   void _init();
+  void startReading();
+  void endReading(neutube::EReadStatus status);
+  bool isReadingDone() const;
   QNetworkAccessManager* getNetworkAccessManager() {
     return m_networkManager;
   }
