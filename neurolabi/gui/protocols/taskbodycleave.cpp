@@ -19,12 +19,14 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QPixmap>
 #include <QPushButton>
 #include <QSlider>
+#include <QTimer>
 #include <QUndoCommand>
 #include <QUrl>
 #include <QVBoxLayout>
@@ -39,6 +41,7 @@ namespace {
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
   static const QString CLEAVING_STATUS_FAILED = "Cleaving status: failed";
+  static const QString CLEAVING_STATUS_INCONSISTENT = "Cleaving status: inconsistent results";
 
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
   static const std::vector<glm::vec4> INDEX_COLORS({
@@ -344,8 +347,6 @@ void TaskBodyCleave::onChosenCleaveIndexChanged()
 
 void TaskBodyCleave::onSelectBody()
 {
-  m_bodyDoc->deselectAllMesh();
-
   std::set<uint64_t> toSelect;
   for (auto it : m_meshIdToCleaveIndex) {
     if (it.second == chosenCleaveIndex()) {
@@ -360,13 +361,7 @@ void TaskBodyCleave::onSelectBody()
     }
   }
 
-  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
-  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-    ZMesh *mesh = *it;
-    if (toSelect.find(mesh->getLabel()) != toSelect.end()) {
-      m_bodyDoc->setMeshSelected(mesh, true);
-    }
-  }
+  selectBodies(toSelect);
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
@@ -421,12 +416,26 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
   QNetworkReply::NetworkError error = reply->error();
-  if (error == QNetworkReply::NoError) {
+
+  // In addition to checking for QNetworkReply::NetworkError, also check for
+  // a status code other than OK (200), to be extra certain about catching errors.
+
+  int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+  const int STATUS_OK = 200;
+
+  QString status = CLEAVING_STATUS_DONE;
+
+  if ((error == QNetworkReply::NoError) && (statusCode == STATUS_OK)) {
     QByteArray replyBytes = reply->readAll();
 
     QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
     if (replyJsonDoc.isObject()) {
       QJsonObject replyJson = replyJsonDoc.object();
+
+      if (showCleaveReplyWarnings(replyJson)) {
+        status = CLEAVING_STATUS_INCONSISTENT;
+      }
+
       QJsonValue replyJsonAssnVal = replyJson["assignments"];
       if (replyJsonAssnVal.isObject()) {
         std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
@@ -445,17 +454,29 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
         m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
 
-        m_cleavingStatusLabel->setText(CLEAVING_STATUS_DONE);
+        if (showCleaveReplyDataErrors(meshIdToCleaveIndex)) {
+          status = CLEAVING_STATUS_INCONSISTENT;
+        }
       }
     }
-
   } else {
-    m_cleavingStatusLabel->setText(CLEAVING_STATUS_FAILED);
+    // On OS X, the title is not displayed, so include it in the text, too.
+    QString title = "Cleave Server Error";
+    QString text = "Cleave server error: ";
+    if (statusCode != STATUS_OK) {
+      text += reply->errorString();
+    } else {
+      QByteArray replyBytes = reply->readAll();
+      text += QString(replyBytes);
+    }
+    displayWarning(title, text);
 
-    LERROR() << "TaskBodyCleave::onNetworkReplyFinished() error: \""
-             << reply->errorString().toStdString() << "\"";
+    status = CLEAVING_STATUS_FAILED;
+
+    LERROR() << "TaskBodyCleave::onNetworkReplyFinished(): " << text << "\n";
   }
 
+  m_cleavingStatusLabel->setText(status);
   reply->deleteLater();
 }
 
@@ -654,6 +675,19 @@ void TaskBodyCleave::updateColors()
   }
 }
 
+void TaskBodyCleave::selectBodies(const std::set<uint64_t> &toSelect)
+{
+  m_bodyDoc->deselectAllMesh();
+
+  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    if (toSelect.find(mesh->getLabel()) != toSelect.end()) {
+      m_bodyDoc->setMeshSelected(mesh, true);
+    }
+  }
+}
+
 void TaskBodyCleave::applyPerTaskSettings()
 {
   // When the overall body is first loaded, the user probably wants the view to zoom to it.
@@ -749,6 +783,71 @@ void TaskBodyCleave::cleave()
   QByteArray requestData(requestJsonDoc.toJson());
 
   m_networkManager->post(request, requestData);
+}
+
+bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
+{
+  auto warningsIt = replyJson.constFind("warnings");
+  if (warningsIt != replyJson.end()) {
+    QJsonValue warningsVal = warningsIt.value();
+    if (warningsVal.isArray()) {
+      QJsonArray warningsArray = warningsVal.toArray();
+      if (!warningsArray.isEmpty()) {
+        QString title = "Cleave Server Warning";
+        title += (warningsArray.size() > 1) ? "s" : "";
+        QString text;
+        for (QJsonValue warning : warningsArray) {
+          text += warning.toString() + "\n";
+        }
+        displayWarning(title, text);
+
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool TaskBodyCleave::showCleaveReplyDataErrors(std::map<uint64_t, std::size_t> meshIdToCleaveIndex)
+{
+  std::vector<ZMesh*> missing;
+  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    if (meshIdToCleaveIndex.find(mesh->getLabel()) == meshIdToCleaveIndex.end()) {
+      missing.push_back(mesh);
+    }
+  }
+
+  if (!missing.empty()) {
+    std::set<uint64_t> toSelect;
+    for (ZMesh* mesh : missing) {
+      toSelect.insert(mesh->getLabel());
+    }
+    selectBodies(toSelect);
+
+    QString title = "Cleave Server Error";
+    // On OS X, the title is not displayed, so include it in the text, too.
+    QString text = "Cleave server error: " + QString::number(missing.size());
+    text += (missing.size() > 1) ? " super voxels were " : " super voxel was ";
+    text += "missing in server response";
+    displayWarning(title, text);
+
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void TaskBodyCleave::displayWarning(const QString &title, const QString &text)
+{
+  // Display the warning at idle time, after the rendering event has been processed,
+  // so the results of cleaving will be visible when the warning is presented.
+
+  QTimer::singleShot(0, this, [=](){ \
+    QMessageBox::warning(m_bodyDoc->getParent3DWindow(), title, text);
+  });
 }
 
 bool TaskBodyCleave::loadSpecific(QJsonObject json)
