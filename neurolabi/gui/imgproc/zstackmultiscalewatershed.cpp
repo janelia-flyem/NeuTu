@@ -644,7 +644,7 @@ ZStack* ZStackMultiScaleWatershed::run(ZStack *src,std::vector<ZObject3d*>& seed
   }
   else if(algorithm=="FFN"){
     const QString working_dir=QCoreApplication::applicationDirPath()+"/../python/service/ffn";
-    sampled->setOffset(0,0,0);
+    //sampled->setOffset(0,0,0);
     //seed->setOffset(0,0,0);
     sampled->save(working_dir.toStdString()+"/data.tif");
     //seed->save(working_dir.toStdString()+"/seed.tif");

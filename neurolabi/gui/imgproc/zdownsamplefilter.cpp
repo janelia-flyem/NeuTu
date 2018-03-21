@@ -254,7 +254,7 @@ double ZEdgeDsFilter::filter(double *buffer)
       rv+=factor[idx]*buffer[idx];
   }
   return std::fabs(rv);*/
-  size_t cnt=m_sX*m_sY*m_sZ;
+  /*size_t cnt=m_sX*m_sY*m_sZ;
   double aver=0;
   for(size_t i=0;i<cnt;++i){
     aver+=buffer[i];
@@ -272,5 +272,40 @@ double ZEdgeDsFilter::filter(double *buffer)
   if(aver==0.0){
     return stddev;
   }
-  return 255-stddev;
+  return 255-stddev;*/
+  int cnt=m_sX*m_sY*m_sZ;
+
+  int que_cnt=std::min(std::max(1,cnt/10),10);
+  int min[10]={255},max[10]={0};
+  for(int i=0;i<cnt;++i){
+    for(int j=0;j<que_cnt;++j){
+      if (buffer[i]<min[j]){
+        for(int k=que_cnt-1;k>j;--k){
+          min[k]=min[k-1];
+        }
+        min[j]=buffer[i];
+        break;
+      }
+    }
+    for(int j=0;j<que_cnt;++j){
+      if (buffer[i]>max[j]){
+        for(int k=que_cnt-1;k>j;--k){
+          max[k]=max[k-1];
+        }
+        max[j]=buffer[i];
+        break;
+      }
+    }
+  }
+  double max_sum=0.0,min_sum=0.0;
+  for(int i=0;i<que_cnt;++i){
+    max_sum+=max[i];
+    min_sum+=min[i];
+  }
+  double rv=(max_sum-min_sum)/que_cnt;
+  if(rv==0.0){
+    return 0.0;
+  }
+  return 255-rv;
+
 }
