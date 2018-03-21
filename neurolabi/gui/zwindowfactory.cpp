@@ -50,11 +50,18 @@ Z3DWindow* ZWindowFactory::make3DWindow(ZSharedPointer<ZStackDoc> doc,
                                         Z3DView::EInitMode mode)
 {
   if (!ZSystemInfo::instance().is3DSupported()) {
-    QMessageBox::information(
-          NULL, "3D Unavailable", "The 3D visualization is unavailable in this"
-          "plug-in because of some technical problems. To obtain a "
-          "fully-functioing version of neuTube, because visit "
-          "<a href=www.neutracing.com>www.neutracing.com</a>");
+    if (GET_APPLICATION_NAME == "neuTube") {
+      QMessageBox::information(
+            NULL, "3D Unavailable", "The 3D visualization is unavailable in this"
+                                    "plug-in because of some technical problems. To obtain a "
+                                    "fully-functioing version of neuTube, because visit "
+                                    "<a href=www.neutracing.com>www.neutracing.com</a>");
+    } else {
+      QMessageBox::information(
+            NULL, "3D Unavailable",
+            "The 3D visualization is unavailable in this"
+            "plug-in because of some technical problems.");
+    }
     return NULL;
   }
 

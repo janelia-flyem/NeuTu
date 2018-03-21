@@ -173,7 +173,7 @@ private:
   ZInteractionEngine m_interaction;
   bool m_updatingDecoration = false;
 
-  QPixmap *m_customCanvas = NULL;
+  QPixmap *m_customCanvas = NULL; //Not in use for now
 
   QString m_message;
 };

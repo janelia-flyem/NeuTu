@@ -320,8 +320,8 @@ void Z3DWindow::init()
           m_doc.get(), SLOT(selectUpstreamNode()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingConnectedSwcNode()),
           m_doc.get(), SLOT(selectConnectedNode()));
-  connect(getCanvas()->getInteractionEngine(), SIGNAL(cameraRorated()),
-          this, SLOT(notifyCameraRotation()));
+//  connect(getCanvas()->getInteractionEngine(), SIGNAL(cameraRorated()),
+//          this, SLOT(notifyCameraRotation()));
   connect(&(m_view->interactionHandler()), SIGNAL(cameraRotated()),
           this, SLOT(notifyCameraRotation()));
 
@@ -3667,6 +3667,10 @@ void Z3DWindow::processMessage(const ZWidgetMessage &msg)
 {
   if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
     m_view->dump(msg.toPlainString());
+  } else if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+    ZDialogFactory::PromptMessage(msg, this);
+  } else {
+    emit messageGenerated(msg);
   }
 }
 
@@ -3865,7 +3869,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
         intersection = mesh->intersectLineSeg(
               stackSeg.getStartPoint(), stackSeg.getEndPoint());
         if (!intersection.empty()) {
-          misc::assign(id, mesh->getLabel());
+          misc::assign(id, ZFlyEmBody3dDoc::unencode(mesh->getLabel()));
           break;
         }
       }

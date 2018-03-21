@@ -27,6 +27,8 @@ class ZActionLibrary;
 class ZFlyEmArbMvc;
 class ZArbSliceViewParam;
 class ZNeu3SliceViewDialog;
+class ZFlyEmMessageWidget;
+class ZWidgetMessage;
 
 #if defined(_USE_WEBENGINE_)
 class QWebEngineView;
@@ -102,7 +104,12 @@ public slots:
 
   void zoomToBodyMesh();
 
+  /*!
+   * \brief Start Neu3Window
+   */
   void start();
+
+  void processMessage(const ZWidgetMessage &msg);
 
 signals:
   void bodySelected(uint64_t bodyId);
@@ -167,8 +174,11 @@ private:
   void initNativeSliceBrowser();
   void createTaskWindow();
   void createRoiWidget();
-  void createToolBar();
+  void configureToolBar();
   void connectSignalSlot();
+  void createBodyListWidget();
+  void createMessageWidget();
+  void createMessageDock();
   QAction* getAction(ZActionFactory::EAction key);
   void initWebView();
   void initGrayscaleWidget();
@@ -181,6 +191,7 @@ private:
   void updateBrowseSize();
 
   QDockWidget* getSliceViewDoc() const;
+  void createDialogs();
 
 private:
   Ui::Neu3Window *ui;
@@ -194,6 +205,8 @@ private:
   QDockWidget *m_nativeSliceDock = nullptr;
   ZROIWidget *m_roiWidget = nullptr;
   TaskProtocolWindow *m_taskProtocolWidget = nullptr;
+  QDockWidget *m_messageDock = nullptr;
+  ZFlyEmMessageWidget *m_messageWidget = nullptr;
 //  QWidget *m_controlWidget = nullptr;
   bool m_doingBulkUpdate = false;
   class DoingBulkUpdate;

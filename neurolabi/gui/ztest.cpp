@@ -24740,7 +24740,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   std::set<QString, QStringNaturalCompare> set1;
   set1.insert("#.FlyEMSynapse.Psd#43");
   set1.insert("#.FlyEMSynapse.Psd#18110738494");
@@ -25642,7 +25642,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
@@ -25650,7 +25650,7 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   ZStack *stack = reader.readGrayScaleLowtis(
-        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 512, 512, 0, 256, 256);
+        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 1024, 1024, 1, 256, 256);
 
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
@@ -25728,7 +25728,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "b6bc", 8500);
   target.setSegmentationName("labels");

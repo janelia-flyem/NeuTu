@@ -20,6 +20,7 @@
 
 class QColor;
 class ZArray;
+class ZPixmap;
 
 class ZDvidLabelSlice : public ZStackObject
 {
@@ -181,6 +182,8 @@ private:
 
   ZFlyEmBodyMerger::TLabelMap getLabelMap() const;
   void clearLabelData();
+
+  void updatePixmap(ZPixmap *pixmap) const;
 
 private:
 //  ZDvidTarget m_dvidTarget;

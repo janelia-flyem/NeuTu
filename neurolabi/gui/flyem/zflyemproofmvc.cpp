@@ -844,14 +844,16 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
   m_meshWindow->syncAction();
 
   if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
-          m_meshWindow, getDvidInfo(),
-          m_doc->getParentMvc()->getView()->getViewParameter(), false);
+    if (windowType != neutube3d::TYPE_NEU3) {
+      ZFlyEmMisc::Decorate3dBodyWindow(
+            m_meshWindow, getDvidInfo(),
+            m_doc->getParentMvc()->getView()->getViewParameter(), false);
 
-    if(m_ROILoaded) {
+      if(m_ROILoaded) {
         m_meshWindow->getROIsDockWidget()->loadROIs(
               m_skeletonWindow, m_roiList, m_loadedROIs,
               m_roiSourceList);
+      }
     }
   }
 
@@ -1741,6 +1743,7 @@ void ZFlyEmProofMvc::customInit()
   connect(getDocument().get(), SIGNAL(messageGenerated(QString, bool)),
           this, SIGNAL(messageGenerated(QString, bool)));
           */
+
 
   ZWidgetMessage::ConnectMessagePipe(&m_splitProject, this, false);
 //  ZWidgetMessage::ConnectMessagePipe(&m_mergeProject, this, false);

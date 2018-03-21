@@ -775,7 +775,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
       }
     }
 
-    startTimer();
+//    startTimer();
   } else {
     m_dvidReader.clear();
 //    m_dvidTarget.clear();
