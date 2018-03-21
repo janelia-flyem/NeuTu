@@ -23,6 +23,7 @@
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 #include "z3dwindow.h"
+#include "zwidgetmessage.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -99,12 +100,15 @@ void TaskProtocolWindow::init() {
         return;
     }
 
-    ZDvidReader reader;
+    const ZDvidReader &reader = m_writer.getDvidReader();
+    /*
     if (!reader.open(m_proofDoc->getDvidTarget())) {
         showError("Couldn't open DVID", "DVID couldn't be opened!  Check your network connections.");
         setWindowConfiguration(LOAD_BUTTON);
         return;
     }
+    */
+
     ZDvid::ENodeStatus status = reader.getNodeStatus();
     if (status == ZDvid::NODE_INVALID || status == ZDvid::NODE_OFFLINE) {
         showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
@@ -750,8 +754,17 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
                 ", " + key + "!");
             return emptyResult;
         } else {
-            LINFO() << "Task protocol: json loaded from DVID:" + instance + "," + key;
-            return doc.object();
+          QString msg =
+              "Task protocol: json loaded from DVID:" + instance + "," + key;
+          LINFO() << msg;
+          emit messageGenerated(ZWidgetMessage(msg));
+#if 0
+          //For testing
+          emit messageGenerated(
+              ZWidgetMessage(
+                "test", msg, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+#endif
+          return doc.object();
         }
 }
 
@@ -987,12 +1000,16 @@ void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {
  * effect: shows error dialog (convenience function)
  */
 void TaskProtocolWindow::showError(QString title, QString message) {
-    QMessageBox errorBox;
-    errorBox.setText(title);
-    errorBox.setInformativeText(message);
-    errorBox.setStandardButtons(QMessageBox::Ok);
-    errorBox.setIcon(QMessageBox::Warning);
-    errorBox.exec();
+//    QMessageBox errorBox;
+//    errorBox.setText(title);
+//    errorBox.setInformativeText(message);
+//    errorBox.setStandardButtons(QMessageBox::Ok);
+//    errorBox.setIcon(QMessageBox::Warning);
+//    errorBox.exec();
+
+    emit messageGenerated(
+        ZWidgetMessage(
+          title, message, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
 }
 
 /*

@@ -201,6 +201,7 @@ public slots:
   void setDvidTarget();
   void launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode);
   void processMessageSlot(const QString &message);
+//  void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
   void annotateBody();
   void annotateSynapse();

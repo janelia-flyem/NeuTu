@@ -228,6 +228,7 @@ signals:
   void settingTriggered();
 
   void cameraRotated();
+  void messageGenerated(const ZWidgetMessage &msg);
 
 public slots:
   void resetCamera()
