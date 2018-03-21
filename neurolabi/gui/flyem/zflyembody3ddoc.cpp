@@ -2427,6 +2427,12 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_
       m_dvidReader.readMeshArchiveEnd(arc);
 
       emit meshArchiveLoadingEnded();
+    } else {
+      emit messageGenerated(
+            ZWidgetMessage(
+              "Mesh Loading Failed", "Failed to read mesh archive from dvid",
+              neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+      emit meshArchiveLoadingEnded();
     }
   } else {
     ZStackObject *obj = takeObjectFromBuffer(
