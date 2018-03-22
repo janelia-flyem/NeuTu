@@ -67,6 +67,7 @@ public:
       neutube::EAxis axis = neutube::Z_AXIS, ERole role = ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
       const ZDvidTarget &target, ERole role = ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(ERole role = ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
@@ -188,7 +189,7 @@ signals:
   void highlightModeChanged();
   void roiLoaded();
   void locating2DViewTriggered(int x, int y, int z, int width);
-
+  void dvidReady();
 
 public slots:
   void mergeSelected();
@@ -200,6 +201,7 @@ public slots:
   void setDvidTarget();
   void launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode);
   void processMessageSlot(const QString &message);
+//  void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
   void annotateBody();
   void annotateSynapse();

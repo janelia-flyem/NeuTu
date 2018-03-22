@@ -29,6 +29,14 @@ ZWidgetMessage::ZWidgetMessage(const std::string &msg, neutube::EMessageType typ
   m_message.append(msg.c_str());
 }
 
+ZWidgetMessage::ZWidgetMessage(
+    const QString &title, const QString &msg,
+    neutube::EMessageType type, ETarget target) :
+  m_type(type), m_target(target), m_title(title)
+{
+  m_message.append(msg);
+}
+
 QString ZWidgetMessage::ToHtmlString(
     const QString &msg, neutube::EMessageType type)
 {

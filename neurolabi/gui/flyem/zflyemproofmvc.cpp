@@ -322,12 +322,20 @@ ZFlyEmProofMvc* ZFlyEmProofMvc::Make(
 
 ZFlyEmProofMvc* ZFlyEmProofMvc::Make(const ZDvidTarget &target, ERole role)
 {
+  ZFlyEmProofMvc *mvc = Make(role);
+
+  mvc->setDvidTarget(target);
+
+  return mvc;
+}
+
+ZFlyEmProofMvc* ZFlyEmProofMvc::Make(ERole role)
+{
   ZFlyEmProofDoc *doc = new ZFlyEmProofDoc;
 //  doc->setTag(neutube::Document::FLYEM_DVID);
   ZFlyEmProofMvc *mvc = ZFlyEmProofMvc::Make(
         NULL, ZSharedPointer<ZFlyEmProofDoc>(doc), neutube::Z_AXIS, role);
   mvc->getPresenter()->setObjectStyle(ZStackObject::SOLID);
-  mvc->setDvidTarget(target);
 
   mvc->connectSignalSlot();
 
@@ -836,14 +844,16 @@ Z3DWindow* ZFlyEmProofMvc::makeExternalMeshWindow(
   m_meshWindow->syncAction();
 
   if (m_doc->getParentMvc() != NULL) {
-    ZFlyEmMisc::Decorate3dBodyWindow(
-          m_meshWindow, getDvidInfo(),
-          m_doc->getParentMvc()->getView()->getViewParameter(), false);
+    if (windowType != neutube3d::TYPE_NEU3) {
+      ZFlyEmMisc::Decorate3dBodyWindow(
+            m_meshWindow, getDvidInfo(),
+            m_doc->getParentMvc()->getView()->getViewParameter(), false);
 
-    if(m_ROILoaded) {
+      if(m_ROILoaded) {
         m_meshWindow->getROIsDockWidget()->loadROIs(
               m_skeletonWindow, m_roiList, m_loadedROIs,
               m_roiSourceList);
+      }
     }
   }
 
@@ -1434,7 +1444,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
+  LINFO() << "Setting dvid env in ZFlyEmProofMvc";
 
+  getProgressSignal()->startProgress("Loading data ...");
 
   ZDvidReader reader;
   if (!reader.open(target)) {
@@ -1442,12 +1454,11 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
           ZWidgetMessage("Failed to open the database.",
                          neutube::MSG_WARNING,
                          ZWidgetMessage::TARGET_DIALOG));
+    getProgressSignal()->endProgress();
     return;
   }
 
   exitCurrentDoc();
-
-  getProgressSignal()->startProgress("Loading data ...");
 
   clear();
   getProgressSignal()->advanceProgress(0.1);
@@ -1457,9 +1468,11 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 
   if (getRole() == ROLE_WIDGET) {
+    LINFO() << "Set contrast";
     ZJsonObject contrastObj = reader.readContrastProtocal();
     getPresenter()->setHighContrastProtocal(contrastObj);
 
+    LINFO() << "Init grayslice";
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
     if (slice != NULL) {
       slice->updateContrast(getCompletePresenter()->highTileContrast());
@@ -1471,6 +1484,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
       getView()->setScrollStrategy(scrollStrategy);
     }
 
+    LINFO() << "Init tiles";
     QList<ZDvidTileEnsemble*> teList =
         getCompleteDocument()->getDvidTileEnsembleList();
     foreach (ZDvidTileEnsemble *te, teList) {
@@ -1492,6 +1506,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   if (getRole() == ROLE_WIDGET) {
     if (getDvidTarget().isValid()) {
+      LINFO() << "Download annotations";
       getCompleteDocument()->downloadSynapse();
       enableSynapseFetcher();
       getCompleteDocument()->downloadBookmark();
@@ -1499,11 +1514,12 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     }
   }
 
-  getProgressSignal()->advanceProgress(0.5);
+  getProgressSignal()->advanceProgress(0.1);
 
   emit dvidTargetChanged(getDvidTarget());
 
   if (getRole() == ROLE_WIDGET) {
+    LINFO() << "Set ROI dialog";
     m_roiDlg->clear();
     m_roiDlg->updateDvidTarget();
     m_roiDlg->downloadAllProject();
@@ -1519,6 +1535,9 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
             getDvidTarget().getSourceString(false).c_str()),
           neutube::MSG_INFORMATION,
           ZWidgetMessage::TARGET_STATUS_BAR));
+
+  LINFO() << "DVID Ready";
+  emit dvidReady();
 }
 
 void ZFlyEmProofMvc::showSetting()
@@ -1725,6 +1744,7 @@ void ZFlyEmProofMvc::customInit()
           this, SIGNAL(messageGenerated(QString, bool)));
           */
 
+
   ZWidgetMessage::ConnectMessagePipe(&m_splitProject, this, false);
 //  ZWidgetMessage::ConnectMessagePipe(&m_mergeProject, this, false);
 //  ZWidgetMessage::ConnectMessagePipe(&getDocument().get(), this, false);
@@ -1756,27 +1776,26 @@ void ZFlyEmProofMvc::customInit()
 
   disableSplit();
 
-
-  // connections to body info dialog (aka "sequencer")
-  if (m_bodyInfoDlg != NULL) {
-    connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
-            this, SLOT(locateBody(uint64_t)));
-    connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
-            this, SLOT(addLocateBody(uint64_t)));
-    connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
-            this, SLOT(selectBody(QList<uint64_t>)));
-    connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
-            m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
-    connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
-            this, SLOT(prepareBodyMap(ZJsonValue)));
-    connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
-            getCompleteDocument(),
-            SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
-    connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
-            this, SLOT(zoomTo(int,int,int)));
-  }
-
   if (getRole() == ROLE_WIDGET) {
+    // connections to body info dialog (aka "sequencer")
+    if (m_bodyInfoDlg != NULL) {
+      connect(m_bodyInfoDlg, SIGNAL(bodyActivated(uint64_t)),
+              this, SLOT(locateBody(uint64_t)));
+      connect(m_bodyInfoDlg, SIGNAL(addBodyActivated(uint64_t)),
+              this, SLOT(addLocateBody(uint64_t)));
+      connect(m_bodyInfoDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+              this, SLOT(selectBody(QList<uint64_t>)));
+      connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+              m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+      connect(m_bodyInfoDlg, SIGNAL(namedBodyChanged(ZJsonValue)),
+              this, SLOT(prepareBodyMap(ZJsonValue)));
+      connect(m_bodyInfoDlg, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+              getCompleteDocument(),
+              SLOT(updateSequencerBodyMap(ZFlyEmSequencerColorScheme)));
+      connect(m_bodyInfoDlg, SIGNAL(pointDisplayRequested(int,int,int)),
+              this, SLOT(zoomTo(int,int,int)));
+    }
+
     // connections to protocols
     connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
             m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));

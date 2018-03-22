@@ -10,6 +10,8 @@
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltask.h"
 
+class ZWidgetMessage;
+
 namespace Ui {
 class TaskProtocolWindow;
 }
@@ -38,6 +40,7 @@ signals:
     void prefetchBody(uint64_t bodyID);
     void unprefetchBody(QSet<uint64_t> bodyIDs);
     void clearBodyQueue();
+    void messageGenerated(const ZWidgetMessage &msg);
 
 private slots:
     void onNextButton();
