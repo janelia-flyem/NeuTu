@@ -7,6 +7,7 @@
 #include "flyem/zflyemproofmvc.h"
 #include "neu3window.h"
 #include "z3dmeshfilter.h"
+#include "zwidgetmessage.h"
 #include "z3dwindow.h"
 
 #include <iostream>
@@ -19,7 +20,6 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QMenu>
-#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -37,6 +37,7 @@ namespace {
   static const QString VALUE_TASKTYPE = "body cleave";
   static const QString KEY_BODYID = "body ID";
   static const QString KEY_MAXLEVEL = "maximum level";
+  static const QString KEY_ASSIGNED_USER = "assigned user";
 
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
@@ -845,8 +846,9 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text)
   // Display the warning at idle time, after the rendering event has been processed,
   // so the results of cleaving will be visible when the warning is presented.
 
-  QTimer::singleShot(0, this, [=](){ \
-    QMessageBox::warning(m_bodyDoc->getParent3DWindow(), title, text);
+  QTimer::singleShot(0, this, [=](){
+    ZWidgetMessage msg(title, text, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG);
+    m_bodyDoc->notify(msg);
   });
 }
 
@@ -858,6 +860,18 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
 
   m_bodyId = json[KEY_BODYID].toDouble();
   m_maxLevel = json[KEY_MAXLEVEL].toDouble();
+
+  QString assignedUser = json[KEY_ASSIGNED_USER].toString();
+  if (!assignedUser.isEmpty()) {
+    if (const char* user = std::getenv("USER")) {
+      if (user != assignedUser) {
+        QString title = "Warning";
+        QString text = "Task for ID " + QString::number(m_bodyId) +
+            " was assigned to user \"" + assignedUser + "\"";
+        displayWarning(title, text);
+      }
+    }
+  }
 
   return true;
 }
