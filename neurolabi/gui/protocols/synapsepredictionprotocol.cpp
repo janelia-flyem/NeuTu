@@ -870,36 +870,47 @@ void SynapsePredictionProtocol::setupColorList() {
 
 }
 
+/*
+ * return a color out of the table for a given index
+ */
+QColor SynapsePredictionProtocol::getColor(int index) {
+    return m_postColorList[index % m_postColorList.size()];
+}
+
 void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapses) {
     // remember, the first element of the incoming vector is the pre-synaptic
     //  element (the T-bar)
-
     if (synapses.size() < 2) {
         // no post-synaptic elements
         return;
     }
 
-
-
     // get body IDs for all locations
+    std::vector<ZIntPoint> sites;
+    for (size_t i=0; i<synapses.size(); i++) {
+        sites.push_back(synapses[i].getPosition());
+    }
 
+    ZDvidReader reader;
+    if (reader.open(m_dvidTarget)) {
+        std::vector<uint64_t> bodyList = reader.readBodyIdAt(sites);
+        // if we don't have body IDs (no segmentation), we're done
+        if (bodyList.size() == 0) {
+            return;
+        }
 
-
-
-
-    // if we don't have body IDs (no segmentation), we're done
-
-
-
-    // poke in colors for each post-synaptic element that is verified
-    // NOTE: index into the color array with index of each element in full
-    //  list not verified list; we don't want colors switching when we verify
-    //  a new element
-    m_colorScheme.clear();
-
-
-
-
+        // loop over synapses only (i=0 is T-bar); color the verified ones; note that
+        //  by using the overall synapse index, we keep the colors constant as they
+        //  PSDs are verified
+        m_colorScheme.clear();
+        for (size_t i=0; i<synapses.size(); i++) {
+            if (synapses[i].isVerified()) {
+                m_colorScheme.setBodyColor(bodyList[i], getColor(i));
+            }
+        }
+        m_colorScheme.buildColorTable();
+        emit requestColorMapChange(m_colorScheme);
+    }
 
 }
 

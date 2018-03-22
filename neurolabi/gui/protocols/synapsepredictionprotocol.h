@@ -104,6 +104,7 @@ private:
     void setupColorList();
     void enableProtocolColorMap();
     void disableProtocolColorMap();
+    QColor getColor(int index);
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H
