@@ -65,6 +65,8 @@ public:
                         const std::map<uint64_t, std::size_t> &meshIdToColorIndex);
 
   void emitDumpParaGarbage();
+
+public slots:
   void dumpParamGarbage();
 
 signals:

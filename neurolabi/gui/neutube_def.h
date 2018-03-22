@@ -91,6 +91,11 @@ enum ECardinalDirection {
   CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
 };
 
+enum EReadStatus {
+  READ_NULL, READ_OK, READ_FAILED, READ_TIMEOUT, READ_CANCELED,
+  READ_BAD_RESPONSE
+};
+
 namespace Json {
 namespace {
 const char* REF_KEY = "->";

@@ -375,8 +375,10 @@ int main(int argc, char *argv[])
     RECORD_INFORMATION("Initializing 3D ...");
 #ifdef _NEU3_
     Neu3Window *mainWin = new Neu3Window();
+
     if (!mainWin->loadDvidTarget()) {
-      delete mainWin;
+      mainWin->close();
+//      delete mainWin;
       mainWin = NULL;
     }
 #else
@@ -407,7 +409,7 @@ int main(int argc, char *argv[])
       mainWin->startProofread();
 #endif
 
-#if defined(_NEU3_)
+#if defined(_NEU3_2)
       mainWin->show();
       mainWin->initialize();
       mainWin->raise();

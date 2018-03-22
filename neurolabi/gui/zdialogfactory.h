@@ -13,6 +13,7 @@
 
 class QSpacerItem;
 class ZParameterArray;
+class ZWidgetMessage;
 
 #ifdef _WIN32
 #undef GetOpenFileName
@@ -48,6 +49,8 @@ public:
   static void Notify3DDisabled(QWidget *parent);
 
   static void About(QWidget *parent);
+
+  static void PromptMessage(const ZWidgetMessage &msg, QWidget *parent);
 
 private:
   QWidget *m_parentWidget;

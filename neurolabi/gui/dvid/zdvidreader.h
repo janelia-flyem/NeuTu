@@ -59,11 +59,11 @@ class ImageService;
 /*!
  * \brief The class for reading data from DVID
  */
-class ZDvidReader : public QObject
+class ZDvidReader/* : public QObject*/
 {
-  Q_OBJECT
+//  Q_OBJECT
 public:
-  explicit ZDvidReader(QObject *parent = 0);
+  explicit ZDvidReader(/*QObject *parent = 0*/);
   ~ZDvidReader();
 
   /*!

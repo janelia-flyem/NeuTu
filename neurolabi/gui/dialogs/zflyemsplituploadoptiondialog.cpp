@@ -44,6 +44,7 @@ ZFlyEmSplitUploadOptionDialog::~ZFlyEmSplitUploadOptionDialog()
 
 void ZFlyEmSplitUploadOptionDialog::setDvidTarget(const ZDvidTarget &target)
 {
+  LINFO() << "Setting dvid env in ZFlyEmSplitUploadOptionDialog";
   m_dvidReader.open(target);
 }
 

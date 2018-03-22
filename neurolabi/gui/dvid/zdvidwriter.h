@@ -30,11 +30,11 @@ class ZDvidSynapse;
 class ZFlyEmToDoItem;
 class ZArray;
 
-class ZDvidWriter : public QObject
+class ZDvidWriter /*: public QObject*/
 {
-  Q_OBJECT
+  /*Q_OBJECT*/
 public:
-  explicit ZDvidWriter(QObject *parent = 0);
+  explicit ZDvidWriter(/*QObject *parent = 0*/);
   ~ZDvidWriter();
 
   bool open(const QString &serverAddress, const QString &uuid,

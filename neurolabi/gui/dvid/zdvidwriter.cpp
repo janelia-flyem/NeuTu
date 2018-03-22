@@ -28,8 +28,8 @@
 #include "dvid/zdvidpath.h"
 #include "zmesh.h"
 
-ZDvidWriter::ZDvidWriter(QObject *parent) :
-  QObject(parent)
+ZDvidWriter::ZDvidWriter(/*QObject *parent*/)   /*:
+QObject(parent)*/
 {
 #ifdef _DEBUG_
   std::cout << "Creating dvid writer." << std::endl;
