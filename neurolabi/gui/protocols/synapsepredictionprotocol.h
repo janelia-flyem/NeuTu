@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 
 #include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
@@ -78,6 +79,7 @@ private:
 
     Ui::SynapsePredictionProtocol *ui;
     QStandardItemModel * m_sitesModel;
+    QSortFilterProxyModel * m_sitesProxy;
     std::string m_variation;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
