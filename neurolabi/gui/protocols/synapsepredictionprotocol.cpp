@@ -854,8 +854,8 @@ void SynapsePredictionProtocol::setupColorList() {
     // these are the colors I used in Raveler for its PSD protocol; they're
     //  chosen to be fairly bright
     m_postColorList.clear();
-    m_postColorList << QColor(255, 0, 0)     // red
-                    << QColor(0, 255, 0)     // green
+    m_postColorList << QColor(0, 255, 0)     // green
+                    << QColor(255, 0, 0)     // red
                     << QColor(0, 128, 255)   // blue
                     << QColor(128, 0, 255)   // purple
                     << QColor(255, 128, 0)   // orange
@@ -899,10 +899,13 @@ void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapse
             return;
         }
 
-        // loop over synapses only (i=0 is T-bar); color the verified ones; note that
-        //  by using the overall synapse index, we keep the colors constant as they
-        //  PSDs are verified
+        // color the T-bar (i=0):
         m_colorScheme.clear();
+        m_colorScheme.setBodyColor(bodyList[0], getColor(0));
+
+        // color the verified post-synaptic sites; note that
+        //  by using the overall synapse index, we keep the colors
+        // constant as the PSDs are verified
         for (size_t i=0; i<synapses.size(); i++) {
             if (synapses[i].isVerified()) {
                 m_colorScheme.setBodyColor(bodyList[i], getColor(i));
