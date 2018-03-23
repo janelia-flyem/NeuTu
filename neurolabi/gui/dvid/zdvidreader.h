@@ -299,8 +299,22 @@ public:
       int width, int height, int depth, int zoom = 0) const;
 
 #if defined(_ENABLE_LOWTIS_)
+  //Read label data
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
+  /*!
+   * (\a x0, \a y0, \a z0) is the retrieval center.
+   */
+  ZArray *readLabels64Lowtis(
+      int x0, int y0, int z0, double vx1, double vy1, double vz1,
+      double vx2, double vy2, double vz2,
+      int width, int height, int zoom) const;
+  ZArray *readLabels64Lowtis(
+      const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
+      int width, int height, int zoom) const;
+
+
+  //Read grayscale data
   ZStack *readGrayScaleLowtis(int x0, int y0, int z0,
                               int width, int height, int zoom = 0) const;
   ZStack *readGrayScaleLowtis(
@@ -582,6 +596,7 @@ private:
 
 
   lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
+  lowtis::ImageService* getLowtisServiceLabel() const;
 
 protected:
   ZDvidTarget m_dvidTarget;

@@ -159,6 +159,8 @@ public:
 
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
+
+  void forceUpdate(const ZArbSliceViewParam &viewParam);
 //  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,

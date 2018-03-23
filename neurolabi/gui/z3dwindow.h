@@ -226,6 +226,7 @@ signals:
   void runningFullSplit();
 
   void settingTriggered();
+  void neutuTriggered();
 
   void cameraRotated();
   void messageGenerated(const ZWidgetMessage &msg);

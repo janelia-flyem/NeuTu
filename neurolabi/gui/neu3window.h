@@ -139,6 +139,7 @@ private slots:
   void processKeyPressed(QKeyEvent* event);
   void updateBodyState();
   void setOption();
+  void openNeuTu();
 
   void updateWidget();
   void exitSplit();
@@ -168,6 +169,8 @@ private slots:
   void startProgress(double alpha);
   void advanceProgress(double dp);
   void endProgress();
+
+  void on_actionNeuTu_Proofread_triggered();
 
 private:
   void createDockWidget();

@@ -143,9 +143,7 @@ void TaskProtocolWindow::init() {
     } else {
         // otherwise, show the load task file button
         setWindowConfiguration(LOAD_BUTTON);
-    }
-
-    m_prefetchThread->start();
+    } 
 }
 
 void TaskProtocolWindow::onPrevButton() {
@@ -448,6 +446,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     updateBodyWindow();
     updateLabel();
     setWindowConfiguration(TASK_UI);
+
+    m_prefetchThread->start();
 }
 
 /*

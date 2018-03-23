@@ -232,6 +232,10 @@ void Z3DWindow::configureMenuForNeu3()
   m_helpMenu->addAction(settingAction);
   connect(settingAction, SIGNAL(triggered()), this, SIGNAL(settingTriggered()));
 
+  QAction *neutuAction = new QAction("NeuTu", this);
+  m_helpMenu->addAction(neutuAction);
+  connect(neutuAction, SIGNAL(triggered()), this, SIGNAL(neutuTriggered()));
+
   m_helpMenu->addAction(getAction(ZActionFactory::ACTION_ABOUT));
 }
 

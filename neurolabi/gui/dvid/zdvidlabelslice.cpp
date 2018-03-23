@@ -18,6 +18,7 @@
 #include "zpixmap.h"
 #include "zstring.h"
 #include "zintcuboid.h"
+#include "zarbsliceviewparam.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -243,6 +244,20 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
   forceUpdate(m_currentDataRect, m_currentZ, ignoringHidden);
 }
 #endif
+
+void ZDvidLabelSlice::forceUpdate(const ZArbSliceViewParam &viewParam)
+{
+  if (m_sliceAxis != neutube::A_AXIS || !viewParam.isValid()) {
+    return;
+  }
+
+  if (isVisible()) {
+    m_labelArray = m_reader.readLabels64Lowtis(
+          viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
+          viewParam.getWidth(), viewParam.getHeight(),
+          m_currentZoom);
+  }
+}
 
 void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
 {
