@@ -94,6 +94,16 @@ void ZMesh::save(const QString& filename, const std::string& format) const
   ZMeshIO::instance().save(*this, filename, format);
 }
 
+void ZMesh::save(const std::string& filename, const std::string& format) const
+{
+  save(filename.c_str(), format);
+}
+
+void ZMesh::save(const char* filename, const std::string& format) const
+{
+  save(QString(filename), format);
+}
+
 QByteArray ZMesh::writeToMemory(const std::string &format) const
 {
   return ZMeshIO::instance().writeToMemory(*this, format);

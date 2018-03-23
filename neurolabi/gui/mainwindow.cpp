@@ -7422,6 +7422,7 @@ ZProofreadWindow *MainWindow::startProofread()
   connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
   connect(window, SIGNAL(showingMainWindow()), this, SLOT(showAndRaise()));
 
+#if 0
   if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
     window->dump(
           ZWidgetMessage("Failed to initialize tmp directory. "
@@ -7429,6 +7430,7 @@ ZProofreadWindow *MainWindow::startProofread()
                          "Please check the permission or disk space.",
                          neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
   }
+#endif
 
   return window;
 }

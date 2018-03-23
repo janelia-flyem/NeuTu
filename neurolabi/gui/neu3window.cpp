@@ -48,6 +48,7 @@
 #include "zqtbarprogressreporter.h"
 #include "flyem/zflyemmessagewidget.h"
 #include "zwidgetmessage.h"
+#include "flyem/zproofreadwindow.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -97,6 +98,7 @@ void Neu3Window::initialize()
 //  m_3dwin->menuBar()->hide();
   m_3dwin->configureMenuForNeu3();
   connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
+  connect(m_3dwin, SIGNAL(neutuTriggered()), this, SLOT(openNeuTu()));
   ZWidgetMessage::ConnectMessagePipe(m_3dwin, this);
   setCentralWidget(m_3dwin);
 
@@ -1044,4 +1046,18 @@ void Neu3Window::advanceProgress(double dp)
 void Neu3Window::endProgress()
 {
   getProgressDialog()->reset();
+}
+
+void Neu3Window::openNeuTu()
+{
+  ZProofreadWindow *window = ZProofreadWindow::Make();
+  window->show();
+
+  window->getMainMvc()->setDvidTarget(m_dataContainer->getDvidTarget());
+//  window->showMaximized();
+}
+
+void Neu3Window::on_actionNeuTu_Proofread_triggered()
+{
+  openNeuTu();
 }

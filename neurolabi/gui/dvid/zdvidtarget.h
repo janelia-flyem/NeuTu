@@ -187,6 +187,7 @@ public:
   bool segmentationAsBodyLabel() const;
   bool hasSparsevolSizeApi() const;
   bool hasMultiscaleSegmentation() const;
+  bool hasCoarseSplit() const;
 //  void useLabelArray(bool on);
 //  void useLabelMap(bool on);
 
@@ -340,6 +341,7 @@ public:
   const static char* m_grayScaleNameKey;
   const static char* m_bodyLabelNameKey;
   const static char* m_segmentationNameKey;
+  const static char* m_newSegmentationNameKey;
   const static char* m_multiscale2dNameKey;
   const static char* m_tileConfigKey;
   const static char* m_roiListKey;

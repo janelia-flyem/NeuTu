@@ -18,6 +18,7 @@ const char* ZDvidTarget::m_debugKey = "debug";
 const char* ZDvidTarget::m_bgValueKey = "background";
 const char* ZDvidTarget::m_bodyLabelNameKey = "body_label";
 const char* ZDvidTarget::m_segmentationNameKey = "label_block";
+const char* ZDvidTarget::m_newSegmentationNameKey = "segmentation";
 const char* ZDvidTarget::m_grayScaleNameKey = "gray_scale";
 const char* ZDvidTarget::m_multiscale2dNameKey = "multires_tile";
 const char* ZDvidTarget::m_tileConfigKey = "multires_tile_config";
@@ -608,6 +609,15 @@ bool ZDvidTarget::hasMultiscaleSegmentation() const
   if (hasSegmentation()) {
     return getSegmentationType() == ZDvidData::TYPE_LABELARRAY ||
         getSegmentationType() == ZDvidData::TYPE_LABELMAP;
+  }
+
+  return false;
+}
+
+bool ZDvidTarget::hasCoarseSplit() const
+{
+  if (hasSegmentation()) {
+    return getSegmentationType() != ZDvidData::TYPE_LABELMAP;
   }
 
   return false;

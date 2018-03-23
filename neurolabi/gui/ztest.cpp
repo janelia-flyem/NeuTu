@@ -25642,7 +25642,97 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  lowtis::DVIDLabelblkConfig config;
+
+  config.username = "sample";
+  config.dvid_server = "emdata2.int.janelia.org:8300";
+  config.dvid_uuid = "1236";
+  config.datatypename = "base20180227_8nm_watershed_fixed";
+
+  // create service for 2D image fetching
+  lowtis::ImageService service(config);
+
+
+  // fetch image from 0,0,0 into buffer
+  int width = 1024; int height = 1024;
+  std::vector<int> offset(3,0);
+  offset[0] = 17152;
+  offset[1] = 22592;
+  offset[2] = 19328;
+
+  char* buffer = new char[width*height*8];
+  service.retrieve_image(width, height, offset, buffer);
+#endif
+
 #if 1
+  //testing labelmap
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "1236", 8300);
+  target.setSegmentationName("base20180227_8nm_watershed_fixed");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+#if 1
+  ZArray *array = reader.readLabels64Lowtis(
+        17152, 22592, 19328, 1024, 1024, 0);
+  array->printInfo();
+  array->print();
+  std::cout << "Value: " << array->getUint64Value(0) << std::endl;
+
+  uint64_t bodyId =
+      reader.readBodyIdAt(17152 + 256, 22592 + 256, 19328 + 100);
+  std::cout << "Body ID: " << bodyId << std::endl;
+
+  delete array;
+#endif
+
+#if 0
+  uint64_t bodyId = 769263962;
+  ZObject3dScan body;
+  reader.readCoarseBody(bodyId, &body);
+  body.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZMesh *mesh = ZMeshFactory::MakeMesh(body);
+  mesh->save(GET_TEST_DATA_DIR + "/test.obj");
+
+  std::cout << reader.getDvidTarget().hasCoarseSplit() << std::endl;
+#endif
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZArray *array = reader.readLabels64Lowtis(4003, 5607, 7312, 1024, 1024, 0);
+
+//  ZArray *array = reader.readLabels64Lowtis(
+//        4003, 5607, 7312, 1, 0, 0, 0, 1, 0, 1024, 1024, 0);
+  array->printInfo();
+
+  delete array;
+
+  /*
+   * {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "b6bc",
+      "name": "MB_Test",
+      "comment": "MB seg (branched from febc)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "roi": "mb_subtracted",
+      "user_name": "zhaot"
+    }
+  */
+#endif
+
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
