@@ -33,8 +33,10 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     // sites table
     m_sitesModel = new QStandardItemModel(0, 5, ui->sitesTableView);
     setSitesHeaders(m_sitesModel);
-    ui->sitesTableView->setModel(m_sitesModel);
-
+    m_sitesProxy = new QSortFilterProxyModel(this);
+    m_sitesProxy->setSourceModel(m_sitesModel);
+    m_sitesProxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    ui->sitesTableView->setModel(m_sitesProxy);
 
     // UI connections:
     connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
@@ -756,6 +758,10 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
     // currently plan to rebuild from scratch each time
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
 
+        // save sort order to restore later
+        Qt::SortOrder sortOrder = m_sitesProxy->sortOrder();
+        int sortColumn = m_sitesProxy->sortColumn();
+
         // note: post synaptic sites start at index 1, but the
         //  table row still starts at 0
         for (size_t i=1; i<synapse.size(); i++) {
@@ -795,17 +801,22 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
         ui->sitesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
         ui->sitesTableView->horizontalHeader()->setResizeMode(SITES_CONFIDENCE_COLUMN, QHeaderView::Stretch);
 #endif
+
+        // restore sort order
+        ui->sitesTableView->horizontalHeader()->setSortIndicator(sortColumn, sortOrder);
     }
 }
 
-void SynapsePredictionProtocol::onDoubleClickSitesTable(QModelIndex index) {
-    QStandardItem *itemX = m_sitesModel->item(index.row(), SITES_X_COLUMN);
+void SynapsePredictionProtocol::onDoubleClickSitesTable(QModelIndex tableIndex) {
+    QModelIndex modelIndex = m_sitesProxy->mapToSource(tableIndex);
+
+    QStandardItem *itemX = m_sitesModel->item(modelIndex.row(), SITES_X_COLUMN);
     int x = itemX->data(Qt::DisplayRole).toInt();
 
-    QStandardItem *itemY = m_sitesModel->item(index.row(), SITES_Y_COLUMN);
+    QStandardItem *itemY = m_sitesModel->item(modelIndex.row(), SITES_Y_COLUMN);
     int y = itemY->data(Qt::DisplayRole).toInt();
 
-    QStandardItem *itemZ = m_sitesModel->item(index.row(), SITES_Z_COLUMN);
+    QStandardItem *itemZ = m_sitesModel->item(modelIndex.row(), SITES_Z_COLUMN);
     int z = itemZ->data(Qt::DisplayRole).toInt();
 
     emit requestDisplayPoint(x, y, z);
