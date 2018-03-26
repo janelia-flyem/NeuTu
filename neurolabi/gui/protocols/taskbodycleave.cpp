@@ -447,7 +447,7 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
           QJsonValue value = replyJsonAssn[key];
           if (value.isArray()) {
             for (QJsonValue idVal : value.toArray()) {
-              uint64_t id = idVal.toInt();
+              uint64_t id = idVal.toDouble();
               meshIdToCleaveIndex[id] = cleaveIndex;
             }
           }
