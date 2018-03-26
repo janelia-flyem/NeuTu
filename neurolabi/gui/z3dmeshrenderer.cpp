@@ -6,6 +6,7 @@
 #include "z3dtexture.h"
 #include "QsLog.h"
 #include "zmesh.h"
+#include "neutubeconfig.h"
 
 Z3DMeshRenderer::Z3DMeshRenderer(Z3DRendererBase& rendererBase)
   : Z3DPrimitiveRenderer(rendererBase)
@@ -121,9 +122,10 @@ void Z3DMeshRenderer::prepareMesh()
     return;
   }
   m_splitCount.resize(m_meshPt->size());
-  size_t numTriThre = 5000000;
+  size_t numTriThre = NeutubeConfig::GetMeshSplitThreshold();
   for (auto mesh : *m_meshPt) {
     if (mesh->numTriangles() > numTriThre) {
+      LINFO() << mesh->numTriangles() << "triangles found. Split triggerd.";
       m_meshNeedSplit = true;
       break;
     }

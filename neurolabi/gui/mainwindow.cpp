@@ -8453,3 +8453,40 @@ void MainWindow::on_actionView_Segmentation_Meshes_triggered()
     frame->viewSegmentationMesh();
   }
 }
+
+void MainWindow::on_actionUpdate_Body_Info_triggered()
+{
+  QProcess process;
+  process.start(QString::fromStdString(
+                  GET_TEST_DATA_DIR + "/_misc/neutu_em/script/prepare_body"));
+  if (process.waitForFinished(60000)) {
+    qDebug() << process.readAllStandardOutput();
+
+    ZJsonObject json;
+    json.load(GET_TEST_DATA_DIR + "/_misc/neutu_em/bodyinfo.json");
+
+    ZDvidTarget target;
+    target.loadJsonObject(ZJsonObject(json.value("dvid")));
+
+    ZDvidWriter writer;
+    if (writer.open(target)) {
+      ZJsonArray bodyJson(json.value("bodies"));
+      for (size_t i = 0; i < bodyJson.size(); ++i) {
+        uint64_t bodyId = ZJsonParser::integerValue(bodyJson.at(i));
+        if (!writer.getDvidReader().hasBodyInfo(bodyId)) {
+          writer.writeBodyInfo(bodyId);
+        }
+      }
+    }
+
+    process.start(QString::fromStdString(
+                    GET_TEST_DATA_DIR + "/_misc/neutu_em/script/summarize_merge"));
+    if (!process.waitForFinished(60000)) {
+      dump(ZWidgetMessage("Error", "Failed to summarize merges", neutube::MSG_ERROR,
+                          ZWidgetMessage::TARGET_DIALOG));
+    }
+  } else {
+    dump(ZWidgetMessage("Error", "Failed to prepare bodies", neutube::MSG_ERROR,
+                        ZWidgetMessage::TARGET_DIALOG));
+  }
+}
