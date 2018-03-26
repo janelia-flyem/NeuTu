@@ -3147,6 +3147,11 @@ void ZFlyEmProofMvc::processMessageSlot(const QString &message)
   }
 }
 
+void ZFlyEmProofMvc::processMessage(const ZWidgetMessage &/*msg*/)
+{
+
+}
+
 void ZFlyEmProofMvc::showBodyQuickView()
 {
   showFineBody3d();
