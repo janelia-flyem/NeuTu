@@ -3,10 +3,11 @@
 
 #include "protocols/taskprotocoltask.h"
 #include <QObject>
-
 #include <QVector>
+#include <set>
 
 class ZFlyEmBody3dDoc;
+class ZMesh;
 class QAction;
 class QCheckBox;
 class QComboBox;
@@ -82,11 +83,17 @@ private:
   void buildTaskWidget();
   void updateColors();
 
+  void selectBodies(const std::set<uint64_t>& toSelect);
+
   void applyPerTaskSettings();
   void applyColorMode(bool showingCleaving);
   void enableCleavingUI(bool showingCleaving);
 
   void cleave();
+
+  bool showCleaveReplyWarnings(const QJsonObject& reply);
+  bool showCleaveReplyDataErrors(std::map<uint64_t, std::size_t> meshIdToCleaveIndex);
+  void displayWarning(const QString& title, const QString& text);
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;
