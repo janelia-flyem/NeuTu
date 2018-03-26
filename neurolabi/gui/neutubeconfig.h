@@ -80,6 +80,12 @@ public:
   void setAdvancedMode(bool on);
   bool isAdvancedMode() const;
 
+  void setMeshSplitThreshold(size_t thre);
+  size_t getMeshSplitThreshold() const;
+
+  static void SetMeshSplitThreshold(size_t thre);
+  static size_t GetMeshSplitThreshold();
+
   static void SetAdvancedMode(bool on);
   static bool IsAdvancedMode();
 
@@ -448,6 +454,7 @@ private:
   bool m_loggingProfile;
   int m_verboseLevel;
   bool m_advancedMode = false;
+  size_t m_meshSplitThreshold = 5000000;
 
   ZMessageReporter *m_messageReporter; //Obsolete
 

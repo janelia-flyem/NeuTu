@@ -521,6 +521,8 @@ private slots:
 
   void on_actionView_Segmentation_Meshes_triggered();
 
+  void on_actionUpdate_Body_Info_triggered();
+
 private:
   void createActions();
   void createFileActions();

@@ -1,7 +1,11 @@
 #include "zflyemneuronbodyinfo.h"
+
+#include <sstream>
+
 #include "zjsonobject.h"
 #include "zjsonarray.h"
 #include "zjsonparser.h"
+#include "zstring.h"
 
 ZFlyEmNeuronBodyInfo::ZFlyEmNeuronBodyInfo()
 {
@@ -20,7 +24,7 @@ void ZFlyEmNeuronBodyInfo::setBoundBox(const ZIntCuboid &box)
 ZJsonObject ZFlyEmNeuronBodyInfo::toJsonObject() const
 {
   ZJsonObject obj;
-  obj.setEntry("volume", m_bodySize);
+  obj.setEntry("volume", uint64_t(m_bodySize));
 
   ZJsonArray boundBoxOffsetJson;
   boundBoxOffsetJson.append(m_boundBox.getFirstCorner().getX());
@@ -43,7 +47,11 @@ void ZFlyEmNeuronBodyInfo::loadJsonObject(const ZJsonObject &obj)
   m_boundBox.reset();
 
   if (obj.hasKey("volume")) {
-    m_bodySize = ZJsonParser::integerValue(obj["volume"]);
+    if (ZJsonParser::isInteger(obj["volume"])) {
+      m_bodySize = ZJsonParser::integerValue(obj["volume"]);
+    } else {
+      m_bodySize = ZString(ZJsonParser::stringValue(obj["volume"])).firstUint64();
+    }
   }
 
   if (obj.hasKey("bound_offset")) {

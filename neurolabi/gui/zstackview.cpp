@@ -2179,8 +2179,8 @@ void ZStackView::paintActiveDecorationBuffer()
       ZPainter painter(m_activeDecorationCanvas);
 //      qDebug() << "Active painter transform: " << painter.getTransform();
 
-      ZIntPoint pt = buddyDocument()->getStackOffset();
-      pt.shiftSliceAxis(getSliceAxis());
+//      ZIntPoint pt = buddyDocument()->getStackOffset();
+//      pt.shiftSliceAxis(getSliceAxis());
 //      painter.setStackOffset(pt);
 
       foreach (ZStackObject *obj, drawableList) {
@@ -2189,6 +2189,7 @@ void ZStackView::paintActiveDecorationBuffer()
 //          painted = true;
         }
       }
+
       if (painter.isPainted()) {
         m_activeDecorationCanvas->setVisible(true);
 #ifdef _DEBUG_2

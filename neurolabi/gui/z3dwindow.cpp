@@ -3713,6 +3713,12 @@ void Z3DWindow::browseWithRay(int x, int y)
       pt += intersection[1];
       pt *= 0.5;
     }
+
+    emit messageGenerated(
+          ZWidgetMessage(
+            QString("Checking (%1, %2, %3)").
+            arg(iround(pt.x())).arg(iround(pt.y())).arg(iround(pt.z()))));
+
     emit browsing(pt.x(), pt.y(), pt.z());
   }
 }

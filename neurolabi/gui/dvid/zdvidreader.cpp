@@ -2861,7 +2861,7 @@ lowtis::ImageService* ZDvidReader::getLowtisServiceLabel() const
       m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
       m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
       m_lowtisConfig.datatypename = getDvidTarget().getSegmentationName();
-      m_lowtisConfig.enableprefetch = false;
+//      m_lowtisConfig.enableprefetch = false;
 
       m_lowtisService = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfig));
@@ -3026,7 +3026,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
 
   QElapsedTimer timer;
   timer.start();
-  if (m_lowtisService.get() != NULL) {
+  if (service != NULL) {
     array = MakeArray64(box);
 
     try {
@@ -3049,7 +3049,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
                   arg(dim2vec[0]).arg(dim2vec[1]).arg(dim2vec[2]).arg(zoom);
 #endif
 
-      m_lowtisServiceGray->retrieve_arbimage(
+      service->retrieve_arbimage(
             box.getWidth(), box.getHeight(), offset, dim1vec, dim2vec,
             array->getDataPointer<char>(), zoom);
 
@@ -3072,9 +3072,14 @@ ZArray* ZDvidReader::readLabels64Lowtis(
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
-  if (!getDvidTarget().hasSegmentation()) {
+  lowtis::ImageService *service = getLowtisServiceLabel();
+  if (service == NULL) {
     return NULL;
   }
+  /*
+  if (!getDvidTarget().hasSegmentation()) {
+    return NULL;
+  }*/
 
   int scale = 1;
   if (zoom > 0) {
@@ -3089,7 +3094,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
            << x0 << y0 << z0;
   qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
 
-
+#if 0
   if (m_lowtisService.get() == NULL) {
     try {
 //      lowtis::DVIDLabelblkConfig config;
@@ -3110,9 +3115,10 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
 
 //    m_lowtisService = ZDvid::MakeLowtisServicePtr(getDvidTarget());
   }
+#endif
   QElapsedTimer timer;
   timer.start();
-  if (m_lowtisService.get() != NULL) {
+  if (service != NULL) {
 //    m_lowtisService->config.bytedepth = 8;
 
     mylib::Dimn_Type arrayDims[3];
@@ -3132,7 +3138,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
       offset[2] = z0;
 
 
-      m_lowtisService->retrieve_image(
+      service->retrieve_image(
             width, height, offset, array->getDataPointer<char>(), zoom);
 
       setStatusCode(200);

@@ -25665,10 +25665,63 @@ void ZTest::test(MainWindow *host)
   service.retrieve_image(width, height, offset, buffer);
 #endif
 
+#if 0
+  // create dvid config
+  lowtis::DVIDLabelblkConfig config;
+  config.username = "sample";
+  config.dvid_server = "emdata1.int.janelia.org:8500";
+  config.dvid_uuid = "b6bc";
+  config.datatypename = "labels";
+  //config.centercut = std::tuple<int, int>(256, 256);
+  // create service for 2D image fetching
+  lowtis::ImageService service(config);
+  std::vector<int> center(3,0);
+  center[0] = 4003;
+  center[1] = 5607;
+  center[2] = 7312;
+  std::vector<double> dim1(3,0);
+  std::vector<double> dim2(3,0);
+  dim1[0] = 1;
+  dim2[1] = 1;
+  int width = 1024; int height = 1024;
+  char* buffer = new char[width*height*8];
+  service.retrieve_arbimage(1024, 1024, center, dim1, dim2, buffer, 0, false);
+  std::cout << "success" << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  ZDvidReader reader;
+  reader.open(target);
+
+//  ZArray *array = reader.readLabels64Lowtis(4003, 5607, 7312, 1024, 1024, 1);
+
+  ZArray *array = reader.readLabels64Lowtis(
+        4003, 5607, 7312, 1, 0, 0, 0, 1, 0, 1024, 1024, 0);
+  array->printInfo();
+
+  delete array;
+  /*
+   * {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "b6bc",
+      "name": "MB_Test",
+      "comment": "MB seg (branched from febc)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "roi": "mb_subtracted",
+      "user_name": "zhaot"
+    }
+  */
+#endif
+
 #if 1
   //testing labelmap
   ZDvidTarget target;
-  target.set("emdata2.int.janelia.org", "1236", 8300);
+  target.set("emdata2.int.janelia.org", "1236", 8700);
   target.setSegmentationName("base20180227_8nm_watershed_fixed");
 
   ZDvidReader reader;
@@ -25676,9 +25729,9 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZArray *array = reader.readLabels64Lowtis(
-        17152, 22592, 19328, 1024, 1024, 0);
+        17152, 22592, 19328, 1024, 1024, 1);
   array->printInfo();
-  array->print();
+//  array->print();
   std::cout << "Value: " << array->getUint64Value(0) << std::endl;
 
   uint64_t bodyId =
@@ -25700,36 +25753,6 @@ void ZTest::test(MainWindow *host)
   std::cout << reader.getDvidTarget().hasCoarseSplit() << std::endl;
 #endif
 
-#endif
-
-#if 0
-  ZDvidTarget target;
-  target.set("emdata1.int.janelia.org", "b6bc", 8500);
-  target.setSegmentationName("labels");
-  ZDvidReader reader;
-  reader.open(target);
-
-  ZArray *array = reader.readLabels64Lowtis(4003, 5607, 7312, 1024, 1024, 0);
-
-//  ZArray *array = reader.readLabels64Lowtis(
-//        4003, 5607, 7312, 1, 0, 0, 0, 1, 0, 1024, 1024, 0);
-  array->printInfo();
-
-  delete array;
-
-  /*
-   * {
-      "address": "emdata1.int.janelia.org",
-      "port": 8500,
-      "uuid": "b6bc",
-      "name": "MB_Test",
-      "comment": "MB seg (branched from febc)",
-      "body_label": "bodies",
-      "label_block": "labels",
-      "roi": "mb_subtracted",
-      "user_name": "zhaot"
-    }
-  */
 #endif
 
 #if 0

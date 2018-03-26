@@ -367,7 +367,8 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
 //    processed = true;
 //    break;
   case Qt::Key_D:
-    if (event->modifiers() == Qt::NoModifier) {
+    if (event->modifiers() == Qt::ControlModifier) {
+      LINFO() << "Ctrl+D pressed: Toggling data";
       emit togglingData();
       processed = true;
     }
