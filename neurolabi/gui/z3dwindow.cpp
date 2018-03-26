@@ -3673,9 +3673,9 @@ void Z3DWindow::processMessage(const ZWidgetMessage &msg)
     m_view->dump(msg.toPlainString());
   } else if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
     ZDialogFactory::PromptMessage(msg, this);
-  } else {
+  }/* else {
     emit messageGenerated(msg);
-  }
+  }*/
 }
 
 void Z3DWindow::setMeshOpacity(double opacity)

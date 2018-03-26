@@ -242,6 +242,7 @@ bool Neu3Window::loadDvidTarget()
     m_dataContainer->getProgressSignal()->connectSlot(this);
     connect(m_dataContainer, &ZFlyEmProofMvc::dvidReady,
             this, &Neu3Window::start);
+    ZWidgetMessage::ConnectMessagePipe(m_dataContainer, this);
     QtConcurrent::run(m_dataContainer, &ZFlyEmProofMvc::setDvidTarget,
                       dlg->getDvidTarget());
 //    m_dataContainer->setDvidTarget(dlg->getDvidTarget());
@@ -915,6 +916,8 @@ void Neu3Window::processMessage(const ZWidgetMessage &msg)
   if (msg.getTarget() == ZWidgetMessage::TARGET_TEXT ||
       msg.getTarget() == ZWidgetMessage::TARGET_TEXT_APPENDING) {
     m_messageWidget->dump(msg.toHtmlString(), msg.isAppending());
+  } else if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+    ZDialogFactory::PromptMessage(msg, this);
   } else {
     m_3dwin->processMessage(msg);
   }
