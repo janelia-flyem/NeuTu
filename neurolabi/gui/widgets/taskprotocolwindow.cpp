@@ -269,25 +269,33 @@ void TaskProtocolWindow::onDoneButton() {
         }
     }
     if (!allComplete) {
-        showInfo("Not all tasks complete!", "You have not completed all tasks!");
-        return;
-    }
-
-    QMessageBox messageBox;
-    messageBox.setText("Complete task protocol?");
-    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, your progress data will be stored in DVID, and you will not be able to continue.\n\nComplete protocol?");
-    messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    messageBox.setDefaultButton(QMessageBox::Ok);
-    int ret = messageBox.exec();
-    if (ret != QMessageBox::Ok) {
-        return;
+        QMessageBox messageBox;
+        messageBox.setText("Exit task protocol?");
+        messageBox.setInformativeText("Not all tasks are complete!\n\nDo you want to exit the task protocol with incomplete tasks? If you do, your progress data will be saved, but you will not be able to continue.\n\nExit protocol?");
+        messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        messageBox.setDefaultButton(QMessageBox::Ok);
+        int ret = messageBox.exec();
+        if (ret != QMessageBox::Ok) {
+            return;
+        }
+    } else {
+        QMessageBox messageBox;
+        messageBox.setText("Complete task protocol?");
+        messageBox.setInformativeText("Do you want to complete the task protocol? If you do, your progress data will be stored in DVID, and you will not be able to continue.\n\nComplete protocol?");
+        messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        messageBox.setDefaultButton(QMessageBox::Ok);
+        int ret = messageBox.exec();
+        if (ret != QMessageBox::Ok) {
+            return;
+        }
     }
 
     if (m_currentTaskIndex >= 0) {
       m_taskList[m_currentTaskIndex]->beforeDone();
     }
 
-    // new key is old key + either identifier or datetime stamp
+    // re-save the data, complete or not; the new key is old key + either an identifier
+    //  or datetime stamp
     QString key;
     if (m_ID.size() > 0) {
         key = generateDataKey() + "-" + m_ID;
@@ -300,11 +308,12 @@ void TaskProtocolWindow::onDoneButton() {
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
         jsonString.toStdString());
 
-    // delete old key
-    m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
-
     LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
             << "," << key.toStdString();
+
+    // delete old key in either case
+    m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
+    LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
 }
