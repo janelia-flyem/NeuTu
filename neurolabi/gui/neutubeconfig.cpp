@@ -85,6 +85,10 @@ void NeutubeConfig::init()
   m_loggingProfile = false;
   m_verboseLevel = 1;
 
+  if (m_settings.contains("mesh_split_thre")) {
+    m_meshSplitThreshold = m_settings.value("mesh_split_thre").toInt();
+  }
+
   updateLogDir();
 
 }
@@ -877,6 +881,27 @@ void NeutubeConfig::SetAdvancedMode(bool on)
 bool NeutubeConfig::IsAdvancedMode()
 {
   return getInstance().isAdvancedMode();
+}
+
+void NeutubeConfig::setMeshSplitThreshold(size_t thre)
+{
+  m_meshSplitThreshold = thre;
+  m_settings.setValue("mesh_split_thre", int(thre));
+}
+
+size_t NeutubeConfig::getMeshSplitThreshold() const
+{
+  return m_meshSplitThreshold;
+}
+
+void NeutubeConfig::SetMeshSplitThreshold(size_t thre)
+{
+  getInstance().setMeshSplitThreshold(thre);
+}
+
+size_t NeutubeConfig::GetMeshSplitThreshold()
+{
+  return getInstance().getMeshSplitThreshold();
 }
 
 int NeutubeConfig::GetVerboseLevel()

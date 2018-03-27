@@ -226,6 +226,21 @@ bool ZDvidGraySlice::validateSize(int *width, int *height)
   return changed;
 }
 
+template<typename T>
+int ZDvidGraySlice::updateParam(T *param)
+{
+  int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
+  if (maxZoomLevel < 3) {
+    int width = param->getViewPort().width();
+    int height = param->getViewPort().height();
+    if (validateSize(&width, &height)) {
+      param->resize(width, height);
+    }
+  }
+
+  return maxZoomLevel;
+}
+
 bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
 {
   if (viewParam.getSliceAxis() != m_sliceAxis) {
@@ -240,6 +255,9 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
 
   ZStackViewParam newViewParam = viewParam;
 
+  int maxZoomLevel = updateParam(&newViewParam);
+
+  /*
   int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
   if (maxZoomLevel < 3) {
     int width = viewParam.getViewPort().width();
@@ -248,6 +266,7 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
       newViewParam.resize(width, height);
     }
   }
+  */
 
   if (!m_currentViewParam.contains(newViewParam) ||
       viewParam.getZoomLevel(maxZoomLevel) <
@@ -259,6 +278,7 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
   return updated;
 }
 
+/*
 bool ZDvidGraySlice::update(const ZArbSliceViewParam &viewParam)
 {
   if (m_sliceAxis != neutube::A_AXIS) {
@@ -278,7 +298,7 @@ bool ZDvidGraySlice::update(const ZArbSliceViewParam &viewParam)
 
   return updated;
 }
-
+*/
 int ZDvidGraySlice::getZoom() const
 {
   return m_zoom;
@@ -304,19 +324,6 @@ void ZDvidGraySlice::setCenterCut(int width, int height)
   m_centerCutWidth = width;
   m_centerCutHeight = height;
 }
-
-/*
-void ZDvidGraySlice::setArbitraryAxis(const ZPoint &v1, const ZPoint &v2)
-{
-  m_sliceAxis = neutube::A_AXIS;
-  if (v1.isPendicularTo(v2)) {
-    m_v1 = v1;
-    m_v2 = v2;
-    m_v1.normalize();
-    m_v2.normalize();
-  }
-}
-*/
 
 void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
 {
@@ -392,12 +399,12 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
   }
 
   if (isVisible()) {
+    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
     if (m_sliceAxis == neutube::Z_AXIS) {
-      m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
-
       QRect viewPort = viewParam.getViewPort();
       forceUpdate(viewPort, viewParam.getZ());
     } else if (m_sliceAxis == neutube::A_AXIS) {
+      m_zoom = 0; //Temporary fix for the crashing problem in grayscale retrieval
       forceUpdate(viewParam.getSliceViewParam());
       //Align the image with the view port, which is used by the painter
       m_image.setOffset(viewParam.getViewPort().left(),

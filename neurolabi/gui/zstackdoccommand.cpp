@@ -20,6 +20,7 @@
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "zfiletype.h"
+#include "zobject3d.h"
 
 using namespace std;
 
@@ -2171,9 +2172,12 @@ ZStackDocCommand::TubeEdit::AutoTraceAxon::~AutoTraceAxon()
   for (int i=0; i<m_swcList.size(); i++) {
     delete m_swcList[i];
   }
+  qDeleteAll(m_obj3dList);
+  /*
   for (int i=0; i<m_obj3dList.size(); i++) {
     delete m_obj3dList[i];
   }
+  */
   for (int i=0; i<m_connList.size(); i++) {
     delete m_connList[i];
   }

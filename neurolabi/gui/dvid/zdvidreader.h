@@ -59,11 +59,11 @@ class ImageService;
 /*!
  * \brief The class for reading data from DVID
  */
-class ZDvidReader : public QObject
+class ZDvidReader/* : public QObject*/
 {
-  Q_OBJECT
+//  Q_OBJECT
 public:
-  explicit ZDvidReader(QObject *parent = 0);
+  explicit ZDvidReader(/*QObject *parent = 0*/);
   ~ZDvidReader();
 
   /*!
@@ -299,14 +299,31 @@ public:
       int width, int height, int depth, int zoom = 0) const;
 
 #if defined(_ENABLE_LOWTIS_)
+  //Read label data
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
+  /*!
+   * (\a x0, \a y0, \a z0) is the retrieval center.
+   */
+  ZArray *readLabels64Lowtis(
+      int x0, int y0, int z0, double vx1, double vy1, double vz1,
+      double vx2, double vy2, double vz2,
+      int width, int height, int zoom) const;
+  ZArray *readLabels64Lowtis(
+      const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
+      int width, int height, int zoom) const;
+
+
+  //Read grayscale data
   ZStack *readGrayScaleLowtis(int x0, int y0, int z0,
                               int width, int height, int zoom = 0) const;
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0,
       int width, int height, int zoom, int cx, int cy) const;
 
+  /*!
+   * (\a x0, \a y0, \a z0) is the retrieval center.
+   */
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
@@ -516,16 +533,28 @@ public:
 
   bool hasSplitTask(const QString &key) const;
 
+  class PauseVerbose {
+  public:
+    PauseVerbose(ZDvidReader *reader) : m_reader(reader) {
+      m_verbose = m_reader->isVerbose();
+      m_reader->setVerbose(false);
+    }
 
-signals:
-  void readingDone();
+    ~PauseVerbose() {
+      m_reader->setVerbose(m_verbose);
+    }
 
-public slots:
+  private:
+    ZDvidReader *m_reader;
+    bool m_verbose;
+  };
+
+//public slots:
 //  void slotTest();
 //  void startReading();
 //  void endReading();
 
-  std::set<uint64_t> readBodyId(const QString sizeRange);
+//  std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
   ZDvidReader(const ZDvidReader&);
@@ -560,11 +589,14 @@ private:
 
   static ZIntCuboid GetStackBox(
       int x0, int y0, int z0, int width, int height, int zoom);
+  static ZIntCuboid GetStackBoxAtCenter(
+      int x0, int y0, int z0, int width, int height, int zoom);
   static std::vector<int> GetOffset(int x0, int y0, int z0);
   static std::vector<int> GetOffset(int cx, int cy, int cz, int width, int height);
 
 
   lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
+  lowtis::ImageService* getLowtisServiceLabel() const;
 
 protected:
   ZDvidTarget m_dvidTarget;

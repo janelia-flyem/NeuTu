@@ -72,6 +72,8 @@ public:
 
   void setViewPort(const QRect &rect);
 
+  void prepareViewPort(const QRect &rect);
+
   void zoomTo(int x, int y, int width);
   void zoomTo(const QPoint &pt, int width);
 
@@ -108,6 +110,8 @@ private:
   double m_zoom; //the ratio from view to projection: p/v
   QRect m_canvasRect;
   QRect m_widgetRect;
+
+  QRect m_viewPortBuffer;
 
   mutable QRectF m_projRegion;
   mutable QRect m_viewPort;

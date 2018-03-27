@@ -101,9 +101,12 @@ void ZWidgetsGroup::removeAllChildren()
 
 void ZWidgetsGroup::removeChild(const ZParameter& para)
 {
+  qDebug() << "removing child:" << para.name();
+
   m_childGroups.erase(std::remove_if(m_childGroups.begin(), m_childGroups.end(),
                                      [&para, this](const std::shared_ptr<ZWidgetsGroup>& child) {
                                        if (child->m_type == Type::Parameter && child->m_parameter == &para) {
+                                         qDebug() << "Child removed:" << para.name();
                                          child->disconnect(this);
                                          return true;
                                        }
@@ -114,9 +117,12 @@ void ZWidgetsGroup::removeChild(const ZParameter& para)
 
 void ZWidgetsGroup::removeChild(const std::shared_ptr<ZWidgetsGroup>& childIn)
 {
+  qDebug() << "removing child:" << childIn->getGroupName();
+
   m_childGroups.erase(std::remove_if(m_childGroups.begin(), m_childGroups.end(),
                                      [&childIn, this](const std::shared_ptr<ZWidgetsGroup>& child) {
                                        if (child->m_type == Type::Group && child == childIn) {
+                                         qDebug() << "Child removed:" << child->getGroupName();
                                          child->disconnect(this);
                                          return true;
                                        }
@@ -258,7 +264,8 @@ bool ZWidgetsGroup::operator<(const ZWidgetsGroup& other) const
 
 void ZWidgetsGroup::sortChildGroups()
 {
-  std::stable_sort(m_childGroups.begin(), m_childGroups.end(), widgetGroupPtVisibleLevelLessThan);
+  std::stable_sort(m_childGroups.begin(), m_childGroups.end(),
+                   widgetGroupPtVisibleLevelLessThan);
   m_isSorted = true;
 }
 

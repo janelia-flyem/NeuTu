@@ -323,9 +323,9 @@ MainWindow::MainWindow(QWidget *parent) :
   m_stackViewManager = new ZStackViewManager(this);
   m_flyemDataLoader = new ZFlyEmDataLoader(this);
 
-  m_progressManager = new ZProgressManager(this);
-  m_specialProgressReporter.setProgressBar(getProgressBar());
-  m_progressManager->setProgressReporter(&m_specialProgressReporter);
+//  m_progressManager = new ZProgressManager(this);
+//  m_specialProgressReporter.setProgressBar(getProgressBar());
+//  m_progressManager->setProgressReporter(&m_specialProgressReporter);
 
   m_3dWindowFactory.setParentWidget(this);
 
@@ -7422,6 +7422,7 @@ ZProofreadWindow *MainWindow::startProofread()
   connect(window, SIGNAL(destroyed()), this, SLOT(tryToClose()));
   connect(window, SIGNAL(showingMainWindow()), this, SLOT(showAndRaise()));
 
+#if 0
   if (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA).empty()) {
     window->dump(
           ZWidgetMessage("Failed to initialize tmp directory. "
@@ -7429,6 +7430,7 @@ ZProofreadWindow *MainWindow::startProofread()
                          "Please check the permission or disk space.",
                          neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
   }
+#endif
 
   return window;
 }
@@ -7751,7 +7753,7 @@ void MainWindow::generateMBKcCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -7833,7 +7835,7 @@ void MainWindow::generateMBAllKcCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -7917,7 +7919,7 @@ void MainWindow::generateMBPAMCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -7965,7 +7967,7 @@ void MainWindow::generateMBONCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -8013,7 +8015,7 @@ void MainWindow::generateMBONConnCast(const std::string &movieFolder)
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   QFile neuronListFile(outDir.absoluteFilePath("../neuron_list.csv"));
@@ -8449,5 +8451,42 @@ void MainWindow::on_actionView_Segmentation_Meshes_triggered()
   ZStackFrame *frame = currentStackFrame();
   if (frame != NULL) {
     frame->viewSegmentationMesh();
+  }
+}
+
+void MainWindow::on_actionUpdate_Body_Info_triggered()
+{
+  QProcess process;
+  process.start(QString::fromStdString(
+                  GET_TEST_DATA_DIR + "/_misc/neutu_em/script/prepare_body"));
+  if (process.waitForFinished(60000)) {
+    qDebug() << process.readAllStandardOutput();
+
+    ZJsonObject json;
+    json.load(GET_TEST_DATA_DIR + "/_misc/neutu_em/bodyinfo.json");
+
+    ZDvidTarget target;
+    target.loadJsonObject(ZJsonObject(json.value("dvid")));
+
+    ZDvidWriter writer;
+    if (writer.open(target)) {
+      ZJsonArray bodyJson(json.value("bodies"));
+      for (size_t i = 0; i < bodyJson.size(); ++i) {
+        uint64_t bodyId = ZJsonParser::integerValue(bodyJson.at(i));
+        if (!writer.getDvidReader().hasBodyInfo(bodyId)) {
+          writer.writeBodyInfo(bodyId);
+        }
+      }
+    }
+
+    process.start(QString::fromStdString(
+                    GET_TEST_DATA_DIR + "/_misc/neutu_em/script/summarize_merge"));
+    if (!process.waitForFinished(60000)) {
+      dump(ZWidgetMessage("Error", "Failed to summarize merges", neutube::MSG_ERROR,
+                          ZWidgetMessage::TARGET_DIALOG));
+    }
+  } else {
+    dump(ZWidgetMessage("Error", "Failed to prepare bodies", neutube::MSG_ERROR,
+                        ZWidgetMessage::TARGET_DIALOG));
   }
 }

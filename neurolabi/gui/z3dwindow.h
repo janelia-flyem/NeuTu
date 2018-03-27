@@ -111,6 +111,7 @@ public:
   void setOpacity(neutube3d::ERendererLayer layer, double opacity);
   void setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity);
   void setFront(neutube3d::ERendererLayer layer, bool on);
+  void setColorMode(neutube3d::ERendererLayer layer, const std::string &mode);
 
   void configureMenuForNeu3();
 
@@ -225,8 +226,10 @@ signals:
   void runningFullSplit();
 
   void settingTriggered();
+  void neutuTriggered();
 
   void cameraRotated();
+  void messageGenerated(const ZWidgetMessage &msg);
 
 public slots:
   void resetCamera()

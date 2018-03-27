@@ -21,14 +21,17 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
 {
   setControlName("Mesh");
   m_singleColorForAllMesh.setStyle("COLOR");
-  connect(&m_singleColorForAllMesh, &ZVec4Parameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
+  connect(&m_singleColorForAllMesh, &ZVec4Parameter::valueChanged,
+          this, &Z3DMeshFilter::prepareColor);
 
   // Color Mode
   m_colorMode.addOptions("Mesh Color", "Single Color", "Mesh Source", "Indexed Color");
   m_colorMode.select("Mesh Source");
 
-  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::prepareColor);
-  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DMeshFilter::adjustWidgets);
+  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged,
+          this, &Z3DMeshFilter::processColorModeChange);
+//  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged,
+//          this, &Z3DMeshFilter::adjustWidgets);
 
   addParameter(m_colorMode);
 
@@ -56,6 +59,10 @@ Z3DMeshFilter::Z3DMeshFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   addParameter(m_meshRenderer.wireframeColorPara());
 
   addParameter(m_meshRenderer.useTwoSidedLightingPara());
+
+  //Use queued connection to work in the right order with updateSettingsDockWidget in Z3DWindow
+  connect(this, SIGNAL(clearingParamGarbage()), this, SLOT(dumpParamGarbage()),
+          Qt::QueuedConnection);
 }
 
 void Z3DMeshFilter::process(Z3DEye)
@@ -68,6 +75,26 @@ void Z3DMeshFilter::process(Z3DEye)
 void Z3DMeshFilter::setColorMode(const std::string &mode)
 {
   m_colorMode.select(mode.c_str());
+}
+
+void Z3DMeshFilter::processColorModeChange()
+{
+  if (m_colorMode.get() == "Mesh Source") {
+    updateSourceColorMapper();
+  }
+  prepareColor();
+  adjustWidgets();
+}
+
+void Z3DMeshFilter::dumpParamGarbage()
+{
+  LINFO() << "Dumping garbage";
+  m_paramGarbage.clear();
+}
+
+void Z3DMeshFilter::emitDumpParaGarbage()
+{
+  emit clearingParamGarbage();
 }
 
 void Z3DMeshFilter::enablePreservingSourceColors(bool on)
@@ -204,6 +231,150 @@ namespace {
   }
 }
 
+void Z3DMeshFilter::removeOldColorParameter(
+    const std::set<QString, QStringNaturalCompare> &allSources)
+{
+#ifdef _DEBUG_
+  printColorMapper();
+#endif
+  if (!m_preserveSourceColors) {
+    // remove not in use sources
+    for (auto it = m_sourceColorMapper.begin(); it != m_sourceColorMapper.end(); ) {
+      if (allSources.find(it->first) == allSources.end()) {
+        removeParameter(*it->second);
+        m_paramGarbage.push_back(it->second);
+        it = m_sourceColorMapper.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+#ifdef _DEBUG_
+  std::cout << "After removing:";
+  printColorMapper();
+#endif
+}
+
+void Z3DMeshFilter::printColorMapper()
+{
+  std::cout << "Current color mapper: ";
+  for (const auto &kv : m_sourceColorMapper) {
+    std::cout << " " << kv.first.toStdString();
+  }
+  std::cout << std::endl;
+}
+
+void Z3DMeshFilter::addSourceColor(const QString &source)
+{
+  QString guiname = QString("Source: %1").arg(source);
+
+  auto color = randomColorRGB();
+
+  Q_ASSERT(m_sourceColorMapper.count(source) == 0);
+
+  m_sourceColorMapper.insert(
+        std::make_pair(source,
+                       std::make_shared<ZVec4Parameter>(guiname, color)));
+
+  m_sourceColorMapper[source]->setStyle("COLOR");
+  connect(m_sourceColorMapper[source].get(), &ZVec4Parameter::valueChanged,
+          this, &Z3DMeshFilter::prepareColor);
+  addParameter(*m_sourceColorMapper[source]);
+}
+
+void Z3DMeshFilter::addNewColorParameter(
+    const std::set<QString, QStringNaturalCompare> &allSources)
+{
+#ifdef _DEBUG_
+  std::cout << "All sources:";
+  for (const QString &source : allSources) {
+    std::cout << " " << source.toStdString();
+  }
+  std::cout << std::endl;
+
+  printColorMapper();
+#endif
+  // create color parameters for new sources
+  std::set<QString, QStringNaturalCompare> newSources;
+  std::set_difference(allSources.begin(), allSources.end(),
+                      m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
+                      std::inserter(newSources, newSources.end()),
+                      QStringKeyNaturalLess());
+  for (const auto& kv : newSources) {
+    addSourceColor(kv);
+  }
+#ifdef _DEBUG_
+  std::cout << "After update:";
+  printColorMapper();
+#endif
+}
+
+bool Z3DMeshFilter::sourceChanged(
+    const std::set<QString, QStringNaturalCompare> &allSources) const
+{
+  return m_sourceColorMapper.size() != allSources.size() ||
+      !std::equal(m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
+                  allSources.begin(), _KeyEqual());
+}
+
+void Z3DMeshFilter::removeSourceColorWidget()
+{
+  if (m_widgetsGroup) {
+    for (auto& kv : m_sourceColorMapper) {
+      m_widgetsGroup->removeChild(*kv.second);
+    }
+  }
+}
+
+void Z3DMeshFilter::updateWidgetGroup()
+{
+  m_widgetsGroup->emitWidgetsGroupChangedSignal();
+  emitDumpParaGarbage();
+}
+
+void Z3DMeshFilter::addSourceColorWidget()
+{
+  if (m_widgetsGroup) {
+    for (const auto& kv : m_sourceColorMapper) {
+      m_widgetsGroup->addChild(*kv.second, 2);
+    }
+    updateWidgetGroup();
+  }
+}
+
+void Z3DMeshFilter::updateSourceColorMapper()
+{
+  if (m_colorMode.get() == "Mesh Source") {
+    if (m_showSourceColors) {
+      std::set<QString, QStringNaturalCompare> allSources;
+      for (auto mesh : m_origMeshList) {
+        allSources.insert(mesh->getSource().c_str());
+      }
+      // do nothing if sources don't change
+      if (sourceChanged(allSources)) {
+        // remove old source color parameters from widget, will add new ones later
+        removeSourceColorWidget();
+
+        removeOldColorParameter(allSources);
+        addNewColorParameter(allSources);
+
+        // update widget group
+        addSourceColorWidget();
+      }
+    } else {
+      for (auto mesh : m_origMeshList) {
+        auto kv = mesh->getSource().c_str();
+        QString guiname = QString("Source: %1").arg(kv);
+        auto color = randomColorRGB();
+        m_sourceColorMapper.insert(
+              std::make_pair(kv, std::make_shared<ZVec4Parameter>(guiname, color)));
+
+        m_sourceColorMapper[kv]->setStyle("COLOR");
+      }
+    }
+  }
+}
+
 void Z3DMeshFilter::prepareData()
 {
   if (!m_dataIsInvalid)
@@ -214,70 +385,7 @@ void Z3DMeshFilter::prepareData()
   initializeCutRange();
   initializeRotationCenter();
 
-  if (m_showSourceColors) {
-    std::set<QString, QStringNaturalCompare> allSources;
-    for (auto mesh : m_origMeshList) {
-      allSources.insert(mesh->getSource().c_str());
-    }
-    // do nothing if sources don't change
-    if (m_sourceColorMapper.size() != allSources.size() ||
-        !std::equal(m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
-                    allSources.begin(), _KeyEqual())) {
-      // remove old source color parameters from widget, will add new ones later
-      if (m_widgetsGroup) {
-        for (auto& kv : m_sourceColorMapper) {
-          m_widgetsGroup->removeChild(*kv.second);
-        }
-      }
-
-      if (!m_preserveSourceColors) {
-        // remove not in use sources
-        for (auto it = m_sourceColorMapper.begin(); it != m_sourceColorMapper.end(); ) {
-          if (allSources.find(it->first) == allSources.end()) {
-            removeParameter(*it->second);
-            it = m_sourceColorMapper.erase(it);
-          } else {
-            ++it;
-          }
-        }
-      }
-
-      // create color parameters for new sources
-      std::set<QString, QStringNaturalCompare> newSources;
-      std::set_difference(allSources.begin(), allSources.end(),
-                          m_sourceColorMapper.begin(), m_sourceColorMapper.end(),
-                          std::inserter(newSources, newSources.end()),
-                          QStringKeyNaturalLess());
-      for (const auto& kv : newSources) {
-        QString guiname = QString("Source: %1").arg(kv);
-        auto color = randomColorRGB();
-        m_sourceColorMapper.insert(std::make_pair(kv,
-                                                  std::make_unique<ZVec4Parameter>(guiname, color)));
-
-        m_sourceColorMapper[kv]->setStyle("COLOR");
-        connect(m_sourceColorMapper[kv].get(), &ZVec4Parameter::valueChanged,
-                this, &Z3DMeshFilter::prepareColor);
-        addParameter(*m_sourceColorMapper[kv]);
-      }
-
-      // update widget group
-      if (m_widgetsGroup) {
-        for (const auto& kv : m_sourceColorMapper) {
-          m_widgetsGroup->addChild(*kv.second, 2);
-        }
-        m_widgetsGroup->emitWidgetsGroupChangedSignal();
-      }
-    }
-  } else {
-    for (auto mesh : m_origMeshList) {
-      auto kv = mesh->getSource().c_str();
-      QString guiname = QString("Source: %1").arg(kv);
-      auto color = randomColorRGB();
-      m_sourceColorMapper.insert(std::make_pair(kv, std::make_unique<ZVec4Parameter>(guiname, color)));
-
-      m_sourceColorMapper[kv]->setStyle("COLOR");
-    }
-  }
+  updateSourceColorMapper();
 
   m_meshRenderer.setData(&m_meshList);
   prepareColor();
@@ -397,8 +505,10 @@ void Z3DMeshFilter::adjustWidgets()
 {
   m_singleColorForAllMesh.setVisible(m_colorMode.isSelected("Single Color"));
 
-  for (auto& kv : m_sourceColorMapper) {
-    kv.second->setVisible(m_colorMode.isSelected("Mesh Source"));
+  if (m_showSourceColors) {
+    for (auto& kv : m_sourceColorMapper) {
+      kv.second->setVisible(m_colorMode.isSelected("Mesh Source"));
+    }
   }
 }
 

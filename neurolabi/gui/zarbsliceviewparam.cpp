@@ -30,6 +30,11 @@ void ZArbSliceViewParam::setSize(int width, int height)
   m_height = height;
 }
 
+void ZArbSliceViewParam::resize(int width, int height)
+{
+  setSize(width, height);
+}
+
 bool ZArbSliceViewParam::isValid() const
 {
   return m_v1.isPendicularTo(m_v2) && m_width > 0 && m_height > 0;
