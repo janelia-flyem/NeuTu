@@ -309,10 +309,12 @@ void SynapsePredictionProtocol::onCompleteButton() {
 
     if (ans == QMessageBox::Ok) {
         saveState();
+
+        // restore original color map
+        disableProtocolColorMap();
+
         emit protocolCompleting();
     }
-    // restore original color map
-    disableProtocolColorMap();
 }
 
 void SynapsePredictionProtocol::onRefreshButton()
