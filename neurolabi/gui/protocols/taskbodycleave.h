@@ -90,6 +90,7 @@ private:
   void enableCleavingUI(bool showingCleaving);
 
   void cleave();
+  bool cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>& cleaveIndexToMeshIds);
 
   bool showCleaveReplyWarnings(const QJsonObject& reply);
   bool showCleaveReplyDataErrors(std::map<uint64_t, std::size_t> meshIdToCleaveIndex);
