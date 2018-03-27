@@ -232,6 +232,10 @@ void Z3DWindow::configureMenuForNeu3()
   m_helpMenu->addAction(settingAction);
   connect(settingAction, SIGNAL(triggered()), this, SIGNAL(settingTriggered()));
 
+  QAction *neutuAction = new QAction("NeuTu", this);
+  m_helpMenu->addAction(neutuAction);
+  connect(neutuAction, SIGNAL(triggered()), this, SIGNAL(neutuTriggered()));
+
   m_helpMenu->addAction(getAction(ZActionFactory::ACTION_ABOUT));
 }
 
@@ -320,8 +324,8 @@ void Z3DWindow::init()
           m_doc.get(), SLOT(selectUpstreamNode()));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingConnectedSwcNode()),
           m_doc.get(), SLOT(selectConnectedNode()));
-  connect(getCanvas()->getInteractionEngine(), SIGNAL(cameraRorated()),
-          this, SLOT(notifyCameraRotation()));
+//  connect(getCanvas()->getInteractionEngine(), SIGNAL(cameraRorated()),
+//          this, SLOT(notifyCameraRotation()));
   connect(&(m_view->interactionHandler()), SIGNAL(cameraRotated()),
           this, SLOT(notifyCameraRotation()));
 
@@ -993,6 +997,7 @@ void Z3DWindow::fillDockWindows()
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
 
+  //Use QueuedConnection to avoid a strange crash
   connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()),
           this, SLOT(updateSettingsDockWidget()), Qt::QueuedConnection);
   connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)),
@@ -1006,6 +1011,8 @@ void Z3DWindow::fillDockWindows()
   connect(omw, SIGNAL(punctaDoubleClicked(ZPunctum*)), this, SLOT(punctaDoubleClicked(ZPunctum*)));
   connect(omw, SIGNAL(meshDoubleClicked(ZMesh*)), this, SLOT(meshDoubleClicked(ZMesh*)));
   m_objectsDockWidget->setWidget(omw);
+
+//  getMeshFilter()->emitDumpParaGarbage();
 }
 
 int Z3DWindow::channelNumber()
@@ -3664,7 +3671,11 @@ void Z3DWindow::processMessage(const ZWidgetMessage &msg)
 {
   if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
     m_view->dump(msg.toPlainString());
-  }
+  } else if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+    ZDialogFactory::PromptMessage(msg, this);
+  }/* else {
+    emit messageGenerated(msg);
+  }*/
 }
 
 void Z3DWindow::setMeshOpacity(double opacity)
@@ -3702,6 +3713,12 @@ void Z3DWindow::browseWithRay(int x, int y)
       pt += intersection[1];
       pt *= 0.5;
     }
+
+    emit messageGenerated(
+          ZWidgetMessage(
+            QString("Checking (%1, %2, %3)").
+            arg(iround(pt.x())).arg(iround(pt.y())).arg(iround(pt.z()))));
+
     emit browsing(pt.x(), pt.y(), pt.z());
   }
 }
@@ -3862,7 +3879,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
         intersection = mesh->intersectLineSeg(
               stackSeg.getStartPoint(), stackSeg.getEndPoint());
         if (!intersection.empty()) {
-          misc::assign(id, mesh->getLabel());
+          misc::assign(id, ZFlyEmBody3dDoc::unencode(mesh->getLabel()));
           break;
         }
       }
@@ -4247,6 +4264,24 @@ void Z3DWindow::setOpacityQuietly(
 void Z3DWindow::setFront(neutube3d::ERendererLayer layer, bool on)
 {
   m_view->setFront(layer, on);
+}
+
+void Z3DWindow::setColorMode(
+    neutube3d::ERendererLayer layer, const std::string &mode)
+{
+  switch (layer) {
+  case neutube3d::LAYER_MESH:
+    getMeshFilter()->setColorMode(mode);
+    break;
+  case neutube3d::LAYER_SWC:
+    getSwcFilter()->setColorMode(mode);
+    break;
+  case neutube3d::LAYER_PUNCTA:
+    getPunctaFilter()->setColorMode(mode);
+    break;
+  default:
+    break;
+  }
 }
 
 /*

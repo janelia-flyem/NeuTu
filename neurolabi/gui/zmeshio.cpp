@@ -254,7 +254,7 @@ void getDracoTextureCoordinates(const PointCloud& pc,
 void getDracoFaces(const Mesh& msh, std::vector<GLuint>& faces)
 {
   faces.resize(msh.num_faces() * 3);
-  const PointAttribute *const pos_att_ = msh.GetNamedAttribute(GeometryAttribute::POSITION);
+//  const PointAttribute *const pos_att_ = msh.GetNamedAttribute(GeometryAttribute::POSITION);
   for (FaceIndex i(0); i < msh.num_faces(); ++i) {
     for (int j = 0; j < 3; ++j) {
       const PointIndex vert_index = msh.face(i)[j];

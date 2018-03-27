@@ -8,7 +8,7 @@ ZObjsItem::ZObjsItem(const QList<QVariant> &data, void *pData, ZObjsItem *parent
   m_actualObj = pData;
   m_checkState = Qt::Checked;
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Item created: " << this << std::endl;
 #endif
 }
@@ -16,7 +16,7 @@ ZObjsItem::ZObjsItem(const QList<QVariant> &data, void *pData, ZObjsItem *parent
 ZObjsItem::~ZObjsItem()
 {
   qDeleteAll(m_childItems);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Item deleted: " << this << std::endl;
 #endif
 }

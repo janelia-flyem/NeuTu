@@ -64,6 +64,7 @@ void FlyEmSettingDialog::loadSetting()
         GET_FLYEM_CONFIG.usingDefaultConfig());
   ui->synapseNameCheckBox->setChecked(NeutubeConfig::NamingSynapse());
 #endif
+  ui->meshThreSpinBox->setValue(NeutubeConfig::GetMeshSplitThreshold() / 1000000);
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -133,6 +134,7 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetFlyEmConfigPath(getConfigPath().c_str());
   NeutubeConfig::UseDefaultFlyEmConfig(usingDefaultConfig());
   NeutubeConfig::SetNamingSynapse(namingSynapse());
+  NeutubeConfig::SetMeshSplitThreshold(ui->meshThreSpinBox->value() * 1000000);
 }
 
 QString FlyEmSettingDialog::shrink(const QString &str, int len)

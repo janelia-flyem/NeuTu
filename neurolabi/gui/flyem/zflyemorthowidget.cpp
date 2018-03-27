@@ -302,7 +302,10 @@ void ZFlyEmOrthoWidget::keyPressEvent(QKeyEvent *event)
 {
   switch (event->key()) {
   case Qt::Key_D:
-    toggleData();
+    if (event->modifiers() == Qt::ControlModifier) {
+      LINFO() << "Ctrl+D pressed: Toggling data";
+      toggleData();
+    }
     break;
   }
 }

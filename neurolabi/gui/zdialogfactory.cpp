@@ -26,6 +26,7 @@
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zsysteminfo.h"
+#include "zwidgetmessage.h"
 
 #ifdef _WIN32
 #undef GetOpenFileName
@@ -316,4 +317,21 @@ void ZDialogFactory::About(QWidget *parent)
                      "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
 
                      );
+}
+
+void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
+{
+  if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+      switch (msg.getType()) {
+      case neutube::MSG_INFORMATION:
+        QMessageBox::information(parent, msg.getTitle(), msg.toHtmlString());
+        break;
+      case neutube::MSG_WARNING:
+      case neutube::MSG_ERROR:
+        QMessageBox::warning(parent, msg.getTitle(), msg.toHtmlString());
+        break;
+      default:
+        break;
+      }
+    }
 }

@@ -28,8 +28,8 @@
 #include "dvid/zdvidpath.h"
 #include "zmesh.h"
 
-ZDvidWriter::ZDvidWriter(QObject *parent) :
-  QObject(parent)
+ZDvidWriter::ZDvidWriter(/*QObject *parent*/)   /*:
+QObject(parent)*/
 {
 #ifdef _DEBUG_
   std::cout << "Creating dvid writer." << std::endl;
@@ -477,13 +477,13 @@ std::string ZDvidWriter::getJsonStringForCurl(const ZJsonValue &obj) const
 void ZDvidWriter::syncAnnotationToLabel(
     const std::string &name, const std::string &queryString)
 {
-  if (!getDvidTarget().getLabelBlockName().empty()) {
+  if (!getDvidTarget().getSegmentationName().empty()) {
     ZDvidUrl url(getDvidTarget());
     ZJsonObject jsonObj;
-    if (getDvidTarget().getLabelBlockName() == getDvidTarget().getBodyLabelName()) {
-      jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName());
+    if (getDvidTarget().getSegmentationName() == getDvidTarget().getBodyLabelName()) {
+      jsonObj.setEntry("sync", getDvidTarget().getSegmentationName());
     } else {
-      jsonObj.setEntry("sync", getDvidTarget().getLabelBlockName() + "," +
+      jsonObj.setEntry("sync", getDvidTarget().getSegmentationName() + "," +
                        getDvidTarget().getBodyLabelName());
     }
 #ifdef _DEBUG_
@@ -1405,12 +1405,12 @@ uint64_t ZDvidWriter::writePartition(
   timer.start();
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   bm.exportDvidObject(GET_TMP_DIR + "/test_bm.dvid");
   bs.exportDvidObject(GET_TMP_DIR + "/test_bs.dvid");
 #endif
 
-  if (bs.getVoxelNumber() >= 100000) {
+  if (bs.getVoxelNumber() >= 100000 && getDvidTarget().hasCoarseSplit()) {
     ZDvidInfo dvidInfo;
     ZDvidReader &reader = m_reader;
     if (reader.isReady()) {
@@ -1432,7 +1432,7 @@ uint64_t ZDvidWriter::writePartition(
     if (!Bsc.isEmpty()) {
       newBodyId = writeCoarseSplit(Bsc, oldLabel);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       Bsc.exportDvidObject(GET_TMP_DIR + "/test.dvid");
 #endif
 
