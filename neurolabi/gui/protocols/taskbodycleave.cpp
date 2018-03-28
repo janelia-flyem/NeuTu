@@ -42,7 +42,8 @@ namespace {
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
   static const QString CLEAVING_STATUS_FAILED = "Cleaving status: failed";
-  static const QString CLEAVING_STATUS_INCONSISTENT = "Cleaving status: inconsistent results";
+  static const QString CLEAVING_STATUS_SERVER_WARNINGS = "Cleaving status: server warnings";
+  static const QString CLEAVING_STATUS_SERVER_INCOMPLETE = "Cleaving status: omitted meshes";
 
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
   static const std::vector<glm::vec4> INDEX_COLORS({
@@ -434,7 +435,7 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
       QJsonObject replyJson = replyJsonDoc.object();
 
       if (showCleaveReplyWarnings(replyJson)) {
-        status = CLEAVING_STATUS_INCONSISTENT;
+        status = CLEAVING_STATUS_SERVER_WARNINGS;
       }
 
       QJsonValue replyJsonAssnVal = replyJson["assignments"];
@@ -455,8 +456,8 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
         m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
 
-        if (showCleaveReplyDataErrors(meshIdToCleaveIndex)) {
-          status = CLEAVING_STATUS_INCONSISTENT;
+        if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
+          status = CLEAVING_STATUS_SERVER_INCOMPLETE;
         }
       }
     }
@@ -851,7 +852,7 @@ bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
   return false;
 }
 
-bool TaskBodyCleave::showCleaveReplyDataErrors(std::map<uint64_t, std::size_t> meshIdToCleaveIndex)
+bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t> meshIdToCleaveIndex)
 {
   std::vector<ZMesh*> missing;
   QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
