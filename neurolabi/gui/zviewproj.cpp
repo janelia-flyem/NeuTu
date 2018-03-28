@@ -54,6 +54,10 @@ void ZViewProj::setCanvasRect(const QRect &canvasRect)
 void ZViewProj::setWidgetRect(const QRect &widgetRect)
 {
   m_widgetRect = widgetRect;
+  if (m_viewPortBuffer.isValid()) {
+    setViewPort(m_viewPortBuffer);
+    m_viewPortBuffer.setSize(QSize(0, 0));
+  }
   deprecateViewPort();
 }
 
@@ -167,6 +171,11 @@ void ZViewProj::setViewPort(const QRect &rect)
                      (double) (m_widgetRect.height()) / rect.height()));
     setViewCenter(rect.center());
   }
+}
+
+void ZViewProj::prepareViewPort(const QRect &rect)
+{
+  m_viewPortBuffer = rect;
 }
 
 void ZViewProj::zoomTo(int x, int y, int width)

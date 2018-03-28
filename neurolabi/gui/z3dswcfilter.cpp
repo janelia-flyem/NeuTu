@@ -67,6 +67,7 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   initLabelTypeColor();
 
   m_individualColorScheme.setColorScheme(ZSwcColorScheme::UNIQUE_COLOR);
+  m_randomColorScheme.setColorScheme(ZColorScheme::RANDOM_COLOR);
 
   // rendering primitive
   m_renderingPrimitive.addOptions("Normal", "Line", "Sphere");
@@ -83,15 +84,18 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
     m_colorMode.addOption("Biocytin Branch Type");
   }
 
-  m_colorMode.addOptions("Individual",
-                         "Random Tree Color",
-                         "Branch Type",
-                         "Topology",
-                         "Colormap Branch Type",
-                         "Label Branch Type",
-                         "Subclass",
-                         "Direction",
-                         "Intrinsic");
+  m_colorMode.addOptions(
+      #if !defined(_FLYEM_) //disabled temporarily to avoid crash
+        "Individual",
+        "Random Tree Color",
+      #endif
+        "Branch Type",
+        "Topology",
+        "Colormap Branch Type",
+        "Label Branch Type",
+        "Subclass",
+        "Direction",
+        "Intrinsic");
 
   m_colorMode.select("Branch Type");
   if (!config.getColorMode().empty()) {
@@ -843,6 +847,22 @@ std::shared_ptr<ZVec4Parameter> Z3DSwcFilter::getIndvidualColorParam(int index)
   return m_individualTreeColorList[index];
 }
 
+std::shared_ptr<ZVec4Parameter> Z3DSwcFilter::getRandomColorParam(int index)
+{
+  for (int i = (int) m_randomTreeColorList.size(); i <= index; ++i) {
+    QColor color = m_randomColorScheme.getColor(i);
+    std::shared_ptr<ZVec4Parameter> param = std::make_shared<ZVec4Parameter>(
+          QString("Random Swc %1 Color").arg(i + 1),
+          glm::vec4(color.redF(), color.greenF(), color.blueF(), 1.f));
+    param->setStyle("COLOR");
+    connect(param.get(), &ZVec4Parameter::valueChanged,
+        this, &Z3DSwcFilter::prepareColor);
+    m_randomTreeColorList.push_back(param);
+  }
+
+  return m_randomTreeColorList[index];
+}
+
 bool Z3DSwcFilter::updateColorParameter(
     const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
 {
@@ -855,6 +875,9 @@ bool Z3DSwcFilter::updateColorParameter(
   bool updating = !newSources.empty();
   for (const auto& kv : newSources) {
     m_randomTreeColorMapper.insert(
+          std::make_pair(kv.first, getRandomColorParam(kv.second)));
+
+    /*
           std::make_pair(kv.first,
                          std::make_unique<ZVec4Parameter>(
                            QString("Random Swc %1 Color").arg(kv.second + 1),
@@ -862,13 +885,13 @@ bool Z3DSwcFilter::updateColorParameter(
                                      ZRandom::instance().randReal<float>(),
                                      ZRandom::instance().randReal<float>(),
                                      1.f))));
-
+*/
     m_individualTreeColorMapper.insert(
           std::make_pair(kv.first, getIndvidualColorParam(kv.second)));
 
-    m_randomTreeColorMapper[kv.first]->setStyle("COLOR");
-    connect(m_randomTreeColorMapper[kv.first].get(), &ZVec4Parameter::valueChanged,
-        this, &Z3DSwcFilter::prepareColor);
+//    m_randomTreeColorMapper[kv.first]->setStyle("COLOR");
+//    connect(m_randomTreeColorMapper[kv.first].get(), &ZVec4Parameter::valueChanged,
+//        this, &Z3DSwcFilter::prepareColor);
 
     addParameter(*m_randomTreeColorMapper[kv.first]);
     addParameter(*m_individualTreeColorMapper[kv.first]);
@@ -877,7 +900,8 @@ bool Z3DSwcFilter::updateColorParameter(
   return updating;
 }
 
-bool Z3DSwcFilter::updateTreeColorParameter(const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
+bool Z3DSwcFilter::updateTreeColorParameter(
+    const std::map<ZSwcTree *, size_t> &sourceIndexMapper)
 {
   // do nothing if sources don't change
   if (sourceIndexMapper.size() != m_randomTreeColorMapper.size() ||
@@ -1022,6 +1046,7 @@ void Z3DSwcFilter::prepareData()
     sourceIndexMapper[m_origSwcList[i]] = i;
   }
 
+#if !defined(_FLYEM_)
   // remove old param
   bool updatingTreeColorParam = updateTreeColorParameter(sourceIndexMapper);
 
@@ -1034,6 +1059,7 @@ void Z3DSwcFilter::prepareData()
   if (updatingTreeColorParam) {
     updateWidgetGroup();
   }
+#endif
 #endif
 
   ZOUT(LINFO(), 5) << "Setting renderers ...";

@@ -19,6 +19,11 @@ public:
   void setPlane(const ZPoint &v1, const ZPoint &v2);
   void setSize(int width, int height);
 
+  /*!
+   * \brief Same as setSize for API compatiblity with ZStackViewParam
+   */
+  void resize(int width, int height);
+
   QRect getViewPort() const;
   int getX() const;
   int getY() const;

@@ -1,6 +1,9 @@
 #ifndef Z3DMESHFILTER_H
 #define Z3DMESHFILTER_H
 
+#include <map>
+#include <vector>
+
 #include "z3dgeometryfilter.h"
 #include "zoptionparameter.h"
 #include "zwidgetsgroup.h"
@@ -8,8 +11,6 @@
 #include "z3dmeshrenderer.h"
 #include "zeventlistenerparameter.h"
 #include "zstringutils.h"
-#include <map>
-#include <vector>
 
 class Z3DMeshFilter : public Z3DGeometryFilter
 {
@@ -62,9 +63,15 @@ public:
   // Meshes not mentioned in meshIdToColorIndex will get indexedColors[0].
   void setColorIndexing(const std::vector<glm::vec4> &indexedColors,
                         const std::map<uint64_t, std::size_t> &meshIdToColorIndex);
-signals:
 
+  void emitDumpParaGarbage();
+
+public slots:
+  void dumpParamGarbage();
+
+signals:
   void meshSelected(ZMesh*, bool append);
+  void clearingParamGarbage();
 
 protected:
   void prepareColor();
@@ -91,13 +98,30 @@ protected:
 private:
   // get visible data from m_origMeshList put into m_meshList
   void getVisibleData();
+  void removeOldColorParameter(
+      const std::set<QString, QStringNaturalCompare> &allSources);
+  void addNewColorParameter(
+      const std::set<QString, QStringNaturalCompare> &allSources);
+  void addSourceColor(const QString &source);
+  void printColorMapper();
+  void updateSourceColorMapper();
+  bool sourceChanged(
+      const std::set<QString, QStringNaturalCompare> &allSources) const;
+  void removeSourceColorWidget();
+  void addSourceColorWidget();
+  void updateWidgetGroup();
+
+private slots:
+  void processColorModeChange();
 
 private:
   Z3DMeshRenderer m_meshRenderer;
 
   ZStringIntOptionParameter m_colorMode;
   ZVec4Parameter m_singleColorForAllMesh;
-  std::map<QString, std::unique_ptr<ZVec4Parameter>> m_sourceColorMapper;
+  std::map<QString, std::shared_ptr<ZVec4Parameter>, QStringNaturalCompare>
+  m_sourceColorMapper;
+  std::vector<std::shared_ptr<ZVec4Parameter>> m_paramGarbage;
   bool m_preserveSourceColors;
   bool m_showSourceColors;
 

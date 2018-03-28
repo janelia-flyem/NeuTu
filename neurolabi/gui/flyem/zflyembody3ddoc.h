@@ -151,6 +151,7 @@ public:
   flyem::EBodyType getBodyType() const { return m_bodyType; }
 
   QSet<uint64_t> getBodySet() const { return m_bodySet; }
+  QSet<uint64_t> getUnencodedBodySet() const;
 
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
@@ -199,7 +200,7 @@ public:
   ZFlyEmProofDoc* getDataDocument() const;
 
   ZDvidGraySlice* getArbGraySlice() const;
-  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);
+//  void updateArbGraySlice(const ZArbSliceViewParam &viewParam);
   void hideArbGrayslice();
   void setArbGraySliceVisible(bool v);
 
@@ -254,6 +255,7 @@ public:
   // raw body identifier.
 
   static uint64_t encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
+  static uint64_t unencode(uint64_t encodedId);
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 

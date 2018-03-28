@@ -90,7 +90,7 @@ TEST(ZDvidTest, Util)
 TEST(ZDvidTest, ZDvidUrl)
 {
   ZDvidTarget target("emdata.janelia.org", "bf1");
-  target.setLabelBlockName("labels");
+  target.setSegmentationName("labels");
   target.setBodyLabelName("bodies");
   target.setGrayScaleName("grayscale");
 
@@ -171,7 +171,7 @@ TEST(ZDvidTest, ZDvidUrl)
 
   target.setGrayScaleName("grayscale2");
   target.setBodyLabelName("bodies2");
-  target.setLabelBlockName("labels2");
+  target.setSegmentationName("labels2");
   ZDvidUrl dvidUrl2(target);
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_skeletons",
             dvidUrl2.getSkeletonUrl());
@@ -416,7 +416,7 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/synapse_labelsz/top/1/AllSyn",
             dvidUrl.getSynapseLabelszUrl(1, ZDvid::INDEX_ALL_SYN));
 
-  target.setLabelBlockName("labelstest");
+  target.setSegmentationName("labelstest");
   target.setMaxLabelZoom(5);
   ZDvidUrl dvidUrl3(target);
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labelstest_2/raw/0_1_2/100_200_300/1_2_3",
@@ -449,7 +449,8 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getDefaultDataInstancesUrl());
   ASSERT_TRUE(dvidUrl4.getSparsevolSizeUrl(1).empty());
 
-  target.useLabelArray(true);
+//  target.useLabelArray(true);
+  target.setSegmentationType(ZDvidData::TYPE_LABELARRAY);
   dvidUrl4.setDvidTarget(target, "3456");
 //  std::cout << target.getBodyLabelName() << std::endl;
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
@@ -660,7 +661,7 @@ TEST(ZDvidTest, DataType)
 
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "e2f0", 7000);
-  target.setLabelBlockName("segmentation2");
+  target.setSegmentationName("segmentation2");
   ZDvidReader reader;
   if (reader.open(target)) {
     reader.syncBodyLabelName();

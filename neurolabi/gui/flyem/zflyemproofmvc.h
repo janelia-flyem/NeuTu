@@ -67,6 +67,7 @@ public:
       neutube::EAxis axis = neutube::Z_AXIS, ERole role = ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
       const ZDvidTarget &target, ERole role = ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(ERole role = ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
@@ -113,42 +114,7 @@ public:
   }
   */
 
-//  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
-//  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
-//  QSortFilterProxyModel* getAssignedBookmarkProxy() const;
-//  QSortFilterProxyModel* getUserBookmarkProxy() const;
 
-  ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
-     flyem::EProofreadingMode mode) const {
-    return m_assignedBookmarkModel[mode];
-  }
-
-  ZFlyEmBookmarkListModel* getUserBookmarkModel(
-     flyem::EProofreadingMode mode) const {
-    return m_userBookmarkModel[mode];
-  }
-
-  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
-  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
-
-  void registerBookmarkView(ZFlyEmBookmarkView *view);
-
-  void exportGrayscale();
-  void exportGrayscale(const ZIntCuboid &box, int dsIntv, const QString &fileName);
-  void exportBodyStack();
-
-  //exploratory code
-  void exportNeuronScreenshot(
-      const std::vector<uint64_t> &bodyIdArray, int width, int height,
-      const QString &outDir);
-
-  void exportNeuronMeshScreenshot(
-      const std::vector<uint64_t> &bodyIdArray, int width, int height,
-      const QString &outDir);
-
-  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
-    return m_bodyInfoDlg;
-  }
 
   void diagnose();
   void showSetting();
@@ -165,6 +131,42 @@ public:
 
   static void showAnnotations(bool show);
   static bool showingAnnotations();
+
+  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
+
+  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
+    return m_bodyInfoDlg;
+  }
+
+public: //bookmark functions
+    ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
+       flyem::EProofreadingMode mode) const {
+      return m_assignedBookmarkModel[mode];
+    }
+
+    ZFlyEmBookmarkListModel* getUserBookmarkModel(
+       flyem::EProofreadingMode mode) const {
+      return m_userBookmarkModel[mode];
+    }
+
+    ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
+    ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
+
+    void registerBookmarkView(ZFlyEmBookmarkView *view);
+
+public: //Export functions
+  void exportGrayscale();
+  void exportGrayscale(const ZIntCuboid &box, int dsIntv, const QString &fileName);
+  void exportBodyStack();
+
+  //exploratory code
+  void exportNeuronScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
+
+  void exportNeuronMeshScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
 
 signals:
   void launchingSplit(const QString &message);
@@ -187,7 +189,7 @@ signals:
   void highlightModeChanged();
   void roiLoaded();
   void locating2DViewTriggered(int x, int y, int z, int width);
-
+  void dvidReady();
 
 public slots:
   void mergeSelected();
@@ -199,6 +201,7 @@ public slots:
   void setDvidTarget();
   void launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode);
   void processMessageSlot(const QString &message);
+  void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
   void annotateBody();
   void annotateSynapse();
@@ -467,15 +470,13 @@ private:
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
-
-  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
-
   void exitHighlightMode();
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId);
   ZDvidSparseStack* updateBodyForSplit(uint64_t bodyId, ZDvidReader &reader);
 
   void prepareTile(ZDvidTileEnsemble *te);
   void applySettings();
+  void connectSignalSlot();
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 

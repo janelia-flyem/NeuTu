@@ -88,6 +88,7 @@ public:
   void setViewProj(int x0, int y0, double zoom);
   void setViewProj(const QPoint &pt, double zoom);
   void resetViewProj(int x0, int y0, int w, int h);
+  void resetViewProj(int x0, int y0, int w, int h, const QRect &viewPort);
 
   /*!
    * \brief Move viewport.

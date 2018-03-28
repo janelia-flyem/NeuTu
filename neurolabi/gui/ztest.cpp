@@ -24719,23 +24719,46 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  std::map<QString, int> map1;
+  std::map<QString, int/*,QStringNaturalCompare*/> map1;
   map1["#.FlyEMSynapse.Psd#43"] = 1;
   map1["#.FlyEMSynapse.Psd#18110738494"] = 2;
   map1["#.FlyEMSynapse.TBar#43"] = 3;
   map1["#.FlyEMSynapse.TBar#18110738494"] = 4;
 
-  std::map<QString, std::string> map2;
-  map2["#.FlyEMSynapse.Psd#18110738494"] = "1";
+  std::map<QString, std::string/*,QStringNaturalCompare*/> map2;
+  map2["#.FlyEMSynapse.Psd#43"] = "1";
   map2["#.FlyEMSynapse.TBar#18110738494"] = "2";
 
   std::map<QString, int> map3;
   std::set_difference(map1.begin(), map1.end(), map2.begin(), map2.end(),
                       std::inserter(map3, map3.end()), QStringKeyNaturalLess());
 
+  std::cout << "Wrong set difference" << std::endl;
   std::cout << map3.size() << std::endl;
   for (const auto &m : map3) {
     qDebug() << m.first << m.second;
+  }
+#endif
+
+#if 0
+  std::set<QString, QStringNaturalCompare> set1;
+  set1.insert("#.FlyEMSynapse.Psd#43");
+  set1.insert("#.FlyEMSynapse.Psd#18110738494");
+  set1.insert("#.FlyEMSynapse.TBar#43");
+  set1.insert("#.FlyEMSynapse.TBar#18110738494");
+
+  std::map<QString, std::string, QStringNaturalCompare> map2;
+  map2["#.FlyEMSynapse.Psd#43"] = "1";
+  map2["#.FlyEMSynapse.TBar#18110738494"] = "2";
+  map2["#.FlyEMSynapse.TBar#18"] = "3";
+
+  std::set<QString, QStringNaturalCompare> set3;
+  std::set_difference(set1.begin(), set1.end(), map2.begin(), map2.end(),
+                      std::inserter(set3, set3.end()), QStringKeyNaturalLess());
+
+  std::cout << set3.size() << std::endl;
+  for (const auto &m : set3) {
+    qDebug() << m;
   }
 #endif
 
@@ -25597,7 +25620,14 @@ void ZTest::test(MainWindow *host)
 #if defined(_USE_WEBENGINE_)
   QWebEngineView *view = new QWebEngineView(NULL);
 //  view->setUrl(QUrl("https://janeliascicomp.github.io/SharkViewer/"));
-  QUrl url("http://emdata1.int.janelia.org:8500/neuroglancer/#!{'layers':{'grayscale':{'type':'image'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/grayscale'}_'labels3':{'type':'segmentation'_'source':'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/labels3'}}_'navigation':{'pose':{'position':{'voxelSize':[8_8_8]_'voxelCoordinates':[4032_5600_7936]}}_'zoomFactor':8}_'perspectiveOrientation':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'perspectiveZoom':64}");
+  QUrl url("http://emdata1.int.janelia.org:8500/neuroglancer/#!"
+           "{'layers':{'grayscale':{"
+           "'type':'image'_'source':"
+           "'dvid://http://emdata1.int.janelia.org:8500/babdf6dbc23e44a69953a66e2260ff0a/grayscale'}_"
+           "'labels3':{'type':'segmentation'_"
+           "'source':'dvid://http://emdata1.int.janelia.org:8500/"
+           "babdf6dbc23e44a69953a66e2260ff0a/labels3'_'segments':['100032978448']}}"
+           "_'navigation':{'pose':{'position':{'voxelSize':[8_8_8]_'voxelCoordinates':[4032_5600_7936]}}_'zoomFactor':8}_'perspectiveOrientation':[-0.12320887297391891_0.2175416201353073_-0.00949245784431696_0.9681968092918396]_'perspectiveZoom':64}");
   view->setUrl(url);
   view->show();
 #endif
@@ -25613,6 +25643,119 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  lowtis::DVIDLabelblkConfig config;
+
+  config.username = "sample";
+  config.dvid_server = "emdata2.int.janelia.org:8300";
+  config.dvid_uuid = "1236";
+  config.datatypename = "base20180227_8nm_watershed_fixed";
+
+  // create service for 2D image fetching
+  lowtis::ImageService service(config);
+
+
+  // fetch image from 0,0,0 into buffer
+  int width = 1024; int height = 1024;
+  std::vector<int> offset(3,0);
+  offset[0] = 17152;
+  offset[1] = 22592;
+  offset[2] = 19328;
+
+  char* buffer = new char[width*height*8];
+  service.retrieve_image(width, height, offset, buffer);
+#endif
+
+#if 0
+  // create dvid config
+  lowtis::DVIDLabelblkConfig config;
+  config.username = "sample";
+  config.dvid_server = "emdata1.int.janelia.org:8500";
+  config.dvid_uuid = "b6bc";
+  config.datatypename = "labels";
+  //config.centercut = std::tuple<int, int>(256, 256);
+  // create service for 2D image fetching
+  lowtis::ImageService service(config);
+  std::vector<int> center(3,0);
+  center[0] = 4003;
+  center[1] = 5607;
+  center[2] = 7312;
+  std::vector<double> dim1(3,0);
+  std::vector<double> dim2(3,0);
+  dim1[0] = 1;
+  dim2[1] = 1;
+  int width = 1024; int height = 1024;
+  char* buffer = new char[width*height*8];
+  service.retrieve_arbimage(1024, 1024, center, dim1, dim2, buffer, 0, false);
+  std::cout << "success" << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  ZDvidReader reader;
+  reader.open(target);
+
+//  ZArray *array = reader.readLabels64Lowtis(4003, 5607, 7312, 1024, 1024, 1);
+
+  ZArray *array = reader.readLabels64Lowtis(
+        4003, 5607, 7312, 1, 0, 0, 0, 1, 0, 1024, 1024, 0);
+  array->printInfo();
+
+  delete array;
+  /*
+   * {
+      "address": "emdata1.int.janelia.org",
+      "port": 8500,
+      "uuid": "b6bc",
+      "name": "MB_Test",
+      "comment": "MB seg (branched from febc)",
+      "body_label": "bodies",
+      "label_block": "labels",
+      "roi": "mb_subtracted",
+      "user_name": "zhaot"
+    }
+  */
+#endif
+
+#if 1
+  //testing labelmap
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "1236", 8700);
+  target.setSegmentationName("base20180227_8nm_watershed_fixed");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+#if 1
+  ZArray *array = reader.readLabels64Lowtis(
+        17152, 22592, 19328, 1024, 1024, 1);
+  array->printInfo();
+//  array->print();
+  std::cout << "Value: " << array->getUint64Value(0) << std::endl;
+
+  uint64_t bodyId =
+      reader.readBodyIdAt(17152 + 256, 22592 + 256, 19328 + 100);
+  std::cout << "Body ID: " << bodyId << std::endl;
+
+  delete array;
+#endif
+
+#if 0
+  uint64_t bodyId = 769263962;
+  ZObject3dScan body;
+  reader.readCoarseBody(bodyId, &body);
+  body.save(GET_TEST_DATA_DIR + "/test.sobj");
+
+  ZMesh *mesh = ZMeshFactory::MakeMesh(body);
+  mesh->save(GET_TEST_DATA_DIR + "/test.obj");
+
+  std::cout << reader.getDvidTarget().hasCoarseSplit() << std::endl;
+#endif
+
+#endif
+
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
@@ -25620,14 +25763,12 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
 
   ZStack *stack = reader.readGrayScaleLowtis(
-        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 512, 512, 0, 256, 256);
+        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 1024, 1024, 1, 256, 256);
 
   stack->save(GET_TEST_DATA_DIR + "/test.tif");
 #endif
 
-#if 1
-
-
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
@@ -25637,8 +25778,8 @@ void ZTest::test(MainWindow *host)
   ZArbSliceViewParam viewParam;
   viewParam.setSize(1024, 1024);
   viewParam.setCenter(17216, 19872, 20704);
-  ZPoint v1 = ZPoint(0, 1, 0);
-  ZPoint v2 = ZPoint(0, 0, 1);
+  ZPoint v1 = ZPoint(1, 0, 0);
+  ZPoint v2 = ZPoint(0, 1, 0);
 
   viewParam.setPlane(v1, v2);
   mvc->show();
@@ -25699,5 +25840,30 @@ void ZTest::test(MainWindow *host)
   */
 
 #endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  target.setBodyLabelName("bodies");
+
+  QFuture<ZDvidReader*> future = QtConcurrent::run(
+        [&](const ZDvidTarget &target) {
+    ZDvidReader *reader = new ZDvidReader;
+    reader->open(target);
+    return reader;
+  }, target);
+
+  future.waitForFinished();
+
+  ZDvidReader *reader = future.result();
+  std::cout << reader->hasData("labels") << std::endl;
+  std::cout << reader->hasData("labels10") << std::endl;
+  std::cout << reader->hasCoarseSparseVolume(1) << std::endl;
+  std::cout << reader->hasCoarseSparseVolume(2) << std::endl;
+  std::cout << reader->hasCoarseSparseVolume(12345678) << std::endl;
+
+#endif
+
   std::cout << "Done." << std::endl;
 }

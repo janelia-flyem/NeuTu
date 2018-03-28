@@ -285,6 +285,10 @@ public:
     m_maxViewPort = s;
   }
 
+  void setDefaultViewPort(const QRect &rect) {
+    m_defaultViewPort = rect;
+  }
+
 public: //Message system implementation
   class MessageProcessor : public ZMessageProcessor {
   public:
@@ -644,6 +648,7 @@ protected:
 
   ZScrollSliceStrategy *m_sliceStrategy;
 
+  QRect m_defaultViewPort;
   ZStackViewParam m_oldViewParam;
   bool m_viewParamRecorded = false;
   bool m_viewParamRecordOnce = false;

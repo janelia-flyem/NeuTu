@@ -18,6 +18,7 @@
 #include "zpixmap.h"
 #include "zstring.h"
 #include "zintcuboid.h"
+#include "zarbsliceviewparam.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -117,6 +118,13 @@ void ZDvidLabelSlice::setSliceAxis(neutube::EAxis sliceAxis)
   m_sliceAxis = sliceAxis;
 }
 
+void ZDvidLabelSlice::updatePixmap(ZPixmap *pixmap) const
+{
+  pixmap->convertFromImage(*m_paintBuffer, Qt::ColorOnly);
+  pixmap->setTransform(m_paintBuffer->getTransform());
+  pixmap->matchProj();
+}
+
 void ZDvidLabelSlice::display(
     ZPainter &painter, int /*slice*/, EDisplayStyle /*option*/,
     neutube::EAxis sliceAxis) const
@@ -134,10 +142,7 @@ void ZDvidLabelSlice::display(
     if (m_paintBuffer != NULL) {
       if (m_paintBuffer->isVisible()) {
         ZPixmap pixmap;
-        pixmap.convertFromImage(*m_paintBuffer, Qt::ColorOnly);
-        pixmap.setTransform(m_paintBuffer->getTransform());
-
-        pixmap.matchProj();
+        updatePixmap(&pixmap);
 
 #ifdef _DEBUG_2
         pixmap.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
@@ -239,6 +244,20 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
   forceUpdate(m_currentDataRect, m_currentZ, ignoringHidden);
 }
 #endif
+
+void ZDvidLabelSlice::forceUpdate(const ZArbSliceViewParam &viewParam)
+{
+  if (m_sliceAxis != neutube::A_AXIS || !viewParam.isValid()) {
+    return;
+  }
+
+  if (isVisible()) {
+    m_labelArray = m_reader.readLabels64Lowtis(
+          viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
+          viewParam.getWidth(), viewParam.getHeight(),
+          m_currentZoom);
+  }
+}
 
 void ZDvidLabelSlice::setDvidTarget(const ZDvidTarget &target)
 {
@@ -423,7 +442,8 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
       m_paintBuffer = new ZImage(width, height, QImage::Format_ARGB32);
       paintBufferUnsync();
       ZStTransform transform;
-      transform.setScale(1.0 / zoomRatio, 1.0 / zoomRatio);
+      double scale = 1.0 / zoomRatio;
+      transform.setScale(scale, scale);
       transform.setOffset(-x0, -y0);;
       m_paintBuffer->setTransform(transform);
 

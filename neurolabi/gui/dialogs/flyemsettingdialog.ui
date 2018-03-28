@@ -263,6 +263,30 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Mesh Split</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="meshThreSpinBox">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>999</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>x1M</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
