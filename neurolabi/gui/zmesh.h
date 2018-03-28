@@ -92,6 +92,8 @@ public:
   void load(const QString& filename);
 
   void save(const QString& filename, const std::string& format = "") const;
+  void save(const std::string& filename, const std::string& format = "") const;
+  void save(const char* filename, const std::string& format = "") const;
 
   QByteArray writeToMemory(const std::string &format) const;
 

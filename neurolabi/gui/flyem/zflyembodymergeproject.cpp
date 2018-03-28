@@ -135,7 +135,7 @@ void ZFlyEmBodyMergeProject::test()
 #if 1
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "b6bc", 8500);
-  target.setLabelBlockName("labels");
+  target.setSegmentationName("labels");
   setDvidTarget(target);
 
   uint64_t targetId = 12532906;

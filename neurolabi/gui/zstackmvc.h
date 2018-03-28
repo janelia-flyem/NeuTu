@@ -79,12 +79,14 @@ public:
   double getHeightZoomRatio() const;
   QSize getViewScreenSize() const;
   QRect getViewPort() const;
+  void setDefaultViewPort(const QRect &rect);
 
   void toggleStressTest();
   virtual void stressTest(ZStressTestOptionDialog *dlg);
 
   ERole getRole() const;
   void setRole(ERole role);
+
 
 signals:
 //  void stackChanged();
@@ -146,10 +148,15 @@ protected:
 
   typedef bool FConnectAction(
       const QObject*, const char *,
-      const QObject *, const char *);
+      const QObject *, const char *,
+      Qt::ConnectionType connetionType);
 
   static bool connectFunc(const QObject* obj1, const char *signal,
-                          const QObject *obj2, const char *slot);
+                          const QObject *obj2, const char *slot,
+                          Qt::ConnectionType connetionType);
+  static bool disconnectFunc(const QObject* obj1, const char *signal,
+                             const QObject *obj2, const char *slot,
+                             Qt::ConnectionType connetionType);
 
   void updateDocSignalSlot(FConnectAction connectAction);
   void updateSignalSlot(FConnectAction connectAction);

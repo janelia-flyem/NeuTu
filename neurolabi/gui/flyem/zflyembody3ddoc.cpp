@@ -416,6 +416,7 @@ ZDvidGraySlice* ZFlyEmBody3dDoc::getArbGraySlice() const
   return slice;
 }
 
+/*
 void ZFlyEmBody3dDoc::updateArbGraySlice(const ZArbSliceViewParam &viewParam)
 {
   ZDvidGraySlice *slice = getObject<ZDvidGraySlice>(
@@ -427,6 +428,7 @@ void ZFlyEmBody3dDoc::updateArbGraySlice(const ZArbSliceViewParam &viewParam)
     }
   }
 }
+*/
 
 void ZFlyEmBody3dDoc::setArbGraySliceVisible(bool v)
 {
@@ -1900,11 +1902,23 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
          ++iter) {
 //      removeObject(*iter, false);
 //      dumpGarbageUnsync(*iter, true);
+      LINFO() << "Put" << (*iter)->getSource() << " in recycle";
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
     }
 
     if (!objList.isEmpty()) {
       emit bodyRemoved(bodyId);
+    } else {
+      LWARN() << "No object found for" << bodyId;
+#ifdef _DEBUG_
+      LINFO() << "Current sources:";
+
+      TStackObjectList objList = getObjectGroup().getObjectList(
+            getBodyObjectType());
+      for (const ZStackObject *obj : objList) {
+        LINFO() << obj->getObjectClass() << obj->getSource();
+      }
+#endif
     }
 
     if (removingAnnotation) {
@@ -2098,6 +2112,15 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
 
 }
 
+QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
+{
+  QSet<uint64_t> bodySet;
+  foreach (uint64_t bodyId, m_bodySet) {
+    bodySet.insert(unencode(bodyId));
+  }
+  return bodySet;
+}
+
 ZDvidReader& ZFlyEmBody3dDoc::getBodyReader()
 {
   if (!m_bodyReader.isReady()) {
@@ -2234,6 +2257,11 @@ uint64_t ZFlyEmBody3dDoc::encode(uint64_t rawId, unsigned int level, bool tar)
 {
   uint64_t tarEncoding = tar ? ENCODING_TAR : 0;
   return (level + tarEncoding) * ENCODING_BASE + rawId;
+}
+
+uint64_t ZFlyEmBody3dDoc::unencode(uint64_t encodedId)
+{
+  return encodedId % ENCODING_BASE;
 }
 
 bool ZFlyEmBody3dDoc::encodesTar(uint64_t id) {
@@ -2399,7 +2427,16 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_
       m_dvidReader.readMeshArchiveEnd(arc);
 
       emit meshArchiveLoadingEnded();
+    } else {
+      QString title = "Mesh Loading Failed";
+      uint64_t idUnencoded = unencode(id);
+      QString text = "DVID mesh archive does not contain ID " +
+          QString::number(idUnencoded) + " (encoded as " + QString::number(id) + ")";
+      ZWidgetMessage msg(title, text, neutube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG);
+      emit messageGenerated(msg);
+      emit meshArchiveLoadingEnded();
     }
+
   } else {
     ZStackObject *obj = takeObjectFromBuffer(
           ZStackObject::TYPE_MESH,
@@ -2742,7 +2779,7 @@ void ZFlyEmBody3dDoc::compareBody(ZDvidReader &diffReader, const ZIntPoint &pt)
 #ifdef _DEBUG_
     std::cout << "Diff body target: " << std::endl;
     diffReader.getDvidTarget().print();
-    std::cout << diffReader.getDvidTarget().getLabelBlockName() << std::endl;
+    std::cout << diffReader.getDvidTarget().getSegmentationName() << std::endl;
 #endif
 
 #if 0
@@ -2850,7 +2887,7 @@ void ZFlyEmBody3dDoc::compareBody(const ZFlyEmBodyComparisonDialog *dlg)
     target.setUuid(dlg->getUuid());
     if (dlg->usingCustomSegmentation()) {
       target.useDefaultDataSetting(false);
-      target.setLabelBlockName(dlg->getSegmentation());
+      target.setSegmentationName(dlg->getSegmentation());
     } else if (dlg->usingSameSegmentation()) {
       target.useDefaultDataSetting(false);
     } else if (dlg->usingDefaultSegmentation()) {
@@ -2882,7 +2919,7 @@ void ZFlyEmBody3dDoc::compareBody(const std::string &uuid)
 
 #ifdef _DEBUG_
     std::cout << "Diff body target: " << std::endl;
-    std::cout << target.getLabelBlockName() << std::endl;
+    std::cout << target.getSegmentationName() << std::endl;
 #endif
 
       ZDvidReader diffReader;

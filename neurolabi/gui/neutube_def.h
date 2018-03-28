@@ -2,6 +2,7 @@
 #define NEUTUBE_DEF_H
 
 #include <limits>
+#include "functional"
 #include "tz_stdint.h"
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
@@ -90,6 +91,11 @@ enum ECardinalDirection {
   CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
 };
 
+enum EReadStatus {
+  READ_NULL, READ_OK, READ_FAILED, READ_TIMEOUT, READ_CANCELED,
+  READ_BAD_RESPONSE
+};
+
 namespace Json {
 namespace {
 const char* REF_KEY = "->";
@@ -176,6 +182,8 @@ enum EBodySplitRange {
 static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
 }
+
+using TProgressFunc = std::function<void(size_t, size_t)>;
 
 #if defined(_CPP11_)
 #  undef NULL

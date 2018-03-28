@@ -26,6 +26,10 @@ public:
   explicit ZWidgetMessage(const QString &msg,
                  neutube::EMessageType type = neutube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
+  explicit ZWidgetMessage(const QString &title, const QString &msg,
+                 neutube::EMessageType type = neutube::MSG_INFORMATION,
+                 ETarget target = TARGET_TEXT_APPENDING);
+
 
   QString toHtmlString() const;
   static QString ToHtmlString(const QString &msg, neutube::EMessageType type);
@@ -58,10 +62,11 @@ public:
   inline const QString &getTitle() const { return m_title; }
 
   template <typename T1, typename T2>
-  static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
-
-  template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target);
+
+  //Obsolete API
+  template <typename T1, typename T2>
+  static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
 
   static QString appendTime(const QString &message);
 

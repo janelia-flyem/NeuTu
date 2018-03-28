@@ -578,6 +578,8 @@ QSize ZImageWidget::sizeHint() const
 
 void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
 {
+  resetViewProj(x0, y0, w, h, QRect());
+#if 0
 #ifdef _DEBUG_2
   std::cout << "ZImageWidget::resetViewProj" << std::endl;
 #endif
@@ -585,6 +587,21 @@ void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
   m_viewProj.setWidgetRect(rect());
   m_viewProj.maximizeViewPort();
   m_isReady = false;
+
+  updateView();
+#endif
+}
+
+void ZImageWidget::resetViewProj(int x0, int y0, int w, int h, const QRect &viewPort)
+{
+  setCanvasRegion(x0, y0, w, h);
+  m_viewProj.setWidgetRect(rect());
+  if (viewPort.isValid()) {
+    m_viewProj.setViewPort(viewPort);
+  } else {
+    m_viewProj.maximizeViewPort();
+  }
+  m_isReady = true;
 
   updateView();
 }

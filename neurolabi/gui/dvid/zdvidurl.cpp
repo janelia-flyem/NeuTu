@@ -255,7 +255,7 @@ std::string ZDvidUrl::getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom)
 {
   std::string url;
 
-  if (m_dvidTarget.usingLabelArray()) {
+  if (m_dvidTarget.hasMultiscaleSegmentation()) {
     url = getSupervoxelUrl(bodyId);
     if (zoom > m_dvidTarget.getMaxLabelZoom()) {
       zoom = m_dvidTarget.getMaxLabelZoom();
@@ -280,7 +280,7 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
 {
   std::string url;
 
-  if (m_dvidTarget.usingLabelArray()) {
+  if (m_dvidTarget.hasMultiscaleSegmentation()) {
     url = getSparsevolUrl(bodyId);
     if (zoom > m_dvidTarget.getMaxLabelZoom()) {
       zoom = m_dvidTarget.getMaxLabelZoom();
@@ -303,7 +303,7 @@ std::string ZDvidUrl::getMultiscaleSparsevolUrl(uint64_t bodyId, int zoom)
 std::string ZDvidUrl::getSparsevolUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {
-  if (axis = neutube::A_AXIS) {
+  if (axis == neutube::A_AXIS) {
     return "";
   }
 
@@ -343,7 +343,7 @@ std::string ZDvidUrl::getSparsevolUrl(
 std::string ZDvidUrl::getSupervoxelUrl(
     uint64_t bodyId, int z, neutube::EAxis axis) const
 {
-  if (axis = neutube::A_AXIS) {
+  if (axis == neutube::A_AXIS) {
     return "";
   }
 
@@ -462,7 +462,7 @@ std::string ZDvidUrl::getSparsevolSizeUrl(uint64_t bodyId) const
 {
   ZString url;
 
-  if (m_dvidTarget.usingLabelArray()) {
+  if (m_dvidTarget.hasSparsevolSizeApi()) {
     url = getDataUrl(m_dvidTarget.getBodyLabelName());
     if (!url.empty()) {
       url += "/" + ZDvidData::GetName(ZDvidData::ROLE_SPARSEVOL_SIZE);
@@ -702,12 +702,12 @@ std::string ZDvidUrl::getGrayScaleBlockUrl(
 
 std::string ZDvidUrl::getLabels64Url() const
 {
-  return getDataUrl(m_dvidTarget.getLabelBlockName());
+  return getDataUrl(m_dvidTarget.getSegmentationName());
 }
 
 std::string ZDvidUrl::getLabels64Url(int zoom) const
 {
-  std::string dataName = m_dvidTarget.getValidLabelBlockName(zoom);
+  std::string dataName = m_dvidTarget.getValidSegmentationName(zoom);
 
   return getDataUrl(dataName);
 }
@@ -730,7 +730,7 @@ std::string ZDvidUrl::getLabels64Url(
 std::string ZDvidUrl::getLabels64Url(int sx, int sy, int sz,
     int x0, int y0, int z0, int zoom) const
 {
-  return getLabels64Url(m_dvidTarget.getValidLabelBlockName(zoom),
+  return getLabels64Url(m_dvidTarget.getValidSegmentationName(zoom),
                         sx, sy, sz, x0, y0, z0);
 }
 
@@ -910,7 +910,7 @@ std::string ZDvidUrl::getMergeOperationUrl(const std::string &dataName) const
 
 std::string ZDvidUrl::getMergeOperationUrl(const std::string &userName) const
 {
-  std::string key = m_dvidTarget.getLabelBlockName();
+  std::string key = m_dvidTarget.getSegmentationName();
   if (key.empty()) {
     return "";
   }

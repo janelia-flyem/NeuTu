@@ -162,9 +162,9 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setPort(getPort());
     target.setBodyLabelName(getBodyLabelName());
     if (getSegmentationName().empty()) {
-      target.setNullLabelBlockName();
+      target.setNullSegmentationName();
     } else {
-      target.setLabelBlockName(getSegmentationName());
+      target.setSegmentationName(getSegmentationName());
     }
     target.setGrayScaleName(getGrayscaleName());
 
@@ -196,7 +196,7 @@ void ZDvidDialog::setServer(int index)
   ui->dvidSourceWidget->setUuid(dvidTarget.getUuid());
   ui->infoLabel->setText(dvidTarget.getComment().c_str());
   ui->grayScalelineEdit->setText(dvidTarget.getGrayScaleName().c_str());
-  ui->labelBlockLineEdit->setText(dvidTarget.getLabelBlockName().c_str());
+  ui->labelBlockLineEdit->setText(dvidTarget.getSegmentationName().c_str());
   //ui->maxZoomSpinBox->setValue(dvidTarget.getMaxLabelZoom());
 //  ui->labelszLineEdit->setText(dvidTarget.getLabelszName().c_str());
   ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());

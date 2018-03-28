@@ -626,7 +626,7 @@ ZSwcTree* ZCommandLine::traceDvid()
   ZDvidTarget target;
   target.setFromSourceString(m_input[0], ZDvid::TYPE_UINT8BLK);
 
-  target.setNullLabelBlockName();
+  target.setNullSegmentationName();
   tracer.setDvidTarget(target);
   tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
 

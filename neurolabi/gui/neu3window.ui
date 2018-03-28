@@ -28,6 +28,7 @@
      <string>Advanced</string>
     </property>
     <addaction name="actionSettings"/>
+    <addaction name="actionNeuTu_Proofread"/>
    </widget>
    <addaction name="menuAdvanced"/>
   </widget>
@@ -35,6 +36,11 @@
   <action name="actionSettings">
    <property name="text">
     <string>&amp;Settings</string>
+   </property>
+  </action>
+  <action name="actionNeuTu_Proofread">
+   <property name="text">
+    <string>NeuTu</string>
    </property>
   </action>
  </widget>

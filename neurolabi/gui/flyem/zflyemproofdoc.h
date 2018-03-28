@@ -231,6 +231,8 @@ public:
 
   const ZDvidInfo& getDvidInfo() const;
 
+  void startTimer();
+
 public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
@@ -553,7 +555,6 @@ private:
   void init();
   void initTimer();
   void initAutoSave();
-  void startTimer();
 
   QString getBodySelectionMessage() const;
 
