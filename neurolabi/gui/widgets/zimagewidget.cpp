@@ -35,6 +35,8 @@ ZImageWidget::~ZImageWidget()
 
 void ZImageWidget::init()
 {
+  qDebug() << "ZImageWidget initialization:" << this;
+
   m_isViewHintVisible = true;
   m_freeMoving = true;
   m_hoverFocus = false;
@@ -70,11 +72,14 @@ void ZImageWidget::init()
 
 void ZImageWidget::maximizeViewPort()
 {
+  qDebug() << "ZImageWidget::maximizeViewPort";
   m_viewProj.maximizeViewPort();
 }
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
+  qDebug() << "ZImageWidget::paintEvent";
+
   QWidget::paintEvent(event);
 
 #ifdef _DEBUG_2
@@ -758,8 +763,16 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
 
 void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
+  qDebug() << "ZImageWidget::resizeEvent" << size() << isVisible();
+
   m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
 //  setValidViewPort(m_viewPort);
+}
+
+void ZImageWidget::showEvent(QShowEvent *event)
+{
+  qDebug() << "ZImageWidget::showEvent" << isVisible();
+  QWidget::showEvent(event);
 }
 
 void ZImageWidget::keyPressEvent(QKeyEvent *event)

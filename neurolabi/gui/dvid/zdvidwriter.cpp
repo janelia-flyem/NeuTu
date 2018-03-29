@@ -31,10 +31,6 @@
 ZDvidWriter::ZDvidWriter(/*QObject *parent*/)   /*:
 QObject(parent)*/
 {
-#ifdef _DEBUG_
-  std::cout << "Creating dvid writer." << std::endl;
-#endif
-
   init();
 //  m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
@@ -80,6 +76,10 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   if (!target.isValid()) {
     return false;
   }
+
+#ifdef _DEBUG_
+  std::cout << "Opening dvid writer." << std::endl;
+#endif
 
   m_reader.open(target);
 

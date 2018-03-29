@@ -235,6 +235,7 @@ public:
 protected:
   void keyPressEvent(QKeyEvent *event);
   bool event(QEvent *event);
+  void showEvent(QShowEvent *event);
 
 public slots:
   void updateView();
