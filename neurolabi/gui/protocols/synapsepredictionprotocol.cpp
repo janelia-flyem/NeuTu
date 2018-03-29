@@ -33,8 +33,10 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     // sites table
     m_sitesModel = new QStandardItemModel(0, 5, ui->sitesTableView);
     setSitesHeaders(m_sitesModel);
-    ui->sitesTableView->setModel(m_sitesModel);
-
+    m_sitesProxy = new QSortFilterProxyModel(this);
+    m_sitesProxy->setSourceModel(m_sitesModel);
+    m_sitesProxy->setSortCaseSensitivity(Qt::CaseInsensitive);
+    ui->sitesTableView->setModel(m_sitesProxy);
 
     // UI connections:
     connect(ui->firstButton, SIGNAL(clicked(bool)), this, SLOT(onFirstButton()));
@@ -60,6 +62,8 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
             this, SLOT(onDoubleClickSitesTable(QModelIndex)));
 
     // misc UI setup
+    setupColorList();
+
     ui->buttonBox->button(QDialogButtonBox::Close)->setDefault(true);
 
     m_currentPendingIndex = 0;
@@ -73,7 +77,7 @@ const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
 const std::string SynapsePredictionProtocol::KEY_PROTOCOL_RANGE = "range";
 const std::string SynapsePredictionProtocol::KEY_BODYID= "body ID";
 const int SynapsePredictionProtocol::fileVersion = 2;
-
+const QColor SynapsePredictionProtocol::COLOR_DEFAULT = QColor(0, 0, 0);      // no color
 
 /*
  * start the protocol anew; returns success status;
@@ -146,6 +150,9 @@ bool SynapsePredictionProtocol::initialize() {
         variationError(m_variation);
         return false;
     }
+
+    // initial color map is nothing
+    enableProtocolColorMap();
 
     // generate pending/finished lists from user input
     // throw this into a thread?
@@ -302,6 +309,10 @@ void SynapsePredictionProtocol::onCompleteButton() {
 
     if (ans == QMessageBox::Ok) {
         saveState();
+
+        // restore original color map
+        disableProtocolColorMap();
+
         emit protocolCompleting();
     }
 }
@@ -359,6 +370,9 @@ void SynapsePredictionProtocol::onDetailsButton() {
 }
 
 void SynapsePredictionProtocol::onExitButton() {
+    // restore original color map
+    disableProtocolColorMap();
+
     // exit protocol; can be reopened and worked on later
     emit protocolExiting();
 }
@@ -456,6 +470,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
         saveState();
     }
 
+    enableProtocolColorMap();
     onFirstButton();
 }
 
@@ -584,8 +599,8 @@ void SynapsePredictionProtocol::moveSynapse(
 }
 
 void SynapsePredictionProtocol::updateLabels() {
-    // currently we update all labels and the PSD table at once
-
+    // currently we update all labels here while calling methods
+    //  to do the table and color map
 
     // current presynaptic sites labels:
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
@@ -623,6 +638,7 @@ void SynapsePredictionProtocol::updateLabels() {
         ui->postTableLabel->setText(QString("PSDs (%1/%2 verified)").arg(nPSDverified).arg(synapse.size() - 1));
 
         updateSitesTable(synapse);
+        updateColorMap(synapse);
     } else {
         ui->preLocationLabel->setText(QString("(--, --, --)"));
         ui->preConfLabel->setText(QString("Confidence: --"));
@@ -744,6 +760,10 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
     // currently plan to rebuild from scratch each time
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
 
+        // save sort order to restore later
+        Qt::SortOrder sortOrder = m_sitesProxy->sortOrder();
+        int sortColumn = m_sitesProxy->sortColumn();
+
         // note: post synaptic sites start at index 1, but the
         //  table row still starts at 0
         for (size_t i=1; i<synapse.size(); i++) {
@@ -783,17 +803,22 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
         ui->sitesTableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
         ui->sitesTableView->horizontalHeader()->setResizeMode(SITES_CONFIDENCE_COLUMN, QHeaderView::Stretch);
 #endif
+
+        // restore sort order
+        ui->sitesTableView->horizontalHeader()->setSortIndicator(sortColumn, sortOrder);
     }
 }
 
-void SynapsePredictionProtocol::onDoubleClickSitesTable(QModelIndex index) {
-    QStandardItem *itemX = m_sitesModel->item(index.row(), SITES_X_COLUMN);
+void SynapsePredictionProtocol::onDoubleClickSitesTable(QModelIndex tableIndex) {
+    QModelIndex modelIndex = m_sitesProxy->mapToSource(tableIndex);
+
+    QStandardItem *itemX = m_sitesModel->item(modelIndex.row(), SITES_X_COLUMN);
     int x = itemX->data(Qt::DisplayRole).toInt();
 
-    QStandardItem *itemY = m_sitesModel->item(index.row(), SITES_Y_COLUMN);
+    QStandardItem *itemY = m_sitesModel->item(modelIndex.row(), SITES_Y_COLUMN);
     int y = itemY->data(Qt::DisplayRole).toInt();
 
-    QStandardItem *itemZ = m_sitesModel->item(index.row(), SITES_Z_COLUMN);
+    QStandardItem *itemZ = m_sitesModel->item(modelIndex.row(), SITES_Z_COLUMN);
     int z = itemZ->data(Qt::DisplayRole).toInt();
 
     emit requestDisplayPoint(x, y, z);
@@ -836,6 +861,87 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
         }
     }
     return result;
+}
+
+void SynapsePredictionProtocol::setupColorList() {
+    // these are the colors I used in Raveler for its PSD protocol; they're
+    //  chosen to be fairly bright
+    m_postColorList.clear();
+    m_postColorList << QColor(0, 255, 0)     // green
+                    << QColor(255, 0, 0)     // red
+                    << QColor(0, 128, 255)   // blue
+                    << QColor(128, 0, 255)   // purple
+                    << QColor(255, 128, 0)   // orange
+                    << QColor(0, 255, 128)   // blue-green
+                    << QColor(0, 0, 255)     // dark blue
+                    << QColor(255, 0, 128)   // purple-red
+                    << QColor(255, 255, 0)   // yellow
+                    << QColor(255, 0, 255)  // pink-purple
+                    << QColor(128, 255, 0)  // yellow-green
+                    << QColor(0, 255, 255)  // light blue
+                    ;
+
+}
+
+/*
+ * return a color out of the table for a given index
+ */
+QColor SynapsePredictionProtocol::getColor(int index) {
+    return m_postColorList[index % m_postColorList.size()];
+}
+
+void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapses) {
+    // remember, the first element of the incoming vector is the pre-synaptic
+    //  element (the T-bar)
+    if (synapses.size() < 2) {
+        // no post-synaptic elements
+        return;
+    }
+
+    // get body IDs for all locations
+    std::vector<ZIntPoint> sites;
+    for (size_t i=0; i<synapses.size(); i++) {
+        sites.push_back(synapses[i].getPosition());
+    }
+
+    ZDvidReader reader;
+    if (reader.open(m_dvidTarget)) {
+        std::vector<uint64_t> bodyList = reader.readBodyIdAt(sites);
+        // if we don't have body IDs (no segmentation), we're done
+        if (bodyList.size() == 0) {
+            return;
+        }
+
+        // color the T-bar (i=0):
+        m_colorScheme.clear();
+        m_colorScheme.setBodyColor(bodyList[0], getColor(0));
+
+        // color the verified post-synaptic sites; note that
+        //  by using the overall synapse index, we keep the colors
+        // constant as the PSDs are verified
+        for (size_t i=0; i<synapses.size(); i++) {
+            if (synapses[i].isVerified()) {
+                m_colorScheme.setBodyColor(bodyList[i], getColor(i));
+            }
+        }
+        m_colorScheme.buildColorTable();
+        emit requestColorMapChange(m_colorScheme);
+    }
+
+}
+
+/*
+ * when you enter the protocol, switch to the protocol color map
+ */
+void SynapsePredictionProtocol::enableProtocolColorMap() {
+    m_colorScheme.clear();
+    m_colorScheme.setDefaultColor(COLOR_DEFAULT);
+    emit requestColorMapChange(m_colorScheme);
+    emit requestActivateColorMap();
+}
+
+void SynapsePredictionProtocol::disableProtocolColorMap() {
+    emit requestDeactivateColorMap();
 }
 
 void SynapsePredictionProtocol::setSitesHeaders(QStandardItemModel * model) {
