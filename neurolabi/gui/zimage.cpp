@@ -1326,6 +1326,10 @@ void ZImage::enhanceContrast(bool highContrast)
         color.setGreen(v);
         color.setBlue(v);
         setColor(i, color.rgb());
+
+#ifdef _DEBUG_2
+        std::cout << "Gray map: " << i << " -> " << v << std::endl;
+#endif
       }
     } else {
       for (int i = 0; i < 255; ++i) {

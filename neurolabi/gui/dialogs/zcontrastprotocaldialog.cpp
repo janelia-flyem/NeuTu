@@ -2,6 +2,7 @@
 #include "ui_zcontrastprotocaldialog.h"
 
 #include "zjsonobject.h"
+#include "zcontrastprotocol.h"
 
 ZContrastProtocalDialog::ZContrastProtocalDialog(QWidget *parent) :
   QDialog(parent),
@@ -24,4 +25,15 @@ ZJsonObject ZContrastProtocalDialog::getContrastProtocal() const
   obj.setEntry("nonlinear", ui->nonlinearCheckBox->isChecked());
 
   return obj;
+}
+
+void ZContrastProtocalDialog::setContrastProtocol(
+    const ZJsonObject &protocolJson)
+{
+  ZContrastProtocol protocal;
+  protocal.load(protocolJson);
+
+  ui->offsetSpinBox->setValue(protocal.getOffset());
+  ui->scaleSpinBox->setValue(protocal.getScale());
+  ui->nonlinearCheckBox->setChecked(protocal.isNonlinear());
 }
