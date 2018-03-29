@@ -211,13 +211,18 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
         data = service->custom_request(
               endPoint, libdvid::BinaryDataPtr(), libdvid::GET, m_tryingCompress);
       }
+      qDebug() << "Reading done:" << url;
 
       m_buffer.append(data->get_data().c_str(), data->length());
       m_status = neutube::READ_OK;
       m_statusCode = 200;
     } catch (libdvid::DVIDException &e) {
-      std::cout << e.what() << std::endl;
+      std::cout << "Exception: " << e.what() << std::endl;
       m_statusCode = e.getStatus();
+      m_status = neutube::READ_FAILED;
+    } catch (std::exception &e) {
+      std::cout << "Any exception: " << e.what() << std::endl;
+      m_statusCode = 0;
       m_status = neutube::READ_FAILED;
     }
   } else {
@@ -259,6 +264,10 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
           this, SLOT(handleError(QNetworkReply::NetworkError)));
 
   waitForReading();
+#endif
+
+#ifdef _DEBUG_
+  std::cout << "Exiting " << "ZDvidBufferReader::read" << std::endl;
 #endif
 }
 

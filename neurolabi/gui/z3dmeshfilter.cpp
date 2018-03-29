@@ -119,6 +119,7 @@ bool Z3DMeshFilter::showingSourceColors() const
 
 void Z3DMeshFilter::setData(const std::vector<ZMesh*>& meshList)
 {
+  m_meshBoundboxMapper.clear();
   m_origMeshList = meshList;
   //LOG(INFO) << className() << " read " << m_origMeshList.size() << " meshes.";
   getVisibleData();
@@ -130,6 +131,7 @@ void Z3DMeshFilter::setData(const std::vector<ZMesh*>& meshList)
 
 void Z3DMeshFilter::setData(const QList<ZMesh*>& meshList)
 {
+  m_meshBoundboxMapper.clear();
   m_origMeshList.clear();
   for (auto mesh : meshList)
     m_origMeshList.push_back(mesh);
