@@ -2937,7 +2937,7 @@ void ZStackView::processViewChange(bool redrawing)
 
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 {
-  if (!isViewChangeEventBlocked()) {
+  if (!isViewChangeEventBlocked() && isVisible()) {
 //    ZStackViewParam param = getViewParameter(neutube::COORD_STACK);
     QSet<ZStackObject::ETarget> targetSet = updateViewData();
 
@@ -2967,17 +2967,6 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
         paintStackBuffer();
       }
     }
-
-#ifdef _DEBUG_2
-//    updateActiveDecorationCanvas();
-//    updateNewTileCanvas();
-
-
-    if (!isViewChangeEventBlocked()) {
-//      emit viewChanged(param);
-    }
-    paintObjectBuffer(ZStackObject::TARGET_TILE_CANVAS);
-#endif
 
     notifyViewChanged(getViewParameter()); //?
   }
