@@ -25718,7 +25718,7 @@ void ZTest::test(MainWindow *host)
   */
 #endif
 
-#if 1
+#if 0
   //testing labelmap
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "1236", 8700);
@@ -25863,6 +25863,18 @@ void ZTest::test(MainWindow *host)
   std::cout << reader->hasCoarseSparseVolume(2) << std::endl;
   std::cout << reader->hasCoarseSparseVolume(12345678) << std::endl;
 
+#endif
+
+#if 1
+  ZContrastProtocol protocol;
+  protocol.setScale(5.2);
+  protocol.setOffset(-0.5);
+  protocol.setNonlinear(ZContrastProtocol::NONLINEAR_SIGMOID);
+
+//  std::cout << protocol.mapFloat(1.0) << std::endl;
+  for (int i = 0; i < 256; ++i) {
+    std::cout << i << " -> " << int(protocol.mapGrey(i)) << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;
