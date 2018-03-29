@@ -108,7 +108,7 @@ private:
   QAction *m_nameColorAction;
 
 //  QAction *m_sequencerColorAction;
-//  QAction *m_focusedColorAction;
+//  QAction *m_protocolColorAction;
 
   ZColorLabel *m_latencyWidget;
 

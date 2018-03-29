@@ -83,8 +83,8 @@ TEST(ZFlyEmProofDoc, ColorMap)
   ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER));
 
   doc.activateBodyColorMap(ZFlyEmBodyColorOption::GetColorMapName(
-                             ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED));
-  ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED));
+                             ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL));
+  ASSERT_TRUE(doc.isActive(ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL));
 }
 
 #endif
