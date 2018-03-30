@@ -768,7 +768,7 @@ void TaskBodyCleave::writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
 {
   std::string instance = writer.getDvidTarget().getBodyLabelName();
   ZDvidUrl url(writer.getDvidTarget());
-  std::string urlBase = url.getNodeUrl() + "/" + instance + "/cleave/" + std::to_string(m_bodyId) + "?cleavelabel=";
+  std::string urlCleave = url.getNodeUrl() + "/" + instance + "/cleave/" + std::to_string(m_bodyId);
 
   for (const auto &pair : cleaveIndexToMeshIds) {
     const std::vector<uint64_t> &ids = pair.second;
@@ -780,16 +780,9 @@ void TaskBodyCleave::writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
     // So we need check only the first super voxel ID in the vector.
 
     if (ids[0] != m_bodyId) {
-      uint64_t newBodyId = ids[0];
-
-      // When cleaving off super voxels to create a new body, the ID of that new body is the lowest of the
-      // super voxel IDs for that body, per the convention mentioned above.
-
-      std::string urlCleave = urlBase + std::to_string(newBodyId);
-
       ZJsonArray jsonBody;
       for (uint64_t id : ids) {
-        jsonBody.append(ZJsonValue(double(id)));
+        jsonBody.append(id);
       }
 
       writer.post(urlCleave, jsonBody);
