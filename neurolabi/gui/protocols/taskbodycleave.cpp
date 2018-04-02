@@ -830,8 +830,8 @@ void TaskBodyCleave::writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
       writer.post(urlCleave, jsonBody);
       if (!writer.isStatusOk()) {
         QString title = "Writing of cleaving results failed";
-        QString text = "Writing of cleaving results failed: " + QString::number(writer.getStatusCode()) + "\n" +
-            "URL: " + QString(urlCleave.c_str());
+        QString text = "Writing of cleaving results failed, code " + QString::number(writer.getStatusCode()) + ":\n" +
+            writer.getStatusErrorMessage();
         displayWarning(title, text);
         return;
       }
