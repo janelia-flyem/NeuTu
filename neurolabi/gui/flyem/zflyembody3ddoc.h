@@ -30,6 +30,11 @@ class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 //class ZFlyEmToDoItem;
 
+/*!
+ * \brief The class of managing body update in 3D.
+ *
+ * The class has a work thread to process a queue of body update events.
+ */
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
   Q_OBJECT
@@ -190,6 +195,8 @@ public:
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
+
+  const ZDvidReader& getMainDvidReader() const;
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -478,8 +485,8 @@ private:
 //  bool m_isBodySetBufferProcessed;
 
   ZDvidTarget m_dvidTarget;
-  ZDvidReader m_dvidReader;
-  ZDvidWriter m_dvidWriter;
+  ZDvidReader m_workDvidReader;
+  ZDvidWriter m_mainDvidWriter;
   ZDvidReader m_bodyReader;
 
   ZDvidInfo m_dvidInfo;

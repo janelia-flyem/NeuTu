@@ -48,6 +48,19 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
+  const ZDvidReader& getDvidReader() const;
+  const ZDvidTarget& getDvidTarget() const;
+  int getX() const;
+  int getY() const;
+  int getZ() const;
+  void setZ(int z);
+  int getWidth() const;
+  int getHeight() const;
+  int getZoom() const;
+
+  int getScale() const;
+
+  /*
   inline const ZDvidTarget& getDvidTarget() const {
     return m_reader.getDvidTarget();
   }
@@ -64,17 +77,19 @@ public:
   inline void setZ(int z) {
     m_currentViewParam.setZ(z);
   }
+  */
 
-  int getWidth() const { return m_currentViewParam.getViewPort().width(); }
-  int getHeight() const { return m_currentViewParam.getViewPort().height(); }
+//  int getWidth() const { return m_currentViewParam.getViewPort().width(); }
+//  int getHeight() const { return m_currentViewParam.getViewPort().height(); }
 
   ZRect2d getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void setBoundBox(const ZRect2d &rect);
 
-  int getZoom() const;
-  int getScale() const;
+  QRect getViewPort() const;
+  ZStackViewParam getViewParam() const;
+
 
   void setZoom(int zoom);
   void setContrastProtocol(const ZContrastProtocol &cp);
@@ -116,7 +131,7 @@ private:
   void validatePixmap();
   bool isPixmapValid() const;
 
-  bool validateSize(int *width, int *height);
+//  bool validateSize(int *width, int *height);
   template<typename T>
   int updateParam(T *param);
 
@@ -124,6 +139,13 @@ private:
    * \brief Check if the regions of the image and the slice are consistent.
    */
 //  bool isRegionConsistent() const;
+
+  const ZDvidDataSliceHelper* getHelper() const {
+    return m_helper.get();
+  }
+  ZDvidDataSliceHelper* getHelper() {
+    return m_helper.get();
+  }
 
 private:
   ZImage m_image;
@@ -134,14 +156,14 @@ private:
   ZContrastProtocol m_contrastProtocal;
 
   QMutex m_pixmapMutex;
-  ZStackViewParam m_currentViewParam;
+//  ZStackViewParam m_currentViewParam;
 
 //  ZArbSliceViewParam m_sliceViewParam; //Only useful for A_AXIS
 
-  int m_zoom;
+//  int m_zoom;
 
-  int m_maxWidth;
-  int m_maxHeight;
+//  int m_maxWidth;
+//  int m_maxHeight;
 
   int m_centerCutWidth = 256;
   int m_centerCutHeight = 256;
@@ -150,7 +172,7 @@ private:
 //  ZPoint m_v1;
 //  ZPoint m_v2;
 
-  ZDvidReader m_reader;
+//  ZDvidReader m_reader;
 };
 
 #endif // ZDVIDGRAYSLICE_H

@@ -32,7 +32,7 @@ ZWidgetMessage::ZWidgetMessage(const std::string &msg, neutube::EMessageType typ
 ZWidgetMessage::ZWidgetMessage(
     const QString &title, const QString &msg,
     neutube::EMessageType type, ETarget target) :
-  m_type(type), m_target(target), m_title(title)
+  m_title(title), m_type(type), m_target(target)
 {
   m_message.append(msg);
 }

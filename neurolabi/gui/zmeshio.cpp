@@ -394,6 +394,7 @@ void ZMeshIO::loadFromMemory(
       mesh.setType(GL_TRIANGLES);
       Assimp::Importer importer;
       initImporter(importer);
+//      qDebug() << "Meshes:" << buffer;
       const aiScene* scene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),                                               aiProcess_GenSmoothNormals |
                                                          aiProcess_JoinIdenticalVertices |
                                                          aiProcess_ImproveCacheLocality |
