@@ -3512,11 +3512,11 @@ void ZFlyEmProofDoc::updateSequencerBodyMap(
                          ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER);
 }
 
-void ZFlyEmProofDoc::updateFocusedColorMap(
+void ZFlyEmProofDoc::updateProtocolColorMap(
     const ZFlyEmSequencerColorScheme &colorScheme)
 {
   updateSequencerBodyMap(colorScheme,
-                         ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED);
+                         ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL);
 }
 
 #if 0
@@ -3654,7 +3654,7 @@ ZFlyEmProofDoc::getColorScheme(ZFlyEmBodyColorOption::EColorOption type)
     }
       break;
     case ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER:
-    case ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED:
+    case ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL:
       m_colorMapConfig[type] =
           ZSharedPointer<ZFlyEmBodyColorScheme>(new ZFlyEmSequencerColorScheme);
       break;
