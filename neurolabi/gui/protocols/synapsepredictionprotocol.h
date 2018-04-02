@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 
 #include "dvid/zdvidsynapse.h"
 #include "zjsonarray.h"
@@ -66,6 +67,7 @@ private:
     static const std::string KEY_PROTOCOL_RANGE;
     static const std::string KEY_BODYID;
     static const int fileVersion;
+    static const QColor COLOR_DEFAULT;
 
     enum SitesTableColumns {
         SITES_STATUS_COLUMN,
@@ -77,6 +79,7 @@ private:
 
     Ui::SynapsePredictionProtocol *ui;
     QStandardItemModel * m_sitesModel;
+    QSortFilterProxyModel * m_sitesProxy;
     std::string m_variation;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
@@ -84,6 +87,8 @@ private:
     int m_currentFinishedIndex;
     ZIntCuboid m_protocolRange;
     uint64_t  m_bodyID;
+    QList<QColor> m_postColorList;
+    ZFlyEmSequencerColorScheme m_colorScheme;
 
     void saveState();
     void updateLabels();
@@ -92,12 +97,16 @@ private:
     void loadInitialSynapseList();
     void setSitesHeaders(QStandardItemModel * model);
     void clearSitesTable();
-    void updateSitesTable(std::vector<ZDvidSynapse>);
+    void updateSitesTable(std::vector<ZDvidSynapse> synapses);
+    void updateColorMap(std::vector<ZDvidSynapse> synapses);
     std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
     static bool sortXY(const ZIntPoint &p1, const ZIntPoint &p2);
     static bool compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2);
-    void variationError(std::string variation);
-
+    void variationError(std::string variation);    
+    void setupColorList();
+    void enableProtocolColorMap();
+    void disableProtocolColorMap();
+    QColor getColor(int index);
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H

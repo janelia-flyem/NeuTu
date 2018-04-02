@@ -1411,8 +1411,8 @@ void ZFlyEmProofMvc::setLabelAlpha(int alpha)
 
 void ZFlyEmProofMvc::prepareTile(ZDvidTileEnsemble *te)
 {
-  te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
-  te->enhanceContrast(getCompletePresenter()->highTileContrast());
+//  te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
+//  te->enhanceContrast(getCompletePresenter()->highTileContrast());
   te->attachView(getView());
   ZDvidPatchDataFetcher *patchFetcher = new ZDvidPatchDataFetcher(this);
   ZDvidPatchDataUpdater *patchUpdater = new ZDvidPatchDataUpdater(this);
@@ -1468,14 +1468,14 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
 
   if (getRole() == ROLE_WIDGET) {
-    LINFO() << "Set contrast";
-    ZJsonObject contrastObj = reader.readContrastProtocal();
-    getPresenter()->setHighContrastProtocal(contrastObj);
+//    LINFO() << "Set contrast";
+//    ZJsonObject contrastObj = reader.readContrastProtocal();
+//    getPresenter()->setHighContrastProtocal(contrastObj);
 
     LINFO() << "Init grayslice";
     ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
     if (slice != NULL) {
-      slice->updateContrast(getCompletePresenter()->highTileContrast());
+//      slice->updateContrast(getCompletePresenter()->highTileContrast());
 
       ZDvidGraySliceScrollStrategy *scrollStrategy =
           new ZDvidGraySliceScrollStrategy(getView());
@@ -1490,6 +1490,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     foreach (ZDvidTileEnsemble *te, teList) {
       prepareTile(te);
     }
+    updateContrast();
   }
 
   getView()->reset(false);
@@ -1546,6 +1547,31 @@ void ZFlyEmProofMvc::showSetting()
     getCompleteDocument()->setGraySliceCenterCut(
           m_settingDlg->getCenterCutWidth(), m_settingDlg->getCenterCutHeight());
     getDocument()->showSwcFullSkeleton(m_settingDlg->showingFullSkeleton());
+  }
+}
+
+void ZFlyEmProofMvc::updateContrast()
+{
+  ZDvidReader &reader = getCompleteDocument()->getDvidReader();
+
+  LINFO() << "Set contrast";
+  ZJsonObject contrastObj =reader.readContrastProtocal();
+  getPresenter()->setHighContrastProtocal(contrastObj);
+
+  LINFO() << "Init grayslice";
+  ZDvidGraySlice *slice = getCompleteDocument()->getDvidGraySlice();
+  ZContrastProtocol protocal;
+  protocal.load(getPresenter()->getHighContrastProtocal());
+  if (slice != NULL) {
+    slice->setContrastProtocol(protocal);
+    slice->updateContrast(getCompletePresenter()->highTileContrast());
+  }
+
+  QList<ZDvidTileEnsemble*> teList =
+      getCompleteDocument()->getDvidTileEnsembleList();
+  foreach (ZDvidTileEnsemble *te, teList) {
+    te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
+    te->enhanceContrast(getCompletePresenter()->highTileContrast());
   }
 }
 
@@ -1801,6 +1827,10 @@ void ZFlyEmProofMvc::customInit()
             m_protocolSwitcher, SLOT(dvidTargetChanged(ZDvidTarget)));
     connect(m_protocolSwitcher, SIGNAL(requestDisplayPoint(int,int,int)),
             this, SLOT(zoomToL1(int,int,int)));
+    connect(m_protocolSwitcher, SIGNAL(colorMapChanged(ZFlyEmSequencerColorScheme)),
+            getCompleteDocument(), SLOT(updateProtocolColorMap(ZFlyEmSequencerColorScheme)));
+    connect(m_protocolSwitcher, SIGNAL(activateColorMap(QString)),
+            this, SLOT(changeColorMap(QString)));
   }
 
   m_paintLabelWidget = new ZPaintLabelWidget();
@@ -4376,6 +4406,9 @@ void ZFlyEmProofMvc::processCheckedUserBookmark(ZFlyEmBookmark * /*bookmark*/)
 void ZFlyEmProofMvc::enhanceTileContrast(bool state)
 {
   getCompletePresenter()->setHighTileContrast(state);
+  if (state) {
+    updateContrast();
+  }
   getCompleteDocument()->enhanceTileContrast(state);
 }
 

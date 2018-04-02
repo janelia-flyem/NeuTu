@@ -108,13 +108,7 @@ public:
   uint64_t getBodyIdForSplit() const;
   void setBodyIdForSplit(uint64_t id);
 
-  /*
-  ZFlyEmBodyMergeProject* getMergeProject() {
-    return &m_mergeProject;
-  }
-  */
-
-
+  void updateContrast();
 
   void diagnose();
   void showSetting();

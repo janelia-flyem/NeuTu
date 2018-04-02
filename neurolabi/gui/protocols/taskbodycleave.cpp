@@ -43,7 +43,8 @@ namespace {
   static const QString CLEAVING_STATUS_DONE = "Cleaving status: done";
   static const QString CLEAVING_STATUS_IN_PROGRESS = "Cleaving status: in progress...";
   static const QString CLEAVING_STATUS_FAILED = "Cleaving status: failed";
-  static const QString CLEAVING_STATUS_INCONSISTENT = "Cleaving status: inconsistent results";
+  static const QString CLEAVING_STATUS_SERVER_WARNINGS = "Cleaving status: server warnings";
+  static const QString CLEAVING_STATUS_SERVER_INCOMPLETE = "Cleaving status: omitted meshes";
 
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
   static const std::vector<glm::vec4> INDEX_COLORS({
@@ -369,7 +370,7 @@ void TaskBodyCleave::onSelectBody()
 void TaskBodyCleave::onToggleInChosenCleaveBody()
 {
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
-  std::map<uint64_t, size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
+  std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
 
   // The text of the combobox item will be updated to indicate the number of seeds
   // with the current color, so count them.
@@ -435,7 +436,7 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
       QJsonObject replyJson = replyJsonDoc.object();
 
       if (showCleaveReplyWarnings(replyJson)) {
-        status = CLEAVING_STATUS_INCONSISTENT;
+        status = CLEAVING_STATUS_SERVER_WARNINGS;
       }
 
       QJsonValue replyJsonAssnVal = replyJson["assignments"];
@@ -456,8 +457,8 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
         m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
 
-        if (showCleaveReplyDataErrors(meshIdToCleaveIndex)) {
-          status = CLEAVING_STATUS_INCONSISTENT;
+        if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
+          status = CLEAVING_STATUS_SERVER_INCOMPLETE;
         }
       }
     }
@@ -519,6 +520,11 @@ void TaskBodyCleave::onCompleted()
     }
     uint64_t id = pair.first;
     cleaveIndexToMeshIds[cleaveIndex].push_back(id);
+  }
+
+  if (cleaveIndexToMeshIds.size() < 2) {
+    // Fewer than two cleave indices means no actual cleaving, so omit the output.
+    return;
   }
 
   for (auto &pair : cleaveIndexToMeshIds) {
@@ -720,15 +726,20 @@ void TaskBodyCleave::cleave()
   QJsonObject requestJson;
   requestJson["body-id"] = qint64(m_bodyId);
 
-  std::map<unsigned int, std::vector<uint64_t>> cleaveIndexToMeshIds;
+  std::map<std::size_t, std::vector<uint64_t>> cleaveIndexToMeshIds;
   for (auto it1 : m_meshIdToCleaveIndex) {
-    unsigned int cleaveIndex = it1.second;
+    std::size_t cleaveIndex = it1.second;
     auto it2 = cleaveIndexToMeshIds.find(cleaveIndex);
     if (it2 == cleaveIndexToMeshIds.end()) {
       cleaveIndexToMeshIds[cleaveIndex] = std::vector<uint64_t>();
     }
     uint64_t id = it1.first;
     cleaveIndexToMeshIds[cleaveIndex].push_back(id);
+  }
+
+  if (cleavedWithoutServer(cleaveIndexToMeshIds)) {
+    m_cleavingStatusLabel->setText(CLEAVING_STATUS_DONE);
+    return;
   }
 
   QJsonObject requestJsonSeeds;
@@ -761,6 +772,37 @@ void TaskBodyCleave::cleave()
   QByteArray requestData(requestJsonDoc.toJson());
 
   m_networkManager->post(request, requestData);
+}
+
+bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>&
+                                          cleaveIndexToMeshIds)
+{
+  std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
+
+  if (cleaveIndexToMeshIds.size() == 0) {
+    // If no cleave indices are in use, just clear the map so all meshes return to the
+    // default color.
+
+    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+    return true;
+  } else if (cleaveIndexToMeshIds.size() == 1) {
+    // If one cleave index is in use, just use it for all the meshes.
+
+    std::size_t cleaveIndex = cleaveIndexToMeshIds.begin()->first;
+
+    QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+    for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+      ZMesh *mesh = *it;
+      meshIdToCleaveIndex[mesh->getLabel()] = cleaveIndex;
+    }
+
+    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+    return true;
+  }
+
+  // Other situations do require the cleave server.
+
+  return false;
 }
 
 void TaskBodyCleave::writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
@@ -850,7 +892,7 @@ bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
   return false;
 }
 
-bool TaskBodyCleave::showCleaveReplyDataErrors(std::map<uint64_t, std::size_t> meshIdToCleaveIndex)
+bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t> meshIdToCleaveIndex)
 {
   std::vector<ZMesh*> missing;
   QList<ZMesh*> meshes = m_bodyDoc->getMeshList();

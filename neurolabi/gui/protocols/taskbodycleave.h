@@ -92,6 +92,7 @@ private:
   void enableCleavingUI(bool showingCleaving);
 
   void cleave();
+  bool cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>& cleaveIndexToMeshIds);
 
   void writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
                    const std::map<unsigned int, std::vector<uint64_t>> &cleaveIndexToMeshIds);
@@ -99,7 +100,7 @@ private:
                             const std::map<unsigned int, std::vector<uint64_t>> &cleaveIndexToMeshIds);
 
   bool showCleaveReplyWarnings(const QJsonObject& reply);
-  bool showCleaveReplyDataErrors(std::map<uint64_t, std::size_t> meshIdToCleaveIndex);
+  bool showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t> meshIdToCleaveIndex);
   void displayWarning(const QString& title, const QString& text);
 
   virtual bool loadSpecific(QJsonObject json) override;

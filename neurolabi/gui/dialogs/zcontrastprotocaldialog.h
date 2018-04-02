@@ -18,6 +18,7 @@ public:
   ~ZContrastProtocalDialog();
 
   ZJsonObject getContrastProtocal() const;
+  void setContrastProtocol(const ZJsonObject &protocolJson);
 
 private:
   Ui::ZContrastProtocalDialog *ui;
