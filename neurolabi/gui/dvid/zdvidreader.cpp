@@ -2472,7 +2472,7 @@ ZIntPoint ZDvidReader::readPosition(uint64_t bodyId, int x, int y, int z) const
   uint8_t *stackArray = stack->array8();
   bool found = false;
   for (size_t offset = 0; offset < voxelCount; ++offset) {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
     std::cout << "Label64: " << array[offset] << " <> " << bodyId <<std::endl;
 #endif
     if (array[offset] == bodyId) {
