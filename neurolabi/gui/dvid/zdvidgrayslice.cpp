@@ -1,4 +1,5 @@
 #include "zdvidgrayslice.h"
+
 #include "zdvidurl.h"
 #include "zdvidbufferreader.h"
 #include "zrect2d.h"
@@ -8,6 +9,8 @@
 #include "imgproc/zstackprocessor.h"
 #include "zintcuboid.h"
 #include "neutubeconfig.h"
+#include "zdviddataslicehelper.h"
+#include "zutils.h"
 
 ZDvidGraySlice::ZDvidGraySlice()
 {
@@ -16,6 +19,8 @@ ZDvidGraySlice::ZDvidGraySlice()
   m_zoom = 0;
   m_maxWidth = 512;
   m_maxHeight = 512;
+
+  m_helper = std::make_unique<ZDvidDataSliceHelper>();
 }
 
 ZDvidGraySlice::~ZDvidGraySlice()

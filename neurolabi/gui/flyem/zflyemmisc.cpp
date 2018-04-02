@@ -1480,7 +1480,7 @@ ZJsonObject ZFlyEmMisc::MakeSplitTask(
     ZJsonObject signalInfo;
     signalInfo.setEntry(
           ZDvidTarget::m_grayScaleNameKey, target.getGrayScaleName());
-    ZJsonObject sourceConfig = target.getSourceConfig();
+    ZJsonObject sourceConfig = target.getSourceConfigJson();
     if (!sourceConfig.isEmpty()) {
       signalInfo.setEntry(ZDvidTarget::m_sourceConfigKey, sourceConfig);
     }

@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QtConcurrentRun>
 #include <QTimer>
+#include <QDirIterator>
 
 #include <iostream>
 #include <ostream>
@@ -8454,39 +8455,68 @@ void MainWindow::on_actionView_Segmentation_Meshes_triggered()
   }
 }
 
-void MainWindow::on_actionUpdate_Body_Info_triggered()
+void MainWindow::runNeuTuPaper()
 {
-  QProcess process;
-  process.start(QString::fromStdString(
-                  GET_TEST_DATA_DIR + "/_misc/neutu_em/script/prepare_body"));
-  if (process.waitForFinished(60000)) {
-    qDebug() << process.readAllStandardOutput();
+  QString rootDir =
+      QString::fromStdString(GET_TEST_DATA_DIR + "/_misc/neutu_em");
+  QDirIterator dirIter(
+        rootDir + "/results/merge", QDir::Dirs | QDir::NoDotAndDotDot);
+  while (dirIter.hasNext()) {
+    QString currentDir = dirIter.next();
+    qInfo() << "Processing" << currentDir;
 
-    ZJsonObject json;
-    json.load(GET_TEST_DATA_DIR + "/_misc/neutu_em/bodyinfo.json");
+    QFileInfo fileInfo(QDir(currentDir), "merge_summary.json");
 
-    ZDvidTarget target;
-    target.loadJsonObject(ZJsonObject(json.value("dvid")));
+    if (!fileInfo.exists()) {
+      QStringList argList;
+      argList << currentDir;
+      QProcess process;
+      process.start(rootDir + "/script/prepare_body", argList);
+      if (process.waitForFinished(60000)) {
+        qInfo() << "prepare_body output:" << process.readAllStandardOutput();
 
-    ZDvidWriter writer;
-    if (writer.open(target)) {
-      ZJsonArray bodyJson(json.value("bodies"));
-      for (size_t i = 0; i < bodyJson.size(); ++i) {
-        uint64_t bodyId = ZJsonParser::integerValue(bodyJson.at(i));
-        if (!writer.getDvidReader().hasBodyInfo(bodyId)) {
-          writer.writeBodyInfo(bodyId);
+        ZJsonObject json;
+        json.load((currentDir + "/bodyinfo.json").toStdString());
+
+        ZDvidTarget target;
+        target.loadJsonObject(ZJsonObject(json.value("dvid")));
+        target.print();
+
+        ZDvidWriter writer;
+        if (writer.open(target)) {
+          if (!writer.getDvidTarget().hasBodyLabel()) {
+            dump(ZWidgetMessage("Error", "No sparsevol found", neutube::MSG_ERROR,
+                                ZWidgetMessage::TARGET_DIALOG));
+            return;
+          }
+
+          ZJsonArray bodyJson(json.value("bodies"));
+          for (size_t i = 0; i < bodyJson.size(); ++i) {
+            uint64_t bodyId = ZJsonParser::integerValue(bodyJson.at(i));
+            qInfo() << "Checking body:" << bodyId;
+            if (!writer.getDvidReader().hasBodyInfo(bodyId)) {
+              writer.writeBodyInfo(bodyId);
+            }
+          }
         }
+
+
+        process.start(rootDir + "/script/summarize_merge",
+                      QStringList() << currentDir);
+        if (process.waitForFinished(60000)) {
+          qInfo() << "summarize_merge output:" << process.readAllStandardOutput();
+        } else {
+          dump(ZWidgetMessage("Error", "Failed to summarize merges", neutube::MSG_ERROR,
+                              ZWidgetMessage::TARGET_DIALOG));
+        }
+      } else {
+        dump(ZWidgetMessage("Error", "Failed to prepare bodies", neutube::MSG_ERROR,
+                            ZWidgetMessage::TARGET_DIALOG));
       }
     }
-
-    process.start(QString::fromStdString(
-                    GET_TEST_DATA_DIR + "/_misc/neutu_em/script/summarize_merge"));
-    if (!process.waitForFinished(60000)) {
-      dump(ZWidgetMessage("Error", "Failed to summarize merges", neutube::MSG_ERROR,
-                          ZWidgetMessage::TARGET_DIALOG));
-    }
-  } else {
-    dump(ZWidgetMessage("Error", "Failed to prepare bodies", neutube::MSG_ERROR,
-                        ZWidgetMessage::TARGET_DIALOG));
   }
+}
+void MainWindow::on_actionUpdate_Body_Info_triggered()
+{
+  runNeuTuPaper();
 }

@@ -34,6 +34,7 @@ const char* ZDvidTarget::m_synapseLabelszKey = "labelsz";
 const char* ZDvidTarget::m_todoListNameKey = "todo";
 const char* ZDvidTarget::m_defaultSettingKey = "default";
 const char* ZDvidTarget::m_sourceConfigKey = "@source";
+const char* ZDvidTarget::m_proofreadingKey = "proofreading";
 
 ZDvidTarget::ZDvidTarget()
 {
@@ -288,6 +289,22 @@ std::string ZDvidTarget::getBodyPath(uint64_t bodyId) const
   return getSourceString() + ":" + ZString::num2str(bodyId);
 }
 
+namespace {
+template<typename T>
+ZJsonObject MakeJsonObject(const std::map<std::string, T> &config)
+{
+  ZJsonObject configJson;
+  if (!config.empty()) {
+    for (const auto& tg : config) {
+      ZJsonObject subjson = tg.second.toJsonObject();
+      configJson.setEntry(tg.first.c_str(), subjson);
+    }
+  }
+  return configJson;
+}
+} //namespace
+
+
 ZJsonObject ZDvidTarget::toJsonObject() const
 {
   ZJsonObject obj = m_node.toJsonObject();
@@ -303,6 +320,7 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setNonEmptyEntry(m_synapseLabelszKey, m_synapseLabelszName);
   obj.setNonEmptyEntry(m_roiNameKey, m_roiName);
   obj.setNonEmptyEntry(m_todoListNameKey, m_todoListName);
+  obj.setEntry(m_proofreadingKey, !m_readOnly);
 
   ZJsonArray jsonArray;
   for (std::vector<std::string>::const_iterator iter = m_roiList.begin();
@@ -312,12 +330,28 @@ ZJsonObject ZDvidTarget::toJsonObject() const
   obj.setEntry(m_roiListKey, jsonArray);
 
   obj.setEntry(m_multiscale2dNameKey, m_multiscale2dName);
+
+  if (!m_tileConfig.empty()) {
+    /*
+    ZJsonObject tileConfigJson;
+    for (const auto& tg : m_tileConfig) {
+      ZJsonObject subjson = tg.second.toJsonObject();
+      tileConfigJson.setEntry(tg.first.c_str(), subjson);
+    }
+    */
+    ZJsonObject tileConfigJson = MakeJsonObject(m_tileConfig);
+    obj.setEntry(m_tileConfigKey, tileConfigJson);
+  }
+  /*
   if (!m_tileConfig.isEmpty()) {
     obj.setEntry(m_tileConfigKey, const_cast<ZJsonObject&>(m_tileConfig));
   }
+  */
 
-  if (!m_sourceConfig.isEmpty()) {
-    obj.setEntry(m_sourceConfigKey, const_cast<ZJsonObject&>(m_sourceConfig));
+  if (!m_sourceConfig.empty()) {
+    ZJsonObject sourceConfigJson = MakeJsonObject(m_sourceConfig);
+    obj.setEntry(m_sourceConfigKey, sourceConfigJson);
+//    obj.setEntry(m_sourceConfigKey, const_cast<ZJsonObject&>(m_sourceConfig));
   }
 
   obj.setEntry(m_synapseNameKey, m_synapseName);
@@ -384,6 +418,118 @@ ZJsonObject ZDvidTarget::toDvidDataSetting() const
   return obj;
 }
 
+namespace {
+
+template<typename T>
+void LoadJsonConfig(const ZJsonObject &json, std::map<std::string, T> &config)
+{
+  const char *key;
+  json_t *value;
+  ZJsonObject_foreach(json, key, value) {
+    T tg;
+    tg.loadJsonObject(ZJsonObject(value, ZJsonValue::SET_INCREASE_REF_COUNT));
+    config[key] = tg;
+  }
+}
+
+} //namespace
+
+namespace {
+template<typename T>
+std::string GetTestJsonString(const T &json)
+{
+  return json.dumpJanssonString(JSON_INDENT(0) | JSON_SORT_KEYS);
+}
+}
+bool ZDvidTarget::Test()
+{
+  std::cout << "Testing private functions ..." << std::endl;
+  {
+    TileConfig tg;
+    tg.setLowQuality(true);
+    std::map<std::string, TileConfig> config;
+    config["d1"] = tg;
+    tg.setLowQuality(false);
+    config["t2"] = tg;
+
+    ZJsonObject json = MakeJsonObject(config);
+    if (GetTestJsonString(json) !=
+        "{\"d1\": {\"low_quality\": true}, \"t2\": {\"low_quality\": false}}") {
+      std::cout << GetTestJsonString(json) << std::endl;
+      LERROR() << "Test failed";
+      return false;
+    }
+  }
+
+  {
+    ZDvidNode node("emdata2.int.janelia.org", "5678", 7000);
+    std::map<std::string, ZDvidNode> config;
+    config["n1"] = node;
+    node.setUuid("abcd");
+    config["n2"] = node;
+    ZJsonObject json = MakeJsonObject(config);
+    if (GetTestJsonString(json) !=
+        "{\"n1\": {\"address\": \"emdata2.int.janelia.org\", \"port\": 7000, "
+        "\"uuid\": \"5678\"}, \"n2\": {\"address\": "
+        "\"emdata2.int.janelia.org\", \"port\": 7000, \"uuid\": \"abcd\"}}") {
+      std::cout << GetTestJsonString(json) << std::endl;
+      LERROR() << "Test failed";
+      return false;
+    }
+  }
+
+  {
+    std::map<std::string, TileConfig> config;
+    ZJsonObject obj;
+    obj.decodeString("{\"d1\": {\"low_quality\": true}, \"t2\": {\"low_quality\": false}}");
+    LoadJsonConfig(obj, config);
+    if (config.count("d1") == 0) {
+      LERROR() << "Test failed";
+    } else {
+      if (!config.at("d1").isLowQuality()) {
+        LERROR() << "Test failed";
+      }
+    }
+    if (config.count("t2") == 0) {
+      LERROR() << "Test failed";
+    } else {
+      if (config.at("t2").isLowQuality()) {
+        LERROR() << "Test failed";
+      }
+    }
+  }
+
+  {
+    std::map<std::string, ZDvidNode> config;
+    ZJsonObject obj;
+    obj.decodeString(
+          "{\"n1\": {\"address\": \"emdata2.int.janelia.org\", \"port\": 7000, "
+          "\"uuid\": \"5678\"}, \"n2\": {\"address\": "
+          "\"emdata2.int.janelia.org\", \"port\": 7000, \"uuid\": \"abcd\"}}");
+    LoadJsonConfig(obj, config);
+    if (config.count("n1") == 0) {
+      LERROR() << "Test failed";
+    } else {
+      if (config.at("n1").getSourceString(false) !=
+          "emdata2.int.janelia.org:7000:5678") {
+        LERROR() << "Test failed";
+      }
+    }
+    if (config.count("n2") == 0) {
+      LERROR() << "Test failed";
+    } else {
+      if (config.at("n2").getSourceString(false) !=
+          "emdata2.int.janelia.org:7000:abcd") {
+        LERROR() << "Test failed";
+      }
+    }
+  }
+
+//  std::cout << json.dumpString(0) << std::endl;
+
+  return true;
+}
+
 void ZDvidTarget::updateData(const ZJsonObject &obj)
 {
   if (obj.hasKey("uuid")) {
@@ -396,7 +542,9 @@ void ZDvidTarget::updateData(const ZJsonObject &obj)
   if (obj.hasKey(m_bodyLabelNameKey)) {
     setBodyLabelName(ZJsonParser::stringValue(obj[m_bodyLabelNameKey]));
   }
-  if (obj.hasKey(m_segmentationNameKey)) {
+  if (obj.hasKey(m_newSegmentationNameKey)) {
+    setSegmentationName(ZJsonParser::stringValue(obj[m_newSegmentationNameKey]));
+  } else if (obj.hasKey(m_segmentationNameKey)) {
     setSegmentationName(ZJsonParser::stringValue(obj[m_segmentationNameKey]));
   }
   if (obj.hasKey(m_grayScaleNameKey)) {
@@ -407,7 +555,8 @@ void ZDvidTarget::updateData(const ZJsonObject &obj)
           ZJsonParser::stringValue(obj[m_multiscale2dNameKey]));
   }
   if (obj.hasKey(m_tileConfigKey)) {
-    m_tileConfig = ZJsonObject(obj.value(m_tileConfigKey));
+    ZJsonObject tileConfigJson = ZJsonObject(obj.value(m_tileConfigKey));
+    LoadJsonConfig(tileConfigJson, m_tileConfig);
   }
 
   if (obj.hasKey(m_roiListKey)) {
@@ -453,7 +602,7 @@ void ZDvidTarget::updateData(const ZJsonObject &obj)
   }
 
   if (obj.hasKey(m_sourceConfigKey)) {
-    m_sourceConfig.set(obj.value(m_sourceConfigKey));
+    LoadJsonConfig(ZJsonObject(obj.value(m_sourceConfigKey)), m_sourceConfig);
   }
 }
 
@@ -474,6 +623,8 @@ void ZDvidTarget::loadJsonObject(const ZJsonObject &obj)
     m_comment = ZJsonParser::stringValue(obj[m_commentKey]);
     m_name = ZJsonParser::stringValue(obj[m_nameKey]);
     m_localFolder = ZJsonParser::stringValue(obj[m_localKey]);
+    m_readOnly = !ZJsonParser::booleanValue(
+          obj[m_proofreadingKey], /*default=*/true);
     updateData(obj);
   }
 }
@@ -719,18 +870,39 @@ std::string ZDvidTarget::getBodyInfoName() const
                             getBodyLabelName());
 }
 
+void ZDvidTarget::TileConfig::loadJsonObject(const ZJsonObject &jsonObj)
+{
+  if (jsonObj.hasKey("low_quality")) {
+    m_lowQuality = ZJsonParser::booleanValue(jsonObj["low_quality"]);
+  } else {
+    m_lowQuality = false;
+  }
+}
+
+ZJsonObject ZDvidTarget::TileConfig::toJsonObject() const
+{
+  ZJsonObject obj;
+  obj.setEntry("low_quality", isLowQuality());
+
+  return obj;
+}
+
 bool ZDvidTarget::isLowQualityTile(const std::string &name) const
 {
-  bool lowQuality = true;
+  bool lowQuality = false;
 
   if (!name.empty()) {
-    lowQuality = false;
+    if (m_tileConfig.count(name) > 0) {
+      lowQuality = m_tileConfig.at(name).isLowQuality();
+    }
+    /*
     if (m_tileConfig.hasKey(name.c_str())) {
       ZJsonObject obj(m_tileConfig.value(name.c_str()));
       if (obj.hasKey("low_quality")) {
         lowQuality = ZJsonParser::booleanValue(obj["low_quality"]);
       }
     }
+    */
   }
 
   return lowQuality;
@@ -787,6 +959,11 @@ void ZDvidTarget::setDefaultMultiscale2dName()
 void ZDvidTarget::configTile(const std::string &name, bool lowQuality)
 {
   if (!name.empty()) {
+    if (m_tileConfig.count(name) == 0) {
+      m_tileConfig[name] = TileConfig();
+    }
+    m_tileConfig[name].setLowQuality(lowQuality);
+#if 0
     if (lowQuality) {
       ZJsonObject obj;
       if (m_tileConfig.hasKey(name.c_str())) {
@@ -803,6 +980,7 @@ void ZDvidTarget::configTile(const std::string &name, bool lowQuality)
         }
       }
     }
+#endif
   }
 }
 
@@ -937,22 +1115,27 @@ const std::set<std::string>& ZDvidTarget::getUserNameSet() const
   return m_userList;
 }
 
+
 void ZDvidTarget::setSourceConfig(const ZJsonObject &config)
 {
-  m_sourceConfig = config;
+  LoadJsonConfig(config, m_sourceConfig);
+//  m_sourceConfig = config;
 }
 
-const ZJsonObject& ZDvidTarget::getSourceConfig() const
+ZJsonObject ZDvidTarget::getSourceConfigJson() const
 {
-  return m_sourceConfig;
+  return MakeJsonObject(m_sourceConfig);
+//  return m_sourceConfig;
 }
 
 void ZDvidTarget::setSource(const char *key, const ZDvidNode &node)
 {
   if (node == m_node || !node.isValid()) {
-    m_sourceConfig.removeKey(key);
+    m_sourceConfig.erase(key);
+//    m_sourceConfig.removeKey(key);
   } else {
-    m_sourceConfig.setEntry(key, node.toJsonObject().getData());
+    m_sourceConfig[key] = node;
+//    m_sourceConfig.setEntry(key, node.toJsonObject().getData());
   }
 }
 
@@ -963,10 +1146,10 @@ void ZDvidTarget::setGrayScaleSource(const ZDvidNode &node)
 
 ZDvidNode ZDvidTarget::getSource(const char *key) const
 {
-  if (m_sourceConfig.hasKey(key)) {
-    ZDvidNode node;
-    ZJsonObject obj(m_sourceConfig.value(key));
-    node.loadJsonObject(obj);
+  if (m_sourceConfig.count(key) > 0) {
+    ZDvidNode node = m_sourceConfig.at(key);
+//    ZJsonObject obj(m_sourceConfig.value(key));
+//    node.loadJsonObject(obj);
     if (node.isValid()) {
       return node;
     }
@@ -1004,17 +1187,19 @@ void ZDvidTarget::setTileSource(const ZDvidNode &node)
 
 void ZDvidTarget::prepareGrayScale()
 {
-  if (m_sourceConfig.hasKey(m_grayScaleNameKey)) {
-    ZJsonObject nodeJson(m_sourceConfig.value(m_grayScaleNameKey));
-    m_node.loadJsonObject(nodeJson);
+  if (m_sourceConfig.count(m_grayScaleNameKey) > 0) {
+    m_node = m_sourceConfig[m_grayScaleNameKey];
+//    ZJsonObject nodeJson(m_sourceConfig.value(m_grayScaleNameKey));
+//    m_node.loadJsonObject(nodeJson);
   }
 }
 
 void ZDvidTarget::prepareTile()
 {
-  if (m_sourceConfig.hasKey(m_multiscale2dNameKey)) {
-    ZJsonObject nodeJson(m_sourceConfig.value(m_multiscale2dNameKey));
-    m_node.loadJsonObject(nodeJson);
+  if (m_sourceConfig.count(m_multiscale2dNameKey) > 0) {
+    m_node = m_sourceConfig[m_multiscale2dNameKey];
+//    ZJsonObject nodeJson(m_sourceConfig.value(m_multiscale2dNameKey));
+//    m_node.loadJsonObject(nodeJson);
   }
 }
 

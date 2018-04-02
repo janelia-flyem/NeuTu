@@ -25865,7 +25865,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZContrastProtocol protocol;
   protocol.setScale(5.2);
   protocol.setOffset(-0.5);
@@ -25875,6 +25875,22 @@ void ZTest::test(MainWindow *host)
   for (int i = 0; i < 256; ++i) {
     std::cout << i << " -> " << int(protocol.mapGrey(i)) << std::endl;
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setFromUrl("http://emdata2.int.janelia.org:8700/api/node/0667");
+  target.setSegmentationName("segmentation");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.syncAnnotationToLabel("segmentation_todo");
+
+#endif
+
+#if 1
+  host->runNeuTuPaper();
 #endif
 
   std::cout << "Done." << std::endl;

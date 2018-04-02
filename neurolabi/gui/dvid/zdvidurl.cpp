@@ -6,6 +6,7 @@
 #include "zstring.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
+#include "zdvidutil.h"
 
 const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
@@ -1202,10 +1203,13 @@ std::string ZDvidUrl::getAnnotationUrl(
   std::string url = getAnnotationUrl(dataName);
 
   if (!url.empty()) {
-    std::ostringstream stream;
-    stream << label;
-    url += "/" + m_annotationLabelCommand + "/" +
-        stream.str();
+    if (m_dvidTarget.getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
+      url = getAnnotationUrl(dataName, ZDvid::GetBodyIdTag(label));
+    } else {
+      std::ostringstream stream;
+      stream << label;
+      url += "/" + m_annotationLabelCommand + "/" + stream.str();
+    }
   }
 
   return url;
