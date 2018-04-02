@@ -14,9 +14,10 @@
 class ZRect2d;
 class ZDvidReader;
 class ZStack;
+class ZDvidDataSliceHelper;
 //class ZStackViewParam;
 
-class ZDvidGraySlice : public ZStackObject
+class ZDvidGraySlice : public ZStackObject, ZUncopyable
 {
 public:
   ZDvidGraySlice();
@@ -145,6 +146,7 @@ private:
   int m_centerCutWidth = 256;
   int m_centerCutHeight = 256;
 
+  std::unique_ptr<ZDvidDataSliceHelper> m_helper;
 //  ZPoint m_v1;
 //  ZPoint m_v2;
 

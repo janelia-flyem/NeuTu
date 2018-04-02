@@ -1114,9 +1114,14 @@ void ZFlyEmBody3dDoc::processEvent()
   }
 }
 
-bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId) const
+bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId, bool encoded) const
 {
   QMutexLocker locker(&m_BodySetMutex);
+
+  if (!encoded) {
+    return getUnencodedBodySet().contains(bodyId);
+  }
+
   return m_bodySet.contains(bodyId);
 }
 
@@ -1588,7 +1593,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
     }
 
-    if (hasBody(bodyId)) {
+    if (hasBody(bodyId, false)) {
       std::vector<ZFlyEmToDoItem*> itemList =
           getDataDocument()->getTodoItem(bodyId);
 
@@ -1707,6 +1712,11 @@ ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
     item.setUserName(neutube::GetCurrentUserName());
     if (checked) {
       item.setChecked(checked);
+    }
+    if (m_dvidReader.getDvidTarget().getSegmentationType() ==
+        ZDvidData::TYPE_LABELMAP) {
+      item.setBodyId(bodyId);
+      item.addBodyIdTag();
     }
   }
 
@@ -2404,7 +2414,7 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_
     emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
 
     size_t bytesTotal;
-    size_t bytesRead = 0;
+//    size_t bytesRead = 0;
     if (struct archive *arc = m_dvidReader.readMeshArchiveStart(id, bytesTotal)) {
       std::vector<ZMesh*> resultVec;
 

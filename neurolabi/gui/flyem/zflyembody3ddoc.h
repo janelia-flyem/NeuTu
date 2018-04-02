@@ -185,7 +185,7 @@ public:
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
 
-  bool hasBody(uint64_t bodyId) const;
+  bool hasBody(uint64_t bodyId, bool encoded) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;

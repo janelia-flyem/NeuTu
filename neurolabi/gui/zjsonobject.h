@@ -177,7 +177,12 @@ public:
 
   void removeKey(const char *key);
 
-  std::string dumpString(int indent = 2) const;
+//  std::string dumpString(int indent = 2) const;
+
+  /*!
+   * \brief Using flags in libjansson to produce a json string.
+   */
+  virtual std::string dumpJanssonString(size_t flags) const;
 
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);

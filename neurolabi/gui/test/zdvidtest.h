@@ -456,6 +456,9 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
             dvidUrl4.getSparsevolSizeUrl(1));
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
+            dvidUrl.getAnnotationUrl("test", 123));
+
   ASSERT_EQ(12345, (int) ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));
   ASSERT_EQ(0, (int) ZDvidUrl::GetBodyId(
@@ -474,6 +477,12 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("",
             ZDvidUrl::ExtractSplitTaskKey(
               "http://localhost:8000/api/node/4d3e/split/key/"));
+
+  target.setSegmentationType(ZDvidData::TYPE_LABELMAP);
+  dvidUrl4.setDvidTarget(target, "3456");
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/tag/body:123",
+            dvidUrl.getAnnotationUrl("test", 123));
+
 }
 
 TEST(ZDvidTest, Reader)
@@ -567,6 +576,8 @@ TEST(ZDvidTest, ZDvidNode)
 
 TEST(ZDvidTest, ZDvidTarget)
 {
+  ASSERT_TRUE(ZDvidTarget::Test());
+
   ZDvidTarget target;
   target.setServer("http://emdata2.int.janelia.org:9000");
   ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
@@ -633,6 +644,10 @@ TEST(ZDvidTest, ZDvidTarget)
   ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
   ASSERT_EQ(9000, node.getPort());
   ASSERT_EQ("1234", node.getUuid());
+
+  ASSERT_FALSE(target.isLowQualityTile("tiles"));
+  target.configTile("tiles", true);
+  ASSERT_TRUE(target.isLowQualityTile("tiles"));
 
   target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "2234", 9100));
   node = target.getGrayScaleSource();

@@ -857,7 +857,8 @@ HEADERS += mainwindow.h \
     flyem/zarbslicescrollstrategy.h \
     dialogs/zneu3sliceviewdialog.h \
     znetbufferreader.h \
-    zstackviewhelper.h
+    zstackviewhelper.h \
+    dvid/zdviddataslicehelper.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1498,7 +1499,8 @@ SOURCES += main.cpp \
     flyem/zarbslicescrollstrategy.cpp \
     dialogs/zneu3sliceviewdialog.cpp \
     znetbufferreader.cpp \
-    zstackviewhelper.cpp
+    zstackviewhelper.cpp \
+    dvid/zdviddataslicehelper.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
