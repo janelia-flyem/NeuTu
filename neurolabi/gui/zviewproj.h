@@ -71,6 +71,7 @@ public:
   void decreaseZoom();
 
   void setViewPort(const QRect &rect);
+  void setViewPortWithZoomFixed(const QRect &rect);
 
   void prepareViewPort(const QRect &rect);
 

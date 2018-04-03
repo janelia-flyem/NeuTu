@@ -8,7 +8,7 @@
 #include "zdvidtarget.h"
 #include "zobject3dscan.h"
 #include "zobject3dscanarray.h"
-#include "zstackviewparam.h"
+//#include "zstackviewparam.h"
 #include "zobjectcolorscheme.h"
 #include "neutube.h"
 #include "zimage.h"
@@ -21,6 +21,9 @@
 class QColor;
 class ZArray;
 class ZPixmap;
+class ZDvidDataSliceHelper;
+class ZStackViewParam;
+class ZArbSliceViewParam;
 
 class ZDvidLabelSlice : public ZStackObject
 {
@@ -36,7 +39,7 @@ public:
   void setMaxSize(const ZStackViewParam &viewParam, int maxWidth, int maxHeight);
 
   bool update(const ZStackViewParam &viewParam);
-  bool update(const QRect &dataRect, int zoom, int z);
+//  bool update(const QRect &dataRect, int zoom, int z);
   void update(int z);
   void update();
 
@@ -122,7 +125,10 @@ public:
 
   void mapSelection();
 
-  void forceUpdate(bool ignoringHidden);
+//  void forceUpdate(bool ignoringHidden);
+  void forceUpdate(
+      const ZStackViewParam &viewParam, bool ignoringHidden);
+  void forceUpdate(const QRect &viewPort, int z);
 
   //Selection events
   void recordSelection();
@@ -186,15 +192,24 @@ private:
   void clearLabelData();
 
   void updatePixmap(ZPixmap *pixmap) const;
+  void updatePaintBuffer();
+  void setTransform(ZImage *image) const;
+
+  const ZDvidDataSliceHelper* getHelper() const {
+    return m_helper.get();
+  }
+  ZDvidDataSliceHelper* getHelper() {
+    return m_helper.get();
+  }
 
 private:
 //  ZDvidTarget m_dvidTarget;
   ZDvidReader m_reader;
   ZObject3dScanArray m_objArray;
 //  ZStackViewParam m_currentViewParam;
-  QRect m_currentDataRect;
-  int m_currentZ;
-  int m_currentZoom;
+//  QRect m_currentDataRect;
+//  int m_currentZ;
+//  int m_currentZoom;
 
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
@@ -214,8 +229,10 @@ private:
   std::set<uint64_t> m_prevSelectedOriginal;
   ZSelector<uint64_t> m_selector; //original labels
 
-  int m_maxWidth;
-  int m_maxHeight;
+//  int m_maxWidth;
+//  int m_maxHeight;
+
+  std::unique_ptr<ZDvidDataSliceHelper> m_helper;
 //  int m_zoom;
 
   bool m_selectionFrozen;

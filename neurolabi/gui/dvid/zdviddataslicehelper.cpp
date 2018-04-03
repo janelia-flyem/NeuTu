@@ -89,6 +89,16 @@ int ZDvidDataSliceHelper::getScale() const
   return misc::GetZoomScale(getZoom());
 }
 
+bool ZDvidDataSliceHelper::hasMaxSize(int width, int height) const
+{
+  return getMaxWidth() == width && getMaxHeight() == height;
+}
+
+bool ZDvidDataSliceHelper::getMaxArea() const
+{
+  return getMaxWidth() * getMaxHeight();
+}
+
 void ZDvidDataSliceHelper::setViewParam(const ZStackViewParam &viewParam)
 {
   m_currentViewParam = viewParam;

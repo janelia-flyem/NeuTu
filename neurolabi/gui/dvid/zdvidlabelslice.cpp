@@ -7,6 +7,7 @@
 #include <QtConcurrent>
 #endif
 
+#include "zutils.h"
 #include "tz_math.h"
 #include "zarray.h"
 #include "dvid/zdvidreader.h"
@@ -19,10 +20,13 @@
 #include "zstring.h"
 #include "zintcuboid.h"
 #include "zarbsliceviewparam.h"
+#include "zstackviewparam.h"
+#include "zdviddataslicehelper.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
-  init(512, 512);
+//  init(512, 512);
+  m_helper = std::make_unique<ZDvidDataSliceHelper>();
 }
 
 ZDvidLabelSlice::ZDvidLabelSlice(int maxWidth, int maxHeight)
@@ -46,8 +50,9 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAx
   m_bodyMerger = NULL;
   setZOrder(0);
 
-  m_maxWidth = maxWidth;
-  m_maxHeight = maxHeight;
+  getHelper()->setMaxSize(maxWidth, maxHeight);
+//  m_maxWidth = maxWidth;
+//  m_maxHeight = maxHeight;
 
   m_paintBuffer = NULL;
 //  m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
@@ -58,8 +63,8 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAx
   m_isFullView = false;
   m_sliceAxis = sliceAxis;
 
-  m_currentZ = 0;
-  m_currentZoom = 0;
+//  m_currentZ = 0;
+//  m_currentZoom = 0;
 
 //  setColor(QColor(0, 0, 128));
 //  m_zoom = 0;
@@ -69,6 +74,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAx
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZDvidLabelSlice)
 
+#if 0
 class ZDvidLabelSlicePaintTask {
 public:
   ZDvidLabelSlicePaintTask(ZDvidLabelSlice *labelSlice)
@@ -110,6 +116,7 @@ private:
   ZDvidLabelSlice *m_labelSlice;
   QList<ZObject3dScan*> m_objArray;
 };
+#endif
 
 #define ZDVIDLABELSLICE_MT 1
 
@@ -255,7 +262,7 @@ void ZDvidLabelSlice::forceUpdate(const ZArbSliceViewParam &viewParam)
     m_labelArray = m_reader.readLabels64Lowtis(
           viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
           viewParam.getWidth(), viewParam.getHeight(),
-          m_currentZoom);
+          getHelper()->getZoom());
   }
 }
 
@@ -371,6 +378,92 @@ void ZDvidLabelSlice::clearLabelData()
   m_mappedLabelArray = NULL;
 }
 
+void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z)
+{
+  ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(viewPort, z);
+
+  if (getSliceAxis() != neutube::A_AXIS) {
+    clearLabelData();
+    if (getSliceAxis() == neutube::Z_AXIS) {
+      m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
+            box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+            box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+            getHelper()->getZoom());
+    } else {
+      int zoom = getHelper()->getZoom();
+      int zoomRatio = pow(2, zoom);
+      int width = box.getWidth() / zoomRatio;
+      int height = box.getHeight() / zoomRatio;
+      int depth = box.getDepth();
+      int x0 = box.getFirstCorner().getX() / zoomRatio;
+      int y0 = box.getFirstCorner().getY() / zoomRatio;
+      int z0 = box.getFirstCorner().getZ();
+
+      ZGeometry::shiftSliceAxisInverse(x0, y0, z0, getSliceAxis());
+      ZGeometry::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
+
+      m_labelArray = m_reader.readLabels64Raw(
+            x0, y0, z0, width, height, depth, zoom);
+    }
+  }
+}
+
+void ZDvidLabelSlice::forceUpdate(
+    const ZStackViewParam &viewParam, bool ignoringHidden)
+{
+  if (viewParam.getSliceAxis() != m_sliceAxis) {
+    return;
+  }
+
+  if (m_sliceAxis != neutube::Z_AXIS && m_sliceAxis != neutube::A_AXIS) {
+    return;
+  }
+
+  if ((!ignoringHidden) || isVisible()) {
+    getHelper()->setZoom(
+          viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom()));
+//    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
+    if (m_sliceAxis == neutube::Z_AXIS) {
+      QRect viewPort = viewParam.getViewPort();
+      forceUpdate(viewPort, viewParam.getZ());
+    } else if (m_sliceAxis == neutube::A_AXIS) {
+      forceUpdate(viewParam.getSliceViewParam());
+      //Align the image with the view port, which is used by the painter
+//      m_paintBuffer->setOffset(viewParam.getViewPort().left(),
+//                               viewParam.getViewPort().top());
+    }
+  }
+
+  getHelper()->setViewParam(viewParam);
+  updatePaintBuffer();
+}
+
+void ZDvidLabelSlice::updatePaintBuffer()
+{
+  if (m_labelArray != NULL) {
+    int width = m_labelArray->getDim(0);
+    int height = m_labelArray->getDim(1);
+    if (m_paintBuffer->width() !=  width ||
+        m_paintBuffer->height() != height) {
+      delete m_paintBuffer;
+      m_paintBuffer = new ZImage(width, height, QImage::Format_ARGB32);
+    }
+
+    paintBufferUnsync();
+    setTransform(m_paintBuffer);
+  }
+}
+
+void ZDvidLabelSlice::setTransform(ZImage *image) const
+{
+  ZStTransform transform;
+  double scale = 1.0 / getHelper()->getScale();
+  transform.setScale(scale, scale);
+  transform.setOffset(-getHelper()->getX(), -getHelper()->getY());
+  image->setTransform(transform);
+}
+
+#if 0
 void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
 {
   QMutexLocker locker(&m_updateMutex);
@@ -453,13 +546,19 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
     }
   }
 }
+#endif
 
 void ZDvidLabelSlice::update(int z)
 {
 //  ZStackViewParam viewParam = m_currentViewParam;
 //  viewParam.setZ(z);
 
-  update(m_currentDataRect, m_currentZoom, z);
+  if (getHelper()->getZ() != z) {
+    ZStackViewParam viewParam = getHelper()->getViewParam();
+    viewParam.moveSlice(z - viewParam.getZ());
+    forceUpdate(viewParam, true);
+  }
+//  update(getHelper()->getViewPort(), getHelper()->getZoom(), z);
 
 //  m_isFullView = false;
 }
@@ -489,12 +588,12 @@ QRect ZDvidLabelSlice::getDataRect(const ZStackViewParam &viewParam) const
     int width = viewPort.width();
     int height = viewPort.height();
     int area = width * height;
-    if (area > m_maxWidth * m_maxHeight) {
-      if (width > m_maxWidth) {
-        width = m_maxWidth;
+    if (area > getHelper()->getMaxArea()) {
+      if (width > getHelper()->getMaxWidth()) {
+        width = getHelper()->getMaxWidth();
       }
-      if (height > m_maxHeight) {
-        height = m_maxHeight;
+      if (height > getHelper()->getMaxWidth()) {
+        height = getHelper()->getMaxWidth();
       }
       QPoint oldCenter = viewPort.center();
       viewPort.setSize(QSize(width, height));
@@ -507,9 +606,10 @@ QRect ZDvidLabelSlice::getDataRect(const ZStackViewParam &viewParam) const
 
 int ZDvidLabelSlice::getCurrentZ() const
 {
-  return m_currentZ;
+  return getHelper()->getZ();
 }
 
+#if 0
 bool ZDvidLabelSlice::update(const QRect &dataRect, int zoom, int z)
 {
   bool updating = false;
@@ -517,9 +617,9 @@ bool ZDvidLabelSlice::update(const QRect &dataRect, int zoom, int z)
   if (z != getCurrentZ()) {
     updating = true;
   } else {
-    if (zoom != m_currentZoom) {
+    if (zoom != getHelper()->getZoom()) {
       updating = true;
-    } else if (!m_currentDataRect.contains(dataRect)) {
+    } else if (!getHelper()->getViewPort().contains(dataRect)) {
       updating = true;
     }
   }
@@ -527,9 +627,9 @@ bool ZDvidLabelSlice::update(const QRect &dataRect, int zoom, int z)
   bool updated = false;
 
   if (updating) {
-    m_currentDataRect = dataRect;
-    m_currentZoom = zoom;
-    m_currentZ = z;
+//    m_currentDataRect = dataRect;
+//    m_currentZoom = zoom;
+//    m_currentZ = z;
 
     forceUpdate(true);
     updated = true;
@@ -539,6 +639,7 @@ bool ZDvidLabelSlice::update(const QRect &dataRect, int zoom, int z)
 
   return updated;
 }
+#endif
 
 bool ZDvidLabelSlice::update(const ZStackViewParam &viewParam)
 {
@@ -1120,13 +1221,15 @@ void ZDvidLabelSlice::setBodyMerger(ZFlyEmBodyMerger *bodyMerger)
 void ZDvidLabelSlice::setMaxSize(
     const ZStackViewParam &viewParam, int maxWidth, int maxHeight)
 {
-  if (m_maxWidth != maxWidth || m_maxHeight != maxHeight) {
-    m_maxWidth = maxWidth;
-    m_maxHeight = maxHeight;
+  if (!getHelper()->hasMaxSize(maxWidth, maxHeight)) {
+    getHelper()->setMaxSize(maxWidth, maxHeight);
+//    m_maxWidth = maxWidth;
+//    m_maxHeight = maxHeight;
     m_objArray.clear();
     delete m_paintBuffer;
-    m_paintBuffer = new ZImage(m_maxWidth, m_maxHeight, QImage::Format_ARGB32);
-    m_currentDataRect.setSize(QSize(0, 0));
+    m_paintBuffer = new ZImage(maxWidth, maxHeight, QImage::Format_ARGB32);
+
+//    m_currentDataRect.setSize(QSize(0, 0));
 
     update(viewParam);
   }

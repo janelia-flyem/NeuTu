@@ -443,16 +443,6 @@ int main(int argc, char *argv[])
     /********* for debugging *************/
 
 #ifndef QT_NO_DEBUG
-    /*
-    std::cout << "Debugging ..." << std::endl;
-    ZCurve curve;
-    double *array = new double[10];
-    for (int i = 0; i < 10; i++) {
-      array[i] = -i * i;
-    }
-    curve.loadArray(array, 10);
-    std::cout << curve.minY() << std::endl;
-    */
     if (unitTest) {
       ZTest::RunUnitTest(argc, argv);
     }
