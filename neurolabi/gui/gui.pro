@@ -106,7 +106,6 @@ qtHaveModule(webenginewidgets) {
 }
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
-#_USE_CORE_PROFILE_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -267,7 +266,7 @@ unix {
             RC_FILE = images/app.icns
         }
 
-    }
+    } #macx
 }
 
 win32 {

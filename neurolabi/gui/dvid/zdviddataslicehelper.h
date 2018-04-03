@@ -41,6 +41,9 @@ public:
     return m_maxHeight;
   }
 
+  bool hasMaxSize(int width, int height) const;
+  bool getMaxArea() const;
+
   QRect getViewPort() const;
   int getX() const;
   int getY() const;
