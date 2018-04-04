@@ -83,6 +83,7 @@ private:
   std::set<size_t> m_hiddenCleaveIndices;
 
   QNetworkAccessManager *m_networkManager;
+  bool m_cleaveReplyPending = false;
 
   std::set<QString> m_warningTextToSuppress;
 
@@ -118,6 +119,7 @@ private:
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;
+  virtual bool allowCompletion() override;
   virtual void onCompleted() override;
 };
 
