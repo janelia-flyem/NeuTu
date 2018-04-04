@@ -125,10 +125,8 @@ public:
 
   void mapSelection();
 
-//  void forceUpdate(bool ignoringHidden);
-  void forceUpdate(
-      const ZStackViewParam &viewParam, bool ignoringHidden);
-  void forceUpdate(const QRect &viewPort, int z);
+  void forceUpdate(bool ignoringHidden);
+
 
   //Selection events
   void recordSelection();
@@ -166,6 +164,9 @@ public:
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
 
+  void forceUpdate(
+      const ZStackViewParam &viewParam, bool ignoringHidden);
+  void forceUpdate(const QRect &viewPort, int z);
   void forceUpdate(const ZArbSliceViewParam &viewParam);
 //  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
@@ -202,9 +203,11 @@ private:
     return m_helper.get();
   }
 
+  bool isPaintBufferAllocNeeded(int width, int height) const;
+
 private:
 //  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_reader;
+//  ZDvidReader m_reader;
   ZObject3dScanArray m_objArray;
 //  ZStackViewParam m_currentViewParam;
 //  QRect m_currentDataRect;

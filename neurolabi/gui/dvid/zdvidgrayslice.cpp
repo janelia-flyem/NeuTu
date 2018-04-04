@@ -310,7 +310,7 @@ int ZDvidGraySlice::updateParam(T *param)
 
 bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
 {
-  if (viewParam.getSliceAxis() != m_sliceAxis) {
+  if (viewParam.getSliceAxis() != getSliceAxis()) {
     return false;
   }
 
@@ -320,6 +320,12 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
 
   bool updated = false;
 
+  ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
+  if (getHelper()->hasNewView(newViewParam)) {
+    forceUpdate(newViewParam);
+    updated = true;
+  }
+#if 0
   ZStackViewParam newViewParam = viewParam;
 
   int maxZoomLevel = updateParam(&newViewParam);
@@ -341,6 +347,7 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
     forceUpdate(newViewParam);
     updated = true;
   }
+#endif
 
   return updated;
 }
