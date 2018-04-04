@@ -25665,7 +25665,7 @@ void ZTest::test(MainWindow *host)
   service.retrieve_image(width, height, offset, buffer);
 #endif
 
-#if 0
+#if 1
   // create dvid config
   lowtis::DVIDLabelblkConfig config;
   config.username = "sample";
@@ -25687,6 +25687,11 @@ void ZTest::test(MainWindow *host)
   char* buffer = new char[width*height*8];
   service.retrieve_arbimage(1024, 1024, center, dim1, dim2, buffer, 0, false);
   std::cout << "success" << std::endl;
+
+  uint64_t *array = (uint64_t*) buffer;
+  for (size_t i = 0; i < 10; ++i) {
+    std::cout << array[i] << std::endl;
+  }
 #endif
 
 #if 0
@@ -25889,8 +25894,44 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   host->runNeuTuPaper();
+#endif
+
+#if 0
+  ZDvidLabelSlice slice;
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  target.setGrayScaleName("grayscale");
+
+  slice.setDvidTarget(target);
+
+  ZArbSliceViewParam sliceViewParam;
+  sliceViewParam.setSize(512, 512);
+  sliceViewParam.setCenter(3079, 5798, 3120);
+  ZPoint v1 = ZPoint(1, 0, 0);
+  ZPoint v2 = ZPoint(0, 1, 0);
+  sliceViewParam.setPlane(v1, v2);
+
+  ZStackViewParam viewParam;
+  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
+  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
+  viewParam.setSliceAxis(neutube::A_AXIS);
+  viewParam.setArbSliceView(sliceViewParam);
+  /*
+  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
+  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
+  viewParam.setViewPort(QRect(3079, 5798, 512, 512));
+  viewParam.setZ(3120);
+  qDebug() <<  viewParam.getViewPort();
+  */
+  slice.setSliceAxis(neutube::A_AXIS);
+  slice.update(viewParam);
+
+//  slice.paintBuffer();
+  slice.getPaintBuffer()->save(QString::fromStdString(GET_TEST_DATA_DIR+"/test.tif"));
+
 #endif
 
   std::cout << "Done." << std::endl;

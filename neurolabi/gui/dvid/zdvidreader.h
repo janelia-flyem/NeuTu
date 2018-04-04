@@ -515,7 +515,7 @@ public:
   QByteArray readDataFromEndpoint(
       const std::string &endPoint, bool tryingCompress = false) const;
 
-  bool refreshLabelBuffer();
+  bool refreshLabelBuffer() const;
 
   void testApiLoad();
 

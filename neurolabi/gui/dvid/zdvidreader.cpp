@@ -2619,7 +2619,7 @@ ZArray* ZDvidReader::readLabels64(
   return array;
 }
 
-bool ZDvidReader::refreshLabelBuffer()
+bool ZDvidReader::refreshLabelBuffer() const
 {
 #if defined(_ENABLE_LOWTIS_)
   if (m_lowtisService.get() != NULL) {
