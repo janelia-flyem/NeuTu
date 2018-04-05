@@ -25665,7 +25665,7 @@ void ZTest::test(MainWindow *host)
   service.retrieve_image(width, height, offset, buffer);
 #endif
 
-#if 1
+#if 0
   // create dvid config
   lowtis::DVIDLabelblkConfig config;
   config.username = "sample";
@@ -25896,6 +25896,28 @@ void ZTest::test(MainWindow *host)
 
 #if 0
   host->runNeuTuPaper();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidLabelSlice slice;
+  slice.setSliceAxis(neutube::X_AXIS);
+  slice.setDvidTarget(target);
+
+  ZStackViewParam viewParam;
+  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
+  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
+  viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
+
+  viewParam.setSliceAxis(neutube::X_AXIS);
+
+  slice.update(viewParam);
+  slice.getPaintBuffer()->save(
+        QString::fromStdString(GET_TEST_DATA_DIR+"/test.tif"));
 #endif
 
 #if 0

@@ -49,7 +49,7 @@ void ZDvidLabelSlice::init(int maxWidth, int maxHeight  , neutube::EAxis sliceAx
   m_bodyMerger = NULL;
   setZOrder(0);
 
-  m_helper = std::make_unique<ZDvidDataSliceHelper>();
+  m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_LABEL_BLOCK);
   getHelper()->setMaxSize(maxWidth, maxHeight);
 //  m_maxWidth = maxWidth;
 //  m_maxHeight = maxHeight;
@@ -390,9 +390,6 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z)
             box.getFirstCorner().getX(), box.getFirstCorner().getY(),
             box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
             getHelper()->getZoom());
-#ifdef _DEBUG_2
-      std::cout << "Max label: " << m_labelArray->getMax<uint64_t>() << std::endl;
-#endif
     } else {
       int zoom = getHelper()->getZoom();
       int zoomRatio = pow(2, zoom);
@@ -424,22 +421,18 @@ void ZDvidLabelSlice::forceUpdate(
     return;
   }
 
-  if (m_sliceAxis != neutube::Z_AXIS && m_sliceAxis != neutube::A_AXIS) {
-    return;
-  }
-
   if ((!ignoringHidden) || isVisible()) {
     getHelper()->setZoom(
-          viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom()));
+          viewParam.getZoomLevel(getDvidTarget().getMaxLabelZoom()));
 //    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
-    if (m_sliceAxis == neutube::Z_AXIS) {
-      QRect viewPort = viewParam.getViewPort();
-      forceUpdate(viewPort, viewParam.getZ());
-    } else if (m_sliceAxis == neutube::A_AXIS) {
+    if (m_sliceAxis == neutube::A_AXIS) {
       forceUpdate(viewParam.getSliceViewParam());
       //Align the image with the view port, which is used by the painter
 //      m_paintBuffer->setOffset(viewParam.getViewPort().left(),
 //                               viewParam.getViewPort().top());
+    } else {
+      QRect viewPort = viewParam.getViewPort();
+      forceUpdate(viewPort, viewParam.getZ());
     }
   }
 
@@ -461,6 +454,15 @@ void ZDvidLabelSlice::updatePaintBuffer()
   if (m_labelArray != NULL) {
     int width = m_labelArray->getDim(0);
     int height = m_labelArray->getDim(1);
+    if (getSliceAxis() == neutube::X_AXIS || getSliceAxis() == neutube::Y_AXIS) {
+      int depth = m_labelArray->getDim(2);
+      ZGeometry::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
+    }
+
+#ifdef _DEBUG_
+      std::cout << "Max label: " << m_labelArray->getMax<uint64_t>() << std::endl;
+#endif
+
     if (isPaintBufferAllocNeeded(width, height)) {
       delete m_paintBuffer;
       m_paintBuffer = new ZImage(width, height, QImage::Format_ARGB32);
@@ -476,7 +478,7 @@ void ZDvidLabelSlice::setTransform(ZImage *image) const
   ZStTransform transform;
   double scale = 1.0 / getHelper()->getScale();
   transform.setScale(scale, scale);
-  transform.setOffset(-getHelper()->getX(), -getHelper()->getY());
+  transform.setOffset(-getHelper()->getX() * scale, -getHelper()->getY() * scale);
   image->setTransform(transform);
 }
 
