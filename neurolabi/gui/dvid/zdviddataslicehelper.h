@@ -3,6 +3,7 @@
 
 #include "zdvidreader.h"
 #include "zstackviewparam.h"
+#include "zdviddata.h"
 
 class QRect;
 class ZIntCuboid;
@@ -11,7 +12,7 @@ class ZRect2d;
 class ZDvidDataSliceHelper
 {
 public:
-  ZDvidDataSliceHelper();
+  ZDvidDataSliceHelper(ZDvidData::ERole role);
 
   void setDvidTarget(const ZDvidTarget &target);
   inline const ZDvidTarget& getDvidTarget() const {
@@ -40,6 +41,8 @@ public:
   int getMaxHeight() const {
     return m_maxHeight;
   }
+
+  int getMaxZoom() const;
 
   bool hasMaxSize(int width, int height) const;
   bool getMaxArea() const;
@@ -75,6 +78,8 @@ public:
 
   int m_maxWidth = 512;
   int m_maxHeight = 512;
+
+  ZDvidData::ERole m_dataRole;
 
   ZDvidReader m_reader;
 };

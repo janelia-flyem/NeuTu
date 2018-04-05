@@ -3,7 +3,8 @@
 #include "zintcuboid.h"
 #include "misc/miscutility.h"
 
-ZDvidDataSliceHelper::ZDvidDataSliceHelper()
+ZDvidDataSliceHelper::ZDvidDataSliceHelper(ZDvidData::ERole role) :
+  m_dataRole(role)
 {
 }
 
@@ -15,6 +16,21 @@ void ZDvidDataSliceHelper::clear()
 void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
 {
   m_reader.open(target);
+}
+
+int ZDvidDataSliceHelper::getMaxZoom() const
+{
+  switch (m_dataRole) {
+  case ZDvidData::ROLE_GRAY_SCALE:
+    return getDvidTarget().getMaxGrayscaleZoom();
+  case ZDvidData::ROLE_LABEL_BLOCK:
+  case ZDvidData::ROLE_BODY_LABEL:
+    return getDvidTarget().getMaxLabelZoom();
+  default:
+    return 0;
+  }
+
+  return 0;
 }
 
 bool ZDvidDataSliceHelper::validateSize(int *width, int *height) const
@@ -37,7 +53,7 @@ bool ZDvidDataSliceHelper::validateSize(int *width, int *height) const
 
 int ZDvidDataSliceHelper::updateParam(ZStackViewParam *param)
 {
-  int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
+  int maxZoomLevel = getMaxZoom();
   if (maxZoomLevel < 3) {
     int width = param->getViewPort().width();
     int height = param->getViewPort().height();
@@ -109,7 +125,7 @@ ZStackViewParam ZDvidDataSliceHelper::getValidViewParam(
 {
   ZStackViewParam newViewParam = viewParam;
 
-  int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
+  int maxZoomLevel = getMaxZoom();
   if (maxZoomLevel < 3) {
     int width = viewParam.getViewPort().width();
     int height = viewParam.getViewPort().height();
@@ -123,7 +139,7 @@ ZStackViewParam ZDvidDataSliceHelper::getValidViewParam(
 
 bool ZDvidDataSliceHelper::hasNewView(const ZStackViewParam &viewParam) const
 {
-  int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
+  int maxZoomLevel = getMaxZoom();
 
   return !m_currentViewParam.contains(viewParam) ||
       (viewParam.getZoomLevel(maxZoomLevel) <

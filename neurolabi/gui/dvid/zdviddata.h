@@ -6,7 +6,7 @@
 /*!
  * \brief The class of dvid data
  *
- * An instance of DVID data has a type and a name. It can also have role in the
+ * An instance of DVID data has a type and a name. It can also have a role in the
  * framework of FlyEM reconstruction. This class has built-in correspondence
  * between a role and a name, providing the default name of a given role.
  */
