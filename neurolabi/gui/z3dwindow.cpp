@@ -90,6 +90,7 @@
 #include <QLineEdit>
 #include <QMimeData>
 #include <QMessageBox>
+#include <QInputDialog>
 
 /*
 class Sleeper : public QThread
@@ -723,6 +724,9 @@ void Z3DWindow::createMenus()
   m_editMenu->addSeparator();
 //  m_editMenu->addAction(m_markSwcSomaAction);
 
+  m_editMenu->addAction("Select Mesh by ID", this, SLOT(selectMeshByID()));
+  m_editMenu->addSeparator();
+
   m_helpMenu->addAction(m_helpAction);
 
   createContextMenu();
@@ -1096,6 +1100,39 @@ void Z3DWindow::zoomToSelectedMeshes()
   }
 }
 
+void Z3DWindow::selectMeshByID()
+{
+  bool ok = true;
+  QString text = QInputDialog::getText(this, "Select Mesh", "Mesh ID:",
+                                       QLineEdit::Normal, "", &ok);
+  if (ok) {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc) {
+      ZMesh *meshToSelect = nullptr;
+      uint64_t id = text.toULongLong(&ok);
+      if (ok) {
+        auto meshList = doc->getMeshList();
+        for (ZMesh* mesh : meshList) {
+          if (mesh->getLabel() == id) {
+            meshToSelect = mesh;
+            break;
+          }
+        }
+      }
+      if (meshToSelect) {
+        doc->setMeshSelected(meshToSelect, true);
+        QString message = "Mesh " + QString::number(meshToSelect->getLabel()) + " selected";
+        m_doc->notifyWindowMessageUpdated(message);
+      }
+      else {
+        QString title = "Selection Failed";
+        QString warning = "No mesh has ID " + text;
+        QMessageBox::warning(this, title, warning);
+      }
+    }
+  }
+}
+
 void Z3DWindow::configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj)
 {
   m_view->configureLayer(layer, obj);
@@ -1283,8 +1320,10 @@ void Z3DWindow::selectedPunctumChangedFrom3D(ZPunctum *p, bool append)
 void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
 {
   if (p == NULL) {
-    if (!append)
+    if (!append) {
       m_doc->deselectAllMesh();
+      m_doc->notifyWindowMessageUpdated("");
+    }
     return;
   }
 
@@ -1295,6 +1334,9 @@ void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
     m_doc->deselectAllMesh();
     m_doc->setMeshSelected(p, true);
   }
+
+  QString message = "Mesh " + QString::number(p->getLabel()) + " selected";
+  m_doc->notifyWindowMessageUpdated(message);
 
   statusBar()->showMessage(p->getSource().c_str());
 }

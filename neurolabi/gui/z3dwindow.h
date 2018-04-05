@@ -251,6 +251,7 @@ public slots:
   { m_view->resetCameraClippingRange(); }
 
   void zoomToSelectedMeshes();
+  void selectMeshByID();
 
 //  void updateDecorationDisplay();
 
