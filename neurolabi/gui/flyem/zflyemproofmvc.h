@@ -111,6 +111,7 @@ public:
   void updateContrast();
 
   void diagnose();
+  void profile();
   void showSetting();
   void setExiting(bool exiting) {
     m_quitting = exiting;
@@ -355,6 +356,8 @@ public slots:
   void testBodyVis();
   void testBodySplit();
 
+  void endProfile();
+
 protected slots:
   void detachCoarseBodyWindow();
   void detachBodyWindow();
@@ -474,6 +477,9 @@ private:
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 
+  void startMergeProfile();
+  void endMergeProfile();
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
@@ -539,6 +545,8 @@ protected:
   ZFlyEmSynapseDataUpdater *m_seUpdater;
 
   bool m_quitting = false;
+
+  QTimer *m_profileTimer = nullptr;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };

@@ -420,7 +420,7 @@ void ZFlyEmProofDoc::verifyBodyAnnotationMap()
 void ZFlyEmProofDoc::clearBodyMergeStage()
 {
   clearBodyMerger();
-  saveMergeOperation();
+//  saveMergeOperation();
   notifyBodyUnmerged();
 }
 
