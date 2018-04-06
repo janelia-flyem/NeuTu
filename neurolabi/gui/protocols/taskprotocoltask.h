@@ -8,6 +8,7 @@
 #include <QSet>
 
 class QMenu;
+class ZWidgetMessage;
 
 class TaskProtocolTask: public QObject
 {
@@ -43,6 +44,7 @@ public:
 
 signals:
     void bodiesUpdated();
+    void messageGenerated(const ZWidgetMessage&);
 
 protected:
     static const QString KEY_COMPLETED;
@@ -58,6 +60,8 @@ protected:
     QString objectToString(QJsonObject json);
 
     void updateBodies(const QSet<uint64_t> &visible, const QSet<uint64_t> &selected);
+
+    void notify(const ZWidgetMessage &msg);
 
 private:
     bool loadStandard(QJsonObject json);

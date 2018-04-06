@@ -240,6 +240,11 @@ void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
   emit(bodiesUpdated());
 }
 
+void TaskProtocolTask::notify(const ZWidgetMessage &msg)
+{
+  emit messageGenerated(msg);
+}
+
 /*
  * produce the json that holds all the task data
  */
