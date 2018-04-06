@@ -244,6 +244,19 @@ void ZDvidDialog::setServer(int index)
   resetAdvancedDlg(dvidTarget);
 }
 
+const ZDvidTarget& ZDvidDialog::getDvidTarget(const std::string &name) const
+{
+  for (QList<ZDvidTarget>::const_iterator iter = m_dvidRepo.begin();
+       iter != m_dvidRepo.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    if (name == target.getName()) {
+      return target;
+    }
+  }
+
+  return m_emptyTarget;
+}
+
 bool ZDvidDialog::hasNameConflict(const std::string &name) const
 {
   for (QList<ZDvidTarget>::const_iterator iter = m_dvidRepo.begin();

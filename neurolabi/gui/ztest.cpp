@@ -25898,7 +25898,7 @@ void ZTest::test(MainWindow *host)
   host->runNeuTuPaper();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "b6bc", 8500);
   target.setSegmentationName("labels");
@@ -25931,9 +25931,10 @@ void ZTest::test(MainWindow *host)
 
   ZArbSliceViewParam sliceViewParam;
   sliceViewParam.setSize(512, 512);
-  sliceViewParam.setCenter(3079, 5798, 3120);
-  ZPoint v1 = ZPoint(1, 0, 0);
-  ZPoint v2 = ZPoint(0, 1, 0);
+  sliceViewParam.setCenter(3079, 6798, 3120);
+//  sliceViewParam.setCenter(4003, 5607, 7312);
+  ZPoint v1 = ZPoint(0, 0, 1);
+  ZPoint v2 = ZPoint(1, 0, 0);
   sliceViewParam.setPlane(v1, v2);
 
   ZStackViewParam viewParam;

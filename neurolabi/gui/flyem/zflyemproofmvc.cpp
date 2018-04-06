@@ -89,6 +89,7 @@
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "zmeshfactory.h"
 #include "z3dwindow.h"
+#include "zflyemproofmvccontroller.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -176,6 +177,10 @@ void ZFlyEmProofMvc::init()
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 //  m_testTimer = new QTimer(this);
+
+  m_profileTimer = new QTimer(this);
+  m_profileTimer->setSingleShot(true);
+  connect(m_profileTimer, SIGNAL(timeout()), this, SLOT(endProfile()));
 
 #ifdef _DEBUG_
 //  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
@@ -1458,7 +1463,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
-  exitCurrentDoc();
+//  exitCurrentDoc();
 
   clear();
   getProgressSignal()->advanceProgress(0.1);
@@ -1573,6 +1578,54 @@ void ZFlyEmProofMvc::updateContrast()
     te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
     te->enhanceContrast(getCompletePresenter()->highTileContrast());
   }
+}
+
+void ZFlyEmProofMvc::profile()
+{
+  getProgressSignal()->startProgress("Loading data ...");
+  const ZDvidTarget &target = getDvidDialog()->getDvidTarget("#profile#");
+  if (target.isValid()) {
+    setDvidTarget(target);
+  }
+  getProgressSignal()->endProgress();
+
+  if (getDvidTarget().isValid()) {
+    startMergeProfile();
+  }
+}
+
+void ZFlyEmProofMvc::startMergeProfile()
+{
+  emit messageGenerated(
+        ZWidgetMessage("Start merge profiling"));
+  clearBodyMergeStage();
+  uint64_t bodyId = 29783151;
+  ZFlyEmProofMvcController::GoToBody(this, bodyId);
+  ZFlyEmProofMvcController::EnableHighlightMode(this);
+
+  emit messageGenerated(
+        ZWidgetMessage(
+          "Please trace the selected body until the time is up. Ready?",
+          neutube::MSG_INFORMATION, ZWidgetMessage::TARGET_DIALOG));
+  m_profileTimer->start(60000);
+}
+
+void ZFlyEmProofMvc::endProfile()
+{
+  endMergeProfile();
+}
+
+void ZFlyEmProofMvc::endMergeProfile()
+{
+  emit messageGenerated(
+        ZWidgetMessage("End merge profiling"));
+  mergeSelected();
+//  getCompleteDocument()->saveMergeOperation();
+  emit messageGenerated(
+        ZWidgetMessage(
+          "Time is up. Thank you for doing the experiment!",
+          neutube::MSG_INFORMATION, ZWidgetMessage::TARGET_DIALOG));
+  ZFlyEmProofMvcController::Close(this);
 }
 
 void ZFlyEmProofMvc::diagnose()
@@ -2979,8 +3032,6 @@ void ZFlyEmProofMvc::exportSelectedBody()
     if (slice != NULL) {
       std::set<uint64_t> idSet =
           slice->getSelected(neutube::BODY_LABEL_ORIGINAL);
-//      std::set<uint64_t> idSet =
-//          m_mergeProject.getSelection(neutube::BODY_LABEL_ORIGINAL);
       ZObject3dScan obj;
 
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();

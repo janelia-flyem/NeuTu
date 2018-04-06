@@ -19,7 +19,7 @@ note=$4
 
 #http POST http://$address/api/node/$node/commit log="[\"locked for backup\"]"
 #date=`date`
-http POST http://$address/api/node/$node/branch branch="$name" note="$note" 
+http POST $address/api/node/$node/branch branch="$name" note="$note" 
 
 
  

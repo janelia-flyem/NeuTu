@@ -224,6 +224,11 @@ void ZProofreadWindow::diagnose()
   m_mainMvc->diagnose();
 }
 
+void ZProofreadWindow::profile()
+{
+  m_mainMvc->profile();
+}
+
 void ZProofreadWindow::showSettings()
 {
   m_mainMvc->showSetting();
@@ -444,6 +449,10 @@ void ZProofreadWindow::createMenu()
   QAction *settingAction = new QAction(" Settings", this);
   connect(settingAction, SIGNAL(triggered()), this, SLOT(showSettings()));
   m_advancedMenu->addAction(settingAction);
+
+  QAction *profileAction = new QAction("Profile", this);
+  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
+  m_advancedMenu->addAction(profileAction);
 
 
 //  m_viewMenu->setEnabled(false);

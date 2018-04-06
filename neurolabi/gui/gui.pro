@@ -857,7 +857,8 @@ HEADERS += mainwindow.h \
     dialogs/zneu3sliceviewdialog.h \
     znetbufferreader.h \
     zstackviewhelper.h \
-    dvid/zdviddataslicehelper.h
+    dvid/zdviddataslicehelper.h \
+    flyem/zflyemproofmvccontroller.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1499,7 +1500,8 @@ SOURCES += main.cpp \
     dialogs/zneu3sliceviewdialog.cpp \
     znetbufferreader.cpp \
     zstackviewhelper.cpp \
-    dvid/zdviddataslicehelper.cpp
+    dvid/zdviddataslicehelper.cpp \
+    flyem/zflyemproofmvccontroller.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
