@@ -52,7 +52,8 @@ public:
     ROLE_MESH,
     ROLE_MESHES_TARS,
     ROLE_ROI_KEY,
-    ROLE_ROI_DATA_KEY
+    ROLE_ROI_DATA_KEY,
+    ROLE_TEST_TASK_KEY
   };
 
   enum EType {
@@ -121,6 +122,7 @@ private:
   static const char *m_meshesTarsName;
   static const char *m_roiKeyName;
   static const char *m_roiDataKeyName;
+  static const char *m_testTaskKeyName;
 
 
   static const char *m_nullName;

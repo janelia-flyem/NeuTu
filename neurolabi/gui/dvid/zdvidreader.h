@@ -249,6 +249,7 @@ public:
   std::set<uint64_t> readAnnnotatedBodySet();
 
   bool hasKey(const QString &dataName, const QString &key) const;
+
   QByteArray readKeyValue(const QString &dataName, const QString &key) const;
   QStringList readKeys(const QString &dataName) const;
   QStringList readKeys(const QString &dataName, const QString &minKey);
@@ -530,6 +531,8 @@ public:
       const std::string &taskKey, uint64_t bodyId);
   QList<ZStackObject*> readSeedFromSplitTask(
       const ZDvidTarget &target, uint64_t bodyId);
+
+  ZJsonObject readTestTask() const;
 
   bool hasSplitTask(const QString &key) const;
 

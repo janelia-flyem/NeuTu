@@ -3771,6 +3771,7 @@ void Z3DWindow::shootTodo(int x, int y)
   if (doc != NULL) {
     uint64_t bodyId = 0;
     std::vector<ZPoint> intersection = getRayIntersection(x, y, &bodyId);
+    bodyId = doc->getMappedId(bodyId);
     if (!intersection.empty()) {
       ZPoint &pt = intersection.front();
       int cx = iround(pt.x());
@@ -3921,7 +3922,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
         intersection = mesh->intersectLineSeg(
               stackSeg.getStartPoint(), stackSeg.getEndPoint());
         if (!intersection.empty()) {
-          misc::assign(id, ZFlyEmBody3dDoc::unencode(mesh->getLabel()));
+          misc::assign(id, mesh->getLabel());
           break;
         }
       }

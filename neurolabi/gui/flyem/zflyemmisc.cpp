@@ -39,6 +39,7 @@
 #include "dvid/zdvidwriter.h"
 #include "zobject3d.h"
 #include "zarbsliceviewparam.h"
+#include "flyem/zmainwindowcontroller.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -1434,7 +1435,8 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   ZDvidUrl dvidUrl(target);
   std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
   ZDvidReader *reader =
-      ZGlobal::GetInstance().getDvidReaderFromUrl(GET_FLYEM_CONFIG.getTaskServer());
+      ZGlobal::GetInstance().getDvidReaderFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
   ZJsonObject taskJson =
       reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
                                     taskKey.c_str());
@@ -1488,6 +1490,45 @@ ZJsonObject ZFlyEmMisc::MakeSplitTask(
   }
 
   return task;
+}
+
+ZDvidReader* ZFlyEmMisc::GetTaskReader()
+{
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+
+  return reader;
+}
+
+ZDvidWriter* ZFlyEmMisc::GetTaskWriter()
+{
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriterFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+
+  return writer;
+}
+
+bool ZFlyEmMisc::HasOpenTestTask()
+{
+  ZDvidReader *reader = GetTaskReader();
+  QString taskKey =  QString::fromStdString(ZDvidUrl::GetTaskKey());
+  if (reader->hasKey("task_test", taskKey)) {
+    if (!reader->hasKey("result_test", taskKey)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void ZFlyEmMisc::StartOpenTestTask()
+{
+  ZJsonObject config = GetTaskReader()->readTestTask();
+
+
+  //todo
 }
 
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)

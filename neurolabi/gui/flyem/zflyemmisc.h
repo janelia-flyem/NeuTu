@@ -29,6 +29,7 @@ class ZVaa3dMarker;
 class ZObject3d;
 class ZMesh;
 class ZArbSliceViewParam;
+class ZDvidWriter;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -101,6 +102,12 @@ ZJsonObject MakeSplitTask(
     const ZDvidTarget &target, uint64_t bodyId, ZJsonArray seedJson,
     ZJsonArray roiJson);
 void RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId);
+
+bool HasOpenTestTask();
+void StartOpenTestTask();
+
+ZDvidReader* GetTaskReader();
+ZDvidWriter* GetTaskWriter();
 
 QString GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,

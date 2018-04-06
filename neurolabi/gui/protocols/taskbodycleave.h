@@ -35,6 +35,8 @@ public:
   virtual QWidget *getTaskWidget() override;
   virtual QMenu *getTaskMenu() override;
 
+  uint64_t getBodyId() const;
+
 private slots:
   void updateLevel(int level);
 

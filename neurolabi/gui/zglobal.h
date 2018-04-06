@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <QObject>
 
 #include "zsharedpointer.h"
 
@@ -14,6 +15,7 @@ class ZDvidWriter;
 class ZDvidSparseStack;
 class ZDvidTarget;
 class ZBrowserOpener;
+class QMainWindow;
 
 class ZGlobal
 {
@@ -42,6 +44,12 @@ public:
       const std::string &url, const std::string &key = "") const;
   ZDvidWriter* getDvidWriterFromUrl(
       const std::string &url, const std::string &key = "") const;
+
+  void setMainWindow(QMainWindow *win);
+  template<typename T>
+  T* getMainWindow() const;
+
+  QMainWindow* getMainWindow() const;
 
 public:
   static ZDvidReader* GetDvidReader(const std::string &name);
@@ -77,6 +85,17 @@ private:
 private:
   ZGlobalData *m_data;
   ZSharedPointer<ZBrowserOpener> m_browserOpener;
+  QMainWindow *m_mainWin = nullptr;
 };
+
+template<typename T>
+T* ZGlobal::getMainWindow() const
+{
+  if (m_mainWin == nullptr) {
+    return nullptr;
+  }
+
+  return qobject_cast<T*>(m_mainWin);
+}
 
 #endif // ZGLOBAL_H

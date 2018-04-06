@@ -2122,6 +2122,18 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
 
 }
 
+uint64_t ZFlyEmBody3dDoc::getMappedId(uint64_t bodyId) const
+{
+  for (const auto &m : m_tarIdToMeshIds) {
+    if (m.second.count(bodyId) > 0) {
+      bodyId = m.first;
+      break;
+    }
+  }
+
+  return unencode(bodyId);
+}
+
 QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
 {
   QSet<uint64_t> bodySet;
