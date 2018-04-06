@@ -855,6 +855,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         if (!m_taskList.empty()) {
           connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
                   this, SLOT(onBodiesUpdated()));
+          connect(m_taskList.back().data(), SIGNAL(messageGenerated(const ZWidgetMessage&)),
+                  this, SIGNAL(messageGenerated(const ZWidgetMessage&)));
         }
     }
 

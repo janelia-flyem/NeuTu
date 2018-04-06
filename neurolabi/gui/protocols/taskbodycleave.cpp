@@ -20,7 +20,6 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QMenu>
-#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -812,6 +811,9 @@ void TaskBodyCleave::writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
   ZDvidUrl url(writer.getDvidTarget());
   std::string urlCleave = url.getNodeUrl() + "/" + instance + "/cleave/" + std::to_string(m_bodyId);
 
+  QVector<QString> responseLabels;
+
+  size_t i = 0;
   for (const auto &pair : cleaveIndexToMeshIds) {
     const std::vector<uint64_t> &ids = pair.second;
 
@@ -827,16 +829,61 @@ void TaskBodyCleave::writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
         jsonBody.append(id);
       }
 
-      writer.post(urlCleave, jsonBody);
-      if (!writer.isStatusOk()) {
-        QString title = "Writing of cleaving results failed";
-        QString text = "Writing of cleaving results failed, code " + QString::number(writer.getStatusCode()) + ":\n" +
+      QString frac = QString::number(i++) + " of " + QString::number(cleaveIndexToMeshIds.size());
+
+      std::string response = writer.post(urlCleave, jsonBody);
+      QString labelStr;
+      if (writer.isStatusOk()) {
+        QJsonDocument responseDoc = QJsonDocument::fromJson(response.c_str());
+        if (responseDoc.isObject())  {
+          QJsonObject responseObj = responseDoc.object();
+          QJsonValue labelVal = responseObj.value("CleavedLabel");
+          if (!labelVal.isUndefined()) {
+            uint64_t label = labelVal.toDouble();
+            labelStr = QString::number(label);
+            responseLabels.push_back(labelStr);
+          }
+        }
+        if (labelStr.isEmpty()) {
+          QString title = "Warning";
+          QString text = "DVID did not respond with a new body ID when writing cleaving results " + frac;
+          displayWarning(title, text);
+        }
+      } else {
+        QString title = "Writing of cleaving results " + frac + " failed";
+        QString text = "Writing of cleaving results " + frac + " failed, code " + QString::number(writer.getStatusCode()) + ":\n" +
             writer.getStatusErrorMessage();
         displayWarning(title, text);
         return;
       }
     }
   }
+
+  // It can be useful to know the new bodies created by cleaving, so display that information.
+
+  QString responsesText = "Cleaving body " + QString::number(m_bodyId) + " created new ";
+  responsesText += (responseLabels.size() > 1) ? "bodies " : "body ";
+  for (int i = 0; i < responseLabels.size(); i++) {
+    responsesText += responseLabels[i];
+    if (i < responseLabels.size() - 1) {
+      responsesText += ", ";
+    }
+  }
+  ZWidgetMessage msg(responsesText);
+  notify(msg);
+
+  // And for now, at least, print to the shell the HTTPie command that would undo the cleaving.
+
+  std::string undoText = "echo '[" + QString::number(m_bodyId).toStdString() + ", ";
+  for (int i = 0; i < responseLabels.size(); i++) {
+    undoText += responseLabels[i].toStdString();
+    if (i < responseLabels.size() - 1) {
+      undoText += ", ";
+    }
+  }
+  undoText += "]' | http POST " + url.getNodeUrl() + "/" + instance + "/merge";
+  std::string undoMsg = "\nUndo the previous cleave with the following shell command (using HTTPie):\n" + undoText + "\n\n";
+  std::cout << undoMsg;
 }
 
 void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
