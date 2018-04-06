@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "dvid/zdviddata.h"
+#include "neutube.h"
 #include "zstring.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
@@ -1532,6 +1533,11 @@ std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
   return GetMeshKey(bodyId) + "_info";
 }
 
+std::string ZDvidUrl::GetTaskKey()
+{
+  return "task__" + neutube::GetCurrentUserName();
+}
+
 std::string ZDvidUrl::GetServiceResultEndPoint()
 {
   return "result";
@@ -1580,6 +1586,11 @@ std::string ZDvidUrl::getSplitResultKey(const uint64_t bodyId) const
   return GetResultKeyFromTaskKey(taskKey);
 }
 
+std::string ZDvidUrl::getTestTaskUrl() const
+{
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_TEST_TASK_KEY),
+                   GetTaskKey());
+}
 /*
 bool ZDvidUrl::IsSplitTask(const std::string &url)
 {

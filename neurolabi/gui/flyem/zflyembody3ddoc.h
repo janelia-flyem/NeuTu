@@ -158,6 +158,8 @@ public:
   QSet<uint64_t> getBodySet() const { return m_bodySet; }
   QSet<uint64_t> getUnencodedBodySet() const;
 
+  uint64_t getMappedId(uint64_t bodyId) const;
+
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);

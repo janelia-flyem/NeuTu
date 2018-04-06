@@ -4516,6 +4516,15 @@ QList<ZStackObject*> ZDvidReader::readSeedFromSplitTask(
   return readSeedFromSplitTask(taskKey, bodyId);
 }
 
+ZJsonObject ZDvidReader::readTestTask() const
+{
+  ZDvidUrl url(getDvidTarget());
+  std::string taskUrl = url.getTestTaskUrl();
+  ZJsonObject taskJson = readJsonObject(taskUrl);
+
+  return taskJson;
+}
+
 bool ZDvidReader::hasSplitTask(const QString &key) const
 {
   return hasKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY).c_str(), key);

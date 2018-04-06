@@ -31,6 +31,7 @@ const char* ZDvidData::m_sparsevolSizeName = "sparsevol-size";
 const char* ZDvidData::m_meshesTarsName = "meshes_tars";
 const char* ZDvidData::m_roiKeyName = "rois";
 const char* ZDvidData::m_roiDataKeyName = "roi_data";
+const char* ZDvidData::m_testTaskKeyName = "task_test";
 
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
@@ -123,6 +124,8 @@ std::string ZDvidData::GetName(ERole role)
     return m_roiKeyName;
   case ROLE_ROI_DATA_KEY:
     return m_roiDataKeyName;
+  case ROLE_TEST_TASK_KEY:
+    return m_testTaskKeyName;
   }
 
   return m_emptyName;

@@ -299,6 +299,11 @@ QMenu *TaskBodyCleave::getTaskMenu()
   return m_menu;
 }
 
+uint64_t TaskBodyCleave::getBodyId() const
+{
+  return m_bodyId;
+}
+
 void TaskBodyCleave::updateLevel(int level)
 {
   bool showingCleaving = m_showCleavingCheckBox->isChecked();

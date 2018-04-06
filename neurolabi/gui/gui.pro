@@ -858,7 +858,8 @@ HEADERS += mainwindow.h \
     znetbufferreader.h \
     zstackviewhelper.h \
     dvid/zdviddataslicehelper.h \
-    flyem/zflyemproofmvccontroller.h
+    flyem/zflyemproofmvccontroller.h \
+    flyem/zmainwindowcontroller.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1501,7 +1502,8 @@ SOURCES += main.cpp \
     znetbufferreader.cpp \
     zstackviewhelper.cpp \
     dvid/zdviddataslicehelper.cpp \
-    flyem/zflyemproofmvccontroller.cpp
+    flyem/zflyemproofmvccontroller.cpp \
+    flyem/zmainwindowcontroller.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

@@ -75,6 +75,16 @@ void ZGlobal::clearStackPosition()
   m_data->m_stackPosition.invalidate();
 }
 
+void ZGlobal::setMainWindow(QMainWindow *win)
+{
+  m_mainWin = win;
+}
+
+QMainWindow* ZGlobal::getMainWindow() const
+{
+  return m_mainWin;
+}
+
 template<typename T>
 T* ZGlobal::getIODevice(
     const std::string &name, std::map<std::string, T*> &ioMap) const
@@ -232,3 +242,4 @@ ZDvidWriter* ZGlobal::GetDvidWriterFromUrl(
 {
   return GetInstance().getDvidWriterFromUrl(url, key);
 }
+
