@@ -25957,5 +25957,14 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 1
+  ZWidgetMessage msg = ZWidgetMessageFactory("test").
+      to(ZWidgetMessage::TARGET_CUSTOM_AREA).
+      as(neutube::MSG_WARNING).
+      title("Test Title");
+  qDebug() << msg.getTitle();
+  qDebug() << msg.toHtmlString();
+#endif
+
   std::cout << "Done." << std::endl;
 }

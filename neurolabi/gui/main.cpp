@@ -24,6 +24,7 @@
 #include "zneurontracerconfig.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
+#include "flyem/zmainwindowcontroller.h"
 
 #if 0
 #ifdef _QT5_
@@ -405,8 +406,12 @@ int main(int argc, char *argv[])
     int result = 1;
 
     if (mainWin != NULL) {
-#if defined(_FLYEM_) && !defined(_DEBUG_) && !defined(_NEU3_)
-      mainWin->startProofread();
+#if defined(_FLYEM_) && !defined(_NEU3_)
+#  if defined(_DEBUG_)
+      ZMainWindowController::StartTestTask(mainWin);
+#  else
+      ZMainWindowController::StartTestTask(mainWin->startProofread());
+#  endif
 #endif
 
 #if defined(_NEU3_2)

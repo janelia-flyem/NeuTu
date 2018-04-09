@@ -7,7 +7,6 @@
 #include "z3dvolumefilter.h"
 #include "z3dbackgroundrenderer.h"
 #include "z3dcameraparameter.h"
-#include "z3dpickingmanager.h"
 #include "z3dtextureblendrenderer.h"
 #include "z3dtexturecopyrenderer.h"
 #include "z3dfontrenderer.h"

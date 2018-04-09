@@ -376,37 +376,71 @@ void Z3DSwcFilter::registerPickingObjects()
     }
 
     if (!m_pickingObjectsRegistered) {
-      for (size_t i=0; i<m_swcList.size(); i++) {
-        pickingManager().registerObject(m_swcList[i]);
-        for (size_t j=0; j<m_decomposedNodes[i].size(); j++) {
-          pickingManager().registerObject(m_decomposedNodes[i][j]);
-          m_registeredSwcTreeNodeList.push_back(m_decomposedNodes[i][j]);
+      size_t nodePairCount = 0;
+      size_t nodeCount = 0;
+      for (size_t i=0; i < m_swcList.size(); i++) {
+        nodePairCount += m_decompsedNodePairs[i].size();
+        nodeCount += m_decomposedNodes[i].size();
+      }
+
+      m_registeredSwcTreeNodeList.resize(nodeCount);
+
+      {
+        size_t nodeIndex = 0;
+        for (size_t i=0; i<m_swcList.size(); i++) {
+          pickingManager().registerObject(m_swcList[i]);
+          for (size_t j=0; j<m_decomposedNodes[i].size(); j++) {
+            pickingManager().registerObject(m_decomposedNodes[i][j]);
+//            m_registeredSwcTreeNodeList.push_back(m_decomposedNodes[i][j]);
+            m_registeredSwcTreeNodeList[nodeIndex++] = m_decomposedNodes[i][j];
+          }
         }
       }
+
       m_registeredSwcList = m_swcList;
-      m_swcPickingColors.clear();
-      m_linePickingColors.clear();
-      m_pointPickingColors.clear();
-      m_sphereForConePickingColors.clear();
+
+      m_swcPickingColors.resize(nodePairCount);
+//      m_swcPickingColors.clear();
+//      m_linePickingColors.clear();
+      m_linePickingColors.resize(nodePairCount * 2);
+//      m_pointPickingColors.clear();
+//      m_sphereForConePickingColors.clear();
+      m_pointPickingColors.resize(nodeCount);
+      m_sphereForConePickingColors.resize(nodeCount);
+
+      size_t nodePairIndex = 0;
+      size_t nodeIndex = 0;
+
       for (size_t i=0; i < m_swcList.size(); i++) {
         glm::col4 pickingColor = pickingManager().colorOfObject(m_swcList[i]);
         glm::vec4 swcPickingColor(
               pickingColor[0]/255.f, pickingColor[1]/255.f, pickingColor[2]/255.f,
             pickingColor[3]/255.f);
         for (size_t j=0; j<m_decompsedNodePairs[i].size(); j++) {
-          m_swcPickingColors.push_back(swcPickingColor);
-          m_linePickingColors.push_back(swcPickingColor);
-          m_linePickingColors.push_back(swcPickingColor);
+          m_swcPickingColors[nodePairIndex] = swcPickingColor;
+          m_linePickingColors[nodePairIndex * 2] = swcPickingColor;
+          m_linePickingColors[nodePairIndex * 2 + 1] = swcPickingColor;
+          ++nodePairIndex;
+//          m_swcPickingColors.push_back(swcPickingColor);
+//          m_linePickingColors.push_back(swcPickingColor);
+//          m_linePickingColors.push_back(swcPickingColor);
         }
         //      m_sphereForConePickingColors = m_swcPickingColors;
         //      m_sphereForConePickingColors.push_back(fPickingColor);
+//        m_pointPickingColors.reserve(
+//              m_pointPickingColors.size() + m_decomposedNodes[i].size());
+//        m_sphereForConePickingColors.reserve(
+//              m_sphereForConePickingColors.size() + m_decomposedNodes[i].size());
         for (size_t j=0; j<m_decomposedNodes[i].size(); j++) {
           pickingColor = pickingManager().colorOfObject(m_decomposedNodes[i][j]);
           glm::vec4 fPickingColor = glm::vec4(
                 pickingColor[0]/255.f, pickingColor[1]/255.f,
               pickingColor[2]/255.f, pickingColor[3]/255.f);
-          m_pointPickingColors.push_back(fPickingColor);
-          m_sphereForConePickingColors.push_back(swcPickingColor);
+          m_pointPickingColors[nodeIndex] = fPickingColor;
+          m_sphereForConePickingColors[nodeIndex] = swcPickingColor;
+          ++nodeIndex;
+//          m_pointPickingColors.push_back(fPickingColor);
+//          m_sphereForConePickingColors.push_back(swcPickingColor);
         }
       }
 
@@ -641,8 +675,12 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
     if (m_swcList.empty())
       return;
 
-    if (!m_pickingObjectsRegistered)
+    if (!m_pickingObjectsRegistered) {
+      QElapsedTimer timer;
+      timer.restart();
       registerPickingObjects();
+      LINFO() << "Registering time:" << timer.elapsed();
+    }
 
     if (isNodePicking()) {
       if (m_renderingPrimitive.isSelected("Normal")) {

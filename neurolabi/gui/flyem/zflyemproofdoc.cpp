@@ -1966,6 +1966,11 @@ void ZFlyEmProofDoc::saveMergeOperation()
   }
 }
 
+ZJsonArray ZFlyEmProofDoc::getMergeOperation() const
+{
+  return m_bodyMerger.toJsonArray();
+}
+
 void ZFlyEmProofDoc::backupMergeOperation()
 {
   if (!m_mergeAutoSavePath.isEmpty()) {

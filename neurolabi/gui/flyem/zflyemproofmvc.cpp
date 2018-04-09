@@ -180,7 +180,7 @@ void ZFlyEmProofMvc::init()
 
   m_profileTimer = new QTimer(this);
   m_profileTimer->setSingleShot(true);
-  connect(m_profileTimer, SIGNAL(timeout()), this, SLOT(endProfile()));
+  connect(m_profileTimer, SIGNAL(timeout()), this, SLOT(endTestTask()));
 
 #ifdef _DEBUG_
 //  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
@@ -1594,12 +1594,51 @@ void ZFlyEmProofMvc::profile()
   }
 }
 
-void ZFlyEmProofMvc::startMergeProfile()
+void ZFlyEmProofMvc::startTestTask(const std::string &taskKey)
+{
+  if (ZFlyEmMisc::IsTaskOpen(QString::fromStdString(taskKey))) {
+    m_taskKey = taskKey;
+    ZJsonObject config = ZFlyEmMisc::GetTaskReader()->readTestTask(taskKey);
+    startTestTask(config);
+  }
+}
+
+void ZFlyEmProofMvc::startTestTask(const ZJsonObject &config)
+{
+  if (config.hasKey("dvid")) {
+    ZDvidTarget target;
+    target.loadJsonObject(ZJsonObject(config.value("dvid")));
+    if (target.isValid()) {
+      ZFlyEmProofMvcController::DisableSequencer(this);
+
+      getProgressSignal()->startProgress("Loading data ...");
+      setDvidTarget(target);
+      getProgressSignal()->endProgress();
+
+      if (config.hasKey("type")) {
+        std::string taskType = ZJsonParser::stringValue(config["type"]);
+        if (taskType == "2d merge") {
+          ZFlyEmProofMvcController::Disable3DVisualization(this);
+        } else if (taskType == "3d merge") {
+          showFineBody3d();
+        }
+      }
+
+      uint64_t bodyId = ZJsonParser::integerValue(config["body ID"]);
+      int t = ZJsonParser::integerValue(config["time"]);
+      startMergeProfile(bodyId, t);
+    } else {
+      emit ZWidgetMessage("Invalid dvid env", neutube::MSG_WARNING);
+    }
+  }
+}
+
+void ZFlyEmProofMvc::startMergeProfile(const uint64_t bodyId, int msec)
 {
   emit messageGenerated(
-        ZWidgetMessage("Start merge profiling"));
+        ZWidgetMessage(QString("Start merge profiling: %1 in %2msec").
+                       arg(bodyId).arg(msec)));
   clearBodyMergeStage();
-  uint64_t bodyId = 29783151;
   ZFlyEmProofMvcController::GoToBody(this, bodyId);
   ZFlyEmProofMvcController::EnableHighlightMode(this);
 
@@ -1607,12 +1646,33 @@ void ZFlyEmProofMvc::startMergeProfile()
         ZWidgetMessage(
           "Please trace the selected body until the time is up. Ready?",
           neutube::MSG_INFORMATION, ZWidgetMessage::TARGET_DIALOG));
-  m_profileTimer->start(60000);
+  m_profileTimer->start(msec);
 }
 
-void ZFlyEmProofMvc::endProfile()
+void ZFlyEmProofMvc::startMergeProfile()
+{
+  startMergeProfile(29783151, 60000);
+}
+
+void ZFlyEmProofMvc::endTestTask()
 {
   endMergeProfile();
+
+  //Saving results
+  ZJsonArray array = getCompleteDocument()->getMergeOperation();
+  ZJsonObject config = ZFlyEmMisc::GetTaskReader()->readTestTask(m_taskKey);
+  std::cout << array.toString() << std::endl;
+  config.setEntry("merge", array);
+  std::cout << config.dumpString(2) << std::endl;
+
+  ZFlyEmMisc::GetTaskWriter()->writeTestResult(m_taskKey, config);
+
+  m_taskKey.clear();
+  emit messageGenerated(
+        ZWidgetMessage(
+          "Time is up. Thank you for doing the experiment!",
+          neutube::MSG_INFORMATION, ZWidgetMessage::TARGET_DIALOG));
+  ZFlyEmProofMvcController::Close(this);
 }
 
 void ZFlyEmProofMvc::endMergeProfile()
@@ -1620,12 +1680,10 @@ void ZFlyEmProofMvc::endMergeProfile()
   emit messageGenerated(
         ZWidgetMessage("End merge profiling"));
   mergeSelected();
+
+//  mergeSelected();
 //  getCompleteDocument()->saveMergeOperation();
-  emit messageGenerated(
-        ZWidgetMessage(
-          "Time is up. Thank you for doing the experiment!",
-          neutube::MSG_INFORMATION, ZWidgetMessage::TARGET_DIALOG));
-  ZFlyEmProofMvcController::Close(this);
+
 }
 
 void ZFlyEmProofMvc::diagnose()
@@ -2329,6 +2387,17 @@ uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
   }
 
   return bodyId;
+}
+
+void ZFlyEmProofMvc::notifyStateUpdate()
+{
+  emit stateUpdated(this);
+}
+
+void ZFlyEmProofMvc::disableSequencer()
+{
+  disconnect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+             m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
 }
 
 void ZFlyEmProofMvc::testBodySplit()

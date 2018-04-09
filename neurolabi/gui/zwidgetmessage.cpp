@@ -112,3 +112,39 @@ bool ZWidgetMessage::hasMessage() const
 {
   return !m_message.isEmpty();
 }
+
+ZWidgetMessageFactory::operator ZWidgetMessage() const
+{
+  return m_message;
+}
+
+ZWidgetMessageFactory::ZWidgetMessageFactory(const char *msg)
+{
+  m_message.setMessage(msg);
+}
+
+ZWidgetMessageFactory ZWidgetMessageFactory::Make(const char *msg)
+{
+  return ZWidgetMessageFactory(msg);
+}
+
+ZWidgetMessageFactory& ZWidgetMessageFactory::to(ZWidgetMessage::ETarget target)
+{
+  m_message.setTarget(target);
+
+  return *this;
+}
+
+ZWidgetMessageFactory& ZWidgetMessageFactory::as(neutube::EMessageType type)
+{
+  m_message.setType(type);
+
+  return *this;
+}
+
+ZWidgetMessageFactory& ZWidgetMessageFactory::title(const char *title)
+{
+  m_message.setTitle(title);
+
+  return *this;
+}

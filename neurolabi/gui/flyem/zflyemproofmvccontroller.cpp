@@ -32,3 +32,14 @@ void ZFlyEmProofMvcController::EnableHighlightMode(ZFlyEmProofMvc *mvc)
   mvc->getCompletePresenter()->setHighlightMode(true);
   mvc->highlightSelectedObject(true);
 }
+
+void ZFlyEmProofMvcController::Disable3DVisualization(ZFlyEmProofMvc *mvc)
+{
+  mvc->disable3D();
+  mvc->notifyStateUpdate();
+}
+
+void ZFlyEmProofMvcController::DisableSequencer(ZFlyEmProofMvc *mvc)
+{
+  mvc->disableSequencer();
+}
