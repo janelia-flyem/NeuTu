@@ -257,6 +257,7 @@ public:
   std::string writeServiceTask(const QString &group, const ZJsonObject &task);
   void writeSplitTask(const QString &key, const ZJsonObject &task);
   void deleteSplitTask(const QString &key);
+  void writeTestResult(const std::string &key, const ZJsonObject &result);
 
   /*!
    * \brief Upload a mesh as a ROI

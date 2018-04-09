@@ -532,7 +532,8 @@ public:
   QList<ZStackObject*> readSeedFromSplitTask(
       const ZDvidTarget &target, uint64_t bodyId);
 
-  ZJsonObject readTestTask() const;
+//  ZJsonObject readTestTask() const;
+  ZJsonObject readTestTask(const std::string &key) const;
 
   bool hasSplitTask(const QString &key) const;
 

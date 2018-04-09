@@ -103,8 +103,9 @@ ZJsonObject MakeSplitTask(
     ZJsonArray roiJson);
 void RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId);
 
-bool HasOpenTestTask();
-void StartOpenTestTask();
+bool IsTaskOpen(const QString &taskKey);
+//bool HasOpenTestTask();
+//void StartOpenTestTask();
 
 ZDvidReader* GetTaskReader();
 ZDvidWriter* GetTaskWriter();

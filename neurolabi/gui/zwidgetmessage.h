@@ -30,7 +30,6 @@ public:
                  neutube::EMessageType type = neutube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
 
-
   QString toHtmlString() const;
   static QString ToHtmlString(const QString &msg, neutube::EMessageType type);
   static QString ToHtmlString(const QStringList &msgList,
@@ -103,5 +102,20 @@ void ZWidgetMessage::ConnectMessagePipe(T1 *source, T2 *target)
   QObject::connect(source, SIGNAL(messageGenerated(ZWidgetMessage)),
                    target, SLOT(processMessage(ZWidgetMessage)));
 }
+
+struct ZWidgetMessageFactory
+{
+  ZWidgetMessageFactory(const char *msg);
+  operator ZWidgetMessage() const;
+
+  static ZWidgetMessageFactory Make(const char *msg);
+
+  ZWidgetMessageFactory& to(ZWidgetMessage::ETarget target);
+  ZWidgetMessageFactory& as(neutube::EMessageType type);
+  ZWidgetMessageFactory& title(const char *title);
+
+private:
+  ZWidgetMessage m_message;
+};
 
 #endif // ZWIDGETMESSAGE_H

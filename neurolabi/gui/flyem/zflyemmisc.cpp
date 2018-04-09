@@ -1510,6 +1510,19 @@ ZDvidWriter* ZFlyEmMisc::GetTaskWriter()
   return writer;
 }
 
+bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
+{
+  ZDvidReader *reader = GetTaskReader();
+  if (reader->hasKey("task_test", taskKey)) {
+    if (!reader->hasKey("result_test", taskKey)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*
 bool ZFlyEmMisc::HasOpenTestTask()
 {
   ZDvidReader *reader = GetTaskReader();
@@ -1522,14 +1535,18 @@ bool ZFlyEmMisc::HasOpenTestTask()
 
   return true;
 }
+*/
 
+#if 0
 void ZFlyEmMisc::StartOpenTestTask()
 {
-  ZJsonObject config = GetTaskReader()->readTestTask();
-
-
-  //todo
+  if (HasOpenTestTask()) {
+//    ZJsonObject config = GetTaskReader()->readTestTask();
+    //todo
+    ZMainWindowController::StartTestTask(ZDvidUrl::GetTaskKey());
+  }
 }
+#endif
 
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {

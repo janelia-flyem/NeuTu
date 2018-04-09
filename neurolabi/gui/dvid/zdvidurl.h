@@ -299,7 +299,8 @@ public:
   std::string getSplitTaskKey(const uint64_t bodyId) const;
   std::string getSplitResultKey(const uint64_t bodyId) const;
 
-  std::string getTestTaskUrl() const;
+  std::string getTestTaskUrl(const std::string &key);
+//  std::string getTestTaskUrl() const;
 
 //  static bool IsSplitTask(const std::string &url);
 

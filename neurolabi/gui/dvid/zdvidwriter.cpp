@@ -1067,6 +1067,12 @@ void ZDvidWriter::writeSplitTask(const QString &key, const ZJsonObject &task)
         ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY), key.toStdString(), task);
 }
 
+void ZDvidWriter::writeTestResult(
+    const std::string &key, const ZJsonObject &result)
+{
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_TEST_RESULT_KEY), key, result);
+}
+
 void ZDvidWriter::deleteSplitTask(const QString &key)
 {
   deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
