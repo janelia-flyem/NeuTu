@@ -643,7 +643,11 @@ void Neu3Window::startBrowser(EBrowseMode mode)
   #if defined(_USE_WEBENGINE_)
     initWebView();
     updateSliceBrowser();
-  #else
+  #endif
+  }
+    break;
+  case BROWSE_NEUROGLANCER_EXT:
+  {
     m_browseMode = BROWSE_NONE;
     glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
     ZWeightedPoint rotation;
@@ -655,7 +659,6 @@ void Neu3Window::startBrowser(EBrowseMode mode)
     bo->open(ZFlyEmMisc::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, m_bodyListWidget->getModel()->getBodySet()));
-  #endif
   }
     break;
   default:

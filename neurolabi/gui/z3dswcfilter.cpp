@@ -1754,8 +1754,10 @@ void Z3DSwcFilter::decompseSwcTree()
           m_sortedNodeList.push_back(tn);
 //          m_allNodesSet.insert(tn);
         }
-        if (tn->parent != NULL && !Swc_Tree_Node_Is_Virtual(tn->parent))
-          allPairs.push_back(std::pair<Swc_Tree_Node*, Swc_Tree_Node*>(tn, tn->parent));
+        if (tn->parent != NULL && !Swc_Tree_Node_Is_Virtual(tn->parent)) {
+          allPairs.push_back(
+                std::pair<Swc_Tree_Node*, Swc_Tree_Node*>(tn, tn->parent));
+        }
       }
 //      m_allNodesSet.insert(allNodes.begin(), allNodes.end());
       m_decompsedNodePairs[i] = allPairs;

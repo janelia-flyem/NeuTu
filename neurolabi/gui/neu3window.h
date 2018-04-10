@@ -56,7 +56,7 @@ public:
   static bool zoomToLoadedBodyEnabled();
 
   enum EBrowseMode {
-    BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER
+    BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER, BROWSE_NEUROGLANCER_EXT
   };
 
   QProgressDialog* getProgressDialog();

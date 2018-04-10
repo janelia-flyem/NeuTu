@@ -3852,6 +3852,52 @@ ZLineSegment Z3DWindow::getStackSeg(
   return stackSeg;
 }
 
+std::vector<ZPoint> Z3DWindow::shootMesh(const ZMesh *mesh, int x, int y)
+{
+  std::vector<ZPoint> intersection;
+  if (mesh != NULL) {
+    glm::dvec3 v1,v2;
+    int w = getCanvas()->width();
+    int h = getCanvas()->height();
+    getMeshFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
+#ifdef _DEBUG_
+    std::cout << "Segment start: " << v1.x << " " << v1.y << " " << v1.z << std::endl;
+    std::cout << "Segment end: " << v2.x << " " << v2.y << " " << v2.z << std::endl;
+#endif
+    const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
+    ZCuboid rbox;
+    rbox.setFirstCorner(
+          boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
+    rbox.setLastCorner(
+          boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
+
+    ZLineSegment seg(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+    ZLineSegment stackSeg = getStackSeg(seg, rbox);
+/*
+    ZLineSegment Z3DWindow::getStackSeg(
+        const ZLineSegment &seg, const ZCuboid &rbox) const
+
+    ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
+    ZLineSegment stackSeg;
+    if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+      ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
+      if (slope.dot(slope2) < 0.0) {
+        stackSeg.invert();
+      }
+    }
+*/
+#ifdef _DEBUG_
+    std::cout << "Segment start: " << stackSeg.getStartPoint().toString() << std::endl;
+    std::cout << "Segment end: " << stackSeg.getEndPoint().toString() << std::endl;
+#endif
+
+    intersection = mesh->intersectLineSeg(
+          stackSeg.getStartPoint(), stackSeg.getEndPoint());
+  }
+
+  return intersection;
+}
+
 std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
 {
   std::vector<ZPoint> intersection;
@@ -3882,48 +3928,12 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
       }
       getSwcFilter()->forceNodePicking(false);
     } else {
-      QList<ZMesh*> meshList = doc->getMeshList();
-      foreach (const ZMesh *mesh, meshList) {
-        glm::dvec3 v1,v2;
-        int w = getCanvas()->width();
-        int h = getCanvas()->height();
-        getMeshFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
-#ifdef _DEBUG_
-        std::cout << "Segment start: " << v1.x << " " << v1.y << " " << v1.z << std::endl;
-        std::cout << "Segment end: " << v2.x << " " << v2.y << " " << v2.z << std::endl;
-#endif
-        const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
-        ZCuboid rbox;
-        rbox.setFirstCorner(
-              boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
-        rbox.setLastCorner(
-              boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
-
-        ZLineSegment seg(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
-        ZLineSegment stackSeg = getStackSeg(seg, rbox);
-/*
-        ZLineSegment Z3DWindow::getStackSeg(
-            const ZLineSegment &seg, const ZCuboid &rbox) const
-
-        ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
-        ZLineSegment stackSeg;
-        if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
-          ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
-          if (slope.dot(slope2) < 0.0) {
-            stackSeg.invert();
-          }
-        }
-*/
-#ifdef _DEBUG_
-        std::cout << "Segment start: " << stackSeg.getStartPoint().toString() << std::endl;
-        std::cout << "Segment end: " << stackSeg.getEndPoint().toString() << std::endl;
-#endif
-
-        intersection = mesh->intersectLineSeg(
-              stackSeg.getStartPoint(), stackSeg.getEndPoint());
+      getCanvas()->getGLFocus();
+      ZMesh *mesh = getMeshFilter()->hitMesh(x, y);
+      if (mesh != NULL) {
+        intersection = shootMesh(mesh, x, y);
         if (!intersection.empty()) {
           misc::assign(id, mesh->getLabel());
-          break;
         }
       }
     }

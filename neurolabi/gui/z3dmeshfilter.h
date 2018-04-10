@@ -60,6 +60,8 @@ public:
    */
   std::vector<bool> hitObject(const std::vector<std::pair<int, int> > &ptArray);
 
+  ZMesh* hitMesh(int x, int y);
+
   // Meshes not mentioned in meshIdToColorIndex will get indexedColors[0].
   void setColorIndexing(const std::vector<glm::vec4> &indexedColors,
                         const std::map<uint64_t, std::size_t> &meshIdToColorIndex);

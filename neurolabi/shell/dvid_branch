@@ -2,7 +2,7 @@
 
 if [ $# -lt 4 ]
 then
-  echo './flyem_backup_node <address> <node> <name> <note>'
+  echo './dvid_branch <address> <node> <name> <note>'
   exit
 fi
 
