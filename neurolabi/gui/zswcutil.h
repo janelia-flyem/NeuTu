@@ -5,8 +5,10 @@
 #include <set>
 #include "zswctree.h"
 
-namespace ZSwc
+namespace zswc
 {
+using Swc_Tree_Node_Pair = std::pair<Swc_Tree_Node*, Swc_Tree_Node*>;
+
 /*!
  * \brief Extract overlapping nodes.
  *
@@ -18,6 +20,9 @@ std::vector<Swc_Tree_Node*> FindOverlapNode(
     const ZSwcTree &tree1, const ZSwcTree &tree2);
 
 void Subtract(ZSwcTree *tree1, const ZSwcTree *tree2);
+
+std::vector<Swc_Tree_Node *> Decompose(
+    const ZSwcTree *tree, std::vector<Swc_Tree_Node_Pair> *nodePairList);
 
 #if __cplusplus >= 201103L
 template <template<class...> class container>
@@ -33,7 +38,7 @@ void SetType(const InputIterator &first, const InputIterator &last, int type);
 
 #if __cplusplus >= 201103L
 template <template<class...> class container>
-void ZSwc::SetType(container<Swc_Tree_Node *> nodeGroup, int type)
+void zswc::SetType(container<Swc_Tree_Node *> nodeGroup, int type)
 {
   for (typename container<Swc_Tree_Node*>::iterator iter = nodeGroup.begin();
        iter != nodeGroup.end(); ++iter) {
@@ -43,7 +48,7 @@ void ZSwc::SetType(container<Swc_Tree_Node *> nodeGroup, int type)
 #endif
 
 template <typename InputIterator>
-void ZSwc::SetType(const InputIterator &first, const InputIterator &last, int type)
+void zswc::SetType(const InputIterator &first, const InputIterator &last, int type)
 {
   for (InputIterator iter = first; iter != last; ++iter) {
     SwcTreeNode::setType(*iter, type);

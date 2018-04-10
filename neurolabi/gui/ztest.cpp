@@ -25957,13 +25957,43 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZWidgetMessage msg = ZWidgetMessageFactory("test").
       to(ZWidgetMessage::TARGET_CUSTOM_AREA).
       as(neutube::MSG_WARNING).
       title("Test Title");
   qDebug() << msg.getTitle();
   qDebug() << msg.toHtmlString();
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/swc/dynamic.swc");
+  tree.forceVirtualRoot();
+//  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+//  SwcTreeNode::setParent(tn, tree.root());
+  std::vector<zswc::Swc_Tree_Node_Pair> pairList;
+  std::vector<Swc_Tree_Node*> nodeList = zswc::Decompose(&tree, &pairList);
+  std::for_each(nodeList.begin(), nodeList.end(), [](Swc_Tree_Node *tn) {
+    SwcTreeNode::print(tn);
+  });
+
+  std::for_each(pairList.begin(), pairList.end(),
+                [](const zswc::Swc_Tree_Node_Pair &p) {
+    std::cout << SwcTreeNode::id(p.first) << "->" << SwcTreeNode::id(p.second)
+              << std::endl;
+  });
+
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1", "1d1d", 8100);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+
+  }
 #endif
 
   std::cout << "Done." << std::endl;

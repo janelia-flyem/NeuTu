@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>342</width>
+    <width>521</width>
     <height>86</height>
    </rect>
   </property>
@@ -37,6 +37,13 @@
       <widget class="QRadioButton" name="neuroglancerRadioButton">
        <property name="text">
         <string>Neuroglancer</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="extNeuroglancerRadioButton">
+       <property name="text">
+        <string>Neuroglancer (External)</string>
        </property>
       </widget>
      </item>

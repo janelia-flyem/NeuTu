@@ -640,7 +640,7 @@ void ZFlyEmBody3dDoc::uncheckSelectedTodoItem()
 
 void ZFlyEmBody3dDoc::setSeedType(int type)
 {
-  ZSwc::SetType(getSelectedSwcNodeSet(), type);
+  zswc::SetType(getSelectedSwcNodeSet(), type);
   notifySwcModified();
 }
 

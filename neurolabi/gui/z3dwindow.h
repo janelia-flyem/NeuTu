@@ -458,6 +458,8 @@ private:
       const ZStroke2d *stroke,
       std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > &polylinePairList);
 
+  std::vector<ZPoint> shootMesh(const ZMesh *mesh, int x, int y);
+
 private:
   ZCuboid getRayBoundbox() const;
   ZLineSegment getRaySegment(int x, int y, std::string &source) const;
