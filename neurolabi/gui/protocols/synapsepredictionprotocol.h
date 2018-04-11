@@ -59,15 +59,20 @@ private slots:
     void onCompleteButton();
     void onRefreshButton();
     void onDetailsButton();
-    void onDoubleClickSitesTable(QModelIndex index);
+    void onDoubleClickSitesTable(QModelIndex index);    
+    void onModeChanged(QString item);
 
 private:
     static const std::string KEY_VARIATION;
     static const std::string KEY_VERSION;
     static const std::string KEY_PROTOCOL_RANGE;
     static const std::string KEY_BODYID;
+    static const std::string KEY_MODE;
     static const int fileVersion;
     static const QColor COLOR_DEFAULT;
+    static const QString MODE_SYNAPSE;
+    static const QString MODE_TBAR;
+    static const QString MODE_PSD;
 
     enum SitesTableColumns {
         SITES_STATUS_COLUMN,
@@ -89,6 +94,7 @@ private:
     uint64_t  m_bodyID;
     QList<QColor> m_postColorList;
     ZFlyEmSequencerColorScheme m_colorScheme;
+    QString m_currentMode;
 
     void saveState();
     void updateLabels();
@@ -107,6 +113,8 @@ private:
     void enableProtocolColorMap();
     void disableProtocolColorMap();
     QColor getColor(int index);
+    bool isFinished(ZIntPoint point);
+    void refreshData(bool unfinishCurrent);
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H
