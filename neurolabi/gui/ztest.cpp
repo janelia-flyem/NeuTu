@@ -25990,9 +25990,73 @@ void ZTest::test(MainWindow *host)
   ZDvidTarget target;
   target.set("emdata1", "1d1d", 8100);
 
+  ZMeshFactory mf;
+  mf.setSmooth(3);
+
   ZDvidReader reader;
   if (reader.open(target)) {
+    ZDvidWriter writer;
+    ZDvidTarget roiTarget;
+    roiTarget.set("emdata2", "5f98", 8900);
 
+    if (writer.open(roiTarget)) {
+      auto roiList = reader.readDataInstances("roi");
+      for (const auto &roiName : roiList) {
+        std::cout << "Processing " << roiName;
+        if (!writer.getDvidReader().hasData(roiName)) {
+          std::cout << "Generating mesh ..." << std::endl;
+          ZObject3dScan obj = reader.readRoi(roiName);
+          if (!obj.isEmpty()) {
+            writer.createData("roi", roiName);
+            writer.writeRoi(obj, roiName);
+          } else {
+            std::cout << "Failed to load ROI: " << roiName;
+          }
+        }
+      }
+    }
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1", "1d1d", 8100);
+
+  ZMeshFactory mf;
+  mf.setSmooth(3);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZDvidWriter writer;
+    ZDvidTarget roiTarget;
+    roiTarget.set("emdata2", "5f98", 8900);
+
+    if (writer.open(roiTarget)) {
+      auto roiList = reader.readDataInstances("roi");
+      for (const auto &roiName : roiList) {
+        std::cout << "Processing " << roiName;
+        std::string filePath =
+            GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/rois_smooth2/" +
+            roiName + ".obj";
+        QFileInfo fileInfo(filePath.c_str());
+        if (!fileInfo.exists()) {
+          std::cout << "Generating mesh ..." << std::endl;
+          ZObject3dScan obj = reader.readRoi(roiName);
+          if (!obj.isEmpty()) {
+            ZMesh *mesh = mf.makeMesh(obj);
+            if (mesh != NULL) {
+              mesh->save(filePath);
+              delete mesh;
+            } else {
+              std::cout << "Failed to create mesh: " << roiName;
+            }
+          } else {
+            std::cout << "Failed to load ROI: " << roiName;
+          }
+        }
+        writer.uploadRoiMesh(filePath, roiName);
+      }
+    }
   }
 #endif
 
