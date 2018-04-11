@@ -124,6 +124,8 @@ public:
     return m_bufferReader;
   }
 
+  std::vector<std::string> readDataInstances(const std::string &type);
+
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
