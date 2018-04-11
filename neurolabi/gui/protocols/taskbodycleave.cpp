@@ -20,6 +20,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -432,38 +433,35 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
   QString status = CLEAVING_STATUS_DONE;
 
-  if ((error == QNetworkReply::NoError) && (statusCode == STATUS_OK)) {
-    QByteArray replyBytes = reply->readAll();
+  QByteArray replyBytes = reply->readAll();
+  QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
+  QJsonObject replyJson = replyJsonDoc.object();
 
-    QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
-    if (replyJsonDoc.isObject()) {
-      QJsonObject replyJson = replyJsonDoc.object();
+  if ((error == QNetworkReply::NoError) && (statusCode == STATUS_OK) && replyJsonDoc.isObject()) {
+    if (showCleaveReplyWarnings(replyJson)) {
+      status = CLEAVING_STATUS_SERVER_WARNINGS;
+    }
 
-      if (showCleaveReplyWarnings(replyJson)) {
-        status = CLEAVING_STATUS_SERVER_WARNINGS;
-      }
+    QJsonValue replyJsonAssnVal = replyJson["assignments"];
+    if (replyJsonAssnVal.isObject()) {
+      std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
 
-      QJsonValue replyJsonAssnVal = replyJson["assignments"];
-      if (replyJsonAssnVal.isObject()) {
-        std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
-
-        QJsonObject replyJsonAssn = replyJsonAssnVal.toObject();
-        for (QString key : replyJsonAssn.keys()) {
-          uint64_t cleaveIndex = key.toInt();
-          QJsonValue value = replyJsonAssn[key];
-          if (value.isArray()) {
-            for (QJsonValue idVal : value.toArray()) {
-              uint64_t id = idVal.toDouble();
-              meshIdToCleaveIndex[id] = cleaveIndex;
-            }
+      QJsonObject replyJsonAssn = replyJsonAssnVal.toObject();
+      for (QString key : replyJsonAssn.keys()) {
+        uint64_t cleaveIndex = key.toInt();
+        QJsonValue value = replyJsonAssn[key];
+        if (value.isArray()) {
+          for (QJsonValue idVal : value.toArray()) {
+            uint64_t id = idVal.toDouble();
+            meshIdToCleaveIndex[id] = cleaveIndex;
           }
         }
+      }
 
-        m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+      m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
 
-        if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
-          status = CLEAVING_STATUS_SERVER_INCOMPLETE;
-        }
+      if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
+        status = CLEAVING_STATUS_SERVER_INCOMPLETE;
       }
     }
   } else {
@@ -471,12 +469,24 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
     QString title = "Cleave Server Error";
     QString text = "Cleave server error: ";
     if (statusCode != STATUS_OK) {
-      text += reply->errorString();
-    } else {
-      QByteArray replyBytes = reply->readAll();
-      text += QString(replyBytes);
+      text += reply->errorString() + "\n";
+    } else if (!replyJsonDoc.isObject()) {
+      text += "Reply is not a JSON object";
     }
-    displayWarning(title, text);
+    if (replyJsonDoc.isObject()) {
+      auto errorsIt = replyJson.constFind("errors");
+      if (errorsIt != replyJson.end()) {
+        QJsonValue errorsVal = errorsIt.value();
+        if (errorsVal.isArray()) {
+          QJsonArray errorsArray = errorsVal.toArray();
+          for (QJsonValue error : errorsArray) {
+            text += error.toString() + "\n";
+          }
+        }
+      }
+    }
+    QString details = QString(replyBytes);
+    displayWarning(title, text, details);
 
     status = CLEAVING_STATUS_FAILED;
 
@@ -847,7 +857,10 @@ bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
         for (QJsonValue warning : warningsArray) {
           text += warning.toString() + "\n";
         }
-        displayWarning(title, text);
+
+        if (m_warningTextToSuppress.find(text) == m_warningTextToSuppress.end()) {
+          displayWarning(title, text, "", true);
+        }
 
         return true;
       }
@@ -880,7 +893,22 @@ bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t
     QString text = "Cleave server error: " + QString::number(missing.size());
     text += (missing.size() > 1) ? " super voxels were " : " super voxel was ";
     text += "missing in server response";
-    displayWarning(title, text);
+
+    std::vector<uint64_t> missingIds;
+    for (ZMesh* mesh : missing) {
+      missingIds.push_back(mesh->getLabel());
+    }
+    std::sort(missingIds.begin(), missingIds.end());
+    QString details("Missing: ");
+    for (size_t i = 0; i < missingIds.size(); i++) {
+      if (i == 200) {
+        details += "etc.";
+        break;
+      }
+      details += QString::number(missingIds[i]) + " ";
+    }
+
+    displayWarning(title, text, details);
 
     return true;
   } else {
@@ -888,14 +916,34 @@ bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t
   }
 }
 
-void TaskBodyCleave::displayWarning(const QString &title, const QString &text)
+void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
+                                    const QString& details, bool allowSuppression)
 {
   // Display the warning at idle time, after the rendering event has been processed,
   // so the results of cleaving will be visible when the warning is presented.
 
   QTimer::singleShot(0, this, [=](){
-    ZWidgetMessage msg(title, text, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG);
-    m_bodyDoc->notify(msg);
+    if (details.isEmpty() && !allowSuppression) {
+      ZWidgetMessage msg(title, text, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG);
+      m_bodyDoc->notify(msg);
+    } else {
+      QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
+      QPushButton *okAndSuppress = nullptr;
+      if (allowSuppression) {
+        okAndSuppress = msgBox.addButton("OK, Don't Ask Again", QMessageBox::AcceptRole);
+      }
+      QPushButton *ok = msgBox.addButton("OK", QMessageBox::AcceptRole);
+      msgBox.setDefaultButton(ok);
+      if (!details.isEmpty()) {
+        msgBox.setDetailedText(details);
+      }
+
+      msgBox.exec();
+
+      if (msgBox.clickedButton() == okAndSuppress) {
+          m_warningTextToSuppress.insert(text);
+      }
+    }
   });
 }
 
