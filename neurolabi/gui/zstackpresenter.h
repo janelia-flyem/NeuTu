@@ -194,6 +194,8 @@ public:
 
   bool isContextMenuOn();
 
+  void setContextMenuFactory(std::unique_ptr<ZStackDocMenuFactory> factory);
+
   void setStackBc(double scale, double offset, int c = 0);
   double getGrayScale(int c = 0) const;
   double getGrayOffset(int c = 0) const;
@@ -547,7 +549,7 @@ protected:
   QMenu *m_strokePaintContextMenu;
   QMenu *m_stackContextMenu;
   QMenu *m_bodyContextMenu;
-  QMenu *m_contextMenu;
+  QMenu *m_contextMenu = NULL;
 
   //recorded information
   int m_mouseMovePosition[3];
@@ -586,7 +588,7 @@ protected:
   ZMouseEventProcessor m_mouseEventProcessor;
 
   ZActionFactory *m_actionFactory;
-  ZStackDocMenuFactory *m_menuFactory;
+  std::unique_ptr<ZStackDocMenuFactory> m_menuFactory;
 
   int m_zOrder;
 

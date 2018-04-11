@@ -1,13 +1,13 @@
-#ifndef ZFLYEMPROOFDOCMENUFACTORY_H
-#define ZFLYEMPROOFDOCMENUFACTORY_H
+#ifndef ZSTACKDOCNULLMENUFACTORY_H
+#define ZSTACKDOCNULLMENUFACTORY_H
 
 #include "zstackdocmenufactory.h"
 
-class ZFlyEmProofDocMenuFactory : public ZStackDocMenuFactory
+class ZStackDocNullMenuFactory : public ZStackDocMenuFactory
 {
 public:
-  ZFlyEmProofDocMenuFactory();
-  virtual ~ZFlyEmProofDocMenuFactory() {}
+  ZStackDocNullMenuFactory();
+  virtual ~ZStackDocNullMenuFactory() {}
 
 public:
   QMenu* makeBodyContextMenu(
@@ -19,9 +19,6 @@ public:
 
   QMenu* makeContextMenu(
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
-
-//  QMenu* makeContextMenu(Z3DWindow *window, QMenu *menu);
-
 };
 
-#endif // ZFLYEMPROOFDOCMENUFACTORY_H
+#endif // ZSTACKDOCNULLMENUFACTORY_H

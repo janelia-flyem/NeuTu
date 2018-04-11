@@ -49,6 +49,7 @@
 #include "flyem/zflyemmessagewidget.h"
 #include "zwidgetmessage.h"
 #include "flyem/zproofreadwindow.h"
+#include "flyem/zflyemproofmvccontroller.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -136,11 +137,19 @@ void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
     m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
+    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
+    ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
+
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
             this, SLOT(updateSliceViewGraph(ZArbSliceViewParam)));
 
     m_sliceWidget->setDefaultViewPort(
           getSliceViewParam(m_browsePos).getViewPort());
+
+    ZFlyEmProofMvcController::SelectBody(
+          m_sliceWidget,
+          getBodyDocument()->getUnencodedBodySet());
+    ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
   }
 }
 
