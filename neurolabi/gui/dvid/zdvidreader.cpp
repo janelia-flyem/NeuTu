@@ -186,6 +186,38 @@ bool ZDvidReader::open(const ZDvidTarget &target)
   return succ;
 }
 
+std::vector<std::string> ZDvidReader::readDataInstances(const std::string &type)
+{
+  std::vector<std::string> dataList;
+
+  ZJsonObject meta = readInfo();
+
+  //
+  ZJsonValue datains = meta.value("DataInstances");
+
+  if(datains.isObject())
+  {
+    ZJsonObject insList(datains);
+    std::vector<std::string> keys = insList.getAllKey();
+
+    for(std::size_t i=0; i<keys.size(); i++)
+    {
+      std::string name = keys.at(i);
+      ZJsonObject roiJson(insList.value(name.c_str()));
+      if (roiJson.hasKey("Base")) {
+        ZJsonObject baseJson(roiJson.value("Base"));
+        std::string typeName =
+            ZJsonParser::stringValue(baseJson["TypeName"]);
+        if (typeName == type) {
+          dataList.push_back(name);
+        }
+      }
+    }
+  }
+
+  return dataList;
+}
+
 void ZDvidReader::updateSegmentationData()
 {
   std::string typeName;

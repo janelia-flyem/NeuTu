@@ -61,6 +61,18 @@ ZMesh * ConvertMeshToZMesh(
 
 }
 
+ZMesh* ZMarchingCube::March(const ZStack &stack, int smooth, ZMesh *out)
+{
+  ilastik::Mesh mesh = ilastik::march(
+        stack.array8(), stack.width(), stack.height(), stack.depth(), 1);
+
+  ilastik::smooth(mesh, smooth);
+
+  out = ConvertMeshToZMesh(mesh, stack.getOffset(), stack.getDsIntv(), out);
+
+  return out;
+}
+
 
 ZMesh* ZMarchingCube::March(const ZStack &stack, ZMesh *out)
 {
