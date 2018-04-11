@@ -2,6 +2,7 @@
 #include "zwidgetmessage.h"
 #include "zstackfactory.h"
 #include "dvid/zdvidgrayslice.h"
+#include "dvid/zdvidlabelslice.h"
 #include "zstackobjectsourcefactory.h"
 
 ZFlyEmArbDoc::ZFlyEmArbDoc(QObject *parent) : ZFlyEmProofDoc(parent)
@@ -57,6 +58,17 @@ void ZFlyEmArbDoc::prepareDvidData()
             ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::A_AXIS));
       slice->setDvidTarget(m_grayscaleReader.getDvidTarget());
       prepareGraySlice(slice);
+      addObject(slice, true);
+    }
+
+    if (getDvidTarget().hasSegmentation()) {
+      ZDvidLabelSlice *slice = new ZDvidLabelSlice;
+      slice->setSliceAxis(neutube::A_AXIS);
+      slice->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+      slice->setSource(
+            ZStackObjectSourceFactory::MakeDvidLabelSliceSource(neutube::A_AXIS));
+      slice->setDvidTarget(getDvidTarget());
+//      prepareGraySlice(slice);
       addObject(slice, true);
     }
   }

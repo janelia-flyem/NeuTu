@@ -259,6 +259,7 @@ void ZDvidLabelSlice::forceUpdate(const ZArbSliceViewParam &viewParam)
   }
 
   if (isVisible()) {
+    clearLabelData();
     m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
           viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
           viewParam.getWidth(), viewParam.getHeight(),

@@ -3748,7 +3748,9 @@ void Z3DWindow::locateWithRay(int x, int y)
 
 void Z3DWindow::browseWithRay(int x, int y)
 {
-  std::vector<ZPoint> intersection = getRayIntersection(x, y);
+  uint64_t bodyId = 0;
+
+  std::vector<ZPoint> intersection = getRayIntersection(x, y, &bodyId);
   if (!intersection.empty()) {
     ZPoint &pt = intersection.front();
     if (intersection.size() > 1) {

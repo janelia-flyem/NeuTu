@@ -187,9 +187,10 @@ int ZStackViewParam::getZoomLevel(int maxLevel) const
   }
 
   int scale = pow(2, zoom);
-  if (getViewPort().width() * getViewPort().height() /
+  while (getViewPort().width() * getViewPort().height() /
       scale / scale > 1024 * 1024) {
     zoom += 1;
+    scale = pow(2, zoom);
   }
 
   if (zoom > maxLevel) {
