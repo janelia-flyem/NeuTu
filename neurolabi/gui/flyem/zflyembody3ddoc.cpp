@@ -1317,6 +1317,13 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
 
   std::map<uint64_t, ZMesh*> meshes;
   makeBodyMeshModels(id, resLevel, meshes);
+
+  if (!meshes.empty()) {
+    addSynapse(decode(id));
+    //      addTodo(bodyId);
+    updateTodo(decode(id));
+  }
+
   for (auto it : meshes) {
 //    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
 
@@ -1373,10 +1380,6 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
       updateBodyFunc(bodyId, mesh);
 
       if (!loaded) {
-        addSynapse(bodyId);
-  //      addTodo(bodyId);
-        updateTodo(bodyId);
-
         // TODO: As of December, 2017, the following is slow due to access of a desktop server,
         // http://zhaot-ws1:9000.  This server should be replaced with a faster one.
         // The problem is most noticeable for the functionality of taskbodyhistory.cpp.
@@ -2131,14 +2134,14 @@ uint64_t ZFlyEmBody3dDoc::getMappedId(uint64_t bodyId) const
     }
   }
 
-  return unencode(bodyId);
+  return decode(bodyId);
 }
 
 QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
 {
   QSet<uint64_t> bodySet;
   foreach (uint64_t bodyId, m_bodySet) {
-    bodySet.insert(unencode(bodyId));
+    bodySet.insert(decode(bodyId));
   }
   return bodySet;
 }
@@ -2281,7 +2284,7 @@ uint64_t ZFlyEmBody3dDoc::encode(uint64_t rawId, unsigned int level, bool tar)
   return (level + tarEncoding) * ENCODING_BASE + rawId;
 }
 
-uint64_t ZFlyEmBody3dDoc::unencode(uint64_t encodedId)
+uint64_t ZFlyEmBody3dDoc::decode(uint64_t encodedId)
 {
   return encodedId % ENCODING_BASE;
 }
@@ -2451,7 +2454,7 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_
       emit meshArchiveLoadingEnded();
     } else {
       QString title = "Mesh Loading Failed";
-      uint64_t idUnencoded = unencode(id);
+      uint64_t idUnencoded = decode(id);
       QString text = "DVID mesh archive does not contain ID " +
           QString::number(idUnencoded) + " (encoded as " + QString::number(id) + ")";
       ZWidgetMessage msg(title, text, neutube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG);
