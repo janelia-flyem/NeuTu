@@ -44,8 +44,10 @@ private slots:
   void onToggleShowCleaving();
   void onShowSeedsOnlyChanged(int state);
   void onToggleShowSeedsOnly();
-  void onChosenCleaveIndexChanged();
+  void onCleaveIndexShortcut();
+  void onCleaveIndexChanged(int comboBoxIndex);
   void onSelectBody();
+  void onShowBodyChanged(int state);
   void onToggleInChosenCleaveBody();
 
   void onNetworkReplyFinished(QNetworkReply *reply);
@@ -60,6 +62,7 @@ private:
   QCheckBox *m_showCleavingCheckBox;
   QComboBox *m_cleaveIndexComboBox;
   QPushButton *m_selectBodyButton;
+  QCheckBox* m_showBodyCheckBox;
   QCheckBox *m_showSeedsOnlyCheckBox;
   QLabel *m_cleavingStatusLabel;
   QShortcut *m_shortcutToggle;
@@ -75,6 +78,8 @@ private:
   // cleaving operation.
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndex;
 
+  std::set<size_t> m_hiddenCleaveIndices;
+
   QNetworkAccessManager *m_networkManager;
 
   std::set<QString> m_warningTextToSuppress;
@@ -87,6 +92,8 @@ private:
   void buildTaskWidget();
   void updateColors();
 
+  void bodiesForCleaveIndex(std::size_t cleaveIndex, std::set<uint64_t>& result);
+
   void selectBodies(const std::set<uint64_t>& toSelect);
 
   void applyPerTaskSettings();
@@ -95,6 +102,11 @@ private:
 
   void cleave();
   bool cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>& cleaveIndexToMeshIds);
+
+  void updateVisibility();
+
+  std::set<std::size_t> hiddenChanges(const std::map<uint64_t, std::size_t>& newMeshIdToCleaveIndex) const;
+  void showHiddenChangeWarning(const std::set<std::size_t>& hiddenChangedIndices);
 
   bool showCleaveReplyWarnings(const QJsonObject& reply);
   bool showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t> meshIdToCleaveIndex);
