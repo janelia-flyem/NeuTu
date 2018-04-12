@@ -2394,6 +2394,11 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_Q:
     getDocument()->executeSwcNodeChangeSizeCommand(-0.5);
     break;
+  case Qt::Key_F:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      zoomToSelectedSwcNodes();
+    }
+    break;
   case Qt::Key_Period:
   case Qt::Key_E:
     getDocument()->executeSwcNodeChangeSizeCommand(0.5);
@@ -2432,6 +2437,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
           locatePunctumIn2DView();
         }
       }
+    } else if (event->modifiers() == Qt::ShiftModifier) {
+      zoomToSelectedSwcNodes();
     }
     break;
   case Qt::Key_V:

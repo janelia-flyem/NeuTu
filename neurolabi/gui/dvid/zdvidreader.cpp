@@ -3767,7 +3767,11 @@ int ZDvidReader::readCoarseBodySize(uint64_t bodyId) const
 
 uint64_t ZDvidReader::readBodyIdAt(const ZIntPoint &pt) const
 {
-  return readBodyIdAt(pt.getX(), pt.getY(), pt.getZ());
+  if (pt.isValid()) {
+    return readBodyIdAt(pt.getX(), pt.getY(), pt.getZ());
+  }
+
+  return 0;
 }
 
 uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z) const
