@@ -264,7 +264,7 @@ public:
   // raw body identifier.
 
   static uint64_t encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
-  static uint64_t unencode(uint64_t encodedId);
+  static uint64_t decode(uint64_t encodedId);
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 
