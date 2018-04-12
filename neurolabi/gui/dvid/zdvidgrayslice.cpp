@@ -230,6 +230,16 @@ void ZDvidGraySlice::updatePixmap()
     m_pixmap.setScale(scale, scale);
     m_pixmap.setOffset(-getX(), -getY());
     validatePixmap();
+
+#ifdef _DEBUG_
+  std::cout << "gray slice pixmap offset: "
+            << m_pixmap.getTransform().getTx() << " "
+            << m_pixmap.getTransform().getTy() << std::endl;
+
+  std::cout << "gray slice pixmap scale: "
+            << m_pixmap.getTransform().getSx() << " "
+            << m_pixmap.getTransform().getSy() << std::endl;
+#endif
   }
 }
 
@@ -325,29 +335,6 @@ bool ZDvidGraySlice::update(const ZStackViewParam &viewParam)
     forceUpdate(newViewParam);
     updated = true;
   }
-#if 0
-  ZStackViewParam newViewParam = viewParam;
-
-  int maxZoomLevel = updateParam(&newViewParam);
-
-  /*
-  int maxZoomLevel = getDvidTarget().getMaxGrayscaleZoom();
-  if (maxZoomLevel < 3) {
-    int width = viewParam.getViewPort().width();
-    int height = viewParam.getViewPort().height();
-    if (validateSize(&width, &height)) {
-      newViewParam.resize(width, height);
-    }
-  }
-  */
-
-  if (!getViewParam().contains(newViewParam) ||
-      viewParam.getZoomLevel(maxZoomLevel) <
-      getViewParam().getZoomLevel(maxZoomLevel)) {
-    forceUpdate(newViewParam);
-    updated = true;
-  }
-#endif
 
   return updated;
 }
@@ -476,7 +463,7 @@ void ZDvidGraySlice::forceUpdate(const ZStackViewParam &viewParam)
       QRect viewPort = viewParam.getViewPort();
       forceUpdate(viewPort, viewParam.getZ());
     } else if (m_sliceAxis == neutube::A_AXIS) {
-      setZoom(0); //Temporary fix for the crashing problem in grayscale retrieval
+//      setZoom(0); //Temporary fix for the crashing problem in grayscale retrieval
       forceUpdate(viewParam.getSliceViewParam());
       //Align the image with the view port, which is used by the painter
       m_image.setOffset(viewParam.getViewPort().left(),

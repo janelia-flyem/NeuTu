@@ -244,7 +244,8 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     break;
   case Qt::Key_C:
     if (!isSplitOn()) {
-      emit deselectingAllBody();
+      bool asking = (event->modifiers() != Qt::ShiftModifier);
+      emit deselectingAllBody(asking);
       processed = true;
     }
     break;

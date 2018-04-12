@@ -2,6 +2,7 @@
 #define ZSTACKDOCHELPER_H
 
 #include"zintpoint.h"
+#include "neutube_def.h"
 
 class ZStackDoc;
 class ZIntCuboid;
@@ -42,6 +43,12 @@ public:
 
   static ZIntCuboid getVolumeBoundBox(const ZStackDoc *doc);
   static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);
+  static bool HasMultipleBodySelected(
+      const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type);
+  static int CountSelectedBody(
+      const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type);
+  static bool HasBodySelected(const ZFlyEmProofDoc *doc);
+  static void ClearBodySelection(ZFlyEmProofDoc *doc);
 
 private:
   int m_currentZ;

@@ -130,6 +130,16 @@ void ZDvidLabelSlice::updatePixmap(ZPixmap *pixmap) const
   pixmap->convertFromImage(*m_paintBuffer, Qt::ColorOnly);
   pixmap->setTransform(m_paintBuffer->getTransform());
   pixmap->matchProj();
+
+#ifdef _DEBUG_
+  std::cout << "label slice pixmap offset: "
+            << pixmap->getTransform().getTx() << " "
+            << pixmap->getTransform().getTy() << std::endl;
+
+  std::cout << "label slice pixmap scale: "
+            << pixmap->getTransform().getSx() << " "
+            << pixmap->getTransform().getSy() << std::endl;
+#endif
 }
 
 void ZDvidLabelSlice::display(
