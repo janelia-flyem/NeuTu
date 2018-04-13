@@ -784,6 +784,17 @@ bool NeutubeConfig::parallelTileFetching() const
   return true;
 }
 
+bool NeutubeConfig::lowtisPrefetching() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("lowtis_prefetching")) {
+    return m_settings.value("lowtis_prefetching").toBool();
+  }
+#endif
+
+  return false;
+}
+
 void NeutubeConfig::setParallelTileFetching(bool on)
 {
 #ifdef _QT_GUI_USED_
@@ -791,9 +802,26 @@ void NeutubeConfig::setParallelTileFetching(bool on)
 #endif
 }
 
+void NeutubeConfig::enableLowtisPrefetching(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("lowtis_prefetching", on);
+#endif
+}
+
 void NeutubeConfig::SetParallelTileFetching(bool on)
 {
   getInstance().setParallelTileFetching(on);
+}
+
+void NeutubeConfig::EnableLowtisPrefetching(bool on)
+{
+  getInstance().enableLowtisPrefetching(on);
+}
+
+bool NeutubeConfig::LowtisPrefetching()
+{
+  return getInstance().lowtisPrefetching();
 }
 
 bool NeutubeConfig::namingSynapse() const
