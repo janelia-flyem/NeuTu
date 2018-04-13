@@ -49,6 +49,7 @@ private slots:
   void onSelectBody();
   void onShowBodyChanged(int state);
   void onToggleInChosenCleaveBody();
+  void onToggleShowChosenCleaveBody();
 
   void onNetworkReplyFinished(QNetworkReply *reply);
 
@@ -69,6 +70,7 @@ private:
   QMenu *m_menu;
   QAction *m_showSeedsOnlyAction;
   QAction *m_toggleInBodyAction;
+  QAction *m_toggleShowChosenCleaveBodyAction;
   std::map<QAction *, int> m_actionToComboBoxIndex;
 
   // The cleave index assignments created by the last cleaving operation (initially empty).
