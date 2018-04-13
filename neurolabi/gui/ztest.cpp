@@ -25760,17 +25760,27 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
   ZDvidReader reader;
   reader.open(target);
+  reader.updateMaxGrayscaleZoom();
 
-  ZStack *stack = reader.readGrayScaleLowtis(
-        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 1024, 1024, 1, 256, 256);
+  {
+    ZStack *stack = reader.readGrayScaleLowtis(
+          17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 1024, 1024, 0, 256, 256);
 
-  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+    stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  }
+
+  {
+    ZStack *stack = reader.readGrayScaleLowtis(
+          17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 1024, 1024, 1, 256, 256);
+
+    stack->save(GET_TEST_DATA_DIR + "/test2.tif");
+  }
 #endif
 
 #if 0
@@ -25986,7 +25996,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1", "1d1d", 8100);
 

@@ -90,6 +90,7 @@
 #include "zmeshfactory.h"
 #include "z3dwindow.h"
 #include "zflyemproofmvccontroller.h"
+#include "zstackdochelper.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -1892,8 +1893,8 @@ void ZFlyEmProofMvc::customInit()
 
   connect(getCompletePresenter(), SIGNAL(selectingBodyAt(int,int,int)),
           this, SLOT(xorSelectionAt(int, int, int)));
-  connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
-          this, SLOT(deselectAllBody()));
+  connect(getCompletePresenter(), SIGNAL(deselectingAllBody(bool)),
+          this, SLOT(deselectAllBody(bool)));
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
   connect(getCompletePresenter(), SIGNAL(runningFullSplit()),
           this, SLOT(runFullSplit()));
@@ -4105,24 +4106,24 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
   }
 }
 
-void ZFlyEmProofMvc::deselectAllBody()
+void ZFlyEmProofMvc::deselectAllBody(bool asking)
 {
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
   if (reader.isReady()) {
 //    ZDvidLabelSlice *slice = getDvidLabelSlice();
-    QList<ZDvidLabelSlice*> sliceList =
-        getCompleteDocument()->getDvidLabelSliceList();
-    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-         iter != sliceList.end(); ++iter) {
-      ZDvidLabelSlice *slice = *iter;
-      if (slice != NULL) {
-        slice->recordSelection();
-        slice->deselectAll();
-        slice->processSelection();
+    if (ZStackDocHelper::HasBodySelected(getCompleteDocument())) {
+      bool ahead = true;
+      if (asking) {
+        ahead = ZDialogFactory::Ask(
+            "Clear Body Selection",
+            "<p>Do you want to deselect all bodies?</p> "
+            "<p><font color = \"#007700\">Hint: Use Shift+C to avoid this dialog.</font></p>",
+            this);
+      }
+      if (ahead) {
+        ZStackDocHelper::ClearBodySelection(getCompleteDocument());
       }
     }
-//    updateBodySelection();
-    getCompleteDocument()->notifyBodySelectionChanged();
   }
 }
 
