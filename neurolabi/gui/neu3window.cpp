@@ -149,7 +149,9 @@ void Neu3Window::initGrayscaleWidget()
     ZFlyEmProofMvcController::SelectBody(
           m_sliceWidget,
           getBodyDocument()->getUnencodedBodySet());
-    ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
+    if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
+      ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
+    }
   }
 }
 
