@@ -77,6 +77,8 @@ private:
 
   QNetworkAccessManager *m_networkManager;
 
+  std::set<QString> m_warningTextToSuppress;
+
   class SetCleaveIndicesCommand;
   class CleaveCommand;
 
@@ -96,7 +98,9 @@ private:
 
   bool showCleaveReplyWarnings(const QJsonObject& reply);
   bool showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t> meshIdToCleaveIndex);
-  void displayWarning(const QString& title, const QString& text);
+  void displayWarning(const QString& title, const QString& text,
+                      const QString& details = "",
+                      bool allowSuppression = false);
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;
