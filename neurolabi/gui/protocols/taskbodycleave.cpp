@@ -183,6 +183,7 @@ public:
   {
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexBefore;
     m_task->updateColors();
+    m_task->updateVisibility();
     m_task->m_cleaveIndexComboBox->setItemText(m_comboBoxIndex, m_comboBoxTextBefore);
   }
 
@@ -190,6 +191,7 @@ public:
   {
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexAfter;
     m_task->updateColors();
+    m_task->updateVisibility();
     m_task->m_cleaveIndexComboBox->setItemText(m_comboBoxIndex, m_comboBoxTextAfter);
   }
 
@@ -217,12 +219,14 @@ public:
   {
     m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexBefore;
     m_task->updateColors();
+    m_task->updateVisibility();
   }
 
   virtual void redo() override
   {
     m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexAfter;
     m_task->updateColors();
+    m_task->updateVisibility();
   }
 
 private:
@@ -273,6 +277,13 @@ void TaskBodyCleave::beforeNext()
   // back to a previous task.
 
   m_bodyDoc->clearGarbage(true);
+
+  // If the user returns to this task, there is no good way (at least for now) to
+  // reapply the visiblity settings to this task's meshes after they have been
+  // reloaded.  So clear the visiblity settings.
+
+  m_hiddenCleaveIndices.clear();
+  m_showBodyCheckBox->setChecked(true);
 }
 
 void TaskBodyCleave::beforePrev()
@@ -282,6 +293,11 @@ void TaskBodyCleave::beforePrev()
   // See the comment in beforeNext().
 
   m_bodyDoc->clearGarbage(true);
+
+  // See the comment in beforeNext().
+
+  m_hiddenCleaveIndices.clear();
+  m_showBodyCheckBox->setChecked(true);
 }
 
 void TaskBodyCleave::beforeDone()
@@ -345,7 +361,7 @@ void TaskBodyCleave::onToggleShowSeedsOnly()
   m_showSeedsOnlyCheckBox->setChecked(!m_showSeedsOnlyCheckBox->isChecked());
 }
 
-void TaskBodyCleave::onChosenCleaveIndexChanged()
+void TaskBodyCleave::onCleaveIndexShortcut()
 {
   if (QAction* action = dynamic_cast<QAction*>(QObject::sender())) {
     int i = m_actionToComboBoxIndex[action];
@@ -353,23 +369,38 @@ void TaskBodyCleave::onChosenCleaveIndexChanged()
   }
 }
 
+void TaskBodyCleave::onCleaveIndexChanged(int)
+{
+  bool visible = (m_hiddenCleaveIndices.find(chosenCleaveIndex()) ==
+                  m_hiddenCleaveIndices.end());
+  m_showBodyCheckBox->setChecked(visible);
+}
+
 void TaskBodyCleave::onSelectBody()
 {
   std::set<uint64_t> toSelect;
-  for (auto it : m_meshIdToCleaveIndex) {
-    if (it.second == chosenCleaveIndex()) {
-      toSelect.insert(it.first);
-    }
-  }
-  if (!m_showSeedsOnlyCheckBox->isChecked()) {
-    for (auto it : m_meshIdToCleaveResultIndex) {
-      if (it.second == chosenCleaveIndex()) {
-        toSelect.insert(it.first);
-      }
-    }
+  bodiesForCleaveIndex(chosenCleaveIndex(), toSelect);
+  selectBodies(toSelect);
+}
+
+void TaskBodyCleave::onShowBodyChanged(int state)
+{
+  if (state) {
+    m_hiddenCleaveIndices.erase(chosenCleaveIndex());
+  } else {
+    m_hiddenCleaveIndices.insert(chosenCleaveIndex());
   }
 
-  selectBodies(toSelect);
+  std::set<uint64_t> bodiesForIndex;
+  bodiesForCleaveIndex(chosenCleaveIndex(), bodiesForIndex);
+
+  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    if (bodiesForIndex.find(mesh->getLabel()) != bodiesForIndex.end()) {
+      m_bodyDoc->setVisible(mesh, state);
+    }
+  }
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
@@ -421,6 +452,11 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
   cleave();
 }
 
+void TaskBodyCleave::onToggleShowChosenCleaveBody()
+{
+  m_showBodyCheckBox->setChecked(!m_showBodyCheckBox->isChecked());
+}
+
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
   QNetworkReply::NetworkError error = reply->error();
@@ -458,11 +494,15 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
         }
       }
 
+      std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
+
       m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
 
       if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
         status = CLEAVING_STATUS_SERVER_INCOMPLETE;
       }
+
+      showHiddenChangeWarning(hiddenChangedIndices);
     }
   } else {
     // On OS X, the title is not displayed, so include it in the text, too.
@@ -610,14 +650,23 @@ void TaskBodyCleave::buildTaskWidget()
     QIcon icon(pixmap);
     m_cleaveIndexComboBox->addItem(icon, "Cleaved body " + QString::number(i));
   }
+  connect(m_cleaveIndexComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCleaveIndexChanged(int)));
 
   m_selectBodyButton = new QPushButton("Select", m_widget);
   connect(m_selectBodyButton, SIGNAL(clicked(bool)), this, SLOT(onSelectBody()));
 
+  m_showBodyCheckBox = new QCheckBox("Show", m_widget);
+  m_showBodyCheckBox->setChecked(true);
+  connect(m_showBodyCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowBodyChanged(int)));
+
+  QVBoxLayout *cleaveIndexActionsLayout = new QVBoxLayout;
+  cleaveIndexActionsLayout->addWidget(m_selectBodyButton);
+  cleaveIndexActionsLayout->addWidget(m_showBodyCheckBox);
+
   QHBoxLayout *cleaveLayout1 = new QHBoxLayout;
   cleaveLayout1->addWidget(m_showCleavingCheckBox);
   cleaveLayout1->addWidget(m_cleaveIndexComboBox);
-  cleaveLayout1->addWidget(m_selectBodyButton);
+  cleaveLayout1->addLayout(cleaveIndexActionsLayout);
 
   m_showSeedsOnlyCheckBox = new QCheckBox("Show seeds only", m_widget);
   m_showSeedsOnlyCheckBox->setChecked(false);
@@ -648,12 +697,18 @@ void TaskBodyCleave::buildTaskWidget()
   m_menu->addAction(m_showSeedsOnlyAction);
   connect(m_showSeedsOnlyAction, SIGNAL(triggered()), this, SLOT(onToggleShowSeedsOnly()));
 
-  m_toggleInBodyAction = new QAction("Toggle Selection in Body", m_widget);
+  m_toggleInBodyAction = new QAction("Toggle Selection in to/out of Current Body", m_widget);
   m_toggleInBodyAction->setShortcut(Qt::Key_Space);
   m_menu->addAction(m_toggleInBodyAction);
   connect(m_toggleInBodyAction, SIGNAL(triggered()), this, SLOT(onToggleInChosenCleaveBody()));
 
-  QMenu *setChosenCleaveIndexMenu = new QMenu("Set Cleaved Body To");
+  m_toggleShowChosenCleaveBodyAction = new QAction("Toggle Visibilty of Current Body", m_widget);
+  m_toggleShowChosenCleaveBodyAction->setShortcut(Qt::Key_H);
+  m_menu->addAction(m_toggleShowChosenCleaveBodyAction);
+  connect(m_toggleShowChosenCleaveBodyAction, SIGNAL(triggered()),
+          this, SLOT(onToggleShowChosenCleaveBody()));
+
+  QMenu *setChosenCleaveIndexMenu = new QMenu("Set Current  Body To");
   m_menu->addMenu(setChosenCleaveIndexMenu);
 
   const int NUM_DISTINCT_KEYS = 10;
@@ -671,7 +726,7 @@ void TaskBodyCleave::buildTaskWidget()
     QAction *action = new QAction(icon, "Cleaved Body " + QString::number(j), m_widget);
     action->setShortcut(key);
     setChosenCleaveIndexMenu->addAction(action);
-    connect(action, SIGNAL(triggered()), this, SLOT(onChosenCleaveIndexChanged()));
+    connect(action, SIGNAL(triggered()), this, SLOT(onCleaveIndexShortcut()));
 
     // To avoid having to algorithmically invert the mapping of keys to combobox indices
     // when the shortcut is triggered, just store it.
@@ -694,6 +749,22 @@ void TaskBodyCleave::updateColors()
     }
 
     filter->setColorIndexing(INDEX_COLORS, meshIdToCleaveIndex);
+  }
+}
+
+void TaskBodyCleave::bodiesForCleaveIndex(std::size_t cleaveIndex, std::set<uint64_t> &result)
+{
+  for (auto it : m_meshIdToCleaveIndex) {
+    if (it.second == cleaveIndex) {
+      result.insert(it.first);
+    }
+  }
+  if (!m_showSeedsOnlyCheckBox->isChecked()) {
+    for (auto it : m_meshIdToCleaveResultIndex) {
+      if (it.second == cleaveIndex) {
+        result.insert(it.first);
+      }
+    }
   }
 }
 
@@ -748,10 +819,12 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
 {
   m_cleaveIndexComboBox->setEnabled(showingCleaving);
   m_selectBodyButton->setEnabled(showingCleaving);
+  m_showBodyCheckBox->setEnabled(showingCleaving);
   m_showSeedsOnlyCheckBox->setEnabled(showingCleaving);
   m_cleavingStatusLabel->setEnabled(showingCleaving);
   m_showSeedsOnlyAction->setEnabled(showingCleaving);
   m_toggleInBodyAction->setEnabled(showingCleaving);
+  m_toggleShowChosenCleaveBodyAction->setEnabled(showingCleaving);
   for (auto it : m_actionToComboBoxIndex) {
     it.first->setEnabled(showingCleaving);
   }
@@ -834,13 +907,94 @@ bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vecto
       meshIdToCleaveIndex[mesh->getLabel()] = cleaveIndex;
     }
 
+    std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
+
     m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+
+    showHiddenChangeWarning(hiddenChangedIndices);
+
     return true;
   }
 
   // Other situations do require the cleave server.
 
   return false;
+}
+
+void TaskBodyCleave::updateVisibility()
+{
+  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+    ZMesh *mesh = *itMesh;
+    uint64_t id = mesh->getLabel();
+    bool toBeVisible = true;
+
+    // First check whether the mesh is a seed, to give the correct update when
+    // undoing the setting of a seed.
+
+    auto itCleave = m_meshIdToCleaveIndex.find(id);
+    if (itCleave != m_meshIdToCleaveIndex.end()) {
+      std::size_t index = itCleave->second;
+      toBeVisible = (m_hiddenCleaveIndices.find(index) == m_hiddenCleaveIndices.end());
+    } else {
+
+      // If it is not a seed check for it in the cleaving results.
+
+      auto itCleaveResult = m_meshIdToCleaveResultIndex.find(id);
+      if (itCleaveResult != m_meshIdToCleaveResultIndex.end()) {
+        std::size_t index = itCleaveResult->second;
+        toBeVisible = (m_hiddenCleaveIndices.find(index) == m_hiddenCleaveIndices.end());
+      }
+    }
+
+    m_bodyDoc->setVisible(mesh, toBeVisible);
+  }
+}
+
+std::set<std::size_t> TaskBodyCleave::hiddenChanges(const std::map<uint64_t, std::size_t>&
+                                                    newMeshIdToCleaveIndex) const
+{
+  std::set<std::size_t> changedHiddenIndices;
+
+  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+    ZMesh *mesh = *itMesh;
+    if (!mesh->isVisible()) {
+      uint64_t id = mesh->getLabel();
+
+      auto itCleave = m_meshIdToCleaveResultIndex.find(id);
+      if (itCleave != m_meshIdToCleaveResultIndex.end()) {
+        size_t index = itCleave->second;
+
+        auto itNewCleave = newMeshIdToCleaveIndex.find(id);
+        if (itNewCleave != newMeshIdToCleaveIndex.end()) {
+          size_t indexNew = itNewCleave->second;
+          if (index != indexNew) {
+            bool newHidden = (m_hiddenCleaveIndices.find(indexNew) !=
+                              m_hiddenCleaveIndices.end());
+            size_t indexHidden = newHidden ? indexNew : index;
+            changedHiddenIndices.insert(indexHidden);
+          }
+        }
+      }
+    }
+  }
+
+  return changedHiddenIndices;
+}
+
+void TaskBodyCleave::showHiddenChangeWarning(const std::set<std::size_t> &
+                                             hiddenChangedIndices)
+{
+  if (!hiddenChangedIndices.empty()) {
+    QString title = "Hidden Changes";
+    QString text = "Changes occurred in hidden ";
+    text += (hiddenChangedIndices.size() == 1) ? "body (color): " : "bodies (colors): ";
+    for (std::size_t index : hiddenChangedIndices) {
+      text += QString::number(index) + " ";
+    }
+    displayWarning(title, text);
+  }
 }
 
 bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
