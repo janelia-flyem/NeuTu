@@ -604,6 +604,9 @@ private:
   lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
   lowtis::ImageService* getLowtisServiceLabel() const;
 
+  template<typename T>
+  void configureLowtis(T *config, const std::string &dataName) const;
+
 protected:
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
