@@ -11,6 +11,7 @@
 #include <QElapsedTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QtConcurrent>
 
 #include "QsLog/QsLog.h"
 
@@ -992,12 +993,18 @@ struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, size_t &bytes
   } else {
     LINFO() << "Reading mesh archive:" << tarUrl;
   }
+
+  QTime timer;
+  timer.start();
+
   m_bufferReader.read(tarUrl.c_str(), isVerbose());
   if (m_bufferReader.getStatus() == neutube::READ_FAILED) {
     return nullptr;
   }
 
   const QByteArray &buffer = m_bufferReader.getBuffer();
+
+  LINFO() << "Reading the mesh archive for ID " << bodyId << " (" << buffer.size() << " bytes) took " << timer.elapsed() << " ms.";
 
   struct archive *arc = archive_read_new();
   archive_read_support_format_all(arc);
@@ -1046,52 +1053,80 @@ ZMesh *ZDvidReader::readMeshArchiveNext(struct archive *arc, size_t &bytesJustRe
   return mesh;
 }
 
+namespace {
+struct BodyIdStrAndBuffer
+{
+  BodyIdStrAndBuffer(const std::string& bid = "", const QByteArray& bu = QByteArray())
+    : bodyIdStr(bid), buffer(bu) {}
+  std::string bodyIdStr;
+  QByteArray buffer;
+};
+}
+
 void ZDvidReader::readMeshArchiveAsync(archive *arc, std::vector<ZMesh *> &results,
                                        const std::function<void(size_t, size_t)>& progress)
 {
-    std::vector<std::future<ZMesh*>> futures;
+  QTime timer;
+  timer.start();
 
-    struct archive_entry *entry;
-    while (archive_read_next_header(arc, &entry) == ARCHIVE_OK) {
-      std::string pathname = archive_entry_pathname(entry);
-      auto i = pathname.find_last_of('.');
-      std::string bodyIdStr = (i != std::string::npos) ? pathname.substr(0, i) : pathname;
+  // Read all the compressed meshes into a vector of buffers.
 
-      const struct stat *s = archive_entry_stat(entry);
-      size_t size = s->st_size;
+  QVector<BodyIdStrAndBuffer> buffers;
+  struct archive_entry *entry;
+  while (archive_read_next_header(arc, &entry) == ARCHIVE_OK) {
+    std::string pathname = archive_entry_pathname(entry);
+    auto i = pathname.find_last_of('.');
+    std::string bodyIdStr = (i != std::string::npos) ? pathname.substr(0, i) : pathname;
 
-      QByteArray buffer(size, 0);
-      archive_read_data(arc, buffer.data(), size);
+    const struct stat *s = archive_entry_stat(entry);
+    size_t size = s->st_size;
 
-      // Decompress each mesh in its own asynchronous task, in the hopes that there are
-      // enough threads running in parallel to reduce the overall time for all meshes.
+    QByteArray buffer(size, 0);
+    archive_read_data(arc, buffer.data(), size);
 
-      futures.push_back(std::async(std::launch::async, [buffer, bodyIdStr]{
-        ZMesh *mesh = nullptr;
-        try {
-          mesh = ZMeshIO::instance().loadFromMemory(buffer, "drc");
-        } catch (...) {}
-        if (mesh) {
-          mesh->setLabel(std::stoull(bodyIdStr));
-        }
-        return mesh;
-      }));
+    buffers.push_back(BodyIdStrAndBuffer(bodyIdStr, buffer));
+  }
+
+  // This function will decompress one buffer in the vector, and it will be applied in parallel.
+
+  std::function<ZMesh*(const BodyIdStrAndBuffer&)> buildMesh = [](const BodyIdStrAndBuffer& idBuf) {
+    ZMesh *mesh = nullptr;
+    try {
+      mesh = ZMeshIO::instance().loadFromMemory(idBuf.buffer, "drc");
+    } catch (...) {}
+    if (mesh) {
+      mesh->setLabel(std::stoull(idBuf.bodyIdStr));
+    }
+    return mesh;
+  };
+
+  // Decompress the meshes in parallel.  This Qt function does use a thread pool, so it does not
+  // have the problem that std::async() has on Linux (as of 2018), that std::launch::async is necessary
+  // to get parallelism but it will allow unlimited thread creation until the limit is reached an
+  // exception is generated.
+
+  QFuture<ZMesh*> futures = QtConcurrent::mapped(buffers, buildMesh);
+
+  // Get each decompressed mesh from the QFuture, with progress reporting.  Despite the Qt documentation,
+  // it seems to be necssary to use the QFuture::resultAt() function to get a result when it is ready.
+  // The QFuture::const_iterator API causes a crash.
+
+  for (int i = 0; i < buffers.size(); ++i) {
+    ZMesh *mesh = futures.resultAt(i);
+    if (mesh) {
+      results.push_back(mesh);
     }
 
-    // Process the results of the asynchronous tasks.
-
-    size_t count = 0;
-    for (auto &future : futures) {
-      ZMesh *mesh = future.get();
-      if (mesh) {
-        results.push_back(mesh);
-      }
-
-      count++;
-      if (progress) {
-        progress(count, futures.size());
-      }
+    if (progress) {
+      progress(i+1, buffers.size());
     }
+  }
+
+  if (buffers.size() == 1) {
+    LINFO() << "Decompressing the mesh archive (1 mesh) took " << timer.elapsed() << " ms.";
+  } else {
+    LINFO() << "Decompressing the mesh archive (" << buffers.size() << " meshes) took " << timer.elapsed() << " ms.";
+  }
 }
 
 void ZDvidReader::readMeshArchiveEnd(struct archive *arc)
