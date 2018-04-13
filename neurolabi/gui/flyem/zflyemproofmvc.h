@@ -279,7 +279,7 @@ public slots:
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
-  void deselectAllBody();
+  void deselectAllBody(bool asking);
   void selectSeed();
   void setMainSeed();
   void selectAllSeed();
