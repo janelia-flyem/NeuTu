@@ -452,6 +452,11 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
   cleave();
 }
 
+void TaskBodyCleave::onToggleShowChosenCleaveBody()
+{
+  m_showBodyCheckBox->setChecked(!m_showBodyCheckBox->isChecked());
+}
+
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
   QNetworkReply::NetworkError error = reply->error();
@@ -692,12 +697,18 @@ void TaskBodyCleave::buildTaskWidget()
   m_menu->addAction(m_showSeedsOnlyAction);
   connect(m_showSeedsOnlyAction, SIGNAL(triggered()), this, SLOT(onToggleShowSeedsOnly()));
 
-  m_toggleInBodyAction = new QAction("Toggle Selection in Body", m_widget);
+  m_toggleInBodyAction = new QAction("Toggle Selection in to/out of Current Body", m_widget);
   m_toggleInBodyAction->setShortcut(Qt::Key_Space);
   m_menu->addAction(m_toggleInBodyAction);
   connect(m_toggleInBodyAction, SIGNAL(triggered()), this, SLOT(onToggleInChosenCleaveBody()));
 
-  QMenu *setChosenCleaveIndexMenu = new QMenu("Set Cleaved Body To");
+  m_toggleShowChosenCleaveBodyAction = new QAction("Toggle Visibilty of Current Body", m_widget);
+  m_toggleShowChosenCleaveBodyAction->setShortcut(Qt::Key_H);
+  m_menu->addAction(m_toggleShowChosenCleaveBodyAction);
+  connect(m_toggleShowChosenCleaveBodyAction, SIGNAL(triggered()),
+          this, SLOT(onToggleShowChosenCleaveBody()));
+
+  QMenu *setChosenCleaveIndexMenu = new QMenu("Set Current  Body To");
   m_menu->addMenu(setChosenCleaveIndexMenu);
 
   const int NUM_DISTINCT_KEYS = 10;
@@ -813,6 +824,7 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
   m_cleavingStatusLabel->setEnabled(showingCleaving);
   m_showSeedsOnlyAction->setEnabled(showingCleaving);
   m_toggleInBodyAction->setEnabled(showingCleaving);
+  m_toggleShowChosenCleaveBodyAction->setEnabled(showingCleaving);
   for (auto it : m_actionToComboBoxIndex) {
     it.first->setEnabled(showingCleaving);
   }
