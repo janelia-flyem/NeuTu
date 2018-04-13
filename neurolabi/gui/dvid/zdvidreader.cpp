@@ -2712,6 +2712,16 @@ void LogReadingTime(int64_t time, int64_t thre, const std::string &name)
 }
 }
 
+template<typename T>
+void ZDvidReader::configureLowtis(T *config, const std::string &dataName) const
+{
+  config->username = neutube::GetCurrentUserName();
+  config->dvid_server = getDvidTarget().getAddressWithPort();
+  config->dvid_uuid = getDvidTarget().getUuid();
+  config->datatypename = dataName;
+  config->enableprefetch = NeutubeConfig::LowtisPrefetching();
+}
+
 #if defined(_ENABLE_LOWTIS_)
 ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     int width, int height, int zoom, int cx, int cy) const
@@ -2733,15 +2743,15 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
 
   qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
 
-
   if (m_lowtisServiceGray.get() == NULL) {
     try {
-      m_lowtisConfigGray.username = neutube::GetCurrentUserName();
-      m_lowtisConfigGray.dvid_server = getDvidTarget().getAddressWithPort();
-      m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
-      m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
+      configureLowtis(&m_lowtisConfigGray, getDvidTarget().getGrayScaleName());
+//      m_lowtisConfigGray.username = neutube::GetCurrentUserName();
+//      m_lowtisConfigGray.dvid_server = getDvidTarget().getAddressWithPort();
+//      m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
+//      m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
       m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
-      m_lowtisConfigGray.enableprefetch = false;
+//      m_lowtisConfigGray.enableprefetch = NeutubeConfig::LowtisPrefetching();
 
       m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
@@ -2753,6 +2763,8 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       setStatusCode(e.getStatus());
     }
   }
+
+  qDebug() << "  Prefetching:" << m_lowtisConfigGray.enableprefetch;
 
   QElapsedTimer timer;
   timer.start();
@@ -2923,11 +2935,12 @@ lowtis::ImageService* ZDvidReader::getLowtisServiceLabel() const
 
   if (m_lowtisService.get() == NULL) {
     try {
+      configureLowtis(&m_lowtisConfig, getDvidTarget().getSegmentationName());
 //      lowtis::DVIDLabelblkConfig config;
-      m_lowtisConfig.username = neutube::GetCurrentUserName();
-      m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
-      m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
-      m_lowtisConfig.datatypename = getDvidTarget().getSegmentationName();
+//      m_lowtisConfig.username = neutube::GetCurrentUserName();
+//      m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
+//      m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
+//      m_lowtisConfig.datatypename = getDvidTarget().getSegmentationName();
 //      m_lowtisConfig.enableprefetch = false;
 
       m_lowtisService = ZSharedPointer<lowtis::ImageService>(
@@ -2955,12 +2968,8 @@ lowtis::ImageService* ZDvidReader::getLowtisServiceGray(int cx, int cy) const
 
   if (m_lowtisServiceGray.get() == NULL) {
     try {
-      m_lowtisConfigGray.username = neutube::GetCurrentUserName();
-      m_lowtisConfigGray.dvid_server = getDvidTarget().getAddressWithPort();
-      m_lowtisConfigGray.dvid_uuid = getDvidTarget().getUuid();
-      m_lowtisConfigGray.datatypename = getDvidTarget().getGrayScaleName();
+      configureLowtis(&m_lowtisConfigGray, getDvidTarget().getGrayScaleName());
       m_lowtisConfigGray.centercut = std::tuple<int, int>(cx, cy);
-      m_lowtisConfigGray.enableprefetch = false;
 
       m_lowtisServiceGray = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfigGray));
@@ -2988,6 +2997,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
   ZStack *stack = NULL;
 
   qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
+  qDebug() << "  Prefetching:" << m_lowtisConfigGray.enableprefetch;
 
   QElapsedTimer timer;
   timer.start();
