@@ -4346,13 +4346,6 @@ void Z3DWindow::setColorMode(
   }
 }
 
-/*
-Z3DTransformParameter Z3DWindow::getTransformPara() const
-{
-  return m_view->getTransformPara();
-}
-*/
-
 void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
   ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),

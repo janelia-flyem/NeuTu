@@ -32,7 +32,7 @@ requirements:
     - libpng  1.6*
     - hdf5    1.8*
     - pango   1.40* # [linux64]
-    - lowtis  >=0.1.0.post45
+    - lowtis  >=0.1.0.post48
     - cmake
     - ninja
     - tbb
@@ -52,7 +52,7 @@ requirements:
     - libpng  1.6*
     - hdf5    1.8*
     - pango   1.40* # [linux64]
-    - lowtis  >=0.1.0.post45
+    - lowtis  >=0.1.0.post48
     - ninja
     - tbb
     - vtk 7.1*
