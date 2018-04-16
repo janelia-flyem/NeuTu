@@ -613,7 +613,8 @@ bool TaskBodyCleave::allowCompletion()
       }
       text += ". Really save now without checking what is hidden?";
 
-      QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::Save, m_bodyDoc->getParent3DWindow());
+      QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::Save,
+                         window);
       QPushButton *cancelAndShow = msgBox.addButton("Cancel and Show All", QMessageBox::RejectRole);
       msgBox.setDefaultButton(cancelAndShow);
 
