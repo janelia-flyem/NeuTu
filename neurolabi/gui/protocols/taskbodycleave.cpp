@@ -868,6 +868,9 @@ void TaskBodyCleave::cleave()
   if (const char* user = std::getenv("USER")) {
     requestJson["user"] = user;
   }
+  requestJson["server"] = m_bodyDoc->getDvidTarget().getAddress().c_str();
+  requestJson["port"] = m_bodyDoc->getDvidTarget().getPort();
+  requestJson["uuid"] = m_bodyDoc->getDvidTarget().getUuid().c_str();
 
   // TODO: Teporary cleaving sevrver URL.
   QString server = "http://bergs-ws1.int.janelia.org:5556/compute-cleave";
