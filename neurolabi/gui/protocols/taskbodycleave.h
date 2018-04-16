@@ -94,7 +94,8 @@ private:
   void buildTaskWidget();
   void updateColors();
 
-  void bodiesForCleaveIndex(std::size_t cleaveIndex, std::set<uint64_t>& result);
+  void bodiesForCleaveIndex(std::set<uint64_t>& result, std::size_t cleaveIndex,
+                            bool ignoreSeedsOnly = false);
 
   void selectBodies(const std::set<uint64_t>& toSelect);
 

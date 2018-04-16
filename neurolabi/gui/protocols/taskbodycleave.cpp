@@ -379,7 +379,7 @@ void TaskBodyCleave::onCleaveIndexChanged(int)
 void TaskBodyCleave::onSelectBody()
 {
   std::set<uint64_t> toSelect;
-  bodiesForCleaveIndex(chosenCleaveIndex(), toSelect);
+  bodiesForCleaveIndex(toSelect, chosenCleaveIndex());
   selectBodies(toSelect);
 }
 
@@ -392,7 +392,7 @@ void TaskBodyCleave::onShowBodyChanged(int state)
   }
 
   std::set<uint64_t> bodiesForIndex;
-  bodiesForCleaveIndex(chosenCleaveIndex(), bodiesForIndex);
+  bodiesForCleaveIndex(bodiesForIndex, chosenCleaveIndex(), true);
 
   QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
@@ -752,14 +752,16 @@ void TaskBodyCleave::updateColors()
   }
 }
 
-void TaskBodyCleave::bodiesForCleaveIndex(std::size_t cleaveIndex, std::set<uint64_t> &result)
+void TaskBodyCleave::bodiesForCleaveIndex(std::set<uint64_t> &result,
+                                          std::size_t cleaveIndex,
+                                          bool ignoreSeedsOnly)
 {
   for (auto it : m_meshIdToCleaveIndex) {
     if (it.second == cleaveIndex) {
       result.insert(it.first);
     }
   }
-  if (!m_showSeedsOnlyCheckBox->isChecked()) {
+  if (ignoreSeedsOnly || !m_showSeedsOnlyCheckBox->isChecked()) {
     for (auto it : m_meshIdToCleaveResultIndex) {
       if (it.second == cleaveIndex) {
         result.insert(it.first);
