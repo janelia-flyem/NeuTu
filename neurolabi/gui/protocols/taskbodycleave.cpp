@@ -549,6 +549,8 @@ QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
 
 bool TaskBodyCleave::allowCompletion()
 {
+  bool allow = true;
+
   if (m_cleaveReplyPending) {
     if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
       QString title = "Warning";
@@ -557,10 +559,39 @@ bool TaskBodyCleave::allowCompletion()
       QMessageBox::StandardButton chosen =
           QMessageBox::warning(window, title, text, QMessageBox::Save | QMessageBox::Cancel,
                                QMessageBox::Cancel);
-      return (chosen == QMessageBox::Save);
+      allow = (chosen == QMessageBox::Save);
     }
   }
-  return true;
+
+  if (!m_hiddenCleaveIndices.empty()) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      QString title = "Warning";
+      QString text = "The following ";
+      text += (m_hiddenCleaveIndices.size() == 1) ? "body (color) is" : "bodies (colors) are";
+      text += " hidden:";
+      for (std::size_t index : m_hiddenCleaveIndices) {
+        text += " " + QString::number(index);
+      }
+      text += ". Really save now without checking what is hidden?";
+
+      QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::Save, m_bodyDoc->getParent3DWindow());
+      QPushButton *cancelAndShow = msgBox.addButton("Cancel and Show All", QMessageBox::RejectRole);
+      msgBox.setDefaultButton(cancelAndShow);
+
+      msgBox.exec();
+
+      if (msgBox.clickedButton() == cancelAndShow) {
+        m_hiddenCleaveIndices.clear();
+        m_showBodyCheckBox->setChecked(true);
+        m_showSeedsOnlyCheckBox->setChecked(false);
+        updateVisibility();
+
+        allow = false;
+      }
+    }
+  }
+
+  return allow;
 }
 
 void TaskBodyCleave::onCompleted()
