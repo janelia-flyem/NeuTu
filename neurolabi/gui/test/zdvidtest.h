@@ -457,7 +457,7 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getSparsevolSizeUrl(1));
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
-            dvidUrl.getAnnotationUrl("test", 123));
+            dvidUrl4.getAnnotationUrl("test", 123));
 
   ASSERT_EQ(12345, (int) ZDvidUrl::GetBodyId(
               "http://localhost:8000/api/node/uuid/segname/sparsevol/12345"));
@@ -481,7 +481,7 @@ TEST(ZDvidTest, ZDvidUrl)
   target.setSegmentationType(ZDvidData::TYPE_LABELMAP);
   dvidUrl4.setDvidTarget(target, "3456");
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/tag/body:123",
-            dvidUrl.getAnnotationUrl("test", 123));
+            dvidUrl4.getAnnotationUrl("test", 123));
 
 }
 
@@ -572,6 +572,55 @@ TEST(ZDvidTest, ZDvidNode)
   ZDvidNode node3;
   node3.set("emdata2.int.janelia.org", "uuid", 8100);
   ASSERT_NE(node2, node3);
+
+  {
+    std::vector<std::string> tokens = {"1", "2", "3"};
+    node.setFromSourceToken(tokens);
+    ASSERT_FALSE(node.isValid());
+  }
+
+  {
+    std::vector<std::string> tokens = {
+      "http", "emdata2.int.janelia.org", "-1", "2b6c"};
+    node.setFromSourceToken(tokens);
+    ASSERT_TRUE(node.isValid());
+    ASSERT_FALSE(node.isMock());
+  }
+
+  {
+    std::vector<std::string> tokens = {
+      "mock", "emdata2.int.janelia.org", "-1", "2b6c"};
+    node.setFromSourceToken(tokens);
+    ASSERT_TRUE(node.isValid());
+    ASSERT_TRUE(node.isMock());
+  }
+
+  node.setFromSourceString("http:emdata2.int.janelia.org:-1:2b6c");
+  ASSERT_TRUE(node.isValid());
+  ASSERT_FALSE(node.isMock());
+  ASSERT_EQ("http:emdata2.int.janelia.org:-1:2b6c", node.getSourceString(true));
+
+  node2.set("emdata2.int.janelia.org", "2b6c", -1);
+  ASSERT_EQ(node, node2);
+  node.setMock(true);
+  ASSERT_NE(node, node2);
+  node2.setMock(true);
+  ASSERT_EQ(node, node2);
+
+  node.setFromSourceString("mock:emdata2.int.janelia.org:-1:2b6c");
+  ASSERT_TRUE(node.isValid());
+  ASSERT_TRUE(node.isMock());
+  ASSERT_EQ("mock:emdata2.int.janelia.org:-1:2b6c", node.getSourceString(true));
+
+  node.setFromUrl(
+        "http://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_FALSE(node.isMock());
+  ASSERT_EQ("http:emdata2.int.janelia.org:9000:3456", node.getSourceString(true));
+
+  node.setFromUrl(
+        "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_TRUE(node.isMock());
+  ASSERT_EQ("mock:emdata2.int.janelia.org:9000:3456", node.getSourceString(true));
 }
 
 TEST(ZDvidTest, ZDvidTarget)
@@ -660,6 +709,39 @@ TEST(ZDvidTest, ZDvidTarget)
   ASSERT_EQ("hackathon2.janelia.org", node.getAddress());
   ASSERT_EQ(9800, node.getPort());
   ASSERT_EQ("1a3", node.getUuid());
+
+  target.clear();
+  target.setFromUrl(
+        "mock://emdata2.int.janelia.org:9000/api/node/3456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9000, target.getPort());
+  ASSERT_EQ("3456", target.getUuid());
+  target.setTodoListName("test");
+  ASSERT_EQ("test", target.getTodoListName());
+  ASSERT_TRUE(target.isMock());
+  ASSERT_EQ("mock:emdata2.int.janelia.org:9000:3456:*", target.getSourceString());
+
+  target.setFromUrl(
+        "http://emdata3.int.janelia.org:9100/api/node/1234/body_test/sparsevol/123");
+  ASSERT_EQ("emdata3.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9100, target.getPort());
+  ASSERT_EQ("1234", target.getUuid());
+  target.setTodoListName("test");
+  ASSERT_EQ("test", target.getTodoListName());
+  ASSERT_FALSE(target.isMock());
+  ASSERT_EQ("body_test", target.getBodyLabelName());
+  ASSERT_EQ("http:emdata3.int.janelia.org:9100:1234:body_test", target.getSourceString());
+
+  target.setFromUrl(
+        "mock://emdata3.int.janelia.org:9100/api/node/1234/body_test/sparsevol/123");
+  ASSERT_EQ("emdata3.int.janelia.org", target.getAddress());
+  ASSERT_EQ(9100, target.getPort());
+  ASSERT_EQ("1234", target.getUuid());
+  target.setTodoListName("test");
+  ASSERT_EQ("test", target.getTodoListName());
+  ASSERT_TRUE(target.isMock());
+  ASSERT_EQ("body_test", target.getBodyLabelName());
+  ASSERT_EQ("mock:emdata3.int.janelia.org:9100:1234:body_test", target.getSourceString());
 }
 
 TEST(ZDvidTest, DataType)

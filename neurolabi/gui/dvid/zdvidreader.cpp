@@ -87,6 +87,10 @@ void ZDvidReader::clear()
 
 bool ZDvidReader::startService()
 {
+  if (getDvidTarget().isMock()) {
+    return true;
+  }
+
 #if defined(_ENABLE_LIBDVIDCPP_)
   try {
     m_service = ZDvid::MakeDvidNodeService(getDvidTarget());
@@ -158,7 +162,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 
   bool succ = false;
 
-  if (target.isInferred()) {
+  if (target.isInferred() || target.isMock()) {
     succ = openRaw(target);
   } else {
     m_dvidTarget = target;
@@ -170,7 +174,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 
     succ = startService();
 
-    if (succ) { //Read default settings
+    if (succ && !getDvidTarget().isMock()) { //Read default settings
       updateNodeStatus();
 
       if (getDvidTarget().usingDefaultDataSetting()) {

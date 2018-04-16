@@ -63,5 +63,6 @@
 #include "test/zgradientmagnitudemoduletest.h"
 #include "test/zdvidresultservicetest.h"
 #include "test/zstackobjectinfotest.h"
+#include "test/zglobaltest.h"
 
 #endif // ZTESTALL_H

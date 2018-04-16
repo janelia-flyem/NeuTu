@@ -31,7 +31,7 @@ public:
   /*!
    * \brief Set dvid target from source string
    *
-   * The old settings will be cleared no matter what.
+   * The old settings will be cleared after the call.
    *
    * \param sourceString Format: http:host:port:node:segmentation_name.
    */
@@ -40,6 +40,8 @@ public:
 
   /*!
    * \brief Set dvid target from source string
+   *
+   * The old settings will be cleared after the call.
    *
    * \param sourceString Format: http:host:port:node:<dataType>_name.
    */
@@ -147,6 +149,9 @@ public:
   ZJsonObject toDvidDataSetting() const;
 
   void print() const;
+
+  void setMock(bool on);
+  bool isMock() const;
 
   //Special functions
   inline const std::string& getLocalFolder() const {
