@@ -354,9 +354,9 @@ namespace {
   };
 }
 
-void TaskProtocolWindow::onCompletedStateChanged(int /*state*/) {
+void TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
-      if (m_taskList[m_currentTaskIndex]->allowCompletion()) {
+      if (!state || m_taskList[m_currentTaskIndex]->allowCompletion()) {
           m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
           saveState();
           updateLabel();
