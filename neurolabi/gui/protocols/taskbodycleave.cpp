@@ -459,6 +459,7 @@ void TaskBodyCleave::onToggleShowChosenCleaveBody()
 
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
+  m_cleaveReplyPending = false;
   QNetworkReply::NetworkError error = reply->error();
 
   // In addition to checking for QNetworkReply::NetworkError, also check for
@@ -544,6 +545,22 @@ QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
   taskJson[KEY_MAXLEVEL] = m_maxLevel;
 
   return taskJson;
+}
+
+bool TaskBodyCleave::allowCompletion()
+{
+  if (m_cleaveReplyPending) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      QString title = "Warning";
+      QString text = "A reply from the cleave server is pending. "
+                     "Really save now without the cleaving in that reply?";
+      QMessageBox::StandardButton chosen =
+          QMessageBox::warning(window, title, text, QMessageBox::Save | QMessageBox::Cancel,
+                               QMessageBox::Cancel);
+      return (chosen == QMessageBox::Save);
+    }
+  }
+  return true;
 }
 
 void TaskBodyCleave::onCompleted()
@@ -834,6 +851,7 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
 
 void TaskBodyCleave::cleave()
 {
+  m_cleaveReplyPending = true;
   m_cleavingStatusLabel->setText(CLEAVING_STATUS_IN_PROGRESS);
 
   QJsonObject requestJson;
