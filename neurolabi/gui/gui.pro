@@ -122,7 +122,7 @@ contains(GIT, .*git) {
 
 include(add_itk.pri)
 
-#Qt4
+#Qt4 (Obsolete)
 isEqual(QT_MAJOR_VERSION,4) {
   QT += opengl xml network
   message("Qt 4")

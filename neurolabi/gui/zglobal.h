@@ -29,13 +29,26 @@ public:
     return g;
   }
 
+  /*!
+   * \brief For transferring positions globally.
+   */
   void setStackPosition(int x, int y, int z);
   void setStackPosition(const ZIntPoint &pt);
   void setStackPosition(const ZPoint &pt);
+
   void clearStackPosition();
   ZIntPoint getStackPosition() const;
-  ZDvidReader* getDvidReader(const std::string &name) const;
-  ZDvidWriter* getDvidWriter(const std::string &name) const;
+
+  //! DVID IO with shared readers and writers
+  /*!
+   * \brief Get DVID reader from a name
+   * \param name The name can be an alias name or dvid source string
+   * \param key Additional key
+   */
+  ZDvidReader* getDvidReader(
+      const std::string &name, const std::string &key = "") const;
+  ZDvidWriter* getDvidWriter(
+      const std::string &name, const std::string &key = "") const;
   ZDvidReader* getDvidReader(
       const ZDvidTarget &target, const std::string &key = "") const;
   ZDvidWriter* getDvidWriter(
@@ -52,8 +65,10 @@ public:
   QMainWindow* getMainWindow() const;
 
 public:
-  static ZDvidReader* GetDvidReader(const std::string &name);
-  static ZDvidWriter* GetDvidWriter(const std::string &name);
+  static ZDvidReader* GetDvidReader(
+      const std::string &name, const std::string &key = "");
+  static ZDvidWriter* GetDvidWriter(
+      const std::string &name, const std::string &key = "");
   static ZDvidReader* GetDvidReader(
       const ZDvidTarget &target, const std::string &key = "");
   static ZDvidWriter* GetDvidWriter(
@@ -68,13 +83,19 @@ public:
   ZBrowserOpener* getBrowserOpener() const;
 
 private:
+  /*
   template<typename T>
   T* getIODevice(
       const std::string &name, std::map<std::string, T*> &ioMap) const;
+*/
+  template<typename T>
+  T* getIODevice(
+      const std::string &name, std::map<std::string, T*> &ioMap,
+      const std::string &key = "") const;
 
   template<typename T>
   T* getIODevice(
-      const ZDvidTarget &name, std::map<std::string, T*> &ioMap,
+      const ZDvidTarget &target, std::map<std::string, T*> &ioMap,
       const std::string &key) const;
 
   template<typename T>

@@ -2595,14 +2595,6 @@ void MainWindow::on_actionOpen_triggered()
         "Open stack",
         "Stack files (*.tif *.lsm *.raw *.png *.swc *.nnt *.apo *.marker *.json)");
 
-#if 0
-      QFileDialog::getOpenFileName(
-        this, tr("Open stack"),
-        m_lastOpenedFilePath,
-        tr("Stack files (*.tif *.lsm *.raw *.png *.swc *.nnt *.apo *.marker *.json)"),
-        NULL/*, QFileDialog::DontUseNativeDialog*/);
-#endif
-
   if (!fileName.isEmpty()) {
     m_lastOpenedFilePath = QFileInfo(fileName).absoluteDir().path();
     openFile(fileName);

@@ -391,6 +391,8 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
               ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
         resultJson.setEntry(
               "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
+        std::cout << "Writing result summary to " << refPath.toStdString()
+                  << std::endl;
         writer->writeJson(refPath.toStdString(), resultJson);
       } else {
         for (ZObject3dScanArray::const_iterator iter = result->begin();

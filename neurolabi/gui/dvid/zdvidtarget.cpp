@@ -66,6 +66,7 @@ void ZDvidTarget::init()
   m_maxGrayscaleZoom = 0;
   m_usingMultresBodyLabel = true;
   m_usingDefaultSetting = false;
+  m_isInferred = false;
 
   setDefaultMultiscale2dName();
   setSegmentationName("*");
@@ -74,15 +75,15 @@ void ZDvidTarget::init()
 
 std::string ZDvidTarget::getSourceString(bool withHttpPrefix) const
 {
-  std::string source;
-
+  std::string source = m_node.getSourceString(withHttpPrefix);
+/*
   if (!getAddress().empty()) {
     source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + getUuid();
     if (withHttpPrefix) {
       source = "http:" + source;
     }
   }
-
+*/
   if (!m_bodyLabelName.empty()) {
     source += ":" + m_bodyLabelName;
   }
@@ -104,8 +105,6 @@ void ZDvidTarget::clear()
   m_comment = "";
   m_localFolder = "";
   m_bodyLabelName = "*";
-  m_segmentationName = "*";
-
   m_grayScaleName = "";
   m_synapseLabelszName = "";
   m_synapseName = "";
@@ -135,14 +134,17 @@ void ZDvidTarget::setPort(int port)
 
 void ZDvidTarget::setFromUrl(const std::string &url)
 {
+  clear();
   if (url.empty()) {
-    clear();
     return;
   }
 
   ZString zurl(url);
   if (zurl.startsWith("http://")) {
     zurl.replace("http://", "");
+  } else if (zurl.startsWith("mock://")) {
+    zurl.replace("mock://", "");
+    setMock(true);
   }
 
   std::vector<std::string> tokens = zurl.tokenize('/');
@@ -173,11 +175,19 @@ void ZDvidTarget::setFromUrl(const std::string &url)
 
 void ZDvidTarget::setFromSourceString(const std::string &sourceString)
 {
-  set("", "", -1);
+  clear();
 
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
+  m_node.setFromSourceToken(tokens);
+  if (tokens.size() >= 5) {
+    setBodyLabelName(tokens[4]);
+  }
 
-  if (tokens.size() < 4 || tokens[0] != "http") {
+  if (tokens.size() >= 6) {
+    setGrayScaleName(tokens[5]);
+  }
+#if 0
+  if (tokens.size() < 4 || tokens[0] != "http" || tokens[0] != "mock") {
 #if defined(_QT_APPLICATION_)
     LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
 #else
@@ -199,17 +209,21 @@ void ZDvidTarget::setFromSourceString(const std::string &sourceString)
     if (tokens.size() >= 6) {
       setGrayScaleName(tokens[5]);
     }
+    if (tokens[0] == "mock") {
+      setMock(true);
+    }
   }
+#endif
 }
 
 void ZDvidTarget::setFromSourceString(
     const std::string &sourceString, ZDvid::EDataType dataType)
 {
-  set("", "", -1);
+  clear();
 
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
-  if (tokens.size() < 4 || tokens[0] != "http") {
+  if (tokens.size() < 4 || tokens[0] != "http" || tokens[0] != "mock") {
 #if defined(_QT_APPLICATION_)
     LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
 #else
@@ -235,6 +249,9 @@ void ZDvidTarget::setFromSourceString(
       default:
         break;
       }
+    }
+    if (tokens[0] == "mock") {
+      setMock(true);
     }
   }
 }
@@ -267,6 +284,16 @@ std::string ZDvidTarget::getAddressWithPort() const
   }
 
   return address;
+}
+
+void ZDvidTarget::setMock(bool on)
+{
+  m_node.setMock(on);
+}
+
+bool ZDvidTarget::isMock() const
+{
+  return m_node.isMock();
 }
 
 void ZDvidTarget::print() const

@@ -33,6 +33,17 @@ ZDvidNode::ZDvidNode(
 void ZDvidNode::init()
 {
   m_port = -1;
+  m_isMocked = false;
+}
+
+void ZDvidNode::setMock(bool on)
+{
+  m_isMocked = on;
+}
+
+bool ZDvidNode::isMock() const
+{
+  return m_isMocked;
 }
 
 std::string ZDvidNode::getSourceString(bool withHttpPrefix) const
@@ -42,7 +53,11 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix) const
   if (!getAddress().empty()) {
     source = getAddress() + ":" + ZString::num2str(getPort()) + ":" + getUuid();
     if (withHttpPrefix) {
-      source = "http:" + source;
+      if (isMock()) {
+        source = "mock:" + source;
+      } else {
+        source = "http:" + source;
+      }
     }
   }
 
@@ -52,13 +67,13 @@ std::string ZDvidNode::getSourceString(bool withHttpPrefix) const
 bool ZDvidNode::operator ==(const ZDvidNode &node) const
 {
   return m_address == node.m_address && m_port == node.m_port &&
-      m_uuid == node.m_uuid;
+      m_uuid == node.m_uuid && m_isMocked == node.m_isMocked;
 }
 
 bool ZDvidNode::operator !=(const ZDvidNode &node) const
 {
   return m_address != node.m_address || m_port != node.m_port ||
-      m_uuid != node.m_uuid;
+      m_uuid != node.m_uuid || m_isMocked != node.m_isMocked;
 }
 
 
@@ -68,7 +83,14 @@ void ZDvidNode::set(
   ZString s(address);
   std::string pureAddress = address;
   if (port < 0) { //parsing address
+    bool hasPrefix = false;
     if (s.startsWith("http://", ZString::CASE_INSENSITIVE)) {
+      hasPrefix = true;
+    } else if (s.startsWith("mock://", ZString::CASE_INSENSITIVE)) {
+      hasPrefix = true;
+      setMock(true);
+    }
+    if (hasPrefix) {
       s = s.substr(7);
       std::vector<std::string> tokenArray = s.tokenize(':');
       if (tokenArray.empty()) {
@@ -117,6 +139,9 @@ void ZDvidNode::setServer(const std::string &address)
 
     if (addressObj.startsWith("http://")) {
       addressObj = address.substr(7);
+    } else if (addressObj.startsWith("mock://")) {
+      addressObj = address.substr(7);
+      setMock(true);
     } else if (ZString(address).startsWith("//")) {
       addressObj = address.substr(2);
     } else {
@@ -174,14 +199,17 @@ void ZDvidNode::setPort(int port)
 
 void ZDvidNode::setFromUrl(const std::string &url)
 {
+  clear();
   if (url.empty()) {
-    clear();
     return;
   }
 
   ZString zurl(url);
   if (zurl.startsWith("http:")) {
     zurl.replace("http://", "");
+  } else if (zurl.startsWith("mock://")) {
+    zurl.replace("mock://", "");
+    setMock(true);
   }
 
   std::vector<std::string> tokens = zurl.tokenize('/');
@@ -207,15 +235,22 @@ void ZDvidNode::setFromUrl(const std::string &url)
 
 void ZDvidNode::setFromSourceString(const std::string &sourceString)
 {
-  set("", "", -1);
-
   std::vector<std::string> tokens = ZString(sourceString).tokenize(':');
 
-  if (tokens.size() < 4 || tokens[0] != "http") {
+  if (setFromSourceToken(tokens)) {
 #if defined(_QT_APPLICATION_)
     LWARN() << "Invalid source string for dvid target:" << sourceString.c_str();
 #endif
-  } else {
+  }
+}
+
+bool ZDvidNode::setFromSourceToken(const std::vector<std::string> &tokens)
+{
+  bool succ = false;
+
+ clear();
+
+  if (tokens.size() >= 4 && (tokens[0] == "http" || tokens[0] == "mock")) {
     int port = -1;
     if (!tokens[2].empty()) {
       port = ZString::FirstInteger(tokens[2]);
@@ -224,7 +259,13 @@ void ZDvidNode::setFromSourceString(const std::string &sourceString)
       }
     }
     set(tokens[1], tokens[3], port);
+    if (tokens[0] == "mock") {
+      setMock(true);
+    }
+    succ = true;
   }
+
+  return succ;
 }
 
 bool ZDvidNode::hasPort() const
@@ -255,7 +296,11 @@ std::string ZDvidNode::getUrl() const
 {
   ZString url = "";
   if (isValid()) {
-    url = "http://" + m_address;
+    if (isMock()) {
+      url = "mock://" + m_address;
+    } else {
+      url = "http://" + m_address;
+    }
     if (m_port >= 0) {
       url += ":";
       url.appendNumber(m_port);
