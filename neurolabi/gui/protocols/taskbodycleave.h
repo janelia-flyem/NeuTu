@@ -83,6 +83,7 @@ private:
   std::set<size_t> m_hiddenCleaveIndices;
 
   QNetworkAccessManager *m_networkManager;
+  bool m_cleaveReplyPending = false;
 
   std::set<QString> m_warningTextToSuppress;
 
@@ -94,7 +95,8 @@ private:
   void buildTaskWidget();
   void updateColors();
 
-  void bodiesForCleaveIndex(std::size_t cleaveIndex, std::set<uint64_t>& result);
+  void bodiesForCleaveIndex(std::set<uint64_t>& result, std::size_t cleaveIndex,
+                            bool ignoreSeedsOnly = false);
 
   void selectBodies(const std::set<uint64_t>& toSelect);
 
@@ -118,6 +120,7 @@ private:
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;
+  virtual bool allowCompletion() override;
   virtual void onCompleted() override;
 };
 
