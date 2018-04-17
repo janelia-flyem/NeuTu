@@ -922,7 +922,6 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
 
 void TaskBodyCleave::cleave()
 {
-  m_cleaveReplyPending = true;
   m_cleavingStatusLabel->setText(CLEAVING_STATUS_IN_PROGRESS);
 
   QJsonObject requestJson;
@@ -981,6 +980,7 @@ void TaskBodyCleave::cleave()
   QJsonDocument requestJsonDoc(requestJson);
   QByteArray requestData(requestJsonDoc.toJson());
 
+  m_cleaveReplyPending = true;
   m_networkManager->post(request, requestData);
 }
 
