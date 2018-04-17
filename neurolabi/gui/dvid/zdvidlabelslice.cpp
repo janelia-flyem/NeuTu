@@ -1018,13 +1018,15 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
     int nz = iround(z);
 
     ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
+
     if (getHelper()->getViewPort().contains(nx, ny) &&
         nz == getHelper()->getZ()) {
 //      ZDvidReader reader;
       if (getHelper()->getDvidReader().isReady()) {
         ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
-        m_hitLabel = getMappedLabel(getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
-                                    neutube::BODY_LABEL_ORIGINAL);
+        m_hitLabel = getMappedLabel(
+              getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
+              neutube::BODY_LABEL_ORIGINAL);
       }
 
       return m_hitLabel > 0;

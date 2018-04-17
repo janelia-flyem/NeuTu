@@ -63,8 +63,12 @@ enum EAxisSystem {
 };
 
 enum ECoordinateSystem {
-  COORD_WIDGET, COORD_SCREEN, COORD_RAW_STACK, COORD_STACK,
-  COORD_WORLD, COORD_CANVAS
+  COORD_WIDGET,
+  COORD_SCREEN,
+  COORD_RAW_STACK, //Coordiantes relative to the first stack corner
+  COORD_STACK,     //Absolute coordinates in the current stack alignment
+  COORD_ORGDATA,   //Coordinates registered to the original data
+  COORD_WORLD_2D, COORD_CANVAS
 };
 
 enum EColor {

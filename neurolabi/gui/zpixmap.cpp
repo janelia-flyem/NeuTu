@@ -165,7 +165,7 @@ void ZPixmap::clean(const QRect &rect)
 QRectF ZPixmap::getActiveArea(neutube::ECoordinateSystem coord) const
 {
   switch (coord) {
-  case neutube::COORD_WORLD:
+  case neutube::COORD_WORLD_2D:
     if (m_activeArea.isEmpty()) {
       return m_objTransform.getInverseTransform().transform(
             QRectF(0, 0, width(), height()));
