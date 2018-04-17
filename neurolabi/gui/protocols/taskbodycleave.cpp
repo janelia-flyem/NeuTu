@@ -95,7 +95,6 @@ namespace {
   static bool zoomToLoadedBodyEnabled;
   static bool garbageLifetimeLimitEnabled;
   static bool splitTaskLoadingEnabled;
-  static bool showingTodo;
   static bool showingSynapse;
   static bool preservingSourceColorEnabled;
   static bool showingSourceColors;
@@ -113,9 +112,6 @@ namespace {
 
       splitTaskLoadingEnabled = bodyDoc->splitTaskLoadingEnabled();
       bodyDoc->enableSplitTaskLoading(false);
-
-      showingTodo = bodyDoc->showingTodo();
-//      bodyDoc->showTodo(false);
 
       showingSynapse = bodyDoc->showingSynapse();
       bodyDoc->showSynapse(false);
@@ -146,7 +142,6 @@ namespace {
 
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
       bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
-      bodyDoc->showTodo(showingTodo);
       bodyDoc->showSynapse(showingSynapse);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
