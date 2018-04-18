@@ -11,6 +11,7 @@
 #include "neutubeconfig.h"
 #include "zdviddataslicehelper.h"
 #include "zutils.h"
+#include "zstack.hxx"
 
 ZDvidGraySlice::ZDvidGraySlice()
 {

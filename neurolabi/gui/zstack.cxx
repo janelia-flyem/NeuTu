@@ -805,9 +805,9 @@ int ZStack::getChannelNumber(const string &filepath)
   return nchannel;
 }
 
-string ZStack::save(const string &filepath) const
+std::string ZStack::save(const string &filepath) const
 {
-  string resultFilePath;
+  std::string resultFilePath;
 
   if (!isVirtual()) {
     resultFilePath = filepath;

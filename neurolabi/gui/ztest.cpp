@@ -25760,7 +25760,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
@@ -26068,6 +26068,21 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "fb02", 8900);
+
+  ZJsonObject jsonObj;
+  jsonObj.decodeString("{\"Pos\":[23620,30590,20736],\"Kind\":\"Note\","
+                       "\"Tags\":[\"user:taggl\"],"
+                       "\"Prop\":{\"body ID\":\"1144018233\","
+                       "\"comment\":\"Interesting Contralateral Neuron \","
+                       "\"custom\":\"1\",\"status\":\"\",\"time\":\"\","
+                       "\"type\":\"Other\",\"user\":\"taggl\"},\"Supervoxel\":0}");
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter(target);
+  writer->writePointAnnotation("bookmark_annotations", jsonObj);
 #endif
 
   std::cout << "Done." << std::endl;

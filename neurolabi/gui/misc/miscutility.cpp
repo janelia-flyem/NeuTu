@@ -14,6 +14,7 @@
 #include "zswctree.h"
 #include "zclosedcurve.h"
 #include "zintcuboid.h"
+#include "zstack.hxx"
 
 using namespace std;
 

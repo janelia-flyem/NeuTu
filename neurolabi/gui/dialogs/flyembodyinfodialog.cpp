@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <sstream>
 
 #include <QMessageBox>
 #include <QColor>

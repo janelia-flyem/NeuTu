@@ -2,6 +2,7 @@
 #include "neutubeconfig.h"
 #include "zdvidtileensemble.h"
 #include "zstackview.h"
+#include "zstack.hxx"
 
 ZDvidPatchDataFetcher::ZDvidPatchDataFetcher(QObject *parent) :
   ZDvidDataFetcher(parent)

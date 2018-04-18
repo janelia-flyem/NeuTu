@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstring>
 
+#include "zstack.hxx"
+
 using namespace std;
 
 ZStackBlender::ZStackBlender()

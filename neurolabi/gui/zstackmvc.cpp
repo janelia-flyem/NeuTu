@@ -9,7 +9,7 @@
 #include <QShortcut>
 
 #include "neutubeconfig.h"
-#include "zstackdoc.h"
+//#include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
 #include "zprogresssignal.h"
@@ -20,6 +20,7 @@
 #include "zstackviewlocator.h"
 #include "zdialogfactory.h"
 #include "dialogs/zstresstestoptiondialog.h"
+#include "zstackdochelper.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -426,7 +427,11 @@ void ZStackMvc::saveStack()
     QString filePath =
         ZDialogFactory::GetSaveFileName("Save Stack", ".tif", this);
     if (!filePath.isEmpty()) {
-      getDocument()->getStack()->save(filePath.toStdString());
+      std::string resultPath =
+          ZStackDocHelper::SaveStack(getDocument().get(), filePath.toStdString());
+      if (!resultPath.empty()) {
+        LINFO() << "Stack saved at" << resultPath;
+      }
     }
   }
 }

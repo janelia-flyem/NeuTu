@@ -50,6 +50,7 @@
 #include "zwidgetmessage.h"
 #include "flyem/zproofreadwindow.h"
 #include "flyem/zflyemproofmvccontroller.h"
+#include "zstackobjectaccessor.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -912,15 +913,21 @@ void Neu3Window::zoomToBodyMesh()
 void Neu3Window::processSwcChangeFrom3D(
     QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
 {
-  foreach (ZSwcTree *tree, selected) {
-    if (tree->getLabel() > 0) {
-      emit bodySelected(tree->getLabel());
+  {
+    QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(selected);
+    foreach (uint64_t label, labelSet) {
+      if (label > 0) {
+        emit bodySelected(label);
+      }
     }
   }
 
-  foreach (ZSwcTree *tree, deselected) {
-    if (tree->getLabel() > 0) {
-      emit bodyDeselected(tree->getLabel());
+  {
+    QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(deselected);
+    foreach (uint64_t label, labelSet) {
+      if (label > 0) {
+        emit bodySelected(label);
+      }
     }
   }
 }

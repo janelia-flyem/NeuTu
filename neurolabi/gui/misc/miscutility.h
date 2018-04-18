@@ -8,7 +8,6 @@
 #include <iostream>
 
 #include "zhistogram.h"
-#include "zstack.hxx"
 #include "zobject3dscan.h"
 #include "neutube_def.h"
 #include "zintcuboidarray.h"

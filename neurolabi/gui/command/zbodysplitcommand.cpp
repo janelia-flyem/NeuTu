@@ -24,6 +24,7 @@
 #include "dvid/zdvidpath.h"
 #include "zstackgarbagecollector.h"
 #include "dvid/zdvidsparsestack.h"
+#include "zswctree.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {

@@ -4,6 +4,7 @@
 
 #include "zstackobject.h"
 #include "zintcuboid.h"
+#include "zswctree.h"
 
 ZStackObjectAccessor::ZStackObjectAccessor()
 {
@@ -19,12 +20,25 @@ ZIntCuboid ZStackObjectAccessor::GetIntBoundBox(const ZStackObject &obj)
 }
 
 
-int ZStackObjectAccessor::GetLabelCount(const QList<ZStackObject *> &objList)
+int ZStackObjectAccessor::GetLabelCount(const QList<ZStackObject*> &objList)
+{
+  return GetLabelSet(objList).size();
+}
+
+QSet<uint64_t> ZStackObjectAccessor::GetLabelSet(const QList<ZSwcTree*> &objList)
+{
+  return GetLabelSet<ZSwcTree>(objList);
+}
+
+/*
+QSet<uint64_t> ZStackObjectAccessor::GetLabelSet(
+    const QList<ZStackObject*> &objList)
 {
   QSet<uint64_t> labelSet;
   foreach (const ZStackObject *obj, objList) {
     labelSet.insert(obj->getLabel());
   }
 
-  return labelSet.size();
+  return labelSet;
 }
+*/

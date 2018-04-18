@@ -7,7 +7,7 @@
 #include "zstack.hxx"
 
 ZMouseEventProcessor::ZMouseEventProcessor() :
-  m_context(NULL), m_imageWidget(NULL)
+  m_context(NULL)
 {
   registerMapper();
 }
@@ -32,7 +32,8 @@ void ZMouseEventProcessor::registerMapper()
 }
 
 const ZMouseEvent& ZMouseEventProcessor::process(
-    QMouseEvent *event, ZMouseEvent::EAction action, int z)
+    QMouseEvent *event, ZMouseEvent::EAction action, const ZViewProj &viewProj,
+    int z)
 {
   switch (action) {
   case ZMouseEvent::ACTION_PRESS:
@@ -49,9 +50,9 @@ const ZMouseEvent& ZMouseEventProcessor::process(
 
   ZMouseEvent zevent;
   zevent.set(event, action, z);
-  zevent.setSliceAxis(m_imageWidget->getSliceAxis());
+  zevent.setSliceAxis(getSliceAxis());
   const ZIntPoint &pt = zevent.getPosition();
-  zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt));
+  zevent.setRawStackPosition(mapPositionFromWidgetToRawStack(pt, viewProj));
 
   if (m_doc->hasStack()) {
     if (m_doc->getStack()->containsRaw(zevent.getRawStackPosition())) {
@@ -76,10 +77,22 @@ void ZMouseEventProcessor::setInteractiveContext(ZInteractiveContext *context)
   }
 }
 
+void ZMouseEventProcessor::setSliceAxis(neutube::EAxis axis)
+{
+  m_sliceAxis = axis;
+}
+
+neutube::EAxis ZMouseEventProcessor::getSliceAxis() const
+{
+  return m_sliceAxis;
+}
+
+/*
 void ZMouseEventProcessor::setImageWidget(ZImageWidget *widget)
 {
   m_imageWidget = widget;
 }
+*/
 
 void ZMouseEventProcessor::setDocument(ZSharedPointer<ZStackDoc> doc)
 {
@@ -140,21 +153,23 @@ ZStackOperator ZMouseEventProcessor::getOperator() const
 }
 
 ZPoint ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
-    const ZIntPoint &pt) const
+    const ZIntPoint &pt, const ZViewProj &viewProj) const
 {
-  return mapPositionFromWidgetToRawStack(pt.getX(), pt.getY(), pt.getZ());
+  return mapPositionFromWidgetToRawStack(
+        pt.getX(), pt.getY(), pt.getZ(), viewProj);
 }
 
 ZPoint ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
-    int x, int y, int z) const
+    int x, int y, int z, const ZViewProj &viewProj) const
 {
   ZPoint pt(x, y, z);
-  mapPositionFromWidgetToRawStack(pt.xRef(), pt.yRef());
-  pt.shiftSliceAxis(m_imageWidget->getSliceAxis());
+  mapPositionFromWidgetToRawStack(pt.xRef(), pt.yRef(), viewProj);
+  pt.shiftSliceAxis(getSliceAxis());
 
   return pt;
 }
 
+/*
 void ZMouseEventProcessor::mapPositionFromWidgetToRawStack(double *x, double *y)
 const
 {
@@ -164,19 +179,17 @@ const
 
   (*x) -= viewProj.getCanvasRect().left();
   (*y) -= viewProj.getCanvasRect().top();
+}
+*/
+void ZMouseEventProcessor::mapPositionFromWidgetToRawStack(
+    double *x, double *y, const ZViewProj &viewProj) const
+{
+//  ZViewProj viewProj = m_imageWidget->getViewProj();
 
-#if 0
-  QSizeF csize = m_imageWidget->projectSize();
+  viewProj.mapPointBack(x, y);
 
-  if (csize.width() > 0 && csize.height() > 0) {
-    *x = *x * (m_imageWidget->viewPort().width()) / csize.width() +
-        m_imageWidget->viewPort().left() -
-        m_imageWidget->canvasRegion().left() - 0.5;
-    *y = *y * (m_imageWidget->viewPort().height()) / csize.height() +
-        m_imageWidget->viewPort().top() -
-        m_imageWidget->canvasRegion().top() - 0.5;
-  }
-#endif
+  (*x) -= viewProj.getCanvasRect().left();
+  (*y) -= viewProj.getCanvasRect().top();
 }
 
 const ZMouseEvent& ZMouseEventProcessor::getLatestMouseEvent() const
