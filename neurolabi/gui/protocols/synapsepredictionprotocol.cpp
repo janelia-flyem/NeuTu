@@ -6,6 +6,7 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QProgressDialog>
 #include <QtAlgorithms>
 
 #include "synapsepredictioninputdialog.h"
@@ -749,29 +750,41 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     ZDvidReader reader;
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
-        // show wait cursor
-        QApplication::setOverrideCursor(Qt::WaitCursor);
-        QApplication::processEvents();
+
+        // QProgressDialog progressDialog("Operation in progress", "Cancel", 0, 100, this);
+        QProgressDialog progressDialog("Operation in progress", 0, 0, 100, this);
+        progressDialog.setWindowModality(Qt::WindowModal);
+        progressDialog.setMinimumDuration(1000);
+        progressDialog.setValue(20);
 
         std::vector<ZDvidSynapse> synapseList;
         if (m_variation == VARIATION_REGION) {
             synapseList = reader.readSynapse(m_protocolRange, flyem::LOAD_PARTNER_LOCATION);
-
-            // filter by roi (coming "soon")
-            // will need to do raw DVID call to batch ask "is point in RoI?";
-            //  that call not in ZDvidReader() yet
-
         } else if (m_variation == VARIATION_BODY) {
             synapseList = reader.readSynapse(m_bodyID, flyem::LOAD_PARTNER_LOCATION);
         } else {
             variationError(m_variation);
         }
 
+        // do the filter by roi here (coming "soon")
+        // will need to do raw DVID call to batch ask "is point in RoI?";
+        //  that call not in ZDvidReader() yet
+
         // look at pre-synaptic sites; check whether the appropriate
         //  items have been verified according to the mode we're in; if so, its
         //  position goes in the finished list
+        // update progress dialog approximate every 5%; some ad hoc testing indicated
+        //  that the initial read (above) is about 20% of the total (note setValue() above),
+        //  so scale based on that
+        int progressInterval = 1;
+        if (synapseList.size() >= 16) {
+            progressInterval = synapseList.size() / 16;
+        }
         QList<ZDvidSynapse> pendingSynapses;
         for (size_t i=0; i<synapseList.size(); i++) {
+            if (i % progressInterval == 0) {
+                progressDialog.setValue(20 + 5 * (i / progressInterval));
+            }
             ZDvidSynapse &synapse = synapseList[i];
             if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
                 if (isFinished(synapse.getPosition())) {
@@ -783,14 +796,13 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
         }
 
         // sort the pending synapse list; DVID can return things in variable order,
-        //  and people don't like that; then put positions into pending list
+        //  and people don't like that; then put ordered positions into pending list
         qSort(pendingSynapses.begin(), pendingSynapses.end(), SynapsePredictionProtocol::compareSynapses);
         for (int i=0; i<pendingSynapses.size(); i++) {
             m_pendingList.append(pendingSynapses[i].getPosition());
         }
-        // restore original cursor
-        QApplication::restoreOverrideCursor();
-        QApplication::processEvents();
+
+        progressDialog.setValue(100);
     }
 }
 
