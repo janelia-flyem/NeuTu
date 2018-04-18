@@ -65,4 +65,5 @@ HEADERS += \
     $$PWD/zwatershedtest.h \
     $$PWD/ztestall.h \
     $$PWD/zstackobjectinfotest.h \
-    $$PWD/zglobaltest.h
+    $$PWD/zglobaltest.h \
+    $$PWD/zmouseeventprocessortest.h

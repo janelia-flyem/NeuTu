@@ -2,6 +2,7 @@
 #include "zstackview.h"
 #include "zstackdoc.h"
 #include "zstroke2d.h"
+#include "zstack.hxx"
 
 ZBiocytinProjMaskFactory::ZBiocytinProjMaskFactory()
 {

@@ -1,5 +1,5 @@
 #include "zstackdiffcommand.h"
-#include "zstackdoc.h"
+#include "zstack.hxx"
 
 ZStackDiffCommand::ZStackDiffCommand()
 {

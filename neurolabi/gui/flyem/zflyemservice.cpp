@@ -9,6 +9,7 @@
 #include "flyem/zsynapseannotation.h"
 #include "flyem/zsynapseannotationarray.h"
 #include "zintcuboid.h"
+#include "zstack.hxx"
 
 flyem::Service::FaceOrphanOverlap::FaceIndex::FaceIndex() :
   m_cuboidIndex(-1), m_faceIndex(-1)

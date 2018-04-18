@@ -10,6 +10,7 @@
 #include "zsandbox.h"
 #include "mainwindow.h"
 #include "zstackdocdatabuffer.h"
+#include "zstack.hxx"
 
 ZShowSegResultModule::ZShowSegResultModule(QObject *parent) :
   ZSandboxModule(parent)

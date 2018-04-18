@@ -64,5 +64,6 @@
 #include "test/zdvidresultservicetest.h"
 #include "test/zstackobjectinfotest.h"
 #include "test/zglobaltest.h"
+#include "test/zmouseeventprocessortest.h"
 
 #endif // ZTESTALL_H

@@ -8,6 +8,7 @@
 #include <QUrl>
 
 #include "neutubeconfig.h"
+#include "zstack.hxx"
 #include "flyem/zflyemneuron.h"
 #include "zclosedcurve.h"
 #include "zswctree.h"

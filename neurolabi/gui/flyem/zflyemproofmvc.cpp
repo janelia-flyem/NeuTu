@@ -91,6 +91,7 @@
 #include "z3dwindow.h"
 #include "zflyemproofmvccontroller.h"
 #include "zstackdochelper.h"
+#include "zstack.hxx"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)

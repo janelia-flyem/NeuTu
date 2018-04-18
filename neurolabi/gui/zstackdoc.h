@@ -48,6 +48,7 @@
 #include "zactionfactory.h"
 #include "zmesh.h"
 #include "zstackobjectinfo.h"
+#include "zresolution.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;

@@ -40,6 +40,7 @@
 #include "zobject3d.h"
 #include "zarbsliceviewparam.h"
 #include "flyem/zmainwindowcontroller.h"
+#include "zswctree.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {

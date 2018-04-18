@@ -1,7 +1,7 @@
 #ifndef ZSTACKBLENDER_H
 #define ZSTACKBLENDER_H
 
-#include "zstack.hxx"
+class ZStack;
 
 class ZStackBlender
 {

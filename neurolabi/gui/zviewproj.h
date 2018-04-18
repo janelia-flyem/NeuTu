@@ -61,15 +61,15 @@ public:
   /*!
    * \brief Map a point from viewport to projection area
    */
-  QPointF mapPoint(const QPoint &p);
-  QPointF mapPoint(const QPointF &p);
+  QPointF mapPoint(const QPoint &p) const;
+  QPointF mapPoint(const QPointF &p) const;
 
   /*!
    * \brief Map a point from projection to viewport
    */
-  QPoint mapPointBack(const QPointF &p);
-  QPointF mapPointBackF(const QPointF &p);
-  void mapPointBack(double *x, double *y);
+  QPoint mapPointBack(const QPointF &p) const;
+  QPointF mapPointBackF(const QPointF &p) const;
+  void mapPointBack(double *x, double *y) const;
 
   double getMaxZoomRatio() const;
   double getMinZoomRatio() const;

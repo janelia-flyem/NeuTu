@@ -413,7 +413,7 @@ void ZViewProj::setViewCenter(const QPoint &pt)
   setViewCenter(pt.x(), pt.y());
 }
 
-QPointF ZViewProj::mapPoint(const QPoint &p)
+QPointF ZViewProj::mapPoint(const QPoint &p) const
 {
   double x = (p.x() - m_x0) * m_zoom;
   double y = (p.y() - m_y0) * m_zoom;
@@ -421,7 +421,7 @@ QPointF ZViewProj::mapPoint(const QPoint &p)
   return QPointF(x, y);
 }
 
-QPointF ZViewProj::mapPoint(const QPointF &p)
+QPointF ZViewProj::mapPoint(const QPointF &p) const
 {
   double x = (p.x() - m_x0) * m_zoom;
   double y = (p.y() - m_y0) * m_zoom;
@@ -429,7 +429,7 @@ QPointF ZViewProj::mapPoint(const QPointF &p)
   return QPointF(x, y);
 }
 
-void ZViewProj::mapPointBack(double *x, double *y)
+void ZViewProj::mapPointBack(double *x, double *y) const
 {
   if (m_zoom > 0.0) {
     *x = *x / m_zoom + m_x0;
@@ -440,7 +440,7 @@ void ZViewProj::mapPointBack(double *x, double *y)
   }
 }
 
-QPointF ZViewProj::mapPointBackF(const QPointF &p)
+QPointF ZViewProj::mapPointBackF(const QPointF &p) const
 {
   if (m_zoom <= 0) {
     return QPointF(0, 0);
@@ -452,7 +452,7 @@ QPointF ZViewProj::mapPointBackF(const QPointF &p)
   return QPointF(x, y);
 }
 
-QPoint ZViewProj::mapPointBack(const QPointF &p)
+QPoint ZViewProj::mapPointBack(const QPointF &p) const
 {
   if (m_zoom <= 0) {
     return QPoint(0, 0);

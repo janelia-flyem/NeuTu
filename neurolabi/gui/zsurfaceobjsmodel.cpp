@@ -2,6 +2,7 @@
 
 #include <QFileInfo>
 
+#include "QsLog.h"
 #include "zstackdoc.h"
 #include "zcubearray.h"
 #include "zobjsitem.h"

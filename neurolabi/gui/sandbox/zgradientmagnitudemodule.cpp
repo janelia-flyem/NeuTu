@@ -11,6 +11,7 @@
 #include "mainwindow.h"
 #include "zsandbox.h"
 #include "imgproc/zstackprocessor.h"
+#include "zstack.hxx"
 
 ZGradientMagnitudeModule::ZGradientMagnitudeModule(QObject *parent) :
   ZSandboxModule(parent)

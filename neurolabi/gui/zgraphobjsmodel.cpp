@@ -2,10 +2,11 @@
 
 #include <QFileInfo>
 
+#include "neutubeconfig.h"
+#include "QsLog.h"
 #include "zstackdoc.h"
 #include "z3dgraph.h"
 #include "zobjsitem.h"
-#include "neutubeconfig.h"
 
 ZGraphObjsModel::ZGraphObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)

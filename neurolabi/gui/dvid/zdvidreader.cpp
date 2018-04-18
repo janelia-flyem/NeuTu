@@ -15,6 +15,7 @@
 
 #include "QsLog/QsLog.h"
 
+#include "zstack.hxx"
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
 #include "zswctree.h"

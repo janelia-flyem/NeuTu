@@ -9,6 +9,7 @@
 #include "zimage.h"
 #include "neutubeconfig.h"
 #include "c_stack.h"
+#include "zstack.hxx"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {

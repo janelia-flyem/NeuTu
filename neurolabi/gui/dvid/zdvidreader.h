@@ -12,8 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "zstack.hxx"
-#include "zdvidclient.h"
+//#include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zclosedcurve.h"
 #include "dvid/zdvidinfo.h"
@@ -44,6 +43,7 @@ class ZFlyEmToDoItem;
 class ZDvidRoi;
 class ZObject3dScanArray;
 class ZMesh;
+class ZStack;
 
 struct archive;
 
