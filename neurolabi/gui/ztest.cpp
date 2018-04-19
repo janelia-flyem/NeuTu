@@ -26132,5 +26132,53 @@ void ZTest::test(MainWindow *host)
   ss->save(GET_TEST_DATA_DIR + "/test.zss");
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "9524", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidNode node;
+  node.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleSource(node);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::vector<uint64_t> bodyList = {
+    5812980779, 5812980781, 5812980782
+  };
+
+  for (uint64_t bodyId : bodyList) {
+    ZObject3dScan obj;
+    reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+    if (!obj.isEmpty()) {
+      ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+      mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+      delete mesh;
+    }
+  }
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "f5bc", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZObject3dScan obj;
+  uint64_t bodyId = 1233492629;
+  reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+  if (!obj.isEmpty()) {
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+    delete mesh;
+  }
+
+#endif
+
+
   std::cout << "Done." << std::endl;
 }

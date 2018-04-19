@@ -862,7 +862,8 @@ HEADERS += mainwindow.h \
     flyem/zmainwindowcontroller.h \
     zstackdocnullmenufactory.h \
     mvc/zstackspaceconfig.h \
-    mvc/zviewspaceconfig.h
+    mvc/zviewspaceconfig.h \
+    mvc/zpositionmapper.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1509,7 +1510,8 @@ SOURCES += main.cpp \
     flyem/zmainwindowcontroller.cpp \
     zstackdocnullmenufactory.cpp \
     mvc/zstackspaceconfig.cpp \
-    mvc/zviewspaceconfig.cpp
+    mvc/zviewspaceconfig.cpp \
+    mvc/zpositionmapper.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

@@ -346,11 +346,26 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
         std::cout << "Splitting supervoxel: " << currentBodyId << std::endl;
         std::pair<uint64_t, uint64_t> idPair = writer.writeSupervoxelSplit(
               *obj, currentBodyId);
-        if (currentBodyId != idPair.first) {
+        if (currentBodyId != idPair.first) { //The current id is gone
+          bool splitRecorded = false;
+          if (!newBodyIdArray.empty()) { //Replace last id if it's invalid
+            if (currentBodyId == newBodyIdArray.back()) {
+              std::cout << "Overwrite remainder: " << currentBodyId << std::endl;
+              newBodyIdArray.back() = idPair.second;
+              newBodyIdArray.push_back(idPair.first);
+              splitRecorded = true;
+            }
+          }
+          if (!splitRecorded) {
+            newBodyIdArray.push_back(idPair.second);
+            newBodyIdArray.push_back(idPair.first);
+          }
           currentBodyId = idPair.first;
-          newBodyIdArray.push_back(currentBodyId);
         }
-        newBodyIdArray.push_back(idPair.second);
+        for (uint64_t id : newBodyIdArray) {
+          std::cout << id << " ";
+        }
+        std::cout << std::endl;
       }
     }
   }
