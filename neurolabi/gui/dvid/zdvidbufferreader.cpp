@@ -193,8 +193,6 @@ void ZDvidBufferReader::read(const QString &url, bool outputingUrl)
   m_buffer.clear();
 
 #if defined(_ENABLE_LIBDVIDCPP_)
-//  qDebug() << "Using libdvidcpp";
-
   ZDvidTarget target;
   target.setFromUrl(url.toStdString());
 

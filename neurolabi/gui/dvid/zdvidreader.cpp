@@ -1429,6 +1429,19 @@ ZStack* ZDvidReader::readGrayScaleBlock(
   return stack;
 }
 
+ZDvidSparseStack* ZDvidReader::readDvidSparseStack(
+    uint64_t bodyId, flyem::EBodyLabelType labelType) const
+{
+  ZDvidSparseStack *spStack = new ZDvidSparseStack;
+  spStack->setLabelType(labelType);
+  spStack->setDvidTarget(getDvidTarget());
+  spStack->loadBody(bodyId);
+  m_statusCode = spStack->getReadStatusCode();
+
+  return spStack;
+}
+
+/*
 ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
@@ -1438,6 +1451,7 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId) const
 
   return spStack;
 }
+*/
 
 ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const
 {
@@ -1454,9 +1468,11 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStack(uint64_t bodyId, const ZIntCu
   return spStack;
 }
 
-ZDvidSparseStack* ZDvidReader::readDvidSparseStackAsync(uint64_t bodyId) const
+ZDvidSparseStack* ZDvidReader::readDvidSparseStackAsync(
+    uint64_t bodyId, flyem::EBodyLabelType labelType) const
 {
   ZDvidSparseStack *spStack = new ZDvidSparseStack;
+  spStack->setLabelType(labelType);
   spStack->setLabel(bodyId);
   spStack->setDvidTarget(getDvidTarget());
   spStack->loadBodyAsync(bodyId);
