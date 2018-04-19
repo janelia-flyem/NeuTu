@@ -189,7 +189,7 @@ static const uint64_t LABEL_ID_SELECTION =
 
 using TProgressFunc = std::function<void(size_t, size_t)>;
 
-#if defined(_CPP11_)
+#if __cplusplus >= 201103L
 #  undef NULL
 #  define NULL nullptr
 #endif

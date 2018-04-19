@@ -2,6 +2,7 @@
 #define ZBODYSPLITCOMMAND_H
 
 #include "zcommandmodule.h"
+#include "neutube_def.h"
 
 class ZDvidReader;
 class ZStack;
@@ -26,12 +27,13 @@ private:
       const std::string inputPath, ZJsonObject &inputJson,
       std::string &splitTaskKey, std::string &splitResultKey,
       std::string &dataDir, bool &isFile);
-  std::pair<ZStack *, ZSparseStack*> parseSignalPath(
-      std::string &signalPath, const ZJsonObject &signalInfo, const std::string &dataDir,
-      bool isFile, const ZIntCuboid &range, ZStackGarbageCollector &gc);
   static void LoadSeeds(
       const ZJsonObject &inputJson, ZStackWatershedContainer &container,
       const std::string &dataDir, bool isFile);
+
+  std::pair<ZStack *, ZSparseStack*> parseSignalPath(
+      std::string &signalPath, const ZJsonObject &signalInfo, const std::string &dataDir,
+      bool isFile, const ZIntCuboid &range, ZStackGarbageCollector &gc);
   void processResult(
       ZStackWatershedContainer &container, const std::string &output,
       const std::string &splitTaskKey, const std::string &signalPath,
@@ -41,6 +43,7 @@ private:
 
 private:
   uint64_t m_bodyId = 0;
+  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
 };
 
 #endif // ZBODYSPLITCOMMAND_H
