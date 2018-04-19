@@ -342,6 +342,7 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
         uint64_t newBodyId = writer.writeSplit(*obj, currentBodyId, 0);
         newBodyIdArray.push_back(newBodyId);
       } else {
+        std::cout << "Splitting supervoxel: " << currentBodyId << std::endl;
         std::pair<uint64_t, uint64_t> idPair = writer.writeSupervoxelSplit(
               *obj, currentBodyId);
         if (currentBodyId != idPair.first) {
