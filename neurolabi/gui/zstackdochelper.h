@@ -49,6 +49,8 @@ public:
   static ZIntCuboid GetStackSpaceRange(
       const ZStackDoc *doc, neutube::EAxis sliceAxis = neutube::Z_AXIS);
 
+  static ZIntCuboid GetDataSpaceRange(const ZStackDoc *doc);
+
   static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);
   static bool HasMultipleBodySelected(
       const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type);

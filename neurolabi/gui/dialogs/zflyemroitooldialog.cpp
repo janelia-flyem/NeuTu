@@ -198,7 +198,8 @@ bool ZFlyEmRoiToolDialog::appendProject(ZFlyEmRoiProject *project)
         //project->downloadAllRoi();
         m_projectList.append(project);
         if (getDocument() != NULL) {
-          project->setDataRange(ZStackDocHelper::GetStackBox(getDocument()));
+          project->setDataRange(
+                ZStackDocHelper::GetDataSpaceRange(getDocument()));
         }
         ui->projectComboBox->addItem(project->getName().c_str());
         return true;

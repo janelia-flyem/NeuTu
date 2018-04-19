@@ -25731,8 +25731,9 @@ void ZTest::test(MainWindow *host)
 
   ZDvidReader reader;
   reader.open(target);
+#endif
 
-#if 1
+#if 0
   ZArray *array = reader.readLabels64Lowtis(
         17152, 22592, 19328, 1024, 1024, 1);
   array->printInfo();
@@ -25756,8 +25757,6 @@ void ZTest::test(MainWindow *host)
   mesh->save(GET_TEST_DATA_DIR + "/test.obj");
 
   std::cout << reader.getDvidTarget().hasCoarseSplit() << std::endl;
-#endif
-
 #endif
 
 #if 0
@@ -26071,6 +26070,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "fb02", 8900);
 
@@ -26083,6 +26083,53 @@ void ZTest::test(MainWindow *host)
                        "\"type\":\"Other\",\"user\":\"taggl\"},\"Supervoxel\":0}");
   ZDvidWriter *writer = ZGlobal::GetDvidWriter(target);
   writer->writePointAnnotation("bookmark_annotations", jsonObj);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("MB_Test");
+  ZDvidSparseStack stack;
+  stack.setDvidTarget(reader->getDvidTarget());
+  stack.loadBody(123456);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "9524", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidNode node;
+  node.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleSource(node);
+
+  ZDvidSparseStack stack;
+  stack.setDvidTarget(target);
+  stack.setLabelType(flyem::LABEL_SUPERVOXEL);
+
+  stack.loadBody(987648131);
+//  stack.loadBody(1479647609);
+
+  ZSparseStack *ss = stack.getSparseStack();
+  ss->save(GET_TEST_DATA_DIR + "/test.zss");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "9524", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidNode node;
+  node.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleSource(node);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *stack =
+      reader.readDvidSparseStack(987648131, flyem::LABEL_SUPERVOXEL);
+  ZSparseStack *ss = stack->getSparseStack();
+  ss->save(GET_TEST_DATA_DIR + "/test.zss");
 #endif
 
   std::cout << "Done." << std::endl;

@@ -131,6 +131,18 @@ ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
   return box;
 }
 
+
+ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc *doc)
+{
+  ZIntCuboid box;
+
+  if (doc->hasStack()) {
+    box = doc->getStack()->getBoundBox();
+  }
+
+  return box;
+}
+
 bool ZStackDocHelper::HasMultipleBodySelected(
     const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
 {
