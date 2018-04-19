@@ -25760,7 +25760,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
@@ -26068,6 +26068,53 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("MB_Test");
+  ZDvidSparseStack stack;
+  stack.setDvidTarget(reader->getDvidTarget());
+  stack.loadBody(123456);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "9524", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidNode node;
+  node.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleSource(node);
+
+  ZDvidSparseStack stack;
+  stack.setDvidTarget(target);
+  stack.setLabelType(flyem::LABEL_SUPERVOXEL);
+
+  stack.loadBody(987648131);
+//  stack.loadBody(1479647609);
+
+  ZSparseStack *ss = stack.getSparseStack();
+  ss->save(GET_TEST_DATA_DIR + "/test.zss");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "9524", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidNode node;
+  node.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleSource(node);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *stack =
+      reader.readDvidSparseStack(987648131, flyem::LABEL_SUPERVOXEL);
+  ZSparseStack *ss = stack->getSparseStack();
+  ss->save(GET_TEST_DATA_DIR + "/test.zss");
 #endif
 
   std::cout << "Done." << std::endl;

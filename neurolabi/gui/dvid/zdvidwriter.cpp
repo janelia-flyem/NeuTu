@@ -1244,9 +1244,9 @@ std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
     if (obj.hasKey("label")) {
       newBodyId = ZJsonParser::integerValue(obj["label"]);
       m_statusCode = 200;
-    } else if (obj.hasKey("SplitLabel")) {
-      newBodyId = ZJsonParser::integerValue(obj["SplitLabel"]);
-      remainderId = ZJsonParser::integerValue(obj["RemainLabel"]);
+    } else if (obj.hasKey("SplitSupervoxel")) {
+      newBodyId = ZJsonParser::integerValue(obj["SplitSupervoxel"]);
+      remainderId = ZJsonParser::integerValue(obj["RemainSupervoxel"]);
       m_statusCode = 200;
     }
   }

@@ -20,8 +20,8 @@ const std::string ZDvidUrl::m_coarseSupervoxelCommand = "sparsevol-coarse"; //Te
 const std::string ZDvidUrl::m_infoCommand = "info";
 const std::string ZDvidUrl::m_splitCommand = "split";
 const std::string ZDvidUrl::m_coarseSplitCommand = "split-coarse";
-const std::string ZDvidUrl::m_splitSupervoxelCommand= "split"; //Temporary mockup
-//const std::string ZDvidUrl::m_splitSuperVoxelCommand= "split-supervoxel";
+//const std::string ZDvidUrl::m_splitSupervoxelCommand= "split"; //Temporary mockup
+const std::string ZDvidUrl::m_splitSupervoxelCommand = "split-supervoxel";
 const std::string ZDvidUrl::m_labelCommand = "label";
 const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
@@ -231,6 +231,7 @@ std::string ZDvidUrl::getSupervoxelUrl(
 {
   ZString str;
   str.appendNumber(bodyId);
+  str += "?supervoxels=true";
 
   return GetFullUrl(getSupervoxelUrl(dataName), str);
 }
@@ -549,6 +550,7 @@ std::string ZDvidUrl::getCoarseSupervoxelUrl(
 
   ZString str;
   str.appendNumber(bodyId);
+  str += "?supervoxels=true";
 
   return GetFullUrl(getCoarseSupervoxelUrl(dataName), str);
 }
