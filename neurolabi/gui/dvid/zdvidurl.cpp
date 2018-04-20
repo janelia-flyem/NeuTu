@@ -1134,6 +1134,16 @@ std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
   return url;
 }
 
+std::string ZDvidUrl::getLocalSupervoxelIdUrl(int x, int y, int z) const
+{
+  std::string url = getLocalBodyIdUrl(x, y, z);
+  if (!url.empty()) {
+    url += "?supervoxels=true";
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 {
   return GetFullUrl(getLabels64Url(), m_labelArrayCommand);
@@ -1206,12 +1216,13 @@ std::string ZDvidUrl::getAnnotationUrl(
   std::string url = getAnnotationUrl(dataName);
 
   if (!url.empty()) {
-    if (m_dvidTarget.getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
-      url = getAnnotationUrl(dataName, ZDvid::GetBodyIdTag(label));
-    } else {
+    if (m_dvidTarget.isSegmentationSyncable()) {
       std::ostringstream stream;
       stream << label;
       url += "/" + m_annotationLabelCommand + "/" + stream.str();
+    } else {
+      //A workaround for syncing to labelmap (temporary solution)
+      url = getAnnotationUrl(dataName, ZDvid::GetBodyIdTag(label));
     }
   }
 

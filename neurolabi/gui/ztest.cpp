@@ -25731,8 +25731,9 @@ void ZTest::test(MainWindow *host)
 
   ZDvidReader reader;
   reader.open(target);
+#endif
 
-#if 1
+#if 0
   ZArray *array = reader.readLabels64Lowtis(
         17152, 22592, 19328, 1024, 1024, 1);
   array->printInfo();
@@ -25756,8 +25757,6 @@ void ZTest::test(MainWindow *host)
   mesh->save(GET_TEST_DATA_DIR + "/test.obj");
 
   std::cout << reader.getDvidTarget().hasCoarseSplit() << std::endl;
-#endif
-
 #endif
 
 #if 0
@@ -25892,7 +25891,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
+#if 1
   ZDvidTarget target;
   target.setFromUrl("http://emdata2.int.janelia.org:8700/api/node/0667");
   target.setSegmentationName("segmentation");
@@ -26071,6 +26070,22 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "fb02", 8900);
+
+  ZJsonObject jsonObj;
+  jsonObj.decodeString("{\"Pos\":[23620,30590,20736],\"Kind\":\"Note\","
+                       "\"Tags\":[\"user:taggl\"],"
+                       "\"Prop\":{\"body ID\":\"1144018233\","
+                       "\"comment\":\"Interesting Contralateral Neuron \","
+                       "\"custom\":\"1\",\"status\":\"\",\"time\":\"\","
+                       "\"type\":\"Other\",\"user\":\"taggl\"},\"Supervoxel\":0}");
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter(target);
+  writer->writePointAnnotation("bookmark_annotations", jsonObj);
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetDvidReader("MB_Test");
   ZDvidSparseStack stack;
   stack.setDvidTarget(reader->getDvidTarget());
@@ -26116,6 +26131,55 @@ void ZTest::test(MainWindow *host)
   ZSparseStack *ss = stack->getSparseStack();
   ss->save(GET_TEST_DATA_DIR + "/test.zss");
 #endif
+
+#if 0
+  {
+    ZDvidTarget target;
+    target.set("emdata2.int.janelia.org", "9524", 8700);
+    target.setSegmentationName("segmentation");
+    target.setGrayScaleName("grayscalejpeg");
+
+    ZDvidNode node;
+    node.set("emdata3.int.janelia.org", "a89e", 8600);
+    target.setGrayScaleSource(node);
+
+    ZDvidReader reader;
+    reader.open(target);
+
+    std::vector<uint64_t> bodyList = {
+      5812980925, 5812980927, 5812980928
+    };
+
+    for (uint64_t bodyId : bodyList) {
+      ZObject3dScan obj;
+      reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+      if (!obj.isEmpty()) {
+        ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+        mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+        delete mesh;
+      }
+    }
+  }
+
+  {
+    ZDvidTarget target;
+    target.set("emdata2.int.janelia.org", "f5bc", 8700);
+    target.setSegmentationName("segmentation");
+    target.setGrayScaleName("grayscalejpeg");
+
+    ZDvidReader reader;
+    reader.open(target);
+    ZObject3dScan obj;
+    uint64_t bodyId = 1388969101;
+    reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+    if (!obj.isEmpty()) {
+      ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+      mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+      delete mesh;
+    }
+  }
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

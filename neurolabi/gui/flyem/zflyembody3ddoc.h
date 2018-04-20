@@ -168,7 +168,8 @@ public:
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
   void addTodo(int x, int y, int z, bool checked, uint64_t bodyId);
-  void addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
+  void addTosplit(int x, int y, int z, bool checked, uint64_t bodyId);
+  bool addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
   void addTodoSliently(const ZFlyEmToDoItem &item);
   void addTodo(const QList<ZFlyEmToDoItem> &itemList);
   void updateSegmentation();
@@ -278,7 +279,9 @@ public:
   void makeAction(ZActionFactory::EAction item) override;
 
 public:
-  void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
+  void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  ZFlyEmToDoItem::EToDoAction action,
+      uint64_t bodyId);
   void executeRemoveTodoCommand();
 
 public:
