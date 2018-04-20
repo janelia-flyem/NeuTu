@@ -58,7 +58,6 @@ private slots:
     void onExitButton();
     void onCompleteButton();
     void onRefreshButton();
-    void onDetailsButton();
     void onDoubleClickSitesTable(QModelIndex index);    
     void onModeChanged(QString item);
 
@@ -115,6 +114,7 @@ private:
     QColor getColor(int index);
     bool isFinished(ZIntPoint point);
     void refreshData(bool unfinishCurrent);
+    void updateSiteListLabel();
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H
