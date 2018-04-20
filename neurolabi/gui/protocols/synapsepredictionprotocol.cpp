@@ -63,7 +63,6 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
 
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->finishCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onFinishCurrentButton()));
-    connect(ui->detailsButton, SIGNAL(clicked(bool)), this, SLOT(onDetailsButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
@@ -168,6 +167,7 @@ bool SynapsePredictionProtocol::initialize() {
     // generate pending/finished lists from user input
     // throw this into a thread?
     loadInitialSynapseList();
+    updateSiteListLabel();
 
     // get started
     onFirstButton();
@@ -369,28 +369,6 @@ void SynapsePredictionProtocol::refreshData(bool unfinishCurrent) {
     updateLabels();
 }
 
-void SynapsePredictionProtocol::onDetailsButton() {
-    QString message = "Synapses come from ";
-    if (m_variation == VARIATION_REGION) {
-        message += "region between ";
-        message += QString::fromStdString(m_protocolRange.getFirstCorner().toString());
-        message += " and ";
-        message += QString::fromStdString(m_protocolRange.getLastCorner().toString());
-    } else if (m_variation == VARIATION_BODY) {
-        message += "body ";
-        message += QString::number(m_bodyID);
-    } else {
-        variationError(m_variation);
-    }
-
-    QMessageBox mb;
-    mb.setText("Protocol details");
-    mb.setInformativeText(message);
-    mb.setStandardButtons(QMessageBox::Ok);
-    mb.setDefaultButton(QMessageBox::Ok);
-    mb.exec();
-}
-
 void SynapsePredictionProtocol::onExitButton() {
     // restore original color map
     disableProtocolColorMap();
@@ -545,6 +523,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     }
 
     enableProtocolColorMap();
+    updateSiteListLabel();
     onFirstButton();
 }
 
@@ -672,6 +651,22 @@ void SynapsePredictionProtocol::moveSynapse(
   }
 }
 
+void SynapsePredictionProtocol::updateSiteListLabel() {
+    QString message = "Site list: ";
+    if (m_variation == VARIATION_REGION) {
+        message += "T-bars within ";
+        message += QString::fromStdString(m_protocolRange.getFirstCorner().toString());
+        message += " to ";
+        message += QString::fromStdString(m_protocolRange.getLastCorner().toString());
+    } else if (m_variation == VARIATION_BODY) {
+        message += "T-bars on body ";
+        message += QString::number(m_bodyID);
+    } else {
+        variationError(m_variation);
+    }
+    ui->siteListLabel->setText(message);
+}
+
 void SynapsePredictionProtocol::updateLabels() {
     // currently we update all labels here while calling methods
     //  to do the table and color map
@@ -751,8 +746,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     reader.setVerbose(false);
     if (reader.open(m_dvidTarget)) {
 
-        // QProgressDialog progressDialog("Operation in progress", "Cancel", 0, 100, this);
-        QProgressDialog progressDialog("Operation in progress", 0, 0, 100, this);
+        QProgressDialog progressDialog("Loading synapses...", 0, 0, 100, this);
         progressDialog.setWindowModality(Qt::WindowModal);
         progressDialog.setMinimumDuration(1000);
         progressDialog.setValue(20);
