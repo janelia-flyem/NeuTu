@@ -2937,7 +2937,7 @@ void ZStackView::processViewChange(bool redrawing)
 
 void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 {
-  if (!isViewChangeEventBlocked()) {
+  if (!isViewChangeEventBlocked() && isVisible()) {
 //    ZStackViewParam param = getViewParameter(neutube::COORD_STACK);
     QSet<ZStackObject::ETarget> targetSet = updateViewData();
 
@@ -2949,35 +2949,33 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
 //    updateNewTileCanvas();
 
     if (redrawing) {
+      if (depthChanged) {
+        targetSet.insert(ZStackObject::TARGET_OBJECT_CANVAS);
+        targetSet.insert(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
+        paintStackBuffer();
+      }
 
       for (QSet<ZStackObject::ETarget>::const_iterator iter = targetSet.begin();
            iter != targetSet.end(); ++iter) {
         paintObjectBuffer(*iter);
       }
 
+      /*
       if (depthChanged) {
         if (!targetSet.contains(ZStackObject::TARGET_OBJECT_CANVAS)) {
           paintObjectBuffer();
         }
+        if (!targetSet.contains(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS)) {
+          paintDynamicObjectBuffer();
+        }
       }
 
-      paintDynamicObjectBuffer();
 
       if (depthChanged) {
         paintStackBuffer();
       }
+            */
     }
-
-#ifdef _DEBUG_2
-//    updateActiveDecorationCanvas();
-//    updateNewTileCanvas();
-
-
-    if (!isViewChangeEventBlocked()) {
-//      emit viewChanged(param);
-    }
-    paintObjectBuffer(ZStackObject::TARGET_TILE_CANVAS);
-#endif
 
     notifyViewChanged(getViewParameter()); //?
   }

@@ -46,6 +46,20 @@ void Z3DPickingManager::deregisterObject(const void* obj)
   m_objectToColor.erase(obj);
 }
 
+/*
+void Z3DPickingManager::deregisterObject(
+    const std::vector<Swc_Tree_Node *> &nodeList)
+{
+  std::vector<glm::col4> colList(nodeList.size());
+  for (size_t i = 0; i < nodeList.size(); ++i) {
+    colList[i] = colorOfObject(nodeList[i]);
+  }
+
+  m_colorToObject.erase(colList.begin(), colList.end());
+  m_objectToColor.erase(nodeList.begin(), nodeList.end());
+}
+*/
+
 void Z3DPickingManager::deregisterObject(const glm::col4& col)
 {
   const void* obj = objectOfColor(col);

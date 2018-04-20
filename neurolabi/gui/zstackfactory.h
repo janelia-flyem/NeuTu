@@ -67,7 +67,7 @@ public:
   static ZStack* MakeBinaryStack(const ZObject3dScanArray &objArray, int v = 1);
   static ZStack* MakeColorStack(const ZObject3dScanArray &objArray);
 
-  static ZStack* MakeLabelStack(ZSwcTree *obj, int v);
+//  static ZStack* MakeLabelStack(ZSwcTree *obj, int v);
 
   /*!
    * \brief Only support GREY data

@@ -344,11 +344,26 @@ void TaskProtocolWindow::onBodiesUpdated() {
   updateBodyWindow();
 }
 
-void TaskProtocolWindow::onCompletedStateChanged(int /*state*/) {
+namespace {
+  struct BlockSignals
+  {
+    BlockSignals(QObject *o) : m_o(o) { m_blocked = o->blockSignals(true); }
+    ~BlockSignals() { m_o->blockSignals(m_blocked); }
+    QObject *m_o;
+    bool m_blocked;
+  };
+}
+
+void TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
-        m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
-        saveState();
-        updateLabel();
+      if (!state || m_taskList[m_currentTaskIndex]->allowCompletion()) {
+          m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
+          saveState();
+          updateLabel();
+      } else {
+        BlockSignals blockCallingThisAgain(ui->completedCheckBox);
+        ui->completedCheckBox->setCheckState(Qt::Unchecked);
+      }
     }
 }
 

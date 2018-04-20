@@ -11,6 +11,15 @@
   },
   "dvid repo": [
     {
+      "name": "#profile#",
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "7abe",
+      "segmentation": "segmentation2",
+      "multires_tile": "graytiles",
+      "comment": "2d merge"
+    },
+    {
       "address": "hackathon.janelia.org",
       "uuid": "2a3",
       "name": "FIB25-Hackathon",

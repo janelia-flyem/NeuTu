@@ -2,6 +2,7 @@
 #define ZDVIDNODE_H
 
 #include <string>
+#include <vector>
 
 class ZJsonObject;
 
@@ -18,15 +19,19 @@ public:
   void setUuid(const std::string &uuid);
   void setPort(int port);
 
+  void setMock(bool on);
+  bool isMock() const;
+
   /*!
    * \brief Set dvid target from source string
    *
    * The old settings will be cleared no matter what. The source string is
-   * http:address:port:uuid.
+   * http:address:port:uuid, with tokens separated by colons.
    *
    * \param sourceString Must start with "http:".
    */
   void setFromSourceString(const std::string &sourceString);
+  bool setFromSourceToken(const std::vector<std::string> &tokens);
 
   void setFromUrl(const std::string &url);
 
@@ -95,6 +100,7 @@ private:
   std::string m_address;
   std::string m_uuid;
   int m_port;
+  bool m_isMocked = false; //Mocked node if true
 
   const static char* m_addressKey;
   const static char* m_portKey;

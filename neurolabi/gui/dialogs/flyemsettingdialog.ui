@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>501</width>
-    <height>354</height>
+    <height>358</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -202,6 +202,13 @@
       <widget class="QCheckBox" name="parallelTileCheckBox">
        <property name="text">
         <string>Parallell tile fetching</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="prefetchCheckBox">
+       <property name="text">
+        <string>Lowtis Prefetching</string>
        </property>
       </widget>
      </item>

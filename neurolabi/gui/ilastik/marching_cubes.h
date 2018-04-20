@@ -34,13 +34,18 @@ struct Triangle
 struct Mesh
 {
 	size_t vertexCount;
-	Point* vertices;
+    Point* vertices = NULL;
     Point* normals = NULL;
 	size_t faceCount;
-	size_t* faces;
+    size_t* faces = NULL;
 
 	Mesh(size_t, Point*, Point*, size_t, size_t*);
 	Mesh();
+    ~Mesh() {
+      delete []vertices;
+      delete []normals;
+      delete []faces;
+    }
 };
 
 /**

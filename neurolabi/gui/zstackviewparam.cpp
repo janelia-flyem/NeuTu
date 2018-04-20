@@ -61,6 +61,12 @@ void ZStackViewParam::setViewPort(const QRect &rect)
   m_viewProj.setViewPort(rect);
 }
 
+void ZStackViewParam::setViewPort(const QRect &rect, int z)
+{
+  setViewPort(rect);
+  setZ(z);
+}
+
 void ZStackViewParam::setWidgetRect(const QRect &rect)
 {
   m_viewProj.setWidgetRect(rect);
@@ -181,9 +187,10 @@ int ZStackViewParam::getZoomLevel(int maxLevel) const
   }
 
   int scale = pow(2, zoom);
-  if (getViewPort().width() * getViewPort().height() /
+  while (getViewPort().width() * getViewPort().height() /
       scale / scale > 1024 * 1024) {
     zoom += 1;
+    scale = pow(2, zoom);
   }
 
   if (zoom > maxLevel) {

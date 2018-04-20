@@ -24,6 +24,7 @@
 #include "dvid/zdvidpath.h"
 #include "zstackgarbagecollector.h"
 #include "dvid/zdvidsparsestack.h"
+#include "zswctree.h"
 
 ZBodySplitCommand::ZBodySplitCommand()
 {
@@ -80,7 +81,7 @@ ZBodySplitCommand::parseSignalPath(
       reader.open(target);
       if (reader.isReady()) {
         ZDvidSparseStack *dvidStack =
-            dvidStack = reader.readDvidSparseStack(m_bodyId);
+            dvidStack = reader.readDvidSparseStack(m_bodyId, m_labelType);
         spStack = dvidStack->getSparseStack(range);
         gc.registerObject(dvidStack);
       }
@@ -184,26 +185,11 @@ int ZBodySplitCommand::run(
     commitPath = ZJsonParser::stringValue(config["commit_path"]);
   }
 
-#if 0
-  if (config.hasKey("output")) {
-    //Temporary design of output mode:
-    //  "file": output to file for testing purpose
-    //  "server": saving results to the task server
-    //  "commit": committing to dvid (target: signal path)
-    //  "commit_out": committing to dvid (target: output)
-    std::string outputMode = ZJsonParser::stringValue(config["output"]);
-    if (outputMode == "file") {
-      testing = true;
-    } else if (outputMode == "server") {
-      testing = false;
-    } else if (outputMode == "commit") {
-      testing = false;
-      commiting = true;
-
+  if (config.hasKey("supervoxel")) {
+    if (ZJsonParser::booleanValue(config["supervoxel"]) == true) {
+      m_labelType = flyem::LABEL_SUPERVOXEL;
     }
   }
-#endif
-
 
   ZJsonObject signalInfo;
   const char *signalInfoKey = "signal info";
@@ -334,8 +320,6 @@ void ZBodySplitCommand::LoadSeeds(
         }
         container.addSeed(tree);
       }
-//        ZStack *seedStack = obj.toStackObject(label);
-//        seedMask.push_back(seedStack);
     } else if (seedJson.hasKey("stroke")) {
       ZStroke2d stroke;
       stroke.loadJsonObject(seedJson);
@@ -352,16 +336,44 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
     ZObject3dScanArray *objArray, ZDvidWriter &writer)
 {
   std::vector<uint64_t> newBodyIdArray;
-  if (m_bodyId > 0) {
+  uint64_t currentBodyId = m_bodyId;
+  if (currentBodyId > 0) {
     for (ZObject3dScan *obj : *objArray) {
-      uint64_t newBodyId = writer.writeSplit(*obj, m_bodyId, 0);
-      newBodyIdArray.push_back(newBodyId);
+      if (m_labelType == flyem::LABEL_BODY) {
+        uint64_t newBodyId = writer.writeSplit(*obj, currentBodyId, 0);
+        newBodyIdArray.push_back(newBodyId);
+      } else {
+        std::cout << "Splitting supervoxel: " << currentBodyId << std::endl;
+        std::pair<uint64_t, uint64_t> idPair = writer.writeSupervoxelSplit(
+              *obj, currentBodyId);
+        if (currentBodyId != idPair.first) { //The current id is gone
+          bool splitRecorded = false;
+          if (!newBodyIdArray.empty()) { //Replace last id if it's invalid
+            if (currentBodyId == newBodyIdArray.back()) {
+              std::cout << "Overwrite remainder: " << currentBodyId << std::endl;
+              newBodyIdArray.back() = idPair.second;
+              newBodyIdArray.push_back(idPair.first);
+              splitRecorded = true;
+            }
+          }
+          if (!splitRecorded) {
+            newBodyIdArray.push_back(idPair.second);
+            newBodyIdArray.push_back(idPair.first);
+          }
+          currentBodyId = idPair.first;
+        }
+        for (uint64_t id : newBodyIdArray) {
+          std::cout << id << " ";
+        }
+        std::cout << std::endl;
+      }
     }
   }
   return newBodyIdArray;
 }
 
-void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const std::string &output,
+void ZBodySplitCommand::processResult(
+    ZStackWatershedContainer &container, const std::string &output,
     const std::string &splitTaskKey, const std::string &/*signalPath*/,
     bool committing, const std::string &commitPath)
 {
@@ -391,6 +403,8 @@ void ZBodySplitCommand::processResult(ZStackWatershedContainer &container, const
               ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
         resultJson.setEntry(
               "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
+        std::cout << "Writing result summary to " << refPath.toStdString()
+                  << std::endl;
         writer->writeJson(refPath.toStdString(), resultJson);
       } else {
         for (ZObject3dScanArray::const_iterator iter = result->begin();

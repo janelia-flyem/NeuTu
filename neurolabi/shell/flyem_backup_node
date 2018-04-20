@@ -1,30 +1,25 @@
 #!/bin/bash
 
-if [ $# -lt 2 ]
+if [ $# -lt 4 ]
 then
-  echo './flyem_backup_node <address> <node> [<name>]'
+  echo './flyem_backup_node <address> <node> <name> <note>'
   exit
 fi
 
 address=$1
+if [[ $address != http://* ]]
+then
+  address="http://$address"
+fi
+
+
 node=$2
+name=$3
+note=$4
 
-name=Production
-if [ $# -ge 3 ]
-then
-  name=$3
-fi
-
-log=""
-if [ $# -ge 4 ]
-then
-  log=$4
-fi
-
-
-http POST http://$address/api/node/$node/commit log="[\"locked for backup\"]"
-date=`date`
-http POST http://$address/api/node/$node/branch branch="$name" 
+#http POST http://$address/api/node/$node/commit log="[\"locked for backup\"]"
+#date=`date`
+http POST http://$address/api/node/$node/branch branch="$name" note="$note" 
 
 
  

@@ -12,6 +12,7 @@ class ZStackDoc;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
 class ZColorLabel;
+class ZFlyEmProofMvc;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -71,6 +72,7 @@ public slots:
 //  void updateUserBookmarkTable(ZStackDoc *doc);
 //  void removeBookmarkFromTable(ZFlyEmBookmark *bookmark);
   void updateLatency(int t);
+  void updateWidget(ZFlyEmProofMvc *mvc);
 
 private slots:
   void setSegmentSize();

@@ -131,6 +131,15 @@ bool ZJsonParser::booleanValue(const json_t *value)
   return false;
 }
 
+bool ZJsonParser::booleanValue(const json_t *value, bool defaultValue)
+{
+  if (isBoolean(value)) {
+    return booleanValue(value);
+  }
+
+  return defaultValue;
+}
+
 const char* ZJsonParser::stringValue(const json_t *value, size_t index)
 {
   return stringValue(arrayValue(value, index));

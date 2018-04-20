@@ -6,6 +6,9 @@ ZNeu3SliceViewDialog::ZNeu3SliceViewDialog(QWidget *parent) :
   ui(new Ui::ZNeu3SliceViewDialog)
 {
   ui->setupUi(this);
+#if !defined(_USE_WEBENGINE_)
+  ui->neuroglancerRadioButton->hide();
+#endif
 }
 
 ZNeu3SliceViewDialog::~ZNeu3SliceViewDialog()
@@ -19,6 +22,8 @@ Neu3Window::EBrowseMode ZNeu3SliceViewDialog::getBrowseMode() const
     return Neu3Window::BROWSE_NATIVE;
   } else if (ui->neuroglancerRadioButton->isChecked()) {
     return Neu3Window::BROWSE_NEUROGLANCER;
+  } else if (ui->extNeuroglancerRadioButton->isChecked()) {
+    return Neu3Window::BROWSE_NEUROGLANCER_EXT;
   }
 
   return Neu3Window::BROWSE_NONE;

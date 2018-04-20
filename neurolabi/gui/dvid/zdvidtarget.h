@@ -31,7 +31,7 @@ public:
   /*!
    * \brief Set dvid target from source string
    *
-   * The old settings will be cleared no matter what.
+   * The old settings will be cleared after the call.
    *
    * \param sourceString Format: http:host:port:node:segmentation_name.
    */
@@ -40,6 +40,8 @@ public:
 
   /*!
    * \brief Set dvid target from source string
+   *
+   * The old settings will be cleared after the call.
    *
    * \param sourceString Format: http:host:port:node:<dataType>_name.
    */
@@ -147,6 +149,9 @@ public:
   ZJsonObject toDvidDataSetting() const;
 
   void print() const;
+
+  void setMock(bool on);
+  bool isMock() const;
 
   //Special functions
   inline const std::string& getLocalFolder() const {
@@ -309,7 +314,7 @@ public:
   }
 
   void setSourceConfig(const ZJsonObject &config);
-  const ZJsonObject& getSourceConfig() const;
+  ZJsonObject getSourceConfigJson() const;
 
   /*!
    * \brief Set dvid source of grayscale data
@@ -327,10 +332,28 @@ public:
   ZDvidNode getTileSource() const;
   ZDvidTarget getGrayScaleTarget() const;
 
+  static bool Test();
+
 private:
   void init();
   void setSource(const char *key, const ZDvidNode &node);
   ZDvidNode getSource(const char *key) const;
+
+  class TileConfig {
+  public:
+    TileConfig() {}
+    void loadJsonObject(const ZJsonObject &jsonObj);
+    void setLowQuality(bool on) {
+      m_lowQuality = on;
+    }
+    bool isLowQuality() const {
+      return m_lowQuality;
+    }
+    ZJsonObject toJsonObject() const;
+
+  private:
+    bool m_lowQuality = false;
+  };
 
 public:
   const static char* m_commentKey;
@@ -356,23 +379,29 @@ public:
   const static char* m_synapseLabelszKey;
   const static char* m_todoListNameKey;
   const static char* m_sourceConfigKey;
+  const static char* m_proofreadingKey;
 
 private:
   ZDvidNode m_node;
   std::string m_name;
   std::string m_comment;
   std::string m_localFolder;
+
   std::string m_bodyLabelName;
   std::string m_segmentationName;
   std::string m_multiscale2dName; //default lossless tile name
-  ZJsonObject m_tileConfig; //used when m_multiscale2dName is empty
-  ZJsonObject m_sourceConfig;
   std::string m_grayScaleName;
   std::string m_synapseLabelszName;
   std::string m_roiName;
   std::string m_todoListName;
   std::vector<std::string> m_roiList;
   std::string m_synapseName;
+
+  std::map<std::string, TileConfig> m_tileConfig; //used when m_multiscale2dName is empty
+//  ZJsonObject m_tileConfig;
+  std::map<std::string, ZDvidNode> m_sourceConfig;
+//  ZJsonObject m_sourceConfig;
+
   std::set<std::string> m_userList;
   bool m_isSupervised;
   std::string m_supervisorServer;

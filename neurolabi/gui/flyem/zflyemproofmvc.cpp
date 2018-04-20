@@ -89,6 +89,8 @@
 #include "dialogs/zflyemmergeuploaddialog.h"
 #include "zmeshfactory.h"
 #include "z3dwindow.h"
+#include "zflyemproofmvccontroller.h"
+#include "zstackdochelper.h"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -176,6 +178,10 @@ void ZFlyEmProofMvc::init()
 
   m_dvidDlg = ZDialogFactory::makeDvidDialog(this);
 //  m_testTimer = new QTimer(this);
+
+  m_profileTimer = new QTimer(this);
+  m_profileTimer->setSingleShot(true);
+  connect(m_profileTimer, SIGNAL(timeout()), this, SLOT(endTestTask()));
 
 #ifdef _DEBUG_
 //  connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testSlot()));
@@ -1458,7 +1464,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     return;
   }
 
-  exitCurrentDoc();
+//  exitCurrentDoc();
 
   clear();
   getProgressSignal()->advanceProgress(0.1);
@@ -1573,6 +1579,112 @@ void ZFlyEmProofMvc::updateContrast()
     te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
     te->enhanceContrast(getCompletePresenter()->highTileContrast());
   }
+}
+
+void ZFlyEmProofMvc::profile()
+{
+  getProgressSignal()->startProgress("Loading data ...");
+  const ZDvidTarget &target = getDvidDialog()->getDvidTarget("#profile#");
+  if (target.isValid()) {
+    setDvidTarget(target);
+  }
+  getProgressSignal()->endProgress();
+
+  if (getDvidTarget().isValid()) {
+    startMergeProfile();
+  }
+}
+
+void ZFlyEmProofMvc::startTestTask(const std::string &taskKey)
+{
+  if (ZFlyEmMisc::IsTaskOpen(QString::fromStdString(taskKey))) {
+    m_taskKey = taskKey;
+    ZJsonObject config = ZFlyEmMisc::GetTaskReader()->readTestTask(taskKey);
+    startTestTask(config);
+  }
+}
+
+void ZFlyEmProofMvc::startTestTask(const ZJsonObject &config)
+{
+  if (config.hasKey("dvid")) {
+    ZDvidTarget target;
+    target.loadJsonObject(ZJsonObject(config.value("dvid")));
+    if (target.isValid()) {
+      ZFlyEmProofMvcController::DisableSequencer(this);
+
+      getProgressSignal()->startProgress("Loading data ...");
+      setDvidTarget(target);
+      getProgressSignal()->endProgress();
+
+      if (config.hasKey("type")) {
+        std::string taskType = ZJsonParser::stringValue(config["type"]);
+        if (taskType == "2d merge") {
+          ZFlyEmProofMvcController::Disable3DVisualization(this);
+        } else if (taskType == "3d merge") {
+          showFineBody3d();
+        }
+      }
+
+      uint64_t bodyId = ZJsonParser::integerValue(config["body ID"]);
+      int t = ZJsonParser::integerValue(config["time"]);
+      startMergeProfile(bodyId, t);
+    } else {
+      emit ZWidgetMessage("Invalid dvid env", neutube::MSG_WARNING);
+    }
+  }
+}
+
+void ZFlyEmProofMvc::startMergeProfile(const uint64_t bodyId, int msec)
+{
+  emit messageGenerated(
+        ZWidgetMessage(QString("Start merge profiling: %1 in %2msec").
+                       arg(bodyId).arg(msec)));
+  clearBodyMergeStage();
+  ZFlyEmProofMvcController::GoToBody(this, bodyId);
+  ZFlyEmProofMvcController::EnableHighlightMode(this);
+
+  emit messageGenerated(
+        ZWidgetMessage(
+          "Please trace the selected body until the time is up. Ready?",
+          neutube::MSG_INFORMATION, ZWidgetMessage::TARGET_DIALOG));
+  m_profileTimer->start(msec);
+}
+
+void ZFlyEmProofMvc::startMergeProfile()
+{
+  startMergeProfile(29783151, 60000);
+}
+
+void ZFlyEmProofMvc::endTestTask()
+{
+  endMergeProfile();
+
+  //Saving results
+  ZJsonArray array = getCompleteDocument()->getMergeOperation();
+  ZJsonObject config = ZFlyEmMisc::GetTaskReader()->readTestTask(m_taskKey);
+  std::cout << array.toString() << std::endl;
+  config.setEntry("merge", array);
+  std::cout << config.dumpString(2) << std::endl;
+
+  ZFlyEmMisc::GetTaskWriter()->writeTestResult(m_taskKey, config);
+
+  m_taskKey.clear();
+  emit messageGenerated(
+        ZWidgetMessage(
+          "Time is up. Thank you for doing the experiment!",
+          neutube::MSG_INFORMATION, ZWidgetMessage::TARGET_DIALOG));
+  ZFlyEmProofMvcController::Close(this);
+}
+
+void ZFlyEmProofMvc::endMergeProfile()
+{
+  emit messageGenerated(
+        ZWidgetMessage("End merge profiling"));
+  mergeSelected();
+
+//  mergeSelected();
+//  getCompleteDocument()->saveMergeOperation();
+
 }
 
 void ZFlyEmProofMvc::diagnose()
@@ -1781,8 +1893,8 @@ void ZFlyEmProofMvc::customInit()
 
   connect(getCompletePresenter(), SIGNAL(selectingBodyAt(int,int,int)),
           this, SLOT(xorSelectionAt(int, int, int)));
-  connect(getCompletePresenter(), SIGNAL(deselectingAllBody()),
-          this, SLOT(deselectAllBody()));
+  connect(getCompletePresenter(), SIGNAL(deselectingAllBody(bool)),
+          this, SLOT(deselectAllBody(bool)));
   connect(getCompletePresenter(), SIGNAL(runningSplit()), this, SLOT(runSplit()));
   connect(getCompletePresenter(), SIGNAL(runningFullSplit()),
           this, SLOT(runFullSplit()));
@@ -2276,6 +2388,17 @@ uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
   }
 
   return bodyId;
+}
+
+void ZFlyEmProofMvc::notifyStateUpdate()
+{
+  emit stateUpdated(this);
+}
+
+void ZFlyEmProofMvc::disableSequencer()
+{
+  disconnect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+             m_bodyInfoDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
 }
 
 void ZFlyEmProofMvc::testBodySplit()
@@ -2979,8 +3102,6 @@ void ZFlyEmProofMvc::exportSelectedBody()
     if (slice != NULL) {
       std::set<uint64_t> idSet =
           slice->getSelected(neutube::BODY_LABEL_ORIGINAL);
-//      std::set<uint64_t> idSet =
-//          m_mergeProject.getSelection(neutube::BODY_LABEL_ORIGINAL);
       ZObject3dScan obj;
 
       ZDvidReader &reader = getCompleteDocument()->getDvidReader();
@@ -3985,24 +4106,24 @@ void ZFlyEmProofMvc::xorSelectionAt(int x, int y, int z)
   }
 }
 
-void ZFlyEmProofMvc::deselectAllBody()
+void ZFlyEmProofMvc::deselectAllBody(bool asking)
 {
   ZDvidReader &reader = getCompleteDocument()->getDvidReader();
   if (reader.isReady()) {
 //    ZDvidLabelSlice *slice = getDvidLabelSlice();
-    QList<ZDvidLabelSlice*> sliceList =
-        getCompleteDocument()->getDvidLabelSliceList();
-    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-         iter != sliceList.end(); ++iter) {
-      ZDvidLabelSlice *slice = *iter;
-      if (slice != NULL) {
-        slice->recordSelection();
-        slice->deselectAll();
-        slice->processSelection();
+    if (ZStackDocHelper::HasBodySelected(getCompleteDocument())) {
+      bool ahead = true;
+      if (asking) {
+        ahead = ZDialogFactory::Ask(
+            "Clear Body Selection",
+            "<p>Do you want to deselect all bodies?</p> "
+            "<p><font color = \"#007700\">Hint: Use Shift+C to avoid this dialog.</font></p>",
+            this);
+      }
+      if (ahead) {
+        ZStackDocHelper::ClearBodySelection(getCompleteDocument());
       }
     }
-//    updateBodySelection();
-    getCompleteDocument()->notifyBodySelectionChanged();
   }
 }
 

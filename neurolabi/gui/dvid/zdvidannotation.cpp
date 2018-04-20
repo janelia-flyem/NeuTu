@@ -1,6 +1,7 @@
 #include "zdvidannotation.h"
 
 #include <cmath>
+#include <sstream>
 #include <QColor>
 
 #include "tz_math.h"
@@ -11,6 +12,7 @@
 #include "c_json.h"
 #include "zcuboid.h"
 #include "zresolution.h"
+#include "zdvidutil.h"
 
 ZDvidAnnotation::ZDvidAnnotation()
 {
@@ -449,6 +451,11 @@ void ZDvidAnnotation::addTag(const std::string &tag)
   if (!tag.empty()) {
     m_tagSet.insert(tag);
   }
+}
+
+void ZDvidAnnotation::addBodyIdTag()
+{
+  addTag(ZDvid::GetBodyIdTag(getBodyId()));
 }
 
 void ZDvidAnnotation::removeTag(const std::string &tag)
