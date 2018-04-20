@@ -6,8 +6,9 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "neu3window.h"
-#include "z3dmeshfilter.h"
+#include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
+#include "z3dmeshfilter.h"
 #include "z3dwindow.h"
 
 #include <iostream>
@@ -402,7 +403,7 @@ void TaskBodyCleave::onShowBodyChanged(int state)
   std::set<uint64_t> bodiesForIndex;
   bodiesForCleaveIndex(bodiesForIndex, chosenCleaveIndex(), true);
 
-  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
     if (bodiesForIndex.find(mesh->getLabel()) != bodiesForIndex.end()) {
@@ -857,7 +858,7 @@ void TaskBodyCleave::selectBodies(const std::set<uint64_t> &toSelect)
 {
   m_bodyDoc->deselectAllMesh();
 
-  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
     if (toSelect.find(mesh->getLabel()) != toSelect.end()) {
@@ -995,7 +996,7 @@ bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vecto
 
     std::size_t cleaveIndex = cleaveIndexToMeshIds.begin()->first;
 
-    QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
     for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
       ZMesh *mesh = *it;
       meshIdToCleaveIndex[mesh->getLabel()] = cleaveIndex;
@@ -1017,7 +1018,7 @@ bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vecto
 
 void TaskBodyCleave::updateVisibility()
 {
-  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
     ZMesh *mesh = *itMesh;
     uint64_t id = mesh->getLabel();
@@ -1050,7 +1051,7 @@ std::set<std::size_t> TaskBodyCleave::hiddenChanges(const std::map<uint64_t, std
 {
   std::set<std::size_t> changedHiddenIndices;
 
-  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
     ZMesh *mesh = *itMesh;
     if (!mesh->isVisible()) {
@@ -1121,7 +1122,7 @@ bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
 bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t> meshIdToCleaveIndex)
 {
   std::vector<ZMesh*> missing;
-  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
     if (meshIdToCleaveIndex.find(mesh->getLabel()) == meshIdToCleaveIndex.end()) {
