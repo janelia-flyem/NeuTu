@@ -116,6 +116,39 @@ ZIntCuboid ZStackDocHelper::getVolumeBoundBox(const ZStackDoc *doc)
   return box;
 }
 
+bool ZStackDocHelper::HasMultipleBodySelected(
+    const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
+{
+  return CountSelectedBody(doc, type) > 1;
+}
+
+int ZStackDocHelper::CountSelectedBody(
+    const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
+{
+  return doc->getSelectedBodySet(type).size();
+}
+
+bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
+{
+  return CountSelectedBody(doc, neutube::BODY_LABEL_ORIGINAL) > 0;
+}
+
+void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
+{
+  QList<ZDvidLabelSlice*> sliceList = doc->getDvidLabelSliceList();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
+    if (slice != NULL) {
+      slice->recordSelection();
+      slice->deselectAll();
+      slice->processSelection();
+    }
+  }
+  //    updateBodySelection();
+  doc->notifyBodySelectionChanged();
+}
+
 QColor ZStackDocHelper::GetBodyColor(
     const ZFlyEmProofDoc *doc, uint64_t bodyId)
 {

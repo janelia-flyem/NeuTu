@@ -111,6 +111,9 @@ public:
   void updateContrast();
 
   void diagnose();
+  void profile();
+  void startTestTask(const std::string &taskKey);
+  void startTestTask(const ZJsonObject &config);
   void showSetting();
   void setExiting(bool exiting) {
     m_quitting = exiting;
@@ -131,6 +134,19 @@ public:
   FlyEmBodyInfoDialog *getBodyInfoDlg() const {
     return m_bodyInfoDlg;
   }
+
+  bool is3DEnabled() const {
+    return m_3dEnabled;
+  }
+
+  void disable3D() {
+    m_3dEnabled = false;
+  }
+
+  void disableSequencer();
+
+  void notifyStateUpdate();
+
 
 public: //bookmark functions
     ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
@@ -184,6 +200,7 @@ signals:
   void roiLoaded();
   void locating2DViewTriggered(int x, int y, int z, int width);
   void dvidReady();
+  void stateUpdated(ZFlyEmProofMvc *mvc);
 
 public slots:
   void mergeSelected();
@@ -262,7 +279,7 @@ public slots:
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
-  void deselectAllBody();
+  void deselectAllBody(bool asking);
   void selectSeed();
   void setMainSeed();
   void selectAllSeed();
@@ -354,6 +371,8 @@ public slots:
   void testBodyMerge();
   void testBodyVis();
   void testBodySplit();
+
+  void endTestTask();
 
 protected slots:
   void detachCoarseBodyWindow();
@@ -474,6 +493,10 @@ private:
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
 
+  void startMergeProfile();
+  void startMergeProfile(const uint64_t bodyId, int msec);
+  void endMergeProfile();
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
@@ -539,6 +562,10 @@ protected:
   ZFlyEmSynapseDataUpdater *m_seUpdater;
 
   bool m_quitting = false;
+  std::string m_taskKey; //For testing tasks
+  bool m_3dEnabled = true;
+
+  QTimer *m_profileTimer = nullptr;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };
@@ -612,6 +639,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
   connect(panel, SIGNAL(reportingBodyCorruption()),
           this, SLOT(reportBodyCorruption()));
   connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
+  connect(this, SIGNAL(stateUpdated(ZFlyEmProofMvc*)),
+          panel, SLOT(updateWidget(ZFlyEmProofMvc*)));
 }
 
 template <typename T>

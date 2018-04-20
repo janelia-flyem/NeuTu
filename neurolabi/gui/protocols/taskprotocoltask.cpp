@@ -61,6 +61,14 @@ void TaskProtocolTask::setCompleted(bool completed)
 
 /*
  * subclasses may optionally implement this method to
+ * check internal state and disallow completion of the task
+ */
+bool TaskProtocolTask::allowCompletion() {
+    return true;
+}
+
+/*
+ * subclasses may optionally implement this method to
  * do something when the task is marked "complete"
  */
 void TaskProtocolTask::onCompleted() {

@@ -141,6 +141,7 @@ public:
 
   uint64_t rewriteBody(uint64_t label);
 
+  //Returns (remainderId, newBodyId)
   std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
       const std::string &dataName, const ZObject3dScan &obj,
       uint64_t oldLabel);
@@ -152,8 +153,6 @@ public:
   uint64_t writeSplit(const ZObject3dScan &obj,
                       uint64_t oldLabel, uint64_t label,
                       uint64_t newBodyId = 0);
-
-
 
   uint64_t writeSplitMultires(
       const ZObject3dScan &bf, const ZObject3dScan &bs, uint64_t oldLabel);
@@ -261,6 +260,7 @@ public:
   std::string writeServiceTask(const QString &group, const ZJsonObject &task);
   void writeSplitTask(const QString &key, const ZJsonObject &task);
   void deleteSplitTask(const QString &key);
+  void writeTestResult(const std::string &key, const ZJsonObject &result);
 
   /*!
    * \brief Upload a mesh as a ROI

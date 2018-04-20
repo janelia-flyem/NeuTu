@@ -106,12 +106,24 @@ void Z3DSphereRenderer::setDataPickingColors(std::vector<glm::vec4>* pointPickin
   m_pointPickingColors.clear();
   if (!pointPickingColorsInput)
     return;
+  m_pointPickingColors.resize(pointPickingColorsInput->size() * 4);
+  for (size_t i = 0; i < pointPickingColorsInput->size(); ++i) {
+    const glm::vec4& color = (*pointPickingColorsInput)[i];
+    size_t index = i * 4;
+    m_pointPickingColors[index] = color;
+    m_pointPickingColors[index + 1] = color;
+    m_pointPickingColors[index + 2] = color;
+    m_pointPickingColors[index + 3] = color;
+  }
+  /*
   for (auto color : *pointPickingColorsInput) {
     m_pointPickingColors.push_back(color);
     m_pointPickingColors.push_back(color);
     m_pointPickingColors.push_back(color);
     m_pointPickingColors.push_back(color);
   }
+  */
+
 #if !defined(_USE_CORE_PROFILE_) && defined(_SUPPORT_FIXED_PIPELINE_)
   invalidateOpenglPickingRenderer();
 #endif

@@ -83,6 +83,7 @@ ZDvid::EDataType GetDataType(const std::string &typeName);
 
 ZDvidTarget MakeTargetFromUrl(const std::string path);
 
+bool IsValidDvidUrl(const std::string &url);
 
 /*!
  * \brief Test if two UUIDs they point to the same DVID node
@@ -98,6 +99,8 @@ bool IsUuidMatched(const std::string &uuid1, const std::string &uuid2);
 
 bool IsDataValid(const std::string &data, const ZDvidTarget &target,
                  const ZJsonObject &infoJson, const ZDvidVersionDag &dag);
+
+std::string GetBodyIdTag(uint64_t bodyId);
 
 ZIntCuboid GetZoomBox(const ZIntCuboid &box, int zoom);
 #if defined(_ENABLE_LIBDVIDCPP_)

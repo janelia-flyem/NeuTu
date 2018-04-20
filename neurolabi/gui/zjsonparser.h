@@ -41,6 +41,7 @@ public:
   static int64_t integerValue(const json_t *value);
 
   static bool booleanValue(const json_t *value);
+  static bool booleanValue(const json_t *value, bool defaultValue);
 
   static const char* stringValue(const json_t *value, size_t index);
   static double numberValue(const json_t *value, size_t index);

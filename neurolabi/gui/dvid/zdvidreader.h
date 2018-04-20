@@ -124,6 +124,8 @@ public:
     return m_bufferReader;
   }
 
+  std::vector<std::string> readDataInstances(const std::string &type);
+
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
@@ -212,9 +214,12 @@ public:
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId) const;
-  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
+  ZDvidSparseStack* readDvidSparseStack(
+      uint64_t bodyId, flyem::EBodyLabelType labelType = flyem::LABEL_BODY) const;
+//  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
-  ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId) const;
+  ZDvidSparseStack* readDvidSparseStackAsync(
+      uint64_t bodyId, flyem::EBodyLabelType labelType = flyem::LABEL_BODY) const;
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(
@@ -249,6 +254,7 @@ public:
   std::set<uint64_t> readAnnnotatedBodySet();
 
   bool hasKey(const QString &dataName, const QString &key) const;
+
   QByteArray readKeyValue(const QString &dataName, const QString &key) const;
   QStringList readKeys(const QString &dataName) const;
   QStringList readKeys(const QString &dataName, const QString &minKey);
@@ -515,7 +521,7 @@ public:
   QByteArray readDataFromEndpoint(
       const std::string &endPoint, bool tryingCompress = false) const;
 
-  bool refreshLabelBuffer();
+  bool refreshLabelBuffer() const;
 
   void testApiLoad();
 
@@ -530,6 +536,9 @@ public:
       const std::string &taskKey, uint64_t bodyId);
   QList<ZStackObject*> readSeedFromSplitTask(
       const ZDvidTarget &target, uint64_t bodyId);
+
+//  ZJsonObject readTestTask() const;
+  ZJsonObject readTestTask(const std::string &key) const;
 
   bool hasSplitTask(const QString &key) const;
 
@@ -597,6 +606,9 @@ private:
 
   lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
   lowtis::ImageService* getLowtisServiceLabel() const;
+
+  template<typename T>
+  void configureLowtis(T *config, const std::string &dataName) const;
 
 protected:
   ZDvidTarget m_dvidTarget;

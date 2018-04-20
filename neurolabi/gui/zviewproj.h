@@ -58,8 +58,15 @@ public:
   void setViewCenter(const QPoint &pt);
 //  void setViewCenter(const QPointF &pt);
 
+  /*!
+   * \brief Map a point from viewport to projection area
+   */
   QPointF mapPoint(const QPoint &p);
   QPointF mapPoint(const QPointF &p);
+
+  /*!
+   * \brief Map a point from projection to viewport
+   */
   QPoint mapPointBack(const QPointF &p);
   QPointF mapPointBackF(const QPointF &p);
   void mapPointBack(double *x, double *y);
@@ -71,6 +78,7 @@ public:
   void decreaseZoom();
 
   void setViewPort(const QRect &rect);
+  void setViewPortWithZoomFixed(const QRect &rect);
 
   void prepareViewPort(const QRect &rect);
 

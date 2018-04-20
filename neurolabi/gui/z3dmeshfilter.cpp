@@ -550,6 +550,22 @@ void Z3DMeshFilter::setColorIndexing(const std::vector<glm::vec4> &indexedColors
   updateMeshVisibleState();
 }
 
+ZMesh* Z3DMeshFilter::hitMesh(int x, int y)
+{
+  const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(x, y));
+  ZMesh *hitMesh = NULL;
+  if (obj != NULL) {
+    // Check if any point was selected...
+    for (auto m : m_meshList) {
+      if (m == obj) {
+        hitMesh = m;
+        break;
+      }
+    }
+  }
+
+  return hitMesh;
+}
 
 void Z3DMeshFilter::selectMesh(QMouseEvent* e, int, int)
 {

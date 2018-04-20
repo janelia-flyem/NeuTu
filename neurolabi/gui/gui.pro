@@ -106,7 +106,6 @@ qtHaveModule(webenginewidgets) {
 }
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
-#_USE_CORE_PROFILE_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -123,7 +122,7 @@ contains(GIT, .*git) {
 
 include(add_itk.pri)
 
-#Qt4
+#Qt4 (Obsolete)
 isEqual(QT_MAJOR_VERSION,4) {
   QT += opengl xml network
   message("Qt 4")
@@ -267,7 +266,7 @@ unix {
             RC_FILE = images/app.icns
         }
 
-    }
+    } #macx
 }
 
 win32 {
@@ -856,7 +855,14 @@ HEADERS += mainwindow.h \
     flyem/zflyemarbpresenter.h \
     flyem/zarbslicescrollstrategy.h \
     dialogs/zneu3sliceviewdialog.h \
-    znetbufferreader.h
+    znetbufferreader.h \
+    zstackviewhelper.h \
+    dvid/zdviddataslicehelper.h \
+    flyem/zflyemproofmvccontroller.h \
+    flyem/zmainwindowcontroller.h \
+    zstackdocnullmenufactory.h \
+    mvc/zstackspaceconfig.h \
+    mvc/zviewspaceconfig.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1496,7 +1502,14 @@ SOURCES += main.cpp \
     flyem/zflyemarbpresenter.cpp \
     flyem/zarbslicescrollstrategy.cpp \
     dialogs/zneu3sliceviewdialog.cpp \
-    znetbufferreader.cpp
+    znetbufferreader.cpp \
+    zstackviewhelper.cpp \
+    dvid/zdviddataslicehelper.cpp \
+    flyem/zflyemproofmvccontroller.cpp \
+    flyem/zmainwindowcontroller.cpp \
+    zstackdocnullmenufactory.cpp \
+    mvc/zstackspaceconfig.cpp \
+    mvc/zviewspaceconfig.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

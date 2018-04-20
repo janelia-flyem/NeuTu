@@ -49,6 +49,7 @@
 #include "flyem/zflyemmessagewidget.h"
 #include "zwidgetmessage.h"
 #include "flyem/zproofreadwindow.h"
+#include "flyem/zflyemproofmvccontroller.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -136,11 +137,21 @@ void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
     m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
+    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
+    ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
+
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
             this, SLOT(updateSliceViewGraph(ZArbSliceViewParam)));
 
     m_sliceWidget->setDefaultViewPort(
           getSliceViewParam(m_browsePos).getViewPort());
+
+    ZFlyEmProofMvcController::SelectBody(
+          m_sliceWidget,
+          getBodyDocument()->getUnencodedBodySet());
+    if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
+      ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
+    }
   }
 }
 
@@ -643,7 +654,11 @@ void Neu3Window::startBrowser(EBrowseMode mode)
   #if defined(_USE_WEBENGINE_)
     initWebView();
     updateSliceBrowser();
-  #else
+  #endif
+  }
+    break;
+  case BROWSE_NEUROGLANCER_EXT:
+  {
     m_browseMode = BROWSE_NONE;
     glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
     ZWeightedPoint rotation;
@@ -655,7 +670,6 @@ void Neu3Window::startBrowser(EBrowseMode mode)
     bo->open(ZFlyEmMisc::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
                rotation, m_bodyListWidget->getModel()->getBodySet()));
-  #endif
   }
     break;
   default:

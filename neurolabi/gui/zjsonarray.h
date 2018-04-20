@@ -84,7 +84,7 @@ public:
   bool isEmpty() const;
   void denull();
 
-  std::string dumpString(int indent = 2) const;
+  std::string dumpJanssonString(size_t flags) const;
 };
 
 #endif // ZJSONARRAY_H

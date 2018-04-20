@@ -66,8 +66,8 @@ void FlyEmBodyMergeProjectDialog::setPushButtonSlots()
   connect(ui->nextSlicePushButton, SIGNAL(clicked()),
           this, SLOT(showNextSlice()));
 
-  connect(ui->uploadResultPushButton, SIGNAL(clicked()),
-          m_project, SLOT(uploadResult()));
+//  connect(ui->uploadResultPushButton, SIGNAL(clicked()),
+//          m_project, SLOT(uploadResult()));
   connect(ui->startSplitPushButton, SIGNAL(clicked()),
           m_project, SLOT(notifySplit()));
 

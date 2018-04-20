@@ -56,7 +56,7 @@ public:
   static bool zoomToLoadedBodyEnabled();
 
   enum EBrowseMode {
-    BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER
+    BROWSE_NONE, BROWSE_NATIVE, BROWSE_NEUROGLANCER, BROWSE_NEUROGLANCER_EXT
   };
 
   QProgressDialog* getProgressDialog();
@@ -224,6 +224,7 @@ private:
   ZFlyEmArbMvc *m_sliceWidget = nullptr;
 
   ZPoint m_browsePos;
+
   constexpr static int DEFAULT_BROWSE_WIDTH = 512;
   constexpr static int DEFAULT_BROWSE_HEIGHT = 512;
   int m_browseWidth = DEFAULT_BROWSE_WIDTH;

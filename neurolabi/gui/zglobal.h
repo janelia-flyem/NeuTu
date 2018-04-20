@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <QObject>
 
 #include "zsharedpointer.h"
 
@@ -14,6 +15,7 @@ class ZDvidWriter;
 class ZDvidSparseStack;
 class ZDvidTarget;
 class ZBrowserOpener;
+class QMainWindow;
 
 class ZGlobal
 {
@@ -27,13 +29,26 @@ public:
     return g;
   }
 
+  /*!
+   * \brief For transferring positions globally.
+   */
   void setStackPosition(int x, int y, int z);
   void setStackPosition(const ZIntPoint &pt);
   void setStackPosition(const ZPoint &pt);
+
   void clearStackPosition();
   ZIntPoint getStackPosition() const;
-  ZDvidReader* getDvidReader(const std::string &name) const;
-  ZDvidWriter* getDvidWriter(const std::string &name) const;
+
+  //! DVID IO with shared readers and writers
+  /*!
+   * \brief Get DVID reader from a name
+   * \param name The name can be an alias name or dvid source string
+   * \param key Additional key
+   */
+  ZDvidReader* getDvidReader(
+      const std::string &name, const std::string &key = "") const;
+  ZDvidWriter* getDvidWriter(
+      const std::string &name, const std::string &key = "") const;
   ZDvidReader* getDvidReader(
       const ZDvidTarget &target, const std::string &key = "") const;
   ZDvidWriter* getDvidWriter(
@@ -43,9 +58,17 @@ public:
   ZDvidWriter* getDvidWriterFromUrl(
       const std::string &url, const std::string &key = "") const;
 
+  void setMainWindow(QMainWindow *win);
+  template<typename T>
+  T* getMainWindow() const;
+
+  QMainWindow* getMainWindow() const;
+
 public:
-  static ZDvidReader* GetDvidReader(const std::string &name);
-  static ZDvidWriter* GetDvidWriter(const std::string &name);
+  static ZDvidReader* GetDvidReader(
+      const std::string &name, const std::string &key = "");
+  static ZDvidWriter* GetDvidWriter(
+      const std::string &name, const std::string &key = "");
   static ZDvidReader* GetDvidReader(
       const ZDvidTarget &target, const std::string &key = "");
   static ZDvidWriter* GetDvidWriter(
@@ -60,13 +83,19 @@ public:
   ZBrowserOpener* getBrowserOpener() const;
 
 private:
+  /*
   template<typename T>
   T* getIODevice(
       const std::string &name, std::map<std::string, T*> &ioMap) const;
+*/
+  template<typename T>
+  T* getIODevice(
+      const std::string &name, std::map<std::string, T*> &ioMap,
+      const std::string &key = "") const;
 
   template<typename T>
   T* getIODevice(
-      const ZDvidTarget &name, std::map<std::string, T*> &ioMap,
+      const ZDvidTarget &target, std::map<std::string, T*> &ioMap,
       const std::string &key) const;
 
   template<typename T>
@@ -77,6 +106,17 @@ private:
 private:
   ZGlobalData *m_data;
   ZSharedPointer<ZBrowserOpener> m_browserOpener;
+  QMainWindow *m_mainWin = nullptr;
 };
+
+template<typename T>
+T* ZGlobal::getMainWindow() const
+{
+  if (m_mainWin == nullptr) {
+    return nullptr;
+  }
+
+  return qobject_cast<T*>(m_mainWin);
+}
 
 #endif // ZGLOBAL_H

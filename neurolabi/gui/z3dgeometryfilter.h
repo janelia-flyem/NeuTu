@@ -4,7 +4,6 @@
 #include "z3dboundedfilter.h"
 #include "z3drendererbase.h"
 #include "z3dport.h"
-#include "z3dpickingmanager.h"
 
 class Z3DGeometryFilter : public Z3DBoundedFilter
 {
