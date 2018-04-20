@@ -173,6 +173,7 @@ public: //controls
   bool getButtonStatus(int index);
 
   QAction* getAction(ZActionFactory::EAction item);
+  void setActionChecked(ZActionFactory::EAction item, bool on);
 
   QDockWidget * getSettingsDockWidget();
   QDockWidget * getObjectsDockWidget();
@@ -292,9 +293,12 @@ public slots:
 
   void showPuncta(bool on);
   void showTodo(bool on);
-  void activateTodoAction();
-  void activateBookmarkAction();
-  void activateLocateAction();
+  void activateTodoAction(bool on);
+//  void activateTosplitAction(bool on);
+  void activateBookmarkAction(bool on);
+  void activateLocateAction(bool on);
+
+  void syncActionToNormalMode();
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -316,7 +320,7 @@ public slots:
   void saveSplitTask();
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
-  void viewDataExternally();
+  void viewDataExternally(bool on);
   //
   void show3DViewContextMenu(QPoint pt);
 

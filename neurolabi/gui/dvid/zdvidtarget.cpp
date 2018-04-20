@@ -748,6 +748,27 @@ bool ZDvidTarget::hasSegmentation() const
   return !getSegmentationName().empty();
 }
 
+bool ZDvidTarget::hasSupervoxel() const
+{
+  if (hasSegmentation()) {
+    if (getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZDvidTarget::isSegmentationSyncable() const
+{
+  if (hasSegmentation()) {
+    if (getSegmentationType() != ZDvidData::TYPE_LABELMAP) {
+      return true;
+    }
+  }
+
+  return false;
+}
 /*
 bool ZDvidTarget::usingLabelArray() const
 {

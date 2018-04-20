@@ -101,6 +101,9 @@ void Neu3Window::initialize()
   connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
   connect(m_3dwin, SIGNAL(neutuTriggered()), this, SLOT(openNeuTu()));
   ZWidgetMessage::ConnectMessagePipe(m_3dwin, this);
+  ZWidgetMessage::ConnectMessagePipe(getBodyDocument(), this);
+  ZWidgetMessage::DisconnectMessagePipe(getBodyDocument(), m_3dwin);
+
   setCentralWidget(m_3dwin);
 
   createDialogs();

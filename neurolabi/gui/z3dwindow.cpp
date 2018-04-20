@@ -198,9 +198,16 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(viewSynapseAction);
 
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_SHOW_TODO));
-    m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TODO_ITEM));
+//    m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TODO_ITEM));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
+
+    QActionGroup *group = new QActionGroup(this);
+    group->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM));
+    group->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE));
+    group->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
+
   }
 
   if (getWindowType() == neutube3d::TYPE_NEU3) {
@@ -329,6 +336,8 @@ void Z3DWindow::init()
 //          this, SLOT(notifyCameraRotation()));
   connect(&(m_view->interactionHandler()), SIGNAL(cameraRotated()),
           this, SLOT(notifyCameraRotation()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(exitingEdit()),
+          this, SLOT(syncActionToNormalMode()));
 
 
 //  connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
@@ -437,7 +446,8 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(item, this, SLOT(addToMergeMarker()));
     break;
   case ZActionFactory::ACTION_ADD_TODO_SPLIT:
-    action = m_actionLibrary->getAction(item, this, SLOT(addToSplitMarker()));
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(addToSplitMarker(bool)));
     break;
   case ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT:
     action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToSplit()));
@@ -458,10 +468,29 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(item, this, SLOT(showTodo(bool)));
     break;
   case ZActionFactory::ACTION_ACTIVATE_TODO_ITEM:
-    action = m_actionLibrary->getAction(item, this, SLOT(activateTodoAction()));
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(activateTodoAction(bool)));
+    break;
+  case ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(activateTodoAction(bool)));
+    if (action != NULL) {
+      action->setShortcut(Qt::Key_B);
+    }
     break;
   case ZActionFactory::ACTION_ACTIVATE_LOCATE:
-    action = m_actionLibrary->getAction(item, this, SLOT(activateLocateAction()));
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(activateLocateAction(bool)));
+    if (action != NULL) {
+      action->setShortcut(Qt::Key_T);
+    }
+    break;
+  case ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(viewDataExternally(bool)));
+    if (action != NULL) {
+      action->setShortcut(Qt::SHIFT + Qt::Key_T);
+    }
     break;
   case ZActionFactory::ACTION_CHECK_TODO_ITEM:
     action = m_actionLibrary->getAction(item, this, SLOT(checkSelectedTodo()));
@@ -481,9 +510,6 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_TEST:
     action = m_actionLibrary->getAction(item, this, SLOT(test()));
     break;
-  case ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY:
-    action = m_actionLibrary->getAction(item, this, SLOT(viewDataExternally()));
-    break;
   case ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR:
     action = m_actionLibrary->getAction(
           item, this, SLOT(changeSelectedPunctaColor()));
@@ -494,6 +520,16 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   }
 
   return action;
+}
+
+void Z3DWindow::setActionChecked(ZActionFactory::EAction item, bool on)
+{
+  QAction *action = getAction(item);
+  if (action != NULL) {
+    if (action->isCheckable()) {
+      action->setChecked(on);
+    }
+  }
 }
 
 void Z3DWindow::createActions()
@@ -1156,6 +1192,15 @@ void Z3DWindow::syncAction()
   if (action != NULL) {
     action->setChecked(m_view->isLayerVisible(neutube3d::LAYER_TODO));
   }
+}
+
+void Z3DWindow::syncActionToNormalMode()
+{
+  blockSignals(true);
+  setActionChecked(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM, false);
+  setActionChecked(ZActionFactory::ACTION_ACTIVATE_LOCATE, false);
+  setActionChecked(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY, false);
+  blockSignals(false);
 }
 
 void Z3DWindow::readSettings()
@@ -1870,12 +1915,14 @@ void Z3DWindow::saveSelectedPunctaAs()
   }
 }
 
-void Z3DWindow::emitAddTodoMarker(int x, int y, int z, bool checked, uint64_t bodyId)
+void Z3DWindow::emitAddTodoMarker(
+    int x, int y, int z, bool checked, uint64_t bodyId)
 {
   emit addingTodoMarker(x, y, z, checked, bodyId);
 }
 
-void Z3DWindow::emitAddTodoMarker(const ZIntPoint &pt, bool checked, uint64_t bodyId)
+void Z3DWindow::emitAddTodoMarker(
+    const ZIntPoint &pt, bool checked, uint64_t bodyId)
 {
   emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), checked, bodyId);
 }
@@ -3210,19 +3257,38 @@ void Z3DWindow::showTodo(bool on)
   emit showingTodo(on);
 }
 
-void Z3DWindow::activateTodoAction()
+void Z3DWindow::activateTodoAction(bool on)
 {
-  getCanvas()->getInteractionEngine()->enterMarkTodo();
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterMarkTodo();
+  } else {
+    getCanvas()->getInteractionEngine()->exitMarkTodo();
+  }
 }
 
-void Z3DWindow::activateBookmarkAction()
+/*
+void Z3DWindow::activateTosplitAction(bool on)
 {
-  getCanvas()->getInteractionEngine()->enterMarkBookmark();
+  activateTodoAction(on);
+}
+*/
+
+void Z3DWindow::activateBookmarkAction(bool on)
+{
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterMarkBookmark();
+  } else {
+    getCanvas()->getInteractionEngine()->exitMarkBookmark();
+  }
 }
 
-void Z3DWindow::activateLocateAction()
+void Z3DWindow::activateLocateAction(bool on)
 {
-  getCanvas()->getInteractionEngine()->enterLocateMode();
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterLocateMode();
+  } else {
+    getCanvas()->getInteractionEngine()->exitLocateMode();
+  }
 }
 
 void Z3DWindow::showSeletedSwcNodeDist()
@@ -3409,7 +3475,7 @@ void Z3DWindow::test()
 
 }
 
-void Z3DWindow::viewDataExternally()
+void Z3DWindow::viewDataExternally(bool on)
 {
 #if 0
   ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
@@ -3421,8 +3487,11 @@ void Z3DWindow::viewDataExternally()
           "The default browser will be used.", this);
   }
 #endif
-
-  getCanvas()->getInteractionEngine()->enterBrowseMode();
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterBrowseMode();
+  } else {
+    getCanvas()->getInteractionEngine()->exitBrowseMode();
+  }
 }
 
 void Z3DWindow::breakSelectedSwc()
@@ -3786,7 +3855,16 @@ void Z3DWindow::shootTodo(int x, int y)
       int cx = iround(pt.x());
       int cy = iround(pt.y());
       int cz = iround(pt.z());
-      doc->executeAddTodoCommand(cx, cy, cz, false, bodyId);
+      QAction *action = getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM);
+      if (action != NULL) {
+        if (action->isChecked()) {
+          doc->executeAddTodoCommand(
+                cx, cy, cz, false, ZFlyEmToDoItem::TO_SPLIT, bodyId);
+        }
+      } else {
+        doc->executeAddTodoCommand(
+              cx, cy, cz, false, ZFlyEmToDoItem::TO_DO, bodyId);
+      }
   //          emitAddTodoMarker(cx, cy, cz, false, bodyId);
     }
   }

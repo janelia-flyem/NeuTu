@@ -392,6 +392,9 @@ public:
   std::vector<uint64_t> readBodyIdAt(
       const InputIterator &first, const InputIterator &last) const;
 
+  uint64_t readSupervoxelIdAt(int x, int y, int z) const;
+  uint64_t readSupervoxelIdAt(const ZIntPoint &pt) const;
+
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
   //ZDvidTile *readTile(const std::string &dataName, int resLevel,

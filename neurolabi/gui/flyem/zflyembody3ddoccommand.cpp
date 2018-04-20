@@ -18,11 +18,13 @@ ZFlyEmBody3dDocCommand::AddTodo::AddTodo(ZStackDoc *doc, QUndoCommand *parent)
 
 
 void ZFlyEmBody3dDocCommand::AddTodo::setTodoItem(
-    int x, int y, int z, bool checked, uint64_t bodyId)
+    int x, int y, int z, bool checked, ZFlyEmToDoItem::EToDoAction action,
+    uint64_t bodyId)
 {
   ZFlyEmBody3dDoc *doc = getCompleteDocument();
   if (doc != NULL) {
     m_item = doc->makeTodoItem(x, y, z, checked, bodyId);
+    m_item.setAction(action);
     m_bodyId = bodyId;
   }
 }

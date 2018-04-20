@@ -158,5 +158,6 @@
         <file>Resources/shader/wideline_func1.frag</file>
         <file>images/add_todo.png</file>
         <file>images/add_todo2.png</file>
+        <file>images/add_tosplit.png</file>
     </qresource>
 </RCC>

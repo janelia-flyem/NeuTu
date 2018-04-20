@@ -1707,7 +1707,8 @@ ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
 {
   ZFlyEmToDoItem item;
 
-  ZIntPoint position = getMainDvidReader().readPosition(bodyId, ZIntPoint(x, y, z));
+  ZIntPoint position = getMainDvidReader().readPosition(
+        bodyId, ZIntPoint(x, y, z));
 
   if (position.isValid()) {
     item.setPosition(position);
@@ -1716,8 +1717,9 @@ ZFlyEmToDoItem ZFlyEmBody3dDoc::makeTodoItem(
     if (checked) {
       item.setChecked(checked);
     }
-    if (getMainDvidReader().getDvidTarget().getSegmentationType() ==
-        ZDvidData::TYPE_LABELMAP) {
+
+    if (!getMainDvidReader().getDvidTarget().isSegmentationSyncable()) {
+      //A workaround for syncing to labelmap (temporary solution)
       item.setBodyId(bodyId);
       item.addBodyIdTag();
     }
@@ -1733,12 +1735,27 @@ ZFlyEmToDoItem ZFlyEmBody3dDoc::readTodoItem(int x, int y, int z) const
   return item;
 }
 
-void ZFlyEmBody3dDoc::addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId)
+bool ZFlyEmBody3dDoc::addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId)
 {
+  bool succ = false;
   if (item.isValid()) {
     m_mainDvidWriter.writeToDoItem(item);
-    updateTodo(bodyId);
+    if (m_mainDvidWriter.isStatusOk()) {
+      emit messageGenerated(ZWidgetMessage(
+                              QString("Todo added at %1").
+                              arg(item.getPosition().toString().c_str())));
+      if (m_mainDvidWriter.getDvidTarget().hasSupervoxel()) {
+        uint64_t svId = m_mainDvidWriter.getDvidReader().readSupervoxelIdAt(
+              item.getPosition());
+        emit messageGenerated(ZWidgetMessage(
+                               QString("Supervoxel ID: %1").arg(svId)));
+      }
+      updateTodo(bodyId);
+      succ = true;
+    }
   }
+
+  return succ;
 }
 
 void ZFlyEmBody3dDoc::addTodoSliently(const ZFlyEmToDoItem &item)
@@ -1804,6 +1821,12 @@ void ZFlyEmBody3dDoc::addTodo(int x, int y, int z, bool checked, uint64_t bodyId
   addTodo(item, bodyId);
 }
 
+void ZFlyEmBody3dDoc::addTosplit(int x, int y, int z, bool checked, uint64_t bodyId)
+{
+  ZFlyEmToDoItem item = makeTodoItem(x, y, z, checked, bodyId);
+  item.setAction(ZFlyEmToDoItem::TO_SPLIT);
+  addTodo(item, bodyId);
+}
 
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
@@ -1849,11 +1872,12 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
 }
 
 void ZFlyEmBody3dDoc::executeAddTodoCommand(
-    int x, int y, int z, bool checked, uint64_t bodyId)
+    int x, int y, int z, bool checked, ZFlyEmToDoItem::EToDoAction action,
+    uint64_t bodyId)
 {
   ZFlyEmBody3dDocCommand::AddTodo *command =
       new ZFlyEmBody3dDocCommand::AddTodo(this);
-  command->setTodoItem(x, y, z, checked, bodyId);
+  command->setTodoItem(x, y, z, checked, action, bodyId);
   if (command->hasValidItem()) {
     pushUndoCommand(command);
   } else {
