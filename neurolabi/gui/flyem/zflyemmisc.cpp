@@ -1513,9 +1513,11 @@ ZDvidWriter* ZFlyEmMisc::GetTaskWriter()
 bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
 {
   ZDvidReader *reader = GetTaskReader();
-  if (reader->hasKey("task_test", taskKey)) {
-    if (!reader->hasKey("result_test", taskKey)) {
-      return true;
+  if (reader != NULL) {
+    if (reader->hasKey("task_test", taskKey)) {
+      if (!reader->hasKey("result_test", taskKey)) {
+        return true;
+      }
     }
   }
 

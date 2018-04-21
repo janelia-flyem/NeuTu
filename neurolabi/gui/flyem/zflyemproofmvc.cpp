@@ -3052,7 +3052,7 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
 
 void ZFlyEmProofMvc::exportSelectedBodyLevel()
 {
-  m_grayscaleDlg->makeBodyExportAppearance();
+  m_grayscaleDlg->makeBodyFieldExportAppearance();
   if (m_grayscaleDlg->exec()) {
     QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
     if (!fileName.isEmpty()) {
@@ -3072,8 +3072,8 @@ void ZFlyEmProofMvc::exportSelectedBodyLevel()
           int index = 0;
           for (std::set<uint64_t>::const_iterator iter = idSet.begin();
                iter != idSet.end(); ++iter) {
-            ZObject3dScan *obj = objArray[index];
-            reader.readBody(*iter, false, obj);
+//            ZObject3dScan *obj = objArray[index];
+            objArray[index] = reader.readBody(*iter, false, NULL);
             index++;
           }
         }

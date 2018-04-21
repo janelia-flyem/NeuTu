@@ -1645,8 +1645,10 @@ void ZFlyEmBody3dDoc::updateSegmentation()
       getObjectList(ZStackObjectRole::ROLE_TMP_RESULT);
   getDataBuffer()->addUpdate(oldObjList, ZStackDocObjectUpdate::ACTION_KILL);
 
+
+  QMutexLocker locker(getDataDocument()->getObjectGroup().getMutex());
   QList<ZObject3dScan*> objList =
-      getDataDocument()->getObjectList<ZObject3dScan>();
+      getDataDocument()->getObjectGroup().getObjectListUnsync<ZObject3dScan>();
   foreach(ZObject3dScan *obj, objList) {
     if (obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
       ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);

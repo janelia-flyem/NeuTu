@@ -485,9 +485,9 @@ QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
 
 QMenu* ZFlyEmProofPresenter::getContextMenu()
 {
-  if (m_contextMenu == NULL) {
-    m_contextMenu = getMenuFactory()->makeContextMenu(this, NULL, m_contextMenu);
-  }
+//  if (m_contextMenu == NULL) {
+  m_contextMenu = getMenuFactory()->makeContextMenu(this, NULL, m_contextMenu);
+//  }
 
   return m_contextMenu;
   /*
