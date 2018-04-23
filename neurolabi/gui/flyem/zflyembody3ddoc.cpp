@@ -1640,32 +1640,34 @@ void ZFlyEmBody3dDoc::addTodo(uint64_t bodyId)
 
 void ZFlyEmBody3dDoc::updateSegmentation()
 {
-  ZOUT(LTRACE(), 5) << "Update segmentation";
-  QList<ZStackObject*> oldObjList =
-      getObjectList(ZStackObjectRole::ROLE_TMP_RESULT);
-  getDataBuffer()->addUpdate(oldObjList, ZStackDocObjectUpdate::ACTION_KILL);
+  if (getBodyType() == flyem::BODY_MESH) {
+    ZOUT(LTRACE(), 5) << "Update segmentation";
+    QList<ZStackObject*> oldObjList =
+        getObjectList(ZStackObjectRole::ROLE_TMP_RESULT);
+    getDataBuffer()->addUpdate(oldObjList, ZStackDocObjectUpdate::ACTION_KILL);
 
 
-  QMutexLocker locker(getDataDocument()->getObjectGroup().getMutex());
-  QList<ZObject3dScan*> objList =
-      getDataDocument()->getObjectGroup().getObjectListUnsync<ZObject3dScan>();
-  foreach(ZObject3dScan *obj, objList) {
-    if (obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
-      ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
-      if (mesh != NULL) {
-        mesh->setColor(obj->getColor());
-        mesh->pushObjectColor();
-        mesh->setVisible(obj->isVisible());
-        mesh->setSelectable(false);
-        mesh->addRole(ZStackObjectRole::ROLE_TMP_RESULT);
-        mesh->setSource(
-              ZStackObjectSourceFactory::MakeSplitResultSource(obj->getLabel()));
-        getDataBuffer()->addUpdate(
-              mesh, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    QMutexLocker locker(getDataDocument()->getObjectGroup().getMutex());
+    QList<ZObject3dScan*> objList =
+        getDataDocument()->getObjectGroup().getObjectListUnsync<ZObject3dScan>();
+    foreach(ZObject3dScan *obj, objList) {
+      if (obj->hasRole(ZStackObjectRole::ROLE_SEGMENTATION)) {
+        ZMesh *mesh = ZMeshFactory::MakeMesh(*obj);
+        if (mesh != NULL) {
+          mesh->setColor(obj->getColor());
+          mesh->pushObjectColor();
+          mesh->setVisible(obj->isVisible());
+          mesh->setSelectable(false);
+          mesh->addRole(ZStackObjectRole::ROLE_TMP_RESULT);
+          mesh->setSource(
+                ZStackObjectSourceFactory::MakeSplitResultSource(obj->getLabel()));
+          getDataBuffer()->addUpdate(
+                mesh, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+        }
       }
     }
+    getDataBuffer()->deliver();
   }
-  getDataBuffer()->deliver();
 }
 
 void ZFlyEmBody3dDoc::loadSplitTask(uint64_t bodyId)

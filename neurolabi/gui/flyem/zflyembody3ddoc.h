@@ -284,6 +284,37 @@ public:
       uint64_t bodyId);
   void executeRemoveTodoCommand();
 
+  //override to disable the swc commands
+  virtual bool executeDeleteSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeDeleteUnselectedSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node */*tn*/) override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand(
+      Swc_Tree_Node */*tn1*/, Swc_Tree_Node */*tn2*/) override {
+    return false;
+  }
+  virtual bool executeSmartConnectSwcNodeCommand(
+      Swc_Tree_Node */*tn1*/, Swc_Tree_Node */*tn2*/) override {
+    return false;
+  }
+  virtual bool executeSmartConnectSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeBreakSwcConnectionCommand() override {
+    return false;
+  }
+  virtual bool executeMergeSwcNodeCommand() override {
+    return false;
+  }
+
 public:
 //  ZDvidSparseStack* loadDvidSparseStack();
   ZDvidSparseStack* loadDvidSparseStack(
