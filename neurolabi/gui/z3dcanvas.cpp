@@ -306,7 +306,10 @@ void Z3DCanvas::drawText(QPainter &painter, const QStringList &text)
 
       //    bufferPainter.fillRect(pixmap.rect(), QColor(0, 0, 0, 0));
       bufferPainter.drawText(QRectF(10, 1, width, height), compText);
+      painter.save();
+      painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
       painter.drawPixmap(0, 0, pixmap);
+      painter.restore();
     }
   }
 }
