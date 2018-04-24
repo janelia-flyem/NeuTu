@@ -10,6 +10,7 @@
 #include <QtAlgorithms>
 
 #include "synapsepredictioninputdialog.h"
+#include "synapsepredictionbodyinputdialog.h"
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
@@ -81,15 +82,19 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
 }
 
 const std::string SynapsePredictionProtocol::KEY_VARIATION = "variation";
+const std::string SynapsePredictionProtocol::KEY_SUBVARIATION = "subvariation";
 const std::string SynapsePredictionProtocol::VARIATION_REGION = "region";
 const std::string SynapsePredictionProtocol::VARIATION_BODY = "body";
+const std::string SynapsePredictionProtocol::SUBVARIATION_BODY_TBAR = "T-bar";
+const std::string SynapsePredictionProtocol::SUBVARIATION_BODY_PSD = "PSD";
+const std::string SynapsePredictionProtocol::SUBVARIATION_BODY_BOTH = "both";
 const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
 const std::string SynapsePredictionProtocol::KEY_PROTOCOL_RANGE = "range";
 const std::string SynapsePredictionProtocol::KEY_BODYID= "body ID";
 const std::string SynapsePredictionProtocol::KEY_MODE= "mode";
 const int SynapsePredictionProtocol::fileVersion = 3;
 const QColor SynapsePredictionProtocol::COLOR_DEFAULT = QColor(0, 0, 0);      // no color
-const QString SynapsePredictionProtocol::MODE_SYNAPSE = "Whole synapses";
+const QString SynapsePredictionProtocol::MODE_SYNAPSE = "whole synapses";
 const QString SynapsePredictionProtocol::MODE_TBAR = "T-bars only";
 const QString SynapsePredictionProtocol::MODE_PSD = "PSDs only";
 
@@ -118,44 +123,34 @@ bool SynapsePredictionProtocol::initialize() {
         m_protocolRange = volume;
 
     } else if (m_variation == VARIATION_BODY) {
-        // using text dialog because getInt() variation is 32-bit;
-        //  our body IDs get bigger than that
-        // note for future improvement: would be nice to let the user
-        //  enter a body name, but currently we store body names in
-        //  key-value, which is not indexed and not synced to body IDs
-        bool ok;
-        uint64_t bodyID;
-        QString ans = QInputDialog::getText(this,
-            "Choose body", "Review synapses on body with ID:",
-            QLineEdit::Normal, "", &ok);
-        if (ok && !ans.isEmpty()) {
-            // convert to int and check that it exists:
-            bodyID = ans.toLong(&ok);
-            if (!ok) {
+
+        SynapsePredictionBodyInputDialog inputDialog;
+
+        int ans = inputDialog.exec();
+        if (ans == QDialog::Rejected) {
+            return false;
+        }
+        if (!inputDialog.hasBodyID()) {
+            return false;
+        }
+        m_subvariation = inputDialog.getMode();
+        uint64_t bodyID = inputDialog.getBodyID();
+        ZDvidReader reader;
+        if (reader.open(m_dvidTarget)) {
+            if (!reader.hasBody(bodyID)) {
                 QMessageBox mb;
-                mb.setText("Can't parse body ID");
-                mb.setInformativeText("The entered body ID " + ans + " doesn't seem to be an integer!");
+                mb.setText("Body ID doesn't exist!");
+                mb.setInformativeText("The entered body ID " + QString::number(bodyID)  + " doesn't seem to exist!");
                 mb.setStandardButtons(QMessageBox::Ok);
                 mb.setDefaultButton(QMessageBox::Ok);
                 mb.exec();
                 return false;
-            }
-            ZDvidReader reader;
-            if (reader.open(m_dvidTarget)) {
-                if (!reader.hasBody(bodyID)) {
-                    QMessageBox mb;
-                    mb.setText("Body ID doesn't exist!");
-                    mb.setInformativeText("The entered body ID " +  ans + " doesn't seem to exist!");
-                    mb.setStandardButtons(QMessageBox::Ok);
-                    mb.setDefaultButton(QMessageBox::Ok);
-                    mb.exec();
-                    return false;
-                }
+            } else {
+                m_bodyID = bodyID;
             }
         } else {
             return false;
         }
-        m_bodyID = bodyID;
     } else {
         variationError(m_variation);
         return false;
@@ -449,6 +444,7 @@ void SynapsePredictionProtocol::saveState() {
         data.setEntry(KEY_PROTOCOL_RANGE.c_str(), rangeJson);
     } else if (m_variation == VARIATION_BODY) {
         data.setEntry(KEY_BODYID.c_str(), m_bodyID);
+        data.setEntry(KEY_SUBVARIATION.c_str(), m_subvariation);
     } else {
         variationError(m_variation);
         return;
@@ -486,12 +482,18 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
             version = 2;
         }
 
-        // 2 to 3: added "mode" key; in previous versions, it was always "Whole synapses"
+        // 2 to 3:
         if (version == 2) {
+            // added "mode" key; in previous versions, it was always "Whole synapses"
             data.setEntry(KEY_MODE.c_str(), MODE_SYNAPSE.toStdString().c_str());
+
+            // added subvariation to body variation; old one was always T-bar:
+            if (m_variation == VARIATION_BODY) {
+                data.setEntry(KEY_SUBVARIATION.c_str(), SUBVARIATION_BODY_TBAR.c_str());
+            }
+
             version = 3;
         }
-
 
         updated = true;
     }
@@ -510,6 +512,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
             return;
         }
     } else if (m_variation == VARIATION_BODY) {
+        m_subvariation = ZJsonParser::stringValue(data[KEY_SUBVARIATION.c_str()]);
         m_bodyID = ZJsonParser::integerValue(data[KEY_BODYID.c_str()]);
         loadInitialSynapseList();
     } else {
@@ -659,7 +662,14 @@ void SynapsePredictionProtocol::updateSiteListLabel() {
         message += " to ";
         message += QString::fromStdString(m_protocolRange.getLastCorner().toString());
     } else if (m_variation == VARIATION_BODY) {
-        message += "T-bars on body ";
+        if (m_subvariation == SUBVARIATION_BODY_TBAR) {
+            message += "T-bars";
+        } else if (m_subvariation == SUBVARIATION_BODY_PSD) {
+            message += "T-bars with PSDs";
+        } else if (m_subvariation == SUBVARIATION_BODY_BOTH) {
+            message += "synapses";
+        }
+        message += " on body ";
         message += QString::number(m_bodyID);
     } else {
         variationError(m_variation);
@@ -780,7 +790,7 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
                 progressDialog.setValue(20 + 5 * (i / progressInterval));
             }
             ZDvidSynapse &synapse = synapseList[i];
-            if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+            if (keepSynapse(synapse)) {
                 if (isFinished(synapse.getPosition())) {
                     m_finishedList.append(synapse.getPosition());
                 } else {
@@ -797,6 +807,31 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
         }
 
         progressDialog.setValue(100);
+    }
+}
+
+/*
+ * is this a synapse we want to look at in given the variation and subvariation?
+ */
+bool SynapsePredictionProtocol::keepSynapse(ZDvidSynapse synapse) {
+    // for region, want T-bars; likewise body/T-bar;
+    //  for body/PSD, keep the post, and for body/both, keep all
+    if (m_variation == VARIATION_REGION) {
+        return synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN;
+    } else if (m_variation == VARIATION_BODY) {
+        if (m_subvariation == SUBVARIATION_BODY_TBAR) {
+            return synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN;
+        } else if (m_subvariation == SUBVARIATION_BODY_PSD) {
+            return synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN;
+        } else if (m_subvariation == SUBVARIATION_BODY_BOTH) {
+            return true;
+        } else {
+            variationError("found unexpected subvariation while loading synapses: " + m_subvariation);
+            return false;
+        }
+    } else {
+        variationError("found unexpected variation while loading synapses: " + m_variation);
+        return false;
     }
 }
 
