@@ -27,6 +27,9 @@ public:
     bool initialize();
     static const std::string VARIATION_REGION;
     static const std::string VARIATION_BODY;
+    static const std::string SUBVARIATION_BODY_TBAR;
+    static const std::string SUBVARIATION_BODY_PSD;
+    static const std::string SUBVARIATION_BODY_BOTH;
     void processSynapseVerification(int x, int y, int z, bool verified);
     void processSynapseVerification(const ZIntPoint &pt, bool verified);
     void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
@@ -63,6 +66,7 @@ private slots:
 
 private:
     static const std::string KEY_VARIATION;
+    static const std::string KEY_SUBVARIATION;
     static const std::string KEY_VERSION;
     static const std::string KEY_PROTOCOL_RANGE;
     static const std::string KEY_BODYID;
@@ -85,6 +89,7 @@ private:
     QStandardItemModel * m_sitesModel;
     QSortFilterProxyModel * m_sitesProxy;
     std::string m_variation;
+    std::string m_subvariation;
     QList<ZIntPoint> m_pendingList;
     QList<ZIntPoint> m_finishedList;
     int m_currentPendingIndex; //Index for locating in pending list
@@ -115,6 +120,7 @@ private:
     bool isFinished(ZIntPoint point);
     void refreshData(bool unfinishCurrent);
     void updateSiteListLabel();
+    bool keepSynapse(ZDvidSynapse synapse);
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H
