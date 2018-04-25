@@ -51,6 +51,8 @@ private slots:
     void onCompletedStateChanged(int state);
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
+    void onBodyMeshesAdded(int numMeshes);
+    void onBodyMeshLoaded();
     void applicationQuitting();
 
 private:
@@ -114,6 +116,8 @@ private:
     bool m_nodeLocked;
     BodyPrefetchQueue * m_prefetchQueue;
     QThread * m_prefetchThread;
+    int m_bodyMeshLoadedExpected = 0;
+    int m_bodyMeshLoadedReceived = 0;
 
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
@@ -135,6 +139,7 @@ private:
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
     void updateBodyWindow();
+    void disableButtonsWhileUpdating();
     int getNext();
     int getNextUncompleted();
     int getPrev();

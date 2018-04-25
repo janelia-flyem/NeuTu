@@ -19,8 +19,8 @@ public:
 
     bool completed() const;
     void setCompleted(bool completed);
-    QSet<uint64_t> visibleBodies();
-    QSet<uint64_t> selectedBodies();
+    const QSet<uint64_t> & visibleBodies();
+    const QSet<uint64_t> & selectedBodies();
 
     virtual void beforeNext();
     virtual void beforePrev();
