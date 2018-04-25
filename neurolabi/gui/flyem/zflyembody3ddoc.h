@@ -473,7 +473,7 @@ private:
 signals:
   void todoVisibleChanged();
   void bodyMeshLoaded();
-  void bodyMeshesAdded();
+  void bodyMeshesAdded(int);
 
   void meshArchiveLoadingStarted();
   void meshArchiveLoadingProgress(float fraction);

@@ -71,6 +71,11 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
 
     ui->nextButton->setShortcut(Qt::Key_E);
     ui->prevButton->setShortcut(Qt::Key_Q);
+
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshesAdded,
+            this, &TaskProtocolWindow::onBodyMeshesAdded, Qt::QueuedConnection);
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded,
+            this, &TaskProtocolWindow::onBodyMeshLoaded, Qt::QueuedConnection);
 }
 
 // constants
@@ -683,10 +688,12 @@ void TaskProtocolWindow::updateMenu(bool add) {
 void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
+        disableButtonsWhileUpdating();
+
         emit allBodiesRemoved();
 
-        QSet<uint64_t> visible = m_taskList[m_currentTaskIndex]->visibleBodies();
-        QSet<uint64_t> selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+        const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+        const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
 
         // if something is selected, it should be visible, too
         foreach (uint64_t bodyID, visible) {
@@ -700,6 +707,37 @@ void TaskProtocolWindow::updateBodyWindow() {
         }
         emit bodySelectionChanged(selected);
     }
+}
+
+void TaskProtocolWindow::disableButtonsWhileUpdating()
+{
+    m_bodyMeshLoadedExpected = 0;
+    m_bodyMeshLoadedReceived = 0;
+
+    // If the user triggers several calls to updateBodyWindow() in rapid succession by
+    // quickly moving between tasks, then the bodies loaded by one call may not be fully cleared
+    // by the next call, due to the way bodies are added and removed asynchronously in a background
+    // thread.  The problem seems worst for meshes loaded from a tar archive, and that is the
+    // case handled by this work-around.  The buttons for moving between tasks will be disabled
+    // until signals connected to the onBodyMeshesAdded and onBodyMeshLoaded slots indicate that
+    // all the meshes from the archive have been loaded.
+
+    const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+    foreach (uint64_t bodyID, visible) {
+        if (!ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+            return;
+        }
+    }
+
+    const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+    foreach (uint64_t bodyID, selected) {
+        if (!ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+            return;
+        }
+    }
+
+    ui->nextButton->setEnabled(false);
+    ui->prevButton->setEnabled(false);
 }
 
 /*
@@ -1047,6 +1085,22 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
+{
+    m_bodyMeshLoadedExpected += numMeshes;
+    if (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived) {
+        updateButtonsEnabled();
+    }
+}
+
+void TaskProtocolWindow::onBodyMeshLoaded()
+{
+    m_bodyMeshLoadedReceived++;
+    if (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived) {
+        updateButtonsEnabled();
+    }
 }
 
 void TaskProtocolWindow::applicationQuitting() {
