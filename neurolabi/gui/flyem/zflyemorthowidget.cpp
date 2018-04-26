@@ -200,7 +200,7 @@ void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)
 void ZFlyEmOrthoWidget::moveUp()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetStackSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setY(newCenter.getY() - currentBox.getHeight() / 2);
 
@@ -210,7 +210,7 @@ void ZFlyEmOrthoWidget::moveUp()
 void ZFlyEmOrthoWidget::moveDown()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetStackSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setY(newCenter.getY() + currentBox.getHeight() / 2);
 
@@ -220,7 +220,7 @@ void ZFlyEmOrthoWidget::moveDown()
 void ZFlyEmOrthoWidget::moveLeft()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetStackSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setX(newCenter.getX() - currentBox.getWidth() / 2);
 
@@ -230,7 +230,7 @@ void ZFlyEmOrthoWidget::moveLeft()
 void ZFlyEmOrthoWidget::moveRight()
 {
 //  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
-  ZIntCuboid currentBox = ZStackDocHelper::GetStackSpaceRange(getDocument());
+  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setX(newCenter.getX() + currentBox.getWidth() / 2);
 

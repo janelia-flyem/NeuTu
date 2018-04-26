@@ -383,3 +383,9 @@ void ZIntPoint::write(std::ostream &stream) const
   misc::write(stream, m_y);
   misc::write(stream, m_z);
 }
+
+std::ostream &operator<<(std::ostream &stream, const ZIntPoint &pt)
+{
+  stream << "(" << pt.getX() << ", " << pt.getY() << ", " << pt.getZ() << ")";
+  return stream;
+}

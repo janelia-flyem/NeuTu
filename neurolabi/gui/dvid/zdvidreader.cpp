@@ -3860,6 +3860,34 @@ uint64_t ZDvidReader::readBodyIdAt(int x, int y, int z) const
   return bodyId;
 }
 
+uint64_t ZDvidReader::readSupervoxelIdAt(const ZIntPoint &pt) const
+{
+  return readSupervoxelIdAt(pt.getX(), pt.getY(), pt.getZ());
+}
+
+uint64_t ZDvidReader::readSupervoxelIdAt(int x, int y, int z) const
+{
+  uint64_t bodyId = 0;
+
+  if (getDvidTarget().hasSupervoxel()) {
+    ZDvidBufferReader &bufferReader = m_bufferReader;
+    ZDvidUrl dvidUrl(m_dvidTarget);
+    bufferReader.read(dvidUrl.getLocalSupervoxelIdUrl(x, y, z).c_str(), isVerbose());
+    setStatusCode(bufferReader.getStatusCode());
+
+    ZJsonObject infoJson;
+    infoJson.decodeString(bufferReader.getBuffer().data());
+
+    if (infoJson.hasKey("Label")) {
+      bodyId = (uint64_t) ZJsonParser::integerValue(infoJson["Label"]);
+    }
+
+    clearBuffer();
+  }
+
+  return bodyId;
+}
+
 std::vector<std::vector<uint64_t> > ZDvidReader::readBodyIdAt(
     const std::vector<std::vector<ZIntPoint> > &ptArray) const
 {
@@ -4120,6 +4148,7 @@ ZJsonObject ZDvidReader::readJsonObject(const std::string &url) const
     } else {
       bufferReader.readFromPath(url.c_str(), isVerbose());
     }
+    setStatusCode(bufferReader.getStatusCode());
     const QByteArray &buffer = bufferReader.getBuffer();
     if (!buffer.isEmpty()) {
       obj.decodeString(buffer.constData());

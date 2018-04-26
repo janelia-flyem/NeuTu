@@ -156,6 +156,7 @@ public:
   int getDim(neutube::EAxis axis) const;
 
   ZIntPoint getCenter() const;
+  void setCenter(const ZIntPoint &center);
 
 
   /*!

@@ -40,6 +40,8 @@
 #include "zstackviewlocator.h"
 #include "zscrollslicestrategy.h"
 #include "zarbsliceviewparam.h"
+#include "zstackdochelper.h"
+#include "mvc/zpositionmapper.h"
 
 using namespace std;
 
@@ -291,17 +293,42 @@ void ZStackView::setCentralView(int width, int height)
 
 void ZStackView::updateDataInfo(const QPoint &widgetPos)
 {
-  if (getSliceAxis() != neutube::A_AXIS) {
-    int z = sliceIndex();
-    if (buddyPresenter()->interactiveContext().isProjectView()) {
-      z = -1;
-    }
+  int z = sliceIndex();
+  if (buddyPresenter()->interactiveContext().isProjectView()) {
+    z = -1;
+  }
 
-    QPointF pos = imageWidget()->canvasCoordinate(widgetPos);
-    ZPoint pt = ZPoint(pos.x(), pos.y(), z);
-    //          pt.shiftSliceAxisInverse(getSliceAxis());
+#ifdef _DEBUG_2
+  std::cout << "Slice index in " << __FUNCTION__ << ": " << z << std::endl;
+#endif
+
+  //    QPointF pos = imageWidget()->canvasCoordinate(widgetPos);
+  ZPoint pos(widgetPos.x(), widgetPos.y(), z);
+
+  if (buddyDocument()->hasStackData()) {
+    ZPoint pt = ZPositionMapper::WidgetToRawStack(pos, getViewProj());
     setInfo(buddyDocument()->rawDataInfo(
               pt.x(), pt.y(), pt.z(), getSliceAxis()));
+  } else {
+    ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(
+          *buddyDocument(), getSliceAxis());
+#ifdef _DEBUG_2
+    std::cout << "Stack range: " << box.toString() << std::endl;
+#endif
+    QPointF stackPos = ZPositionMapper::WidgetToStack(
+          widgetPos.x(), widgetPos.y(), getViewProj());
+    ZPoint dataPos;
+    if (getSliceAxis() == neutube::A_AXIS) {
+      dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
+    } else {
+      dataPos = ZPositionMapper::StackToData(
+            ZPositionMapper::WidgetToStack(
+              pos, getViewProj(), box.getFirstCorner().getZ()), getSliceAxis());
+    }
+    setInfo(QString("(%1, %2, %3); (%4, %5, %6)").
+            arg(pos.x()).arg(pos.y()).arg(z).
+            arg(iround(dataPos.getX())).arg(iround(dataPos.getY())).
+            arg(iround(dataPos.getZ())));
   }
 }
 
@@ -403,6 +430,8 @@ double ZStackView::getProjZoomRatio() const
 
 ZIntCuboid ZStackView::getViewBoundBox() const
 {
+  return ZStackDocHelper::GetStackSpaceRange(*buddyDocument(), getSliceAxis());
+  /*
   ZStack *stack = stackData();
   ZIntCuboid box;
   if (stack != NULL) {
@@ -411,16 +440,20 @@ ZIntCuboid ZStackView::getViewBoundBox() const
   }
 
   return box;
+  */
 }
 
 int ZStackView::getDepth() const
 {
+  return getViewBoundBox().getDepth();
+  /*
   ZStack *stack = stackData();
   if (stack != NULL) {
     return stack->getBoundBox().getDim(m_sliceAxis);
   }
 
   return 0;
+  */
 }
 
 void ZStackView::setSliceAxis(neutube::EAxis axis)
@@ -428,6 +461,11 @@ void ZStackView::setSliceAxis(neutube::EAxis axis)
   m_sliceAxis = axis;
   m_imageWidget->setSliceAxis(axis);
   m_paintBundle.setSliceAxis(axis);
+}
+
+ZAffinePlane ZStackView::getAffinePlane() const
+{
+  return m_sliceViewParam.getAffinePlane();
 }
 
 void ZStackView::setSliceRange(int minSlice, int maxSlice)
@@ -487,7 +525,9 @@ void ZStackView::configure(EMode mode)
     hideLayout(m_zControlLayout);
     break;
   case MODE_PLAIN_IMAGE:
+#ifndef _DEBUG_
     hideLayout(m_topLayout);
+#endif
     hideLayout(m_secondTopLayout);
     hideLayout(m_zControlLayout);
     m_imageWidget->hideZoomHint();
@@ -572,7 +612,7 @@ void ZStackView::updateChannelControl()
   m_zSpinBox->setVisible(false);
   ZStack *stack = stackData();
   if (stack != NULL) {
-    if (getDepth() > 1) {
+    if (getDepth() > 1 && getSliceAxis() != neutube::A_AXIS) {
       m_zSpinBox->setVisible(true);
     }
 
@@ -652,29 +692,39 @@ int ZStackView::sliceIndex() const
   return m_depthControl->value();
 }
 
+int ZStackView::getZ0() const
+{
+  return getStackOffset().getZ();
+}
+
+ZIntPoint ZStackView::getStackOffset() const
+{
+  return ZStackDocHelper::GetStackSpaceRange(
+        *buddyDocument(), getSliceAxis()).getFirstCorner();
+}
+
 int ZStackView::getCurrentZ() const
 {
-  return sliceIndex() +
-      buddyDocument()->getStackOffset(m_sliceAxis);
+  return sliceIndex() + getZ0();
 }
 
 void ZStackView::setZ(int z)
 {
   if (z != getZ(neutube::COORD_STACK)) {
-    setSliceIndex(
-          z - buddyDocument()->getStackOffset(m_sliceAxis));
+    setSliceIndex(z - getZ0());
   }
 }
 
 void ZStackView::setZQuitely(int z)
 {
-  setSliceIndexQuietly(
-        z - buddyDocument()->getStackOffset(m_sliceAxis));
+  setSliceIndexQuietly(z - getZ0());
 }
 
 void ZStackView::setSliceIndex(int slice)
 {
   if (!isDepthFronzen()) {
+    LDEBUG() << "Set slice index:" << slice;
+
     recordViewParam();
 //    setDepthFrozen(true);
     m_depthControl->setValue(slice);
@@ -687,6 +737,8 @@ void ZStackView::setSliceIndex(int slice)
 void ZStackView::setSliceIndexQuietly(int slice)
 {
   if (!isDepthFronzen()) {
+    LDEBUG() << "Set slice index:" << slice;
+
     recordViewParam();
     m_depthControl->setValueQuietly(slice);
     m_zSpinBox->setValueQuietly(slice);
@@ -725,7 +777,7 @@ void ZStackView::updatePaintBundle()
 //  m_paintBundle.unsetSwcNodeList();
   m_paintBundle.clearAllDrawableLists();
   if (buddyDocument()) {
-    m_paintBundle.setStackOffset(buddyDocument()->getStackOffset());
+    m_paintBundle.setStackOffset(getStackOffset());
   }
 
   int slice = m_depthControl->value();
@@ -956,6 +1008,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
 
 void ZStackView::resizeEvent(QResizeEvent *event)
 {
+  LDEBUG() << "ZStackView::resizeEvent:" << size() << isVisible();
   setInfo();
   event->accept();
 
@@ -965,6 +1018,11 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 //  updateActiveDecorationCanvas();
 //  updateTileCanvas();
   //buddyPresenter()->updateInteractiveContext();
+}
+
+void ZStackView::showEvent(QShowEvent */*event*/)
+{
+  LDEBUG() << "ZStackView::showEvent:" << size();
 }
 
 void ZStackView::processStackChange(bool rangeChanged)
@@ -1785,7 +1843,7 @@ void ZStackView::prepareCanvasPainter(ZPixmap *canvas, ZPainter &canvasPainter)
         canvasPainter.restart(canvas);
       }
     }
-    canvasPainter.setZOffset(buddyDocument()->getStackOffset().getZ());
+    canvasPainter.setZOffset(getZ0());
   }
 }
 
@@ -1871,7 +1929,7 @@ void ZStackView::paintStackBuffer()
           ZStack *slice =
               buddyDocument()->getSparseStack()->getSlice(getCurrentZ());
           //paintSingleChannelStackSlice(slice, 0);
-          slice->translate(-buddyDocument()->getStackOffset());
+          slice->translate(-getStackOffset());
           slice->getOffset().setZ(0);
 
           m_image->setData(slice, 0, true);
@@ -1893,7 +1951,7 @@ void ZStackView::paintStackBuffer()
           ZStack *slice =
               buddyDocument()->getConstSparseStack()->getMip();
           if (slice != NULL) {
-            slice->translate(-buddyDocument()->getStackOffset());
+            slice->translate(-getStackOffset());
             slice->getOffset().setZ(0);
 
             m_image->setData(slice, 0, false, true);
@@ -2506,7 +2564,7 @@ int ZStackView::getZ(neutube::ECoordinateSystem coordSys) const
 {
   int z = sliceIndex();
   if (coordSys == neutube::COORD_STACK) {
-    z += buddyDocument()->getStackOffset().getSliceCoord(m_sliceAxis);
+    z += getZ0();
   }
 
   return z;
@@ -2572,6 +2630,11 @@ void ZStackView::updateViewParam(const ZStackViewParam &param)
       }
       setZQuitely(param.getZ());
 
+#ifdef _DEBUG_
+      std::cout << "View param updated: z=" << getZ(neutube::COORD_STACK)
+                << std::endl;
+#endif
+
       processViewChange(true);
       updateImageScreen(UPDATE_DIRECT);
     }
@@ -2613,9 +2676,7 @@ ZStackViewParam ZStackView::getViewParameter(
 //  param.setProjRect(getProjRegion());
   param.setExploreAction(action);
   param.setSliceAxis(m_sliceAxis);
-  param.setZOffset(
-        buddyDocument()->getStackOffset().getSliceCoord(getSliceAxis()));
-
+  param.setZOffset(getZ0());
 
   if (m_sliceAxis == neutube::A_AXIS) {
     ZArbSliceViewParam viewParam = m_sliceViewParam;
@@ -2742,8 +2803,7 @@ void ZStackView::recordViewParam()
 void ZStackView::updateSliceFromZ(int z)
 {
   bool depthChanged = false;
-  int slice =
-      z - buddyDocument()->getStackOffset().getSliceCoord(getSliceAxis());
+  int slice = z - getZ0();
   if (slice != m_depthControl->value()) {
     setSliceIndexQuietly(slice);
     depthChanged = true;

@@ -13,6 +13,7 @@
 #include "zintcuboidarray.h"
 #include "zpointarray.h"
 #include "ztree.h"
+#include "zarray.h"
 
 class ZGraph;
 class ZIntPoint;
@@ -65,6 +66,8 @@ ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 
 ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
 ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
+
+ZIntCuboid GetBoundBox(const ZArray *array);
 
 enum ESampleStackOption {
   SAMPLE_STACK_NN, SAMPLE_STACK_AVERAGE, SAMPLE_STACK_UNIFORM

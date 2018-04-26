@@ -56,7 +56,7 @@ void ZViewProj::setWidgetRect(const QRect &widgetRect)
   m_widgetRect = widgetRect;
   if (m_viewPortBuffer.isValid()) {
     setViewPort(m_viewPortBuffer);
-    m_viewPortBuffer.setSize(QSize(0, 0));
+    m_viewPortBuffer.setSize(QSize(0, 0)); //clear buffer
   }
   deprecateViewPort();
 }

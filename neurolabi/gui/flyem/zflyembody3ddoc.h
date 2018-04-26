@@ -168,7 +168,8 @@ public:
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
   void addTodo(int x, int y, int z, bool checked, uint64_t bodyId);
-  void addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
+  void addTosplit(int x, int y, int z, bool checked, uint64_t bodyId);
+  bool addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
   void addTodoSliently(const ZFlyEmToDoItem &item);
   void addTodo(const QList<ZFlyEmToDoItem> &itemList);
   void updateSegmentation();
@@ -278,8 +279,41 @@ public:
   void makeAction(ZActionFactory::EAction item) override;
 
 public:
-  void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
+  void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  ZFlyEmToDoItem::EToDoAction action,
+      uint64_t bodyId);
   void executeRemoveTodoCommand();
+
+  //override to disable the swc commands
+  virtual bool executeDeleteSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeDeleteUnselectedSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node */*tn*/) override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand(
+      Swc_Tree_Node */*tn1*/, Swc_Tree_Node */*tn2*/) override {
+    return false;
+  }
+  virtual bool executeSmartConnectSwcNodeCommand(
+      Swc_Tree_Node */*tn1*/, Swc_Tree_Node */*tn2*/) override {
+    return false;
+  }
+  virtual bool executeSmartConnectSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeBreakSwcConnectionCommand() override {
+    return false;
+  }
+  virtual bool executeMergeSwcNodeCommand() override {
+    return false;
+  }
 
 public:
 //  ZDvidSparseStack* loadDvidSparseStack();

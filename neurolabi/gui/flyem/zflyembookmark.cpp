@@ -247,7 +247,7 @@ void ZFlyEmBookmark::setCustom(bool state)
   */
   m_isCustom = state;
   if (state == true) {
-    setHitProtocal(ZStackObject::HIT_STACK_POS);
+    setHitProtocal(ZStackObject::HIT_DATA_POS);
   } else {
     setHitProtocal(ZStackObject::HIT_NONE);
   }

@@ -17,7 +17,7 @@ TEST(ZMouseEventProcessor, MapPoint)
 
   ZStackDoc doc;
   doc.loadStack(ZStackFactory::MakeVirtualStack(100, 200, 300));
-  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(&doc);
+  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(&doc, neutube::Z_AXIS);
 
   ZViewProj viewProj;
   viewProj.setCanvasRect(QRect(box.getFirstCorner().getX(),
@@ -27,7 +27,7 @@ TEST(ZMouseEventProcessor, MapPoint)
 
   double x = 50.0;
   double y = 50.0;
-  processor.mapPositionFromWidgetToRawStack(&x, &y, viewProj);
+//  processor.mapPositionFromWidgetToRawStack(&x, &y, viewProj);
   ASSERT_DOUBLE_EQ(50.0, x);
   ASSERT_DOUBLE_EQ(50.0, y);
 

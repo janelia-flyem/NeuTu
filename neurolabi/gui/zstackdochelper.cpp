@@ -122,22 +122,49 @@ ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
     const ZStackDoc *doc, neutube::EAxis sliceAxis)
 {
   ZIntCuboid box;
-
-  if (doc->hasStack()) {
-    box = doc->getStack()->getBoundBox();
-    box.shiftSliceAxis(sliceAxis);
+  if (doc != NULL) {
+    box = GetStackSpaceRange(*doc, sliceAxis);
   }
 
   return box;
 }
 
+ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
+    const ZStackDoc &doc, neutube::EAxis sliceAxis)
+{
+  ZIntCuboid box;
+
+  if (doc.hasStack()) {
+    box = doc.getStack()->getBoundBox();
+    if (sliceAxis == neutube::A_AXIS) {
+      ZIntPoint center = box.getCenter();
+      int length = iround(box.getDiagonalLength());
+      box.setSize(length, length, length);
+      box.setCenter(center);
+    } else {
+      box.shiftSliceAxis(sliceAxis);
+    }
+  }
+
+  return box;
+}
 
 ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc *doc)
 {
   ZIntCuboid box;
+  if (doc != NULL) {
+    box = GetDataSpaceRange(*doc);
+  }
 
-  if (doc->hasStack()) {
-    box = doc->getStack()->getBoundBox();
+  return box;
+}
+
+ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc &doc)
+{
+  ZIntCuboid box;
+
+  if (doc.hasStack()) {
+    box = doc.getStack()->getBoundBox();
   }
 
   return box;

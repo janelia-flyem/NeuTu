@@ -1,6 +1,7 @@
 #include "zmeshfactory.h"
 #include "zobject3dscan.h"
 #include "zmesh.h"
+#include "zstack.hxx"
 #include "tz_stack_neighborhood.h"
 #include "zintcuboid.h"
 #include "misc/miscutility.h"

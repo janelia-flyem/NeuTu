@@ -91,6 +91,8 @@ public:
 private:
   void processSelectionOperation(
       ZStackOperator &op, const ZMouseEvent &event) const;
+  void setOperation(ZStackOperator &op, const ZMouseEvent &event) const;
+  void hitTest(ZStackOperator &op, const ZMouseEvent &event) const;
 };
 
 ////////////////////////////////////

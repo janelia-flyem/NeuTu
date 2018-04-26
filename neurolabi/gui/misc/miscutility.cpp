@@ -15,6 +15,7 @@
 #include "zclosedcurve.h"
 #include "zintcuboid.h"
 #include "zstack.hxx"
+#include "zarray.h"
 
 using namespace std;
 
@@ -646,6 +647,19 @@ ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
   }
 
   return curve;
+}
+
+ZIntCuboid misc::GetBoundBox(const ZArray *array)
+{
+  ZIntCuboid box;
+  if (array != NULL) {
+    box.setFirstCorner(array->getStartCoordinate(0),
+                       array->getStartCoordinate(1),
+                       array->getStartCoordinate(2));
+    box.setSize(array->getDim(0), array->getDim(1), array->getDim(2));
+  }
+
+  return box;
 }
 
 ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)

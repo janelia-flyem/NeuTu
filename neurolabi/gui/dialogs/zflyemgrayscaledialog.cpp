@@ -208,5 +208,12 @@ void ZFlyEmGrayscaleDialog::makeGrayscaleExportAppearance()
   ui->fullRangeCheckBox->setVisible(false);
 }
 
+void ZFlyEmGrayscaleDialog::makeBodyFieldExportAppearance()
+{
+  ui->downsampleSpinBox->setVisible(false);
+  ui->downsampleLabel->setVisible(false);
+  ui->sparseCheckBox->setVisible(false);
+  ui->fullRangeCheckBox->setVisible(true);
+}
 
 
