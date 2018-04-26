@@ -102,6 +102,9 @@ void Neu3Window::initialize()
   connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
   connect(m_3dwin, SIGNAL(neutuTriggered()), this, SLOT(openNeuTu()));
   ZWidgetMessage::ConnectMessagePipe(m_3dwin, this);
+  ZWidgetMessage::ConnectMessagePipe(getBodyDocument(), this);
+  ZWidgetMessage::DisconnectMessagePipe(getBodyDocument(), m_3dwin);
+
   setCentralWidget(m_3dwin);
 
   createDialogs();
@@ -465,6 +468,10 @@ void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
     ZStackDocAccessor::AddObjectUnique(getBodyDocument(), graph);
 
     m_browsePos = param.getCenter().toPoint();
+
+#ifdef _DEBUG_
+    std::cout << "Browse pos: " << m_browsePos.toString() << std::endl;
+#endif
   }
 }
 
@@ -602,41 +609,6 @@ void Neu3Window::browse(double x, double y, double z)
   } else {
     updateSliceBrowser();
   }
-
-#if 0
-#if 1
-//  initGrayscaleWidget();
-  createGrayscaleWidget();
-  m_grayscaleWidget->show();
-  m_grayscaleWidget->resetViewParam(getSliceViewParam(x, y, z));
-  m_grayscaleWidget->raise();
-#else
-  glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
-  ZWeightedPoint rotation;
-  rotation.set(r.x, r.y, r.z);
-  rotation.setWeight(r.w);
-
-#if defined(_USE_WEBENGINE_)
-  initWebView();
-  QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
-             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
-             rotation, m_bodyListWidget->getModel()->getBodySet()));
-
-
-  m_webView->setUrl(url);
-  m_webView->show();
-  m_webView->raise();
-#else
-  ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
-
-  bo->open(ZFlyEmMisc::GetNeuroglancerPath(
-             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
-             rotation, m_bodyListWidget->getModel()->getBodySet()));
-#endif
-#endif
-
-  m_browsePos.set(x, y, z);
-#endif
 }
 
 void Neu3Window::startBrowser(EBrowseMode mode)

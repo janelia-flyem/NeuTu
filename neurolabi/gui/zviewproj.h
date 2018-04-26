@@ -80,21 +80,33 @@ public:
   void setViewPort(const QRect &rect);
   void setViewPortWithZoomFixed(const QRect &rect);
 
+  /*!
+   * \brief Cache a viewport for future setting
+   */
   void prepareViewPort(const QRect &rect);
+
+  /*!
+   * \brief Store the current viewport into the buffer
+   */
+  void backupViewPort();
 
   void zoomTo(int x, int y, int width);
   void zoomTo(const QPoint &pt, int width);
 
   /*!
    * \brief Zooming with reference point
-   * \param rx
-   * \param ry
+   *
+   * \param rx X coordinate of reference point.
+   * \param ry Y coordinate of reference point.
    */
   void increaseZoom(int rx, int ry);
   void decreaseZoom(int rx, int ry);
 
   void move(int dx, int dy);
 
+  /*!
+   * \brief Reset the viewport if it contains the whole canvas.
+   */
   void recoverViewPort();
 
   void print() const;
@@ -119,7 +131,9 @@ private:
   QRect m_canvasRect;
   QRect m_widgetRect;
 
-  QRect m_viewPortBuffer;
+  QRect m_viewPortBuffer; //The buffer is used to force viewport setting
+                          //It will be removed if m_viewPort becomes a canonical
+                          //member in the future.
 
   mutable QRectF m_projRegion;
   mutable QRect m_viewPort;

@@ -61,7 +61,7 @@ void ZTiledStackFrame::updateStackBoundBox()
 {
 //  ZIntCuboid box = document()->getStack()->getBoundBox();
 
-  ZIntCuboid box = ZStackDocHelper::GetStackSpaceRange(document().get());
+  ZIntCuboid box = ZStackDocHelper::GetDataSpaceRange(document().get());
 
   Z3DGraphFactory factory;
   factory.setShapeHint(GRAPH_LINE);

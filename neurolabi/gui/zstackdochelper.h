@@ -47,8 +47,11 @@ public:
    * \brief Get the range of the current axis-shifted stack space.
    */
   static ZIntCuboid GetStackSpaceRange(
-      const ZStackDoc *doc, neutube::EAxis sliceAxis = neutube::Z_AXIS);
+      const ZStackDoc *doc, neutube::EAxis sliceAxis);
+  static ZIntCuboid GetStackSpaceRange(
+      const ZStackDoc &doc, neutube::EAxis sliceAxis);
 
+  static ZIntCuboid GetDataSpaceRange(const ZStackDoc &doc);
   static ZIntCuboid GetDataSpaceRange(const ZStackDoc *doc);
 
   static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);

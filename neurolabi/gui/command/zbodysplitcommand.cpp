@@ -362,6 +362,7 @@ std::vector<uint64_t> ZBodySplitCommand::commitResult(
           }
           currentBodyId = idPair.first;
         }
+        std::cout << "New IDs: ";
         for (uint64_t id : newBodyIdArray) {
           std::cout << id << " ";
         }

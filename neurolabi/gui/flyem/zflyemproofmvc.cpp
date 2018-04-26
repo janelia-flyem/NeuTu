@@ -800,6 +800,8 @@ void ZFlyEmProofMvc::makeBodyWindow()
   m_bodyWindow->setOpacity(neutube3d::LAYER_MESH, 0.2);
 //  m_bodyWindow->setFront(neutube3d::LAYER_MESH, true);
 
+  m_bodyWindow->getSwcFilter()->setSwcTopologyMutable(false);
+//  m_bodyWindow->getSwcFilter()->forceNodePicking(true);
   m_bodyWindow->getMeshFilter()->setColorMode("Mesh Color");
   m_bodyWindow->setWindowType(neutube3d::TYPE_BODY);
   m_bodyWindow->readSettings();
@@ -3053,7 +3055,7 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
 
 void ZFlyEmProofMvc::exportSelectedBodyLevel()
 {
-  m_grayscaleDlg->makeBodyExportAppearance();
+  m_grayscaleDlg->makeBodyFieldExportAppearance();
   if (m_grayscaleDlg->exec()) {
     QString fileName = ZDialogFactory::GetSaveFileName("Export Bodies", "", this);
     if (!fileName.isEmpty()) {
@@ -3073,8 +3075,8 @@ void ZFlyEmProofMvc::exportSelectedBodyLevel()
           int index = 0;
           for (std::set<uint64_t>::const_iterator iter = idSet.begin();
                iter != idSet.end(); ++iter) {
-            ZObject3dScan *obj = objArray[index];
-            reader.readBody(*iter, false, obj);
+//            ZObject3dScan *obj = objArray[index];
+            objArray[index] = reader.readBody(*iter, false, NULL);
             index++;
           }
         }
@@ -3221,7 +3223,7 @@ void ZFlyEmProofMvc::exitSplit()
         getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(neutube::COORD_STACK));
-    labelSlice->setHitProtocal(ZStackObject::HIT_STACK_POS);
+    labelSlice->setHitProtocal(ZStackObject::HIT_DATA_POS);
 //    labelSlice->setHittable(true);
 
     //m_splitProject.clearBookmarkDecoration();

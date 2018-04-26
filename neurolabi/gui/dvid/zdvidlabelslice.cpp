@@ -22,6 +22,7 @@
 #include "zarbsliceviewparam.h"
 #include "zstackviewparam.h"
 #include "zdviddataslicehelper.h"
+#include "misc/miscutility.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -1017,13 +1018,24 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
     int ny = iround(y);
     int nz = iround(z);
 
-    ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
+//    ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
 
-    if (getHelper()->getViewPort().contains(nx, ny) &&
-        nz == getHelper()->getZ()) {
+//    if (getHelper()->getViewPort().contains(nx, ny) &&
+//        nz == getHelper()->getZ()) {
 //      ZDvidReader reader;
+    bool withinRange = true;
+    if (getSliceAxis() != neutube::A_AXIS) {
+      ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
+      if (!getHelper()->getViewPort().contains(nx, ny) ||
+              nz != getHelper()->getZ()) {
+        withinRange = false;
+      }
+      ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
+    }
+
+    if (withinRange) {
       if (getHelper()->getDvidReader().isReady()) {
-        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
+//        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
         m_hitLabel = getMappedLabel(
               getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
               neutube::BODY_LABEL_ORIGINAL);

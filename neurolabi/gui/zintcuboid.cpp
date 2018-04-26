@@ -417,6 +417,16 @@ ZIntPoint ZIntCuboid::getCenter() const
       ZIntPoint(getWidth() / 2, getHeight() / 2, getDepth() / 2);
 }
 
+void ZIntCuboid::setCenter(const ZIntPoint &center)
+{
+  int width = getWidth();
+  int height = getHeight();
+  int depth = getDepth();
+
+  setFirstCorner(center - ZIntPoint(width, height, depth) / 2);
+  setSize(width, height, depth);
+}
+
 ZJsonArray ZIntCuboid::toJsonArray() const
 {
   ZJsonArray json;

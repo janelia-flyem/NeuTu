@@ -175,6 +175,7 @@ public:
 
   void setSliceAxis(neutube::EAxis axis);
   neutube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  ZAffinePlane getAffinePlane() const;
 
   /*!
    * \brief Get stack data from the buddy document
@@ -187,6 +188,7 @@ public:
   void prepareDocument();
 
   virtual void resizeEvent(QResizeEvent *event);
+  virtual void showEvent(QShowEvent *event);
 
   /*!
    * \brief Get the information of the view as a list of strings.
@@ -489,12 +491,14 @@ public: //Change view parameters
 public: //View parameters for arbitrary plane
   ZStackViewParam getViewParameter(const ZArbSliceViewParam &param) const;
   ZArbSliceViewParam getSliceViewParam() const;
+
+  void updateDataInfo(const QPoint &widgetPos);
 //  void setSliceViewParam(const ZArbSliceViewParam &param);
 //  void showArbSliceViewPort();
 
 protected:
   ZIntCuboid getViewBoundBox() const;
-  virtual int getDepth() const;
+  int getDepth() const;
 
   void clearCanvas();
   template<typename T>
@@ -567,12 +571,15 @@ private:
 
   ZStack* getObjectMask(uint8_t maskValue);
 
+  //Stack space offset
+  int getZ0() const;
+  ZIntPoint getStackOffset() const;
+
   /*!
    * \brief Get object mask of a certain color
    */
   ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
 
-  void updateDataInfo(const QPoint &widgetPos);
 //  void setCentralView(int width, int height);
 
   class ViewParamRecordOnce {

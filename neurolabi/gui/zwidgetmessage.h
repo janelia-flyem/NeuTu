@@ -63,6 +63,9 @@ public:
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target);
 
+  template <typename T1, typename T2>
+  static void DisconnectMessagePipe(T1 *source, T2 *target);
+
   //Obsolete API
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
@@ -95,11 +98,17 @@ void ZWidgetMessage::ConnectMessagePipe(
   }
 }
 
-
 template <typename T1, typename T2>
 void ZWidgetMessage::ConnectMessagePipe(T1 *source, T2 *target)
 {
   QObject::connect(source, SIGNAL(messageGenerated(ZWidgetMessage)),
+                   target, SLOT(processMessage(ZWidgetMessage)));
+}
+
+template <typename T1, typename T2>
+void ZWidgetMessage::DisconnectMessagePipe(T1 *source, T2 *target)
+{
+  QObject::disconnect(source, SIGNAL(messageGenerated(ZWidgetMessage)),
                    target, SLOT(processMessage(ZWidgetMessage)));
 }
 

@@ -41,13 +41,13 @@ void ZFlyEmArbDoc::prepareDvidData()
       boundBox = ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(512, 512, 512));
     }
 
-    int radius = int(std::ceil(boundBox.getDiagonalLength() * 0.5));
-    ZIntPoint center = boundBox.getCenter();
-    ZIntCuboid newBox(center - radius, center + radius);
+//    int radius = int(std::ceil(boundBox.getDiagonalLength() * 0.5));
+//    ZIntPoint center = boundBox.getCenter();
+//    ZIntCuboid newBox(center - radius, center + radius);
 //    newBox.setFirstZ(0);
 //    newBox.setDepth(1);
 
-    ZStack *stack = ZStackFactory::MakeVirtualStack(newBox);
+    ZStack *stack = ZStackFactory::MakeVirtualStack(boundBox);
     loadStack(stack);
 
     if (getDvidTarget().hasGrayScaleData()) {

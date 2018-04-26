@@ -146,6 +146,8 @@ public:
   std::string getLocalBodyIdUrl(int x, int y, int z) const;
   std::string getLocalBodyIdArrayUrl() const;
 
+  std::string getLocalSupervoxelIdUrl(int x, int y, int z) const;
+
   std::string getBodyLabelUrl() const;
   std::string getBodyLabelUrl(const std::string &dataName) const;
     /*
