@@ -465,6 +465,18 @@ std::string ZIntCuboid::toString() const
   stream << getFirstCorner().toString() << "->" << getLastCorner().toString();
   return stream.str();
 }
+
+bool ZIntCuboid::operator ==(const ZIntCuboid &box) const
+{
+  return m_firstCorner == box.m_firstCorner && m_lastCorner == box.m_lastCorner;
+}
+
+bool ZIntCuboid::operator !=(const ZIntCuboid &box) const
+{
+  return m_firstCorner != box.m_firstCorner ||
+      m_lastCorner != box.m_lastCorner;
+}
+
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
 {

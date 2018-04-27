@@ -1502,7 +1502,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     updateContrast();
   }
 
-  getView()->reset(false);
+//  getView()->reset(false);
   getProgressSignal()->advanceProgress(0.1);
 
   m_splitProject.setDvidTarget(getDvidTarget());

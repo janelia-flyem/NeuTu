@@ -1512,6 +1512,7 @@ const ZStack* ZStackDoc::stackRef() const
 
 void ZStackDoc::loadStack(Stack *stack, bool isOwner)
 {
+  LDEBUG() << "Loading stack";
   if (stack == NULL)
     return;
 
@@ -5708,7 +5709,11 @@ void ZStackDoc::notifySparseObjectModified()
 
 void ZStackDoc::notifyStackModified(bool rangeChanged)
 {
-  emit stackModified(rangeChanged);
+  LDEBUG() << "Stack modified";
+  if (rangeChanged) {
+    emit stackRangeChanged();
+  }
+  emit stackModified(false);
 //  emit stackBoundBoxChanged();
 }
 

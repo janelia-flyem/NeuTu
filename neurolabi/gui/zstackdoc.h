@@ -1251,6 +1251,7 @@ signals:
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
   void stackModified(bool rangeChanged);
+  void stackRangeChanged();
   void sparseStackModified();
   void labelFieldModified();
   void segmentationUpdated();

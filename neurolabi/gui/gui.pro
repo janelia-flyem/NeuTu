@@ -18,6 +18,8 @@ contains(CONFIG, neu3) | contains(CONFIG, flyem) {
   DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
 }
 
+CONFIG += object_parallel_to_source
+
 #DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
@@ -863,7 +865,9 @@ HEADERS += mainwindow.h \
     zstackdocnullmenufactory.h \
     mvc/zstackspaceconfig.h \
     mvc/zviewspaceconfig.h \
-    mvc/zpositionmapper.h
+    mvc/zpositionmapper.h \
+    data3d/zstackobjecthelper.h \
+    data3d/utilities.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1511,7 +1515,9 @@ SOURCES += main.cpp \
     zstackdocnullmenufactory.cpp \
     mvc/zstackspaceconfig.cpp \
     mvc/zviewspaceconfig.cpp \
-    mvc/zpositionmapper.cpp
+    mvc/zpositionmapper.cpp \
+    data3d/zstackobjecthelper.cpp \
+    data3d/utilities.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
