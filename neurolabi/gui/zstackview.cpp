@@ -428,6 +428,11 @@ double ZStackView::getProjZoomRatio() const
       m_imageWidget->viewPort().width();
 }
 
+ZIntCuboid ZStackView::getCurrentStackRange() const
+{
+  return m_currentStackRange;
+}
+
 ZIntCuboid ZStackView::getViewBoundBox() const
 {
   return ZStackDocHelper::GetStackSpaceRange(*buddyDocument(), getSliceAxis());
@@ -491,6 +496,8 @@ void ZStackView::resetDepthControl()
 
 void ZStackView::reset(bool updatingScreen)
 { 
+  LDEBUG() << "Resetting view";
+
   ZStack *stack = stackData();
   updateChannelControl();
   if (stack != NULL) {
@@ -581,6 +588,7 @@ void ZStackView::updateViewBox()
 
 void ZStackView::updateStackWidget()
 {
+  LDEBUG() << "Updating stack widget";
   updateChannelControl();
   updateThresholdSlider();
   updateSlider();
@@ -1025,18 +1033,31 @@ void ZStackView::showEvent(QShowEvent */*event*/)
   LDEBUG() << "ZStackView::showEvent:" << size();
 }
 
-void ZStackView::processStackChange(bool rangeChanged)
+void ZStackView::updateStackRange()
 {
-  updateChannelControl();
-
-  if (rangeChanged) {
+  LDEBUG() << "Updating stack range";
+  ZIntCuboid stackRange = getViewBoundBox();
+  if (stackRange != getCurrentStackRange()) {
     resetViewProj();
     updateSlider();
     setSliceIndexQuietly(m_depthControl->maximum() / 2);
+    m_currentStackRange = stackRange;
+
     updateObjectCanvas();
     updateTileCanvas();
     updateActiveDecorationCanvas();
     updateImageCanvas();
+  }
+}
+
+void ZStackView::processStackChange(bool rangeChanged)
+{
+  LDEBUG() << "Processing stack change";
+
+  updateChannelControl();
+
+  if (rangeChanged) {
+    updateStackRange();
   }
 
   processViewChange(true, true);
@@ -1100,7 +1121,8 @@ void ZStackView::redraw(EUpdateOption option)
 
 void ZStackView::prepareDocument()
 {
-  updateSlider();
+  updateStackRange();
+//  updateSlider();
 //  m_objectUpdater.setDocument(buddyDocument());
 }
 
@@ -3019,22 +3041,6 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
            iter != targetSet.end(); ++iter) {
         paintObjectBuffer(*iter);
       }
-
-      /*
-      if (depthChanged) {
-        if (!targetSet.contains(ZStackObject::TARGET_OBJECT_CANVAS)) {
-          paintObjectBuffer();
-        }
-        if (!targetSet.contains(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS)) {
-          paintDynamicObjectBuffer();
-        }
-      }
-
-
-      if (depthChanged) {
-        paintStackBuffer();
-      }
-            */
     }
 
     notifyViewChanged(getViewParameter()); //?

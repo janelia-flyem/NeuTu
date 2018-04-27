@@ -176,6 +176,9 @@ public:
 
   std::string toString() const;
 
+  bool operator == (const ZIntCuboid &box) const;
+  bool operator != (const ZIntCuboid &box) const;
+
 private:
   ZIntPoint m_firstCorner;
   ZIntPoint m_lastCorner;
