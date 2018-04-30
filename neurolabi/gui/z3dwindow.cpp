@@ -9,6 +9,7 @@
 
 #include "zstack.hxx"
 #include "zstackdoc.h"
+#include "zstackdocproxy.h"
 #include "zstackframe.h"
 
 #include "neutubeconfig.h"
@@ -761,6 +762,8 @@ void Z3DWindow::createMenus()
 //  m_editMenu->addAction(m_markSwcSomaAction);
 
   m_editMenu->addAction("Select Mesh by ID", this, SLOT(selectMeshByID()));
+  m_editMenu->addAction("Select All Meshes", this, SLOT(selectAllMeshes()),
+                        QKeySequence("ctrl+a"));
   m_editMenu->addSeparator();
 
   m_helpMenu->addAction(m_helpAction);
@@ -1166,6 +1169,20 @@ void Z3DWindow::selectMeshByID()
         QMessageBox::warning(this, title, warning);
       }
     }
+  }
+}
+
+void Z3DWindow::selectAllMeshes()
+{
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc) {
+    auto meshList = ZStackDocProxy::GetGeneralMeshList(doc);
+    for (ZMesh* mesh : meshList) {
+      doc->setMeshSelected(mesh, true);
+    }
+    QString message = QString::number(meshList.size());
+    message += (meshList.size() == 1) ? " mesh selected" : " meshes selected";
+    doc->notifyWindowMessageUpdated(message);
   }
 }
 
