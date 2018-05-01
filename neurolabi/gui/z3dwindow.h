@@ -253,6 +253,7 @@ public slots:
 
   void zoomToSelectedMeshes();
   void selectMeshByID();
+  void selectAllMeshes();
 
 //  void updateDecorationDisplay();
 
