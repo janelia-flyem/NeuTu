@@ -714,13 +714,15 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
     m_bodyMeshLoadedExpected = 0;
     m_bodyMeshLoadedReceived = 0;
 
-    // If the user triggers several calls to updateBodyWindow() in rapid succession by
-    // quickly moving between tasks, then the bodies loaded by one call may not be fully cleared
-    // by the next call, due to the way bodies are added and removed asynchronously in a background
+    // If the user triggers several calls to updateBodyWindow() in rapid succession, by
+    // quickly moving between tasks and using controls from the task widget that also change
+    // the loaded bodies, then the bodies loaded by one call may not be fully cleared by the
+    // next call, due to the way bodies are added and removed asynchronously in a background
     // thread.  The problem seems worst for meshes loaded from a tar archive, and that is the
-    // case handled by this work-around.  The buttons for moving between tasks will be disabled
-    // until signals connected to the onBodyMeshesAdded and onBodyMeshLoaded slots indicate that
-    // all the meshes from the archive have been loaded.
+    // case handled by this work-around.  The buttons for moving between tasks, and the whole
+    // task widget, will be disabled until signals connected to the onBodyMeshesAdded and
+    // onBodyMeshLoaded slots indicate that all the meshes from the archive have been loaded.
+
 
     const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
     foreach (uint64_t bodyID, visible) {
@@ -738,6 +740,9 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
     ui->nextButton->setEnabled(false);
     ui->prevButton->setEnabled(false);
+    if (m_currentTaskWidget) {
+      m_currentTaskWidget->setEnabled(false);
+    }
 }
 
 /*
@@ -1092,6 +1097,9 @@ void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
     m_bodyMeshLoadedExpected += numMeshes;
     if (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived) {
         updateButtonsEnabled();
+      if (m_currentTaskWidget) {
+        m_currentTaskWidget->setEnabled(true);
+      }
     }
 }
 
@@ -1100,6 +1108,9 @@ void TaskProtocolWindow::onBodyMeshLoaded()
     m_bodyMeshLoadedReceived++;
     if (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived) {
         updateButtonsEnabled();
+        if (m_currentTaskWidget) {
+          m_currentTaskWidget->setEnabled(true);
+        }
     }
 }
 
