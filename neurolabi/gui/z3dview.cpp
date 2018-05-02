@@ -36,6 +36,7 @@
 #include "z3dmainwindow.h"
 #include "z3dcontext.h"
 #include "zstackdoc3dhelper.h"
+#include "core/utilities.h"
 
 Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QMainWindow* parent)
   : QObject(parent)
@@ -332,7 +333,7 @@ bool Z3DView::takeFixedSizeSeriesScreenShot(const QDir& dir, const QString& name
     else
       camera().rotate(-rAngle, camera().get().vectorEyeToWorld(axis), camera().get().center());
     //resetCameraClippingRange();
-    int fieldWidth = numDigits(numFrame);
+    int fieldWidth = neutube::numDigits(numFrame);
     QString filename = QString("%1%2.tif").arg(namePrefix).arg(i, fieldWidth, 10, QChar('0'));
     QString filepath = dir.filePath(filename);
     if (!takeFixedSizeScreenShot(filepath, width, height, sst)) {
@@ -369,7 +370,7 @@ bool Z3DView::takeSeriesScreenShot(const QDir& dir, const QString& namePrefix, c
     else
       camera().rotate(-rAngle, camera().get().vectorEyeToWorld(axis), camera().get().center());
     //resetCameraClippingRange();
-    int fieldWidth = numDigits(numFrame);
+    int fieldWidth = neutube::numDigits(numFrame);
     QString filename = QString("%1%2.tif").arg(namePrefix).arg(i, fieldWidth, 10, QChar('0'));
     QString filepath = dir.filePath(filename);
     if (!takeScreenShot(filepath, sst)) {

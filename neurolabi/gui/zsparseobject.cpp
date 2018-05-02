@@ -89,7 +89,7 @@ void ZSparseObject::display(ZPainter &painter, int z, EDisplayStyle option,
             int wx = x;
             int wy = y;
             int wz = z;
-            ZGeometry::shiftSliceAxisInverse(wx, wy, wz, m_sliceAxis);
+            zgeom::shiftSliceAxisInverse(wx, wy, wz, m_sliceAxis);
             int v = getVoxelValue(x, y, z);
             painter.setPen(QColor(v, v, v));
             painter.drawPoint(QPoint(x, y));

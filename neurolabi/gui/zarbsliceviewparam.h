@@ -5,6 +5,7 @@
 #include "zpoint.h"
 
 class QRect;
+class ZAffinePlane;
 
 /*!
  * \brief The class of managing parameters of viewing an arbitrarily cut slice.
@@ -38,6 +39,8 @@ public:
   ZPoint getPlaneNormal() const;
   int getWidth() const;
   int getHeight() const;
+
+  ZAffinePlane getAffinePlane() const;
 
   /*!
    * \brief Move in the slicing coordinate system.

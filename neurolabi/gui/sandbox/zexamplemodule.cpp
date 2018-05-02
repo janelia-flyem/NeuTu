@@ -24,9 +24,8 @@ void ZExampleModule::execute()
 {
   ZStackDoc *doc = ZSandbox::GetCurrentDoc();
   if (doc != NULL) {
-    ZStack *stack = doc->getStack();
-    if (stack->hasData()) {
-      ZStackProcessor::SubtractBackground(stack);
+    if (doc->hasStackData()) {
+      ZStackProcessor::SubtractBackground(doc->getStack());
       doc->notifyStackModified(false);
     }
   }

@@ -6,6 +6,14 @@
 #include <sstream>
 #include <limits>
 #include <QToolBar>
+#include <QDesktopWidget>
+#include <QMenuBar>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMimeData>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QThread>
 
 #include "zstack.hxx"
 #include "zstackdoc.h"
@@ -20,7 +28,7 @@
 #include "zpunctum.h"
 #include "zlocsegchain.h"
 #include "z3dcanvas.h"
-#include <QThread>
+
 #include "z3dgraphfilter.h"
 #include "zswcnetwork.h"
 #include "zcloudnetwork.h"
@@ -84,14 +92,8 @@
 #include "zstackobjectsourcefactory.h"
 #include "sandbox/zbrowseropener.h"
 #include "zwidgetmessage.h"
+#include "core/utilities.h"
 
-#include <QDesktopWidget>
-#include <QMenuBar>
-#include <QInputDialog>
-#include <QLineEdit>
-#include <QMimeData>
-#include <QMessageBox>
-#include <QInputDialog>
 
 /*
 class Sleeper : public QThread
@@ -4007,7 +4009,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
   std::vector<ZPoint> intersection;
   ZStackDoc *doc = getDocument();
 
-  misc::assign<uint64_t>(id, 0);
+  neutube::assign<uint64_t>(id, 0);
 
   if (doc != NULL) {
     if (hasSwc()) {
@@ -4018,7 +4020,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
       if (tn != NULL) {
         ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
         if (tree != NULL) {
-          misc::assign(id, tree->getLabel());
+          neutube::assign(id, tree->getLabel());
           glm::dvec3 v1,v2;
           int w = getCanvas()->width();
           int h = getCanvas()->height();
@@ -4026,7 +4028,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
           ZPoint lineStart(v1.x, v1.y, v1.z);
           glm::dvec3 norm = v2 - v1;
           ZPoint lineNorm(norm.x, norm.y, norm.z);
-          intersection = ZGeometry::LineShpereIntersection(
+          intersection = zgeom::LineShpereIntersection(
                 lineStart, lineNorm, SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
         }
       }
@@ -4037,7 +4039,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
       if (mesh != NULL) {
         intersection = shootMesh(mesh, x, y);
         if (!intersection.empty()) {
-          misc::assign(id, mesh->getLabel());
+          neutube::assign(id, mesh->getLabel());
         }
       }
     }

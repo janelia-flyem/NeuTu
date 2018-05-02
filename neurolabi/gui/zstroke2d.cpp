@@ -960,7 +960,7 @@ bool ZStroke2d::hitTest(double x, double y, double z) const
 {
   bool hit = false;
 
-  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+  zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
 
   if (iround(z) == m_z) {
     hit = hitTest(x, y, getSliceAxis());
