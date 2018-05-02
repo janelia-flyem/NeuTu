@@ -7,6 +7,7 @@
 #include "zstackdoc.h"
 #include "z3dgraph.h"
 #include "zobjsitem.h"
+#include "core/utilities.h"
 
 ZGraphObjsModel::ZGraphObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -108,7 +109,7 @@ void ZGraphObjsModel::setupModelData(ZObjsItem *parent)
   ZOUT(LTRACE(), 5) << "Setup graph model";
   QList<ZStackObject*> graphList =
       m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
-  int numDigit = numDigits(graphList.size()+1);
+  int numDigit = neutube::numDigits(graphList.size()+1);
   for (int i=0; i<graphList.size(); i++) {
     data.clear();
     Z3DGraph *p = dynamic_cast<Z3DGraph*>(graphList.at(i));

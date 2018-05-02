@@ -19,6 +19,7 @@ contains(CONFIG, neu3) | contains(CONFIG, flyem) {
 }
 
 CONFIG += object_parallel_to_source
+message("Objs dir: $${OBJECTS_DIR}")
 
 #DEFINES+=_CLI_VERSION
 win32 {
@@ -285,7 +286,7 @@ include(command/command.pri)
 
 message("Config: $$CONFIG")
 
-message($$QMAKE_MACOSX_DEPLOYMENT_TARGET)
+message("Target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
 # Input
 RESOURCES = gui.qrc
@@ -867,7 +868,9 @@ HEADERS += mainwindow.h \
     mvc/zviewspaceconfig.h \
     mvc/zpositionmapper.h \
     data3d/zstackobjecthelper.h \
-    data3d/utilities.h
+    data3d/utilities.h \
+    core/utilities.h \
+    core/qthelper.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1517,7 +1520,9 @@ SOURCES += main.cpp \
     mvc/zviewspaceconfig.cpp \
     mvc/zpositionmapper.cpp \
     data3d/zstackobjecthelper.cpp \
-    data3d/utilities.cpp
+    data3d/utilities.cpp \
+    core/utilities.cpp \
+    core/qthelper.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

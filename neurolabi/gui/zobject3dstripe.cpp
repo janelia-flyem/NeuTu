@@ -419,7 +419,7 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, neutube::EAxis axis,
         dx = offset[0];
         dy = offset[1];
         dz = offset[2];
-        ZGeometry::shiftSliceAxis(dx, dy, dz, axis);
+        zgeom::shiftSliceAxis(dx, dy, dz, axis);
       }
 
       int y = getY();
@@ -433,7 +433,7 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, neutube::EAxis axis,
       int shiftedWidth = C_Stack::width(stack);
       int shiftedHeight = C_Stack::height(stack);
       int shiftedDepth = C_Stack::depth(stack);
-      ZGeometry::shiftSliceAxis(shiftedWidth, shiftedHeight, shiftedDepth, axis);
+      zgeom::shiftSliceAxis(shiftedWidth, shiftedHeight, shiftedDepth, axis);
       if (y >= shiftedHeight) {
         return;
       }

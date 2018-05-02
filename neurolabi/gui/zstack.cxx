@@ -32,6 +32,7 @@
 #include "zpoint.h"
 #include "zintcuboid.h"
 #include "misc/miscutility.h"
+#include "core/utilities.h"
 
 using namespace std;
 
@@ -661,9 +662,9 @@ void ZStack::read(std::istream &stream)
   clear();
 
   int kind = GREY;
-  misc::read(stream, kind);
+  neutube::read(stream, kind);
   int channel = 0;
-  misc::read(stream, channel);
+  neutube::read(stream, channel);
 
   m_offset.read(stream);
   ZIntPoint dim;
@@ -675,8 +676,8 @@ void ZStack::read(std::istream &stream)
 
 void ZStack::write(std::ostream &stream) const
 {
-  misc::write(stream, m_stack->kind);
-  misc::write(stream, m_stack->nchannel);
+  neutube::write(stream, m_stack->kind);
+  neutube::write(stream, m_stack->nchannel);
   m_offset.write(stream);
   ZIntPoint dim(width(), height(), depth());
   dim.write(stream);

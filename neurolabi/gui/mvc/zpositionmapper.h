@@ -3,10 +3,11 @@
 
 #include "neutube_def.h"
 
+#include "geometry/zaffineplane.h"
+
 class ZPoint;
 class ZViewProj;
 class QPointF;
-class ZAffinePlane;
 class ZIntPoint;
 
 class ZPositionMapper
@@ -14,6 +15,10 @@ class ZPositionMapper
 public:
   ZPositionMapper();
 
+public:
+  ZPoint mapDataToStack(const ZPoint &pt);
+
+public:
   static QPointF WidgetToRawStack(double x, double y, const ZViewProj &vp);
   static QPointF WidgetToRawStack(const QPointF &pt, const ZViewProj &vp);
   static ZPoint WidgetToRawStack(
@@ -46,6 +51,9 @@ public:
   //The anchor points have the same coordinates
   static ZPoint DataToStack(const ZPoint &pt, const ZAffinePlane &ap);
 
+private:
+  neutube::EAxis m_sliceAxis = neutube::Z_AXIS;
+  ZAffinePlane m_ap;
 };
 
 #endif // ZPOSITIONMAPPER_H

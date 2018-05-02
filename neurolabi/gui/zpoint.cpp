@@ -386,12 +386,12 @@ bool ZPoint::operator <(const ZPoint &pt) const
 
 void ZPoint::shiftSliceAxis(neutube::EAxis axis)
 {
-  ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
+  zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
 void ZPoint::shiftSliceAxisInverse(neutube::EAxis axis)
 {
-  ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+  zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
 double ZPoint::getSliceCoord(neutube::EAxis axis) const
@@ -408,4 +408,10 @@ double ZPoint::getSliceCoord(neutube::EAxis axis) const
   }
 
   return m_z;
+}
+
+std::ostream &operator<<(std::ostream &stream, const ZPoint &pt)
+{
+  stream << "(" << pt.getX() << ", " << pt.getY() << ", " << pt.getZ() << ")";
+  return stream;
 }

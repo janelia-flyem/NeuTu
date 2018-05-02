@@ -607,7 +607,7 @@ void ZImageWidget::resetViewProj(int x0, int y0, int w, int h, const QRect &view
   } else {
     m_viewProj.maximizeViewPort();
   }
-  m_isReady = true;
+//  m_isReady = true;
 
   updateView();
 }

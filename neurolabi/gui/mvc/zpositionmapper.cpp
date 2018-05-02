@@ -145,3 +145,15 @@ ZPoint ZPositionMapper::DataToStack(const ZPoint &pt, neutube::EAxis axis)
   return pt2;
 }
 
+ZPoint ZPositionMapper::mapDataToStack(const ZPoint &pt)
+{
+  ZPoint result;
+  if (m_sliceAxis == neutube::A_AXIS) {
+    result = DataToStack(pt, m_ap);
+  } else {
+    result = DataToStack(pt, m_sliceAxis);
+  }
+
+  return result;
+}
+

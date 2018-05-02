@@ -76,33 +76,6 @@ enum ESampleStackOption {
 double SampleStack(const Stack *stack, double x, double y, double z,
                    ESampleStackOption option);
 
-template<typename T>
-void read(std::istream &stream, T &v)
-{
-  stream.read((char*)(&v), sizeof(T));
-}
-
-template<typename T>
-void read(std::istream &stream, T &v, size_t n)
-{
-  stream.read((char*)(&v), sizeof(T) * n);
-}
-
-template<typename T>
-void write(std::ostream &stream, const T &v)
-{
-  stream.write((const char*)(&v), sizeof(T));
-}
-
-template<typename T>
-void write(std::ostream &stream, const T *v, size_t n)
-{
-  stream.write((const char*)(v), sizeof(T) * n);
-}
-
-template<typename T>
-void assign(T *out, const T &v);
-
 /*!
  * \brief Parse hdf5 path
  *
@@ -111,54 +84,6 @@ void assign(T *out, const T &v);
  * \return empty array if the parsing failed
  */
 std::vector<std::string> parseHdf5Path(const std::string &path);
-
-template<typename T>
-std::set<T> intersect(const std::set<T> &s1, const std::set<T> &s2);
-
-template<typename T>
-std::set<T> setdiff(const std::set<T> &s1, const std::set<T> &s2);
-}
-
-// generic solution
-template <class T>
-int numDigits(T number)
-{
-  int digits = 0;
-  if (number < 0) digits = 1; // remove this line if '-' counts as a digit
-  while (number) {
-    number /= 10;
-    digits++;
-  }
-  return digits;
-}
-
-//template<>
-//int numDigits(int32_t x);
-
-template<typename T>
-std::set<T> misc::intersect(const std::set<T> &s1, const std::set<T> &s2)
-{
-  std::set<T> result;
-  std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
-                        std::inserter(result, result.begin()));
-  return result;
-}
-
-template<typename T>
-std::set<T> misc::setdiff(const std::set<T> &s1, const std::set<T> &s2)
-{
-  std::set<T> result;
-  std::set_difference(s1.begin(), s1.end(), s2.begin(), s2.end(),
-                      std::inserter(result, result.begin()));
-  return result;
-}
-
-template<typename T>
-void misc::assign(T *out, const T &v)
-{
-  if (out != NULL) {
-    *out = v;
-  }
 }
 
 //// partial-specialization optimization for 8-bit numbers

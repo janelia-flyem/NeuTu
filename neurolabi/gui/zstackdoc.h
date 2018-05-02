@@ -40,7 +40,6 @@
 #include "zcubearray.h"
 #include "zstackobjectgroup.h"
 #include "tz_error.h"
-#include "misc/miscutility.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "zthreadfuturemap.h"
@@ -49,6 +48,7 @@
 #include "zmesh.h"
 #include "zstackobjectinfo.h"
 #include "zresolution.h"
+#include "core/utilities.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -1515,7 +1515,7 @@ void ZStackDoc::notifySelectionAdded(const std::set<T*> &oldSelected,
                                      const std::set<T*> &newSelected)
 {
   QList<T*> selected;
-  std::set<T*> addedSet = misc::setdiff(newSelected, oldSelected);
+  std::set<T*> addedSet = neutube::setdiff(newSelected, oldSelected);
   for (typename std::set<T*>::const_iterator iter = addedSet.begin();
        iter != addedSet.end(); ++iter) {
     selected.append(const_cast<T*>(*iter));
@@ -1539,7 +1539,7 @@ void ZStackDoc::notifySelectionRemoved(const std::set<T*> &oldSelected,
                                        const std::set<T*> &newSelected)
 {
   QList<T*> deselected;
-  std::set<T*> removedSet = misc::setdiff(oldSelected, newSelected);
+  std::set<T*> removedSet = neutube::setdiff(oldSelected, newSelected);
   for (typename std::set<T*>::const_iterator iter = removedSet.begin();
        iter != removedSet.end(); ++iter) {
     deselected.append(const_cast<T*>(*iter));

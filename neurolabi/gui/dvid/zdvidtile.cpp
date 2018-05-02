@@ -15,12 +15,11 @@
 #include "zdvidurl.h"
 #include "zdvidtileinfo.h"
 #include "zdvidreader.h"
-#include "zstackview.h"
+//#include "zstackview.h"
 #include "zrect2d.h"
 #include "libdvidheader.h"
 
-ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
-  m_view(NULL)
+ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0)
 {
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = GetType();
@@ -53,11 +52,13 @@ void ZDvidTile::loadDvidSlice(
     const uchar *buf, int length, int z, bool highContrast)
 {
   bool loading = true;
+  /*
   if (m_view != NULL) {
     if (m_view->getZ(neutube::COORD_STACK) != z) {
       loading = false;
     }
   }
+  */
 
   bool modified = false;
   if (loading) {
@@ -240,7 +241,7 @@ void ZDvidTile::display(
   m_latestZ = z;
 
 //  tic();
-  const_cast<ZDvidTile&>(*this).update(z);
+//  const_cast<ZDvidTile&>(*this).update(z);
       //  std::cout << "tile update time: " << toc() << std::endl;
 
   if ((z == m_z)  && (m_image != NULL)) {
@@ -267,6 +268,7 @@ void ZDvidTile::display(
 //    tic();
 //    QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
 
+    LDEBUG() << "Painting tile:" << m_pixmap.size();
     painter.drawPixmap(getX(), getY(), m_pixmap);
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
@@ -418,11 +420,12 @@ int ZDvidTile::getZ() const
   return m_z;
 }
 
+/*
 void ZDvidTile::attachView(ZStackView *view)
 {
   m_view = view;
 }
-
+*/
 ZRect2d ZDvidTile::getBoundBox() const
 {
   ZRect2d rect;

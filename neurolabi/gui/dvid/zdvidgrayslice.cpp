@@ -96,9 +96,11 @@ void ZDvidGraySlice::display(
   }
 
   int z = painter.getZOffset() + slice;
+#if 0
   if (getSliceAxis() == neutube::Z_AXIS) {
     const_cast<ZDvidGraySlice&>(*this).update(z);
   }
+#endif
 
   if (z == getZ() && !m_image.isNull()) {
     const_cast<ZDvidGraySlice&>(*this).updatePixmap();

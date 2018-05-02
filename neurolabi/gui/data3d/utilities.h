@@ -1,5 +1,5 @@
-#ifndef UTILITIES_H
-#define UTILITIES_H
+#ifndef DATA3D_UTILITIES_H
+#define DATA3D_UTILITIES_H
 
 #include <string>
 
