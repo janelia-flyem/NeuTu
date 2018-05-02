@@ -30,6 +30,11 @@ class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
 //class ZFlyEmToDoItem;
 
+/*!
+ * \brief The class of managing body update in 3D.
+ *
+ * The class has a work thread to process a queue of body update events.
+ */
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
   Q_OBJECT
@@ -153,6 +158,8 @@ public:
   QSet<uint64_t> getBodySet() const { return m_bodySet; }
   QSet<uint64_t> getUnencodedBodySet() const;
 
+  uint64_t getMappedId(uint64_t bodyId) const;
+
   void addBody(uint64_t bodyId, const QColor &color);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
@@ -161,7 +168,8 @@ public:
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
   void addTodo(int x, int y, int z, bool checked, uint64_t bodyId);
-  void addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
+  void addTosplit(int x, int y, int z, bool checked, uint64_t bodyId);
+  bool addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
   void addTodoSliently(const ZFlyEmToDoItem &item);
   void addTodo(const QList<ZFlyEmToDoItem> &itemList);
   void updateSegmentation();
@@ -185,11 +193,13 @@ public:
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
 
-  bool hasBody(uint64_t bodyId) const;
+  bool hasBody(uint64_t bodyId, bool encoded) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
   }
+
+  const ZDvidReader& getMainDvidReader() const;
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -255,7 +265,7 @@ public:
   // raw body identifier.
 
   static uint64_t encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
-  static uint64_t unencode(uint64_t encodedId);
+  static uint64_t decode(uint64_t encodedId);
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 
@@ -269,8 +279,41 @@ public:
   void makeAction(ZActionFactory::EAction item) override;
 
 public:
-  void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
+  void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  ZFlyEmToDoItem::EToDoAction action,
+      uint64_t bodyId);
   void executeRemoveTodoCommand();
+
+  //override to disable the swc commands
+  virtual bool executeDeleteSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeDeleteUnselectedSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node */*tn*/) override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand(
+      Swc_Tree_Node */*tn1*/, Swc_Tree_Node */*tn2*/) override {
+    return false;
+  }
+  virtual bool executeSmartConnectSwcNodeCommand(
+      Swc_Tree_Node */*tn1*/, Swc_Tree_Node */*tn2*/) override {
+    return false;
+  }
+  virtual bool executeSmartConnectSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeBreakSwcConnectionCommand() override {
+    return false;
+  }
+  virtual bool executeMergeSwcNodeCommand() override {
+    return false;
+  }
 
 public:
 //  ZDvidSparseStack* loadDvidSparseStack();
@@ -478,8 +521,8 @@ private:
 //  bool m_isBodySetBufferProcessed;
 
   ZDvidTarget m_dvidTarget;
-  ZDvidReader m_dvidReader;
-  ZDvidWriter m_dvidWriter;
+  ZDvidReader m_workDvidReader;
+  ZDvidWriter m_mainDvidWriter;
   ZDvidReader m_bodyReader;
 
   ZDvidInfo m_dvidInfo;

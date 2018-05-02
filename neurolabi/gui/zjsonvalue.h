@@ -108,7 +108,12 @@ public:
   /*!
    * \brief Dump the object to a string.
    */
-  virtual std::string dumpString(int indent = 2) const;
+  std::string dumpString(int indent = 2) const;
+
+  /*!
+   * \brief Using flags in libjansson to produce a json string.
+   */
+  virtual std::string dumpJanssonString(size_t flags) const;
 
   /*!
    * \brief Save the json value into a file

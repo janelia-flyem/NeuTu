@@ -1,11 +1,7 @@
 #ifndef ZFLYEMPROOFDOCMENUFACTORY_H
 #define ZFLYEMPROOFDOCMENUFACTORY_H
 
-#include <QList>
-#include "zactionfactory.h"
 #include "zstackdocmenufactory.h"
-
-class Z3DWindow;
 
 class ZFlyEmProofDocMenuFactory : public ZStackDocMenuFactory
 {

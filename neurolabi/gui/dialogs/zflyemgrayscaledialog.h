@@ -49,6 +49,7 @@ public:
 
   void makeGrayscaleExportAppearance();
   void makeBodyExportAppearance();
+  void makeBodyFieldExportAppearance();
 
 private slots:
   void useCurrentOffset();

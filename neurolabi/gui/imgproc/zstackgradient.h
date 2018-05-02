@@ -10,7 +10,7 @@ class GradientStrategy
 {
 public:
   GradientStrategy();
-  //virtual ~GradientStrategy();
+  virtual ~GradientStrategy() {}
   void run(const T* in,T* out,uint width,uint height,uint depth,bool ignore_background);
   void reverse(T* begin,T* end);
   void edgeEnhance(const T* in,T* out,double alpha);

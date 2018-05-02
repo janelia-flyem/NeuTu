@@ -150,6 +150,9 @@ public:
 public: //Testing routines
   void testFlyEmProofread();
 
+public: //Special functions
+  void runNeuTuPaper();
+
 
 signals:
   void dvidRequestCanceled();

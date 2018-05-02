@@ -16,12 +16,15 @@
 #ifndef Z3DPICKINGMANAGER_H
 #define Z3DPICKINGMANAGER_H
 
-#include "z3drendertarget.h"
-#include "zglmutils.h"
 #include <cstdint>
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <QList>
+
+#include "z3drendertarget.h"
+#include "zglmutils.h"
+//#include "swctreenode.h"
 
 class Z3DPickingManager
 {
@@ -37,6 +40,8 @@ public:
   glm::col4 registerObject(const void* obj);
 
   void deregisterObject(const void* obj);
+
+//  void deregisterObject(const std::vector<Swc_Tree_Node*> &nodeList);
 
   void deregisterObject(const glm::col4& col);
 
@@ -56,7 +61,8 @@ public:
 
   // find all objects within a radius of pos, sort by distance
   // if radius is -1, search the whole image
-  std::vector<const void*> sortObjectsByDistanceToPos(const glm::ivec2& pos, int radius = -1, bool ascend = true);
+  std::vector<const void*> sortObjectsByDistanceToPos(
+      const glm::ivec2& pos, int radius = -1, bool ascend = true);
 
   bool isHit(const glm::ivec2& pos, const void* obj)
   { return (objectAtWidgetPos(pos) == obj); }

@@ -112,6 +112,11 @@ public:
   void enterLocateMode();
   void enterBrowseMode();
 
+  void exitBrowseMode();
+  void exitMarkTodo();
+  void exitMarkBookmark();
+  void exitLocateMode();
+
 signals:
   void decorationUpdated();
   void strokePainted(ZStroke2d*);
@@ -131,11 +136,10 @@ signals:
   void locating(int x, int y);
   void browsing(int x, int y);
   void cameraRotated();
+  void exitingEdit();
 
 private:
   void exitPaintStroke();
-  void exitMarkTodo();
-  void exitMarkBookmark();
   void exitExplore();
   void exitPaintRect();
   void exitSwcEdit();

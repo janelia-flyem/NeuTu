@@ -59,7 +59,7 @@ void ZProofreadWindow::init()
 
   QWidget *widget = new QWidget(this);
 
-  QHBoxLayout *layout = new QHBoxLayout(this);
+  QHBoxLayout *layout = new QHBoxLayout;
   layout->setMargin(1);
   widget->setLayout(layout);
 
@@ -71,13 +71,13 @@ void ZProofreadWindow::init()
 
   layout->addWidget(m_mainMvc);
 
-  QVBoxLayout *controlLayout = new QVBoxLayout(this);
+  QVBoxLayout *controlLayout = new QVBoxLayout;
 
   m_controlGroup = new QStackedWidget(this);
   controlLayout->addWidget(m_controlGroup);
 
 
-  QHBoxLayout *titleLayout = new QHBoxLayout(this);
+  QHBoxLayout *titleLayout = new QHBoxLayout;
   titleLayout->addWidget(ZWidgetFactory::MakeHorizontalLine(this));
   QLabel *titleLabel = new QLabel("<font color=\"Green\">Message</font>", this);
   titleLabel->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
@@ -222,6 +222,11 @@ void ZProofreadWindow::stressTestSlot()
 void ZProofreadWindow::diagnose()
 {
   m_mainMvc->diagnose();
+}
+
+void ZProofreadWindow::profile()
+{
+  m_mainMvc->profile();
 }
 
 void ZProofreadWindow::showSettings()
@@ -444,6 +449,10 @@ void ZProofreadWindow::createMenu()
   QAction *settingAction = new QAction(" Settings", this);
   connect(settingAction, SIGNAL(triggered()), this, SLOT(showSettings()));
   m_advancedMenu->addAction(settingAction);
+
+  QAction *profileAction = new QAction("Profile", this);
+  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
+  m_advancedMenu->addAction(profileAction);
 
 
 //  m_viewMenu->setEnabled(false);

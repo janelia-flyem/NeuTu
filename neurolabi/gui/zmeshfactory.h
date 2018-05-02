@@ -9,7 +9,17 @@ class ZMeshFactory
 public:
   ZMeshFactory();
 
-  static ZMesh* MakeMesh(const ZObject3dScan &obj, int dsIntv = 0);
+  ZMesh* makeMesh(const ZObject3dScan &obj);
+
+  void setDsIntv(int dsIntv);
+  void setSmooth(int smooth);
+
+  static ZMesh* MakeMesh(const ZObject3dScan &obj);
+  static ZMesh* MakeMesh(const ZObject3dScan &obj, int dsIntv, int smooth);
+
+private:
+  int m_dsIntv = 0;
+  int m_smooth = 3;
 };
 
 #endif // ZMESHFACTORY_H

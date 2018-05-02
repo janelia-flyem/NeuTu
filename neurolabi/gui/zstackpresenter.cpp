@@ -65,7 +65,7 @@ ZStackPresenter::~ZStackPresenter()
   delete m_stackContextMenu;
   delete m_keyConfig;
   delete m_actionFactory;
-  delete m_menuFactory;
+//  delete m_menuFactory;
 }
 
 ZStackPresenter* ZStackPresenter::Make(QWidget *parent)
@@ -166,7 +166,7 @@ void ZStackPresenter::init()
   m_strokePaintContextMenu = NULL;
   m_stackContextMenu = NULL;
   m_bodyContextMenu = NULL;
-    m_contextMenu = NULL;
+//    m_contextMenu = NULL;
 
 //  createActions();
 
@@ -176,7 +176,7 @@ void ZStackPresenter::init()
 
   m_keyConfig = NULL;
 
-  m_menuFactory = NULL;
+//  m_menuFactory = NULL;
   m_actionFactory = new ZActionFactory;
 }
 
@@ -202,12 +202,13 @@ ZKeyOperationConfig* ZStackPresenter::getKeyConfig()
 
 ZStackDocMenuFactory* ZStackPresenter::getMenuFactory()
 {
-  if (m_menuFactory == NULL) {
-    m_menuFactory = new ZStackDocMenuFactory;
+  if (!m_menuFactory) {
+    m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
+          new ZStackDocMenuFactory);
     m_menuFactory->setAdminState(neutube::IsAdminUser());
   }
 
-  return m_menuFactory;
+  return m_menuFactory.get();
 }
 
 void ZStackPresenter::configKeyMap()
@@ -1438,6 +1439,12 @@ bool ZStackPresenter::isContextMenuOn()
   }
 
   return false;
+}
+
+void ZStackPresenter::setContextMenuFactory(
+    std::unique_ptr<ZStackDocMenuFactory> factory)
+{
+  m_menuFactory = std::move(factory);
 }
 
 void ZStackPresenter::processMousePressEvent(QMouseEvent *event)

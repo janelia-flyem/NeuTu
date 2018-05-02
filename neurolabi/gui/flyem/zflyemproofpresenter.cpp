@@ -190,12 +190,13 @@ ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
 
 ZStackDocMenuFactory* ZFlyEmProofPresenter::getMenuFactory()
 {
-  if (m_menuFactory == NULL) {
-    m_menuFactory = new ZFlyEmProofDocMenuFactory;
+  if (!m_menuFactory) {
+    m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
+          new ZFlyEmProofDocMenuFactory);
     m_menuFactory->setAdminState(neutube::IsAdminUser());
   }
 
-  return m_menuFactory;
+  return m_menuFactory.get();
 }
 
 ZKeyOperationConfig* ZFlyEmProofPresenter::getKeyConfig()
@@ -243,7 +244,8 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     break;
   case Qt::Key_C:
     if (!isSplitOn()) {
-      emit deselectingAllBody();
+      bool asking = (event->modifiers() != Qt::ShiftModifier);
+      emit deselectingAllBody(asking);
       processed = true;
     }
     break;
@@ -483,7 +485,9 @@ QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
 
 QMenu* ZFlyEmProofPresenter::getContextMenu()
 {
+//  if (m_contextMenu == NULL) {
   m_contextMenu = getMenuFactory()->makeContextMenu(this, NULL, m_contextMenu);
+//  }
 
   return m_contextMenu;
   /*

@@ -232,13 +232,13 @@ bool ZJsonArray::decode(const string &str)
   return true;
 }
 
-string ZJsonArray::dumpString(int indent) const
+std::string ZJsonArray::dumpJanssonString(size_t flags) const
 {
   if (isEmpty()) {
     return "[]";
   }
 
-  return ZJsonValue::dumpString(indent);
+  return ZJsonValue::dumpJanssonString(flags);
 }
 
 ZJsonValue ZJsonArray::value(size_t index) const

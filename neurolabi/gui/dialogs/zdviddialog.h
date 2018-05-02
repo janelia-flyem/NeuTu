@@ -29,6 +29,7 @@ public:
   QString getUuid() const;
 
   ZDvidTarget& getDvidTarget();
+  const ZDvidTarget& getDvidTarget(const std::string &name) const;
 
   void addDvidTarget(ZDvidTarget &target);
 
@@ -61,6 +62,7 @@ private:
   std::string m_customString;
   StringListDialog *m_roiDlg;
   ZDvidAdvancedDialog *m_advancedDlg;
+  ZDvidTarget m_emptyTarget;
   const static char *m_dvidRepoKey;
 };
 

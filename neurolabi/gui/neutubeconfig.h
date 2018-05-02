@@ -73,7 +73,9 @@ public:
   void enableAutoStatusCheck(bool on);
   bool autoStatusCheck() const;
   bool parallelTileFetching() const;
+  bool lowtisPrefetching() const;
   void setParallelTileFetching(bool on);
+  void enableLowtisPrefetching(bool on);
   bool namingSynapse() const;
   void setNamingSynapse(bool on);
 
@@ -101,6 +103,8 @@ public:
   static void SetVerboseLevel(int level);
   static bool ParallelTileFetching();
   static void SetParallelTileFetching(bool on);
+  static void EnableLowtisPrefetching(bool on);
+  static bool LowtisPrefetching();
 
   /*!
    * \brief Configure from a json object.

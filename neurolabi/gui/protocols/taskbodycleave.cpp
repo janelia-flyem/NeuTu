@@ -6,8 +6,9 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "neu3window.h"
-#include "z3dmeshfilter.h"
+#include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
+#include "z3dmeshfilter.h"
 #include "z3dwindow.h"
 
 #include <iostream>
@@ -20,6 +21,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -94,7 +96,6 @@ namespace {
   static bool zoomToLoadedBodyEnabled;
   static bool garbageLifetimeLimitEnabled;
   static bool splitTaskLoadingEnabled;
-  static bool showingTodo;
   static bool showingSynapse;
   static bool preservingSourceColorEnabled;
   static bool showingSourceColors;
@@ -112,9 +113,6 @@ namespace {
 
       splitTaskLoadingEnabled = bodyDoc->splitTaskLoadingEnabled();
       bodyDoc->enableSplitTaskLoading(false);
-
-      showingTodo = bodyDoc->showingTodo();
-//      bodyDoc->showTodo(false);
 
       showingSynapse = bodyDoc->showingSynapse();
       bodyDoc->showSynapse(false);
@@ -145,7 +143,6 @@ namespace {
 
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
       bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
-      bodyDoc->showTodo(showingTodo);
       bodyDoc->showSynapse(showingSynapse);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
@@ -166,14 +163,12 @@ class TaskBodyCleave::SetCleaveIndicesCommand : public QUndoCommand
 public:
   SetCleaveIndicesCommand(TaskBodyCleave *task,
                           std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
-                          int comboBoxIndex,
-                          const QString &comboBoxText) :
+                          const std::vector< QString>& comboBoxItemsText) :
     m_task(task),
     m_meshIdToCleaveIndexBefore(task->m_meshIdToCleaveIndex),
     m_meshIdToCleaveIndexAfter(meshIdToCleaveIndex),
-    m_comboBoxIndex(comboBoxIndex),
-    m_comboBoxTextBefore(task->m_cleaveIndexComboBox->itemText(m_comboBoxIndex)),
-    m_comboBoxTextAfter(comboBoxText)
+    m_comboBoxItemsTextBefore(getComboBoxItemsText(task->m_cleaveIndexComboBox)),
+    m_comboBoxItemsTextAfter(comboBoxItemsText)
   {
     setText("seeding for next cleave");
   }
@@ -182,23 +177,40 @@ public:
   {
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexBefore;
     m_task->updateColors();
-    m_task->m_cleaveIndexComboBox->setItemText(m_comboBoxIndex, m_comboBoxTextBefore);
+    m_task->updateVisibility();
+    setComboBoxItemsText(m_task->m_cleaveIndexComboBox, m_comboBoxItemsTextBefore);
   }
 
   virtual void redo() override
   {
     m_task->m_meshIdToCleaveIndex = m_meshIdToCleaveIndexAfter;
     m_task->updateColors();
-    m_task->m_cleaveIndexComboBox->setItemText(m_comboBoxIndex, m_comboBoxTextAfter);
+    m_task->updateVisibility();
+    setComboBoxItemsText(m_task->m_cleaveIndexComboBox, m_comboBoxItemsTextAfter);
   }
 
 private:
+  static std::vector<QString> getComboBoxItemsText(QComboBox* comboBox)
+  {
+    std::vector<QString> result;
+    for (int i = 0; i < comboBox->count(); i++) {
+      result.push_back(comboBox->itemText(i));
+    }
+    return result;
+  }
+
+  static void setComboBoxItemsText(QComboBox* comboBox, const std::vector<QString> &itemsText)
+  {
+    for (int i = 0; i < comboBox->count(); i++) {
+      comboBox->setItemText(i, itemsText[i]);
+    }
+  }
+
   TaskBodyCleave *m_task;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexBefore;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndexAfter;
-  int m_comboBoxIndex;
-  QString m_comboBoxTextBefore;
-  QString m_comboBoxTextAfter;
+  std::vector<QString> m_comboBoxItemsTextBefore;
+  std::vector<QString> m_comboBoxItemsTextAfter;
 };
 
 class TaskBodyCleave::CleaveCommand : public QUndoCommand
@@ -216,12 +228,14 @@ public:
   {
     m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexBefore;
     m_task->updateColors();
+    m_task->updateVisibility();
   }
 
   virtual void redo() override
   {
     m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexAfter;
     m_task->updateColors();
+    m_task->updateVisibility();
   }
 
 private:
@@ -272,6 +286,13 @@ void TaskBodyCleave::beforeNext()
   // back to a previous task.
 
   m_bodyDoc->clearGarbage(true);
+
+  // If the user returns to this task, there is no good way (at least for now) to
+  // reapply the visiblity settings to this task's meshes after they have been
+  // reloaded.  So clear the visiblity settings.
+
+  m_hiddenCleaveIndices.clear();
+  m_showBodyCheckBox->setChecked(true);
 }
 
 void TaskBodyCleave::beforePrev()
@@ -281,6 +302,11 @@ void TaskBodyCleave::beforePrev()
   // See the comment in beforeNext().
 
   m_bodyDoc->clearGarbage(true);
+
+  // See the comment in beforeNext().
+
+  m_hiddenCleaveIndices.clear();
+  m_showBodyCheckBox->setChecked(true);
 }
 
 void TaskBodyCleave::beforeDone()
@@ -297,6 +323,11 @@ QWidget *TaskBodyCleave::getTaskWidget()
 QMenu *TaskBodyCleave::getTaskMenu()
 {
   return m_menu;
+}
+
+uint64_t TaskBodyCleave::getBodyId() const
+{
+  return m_bodyId;
 }
 
 void TaskBodyCleave::updateLevel(int level)
@@ -339,7 +370,7 @@ void TaskBodyCleave::onToggleShowSeedsOnly()
   m_showSeedsOnlyCheckBox->setChecked(!m_showSeedsOnlyCheckBox->isChecked());
 }
 
-void TaskBodyCleave::onChosenCleaveIndexChanged()
+void TaskBodyCleave::onCleaveIndexShortcut()
 {
   if (QAction* action = dynamic_cast<QAction*>(QObject::sender())) {
     int i = m_actionToComboBoxIndex[action];
@@ -347,23 +378,38 @@ void TaskBodyCleave::onChosenCleaveIndexChanged()
   }
 }
 
+void TaskBodyCleave::onCleaveIndexChanged(int)
+{
+  bool visible = (m_hiddenCleaveIndices.find(chosenCleaveIndex()) ==
+                  m_hiddenCleaveIndices.end());
+  m_showBodyCheckBox->setChecked(visible);
+}
+
 void TaskBodyCleave::onSelectBody()
 {
   std::set<uint64_t> toSelect;
-  for (auto it : m_meshIdToCleaveIndex) {
-    if (it.second == chosenCleaveIndex()) {
-      toSelect.insert(it.first);
-    }
-  }
-  if (!m_showSeedsOnlyCheckBox->isChecked()) {
-    for (auto it : m_meshIdToCleaveResultIndex) {
-      if (it.second == chosenCleaveIndex()) {
-        toSelect.insert(it.first);
-      }
-    }
+  bodiesForCleaveIndex(toSelect, chosenCleaveIndex());
+  selectBodies(toSelect);
+}
+
+void TaskBodyCleave::onShowBodyChanged(int state)
+{
+  if (state) {
+    m_hiddenCleaveIndices.erase(chosenCleaveIndex());
+  } else {
+    m_hiddenCleaveIndices.insert(chosenCleaveIndex());
   }
 
-  selectBodies(toSelect);
+  std::set<uint64_t> bodiesForIndex;
+  bodiesForCleaveIndex(bodiesForIndex, chosenCleaveIndex(), true);
+
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    if (bodiesForIndex.find(mesh->getLabel()) != bodiesForIndex.end()) {
+      m_bodyDoc->setVisible(mesh, state);
+    }
+  }
 }
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
@@ -371,52 +417,84 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
   std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
 
-  // The text of the combobox item will be updated to indicate the number of seeds
-  // with the current color, so count them.
+  // The text for each combobox item indicates the count the of seeds set for that item's color,
+  // and we need to compute how those counts change.
 
-  int numSeeds = 0;
-  for (auto it : m_meshIdToCleaveIndex) {
-    if (it.second == chosenCleaveIndex()) {
-      numSeeds++;
-    }
+  std::vector<int> countChanges;
+  for (unsigned int i = 0; i < INDEX_COLORS.size(); i++) {
+    countChanges.push_back(0);
   }
-
-  QString text = m_cleaveIndexComboBox->currentText();
 
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
     uint64_t id = mesh->getLabel();
-    int change = 0;
     auto itCleave = meshIdToCleaveIndex.find(id);
-    if ((itCleave == meshIdToCleaveIndex.end()) || (itCleave->second != chosenCleaveIndex())) {
+    if (itCleave == meshIdToCleaveIndex.end()) {
+
+      // The selected mesh has not been assigned to a color before, so the count for the current color
+      // increases by one.
+
+      countChanges[chosenCleaveIndex()] += 1;
       meshIdToCleaveIndex[id] = chosenCleaveIndex();
-      change = 1;
+    } else if (itCleave->second != chosenCleaveIndex()) {
+
+      // The selected mesh has been assigned to a different color, so it is being reassigned from that
+      // color.  So that color's count decreases by one, and the current color's count increases by one.
+
+      countChanges[chosenCleaveIndex()] += 1;
+      countChanges[itCleave->second] -= 1;
+      meshIdToCleaveIndex[id] = chosenCleaveIndex();
     } else {
+
+      // The selected mesh has been assigned to the current color, so it is being assigned no color,
+      // and the current color's count decreases by one.
+
+      countChanges[chosenCleaveIndex()] -= 1;
       meshIdToCleaveIndex.erase(id);
-      change = -1;
-    }
-
-    // Update the text to indicate the new number of seeds.
-
-    int i = text.indexOf(" (");
-    if (i != -1) {
-      text.truncate(i);
-    }
-    numSeeds += change;
-    if (numSeeds > 0) {
-      text += " (" + QString::number(numSeeds);
-      text += (numSeeds == 1) ? " seed)" : " seeds)";
     }
   }
 
-  int i = m_cleaveIndexComboBox->currentIndex();
-  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex, i, text));
+  // The command to change the colors, and update the combobox items' text, takes an array of text
+  // for all the items.  Only a few will change, but since more than one could change, the undo/redo
+  // managment is simpler with the complete array.
+
+  std::vector<QString> itemTexts;
+  for (std::size_t i = 1; i < countChanges.size(); i++) {
+    int change = countChanges[i];
+    QString text = m_cleaveIndexComboBox->itemText(i-1);
+
+    if (change != 0) {
+      int numSeeds = 0;
+      int j = text.indexOf(" (");
+      if (j != -1) {
+        int k = text.indexOf(" ", j + 1);
+        QString numSeedsStr = text.mid(j + 2, k - j - 2);
+        numSeeds = numSeedsStr.toInt();
+        text.truncate(j);
+      }
+      numSeeds += change;
+      if (numSeeds > 0) {
+        text += " (" + QString::number(numSeeds);
+        text += (numSeeds == 1) ? " seed)" : " seeds)";
+      }
+    }
+
+    itemTexts.push_back(text);
+  }
+
+  m_bodyDoc->pushUndoCommand(new SetCleaveIndicesCommand(this, meshIdToCleaveIndex, itemTexts));
 
   cleave();
 }
 
+void TaskBodyCleave::onToggleShowChosenCleaveBody()
+{
+  m_showBodyCheckBox->setChecked(!m_showBodyCheckBox->isChecked());
+}
+
 void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 {
+  m_cleaveReplyPending = false;
   QNetworkReply::NetworkError error = reply->error();
 
   // In addition to checking for QNetworkReply::NetworkError, also check for
@@ -427,51 +505,64 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
   QString status = CLEAVING_STATUS_DONE;
 
-  if ((error == QNetworkReply::NoError) && (statusCode == STATUS_OK)) {
-    QByteArray replyBytes = reply->readAll();
+  QByteArray replyBytes = reply->readAll();
+  QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
+  QJsonObject replyJson = replyJsonDoc.object();
 
-    QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
-    if (replyJsonDoc.isObject()) {
-      QJsonObject replyJson = replyJsonDoc.object();
+  if ((error == QNetworkReply::NoError) && (statusCode == STATUS_OK) && replyJsonDoc.isObject()) {
+    if (showCleaveReplyWarnings(replyJson)) {
+      status = CLEAVING_STATUS_SERVER_WARNINGS;
+    }
 
-      if (showCleaveReplyWarnings(replyJson)) {
-        status = CLEAVING_STATUS_SERVER_WARNINGS;
-      }
+    QJsonValue replyJsonAssnVal = replyJson["assignments"];
+    if (replyJsonAssnVal.isObject()) {
+      std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
 
-      QJsonValue replyJsonAssnVal = replyJson["assignments"];
-      if (replyJsonAssnVal.isObject()) {
-        std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
-
-        QJsonObject replyJsonAssn = replyJsonAssnVal.toObject();
-        for (QString key : replyJsonAssn.keys()) {
-          uint64_t cleaveIndex = key.toInt();
-          QJsonValue value = replyJsonAssn[key];
-          if (value.isArray()) {
-            for (QJsonValue idVal : value.toArray()) {
-              uint64_t id = idVal.toDouble();
-              meshIdToCleaveIndex[id] = cleaveIndex;
-            }
+      QJsonObject replyJsonAssn = replyJsonAssnVal.toObject();
+      for (QString key : replyJsonAssn.keys()) {
+        uint64_t cleaveIndex = key.toInt();
+        QJsonValue value = replyJsonAssn[key];
+        if (value.isArray()) {
+          for (QJsonValue idVal : value.toArray()) {
+            uint64_t id = idVal.toDouble();
+            meshIdToCleaveIndex[id] = cleaveIndex;
           }
         }
-
-        m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
-
-        if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
-          status = CLEAVING_STATUS_SERVER_INCOMPLETE;
-        }
       }
+
+      std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
+
+      m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+
+      if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
+        status = CLEAVING_STATUS_SERVER_INCOMPLETE;
+      }
+
+      showHiddenChangeWarning(hiddenChangedIndices);
     }
   } else {
     // On OS X, the title is not displayed, so include it in the text, too.
     QString title = "Cleave Server Error";
     QString text = "Cleave server error: ";
     if (statusCode != STATUS_OK) {
-      text += reply->errorString();
-    } else {
-      QByteArray replyBytes = reply->readAll();
-      text += QString(replyBytes);
+      text += reply->errorString() + "\n";
+    } else if (!replyJsonDoc.isObject()) {
+      text += "Reply is not a JSON object";
     }
-    displayWarning(title, text);
+    if (replyJsonDoc.isObject()) {
+      auto errorsIt = replyJson.constFind("errors");
+      if (errorsIt != replyJson.end()) {
+        QJsonValue errorsVal = errorsIt.value();
+        if (errorsVal.isArray()) {
+          QJsonArray errorsArray = errorsVal.toArray();
+          for (QJsonValue error : errorsArray) {
+            text += error.toString() + "\n";
+          }
+        }
+      }
+    }
+    QString details = QString(replyBytes);
+    displayWarning(title, text, details);
 
     status = CLEAVING_STATUS_FAILED;
 
@@ -489,6 +580,54 @@ QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
   taskJson[KEY_MAXLEVEL] = m_maxLevel;
 
   return taskJson;
+}
+
+bool TaskBodyCleave::allowCompletion()
+{
+  bool allow = true;
+
+  if (m_cleaveReplyPending) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      QString title = "Warning";
+      QString text = "A reply from the cleave server is pending. "
+                     "Really save now without the cleaving in that reply?";
+      QMessageBox::StandardButton chosen =
+          QMessageBox::warning(window, title, text, QMessageBox::Save | QMessageBox::Cancel,
+                               QMessageBox::Cancel);
+      allow = (chosen == QMessageBox::Save);
+    }
+  }
+
+  if (!m_hiddenCleaveIndices.empty()) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      QString title = "Warning";
+      QString text = "The following ";
+      text += (m_hiddenCleaveIndices.size() == 1) ? "body (color) is" : "bodies (colors) are";
+      text += " hidden:";
+      for (std::size_t index : m_hiddenCleaveIndices) {
+        text += " " + QString::number(index);
+      }
+      text += ". Really save now without checking what is hidden?";
+
+      QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::Save,
+                         window);
+      QPushButton *cancelAndShow = msgBox.addButton("Cancel and Show All", QMessageBox::RejectRole);
+      msgBox.setDefaultButton(cancelAndShow);
+
+      msgBox.exec();
+
+      if (msgBox.clickedButton() == cancelAndShow) {
+        m_hiddenCleaveIndices.clear();
+        m_showBodyCheckBox->setChecked(true);
+        m_showSeedsOnlyCheckBox->setChecked(false);
+        updateVisibility();
+
+        allow = false;
+      }
+    }
+  }
+
+  return allow;
 }
 
 void TaskBodyCleave::onCompleted()
@@ -595,14 +734,23 @@ void TaskBodyCleave::buildTaskWidget()
     QIcon icon(pixmap);
     m_cleaveIndexComboBox->addItem(icon, "Cleaved body " + QString::number(i));
   }
+  connect(m_cleaveIndexComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onCleaveIndexChanged(int)));
 
   m_selectBodyButton = new QPushButton("Select", m_widget);
   connect(m_selectBodyButton, SIGNAL(clicked(bool)), this, SLOT(onSelectBody()));
 
+  m_showBodyCheckBox = new QCheckBox("Show", m_widget);
+  m_showBodyCheckBox->setChecked(true);
+  connect(m_showBodyCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowBodyChanged(int)));
+
+  QVBoxLayout *cleaveIndexActionsLayout = new QVBoxLayout;
+  cleaveIndexActionsLayout->addWidget(m_selectBodyButton);
+  cleaveIndexActionsLayout->addWidget(m_showBodyCheckBox);
+
   QHBoxLayout *cleaveLayout1 = new QHBoxLayout;
   cleaveLayout1->addWidget(m_showCleavingCheckBox);
   cleaveLayout1->addWidget(m_cleaveIndexComboBox);
-  cleaveLayout1->addWidget(m_selectBodyButton);
+  cleaveLayout1->addLayout(cleaveIndexActionsLayout);
 
   m_showSeedsOnlyCheckBox = new QCheckBox("Show seeds only", m_widget);
   m_showSeedsOnlyCheckBox->setChecked(false);
@@ -633,12 +781,18 @@ void TaskBodyCleave::buildTaskWidget()
   m_menu->addAction(m_showSeedsOnlyAction);
   connect(m_showSeedsOnlyAction, SIGNAL(triggered()), this, SLOT(onToggleShowSeedsOnly()));
 
-  m_toggleInBodyAction = new QAction("Toggle Selection in Body", m_widget);
+  m_toggleInBodyAction = new QAction("Toggle Selection in to/out of Current Body", m_widget);
   m_toggleInBodyAction->setShortcut(Qt::Key_Space);
   m_menu->addAction(m_toggleInBodyAction);
   connect(m_toggleInBodyAction, SIGNAL(triggered()), this, SLOT(onToggleInChosenCleaveBody()));
 
-  QMenu *setChosenCleaveIndexMenu = new QMenu("Set Cleaved Body To");
+  m_toggleShowChosenCleaveBodyAction = new QAction("Toggle Visibilty of Current Body", m_widget);
+  m_toggleShowChosenCleaveBodyAction->setShortcut(Qt::Key_H);
+  m_menu->addAction(m_toggleShowChosenCleaveBodyAction);
+  connect(m_toggleShowChosenCleaveBodyAction, SIGNAL(triggered()),
+          this, SLOT(onToggleShowChosenCleaveBody()));
+
+  QMenu *setChosenCleaveIndexMenu = new QMenu("Set Current  Body To");
   m_menu->addMenu(setChosenCleaveIndexMenu);
 
   const int NUM_DISTINCT_KEYS = 10;
@@ -656,7 +810,7 @@ void TaskBodyCleave::buildTaskWidget()
     QAction *action = new QAction(icon, "Cleaved Body " + QString::number(j), m_widget);
     action->setShortcut(key);
     setChosenCleaveIndexMenu->addAction(action);
-    connect(action, SIGNAL(triggered()), this, SLOT(onChosenCleaveIndexChanged()));
+    connect(action, SIGNAL(triggered()), this, SLOT(onCleaveIndexShortcut()));
 
     // To avoid having to algorithmically invert the mapping of keys to combobox indices
     // when the shortcut is triggered, just store it.
@@ -682,11 +836,29 @@ void TaskBodyCleave::updateColors()
   }
 }
 
+void TaskBodyCleave::bodiesForCleaveIndex(std::set<uint64_t> &result,
+                                          std::size_t cleaveIndex,
+                                          bool ignoreSeedsOnly)
+{
+  for (auto it : m_meshIdToCleaveIndex) {
+    if (it.second == cleaveIndex) {
+      result.insert(it.first);
+    }
+  }
+  if (ignoreSeedsOnly || !m_showSeedsOnlyCheckBox->isChecked()) {
+    for (auto it : m_meshIdToCleaveResultIndex) {
+      if (it.second == cleaveIndex) {
+        result.insert(it.first);
+      }
+    }
+  }
+}
+
 void TaskBodyCleave::selectBodies(const std::set<uint64_t> &toSelect)
 {
   m_bodyDoc->deselectAllMesh();
 
-  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
     if (toSelect.find(mesh->getLabel()) != toSelect.end()) {
@@ -733,10 +905,12 @@ void TaskBodyCleave::enableCleavingUI(bool showingCleaving)
 {
   m_cleaveIndexComboBox->setEnabled(showingCleaving);
   m_selectBodyButton->setEnabled(showingCleaving);
+  m_showBodyCheckBox->setEnabled(showingCleaving);
   m_showSeedsOnlyCheckBox->setEnabled(showingCleaving);
   m_cleavingStatusLabel->setEnabled(showingCleaving);
   m_showSeedsOnlyAction->setEnabled(showingCleaving);
   m_toggleInBodyAction->setEnabled(showingCleaving);
+  m_toggleShowChosenCleaveBodyAction->setEnabled(showingCleaving);
   for (auto it : m_actionToComboBoxIndex) {
     it.first->setEnabled(showingCleaving);
   }
@@ -780,6 +954,14 @@ void TaskBodyCleave::cleave()
   if (const char* user = std::getenv("USER")) {
     requestJson["user"] = user;
   }
+  requestJson["server"] = m_bodyDoc->getDvidTarget().getAddress().c_str();
+  requestJson["port"] = m_bodyDoc->getDvidTarget().getPort();
+  requestJson["uuid"] = m_bodyDoc->getDvidTarget().getUuid().c_str();
+  requestJson["segmentation-instance"] = m_bodyDoc->getDvidTarget().getBodyLabelName().c_str();
+  requestJson["mesh-instance"] =
+      ZDvidData::GetName(ZDvidData::ROLE_MESHES_TARS,
+                         ZDvidData::ROLE_BODY_LABEL,
+                         m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
 
   // TODO: Teporary cleaving sevrver URL.
   QString server = "http://bergs-ws1.int.janelia.org:5556/compute-cleave";
@@ -794,6 +976,7 @@ void TaskBodyCleave::cleave()
   QJsonDocument requestJsonDoc(requestJson);
   QByteArray requestData(requestJsonDoc.toJson());
 
+  m_cleaveReplyPending = true;
   m_networkManager->post(request, requestData);
 }
 
@@ -813,19 +996,100 @@ bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vecto
 
     std::size_t cleaveIndex = cleaveIndexToMeshIds.begin()->first;
 
-    QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
     for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
       ZMesh *mesh = *it;
       meshIdToCleaveIndex[mesh->getLabel()] = cleaveIndex;
     }
 
+    std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
+
     m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+
+    showHiddenChangeWarning(hiddenChangedIndices);
+
     return true;
   }
 
   // Other situations do require the cleave server.
 
   return false;
+}
+
+void TaskBodyCleave::updateVisibility()
+{
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+  for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+    ZMesh *mesh = *itMesh;
+    uint64_t id = mesh->getLabel();
+    bool toBeVisible = true;
+
+    // First check whether the mesh is a seed, to give the correct update when
+    // undoing the setting of a seed.
+
+    auto itCleave = m_meshIdToCleaveIndex.find(id);
+    if (itCleave != m_meshIdToCleaveIndex.end()) {
+      std::size_t index = itCleave->second;
+      toBeVisible = (m_hiddenCleaveIndices.find(index) == m_hiddenCleaveIndices.end());
+    } else {
+
+      // If it is not a seed check for it in the cleaving results.
+
+      auto itCleaveResult = m_meshIdToCleaveResultIndex.find(id);
+      if (itCleaveResult != m_meshIdToCleaveResultIndex.end()) {
+        std::size_t index = itCleaveResult->second;
+        toBeVisible = (m_hiddenCleaveIndices.find(index) == m_hiddenCleaveIndices.end());
+      }
+    }
+
+    m_bodyDoc->setVisible(mesh, toBeVisible);
+  }
+}
+
+std::set<std::size_t> TaskBodyCleave::hiddenChanges(const std::map<uint64_t, std::size_t>&
+                                                    newMeshIdToCleaveIndex) const
+{
+  std::set<std::size_t> changedHiddenIndices;
+
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+  for (auto itMesh = meshes.cbegin(); itMesh != meshes.cend(); itMesh++) {
+    ZMesh *mesh = *itMesh;
+    if (!mesh->isVisible()) {
+      uint64_t id = mesh->getLabel();
+
+      auto itCleave = m_meshIdToCleaveResultIndex.find(id);
+      if (itCleave != m_meshIdToCleaveResultIndex.end()) {
+        size_t index = itCleave->second;
+
+        auto itNewCleave = newMeshIdToCleaveIndex.find(id);
+        if (itNewCleave != newMeshIdToCleaveIndex.end()) {
+          size_t indexNew = itNewCleave->second;
+          if (index != indexNew) {
+            bool newHidden = (m_hiddenCleaveIndices.find(indexNew) !=
+                              m_hiddenCleaveIndices.end());
+            size_t indexHidden = newHidden ? indexNew : index;
+            changedHiddenIndices.insert(indexHidden);
+          }
+        }
+      }
+    }
+  }
+
+  return changedHiddenIndices;
+}
+
+void TaskBodyCleave::showHiddenChangeWarning(const std::set<std::size_t> &
+                                             hiddenChangedIndices)
+{
+  if (!hiddenChangedIndices.empty()) {
+    QString title = "Hidden Changes";
+    QString text = "Changes occurred in hidden ";
+    text += (hiddenChangedIndices.size() == 1) ? "body (color): " : "bodies (colors): ";
+    for (std::size_t index : hiddenChangedIndices) {
+      text += QString::number(index) + " ";
+    }
+    displayWarning(title, text);
+  }
 }
 
 bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
@@ -842,7 +1106,10 @@ bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
         for (QJsonValue warning : warningsArray) {
           text += warning.toString() + "\n";
         }
-        displayWarning(title, text);
+
+        if (m_warningTextToSuppress.find(text) == m_warningTextToSuppress.end()) {
+          displayWarning(title, text, "", true);
+        }
 
         return true;
       }
@@ -855,7 +1122,7 @@ bool TaskBodyCleave::showCleaveReplyWarnings(const QJsonObject &replyJson)
 bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t> meshIdToCleaveIndex)
 {
   std::vector<ZMesh*> missing;
-  QList<ZMesh*> meshes = m_bodyDoc->getMeshList();
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
     if (meshIdToCleaveIndex.find(mesh->getLabel()) == meshIdToCleaveIndex.end()) {
@@ -875,7 +1142,22 @@ bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t
     QString text = "Cleave server error: " + QString::number(missing.size());
     text += (missing.size() > 1) ? " super voxels were " : " super voxel was ";
     text += "missing in server response";
-    displayWarning(title, text);
+
+    std::vector<uint64_t> missingIds;
+    for (ZMesh* mesh : missing) {
+      missingIds.push_back(mesh->getLabel());
+    }
+    std::sort(missingIds.begin(), missingIds.end());
+    QString details("Missing: ");
+    for (size_t i = 0; i < missingIds.size(); i++) {
+      if (i == 200) {
+        details += "etc.";
+        break;
+      }
+      details += QString::number(missingIds[i]) + " ";
+    }
+
+    displayWarning(title, text, details);
 
     return true;
   } else {
@@ -883,14 +1165,34 @@ bool TaskBodyCleave::showCleaveReplyOmittedMeshes(std::map<uint64_t, std::size_t
   }
 }
 
-void TaskBodyCleave::displayWarning(const QString &title, const QString &text)
+void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
+                                    const QString& details, bool allowSuppression)
 {
   // Display the warning at idle time, after the rendering event has been processed,
   // so the results of cleaving will be visible when the warning is presented.
 
   QTimer::singleShot(0, this, [=](){
-    ZWidgetMessage msg(title, text, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG);
-    m_bodyDoc->notify(msg);
+    if (details.isEmpty() && !allowSuppression) {
+      ZWidgetMessage msg(title, text, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG);
+      m_bodyDoc->notify(msg);
+    } else {
+      QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::NoButton, m_bodyDoc->getParent3DWindow());
+      QPushButton *okAndSuppress = nullptr;
+      if (allowSuppression) {
+        okAndSuppress = msgBox.addButton("OK, Don't Ask Again", QMessageBox::AcceptRole);
+      }
+      QPushButton *ok = msgBox.addButton("OK", QMessageBox::AcceptRole);
+      msgBox.setDefaultButton(ok);
+      if (!details.isEmpty()) {
+        msgBox.setDetailedText(details);
+      }
+
+      msgBox.exec();
+
+      if (msgBox.clickedButton() == okAndSuppress) {
+          m_warningTextToSuppress.insert(text);
+      }
+    }
   });
 }
 

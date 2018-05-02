@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ $# -lt 4 ]
+then
+  echo './dvid_branch <address> <node> <name> <note>'
+  exit
+fi
+
+address=$1
+if [[ $address != http://* ]]
+then
+  address="http://$address"
+fi
+
+
+node=$2
+name=$3
+note=$4
+
+#http POST http://$address/api/node/$node/commit log="[\"locked for backup\"]"
+#date=`date`
+http POST $address/api/node/$node/branch branch="$name" note="$note" 
+
+
+ 

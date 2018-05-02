@@ -16,6 +16,7 @@
 #include "znormcolormap.h"
 #include "flyem/zflyembodycoloroption.h"
 #include "zglobal.h"
+#include "flyem/zflyemproofmvc.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -401,6 +402,15 @@ void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
     }
     */
   }
+}
+
+void FlyEmProofControlForm::updateWidget(ZFlyEmProofMvc *mvc)
+{
+  updateWidget(mvc->getDvidTarget());
+  ui->coarseBodyPushButton->setEnabled(mvc->is3DEnabled());
+  ui->bodyViewPushButton->setEnabled(mvc->is3DEnabled());
+  ui->skeletonViewPushButton->setEnabled(mvc->is3DEnabled());
+  ui->meshPushButton->setEnabled(mvc->is3DEnabled());
 }
 
 void FlyEmProofControlForm::setInfo(const QString &info)

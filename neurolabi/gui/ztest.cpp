@@ -25687,6 +25687,11 @@ void ZTest::test(MainWindow *host)
   char* buffer = new char[width*height*8];
   service.retrieve_arbimage(1024, 1024, center, dim1, dim2, buffer, 0, false);
   std::cout << "success" << std::endl;
+
+  uint64_t *array = (uint64_t*) buffer;
+  for (size_t i = 0; i < 10; ++i) {
+    std::cout << array[i] << std::endl;
+  }
 #endif
 
 #if 0
@@ -25726,8 +25731,9 @@ void ZTest::test(MainWindow *host)
 
   ZDvidReader reader;
   reader.open(target);
+#endif
 
-#if 1
+#if 0
   ZArray *array = reader.readLabels64Lowtis(
         17152, 22592, 19328, 1024, 1024, 1);
   array->printInfo();
@@ -25753,19 +25759,27 @@ void ZTest::test(MainWindow *host)
   std::cout << reader.getDvidTarget().hasCoarseSplit() << std::endl;
 #endif
 
-#endif
-
 #if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
   ZDvidReader reader;
   reader.open(target);
+  reader.updateMaxGrayscaleZoom();
 
-  ZStack *stack = reader.readGrayScaleLowtis(
-        17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 1024, 1024, 1, 256, 256);
+  {
+    ZStack *stack = reader.readGrayScaleLowtis(
+          17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 1024, 1024, 0, 256, 256);
 
-  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+    stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  }
+
+  {
+    ZStack *stack = reader.readGrayScaleLowtis(
+          17216, 19872, 20704, 1, 0, 0, 0, 1, 0, 1024, 1024, 1, 256, 256);
+
+    stack->save(GET_TEST_DATA_DIR + "/test2.tif");
+  }
 #endif
 
 #if 0
@@ -25865,7 +25879,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZContrastProtocol protocol;
   protocol.setScale(5.2);
   protocol.setOffset(-0.5);
@@ -25876,6 +25890,296 @@ void ZTest::test(MainWindow *host)
     std::cout << i << " -> " << int(protocol.mapGrey(i)) << std::endl;
   }
 #endif
+
+#if 1
+  ZDvidTarget target;
+  target.setFromUrl("http://emdata2.int.janelia.org:8700/api/node/0667");
+  target.setSegmentationName("segmentation");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.syncAnnotationToLabel("segmentation_todo");
+
+#endif
+
+#if 0
+  host->runNeuTuPaper();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  target.setGrayScaleName("grayscale");
+
+  ZDvidLabelSlice slice;
+  slice.setSliceAxis(neutube::X_AXIS);
+  slice.setDvidTarget(target);
+
+  ZStackViewParam viewParam;
+  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
+  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
+  viewParam.setViewPort(QRect(7286, 5630, 512, 512), 3619);
+
+  viewParam.setSliceAxis(neutube::X_AXIS);
+
+  slice.update(viewParam);
+  slice.getPaintBuffer()->save(
+        QString::fromStdString(GET_TEST_DATA_DIR+"/test.tif"));
+#endif
+
+#if 0
+  ZDvidLabelSlice slice;
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "b6bc", 8500);
+  target.setSegmentationName("labels");
+  target.setGrayScaleName("grayscale");
+
+  slice.setDvidTarget(target);
+
+  ZArbSliceViewParam sliceViewParam;
+  sliceViewParam.setSize(512, 512);
+  sliceViewParam.setCenter(3079, 6798, 3120);
+//  sliceViewParam.setCenter(4003, 5607, 7312);
+  ZPoint v1 = ZPoint(0, 0, 1);
+  ZPoint v2 = ZPoint(1, 0, 0);
+  sliceViewParam.setPlane(v1, v2);
+
+  ZStackViewParam viewParam;
+  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
+  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
+  viewParam.setSliceAxis(neutube::A_AXIS);
+  viewParam.setArbSliceView(sliceViewParam);
+  /*
+  viewParam.setCanvasRect(QRect(0, 0, 10000, 20000));
+  viewParam.setWidgetRect(QRect(0, 0, 100, 100));
+  viewParam.setViewPort(QRect(3079, 5798, 512, 512));
+  viewParam.setZ(3120);
+  qDebug() <<  viewParam.getViewPort();
+  */
+  slice.setSliceAxis(neutube::A_AXIS);
+  slice.update(viewParam);
+
+//  slice.paintBuffer();
+  slice.getPaintBuffer()->save(QString::fromStdString(GET_TEST_DATA_DIR+"/test.tif"));
+
+#endif
+
+#if 0
+  ZWidgetMessage msg = ZWidgetMessageFactory("test").
+      to(ZWidgetMessage::TARGET_CUSTOM_AREA).
+      as(neutube::MSG_WARNING).
+      title("Test Title");
+  qDebug() << msg.getTitle();
+  qDebug() << msg.toHtmlString();
+#endif
+
+#if 0
+  ZSwcTree tree;
+  tree.load(GET_BENCHMARK_DIR + "/swc/dynamic.swc");
+  tree.forceVirtualRoot();
+//  Swc_Tree_Node *tn = SwcTreeNode::makePointer(ZPoint(0, 0, 0), 1);
+//  SwcTreeNode::setParent(tn, tree.root());
+  std::vector<zswc::Swc_Tree_Node_Pair> pairList;
+  std::vector<Swc_Tree_Node*> nodeList = zswc::Decompose(&tree, &pairList);
+  std::for_each(nodeList.begin(), nodeList.end(), [](Swc_Tree_Node *tn) {
+    SwcTreeNode::print(tn);
+  });
+
+  std::for_each(pairList.begin(), pairList.end(),
+                [](const zswc::Swc_Tree_Node_Pair &p) {
+    std::cout << SwcTreeNode::id(p.first) << "->" << SwcTreeNode::id(p.second)
+              << std::endl;
+  });
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1", "1d1d", 8100);
+
+  ZMeshFactory mf;
+  mf.setSmooth(3);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZDvidWriter writer;
+    ZDvidTarget roiTarget;
+    roiTarget.set("emdata2", "5f98", 8900);
+
+    if (writer.open(roiTarget)) {
+      auto roiList = reader.readDataInstances("roi");
+      for (const auto &roiName : roiList) {
+        std::cout << "Processing " << roiName;
+        if (!writer.getDvidReader().hasData(roiName)) {
+          std::cout << "Generating mesh ..." << std::endl;
+          ZObject3dScan obj = reader.readRoi(roiName);
+          if (!obj.isEmpty()) {
+            writer.createData("roi", roiName);
+            writer.writeRoi(obj, roiName);
+          } else {
+            std::cout << "Failed to load ROI: " << roiName;
+          }
+        }
+      }
+    }
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1", "1d1d", 8100);
+
+  ZMeshFactory mf;
+  mf.setSmooth(3);
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZDvidWriter writer;
+    ZDvidTarget roiTarget;
+    roiTarget.set("emdata2", "5f98", 8900);
+
+    if (writer.open(roiTarget)) {
+      auto roiList = reader.readDataInstances("roi");
+      for (const auto &roiName : roiList) {
+        std::cout << "Processing " << roiName;
+        std::string filePath =
+            GET_TEST_DATA_DIR + "/_flyem/FIB/hemibrain/rois_smooth2/" +
+            roiName + ".obj";
+        QFileInfo fileInfo(filePath.c_str());
+        if (!fileInfo.exists()) {
+          std::cout << "Generating mesh ..." << std::endl;
+          ZObject3dScan obj = reader.readRoi(roiName);
+          if (!obj.isEmpty()) {
+            ZMesh *mesh = mf.makeMesh(obj);
+            if (mesh != NULL) {
+              mesh->save(filePath);
+              delete mesh;
+            } else {
+              std::cout << "Failed to create mesh: " << roiName;
+            }
+          } else {
+            std::cout << "Failed to load ROI: " << roiName;
+          }
+        }
+        writer.uploadRoiMesh(filePath, roiName);
+      }
+    }
+  }
+#endif
+
+#if 0
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "fb02", 8900);
+
+  ZJsonObject jsonObj;
+  jsonObj.decodeString("{\"Pos\":[23620,30590,20736],\"Kind\":\"Note\","
+                       "\"Tags\":[\"user:taggl\"],"
+                       "\"Prop\":{\"body ID\":\"1144018233\","
+                       "\"comment\":\"Interesting Contralateral Neuron \","
+                       "\"custom\":\"1\",\"status\":\"\",\"time\":\"\","
+                       "\"type\":\"Other\",\"user\":\"taggl\"},\"Supervoxel\":0}");
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter(target);
+  writer->writePointAnnotation("bookmark_annotations", jsonObj);
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("MB_Test");
+  ZDvidSparseStack stack;
+  stack.setDvidTarget(reader->getDvidTarget());
+  stack.loadBody(123456);
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "9524", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidNode node;
+  node.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleSource(node);
+
+  ZDvidSparseStack stack;
+  stack.setDvidTarget(target);
+  stack.setLabelType(flyem::LABEL_SUPERVOXEL);
+
+  stack.loadBody(987648131);
+//  stack.loadBody(1479647609);
+
+  ZSparseStack *ss = stack.getSparseStack();
+  ss->save(GET_TEST_DATA_DIR + "/test.zss");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "9524", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidNode node;
+  node.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleSource(node);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidSparseStack *stack =
+      reader.readDvidSparseStack(987648131, flyem::LABEL_SUPERVOXEL);
+  ZSparseStack *ss = stack->getSparseStack();
+  ss->save(GET_TEST_DATA_DIR + "/test.zss");
+#endif
+
+#if 0
+  {
+    ZDvidTarget target;
+    target.set("emdata2.int.janelia.org", "9524", 8700);
+    target.setSegmentationName("segmentation");
+    target.setGrayScaleName("grayscalejpeg");
+
+    ZDvidNode node;
+    node.set("emdata3.int.janelia.org", "a89e", 8600);
+    target.setGrayScaleSource(node);
+
+    ZDvidReader reader;
+    reader.open(target);
+
+    std::vector<uint64_t> bodyList = {
+      5812980925, 5812980927, 5812980928
+    };
+
+    for (uint64_t bodyId : bodyList) {
+      ZObject3dScan obj;
+      reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+      if (!obj.isEmpty()) {
+        ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+        mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+        delete mesh;
+      }
+    }
+  }
+
+  {
+    ZDvidTarget target;
+    target.set("emdata2.int.janelia.org", "f5bc", 8700);
+    target.setSegmentationName("segmentation");
+    target.setGrayScaleName("grayscalejpeg");
+
+    ZDvidReader reader;
+    reader.open(target);
+    ZObject3dScan obj;
+    uint64_t bodyId = 1388969101;
+    reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+    if (!obj.isEmpty()) {
+      ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+      mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+      delete mesh;
+    }
+  }
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

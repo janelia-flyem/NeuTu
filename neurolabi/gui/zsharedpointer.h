@@ -3,7 +3,7 @@
 
 #include <utility>
 
-#if defined(__GLIBCXX__) && !defined(_CPP11_)
+#if defined(__GLIBCXX__) && (__cplusplus < 201103L)
 #include <tr1/memory>
 namespace ztr1 = std::tr1;
 #else
@@ -27,6 +27,8 @@ public:
 };
 #endif
 
+//Those macros are obsolete because we no longer support compling without
+//standard lower than c++11
 #define ZSharedPointer ztr1::shared_ptr
 #define Make_Shared ztr1::make_shared
 #define Shared_Dynamic_Cast ztr1::dynamic_pointer_cast

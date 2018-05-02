@@ -129,6 +129,7 @@ bool ZInteractionEngine::processMouseReleaseEvent(
     m_mouseLeftButtonPressed = false;
   } else if (event->button() == Qt::RightButton) {
     exitEditMode();
+    emit exitingEdit();
     m_mouseRightButtonPressed = false;
   }
 
@@ -431,6 +432,11 @@ void ZInteractionEngine::enterLocateMode()
   emit decorationUpdated();
 }
 
+void ZInteractionEngine::exitLocateMode()
+{
+  exitExplore();
+}
+
 void ZInteractionEngine::enterBrowseMode()
 {
   exitEditMode();
@@ -438,6 +444,11 @@ void ZInteractionEngine::enterBrowseMode()
   m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
   m_exploreMarker.setVisible(true);
   emit decorationUpdated();
+}
+
+void ZInteractionEngine::exitBrowseMode()
+{
+  exitExplore();
 }
 
 void ZInteractionEngine::enterPaintRect()
@@ -512,8 +523,6 @@ void ZInteractionEngine::exitEditMode()
   exitMarkTodo();
   exitMarkBookmark();
   exitExplore();
-
-//  m_interactiveContext.setExitingEdit(true);
 }
 
 QList<ZStackObject*> ZInteractionEngine::getDecorationList() const

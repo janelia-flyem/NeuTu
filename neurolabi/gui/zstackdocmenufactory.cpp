@@ -8,6 +8,7 @@
 #include "zstackpresenter.h"
 #include "zactionfactory.h"
 #include "z3dwindow.h"
+#include "zactionactivator.h"
 
 ZStackDocMenuFactory::ZStackDocMenuFactory()
 {

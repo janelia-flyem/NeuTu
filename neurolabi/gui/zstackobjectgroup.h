@@ -164,7 +164,6 @@ public:
   template<typename T>
   QList<T*> getObjectList() const;
 
-
   TStackObjectList getObjectList(ZStackObject::EType type,
                                  TObjectTest testFunc) const;
 

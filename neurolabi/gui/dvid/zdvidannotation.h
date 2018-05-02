@@ -96,6 +96,16 @@ public:
   bool hasPartner(const ZIntPoint &pos);
 
   void addTag(const std::string &tag);
+
+  /*!
+   * \brief Add a body ID tag.
+   *
+   * Mainly used as a temporary solution for unsyncable labelmap.
+   */
+  void addBodyIdTag();
+
+//  static std::string GetBodyIdTag(uint64_t bodyId);
+
   void removeTag(const std::string &tag);
   bool hasTag(const std::string &tag) const;
 

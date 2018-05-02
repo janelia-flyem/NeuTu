@@ -454,11 +454,11 @@ void ZJsonObject::removeKey(const char *key)
   }
 }
 
-std::string ZJsonObject::dumpString(int indent) const
+std::string ZJsonObject::dumpJanssonString(size_t flags) const
 {
   if (isEmpty()) {
     return "{}";
   }
 
-  return ZJsonValue::dumpString(indent);
+  return ZJsonValue::dumpJanssonString(flags);
 }
