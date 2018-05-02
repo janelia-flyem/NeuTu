@@ -91,6 +91,7 @@
 #include "z3dwindow.h"
 #include "zflyemproofmvccontroller.h"
 #include "zstackdochelper.h"
+#include "zstack.hxx"
 
 ZFlyEmProofMvc::ZFlyEmProofMvc(QWidget *parent) :
   ZStackMvc(parent)
@@ -800,6 +801,7 @@ void ZFlyEmProofMvc::makeBodyWindow()
 //  m_bodyWindow->setFront(neutube3d::LAYER_MESH, true);
 
   m_bodyWindow->getSwcFilter()->setSwcTopologyMutable(false);
+//  m_bodyWindow->getSwcFilter()->forceNodePicking(true);
   m_bodyWindow->getMeshFilter()->setColorMode("Mesh Color");
   m_bodyWindow->setWindowType(neutube3d::TYPE_BODY);
   m_bodyWindow->readSettings();
@@ -1420,7 +1422,7 @@ void ZFlyEmProofMvc::prepareTile(ZDvidTileEnsemble *te)
 {
 //  te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
 //  te->enhanceContrast(getCompletePresenter()->highTileContrast());
-  te->attachView(getView());
+//  te->attachView(getView());
   ZDvidPatchDataFetcher *patchFetcher = new ZDvidPatchDataFetcher(this);
   ZDvidPatchDataUpdater *patchUpdater = new ZDvidPatchDataUpdater(this);
   patchFetcher->setDvidTarget(getDvidTarget());
@@ -1500,7 +1502,7 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
     updateContrast();
   }
 
-  getView()->reset(false);
+//  getView()->reset(false);
   getProgressSignal()->advanceProgress(0.1);
 
   m_splitProject.setDvidTarget(getDvidTarget());
@@ -3221,7 +3223,7 @@ void ZFlyEmProofMvc::exitSplit()
         getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
     labelSlice->setVisible(true);
     labelSlice->update(getView()->getViewParameter(neutube::COORD_STACK));
-    labelSlice->setHitProtocal(ZStackObject::HIT_STACK_POS);
+    labelSlice->setHitProtocal(ZStackObject::HIT_DATA_POS);
 //    labelSlice->setHittable(true);
 
     //m_splitProject.clearBookmarkDecoration();

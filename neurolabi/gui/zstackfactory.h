@@ -14,6 +14,7 @@ class ZObject3dScanArray;
 class ZStackObject;
 class ZSwcTree;
 class ZObject3dScan;
+class ZStackArray;
 
 /*!
  * \brief The class of creating a stack
@@ -84,6 +85,7 @@ public:
       const ZStack &redStack, const ZStack &greenStack, const ZStack &blueStack);
 
   static ZStack* CompositeForeground(const ZStack &stack1, const ZStack &stack2);
+  static ZStack* CompositeForeground(const ZStackArray &stackArray);
 
   static ZStack* MakeStrokeMask(const std::vector<ZStroke2d*> strokeList);
   static ZStack* MakeStrokeProjMask(const std::vector<ZStroke2d*> strokeList);

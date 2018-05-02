@@ -112,6 +112,8 @@ public:
 
   ZIntPoint toIntPoint() const;
 
+  friend std::ostream& operator<<(std::ostream& stream, const ZPoint &pt);
+
 public:
   //virtual void display(ZPainter &painter, int n = 0, Display_Style style = NORMAL) const;
 

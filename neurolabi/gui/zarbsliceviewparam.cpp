@@ -2,6 +2,8 @@
 #include <QRect>
 #include <cmath>
 
+#include "geometry/zaffineplane.h"
+
 ZArbSliceViewParam::ZArbSliceViewParam()
 {
 }
@@ -102,6 +104,15 @@ int ZArbSliceViewParam::getWidth() const
 int ZArbSliceViewParam::getHeight() const
 {
   return m_height;
+}
+
+ZAffinePlane ZArbSliceViewParam::getAffinePlane() const
+{
+  ZAffinePlane ap;
+  ap.setOffset(getCenter().toPoint());
+  ap.setPlane(getPlaneV1(), getPlaneV2());
+
+  return ap;
 }
 
 void ZArbSliceViewParam::move(double dx, double dy, double dz)
