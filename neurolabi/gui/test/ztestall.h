@@ -67,5 +67,6 @@
 #include "test/zmouseeventprocessortest.h"
 #include "test/zpositionmappertest.h"
 #include "test/zstackdochelpertest.h"
+#include "test/zgeometrytest.h"
 
 #endif // ZTESTALL_H

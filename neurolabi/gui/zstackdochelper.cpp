@@ -68,10 +68,8 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
         ZDvidTileEnsemble *obj =
             dynamic_cast<ZDvidTileEnsemble*>(objList.first());
         if (obj->isVisible()) {
-          if (obj->getView() != NULL) {
-            m_currentZ = obj->getView()->getCurrentZ();
-            m_hasCurrentZ = true;
-          }
+          m_currentZ = obj->getCurrentZ();
+          m_hasCurrentZ = true;
         }
       }
     }

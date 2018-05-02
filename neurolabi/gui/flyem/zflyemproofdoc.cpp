@@ -7,6 +7,7 @@
 #include <QtConcurrentRun>
 #include <QMessageBox>
 #include <QElapsedTimer>
+#include <sstream>
 
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
@@ -724,6 +725,9 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 {
   LINFO() << "Setting dvid env in ZFlyEmProofDoc";
   if (m_dvidReader.open(target)) {
+    std::ostringstream flowInfo;
+
+    flowInfo << "Prepare DVID readers";
     m_dvidWriter.open(target);
     m_synapseReader.openRaw(m_dvidReader.getDvidTarget());
     m_todoReader.openRaw(m_dvidReader.getDvidTarget());
@@ -733,8 +737,10 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     m_activeBodyColorMap.reset();
     m_mergeProject->setDvidTarget(m_dvidReader.getDvidTarget());
 
+    flowInfo << "->Prepare DVID data instances";
     initData(getDvidTarget());
     if (getSupervisor() != NULL) {
+      flowInfo << "->Prepare librarian";
       getSupervisor()->setDvidTarget(m_dvidReader.getDvidTarget());
       if (!getSupervisor()->isEmpty() && !target.readOnly()) {
         int statusCode = getSupervisor()->testServer();
@@ -750,11 +756,16 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
       }
     }
 
+    flowInfo << "->Read DVID Info";
     readInfo();
 
+    flowInfo << "->Prepare DVID-related data";
     prepareDvidData();
 
+    flowInfo << "->Update DVID target for objects";
     updateDvidTargetForObject();
+
+    flowInfo << "->Update DVID info for objects";
     updateDvidInfoForObject();
 
 #ifdef _DEBUG_2
@@ -763,6 +774,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
 #endif
 
     //Run check anyway to get around a strange bug of showing grayscale
+    flowInfo << "->Check proofreading data instances";
     int missing = m_dvidReader.checkProofreadingData();
     if (!getDvidTarget().readOnly()) {
       if (missing > 0) {
@@ -776,6 +788,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
       }
     }
 
+    LDEBUG() << flowInfo.str();
 //    startTimer();
   } else {
     m_dvidReader.clear();

@@ -42,6 +42,7 @@
 #include "zarbsliceviewparam.h"
 #include "zstackdochelper.h"
 #include "mvc/zpositionmapper.h"
+#include "data3d/utilities.h"
 
 using namespace std;
 
@@ -139,11 +140,6 @@ void ZStackView::init()
   m_secondTopLayout->addWidget(m_stackLabel);
 //  m_msgLabel->setText("test");
   m_secondTopLayout->addWidget(m_progress);
-//  m_secondTopLayout->addWidget(m_zSpinBox);
-
-//  m_secondTopLayout->addSpacerItem(new QSpacerItem(1, 1,
-//                                               QSizePolicy::Expanding,
-//                                               QSizePolicy::Fixed));
 
   m_layout = new QVBoxLayout;
   m_layout->setSpacing(0);
@@ -1020,9 +1016,32 @@ void ZStackView::resizeEvent(QResizeEvent *event)
   setInfo();
   event->accept();
 
-//  m_currentViewParam = getViewParameter(neutube::COORD_STACK);
+  if (isVisible()) {
+    if (getSliceAxis() == neutube::A_AXIS) {
+      //Adjust center
+      QPointF stackPos = ZPositionMapper::WidgetToStack(
+            imageWidget()->width() / 2, imageWidget()->height() / 2,
+            getViewProj());
+      LDEBUG() << "Stack center:" << stackPos.x() << stackPos.y();
+      //    ZPoint dataPos = ZPositionMapper::StackToData(stackPos, getAffinePlane());
+      //    m_sliceViewParam.setCenter(dataPos.toIntPoint());
+      ZStackViewParam param = getViewParameter(m_sliceViewParam);
+      if (m_imageWidget->getViewProj() != param.getViewProj()) {
+        m_imageWidget->setViewProj(param.getViewProj());
+      }
 
-  processViewChange(true, false);
+      recordViewParam();
+      m_depthControl->setValueQuietly(param.getZ() - getZ0());
+      m_zSpinBox->setValueQuietly(m_depthControl->value());
+
+//      updateViewParam(m_sliceViewParam);
+
+      LDEBUG() << "Slice center:" << m_sliceViewParam.getCenter().toString();
+    }
+
+    processViewChange(true, false);
+
+  }
 //  updateActiveDecorationCanvas();
 //  updateTileCanvas();
   //buddyPresenter()->updateInteractiveContext();
@@ -2479,7 +2498,7 @@ void ZStackView::zoomTo(int x, int y, int z, int w)
     width = 200;
   }
 
-  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+  zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
 
   recordViewParam();
 
@@ -2841,7 +2860,7 @@ void ZStackView::setViewPortCenter(
 {
   switch (system) {
   case neutube::AXIS_NORMAL:
-    ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+    zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
     setViewPortCenter(x, y, z, neutube::AXIS_SHIFTED);
     break;
   case neutube::AXIS_SHIFTED:
@@ -3037,10 +3056,12 @@ void ZStackView::processViewChange(bool redrawing, bool depthChanged)
         paintStackBuffer();
       }
 
-      for (QSet<ZStackObject::ETarget>::const_iterator iter = targetSet.begin();
-           iter != targetSet.end(); ++iter) {
-        paintObjectBuffer(*iter);
+      std::string painted;
+      foreach (ZStackObject::ETarget target, targetSet) {
+        paintObjectBuffer(target);
+        painted += zstackobject::ToString(target) + ",";
       }
+      LDEBUG() << "Painting objects in" << painted;
     }
 
     notifyViewChanged(getViewParameter()); //?

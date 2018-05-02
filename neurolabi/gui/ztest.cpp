@@ -26220,6 +26220,152 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "0667", 8700);
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "a89e", 8600));
+  target.setGrayScaleName("grayscalejpeg");
+  target.setSegmentationName("segmentation");
+
+  ZDvidReader reader;
+  if (reader.open(target.getGrayScaleTarget())) {
+    ZPoint center;
+    center.set(25940, 24740, 20389);
+    ZPoint v1(1, 0, 0);
+    ZPoint v2(0, 1, 2);
+    v2.normalize();
+
+    int width = 25200 / 10;
+    int height = 17400 / 10;
+
+    ZAffineRect rect = ZAffineRectBuilder(width, height).at(center).on(v1, v2);
+
+    int row = 10;
+    int col = 10;
+    std::vector<ZAffineRect> rectArray = zgeom::Partition(rect, row, col);
+
+    ZStackArray stackArray;
+
+    int index = 0;
+    int dy = 0;
+    for (int i = 0; i < row; ++i) {
+      int dx = 0;
+      int height = rectArray[index].getHeight();
+      for (int j = 0; j < col; ++j) {
+        const ZAffineRect &rect = rectArray[index];
+        ZStack *stack = reader.readGrayScaleLowtis(rect, 0, 0, 0);
+//            ZFlyEmMisc::MakeColorSegmentation(reader, rect);
+        std::cout << "Offset: " << dx << " " << dy << std::endl;
+        stack->setOffset(dx, dy, 0);
+        stackArray.append(stack);
+        dx += rect.getWidth();
+        ++index;
+      }
+      dy += height;
+    }
+
+    ZStack *stack = ZStackFactory::CompositeForeground(stackArray);
+
+    stack->save(GET_TEST_DATA_DIR + "/_flyem/art/gray_small.tif");
+  }
+#endif
+
+#if 0
+  ZStack grayscale;
+  grayscale.load(GET_TEST_DATA_DIR + "/_flyem/art/gray.tif");
+
+  ZStack segmentation;
+  segmentation.load(GET_TEST_DATA_DIR + "/_flyem/art/seg.tif");
+
+  ZStack *cgray = ZStackFactory::MakeZeroStack(GREY, grayscale.getBoundBox(), 3);
+  for (int c = 0; c < 3; ++c) {
+    cgray->copyValueFrom(grayscale.array8(), grayscale.getVoxelNumber(), c);
+  }
+
+  ZStackBlender blender;
+  blender.setBlendingMode(ZStackBlender::BLEND_NO_BLACK);
+  ZStack *out = blender.blend(*cgray, segmentation, 0.5);
+
+  out->save(GET_TEST_DATA_DIR + "/_flyem/art/blend.tif");
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "0667", 8700);
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "a89e", 8600));
+  target.setGrayScaleName("grayscalejpeg");
+  target.setSegmentationName("segmentation");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZPoint center;
+    center.set(25940, 24740, 20389);
+    ZPoint v1(1, 0, 0);
+    ZPoint v2(0, 1, 2);
+    v2.normalize();
+
+    int width = 25200 / 10;
+    int height = 17400 / 10;
+
+    ZAffineRect rect = ZAffineRectBuilder(width, height).at(center).on(v1, v2);
+
+    int row = 10;
+    int col = 10;
+    std::vector<ZAffineRect> rectArray = zgeom::Partition(rect, row, col);
+
+    ZStackArray stackArray;
+
+    int index = 0;
+    int dy = 0;
+    for (int i = 0; i < row; ++i) {
+      int dx = 0;
+      int height = rectArray[index].getHeight();
+      for (int j = 0; j < col; ++j) {
+        const ZAffineRect &rect = rectArray[index];
+        ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(reader, rect);
+        std::cout << "Offset: " << dx << " " << dy << std::endl;
+        stack->setOffset(dx, dy, 0);
+        stackArray.append(stack);
+        dx += rect.getWidth();
+        ++index;
+      }
+      dy += height;
+    }
+
+    ZStack *stack = ZStackFactory::CompositeForeground(stackArray);
+
+#if 0
+    ZObjectColorScheme colorScheme;
+    colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
+    ZArray *array = reader.readLabels64Lowtis(center, v1, v2, width, height, 0);
+    uint64_t *labelArray = array->getDataPointer<uint64_t>();
+
+    ZStack *stack = ZStackFactory::MakeZeroStack(
+          GREY, misc::GetBoundBox(array), 3);
+//    ZStack *stack = new ZStack(COLOR, width, height, 1, 1);
+    uint8_t *array1 = stack->array8(0);
+    uint8_t *array2 = stack->array8(1);
+    uint8_t *array3 = stack->array8(2);
+
+    size_t area = width * height;
+    for (size_t i = 0; i < area; ++i) {
+      QColor color = colorScheme.getColor(labelArray[i]);
+      array1[i] = color.red();
+      array2[i] = color.green();
+      array3[i] = color.blue();
+    }
+#endif
+    stack->save(GET_TEST_DATA_DIR + "/_flyem/art/seg_small.tif");
+
+//    ZDvidReader reader2;
+//    reader2.open(target.getGrayScaleTarget());
+//    ZStack *stack =
+//        reader2.readGrayScaleLowtis(center, v1, v2, width/2, height/2, 0, 0, 0);
+//    stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  }
+#endif
+
 
   std::cout << "Done." << std::endl;
 }

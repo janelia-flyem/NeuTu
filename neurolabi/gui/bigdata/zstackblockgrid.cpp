@@ -2,7 +2,7 @@
 #include "zstack.hxx"
 #include "zintcuboid.h"
 #include "neutubeconfig.h"
-#include "misc/miscutility.h"
+#include "core/utilities.h"
 
 ZStackBlockGrid::ZStackBlockGrid()
 {
@@ -271,15 +271,15 @@ void ZStackBlockGrid::read(std::istream &stream)
   m_blockSize.read(stream);
 
   int count = 0;
-  misc::read(stream, count);
+  neutube::read(stream, count);
   int maxIndex = -1;
-  misc::read(stream, maxIndex);
+  neutube::read(stream, maxIndex);
 
   if (maxIndex >= 0) {
     m_stackArray.resize(maxIndex + 1, 0);
     for (int i = 0; i < count; ++i) {
       int index = -1;
-      misc::read(stream, index);
+      neutube::read(stream, index);
       if (index >= 0) {
         ZStack *stack = new ZStack;
         stack->read(stream);
@@ -305,13 +305,13 @@ void ZStackBlockGrid::write(std::ostream &stream) const
     }
   }
 
-  misc::write(stream, count);
-  misc::write(stream, maxIndex);
+  neutube::write(stream, count);
+  neutube::write(stream, maxIndex);
 
   for (int i = 0; i < (int) m_stackArray.size(); ++i) {
     ZStack *stack = m_stackArray[i];
     if (stack != NULL) {
-      misc::write(stream, i);
+      neutube::write(stream, i);
       stack->write(stream);
     }
   }

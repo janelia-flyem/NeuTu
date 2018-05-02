@@ -1422,7 +1422,7 @@ void ZFlyEmProofMvc::prepareTile(ZDvidTileEnsemble *te)
 {
 //  te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
 //  te->enhanceContrast(getCompletePresenter()->highTileContrast());
-  te->attachView(getView());
+//  te->attachView(getView());
   ZDvidPatchDataFetcher *patchFetcher = new ZDvidPatchDataFetcher(this);
   ZDvidPatchDataUpdater *patchUpdater = new ZDvidPatchDataUpdater(this);
   patchFetcher->setDvidTarget(getDvidTarget());

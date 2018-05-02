@@ -60,12 +60,13 @@ HEADERS += \
     test/zviewprojtest.h \
     test/z3dfiltersettingtest.h \
     test/zdvidresultservicetest.h \
-    $$PWD/zxmltest.h \
-    $$PWD/zpointtest.h \
-    $$PWD/zwatershedtest.h \
-    $$PWD/ztestall.h \
-    $$PWD/zstackobjectinfotest.h \
-    $$PWD/zglobaltest.h \
-    $$PWD/zmouseeventprocessortest.h \
+    test/zxmltest.h \
+    test/zpointtest.h \
+    test/zwatershedtest.h \
+    test/ztestall.h \
+    test/zstackobjectinfotest.h \
+    test/zglobaltest.h \
+    test/zmouseeventprocessortest.h \
     $$PWD/zpositionmappertest.h \
-    $$PWD/zstackdochelpertest.h
+    $$PWD/zstackdochelpertest.h \
+    $$PWD/zgeometrytest.h

@@ -116,6 +116,7 @@
 #include "z3dwindow.h"
 #include "zswctree.h"
 #include "zobject3d.h"
+#include "data3d/utilities.h"
 
 using namespace std;
 
@@ -4733,7 +4734,7 @@ QString ZStackDoc::rawDataInfo(double cx, double cy, int z, neutube::EAxis axis)
   int wy = y;
   int wz = z;
 
-  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
+  zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
 
   if (x >= 0 && y >= 0) {
     std::ostringstream stream;
@@ -8293,6 +8294,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       case ZStackObject::TYPE_DVID_LABEL_SLICE:
         player = new ZDvidLabelSlicePlayer(obj);
         break;
+      case ZStackObject::TYPE_DVID_TILE_ENSEMBLE:
+        player = new ZDvidTileEnsemblePlayer(obj);
+        break;
       case ZStackObject::TYPE_DVID_GRAY_SLICE:
         player = new ZDvidGraySlicePlayer(obj);
         break;
@@ -10227,6 +10231,9 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
       if (!m_excludeSet.contains(obj->getType()) &&
           !m_excludeTarget.contains(obj->getTarget()) &&
           obj->isVisible()) {
+        LDEBUG() << "Updating " << zstackobject::ToString(obj->getTarget())
+                 << obj->getType() << obj->getSource();
+
         if (player->updateData(param)) {
           m_updatedTarget.insert(obj->getTarget());
           if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE) {
