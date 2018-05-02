@@ -24,6 +24,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="siteListLabel2">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_6">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
