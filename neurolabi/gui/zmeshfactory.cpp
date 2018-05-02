@@ -6,13 +6,36 @@
 #include "misc/miscutility.h"
 #include "tz_stack_bwmorph.h"
 #include "misc/zmarchingcube.h"
+#include "ilastik/laplacian_smoothing.h"
 
 ZMeshFactory::ZMeshFactory()
 {
 
 }
 
-ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv)
+void ZMeshFactory::setDsIntv(int dsIntv)
+{
+  m_dsIntv = dsIntv;
+}
+
+void ZMeshFactory::setSmooth(int smooth)
+{
+  m_smooth = smooth;
+}
+
+ZMesh* ZMeshFactory::makeMesh(const ZObject3dScan &obj)
+{
+  ZMesh *mesh = MakeMesh(obj, m_dsIntv, m_smooth);
+
+  return mesh;
+}
+
+ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj)
+{
+  return MakeMesh(obj, 0, 3);
+}
+
+ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv, int smooth)
 {
   if (obj.isEmpty()) {
     return NULL;
@@ -30,7 +53,7 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv)
   }
 
   ZStack *stack = dsObj.toStackObjectWithMargin(1, 1);
-  ZMesh *mesh = ZMarchingCube::March(*stack, NULL);
+  ZMesh *mesh = ZMarchingCube::March(*stack, smooth, NULL);
 
   if (dsIntv > 0 && mesh != NULL) {
     mesh->setSource("oversize");

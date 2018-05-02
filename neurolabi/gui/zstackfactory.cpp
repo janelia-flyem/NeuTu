@@ -720,6 +720,7 @@ ZStack* ZStackFactory::MakeBinaryStack(
   return stack;
 }
 
+/*
 ZStack* ZStackFactory::MakeLabelStack(ZSwcTree *obj, int v)
 {
   ZIntCuboid box = obj->getBoundBox().toIntCuboid();
@@ -727,6 +728,7 @@ ZStack* ZStackFactory::MakeLabelStack(ZSwcTree *obj, int v)
   return NULL;
 //  ZStack *stack = MakeStack()
 }
+*/
 
 ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 {

@@ -372,10 +372,17 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ACTIVATE_TODO_ITEM:
     action = new QAction("Add Todo", parent);
     action->setIcon(QIcon(":/images/add_todo2.png"));
+    action->setCheckable(true);
+    break;
+  case ACTION_ACTIVATE_TOSPLIT_ITEM:
+    action = new QAction("Add To Split", parent);
+    action->setIcon(QIcon(":/images/add_todo2.png"));
+    action->setCheckable(true);
     break;
   case ACTION_ACTIVATE_LOCATE:
     action = new QAction("Locate", parent);
     action->setIcon(QIcon(":/images/locate.png"));
+    action->setCheckable(true);
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
@@ -481,7 +488,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_VIEW_DATA_EXTERNALLY:
     action = new QAction("View data externally", parent);
     action->setIcon(QIcon(":/images/binoculars.png"));
-    action->setToolTip("View grayscale/segmentation in an external browser (default in Chrome) ");
+    action->setToolTip("View grayscale/segmentation");
+    action->setCheckable(true);
     break;
     break;
   case ACTION_MEASURE_SWC_NODE_DIST:

@@ -173,6 +173,7 @@ public: //controls
   bool getButtonStatus(int index);
 
   QAction* getAction(ZActionFactory::EAction item);
+  void setActionChecked(ZActionFactory::EAction item, bool on);
 
   QDockWidget * getSettingsDockWidget();
   QDockWidget * getObjectsDockWidget();
@@ -251,6 +252,8 @@ public slots:
   { m_view->resetCameraClippingRange(); }
 
   void zoomToSelectedMeshes();
+  void selectMeshByID();
+  void selectAllMeshes();
 
 //  void updateDecorationDisplay();
 
@@ -291,9 +294,12 @@ public slots:
 
   void showPuncta(bool on);
   void showTodo(bool on);
-  void activateTodoAction();
-  void activateBookmarkAction();
-  void activateLocateAction();
+  void activateTodoAction(bool on);
+//  void activateTosplitAction(bool on);
+  void activateBookmarkAction(bool on);
+  void activateLocateAction(bool on);
+
+  void syncActionToNormalMode();
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -315,7 +321,7 @@ public slots:
   void saveSplitTask();
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
-  void viewDataExternally();
+  void viewDataExternally(bool on);
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -456,6 +462,8 @@ private:
   std::string updatePolyLinePairList(
       const ZStroke2d *stroke,
       std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > &polylinePairList);
+
+  std::vector<ZPoint> shootMesh(const ZMesh *mesh, int x, int y);
 
 private:
   ZCuboid getRayBoundbox() const;

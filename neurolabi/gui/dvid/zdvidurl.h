@@ -146,6 +146,8 @@ public:
   std::string getLocalBodyIdUrl(int x, int y, int z) const;
   std::string getLocalBodyIdArrayUrl() const;
 
+  std::string getLocalSupervoxelIdUrl(int x, int y, int z) const;
+
   std::string getBodyLabelUrl() const;
   std::string getBodyLabelUrl(const std::string &dataName) const;
     /*
@@ -263,6 +265,7 @@ public:
   static std::string GetSkeletonKey(uint64_t bodyId);
   static std::string GetMeshKey(uint64_t bodyId);
   static std::string GetMeshInfoKey(uint64_t bodyId);
+  static std::string GetTaskKey();
 
   void setUuid(const std::string &uuid);
 
@@ -297,6 +300,9 @@ public:
 
   std::string getSplitTaskKey(const uint64_t bodyId) const;
   std::string getSplitResultKey(const uint64_t bodyId) const;
+
+  std::string getTestTaskUrl(const std::string &key);
+//  std::string getTestTaskUrl() const;
 
 //  static bool IsSplitTask(const std::string &url);
 

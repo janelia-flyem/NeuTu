@@ -57,6 +57,7 @@ void FlyEmSettingDialog::loadSetting()
   ui->autoStatuscCheckBox->setChecked(NeutubeConfig::AutoStatusCheck());
   ui->verboseSpinBox->setValue(NeutubeConfig::GetVerboseLevel());
   ui->parallelTileCheckBox->setChecked(NeutubeConfig::ParallelTileFetching());
+  ui->prefetchCheckBox->setChecked(NeutubeConfig::LowtisPrefetching());
   std::string dataDir = GET_DATA_DIR;
   ui->dataDirLineEdit->setText(QFileInfo(dataDir.c_str()).absoluteFilePath());
 #if defined(_FLYEM_)
@@ -130,6 +131,7 @@ void FlyEmSettingDialog::update()
     QsLogging::Logger::instance().setLoggingLevel(QsLogging::TraceLevel);
   }
   NeutubeConfig::SetParallelTileFetching(ui->parallelTileCheckBox->isChecked());
+  NeutubeConfig::EnableLowtisPrefetching(ui->prefetchCheckBox->isChecked());
   NeutubeConfig::SetDataDir(ui->dataDirLineEdit->text());
   NeutubeConfig::SetFlyEmConfigPath(getConfigPath().c_str());
   NeutubeConfig::UseDefaultFlyEmConfig(usingDefaultConfig());

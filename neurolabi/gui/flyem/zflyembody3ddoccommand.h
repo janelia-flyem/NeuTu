@@ -24,7 +24,8 @@ class AddTodo : public Base
 public:
   AddTodo(ZStackDoc *doc, QUndoCommand *parent = NULL);
 
-  void setTodoItem(int x, int y, int z, bool checked, uint64_t bodyId);
+  void setTodoItem(int x, int y, int z, bool checked,
+                   ZFlyEmToDoItem::EToDoAction action, uint64_t bodyId);
   bool hasValidItem() const;
 
   void redo();

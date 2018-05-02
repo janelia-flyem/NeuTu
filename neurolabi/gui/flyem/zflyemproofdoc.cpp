@@ -420,7 +420,7 @@ void ZFlyEmProofDoc::verifyBodyAnnotationMap()
 void ZFlyEmProofDoc::clearBodyMergeStage()
 {
   clearBodyMerger();
-  saveMergeOperation();
+//  saveMergeOperation();
   notifyBodyUnmerged();
 }
 
@@ -1964,6 +1964,11 @@ void ZFlyEmProofDoc::saveMergeOperation()
                            neutube::MSG_ERROR));
     }
   }
+}
+
+ZJsonArray ZFlyEmProofDoc::getMergeOperation() const
+{
+  return m_bodyMerger.toJsonArray();
 }
 
 void ZFlyEmProofDoc::backupMergeOperation()

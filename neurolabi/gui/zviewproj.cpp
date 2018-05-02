@@ -166,9 +166,17 @@ QRectF ZViewProj::getProjRect() const
 void ZViewProj::setViewPort(const QRect &rect)
 {
   if (rect.isValid()) {
-//    setOffset(rect.topLeft());
     setZoom(std::min((double) (m_widgetRect.width()) / rect.width(),
                      (double) (m_widgetRect.height()) / rect.height()));
+    setViewCenter(rect.center());
+  }
+}
+
+void ZViewProj::setViewPortWithZoomFixed(const QRect &rect)
+{
+  if (rect.isValid()) {
+    m_widgetRect.setWidth(iround(rect.width() * getZoom()));
+    m_widgetRect.setHeight(iround(rect.height() * getZoom()));
     setViewCenter(rect.center());
   }
 }

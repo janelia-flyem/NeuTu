@@ -31,10 +31,6 @@
 ZDvidWriter::ZDvidWriter(/*QObject *parent*/)   /*:
 QObject(parent)*/
 {
-#ifdef _DEBUG_
-  std::cout << "Creating dvid writer." << std::endl;
-#endif
-
   init();
 //  m_eventLoop = new QEventLoop(this);
 //  m_dvidClient = new ZDvidClient(this);
@@ -80,6 +76,10 @@ bool ZDvidWriter::open(const ZDvidTarget &target)
   if (!target.isValid()) {
     return false;
   }
+
+#ifdef _DEBUG_
+  std::cout << "Opening dvid writer." << std::endl;
+#endif
 
   m_reader.open(target);
 
@@ -1067,6 +1067,12 @@ void ZDvidWriter::writeSplitTask(const QString &key, const ZJsonObject &task)
         ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY), key.toStdString(), task);
 }
 
+void ZDvidWriter::writeTestResult(
+    const std::string &key, const ZJsonObject &result)
+{
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_TEST_RESULT_KEY), key, result);
+}
+
 void ZDvidWriter::deleteSplitTask(const QString &key)
 {
   deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),
@@ -1238,9 +1244,9 @@ std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
     if (obj.hasKey("label")) {
       newBodyId = ZJsonParser::integerValue(obj["label"]);
       m_statusCode = 200;
-    } else if (obj.hasKey("SplitLabel")) {
-      newBodyId = ZJsonParser::integerValue(obj["SplitLabel"]);
-      remainderId = ZJsonParser::integerValue(obj["RemainLabel"]);
+    } else if (obj.hasKey("SplitSupervoxel")) {
+      newBodyId = ZJsonParser::integerValue(obj["SplitSupervoxel"]);
+      remainderId = ZJsonParser::integerValue(obj["RemainSupervoxel"]);
       m_statusCode = 200;
     }
   }

@@ -4,6 +4,7 @@
 #include "z3dfiltersetting.h"
 #include "zjsonparser.h"
 #include "z3drendertarget.h"
+#include "z3dpickingmanager.h"
 
 Z3DGeometryFilter::Z3DGeometryFilter(Z3DGlobalParameters& globalPara, QObject* parent)
   : Z3DBoundedFilter(globalPara, parent)

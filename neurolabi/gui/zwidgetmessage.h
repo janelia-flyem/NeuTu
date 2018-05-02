@@ -30,7 +30,6 @@ public:
                  neutube::EMessageType type = neutube::MSG_INFORMATION,
                  ETarget target = TARGET_TEXT_APPENDING);
 
-
   QString toHtmlString() const;
   static QString ToHtmlString(const QString &msg, neutube::EMessageType type);
   static QString ToHtmlString(const QStringList &msgList,
@@ -64,6 +63,9 @@ public:
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target);
 
+  template <typename T1, typename T2>
+  static void DisconnectMessagePipe(T1 *source, T2 *target);
+
   //Obsolete API
   template <typename T1, typename T2>
   static void ConnectMessagePipe(T1 *source, T2 *target, bool dumping);
@@ -96,12 +98,33 @@ void ZWidgetMessage::ConnectMessagePipe(
   }
 }
 
-
 template <typename T1, typename T2>
 void ZWidgetMessage::ConnectMessagePipe(T1 *source, T2 *target)
 {
   QObject::connect(source, SIGNAL(messageGenerated(ZWidgetMessage)),
                    target, SLOT(processMessage(ZWidgetMessage)));
 }
+
+template <typename T1, typename T2>
+void ZWidgetMessage::DisconnectMessagePipe(T1 *source, T2 *target)
+{
+  QObject::disconnect(source, SIGNAL(messageGenerated(ZWidgetMessage)),
+                   target, SLOT(processMessage(ZWidgetMessage)));
+}
+
+struct ZWidgetMessageFactory
+{
+  ZWidgetMessageFactory(const char *msg);
+  operator ZWidgetMessage() const;
+
+  static ZWidgetMessageFactory Make(const char *msg);
+
+  ZWidgetMessageFactory& to(ZWidgetMessage::ETarget target);
+  ZWidgetMessageFactory& as(neutube::EMessageType type);
+  ZWidgetMessageFactory& title(const char *title);
+
+private:
+  ZWidgetMessage m_message;
+};
 
 #endif // ZWIDGETMESSAGE_H

@@ -20,12 +20,15 @@ void ZFlyEmDataLoader::connectSignalSlot()
   connect(this, SIGNAL(dataReady(ZFlyEmDataBundle*,QString)),
           this, SLOT(createFrame(ZFlyEmDataBundle*,QString)));
 
-  connect(this, SIGNAL(progressStarted()),
-          getMainWindow(), SLOT(startProgress()));
-  connect(this, SIGNAL(progressEnded()),
-          getMainWindow(), SLOT(endProgress()));
-  connect(this, SIGNAL(progressAdvanced(double)),
-          getMainWindow(), SLOT(advanceProgress(double)));
+  if (getMainWindow() != NULL) {
+    connect(this, SIGNAL(progressStarted()),
+            getMainWindow(), SLOT(startProgress()));
+    connect(this, SIGNAL(progressEnded()),
+            getMainWindow(), SLOT(endProgress()));
+    connect(this, SIGNAL(progressAdvanced(double)),
+            getMainWindow(), SLOT(advanceProgress(double)));
+  }
+
   connect(this, SIGNAL(loadFailed(QString)),
           this, SLOT(processFailure(QString)));
 }

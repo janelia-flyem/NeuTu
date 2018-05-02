@@ -1,16 +1,17 @@
 #ifndef ZSTACKDOCMENUFACTORY_H
 #define ZSTACKDOCMENUFACTORY_H
 
+#include "neutube.h"
+#include "zactionfactory.h"
+
 class QMenu;
 class QAction;
 class ZStackDoc;
 class ZStackPresenter;
 class QWidget;
 class Z3DWindow;
+class ZSingleSwcNodeActionActivator;
 
-#include "neutube.h"
-#include "zactionactivator.h"
-#include "zactionfactory.h"
 
 /*!
  * \brief Class of creating menus for ZStackDoc

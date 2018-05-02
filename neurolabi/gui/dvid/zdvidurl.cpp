@@ -3,9 +3,11 @@
 #include <iostream>
 
 #include "dvid/zdviddata.h"
+#include "neutube.h"
 #include "zstring.h"
 #include "zintpoint.h"
 #include "zintcuboid.h"
+#include "zdvidutil.h"
 
 const std::string ZDvidUrl::m_keyCommand = "key";
 const std::string ZDvidUrl::m_keysCommand = "keys";
@@ -18,8 +20,8 @@ const std::string ZDvidUrl::m_coarseSupervoxelCommand = "sparsevol-coarse"; //Te
 const std::string ZDvidUrl::m_infoCommand = "info";
 const std::string ZDvidUrl::m_splitCommand = "split";
 const std::string ZDvidUrl::m_coarseSplitCommand = "split-coarse";
-const std::string ZDvidUrl::m_splitSupervoxelCommand= "split"; //Temporary mockup
-//const std::string ZDvidUrl::m_splitSuperVoxelCommand= "split-supervoxel";
+//const std::string ZDvidUrl::m_splitSupervoxelCommand= "split"; //Temporary mockup
+const std::string ZDvidUrl::m_splitSupervoxelCommand = "split-supervoxel";
 const std::string ZDvidUrl::m_labelCommand = "label";
 const std::string ZDvidUrl::m_labelArrayCommand = "labels";
 const std::string ZDvidUrl::m_roiCommand = "roi";
@@ -229,6 +231,7 @@ std::string ZDvidUrl::getSupervoxelUrl(
 {
   ZString str;
   str.appendNumber(bodyId);
+  str += "?supervoxels=true";
 
   return GetFullUrl(getSupervoxelUrl(dataName), str);
 }
@@ -547,6 +550,7 @@ std::string ZDvidUrl::getCoarseSupervoxelUrl(
 
   ZString str;
   str.appendNumber(bodyId);
+  str += "?supervoxels=true";
 
   return GetFullUrl(getCoarseSupervoxelUrl(dataName), str);
 }
@@ -1130,6 +1134,16 @@ std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
   return url;
 }
 
+std::string ZDvidUrl::getLocalSupervoxelIdUrl(int x, int y, int z) const
+{
+  std::string url = getLocalBodyIdUrl(x, y, z);
+  if (!url.empty()) {
+    url += "?supervoxels=true";
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 {
   return GetFullUrl(getLabels64Url(), m_labelArrayCommand);
@@ -1202,10 +1216,14 @@ std::string ZDvidUrl::getAnnotationUrl(
   std::string url = getAnnotationUrl(dataName);
 
   if (!url.empty()) {
-    std::ostringstream stream;
-    stream << label;
-    url += "/" + m_annotationLabelCommand + "/" +
-        stream.str();
+    if (m_dvidTarget.isSegmentationSyncable()) {
+      std::ostringstream stream;
+      stream << label;
+      url += "/" + m_annotationLabelCommand + "/" + stream.str();
+    } else {
+      //A workaround for syncing to labelmap (temporary solution)
+      url = getAnnotationUrl(dataName, ZDvid::GetBodyIdTag(label));
+    }
   }
 
   return url;
@@ -1528,6 +1546,11 @@ std::string ZDvidUrl::GetMeshInfoKey(uint64_t bodyId)
   return GetMeshKey(bodyId) + "_info";
 }
 
+std::string ZDvidUrl::GetTaskKey()
+{
+  return "task__" + neutube::GetCurrentUserName();
+}
+
 std::string ZDvidUrl::GetServiceResultEndPoint()
 {
   return "result";
@@ -1575,6 +1598,18 @@ std::string ZDvidUrl::getSplitResultKey(const uint64_t bodyId) const
 
   return GetResultKeyFromTaskKey(taskKey);
 }
+
+std::string ZDvidUrl::getTestTaskUrl(const std::string &key)
+{
+  return getKeyUrl(ZDvidData::GetName(ZDvidData::ROLE_TEST_TASK_KEY), key);
+}
+
+/*
+std::string ZDvidUrl::getTestTaskUrl() const
+{
+  return getTestTaskUrl(GetTaskKey());
+}
+*/
 
 /*
 bool ZDvidUrl::IsSplitTask(const std::string &url)

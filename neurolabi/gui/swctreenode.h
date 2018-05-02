@@ -22,7 +22,7 @@ static std::vector<std::string> SwcTreeNodeClipboard;
 //A wrapper for Swc_Tree_Node
 namespace SwcTreeNode {
 
-//Constructors
+using Pair = std::pair<Swc_Tree_Node*, Swc_Tree_Node*>;
 
 /*!
  * \brief Create a regular swc node

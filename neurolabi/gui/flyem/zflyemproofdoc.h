@@ -409,6 +409,8 @@ public:
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
   void updateBodyColor(ZSharedPointer<ZFlyEmBodyColorScheme> colorMap);
 
+  ZJsonArray getMergeOperation() const;
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
