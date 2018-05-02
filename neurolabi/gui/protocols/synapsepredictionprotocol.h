@@ -73,6 +73,7 @@ private:
     static const std::string KEY_MODE;
     static const int fileVersion;
     static const QColor COLOR_DEFAULT;
+    static const QColor COLOR_TARGET_BODY;
     static const QString MODE_SYNAPSE;
     static const QString MODE_TBAR;
     static const QString MODE_PSD;
@@ -107,8 +108,9 @@ private:
     void loadInitialSynapseList();
     void setSitesHeaders(QStandardItemModel * model);
     void clearSitesTable();
-    void updateSitesTable(std::vector<ZDvidSynapse> synapses);
-    void updateColorMap(std::vector<ZDvidSynapse> synapses);
+    void updateSitesTable(std::vector<ZDvidSynapse> synapses, std::vector<uint64_t> bodyList);
+    void updateColorMap(std::vector<ZDvidSynapse> synapses, std::vector<uint64_t> bodyList);
+    void updateSiteListLabel();
     std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
     static bool sortXY(const ZIntPoint &p1, const ZIntPoint &p2);
     static bool compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2);
@@ -119,8 +121,9 @@ private:
     QColor getColor(int index);
     bool isFinished(ZIntPoint point);
     void refreshData(bool unfinishCurrent);
-    void updateSiteListLabel();
     bool keepSynapse(ZDvidSynapse synapse);
+    std::vector<uint64_t> getBodiesForSynapse(std::vector<ZDvidSynapse> synapse);
+    QString targetBodyStylesheet(QColor color);
 };
 
 #endif // SYNAPSEPREDICTIONPROTOCOL_H

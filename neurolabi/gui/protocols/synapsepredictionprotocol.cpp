@@ -94,6 +94,7 @@ const std::string SynapsePredictionProtocol::KEY_BODYID= "body ID";
 const std::string SynapsePredictionProtocol::KEY_MODE= "mode";
 const int SynapsePredictionProtocol::fileVersion = 3;
 const QColor SynapsePredictionProtocol::COLOR_DEFAULT = QColor(0, 0, 0);      // no color
+const QColor SynapsePredictionProtocol::COLOR_TARGET_BODY = QColor(102, 204, 255);      // medium mild blue
 const QString SynapsePredictionProtocol::MODE_SYNAPSE = "whole synapses";
 const QString SynapsePredictionProtocol::MODE_TBAR = "T-bars only";
 const QString SynapsePredictionProtocol::MODE_PSD = "PSDs only";
@@ -669,8 +670,11 @@ void SynapsePredictionProtocol::updateSiteListLabel() {
         } else if (m_subvariation == SUBVARIATION_BODY_BOTH) {
             message += "synapses";
         }
-        message += " on body ";
-        message += QString::number(m_bodyID);
+        message += " on body";
+        // color the body ID; we'll use that color to indicate sites on that body
+        ui->siteListLabel2->setStyleSheet(targetBodyStylesheet(COLOR_TARGET_BODY));
+        ui->siteListLabel2->setText(QString::number(m_bodyID));
+        ui->siteListLabel2->setToolTip("T-bars and PSDs on this body will be highlighted in the same color");
     } else {
         variationError(m_variation);
     }
@@ -727,8 +731,22 @@ void SynapsePredictionProtocol::updateLabels() {
             ui->postTableLabel->setText(QString("PSDs"));
         }
 
-        updateSitesTable(synapse);
-        updateColorMap(synapse);
+        // if we have segmentation, we also color stuff; get body IDs for all locations
+        std::vector<uint64_t> bodyList = getBodiesForSynapse(synapse);
+
+        // color labels for T-bar if we're in body variation; remember, the
+        //  first synaptic element is the T-bar
+        if (m_variation == VARIATION_BODY && bodyList.size() > 0 && m_bodyID == bodyList[0]) {
+            ui->preLocationLabel->setStyleSheet(targetBodyStylesheet(COLOR_TARGET_BODY));
+        } else {
+            ui->preLocationLabel->setStyleSheet("");
+        }
+
+        updateSitesTable(synapse, bodyList);
+
+        if (bodyList.size() > 0) {
+            updateColorMap(synapse, bodyList);
+        }
     } else {
         ui->preLocationLabel->setText(QString("(--, --, --)"));
         ui->preConfLabel->setText(QString("Confidence: --"));
@@ -743,6 +761,23 @@ void SynapsePredictionProtocol::updateLabels() {
     int nTotal = nPending + nFinished;
     float percent = (100.0 * nFinished) / nTotal;
     ui->progressLabel->setText(QString("Progress:\n\n %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
+}
+
+/*
+ * given a list of synaptic elements, return a list of body IDs at their locations;
+ * returns empty list if we have no segmentation
+ */
+std::vector<uint64_t> SynapsePredictionProtocol::getBodiesForSynapse(std::vector<ZDvidSynapse> synapse) {
+    std::vector<ZIntPoint> sites;
+    for (size_t i=0; i<synapse.size(); i++) {
+        sites.push_back(synapse[i].getPosition());
+    }
+    ZDvidReader reader;
+    std::vector<uint64_t> bodyList;
+    if (reader.open(m_dvidTarget)) {
+        bodyList = reader.readBodyIdAt(sites);
+    }
+    return bodyList;
 }
 
 void SynapsePredictionProtocol::loadInitialSynapseList()
@@ -877,7 +912,8 @@ void SynapsePredictionProtocol::clearSitesTable() {
     setSitesHeaders(m_sitesModel);
 }
 
-void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synapse) {
+void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synapse,
+    std::vector<uint64_t> bodyList) {
     clearSitesTable();
 
     // don't show PSD info if we're in T-bar mode
@@ -920,9 +956,16 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
             xItem->setData(QVariant(site.getX()), Qt::DisplayRole);
             yItem->setData(QVariant(site.getY()), Qt::DisplayRole);
             zItem->setData(QVariant(site.getZ()), Qt::DisplayRole);
+            if (m_variation == VARIATION_BODY && bodyList.size() > 0 && m_bodyID == bodyList[i]) {
+                // color the PSDs on the body of interest
+                xItem->setData(COLOR_TARGET_BODY, Qt::BackgroundRole);
+                yItem->setData(COLOR_TARGET_BODY, Qt::BackgroundRole);
+                zItem->setData(COLOR_TARGET_BODY, Qt::BackgroundRole);
+            }
             m_sitesModel->setItem(i - 1, SITES_X_COLUMN, xItem);
             m_sitesModel->setItem(i - 1, SITES_Y_COLUMN, yItem);
             m_sitesModel->setItem(i - 1, SITES_Z_COLUMN, zItem);
+
         }
 #if QT_VERSION >= 0x050000
         ui->sitesTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -991,6 +1034,13 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
     return result;
 }
 
+/*
+ * returns stylesheet string for a color for label background color
+ */
+QString SynapsePredictionProtocol::targetBodyStylesheet(QColor color) {
+    return QString("QLabel { background-color : rgb(%1, %2, %3); }").arg(color.red()).arg(color.green()).arg(color.blue());
+}
+
 void SynapsePredictionProtocol::setupColorList() {
     // these are the colors I used in Raveler for its PSD protocol; they're
     //  chosen to be fairly bright
@@ -1018,7 +1068,15 @@ QColor SynapsePredictionProtocol::getColor(int index) {
     return m_postColorList[index % m_postColorList.size()];
 }
 
-void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapses) {
+/*
+ * update the color map so bodies with verified PSDs are colored;
+ * input: list of synaptic elements (T-bar first) and list
+ *      of body ID at each element position
+ *
+ * this method isn't called if there is no segmentation
+ */
+void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapses,
+    std::vector<uint64_t> bodyList) {
     // remember, the first element of the incoming vector is the pre-synaptic
     //  element (the T-bar)
     if (synapses.size() < 2) {
@@ -1026,43 +1084,27 @@ void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapse
         return;
     }
 
-    // get body IDs for all locations
-    std::vector<ZIntPoint> sites;
-    for (size_t i=0; i<synapses.size(); i++) {
-        sites.push_back(synapses[i].getPosition());
-    }
+    m_colorScheme.clear();
 
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
-        std::vector<uint64_t> bodyList = reader.readBodyIdAt(sites);
-        // if we don't have body IDs (no segmentation), we're done
-        if (bodyList.size() == 0) {
-            return;
-        }
-
-        m_colorScheme.clear();
-
-        // in T-bar mode, no coloring:
-        if (m_currentMode == MODE_TBAR) {
-            emit requestColorMapChange(m_colorScheme);
-            return;
-        }
-
-        // color the T-bar (i=0)
-        m_colorScheme.setBodyColor(bodyList[0], getColor(0));
-
-        // color the verified post-synaptic sites; note that
-        //  by using the overall synapse index, we keep the colors
-        // constant as the PSDs are verified
-        for (size_t i=0; i<synapses.size(); i++) {
-            if (synapses[i].isVerified()) {
-                m_colorScheme.setBodyColor(bodyList[i], getColor(i));
-            }
-        }
-        m_colorScheme.buildColorTable();
+    // in T-bar mode, no coloring:
+    if (m_currentMode == MODE_TBAR) {
         emit requestColorMapChange(m_colorScheme);
+        return;
     }
 
+    // color the T-bar (i=0)
+    m_colorScheme.setBodyColor(bodyList[0], getColor(0));
+
+    // color the verified post-synaptic sites; note that
+    //  by using the overall synapse index, we keep the colors
+    // constant as the PSDs are verified
+    for (size_t i=0; i<synapses.size(); i++) {
+        if (synapses[i].isVerified()) {
+            m_colorScheme.setBodyColor(bodyList[i], getColor(i));
+        }
+    }
+    m_colorScheme.buildColorTable();
+    emit requestColorMapChange(m_colorScheme);
 }
 
 /*
