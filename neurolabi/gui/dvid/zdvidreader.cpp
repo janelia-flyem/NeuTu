@@ -15,6 +15,7 @@
 
 #include "QsLog/QsLog.h"
 
+#include "zstack.hxx"
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
 #include "zswctree.h"
@@ -49,6 +50,7 @@
 #include "zstroke2d.h"
 #include "zobject3d.h"
 #include "znetbufferreader.h"
+#include "geometry/zaffinerect.h"
 
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
@@ -3096,6 +3098,14 @@ ZStack *ZDvidReader::readGrayScaleLowtis(
         width, height, zoom, cx, cy);
 }
 
+ZStack* ZDvidReader::readGrayScaleLowtis(
+    const ZAffineRect &ar, int zoom, int cx, int cy) const
+{
+  return readGrayScaleLowtis(
+        ar.getCenter().toIntPoint(), ar.getV1(), ar.getV2(),
+        ar.getWidth(), ar.getHeight(), zoom, cx, cy);
+}
+
 ZArray* ZDvidReader::readLabels64Lowtis(
     const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
     int width, int height, int zoom) const
@@ -3103,6 +3113,13 @@ ZArray* ZDvidReader::readLabels64Lowtis(
   return readLabels64Lowtis(center.getX(), center.getY(), center.getZ(),
                             v1.x(), v1.y(), v1.z(), v2.x(), v2.y(), v2.z(),
                             width, height, zoom);
+}
+
+ZArray* ZDvidReader::readLabels64Lowtis(const ZAffineRect &ar, int zoom) const
+{
+  return readLabels64Lowtis(
+        ar.getCenter().toIntPoint(), ar.getV1(), ar.getV2(),
+        ar.getWidth(), ar.getHeight(), zoom);
 }
 
 ZArray* ZDvidReader::readLabels64Lowtis(

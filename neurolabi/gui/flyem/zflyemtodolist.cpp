@@ -241,7 +241,7 @@ int ZFlyEmToDoList::getMaxZ() const
 
 bool ZFlyEmToDoList::hasLocalItem(int x, int y, int z) const
 {
-  ZGeometry::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
 
   int zIndex = z - m_startZ;
 
@@ -268,7 +268,7 @@ bool ZFlyEmToDoList::removeItem(int x, int y, int z, EDataScope scope)
       int sx = x;
       int sy = y;
       int sz = z;
-      ZGeometry::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+      zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
       getItemMap(sy, sz).remove(sx);
       getSelector().deselectObject(ZIntPoint(x, y, z));
 
@@ -424,7 +424,7 @@ ZFlyEmToDoItem& ZFlyEmToDoList::getItem(
     int sx = x;
     int sy = y;
     int sz = z;
-    ZGeometry::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+    zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
 
     return getSlice(sz).getMap(sy)[sx];
   } else {

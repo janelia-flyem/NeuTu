@@ -1,4 +1,6 @@
 #include "zflyembodysplitter.h"
+
+#include <QsLog.h>
 #include "neutubeconfig.h"
 #include "zstackdoc.h"
 #include "zflyembody3ddoc.h"

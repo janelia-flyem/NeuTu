@@ -15,7 +15,7 @@
 
 class ZPainter;
 class ZStack;
-class ZStackView;
+//class ZStackView;
 class ZRect2d;
 class ZIntPoint;
 class ZImage;
@@ -70,7 +70,7 @@ public:
   int getWidth() const;
   int getHeight() const;
 
-  void attachView(ZStackView *view);
+//  void attachView(ZStackView *view);
 
   ZRect2d getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
@@ -96,7 +96,7 @@ private:
 
   QMutex m_pixmapMutex;
 
-  ZStackView *m_view;
+//  ZStackView *m_view;
 };
 
 #endif // ZDVIDTILE_H

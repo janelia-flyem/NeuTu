@@ -18,6 +18,9 @@ public:
   inline const ZDvidTarget& getDvidTarget() const {
     return m_reader.getDvidTarget();
   }
+  inline ZDvidTarget& getDvidTarget() {
+    return m_reader.getDvidTarget();
+  }
 
   const ZDvidReader& getDvidReader() const {
     return m_reader;
@@ -72,9 +75,12 @@ public:
 
   void clear();
 
+  void setMaxZoom(int maxZoom);
+
 public:
   ZStackViewParam m_currentViewParam;
   int m_zoom = 0;
+  int m_maxZoom = 0;
 
   int m_maxWidth = 512;
   int m_maxHeight = 512;

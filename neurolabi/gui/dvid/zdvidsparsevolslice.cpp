@@ -1,6 +1,7 @@
 #include "zdvidsparsevolslice.h"
 
 #include "neutubeconfig.h"
+#include "QsLog.h"
 #include "zpainter.h"
 #include "zintcuboid.h"
 

@@ -26,6 +26,7 @@ class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
 class ZDvidGraySlice;
 class ZArbSliceViewParam;
+class ZDvidTileEnsemble;
 
 /*!
  * \brief The basic class of manage roles to a stack object
@@ -349,6 +350,18 @@ public:
   QString getTypeName() const { return "DvidLabelSlice"; }
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidLabelSlice *getCompleteData() const;
+};
+
+/**************************************************/
+class ZDvidTileEnsemblePlayer : public ZDocPlayer
+{
+public:
+  ZDvidTileEnsemblePlayer(ZStackObject* data = NULL);
+
+public:
+  QString getTypeName() const { return "DvidTileEnsemble"; }
+  bool updateData(const ZStackViewParam &viewParam) const;
+  ZDvidTileEnsemble *getCompleteData() const;
 };
 
 /**************************************************/

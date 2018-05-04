@@ -11,6 +11,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidgrayslice.h"
+#include "dvid/zdvidtileensemble.h"
 #include "flyem/zflyemmisc.h"
 
 ZDocPlayer::~ZDocPlayer()
@@ -732,6 +733,34 @@ bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
 
   return updated;
 }
+
+
+/////////////////////////////
+ZDvidTileEnsemblePlayer::ZDvidTileEnsemblePlayer(ZStackObject *data) :
+  ZDocPlayer(data)
+{
+}
+
+ZDvidTileEnsemble* ZDvidTileEnsemblePlayer::getCompleteData() const
+{
+  return dynamic_cast<ZDvidTileEnsemble*>(m_data);
+}
+
+bool ZDvidTileEnsemblePlayer::updateData(const ZStackViewParam &viewParam) const
+{
+  bool updated = false;
+  if (m_enableUpdate) {
+    ZDvidTileEnsemble *obj = getCompleteData();
+    if (obj != NULL) {
+      if (obj->isVisible()) {
+        updated = obj->update(viewParam);
+      }
+    }
+  }
+
+  return updated;
+}
+
 
 /////////////////////////////
 

@@ -156,6 +156,7 @@ public:
   int getDim(neutube::EAxis axis) const;
 
   ZIntPoint getCenter() const;
+  void setCenter(const ZIntPoint &center);
 
 
   /*!
@@ -174,6 +175,9 @@ public:
   void loadJson(const ZJsonArray &json);
 
   std::string toString() const;
+
+  bool operator == (const ZIntCuboid &box) const;
+  bool operator != (const ZIntCuboid &box) const;
 
 private:
   ZIntPoint m_firstCorner;

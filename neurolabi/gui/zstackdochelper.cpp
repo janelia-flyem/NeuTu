@@ -1,5 +1,6 @@
 #include "zstackdochelper.h"
 
+#include <string>
 #include <QColor>
 
 #include "zstackdoc.h"
@@ -10,6 +11,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "zintcuboidobj.h"
 #include "dvid/zdvidsparsestack.h"
+#include "zstack.hxx"
 
 ZStackDocHelper::ZStackDocHelper()
 {
@@ -66,10 +68,8 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
         ZDvidTileEnsemble *obj =
             dynamic_cast<ZDvidTileEnsemble*>(objList.first());
         if (obj->isVisible()) {
-          if (obj->getView() != NULL) {
-            m_currentZ = obj->getView()->getCurrentZ();
-            m_hasCurrentZ = true;
-          }
+          m_currentZ = obj->getCurrentZ();
+          m_hasCurrentZ = true;
         }
       }
     }
@@ -98,7 +98,7 @@ bool ZStackDocHelper::hasCurrentZ() const
   return m_hasCurrentZ;
 }
 
-ZIntCuboid ZStackDocHelper::getVolumeBoundBox(const ZStackDoc *doc)
+ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 {
   ZIntCuboid box;
   if (doc != NULL) {
@@ -111,6 +111,58 @@ ZIntCuboid ZStackDocHelper::getVolumeBoundBox(const ZStackDoc *doc)
     } else {
       return doc->getStack()->getBoundBox();
     }
+  }
+
+  return box;
+}
+
+ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
+    const ZStackDoc *doc, neutube::EAxis sliceAxis)
+{
+  ZIntCuboid box;
+  if (doc != NULL) {
+    box = GetStackSpaceRange(*doc, sliceAxis);
+  }
+
+  return box;
+}
+
+ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
+    const ZStackDoc &doc, neutube::EAxis sliceAxis)
+{
+  ZIntCuboid box;
+
+  if (doc.hasStack()) {
+    box = doc.getStack()->getBoundBox();
+    if (sliceAxis == neutube::A_AXIS) {
+      ZIntPoint center = box.getCenter();
+      int length = iround(box.getDiagonalLength());
+      box.setSize(length, length, length);
+      box.setCenter(center);
+    } else {
+      box.shiftSliceAxis(sliceAxis);
+    }
+  }
+
+  return box;
+}
+
+ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc *doc)
+{
+  ZIntCuboid box;
+  if (doc != NULL) {
+    box = GetDataSpaceRange(*doc);
+  }
+
+  return box;
+}
+
+ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc &doc)
+{
+  ZIntCuboid box;
+
+  if (doc.hasStack()) {
+    box = doc.getStack()->getBoundBox();
   }
 
   return box;
@@ -159,4 +211,15 @@ QColor ZStackDocHelper::GetBodyColor(
   }
 
   return color;
+}
+
+std::string ZStackDocHelper::SaveStack(
+    const ZStackDoc *doc, const std::string &path)
+{
+  std::string  resultPath;
+  if (doc->hasStackData()) {
+    resultPath = doc->getStack()->save(path);
+  }
+
+  return resultPath;
 }
