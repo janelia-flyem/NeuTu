@@ -386,10 +386,13 @@ void SynapsePredictionProtocol::onModeChanged(QString item) {
  * is the synapse at the input point finished being reviewed under the current mode?
  */
 bool SynapsePredictionProtocol::isFinished(ZIntPoint point) {
+    return isFinished(getWholeSynapse(point));
+}
 
-    // note that first element returned is the T-bar
-    std::vector<ZDvidSynapse> synapseElements = getWholeSynapse(point);
-
+/* as above, but input is vector of synapse elements returned by getWholeSynapse(),
+ * in which T-bar element is first
+ */
+bool SynapsePredictionProtocol::isFinished(std::vector<ZDvidSynapse> synapseElements) {
     bool tbarVerified = synapseElements[0].isVerified();
     if (m_currentMode == MODE_TBAR) {
         return tbarVerified;
@@ -825,10 +828,18 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
                 progressDialog.setValue(20 + 5 * (i / progressInterval));
             }
             ZDvidSynapse &synapse = synapseList[i];
+            std::vector<ZDvidSynapse> wholeSynapse = getWholeSynapse(synapse.getPosition());
             if (keepSynapse(synapse)) {
-                if (isFinished(synapse.getPosition())) {
+                // if synapse is post, get its pre (T-bar)
+                if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+                    synapse = wholeSynapse[0];
+                }
+
+                if (isFinished(wholeSynapse)) {
                     m_finishedList.append(synapse.getPosition());
                 } else {
+                    // collect the pending synapses for later sorting; otherwise,
+                    //  we'd just add position to m_pendingList directly
                     pendingSynapses.append(synapse);
                 }
             }
