@@ -906,6 +906,8 @@ public:
 
 //  void notifyObjectModified(bool sync = true);
   void notifyObjectModified(ZStackObject::EType type);
+  void notifyObjectModified(const ZStackObjectInfoSet &infoSet);
+  void notifyObjectModified(const ZStackObjectInfo &info);
 
   void bufferObjectModified(ZStackObject::EType type, bool sync = true);
   void bufferObjectModified(ZStackObject::ETarget target, bool sync = true);
@@ -1185,6 +1187,11 @@ public slots: //undoable commands
   virtual bool executeChangeSwcNodeType(
       QList<Swc_Tree_Node*> &nodeList, int type);
 
+  virtual void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      uint64_t id);
+  virtual void executeRemoveTodoCommand();
+
   void advanceProgressSlot(double dp);
   void startProgressSlot();
   void endProgressSlot();
@@ -1237,7 +1244,7 @@ public slots:
   void notifyZoomingTo(double x, double y, double z);
   void notifyZoomingTo(const ZIntPoint &pt);
 
-  virtual void processDataBuffer();
+  void processDataBuffer();
   virtual void recycleObject(ZStackObject *obj);
   virtual void killObject(ZStackObject *obj);
 //  void processRectRoiUpdateSlot();

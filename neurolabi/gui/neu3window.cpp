@@ -141,7 +141,7 @@ void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
     m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
-    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
+//    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
 
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
@@ -156,6 +156,7 @@ void Neu3Window::initGrayscaleWidget()
     if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
+    ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
   }
 }
 

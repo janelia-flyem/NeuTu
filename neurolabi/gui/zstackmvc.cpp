@@ -77,7 +77,7 @@ void ZStackMvc::construct(ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView(axis);
   createPresenter(axis);
-  getPresenter()->createActions();
+//  getPresenter()->createActions();
 
   updateDocument();
 

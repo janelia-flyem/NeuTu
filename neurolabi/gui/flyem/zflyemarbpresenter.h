@@ -20,6 +20,7 @@ public:
 
   void setViewParam(const ZArbSliceViewParam &param);
 
+
 private:
   ZArbSliceViewParam m_viewParam;
 };
