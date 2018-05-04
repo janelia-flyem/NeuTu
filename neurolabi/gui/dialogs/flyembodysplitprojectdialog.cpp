@@ -26,6 +26,7 @@
 #include "dvid/zdviddata.h"
 #include "zmessage.h"
 #include "zmessagemanager.h"
+#include "zstack.hxx"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),

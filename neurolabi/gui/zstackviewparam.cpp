@@ -139,7 +139,7 @@ bool ZStackViewParam::containsViewport(const ZStackViewParam &param) const
 
 bool ZStackViewParam::contains(int x, int y, int z)
 {
-  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+  zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
 
   if (z == m_z) {
     return getViewPort().contains(x, y);

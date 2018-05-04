@@ -17,6 +17,7 @@
 #include "zpoint.h"
 #include "zhdf5writer.h"
 #include "zhdf5reader.h"
+#include "zstack.hxx"
 
 using namespace std;
 

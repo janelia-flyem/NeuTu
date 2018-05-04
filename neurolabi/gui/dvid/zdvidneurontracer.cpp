@@ -1,8 +1,12 @@
 #include "zdvidneurontracer.h"
 
+#include <cmath>
+
 #include "zintcuboid.h"
 #include "tz_math.h"
 #include "tz_locseg_chain.h"
+#include "zswctree.h"
+#include "zstack.hxx"
 
 ZDvidNeuronTracer::ZDvidNeuronTracer()
 {

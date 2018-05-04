@@ -1112,7 +1112,9 @@ void ZStackPresenter::prepareView()
   buddyView()->rightMenu()->clear();
   //m_interactiveContext.setView(buddyView()->imageWidget()->projectRegion(),
   //                             buddyView()->imageWidget()->viewPort());
-  m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
+//  m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
+  m_mouseEventProcessor.setSliceAxis(buddyView()->getSliceAxis());
+  m_mouseEventProcessor.setArbSlice(buddyView()->getAffinePlane());
   m_mouseEventProcessor.setDocument(getSharedBuddyDocument());
 
   setSliceAxis(buddyView()->getSliceAxis());
@@ -1257,6 +1259,10 @@ int ZStackPresenter::getSliceIndex() const {
     sliceIndex = buddyView()->sliceIndex();
   }
 
+#ifdef _DEBUG_2
+  std::cout << "Slice index: " << sliceIndex << std::endl;
+#endif
+
   return sliceIndex;
 }
 
@@ -1288,7 +1294,8 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 
   const ZMouseEvent& mouseEvent =
       m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_RELEASE, getSliceIndex());
+        event, ZMouseEvent::ACTION_RELEASE, buddyView()->getViewProj(),
+        getSliceIndex());
 
   if (mouseEvent.isNull()) {
     return;
@@ -1395,7 +1402,8 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_MOVE, getSliceIndex());
+        event, ZMouseEvent::ACTION_MOVE, buddyView()->getViewProj(),
+        getSliceIndex());
 
   if (mouseEvent.isNull()) {
     return;
@@ -1460,7 +1468,8 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_PRESS, buddyView()->sliceIndex());
+        event, ZMouseEvent::ACTION_PRESS, buddyView()->getViewProj(),
+        getSliceIndex());
   if (mouseEvent.isNull()) {
     return;
   }
@@ -1940,7 +1949,8 @@ bool ZStackPresenter::customKeyProcess(QKeyEvent * /*event*/)
 void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
 {
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_DOUBLE_CLICK, getSliceIndex());
+        event, ZMouseEvent::ACTION_DOUBLE_CLICK,  buddyView()->getViewProj(),
+        getSliceIndex());
 
   if (mouseEvent.isNull()) {
     return;
@@ -2939,7 +2949,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
 
   ZInteractionEvent interactionEvent;
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZIntPoint widgetPos = event.getPosition();
+  ZIntPoint widgetPos = event.getWidgetPosition();
   QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
   ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(neutube::COORD_RAW_STACK);
@@ -3593,12 +3603,15 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
+    buddyView()->updateDataInfo(currentWidgetPos);
+    /*
     buddyView()->setInfo(
           buddyDocument()->rawDataInfo(
             currentRawStackPos.getX(),
             currentRawStackPos.getY(),
             currentRawStackPos.getZ(),
             buddyView()->getSliceAxis()));
+            */
 
     if (m_interactiveContext.synapseEditMode() ==
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {

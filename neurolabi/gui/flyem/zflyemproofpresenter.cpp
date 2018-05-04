@@ -1047,8 +1047,8 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
     if (!menu->isEmpty()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
             Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
-      QPoint currentWidgetPos(event.getPosition().getX(),
-                 event.getPosition().getY());
+      QPoint currentWidgetPos(event.getWidgetPosition().getX(),
+                              event.getWidgetPosition().getY());
       buddyView()->showContextMenu(menu, currentWidgetPos);
     }
     interactiveContext().setAcceptingRect(false);

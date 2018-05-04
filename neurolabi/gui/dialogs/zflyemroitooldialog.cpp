@@ -9,6 +9,8 @@
 #include "flyem/zflyemroiproject.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zwidgetmessage.h"
+#include "zstackdochelper.h"
+#include "zswctree.h"
 
 ZFlyEmRoiToolDialog::ZFlyEmRoiToolDialog(QWidget *parent) :
   QDialog(parent),
@@ -196,7 +198,8 @@ bool ZFlyEmRoiToolDialog::appendProject(ZFlyEmRoiProject *project)
         //project->downloadAllRoi();
         m_projectList.append(project);
         if (getDocument() != NULL) {
-          project->setDataRange(getDocument()->getStack()->getBoundBox());
+          project->setDataRange(
+                ZStackDocHelper::GetDataSpaceRange(getDocument()));
         }
         ui->projectComboBox->addItem(project->getName().c_str());
         return true;

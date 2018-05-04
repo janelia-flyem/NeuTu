@@ -12,13 +12,15 @@ ZPoint ZMouseEvent::getPosition(neutube::ECoordinateSystem cs) const
 {
   switch (cs) {
   case neutube::COORD_WIDGET:
-    return m_position.toPoint();
+    return m_widgetPosition.toPoint();
   case neutube::COORD_STACK:
     return m_stackPosition;
   case neutube::COORD_RAW_STACK:
     return m_rawStackPosition;
   case neutube::COORD_SCREEN:
     return m_globalPosition.toPoint();
+  case neutube::COORD_ORGDATA:
+    return m_dataPosition;
   default:
     break;
   }
@@ -41,6 +43,10 @@ void ZMouseEvent::setStackPosition(const ZPoint &pt)
   m_stackPosition = pt;
 }
 
+void ZMouseEvent::setDataPositoin(const ZPoint &pt)
+{
+  m_dataPosition = pt;
+}
 
 void ZMouseEvent::set(QMouseEvent *event, int z)
 {
@@ -48,7 +54,7 @@ void ZMouseEvent::set(QMouseEvent *event, int z)
   m_buttons = event->buttons();
   m_action = ACTION_NONE;
   m_modifiers = event->modifiers();
-  m_position.set(event->x(), event->y(), z);
+  m_widgetPosition.set(event->x(), event->y(), z);
   m_globalPosition.set(event->globalX(), event->globalY(), z);
 }
 

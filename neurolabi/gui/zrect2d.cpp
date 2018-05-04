@@ -228,7 +228,7 @@ bool ZRect2d::hit(double x, double y, double z)
   double wy = y;
   double wz = z;
 
-  ZGeometry::shiftSliceAxis(wx, wy, wz, m_sliceAxis);
+  zgeom::shiftSliceAxis(wx, wy, wz, m_sliceAxis);
 
   if (m_isPenetrating) {
     return hit(wx, wy, m_sliceAxis);

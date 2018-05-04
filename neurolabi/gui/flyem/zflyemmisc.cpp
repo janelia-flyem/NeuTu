@@ -40,6 +40,12 @@
 #include "zobject3d.h"
 #include "zarbsliceviewparam.h"
 #include "flyem/zmainwindowcontroller.h"
+#include "zswctree.h"
+#include "geometry/zaffinerect.h"
+#include "zarray.h"
+#include "zstack.hxx"
+#include "zstackfactory.h"
+#include "misc/miscutility.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -429,6 +435,37 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   //
   return cubes;
 #endif
+}
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(const ZDvidReader &reader, const ZAffineRect &ar)
+{
+  ZObjectColorScheme colorScheme;
+  colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
+  ZArray *array = reader.readLabels64Lowtis(ar, 0);
+
+  ZStack *stack = NULL;
+  if (array != NULL) {
+    uint64_t *labelArray = array->getDataPointer<uint64_t>();
+
+    stack = ZStackFactory::MakeZeroStack(
+          GREY, misc::GetBoundBox(array), 3);
+    //    ZStack *stack = new ZStack(COLOR, width, height, 1, 1);
+    uint8_t *array1 = stack->array8(0);
+    uint8_t *array2 = stack->array8(1);
+    uint8_t *array3 = stack->array8(2);
+
+    size_t area = ar.getWidth() * ar.getHeight();
+    for (size_t i = 0; i < area; ++i) {
+      QColor color = colorScheme.getColor(labelArray[i]);
+      array1[i] = color.red();
+      array2[i] = color.green();
+      array3[i] = color.blue();
+    }
+
+    delete array;
+  }
+
+  return stack;
 }
 
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(

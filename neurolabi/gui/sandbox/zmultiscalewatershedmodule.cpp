@@ -23,6 +23,7 @@
 #include "zobject3dscanarray.h"
 #include "zsparsestack.h"
 #include "flyem/zstackwatershedcontainer.h"
+#include "zstack.hxx"
 
 ZMultiscaleWaterShedModule::ZMultiscaleWaterShedModule(QObject *parent) :
   ZSandboxModule(parent)
@@ -144,7 +145,8 @@ void ZWaterShedWindow::onOk()
   }
   doc->getDataBuffer()->deliver();
   result.shallowClear();
-  ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(container.getResultStack()->clone());
+  ZStackFrame* frame=ZSandbox::GetMainWindow()->createStackFrame(
+        container.getResultStack()->clone());
   ZSandbox::GetMainWindow()->addStackFrame(frame);
   ZSandbox::GetMainWindow()->presentStackFrame(frame);
 

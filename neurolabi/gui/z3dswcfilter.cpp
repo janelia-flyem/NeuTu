@@ -77,7 +77,8 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
   if (!config.getPrimitive().empty()) {
     m_renderingPrimitive.select(config.getPrimitive().c_str());
   }
-  connect(&m_renderingPrimitive, &ZStringIntOptionParameter::valueChanged, this, &Z3DSwcFilter::updateBoundBox);
+  connect(&m_renderingPrimitive, &ZStringIntOptionParameter::valueChanged,
+          this, &Z3DSwcFilter::updateBoundBox);
 
   // Color Mode
   if (NeutubeConfig::getInstance().getApplication() == "Biocytin") {
@@ -102,8 +103,10 @@ Z3DSwcFilter::Z3DSwcFilter(Z3DGlobalParameters& globalParas, QObject* parent)
     m_colorMode.select(config.getColorMode().c_str());
   }
 
-  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DSwcFilter::prepareColor);
-  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged, this, &Z3DSwcFilter::adjustWidgets);
+  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged,
+          this, &Z3DSwcFilter::prepareColor);
+  connect(&m_colorMode, &ZStringIntOptionParameter::valueChanged,
+          this, &Z3DSwcFilter::adjustWidgets);
 
   addParameter(m_renderingPrimitive);
   addParameter(m_colorMode);
@@ -815,13 +818,13 @@ void Z3DSwcFilter::renderPicking(Z3DEye eye)
 
     if (isNodePicking()) {
       if (m_renderingPrimitive.isSelected("Normal")) {
-        m_rendererBase.renderPicking(eye, m_sphereRenderer);
+        m_rendererBase.renderPicking(eye, m_coneRenderer, m_sphereRenderer);
       } else {
         m_rendererBase.renderPicking(eye, m_lineRenderer, m_sphereRenderer);
       }
     } else {
       if (m_renderingPrimitive.isSelected("Normal")) {
-        m_rendererBase.renderPicking(eye, m_coneRenderer, m_sphereRendererForCone);
+        m_rendererBase.renderPicking(eye, m_coneRenderer, m_sphereRenderer);
       } else if (m_renderingPrimitive.isSelected("Line")) {
         m_rendererBase.renderPicking(eye, m_lineRenderer);
       }
@@ -2074,7 +2077,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
     //        }
     //      }
     //    }
-    if (isNodePicking()) {
+//    if (isNodePicking()) {
       QMutexLocker locker(&m_nodeSelectionMutex);
       std::vector<Swc_Tree_Node*>::iterator it = std::find(
             m_sortedNodeList.begin(), m_sortedNodeList.end(),
@@ -2087,7 +2090,7 @@ void Z3DSwcFilter::selectSwc(QMouseEvent *e, int w, int h)
       if (it != m_allNodesSet.end())
         m_pressedSwcTreeNode = *it;
         */
-    }
+//    }
     return;
   }
 

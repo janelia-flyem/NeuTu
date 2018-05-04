@@ -8,6 +8,7 @@
 #include "zstring.h"
 #include "swctreenode.h"
 #include "zswctree.h"
+#include "geometry/zgeometry.h"
 
 using namespace std;
 
@@ -73,7 +74,7 @@ QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutube::EAxis ax
     int wx = iround(x);
     int wy = iround(y);
     int wz = z;
-    ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
+    zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
 //    ZGeometry::shiftSliceAxis(wx, wy, wz, axis);
     uint64_t bodyId = flyem::ZSegmentationAnalyzer::channelCodeToId(
           segmentation->color(wx, wy, wz));

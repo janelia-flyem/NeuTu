@@ -4,6 +4,7 @@
 #include <cmath>
 #include <QGraphicsBlurEffect>
 
+#include "QsLog.h"
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"
 #include "zpainter.h"
@@ -78,7 +79,7 @@ void ZImageWidget::maximizeViewPort()
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
-  qDebug() << "ZImageWidget::paintEvent";
+  LDEBUG() << "ZImageWidget::paintEvent";
 
   QWidget::paintEvent(event);
 
@@ -606,7 +607,7 @@ void ZImageWidget::resetViewProj(int x0, int y0, int w, int h, const QRect &view
   } else {
     m_viewProj.maximizeViewPort();
   }
-  m_isReady = true;
+//  m_isReady = true;
 
   updateView();
 }
@@ -763,7 +764,7 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
 
 void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
-  qDebug() << "ZImageWidget::resizeEvent" << size() << isVisible();
+  LDEBUG() << "ZImageWidget::resizeEvent" << size() << isVisible();
 
   m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
 //  setValidViewPort(m_viewPort);
@@ -771,7 +772,7 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 
 void ZImageWidget::showEvent(QShowEvent *event)
 {
-  qDebug() << "ZImageWidget::showEvent" << isVisible();
+  LDEBUG() << "ZImageWidget::showEvent" << size() << isVisible();
   QWidget::showEvent(event);
 }
 
