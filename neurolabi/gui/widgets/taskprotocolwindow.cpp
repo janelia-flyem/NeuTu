@@ -23,6 +23,7 @@
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 #include "z3dwindow.h"
+#include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 
 #include "taskprotocolwindow.h"
@@ -76,6 +77,8 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
             this, &TaskProtocolWindow::onBodyMeshesAdded, Qt::QueuedConnection);
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded,
             this, &TaskProtocolWindow::onBodyMeshLoaded, Qt::QueuedConnection);
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyRecycled,
+            this, &TaskProtocolWindow::onBodyRecycled);
 }
 
 // constants
@@ -711,38 +714,66 @@ void TaskProtocolWindow::updateBodyWindow() {
 
 void TaskProtocolWindow::disableButtonsWhileUpdating()
 {
-    m_bodyMeshLoadedExpected = 0;
-    m_bodyMeshLoadedReceived = 0;
-
     // If the user triggers several calls to updateBodyWindow() in rapid succession, by
     // quickly moving between tasks and using controls from the task widget that also change
     // the loaded bodies, then the bodies loaded by one call may not be fully cleared by the
     // next call, due to the way bodies are added and removed asynchronously in a background
     // thread.  The problem seems worst for meshes loaded from a tar archive, and that is the
     // case handled by this work-around.  The buttons for moving between tasks, and the whole
-    // task widget, will be disabled until signals connected to the onBodyMeshesAdded and
-    // onBodyMeshLoaded slots indicate that all the meshes from the archive have been loaded.
+    // task widget, will be disabled until signals connected to the onBodyRecycled,
+    // onBodyMeshesAdded abd onBodyMeshLoaded slots indicate that all the old meshes have been
+    // fully deleted and all the new meshes from the archive have been loaded.
 
+    m_bodyRecycledExpected = ZStackDocProxy::GetGeneralMeshList(m_body3dDoc).size();
+    m_bodyRecycledReceived = 0;
+
+    m_bodyMeshesAddedExpected = 0;
+    m_bodyMeshesAddedReceived = 0;
+
+    m_bodyMeshLoadedExpected = 0;
+    m_bodyMeshLoadedReceived = 0;
 
     const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
     foreach (uint64_t bodyID, visible) {
-        if (!ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+            m_bodyMeshesAddedExpected++;
+        } else {
             return;
         }
     }
 
     const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
     foreach (uint64_t bodyID, selected) {
-        if (!ZFlyEmBody3dDoc::encodesTar(bodyID)) {
-            return;
-        }
+      if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+          m_bodyMeshesAddedExpected++;
+      } else {
+          return;
+      }
     }
 
     ui->nextButton->setEnabled(false);
     ui->prevButton->setEnabled(false);
     if (m_currentTaskWidget) {
-      m_currentTaskWidget->setEnabled(false);
+        m_currentTaskWidget->setEnabled(false);
     }
+    if (m_currentTaskMenuAction) {
+        m_currentTaskMenuAction->setEnabled(false);
+    }
+}
+
+void TaskProtocolWindow::enableButtonsAfterUpdating()
+{
+  if ((m_bodyRecycledExpected == m_bodyRecycledReceived) &&
+      (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
+      (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived)) {
+      updateButtonsEnabled();
+      if (m_currentTaskWidget) {
+          m_currentTaskWidget->setEnabled(true);
+      }
+      if (m_currentTaskMenuAction) {
+          m_currentTaskMenuAction->setEnabled(true);
+      }
+  }
 }
 
 /*
@@ -1094,24 +1125,21 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
 
 void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
 {
+    m_bodyMeshesAddedReceived++;
     m_bodyMeshLoadedExpected += numMeshes;
-    if (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived) {
-        updateButtonsEnabled();
-      if (m_currentTaskWidget) {
-        m_currentTaskWidget->setEnabled(true);
-      }
-    }
+    enableButtonsAfterUpdating();
 }
 
 void TaskProtocolWindow::onBodyMeshLoaded()
 {
     m_bodyMeshLoadedReceived++;
-    if (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived) {
-        updateButtonsEnabled();
-        if (m_currentTaskWidget) {
-          m_currentTaskWidget->setEnabled(true);
-        }
-    }
+    enableButtonsAfterUpdating();
+}
+
+void TaskProtocolWindow::onBodyRecycled()
+{
+    m_bodyRecycledReceived++;
+    enableButtonsAfterUpdating();
 }
 
 void TaskProtocolWindow::applicationQuitting() {

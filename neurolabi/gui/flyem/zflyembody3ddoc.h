@@ -379,6 +379,7 @@ public slots:
 
 signals:
   void bodyRemoved(uint64_t bodyId);
+  void bodyRecycled(uint64_t bodyId);
   void interactionStateChanged();
 
   //Signals for triggering external body control
