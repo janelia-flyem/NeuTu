@@ -120,6 +120,7 @@ private:
     void disableProtocolColorMap();
     QColor getColor(int index);
     bool isFinished(ZIntPoint point);
+    bool isFinished(std::vector<ZDvidSynapse> synapseElements);
     void refreshData(bool unfinishCurrent);
     bool keepSynapse(ZDvidSynapse synapse);
     std::vector<uint64_t> getBodiesForSynapse(std::vector<ZDvidSynapse> synapse);
