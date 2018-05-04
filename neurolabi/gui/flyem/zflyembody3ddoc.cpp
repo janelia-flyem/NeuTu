@@ -1914,6 +1914,7 @@ void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
   if (removeObject(obj, false)) {
     dumpGarbage(obj, true);
+    emit bodyRecycled(obj->getLabel());
   }
 }
 
