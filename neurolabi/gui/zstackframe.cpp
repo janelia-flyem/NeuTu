@@ -195,7 +195,7 @@ void ZStackFrame::constructFrame(ZSharedPointer<ZStackDoc> doc)
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView();
   createPresenter();
-  presenter()->createActions();
+//  presenter()->createActions();
 
   updateDocument();
 

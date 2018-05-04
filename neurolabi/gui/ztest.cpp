@@ -290,6 +290,7 @@
 #include "sandbox/zbrowseropener.h"
 #include "widgets/zpythonprocess.h"
 #include "flyem/zflyemarbmvc.h"
+#include "zmenuconfig.h"
 
 #include "test/ztestall.h"
 
@@ -26366,6 +26367,21 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#if 1
+  ZMenuConfig config;
+  config << "test" << ZActionFactory::ACTION_ABOUT
+         << ZActionFactory::ACTION_ACTIVATE_LOCATE;
+  config << "test2" << ZActionFactory::ACTION_ACTIVATE_TODO_ITEM
+         << ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM;
+  config << ZActionFactory::ACTION_ADD_SPLIT_SEED
+         << ZActionFactory::ACTION_ADD_SWC_NODE;
+  config << "test3" << ZActionFactory::ACTION_ACTIVATE_TODO_ITEM
+         << ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM;
+  config << "" << ZActionFactory::ACTION_ACTIVATE_TODO_ITEM
+         << ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM;
+  std::cout << config << std::endl;
+
+#endif
 
   std::cout << "Done." << std::endl;
 }

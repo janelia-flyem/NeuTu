@@ -1202,7 +1202,7 @@ void ZFlyEmProofDoc::checkTodoItem(bool checking)
   processObjectModified();
 }
 
-void ZFlyEmProofDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
+void ZFlyEmProofDoc::setTodoItemAction(neutube::EToDoAction action)
 { //Duplicated code with checkTodoItem
   ZOUT(LTRACE(), 5) << "Set action of to do items";
   QList<ZFlyEmToDoList*> todoList = getObjectList<ZFlyEmToDoList>();
@@ -1234,17 +1234,17 @@ void ZFlyEmProofDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
 
 void ZFlyEmProofDoc::setTodoItemToNormal()
 {
-  setTodoItemAction(ZFlyEmToDoItem::TO_DO);
+  setTodoItemAction(neutube::TO_DO);
 }
 
 void ZFlyEmProofDoc::setTodoItemToMerge()
 {
-  setTodoItemAction(ZFlyEmToDoItem::TO_MERGE);
+  setTodoItemAction(neutube::TO_MERGE);
 }
 
 void ZFlyEmProofDoc::setTodoItemToSplit()
 {
-  setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
+  setTodoItemAction(neutube::TO_SPLIT);
 }
 
 void ZFlyEmProofDoc::tryMoveSelectedSynapse(
@@ -4039,6 +4039,22 @@ void ZFlyEmProofDoc::updateLocalBookmark(ZFlyEmBookmark *bookmark)
   }
 }
 
+void ZFlyEmProofDoc::executeAddTodoCommand(
+    int x, int y, int z, bool checked, neutube::EToDoAction action,
+    uint64_t bodyId)
+{
+  ZIntPoint position = getDvidReader().readPosition(bodyId, x, y, z);
+
+  if (position.isValid()) {
+    ZFlyEmToDoItem item(position);
+    item.setUserName(neutube::GetCurrentUserName());
+    item.setAction(action);
+    item.setChecked(checked);
+
+    executeAddTodoItemCommand(item);
+  }
+}
+
 void ZFlyEmProofDoc::executeAddTodoItemCommand(
     int x, int y, int z, bool checked, uint64_t bodyId)
 {
@@ -4062,22 +4078,14 @@ void ZFlyEmProofDoc::executeAddTodoItemCommand(
 }
 
 void ZFlyEmProofDoc::executeAddTodoItemCommand(
-    int x, int y, int z, ZFlyEmToDoItem::EToDoAction action, uint64_t bodyId)
+    int x, int y, int z, neutube::EToDoAction action, uint64_t bodyId)
 {
-  ZIntPoint position = getDvidReader().readPosition(bodyId, x, y, z);
-
-  if (position.isValid()) {
-    ZFlyEmToDoItem item(position);
-    item.setUserName(neutube::GetCurrentUserName());
-    item.setAction(action);
-
-    executeAddTodoItemCommand(item);
-  }
+  executeAddTodoCommand(x, y, z, false, action, bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddToMergeItemCommand(int x, int y, int z, uint64_t bodyId)
 {
-  executeAddTodoItemCommand(x, y, z, ZFlyEmToDoItem::TO_MERGE, bodyId);
+  executeAddTodoItemCommand(x, y, z, neutube::TO_MERGE, bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId)
@@ -4087,7 +4095,7 @@ void ZFlyEmProofDoc::executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t 
 
 void ZFlyEmProofDoc::executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId)
 {
-  executeAddTodoItemCommand(x, y, z, ZFlyEmToDoItem::TO_SPLIT, bodyId);
+  executeAddTodoItemCommand(x, y, z, neutube::TO_SPLIT, bodyId);
 }
 
 void ZFlyEmProofDoc::executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId)
@@ -4117,6 +4125,10 @@ std::set<ZIntPoint> ZFlyEmProofDoc::getSelectedTodoItemPosition() const
   return selected;
 }
 
+void ZFlyEmProofDoc::executeRemoveTodoCommand()
+{
+  executeRemoveTodoItemCommand();
+}
 
 void ZFlyEmProofDoc::executeRemoveTodoItemCommand()
 {

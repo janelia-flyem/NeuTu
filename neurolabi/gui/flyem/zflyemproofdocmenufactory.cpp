@@ -2,13 +2,15 @@
 
 #include <QMenu>
 
+#include "neutubeconfig.h"
 #include "zstackpresenter.h"
 #include "zactionfactory.h"
 #include "flyem/zflyemproofpresenter.h"
 #include "flyem/zflyemproofdoc.h"
 #include "z3dwindow.h"
 #include "zintcuboidobj.h"
-#include "neutubeconfig.h"
+#include "zmenuconfig.h"
+#include "zmenufactory.h"
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -102,6 +104,150 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu
 }
 #endif
 
+ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter)
+{
+  ZFlyEmProofDoc *doc = presenter->getCompleteDocument();
+
+  ZMenuConfig config;
+  if (presenter->isSplitOn()) {
+    config.append(ZActionFactory::ACTION_BODY_DECOMPOSE);
+    config.append(ZActionFactory::ACTION_BODY_CHOP);
+    ZIntCuboidObj *roi = doc->getSplitRoi();
+    if (roi != NULL) {
+      if (roi->isValid()) {
+        config.append(ZActionFactory::ACTION_BODY_CROP);
+      }
+    }
+  } else {
+    if (presenter->interactiveContext().acceptingRect()) {
+      config.append(ZActionFactory::ACTION_ZOOM_TO_RECT);
+      config.append(ZActionFactory::ACTION_SELECT_BODY_IN_RECT);
+      config.append(ZActionFactory::ACTION_CANCEL_RECT_ROI);
+    } else {
+      if (!doc->getDvidTarget().readOnly()) {
+        std::set<uint64_t> selectedOriginal =
+            doc->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+        std::set<uint64_t> selectedMapped =
+            doc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED);
+
+        if (!selectedOriginal.empty()) {
+          if (selectedOriginal.size() == 1) {
+            if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+              config.append(ZActionFactory::ACTION_BODY_SPLIT_START);
+            }
+            config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+          }
+
+          if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+            if (selectedMapped.size() > 1) {
+              config.append(ZActionFactory::ACTION_BODY_MERGE);
+            }
+            if (selectedMapped.size() != selectedOriginal.size()) {
+              config.append(ZActionFactory::ACTION_BODY_UNMERGE);
+            }
+          }
+
+          config.append(ZActionFactory::ACTION_BODY_CHECKOUT);
+          config.append(ZActionFactory::ACTION_BODY_CHECKIN);
+          if (isAdmin()) {
+            config.append(ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
+          }
+        }
+      }
+    }
+  }
+
+  if (!presenter->interactiveContext().acceptingRect()) {
+    config.appendSeparator();
+    /* Synapse actions */
+    if (!doc->getDvidTarget().readOnly()) {
+      config.append(ZActionFactory::ACTION_ADD_TODO_ITEM);
+      config.append(ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED);
+      config.append(ZActionFactory::ACTION_ADD_TODO_MERGE);
+      config.append(ZActionFactory::ACTION_ADD_TODO_SPLIT);
+      config.append(ZActionFactory::ACTION_SEPARATOR);
+      if (doc->hasTodoItemSelected()) {
+        config.append(ZActionFactory::ACTION_CHECK_TODO_ITEM);
+        config.append(ZActionFactory::ACTION_UNCHECK_TODO_ITEM);
+        config.append(ZActionFactory::ACTION_REMOVE_TODO_ITEM);
+      }
+
+      if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+        config.appendSeparator();
+
+        config.append(ZActionFactory::ACTION_SYNAPSE_ADD_PRE);
+        config.append(ZActionFactory::ACTION_SYNAPSE_ADD_POST);
+
+        std::set<ZIntPoint> synapseSet = doc->getSelectedSynapse();
+        if (!synapseSet.empty()) {
+          config.append(ZActionFactory::ACTION_SYNAPSE_DELETE);
+          if (synapseSet.size() == 1) {
+            config.append(ZActionFactory::ACTION_SYNAPSE_MOVE);
+          } else {
+            config.append(ZActionFactory::ACTION_SYNAPSE_LINK);
+          }
+          config.append(ZActionFactory::ACTION_SYNAPSE_UNLINK);
+          config.append(ZActionFactory::ACTION_SYNAPSE_VERIFY);
+          config.append(ZActionFactory::ACTION_SYNAPSE_UNVERIFY);
+          config.append(ZActionFactory::ACTION_SYNAPSE_REPAIR);
+        }
+      }
+    }
+
+    if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+      config.appendSeparator();
+      config.append(ZActionFactory::ACTION_SHOW_ORTHO);
+
+      if (NeutubeConfig::IsAdvancedMode()) {
+        config.append(ZActionFactory::ACTION_SHOW_ORTHO_BIG);
+      }
+    }
+
+    config.appendSeparator();
+    config.append(ZActionFactory::ACTION_COPY_POSITION);
+
+    if (doc->hasStackData()) {
+      config.append(ZActionFactory::ACTION_SAVE_STACK);
+    }
+
+    if (!doc->getDvidTarget().readOnly()) {
+      if (doc->getCuboidRoi().getDepth() > 1) {
+        config.appendSeparator();
+        config.append(ZActionFactory::ACTION_REWRITE_SEGMENTATION);
+      }
+    }
+  }
+
+  config.append(ZActionFactory::ACTION_REFRESH_SEGMENTATION);
+
+//  addAction(actionList, presenter, menu);
+
+  if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+    /* Bookmark actions */
+    TStackObjectSet& bookmarkSet =
+        doc->getSelected(ZStackObject::TYPE_FLYEM_BOOKMARK);
+    if (!bookmarkSet.isEmpty()) {
+      QString groupName("Bookmarks");
+      config.append(groupName, ZActionFactory::ACTION_BOOKMARK_CHECK);
+      config.append(groupName, ZActionFactory::ACTION_BOOKMARK_UNCHECK);
+    }
+
+    if (!presenter->interactiveContext().acceptingRect()) {
+      //    QList<ZActionFactory::EAction> swcActionList;
+      //SWC actions (submenu has to be added separately)
+      QList<Swc_Tree_Node*> swcNodeList = doc->getSelectedSwcNodeList();
+      if (swcNodeList.size() > 1) {
+        config.appendSeparator();
+        config << "Path Information"
+               << ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH
+               << ZActionFactory::ACTION_MEASURE_SCALED_SWC_NODE_LENGTH;
+      }
+    }
+  }
+
+  return config;
+}
+
 QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
     ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu)
 {
@@ -109,12 +255,18 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
       qobject_cast<ZFlyEmProofPresenter*>(presenter);
 
   if (proofPresenter != NULL) {
-    if (menu == NULL) {
-      menu = new QMenu(NULL);
-    } else {
-      menu->clear();
-    }
+//    if (menu == NULL) {
+//      menu = new QMenu(NULL);
+//    } else {
+//      menu->clear();
+//    }
 
+    ZMenuConfig config = getConfig(proofPresenter);
+
+    menu = ZMenuFactory::MakeMenu(config, proofPresenter, menu);
+//    menu = ZMenuFactory::MakeMenu(config, menu);
+
+#if 0
     ZFlyEmProofDoc *doc = proofPresenter->getCompleteDocument();
 
     QList<ZActionFactory::EAction> actionList;
@@ -267,6 +419,7 @@ QMenu* ZFlyEmProofDocMenuFactory::makeContextMenu(
         addAction(swcActionList, presenter, submenu);
       }
     }
+#endif
   } else {
     menu = ZStackDocMenuFactory::makeContextMenu(presenter, parentWidget, menu);
   }

@@ -23,6 +23,7 @@ public:
   virtual ~ZActionFactory() {}
 
   enum EAction {
+    ACTION_NULL,
     ACTION_TEST, ACTION_ABOUT,
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
     ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
@@ -110,6 +111,8 @@ public:
   virtual QAction* makeAction(EAction actionKey, QObject *parent) const;
 
   void setUndoStack(QUndoStack *undoStack);
+
+  static bool IsRegularAction(EAction actionKey);
 
 private:
   QUndoStack *m_undoStack = NULL;

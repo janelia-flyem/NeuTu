@@ -5752,38 +5752,6 @@ void ZStackDoc::notifyActiveViewModified()
 {
   emit activeViewModified();
 }
-#if 0
-void ZStackDoc::clearObjectModifiedTypeBuffer(bool sync)
-{
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 6) << "m_objectModifiedTypeBufferMutex locked";
-    m_objectModifiedTypeBuffer.clear();
-  } else {
-    m_objectModifiedTypeBuffer.clear();
-  }
-}
-
-void ZStackDoc::clearObjectModifiedTargetBuffer(bool sync)
-{
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
-    m_objectModifiedTargetBuffer.clear();
-  } else {
-    m_objectModifiedTargetBuffer.clear();
-  }
-}
-
-void ZStackDoc::clearObjectModifiedRoleBuffer(bool sync)
-{
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedRoleBufferMutex);
-    m_objectModifiedRoleBuffer.clear();
-  } else {
-    m_objectModifiedRoleBuffer.clear();
-  }
-}
-#endif
 
 void ZStackDoc::clearObjectModifiedBuffer(bool sync)
 {
@@ -5794,36 +5762,6 @@ void ZStackDoc::clearObjectModifiedBuffer(bool sync)
     m_objectModifiedBuffer.clear();
   }
 }
-
-#if 0
-void ZStackDoc::notifyObjectModified(bool sync)
-{
-//  emit objectModified();
-  if (getObjectModifiedMode() == OBJECT_MODIFIED_SIGNAL) {
-    if (!m_objectModifiedBuffer.empty()) {
-      processObjectModified(m_objectModifiedBuffer, sync);
-      clearObjectModifiedBuffer(sync);
-    }
-
-    /*
-    if (!m_objectModifiedTypeBuffer.empty()) {
-      processObjectModified(m_objectModifiedTypeBuffer, sync);
-      clearObjectModifiedTypeBuffer(sync);
-    }
-
-    if (!m_objectModifiedTargetBuffer.empty()) {
-      processObjectModified(m_objectModifiedTargetBuffer, sync);
-      clearObjectModifiedTypeBuffer(sync);
-    }
-
-    if (!m_objectModifiedRoleBuffer.isNone()) {
-      processObjectModified(m_objectModifiedRoleBuffer.getRole(), sync);
-      clearObjectModifiedRoleBuffer(sync);
-    }
-    */
-  }
-}
-#endif
 
 void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
 {
@@ -5849,31 +5787,6 @@ void ZStackDoc::bufferObjectModified(ZStackObject::ETarget target, bool sync)
     m_objectModifiedBuffer.add(target);
   }
 }
-#if 0
-void ZStackDoc::bufferObjectModified(
-    const QSet<ZStackObject::EType> &typeSet, bool sync)
-{
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedBufferMutex);
-    m_objectModifiedBuffer.unite(typeSet);
-  } else {
-    m_objectModifiedBuffer.unite(typeSet);
-  }
-}
-#endif
-
-#if 0
-void ZStackDoc::bufferObjectModified(
-    const QSet<ZStackObject::ETarget> &targetSet, bool sync)
-{
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
-    m_objectModifiedBuffer.unite(targetSet);
-  } else {
-    m_objectModifiedBuffer.unite(targetSet);
-  }
-}
-#endif
 
 void ZStackDoc::bufferObjectModified(
     ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
@@ -5947,7 +5860,7 @@ void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
 {
   switch (getObjectModifiedMode()) {
   case OBJECT_MODIFIED_SIGNAL:
-    emit objectModified(info);
+    notifyObjectModified(info);
     break;
   case OBJECT_MODIFIED_CACHE:
   {
@@ -6037,6 +5950,20 @@ void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role, bool sync)
   }
 }
 
+void ZStackDoc::notifyObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  LDEBUG() << "emit signal: objectModified";
+  emit objectModified(infoSet);
+}
+
+void ZStackDoc::notifyObjectModified(const ZStackObjectInfo &info)
+{
+  ZStackObjectInfoSet infoSet;
+  infoSet.add(info);
+
+  emit objectModified(infoSet);
+}
+
 void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
 {
   switch (type) {
@@ -6093,38 +6020,11 @@ void ZStackDoc::processObjectModified()
     }
 
     if (!m_objectModifiedBuffer.isEmpty()) {
-      emit objectModified(m_objectModifiedBuffer);
+      notifyObjectModified(m_objectModifiedBuffer);
       m_objectModifiedBuffer.clear();
     }
   }
 }
-
-#if 0
-void ZStackDoc::processObjectModified(
-    const QSet<ZStackObject::EType> &typeSet, bool sync)
-{
-  if (sync) {
-    QSet<ZStackObject::EType> bufferTypeSet;
-    {
-      QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-      ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
-      bufferTypeSet = typeSet;
-    }
-
-    for (QSet<ZStackObject::EType>::const_iterator iter = bufferTypeSet.begin();
-         iter != bufferTypeSet.end(); ++iter) {
-      ZStackObject::EType type = *iter;
-      processObjectModified(type, false);
-    }
-  } else {
-    for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
-         iter != typeSet.end(); ++iter) {
-      ZStackObject::EType type = *iter;
-      processObjectModified(type, false);
-    }
-  }
-}
-#endif
 
 bool ZStackDoc::watershed()
 {
@@ -7414,6 +7314,16 @@ bool ZStackDoc::executeResolveCrossoverCommand()
   return succ;
 #endif
 }
+void ZStackDoc::executeAddTodoCommand(
+    int /*x*/, int /*y*/, int /*z*/, bool /*checked*/,
+    neutube::EToDoAction /*action*/, uint64_t /*id*/)
+{
+}
+
+void ZStackDoc::executeRemoveTodoCommand()
+{
+}
+
 
 bool ZStackDoc::executeWatershedCommand()
 {

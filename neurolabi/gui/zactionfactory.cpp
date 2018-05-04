@@ -19,6 +19,12 @@ void ZActionFactory::setUndoStack(QUndoStack *undoStack)
   m_undoStack = undoStack;
 }
 
+bool ZActionFactory::IsRegularAction(EAction actionKey)
+{
+  return actionKey != ZActionFactory::ACTION_NULL &&
+      actionKey != ZActionFactory::ACTION_SEPARATOR;
+}
+
 QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 {
   QAction *action = NULL;

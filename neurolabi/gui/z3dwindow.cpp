@@ -1967,7 +1967,7 @@ void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId)
 }
 
 static void AddTodoMarker(
-    Z3DWindow *window, ZFlyEmToDoItem::EToDoAction action, bool checked)
+    Z3DWindow *window, neutube::EToDoAction action, bool checked)
 {
   QList<Swc_Tree_Node*> swcNodeList =
       window->getDocument()->getSelectedSwcNodeList();
@@ -1983,13 +1983,13 @@ static void AddTodoMarker(
       window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
       switch (action) {
-      case ZFlyEmToDoItem::TO_DO:
+      case neutube::TO_DO:
         window->emitAddTodoMarker(pt, checked, bodyId);
         break;
-      case ZFlyEmToDoItem::TO_MERGE:
+      case neutube::TO_MERGE:
         window->emitAddToMergeMarker(pt, bodyId);
         break;
-      case ZFlyEmToDoItem::TO_SPLIT:
+      case neutube::TO_SPLIT:
         window->emitAddToSplitMarker(pt, bodyId);
         break;
       }
@@ -2009,29 +2009,29 @@ void Z3DWindow::updateTodoVisibility()
 
 void Z3DWindow::addTodoMarker()
 {
-  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, false);
+  AddTodoMarker(this, neutube::TO_DO, false);
 }
 
 void Z3DWindow::addToMergeMarker()
 {
-  AddTodoMarker(this, ZFlyEmToDoItem::TO_MERGE, false);
+  AddTodoMarker(this, neutube::TO_MERGE, false);
 }
 
 void Z3DWindow::addToSplitMarker()
 {
-  AddTodoMarker(this, ZFlyEmToDoItem::TO_SPLIT, false);
+  AddTodoMarker(this, neutube::TO_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
 {
-  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, true);
+  AddTodoMarker(this, neutube::TO_DO, true);
 }
 
 void Z3DWindow::setTodoItemToSplit()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
+    doc->setTodoItemAction(neutube::TO_SPLIT);
   }
 }
 
@@ -2039,7 +2039,7 @@ void Z3DWindow::setTodoItemToNormal()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(ZFlyEmToDoItem::TO_DO);
+    doc->setTodoItemAction(neutube::TO_DO);
   }
 }
 
@@ -3878,11 +3878,11 @@ void Z3DWindow::shootTodo(int x, int y)
       if (action != NULL) {
         if (action->isChecked()) {
           doc->executeAddTodoCommand(
-                cx, cy, cz, false, ZFlyEmToDoItem::TO_SPLIT, bodyId);
+                cx, cy, cz, false, neutube::TO_SPLIT, bodyId);
         }
       } else {
         doc->executeAddTodoCommand(
-              cx, cy, cz, false, ZFlyEmToDoItem::TO_DO, bodyId);
+              cx, cy, cz, false, neutube::TO_DO, bodyId);
       }
   //          emitAddTodoMarker(cx, cy, cz, false, bodyId);
     }
