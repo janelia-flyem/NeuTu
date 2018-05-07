@@ -28,7 +28,11 @@ ZActionFactory::EAction ZMenuConfig::getLastAction() const
 
 void ZMenuConfig::appendSeparator()
 {
-  append(ZActionFactory::ACTION_SEPARATOR);
+  if (!m_actionGroup.empty()) {
+    if (getLastAction() != ZActionFactory::ACTION_SEPARATOR) {
+      append(ZActionFactory::ACTION_SEPARATOR);
+    }
+  }
 }
 
 ZMenuConfig::const_iterator ZMenuConfig::begin() const

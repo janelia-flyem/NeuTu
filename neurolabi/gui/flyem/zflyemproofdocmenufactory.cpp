@@ -11,6 +11,7 @@
 #include "zintcuboidobj.h"
 #include "zmenuconfig.h"
 #include "zmenufactory.h"
+#include "zstackdochelper.h"
 
 ZFlyEmProofDocMenuFactory::ZFlyEmProofDocMenuFactory()
 {
@@ -132,13 +133,15 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
         if (!selectedOriginal.empty()) {
           if (selectedOriginal.size() == 1) {
-            if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+            if (ZStackDocHelper::AllowingBodySplit(doc)) {
               config.append(ZActionFactory::ACTION_BODY_SPLIT_START);
             }
-            config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+            if (ZStackDocHelper::AllowingBodyAnnotation(doc)) {
+              config.append(ZActionFactory::ACTION_BODY_ANNOTATION);
+            }
           }
 
-          if (doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+          if (ZStackDocHelper::AllowingBodyMerge(doc)) {
             if (selectedMapped.size() > 1) {
               config.append(ZActionFactory::ACTION_BODY_MERGE);
             }
@@ -147,10 +150,12 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
             }
           }
 
-          config.append(ZActionFactory::ACTION_BODY_CHECKOUT);
-          config.append(ZActionFactory::ACTION_BODY_CHECKIN);
-          if (isAdmin()) {
-            config.append(ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
+          if (ZStackDocHelper::AllowingBodyLock(doc)) {
+            config.append(ZActionFactory::ACTION_BODY_CHECKOUT);
+            config.append(ZActionFactory::ACTION_BODY_CHECKIN);
+            if (isAdmin()) {
+              config.append(ZActionFactory::ACTION_BODY_FORCE_CHECKIN);
+            }
           }
         }
       }
