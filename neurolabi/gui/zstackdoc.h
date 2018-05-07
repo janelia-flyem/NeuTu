@@ -94,6 +94,7 @@ class ZActionLibrary;
 class ZSwcTree;
 class ZObject3d;
 class ZArbSliceViewParam;
+class ZObjsModelManager;
 
 /*!
  * \brief The class of stack document
@@ -126,10 +127,12 @@ public:
     SEGMENTATION_GRAPH, SEGMENTATION_INDEX_MAP, SPARSE_STACK
   };
 
+#if 0
   enum EDocumentDataType {
     DATA_SWC, DATA_PUNCTA, DATA_STACK, DATA_NETWORK, DATA_GRAPH, DATA_ROI,
     DATA_SEED, DATA_TODO
   };
+#endif
 
   enum EObjectModifiedMode {
     OBJECT_MODIFIED_SLIENT, OBJECT_MODIFIED_SIGNAL, OBJECT_MODIFIED_CACHE
@@ -285,16 +288,20 @@ public: //attributes
   bool hasSwcList();       //to test swctree
   QList<ZSwcTree*> getSwcList(ZStackObjectRole::TRole role) const;
 
+  ZObjsModelManager* getModelManager() {
+    return m_modelManager;
+  }
+
   //inline QList<ZLocsegChain*>* chainList() {return &m_chainList;}
   //inline QList<ZPunctum*>* punctaList() {return &m_punctaList;}
-  inline ZSwcObjsModel* swcObjsModel() {return m_swcObjsModel;}
-  inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
-  inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
-  inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
-  inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
-  inline ZSurfaceObjsModel* surfaceObjsModel() { return m_surfaceObjsModel; }
-  inline ZMeshObjsModel* meshObjsModel() { return m_meshObjsModel; }
-  inline ZRoiObjsModel* roiObjsModel() { return m_roiObjsModel; }
+//  inline ZSwcObjsModel* swcObjsModel() {return m_swcObjsModel;}
+//  inline ZDocPlayerObjsModel* seedObjsModel() { return m_seedObjsModel; }
+//  inline ZSwcNodeObjsModel* swcNodeObjsModel() {return m_swcNodeObjsModel;}
+//  inline ZPunctaObjsModel* punctaObjsModel() {return m_punctaObjsModel;}
+//  inline ZGraphObjsModel* graphObjsModel() { return m_graphObjsModel; }
+//  inline ZSurfaceObjsModel* surfaceObjsModel() { return m_surfaceObjsModel; }
+//  inline ZMeshObjsModel* meshObjsModel() { return m_meshObjsModel; }
+//  inline ZRoiObjsModel* roiObjsModel() { return m_roiObjsModel; }
 
   void updatePunctaObjsModel(ZPunctum *punctum);
 
@@ -775,7 +782,7 @@ public:
 
   Z3DGraph get3DGraphDecoration() const;
 
-  void updateModelData(EDocumentDataType type);
+//  void updateModelData(EDocumentDataType type);
 
   /*!
    * \brief Get all swc trees from the document in a single tree
@@ -888,8 +895,8 @@ public:
     return m_neuronTracer.getConnectionTestWorkspace();
   }
 
-  void disconnectSwcNodeModelUpdate();
-  void disconnectPunctaModelUpdate();
+//  void disconnectSwcNodeModelUpdate();
+//  void disconnectPunctaModelUpdate();
   /*
   inline ZSwcTree* previewSwc() { return m_previewSwc; }
   void updatePreviewSwc();
@@ -923,7 +930,7 @@ public:
   void bufferObjectModified(ZStackObjectRole::TRole role, bool sync = true);
   void bufferObjectModified(
       const ZStackObjectInfo &info, ZStackObjectInfo::TState state,
-      bool sync = true);
+      bool sync);
   void bufferObjectModified(
       const QSet<ZStackObject::ETarget> &targetSet, bool sync = true);
 
@@ -1387,14 +1394,17 @@ private:
   //Swc_Tree_Node *m_lastAddedSwcNode;
 
   //model-view structure for obj list and edit
-  ZSwcObjsModel *m_swcObjsModel;
-  ZSwcNodeObjsModel *m_swcNodeObjsModel;
-  ZPunctaObjsModel *m_punctaObjsModel;
-  ZDocPlayerObjsModel *m_seedObjsModel;
-  ZGraphObjsModel *m_graphObjsModel;
-  ZSurfaceObjsModel *m_surfaceObjsModel;
-  ZMeshObjsModel *m_meshObjsModel;
-  ZRoiObjsModel *m_roiObjsModel;
+//  ZSwcObjsModel *m_swcObjsModel;
+//  ZSwcNodeObjsModel *m_swcNodeObjsModel;
+//  ZPunctaObjsModel *m_punctaObjsModel;
+//  ZDocPlayerObjsModel *m_seedObjsModel;
+//  ZGraphObjsModel *m_graphObjsModel;
+//  ZSurfaceObjsModel *m_surfaceObjsModel;
+//  ZMeshObjsModel *m_meshObjsModel;
+//  ZRoiObjsModel *m_roiObjsModel;
+
+  ZObjsModelManager *m_modelManager = NULL;
+
 
   //Parent frame
   ZStackFrame *m_parentFrame;

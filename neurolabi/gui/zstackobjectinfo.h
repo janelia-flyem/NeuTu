@@ -84,6 +84,8 @@ public:
    */
   bool hasObjectModified(
       ZStackObject::EType type, ZStackObjectInfo::TState flag) const;
+  bool hasObjectModified(
+      ZStackObject::EType type) const;
 
   bool onlyVisibilityChanged(ZStackObject::EType type) const;
 

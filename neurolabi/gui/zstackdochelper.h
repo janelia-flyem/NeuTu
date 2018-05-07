@@ -63,10 +63,10 @@ public:
   static void ClearBodySelection(ZFlyEmProofDoc *doc);
   static std::string SaveStack(const ZStackDoc *doc, const std::string &path);
 
-  bool AllowingBodySplit(const ZStackDoc *doc);
-  bool AllowingBodyAnnotation(const ZStackDoc *doc);
-  bool AllowingBodyMerge(const ZStackDoc *doc);
-  bool AllowingBodyLock(const ZStackDoc *doc);
+  static bool AllowingBodySplit(const ZStackDoc *doc);
+  static bool AllowingBodyAnnotation(const ZStackDoc *doc);
+  static bool AllowingBodyMerge(const ZStackDoc *doc);
+  static bool AllowingBodyLock(const ZStackDoc *doc);
 
 private:
   int m_currentZ;

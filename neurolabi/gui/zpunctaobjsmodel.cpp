@@ -8,6 +8,7 @@
 #include "zobjsitem.h"
 #include "core/utilities.h"
 #include "neutubeconfig.h"
+#include "zstackobjectinfo.h"
 
 namespace {
 // generic solution
@@ -37,9 +38,9 @@ ZPunctaObjsModel::~ZPunctaObjsModel()
 {
 }
 
-QModelIndex ZPunctaObjsModel::getIndex(ZPunctum *punctum, int col) const
+QModelIndex ZPunctaObjsModel::getIndex(const ZPunctum *punctum, int col) const
 {
-  std::map<ZPunctum*, int>::const_iterator pun2rIt = m_punctaToRow.find(punctum);
+  auto pun2rIt = m_punctaToRow.find(punctum);
   if (pun2rIt != m_punctaToRow.end()) {
     std::map<QString, ZObjsItem*>::const_iterator s2pIt =
         m_punctaSourceToParent.find(punctum->getSource().c_str());
@@ -83,22 +84,33 @@ const std::vector<ZPunctum *> *ZPunctaObjsModel::getPuncta(const QModelIndex &in
   return NULL;
 }
 
-void ZPunctaObjsModel::updateData(ZPunctum *punctum)
+void ZPunctaObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
 {
-  QModelIndex index = getIndex(punctum);
-  if (!index.isValid())
-    return;
-  ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
-  QList<QVariant> &data = item->getItemData();
-  ZPunctum *p = punctum;
-  QList<QVariant>::iterator beginit = data.begin();
-  beginit++;
-  data.erase(beginit, data.end());
-  data << p->score() << p->name() << p->comment() << p->x() << p->y() <<
-          p->z() << p->sDevOfIntensity() << p->volSize() << p->mass() << p->radius() <<
-          p->meanIntensity() << p->maxIntensity() << p->property1() << p->property2() <<
-          p->property3() << p->color() << p->getSource().c_str();
-  emit dataChanged(index, getIndex(punctum, item->parent()->columnCount()-1));
+  if (infoSet.hasObjectModified(ZStackObject::TYPE_PUNCTA) ||
+      infoSet.hasObjectModified(ZStackObject::TYPE_PUNCTUM)) {
+    updateModelData();
+  }
+}
+
+void ZPunctaObjsModel::updateData(const ZStackObject *obj)
+{
+  const ZPunctum *punctum = dynamic_cast<const ZPunctum*>(obj);
+  if (punctum != NULL) {
+    QModelIndex index = getIndex(punctum);
+    if (!index.isValid())
+      return;
+    ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
+    QList<QVariant> &data = item->getItemData();
+    const ZPunctum *p = punctum;
+    QList<QVariant>::iterator beginit = data.begin();
+    beginit++;
+    data.erase(beginit, data.end());
+    data << p->score() << p->name() << p->comment() << p->x() << p->y() <<
+            p->z() << p->sDevOfIntensity() << p->volSize() << p->mass() << p->radius() <<
+            p->meanIntensity() << p->maxIntensity() << p->property1() << p->property2() <<
+            p->property3() << p->color() << p->getSource().c_str();
+    emit dataChanged(index, getIndex(punctum, item->parent()->columnCount()-1));
+  }
 }
 
 void ZPunctaObjsModel::updateModelData()

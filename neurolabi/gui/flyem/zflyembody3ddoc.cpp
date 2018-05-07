@@ -60,7 +60,7 @@ ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   enableAutoSaving(false);
 
   connectSignalSlot();
-  disconnectSwcNodeModelUpdate();
+//  disconnectSwcNodeModelUpdate();
 
   m_splitter = new ZFlyEmBodySplitter(this);
   ZWidgetMessage::ConnectMessagePipe(m_splitter, this);

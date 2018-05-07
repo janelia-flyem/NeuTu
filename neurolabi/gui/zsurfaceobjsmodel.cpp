@@ -20,9 +20,9 @@ ZSurfaceObjsModel::~ZSurfaceObjsModel()
 
 }
 
-QModelIndex ZSurfaceObjsModel::getIndex(ZCubeArray *cubearray, int col) const
+QModelIndex ZSurfaceObjsModel::getIndex(const ZCubeArray *cubearray, int col) const
 {
-  std::map<ZCubeArray*, int>::const_iterator pun2rIt = m_surfaceToRow.find(cubearray);
+  auto pun2rIt = m_surfaceToRow.find(cubearray);
   if (pun2rIt != m_surfaceToRow.end()) {
     std::map<QString, ZObjsItem*>::const_iterator s2pIt =
         m_surfaceSourceToParent.find(cubearray->getSource().c_str());
@@ -67,19 +67,23 @@ const std::vector<ZCubeArray *> *ZSurfaceObjsModel::getSurfaceList(
   return NULL;
 }
 
-void ZSurfaceObjsModel::updateData(ZCubeArray *cubearray)
+void ZSurfaceObjsModel::updateData(const ZStackObject *obj)
 {
-  QModelIndex index = getIndex(cubearray);
-  if (!index.isValid())
-    return;
-  ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
-  QList<QVariant> &data = item->getItemData();
-  ZCubeArray *p = cubearray;
-  QList<QVariant>::iterator beginit = data.begin();
-  beginit++;
-  data.erase(beginit, data.end());
-  data << p->getSource().c_str();
-  emit dataChanged(index, getIndex(cubearray, item->parent()->columnCount()-1));
+  const ZCubeArray *cubearray = dynamic_cast<const ZCubeArray*>(obj);
+
+  if (cubearray != NULL) {
+    QModelIndex index = getIndex(cubearray);
+    if (!index.isValid())
+      return;
+    ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
+    QList<QVariant> &data = item->getItemData();
+    const ZCubeArray *p = cubearray;
+    QList<QVariant>::iterator beginit = data.begin();
+    beginit++;
+    data.erase(beginit, data.end());
+    data << p->getSource().c_str();
+    emit dataChanged(index, getIndex(cubearray, item->parent()->columnCount()-1));
+  }
 }
 
 void ZSurfaceObjsModel::updateModelData()
