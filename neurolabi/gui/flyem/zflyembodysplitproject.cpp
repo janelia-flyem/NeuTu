@@ -523,7 +523,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 //      ZStackDoc *doc = new ZStackDoc;
       m_quickResultDoc = ZSharedPointer<ZStackDoc>(new ZStackDoc);
       m_quickResultDoc->setTag(neutube::Document::FLYEM_BODY_DISPLAY);
-      m_quickResultDoc->disconnectSwcNodeModelUpdate();
+//      m_quickResultDoc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(m_quickResultDoc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
       m_quickResultWindow->getSwcFilter()->setRenderingPrimitive("Sphere");

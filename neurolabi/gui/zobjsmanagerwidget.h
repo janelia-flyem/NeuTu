@@ -11,6 +11,11 @@ struct _Swc_Tree_Node;
 typedef _Swc_Tree_Node Swc_Tree_Node;
 class ZMesh;
 class QSortFilterProxyModel;
+class ZSwcObjsModel;
+class ZPunctaObjsModel;
+class ZMeshObjsModel;
+class ZDocPlayerObjsModel;
+class ZGraphObjsModel;
 
 class ZObjsManagerWidget : public QWidget
 {
@@ -27,11 +32,11 @@ signals:
   
 public slots:
   void swcItemDoubleClicked(QModelIndex index);
-  void processDoubleClickOnCategorizedSwcNode(QModelIndex index);
+//  void processDoubleClickOnCategorizedSwcNode(QModelIndex index);
   void swcSelectionChangedFromTreeView(
       QItemSelection selected, QItemSelection deselected);
-  void updateSelectionFromCategorizedSwcNode(
-      QItemSelection selected, QItemSelection deselected);
+//  void updateSelectionFromCategorizedSwcNode(
+//      QItemSelection selected, QItemSelection deselected);
 
   void punctaItemDoubleClicked(QModelIndex index);
   void punctaSelectionChangedFromTreeView(
@@ -47,8 +52,10 @@ public slots:
       QList<ZMesh*> selected, QList<ZMesh*> deselected);
   void swcSelectionChanged(
       QList<ZSwcTree*> selected, QList<ZSwcTree*> deselected);
+  /*
   void swcTreeNodeSelectionChanged(
       QList<Swc_Tree_Node*> selected, QList<Swc_Tree_Node*> deselected);
+      */
 
   //void updateSelection();
 
@@ -59,10 +66,18 @@ protected:
 
   void buildItemSelectionFromList(const QList<ZPunctum*> &list, QItemSelection &is);
   void buildItemSelectionFromList(const QList<ZSwcTree*> &list, QItemSelection &is);
-  void buildItemSelectionFromList(const QList<Swc_Tree_Node*> &list, QItemSelection &is);
+//  void buildItemSelectionFromList(const QList<Swc_Tree_Node*> &list, QItemSelection &is);
   void buildItemSelectionFromList(const QList<ZMesh*> &list, QItemSelection &is);
 
   QList<Swc_Tree_Node*> getSwcNodeList(QItemSelection &is);
+
+  ZSwcObjsModel* getSwcObjsModel();
+  ZPunctaObjsModel* getPunctaObjsModel();
+  ZMeshObjsModel* getMeshObjsModel();
+  ZDocPlayerObjsModel* getSeedObjsModel();
+  ZGraphObjsModel* getGraphObjsModel();
+
+private:
 
   ZStackDoc *m_doc;
   //old selection

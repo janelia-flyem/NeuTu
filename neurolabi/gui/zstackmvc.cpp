@@ -275,10 +275,12 @@ void ZStackMvc::processViewChange()
   processViewChange(getView()->getViewParameter(neutube::COORD_STACK));
 }
 
+/*
 void ZStackMvc::updateActiveViewData()
 {
   processViewChangeCustom(getView()->getViewParameter(neutube::COORD_STACK));
 }
+*/
 
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {

@@ -117,6 +117,7 @@
 #include "zswctree.h"
 #include "zobject3d.h"
 #include "data3d/utilities.h"
+#include "zobjsmodelmanager.h"
 
 using namespace std;
 
@@ -172,18 +173,21 @@ void ZStackDoc::init()
   m_swcNetwork = NULL;
   m_stackFactory = NULL;
 
+
 //  m_actionFactory = new ZActionFactory;
 
   initNeuronTracer();
-  m_swcObjsModel = new ZSwcObjsModel(this, this);
-  m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
-  m_punctaObjsModel = new ZPunctaObjsModel(this, this);
-  m_seedObjsModel = new ZDocPlayerObjsModel(
-        this, ZStackObjectRole::ROLE_SEED, this);
-  m_graphObjsModel = new ZGraphObjsModel(this, this);
-  m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
-  m_meshObjsModel = new ZMeshObjsModel(this, this);
-  m_roiObjsModel = new ZRoiObjsModel(this, this);
+
+  m_modelManager = new ZObjsModelManager(this);
+//  m_swcObjsModel = new ZSwcObjsModel(this, this);
+//  m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
+//  m_punctaObjsModel = new ZPunctaObjsModel(this, this);
+//  m_seedObjsModel = new ZDocPlayerObjsModel(
+//        this, ZStackObjectRole::ROLE_SEED, this);
+//  m_graphObjsModel = new ZGraphObjsModel(this, this);
+//  m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
+//  m_meshObjsModel = new ZMeshObjsModel(this, this);
+//  m_roiObjsModel = new ZRoiObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
   connectSignalSlot();
@@ -333,30 +337,33 @@ void ZStackDoc::emptySlot()
   QMessageBox::information(NULL, "empty slot", "To be implemented");
 }
 
-void ZStackDoc::disconnectSwcNodeModelUpdate()
-{
-  disconnect(this, SIGNAL(swcModified()),
-             m_swcNodeObjsModel, SLOT(updateModelData()));
-}
+//void ZStackDoc::disconnectSwcNodeModelUpdate()
+//{
+//  disconnect(this, SIGNAL(swcModified()),
+//             m_swcNodeObjsModel, SLOT(updateModelData()));
+//}
 
 
-void ZStackDoc::disconnectPunctaModelUpdate()
-{
-  disconnect(this, SIGNAL(punctaModified()),
-             m_punctaObjsModel, SLOT(updateModelData()));
-}
+//void ZStackDoc::disconnectPunctaModelUpdate()
+//{
+//  disconnect(this, SIGNAL(punctaModified()),
+//             m_punctaObjsModel, SLOT(updateModelData()));
+//}
 
 void ZStackDoc::connectSignalSlot()
 {
-  connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
   connect(this, SIGNAL(objectModified(ZStackObjectInfoSet)),
-          m_roiObjsModel, SLOT(processObjectModified(ZStackObjectInfoSet)));
-  connect(this, SIGNAL(meshModified()), m_meshObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
+          m_modelManager, SLOT(processObjectModified(ZStackObjectInfoSet)));
+
+//  connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(objectModified(ZStackObjectInfoSet)),
+//          m_roiObjsModel, SLOT(processObjectModified(ZStackObjectInfoSet)));
+//  connect(this, SIGNAL(meshModified()), m_meshObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
 
   connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
           this, SLOT(addObject(ZStackObject*,bool)));
@@ -5823,7 +5830,8 @@ void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
   }
 }
 
-void ZStackDoc::bufferObjectModified(const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync)
+void ZStackDoc::bufferObjectModified(
+    const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync)
 {
   if (sync) {
     QMutexLocker locker(&m_objectModifiedBufferMutex);
@@ -5864,7 +5872,7 @@ void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
     break;
   case OBJECT_MODIFIED_CACHE:
   {
-    bufferObjectModified(info, sync);
+    bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
   }
     break;
   default:
@@ -8121,7 +8129,7 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
         for (TStackObjectList::iterator iter = objList.begin();
              iter != objList.end(); ++iter) {
           ZStackObject *oldObj = *iter;
-          bufferObjectModified(oldObj);
+          bufferObjectModified(oldObj, ZStackObjectInfo::STATE_ADDED);
           //      role.addRole(m_playerList.removePlayer(obj));
           if (oldObj != obj) {
             ZOUT(LTRACE(), 5) << "Deleting object:" <<  oldObj;
@@ -8373,7 +8381,8 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 
 void ZStackDoc::updatePunctaObjsModel(ZPunctum *punctum)
 {
-  punctaObjsModel()->updateData(punctum);
+  m_modelManager->updateData(punctum);
+//  punctaObjsModel()->updateData(punctum);
 }
 
 bool ZStackDoc::executeTraceSwcBranchCommand(
@@ -8850,6 +8859,7 @@ bool ZStackDoc::hasMultipleSelectedSwcNode() const
   return getSelectedSwcNodeNumber() > 1;
 }
 
+/*
 void ZStackDoc::updateModelData(EDocumentDataType type)
 {
   switch (type) {
@@ -8863,6 +8873,7 @@ void ZStackDoc::updateModelData(EDocumentDataType type)
     break;
   }
 }
+*/
 
 void ZStackDoc::showSeletedSwcNodeScaledLength()
 {

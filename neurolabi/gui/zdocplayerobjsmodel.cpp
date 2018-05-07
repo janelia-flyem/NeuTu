@@ -77,3 +77,10 @@ bool ZDocPlayerObjsModel::needCheckbox(const QModelIndex &/*index*/) const
 {
   return false;
 }
+
+void ZDocPlayerObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  if (infoSet.contains(ZStackObjectRole::ROLE_SEED)) {
+    updateModelData();
+  }
+}
