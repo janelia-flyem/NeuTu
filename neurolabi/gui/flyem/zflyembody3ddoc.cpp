@@ -1403,7 +1403,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     // can be used by code that needs to know the IDs of the loaded meshes (instead of
     // the ID of the archive).
 
-    emit bodyMeshesAdded();
+    emit bodyMeshesAdded(meshes.size());
   }
 }
 
@@ -1850,7 +1850,7 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
   QString threadId = QString("updateBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
 
-    // The findSameClass() function has performance that iis quadratic in the number of meshes,
+    // The findSameClass() function has performance that is quadratic in the number of meshes,
     // and is unnecessary for meshes from a tar archive.
 
     if (!fromTar(bodyId)) {
@@ -1925,6 +1925,7 @@ void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
   if (removeObject(obj, false)) {
     dumpGarbage(obj, true);
+    emit bodyRecycled(obj->getLabel());
   }
 }
 
