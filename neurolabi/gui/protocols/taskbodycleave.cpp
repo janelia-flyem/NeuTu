@@ -357,6 +357,17 @@ void TaskBodyCleave::onShowCleavingChanged(int state)
 
 void TaskBodyCleave::onToggleShowCleaving()
 {
+  // For some reason, Qt will call this slot even when the source of the signal is disabled.
+  // The source is a QAction on m_menu, and TaskProtocolWindow disables it and m_widget while
+  // waiting for meshes from the previous task to e deleted and meshes for the next task to be
+  // loaded.  In this case, going ahead and loading more meshes for cleaving can cause problems
+  // due to way meshes are deleted and loaded asynchronously.  Since this disabling does not
+  // prevent this slot from being called, we must explicitly abort this slot when there is
+  // disabling.
+
+  if (!m_menu->isEnabled() || !m_widget->isEnabled()) {
+    return;
+  }
   m_showCleavingCheckBox->setChecked(!m_showCleavingCheckBox->isChecked());
 }
 

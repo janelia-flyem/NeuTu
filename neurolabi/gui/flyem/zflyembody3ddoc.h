@@ -376,6 +376,7 @@ public slots:
 
 signals:
   void bodyRemoved(uint64_t bodyId);
+  void bodyRecycled(uint64_t bodyId);
   void interactionStateChanged();
 
   //Signals for triggering external body control
@@ -470,7 +471,7 @@ private:
 signals:
   void todoVisibleChanged();
   void bodyMeshLoaded();
-  void bodyMeshesAdded();
+  void bodyMeshesAdded(int);
 
   void meshArchiveLoadingStarted();
   void meshArchiveLoadingProgress(float fraction);
