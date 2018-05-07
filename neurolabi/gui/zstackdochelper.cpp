@@ -223,3 +223,26 @@ std::string ZStackDocHelper::SaveStack(
 
   return resultPath;
 }
+
+bool ZStackDocHelper::AllowingBodySplit(const ZStackDoc *doc)
+{
+  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD;
+}
+
+bool ZStackDocHelper::AllowingBodyAnnotation(const ZStackDoc *doc)
+{
+  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::FLYEM_ORTHO;
+}
+
+bool ZStackDocHelper::AllowingBodyMerge(const ZStackDoc *doc)
+{
+  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::FLYEM_ORTHO;
+}
+
+bool ZStackDocHelper::AllowingBodyLock(const ZStackDoc *doc)
+{
+  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::FLYEM_ORTHO;
+}
