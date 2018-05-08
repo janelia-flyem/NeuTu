@@ -11,6 +11,7 @@ contains(TEMPLATE, app) {
 
 contains(CONFIG, neu3) {
   DEFINES += _NEU3_
+  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
 
 contains(CONFIG, neu3) | contains(CONFIG, flyem) {
