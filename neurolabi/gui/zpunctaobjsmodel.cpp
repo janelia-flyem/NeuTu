@@ -127,6 +127,8 @@ void ZPunctaObjsModel::updateModelData()
         rootData, &(m_doc->getObjectList(ZStackObject::TYPE_PUNCTUM)));
   setupModelData(m_rootItem);
   endResetModel();
+
+  LDEBUG() << "Puncta rows:" << rowCount();
 }
 
 void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
@@ -145,7 +147,8 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
     data.clear();
     ZPunctum *p = punctaList.at(i);
     QFileInfo sourceInfo(p->getSource().c_str());
-    if (m_punctaSourceToParent.find(p->getSource().c_str()) != m_punctaSourceToParent.end()) {
+    if (m_punctaSourceToParent.find(p->getSource().c_str()) !=
+        m_punctaSourceToParent.end()) {
       ZObjsItem *sourceParent = m_punctaSourceToParent[p->getSource().c_str()];
       data << QString("puncta %1").
               arg(m_punctaSourceToCount[p->getSource().c_str()] + 1,
@@ -160,7 +163,8 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
       punctum->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
       punctum->setToolTip(QString("puncta from: %1").arg(p->getSource().c_str()));
       sourceParent->appendChild(punctum);
-      m_punctaSeparatedByFile[m_punctaSourceParentToRow[sourceParent]].push_back(punctaList.at(i));
+      m_punctaSeparatedByFile[m_punctaSourceParentToRow[sourceParent]].push_back(
+            punctaList.at(i));
     } else {
       data << sourceInfo.fileName() << "score" << "name" << "comment" << "x" << "y" << "z" << "sDev" <<
               "volSize" << "mass" << "radius" << "meanIntensity" << "maxIntensity" <<
@@ -185,7 +189,8 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
       punctum->setCheckState(p->isVisible() ? Qt::Checked : Qt::Unchecked);
       punctum->setToolTip(QString("puncta from: %1").arg(p->getSource().c_str()));
       sourceParent->appendChild(punctum);
-      m_punctaSeparatedByFile[m_punctaSourceParentToRow[sourceParent]].push_back(punctaList.at(i));
+      m_punctaSeparatedByFile[m_punctaSourceParentToRow[sourceParent]].push_back(
+            punctaList.at(i));
     }
   }
 }

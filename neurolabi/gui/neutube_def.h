@@ -104,12 +104,6 @@ enum EToDoAction {
   TO_DO, TO_MERGE, TO_SPLIT
 };
 
-namespace Json {
-namespace {
-const char* REF_KEY = "->";
-}
-}
-
 namespace display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;

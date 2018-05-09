@@ -37,6 +37,8 @@ void ZObjsModelManager::processObjectModified(
 
 ZObjsModel* ZObjsModelManager::getObjsModel(ZStackObject::EType type)
 {
+  type = ZObjsModelFactory::GetCanonicalType(type);
+
   if (!m_modelMap.contains(type)) {
     ZObjsModel *model = ZObjsModelFactory::Make(type, getDocument(), this);
     m_modelMap[type] = model;

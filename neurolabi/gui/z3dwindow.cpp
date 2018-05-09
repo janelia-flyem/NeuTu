@@ -2057,7 +2057,7 @@ void Z3DWindow::copyPosition()
   std::set<Swc_Tree_Node*> nodeSet = doc->getSelectedSwcNodeSet();
   if (nodeSet.size() == 1) {
     ZPoint pos = SwcTreeNode::center(*(nodeSet.begin()));
-    ZGlobal::GetInstance().setStackPosition(pos);
+    ZGlobal::GetInstance().setDataPosition(pos);
   } else {
     ZGlobal::GetInstance().clearStackPosition();
   }

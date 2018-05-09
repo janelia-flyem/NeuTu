@@ -14,10 +14,19 @@ ZObjsModelFactory::ZObjsModelFactory()
 
 }
 
+ZStackObject::EType ZObjsModelFactory::GetCanonicalType(ZStackObject::EType type)
+{
+  if (type == ZStackObject::TYPE_PUNCTUM) {
+    type = ZStackObject::TYPE_PUNCTA;
+  }
+
+  return type;
+}
+
 ZObjsModel* ZObjsModelFactory::Make(
     ZStackObject::EType type, ZStackDoc *doc, QObject *parent)
 {
-  switch (type) {
+  switch (GetCanonicalType(type)) {
   case ZStackObject::TYPE_SWC:
     return new ZSwcObjsModel(doc, parent);
   case ZStackObject::TYPE_PUNCTA:

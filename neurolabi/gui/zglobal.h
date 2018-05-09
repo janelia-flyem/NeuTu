@@ -32,9 +32,9 @@ public:
   /*!
    * \brief For transferring positions globally.
    */
-  void setStackPosition(int x, int y, int z);
-  void setStackPosition(const ZIntPoint &pt);
-  void setStackPosition(const ZPoint &pt);
+  void setDataPosition(int x, int y, int z);
+  void setDataPosition(const ZIntPoint &pt);
+  void setDataPosition(const ZPoint &pt);
 
   void clearStackPosition();
   ZIntPoint getStackPosition() const;
@@ -81,6 +81,8 @@ public:
 public:
   ZDvidSparseStack* readDvidSparseStack(const std::string &url) const;
   ZBrowserOpener* getBrowserOpener() const;
+
+  static void CopyToClipboard(const std::string &str);
 
 private:
   /*

@@ -2,6 +2,8 @@
 
 #include <QUrl>
 #include <map>
+#include <QClipboard>
+#include <QApplication>
 
 #include "zintpoint.h"
 #include "zpoint.h"
@@ -11,6 +13,7 @@
 #include "dvid/zdvidwriter.h"
 #include "zdvidutil.h"
 #include "sandbox/zbrowseropener.h"
+#include "flyem/zglobaldvidrepo.h"
 
 #include "neutubeconfig.h"
 
@@ -50,7 +53,7 @@ ZBrowserOpener* ZGlobal::getBrowserOpener() const
   return m_browserOpener.get();
 }
 
-void ZGlobal::setStackPosition(int x, int y, int z)
+void ZGlobal::setDataPosition(int x, int y, int z)
 {
   m_data->m_stackPosition.set(x, y, z);
 }
@@ -60,14 +63,14 @@ ZIntPoint ZGlobal::getStackPosition() const
   return m_data->m_stackPosition;
 }
 
-void ZGlobal::setStackPosition(const ZIntPoint &pt)
+void ZGlobal::setDataPosition(const ZIntPoint &pt)
 {
   m_data->m_stackPosition = pt;
 }
 
-void ZGlobal::setStackPosition(const ZPoint &pt)
+void ZGlobal::setDataPosition(const ZPoint &pt)
 {
-  setStackPosition(pt.toIntPoint());
+  setDataPosition(pt.toIntPoint());
 }
 
 void ZGlobal::clearStackPosition()
@@ -94,6 +97,18 @@ T* ZGlobal::getIODevice(
 
   std::string nameKey = name + "$" + key;
   if (ioMap.count(nameKey) == 0) {
+    {
+      const ZDvidTarget &target =
+          ZGlobalDvidRepo::GetInstance().getDvidTarget(name);
+      if (target.isValid()) {
+        io = new T;
+        if (!io->open(target)) {
+          delete io;
+          io = NULL;
+        }
+      }
+    }
+/*
     const std::vector<ZDvidTarget> &dvidRepo = GET_FLYEM_CONFIG.getDvidRepo();
     for (std::vector<ZDvidTarget>::const_iterator iter = dvidRepo.begin();
          iter != dvidRepo.end(); ++iter) {
@@ -108,7 +123,7 @@ T* ZGlobal::getIODevice(
         }
       }
     }
-
+*/
     if (io == NULL) {
       ZDvidTarget target;
       target.setFromSourceString(name);
@@ -248,5 +263,11 @@ ZDvidWriter* ZGlobal::GetDvidWriterFromUrl(
     const std::string &url, const std::string &key)
 {
   return GetInstance().getDvidWriterFromUrl(url, key);
+}
+
+void ZGlobal::CopyToClipboard(const std::string &str)
+{
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setText(str.c_str());
 }
 

@@ -175,6 +175,11 @@ void ZDvidLabelSlice::display(
   }
 }
 
+void ZDvidLabelSlice::setCenterCut(int width, int height)
+{
+  getHelper()->setCenterCut(width, height);
+}
+
 void ZDvidLabelSlice::update()
 {
   if (m_objArray.empty()) {
@@ -201,7 +206,8 @@ void ZDvidLabelSlice::forceUpdate(const ZArbSliceViewParam &viewParam)
     m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
           viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
           viewParam.getWidth(), viewParam.getHeight(),
-          getHelper()->getZoom());
+          getHelper()->getZoom(), getHelper()->getCenterCutWidth(),
+          getHelper()->getCenterCutHeight());
   }
 }
 
@@ -328,7 +334,8 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z)
       m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
             box.getFirstCorner().getX(), box.getFirstCorner().getY(),
             box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
-            getHelper()->getZoom());
+            getHelper()->getZoom(), getHelper()->getCenterCutWidth(),
+            getHelper()->getCenterCutHeight());
     } else {
       int zoom = getHelper()->getZoom();
       int zoomRatio = pow(2, zoom);

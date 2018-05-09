@@ -107,6 +107,16 @@ int ZDvidDataSliceHelper::getHeight() const
   return getViewPort().height();
 }
 
+int ZDvidDataSliceHelper::getCenterCutWidth() const
+{
+  return m_centerCutWidth;
+}
+
+int ZDvidDataSliceHelper::getCenterCutHeight() const
+{
+  return m_centerCutHeight;
+}
+
 int ZDvidDataSliceHelper::getScale() const
 {
   return misc::GetZoomScale(getZoom());
@@ -171,6 +181,12 @@ void ZDvidDataSliceHelper::setMaxSize(int maxW, int maxH)
 {
   m_maxWidth = maxW;
   m_maxHeight = maxH;
+}
+
+void ZDvidDataSliceHelper::setCenterCut(int width, int height)
+{
+  m_centerCutWidth = width;
+  m_centerCutHeight = height;
 }
 
 void ZDvidDataSliceHelper::setBoundBox(const ZRect2d &rect)

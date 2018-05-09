@@ -58,6 +58,9 @@ public:
   int getWidth() const;
   int getHeight() const;
 
+  int getCenterCutWidth() const;
+  int getCenterCutHeight() const;
+
   static ZIntCuboid GetBoundBox(const QRect &viewPort, int z);
   ZIntCuboid getBoundBox() const;
   void setBoundBox(const ZRect2d &rect);
@@ -72,6 +75,7 @@ public:
   bool hasNewView(const ZStackViewParam &viewParam) const;
 
   void setMaxSize(int maxW, int maxH);
+  void setCenterCut(int width, int height);
 
   void clear();
 
@@ -84,6 +88,9 @@ public:
 
   int m_maxWidth = 512;
   int m_maxHeight = 512;
+
+  int m_centerCutWidth = 256;
+  int m_centerCutHeight = 256;
 
   ZDvidData::ERole m_dataRole;
 

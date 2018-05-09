@@ -67,6 +67,7 @@ public:
   }
 
   void setGraySliceCenterCut(int width, int height);
+  void setSegmentationCenterCut(int width, int height);
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
@@ -541,6 +542,7 @@ protected:
   QColor getSeedColor(int label) const;
   void readInfo();
   void prepareGraySlice(ZDvidGraySlice *slice);
+  void prepareLabelSlice();
 
 private:
   void connectSignalSlot();
@@ -633,6 +635,9 @@ protected:
   //Data settings
   int m_graySliceCenterCutWidth = 256;
   int m_graySliceCenterCutHeight = 256;
+
+  int m_labelSliceCenterCutWidth = 256;
+  int m_labelSliceCenterCutHeight = 256;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<ZFlyEmBodyColorOption::EColorOption,

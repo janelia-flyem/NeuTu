@@ -232,8 +232,7 @@ bool ZStackDocHelper::AllowingBodySplit(const ZStackDoc *doc)
 bool ZStackDocHelper::AllowingBodyAnnotation(const ZStackDoc *doc)
 {
   return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
-      doc->getTag() == neutube::Document::FLYEM_ORTHO ||
-      doc->getTag() == neutube::Document::FLYEM_ARBSLICE;
+      doc->getTag() == neutube::Document::FLYEM_ORTHO;
 }
 
 bool ZStackDocHelper::AllowingBodyMerge(const ZStackDoc *doc)

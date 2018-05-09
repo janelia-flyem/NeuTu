@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <map>
+#include <QMap>
+#include <QSize>
+
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidtarget.h"
 #ifdef _QT_GUI_USED_
@@ -13,6 +16,7 @@ class ZFlyEmConfig
 {
 public:
   ZFlyEmConfig();
+  ~ZFlyEmConfig();
 
   static ZFlyEmConfig& getInstance() {
     static ZFlyEmConfig config;
@@ -31,6 +35,7 @@ public:
 
 //  void loadConfig(const std::string &filePath);
   void loadConfig();
+  void loadUserSettings();
 
   void setConfigPath(const std::string &filePath) {
     m_configPath = filePath;
@@ -95,6 +100,10 @@ public:
     return m_usingDefaultConfig;
   }
 
+  std::pair<int,int> getCenterCut(const std::string &name) const;
+  void setCenterCut(const std::string &name, int cx, int cy);
+
+  void saveSettings() const;
 //  std::string getSplitResultUrl(const ZDvidTarget &target, uint64_t bodyId);
 
 private:
@@ -105,6 +114,8 @@ private:
   std::vector<ZDvidTarget> m_dvidRepo;
   std::map<std::string, std::string> m_addressMap;
   std::map<std::string, std::string> m_rootMap;
+  std::map<std::string, std::pair<int,int>> m_centerCut;
+
 #ifdef _QT_GUI_USED_
   ZNeutuService m_neutuService;
 #endif
@@ -126,6 +137,8 @@ private:
   const static char *MB6_KEY;
   const static char *TASK_SERVER_KEY;
   const static char *NEUROGLANCER_KEY;
+  const static char *CENTERCUT_KEY;
+
 };
 
 #endif // ZFLYEMCONFIG_H
