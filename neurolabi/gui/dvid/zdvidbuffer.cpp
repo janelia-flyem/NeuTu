@@ -2,6 +2,7 @@
 #include <QDebug>
 #include "dvid/zdvidclient.h"
 #include "zswctree.h"
+#include "zstack.hxx"
 
 ZDvidBuffer::ZDvidBuffer(ZDvidClient *parent) :
   QObject(parent), m_dvidClient(parent)

@@ -130,6 +130,8 @@ public:
   void read(std::istream &stream);
   void write(std::ostream &stream) const;
 
+  friend std::ostream& operator<<(std::ostream& stream, const ZIntPoint &pt);
+
 public:
   int m_x;
   int m_y;

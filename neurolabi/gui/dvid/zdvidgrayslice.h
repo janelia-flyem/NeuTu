@@ -3,11 +3,12 @@
 
 #include "zstackobject.h"
 #include "zimage.h"
-#include "zdvidreader.h"
+//#include "zdvidreader.h"
 #include "zstackviewparam.h"
 #include "zarbsliceviewparam.h"
 #include "zpixmap.h"
 #include "zcontrastprotocol.h"
+#include "zuncopyable.h"
 
 //#include "zdvidtarget.h"
 
@@ -15,6 +16,7 @@ class ZRect2d;
 class ZDvidReader;
 class ZStack;
 class ZDvidDataSliceHelper;
+class ZDvidTarget;
 //class ZStackViewParam;
 
 class ZDvidGraySlice : public ZStackObject, ZUncopyable

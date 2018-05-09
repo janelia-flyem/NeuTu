@@ -9,9 +9,13 @@
 #include "neutube_def.h"
 
 class ZPoint;
+class ZAffineRect;
 
-namespace ZGeometry
+namespace zgeom
 {
+
+std::vector<ZAffineRect> Partition(const ZAffineRect &rect, int row, int col);
+
 /*!
  * \brief Transform a 3D field
  */
@@ -29,7 +33,7 @@ std::vector<ZPoint> LineShpereIntersection(
 std::vector<std::pair<int, int> > LineToPixel(int x0, int y0, int x1, int y1);
 
 template <typename T>
-void ZGeometry::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
+void zgeom::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
 {
   switch (axis) {
   case neutube::X_AXIS:
@@ -47,7 +51,7 @@ void ZGeometry::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
 }
 
 template <typename T>
-void ZGeometry::shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis)
+void zgeom::shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis)
 {
   switch (axis) {
   case neutube::X_AXIS:

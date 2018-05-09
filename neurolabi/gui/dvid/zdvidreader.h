@@ -12,8 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "zstack.hxx"
-#include "zdvidclient.h"
+//#include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zclosedcurve.h"
 #include "dvid/zdvidinfo.h"
@@ -44,6 +43,8 @@ class ZFlyEmToDoItem;
 class ZDvidRoi;
 class ZObject3dScanArray;
 class ZMesh;
+class ZStack;
+class ZAffineRect;
 
 struct archive;
 
@@ -318,6 +319,8 @@ public:
   ZArray *readLabels64Lowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
       int width, int height, int zoom) const;
+  ZArray *readLabels64Lowtis(
+      const ZAffineRect &ar, int zoom) const;
 
 
   //Read grayscale data
@@ -334,6 +337,9 @@ public:
       int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
       int width, int height, int zoom, int cx, int cy) const;
+
+  ZStack *readGrayScaleLowtis(
+      const ZAffineRect &ar, int zoom, int cx, int cy) const;
 
   ZStack *readGrayScaleLowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,

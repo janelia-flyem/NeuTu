@@ -17,9 +17,6 @@
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
 #include "zthreadfuturemap.h"
-//#include "zsharedpointer.h"
-//#include "flyem/zflyembodysplitter.h"
-//#include "flyem/zflyemtodoitem.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
@@ -28,7 +25,7 @@ class ZFlyEmBody3dDocKeyProcessor;
 class ZMesh;
 class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
-//class ZFlyEmToDoItem;
+class ZFlyEmToDoItem;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -279,10 +276,10 @@ public:
   void makeAction(ZActionFactory::EAction item) override;
 
 public:
-  void executeAddTodoCommand(
-      int x, int y, int z, bool checked,  ZFlyEmToDoItem::EToDoAction action,
-      uint64_t bodyId);
-  void executeRemoveTodoCommand();
+  virtual void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      uint64_t bodyId) override;
+  virtual void executeRemoveTodoCommand() override;
 
   //override to disable the swc commands
   virtual bool executeDeleteSwcNodeCommand() override {
@@ -347,7 +344,7 @@ public slots:
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
-  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
+  void setTodoItemAction(neutube::EToDoAction action);
 
   void recycleObject(ZStackObject *obj) override;
   void killObject(ZStackObject *obj) override;
@@ -379,6 +376,7 @@ public slots:
 
 signals:
   void bodyRemoved(uint64_t bodyId);
+  void bodyRecycled(uint64_t bodyId);
   void interactionStateChanged();
 
   //Signals for triggering external body control
@@ -473,7 +471,7 @@ private:
 signals:
   void todoVisibleChanged();
   void bodyMeshLoaded();
-  void bodyMeshesAdded();
+  void bodyMeshesAdded(int);
 
   void meshArchiveLoadingStarted();
   void meshArchiveLoadingProgress(float fraction);

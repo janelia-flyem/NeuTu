@@ -102,7 +102,7 @@ int ZObject3dScan::scanArray(
     return 0;
   }
 
-  ZGeometry::shiftSliceAxis(x, y, z, axis);
+  zgeom::shiftSliceAxis(x, y, z, axis);
 
   if (x < 0 || x >= dim) {
     return 0;
@@ -239,8 +239,8 @@ std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllObject(
   size_t strideY = width;
   size_t strideZ = width * height;
 
-  ZGeometry::shiftSliceAxis(sw, sh, sd, axis);
-  ZGeometry::shiftSliceAxis(strideX, strideY, strideZ, axis);
+  zgeom::shiftSliceAxis(sw, sh, sd, axis);
+  zgeom::shiftSliceAxis(strideX, strideY, strideZ, axis);
 
   const T *arrayOrigin = array;
 
@@ -286,8 +286,8 @@ std::map<uint64_t, ZObject3dScan *> *ZObject3dScan::extractAllForegroundObject(
   size_t strideY = width;
   size_t strideZ = width * height;
 
-  ZGeometry::shiftSliceAxis(sw, sh, sd, axis);
-  ZGeometry::shiftSliceAxis(strideX, strideY, strideZ, axis);
+  zgeom::shiftSliceAxis(sw, sh, sd, axis);
+  zgeom::shiftSliceAxis(strideX, strideY, strideZ, axis);
 
   const T *arrayOrigin = array;
 

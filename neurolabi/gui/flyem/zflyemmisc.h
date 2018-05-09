@@ -30,6 +30,7 @@ class ZObject3d;
 class ZMesh;
 class ZArbSliceViewParam;
 class ZDvidWriter;
+class ZAffineRect;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
@@ -109,6 +110,8 @@ bool IsTaskOpen(const QString &taskKey);
 
 ZDvidReader* GetTaskReader();
 ZDvidWriter* GetTaskWriter();
+
+ZStack* MakeColorSegmentation(const ZDvidReader &reader, const ZAffineRect &ar);
 
 QString GetNeuroglancerPath(
     const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,

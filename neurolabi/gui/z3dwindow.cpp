@@ -6,6 +6,14 @@
 #include <sstream>
 #include <limits>
 #include <QToolBar>
+#include <QDesktopWidget>
+#include <QMenuBar>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMimeData>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QThread>
 
 #include "zstack.hxx"
 #include "zstackdoc.h"
@@ -20,7 +28,7 @@
 #include "zpunctum.h"
 #include "zlocsegchain.h"
 #include "z3dcanvas.h"
-#include <QThread>
+
 #include "z3dgraphfilter.h"
 #include "zswcnetwork.h"
 #include "zcloudnetwork.h"
@@ -84,14 +92,8 @@
 #include "zstackobjectsourcefactory.h"
 #include "sandbox/zbrowseropener.h"
 #include "zwidgetmessage.h"
+#include "core/utilities.h"
 
-#include <QDesktopWidget>
-#include <QMenuBar>
-#include <QInputDialog>
-#include <QLineEdit>
-#include <QMimeData>
-#include <QMessageBox>
-#include <QInputDialog>
 
 /*
 class Sleeper : public QThread
@@ -1965,7 +1967,7 @@ void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId)
 }
 
 static void AddTodoMarker(
-    Z3DWindow *window, ZFlyEmToDoItem::EToDoAction action, bool checked)
+    Z3DWindow *window, neutube::EToDoAction action, bool checked)
 {
   QList<Swc_Tree_Node*> swcNodeList =
       window->getDocument()->getSelectedSwcNodeList();
@@ -1981,13 +1983,13 @@ static void AddTodoMarker(
       window->emitAddTodoMarker(pt, checked, bodyId);
     } else {
       switch (action) {
-      case ZFlyEmToDoItem::TO_DO:
+      case neutube::TO_DO:
         window->emitAddTodoMarker(pt, checked, bodyId);
         break;
-      case ZFlyEmToDoItem::TO_MERGE:
+      case neutube::TO_MERGE:
         window->emitAddToMergeMarker(pt, bodyId);
         break;
-      case ZFlyEmToDoItem::TO_SPLIT:
+      case neutube::TO_SPLIT:
         window->emitAddToSplitMarker(pt, bodyId);
         break;
       }
@@ -2007,29 +2009,29 @@ void Z3DWindow::updateTodoVisibility()
 
 void Z3DWindow::addTodoMarker()
 {
-  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, false);
+  AddTodoMarker(this, neutube::TO_DO, false);
 }
 
 void Z3DWindow::addToMergeMarker()
 {
-  AddTodoMarker(this, ZFlyEmToDoItem::TO_MERGE, false);
+  AddTodoMarker(this, neutube::TO_MERGE, false);
 }
 
 void Z3DWindow::addToSplitMarker()
 {
-  AddTodoMarker(this, ZFlyEmToDoItem::TO_SPLIT, false);
+  AddTodoMarker(this, neutube::TO_SPLIT, false);
 }
 
 void Z3DWindow::addDoneMarker()
 {
-  AddTodoMarker(this, ZFlyEmToDoItem::TO_DO, true);
+  AddTodoMarker(this, neutube::TO_DO, true);
 }
 
 void Z3DWindow::setTodoItemToSplit()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
+    doc->setTodoItemAction(neutube::TO_SPLIT);
   }
 }
 
@@ -2037,7 +2039,7 @@ void Z3DWindow::setTodoItemToNormal()
 {
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
-    doc->setTodoItemAction(ZFlyEmToDoItem::TO_DO);
+    doc->setTodoItemAction(neutube::TO_DO);
   }
 }
 
@@ -3876,11 +3878,11 @@ void Z3DWindow::shootTodo(int x, int y)
       if (action != NULL) {
         if (action->isChecked()) {
           doc->executeAddTodoCommand(
-                cx, cy, cz, false, ZFlyEmToDoItem::TO_SPLIT, bodyId);
+                cx, cy, cz, false, neutube::TO_SPLIT, bodyId);
         }
       } else {
         doc->executeAddTodoCommand(
-              cx, cy, cz, false, ZFlyEmToDoItem::TO_DO, bodyId);
+              cx, cy, cz, false, neutube::TO_DO, bodyId);
       }
   //          emitAddTodoMarker(cx, cy, cz, false, bodyId);
     }
@@ -4007,7 +4009,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
   std::vector<ZPoint> intersection;
   ZStackDoc *doc = getDocument();
 
-  misc::assign<uint64_t>(id, 0);
+  neutube::assign<uint64_t>(id, 0);
 
   if (doc != NULL) {
     if (hasSwc()) {
@@ -4018,7 +4020,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
       if (tn != NULL) {
         ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
         if (tree != NULL) {
-          misc::assign(id, tree->getLabel());
+          neutube::assign(id, tree->getLabel());
           glm::dvec3 v1,v2;
           int w = getCanvas()->width();
           int h = getCanvas()->height();
@@ -4026,7 +4028,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
           ZPoint lineStart(v1.x, v1.y, v1.z);
           glm::dvec3 norm = v2 - v1;
           ZPoint lineNorm(norm.x, norm.y, norm.z);
-          intersection = ZGeometry::LineShpereIntersection(
+          intersection = zgeom::LineShpereIntersection(
                 lineStart, lineNorm, SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
         }
       }
@@ -4037,7 +4039,7 @@ std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
       if (mesh != NULL) {
         intersection = shootMesh(mesh, x, y);
         if (!intersection.empty()) {
-          misc::assign(id, mesh->getLabel());
+          neutube::assign(id, mesh->getLabel());
         }
       }
     }

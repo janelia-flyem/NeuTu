@@ -38,6 +38,7 @@
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcfactory.h"
 #include "dvid/zdvidneurontracer.h"
+#include "zstack.hxx"
 //#include "mylib/utilities.h"
 
 //Incude your module headers here

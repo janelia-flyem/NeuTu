@@ -18,6 +18,9 @@ contains(CONFIG, neu3) | contains(CONFIG, flyem) {
   DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
 }
 
+CONFIG += object_parallel_to_source
+message("Objs dir: $${OBJECTS_DIR}")
+
 #DEFINES+=_CLI_VERSION
 win32 {
     QMAKE_CXXFLAGS += /bigobj #/GL # Enables whole program optimization.
@@ -283,7 +286,7 @@ include(command/command.pri)
 
 message("Config: $$CONFIG")
 
-message($$QMAKE_MACOSX_DEPLOYMENT_TARGET)
+message("Target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
 # Input
 RESOURCES = gui.qrc
@@ -863,7 +866,14 @@ HEADERS += mainwindow.h \
     flyem/zmainwindowcontroller.h \
     zstackdocnullmenufactory.h \
     mvc/zstackspaceconfig.h \
-    mvc/zviewspaceconfig.h
+    mvc/zviewspaceconfig.h \
+    mvc/zpositionmapper.h \
+    data3d/zstackobjecthelper.h \
+    data3d/utilities.h \
+    core/utilities.h \
+    core/qthelper.h \
+    flyem/zflyemtododelegate.h \
+    zmenuconfig.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1512,7 +1522,14 @@ SOURCES += main.cpp \
     flyem/zmainwindowcontroller.cpp \
     zstackdocnullmenufactory.cpp \
     mvc/zstackspaceconfig.cpp \
-    mvc/zviewspaceconfig.cpp
+    mvc/zviewspaceconfig.cpp \
+    mvc/zpositionmapper.cpp \
+    data3d/zstackobjecthelper.cpp \
+    data3d/utilities.cpp \
+    core/utilities.cpp \
+    core/qthelper.cpp \
+    flyem/zflyemtododelegate.cpp \
+    zmenuconfig.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

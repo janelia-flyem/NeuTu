@@ -8,6 +8,7 @@
 #include <QUrl>
 
 #include "neutubeconfig.h"
+#include "zstack.hxx"
 #include "flyem/zflyemneuron.h"
 #include "zclosedcurve.h"
 #include "zswctree.h"
@@ -1236,9 +1237,8 @@ std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
   uint64_t remainderId = oldLabel;
 
   if (!response.empty()) {
-#ifdef _DEBUG_
     std::cout << response << std::endl;
-#endif
+
     ZJsonObject obj;
     obj.decodeString(response.c_str());
     if (obj.hasKey("label")) {

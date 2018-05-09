@@ -13,6 +13,7 @@
 #include "zsparseobject.h"
 #include "zstackdochelper.h"
 #include "zstackdoc.h"
+#include "misc/miscutility.h"
 
 const size_t Z3DVolumeFilter::m_maxNumOfFullResolutionVolumeSlice = 6;
 

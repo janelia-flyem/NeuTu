@@ -107,7 +107,7 @@ public:
   };
 
   enum EHitProtocal {
-    HIT_NONE, HIT_WIDGET_POS, HIT_STACK_POS
+    HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
   };
 
   /*!
@@ -170,8 +170,8 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
-  virtual bool hit(
-      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutube::EAxis axis);
+  virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
+                   neutube::EAxis axis);
   virtual bool hit(double x, double y, neutube::EAxis axis);
   virtual bool hitWidgetPos(const ZIntPoint &widgetPos, neutube::EAxis axis);
 

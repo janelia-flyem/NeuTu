@@ -515,7 +515,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   int sw = width;
   int sh = height;
   int sd = depth;
-  ZGeometry::shiftSliceAxis(sw, sh, sd, m_sliceAxis);
+  zgeom::shiftSliceAxis(sw, sh, sd, m_sliceAxis);
 
   uint8_t *array = stack->array;
   uint8_t *arrayOrigin = array;
@@ -525,7 +525,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   size_t yStride = width;
   size_t zStride = area;
 
-  ZGeometry::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
+  zgeom::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
 
   switch (m_sliceAxis) {
   case neutube::Z_AXIS: //XY plane
@@ -1733,7 +1733,7 @@ size_t ZObject3dScan::getSegmentNumber() const
 
 void ZObject3dScan::translate(int dx, int dy, int dz)
 {
-  ZGeometry::shiftSliceAxis(dx, dy, dz, m_sliceAxis);
+  zgeom::shiftSliceAxis(dx, dy, dz, m_sliceAxis);
 
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     m_stripeArray[i].translate(dx, dy, dz);
@@ -2478,7 +2478,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   int tx = iround(x);
   int ty = iround(y);
   int tz = iround(z);
-  ZGeometry::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
+  zgeom::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
   tx /= m_dsIntv.getX() + 1;
   ty /= m_dsIntv.getY() + 1;
   tz /= m_dsIntv.getZ() + 1;
@@ -3256,7 +3256,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
 //    addStripeFast(coord[2], coord[1]);
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
-    ZGeometry::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
+    zgeom::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
 
     if (getSliceAxis() == neutube::X_AXIS) {
       for (int i = 0; i < runLength; ++i) {
@@ -3581,7 +3581,7 @@ void ZObject3dScan::addForeground(ZStack *stack)
     int z = seg.getZ();
     int y = seg.getY();
     for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
-      ZGeometry::shiftSliceAxis(x, y, z, m_sliceAxis);
+      zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
       if (stack->getIntValue(x, y, z) > 0) {
         stack->addIntValue(x, y, z, 0, 1);
       }
@@ -4118,7 +4118,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
     cov[2] = (xyCorr - xMean * yMean) * factor;
   }
 
-  ZGeometry::shiftSliceAxis(cov[0], cov[1], cov[2], m_sliceAxis);
+  zgeom::shiftSliceAxis(cov[0], cov[1], cov[2], m_sliceAxis);
 
   return cov;
 }
@@ -4143,7 +4143,7 @@ bool ZObject3dScan::contains(const ZIntPoint &pt)
 
 bool ZObject3dScan::contains(int x, int y, int z)
 {
-  ZGeometry::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
 
   canonize();
 

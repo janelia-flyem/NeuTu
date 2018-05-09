@@ -1,6 +1,9 @@
 #ifndef ZSTACKGRADIENT_H
 #define ZSTACKGRADIENT_H
-#include "zstack.hxx"
+
+class ZStack;
+
+#include "tz_stdint.h"
 
 /* GradientStrategy
  * abstract base class of computing gradient

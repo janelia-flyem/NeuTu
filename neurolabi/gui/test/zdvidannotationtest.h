@@ -62,16 +62,16 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
 //  item.toJsonObject().print();
 
   item.setChecked(true);
-  item.setAction(ZFlyEmToDoItem::TO_MERGE);
+  item.setAction(neutube::TO_MERGE);
 //  item.toJsonObject().print();
-  ASSERT_EQ(ZFlyEmToDoItem::TO_MERGE, item.getAction());
+  ASSERT_EQ(neutube::TO_MERGE, item.getAction());
 
-  item.setAction(ZFlyEmToDoItem::TO_SPLIT);
-  ASSERT_EQ(ZFlyEmToDoItem::TO_SPLIT, item.getAction());
+  item.setAction(neutube::TO_SPLIT);
+  ASSERT_EQ(neutube::TO_SPLIT, item.getAction());
 
-  item.setAction(ZFlyEmToDoItem::TO_DO);
+  item.setAction(neutube::TO_DO);
 //  item.toJsonObject().print();
-  ASSERT_EQ(ZFlyEmToDoItem::TO_DO, item.getAction());
+  ASSERT_EQ(neutube::TO_DO, item.getAction());
 
   std::string splitTag = std::string(ZFlyEmToDoItem::ACTION_KEY) + ":"
       + ZFlyEmToDoItem::ACTION_SPLIT_TAG;
@@ -83,7 +83,7 @@ TEST(ZDvidAnnotation, ZFlyEmToDoItem)
   item.removeActionTag();
   ASSERT_FALSE(item.hasTag(splitTag));
 
-  item.setAction(ZFlyEmToDoItem::TO_SPLIT);
+  item.setAction(neutube::TO_SPLIT);
   ASSERT_TRUE(item.hasTag(splitTag));
 
   item.setChecked(true);

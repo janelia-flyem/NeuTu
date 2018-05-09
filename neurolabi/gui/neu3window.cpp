@@ -50,6 +50,7 @@
 #include "zwidgetmessage.h"
 #include "flyem/zproofreadwindow.h"
 #include "flyem/zflyemproofmvccontroller.h"
+#include "zstackobjectaccessor.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -140,7 +141,7 @@ void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
     m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
-    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
+//    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
 
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
@@ -155,6 +156,7 @@ void Neu3Window::initGrayscaleWidget()
     if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
+    ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
   }
 }
 
@@ -467,6 +469,10 @@ void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
     ZStackDocAccessor::AddObjectUnique(getBodyDocument(), graph);
 
     m_browsePos = param.getCenter().toPoint();
+
+#ifdef _DEBUG_
+    std::cout << "Browse pos: " << m_browsePos.toString() << std::endl;
+#endif
   }
 }
 
@@ -604,41 +610,6 @@ void Neu3Window::browse(double x, double y, double z)
   } else {
     updateSliceBrowser();
   }
-
-#if 0
-#if 1
-//  initGrayscaleWidget();
-  createGrayscaleWidget();
-  m_grayscaleWidget->show();
-  m_grayscaleWidget->resetViewParam(getSliceViewParam(x, y, z));
-  m_grayscaleWidget->raise();
-#else
-  glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
-  ZWeightedPoint rotation;
-  rotation.set(r.x, r.y, r.z);
-  rotation.setWeight(r.w);
-
-#if defined(_USE_WEBENGINE_)
-  initWebView();
-  QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
-             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
-             rotation, m_bodyListWidget->getModel()->getBodySet()));
-
-
-  m_webView->setUrl(url);
-  m_webView->show();
-  m_webView->raise();
-#else
-  ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
-
-  bo->open(ZFlyEmMisc::GetNeuroglancerPath(
-             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
-             rotation, m_bodyListWidget->getModel()->getBodySet()));
-#endif
-#endif
-
-  m_browsePos.set(x, y, z);
-#endif
 }
 
 void Neu3Window::startBrowser(EBrowseMode mode)
@@ -915,15 +886,21 @@ void Neu3Window::zoomToBodyMesh()
 void Neu3Window::processSwcChangeFrom3D(
     QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
 {
-  foreach (ZSwcTree *tree, selected) {
-    if (tree->getLabel() > 0) {
-      emit bodySelected(tree->getLabel());
+  {
+    QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(selected);
+    foreach (uint64_t label, labelSet) {
+      if (label > 0) {
+        emit bodySelected(label);
+      }
     }
   }
 
-  foreach (ZSwcTree *tree, deselected) {
-    if (tree->getLabel() > 0) {
-      emit bodyDeselected(tree->getLabel());
+  {
+    QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(deselected);
+    foreach (uint64_t label, labelSet) {
+      if (label > 0) {
+        emit bodySelected(label);
+      }
     }
   }
 }
