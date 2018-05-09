@@ -6,7 +6,7 @@
 #include "zstackdoc.h"
 #include "zpunctum.h"
 #include "zobjsitem.h"
-#include "misc/miscutility.h"
+#include "core/utilities.h"
 #include "neutubeconfig.h"
 
 namespace {
@@ -128,7 +128,7 @@ void ZPunctaObjsModel::setupModelData(ZObjsItem *parent)
   m_punctaSeparatedByFile.clear();
   int sourceParentRow = 0;
   QList<ZPunctum*> punctaList = m_doc->getPunctumList();
-  int numDigit = numDigits(punctaList.size()+1);
+  int numDigit = neutube::numDigits(punctaList.size()+1);
   for (int i=0; i<punctaList.size(); i++) {
     data.clear();
     ZPunctum *p = punctaList.at(i);

@@ -41,11 +41,11 @@ bool TaskProtocolTask::completed() const
     return m_completed;
 }
 
-QSet<uint64_t> TaskProtocolTask::visibleBodies() {
+const QSet<uint64_t> & TaskProtocolTask::visibleBodies() {
     return m_visibleBodies;
 }
 
-QSet<uint64_t> TaskProtocolTask::selectedBodies() {
+const QSet<uint64_t> & TaskProtocolTask::selectedBodies() {
     return m_selectedBodies;
 }
 

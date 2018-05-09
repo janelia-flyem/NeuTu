@@ -35,6 +35,7 @@
 #include "flyem/zflyembodysplitter.h"
 #include "zactionlibrary.h"
 #include "dvid/zdvidgrayslice.h"
+#include "flyem/zflyemtodoitem.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
@@ -576,7 +577,7 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
   for (QList<ZFlyEmToDoItem*>::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZFlyEmToDoItem *item = *iter;
-    if (item->getAction() == ZFlyEmToDoItem::TO_DO) {
+    if (item->getAction() == neutube::TO_DO) {
       item->setVisible(visible);
     }
   }
@@ -584,7 +585,7 @@ void ZFlyEmBody3dDoc::setNormalTodoVisible(bool visible)
   emit todoVisibleChanged();
 }
 
-void ZFlyEmBody3dDoc::setTodoItemAction(ZFlyEmToDoItem::EToDoAction action)
+void ZFlyEmBody3dDoc::setTodoItemAction(neutube::EToDoAction action)
 {
   const TStackObjectSet& objSet = getObjectGroup().getSelectedSet(
         ZStackObject::TYPE_FLYEM_TODO_ITEM);
@@ -1402,7 +1403,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     // can be used by code that needs to know the IDs of the loaded meshes (instead of
     // the ID of the archive).
 
-    emit bodyMeshesAdded();
+    emit bodyMeshesAdded(meshes.size());
   }
 }
 
@@ -1754,7 +1755,10 @@ bool ZFlyEmBody3dDoc::addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId)
         emit messageGenerated(ZWidgetMessage(
                                QString("Supervoxel ID: %1").arg(svId)));
       }
-      updateTodo(bodyId);
+
+      if (m_bodySet.contains(bodyId)) {
+        updateTodo(bodyId);
+      }
       succ = true;
     }
   }
@@ -1828,7 +1832,7 @@ void ZFlyEmBody3dDoc::addTodo(int x, int y, int z, bool checked, uint64_t bodyId
 void ZFlyEmBody3dDoc::addTosplit(int x, int y, int z, bool checked, uint64_t bodyId)
 {
   ZFlyEmToDoItem item = makeTodoItem(x, y, z, checked, bodyId);
-  item.setAction(ZFlyEmToDoItem::TO_SPLIT);
+  item.setAction(neutube::TO_SPLIT);
   addTodo(item, bodyId);
 }
 
@@ -1846,7 +1850,7 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
   QString threadId = QString("updateBody(%1)").arg(bodyId);
   if (!m_futureMap.isAlive(threadId)) {
 
-    // The findSameClass() function has performance that iis quadratic in the number of meshes,
+    // The findSameClass() function has performance that is quadratic in the number of meshes,
     // and is unnecessary for meshes from a tar archive.
 
     if (!fromTar(bodyId)) {
@@ -1876,16 +1880,23 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
 }
 
 void ZFlyEmBody3dDoc::executeAddTodoCommand(
-    int x, int y, int z, bool checked, ZFlyEmToDoItem::EToDoAction action,
+    int x, int y, int z, bool checked, neutube::EToDoAction action,
     uint64_t bodyId)
 {
   ZFlyEmBody3dDocCommand::AddTodo *command =
       new ZFlyEmBody3dDocCommand::AddTodo(this);
-  command->setTodoItem(x, y, z, checked, action, bodyId);
-  if (command->hasValidItem()) {
-    pushUndoCommand(command);
-  } else {
-    delete command;
+
+  if (bodyId == 0) {
+    bodyId = getMainDvidReader().readBodyIdAt(x, y, z);
+  }
+
+  if (m_bodySet.contains(bodyId)) {
+    command->setTodoItem(x, y, z, checked, action, bodyId);
+    if (command->hasValidItem()) {
+      pushUndoCommand(command);
+    } else {
+      delete command;
+    }
   }
 }
 
@@ -1914,6 +1925,7 @@ void ZFlyEmBody3dDoc::recycleObject(ZStackObject *obj)
 {
   if (removeObject(obj, false)) {
     dumpGarbage(obj, true);
+    emit bodyRecycled(obj->getLabel());
   }
 }
 

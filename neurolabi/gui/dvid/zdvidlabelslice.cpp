@@ -22,6 +22,7 @@
 #include "zarbsliceviewparam.h"
 #include "zstackviewparam.h"
 #include "zdviddataslicehelper.h"
+#include "misc/miscutility.h"
 
 ZDvidLabelSlice::ZDvidLabelSlice()
 {
@@ -171,79 +172,6 @@ void ZDvidLabelSlice::display(
 //        painter.restore();
       }
     }
-#if 0
-    if (m_currentViewParam.getViewPort().width() > m_paintBuffer->width() ||
-        m_currentViewParam.getViewPort().height() > m_paintBuffer->height()) {
-      for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
-           iter != m_objArray.end(); ++iter) {
-        ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
-
-        if (m_selectedOriginal.count(obj.getLabel()) > 0) {
-          obj.setSelected(true);
-        } else {
-          obj.setSelected(false);
-        }
-
-        obj.display(painter, slice, option, sliceAxis);
-      }
-    } else {
-      m_paintBuffer->clear();
-      m_paintBuffer->setOffset(-m_currentViewParam.getViewPort().x(),
-                               -m_currentViewParam.getViewPort().y());
-
-#if defined(ZDVIDLABELSLICE_MT)
-      QList<ZDvidLabelSlicePaintTask> taskList;
-      const int taskCount = 4;
-      for (int i = 0; i < taskCount; ++i) {
-        taskList.append(ZDvidLabelSlicePaintTask(
-                          const_cast<ZDvidLabelSlice*>(this)));
-      }
-#endif
-
-      int count = 0;
-      for (ZObject3dScanArray::const_iterator iter = m_objArray.begin();
-           iter != m_objArray.end(); ++iter, ++count) {
-        ZObject3dScan &obj = const_cast<ZObject3dScan&>(*iter);
-#if defined(ZDVIDLABELSLICE_MT)
-        taskList[count % taskCount].addObject(&obj);
-#else
-        //if (m_selectedSet.count(obj.getLabel()) > 0) {
-        if (m_selectedOriginal.count(obj.getLabel()) > 0) {
-          obj.setSelected(true);
-        } else {
-          obj.setSelected(false);
-        }
-
-        //      obj.display(painter, slice, option);
-
-        if (!obj.isSelected()) {
-          m_paintBuffer->setData(obj);
-        } else {
-          m_paintBuffer->setData(obj, QColor(255, 255, 255, 164));
-        }
-#endif
-      }
-
-#if defined(ZDVIDLABELSLICE_MT)
-      QtConcurrent::blockingMap(taskList, &ZDvidLabelSlicePaintTask::ExecuteTask);
-#endif
-
-      //    painter.save();
-      //    painter.setOpacity(0.5);
-
-      painter.drawImage(m_currentViewParam.getViewPort().x(),
-                        m_currentViewParam.getViewPort().y(),
-                        *m_paintBuffer);
-
-    }
-
-    ZOUT(LTRACE(), 5) << "Body buffer painting time: " << timer.elapsed();
-//    painter.restore();
-
-#ifdef _DEBUG_2
-//      m_paintBuffer->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
-#endif
-#endif
   }
 }
 
@@ -411,8 +339,8 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z)
       int y0 = box.getFirstCorner().getY() / zoomRatio;
       int z0 = box.getFirstCorner().getZ();
 
-      ZGeometry::shiftSliceAxisInverse(x0, y0, z0, getSliceAxis());
-      ZGeometry::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
+      zgeom::shiftSliceAxisInverse(x0, y0, z0, getSliceAxis());
+      zgeom::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
 
       m_labelArray = getHelper()->getDvidReader().readLabels64Raw(
             x0, y0, z0, width, height, depth, zoom);
@@ -467,7 +395,7 @@ void ZDvidLabelSlice::updatePaintBuffer()
     int height = m_labelArray->getDim(1);
     if (getSliceAxis() == neutube::X_AXIS || getSliceAxis() == neutube::Y_AXIS) {
       int depth = m_labelArray->getDim(2);
-      ZGeometry::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
+      zgeom::shiftSliceAxisInverse(width, height, depth, getSliceAxis());
     }
 
 #ifdef _DEBUG_
@@ -1017,13 +945,24 @@ bool ZDvidLabelSlice::hit(double x, double y, double z)
     int ny = iround(y);
     int nz = iround(z);
 
-    ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
+//    ZGeometry::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
 
-    if (getHelper()->getViewPort().contains(nx, ny) &&
-        nz == getHelper()->getZ()) {
+//    if (getHelper()->getViewPort().contains(nx, ny) &&
+//        nz == getHelper()->getZ()) {
 //      ZDvidReader reader;
+    bool withinRange = true;
+    if (getSliceAxis() != neutube::A_AXIS) {
+      zgeom::shiftSliceAxisInverse(nx, ny, nz, m_sliceAxis);
+      if (!getHelper()->getViewPort().contains(nx, ny) ||
+              nz != getHelper()->getZ()) {
+        withinRange = false;
+      }
+      zgeom::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
+    }
+
+    if (withinRange) {
       if (getHelper()->getDvidReader().isReady()) {
-        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
+//        ZGeometry::shiftSliceAxis(nx, ny, nz, m_sliceAxis);
         m_hitLabel = getMappedLabel(
               getHelper()->getDvidReader().readBodyIdAt(nx, ny, nz),
               neutube::BODY_LABEL_ORIGINAL);

@@ -40,7 +40,6 @@
 #include "zcubearray.h"
 #include "zstackobjectgroup.h"
 #include "tz_error.h"
-#include "misc/miscutility.h"
 #include "zrect2d.h"
 #include "zobjectcolorscheme.h"
 #include "zthreadfuturemap.h"
@@ -48,6 +47,8 @@
 #include "zactionfactory.h"
 #include "zmesh.h"
 #include "zstackobjectinfo.h"
+#include "zresolution.h"
+#include "core/utilities.h"
 
 class ZStackFrame;
 class ZLocalNeuroseg;
@@ -905,6 +906,8 @@ public:
 
 //  void notifyObjectModified(bool sync = true);
   void notifyObjectModified(ZStackObject::EType type);
+  void notifyObjectModified(const ZStackObjectInfoSet &infoSet);
+  void notifyObjectModified(const ZStackObjectInfo &info);
 
   void bufferObjectModified(ZStackObject::EType type, bool sync = true);
   void bufferObjectModified(ZStackObject::ETarget target, bool sync = true);
@@ -1184,6 +1187,11 @@ public slots: //undoable commands
   virtual bool executeChangeSwcNodeType(
       QList<Swc_Tree_Node*> &nodeList, int type);
 
+  virtual void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      uint64_t id);
+  virtual void executeRemoveTodoCommand();
+
   void advanceProgressSlot(double dp);
   void startProgressSlot();
   void endProgressSlot();
@@ -1236,7 +1244,7 @@ public slots:
   void notifyZoomingTo(double x, double y, double z);
   void notifyZoomingTo(const ZIntPoint &pt);
 
-  virtual void processDataBuffer();
+  void processDataBuffer();
   virtual void recycleObject(ZStackObject *obj);
   virtual void killObject(ZStackObject *obj);
 //  void processRectRoiUpdateSlot();
@@ -1250,6 +1258,7 @@ signals:
   void stackDelivered(Stack *stack, bool beOwner);
   void frameDelivered(ZStackFrame *frame);
   void stackModified(bool rangeChanged);
+  void stackRangeChanged();
   void sparseStackModified();
   void labelFieldModified();
   void segmentationUpdated();
@@ -1513,7 +1522,7 @@ void ZStackDoc::notifySelectionAdded(const std::set<T*> &oldSelected,
                                      const std::set<T*> &newSelected)
 {
   QList<T*> selected;
-  std::set<T*> addedSet = misc::setdiff(newSelected, oldSelected);
+  std::set<T*> addedSet = neutube::setdiff(newSelected, oldSelected);
   for (typename std::set<T*>::const_iterator iter = addedSet.begin();
        iter != addedSet.end(); ++iter) {
     selected.append(const_cast<T*>(*iter));
@@ -1537,7 +1546,7 @@ void ZStackDoc::notifySelectionRemoved(const std::set<T*> &oldSelected,
                                        const std::set<T*> &newSelected)
 {
   QList<T*> deselected;
-  std::set<T*> removedSet = misc::setdiff(oldSelected, newSelected);
+  std::set<T*> removedSet = neutube::setdiff(oldSelected, newSelected);
   for (typename std::set<T*>::const_iterator iter = removedSet.begin();
        iter != removedSet.end(); ++iter) {
     deselected.append(const_cast<T*>(*iter));

@@ -5,6 +5,7 @@
 #include "zintpoint.h"
 #include "zflyemproofpresenter.h"
 #include "zstackdocnullmenufactory.h"
+#include "flyem/zflyemtododelegate.h"
 
 ZFlyEmProofMvcController::ZFlyEmProofMvcController()
 {
@@ -63,5 +64,14 @@ void ZFlyEmProofMvcController::DisableContextMenu(ZFlyEmProofMvc *mvc)
 {
   mvc->getPresenter()->setContextMenuFactory(
         std::unique_ptr<ZStackDocMenuFactory>(new ZStackDocNullMenuFactory));
+}
+
+void ZFlyEmProofMvcController::SetTodoDelegate(
+    ZFlyEmProofMvc *mvc, ZStackDoc *todoDoc)
+{
+  if (todoDoc != NULL) {
+    mvc->getCompletePresenter()->setTodoDelegate(
+          std::unique_ptr<ZFlyEmToDoDelegate>(new ZFlyEmToDoDelegate(todoDoc)));
+  }
 }
 

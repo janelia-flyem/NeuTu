@@ -22,6 +22,7 @@
 #include "c_stack.h"
 #include "zintcuboid.h"
 #include "zswctree.h"
+#include "zstackarray.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -680,17 +681,38 @@ ZStack* ZStackFactory::MakeRgbStack(
   return output;
 }
 
+ZStack* ZStackFactory::CompositeForeground(const ZStackArray &stackArray)
+{
+  ZStack *stack = NULL;
+
+  if (!stackArray.empty()) {
+    const ZStackPtr &firstStack = stackArray.front();
+
+    ZIntCuboid boundBox = stackArray.getBoundBox();
+    stack = ZStackFactory::MakeZeroStack(
+          firstStack->kind(), boundBox, firstStack->channelNumber());
+
+    for (const ZStackPtr &substack : stackArray) {
+      substack->paste(stack, 0);
+    }
+  }
+
+  return stack;
+}
+
 ZStack* ZStackFactory::CompositeForeground(
     const ZStack &stack1, const ZStack &stack2)
 {
-  if (stack1.kind() != stack2.kind()) {
+  if (stack1.kind() != stack2.kind() ||
+      stack1.channelNumber() != stack2.channelNumber()) {
     return NULL;
   }
 
   ZIntCuboid boundBox = stack1.getBoundBox();
   boundBox.join(stack2.getBoundBox());
 
-  ZStack *stack = ZStackFactory::MakeZeroStack(stack1.kind(), boundBox, 1);
+  ZStack *stack = ZStackFactory::MakeZeroStack(
+        stack1.kind(), boundBox, stack1.channelNumber());
   stack1.paste(stack, 0);
   stack2.paste(stack, 0);
 

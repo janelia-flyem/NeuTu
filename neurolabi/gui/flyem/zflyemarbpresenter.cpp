@@ -9,6 +9,7 @@ ZFlyEmArbPresenter::ZFlyEmArbPresenter(QWidget *parent) :
 void ZFlyEmArbPresenter::setViewParam(const ZArbSliceViewParam &param)
 {
   m_viewParam = param;
+  m_mouseEventProcessor.setArbSlice(m_viewParam.getAffinePlane());
 }
 
 ZFlyEmArbPresenter* ZFlyEmArbPresenter::Make(QWidget *parent)

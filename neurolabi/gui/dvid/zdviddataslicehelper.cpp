@@ -18,6 +18,11 @@ void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
   m_reader.open(target);
 }
 
+void ZDvidDataSliceHelper::setMaxZoom(int maxZoom)
+{
+  m_maxZoom = maxZoom;
+}
+
 int ZDvidDataSliceHelper::getMaxZoom() const
 {
   switch (m_dataRole) {
@@ -26,6 +31,8 @@ int ZDvidDataSliceHelper::getMaxZoom() const
   case ZDvidData::ROLE_LABEL_BLOCK:
   case ZDvidData::ROLE_BODY_LABEL:
     return getDvidTarget().getMaxLabelZoom();
+  case ZDvidData::ROLE_MULTISCALE_2D:
+    return m_maxZoom;
   default:
     return 0;
   }

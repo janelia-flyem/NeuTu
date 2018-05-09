@@ -299,7 +299,7 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
-  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
+  void setTodoItemAction(neutube::EToDoAction action);
   void setTodoItemToNormal();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
@@ -411,6 +411,12 @@ public:
 
   ZJsonArray getMergeOperation() const;
 
+public:
+  virtual void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      uint64_t bodyId);
+  virtual void executeRemoveTodoCommand();
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -454,7 +460,7 @@ public slots: //Commands
   void executeAddTodoItemCommand(int x, int y, int z, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(
-      int x, int y, int z, ZFlyEmToDoItem::EToDoAction action, uint64_t bodyId = 0);
+      int x, int y, int z, neutube::EToDoAction action, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
   void executeAddToMergeItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);

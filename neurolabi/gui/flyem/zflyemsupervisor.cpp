@@ -1,6 +1,7 @@
 #include "zflyemsupervisor.h"
 #include "neutube.h"
 #include "neutubeconfig.h"
+#include <QsLog.h>
 #include "dvid/libdvidheader.h"
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
