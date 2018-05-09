@@ -8,6 +8,7 @@
 #include <QUndoStack>
 #include <QMutexLocker>
 
+#include "zjsondef.h"
 #include "zstackframe.h"
 #include "z3dwindow.h"
 #include "zstackdoclabelstackfactory.h"
@@ -2057,7 +2058,7 @@ std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
 
         location = writer->writeServiceTask("split", task);
         ZJsonObject taskJson;
-        taskJson.setEntry(neutube::Json::REF_KEY, location);
+        taskJson.setEntry(neutube::json::REF_KEY, location);
   //      QUrl url(bodyUrl.c_str());
         ZDvidUrl dvidUrl(getDvidTarget());
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();

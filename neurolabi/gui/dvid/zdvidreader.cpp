@@ -15,6 +15,7 @@
 
 #include "QsLog/QsLog.h"
 
+#include "zjsondef.h"
 #include "zstack.hxx"
 #include "zdvidbuffer.h"
 #include "zstackfactory.h"
@@ -2949,7 +2950,7 @@ ZIntCuboid ZDvidReader::GetStackBoxAtCenter(
   return box;
 }
 
-lowtis::ImageService* ZDvidReader::getLowtisServiceLabel() const
+lowtis::ImageService* ZDvidReader::getLowtisServiceLabel(int cx, int cy) const
 {
   if (!getDvidTarget().hasSegmentation()) {
     return NULL;
@@ -2964,6 +2965,7 @@ lowtis::ImageService* ZDvidReader::getLowtisServiceLabel() const
 //      m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
 //      m_lowtisConfig.datatypename = getDvidTarget().getSegmentationName();
 //      m_lowtisConfig.enableprefetch = false;
+      m_lowtisConfig.centercut = std::tuple<int, int>(cx, cy);
 
       m_lowtisService = ZSharedPointer<lowtis::ImageService>(
             new lowtis::ImageService(m_lowtisConfig));
@@ -3108,25 +3110,27 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 
 ZArray* ZDvidReader::readLabels64Lowtis(
     const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
-    int width, int height, int zoom) const
+    int width, int height, int zoom, int cx, int cy) const
 {
   return readLabels64Lowtis(center.getX(), center.getY(), center.getZ(),
                             v1.x(), v1.y(), v1.z(), v2.x(), v2.y(), v2.z(),
-                            width, height, zoom);
+                            width, height, zoom, cx, cy);
 }
 
-ZArray* ZDvidReader::readLabels64Lowtis(const ZAffineRect &ar, int zoom) const
+ZArray* ZDvidReader::readLabels64Lowtis(
+    const ZAffineRect &ar, int zoom, int cx, int cy) const
 {
   return readLabels64Lowtis(
         ar.getCenter().toIntPoint(), ar.getV1(), ar.getV2(),
-        ar.getWidth(), ar.getHeight(), zoom);
+        ar.getWidth(), ar.getHeight(), zoom, cx, cy);
 }
 
 ZArray* ZDvidReader::readLabels64Lowtis(
     int x0, int y0, int z0, double vx1, double vy1, double vz1,
-    double vx2, double vy2, double vz2, int width, int height, int zoom) const
+    double vx2, double vy2, double vz2, int width, int height, int zoom,
+    int cx, int cy) const
 {
-  lowtis::ImageService *service = getLowtisServiceLabel();
+  lowtis::ImageService *service = getLowtisServiceLabel(cx, cy);
   if (service == NULL) {
     return NULL;
   }
@@ -3183,10 +3187,10 @@ ZArray* ZDvidReader::readLabels64Lowtis(
   return array;
 }
 
-ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
-    int width, int height, int zoom) const
+ZArray* ZDvidReader::readLabels64Lowtis(
+    int x0, int y0, int z0, int width, int height, int zoom, int cx, int cy) const
 {
-  lowtis::ImageService *service = getLowtisServiceLabel();
+  lowtis::ImageService *service = getLowtisServiceLabel(cx, cy);
   if (service == NULL) {
     return NULL;
   }
@@ -3208,28 +3212,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
            << x0 << y0 << z0;
   qDebug() << "Using lowtis: (" << zoom << ")" << width << "x" << height;
 
-#if 0
-  if (m_lowtisService.get() == NULL) {
-    try {
-//      lowtis::DVIDLabelblkConfig config;
-      m_lowtisConfig.username = neutube::GetCurrentUserName();
-      m_lowtisConfig.dvid_server = getDvidTarget().getAddressWithPort();
-      m_lowtisConfig.dvid_uuid = getDvidTarget().getUuid();
-      m_lowtisConfig.datatypename = getDvidTarget().getSegmentationName();
-      m_lowtisConfig.enableprefetch = false;
 
-      m_lowtisService = ZSharedPointer<lowtis::ImageService>(
-            new lowtis::ImageService(m_lowtisConfig));
-    } catch (libdvid::DVIDException &e) {
-      m_lowtisService.reset();
-
-      LERROR() << e.what();
-      setStatusCode(e.getStatus());
-    }
-
-//    m_lowtisService = ZDvid::MakeLowtisServicePtr(getDvidTarget());
-  }
-#endif
   QElapsedTimer timer;
   timer.start();
   if (service != NULL) {
@@ -3269,6 +3252,12 @@ ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
   }
 
   return array;
+}
+
+ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
+    int width, int height, int zoom) const
+{
+  return readLabels64Lowtis(x0, y0, z0, width, height, zoom, 256, 256);
 }
 #endif
 
@@ -4597,8 +4586,8 @@ std::map<std::string, ZJsonObject> ZDvidReader::readSplitTaskMap() const
   QStringList keyList = readKeys(dataName.c_str(), "task__0", "task__z");
   foreach (const QString &key, keyList) {
     ZJsonObject obj = readJsonObjectFromKey(dataName.c_str(), key);
-    if (obj.hasKey(neutube::Json::REF_KEY)) {
-      obj = readJsonObject(ZJsonParser::stringValue(obj[neutube::Json::REF_KEY]));
+    if (obj.hasKey(neutube::json::REF_KEY)) {
+      obj = readJsonObject(ZJsonParser::stringValue(obj[neutube::json::REF_KEY]));
     }
     if (!obj.isEmpty()) {
       taskMap[key.toStdString()] = obj;
@@ -4613,9 +4602,9 @@ QList<ZStackObject*> ZDvidReader::readSeedFromSplitTask(
 {
   ZJsonObject taskJson = readJsonObjectFromKey(
         ZDvidData::GetTaskName("split").c_str(), taskKey.c_str());
-  if (taskJson.hasKey(neutube::Json::REF_KEY)) {
+  if (taskJson.hasKey(neutube::json::REF_KEY)) {
     taskJson = readJsonObject(
-          ZJsonParser::stringValue(taskJson[neutube::Json::REF_KEY]));
+          ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
   }
   ZJsonArray seedArrayJson(taskJson.value("seeds"));
   QList<ZStackObject*> seedList;

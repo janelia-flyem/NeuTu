@@ -2746,9 +2746,10 @@ void ZStackPresenter::copyCurrentPosition()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint pt = event.getStackPosition();
+  ZPoint pt = event.getDataPosition();
 
-  ZGlobal::GetInstance().setStackPosition(pt.x(), pt.y(), pt.z());
+  ZGlobal::GetInstance().setDataPosition(pt.x(), pt.y(), pt.z());
+  ZGlobal::CopyToClipboard(pt.toIntPoint().toString());
 
   buddyDocument()->notify(
         QString("%1 copied").arg(pt.toIntPoint().toString().c_str()));

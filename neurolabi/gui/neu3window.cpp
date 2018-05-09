@@ -280,6 +280,7 @@ void Neu3Window::setOption()
 {
   m_flyemSettingDlg->loadSetting();
   m_flyemSettingDlg->exec();
+  GET_FLYEM_CONFIG.saveSettings();
 }
 
 void Neu3Window::createDockWidget()

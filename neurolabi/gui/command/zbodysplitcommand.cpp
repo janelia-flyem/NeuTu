@@ -3,6 +3,7 @@
 #include <QUrl>
 #include <QDateTime>
 
+#include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
@@ -40,10 +41,10 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
   if (inputUrl.scheme() == "dvid" || inputUrl.scheme() == "http") {
     reader = ZGlobal::GetInstance().getDvidReaderFromUrl(inputPath);
     inputJson = reader->readJsonObject(inputPath);
-    if (inputJson.hasKey(neutube::Json::REF_KEY)) {
+    if (inputJson.hasKey(neutube::json::REF_KEY)) {
       inputJson =
           reader->readJsonObject(
-            ZJsonParser::stringValue(inputJson[neutube::Json::REF_KEY]));
+            ZJsonParser::stringValue(inputJson[neutube::json::REF_KEY]));
     }
     isFile = false;
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
@@ -74,14 +75,22 @@ ZBodySplitCommand::parseSignalPath(
     if (m_bodyId > 0) {
       ZDvidReader reader;
       ZDvidTarget target;
+
       target.setFromUrl(signalPath);
       if (!signalInfo.isEmpty()) {
+        if (signalInfo.hasKey("address")) {
+          target.setServer(ZJsonParser::stringValue(signalInfo["address"]));
+        }
+        if (signalInfo.hasKey("port")) {
+          target.setPort(ZJsonParser::integerValue(signalInfo["port"]));
+        }
+
         target.updateData(signalInfo);
       }
       reader.open(target);
       if (reader.isReady()) {
         ZDvidSparseStack *dvidStack =
-            dvidStack = reader.readDvidSparseStack(m_bodyId, m_labelType);
+            reader.readDvidSparseStack(m_bodyId, m_labelType);
         spStack = dvidStack->getSparseStack(range);
         gc.registerObject(dvidStack);
       }
@@ -415,7 +424,7 @@ void ZBodySplitCommand::processResult(
               writer->writeServiceResult("split", obj.toDvidPayload(), false);
           ZJsonObject regionJson;
           regionJson.setEntry("label", (int) obj.getLabel());
-          regionJson.setEntry(neutube::Json::REF_KEY, endPoint);
+          regionJson.setEntry(neutube::json::REF_KEY, endPoint);
           resultArray.append(regionJson);
 #ifdef _DEBUG_2
           obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -442,7 +451,7 @@ void ZBodySplitCommand::processResult(
           std::cout << "Result endpoint: " << endPoint << std::endl;
 
           if (!splitTaskKey.empty()) {
-            refJson.setEntry(neutube::Json::REF_KEY, endPoint);
+            refJson.setEntry(neutube::json::REF_KEY, endPoint);
           }
         } else {
           if (!splitTaskKey.empty()) {

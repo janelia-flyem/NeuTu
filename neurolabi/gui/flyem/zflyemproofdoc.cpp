@@ -967,6 +967,13 @@ void ZFlyEmProofDoc::setGraySliceCenterCut(int width, int height)
   prepareGraySlice(getDvidGraySlice());
 }
 
+void ZFlyEmProofDoc::setSegmentationCenterCut(int width, int height)
+{
+  m_labelSliceCenterCutWidth = width;
+  m_labelSliceCenterCutHeight = height;
+  prepareLabelSlice();
+}
+
 void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
 {
   ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
@@ -979,6 +986,8 @@ void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
   labelSlice->setSource(
         ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
   labelSlice->setBodyMerger(&m_bodyMerger);
+  labelSlice->setCenterCut(
+        m_labelSliceCenterCutWidth, m_labelSliceCenterCutHeight);
   addObject(labelSlice, 0, true);
 }
 
@@ -2477,6 +2486,14 @@ void ZFlyEmProofDoc::prepareGraySlice(ZDvidGraySlice *slice)
 {
   if (slice != NULL) {
     slice->setCenterCut(m_graySliceCenterCutWidth, m_graySliceCenterCutHeight);
+  }
+}
+
+void ZFlyEmProofDoc::prepareLabelSlice()
+{
+  auto sliceList = getDvidLabelSliceList();
+  for (auto &slice : sliceList) {
+    slice->setCenterCut(m_labelSliceCenterCutWidth, m_labelSliceCenterCutHeight);
   }
 }
 
