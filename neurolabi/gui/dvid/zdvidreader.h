@@ -556,6 +556,9 @@ public:
 
   bool hasSplitTask(const QString &key) const;
 
+  void setGrayCenterCut(int cx, int cy);
+  void setLabelCenterCut(int cx, int cy);
+
   class PauseVerbose {
   public:
     PauseVerbose(ZDvidReader *reader) : m_reader(reader) {
@@ -620,6 +623,10 @@ private:
 
   lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
   lowtis::ImageService* getLowtisServiceLabel(int cx, int cy) const;
+
+  void prepareLowtisService(
+      ZSharedPointer<lowtis::ImageService> &service, const std::string &dataName,
+      lowtis::DVIDConfig &config, int cx, int cy) const;
 
   template<typename T>
   void configureLowtis(T *config, const std::string &dataName) const;
