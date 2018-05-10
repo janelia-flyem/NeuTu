@@ -853,6 +853,17 @@ void ZFlyEmBody3dDoc::processEventFunc()
   std::cout << "====Processing done====" << std::endl;
 }
 
+flyem::EBodyLabelType ZFlyEmBody3dDoc::getBodyLabelType() const
+{
+  /*
+  if (getDvidTarget().hasSupervoxel()) {
+    return flyem::LABEL_SUPERVOXEL;
+  }
+  */
+
+  return flyem::LABEL_BODY;
+}
+
 ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
 {
   if (getBodyType() == flyem::BODY_MESH) {
