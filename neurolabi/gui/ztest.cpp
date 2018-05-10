@@ -26427,9 +26427,25 @@ void ZTest::test(MainWindow *host)
 
 #if 1
   ZDvidReader *reader = ZGlobal::GetDvidReader("labelmap_test");
-  ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
-        *reader, 10300, 20351, 10256, 1024, 1024, 0, 256, 256);
-  stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  reader->updateMaxLabelZoom();
+//    reader->setLabelCenterCut(256, 256);
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 256, 256);
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  }
+
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 0, 0);
+    stack->save(GET_TEST_DATA_DIR + "/_test2.tif");
+  }
+
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 1024, 1024);
+    stack->save(GET_TEST_DATA_DIR + "/_test3.tif");
+  }
 #endif
 
   std::cout << "Done." << std::endl;
