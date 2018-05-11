@@ -95,6 +95,14 @@ public:
     return m_usingDefaultConfig;
   }
 
+  bool psdNameDetail() const {
+    return m_psdNameDetail;
+  }
+
+  void setPsdNameDetail(bool on) {
+    m_psdNameDetail = on;
+  }
+
 //  std::string getSplitResultUrl(const ZDvidTarget &target, uint64_t bodyId);
 
 private:
@@ -117,6 +125,8 @@ private:
   std::string m_neuroglancerServer;
 
   bool m_analyzingMb6;
+  bool m_psdNameDetail = false;
+
 //  std::string m_neutuServer;
 //  std::string m_bodyLabelName;
   const static char *DVID_REPO_KEY;

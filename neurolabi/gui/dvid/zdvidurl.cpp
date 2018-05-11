@@ -30,6 +30,7 @@ const std::string ZDvidUrl::m_annotationElementsCommand = "elements";
 const std::string ZDvidUrl::m_annotationLabelCommand = "label";
 const std::string ZDvidUrl::m_annotationMoveCommand = "move";
 const std::string ZDvidUrl::m_annotationTagCommand = "tag";
+const std::string ZDvidUrl::m_labelMappingCommand = "mapping";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -1201,6 +1202,12 @@ std::string ZDvidUrl::getDataSyncUrl(
 std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
 {
   return GetFullUrl(getDataUrl(dataName), "sync");
+}
+
+std::string ZDvidUrl::getLabelMappingUrl() const
+{
+  return GetFullUrl(
+        getDataUrl(m_dvidTarget.getSegmentationName()), m_labelMappingCommand);
 }
 
 std::string ZDvidUrl::getAnnotationUrl(

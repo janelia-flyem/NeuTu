@@ -28,6 +28,7 @@ private:
 
   bool usingDefaultConfig() const;
   bool namingSynapse() const;
+  bool namingPsd() const;
 
   void init();
 

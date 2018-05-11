@@ -907,7 +907,14 @@ void ZFlyEmBody3dDoc::activateSplitForSelected()
   TStackObjectSet objSet = getSelected(ZStackObject::TYPE_MESH);
   if (objSet.size() == 1) {
     ZStackObject *obj = *(objSet.begin());
-    activateSplit(obj->getLabel(), getBodyLabelType());
+    flyem::EBodyLabelType labelType = flyem::LABEL_BODY;
+    if (getDvidTarget().hasSupervoxel()) {
+      if (getMappedId(obj->getLabel()) != obj->getLabel()) {
+        labelType = flyem::LABEL_SUPERVOXEL;
+      }
+    }
+
+    activateSplit(obj->getLabel(), labelType);
   }
 }
 
@@ -1901,13 +1908,25 @@ void ZFlyEmBody3dDoc::executeAddTodoCommand(
     bodyId = getMainDvidReader().readBodyIdAt(x, y, z);
   }
 
-  if (m_bodySet.contains(bodyId)) {
+  if (getUnencodedBodySet().contains(bodyId)) {
     command->setTodoItem(x, y, z, checked, action, bodyId);
     if (command->hasValidItem()) {
       pushUndoCommand(command);
     } else {
       delete command;
     }
+  } else {
+    std::ostringstream stream;
+    int count = 0;
+    for (uint64_t bodyId : m_bodySet) {
+      if (count < 3) {
+        stream << bodyId << ", ";
+      } else {
+        stream << "...";
+        break;
+      }
+    }
+    LDEBUG() << "Cannot add todo:" << bodyId << "not in" << stream.str();
   }
 }
 
