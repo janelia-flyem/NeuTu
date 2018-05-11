@@ -26367,7 +26367,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZMenuConfig config;
   config << "test" << ZActionFactory::ACTION_ABOUT
          << ZActionFactory::ACTION_ACTIVATE_LOCATE;
@@ -26381,6 +26381,38 @@ void ZTest::test(MainWindow *host)
          << ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM;
   std::cout << config << std::endl;
 
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "017a", 8900);
+  target.setSegmentationName("segmentation");
+
+  if (reader.open(target)) {
+    QByteArray payload("[1166130438]");
+    ZJsonArray jsonArray = reader.readJsonArray(
+          "http://emdata2.int.janelia.org:8700/api/node/0667/segmentation/mapping",
+          payload);
+    jsonArray.print();
+
+    uint64_t bodyId = reader.readBodyIdAt(15994, 23934, 20696);
+    std::cout << bodyId << std::endl;
+
+    uint64_t spId = reader.readSupervoxelIdAt(15994, 23934, 20696);
+    std::cout << spId << std::endl;
+  }
+#endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "017a", 8900);
+  target.setSegmentationName("segmentation");
+
+  if (reader.open(target)) {
+    std::cout << "parent id:" << reader.readParentBodyId(1166130438) << std::endl;
+  }
 #endif
 
   std::cout << "Done." << std::endl;

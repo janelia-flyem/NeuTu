@@ -132,9 +132,7 @@ public:
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
 
 
-  uint64_t readParentBodyId(uint64_t spId) const {
-    return spId; //mockup implementation
-  }
+  uint64_t readParentBodyId(uint64_t spId) const;
 
   ZObject3dScan* readBody(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
@@ -433,6 +431,8 @@ public:
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
+  ZJsonArray readJsonArray(
+      const std::string &url, const QByteArray &payload) const;
 
   ZJsonArray readAnnotation(
       const std::string &dataName, const std::string &tag) const;

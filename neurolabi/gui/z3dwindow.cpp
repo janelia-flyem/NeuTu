@@ -517,6 +517,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(
           item, this, SLOT(changeSelectedPunctaColor()));
     break;
+  case ZActionFactory::ACTION_PUNCTA_HIDE_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(hideSelectedPuncta()));
+    break;
+  case ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(showSelectedPuncta()));
+    break;
   default:
     action = getDocument()->getAction(item);
     break;
@@ -3115,6 +3121,32 @@ void Z3DWindow::transformSelectedPuncta()
     }
     m_doc->notifyPunctumModified();
   }
+}
+
+void Z3DWindow::setSelectPunctaVisible(bool on)
+{
+  std::set<ZPunctum*> punctaSet =
+      m_doc->getSelectedObjectSet<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+  if (!punctaSet.empty()) {
+    for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+         iter != punctaSet.end(); ++iter) {
+      ZPunctum *punctum = *iter;
+      punctum->setVisible(on);
+      m_doc->bufferObjectModified(
+            punctum, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
+    }
+    m_doc->processObjectModified();
+  }
+}
+
+void Z3DWindow::hideSelectedPuncta()
+{
+  setSelectPunctaVisible(false);
+}
+
+void Z3DWindow::showSelectedPuncta()
+{
+  setSelectPunctaVisible(true);
 }
 
 void Z3DWindow::changeSelectedPunctaColor()

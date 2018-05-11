@@ -2596,11 +2596,8 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
          iter != synapseArray.end(); ++iter) {
       const ZDvidSynapse &synapse = *iter;
       ZPunctum *punctum = new ZPunctum(synapse.getPosition(), radius);
-#if defined(_FLYEM_)
-      if (GET_FLYEM_CONFIG.anayzingMb6()) {
-        punctum->setName(m_analyzer.getPunctumName(synapse));
-      }
-#endif
+      punctum->setName(getSynapseName(synapse).c_str());
+
       if (synapse.getKind() == ZDvidSynapse::KIND_PRE_SYN) {
         tbar.push_back(punctum);
       } else if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
@@ -2611,6 +2608,34 @@ ZFlyEmProofDoc::getSynapse(uint64_t bodyId)
   }
 
   return synapse;
+}
+
+std::string ZFlyEmProofDoc::getSynapseName(const ZDvidSynapse &synapse) const
+{
+  std::string name;
+
+  if (GET_FLYEM_CONFIG.anayzingMb6()) {
+    name = m_analyzer.getPunctumName(synapse).toStdString();
+  } else {
+    name = std::to_string(synapse.getBodyId());
+    if (GET_FLYEM_CONFIG.psdNameDetail()) {
+      if (synapse.getKind() == ZDvidSynapse::KIND_POST_SYN) {
+        ZJsonArray jsonArray = synapse.getRelationJson();
+        ZJsonObject jsonObj(jsonArray.value(0));
+        if (jsonObj.hasKey("To")) {
+          ZJsonArray ptJson(jsonObj.value("To"));
+          ZIntPoint pt;
+          pt.set(ZJsonParser::integerValue(ptJson.at(0)),
+                 ZJsonParser::integerValue(ptJson.at(1)),
+                 ZJsonParser::integerValue(ptJson.at(2)));
+          uint64_t tbarId = m_synapseReader.readBodyIdAt(pt);
+          name = name + "<-" + std::to_string(tbarId);
+        }
+      }
+    }
+  }
+
+  return name;
 }
 
 std::vector<ZFlyEmToDoItem*> ZFlyEmProofDoc::getTodoItem(uint64_t bodyId)

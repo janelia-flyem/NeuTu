@@ -202,6 +202,9 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies2_1/sparsevol/1",
             dvidUrl2.getMultiscaleSparsevolUrl(1, 1));
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/labels2/mapping",
+            dvidUrl2.getLabelMappingUrl());
+
 
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/bf1/bodies/sparsevol-coarse",

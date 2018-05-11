@@ -317,6 +317,9 @@ public slots:
   void transformAllPuncta();
   void convertPunctaToSwc();
   void changeSelectedPunctaColor();
+  void hideSelectedPuncta();
+  void showSelectedPuncta();
+  void setSelectPunctaVisible(bool on);
 
   void saveSplitTask();
   void deleteSplitSeed();
