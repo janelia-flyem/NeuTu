@@ -1459,10 +1459,17 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   ZDvidReader reader;
   if (!reader.open(target)) {
-    emit messageGenerated(
-          ZWidgetMessage("Failed to open the database.",
-                         neutube::MSG_WARNING,
-                         ZWidgetMessage::TARGET_DIALOG));
+    ZWidgetMessage msg("Failed to open the database.",
+                       neutube::MSG_WARNING,
+                       ZWidgetMessage::TARGET_DIALOG);
+
+    QString detail = "Detail: ";
+    if (!reader.getErrorMsg().empty()) {
+      detail += reader.getErrorMsg().c_str();
+    }
+    msg.appendMessage(detail);
+    emit messageGenerated(msg);
+
     getProgressSignal()->endProgress();
     return;
   }

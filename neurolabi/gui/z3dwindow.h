@@ -505,6 +505,7 @@ private:
   QAction *m_markPunctumAction;
   QAction *m_toggleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
+  QAction *m_toggleObjectsAction;
   QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;
   QAction *m_toggleSmartExtendSelectedSwcNodeAction;

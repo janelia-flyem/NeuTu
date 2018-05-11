@@ -100,6 +100,7 @@ bool ZDvidReader::startService()
     m_bufferReader.setService(getDvidTarget());
   } catch (std::exception &e) {
     m_service.reset();
+    m_errorMsg = e.what();
     std::cout << e.what() << std::endl;
     return false;
   }
