@@ -2823,8 +2823,11 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     mesh->setSource(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
             oldId, 0, flyem::BODY_MESH));
+    mesh->setObjectClass(
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(oldId));
     mesh->setColor(Qt::white);
     mesh->pushObjectColor();
+
     ZStackDocAccessor::AddObjectUnique(this, mesh);
   } else {
     emit removingBody(oldId);

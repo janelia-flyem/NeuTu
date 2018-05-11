@@ -26404,7 +26404,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "017a", 8900);
@@ -26413,6 +26413,14 @@ void ZTest::test(MainWindow *host)
   if (reader.open(target)) {
     std::cout << "parent id:" << reader.readParentBodyId(1166130438) << std::endl;
   }
+#endif
+
+#if 1
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "f", 7000);
+  target.setSegmentationName("segmentation");
+  reader.open(target);
 #endif
 
   std::cout << "Done." << std::endl;

@@ -118,6 +118,10 @@ public:
 
   std::string readNodeInfo() const;
 
+  std::string getErrorMsg() const {
+    return m_errorMsg;
+  }
+
   ZDvid::ENodeStatus getNodeStatus() const;
   void updateNodeStatus();
 
@@ -622,6 +626,9 @@ private:
 protected:
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
+
+  std::string m_errorMsg;
+
   mutable int m_statusCode;
   mutable int64_t m_readingTime;
 

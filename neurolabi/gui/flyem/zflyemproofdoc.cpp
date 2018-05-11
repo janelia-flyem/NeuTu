@@ -793,8 +793,13 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
   } else {
     m_dvidReader.clear();
 //    m_dvidTarget.clear();
-    emit messageGenerated(
-          ZWidgetMessage("Failed to open the node.", neutube::MSG_ERROR));
+    ZWidgetMessage msg("Failed to open the node.", neutube::MSG_ERROR);
+    QString detail = "Detail: ";
+    if (!m_dvidReader.getErrorMsg().empty()) {
+      detail += m_dvidReader.getErrorMsg().c_str();
+    }
+    msg.appendMessage(detail);
+    emit messageGenerated(msg);
   }
 }
 
