@@ -895,6 +895,15 @@ void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId, flyem::EBodyLabelType type)
 
     if (getDataDocument()->checkOutBody(parentId, flyem::BODY_SPLIT_ONLINE)) {
       m_splitter->setBody(bodyId, type);
+      QString msg = "Split activated for ";
+      if (type == flyem::LABEL_SUPERVOXEL) {
+        msg += "supervoxel ";
+      }
+
+      msg += QString("%1").arg(bodyId);
+
+      emit messageGenerated(ZWidgetMessage(msg));
+
       emit interactionStateChanged();
     } else {
       notifyWindowMessageUpdated("Failed to lock the body for split.");
@@ -2757,6 +2766,11 @@ void ZFlyEmBody3dDoc::runFullSplit()
 
 void ZFlyEmBody3dDoc::commitSplitResult()
 {
+  QAction *action = getAction(ZActionFactory::ACTION_COMMIT_SPLIT);
+  if (action != NULL) {
+    action->setVisible(false);
+  }
+
   notifyWindowMessageUpdated("Uploading splitted bodies");
 
   QString summary;
@@ -2782,13 +2796,13 @@ void ZFlyEmBody3dDoc::commitSplitResult()
               m_mainDvidWriter.writeSupervoxelSplit(*seg, remainderId);
           remainderId = idPair.first;
           newBodyId = idPair.second;
-        }
 
-        notifyWindowMessageUpdated(QString("Updating mesh ..."));
-        ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
-        m_mainDvidWriter.writeMesh(*mesh, newBodyId, 0);
-        delete mesh;
-        emit addingBody(newBodyId);
+          notifyWindowMessageUpdated(QString("Updating mesh ..."));
+          ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
+          m_mainDvidWriter.writeMesh(*mesh, newBodyId, 0);
+          delete mesh;
+          emit addingBody(newBodyId);
+        }
 //        addEvent(BodyEvent::ACTION_ADD, newBodyId);
 
         summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
@@ -2809,6 +2823,8 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     mesh->setSource(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
             oldId, 0, flyem::BODY_MESH));
+    mesh->setColor(Qt::white);
+    mesh->pushObjectColor();
     ZStackDocAccessor::AddObjectUnique(this, mesh);
   } else {
     emit removingBody(oldId);
