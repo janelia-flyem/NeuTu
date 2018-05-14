@@ -3024,7 +3024,7 @@ void MainWindow::on_actionCanny_Edge_triggered()
     ZStackProcessor proc;
     CannyEdgeDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      proc.cannyEdge(currentStackFrame()->document()->stack(),
+      proc.cannyEdge(currentStackFrame()->document()->getStack(),
                      dlg.variance(), dlg.lowerThreshold(),
                      dlg.upperThreshold());
       currentStackFrame()->updateView();
@@ -3042,7 +3042,7 @@ void MainWindow::connectedThreshold(int x, int y, int z)
   ConnectedThresholdDialog dlg;
   if (dlg.exec() == QDialog::Accepted) {
 
-    proc.connectedThreshold(currentStackFrame()->document()->stack(),
+    proc.connectedThreshold(currentStackFrame()->document()->getStack(),
                             x, y, z,
                             dlg.lowerThreshold(), dlg.upperThreshold());
     currentStackFrame()->updateView();
@@ -3079,7 +3079,7 @@ void MainWindow::on_actionMedian_Filter_triggered()
 
     MedianFilterDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      proc.medianFilter(currentStackFrame()->document()->stack(), dlg.radius());
+      proc.medianFilter(currentStackFrame()->document()->getStack(), dlg.radius());
       currentStackFrame()->updateView();
     }
   }
