@@ -1,11 +1,24 @@
-exists(../lib/ITK) {
+ITK_VER = 4.13
+ITK_INCLUDE_PATH = $${CONDA_ENV}/include/ITK-$${ITK_VER}
+exists($${ITK_INCLUDE_PATH}) {
     system(echo ITK)
-    ITK_INCLUDE_PATH = ../lib/ITK/include
-    ITK_LIB_PATH = ../lib/ITK/lib
+#    ITK_LIB_PATH = ../lib/ITK/lib
     INCLUDEPATH += $$ITK_INCLUDE_PATH
-    LIBS += -L$$ITK_LIB_PATH
-    DEFINES += _USE_ITK_
+#    LIBS += -L$$ITK_LIB_PATH
+#    DEFINES += _USE_ITK_
     HEADERS += itkimagedefs.h
+
+    LIBS += -lITKCommon-$${ITK_VER} \
+      -lITKVNLInstantiation-$${ITK_VER} \
+      -litkvnl_algo-$${ITK_VER} \
+      -litkvnl-$${ITK_VER} \
+      -litkvcl-$${ITK_VER} \
+      -litksys-$${ITK_VER} \
+      -litkv3p_netlib-$${ITK_VER} \
+      -lITKTransform-$${ITK_VER} \
+      -lITKLabelMap-$${ITK_VER} \
+      -lITKStatistics-$${ITK_VER} \
+      -litkOptimizers-$${ITK_VER}
 }
 
 exists(../lib/ITK/lib/libITKCommon-4.2.a) {
