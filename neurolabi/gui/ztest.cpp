@@ -26503,7 +26503,7 @@ void ZTest::test(MainWindow *host)
   container.exportMask(GET_DATA_DIR + "/_system/emstack2_seed.tif");
 #endif
 
-#if 1
+#if 0
   ZStack signal;
   ZStack label;
   signal.load(GET_DATA_DIR + "/_system/emstack2.tif");
