@@ -279,6 +279,11 @@ void ZDvidLabelSlice::paintBufferUnsync()
     if ((int) m_labelArray->getElementNumber() ==
         m_paintBuffer->width() * m_paintBuffer->height()) {
       updateRgbTable();
+
+      // TODO: Consider a way to use m_customColorScheme without remapId(), because remapId()
+      // takes around 3 ms on a Macbook Pro.  That may not sound like much but it is about
+      // 20% of the budget per frame for 60 frames/sec.
+
       remapId();
 
       uint64_t *labelArray = NULL;

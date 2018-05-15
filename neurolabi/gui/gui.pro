@@ -872,7 +872,9 @@ HEADERS += mainwindow.h \
     core/utilities.h \
     core/qthelper.h \
     flyem/zflyemtododelegate.h \
-    zmenuconfig.h
+    zmenuconfig.h \
+    protocols/taskbodymerge.h \
+    flyem/zflyembodyidcolorscheme.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1526,7 +1528,9 @@ SOURCES += main.cpp \
     core/utilities.cpp \
     core/qthelper.cpp \
     flyem/zflyemtododelegate.cpp \
-    zmenuconfig.cpp
+    zmenuconfig.cpp \
+    protocols/taskbodymerge.cpp \
+    flyem/zflyembodyidcolorscheme.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

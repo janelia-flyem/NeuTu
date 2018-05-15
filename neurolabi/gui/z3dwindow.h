@@ -117,6 +117,7 @@ public:
 
 public: //Camera adjustment
   void gotoPosition(const ZCuboid& bound);
+  void gotoPosition(const ZPoint& position, double radius);
   void zoomToSelectedSwcNodes();
 
 public: //Components

@@ -24,6 +24,7 @@ public:
 
     virtual void beforeNext();
     virtual void beforePrev();
+    virtual void onLoaded();
     virtual void beforeDone();
 
     bool loadJson(QJsonObject json);
@@ -44,6 +45,7 @@ public:
 
 signals:
     void bodiesUpdated();
+    void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor);
 
 protected:
     static const QString KEY_COMPLETED;

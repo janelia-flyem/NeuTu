@@ -338,6 +338,10 @@ public: //Bookmark functions
 
 public:
   bool isDataValid(const std::string &data) const;
+
+  static void enableBodySelectionMessage(bool enable = true);
+  static bool bodySelectionMessageEnabled();
+
   void notifyBodySelectionChanged();
 
   /*!
