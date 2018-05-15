@@ -100,6 +100,7 @@ private:
     QList<QColor> m_postColorList;
     ZFlyEmSequencerColorScheme m_colorScheme;
     QString m_currentMode;
+    ZDvidReader m_reader;
 
     void saveState();
     void updateLabels();
@@ -111,7 +112,8 @@ private:
     void updateSitesTable(std::vector<ZDvidSynapse> synapses, std::vector<uint64_t> bodyList);
     void updateColorMap(std::vector<ZDvidSynapse> synapses, std::vector<uint64_t> bodyList);
     void updateSiteListLabel();
-    std::vector<ZDvidSynapse> getWholeSynapse(ZIntPoint point);
+    std::vector<ZDvidSynapse> getWholeSynapse(
+        ZIntPoint point, const ZDvidReader &reader);
     static bool sortXY(const ZIntPoint &p1, const ZIntPoint &p2);
     static bool compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2);
     void variationError(std::string variation);    
