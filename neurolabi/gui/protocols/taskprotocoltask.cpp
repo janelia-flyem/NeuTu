@@ -95,6 +95,15 @@ void TaskProtocolTask::beforePrev() {
 
 /*
  * subclasses may optionally implement this method to
+ * do something when the bodies from the previous task have been unloaded
+ * and the bodies from this task have been loaded
+ */
+void TaskProtocolTask::onLoaded() {
+    // nothing
+}
+
+/*
+ * subclasses may optionally implement this method to
  * do something in the task that is active when the "done" button
  * is pressed
  */
