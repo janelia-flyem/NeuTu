@@ -266,6 +266,17 @@ void TaskBodyMerge::setBodiesFromSuperVoxels()
   ZDvidUrl url(m_bodyDoc->getDvidTarget());
   std::string urlMapping = url.getNodeUrl() + "/" + instance + "/mapping";
 
+#if 1
+  // TEMPORARY fix: Node 5ea99 (branched from locked from 0667) is right except for its labelmap.
+  // Use f73ce for the labelmap, but it cannot be used in general, as it does not have the tar
+  // archives for meshes.
+  size_t i = urlMapping.find("5ea99");
+  if (i != std::string::npos) {
+    urlMapping.replace(i, 4, "f73ce");
+    std::cerr << "** url for mapping changed to: \"" << urlMapping << "\" **\n";
+  }
+#endif
+
   ZJsonArray jsonBody;
   jsonBody.append(m_supervoxelId1);
   jsonBody.append(m_supervoxelId2);
