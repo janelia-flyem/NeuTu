@@ -63,7 +63,13 @@ bool ProtocolDialog::initialize() {
 }
 
 void ProtocolDialog::setDvidTarget(ZDvidTarget target) {
-    m_dvidTarget = target;
+//    m_dvidTarget = target;
+  m_dvidReader.open(target);
+}
+
+const ZDvidTarget& ProtocolDialog::getDvidTarget() const
+{
+  return m_dvidReader.getDvidTarget();
 }
 
 /*
