@@ -48,6 +48,7 @@ public:
   int getMaxZoom() const;
 
   bool hasMaxSize(int width, int height) const;
+  bool hasMaxSize() const;
   bool getMaxArea() const;
 
   QRect getViewPort() const;
@@ -72,18 +73,21 @@ public:
   bool hasNewView(const ZStackViewParam &viewParam) const;
 
   void setMaxSize(int maxW, int maxH);
+  void setUnlimitedSize();
 
   void clear();
 
   void setMaxZoom(int maxZoom);
+
+  void invalidateViewParam();
 
 public:
   ZStackViewParam m_currentViewParam;
   int m_zoom = 0;
   int m_maxZoom = 0;
 
-  int m_maxWidth = 512;
-  int m_maxHeight = 512;
+  int m_maxWidth = 512; //0 for no limitation
+  int m_maxHeight = 512; //0 for no limitation
 
   ZDvidData::ERole m_dataRole;
 
