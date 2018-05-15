@@ -28,6 +28,7 @@ public:
   }
 
   bool isValid() const;
+  void invalidate();
 
   int getArea() const;
 
