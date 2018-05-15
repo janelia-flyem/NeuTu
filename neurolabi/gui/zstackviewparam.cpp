@@ -163,6 +163,11 @@ bool ZStackViewParam::isValid() const
   return m_viewProj.isValid();
 }
 
+void ZStackViewParam::invalidate()
+{
+  m_viewProj.setZoom(0);
+}
+
 int ZStackViewParam::getArea() const
 {
   return getViewPort().width() * getViewPort().height();

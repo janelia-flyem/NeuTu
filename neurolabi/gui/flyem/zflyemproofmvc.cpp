@@ -1581,6 +1581,7 @@ void ZFlyEmProofMvc::updateContrast()
   if (slice != NULL) {
     slice->setContrastProtocol(protocal);
     slice->updateContrast(getCompletePresenter()->highTileContrast());
+    getCompleteDocument()->bufferObjectModified(slice);
   }
 
   QList<ZDvidTileEnsemble*> teList =
@@ -1588,7 +1589,9 @@ void ZFlyEmProofMvc::updateContrast()
   foreach (ZDvidTileEnsemble *te, teList) {
     te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
     te->enhanceContrast(getCompletePresenter()->highTileContrast());
+    getCompleteDocument()->bufferObjectModified(te);
   }
+  getCompleteDocument()->processObjectModified();
 }
 
 void ZFlyEmProofMvc::profile()
@@ -3550,25 +3553,21 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
     ZDvidLabelSlice *slice =
         getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
     if (slice != NULL) {
+//      slice->disableFullView();
       slice->setMaxSize(getView()->getViewParameter(), width, height);
-      slice->disableFullView();
       getView()->paintObject();
     }
   }
 }
 
-void ZFlyEmProofMvc::showFullSegmentation(bool on)
+void ZFlyEmProofMvc::showFullSegmentation()
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
     if (slice != NULL) {
-      if (on) {
-        slice->updateFullView(getView()->getViewParameter());
-        getView()->paintObject();
-      } else {
-        slice->disableFullView();
-      }
+      slice->updateFullView(getView()->getViewParameter());
+      getView()->paintObject();
     }
   }
 }
