@@ -835,10 +835,28 @@ bool NeutubeConfig::namingSynapse() const
   return false;
 }
 
+bool NeutubeConfig::namingPsd() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("naming_psd")) {
+    return m_settings.value("naming_psd").toBool();
+  }
+#endif
+
+  return false;
+}
+
 void NeutubeConfig::setNamingSynapse(bool on)
 {
 #ifdef _QT_GUI_USED_
   m_settings.setValue("naming_synapse", on);
+#endif
+}
+
+void NeutubeConfig::setNamingPsd(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("naming_psd", on);
 #endif
 }
 
@@ -1000,9 +1018,19 @@ bool NeutubeConfig::NamingSynapse()
   return getInstance().namingSynapse();
 }
 
+bool NeutubeConfig::NamingPsd()
+{
+  return getInstance().namingPsd();
+}
+
 void NeutubeConfig::SetNamingSynapse(bool on)
 {
   getInstance().setNamingSynapse(on);
+}
+
+void NeutubeConfig::SetNamingPsd(bool on)
+{
+  getInstance().setNamingPsd(on);
 }
 
 void NeutubeConfig::SetNeuTuServer(const QString &path)

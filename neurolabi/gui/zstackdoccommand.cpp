@@ -2165,6 +2165,7 @@ ZStackDocCommand::TubeEdit::AutoTraceAxon::AutoTraceAxon(
   :ZUndoCommand(parent), m_doc(doc)
 {
   setText(QObject::tr("auto trace axon"));
+  UNUSED_PARAMETER(m_doc);
 }
 
 ZStackDocCommand::TubeEdit::AutoTraceAxon::~AutoTraceAxon()
