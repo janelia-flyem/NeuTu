@@ -11,6 +11,7 @@ contains(TEMPLATE, app) {
 
 contains(CONFIG, neu3) {
   DEFINES += _NEU3_
+  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
 
 contains(CONFIG, neu3) | contains(CONFIG, flyem) {
@@ -716,6 +717,7 @@ HEADERS += mainwindow.h \
     protocols/doNthingsprotocol.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
+    protocols/synapsepredictionbodyinputdialog.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
     widgets/zcolorlabel.h \
@@ -870,7 +872,13 @@ HEADERS += mainwindow.h \
     data3d/zstackobjecthelper.h \
     data3d/utilities.h \
     core/utilities.h \
-    core/qthelper.h
+    core/qthelper.h \
+    flyem/zflyemtododelegate.h \
+    zmenuconfig.h \
+    zobjsmodelmanager.h \
+    zobjsmodelfactory.h \
+    flyem/zglobaldvidrepo.h \
+    flyem/flyemdef.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -949,6 +957,7 @@ FORMS += dialogs/settingdialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/synapsepredictionbodyinputdialog.ui \
     protocols/synapsereviewprotocol.ui \
     protocols/synapsereviewinputdialog.ui \
     protocols/protocoldialog.ui \
@@ -1373,6 +1382,7 @@ SOURCES += main.cpp \
     protocols/doNthingsprotocol.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsepredictionbodyinputdialog.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
     widgets/zcolorlabel.cpp \
@@ -1522,7 +1532,12 @@ SOURCES += main.cpp \
     data3d/zstackobjecthelper.cpp \
     data3d/utilities.cpp \
     core/utilities.cpp \
-    core/qthelper.cpp
+    core/qthelper.cpp \
+    flyem/zflyemtododelegate.cpp \
+    zmenuconfig.cpp \
+    zobjsmodelmanager.cpp \
+    zobjsmodelfactory.cpp \
+    flyem/zglobaldvidrepo.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

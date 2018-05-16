@@ -19,6 +19,12 @@ void ZActionFactory::setUndoStack(QUndoStack *undoStack)
   m_undoStack = undoStack;
 }
 
+bool ZActionFactory::IsRegularAction(EAction actionKey)
+{
+  return actionKey != ZActionFactory::ACTION_NULL &&
+      actionKey != ZActionFactory::ACTION_SEPARATOR;
+}
+
 QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 {
   QAction *action = NULL;
@@ -355,6 +361,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_COPY_POSITION:
     action = new QAction("Copy position", parent);
     break;
+  case ACTION_COPY_BODY_ID:
+    action = new QAction("Copy Body ID", parent);
+    break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
     break;
@@ -435,6 +444,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_PUNCTA_CHANGE_COLOR:
     action = new QAction("Change Color of Selected Puncta", parent);
+    break;
+  case ACTION_PUNCTA_HIDE_SELECTED:
+    action = new QAction("Hide Selected Puncta", parent);
+    break;
+  case ACTION_PUNCTA_SHOW_SELECTED:
+    action = new QAction("Show Selected Puncta", parent);
     break;
   case ACTION_REWRITE_SEGMENTATION:
     action = new QAction("Rewrite segmentation", parent);

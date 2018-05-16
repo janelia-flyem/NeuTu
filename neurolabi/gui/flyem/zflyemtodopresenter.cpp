@@ -1,5 +1,7 @@
 #include "zflyemtodopresenter.h"
 
+#include "flyem/zflyemtodoitem.h"
+
 ZFlyEmTodoPresenter::ZFlyEmTodoPresenter()
 {
   m_fieldList << " Body ID " << "  Z   " << "  X  " << "  Y  " << "  User  ";

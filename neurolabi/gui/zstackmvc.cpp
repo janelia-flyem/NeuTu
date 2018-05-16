@@ -77,7 +77,7 @@ void ZStackMvc::construct(ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView(axis);
   createPresenter(axis);
-  getPresenter()->createActions();
+//  getPresenter()->createActions();
 
   updateDocument();
 
@@ -275,10 +275,12 @@ void ZStackMvc::processViewChange()
   processViewChange(getView()->getViewParameter(neutube::COORD_STACK));
 }
 
+/*
 void ZStackMvc::updateActiveViewData()
 {
   processViewChangeCustom(getView()->getViewParameter(neutube::COORD_STACK));
 }
+*/
 
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {

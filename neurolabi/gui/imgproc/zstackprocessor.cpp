@@ -18,6 +18,7 @@
 #include "tz_int_histogram.h"
 #include "zintcuboid.h"
 #include "zpoint.h"
+#include "zstackfactory.h"
 
 ZStackProcessor::ZStackProcessor()
 {
@@ -126,6 +127,7 @@ void ZStackProcessor::expandRegion(ZStack *stack, int r)
 #include <itkDiffusionTensor3D.h>
 #include <itkMeasurementVectorTraits.h>
 #include <itkGaussianRandomSpatialNeighborSubsampler.h>
+#include <itkMorphologicalWatershedFromMarkersImageFilter.h>
 #undef ASCII
 #include <itkPatchBasedDenoisingImageFilter.h>
 
@@ -164,20 +166,20 @@ void ZStackProcessor::copyData(Uint8Image3DType *src, ZStack *dst, int ch)
 {
   uint8 *array = src->GetPixelContainer()->GetImportPointer();
 
-  dst->copyValue(array, dst->getByteNumber(ZStack::SINGLE_CHANNEL), ch);
+  dst->copyValueFrom(array, dst->getByteNumber(ZStack::SINGLE_CHANNEL), ch);
 }
 
 void ZStackProcessor::copyData(Uint16Image3DType *src, ZStack *dst, int ch)
 {
   uint16 *array = src->GetPixelContainer()->GetImportPointer();
 
-  dst->copyValue(array, dst->getByteNumber(ZStack::SINGLE_CHANNEL), ch);
+  dst->copyValueFrom(array, dst->getByteNumber(ZStack::SINGLE_CHANNEL), ch);
 }
 
 void ZStackProcessor::copyData(FloatImage3DType *src, ZStack *dst, int ch)
 {
   float *array = src->GetPixelContainer()->GetImportPointer();
-  dst->copyValue(array, dst->getByteNumber(ZStack::SINGLE_CHANNEL), ch);
+  dst->copyValueFrom(array, dst->getByteNumber(ZStack::SINGLE_CHANNEL), ch);
 }
 
 void ZStackProcessor::convertStack(const ZStack *stack, int ch, Uint8Image3DType *image)
@@ -316,6 +318,38 @@ void ZStackProcessor::cannyEdge(ZStack *stack, double variance, double low,
       break;
     }
   }
+}
+
+ZStack* ZStackProcessor::SeededWatershed(ZStack *signal, ZStack *label)
+{
+  ZStack *result = NULL;
+  if (!signal->isVirtual()) {
+    if (signal->kind() == GREY && label->kind() == GREY) {
+      Uint8Image3DType::Pointer image = Uint8Image3DType::New();
+      convertStack(signal, image);
+
+      Uint8Image3DType::Pointer labelImage = Uint8Image3DType::New();
+      convertStack(label, labelImage);
+
+      using WathershedFilter =
+        itk::MorphologicalWatershedFromMarkersImageFilter<
+            Uint8Image3DType, Uint8Image3DType>;
+
+      WathershedFilter::Pointer filter = WathershedFilter::New();
+      filter->SetInput1(image);
+      filter->SetInput2(labelImage);
+      filter->SetMarkWatershedLine(false);
+      tic();
+      filter->Update();
+      Uint8Image3DType::Pointer output = filter->GetOutput();
+      std::cout << "Watershed time (ITK): " << toc() << "ms" << std::endl;
+
+      result = ZStackFactory::MakeZeroStack(GREY, signal->getBoundBox());
+      copyData(output, result);
+    }
+  }
+
+  return result;
 }
 
 void ZStackProcessor::anisotropicDiffusion(ZStack *stack, double timeStep,
@@ -809,6 +843,11 @@ void ZStackProcessor::patchBasedDenoising(ZStack *, const int, const int,
 {
 }
 
+ZStack* ZStackProcessor::SeededWatershed(ZStack */*signal*/, ZStack */*label*/)
+{
+  return NULL;
+}
+
 #endif
 
 void ZStackProcessor::removeIsolatedObject(ZStack *stack, int r, int dr)
@@ -1217,6 +1256,7 @@ void ZStackProcessor::ShrinkSkeleton(Stack *stack)
     stack->array[*iter] = 0;
   }
 }
+
 /*
 void ZStackProcessor::SubtractBackground(Stack *stack, double minFr, int maxIter)
 {

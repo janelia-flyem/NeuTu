@@ -53,8 +53,8 @@ void ZMovieMaker::prepareStage()
   Z3DWindow *window = new Z3DWindow(m_academy, Z3DView::INIT_NORMAL);
   m_stage = new ZMovieStage(window);
 
-  window->getDocument()->disconnectPunctaModelUpdate();
-  window->getDocument()->disconnectSwcNodeModelUpdate();
+//  window->getDocument()->disconnectPunctaModelUpdate();
+//  window->getDocument()->disconnectSwcNodeModelUpdate();
 
   m_photographer.setStage(m_stage);
   window->getVolumeFilter()->setData(window->getDocument(), 1024 * 1024 * 512);
@@ -381,7 +381,7 @@ ZStackDoc* ZMovieMaker::getAcademy()
 {
   if (!m_academy) {
     m_academy = ZSharedPointer<ZStackDoc>(new ZStackDoc);
-    m_academy->disconnectSwcNodeModelUpdate();
+//    m_academy->disconnectSwcNodeModelUpdate();
   }
 
   return m_academy.get();

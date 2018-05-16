@@ -17,11 +17,19 @@ public:
   explicit ZFlyEmProofSettingDialog(QWidget *parent = 0);
   ~ZFlyEmProofSettingDialog();
 
-  int getCenterCutWidth() const;
-  int getCenterCutHeight() const;
+  int getGrayscaleCenterCutWidth() const;
+  int getGrayscaleCenterCutHeight() const;
+
+  int getSegmentationCenterCutWidth() const;
+  int getSegmentationCenterCutHeight() const;
+
   bool showingFullSkeleton() const;
 
   void applySettings(ZFlyEmProofDoc *doc) const;
+
+private:
+  void initGrayscaleCenterCut();
+  void initSegmentationCenterCut();
 
 private:
   Ui::ZFlyEmProofSettingDialog *ui;

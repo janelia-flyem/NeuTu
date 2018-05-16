@@ -1,11 +1,13 @@
 #ifndef ZFLYEMPROOFMVCCONTROLLER_H
 #define ZFLYEMPROOFMVCCONTROLLER_H
 
+#include <memory>
 #include <QSet>
 #include "tz_stdint.h"
 
 class ZFlyEmProofMvc;
 class ZIntPoint;
+class ZStackDoc;
 
 /*!
  * \brief An experimental class for controlling mvc widgets
@@ -25,6 +27,7 @@ public:
   static void Disable3DVisualization(ZFlyEmProofMvc *mvc);
   static void DisableSequencer(ZFlyEmProofMvc *mvc);
   static void DisableContextMenu(ZFlyEmProofMvc *mvc);
+  static void SetTodoDelegate(ZFlyEmProofMvc *mvc, ZStackDoc *todoDoc);
 };
 
 #endif // ZFLYEMPROOFMVCCONTROLLER_H

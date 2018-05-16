@@ -48,6 +48,7 @@ public:
   int getMaxZoom() const;
 
   bool hasMaxSize(int width, int height) const;
+  bool hasMaxSize() const;
   bool getMaxArea() const;
 
   QRect getViewPort() const;
@@ -57,6 +58,9 @@ public:
   void setZ(int z);
   int getWidth() const;
   int getHeight() const;
+
+  int getCenterCutWidth() const;
+  int getCenterCutHeight() const;
 
   static ZIntCuboid GetBoundBox(const QRect &viewPort, int z);
   ZIntCuboid getBoundBox() const;
@@ -72,18 +76,26 @@ public:
   bool hasNewView(const ZStackViewParam &viewParam) const;
 
   void setMaxSize(int maxW, int maxH);
+  void setCenterCut(int width, int height);
+  void setUnlimitedSize();
 
   void clear();
 
   void setMaxZoom(int maxZoom);
+
+  void invalidateViewParam();
+  void updateCenterCut();
 
 public:
   ZStackViewParam m_currentViewParam;
   int m_zoom = 0;
   int m_maxZoom = 0;
 
-  int m_maxWidth = 512;
-  int m_maxHeight = 512;
+  int m_maxWidth = 512; //0 for no limitation
+  int m_maxHeight = 512; //0 for no limitation
+
+  int m_centerCutWidth = 256;
+  int m_centerCutHeight = 256;
 
   ZDvidData::ERole m_dataRole;
 

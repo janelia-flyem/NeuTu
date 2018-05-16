@@ -39,6 +39,7 @@ class ZStackMvc;
 class ZKeyOperationConfig;
 class ZStackDocMenuFactory;
 class ZStackObjectInfoSet;
+class ZMenuConfig;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -301,6 +302,8 @@ public:
 
   virtual ZStackDocMenuFactory* getMenuFactory();
 
+  virtual ZMenuConfig getMenuConfig() const;
+
   bool hasHighContrastProtocal() const;
   ZJsonObject getHighContrastProtocal() const;
 
@@ -390,6 +393,7 @@ public slots:
   void slotTest();
 
   void copyCurrentPosition();
+  void copyLabelId();
 
 
   void notifyUser(const QString &msg);
@@ -504,43 +508,6 @@ protected:
   bool m_mouseRightButtonPressed;
   ZInteractiveContext m_interactiveContext;
   int m_cursorRadius;
-
-  //actions
-//  QAction *m_traceAction;
-//  QAction *m_fitsegAction;
-//  QAction *m_fitEllipseAction;
-//  QAction *m_dropsegAction;
-//  QAction *m_markPunctaAction;
-//  QAction *m_deleteSelectedAction;
-//  //QAction *m_deleteAllPunctaAction;
-//  QAction *m_enlargePunctaAction;
-//  QAction *m_narrowPunctaAction;
-//  QAction *m_meanshiftPunctaAction;
-//  QAction *m_meanshiftAllPunctaAction;
-
-//  QAction *m_swcConnectToAction;
-//  QAction *m_swcExtendAction;
-//  //QAction *m_swcSmartExtendAction;
-//  QAction *m_swcMoveSelectedAction;
-//  //QAction *m_swcDeleteAction;
-//  //QAction *m_swcConnectSelectedAction;
-//  QAction *m_swcSelectConnectionAction;
-//  QAction *m_swcLockFocusAction;
-//  QAction *m_swcChangeFocusAction;
-//  QAction *m_swcEstimateRadiusAction;
-//  //QAction *m_swcSelectAllNodeAction;
-//  //QAction *m_swcBreakSelectedAction;
-
-//  QAction *m_selectSwcNodeDownstreamAction;
-//  QAction *m_selectSwcConnectionAction;
-//  QAction *m_selectSwcNodeBranchAction;
-//  QAction *m_selectSwcNodeUpstreamAction;
-//  QAction *m_selectSwcNodeTreeAction;
-//  QAction *m_selectAllConnectedSwcNodeAction;
-//  QAction *m_selectAllSwcNodeAction;
-
-//  QAction *m_paintStrokeAction;
-//  QAction *m_eraseStrokeAction;
 
   //  Action map
   QMap<ZActionFactory::EAction, QAction*> m_actionMap;

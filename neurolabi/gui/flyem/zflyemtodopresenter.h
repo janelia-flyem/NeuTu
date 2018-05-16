@@ -2,7 +2,8 @@
 #define ZFLYEMTODOPRESENTER_H
 
 #include "zabstractmodelpresenter.h"
-#include "flyem/zflyemtodoitem.h"
+
+class ZFlyEmToDoItem;
 
 class ZFlyEmTodoPresenter : public ZAbstractModelPresenter
 {
