@@ -28,7 +28,7 @@ enum ETag {
   FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON, FLYEM_MESH,
   FLYEM_STACK,
   FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID,
-  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO
+  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO, FLYEM_ARBSLICE
 };
 }
 
@@ -100,11 +100,9 @@ enum EReadStatus {
   READ_BAD_RESPONSE
 };
 
-namespace Json {
-namespace {
-const char* REF_KEY = "->";
-}
-}
+enum EToDoAction {
+  TO_DO, TO_MERGE, TO_SPLIT
+};
 
 namespace display {
 typedef uint64_t TVisualEffect;

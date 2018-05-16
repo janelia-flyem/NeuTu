@@ -96,7 +96,7 @@ signals:
   void viewChanged();
 
 public slots:
-  void updateActiveViewData();
+//  void updateActiveViewData();
   void processViewChange(const ZStackViewParam &viewParam);
   void processViewChange();
 

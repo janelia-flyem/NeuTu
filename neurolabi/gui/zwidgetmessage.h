@@ -15,6 +15,7 @@ public:
     TARGET_CUSTOM_AREA, TARGET_LOG_FILE
   };
 
+  Q_DECLARE_FLAGS(FTargets, ETarget)
 
   ZWidgetMessage(ETarget target = TARGET_TEXT_APPENDING);
   explicit ZWidgetMessage(const std::string &msg,

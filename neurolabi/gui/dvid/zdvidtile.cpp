@@ -111,29 +111,6 @@ void ZDvidTile::loadDvidSlice(
 
 void ZDvidTile::updatePixmap()
 {
-//  QMutexLocker locker(&m_pixmapMutex);
-#if 0
-#if 1
-//  m_pixmap.cleanUp();
-  if (m_pixmap != NULL) {
-#ifdef _DEBUG_2
-    std::cout << "Deleting " << m_pixmap << std::endl;
-#endif
-    delete m_pixmap;
-  }
-  m_pixmap = new ZPixmap();
-#else
-  if (m_pixmap == NULL) {
-    m_pixmap = new ZPixmap();
-  }
-  m_pixmap->cleanUp();
-#endif
-#endif
-//  m_pixmap.setPixmap(QPixmap::fromImage(*m_image, Qt::ColorOnly);
-//  m_pixmap->
-//  if (m_pixmap.width() != m_image->width()) {
-//    m_pixmap.fill(Qt::white);
-//  }
   m_pixmap.detach(); //must be called before convertFromImage. Probably a bug in Qt.
 //  qDebug() << "Tile pixel type: " << m_image->format();
   m_pixmap.convertFromImage(*m_image);
@@ -152,6 +129,9 @@ void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
       addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
     } else {
       removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+//      delete m_image;
+//      m_image = NULL;
+//      update(getZ());
     }
 
     if (m_image != NULL) {

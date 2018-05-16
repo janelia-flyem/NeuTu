@@ -18,6 +18,8 @@ public:
   QModelIndex getIndex(const ZDocPlayer *tree, int col = 0) const;
   ZDocPlayer* getDocPlayer(const QModelIndex &index) const;
 
+  void processObjectModified(const ZStackObjectInfoSet &infoSet);
+
 public slots:
   void updateModelData();
 

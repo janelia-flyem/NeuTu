@@ -8,6 +8,7 @@
 #include <QUndoStack>
 #include <QMutexLocker>
 
+#include "zjsondef.h"
 #include "zstackframe.h"
 #include "z3dwindow.h"
 #include "zstackdoclabelstackfactory.h"
@@ -523,7 +524,7 @@ void ZFlyEmBodySplitProject::showResultQuickView()
 //      ZStackDoc *doc = new ZStackDoc;
       m_quickResultDoc = ZSharedPointer<ZStackDoc>(new ZStackDoc);
       m_quickResultDoc->setTag(neutube::Document::FLYEM_BODY_DISPLAY);
-      m_quickResultDoc->disconnectSwcNodeModelUpdate();
+//      m_quickResultDoc->disconnectSwcNodeModelUpdate();
       m_quickResultWindow = windowFactory.make3DWindow(m_quickResultDoc);
       m_quickResultWindow->getSwcFilter()->setColorMode("Intrinsic");
       m_quickResultWindow->getSwcFilter()->setRenderingPrimitive("Sphere");
@@ -2057,7 +2058,7 @@ std::string ZFlyEmBodySplitProject::saveTask(uint64_t bodyId) const
 
         location = writer->writeServiceTask("split", task);
         ZJsonObject taskJson;
-        taskJson.setEntry(neutube::Json::REF_KEY, location);
+        taskJson.setEntry(neutube::json::REF_KEY, location);
   //      QUrl url(bodyUrl.c_str());
         ZDvidUrl dvidUrl(getDvidTarget());
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();

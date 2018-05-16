@@ -87,3 +87,10 @@ bool ZMeshObjsModel::needCheckbox(const QModelIndex &index) const
 {
   return getMesh(index) != NULL;
 }
+
+void ZMeshObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  if (infoSet.contains(ZStackObject::TYPE_MESH)) {
+    updateModelData();
+  }
+}

@@ -141,8 +141,8 @@ bool ZDvidGraySlice::hasLowresRegion() const
   }
 
   QRect viewport = getViewPort();//m_currentViewParam.getViewPort();
-  if (viewport.width() > m_centerCutWidth ||
-      viewport.height() > m_centerCutHeight) {
+  if (viewport.width() > getHelper()->getCenterCutWidth() ||
+      viewport.height() > getHelper()->getCenterCutHeight()) {
     return true;
   }
 
@@ -382,8 +382,7 @@ int ZDvidGraySlice::getScale() const
 
 void ZDvidGraySlice::setCenterCut(int width, int height)
 {
-  m_centerCutWidth = width;
-  m_centerCutHeight = height;
+  getHelper()->setCenterCut(width, height);
 }
 
 void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
@@ -392,8 +391,8 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
   box.setFirstCorner(viewPort.left(), viewPort.top(), z);
   box.setSize(viewPort.width(), viewPort.height(), 1);
 
-  int cx = m_centerCutWidth;
-  int cy = m_centerCutHeight;
+  int cx = getHelper()->getCenterCutWidth();
+  int cy = getHelper()->getCenterCutHeight();
 //  int z = box.getFirstCorner().getZ();
 
 
@@ -495,7 +494,8 @@ void ZDvidGraySlice::forceUpdate(const ZArbSliceViewParam &viewParam)
     ZStack *stack = getDvidReader().readGrayScaleLowtis(
           viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
           viewParam.getWidth(), viewParam.getHeight(),
-          getZoom(), m_centerCutWidth, m_centerCutHeight);
+          getZoom(), getHelper()->getCenterCutWidth(),
+          getHelper()->getCenterCutHeight());
     updateImage(stack);
     delete stack;
   } else {

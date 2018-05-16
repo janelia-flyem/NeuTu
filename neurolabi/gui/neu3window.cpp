@@ -141,7 +141,7 @@ void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
     m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
-    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
+//    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
 
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
@@ -152,10 +152,11 @@ void Neu3Window::initGrayscaleWidget()
 
     ZFlyEmProofMvcController::SelectBody(
           m_sliceWidget,
-          getBodyDocument()->getUnencodedBodySet());
+          getBodyDocument()->getNormalBodySet());
     if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
+    ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
   }
 }
 
@@ -279,6 +280,7 @@ void Neu3Window::setOption()
 {
   m_flyemSettingDlg->loadSetting();
   m_flyemSettingDlg->exec();
+  GET_FLYEM_CONFIG.saveSettings();
 }
 
 void Neu3Window::createDockWidget()
@@ -535,7 +537,7 @@ void Neu3Window::updateWebView()
 
     QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
-               rotation, getBodyDocument()->getUnencodedBodySet()));
+               rotation, getBodyDocument()->getNormalBodySet()));
 
 
     m_webView->setUrl(url);

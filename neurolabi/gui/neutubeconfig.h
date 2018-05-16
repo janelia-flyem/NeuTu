@@ -60,7 +60,9 @@ public:
   static QString GetTaskServer();
   static void SetTaskServer(const QString &path);
   static bool NamingSynapse();
+  static bool NamingPsd();
   static void SetNamingSynapse(bool on);
+  static void SetNamingPsd(bool on);
 
   static void SetDataDir(const QString &dataDir);
 #endif
@@ -77,7 +79,9 @@ public:
   void setParallelTileFetching(bool on);
   void enableLowtisPrefetching(bool on);
   bool namingSynapse() const;
+  bool namingPsd() const;
   void setNamingSynapse(bool on);
+  void setNamingPsd(bool on);
 
   void setAdvancedMode(bool on);
   bool isAdvancedMode() const;

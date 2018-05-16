@@ -7,6 +7,7 @@
 
 ZFlyEmArbDoc::ZFlyEmArbDoc(QObject *parent) : ZFlyEmProofDoc(parent)
 {
+  setTag(neutube::Document::FLYEM_ARBSLICE);
 }
 
 void ZFlyEmArbDoc::setDvidTarget(const ZDvidTarget &target)
