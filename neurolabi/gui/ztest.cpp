@@ -26367,7 +26367,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZMenuConfig config;
   config << "test" << ZActionFactory::ACTION_ABOUT
          << ZActionFactory::ACTION_ACTIVATE_LOCATE;
@@ -26381,6 +26381,138 @@ void ZTest::test(MainWindow *host)
          << ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM;
   std::cout << config << std::endl;
 
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "017a", 8900);
+  target.setSegmentationName("segmentation");
+
+  if (reader.open(target)) {
+    QByteArray payload("[1166130438]");
+    ZJsonArray jsonArray = reader.readJsonArray(
+          "http://emdata2.int.janelia.org:8700/api/node/0667/segmentation/mapping",
+          payload);
+    jsonArray.print();
+
+    uint64_t bodyId = reader.readBodyIdAt(15994, 23934, 20696);
+    std::cout << bodyId << std::endl;
+
+    uint64_t spId = reader.readSupervoxelIdAt(15994, 23934, 20696);
+    std::cout << spId << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "017a", 8900);
+  target.setSegmentationName("segmentation");
+
+  if (reader.open(target)) {
+    std::cout << "parent id:" << reader.readParentBodyId(1166130438) << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "f", 7000);
+  target.setSegmentationName("segmentation");
+  reader.open(target);
+#endif
+
+#if 0
+  ZDvidReader reader;
+  reader.open("emdata2.int.janelia.org", "059e", 7000);
+  ZObject3dScan obj = reader.readRoi("seven_column_roi");
+  std::cout << "Voxel count: " << obj.getVoxelNumber() << std::endl;
+  std::cout << "Volume: " << obj.getVoxelNumber() * 0.32 * 0.32 * 0.32 << "um^3" << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  reader.open("emdata1.int.janelia.org", "babd", 8500);
+
+  ZObject3dScan obj1 = reader.readRoi("ventral_roi");
+  ZObject3dScan obj2 = reader.readRoi("ventral_roi_patch");
+
+  ZObject3dScan obj3;
+  obj3.load(GET_TEST_DATA_DIR + "/_flyem/MB/large_outside_block_fixed.sobj");
+
+  obj1.concat(obj2);
+  obj1.concat(obj3);
+  obj1.canonize();
+
+  obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
+  std::cout << "Volume: " << obj1.getVoxelNumber() * 0.032 * 0.032 * 0.032 * 8 * 8 * 8
+            << "um^3" << std::endl;
+
+
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  ZStackWatershedContainer container(&stack);
+  ZObject3dScan obj;
+  obj.addSegment(3201, 4102, 2900, 2905);
+  obj.setLabel(1);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(3201, 4114, 3010, 3015);
+  obj2.setLabel(2);
+
+  container.addSeed(obj);
+  container.addSeed(obj2);
+
+  container.setFloodFillingZero(true);
+  container.run();
+
+  container.exportMask(GET_BENCHMARK_DIR + "/em_slice_seed.tif");
+  //    result->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//  delete result;
+
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/_system/emstack2.tif");
+  ZStackWatershedContainer container(&stack);
+  container.setFloodFillingZero(true);
+
+  ZStroke2d stroke;
+  stroke.setWidth(5);
+  stroke.setZ(105);
+  stroke.append(90, 125);
+  stroke.setLabel(1);
+  container.addSeed(stroke);
+
+  ZStroke2d stroke2;
+  stroke2.setWidth(5);
+  stroke2.setZ(105);
+  stroke2.append(103, 57);
+  stroke2.setLabel(2);
+  container.addSeed(stroke2);
+
+  container.run();
+  container.exportMask(GET_DATA_DIR + "/_system/emstack2_seed.tif");
+#endif
+
+#if 0
+  ZStack signal;
+  ZStack label;
+  signal.load(GET_DATA_DIR + "/_system/emstack2.tif");
+  label.load(GET_DATA_DIR + "/_system/emstack2_seed.tif");
+
+  ZStack *result = ZStackProcessor::SeededWatershed(&signal, &label);
+  result->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+  delete result;
 #endif
 
   std::cout << "Done." << std::endl;

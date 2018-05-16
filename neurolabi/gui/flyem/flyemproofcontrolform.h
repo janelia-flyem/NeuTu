@@ -36,7 +36,7 @@ signals:
   void splitTriggered(uint64_t bodyId);
   void splitTriggered();
   void labelSizeChanged(int width, int height);
-  void showingFullSegmentation(bool on);
+  void showingFullSegmentation();
   void coarseBodyViewTriggered();
   void skeletonViewTriggered();
   void meshViewTriggered();

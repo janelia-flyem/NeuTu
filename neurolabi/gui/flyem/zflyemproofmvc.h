@@ -261,7 +261,7 @@ public slots:
   void closeSkeletonWindow();
 
   void setDvidLabelSliceSize(int width, int height);
-  void showFullSegmentation(bool on);
+  void showFullSegmentation();
 
   void enhanceTileContrast(bool state);
   void smoothDisplay(bool state);
@@ -585,8 +585,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),
           this, SLOT(setDvidLabelSliceSize(int, int)));
-  connect(panel, SIGNAL(showingFullSegmentation(bool)),
-          this, SLOT(showFullSegmentation(bool)));
+  connect(panel, SIGNAL(showingFullSegmentation()),
+          this, SLOT(showFullSegmentation()));
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(bodyViewTriggered()),

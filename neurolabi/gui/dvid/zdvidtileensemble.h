@@ -78,6 +78,8 @@ private:
     return m_helper.get();
   }
 
+  void forceUpdate();
+
 private:
   std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> > m_tileGroup;
   ZDvidTileInfo m_tilingInfo;

@@ -44,15 +44,17 @@ bool ZDvidDataSliceHelper::validateSize(int *width, int *height) const
 {
   bool changed = false;
 
-  int area = (*width) * (*height);
-  if (area > m_maxWidth * m_maxHeight) {
-    if (*width > m_maxWidth) {
-      *width = m_maxWidth;
+  if (hasMaxSize()) {
+    int area = (*width) * (*height);
+    if (area > m_maxWidth * m_maxHeight) {
+      if (*width > m_maxWidth) {
+        *width = m_maxWidth;
+      }
+      if (*height > m_maxHeight) {
+        *height = m_maxHeight;
+      }
+      changed = true;
     }
-    if (*height > m_maxHeight) {
-      *height = m_maxHeight;
-    }
-    changed = true;
   }
 
   return changed;
@@ -117,6 +119,10 @@ bool ZDvidDataSliceHelper::hasMaxSize(int width, int height) const
   return getMaxWidth() == width && getMaxHeight() == height;
 }
 
+bool ZDvidDataSliceHelper::hasMaxSize() const{
+  return m_maxWidth > 0 && m_maxHeight > 0;
+}
+
 bool ZDvidDataSliceHelper::getMaxArea() const
 {
   return getMaxWidth() * getMaxHeight();
@@ -153,6 +159,11 @@ bool ZDvidDataSliceHelper::hasNewView(const ZStackViewParam &viewParam) const
       m_currentViewParam.getZoomLevel(maxZoomLevel));
 }
 
+void ZDvidDataSliceHelper::invalidateViewParam()
+{
+  m_currentViewParam.invalidate();
+}
+
 ZIntCuboid ZDvidDataSliceHelper::GetBoundBox(const QRect &viewPort, int z)
 {
   ZIntCuboid box;
@@ -171,6 +182,11 @@ void ZDvidDataSliceHelper::setMaxSize(int maxW, int maxH)
 {
   m_maxWidth = maxW;
   m_maxHeight = maxH;
+}
+
+void ZDvidDataSliceHelper::setUnlimitedSize()
+{
+  setMaxSize(0, 0);
 }
 
 void ZDvidDataSliceHelper::setBoundBox(const ZRect2d &rect)
