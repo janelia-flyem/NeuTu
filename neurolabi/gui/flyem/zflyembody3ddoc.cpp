@@ -1514,9 +1514,7 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 void ZFlyEmBody3dDoc::addSynapse(bool on)
 {
   if (on) {
-    for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
-         iter != m_bodySet.end(); ++iter) {
-      uint64_t bodyId = *iter;
+    for (uint64_t bodyId : getNormalBodySet()) {
       addEvent(BodyEvent::ACTION_UPDATE, bodyId, BodyEvent::UPDATE_ADD_SYNAPSE);
     }
   }
@@ -1525,9 +1523,7 @@ void ZFlyEmBody3dDoc::addSynapse(bool on)
 void ZFlyEmBody3dDoc::addTodo(bool on)
 {
   if (on) {
-    for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
-         iter != m_bodySet.end(); ++iter) {
-      uint64_t bodyId = *iter;
+    for (uint64_t bodyId : getNormalBodySet()) {
       addEvent(BodyEvent::ACTION_UPDATE, bodyId, BodyEvent::UPDATE_ADD_TODO_ITEM);
     }
   }
@@ -1625,7 +1621,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
     }
 
-    if (hasBody(bodyId, false)) {
+    if (getNormalBodySet().contains(bodyId)) {
       std::vector<ZFlyEmToDoItem*> itemList =
           getDataDocument()->getTodoItem(bodyId);
 
@@ -1784,7 +1780,7 @@ bool ZFlyEmBody3dDoc::addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId)
                                QString("Supervoxel ID: %1").arg(svId)));
       }
 
-      if (getUnencodedBodySet().contains(bodyId)) {
+      if (getNormalBodySet().contains(bodyId)) {
         updateTodo(bodyId);
       }
       succ = true;
@@ -1918,7 +1914,7 @@ void ZFlyEmBody3dDoc::executeAddTodoCommand(
     bodyId = getMainDvidReader().readBodyIdAt(x, y, z);
   }
 
-  if (getUnencodedBodySet().contains(bodyId)) {
+  if (getNormalBodySet().contains(bodyId)) {
     command->setTodoItem(x, y, z, checked, action, bodyId);
     if (command->hasValidItem()) {
       pushUndoCommand(command);
@@ -1928,7 +1924,7 @@ void ZFlyEmBody3dDoc::executeAddTodoCommand(
   } else {
     std::ostringstream stream;
     int count = 0;
-    for (uint64_t bodyId : m_bodySet) {
+    for (uint64_t bodyId : getNormalBodySet()) {
       if (count < 3) {
         stream << bodyId << ", ";
       } else {
@@ -2226,6 +2222,19 @@ QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
   return bodySet;
 }
 
+QSet<uint64_t> ZFlyEmBody3dDoc::getNormalBodySet() const
+{
+  if (isTarMode()) {
+    QSet<uint64_t> bodySet;
+    for (const auto &m : m_tarIdToMeshIds) {
+      bodySet.insert(decode(m.first));
+    }
+    return bodySet;
+  }
+
+  return getUnencodedBodySet();
+}
+
 ZDvidReader& ZFlyEmBody3dDoc::getBodyReader()
 {
   if (!m_bodyReader.isReady()) {
@@ -2394,6 +2403,11 @@ bool ZFlyEmBody3dDoc::fromTar(uint64_t id) const
     }
     return false;
   }
+}
+
+bool ZFlyEmBody3dDoc::isTarMode() const
+{
+  return !m_tarIdToMeshIds.empty();
 }
 
 

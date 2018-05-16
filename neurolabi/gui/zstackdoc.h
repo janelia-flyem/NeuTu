@@ -1040,6 +1040,8 @@ public:
   void setLabelField(ZStack *getStack);
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
+  virtual uint64_t getLabelId(int x, int y, int z);
+
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);
 

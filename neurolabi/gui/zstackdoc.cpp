@@ -10015,6 +10015,11 @@ const ZStack* ZStackDoc::getLabelField() const
   return getLabelFieldUnsync();
 }
 
+uint64_t ZStackDoc::getLabelId(int /*x*/, int /*y*/, int /*z*/)
+{
+  return 0;
+}
+
 ZStack* ZStackDoc::getLabelField()
 {
   return const_cast<ZStack*>(

@@ -361,6 +361,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_COPY_POSITION:
     action = new QAction("Copy position", parent);
     break;
+  case ACTION_COPY_BODY_ID:
+    action = new QAction("Copy Body ID", parent);
+    break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
     break;
