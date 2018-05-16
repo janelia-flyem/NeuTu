@@ -453,9 +453,7 @@ private:
 
   ZStackObject::EType getBodyObjectType() const;
 
-  flyem::EBodyLabelType getBodyLabelType() const {
-    return flyem::LABEL_SUPERVOXEL;
-  }
+  flyem::EBodyLabelType getBodyLabelType() const;
 
 #if 0
   void runLocalSplitFunc();

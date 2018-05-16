@@ -104,7 +104,14 @@ public:
   void setCenterCut(const std::string &name, int cx, int cy);
 
   void saveSettings() const;
-//  std::string getSplitResultUrl(const ZDvidTarget &target, uint64_t bodyId);
+  bool psdNameDetail() const {
+    return m_psdNameDetail;
+  }
+
+  void setPsdNameDetail(bool on) {
+    m_psdNameDetail = on;
+  }
+
 
 private:
   void init();
@@ -128,6 +135,8 @@ private:
   std::string m_neuroglancerServer;
 
   bool m_analyzingMb6;
+  bool m_psdNameDetail = false;
+
 //  std::string m_neutuServer;
 //  std::string m_bodyLabelName;
   const static char *DVID_REPO_KEY;

@@ -854,6 +854,17 @@ void ZFlyEmBody3dDoc::processEventFunc()
   std::cout << "====Processing done====" << std::endl;
 }
 
+flyem::EBodyLabelType ZFlyEmBody3dDoc::getBodyLabelType() const
+{
+  /*
+  if (getDvidTarget().hasSupervoxel()) {
+    return flyem::LABEL_SUPERVOXEL;
+  }
+  */
+
+  return flyem::LABEL_BODY;
+}
+
 ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
 {
   if (getBodyType() == flyem::BODY_MESH) {
@@ -885,6 +896,15 @@ void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId, flyem::EBodyLabelType type)
 
     if (getDataDocument()->checkOutBody(parentId, flyem::BODY_SPLIT_ONLINE)) {
       m_splitter->setBody(bodyId, type);
+      QString msg = "Split activated for ";
+      if (type == flyem::LABEL_SUPERVOXEL) {
+        msg += "supervoxel ";
+      }
+
+      msg += QString("%1").arg(bodyId);
+
+      emit messageGenerated(ZWidgetMessage(msg));
+
       emit interactionStateChanged();
     } else {
       notifyWindowMessageUpdated("Failed to lock the body for split.");
@@ -897,7 +917,14 @@ void ZFlyEmBody3dDoc::activateSplitForSelected()
   TStackObjectSet objSet = getSelected(ZStackObject::TYPE_MESH);
   if (objSet.size() == 1) {
     ZStackObject *obj = *(objSet.begin());
-    activateSplit(obj->getLabel(), getBodyLabelType());
+    flyem::EBodyLabelType labelType = flyem::LABEL_BODY;
+    if (getDvidTarget().hasSupervoxel()) {
+      if (getMappedId(obj->getLabel()) != obj->getLabel()) {
+        labelType = flyem::LABEL_SUPERVOXEL;
+      }
+    }
+
+    activateSplit(obj->getLabel(), labelType);
   }
 }
 
@@ -1757,7 +1784,7 @@ bool ZFlyEmBody3dDoc::addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId)
                                QString("Supervoxel ID: %1").arg(svId)));
       }
 
-      if (m_bodySet.contains(bodyId)) {
+      if (getUnencodedBodySet().contains(bodyId)) {
         updateTodo(bodyId);
       }
       succ = true;
@@ -1891,13 +1918,25 @@ void ZFlyEmBody3dDoc::executeAddTodoCommand(
     bodyId = getMainDvidReader().readBodyIdAt(x, y, z);
   }
 
-  if (m_bodySet.contains(bodyId)) {
+  if (getUnencodedBodySet().contains(bodyId)) {
     command->setTodoItem(x, y, z, checked, action, bodyId);
     if (command->hasValidItem()) {
       pushUndoCommand(command);
     } else {
       delete command;
     }
+  } else {
+    std::ostringstream stream;
+    int count = 0;
+    for (uint64_t bodyId : m_bodySet) {
+      if (count < 3) {
+        stream << bodyId << ", ";
+      } else {
+        stream << "...";
+        break;
+      }
+    }
+    LDEBUG() << "Cannot add todo:" << bodyId << "not in" << stream.str();
   }
 }
 
@@ -2728,6 +2767,11 @@ void ZFlyEmBody3dDoc::runFullSplit()
 
 void ZFlyEmBody3dDoc::commitSplitResult()
 {
+  QAction *action = getAction(ZActionFactory::ACTION_COMMIT_SPLIT);
+  if (action != NULL) {
+    action->setVisible(false);
+  }
+
   notifyWindowMessageUpdated("Uploading splitted bodies");
 
   QString summary;
@@ -2753,13 +2797,13 @@ void ZFlyEmBody3dDoc::commitSplitResult()
               m_mainDvidWriter.writeSupervoxelSplit(*seg, remainderId);
           remainderId = idPair.first;
           newBodyId = idPair.second;
-        }
 
-        notifyWindowMessageUpdated(QString("Updating mesh ..."));
-        ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
-        m_mainDvidWriter.writeMesh(*mesh, newBodyId, 0);
-        delete mesh;
-        emit addingBody(newBodyId);
+          notifyWindowMessageUpdated(QString("Updating mesh ..."));
+          ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
+          m_mainDvidWriter.writeMesh(*mesh, newBodyId, 0);
+          delete mesh;
+          emit addingBody(newBodyId);
+        }
 //        addEvent(BodyEvent::ACTION_ADD, newBodyId);
 
         summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
@@ -2780,6 +2824,11 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     mesh->setSource(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
             oldId, 0, flyem::BODY_MESH));
+    mesh->setObjectClass(
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(oldId));
+    mesh->setColor(Qt::white);
+    mesh->pushObjectColor();
+
     ZStackDocAccessor::AddObjectUnique(this, mesh);
   } else {
     emit removingBody(oldId);

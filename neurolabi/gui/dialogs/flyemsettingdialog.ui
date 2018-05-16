@@ -258,6 +258,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="psdNameCheckBox">
+       <property name="text">
+        <string>Naming PSD</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_5">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
