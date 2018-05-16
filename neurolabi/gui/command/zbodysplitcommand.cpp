@@ -76,12 +76,19 @@ ZBodySplitCommand::parseSignalPath(
       ZDvidTarget target;
       target.setFromUrl(signalPath);
       if (!signalInfo.isEmpty()) {
+        if (signalInfo.hasKey("address")) {
+          target.setServer(ZJsonParser::stringValue(signalInfo["address"]));
+        }
+        if (signalInfo.hasKey("port")) {
+          target.setPort(ZJsonParser::integerValue(signalInfo["port"]));
+        }
+
         target.updateData(signalInfo);
       }
       reader.open(target);
       if (reader.isReady()) {
         ZDvidSparseStack *dvidStack =
-            dvidStack = reader.readDvidSparseStack(m_bodyId, m_labelType);
+            reader.readDvidSparseStack(m_bodyId, m_labelType);
         spStack = dvidStack->getSparseStack(range);
         gc.registerObject(dvidStack);
       }
