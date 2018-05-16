@@ -1460,10 +1460,17 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 
   ZDvidReader reader;
   if (!reader.open(target)) {
-    emit messageGenerated(
-          ZWidgetMessage("Failed to open the database.",
-                         neutube::MSG_WARNING,
-                         ZWidgetMessage::TARGET_DIALOG));
+    ZWidgetMessage msg("Failed to open the database.",
+                       neutube::MSG_WARNING,
+                       ZWidgetMessage::TARGET_DIALOG);
+
+    QString detail = "Detail: ";
+    if (!reader.getErrorMsg().empty()) {
+      detail += reader.getErrorMsg().c_str();
+    }
+    msg.appendMessage(detail);
+    emit messageGenerated(msg);
+
     getProgressSignal()->endProgress();
     return;
   }
@@ -1554,9 +1561,13 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 void ZFlyEmProofMvc::showSetting()
 {
   if (m_settingDlg->exec()) {
+    m_settingDlg->applySettings(getCompleteDocument());
+    /*
     getCompleteDocument()->setGraySliceCenterCut(
-          m_settingDlg->getGrayscaleCenterCutWidth(), m_settingDlg->getGrayscaleCenterCutHeight());
+          m_settingDlg->getGrayscaleCenterCutWidth(),
+          m_settingDlg->getGrayscaleCenterCutHeight());
     getDocument()->showSwcFullSkeleton(m_settingDlg->showingFullSkeleton());
+    */
   }
 }
 
@@ -1575,6 +1586,7 @@ void ZFlyEmProofMvc::updateContrast()
   if (slice != NULL) {
     slice->setContrastProtocol(protocal);
     slice->updateContrast(getCompletePresenter()->highTileContrast());
+    getCompleteDocument()->bufferObjectModified(slice);
   }
 
   QList<ZDvidTileEnsemble*> teList =
@@ -1582,7 +1594,9 @@ void ZFlyEmProofMvc::updateContrast()
   foreach (ZDvidTileEnsemble *te, teList) {
     te->setContrastProtocal(getPresenter()->getHighContrastProtocal());
     te->enhanceContrast(getCompletePresenter()->highTileContrast());
+    getCompleteDocument()->bufferObjectModified(te);
   }
+  getCompleteDocument()->processObjectModified();
 }
 
 void ZFlyEmProofMvc::profile()
@@ -3544,25 +3558,21 @@ void ZFlyEmProofMvc::setDvidLabelSliceSize(int width, int height)
     ZDvidLabelSlice *slice =
         getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
     if (slice != NULL) {
+//      slice->disableFullView();
       slice->setMaxSize(getView()->getViewParameter(), width, height);
-      slice->disableFullView();
       getView()->paintObject();
     }
   }
 }
 
-void ZFlyEmProofMvc::showFullSegmentation(bool on)
+void ZFlyEmProofMvc::showFullSegmentation()
 {
   if (getCompleteDocument() != NULL) {
     ZDvidLabelSlice *slice =
-        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+        getCompleteDocument()->getDvidLabelSlice(getView()->getSliceAxis());
     if (slice != NULL) {
-      if (on) {
-        slice->updateFullView(getView()->getViewParameter());
-        getView()->paintObject();
-      } else {
-        slice->disableFullView();
-      }
+      slice->updateFullView(getView()->getViewParameter());
+      getView()->paintObject();
     }
   }
 }

@@ -122,6 +122,7 @@ Z3DWindow::Z3DWindow(
 {
   setAttribute(Qt::WA_DeleteOnClose);
   setFocusPolicy(Qt::StrongFocus);
+
   createActions();
   createMenus();
   createStatusBar();
@@ -140,7 +141,11 @@ Z3DWindow::Z3DWindow(
 
   setCentralWidget(getCanvas());
   connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::init);
+
   createDockWindows(); // empty docks
+  createContextMenu();
+  customizeContextMenu();
+
   connect(m_view, &Z3DView::networkConstructed,
           this, &Z3DWindow::fillDockWindows);  // fill in real widgets later
 
@@ -517,6 +522,12 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     action = m_actionLibrary->getAction(
           item, this, SLOT(changeSelectedPunctaColor()));
     break;
+  case ZActionFactory::ACTION_PUNCTA_HIDE_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(hideSelectedPuncta()));
+    break;
+  case ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(showSelectedPuncta()));
+    break;
   default:
     action = getDocument()->getAction(item);
     break;
@@ -769,9 +780,6 @@ void Z3DWindow::createMenus()
   m_editMenu->addSeparator();
 
   m_helpMenu->addAction(m_helpAction);
-
-  createContextMenu();
-  customizeContextMenu();
 }
 
 void Z3DWindow::createContextMenu()
@@ -874,6 +882,13 @@ void Z3DWindow::createContextMenu()
   connect(m_changeBackgroundAction, SIGNAL(triggered()), this,
           SLOT(changeBackground()));
 
+  m_toggleObjectsAction = new QAction("Objects", this);
+  m_toggleObjectsAction->setCheckable(true);
+  m_toggleObjectsAction->setChecked(
+        m_objectsDockWidget->toggleViewAction());
+  connect(m_toggleObjectsAction, SIGNAL(triggered(bool)),
+          m_objectsDockWidget->toggleViewAction(), SIGNAL(triggered(bool)));
+
   m_contextMenuGroup["empty"] = contextMenu;
 }
 
@@ -919,6 +934,7 @@ void Z3DWindow::hideObjectView()
 {
   if (m_objectsDockWidget != NULL) {
     m_objectsDockWidget->hide();
+    m_toggleObjectsAction->setChecked(false);
   }
 }
 
@@ -2638,6 +2654,7 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["empty"]->addAction(m_changeBackgroundAction);
+    m_contextMenuGroup["empty"]->addAction(m_toggleObjectsAction);
 
   }
   if (group == "volume") {
@@ -3115,6 +3132,32 @@ void Z3DWindow::transformSelectedPuncta()
     }
     m_doc->notifyPunctumModified();
   }
+}
+
+void Z3DWindow::setSelectPunctaVisible(bool on)
+{
+  std::set<ZPunctum*> punctaSet =
+      m_doc->getSelectedObjectSet<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+  if (!punctaSet.empty()) {
+    for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+         iter != punctaSet.end(); ++iter) {
+      ZPunctum *punctum = *iter;
+      punctum->setVisible(on);
+      m_doc->bufferObjectModified(
+            punctum, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
+    }
+    m_doc->processObjectModified();
+  }
+}
+
+void Z3DWindow::hideSelectedPuncta()
+{
+  setSelectPunctaVisible(false);
+}
+
+void Z3DWindow::showSelectedPuncta()
+{
+  setSelectPunctaVisible(true);
 }
 
 void Z3DWindow::changeSelectedPunctaColor()

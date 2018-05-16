@@ -101,6 +101,7 @@ bool ZDvidReader::startService()
     m_bufferReader.setService(getDvidTarget());
   } catch (std::exception &e) {
     m_service.reset();
+    m_errorMsg = e.what();
     std::cout << e.what() << std::endl;
     return false;
   }
@@ -802,6 +803,21 @@ ZObject3dScan *ZDvidReader::readSupervoxel(
   }
 
   return result;
+}
+
+uint64_t ZDvidReader::readParentBodyId(uint64_t spId) const
+{
+  uint64_t parentId = spId;
+
+  ZDvidUrl url(getDvidTarget());
+
+  QByteArray payload(("[" + std::to_string(spId) + "]").c_str());
+  ZJsonArray arrayJson = readJsonArray(url.getLabelMappingUrl(), payload);
+  if (!arrayJson.isEmpty()) {
+    parentId = ZJsonParser::integerValue(arrayJson.at(0));
+  }
+
+  return parentId;
 }
 
 ZObject3dScan *ZDvidReader::readBody(
@@ -3001,12 +3017,18 @@ lowtis::ImageService* ZDvidReader::getLowtisServiceGray(int cx, int cy) const
 
 void ZDvidReader::setGrayCenterCut(int cx, int cy)
 {
-  getLowtisServiceGray(cx, cy)->set_centercut(std::tuple<int,int>(cx, cy));
+  lowtis::ImageService *service = getLowtisServiceGray(cx, cy);
+  if (service != NULL) {
+    service->set_centercut(std::tuple<int,int>(cx, cy));
+  }
 }
 
 void ZDvidReader::setLabelCenterCut(int cx, int cy)
 {
-  getLowtisServiceLabel(cx, cy)->set_centercut(std::tuple<int,int>(cx, cy));
+  lowtis::ImageService *service = getLowtisServiceLabel(cx, cy);
+  if (service != NULL) {
+    service->set_centercut(std::tuple<int,int>(cx, cy));
+  }
 }
 
 
@@ -3170,7 +3192,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
 
       service->retrieve_arbimage(
             box.getWidth(), box.getHeight(), offset, dim1vec, dim2vec,
-            array->getDataPointer<char>(), zoom);
+            array->getDataPointer<char>(), zoom, true);
 
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
@@ -4194,6 +4216,22 @@ ZJsonArray ZDvidReader::readJsonArray(const std::string &url) const
 
   return obj;
 }
+
+ZJsonArray ZDvidReader::readJsonArray(
+    const std::string &url, const QByteArray &payload) const
+{
+  ZJsonArray obj;
+
+  ZDvidBufferReader &bufferReader = m_bufferReader;
+  bufferReader.read(url.c_str(), payload, "GET", isVerbose());
+  const QByteArray &buffer = bufferReader.getBuffer();
+  if (!buffer.isEmpty()) {
+    obj.decodeString(buffer.constData());
+  }
+
+  return obj;
+}
+
 
 std::vector<ZIntPoint> ZDvidReader::readSynapsePosition(
     const ZIntCuboid &box) const

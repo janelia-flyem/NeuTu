@@ -442,6 +442,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_PUNCTA_CHANGE_COLOR:
     action = new QAction("Change Color of Selected Puncta", parent);
     break;
+  case ACTION_PUNCTA_HIDE_SELECTED:
+    action = new QAction("Hide Selected Puncta", parent);
+    break;
+  case ACTION_PUNCTA_SHOW_SELECTED:
+    action = new QAction("Show Selected Puncta", parent);
+    break;
   case ACTION_REWRITE_SEGMENTATION:
     action = new QAction("Rewrite segmentation", parent);
     action->setToolTip("Rewrite segmentation in the current ROI. "

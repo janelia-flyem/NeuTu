@@ -74,6 +74,7 @@ void FlyEmSettingDialog::loadSetting()
   centerCut = GET_FLYEM_CONFIG.getCenterCut(flyem::key::SEGMENTATION);
   ui->segCxSpinBox->setValue(centerCut.first);
   ui->segCySpinBox->setValue(centerCut.second);
+  ui->psdNameCheckBox->setChecked(NeutubeConfig::NamingPsd());
 #endif
   ui->meshThreSpinBox->setValue(
         NeutubeConfig::GetMeshSplitThreshold() / 1000000);
@@ -95,6 +96,11 @@ bool FlyEmSettingDialog::usingDefaultConfig() const
 bool FlyEmSettingDialog::namingSynapse() const
 {
   return ui->synapseNameCheckBox->isChecked();
+}
+
+bool FlyEmSettingDialog::namingPsd() const
+{
+  return ui->psdNameCheckBox->isChecked();
 }
 
 std::string FlyEmSettingDialog::getNeuTuServer() const
@@ -140,6 +146,7 @@ void FlyEmSettingDialog::update()
   GET_FLYEM_CONFIG.setCenterCut(
         flyem::key::SEGMENTATION, ui->segCxSpinBox->value(),
         ui->segCySpinBox->value());
+  GET_FLYEM_CONFIG.setPsdNameDetail(namingPsd());
 #endif
 
   NeutubeConfig::EnableProfileLogging(ui->profilingCheckBox->isChecked());
@@ -154,6 +161,7 @@ void FlyEmSettingDialog::update()
   NeutubeConfig::SetFlyEmConfigPath(getConfigPath().c_str());
   NeutubeConfig::UseDefaultFlyEmConfig(usingDefaultConfig());
   NeutubeConfig::SetNamingSynapse(namingSynapse());
+  NeutubeConfig::SetNamingPsd(namingPsd());
   NeutubeConfig::SetMeshSplitThreshold(ui->meshThreSpinBox->value() * 1000000);
 }
 

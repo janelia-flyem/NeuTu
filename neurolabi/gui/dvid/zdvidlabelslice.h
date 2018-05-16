@@ -44,7 +44,7 @@ public:
   void update();
 
   void updateFullView(const ZStackViewParam &viewParam);
-  void disableFullView();
+//  void disableFullView();
 
   void setSliceAxis(neutube::EAxis sliceAxis);
 
@@ -240,7 +240,7 @@ private:
 //  int m_zoom;
 
   bool m_selectionFrozen;
-  bool m_isFullView;
+//  bool m_isFullView;
 
   mutable QCache<QString, ZArray> m_objCache;
 //  NeuTube::EAxis m_sliceAxis;
