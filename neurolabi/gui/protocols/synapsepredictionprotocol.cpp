@@ -136,8 +136,8 @@ bool SynapsePredictionProtocol::initialize() {
         }
         m_subvariation = inputDialog.getMode();
         uint64_t bodyID = inputDialog.getBodyID();
-        ZDvidReader reader;
-        if (reader.open(m_dvidTarget)) {
+        const ZDvidReader &reader = m_dvidReader;
+        if (reader.good()) {
             if (!reader.hasBody(bodyID)) {
                 QMessageBox mb;
                 mb.setText("Body ID doesn't exist!");
@@ -386,7 +386,7 @@ void SynapsePredictionProtocol::onModeChanged(QString item) {
  * is the synapse at the input point finished being reviewed under the current mode?
  */
 bool SynapsePredictionProtocol::isFinished(ZIntPoint point) {
-    return isFinished(getWholeSynapse(point));
+    return isFinished(getWholeSynapse(point, m_dvidReader));
 }
 
 /* as above, but input is vector of synapse elements returned by getWholeSynapse(),
@@ -563,10 +563,10 @@ void SynapsePredictionProtocol::processSynapseVerification(
 
 void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
 {
-  ZDvidReader reader;
+  ZDvidReader &reader = m_dvidReader;
   ZIntPoint targetPoint = pt;
   bool isVerified = true;
-  if (reader.open(m_dvidTarget)) {
+  if (reader.good()) {
     ZDvidSynapse synapse =
         reader.readSynapse(pt, flyem::LOAD_PARTNER_LOCATION);
 
@@ -614,10 +614,10 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
 
 void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)
 {
-  ZDvidReader reader;
+  ZDvidReader &reader = m_dvidReader;
   ZIntPoint targetPoint = pt;
 
-  if (reader.open(m_dvidTarget)) {
+  if (reader.good()) {
     ZDvidSynapse synapse =
         reader.readSynapse(pt, flyem::LOAD_PARTNER_LOCATION);
 
@@ -691,7 +691,8 @@ void SynapsePredictionProtocol::updateLabels() {
     // current presynaptic sites labels:
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
         ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
-        std::vector<ZDvidSynapse> synapse = getWholeSynapse(currentPoint);
+        std::vector<ZDvidSynapse> synapse = getWholeSynapse(
+              currentPoint, m_dvidReader);
 
         if (synapse.size() == 0) {
             QMessageBox mb;
@@ -775,10 +776,10 @@ std::vector<uint64_t> SynapsePredictionProtocol::getBodiesForSynapse(std::vector
     for (size_t i=0; i<synapse.size(); i++) {
         sites.push_back(synapse[i].getPosition());
     }
-    ZDvidReader reader;
+    ZDvidReader &reader = m_dvidReader;
     std::vector<uint64_t> bodyList;
-    if (reader.open(m_dvidTarget)) {
-        bodyList = reader.readBodyIdAt(sites);
+    if (reader.good()) {
+      bodyList = reader.readBodyIdAt(sites);
     }
     return bodyList;
 }
@@ -790,10 +791,11 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     m_finishedList.clear();
     m_currentPendingIndex = 0;
 
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(m_dvidTarget)) {
+    ZDvidReader &reader = m_dvidReader;
+//    reader.setVerbose(false);
+    ZDvidReader::PauseVerbose pv(&reader);
 
+    if (reader.good()) {
         QProgressDialog progressDialog("Loading synapses...", 0, 0, 100, this);
         progressDialog.setWindowModality(Qt::WindowModal);
         progressDialog.setMinimumDuration(1000);
@@ -828,7 +830,8 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
                 progressDialog.setValue(20 + 5 * (i / progressInterval));
             }
             ZDvidSynapse &synapse = synapseList[i];
-            std::vector<ZDvidSynapse> wholeSynapse = getWholeSynapse(synapse.getPosition());
+            std::vector<ZDvidSynapse> wholeSynapse = getWholeSynapse(
+                  synapse.getPosition(), m_dvidReader);
             if (keepSynapse(synapse)) {
                 // if synapse is post, get its pre (T-bar)
                 if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
@@ -1009,12 +1012,12 @@ void SynapsePredictionProtocol::onDoubleClickSitesTable(QModelIndex tableIndex) 
 // input: point (pre- or post-synaptic site)
 // output: array with first pre-synaptic site then all post-synaptic sites
 //  for the synapse; returns empty list on errors
-std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint point) {
+std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(
+    ZIntPoint point, const ZDvidReader &reader) {
 
     std::vector<ZDvidSynapse> result;
 
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
+    if (reader.good()) {
         ZDvidSynapse synapse = reader.readSynapse(point, flyem::LOAD_PARTNER_LOCATION);
 
         // find the presynaptic site
