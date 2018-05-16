@@ -393,6 +393,7 @@ public slots:
   void slotTest();
 
   void copyCurrentPosition();
+  void copyLabelId();
 
 
   void notifyUser(const QString &msg);

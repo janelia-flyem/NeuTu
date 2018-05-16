@@ -3084,7 +3084,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 
       std::cout << "Reading size:" << box.getWidth() << "x" << box.getHeight()
                 << std::endl;
-      qDebug() << QString("Call: retrieve_argimage(%1, %2, [%3, %4, %5], "
+      qDebug() << QString("Call: retrieve_arbimage(%1, %2, [%3, %4, %5], "
                           "[%6, %7, %8], [%9, %10, %11], array, %12, %13)").
                   arg(box.getWidth()).arg(box.getHeight()).
                   arg(offset[0]).arg(offset[1]).arg(offset[2]).
@@ -3182,7 +3182,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
 
       std::cout << "Reading size:" << box.getWidth() << "x" << box.getHeight()
                 << std::endl;
-      qDebug() << QString("Call: retrieve_argimage(%1, %2, [%3, %4, %5], "
+      qDebug() << QString("Call: retrieve_arbimage(%1, %2, [%3, %4, %5], "
                           "[%6, %7, %8], [%9, %10, %11], array, %12)").
                   arg(box.getWidth()).arg(box.getHeight()).
                   arg(offset[0]).arg(offset[1]).arg(offset[2]).

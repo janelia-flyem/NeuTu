@@ -151,7 +151,6 @@ protected:
   void tryAddTodoItem(
       const ZIntPoint &pt, bool checked, neutube::EToDoAction action);
 
-
 private:
 //  void connectAction();
   void tryAddBookmarkMode();

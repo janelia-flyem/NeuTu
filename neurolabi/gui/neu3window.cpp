@@ -152,7 +152,7 @@ void Neu3Window::initGrayscaleWidget()
 
     ZFlyEmProofMvcController::SelectBody(
           m_sliceWidget,
-          getBodyDocument()->getUnencodedBodySet());
+          getBodyDocument()->getNormalBodySet());
     if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
@@ -537,7 +537,7 @@ void Neu3Window::updateWebView()
 
     QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
-               rotation, getBodyDocument()->getUnencodedBodySet()));
+               rotation, getBodyDocument()->getNormalBodySet()));
 
 
     m_webView->setUrl(url);

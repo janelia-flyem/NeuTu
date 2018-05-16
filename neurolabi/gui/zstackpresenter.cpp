@@ -435,6 +435,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_POSITION:
       connect(action, SIGNAL(triggered()), this, SLOT(copyCurrentPosition()));
       break;
+    case ZActionFactory::ACTION_COPY_BODY_ID:
+      connect(action, SIGNAL(triggered()), this, SLOT(copyLabelId()));
+      break;
     default:
       connected = false;
       break;
@@ -2753,6 +2756,20 @@ void ZStackPresenter::copyCurrentPosition()
 
   buddyDocument()->notify(
         QString("%1 copied").arg(pt.toIntPoint().toString().c_str()));
+}
+
+void ZStackPresenter::copyLabelId()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getDataPosition();
+
+  uint64_t id = buddyDocument()->getLabelId(
+        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+
+  ZGlobal::CopyToClipboard(std::to_string(id));
+
+  buddyDocument()->notify(QString("%1 copied").arg(id));
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()

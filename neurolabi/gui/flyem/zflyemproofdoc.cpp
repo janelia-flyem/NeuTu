@@ -2900,7 +2900,7 @@ uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
 {
   uint64_t bodyId = 0;
   ZDvidReader &reader = getDvidReader();
-  if (reader.open(getDvidTarget())) {
+  if (reader.good()) {
     bodyId = m_bodyMerger.getFinalLabel(reader.readBodyIdAt(x, y, z));
   }
 
@@ -2910,6 +2910,17 @@ uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
 uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
 {
   return getBodyId(pt.getX(), pt.getY(), pt.getZ());
+}
+
+uint64_t ZFlyEmProofDoc::getLabelId(int x, int y, int z)
+{
+  uint64_t bodyId = 0;
+  ZDvidReader &reader = getDvidReader();
+  if (reader.good()) {
+    bodyId = reader.readBodyIdAt(x, y, z);
+  }
+
+  return bodyId;
 }
 
 void ZFlyEmProofDoc::autoSave()
@@ -3668,7 +3679,7 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
 
   if (rect.isValid()) {
     ZDvidReader &reader = getDvidReader();
-    if (reader.open(getDvidTarget())) {
+    if (reader.good()) {
       std::set<uint64_t> bodySet = reader.readBodyId(
             rect.getFirstX(), rect.getFirstY(), z,
             rect.getWidth(), rect.getHeight(), 1);
