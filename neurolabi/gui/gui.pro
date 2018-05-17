@@ -679,6 +679,7 @@ HEADERS += mainwindow.h \
     flyem/zflyemkeyoperationconfig.h \
     zslicedpuncta.h \
     flyem/zflyembookmarkwidget.h \
+    flyem/zflyembookmarkfilter.h \
     zmultiscalepixmap.h \
     biocytin/zbiocytinprojmaskfactory.h \
     flyem/zflyemproofdocmenufactory.h \
@@ -947,6 +948,7 @@ FORMS += dialogs/settingdialog.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     flyem/zflyembookmarkwidget.ui \
+    flyem/zflyembookmarkfilter.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
@@ -1339,6 +1341,7 @@ SOURCES += main.cpp \
     flyem/zflyemkeyoperationconfig.cpp \
     zslicedpuncta.cpp \
     flyem/zflyembookmarkwidget.cpp \
+    flyem/zflyembookmarkfilter.cpp \
     zmultiscalepixmap.cpp \
     biocytin/zbiocytinprojmaskfactory.cpp \
     flyem/zflyemproofdocmenufactory.cpp \
@@ -1530,7 +1533,7 @@ SOURCES += main.cpp \
     core/utilities.cpp \
     core/qthelper.cpp \
     flyem/zflyemtododelegate.cpp \
-    zmenuconfig.cpp
+    zmenuconfig.cpp 
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
