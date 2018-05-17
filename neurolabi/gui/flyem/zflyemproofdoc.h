@@ -592,6 +592,7 @@ private:
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
+  std::string getSynapseName(const ZDvidSynapse &synapse) const;
 
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,

@@ -6,9 +6,11 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QProgressDialog>
 #include <QtAlgorithms>
 
 #include "synapsepredictioninputdialog.h"
+#include "synapsepredictionbodyinputdialog.h"
 
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidsynapse.h"
@@ -29,6 +31,16 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     m_variation = variation;
 
     ui->setupUi(this);
+
+    // mode menu
+    ui->modeMenu->clear();
+    ui->modeMenu->addItem(MODE_SYNAPSE);
+    ui->modeMenu->addItem(MODE_TBAR);
+    ui->modeMenu->addItem(MODE_PSD);
+    ui->modeMenu->setCurrentIndex(0);
+    m_currentMode = MODE_SYNAPSE;
+    // connect(ui->modeMenu, SIGNAL(currentIndexChanged(QString)), this, SLOT(onModeChanged(QString)));
+    connect(ui->modeMenu, SIGNAL(activated(QString)), this, SLOT(onModeChanged(QString)));
 
     // sites table
     m_sitesModel = new QStandardItemModel(0, 5, ui->sitesTableView);
@@ -52,7 +64,6 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
 
     connect(ui->gotoButton, SIGNAL(clicked(bool)), this, SLOT(onGotoButton()));
     connect(ui->finishCurrentButton, SIGNAL(clicked(bool)), this, SLOT(onFinishCurrentButton()));
-    connect(ui->detailsButton, SIGNAL(clicked(bool)), this, SLOT(onDetailsButton()));
     connect(ui->exitButton, SIGNAL(clicked(bool)), this, SLOT(onExitButton()));
     connect(ui->completeButton, SIGNAL(clicked(bool)), this, SLOT(onCompleteButton()));
     connect(ui->refreshButton, SIGNAL(clicked(bool)), this, SLOT(onRefreshButton()));
@@ -71,13 +82,22 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
 }
 
 const std::string SynapsePredictionProtocol::KEY_VARIATION = "variation";
+const std::string SynapsePredictionProtocol::KEY_SUBVARIATION = "subvariation";
 const std::string SynapsePredictionProtocol::VARIATION_REGION = "region";
 const std::string SynapsePredictionProtocol::VARIATION_BODY = "body";
+const std::string SynapsePredictionProtocol::SUBVARIATION_BODY_TBAR = "T-bar";
+const std::string SynapsePredictionProtocol::SUBVARIATION_BODY_PSD = "PSD";
+const std::string SynapsePredictionProtocol::SUBVARIATION_BODY_BOTH = "both";
 const std::string SynapsePredictionProtocol::KEY_VERSION = "version";
 const std::string SynapsePredictionProtocol::KEY_PROTOCOL_RANGE = "range";
 const std::string SynapsePredictionProtocol::KEY_BODYID= "body ID";
-const int SynapsePredictionProtocol::fileVersion = 2;
+const std::string SynapsePredictionProtocol::KEY_MODE= "mode";
+const int SynapsePredictionProtocol::fileVersion = 3;
 const QColor SynapsePredictionProtocol::COLOR_DEFAULT = QColor(0, 0, 0);      // no color
+const QColor SynapsePredictionProtocol::COLOR_TARGET_BODY = QColor(102, 204, 255);      // medium mild blue
+const QString SynapsePredictionProtocol::MODE_SYNAPSE = "whole synapses";
+const QString SynapsePredictionProtocol::MODE_TBAR = "T-bars only";
+const QString SynapsePredictionProtocol::MODE_PSD = "PSDs only";
 
 /*
  * start the protocol anew; returns success status;
@@ -88,10 +108,6 @@ bool SynapsePredictionProtocol::initialize() {
 
     if (m_variation == VARIATION_REGION) {
         SynapsePredictionInputDialog inputDialog;
-
-        // set initial volume here
-        // small volume for testing (has only a handful of synapses):
-        // inputDialog.setVolume(ZIntCuboid(3500, 5200, 7300, 3700, 5400, 7350));
 
         inputDialog.setRoI("(RoI is ignored for now)");
 
@@ -108,44 +124,34 @@ bool SynapsePredictionProtocol::initialize() {
         m_protocolRange = volume;
 
     } else if (m_variation == VARIATION_BODY) {
-        // using text dialog because getInt() variation is 32-bit;
-        //  our body IDs get bigger than that
-        // note for future improvement: would be nice to let the user
-        //  enter a body name, but currently we store body names in
-        //  key-value, which is not indexed and not synced to body IDs
-        bool ok;
-        uint64_t bodyID;
-        QString ans = QInputDialog::getText(this,
-            "Choose body", "Review synapses on body with ID:",
-            QLineEdit::Normal, "", &ok);
-        if (ok && !ans.isEmpty()) {
-            // convert to int and check that it exists:
-            bodyID = ans.toLong(&ok);
-            if (!ok) {
+
+        SynapsePredictionBodyInputDialog inputDialog;
+
+        int ans = inputDialog.exec();
+        if (ans == QDialog::Rejected) {
+            return false;
+        }
+        if (!inputDialog.hasBodyID()) {
+            return false;
+        }
+        m_subvariation = inputDialog.getMode();
+        uint64_t bodyID = inputDialog.getBodyID();
+        const ZDvidReader &reader = m_dvidReader;
+        if (reader.good()) {
+            if (!reader.hasBody(bodyID)) {
                 QMessageBox mb;
-                mb.setText("Can't parse body ID");
-                mb.setInformativeText("The entered body ID " + ans + " doesn't seem to be an integer!");
+                mb.setText("Body ID doesn't exist!");
+                mb.setInformativeText("The entered body ID " + QString::number(bodyID)  + " doesn't seem to exist!");
                 mb.setStandardButtons(QMessageBox::Ok);
                 mb.setDefaultButton(QMessageBox::Ok);
                 mb.exec();
                 return false;
-            }
-            ZDvidReader reader;
-            if (reader.open(m_dvidTarget)) {
-                if (!reader.hasBody(bodyID)) {
-                    QMessageBox mb;
-                    mb.setText("Body ID doesn't exist!");
-                    mb.setInformativeText("The entered body ID " +  ans + " doesn't seem to exist!");
-                    mb.setStandardButtons(QMessageBox::Ok);
-                    mb.setDefaultButton(QMessageBox::Ok);
-                    mb.exec();
-                    return false;
-                }
+            } else {
+                m_bodyID = bodyID;
             }
         } else {
             return false;
         }
-        m_bodyID = bodyID;
     } else {
         variationError(m_variation);
         return false;
@@ -157,6 +163,7 @@ bool SynapsePredictionProtocol::initialize() {
     // generate pending/finished lists from user input
     // throw this into a thread?
     loadInitialSynapseList();
+    updateSiteListLabel();
 
     // get started
     onFirstButton();
@@ -263,19 +270,17 @@ void SynapsePredictionProtocol::onFinishCurrentButton() {
     }
 
     // ensure the thing is 100% verified
-    ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
-    std::vector<ZDvidSynapse> synapseElements = getWholeSynapse(currentPoint);
-    bool verified = true;
-    for (size_t i=0; i<synapseElements.size(); i++) {
-        if (!synapseElements[i].isVerified()) {
-            verified = false;
-            break;
-        }
-    }
-    if (!verified) {
+    ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];    
+    if (!isFinished(currentPoint)) {
         QMessageBox mb;
         mb.setText("Not all verified!");
-        mb.setInformativeText("Not all elements of the current T-bar are verified!  Verify the T-bar and all PSDs before finishing.");
+        if (m_currentMode == MODE_SYNAPSE) {
+            mb.setInformativeText("Not all elements of the current T-bar are verified!  Verify the T-bar and all PSDs before finishing.");
+        } else if (m_currentMode == MODE_TBAR) {
+            mb.setInformativeText("This T-bar is not verified!  Verify it before finishing.");
+        } else if (m_currentMode == MODE_PSD) {
+            mb.setInformativeText("Not all PSDs of the current T-bar are verified!  Verify all PSDs before finishing.");
+        }
         mb.setStandardButtons(QMessageBox::Ok);
         mb.setDefaultButton(QMessageBox::Ok);
         mb.exec();
@@ -319,6 +324,17 @@ void SynapsePredictionProtocol::onCompleteButton() {
 
 void SynapsePredictionProtocol::onRefreshButton()
 {
+    refreshData(true);
+}
+
+/*
+ * refresh the data in the protocol and update labels; current
+ * T-bar is preserved if possible; if unfinishCurrent = true,
+ * it will be moved from the finished list back to pending if
+ * it moved to finished during the refresh (there are reasons
+ * for wanting both behaviors)
+ */
+void SynapsePredictionProtocol::refreshData(bool unfinishCurrent) {
     // try to keep the same current T-bar across the refresh
     ZIntPoint savedPoint;
     int savedIndex = -1;
@@ -337,36 +353,16 @@ void SynapsePredictionProtocol::onRefreshButton()
             // if we make it here, that means the current synapse was
             //  all verified but not yet finished when the list was
             //  refreshed, and it got finished because that's a side
-            //  effect of the refresh; move it back from the finished list to
-            //  the pending list, at the same position
-            m_finishedList.removeOne(savedPoint);
-            m_pendingList.insert(savedIndex, savedPoint);
-            m_currentPendingIndex = savedIndex;
+            //  effect of the refresh; if desired, move it back from
+            //  the finished list to the pending list, at the same position
+            if (unfinishCurrent) {
+                m_finishedList.removeOne(savedPoint);
+                m_pendingList.insert(savedIndex, savedPoint);
+                m_currentPendingIndex = savedIndex;
+            }
         }
     }
     updateLabels();
-}
-
-void SynapsePredictionProtocol::onDetailsButton() {
-    QString message = "Synapses come from ";
-    if (m_variation == VARIATION_REGION) {
-        message += "region between ";
-        message += QString::fromStdString(m_protocolRange.getFirstCorner().toString());
-        message += " and ";
-        message += QString::fromStdString(m_protocolRange.getLastCorner().toString());
-    } else if (m_variation == VARIATION_BODY) {
-        message += "body ";
-        message += QString::number(m_bodyID);
-    } else {
-        variationError(m_variation);
-    }
-
-    QMessageBox mb;
-    mb.setText("Protocol details");
-    mb.setInformativeText(message);
-    mb.setStandardButtons(QMessageBox::Ok);
-    mb.setDefaultButton(QMessageBox::Ok);
-    mb.exec();
 }
 
 void SynapsePredictionProtocol::onExitButton() {
@@ -375,6 +371,50 @@ void SynapsePredictionProtocol::onExitButton() {
 
     // exit protocol; can be reopened and worked on later
     emit protocolExiting();
+}
+
+void SynapsePredictionProtocol::onModeChanged(QString item) {
+    // full refresh is needed to update the pending and finished lists;
+    //  maybe an "are you sure?" dialog is useful, since it takes some time?
+    //  then save so the change is persisted
+    m_currentMode = item;
+    refreshData(false);
+    saveState();
+}
+
+/*
+ * is the synapse at the input point finished being reviewed under the current mode?
+ */
+bool SynapsePredictionProtocol::isFinished(ZIntPoint point) {
+    return isFinished(getWholeSynapse(point, m_dvidReader));
+}
+
+/* as above, but input is vector of synapse elements returned by getWholeSynapse(),
+ * in which T-bar element is first
+ */
+bool SynapsePredictionProtocol::isFinished(std::vector<ZDvidSynapse> synapseElements) {
+    bool tbarVerified = synapseElements[0].isVerified();
+    if (m_currentMode == MODE_TBAR) {
+        return tbarVerified;
+    }
+
+    bool psdVerified = true;
+    for (size_t i=1; i<synapseElements.size(); i++) {
+        if (!synapseElements[i].isVerified()) {
+            psdVerified = false;
+            break;
+        }
+    }
+
+    if (m_currentMode == MODE_PSD) {
+        return psdVerified;
+    } else if (m_currentMode == MODE_SYNAPSE) {
+        return tbarVerified && psdVerified;
+    } else {
+        // unknown mode!  log it and say no
+        LINFO() << "unknown mode found in SynapsePredictionProtocol::isfinished():" << m_currentMode;
+        return false;
+    }
 }
 
 void SynapsePredictionProtocol::gotoCurrent() {
@@ -408,10 +448,13 @@ void SynapsePredictionProtocol::saveState() {
         data.setEntry(KEY_PROTOCOL_RANGE.c_str(), rangeJson);
     } else if (m_variation == VARIATION_BODY) {
         data.setEntry(KEY_BODYID.c_str(), m_bodyID);
+        data.setEntry(KEY_SUBVARIATION.c_str(), m_subvariation);
     } else {
         variationError(m_variation);
         return;
     }
+
+    data.setEntry(KEY_MODE.c_str(), m_currentMode.toStdString().c_str());
 
     // always version your output files!
     data.setEntry(KEY_VERSION.c_str(), fileVersion);
@@ -437,16 +480,31 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     //  separate methods if they get wordy
     bool updated = false;
     if (version != fileVersion) {
-        // 1 to 2:
+        // 1 to 2: in v2, we added the "variation" key; in v1, that was always "region"
         if (version == 1) {
-            // in v2, we added the "variation" key; in v1, that was always "region"
             data.setEntry(KEY_VARIATION.c_str(), VARIATION_REGION.c_str());
             version = 2;
         }
 
+        // 2 to 3:
+        if (version == 2) {
+            // added "mode" key; in previous versions, it was always "Whole synapses"
+            data.setEntry(KEY_MODE.c_str(), MODE_SYNAPSE.toStdString().c_str());
+
+            // added subvariation to body variation; old one was always T-bar:
+            if (m_variation == VARIATION_BODY) {
+                data.setEntry(KEY_SUBVARIATION.c_str(), SUBVARIATION_BODY_TBAR.c_str());
+            }
+
+            version = 3;
+        }
 
         updated = true;
     }
+
+    // must get mode before synapse list is retrieved
+    m_currentMode = QString::fromUtf8(ZJsonParser::stringValue(data[KEY_MODE.c_str()]));
+    ui->modeMenu->setCurrentText(m_currentMode);
 
     // variation specific loading:
     if (m_variation == VARIATION_REGION) {
@@ -458,6 +516,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
             return;
         }
     } else if (m_variation == VARIATION_BODY) {
+        m_subvariation = ZJsonParser::stringValue(data[KEY_SUBVARIATION.c_str()]);
         m_bodyID = ZJsonParser::integerValue(data[KEY_BODYID.c_str()]);
         loadInitialSynapseList();
     } else {
@@ -471,6 +530,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
     }
 
     enableProtocolColorMap();
+    updateSiteListLabel();
     onFirstButton();
 }
 
@@ -503,10 +563,10 @@ void SynapsePredictionProtocol::processSynapseVerification(
 
 void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
 {
-  ZDvidReader reader;
+  ZDvidReader &reader = m_dvidReader;
   ZIntPoint targetPoint = pt;
   bool isVerified = true;
-  if (reader.open(m_dvidTarget)) {
+  if (reader.good()) {
     ZDvidSynapse synapse =
         reader.readSynapse(pt, flyem::LOAD_PARTNER_LOCATION);
 
@@ -554,10 +614,10 @@ void SynapsePredictionProtocol::verifySynapse(const ZIntPoint &pt)
 
 void SynapsePredictionProtocol::unverifySynapse(const ZIntPoint &pt)
 {
-  ZDvidReader reader;
+  ZDvidReader &reader = m_dvidReader;
   ZIntPoint targetPoint = pt;
 
-  if (reader.open(m_dvidTarget)) {
+  if (reader.good()) {
     ZDvidSynapse synapse =
         reader.readSynapse(pt, flyem::LOAD_PARTNER_LOCATION);
 
@@ -598,6 +658,32 @@ void SynapsePredictionProtocol::moveSynapse(
   }
 }
 
+void SynapsePredictionProtocol::updateSiteListLabel() {
+    QString message = "Site list: ";
+    if (m_variation == VARIATION_REGION) {
+        message += "T-bars within ";
+        message += QString::fromStdString(m_protocolRange.getFirstCorner().toString());
+        message += " to ";
+        message += QString::fromStdString(m_protocolRange.getLastCorner().toString());
+    } else if (m_variation == VARIATION_BODY) {
+        if (m_subvariation == SUBVARIATION_BODY_TBAR) {
+            message += "T-bars";
+        } else if (m_subvariation == SUBVARIATION_BODY_PSD) {
+            message += "T-bars with PSDs";
+        } else if (m_subvariation == SUBVARIATION_BODY_BOTH) {
+            message += "synapses";
+        }
+        message += " on body";
+        // color the body ID; we'll use that color to indicate sites on that body
+        ui->siteListLabel2->setStyleSheet(targetBodyStylesheet(COLOR_TARGET_BODY));
+        ui->siteListLabel2->setText(QString::number(m_bodyID));
+        ui->siteListLabel2->setToolTip("T-bars and PSDs on this body will be highlighted in the same color");
+    } else {
+        variationError(m_variation);
+    }
+    ui->siteListLabel->setText(message);
+}
+
 void SynapsePredictionProtocol::updateLabels() {
     // currently we update all labels here while calling methods
     //  to do the table and color map
@@ -605,7 +691,8 @@ void SynapsePredictionProtocol::updateLabels() {
     // current presynaptic sites labels:
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
         ZIntPoint currentPoint = m_pendingList[m_currentPendingIndex];
-        std::vector<ZDvidSynapse> synapse = getWholeSynapse(currentPoint);
+        std::vector<ZDvidSynapse> synapse = getWholeSynapse(
+              currentPoint, m_dvidReader);
 
         if (synapse.size() == 0) {
             QMessageBox mb;
@@ -622,11 +709,17 @@ void SynapsePredictionProtocol::updateLabels() {
 
         // first item in that list is the pre-synaptic element
         ui->preLocationLabel->setText(QString::fromStdString(currentPoint.toString()));
-        ui->preConfLabel->setText(QString("Confidence: %1").arg(synapse[0].getConfidence(), 3, 'f', 1));
-        if (synapse[0].isVerified()) {
-            ui->preStatusLabel->setText(QString("Verified: yes"));
+        if (m_currentMode != MODE_PSD) {
+            ui->preConfLabel->setText(QString("Confidence: %1").arg(synapse[0].getConfidence(), 3, 'f', 1));
+            if (synapse[0].isVerified()) {
+                ui->preStatusLabel->setText(QString("Verified: yes"));
+            } else {
+                ui->preStatusLabel->setText(QString("Verified: no"));
+            }
         } else {
-            ui->preStatusLabel->setText(QString("Verified: no"));
+            // in PSD mode, don't show T-bar info
+            ui->preConfLabel->setText(QString("Confidence: n/a"));
+            ui->preStatusLabel->setText(QString("Verified: n/a"));
         }
 
         int nPSDverified = 0;
@@ -635,10 +728,29 @@ void SynapsePredictionProtocol::updateLabels() {
                 nPSDverified++;
             }
         }
-        ui->postTableLabel->setText(QString("PSDs (%1/%2 verified)").arg(nPSDverified).arg(synapse.size() - 1));
+        if (m_currentMode != MODE_TBAR) {
+            ui->postTableLabel->setText(QString("PSDs (%1/%2 verified)").arg(nPSDverified).arg(synapse.size() - 1));
+        } else {
+            // in T-bar mode, don't show PSD info
+            ui->postTableLabel->setText(QString("PSDs"));
+        }
 
-        updateSitesTable(synapse);
-        updateColorMap(synapse);
+        // if we have segmentation, we also color stuff; get body IDs for all locations
+        std::vector<uint64_t> bodyList = getBodiesForSynapse(synapse);
+
+        // color labels for T-bar if we're in body variation; remember, the
+        //  first synaptic element is the T-bar
+        if (m_variation == VARIATION_BODY && bodyList.size() > 0 && m_bodyID == bodyList[0]) {
+            ui->preLocationLabel->setStyleSheet(targetBodyStylesheet(COLOR_TARGET_BODY));
+        } else {
+            ui->preLocationLabel->setStyleSheet("");
+        }
+
+        updateSitesTable(synapse, bodyList);
+
+        if (bodyList.size() > 0) {
+            updateColorMap(synapse, bodyList);
+        }
     } else {
         ui->preLocationLabel->setText(QString("(--, --, --)"));
         ui->preConfLabel->setText(QString("Confidence: --"));
@@ -647,12 +759,29 @@ void SynapsePredictionProtocol::updateLabels() {
         clearSitesTable();
     }
 
-    // progress label:
+    // progress label is same for all modes:
     int nPending = m_pendingList.size();
     int nFinished = m_finishedList.size();
     int nTotal = nPending + nFinished;
     float percent = (100.0 * nFinished) / nTotal;
     ui->progressLabel->setText(QString("Progress:\n\n %1 / %2 (%3%)").arg(nFinished).arg(nTotal).arg(percent, 4, 'f', 1));
+}
+
+/*
+ * given a list of synaptic elements, return a list of body IDs at their locations;
+ * returns empty list if we have no segmentation
+ */
+std::vector<uint64_t> SynapsePredictionProtocol::getBodiesForSynapse(std::vector<ZDvidSynapse> synapse) {
+    std::vector<ZIntPoint> sites;
+    for (size_t i=0; i<synapse.size(); i++) {
+        sites.push_back(synapse[i].getPosition());
+    }
+    ZDvidReader &reader = m_dvidReader;
+    std::vector<uint64_t> bodyList;
+    if (reader.good()) {
+      bodyList = reader.readBodyIdAt(sites);
+    }
+    return bodyList;
 }
 
 void SynapsePredictionProtocol::loadInitialSynapseList()
@@ -662,54 +791,97 @@ void SynapsePredictionProtocol::loadInitialSynapseList()
     m_finishedList.clear();
     m_currentPendingIndex = 0;
 
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(m_dvidTarget)) {
-        // show wait cursor
-        QApplication::setOverrideCursor(Qt::WaitCursor);
-        QApplication::processEvents();
+    ZDvidReader &reader = m_dvidReader;
+//    reader.setVerbose(false);
+    ZDvidReader::PauseVerbose pv(&reader);
+
+    if (reader.good()) {
+        QProgressDialog progressDialog("Loading synapses...", 0, 0, 100, this);
+        progressDialog.setWindowModality(Qt::WindowModal);
+        progressDialog.setMinimumDuration(1000);
+        progressDialog.setValue(20);
 
         std::vector<ZDvidSynapse> synapseList;
         if (m_variation == VARIATION_REGION) {
             synapseList = reader.readSynapse(m_protocolRange, flyem::LOAD_PARTNER_LOCATION);
-
-            // filter by roi (coming "soon")
-            // will need to do raw DVID call to batch ask "is point in RoI?";
-            //  that call not in ZDvidReader() yet
-
         } else if (m_variation == VARIATION_BODY) {
             synapseList = reader.readSynapse(m_bodyID, flyem::LOAD_PARTNER_LOCATION);
         } else {
             variationError(m_variation);
         }
 
-        // build the lists of pre-synaptic sites; if a site is
-        //  already verified, then it is "finished"; if not,
-        //  add to the pending synapse list that we will then sort;
-        //  only after that transfer the positions to the pending position list
+        // do the filter by roi here (coming "soon")
+        // will need to do raw DVID call to batch ask "is point in RoI?";
+        //  that call not in ZDvidReader() yet
+
+        // look at pre-synaptic sites; check whether the appropriate
+        //  items have been verified according to the mode we're in; if so, its
+        //  position goes in the finished list
+        // update progress dialog approximate every 5%; some ad hoc testing indicated
+        //  that the initial read (above) is about 20% of the total (note setValue() above),
+        //  so scale based on that
+        int progressInterval = 1;
+        if (synapseList.size() >= 16) {
+            progressInterval = synapseList.size() / 16;
+        }
         QList<ZDvidSynapse> pendingSynapses;
         for (size_t i=0; i<synapseList.size(); i++) {
+            if (i % progressInterval == 0) {
+                progressDialog.setValue(20 + 5 * (i / progressInterval));
+            }
             ZDvidSynapse &synapse = synapseList[i];
-            if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
-                if (synapse.isProtocolVerified(m_dvidTarget)) {
+            std::vector<ZDvidSynapse> wholeSynapse = getWholeSynapse(
+                  synapse.getPosition(), m_dvidReader);
+            if (keepSynapse(synapse)) {
+                // if synapse is post, get its pre (T-bar)
+                if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+                    synapse = wholeSynapse[0];
+                }
+
+                if (isFinished(wholeSynapse)) {
                     m_finishedList.append(synapse.getPosition());
                 } else {
+                    // collect the pending synapses for later sorting; otherwise,
+                    //  we'd just add position to m_pendingList directly
                     pendingSynapses.append(synapse);
                 }
             }
         }
 
         // sort the pending synapse list; DVID can return things in variable order,
-        //  and people don't like that
+        //  and people don't like that; then put ordered positions into pending list
         qSort(pendingSynapses.begin(), pendingSynapses.end(), SynapsePredictionProtocol::compareSynapses);
         for (int i=0; i<pendingSynapses.size(); i++) {
             m_pendingList.append(pendingSynapses[i].getPosition());
         }
-        // restore original cursor
-        QApplication::restoreOverrideCursor();
-        QApplication::processEvents();
-    }
 
+        progressDialog.setValue(100);
+    }
+}
+
+/*
+ * is this a synapse we want to look at in given the variation and subvariation?
+ */
+bool SynapsePredictionProtocol::keepSynapse(ZDvidSynapse synapse) {
+    // for region, want T-bars; likewise body/T-bar;
+    //  for body/PSD, keep the post, and for body/both, keep all
+    if (m_variation == VARIATION_REGION) {
+        return synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN;
+    } else if (m_variation == VARIATION_BODY) {
+        if (m_subvariation == SUBVARIATION_BODY_TBAR) {
+            return synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN;
+        } else if (m_subvariation == SUBVARIATION_BODY_PSD) {
+            return synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN;
+        } else if (m_subvariation == SUBVARIATION_BODY_BOTH) {
+            return true;
+        } else {
+            variationError("found unexpected subvariation while loading synapses: " + m_subvariation);
+            return false;
+        }
+    } else {
+        variationError("found unexpected variation while loading synapses: " + m_variation);
+        return false;
+    }
 }
 
 bool SynapsePredictionProtocol::compareSynapses(const ZDvidSynapse &synapse1, const ZDvidSynapse &synapse2) {
@@ -754,8 +926,14 @@ void SynapsePredictionProtocol::clearSitesTable() {
     setSitesHeaders(m_sitesModel);
 }
 
-void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synapse) {
+void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synapse,
+    std::vector<uint64_t> bodyList) {
     clearSitesTable();
+
+    // don't show PSD info if we're in T-bar mode
+    if (m_currentMode == MODE_TBAR) {
+        return;
+    }
 
     // currently plan to rebuild from scratch each time
     if (m_currentPendingIndex >= 0 && m_currentPendingIndex < m_pendingList.size()) {
@@ -792,9 +970,16 @@ void SynapsePredictionProtocol::updateSitesTable(std::vector<ZDvidSynapse> synap
             xItem->setData(QVariant(site.getX()), Qt::DisplayRole);
             yItem->setData(QVariant(site.getY()), Qt::DisplayRole);
             zItem->setData(QVariant(site.getZ()), Qt::DisplayRole);
+            if (m_variation == VARIATION_BODY && bodyList.size() > 0 && m_bodyID == bodyList[i]) {
+                // color the PSDs on the body of interest
+                xItem->setData(COLOR_TARGET_BODY, Qt::BackgroundRole);
+                yItem->setData(COLOR_TARGET_BODY, Qt::BackgroundRole);
+                zItem->setData(COLOR_TARGET_BODY, Qt::BackgroundRole);
+            }
             m_sitesModel->setItem(i - 1, SITES_X_COLUMN, xItem);
             m_sitesModel->setItem(i - 1, SITES_Y_COLUMN, yItem);
             m_sitesModel->setItem(i - 1, SITES_Z_COLUMN, zItem);
+
         }
 #if QT_VERSION >= 0x050000
         ui->sitesTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -827,12 +1012,12 @@ void SynapsePredictionProtocol::onDoubleClickSitesTable(QModelIndex tableIndex) 
 // input: point (pre- or post-synaptic site)
 // output: array with first pre-synaptic site then all post-synaptic sites
 //  for the synapse; returns empty list on errors
-std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint point) {
+std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(
+    ZIntPoint point, const ZDvidReader &reader) {
 
     std::vector<ZDvidSynapse> result;
 
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
+    if (reader.good()) {
         ZDvidSynapse synapse = reader.readSynapse(point, flyem::LOAD_PARTNER_LOCATION);
 
         // find the presynaptic site
@@ -863,6 +1048,13 @@ std::vector<ZDvidSynapse> SynapsePredictionProtocol::getWholeSynapse(ZIntPoint p
     return result;
 }
 
+/*
+ * returns stylesheet string for a color for label background color
+ */
+QString SynapsePredictionProtocol::targetBodyStylesheet(QColor color) {
+    return QString("QLabel { background-color : rgb(%1, %2, %3); }").arg(color.red()).arg(color.green()).arg(color.blue());
+}
+
 void SynapsePredictionProtocol::setupColorList() {
     // these are the colors I used in Raveler for its PSD protocol; they're
     //  chosen to be fairly bright
@@ -890,7 +1082,15 @@ QColor SynapsePredictionProtocol::getColor(int index) {
     return m_postColorList[index % m_postColorList.size()];
 }
 
-void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapses) {
+/*
+ * update the color map so bodies with verified PSDs are colored;
+ * input: list of synaptic elements (T-bar first) and list
+ *      of body ID at each element position
+ *
+ * this method isn't called if there is no segmentation
+ */
+void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapses,
+    std::vector<uint64_t> bodyList) {
     // remember, the first element of the incoming vector is the pre-synaptic
     //  element (the T-bar)
     if (synapses.size() < 2) {
@@ -898,36 +1098,27 @@ void SynapsePredictionProtocol::updateColorMap(std::vector<ZDvidSynapse> synapse
         return;
     }
 
-    // get body IDs for all locations
-    std::vector<ZIntPoint> sites;
-    for (size_t i=0; i<synapses.size(); i++) {
-        sites.push_back(synapses[i].getPosition());
-    }
+    m_colorScheme.clear();
 
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
-        std::vector<uint64_t> bodyList = reader.readBodyIdAt(sites);
-        // if we don't have body IDs (no segmentation), we're done
-        if (bodyList.size() == 0) {
-            return;
-        }
-
-        // color the T-bar (i=0):
-        m_colorScheme.clear();
-        m_colorScheme.setBodyColor(bodyList[0], getColor(0));
-
-        // color the verified post-synaptic sites; note that
-        //  by using the overall synapse index, we keep the colors
-        // constant as the PSDs are verified
-        for (size_t i=0; i<synapses.size(); i++) {
-            if (synapses[i].isVerified()) {
-                m_colorScheme.setBodyColor(bodyList[i], getColor(i));
-            }
-        }
-        m_colorScheme.buildColorTable();
+    // in T-bar mode, no coloring:
+    if (m_currentMode == MODE_TBAR) {
         emit requestColorMapChange(m_colorScheme);
+        return;
     }
 
+    // color the T-bar (i=0)
+    m_colorScheme.setBodyColor(bodyList[0], getColor(0));
+
+    // color the verified post-synaptic sites; note that
+    //  by using the overall synapse index, we keep the colors
+    // constant as the PSDs are verified
+    for (size_t i=0; i<synapses.size(); i++) {
+        if (synapses[i].isVerified()) {
+            m_colorScheme.setBodyColor(bodyList[i], getColor(i));
+        }
+    }
+    m_colorScheme.buildColorTable();
+    emit requestColorMapChange(m_colorScheme);
 }
 
 /*
