@@ -26581,5 +26581,15 @@ void ZTest::test(MainWindow *host)
   delete result;
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "0397", 8900);
+  target.setSegmentationName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncData("segmentation_todo", "segmentation", "replace=true");
+#endif
+
   std::cout << "Done." << std::endl;
 }
