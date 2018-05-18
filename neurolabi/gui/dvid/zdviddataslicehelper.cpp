@@ -16,6 +16,7 @@ void ZDvidDataSliceHelper::clear()
 void ZDvidDataSliceHelper::setDvidTarget(const ZDvidTarget &target)
 {
   m_reader.open(target);
+  updateCenterCut();
 }
 
 void ZDvidDataSliceHelper::setMaxZoom(int maxZoom)
@@ -38,6 +39,20 @@ int ZDvidDataSliceHelper::getMaxZoom() const
   }
 
   return 0;
+}
+
+void ZDvidDataSliceHelper::updateCenterCut()
+{
+  switch (m_dataRole) {
+  case ZDvidData::ROLE_GRAY_SCALE:
+    m_reader.setGrayCenterCut(m_centerCutWidth, m_centerCutHeight);
+    break;
+  case ZDvidData::ROLE_LABEL_BLOCK:
+    m_reader.setLabelCenterCut(m_centerCutWidth, m_centerCutHeight);
+    break;
+  default:
+    break;
+  }
 }
 
 bool ZDvidDataSliceHelper::validateSize(int *width, int *height) const
@@ -107,6 +122,16 @@ int ZDvidDataSliceHelper::getWidth() const
 int ZDvidDataSliceHelper::getHeight() const
 {
   return getViewPort().height();
+}
+
+int ZDvidDataSliceHelper::getCenterCutWidth() const
+{
+  return m_centerCutWidth;
+}
+
+int ZDvidDataSliceHelper::getCenterCutHeight() const
+{
+  return m_centerCutHeight;
 }
 
 int ZDvidDataSliceHelper::getScale() const
@@ -182,6 +207,13 @@ void ZDvidDataSliceHelper::setMaxSize(int maxW, int maxH)
 {
   m_maxWidth = maxW;
   m_maxHeight = maxH;
+}
+
+void ZDvidDataSliceHelper::setCenterCut(int width, int height)
+{
+  m_centerCutWidth = width;
+  m_centerCutHeight = height;
+  updateCenterCut();
 }
 
 void ZDvidDataSliceHelper::setUnlimitedSize()

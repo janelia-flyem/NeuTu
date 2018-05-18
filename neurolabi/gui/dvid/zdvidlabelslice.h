@@ -127,6 +127,7 @@ public:
 
   void forceUpdate(bool ignoringHidden);
 
+  void setCenterCut(int width, int height);
 
   //Selection events
   void recordSelection();

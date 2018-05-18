@@ -25,6 +25,7 @@
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
 #include "flyem/zmainwindowcontroller.h"
+#include "flyem/zglobaldvidrepo.h"
 
 #if 0
 #ifdef _QT5_
@@ -127,6 +128,7 @@ static void LoadFlyEmConfig(
 
   GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
   GET_FLYEM_CONFIG.loadConfig();
+  GET_FLYEM_CONFIG.loadUserSettings();
 
   if (usingConfig) {
 #ifdef _DEBUG_
@@ -283,15 +285,14 @@ int main(int argc, char *argv[])
 
 #ifdef _FLYEM_
   LoadFlyEmConfig(configPath, config, true);
+
+  ZGlobalDvidRepo::GetInstance().init();
 #endif
 
   if (!runCommandLine) { //Command line mode takes care of configuration independently
+#if !defined(_FLYEM_)
     ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
     tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
-
-    //Sync log files
-    syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
-               NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
 
     if (GET_APPLICATION_NAME == "Biocytin") {
       tracingConfig.load(
@@ -299,6 +300,10 @@ int main(int argc, char *argv[])
     } else {
       tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
     }
+#endif
+    //Sync log files
+    syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
+               NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
   }
 
 #ifdef _DEBUG_

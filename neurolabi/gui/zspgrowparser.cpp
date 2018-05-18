@@ -306,14 +306,14 @@ vector<ZVoxelArray> ZSpGrowParser::extractAllPath(double lengthThreshold,
     double length = 0.0;
     ZVoxelArray path = extractLongestPath(&length, true);
 
-    cout << "Path length: " << length << endl;
-    cout << "Path size: " << path.size() << endl;
-    if (path.size() == 1) {
-      cout << "Debug here." << endl;
-    }
+    cout << "Path: length = " << length << "; size = " << path.size()
+         << "; Threshold = " << lengthThreshold << std::endl;
+//    if (path.size() == 1) {
+//      cout << "Debug here." << endl;
+//    }
 
 
-    if (length < lengthThreshold) {
+    if (length < lengthThreshold || path.isEmpty()) {
       isPathAvailable = false;
     } else {
       pathArray.push_back(path);

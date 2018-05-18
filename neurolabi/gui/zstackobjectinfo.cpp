@@ -71,6 +71,11 @@ bool ZStackObjectInfoSet::contains(ZStackObject::EType type) const
   return false;
 }
 
+bool ZStackObjectInfoSet::hasObjectModified(ZStackObject::EType type) const
+{
+  return contains(type);
+}
+
 bool ZStackObjectInfoSet::hasObjectModified(
     ZStackObject::EType type, ZStackObjectInfo::TState flag) const
 {

@@ -4,6 +4,7 @@
 
 #include "ui_flyemsettingdialog.h"
 #include "neutubeconfig.h"
+#include "flyem/flyemdef.h"
 
 FlyEmSettingDialog::FlyEmSettingDialog(QWidget *parent) :
   QDialog(parent),
@@ -64,9 +65,19 @@ void FlyEmSettingDialog::loadSetting()
   ui->defaultConfigFileCheckBox->setChecked(
         GET_FLYEM_CONFIG.usingDefaultConfig());
   ui->synapseNameCheckBox->setChecked(NeutubeConfig::NamingSynapse());
+
+  std::pair<int,int> centerCut = GET_FLYEM_CONFIG.getCenterCut(
+        flyem::key::GRAYSCALE);
+  ui->grayCxSpinBox->setValue(centerCut.first);
+  ui->grayCySpinBox->setValue(centerCut.second);
+
+  centerCut = GET_FLYEM_CONFIG.getCenterCut(flyem::key::SEGMENTATION);
+  ui->segCxSpinBox->setValue(centerCut.first);
+  ui->segCySpinBox->setValue(centerCut.second);
   ui->psdNameCheckBox->setChecked(NeutubeConfig::NamingPsd());
 #endif
-  ui->meshThreSpinBox->setValue(NeutubeConfig::GetMeshSplitThreshold() / 1000000);
+  ui->meshThreSpinBox->setValue(
+        NeutubeConfig::GetMeshSplitThreshold() / 1000000);
 }
 
 void FlyEmSettingDialog::connectSignalSlot()
@@ -128,6 +139,13 @@ void FlyEmSettingDialog::update()
   }
   GET_FLYEM_CONFIG.setTaskServer(getTaskServer());
   GET_FLYEM_CONFIG.setAnalyzingMb6(namingSynapse());
+
+  GET_FLYEM_CONFIG.setCenterCut(
+        flyem::key::GRAYSCALE, ui->grayCxSpinBox->value(),
+        ui->grayCySpinBox->value());
+  GET_FLYEM_CONFIG.setCenterCut(
+        flyem::key::SEGMENTATION, ui->segCxSpinBox->value(),
+        ui->segCySpinBox->value());
   GET_FLYEM_CONFIG.setPsdNameDetail(namingPsd());
 #endif
 

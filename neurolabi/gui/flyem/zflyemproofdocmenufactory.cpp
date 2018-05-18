@@ -210,6 +210,7 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
 
     config.appendSeparator();
     config.append(ZActionFactory::ACTION_COPY_POSITION);
+    config.append(ZActionFactory::ACTION_COPY_BODY_ID);
 
     if (doc->hasStackData()) {
       config.append(ZActionFactory::ACTION_SAVE_STACK);

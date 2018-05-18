@@ -972,6 +972,13 @@ void ZFlyEmProofDoc::setGraySliceCenterCut(int width, int height)
   prepareGraySlice(getDvidGraySlice());
 }
 
+void ZFlyEmProofDoc::setSegmentationCenterCut(int width, int height)
+{
+  m_labelSliceCenterCutWidth = width;
+  m_labelSliceCenterCutHeight = height;
+  prepareLabelSlice();
+}
+
 void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
 {
   ZDvidLabelSlice *labelSlice = new ZDvidLabelSlice;
@@ -984,6 +991,8 @@ void ZFlyEmProofDoc::addDvidLabelSlice(neutube::EAxis axis)
   labelSlice->setSource(
         ZStackObjectSourceFactory::MakeDvidLabelSliceSource(axis));
   labelSlice->setBodyMerger(&m_bodyMerger);
+  labelSlice->setCenterCut(
+        m_labelSliceCenterCutWidth, m_labelSliceCenterCutHeight);
   addObject(labelSlice, 0, true);
 }
 
@@ -2485,6 +2494,14 @@ void ZFlyEmProofDoc::prepareGraySlice(ZDvidGraySlice *slice)
   }
 }
 
+void ZFlyEmProofDoc::prepareLabelSlice()
+{
+  auto sliceList = getDvidLabelSliceList();
+  for (auto &slice : sliceList) {
+    slice->setCenterCut(m_labelSliceCenterCutWidth, m_labelSliceCenterCutHeight);
+  }
+}
+
 std::vector<ZPunctum*> ZFlyEmProofDoc::getTbar(ZObject3dScan &body)
 {
   std::vector<ZPunctum*> puncta;
@@ -2883,7 +2900,7 @@ uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
 {
   uint64_t bodyId = 0;
   ZDvidReader &reader = getDvidReader();
-  if (reader.open(getDvidTarget())) {
+  if (reader.good()) {
     bodyId = m_bodyMerger.getFinalLabel(reader.readBodyIdAt(x, y, z));
   }
 
@@ -2893,6 +2910,17 @@ uint64_t ZFlyEmProofDoc::getBodyId(int x, int y, int z)
 uint64_t ZFlyEmProofDoc::getBodyId(const ZIntPoint &pt)
 {
   return getBodyId(pt.getX(), pt.getY(), pt.getZ());
+}
+
+uint64_t ZFlyEmProofDoc::getLabelId(int x, int y, int z)
+{
+  uint64_t bodyId = 0;
+  ZDvidReader &reader = getDvidReader();
+  if (reader.good()) {
+    bodyId = reader.readBodyIdAt(x, y, z);
+  }
+
+  return bodyId;
 }
 
 void ZFlyEmProofDoc::autoSave()
@@ -3651,7 +3679,7 @@ void ZFlyEmProofDoc::selectBodyInRoi(int z, bool appending, bool removingRoi)
 
   if (rect.isValid()) {
     ZDvidReader &reader = getDvidReader();
-    if (reader.open(getDvidTarget())) {
+    if (reader.good()) {
       std::set<uint64_t> bodySet = reader.readBodyId(
             rect.getFirstX(), rect.getFirstY(), z,
             rect.getWidth(), rect.getHeight(), 1);
