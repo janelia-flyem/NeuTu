@@ -90,11 +90,6 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
     ZPainter painter;
 
-    if (!m_isReady) {
-      m_viewProj.maximizeViewPort();
-      m_isReady = true;
-    }
-
 #ifdef _DEBUG_2
     std::cout << "Axis: " << m_sliceAxis << std::endl;
     m_viewProj.print();
@@ -127,7 +122,7 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 
     //tic();
     if (m_tileCanvas != NULL) {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
 #ifdef _DEBUG_2
@@ -767,6 +762,11 @@ void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
   LDEBUG() << "ZImageWidget::resizeEvent" << size() << isVisible();
 
   m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
+
+  if (!m_isReady && isVisible()) {
+    m_viewProj.maximizeViewPort();
+    m_isReady = true;
+  }
 //  setValidViewPort(m_viewPort);
 }
 
