@@ -18,7 +18,7 @@ ZParameter::ZParameter(const QString& name, QObject* parent)
 
 ZParameter::~ZParameter()
 {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   std::cout << "Destroying ZParameter " << m_name.toStdString() << " " << this << std::endl;
 #endif
 }
