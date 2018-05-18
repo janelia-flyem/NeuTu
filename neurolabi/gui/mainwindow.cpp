@@ -2457,6 +2457,7 @@ void MainWindow::setOption()
 #if defined(_FLYEM_)
   m_flyemSettingDlg->loadSetting();
   m_flyemSettingDlg->exec();
+  GET_FLYEM_CONFIG.saveSettings();
 #else
   if (activeStackFrame() != NULL) {
     activeStackFrame()->showSetting();

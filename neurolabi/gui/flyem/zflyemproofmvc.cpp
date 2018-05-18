@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QMimeData>
 
+#include "zjsondef.h"
 #include "flyem/zflyemproofdoc.h"
 #include "zstackview.h"
 #include "dvid/zdvidtileensemble.h"
@@ -1560,9 +1561,13 @@ void ZFlyEmProofMvc::setDvidTarget(const ZDvidTarget &target)
 void ZFlyEmProofMvc::showSetting()
 {
   if (m_settingDlg->exec()) {
+    m_settingDlg->applySettings(getCompleteDocument());
+    /*
     getCompleteDocument()->setGraySliceCenterCut(
-          m_settingDlg->getCenterCutWidth(), m_settingDlg->getCenterCutHeight());
+          m_settingDlg->getGrayscaleCenterCutWidth(),
+          m_settingDlg->getGrayscaleCenterCutHeight());
     getDocument()->showSwcFullSkeleton(m_settingDlg->showingFullSkeleton());
+    */
   }
 }
 
@@ -4431,6 +4436,14 @@ bool ZFlyEmProofMvc::locateBody(uint64_t bodyId, bool appending)
   return succ;
 }
 
+void ZFlyEmProofMvc::configure()
+{
+//  std::pair<int,int> grayscaleCenterCut =
+//      GET_FLYEM_CONFIG.getCenterCut("grayscale");
+//  getCompleteDocument()->setGraySliceCenterCut(grayscaleCenterCut.first,
+//                                               grayscaleCenterCut.second);
+}
+
 bool ZFlyEmProofMvc::locateBody(uint64_t bodyId)
 {
   return locateBody(bodyId, false);
@@ -5051,11 +5064,11 @@ void ZFlyEmProofMvc::loadRoiFromRefData(
 #endif
 //  ZMesh *mesh = NULL;
 
-  //Scheme: {"->": {"type": type, "key", data}}
+  //Schema: {"->": {"type": type, "key", data}}
   ZJsonObject roiInfo = reader.readJsonObjectFromKey(
         ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY).c_str(), roiName.c_str());
-  if (roiInfo.hasKey(neutube::Json::REF_KEY)) {
-    ZJsonObject jsonObj(roiInfo.value(neutube::Json::REF_KEY));
+  if (roiInfo.hasKey(neutube::json::REF_KEY)) {
+    ZJsonObject jsonObj(roiInfo.value(neutube::json::REF_KEY));
 
     std::string type = ZJsonParser::stringValue(jsonObj["type"]);
     if (type.empty()) {

@@ -7,6 +7,7 @@
 #include <QElapsedTimer>
 #include <QUrl>
 
+#include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zstack.hxx"
 #include "flyem/zflyemneuron.h"
@@ -1085,7 +1086,7 @@ void ZDvidWriter::writeRoiRef(
 {
   ZJsonObject refJson;
   ZJsonObject roiJson;
-  roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+  roiJson.setEntry(neutube::json::REF_KEY, refJson);
   refJson.setEntry("key", key);
   refJson.setEntry("type", type);
 
@@ -1103,7 +1104,7 @@ void ZDvidWriter::writeRoiRef(
 {
   ZJsonObject refJson;
   ZJsonObject roiJson;
-  roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+  roiJson.setEntry(neutube::json::REF_KEY, refJson);
   refJson.setEntry("type", type);
   refJson.setEntry("key", keyList);
 
@@ -1148,7 +1149,7 @@ void ZDvidWriter::uploadRoiMesh(
     //Write reference
     ZJsonObject refJson;
     ZJsonObject roiJson;
-    roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+    roiJson.setEntry(neutube::json::REF_KEY, refJson);
     refJson.setEntry("key", key.toStdString());
     writeJson(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), name, roiJson);
   } else {

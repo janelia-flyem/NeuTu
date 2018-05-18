@@ -875,7 +875,11 @@ HEADERS += mainwindow.h \
     core/utilities.h \
     core/qthelper.h \
     flyem/zflyemtododelegate.h \
-    zmenuconfig.h
+    zmenuconfig.h \
+    zobjsmodelmanager.h \
+    zobjsmodelfactory.h \
+    flyem/zglobaldvidrepo.h \
+    flyem/flyemdef.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1533,7 +1537,10 @@ SOURCES += main.cpp \
     core/utilities.cpp \
     core/qthelper.cpp \
     flyem/zflyemtododelegate.cpp \
-    zmenuconfig.cpp 
+    zmenuconfig.cpp \
+    zobjsmodelmanager.cpp \
+    zobjsmodelfactory.cpp \
+    flyem/zglobaldvidrepo.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

@@ -291,6 +291,7 @@
 #include "widgets/zpythonprocess.h"
 #include "flyem/zflyemarbmvc.h"
 #include "zmenuconfig.h"
+#include "flyem/zglobaldvidrepo.h"
 
 #include "test/ztestall.h"
 
@@ -26384,6 +26385,71 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+<<<<<<< HEAD
+  ZDvidReader *reader = ZGlobal::GetDvidReader("labelmap_test");
+  reader->updateMaxLabelZoom();
+  reader->setVerbose(false);
+  QElapsedTimer timer;
+  timer.start();
+
+  int z = 10256;
+  for (size_t i = 0; i < 100; ++i) {
+      ZArray *array = reader->readLabels64Lowtis(
+            10300, 20351, z + i, 1024, 1024, 0);
+      delete array;
+  }
+
+  std::cout << "Time elapsed: " << timer.elapsed() << "ms" << std::endl;
+#endif
+
+#if 0
+  ZGlobalDvidRepo &repo = ZGlobalDvidRepo::GetInstance();
+//  repo.init();
+
+  for (auto e : repo) {
+    std::cout << e.first << ": " << e.second.getSourceString() << std::endl;
+//    e.second.print();
+  }
+
+#endif
+
+#if 0
+  std::pair<int,int> centerCut = GET_FLYEM_CONFIG.getCenterCut("grayscale");
+  std::cout << "Center cut: " << centerCut.first << " " << centerCut.second << std::endl;
+
+  GET_FLYEM_CONFIG.setCenterCut("grayscale", 512, 512);
+  centerCut = GET_FLYEM_CONFIG.getCenterCut("grayscale");
+  std::cout << "Center cut: " << centerCut.first << " " << centerCut.second << std::endl;
+
+  centerCut = GET_FLYEM_CONFIG.getCenterCut("segmentation");
+  std::cout << "Center cut: " << centerCut.first << " " << centerCut.second << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("labelmap_test");
+  reader->updateMaxLabelZoom();
+//    reader->setLabelCenterCut(256, 256);
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 256, 256);
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  }
+
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 0, 0);
+    stack->save(GET_TEST_DATA_DIR + "/_test2.tif");
+  }
+
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 1024, 1024);
+    stack->save(GET_TEST_DATA_DIR + "/_test3.tif");
+  }
+#endif
+
+#if 0
   ZDvidReader reader;
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "017a", 8900);
@@ -26513,6 +26579,16 @@ void ZTest::test(MainWindow *host)
   result->save(GET_TEST_DATA_DIR + "/_test.tif");
 
   delete result;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "0397", 8900);
+  target.setSegmentationName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncData("segmentation_todo", "segmentation", "replace=true");
 #endif
 
   std::cout << "Done." << std::endl;

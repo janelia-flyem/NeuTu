@@ -147,6 +147,8 @@ public:
 
   void notifyStateUpdate();
 
+  void configure();
+
 
 public: //bookmark functions
     ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
