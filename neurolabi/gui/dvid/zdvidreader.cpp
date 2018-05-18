@@ -3190,9 +3190,14 @@ ZArray* ZDvidReader::readLabels64Lowtis(
                   arg(dim2vec[0]).arg(dim2vec[1]).arg(dim2vec[2]).arg(zoom);
 #endif
 
+      bool centerCut = true;
+      if (zoom == getDvidTarget().getMaxLabelZoom() || width < cx || height < cy) {
+        centerCut = false;
+      }
+
       service->retrieve_arbimage(
             box.getWidth(), box.getHeight(), offset, dim1vec, dim2vec,
-            array->getDataPointer<char>(), zoom, true);
+            array->getDataPointer<char>(), zoom, centerCut);
 
       setStatusCode(200);
     } catch (libdvid::DVIDException &e) {
