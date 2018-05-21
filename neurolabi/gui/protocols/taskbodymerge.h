@@ -24,6 +24,7 @@ public:
 
 private slots:
   void onCycleAnswer();
+  void onButtonToggled();
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;

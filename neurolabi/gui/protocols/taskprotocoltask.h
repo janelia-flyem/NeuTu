@@ -46,6 +46,7 @@ public:
 signals:
     void bodiesUpdated();
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor);
+    void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
 
 protected:
     static const QString KEY_COMPLETED;

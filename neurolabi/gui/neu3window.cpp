@@ -416,6 +416,8 @@ void Neu3Window::createTaskWindow() {
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
     connect(m_taskProtocolWidget, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
             this, SLOT(browse(double,double,double,const QHash<uint64_t, QColor>&)));
+    connect(m_taskProtocolWidget, SIGNAL(updateGrayscaleColor(const QHash<uint64_t,QColor>&)),
+            this, SLOT(updateBrowserColor(const QHash<uint64_t,QColor>&)));
     ZWidgetMessage::ConnectMessagePipe(m_taskProtocolWidget, this);
 
     // make the OpenGL context current in case any task's widget changes any parameters
@@ -554,27 +556,23 @@ void Neu3Window::updateSliceBrowser()
 
 void Neu3Window::updateSliceBrowserSelection()
 {
-#if 0
-  // HEY!! Old
-    ZFlyEmProofMvcController::SelectBody(
-          m_sliceWidget,
-          getBodyDocument()->getUnencodedBodySet());
-#else
-  // HEY!! Came with Ting's changes
   ZFlyEmProofMvcController::SelectBody(
         m_sliceWidget,
         getBodyDocument()->getNormalBodySet());
-#endif
 }
 
 void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
 {
-  const ZSharedPointer<ZFlyEmBodyColorScheme>
-      colorMap(new ZFlyEmBodyIdColorScheme(idToColor));
+  if (m_sliceWidget) {
+    const ZSharedPointer<ZFlyEmBodyColorScheme>
+        colorMap(new ZFlyEmBodyIdColorScheme(idToColor));
 
-  ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
-  ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::A_AXIS);
-  slice->setCustomColorMap(colorMap);
+    ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
+    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::A_AXIS);
+    slice->setCustomColorMap(colorMap);
+
+     updateSliceBrowserSelection();
+  }
 }
 
 void Neu3Window::updateWebView()
@@ -674,7 +672,6 @@ void Neu3Window::browse(double x, double y, double z, const QHash<uint64_t, QCol
   }
 
   updateBrowserColor(idToColor);
-  updateSliceBrowserSelection();
   updateSliceBrowser();
 }
 

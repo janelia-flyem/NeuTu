@@ -954,6 +954,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
                   this, SLOT(onBodiesUpdated()));
           connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
                   this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
+          connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
+                  this, SIGNAL(updateGrayscaleColor(QHash<uint64_t,QColor>)));
         }
     }
 
