@@ -5,6 +5,7 @@ ZStackDocProxy::ZStackDocProxy()
 
 }
 
+#if 0
 QList<ZStackObject*> ZStackDocProxy::GetObjectList(
     ZStackDoc *doc, ZStackDoc::EDocumentDataType dataType)
 {
@@ -25,6 +26,7 @@ QList<ZStackObject*> ZStackDocProxy::GetObjectList(
 
   return objList;
 }
+#endif
 
 QList<ZMesh*> ZStackDocProxy::GetGeneralMeshList(ZStackDoc *doc)
 {

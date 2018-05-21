@@ -235,7 +235,8 @@ HEADERS += $${PWD}/zstack.hxx \
    $$PWD/zswcdirectionfeatureanalyzer.h \
     $$PWD/geometry/zplane.h \
     $$PWD/geometry/zaffineplane.h \
-    $$PWD/geometry/zaffinerect.h
+    $$PWD/geometry/zaffinerect.h \
+    $$PWD/zjsondef.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \

@@ -154,6 +154,7 @@ public:
 
   QSet<uint64_t> getBodySet() const { return m_bodySet; }
   QSet<uint64_t> getUnencodedBodySet() const;
+  QSet<uint64_t> getNormalBodySet() const;
 
   uint64_t getMappedId(uint64_t bodyId) const;
 
@@ -267,6 +268,7 @@ public:
   static unsigned int encodedLevel(uint64_t id);
 
   bool fromTar(uint64_t id) const;
+  bool isTarMode() const;
 
   void setMaxResLevel(int res) {
     m_maxResLevel = res;
@@ -453,9 +455,7 @@ private:
 
   ZStackObject::EType getBodyObjectType() const;
 
-  flyem::EBodyLabelType getBodyLabelType() const {
-    return flyem::LABEL_SUPERVOXEL;
-  }
+  flyem::EBodyLabelType getBodyLabelType() const;
 
 #if 0
   void runLocalSplitFunc();

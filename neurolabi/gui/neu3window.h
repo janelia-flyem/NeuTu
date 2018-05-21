@@ -116,6 +116,7 @@ signals:
   void bodyDeselected(uint64_t bodyId);
   void closed();
   void dvidLoaded();
+  void updatingSliceWidget();
 
 protected:
   virtual void keyPressEvent(QKeyEvent *event);
@@ -163,6 +164,8 @@ private slots:
   void updateSliceViewGraph(const ZArbSliceViewParam &param);
   void removeSliceViewGraph();
 
+  void updateSliceWidget();
+
   void processSliceDockVisibility(bool on);
 
   void test();
@@ -201,6 +204,8 @@ private:
 
   QDockWidget* getSliceViewDoc() const;
   void createDialogs();
+
+  void trackSliceViewPort() const;
 
 private:
   Ui::Neu3Window *ui;

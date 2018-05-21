@@ -11,6 +11,7 @@ contains(TEMPLATE, app) {
 
 contains(CONFIG, neu3) {
   DEFINES += _NEU3_
+  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
 
 contains(CONFIG, neu3) | contains(CONFIG, flyem) {
@@ -678,6 +679,7 @@ HEADERS += mainwindow.h \
     flyem/zflyemkeyoperationconfig.h \
     zslicedpuncta.h \
     flyem/zflyembookmarkwidget.h \
+    flyem/zflyembookmarkfilter.h \
     zmultiscalepixmap.h \
     biocytin/zbiocytinprojmaskfactory.h \
     flyem/zflyemproofdocmenufactory.h \
@@ -716,6 +718,7 @@ HEADERS += mainwindow.h \
     protocols/doNthingsprotocol.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
+    protocols/synapsepredictionbodyinputdialog.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
     widgets/zcolorlabel.h \
@@ -874,7 +877,11 @@ HEADERS += mainwindow.h \
     flyem/zflyemtododelegate.h \
     zmenuconfig.h \
     protocols/taskbodymerge.h \
-    flyem/zflyembodyidcolorscheme.h
+    flyem/zflyembodyidcolorscheme.h \
+    zobjsmodelmanager.h \
+    zobjsmodelfactory.h \
+    flyem/zglobaldvidrepo.h \
+    flyem/flyemdef.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -947,12 +954,14 @@ FORMS += dialogs/settingdialog.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     flyem/zflyembookmarkwidget.ui \
+    flyem/zflyembookmarkfilter.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/synapsepredictionbodyinputdialog.ui \
     protocols/synapsereviewprotocol.ui \
     protocols/synapsereviewinputdialog.ui \
     protocols/protocoldialog.ui \
@@ -1338,6 +1347,7 @@ SOURCES += main.cpp \
     flyem/zflyemkeyoperationconfig.cpp \
     zslicedpuncta.cpp \
     flyem/zflyembookmarkwidget.cpp \
+    flyem/zflyembookmarkfilter.cpp \
     zmultiscalepixmap.cpp \
     biocytin/zbiocytinprojmaskfactory.cpp \
     flyem/zflyemproofdocmenufactory.cpp \
@@ -1377,6 +1387,7 @@ SOURCES += main.cpp \
     protocols/doNthingsprotocol.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsepredictionbodyinputdialog.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
     widgets/zcolorlabel.cpp \
@@ -1530,7 +1541,10 @@ SOURCES += main.cpp \
     flyem/zflyemtododelegate.cpp \
     zmenuconfig.cpp \
     protocols/taskbodymerge.cpp \
-    flyem/zflyembodyidcolorscheme.cpp
+    flyem/zflyembodyidcolorscheme.cpp \
+    zobjsmodelmanager.cpp \
+    zobjsmodelfactory.cpp \
+    flyem/zglobaldvidrepo.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

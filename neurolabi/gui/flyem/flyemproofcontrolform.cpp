@@ -59,7 +59,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SLOT(decSegmentSize()));
   connect(ui->bigRadioButton, SIGNAL(clicked(bool)),
           this, SLOT(incSegmentSize()));
-  connect(ui->fullRadioButton, SIGNAL(clicked(bool)),
+  connect(ui->fullRadioButton, SIGNAL(toggled(bool)),
           this, SLOT(showFullSegmentation(bool)));
 
   /*
@@ -336,7 +336,9 @@ void FlyEmProofControlForm::decSegmentSize()
 
 void FlyEmProofControlForm::showFullSegmentation(bool on)
 {
-  emit showingFullSegmentation(on);
+  if (on) {
+    emit showingFullSegmentation();
+  }
 }
 
 void FlyEmProofControlForm::goToBody()

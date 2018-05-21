@@ -6,6 +6,8 @@
 #include <QVariant>
 
 class ZObjsItem;
+class ZStackObjectInfoSet;
+class ZStackObject;
 
 // provide a data model for all objects, used by views such as treeview, tableview
 class ZObjsModel : public QAbstractItemModel
@@ -27,6 +29,9 @@ public:
   QModelIndex parent(const QModelIndex &index) const;
   int rowCount(const QModelIndex &parent = QModelIndex()) const;
   int columnCount(const QModelIndex &parent = QModelIndex()) const;
+
+  virtual void updateData(const ZStackObject */*obj*/) {}
+  virtual void processObjectModified(const ZStackObjectInfoSet &/*infoSet*/) {}
 
 protected:
   void updateChildCheckState(const QModelIndex & parent, Qt::CheckState cs);
