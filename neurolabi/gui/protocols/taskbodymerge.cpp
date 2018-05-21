@@ -204,6 +204,11 @@ void TaskBodyMerge::onCycleAnswer()
   }
 }
 
+void TaskBodyMerge::onButtonToggled()
+{
+  updateColors();
+}
+
 bool TaskBodyMerge::loadSpecific(QJsonObject json)
 {
   if (!json.contains(KEY_SUPERVOXEL_ID1) || !json.contains(KEY_SUPERVOXEL_ID2)) {
@@ -306,10 +311,14 @@ void TaskBodyMerge::buildTaskWidget()
   m_widget = new QWidget();
 
   m_mergeButton = new QRadioButton("Merge", m_widget);
-  m_dontMergeButton = new QRadioButton("Don't Merge", m_widget);
-  m_dontKnowButton = new QRadioButton("Don't Know", m_widget);
+  connect(m_mergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
+  m_dontMergeButton = new QRadioButton("Don't Merge", m_widget);
   m_dontMergeButton->setChecked(true);
+  connect(m_dontMergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
+
+  m_dontKnowButton = new QRadioButton("Don't Know", m_widget);
+  connect(m_dontKnowButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
   QHBoxLayout *radioLayout = new QHBoxLayout(m_widget);
   radioLayout->addWidget(m_mergeButton);
@@ -332,10 +341,12 @@ void TaskBodyMerge::onLoaded()
 
   ZPoint point = mergePosition();
 
+  std::size_t index1 = 1;
+  std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
   QHash<uint64_t, QColor> idToColor;
-  glm::vec4 color1 = INDEX_COLORS[1] * 255.0f;
+  glm::vec4 color1 = INDEX_COLORS[index1] * 255.0f;
   idToColor[m_bodyId1] = QColor(color1.x, color1.y, color1.z);
-  glm::vec4 color2 = INDEX_COLORS[2] * 255.0f;
+  glm::vec4 color2 = INDEX_COLORS[index2] * 255.0f;
   idToColor[m_bodyId2] = QColor(color2.x, color2.y, color2.z);
 
   emit browseGrayscale(point.x(), point.y(), point.z(), idToColor);
@@ -393,16 +404,27 @@ void TaskBodyMerge::applyColorMode(bool merging)
 void TaskBodyMerge::updateColors()
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
-    filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id){
+    std::size_t index1 = 1;
+    std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
+
+    filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
       uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
       if (tarBodyId == m_bodyId1) {
-        return 1;
+        return index1;
       } else if (tarBodyId == m_bodyId2) {
-        return 2;
+        return index2;
       } else {
         return 0;
       }
     });
+
+    QHash<uint64_t, QColor> idToColor;
+    glm::vec4 color1 = INDEX_COLORS[index1] * 255.0f;
+    idToColor[m_bodyId1] = QColor(color1.x, color1.y, color1.z);
+    glm::vec4 color2 = INDEX_COLORS[index2] * 255.0f;
+    idToColor[m_bodyId2] = QColor(color2.x, color2.y, color2.z);
+
+    emit updateGrayscaleColor(idToColor);
   }
 }
 

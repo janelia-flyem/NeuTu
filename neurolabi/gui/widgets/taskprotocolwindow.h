@@ -43,6 +43,7 @@ signals:
     void messageGenerated(const ZWidgetMessage &msg);
 
     void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor>& idToColor);
+    void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
 
 private slots:
     void onNextButton();
