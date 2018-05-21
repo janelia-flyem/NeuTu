@@ -65,6 +65,8 @@ Neu3Window::Neu3Window(QWidget *parent) :
   m_testTimer = new QTimer(this);
 //  m_testTimer->setInterval(1000);
   connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyChange()));
+  connect(this, &Neu3Window::updatingSliceWidget, this, &Neu3Window::updateSliceWidget,
+          Qt::QueuedConnection);
 //  initialize();
 }
 
@@ -143,6 +145,7 @@ QAction* Neu3Window::getAction(ZActionFactory::EAction key)
 void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
+    LDEBUG() << "Init grayscale widget";
     m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
 //    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
@@ -229,6 +232,8 @@ void Neu3Window::start()
   initialize();
   raise();
   showMaximized();
+
+//  initNativeSliceBrowser();
 }
 
 void Neu3Window::initOpenglContext()
@@ -281,6 +286,7 @@ void Neu3Window::setOption()
 {
   m_flyemSettingDlg->loadSetting();
   m_flyemSettingDlg->exec();
+  GET_FLYEM_CONFIG.saveSettings();
 }
 
 void Neu3Window::createDockWidget()
@@ -499,11 +505,29 @@ void Neu3Window::updateBrowseSize()
 
 void Neu3Window::processCameraRotation()
 {
+  trackSliceViewPort();
   updateBrowseSize();
   updateSliceBrowser();
 //  updateBrowser();
 //  updateEmbeddedGrayscale();
 //  updateGrayscaleWidget();
+}
+
+void Neu3Window::trackSliceViewPort() const
+{
+  if (m_sliceWidget != NULL) {
+    LDEBUG() << "Slice viewport:" << m_sliceWidget->getViewPort();
+  }
+}
+
+void Neu3Window::updateSliceWidget()
+{
+  LDEBUG() << "Updating slice widget";
+  ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+  m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
+  m_sliceWidget->resetViewParam(viewParam);
+
+  trackSliceViewPort();
 }
 
 void Neu3Window::updateSliceBrowser()
@@ -512,9 +536,9 @@ void Neu3Window::updateSliceBrowser()
   case BROWSE_NATIVE:
     if (m_nativeSliceDock != NULL) {
       m_nativeSliceDock->show();
-      ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
-      m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
-      m_sliceWidget->resetViewParam(viewParam);
+      LDEBUG() << "m_nativeSliceDock->show called";
+      updateSliceWidget();
+//      QTimer::singleShot(3000, this, &Neu3Window::updateSliceWidget);
     }
     break;
   case BROWSE_NEUROGLANCER:
@@ -530,9 +554,17 @@ void Neu3Window::updateSliceBrowser()
 
 void Neu3Window::updateSliceBrowserSelection()
 {
+#if 0
+  // HEY!! Old
     ZFlyEmProofMvcController::SelectBody(
           m_sliceWidget,
           getBodyDocument()->getUnencodedBodySet());
+#else
+  // HEY!! Came with Ting's changes
+  ZFlyEmProofMvcController::SelectBody(
+        m_sliceWidget,
+        getBodyDocument()->getNormalBodySet());
+#endif
 }
 
 void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
@@ -556,7 +588,7 @@ void Neu3Window::updateWebView()
 
     QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
-               rotation, getBodyDocument()->getUnencodedBodySet()));
+               rotation, getBodyDocument()->getNormalBodySet()));
 
 
     m_webView->setUrl(url);

@@ -6,6 +6,8 @@ ZFlyEmBookmarkWidget::ZFlyEmBookmarkWidget(QWidget *parent) :
   ui(new Ui::ZFlyEmBookmarkWidget)
 {
   ui->setupUi(this);
+
+  connect(ui->bookmarkTab, SIGNAL(currentChanged(int)), ui->bookmarkFilter, SLOT(onTabChanged(int)));
 }
 
 ZFlyEmBookmarkWidget::~ZFlyEmBookmarkWidget()
@@ -30,4 +32,9 @@ ZFlyEmBookmarkView* ZFlyEmBookmarkWidget::getBookmarkView(EBookmarkSource source
   }
 
   return NULL;
+}
+
+ZFlyEmBookmarkWidget::EBookmarkSource ZFlyEmBookmarkWidget::getCurrentSource() {
+    int index = ui->bookmarkTab->currentIndex();
+    return static_cast<EBookmarkSource>(index);
 }

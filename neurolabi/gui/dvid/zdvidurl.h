@@ -237,6 +237,8 @@ public:
       const std::string &dataName, const std::string &queryString) const;
   std::string getLabelszSyncUrl(const std::string &dataName) const;
 
+  std::string getLabelMappingUrl() const;
+
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
   std::string getSynapseUrl(const ZIntPoint &pos) const;
@@ -334,6 +336,7 @@ private:
   static const std::string m_annotationLabelCommand;
   static const std::string m_annotationMoveCommand;
   static const std::string m_annotationTagCommand;
+  static const std::string m_labelMappingCommand;
 };
 
 #endif // ZDVIDURL_H

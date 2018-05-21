@@ -167,9 +167,6 @@ private:
 //  int m_maxWidth;
 //  int m_maxHeight;
 
-  int m_centerCutWidth = 256;
-  int m_centerCutHeight = 256;
-
   std::unique_ptr<ZDvidDataSliceHelper> m_helper;
 //  ZPoint m_v1;
 //  ZPoint m_v2;

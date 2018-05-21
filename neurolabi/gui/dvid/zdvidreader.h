@@ -118,6 +118,10 @@ public:
 
   std::string readNodeInfo() const;
 
+  std::string getErrorMsg() const {
+    return m_errorMsg;
+  }
+
   ZDvid::ENodeStatus getNodeStatus() const;
   void updateNodeStatus();
 
@@ -132,9 +136,7 @@ public:
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
 
 
-  uint64_t readParentBodyId(uint64_t spId) const {
-    return spId; //mockup implementation
-  }
+  uint64_t readParentBodyId(uint64_t spId) const;
 
   ZObject3dScan* readBody(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
@@ -309,18 +311,23 @@ public:
   //Read label data
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
+
+  ZArray* readLabels64Lowtis(
+      int x0, int y0, int z0,
+      int width, int height, int zoom, int cx, int cy) const;
+
   /*!
    * (\a x0, \a y0, \a z0) is the retrieval center.
    */
   ZArray *readLabels64Lowtis(
       int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
-      int width, int height, int zoom) const;
+      int width, int height, int zoom, int cx, int cy) const;
   ZArray *readLabels64Lowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
-      int width, int height, int zoom) const;
+      int width, int height, int zoom, int cx, int cy) const;
   ZArray *readLabels64Lowtis(
-      const ZAffineRect &ar, int zoom) const;
+      const ZAffineRect &ar, int zoom, int cx, int cy) const;
 
 
   //Read grayscale data
@@ -433,6 +440,8 @@ public:
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
+  ZJsonArray readJsonArray(
+      const std::string &url, const QByteArray &payload) const;
 
   ZJsonArray readAnnotation(
       const std::string &dataName, const std::string &tag) const;
@@ -551,6 +560,9 @@ public:
 
   bool hasSplitTask(const QString &key) const;
 
+  void setGrayCenterCut(int cx, int cy);
+  void setLabelCenterCut(int cx, int cy);
+
   class PauseVerbose {
   public:
     PauseVerbose(ZDvidReader *reader) : m_reader(reader) {
@@ -614,7 +626,11 @@ private:
 
 
   lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
-  lowtis::ImageService* getLowtisServiceLabel() const;
+  lowtis::ImageService* getLowtisServiceLabel(int cx, int cy) const;
+
+  void prepareLowtisService(
+      ZSharedPointer<lowtis::ImageService> &service, const std::string &dataName,
+      lowtis::DVIDConfig &config, int cx, int cy) const;
 
   template<typename T>
   void configureLowtis(T *config, const std::string &dataName) const;
@@ -622,6 +638,9 @@ private:
 protected:
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
+
+  std::string m_errorMsg;
+
   mutable int m_statusCode;
   mutable int64_t m_readingTime;
 

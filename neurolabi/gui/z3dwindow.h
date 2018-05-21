@@ -318,6 +318,9 @@ public slots:
   void transformAllPuncta();
   void convertPunctaToSwc();
   void changeSelectedPunctaColor();
+  void hideSelectedPuncta();
+  void showSelectedPuncta();
+  void setSelectPunctaVisible(bool on);
 
   void saveSplitTask();
   void deleteSplitSeed();
@@ -503,6 +506,7 @@ private:
   QAction *m_markPunctumAction;
   QAction *m_toggleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
+  QAction *m_toggleObjectsAction;
   QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;
   QAction *m_toggleSmartExtendSelectedSwcNodeAction;

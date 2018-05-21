@@ -67,6 +67,7 @@ public:
   }
 
   void setGraySliceCenterCut(int width, int height);
+  void setSegmentationCenterCut(int width, int height);
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
@@ -79,19 +80,19 @@ public:
   ZDvidSparseStack* getBodyForSplit();
   void clearBodyForSplit();
 
-  const ZSparseStack* getSparseStack() const;
-  ZSparseStack* getSparseStack();
+  const ZSparseStack* getSparseStack() const override;
+  ZSparseStack* getSparseStack() override;
 
   ZStackBlockGrid* getStackGrid();
 
   //bool hasSparseStack() const;
-  bool hasVisibleSparseStack() const;
+  bool hasVisibleSparseStack() const override;
 
   ZFlyEmSupervisor* getSupervisor() const;
 
   void updateBodyObject();
 
-  void clearData();
+  void clearData() override;
 
   /*!
    * \brief Get brief information of the document
@@ -107,6 +108,8 @@ public:
    */
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
+
+  uint64_t getLabelId(int x, int y, int z) override;
 
   bool hasBodySelected() const;
 
@@ -159,7 +162,7 @@ public:
   ZDvidSparseStack* getDvidSparseStack(
       const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
 
-  ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack() const override;
 
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
@@ -418,8 +421,8 @@ public:
 public:
   virtual void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
-      uint64_t bodyId);
-  virtual void executeRemoveTodoCommand();
+      uint64_t bodyId) override;
+  virtual void executeRemoveTodoCommand() override;
 
 signals:
   void bodyMerged();
@@ -532,8 +535,8 @@ public slots:
 
 
 protected:
-  void autoSave();
-  void customNotifyObjectModified(ZStackObject::EType type);
+  void autoSave() override;
+  void customNotifyObjectModified(ZStackObject::EType type) override;
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData();
@@ -545,6 +548,7 @@ protected:
   QColor getSeedColor(int label) const;
   void readInfo();
   void prepareGraySlice(ZDvidGraySlice *slice);
+  void prepareLabelSlice();
 
 private:
   void connectSignalSlot();
@@ -592,6 +596,7 @@ private:
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
+  std::string getSynapseName(const ZDvidSynapse &synapse) const;
 
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,
@@ -637,6 +642,9 @@ protected:
   //Data settings
   int m_graySliceCenterCutWidth = 256;
   int m_graySliceCenterCutHeight = 256;
+
+  int m_labelSliceCenterCutWidth = 256;
+  int m_labelSliceCenterCutHeight = 256;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<ZFlyEmBodyColorOption::EColorOption,
