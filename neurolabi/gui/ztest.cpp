@@ -26591,5 +26591,16 @@ void ZTest::test(MainWindow *host)
   writer.syncData("segmentation_todo", "segmentation", "replace=true");
 #endif
 
+#if 0
+  QDir fileInfo(GET_TEST_DATA_DIR.c_str());
+  fileInfo.setFile(GET_TEST_DATA_DIR, "test.tif");
+  qDebug() << fileInfo.absoluteFilePath();
+
+  fileInfo.setFile("test2.tif");
+  qDebug() << fileInfo.absoluteFilePath();
+
+  qDebug() << fileInfo.isFile();
+#endif
+
   std::cout << "Done." << std::endl;
 }
