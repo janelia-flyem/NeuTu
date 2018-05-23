@@ -10,6 +10,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QsLog.h>
+#include <QShortcut>
 
 
 #include "neutube_def.h"
@@ -73,6 +74,9 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
 
     ui->nextButton->setShortcut(Qt::Key_E);
     ui->prevButton->setShortcut(Qt::Key_Q);
+
+    QShortcut *shortcut = new QShortcut(Qt::SHIFT + Qt::Key_E, this);
+    connect(shortcut, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
 
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshesAdded,
             this, &TaskProtocolWindow::onBodyMeshesAdded, Qt::QueuedConnection);
@@ -374,6 +378,14 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
         ui->completedCheckBox->setCheckState(Qt::Unchecked);
       }
     }
+}
+
+void TaskProtocolWindow::onCompletedAndNext()
+{
+  ui->completedCheckBox->setCheckState(Qt::Checked);
+  if (ui->nextButton->isEnabled()) {
+    onNextButton();
+  }
 }
 
 void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
