@@ -173,7 +173,7 @@ QString TaskBodyMerge::actionString()
 
 QString TaskBodyMerge::targetString()
 {
-  return QString::number(m_bodyId1) + " + " + QString::number(m_bodyId2);
+  return QString::number(m_bodyId1) + " +<br>" + QString::number(m_bodyId2);
 }
 
 void TaskBodyMerge::beforeDone()
@@ -195,12 +195,12 @@ QMenu *TaskBodyMerge::getTaskMenu()
 
 void TaskBodyMerge::onCycleAnswer()
 {
-  if (m_mergeButton->isChecked()) {
-    m_dontMergeButton->setChecked(true);
-  } else if (m_dontMergeButton->isChecked()) {
+  if (m_dontMergeButton->isChecked()) {
+    m_mergeButton->setChecked(true);
+  } else if (m_mergeButton->isChecked()) {
     m_dontKnowButton->setChecked(true);
   } else {
-    m_mergeButton->setChecked(true);
+    m_dontMergeButton->setChecked(true);
   }
 }
 
@@ -310,19 +310,19 @@ void TaskBodyMerge::buildTaskWidget()
 {
   m_widget = new QWidget();
 
-  m_mergeButton = new QRadioButton("Merge", m_widget);
-  connect(m_mergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
-
   m_dontMergeButton = new QRadioButton("Don't Merge", m_widget);
   m_dontMergeButton->setChecked(true);
   connect(m_dontMergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
+
+  m_mergeButton = new QRadioButton("Merge", m_widget);
+  connect(m_mergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
   m_dontKnowButton = new QRadioButton("Don't Know", m_widget);
   connect(m_dontKnowButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
   QHBoxLayout *radioLayout = new QHBoxLayout(m_widget);
-  radioLayout->addWidget(m_mergeButton);
   radioLayout->addWidget(m_dontMergeButton);
+  radioLayout->addWidget(m_mergeButton);
   radioLayout->addWidget(m_dontKnowButton);
 
   m_widget->setLayout(radioLayout);
