@@ -246,6 +246,8 @@ public slots:
   void selectBodyInRoi(bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
   void notifyBodyMergeEdited();
+  void updateProtocolRangeGlyph(
+      const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
 
   void showBody3d();
   void showSplit3d();

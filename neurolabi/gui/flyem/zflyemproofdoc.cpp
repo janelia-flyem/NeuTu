@@ -3335,8 +3335,8 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
   ZIntCuboidObj* roi = new ZIntCuboidObj;
   roi->setColor(QColor(255, 255, 255));
   roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+//  roi->addVisualEffect(neutube::display::Box::VE_GRID); //For testing
   roi->clear();
-
 
   roi->setRole(ZStackObjectRole::ROLE_ROI);
   new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);
