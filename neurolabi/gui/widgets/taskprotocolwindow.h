@@ -52,6 +52,7 @@ private slots:
     void onLoadTasksButton();    
     void onBodiesUpdated();
     void onCompletedStateChanged(int state);
+    void onCompletedAndNext();
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
     void onBodyMeshesAdded(int numMeshes);
