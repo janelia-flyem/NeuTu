@@ -17,6 +17,8 @@ public:
   QString actionString() override;
   QString targetString() override;
 
+  virtual void beforeNext() override;
+  virtual void beforePrev() override;
   virtual void beforeDone() override;
 
   virtual QWidget *getTaskWidget() override;

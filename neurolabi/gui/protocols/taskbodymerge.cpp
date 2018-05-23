@@ -176,6 +176,24 @@ QString TaskBodyMerge::targetString()
   return QString::number(m_bodyId1) + " +<br>" + QString::number(m_bodyId2);
 }
 
+void TaskBodyMerge::beforeNext()
+{
+  // Clear the mesh cache when changing tasks so it does not grow without bound
+  // during an assignment, which causes a performance degradation.  The assumption
+  // is that improving performance as a user progresses through an assignment is
+  // more important than eliminating the need to reload meshses if the user goes
+  // back to a previous task.
+
+  m_bodyDoc->clearGarbage(true);
+}
+
+void TaskBodyMerge::beforePrev()
+{
+  // See the comment in beforeNext().
+
+  m_bodyDoc->clearGarbage(true);
+}
+
 void TaskBodyMerge::beforeDone()
 {
   restoreOverallSettings(m_bodyDoc);
