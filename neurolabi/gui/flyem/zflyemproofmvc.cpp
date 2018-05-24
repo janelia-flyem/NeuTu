@@ -1961,6 +1961,8 @@ void ZFlyEmProofMvc::customInit()
             getCompleteDocument(), SLOT(updateProtocolColorMap(ZFlyEmSequencerColorScheme)));
     connect(m_protocolSwitcher, SIGNAL(activateColorMap(QString)),
             this, SLOT(changeColorMap(QString)));
+    connect(m_protocolSwitcher, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)),
+            this, SLOT(updateProtocolRangeGlyph(ZIntPoint, ZIntPoint)));
   }
 
   m_paintLabelWidget = new ZPaintLabelWidget();
@@ -1986,6 +1988,13 @@ void ZFlyEmProofMvc::prepareBodyMap(const ZJsonValue &bodyInfoObj)
   getCompleteDocument()->prepareNameBodyMap(bodyInfoObj);
 
   emit nameColorMapReady(true);
+}
+
+void ZFlyEmProofMvc::updateProtocolRangeGlyph(
+    const ZIntPoint &firstCorner, const ZIntPoint &lastCorner)
+{
+  ZFlyEmProofMvcController::UpdateProtocolRangeGlyph(
+        this, ZIntCuboid(firstCorner, lastCorner));
 }
 
 void ZFlyEmProofMvc::goToBodyBottom()
