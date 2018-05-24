@@ -242,7 +242,7 @@ size_t ZObject3dScan::getVoxelNumber(int z) const
   return voxelNumber;
 }
 
-const std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
+const std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
 {
   if (isDeprecated(COMPONENT_SLICEWISE_VOXEL_NUMBER)) {
     //std::vector<size_t> voxelNumber;
@@ -260,9 +260,9 @@ const std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
   return m_slicewiseVoxelNumber;
 }
 
-std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber()
+std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber()
 {
-  return const_cast<std::map<int, size_t>&>(
+  return const_cast<std::unordered_map<int, size_t>&>(
         static_cast<const ZObject3dScan&>(*this).getSlicewiseVoxelNumber());
 }
 
@@ -460,8 +460,7 @@ ZObject3d* ZObject3dScan::toObject3d() const
   return obj;
 }
 
-const std::map<size_t, std::pair<size_t, size_t> >&
-ZObject3dScan::getIndexSegmentMap() const
+const std::map<size_t, std::pair<size_t, size_t> > &ZObject3dScan::getIndexSegmentMap() const
 {
   if (isDeprecated(COMPONENT_INDEX_SEGMENT_MAP)) {
     m_indexSegmentMap.clear();
@@ -480,8 +479,7 @@ ZObject3dScan::getIndexSegmentMap() const
 
 bool ZObject3dScan::getSegment(size_t index, int *z, int *y, int *x1, int *x2)
 {
-  const std::map<size_t, std::pair<size_t, size_t> >&segMap =
-      getIndexSegmentMap();
+  const auto& segMap = getIndexSegmentMap();
   if (segMap.count(index) > 0) {
     std::pair<size_t, size_t> location = segMap.at(index);
     *z = m_stripeArray[location.first].getZ();
@@ -1628,8 +1626,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
   if (graph != NULL) {
     const std::vector<ZGraph*> &subGraph = graph->getConnectedSubgraph();
 
-    const std::map<size_t, std::pair<size_t, size_t> >&segMap =
-        getIndexSegmentMap();
+    const auto& segMap = getIndexSegmentMap();
 
     std::vector<bool> isAdded(segMap.size(), false);
 

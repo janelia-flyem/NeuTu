@@ -107,8 +107,8 @@
 #include "swc/zswcresampler.h"
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "dialogs/penwidthdialog.h"
-#include "dvid/zdvidclient.h"
-#include "dvid/zdvidbuffer.h"
+//#include "dvid/zdvidclient.h"
+//#include "dvid/zdvidbuffer.h"
 #include "dialogs/dvidobjectdialog.h"
 #include "dialogs/resolutiondialog.h"
 #include "zswcglobalfeatureanalyzer.h"
@@ -277,11 +277,11 @@ MainWindow::MainWindow(QWidget *parent) :
   //m_actionActivatorList.append(&m_swcActionActivator); //Need to monitor swc modification signal
   updateAction();
 
-  m_dvidClient = new ZDvidClient(this);
+//  m_dvidClient = new ZDvidClient(this);
   //m_dvidClient->setServer("http://emdata1.int.janelia.org");
   m_dvidFrame = NULL;
-  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(createDvidFrame()));
-  connect(this, SIGNAL(dvidRequestCanceled()), m_dvidClient, SLOT(cancelRequest()));
+//  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(createDvidFrame()));
+//  connect(this, SIGNAL(dvidRequestCanceled()), m_dvidClient, SLOT(cancelRequest()));
   /*
   connect(m_dvidClient, SIGNAL(swcRetrieved()), this, SLOT(createDvidFrame()));
   connect(m_dvidClient, SIGNAL(objectRetrieved()),
@@ -5430,6 +5430,7 @@ void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
   }
 }
 
+#if 0
 void MainWindow::createDvidFrame()
 {
   QProgressDialog *progressDlg = getProgressDialog();
@@ -5567,6 +5568,7 @@ void MainWindow::createDvidFrame()
   }
 #endif
 }
+#endif
 
 #if 0
 void MainWindow::on_actionDVID_Object_triggered()

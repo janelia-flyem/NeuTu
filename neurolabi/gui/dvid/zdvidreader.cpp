@@ -17,7 +17,7 @@
 
 #include "zjsondef.h"
 #include "zstack.hxx"
-#include "zdvidbuffer.h"
+//#include "zdvidbuffer.h"
 #include "zstackfactory.h"
 #include "zswctree.h"
 #include "zdvidinfo.h"
