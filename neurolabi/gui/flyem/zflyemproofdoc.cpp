@@ -880,6 +880,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
         obj->setTarget(ZStackObject::TARGET_WIDGET);
         obj->useCosmeticPen(true);
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
+        obj->useCosmeticPen(true);
         //          obj->setDsIntv(31, 31, 31);
         obj->addVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
 //        obj->setHittable(false);
