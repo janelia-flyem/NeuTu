@@ -34,6 +34,7 @@ void neutube::RegisterMetaType()
   qRegisterMetaType<ZStackObjectInfoSet>("ZStackObjectInfoSet");
   qRegisterMetaType<ZStackViewParam>("ZStackViewParam");
   qRegisterMetaType<ZArbSliceViewParam>("ZArbSliceViewParam");
+  qRegisterMetaType<ZIntPoint>("ZIntPoint");
 }
 
 ZMessageReporter* neutube::getMessageReporter()

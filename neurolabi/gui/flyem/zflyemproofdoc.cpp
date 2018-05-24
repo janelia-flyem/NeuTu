@@ -880,6 +880,7 @@ void ZFlyEmProofDoc::loadRoiFunc()
         obj->setTarget(ZStackObject::TARGET_WIDGET);
         obj->useCosmeticPen(true);
         obj->addRole(ZStackObjectRole::ROLE_ROI_MASK);
+        obj->useCosmeticPen(true);
         //          obj->setDsIntv(31, 31, 31);
         obj->addVisualEffect(neutube::display::SparseObject::VE_PLANE_BOUNDARY);
 //        obj->setHittable(false);
@@ -3335,8 +3336,8 @@ void ZFlyEmProofDoc::updateSplitRoi(ZRect2d *rect, bool appending)
   ZIntCuboidObj* roi = new ZIntCuboidObj;
   roi->setColor(QColor(255, 255, 255));
   roi->setSource(ZStackObjectSourceFactory::MakeFlyEmSplitRoiSource());
+//  roi->addVisualEffect(neutube::display::Box::VE_GRID); //For testing
   roi->clear();
-
 
   roi->setRole(ZStackObjectRole::ROLE_ROI);
   new ZStackDocCommand::ObjectEdit::AddObject(this, roi, false, command);

@@ -34,6 +34,10 @@ public:
     void processSynapseVerification(const ZIntPoint &pt, bool verified);
     void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
 
+    ZIntCuboid getRange() const;
+    void setRange(const ZIntCuboid &range);
+    void setRange(const ZJsonArray &rangeJson);
+
 signals:
     void protocolCompleting();
     void protocolExiting();
