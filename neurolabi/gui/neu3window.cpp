@@ -182,7 +182,7 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(updateWidget()));
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
-          this, &Neu3Window::zoomToBodyMesh, Qt::QueuedConnection);
+          this, &Neu3Window::zoomToBodyMesh);
 
   connect(getBodyDocument(), SIGNAL(meshArchiveLoadingStarted()),
           this, SLOT(meshArchiveLoadingStarted()));
@@ -198,7 +198,7 @@ void Neu3Window::connectSignalSlot()
   // signals emitted with each mesh.
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
-          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+          this, &Neu3Window::syncBodyListModel);
 
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),

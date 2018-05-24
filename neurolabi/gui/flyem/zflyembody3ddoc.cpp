@@ -1364,7 +1364,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
             mesh->getSource());
     }
 
-    if (resLevel > getMinResLevel()) {
+    if (resLevel > getMinResLevel() && !fromTar(id)) {
       QMutexLocker locker(&m_eventQueueMutex);
       bool removing = false;
 

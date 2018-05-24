@@ -79,9 +79,9 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(shortcut, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
 
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshesAdded,
-            this, &TaskProtocolWindow::onBodyMeshesAdded, Qt::QueuedConnection);
+            this, &TaskProtocolWindow::onBodyMeshesAdded);
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded,
-            this, &TaskProtocolWindow::onBodyMeshLoaded, Qt::QueuedConnection);
+            this, &TaskProtocolWindow::onBodyMeshLoaded);
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyRecycled,
             this, &TaskProtocolWindow::onBodyRecycled);
 }
