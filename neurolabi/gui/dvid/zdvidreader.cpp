@@ -173,7 +173,7 @@ bool ZDvidReader::open(const ZDvidTarget &target)
 
     std::string masterNode = ReadMasterNode(target);
     if (!masterNode.empty()) {
-      m_dvidTarget.setUuid(masterNode.substr(0, 4));
+      m_dvidTarget.setUuid(masterNode);
     }
 
     succ = startService();
