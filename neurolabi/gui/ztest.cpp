@@ -19110,8 +19110,9 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 0
-  while (1) {
+#if 1
+  tic();
+  for (int i = 0; i < 1000; ++i) {
     ZObject3dScan obj = ZObject3dFactory::MakeRandomObject3dScan(
           ZIntCuboid(0, 0, 0, 200, 200, 200));
     obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -19150,7 +19151,7 @@ void ZTest::test(MainWindow *host)
       }
     }
   }
-
+  ptoc();
 #endif
 
 #if 0
