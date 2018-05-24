@@ -19111,8 +19111,10 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
-  tic();
-  for (int i = 0; i < 1000; ++i) {
+  QElapsedTimer timer;
+  timer.start();
+  ZRandomGenerator::SetSeed(0);
+  for (int i = 0; i < 10; ++i) {
     ZObject3dScan obj = ZObject3dFactory::MakeRandomObject3dScan(
           ZIntCuboid(0, 0, 0, 200, 200, 200));
     obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -19138,20 +19140,21 @@ void ZTest::test(MainWindow *host)
       break;
     }
 
-    for (size_t i = 0; i < objArray.size(); ++i) {
-      for (size_t j = 0; j < objArray.size(); ++j) {
+    for (size_t i = 0; i < objArray.size(); i += 10) {
+      for (size_t j = i + 1; j < objArray.size(); j += 10) {
         if (i != j) {
           ZObject3dScan &obj1 = objArray[i];
           ZObject3dScan &obj2 = objArray[j];
           if (obj1.isAdjacentTo(obj2)) {
             std::cout << "Bug found: Adjacent disjoints." << std::endl;
+            i = objArray.size();
             break;
           }
         }
       }
     }
   }
-  ptoc();
+  std::cout << timer.elapsed() << "ms" << std::endl;
 #endif
 
 #if 0

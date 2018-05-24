@@ -22,6 +22,7 @@
 #include "zlogmessagereporter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "tz_utilities.h"
 
 using namespace std;
 
