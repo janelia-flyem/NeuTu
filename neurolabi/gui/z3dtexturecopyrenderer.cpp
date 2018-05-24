@@ -1,56 +1,53 @@
 #include "z3dtexturecopyrenderer.h"
 
+#include "z3dshaderprogram.h"
 #include "z3dtexture.h"
 
-Z3DTextureCopyRenderer::Z3DTextureCopyRenderer(QObject *parent)
-  : Z3DPrimitiveRenderer(parent)
-  , m_colorTexture(NULL)
-  , m_depthTexture(NULL)
-  , m_colorOpAlpha(0.f)
+Z3DTextureCopyRenderer::Z3DTextureCopyRenderer(Z3DRendererBase& rendererBase, OutputColorOption mode)
+  : Z3DPrimitiveRenderer(rendererBase)
+  , m_copyTextureShaderGrp(rendererBase)
   , m_discardTransparent(false)
+  , m_mode(mode)
+  , m_VAO(1)
 {
+  QStringList allshaders;
+  allshaders << "pass.vert" << "copyimage_func.frag";
+  QStringList normalShaders;
+  normalShaders << "pass.vert" << "copyimage.frag";
+  m_copyTextureShaderGrp.init(allshaders, m_rendererBase.generateHeader() + generateHeader(), "", normalShaders);
+  m_copyTextureShaderGrp.addAllSupportedPostShaders();
 }
 
 void Z3DTextureCopyRenderer::compile()
 {
-  m_copyTextureShader.setHeaderAndRebuild(generateHeader());
+  m_copyTextureShaderGrp.rebuild(m_rendererBase.generateHeader() + generateHeader());
 }
 
-void Z3DTextureCopyRenderer::initialize()
+QString Z3DTextureCopyRenderer::generateHeader() const
 {
-  Z3DPrimitiveRenderer::initialize();
-  m_copyTextureShader.bindFragDataLocation(0, "FragData0");
-  m_copyTextureShader.loadFromSourceFile("pass.vert", "copyimage.frag", generateHeader());
-}
-
-void Z3DTextureCopyRenderer::deinitialize()
-{
-  m_copyTextureShader.removeAllShaders();
-  CHECK_GL_ERROR;
-  Z3DPrimitiveRenderer::deinitialize();
+  QString headerSource;
+  if (m_mode == OutputColorOption::MultiplyAlpha) {
+    headerSource += "#define Multiply_Alpha\n";
+  } else if (m_mode == OutputColorOption::DivideByAlpha) {
+    headerSource += "#define Divide_By_Alpha\n";
+  }
+  return headerSource;
 }
 
 void Z3DTextureCopyRenderer::render(Z3DEye eye)
 {
-  if (!m_initialized)
+  if (!m_colorTexture || !m_depthTexture)
     return;
 
-  if (m_colorTexture == NULL || m_depthTexture == NULL)
-    return;
-
-  m_copyTextureShader.bind();
-  m_rendererBase->setGlobalShaderParameters(m_copyTextureShader, eye);
-  m_copyTextureShader.setUniformValue("output_color_option", m_colorOpAlpha);
-  m_copyTextureShader.setUniformValue("discard_transparent", m_discardTransparent);
+  m_copyTextureShaderGrp.bind();
+  Z3DShaderProgram& shader = m_copyTextureShaderGrp.get();
+  m_rendererBase.setGlobalShaderParameters(shader, eye);
+  shader.setUniform("discard_transparent", m_discardTransparent);
 
   // pass texture parameters to the shader
-  m_copyTextureShader.bindTexture("color_texture", m_colorTexture);
-  m_copyTextureShader.bindTexture("depth_texture", m_depthTexture);
+  shader.bindTexture("color_texture", m_colorTexture);
+  shader.bindTexture("depth_texture", m_depthTexture);
 
-  renderScreenQuad(m_copyTextureShader);
-  m_copyTextureShader.release();
-}
-
-void Z3DTextureCopyRenderer::renderPicking(Z3DEye)
-{
+  renderScreenQuad(m_VAO, shader);
+  m_copyTextureShaderGrp.release();
 }

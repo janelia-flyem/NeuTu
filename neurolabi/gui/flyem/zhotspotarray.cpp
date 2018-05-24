@@ -5,25 +5,25 @@
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 
-FlyEm::ZHotSpotArray::ZHotSpotArray()
+flyem::ZHotSpotArray::ZHotSpotArray()
 {
 }
 
-FlyEm::ZHotSpotArray::~ZHotSpotArray()
+flyem::ZHotSpotArray::~ZHotSpotArray()
 {
   for (iterator iter = begin(); iter != end(); ++iter) {
     delete *iter;
   }
 }
 
-void FlyEm::ZHotSpotArray::append(ZHotSpot *hotSpot)
+void flyem::ZHotSpotArray::append(ZHotSpot *hotSpot)
 {
   if (hotSpot != NULL) {
     push_back(hotSpot);
   }
 }
 
-ZTextLineCompositer FlyEm::ZHotSpotArray::toLineCompositer() const
+ZTextLineCompositer flyem::ZHotSpotArray::toLineCompositer() const
 {
   ZTextLineCompositer text;
   ZString line;
@@ -38,17 +38,17 @@ ZTextLineCompositer FlyEm::ZHotSpotArray::toLineCompositer() const
   return text;
 }
 
-std::string FlyEm::ZHotSpotArray::toString() const
+std::string flyem::ZHotSpotArray::toString() const
 {
   return toLineCompositer().toString(2);
 }
 
-void FlyEm::ZHotSpotArray::print() const
+void flyem::ZHotSpotArray::print() const
 {
   std::cout << toString() << std::endl;
 }
 
-void FlyEm::ZHotSpotArray::concat(FlyEm::ZHotSpotArray *spotArray)
+void flyem::ZHotSpotArray::concat(flyem::ZHotSpotArray *spotArray)
 {
 #ifdef _DEBUG_
   std::cout << spotArray->toString() << std::endl;
@@ -59,11 +59,11 @@ void FlyEm::ZHotSpotArray::concat(FlyEm::ZHotSpotArray *spotArray)
   }
 }
 
-bool FlyEm::ZHotSpotArray::exportJsonFile(const std::string &filePath)
+bool flyem::ZHotSpotArray::exportJsonFile(const std::string &filePath)
 {
   ZJsonObject obj;
   ZJsonArray arrayObj;
-  for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
+  for (flyem::ZHotSpotArray::const_iterator iter = begin(); iter != end();
        ++iter) {
     ZHotSpot *hotSpot = *iter;
     ZJsonObject spotObj = hotSpot->toJsonObject();
@@ -75,12 +75,12 @@ bool FlyEm::ZHotSpotArray::exportJsonFile(const std::string &filePath)
   return obj.dump(filePath);
 }
 
-std::string FlyEm::ZHotSpotArray::toJsonString() const
+std::string flyem::ZHotSpotArray::toJsonString() const
 {
   ZJsonObject obj;
   if (!empty()) {
     ZJsonArray arrayObj;
-    for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
+    for (flyem::ZHotSpotArray::const_iterator iter = begin(); iter != end();
          ++iter) {
       ZHotSpot *hotSpot = *iter;
       ZJsonObject spotObj = hotSpot->toJsonObject();
@@ -95,14 +95,14 @@ std::string FlyEm::ZHotSpotArray::toJsonString() const
   return obj.dumpString();
 }
 
-bool FlyEm::ZHotSpotArray::exportRavelerBookmark(
+bool flyem::ZHotSpotArray::exportRavelerBookmark(
     const std::string &filePath,
     const double *resolution,
     const int *imageSize)
 {
   ZJsonObject obj;
   ZJsonArray arrayObj;
-  for (FlyEm::ZHotSpotArray::const_iterator iter = begin(); iter != end();
+  for (flyem::ZHotSpotArray::const_iterator iter = begin(); iter != end();
        ++iter) {
     ZHotSpot *hotSpot = *iter;
     ZJsonObject spotObj = hotSpot->toRavelerJsonObject(resolution, imageSize);
@@ -114,12 +114,12 @@ bool FlyEm::ZHotSpotArray::exportRavelerBookmark(
   return obj.dump(filePath);
 }
 
-void FlyEm::ZHotSpotArray::sort()
+void flyem::ZHotSpotArray::sort()
 {
   std::sort(begin(), end(), ZHotSpot::compareConfidence);
 }
 
-ZPointArray FlyEm::ZHotSpotArray::toPointArray() const
+ZPointArray flyem::ZHotSpotArray::toPointArray() const
 {
   ZPointArray ptArray;
   for (ZHotSpotArray::const_iterator iter = begin(); iter != end(); ++iter) {
@@ -130,7 +130,7 @@ ZPointArray FlyEm::ZHotSpotArray::toPointArray() const
   return ptArray;
 }
 
-ZLineSegmentArray FlyEm::ZHotSpotArray::toLineSegmentArray() const
+ZLineSegmentArray flyem::ZHotSpotArray::toLineSegmentArray() const
 {
   ZLineSegmentArray lineArray;
   for (ZHotSpotArray::const_iterator iter = begin(); iter != end(); ++iter) {

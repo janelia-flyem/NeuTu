@@ -5,6 +5,7 @@
 #include "zhdf5writer.h"
 #include "zhdf5reader.h"
 #include "misc/miscutility.h"
+#include "zjsonparser.h"
 
 ZFlyEmNeuronArray::ZFlyEmNeuronArray()
 {
@@ -25,7 +26,7 @@ void ZFlyEmNeuronArray::importBodyDir(const std::string &dirPath)
         reader.getAllDatasetName(pathArray[1]);
     for (size_t i = 0; i < bodyNameArray.size(); ++i) {
       if (ZString(bodyNameArray[i]).endsWith(".sobj")) {
-        int bodyId = ZString::lastInteger(bodyNameArray[i]);
+        int bodyId = ZString::LastInteger(bodyNameArray[i]);
         ZFlyEmNeuron neuron;
         neuron.setId(bodyId);
         if (!ZString(pathArray[1]).endsWith("/")) {
@@ -39,7 +40,7 @@ void ZFlyEmNeuronArray::importBodyDir(const std::string &dirPath)
     ZFileList fileList;
     fileList.load(dirPath, "sobj");
     for (int i = 0; i < fileList.size(); ++i) {
-      int bodyId = ZString::lastInteger(fileList.getFilePath(i));
+      int bodyId = ZString::LastInteger(fileList.getFilePath(i));
       ZFlyEmNeuron neuron;
       neuron.setId(bodyId);
       neuron.setVolumePath(fileList.getFilePath(i));
@@ -49,7 +50,7 @@ void ZFlyEmNeuronArray::importBodyDir(const std::string &dirPath)
 }
 
 void ZFlyEmNeuronArray::setSynapseAnnotation(
-    FlyEm::ZSynapseAnnotationArray *annotation)
+    flyem::ZSynapseAnnotationArray *annotation)
 {
   for (size_t i = 0; i < size(); ++i) {
     ZFlyEmNeuron &neuron = (*this)[i];
@@ -94,7 +95,7 @@ void ZFlyEmNeuronArray::importNamedBody(const std::string &filePath)
   if (!obj.isEmpty()) {
     ZJsonArray array(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < array.size(); ++i) {
-      ZJsonObject bodyObj(array.at(i), false);
+      ZJsonObject bodyObj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (bodyObj.hasKey("body ID")) {
         int bodyId = ZJsonParser::integerValue(bodyObj["body ID"]);
         if (bodyId > 0) {
@@ -119,7 +120,7 @@ void ZFlyEmNeuronArray::importFromDataBundle(const std::string &filePath)
   if (!obj.isEmpty()) {
     ZJsonArray array(obj["neuron"], ZJsonValue::SET_INCREASE_REF_COUNT);
     for (size_t i = 0; i < array.size(); ++i) {
-      ZJsonObject bodyObj(array.at(i), false);
+      ZJsonObject bodyObj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       if (bodyObj.hasKey("id")) {
         int bodyId = ZJsonParser::integerValue(bodyObj["id"]);
         if (bodyId > 0) {

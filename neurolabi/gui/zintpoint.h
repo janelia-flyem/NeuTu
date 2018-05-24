@@ -3,11 +3,16 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
+
+#include "neutube_def.h"
 
 class ZPoint;
 
 /*!
  * \brief The class of 3D points with integer coordinates
+ *
+ * The point (INT_MIN, INT_MIN, INT_MIN) is reserved for invalid point.
  */
 class ZIntPoint
 {
@@ -37,27 +42,67 @@ public:
   /*!
    * \brief Comparison.
    *
+   * The result of comparing with an invalid point is undefined.
+   *
    * Compare order: z, y, x
    */
   bool operator < (const ZIntPoint &pt) const;
+
+  /*!
+   * \brief Check if a point is defintely less than another point
+   *
+   * \return true iff any of the coordinate value than that of \a pt and the
+   * other two coordinate values are not greater than their counterparts of \a pt.
+   */
+  bool definiteLessThan(const ZIntPoint &pt) const;
+
+  /*!
+   * \brief Check if tow points are the same.
+   *
+   * Tow invalid points are considered as the same.
+   */
   bool operator == (const ZIntPoint &pt) const;
 
+  /*!
+   * \brief Check if tow points are different.
+   */
+  bool operator != (const ZIntPoint &pt) const;
+
+
+  /**@addtogroup _opr Point operations
+   *
+   * Note: An operation always results in an invalid point if any of the inputs
+   * is invalid.
+   *
+   * @{
+   */
+
+  /*!
+   * \brief Negate a point.
+   */
   ZIntPoint operator - () const;
 
   ZIntPoint& operator += (const ZIntPoint &pt);
   ZIntPoint& operator -= (const ZIntPoint &pt);
   ZIntPoint& operator *= (const ZIntPoint &pt);
+  ZIntPoint& operator /= (const ZIntPoint &pt);
 
   friend ZIntPoint operator + (const ZIntPoint &pt1, const ZIntPoint &pt2);
   friend ZIntPoint operator + (const ZIntPoint &pt1, int v);
+  friend ZIntPoint operator * (const ZIntPoint &pt1, const ZIntPoint &pt2);
+  friend ZIntPoint operator * (const ZIntPoint &pt1, int v);
   friend ZIntPoint operator - (const ZIntPoint &pt1, const ZIntPoint &pt2);
+  friend ZIntPoint operator - (const ZIntPoint &pt1, int v);
+
   /*!
-   * \brief Coordinate-wise ivision
+   * \brief Coordinate-wise division
    *
    * It returns (0, 0, 0) if \a pt2 has a 0 coordinate value.
    */
   friend ZIntPoint operator / (const ZIntPoint &pt1, const ZIntPoint &pt2);
-  friend ZIntPoint operator / (const ZPoint &pt1, int scale);
+  friend ZIntPoint operator / (const ZIntPoint &pt1, int scale);
+
+  /**@}*/
 
   std::string toString() const;
 
@@ -69,6 +114,23 @@ public:
   bool isZero() const;
 
   bool equals(const ZIntPoint &pt) const;
+
+  double distanceTo(double x, double y, double z) const;
+
+  void shiftSliceAxis(neutube::EAxis axis);
+  void shiftSliceAxisInverse(neutube::EAxis axis);
+  int getSliceCoord(neutube::EAxis axis) const;
+
+  void invalidate();
+  bool isValid() const;
+  static bool IsValid(int x);
+
+  static bool IsNormalDimIndex(int index);
+
+  void read(std::istream &stream);
+  void write(std::ostream &stream) const;
+
+  friend std::ostream& operator<<(std::ostream& stream, const ZIntPoint &pt);
 
 public:
   int m_x;

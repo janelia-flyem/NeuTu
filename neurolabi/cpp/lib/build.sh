@@ -8,5 +8,14 @@ then
 fi
 
 cd build
-cmake ..
-make
+config=$1
+if [ ${config:-release} == debug ]
+then
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
+else
+  cmake -DCMAKE_BUILD_TYPE=Release ..
+fi
+
+THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
+make -j${THREAD_COUNT} VERBOSE=1
+

@@ -4,7 +4,7 @@
 #include "zstring.h"
 #include "dvid/zdvidinfo.h"
 
-ZFlyEmDataInfo::ZFlyEmDataInfo(FlyEm::EDataSet dataSet) : m_blockMargin(0)
+ZFlyEmDataInfo::ZFlyEmDataInfo(flyem::EDataSet dataSet) : m_blockMargin(0)
 {
   m_stackSize.resize(3);
   m_voxelResolution.resize(3);
@@ -24,11 +24,11 @@ void ZFlyEmDataInfo::configure(const ZDvidInfo &info)
   m_startCoordinates[2] = info.getStartCoordinates().getZ();
 }
 
-void ZFlyEmDataInfo::configure(FlyEm::EDataSet dataSet)
+void ZFlyEmDataInfo::configure(flyem::EDataSet dataSet)
 {
   m_dataSet = dataSet;
   switch (dataSet) {
-  case FlyEm::DATA_FIB25:
+  case flyem::DATA_FIB25:
     m_stackSize[0] = 3150;
     m_stackSize[1] = 2599;
     m_stackSize[2] = 6520;
@@ -43,7 +43,7 @@ void ZFlyEmDataInfo::configure(FlyEm::EDataSet dataSet)
     m_dvidPort = 9000;
     m_dvidUuid = "fa9";
     break;
-  case FlyEm::DATA_FIB25_7C:
+  case flyem::DATA_FIB25_7C:
     m_stackSize[0] = 6445;
     m_stackSize[1] = 6642;
     m_stackSize[2] = 8089;

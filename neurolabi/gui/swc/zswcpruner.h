@@ -20,6 +20,8 @@ public:
    */
   int prune(ZSwcTree *tree) const;
 
+  void removeOrphanBlob(ZSwcTree *tree) const;
+
   /*!
    * \brief Set the minimal length of preserved branches.
    *
@@ -56,6 +58,7 @@ private:
 
 private:
   double m_minLength;
+  int m_minOrphanCount; //minimal count for orphan stat
   bool m_removingOrphan;
 };
 

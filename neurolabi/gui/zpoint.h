@@ -8,6 +8,8 @@
 #include <iostream>
 #include <string>
 
+#include "neutube_def.h"
+
 class ZIntPoint;
 
 class ZPoint {
@@ -29,6 +31,9 @@ public:
   inline double x() const { return m_x; }
   inline double y() const { return m_y; }
   inline double z() const { return m_z; }
+  inline double getX() const { return m_x; }
+  inline double getY() const { return m_y; }
+  inline double getZ() const { return m_z; }
 
   inline double* xRef() { return &m_x; }
   inline double* yRef() { return &m_y; }
@@ -37,7 +42,8 @@ public:
   const double& operator[] (int index) const;
   double& operator[] (int index);
   ZPoint& operator= (const ZPoint &pt);
-  bool operator== (const ZPoint &pt);
+  bool operator== (const ZPoint &pt) const;
+  bool operator!= (const ZPoint &pt) const;
 
   bool operator < (const ZPoint &pt) const;
 
@@ -48,6 +54,7 @@ public:
   double distanceTo(const ZPoint &pt) const;
   double distanceTo(double x, double y, double z) const;
   double length() const;
+  double lengthSqure() const;
 
   ZPoint& operator += (const ZPoint &pt);
   ZPoint& operator += (const ZIntPoint &pt);
@@ -62,7 +69,9 @@ public:
 
   friend ZPoint operator + (const ZPoint &pt1, const ZPoint &pt2);
   friend ZPoint operator + (const ZPoint &pt1, const ZIntPoint &pt2);
+  friend ZPoint operator + (const ZPoint &pt1, double offset);
   friend ZPoint operator - (const ZPoint &pt1, const ZPoint &pt2);
+  friend ZPoint operator - (const ZPoint &pt1, double offset);
   friend ZPoint operator * (const ZPoint &pt1, double scale);
   friend ZPoint operator / (const ZPoint &pt1, double scale);
 
@@ -73,8 +82,18 @@ public:
   double cosAngle(const ZPoint &pt) const;
   ZPoint cross(const ZPoint &pt) const;
 
+  /*!
+   * \brief Check if a point is an approximate origin point.
+   */
   bool isApproxOrigin() const;
   bool approxEquals(const ZPoint &pt) const;
+
+  /*!
+   * \brief Check if two points (vector to the origin) are perpendicular.
+   *
+   * An approximate origin point is not perpendicular to any other point.
+   */
+  bool isPendicularTo(const ZPoint &pt) const;
 
   std::string toString() const;
   std::string toJsonString() const;
@@ -93,13 +112,15 @@ public:
 
   ZIntPoint toIntPoint() const;
 
+  friend std::ostream& operator<<(std::ostream& stream, const ZPoint &pt);
+
 public:
   //virtual void display(ZPainter &painter, int n = 0, Display_Style style = NORMAL) const;
 
   virtual void save(const char *filePath);
   virtual void load(const char *filePath);
 
-  static inline double minimalDistance() { return m_minimalDistance; }
+  static inline double minimalDistance() { return MIN_DIST; }
 
   struct ZCompare {
     bool operator() (const ZPoint &pt1, const ZPoint &pt2) {
@@ -119,12 +140,18 @@ public:
     }
   };
 
+  void shiftSliceAxis(neutube::EAxis axis);
+  void shiftSliceAxisInverse(neutube::EAxis axis);
+
+  double getSliceCoord(neutube::EAxis axis) const;
+
+public:
+  const static double MIN_DIST;
+
 private:
   double m_x;
   double m_y;
   double m_z;
-
-  const static double m_minimalDistance;
 };
 
 #endif // ZPOINT_H

@@ -12,7 +12,7 @@ class ZFlyEmNeuronBodyInfo
 public:
   ZFlyEmNeuronBodyInfo();
 
-  inline void setBodySize(int bodySize) {
+  inline void setBodySize(size_t bodySize) {
     m_bodySize = bodySize;
   }
 
@@ -31,7 +31,7 @@ public:
   void loadJsonObject(const ZJsonObject &obj);
 
 private:
-  int m_bodySize;
+  size_t m_bodySize;
   ZIntCuboid m_boundBox;
 };
 

@@ -14,8 +14,8 @@ public:
   ~ZStackPatch();
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option)
-  const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       neutube::EAxis sliceAxis) const;
 
   virtual const std::string& className() const;
 

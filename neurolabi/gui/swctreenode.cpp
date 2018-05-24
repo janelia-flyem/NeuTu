@@ -4,6 +4,7 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <stack>
 
 #include "tz_error.h"
 #include "zswctree.h"
@@ -20,7 +21,9 @@
 #include "zerror.h"
 #include "zweightedpointarray.h"
 #include "tz_stack_objlabel.h"
-#include "zstackprocessor.h"
+#include "imgproc/zstackprocessor.h"
+#include "zstack.hxx"
+#include "tz_3dgeom.h"
 
 using namespace std;
 
@@ -186,6 +189,67 @@ int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn)
   return Swc_Tree_Node_Fsize(tn);
 }
 
+double SwcTreeNode::downstreamLength(Swc_Tree_Node *tn)
+{
+  if (tn == NULL) {
+    return 0;
+  }
+
+  double length = 0;
+
+  Swc_Tree_Node *pointer = tn;
+  std::stack<Swc_Tree_Node*> nodeStack;
+
+  do {
+    Swc_Tree_Node *child = pointer->first_child;
+
+    while (child != NULL) {
+      nodeStack.push(child);
+      length += SwcTreeNode::length(child);
+      child = child->next_sibling;
+    }
+    if (!nodeStack.empty()) {
+      pointer = nodeStack.top();
+      nodeStack.pop();
+    } else {
+      pointer = NULL;
+    }
+  } while (pointer != NULL);
+
+  return length;
+}
+
+double SwcTreeNode::downstreamLength(
+    Swc_Tree_Node *tn, double sx, double sy, double sz)
+{
+  if (tn == NULL) {
+    return 0;
+  }
+
+  double length = 0;
+
+  Swc_Tree_Node *pointer = tn;
+  std::stack<Swc_Tree_Node*> nodeStack;
+
+  do {
+    Swc_Tree_Node *child = pointer->first_child;
+
+    while (child != NULL) {
+      nodeStack.push(child);
+      length += SwcTreeNode::length(child, sx, sy, sz);
+      child = child->next_sibling;
+    }
+    if (!nodeStack.empty()) {
+      pointer = nodeStack.top();
+      nodeStack.pop();
+    } else {
+      pointer = NULL;
+    }
+  } while (pointer != NULL);
+
+  return length;
+}
+
 int SwcTreeNode::downstreamSize(Swc_Tree_Node *tn,
                                 Swc_Tree_Node_Compare compfunc)
 {
@@ -252,6 +316,20 @@ ZPoint SwcTreeNode::center(const Swc_Tree_Node *tn)
   return ZPoint(tn->node.x, tn->node.y, tn->node.z);
 }
 
+void SwcTreeNode::setCenter(Swc_Tree_Node *tn, double x, double y, double z)
+{
+  if (tn != NULL) {
+    tn->node.x = x;
+    tn->node.y = y;
+    tn->node.z = z;
+  }
+}
+
+void SwcTreeNode::setCenter(Swc_Tree_Node *tn, const ZPoint &center)
+{
+  setCenter(tn, center.x(), center.y(), center.z());
+}
+
 std::string SwcTreeNode::toSwcLine(const Swc_Tree_Node *tn)
 {
   std::ostringstream stream;
@@ -308,9 +386,20 @@ int SwcTreeNode::index(const Swc_Tree_Node *tn)
   return tn->index;
 }
 
+void SwcTreeNode::print(const Swc_Tree_Node *tn)
+{
+  Print_Swc_Tree_Node(tn);
+}
+
 double SwcTreeNode::length(const Swc_Tree_Node *tn)
 {
   return Swc_Tree_Node_Length(tn);
+}
+
+double SwcTreeNode::length(
+    const Swc_Tree_Node *tn, double sx, double sy, double sz)
+{
+  return Swc_Tree_Node_Scaled_Length(tn, sx, sy, sz);
 }
 
 bool SwcTreeNode::isLeaf(const Swc_Tree_Node *tn)
@@ -462,6 +551,21 @@ void SwcTreeNode::rotate(
   }
 }
 
+void SwcTreeNode::rotateAroundZ(
+    Swc_Tree_Node *tn, double theta, double cx, double cy)
+{
+  if (tn != NULL) {
+    translate(tn, -cx, -cy, 0);
+    double pos[3];
+    pos[0] = x(tn);
+    pos[1] = y(tn);
+    pos[2] = z(tn);
+    Rotate_Z(pos, pos, 1, theta, false);
+    SwcTreeNode::setPos(tn, pos[0], pos[1], pos[2]);
+    translate(tn, cx, cy, 0);
+  }
+}
+
 double SwcTreeNode::pathLength(const Swc_Tree_Node *tn1,
                                const Swc_Tree_Node *tn2)
 {
@@ -530,6 +634,14 @@ double SwcTreeNode::distance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
   case SwcTreeNode::EUCLIDEAN:
     dist = Swc_Tree_Node_Dist(tn1, tn2);
     break;
+  case SwcTreeNode::EUCLIDEAN_SQUARE:
+  {
+    double dx = x(tn1) - x(tn2);
+    double dy = y(tn1) - y(tn2);
+    double dz = z(tn1) - z(tn2);
+    dist = dx * dx + dy * dy + dz * dz;
+  }
+    break;
   case SwcTreeNode::PLANE_EUCLIDEAN:
   {
     double dx = x(tn1) - x(tn2);
@@ -590,6 +702,13 @@ double SwcTreeNode::scaledDistance(
   double dz = (z(tn1) - z(tn2)) * sz;
 
   return sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+double SwcTreeNode::scaledSurfaceDistance(
+    const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+    double sx, double sy, double sz)
+{
+  return scaledDistance(tn1, tn2, sx, sy, sz) - radius(tn1) - radius(tn2);
 }
 
 Swc_Tree_Node*
@@ -720,7 +839,7 @@ void SwcTreeNode::setFirstChild(Swc_Tree_Node *tn, Swc_Tree_Node *child)
     SwcTreeNode::setLink(child, tn, SwcTreeNode::PARENT);
     SwcTreeNode::setLink(tn, child, SwcTreeNode::FIRST_CHILD);
     SwcTreeNode::setLink(child, oldFirstChild, SwcTreeNode::NEXT_SIBLING);
-    child->tree_state = tn->tree_state;
+//    child->tree_state = tn->tree_state;
   }
 }
 
@@ -749,6 +868,48 @@ ZPoint SwcTreeNode::upStreamDirection(Swc_Tree_Node *tn, int n)
     ancester = parent(ancester);
     upLevel ++;
   }
+
+  return direction;
+}
+
+ZPoint SwcTreeNode::weightedDirection(const ZWeightedPointArray &ptArray)
+{
+  ZPoint direction;
+
+  double totalLength = 0.0;
+  for (size_t i = 0; i < ptArray.size() - 1; ++i) {
+    const ZWeightedPoint &pt = ptArray[i];
+    ZPoint v = pt - ptArray[i + 1];
+    v *= (pt.weight() + ptArray[i + 1].weight());
+    totalLength += v.length();
+    direction += v;
+  }
+
+  if (totalLength > 0) {
+    double ratio = direction.length() / totalLength;
+    direction.normalize();
+    direction *= ratio;
+  }
+
+  return direction;
+}
+
+ZPoint SwcTreeNode::weightedDirection(const Swc_Tree_Node *tn, int extend)
+{
+  ZWeightedPointArray ptArray;
+
+  const Swc_Tree_Node *start = tn;
+
+  for (int i = 0; i < extend; ++i) {
+    ptArray.append(SwcTreeNode::center(start), SwcTreeNode::radius(start));
+    if (SwcTreeNode::isRegular(start->parent)) {
+      start = start->parent;
+    } else {
+      break;
+    }
+  }
+
+  ZPoint direction = weightedDirection(ptArray);
 
   return direction;
 }
@@ -783,7 +944,7 @@ ZPoint SwcTreeNode::localDirection(const Swc_Tree_Node *tn, int extend)
 
 void SwcTreeNode::killSubtree(Swc_Tree_Node *tn)
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Kill subtree of " << tn << std::endl;
   Print_Swc_Tree_Node(tn);
 #endif
@@ -1203,7 +1364,7 @@ void SwcTreeNode::kill(Swc_Tree_Node *tn)
 {
 #ifdef _DEBUG_
   std::cout << "Deleting Swc node " << tn << std::endl;
-  Print_Swc_Tree_Node(tn);
+//  Print_Swc_Tree_Node(tn);
 #endif
 
   Kill_Swc_Tree_Node(tn);
@@ -1315,6 +1476,14 @@ void SwcTreeNode::weightedAverage(const Swc_Tree_Node *tn1,
   }
 }
 
+void SwcTreeNode::LabelStack(
+    const Swc_Tree_Node *tn, ZStack *stack, Swc_Tree_Node_Label_Workspace *ws)
+{
+  Swc_Tree_Node tmpTn = *tn;
+  SwcTreeNode::translate(&tmpTn, -stack->getOffset());
+  Swc_Tree_Node_Label_Stack(&tmpTn, stack->c_stack(), ws);
+}
+
 void SwcTreeNode::interpolate(
     const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2, double lambda,
     Swc_Tree_Node *out)
@@ -1330,7 +1499,7 @@ void SwcTreeNode::interpolate(
 }
 
 double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
-                                   NeuTube::EImageBackground bg)
+                                   neutube::EImageBackground bg)
 {
 
   //Extract image slice
@@ -1340,7 +1509,8 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
   int y2 = iround(y(tn) + radius(tn) * 2);
   int cz = iround(z(tn));
 
-  Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
+  Stack *slice = C_Stack::crop(
+        stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
   //RC threshold
   int thre = Stack_Threshold_Triangle(slice, 0, 65535);
@@ -1348,7 +1518,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
   //Seed grow
   Stack_Threshold_Binarize(slice, thre);
 
-  if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+  if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
     Stack_Invert_Value(slice);
   }
 
@@ -1366,7 +1536,7 @@ double SwcTreeNode::estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
 }
 
 bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
-                            NeuTube::EImageBackground bg, int option)
+                            neutube::EImageBackground bg, int option)
 {
   if (tn == NULL || stack == NULL) {
     return false;
@@ -1401,7 +1571,8 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
     return false;
   }
 
-  Stack *slice = Crop_Stack(stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
+  Stack *slice = C_Stack::crop(
+        stack, x1, y1, cz, x2 - x1 + 1, y2 - y1 + 1, 1, NULL);
 
 
   if (slice == NULL) {
@@ -1423,7 +1594,7 @@ bool SwcTreeNode::fitSignal(Swc_Tree_Node *tn, const Stack *stack,
   y1 += 3;
   */
 
-  if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+  if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
     Stack_Invert_Value(slice);
   }
 

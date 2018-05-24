@@ -2,6 +2,7 @@
 #include "zstack.hxx"
 #include "zintcuboid.h"
 #include "neutubeconfig.h"
+#include "core/utilities.h"
 
 ZStackBlockGrid::ZStackBlockGrid()
 {
@@ -83,6 +84,43 @@ bool ZStackBlockGrid::consumeStack(const ZIntPoint &blockIndex, ZStack *stack)
   return true;
 }
 
+void ZStackBlockGrid::consume(ZStackBlockGrid &grid)
+{
+  bool compatible = true;
+
+  //Check compatibility
+  if (m_blockSize != grid.m_blockSize || m_minPoint != grid.m_minPoint) {
+    compatible = false;
+  }
+
+  if (compatible) {
+    if (grid.m_stackArray.size() > m_stackArray.size()) {
+      m_stackArray.resize(grid.m_stackArray.size(), NULL);
+      for (size_t i = 0; i < m_stackArray.size(); ++i) {
+        if (m_stackArray[i] == NULL && grid.m_stackArray[i] != NULL) {
+          m_stackArray[i] = grid.m_stackArray[i];
+          grid.m_stackArray[i] = NULL;
+        }
+      }
+
+      for (int i = 0; i < 3; ++i) {
+        if (m_size[i] < grid.m_size[i]) {
+          m_size[i] = grid.m_size[i];
+        }
+      }
+    }
+  }
+}
+
+void ZStackBlockGrid::consume(ZStackBlockGrid *&grid)
+{
+  if (grid != NULL) {
+    consume(*grid);
+    delete grid;
+    grid = NULL;
+  }
+}
+
 ZStack* ZStackBlockGrid::getStack(const ZIntPoint &blockIndex) const
 {
   ZStack *stack = NULL;
@@ -94,6 +132,15 @@ ZStack* ZStackBlockGrid::getStack(const ZIntPoint &blockIndex) const
 
   return stack;
 }
+
+
+bool ZStackBlockGrid::hasStack(int x,int y,int z) const
+{
+  Location location = getLocation(x, y, z);
+  int index = getHashIndex(location.getBlockIndex());
+  return index>=0 && index < (int) m_stackArray.size();
+}
+
 
 int ZStackBlockGrid::getValue(int x, int y, int z) const
 {
@@ -122,7 +169,7 @@ ZStack* ZStackBlockGrid::toStack() const
   //int depth = getSpatialDepth();
 
   ZStack *out =
-      new ZStack(GREY, box.getWidth(), box.getHeight(), box.getDepth(), 1);
+      new ZStack(GREY, box, 1);
   out->setOffset(box.getFirstCorner());
   out->setZero();
 
@@ -215,4 +262,57 @@ ZIntCuboid ZStackBlockGrid::getStackBoundBox() const
   }
 
   return cuboid;
+}
+
+void ZStackBlockGrid::read(std::istream &stream)
+{
+  m_size.read(stream);
+  m_minPoint.read(stream);
+  m_blockSize.read(stream);
+
+  int count = 0;
+  neutube::read(stream, count);
+  int maxIndex = -1;
+  neutube::read(stream, maxIndex);
+
+  if (maxIndex >= 0) {
+    m_stackArray.resize(maxIndex + 1, 0);
+    for (int i = 0; i < count; ++i) {
+      int index = -1;
+      neutube::read(stream, index);
+      if (index >= 0) {
+        ZStack *stack = new ZStack;
+        stack->read(stream);
+        m_stackArray[index] = stack;
+      }
+    }
+  }
+}
+
+void ZStackBlockGrid::write(std::ostream &stream) const
+{
+  m_size.write(stream);
+  m_minPoint.write(stream);
+  m_blockSize.write(stream);
+
+  int count = 0;
+  int maxIndex = -1;
+  for (int i = 0; i < (int) m_stackArray.size(); ++i) {
+    ZStack *stack = m_stackArray[i];
+    if (stack != NULL) {
+      ++count;
+      maxIndex = i;
+    }
+  }
+
+  neutube::write(stream, count);
+  neutube::write(stream, maxIndex);
+
+  for (int i = 0; i < (int) m_stackArray.size(); ++i) {
+    ZStack *stack = m_stackArray[i];
+    if (stack != NULL) {
+      neutube::write(stream, i);
+      stack->write(stream);
+    }
+  }
 }

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]
+then
+  echo "./flyem_master_node <address> <uuid>"
+  exit 1
+fi
+
+address=$1
+node=$2
+
+http POST $address/api/repo/$node/instance dataname="branches" typename="keyvalue" versioned="false"
+ 

@@ -20,30 +20,34 @@ void ZFlyEmNeuronImageFactory::setSizePolicy(
 }
 
 void ZFlyEmNeuronImageFactory::setSizePolicy(
-    NeuTube::EAxis axis, ESizePolicy policy)
+    neutube::EAxis axis, ESizePolicy policy)
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     m_sizePolicy[0] = policy;
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     m_sizePolicy[1] = policy;
     break;
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     m_sizePolicy[2] = policy;
+    break;
+  case neutube::A_AXIS:
     break;
   }
 }
 
-int ZFlyEmNeuronImageFactory::getSourceDimension(NeuTube::EAxis axis) const
+int ZFlyEmNeuronImageFactory::getSourceDimension(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_sourceDimension[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_sourceDimension[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_sourceDimension[2];
+  case neutube::A_AXIS:
+    break;
   }
 
   return 0;
@@ -139,11 +143,15 @@ Stack *ZFlyEmNeuronImageFactory::createSurfaceImage(const ZObject3dScan &obj) co
         m_downsampleInterval[2]);
 
     int offset[3] = { 0, 0, 0 };
-    tmpObj.switchYZ();
+//    tmpObj.switchYZ();
     Stack *objStack = tmpObj.toStack(offset);
-    offset[1] -= 1500 / (m_downsampleInterval[2] + 1); //hard-coded calibration, need modification later
+    offset[2] -= m_sourceDimension[2] / (m_downsampleInterval[2] + 1);
 
-    stack = misc::computeNormal(objStack, NeuTube::Z_AXIS);
+#ifdef _DEBUG_2
+    C_Stack::write("/Users/zhaot/Work/neutube/neurolabi/data/test2.tif", objStack);
+#endif
+
+    stack = misc::computeNormal(objStack, neutube::Y_AXIS);
     C_Stack::kill(objStack);
 
     int height= C_Stack::height(stack);

@@ -140,7 +140,7 @@ TEST(ZSwcGlobalFeatureAnalyzer, computeFeature)
   tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
   ZDoubleVector feature = ZSwcGlobalFeatureAnalyzer::computeFeatureSet(
         tree, ZSwcGlobalFeatureAnalyzer::NGF1);
-  ZDoubleVector::print(feature);
+  ZDoubleVector::Print(feature);
 }
 
 TEST(ZSwcSubtreeAnalyzer, labelSubtree)

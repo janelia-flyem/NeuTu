@@ -126,7 +126,7 @@ void ZSegmentationProjectModel::updateSegmentation()
           int row = 0;
           for (ZObject3dScanArray::iterator iter = objArray->begin();
                iter != objArray->end(); ++iter) {
-            ZObject3dScan &obj = *iter;
+            ZObject3dScan &obj = **iter;
             ZTreeNode<ZObject3dScan> *childNode = new ZTreeNode<ZObject3dScan>;
             childNode->setData(obj);
             childNode->setParent(labelNode);

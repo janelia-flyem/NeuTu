@@ -1,5 +1,5 @@
 uniform float alpha;
-uniform bool no_alpha = false;
+uniform bool lighting_enabled = true;
 
 #if GLSL_VERSION >= 130
 in vec4 color;
@@ -10,6 +10,6 @@ varying vec4 color;
 void fragment_func(out vec4 fragColor, out float fragDepth)
 {
   fragDepth = gl_FragCoord.z;
-  fragColor = no_alpha ? color : vec4(color.rgb * color.a * alpha, color.a * alpha);
+  fragColor = !lighting_enabled ? color : vec4(color.rgb * color.a * alpha, color.a * alpha);
 }
 

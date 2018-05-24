@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <cstdarg>
 
 #include "tz_error.h"
 #include "zjsonparser.h"
@@ -11,12 +12,14 @@
 
 using namespace std;
 
+/*
 ZJsonObject::ZJsonObject(json_t *json, bool asNew) : ZJsonValue()
 {
   if (ZJsonParser::isObject(json)) {
     set(json, asNew);
   }
 }
+*/
 
 ZJsonObject::ZJsonObject(json_t *data, ESetDataOption option) : ZJsonValue()
 {
@@ -67,6 +70,13 @@ bool ZJsonObject::isEmpty() const
   return json_object_size(m_data) == 0;
 }
 
+void ZJsonObject::denull()
+{
+  if (m_data == NULL) {
+    m_data = C_Json::makeObject();
+  }
+}
+
 const json_t* ZJsonObject::operator[] (const char *key) const
 {
   if (m_data != NULL) {
@@ -88,6 +98,23 @@ ZJsonValue ZJsonObject::value(const char *key) const
   return ZJsonValue(const_cast<json_t*>((*this)[key]),
                     ZJsonValue::SET_INCREASE_REF_COUNT);
 }
+
+#ifndef SWIG
+ZJsonValue ZJsonObject::value(
+    const std::initializer_list<const char*> &keyList) const
+{
+  ZJsonValue v = *this;
+  for (const char *key : keyList) {
+    ZJsonObject obj(v);
+    v = obj.value(key);
+    if (v.isEmpty()) {
+      break;
+    }
+  }
+
+  return v;
+}
+#endif
 
 bool ZJsonObject::decode(const string &str)
 {
@@ -122,14 +149,14 @@ string ZJsonObject::summary()
 
     json_object_foreach(m_data, key, value) {
       if (json_is_object(value)) {
-        ZJsonObject obj(value, false);
+        ZJsonObject obj(value, ZJsonValue::SET_INCREASE_REF_COUNT);
         stream << obj.summary();
       } else if (json_is_array(value)) {
         stream << key << " : " << "Array " << endl;
         for (size_t i = 0; i < json_array_size(value); i++) {
           json_t *element = json_array_get(value, i);
           if (json_is_object(element)) {
-            ZJsonObject obj(element, false);
+            ZJsonObject obj(element, ZJsonValue::SET_INCREASE_REF_COUNT);
             stream << obj.summary();
           } else {
             stream << "Element : " << "Type " << json_typeof(element) << endl;
@@ -162,17 +189,19 @@ void ZJsonObject::appendEntries(const char *key, json_t *obj,
 
 map<string, json_t*> ZJsonObject::toEntryMap(bool recursive) const
 {
-  TZ_ASSERT(json_is_object(m_data), "Invalid json object");
+//  TZ_ASSERT(json_is_object(m_data), "Invalid json object");
+
 
   map<std::string, json_t*> entryMap;
-
-  if (recursive) {
-    appendEntries(NULL, m_data, &entryMap);
-  } else {
-    const char *subkey = NULL;
-    json_t *value = NULL;
-    json_object_foreach(m_data, subkey, value) {
-      entryMap[subkey] = value;
+  if (C_Json::isObject(m_data)) {
+    if (recursive) {
+      appendEntries(NULL, m_data, &entryMap);
+    } else {
+      const char *subkey = NULL;
+      json_t *value = NULL;
+      json_object_foreach(m_data, subkey, value) {
+        entryMap[subkey] = value;
+      }
     }
   }
 
@@ -229,14 +258,52 @@ void ZJsonObject::consumeEntry(const char *key, json_t *obj)
   setEntryWithoutKeyCheck(key, obj, true);
 }
 
+void ZJsonObject::setNonEmptyEntry(const char *key, const string &value)
+{
+  if (!value.empty()) {
+    setEntry(key, value);
+  }
+}
+
 void ZJsonObject::setEntry(const char *key, const string &value)
 {
   if (!isValidKey(key)) {
     return;
   }
 
-  if (!value.empty()) {
+//  if (!value.empty()) {
     setEntryWithoutKeyCheck(key, json_string(value.c_str()), true);
+//  }
+}
+
+void ZJsonObject::setEntry(const char *key, const char *value)
+{
+  if (!isValidKey(key)) {
+    return;
+  }
+
+  if (value != NULL) {
+//    if (strlen(value) > 0) {
+      setEntryWithoutKeyCheck(key, json_string(value), true);
+//    }
+  }
+}
+
+void ZJsonObject::setEntry(const string &key, const string &value)
+{
+  setEntry(key.c_str(), value.c_str());
+}
+
+void ZJsonObject::setEntry(const char *key, const std::vector<string> &value)
+{
+  if (!value.empty()) {
+    ZJsonArray jsonArray;
+    for (const std::string &v : value) {
+      if (!v.empty()) {
+        jsonArray.append(v);
+      }
+    }
+    setEntry(key, jsonArray);
   }
 }
 
@@ -309,7 +376,39 @@ void ZJsonObject::setEntry(const char *key, ZJsonValue &value)
     return;
   }
 
+  value.denull();
   setEntryWithoutKeyCheck(key, value.getValue());
+}
+
+void ZJsonObject::addEntry(const char *key, ZJsonValue &value)
+{
+  if (!hasKey(key)) {
+    setEntry(key, value);
+  }
+}
+
+void ZJsonObject::addEntry(const char *key, const string &value)
+{
+  if (!hasKey(key)) {
+    setEntry(key, value);
+  }
+}
+
+void ZJsonObject::addEntry(const char *key, const char *value)
+{
+  if (!hasKey(key)) {
+    setEntry(key, value);
+  }
+}
+
+void ZJsonObject::addEntryFrom(const ZJsonObject &obj)
+{
+  const char *key;
+  json_t *value;
+  ZJsonObject_foreach(obj, key, value) {
+    ZJsonValue valueJson(value, ZJsonValue::SET_INCREASE_REF_COUNT);
+    addEntry(key, valueJson);
+  }
 }
 
 json_t* ZJsonObject::setArrayEntry(const char *key)
@@ -355,11 +454,11 @@ void ZJsonObject::removeKey(const char *key)
   }
 }
 
-std::string ZJsonObject::dumpString(int indent) const
+std::string ZJsonObject::dumpJanssonString(size_t flags) const
 {
   if (isEmpty()) {
     return "{}";
   }
 
-  return ZJsonValue::dumpString(indent);
+  return ZJsonValue::dumpJanssonString(flags);
 }

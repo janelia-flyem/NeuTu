@@ -8,8 +8,8 @@ sys.path.append('service')
 import neutube 
 import flyem
 import neutu_server as ns
-import httplib
-from urlparse import urlparse
+import http.client
+from urllib.parse import urlparse
 
 class QualityAnalyzer:
     def __init__(self):
@@ -21,7 +21,7 @@ class QualityAnalyzer:
             neutube.DeleteZFlyEmQualityAnalyzer(self._engine)
 
     def getSkeleton(self, bodyId):
-        conn = httplib.HTTPConnection(ns.getSkeletonServer())
+        conn = http.client.HTTPConnection(ns.getSkeletonServer())
         conn.request('POST', '/skeletonize', \
                 '{"uuid": "a75", "bodies": [' + str(bodyId) + ']}', \
                 {"Content-Type": "application/json"})
@@ -34,7 +34,7 @@ class QualityAnalyzer:
                 for swc in swcList['swc-list']:
                     if swc['id'] == bodyId:
                         parsed = urlparse('//' + swc['url'])
-                        conn = httplib.HTTPConnection(parsed.netloc)
+                        conn = http.client.HTTPConnection(parsed.netloc)
                         conn.request('GET', parsed.path)
                         r = conn.getresponse()
                         if r.status == 200:
@@ -49,7 +49,7 @@ class QualityAnalyzer:
         model = self.getSkeleton(bodyId)
         neuron = neutube.CreateZFlyEmNeuron(bodyId, model)
         hotspot = self._engine.computeHotSpotForSplit(neuron)
-        print hotspot
+        print(hotspot)
         hotspot._print()
         return hotspot.toJsonString()
 
@@ -62,7 +62,7 @@ class QualityAnalyzer:
 if __name__ == '__main__':
     qa = QualityAnalyzer()
     #qa.loadDataBundle('/Users/zhaot/Work/neutube/neurolabi/data/flyem/FIB/data_release/bundle5/data_bundle.json')
-    print qa.computeHotSpot(1)
+    print(qa.computeHotSpot(1))
     #tree = qa.getSkeleton(1)
     #tree._print()
   

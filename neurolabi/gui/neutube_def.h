@@ -1,9 +1,21 @@
 #ifndef NEUTUBE_DEF_H
 #define NEUTUBE_DEF_H
 
+#include <limits>
+#include "functional"
 #include "tz_stdint.h"
 
-namespace NeuTube {
+#define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
+
+namespace neutube {
+
+static const uint64_t ONEGIGA = 1073741824;
+static const uint64_t HALFGIGA = 536870912;
+
+enum ESyncOption {
+  SYNC, NO_SYNC
+};
+
 enum EDocumentableType {
   Documentable_SWC, Documentable_PUNCTUM, Documentable_OBJ3D,
   Documentable_STROKE, Documentable_LOCSEG_CHAIN, Documentable_CONN,
@@ -13,10 +25,18 @@ enum EDocumentableType {
 namespace Document {
 enum ETag {
   NORMAL, BIOCYTIN_PROJECTION, BIOCYTIN_STACK, FLYEM_BODY, FLYEM_COARSE_BODY,
-  FLYEM_QUICK_BODY, FLYEM_QUICK_BODY_COARSE, FLYEM_SKELETON,
+  FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON, FLYEM_MESH,
   FLYEM_STACK,
   FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID,
-  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD
+  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO, FLYEM_ARBSLICE
+};
+}
+
+namespace View {
+enum EExploreAction {
+  EXPLORE_NONE, EXPLORE_MOVE, EXPLORE_ZOOM, EXPLORE_SLICE,
+  EXPLORE_ZOOM_DONE, EXPLORE_MOVE_DONE,
+  EXPLORE_UNKNOWN
 };
 }
 
@@ -28,13 +48,27 @@ enum ESizeHintOption {
   SIZE_HINT_DEFAULT, SIZE_HINT_CURRENT_BEST, SIZE_HINT_TAKING_SPACE
 };
 
+//Must have value X=0, Y=1, Z=2 for indexing
 enum EAxis {
-  X_AXIS, Y_AXIS, Z_AXIS
+  X_AXIS = 0, Y_AXIS = 1, Z_AXIS = 2
+  , A_AXIS //arbitrary axis
+};
+
+enum EPlane {
+  PLANE_XY = 0, PLANE_XZ, PLANE_YZ
+};
+
+enum EAxisSystem {
+  AXIS_NORMAL, AXIS_SHIFTED
 };
 
 enum ECoordinateSystem {
-  COORD_WIDGET, COORD_SCREEN, COORD_RAW_STACK, COORD_STACK,
-  COORD_WORLD, COORD_CANVAS
+  COORD_WIDGET,
+  COORD_SCREEN,
+  COORD_RAW_STACK, //Coordiantes relative to the first stack corner
+  COORD_STACK,     //Absolute coordinates in the current stack alignment
+  COORD_ORGDATA,   //Coordinates registered to the original data
+  COORD_WORLD_2D, COORD_CANVAS
 };
 
 enum EColor {
@@ -57,39 +91,105 @@ enum EBiDirection {
   DIRECTION_FORWARD, DIRECTION_BACKWARD
 };
 
-namespace Display {
+enum ECardinalDirection {
+  CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
+};
+
+enum EReadStatus {
+  READ_NULL, READ_OK, READ_FAILED, READ_TIMEOUT, READ_CANCELED,
+  READ_BAD_RESPONSE
+};
+
+enum EToDoAction {
+  TO_DO, TO_MERGE, TO_SPLIT
+};
+
+namespace display {
 typedef uint64_t TVisualEffect;
 static const TVisualEffect VE_NONE = 0;
-static const TVisualEffect VE_Z_PROJ = 0x0000000100000000;
+static const TVisualEffect VE_Z_PROJ = BIT_FLAG(19);
+static const TVisualEffect VE_GROUP_HIGHLIGHT = BIT_FLAG(20);
 
-namespace Image {
+namespace image {
 static const TVisualEffect VE_HIGH_CONTRAST = 1;
 }
 
+namespace LabelField {
+static const TVisualEffect VE_HIGHLIGHT_SELECTED = 1;
+}
+
 namespace Sphere {
-static const TVisualEffect VE_DASH_PATTERN = 1;
-static const TVisualEffect VE_BOUND_BOX = 2;
-static const TVisualEffect VE_NO_CIRCLE = 4;
-static const TVisualEffect VE_NO_FILL = 8;
-static const TVisualEffect VE_GRADIENT_FILL = 16;
-static const TVisualEffect VE_OUT_FOCUS_DIM = 32;
-static const TVisualEffect VE_DOT_CENTER = 64;
-static const TVisualEffect VE_RECTANGLE_SHAPE = 128;
-static const TVisualEffect VE_CROSS_CENTER = 256;
-static const TVisualEffect VE_FORCE_FILL = 512;
+static const TVisualEffect VE_DASH_PATTERN = BIT_FLAG(1);
+static const TVisualEffect VE_BOUND_BOX = BIT_FLAG(2);
+static const TVisualEffect VE_NO_CIRCLE = BIT_FLAG(3);
+static const TVisualEffect VE_NO_FILL = BIT_FLAG(4);
+static const TVisualEffect VE_GRADIENT_FILL = BIT_FLAG(5);
+static const TVisualEffect VE_OUT_FOCUS_DIM = BIT_FLAG(6);
+static const TVisualEffect VE_DOT_CENTER = BIT_FLAG(7);
+static const TVisualEffect VE_RECTANGLE_SHAPE = BIT_FLAG(8);
+static const TVisualEffect VE_CROSS_CENTER = BIT_FLAG(9);
+static const TVisualEffect VE_FORCE_FILL = BIT_FLAG(10);
 }
 
 namespace SwcTree {
 static const TVisualEffect VE_FULL_SKELETON = 1;
 }
 
+namespace Line {
+static const TVisualEffect VE_LINE_PROJ = 1;
+static const TVisualEffect VE_LINE_FADING_PROJ = 2;
+}
+
 namespace SparseObject {
 static const TVisualEffect VE_FORCE_SOLID = 1;
+static const TVisualEffect VE_PLANE_BOUNDARY = BIT_FLAG(2);
+}
 }
 
+#if defined(INT32_MIN)
+static const int DIM_INVALID_INDEX = INT32_MIN;
+#else
+static const int DIM_INVALID_INDEX = -2147483647;
+#endif
+
+static const int DIM_PROJECTION_INDEX = DIM_INVALID_INDEX + 1;
+static const int DIM_MIN_NORMAL_INDEX = DIM_INVALID_INDEX + 10;
 }
 
+namespace flyem {
+enum EDvidAnnotationLoadMode {
+  LOAD_NO_PARTNER, LOAD_PARTNER_LOCATION, LOAD_PARTNER_RELJSON
+};
+
+enum EProofreadingMode {
+  PR_NORMAL, PR_SPLIT
+};
+
+enum EBodyType {
+  BODY_NULL, BODY_FULL, BODY_COARSE, BODY_SKELETON, BODY_MESH
+};
+
+enum EBodyLabelType {
+  LABEL_BODY, LABEL_SUPERVOXEL
+};
+
+enum EBodySplitMode {
+  BODY_SPLIT_NONE, BODY_SPLIT_ONLINE, BODY_SPLIT_OFFLINE
+};
+
+enum EBodySplitRange {
+  RANGE_FULL, RANGE_SEED, RANGE_LOCAL
+};
+
+static const uint64_t LABEL_ID_SELECTION =
+    std::numeric_limits<uint64_t>::max() - 1;
 }
 
+using TProgressFunc = std::function<void(size_t, size_t)>;
+
+#if __cplusplus >= 201103L
+#  undef NULL
+#  define NULL nullptr
+#endif
 
 #endif // NEUTUBE_DEF_H

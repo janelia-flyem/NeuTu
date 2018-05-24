@@ -3,9 +3,9 @@
 
 #include <map>
 #include <utility>
-#include "zpoint.h"
 
 class ZSwcTree;
+class ZPoint;
 
 /*!
  * \brief The class of representing the medial axis along Z

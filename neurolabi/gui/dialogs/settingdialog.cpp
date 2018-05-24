@@ -1,5 +1,3 @@
-#include <QtGui>
-
 #include "settingdialog.h"
 #include "neutubeconfig.h"
 #include "zresolution.h"
@@ -19,7 +17,8 @@ SettingDialog::SettingDialog(QWidget *parent) : QDialog(parent)
 
   m_traceEffort = 0;
   m_traceMasked = false;
-  m_traceMinScore = 0.35;
+  m_autoTraceMinScore = 0.35;
+  m_manualTraceMinScore = 0.3;
   m_receptor = 0;
   m_useCone = false;
   m_unit = 0;
@@ -48,7 +47,9 @@ void SettingDialog::resetWidgetValue()
   TraceComboBox->setCurrentIndex(m_traceEffort);
   maskCheckBox->setChecked(m_traceMasked);
   receptorComboBox->setCurrentIndex(m_receptor);
-  ScoreThreSpinBox->setValue(m_traceMinScore);
+  autoScoreSpinBox->setValue(m_autoTraceMinScore);
+  manualScoreSpinBox->setValue(m_manualTraceMinScore);
+//  traceScoreSpinBox->setValue(m_traceMinScore);
   coneReceptorCheckBox->setChecked(m_useCone);
   unitComboBox->setCurrentIndex(m_unit);
 
@@ -124,7 +125,9 @@ void SettingDialog::update()
   m_traceEffort = TraceComboBox->currentIndex();
   m_traceMasked = maskCheckBox->isChecked();
   m_receptor = receptorComboBox->currentIndex();
-  m_traceMinScore = ScoreThreSpinBox->value();
+  m_autoTraceMinScore = autoScoreSpinBox->value();
+  m_manualTraceMinScore = manualScoreSpinBox->value();
+//  m_traceMinScore = traceScoreSpinBox->value();
   m_useCone = coneReceptorCheckBox->isChecked();
   m_unit = unitComboBox->currentIndex();
 
@@ -217,9 +220,14 @@ int SettingDialog::receptor()
   return m_receptor;
 }
 
-double SettingDialog::traceMinScore()
+double SettingDialog::autoTraceMinScore() const
 {
-  return m_traceMinScore;
+  return m_autoTraceMinScore;
+}
+
+double SettingDialog::manualTraceMinScore() const
+{
+  return m_manualTraceMinScore;
 }
 
 bool SettingDialog::useCone()
@@ -245,22 +253,22 @@ void SettingDialog::setUnit(char unit)
   }
 }
 
-NeuTube::EImageBackground SettingDialog::getBackground() const
+neutube::EImageBackground SettingDialog::getBackground() const
 {
   if (backgroundComboBox->currentIndex() == 0) {
-    return NeuTube::IMAGE_BACKGROUND_DARK;
+    return neutube::IMAGE_BACKGROUND_DARK;
   }
 
-  return NeuTube::IMAGE_BACKGROUND_BRIGHT;
+  return neutube::IMAGE_BACKGROUND_BRIGHT;
 }
 
-void SettingDialog::setBackground(NeuTube::EImageBackground bg)
+void SettingDialog::setBackground(neutube::EImageBackground bg)
 {
   switch (bg) {
-  case NeuTube::IMAGE_BACKGROUND_DARK:
+  case neutube::IMAGE_BACKGROUND_DARK:
     backgroundComboBox->setCurrentIndex(0);
     break;
-  case NeuTube::IMAGE_BACKGROUND_BRIGHT:
+  case neutube::IMAGE_BACKGROUND_BRIGHT:
     backgroundComboBox->setCurrentIndex(1);
   }
 }
@@ -278,7 +286,8 @@ void SettingDialog::setTracingParameter(const ZNeuronTracerConfig &traceConfig)
     m_traceEffort = 1;
   }
 
-  m_traceMinScore = traceConfig.getMinAutoScore();
+  m_autoTraceMinScore = traceConfig.getMinAutoScore();
+  m_manualTraceMinScore = traceConfig.getMinManualScore();
   m_distThre = traceConfig.getMaxEucDist();
 
   m_crossoverTest = traceConfig.crossoverTest();

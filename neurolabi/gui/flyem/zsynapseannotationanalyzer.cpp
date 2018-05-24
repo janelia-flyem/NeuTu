@@ -6,7 +6,7 @@
 #include "zfiletype.h"
 #include "zjsonparser.h"
 
-using namespace FlyEm;
+using namespace flyem;
 using namespace std;
 
 ZSynapseAnnotationAnalyzer::ZSynapseAnnotationAnalyzer() :
@@ -113,10 +113,10 @@ void ZSynapseAnnotationAnalyzer::loadConfig(string filePath)
   if (fp == NULL) {
     cerr << "Cannot open " << filePath << endl;
   } else {
-    if (ZFileType::fileType(filePath) == ZFileType::JSON_FILE) {
+    if (ZFileType::FileType(filePath) == ZFileType::FILE_JSON) {
       ZJsonObject jsonObject;
       jsonObject.load(filePath);
-      map<string, json_t*> entryMap = jsonObject.toEntryMap();
+      map<string, json_t*> entryMap = jsonObject.toEntryMap(false);
 
       for (map<string, json_t*>::const_iterator iter = entryMap.begin();
            iter != entryMap.end(); ++iter) {
@@ -175,7 +175,7 @@ void ZSynapseAnnotationAnalyzer::loadConfig(string filePath)
   }
 }
 
-void FlyEm::ZSynapseAnnotationAnalyzer::print()
+void flyem::ZSynapseAnnotationAnalyzer::print()
 {
   m_config.print();
   cout << "Synapse geometric range:" << endl;

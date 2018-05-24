@@ -4,9 +4,9 @@
 #include <vector>
 #include "tz_image_lib_defs.h"
 #include "tz_stack_graph.h"
-#include "zintcuboid.h"
 
 class ZGraph;
+class ZIntCuboid;
 
 /*!
  * \brief The ZStackGraph class provides functions to perform graph processing

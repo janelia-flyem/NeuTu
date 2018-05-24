@@ -49,7 +49,7 @@ float halfp_2_fullp(unsigned short halfp)   // half-precision to float converter
 //  These routines are privately shared between tiff_io and tiff_image
 
 extern unsigned char *Tiff_IFD_Data(Tiff_IFD *ifd);
-extern int            Allocate_Tiff_IFD_Data(Tiff_IFD *ifd, int size);
+extern void           Allocate_Tiff_IFD_Data(Tiff_IFD *ifd, int size);
 extern int            Tiff_IFD_Data_Flip(Tiff_IFD *ifd);
 
 #undef DEBUG_ENCODE

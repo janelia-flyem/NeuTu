@@ -10,12 +10,12 @@
  * @brief The class for body connection feature set
  *
  * Usage:
- *  FlyEm::ZBcfSet bcfSet("data/feature");
+ *  flyem::ZBcfSet bcfSet("data/feature");
  *  ZMatrix *featureMatrix = bcfSet.load("body_size");
  *  featureMatrix->printInfo();
  */
 
-namespace FlyEm {
+namespace flyem {
 class ZBcfSet
 {
 public:

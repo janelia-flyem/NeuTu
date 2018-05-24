@@ -1,0 +1,68 @@
+digraph {
+ ProtocolMetaData [label = "ProtocolMetaData",shape = "box"];
+ ProtocolDialog [label = "ProtocolDialog",shape = "box"];
+ ZFlyEmProofMvc [label = "ZFlyEmProofMvc",shape = "box"];
+ ProtocolSwitcher [label = "ProtocolSwitcher",shape = "box"];
+ SynapsePredicionProtocol [label = "SynapsePredicionProtocol",shape = "box"];
+ ProtocolChooser [label = "ProtocolChooser",shape = "box"];
+ SynapsePredictionInputDialog [label = "SynapsePredictionInputDialog",shape = "box"];
+ ProtocolDialog__protocolExiting [label = "protocolExiting()",shape = "none"];
+ ProtocolSwitcher__openProtocolDialogRequested [label = "openProtocolDialogRequested",];
+ ProtocolSwitcher__exitProtocolRequested [label = "exitProtocolRequested",];
+ ProtocolChooser__requestStartProtocol [label = "requestStartProtocol()",shape = "none"];
+ ProtocolDialog__protocolCompleting [label = "protocolCompleting()",shape = "none"];
+ ProtocolSwitcher__completeProtocolRequested [label = "completeProtocolRequested",];
+ ProtocolSwitcher__startProtocolRequested [label = "startProtocolRequested",];
+ ProtocolDialog__requestSaveProtocol [label = "requestSaveProtocol()",shape = "none"];
+ ProtocolSwitcher__saveProtocolRequested [label = "saveProtocolRequested",];
+ ProtocolChooser__requestLoadProtocolKey [label = "requestLoadProtocolKey()",shape = "none"];
+ ProtocolSwitcher__loadProtocolKeyRequested [label = "loadProtocolKeyRequested",];
+ SynapsePredictionInputDialog__getVolume [label = "getVolume",];
+ SynapsePredictionInputDialog__getRoI [label = "getRoI",];
+ ProtocolDialog__loadDataRequested [label = "loadDataRequested",];
+ ProtocolSwitcher__requestDisplaySavedProtocols [label = "requestDisplaySavedProtocols()",shape = "none"];
+ ProtocolChooser__displaySavedProtocolKeys [label = "displaySavedProtocolKeys",];
+ ProtocolDialog__requestDisplayPoint [label = "requestDisplayPoint()",shape = "none"];
+ ProtocolSwitcher__dvidTargetChanged [label = "dvidTargetChanged",];
+ ProtocolSwitcher__displayPointRequested [label = "displayPointRequested",];
+ ProtocolSwitcher__loadProtocolRequested [label = "loadProtocolRequested",];
+ ProtocolSwitcher__requestLoadProtocol [label = "requestLoadProtocol()",shape = "none"];
+ ProtocolMetadata__ReadProtocolMetadata [label = "ReadProtocolMetadata",];
+ ProtocolDialog -> SynapsePredicionProtocol
+ ProtocolDialog -> ProtocolDialog__protocolExiting [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__openProtocolDialogRequested [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__exitProtocolRequested [arrowhead = odot];
+ ProtocolChooser -> ProtocolChooser__requestStartProtocol [arrowhead = odot];
+ ProtocolDialog -> ProtocolDialog__protocolCompleting [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__completeProtocolRequested [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__startProtocolRequested [arrowhead = odot];
+ ProtocolDialog -> ProtocolDialog__requestSaveProtocol [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__saveProtocolRequested [arrowhead = odot];
+ ProtocolChooser -> ProtocolChooser__requestLoadProtocolKey [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__loadProtocolKeyRequested [arrowhead = odot];
+ SynapsePredictionInputDialog -> SynapsePredictionInputDialog__getVolume [arrowhead = odot];
+ SynapsePredictionInputDialog -> SynapsePredictionInputDialog__getRoI [arrowhead = odot];
+ ProtocolDialog -> ProtocolDialog__loadDataRequested [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__requestDisplaySavedProtocols [arrowhead = odot];
+ ProtocolChooser -> ProtocolChooser__displaySavedProtocolKeys [arrowhead = odot];
+ ProtocolDialog -> ProtocolDialog__requestDisplayPoint [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__dvidTargetChanged [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__displayPointRequested [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__loadProtocolRequested [arrowhead = odot];
+ ProtocolSwitcher -> ProtocolSwitcher__requestLoadProtocol [arrowhead = odot];
+ ProtocolMetadata -> ProtocolMetadata__ReadProtocolMetadata [arrowhead = odot];
+ ProtocolChooser__requestStartProtocol -> ProtocolSwitcher__startProtocolRequested
+ ProtocolChooser__requestLoadProtocolKey -> ProtocolSwitcher__loadProtocolKeyRequested
+ ProtocolSwitcher__requestDisplaySavedProtocols -> ProtocolChooser__displaySavedProtocolKeys
+ ProtocolDialog__protocolExiting -> ProtocolSwitcher__exitProtocolRequested
+ ProtocolDialog__protocolCompleting -> ProtocolSwitcher__completeProtocolRequested
+ ProtocolDialog__requestSaveProtocol -> ProtocolSwitcher__saveProtocolRequested
+ ProtocolSwitcher__requestLoadProtocol -> ProtocolDialog__loadDataRequested
+ ProtocolDialog__requestDisplayPoint -> ProtocolSwitcher__displayPointRequested
+ ProtocolSwitcher -> ProtocolChooser [arrowhead = odiamond];
+ ProtocolSwitcher -> ProtocolDialog [arrowhead = diamond];
+ ProtocolSwitcher -> ProtocolMetaData [arrowhead = diamond];
+ ZFlyEmProofMvc -> ProtocolSwitcher [arrowhead = diamond];
+ ProtocolSwitcher__dvidTargetChanged -> ProtocolSwitcher__loadProtocolRequested [arrowhead = onormal];
+ ProtocolSwitcher__dvidTargetChanged -> ProtocolMetadata__ReadProtocolMetadata [arrowhead = onormal];
+}

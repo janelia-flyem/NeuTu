@@ -2,8 +2,10 @@
 #define ZSTACKBLOCKGRID_H
 
 #include <vector>
+#include <iostream>
 
 #include "zblockgrid.h"
+
 class ZStack;
 
 class ZStackBlockGrid : public ZBlockGrid
@@ -24,10 +26,14 @@ public:
 
   void consumeStack(const ZIntPoint &blockIndex, std::vector<ZStack*> stackArray);
 
+  void consume(ZStackBlockGrid &grid);
+  void consume(ZStackBlockGrid *&grid);
+
   int getValue(int x, int y, int z) const;
 
   ZStack* getStack(const ZIntPoint &blockIndex) const;
 
+  bool  hasStack(int x,int y,int z) const ;
   void clearStack();
 
   ZStack* toStack() const;
@@ -53,6 +59,9 @@ public:
   inline const std::vector<ZStack*>& getStackArray() const {
     return m_stackArray;
   }
+
+  void read(std::istream &stream);
+  void write(std::ostream &stream) const;
 
 private:
   std::vector<ZStack*> m_stackArray;

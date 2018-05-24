@@ -19,18 +19,18 @@ ZMovieCamera::ZMovieCamera()
 
 void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
 {
-  map<string, json_t*> entryMap = obj.toEntryMap();
+  map<string, json_t*> entryMap = obj.toEntryMap(false);
   if (entryMap.count("rotate") > 0) {
     json_t* rotateObj = entryMap["rotate"];
     if (ZJsonParser::isObject(rotateObj)) {
-      m_rotation.loadJsonObject(ZJsonObject(rotateObj, false));
+      m_rotation.loadJsonObject(ZJsonObject(rotateObj, ZJsonValue::SET_INCREASE_REF_COUNT));
     } else {
       cerr << "Invalid rotate object. Skip." << endl;
     }
   }
 
   if (entryMap.count("move") > 0) {
-    ZJsonObject moveObj = ZJsonObject(entryMap["move"], false);
+    ZJsonObject moveObj = ZJsonObject(entryMap["move"], ZJsonValue::SET_INCREASE_REF_COUNT);
     if (!moveObj.isEmpty()) {
       json_t *value = moveObj["center"];
       if (value != NULL) {
@@ -72,7 +72,7 @@ void ZMovieCamera::loadJsonObject(const ZJsonObject &obj)
   }
 
   if (entryMap.count("reset") > 0) {
-    ZJsonObject resetObj = ZJsonObject(entryMap["reset"], false);
+    ZJsonObject resetObj = ZJsonObject(entryMap["reset"], ZJsonValue::SET_INCREASE_REF_COUNT);
     if (!resetObj.isEmpty()) {
       json_t *value = resetObj["center"];
       if (value != NULL) {

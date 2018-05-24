@@ -495,7 +495,7 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
         if (voxelNumber == m_imageBuffer.size()) {
           m_image.setData(C_Stack::make(GREY, width, height, depth, 1));
           const char *dataArray = m_imageBuffer.constData();
-          m_image.loadValue(dataArray, m_imageBuffer.size());
+          m_image.copyValueFrom(dataArray, m_imageBuffer.size());
           m_image.setOffset(parameterList.at(0).toInt(),
                             parameterList.at(1).toInt(),
                             parameterList.at(2).toInt());
@@ -504,20 +504,21 @@ void ZDvidClient::finishRequest(QNetworkReply::NetworkError error)
           const char *dataArray = m_imageBuffer.constData();
           if (channelNumber == 8) {
             m_image.setData(C_Stack::make(FLOAT64, width, height, depth, 1));
-            m_image.loadValue(dataArray, m_imageBuffer.size());
+            m_image.copyValueFrom(dataArray, m_imageBuffer.size());
           } else {
             m_image.setData(
                   C_Stack::make(GREY, width, height, depth, channelNumber));
 
             for (int i = 0; i < channelNumber; ++i) {
-              m_image.loadValue(dataArray + voxelNumber * i, voxelNumber, i);
+              m_image.copyValueFrom(dataArray + voxelNumber * i, voxelNumber, i);
             }
           }
           m_image.setOffset(parameterList.at(0).toInt(),
                             parameterList.at(1).toInt(),
                             parameterList.at(2).toInt());
         } else {
-          RECORD_WARNING_UNCOND("Image retrieval failed.");
+          qWarning() << "Image retrieval failed.";
+//          RECORD_WARNING_UNCOND("Image retrieval failed.");
           m_image.clear();
         }
       } else if (m_currentRequest.getType() == ZDvidRequest::DVID_GET_THUMBNAIL) {
@@ -677,8 +678,7 @@ void ZDvidClient::cancelRequest()
 void ZDvidClient::setDefaultServer()
 {
 #if defined(_FLYEM_)
-  const ZDvidTarget &dvidTarget =
-      NeutubeConfig::getInstance().getFlyEmConfig().getDvidTarget();
+  const ZDvidTarget &dvidTarget = GET_FLYEM_CONFIG.getDvidTarget();
   setServer(dvidTarget.getAddress().c_str(), dvidTarget.getPort());
   setUuid(dvidTarget.getUuid().c_str());
 #endif

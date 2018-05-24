@@ -9,7 +9,7 @@ import neutube
 from optparse import OptionParser
 import json
 from LoadDvidObject import LoadDvidObject
-import httplib
+import http.client
 import dvid
 
 def computeHotSpot(source, config):
@@ -19,9 +19,9 @@ def computeHotSpot(source, config):
     if not config:
         raise Exception('Server configuration must be specified for DVID target.')
     else:
-        if not config.has_key('dvid-server'):
+        if 'dvid-server' not in config:
             raise Exception('Server address must be specified for DVID target.')
-        elif not config.has_key('uuid'):
+        elif 'uuid' not in config:
             raise Exception('UUID must be specified for DVID target.')
         
     dvidServer = config['dvid-server']
@@ -67,5 +67,5 @@ def computeHotSpot(source, config):
 if __name__ == '__main__':
     config = {'dvid-server': 'emdata1.int.janelia.org', 'uuid': '240a'}
     
-    print computeHotSpot(1, config)
+    print(computeHotSpot(1, config))
     

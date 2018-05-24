@@ -3,22 +3,21 @@
 #include <cmath>
 #include <QRect>
 #include <QRectF>
+#include <QPen>
 
+#include "geometry/zgeometry.h"
 #include "zpainter.h"
 #include "tz_math.h"
 #include "zsttransform.h"
 
-ZRect2d::ZRect2d() : m_x0(0), m_y0(0), m_width(0), m_height(0), m_z(0),
-  m_isPenetrating(false)
+ZRect2d::ZRect2d()
 {
-  m_type = ZStackObject::TYPE_RECT2D;
+  init(0, 0, 0, 0);
 }
 
-ZRect2d::ZRect2d(int x0, int y0, int width, int height) :
-  m_x0(x0), m_y0(y0), m_width(width), m_height(height), m_z(0),
-  m_isPenetrating(false)
+ZRect2d::ZRect2d(int x0, int y0, int width, int height)
 {
-  m_type = ZStackObject::TYPE_RECT2D;
+  init(x0, y0, width, height);
 }
 
 ZRect2d::~ZRect2d()
@@ -26,6 +25,16 @@ ZRect2d::~ZRect2d()
 #ifdef _DEBUG_
   std::cout << "Destroying ZRect2d: " << getSource() << std::endl;
 #endif
+}
+
+void ZRect2d::init(int x0, int y0, int width, int height)
+{
+  set(x0, y0, width, height);
+  m_z = 0;
+  m_isPenetrating = false;
+  m_zSpan = 0;
+  m_type = GetType();
+  useCosmeticPen(true);
 }
 
 void ZRect2d::set(int x0, int y0, int width, int height)
@@ -41,51 +50,81 @@ bool ZRect2d::isValid() const
   return m_width > 0 && m_height > 0;
 }
 
-bool ZRect2d::isSliceVisible(int z) const
+bool ZRect2d::isSliceVisible(int z, neutube::EAxis /*sliceAxis*/) const
 {
-  return isValid() && (m_isPenetrating || z == m_z);
+  bool visible = isValid();
+
+  if (visible) {
+    if (!m_isPenetrating) {
+      visible = abs(z - m_z) <= m_zSpan;
+    }
+  }
+
+
+  return visible;
 }
 
-void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+void ZRect2d::preparePen(QPen &pen) const
 {
-  int z = slice + iround(painter.getZOffset());
-  if (!(isSliceVisible(z) || (slice < 0))) {
+  pen.setColor(m_color);
+  pen.setWidthF(getPenWidth());
+//  if (isSelected()) {
+//    pen.setWidth(pen.width() + 5);
+//    pen.setStyle(Qt::DashLine);
+//  }
+
+  pen.setCosmetic(m_usingCosmeticPen);
+}
+
+void ZRect2d::display(ZPainter &painter, int slice, EDisplayStyle /*option*/,
+                      neutube::EAxis sliceAxis) const
+{
+  if (sliceAxis != m_sliceAxis) {
     return;
   }
 
-  QColor color = m_color;
-  QPen pen(color);
-  if (isSelected()) {
-    pen.setWidth(pen.width() + 5);
-    pen.setStyle(Qt::DashLine);
+  int z = slice + iround(painter.getZOffset());
+  if (!(isSliceVisible(z, sliceAxis) || (slice < 0))) {
+    return;
   }
+
+  QPen pen;
+  preparePen(pen);
 
   painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);
 
-
-
   painter.drawRect(m_x0, m_y0, m_width, m_height);
+
+  if (isSelected()) {
+    QColor color = getColor();
+    color.setAlpha(128);
+    pen.setColor(color);
+    painter.setPen(pen);
+    painter.drawLine(getFirstX(), getFirstY(), getLastX(), getLastY());
+    painter.drawLine(getFirstX(), getLastY(), getLastX(), getFirstY());
+  }
 }
 
-bool ZRect2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
-             EDisplaySliceMode sliceMode) const
+bool ZRect2d::display(QPainter *rawPainter, int /*z*/, EDisplayStyle /*option*/,
+             EDisplaySliceMode /*sliceMode*/, neutube::EAxis sliceAxis) const
 {
+  if (sliceAxis != m_sliceAxis) {
+    return false;
+  }
+
   bool painted = false;
 
   if (rawPainter == NULL || !isVisible()) {
     return painted;
   }
 
-  QColor color = m_color;
-  QPen pen(color);
-  if (isSelected()) {
-    pen.setWidth(pen.width() + 5);
-    pen.setStyle(Qt::DashLine);
-  }
+  QPen pen;
+  preparePen(pen);
 
   rawPainter->setPen(pen);
   rawPainter->setBrush(Qt::NoBrush);
+
 
   int width = m_width;
   int height = m_height;
@@ -102,6 +141,7 @@ bool ZRect2d::display(QPainter *rawPainter, int z, EDisplayStyle option,
     y0 -= height - 1;
   }
 
+//  rawPainter->drawEllipse(x0, y0, width/2, height/2);
   rawPainter->drawRect(x0, y0, width, height);
 
   return true;
@@ -170,8 +210,12 @@ bool ZRect2d::contains(double x, double y) const
        x < m_x0 + m_width && y < m_y0 + m_height));
 }
 
-bool ZRect2d::hit(double x, double y)
+bool ZRect2d::hit(double x, double y, neutube::EAxis axis)
 {
+  if (m_sliceAxis != axis) {
+    return false;
+  }
+
   return ((x >= m_x0 - 5 && y >= m_y0 - 5 &&
        x < m_x0 + m_width + 5 && y < m_y0 + m_height + 5) &&
       !(x >= m_x0 + 5 && y >= m_y0 + 5 &&
@@ -180,15 +224,21 @@ bool ZRect2d::hit(double x, double y)
 
 bool ZRect2d::hit(double x, double y, double z)
 {
+  double wx = x;
+  double wy = y;
+  double wz = z;
+
+  zgeom::shiftSliceAxis(wx, wy, wz, m_sliceAxis);
+
   if (m_isPenetrating) {
-    return hit(x, y);
+    return hit(wx, wy, m_sliceAxis);
   }
 
-  if (iround(z) == m_z) {
-    return ((x >= m_x0 - 5 && y >= m_y0 - 5 &&
-             x < m_x0 + m_width + 5 && y < m_y0 + m_height + 5) &&
-            !(x >= m_x0 + 5 && y >= m_y0 + 5 &&
-              x < m_x0 + m_width - 5 && y < m_y0 + m_height - 5));
+  if (iround(wz) == m_z) {
+    return ((wx >= m_x0 - 5 && wy >= m_y0 - 5 &&
+             wx < m_x0 + m_width + 5 && wy < m_y0 + m_height + 5) &&
+            !(wx >= m_x0 + 5 && wy >= m_y0 + 5 &&
+              wx < m_x0 + m_width - 5 && wy < m_y0 + m_height - 5));
   }
 
   return false;

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <initializer_list>
 
 #include "zjsonvalue.h"
 #include "tz_stdint.h"
@@ -15,7 +16,7 @@ class ZJsonObject : public ZJsonValue
 {
 public:
   ZJsonObject();
-  explicit ZJsonObject(json_t *json, bool asNew);
+//  explicit ZJsonObject(json_t *json, bool asNew);
   explicit ZJsonObject(json_t *data, ESetDataOption option);
   ZJsonObject(const ZJsonObject &obj);
   ZJsonObject(const ZJsonValue &obj);
@@ -26,13 +27,16 @@ public:
   const json_t* operator[] (const char *key) const;
 
   ZJsonValue value(const char *key) const;
-
+#ifndef SWIG
+  ZJsonValue value(const std::initializer_list<const char*> &keyList) const;
+#endif
   /*!
    * \brief Test if an object is empty
    *
    * An object is empty iff no key exists.
    */
   bool isEmpty() const;
+  void denull();
 
 public:
   /*!
@@ -47,7 +51,7 @@ public:
   bool decode(const std::string &str);
 
   std::string summary();
-  std::map<std::string, json_t*> toEntryMap(bool recursive = true) const;
+  std::map<std::string, json_t*> toEntryMap(bool recursive) const;
 
   /*!
    * \brief Test if a key is valid
@@ -74,6 +78,21 @@ public:
    * The function does nothing if the key is empty.
    */
   void setEntry(const char *key, const std::string &value);
+  void setEntry(const char *key, const char *value);
+  void setEntry(const std::string &key, const std::string &value);
+
+  /*!
+   * \brief Set an entry to a string array
+   *
+   * Nothing will be done if \a value is empty. Any empty string in \a value
+   * will also be ignored.
+   *
+   * \param key Key of the entry
+   * \param value String array of the entry
+   */
+  void setEntry(const char *key, const std::vector<std::string> &value);
+
+  void setNonEmptyEntry(const char *key, const std::string &value);
 
   /*!
    * \brief Set an entry of the object with an array
@@ -115,6 +134,25 @@ public:
    */
   void setEntry(const char *key, ZJsonValue &value);
 
+  /*!
+   * \brief Add an entry
+   *
+   * THe function adds the entry \a key -> \a value if \a key does not exist
+   * in the current object.
+   *
+   * \return /for future/true iff the entry is added
+   */
+  void addEntry(const char *key, ZJsonValue &value);
+  void addEntry(const char *key, const std::string &value);
+  void addEntry(const char *key, const char *value);
+
+  /*!
+   * \brief Add fields from another object
+   *
+   * A field of \a obj is added to the current object iff its key does not exist
+   * in the current object.
+   */
+  void addEntryFrom(const ZJsonObject &obj);
 
   /*!
    * \brief Test if a key exists
@@ -139,7 +177,12 @@ public:
 
   void removeKey(const char *key);
 
-  std::string dumpString(int indent = 2) const;
+//  std::string dumpString(int indent = 2) const;
+
+  /*!
+   * \brief Using flags in libjansson to produce a json string.
+   */
+  virtual std::string dumpJanssonString(size_t flags) const;
 
 private:
   void setEntryWithoutKeyCheck(const char *key, json_t *obj, bool asNew = false);

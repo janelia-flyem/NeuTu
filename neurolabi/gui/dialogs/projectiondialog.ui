@@ -14,7 +14,7 @@
    <string>Z Projection</string>
   </property>
   <property name="toolTip">
-   <string>Use [Base].Proj.tif if it exists</string>
+   <string/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -87,6 +87,9 @@
    </item>
    <item>
     <widget class="QCheckBox" name="usingExistedCheckBox">
+     <property name="toolTip">
+      <string>Using existing projection files ([Base].Proj.tif) if any of them exists</string>
+     </property>
      <property name="text">
       <string>Use existing projection</string>
      </property>

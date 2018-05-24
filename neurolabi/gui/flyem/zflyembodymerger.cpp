@@ -7,6 +7,8 @@
 #include "zjsonarray.h"
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
+#include "neutubeconfig.h"
+#include "QsLog/QsLog.h"
 
 ZFlyEmBodyMerger::ZFlyEmBodyMerger()
 {
@@ -120,6 +122,27 @@ void ZFlyEmBodyMerger::pushMap(const TLabelSet &labelSet)
   }
 }
 
+void ZFlyEmBodyMerger::unmerge(uint64_t bodyId)
+{
+  for (TLabelMapList::iterator iter = m_mapList.begin();
+       iter != m_mapList.end(); ++iter) {
+    TLabelMap &labelMap = *iter;
+    if (labelMap.contains(bodyId)) {
+      labelMap.remove(bodyId);
+    }
+
+    //remove values
+    for (TLabelMap::iterator itemIter = labelMap.begin();
+         itemIter != labelMap.end();) {
+      if (itemIter.value() == bodyId) {
+        itemIter = labelMap.erase(itemIter);
+      } else {
+        ++itemIter;
+      }
+    }
+  }
+}
+
 ZFlyEmBodyMerger::TLabelMap ZFlyEmBodyMerger::undo()
 {
   TLabelMap labelMap;
@@ -229,9 +252,7 @@ QList<uint64_t> ZFlyEmBodyMerger::getOriginalLabelList(uint64_t finalLabel) cons
   QList<uint64_t> list = getFinalMap().keys(finalLabel);
   list.append(finalLabel);
 
-#ifdef _DEBUG_
-  qDebug() << list;
-#endif
+  ZOUT(LTRACE(), 5) << list;
 
   return list;
 }
@@ -249,9 +270,7 @@ QSet<uint64_t> ZFlyEmBodyMerger::getOriginalLabelSet(uint64_t finalLabel) const
   }
 //  labelSet.fromList(getOriginalLabelList(finalLabel));
 
-#ifdef _DEBUG_
-  qDebug() << labelSet;
-#endif
+  ZOUT(LTRACE(), 5) << labelSet;
 
   return labelSet;
 }

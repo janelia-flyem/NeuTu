@@ -1,21 +1,26 @@
 #include "zeventlistenerparameter.h"
+
 #include <QLabel>
 #include <QEvent>
 
-ZEventListenerParameter::ZEventListenerParameter(const QString &name, bool acceptEvent, bool sharing, QObject *parent)
+ZEventListenerParameter::ZEventListenerParameter(const QString& name, bool sharing, QObject* parent)
   : ZParameter(name, parent)
-  , m_acceptEvent(acceptEvent)
   , m_sharing(sharing)
 {
 }
 
-void ZEventListenerParameter::listenTo(const QString &actionName, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, QEvent::Type type)
+
+void
+ZEventListenerParameter::listenTo(const QString& actionName, const Qt::MouseButtons& buttons,
+                                  const Qt::KeyboardModifiers& modifiers,
+                                  QEvent::Type type)
 {
   m_mouseEvents.push_back(MouseEvent(actionName, buttons, modifiers, type));
   emit valueChanged();
 }
 
-void ZEventListenerParameter::listenTo(const QString &actionName, Qt::Key key, Qt::KeyboardModifiers modifiers, QEvent::Type type)
+void ZEventListenerParameter::listenTo(const QString& actionName, Qt::Key key, const Qt::KeyboardModifiers& modifiers,
+                                       QEvent::Type type)
 {
   m_keyEvents.push_back(KeyEvent(actionName, key, modifiers, type));
   emit valueChanged();
@@ -28,79 +33,90 @@ void ZEventListenerParameter::clearAll()
   emit valueChanged();
 }
 
-void ZEventListenerParameter::sendEvent(QEvent *e, int w, int h)
+void ZEventListenerParameter::sendEvent(QEvent* e, int w, int h)
 {
-  if (!isAcceptingEvent())
+  if (!m_isWidgetsEnabled)
     return;
 
-//  if (QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(e)) {
-  if (e->type() == QEvent::MouseMove ||
-      e->type() == QEvent::MouseButtonPress ||
-      e->type() == QEvent::MouseButtonRelease ||
-      e->type() == QEvent::MouseButtonDblClick) {
-    QMouseEvent *mouseEvent = (QMouseEvent*) e;
+  if (QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(e)) {
     bool accept = false;
-    for (int i=0; i<m_mouseEvents.size(); i++) {
+    //LOG(INFO) << mouseEvent->modifiers() << " " << mouseEvent->button() << " " << mouseEvent->buttons();
+    for (const auto& me : m_mouseEvents) {
       accept = true;
-      accept &= (mouseEvent->modifiers() == m_mouseEvents[i].modifiers);
-      accept &= (mouseEvent->type() == m_mouseEvents[i].type);
+      accept &= (mouseEvent->modifiers() == me.modifiers);
+      accept &= (mouseEvent->type() == me.type);
       if (mouseEvent->type() == QEvent::MouseMove)
-        accept &= ((mouseEvent->buttons() == m_mouseEvents[i].buttons));
+        accept &= ((mouseEvent->buttons() == me.buttons));
       else
-        accept &= ((mouseEvent->button() == m_mouseEvents[i].buttons));
+        accept &= ((mouseEvent->button() == me.buttons));
       if (accept)
         break;
     }
     if (accept) {
+#ifdef _DEBUG_2
+      qDebug() << "ZEventListenerParameter::sendEvent" << name();
+#endif
+
       emit eventTriggered(e, w, h);
       emit mouseEventTriggered(mouseEvent, w, h);
-      // now all the slots have return
+
       if (m_sharing)
         e->ignore();
     }
-  } else if (e->type() == QEvent::Wheel) {
-    QWheelEvent *wheelEvent = (QWheelEvent*) (e);
-//             QWheelEvent *wheelEvent = dynamic_cast<QWheelEvent*>(e)) {
+  } else if (QWheelEvent* wheelEvent = dynamic_cast<QWheelEvent*>(e)) {
     bool accept = false;
-    for (int i=0; i<m_mouseEvents.size(); i++) {
+    for (const auto& me : m_mouseEvents) {
       accept = true;
-      accept &= (wheelEvent->modifiers() == m_mouseEvents[i].modifiers);
-      accept &= (wheelEvent->type() == m_mouseEvents[i].type);
-      accept &= ((wheelEvent->buttons() == m_mouseEvents[i].buttons));
+      accept &= (wheelEvent->modifiers() == me.modifiers);
+      accept &= (wheelEvent->type() == me.type);
+      accept &= ((wheelEvent->buttons() == me.buttons));
       if (accept)
         break;
     }
     if (accept) {
       emit eventTriggered(e, w, h);
       emit wheelEventTriggered(wheelEvent, w, h);
-      // now all the slots have return
+
       if (m_sharing)
         e->ignore();
     }
-//  } else if (QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(e)) {
-  } else if (e->type() == QEvent::KeyPress) {
-    QKeyEvent *keyEvent = (QKeyEvent*) e;
+  } else if (QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(e)) {
     bool accept = false;
-    for (int i=0; i<m_keyEvents.size(); i++) {
+    for (const auto& ke : m_keyEvents) {
       accept = true;
-      accept &= (keyEvent->modifiers() == m_keyEvents[i].modifiers);
-      accept &= (keyEvent->type() == m_keyEvents[i].type);
-      accept &= (keyEvent->key() == m_keyEvents[i].key);
+      accept &= (keyEvent->modifiers() == ke.modifiers);
+      accept &= (keyEvent->type() == ke.type);
+      accept &= (keyEvent->key() == ke.key);
       if (accept)
         break;
     }
     if (accept) {
       emit eventTriggered(e, w, h);
       emit keyEventTriggered(keyEvent, w, h);
-      // now all the slots have return
+
       if (m_sharing)
         e->ignore();
     }
   }
 }
 
-QWidget *ZEventListenerParameter::actualCreateWidget(QWidget *parent)
+QWidget* ZEventListenerParameter::actualCreateWidget(QWidget* parent)
 {
-  // TODO
+  // todo: interface?
   return new QLabel("Place holder", parent);
+}
+
+void ZEventListenerParameter::setSameAs(const ZParameter& rhs)
+{
+  CHECK(this->isSameType(rhs));
+  const ZEventListenerParameter* src = static_cast<const ZEventListenerParameter*>(&rhs);
+  m_sharing = src->m_sharing;
+  m_mouseEvents = src->m_mouseEvents;
+  m_keyEvents = src->m_keyEvents;
+  ZParameter::setSameAs(rhs);
+}
+
+void ZEventListenerParameter::setValueSameAs(const ZParameter& rhs)
+{
+  CHECK(this->isSameType(rhs));
 }

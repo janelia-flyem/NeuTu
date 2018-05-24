@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>1.0z</string>
+   <string/>
   </property>
   <property name="iconSize">
    <size>
@@ -227,6 +227,13 @@
      <addaction name="actionPixel"/>
      <addaction name="actionPosition"/>
     </widget>
+    <widget class="QMenu" name="menuDiagnose">
+     <property name="title">
+      <string>Diagnose</string>
+     </property>
+     <addaction name="actionTrace_Mask"/>
+     <addaction name="actionSeed_Mask"/>
+    </widget>
     <addaction name="menuProcess"/>
     <addaction name="menuTrace"/>
     <addaction name="menuTube"/>
@@ -235,6 +242,9 @@
     <addaction name="menuQuery"/>
     <addaction name="separator"/>
     <addaction name="actionTile_Manager_2"/>
+    <addaction name="actionMake_Movie_2"/>
+    <addaction name="separator"/>
+    <addaction name="menuDiagnose"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
     <property name="title">
@@ -276,6 +286,7 @@
       <addaction name="actionHDF5_Body"/>
       <addaction name="actionImportBoundBox"/>
       <addaction name="actionImportSeeds"/>
+      <addaction name="actionImport_Sparsevol_Json"/>
      </widget>
      <widget class="QMenu" name="menuQuality_Control">
       <property name="title">
@@ -337,6 +348,8 @@
       <addaction name="actionOperateDvid"/>
       <addaction name="actionGenerate_Local_Grayscale"/>
       <addaction name="actionUpload_Annotations"/>
+      <addaction name="actionRemove_Obsolete_Annotations"/>
+      <addaction name="actionGet_Body_Positions"/>
      </widget>
      <widget class="QMenu" name="menuExport_2">
       <property name="title">
@@ -357,6 +370,7 @@
       <addaction name="actionExport_Segmentation_Result"/>
       <addaction name="actionHierarchical_Split"/>
       <addaction name="actionSegmentation_Project"/>
+      <addaction name="actionView_Segmentation_Meshes"/>
      </widget>
      <widget class="QMenu" name="menuNew">
       <property name="title">
@@ -381,6 +395,42 @@
       <addaction name="actionHackathonSimmat"/>
       <addaction name="actionHackathonEvaluate"/>
      </widget>
+     <widget class="QMenu" name="menuSeven_Column">
+      <property name="title">
+       <string>Seven Column</string>
+      </property>
+      <addaction name="actionNeuroMorpho"/>
+     </widget>
+     <widget class="QMenu" name="menuMB_Paper">
+      <property name="title">
+       <string>MB Paper</string>
+      </property>
+      <addaction name="actionGenerate_KC_c_Actor"/>
+      <addaction name="actionGenerate_KC_s_Actor"/>
+      <addaction name="actionGenerate_KC_p_Actor"/>
+      <addaction name="actionGenerate_All_KC_Actor"/>
+      <addaction name="actionGenerate_PAM_Actor"/>
+      <addaction name="actionGenerate_MB_Actor"/>
+      <addaction name="actionGenerate_MB_Conn_Actor"/>
+      <addaction name="actionGenerate_MB_SynapseT_Actor"/>
+      <addaction name="actionGenerate_MB_SynapseS_Actor"/>
+      <addaction name="separator"/>
+      <addaction name="actionMake_Movie_MB"/>
+     </widget>
+     <widget class="QMenu" name="menuFIB19">
+      <property name="title">
+       <string>FIB19</string>
+      </property>
+      <addaction name="actionGenerate_VS_Cast"/>
+      <addaction name="separator"/>
+      <addaction name="actionMake_Movie_3"/>
+     </widget>
+     <widget class="QMenu" name="menuNeuTu_Paper">
+      <property name="title">
+       <string>NeuTu Paper</string>
+      </property>
+      <addaction name="actionUpdate_Body_Info"/>
+     </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
@@ -396,6 +446,10 @@
      <addaction name="separator"/>
      <addaction name="menuHackathon"/>
      <addaction name="menuTEM_Paper"/>
+     <addaction name="menuMB_Paper"/>
+     <addaction name="menuFIB19"/>
+     <addaction name="menuNeuTu_Paper"/>
+     <addaction name="menuSeven_Column"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
     </widget>
@@ -406,8 +460,15 @@
      <addaction name="actionGenerate_Mask"/>
      <addaction name="actionBigNeuron_Trace"/>
     </widget>
+    <widget class="QMenu" name="menuSandbox">
+     <property name="title">
+      <string>Sandbox</string>
+     </property>
+    </widget>
     <addaction name="menuFLy_EM"/>
     <addaction name="menuBiocytin"/>
+    <addaction name="separator"/>
+    <addaction name="menuSandbox"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -418,23 +479,6 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <property name="iconSize">
-    <size>
-     <width>24</width>
-     <height>24</height>
-    </size>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
   <action name="actionOpen">
    <property name="icon">
     <iconset resource="gui.qrc">
@@ -1421,6 +1465,116 @@
   <action name="actionSubtract_Background">
    <property name="text">
     <string>Subtract Background</string>
+   </property>
+  </action>
+  <action name="actionImport_Sparsevol_Json">
+   <property name="text">
+    <string>Sparsevol Json</string>
+   </property>
+  </action>
+  <action name="actionNeuroMorpho">
+   <property name="text">
+    <string>NeuroMorpho</string>
+   </property>
+  </action>
+  <action name="actionRemove_Obsolete_Annotations">
+   <property name="text">
+    <string>Remove Obsolete Annotations</string>
+   </property>
+  </action>
+  <action name="actionGenerate_KC_c_Actor">
+   <property name="text">
+    <string>Generate KC-c Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_KC_s_Actor">
+   <property name="text">
+    <string>Generate KC-s Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_KC_p_Actor">
+   <property name="text">
+    <string>Generate KC-p Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_All_KC_Actor">
+   <property name="text">
+    <string>Generate All KC Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_PAM_Actor">
+   <property name="text">
+    <string>Generate PAM Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_Actor">
+   <property name="text">
+    <string>Generate MB Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_Conn_Actor">
+   <property name="text">
+    <string>Generate MB-Conn Actor</string>
+   </property>
+  </action>
+  <action name="actionMake_Movie_MB">
+   <property name="text">
+    <string>Make Movie</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionGet_Body_Positions">
+   <property name="text">
+    <string>Get Body Positions</string>
+   </property>
+  </action>
+  <action name="actionMake_Movie_2">
+   <property name="text">
+    <string>Make Movie</string>
+   </property>
+  </action>
+  <action name="actionTrace_Mask">
+   <property name="text">
+    <string>Trace Mask</string>
+   </property>
+  </action>
+  <action name="actionSeed_Mask">
+   <property name="text">
+    <string>Foreground Mask</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_SynapseT_Actor">
+   <property name="text">
+    <string>Generate MB-SynapseT Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_MB_SynapseS_Actor">
+   <property name="text">
+    <string>Generate MB-SynapseS Actor</string>
+   </property>
+  </action>
+  <action name="actionGenerate_VS_Cast">
+   <property name="text">
+    <string>Generate VS Cast</string>
+   </property>
+  </action>
+  <action name="actionMake_Movie_3">
+   <property name="text">
+    <string>Make Movie</string>
+   </property>
+  </action>
+  <action name="actionView_Segmentation_Meshes">
+   <property name="text">
+    <string>View Segmentation Meshes</string>
+   </property>
+  </action>
+  <action name="actionUpdate_Body_Info">
+   <property name="text">
+    <string>Update Body Info</string>
    </property>
   </action>
  </widget>

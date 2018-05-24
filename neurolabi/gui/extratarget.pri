@@ -2,20 +2,37 @@
 #Build neurolabi
 NEUROLABI_DIR = $${PWD}/..
 CONFIG(debug, debug|release) {
-    TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
+    contains(CONFIG, sanitize) {
+      TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_sanitize.a
+    } else {
+      TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
+    }
 } else {
     TargetFile  = $${NEUROLABI_DIR}/c/lib/libneurolabi.a
 }
 
+exists($${CONDA_ENV}) {
+  CONDA_CONFIG = "CONDA_ENV=$${CONDA_ENV}"
+}
+
+message("Config: " $${CONDA_CONFIG})
+
 neurolabi.target = neurolabi
 CONFIG(debug, debug|release) {
-    neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library
+    contains(CONFIG, sanitize) {
+      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize "'$${CONDA_CONFIG}'"
+    } else {
+      neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library "'$${CONDA_CONFIG}'"
+    }
 #make lib VERSION=
 } else {
-    neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --release
+    neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --release "'$${CONDA_CONFIG}'"
 }
+
 neurolabi.depends = FORCE
 QMAKE_EXTRA_TARGETS += neurolabi
+
+message($${neurolabi.commands})
 
 #May not work in parallel compiling
 #PRE_TARGETDEPS = $${TargetFile}
@@ -35,11 +52,15 @@ QMAKE_EXTRA_TARGETS += neurolabi
 #}
 #SourceJson = $${PWD}/../json
 
-#unix {
-#    OutputDir = $${OUT_PWD}
-#    macx {
-#        OutputDir = $${OutputDir}/$${TARGET}.app/Contents/MacOS
-#    }
+unix {
+  OutputDir = $${OUT_PWD}
+  macx {
+    OutputDir = $${OutputDir}/$${TARGET}.app/Contents/MacOS
+    exists($${CONDA_ENV}) {
+#      QMAKE_POST_LINK += install_name_tool -add_rpath $${CONDA_ENV}/lib $${OutputDir}/$$TARGET
+    }
+  }
+
 
 #    ConfigTarget.target = ConfigTarget
 #    ConfigTarget.commands = echo "copying config"; cp $${SourceConfig} $${OutputDir}/config.xml
@@ -57,8 +78,4 @@ QMAKE_EXTRA_TARGETS += neurolabi
 
 #    QMAKE_EXTRA_TARGETS += JsonConfig
 #    QMAKE_POST_LINK += $$quote(echo "making json"; make JsonConfig;)
-#}
-
-
-
-
+}

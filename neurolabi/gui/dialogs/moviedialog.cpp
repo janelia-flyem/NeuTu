@@ -8,6 +8,7 @@ MovieDialog::MovieDialog(QWidget *parent) :
   ui(new Ui::MovieDialog)
 {
   ui->setupUi(this);
+  ui->axisCheckBox->hide();
 }
 
 MovieDialog::~MovieDialog()
@@ -69,6 +70,11 @@ void MovieDialog::setScriptPath(const QString &path)
 void MovieDialog::setOutputPath(const QString &path)
 {
   ui->outputLineEdit->setText(path);
+}
+
+bool MovieDialog::renderingAxis() const
+{
+  return ui->axisCheckBox->isChecked();
 }
 
 void MovieDialog::on_scriptPushButton_clicked()

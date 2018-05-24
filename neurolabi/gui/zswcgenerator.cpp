@@ -18,6 +18,7 @@
 #include "tz_math.h"
 #include "zclosedcurve.h"
 #include "tz_stack_neighborhood.h"
+#include "zintcuboid.h"
 
 ZSwcGenerator::ZSwcGenerator()
 {
@@ -480,6 +481,7 @@ ZSwcTree* ZSwcGenerator::createSwc(const ZObject3dScan &obj)
   }
 
   tree->resortId();
+  tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
 
   return tree;
 }
@@ -499,7 +501,9 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
   if (intv > 0) {
     ZObject3dScan obj2 = obj;
     obj2.downsampleMax(intv, intv, intv);
+    std::cout << "Object downsampled" << std::endl;
     stack = obj2.toStackObject();
+    std::cout << "Stack generated" << std::endl;
   } else {
     stack = obj.toStackObject();
   }
@@ -507,10 +511,13 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(
   ZSwcTree *tree = NULL;
   if (stack != NULL) {
     tree = createSurfaceSwc(*stack, sparseLevel);
-    tree->setColor(obj.getColor());
-    tree->rescale(intv + 1, intv + 1, intv + 1);
+    if (tree != NULL) {
+      tree->setColor(obj.getColor());
+      tree->rescale(intv + 1, intv + 1, intv + 1);
+    }
     delete stack;
   }
+  std::cout << "Surface swc created." << std::endl;
 
   return tree;
 }
@@ -570,7 +577,7 @@ ZSwcTree* ZSwcGenerator::createSurfaceSwc(const ZStack &stack, int sparseLevel)
                 SwcTreeNode::makePointer(i + stack.getOffset().getX(),
                                          j + stack.getOffset().getY(),
                                          k + stack.getOffset().getZ(),
-                                         sparseLevel * 0.7, root);
+                                         sqrt(sparseLevel), root);
               }
             }
           }

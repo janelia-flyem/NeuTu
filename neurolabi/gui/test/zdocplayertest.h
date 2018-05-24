@@ -22,7 +22,7 @@ TEST(ZDocPlayer, Property)
 TEST(ZDocPlayerList, General)
 {
   ZDocPlayerList playerList;
-  playerList.append(new ZDocPlayer(new ZObject3d));
+  playerList.add(new ZDocPlayer(new ZObject3d));
   ASSERT_EQ(1, playerList.size());
   ASSERT_TRUE(playerList.hasPlayer(ZStackObjectRole::ROLE_NONE));
   ASSERT_FALSE(playerList.hasPlayer(ZStackObjectRole::ROLE_3DPAINT));
@@ -33,43 +33,53 @@ TEST(ZDocPlayerList, General)
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_NONE);
-    playerList.append(new ZDocPlayer(obj));
+
+    ASSERT_FALSE(playerList.contains(obj));
+    playerList.add(new ZDocPlayer(obj));
+    ASSERT_TRUE(playerList.contains(obj));
   }
+  {
+    ZObject3d *obj = new ZObject3d;
+    delete obj;
+    ASSERT_FALSE(playerList.contains(obj));
+  }
+
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_DISPLAY);
-    playerList.append(new ZDocPlayer(obj));
+    playerList.add(new ZDocPlayer(obj));
   }
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_NONE);
-    playerList.append(new ZDocPlayer(obj));
+    playerList.add(new ZDocPlayer(obj));
   }
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_NONE);
-    playerList.append(new ZDocPlayer(obj));
+    playerList.add(new ZDocPlayer(obj));
   }
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_SEED);
-    playerList.append(new ZDocPlayer(obj));
+    playerList.add(new ZDocPlayer(obj));
   }
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_DISPLAY);
-    playerList.append(new ZDocPlayer(obj));
+    playerList.add(new ZDocPlayer(obj));
   }
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_DISPLAY | ZStackObjectRole::ROLE_SEED);
-    playerList.append(new ZDocPlayer(obj));
+    playerList.add(new ZDocPlayer(obj));
   }
+
   {
     ZObject3d *obj = new ZObject3d;
     obj->setRole(ZStackObjectRole::ROLE_DISPLAY |
                  ZStackObjectRole::ROLE_MANAGED_OBJECT);
-    playerList.append(new ZDocPlayer(obj));
+    playerList.add(new ZDocPlayer(obj));
   }
 
 
@@ -93,6 +103,40 @@ TEST(ZDocPlayerList, General)
             ZStackObjectRole::ROLE_MANAGED_OBJECT,
             role);
   ASSERT_EQ(4, playerList.size());
+
+  {
+    ZObject3d *obj = new ZObject3d;
+    obj->setRole(ZStackObjectRole::ROLE_DISPLAY |
+                 ZStackObjectRole::ROLE_MANAGED_OBJECT);
+    playerList.add(new ZDocPlayer(obj));
+
+    QList<ZDocPlayer*> players = playerList.takePlayer(obj);
+
+    ASSERT_EQ(1, players.size());
+    ASSERT_EQ(ZStackObjectRole::ROLE_DISPLAY |
+              ZStackObjectRole::ROLE_MANAGED_OBJECT,
+              players.front()->getRole());
+
+    ASSERT_EQ(obj, players.front()->getData());
+
+    playerList.add(new ZDocPlayer(obj));
+    ZStackObjectRole::TRole role = playerList.removePlayer(obj);
+    ASSERT_EQ(ZStackObjectRole::ROLE_DISPLAY |
+              ZStackObjectRole::ROLE_MANAGED_OBJECT, role);
+
+    playerList.removeAll();
+    ASSERT_EQ(0, playerList.size());
+
+    playerList.add(new ZDocPlayer(obj));
+
+    ZDocPlayerList playerList2;
+    playerList2.add(new ZDocPlayer(obj));
+
+    playerList2.moveTo(playerList);
+    ASSERT_EQ(2, playerList.size());
+    ASSERT_EQ(0, playerList2.size());
+
+  }
 }
 
 #endif

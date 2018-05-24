@@ -1,0 +1,32 @@
+#!/bin/sh
+
+qmakeCmd=$1
+buildDIR=$2
+deployDIR=$3
+#DIR="$( cd -P "$( dirname "$0" )" && pwd )"
+#deployDIR=$DIR/../../neuTube.app
+
+if [ -d $deployDIR ]; then
+  rm -rf $deployDIR
+fi
+
+cp -R $buildDIR/neuTube.app/ $deployDIR
+
+
+
+#install_name_tool -change libboost_thread.dylib /usr/local/lib/libboost_thread.dylib $deployDIR/Contents/MacOS/neuTube
+#install_name_tool -change libboost_system.dylib /usr/local/lib/libboost_system.dylib $deployDIR/Contents/MacOS/neuTube
+
+#chmod a+w $deployDIR/Contents/Frameworks/libboost_system.dylib
+#chmod a+w $deployDIR/Contents/Frameworks/libboost_thread.dylib
+
+macdeployqtCmd="$( $qmakeCmd -query QT_INSTALL_BINS )"/macdeployqt
+
+$macdeployqtCmd $deployDIR
+
+cp /usr/local/lib/libboost_system.dylib $deployDIR/Contents/Frameworks/
+cp /usr/local/lib/libboost_thread.dylib $deployDIR/Contents/Frameworks/
+#chmod a+w $deployDIR/Contents/Frameworks/libboost_system.dylib
+#chmod a+w $deployDIR/Contents/Frameworks/libboost_thread.dylib
+
+

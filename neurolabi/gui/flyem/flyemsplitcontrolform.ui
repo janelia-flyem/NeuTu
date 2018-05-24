@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>513</width>
-    <height>615</height>
+    <width>473</width>
+    <height>637</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -103,6 +103,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="loadBodyPushButton">
+         <property name="toolTip">
+          <string>Load a body to split</string>
+         </property>
          <property name="text">
           <string>Load Body</string>
          </property>
@@ -110,6 +113,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="saveSeedPushButton">
+         <property name="toolTip">
+          <string>Save current seeds</string>
+         </property>
          <property name="text">
           <string>Save Seeds</string>
          </property>
@@ -135,6 +141,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="exitPushButton">
+         <property name="toolTip">
+          <string>Exit split and back to the proofreading mode</string>
+         </property>
          <property name="text">
           <string>Exit Split</string>
          </property>
@@ -227,35 +236,75 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_8">
-     <item>
-      <widget class="QPushButton" name="coarseBodyViewPushButton">
-       <property name="text">
-        <string>Coarse Body View</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="quickViewPushButton">
-       <property name="text">
-        <string>Body View</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="viewResultQuickPushButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Split Quick View</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>3D Visualization</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="toolTip">
+         <string>A body is rendered as a set of balls resembling its surface</string>
+        </property>
+        <property name="title">
+         <string>Ball Surface</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Quality:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="coarseBodyViewPushButton">
+           <property name="toolTip">
+            <string>3D body visualization (low resolution)</string>
+           </property>
+           <property name="text">
+            <string>LowRes</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="quickViewPushButton">
+           <property name="toolTip">
+            <string>3D body visualization (high resolution)</string>
+           </property>
+           <property name="text">
+            <string>HighRes</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="meshPushButton">
+        <property name="text">
+         <string>Mesh</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="viewResultQuickPushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="toolTip">
+         <string>3D split visualization</string>
+        </property>
+        <property name="text">
+         <string>Splits</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="volumeViewLayout">
@@ -293,15 +342,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ZSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header location="global">zspinbox.h</header>
-  </customwidget>
-  <customwidget>
    <class>ZFlyEmBookmarkWidget</class>
    <extends>QWidget</extends>
    <header location="global">flyem/zflyembookmarkwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ZSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">zspinbox.h</header>
   </customwidget>
  </customwidgets>
  <resources>

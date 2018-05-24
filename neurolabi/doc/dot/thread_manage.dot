@@ -1,0 +1,13 @@
+digraph {
+  is_calculator_finished [shape = record, label = "<no> no | <cond> is finished | <yes> yes"];
+  foreach_calculator [label = "foreach calculator", shape = diamond];
+  ZSwcBatchMatcher__process -> foreach_calculator;
+  foreach_calculator -> is_calculator_finished:cond [arrowhead = onormal];
+  is_calculator_finished:yes -> retrieve_result [arrowhead = onormal];
+  retrieve_result -> dequeue_neuron [arrowhead = onormal];
+  dequeue_neuron -> restart_calculator [arrowhead = onormal];
+  restart_calculator -> foreach_calculator [arrowhead = onormal];
+  is_calculator_finished:no -> foreach_calculator [arrowhead = onormal];
+  foreach_calculator -> if_all_finished [arrowhead = onormal];
+  if_all_finished -> ZSwcBatchMatcher__finished;
+}

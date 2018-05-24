@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
+
 #include "zjsonparser.h"
 #include "zjsonobject.h"
 #include "zstring.h"
@@ -101,7 +103,7 @@ void ZFlyEmBodyAnnotation::loadJsonObject(const ZJsonObject &obj)
   } else {
     std::vector<std::string> keyList = obj.getAllKey();
     if (keyList.size() == 1) {
-      int bodyId = ZString(keyList.front()).firstInteger();
+      uint64_t bodyId = ZString(keyList.front()).firstUint64();
       if (bodyId > 0) {
         setBodyId(bodyId);
         ZJsonObject annotationJson(
@@ -133,13 +135,63 @@ bool ZFlyEmBodyAnnotation::isEmpty() const
       m_type.empty();
 }
 
+int ZFlyEmBodyAnnotation::GetStatusRank(const std::string &status)
+{
+  if (status.empty()) {
+    return 8;
+  }
+
+  std::string statusLowerCase = status;
+  std::transform(statusLowerCase.begin(), statusLowerCase.end(),
+                 statusLowerCase.begin(), ::tolower);
+
+  if (statusLowerCase == "finalized") {
+    return 0;
+  }
+
+  if (statusLowerCase == "traced") {
+    return 1;
+  }
+
+  if (statusLowerCase == "traced in roi") {
+    return 2;
+  }
+
+  if (statusLowerCase == "partially traced") {
+    return 3;
+  }
+
+  if (statusLowerCase == "not examined") {
+    return 5;
+  }
+
+  if (statusLowerCase == "hard to trace") {
+    return 4;
+  }
+
+  if (statusLowerCase == "orphan") {
+    return 6;
+  }
+
+  return 7;
+}
+
+#if 0
+int ZFlyEmBodyAnnotation::CompareStatus(
+      const std::string &status1, const std::string &status2)
+{
+  if (GetStatusRank(status1))
+}
+#endif
+
 void ZFlyEmBodyAnnotation::mergeAnnotation(
     const ZFlyEmBodyAnnotation &annotation)
 {
   if (m_bodyId == 0) {
     m_bodyId = annotation.getBodyId();
   }
-  if (m_status.empty()) {
+
+  if (GetStatusRank(m_status) > GetStatusRank(annotation.m_status)) {
     m_status = annotation.m_status;
   }
 

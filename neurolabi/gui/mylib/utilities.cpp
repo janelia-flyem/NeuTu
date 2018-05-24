@@ -40,7 +40,7 @@ typedef CONDITION_VARIABLE pthread_cond_t;
   //  Simple thread support
 
 typedef struct
-  { HANDLE *handle;
+  { HANDLE handle;
     void   *(*fct)(void *);
     void   *arg;
     void   *retval;
@@ -70,7 +70,7 @@ static int pthread_create(pthread_t *thread, void *attr,
     };
   tv->fct    = fct;
   tv->arg    = arg;
-  tv->handle = CreateThread(NULL,0,MyStart,tv,0,&tv->id);
+  tv->handle = CreateThread(NULL,0,MyStart,tv,0,(LPDWORD)&tv->id);
   if (tv->handle == NULL)
     return (EAGAIN);
   else
@@ -2091,7 +2091,7 @@ static void match_required(Unit *def)
 // Return non-zero only if name[0..len] matches text where quoted characters can
 //   occur in name (but not in text).
 
-int match_text(char *name, char *text, int len)
+static int match_text(char *name, char *text, int len)
 { int i, j;
 
   for (i = j = 0; i < len; i++, j++)
@@ -2107,7 +2107,7 @@ int match_text(char *name, char *text, int len)
 //   line starting at the character pointed at by arg, which is the first string pointed
 //   at by argv (the rest of the command line following it in order).
 
-int match_option_suffix(Unit *def, int i, char *arg, char **argv)
+static int match_option_suffix(Unit *def, int i, char *arg, char **argv)
 { if (i >= def->len) 
     { if (*arg == '\0')
         return (1);
@@ -2807,7 +2807,7 @@ static void store_match(int argc, char *argv[])
 /*   PROCESS_ARGUMENTS: TOP LEVEL                                                        */
 /*****************************************************************************************/
 
-void Process_Arguments(int argc, char *argv[], char *spec[], int no_escapes)
+void mylib::Process_Arguments(int argc, char *argv[], char *spec[], int no_escapes)
 { static int   First_Call = 1;
   Node        *root;
   Automaton   *mach;
@@ -2839,7 +2839,7 @@ void Process_Arguments(int argc, char *argv[], char *spec[], int no_escapes)
     if (lines == 0)
       { Master_Spec = (char **) mylib::Guarded_Malloc(sizeof(char *)*2,"Process_Arguments");
         Master_Spec[1] = NULL;
-        Master_Spec[0] = Guarded_Strdup("\n","Process_Arguments");
+        Master_Spec[0] = Guarded_Strdup(const_cast<char*>("\n"), "Process_Arguments");
       }
     else
       { Master_Spec = (char **)
@@ -3126,7 +3126,7 @@ static Match *find_value(int k)
 // Return 0 if the named unit (or synonym) is unmatched or its match is not in a loop,
 //     otherwise the number of times through the loop
 
-int Get_Repeat_Count(char *name)
+int mylib::Get_Repeat_Count(char *name)
 { int n;
 
   n = search_table(name);
@@ -3138,7 +3138,7 @@ int Get_Repeat_Count(char *name)
 
 // Return non-zero if the named unit was matched (in the k'th iteration if non-scalar)
 
-int Is_Arg_Matched(char *name, ... /* [int no] */ )
+int mylib::Is_Arg_Matched(char *name, ... /* [int no] */ )
 { va_list ap;
   int     k, n;
 

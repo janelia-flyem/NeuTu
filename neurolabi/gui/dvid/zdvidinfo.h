@@ -23,6 +23,7 @@ public:
    * \param str Input json string.
    */
   void setFromJsonString(const std::string &str);
+  void set(const ZJsonObject &obj);
 
   void print() const;
 
@@ -40,7 +41,17 @@ public:
   ZIntPoint getBlockIndex(int x, int y, int z) const;
   ZIntPoint getBlockIndex(const ZIntPoint &pt) const;
 
+  /*!
+   * \brief Get the first corner of a block.
+   *
+   * It returns the coordinates of the first corner of the block index
+   * (\a ix, \a iy, \a iz).
+   */
+  ZIntPoint getBlockCoord(int ix, int iy, int iz) const;
+
   int getBlockIndexZ(int z) const;
+
+  int getCoordZ(int zIndex) const;
 
   /*!
    * \brief Get the indices of all blocks containing at least one voxel of an object
@@ -78,10 +89,10 @@ public:
   /*!
    * \brief Get the bound box of a block
    *
-   * Get the bound box of a block in DVID coordinates. (\a x, \a y, \a z) is
+   * Get the bound box of a block in DVID coordinates. (\a ix, \a iy, \a iz) is
    * the block index.
    */
-  ZIntCuboid getBlockBox(int x, int y, int z) const;
+  ZIntCuboid getBlockBox(int ix, int iy, int iz) const;
   ZIntCuboid getBlockBox(const ZIntPoint &blockIndex) const;
 
   ZIntCuboid getBlockBox(int x0, int x1, int y, int z) const;
@@ -100,6 +111,8 @@ public:
   int getMinY() const;
   int getMaxY() const;
 
+  ZIntCuboid getDataRange() const;
+
   void clear();
 
   bool isValid() const;
@@ -107,6 +120,38 @@ public:
   void setStackSize(int width, int height, int depth);
   void setStartBlockIndex(int x, int y, int z);
   void setEndBlockIndex(int x, int y, int z);
+
+  void setBlockSize(int width, int height, int depth);
+
+  void downsampleBlock(int xintv, int yintv, int zintv);
+
+  void setDvidNode(const std::string &address,
+                   int port, const std::string &uuid) {
+    m_dvidAddress = address;
+    m_dvidPort = port;
+    m_dvidUuid = uuid;
+  }
+
+  const std::string& getDvidAddress() const {
+    return m_dvidAddress;
+  }
+
+  int getDvidPort() const {
+    return m_dvidPort;
+  }
+
+  const std::string& getDvidUuid() const {
+    return m_dvidUuid;
+  }
+
+private:
+  static int CoordToBlockIndex(int x, int s);
+  /*!
+   * \brief Get the first corner of the block.
+   */
+  static int BlockIndexToCoord(int index, int s);
+
+  void setExtents(const ZJsonObject &obj);
 
 private:
   std::vector<int> m_stackSize;

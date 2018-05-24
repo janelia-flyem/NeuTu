@@ -1,5 +1,4 @@
 #!/bin/bash
-master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
 if [ $# -ge 1 ]
 then
   install_dir=$1
@@ -10,14 +9,32 @@ fi
 if [ $# -ge 2 ]
 then
   master_dir=$2
+else
+  master_dir=/groups/flyem/home/zhaot/Work/neutube_ws
+  if [ ! -d $master_dir ]
+  then
+    if [ `uname` == 'Darwin' ]; then
+      scriptDir=$(cd $(dirname "$0") && pwd -P)
+    else
+      scriptDir=$(dirname `readlink -f "$0"`)
+    fi
+    echo $scriptDir
+    master_dir=$(dirname "$(dirname $scriptDir)")
+    echo $master_dir
+  fi
 fi
 
 source $master_dir/neurolabi/shell/flyem_utilities.sh
 
-flyem_neutu_update $1
-if [ -d $install_dir/Download/miniconda/envs/dvidenv/include ]
+flyem_neutu_update $install_dir
+if [ -d $install_dir/Download/neutube/neurolabi/build_debug ]
 then
-  flyem_neutu_update $1 debug
+  flyem_neutu_update $install_dir debug
+fi
+if [ -d $install_dir/Download/neutube/neurolabi/build_sanitize ]
+then
+  echo "Building sanitized version"
+  flyem_neutu_update $install_dir sanitize
 fi
 
 

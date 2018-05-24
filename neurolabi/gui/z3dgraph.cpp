@@ -4,6 +4,7 @@
 #include "znormcolormap.h"
 #include "zobject3d.h"
 #include "zstackball.h"
+#include "zintpoint.h"
 
 using namespace std;
 
@@ -25,14 +26,6 @@ Z3DGraphNode::Z3DGraphNode(const ZPoint &center, double radius)
   set(center.x(), center.y(), center.z(), radius);
 }
 
-Z3DGraphNode::Z3DGraphNode(const Z3DGraphNode &node)
-{
-  m_center = node.m_center;
-  m_radius = node.m_radius;
-  m_color = node.m_color;
-  m_shape = node.m_shape;
-}
-
 void Z3DGraphNode::set(double x, double y, double z, double r)
 {
   m_center.set(x, y, z);
@@ -42,6 +35,16 @@ void Z3DGraphNode::set(double x, double y, double z, double r)
 void Z3DGraphNode::setCenter(double x, double y, double z)
 {
   m_center.set(x, y, z);
+}
+
+void Z3DGraphNode::setCenter(const ZIntPoint &center)
+{
+  setCenter(center.getX(), center.getY(), center.getZ());
+}
+
+void Z3DGraphNode::setCenter(const ZPoint &center)
+{
+  setCenter(center.getX(), center.getY(), center.getZ());
 }
 
 void Z3DGraphNode::addX(double dx)
@@ -64,9 +67,24 @@ void Z3DGraphNode::setY(double y)
   m_center.setY(y);
 }
 
+void Z3DGraphNode::setZ(double z)
+{
+  m_center.setZ(z);
+}
+
 void Z3DGraphNode::setRadius(double r)
 {
   m_radius = r;
+}
+
+void Z3DGraphNode::setText(const QString &text)
+{
+  m_text = text;
+}
+
+const QString& Z3DGraphNode::getText() const
+{
+  return m_text;
 }
 
 void Z3DGraphNode::loadJsonObject(json_t *obj)
@@ -212,8 +230,13 @@ void Z3DGraphEdge::print()
 
 Z3DGraph::Z3DGraph()
 {
-  m_type = ZStackObject::TYPE_3D_GRAPH;
+  m_type = GetType();
   m_target = ZStackObject::TARGET_3D_ONLY;
+}
+
+Z3DGraphPtr Z3DGraph::MakePointer()
+{
+  return std::make_shared<Z3DGraph>();
 }
 
 bool Z3DGraph::isEmpty() const
@@ -329,6 +352,22 @@ void Z3DGraph::addNode(const ZStackBall &ball)
   m_nodeArray.back().setColor(ball.getColor());
 }
 
+void Z3DGraph::connectNode(const ZStackBall &ball, EGraphShape shape)
+{
+  m_nodeArray.push_back(
+        Z3DGraphNode(ball.getX(), ball.getY(), ball.getZ(), ball.getRadius()));
+  m_nodeArray.back().setColor(ball.getColor());
+
+  if (m_nodeArray.size() > 1) {
+    Z3DGraphEdge edge;
+    edge.useNodeColor(true);
+    edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1,
+             ball.getRadius() * 2.0);
+    edge.setShape(shape);
+    addEdge(edge);
+  }
+}
+
 void Z3DGraph::addNode(double x, double y, double z, double radius)
 {
   m_nodeArray.push_back(Z3DGraphNode(x, y, z, radius));
@@ -340,18 +379,44 @@ void Z3DGraph::importObject3d(
   m_nodeArray.clear();
   m_edgeArray.clear();
 
+#if 0
+  for (size_t i = 0; i < obj.size(); i += sampleStep) {
+    int x = obj.getX(i);
+    int y = obj.getY(i);
+    int z = obj.getZ(i);
+
+    {
+      Z3DGraphNode n1 = Z3DGraphNode(x - radius, y, z, 0);
+      n1.setColor(obj.getColor());
+      Z3DGraphNode n2 = Z3DGraphNode(x + radius, y, z, 0);
+      n2.setColor(obj.getColor());
+      addEdge(n1, n2, radius * 5.0, GRAPH_LINE);
+    }
+
+    {
+      Z3DGraphNode n1 = Z3DGraphNode(x, y - radius, z, 0);
+      n1.setColor(obj.getColor());
+      Z3DGraphNode n2 = Z3DGraphNode(x, y + radius, z, 0);
+      n2.setColor(obj.getColor());
+      addEdge(n1, n2, radius * 5.0, GRAPH_LINE);
+    }
+  }
+#endif
+
+#if 1
   for (size_t i = 0; i < obj.size(); i += sampleStep) {
     m_nodeArray.push_back(Z3DGraphNode(
                             obj.getX(i), obj.getY(i), obj.getZ(i), radius));
     m_nodeArray.back().setColor(obj.getColor());
   }
+#endif
 }
 
 void Z3DGraph::importObject3d(
     const ZObject3d &obj, double radius)
 {
   const static int maxSampleStep = 3;
-  const static size_t maxNodeNumber = 10000;
+  const static size_t maxNodeNumber = 1000;
   int sampleStep = imin2(maxSampleStep, obj.size() / maxNodeNumber + 1);
   importObject3d(obj, radius, sampleStep);
 }
@@ -363,7 +428,8 @@ void Z3DGraph::clear()
 }
 
 void Z3DGraph::display(
-    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/) const
+    ZPainter &/*painter*/, int /*slice*/, EDisplayStyle /*option*/,
+    neutube::EAxis /*sliceAxis*/) const
 {
 }
 
@@ -378,8 +444,24 @@ void Z3DGraph::addNode(const Z3DGraphNode &node)
 }
 
 void Z3DGraph::addEdge(
+    const Z3DGraphNode &node1, const Z3DGraphNode &node2, double weight,
+    EGraphShape shape)
+{
+  addNode(node1);
+  addNode(node2);
+
+  Z3DGraphEdge edge;
+  edge.useNodeColor(true);
+  edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, weight);
+  edge.setShape(shape);
+  addEdge(edge);
+}
+
+void Z3DGraph::addEdge(
     const Z3DGraphNode &node1, const Z3DGraphNode &node2, EGraphShape shape)
 {
+  addEdge(node1, node2, node1.radius() * 2.0, shape);
+  /*
   addNode(node1);
   addNode(node2);
 
@@ -388,6 +470,34 @@ void Z3DGraph::addEdge(
   edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1, node1.radius() * 2.0);
   edge.setShape(shape);
   addEdge(edge);
+  */
+}
+
+void Z3DGraph::addConnectedNode(
+    const std::vector<Z3DGraphNode> &nodeArray, EGraphShape shape)
+{
+  if (!nodeArray.empty()) {
+    addNode(nodeArray[0]);
+  }
+
+  for (size_t i = 1; i < nodeArray.size(); ++i) {
+    addNode(nodeArray[i]);
+    Z3DGraphEdge edge;
+    edge.useNodeColor(true);
+    edge.set(m_nodeArray.size() - 2, m_nodeArray.size() - 1,
+             nodeArray[i].radius() * 2.0);
+    edge.setShape(shape);
+    addEdge(edge);
+  }
+}
+
+void Z3DGraph::syncNodeColor()
+{
+  for (std::vector<Z3DGraphNode>::iterator iter = m_nodeArray.begin();
+       iter != m_nodeArray.end(); ++iter) {
+    Z3DGraphNode &node = *iter;
+    node.setColor(getColor());
+  }
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(Z3DGraph)

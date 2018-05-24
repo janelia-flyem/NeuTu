@@ -13,8 +13,6 @@
 #include "tz_object_3d.h"
 #include "zstackobject.h"
 #include "tz_fmatrix.h"
-#include "zpoint.h"
-#include "zintpoint.h"
 #include "tz_stack_utils.h"
 
 #ifndef INT_VOXEL_TYPE
@@ -24,6 +22,8 @@
 class ZStack;
 class ZObject3dArray;
 class ZJsonObject;
+class ZPoint;
+class ZIntPoint;
 
 /*!
  * \brief The class of a 3D object
@@ -37,13 +37,17 @@ public:
             int dx, int dy, int dz);
   virtual ~ZObject3d();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_OBJ3D;
+  }
+
   virtual const std::string& className() const;
 
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option)
-  const;
+      ZPainter &painter, int slice, EDisplayStyle option,
+      neutube::EAxis sliceAxis) const;
 
 public:
   /*!
@@ -70,12 +74,12 @@ public:
   inline void setY(int index, int y) { m_voxelArray[index * 3 + 1] = y; }
   inline void setZ(int index, int z) { m_voxelArray[index * 3 + 2] = z; }
 
-  inline int getLabel() const { return m_label; }
-  inline void setLabel(int label) { m_label = label; }
+//  inline int getLabel() const { return getLabel(); }
+//  inline void setLabel(int label) { setLabel(label); }
 
   bool isEmpty() const;
 
-  void append(int getX, int getY, int getZ);
+  void append(int x, int y, int z);
 
   /*!
    * \brief Append an object to the current object.
@@ -83,6 +87,7 @@ public:
    * \a srcOffset is the voxel index offset of \a obj for the start of appending.
    */
   void append(const ZObject3d &obj, size_t srcOffset = 0);
+  void append(const ZObject3d *obj, size_t srcOffset = 0);
 
   /*!
    * \brief Append an object from the backward direction
@@ -202,20 +207,23 @@ public:
    */
   void upSample(int xIntv, int yIntv, int zIntv);
 
+  void downsample(int xIntv, int yIntv, int zIntv);
+
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &jsonObj);
 
+  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
   bool hit(double x, double y);
   bool hit(double x, double y, double z);
 
   bool hasHitVoxel() const;
   ZIntPoint getHitVoxel() const;
 
-  void getBoundBox(ZIntCuboid *box) const;
+  void boundBox(ZIntCuboid *box) const;
+  ZIntCuboid getBoundBox() const;
 
 private:
   int m_conn;
-  int m_label;
   std::vector<int> m_voxelArray;
   mutable Object_3d m_objWrapper;
 

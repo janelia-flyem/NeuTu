@@ -10,10 +10,10 @@
 
 ZIntCuboidObj::ZIntCuboidObj()
 {
-  m_type = ZStackObject::TYPE_INT_CUBOID;
+  m_type = GetType();
 }
 
-bool ZIntCuboidObj::isSliceVisible(int /*z*/) const
+bool ZIntCuboidObj::isSliceVisible(int /*z*/, neutube::EAxis /*sliceAxis*/) const
 {
   return true;
 }
@@ -63,12 +63,15 @@ int ZIntCuboidObj::getDepth() const
   return m_cuboid.getDepth();
 }
 
-bool ZIntCuboidObj::isOnSlice(int z) const
+bool ZIntCuboidObj::isOnSlice(int z, neutube::EAxis sliceAxis) const
 {
-  return z >= getFirstCorner().getZ() && z <= getLastCorner().getZ();
+  return z >= getFirstCorner().getSliceCoord(sliceAxis) &&
+      z <= getLastCorner().getSliceCoord(sliceAxis);
 }
 
-void ZIntCuboidObj::display(ZPainter &painter, int slice, EDisplayStyle /*option*/) const
+void ZIntCuboidObj::display(
+    ZPainter &painter, int slice, EDisplayStyle /*option*/,
+    neutube::EAxis sliceAxis) const
 {
   if (m_cuboid.isEmpty()) {
     return;
@@ -76,14 +79,14 @@ void ZIntCuboidObj::display(ZPainter &painter, int slice, EDisplayStyle /*option
 
   int z = painter.getZ(slice);
 
-  if (!(isSliceVisible(z) || (slice < 0))) {
+  if (!(isSliceVisible(z, sliceAxis) || (slice < 0))) {
     return;
   }
 
   QColor color = m_color;
   QPen pen(color);
 
-  if(isOnSlice(z) || slice < 0) {
+  if(isOnSlice(z, sliceAxis) || slice < 0) {
     if (isSelected()) {
       pen.setStyle(Qt::DashLine);
     } else {
@@ -97,25 +100,39 @@ void ZIntCuboidObj::display(ZPainter &painter, int slice, EDisplayStyle /*option
     pen.setWidth(pen.width() + 5);
   }
 
+  pen.setCosmetic(m_usingCosmeticPen);
+
   painter.setPen(pen);
   painter.setBrush(Qt::NoBrush);
 
-  painter.drawRect(getFirstCorner().getX(), getFirstCorner().getY(),
-                   getWidth(), getHeight());
+  ZIntPoint firstCorner = getFirstCorner();
+  ZIntPoint lastCorner = getLastCorner();
+
+  firstCorner.shiftSliceAxis(sliceAxis);
+  lastCorner.shiftSliceAxis(sliceAxis);
+  painter.drawRect(firstCorner.getX(), firstCorner.getY(),
+                   lastCorner.getX() - firstCorner.getX() + 1,
+                   lastCorner.getY() - firstCorner.getY() + 1);
 }
 
-bool ZIntCuboidObj::hit(double x, double y)
+bool ZIntCuboidObj::hit(double x, double y, neutube::EAxis axis)
 {
-  return ((x >= getFirstCorner().getX() - 5 && y >= getFirstCorner().getY() - 5 &&
-           x < getLastCorner().getX() + 5 && y < getLastCorner().getY() + 5) &&
-          !(x >= getFirstCorner().getX() + 5 && y >= getFirstCorner().getY() + 5 &&
-            x < getLastCorner().getX() - 5 && y < getLastCorner().getY() - 5));
+  ZIntPoint firstCorner = getFirstCorner();
+  ZIntPoint lastCorner = getLastCorner();
+
+  firstCorner.shiftSliceAxis(axis);
+  lastCorner.shiftSliceAxis(axis);
+
+  return ((x >= firstCorner.getX() - 5 && y >= firstCorner.getY() - 5 &&
+           x < lastCorner.getX() + 5 && y < lastCorner.getY() + 5) &&
+          !(x >= firstCorner.getX() + 5 && y >= firstCorner.getY() + 5 &&
+            x < lastCorner.getX() - 5 && y < lastCorner.getY() - 5));
 }
 
 bool ZIntCuboidObj::hit(double x, double y, double z)
 {
-  if (isOnSlice(z)) {
-    return hit(x, y);
+  if (isOnSlice(z, neutube::Z_AXIS)) {
+    return hit(x, y, neutube::Z_AXIS);
   }
 
   return false;
@@ -134,6 +151,13 @@ bool ZIntCuboidObj::isValid() const
 void ZIntCuboidObj::join(const ZIntCuboid &cuboid)
 {
   m_cuboid.join(cuboid);
+}
+
+void ZIntCuboidObj::boundBox(ZIntCuboid *box) const
+{
+  if (box != NULL) {
+    *box = getCuboid();
+  }
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)

@@ -1,8 +1,8 @@
 include($${PWD}/json.pri)
 include($${PWD}/mylib/mylib.pri)
+include($${PWD}/imgproc/imgproc.pri)
 
-HEADERS +=$${PWD}/zstackprocessor.h \
-   $${PWD}/zstack.hxx \
+HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/zlocalneuroseg.h \
    $${PWD}/zellipse.h \
    $${PWD}/zswctree.h \
@@ -75,7 +75,6 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zfiletype.h \
    $${PWD}/flyem/zsynapselocationmetric.h \
    $${PWD}/zstackfile.h \
-   $${PWD}/zxmldoc.h \
    $${PWD}/zintmap.h \
    $${PWD}/flyem/zsegmentationanalyzer.h \
    $${PWD}/flyem/zsegmentationbundle.h \
@@ -92,7 +91,6 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zopencv_header.h \
    $${PWD}/neutubeconfig.h \
    $${PWD}/zhdf5writer.h \
-   $${PWD}/flyem/zbcfset.h \
    $${PWD}/zstackskeletonizer.h \
    $${PWD}/zswclayerfeatureanalyzer.h \
    $${PWD}/flyem/zflyemneuron.h \
@@ -186,7 +184,6 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/zintarray.h \
    $${PWD}/zintset.h \
    $${PWD}/flyem/zflyemsubstackroi.h \
-   $${PWD}/zstackwatershed.h \
    $${PWD}/zstackarray.h \
    $${PWD}/flyem/zflyemconfig.h \
    $${PWD}/tr1_header.h \
@@ -229,10 +226,19 @@ HEADERS +=$${PWD}/zstackprocessor.h \
    $${PWD}/swc/zswcradiusestimator.h \
    $${PWD}/zswctreenodeselector.h \
    $${PWD}/swc/zswcsignalfitter.h \
-   $${PWD}/zneurontracerconfig.h
+   $${PWD}/zneurontracerconfig.h \
+   $${PWD}/zobject3dscan.hpp \
+   $${PWD}/dvid/zdviddef.h \
+   $${PWD}/zswcutil.h \
+   $${PWD}/dvid/zdvidnode.h \
+   $$PWD/zstackwriter.h \
+   $$PWD/zswcdirectionfeatureanalyzer.h \
+    $$PWD/geometry/zplane.h \
+    $$PWD/geometry/zaffineplane.h \
+    $$PWD/geometry/zaffinerect.h \
+    $$PWD/zjsondef.h
 
-SOURCES +=$${PWD}/zstackprocessor.cpp \
-   $${PWD}/zstack.cxx \
+SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
    $${PWD}/zellipse.cpp \
    $${PWD}/zswctree.cpp \
@@ -302,7 +308,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zfiletype.cpp \
    $${PWD}/flyem/zsynapselocationmetric.cpp \
    $${PWD}/zstackfile.cpp \
-   $${PWD}/zxmldoc.cpp \
    $${PWD}/zintmap.cpp \
    $${PWD}/flyem/zsegmentationanalyzer.cpp \
    $${PWD}/flyem/zsegmentationbundle.cpp \
@@ -317,7 +322,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zhdf5reader.cpp \
    $${PWD}/neutubeconfig.cpp \
    $${PWD}/zhdf5writer.cpp \
-   $${PWD}/flyem/zbcfset.cpp \
    $${PWD}/zstackskeletonizer.cpp \
    $${PWD}/zswclayerfeatureanalyzer.cpp \
    $${PWD}/flyem/zflyemneuron.cpp \
@@ -403,7 +407,6 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/zintarray.cpp \
    $${PWD}/zintset.cpp \
    $${PWD}/flyem/zflyemsubstackroi.cpp \
-   $${PWD}/zstackwatershed.cpp \
    $${PWD}/zstackarray.cpp \
    $${PWD}/flyem/zflyemconfig.cpp \
    $${PWD}/geometry/zgeo3dtransform.cpp \
@@ -441,5 +444,12 @@ SOURCES +=$${PWD}/zstackprocessor.cpp \
    $${PWD}/swc/zswcradiusestimator.cpp \
    $${PWD}/zswctreenodeselector.cpp \
    $${PWD}/swc/zswcsignalfitter.cpp \
-   $${PWD}/zneurontracerconfig.cpp
+   $${PWD}/zneurontracerconfig.cpp \
+   $${PWD}/zswcutil.cpp \
+   $${PWD}/dvid/zdvidnode.cpp \
+   $$PWD/zstackwriter.cpp \
+   $$PWD/zswcdirectionfeatureanalyzer.cpp \
+    $$PWD/geometry/zplane.cpp \
+    $$PWD/geometry/zaffineplane.cpp \
+    $$PWD/geometry/zaffinerect.cpp
 

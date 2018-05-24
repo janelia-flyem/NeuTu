@@ -26,22 +26,32 @@ public:
     void setTileManager(ZTileManager *manager);
     void setDocument(ZSharedPointer<ZStackDoc> p_doc);
     inline ZSharedPointer<ZStackDoc> getDocument() const { return m_doc; }
-    inline float getScaleFactor() {return m_scaleFactor;}
+//    inline float getScaleFactor() {return m_scaleFactor;}
 
 public slots:
     void closeProject();
 
 private slots:
     void ShowContextMenu(const QPoint& pos);
-    void on_actionShowSWC_triggered();
-    void on_actionTurnOffSWC_triggered();
+//    void on_actionShowSWC_triggered();
+//    void on_actionTurnOffSWC_triggered();
     void keyPressEvent(QKeyEvent *event);
+    void showSwc(bool on);
+
+private:
+    void init();
+    void createMenu();
+    void connectSignalSlot();
+    void updateView();
+    void zoom(int ds);
 
 private:
     Ui::TileManager *ui;
     ZQtBarProgressReporter *m_progressReporter;
     ZSharedPointer<ZStackDoc> m_doc;
-    float m_scaleFactor;
+    int m_scaleFactor;
+    QMenu *m_contextMenu;
+    QAction *m_showSwcAction;
 };
 
 #endif // TILEMANAGER_H

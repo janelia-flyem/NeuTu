@@ -2,6 +2,7 @@
 #define ZNEURONTRACER_H
 
 #include <map>
+#include <vector>
 
 #include "zswcpath.h"
 #include "tz_trace_defs.h"
@@ -11,11 +12,13 @@
 #include "tz_locseg_chain.h"
 #include "zprogressable.h"
 #include "zintpoint.h"
+#include "zweightedpoint.h"
 
 class ZStack;
 class ZSwcTree;
 class ZSwcConnector;
 class ZJsonObject;
+
 //class ZIntPoint;
 
 class ZNeuronTraceSeeder {
@@ -75,9 +78,11 @@ public:
   Swc_Tree* trace(double x1, double y1, double z1, double r1,
                  double x2, double y2, double z2, double r2);
 
+  void setTraceRange(const ZIntCuboid &box);
+
   void clear();
 
-  inline void setBackgroundType(NeuTube::EImageBackground bg) {
+  inline void setBackgroundType(neutube::EImageBackground bg) {
     m_backgroundType = bg;
   }
 
@@ -86,16 +91,6 @@ public:
     m_resolution[1] = y;
     m_resolution[2] = z;
   }
-
-#if 0
-  inline void setStackOffset(double x, double y, double z) {
-    m_stackOffset[0] = x;
-    m_stackOffset[1] = y;
-    m_stackOffset[2] = z;
-  }
-
-  void setStackOffset(const ZIntPoint &pt);
-#endif
 
   inline void setVertexOption(ZStackGraph::EVertexOption vertexOption) {
     m_vertexOption = vertexOption;
@@ -109,9 +104,9 @@ public:
    *
    * It will also create workspaces automatically if necessary.
    */
-  ZSwcTree* trace(Stack *stack, bool doResampleAfterTracing = true);
+  ZSwcTree* trace(Stack *signal, bool doResampleAfterTracing = true);
 
-  ZSwcTree* trace(ZStack *stack, bool doResampleAfterTracing = true);
+  ZSwcTree* trace(const ZStack *stack, bool doResampleAfterTracing = true);
 
   //Autotrace configuration
   //Trace level setup: 1 - 10 (fast -> accurate)
@@ -132,6 +127,7 @@ public:
     return m_connWorkspace;
   }
 
+  void initTraceMask(bool clearing);
   void initTraceWorkspace(Stack *stack);
   void initTraceWorkspace(ZStack *stack);
   void initConnectionTestWorkspace();
@@ -151,7 +147,8 @@ public:
   enum ETracingMode {
     TRACING_AUTO, TRACING_INTERACTIVE, TRACING_SEED
   };
-  void setTraceScoreThreshold(ETracingMode mode);
+  void prepareTraceScoreThreshold(ETracingMode mode);
+  void setMinScore(double score, ETracingMode mode);
 
   void useEdgePath(bool state) {
     m_usingEdgePath = state;
@@ -160,10 +157,27 @@ public:
   void setBcAdjust(bool on) { m_bcAdjust = on; }
   void setGreyFactor(double v) { m_greyFactor = v; }
   void setGrayOffset(double v) { m_greyOffset = v; }
+  void setEstimatingRadius(bool on) { m_estimatingRadius = on; }
+
+public:
+  std::vector<ZWeightedPoint> computeSeedPosition(const Stack *stack);
+  std::vector<ZWeightedPoint> computeSeedPosition(const ZStack *stack);
+  std::vector<ZWeightedPoint> computeSeedPosition();
+  ZSwcTree *computeInitialTrace(const Stack *stack);
+
+  int getRecoverLevel() const;
+  void setRecoverLevel(int level);
+
+  Stack* computeSeedMask();
+  Stack* computeSeedMask(Stack *stack);
+
+public:
+  void test();
 
 private:
   //Helper functions
   Stack* binarize(const Stack *stack);
+  Stack* binarize(const Stack *stack, Stack *out);
   Stack* bwsolid(Stack *stack);
   Stack* enhanceLine(const Stack *stack);
   Geo3d_Scalar_Field* extractSeed(const Stack *mask);
@@ -188,12 +202,13 @@ private:
   void init();
   void config();
 
+
 private:
   ZStack *m_stack;
   Trace_Workspace *m_traceWorkspace;
   Connection_Test_Workspace *m_connWorkspace;
   ZSwcConnector *m_swcConnector;
-  NeuTube::EImageBackground m_backgroundType;
+  neutube::EImageBackground m_backgroundType;
   ZStackGraph::EVertexOption m_vertexOption;
   double m_resolution[3];
 //  double m_stackOffset[3];
@@ -218,6 +233,7 @@ private:
   bool m_bcAdjust;
   double m_greyFactor;
   double m_greyOffset;
+  bool m_estimatingRadius;
 
   /*
   static const char *m_levelKey;

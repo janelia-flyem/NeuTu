@@ -4,13 +4,14 @@
 #include "zstackdoc.h"
 #include "zflyemneuronpresenter.h"
 #include "zswcobjsmodel.h"
-#include "zpunctaobjsmodel.h"
+//#include "zpunctaobjsmodel.h"
 #include "zswccolorscheme.h"
 #include "QsLog.h"
 #include "zobject3dscanarray.h"
 #include "zstackfactory.h"
 #include "zlabelcolortable.h"
 #include "zscalablestack.h"
+#include "zswctree.h"
 
 ZFlyEmNeuronListModel::ZFlyEmNeuronListModel(QObject *parent) :
   QAbstractTableModel(parent)
@@ -254,7 +255,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
   }
 
   doc->endObjectModifiedMode();
-  doc->notifyObjectModified();
+  doc->processObjectModified();
 //  doc->blockSignals(false);
 //  doc->swcObjsModel()->updateModelData();
 //  doc->punctaObjsModel()->updateModelData();
@@ -280,7 +281,7 @@ ZScalableStack* ZFlyEmNeuronListModel::retrieveBody(
       ZObject3dScan *body = neuron->getBody();
 
       if (body != NULL) {
-        bodyArray.push_back(*body);
+        bodyArray.append(*body);
       }
     }
   }
@@ -303,7 +304,7 @@ ZScalableStack* ZFlyEmNeuronListModel::retrieveBody(
 
     ZLabelColorTable colorTable;
     for (size_t i = 0; i < bodyArray.size(); ++i) {
-      ZObject3dScan &obj = bodyArray[i];
+      ZObject3dScan &obj = *(bodyArray[i]);
       obj.setColor(colorTable.getColor(i));
     }
     if (bodyArray.size() == 1) {
@@ -340,7 +341,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
       ZObject3dScan *body = neuron->getBody();
 
       if (body != NULL) {
-        bodyArray.push_back(*body);
+        bodyArray.append(*body);
       }
     }
   }
@@ -363,7 +364,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
 
     ZLabelColorTable colorTable;
     for (size_t i = 0; i < bodyArray.size(); ++i) {
-      ZObject3dScan &obj = bodyArray[i];
+      ZObject3dScan &obj = *(bodyArray[i]);
       obj.setColor(colorTable.getColor(i));
     }
 
@@ -379,7 +380,7 @@ ZIntPoint ZFlyEmNeuronListModel::retrieveBody(
 
   if (stack != NULL) {
     doc->loadStack(stack);
-    doc->setTag(NeuTube::Document::FLYEM_BODY);
+    doc->setTag(neutube::Document::FLYEM_BODY);
   }
 
   return dsIntvPt;

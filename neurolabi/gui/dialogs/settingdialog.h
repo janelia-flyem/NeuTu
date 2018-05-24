@@ -28,7 +28,9 @@ public:
   double zScale();
   char unit();
   int traceEffort();
-  double traceMinScore();
+//  double traceMinScore();
+  double autoTraceMinScore() const;
+  double manualTraceMinScore() const;
   int receptor();
   bool useCone();
   inline bool traceMasked() { return m_traceMasked; }
@@ -42,9 +44,9 @@ public:
   /*!
    * \brief Get backgound setting.
    */
-  NeuTube::EImageBackground getBackground() const;
+  neutube::EImageBackground getBackground() const;
 
-  void setBackground(NeuTube::EImageBackground bg);
+  void setBackground(neutube::EImageBackground bg);
 
 public:
   void setResolution(const ZResolution &res);
@@ -67,7 +69,8 @@ private:
   double m_scales[3];
   int m_traceEffort;
   bool m_traceMasked;
-  double m_traceMinScore;
+  double m_autoTraceMinScore;
+  double m_manualTraceMinScore;
   int m_receptor;
   bool m_useCone;
   int m_unit;

@@ -11,7 +11,7 @@
 #include "tz_swc_tree.h"
 #include "zjsonobject.h"
 
-namespace FlyEm {
+namespace flyem {
 
 struct SynapseAnnotationConfig {
   int width;
@@ -191,6 +191,8 @@ public:
   std::vector<SynapseLocation*> getDistalPartner(double distThre);
 
   bool hasPartner(int bodyId) const;
+
+  std::vector<ZJsonObject> toDvidSynapseElementJson() const;
 
 private:
   SynapseLocation m_tBar;

@@ -1,8 +1,10 @@
 #include "ztilemanagerview.h"
-#include "zstackdrawable.h"
-#include "ztilemanager.h"
 #include <QScrollBar>
 #include <QDebug>
+
+#include "zstackdrawable.h"
+#include "ztilemanager.h"
+#include "zswctree.h"
 
 ZTileManagerView::ZTileManagerView(QWidget *parent) :
   QGraphicsView(parent)
@@ -17,8 +19,8 @@ void ZTileManagerView::paintEvent(QPaintEvent *event)
    if (swcVisible) {
      ZPainter viewPainter(this->viewport());
 
+
      QTransform transform;
-     float scale = getParentWindow()->getScaleFactor();
 
      QScrollBar* vSc;
      vSc = this->verticalScrollBar();
@@ -26,13 +28,31 @@ void ZTileManagerView::paintEvent(QPaintEvent *event)
      hSc = this->horizontalScrollBar();
      transform.translate(-hSc->value(),-vSc->value());
 
+     transform.scale(this->transform().m11() ,
+                     this->transform().m22() );
+
+
+
+
+#if 0
+     QTransform transform = this->transform();
+     float scale = 0.1;
+//     float scale = getParentWindow()->getScaleFactor();
+
+     QScrollBar* vSc;
+     vSc = this->verticalScrollBar();
+     QScrollBar* hSc;
+     hSc = this->horizontalScrollBar();
+     transform.translate(hSc->value(),vSc->value());
+
      transform.scale(scale, scale);
+#endif
      viewPainter.setTransform(transform);
 
      QList<ZSwcTree*> swcList = getParentWindow()->getDocument()->getSwcList();
      foreach (ZSwcTree *swc, swcList ) {
        if (swc != NULL) {
-         swc->display(viewPainter,-1, ZStackObject::SOLID);
+         swc->display(viewPainter,-1, ZStackObject::BOUNDARY, neutube::Z_AXIS);
        }
      }
    }

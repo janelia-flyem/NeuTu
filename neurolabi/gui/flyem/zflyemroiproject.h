@@ -7,15 +7,20 @@
 #include <QString>
 #include "dvid/zdvidinfo.h"
 #include "flyem/zsynapseannotationarray.h"
+#include "dvid/zdvidwriter.h"
+#include "zwidgetmessage.h"
 
 class ZStackFrame;
 class ZSwcTree;
 class ZObject3dScan;
 class ZStackDocReader;
 class ZStackDoc;
+class QWidget;
 
 /*!
  * \brief The class of managing a FlyEM ROI project
+ *
+ * NOTE: It does not support negative Z value yet.
  */
 class ZFlyEmRoiProject : public QObject
 {
@@ -47,13 +52,14 @@ public:
    *
    * \return true iff the DVID target is writable
    */
-  bool setDvidTarget(const ZDvidTarget &target);
+  bool setDvidTarget(const ZDvidTarget &target, bool downloadingData);
 
   void showDataFrame() const;
   void closeDataFrame();
   bool hasDataFrame() const;
   void setDataFrame(ZStackFrame *frame);
-  void setDocData(const ZStackDocReader &docReader);
+  void setDataRange(const ZIntCuboid &box);
+  void setDocData(ZStackDocReader &docReader);
   void loadSynapse(const std::string &filePath, bool isVisible);
   void shallowClearDataFrame();
   bool addRoi();
@@ -79,12 +85,20 @@ public:
   ZSwcTree* getRoiSwc(int z, double radius = -1.0) const;
   ZSwcTree* getAllRoiSwc() const;
 
+  static double GetMarkerRadius(double s);
   double getMarkerRadius() const;
 
-  void clearRoi();
+  //Clear all ROIs with a covering-safe way
+  void resetRoi();
+
+  /*!
+   * \brief Delete roi curve on a slice
+   */
+  void deleteRoi(int z);
 
   bool hasOpenedRoi() const;
   int uploadRoi();
+  bool createRoiData(const std::string &roiName, QWidget *parent);
   int uploadRoi(int z);
   void downloadRoi();
   void downloadRoi(int z);
@@ -92,7 +106,8 @@ public:
   void downloadAllRoi();
   ZClosedCurve estimateRoi(int z);
   ZClosedCurve* estimateRoi(int z, ZClosedCurve *result) const;
-  void estimateRoi();
+//  void estimateRoi();
+  ZSwcTree* estimateRoi();
   inline const ZDvidInfo& getDvidInfo() const {
     return m_dvidInfo;
   }
@@ -104,6 +119,8 @@ public:
   bool isRoiCurveUploaded(int z) const;
   bool isAllRoiCurveUploaded() const;
 
+  int getNearestRoiZ(int z) const;
+
   ZObject3dScan getFilledRoi(int z) const;
   ZObject3dScan* getFilledRoi(int z, ZObject3dScan *result) const;
 
@@ -112,6 +129,7 @@ public:
    */
   ZObject3dScan getRoiObject(int xIntv, int yIntv, int zIntv) const;
   ZObject3dScan getRoiObject() const;
+  ZObject3dScan getRoiSlice() const;
 
   int getFirstRoiZ() const;
   int getLastRoiZ() const;
@@ -148,7 +166,8 @@ public:
     return m_currentDsIntv;
   }
 
-  void importRoiFromSwc(ZSwcTree *tree);
+  //Make sure it's covering-safe
+  void importRoiFromSwc(ZSwcTree *tree, bool appending = false);
 
   void deleteAllData();
 
@@ -156,11 +175,21 @@ public:
 
   void test();
 
+  void printSummary() const;
+
+public: //utilties
+  static bool IsValidName(const std::string &name);
+  template<typename InputIterator>
+  static bool IsValidName(const std::string &name, const InputIterator &first,
+                   const InputIterator &last);
+  static ZFlyEmRoiProject* Make(const std::string &name, QObject *parent);
+
 private:
   ZObject3dScan* getFilledRoi(
       const ZClosedCurve *curve, int z, ZObject3dScan *result) const;
 
 signals:
+  void messageGenerated(ZWidgetMessage msg);
 
 public slots:
 
@@ -168,16 +197,37 @@ private:
   std::string m_name;
   ZDvidTarget m_dvidTarget;
   ZDvidInfo m_dvidInfo;
+  ZDvidWriter m_dvidWriter;
   int m_z;
   ZIntPoint m_currentDsIntv;
   ZStackFrame *m_dataFrame;
+  ZIntCuboid m_dataRange;
   std::vector<bool> m_isRoiCurveUploaded;
   std::vector<ZClosedCurve*> m_curveArray; //curve array sorted by z position
-  FlyEm::ZSynapseAnnotationArray m_synapseArray;
+  flyem::ZSynapseAnnotationArray m_synapseArray;
   std::vector<ZPunctum*> m_puncta;
   std::vector<QColor> m_punctaColorMap;
 
-  static const double m_defaultSynpaseRadius;
+  static const double m_defaultSynapseRadius;
 };
+
+template<typename InputIterator>
+bool ZFlyEmRoiProject::IsValidName(
+    const std::string &name, const InputIterator &first,
+    const InputIterator &last)
+{
+  bool isValid = false;
+  if (IsValidName(name)) {
+    isValid = true;
+    for (InputIterator iter = first; iter != last; ++iter) {
+      if (name == *iter) {
+        isValid = false;
+        break;
+      }
+    }
+  }
+
+  return isValid;
+}
 
 #endif // ZFLYEMROIPROJECT_H

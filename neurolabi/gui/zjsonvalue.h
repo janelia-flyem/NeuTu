@@ -23,9 +23,10 @@ public:
    * \param data json value pointer
    * \param asNew Take it as a new value or just increase its reference count
    */
-  ZJsonValue(json_t *data, bool asNew);
+//  ZJsonValue(json_t *data, bool asNew);
 
   ZJsonValue(json_t *data, ESetDataOption option);
+  ZJsonValue(const json_t *data, ESetDataOption option);
 
   /*!
    * \brief Constructor
@@ -42,6 +43,8 @@ public:
 
   virtual ~ZJsonValue();
 
+  ZJsonValue clone() const;
+
 public:
   inline json_t *getData() const { return m_data; }
   inline json_t *getValue() const { return m_data; }
@@ -54,6 +57,7 @@ public:
   bool isNumber();
   bool isBoolean();
   virtual bool isEmpty() const;
+  bool isNull() const;
 
   /*!
    * \brief Get the integer value of the json value.
@@ -69,14 +73,20 @@ public:
    */
   double toReal() const;
 
+  std::string toString() const;
+
   //std::string toString() const;
 
   void set(json_t *data, bool asNew);
   void set(json_t *data, ESetDataOption option);
+  void set(const ZJsonValue &value);
+
+  virtual void denull();
 
   /*!
    * \brief Obsolete. Will be removed.
    */
+  void decodeString(const char *str, json_error_t *error);
   void decodeString(const char *str);
 
   void clear();
@@ -92,12 +102,18 @@ public:
   /*!
    * \brief Get a string describing the current error
    */
-  std::string getErrorString() const;
+  static std::string GetErrorString(const json_error_t &error);
+  static void PrintError(const json_error_t &error);
 
   /*!
    * \brief Dump the object to a string.
    */
-  virtual std::string dumpString(int indent = 2) const;
+  std::string dumpString(int indent = 2) const;
+
+  /*!
+   * \brief Using flags in libjansson to produce a json string.
+   */
+  virtual std::string dumpJanssonString(size_t flags) const;
 
   /*!
    * \brief Save the json value into a file
@@ -108,9 +124,14 @@ public:
 
   bool load(const std::string &filePath);
 
+  std::string getSource() const;
+
+  int getRefCount() const;
+
 protected:
-  json_error_t m_error;
+//  json_error_t m_error;
   json_t *m_data;
+  std::string m_source;
 };
 
 #endif

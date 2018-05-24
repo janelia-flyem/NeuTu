@@ -1,7 +1,5 @@
 #include "zobjsmodel.h"
 
-#include <QtGui>
-
 #include "zobjsitem.h"
 #include "QsLog.h"
 
@@ -90,7 +88,7 @@ const
   if (!hasIndex(row, column, parent))
     return QModelIndex();
 
-  ZObjsItem *parentItem;
+  ZObjsItem *parentItem = NULL;
 
   if (!parent.isValid())
     parentItem = m_rootItem;

@@ -11,6 +11,7 @@
 #include <QGraphicsPixmapItem>
 #include <QMenu>
 #include <QtConcurrentRun>
+#include <QFutureWatcher>
 
 #include "neutubeconfig.h"
 #include "tz_error.h"
@@ -27,15 +28,13 @@
 #include "flyem/zflyemneuronbodyinfo.h"
 #include "z3dpunctafilter.h"
 #include "z3dcompositor.h"
-#include "z3dvolumeraycaster.h"
-#include "z3daxis.h"
+#include "z3dvolumefilter.h"
 #include "dialogs/swcexportdialog.h"
 #include "zdialogfactory.h"
 #include "zprogressmanager.h"
-#include "z3dvolumesource.h"
-#include "z3dvolume.h"
 #include "zwindowfactory.h"
 #include "z3ddef.h"
+#include "z3dwindow.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),
@@ -98,6 +97,7 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   ui->label->hide();
 #endif
 
+  m_updateThumbnailAction = NULL;
   createAction();
   createContextMenu();
   ui->queryView->setContextMenu(m_neuronContextMenu);
@@ -122,7 +122,10 @@ FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
 
   m_swcExportDlg = new SwcExportDialog(this);
   m_3dWindowFactory.setParentWidget(this->parentWidget());
-  m_3dWindowFactory.setVolumeRenderMode(NeuTube3D::VR_ALPHA_BLENDING);
+  m_3dWindowFactory.setVolumeRenderMode(neutube3d::VR_ALPHA_BLENDING);
+
+  connect(&m_thumbnailFutureWatcher, SIGNAL(finished()),
+          this, SLOT(slotTest()));
 }
 
 FlyEmDataForm::~FlyEmDataForm()
@@ -131,8 +134,11 @@ FlyEmDataForm::~FlyEmDataForm()
   delete ui;
   delete m_thumbnailScene;
 
-  for (QMap<QString, QFuture<void> >::iterator iter = m_threadFutureMap.begin();
-       iter != m_threadFutureMap.end(); ++iter) {
+  disconnect(&m_thumbnailFutureWatcher, SIGNAL(finished()),
+          this, SLOT(slotTest()));
+
+  for (QMap<QString, QFuture<uint64_t> >::iterator iter = m_bodyFutureMap.begin();
+       iter != m_bodyFutureMap.end(); ++iter) {
     if (!iter->isFinished()) {
       iter->waitForFinished();
     }
@@ -178,6 +184,11 @@ void FlyEmDataForm::createExportMenu()
   m_exportMenu->addAction(exportTypeLabelAction);
   connect(exportTypeLabelAction, SIGNAL(triggered()),
           this, SLOT(exportTypeLabelFile()));
+
+  QAction *exportBodyAction = new QAction("Bodies", this);
+  m_exportMenu->addAction(exportBodyAction);
+  connect(exportBodyAction, SIGNAL(triggered()),
+          this, SLOT(exportSelectedBody()));
 }
 
 void FlyEmDataForm::createImportMenu()
@@ -405,7 +416,7 @@ void FlyEmDataForm::viewModel(const QModelIndex &index)
         doc->addObject(*iter, false);
       }
       doc->endObjectModifiedMode();
-      doc->notifyObjectModified();
+      doc->processObjectModified();
 //      doc->blockSignals(false);
 //      doc->updateModelData(ZStackDoc::SWC_DATA);
 //      doc->updateModelData(ZStackDoc::PUNCTA_DATA);
@@ -498,6 +509,23 @@ ZStackDoc *FlyEmDataForm::updateViewSelectedModel(ZFlyEmQueryView *view)
   return doc;
 }
 
+void FlyEmDataForm::updateViewSelectedThumbnail(ZFlyEmQueryView *view)
+{
+  ui->progressBar->setValue(50);
+  ui->progressBar->show();
+  //QApplication::processEvents();
+
+  QItemSelectionModel *sel = view->selectionModel();
+  QVector<ZFlyEmNeuron*> neuronArray =
+      view->getModel()->getNeuronArray(sel->selectedIndexes());
+
+  foreach (ZFlyEmNeuron *neuron, neuronArray) {
+    updateThumbnail(neuron, THUMBAIL_FORCE_COMPUTE);
+  }
+
+  ui->progressBar->hide();
+}
+
 ZStackDoc *FlyEmDataForm::showViewSelectedBody(ZFlyEmQueryView *view)
 {
   ui->progressBar->setValue(50);
@@ -535,6 +563,11 @@ void FlyEmDataForm::showSelectedModel()
 void FlyEmDataForm::updateSelectedModel()
 {
   updateViewSelectedModel(ui->queryView);
+}
+
+void FlyEmDataForm::updateSelectedThumbnail()
+{
+  updateViewSelectedThumbnail(ui->queryView);
 }
 
 void FlyEmDataForm::showSelectedBody()
@@ -648,6 +681,7 @@ void FlyEmDataForm::createContextMenu()
     m_neuronContextMenu->addAction(m_showSelectedModelAction);
     m_neuronContextMenu->addAction(m_showSelectedModelWithBoundBoxAction);
     m_neuronContextMenu->addAction(m_updateSelectedModelAction);
+    m_neuronContextMenu->addAction(m_updateThumbnailAction);
     m_neuronContextMenu->addAction(m_changeClassAction);
     m_neuronContextMenu->addAction(m_neighborSearchAction);
     m_neuronContextMenu->addAction(m_showSelectedBodyAction);
@@ -671,6 +705,12 @@ void FlyEmDataForm::createAction()
     m_updateSelectedModelAction = new QAction("Update Model", this);
     connect(m_updateSelectedModelAction, SIGNAL(triggered()),
             this, SLOT(updateSelectedModel()));
+  }
+
+  if (m_updateThumbnailAction == NULL) {
+    m_updateThumbnailAction = new QAction("Update Thumbnail", this);
+    connect(m_updateThumbnailAction, SIGNAL(triggered()),
+            this, SLOT(updateSelectedThumbnail()));
   }
 
   if (m_showSelectedBodyAction == NULL) {
@@ -749,9 +789,9 @@ void FlyEmDataForm::updateThumbnail(const QModelIndex &index)
   updateThumbnail(neuron);
 }
 
-QList<int> FlyEmDataForm::getSelectedNeuronList() const
+QList<uint64_t> FlyEmDataForm::getSelectedNeuronList() const
 {
-  QList<int> neuronIdList;
+  QList<uint64_t> neuronIdList;
 
   QItemSelectionModel *sel = ui->queryView->selectionModel();
   QVector<ZFlyEmNeuron*> neuronArray =
@@ -764,9 +804,9 @@ QList<int> FlyEmDataForm::getSelectedNeuronList() const
 }
 
 void FlyEmDataForm::updateThumbnail(
-    QList<QGraphicsItem *> itemList, int bodyId)
+    QList<QGraphicsItem *> itemList, uint64_t bodyId)
 {
-  QList<int> bodyList = getSelectedNeuronList();
+  QList<uint64_t> bodyList = getSelectedNeuronList();
   bool itemAdded = false;
   if (!bodyList.isEmpty()) {
     if (bodyList.last() == bodyId) {
@@ -790,7 +830,18 @@ void FlyEmDataForm::updateThumbnailSecondary(const QModelIndex &index)
   updateThumbnail(neuron);
 }
 
-void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
+QString FlyEmDataForm::GetThumbnailMessage(uint64_t bodyId)
+{
+  QString msg = QString(
+        "<p><font color=\"green\">I'm computing the thumbail for %1.</font></p>"
+        "<p><font color=\"green\">It may take several minutes.</p>"
+        "<p><font color=\"green\">You can wait for it or come back later.</font></p>").
+      arg(bodyId);
+
+  return msg;
+}
+
+uint64_t FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
 {
   ZFlyEmNeuronImageFactory imageFactory = *(getParentFrame()->getImageFactory());
   if (neuron != NULL) {
@@ -812,7 +863,7 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
           ZDvidReader reader;
           reader.open(target);
           ZObject3dScan body;
-          reader.readBody(neuron->getId(), &body);
+          reader.readBody(neuron->getId(), true, &body);
 
           Stack *stack = imageFactory.createSurfaceImage(body);
           writer.writeThumbnail(neuron->getId(), stack);
@@ -822,19 +873,25 @@ void FlyEmDataForm::computeThumbnailFunc(ZFlyEmNeuron *neuron)
           bodyInfo.setBoundBox(body.getBoundBox());
           writer.writeBodyInfo(neuron->getId(), bodyInfo.toJsonObject());
 
+          C_Stack::kill(stack);
+
+          return neuron->getId();
+
           //QList<QGraphicsItem *> currentItemList;
           //generateThumbnailItem(currentItemList, neuron);
         }
       }
     }
   }
+
+  return 0;
 }
 
 Stack* FlyEmDataForm::loadThumbnailImage(ZFlyEmNeuron *neuron)
 {
-  Stack *stack;
-  if (ZFileType::fileType(neuron->getThumbnailPath()) ==
-      ZFileType::TIFF_FILE) {
+  Stack *stack = NULL;
+  if (ZFileType::FileType(neuron->getThumbnailPath()) ==
+      ZFileType::FILE_TIFF) {
     stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
   } else {
     ZString str(neuron->getThumbnailPath());
@@ -843,13 +900,13 @@ Stack* FlyEmDataForm::loadThumbnailImage(ZFlyEmNeuron *neuron)
       target.setFromSourceString(str);
       ZDvidReader reader;
       if (reader.open(target)) {
-        bool isDataReady = false;
+//        bool isDataReady = false;
         if (reader.hasBodyInfo(neuron->getId())) {
           ZStack *stackObj = reader.readThumbnail(neuron->getId());
           if (stackObj != NULL) {
             stack = C_Stack::clone(stackObj->c_stack());
             delete stackObj;
-            isDataReady = true;
+//            isDataReady = true;
           }
         }
       }
@@ -880,7 +937,7 @@ void FlyEmDataForm::generateThumbnailItem(
           } else {
             dump("Failed to load the thumbnail.");
           }
-          C_Stack::kill(stack);
+//          C_Stack::kill(stack);
         } else {
           //dump("Failed to load the thumbnail.");
         }
@@ -903,9 +960,9 @@ void FlyEmDataForm::generateThumbnailItem(
         currentItemList.append(thumbnailItem);
 
         int sourceZDim = getParentFrame()->
-            getMasterData()->getSourceDimension(NeuTube::Z_AXIS);
+            getMasterData()->getSourceDimension(neutube::Z_AXIS);
         int sourceYDim = getParentFrame()->getMasterData()->
-            getSourceDimension(NeuTube::Y_AXIS);
+            getSourceDimension(neutube::Y_AXIS);
 
         ZDvidTarget dvidTarget;
         dvidTarget.setFromSourceString(neuron->getThumbnailPath());
@@ -941,9 +998,9 @@ void FlyEmDataForm::generateThumbnailItem(
 //            m_thumbnailScene->addItem(rectItem);
 
             int z0 = getParentFrame()->
-                getMasterData()->getSourceOffset(NeuTube::Z_AXIS);
+                getMasterData()->getSourceOffset(neutube::Z_AXIS);
             int y0 = getParentFrame()->
-                getMasterData()->getSourceOffset(NeuTube::Y_AXIS);
+                getMasterData()->getSourceOffset(neutube::Y_AXIS);
             rectItem = new QGraphicsRectItem(
                   sceneWidth - width - x + (startY - y0) * scale,
                   y + (startZ - z0) * scale,
@@ -957,10 +1014,10 @@ void FlyEmDataForm::generateThumbnailItem(
         //fire off computation thread
         QString threadId =
             QString("computeThumbnailFunc:%1").arg(neuron->getId());
-        QFuture<void> future =
+        QFuture<uint64_t> future =
             QtConcurrent::run(
               this, &FlyEmDataForm::computeThumbnailFunc, neuron);
-        m_threadFutureMap[threadId] = future;
+        m_bodyFutureMap[threadId] = future;
       }
     }
     emit thumbnailItemReady(currentItemList, neuron->getId());
@@ -975,19 +1032,16 @@ void FlyEmDataForm::updateThumbnailLive(ZFlyEmNeuron *neuron)
 
   //initThumbnailScene();
 
-  bool isWaiting = false;
+//  bool isWaiting = false;
   QString threadId =
       QString("computeThumbnailFunc:%1").arg(neuron->getId());
   QList<QGraphicsItem*> itemList;
 
-  if (m_threadFutureMap.contains(threadId)) {
-    if (m_threadFutureMap[threadId].isRunning()) {
-      isWaiting = true;
+  if (m_bodyFutureMap.contains(threadId)) {
+    if (m_bodyFutureMap[threadId].isRunning()) {
+//      isWaiting = true;
       QGraphicsTextItem *textItem = new QGraphicsTextItem;
-      textItem->setHtml(
-            QString("<p><font color=\"green\">The thumbail is being computed.</font></p>"
-                    "<p><font color=\"green\">It may take several minutes.</p>"
-                    "<p><font color=\"green\">Please come back later.</font></p>"));
+      textItem->setHtml(GetThumbnailMessage(neuron->getId()));
 
       itemList.append(textItem);
       //m_thumbnailScene->addItem(textItem);
@@ -1132,7 +1186,8 @@ void FlyEmDataForm::updateThumbnailLive(ZFlyEmNeuron *neuron)
 #endif
 }
 
-void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
+void FlyEmDataForm::updateThumbnail(
+    ZFlyEmNeuron *neuron, EUpdateThumbnailOption option)
 {
   if (neuron == NULL) {
     return;
@@ -1143,14 +1198,12 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
   bool isWaiting = false;
   QString threadId =
       QString("computeThumbnailFunc:%1").arg(neuron->getId());
-  if (m_threadFutureMap.contains(threadId)) {
-    if (m_threadFutureMap[threadId].isRunning()) {
+  if (m_bodyFutureMap.contains(threadId)) {
+    if (m_bodyFutureMap[threadId].isRunning()) {
+//      m_thumbnailFutureWatcher.setFuture(m_bodyFutureMap[threadId]);
       isWaiting = true;
       QGraphicsTextItem *textItem = new QGraphicsTextItem;
-      textItem->setHtml(
-            QString("<p><font color=\"green\">The thumbail is being computed.</font></p>"
-                    "<p><font color=\"green\">It may take several minutes.</p>"
-                    "<p><font color=\"green\">Please come back later.</font></p>"));
+      textItem->setHtml(GetThumbnailMessage(neuron->getId()));
       m_thumbnailScene->addItem(textItem);
     }
   }
@@ -1164,8 +1217,8 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
         thumbnailReady = true;
       } else {
         Stack *stack = NULL;
-        if (ZFileType::fileType(neuron->getThumbnailPath()) ==
-            ZFileType::TIFF_FILE) {
+        if (ZFileType::FileType(neuron->getThumbnailPath()) ==
+            ZFileType::FILE_TIFF) {
           stack = C_Stack::readSc(neuron->getThumbnailPath().c_str());
         } else {
           ZString str(neuron->getThumbnailPath());
@@ -1187,21 +1240,24 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
                 }
               }
 
-              if (!isDataReady) {
-                //fire off computation thread
-                QFuture<void> future =
-                    QtConcurrent::run(
-                      this, &FlyEmDataForm::computeThumbnailFunc, neuron);
-                m_threadFutureMap[threadId] = future;
-                QGraphicsTextItem *textItem = new QGraphicsTextItem;
-                QString font = "color=\"green\"";
-                textItem->setHtml(
-                      QString(
-                        "<p><font %1>The thumbail is being computed.</font></p>"
-                        "<p><font %1>It may take several minutes.</font></p>"
-                        "<p><font %1>Please come back later.</font></p>").
-                      arg(font));
-                m_thumbnailScene->addItem(textItem);
+              if (option != THUMBNAIL_NO_COMPUTE) {
+                if (!isDataReady || option == THUMBAIL_FORCE_COMPUTE) {
+                  //fire off computation thread
+                  QFuture<uint64_t> future =
+                      QtConcurrent::run(
+                        this, &FlyEmDataForm::computeThumbnailFunc, neuron);
+                  m_bodyFutureMap[threadId] = future;
+                  m_thumbnailFutureWatcher.setFuture(future);
+                  QGraphicsTextItem *textItem = new QGraphicsTextItem;
+                  QString font = "color=\"green\"";
+                  textItem->setHtml(
+                        QString(
+                          "<p><font %1>The thumbail is being computed.</font></p>"
+                          "<p><font %1>It may take several minutes.</font></p>"
+                          "<p><font %1>Please come back later.</font></p>").
+                        arg(font));
+                  m_thumbnailScene->addItem(textItem);
+                }
               }
             }
           }
@@ -1225,6 +1281,8 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
       }
 
       if (thumbnailReady) {
+        m_thumbnailFutureWatcher.cancel();
+//        m_thumbnailFutureWatcher.setFuture(QFuture<uint64_t>());
         thumbnailItem->setPixmap(pixmap);
         QTransform transform;
 
@@ -1241,9 +1299,9 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
         m_thumbnailScene->addItem(thumbnailItem);
 
         int sourceZDim = getParentFrame()->
-            getMasterData()->getSourceDimension(NeuTube::Z_AXIS);
+            getMasterData()->getSourceDimension(neutube::Z_AXIS);
         int sourceYDim = getParentFrame()->getMasterData()->
-            getSourceDimension(NeuTube::Y_AXIS);
+            getSourceDimension(neutube::Y_AXIS);
 
         ZDvidTarget dvidTarget;
         dvidTarget.setFromSourceString(neuron->getThumbnailPath());
@@ -1277,9 +1335,9 @@ void FlyEmDataForm::updateThumbnail(ZFlyEmNeuron *neuron)
             m_thumbnailScene->addItem(rectItem);
 
             int z0 = getParentFrame()->
-                getMasterData()->getSourceOffset(NeuTube::Z_AXIS);
+                getMasterData()->getSourceOffset(neutube::Z_AXIS);
             int y0 = getParentFrame()->
-                getMasterData()->getSourceOffset(NeuTube::Y_AXIS);
+                getMasterData()->getSourceOffset(neutube::Y_AXIS);
             rectItem = new QGraphicsRectItem(
                   sceneWidth - width - x + (startY - y0) * scale,
                   y + (startZ - z0) * scale,
@@ -1349,13 +1407,12 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     int dataRangeX = (maxX + 1) / (dsIntv + 1);
     int dataRangeY = (maxY + 1) / (dsIntv + 1);
 
-    Z3DWindow *stage = new Z3DWindow(academy, Z3DWindow::INIT_FULL_RES_VOLUME,
-                                     false, NULL);
-
-    stage->getVolumeRaycaster()->hideBoundBox();
-    stage->getVolumeRaycasterRenderer()->setCompositeMode(
+    Z3DWindow *stage = new Z3DWindow(
+          academy, Z3DView::INIT_FULL_RES_VOLUME);
+    stage->getVolumeFilter()->hideBoundBox();
+    stage->getVolumeFilter()->setCompositeMode(
           "Direct Volume Rendering");
-    stage->getAxis()->setVisible(false);
+    stage->getCompositor()->setShowAxis(false);
 
     Z3DCameraParameter* camera = stage->getCamera();
 
@@ -1368,16 +1425,16 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
       ZJsonObject cameraJson;
       cameraJson.load(cameraFile.toStdString());
       camera->set(cameraJson);
-      glm::vec3 eyeSpec = camera->getEye();
-      glm::vec3 centerSpec = camera->getCenter();
+      glm::vec3 eyeSpec = camera->get().eye();
+      glm::vec3 centerSpec = camera->get().center();
       vec = ZPoint(eyeSpec[0], eyeSpec[1], eyeSpec[2]) -
               ZPoint(centerSpec[0], centerSpec[1], centerSpec[2]);
       vec.normalize();
 
-      upVector = camera->getUpVector();
+      upVector = camera->get().upVector();
     }
 
-    camera->setProjectionType(Z3DCamera::Orthographic);
+    camera->setProjectionType(Z3DCamera::ProjectionType::Orthographic);
 //    glm::vec3 eyeSpec = camera->getEye();
 //    glm::vec3 centerSpec = camera->getCenter();
 
@@ -1385,7 +1442,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
     referenceCenter.set(dataRangeX / 2, dataRangeY / 2, dataRangeZ / 2);
 
     double distNearToCenter = referenceCenter.length() * 2.0;
-    double distEyeToNear = dataRangeZ * 0.5 / tan(camera->getFieldOfView() * 0.5);
+    double distEyeToNear = dataRangeZ * 0.5 / tan(camera->get().fieldOfView() * 0.5);
     double distEyeToCenter = distEyeToNear + distNearToCenter;
 
     ZPoint eyePosition = referenceCenter + vec * distEyeToCenter;
@@ -1417,7 +1474,7 @@ void FlyEmDataForm::saveVolumeRenderingFigure(
 //    stage->show();
     //stage->showMaximized();
 
-    stage->takeScreenShot(output, 4000, 4000, MonoView);
+    stage->takeScreenShot(output, 4000, 4000, Z3DScreenShotType::MonoView);
     stage->close();
     delete stage;
   }
@@ -1459,6 +1516,33 @@ void FlyEmDataForm::exportTypeLabelFile()
   }
 }
 
+void FlyEmDataForm::exportSelectedBody()
+{
+  QString dirpath = QFileDialog::getExistingDirectory(this, tr("Export Bodies"),
+    "", QFileDialog::ShowDirsOnly);
+
+  if (!dirpath.isEmpty()) {
+    if(QMessageBox::warning(
+         this, "Exporting Bodies",
+         "It will overwrite any existing file "
+         "that has the same name as a saved one. Continue?",
+         QMessageBox::No | QMessageBox::Yes) == QMessageBox::Yes) {
+      QItemSelectionModel *sel = ui->queryView->selectionModel();
+      QVector<ZFlyEmNeuron*> neuronArray =
+          m_neuronList->getNeuronArray(sel->selectedIndexes());
+
+      dump(QString("Saving %1 bodies ...").arg(neuronArray.size()));
+      foreach (ZFlyEmNeuron *neuron, neuronArray) {
+        QString output = dirpath + QString("/body_%1.sobj").arg(neuron->getId());
+        neuron->getBody()->save(output.toStdString());
+        dump(output + " saved");
+        neuron->releaseBody();
+      }
+      dump("Done.");
+    }
+  }
+}
+
 void FlyEmDataForm::importSynapse()
 {
   if (getParentFrame() != NULL) {
@@ -1472,4 +1556,23 @@ void FlyEmDataForm::importSynapse()
       getParentFrame()->importSynapseAnnotation(fileName, coordAdjust);
     }
   }
+}
+
+void FlyEmDataForm::slotTest()
+{
+  QItemSelectionModel *sel = ui->queryView->selectionModel();
+  QModelIndexList selected = sel->selectedIndexes();
+  if (selected.size() == 1) {
+    updateThumbnail(m_neuronList->getNeuron(selected.front()),
+                    THUMBNAIL_NO_COMPUTE);
+  }
+
+#if 0
+  if (m_thumbnailFutureWatcher.isFinished()) {
+    uint64_t bodyId = m_thumbnailFutureWatcher.result();
+    std::cout << "Thumbnail obtained: " << bodyId << std::endl;
+  } else {
+    std::cout << "Thumbtain not ready." << std::endl;
+  }
+#endif
 }

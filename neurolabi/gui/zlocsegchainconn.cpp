@@ -6,7 +6,6 @@
  */
 
 #include <iostream>
-#include <QtGui>
 #include <QXmlStreamWriter>
 #include "zlocsegchainconn.h"
 #include "tz_math.h"

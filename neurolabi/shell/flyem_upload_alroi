@@ -1,0 +1,9 @@
+#!/bin/bash
+i=1
+while [ $i -le 50 ]
+do
+  sh -x ./flyem_upload_roi http://tem-dvid.int.janelia.org:7400 739f roi_$i /Users/zhaot/Work/neutube/neurolabi/data/flyem/AL/glomeruli/roi_json/roi_$i.json
+  i=`expr $i + 1`
+done
+
+ 

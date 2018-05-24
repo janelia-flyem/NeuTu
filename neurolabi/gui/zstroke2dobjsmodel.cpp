@@ -34,7 +34,7 @@ ZStroke2d* ZStroke2dObjsModel::getStroke2d(const QModelIndex &index) const
     ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
     if (item->parent() == m_rootItem) {
-      stroke = ZStackObject::CastVoidPointer<ZStroke2d>(item->getActuralData());
+      stroke = ZStackObject::CastVoidPointer<ZStroke2d>(item->getActualData());
     }
   }
 
@@ -52,7 +52,7 @@ void ZStroke2dObjsModel::updateModelData()
   endResetModel();
 }
 
-void ZStroke2dObjsModel::setupModelData(ZObjsItem */*parent*/)
+void ZStroke2dObjsModel::setupModelData(ZObjsItem * /*parent*/)
 {
   //todo
 }

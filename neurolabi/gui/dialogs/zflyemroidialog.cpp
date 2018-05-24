@@ -1,5 +1,9 @@
 #include "zflyemroidialog.h"
+#if defined(_QT5_)
+#include <QtConcurrent>
+#else
 #include <QtConcurrentRun>
+#endif
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QInputDialog>
@@ -21,11 +25,10 @@
 #include "zflyemutilities.h"
 #include "zstring.h"
 #include "zfiletype.h"
-#include "z3dvolumesource.h"
 #include "zwindowfactory.h"
 #include "z3dpunctafilter.h"
-#include "z3dvolumeraycaster.h"
-#include "z3dvolumeraycasterrenderer.h"
+#include "z3dvolumefilter.h"
+#include "z3dwindow.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),
@@ -165,6 +168,11 @@ void ZFlyEmRoiDialog::createMenu()
   m_mainMenu->addAction(m_importRoiAction);
 //  m_importRoiAction->setCheckable(true);
   connect(m_importRoiAction, SIGNAL(triggered()), this, SLOT(importRoi()));
+
+  QAction *createRoiAction = new QAction("Create ROI Data", this);
+  m_mainMenu->addAction(createRoiAction);
+  connect(createRoiAction, SIGNAL(triggered()),
+          this, SLOT(createRoiData()));
 
   m_autoStepAction = new QAction("Auto Step", this);
   m_mainMenu->addAction(m_autoStepAction);
@@ -321,12 +329,9 @@ void ZFlyEmRoiDialog::loadPartialGrayscaleFunc(
       m_project->downloadRoi(z);
     }
 
-    QString infoString = reader.readInfo("grayscale");
 
-    qDebug() << infoString;
-
-    ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(infoString.toStdString());
+//    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+//    dvidInfo.setFromJsonString(infoString.toStdString());
 
     ZStack *stack = NULL;
     stack = reader.readGrayScale(x0, y0, z,
@@ -359,9 +364,9 @@ void ZFlyEmRoiDialog::prepareQuickLoadFunc(
   //const ZDvidTarget &target = m_project->getDvidTarget();
   ZDvidReader reader;
   if (z >= 0 && reader.open(target)) {
-    QString infoString = reader.readInfo("grayscale");
-    ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(infoString.toStdString());
+//    QString infoString = reader.readInfo("grayscale");
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+//    dvidInfo.setFromJsonString(infoString.toStdString());
 
     /*
     std::string lowresPath =
@@ -480,12 +485,12 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       m_project->downloadRoi(z);
     }
 
-    QString infoString = reader.readInfo("grayscale");
+//    QString infoString = reader.readInfo("grayscale");
 
-    qDebug() << infoString;
+//    qDebug() << infoString;
 
-    ZDvidInfo dvidInfo;
-    dvidInfo.setFromJsonString(infoString.toStdString());
+    ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+//    dvidInfo.setFromJsonString(infoString.toStdString());
 
     //int z = m_zDlg->getValue();
     //m_project->setZ(z);
@@ -519,11 +524,15 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
                                      z, boundBox.getWidth(),
                                      boundBox.getHeight(), 1);
       } else {
+        int width = dvidInfo.getStackSize()[0];
+        int height = dvidInfo.getStackSize()[1];
+        if (width / 20000) { //temporary fix
+          width /= 2;
+        }
         stack = reader.readGrayScale(
               dvidInfo.getStartCoordinates().getX(),
               dvidInfo.getStartCoordinates().getY(),
-              z, dvidInfo.getStackSize()[0],
-            dvidInfo.getStackSize()[1], 1);
+              z, width, height, 1);
         if (stack != NULL) {
           boundBox = ZFlyEmRoiProject::estimateBoundBox(
                 *stack, getDvidTarget().getBgValue());
@@ -555,11 +564,11 @@ void ZFlyEmRoiDialog::loadGrayscaleFunc(int z, bool lowres)
       m_docReader.setStack(stack);
 
       ZSwcTree *tree = m_project->getRoiSwc(
-            z, FlyEm::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
+            z, flyem::GetFlyEmRoiMarkerRadius(stack->width(), stack->height()));
       if (tree != NULL) {
         m_docReader.addObject(tree);
       }
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       std::cout << "Object count in docreader: "
                 << m_docReader.getObjectGroup().size() << std::endl;
       std::cout << "Swc count in docreader: "
@@ -587,8 +596,8 @@ void ZFlyEmRoiDialog::processLoadGrayscaleFailure()
 void ZFlyEmRoiDialog::newDataFrame()
 {
   ZStackFrame *frame = getMainWindow()->createStackFrame(
-        m_docReader, NeuTube::Document::FLYEM_ROI);
-  frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        m_docReader, neutube::Document::FLYEM_ROI);
+  frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
   setDataFrame(frame);
 
   getMainWindow()->addStackFrame(frame);
@@ -1114,7 +1123,7 @@ ZFlyEmRoiProject* ZFlyEmRoiDialog::newProject(const std::string &name)
   ZFlyEmRoiProject *project = NULL;
   if (isValidName(name)) {
     project = new ZFlyEmRoiProject(name, this);
-    project->setDvidTarget(getDvidTarget());
+    project->setDvidTarget(getDvidTarget(), false);
   } else {
     QMessageBox::warning(
               this, "Failed to Create A Project",
@@ -1271,29 +1280,106 @@ void ZFlyEmRoiDialog::exportRoiObject()
   }
 }
 
+void ZFlyEmRoiDialog::createRoiData()
+{
+  ZObject3dScan obj = m_project->getRoiSlice();
+
+  if (obj.isEmpty()) {
+    return;
+  }
+
+  bool ok = false;
+  QString roiName = QInputDialog::getText(
+        this, tr("Create ROI Data"), tr("Data name:"), QLineEdit::Normal,
+        m_project->getName().c_str(), &ok);
+
+  if (!roiName.isEmpty() && ok) {
+    ZDvidReader reader;
+    if (reader.open(getDvidTarget())) {
+      ZDvidWriter writer;
+      writer.open(getDvidTarget());
+      if (reader.hasData(roiName.toStdString())) {
+        std::string type = reader.getType(roiName.toStdString());
+        if (type != "roi") {
+          QMessageBox::warning(this, "Name Conflict",
+                               QString("Cannot create ROI data. %1 has been used by type %2").
+                               arg(roiName).arg(type.c_str()));
+          return;
+        }
+
+        if (!ZDialogFactory::Ask(
+              "Overwrite Data",
+              QString("The data %1 already exists. "
+                      "Do you want to overwrite it?").arg(roiName), this)) {
+          return;
+        }
+      } else {
+        writer.createData("roi", roiName.toStdString());
+        if (writer.getStatusCode() == 200) {
+          dump(QString("ROI data %1 has been created.").arg(roiName), true);
+        } else {
+          dump(QString("WARNING: Failed to create ROI data").arg(roiName), true);
+          return;
+        }
+      }
+
+      ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
+      int minZ = blockObj.getMinZ();
+      int maxZ = blockObj.getMaxZ();
+
+      ZObject3dScan interpolated;
+      for (int z = minZ; z <= maxZ; ++z) {
+        interpolated.concat(blockObj.interpolateSlice(z));
+      }
+
+      ZJsonArray array = ZJsonFactory::MakeJsonArray(
+            interpolated, ZJsonFactory::OBJECT_SPARSE);
+      writer.writeJson(
+            ZDvidUrl(getDvidTarget()).getRoiUrl(roiName.toStdString()),
+            array);
+      if (writer.getStatusCode() == 200) {
+        dump(QString("ROI data %1 has been uploaded.").arg(roiName), true);
+      } else {
+        dump(QString("WARNING: Failed to upload ROI data").arg(roiName), true);
+        return;
+      }
+    }
+  }
+}
+
 void ZFlyEmRoiDialog::exportResult()
 {
   if (m_project != NULL) {
-    ZObject3dScan obj = m_project->getRoiObject();
+    ZObject3dScan obj = m_project->getRoiSlice();
 
     ZObject3dScan blockObj = m_project->getDvidInfo().getBlockIndex(obj);
+    int minZ = blockObj.getMinZ();
+    int maxZ = blockObj.getMaxZ();
+
+    ZObject3dScan interpolated;
+    for (int z = minZ; z <= maxZ; ++z) {
+      interpolated.concat(blockObj.interpolateSlice(z));
+    }
+
+//    blockObj.fillHole();
 
     std::string fileName = GET_DATA_DIR + "/roi_" + m_project->getName();
 
-    blockObj.save(fileName + ".sobj");
+    interpolated.save(fileName + ".sobj");
 
     ZJsonArray array = ZJsonFactory::MakeJsonArray(
-          blockObj, ZJsonFactory::OBJECT_SPARSE);
+          interpolated, ZJsonFactory::OBJECT_SPARSE);
     //ZJsonObject jsonObj;
     //jsonObj.setEntry("data", array);
     array.dump(fileName + ".json");
   }
 }
-
+/*
 void ZFlyEmRoiDialog::on_exportPushButton_clicked()
 {
   exportResult();
 }
+*/
 
 int ZFlyEmRoiDialog::getNextZ() const
 {
@@ -1394,15 +1480,14 @@ void ZFlyEmRoiDialog::viewAllSynapseIn3D()
               stack->getOffset().getZ());
       }
       Z3DWindow *window = factory.make3DWindow(doc);
-      window->getVolumeSource()->setXScale(
+      window->getVolumeFilter()->setXScale(
             m_project->getCurrentDsIntv().getX() + 1);
-      window->getVolumeSource()->setYScale(
+      window->getVolumeFilter()->setYScale(
             m_project->getCurrentDsIntv().getY() + 1);
       window->getPunctaFilter()->setColorMode("Original Point Color");
       window->getPunctaFilter()->setSizeScale(0.5);
       window->getPunctaFilter()->setStayOnTop(false);
-      window->getVolumeRaycasterRenderer()->setCompositeMode(
-            "Direct Volume Rendering");
+      window->getVolumeFilter()->setCompositeMode("Direct Volume Rendering");
       window->setBackgroundColor(glm::vec3(0.0f), glm::vec3(0.0f));
       window->resetCamera();
 

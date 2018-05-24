@@ -8,7 +8,7 @@
 #include "tz_stack_threshold.h"
 #include "tz_stack_bwmorph.h"
 #include "tz_fimage_lib.h"
-#include "tz_xml_utils.h"
+//#include "tz_xml_utils.h"
 #include "tz_stack_relation.h"
 #include "tz_stack_attribute.h"
 #include "tz_stack_watershed.h"
@@ -344,11 +344,11 @@ void ZSingleChannelStack::shiftLocation(int *offset, int width, int height, int 
   if (depth == -1)
     depth = m_stack->depth;
 
-  Stack *stack = Make_Stack(m_stack->kind, width, height, depth);
+  Stack *stack = C_Stack::make(m_stack->kind, width, height, depth);
   int left = (-1) * offset[0];
   int top = (-1) * offset[1];
   int up = (-1) * offset[2];
-  Crop_Stack(m_stack, left, top, up, width, height, depth, stack);
+  C_Stack::crop(m_stack, left, top, up, width, height, depth, stack);
 
   copyData(stack);
   C_Stack::kill(stack);
@@ -425,7 +425,11 @@ bool ZSingleChannelStack::isBinary()
 
   ZStack_Stat *stat = getStat();
 
-  return stat->hist()[0] < 3;
+  if (stat->hist() != NULL) {
+    return stat->hist()[0] < 3;
+  }
+
+  return false;
 }
 
 bool ZSingleChannelStack::binarize(int threshold)
@@ -445,10 +449,10 @@ bool ZSingleChannelStack::bwsolid()
     Stack *clean_stack = Stack_Majority_Filter_R(m_stack, NULL, 26, 4);
     Struct_Element *se = Make_Cuboid_Se(3, 3, 3);
     Stack *dilate_stack = Stack_Dilate(clean_stack, NULL, se);
-    Kill_Stack(clean_stack);
+    C_Stack::kill(clean_stack);
     Stack *fill_stack = dilate_stack;
     Stack_Erode_Fast(fill_stack, m_stack, se);
-    Kill_Stack(fill_stack);
+    C_Stack::kill(fill_stack);
     Kill_Struct_Element(se);
     //m_stamp++;
     deprecateDependent(STACK);
@@ -512,7 +516,7 @@ bool ZSingleChannelStack::watershed()
   if (!isVirtual()) {
     Stack_Invert_Value(m_stack);
     Watershed_3D *shed = Build_3D_Watershed(m_stack, 0);
-    Stack *out = Copy_Stack(shed->labels);
+    Stack *out = C_Stack::clone(shed->labels);
     Kill_Watershed_3D(shed);
     copyData(out);
     C_Stack::kill(out);
@@ -588,6 +592,7 @@ void ZStack_Stat::update(Stack *stack)
 
   if (stack->array != NULL) {
     if (stack->kind != COLOR) {
+#if 1
       double smin, smax;
       if ((stack->kind != FLOAT32) && (stack->kind != FLOAT64)) {
         m_hist = Stack_Hist(stack);
@@ -606,11 +611,16 @@ void ZStack_Stat::update(Stack *stack)
         smin = m_min;
         smax = m_max;
       }
-      if (stack->kind != GREY) {
+//      if (stack->kind != GREY) {
         if (smax != smin)
           m_greyScale = 255.0 / (smax - smin);
         m_greyOffset = -m_greyScale * smin;
-      }
+//      }
+#else
+      m_hist = Stack_Hist(stack);
+      m_min = Stack_Min(stack, NULL);
+      m_max = Stack_Max(stack, NULL);
+#endif
     }
   }
 }

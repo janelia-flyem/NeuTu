@@ -191,10 +191,10 @@ static void sprint_file_bundle_sc(File_Bundle_S *bundle,int depth,char *sname)
 {
   if(bundle->suffix) {
     sprintf(sname, "%s%0*d%s", bundle->prefix, bundle->num_width,
-	    bundle->first_num+depth,bundle->suffix);
+            bundle->first_num+depth,bundle->suffix);
   } else {
     sprintf(sname, "%s%0*d.tif", bundle->prefix, bundle->num_width,
-	    bundle->first_num+depth);
+            bundle->first_num+depth);
   }
 }
 
@@ -212,7 +212,7 @@ int Is_Fbdf(const char *filePath)
 {
   if( strlen(filePath)>4 )
     if( strcmp(filePath+strlen(filePath)-4,".fbd")==0 ||
-	strcmp(filePath+strlen(filePath)-4,".FBD")==0 )
+        strcmp(filePath+strlen(filePath)-4,".FBD")==0 )
       return 1;
 
   return 0;
@@ -222,7 +222,7 @@ int Is_Lsm(const char *filePath)
 {
   if( strlen(filePath)>4 )
     if( strcmp(filePath+strlen(filePath)-4,".lsm")==0 ||
-	strcmp(filePath+strlen(filePath)-4,".LSM")==0 )
+        strcmp(filePath+strlen(filePath)-4,".LSM")==0 )
       return 1;
 
   return 0;
@@ -251,14 +251,14 @@ int Is_V3dpbd(const char *filePath)
 {
   if( strlen(filePath) > 7 ) {
     if( strcmp(filePath+strlen(filePath)-7,".v3dpbd")==0 ||
-	strcmp(filePath+strlen(filePath)-7,".V3DPBD")==0 ) {
+        strcmp(filePath+strlen(filePath)-7,".V3DPBD")==0 ) {
       return 1;
     }
   }
 
   if( strlen(filePath) >= 4 ) {
     if( strcmp(filePath+strlen(filePath)-4,".pbd")==0 ||
-	strcmp(filePath+strlen(filePath)-4,".PBD")==0 ) {
+        strcmp(filePath+strlen(filePath)-4,".PBD")==0 ) {
       return 1;
     }
   }
@@ -270,7 +270,7 @@ int Is_Nsp(const char *filePath)
 {
   if( strlen(filePath) >= 4 ) {
     if( strcmp(filePath+strlen(filePath)-4,".nsp")==0 ||
-	strcmp(filePath+strlen(filePath)-4,".NSP")==0 ) {
+        strcmp(filePath+strlen(filePath)-4,".NSP")==0 ) {
       return 1;
     }
   }
@@ -323,13 +323,13 @@ int Load_Fbdf(const char *filePath, File_Bundle_S *fb)
 
     #if defined(_WIN64) || defined(_WIN32)
 
-	var = strtok(value, "=");
+        var = strtok(value, "=");
 
-	#else
+        #else
 
-	var = strsep(&value, "=");
+        var = strsep(&value, "=");
 
-	#endif
+        #endif
 
     if (value == NULL)
       continue;
@@ -502,27 +502,27 @@ void Stack_Size_F(const char *filepath, int *size)
       break;
     case STACK_DOC_FILE_BUNDLE:
       {
-	File_Bundle_S *bundle = (File_Bundle_S*) doc->ci;
-	char sname[1000];
-	int depth = 0;
-	while (1) {
-	  sprint_file_bundle_sc(bundle,depth,sname);
+        File_Bundle_S *bundle = (File_Bundle_S*) doc->ci;
+        char sname[1000];
+        int depth = 0;
+        while (1) {
+          sprint_file_bundle_sc(bundle,depth,sname);
 
-	  if (!fexist(sname)) {
-	    break;
-	  }
+          if (!fexist(sname)) {
+            break;
+          }
 
-	  depth++;
+          depth++;
           if (bundle->first_num + depth - 1 == bundle->last_num) {
             break;
           }
-	}
+        }
 
-	if (depth > 0) {
-	  sprint_file_bundle_sc(bundle, 0, sname);
-	  Stack_Size_F(sname, size);
-	}
-	size[2] = depth;
+        if (depth > 0) {
+          sprint_file_bundle_sc(bundle, 0, sname);
+          Stack_Size_F(sname, size);
+        }
+        size[2] = depth;
       }
       break;
     }
@@ -644,7 +644,7 @@ void Print_Lsm_Info(const char *filepath)
   Cz_Lsminfo lsminfo;
   fread(&lsminfo, sizeof(Cz_Lsminfo), 1, fp);
   printf("Size: %d x %d x %d\n", lsminfo.s32DimensionX, lsminfo.s32DimensionY,
-	 lsminfo.s32DimensionZ);
+         lsminfo.s32DimensionZ);
 
   printf("Intensity format: ");
 
@@ -654,14 +654,14 @@ void Print_Lsm_Info(const char *filepath)
 
     if (lsminfo.u32OffsetChannelDataTypes > 0) {
       uint32_t *channelDataTypes =
-	(uint32_t*) Guarded_Malloc(sizeof(uint32_t) *
-				   lsminfo.s32DimensionChannels,
-				   "Print_Lsm_Info");
+        (uint32_t*) Guarded_Malloc(sizeof(uint32_t) *
+                                   lsminfo.s32DimensionChannels,
+                                   "Print_Lsm_Info");
       fseek(fp, lsminfo.u32OffsetChannelDataTypes, SEEK_SET);
       fread(channelDataTypes, sizeof(uint32_t),
-	    lsminfo.s32DimensionChannels, fp);
+            lsminfo.s32DimensionChannels, fp);
       printf("%u %u %u\n", channelDataTypes[0], channelDataTypes[1],
-	     channelDataTypes[2]);
+             channelDataTypes[2]);
     }
     break;
   case 1:
@@ -678,8 +678,8 @@ void Print_Lsm_Info(const char *filepath)
   }
 
   printf("Resolution: %g x %g x %g um\n", lsminfo.f64VoxelSizeX * 1000000.0,
-	 lsminfo.f64VoxelSizeY * 1000000.0,
-	 lsminfo.f64VoxelSizeZ * 1000000.0);
+         lsminfo.f64VoxelSizeY * 1000000.0,
+         lsminfo.f64VoxelSizeZ * 1000000.0);
 
   printf("Scan type: ");
   switch (lsminfo.u16ScanType) {
@@ -770,14 +770,14 @@ void Print_Lsm_Info(const char *filepath)
     printf("There is no information about devide settings\n");
   } else {
     printf("Scan information found. Offset: %u\n",
-	   lsminfo.u32OffsetScanInformation);
+           lsminfo.u32OffsetScanInformation);
   }
 
   if (lsminfo.u32OffsetKsData == 0) {
     printf("There is no Zeiss Vision KS-3d data\n");
   } else {
     printf("Zeiss Vision KS-3d data found. Offset: %u\n",
-	   lsminfo.u32OffsetKsData);
+           lsminfo.u32OffsetKsData);
   }
 
   if (lsminfo.u32OffsetTimeStamps == 0) {
@@ -805,8 +805,8 @@ void Print_Lsm_Info(const char *filepath)
   }
 
   printf("Display aspect: %g x %g x %g x %g", lsminfo.f64DisplayAspectX,
-	 lsminfo.f64DisplayAspectY, lsminfo.f64DisplayAspectZ,
-	 lsminfo.f64DisplayAspectTime);
+         lsminfo.f64DisplayAspectY, lsminfo.f64DisplayAspectZ,
+         lsminfo.f64DisplayAspectTime);
 
   if (lsminfo.u32OffsetMeanOfRoisOverlay == 0) {
     printf("No ROI vector overlay.\n");
@@ -847,7 +847,7 @@ void Print_Lsm_Info(const char *filepath)
   }
 
   printf("The inverse radius of the spherical error: %g\n",
-	 lsminfo.f64objectiveSphereCorrection);
+         lsminfo.f64objectiveSphereCorrection);
 
   if (lsminfo.u32OffsetunmixParameters == 0) {
     printf("There is no parameter for linear unmixing.\n");
@@ -881,9 +881,9 @@ Stack *Read_Lsm_Stack(const char *filepath, int channel)
       Free_Tiff_IFD(ifd);
       Advance_Tiff_Reader(reader);
       if (End_Of_Tiff(reader)) {
-	ifd = NULL;
-	TZ_ERROR(ERROR_IO_READ);
-	break;
+        ifd = NULL;
+        TZ_ERROR(ERROR_IO_READ);
+        break;
       }
     }
 
@@ -900,11 +900,11 @@ Stack *Read_Lsm_Stack(const char *filepath, int channel)
 
       depth  = 1;
       while (!End_Of_Tiff(reader)) {
-	ifd = Read_Tiff_IFD(reader);
-	if (lsm_thumbnail_flag(ifd) == 0) {
-	  depth++;
-	}
-	Free_Tiff_IFD(ifd);
+        ifd = Read_Tiff_IFD(reader);
+        if (lsm_thumbnail_flag(ifd) == 0) {
+          depth++;
+        }
+        Free_Tiff_IFD(ifd);
       }
     }
 
@@ -914,11 +914,11 @@ Stack *Read_Lsm_Stack(const char *filepath, int channel)
 
     if (image->number_channels > 1) {
       if (channel < 0) {
-	if (kind == 1) {
-	  kind = 3;
-	} else {
-	  TZ_ERROR(ERROR_DATA_TYPE);
-	}
+        if (kind == 1) {
+          kind = 3;
+        } else {
+          TZ_ERROR(ERROR_DATA_TYPE);
+        }
       }
     }
     Free_Tiff_Image(image);
@@ -935,33 +935,33 @@ Stack *Read_Lsm_Stack(const char *filepath, int channel)
     if (lsm_thumbnail_flag(ifd) == 0) {
       image = Extract_Image_From_IFD(ifd);
       if (image == NULL) {
-	TZ_ERROR(ERROR_POINTER_NULL);
+        TZ_ERROR(ERROR_POINTER_NULL);
       }
 
       if ((kind != 3) || (channel >= 0)) {
-	if (channel < 0) {
-	  channel = 0;
-	}
+        if (channel < 0) {
+          channel = 0;
+        }
 
-	memcpy(stack->array + offset, image->channels[channel]->plane,
-	       bytes_per_plane);
-	offset += bytes_per_plane;
+        memcpy(stack->array + offset, image->channels[channel]->plane,
+               bytes_per_plane);
+        offset += bytes_per_plane;
       } else {
-	color_t *arrayc = (color_t *) stack->array;
-	size_t offset2 = 0;
-	int i;
-	int j;
-	for (j = 0; j < stack->height; j++) {
-	  for (i = 0; i < stack->width; i++) {
-	    arrayc[offset][0] = ((uint8 *) image->channels[0]->plane)[offset2];
-	    arrayc[offset][1] = ((uint8 *) image->channels[1]->plane)[offset2];
-	    if (nchannel > 2) {
-	      arrayc[offset][2] = ((uint8 *) image->channels[2]->plane)[offset2];
-	    }
-	    offset++;
-	    offset2++;
-	  }
-	}
+        color_t *arrayc = (color_t *) stack->array;
+        size_t offset2 = 0;
+        int i;
+        int j;
+        for (j = 0; j < stack->height; j++) {
+          for (i = 0; i < stack->width; i++) {
+            arrayc[offset][0] = ((uint8 *) image->channels[0]->plane)[offset2];
+            arrayc[offset][1] = ((uint8 *) image->channels[1]->plane)[offset2];
+            if (nchannel > 2) {
+              arrayc[offset][2] = ((uint8 *) image->channels[2]->plane)[offset2];
+            }
+            offset++;
+            offset2++;
+          }
+        }
       }
       Free_Tiff_Image(image);
     }
@@ -971,7 +971,7 @@ Stack *Read_Lsm_Stack(const char *filepath, int channel)
 #ifdef _MSC_VER
   Reset_Tiff_Image();
 #else
-  Reset_Tiff_Image(image);
+  Reset_Tiff_Image(/*image*/);
 #endif
   Reset_Tiff_IFD();
   Kill_Tiff_Reader(tif);
@@ -1070,8 +1070,9 @@ int Lsm_Pixel_Type(const char *filepath)
   return type;
 }
 
+
 void Write_Lsm_Stack(const char *filepath, const Stack *stack,
-		     Tiff_IFD *templat)
+                     Tiff_IFD *templat)
 {
   Tiff_Writer *tif = Open_Tiff_Writer((char *) filepath, 1);
 
@@ -1193,7 +1194,7 @@ void Write_Raw_Stack(const char *filepath, const Stack *stack)
     for (i = 0; i < 3; i++) {
       size_t j;
       for (j = 0; j < nvoxel; j++) {
-	fwrite(arrayc[j] + i, dataType, 1, fp);
+        fwrite(arrayc[j] + i, dataType, 1, fp);
       }
     }
     fclose(fp);
@@ -1315,7 +1316,7 @@ Stack* Read_Raw_Stack_C(const char *filepath, int channel)
     for (i = 0; i < 3; i++) {
       size_t j;
       for (j = 0; j < nvoxel; j++) {
-	fread(arrayc[j] + i, 1, 1, fp);
+        fread(arrayc[j] + i, 1, 1, fp);
       }
     }
   } else {
@@ -1423,7 +1424,7 @@ Stack* Read_Raw_Stack_Slice(const char *filepath, int slice)
   if (sz[3] != 1) {
     if ((sz[3] != 3) || (dataType != 1)) {
       PRINT_EXCEPTION("unsupported format",
-		      "multi-channel image can not be read");
+                      "multi-channel image can not be read");
       fclose(fp);
       return NULL;
     } else {
@@ -1509,6 +1510,41 @@ void Read_Stack_Offset(const char *filepath, int *x, int *y, int *z)
   }
 }
 
+void Read_Stack_Intv(const char *filepath, int *x, int *y, int *z)
+{
+  *x = 0;
+  *y = 0;
+  *z = 0;
+
+  if (Is_Tiff(filepath)) {
+    Tio   *tif;
+    Tiff_Type type;
+    int    count;
+
+    tif = (Tio *) Open_Tiff((char*)(filepath),"r");
+    int *tx = NULL;
+    int *ty = NULL;
+    int *tz = NULL;
+
+    if ((tx = (int *) Get_Tiff_Tag(tif->ifd,TIFF_X_INTV_C,&type,&count))
+        != NULL) {
+      *x = *tx;
+    }
+
+    if ((ty = (int *) Get_Tiff_Tag(tif->ifd,TIFF_Y_INTV_C,&type,&count))
+        != NULL) {
+      *y = *ty;
+    }
+
+    if ((tz = (int *) Get_Tiff_Tag(tif->ifd,TIFF_Z_INTV_C,&type,&count))
+        != NULL) {
+      *z = *tz;
+    }
+
+    Close_Tiff((Tiff *) tif);
+  }
+}
+
 Stack* Read_Stack_U(const char *filepath)
 {
   if (!fexist(filepath)) {
@@ -1568,7 +1604,7 @@ Stack* Read_Xml_Stack(const char *filePath)
 }
 
 void Write_Tiff_With_Offset(Tiff *etif, Image *a_image,
-    int x, int y, int z)
+    int x, int y, int z, int compress)
 { Tio        *tif = (Tio *) etif;
   Tiff_IFD   *ifd;
   Tiff_Image *img;
@@ -1613,14 +1649,101 @@ void Write_Tiff_With_Offset(Tiff *etif, Image *a_image,
       break;
   }
 
-  ifd = Make_IFD_For_Image(img,0);
+  ifd = Make_IFD_For_Image(img,compress);
 
   Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
-      sizeof(int), &x);
+      1, &x);
   Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
-      sizeof(int), &y);
+      1, &y);
   Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
-      sizeof(int), &z);
+      1, &z);
+
+  if (a_image->text[0] != '\0')
+    Set_Tiff_Tag(ifd,TIFF_JF_TAGGER,TIFF_BYTE,strlen(a_image->text),a_image->text);
+
+  Write_Tiff_IFD(tif->writer,ifd);
+
+  Free_Tiff_IFD(ifd);
+  Free_Tiff_Image(img);
+}
+
+void Write_Tiff_With_Transform(Tiff *etif, Image *a_image,
+    int x, int y, int z, int ix, int iy, int iz, int compress)
+{ Tio        *tif = (Tio *) etif;
+  Tiff_IFD   *ifd;
+  Tiff_Image *img;
+  int         area;
+
+  area = a_image->width * a_image->height;
+
+  img = Create_Tiff_Image(a_image->width,a_image->height);
+  switch (a_image->kind)
+  { case COLOR:
+      Add_Tiff_Image_Channel(img,CHAN_RED,8,CHAN_UNSIGNED);
+      Add_Tiff_Image_Channel(img,CHAN_GREEN,8,CHAN_UNSIGNED);
+      Add_Tiff_Image_Channel(img,CHAN_BLUE,8,CHAN_UNSIGNED);
+
+      { uint8 *red, *green, *blue;
+        uint8 *out;
+        int    i;
+
+        out   = a_image->array;
+        red   = (uint8*)img->channels[0]->plane;
+        green = (uint8*)img->channels[1]->plane;
+        blue  = (uint8*)img->channels[2]->plane;
+        for (i = 0; i < area; i++)
+          { *red++ = *out++;
+            *green++ = *out++;
+            *blue++ = *out++;
+          }
+      }
+
+      break;
+    case GREY:
+      Add_Tiff_Image_Channel(img,CHAN_BLACK,8,CHAN_UNSIGNED);
+      memcpy(img->channels[0]->plane,a_image->array,area);
+      break;
+    case GREY16:
+      Add_Tiff_Image_Channel(img,CHAN_BLACK,16,CHAN_UNSIGNED);
+      memcpy(img->channels[0]->plane,a_image->array,2*area);
+      break;
+    case FLOAT32:
+      Add_Tiff_Image_Channel(img,CHAN_BLACK,32,CHAN_FLOAT);
+      memcpy(img->channels[0]->plane,a_image->array,4*area);
+      break;
+  }
+
+  ifd = Make_IFD_For_Image(img,compress);
+
+  if (x > 0) {
+    Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
+        1, &x);
+  }
+
+  if (y > 0) {
+    Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
+        1, &y);
+  }
+
+  if (z > 0) {
+    Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
+        1, &z);
+  }
+
+  if (ix > 0) {
+    Set_Tiff_Tag(ifd,TIFF_X_INTV_C,TIFF_LONG,
+        1, &ix);
+  }
+
+  if (iy > 0) {
+    Set_Tiff_Tag(ifd,TIFF_Y_INTV_C,TIFF_LONG,
+        1, &iy);
+  }
+
+  if (iz > 0) {
+    Set_Tiff_Tag(ifd,TIFF_Z_INTV_C,TIFF_LONG,
+        1, &iz);
+  }
 
   if (a_image->text[0] != '\0')
     Set_Tiff_Tag(ifd,TIFF_JF_TAGGER,TIFF_BYTE,strlen(a_image->text),a_image->text);
@@ -1632,7 +1755,7 @@ void Write_Tiff_With_Offset(Tiff *etif, Image *a_image,
 }
 
 void Write_Stack_With_Offset(
-    const char *file_name, const Stack *a_stack, int x, int y, int z)
+    const char *file_name, const Stack *a_stack, int x, int y, int z, int compress)
 {
   if (a_stack == NULL) {
     return;
@@ -1648,7 +1771,8 @@ void Write_Stack_With_Offset(
   tif = Open_Tiff((char*) file_name,"w");
 
   if (tif != NULL) {
-    Write_Tiff_With_Offset(tif, Select_Plane((Stack*) a_stack, 0), x, y, z);
+    Write_Tiff_With_Offset(tif, Select_Plane((Stack*) a_stack, 0), x, y, z, compress);
+
 
     for (i = 1; i < a_stack->depth; i++)
       Write_Tiff(tif,Select_Plane((Stack*)a_stack,i));
@@ -1656,8 +1780,34 @@ void Write_Stack_With_Offset(
   }
 }
 
+void Write_Stack_With_Transform(
+    const char *file_name, const Stack *a_stack, int x, int y, int z,
+    int ix, int iy, int iz, int compress)
+{
+  if (a_stack == NULL) {
+    return;
+  }
+
+  if (a_stack->depth == 0) {
+    return;
+  }
+
+  Tiff *tif;
+  int   i;
+
+  tif = Open_Tiff((char*) file_name,"w");
+
+  if (tif != NULL) {
+    Write_Tiff_With_Transform(tif, Select_Plane((Stack*) a_stack, 0), x, y, z, ix, iy, iz, compress);
+
+
+    for (i = 1; i < a_stack->depth; i++)
+      Write_Tiff(tif,Select_Plane((Stack*)a_stack,i));
+    Close_Tiff(tif);
+  }
+}
 void Write_Stack_U(const char *filepath, const Stack *stack,
-		   const char *metafile)
+                   const char *metafile, int compress)
 {
   if (Is_Raw(filepath)) {
     Write_Raw_Stack(filepath, stack);
@@ -1692,16 +1842,24 @@ void Write_Stack_U(const char *filepath, const Stack *stack,
 
     BOOL is_written = FALSE;
     if (metafile != NULL) {
-      if (String_Starts_With(metafile, "@offset")) {
-        if (metafile[0] == '@') {
-          int n = 0;
-          int *offset = String_To_Integer_Array(metafile, NULL, &n);
-          if (n >= 3) {
-            Write_Stack_With_Offset(filepath, &tmp_stack,
-                offset[0], offset[1], offset[2]);
-            is_written = TRUE;
-          }
+      if (String_Starts_With(metafile, "@offset ")) {
+        int n = 0;
+        int *offset = String_To_Integer_Array(metafile, NULL, &n);
+        if (n >= 3) {
+          Write_Stack_With_Offset(filepath, &tmp_stack,
+              offset[0], offset[1], offset[2], compress);
+          is_written = TRUE;
         }
+        free(offset);
+      } else if (String_Starts_With(metafile, "@transform ")) {
+        int n = 0;
+        int *offset = String_To_Integer_Array(metafile, NULL, &n);
+        if (n >= 6) {
+          Write_Stack_With_Transform(filepath, &tmp_stack,
+              offset[0], offset[1], offset[2], offset[3], offset[4], offset[5], compress);
+          is_written = TRUE;
+        }
+        free(offset);
       }
     }
 
@@ -2665,11 +2823,19 @@ Mc_Stack* Read_V3dpbd(const char *filepath, int channel)
       }
     }
 
+#ifdef _MSC_VER
+        offs = _ftelli64(file);
+#else
     offs = ftello(file);
+#endif
 
     size_t array_offset = 0;
     for (i = 0; i < chans; i++) {
+#ifdef _MSC_VER
+          _fseeki64(file, offs, SEEK_SET);
+#else
       fseeko(file, offs, SEEK_SET);
+#endif
       if (pixel_bytes == 2) {
         decompress_read16(file, (uint16*)(stack->array + array_offset),
             size,bswap, 0);
@@ -2690,9 +2856,9 @@ Mc_Stack* Read_V3dpbd(const char *filepath, int channel)
     }
 
     if (pixel_bytes == 2) {
-      decompress_read16(file,buffer,size*chans,bswap, 1);
+      decompress_read16(file,(uint16*)buffer,size*chans,bswap, 1);
     } else {
-      decompress_read8(file,buffer,size*chans, 1);
+      decompress_read8(file,(uint8*)buffer,size*chans, 1);
     }
 
     if (channel >= 0) {
@@ -2968,7 +3134,7 @@ Mc_Stack* Read_Mc_Stack(const char *filepath, int channel)
     free(mc_stack_array);
     Reset_Tiff_Image();
 #else
-    Reset_Tiff_Image(image);
+    Reset_Tiff_Image(/*image*/);
 #endif
     Reset_Tiff_IFD();
     Kill_Tiff_Reader(reader);
@@ -3057,7 +3223,7 @@ Stack* Read_Sc_Stack(const char *filepath, int channel)
     while (!End_Of_Tiff(reader)) {
       ifd = Read_Tiff_IFD(reader);
       if (!(Is_Lsm(filepath) && lsm_thumbnail_flag(ifd))) {
-	depth++;
+        depth++;
       }
       Free_Tiff_IFD(ifd);
     }
@@ -3101,30 +3267,30 @@ Stack* Read_Sc_Stack(const char *filepath, int channel)
     if (!(Is_Lsm(filepath) && lsm_thumbnail_flag(ifd))) {
       image = Extract_Image_From_IFD(ifd);
       if (image == NULL) {
-	TZ_ERROR(ERROR_POINTER_NULL);
+        TZ_ERROR(ERROR_POINTER_NULL);
       }
 
       if (nchannel == 1) {
-	if (channel > 0) {
-	  TZ_ERROR(ERROR_DATA_TYPE);
-	} else {
-	  memcpy(stack->array + offset, image->channels[channel]->plane,
-		 bytes_per_plane);
-	  offset += bytes_per_plane;
-	}
+        if (channel > 0) {
+          TZ_ERROR(ERROR_DATA_TYPE);
+        } else {
+          memcpy(stack->array + offset, image->channels[channel]->plane,
+                 bytes_per_plane);
+          offset += bytes_per_plane;
+        }
       } else { /* multi-channel stack */
-	if (channel >= 0) { /* only extract one channel */
-	  memcpy(stack->array + offset, image->channels[channel]->plane,
-		 bytes_per_plane);
-	  offset += bytes_per_plane;
-	} else {
-	  int i;
-	  for (i = 0; i < nchannel; i++) {
-	    memcpy(mc_stack_array[i] + offset, image->channels[i]->plane,
-		   bytes_per_plane);
-	  }
-	  offset += bytes_per_plane;
-	}
+        if (channel >= 0) { /* only extract one channel */
+          memcpy(stack->array + offset, image->channels[channel]->plane,
+                 bytes_per_plane);
+          offset += bytes_per_plane;
+        } else {
+          int i;
+          for (i = 0; i < nchannel; i++) {
+            memcpy(mc_stack_array[i] + offset, image->channels[i]->plane,
+                   bytes_per_plane);
+          }
+          offset += bytes_per_plane;
+        }
       }
       Free_Tiff_Image(image);
     }
@@ -3135,7 +3301,7 @@ Stack* Read_Sc_Stack(const char *filepath, int channel)
   free(mc_stack_array);
   Reset_Tiff_Image();
 #else
-  Reset_Tiff_Image(image);
+  Reset_Tiff_Image(/*image*/);
 #endif
   Reset_Tiff_IFD();
   Kill_Tiff_Reader(reader);
@@ -3144,7 +3310,7 @@ Stack* Read_Sc_Stack(const char *filepath, int channel)
 }
 
 Tiff_Image* Mc_Stack_Tiff_Image(const Mc_Stack *mc_stack, int s,
-				Tiff_Image *image)
+                                Tiff_Image *image)
 {
   ASSERT(mc_stack->kind <= 4, "Too many bits for a pixel");
   ASSERT(mc_stack->kind != COLOR, "COLOR kind not supported");
@@ -3179,7 +3345,7 @@ Tiff_Image* Mc_Stack_Tiff_Image(const Mc_Stack *mc_stack, int s,
   for (i = 0; i < mc_stack->nchannel; i++) {
     Add_Tiff_Image_Channel(image, CHAN_BLACK, 8 * mc_stack->kind, type);
     memcpy(image->channels[i]->plane, mc_stack_array[i] + array_offset,
-	   plane_bsize);
+           plane_bsize);
   }
 
 #ifdef _MSC_VER
@@ -3189,11 +3355,11 @@ Tiff_Image* Mc_Stack_Tiff_Image(const Mc_Stack *mc_stack, int s,
 }
 
 void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
-		    const char *metafile)
+                    const char *metafile, int compress)
 {
   if (Is_Raw(filepath)) {
     TZ_ASSERT((stack->kind != COLOR) || (stack->nchannel == 1),
-	      "Unsupported stack type");
+              "Unsupported stack type");
     FILE *fp = Guarded_Fopen((char*) filepath, "wb", "Write_Raw_Stack");
 
     char formatkey[] = "raw_image_stack_by_hpeng";
@@ -3221,7 +3387,7 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
       ((size_t) stack->depth);
     if (stack->kind != COLOR) {
       //fwrite(stack->array, dataType, nvoxel * stack->nchannel, fp);
-    	//use 1G buffer fix fwrite bug for big file 2012/5/31
+        //use 1G buffer fix fwrite bug for big file 2012/5/31
       size_t buffersize = (size_t) 1024 * 1024 * 1024;
       size_t remaining = nvoxel * dataType * stack->nchannel;
       int j = 0;
@@ -3253,10 +3419,10 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
       sz[3] = 3;
       color_t *arrayc = (color_t*) stack->array;
       for (i = 0; i < 3; i++) {
-	size_t j;
-	for (j = 0; j < nvoxel; j++) {
-	  fwrite(arrayc[j] + i, dataType, 1, fp);
-	}
+        size_t j;
+        for (j = 0; j < nvoxel; j++) {
+          fwrite(arrayc[j] + i, dataType, 1, fp);
+        }
       }
       fclose(fp);
     }
@@ -3265,71 +3431,88 @@ void Write_Mc_Stack(const char *filepath, const Mc_Stack *stack,
     if (stack->nchannel == 1) {
       Stack ss = Mc_Stack_Channel(stack, 0);
       ss.text = "\0";
-      Write_Stack_U(filepath, &ss, metafile);
+      Write_Stack_U(filepath, &ss, metafile, compress);
     } else {
       Tiff_Writer *tif = NULL;
       if (Is_Lsm(filepath)) { /* open it as an LSM file */
-	tif = Open_Tiff_Writer((char *) filepath, 1);
+        tif = Open_Tiff_Writer((char *) filepath, 1);
       } else {
-	tif = Open_Tiff_Writer((char *) filepath, 0);
+        tif = Open_Tiff_Writer((char *) filepath, 0);
       }
 
       int i;
       for (i = 0; i < stack->depth; i++) {
-	Tiff_Image *image = Mc_Stack_Tiff_Image(stack, i, NULL);
-	Tiff_IFD *ifd = NULL;
-	if (Is_Lsm(filepath)) {
-	  if ((i == 0) && (metafile != NULL)) {
-	    Tiff_Reader *reader;
-	    Tiff_IFD *templat;
-	    reader = Open_Tiff_Reader((char*) metafile,NULL,1);
+        Tiff_Image *image = Mc_Stack_Tiff_Image(stack, i, NULL);
+        Tiff_IFD *ifd = NULL;
+        if (Is_Lsm(filepath)) {
+          if ((i == 0) && (metafile != NULL)) {
+            Tiff_Reader *reader;
+            Tiff_IFD *templat;
+            reader = Open_Tiff_Reader((char*) metafile,NULL,1);
 
-	    while (lsm_thumbnail_flag(templat = Read_Tiff_IFD(reader)) != 0) {
-	      Kill_Tiff_IFD(templat);
-	      if (End_Of_Tiff(reader)) {
-		templat = NULL;
-		TZ_ERROR(ERROR_IO_READ);
-		break;
-	      }
-	    }
+            while (lsm_thumbnail_flag(templat = Read_Tiff_IFD(reader)) != 0) {
+              Kill_Tiff_IFD(templat);
+              if (End_Of_Tiff(reader)) {
+                templat = NULL;
+                TZ_ERROR(ERROR_IO_READ);
+                break;
+              }
+            }
 
-	    ifd = Make_IFD_For_Lsm_Image(image, 0, templat, stack->depth);
-	    Kill_Tiff_IFD(templat);
-	    Kill_Tiff_Reader(reader);
-	  } else {
-	    ifd = Make_IFD_For_Lsm_Image(image, 0, NULL, stack->depth);
-	  }
-	} else {
-	  ifd = Make_IFD_For_Image(image, 0);
-	}
+            ifd = Make_IFD_For_Lsm_Image(image, compress, templat, stack->depth);
+            Kill_Tiff_IFD(templat);
+            Kill_Tiff_Reader(reader);
+          } else {
+            ifd = Make_IFD_For_Lsm_Image(image, compress, NULL, stack->depth);
+          }
+        } else {
+          ifd = Make_IFD_For_Image(image, compress);
+        }
         //int tagValue = 1;
         //Set_Tiff_Tag(ifd,TIFF_NEW_SUB_FILE_TYPE,TIFF_LONG,1,&(tagValue));
-	//Tiff_IFD *ifd = Make_IFD_For_Image_I(image, 0, NULL);
-	//Print_Tiff_IFD(ifd, stdout);
+        //Tiff_IFD *ifd = Make_IFD_For_Image_I(image, 0, NULL);
+        //Print_Tiff_IFD(ifd, stdout);
 
         if (i == 0) {
           if (metafile != NULL) {
+            int n = 0;
             if (String_Starts_With(metafile, "@offset")) {
-              if (metafile[0] == '@') {
-                int n = 0;
-                int *offset = String_To_Integer_Array(metafile, NULL, &n);
-                if (n >= 3) {
-                  Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset);
-                  Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset + 1);
-                  Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_RATIONAL,
-                      sizeof(int), offset + 2);
-                }
+              int *offset = String_To_Integer_Array(metafile, NULL, &n);
+              if (n >= 3) {
+                Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
+                    1, offset);
+                Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
+                    1, offset + 1);
+                Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
+                    1, offset + 2);
               }
+              free(offset);
+            } else if (String_Starts_With(metafile, "@transform")) {
+              int *offset = String_To_Integer_Array(metafile, NULL, &n);
+              if (n >= 6) {
+                Set_Tiff_Tag(ifd,TIFF_X_POSITION_C,TIFF_LONG,
+                    1, offset);
+                Set_Tiff_Tag(ifd,TIFF_Y_POSITION_C,TIFF_LONG,
+                    1, offset + 1);
+                Set_Tiff_Tag(ifd,TIFF_Z_POSITION_C,TIFF_LONG,
+                    1, offset + 2);
+                Set_Tiff_Tag(ifd,TIFF_X_INTV_C,TIFF_LONG,
+                    1, offset + 3);
+                Set_Tiff_Tag(ifd,TIFF_Y_INTV_C,TIFF_LONG,
+                    1, offset + 4);
+                Set_Tiff_Tag(ifd,TIFF_Z_INTV_C,TIFF_LONG,
+                    1, offset + 5);
+              }
+              free(offset);
             }
           }
         }
+//        uint16 compressValue = TIFF_VALUE_LZW;
+//        Set_Tiff_Tag(ifd, TIFF_COMPRESSION, TIFF_SHORT, 1, &compressValue);
 
-
-	Write_Tiff_IFD(tif, ifd);
-	Free_Tiff_IFD(ifd);
-	Free_Tiff_Image(image);
+        Write_Tiff_IFD(tif, ifd);
+        Free_Tiff_IFD(ifd);
+        Free_Tiff_Image(image);
       }
 
       Reset_Tiff_IFD();
@@ -3414,14 +3597,14 @@ File_Bundle_S *Parse_Stack_Name_S(char *file_name)
   s = file_name + strlen(file_name) - 4;
   if (strcmp(s,".tif") != 0 && strcmp(s,".TIF") != 0) {
     PRINT_EXCEPTION("Invalid file",
-		    "1st file in stack does not have .tif extension");
+                    "1st file in stack does not have .tif extension");
   }
   t = s;
   while (t > file_name && isdigit(t[-1]))
     t -= 1;
   if (s-t <= 0) {
     PRINT_EXCEPTION("Invalid file",
-		    "No number sequence in stack file names");
+                    "No number sequence in stack file names");
   }
 
   if (t-file_name > Prefix_Max)
@@ -3446,7 +3629,7 @@ static void Sprint_File_Bundle_S(File_Bundle_S *bundle,int depth,char *sname)
 {
   if(bundle->suffix) {
     sprintf(sname, "%s%0*d%s", bundle->prefix, bundle->num_width,
-	    bundle->first_num+depth,bundle->suffix);
+            bundle->first_num+depth,bundle->suffix);
   } else {
     sprintf(sname, "%s%0*d.tif", bundle->prefix, bundle->num_width,bundle->first_num+depth);
   }
@@ -3486,7 +3669,7 @@ Stack *Read_Stack_Planes_S(File_Bundle_S *bundle)
     Sprint_File_Bundle_S(bundle, d, sname);
     image = Read_Stack_U(sname);
     memcpy(stack->array + area * image->kind *d,
-	   image->array, area * image->kind);
+           image->array, area * image->kind);
     Free_Stack(image);
   }
 
@@ -3622,13 +3805,13 @@ Stack *Read_Stack_Planes_Sc(File_Bundle_S *bundle, int channel)
     image = Read_Image(sname);
     if (image->kind != COLOR) {
       memcpy(stack->array + area * image->kind *d,
-	     image->array, area * image->kind);
+             image->array, area * image->kind);
     } else {
       int i;
       color_t *image_array = (color_t*) image->array;
       uint8 *stack_array = stack->array + area * d;
       for (i = 0; i < area; i++) {
-	stack_array[i] = image_array[i][channel];
+        stack_array[i] = image_array[i][channel];
       }
     }
     Free_Image(image);

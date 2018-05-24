@@ -1,8 +1,11 @@
-#include <QtGui>
 #ifdef _QT5_
 #include <QtWidgets>
+#else
+#include <QtGui>
 #endif
 
+#include "neutubeconfig.h"
+#include "QsLog.h"
 #include "zslider.h"
 
 #define USE_TOOL_BUTTON 1
@@ -55,6 +58,8 @@ ZSlider::ZSlider(bool useArrow, QWidget *parent) : QWidget(parent)
 #endif
 
     connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(updateArrowState(int)));
+    connect(m_slider, SIGNAL(sliderPressed()), this, SIGNAL(sliderPressed()));
+    connect(m_slider, SIGNAL(sliderReleased()), this, SIGNAL(sliderReleased()));
   }
 
   m_layout = new QHBoxLayout;
@@ -137,12 +142,28 @@ void ZSlider::setValue(int value)
   }
 }
 
+void ZSlider::initValue(int value)
+{
+  if (value < minimum()) {
+    value = minimum();
+  } else if (value > maximum()) {
+    value = maximum();
+  }
+
+
+  if (m_slider->value() != value) {
+    m_slider->setValue(value);
+  } else {
+    emit valueChanged(value);
+  }
+}
+
 void ZSlider::setValueQuietly(int value)
 {
   if (m_slider->value() != value) {
     disconnect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
     m_slider->setValue(value);
-    qDebug() << "Value: " << value << '\n';
+    ZOUT(LTRACE(), 5) << "Value: " << value << '\n';
     connect(m_slider, SIGNAL(valueChanged(int)), this, SIGNAL(valueChanged(int)));
   }
 }

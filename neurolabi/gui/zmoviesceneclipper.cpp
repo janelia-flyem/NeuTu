@@ -2,7 +2,7 @@
 
 #include "tz_math.h"
 #include "z3dwindow.h"
-#include "z3dvolumeraycaster.h"
+#include "z3dvolumefilter.h"
 #include "z3dswcfilter.h"
 #include "zjsonobject.h"
 
@@ -48,7 +48,7 @@ void ZMovieSceneClipper::clip(
   switch (m_target) {
   case VOLUME:
   {
-    Z3DVolumeRaycaster *volume = stage->getVolumeRaycaster();
+    Z3DVolumeFilter *volume = stage->getVolumeFilter();
     int lowerCut = state->getLowerClip(m_target, m_axis);
     int upperCut = state->getUpperClip(m_target, m_axis);
     switch (m_axis) {
@@ -117,7 +117,7 @@ void ZMovieSceneClipper::loadJsonObject(const ZJsonObject &obj)
     }
 
     if (entryMap.count("reset") > 0) {
-      ZJsonObject resetObj = ZJsonObject(entryMap["reset"], false);
+      ZJsonObject resetObj = ZJsonObject(entryMap["reset"], ZJsonValue::SET_INCREASE_REF_COUNT);
       json_t *value = resetObj["lower"];
       if (value != NULL) {
         m_hasReset[0] = true;
@@ -151,19 +151,19 @@ void ZMovieSceneClipper::loadJsonObject(const ZJsonObject &obj)
 
 void ZMovieSceneClipperState::init(Z3DWindow *stage)
 {
-  m_volumeClip[0].first = stage->getVolumeRaycaster()->xCutLowerValue();
-  m_volumeClip[0].second = stage->getVolumeRaycaster()->xCutUpperValue();
-  m_volumeClip[1].first = stage->getVolumeRaycaster()->yCutLowerValue();
-  m_volumeClip[1].second = stage->getVolumeRaycaster()->yCutUpperValue();
-  m_volumeClip[2].first = stage->getVolumeRaycaster()->zCutLowerValue();
-  m_volumeClip[2].second = stage->getVolumeRaycaster()->zCutUpperValue();
+  m_volumeClip[0].first = stage->getVolumeFilter()->xCutLowerValue();
+  m_volumeClip[0].second = stage->getVolumeFilter()->xCutUpperValue();
+  m_volumeClip[1].first = stage->getVolumeFilter()->yCutLowerValue();
+  m_volumeClip[1].second = stage->getVolumeFilter()->yCutUpperValue();
+  m_volumeClip[2].first = stage->getVolumeFilter()->zCutLowerValue();
+  m_volumeClip[2].second = stage->getVolumeFilter()->zCutUpperValue();
 
-  m_volumeClipRange[0].first = stage->getVolumeRaycaster()->xCutMin();
-  m_volumeClipRange[0].second = stage->getVolumeRaycaster()->xCutMax();
-  m_volumeClipRange[1].first = stage->getVolumeRaycaster()->yCutMin();
-  m_volumeClipRange[1].second = stage->getVolumeRaycaster()->yCutMax();
-  m_volumeClipRange[2].first = stage->getVolumeRaycaster()->zCutMin();
-  m_volumeClipRange[2].second = stage->getVolumeRaycaster()->zCutMax();
+  m_volumeClipRange[0].first = stage->getVolumeFilter()->xCutMin();
+  m_volumeClipRange[0].second = stage->getVolumeFilter()->xCutMax();
+  m_volumeClipRange[1].first = stage->getVolumeFilter()->yCutMin();
+  m_volumeClipRange[1].second = stage->getVolumeFilter()->yCutMax();
+  m_volumeClipRange[2].first = stage->getVolumeFilter()->zCutMin();
+  m_volumeClipRange[2].second = stage->getVolumeFilter()->zCutMax();
 
   m_swcClip[0].first = stage->getSwcFilter()->xCutLowerValue();
   m_swcClip[0].second = stage->getSwcFilter()->xCutUpperValue();

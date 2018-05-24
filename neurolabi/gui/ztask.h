@@ -10,10 +10,15 @@ class ZTask : public QObject, public QRunnable
 
 public:
   explicit ZTask(QObject *parent = 0);
+  virtual ~ZTask();
 
   void run();
   virtual void execute() = 0;
   virtual void prepare() {}
+
+  static void ExecuteTask(ZTask *task) {
+    task->execute();
+  }
 
 signals:
   void finished();

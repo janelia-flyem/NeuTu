@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "zintpoint.h"
+
 using namespace std;
 
 const char ZJsonParser::m_emptyString[] = {'\0' };
@@ -80,17 +82,21 @@ json_t* ZJsonParser::arrayValue(const json_t *array, size_t index)
 
 json_type ZJsonParser::type(const json_t *value)
 {
+  if (value == NULL) {
+    return JSON_NULL;
+  }
+
   return json_typeof(value);
 }
 
 void ZJsonParser::incref(json_t *value)
 {
-  incref(value);
+  json_incref(value);
 }
 
 void ZJsonParser::decref(json_t *value)
 {
-  decref(value);
+  json_decref(value);
 }
 
 const char* ZJsonParser::stringValue(const json_t *value)
@@ -123,6 +129,15 @@ bool ZJsonParser::booleanValue(const json_t *value)
   }
 
   return false;
+}
+
+bool ZJsonParser::booleanValue(const json_t *value, bool defaultValue)
+{
+  if (isBoolean(value)) {
+    return booleanValue(value);
+  }
+
+  return defaultValue;
 }
 
 const char* ZJsonParser::stringValue(const json_t *value, size_t index)
@@ -224,7 +239,26 @@ json_t* ZJsonParser::decode(const string &str)
   return json_loads(str.c_str(), 0, &m_error);
 }
 
+
 void ZJsonParser::printError() const
 {
-  std::cout << m_error.text << std::endl;
+  ZJsonValue::PrintError(m_error);
+#if 0
+  std::cout << "Line " << m_error.line << " Column " << m_error.column
+            << ": " << m_error.text << std::endl;
+#endif
+}
+
+ZIntPoint ZJsonParser::toIntPoint(const json_t *value)
+{
+  ZIntPoint pt;
+  if (value != NULL) {
+    if (isArray(value)) {
+      if (arraySize(value) == 3) {
+        pt.set(integerValue(value, 0), integerValue(value, 1), integerValue(value, 2));
+      }
+    }
+  }
+
+  return pt;
 }

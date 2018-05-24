@@ -1,17 +1,16 @@
-#include "zglew.h"
 #include "z3drendertarget.h"
 
 #include "z3dtexture.h"
 #include "QsLog.h"
 #include "zbenchtimer.h"
+#include "z3dgpuinfo.h"
+#include <QImage>
+#include <QImageWriter>
 
-Z3DRenderTarget::Z3DRenderTarget(GLint internalColorFormat, GLint internalDepthFormat, glm::ivec2 size,
+Z3DRenderTarget::Z3DRenderTarget(GLint internalColorFormat, GLint internalDepthFormat, glm::uvec2 size,
                                  bool multisample, int sample)
-  : m_previousDrawFBOID(0)
-  , m_previousReadFBOID(0)
-  , m_multisample(multisample)
+  : m_multisample(multisample)
   , m_samples(sample)
-  , m_maxSamples(0)
   , m_size(size)
 {
   generateId();
@@ -21,64 +20,34 @@ Z3DRenderTarget::Z3DRenderTarget(GLint internalColorFormat, GLint internalDepthF
   isFBOComplete();
 }
 
-Z3DRenderTarget::Z3DRenderTarget(glm::ivec2 size)
-  : m_previousDrawFBOID(0)
-  , m_previousReadFBOID(0)
-  , m_multisample(false)
-  , m_samples(4)
-  , m_maxSamples(0)
-  , m_size(size)
+Z3DRenderTarget::Z3DRenderTarget(glm::uvec2 size)
+  : m_size(size)
 {
   generateId();
 }
 
 Z3DRenderTarget::~Z3DRenderTarget()
 {
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  CHECK(m_context == Z3DContext());
+#endif
   //  if (m_multisample) {
   //    glDeleteRenderbuffers(1, &m_colorBufferID);
   //    glDeleteRenderbuffers(1, &m_depthBufferID);
   //    glDeleteFramebuffers(1, &m_multisampleFBOID);
   //  }
   glDeleteFramebuffers(1, &m_fboID);
-
-  for (std::set<Z3DTexture*>::iterator it = m_ownTextures.begin();
-       it != m_ownTextures.end(); ++it) {
-    delete (*it);
-  }
 }
 
 void Z3DRenderTarget::createColorAttachment(GLint internalColorFormat, GLenum attachment)
 {
-  Z3DTexture *colorTex;
+  std::unique_ptr<Z3DTexture> colorTex;
 
-  glm::ivec3 size3(m_size, 1);
+  glm::uvec3 size3(m_size, 1);
+  colorTex.reset(new Z3DTexture(internalColorFormat, size3, GL_RGBA, GL_FLOAT));
+  colorTex->uploadImage();
 
-  switch(internalColorFormat) {
-  case GL_RGB:
-    colorTex = new Z3DTexture(size3, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
-    break;
-  case GL_RGBA8:
-    colorTex = new Z3DTexture(size3, GL_BGRA, GL_RGBA8, GL_UNSIGNED_INT_8_8_8_8_REV);
-    break;
-  case GL_RGBA16:
-    colorTex = new Z3DTexture(size3, GL_BGRA, GL_RGBA16, GL_UNSIGNED_SHORT);
-    break;
-  case GL_RGB16F_ARB:
-    colorTex = new Z3DTexture(size3, GL_RGB, GL_RGB16F_ARB, GL_FLOAT);
-    break;
-  case GL_RGBA16F_ARB:
-    colorTex = new Z3DTexture(size3, GL_BGRA, GL_RGBA16F_ARB, GL_FLOAT);
-    break;
-  case GL_RGBA32F_ARB:
-    colorTex = new Z3DTexture(size3, GL_BGRA, GL_RGBA32F_ARB, GL_FLOAT);
-    break;
-  default:
-    LERROR() << "unknown internal format!";
-    return;
-  }
-  colorTex->uploadTexture();
-
-  attachTextureToFBO(colorTex, attachment);
+  attachTextureToFBO(colorTex.release(), attachment);
 
   //  if (m_multisample) {
   //    glBindRenderbuffer(GL_RENDERBUFFER, m_colorBufferID);
@@ -98,33 +67,13 @@ void Z3DRenderTarget::createColorAttachment(GLint internalColorFormat, GLenum at
 
 void Z3DRenderTarget::createDepthAttachment(GLint internalDepthFormat)
 {
-  Z3DTexture *depthTex;
+  std::unique_ptr<Z3DTexture> depthTex;
 
-  glm::ivec3 size3(m_size, 1);
+  glm::uvec3 size3(m_size, 1);
+  depthTex.reset(new Z3DTexture(internalDepthFormat, size3, GL_DEPTH_COMPONENT, GL_FLOAT));
+  depthTex->uploadImage();
 
-  switch(internalDepthFormat) {
-  case GL_DEPTH_COMPONENT:
-    depthTex = new Z3DTexture(size3, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
-    break;
-  case GL_DEPTH_COMPONENT16:
-    depthTex = new Z3DTexture(size3, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, GL_FLOAT);
-    break;
-  case GL_DEPTH_COMPONENT24:
-    depthTex = new Z3DTexture(size3, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_FLOAT);
-    break;
-  case GL_DEPTH_COMPONENT32:
-    depthTex = new Z3DTexture(size3, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_FLOAT);
-    break;
-  case GL_DEPTH_COMPONENT32F:
-    depthTex = new Z3DTexture(size3, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, GL_FLOAT);
-    break;
-  default:
-    depthTex = new Z3DTexture(size3, GL_DEPTH_COMPONENT, internalDepthFormat, GL_FLOAT);
-    LERROR() << "unknown internal depth format!";
-  }
-  depthTex->uploadTexture();
-
-  attachTextureToFBO(depthTex, GL_DEPTH_ATTACHMENT);
+  attachTextureToFBO(depthTex.release(), GL_DEPTH_ATTACHMENT);
 
   //  if (m_multisample) {
   //    glBindRenderbuffer(GL_RENDERBUFFER, m_colorBufferID);
@@ -144,36 +93,56 @@ void Z3DRenderTarget::createDepthAttachment(GLint internalDepthFormat)
 
 void Z3DRenderTarget::bind()
 {
-  glViewport(0, 0, m_size.x, m_size.y);
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  CHECK(m_context == Z3DContext());
+#endif
   if (isBound())
     return;
-  m_previousDrawFBOID = getCurrentBoundDrawFBO();
-  m_previousReadFBOID = getCurrentBoundReadFBO();
+  m_previousDrawFBOID = currentBoundDrawFBO();
+  m_previousReadFBOID = currentBoundReadFBO();
+  glGetIntegerv(GL_VIEWPORT, &m_previousViewport[0]);
+
+  glViewport(0, 0, m_size.x, m_size.y);
   if (!m_multisample)
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
   //else
-    //glBindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBOID);
+  //glBindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBOID);
 }
 
 void Z3DRenderTarget::release()
 {
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  CHECK(m_context == Z3DContext());
+#endif
   //  if (m_multisample) {
   //    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_multisampleFBOID);
   //    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fboID);
   //    glBlitFramebuffer(0, 0, m_colorTex->getWidth(), m_colorTex->getHeight(), 0, 0,
   //                      m_colorTex->getWidth(), m_colorTex->getHeight(), GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT,
   //                      GL_LINEAR);
-  //    CHECK_GL_ERROR;
   //  }
-  //LINFO() << m_previousDrawFBOID << m_previousReadFBOID;
+  //LOG(INFO) << m_previousDrawFBOID << " " << m_previousReadFBOID;
   glBindFramebuffer(GL_READ_FRAMEBUFFER, m_previousReadFBOID);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_previousDrawFBOID);
-  glGetError(); // there should be no error according to openGL doc, but some drivers report error, ignore
+  glViewport(m_previousViewport.x, m_previousViewport.y,
+             m_previousViewport.z, m_previousViewport.w);
+  //glGetError(); // there should be no error according to openGL doc, but some drivers report error, ignore
 }
 
 bool Z3DRenderTarget::isBound() const
 {
-  return getCurrentBoundDrawFBO() == m_fboID;
+#ifdef CHECK_OPENGL_ERROR_FOR_ALL_GL_CALLS
+  CHECK(m_context == Z3DContext());
+#endif
+  return currentBoundDrawFBO() == m_fboID;
+}
+
+void Z3DRenderTarget::clear() const
+{
+  if (!isBound())
+    LOG(ERROR) << "RenderTarget is not bound, can not clear.";
+  else
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 GLuint Z3DRenderTarget::handle() const
@@ -181,7 +150,7 @@ GLuint Z3DRenderTarget::handle() const
   return m_fboID;
 }
 
-glm::vec4 Z3DRenderTarget::getFloatColorAtPos(glm::ivec2 pos)
+glm::vec4 Z3DRenderTarget::floatColorAtPos(const glm::ivec2& pos)
 {
   bind();
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -191,37 +160,96 @@ glm::vec4 Z3DRenderTarget::getFloatColorAtPos(glm::ivec2 pos)
   return pixel;
 }
 
-glm::col4 Z3DRenderTarget::getColorAtPos(glm::ivec2 pos)
-{
+glm::col4 Z3DRenderTarget::colorAtPos(const glm::ivec2& pos)
+{  
   bind();
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   glm::col4 pixel;
   glReadPixels(pos.x, pos.y, 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &pixel[0]);
   std::swap(pixel.r, pixel.b);
   release();
+
+#ifdef _DEBUG_
+  std::cout << "Color at " << pos.x << " " << pos.y << ": " << int(pixel.r) << " "
+            << " " <<  int(pixel.g) << " " << int(pixel.b) << " "
+            << int(pixel.a) << std::endl;
+#endif
+
   return pixel;
 }
 
-glm::ivec2 Z3DRenderTarget::getSize() const
+std::vector<glm::col4> Z3DRenderTarget::colorAtPos(
+    const std::vector<glm::ivec2> &posArray)
 {
-  return m_size;
+  bind();
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  std::vector<glm::col4> pixelArray;
+  for (const glm::ivec2 &pos : posArray) {
+    glm::col4 pixel;
+    glReadPixels(pos.x, pos.y, 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &pixel[0]);
+    std::swap(pixel.r, pixel.b);
+    pixelArray.push_back(pixel);
+  }
+
+  release();
+
+  return pixelArray;
 }
 
-void Z3DRenderTarget::resize(glm::ivec2 newsize)
+std::vector<glm::col4> Z3DRenderTarget::colorAtPos(
+    const std::vector<std::pair<int, int> > &posArray)
+{
+  bind();
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  std::vector<glm::col4> pixelArray;
+  for (const std::pair<int,int> &pos : posArray) {
+    glm::col4 pixel;
+    glReadPixels(pos.first, pos.second,
+                 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &pixel[0]);
+    std::swap(pixel.r, pixel.b);
+    pixelArray.push_back(pixel);
+  }
+
+  release();
+
+  return pixelArray;
+}
+
+GLfloat Z3DRenderTarget::depthAtPos(const glm::ivec2& pos)
+{
+  bind();
+  GLfloat res;
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  glReadPixels(pos.x, pos.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &res);
+  release();
+  return res;
+}
+
+bool Z3DRenderTarget::resize(const glm::uvec2& newsize)
 {
   if (newsize == m_size)
-    return;
+    return false;
+  if (newsize == glm::uvec2(0)) {
+    LOG(WARNING) << "invalid size: " << newsize;
+    return false;
+  }
+  if (newsize.x > static_cast<uint32_t>(Z3DGpuInfo::instance().maxTextureSize()) ||
+      newsize.y > static_cast<uint32_t>(Z3DGpuInfo::instance().maxTextureSize())) {
+    LOG(WARNING) << "size " << newsize << " exceeds texture size limit: "
+                 << Z3DGpuInfo::instance().maxTextureSize();
+    return false;
+  }
 
   m_size = newsize;
 
   glActiveTexture(GL_TEXTURE0);
-  for (std::map<GLenum, Z3DTexture*>::iterator it = m_attachments.begin();
-       it != m_attachments.end(); ++it) {
-    if (it->second) {
-      it->second->setDimensions(glm::ivec3(m_size.x, m_size.y, 1));
-      it->second->uploadTexture();
+  for (const auto& enumAttach : m_attachments) {
+    if (enumAttach.second) {
+      enumAttach.second->setDimension(glm::uvec3(m_size.x, m_size.y, enumAttach.second->depth()));
+      enumAttach.second->uploadImage();
     }
   }
+  isFBOComplete();
 
   //  if (m_multisample) {
   //    glBindRenderbuffer(GL_RENDERBUFFER, m_colorBufferID);
@@ -233,17 +261,18 @@ void Z3DRenderTarget::resize(glm::ivec2 newsize)
   //                                     m_depthTex->getInternalFormat(),
   //                                     m_depthTex->getWidth(), m_depthTex->getHeight());
   //  }
+  return true;
 }
 
 void Z3DRenderTarget::changeColorAttachmentFormat(GLint internalColorFormat, GLenum attachment)
 {
   if (m_attachments.find(attachment) == m_attachments.end() ||
-      m_attachments[attachment] == NULL ||
-      m_attachments[attachment]->getInternalFormat() == internalColorFormat)
+      !m_attachments[attachment] ||
+      m_attachments[attachment]->internalFormat() == internalColorFormat)
     return;
 
   m_attachments[attachment]->setInternalFormat(internalColorFormat);
-  m_attachments[attachment]->uploadTexture();
+  m_attachments[attachment]->uploadImage();
 
   //  if (m_multisample) {
   //    glBindRenderbuffer(GL_RENDERBUFFER, m_colorBufferID);
@@ -260,12 +289,12 @@ void Z3DRenderTarget::changeColorAttachmentFormat(GLint internalColorFormat, GLe
 void Z3DRenderTarget::changeDepthAttachmentFormat(GLint internalDepthFormat)
 {
   if (m_attachments.find(GL_DEPTH_ATTACHMENT) == m_attachments.end() ||
-      m_attachments[GL_DEPTH_ATTACHMENT] == NULL ||
-      m_attachments[GL_DEPTH_ATTACHMENT]->getInternalFormat() == internalDepthFormat)
+      !m_attachments[GL_DEPTH_ATTACHMENT] ||
+      m_attachments[GL_DEPTH_ATTACHMENT]->internalFormat() == internalDepthFormat)
     return;
 
   m_attachments[GL_DEPTH_ATTACHMENT]->setInternalFormat(internalDepthFormat);
-  m_attachments[GL_DEPTH_ATTACHMENT]->uploadTexture();
+  m_attachments[GL_DEPTH_ATTACHMENT]->uploadImage();
 }
 
 bool Z3DRenderTarget::isFBOComplete()
@@ -275,127 +304,103 @@ bool Z3DRenderTarget::isFBOComplete()
   bind();
 
   GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-  switch(status) {
-  case GL_FRAMEBUFFER_COMPLETE:
-    complete = true;
-    break;
-  case GL_FRAMEBUFFER_UNDEFINED:
-    LERROR() << "GL_FRAMEBUFFER_UNDEFINED: target is the default framebuffer, but the default framebuffer does not exist.";
-    break;
-  case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: some of the framebuffer attachment points are framebuffer incomplete.";
-    break;
-  case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: framebuffer does not have at least one image attached to it.";
-    break;
-#if defined(GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) || defined(GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT)
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER
-  case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-#else
-  case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-#endif
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE "
-                "is GL_NONE for some color attachment point(s) named by GL_DRAWBUFFERi.";
-    break;
-#endif
-#if defined(GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) || defined(GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT)
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER
-  case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-#else
-  case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-#endif
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: GL_READ_BUFFER is not GL_NONE "
-                "and the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for the color attachment point named "
-                "by GL_READ_BUFFER.";
-    break;
-#endif
-  case GL_FRAMEBUFFER_UNSUPPORTED:
-    LERROR() << "GL_FRAMEBUFFER_UNSUPPORTED: the combination of internal formats of the attached images violates "
-                "an implementation-dependent set of restrictions";
-    break;
-#if defined(GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE) || defined(GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT)
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE
-  case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-#else
-  case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT:
-#endif
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: the value of GL_RENDERBUFFER_SAMPLES is not the same "
-                "for all attached renderbuffers; the value of GL_TEXTURE_SAMPLES is the not same for all attached textures; "
-                "or, if the attached images are a mix of renderbuffers and textures, the value of GL_RENDERBUFFER_SAMPLES "
-                "does not match the value of GL_TEXTURE_SAMPLES; or, the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is "
-                "not the same for all attached textures; or, if the attached images are a mix of renderbuffers and textures, "
-                "the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not GL_TRUE for all attached textures.";
-    break;
-#endif
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS
-  case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: some framebuffer attachment is layered, and some populated "
-                "attachment is not layered, or all populated color attachments are not from textures of the same target.";
-    break;
-#endif
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT
-  case GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT:
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT: duplicate attachment.";
-    break;
-#endif
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS
-  case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS: attached images must have same dimensions.";
-    break;
-#endif
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_FORMATS
-  case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_FORMATS: attached images must have same format.";
-    break;
-#endif
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT
-  case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: attached images must have same dimensions.";
-    break;
-#endif
-#ifdef GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT
-  case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-    LERROR() << "GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: attached images must have same format.";
-    break;
-#endif
-  default:
-    LERROR() << "Unknown error!";
+  switch (status) {
+    case GL_FRAMEBUFFER_COMPLETE:
+      complete = true;
+      break;
+    case GL_FRAMEBUFFER_UNDEFINED:
+      LOG(ERROR)
+        << "GL_FRAMEBUFFER_UNDEFINED: target is the default framebuffer, but the default framebuffer does not exist.";
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+      LOG(ERROR)
+        << "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: some of the framebuffer attachment points are framebuffer incomplete.";
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+      LOG(ERROR)
+        << "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: framebuffer does not have at least one image attached to it.";
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+      LOG(ERROR) << "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE "
+        "is GL_NONE for some color attachment point(s) named by GL_DRAWBUFFERi.";
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+      LOG(ERROR) << "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: GL_READ_BUFFER is not GL_NONE "
+        "and the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for the color attachment point named "
+        "by GL_READ_BUFFER.";
+      break;
+    case GL_FRAMEBUFFER_UNSUPPORTED:
+      LOG(ERROR) << "GL_FRAMEBUFFER_UNSUPPORTED: the combination of internal formats of the attached images violates "
+        "an implementation-dependent set of restrictions";
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+      LOG(ERROR) << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: the value of GL_RENDERBUFFER_SAMPLES is not the same "
+        "for all attached renderbuffers; the value of GL_TEXTURE_SAMPLES is the not same for all attached textures; "
+        "or, if the attached images are a mix of renderbuffers and textures, the value of GL_RENDERBUFFER_SAMPLES "
+        "does not match the value of GL_TEXTURE_SAMPLES; or, the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is "
+        "not the same for all attached textures; or, if the attached images are a mix of renderbuffers and textures, "
+        "the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not GL_TRUE for all attached textures.";
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+      LOG(ERROR)
+        << "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: some framebuffer attachment is layered, and some populated "
+          "attachment is not layered, or all populated color attachments are not from textures of the same target.";
+      break;
+    default:
+      LOG(ERROR) << "Unknown error!";
   }
 
   release();
   return complete;
 }
 
-void Z3DRenderTarget::attachTextureToFBO(Z3DTexture *texture, GLenum attachment, int mipLevel, int zSlice,
-                                         bool takeOwnership)
+void Z3DRenderTarget::attachTextureToFBO(Z3DTexture* texture, GLenum attachment, bool takeOwnership)
 {
-  if (m_size != glm::ivec2(texture->getDimensions())) {
-    LWARN() << "attached texture has imcompatible size with current fbo";
+  CHECK(texture);
+  if (m_size != texture->dimension().xy()) {
+    LOG(WARNING) << "attached texture has imcompatible size with current fbo";
   }
   bind();
-  switch(texture->getTextureTarget()) {
-  case GL_TEXTURE_1D:
-    glFramebufferTexture1D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_1D, texture->getId(), mipLevel);
-    break;
-  case GL_TEXTURE_3D:
-    glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_3D, texture->getId(), mipLevel, zSlice);
-    break;
-  case GL_TEXTURE_2D_ARRAY:
-    glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, texture->getId(), mipLevel, zSlice);
-    break;
-  default: //GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE, ...
-    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texture->getTextureTarget(), texture->getId(), mipLevel);
-    break;
+  switch (texture->textureTarget()) {
+    case GL_TEXTURE_1D:
+      glFramebufferTexture1D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_1D, texture->id(), 0);
+      break;
+    case GL_TEXTURE_3D:
+    case GL_TEXTURE_2D_ARRAY:
+      glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, attachment, texture->id(), 0, 0);
+      break;
+    default: //GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE, ...
+      glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, texture->textureTarget(), texture->id(), 0);
+      break;
   }
-  //LINFO() << texture->getId() << texture->getTextureTarget() << GL_TEXTURE_RECTANGLE << texture->getDimensions();
-  CHECK_GL_ERROR;
+  //LOG(INFO) << texture->getId() << " " << texture->getTextureTarget() << " " << GL_TEXTURE_RECTANGLE << " " << texture->getDimensions();
   release();
   m_attachments[attachment] = texture;
   if (takeOwnership)
-    m_ownTextures.insert(texture);
+    m_ownTextures.emplace(texture);
 }
 
-GLuint Z3DRenderTarget::getCurrentBoundDrawFBO()
+void Z3DRenderTarget::detach(GLenum attachment)
+{
+  bind();
+  glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, GL_TEXTURE_2D, 0, 0);
+  release();
+}
+
+void Z3DRenderTarget::attachSlice(size_t zSlice)
+{
+  bind();
+  for (const auto& enumAttach : m_attachments) {
+    Z3DTexture* texture = enumAttach.second;
+    CHECK(texture->textureTarget() == GL_TEXTURE_2D_ARRAY || texture->textureTarget() == GL_TEXTURE_3D);
+    CHECK(zSlice < texture->depth());
+    glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, enumAttach.first, texture->id(), 0, zSlice);
+  }
+  isFBOComplete();
+  release();
+}
+
+GLuint Z3DRenderTarget::currentBoundDrawFBO()
 {
   GLint fbo;
   //glGetIntegerv(GL_FRAMEBUFFER_BINDING, &fbo);
@@ -403,19 +408,40 @@ GLuint Z3DRenderTarget::getCurrentBoundDrawFBO()
   return static_cast<GLuint>(fbo);
 }
 
-GLuint Z3DRenderTarget::getCurrentBoundReadFBO()
+GLuint Z3DRenderTarget::currentBoundReadFBO()
 {
   GLint fbo;
   glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &fbo);
   return static_cast<GLuint>(fbo);
 }
 
+void Z3DRenderTarget::saveAsColorImage(const QString& filename)
+{
+  CHECK(!isBound());
+  bind();
+  try {
+    GLenum dataFormat = GL_BGRA;
+    GLenum dataType = GL_UNSIGNED_INT_8_8_8_8_REV;
+    auto colorBuffer = std::make_unique<uint8_t[]>(
+      Z3DTexture::bypePerPixel(dataFormat, dataType) * m_size.x * m_size.y);
+    glReadPixels(0, 0, m_size.x, m_size.y, dataFormat, dataType, colorBuffer.get());
+    QImage upsideDownImage(colorBuffer.get(), m_size.x, m_size.y, QImage::Format_ARGB32);
+    QImage image = upsideDownImage.mirrored(false, true);
+    QImageWriter writer(filename);
+    writer.setCompression(1);
+    if (!writer.write(image)) {
+      LOG(ERROR) << writer.errorString();
+    }
+  }
+  catch (ZException const& e) {
+    release();
+    LOG(ERROR) << "Exception: " << e.what();
+  }
+  release();
+}
+
 void Z3DRenderTarget::generateId()
 {
-  m_fboID = 0;
-  m_multisampleFBOID = 0;
-  m_colorBufferID = 0;
-  m_depthBufferID = 0;
   glGenFramebuffers(1, &m_fboID);
   //  if (m_samples < 2)
   //    m_multisample = false;
@@ -426,7 +452,7 @@ void Z3DRenderTarget::generateId()
   //      glGenRenderbuffers(1, &m_colorBufferID);
   //      glGenRenderbuffers(1, &m_depthBufferID);
   //    } else {
-  //      LWARN() << "Multisample not supported?";
+  //      LOG(WARNING) << "Multisample not supported?";
   //      m_multisample = false;
   //    }
   //  }

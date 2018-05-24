@@ -13,6 +13,7 @@
 
 class QSpacerItem;
 class ZParameterArray;
+class ZWidgetMessage;
 
 #ifdef _WIN32
 #undef GetOpenFileName
@@ -36,6 +37,7 @@ public:
       const ZParameterArray &parameterArray,
       QWidget *parent);
   static bool Ask(const QString &title, const QString &msg, QWidget *parent);
+  static void Warn(const QString &title, const QString &msg, QWidget *parent);
 
   static QString GetDirectory(
       const QString &caption, const QString &filePath, QWidget *parent);
@@ -45,6 +47,10 @@ public:
       const QString &caption, const QString &filePath, QWidget *parent);
 
   static void Notify3DDisabled(QWidget *parent);
+
+  static void About(QWidget *parent);
+
+  static void PromptMessage(const ZWidgetMessage &msg, QWidget *parent);
 
 private:
   QWidget *m_parentWidget;

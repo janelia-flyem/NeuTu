@@ -1,10 +1,13 @@
 #ifndef ZSWCFACTORY_H
 #define ZSWCFACTORY_H
 
+#include <vector>
+
 #include "zcuboid.h"
 #include "flyem/zflyemneuronrange.h"
 #include "flyem/zflyemneuronaxis.h"
 #include "zvoxelarray.h"
+#include "zweightedpoint.h"
 
 class ZSwcTree;
 class ZPointArray;
@@ -40,7 +43,11 @@ public:
   static ZSwcTree* CreateSwc(const ZVoxelArray &voxelArray,
                              EPostProcess option = NO_PROCESS);
 
-  static ZSwcTree* CreateSwc(const ZPointArray &pointArray, double radius,
+//  static ZSwcTree* CreateSwc(const ZPointArray &pointArray, double radius,
+//                             bool isConnected = false);
+  static ZSwcTree* CreateSwc(const std::vector<ZPoint> &pointArray, double radius,
+                             bool isConnected = false);
+  static ZSwcTree* CreateSwc(const std::vector<ZWeightedPoint> &pointArray,
                              bool isConnected = false);
 
   static ZSwcTree* CreateSwc(const ZLineSegmentArray &lineArray, double radius);
@@ -54,20 +61,30 @@ public:
 
   static ZSwcTree* CreateSwc(const ZObject3dScan &obj);
 
+  static std::vector<ZSwcTree *> CreateLevelSurfaceSwc(
+      const ZStack &stack, int sparseLevel, const ZIntPoint &scale);
+
+  static ZSwcTree* CreateSurfaceSwc(
+      const ZStack &stack, int sparseLevel, const ZIntPoint &scale, ZSwcTree *tree);
   static ZSwcTree* CreateSurfaceSwc(const ZStack &stack, int sparseLevel = 1);
-  static ZSwcTree* CreateSurfaceSwc(const ZObject3dScan &obj,
-                                    int sparseLevel = 1);
+  static ZSwcTree* CreateSurfaceSwcNoPartition(
+      const ZObject3dScan &obj, int sparseLevel, ZSwcTree *tree);
+  static ZSwcTree* CreateSurfaceSwc(const ZObject3dScan &obj, int sparseLevel = 1);
 
   static ZSwcTree* CreateSwc(const ZClosedCurve &curve, double radius);
 
   static ZSwcTree* CreateSwc(const ZObject3dScan &blockObj, int z,
                              const ZDvidInfo &dvidInfo);
 
+  static std::vector<ZSwcTree*> CreateDiffSurfaceSwc(
+      const ZObject3dScan &obj1, const ZObject3dScan &obj2);
+
 private:
   static ZSwcTree* CreateSwcByRegionSampling(const ZVoxelArray &voxelArray,
                                              double radiusAdjustment = 0.0);
   static ZSwcTree* CreateSurfaceSwcFast(
       const ZStack &stack, int sparseLevel = 1);
+  static int GetIntv(int segNumber, const ZIntCuboid &box);
 };
 
 #endif // ZSWCFACTORY_H

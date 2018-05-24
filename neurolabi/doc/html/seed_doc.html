@@ -1,0 +1,47 @@
+<html>
+<head><title>Skeletonization</title></head>
+
+<body>
+<pre>neutu --command --compute_seed &lt;input&gt; [--position &lt;int&gt; &lt;int&gt; &lt;int&gt;] [--size &lt;int&gt; &lt;int&gt; &lt;int&gt;] -o output
+</pre>
+
+<p>Arguments:</p>
+
+<ul>
+<li>--command: this argument must be specified to use any command line function of neutu
+
+<li>--compute_seed: run neutu as seed computation command command.
+
+<li>&lt;input&gt;: input DVID configuration file, which should be a json file (see schema below).
+<li>--position: the start point of the data block to compute, including three integers correspoindg to (x, y, z).
+<li>--size: the size of the data block to compute, including three integers corresponding to (width, height, depth).
+<li>-o: output file, which can be a SWC file when the file ends with the swc extension or a plain text file.
+</ul>
+
+DVID configuration:
+<pre>{
+  "title": "DVID Seeding Schema",
+  "type": "object",
+  "properties": {
+    "address": {
+      "description": "Address of the DVID server (without port)",
+      "type": "string"
+    },
+    "port": {
+      "description": "Port of the DVID server",
+      "type": "int"
+    },
+    "uuid": {
+      "description": "UUID of the DVID data",
+      "type": "string"
+    },
+    "gray_scale": {
+      "description": "Name of the grayscale data",
+      "type": "string"
+    }
+  }
+}
+</pre>
+
+</body>
+</html>

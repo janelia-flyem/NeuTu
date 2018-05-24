@@ -7,6 +7,20 @@ AC_CONFIG_HEADERS([include/neurolabi_config.h:include/neurolabi_config-h.in])
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
+#AC_ARG_VAR([CONDA_ENV], [Directory path for conda env. Default = ""])
+
+if test -z "$CONDA_ENV"; then
+  echo "No conda env specified"
+  LDFLAGS="-L../lib/fftw3/lib -L../lib/xml/lib -L../lib/png/lib -L../lib/jansson/lib -lm"
+  EXT_INCLUDE="-I../lib/fftw3/include -I../lib/jansson/include -I../lib/png/include -I../lib/xml/include/libxml2"
+else
+  AC_MSG_NOTICE($CONDA_ENV)
+  LDFLAGS="-L$CONDA_ENV/lib -lm"
+  EXT_INCLUDE="-I$CONDA_ENV/include -I$CONDA_ENV/include/libxml2"
+fi
+
+AC_MSG_NOTICE($LDFLAGS)
+
 AC_ARG_ENABLE(z, [AC_HELP_STRING([--disable-z], [disable z])],
     disable_z=$enablval, disable_z=no)
 if test "$disable_z" = "no"; then
@@ -15,7 +29,6 @@ fi
 
 AC_CHECK_LIB(m, sqrt)
 
-LDFLAGS="-L../lib/fftw3/lib -L../lib/xml/lib -L../lib/png/lib -L../lib/jansson/lib -lm"
 
 # checks for libraries
 AC_ARG_ENABLE(fftw, [AC_HELP_STRING([--disable-fftw], [disable fftw])],
@@ -33,7 +46,7 @@ fi
 AC_ARG_ENABLE(xml, [AC_HELP_STRING([--disable-xml], [disable xml])],
     disable_xml=$enablval, disable_xml=no)
 if test "$disable_xml" = "no"; then
-  AC_CHECK_LIB(xml2, xmlFree)
+  AC_CHECK_LIB(xml2, xmlReaderForDoc)
 fi
 
 AC_ARG_ENABLE(png, [AC_HELP_STRING([--disable-png], [disable png])],
@@ -86,6 +99,7 @@ AC_ARG_ENABLE(mylib, [AC_HELP_STRING([--enable-mylib], [use mylib])],
 AC_ARG_ENABLE(64bit, [AC_HELP_STRING([--enable-64bit], [compile 64-bit])],
     enable_64bit=$enableval, enable_64bit=no)	
 
+
 AC_ARG_ENABLE(shared, [AC_HELP_STRING([--enable-shared], [compile shared library])],
     enable_shared=$enableval, enable_shared=no)	
 
@@ -133,11 +147,13 @@ AC_SUBST(EXT_LIB_DIR)
 AC_SUBST(ARCH_FLAG)
 AC_SUBST(DEBUG_DIR)
 AC_SUBST(RELEASE_DIR)
+AC_SUBST(SANITIZE_DIR)
 AC_SUBST(GENELIB_DIR)
 AC_SUBST(GENELIB_TAG)
 AC_SUBST(LIB_FILE)
 AC_SUBST(DYLIB_FILE)
 AC_SUBST(SHARED_FLAG)
+AC_SUBST(EXT_INCLUDE)
 
 AC_CONFIG_FILES(Makefile-def)
 AC_OUTPUT

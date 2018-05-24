@@ -103,10 +103,17 @@ OBJS =  $(LIBOBJS) $(MAIN:.c=.o))
 BINS = $(addprefix $(BINDIR)/,$(MAINS:.c=))
 DEBUG_FLAG = true
 
+CC_FLAGS = $(CFLAGS)
+
 ifeq ($(DEBUG_FLAG),true)
   LIB_NAME=$(LIB_BASE_NAME)$(MUTATION)$(VERSION)${DEBUG_SUFFIX}
 else
-  LIB_NAME=$(LIB_BASE_NAME)$(MUTATION)$(VERSION)
+  ifeq ($(DEBUG_FLAG),sanitize)
+    LIB_NAME=$(LIB_BASE_NAME)$(MUTATION)$(VERSION)${SANITIZE_SUFFIX}
+    CC_FLAGS = ${CFLAGS} $(SANITIZE_FLAG)
+  else
+    LIB_NAME=$(LIB_BASE_NAME)$(MUTATION)$(VERSION)
+  endif
 endif
 
 LIB_PATH = $(LIB_DIR)/$(LIB_NAME).${STATIC_EXT}
@@ -116,7 +123,11 @@ $(BINDIR)/$(PROG): $(MAINOBJ) $(LIB_PATH)
 ifeq ($(DEBUG_FLAG),true)
 	$(CC) $(MAINOBJ) $(LIB_PATH) $(LDFLAGS) -o $@
 else
-	$(CC) $(MAINOBJ) $(LIB_PATH) $(LDFLAGS) $(RELEASE_LDFLAGS) -o $@
+	ifeq ($(DEBUG_FLAG),sanitize)
+		$(CC) $(MAINOBJ) $(LIB_PATH) $(LDFLAGS) $(SANTIZE_FLAG) -o $@
+	else
+		$(CC) $(MAINOBJ) $(LIB_PATH) $(LDFLAGS) $(RELEASE_LDFLAGS) -o $@
+	endif
 endif
 
 clean:
@@ -170,7 +181,7 @@ ${MYERS_DIR}/tiff_image.c: ${MYERS_DIR}/tiff_image.p
 MYERS_MODULES = $(addprefix $(MYERS_DIR)/,$(MYERS_FILES))
 $(MYERS_DIR)/%.o: ${MYERS_DIR}/%.p
 	awk -f $(MYERS_DIR)/manager.awk $< > $(MYERS_DIR)/$*.c
-	gcc -c $(CFLAGS) $(MYERS_DIR)/$*.c -o $@
+	gcc -c $(CC_FLAGS) $(MYERS_DIR)/$*.c -o $@
 
 
 $(OBJDIR)/%.o: %.c
@@ -179,7 +190,7 @@ $(OBJDIR)/%.o: %.c
 	sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 	-e '/^$$/ d' -e 's/$$/ :/' < $(df).d >> $(df).P;\
 	rm -f $(df).d
-	gcc -c $(CFLAGS) $< -o $@
+	gcc -c $(CC_FLAGS) $< -o $@
 
 install: 
 	@if [ ! -d $(INSTALL_DIR)/lib ]; then mkdir -p $(INSTALL_DIR)/lib; fi

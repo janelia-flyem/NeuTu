@@ -182,7 +182,7 @@ void ZFlyEmQualityAnalyzer::setSubstackRegion(const ZIntCuboidArray &roi)
 
 void ZFlyEmQualityAnalyzer::setSubstackRegion(
     const ZIntCuboidArray &roi,
-    const FlyEm::SubstackRegionCalbration &calbr)
+    const flyem::SubstackRegionCalbration &calbr)
 {
   m_substackRegion = roi;
   calbr.calibrate(m_substackRegion);
@@ -300,7 +300,7 @@ bool ZFlyEmQualityAnalyzer::touchingSideBoundary(const ZObject3dScan &obj)
   return false;
 }
 
-FlyEm::ZHotSpotArray&
+flyem::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(
     const ZSwcTree *tree, ZObject3dScan *obj,
     double xRes, double yRes, double zRes, double lengthThre)
@@ -329,18 +329,18 @@ ZFlyEmQualityAnalyzer::computeHotSpot(
             break;
           }
         }
-        FlyEm::ZHotSpot *hotSpot = NULL;
+        flyem::ZHotSpot *hotSpot = NULL;
 
         if (obj != NULL) {
           if (obj->contains(x, y, z)) {
             //pointArray.append(x, y, z);
             //hotSpotArray.append(hotSpot);
-            hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+            hotSpot = flyem::ZHotSpotFactory::createPointHotSpot(x, y, z);
           }
         } else {
           //hotSpotArray.append(hotSpot);
           //pointArray.append(x, y, z);
-          hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+          hotSpot = flyem::ZHotSpotFactory::createPointHotSpot(x, y, z);
         }
         if (hotSpot != NULL) {
           m_hotSpotArray.append(hotSpot);
@@ -359,7 +359,7 @@ ZFlyEmQualityAnalyzer::computeHotSpot(
   return m_hotSpotArray;
 }
 
-FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
+flyem::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
     const ZFlyEmNeuron &neuron)
 {
   m_hotSpotArray.clear();
@@ -406,11 +406,11 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
                 SwcTreeNode::setType(const_cast<Swc_Tree_Node*>(sourceNode), 5);
                 SwcTreeNode::setType(const_cast<Swc_Tree_Node*>(targetNode), 6);
 #endif
-                FlyEm::ZHotSpot *hotSpot =
-                    FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
-                FlyEm::ZStructureInfo *structInfo = new FlyEm::ZStructureInfo;
+                flyem::ZHotSpot *hotSpot =
+                    flyem::ZHotSpotFactory::createPointHotSpot(x, y, z);
+                flyem::ZStructureInfo *structInfo = new flyem::ZStructureInfo;
                 structInfo->setSource(neuron.getId());
-                structInfo->setType(FlyEm::ZStructureInfo::TYPE_SPLIT);
+                structInfo->setType(flyem::ZStructureInfo::TYPE_SPLIT);
                 hotSpot->setStructure(structInfo);
                 hotSpot->setConfidence(
                       misc::computeConfidence(gdist, 1000, 10000));
@@ -418,7 +418,7 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
 
                 ZSwcPath path(const_cast<Swc_Tree_Node*>(sourceNode),
                               const_cast<Swc_Tree_Node*>(targetNode));
-                FlyEm::ZCurveGeometry *guidance = new FlyEm::ZCurveGeometry();
+                flyem::ZCurveGeometry *guidance = new flyem::ZCurveGeometry();
                 for (ZSwcPath::const_iterator iter = path.begin();
                      iter != path.end(); ++iter) {
                   Swc_Tree_Node *tn = *iter;
@@ -443,13 +443,13 @@ FlyEm::ZHotSpotArray& ZFlyEmQualityAnalyzer::computeHotSpotForSplit(
 }
 
 
-FlyEm::ZHotSpotArray&
+flyem::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron)
 {
   return computeHotSpot(*neuron);
 }
 
-FlyEm::ZHotSpotArray&
+flyem::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
 {
   m_hotSpotArray.clear();
@@ -484,18 +484,18 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
             break;
           }
         }
-        FlyEm::ZHotSpot *hotSpot = NULL;
+        flyem::ZHotSpot *hotSpot = NULL;
 
         if (obj != NULL) {
           if (obj->contains(x, y, z)) {
             //pointArray.append(x, y, z);
             //hotSpotArray.append(hotSpot);
-            hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+            hotSpot = flyem::ZHotSpotFactory::createPointHotSpot(x, y, z);
           }
         } else {
           //hotSpotArray.append(hotSpot);
           //pointArray.append(x, y, z);
-          hotSpot = FlyEm::ZHotSpotFactory::createPointHotSpot(x, y, z);
+          hotSpot = flyem::ZHotSpotFactory::createPointHotSpot(x, y, z);
         }
         if (hotSpot != NULL) {
           m_hotSpotArray.append(hotSpot);
@@ -516,13 +516,13 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron)
   return m_hotSpotArray;
 }
 
-FlyEm::ZHotSpotArray &ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron,
+flyem::ZHotSpotArray &ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron *neuron,
                                       std::vector<ZFlyEmNeuron> &neuronArray)
 {
   return computeHotSpot(*neuron, neuronArray);
 }
 
-FlyEm::ZHotSpotArray&
+flyem::ZHotSpotArray&
 ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
                                       std::vector<ZFlyEmNeuron> &neuronArray)
 {
@@ -531,14 +531,10 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
   ZSwcDeepAngleMetric metric;
   metric.setLevel(3);
   metric.setMinDist(20.0);
-  /*
-  ZFlyEmDataBundle dataBundle;
-  dataBundle.loadJsonFile(GET_TEST_DATA_DIR + "/flyem/FIB/data_release/bundle5/data_bundle.json");
-  ZFlyEmNeuron *neuron = dataBundle.getNeuron(538772);
-  */
+
   for (size_t i = 0; i < neuronArray.size(); ++i) {
     const ZFlyEmNeuron &buddyNeuron = neuronArray[i];
-    if (neuron.getId() != buddyNeuron.getId() && buddyNeuron.getId() >= 0) {
+    if (neuron.getId() != buddyNeuron.getId() && buddyNeuron.getId() > 0) {
       double dist =
           metric.measureDistance(
             neuron.getUnscaledModel(), buddyNeuron.getUnscaledModel());
@@ -547,16 +543,16 @@ ZFlyEmQualityAnalyzer::computeHotSpot(const ZFlyEmNeuron &neuron,
 #endif
       if (dist < 1.0) {
         const Swc_Tree_Node *tn = metric.getFirstNode();
-        FlyEm::ZHotSpot *hotSpot = new FlyEm::ZHotSpot;
-        FlyEm::ZPointGeometry *geometry = new FlyEm::ZPointGeometry;
+        flyem::ZHotSpot *hotSpot = new flyem::ZHotSpot;
+        flyem::ZPointGeometry *geometry = new flyem::ZPointGeometry;
         geometry->setCenter(
               SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn));
-        FlyEm::ZStructureInfo *structure = new FlyEm::ZStructureInfo;
+        flyem::ZStructureInfo *structure = new flyem::ZStructureInfo;
         structure->setSource(neuron.getId());
         structure->addTarget(buddyNeuron.getId());
         hotSpot->setGeometry(geometry);
 
-        FlyEm::ZCurveGeometry *guidance = new FlyEm::ZCurveGeometry;
+        flyem::ZCurveGeometry *guidance = new flyem::ZCurveGeometry;
         guidance->appendPoint(SwcTreeNode::center(tn));
         guidance->appendPoint(SwcTreeNode::center(metric.getSecondNode()));
         hotSpot->setGuidance(guidance);

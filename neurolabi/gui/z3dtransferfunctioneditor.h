@@ -16,79 +16,87 @@
 #ifndef Z3DTRANSFERFUNCTIONEDITOR_H
 #define Z3DTRANSFERFUNCTIONEDITOR_H
 
-class QCheckBox;
-class QLabel;
-class QLayout;
-class QDoubleSpinBox;
-class QPushButton;
-
-class Z3DVolume;
-class Z3DTransferFunctionParameter;
-class Z3DTransferFunction;
-class ZColorMapKey;
-class ZClickableTransferFunctionLabel;
-
+#include <memory>
 #include "zglmutils.h"
+#include "zoptionparameter.h"
 #include <QWidget>
 #include <QMenu>
-#include "zparameter.h"
-#include "zoptionparameter.h"
 
 class QAction;
+
 class QColor;
+
 class QMouseEvent;
+
+class QCheckBox;
+
+class QLabel;
+
+class QLayout;
+
+class QDoubleSpinBox;
+
+class QPushButton;
+
+class ZClickableTransferFunctionLabel;
+
+class Z3DVolume;
+
+class Z3DTransferFunctionParameter;
+
+class Z3DTransferFunction;
 
 class Z3DTransferFunctionWidget : public QWidget
 {
-  Q_OBJECT
+Q_OBJECT
 public:
-  Z3DTransferFunctionWidget(Z3DTransferFunctionParameter* tf, bool showHistogram = true,
-                            const QString &histogramNormalizeMethod = tr("Log"), QString xAxisText = tr("Intensity"),
-                            QString yAxisText = tr("Opacity"), QWidget* parent = 0);
+  explicit Z3DTransferFunctionWidget(Z3DTransferFunctionParameter* tf, bool showHistogram = true,
+                                     const QString& histogramNormalizeMethod = tr("Log"),
+                                     QString xAxisText = tr("Intensity"),
+                                     QString yAxisText = tr("Opacity"),
+                                     QWidget* parent = nullptr);
 
-  virtual ~Z3DTransferFunctionWidget();
+  virtual void paintEvent(QPaintEvent* event) override;
 
-  virtual void paintEvent(QPaintEvent* event);
+  virtual void mousePressEvent(QMouseEvent* event) override;
 
-  virtual void mousePressEvent(QMouseEvent* event);
+  virtual void mouseReleaseEvent(QMouseEvent* event) override;
 
-  virtual void mouseReleaseEvent(QMouseEvent* event);
+  virtual void leaveEvent(QEvent* /*event*/) override;
 
-  virtual void mouseMoveEvent(QMouseEvent* event);
+  virtual void mouseMoveEvent(QMouseEvent* event) override;
 
-  virtual void mouseDoubleClickEvent(QMouseEvent* event);
+  virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
 
-  virtual void keyReleaseEvent(QKeyEvent* event);
+  virtual void keyReleaseEvent(QKeyEvent* event) override;
 
-  virtual bool event(QEvent *e);
-  bool findkey(const QPoint &pos, size_t &index, bool &isLeftPart);
+  virtual bool event(QEvent* e) override;
 
-  virtual QSize minimumSizeHint() const;
+  bool findkey(const QPoint& pos, size_t& index, bool& isLeftPart);
 
-  virtual QSize sizeHint() const;
+  virtual QSize minimumSizeHint() const override;
 
-  virtual QSizePolicy sizePolicy() const;
+  virtual QSize sizeHint() const override;
 
   void setTransFunc(Z3DTransferFunctionParameter* tf);
 
-signals:
+  void setHistogramNormalizeMethod(const QString& method);
 
-public slots:
-
-  void setHistogramNormalizeMethod(const QString &method);
   void setHistogramVisible(bool v);
 
-  void volumeChanged(Z3DVolume *volume);
-
-  void deleteKey();
-  void changeCurrentColor();
-  void changeCurrentIntensity();
-  void changeCurrentOpacity();
+  void volumeChanged(Z3DVolume* volume);
 
 protected:
+  void deleteKey();
+
+  void changeCurrentColor();
+
+  void changeCurrentIntensity();
+
+  void changeCurrentOpacity();
 
   // Creates a new key at the given position.
-  void insertNewKey(glm::dvec2 &hit);
+  void insertNewKey(glm::dvec2& hit);
 
   // Paints all keys of the transfer function.
   void paintKeys(QPainter& paint);
@@ -102,19 +110,21 @@ protected:
   void showNoKeyContextMenu(QMouseEvent* event);
 
   // Relative coordinates to Pixel coordinates
-  glm::dvec2 relativeToPixelCoordinates(glm::dvec2 r);
+  glm::dvec2 relativeToPixelCoordinates(const glm::dvec2& r);
 
   // Pixel coordinates to Relative coordinates
-  glm::dvec2 pixelToRelativeCoordinates(glm::dvec2 p);
+  glm::dvec2 pixelToRelativeCoordinates(const glm::dvec2& p);
 
   void hideKeyInfo();
-  void showKeyInfo(QPoint pos, glm::dvec2 values);
+
+  void showKeyInfo(QPoint pos, const glm::dvec2& values);
 
   // Re-calculated the histogram
   void updateHistogram();
 
+protected:
   Z3DTransferFunctionParameter* m_transferFunction;
-  QPixmap* m_histogramCache;
+  std::unique_ptr<QPixmap> m_histogramCache;
 
   // variables for interaction
   bool m_selectedLeftPart;            // when selected key is split, was the left part selected?
@@ -146,31 +156,32 @@ protected:
 
 class Z3DTransferFunctionEditor : public QWidget
 {
-  Q_OBJECT
+Q_OBJECT
 public:
-
-  Z3DTransferFunctionEditor(Z3DTransferFunctionParameter* para, QWidget* parent = 0);
-  virtual ~Z3DTransferFunctionEditor();
+  explicit Z3DTransferFunctionEditor(Z3DTransferFunctionParameter* para, QWidget* parent = nullptr);
 
   void createWidgets();
+
   void createConnections();
-  
-signals:
-  
-public slots:
+
+protected:
   void changeHistogramNormalizeMethod();
+
   void updateFromTransferFunction();
+
   void volumeChanged();
-  void domainMinSpinBoxChanged(double value);
-  void domainMaxSpinBoxChanged(double value);
+
+  void domainMinSpinBoxChanged(double min);
+
+  void domainMaxSpinBoxChanged(double max);
 
   void fitDomainToData();
 
   void reset();
 
-protected:
   QLayout* createMappingLayout();
 
+protected:
   Z3DTransferFunctionParameter* m_transferFunction;
 
   Z3DVolume* m_volume;
@@ -179,7 +190,7 @@ protected:
   ZClickableTransferFunctionLabel* m_transferFunctionTexture;
 
   ZBoolParameter m_showHistogram;
-  ZOptionParameter<QString> m_histogramNormalizeMethod;
+  ZStringIntOptionParameter m_histogramNormalizeMethod;
   QLabel* m_domainMinNameLabel;
   QLabel* m_domainMaxNameLabel;
   QDoubleSpinBox* m_domainMinSpinBox;
@@ -189,7 +200,7 @@ protected:
   QLabel* m_dataMinNameLabel;
   QLabel* m_dataMaxNameLabel;
   QPushButton* m_fitDomainToDataButton;
-  QCheckBox *m_rescaleKeys;
+  QCheckBox* m_rescaleKeys;
 };
 
 #endif // Z3DTRANSFERFUNCTIONEDITOR_H

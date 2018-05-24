@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #ifdef _NEUTUBE_
 #include "zglmutils.h"
@@ -20,10 +21,11 @@
 #include "zstackfile.h"
 #include "tz_image_io.h"
 #include "zresolution.h"
-#include "zpoint.h"
-#include "zintcuboid.h"
 #include "neutube_def.h"
+#include "zintpoint.h"
 
+class ZPoint;
+class ZIntCuboid;
 
 //! Stack class
 /*!
@@ -37,7 +39,7 @@
  *  FLOAT32: 32-bit float
  *  FLOAT64: 64-bit float
  *  COLOR: 24-bit color
- *Note that the COLOR type does not specify multi-channel data. It means the
+ *Note that the COLOR type does not specify multi-channel data. It means a
  *single voxel has 3 contiguous bytes, which can be interpreted as a RGB color.
 */
 
@@ -70,12 +72,26 @@ public:
                   deconstructed. \a delloc can be NULL to keep the stack data
                   in the memory even the object is deconstructed.
    */
-  ZStack(Mc_Stack *stack,
-         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
+  ZStack(Mc_Stack *stack/*,
+         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill*/);
 
+  /*! Constructor
+   *
+   * Construct a stack with essential parameters.
+   *
+   * \param kind Voxel kind of the stack.
+   * \param box Bounding box of the stack.
+   * \param nchannel Number of the channels of the stack.
+   * \param isVirtual Create a virtual stack or not.
+   */
   ZStack(int kind, const ZIntCuboid &box, int nchannel, bool isVirtual = false);
 
-  ZStack(const ZStack &src);
+#if 0
+  /*! Obsolete. Do not use this constructor!
+   */
+  ZStack(Mc_Stack *stack,
+         C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
+#endif
 
   //! Destructor
   virtual ~ZStack();
@@ -93,7 +109,6 @@ public: /* attributes */
   //! Get the C-compatible data
   /*!
    The returned pointer is owned by ZStack.
-   \sa setData()
    */
   inline Mc_Stack* mc_stack() { return m_stack; }
   inline const Mc_Stack* mc_stack() const { return m_stack; }
@@ -102,15 +117,17 @@ public: /* attributes */
 
   /*!
    * \brief Set stack data
+   *
+   * Be careful when you want to set \a dealloc to a non-default value.
    */
   void setData(Mc_Stack *stack,
-               C_Stack::Mc_Stack_Deallocator *delloc = C_Stack::kill);
+               C_Stack::Mc_Stack_Deallocator *dealloc = C_Stack::kill);
 
   /*!
    * \brief Set data from stack
    *
-   * \a stack will be destroyed after function call. It does nothing if \a stack
-   * is NULL.
+   * \a stack will be destroyed after function call. \a stack must be created
+   * by the new operator if it is not NULL. It does nothing if \a stack is NULL.
    */
   void consume(Stack *stack);
   void consume(ZStack *stack);
@@ -368,6 +385,8 @@ public: /* attributes */
    */
   void setOne();
 
+  void swapValue(int v1, int v2);
+
   //Maximum voxel value along a z-parallel line passing (<x>, <y>).
   int maxIntensityDepth(int x, int y, int c = 0) const;
 
@@ -433,6 +452,9 @@ public: /* data operation */
   //Load stack from several single channel stack, stack can be null
   bool load(const Stack *ch1, const Stack *ch2, const Stack *ch3);
 
+  void read(std::istream &stream);
+  void write(std::ostream &stream) const;
+
   // return output file name, some image format might not support some data, so the real file name might be changed
   std::string save(const std::string &filepath) const;
   void setSource(const std::string &filepath, int channel = -1);
@@ -452,6 +474,8 @@ public: /* data operation */
   void* rawChannelData(int c);
   //Stack* channelData(int c);
 
+  bool equals(const ZStack &stack2) const;
+
 public: /* operations */
 
   void* projection(ZSingleChannelStack::Proj_Mode mode,
@@ -459,7 +483,7 @@ public: /* operations */
                    int c = 0);
 
 
-  void* projection(NeuTube::EImageBackground bg,
+  void* projection(neutube::EImageBackground bg,
                    ZSingleChannelStack::Stack_Axis axis = ZSingleChannelStack::Z_AXIS,
                    int c = 0);
 
@@ -478,9 +502,9 @@ public: /* operations */
   /*!
    * \brief Copy values from a buffer to the stack.
    */
-  void loadValue(const void *buffer, size_t length, int ch = 0);
+  void copyValueFrom(const void *buffer, size_t length, int ch = 0);
 
-  void loadValue(const void *buffer, size_t length, void *loc);
+  void copyValueFrom(const void *buffer, size_t length, void *loc);
 
   void setOffset(int dx, int dy);
   void setOffset(int dx, int dy, int dz);
@@ -539,6 +563,20 @@ public: /* processing routines */
   bool watershed(int c = 0);
 //  inline const ZResolution& getResolution() const { return m_resolution; }
 
+  void pushDsIntv(int dx, int dy, int dz);
+  void pushDsIntv(const ZIntPoint &dsIntv);
+
+  ZIntPoint getDsIntv() const {
+    return m_dsIntv;
+  }
+
+  void setDsIntv(const ZIntPoint &dsIntv) {
+    m_dsIntv = dsIntv;
+  }
+  void setDsIntv(int ix, int iy, int iz) {
+    m_dsIntv.set(ix, iy, iz);
+  }
+
   /*!
    * \brief Downsample the stack with maximum assignment.
    *
@@ -552,6 +590,9 @@ public: /* processing routines */
    * The offset postion is adjusted accordingly.
    */
   void downsampleMin(int xintv, int yintv, int zintv);
+  void downsampleMinIgnoreZero(int xintv, int yintv, int zintv);
+
+  void downsampleMean(int xintv, int yintv, int zintv);
 
   void crop(const ZIntCuboid &cuboid);
   ZStack* makeCrop(const ZIntCuboid &cuboid) const;
@@ -560,19 +601,36 @@ public: /* processing routines */
 
 public:
   void initChannelColors();
+  void useChannelColors(bool on);
+  void clearChannelColors();
+
+  std::string getTransformMeta() const;
+
+  struct LsmInfo {
+    LsmInfo() {}
+    Cz_Lsminfo m_basicInfo;
+    Lsm_Channel_Colors m_lsmChannelInfo;
+    Lsm_Time_Stamp_Info m_lsmTimeStampInfo;
+    std::vector<std::string> m_lsmChannelNames;
+    std::vector<double> m_lsmTimeStamps;
+    std::vector<int> m_lsmChannelDataTypes;
+  };
 
   // read lsm file, fill Cz_Lsminfo, Lsm_Channel_Colors and channel names and colors
 #ifdef _NEUTUBE_
-  std::vector<ZVec3Parameter*>& channelColors() { initChannelColors(); return m_channelColors; }
-  glm::vec3 getChannelColor(size_t ch) { initChannelColors(); return m_channelColors[ch]->get(); }
+  std::vector<ZVec3Parameter*>& channelColors() {
+    initChannelColors(); return m_channelColors; }
+  glm::vec3 getChannelColor(size_t ch) {
+    initChannelColors(); return m_channelColors[ch]->get(); }
+
   bool loadLSMInfo(const QString &filepath);
   void logLSMInfo();
   void setChannelColor(int ch, double r, double g, double b);
-  const Cz_Lsminfo& getLSMInfo() const { return m_lsmInfo; }
+  const Cz_Lsminfo& getLSMInfo() const { return m_lsmInfo.m_basicInfo; }
 #endif
 
 private:
-  //ZStack(const ZStack &src); //uncopyable
+  ZStack(const ZStack &src); //uncopyable
 
   void init();
   bool canMerge(const Stack *s1, const Stack *s2);
@@ -589,30 +647,35 @@ private:
 
 
 private:
-  Mc_Stack *m_stack; //Master data
-  C_Stack::Mc_Stack_Deallocator *m_delloc; //Dellocator of the master data
-  //ZStack_Projection *m_proj;
-  //ZStack_Stat *m_stat;
-  ZStackFile m_source;
-//  double m_preferredZScale;
-//  ZResolution m_resolution;
+  Mc_Stack *m_stack = nullptr; //Master data
+  C_Stack::Mc_Stack_Deallocator *m_dealloc = nullptr; //Dellocator of the master data
   ZIntPoint m_offset;
+  ZIntPoint m_dsIntv; //Downsampling ratio from original space;
+                      //note that the offset is also supposed to be downsampled
+
+  ZStackFile m_source;
+
   mutable std::vector<Stack> m_stackView;
   mutable std::vector<ZSingleChannelStack*> m_singleChannelStack;
-  mutable char m_buffer[1]; //Buffer of text field of temporary stack
+  mutable char m_buffer[1] = {'\0'}; //Buffer of text field of temporary stack
+
 
   //float color for each channel
 
-  bool m_isLSMFile;
+//  bool m_isLSMFile;
 
 #ifdef _NEUTUBE_
+  bool m_usingChannelColors = true; //Temporary hack.
+  //Need to make channelColors on demand in the future.
   std::vector<ZVec3Parameter*> m_channelColors;
-  Cz_Lsminfo m_lsmInfo;
-  Lsm_Channel_Colors m_lsmChannelInfo;
-  Lsm_Time_Stamp_Info m_lsmTimeStampInfo;
-  std::vector<QString> m_lsmChannelNames;
-  std::vector<double> m_lsmTimeStamps;
-  std::vector<int> m_lsmChannelDataTypes;
+
+  LsmInfo m_lsmInfo;
+//  Cz_Lsminfo m_lsmInfo;
+//  Lsm_Channel_Colors m_lsmChannelInfo;
+//  Lsm_Time_Stamp_Info m_lsmTimeStampInfo;
+//  std::vector<QString> m_lsmChannelNames;
+//  std::vector<double> m_lsmTimeStamps;
+//  std::vector<int> m_lsmChannelDataTypes;
 #endif
 };
 

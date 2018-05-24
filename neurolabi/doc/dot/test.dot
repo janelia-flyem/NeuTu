@@ -1,0 +1,93 @@
+digraph {
+ ZStackFrame [label = "ZStackFrame",shape = "box",];
+ ZStackDoc [label = "ZStackDoc",shape = "box",];
+ ZStackPresenter [label = "ZStackPresenter",shape = "box",];
+ ZStackView [label = "ZStackView",shape = "box",];
+ ZStackView__paintObject [label = "paintObject",];
+ ZStackFrame__setupDisplay [label = "setupDisplay",];
+ ZStackDoc__objectModified [label = "objectModified()",shape = "none",];
+ ZStackPresenter__processSliceChangeEvent [label = "processSliceChangeEvent",];
+ ZStackDoc__stackModified [label = "stackModified()",shape = "none",];
+ ZStackFrame__changeWindowTitle [label = "changeWindowTitle",];
+ ZStackView__updateChannelControl [label = "updateChannelControl",];
+ ZStackDoc__chainModified [label = "chainModified()",shape = "none",];
+ ZStackDoc__holdSegChanged [label = "holdSegChanged()",shape = "none",];
+ ZStackDoc__swcVisibleStateChanged [label = "swcVisibleStateChanged()",shape = "none",];
+ ZStackView__updateThresholdSlider [label = "updateThresholdSlider",];
+ ZStackDoc__swcModified [label = "swcModified()",shape = "none",];
+ ZStackDoc__punctaSelectionChanged [label = "punctaSelectionChanged()",shape = "none",];
+ ZStackDoc__chainSelectionChanged [label = "chainSelectionChanged()",shape = "none",];
+ ZStackDoc__locsegChainSelected [label = "locsegChainSelected()",shape = "none",];
+ ZStackView__updateSlider [label = "updateSlider",];
+ ZStackDoc__punctaModified [label = "punctaModified()",shape = "none",];
+ ZStackDoc__cleanChanged [label = "cleanChanged()",shape = "none",];
+ ZStackView__currentSliceChanged [label = "currentSliceChanged()",shape = "none",];
+ ZStackFrame__setLocsegChainInfo [label = "setLocsegChainInfo",];
+ ZStackPresenter__updateStackBc [label = "updateStackBc",];
+ ZStackDoc__obj3dModified [label = "obj3dModified()",shape = "none",];
+ ZStackDoc__punctumVisibleStateChanged [label = "punctumVisibleStateChanged()",shape = "none",];
+ ZStackDoc__swcTreeNodeSelectionChanged [label = "swcTreeNodeSelectionChanged()",shape = "none",];
+ ZStackDoc__stackLoaded [label = "stackLoaded()",shape = "none",];
+ ZStackFrame__stackLoaded [label = "stackLoaded",];
+ ZStackDoc__chainVisibleStateChanged [label = "chainVisibleStateChanged()",shape = "none",];
+ ZStackView__updateView [label = "updateView",];
+ ZStackDoc__strokeModified [label = "strokeModified()",shape = "none",];
+ ZStackFrame__ready [label = "ready()",shape = "none",];
+ ZStackFrame__stackLoaded [label = "stackLoaded()",shape = "none",];
+ ZStackView -> ZStackView__paintObject [arrowhead = odot];
+ ZStackFrame -> ZStackFrame__setupDisplay [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__objectModified [arrowhead = odot];
+ ZStackPresenter -> ZStackPresenter__processSliceChangeEvent [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__stackModified [arrowhead = odot];
+ ZStackFrame -> ZStackFrame__changeWindowTitle [arrowhead = odot];
+ ZStackView -> ZStackView__updateChannelControl [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__chainModified [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__holdSegChanged [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__swcVisibleStateChanged [arrowhead = odot];
+ ZStackView -> ZStackView__updateThresholdSlider [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__swcModified [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__punctaSelectionChanged [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__chainSelectionChanged [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__locsegChainSelected [arrowhead = odot];
+ ZStackView -> ZStackView__updateSlider [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__punctaModified [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__cleanChanged [arrowhead = odot];
+ ZStackView -> ZStackView__currentSliceChanged [arrowhead = odot];
+ ZStackFrame -> ZStackFrame__setLocsegChainInfo [arrowhead = odot];
+ ZStackPresenter -> ZStackPresenter__updateStackBc [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__obj3dModified [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__punctumVisibleStateChanged [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__swcTreeNodeSelectionChanged [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__stackLoaded [arrowhead = odot];
+ ZStackFrame -> ZStackFrame__stackLoaded [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__chainVisibleStateChanged [arrowhead = odot];
+ ZStackView -> ZStackView__updateView [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__strokeModified [arrowhead = odot];
+ ZStackFrame -> ZStackFrame__ready [arrowhead = odot];
+ ZStackDoc__locsegChainSelected -> ZStackFrame__setLocsegChainInfo
+ ZStackDoc__stackLoaded -> ZStackFrame__stackLoaded
+ ZStackFrame__stackLoaded -> ZStackFrame__setupDisplay
+ ZStackDoc__stackModified -> ZStackView__updateChannelControl
+ ZStackDoc__stackModified -> ZStackView__updateThresholdSlider
+ ZStackDoc__stackModified -> ZStackView__updateSlider
+ ZStackDoc__stackModified -> ZStackPresenter__updateStackBc
+ ZStackDoc__stackModified -> ZStackView__updateView
+ ZStackDoc__objectModified -> ZStackView__paintObject
+ ZStackDoc__chainModified -> ZStackView__paintObject
+ ZStackDoc__swcModified -> ZStackView__paintObject
+ ZStackDoc__punctaModified -> ZStackView__paintObject
+ ZStackDoc__obj3dModified -> ZStackView__paintObject
+ ZStackDoc__strokeModified -> ZStackView__paintObject
+ ZStackDoc__cleanChanged -> ZStackFrame__changeWindowTitle
+ ZStackDoc__holdSegChanged -> ZStackView__paintObject
+ ZStackDoc__chainSelectionChanged -> ZStackView__paintObject
+ ZStackDoc__swcTreeNodeSelectionChanged -> ZStackView__paintObject
+ ZStackDoc__punctaSelectionChanged -> ZStackView__paintObject
+ ZStackDoc__chainVisibleStateChanged -> ZStackView__paintObject
+ ZStackDoc__swcVisibleStateChanged -> ZStackView__paintObject
+ ZStackDoc__punctumVisibleStateChanged -> ZStackView__paintObject
+ ZStackView__currentSliceChanged -> ZStackPresenter__processSliceChangeEvent
+ ZStackFrame -> ZStackPresenter [arrowhead = diamond];
+ ZStackFrame -> ZStackDoc [arrowhead = diamond];
+ ZStackFrame -> ZStackView [arrowhead = diamond];
+}

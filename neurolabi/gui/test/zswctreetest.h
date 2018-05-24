@@ -16,10 +16,12 @@
 #include "zdoublevector.h"
 #include "swc/zswcpruner.h"
 #include "zswcforest.h"
+#include "neutubeconfig.h"
+#include "zswcutil.h"
 
 #ifdef _USE_GTEST_
 
-static bool testTreeIterator(ZSwcTree &tree,
+static void testTreeIterator(ZSwcTree &tree,
                              const ZTestSwcTreeIteratorConfig &config,
                              int *truthArray,
                              int truthCount, bool testReverse = false)
@@ -37,71 +39,63 @@ static bool testTreeIterator(ZSwcTree &tree,
                                 TRUE);
   }
 
-  EXPECT_EQ(count, truthCount) << "Unmatched node number";
+  ASSERT_EQ(count, truthCount);
 
   if (truthArray == NULL) {
-    if (tree.begin() != NULL) {
-      return false;
-    }
+    ASSERT_EQ(NULL, tree.begin());
   }
 
   for (Swc_Tree_Node *tn = tree.begin(); tn != tree.end(); tn = tree.next()) {
     if (testReverse) {
-      EXPECT_EQ(SwcTreeNode::id(tn), truthArray[count - 1 - SwcTreeNode::index(tn)])
-          << "Unmatched node number";
+      ASSERT_EQ(SwcTreeNode::id(tn), truthArray[count - 1 - SwcTreeNode::index(tn)]);
     } else {
-      EXPECT_EQ(SwcTreeNode::id(tn), truthArray[SwcTreeNode::index(tn)])
-          << "Unmatched id";
+      ASSERT_EQ(SwcTreeNode::id(tn), truthArray[SwcTreeNode::index(tn)]);
     }
   }
 
-  return true;
+//  return true;
 }
 
 TEST(TestSwcTree, TestTreeIterator) {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/breadth_first.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/breadth_first.swc");
   ZTestSwcTreeIteratorConfig config;
   config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
   {
-    int array[7] = { -1, 1, 2, 3, 5, 6, 4 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                                 sizeof(array) / sizeof(array[0])));
+    std::cout << "testing SWC_TREE_ITERATOR_DEPTH_FIRST" << std::endl;
+    int array[7] = { -1, 1, 2, 4, 3, 6, 5 };
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]));
   }
 
   config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
   {
-    int array[7] = { -1, 1, 2, 3, 4, 5, 6 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                                 sizeof(array) / sizeof(array[0])));
+    std::cout << "testing SWC_TREE_ITERATOR_BREADTH_FIRST" << std::endl;
+    int array[7] = { -1, 1, 2, 4, 3, 6, 5 };
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    int array[7] = { -1, 1, 2, 3, 4, 5, 6 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    int array[7] = { -1, 1, 2, 4, 3, 6, 5 };
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[7] = { 6, 5, 4, 3, 2, 1, -1 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                                 sizeof(array) / sizeof(array[0])));
+    int array[7] = { 5, 6, 3, 4, 2, 1, -1 };
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_LEAF;
-    int array[3] = { 5, 6, 4 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    int array[3] = { 4, 6, 5 };
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_REVERSE;
-    int array[3] = { 5, 6, 4 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true));
+    int array[3] = { 4, 6, 5 };
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]), true);
   }
 
   //With blockers
@@ -112,27 +106,24 @@ TEST(TestSwcTree, TestTreeIterator) {
     config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
     config.blocker = &blocker;
     int array[1] = { -1 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
     int array[1] = { -1 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_REVERSE;
     int array[1] = { -1 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array, sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_LEAF;
-    ASSERT_TRUE(testTreeIterator(tree, config, NULL, 0));
+    testTreeIterator(tree, config, NULL, 0);
   }
 
   blocker.clear();
@@ -140,139 +131,140 @@ TEST(TestSwcTree, TestTreeIterator) {
   {
     config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
     int array[2] = { -1, 1 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
     int array[2] = { -1, 1 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
     config.option = SWC_TREE_ITERATOR_REVERSE;
     int array[2] = { 1, -1 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
-  }
-
-  blocker.clear();
-  blocker.insert(tree.data()->root->first_child->first_child->first_child);
-  {
-    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    int array[4] = { -1, 1, 2, 4 };
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
-  }
-
-  {
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true));
-  }
-
-  {
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
-  }
-
-  {
-
-    int array[4] = { -1, 1, 2, 4 };
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   blocker.clear();
   blocker.insert(tree.data()->root->first_child->first_child->first_child->next_sibling);
   {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
     config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    int array[4] = { -1, 1, 2, 4};
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
+    int array[4] = { -1, 1, 2, 4 };
     config.option = SWC_TREE_ITERATOR_REVERSE;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]), true);
   }
 
   {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
+    int array[4] = { -1, 1, 2, 4 };
     config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
-    int array[6] = { -1, 1, 2, 3, 5, 6 };
+
+    int array[4] = { -1, 1, 2, 4 };
     config.option = SWC_TREE_ITERATOR_REVERSE;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]), true);
   }
 
-  {
-    int array[2] = { 5, 6 };
-    config.option = SWC_TREE_ITERATOR_LEAF;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
-
-    config.option = SWC_TREE_ITERATOR_REVERSE;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true));
-  }
-
+  blocker.clear();
   blocker.insert(tree.data()->root->first_child->first_child->first_child);
   {
+    int array[6] = { -1, 1, 2, 3, 6, 5 };
+    config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
+  }
+
+  {
+    int array[6] = { -1, 1, 2, 3, 6, 5 };
+    config.option = SWC_TREE_ITERATOR_REVERSE;
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]), true);
+  }
+
+  {
+    int array[6] = { -1, 1, 2, 3, 6, 5 };
+    config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
+  }
+
+  {
+    int array[6] = { -1, 1, 2, 3, 6, 5 };
+    config.option = SWC_TREE_ITERATOR_REVERSE;
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]), true);
+  }
+
+  {
+    int array[2] = { 6, 5 };
+    config.option = SWC_TREE_ITERATOR_LEAF;
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
+
+    config.option = SWC_TREE_ITERATOR_REVERSE;
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]), true);
+  }
+
+  blocker.insert(tree.data()->root->first_child->first_child->first_child->next_sibling);
+  {
     int array[3] = { -1, 1, 2 };
     config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
     int array[3] = { -1, 1, 2 };
     config.option = SWC_TREE_ITERATOR_REVERSE;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]), true);
   }
 
   {
     int array[3] = { -1, 1, 2 };
     config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
     int array[3] = { -1, 1, 2 };
     config.option = SWC_TREE_ITERATOR_REVERSE;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0]), true));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]), true);
   }
 
+#if 0
   blocker.clear();
   blocker.insert(tree.data()->root->first_child->first_child->first_child->first_child);
   {
     int array[6] = { -1, 1, 2, 3, 4, 6 };
     config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
     int array[6] = { -1, 1, 2, 3, 6, 4 };
     config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   Swc_Tree_Node *start = tree.data()->root->first_child->first_child;
@@ -280,15 +272,15 @@ TEST(TestSwcTree, TestTreeIterator) {
     int array[4] = { 2, 3, 4, 6 };
     config.start = start;
     config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
     int array[4] = { 2, 3, 6, 4 };
     config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   ////////////
@@ -296,16 +288,17 @@ TEST(TestSwcTree, TestTreeIterator) {
   {
     int array[2] = { 3, 6 };
     config.option = SWC_TREE_ITERATOR_BREADTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
 
   {
     int array[2] = { 3, 6 };
     config.option = SWC_TREE_ITERATOR_DEPTH_FIRST;
-    ASSERT_TRUE(testTreeIterator(tree, config, array,
-                               sizeof(array) / sizeof(array[0])));
+    testTreeIterator(tree, config, array,
+                               sizeof(array) / sizeof(array[0]));
   }
+#endif
 }
 
 TEST(SwcTree, Metric)
@@ -313,8 +306,8 @@ TEST(SwcTree, Metric)
   ZSwcTree tree1;
   ZSwcTree tree2;
 
-  std::string filePath1 = GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree1.swc";
-  std::string filePath2 = GET_TEST_DATA_DIR + "/benchmark/swc/dist/angle/tree2.swc";
+  std::string filePath1 = GET_BENCHMARK_DIR + "/swc/dist/angle/tree1.swc";
+  std::string filePath2 = GET_BENCHMARK_DIR + "/swc/dist/angle/tree2.swc";
 
   tree1.load(filePath1);
   tree2.load(filePath2);
@@ -322,14 +315,14 @@ TEST(SwcTree, Metric)
   ZSwcTerminalAngleMetric angleMetric;
   double dist = angleMetric.measureDistance(&tree1, &tree2);
 
-  EXPECT_DOUBLE_EQ(0, dist);
+  ASSERT_DOUBLE_EQ(0, dist);
 }
 
 TEST(SwcTree, Backtrace)
 {
   //test computeBackTraceLenth
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/length_test.swc");
   tree.forceVirtualRoot();
   tree.computeBackTraceLength();
   //tree.print();
@@ -340,8 +333,8 @@ TEST(SwcTree, Backtrace)
   ASSERT_EQ(50, SwcTreeNode::weight(nodeArray[0]));
   ASSERT_EQ(50, SwcTreeNode::weight(nodeArray[1]));
   ASSERT_EQ(40, SwcTreeNode::weight(nodeArray[2]));
-  ASSERT_EQ(20, SwcTreeNode::weight(nodeArray[3]));
-  ASSERT_EQ(0, SwcTreeNode::weight(nodeArray[4]));
+  ASSERT_EQ(20, SwcTreeNode::weight(nodeArray[4]));
+  ASSERT_EQ(0, SwcTreeNode::weight(nodeArray[3]));
   ASSERT_EQ(0, SwcTreeNode::weight(nodeArray[5]));
   ASSERT_EQ(0, SwcTreeNode::weight(nodeArray[6]));
 }
@@ -350,7 +343,7 @@ TEST(SwcTree, Subtree)
 {
   //test labelSubtree
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/length_test.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/length_test.swc");
 
   Swc_Tree_Node *tn = tree.queryNode(3);
   tree.labelSubtree(tn, 1);
@@ -362,41 +355,43 @@ TEST(SwcTree, Subtree)
   ASSERT_EQ(0, SwcTreeNode::label(nodeArray[0]));
   ASSERT_EQ(0, SwcTreeNode::label(nodeArray[1]));
   ASSERT_EQ(0, SwcTreeNode::label(nodeArray[2]));
-  ASSERT_EQ(1, SwcTreeNode::label(nodeArray[3]));
+  ASSERT_EQ(0, SwcTreeNode::label(nodeArray[3]));
   ASSERT_EQ(1, SwcTreeNode::label(nodeArray[4]));
   ASSERT_EQ(1, SwcTreeNode::label(nodeArray[5]));
-  ASSERT_EQ(0, SwcTreeNode::label(nodeArray[6]));
+  ASSERT_EQ(1, SwcTreeNode::label(nodeArray[6]));
 }
 
 TEST(SwcTree, getNodeArray)
 {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/long_fork.swc");
   ASSERT_EQ(1, (int) tree.getSwcTreeNodeArray(ZSwcTree::BRANCH_POINT_ITERATOR).size());
   ASSERT_EQ(2, (int) tree.getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR).size());
   ASSERT_EQ(3, (int) tree.getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR).size());
 
+  /*
   tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/forest2.swc");
   ASSERT_EQ(3, (int) tree.getSwcTreeNodeArray(ZSwcTree::BRANCH_POINT_ITERATOR).size());
   ASSERT_EQ(11, (int) tree.getSwcTreeNodeArray(ZSwcTree::LEAF_ITERATOR).size());
   ASSERT_EQ(15, (int) tree.getSwcTreeNodeArray(ZSwcTree::TERMINAL_ITERATOR).size());
+  */
 }
 
 TEST(SwcTree, getLongestPath)
 {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/long_fork.swc");
 
   ZSwcPath path = tree.getLongestPath();
   ASSERT_EQ(24, (int) path.size());
   ASSERT_EQ(1, SwcTreeNode::id(*path.begin()));
   ASSERT_EQ(31, SwcTreeNode::id(path.at(23)));
 
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare5.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/compare/compare5.swc");
   path = tree.getLongestPath();
   ASSERT_EQ(9, (int) path.size());
-  ASSERT_EQ(14, SwcTreeNode::id(*path.begin()));
-  ASSERT_EQ(8, SwcTreeNode::id(path.at(8)));
+  ASSERT_EQ(8, SwcTreeNode::id(*path.begin()));
+  ASSERT_EQ(14, SwcTreeNode::id(path.at(8)));
 //  path.print();
 }
 
@@ -405,7 +400,7 @@ TEST(SwcTree, forest)
   ZSwcTree tree;
   ASSERT_EQ(0x0, tree.toSwcTreeArray());
 
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/long_fork.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/long_fork.swc");
   ZSwcForest *forest = tree.toSwcTreeArray();
 
   ASSERT_EQ(1, (int) forest->size());
@@ -420,19 +415,19 @@ TEST(SwcTree, Prune)
   pruner.setMinLength(18.0);
 
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
 
   ASSERT_EQ(1, pruner.prune(&tree));
 
   pruner.setMinLength(100.0);
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/compare/compare1.swc");
 
   ASSERT_EQ(4 , pruner.prune(&tree));
 
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/compare/compare1.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/compare/compare1.swc");
 
   ZSwcTree tree2;
-  tree2.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  tree2.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
   tree.merge(&tree2, false);
 
   tree.print();
@@ -445,10 +440,228 @@ TEST(SwcTree, Prune)
 TEST(SwcTree, boundBox)
 {
   ZSwcTree tree;
-  tree.load(GET_TEST_DATA_DIR + "/benchmark/swc/fork2.swc");
+  tree.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
 
   ASSERT_TRUE(tree.isDeprecated(ZSwcTree::BOUND_BOX));
   ASSERT_TRUE(tree.getBoundBox().isValid());
+}
+
+TEST(SwcTree, ExtIterator)
+{
+  {
+    ZSwcTree tree;
+    tree.load(GET_BENCHMARK_DIR + "/swc/depth_first.swc");
+
+    ZSwcTree::DepthFirstIterator iter(&tree);
+    iter.excludeVirtual(true);
+
+    ASSERT_TRUE(iter.hasNext());
+
+    ASSERT_EQ(1, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(2, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(6, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(5, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(4, SwcTreeNode::id(iter.next()));
+
+    ASSERT_FALSE(iter.hasNext());
+
+    iter.restart();
+    ASSERT_TRUE(iter.hasNext());
+
+    ASSERT_EQ(1, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(2, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(6, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(5, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(4, SwcTreeNode::id(iter.next()));
+
+    ASSERT_FALSE(iter.hasNext());
+
+    ASSERT_EQ(1, SwcTreeNode::id(iter.begin()));
+    ASSERT_EQ(2, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(6, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(5, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(4, SwcTreeNode::id(iter.next()));
+
+    ASSERT_FALSE(iter.hasNext());
+  }
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
+
+    ZSwcTree::TerminalIterator iter(&tree);
+    ASSERT_TRUE(iter.hasNext());
+    ASSERT_EQ(1, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(5, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+    iter.restart();
+    ASSERT_TRUE(iter.hasNext());
+    ASSERT_EQ(1, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(5, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+    ASSERT_EQ(1, SwcTreeNode::id(iter.begin()));
+    ASSERT_EQ(5, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+  }
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_BENCHMARK_DIR + "/swc/fork2.swc");
+
+    ZSwcTree::LeafIterator iter(&tree);
+    ASSERT_TRUE(iter.hasNext());
+    ASSERT_EQ(5, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+    iter.restart();
+    ASSERT_TRUE(iter.hasNext());
+    ASSERT_EQ(5, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+    ASSERT_EQ(5, SwcTreeNode::id(iter.begin()));
+    ASSERT_EQ(3, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+  }
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_BENCHMARK_DIR + "/swc/multi_tree2.swc");
+
+    ZSwcTree::RegularRootIterator iter(&tree);
+    ASSERT_TRUE(iter.hasNext());
+    ASSERT_EQ(8, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(6, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(4, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(1, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+    iter.restart();
+    ASSERT_TRUE(iter.hasNext());
+    ASSERT_EQ(8, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(6, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(4, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(1, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+    ASSERT_EQ(8, SwcTreeNode::id(iter.begin()));
+    ASSERT_EQ(6, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(4, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(1, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+  }
+
+  {
+    ZSwcTree tree;
+    tree.load(GET_BENCHMARK_DIR + "/swc/forest1.swc");
+
+    ZSwcTree::DownstreamIterator iter(tree.firstRegularRoot());
+    ASSERT_TRUE(iter.hasNext());
+    ASSERT_EQ(17, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(18, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+    iter.restart();
+    ASSERT_TRUE(iter.hasNext());
+    ASSERT_EQ(17, SwcTreeNode::id(iter.next()));
+    ASSERT_EQ(18, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+    ASSERT_EQ(17, SwcTreeNode::id(iter.begin()));
+    ASSERT_EQ(18, SwcTreeNode::id(iter.next()));
+    ASSERT_FALSE(iter.hasNext());
+
+
+    Swc_Tree_Node *tn = tree.queryNode(10);
+    ZSwcTree::DownstreamIterator iter2(tn);
+    ASSERT_TRUE(iter2.hasNext());
+    ASSERT_EQ(10, SwcTreeNode::id(iter2.next()));
+    ASSERT_EQ(11, SwcTreeNode::id(iter2.next()));
+
+    iter2.restart();
+    ASSERT_TRUE(iter2.hasNext());
+    ASSERT_EQ(10, SwcTreeNode::id(iter2.next()));
+    ASSERT_EQ(11, SwcTreeNode::id(iter2.next()));
+
+    ASSERT_EQ(10, SwcTreeNode::id(iter2.begin()));
+    ASSERT_EQ(11, SwcTreeNode::id(iter2.next()));
+    ASSERT_EQ(12, SwcTreeNode::id(iter2.next()));
+    ASSERT_FALSE(iter2.hasNext());
+  }
+}
+
+TEST(SwcTree, Attributes)
+{
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  SwcTreeNode::setX(tn, 1.0);
+  SwcTreeNode::setY(tn, 2.0);
+  SwcTreeNode::setZ(tn, 3.0);
+  SwcTreeNode::setRadius(tn, 5.0);
+
+  ASSERT_EQ(1.0, SwcTreeNode::x(tn));
+  ASSERT_EQ(2.0, SwcTreeNode::y(tn));
+  ASSERT_EQ(3.0, SwcTreeNode::z(tn));
+  ASSERT_EQ(5.0, SwcTreeNode::radius(tn));
+}
+
+TEST(SwcTree, Distance)
+{
+  Swc_Tree_Node *tn1 = SwcTreeNode::makePointer();
+  SwcTreeNode::setX(tn1, 1.0);
+  SwcTreeNode::setY(tn1, 2.0);
+  SwcTreeNode::setZ(tn1, 3.0);
+  SwcTreeNode::setRadius(tn1, 5.0);
+
+  Swc_Tree_Node *tn2 = SwcTreeNode::makePointer();
+  SwcTreeNode::setX(tn2, 1.0);
+  SwcTreeNode::setY(tn2, 2.0);
+  SwcTreeNode::setZ(tn2, 4.0);
+  SwcTreeNode::setRadius(tn2, 5.0);
+
+
+  ASSERT_DOUBLE_EQ(
+        1.0, SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN));
+  ASSERT_DOUBLE_EQ(
+        1.0, SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN_SQUARE));
+
+
+  SwcTreeNode::setZ(tn2, 5.0);
+  ASSERT_DOUBLE_EQ(
+        2.0, SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN));
+  ASSERT_DOUBLE_EQ(
+        4.0, SwcTreeNode::distance(tn1, tn2, SwcTreeNode::EUCLIDEAN_SQUARE));
+
+}
+
+TEST(SwcTree, Util)
+{
+  ZSwcTree tree1;
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  SwcTreeNode::setNode(tn, 1, 0, 0, 0, 0, 5, -1);
+  tree1.addRegularRoot(tn);
+
+  ZSwcTree tree2;
+
+  tn = SwcTreeNode::makePointer();
+  SwcTreeNode::setNode(tn, 1, 1, 10, 0, 0, 5, -1);
+  tree2.addRegularRoot(tn);
+
+  tn = SwcTreeNode::makePointer();
+  SwcTreeNode::setNode(tn, 1, 0, 0, 0, 0, 5, -1);
+  tree2.addRegularRoot(tn);
+
+  std::vector<Swc_Tree_Node*> nodeArray = zswc::FindOverlapNode(tree1, tree2);
+  ASSERT_EQ(1, (int) nodeArray.size());
+  ASSERT_EQ(tn, nodeArray.front());
 }
 
 #endif

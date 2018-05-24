@@ -12,14 +12,24 @@ ZJsonValue::ZJsonValue() : m_data(NULL)
 {
 }
 
+/*
 ZJsonValue::ZJsonValue(json_t *data, bool asNew) : m_data(NULL)
 {
   set(data, asNew);
 }
+*/
 
 ZJsonValue::ZJsonValue(json_t *data, ESetDataOption option) : m_data(NULL)
 {
   set(data, option);
+#ifdef _DEBUG_2
+      std::cout << m_data << std::endl;
+#endif
+}
+
+ZJsonValue::ZJsonValue(const json_t *data, ESetDataOption option) : m_data(NULL)
+{
+  set(const_cast<json_t*>(data), option);
 #ifdef _DEBUG_2
       std::cout << m_data << std::endl;
 #endif
@@ -58,7 +68,7 @@ bool ZJsonValue::isObject() const
     return false;
   }
 
-  return json_is_object(m_data) > 0;
+  return json_is_object(m_data);
 }
 
 bool ZJsonValue::isArray() const
@@ -67,7 +77,7 @@ bool ZJsonValue::isArray() const
     return false;
   }
 
-  return json_is_array(m_data) > 0;
+  return json_is_array(m_data);
 }
 
 bool ZJsonValue::isString() const
@@ -76,7 +86,7 @@ bool ZJsonValue::isString() const
     return false;
   }
 
-  return json_is_string(m_data) > 0;
+  return json_is_string(m_data);
 }
 
 bool ZJsonValue::isInteger()
@@ -85,7 +95,7 @@ bool ZJsonValue::isInteger()
     return false;
   }
 
-  return json_is_integer(m_data) > 0;
+  return json_is_integer(m_data);
 }
 
 bool ZJsonValue::isReal()
@@ -94,7 +104,7 @@ bool ZJsonValue::isReal()
     return false;
   }
 
-  return json_is_real(m_data) > 0;
+  return json_is_real(m_data);
 }
 
 bool ZJsonValue::isNumber()
@@ -103,7 +113,7 @@ bool ZJsonValue::isNumber()
     return false;
   }
 
-  return json_is_number(m_data) > 0;
+  return json_is_number(m_data);
 }
 
 bool ZJsonValue::isBoolean()
@@ -112,16 +122,30 @@ bool ZJsonValue::isBoolean()
     return false;
   }
 
-  return json_is_boolean(m_data) > 0;
+  return json_is_boolean(m_data);
 }
 
 bool ZJsonValue::isEmpty() const
 {
+  return m_data == NULL || json_is_null(m_data);
+}
+
+bool ZJsonValue::isNull() const
+{
   return m_data == NULL;
+}
+
+void ZJsonValue::set(const ZJsonValue &value)
+{
+  set(value.getData(), ZJsonValue::SET_INCREASE_REF_COUNT);
 }
 
 void ZJsonValue::set(json_t *data, bool asNew)
 {
+  if (m_data == data) {
+    return;
+  }
+
   if (m_data != NULL) {
     json_decref(m_data);
   }
@@ -161,15 +185,25 @@ void ZJsonValue::set(json_t *data, ESetDataOption option)
 
 void ZJsonValue::decodeString(const char *str)
 {
+  json_error_t error;
+  decodeString(str, &error);
+}
+
+void ZJsonValue::decodeString(const char *str, json_error_t *error)
+{
   if (m_data != NULL) {
     json_decref(m_data);
   }
 
-  m_data = json_loads(str, JSON_DECODE_ANY, &m_error);
-  if (m_error.line > 0) {
-    std::cout << m_error.source << std::endl;
-    std::cout << m_error.text << std::endl;
+//  json_error_t error;
+  json_error_t *ownError = NULL;
+  if (error == NULL) {
+    error = ownError = new json_error_t;
   }
+
+  m_data = json_loads(str, JSON_DECODE_ANY, error);
+
+  delete ownError;
 }
 
 void ZJsonValue::clear()
@@ -183,6 +217,8 @@ void ZJsonValue::clear()
 
 void ZJsonValue::print() const
 {
+//  std::cout << dumpString(2);
+
   ZJsonParser::print(NULL, m_data, 0);
 }
 
@@ -208,11 +244,19 @@ std::vector<ZJsonValue> ZJsonValue::toArray()
   return array;
 }
 
-std::string ZJsonValue::getErrorString() const
+void ZJsonValue::PrintError(const json_error_t &error)
+{
+  if (error.line > 0) {
+    std::cout << "JSON decoding error: " << std::endl;
+    std::cout << "  " << GetErrorString(error) << std::endl;
+  }
+}
+
+std::string ZJsonValue::GetErrorString(const json_error_t &error)
 {
   ostringstream stream;
-  stream << "Line " << m_error.line << " Column " << m_error.column
-         << ": " << m_error.text;
+  stream << "Line " << error.line << " Column " << error.column
+         << ": " << error.text;
 
   return stream.str();
 }
@@ -227,6 +271,10 @@ double ZJsonValue::toReal() const
   return ZJsonParser::numberValue(m_data);
 }
 
+std::string ZJsonValue::toString() const
+{
+  return ZJsonParser::stringValue(m_data);
+}
 /*
 std::string ZJsonValue::toString() const
 {
@@ -236,9 +284,14 @@ std::string ZJsonValue::toString() const
 
 std::string ZJsonValue::dumpString(int indent) const
 {
+  return dumpJanssonString(JSON_INDENT(indent));
+}
+
+std::string ZJsonValue::dumpJanssonString(size_t flags) const
+{
   string str;
   if (!isEmpty()) {
-    char *cstr = json_dumps(getValue(), JSON_INDENT(indent));
+    char *cstr = json_dumps(getValue(), flags);
     str = cstr;
     free(cstr);
   }
@@ -261,15 +314,42 @@ bool ZJsonValue::load(const string &filePath)
     json_decref(m_data);
   }
 
-  m_data = json_load_file(filePath.c_str(), 0, &m_error);
+  json_error_t error;
+  m_data = json_load_file(filePath.c_str(), 0, &error);
   if (m_data) {
+    m_source = filePath;
     return true;
   }
 
-
-  std::cout << filePath << "(" << m_error.line << ")" << ": "
-            << m_error.text << std::endl;
+  std::cout << filePath << "(" << error.line << ")" << ": "
+            << error.text << std::endl;
 #endif
 
   return false;
+}
+
+std::string ZJsonValue::getSource() const
+{
+  return m_source;
+}
+
+ZJsonValue ZJsonValue::clone() const
+{
+  return ZJsonValue(C_Json::clone(m_data), SET_AS_IT_IS);
+}
+
+void ZJsonValue::denull()
+{
+  if (m_data == NULL) {
+    m_data = C_Json::makeJsonNull();
+  }
+}
+
+int ZJsonValue::getRefCount() const
+{
+  if (m_data == NULL) {
+    return 0;
+  }
+
+  return m_data->refcount;
 }

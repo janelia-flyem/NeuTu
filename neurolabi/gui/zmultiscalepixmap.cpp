@@ -26,6 +26,13 @@ void ZMultiscalePixmap::clear()
   m_pixmapArray.clear();
 }
 
+void ZMultiscalePixmap::setFullResSize(const QSize &size)
+{
+  if (m_fullResSize != size) {
+    m_fullResSize = size;
+    invalidateFullRes();
+  }
+}
 
 void ZMultiscalePixmap::setSize(const QSize &size)
 {
@@ -39,11 +46,26 @@ void ZMultiscalePixmap::setSize(const QSize &size)
 void ZMultiscalePixmap::setOffset(const QPoint &offset)
 {
   m_offset = offset;
+  int level = 0;
+  for (std::vector<ZPixmap*>::iterator iter = m_pixmapArray.begin();
+       iter != m_pixmapArray.end(); ++iter, ++level) {
+    ZPixmap *pixmap = *iter;
+    if (pixmap != NULL) {
+      int scale = getScale(level);
+      pixmap->setOffset(m_offset.x() / scale, m_offset.y() / scale);
+    }
+  }
 }
 
 int ZMultiscalePixmap::getScale(int level) const
 {
   return level + 1;
+}
+
+void ZMultiscalePixmap::invalidateFullRes()
+{
+  delete m_pixmapArray[0];
+  m_pixmapArray[0] = NULL;
 }
 
 ZPixmap* ZMultiscalePixmap::getPixmap(int level)

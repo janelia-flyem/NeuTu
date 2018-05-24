@@ -64,20 +64,20 @@ EXPECTED_NON_EMPTY_XML = """<?xml version="1.0" encoding="UTF-8"?>
   </testsuite>
   <testsuite name="FailedTest" tests="1" failures="1" disabled="0" errors="0" time="*">
     <testcase name="Fails" status="run" time="*" classname="FailedTest">
-      <failure message="gtest_xml_output_unittest_.cc:*&#x0A;Value of: 2&#x0A;Expected: 1" type=""><![CDATA[gtest_xml_output_unittest_.cc:*
-Value of: 2
-Expected: 1%(stack)s]]></failure>
+      <failure message="gtest_xml_output_unittest_.cc:*&#x0A;      Expected: 1&#x0A;To be equal to: 2" type=""><![CDATA[gtest_xml_output_unittest_.cc:*
+      Expected: 1
+To be equal to: 2%(stack)s]]></failure>
     </testcase>
   </testsuite>
   <testsuite name="MixedResultTest" tests="3" failures="1" disabled="1" errors="0" time="*">
     <testcase name="Succeeds" status="run" time="*" classname="MixedResultTest"/>
     <testcase name="Fails" status="run" time="*" classname="MixedResultTest">
-      <failure message="gtest_xml_output_unittest_.cc:*&#x0A;Value of: 2&#x0A;Expected: 1" type=""><![CDATA[gtest_xml_output_unittest_.cc:*
-Value of: 2
-Expected: 1%(stack)s]]></failure>
-      <failure message="gtest_xml_output_unittest_.cc:*&#x0A;Value of: 3&#x0A;Expected: 2" type=""><![CDATA[gtest_xml_output_unittest_.cc:*
-Value of: 3
-Expected: 2%(stack)s]]></failure>
+      <failure message="gtest_xml_output_unittest_.cc:*&#x0A;      Expected: 1&#x0A;To be equal to: 2" type=""><![CDATA[gtest_xml_output_unittest_.cc:*
+      Expected: 1
+To be equal to: 2%(stack)s]]></failure>
+      <failure message="gtest_xml_output_unittest_.cc:*&#x0A;      Expected: 2&#x0A;To be equal to: 3" type=""><![CDATA[gtest_xml_output_unittest_.cc:*
+      Expected: 2
+To be equal to: 3%(stack)s]]></failure>
     </testcase>
     <testcase name="DISABLED_test" status="notrun" time="*" classname="MixedResultTest"/>
   </testsuite>
@@ -209,16 +209,17 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
         'gtest_no_test_unittest')
     try:
       os.remove(output_file)
-    except OSError, e:
+    except OSError:
+      e = sys.exc_info()[1]
       if e.errno != errno.ENOENT:
         raise
 
     p = gtest_test_utils.Subprocess(
         [gtest_prog_path, '%s=xml' % GTEST_OUTPUT_FLAG],
         working_dir=gtest_test_utils.GetTempDir())
-    self.assert_(p.exited)
-    self.assertEquals(0, p.exit_code)
-    self.assert_(os.path.isfile(output_file))
+    self.assertTrue(p.exited)
+    self.assertEqual(0, p.exit_code)
+    self.assertTrue(os.path.isfile(output_file))
 
   def testSuppressedXmlOutput(self):
     """
@@ -241,13 +242,13 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
           p.terminated_by_signal,
           '%s was killed by signal %d' % (GTEST_PROGRAM_NAME, p.signal))
     else:
-      self.assert_(p.exited)
-      self.assertEquals(1, p.exit_code,
+      self.assertTrue(p.exited)
+      self.assertEqual(1, p.exit_code,
                         "'%s' exited with code %s, which doesn't match "
                         'the expected exit code %s.'
                         % (command, p.exit_code, 1))
 
-    self.assert_(not os.path.isfile(xml_path))
+    self.assertTrue(not os.path.isfile(xml_path))
 
   def testFilteredTestXmlOutput(self):
     """Verifies XML output when a filter is applied.
@@ -272,11 +273,11 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
                extra_args)
     p = gtest_test_utils.Subprocess(command)
     if p.terminated_by_signal:
-      self.assert_(False,
+      self.assertTrue(False,
                    '%s was killed by signal %d' % (gtest_prog_name, p.signal))
     else:
-      self.assert_(p.exited)
-      self.assertEquals(expected_exit_code, p.exit_code,
+      self.assertTrue(p.exited)
+      self.assertEqual(expected_exit_code, p.exit_code,
                         "'%s' exited with code %s, which doesn't match "
                         'the expected exit code %s.'
                         % (command, p.exit_code, expected_exit_code))

@@ -7,6 +7,8 @@
 #include "tz_stack_neighborhood.h"
 #include "zstring.h"
 #include "swctreenode.h"
+#include "zswctree.h"
+#include "geometry/zgeometry.h"
 
 using namespace std;
 
@@ -33,12 +35,12 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
 
   ZGraph *graph = getBodyGraph();
 
-  if (!graph->size() > 0 && selected->size() > 0) {
+  if (graph->size() > 0 && selected->size() > 0) {
     vector<int> vertexArray(selected->size());
     vector<int>::iterator vertexArrayIter = vertexArray.begin();
     for (vector<vector<double> >::const_iterator iter = selected->begin();
          iter != selected->end(); ++iter, ++vertexArrayIter) {
-      *vertexArrayIter = FlyEm::ZSegmentationAnalyzer::channelCodeToId(*iter);
+      *vertexArrayIter = flyem::ZSegmentationAnalyzer::channelCodeToId(*iter);
     }
 
     set<int> neighborSet = graph->getNeighborSet(vertexArray);
@@ -50,7 +52,7 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
     for (set<int>::const_iterator iter = neighborSet.begin();
          iter != neighborSet.end(); ++iter, ++index) {
       vector<uint8_t> channelCode =
-          FlyEm::ZSegmentationAnalyzer::idToChannelCode(*iter, channelNumber);
+          flyem::ZSegmentationAnalyzer::idToChannelCode(*iter, channelNumber);
 
       for (size_t i = 0; i < channelNumber; i++) {
         (*selected)[index][i] = channelCode[i];
@@ -59,9 +61,9 @@ void ZFlyEmStackDoc::appendBodyNeighbor(vector<vector<double> > *selected)
   }
 }
 
-QString ZFlyEmStackDoc::dataInfo(int x, int y, int z) const
+QString ZFlyEmStackDoc::rawDataInfo(double x, double y, int z, neutube::EAxis axis) const
 {
-  QString info = ZStackDoc::dataInfo(x, y, z);
+  QString info = ZStackDoc::rawDataInfo(x, y, z, axis);
 
   ZStack *segmentation = getSegmentation();
 
@@ -69,9 +71,13 @@ QString ZFlyEmStackDoc::dataInfo(int x, int y, int z) const
     TZ_ASSERT(segmentation->channelNumber() != 0, "Empty stack");
 
     info += " | Body ID: ";
-    int bodyId =
-        FlyEm::ZSegmentationAnalyzer::channelCodeToId(
-          segmentation->color(x, y, z));
+    int wx = iround(x);
+    int wy = iround(y);
+    int wz = z;
+    zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
+//    ZGeometry::shiftSliceAxis(wx, wy, wz, axis);
+    uint64_t bodyId = flyem::ZSegmentationAnalyzer::channelCodeToId(
+          segmentation->color(wx, wy, wz));
 
 #ifdef _DEBUG_2
     if (bodyId < 0) {
@@ -233,14 +239,14 @@ void ZFlyEmStackDoc::deprecate(EComponent component)
     ZStackDoc::deprecate(component);
     break;
   case STACK_SEGMENTATION:
-    m_segmentationBundle.deprecate(FlyEm::ZSegmentationBundle::BODY_STACK);
+    m_segmentationBundle.deprecate(flyem::ZSegmentationBundle::BODY_STACK);
     break;
   case SEGMENTATION_OBJECT:
     break;
   case SEGMENTATION_INDEX_MAP:
     break;
   case SEGMENTATION_GRAPH:
-    m_segmentationBundle.deprecate(FlyEm::ZSegmentationBundle::BODY_GRAPH);
+    m_segmentationBundle.deprecate(flyem::ZSegmentationBundle::BODY_GRAPH);
     break;
   default:
     break;
@@ -254,16 +260,16 @@ bool ZFlyEmStackDoc::isDeprecated(EComponent component)
     return ZStackDoc::isDeprecated(component);
   case STACK_SEGMENTATION:
     return m_segmentationBundle.isDeprecated(
-          FlyEm::ZSegmentationBundle::BODY_STACK);
+          flyem::ZSegmentationBundle::BODY_STACK);
   case SEGMENTATION_OBJECT:
     return m_segmentationBundle.isDeprecated(
-          FlyEm::ZSegmentationBundle::BODY_STACK);
+          flyem::ZSegmentationBundle::BODY_STACK);
   case SEGMENTATION_INDEX_MAP:
     return m_segmentationBundle.isDeprecated(
-          FlyEm::ZSegmentationBundle::BODY_INDEX_MAP);
+          flyem::ZSegmentationBundle::BODY_INDEX_MAP);
   case SEGMENTATION_GRAPH:
     return m_segmentationBundle.isDeprecated(
-          FlyEm::ZSegmentationBundle::BODY_GRAPH);
+          flyem::ZSegmentationBundle::BODY_GRAPH);
   default:
     break;
   }

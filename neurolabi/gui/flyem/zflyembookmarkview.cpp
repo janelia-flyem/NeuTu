@@ -3,6 +3,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QSortFilterProxyModel>
+#include "QsLog/QsLog.h"
 
 #include "zflyembookmarklistmodel.h"
 
@@ -15,18 +16,23 @@ ZFlyEmBookmarkView::ZFlyEmBookmarkView(QWidget *parent) :
 void ZFlyEmBookmarkView::init()
 {
   m_bookmarkModel = NULL;
-  m_proxy = NULL;
+//  m_proxy = NULL;
 
   setFocusPolicy(Qt::NoFocus);
 
-  createMenu();
+  m_contextMenu = NULL;
+//  createMenu();
   connectSignalSlot();
+  m_enableDeletion = true;
 }
 
 void ZFlyEmBookmarkView::connectSignalSlot()
 {
   connect(this, SIGNAL(doubleClicked(QModelIndex)),
           this, SLOT(processDouleClick(QModelIndex)));
+  connect(this, SIGNAL(clicked(QModelIndex)),
+          this, SLOT(processSingleClick(QModelIndex)));
+
 }
 
 void ZFlyEmBookmarkView::processDouleClick(const QModelIndex &index)
@@ -37,20 +43,47 @@ void ZFlyEmBookmarkView::processDouleClick(const QModelIndex &index)
   }
 }
 
-void ZFlyEmBookmarkView::setBookmarkModel(ZFlyEmBookmarkListModel *model)
+void ZFlyEmBookmarkView::processSingleClick(const QModelIndex &index)
+{
+  const ZFlyEmBookmark *bookmark = getBookmark(index);
+  if (bookmark != NULL) {
+    LINFO() << bookmark->toLogString() + " is clicked";
+  }
+}
+
+
+void ZFlyEmBookmarkView::setBookmarkModel(
+    ZFlyEmBookmarkListModel *model)
 {
   m_bookmarkModel = model;
+  m_bookmarkModel->setUsed(true);
+  resizeColumnsToContents();
+  setSortingEnabled(true);
+  setModel(model->getProxy());
 
+  /*
+  m_proxy = proxy;
+  if (m_proxy != NULL) {
+    setSortingEnabled(true);
+    setModel(proxy);
+  } else {
+    setModel(m_bookmarkModel);
+    setSortingEnabled(false);
+  }
+  */
+
+  /*
   if (m_proxy == NULL) {
     m_proxy = new QSortFilterProxyModel(this);
     m_proxy->setSortCaseSensitivity(Qt::CaseInsensitive);
     m_proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-
-    setModel(m_proxy);
-    setSortingEnabled(true);
+    m_proxy->setFilterKeyColumn(-1);
   }
 
+  setModel(m_proxy);
+  setSortingEnabled(true);
   m_proxy->setSourceModel(m_bookmarkModel);
+  */
 }
 
 void ZFlyEmBookmarkView::createMenu()
@@ -64,6 +97,13 @@ void ZFlyEmBookmarkView::createMenu()
   m_contextMenu->addAction(unCheckAction);
   connect(unCheckAction, SIGNAL(triggered()),
           this, SLOT(uncheckCurrentBookmark()));
+
+  if (m_enableDeletion) {
+    QAction *deleteAction = new QAction("Delete Selected", this);
+    m_contextMenu->addAction(deleteAction);
+    connect(deleteAction, SIGNAL(triggered()),
+            this, SLOT(deleteSelectedBookmark()));
+  }
 }
 
 void ZFlyEmBookmarkView::contextMenuEvent(QContextMenuEvent *event)
@@ -71,6 +111,10 @@ void ZFlyEmBookmarkView::contextMenuEvent(QContextMenuEvent *event)
 #ifdef _DEBUG_2
   std::cout << "Context menu triggered." << std::endl;
 #endif
+
+  if (m_contextMenu == NULL) {
+    createMenu();
+  }
 
   if (m_contextMenu != NULL) {
     m_contextMenu->popup(event->globalPos());
@@ -95,12 +139,21 @@ ZFlyEmBookmarkListModel* ZFlyEmBookmarkView::getModel() const
 //  return qobject_cast<ZFlyEmBookmarkListModel*>(model());
 }
 
+QSortFilterProxyModel* ZFlyEmBookmarkView::getProxy() const
+{
+  if (getModel() == NULL) {
+    return NULL;
+  }
+
+  return getModel()->getProxy();
+}
+
 const ZFlyEmBookmark* ZFlyEmBookmarkView::getBookmark(
     const QModelIndex &viewIndex) const
 {
   QModelIndex index = viewIndex;
-  if (m_proxy != NULL) {
-    index = m_proxy->mapToSource(viewIndex);
+  if (getProxy() != NULL) {
+    index = getProxy()->mapToSource(viewIndex);
   }
 
   if (getModel() != NULL) {
@@ -110,20 +163,55 @@ const ZFlyEmBookmark* ZFlyEmBookmarkView::getBookmark(
   return NULL;
 }
 
+void ZFlyEmBookmarkView::checkBookmark(ZFlyEmBookmark *bookmark, bool checking)
+{
+  if (bookmark != NULL) {
+    bookmark->setChecked(checking);
+    if (checking) {
+      LINFO() << bookmark->toLogString() << "is checked";
+    } else {
+      LINFO() << bookmark->toLogString() << "is unchecked";
+    }
+  }
+}
+
 void ZFlyEmBookmarkView::checkCurrentBookmark(bool checking)
 {
   QItemSelectionModel *sel = selectionModel();
-  QItemSelection sourceSelection = m_proxy->mapSelectionToSource(sel->selection());
+  QItemSelection sourceSelection =
+      getProxy()->mapSelectionToSource(sel->selection());
 
   QModelIndexList selected = sourceSelection.indexes();
 
   foreach (const QModelIndex &index, selected) {
     ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
-    bookmark->setChecked(checking);
+    checkBookmark(bookmark, checking);
+
     getModel()->update(index.row());
 
     emit bookmarkChecked(bookmark);
-//    emit bookmarkChecked(bookmark.getDvidKey(), checking);
+  }
+}
+
+void ZFlyEmBookmarkView::deleteSelectedBookmark()
+{
+  QItemSelectionModel *sel = selectionModel();
+  QItemSelection sourceSelection =
+      getProxy()->mapSelectionToSource(sel->selection());
+
+  QModelIndexList selected = sourceSelection.indexes();
+
+  QList<ZFlyEmBookmark*> bookmarkList;
+  foreach (const QModelIndex &index, selected) {
+    ZFlyEmBookmark *bookmark = getModel()->getBookmark(index.row());
+
+    bookmarkList.append(bookmark);
+//    emit removingBookmark(bookmark);
+//    getModel()->removeRow(index.row());
+  }
+
+  if (!bookmarkList.empty()) {
+    emit removingBookmark(bookmarkList);
   }
 }
 
@@ -139,7 +227,7 @@ void ZFlyEmBookmarkView::uncheckCurrentBookmark()
 
 void ZFlyEmBookmarkView::sort()
 {
-  if (m_proxy != NULL) {
-    m_proxy->sort(m_proxy->sortColumn(), m_proxy->sortOrder());
+  if (getModel() != NULL) {
+    getModel()->sortBookmark();
   }
 }

@@ -1,10 +1,11 @@
 #include "zbiocytinprojectiondoc.h"
 #include "zstackframe.h"
+#include "zswctree.h"
 
 ZBiocytinProjectionDoc::ZBiocytinProjectionDoc(QObject *parent) :
   ZStackDoc(parent)
 {
-  setTag(NeuTube::Document::BIOCYTIN_PROJECTION);
+  setTag(neutube::Document::BIOCYTIN_PROJECTION);
 }
 
 ZBiocytinProjectionDoc::~ZBiocytinProjectionDoc()
@@ -25,8 +26,10 @@ void ZBiocytinProjectionDoc::setParentDoc(ZSharedPointer<ZStackDoc> parentDoc)
           this, SLOT(updateSwc()));
   connect(this, SIGNAL(swcModified()),
           m_parentDoc.get(), SIGNAL(swcModified()));
-  connect(this, SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
-          m_parentDoc.get(), SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)));
+  connect(this, SIGNAL(swcTreeNodeSelectionChanged(
+                         QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
+          m_parentDoc.get(), SIGNAL(swcTreeNodeSelectionChanged(
+                                      QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)));
   updateSwc();
 }
 

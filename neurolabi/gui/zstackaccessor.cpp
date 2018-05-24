@@ -1,7 +1,9 @@
 #include "zstackaccessor.h"
 #include <string.h>
+#include <algorithm>
 #include "tz_image_io.h"
 #include "tz_file_list.h"
+#include "c_stack.h"
 
 using namespace std;
 
@@ -51,8 +53,8 @@ void ZStackAccessor::updateBuffer(int z)
   int bufferShift = 0; //Shift of the buffer to load new image
 
   if ((z >= m_bufferZStart + bdepth) || (z < m_bufferZStart)) {
-    newBufferZStart = max(0, z - bdepth / 2);
-    newBufferZStart = min(newBufferZStart, stackDepth() - bdepth);
+    newBufferZStart = std::max(0, z - bdepth / 2);
+    newBufferZStart = std::min(newBufferZStart, stackDepth() - bdepth);
     zStart = newBufferZStart;
 
     int planeSize = m_width * m_height * m_byteNumberPerVoxel;
@@ -88,13 +90,13 @@ void ZStackAccessor::updateBuffer(int z)
         }
       }
     } else {
-      m_bufferDepth = min(static_cast<int>(m_fileList.size()),
+      m_bufferDepth = std::min(static_cast<int>(m_fileList.size()),
                           bufferDepthCapacity());
       m_buffer = (uint16_t*)
           malloc(m_width * m_height * bufferDepth() * m_byteNumberPerVoxel);
       depth = bufferDepth();
-      newBufferZStart = max(0, z - depth / 2);
-      newBufferZStart = min(newBufferZStart, stackDepth() - depth);
+      newBufferZStart = std::max(0, z - depth / 2);
+      newBufferZStart = std::min(newBufferZStart, stackDepth() - depth);
       zStart = newBufferZStart;
     }
   }
@@ -139,7 +141,7 @@ void ZStackAccessor::attachFileList(std::string dirPath, std::string ext)
 
 void ZStackAccessor::exportBuffer(std::string filePath)
 {
-  int depth = min(stackDepth(), bufferDepth());
+  int depth = std::min(stackDepth(), bufferDepth());
 
   if ((m_buffer != NULL) && (depth > 0)) {
     Stack stack;
@@ -150,7 +152,7 @@ void ZStackAccessor::exportBuffer(std::string filePath)
     stack.kind = m_byteNumberPerVoxel;
     stack.text = const_cast<char*>("");
 
-    Write_Stack_U(filePath.c_str(), &stack, NULL);
+    C_Stack::write(filePath, &stack);
   }
 }
 

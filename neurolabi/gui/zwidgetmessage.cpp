@@ -3,33 +3,55 @@
 #include <QStringList>
 #include <QDateTime>
 
-ZWidgetMessage::ZWidgetMessage() :
-  m_type(NeuTube::MSG_INFORMATION), m_target(TARGET_TEXT)
+ZWidgetMessage::ZWidgetMessage(ETarget target) :
+  m_type(neutube::MSG_INFORMATION), m_target(target)
 {
 }
 
-ZWidgetMessage::ZWidgetMessage(const QString &msg, NeuTube::EMessageType type,
+ZWidgetMessage::ZWidgetMessage(const QString &msg, neutube::EMessageType type,
                                ETarget target) :
   m_type(type), m_target(target)
 {
   m_message.append(msg);
 }
 
+ZWidgetMessage::ZWidgetMessage(const char *msg, neutube::EMessageType type,
+                               ETarget target) :
+  m_type(type), m_target(target)
+{
+  m_message.append(msg);
+}
+
+ZWidgetMessage::ZWidgetMessage(const std::string &msg, neutube::EMessageType type,
+                               ETarget target) :
+  m_type(type), m_target(target)
+{
+  m_message.append(msg.c_str());
+}
+
+ZWidgetMessage::ZWidgetMessage(
+    const QString &title, const QString &msg,
+    neutube::EMessageType type, ETarget target) :
+  m_title(title), m_type(type), m_target(target)
+{
+  m_message.append(msg);
+}
+
 QString ZWidgetMessage::ToHtmlString(
-    const QString &msg, NeuTube::EMessageType type)
+    const QString &msg, neutube::EMessageType type)
 {
   QString output = msg;
 
   if (!output.startsWith("<p>")) {
     switch (type) {
-    case NeuTube::MSG_INFORMATION:
+    case neutube::MSG_INFORMATION:
 //      output += "<font color = \"#007700\">test</font>";
 //      output = "<p style=\" margin-top:0px;\">" + output + "</p>";
       break;
-    case NeuTube::MSG_ERROR:
+    case neutube::MSG_ERROR:
       output = "<p><font color=\"#FF0000\">" + output + "</font></p>";
       break;
-    case NeuTube::MSG_WARNING:
+    case neutube::MSG_WARNING:
       output = "<p><font color=\"#777700\">" + output + "</font></p>";
       break;
     default:
@@ -56,7 +78,7 @@ QString ZWidgetMessage::toPlainString() const
 }
 
 QString ZWidgetMessage::ToHtmlString(
-    const QStringList &msgList, NeuTube::EMessageType type)
+    const QStringList &msgList, neutube::EMessageType type)
 {
   QString output;
 
@@ -84,4 +106,45 @@ void ZWidgetMessage::setMessage(const QString &msg)
   if (!msg.isEmpty()) {
     m_message.append(msg);
   }
+}
+
+bool ZWidgetMessage::hasMessage() const
+{
+  return !m_message.isEmpty();
+}
+
+ZWidgetMessageFactory::operator ZWidgetMessage() const
+{
+  return m_message;
+}
+
+ZWidgetMessageFactory::ZWidgetMessageFactory(const char *msg)
+{
+  m_message.setMessage(msg);
+}
+
+ZWidgetMessageFactory ZWidgetMessageFactory::Make(const char *msg)
+{
+  return ZWidgetMessageFactory(msg);
+}
+
+ZWidgetMessageFactory& ZWidgetMessageFactory::to(ZWidgetMessage::ETarget target)
+{
+  m_message.setTarget(target);
+
+  return *this;
+}
+
+ZWidgetMessageFactory& ZWidgetMessageFactory::as(neutube::EMessageType type)
+{
+  m_message.setType(type);
+
+  return *this;
+}
+
+ZWidgetMessageFactory& ZWidgetMessageFactory::title(const char *title)
+{
+  m_message.setTitle(title);
+
+  return *this;
 }

@@ -1,7 +1,7 @@
 #ifndef ZINTCUBOIDFACE_H
 #define ZINTCUBOIDFACE_H
 
-#include "neutube.h"
+#include "neutube_def.h"
 #include <vector>
 #include "tz_cuboid_i.h"
 #include "zpoint.h"
@@ -15,7 +15,7 @@ class ZIntCuboidFace
 {
 public:
   ZIntCuboidFace();
-  ZIntCuboidFace(NeuTube::EAxis axis, bool positive) {
+  ZIntCuboidFace(neutube::EAxis axis, bool positive) {
     m_normalAxis = axis;
     m_isNormalPositive = positive;
     m_z = 0;
@@ -79,8 +79,8 @@ public:
 
   void set(const Corner &firstCorner, const Corner &lastCorner);
   void set(int x0, int y0, int x1, int y1);
-  void setNormal(NeuTube::EAxis axis);
-  void setNormal(NeuTube::EAxis axis, bool isPositive);
+  void setNormal(neutube::EAxis axis);
+  void setNormal(neutube::EAxis axis, bool isPositive);
   void setZ(int z);
 
   void flip();
@@ -93,7 +93,7 @@ public:
   bool contains(Corner pt) const;
   bool isWithin(const ZIntCuboidFace &face) const;
 
-  inline NeuTube::EAxis getAxis() const { return m_normalAxis; }
+  inline neutube::EAxis getAxis() const { return m_normalAxis; }
 
   inline bool isNormalPositive() const { return m_isNormalPositive; }
 
@@ -113,7 +113,7 @@ private:
   Corner m_firstCorner;
   Corner m_lastCorner;
   int m_z;
-  NeuTube::EAxis m_normalAxis;
+  neutube::EAxis m_normalAxis;
   bool m_isNormalPositive;
 };
 

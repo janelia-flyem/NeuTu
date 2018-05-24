@@ -15,7 +15,10 @@
 #  define __USE_BSD
 #endif
 #include <string.h>
+#include <memory.h>
+#include <stdlib.h>
 #include <ctype.h>
+
 #include "tz_utilities.h"
 #include "tz_error.h"
 #include "tz_swc_tree.h"
@@ -61,7 +64,7 @@ void Default_Swc_Tree_Node(Swc_Tree_Node *node)
     node->feature = 0.0;
     node->index = -1;
     node->flag = 0;
-    node->tree_state = 0;
+    node->data_link = NULL;
   }
 }
 
@@ -833,7 +836,7 @@ void Swc_Tree_Node_Set_Parent(Swc_Tree_Node *tn, Swc_Tree_Node *parent)
       Swc_Tree_Node_Data(tn)->parent_id = Swc_Tree_Node_Id(parent);
       Swc_Tree_Node_Add_Child(parent, tn);
     }
-    tn->tree_state = parent->tree_state;
+    //tn->tree_state = parent->tree_state;
   } 
 }
 
@@ -2096,6 +2099,142 @@ static int swc_tree_string_max_id(const char *swc_string)
   return max_id;
 }
 
+static int count_double(const char *str)
+{
+  int n = 0;
+  int state = 0;
+
+  BOOL has_number = FALSE;
+
+  while (*str) {
+    switch (state) {
+      case 0:
+        if (has_number) {
+          n++;
+          has_number = FALSE;
+        }
+
+        if (isdigit(*str)) {
+          state = 2;
+          has_number = TRUE;
+        } else if (*str == '+' || *str == '-') {
+          state = 1;
+        } else if ((*str) == '.') {
+          state = 8;
+        }
+
+        ++str;
+        break;
+      case 1:
+        if (isdigit(*str)) {
+          state = 2;
+          has_number = TRUE;
+          ++str;
+        } else if ((*str) == '.') {
+          state = 8;
+          ++str;
+        } else {
+          state = 0;
+        }
+        break;
+      case 8:
+        if (isdigit(*str)) {
+          state = 3;
+          has_number = TRUE;
+          ++str;
+        } else {
+          state = 0;
+        }
+        break;
+      case 2:
+        if (*str == '.') {
+          state = 3;
+        } else if (*str == 'e' || *str == 'E') {
+          state = 5;
+        } else if (!isdigit(*str)) {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 3:
+        if (*str == 'e' || *str == 'E') {
+          state = 5;
+        } else if (isdigit(*str)) {
+          state = 4;
+          has_number = TRUE;
+        } else {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 4:
+        if (*str == 'e' || *str == 'E') {
+          state = 5;
+        } else if (!isdigit(*str)) {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 5:
+        if (*str == '+' || *str == '-') {
+          state = 6;
+        } else if (isdigit(*str)) {
+          state = 7;
+        } else {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 6:
+        if (isdigit(*str)) {
+          state = 7;
+        } else {
+          state = 0;
+        }
+        ++str;
+        break;
+      case 7:
+        if (!isdigit(*str)) {
+          state =0;
+        }
+        ++str;
+        break;
+      default:
+        state = 0;
+        ++str;
+        break;
+    }
+  }
+
+  if (has_number) {
+    ++n;
+  }
+
+  return n;
+}
+
+size_t step_line(char *str)
+{
+    size_t offset = 0;
+
+    int line_count = 0;
+    if (str != NULL) {
+        while (str[offset] != '\0') {
+            ++offset;
+            if (str[offset] == '\r' || str[offset] == '\n') {
+                str[offset] = '\0';
+                ++offset;
+                line_count++;
+            }
+            if (line_count > 0 && !tz_isspace(str[offset])) {
+                break;
+            }
+        }
+    }
+
+    return offset;
+}
+
 Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
 {
   if (swc_string == NULL) {
@@ -2131,15 +2270,22 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
 
   double value[MAX_SWC_FIELD_NUMBER];
   
-  const char *sep = "\n\r";
-  char *line = NULL;
+//  const char *sep = "\n\r";
+//  char *line = NULL;
+  size_t len = strlen(swc_string);\
+  size_t offset = 0;
+#if 0
 #if defined(_WIN64) || defined(_WIN32)
   while ((line = strtok(swc_string, sep)) != NULL) {
     swc_string = NULL;
 #else
   while ((line = strsep(&swc_string, sep)) != NULL) {
 #endif
-    strtrim(line);
+#endif
+  while (offset < len) {
+    char *line = swc_string + offset;
+    offset += step_line(line);
+//    strtrim(line);
     if (strlen(line) > 0) {
       int field_number;
       int cpos;
@@ -2164,35 +2310,38 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
       printf("%s\n", line);
       fflush(stdout);
 #endif
+      int number_count = count_double(line);
+      if (number_count <= MAX_SWC_FIELD_NUMBER) {
+        String_To_Double_Array(line, value, &field_number);
 
-      String_To_Double_Array(line, value, &field_number);
+        if (field_number >= 7) {
+          Swc_Node node;
+          Default_Swc_Node(&node);
+          node.id = (int) value[0];
+          node.type = (int) value[1];
+          node.x = value[2];
+          node.y = value[3];
+          node.z = value[4];
+          node.d = value[5];
+          node.parent_id = (int) value[6];
 
-      if (field_number >= 7) {
-        Swc_Node node;
-        Default_Swc_Node(&node);
-        node.id = (int) value[0];
-        node.type = (int) value[1];
-        node.x = value[2];
-        node.y = value[3];
-        node.z = value[4];
-        node.d = value[5];
-        node.parent_id = (int) value[6];
+          map[node.id + 1].tree_node = New_Swc_Tree_Node();
+          if (field_number >= 8) {
+            node.label = value[7];
+          }
+          if (field_number >= 9) {
+            map[node.id + 1].tree_node->feature = value[8];
+          }
+          if (field_number >= 10) {
+            map[node.id + 1].tree_node->weight = value[9];
+          }
 
-        map[node.id + 1].tree_node = New_Swc_Tree_Node();
-        if (field_number >= 8) {
-          node.label = value[7];
+          map[node.id + 1].tree_node->node = node;
+          n++;
         }
-        if (field_number >= 9) {
-          map[node.id + 1].tree_node->feature = value[8];
-        }
-        if (field_number >= 10) {
-          map[node.id + 1].tree_node->weight = value[9];
-        }
-
-        map[node.id + 1].tree_node->node = node;
-        n++;
       }
     }
+//    free(line);
   }
 
   Swc_Tree *tree = New_Swc_Tree();
@@ -2204,28 +2353,42 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
   map[0].tree_node = tree->root;
 
   for (i = 1; i <= max_id + 1; i++) {
-    if (map[i].tree_node != NULL) {
-      map[i].tree_node->parent = 
-	map[map[i].tree_node->node.parent_id + 1].tree_node;
-
-      if (map[map[i].tree_node->node.parent_id + 1].tree_node == NULL) {
-        printf("WARNING : Node %d does not exist.\n", 
-            map[i].tree_node->node.parent_id);
-        map[i].tree_node->parent = tree->root;
-        map[i].tree_node->node.parent_id = -1;
+    Swc_Tree_Node *tn = map[i].tree_node;
+    if (tn != NULL) {
+      BOOL is_id_normal = TRUE;
+      if (tn->node.id == tn->node.parent_id) {
+        printf("WARNING : Node %d has circuilar parent id.\n",
+            tn->node.parent_id);
+        is_id_normal = FALSE;
+      } else if (map[tn->node.parent_id + 1].tree_node == NULL) {
+        printf("WARNING : Node %d does not exist.\n",
+            tn->node.parent_id);
+        is_id_normal = FALSE;
       }
 
-      if (map[map[i].tree_node->node.parent_id + 1].tree_node->first_child 
-	  == NULL) {
-	map[map[i].tree_node->node.parent_id + 1].tree_node->first_child = 
-	  map[i].tree_node;
+      if (is_id_normal == TRUE) {
+        tn->parent = map[tn->node.parent_id + 1].tree_node;
       } else {
+        tn->parent = tree->root;
+        tn->node.parent_id = -1;
+      }
+
+      Swc_Tree_Node *sibling = 
+        map[tn->node.parent_id + 1].tree_node->first_child;
+      if (sibling == NULL) {
+	map[tn->node.parent_id + 1].tree_node->first_child = tn;
+      } else {
+        tn->next_sibling = sibling;
+        map[tn->node.parent_id + 1].tree_node->first_child = tn;
+        
+        /*
 	Swc_Tree_Node *sibling = 
 	  map[map[i].tree_node->node.parent_id + 1].tree_node->first_child;
 	while (sibling->next_sibling != NULL) {
 	  sibling = sibling->next_sibling;
 	}
 	sibling->next_sibling = map[i].tree_node;
+        */
       }
     }
   }
@@ -2927,7 +3090,7 @@ Swc_Tree_Node* Swc_Tree_Next(Swc_Tree *tree)
 
   if (tn != NULL) {
     //tree->iterator = Swc_Tree_Node_Next(tn);
-    tn->tree_state = tree->tree_state;
+    //tn->tree_state = tree->tree_state;
     tree->iterator = tn->next;
   }
 

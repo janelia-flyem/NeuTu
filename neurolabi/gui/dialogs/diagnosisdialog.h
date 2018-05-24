@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+class QTextBrowser;
+
 namespace Ui {
 class DiagnosisDialog;
 }
@@ -16,8 +18,8 @@ public:
   ~DiagnosisDialog();
 
   void scrollToBottom();
-  void setVideoCardInfo(const QString &str);
-  void setVideoCardInfo(const QStringList &info);
+  void setSystemInfo(const QString &str);
+  void setSystemInfo(const QStringList &info);
 
 public slots:
   void scrollToBottom(int index);
@@ -26,6 +28,7 @@ private:
   void loadErrorFile();
   void loadWarnFile();
   void loadInfoFile();
+  static void LoadFile(const std::string &filePath, QTextBrowser *browser);
 
 private:
   Ui::DiagnosisDialog *ui;

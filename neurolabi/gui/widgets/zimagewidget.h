@@ -9,6 +9,10 @@
 #include <QWidget>
 #include <QMenu>
 #include <QVector>
+#include <QKeyEvent>
+
+#include "neutube_def.h"
+#include "zviewproj.h"
 
 class QPaintEvent;
 class ZPaintBundle;
@@ -30,7 +34,7 @@ class ZImageWidget : public QWidget {
   Q_OBJECT
 
 public:
-  ZImageWidget(QWidget *parent, ZImage *image = NULL);
+  ZImageWidget(QWidget *parent);
   virtual ~ZImageWidget();
 
   inline void setPaintBundle(ZPaintBundle *bd) { m_paintBundle = bd; }
@@ -39,21 +43,31 @@ public:
   void setObjectCanvas(ZPixmap *canvas);
   ZPixmap* getObjectCanvas() { return m_objectCanvas; }
   ZPixmap* getTileCanvas() { return m_tileCanvas; }
+  ZPixmap* getDynamicObjectCanvas() { return m_dynamicObjectCanvas; }
   void setMask(ZImage *mask, int channel);
   void setTileCanvas(ZPixmap *canvas);
+  void setDynamicObjectCanvas(ZPixmap *canvas);
   void setActiveDecorationCanvas(ZPixmap *canvas);
   void removeCanvas(ZPixmap *canvas);
   void removeCanvas(ZImage *canvas);
+
+  bool freeMoving() const {
+    return m_freeMoving;
+  }
 
   /*!
    * \brief Reset the image widget by removing all canvases and view information.
    */
   void reset();
 
-  void setViewPort(const QRect &rect);
-  void setProjRegion(const QRect &rect);
+  enum EViewPortAdjust {
+    VIEWPORT_NO_ADJUST, VIEWPORT_EXPAND, VIEWPORT_SHRINK
+  };
+
+//  void setViewPort(const QRect &rect);
+  void setProjRegion(const QRectF &rect);
   void setView(double zoomRatio, const QPoint &zoomOffset);
-  void setView(const QRect &viewPort, const QRect &projRegion);
+  void setView(const QRect &viewPort, const QRectF &projRegion);
 
   /*!
    * \brief Set view port offset
@@ -63,6 +77,19 @@ public:
    */
   void setViewPortOffset(int x, int y);
 
+  const ZViewProj& getViewProj() const {
+    return m_viewProj;
+  }
+
+  void setViewProj(const ZViewProj &viewProj) {
+    m_viewProj = viewProj;
+  }
+
+  void setViewProj(int x0, int y0, double zoom);
+  void setViewProj(const QPoint &pt, double zoom);
+  void resetViewProj(int x0, int y0, int w, int h);
+  void resetViewProj(int x0, int y0, int w, int h, const QRect &viewPort);
+
   /*!
    * \brief Move viewport.
    *
@@ -70,6 +97,8 @@ public:
    * the first corner of the canvas is (\a x, \a y).
    */
   void moveViewPort(int x, int y);
+
+  void moveViewPort(const QPoint &src, const QPointF &dst);
 
   void setZoomRatio(double zoomRatio);
   //inline int zoomRatio() const { return m_zoomRatio; }
@@ -80,28 +109,44 @@ public:
   void decreaseZoomRatio(int x, int y, bool usingRef = true);
 
   void zoom(double zoomRatio);
+  void zoom(double zoomRatio, EViewPortAdjust option);
+
+  void zoomTo(const QPoint &center, int width);
+
+  void setViewPort(const QRect &rect);
+
+  void restoreFromBadView();
 
   /*!
    * \brief Zoom an image at a fixed point
    *
    * Zoom an image by keeping the screen point \a ref relatively constant.
    */
-  void zoom(double zoomRatio, const QPoint &ref);
+  void zoom(double zoomRatio, const QPointF &ref);
+//  void zoom(double zoomRatio, const QPointF &ref, EViewPortAdjust option);
+
+//  void zoomWithWidthAligned(int x0, int x1, int cy);
+//  void zoomWithWidthAligned(int x0, int x1, double pw, int cy);
+//  void zoomWithHeightAligned(int y0, int y1, double ph, int cx);
 
   void setCanvasRegion(int x0, int y0, int w, int h);
 
   //void setData(const uchar *data, int width, int height, QImage::Format format);
   QSize minimumSizeHint() const;
   QSize sizeHint() const;
-  bool isColorTableRequired();
+//  bool isColorTableRequired();
   void addColorTable();
 
   QSize canvasSize() const;
   QSize screenSize() const;
-  inline QSize projectSize() const { return m_projRegion.size(); }
-  inline const QRect& projectRegion() const { return m_projRegion; }
-  inline const QRect& viewPort() const { return m_viewPort; }
-  inline const QRect& canvasRegion() const { return m_canvasRegion; }
+//  inline QSizeF projectSize() const { return m_projRegion.size(); }
+//  inline const QRectF& projectRegion() const { return m_projRegion; }
+//  inline const QRect& viewPort() const { return m_viewPort; }
+  QSizeF projectSize() const;
+  QRectF projectRegion() const;
+  QRect viewPort() const;
+  QRect canvasRegion() const;
+
 
   /*!
    * \brief Map the widget coordinates to world coordinates
@@ -156,6 +201,29 @@ public:
     return m_paintBlocked;
   }
 
+  void setSliceAxis(neutube::EAxis axis) {
+    m_sliceAxis = axis;
+  }
+
+  neutube::EAxis getSliceAxis() const {
+    return m_sliceAxis;
+  }
+
+  void setHoverFocus(bool on) {
+    m_hoverFocus = on;
+  }
+
+  void setSmoothDisplay(bool on) {
+    m_smoothDisplay = on;
+  }
+
+  void hideZoomHint();
+
+  void showCrossHair(bool on);
+  void updateCrossHair(int x, int y);
+
+  void maximizeViewPort();
+
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -163,6 +231,11 @@ public:
   virtual void mouseDoubleClickEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
   virtual void resizeEvent(QResizeEvent *event);
+
+protected:
+  void keyPressEvent(QKeyEvent *event);
+  bool event(QEvent *event);
+  void showEvent(QShowEvent *event);
 
 public slots:
   void updateView();
@@ -179,6 +252,8 @@ protected:
   int getMaxZoomRatio() const;
 
 private:
+  void init();
+
   void setValidViewPortBackup(const QRect &viewPort);
   void setValidViewPort(const QRect &viewPort);
   /*!
@@ -188,22 +263,41 @@ private:
    * screen coordinates (\a px, \a py).
    */
   QRect alignViewPort(
+      const QRect &viewPort, double vx, double vy, double px, double py,
+      double ratio) const;
+  QRect alignViewPort(
       const QRect &viewPort, int vx, int vy, int px, int py) const;
 
-  void maximizeViewPort();
+  void alignProjRegion(double ratio);
+
+
+  QRect adjustViewPort(const QRect &viewPort, EViewPortAdjust option);
+  void adjustViewPort(EViewPortAdjust option);
+
+  /*!
+   * \brief Maximize the projection region while ensuring that at least one of
+   *        the deminesions of the view port is fully covered.
+   */
+  void adjustProjRegion();
+  void adjustProjRegion(const QRect &viewPort);
   QSize getMaskSize() const;
   void paintObject();
   void paintZoomHint();
+  void paintCrossHair();
+
+  bool isBadView() const;
 
 private:
   ZImage *m_image;
   QVector<ZImage*> m_mask;
   ZPixmap *m_objectCanvas;
   ZPixmap *m_tileCanvas;
+  ZPixmap *m_dynamicObjectCanvas;
   ZPixmap *m_activeDecorationCanvas;
+//  ZPixmap *m_widgetCanvas;
 
-  QRect m_viewPort; /* viewport, in world coordinates */
-  QRect m_projRegion; /* projection region */
+//  QRect m_viewPort; /* viewport, in world coordinates */
+//  QRectF m_projRegion; /* projection region */
   //int m_zoomRatio;
 //  bool m_isowner;
   QMenu *m_leftButtonMenu;
@@ -211,10 +305,20 @@ private:
   ZPaintBundle *m_paintBundle;
   bool m_isViewHintVisible;
   bool m_paintBlocked;
-  QRect m_canvasRegion; //Whole canvas region
+//  QRect m_canvasRegion; //Whole canvas region
+
+  ZViewProj m_viewProj;
+
+  neutube::EAxis m_sliceAxis;
 //  QSize m_canvasSize;
 
   bool m_freeMoving;
+  bool m_hoverFocus;
+  bool m_smoothDisplay;
+  bool m_showingCrossHair;
+  bool m_showingZoomHint = true;
+  bool m_isReady;
+  QPoint m_hairCenter;
 };
 
 #endif

@@ -11,10 +11,14 @@ title: Skeletonization Service
             "type": "object",
             "properties": {
               "dvid-server": { 
-                "description": "location of DVID server (will try to find on service proxy if not provided)",
+                "description": "location of DVID server",
                 "type": "string" 
               },
               "uuid": { "type": "string" },
+              "labelvol": {
+                "type": "string",
+                "description": "Name of the labelvol data for skeletonization. The default value is bodies."
+              }
               "bodies": { 
                 "description": "Array of body ids",
                 "type": "array",

@@ -29,13 +29,13 @@ ZFrameFactory::MakeFlyEmDataFrame(const QString &bundlePath)
 
 ZStackFrame*
 ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
-    NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+    neutube::Document::ETag tag, ZStackFrame *parentFrame)
 {
   ZStackFrame *frame = NULL;
   switch (tag) {
-  case NeuTube::Document::FLYEM_MERGE:
+  case neutube::Document::FLYEM_MERGE:
     frame = ZFlyEmBodyMergeFrame::Make(NULL);
-    frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+    frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
     frame->setObjectDisplayStyle(ZStackObject::SOLID);
     break;
   default:
@@ -57,13 +57,13 @@ ZFrameFactory::MakeStackFrame(ZStackDocReader &reader,
 
 ZStackFrame*
 ZFrameFactory::MakeStackFrame(
-    NeuTube::Document::ETag tag, ZStackFrame *parentFrame)
+    neutube::Document::ETag tag, ZStackFrame *parentFrame)
 {
   ZStackFrame *frame = NULL;
   switch (tag) {
-  case NeuTube::Document::FLYEM_MERGE:
+  case neutube::Document::FLYEM_MERGE:
     frame = ZFlyEmBodyMergeFrame::Make(NULL);
-    frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+    frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
     break;
   default:
     frame = ZStackFrame::Make(NULL);

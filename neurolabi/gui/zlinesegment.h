@@ -74,7 +74,22 @@ public:
   ZPoint getVector() const;
   ZPoint getDirection() const;
 
+  double getLowerX() const;
+  double getUpperX() const;
+  double getLowerY() const;
+  double getUpperY() const;
+  double getLowerZ() const;
+  double getUpperZ() const;
+
   void print() const;
+
+  void shiftSliceAxis(neutube::EAxis axis);
+
+  /*!
+   * \brief A valid line segment has different start and end.
+   * \return
+   */
+  bool isValid() const;
 
 private:
   ZPoint m_start;

@@ -11,6 +11,8 @@ class ZFlyEmBodyMergeProject;
 class ZStackDoc;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
+class ZColorLabel;
+class ZFlyEmProofMvc;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -37,6 +39,7 @@ signals:
   void showingFullSegmentation();
   void coarseBodyViewTriggered();
   void skeletonViewTriggered();
+  void meshViewTriggered();
   void bodyViewTriggered();
   void savingMerge();
   void committingMerge();
@@ -46,22 +49,36 @@ signals:
   void selectingBody();
   void bookmarkChecked(QString, bool);
   void bookmarkChecked(ZFlyEmBookmark*);
+  void removingBookmark(ZFlyEmBookmark*);
+  void removingBookmark(QList<ZFlyEmBookmark*>);
   void userBookmarkChecked(ZFlyEmBookmark*);
   void changingColorMap(QString);
   void clearingBodyMergeStage();
+  void exportingSelectedBody();
+  void exportingSelectedBodyLevel();
+  void exportingGrayscale();
+  void exportingSelectedBodyStack();
+  void skeletonizingSelectedBody();
+  void updatingMeshForSelectedBody();
+  void showingInfo();
+  void reportingBodyCorruption();
 
 public slots:
   void setInfo(const QString &info);
+  void updateWidget(const ZDvidTarget &target);
   void setDvidInfo(const ZDvidTarget &target);
-  void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
-  void clearBookmarkTable(ZFlyEmBodyMergeProject *project);
-  void updateUserBookmarkTable(ZStackDoc *doc);
+//  void updateBookmarkTable(ZFlyEmBodyMergeProject *project);
+//  void clearBookmarkTable(ZFlyEmBodyMergeProject *project);
+//  void updateUserBookmarkTable(ZStackDoc *doc);
+//  void removeBookmarkFromTable(ZFlyEmBookmark *bookmark);
+  void updateLatency(int t);
+  void updateWidget(ZFlyEmProofMvc *mvc);
 
 private slots:
   void setSegmentSize();
   void incSegmentSize();
   void decSegmentSize();
-  void showFullSegmentation();
+  void showFullSegmentation(bool on);
   void goToPosition();
   void goToBody();
   void selectBody();
@@ -70,19 +87,32 @@ private slots:
   void locateBookmark(const ZFlyEmBookmark *bookmark);
   void changeColorMap(QAction *action);
   void enableNameColorMap(bool on);
+//  void enableSequencerColorMap(bool on);
   void clearBodyMergeStage();
+  void exportSelectedBody();
+  void exportSelectedBodyLevel();
+  void exportSelectedBodyStack();
+  void skeletonizeSelectedBody();
+  void updateMeshForSelectedBody();
+  void exportGrayscale();
 
 private:
   void createMenu();
+  void createColorMenu();
   QSortFilterProxyModel *createSortingProxy(ZFlyEmBookmarkListModel *model);
 
 private:
   Ui::FlyEmProofControlForm *ui;
   QMenu *m_mainMenu;
-  ZFlyEmBookmarkListModel m_assignedBookmarkList;
-  ZFlyEmBookmarkListModel m_userBookmarkList;
+//  ZFlyEmBookmarkListModel *m_assignedBookmarkList;
+//  ZFlyEmBookmarkListModel *m_userBookmarkList;
 
   QAction *m_nameColorAction;
+
+//  QAction *m_sequencerColorAction;
+//  QAction *m_protocolColorAction;
+
+  ZColorLabel *m_latencyWidget;
 
 //  QSortFilterProxyModel *m_bookmarkProxy;
 //  QSortFilterProxyModel *m_userBookmarkProxy;

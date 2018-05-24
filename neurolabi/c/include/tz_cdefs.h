@@ -14,6 +14,12 @@
 #  include <limits>
 #endif
 
+#ifdef _MSC_VER // will compile neurolabi as cpp code if use msvc
+#  define __BEGIN_DECLS
+#  define __END_DECLS
+#  define PUBLIC_API
+#  define PUBLIC_VAR extern
+#else
 #ifdef _WIN32
 #  ifdef __cplusplus
 #    define __BEGIN_DECLS extern "C" {
@@ -35,6 +41,7 @@
 #  include <sys/cdefs.h>
 #  define PUBLIC_API
 #  define PUBLIC_VAR extern
+#endif
 #endif
 
 #ifdef _DEBUG_
@@ -59,6 +66,9 @@
 #  define INVALID_ARRAY_INDEX 9223372036854775807L
 #endif
 
+#ifdef _MSC_VER
+#include <windows.h>
+#else
 /* The BOOL type is the same as the type of a logical statement, e.g. 2 > 1 */
 #ifndef HAVE_BOOL
 #  ifdef C99
@@ -74,6 +84,7 @@
 #      define FALSE 0
 #    endif
 #  endif
+#endif
 #endif
 
 /* typedef enum {FALSE = 0, TRUE} BOOL; */ /* might not work for C++*/
@@ -118,11 +129,7 @@
 #  else
 #    define _NAN (std::numeric_limits<double>::quiet_NaN())
 #  endif
-#ifdef _MSC_VER
-#define NaN _NAN
-#else
 static const double NaN = _NAN;
-#endif
 #endif
 
 #ifndef _INFINITY
@@ -132,23 +139,13 @@ static const double NaN = _NAN;
 #  else
 #    define _INFINITY (std::numeric_limits<double>::infinity())
 #  endif
-#ifdef _MSC_VER
-#define Infinity _INFINITY
-#else
 static const double Infinity = _INFINITY;
-#endif
 #endif
 
 #define UNUSED_PARAMETER(var) if (var) {}
 
-#endif
-
 #ifdef _MSC_VER
 #define __func__ __FUNCTION__
-#include <cmath>
-#define isnan _isnan
-#define lrint(x) (floor((x)+((x)>0) ? 0.5 : -0.5))
-#define isinf(x) ((x)==_INFINITY)
-#define INFINITY _INFINITY
-#define round(x) floor((x)+.5)
+#endif
+
 #endif

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+datadir='/Users/zhaot/Work/neutube/neurolabi/data/backup/splits'
+file_list=`ls $datadir/*.dvid`
+for file in $file_list
+do
+  filename=$(basename $file)
+  echo $filename
+  bodyid=`echo $filename | cut -d_ -f1`
+  echo $bodyid
+  http POST "http://emdata1.int.janelia.org:7000/api/node/78b/bodies/split/$bodyid" < $file
+done
+ 

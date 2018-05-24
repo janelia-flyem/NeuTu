@@ -1,6 +1,6 @@
 // Boost.Geometry Index
 //
-// Copyright (c) 2011-2014 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2011-2016 Adam Wulkiewicz, Lodz, Poland.
 //
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -24,10 +24,28 @@ struct equals
     }
 };
 
+template <typename Geometry, typename Tag>
+struct equals<Geometry *, Tag>
+{
+    inline static bool apply(const Geometry * g1, const Geometry * g2)
+    {
+        return g1 == g2;
+    }
+};
+
 template <typename T>
 struct equals<T, void>
 {
     inline static bool apply(T const& v1, T const& v2)
+    {
+        return v1 == v2;
+    }
+};
+
+template <typename T>
+struct equals<T *, void>
+{
+    inline static bool apply(const T * v1, const T * v2)
     {
         return v1 == v2;
     }

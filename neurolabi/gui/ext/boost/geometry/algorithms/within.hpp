@@ -4,8 +4,10 @@
 // Copyright (c) 2008-2012 Bruno Lalande, Paris, France.
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 
-// This file was modified by Oracle on 2013, 2014.
-// Modifications copyright (c) 2013, 2014 Oracle and/or its affiliates.
+// This file was modified by Oracle on 2013, 2014, 2017.
+// Modifications copyright (c) 2013-2017 Oracle and/or its affiliates.
+
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
@@ -13,8 +15,6 @@
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
-
-// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 #ifndef BOOST_GEOMETRY_ALGORITHMS_WITHIN_HPP
 #define BOOST_GEOMETRY_ALGORITHMS_WITHIN_HPP
@@ -24,8 +24,9 @@
 
 #include <boost/concept_check.hpp>
 #include <boost/range.hpp>
-#include <boost/variant/static_visitor.hpp>
+
 #include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
 #include <boost/variant/variant_fwd.hpp>
 
 #include <boost/geometry/algorithms/make.hpp>
@@ -51,6 +52,7 @@
 #include <boost/geometry/views/reversible_view.hpp>
 
 #include <boost/geometry/algorithms/detail/within/point_in_geometry.hpp>
+#include <boost/geometry/algorithms/relate.hpp>
 
 #include <boost/geometry/algorithms/detail/overlay/get_turns.hpp>
 #include <boost/geometry/algorithms/detail/overlay/do_reverse.hpp>
@@ -74,9 +76,13 @@ struct use_point_in_geometry
 struct use_relate
 {
     template <typename Geometry1, typename Geometry2, typename Strategy>
-    static inline bool apply(Geometry1 const& geometry1, Geometry2 const& geometry2, Strategy const& /*strategy*/)
+    static inline bool apply(Geometry1 const& geometry1, Geometry2 const& geometry2, Strategy const& strategy)
     {
-        return Strategy::apply(geometry1, geometry2);
+        typedef typename detail::de9im::static_mask_within_type
+            <
+                Geometry1, Geometry2
+            >::type within_mask;
+        return geometry::relate(geometry1, geometry2, within_mask(), strategy);
     }
 };
 
@@ -283,7 +289,7 @@ struct within
                              Geometry2 const& geometry2,
                              Strategy const& strategy)
     {
-        concept::within::check
+        concepts::within::check
             <
                 typename tag<Geometry1>::type,
                 typename tag<Geometry2>::type,
@@ -299,23 +305,8 @@ struct within
                              Geometry2 const& geometry2,
                              default_strategy)
     {
-        typedef typename point_type<Geometry1>::type point_type1;
-        typedef typename point_type<Geometry2>::type point_type2;
-
         typedef typename strategy::within::services::default_strategy
             <
-                typename tag<Geometry1>::type,
-                typename tag<Geometry2>::type,
-                typename tag<Geometry1>::type,
-                typename tag_cast<typename tag<Geometry2>::type, areal_tag>::type,
-                typename tag_cast
-                    <
-                        typename cs_tag<point_type1>::type, spherical_tag
-                    >::type,
-                typename tag_cast
-                    <
-                        typename cs_tag<point_type2>::type, spherical_tag
-                    >::type,
                 Geometry1,
                 Geometry2
             >::type strategy_type;
@@ -338,8 +329,8 @@ struct within
                              Geometry2 const& geometry2,
                              Strategy const& strategy)
     {
-        concept::check<Geometry1 const>();
-        concept::check<Geometry2 const>();
+        concepts::check<Geometry1 const>();
+        concepts::check<Geometry2 const>();
         assert_dimension_equal<Geometry1, Geometry2>();
 
         return resolve_strategy::within::apply(geometry1,
@@ -357,9 +348,9 @@ struct within<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>, Geometry2>
         Geometry2 const& m_geometry2;
         Strategy const& m_strategy;
 
-        visitor(Geometry2 const& geometry2, Strategy const& strategy):
-        m_geometry2(geometry2),
-        m_strategy(strategy)
+        visitor(Geometry2 const& geometry2, Strategy const& strategy)
+            : m_geometry2(geometry2)
+            , m_strategy(strategy)
         {}
 
         template <typename Geometry1>
@@ -377,10 +368,8 @@ struct within<boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>, Geometry2>
           Geometry2 const& geometry2,
           Strategy const& strategy)
     {
-        return boost::apply_visitor(
-            visitor<Strategy>(geometry2, strategy),
-            geometry1
-        );
+        return boost::apply_visitor(visitor<Strategy>(geometry2, strategy),
+                                    geometry1);
     }
 };
 
@@ -393,9 +382,9 @@ struct within<Geometry1, boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> >
         Geometry1 const& m_geometry1;
         Strategy const& m_strategy;
 
-        visitor(Geometry1 const& geometry1, Strategy const& strategy):
-        m_geometry1(geometry1),
-        m_strategy(strategy)
+        visitor(Geometry1 const& geometry1, Strategy const& strategy)
+            : m_geometry1(geometry1)
+            , m_strategy(strategy)
         {}
 
         template <typename Geometry2>
@@ -413,9 +402,8 @@ struct within<Geometry1, boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> >
           boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)> const& geometry2,
           Strategy const& strategy)
     {
-        return boost::apply_visitor(
-            visitor<Strategy>(geometry1, strategy),
-            geometry2
+        return boost::apply_visitor(visitor<Strategy>(geometry1, strategy),
+                                    geometry2
         );
     }
 };
@@ -452,10 +440,9 @@ struct within<
           boost::variant<BOOST_VARIANT_ENUM_PARAMS(T2)> const& geometry2,
           Strategy const& strategy)
     {
-        return boost::apply_visitor(
-            visitor<Strategy>(strategy),
-            geometry1, geometry2
-        );
+        return boost::apply_visitor(visitor<Strategy>(strategy),
+                                    geometry1,
+                                    geometry2);
     }
 };
 
@@ -520,8 +507,9 @@ inline bool within(Geometry1 const& geometry1, Geometry2 const& geometry2)
 }
 */
 template<typename Geometry1, typename Geometry2, typename Strategy>
-inline bool within(Geometry1 const& geometry1, Geometry2 const& geometry2,
-        Strategy const& strategy)
+inline bool within(Geometry1 const& geometry1,
+                   Geometry2 const& geometry2,
+                   Strategy const& strategy)
 {
     return resolve_variant::within
         <

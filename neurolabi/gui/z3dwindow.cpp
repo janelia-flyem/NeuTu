@@ -1,35 +1,34 @@
 #include "z3dwindow.h"
 
+#include "z3dgl.h"
+#include "z3dview.h"
 #include <iostream>
 #include <sstream>
-#include <z3dgl.h>
-#include <QtGui>
-#ifdef _QT5_
-#include <QtWidgets>
-#endif
 #include <limits>
 #include <QToolBar>
+#include <QDesktopWidget>
+#include <QMenuBar>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMimeData>
+#include <QMessageBox>
+#include <QInputDialog>
+#include <QThread>
 
 #include "zstack.hxx"
 #include "zstackdoc.h"
+#include "zstackdocproxy.h"
 #include "zstackframe.h"
 
 #include "neutubeconfig.h"
-#include "z3dinteractionhandler.h"
-#include "z3dapplication.h"
-#include "z3dnetworkevaluator.h"
-#include "z3dcanvasrenderer.h"
-#include "z3daxis.h"
+#include "zglobal.h"
 #include "z3dpunctafilter.h"
 #include "z3dswcfilter.h"
 #include "z3dcompositor.h"
-#include "z3dvolumesource.h"
-#include "z3dvolumeraycaster.h"
 #include "zpunctum.h"
 #include "zlocsegchain.h"
-#include "z3dtakescreenshotwidget.h"
 #include "z3dcanvas.h"
-#include <QThread>
+
 #include "z3dgraphfilter.h"
 #include "zswcnetwork.h"
 #include "zcloudnetwork.h"
@@ -53,7 +52,7 @@
 #include "zmoviescript.h"
 #include "zobjsmanagerwidget.h"
 #include "zswcobjsmodel.h"
-#include "zpunctaobjsmodel.h"
+//#include "zpunctaobjsmodel.h"
 #include "zdialogfactory.h"
 #include "qcolordialog.h"
 #include "dialogs/zalphadialog.h"
@@ -75,7 +74,28 @@
 #include "zwindowfactory.h"
 #include "zstackviewparam.h"
 #include "z3drendererbase.h"
+#include "z3dsurfacefilter.h"
+#include "zroiwidget.h"
+#include "flyem/zflyemtodolistfilter.h"
+#include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyemproofdoc.h"
+#include "flyem/zflyemtodoitem.h"
+#include "zactionlibrary.h"
+#include "zmenufactory.h"
+#include "widgets/z3dtabwidget.h"
+#include "dialogs/zswcisolationdialog.h"
+#include "dialogs/helpdialog.h"
+#include "z3dinteractionhandler.h"
+#include "dialogs/zcomboeditdialog.h"
+#include "dialogs/zflyembodycomparisondialog.h"
+#include "z3dmeshfilter.h"
+#include "zstackobjectsourcefactory.h"
+#include "sandbox/zbrowseropener.h"
+#include "zwidgetmessage.h"
+#include "core/utilities.h"
 
+
+/*
 class Sleeper : public QThread
 {
 public:
@@ -83,448 +103,82 @@ public:
     static void msleep(unsigned long msecs){QThread::msleep(msecs);}
     static void sleep(unsigned long secs){QThread::sleep(secs);}
 };
-
-Z3DMainWindow::Z3DMainWindow(QWidget *parent) : QMainWindow(parent)
-{
-    setParent(parent);
-
-    toolBar = addToolBar("3DBodyViewTools");
-
-    //    QPixmap quitpix("quit.png");
-    //    QAction *quit = toolBar->addAction(QIcon(quitpix), "Quit 3D Body View");
-    //    QAction *quit = toolBar->addAction("Quit 3D Body View");
-    //    connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
-
-
-    //toolBar->hide();
-}
-
-Z3DMainWindow::~Z3DMainWindow()
-{
-
-}
-
-void Z3DMainWindow::closeEvent(QCloseEvent *event)
-{
-  QMainWindow::closeEvent(event);
-
-  emit closed();
-}
-
-void Z3DMainWindow::stayOnTop(bool on)
-{
-  Qt::WindowFlags flags = this->windowFlags();
-  if (on) {
-    setWindowFlags(flags | Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint);
-    show();
-  } else {
-    setWindowFlags(flags ^ (Qt::CustomizeWindowHint | Qt::WindowStaysOnTopHint));
-    show();
-  }
-}
-
-void Z3DMainWindow::updateButtonShowGraph(bool v)
-{
-    if(showGraphAction)
-    {
-        showGraphAction->setChecked(v);
-    }
-}
-
-void Z3DMainWindow::updateButtonSettings(bool v)
-{
-    if(settingsAction)
-    {
-        settingsAction->setChecked(v);
-    }
-}
-
-void Z3DMainWindow::updateButtonObjects(bool v)
-{
-    if(objectsAction)
-    {
-        objectsAction->setChecked(v);
-    }
-}
-
-Z3DTabWidget* Z3DMainWindow::getCentralTab() const
-{
-  return qobject_cast<Z3DTabWidget*>(centralWidget());
-}
-
-void Z3DMainWindow::setCurrentWidow(Z3DWindow *window)
-{
-  if (getCentralTab() != NULL) {
-    getCentralTab()->setCurrentWidget(window);
-  }
-}
-
-Z3DTabWidget::Z3DTabWidget(QWidget *parent) : QTabWidget(parent)
-{
-  setTabsClosable(true);
-
-  connect(this, SIGNAL(tabIndexChanged(int)), this, SLOT(updateWindow(int)));
-
-  // default button status
-  for(int i=0; i<4; i++)
-  {
-      buttonStatus[i][0] = true;
-      buttonStatus[i][1] = false;
-      buttonStatus[i][2] = false;
-
-      windowStatus[i] = false;
-
-      tabLUT[i] = -1;
-  }
-
-  preIndex = -1;
-
-}
-
-QTabBar* Z3DTabWidget::tabBar()
-{
-    return QTabWidget::tabBar();
-}
-
-void Z3DTabWidget::resetCamera()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->resetCamera();
-    }
-
-}
-
-void Z3DTabWidget::setXZView()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->setXZView();
-    }
-
-}
-
-void Z3DTabWidget::setYZView()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->setYZView();
-    }
-
-}
-
-void Z3DTabWidget::resetCameraCenter()
-{
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(this->currentWidget());
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->resetCameraCenter();
-    }
-}
-
-void Z3DTabWidget::showGraph(bool v)
-{
-    int index = this->currentIndex();
-
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->getGraphFilter()->setVisible(v);
-        cur3Dwin->setButtonStatus(0,v);
-        buttonStatus[getRealIndex(index)][0] = v;
-    }
-}
-
-void Z3DTabWidget::settingsPanel(bool v)
-{
-    int index = this->currentIndex();
-
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->getSettingsDockWidget()->toggleViewAction()->trigger();
-        cur3Dwin->setButtonStatus(1,v);
-        buttonStatus[getRealIndex(index)][1] = v;
-    }
-
-}
-
-void Z3DTabWidget::objectsPanel(bool v)
-{
-    int index = this->currentIndex();
-
-    Z3DWindow *cur3Dwin = (Z3DWindow *)(widget(index));
-
-    if(cur3Dwin)
-    {
-        cur3Dwin->getObjectsDockWidget()->toggleViewAction()->trigger();
-        cur3Dwin->setButtonStatus(2,v);
-        buttonStatus[getRealIndex(index)][2] = v;
-    }
-
-}
-
-void Z3DTabWidget::addWindow(int index, Z3DWindow *window, const QString &title)
-{
-  if (window != NULL) {
-
-      tabLUT[index] = insertTab(index, window, title);
-
-      setCurrentIndex(tabLUT[index]);
-
-      for(int i=index+1; i<4; i++)
-      {
-          if(tabLUT[i]>-1)
-          {
-              tabLUT[i]++;
-          }
-      }
-
-      connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(closeWindow(int)));
-
-      windowStatus[index] = true;
-
-      updateWindow(tabLUT[index]);
-  }
-}
-
-int Z3DTabWidget::getTabIndex(int index)
-{
-    return (tabLUT[index]);
-}
-
-int Z3DTabWidget::getRealIndex(int index)
-{
-    int cur = -1;
-
-    if(index>-1)
-    {
-        for(int i=0; i<4; i++)
-        {
-            if(tabLUT[i]==index)
-            {
-                cur = i;
-            }
-        }
-    }
-
-    return cur;
-}
-
-void Z3DTabWidget::updateTabs(int index)
-{
-    emit tabIndexChanged(index);
-}
-
-void Z3DTabWidget::updateWindow(int index)
-{
-    int cur = getRealIndex(index);
-
-    qDebug()<<"###updateWindow"<<index<<preIndex<<currentIndex()<<cur;
-
-    if(cur>-1 && windowStatus[cur]==true)
-    {
-        qDebug()<<"####updateWindow run";
-
-        Z3DWindow *w = (Z3DWindow *)(widget(index));
-
-        if (w != NULL)
-        {
-            bool buttonChecked;
-
-            // show graph
-            buttonChecked = w->getButtonStatus(0);
-            w->getGraphFilter()->setVisible(buttonChecked);
-            buttonStatus[cur][0] = buttonChecked;
-
-            if(preIndex>-1)
-            {
-                if(windowStatus[preIndex]==true && preIndex!=cur)
-                {
-
-                    qDebug()<<"###if###"<<preIndex<<cur;
-
-                    Z3DWindow *preWin = (Z3DWindow *)(widget(tabLUT[preIndex]));
-
-                    if(preWin)
-                    {
-                        // settings
-                        buttonChecked = w->getButtonStatus(1);
-                        if(buttonChecked != preWin->getButtonStatus(1))
-                        {
-                            w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                            buttonStatus[cur][1] = buttonChecked;
-                        }
-
-                        // objects
-                        buttonChecked = w->getButtonStatus(2);
-                        if(buttonChecked != preWin->getButtonStatus(2))
-                        {
-                            w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                            buttonStatus[cur][2] = buttonChecked;
-                        }
-                    }
-
-                }
-                else
-                {
-                    qDebug()<<"###else###"<<preIndex<<index;
-
-                    // settings
-                    buttonChecked = w->getButtonStatus(1);
-                    if(buttonChecked != buttonStatus[preIndex][1])
-                    {
-                        w->getSettingsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[cur][1] = buttonChecked;
-                    }
-
-                    // objects
-                    buttonChecked = w->getButtonStatus(2);
-
-                    qDebug()<<"####objects"<<buttonChecked<<buttonStatus[preIndex][2];
-
-                    if(buttonChecked != buttonStatus[preIndex][2])
-                    {
-                        qDebug()<<"####objects toggle";
-
-                        w->getObjectsDockWidget()->toggleViewAction()->trigger();
-                        buttonStatus[cur][2] = buttonChecked;
-                    }
-                }
-            }
-
-            //
-            emit buttonShowGraphToggled(w->getButtonStatus(0));
-            emit buttonSettingsToggled(w->getButtonStatus(1));
-            emit buttonObjectsToggled(w->getButtonStatus(2));
-        }
-
-        preIndex = cur;
-    }
-
-}
-
-void Z3DTabWidget::closeAllWindows()
-{
-
-    for(int i=0; i<4; i++)
-    {
-        if(tabLUT[i]==currentIndex())
-        {
-            preIndex = i;
-        }
-
-        tabLUT[i] = -1;
-    }
-
-    for(int i=0; i<4; i++)
-    {
-        closeWindow(i);
-    } 
-}
-
-void Z3DTabWidget::closeWindow(int index)
-{
-    qDebug()<<"####"<<preIndex<<index<<getRealIndex(index);
-
-  Z3DWindow *w = (Z3DWindow *)(widget(index));
-  if (w != NULL) {
-
-    buttonStatus[index][0] = true;
-    buttonStatus[index][1] = false;
-    buttonStatus[index][2] = false;
-
-    w->getGraphFilter()->setVisible(true);
-
-    bool buttonChecked = w->getButtonStatus(1);
-    if(buttonChecked != false)
-    {
-        w->getSettingsDockWidget()->toggleViewAction()->trigger();
-    }
-
-    buttonChecked = w->getButtonStatus(2);
-    if(buttonChecked != false)
-    {
-        w->getObjectsDockWidget()->toggleViewAction()->trigger();
-    }
-
-    windowStatus[getRealIndex(index)] = false;
-
-    if(preIndex==getRealIndex(index))
-        preIndex = -1;
-
-    w->close();
-  }
-
-
-}
-
-Z3DTabWidget::~Z3DTabWidget()
-{
-
-}
-
-Z3DWindow::Z3DWindow(ZSharedPointer<ZStackDoc> doc, Z3DWindow::EInitMode initMode,
-                     bool stereoView, QWidget *parent)
+*/
+
+Z3DWindow::Z3DWindow(
+    ZSharedPointer<ZStackDoc> doc, Z3DView::EInitMode initMode,
+    neutube3d::EWindowType windowType,
+    bool stereoView, QWidget *parent)
   : QMainWindow(parent)
+  , m_windowType(windowType)
   , m_doc(doc)
-  , m_networkEvaluator(NULL)
-  , m_canvas(NULL)
-  , m_canvasRenderer(NULL)
-  , m_axis(NULL)
-  , m_volumeRaycaster(NULL)
-  , m_punctaFilter(NULL)
-  , m_compositor(NULL)
-  , m_volumeBoundBox(6)
-  , m_swcBoundBox(6)
-  , m_punctaBoundBox(6)
-  , m_graphBoundBox(6)
-  , m_boundBox(6)
   , m_isClean(false)
   , m_blockingTraceMenu(false)
-  , m_screenShotWidget(NULL)
   , m_widgetsGroup(NULL)
   , m_settingsDockWidget(NULL)
   , m_objectsDockWidget(NULL)
   , m_advancedSettingDockWidget(NULL)
-  , m_isStereoView(stereoView)
   , m_toolBar(NULL)
 {
   setAttribute(Qt::WA_DeleteOnClose);
   setFocusPolicy(Qt::StrongFocus);
+
   createActions();
   createMenus();
   createStatusBar();
   m_viewMenu->addAction("Reset Camera", this, SLOT(resetCamera()));
-  init(initMode);
-  createDockWindows();
+  m_viewMenu->addAction("Zoom to Selected Meshes", this, SLOT(zoomToSelectedMeshes()),
+                        QKeySequence("m"));
+
+
+  m_view = new Z3DView(m_doc.get(), initMode, stereoView, this);
+
+  ZWidgetMessage::ConnectMessagePipe(m_doc.get(), this);
+  /*
+  connect(m_doc.get(), SIGNAL(messageGenerated(ZWidgetMessage)),
+          this, SLOT(processMessage(ZWidgetMessage)));
+          */
+
+  setCentralWidget(getCanvas());
+  connect(m_view, &Z3DView::networkConstructed, this, &Z3DWindow::init);
+
+  createDockWindows(); // empty docks
+  createContextMenu();
+  customizeContextMenu();
+
+  connect(m_view, &Z3DView::networkConstructed,
+          this, &Z3DWindow::fillDockWindows);  // fill in real widgets later
+
   setAcceptDrops(true);
   m_mergedContextMenu = new QMenu(this);
+  m_contextMenu = NULL;
 
   if (m_doc->getStack() != NULL) {
     setWindowTitle(m_doc->stackSourcePath().c_str());
   }
 
   m_doc->registerUser(this);
-  //createToolBar();
+  createToolBar();
 
   m_buttonStatus[0] = true;  // showgraph
   m_buttonStatus[1] = false; // settings
   m_buttonStatus[2] = false; // objects
+  m_buttonStatus[3] = false; // ROIs
+
+  setWindowType(neutube3d::TYPE_GENERAL);
+
+  m_cuttingStackBound = false;
+
+  m_dvidDlg = NULL;
+  m_bodyCmpDlg = NULL;
 }
 
 Z3DWindow::~Z3DWindow()
 {
   cleanup();
+
+  delete m_actionLibrary;
+  delete m_menuFactory;
 }
 
 void Z3DWindow::createStatusBar()
@@ -532,49 +186,73 @@ void Z3DWindow::createStatusBar()
   statusBar()->showMessage("3D window ready.");
 }
 
+QToolBar* Z3DWindow::getToolBar() const
+{
+  return m_toolBar;
+}
 
 void Z3DWindow::createToolBar()
 {
-  m_toolBar = addToolBar("Interaction");
+  if (getWindowType() == neutube3d::TYPE_COARSE_BODY ||
+      getWindowType() == neutube3d::TYPE_BODY ||
+      getWindowType() == neutube3d::TYPE_SKELETON ||
+      getWindowType() == neutube3d::TYPE_MESH ||
+      getWindowType() == neutube3d::TYPE_NEU3) {
+    m_toolBar = addToolBar("View");
+    QAction *viewSynapseAction = ZActionFactory::MakeAction(
+          ZActionFactory::ACTION_SHOW_SYNAPSE, this);
+    connect(viewSynapseAction, SIGNAL(toggled(bool)),
+            this, SLOT(showPuncta(bool)));
+    m_toolBar->addAction(viewSynapseAction);
+
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_SHOW_TODO));
+//    m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TODO_ITEM));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
+
+    QActionGroup *group = new QActionGroup(this);
+    group->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM));
+    group->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE));
+    group->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
+
+  }
+
+  if (getWindowType() == neutube3d::TYPE_NEU3) {
+//    m_meshOpacitySlider = new QSlider(Qt::Horizontal, this);
+//    m_meshOpacitySlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+//    m_meshOpacitySlider->setRange(0, 255);
+//    m_toolBar->addWidget(m_meshOpacitySlider);
+
+    m_meshOpacitySpinBox = new QDoubleSpinBox(this);
+    m_meshOpacitySpinBox->setPrefix("Mesh Opacity: ");
+    m_meshOpacitySpinBox->setRange(0, 1);
+    m_meshOpacitySpinBox->setSingleStep(0.1);
+    m_toolBar->addWidget(m_meshOpacitySpinBox);
+
+    m_toolBar->addSeparator();
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_SAVE_SPLIT_TASK));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED));
+    m_toolBar->addAction(getAction(ZActionFactory::ACTION_DELETE_SPLIT_SEED));
+  }
+
+#if defined(_DEBUG_) && defined(_NEU3_)
+  m_toolBar->addAction(getAction(ZActionFactory::ACTION_TEST));
+#endif
 }
 
-void Z3DWindow::gotoPosition(double x, double y, double z, double radius)
+void Z3DWindow::configureMenuForNeu3()
 {
-  double xsize = radius;
-  double ysize = radius;
-  double zsize = radius;
-  std::vector<double> bound(6);
-  bound[0] = x - xsize;
-  bound[1] = x + xsize;
-  bound[2] = y - ysize;
-  bound[3] = y + ysize;
-  bound[4] = z - zsize;
-  bound[5] = z + zsize;
-  setupCamera(bound, Z3DCamera::ResetAll);
-}
+  m_helpAction->setVisible(false);
+  QAction *settingAction = new QAction("&Settings", this);
+  m_helpMenu->addAction(settingAction);
+  connect(settingAction, SIGNAL(triggered()), this, SIGNAL(settingTriggered()));
 
-void Z3DWindow::gotoPosition(std::vector<double> bound, double minRadius,
-                             double range)
-{
+  QAction *neutuAction = new QAction("NeuTu", this);
+  m_helpMenu->addAction(neutuAction);
+  connect(neutuAction, SIGNAL(triggered()), this, SIGNAL(neutuTriggered()));
 
-  if (bound[1] - bound[0] < minRadius * 2) {
-    double expand = range - bound[1] + bound[0];
-    bound[1] += expand/2;
-    bound[0] -= expand/2;
-  }
-  if (bound[3] - bound[2] < minRadius * 2) {
-    double expand = range - bound[3] + bound[2];
-    bound[3] += expand/2;
-    bound[2] -= expand/2;
-  }
-
-  if (bound[5] - bound[4] < minRadius * 2) {
-    double expand = range - bound[5] + bound[4];
-    bound[5] += expand/2;
-    bound[4] -= expand/2;
-  }
-
-  setupCamera(bound, Z3DCamera::PreserveViewVector);
+  m_helpMenu->addAction(getAction(ZActionFactory::ACTION_ABOUT));
 }
 
 void Z3DWindow::zoomToSelectedSwcNodes()
@@ -582,243 +260,127 @@ void Z3DWindow::zoomToSelectedSwcNodes()
   std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
   if (!nodeSet.empty()) {
     ZCuboid cuboid = SwcTreeNode::boundBox(nodeSet);
-    std::vector<double> bound(6);
-    bound[0] = cuboid.firstCorner().x();
-    bound[2] = cuboid.firstCorner().y();
-    bound[4] = cuboid.firstCorner().z();
-    bound[1] = cuboid.lastCorner().x();
-    bound[3] = cuboid.lastCorner().y();
-    bound[5] = cuboid.lastCorner().z();
-    gotoPosition(bound);
+    gotoPosition(cuboid);
   }
 }
 
-void Z3DWindow::init(EInitMode mode)
+void Z3DWindow::init()
 {
-  // processors
-  m_axis = new Z3DAxis();
+  connect(getDocument(), SIGNAL(stackBoundBoxChanged()),
+          this, SLOT(updateCuttingBox()));
 
-  // more processors: init volumes
-  if (mode == INIT_EXCLUDE_VOLUME) {
-    m_volumeSource = new Z3DVolumeSource(NULL);
-  } else {
-    if (mode == INIT_NORMAL) {
-      m_volumeSource = new Z3DVolumeSource(m_doc.get());
-    } else if (mode == INIT_FULL_RES_VOLUME) {
-      m_volumeSource = new Z3DVolumeSource(m_doc.get(), MAX_INT32 / 2);
-    }
-    connect(m_volumeSource, SIGNAL(xScaleChanged()), this, SLOT(volumeScaleChanged()));
-    connect(m_volumeSource, SIGNAL(yScaleChanged()), this, SLOT(volumeScaleChanged()));
-    connect(m_volumeSource, SIGNAL(zScaleChanged()), this, SLOT(volumeScaleChanged()));
-    connect(getDocument(), SIGNAL(volumeModified()), this, SLOT(volumeChanged()));
-  }
-
-  // more processors: init geometry filters
-  m_compositor = new Z3DCompositor();
-  m_punctaFilter = new Z3DPunctaFilter();
-  m_punctaFilter->setData(m_doc->getPunctumList());
-  m_swcFilter = new Z3DSwcFilter();
-  m_swcFilter->setData(m_doc->getSwcList());
-  m_graphFilter = new Z3DGraphFilter();
-  if (m_doc->swcNetwork() != NULL) {
-    ZPointNetwork *network = m_doc->swcNetwork()->toPointNetwork();
-    //ZNormColorMap colorMap;
-    //m_graphFilter->setData(*network, &colorMap);
-    m_graphFilter->setData(*network, NULL);
-
-    delete network;
-  } else if (ZFileType::fileType(m_doc->additionalSource()) ==
-             ZFileType::JSON_FILE) {
-    Z3DGraph graph;
-    graph.importJsonFile(m_doc->additionalSource());
-    m_graphFilter->setData(graph);
-  }
-
-//  m_decorationFilter = new Z3DGraphFilter();
-//  m_decorationFilter->setStayOnTop(true);
-
-
-  m_graphFilter->setData(m_doc->get3DGraphDecoration());
-  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
-  for (TStackObjectList::const_iterator iter = objList.begin();
-       iter != objList.end(); ++iter) {
-    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
-  }
-
-  connect(getDocument(), SIGNAL(punctaModified()), this, SLOT(punctaChanged()));
-  connect(getDocument(), SIGNAL(swcModified()), this, SLOT(swcChanged()));
-  connect(getDocument(), SIGNAL(swcNetworkModified()),
-          this, SLOT(updateNetworkDisplay()));
-  connect(getDocument(), SIGNAL(graph3dModified()),
-          this, SLOT(update3DGraphDisplay()));
-  connect(getDocument(),
-          SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
-          this, SLOT(punctaSelectionChanged()));
-  connect(getDocument(),
-          SIGNAL(swcSelectionChanged(QList<ZSwcTree*>,QList<ZSwcTree*>)),
-          this, SLOT(swcSelectionChanged()));
-  connect(getDocument(),
-          SIGNAL(swcTreeNodeSelectionChanged(QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
-          this, SLOT(swcTreeNodeSelectionChanged()));
-  connect(getDocument(),
-          SIGNAL(punctumVisibleStateChanged()),
-          m_punctaFilter, SLOT(updatePunctumVisibleState()));
-  connect(getDocument(),
-          SIGNAL(punctumVisibleStateChanged()),
-          m_punctaFilter, SLOT(updatePunctumVisibleState()));
-  connect(getDocument(),
-          SIGNAL(swcVisibleStateChanged(ZSwcTree*, bool)),
-          m_swcFilter, SLOT(updateSwcVisibleState()));
-  connect(m_punctaFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
-          this, SLOT(punctaCoordScaleChanged()));
-  connect(m_swcFilter->getRendererBase(), SIGNAL(coordScalesChanged()),
-          this, SLOT(swcCoordScaleChanged()));
-  connect(m_punctaFilter->getRendererBase(), SIGNAL(sizeScaleChanged()),
-          this, SLOT(punctaSizeScaleChanged()));
-  connect(m_swcFilter->getRendererBase(), SIGNAL(sizeScaleChanged()),
-          this, SLOT(swcSizeScaleChanged()));
-  connect(m_punctaFilter, SIGNAL(punctumSelected(ZPunctum*, bool)),
+  connect(getPunctaFilter(), SIGNAL(punctumSelected(ZPunctum*, bool)),
           this, SLOT(selectedPunctumChangedFrom3D(ZPunctum*, bool)));
-  connect(m_swcFilter, SIGNAL(treeSelected(ZSwcTree*,bool)),
+  connect(getMeshFilter(), SIGNAL(meshSelected(ZMesh*, bool)),
+          this, SLOT(selectedMeshChangedFrom3D(ZMesh*, bool)));
+  if (getTodoFilter()) {
+    connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
+            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
+  }
+  connect(getSwcFilter(), SIGNAL(treeSelected(ZSwcTree*,bool)),
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
-  connect(m_swcFilter, SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
+  connect(getSwcFilter(), SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
           this, SLOT(selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node*,bool)));
 
-  connect(m_swcFilter, SIGNAL(treeNodeSelectConnection(Swc_Tree_Node*)),
+  connect(getSwcFilter(), SIGNAL(treeNodeSelectConnection(Swc_Tree_Node*)),
           m_doc.get(), SLOT(selectSwcNodeConnection(Swc_Tree_Node*)));
-  connect(m_swcFilter, SIGNAL(treeNodeSelectFloodFilling(Swc_Tree_Node*)),
+  connect(getSwcFilter(), SIGNAL(treeNodeSelectFloodFilling(Swc_Tree_Node*)),
           m_doc.get(), SLOT(selectSwcNodeFloodFilling(Swc_Tree_Node*)));
-  connect(m_swcFilter, SIGNAL(addNewSwcTreeNode(double, double, double, double)),
+  connect(getSwcFilter(), SIGNAL(addNewSwcTreeNode(double, double, double, double)),
           this, SLOT(addNewSwcTreeNode(double, double, double, double)));
-  connect(m_swcFilter, SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
+  connect(getSwcFilter(), SIGNAL(extendSwcTreeNode(double, double, double, double)),
+          this, SLOT(extendSwcTreeNode(double, double, double, double)));
+  connect(getSwcFilter(), SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
+
+  if (getGraphFilter() != NULL) {
+    connect(getGraphFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
+            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
+  }
 
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
           this, SLOT(notifyUser(QString)));
 
-  m_swcFilter->setSelectedSwcs(
-        m_doc->getObjectGroup().getSelectedSet(ZStackObject::TYPE_SWC));
-  //m_swcFilter->setSelectedSwcTreeNodes(m_doc->getSelectedSwcTreeSet());
-  m_punctaFilter->setSelectedPuncta(
-        m_doc->getObjectGroup().getSelectedSet(ZStackObject::TYPE_PUNCTUM));
-
   // init windows size based on data
   setWindowSize();
 
-  // init canvas and opengl context
-#ifdef _QT5_
-  m_canvas = new Z3DCanvas("", 512, 512);
-#else
-  QGLFormat format = QGLFormat();
-  format.setAlpha(true);
-  format.setDepth(true);
-  format.setDoubleBuffer(true);
-  format.setRgba(true);
-  format.setSampleBuffers(true);
-  if (m_isStereoView)
-    format.setStereo(true);
-  m_canvas = new Z3DCanvas("", 512, 512, format);
-#endif
-  setCentralWidget(m_canvas);
-  m_canvas->setContextMenuPolicy(Qt::CustomContextMenu);
-  connect(m_canvas, SIGNAL(customContextMenuRequested(QPoint)),
+  //
+  getCanvas()->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(getCanvas(), SIGNAL(customContextMenuRequested(QPoint)),
           this, SLOT(show3DViewContextMenu(QPoint)));
-  m_canvas->getGLFocus();
 
-  m_canvasRenderer = new Z3DCanvasRenderer();
-  m_canvasRenderer->setCanvas(m_canvas);
-
-  // more processors: init raycaster
-  m_volumeRaycaster = new Z3DVolumeRaycaster();
-  connect(m_volumeRaycaster,
+  connect(getVolumeFilter(),
           SIGNAL(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)),
           this, SLOT(pointInVolumeLeftClicked(QPoint, glm::ivec3, Qt::KeyboardModifiers)));
 
-  // register processors to receive QGLWidget event
-  m_canvas->addEventListenerToBack(m_swcFilter);
-  m_canvas->addEventListenerToBack(m_punctaFilter);
-  m_canvas->addEventListenerToBack(m_volumeRaycaster);      // for trace
-  m_canvas->addEventListenerToBack(m_compositor);  // for interaction
-  m_canvas->addEventListenerToBack(m_graphFilter);
-//  m_canvas->addEventListenerToBack(m_decorationFilter);
 
-  // build network
-  for (int i=0; i<5; i++) {  // max supported channel is 5
-    m_volumeSource->getOutputPort(QString("Volume%1").arg(i+1))->connect(m_volumeRaycaster->getInputPort("Volumes"));
-  }
-  m_volumeSource->getOutputPort("Stack")->connect(m_volumeRaycaster->getInputPort("Stack"));
-  m_volumeRaycaster->getOutputPort("Image")->connect(m_compositor->getInputPort("Image"));
-  m_volumeRaycaster->getOutputPort("LeftEyeImage")->connect(m_compositor->getInputPort("LeftEyeImage"));
-  m_volumeRaycaster->getOutputPort("RightEyeImage")->connect(m_compositor->getInputPort("RightEyeImage"));
-  m_punctaFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
-  m_swcFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
-  m_graphFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
-//  m_decorationFilter->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
 
-  m_axis->getOutputPort("GeometryFilter")->connect(m_compositor->getInputPort("GeometryFilters"));
-  m_compositor->getOutputPort("Image")->connect(m_canvasRenderer->getInputPort("Image"));
-  m_compositor->getOutputPort("LeftEyeImage")->connect(m_canvasRenderer->getInputPort("LeftEyeImage"));
-  m_compositor->getOutputPort("RightEyeImage")->connect(m_canvasRenderer->getInputPort("RightEyeImage"));
-
-  // connection: canvas <-----> networkevaluator <-----> canvasrender
-  m_networkEvaluator = new Z3DNetworkEvaluator();
-  m_canvas->setNetworkEvaluator(m_networkEvaluator);
-
-  // pass the canvasrender to the network evaluator
-  m_networkEvaluator->setNetworkSink(m_canvasRenderer);
-
-  // initializes all connected processors
-  m_networkEvaluator->initializeNetwork();
-
-  //get objects size
-  updateVolumeBoundBox();
-  updateSwcBoundBox();
-  updatePunctaBoundBox();
-  updateGraphBoundBox();
-//  updateDecorationBoundBox();
-  updateOverallBoundBox();
-
-  // adjust camera
-  resetCamera();
-  m_volumeRaycaster->getCamera()->dependsOn(m_compositor->getCamera());
-
-  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isAxisOn()) {
-    m_axis->setVisible(false);
-  }
-
-//  if (!NeutubeConfig::getInstance().getZ3DWindowConfig().isGraphOn()) {
-//    m_graphFilter->get
-//  }
-
-  connect(getInteractionHandler(), SIGNAL(cameraMoved()),
-          this, SLOT(resetCameraClippingRange()));
   connect(getInteractionHandler(), SIGNAL(objectsMoved(double,double,double)),
           this, SLOT(moveSelectedObjects(double,double,double)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeInRoi(bool)),
           this, SLOT(selectSwcTreeNodeInRoi(bool)));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingSwcNodeTreeInRoi(bool)),
+          this, SLOT(selectSwcTreeNodeTreeInRoi(bool)));
+  connect(getCanvas()->getInteractionEngine(),
+            SIGNAL(selectingTerminalBranchInRoi(bool)),
+            this, SLOT(selectTerminalBranchInRoi(bool)));
   connect(getCanvas()->getInteractionEngine(), SIGNAL(croppingSwc()),
           this, SLOT(cropSwcInRoi()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBodyLocal()),
+          this, SIGNAL(runningLocalSplit()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingBody()),
+          this, SIGNAL(runningSplit()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(splittingFullBody()),
+          this, SIGNAL(runningFullSplit()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(deletingSelected()),
+          this, SLOT(deleteSelected()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingDownstreamSwcNode()),
+          m_doc.get(), SLOT(selectDownstreamNode()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingUpstreamSwcNode()),
+          m_doc.get(), SLOT(selectUpstreamNode()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(selectingConnectedSwcNode()),
+          m_doc.get(), SLOT(selectConnectedNode()));
+//  connect(getCanvas()->getInteractionEngine(), SIGNAL(cameraRorated()),
+//          this, SLOT(notifyCameraRotation()));
+  connect(&(m_view->interactionHandler()), SIGNAL(cameraRotated()),
+          this, SLOT(notifyCameraRotation()));
+  connect(getCanvas()->getInteractionEngine(), SIGNAL(exitingEdit()),
+          this, SLOT(syncActionToNormalMode()));
 
-  /*
-  connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
-          this, SLOT(addStrokeFrom3dPaint(ZStroke2d*)));
-          */
 
-  connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
-          this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
+//  connect(m_canvas, SIGNAL(strokePainted(ZStroke2d*)),
+//          this, SLOT(addPolyplaneFrom3dPaint(ZStroke2d*)));
+  connect(getCanvas(), SIGNAL(strokePainted(ZStroke2d*)),
+          this, SLOT(processStroke(ZStroke2d*)));
+  connect(getCanvas(), SIGNAL(shootingTodo(int,int)),
+          this, SLOT(shootTodo(int,int)));
+  connect(getCanvas(), SIGNAL(locating(int, int)),
+          this, SLOT(locateWithRay(int, int)));
+  connect(getCanvas(), SIGNAL(browsing(int,int)),
+          this, SLOT(browseWithRay(int, int)));
 
-  m_canvas->set3DInteractionHandler(m_compositor->getInteractionHandler());
+  m_swcIsolationDlg = new ZSwcIsolationDialog(this);
+  if (getDocument() != NULL) {
+    const ZResolution &res = getDocument()->getResolution();
+    m_swcIsolationDlg->setScale(res.voxelSizeX(), res.voxelSizeY(),
+                                res.voxelSizeZ());
+  }
 
-#if defined(REMOTE_WORKSTATION)
-  getCompositor()->setShowBackground(false);
-#endif
+  m_helpDlg = new HelpDialog(this);
 
+//  if (m_meshOpacitySlider != NULL) {
+//    m_meshOpacitySlider->setValue(iround(getMeshFilter()->opacity() * 255));
+//    connect(m_meshOpacitySlider, SIGNAL(valueChanged(int)),
+//            this, SLOT(setMeshOpacity(int)));
+//  }
 
-  //  // if have image, try black background
-  //  if (channelNumber() > 0) {
-  //    m_background->setFirstColor(glm::vec3(0.f));
-  //    m_background->setSecondColor(glm::vec3(0.f));
-  //  }
+  if (m_meshOpacitySpinBox != NULL) {
+    m_meshOpacitySpinBox->setValue(getMeshFilter()->opacity());
+    connect(m_meshOpacitySpinBox, SIGNAL(valueChanged(double)),
+            this, SLOT(setMeshOpacity(double)));
+    connect(getMeshFilter(), SIGNAL(opacityChanged(double)),
+            this, SLOT(setMeshOpacity(double)));
+  }
 }
 
 void Z3DWindow::setWindowSize()
@@ -826,8 +388,8 @@ void Z3DWindow::setWindowSize()
   int width = 512;
   int height = 512;
 
-  float objectWidth = m_boundBox[1] - m_boundBox[0];
-  float objectHeight = m_boundBox[3] - m_boundBox[2];
+  float objectWidth = m_view->boundBox().size().x;
+  float objectHeight = m_view->boundBox().size().y;
 
   //get screen size
   QDesktopWidget *desktop = QApplication::desktop();
@@ -846,11 +408,147 @@ void Z3DWindow::setWindowSize()
   resize(width+500, height);   //500 for dock widgets
 }
 
+void Z3DWindow::about()
+{
+  ZDialogFactory::About(this);
+}
+
+QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
+{
+  QAction *action = NULL;
+  switch (item) {
+  case ZActionFactory::ACTION_ABOUT:
+    action = m_actionLibrary->getAction(item, this, SLOT(about()));
+    break;
+  case ZActionFactory::ACTION_DESELECT_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(deselectBody()));
+    break;
+  case ZActionFactory::ACTION_MEASURE_SWC_NODE_DIST:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(showSeletedSwcNodeDist()));
+    break;
+  case ZActionFactory::ACTION_MEASURE_SWC_NODE_LENGTH:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(showSeletedSwcNodeLength()));
+    break;
+  case ZActionFactory::ACTION_DELETE_SELECTED:
+    if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
+      action = m_actionLibrary->getAction(
+            item, this, SLOT(removeSelectedObject()));
+    } else {
+      action = m_actionLibrary->getAction(
+            item, this, SLOT(deleteSelectedSwcNode()));
+    }
+    break;
+  case ZActionFactory::ACTION_SHOW_NORMAL_TODO:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(setNormalTodoVisible(bool)));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_ITEM:
+    action = m_actionLibrary->getAction(item, this, SLOT(addTodoMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_ITEM_CHECKED:
+    action = m_actionLibrary->getAction(item, this, SLOT(addDoneMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_MERGE:
+    action = m_actionLibrary->getAction(item, this, SLOT(addToMergeMarker()));
+    break;
+  case ZActionFactory::ACTION_ADD_TODO_SPLIT:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(addToSplitMarker(bool)));
+    break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_SPLIT:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToSplit()));
+    break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToNormal()));
+    break;
+  case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
+    break;
+  case ZActionFactory::ACTION_FLYEM_COMPARE_BODY:
+    action = m_actionLibrary->getAction(item, this, SLOT(compareBody()));
+    break;
+  case ZActionFactory::ACTION_COPY_POSITION:
+    action = m_actionLibrary->getAction(item, this, SLOT(copyPosition()));
+    break;
+  case ZActionFactory::ACTION_SHOW_TODO:
+    action = m_actionLibrary->getAction(item, this, SLOT(showTodo(bool)));
+    break;
+  case ZActionFactory::ACTION_ACTIVATE_TODO_ITEM:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(activateTodoAction(bool)));
+    break;
+  case ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(activateTodoAction(bool)));
+    if (action != NULL) {
+      action->setShortcut(Qt::Key_B);
+    }
+    break;
+  case ZActionFactory::ACTION_ACTIVATE_LOCATE:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(activateLocateAction(bool)));
+    if (action != NULL) {
+      action->setShortcut(Qt::Key_T);
+    }
+    break;
+  case ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(viewDataExternally(bool)));
+    if (action != NULL) {
+      action->setShortcut(Qt::SHIFT + Qt::Key_T);
+    }
+    break;
+  case ZActionFactory::ACTION_CHECK_TODO_ITEM:
+    action = m_actionLibrary->getAction(item, this, SLOT(checkSelectedTodo()));
+    break;
+  case ZActionFactory::ACTION_UNCHECK_TODO_ITEM:
+    action = m_actionLibrary->getAction(item, this, SLOT(uncheckSelectedTodo()));
+    break;
+  case ZActionFactory::ACTION_SAVE_SPLIT_TASK:
+    action = m_actionLibrary->getAction(item, this, SLOT(saveSplitTask()));
+    break;
+  case ZActionFactory::ACTION_DELETE_SPLIT_SEED:
+    action = m_actionLibrary->getAction(item, this, SLOT(deleteSplitSeed()));
+    break;
+  case ZActionFactory::ACTION_DELETE_SELECTED_SPLIT_SEED:
+    action = m_actionLibrary->getAction(item, this, SLOT(deleteSelectedSplitSeed()));
+    break;
+  case ZActionFactory::ACTION_TEST:
+    action = m_actionLibrary->getAction(item, this, SLOT(test()));
+    break;
+  case ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR:
+    action = m_actionLibrary->getAction(
+          item, this, SLOT(changeSelectedPunctaColor()));
+    break;
+  case ZActionFactory::ACTION_PUNCTA_HIDE_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(hideSelectedPuncta()));
+    break;
+  case ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED:
+    action = m_actionLibrary->getAction(item, this, SLOT(showSelectedPuncta()));
+    break;
+  default:
+    action = getDocument()->getAction(item);
+    break;
+  }
+
+  return action;
+}
+
+void Z3DWindow::setActionChecked(ZActionFactory::EAction item, bool on)
+{
+  QAction *action = getAction(item);
+  if (action != NULL) {
+    if (action->isCheckable()) {
+      action->setChecked(on);
+    }
+  }
+}
+
 void Z3DWindow::createActions()
 {
-#ifdef _DEBUG_
-  qDebug() << "Create actions";
-#endif
+  ZOUT(LTRACE(), 5) << "Create actions";
   /*
   m_undoAction = m_doc->undoStack()->createUndoAction(this, tr("&Undo"));
   m_undoAction->setIcon(QIcon(":/images/undo.png"));
@@ -861,11 +559,17 @@ void Z3DWindow::createActions()
   m_redoAction->setShortcuts(QKeySequence::Redo);
   */
 
-  m_undoAction = m_doc->getUndoAction();
-  m_redoAction = m_doc->getRedoAction();
+  m_actionLibrary = new ZActionLibrary(this);
+  m_menuFactory = new ZStackDocMenuFactory;
 
-  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
-  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
+//  m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
+//  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);
+
+//  m_markSwcSomaAction = new QAction("Mark SWC Soma...", this);
+//  connect(m_markSwcSomaAction, SIGNAL(triggered()), this, SLOT(markSwcSoma()));
+
+  m_helpAction = new QAction("Help", this);
+  connect(m_helpAction, SIGNAL(triggered()), this, SLOT(help()));
 
   m_removeSelectedObjectsAction = new QAction("Delete", this);
   if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
@@ -880,9 +584,9 @@ void Z3DWindow::createActions()
   connect(m_locateSwcNodeIn2DAction, SIGNAL(triggered()), this,
           SLOT(locateSwcNodeIn2DView()));
 
-  m_toogleAddSwcNodeModeAction = new QAction("Add neuron node", this);
-  m_toogleAddSwcNodeModeAction->setCheckable(true);
-  connect(m_toogleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
+  m_toggleAddSwcNodeModeAction = new QAction("Add neuron node", this);
+  m_toggleAddSwcNodeModeAction->setCheckable(true);
+  connect(m_toggleAddSwcNodeModeAction, SIGNAL(toggled(bool)), this,
           SLOT(toogleAddSwcNodeMode(bool)));
 
   m_toggleMoveSelectedObjectsAction =
@@ -914,7 +618,7 @@ void Z3DWindow::createActions()
   connect(m_changeSwcNodeTypeAction, SIGNAL(triggered()),
           this, SLOT(changeSelectedSwcNodeType()));
 
-  m_setSwcRootAction = new QAction("Set as root", this);
+  m_setSwcRootAction = new QAction("Set as a root", this);
   connect(m_setSwcRootAction, SIGNAL(triggered()),
           this, SLOT(setRootAsSelectedSwcNode()));
   m_singleSwcNodeActionActivator.registerAction(m_setSwcRootAction, true);
@@ -958,20 +662,23 @@ void Z3DWindow::createActions()
           SLOT(selectDownstreamNode()));
           */
 
+  /*
   m_selectSwcNodeDownstreamAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_DOWNSTREAM);
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_DOWNSTREAM);
 
   m_selectSwcNodeUpstreamAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_UPSTREAM);
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_UPSTREAM);
+      */
 
   /*
   m_selectSwcNodeBranchAction = new QAction("Branch", this);
   connect(m_selectSwcNodeBranchAction, SIGNAL(triggered()), m_doc.get(),
           SLOT(selectBranchNode()));
           */
+  /*
   m_selectSwcNodeBranchAction =
-      m_doc->getAction(ZStackDoc::ACTION_SELECT_SWC_BRANCH);
-
+      m_doc->getAction(ZActionFactory::ACTION_SELECT_SWC_BRANCH);
+*/
 
   m_selectSwcNodeTreeAction = new QAction("Tree", this);
   connect(m_selectSwcNodeTreeAction, SIGNAL(triggered()), m_doc.get(),
@@ -1049,10 +756,10 @@ void Z3DWindow::createActions()
           */
 
   m_removeSwcTurnAction =
-      m_doc->getAction(ZStackDoc::ACTION_REMOVE_TURN);
+      m_doc->getAction(ZActionFactory::ACTION_REMOVE_TURN);
 
   m_resolveCrossoverAction =
-      m_doc->getAction(ZStackDoc::ACTION_RESOLVE_CROSSOVER);
+      m_doc->getAction(ZActionFactory::ACTION_RESOLVE_CROSSOVER);
 
 }
 
@@ -1060,13 +767,19 @@ void Z3DWindow::createMenus()
 {
   m_viewMenu = menuBar()->addMenu(tr("&View"));
   m_editMenu = menuBar()->addMenu(tr("&Edit"));
-  m_editMenu->addAction(m_undoAction);
-  m_editMenu->addAction(m_redoAction);
-  m_editMenu->addSeparator();
-  m_editMenu->addAction(m_markSwcSomaAction);
+  m_helpMenu = menuBar()->addMenu(tr("&Help"));
 
-  createContextMenu();
-  customizeContextMenu();
+  m_editMenu->addAction(getAction(ZActionFactory::ACTION_UNDO));
+  m_editMenu->addAction(getAction(ZActionFactory::ACTION_REDO));
+  m_editMenu->addSeparator();
+//  m_editMenu->addAction(m_markSwcSomaAction);
+
+  m_editMenu->addAction("Select Mesh by ID", this, SLOT(selectMeshByID()));
+  m_editMenu->addAction("Select All Meshes", this, SLOT(selectAllMeshes()),
+                        QKeySequence("ctrl+a"));
+  m_editMenu->addSeparator();
+
+  m_helpMenu->addAction(m_helpAction);
 }
 
 void Z3DWindow::createContextMenu()
@@ -1093,7 +806,8 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_locatePunctumIn2DAction);
   contextMenu->addAction("Transform selected puncta",
                          this, SLOT(transformSelectedPuncta()));
-  contextMenu->addAction("Change color", this, SLOT(changeSelectedPunctaColor()));
+  contextMenu->addAction(
+        "Change color", this, SLOT(changeSelectedPunctaColor()));
   contextMenu->addAction("Transform all puncta",
                          this, SLOT(transformAllPuncta()));
   contextMenu->addAction("Convert to swc",
@@ -1102,9 +816,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addAction(m_toggleMoveSelectedObjectsAction);
   m_contextMenuGroup["puncta"] = contextMenu;
 
-#ifdef _DEBUG_
-  qDebug() << "Create swc node menu";
-#endif
+  ZOUT(LTRACE(), 5) << "Create swc node menu";
 
   //Swc node
   contextMenu = new QMenu(this);
@@ -1121,7 +833,7 @@ void Z3DWindow::createContextMenu()
   contextMenu->addSeparator();
   contextMenu->addAction(m_locateSwcNodeIn2DAction);
   contextMenu->addAction(m_changeSwcNodeTypeAction);
-  contextMenu->addAction(m_toogleAddSwcNodeModeAction);
+  contextMenu->addAction(m_toggleAddSwcNodeModeAction);
 
   m_contextMenuGroup["swcnode"] = contextMenu;
 
@@ -1170,6 +882,13 @@ void Z3DWindow::createContextMenu()
   connect(m_changeBackgroundAction, SIGNAL(triggered()), this,
           SLOT(changeBackground()));
 
+  m_toggleObjectsAction = new QAction("Objects", this);
+  m_toggleObjectsAction->setCheckable(true);
+  m_toggleObjectsAction->setChecked(
+        m_objectsDockWidget->toggleViewAction());
+  connect(m_toggleObjectsAction, SIGNAL(triggered(bool)),
+          m_objectsDockWidget->toggleViewAction(), SIGNAL(triggered(bool)));
+
   m_contextMenuGroup["empty"] = contextMenu;
 }
 
@@ -1179,7 +898,7 @@ void Z3DWindow::customizeContextMenu()
   m_selectSwcNodeTreeAction->setVisible(false);
 
   if (GET_APPLICATION_NAME == "Biocytin") {
-    m_toogleAddSwcNodeModeAction->setVisible(false);
+    m_toggleAddSwcNodeModeAction->setVisible(false);
     m_toggleMoveSelectedObjectsAction->setVisible(false);
     //m_toogleExtendSelectedSwcNodeAction->setVisible(false);
     m_toggleSmartExtendSelectedSwcNodeAction->setVisible(false);
@@ -1197,15 +916,11 @@ void Z3DWindow::customizeContextMenu()
     m_refreshTraceMaskAction->setVisible(false);
   } else if (GET_APPLICATION_NAME == "FlyEM") {
     //m_toogleExtendSelectedSwcNodeAction->setVisible(false);
-    m_toogleAddSwcNodeModeAction->setVisible(false);
+    m_toggleAddSwcNodeModeAction->setVisible(false);
     //m_toogleMoveSelectedObjectsAction->setVisible(false);
     m_toggleSmartExtendSelectedSwcNodeAction->setVisible(false);
     m_refreshTraceMaskAction->setVisible(false);
   }
-}
-
-Z3DVolumeRaycasterRenderer* Z3DWindow::getVolumeRaycasterRenderer() {
-  return m_volumeRaycaster->getRenderer();
 }
 
 void Z3DWindow::hideControlPanel()
@@ -1219,6 +934,14 @@ void Z3DWindow::hideObjectView()
 {
   if (m_objectsDockWidget != NULL) {
     m_objectsDockWidget->hide();
+    m_toggleObjectsAction->setChecked(false);
+  }
+}
+
+void Z3DWindow::hideStatusBar()
+{
+  if (statusBar() != NULL) {
+    statusBar()->hide();
   }
 }
 
@@ -1226,8 +949,30 @@ void Z3DWindow::createDockWindows()
 {
   m_settingsDockWidget = new QDockWidget(tr("Control and Settings"), this);
   m_settingsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_settingsDockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
 
-  m_widgetsGroup = new ZWidgetsGroup("All", NULL, 1);
+  m_viewMenu->addSeparator();
+  m_viewMenu->addAction(m_settingsDockWidget->toggleViewAction());
+
+  m_objectsDockWidget = new QDockWidget(tr("Objects"), this);
+  m_objectsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_objectsDockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+
+  m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
+
+  m_roiDockWidget = new ZROIWidget(tr("ROIs"), this);
+  m_roiDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  m_roiDockWidget->setVisible(false);
+  m_viewMenu->addAction(m_roiDockWidget->toggleViewAction());
+
+  addDockWidget(Qt::RightDockWidgetArea, m_roiDockWidget);
+  addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
+  addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
+}
+
+void Z3DWindow::fillDockWindows()
+{
+  m_widgetsGroup = std::make_shared<ZWidgetsGroup>("All", 1);
 
   QMenu *cameraMenu = new QMenu(this);
   QPushButton *cameraMenuButton = new QPushButton(tr("Camera"));
@@ -1258,142 +1003,81 @@ void Z3DWindow::createDockWindows()
   connect(loadViewAction, SIGNAL(triggered()), this, SLOT(loadView()));
   cameraMenu->addAction(loadViewAction);
 
-  // reset camera button and some other utils
-//  QPushButton *resetCameraButton = new QPushButton(tr("Reset Camera"));
-//  resetCameraButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-//  connect(resetCameraButton, SIGNAL(clicked()), this, SLOT(resetCamera()));
-
-#if 0
-  QPushButton *flipViewButton = new QPushButton(tr("Back view"));
-  flipViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(flipViewButton, SIGNAL(clicked()), this, SLOT(flipView()));
-
-#  ifdef _DEBUG_
-  QPushButton *recordViewButton = new QPushButton(tr("Record view"));
-  recordViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(recordViewButton, SIGNAL(clicked()), this, SLOT(recordView()));
-
-  QPushButton *saveViewButton = new QPushButton(tr("Save view"));
-  saveViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-  connect(saveViewButton, SIGNAL(clicked()), this, SLOT(saveView()));
-
-//  QPushButton *diffViewButton = new QPushButton(tr("Calculate view difference"));
-//  diffViewButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-//  connect(diffViewButton, SIGNAL(clicked()), this, SLOT(diffView()));
-#  endif
-
-#endif
-
   const NeutubeConfig &config = NeutubeConfig::getInstance();
   if (config.getZ3DWindowConfig().isUtilsOn()) {
-    ZWidgetsGroup *utils = new ZWidgetsGroup("General", m_widgetsGroup, 1);
-    new ZWidgetsGroup(cameraMenuButton, utils, 1);
-    new ZWidgetsGroup(getCamera(), utils, 1);
-    new ZWidgetsGroup(m_compositor->getParameter("Multisample Anti-Aliasing"), utils, 1);
-    new ZWidgetsGroup(m_compositor->getParameter("Transparency"), utils, 1);
-//    utils->setVisible(false);
+    auto utils = m_view->globalParasWidgetsGroup();
+    utils->addChild(*cameraMenuButton, 0);
+    m_widgetsGroup->addChild(utils);
   }
 
-  // capture function
-  m_screenShotWidget = new Z3DTakeScreenShotWidget(false, this);
-  m_screenShotWidget->setCaptureStereoImage(m_isStereoView);
-  connect(m_screenShotWidget, SIGNAL(takeScreenShot(QString, Z3DScreenShotType)),
-          this, SLOT(takeScreenShot(QString, Z3DScreenShotType)));
-  connect(m_screenShotWidget, SIGNAL(takeScreenShot(QString,int,int,Z3DScreenShotType)),
-          this, SLOT(takeScreenShot(QString,int,int,Z3DScreenShotType)));
-  connect(m_screenShotWidget, SIGNAL(takeSeriesScreenShot(QDir,QString,glm::vec3,bool,int,Z3DScreenShotType)),
-          this, SLOT(takeSeriesScreenShot(QDir,QString,glm::vec3,bool,int,Z3DScreenShotType)));
-  connect(m_screenShotWidget, SIGNAL(takeSeriesScreenShot(QDir,QString,glm::vec3,bool,int,int,int,Z3DScreenShotType)),
-          this, SLOT(takeSeriesScreenShot(QDir,QString,glm::vec3,bool,int,int,int,Z3DScreenShotType)));
-  ZWidgetsGroup *capture = new ZWidgetsGroup("Capture", m_widgetsGroup, 1);
-  new ZWidgetsGroup(m_screenShotWidget, capture, 1);
+  m_widgetsGroup->addChild(m_view->captureWidgetsGroup());
 
+  const QList<neutube3d::ERendererLayer>& layerList = m_view->getLayerList();
+  foreach (neutube3d::ERendererLayer layer, layerList) {
+    m_widgetsGroup->addChild(m_view->getWidgetsGroup(layer));
+  }
+#if 0
   //volume
-  if (config.getZ3DWindowConfig().isVolumeOn()) {
-    if (m_volumeSource != NULL) {
-      ZWidgetsGroup *wg = m_volumeRaycaster->getWidgetsGroup();
-      wg->mergeGroup(m_volumeSource->getWidgetsGroup(), false);
-      connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
-      m_widgetsGroup->addChildGroup(wg);
-    }
+
+  if (getVolumeFilter() != NULL) {
+    m_widgetsGroup->addChild(getVolumeFilter()->widgetsGroup());
   }
 
-  ZWidgetsGroup *wg = NULL;
-
-  if (config.getZ3DWindowConfig().isGraphOn()) {
-#if defined(_FLYEM_)
-    //graph
-    wg = m_graphFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)), this, SLOT(openAdvancedSetting(QString)));
-    m_widgetsGroup->addChildGroup(wg);
-#endif
+  if (getSwcFilter() != NULL) {
+    m_widgetsGroup->addChild(getSwcFilter()->widgetsGroup());
   }
 
-  if (config.getZ3DWindowConfig().isSwcsOn()) {
-    //swc
-    wg = m_swcFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-            this, SLOT(openAdvancedSetting(QString)));
-    m_widgetsGroup->addChildGroup(wg);
+  if (getPunctaFilter() != NULL) {
+    m_widgetsGroup->addChild(getPunctaFilter()->widgetsGroup());
   }
 
-#if !defined(_NEUTUBE_LIGHT_)
-  //puncta
-  if (config.getZ3DWindowConfig().isPunctaOn()) {
-    wg = m_punctaFilter->getWidgetsGroup();
-    connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-            this, SLOT(openAdvancedSetting(QString)));
-    m_widgetsGroup->addChildGroup(wg);
+  if (getMeshFilter() != NULL) {
+    m_widgetsGroup->addChild(getMeshFilter()->widgetsGroup());
+  }
+
+  if (getGraphFilter() != NULL) {
+    m_widgetsGroup->addChild(getGraphFilter()->widgetsGroup());
+  }
+
+  if (getSurfaceFilter() != NULL) {
+    m_widgetsGroup->addChild(getSurfaceFilter()->widgetsGroup());
+  }
+
+  if (getTodoFilter() != NULL) {
+    m_widgetsGroup->addChild(getTodoFilter()->widgetsGroup());
   }
 #endif
 
   //background
-  wg = m_compositor->getBackgroundWidgetsGroup();
-  connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-          this, SLOT(openAdvancedSetting(QString)));
-  m_widgetsGroup->addChildGroup(wg);
+  m_widgetsGroup->addChild(m_view->backgroundWidgetsGroup());
 
   //axis
-  wg = m_axis->getWidgetsGroup();
-  connect(wg, SIGNAL(requestAdvancedWidget(QString)),
-          this, SLOT(openAdvancedSetting(QString)));
-  m_widgetsGroup->addChildGroup(wg);
+  m_widgetsGroup->addChild(m_view->axisWidgetsGroup());
 
-  //QWidget *widget = m_widgetsGroup->createWidget(this, true);
-
-  //m_settingsDockWidget->setWidget(widget);
 
   QTabWidget *tabs = createBasicSettingTabWidget();
   m_settingsDockWidget->setWidget(tabs);
-  m_viewMenu->addSeparator();
-  m_viewMenu->addAction(m_settingsDockWidget->toggleViewAction());
-  connect(m_widgetsGroup, SIGNAL(widgetsGroupChanged()), this, SLOT(updateSettingsDockWidget()));
 
-  m_objectsDockWidget = new QDockWidget(tr("Objects"), this);
-  m_objectsDockWidget->setAllowedAreas(Qt::RightDockWidgetArea);
+  //Use QueuedConnection to avoid a strange crash
+  connect(m_widgetsGroup.get(), SIGNAL(widgetsGroupChanged()),
+          this, SLOT(updateSettingsDockWidget()), Qt::QueuedConnection);
+  connect(m_widgetsGroup.get(), SIGNAL(requestAdvancedWidget(QString)),
+          this, SLOT(openAdvancedSetting(QString)));
+
+  customizeDockWindows(tabs);
+
   ZObjsManagerWidget* omw = new ZObjsManagerWidget(getDocument(), m_objectsDockWidget);
   connect(omw, SIGNAL(swcDoubleClicked(ZSwcTree*)), this, SLOT(swcDoubleClicked(ZSwcTree*)));
   connect(omw, SIGNAL(swcNodeDoubleClicked(Swc_Tree_Node*)), this, SLOT(swcNodeDoubleClicked(Swc_Tree_Node*)));
   connect(omw, SIGNAL(punctaDoubleClicked(ZPunctum*)), this, SLOT(punctaDoubleClicked(ZPunctum*)));
+  connect(omw, SIGNAL(meshDoubleClicked(ZMesh*)), this, SLOT(meshDoubleClicked(ZMesh*)));
   m_objectsDockWidget->setWidget(omw);
-  m_viewMenu->addAction(m_objectsDockWidget->toggleViewAction());
 
-  addDockWidget(Qt::RightDockWidgetArea, m_objectsDockWidget);
-  addDockWidget(Qt::RightDockWidgetArea, m_settingsDockWidget);
-
-  customizeDockWindows(tabs);
+//  getMeshFilter()->emitDumpParaGarbage();
 }
 
 int Z3DWindow::channelNumber()
 {
-  if (m_volumeSource == NULL) {
-    return 0;
-  }
-
-  if (m_volumeSource->isEmpty()) {
-    return 0;
-  }
-
   if (m_doc.get() == NULL) {
     return 0;
   }
@@ -1417,39 +1101,6 @@ bool Z3DWindow::hasVolume()
   return channelNumber() > 0;
 }
 
-void Z3DWindow::resetCamera()
-{
-  setupCamera(m_boundBox, Z3DCamera::ResetAll);
-}
-
-void Z3DWindow::resetCameraCenter()
-{
-  setupCamera(m_boundBox, Z3DCamera::PreserveViewVector);
-}
-
-void Z3DWindow::setupCamera(const std::vector<double> &bound,
-                            Z3DCamera::ResetCameraOptions options)
-{
-  getCamera()->resetCamera(bound, options);
-}
-
-void Z3DWindow::flipView()
-{
-  getCamera()->flipViewDirection();
-}
-
-void Z3DWindow::setXZView()
-{
-  resetCamera();
-  getCamera()->rotate90X();
-}
-
-void Z3DWindow::setYZView()
-{
-  resetCamera();
-  getCamera()->rotate90XZ();
-}
-
 void Z3DWindow::recordView()
 {
   m_cameraRecord = getCamera()->get();
@@ -1457,19 +1108,19 @@ void Z3DWindow::recordView()
 
 void Z3DWindow::diffView()
 {
-  std::cout << "Eye: " << getCamera()->getEye() - m_cameraRecord.getEye()
+  std::cout << "Eye: " << getCamera()->get().eye() - m_cameraRecord.eye()
             << std::endl;
   std::cout << "Center: "
-            << getCamera()->getCenter() - m_cameraRecord.getCenter() << std::endl;
+            << getCamera()->get().center() - m_cameraRecord.center() << std::endl;
   std::cout << "Up vector: "
-            << getCamera()->getUpVector() - m_cameraRecord.getUpVector() << std::endl;
+            << getCamera()->get().upVector() - m_cameraRecord.upVector() << std::endl;
 }
 
 void Z3DWindow::saveView()
 {
   QString filename = QFileDialog::getSaveFileName(
         this, tr("Save View Parameters"), m_lastOpenedFilePath,
-         tr("Json files (*.json) "));
+         tr("Json files (*.json)"));
 
 
   if (!filename.isEmpty()) {
@@ -1483,13 +1134,139 @@ void Z3DWindow::loadView()
 {
   QString fileName = QFileDialog::getOpenFileName(
         this, tr("Load View Parameters"), m_lastOpenedFilePath,
-        tr("Json files (*.json) "));
+        tr("Json files (*.json)"));
 
   if (!fileName.isEmpty()) {
     ZJsonObject cameraJson;
     cameraJson.load(fileName.toStdString());
-    getCamera()->get().set(cameraJson);
-    getCamera()->updatePara();
+    getCamera()->set(cameraJson);
+  }
+}
+
+void Z3DWindow::zoomToSelectedMeshes()
+{
+  TStackObjectSet &meshSet = m_doc->getSelected(ZStackObject::TYPE_MESH);
+  ZBBox<glm::dvec3> boundingBox;
+  for (ZStackObject *obj : meshSet) {
+    if (ZMesh* mesh = dynamic_cast<ZMesh*>(obj)) {
+      boundingBox.expand(getMeshFilter()->meshBound(mesh));
+    }
+  }
+  if (!boundingBox.empty()) {
+      m_view->gotoPosition(boundingBox, 0);
+  }
+}
+
+void Z3DWindow::selectMeshByID()
+{
+  bool ok = true;
+  QString text = QInputDialog::getText(this, "Select Mesh", "Mesh ID:",
+                                       QLineEdit::Normal, "", &ok);
+  if (ok) {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc) {
+      ZMesh *meshToSelect = nullptr;
+      uint64_t id = text.toULongLong(&ok);
+      if (ok) {
+        auto meshList = doc->getMeshList();
+        for (ZMesh* mesh : meshList) {
+          if (mesh->getLabel() == id) {
+            meshToSelect = mesh;
+            break;
+          }
+        }
+      }
+      if (meshToSelect) {
+        doc->setMeshSelected(meshToSelect, true);
+        QString message = "Mesh " + QString::number(meshToSelect->getLabel()) + " selected";
+        m_doc->notifyWindowMessageUpdated(message);
+      }
+      else {
+        QString title = "Selection Failed";
+        QString warning = "No mesh has ID " + text;
+        QMessageBox::warning(this, title, warning);
+      }
+    }
+  }
+}
+
+void Z3DWindow::selectAllMeshes()
+{
+  ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+  if (doc) {
+    auto meshList = ZStackDocProxy::GetGeneralMeshList(doc);
+    for (ZMesh* mesh : meshList) {
+      doc->setMeshSelected(mesh, true);
+    }
+    QString message = QString::number(meshList.size());
+    message += (meshList.size() == 1) ? " mesh selected" : " meshes selected";
+    doc->notifyWindowMessageUpdated(message);
+  }
+}
+
+void Z3DWindow::configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj)
+{
+  m_view->configureLayer(layer, obj);
+}
+
+
+void Z3DWindow::configure(const ZJsonObject &obj)
+{
+  m_view->configure(obj);
+}
+
+
+void Z3DWindow::skipKeyEvent(bool on)
+{
+  m_skippingKeyEvent = on;
+}
+
+void Z3DWindow::syncAction()
+{
+  QAction *action = getAction(ZActionFactory::ACTION_SHOW_TODO);
+  if (action != NULL) {
+    action->setChecked(m_view->isLayerVisible(neutube3d::LAYER_TODO));
+  }
+}
+
+void Z3DWindow::syncActionToNormalMode()
+{
+  blockSignals(true);
+  setActionChecked(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM, false);
+  setActionChecked(ZActionFactory::ACTION_ACTIVATE_LOCATE, false);
+  setActionChecked(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY, false);
+  blockSignals(false);
+}
+
+void Z3DWindow::readSettings()
+{
+  QString windowKey = neutube3d::GetWindowKeyString(getWindowType()).c_str();
+  QString settingString = NeutubeConfig::GetSettings().value(windowKey).
+      toString();
+
+  ZJsonObject jsonObj;
+
+  qDebug() << settingString;
+
+  jsonObj.decodeString(settingString.toStdString().c_str());
+
+  configure(jsonObj);
+}
+
+void Z3DWindow::writeSettings()
+{
+  //ignore general window type for now
+  if (getWindowType() != neutube3d::TYPE_GENERAL) {
+    ZJsonObject configJson = m_view->getSettings();
+
+    std::string settingString = configJson.dumpString(0);
+
+#ifdef _DEBUG_
+    std::cout << settingString << std::endl;
+#endif
+    NeutubeConfig::GetSettings().setValue(
+          neutube3d::GetWindowKeyString(getWindowType()).c_str(),
+          settingString.c_str());
   }
 }
 
@@ -1503,237 +1280,102 @@ ZRect2d Z3DWindow::getRectRoi() const
   return getCanvas()->getInteractionEngine()->getRectDecoration();
 }
 
-void Z3DWindow::resetCameraClippingRange()
+void Z3DWindow::setMenuFactory(ZStackDocMenuFactory *factory)
 {
-  getCamera()->resetCameraNearFarPlane(m_boundBox);
-}
-
-QPointF Z3DWindow::getScreenProjection(
-    double x, double y, double z, ERendererLayer layer)
-{
-  Z3DRendererBase *base = getRendererBase(layer);
-
-  QPointF pt(0, 0);
-
-  if (base != NULL) {
-    glm::vec3 coord = getRendererBase(layer)->getViewCoord(
-          x, y, z, getCanvas()->width(), getCanvas()->height());
-    pt.setX(coord[0]);
-    pt.setY(coord[1]);
+  if (m_menuFactory != NULL) {
+    delete m_menuFactory;
   }
 
-  return pt;
+  m_menuFactory = factory;
 }
 
-void Z3DWindow::updateVolumeBoundBox()
-{
-  m_volumeBoundBox[0] = m_volumeBoundBox[2] = m_volumeBoundBox[4] = std::numeric_limits<double>::max();
-  m_volumeBoundBox[1] = m_volumeBoundBox[3] = m_volumeBoundBox[5] = -std::numeric_limits<double>::max();
-  if (hasVolume()) {
-    m_volumeBoundBox = m_volumeSource->getVolume(0)->getWorldBoundBox();
-  }
-}
-
-void Z3DWindow::updateSwcBoundBox()
-{
-  m_swcBoundBox[0] = m_swcBoundBox[2] = m_swcBoundBox[4] = std::numeric_limits<double>::max();
-  m_swcBoundBox[1] = m_swcBoundBox[3] = m_swcBoundBox[5] = -std::numeric_limits<double>::max();
-
-  QList<ZSwcTree*> swcList = m_doc->getSwcList();
-
-  for (int i=0; i< swcList.size(); i++) {
-    std::vector<double> boundBox = m_swcFilter->getTreeBound(swcList.at(i));
-    m_swcBoundBox[0] = std::min(boundBox[0], m_swcBoundBox[0]);
-    m_swcBoundBox[1] = std::max(boundBox[1], m_swcBoundBox[1]);
-    m_swcBoundBox[2] = std::min(boundBox[2], m_swcBoundBox[2]);
-    m_swcBoundBox[3] = std::max(boundBox[3], m_swcBoundBox[3]);
-    m_swcBoundBox[4] = std::min(boundBox[4], m_swcBoundBox[4]);
-    m_swcBoundBox[5] = std::max(boundBox[5], m_swcBoundBox[5]);
-  }
-}
-
-void Z3DWindow::updateGraphBoundBox()
-{
-  m_graphBoundBox = m_graphFilter->boundBox();
-}
-
-/*
-void Z3DWindow::updateDecorationBoundBox()
-{
-  m_decorationBoundBox = m_decorationFilter->boundBox();
-}
-*/
-
-void Z3DWindow::updatePunctaBoundBox()
-{
-  m_punctaBoundBox[0] = m_punctaBoundBox[2] = m_punctaBoundBox[4] = std::numeric_limits<double>::max();
-  m_punctaBoundBox[1] = m_punctaBoundBox[3] = m_punctaBoundBox[5] = -std::numeric_limits<double>::max();
-
-  QList<ZPunctum*> punctaList = m_doc->getPunctumList();
-  for (int i=0; i<punctaList.size(); i++) {
-    std::vector<double> boundBox = m_punctaFilter->getPunctumBound(punctaList.at(i));
-    m_punctaBoundBox[0] = std::min(boundBox[0], m_punctaBoundBox[0]);
-    m_punctaBoundBox[1] = std::max(boundBox[1], m_punctaBoundBox[1]);
-    m_punctaBoundBox[2] = std::min(boundBox[2], m_punctaBoundBox[2]);
-    m_punctaBoundBox[3] = std::max(boundBox[3], m_punctaBoundBox[3]);
-    m_punctaBoundBox[4] = std::min(boundBox[4], m_punctaBoundBox[4]);
-    m_punctaBoundBox[5] = std::max(boundBox[5], m_punctaBoundBox[5]);
-  }
-}
-
-Z3DCameraParameter *Z3DWindow::getCamera()
-{
-  return m_compositor->getCamera();
-}
-
-Z3DTrackballInteractionHandler *Z3DWindow::getInteractionHandler()
-{
-  return m_compositor->getInteractionHandler();
-}
 
 void Z3DWindow::cleanup()
 {
   if (!m_isClean) {
-    delete m_widgetsGroup;
-    m_widgetsGroup = NULL;
-    m_canvas->setNetworkEvaluator(NULL);
-    m_networkEvaluator->deinitializeNetwork();
-    delete m_networkEvaluator;
-    m_networkEvaluator = NULL;
-
-    delete m_volumeSource;
-    m_volumeSource = NULL;
-    delete m_volumeRaycaster;
-    m_volumeRaycaster = NULL;
-    delete m_punctaFilter;
-    m_punctaFilter = NULL;
-    delete m_swcFilter;
-    m_swcFilter = NULL;
-    delete m_graphFilter;
-    m_graphFilter = NULL;
-//    delete m_decorationFilter;
-//    m_decorationFilter = NULL;
-    delete m_compositor;
-    m_compositor = NULL;
-    delete m_axis;
-    m_axis = NULL;
-    delete m_canvasRenderer;
-    m_canvasRenderer = NULL;
-
-    delete m_canvas;
     m_isClean = true;
 
     m_buttonStatus[0] = true;  // showgraph
     m_buttonStatus[1] = false; // settings
     m_buttonStatus[2] = false; // objects
+    m_buttonStatus[3] = false; // rois
   }
 }
 
-void Z3DWindow::volumeChanged()
+bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
 {
-  if (m_volumeSource == NULL) {
-    m_volumeSource = new Z3DVolumeSource(getDocument());
+#if defined(_FLYEM_)
+  if (action == ZActionFactory::ACTION_FLYEM_COMPARE_BODY) {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc != NULL) {
+      if (action == ZActionFactory::ACTION_FLYEM_COMPARE_BODY) {
+        if (doc->updating()) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+  }
+#endif
+
+  if (action == ZActionFactory::ACTION_COPY_POSITION) {
+    ZStackDoc *doc = getDocument();
+    if (doc->getSelectedSwcNodeNumber() != 1) {
+      return false;
+    }
   }
 
-  m_volumeSource->reloadVolume();
-  updateVolumeBoundBox();
-  updateOverallBoundBox();
-  resetCameraClippingRange();
+  return true;
 }
 
-void Z3DWindow::swcChanged()
+void Z3DWindow::selectedObjectChangedFrom3D(ZStackObject *p, bool append)
 {
-  m_swcFilter->setData(m_doc->getSwcList());
-  updateSwcBoundBox();
-  updateOverallBoundBox();
-  resetCameraClippingRange();
-}
-
-void Z3DWindow::updateNetworkDisplay()
-{
-  if (m_doc->swcNetwork() != NULL) {
-    ZPointNetwork *network = m_doc->swcNetwork()->toPointNetwork();
-    m_graphFilter->setData(*network, NULL);
-
-    delete network;
-  }
-}
-
-void Z3DWindow::update3DGraphDisplay()
-{
-  m_graphFilter->setData(m_doc->get3DGraphDecoration());
-  TStackObjectList objList = m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
-  for (TStackObjectList::const_iterator iter = objList.begin();
-       iter != objList.end(); ++iter) {
-    m_graphFilter->addData(*dynamic_cast<Z3DGraph*>(*iter));
-  }
-  updateGraphBoundBox();
-//  updateDecorationBoundBox();
-  updateOverallBoundBox();
-  resetCameraClippingRange();
-}
-
-
-void Z3DWindow::updateDisplay()
-{
-  volumeChanged();
-  swcChanged();
-  punctaChanged();
-  updateNetworkDisplay();
-  update3DGraphDisplay();
-//  updateDecorationDisplay();
-}
-
-void Z3DWindow::punctaChanged()
-{
-  m_punctaFilter->setData(m_doc->getPunctumList());
-  updatePunctaBoundBox();
-  updateOverallBoundBox();
-  resetCameraClippingRange();
-}
-
-void Z3DWindow::volumeScaleChanged()
-{
-  if (!m_doc->hasStackData())
+  if (p == NULL) {
+    if (!append) {
+      if (getTodoFilter()) { //temporary hack
+        m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
+        getTodoFilter()->invalidate();
+      }
+      if (getGraphFilter()) {
+        getGraphFilter()->deselectAllGraph();
+      }
+    }
     return;
-  updateVolumeBoundBox();
-  updateOverallBoundBox();
-  //setupCamera(m_boundBox, Z3DCamera::PreserveCenterDistance | Z3DCamera::PreserveViewVector);
-  resetCameraClippingRange();
-}
+  }
 
-void Z3DWindow::swcCoordScaleChanged()
-{
-  if (!m_doc->hasSwc())
-    return;
-  updateSwcBoundBox();
-  updateOverallBoundBox();
-  //setupCamera(m_boundBox, Z3DCamera::PreserveCenterDistance | Z3DCamera::PreserveViewVector);
-  resetCameraClippingRange();
-}
+  switch (p->getType()) {
+  case ZStackObject::TYPE_FLYEM_TODO_ITEM:
+  {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc != NULL) {
+      doc->selectObject(p, append);
+      getTodoFilter()->invalidate();
+    }
+  }
+    break;
+  default:
+  {
+    ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+    if (doc != NULL) {
+      if (!append) {
+        if (getTodoFilter()) { //temporary hack
+          m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
+          getTodoFilter()->invalidate();
+        }
+        if (getGraphFilter()) {
+          getGraphFilter()->deselectAllGraph();
+        }
+      }
 
-void Z3DWindow::punctaCoordScaleChanged()
-{
-  if (m_doc->getObjectList(ZStackObject::TYPE_PUNCTUM).empty())
-    return;
-  updatePunctaBoundBox();
-  updateOverallBoundBox();
-  //setupCamera(m_boundBox, Z3DCamera::PreserveCenterDistance | Z3DCamera::PreserveViewVector);
-  resetCameraClippingRange();
-}
-
-void Z3DWindow::swcSizeScaleChanged()
-{
-  updateSwcBoundBox();
-  updateOverallBoundBox();
-  resetCameraClippingRange();
-}
-
-void Z3DWindow::punctaSizeScaleChanged()
-{
-  updatePunctaBoundBox();
-  updateOverallBoundBox();
-  resetCameraClippingRange();
+      doc->selectObject(p, append);
+      if (getGraphFilter()) {
+        getGraphFilter()->invalidate();
+      }
+    }
+  }
+    break;
+  }
 }
 
 void Z3DWindow::selectedPunctumChangedFrom3D(ZPunctum *p, bool append)
@@ -1754,8 +1396,45 @@ void Z3DWindow::selectedPunctumChangedFrom3D(ZPunctum *p, bool append)
   statusBar()->showMessage(p->toString().c_str());
 }
 
+
+void Z3DWindow::selectedMeshChangedFrom3D(ZMesh* p, bool append)
+{
+  if (p == NULL) {
+    if (!append) {
+      m_doc->deselectAllMesh();
+      m_doc->notifyWindowMessageUpdated("");
+    }
+    return;
+  }
+
+  if (append) {
+    m_doc->setMeshSelected(p, true);
+  } else {
+//    m_doc->deselectAllObject();
+    m_doc->deselectAllMesh();
+    m_doc->setMeshSelected(p, true);
+  }
+
+  QString message = "Mesh " + QString::number(p->getLabel()) + " selected";
+  m_doc->notifyWindowMessageUpdated(message);
+
+  statusBar()->showMessage(p->getSource().c_str());
+}
+
+bool Z3DWindow::canSelectObject() const
+{
+  return !(getCanvas()->getInteractionEngine()->isStateOn(ZInteractionEngine::STATE_DRAW_LINE) ||
+           getCanvas()->getInteractionEngine()->isStateOn(ZInteractionEngine::STATE_DRAW_STROKE) ||
+           getCanvas()->getInteractionEngine()->isStateOn(ZInteractionEngine::STATE_DRAW_RECT) ||
+           getCanvas()->getInteractionEngine()->isStateOn(ZInteractionEngine::STATE_MARK));
+}
+
 void Z3DWindow::selectedSwcChangedFrom3D(ZSwcTree *p, bool append)
 {
+  if (!canSelectObject()) {
+    return;
+  }
+
   if (!append) {
     if (m_doc->hasSelectedSwc()) {
       m_blockingTraceMenu = true;
@@ -1780,6 +1459,10 @@ void Z3DWindow::selectedSwcChangedFrom3D(ZSwcTree *p, bool append)
 
 void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
 {
+  if (!canSelectObject()) {
+    return;
+  }
+
   if (!append) {
     if (m_doc->hasSelectedSwcNode()) {
       m_blockingTraceMenu = true;
@@ -1808,14 +1491,44 @@ void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node *p, bool append)
   statusBar()->showMessage(SwcTreeNode::toString(p).c_str());
 }
 
+void Z3DWindow::selectedSwcTreeNodeChangedFrom3D(
+    QList<Swc_Tree_Node *> nodeArray, bool append)
+{
+  if (!canSelectObject()) {
+    return;
+  }
+
+  if (!append) {
+    if (m_doc->hasSelectedSwcNode()) {
+      m_blockingTraceMenu = true;
+    }
+  }
+
+  if (!append) {
+    if (m_doc->hasSelectedSwcNode()) {
+      m_doc->deselectAllSwcTreeNodes();
+    }
+  }
+
+  m_doc->setSwcTreeNodeSelected(nodeArray.begin(), nodeArray.end(), append);
+
+  statusBar()->showMessage(QString("%1 node(s) selected.").arg(nodeArray.size()));
+}
+
 void Z3DWindow::addNewSwcTreeNode(double x, double y, double z, double r)
 {
-  m_doc->executeAddSwcNodeCommand(ZPoint(x, y, z), r);
+  m_doc->executeAddSwcNodeCommand(
+        ZPoint(x, y, z), r, ZStackObjectRole::ROLE_NONE);
       /*
   QUndoCommand *insertNewSwcTreeNodeCommand =
       new ZStackDocAddSwcNodeCommand(m_doc.get(), p);
   m_doc->undoStack()->push(insertNewSwcTreeNodeCommand);
       */
+}
+
+void Z3DWindow::extendSwcTreeNode(double x, double y, double z, double r)
+{
+  m_doc->executeSwcNodeExtendCommand(ZPoint(x, y, z), r);
 }
 
 void Z3DWindow::removeSwcTurn()
@@ -1827,10 +1540,10 @@ void Z3DWindow::startConnectingSwcNode()
 {
   notifyUser("Click on the target node to connect.");
   getSwcFilter()->setInteractionMode(Z3DSwcFilter::ConnectSwcNode);
-  m_canvas->getInteractionContext().setSwcEditMode(
+  getCanvas()->getInteractionContext().setSwcEditMode(
         ZInteractiveContext::SWC_EDIT_CONNECT);
-  m_canvas->updateCursor();
-  //m_canvas->setCursor(Qt::SizeBDiagCursor);
+  getCanvas()->updateCursor();
+  //getCanvas()->setCursor(Qt::SizeBDiagCursor);
 }
 
 void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
@@ -1840,48 +1553,43 @@ void Z3DWindow::connectSwcTreeNode(Swc_Tree_Node *tn)
           getDocument()->getSelectedSwcNodeSet(), tn);
     m_doc->executeConnectSwcNodeCommand(target, tn);
     getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
-    m_canvas->updateCursor();
-    //m_canvas->setCursor(Qt::ArrowCursor);
+    getCanvas()->getInteractionContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_OFF);
+    getCanvas()->updateCursor();
+    //getCanvas()->setCursor(Qt::ArrowCursor);
   }
 }
 
-void Z3DWindow::punctaSelectionChanged()
-{
-  m_punctaFilter->invalidate();
-}
 
-void Z3DWindow::swcSelectionChanged()
-{
-  m_swcFilter->invalidate();
-}
-
-void Z3DWindow::swcTreeNodeSelectionChanged()
-{
-  m_swcFilter->invalidate();
-}
 
 void Z3DWindow::swcDoubleClicked(ZSwcTree *tree)
 {
-  std::vector<double> boundBox = m_swcFilter->getTreeBound(tree);
-  gotoPosition(boundBox, 0);
+  ZBBox<glm::dvec3> bd;
+  getSwcFilter()->treeBound(tree, bd);
+  m_view->gotoPosition(bd, 0);
 }
 
 void Z3DWindow::swcNodeDoubleClicked(Swc_Tree_Node *node)
 {
-  std::vector<double> boundBox = m_swcFilter->getTreeNodeBound(node);
-  gotoPosition(boundBox, 0);
+  ZBBox<glm::dvec3> bd;
+  getSwcFilter()->treeNodeBound(node, bd);
+  m_view->gotoPosition(bd, 0);
 }
 
 void Z3DWindow::punctaDoubleClicked(ZPunctum *p)
 {
-  std::vector<double> boundBox = m_punctaFilter->getPunctumBound(p);
-  if (hasVolume() > 0) {
-    if (m_volumeSource->isSubvolume())
-      m_volumeSource->exitZoomInView();
+  ZBBox<glm::dvec3> bd;
+  getPunctaFilter()->punctumBound(*p, bd);
+  if (hasVolume()) {
+    if (getVolumeFilter()->isSubvolume())
+      getVolumeFilter()->exitZoomInView();
   }
-  gotoPosition(boundBox);
+  m_view->gotoPosition(bd);
+}
+
+void Z3DWindow::meshDoubleClicked(ZMesh* p)
+{
+  m_view->gotoPosition(getMeshFilter()->meshBound(p), 0);
 }
 
 void Z3DWindow::pointInVolumeLeftClicked(
@@ -1909,39 +1617,89 @@ void Z3DWindow::pointInVolumeLeftClicked(
     m_blockingTraceMenu = false;
   } else {
     if (hasVolume() && channelNumber() == 1 &&
-        !m_toogleAddSwcNodeModeAction->isChecked() &&
+        !m_toggleAddSwcNodeModeAction->isChecked() &&
         !m_toggleMoveSelectedObjectsAction->isChecked() &&
         !m_toggleSmartExtendSelectedSwcNodeAction->isChecked() &&
         NeutubeConfig::getInstance().getMainWindowConfig().isTracingOn()) {
-      m_contextMenuGroup["trace"]->popup(m_canvas->mapToGlobal(pt));
+      m_contextMenuGroup["trace"]->popup(getCanvas()->mapToGlobal(pt));
     }
   }
+}
+
+bool Z3DWindow::addingSwcNode() const
+{
+  return m_toggleAddSwcNodeModeAction->isChecked();
+}
+
+bool Z3DWindow::extendingSwc() const
+{
+  return m_toggleSmartExtendSelectedSwcNodeAction->isChecked();
+}
+
+bool Z3DWindow::movingObject() const
+{
+  return m_toggleMoveSelectedObjectsAction->isChecked();
+}
+
+void Z3DWindow::exitAddingSwcNode()
+{
+  m_toggleAddSwcNodeModeAction->setChecked(false);
+}
+
+void Z3DWindow::exitMovingObject()
+{
+  m_toggleMoveSelectedObjectsAction->setChecked(false);
+}
+
+void Z3DWindow::exitExtendingSwc()
+{
+  m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
+}
+
+bool Z3DWindow::exitEditMode()
+{
+  bool acted = false;
+  if (addingSwcNode()) {
+    exitAddingSwcNode();
+    acted = true;
+  } else if (movingObject()) {
+    exitMovingObject();
+    acted = true;
+  } else if (extendingSwc()) {
+    exitExtendingSwc();
+    acted = true;
+  } else if (getSwcFilter()->interactionMode() ==
+             Z3DSwcFilter::ConnectSwcNode) {
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    getCanvas()->setCursor(Qt::ArrowCursor);
+    acted = true;
+  }
+
+  return acted;
 }
 
 void Z3DWindow::show3DViewContextMenu(QPoint pt)
 {
   notifyUser(" ");
-  if (m_toogleAddSwcNodeModeAction->isChecked()) {
-    m_toogleAddSwcNodeModeAction->setChecked(false);
+  if (exitEditMode()) {
     return;
-  } else if (m_toggleMoveSelectedObjectsAction->isChecked()) {
-    m_toggleMoveSelectedObjectsAction->setChecked(false);
+  } else if (getCanvas()->suppressingContextMenu()) {
     return;
-  } else if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
-    m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
+  }
+
+  m_contextMenu = m_menuFactory->makeContextMenu(this, m_contextMenu);
+  if (!m_contextMenu->isEmpty()) {
+    m_contextMenu->popup(getCanvas()->mapToGlobal(pt));
     return;
-  } else if (getSwcFilter()->getInteractionMode() ==
-             Z3DSwcFilter::ConnectSwcNode) {
-    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->setCursor(Qt::ArrowCursor);
-    return;
-  } else if (m_canvas->suppressingContextMenu()) {
+  }
+
+  if (getDocument()->getTag() == neutube::Document::FLYEM_SKELETON) {
     return;
   }
 
   QList<QAction*> actions;
 
-  if (m_doc->hasSelectedSwc() > 0) {
+  if (m_doc->hasSelectedSwc()) {
     //m_contextMenuGroup["swc"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["swc"]->actions();
     if (actions.empty()) {
@@ -1989,7 +1747,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   }
 
 
-  if (m_doc->hasSelectedPuncta() > 0) {
+  if (m_doc->hasSelectedPuncta()) {
     updateContextMenu("puncta");
     //m_contextMenuGroup["puncta"]->popup(m_canvas->mapToGlobal(pt));
     QList<QAction*> acts = m_contextMenuGroup["puncta"]->actions();
@@ -2021,12 +1779,12 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
     if (channelNumber() > 0) {
       bool success;
 #ifdef _QT5_
-      glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
+      glm::vec3 fpos = getVolumeFilter()->get3DPosition(
             pt.x() * qApp->devicePixelRatio(), pt.y() * qApp->devicePixelRatio(),
-            m_canvas->width() * qApp->devicePixelRatio(), m_canvas->height() * qApp->devicePixelRatio(), success);
+            getCanvas()->width() * qApp->devicePixelRatio(), getCanvas()->height() * qApp->devicePixelRatio(), success);
 #else
-      glm::vec3 fpos = m_volumeRaycaster->get3DPosition(
-            pt.x(), pt.y(), m_canvas->width(), m_canvas->height(), success);
+      glm::vec3 fpos = getVolumeFilter()->get3DPosition(
+            pt.x(), pt.y(), getCanvas()->width(), getCanvas()->height(), success);
 #endif
       if (success) {
         m_lastClickedPosInVolume = glm::ivec3(fpos);
@@ -2043,7 +1801,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
         if (!actions.empty()) {
           m_mergedContextMenu->clear();
           m_mergedContextMenu->addActions(actions);
-          m_mergedContextMenu->popup(m_canvas->mapToGlobal(pt));
+          m_mergedContextMenu->popup(getCanvas()->mapToGlobal(pt));
         }
         return;
       }
@@ -2064,7 +1822,7 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   if (!actions.empty()) {
     m_mergedContextMenu->clear();
     m_mergedContextMenu->addActions(actions);
-    m_mergedContextMenu->popup(m_canvas->mapToGlobal(pt));
+    m_mergedContextMenu->popup(getCanvas()->mapToGlobal(pt));
   }
 }
 
@@ -2075,19 +1833,19 @@ void Z3DWindow::traceTube()
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
       */
-  m_canvas->setCursor(Qt::BusyCursor);
+  getCanvas()->setCursor(Qt::BusyCursor);
   m_doc->executeTraceSwcBranchCommand(m_lastClickedPosInVolume[0],
       m_lastClickedPosInVolume[1],
       m_lastClickedPosInVolume[2]);
   getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-  m_canvas->setCursor(Qt::ArrowCursor);
+  getCanvas()->setCursor(Qt::ArrowCursor);
 }
 
 void Z3DWindow::openZoomInView()
 {
   if (hasVolume()) {
-    if (m_volumeSource->openZoomInView(m_lastClickedPosInVolume)) {
-      gotoPosition(m_volumeSource->getZoomInBound());
+    if (getVolumeFilter()->openZoomInView(m_lastClickedPosInVolume)) {
+      m_view->gotoPosition(getVolumeFilter()->zoomInBound());
     }
   }
 }
@@ -2095,7 +1853,7 @@ void Z3DWindow::openZoomInView()
 void Z3DWindow::exitZoomInView()
 {
   if (hasVolume()) {
-    m_volumeSource->exitZoomInView();
+    getVolumeFilter()->exitZoomInView();
   }
 }
 
@@ -2122,7 +1880,8 @@ void Z3DWindow::markSelectedPunctaProperty1()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty1("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
+//    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
@@ -2132,7 +1891,8 @@ void Z3DWindow::markSelectedPunctaProperty2()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty2("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
+//    m_doc->punctaObjsModel()->updateData(punctum);
   }
 }
 
@@ -2142,7 +1902,7 @@ void Z3DWindow::markSelectedPunctaProperty3()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty3("true");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2152,7 +1912,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty1()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty1("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2162,7 +1922,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty2()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty2("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2172,7 +1932,7 @@ void Z3DWindow::unmarkSelectedPunctaProperty3()
   for (TStackObjectSet::iterator it=objSet.begin(); it != objSet.end(); it++) {
     ZPunctum *punctum = dynamic_cast<ZPunctum*>(*it);
     punctum->setProperty3("");
-    m_doc->punctaObjsModel()->updateData(punctum);
+    m_doc->updatePunctaObjsModel(punctum);
   }
 }
 
@@ -2180,13 +1940,191 @@ void Z3DWindow::saveSelectedPunctaAs()
 {
   QString filename =
     QFileDialog::getSaveFileName(this, tr("Save Selected Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
     QList<ZPunctum*> punctaList =
         m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
     ZPunctumIO::save(filename, punctaList.begin(), punctaList.end());
+  }
+}
+
+void Z3DWindow::emitAddTodoMarker(
+    int x, int y, int z, bool checked, uint64_t bodyId)
+{
+  emit addingTodoMarker(x, y, z, checked, bodyId);
+}
+
+void Z3DWindow::emitAddTodoMarker(
+    const ZIntPoint &pt, bool checked, uint64_t bodyId)
+{
+  emit addingTodoMarker(pt.getX(), pt.getY(), pt.getZ(), checked, bodyId);
+}
+
+void Z3DWindow::emitAddToMergeMarker(int x, int y, int z, uint64_t bodyId)
+{
+  emit addingToMergeMarker(x, y, z, bodyId);
+}
+
+void Z3DWindow::emitAddToMergeMarker(const ZIntPoint &pt, uint64_t bodyId)
+{
+  emit addingToMergeMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
+}
+
+void Z3DWindow::emitAddToSplitMarker(int x, int y, int z, uint64_t bodyId)
+{
+  emit addingToSplitMarker(x, y, z, bodyId);
+}
+
+void Z3DWindow::emitAddToSplitMarker(const ZIntPoint &pt, uint64_t bodyId)
+{
+  emit addingToSplitMarker(pt.getX(), pt.getY(), pt.getZ(), bodyId);
+}
+
+static void AddTodoMarker(
+    Z3DWindow *window, neutube::EToDoAction action, bool checked)
+{
+  QList<Swc_Tree_Node*> swcNodeList =
+      window->getDocument()->getSelectedSwcNodeList();
+  if (swcNodeList.size() == 1) {
+    Swc_Tree_Node *tn = swcNodeList.front();
+    ZSwcTree *tree = window->getDocument()->nodeToSwcTree(tn);
+    uint64_t bodyId = 0;
+    if (tree != NULL) {
+      bodyId = tree->getLabel();
+    }
+    ZIntPoint pt = SwcTreeNode::center(tn).toIntPoint();
+    if (checked) {
+      window->emitAddTodoMarker(pt, checked, bodyId);
+    } else {
+      switch (action) {
+      case neutube::TO_DO:
+        window->emitAddTodoMarker(pt, checked, bodyId);
+        break;
+      case neutube::TO_MERGE:
+        window->emitAddToMergeMarker(pt, bodyId);
+        break;
+      case neutube::TO_SPLIT:
+        window->emitAddToSplitMarker(pt, bodyId);
+        break;
+      }
+    }
+  }
+}
+
+void Z3DWindow::setNormalTodoVisible(bool visible)
+{
+  emit settingNormalTodoVisible(visible);
+}
+
+void Z3DWindow::updateTodoVisibility()
+{
+  getDocument()->notifyTodoModified();
+}
+
+void Z3DWindow::addTodoMarker()
+{
+  AddTodoMarker(this, neutube::TO_DO, false);
+}
+
+void Z3DWindow::addToMergeMarker()
+{
+  AddTodoMarker(this, neutube::TO_MERGE, false);
+}
+
+void Z3DWindow::addToSplitMarker()
+{
+  AddTodoMarker(this, neutube::TO_SPLIT, false);
+}
+
+void Z3DWindow::addDoneMarker()
+{
+  AddTodoMarker(this, neutube::TO_DO, true);
+}
+
+void Z3DWindow::setTodoItemToSplit()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(neutube::TO_SPLIT);
+  }
+}
+
+void Z3DWindow::setTodoItemToNormal()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(neutube::TO_DO);
+  }
+}
+
+void Z3DWindow::updateBody()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->forceBodyUpdate();
+  }
+}
+
+void Z3DWindow::copyPosition()
+{
+  ZStackDoc *doc = getDocument();
+  std::set<Swc_Tree_Node*> nodeSet = doc->getSelectedSwcNodeSet();
+  if (nodeSet.size() == 1) {
+    ZPoint pos = SwcTreeNode::center(*(nodeSet.begin()));
+    ZGlobal::GetInstance().setDataPosition(pos);
+  } else {
+    ZGlobal::GetInstance().clearStackPosition();
+  }
+}
+
+void Z3DWindow::compareBody()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    if (m_bodyCmpDlg == NULL) {
+      m_bodyCmpDlg = new ZFlyEmBodyComparisonDialog(this);
+      std::vector<std::string> uuidList = doc->getAncestorUuidList();
+      m_bodyCmpDlg->setUuidList(uuidList);
+      m_bodyCmpDlg->setCurrentUuidIndex(1);
+    }
+
+    m_bodyCmpDlg->clearPosition();
+
+    if (m_bodyCmpDlg->exec()) {
+      doc->compareBody(m_bodyCmpDlg);
+    }
+  }
+}
+
+void Z3DWindow::deselectBody()
+{
+  std::set<uint64_t> bodySet;
+
+  QList<ZSwcTree*> swcList = getDocument()->getSelectedObjectList<ZSwcTree>();
+  foreach (const ZSwcTree *tree, swcList) {
+    if (tree->getLabel() > 0) {
+      bodySet.insert(tree->getLabel());
+    }
+  }
+
+  QList<Swc_Tree_Node*> swcNodeList =
+      getDocument()->getSelectedSwcNodeList();
+  for (QList<Swc_Tree_Node*>::const_iterator iter = swcNodeList.begin();
+       iter != swcNodeList.end(); ++iter) {
+    const Swc_Tree_Node *tn = *iter;
+    ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
+    uint64_t bodyId = 0;
+    if (tree != NULL) {
+      bodyId = tree->getLabel();
+    }
+    if (bodyId > 0) {
+      bodySet.insert(bodyId);
+    }
+  }
+  if (!bodySet.empty()) {
+    emit deselectingBody(bodySet);
   }
 }
 
@@ -2213,7 +2151,7 @@ void Z3DWindow::saveAllPunctaAs()
 {
   QString filename =
     QFileDialog::getSaveFileName(this, tr("Save All Puncta"), m_lastOpenedFilePath,
-         tr("Puncta files (*.apo) "));
+         tr("Puncta files (*.apo)"));
 
   if (!filename.isEmpty()) {
     m_lastOpenedFilePath = filename;
@@ -2225,33 +2163,6 @@ void Z3DWindow::saveAllPunctaAs()
 void Z3DWindow::markPunctum()
 {
   m_doc->markPunctum(m_lastClickedPosInVolume[0], m_lastClickedPosInVolume[1], m_lastClickedPosInVolume[2]);
-}
-
-void Z3DWindow::takeScreenShot(QString filename, int width, int height, Z3DScreenShotType sst)
-{
-  if (!m_canvasRenderer->renderToImage(filename, width, height, sst)) {
-    QMessageBox::critical(this, "Error", m_canvasRenderer->getRenderToImageError());
-  }
-}
-
-void Z3DWindow::takeScreenShot(QString filename, Z3DScreenShotType sst)
-{
-  int h = m_canvas->height();
-  if (h % 2 == 1) {
-    ++h;
-  }
-  int w = m_canvas->width();
-  if (w % 2 == 1) {
-    ++w;
-  }
-  if (m_canvas->width() % 2 == 1 || m_canvas->height() % 2 == 1) {
-    LINFO() << "Resize canvas size from (" << m_canvas->width() << "," << m_canvas->height() << ") to (" << w << "," << h << ").";
-    m_canvas->resize(w, h);
-  }
-  if (!m_canvasRenderer->renderToImage(filename, sst)) {
-    QMessageBox::critical(this, "Error", m_canvasRenderer->getRenderToImageError());
-  }
-  //m_compositor->savePickingBufferToImage(filename + "_pickingBuffer.tif");
 }
 
 void Z3DWindow::openAdvancedSetting(const QString &name)
@@ -2276,68 +2187,9 @@ void Z3DWindow::openAdvancedSetting(const QString &name)
   }
 }
 
-void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix, glm::vec3 axis,
-                                 bool clockWise, int numFrame, int width, int height, Z3DScreenShotType sst)
-{
-  QString title = "Capturing Images...";
-  if (sst == HalfSideBySideStereoView)
-    title = "Capturing Half Side-By-Side Stereo Images...";
-  else if (sst == FullSideBySideStereoView)
-    title = "Capturing Full Side-By-Side Stereo Images...";
-  QProgressDialog progress(title, "Cancel", 0, numFrame, this);
-  progress.setWindowModality(Qt::WindowModal);
-  progress.show();
-  double rAngle = M_PI * 2. / numFrame;
-  for (int i=0; i<numFrame; i++) {
-    progress.setValue(i);
-    if (progress.wasCanceled())
-      break;
-
-    if (clockWise)
-      getCamera()->rotate(rAngle, getCamera()->vectorEyeToWorld(axis), getCamera()->getCenter());
-    else
-      getCamera()->rotate(-rAngle, getCamera()->vectorEyeToWorld(axis), getCamera()->getCenter());
-    resetCameraClippingRange();
-    int fieldWidth = numDigits(numFrame);
-    QString filename = QString("%1%2.tif").arg(namePrefix).arg(i, fieldWidth, 10, QChar('0'));
-    QString filepath = dir.filePath(filename);
-    takeScreenShot(filepath, width, height, sst);
-  }
-  progress.setValue(numFrame);
-}
-
-void Z3DWindow::takeSeriesScreenShot(const QDir &dir, const QString &namePrefix, glm::vec3 axis,
-                                 bool clockWise, int numFrame, Z3DScreenShotType sst)
-{
-  QString title = "Capturing Images...";
-  if (sst == HalfSideBySideStereoView)
-    title = "Capturing Half Side-By-Side Stereo Images...";
-  else if (sst == FullSideBySideStereoView)
-    title = "Capturing Full Side-By-Side Stereo Images...";
-  QProgressDialog progress(title, "Cancel", 0, numFrame, this);
-  progress.setWindowModality(Qt::WindowModal);
-  progress.show();
-  double rAngle = M_PI * 2. / numFrame;
-  for (int i=0; i<numFrame; i++) {
-    progress.setValue(i);
-    if (progress.wasCanceled())
-      break;
-
-    if (clockWise)
-      getCamera()->rotate(rAngle, getCamera()->vectorEyeToWorld(axis), getCamera()->getCenter());
-    else
-      getCamera()->rotate(-rAngle, getCamera()->vectorEyeToWorld(axis), getCamera()->getCenter());
-    resetCameraClippingRange();
-    int fieldWidth = numDigits(numFrame);
-    QString filename = QString("%1%2.tif").arg(namePrefix).arg(i, fieldWidth, 10, QChar('0'));
-    QString filepath = dir.filePath(filename);
-    takeScreenShot(filepath, sst);
-  }
-  progress.setValue(numFrame);
-}
-
 void Z3DWindow::updateSettingsDockWidget()
 {
+  LINFO() << "Updating widgets";
   //  QScrollArea *oldSA = qobject_cast<QScrollArea*>(m_settingsDockWidget->widget());
   //  int oldScrollBarValue = 0;
   //  if (oldSA) {
@@ -2378,6 +2230,7 @@ void Z3DWindow::updateSettingsDockWidget()
       delete old;
     }
   }
+  LINFO() << "Widget updated";
 }
 
 void Z3DWindow::toogleAddSwcNodeMode(bool checked)
@@ -2393,18 +2246,18 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
       m_toggleSmartExtendSelectedSwcNodeAction->setChecked(false);
       m_toggleSmartExtendSelectedSwcNodeAction->blockSignals(false);
     }
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::AddSwcNode);
-    m_canvas->getInteractionContext().setSwcEditMode(
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::AddSwcNode);
+    getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_ADD_NODE);
     //m_canvas->setCursor(Qt::PointingHandCursor);
     notifyUser("Click to add a node");
   } else {
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
-    //m_canvas->setCursor(Qt::ArrowCursor);
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    getCanvas()->getInteractionContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_OFF);
+    //getCanvas()->setCursor(Qt::ArrowCursor);
   }
-  m_canvas->updateCursor();
+  getCanvas()->updateCursor();
 }
 
 //void Z3DWindow::toogleExtendSelectedSwcNodeMode(bool checked)
@@ -2429,43 +2282,53 @@ void Z3DWindow::toogleAddSwcNodeMode(bool checked)
 void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
 {
   if (checked) {
-    if (m_toogleAddSwcNodeModeAction->isChecked()) {
-      m_toogleAddSwcNodeModeAction->blockSignals(true);
-      m_toogleAddSwcNodeModeAction->setChecked(false);
-      m_toogleAddSwcNodeModeAction->blockSignals(false);
+    if (m_toggleAddSwcNodeModeAction->isChecked()) {
+      m_toggleAddSwcNodeModeAction->blockSignals(true);
+      m_toggleAddSwcNodeModeAction->setChecked(false);
+      m_toggleAddSwcNodeModeAction->blockSignals(false);
     }
     //    if (m_toogleExtendSelectedSwcNodeAction->isChecked()) {
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(true);
     //      m_toogleExtendSelectedSwcNodeAction->setChecked(false);
     //      m_toogleExtendSelectedSwcNodeAction->blockSignals(false);
     //    }
-    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is held."
+    notifyUser("Left click to extend. Path calculation is off when 'Cmd/Ctrl' is pressed."
                "Right click to exit extending mode.");
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
-    m_canvas->getInteractionContext().setSwcEditMode(
+    if (getDocument()->hasStackData()) {
+      getSwcFilter()->setInteractionMode(Z3DSwcFilter::SmartExtendSwcNode);
+    } else {
+      getSwcFilter()->setInteractionMode(Z3DSwcFilter::PlainExtendSwcNode);
+    }
+    getCanvas()->getInteractionContext().setSwcEditMode(
           ZInteractiveContext::SWC_EDIT_SMART_EXTEND);
     //m_canvas->setCursor(Qt::PointingHandCursor);
   } else {
-    m_swcFilter->setInteractionMode(Z3DSwcFilter::Select);
-    m_canvas->getInteractionContext().setSwcEditMode(
-          ZInteractiveContext::SWC_EDIT_SELECT);
-    //m_canvas->setCursor(Qt::ArrowCursor);
+    getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
+    getCanvas()->getInteractionContext().setSwcEditMode(
+          ZInteractiveContext::SWC_EDIT_OFF);
+    //getCanvas()->setCursor(Qt::ArrowCursor);
   }
-  m_canvas->updateCursor();
+  getCanvas()->updateCursor();
 }
 
 void Z3DWindow::changeBackground()
 {
   m_settingsDockWidget->show();
-  int index = m_widgetsGroup->getChildGroups().indexOf(m_compositor->getBackgroundWidgetsGroup());
+  const auto& grps = m_widgetsGroup->getChildGroups();
+  int index = std::find(grps.begin(), grps.end(), m_view->backgroundWidgetsGroup()) - grps.begin();
   QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
   tab->setCurrentIndex(index);
+}
+
+bool Z3DWindow::isBackgroundOn() const
+{
+  return getCompositor()->showingBackground();
 }
 
 void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 {
   getInteractionHandler()->setMoveObjects(checked);
-  m_canvas->updateCursor();
+  getCanvas()->updateCursor();
   if (checked) {
     notifyUser("Shift + Mouse to move selected objects");
   }
@@ -2473,28 +2336,9 @@ void Z3DWindow::toogleMoveSelectedObjectsMode(bool checked)
 
 void Z3DWindow::moveSelectedObjects(double x, double y, double z)
 {
-  m_doc->executeMoveObjectCommand(x, y, z, m_punctaFilter->getCoordScales().x,
-                                  m_punctaFilter->getCoordScales().y,
-                                  m_punctaFilter->getCoordScales().z,
-                                  m_swcFilter->getCoordScales().x,
-                                  m_swcFilter->getCoordScales().y,
-                                  m_swcFilter->getCoordScales().z);
-
-#if 0
-  if (m_doc->selectedSwcs()->empty() && m_doc->selectedPuncta()->empty() &&
-      m_doc->selectedSwcTreeNodes()->empty())
-    return;
-  ZStackDocMoveSelectedObjectCommand *moveSelectedObjectCommand =
-      new ZStackDocMoveSelectedObjectCommand(m_doc.get(),
-                                             x, y, z);
-  moveSelectedObjectCommand->setPunctaCoordScale(m_punctaFilter->getCoordScales().x,
-                                                 m_punctaFilter->getCoordScales().y,
-                                                 m_punctaFilter->getCoordScales().z);
-  moveSelectedObjectCommand->setSwcCoordScale(m_swcFilter->getCoordScales().x,
-                                              m_swcFilter->getCoordScales().y,
-                                              m_swcFilter->getCoordScales().z);
-  m_doc->undoStack()->push(moveSelectedObjectCommand);
-#endif
+  m_doc->executeMoveObjectCommand(x, y, z,
+                                  getPunctaFilter()->coordTransform(),
+                                  getSwcFilter()->coordTransform());
 }
 
 void Z3DWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -2510,13 +2354,20 @@ void Z3DWindow::dropEvent(QDropEvent *event)
   m_doc->loadFileList(urls);
 }
 
-void Z3DWindow::closeEvent(QCloseEvent */*event*/)
+void Z3DWindow::closeEvent(QCloseEvent * /*event*/)
 {
+  writeSettings();
   emit closed();
 }
 
 void Z3DWindow::keyPressEvent(QKeyEvent *event)
 {
+  if (m_skippingKeyEvent) {
+    emit keyPressed(event);
+    return;
+  }
+
+  ZInteractionEngine::EKeyMode keyMode = ZInteractionEngine::KM_NORMAL;
   switch(event->key())
   {
   case Qt::Key_Backspace:
@@ -2532,8 +2383,8 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_C:
-  if (getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY_COARSE &&
-      getDocument()->getTag() != NeuTube::Document::FLYEM_QUICK_BODY){
+  if (getDocument()->getTag() != neutube::Document::FLYEM_BODY_3D_COARSE &&
+      getDocument()->getTag() != neutube::Document::FLYEM_BODY_3D){
     if (event->modifiers() == Qt::ControlModifier) {
       std::set<Swc_Tree_Node*> nodeSet = m_doc->getSelectedSwcNodeSet();
       if (nodeSet.size() > 0) {
@@ -2572,6 +2423,12 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
   case Qt::Key_S:
     if (event->modifiers() == Qt::ControlModifier) {
       m_doc->saveSwc(this);
+    } else if (event->modifiers() == Qt::NoModifier) {
+      if (getDocument()->getTag() == neutube::Document::NORMAL ||
+          getDocument()->getTag() == neutube::Document::FLYEM_SKELETON ||
+          getDocument()->getTag() == neutube::Document::BIOCYTIN_STACK) {
+        keyMode = ZInteractionEngine::KM_SWC_SELECTION;
+      }
     }
     break;
   case Qt::Key_I:
@@ -2589,35 +2446,40 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
 #endif
     if (event->modifiers() == Qt::NoModifier) {
       m_doc->executeBreakSwcConnectionCommand();
+    } else if (event->modifiers() == Qt::ControlModifier) {
+      m_cuttingStackBound = !m_cuttingStackBound;
+      updateCuttingBox();
     }
     break;
   case Qt::Key_Equal: // increase swc size scale
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      getSwcFilter()->setSizeScale(getSwcFilter()->getSizeScale() + .1);
+      getSwcFilter()->setSizeScale(getSwcFilter()->sizeScale() + .1);
     }
   }
     break;
   case Qt::Key_Minus:  // decrease swc size scale
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      getSwcFilter()->setSizeScale(std::max(.1, getSwcFilter()->getSizeScale() - .1));
+      getSwcFilter()->setSizeScale(std::max(.1, getSwcFilter()->sizeScale() - .1));
     }
   }
     break;
   case Qt::Key_G:  // change swc display mode
   {
     if (event->modifiers() == Qt::ControlModifier) {
-      ZOptionParameter<QString> *sm =
-          (ZOptionParameter<QString>*) (
-            getSwcFilter()->getParameter("Geometry"));
-      sm->selectNext();
+      getSwcFilter()->changeGeometryMode();
     }
   }
     break;
   case Qt::Key_Comma:
   case Qt::Key_Q:
     getDocument()->executeSwcNodeChangeSizeCommand(-0.5);
+    break;
+  case Qt::Key_F:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      zoomToSelectedSwcNodes();
+    }
     break;
   case Qt::Key_Period:
   case Qt::Key_E:
@@ -2635,11 +2497,30 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_Z:
     if (event->modifiers() == Qt::NoModifier) {
-      if (getDocument()->hasSelectedSwcNode()) {
-        locateSwcNodeIn2DView();
-      } else if (getDocument()->hasSelectedPuncta()) {
-        locatePunctumIn2DView();
+      ZFlyEmBody3dDoc *doc = qobject_cast<ZFlyEmBody3dDoc*>(getDocument());
+      bool located = false;
+      if (doc != NULL) {
+        ZFlyEmToDoItem *item = doc->getOneSelectedTodoItem();
+        if (item !=NULL) {
+          locate2DView(item->getPosition().toPoint(), item->getRadius());
+          located = true;
+        }
+        /*
+        if (doc->hadTodoItemSelected()) {
+          locateTodoItemIn2DView();
+        }
+        */
       }
+
+      if (!located) {
+        if (getDocument()->hasSelectedSwcNode()) {
+          locateSwcNodeIn2DView();
+        } else if (getDocument()->hasSelectedPuncta()) {
+          locatePunctumIn2DView();
+        }
+      }
+    } else if (event->modifiers() == Qt::ShiftModifier) {
+      zoomToSelectedSwcNodes();
     }
     break;
   case Qt::Key_V:
@@ -2648,9 +2529,9 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
         if (m_toggleSmartExtendSelectedSwcNodeAction->isChecked()) {
           m_toggleSmartExtendSelectedSwcNodeAction->toggle();
         }
-        if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
+        if (getSwcFilter()->interactionMode() == Z3DSwcFilter::ConnectSwcNode) {
             getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-            m_canvas->setCursor(Qt::ArrowCursor);
+            getCanvas()->setCursor(Qt::ArrowCursor);
         }
         m_toggleMoveSelectedObjectsAction->toggle();
       }
@@ -2662,30 +2543,69 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
         if (m_toggleMoveSelectedObjectsAction->isChecked()) {
           m_toggleMoveSelectedObjectsAction->toggle();
         }
-        if (getSwcFilter()->getInteractionMode() == Z3DSwcFilter::ConnectSwcNode) {
+        if (getSwcFilter()->interactionMode() == Z3DSwcFilter::ConnectSwcNode) {
             getSwcFilter()->setInteractionMode(Z3DSwcFilter::Select);
-            m_canvas->setCursor(Qt::ArrowCursor);
+            getCanvas()->setCursor(Qt::ArrowCursor);
         }
         m_toggleSmartExtendSelectedSwcNodeAction->toggle();
       }
     } else {
       if (GET_APPLICATION_NAME == "FlyEM") {
         if (event->modifiers() == Qt::ShiftModifier) {
-          QCursor oldCursor = m_canvas->cursor();
-          m_canvas->setCursor(Qt::BusyCursor);
+          QCursor oldCursor = getCanvas()->cursor();
+          getCanvas()->setCursor(Qt::BusyCursor);
           getDocument()->runSeededWatershed();
           notifyUser("Body splitted");
-          m_canvas->setCursor(oldCursor);
+          getCanvas()->setCursor(oldCursor);
         }
       }
     }
     break;
   case Qt::Key_R:
-    m_doc->executeResetBranchPoint();
+    if (event->modifiers() == Qt::NoModifier) {
+      m_doc->executeResetBranchPoint();
+    } else {
+      m_doc->executeSetRootCommand();
+    }
+    break;
+  case Qt::Key_1:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectDownstreamNode();
+    }
+    break;
+  case Qt::Key_2:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectUpstreamNode();
+    }
+    break;
+  case Qt::Key_3:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->selectConnectedNode();
+    }
+    break;
+  case Qt::Key_4:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      m_doc->inverseSwcNodeSelection();
+    }
+    break;
+  case Qt::Key_5:
+    if (getCanvas()->getInteractionEngine()->getKeyMode() ==
+        ZInteractionEngine::KM_SWC_SELECTION) {
+      if (m_swcIsolationDlg->exec()) {
+        m_doc->selectNoisyTrees(m_swcIsolationDlg->getLengthThreshold(),
+                                m_swcIsolationDlg->getDistanceThreshold());
+      }
+    }
     break;
   default:
     break;
   }
+
+  getCanvas()->setKeyMode(keyMode);
 }
 
 QTabWidget *Z3DWindow::createBasicSettingTabWidget()
@@ -2693,12 +2613,10 @@ QTabWidget *Z3DWindow::createBasicSettingTabWidget()
   QTabWidget *tabs = new QTabWidget();
   tabs->setElideMode(Qt::ElideNone);
   tabs->setUsesScrollButtons(true);
-  const QList<ZWidgetsGroup*>& groups = m_widgetsGroup->getChildGroups();
-  for (int i=0; i<groups.size(); i++) {
-    if (groups[i]->isGroup()) {
-      QWidget *widget = groups[i]->createWidget(this, true);
-      tabs->addTab(widget, groups[i]->getGroupName());
-      //widget->setVisible(groups[i]->isVisible());
+  for (const auto& grp : m_widgetsGroup->getChildGroups()) {
+    if (grp->isGroup()) {
+      QWidget *widget = grp->createWidget(true);
+      tabs->addTab(widget, grp->getGroupName());
     }
   }
   return tabs;
@@ -2708,11 +2626,10 @@ QTabWidget *Z3DWindow::createAdvancedSettingTabWidget()
 {
   QTabWidget *tabs = new QTabWidget();
   tabs->setElideMode(Qt::ElideNone);
-  const QList<ZWidgetsGroup*>& groups = m_widgetsGroup->getChildGroups();
-  for (int i=0; i<groups.size(); i++) {
-    if (groups[i]->isGroup() && groups[i]->getGroupName() != "Capture" &&
-        groups[i]->getGroupName() != "Utils") {
-      tabs->addTab(groups[i]->createWidget(this, false), groups[i]->getGroupName());
+  for (const auto& grp : m_widgetsGroup->getChildGroups()) {
+    if (grp->isGroup() && grp->getGroupName() != "Capture" &&
+        grp->getGroupName() != "Utils") {
+      tabs->addTab(grp->createWidget(false), grp->getGroupName());
     }
   }
   return tabs;
@@ -2722,8 +2639,8 @@ void Z3DWindow::updateContextMenu(const QString &group)
 {
   if (group == "empty") {
     m_contextMenuGroup["empty"]->clear();
-    if (channelNumber() > 0 && m_volumeSource->volumeNeedDownsample() &&
-        m_volumeSource->isSubvolume()) {
+    if (channelNumber() > 0 && getVolumeFilter()->volumeNeedDownsample() &&
+        getVolumeFilter()->isSubvolume()) {
       m_contextMenuGroup["empty"]->addAction(m_exitVolumeZoomInViewAction);
     }
     //if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
@@ -2732,17 +2649,18 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (channelNumber() > 0 && !m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["empty"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
 */
-    if (m_doc->hasSwc() && m_swcFilter->isNodeRendering())
-      m_contextMenuGroup["empty"]->addAction(m_toogleAddSwcNodeModeAction);
+    if (m_doc->hasSwc() && getSwcFilter()->isNodeRendering())
+      m_contextMenuGroup["empty"]->addAction(m_toggleAddSwcNodeModeAction);
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["empty"]->addAction(m_changeBackgroundAction);
+    m_contextMenuGroup["empty"]->addAction(m_toggleObjectsAction);
 
   }
   if (group == "volume") {
     m_contextMenuGroup["volume"]->clear();
-    if (m_volumeSource->volumeNeedDownsample()) {
-      if (m_volumeSource->isSubvolume()) {
+    if (getVolumeFilter()->volumeNeedDownsample()) {
+      if (getVolumeFilter()->isSubvolume()) {
         m_contextMenuGroup["volume"]->addAction(m_exitVolumeZoomInViewAction);
       } else {
         m_contextMenuGroup["volume"]->addAction(m_openVolumeZoomInViewAction);
@@ -2755,13 +2673,13 @@ void Z3DWindow::updateContextMenu(const QString &group)
     if (!m_doc->swcList()->empty() && m_swcFilter->isNodeRendering())
       m_contextMenuGroup["volume"]->addAction(m_toogleSmartExtendSelectedSwcNodeAction);
 */
-    if (m_doc->hasSwc() && m_swcFilter->isNodeRendering())
-      m_contextMenuGroup["volume"]->addAction(m_toogleAddSwcNodeModeAction);
+    if (m_doc->hasSwc() && getSwcFilter()->isNodeRendering())
+      m_contextMenuGroup["volume"]->addAction(m_toggleAddSwcNodeModeAction);
     if (m_doc->hasSwc() || m_doc->hasPuncta())
       m_contextMenuGroup["volume"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["volume"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["volume"]->addAction(m_refreshTraceMaskAction);
-    if (m_doc->getTag() == NeuTube::Document::FLYEM_SPLIT) {
+    if (m_doc->getTag() == neutube::Document::FLYEM_SPLIT) {
       m_contextMenuGroup["volume"]->addAction(m_markPunctumAction);
     }
   }
@@ -2777,35 +2695,6 @@ void Z3DWindow::updateContextMenu(const QString &group)
   }
 }
 
-void Z3DWindow::updateOverallBoundBox(std::vector<double> bound)
-{
-  if (bound.size() == 6) {
-    m_boundBox[0] = std::min(bound[0], m_boundBox[0]);
-    m_boundBox[1] = std::max(bound[1], m_boundBox[1]);
-    m_boundBox[2] = std::min(bound[2], m_boundBox[2]);
-    m_boundBox[3] = std::max(bound[3], m_boundBox[3]);
-    m_boundBox[4] = std::min(bound[4], m_boundBox[4]);
-    m_boundBox[5] = std::max(bound[5], m_boundBox[5]);
-  }
-}
-
-void Z3DWindow::updateOverallBoundBox()
-{
-  m_boundBox[0] = m_boundBox[2] = m_boundBox[4] = std::numeric_limits<double>::max();
-  m_boundBox[1] = m_boundBox[3] = m_boundBox[5] = -std::numeric_limits<double>::max();
-  if (hasVolume()) {
-    updateOverallBoundBox(m_volumeBoundBox);
-  }
-  updateOverallBoundBox(m_swcBoundBox);
-  updateOverallBoundBox(m_punctaBoundBox);
-  updateOverallBoundBox(m_graphBoundBox);
-  updateOverallBoundBox(m_decorationBoundBox);
-  if (m_boundBox[0] > m_boundBox[1] || m_boundBox[2] > m_boundBox[3] || m_boundBox[4] > m_boundBox[5]) {
-    // nothing visible
-    m_boundBox[0] = m_boundBox [2] = m_boundBox[4] = 0.0f;
-    m_boundBox[1] = m_boundBox [3] = m_boundBox[5] = 1.0f;
-  }
-}
 
 void Z3DWindow::changeSelectedSwcNodeType()
 {
@@ -2851,6 +2740,7 @@ void Z3DWindow::changeSelectedSwcNodeType()
       default:
         break;
       }
+      getSwcFilter()->addNodeType(dlg.type());
 
       m_doc->notifySwcModified();
     }
@@ -2917,6 +2807,7 @@ void Z3DWindow::breakSelectedSwcNode()
   }
 }
 
+
 void Z3DWindow::mergeSelectedSwcNode()
 {
   m_doc->executeMergeSwcNodeCommand();
@@ -2980,14 +2871,28 @@ void Z3DWindow::locateSwcNodeIn2DView()
       if (radius < minRadius) {
         radius = minRadius;
       }
+      int width = radius * 2 + 1;
 
-      ZStackViewParam param(NeuTube::COORD_STACK);
-      param.setViewPort(iround(cx - radius), iround(cy - radius),
-                        iround(cx + radius), iround(cy + radius));
-      param.setZ(iround(cz));
-      emit locating2DViewTriggered(param);
+      emit locating2DViewTriggered(cx, cy, cz, width);
     }
   }
+}
+
+void Z3DWindow::locate2DView(const ZPoint &center, double radius)
+{
+  int width = iround(radius * 2 + 1);
+
+  const int minWidth = 800;
+
+  if (width < minWidth) {
+    width = minWidth;
+  }
+
+  double cx = center.getX();
+  double cy = center.getY();
+  double cz = center.getZ();
+
+  emit locating2DViewTriggered(iround(cx), iround(cy), iround(cz), width);
 }
 
 void Z3DWindow::locatePunctumIn2DView()
@@ -2996,24 +2901,8 @@ void Z3DWindow::locatePunctumIn2DView()
       m_doc->getSelectedObjectList<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
   if (punctumList.size() == 1) {
     ZPunctum* punc = *(punctumList.begin());
-    ZStackViewParam param(NeuTube::COORD_STACK);
 
-    double radius = punc->radius();
-    const int minRadius = 400;
-    if (radius < minRadius) {
-      radius = minRadius;
-    }
-
-    double cx = punc->x();
-    double cy = punc->y();
-    double cz = punc->z();
-    param.setViewPort(iround(cx - radius), iround(cy - radius),
-                      iround(cx + radius), iround(cy + radius));
-    param.setZ(iround(cz));
-
-    emit locating2DViewTriggered(param);
-    //      m_doc->getParentFrame()->viewRoi(
-    //            punc->x(), punc->y(), iround(punc->z()), punc->radius() * 4);
+    locate2DView(punc->getCenter(), punc->radius());
   }
 }
 
@@ -3245,6 +3134,32 @@ void Z3DWindow::transformSelectedPuncta()
   }
 }
 
+void Z3DWindow::setSelectPunctaVisible(bool on)
+{
+  std::set<ZPunctum*> punctaSet =
+      m_doc->getSelectedObjectSet<ZPunctum>(ZStackObject::TYPE_PUNCTUM);
+  if (!punctaSet.empty()) {
+    for (std::set<ZPunctum*>::iterator iter = punctaSet.begin();
+         iter != punctaSet.end(); ++iter) {
+      ZPunctum *punctum = *iter;
+      punctum->setVisible(on);
+      m_doc->bufferObjectModified(
+            punctum, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
+    }
+    m_doc->processObjectModified();
+  }
+}
+
+void Z3DWindow::hideSelectedPuncta()
+{
+  setSelectPunctaVisible(false);
+}
+
+void Z3DWindow::showSelectedPuncta()
+{
+  setSelectPunctaVisible(true);
+}
+
 void Z3DWindow::changeSelectedPunctaColor()
 {
   std::set<ZPunctum*> punctaSet =
@@ -3257,9 +3172,11 @@ void Z3DWindow::changeSelectedPunctaColor()
            iter != punctaSet.end(); ++iter) {
         ZPunctum *punctum = *iter;
         punctum->setColor(dlg.currentColor());
+        m_doc->bufferObjectModified(punctum);
       }
+      m_doc->processObjectModified();
 
-      m_doc->notifyPunctumModified();
+//      m_doc->notifyPunctumModified();
     }
   }
 }
@@ -3319,7 +3236,7 @@ void Z3DWindow::convertPunctaToSwc()
     m_doc->addObject(tree, false);
     m_doc->removeSelectedPuncta();
     m_doc->endObjectModifiedMode();
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
 
 //    m_doc->notifyPunctumModified();
 //    m_doc->notifySwcModified();
@@ -3387,6 +3304,58 @@ void Z3DWindow::groupSelectedSwc()
     m_doc->notifySwcModified();
   }
   */
+}
+
+void Z3DWindow::showPuncta(bool on)
+{
+  m_view->setLayerVisible(neutube3d::LAYER_PUNCTA, on);
+
+  emit showingPuncta(on);
+}
+
+void Z3DWindow::showTodo(bool on)
+{
+  m_view->setLayerVisible(neutube3d::LAYER_TODO, on);
+  emit showingTodo(on);
+}
+
+void Z3DWindow::activateTodoAction(bool on)
+{
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterMarkTodo();
+  } else {
+    getCanvas()->getInteractionEngine()->exitMarkTodo();
+  }
+}
+
+/*
+void Z3DWindow::activateTosplitAction(bool on)
+{
+  activateTodoAction(on);
+}
+*/
+
+void Z3DWindow::activateBookmarkAction(bool on)
+{
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterMarkBookmark();
+  } else {
+    getCanvas()->getInteractionEngine()->exitMarkBookmark();
+  }
+}
+
+void Z3DWindow::activateLocateAction(bool on)
+{
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterLocateMode();
+  } else {
+    getCanvas()->getInteractionEngine()->exitLocateMode();
+  }
+}
+
+void Z3DWindow::showSeletedSwcNodeDist()
+{
+  getDocument()->showSeletedSwcNodeDist();
 }
 
 void Z3DWindow::showSeletedSwcNodeLength()
@@ -3491,15 +3460,24 @@ void Z3DWindow::changeSelectedSwcAlpha()
   }
 }
 
+void Z3DWindow::notifyCameraRotation()
+{
+  emit cameraRotated();
+}
+
 void Z3DWindow::test()
 {
+
+#if 0
   const NeutubeConfig &config = NeutubeConfig::getInstance();
 
   UNUSED_PARAMETER(&config);
 
   ZMovieMaker director;
   ZMovieScript script;
+#endif
 
+  emit testing();
 
   /*
   std::set<ZSwcTree*> *treeSet = m_doc->selectedSwcs();
@@ -3557,6 +3535,25 @@ void Z3DWindow::test()
   */
 
 
+}
+
+void Z3DWindow::viewDataExternally(bool on)
+{
+#if 0
+  ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
+  bo->updateChromeBrowser();
+  if (bo->getBrowserPath().isEmpty()) {
+    ZDialogFactory::Warn(
+          "Chrome Not Found",
+          "The path to Google Chrome has not be set correctly. "
+          "The default browser will be used.", this);
+  }
+#endif
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterBrowseMode();
+  } else {
+    getCanvas()->getInteractionEngine()->exitBrowseMode();
+  }
 }
 
 void Z3DWindow::breakSelectedSwc()
@@ -3676,7 +3673,7 @@ void Z3DWindow::convertSelectedChainToSwc()
   m_doc->executeRemoveTubeCommand();
   m_doc->endObjectModifiedMode();
 
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->notifySwcModified();
 //  m_doc->notifyChainModified();
@@ -3773,16 +3770,30 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
 */
   ZObject3d *obj = new ZObject3d;
   for (size_t i = 0; i < baseObj->size(); ++i) {
-    ZLineSegment seg = m_volumeRaycaster->getScreenRay(
+    ZLineSegment seg = getVolumeFilter()->getScreenRay(
           baseObj->getX(i), baseObj->getY(i),
-          m_canvas->width(), m_canvas->height());
+          getCanvas()->width(), getCanvas()->height());
     ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
     //if (success) {
-      ZIntCuboid box = m_doc->stackRef()->getBoundBox();
+//      ZIntCuboid box = m_doc->stackRef()->getBoundBox();
+//      ZIntCuboid box = m_volumeBoundBox;
+#if 0
       ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
                    box.getFirstCorner().getZ(),
                    box.getLastCorner().getX(), box.getLastCorner().getY(),
                    box.getLastCorner().getZ());
+#endif
+      const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
+      ZCuboid rbox;
+      rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+      rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+
+      if (getVolumeFilter()->isSubvolume()) {
+        const auto& zoomInBound = getVolumeFilter()->zoomInBound();
+        rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+        rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
+      }
+
       ZLineSegment stackSeg;
       if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
         ZObject3d *scanLine = ZVoxelGraphics::createLineObject(stackSeg);
@@ -3810,39 +3821,451 @@ void Z3DWindow::addStrokeFrom3dPaint(ZStroke2d *stroke)
   }
 }
 
-void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
+void Z3DWindow::selectSwcNodeFromStroke(const ZStroke2d *stroke)
 {
-  //bool success = false;
-  if (m_doc->hasStack()) {
-    std::vector<ZIntPoint> polyline1;
-    std::vector<ZIntPoint> polyline2;
+  if (hasSwc() && stroke != NULL) {
+    ZObject3d *ptArray = stroke->toObject3d();
+    if (ptArray != NULL) {
+      getSwcFilter()->selectSwcNode(*ptArray);
+    }
+  }
+}
 
-    ZIntCuboid box = m_doc->stackRef()->getBoundBox();
-    ZCuboid rbox(box.getFirstCorner().getX(), box.getFirstCorner().getY(),
-                 box.getFirstCorner().getZ(),
-                 box.getLastCorner().getX(), box.getLastCorner().getY(),
-                 box.getLastCorner().getZ());
+void Z3DWindow::checkSelectedTodo()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->checkSelectedTodoItem();
+  }
+}
+
+void Z3DWindow::uncheckSelectedTodo()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->uncheckSelectedTodoItem();
+  }
+}
+
+void Z3DWindow::processMessage(const ZWidgetMessage &msg)
+{
+  if (msg.getTarget() == ZWidgetMessage::TARGET_CUSTOM_AREA) {
+    m_view->dump(msg.toPlainString());
+  } else if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+    ZDialogFactory::PromptMessage(msg, this);
+  }/* else {
+    emit messageGenerated(msg);
+  }*/
+}
+
+void Z3DWindow::setMeshOpacity(double opacity)
+{
+  if (m_meshOpacitySpinBox != NULL) {
+    if (opacity != m_meshOpacitySpinBox->value()) {
+      m_meshOpacitySpinBox->blockSignals(true);
+      m_meshOpacitySpinBox->setValue(opacity);
+      m_meshOpacitySpinBox->blockSignals(false);
+    }
+  }
+
+  if (getMeshFilter() != NULL) {
+    if (opacity != getMeshFilter()->opacity()) {
+      getMeshFilter()->setOpacityQuitely(opacity);
+    }
+  }
+}
+
+void Z3DWindow::locateWithRay(int x, int y)
+{
+  std::vector<ZPoint> intersection = getRayIntersection(x, y);
+  if (!intersection.empty()) {
+    ZPoint &pt = intersection.front();
+    m_view->gotoPosition(pt.x(), pt.y(), pt.z());
+  }
+}
+
+void Z3DWindow::browseWithRay(int x, int y)
+{
+  uint64_t bodyId = 0;
+
+  std::vector<ZPoint> intersection = getRayIntersection(x, y, &bodyId);
+  if (!intersection.empty()) {
+    ZPoint &pt = intersection.front();
+    if (intersection.size() > 1) {
+      pt += intersection[1];
+      pt *= 0.5;
+    }
+
+    emit messageGenerated(
+          ZWidgetMessage(
+            QString("Checking (%1, %2, %3)").
+            arg(iround(pt.x())).arg(iround(pt.y())).arg(iround(pt.z()))));
+
+    emit browsing(pt.x(), pt.y(), pt.z());
+  }
+}
+
+void Z3DWindow::shootTodo(int x, int y)
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    uint64_t bodyId = 0;
+    std::vector<ZPoint> intersection = getRayIntersection(x, y, &bodyId);
+    bodyId = doc->getMappedId(bodyId);
+    if (!intersection.empty()) {
+      ZPoint &pt = intersection.front();
+      int cx = iround(pt.x());
+      int cy = iround(pt.y());
+      int cz = iround(pt.z());
+      QAction *action = getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM);
+      if (action != NULL) {
+        if (action->isChecked()) {
+          doc->executeAddTodoCommand(
+                cx, cy, cz, false, neutube::TO_SPLIT, bodyId);
+        }
+      } else {
+        doc->executeAddTodoCommand(
+              cx, cy, cz, false, neutube::TO_DO, bodyId);
+      }
+  //          emitAddTodoMarker(cx, cy, cz, false, bodyId);
+    }
+  }
+}
+
+void Z3DWindow::addTodoMarkerFromStroke(const ZStroke2d *stroke)
+{
+  if (hasSwc() && stroke != NULL) {
+    getSwcFilter()->forceNodePicking(true);
+    getSwcFilter()->invalidate();
+    //m_view->updateNetwork();
+    int x = 0;
+    int y = 0;
+    stroke->getLastPoint(&x, &y);
+    shootTodo(x, y);
+  }
+}
+
+void Z3DWindow::labelSwcNodeFromStroke(const ZStroke2d *stroke)
+{
+  if (hasSwc() && stroke != NULL) {
+    getSwcFilter()->forceNodePicking(true);
+    getSwcFilter()->invalidate();
+    //m_view->updateNetwork();
+    ZObject3d *ptArray = stroke->toObject3d();
+    if (ptArray != NULL) {
+      QList<Swc_Tree_Node*> nodeArray = getSwcFilter()->pickSwcNode(*ptArray);
+      getDocument()->executeChangeSwcNodeType(nodeArray, stroke->getLabel());
+      /*
+      foreach (Swc_Tree_Node *node, nodeArray) {
+        SwcTreeNode::setType(node, stroke->getLabel());
+      }
+      */
+    }
+    getSwcFilter()->forceNodePicking(false);
+//    m_doc->notifySwcModified();
+  }
+}
+
+void Z3DWindow::processStroke(ZStroke2d *stroke)
+{
+#ifdef _DEBUG_2
+  addTodoMarkerFromStroke(stroke);
+#else
+//  stroke->decimate();
+//  labelSwcNodeFromStroke(stroke);
+  addPolyplaneFrom3dPaint(stroke);
+  delete stroke;
+#endif
+}
+
+ZLineSegment Z3DWindow::getStackSeg(
+    const ZLineSegment &seg, const ZCuboid &rbox) const
+{
+  ZLineSegment stackSeg;
+
+  if (seg.isValid()) {
+    ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
+    if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+      ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
+      if (slope.dot(slope2) < 0.0) {
+        stackSeg.invert();
+      }
+      const ZPoint &start = stackSeg.getStartPoint();
+      const ZPoint &end = stackSeg.getEndPoint();
+      if (end.distanceTo(start) > end.distanceTo(seg.getStartPoint())) {
+        stackSeg.setStartPoint(seg.getStartPoint());
+      }
+    }
+  }
+
+  return stackSeg;
+}
+
+std::vector<ZPoint> Z3DWindow::shootMesh(const ZMesh *mesh, int x, int y)
+{
+  std::vector<ZPoint> intersection;
+  if (mesh != NULL) {
+    glm::dvec3 v1,v2;
+    int w = getCanvas()->width();
+    int h = getCanvas()->height();
+    getMeshFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
+#ifdef _DEBUG_
+    std::cout << "Segment start: " << v1.x << " " << v1.y << " " << v1.z << std::endl;
+    std::cout << "Segment end: " << v2.x << " " << v2.y << " " << v2.z << std::endl;
+#endif
+    const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
+    ZCuboid rbox;
+    rbox.setFirstCorner(
+          boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
+    rbox.setLastCorner(
+          boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
+
+    ZLineSegment seg(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+    ZLineSegment stackSeg = getStackSeg(seg, rbox);
+/*
+    ZLineSegment Z3DWindow::getStackSeg(
+        const ZLineSegment &seg, const ZCuboid &rbox) const
+
+    ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
+    ZLineSegment stackSeg;
+    if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
+      ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
+      if (slope.dot(slope2) < 0.0) {
+        stackSeg.invert();
+      }
+    }
+*/
+#ifdef _DEBUG_
+    std::cout << "Segment start: " << stackSeg.getStartPoint().toString() << std::endl;
+    std::cout << "Segment end: " << stackSeg.getEndPoint().toString() << std::endl;
+#endif
+
+    intersection = mesh->intersectLineSeg(
+          stackSeg.getStartPoint(), stackSeg.getEndPoint());
+  }
+
+  return intersection;
+}
+
+std::vector<ZPoint> Z3DWindow::getRayIntersection(int x, int y, uint64_t *id)
+{
+  std::vector<ZPoint> intersection;
+  ZStackDoc *doc = getDocument();
+
+  neutube::assign<uint64_t>(id, 0);
+
+  if (doc != NULL) {
+    if (hasSwc()) {
+      getSwcFilter()->forceNodePicking(true);
+      getSwcFilter()->invalidate();
+      //m_view->updateNetwork();
+      Swc_Tree_Node *tn = getSwcFilter()->pickSwcNode(x, y);
+      if (tn != NULL) {
+        ZSwcTree *tree = getDocument()->nodeToSwcTree(tn);
+        if (tree != NULL) {
+          neutube::assign(id, tree->getLabel());
+          glm::dvec3 v1,v2;
+          int w = getCanvas()->width();
+          int h = getCanvas()->height();
+          getSwcFilter()->rayUnderScreenPoint(v1, v2, x, y, w, h);
+          ZPoint lineStart(v1.x, v1.y, v1.z);
+          glm::dvec3 norm = v2 - v1;
+          ZPoint lineNorm(norm.x, norm.y, norm.z);
+          intersection = zgeom::LineShpereIntersection(
+                lineStart, lineNorm, SwcTreeNode::center(tn), SwcTreeNode::radius(tn));
+        }
+      }
+      getSwcFilter()->forceNodePicking(false);
+    } else {
+      getCanvas()->getGLFocus();
+      ZMesh *mesh = getMeshFilter()->hitMesh(x, y);
+      if (mesh != NULL) {
+        intersection = shootMesh(mesh, x, y);
+        if (!intersection.empty()) {
+          neutube::assign(id, mesh->getLabel());
+        }
+      }
+    }
+  }
+
+  return intersection;
+}
+
+ZCuboid Z3DWindow::getRayBoundbox() const
+{
+  ZCuboid rbox;
+
+  if (m_doc->hasStack()) {
+    const auto& volumeBound = getVolumeFilter()->axisAlignedBoundBox();
+
+    rbox.setFirstCorner(volumeBound.minCorner().x, volumeBound.minCorner().y, volumeBound.minCorner().z);
+    rbox.setLastCorner(volumeBound.maxCorner().x, volumeBound.maxCorner().y, volumeBound.maxCorner().z);
+
+    if (getVolumeFilter()->isSubvolume()) {
+      const auto& zoomInBound = getVolumeFilter()->zoomInBound();
+      rbox.setFirstCorner(zoomInBound.minCorner().x, zoomInBound.minCorner().y, zoomInBound.minCorner().z);
+      rbox.setLastCorner(zoomInBound.maxCorner().x, zoomInBound.maxCorner().y, zoomInBound.maxCorner().z);
+    } else {
+      ZIntCuboid cutBox = getVolumeFilter()->cutBox();
+      //      cutBox.translate(m_doc->getStackOffset());
+      rbox = misc::CutBox(rbox, cutBox);
+    }
+  } else {
+    const ZBBox<glm::dvec3> &boundBox = m_view->boundBox();
+    rbox.setFirstCorner(
+          boundBox.minCorner().x, boundBox.minCorner().y, boundBox.minCorner().z);
+    rbox.setLastCorner(
+          boundBox.maxCorner().x, boundBox.maxCorner().y, boundBox.maxCorner().z);
+  }
+
+  return rbox;
+}
+
+ZLineSegment Z3DWindow::getRaySegment(int x, int y, std::string &source) const
+{
+  ZLineSegment stackSeg;
+
+  int w = getCanvas()->width();
+  int h = getCanvas()->height();
+  ZCuboid rbox = getRayBoundbox();
+
+  if (m_doc->hasStack()) {
+    ZLineSegment seg = getVolumeFilter()->getScreenRay(
+          iround(x), iround(y), w, h);
+    stackSeg = getStackSeg(seg, rbox);
+    source = "";
+  } else if (m_doc->hasMesh()){
+    QList<ZMesh*> meshList = m_doc->getMeshList();
+    ZMesh *mesh = meshList.front();
+
+#if defined(_NEU3_)
+    uint64_t bodyId =
+        ZStackObjectSourceFactory::ExtractIdFromFlyEmBodySource(mesh->getSource());
+    if (bodyId > 0) {
+      source = ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId);
+    }
+#endif
+
+    ZLineSegment seg = getMeshFilter()->getScreenRay(
+          iround(x), iround(y), w, h);
+    stackSeg = getStackSeg(seg, rbox);
+
+    if (stackSeg.isValid()) {
+      std::vector<ZPoint> ptArray = mesh->intersectLineSeg(
+            stackSeg.getStartPoint(), stackSeg.getEndPoint());
+      if (ptArray.size() >= 2) {
+        stackSeg.setStartPoint(ptArray[0]);
+        stackSeg.setEndPoint(ptArray[1]);
+        //          ZVoxelGraphics::addLineObject(
+        //                processedObj, ptArray[0].toIntPoint(), ptArray[1].toIntPoint());
+      } else {
+        stackSeg.set(ZPoint(0, 0, 0), ZPoint(0, 0, 0));
+      }
+    }
+  }
+
+  return stackSeg;
+}
+
+std::string Z3DWindow::updatePolyLinePairList(
+    const ZStroke2d *stroke,
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > &polylinePairList)
+{
+  std::string source;
+
+  ZIntPointArrayPtr polyline1;
+  ZIntPointArrayPtr polyline2;
+  for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
+    double x = 0.0;
+    double y = 0.0;
+    stroke->getPoint(&x, &y, i);
+
+    ZLineSegment stackSeg = getRaySegment(iround(x), iround(y), source);
+
+    if (stackSeg.isValid()) {
+      if (!polyline1) {
+        polyline1 = ZIntPointArray::MakePointer();
+        polyline2 = ZIntPointArray::MakePointer();
+        polylinePairList.emplace_back(polyline1, polyline2);
+      }
+      polyline1->push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
+      polyline2->push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+    } else {
+      polyline1.reset();
+      polyline2.reset();
+    }
+  }
+
+  return source;
+}
+
+ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForMesh(ZStroke2d *stroke)
+{
+  ZObject3d *obj = NULL;
+  if (m_doc->hasMesh() && getMeshFilter()) {
+    std::vector<ZStroke2dPtr> strokeList;
+    ZStroke2dPtr subStroke = ZStroke2dPtr(new ZStroke2d);
+    std::string source;
+
+    std::vector<std::pair<int, int> > ptArray;
     for (size_t i = 0; i < stroke->getPointNumber(); ++i) {
       double x = 0.0;
       double y = 0.0;
       stroke->getPoint(&x, &y, i);
-      ZLineSegment seg = m_volumeRaycaster->getScreenRay(
-            iround(x), iround(y), m_canvas->width(), m_canvas->height());
-      //if (success) {
-      ZPoint slope = seg.getEndPoint() - seg.getStartPoint();
-      ZLineSegment stackSeg;
-      if (rbox.intersectLine(seg.getStartPoint(), slope, &stackSeg)) {
-        ZPoint slope2 = stackSeg.getEndPoint() - stackSeg.getStartPoint();
-        if (slope.dot(slope2) < 0.0) {
-          stackSeg.invert();
+
+      ptArray.emplace_back(iround(x), iround(y));
+    }
+    getCanvas()->getGLFocus();
+    std::vector<bool> hitTest = getMeshFilter()->hitObject(ptArray);
+
+    for (size_t i = 0; i < hitTest.size(); ++i) {
+      bool hit = hitTest[i];
+
+      double x = 0.0;
+      double y = 0.0;
+      stroke->getPoint(&x, &y, i);
+
+      if (hit) {
+        if (subStroke->isEmpty()) {
+          strokeList.push_back(subStroke);
         }
-        polyline1.push_back(ZIntPoint(stackSeg.getStartPoint().toIntPoint()));
-        polyline2.push_back(ZIntPoint(stackSeg.getEndPoint().toIntPoint()));
+        subStroke->append(x, y);
+      } else {
+        if (!subStroke->isEmpty()) {
+          subStroke = ZStroke2dPtr(new ZStroke2d);
+        }
       }
-      //}
     }
 
-    ZObject3d *obj = ZVoxelGraphics::createPolyPlaneObject(polyline1, polyline2);
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
+
+
+
+    for (size_t i = 0; i < strokeList.size(); ++i) {
+      ZStroke2dPtr subStroke = strokeList[i];
+      subStroke->decimate();
+      source = updatePolyLinePairList(subStroke.get(), polylinePairList);
+    }
+
+    obj = ZVoxelGraphics::createPolylineObject(polylinePairList);
+    if (obj != NULL) {
+      obj->setSource(source);
+    }
+  }
+
+  return obj;
+}
+
+ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForVolume(ZStroke2d *stroke)
+{
+  ZObject3d *obj = NULL;
+
+  if (m_doc->hasStack()) {
+    std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > polylinePairList;
+    std::string source = updatePolyLinePairList(stroke, polylinePairList);
+
+
+    obj = ZVoxelGraphics::createPolylineObject(polylinePairList);
 
     if (obj != NULL) {
       ZObject3d *processedObj = NULL;
@@ -3854,7 +4277,8 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
 
       if (getDocument()->hasSparseStack()) {
         stack = getDocument()->getSparseStack()->getStack();
-        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
+        ZIntPoint dsIntv = stack->getDsIntv();
+        //        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
         xIntv = dsIntv.getX();
         yIntv = dsIntv.getY();
         zIntv = dsIntv.getZ();
@@ -3887,33 +4311,44 @@ void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
     }
 
     if (obj != NULL) {
-#ifdef _DEBUG_2
-      ZStack *stack = obj->toStackObject();
-      stack->save(GET_TEST_DATA_DIR + "/test.tif");
-      delete stack;
-#endif
-
-      if (!obj->isEmpty()) {
-#ifdef _DEBUG_2
-        ZSwcTree *tree = ZSwcGenerator::createSwc(*obj, 1.0, 3);
-        tree->save(GET_TEST_DATA_DIR + "/test.swc");
-#endif
-
-        obj->setLabel(stroke->getLabel());
-        ZLabelColorTable colorTable;
-        obj->setColor(colorTable.getColor(obj->getLabel()));
-
-        obj->setRole(ZStackObjectRole::ROLE_SEED |
-                     ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-        m_doc->executeAddObjectCommand(obj);
-        //m_doc->notifyVolumeModified();
-      } else {
-        delete obj;
-      }
+      obj->setSource(source);
     }
   }
 
-  delete stroke;
+  return obj;
+}
+
+void Z3DWindow::addPolyplaneFrom3dPaint(ZStroke2d *stroke)
+{
+  //bool success = false;
+//  std::string source;
+  ZObject3d* obj = NULL;
+  if (m_doc->hasStack()) {
+    obj = createPolyplaneFrom3dPaintForVolume(stroke);
+  } else {
+    obj = createPolyplaneFrom3dPaintForMesh(stroke);
+  }
+
+  if (obj != NULL) {
+    if (!obj->isEmpty()) {
+      obj->setLabel(stroke->getLabel());
+      ZLabelColorTable colorTable;
+      obj->setColor(colorTable.getColor(obj->getLabel()));
+      obj->setRole(ZStackObjectRole::ROLE_SEED |
+                   ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+      m_doc->executeAddObjectCommand(obj, false);
+      //m_doc->notifyVolumeModified();
+    } else {
+      delete obj;
+    }
+  }
+}
+
+void Z3DWindow::help()
+{
+  m_helpDlg->setSource((GET_APPLICATION_DIR + "/doc/shortcut_3d.html").c_str());
+  m_helpDlg->show();
+  m_helpDlg->raise();
 }
 
 void Z3DWindow::markSwcSoma()
@@ -3936,19 +4371,19 @@ void Z3DWindow::setBackgroundColor(
 }
 
 Z3DWindow* Z3DWindow::Make(
-    ZStackDoc* doc, QWidget *parent, Z3DWindow::EInitMode mode)
+    ZStackDoc* doc, QWidget *parent, Z3DView::EInitMode mode)
 {
   return Make(ZSharedPointer<ZStackDoc>(doc), parent, mode);
 }
 
 Z3DWindow* Z3DWindow::Open(
-    ZStackDoc* doc, QWidget *parent, Z3DWindow::EInitMode mode)
+    ZStackDoc* doc, QWidget *parent, Z3DView::EInitMode mode)
 {
   return Open(ZSharedPointer<ZStackDoc>(doc), parent, mode);
 }
 
 Z3DWindow* Z3DWindow::Make(
-    ZSharedPointer<ZStackDoc> doc, QWidget *parent, Z3DWindow::EInitMode mode)
+    ZSharedPointer<ZStackDoc> doc, QWidget *parent, Z3DView::EInitMode mode)
 {
   ZWindowFactory factory;
   factory.setParentWidget(parent);
@@ -3956,7 +4391,7 @@ Z3DWindow* Z3DWindow::Make(
 }
 
 Z3DWindow* Z3DWindow::Open(
-    ZSharedPointer<ZStackDoc> doc, QWidget *parent, Z3DWindow::EInitMode mode)
+    ZSharedPointer<ZStackDoc> doc, QWidget *parent, Z3DView::EInitMode mode)
 {
   Z3DWindow *window = Make(doc, parent, mode);
   window->show();
@@ -3965,101 +4400,143 @@ Z3DWindow* Z3DWindow::Open(
   return window;
 }
 
-Z3DRendererBase* Z3DWindow::getRendererBase(ERendererLayer layer)
-{
-  switch (layer) {
-  case LAYER_SWC:
-    return getSwcFilter()->getRendererBase();
-  case LAYER_GRAPH:
-    return getGraphFilter()->getRendererBase();
-  case LAYER_PUNCTA:
-    return getPunctaFilter()->getRendererBase();
-  case LAYER_VOLUME:
-    return getVolumeRaycasterRenderer()->getRendererBase();
-  }
 
-  return NULL;
+Z3DGeometryFilter* Z3DWindow::getFilter(neutube3d::ERendererLayer layer) const
+{
+  return m_view->getFilter(layer);
 }
 
-void Z3DWindow::setZScale(ERendererLayer layer, double scale)
+Z3DBoundedFilter* Z3DWindow::getBoundedFilter(neutube3d::ERendererLayer layer) const
 {
-  getRendererBase(layer)->setZScale(scale);
+  return m_view->getBoundedFilter(layer);
 }
 
-void Z3DWindow::setScale(ERendererLayer layer, double sx, double sy, double sz)
+void Z3DWindow::updateCuttingBox()
 {
-  Z3DRendererBase *base = getRendererBase(layer);
-  base->setXScale(sx);
-  base->setYScale(sy);
-  base->setZScale(sz);
-}
-
-void Z3DWindow::setOpacity(ERendererLayer layer, double opacity)
-{
-  getRendererBase(layer)->setOpacity(opacity);
-}
-
-void Z3DWindow::setVisible(ERendererLayer layer, bool visible)
-{
-  switch (layer) {
-  case LAYER_GRAPH:
-    getGraphFilter()->setVisible(visible);
-    break;
-  case LAYER_SWC:
-    getSwcFilter()->setVisible(visible);
-    break;
-  case LAYER_PUNCTA:
-    getPunctaFilter()->setVisible(visible);
-    break;
-  case LAYER_VOLUME:
-    break;
+  if (m_cuttingStackBound) {
+    if (getDocument()->hasStack()) {
+      m_view->setCutBox(
+            neutube3d::LAYER_SWC, getDocument()->getStack()->getBoundBox());
+    }
+  } else {
+    m_view->resetCutBox(neutube3d::LAYER_SWC);
   }
 }
 
-bool Z3DWindow::isVisible(ERendererLayer layer) const
+void Z3DWindow::setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box)
+{
+  m_view->setCutBox(layer, box);
+}
+
+void Z3DWindow::resetCutBox(neutube3d::ERendererLayer layer)
+{
+  m_view->resetCutBox(layer);
+}
+
+void Z3DWindow::setZScale(double s)
+{
+  m_view->setZScale(s);
+}
+
+bool Z3DWindow::isLayerVisible(neutube3d::ERendererLayer layer) const
+{
+  return m_view->isLayerVisible(layer);
+}
+
+void Z3DWindow::setLayerVisible(neutube3d::ERendererLayer layer, bool visible)
+{
+  m_view->setLayerVisible(layer, visible);
+}
+
+void Z3DWindow::setOpacity(neutube3d::ERendererLayer layer, double opacity)
+{
+  if (layer == neutube3d::LAYER_MESH) {
+    setMeshOpacity(opacity);
+  } else {
+    m_view->setOpacity(layer, opacity);
+  }
+}
+
+void Z3DWindow::setOpacityQuietly(
+    neutube3d::ERendererLayer layer, double opacity)
+{
+  m_view->setOpacityQuietly(layer, opacity);
+}
+
+void Z3DWindow::setFront(neutube3d::ERendererLayer layer, bool on)
+{
+  m_view->setFront(layer, on);
+}
+
+void Z3DWindow::setColorMode(
+    neutube3d::ERendererLayer layer, const std::string &mode)
 {
   switch (layer) {
-  case LAYER_GRAPH:
-    return getGraphFilter()->isVisible();
+  case neutube3d::LAYER_MESH:
+    getMeshFilter()->setColorMode(mode);
     break;
-  case LAYER_SWC:
-    return getSwcFilter()->isVisible();
+  case neutube3d::LAYER_SWC:
+    getSwcFilter()->setColorMode(mode);
     break;
-  case LAYER_PUNCTA:
-    return getPunctaFilter()->isVisible();
+  case neutube3d::LAYER_PUNCTA:
+    getPunctaFilter()->setColorMode(mode);
     break;
-  case LAYER_VOLUME:
+  default:
     break;
   }
-
-  return true;
 }
 
-void Z3DWindow::setZScale(double scale)
+void Z3DWindow::gotoPosition(const ZCuboid& bound)
 {
-  setZScale(LAYER_GRAPH, scale);
-  setZScale(LAYER_SWC, scale);
-  setZScale(LAYER_PUNCTA, scale);
-  setZScale(LAYER_VOLUME, scale);
+  ZBBox<glm::dvec3> bd(glm::dvec3(bound.firstCorner().x(),
+                                  bound.firstCorner().y(),
+                                  bound.firstCorner().z()),
+                       glm::dvec3(bound.lastCorner().x(),
+                                  bound.lastCorner().y(),
+                                  bound.lastCorner().z()));
+  m_view->gotoPosition(bd);
 }
 
-void Z3DWindow::setScale(double sx, double sy, double sz)
+bool Z3DWindow::isProjectedInRectRoi(const ZIntPoint &pt) const
 {
-  setScale(LAYER_GRAPH, sx, sy, sz);
-  setScale(LAYER_SWC, sx, sy, sz);
-  setScale(LAYER_PUNCTA, sx, sy, sz);
-  setScale(LAYER_VOLUME, sx, sy, sz);
+  QPointF screenPos = m_view->getScreenProjection(
+        pt.getX(), pt.getY(), pt.getZ(), neutube3d::LAYER_SWC);
+
+  return getRectRoi().contains(screenPos.x(), screenPos.y());
+}
+
+void Z3DWindow::deleteSelected()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->executeRemoveTodoCommand();
+  }
+}
+
+void Z3DWindow::saveSplitTask()
+{
+  emit savingSplitTask();
+}
+
+void Z3DWindow::deleteSplitSeed()
+{
+  emit deletingSplitSeed();
+}
+
+void Z3DWindow::deleteSelectedSplitSeed()
+{
+  emit deletingSelectedSplitSeed();
 }
 
 void Z3DWindow::cropSwcInRoi()
 {
-  if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY_COARSE) {
+  if (m_doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE) {
 //    m_doc->executeDeleteSwcNodeCommand();
     if (ZDialogFactory::Ask("Cropping", "Do you want to crop the body?", this)) {
       emit croppingSwcInRoi();
     }
-  } else if (m_doc->getTag() == NeuTube::Document::FLYEM_QUICK_BODY ||
-             m_doc->getTag() == NeuTube::Document::FLYEM_SKELETON) {
+  } else if (m_doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
+             m_doc->getTag() == neutube::Document::FLYEM_SKELETON) {
     QMessageBox::warning(
           this, "Action Failed", "Cropping only works in coarse body view.");
   } else {
@@ -4087,9 +4564,9 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
       while (nodeIter.hasNext()) {
         Swc_Tree_Node *tn = nodeIter.next();
         if (SwcTreeNode::isRegular(tn)) {
-          const QPointF &pt = getScreenProjection(
+          const QPointF &pt = m_view->getScreenProjection(
                 SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
-                LAYER_SWC);
+                neutube3d::LAYER_SWC);
           if (rect.contains(pt.x(), pt.y())) {
             tree->selectNode(tn, true);
           }
@@ -4108,6 +4585,103 @@ void Z3DWindow::selectSwcTreeNodeInRoi(bool appending)
   }
 }
 
+void Z3DWindow::selectSwcTreeNodeTreeInRoi(bool appending)
+{
+  if (hasRectRoi()) {
+    QList<ZSwcTree*> treeList = m_doc->getSwcList();
+
+    ZRect2d rect = getRectRoi();
+
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->recordSelection();
+      if (!appending) {
+        tree->deselectAllNode();
+      }
+
+      ZSwcTree::RegularRootIterator rootIter(tree);
+      while (rootIter.hasNext()) {
+        Swc_Tree_Node *root = rootIter.next();
+        bool treeInRoi = true;
+        ZSwcTree::DownstreamIterator dsIter(root);
+        while (dsIter.hasNext()) {
+          Swc_Tree_Node *tn = dsIter.next();
+          const QPointF &pt = m_view->getScreenProjection(
+                SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                neutube3d::LAYER_SWC);
+          if (!rect.contains(pt.x(), pt.y())) {
+            treeInRoi = false;
+            break;
+          }
+        }
+
+        if (treeInRoi) {
+          dsIter.restart();
+          while (dsIter.hasNext()) {
+            Swc_Tree_Node *tn = dsIter.next();
+            tree->selectNode(tn, true);
+          }
+        }
+      }
+
+      tree->processSelection();
+    }
+
+    m_doc->notifySwcTreeNodeSelectionChanged();
+    removeRectRoi();
+  }
+}
+
+void Z3DWindow::selectTerminalBranchInRoi(bool appending)
+{
+  if (hasRectRoi()) {
+    QList<ZSwcTree*> treeList = m_doc->getSwcList();
+
+    ZRect2d rect = getRectRoi();
+
+    for (QList<ZSwcTree*>::const_iterator iter = treeList.begin();
+         iter != treeList.end(); ++iter) {
+      ZSwcTree *tree = *iter;
+      tree->recordSelection();
+      if (!appending) {
+        tree->deselectAllNode();
+      }
+
+      ZSwcTree::TerminalIterator termIter(tree);
+      while (termIter.hasNext()) {
+        Swc_Tree_Node *terminal = termIter.next();
+        Swc_Tree_Node *tn = terminal;
+        bool treeInRoi = true;
+        while (SwcTreeNode::isRegular(tn) && !SwcTreeNode::isBranchPoint(tn)) {
+          const QPointF &pt = m_view->getScreenProjection(
+                SwcTreeNode::x(tn), SwcTreeNode::y(tn), SwcTreeNode::z(tn),
+                neutube3d::LAYER_SWC);
+          if (!rect.contains(pt.x(), pt.y())) {
+            treeInRoi = false;
+            break;
+          }
+          tn = SwcTreeNode::parent(tn);
+        }
+
+        if (treeInRoi) {
+          tn = terminal;
+          while (SwcTreeNode::isRegular(tn) && !SwcTreeNode::isBranchPoint(tn)) {
+            tree->selectNode(tn, true);
+            tn = SwcTreeNode::parent(tn);
+          }
+        }
+      }
+
+      tree->processSelection();
+    }
+
+    m_doc->notifySwcTreeNodeSelectionChanged();
+    removeRectRoi();
+  }
+}
+
+
 void Z3DWindow::removeRectRoi()
 {
   getCanvas()->getInteractionEngine()->removeRectDecoration();
@@ -4121,6 +4695,11 @@ QDockWidget* Z3DWindow::getSettingsDockWidget()
 QDockWidget* Z3DWindow::getObjectsDockWidget()
 {
     return m_objectsDockWidget;
+}
+
+ZROIWidget* Z3DWindow::getROIsDockWidget()
+{
+    return m_roiDockWidget;
 }
 
 void Z3DWindow::setButtonStatus(int index, bool v)

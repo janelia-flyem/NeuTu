@@ -21,9 +21,9 @@ if(PCRE_STATIC_LIBRARY)
 endif(PCRE_STATIC_LIBRARY)
 
 # additional hints
-if(MINGW)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/Mingw/64)
-endif(MINGW)
+if(MSVC)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/msvc/pcre)
+endif(MSVC)
 
 # Include dir
 find_path(PCRE_INCLUDE_DIR

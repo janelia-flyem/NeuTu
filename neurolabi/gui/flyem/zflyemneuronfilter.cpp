@@ -24,7 +24,7 @@ void ZFlyEmNeuronFilter::setReference(const ZFlyEmNeuron *neuron)
   m_refNeuron = neuron;
 }
 
-void ZFlyEmNeuronFilter::appendFilter(ZFlyEmNeuronFilter */*filter*/)
+void ZFlyEmNeuronFilter::appendFilter(ZFlyEmNeuronFilter * /*filter*/)
 {
 
 }
@@ -170,7 +170,7 @@ bool ZFlyEmNeuronLayerFilter::isPassed(const ZFlyEmNeuron &neuron) const
 
 bool ZFlyEmNeuronLayerFilter::configure(ZJsonValue &config)
 {
-  ZJsonObject obj(config.getValue(), false);
+  ZJsonObject obj(config.getValue(), ZJsonValue::SET_INCREASE_REF_COUNT);
   if (!obj.isEmpty()) {
     if (obj.hasKey("start")) {
       m_layerStart = ZJsonParser::numberValue(obj["start"]);
@@ -248,7 +248,7 @@ bool ZFlyEmNeuronTipDistanceFilter::isPassed(const ZFlyEmNeuron &neuron) const
 
 bool ZFlyEmNeuronTipDistanceFilter::configure(ZJsonValue &config)
 {
-  ZJsonObject obj(config.getValue(), false);
+  ZJsonObject obj(config.getValue(), ZJsonValue::SET_INCREASE_REF_COUNT);
   if (!obj.isEmpty()) {
     if (obj.hasKey("min_dist")) {
       m_minDist = ZJsonParser::numberValue(obj["min_dist"]);
@@ -300,7 +300,7 @@ bool ZFlyEmNeuronTipAngleFilter::isPassed(const ZFlyEmNeuron &neuron) const
 
 bool ZFlyEmNeuronTipAngleFilter::configure(ZJsonValue &config)
 {
-  ZJsonObject obj(config.getValue(), false);
+  ZJsonObject obj(config.getValue(), ZJsonValue::SET_INCREASE_REF_COUNT);
   if (!obj.isEmpty()) {
     if (obj.hasKey("min_dist")) {
       m_minDist = ZJsonParser::numberValue(obj["min_dist"]);
@@ -351,7 +351,7 @@ bool ZFlyEmNeuronDeepAngleFilter::isPassed(const ZFlyEmNeuron &neuron) const
 
 bool ZFlyEmNeuronDeepAngleFilter::configure(ZJsonValue &config)
 {
-  ZJsonObject obj(config.getValue(), false);
+  ZJsonObject obj(config.getValue(), ZJsonValue::SET_INCREASE_REF_COUNT);
   if (!obj.isEmpty()) {
     if (obj.hasKey("min_dist")) {
       m_minDist = ZJsonParser::numberValue(obj["min_dist"]);
@@ -405,7 +405,7 @@ bool ZFlyEmNeuronBodySizeFilter::isPassed(const ZFlyEmNeuron &neuron) const
 
 bool ZFlyEmNeuronBodySizeFilter::configure(ZJsonValue &config)
 {
-  ZJsonObject obj(config.getValue(), false);
+  ZJsonObject obj(config.getValue(), ZJsonValue::SET_INCREASE_REF_COUNT);
   if (!obj.isEmpty()) {
     if (obj.hasKey("min_size")) {
       m_minSize = ZJsonParser::integerValue(obj["min_size"]);

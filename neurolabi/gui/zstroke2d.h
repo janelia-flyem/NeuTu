@@ -11,10 +11,14 @@
 #include "c_stack.h"
 #include "zlabelcolortable.h"
 #include "zcuboid.h"
+#include "zsharedpointer.h"
 
 class ZStack;
 class ZObject3d;
 class ZJsonObject;
+class ZStroke2d;
+
+typedef ZSharedPointer<ZStroke2d> ZStroke2dPtr;
 
 /*!
  * \brief The class of plane strokes.
@@ -29,6 +33,10 @@ public:
   ZStroke2d(const ZStroke2d &stroke);
   virtual ~ZStroke2d();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_STROKE;
+  }
+
   enum EOperation {
     OPERATION_NULL,
     OPERATION_DELETE, OPERATION_CHANGE_BRUSH_LABEL,
@@ -41,9 +49,10 @@ public:
   virtual void save(const char *filePath);
   virtual bool load(const char *filePath);
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               neutube::EAxis sliceAxis) const;
   bool display(QPainter *rawPainter, int z, EDisplayStyle option,
-               EDisplaySliceMode sliceMode) const;
+               EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const;
 
   void labelBinary(Stack *stack) const;
 
@@ -60,6 +69,7 @@ public:
    * done.
    */
   void labelGrey(Stack *stack, int label) const;
+  void labelGrey(Stack *stack, int label, int ignoringValue) const;
 
   virtual const std::string& className() const;
 
@@ -68,8 +78,7 @@ public:
   void set(const QPoint &pt);
   void set(double x, double y);
   void setLast(double x, double y);
-  void setLabel(int label);
-  int getLabel() const;
+  void setLabel(uint64_t label);
 
   /*!
    * \brief Toggle the label.
@@ -85,7 +94,7 @@ public:
   void addWidth(double dw);
 
   void setEraser(bool enabled);
-  inline bool isEraser() const { return m_label == 0; }
+  inline bool isEraser() const { return getLabel() == 0; }
   inline void setFilled(bool isFilled) {
     m_isFilled = isFilled;
   }
@@ -107,6 +116,8 @@ public:
    */
   void translate(const ZPoint &offset);
   void translate(const ZIntPoint &offset);
+  void scale(double sx, double sy, double sz);
+  void downsample(const ZIntPoint &dsIntv);
 
   /*!
    * \brief Convert the stroke to a stack.
@@ -116,45 +127,64 @@ public:
    */
   ZStack *toStack() const;
 
+  ZStack *toBinaryStack() const;
+
   ZCuboid getBoundBox() const;
 
   ZObject3d* toObject3d() const;
 
   void labelStack(ZStack *stack) const;
+  void labelStack(ZStack *stack, int ignoringValue) const;
+
+  void labelProjStack(ZStack *stack) const;
+  void labelProjStack(ZStack *stack, int value) const;
 
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &obj);
 
-  bool isSliceVisible(int z) const;
+  bool isSliceVisible(int z, neutube::EAxis sliceAxis) const;
 
   inline void setPenetrating(bool p) {
     m_isPenetrating = p;
+  }
+  bool isPenetrating() const {
+    return m_isPenetrating;
   }
 
   inline void hideStart(bool s) {
     m_hideStart = s;
   }
 
-  bool hitTest(double x, double y) const;
+  bool hitTest(double x, double y, neutube::EAxis axis) const;
   bool hitTest(double x, double y, double z) const;
 
-  bool hit(double x, double y);
+//  using ZStackObject::hit; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+  bool hit(double x, double y, neutube::EAxis axis);
   bool hit(double x, double y, double z);
 
-  void getBoundBox(ZIntCuboid *box) const;
+  void boundBox(ZIntCuboid *box) const;
+
+  static QColor GetLabelColor(int label);
+
+  void decimate();
 
 private:
   static QVector<QColor> constructColorTable();
   const QColor& getLabelColor() const;
   void labelImage(QImage *image) const;
+  ZStack* toLabelStack(int label) const;
 
+  void decimate(size_t first, size_t last, double eps,
+                std::vector<bool> &marker);
+  double pointLinesegDistance(
+      const QPointF &x, const QPointF &x0, const QPointF x1);
 
 private:
   std::vector<QPointF> m_pointArray;
   double m_width;
 
-  int m_label; //Label = 0 is reserved for eraser
-  int m_originalLabel; //for label toggling
+//  int m_label; //Label = 0 is reserved for eraser
+  uint64_t m_originalLabel; //for label toggling
   int m_z;
 
   //bool m_isEraser;
@@ -165,6 +195,7 @@ private:
 
   static const double m_minWidth;
   static const double m_maxWidth;
+  static const double m_zFadeSpan;
 
   const static ZLabelColorTable m_colorTable;
   //const static QVector<QColor> m_colorTable;

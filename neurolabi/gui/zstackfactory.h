@@ -5,13 +5,16 @@
 #include "zstack.hxx"
 #include "tz_math.h"
 #include "tz_stack_lib.h"
-#include "zintcuboid.h"
 
 class ZClosedCurve;
 class ZStroke2d;
 class ZPointArray;
 class ZWeightedPointArray;
 class ZObject3dScanArray;
+class ZStackObject;
+class ZSwcTree;
+class ZObject3dScan;
+class ZStackArray;
 
 /*!
  * \brief The class of creating a stack
@@ -29,30 +32,30 @@ public:
    *
    * \return It returns NULL if any dimension is not positive.
    */
-  static ZStack* makeVirtualStack(int width, int height, int depth);
+  static ZStack* MakeVirtualStack(int width, int height, int depth);
 
 
-  static ZStack* makeVirtualStack(const ZIntCuboid &box);
+  static ZStack* MakeVirtualStack(const ZIntCuboid &box);
 
 public:
   template<class InputIterator>
   static ZStack* composite(InputIterator begin, InputIterator end);
 
-  static ZStack* makeOneStack(int width, int height, int depth,
+  static ZStack* MakeOneStack(int width, int height, int depth,
                               int nchannel = 1);
-  static ZStack* makeZeroStack(int width, int height, int depth,
+  static ZStack* MakeZeroStack(int width, int height, int depth,
                                int nchannel = 1);
 
-  static ZStack* makeZeroStack(int kind, int width, int height, int depth,
+  static ZStack* MakeZeroStack(int kind, int width, int height, int depth,
                                int nchannel);
   static ZStack* makeSlice(const ZStack& stack, int z);
 
 
-  static ZStack* makeZeroStack(const ZIntCuboid box, int nchannel = 1);
-  static ZStack* makeZeroStack(int kind, const ZIntCuboid box, int nchannel = 1);
+  static ZStack* MakeZeroStack(const ZIntCuboid box, int nchannel = 1);
+  static ZStack* MakeZeroStack(int kind, const ZIntCuboid box, int nchannel = 1);
 
   static ZStack* makeIndexStack(int width, int height, int depth);
-  static ZStack* makeUniformStack(int width, int height, int depth, int v);
+  static ZStack* MakeUniformStack(int width, int height, int depth, int v);
 
   static ZStack* makePolygonPicture(const ZStroke2d &stroke);
 
@@ -64,6 +67,8 @@ public:
   static ZStack* makeSeedStack(const ZObject3dScanArray &objArray);
   static ZStack* MakeBinaryStack(const ZObject3dScanArray &objArray, int v = 1);
   static ZStack* MakeColorStack(const ZObject3dScanArray &objArray);
+
+//  static ZStack* MakeLabelStack(ZSwcTree *obj, int v);
 
   /*!
    * \brief Only support GREY data
@@ -80,6 +85,13 @@ public:
       const ZStack &redStack, const ZStack &greenStack, const ZStack &blueStack);
 
   static ZStack* CompositeForeground(const ZStack &stack1, const ZStack &stack2);
+  static ZStack* CompositeForeground(const ZStackArray &stackArray);
+
+  static ZStack* MakeStrokeMask(const std::vector<ZStroke2d*> strokeList);
+  static ZStack* MakeStrokeProjMask(const std::vector<ZStroke2d*> strokeList);
+  static ZStack* MakeStrokeProjMask(
+      const std::vector<ZStroke2d*> strokeList, int value);
+  static ZStack* MakeStrokeMask(const std::vector<ZStroke2d*> strokeList, int z);
 
 private:
   static Stack* pileMatched(const std::vector<Stack*> stackArray);

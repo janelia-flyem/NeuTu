@@ -2,7 +2,10 @@
 #define ZOBJECT3DSTRIPE_H
 
 #include <vector>
+#include <ostream>
+#include <istream>
 #include "c_stack.h"
+#include "neutube_def.h"
 
 /*!
  * \brief The class of RLE object stripe
@@ -15,6 +18,7 @@ public:
   inline int getZ() const { return m_z; }
   int getMinX() const;
   int getMaxX() const;
+
   inline size_t getSize() const { return m_segmentArray.size() / 2; }
   inline int getSegmentNumber() const { return getSize(); }
   size_t getVoxelNumber() const;
@@ -31,7 +35,19 @@ public:
   void write(FILE *fp) const;
   void read(FILE *fp);
 
+  void write(std::ostream &stream) const;
+  void read(std::istream &stream);
+//  friend std::ostream& operator<<(
+//      std::ostream &stream, const ZObject3dStripe &stripe);
+//  friend std::istream& operator>>(
+//      std::istream &stream, ZObject3dStripe &stripe);
+
+  void addStackValue(Stack *stack, int v, const int *offset = NULL) const;
+
   void drawStack(Stack *stack, int v, const int *offset = NULL) const;
+  void drawStack(Stack *stack, int v, neutube::EAxis axis,
+                 const int *offset = NULL) const;
+
   void drawStack(Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
                  const int *offset = NULL) const;
 
@@ -53,6 +69,15 @@ public:
 
   void sort();
   void canonize();
+  void sortedCanonize();
+
+  /*!
+   * \brief Combine two stripes
+   *
+   * If the current object is empty, it will be set to \a stripe.
+   *
+   * \return true iff the unification is successful.
+   */
   bool unify(const ZObject3dStripe &stripe, bool canonizing = true);
 
   void print(int indent = 0) const;
@@ -106,6 +131,27 @@ public:
   void fillIntArray(int *array) const;
 
   std::vector<int>& getSegmentArray() { return m_segmentArray; }
+
+  ZObject3dStripe getComplement(int x0, int x1);
+
+  /*!
+   * \brief Remove voxels within a give range.
+   *
+   * Voxels in [\a bx0, \a bx1] will be removed.
+   */
+  void remove(int bx0, int bx1);
+
+  friend ZObject3dStripe operator - (
+      const ZObject3dStripe &s1, const ZObject3dStripe &s2);
+
+private:
+  template<typename T>
+  void drawArray(
+      T *array, int v, int minV, int maxV, int width, const int *offset) const;
+
+  template<typename T>
+  void addArray(
+      T *array, int v, int minV, int maxV, int width, const int *offset) const;
 
 private:
   std::vector<int> m_segmentArray;

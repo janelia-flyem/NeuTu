@@ -2,7 +2,7 @@
 #define ZSTTRANSFORM_H
 
 
-#include "neutube.h"
+#include "neutube_def.h"
 
 class ZPoint;
 class QPointF;
@@ -28,6 +28,8 @@ public:
    * The transformation along Z is unchanged.
    */
   void setOffset(double dx, double dy);
+  void addOffset(double dx, double dy);
+  void addScaledOffset(double dx, double dy);
 
   /*!
    * \brief Set X-Y scale
@@ -67,8 +69,8 @@ public:
     return z * m_sz + m_dz;
   }
 
-  double getScale(NeuTube::EAxis axis) const;
-  double getOffset(NeuTube::EAxis axis) const;
+  double getScale(neutube::EAxis axis) const;
+  double getOffset(neutube::EAxis axis) const;
   ZPoint getOffset() const;
 
   bool isIntTransform() const;
@@ -85,6 +87,8 @@ public:
   QPointF transform(const QPoint &pt) const;
   QRectF transform(const QRectF &rect) const;
 
+  ZStTransform transform(const ZStTransform &transform) const;
+
   /*!
    * \brief Estimate transformation
    *
@@ -97,6 +101,10 @@ public:
    * \brief Check if the transformation is identity
    */
   bool isIdentity() const;
+
+  void estimate(
+      double source0, double source1, double target0, double target1,
+      neutube::EAxis axis);
 
 private:
   double m_sx;

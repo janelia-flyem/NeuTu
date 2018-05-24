@@ -58,13 +58,14 @@ ZFlyEmNeuronFilter* FlyEmGeoFilterDialog::getFilter()
 {
   QString text = ui->filterTextEdit->toPlainText();
   ZJsonValue jsonValue;
-  jsonValue.decodeString(text.toStdString().c_str());
+  json_error_t error;
+  jsonValue.decodeString(text.toStdString().c_str(), &error);
 
   if (jsonValue.isEmpty()) {
     QMessageBox::warning(
-          this, "Parsing Error", jsonValue.getErrorString().c_str());
+          this, "Parsing Error", ZJsonValue::GetErrorString(error).c_str());
   } else {
-    ZJsonObject config(jsonValue.getData(), false);
+    ZJsonObject config(jsonValue.getData(), ZJsonValue::SET_INCREASE_REF_COUNT);
 
     if (!config.isEmpty()) {
       ZFlyEmNeuronFilter *filter = m_filterFactory.createFilter(config);

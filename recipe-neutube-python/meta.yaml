@@ -1,0 +1,48 @@
+package:
+    name: neutube-python
+
+  {% if GIT_DESCRIBE_NUMBER|int == 0 %}
+    version: "{{GIT_DESCRIBE_TAG}}"
+  {% else %}
+    # If we're using a non-tagged revision, append '.postN' to the version
+    version: "{{GIT_DESCRIBE_TAG}}.post{{GIT_DESCRIBE_NUMBER}}"
+  {% endif %}
+
+source:
+    git_url: ../
+
+build:
+  number: 0
+  string: {{PKG_BUILDNUM}}_g{{GIT_FULL_HASH[:7]}}
+
+requirements:
+  build:
+    - python >=3.6
+    - python {{PY_VER}}*
+    - swig
+    - libdvid-cpp >=0.3
+    - fftw    3.3*
+    - jansson 2.7
+    - libxml2 2.9*
+    - libpng  1.6.28
+    - hdf5    1.8.18 # Ting's build script uses 1.8.12, but that's not available from conda
+    - cmake
+
+  run:
+    - python {{PY_VER}}*
+    - libdvid-cpp >=0.3
+    - fftw    3.3*
+    - jansson 2.7
+    - libxml2 2.9*
+    - libpng  >=1.6.28,<1.7
+    - hdf5    1.8.18
+    
+
+test:
+  imports:
+    - neutube
+
+about:
+  home: http://github.com/janelia-flyem/NeuTu
+  license: GPL
+  summary: A library built from a subset of neutube source files (without any Qt parts), with python bindings. 

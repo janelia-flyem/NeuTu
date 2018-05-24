@@ -1,6 +1,7 @@
 #include "zcolorscheme.h"
 #include "zrandomgenerator.h"
 #include "tz_color.h"
+#include "zlabelcolortable.h"
 
 ZColorScheme::ZColorScheme()
 {
@@ -13,12 +14,35 @@ QColor ZColorScheme::getColor(int index) const
   if (m_colorTable.isEmpty()) {
     color = QColor(0, 0, 0);
   } else {
-    color = m_colorTable[index % m_colorTable.size()];
+    color = m_colorTable[(index + m_startIndex) % m_colorTable.size()];
   }
 
   //qDebug() << color;
 
   return color;
+}
+
+QColor ZColorScheme::getColor(uint64_t index) const
+{
+  QColor color;
+
+  int startIndex = m_startIndex;
+  if (startIndex < 0) {
+    startIndex = startIndex % m_colorTable.size();
+  }
+
+  if (m_colorTable.isEmpty()) {
+    color = QColor(0, 0, 0);
+  } else {
+    color = m_colorTable[(index + startIndex) % (uint64_t) m_colorTable.size()];
+  }
+
+  return color;
+}
+
+void ZColorScheme::setStartIndex(int startIndex)
+{
+  m_startIndex = startIndex;
 }
 
 void ZColorScheme::setColorScheme(EColorScheme scheme)
@@ -33,7 +57,12 @@ void ZColorScheme::setColorScheme(EColorScheme scheme)
   case PUNCTUM_TYPE_COLOR:
     buildPunctumColorTable();
     break;
-
+  case UNIQUE_COLOR:
+    buildUniqueColorTable();
+    break;
+  case LABEL_COLOR:
+    buildLabelColorTable();
+    break;
   default:
     break;
   }
@@ -51,10 +80,23 @@ void ZColorScheme::buildRandomColorTable(int n)
   }
 }
 
+void ZColorScheme::buildLabelColorTable()
+{
+  ZLabelColorTable colorTable;
+  m_colorTable.clear();
+
+  for (int i = 0; i < colorTable.GetColorCount(); ++i) {
+    m_colorTable.append(colorTable.getColor(i));
+  }
+
+}
+
 void ZColorScheme::buildConvRandomColorTable(int n)
 {
-  ZRandomGenerator generator;
-  const int maxInt = 65534;
+  m_colorTable.append(Qt::black);
+
+  ZRandomGenerator generator(42);
+  const int maxInt = 20000;
   for (int i = 1; i < n; ++i) {
     int r = generator.rndint(maxInt)%255;
     int g = generator.rndint(maxInt)%255;
@@ -111,4 +153,22 @@ void ZColorScheme::buildPunctumColorTable()
   m_colorTable.push_back(QColor(127, 128, 255, 255));
   m_colorTable.push_back(QColor(128, 255, 128, 255));
   m_colorTable.push_back(QColor(255, 255, 128, 255));
+}
+
+void ZColorScheme::buildUniqueColorTable()
+{
+  m_colorTable.clear();
+  m_colorTable.push_back(QColor(Qt::red));
+  m_colorTable.push_back(QColor(Qt::green));
+  m_colorTable.push_back(QColor(Qt::blue));
+  m_colorTable.push_back(QColor(Qt::cyan));
+  m_colorTable.push_back(QColor(Qt::magenta));
+  m_colorTable.push_back(QColor(Qt::darkRed));
+  m_colorTable.push_back(QColor(Qt::darkGreen));
+  m_colorTable.push_back(QColor(Qt::darkBlue));
+  m_colorTable.push_back(QColor(Qt::darkCyan));
+  m_colorTable.push_back(QColor(Qt::darkMagenta));
+  m_colorTable.push_back(QColor(Qt::darkYellow));
+  m_colorTable.push_back(QColor(Qt::white));
+  m_colorTable.push_back(QColor(Qt::black));
 }

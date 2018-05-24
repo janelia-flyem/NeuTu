@@ -35,7 +35,7 @@ void ZSelector<T>::reset(const std::set<T> &selected,
 }
 
 template <typename T>
-void ZSelector<T>::selectObject(T obj)
+void ZSelector<T>::selectObject(const T &obj)
 {
   if (m_deselectedSet.count(obj) > 0) {
     m_deselectedSet.erase(obj);
@@ -45,7 +45,7 @@ void ZSelector<T>::selectObject(T obj)
 }
 
 template <typename T>
-void ZSelector<T>::deselectObject(T obj)
+void ZSelector<T>::deselectObject(const T &obj)
 {
   if (m_selectedSet.count(obj) > 0) {
     m_selectedSet.erase(obj);
@@ -117,6 +117,18 @@ template <typename T>
 bool ZSelector<T>::isInDeselectedSet(const T& obj) const
 {
   return m_deselectedSet.count(obj) > 0;
+}
+
+template <typename T>
+void ZSelector<T>::removeObject(const T &obj)
+{
+  if (m_selectedSet.count(obj) > 0) {
+      m_selectedSet.erase(obj);
+  }
+
+  if (m_deselectedSet.count(obj) > 0) {
+      m_deselectedSet.erase(obj);
+  }
 }
 
 template <typename T>

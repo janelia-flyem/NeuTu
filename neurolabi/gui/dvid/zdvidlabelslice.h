@@ -1,11 +1,14 @@
 #ifndef ZDVIDLABELSLICE_H
 #define ZDVIDLABELSLICE_H
 
+#include <QCache>
+#include <QMutex>
+
 #include "zstackobject.h"
 #include "zdvidtarget.h"
 #include "zobject3dscan.h"
 #include "zobject3dscanarray.h"
-#include "zstackviewparam.h"
+//#include "zstackviewparam.h"
 #include "zobjectcolorscheme.h"
 #include "neutube.h"
 #include "zimage.h"
@@ -13,10 +16,14 @@
 #include "dvid/zdvidreader.h"
 #include "zsharedpointer.h"
 #include "flyem/zflyembodycolorscheme.h"
+#include "flyem/zflyembodymerger.h"
 
-class ZFlyEmBodyMerger;
 class QColor;
 class ZArray;
+class ZPixmap;
+class ZDvidDataSliceHelper;
+class ZStackViewParam;
+class ZArbSliceViewParam;
 
 class ZDvidLabelSlice : public ZStackObject
 {
@@ -25,15 +32,24 @@ public:
   ZDvidLabelSlice(int maxWidth, int maxHeight);
   ~ZDvidLabelSlice();
 
-  void setMaxSize(int maxWidth, int maxHeight);
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_LABEL_SLICE;
+  }
 
-  void update(const ZStackViewParam &viewParam);
+  void setMaxSize(const ZStackViewParam &viewParam, int maxWidth, int maxHeight);
+
+  bool update(const ZStackViewParam &viewParam);
+//  bool update(const QRect &dataRect, int zoom, int z);
   void update(int z);
   void update();
 
   void updateFullView(const ZStackViewParam &viewParam);
+//  void disableFullView();
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void setSliceAxis(neutube::EAxis sliceAxis);
+
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               neutube::EAxis sliceAxis) const;
 
   const std::string& className() const;
 
@@ -53,34 +69,35 @@ public:
 
 
   void setSelection(
-      std::set<uint64_t> &selected, NeuTube::EBodyLabelType labelType);
-  void addSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
-  void xorSelection(uint64_t bodyId, NeuTube::EBodyLabelType labelType);
+      const std::set<uint64_t> &selected, neutube::EBodyLabelType labelType);
+  void addSelection(uint64_t bodyId, neutube::EBodyLabelType labelType);
+  void xorSelection(uint64_t bodyId, neutube::EBodyLabelType labelType);
+  void removeSelection(uint64_t bodyId, neutube::EBodyLabelType labelType);
 
   template <typename InputIterator>
   void addSelection(const InputIterator &begin, const InputIterator &end,
-                    NeuTube::EBodyLabelType labelType);
+                    neutube::EBodyLabelType labelType);
 
   template <typename InputIterator>
   void setSelection(const InputIterator &begin, const InputIterator &end,
-                    NeuTube::EBodyLabelType labelType);
+                    neutube::EBodyLabelType labelType);
 
 
   template <typename InputIterator>
   void xorSelection(const InputIterator &begin, const InputIterator &end,
-                    NeuTube::EBodyLabelType labelType);
+                    neutube::EBodyLabelType labelType);
 
   template <typename InputIterator>
   void xorSelectionGroup(const InputIterator &begin, const InputIterator &end,
-                         NeuTube::EBodyLabelType labelType);
+                         neutube::EBodyLabelType labelType);
 
   inline const std::set<uint64_t>& getSelectedOriginal() const {
     return m_selectedOriginal;
   }
 
-  std::set<uint64_t> getSelected(NeuTube::EBodyLabelType labelType) const;
+  std::set<uint64_t> getSelected(neutube::EBodyLabelType labelType) const;
 
-  bool isBodySelected(uint64_t bodyId, NeuTube::EBodyLabelType labelType) const;
+  bool isBodySelected(uint64_t bodyId, neutube::EBodyLabelType labelType) const;
 
   void setBodyMerger(ZFlyEmBodyMerger *bodyMerger);
   void updateLabelColor();
@@ -89,23 +106,28 @@ public:
     return m_objColorSheme;
   }
 
-  QColor getColor(uint64_t label, NeuTube::EBodyLabelType labelType) const;
-  QColor getColor(int64_t label, NeuTube::EBodyLabelType labelType) const;
+  QColor getLabelColor(uint64_t label, neutube::EBodyLabelType labelType) const;
+  QColor getLabelColor(int64_t label, neutube::EBodyLabelType labelType) const;
 
   uint64_t getMappedLabel(const ZObject3dScan &obj) const;
   uint64_t getMappedLabel(uint64_t label) const;
   uint64_t getMappedLabel(
-      uint64_t label, NeuTube::EBodyLabelType labelType) const;
+      uint64_t label, neutube::EBodyLabelType labelType) const;
 
   std::set<uint64_t> getOriginalLabelSet(uint64_t mappedLabel) const;
 
   uint64_t getHitLabel() const;
+  std::set<uint64_t> getHitLabelSet() const;
 
-  const ZStackViewParam& getViewParam() const;
+//  const ZStackViewParam& getViewParam() const;
+  int getCurrentZ() const;
+  QRect getDataRect() const;
 
   void mapSelection();
 
-  void forceUpdate();
+  void forceUpdate(bool ignoringHidden);
+
+  void setCenterCut(int width, int height);
 
   //Selection events
   void recordSelection();
@@ -124,41 +146,110 @@ public:
   bool hasCustomColorMap() const;
   void assignColorMap();
 
-private:
-  inline const ZDvidTarget& getDvidTarget() const { return m_dvidTarget; }
-  void forceUpdate(const ZStackViewParam &viewParam);
-  //void updateLabel(const ZFlyEmBodyMerger &merger);
-  void init(int maxWidth, int maxHeight);
-  QColor getCustomColor(uint64_t label) const;
+  ZImage* getPaintBuffer() {
+    return m_paintBuffer;
+  }
+
+  int64_t getReadingTime() const;
+
+  void clearCache();
+  bool refreshReaderBuffer();
+
+//  int getZoom() const;
+  int getZoomLevel(const ZStackViewParam &viewParam) const;
+
+  void paintBuffer();
+
+  QRect getDataRect(const ZStackViewParam &viewParam) const;
 
 private:
-  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_reader;
+  const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
+
+  void forceUpdate(
+      const ZStackViewParam &viewParam, bool ignoringHidden);
+  void forceUpdate(const QRect &viewPort, int z);
+  void forceUpdate(const ZArbSliceViewParam &viewParam);
+//  void forceUpdate(bool ignoringHidden);
+  //void updateLabel(const ZFlyEmBodyMerger &merger);
+  void init(int maxWidth, int maxHeight,
+            neutube::EAxis sliceAxis = neutube::Z_AXIS);
+  QColor getCustomColor(uint64_t label) const;
+
+  void paintBufferUnsync();
+  void remapId(ZArray *label);
+  void remapId();
+
+  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v);
+  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+               std::set<uint64_t> &selected);
+  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+               const ZFlyEmBodyMerger::TLabelMap &bodyMap);
+  void remapId(uint64_t *array, const uint64_t *originalArray, uint64_t v,
+               std::set<uint64_t> &selected,
+               const ZFlyEmBodyMerger::TLabelMap &bodyMap);
+
+  void updateRgbTable();
+
+  ZFlyEmBodyMerger::TLabelMap getLabelMap() const;
+  void clearLabelData();
+
+  void updatePixmap(ZPixmap *pixmap) const;
+  void updatePaintBuffer();
+  void setTransform(ZImage *image) const;
+
+  const ZDvidDataSliceHelper* getHelper() const {
+    return m_helper.get();
+  }
+  ZDvidDataSliceHelper* getHelper() {
+    return m_helper.get();
+  }
+
+  bool isPaintBufferAllocNeeded(int width, int height) const;
+
+private:
+//  ZDvidTarget m_dvidTarget;
+//  ZDvidReader m_reader;
   ZObject3dScanArray m_objArray;
-  ZStackViewParam m_currentViewParam;
+//  ZStackViewParam m_currentViewParam;
+//  QRect m_currentDataRect;
+//  int m_currentZ;
+//  int m_currentZoom;
+
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
+
+  QVector<int> m_rgbTable;
 
   uint64_t m_hitLabel; //Mapped label
   std::set<uint64_t> m_selectedOriginal;
 //  std::set<uint64_t> m_selectedSet; //Mapped label set
   ZFlyEmBodyMerger *m_bodyMerger;
   ZImage *m_paintBuffer;
+
   ZArray *m_labelArray;
+  ZArray *m_mappedLabelArray;
+  QMutex m_updateMutex;
 
   std::set<uint64_t> m_prevSelectedOriginal;
   ZSelector<uint64_t> m_selector; //original labels
 
-  int m_maxWidth;
-  int m_maxHeight;
+//  int m_maxWidth;
+//  int m_maxHeight;
+
+  std::unique_ptr<ZDvidDataSliceHelper> m_helper;
+//  int m_zoom;
 
   bool m_selectionFrozen;
+//  bool m_isFullView;
+
+  mutable QCache<QString, ZArray> m_objCache;
+//  NeuTube::EAxis m_sliceAxis;
 };
 
 template <typename InputIterator>
 void ZDvidLabelSlice::xorSelection(
     const InputIterator &begin, const InputIterator &end,
-    NeuTube::EBodyLabelType labelType)
+    neutube::EBodyLabelType labelType)
 {
   std::set<uint64_t> labelSet;
 
@@ -168,14 +259,14 @@ void ZDvidLabelSlice::xorSelection(
 
   for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
        iter != labelSet.end(); ++iter) {
-    xorSelection(*iter, NeuTube::BODY_LABEL_MAPPED);
+    xorSelection(*iter, neutube::BODY_LABEL_MAPPED);
   }
 }
 
 template <typename InputIterator>
 void ZDvidLabelSlice::addSelection(
     const InputIterator &begin, const InputIterator &end,
-    NeuTube::EBodyLabelType labelType)
+    neutube::EBodyLabelType labelType)
 {
   std::set<uint64_t> labelSet;
 
@@ -185,35 +276,36 @@ void ZDvidLabelSlice::addSelection(
 
   for (std::set<uint64_t>::const_iterator iter  = labelSet.begin();
        iter != labelSet.end(); ++iter) {
-    addSelection(*iter, NeuTube::BODY_LABEL_MAPPED);
+    addSelection(*iter, neutube::BODY_LABEL_MAPPED);
   }
 }
 
 template <typename InputIterator>
 void ZDvidLabelSlice::setSelection(
     const InputIterator &begin, const InputIterator &end,
-    NeuTube::EBodyLabelType labelType)
+    neutube::EBodyLabelType labelType)
 {
   clearSelection();
   addSelection(begin, end, labelType);
+  paintBuffer();
 }
 
 template <typename InputIterator>
 void ZDvidLabelSlice::xorSelectionGroup(
     const InputIterator &begin, const InputIterator &end,
-    NeuTube::EBodyLabelType labelType)
+    neutube::EBodyLabelType labelType)
 {
   std::set<uint64_t> labelSet; //original label set
 
   switch (labelType) {
-  case NeuTube::BODY_LABEL_MAPPED:
+  case neutube::BODY_LABEL_MAPPED:
     for (InputIterator iter = begin; iter != end; ++iter) {
 //      uint64_t label = getMappedLabel(*iter, labelType);
       std::set<uint64_t> sourceLabel = getOriginalLabelSet(*iter);
       labelSet.insert(sourceLabel.begin(), sourceLabel.end());
     }
     break;
-  case NeuTube::BODY_LABEL_ORIGINAL:
+  case neutube::BODY_LABEL_ORIGINAL:
     for (InputIterator iter = begin; iter != end; ++iter) {
       uint64_t label = *iter;
       labelSet.insert(label);

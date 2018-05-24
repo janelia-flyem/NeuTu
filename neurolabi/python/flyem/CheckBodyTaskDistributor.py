@@ -99,4 +99,4 @@ if __name__ == '__main__':
     distr.setBodyList([1, 2]);
     distr.setBodyDir('.');
     distr.setCommandPath(home + '/Users/zhaot/Work/neutube/neurolabi/cpp/CheckBody_Qt5_Debug/checkbody');
-    print distr.getFullCommand(0);
+    print(distr.getFullCommand(0));

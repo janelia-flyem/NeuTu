@@ -9,6 +9,11 @@ namespace Ui {
 class ZDvidDialog;
 }
 
+class StringListDialog;
+class ZDvidAdvancedDialog;
+class QLabel;
+class QLineEdit;
+
 class ZDvidDialog : public QDialog
 {
   Q_OBJECT
@@ -23,15 +28,41 @@ public:
   QString getAddress() const;
   QString getUuid() const;
 
-  const ZDvidTarget& getDvidTarget();
+  ZDvidTarget& getDvidTarget();
+  const ZDvidTarget& getDvidTarget(const std::string &name) const;
+
+  void addDvidTarget(ZDvidTarget &target);
+
+  bool hasNameConflict(const std::string &name) const;
+  void saveCurrentTarget(bool cloning);
 
 public slots:
   void setServer(int index);
+  void saveCurrentTarget();
+  void saveCurrentTargetAs();
+  void deleteCurrentTarget();
+  void editRoiList();
+  void updateWidgetForDefaultSetting();
+  void setAdvanced();
+
+private:
+  bool usingDefaultSetting() const;
+  void resetAdvancedDlg(const ZDvidTarget &dvidTarget);
+  std::string getBodyLabelName() const;
+  std::string getGrayscaleName() const;
+  std::string getTileName() const;
+  std::string getSegmentationName() const;
+  std::string getSynapseName() const;
+  std::string getRoiName() const;
+
 
 private:
   Ui::ZDvidDialog *ui;
-  std::vector<ZDvidTarget> m_dvidRepo;
+  QList<ZDvidTarget> m_dvidRepo;
   std::string m_customString;
+  StringListDialog *m_roiDlg;
+  ZDvidAdvancedDialog *m_advancedDlg;
+  ZDvidTarget m_emptyTarget;
   const static char *m_dvidRepoKey;
 };
 

@@ -3,6 +3,8 @@
 
 #include <QList>
 #include <QString>
+#include <QMutex>
+
 #include <vector>
 #include "tz_utilities.h"
 #include "tz_cdefs.h"
@@ -22,6 +24,9 @@ class ZObject3dScan;
 class ZStackViewParam;
 class ZDvidSparsevolSlice;
 class ZDvidLabelSlice;
+class ZDvidGraySlice;
+class ZArbSliceViewParam;
+class ZDvidTileEnsemble;
 
 /*!
  * \brief The basic class of manage roles to a stack object
@@ -66,11 +71,15 @@ public:
 
   virtual ZStack* toStack() const { return NULL; }
   virtual int getLabel() const { return 0; }
+  virtual void setLabel(int /*label*/) {}
   virtual QString getTypeName() const { return "Unknown"; }
   virtual ZSwcTree* getSwcDecoration() const { return NULL; }
   virtual Z3DGraph get3DGraph() const { return Z3DGraph(); }
 
   virtual ZJsonObject toJsonObject() const;
+  virtual ZJsonObject toSeedJson() const;
+
+  virtual ZIntCuboid getBoundBox() const;
 
   inline ZStackObject* getData() const {
     return m_data;
@@ -89,18 +98,37 @@ public:
     return m_data->getRole().getRole();
   }
 
-  virtual void updateData(const ZStackViewParam &/*param*/) const {}
+  void enableUpdate(bool on) { m_enableUpdate = on; }
+
+  virtual bool updateData(const ZStackViewParam &/*param*/) const {
+    return true;
+  }
 
 protected:
   ZStackObject *m_data; //not owned by the player
+  bool m_enableUpdate;
   //TRole m_role;
 };
 
 /********************************************************/
-class ZDocPlayerList : public QList<ZDocPlayer*>, ZUncopyable
+class ZDocPlayerList : public ZUncopyable
 {
 public:
   virtual ~ZDocPlayerList();
+
+  inline QList<ZDocPlayer*>& getPlayerList() {
+    return m_playerList;
+  }
+
+  inline const QList<ZDocPlayer*>& getPlayerList() const {
+    return m_playerList;
+  }
+
+  void add(ZDocPlayer *data);
+
+  int size() const {
+    return m_playerList.size();
+  }
 
   /*!
    * \brief Remove players containing certain data
@@ -113,6 +141,7 @@ public:
   ZStackObjectRole::TRole removePlayer(ZStackObject *data);
 
   QList<ZDocPlayer*> takePlayer(ZStackObject *data);
+
 
   /*!
    * \brief Remove players with certain roles.
@@ -138,7 +167,49 @@ public:
    */
   bool hasPlayer(ZStackObjectRole::TRole role) const;
 
+  /*!
+   * \brief Check if the player list contains certain data pointer
+   *
+   * \param data A pointer to check. It can be a pointer that has already been
+   *        freed.
+   * \return true iff the list contains \a data
+   */
+  bool contains(const ZStackObject *data);
+  bool containsUnsync(const ZStackObject *data);
+
+  void clear();
+  void clearUnsync();
+
   void print() const;
+
+  void moveTo(ZDocPlayerList &playerList);
+
+  QMutex* getMutex() const {
+    return &m_mutex;
+  }
+
+public:
+  void addUnsync(ZDocPlayer *data);
+  ZStackObjectRole::TRole removePlayerUnsync(ZStackObject *data);
+
+  QList<ZDocPlayer*> takePlayerUnsync(ZStackObject *data);
+
+
+  ZStackObjectRole::TRole removePlayerUnsync(ZStackObjectRole::TRole role);
+
+  ZStackObjectRole::TRole removeAllUnsync();
+
+  QList<ZDocPlayer*> getPlayerListUnsync(ZStackObjectRole::TRole role);
+
+  QList<const ZDocPlayer*> getPlayerListUnsync(ZStackObjectRole::TRole role) const;
+
+  bool hasPlayerUnsync(ZStackObjectRole::TRole role) const;
+
+  void printUnsync() const;
+
+private:
+  QList<ZDocPlayer*> m_playerList;
+  mutable QMutex m_mutex;
 };
 
 /***************************************************/
@@ -151,8 +222,10 @@ public:
   void labelStack(ZStack*stack) const;
   ZStack* toStack() const;
   int getLabel() const;
+  void setLabel(int label);
   QString getTypeName() const;
   ZJsonObject toJsonObject() const;
+  ZJsonObject toSeedJson() const;
 
   ZSwcTree* getSwcDecoration() const;
   Z3DGraph get3DGraph() const;
@@ -179,13 +252,16 @@ public:
         const int *offset, int xIntv, int yIntv, int zIntv) const;
 
   int getLabel() const;
+  void setLabel(int label);
   ZSwcTree* getSwcDecoration() const;
   Z3DGraph get3DGraph() const;
   ZJsonObject toJsonObject() const;
   QString getTypeName() const { return "Object3d"; }
 
   const ZObject3d *getCompleteData() const;
+  ZObject3d *getCompleteData();
 
+  ZJsonObject toSeedJson() const;
 };
 
 /***************************************************/
@@ -206,7 +282,7 @@ public:
 //        const std::vector<Stack*> &stackArray,
 //        const int *offset, int xIntv, int yIntv, int zIntv) const;
 
-//  int getLabel() const;
+  int getLabel() const;
 //  ZSwcTree* getSwcDecoration() const;
 //  Z3DGraph get3DGraph() const;
 //  ZJsonObject toJsonObject() const;
@@ -253,6 +329,18 @@ public:
 };
 
 /**************************************************/
+class ZDvidGraySlicePlayer : public ZDocPlayer
+{
+public:
+  ZDvidGraySlicePlayer(ZStackObject* data = NULL);
+
+public:
+  QString getTypeName() const { return "DvidGraySlice"; }
+  bool updateData(const ZStackViewParam &viewParam) const;
+  ZDvidGraySlice *getCompleteData() const;
+};
+
+/**************************************************/
 class ZDvidLabelSlicePlayer : public ZDocPlayer
 {
 public:
@@ -260,8 +348,20 @@ public:
 
 public:
   QString getTypeName() const { return "DvidLabelSlice"; }
-  void updateData(const ZStackViewParam &viewParam) const;
+  bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidLabelSlice *getCompleteData() const;
+};
+
+/**************************************************/
+class ZDvidTileEnsemblePlayer : public ZDocPlayer
+{
+public:
+  ZDvidTileEnsemblePlayer(ZStackObject* data = NULL);
+
+public:
+  QString getTypeName() const { return "DvidTileEnsemble"; }
+  bool updateData(const ZStackViewParam &viewParam) const;
+  ZDvidTileEnsemble *getCompleteData() const;
 };
 
 /**************************************************/
@@ -272,7 +372,7 @@ public:
 
 public:
   QString getTypeName() const { return "DvidSparsevolSlice"; }
-  void updateData(const ZStackViewParam &viewParam) const;
+  bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidSparsevolSlice *getCompleteData() const;
 };
 

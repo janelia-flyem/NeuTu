@@ -25,7 +25,7 @@ class ZFlyEmNeuron
 {
 public:
   ZFlyEmNeuron();
-  ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body);
+  ZFlyEmNeuron(uint64_t id, ZSwcTree *model, ZObject3dScan *body);
   ~ZFlyEmNeuron();
 
   ZFlyEmNeuron(const ZFlyEmNeuron &neuron);
@@ -57,7 +57,7 @@ public:
    */
   ZJsonObject makeJsonObject(const std::string &bundleDir) const;
 
-  inline void setId(int id) {
+  inline void setId(uint64_t id) {
     m_id = id;
   }
 
@@ -89,9 +89,9 @@ public:
 
   void setId(const std::string &str);
 
-  inline int getId() const { return m_id; }
-  inline int getSourceId() const { return m_sourceId; }
-  inline void setSourceId(int id) { m_sourceId = id; }
+  inline uint64_t getId() const { return m_id; }
+  inline uint64_t getSourceId() const { return m_sourceId; }
+  inline void setSourceId(uint64_t id) { m_sourceId = id; }
 
   void setPath(const ZDvidTarget &target);
 
@@ -169,9 +169,9 @@ public:
 
 #ifdef _QT_GUI_USED_
   std::vector<ZPunctum*> getSynapse() const;
-  std::vector<ZPunctum*> getSynapse(int buddyBodyId) const;
+  std::vector<ZPunctum*> getSynapse(uint64_t buddyBodyId) const;
 #endif
-  inline void setSynapseAnnotation(FlyEm::ZSynapseAnnotationArray *annotation) {
+  inline void setSynapseAnnotation(flyem::ZSynapseAnnotationArray *annotation) {
     m_synapseAnnotation = annotation;
   }
 
@@ -265,8 +265,8 @@ private:
   std::string getAbsolutePath(const ZString &path, const std::string &source);
 
 private:
-  int m_sourceId;
-  int m_id;
+  uint64_t m_sourceId;
+  uint64_t m_id;
   std::string m_name;
   std::string m_type;
   std::string m_modelPath;
@@ -288,7 +288,7 @@ private:
   mutable ZSwcTree *m_buddyModel;
   mutable ZObject3dScan *m_body;
   mutable std::vector<const ZFlyEmNeuron*> m_matched;
-  const FlyEm::ZSynapseAnnotationArray *m_synapseAnnotation;
+  const flyem::ZSynapseAnnotationArray *m_synapseAnnotation;
   mutable size_t m_bodyVolume;
 
   static const char *m_idKey;

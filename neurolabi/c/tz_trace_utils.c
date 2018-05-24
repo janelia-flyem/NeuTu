@@ -164,9 +164,14 @@ int Trace_Workspace_Mask_Value(const Trace_Workspace *tw,
   int hit_label = 0;
 
   if (tw->trace_mask != NULL) {
-    if (pos[0] >= 0) {
-      hit_label = Get_Stack_Pixel(tw->trace_mask, iround(pos[0]),
-				  iround(pos[1]), iround(pos[2]), 0);
+    int x = iround(pos[0]);
+    int y = iround(pos[1]);
+    int z = iround(pos[2]);
+
+    if (x >= 0 && x < tw->trace_mask->width &&
+        y >= 0 && y < tw->trace_mask->height &&
+        z >= 0 && z < tw->trace_mask->width) {
+      hit_label = Get_Stack_Pixel(tw->trace_mask, x, y, z, 0);
     }
   }
 
@@ -183,7 +188,7 @@ int Trace_Workspace_Mask_Value_Z(const Trace_Workspace *tw,
 BOOL Trace_Workspace_Point_In_Bound(const Trace_Workspace *tw, 
 				    const double pos[3])
 {
-  if (pos[0] >= 0) {
+  if (pos[0] >= 0 && pos[1] >= 0 && pos[2] >= 0) {
     int i;
     for (i = 0; i < 3; i++) {
       if (tw->trace_range[i] >= 0.0) {

@@ -1,19 +1,24 @@
 #ifndef ZDVIDTILE_H
 #define ZDVIDTILE_H
 
-#include "zimage.h"
+#include <QMutex>
+#include <QMutexLocker>
+#include <QPixmap>
+
 #include "zstackobject.h"
 #include "dvid/zdvidresolution.h"
 #include "zdvidtarget.h"
 //#include "zintpoint.h"
 #include "dvid/zdvidtileinfo.h"
 #include "zpixmap.h"
+#include "zjsonobject.h"
 
 class ZPainter;
 class ZStack;
-class ZStackView;
+//class ZStackView;
 class ZRect2d;
 class ZIntPoint;
+class ZImage;
 
 class ZDvidTile : public ZStackObject
 {
@@ -21,8 +26,13 @@ public:
   ZDvidTile();
   ~ZDvidTile();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_TILE;
+  }
+
 public:
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               neutube::EAxis sliceAxis) const;
   void clear();
 
   void update(int z);
@@ -31,8 +41,8 @@ public:
   void setTileIndex(int ix, int iy);
   void setResolutionLevel(int level);
 
-  void loadDvidSlice(const QByteArray &buffer, int z);
-  void loadDvidSlice(const uchar *buf, int length, int z);
+  void loadDvidSlice(const QByteArray &buffer, int z, bool highConstrast);
+  void loadDvidSlice(const uchar *buf, int length, int z, bool highContrast);
 
 //  void setTileOffset(int x, int y, int z);
 
@@ -40,7 +50,9 @@ public:
 
   void printInfo() const;
 
-  void setDvidTarget(const ZDvidTarget &target);
+  void setDvidTarget(const ZDvidTarget &target,
+                     const ZDvidTileInfo &tileInfo);
+  void setTileInfo(const ZDvidTileInfo &tileInfo);
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -58,16 +70,16 @@ public:
   int getWidth() const;
   int getHeight() const;
 
-  void attachView(ZStackView *view);
+//  void attachView(ZStackView *view);
 
   ZRect2d getBoundBox() const;
-  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
+//  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
 //  void setImageData(const uint8_t *data, int width, int height);
 
-  void enhanceContrast(bool high);
+  void enhanceContrast(bool high, bool updatingPixmap);
+  void setContrastProtocal(const ZJsonObject &obj);
 
-private:
   void updatePixmap();
 
 private:
@@ -80,8 +92,11 @@ private:
   ZDvidResolution m_res;
   ZDvidTileInfo m_tilingInfo;
   ZDvidTarget m_dvidTarget;
+  ZJsonObject m_contrastProtocal;
 
-  ZStackView *m_view;
+  QMutex m_pixmapMutex;
+
+//  ZStackView *m_view;
 };
 
 #endif // ZDVIDTILE_H

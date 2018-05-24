@@ -14,19 +14,21 @@
 
 #include "tz_swc_tree.h"
 #include "zstackobject.h"
-#include "zpoint.h"
+//#include "zpoint.h"
 #include "zswcpath.h"
 #include "zcuboid.h"
 #include "zuncopyable.h"
 #include "zswctreenodeselector.h"
 
-
+class ZStack;
 class ZSwcForest;
 class ZSwcBranch;
 class ZSwcTrunkAnalyzer;
 class QPointF;
 class ZClosedCurve;
 class ZRect2d;
+class ZJsonObject;
+class ZPoint;
 
 //! SWC tree class
 /*!
@@ -73,7 +75,7 @@ public:
 
   //Structral mode
   enum EStructrualMode {
-    STRUCT_CLOSED_CURVE, STRUCT_NORMAL
+    STRUCT_CLOSED_CURVE, STRUCT_POINT_CLOUD, STRUCT_NORMAL
   };
 
   enum EOperation {
@@ -84,11 +86,13 @@ public:
     OPERATION_MOVE_NODE_UP, OPERATION_MOVE_NODE_UP_FAST,
     OPERATION_MOVE_NODE_DOWN, OPERATION_MOVE_NODE_DOWN_FAST,
     OPERATION_ADD_NODE,
-    OPERATION_INCREASE_NODE_SIZE, OPERATION_DECREASE_NODE_SIZE,
+    OPERATION_INCREASE_NODE_SIZE, OPERATION_INCREASE_NODE_SIZE_FAST,
+    OPERATION_DECREASE_NODE_SIZE, OPERATION_DECREASE_NODE_SIZE_FAST,
     OPERATION_CONNECT_NODE, OPERATION_CONNECT_NODE_SMART,
     OPERATION_BREAK_NODE, OPERATION_CONNECT_ISOLATE,
     OPERATION_ZOOM_TO_SELECTED_NODE, OPERATION_INSERT_NODE, OPERATION_MOVE_NODE,
     OPERATION_RESET_BRANCH_POINT, OPERATION_CHANGE_NODE_FACUS,
+    OPERATION_SET_AS_ROOT,
     OPERATION_EXTEND_NODE, OPERATION_SELECT, OPERATION_SELECT_CONNECTION,
     OPERATION_SELECT_FLOOD
   };
@@ -123,6 +127,10 @@ public:
    */
   ~ZSwcTree();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_SWC;
+  }
+
   virtual const std::string& className() const;
 
   friend void swap(ZSwcTree& first, ZSwcTree& second);
@@ -139,7 +147,10 @@ public:
    * \a tree will be owned by the object.
    *
    * \param tree The data.
-   * \param option Optioni of handling existing data.
+   * \param option Option of handling existing data:
+   *    CLEAN_ALL (default): Clean all old data.
+   *    FREE_WRAPPER: Free the old wrapper only.
+   *    LEAVE_ONLY: Don't do anything.
    */
   void setData(Swc_Tree *tree, ESetDataOption option = CLEAN_ALL);
 
@@ -186,7 +197,7 @@ public:
   /*!
    * \brief Test if a tree has any regular node.
    */
-  bool hasRegularNode();
+  bool hasRegularNode() const;
 
   /*!
    * \brief Test if a tree is valid.
@@ -202,8 +213,12 @@ public:
    */
   bool isForest() const;
 
+//  void setLabel(uint64_t label);
+//  uint64_t getLabel() const;
+
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       neutube::EAxis axis) const;
 
 //  bool hasVisualEffect(TVisualEffect ve) const;
 //  void addVisualEffect(TVisualEffect ve);
@@ -217,6 +232,8 @@ public:
   bool load(const char *filePath);
   void save(const std::string &filePath);
   void load(const std::string &filePath);
+
+//  void save(const std::string &filePath, const ZJsonObject &info);
 
   /*!
    * \brief Load swc from buffer
@@ -256,9 +273,10 @@ public:
   void deprecateDependent(EComponent component);
   void deprecate(EComponent component);
 
-  inline void setComment(const std::string &comment) {
-    m_comment = comment;
+  inline void addComment(const std::string &comment) {
+    m_comment.push_back(comment);
   }
+  void clearComment();
 
 public:
   int size();
@@ -339,7 +357,7 @@ public:
 
     if (m_tree->begin != NULL) {
       m_tree->iterator = m_tree->begin->next;
-      m_tree->begin->tree_state = m_tree->tree_state;
+//      m_tree->begin->tree_state = m_tree->tree_state;
     }
 
     return m_tree->begin;
@@ -363,15 +381,18 @@ public:
    *        (\a corner[0], \a corner[1], corner[2]) and the last corner is
    *        (\a corner[3], \a corner[4], corner[5]).
    */
-  void boundBox(double *corner) const;
+  void getBoundBox(double *corner) const;
+
 
   /*!
    * \brief Get bound box of the tree
    *
    * \return The bound box.
    */
-   const ZCuboid& getBoundBox() const;
-   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
+   ZCuboid getBoundBox() const;
+//   using ZStackObject::getBoundBox; // warning: 'ZSwcTree::getBoundBox' hides overloaded virtual function [-Woverloaded-virtual]
+
+   void boundBox(ZIntCuboid *box) const;
 
   static ZSwcTree* CreateCuboidSwc(const ZCuboid &box, double radius = 1.0);
   ZSwcTree* createBoundBoxSwc(double margin = 0.0);
@@ -391,7 +412,7 @@ public:
    * \return  Returns the closest node to (\a x, \a y) if there is hit.
    *          If there is no hit, it returns NULL.
    */
-  Swc_Tree_Node* hitTest(double x, double y);
+  Swc_Tree_Node* hitTest(double x, double y, neutube::EAxis axis);
 
   /*!
    * \brief Hit a node within an expanded region
@@ -406,7 +427,7 @@ public:
   /*!
    * \brief ZStackObject hit function implementation
    */
-  bool hit(double x, double y);
+  bool hit(double x, double y, neutube::EAxis axis);
   bool hit(double x, double y, double z);
 
   /*!
@@ -420,6 +441,8 @@ public:
   void deselectNode(Swc_Tree_Node *tn);
   void selectAllNode();
   void deselectAllNode();
+
+  void inverseSelection();
 
   void recordSelection();
   void processSelection();
@@ -443,6 +466,7 @@ public:
   void selectUpstreamNode();
   void selectDownstreamNode();
   void selectBranchNode();
+  void selectSmallSubtree(double maxLength);
 
   const std::set<Swc_Tree_Node*>& getSelectedNode() const;
   bool hasSelectedNode() const;
@@ -529,13 +553,16 @@ public:
 
   ZSwcBranch *extractBranch(int beginId, int endId);
   ZSwcBranch *extractBranch(Swc_Tree_Node *tn1, Swc_Tree_Node *tn2);
-  ZSwcBranch *extractBranch(int setLabel);
+  ZSwcBranch *extractBranch(int label);
   ZSwcBranch *extractLongestBranch();
   ZSwcBranch *extractFurthestBranch();
 
   ZSwcPath getLongestPath();
+  double getLongestPathLength();
 
   std::vector<Swc_Tree_Node*> extractLeaf(Swc_Tree_Node *start);
+
+  std::vector<Swc_Tree_Node*> getNodeOnPlane(int z);
 
   Swc_Tree_Node* queryNode(int id,
                            int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST);
@@ -546,10 +573,18 @@ public:
   std::vector<double> computeAllContinuationAngle(bool rotating = false);
   std::vector<double> computeAllBranchingAngle();
 
+  /*!
+   * \brief Computer all terminal directions
+   * \return An array of terminal direction information. Each entry is an array
+   * with the following elements:
+   * (x, y, z, vx, vy, vz,
+   */
+  std::vector<std::vector<double> >computeAllTerminalDirection();
+
   void merge(Swc_Tree *tree, bool freeInput = false);
   void merge(ZSwcTree *tree, bool freeInput = false);
 
-  void setLabel(int v) const;
+  void setNodeLabel(int v) const;
   void setType(int type);
 
   void translate(const ZPoint& offset);
@@ -582,6 +617,8 @@ public:
   //void labelTrunk(int flag, int setLabel, Swc_Tree_Node *start);
   void labelTrunkLevel(ZSwcTrunkAnalyzer *trunkAnalyzer);
 
+  Swc_Tree_Node* getThickestNode() const;
+
   /*!
    * \brief Mark soma nodes
    *
@@ -596,7 +633,7 @@ public:
   int regularDepth();
 
   ZSwcPath mainTrunk(ZSwcTrunkAnalyzer *trunkAnalyzer);
-  ZSwcPath subTrunk(Swc_Tree_Node *start, int setLabel);
+  ZSwcPath subTrunk(Swc_Tree_Node *start, int setNodeLabel);
   ZSwcPath subTrunk(Swc_Tree_Node *start,
                     const std::set<Swc_Tree_Node*> &blocker,
                     ZSwcTrunkAnalyzer *trunkAnalyzer);
@@ -645,7 +682,16 @@ public:
   const std::vector<Swc_Tree_Node*>& getSwcTreeNodeArray(
       EIteratorOption iteratorOption = DEPTH_FIRST_ITERATOR) const;
 
-  void labelStack(Stack *stack);
+  void labelStack(Stack *stack) const;
+
+  void labelStack(ZStack* stack,int v) const;
+  void labelStack(ZStack *stack) const;
+  void labelStackByType(ZStack *stack) const;
+
+  /*!
+   * \brief Convert typed nodes (type>0) in a swc object into a stack.
+   */
+  ZStack* toTypeStack() const;
 
   /*!
    * \brief Get the length of the longest segment
@@ -672,7 +718,7 @@ public:
   void initHostState();
 
   //void setHostState(Swc_Tree_Node *tn, ENodeState state) const;
-  void setHostState(Swc_Tree_Node *tn) const;
+//  void setHostState(Swc_Tree_Node *tn) const;
 
   inline EStructrualMode getStructrualMode() const {
     return m_smode;
@@ -681,7 +727,7 @@ public:
 
   ZClosedCurve toClosedCurve() const;
 
-  void updateHostState();
+//  void updateHostState();
 
   //Iterator classes
   class ExtIterator {
@@ -689,8 +735,24 @@ public:
     ExtIterator(const ZSwcTree *tree);
     virtual ~ExtIterator();
 
+    /*!
+     * \brief Restart the iterator.
+     */
+    virtual void restart() = 0;
+
+    /*!
+     * \brief Restart the iterator and get the first node
+     */
     virtual Swc_Tree_Node *begin() = 0;
+
     virtual bool hasNext() const = 0;
+
+    /*!
+     * \brief Get the next node.
+     *
+     * Note that the it returns the first node if the iterator is just started.
+     * It returns NULL when it reaches the end.
+     */
     virtual Swc_Tree_Node *next() = 0;
 
     void excludeVirtual(bool on) {
@@ -709,6 +771,7 @@ public:
   class RegularRootIterator : public ExtIterator {
   public:
     RegularRootIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node *next();
@@ -717,6 +780,7 @@ public:
   class DepthFirstIterator : public ExtIterator {
   public:
     DepthFirstIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -725,6 +789,7 @@ public:
   class LeafIterator : public ExtIterator {
   public:
     LeafIterator(const ZSwcTree *tree);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -736,6 +801,19 @@ public:
   class TerminalIterator : public ExtIterator {
   public:
     TerminalIterator(const ZSwcTree *tree);
+    void restart();
+    Swc_Tree_Node *begin();
+    bool hasNext() const;
+    Swc_Tree_Node* next();
+  private:
+    std::vector<Swc_Tree_Node*> m_nodeArray;
+    size_t m_currentIndex;
+  };
+
+  class DownstreamIterator : public ExtIterator {
+  public:
+    DownstreamIterator(Swc_Tree_Node *tn);
+    void restart();
     Swc_Tree_Node *begin();
     bool hasNext() const;
     Swc_Tree_Node* next();
@@ -757,22 +835,43 @@ public: //static functions
                                          double branchAngleMu,
                                          double branchAngleSigma);
 
-  static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
+//  static bool getHostState(const Swc_Tree_Node *tn, ENodeState state);
 
   static ETarget GetDefaultTarget();
 
 
 private:
+  void init();
+#if defined(_QT_GUI_USED_)
+  void displaySkeleton(
+      ZPainter &painter, QPen &pen, double dataFocus, int slice, bool isProj) const;
+  void displayNode(ZPainter &painter, double dataFocus, int slice, bool isProj,
+      ZStackObject::EDisplayStyle style, neutube::EAxis axis) const;
+  void displaySelectedNode(ZPainter &painter, int slice, neutube::EAxis axis)
+  const;
+#endif
   static void computeLineSegment(const Swc_Tree_Node *lowerTn,
                                  const Swc_Tree_Node *upperTn,
                                  QPointF &lineStart, QPointF &lineEnd,
-                                 bool &visible, int dataFocus);
+                                 bool &visible, int dataFocus, bool isProj);
   std::pair<const Swc_Tree_Node *, const Swc_Tree_Node *>
   extractCurveTerminal() const;
   int getTreeState() const;
 
+  void writeSwc(FILE *fp);
+
+  static std::string GetCommentHeader();
+  void linkHost(Swc_Tree_Node *tn);
+  void unlinkHost(Swc_Tree_Node *tn);
+  void unlinkRootHost();
+
+#ifdef _QT_GUI_USED_
+  const QColor& getNodeColor(const Swc_Tree_Node *tn, bool isFocused) const;
+#endif
+
 private:
   Swc_Tree *m_tree;
+  uint64_t m_label;
   EStructrualMode m_smode;
 //  TVisualEffect m_visualEffect;
 
@@ -796,7 +895,7 @@ private:
   static const int m_nodeStateCosmetic;
 
   Swc_Tree_Node *m_hitSwcNode;
-  std::string m_comment;
+  std::vector<std::string> m_comment;
 
 #ifdef _QT_GUI_USED_
   QColor m_rootColor;

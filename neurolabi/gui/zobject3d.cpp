@@ -1,6 +1,6 @@
 #include "zobject3d.h"
 #if _QT_GUI_USED_
-#include <QtGui>
+
 #endif
 
 #include <string.h>
@@ -16,11 +16,13 @@
 #include "zstack.hxx"
 #include "zpainter.h"
 #include "zcuboid.h"
+#include "zintcuboid.h"
+#include "zpoint.h"
+#include "zintpoint.h"
 
 using namespace std;
 
-ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1),
-  m_hitVoxelIndex(-1)
+ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_hitVoxelIndex(-1)
 {
   if (obj != NULL) {
     m_voxelArray.resize(obj->size * 3);
@@ -30,11 +32,11 @@ ZObject3d::ZObject3d(Object_3d *obj) : m_conn(0), m_label(-1),
   }
 
   setTarget(TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_OBJ3D;
+  m_type = GetType();
 }
 
 ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
-                     int dx, int dy, int dz) : m_conn(0), m_label(-1),
+                     int dx, int dy, int dz) : m_conn(0),
   m_hitVoxelIndex(-1)
 {
   setSize(indexArray.size());
@@ -46,7 +48,7 @@ ZObject3d::ZObject3d(const vector<size_t> &indexArray, int width, int height,
   }
 
   setTarget(TARGET_OBJECT_CANVAS);
-  m_type = ZStackObject::TYPE_OBJ3D;
+  m_type = GetType();
 }
 
 ZObject3d::~ZObject3d()
@@ -90,6 +92,13 @@ void ZObject3d::append(const ZObject3d &obj, size_t srcOffset)
   m_voxelArray.insert(m_voxelArray.end(),
                       obj.m_voxelArray.begin() + srcOffset * 3,
                       obj.m_voxelArray.end());
+}
+
+void ZObject3d::append(const ZObject3d *obj, size_t srcOffset)
+{
+  if (obj != NULL) {
+    append(*obj, srcOffset);
+  }
 }
 
 void ZObject3d::appendBackward(const ZObject3d &obj, size_t srcOffset)
@@ -158,9 +167,15 @@ bool ZObject3d::load(const char *filePath)
   return false;
 }
 
-void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) const
+void ZObject3d::display(
+    ZPainter &painter, int slice, EDisplayStyle option,
+    neutube::EAxis sliceAxis) const
 {  
   UNUSED_PARAMETER(option);
+
+  if (sliceAxis == neutube::A_AXIS) {
+    return;
+  }
 
   if (slice < 0 && !isProjectionVisible()) {
     return;
@@ -176,17 +191,42 @@ void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
   Object_3d *obj= c_obj();
   std::vector<QPoint> pointArray;
 
-  if (slice < 0) {
-    for (size_t i = 0; i < obj->size; i++) {
-      pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
-    }
-  } else {
-    for (size_t i = 0; i < obj->size; i++) {
-      if (obj->voxels[i][2] == z) {
+  switch (sliceAxis) {
+  case neutube::Z_AXIS:
+    if (slice < 0) {
+      for (size_t i = 0; i < obj->size; i++) {
         pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
       }
+    } else {
+      for (size_t i = 0; i < obj->size; i++) {
+        if (obj->voxels[i][2] == z) {
+          pointArray.push_back(QPoint(obj->voxels[i][0], obj->voxels[i][1]));
+        }
+      }
     }
+    break;
+  case neutube::X_AXIS:
+  case neutube::Y_AXIS:
+    if (slice < 0) {
+      for (size_t i = 0; i < obj->size; i++) {
+        ZIntPoint pt(obj->voxels[i][0], obj->voxels[i][1], obj->voxels[i][2]);
+        pt.shiftSliceAxis(sliceAxis);
+        pointArray.push_back(QPoint(pt.getX(), pt.getY()));
+      }
+    } else {
+      for (size_t i = 0; i < obj->size; i++) {
+        ZIntPoint pt(obj->voxels[i][0], obj->voxels[i][1], obj->voxels[i][2]);
+        pt.shiftSliceAxis(sliceAxis);
+        if (pt.getZ() == z) {
+          pointArray.push_back(QPoint(pt.getX(), pt.getY()));
+        }
+      }
+    }
+    break;
+  case neutube::A_AXIS:
+    break;
   }
+
   painter.drawPoints(&(pointArray[0]), pointArray.size());
 
   if (isSelected()) {
@@ -220,7 +260,7 @@ void ZObject3d::display(ZPainter &painter, int slice, EDisplayStyle option) cons
 
 void ZObject3d::labelStack(Stack *stack) const
 {
-  labelStack(stack, m_label);
+  labelStack(stack, getLabel());
 }
 
 void ZObject3d::labelStack(Stack *stack, int label) const
@@ -254,12 +294,17 @@ void ZObject3d::labelStack(Stack *stack, int label) const
 
 void ZObject3d::labelStack(ZStack *stack, int label) const
 {
-  labelStack(stack->c_stack(), label, stack->getOffset().getX(),
-             stack->getOffset().getY(), stack->getOffset().getZ());
+  ZIntPoint offset = -stack->getOffset();
+  offset *= stack->getDsIntv() + 1;
+  labelStack(stack->c_stack(), label,
+             offset.getX(), offset.getY(), offset.getZ(),
+             stack->getDsIntv().getX(), stack->getDsIntv().getY(),
+             stack->getDsIntv().getZ());
 }
+
 void ZObject3d::labelStack(ZStack *stack) const
 {
-  labelStack(stack, m_label);
+  labelStack(stack, getLabel());
 }
 
 void ZObject3d::labelStack(Stack *stack, int label, int dx, int dy, int dz) const
@@ -596,7 +641,7 @@ ZStack* ZObject3d::toLabelStack() const
   Stack *stack = C_Stack::make(GREY, width, height, depth);
   C_Stack::setZero(stack);
 
-  int label = m_label;
+  int label = getLabel();
   CLIP_VALUE(label, 0, 255);
   for (size_t i = 0; i < obj->size; ++i) {
     int x = obj->voxels[i][0] - corners[0];
@@ -839,10 +884,24 @@ void ZObject3d::upSample(int xIntv, int yIntv, int zIntv)
   }
 }
 
+void ZObject3d::downsample(int xIntv, int yIntv, int zIntv)
+{
+  int rx = xIntv + 1;
+  int ry = yIntv + 1;
+  int rz = zIntv + 1;
+
+  for (size_t i = 0; i < m_voxelArray.size(); i += 3) {
+    m_voxelArray[i] /= rx;
+    m_voxelArray[i + 1] /= ry;
+    m_voxelArray[i + 2] /= rz;
+  }
+}
+
+
 ZJsonObject ZObject3d::toJsonObject() const
 {
   ZJsonObject jsonObj;
-  jsonObj.setEntry("label", m_label);
+  jsonObj.setEntry("label", getLabel());
   ZJsonArray jsonArray;
   for (size_t i = 0; i < m_voxelArray.size(); ++i) {
     jsonArray.append(m_voxelArray[i]);
@@ -925,7 +984,7 @@ ZIntPoint ZObject3d::getHitVoxel() const
   return pt;
 }
 
-void ZObject3d::getBoundBox(ZIntCuboid *box) const
+void ZObject3d::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     if (!isEmpty()) {
@@ -939,6 +998,14 @@ void ZObject3d::getBoundBox(ZIntCuboid *box) const
       box->joinZ(getZ(i));
     }
   }
+}
+
+ZIntCuboid ZObject3d::getBoundBox() const
+{
+  ZIntCuboid cuboid;
+  boundBox(&cuboid);
+
+  return cuboid;
 }
 
 ZIntPoint ZObject3d::getCentralVoxel() const

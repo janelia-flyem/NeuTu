@@ -3,6 +3,7 @@
 #include "zmoviescript.h"
 #include "zjsonparser.h"
 #include "zmoviecamera.h"
+#include "zstring.h"
 
 using namespace std;
 
@@ -76,15 +77,25 @@ bool ZMovieScript::loadScript(const std::string &filePath)
     castArray.set(movieObject["cast"], false);
 
     for (size_t i = 0; i < castArray.size(); ++i) {
-      ZJsonObject castObject(castArray.at(i), false);
-      m_cast[ZJsonParser::stringValue(castObject["id"])] =
-          ZJsonParser::stringValue(castObject["source"]);
+      ZJsonObject castObject(castArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
+      ZString sourcePath = ZJsonParser::stringValue(castObject["source"]);
+
+      if (!sourcePath.isAbsolutePath()) {
+        sourcePath =
+            ZString::absolutePath(ZString(filePath).dirPath(), sourcePath);
+      }
+
+      m_cast[ZJsonParser::stringValue(castObject["id"])] = sourcePath;
     }
 
 
     for (size_t i = 0; i < sceneArray.size(); ++i) {
       ZMovieScene scene;
-      scene.loadJsonObject(ZJsonObject(sceneArray.at(i), false));
+      ZJsonObject obj = ZJsonObject(sceneArray.value(i));
+#ifdef _DEBUG_
+      obj.print();
+#endif
+      scene.loadJsonObject(obj);
 #ifdef _DEBUG_
       scene.print();
 #endif

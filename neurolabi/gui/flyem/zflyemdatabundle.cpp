@@ -22,6 +22,7 @@
 #include "zfiletype.h"
 #include "flyem/zflyemneuroninfo.h"
 #include "dvid/zdviddata.h"
+#include "tz_math.h"
 
 using namespace std;
 
@@ -108,14 +109,14 @@ void ZFlyEmDataBundle::deprecateDependent(EComponent comp)
   }
 }
 
-
+#if 1
 bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 {
   ZDvidReader reader;
   reader.open(dvidFilter.getDvidTarget());
-  QString info = reader.readInfo("superpixels");
+//  QString info = reader.readInfo("superpixels");
 
-  qDebug() << info;
+//  qDebug() << info;
 
   const ZDvidTarget &dvidTarget = dvidFilter.getDvidTarget();
 
@@ -124,8 +125,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
         //"http:" + dvidFilter.getDvidAddress() + ":" +
       //ZString::num2str(dvidFilter.getPort()) + ":" + dvidFilter.getUuid();
 
-  ZDvidInfo dvidInfo;
-  dvidInfo.setFromJsonString(info.toStdString());
+  ZDvidInfo dvidInfo = reader.readDataInfo(dvidTarget.getBodyLabelName());
+//  dvidInfo.setFromJsonString(info.toStdString());
   dvidInfo.print();
 
   const ZResolution &voxelResolution = dvidInfo.getVoxelResolution();
@@ -176,6 +177,8 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
       if (bodyId > 0 && !dvidFilter.isExcluded(bodyId)) {
         std::string name;
         std::string type;
+        bool traced = false;
+
         if (annotationSet.count(bodyId) > 0) {
           ZFlyEmBodyAnnotation annotation = fdReader.readBodyAnnotation(bodyId);
           name = annotation.getName();
@@ -185,10 +188,19 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
           } else if (!name.empty()) {
             type = ZFlyEmNeuronInfo::GuessTypeFromName(name);
           }
+
+          if (annotation.getStatus() == "Traced" ||
+              annotation.getStatus() == "Hard to trace") { //temporary hack
+            traced = true;
+          }
         }
 
         bool goodNeuron = true;
         if (dvidFilter.namedBodyOnly() && name.empty()) {
+          goodNeuron = false;
+        }
+
+        if (dvidFilter.tracedOnly() && !traced) {
           goodNeuron = false;
         }
 
@@ -220,6 +232,17 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
           goodNeuron = false;
         }
 
+        bool traced = false;
+
+        if (annotation.getStatus() == "Traced" ||
+            annotation.getStatus() == "Hard to trace") { //temporary hack
+          traced = true;
+        }
+
+        if (dvidFilter.tracedOnly() && !traced) {
+          goodNeuron = false;
+        }
+
         if (goodNeuron) {
           std::string type;
           if (!annotation.getType().empty()) {
@@ -247,6 +270,7 @@ bool ZFlyEmDataBundle::loadDvid(const ZDvidFilter &dvidFilter)
 
   return true;
 }
+#endif
 
 bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 {
@@ -307,7 +331,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     m_neuronArray.resize(neuronJsonArray.size());
     for (size_t i = 0; i < neuronJsonArray.size(); ++i) {
       ZFlyEmNeuron &neuron = m_neuronArray[i];
-      ZJsonObject neuronJson(neuronJsonArray.at(i), false);
+      ZJsonObject neuronJson(neuronJsonArray.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       neuron.loadJsonObject(neuronJson, getSource());
       neuron.setSynapseAnnotation(getSynapseAnnotation());
       neuron.setSynapseScale(m_synapseScale);
@@ -342,7 +366,8 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
     }
     m_source = filePath;
 
-    ZJsonArray array(bundleObject[ZFlyEmDataBundle::m_layerKey], false);
+    ZJsonArray array(bundleObject[ZFlyEmDataBundle::m_layerKey],
+        ZJsonValue::SET_INCREASE_REF_COUNT);
     m_layerRatio = array.toNumberArray();
 
     json_t *boundBoxObj = bundleObject[ZFlyEmDataBundle::m_boundBoxKey];
@@ -356,7 +381,7 @@ bool ZFlyEmDataBundle::loadJsonFile(const std::string &filePath)
 
     json_t *serverObj = bundleObject[ZFlyEmDataBundle::m_serverKey];
     if (serverObj != NULL) {
-      ZJsonObject obj(serverObj, false);
+      ZJsonObject obj(serverObj, ZJsonValue::SET_INCREASE_REF_COUNT);
       ZDvidTarget target;
       target.set(ZJsonParser::stringValue(obj["address"]),
           ZJsonParser::stringValue(obj["uuid"]),
@@ -487,7 +512,7 @@ void ZFlyEmDataBundle::print() const
   //cout << "Config: " << m_configFile << endl;
 }
 
-string ZFlyEmDataBundle::getModelPath(int bodyId) const
+string ZFlyEmDataBundle::getModelPath(uint64_t bodyId) const
 {
   string modelPath;
 
@@ -501,7 +526,7 @@ string ZFlyEmDataBundle::getModelPath(int bodyId) const
   return modelPath;
 }
 
-string ZFlyEmDataBundle::getName(int bodyId) const
+string ZFlyEmDataBundle::getName(uint64_t bodyId) const
 {
   string name;
 
@@ -538,7 +563,7 @@ bool ZFlyEmDataBundle::hasNeuronName(const string &name) const
 
   return false;
 }
-const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId) const
+const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(uint64_t bodyId) const
 {
   for (vector<ZFlyEmNeuron>::const_iterator iter = m_neuronArray.begin();
        iter != m_neuronArray.end(); ++iter) {
@@ -550,7 +575,7 @@ const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId) const
   return NULL;
 }
 
-ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(int bodyId)
+ZFlyEmNeuron* ZFlyEmDataBundle::getNeuron(uint64_t bodyId)
 {
   return const_cast<ZFlyEmNeuron*>(
         static_cast<const ZFlyEmDataBundle&>(*this).getNeuron(bodyId));
@@ -568,7 +593,7 @@ const ZFlyEmNeuron* ZFlyEmDataBundle::getNeuronFromName(const string &name) cons
   return NULL;
 }
 
-ZSwcTree* ZFlyEmDataBundle::getModel(int bodyId) const
+ZSwcTree* ZFlyEmDataBundle::getModel(uint64_t bodyId) const
 {
   const ZFlyEmNeuron *neuron = getNeuron(bodyId);
   if (neuron == NULL) {
@@ -585,7 +610,7 @@ void ZFlyEmDataBundle::importSynpaseAnnotation(const string &filePath)
   updateSynapseAnnotation();
 }
 
-FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
+flyem::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
 {
   if (isDeprecated(SYNAPSE_ANNOTATION)) {
     ZString path = m_synapseAnnotationFile;
@@ -596,7 +621,7 @@ FlyEm::ZSynapseAnnotationArray* ZFlyEmDataBundle::getSynapseAnnotation() const
     }
 
     if (fexist(path.c_str()) || ZString(path).startsWith("http:")) {
-      m_synaseAnnotation = new FlyEm::ZSynapseAnnotationArray;
+      m_synaseAnnotation = new flyem::ZSynapseAnnotationArray;
       m_synaseAnnotation->loadJson(path);
       m_synaseAnnotation->setResolution(m_imageResolution);
       m_synaseAnnotation->setSourceOffset(m_sourceOffset);
@@ -659,57 +684,72 @@ void ZFlyEmDataBundle::updateNeuronConnection()
   }
 }
 
-double ZFlyEmDataBundle::getImageResolution(NeuTube::EAxis axis)
+namespace {
+double ComputeOverallResultion(const double *res)
+{
+  return Cube_Root(res[0] * res[1] * res[2]);
+}
+}
+
+double ZFlyEmDataBundle::getImageResolution(neutube::EAxis axis)
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_imageResolution[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_imageResolution[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_imageResolution[2];
+  case neutube::A_AXIS:
+    return ComputeOverallResultion(m_imageResolution);
   }
 
   return 1.0;
 }
 
-double ZFlyEmDataBundle::getSwcResolution(NeuTube::EAxis axis)
+double ZFlyEmDataBundle::getSwcResolution(neutube::EAxis axis)
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_swcResolution[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_swcResolution[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_swcResolution[2];
+  case neutube::A_AXIS:
+    return ComputeOverallResultion(m_swcResolution);
   }
 
   return 1.0;
 }
 
-int ZFlyEmDataBundle::getSourceDimension(NeuTube::EAxis axis) const
+int ZFlyEmDataBundle::getSourceDimension(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_sourceDimension[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_sourceDimension[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_sourceDimension[2];
+  case neutube::A_AXIS:
+    break;
   }
 
   return 0;
 }
 
-int ZFlyEmDataBundle::getSourceOffset(NeuTube::EAxis axis) const
+int ZFlyEmDataBundle::getSourceOffset(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return m_sourceOffset[0];
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return m_sourceOffset[1];
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
     return m_sourceOffset[2];
+  case neutube::A_AXIS:
+    break;
   }
 
   return 0;
@@ -717,10 +757,10 @@ int ZFlyEmDataBundle::getSourceOffset(NeuTube::EAxis axis) const
 
 void ZFlyEmDataBundle::exportJsonFile(const string &path) const
 {
-  ZJsonObject jsonObj(C_Json::makeObject(), true);
+  ZJsonObject jsonObj(C_Json::makeObject(), ZJsonValue::SET_AS_IT_IS);
 
   json_t *neuronArray = C_Json::makeArray();
-  ZJsonArray neuronArrayWrapper(neuronArray, false);
+  ZJsonArray neuronArrayWrapper(neuronArray, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   string exportDir = ZString::dirPath(path);
 
@@ -927,7 +967,7 @@ void ZFlyEmDataBundle::importBoundBox(const string &filePath)
     m_boundBox = NULL;
   }
 
-  if (ZFileType::fileType(filePath) == ZFileType::SWC_FILE) {
+  if (ZFileType::FileType(filePath) == ZFileType::FILE_SWC) {
     m_boundBox = new ZSwcTree;
     m_boundBox->load(filePath);
   } else {

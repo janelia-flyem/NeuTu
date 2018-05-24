@@ -12,6 +12,7 @@
 class ZNormColorMap;
 class ZObject3d;
 class ZStackBall;
+class ZIntPoint;
 
 enum EGraphShape {
   GRAPH_NO_SHAPE, GRAPH_BALL, GRAPH_CYLINDER, GRAPH_LINE
@@ -22,7 +23,6 @@ public:
   Z3DGraphNode();
   Z3DGraphNode(double x, double y, double z, double r = 3.0);
   Z3DGraphNode(const ZPoint &center, double radius);
-  Z3DGraphNode(const Z3DGraphNode &node);
 
   inline const ZPoint& center() const { return m_center; }
   inline double radius() const { return m_radius; }
@@ -36,13 +36,19 @@ public:
 
   void set(double x, double y, double z, double r);
   void setCenter(double x, double y, double z);
+  void setCenter(const ZIntPoint &center);
+  void setCenter(const ZPoint &center);
   void setRadius(double r);
+  void setText(const QString &text);
+
+  const QString& getText() const;
 
   void addX(double dx);
   void addY(double dy);
 
   void setX(double x);
   void setY(double y);
+  void setZ(double z);
 
   void loadJsonObject(json_t *obj);
 
@@ -52,6 +58,7 @@ private:
   ZPoint m_center;
   double m_radius;
   QColor m_color;
+  QString m_text;
   EGraphShape m_shape;
 };
 
@@ -95,13 +102,23 @@ private:
   EGraphShape m_shape;
 };
 
+class Z3DGraph;
+
+typedef ZSharedPointer<Z3DGraph> Z3DGraphPtr;
+
 class Z3DGraph : public ZStackObject
 {
 public:
   Z3DGraph();
 
+  static Z3DGraphPtr MakePointer();
+
 public:
   bool isEmpty() const;
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_3D_GRAPH;
+  }
 
   inline size_t getNodeNumber() const { return m_nodeArray.size(); }
   inline size_t getEdgeNumber() const { return m_edgeArray.size(); }
@@ -125,13 +142,18 @@ public:
 
   void clear();
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               neutube::EAxis sliceAxis) const;
   const std::string& className() const;
 
   void addNode(const Z3DGraphNode &node);
   void addEdge(const Z3DGraphEdge &edge);
   void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2,
                EGraphShape shape = GRAPH_CYLINDER);
+  void addEdge(const Z3DGraphNode &node1, const Z3DGraphNode &node2,
+               double weight, EGraphShape shape);
+  void addConnectedNode(const std::vector<Z3DGraphNode> &nodeArray,
+                        EGraphShape shape);
 
 public:
   void importPointNetwork(const ZPointNetwork &pointNetwork,
@@ -140,7 +162,9 @@ public:
   void importObject3d(const ZObject3d &obj, double radius);
   void importObject3d(const ZObject3d &obj, double radius, int sampleStep);
   void addNode(const ZStackBall &ball);
+  void connectNode(const ZStackBall &ball, EGraphShape shape);
   void addNode(double x, double y, double z, double radius);
+  void syncNodeColor();
 
   void print();
 

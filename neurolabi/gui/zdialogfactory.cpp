@@ -25,7 +25,8 @@
 #include "flyem/flyemproofcontrolform.h"
 #include "flyem/zflyemproofmvc.h"
 #include "flyem/zflyemproofdoc.h"
-#include "z3dapplication.h"
+#include "zsysteminfo.h"
+#include "zwidgetmessage.h"
 
 #ifdef _WIN32
 #undef GetOpenFileName
@@ -161,12 +162,12 @@ QDialog* ZDialogFactory::makeTestDialog(QWidget *parent)
   QVBoxLayout *layout = new QVBoxLayout(dlg);
   dlg->setLayout(layout);
 
-  layout->addWidget(ZWidgetFactory::makeLabledEditWidget(
+  layout->addWidget(ZWidgetFactory::MakeLabledEditWidget(
                       "test", ZWidgetFactory::SPACER_NONE, dlg));
 
 
   QHBoxLayout *buttonLayout = new QHBoxLayout(dlg);
-  buttonLayout->addSpacerItem(ZWidgetFactory::makeHSpacerItem());
+  buttonLayout->addSpacerItem(ZWidgetFactory::MakeHSpacerItem());
   QPushButton *okButton = new QPushButton(dlg);
   buttonLayout->addWidget(okButton);
   okButton->setText("OK");
@@ -202,6 +203,13 @@ bool ZDialogFactory::Ask(
         parent, title, msg, QMessageBox::No | QMessageBox::Yes) ==
       QMessageBox::Yes;
 }
+
+void ZDialogFactory::Warn(
+    const QString &title, const QString &msg, QWidget *parent)
+{
+  QMessageBox::warning(parent, title, msg);
+}
+
 
 ZSpinBoxGroupDialog* ZDialogFactory::makeDownsampleDialog(QWidget *parent)
 {
@@ -263,9 +271,67 @@ QString ZDialogFactory::GetSaveFileName(
 
 void ZDialogFactory::Notify3DDisabled(QWidget *parent)
 {
-  QMessageBox::information(
-        parent, "3D Unavailable", "The 3D visualization is unavailable in this"
-        "plug-in because of some technical problems. To obtain a "
-        "fully-functioing version of neuTube, because visit "
-        "<a href=www.neutracing.com>www.neutracing.com</a>");
+  QMessageBox::critical(parent, "3D functions are disabled",
+                        ZSystemInfo::instance().errorMessage());
+}
+
+void ZDialogFactory::About(QWidget *parent)
+{
+  QString title = QString("<h2>%1</h2>").arg(GET_SOFTWARE_NAME.c_str());
+#if defined(_CURRENT_COMMIT_)
+  if (!NeutubeConfig::getInstance().getApplication().empty()) {
+    title += QString("<p>") +
+        NeutubeConfig::getInstance().getApplication().c_str() + " Edition" +
+        " (" + _CURRENT_COMMIT_ + ")</p>";
+  }
+#endif
+  QString thirdPartyLib = QString(
+        "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third-Party Credits</a></p>")
+      .arg(GET_APPLICATION_DIR.c_str());
+  QMessageBox::about(parent, QString("About %1").arg(GET_SOFTWARE_NAME.c_str()),
+                     title +
+                     "<p>" + GET_SOFTWARE_NAME.c_str() +" is software "
+                     "for neuron reconstruction and visualization. "
+#if !defined(_FLYEM_)
+                     "It was originally developed by Ting Zhao "
+                     "in Myers Lab "
+                     "at Howard Hughes Medical Institute.</p>"
+                     "<p>Current developers: </p>"
+                     "<ul>"
+                     "<li>Ting Zhao</li>"
+                     "<p>Howard Hughes Medical Institute, Janelia Farm Research Campus, "
+                     "Ashburn, VA 20147</p>"
+                     "<li>Linqing Feng</li>"
+                     "<p>Jinny Kim's Lab, Center for Functional Connectomics, KIST, Korea</p>"
+                     "</ul>"
+                     "<p>Website: <a href=\"www.neutracing.com\">www.neutracing.com</a></p>"
+#endif
+                     "<p>The Software is provided \"as is\" without warranty of any kind, "
+                     "either express or implied, including without limitation any implied "
+                     "warranties of condition, uniterrupted use, merchantability, fitness "
+                     "for a particular purpose, or non-infringement.</p>"
+                     "<p>For any regarded question or feedback, please mail to "
+                     "<a href=mailto:tingzhao@gmail.com>tingzhao@gmail.com</a></p>"
+                     "<p>Source code: "
+                     "<a href=\"https://github.com/janelia-flyem/NeuTu\">"
+                     "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
+
+                     );
+}
+
+void ZDialogFactory::PromptMessage(const ZWidgetMessage &msg, QWidget *parent)
+{
+  if (msg.getTarget() == ZWidgetMessage::TARGET_DIALOG) {
+      switch (msg.getType()) {
+      case neutube::MSG_INFORMATION:
+        QMessageBox::information(parent, msg.getTitle(), msg.toHtmlString());
+        break;
+      case neutube::MSG_WARNING:
+      case neutube::MSG_ERROR:
+        QMessageBox::warning(parent, msg.getTitle(), msg.toHtmlString());
+        break;
+      default:
+        break;
+      }
+    }
 }

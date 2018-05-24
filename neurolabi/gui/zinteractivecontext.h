@@ -6,6 +6,7 @@
 #define ZINTERACTIVECONTEXT_H
 
 #include <QRect>
+#include "neutube_def.h"
 
 class ZPoint;
 class ZImageWidget;
@@ -46,7 +47,7 @@ public:
 
   enum SwcEditMode {
     SWC_EDIT_OFF = 0,
-    SWC_EDIT_SELECT,
+//    SWC_EDIT_SELECT,
     SWC_EDIT_CONNECT,
     SWC_EDIT_EXTEND,
     SWC_EDIT_SMART_EXTEND,
@@ -65,6 +66,18 @@ public:
     RECT_DRAW
   };
 
+  enum SynapseEditMode {
+    SYNAPSE_EDIT_OFF = 0,
+    SYNAPSE_ADD_PRE,
+    SYNAPSE_ADD_POST,
+    SYNAPSE_MOVE
+  };
+
+  enum TodoEditMode {
+    TODO_EDIT_OFF = 0,
+    TODO_ADD_ITEM
+  };
+
   enum ViewMode {
     VIEW_NORMAL,
     VIEW_PROJECT,
@@ -76,7 +89,9 @@ public:
     EXPLORE_MOVE_IMAGE,
     EXPLORE_ZOOM_IN_IMAGE,
     EXPLORE_ZOOM_OUT_IMAGE,
-    EXPLORE_CAPTURE_MOUSE
+    EXPLORE_CAPTURE_MOUSE,
+    EXPLORE_LOCAL,
+    EXPLORE_EXTERNALLY
   };
 
   enum EUniqueMode{
@@ -85,7 +100,9 @@ public:
     INTERACT_SWC_MOVE_NODE, INTERACT_OBJECT_MOVE, INTERACT_STROKE_DRAW,
     INTERACT_RECT_DRAW, INTERACT_PUNCTA_MARK, INTERACT_IMAGE_MOVE,
     INTERACT_IMAGE_CAPTURE, INTERACT_IMAGE_ZOOM_IN, INTERACT_IMAGE_ZOOM_OUT,
-    INTERACT_ADD_BOOKMARK
+    INTERACT_ADD_BOOKMARK, INTERACT_ADD_SYNAPSE, INTERACT_MOVE_SYNAPSE,
+    INTERACT_ADD_TODO_ITEM, INTERACT_MOVE_CROSSHAIR, INTERACT_EXPLORE_LOCAL,
+    INTERACT_EXPLORE_EXTERNALLY
   };
 
 public:
@@ -98,8 +115,13 @@ public:
   inline void setSwcEditMode(SwcEditMode mode) { m_swcEditMode = mode; }
   inline void setStrokeEditMode(StrokeEditMode mode) { m_strokeEditMode = mode; }
   inline void setRectEditMode(RectEditMode mode) { m_rectEditMode = mode; }
+  inline void setSynapseEditMode(SynapseEditMode mode) {
+    m_synapseEditMode = mode; }
   inline void setBookmarkEditMode(BookmarkEditMode mode)
   { m_bookmarkEditMode = mode; }
+  inline void setTodoEditMode(TodoEditMode mode) {
+    m_todoEditMode = mode;
+  }
 
   inline TraceMode traceMode() const { return m_traceMode; }
   inline TubeEditMode tubeEditMode() const { return m_tubeEditMode; }
@@ -110,6 +132,8 @@ public:
   inline StrokeEditMode strokeEditMode() const { return m_strokeEditMode; }
   inline RectEditMode rectEditMode() const { return m_rectEditMode; }
   inline BookmarkEditMode bookmarkEditMode() const { return m_bookmarkEditMode; }
+  inline SynapseEditMode synapseEditMode() const { return m_synapseEditMode; }
+  inline TodoEditMode todoEditMode() const { return m_todoEditMode; }
 
   bool isTraceModeOff()  const;
   inline bool isReconPreview() const {
@@ -146,7 +170,16 @@ public:
   inline bool isExitingEdit() const { return m_exitingEdit; }
 
   EUniqueMode getUniqueMode() const;
+  void setUniqueMode(EUniqueMode mode);
   //void setView(const QRect &projRegion, const QRect &viewPort);
+
+  neutube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(neutube::EAxis axis) { m_sliceAxis = axis; }
+
+  void setAcceptingRect(bool on) { m_acceptingRect = on; }
+  bool acceptingRect() const { return m_acceptingRect; }
+  void setRectSpan(bool on) { m_rectSpan = on; }
+  bool rectSpan() const { return m_rectSpan; }
 
 private:
   MarkPunctaMode m_markPunctaMode;
@@ -159,8 +192,15 @@ private:
   StrokeEditMode m_strokeEditMode;
   RectEditMode m_rectEditMode;
   BookmarkEditMode m_bookmarkEditMode;
+  SynapseEditMode m_synapseEditMode;
+  TodoEditMode m_todoEditMode;
+  EUniqueMode m_uniqueMode;
   bool m_exitingEdit;
   bool m_blockingContextMenu;
+  bool m_acceptingRect;
+  bool m_rectSpan;
+  neutube::EAxis m_sliceAxis;
+  int m_keyIndex;
   //ZImageWidget *m_imageWidget;
   //QRect m_projRegion;
   //QRect m_viewPort;

@@ -5,6 +5,11 @@
 #include <QPainter>
 #include <QtConcurrentRun>
 #include <QApplication>
+#include <QGraphicsBlurEffect>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
+
+#include "zstack.hxx"
 
 ZPixmap::ZPixmap() : m_isVisible(false)
 {
@@ -34,17 +39,38 @@ ZPixmap::~ZPixmap()
 
 const ZStTransform& ZPixmap::getTransform() const
 {
-  return m_transform;
+  return m_objTransform;
+}
+
+const ZStTransform& ZPixmap::getProjTransform() const
+{
+  return m_projTransform;
+}
+
+ZStTransform& ZPixmap::getProjTransform()
+{
+  return m_projTransform;
+}
+
+void ZPixmap::updateProjTransform(
+    const QRect &viewPort, const QRectF &newProjRegion)
+{
+  m_projTransform.estimate(m_objTransform.transform(viewPort), newProjRegion);
+}
+
+void ZPixmap::setTransform(const ZStTransform &transform)
+{
+  m_objTransform = transform;
 }
 
 void ZPixmap::setScale(double sx, double sy)
 {
-  m_transform.setScale(sx, sy);
+  m_objTransform.setScale(sx, sy);
 }
 
 void ZPixmap::setOffset(double dx, double dy)
 {
-  m_transform.setOffset(dx, dy);
+  m_objTransform.setOffset(dx, dy);
 }
 
 void ZPixmap::cleanFunc(QPixmap *pixmap)
@@ -113,6 +139,11 @@ void ZPixmap::cleanUp()
   m_isVisible = false;
 }
 
+void ZPixmap::matchProj()
+{
+  m_projTransform = getTransform().getInverseTransform();
+}
+
 void ZPixmap::clean(const QRect &rect)
 {
   QPainter painter;
@@ -131,21 +162,21 @@ void ZPixmap::clean(const QRect &rect)
   */
 }
 
-QRectF ZPixmap::getActiveArea(NeuTube::ECoordinateSystem coord) const
+QRectF ZPixmap::getActiveArea(neutube::ECoordinateSystem coord) const
 {
   switch (coord) {
-  case NeuTube::COORD_WORLD:
+  case neutube::COORD_WORLD_2D:
     if (m_activeArea.isEmpty()) {
-      return m_transform.getInverseTransform().transform(
+      return m_objTransform.getInverseTransform().transform(
             QRectF(0, 0, width(), height()));
     } else {
       return m_activeArea;
     }
-  case NeuTube::COORD_CANVAS:
+  case neutube::COORD_CANVAS:
     if (m_activeArea.isEmpty()) {
       return QRectF(0, 0, width(), height());
     } else {
-      return m_transform.transform(m_activeArea);
+      return m_objTransform.transform(m_activeArea);
     }
   default:
     break;
@@ -159,6 +190,72 @@ bool ZPixmap::isFullyActive() const
   if (m_activeArea.isEmpty()) {
     return true;
   }
-  return m_transform.transform(m_activeArea).contains(
+  return m_objTransform.transform(m_activeArea).contains(
         QRectF(0, 0, width(), height()));
+}
+
+ZStack* ZPixmap::toPlainStack(neutube::EColor color, uint8_t maskValue)
+{
+  ZStack *stack = new ZStack(GREY, width(), height(), 1, 1);
+  size_t offset = 0;
+  uint8_t *array = stack->array8();
+  QImage image = toImage();
+  for (int y = 0; y < height(); ++y) {
+    for (int x = 0; x < width(); ++x) {
+      QRgb rgb = image.pixel(x, y);
+      bool isForeground = false;
+      switch (color) {
+      case neutube::COLOR_RED:
+        if ((qRed(rgb) > qGreen(rgb)) && (qRed(rgb) > qBlue(rgb))) {
+          isForeground = true;
+        }
+        break;
+      case neutube::COLOR_GREEN:
+        if ((qGreen(rgb) > qRed(rgb)) && (qGreen(rgb) > qBlue(rgb))) {
+          isForeground = true;
+        }
+        break;
+      case neutube::COLOR_BLUE:
+        if ((qBlue(rgb) > qRed(rgb)) && (qBlue(rgb) > qGreen(rgb))) {
+          isForeground = true;
+        }
+        break;
+      default:
+        break;
+      }
+
+      if (isForeground) {
+        array[offset] = maskValue;
+      } else {
+        array[offset] = 0;
+      }
+      ++offset;
+    }
+  }
+
+  return stack;
+}
+
+ZStack* ZPixmap::toPlainStack(uint8_t maskValue)
+{
+  ZStack *stack = NULL;
+
+  QImage image = toImage();
+
+  stack = new ZStack(GREY, width(), height(), 1, 1);
+  size_t offset = 0;
+  uint8_t *array = stack->array8();
+  for (int y = 0; y < height(); ++y) {
+    for (int x = 0; x < width(); ++x) {
+      QRgb rgb = image.pixel(x, y);
+      if (qRed(rgb) > 0 || qGreen(rgb) > 0 || qBlue(rgb) > 0) {
+        array[offset] = maskValue;
+      } else {
+        array[offset] = 0;
+      }
+      ++offset;
+    }
+  }
+
+  return stack;
 }

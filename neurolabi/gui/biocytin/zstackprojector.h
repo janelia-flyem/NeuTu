@@ -16,8 +16,10 @@ class ZStackProjector : public ZProgressable {
 public:
   ZStackProjector();
 
-  ZStack* project(const ZStack *stack, NeuTube::EImageBackground bg,
+  ZStack* project(const ZStack *stack, neutube::EImageBackground bg,
                   bool includingDepth, int slabIndex);
+  ZStack* project(
+      const ZStack *stack, neutube::EImageBackground bg);
 
   inline void setAdjustingContrast(bool adj) {
     m_adjustingConstrast = adj;
@@ -45,8 +47,10 @@ public:
 
   inline const std::vector<int>& getDepthArray() { return m_depthArray; }
 
-  static std::string getDefaultResultFilePath(
+  static std::string GetDefaultResultFilePath(
       const std::string &basePath, int minZ, int maxZ);
+  static std::string GetDefaultResultFilePath(
+      const std::string &basePath, int slabCount);
 private:
   inline double colorToValue(double g, double sr, double sg, double reg,
                              double redScale, double redOffset,

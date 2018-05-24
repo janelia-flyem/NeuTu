@@ -12,7 +12,8 @@ public:
 
   void paint(
       const ZStackObject *obj,
-      ZPainter &painter, int slice, ZStackObject::EDisplayStyle option) const;
+      ZPainter &painter, int slice, ZStackObject::EDisplayStyle option,
+      neutube::EAxis sliceAxis) const;
 
   void setRestoringPainter(bool on) {
     m_painterConst = on;

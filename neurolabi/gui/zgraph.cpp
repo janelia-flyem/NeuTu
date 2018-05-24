@@ -635,6 +635,18 @@ std::vector<std::vector<int> > ZGraph::getCycle() const
   return allPath;
 }
 
+std::set<int> ZGraph::getConnectedVertexSet() const
+{
+  std::set<int> vertexSet;
+  int edgeCount = getEdgeNumber();
+  for (int i = 0; i < edgeCount; ++i) {
+    vertexSet.insert(getEdgeBegin(i));
+    vertexSet.insert(getEdgeEnd(i));
+  }
+
+  return vertexSet;
+}
+
 
 std::vector<int> ZGraph::getPath(int v1, int v2)
 {
@@ -825,6 +837,10 @@ const std::vector<ZGraph*>& ZGraph::getConnectedSubgraph() const
 
     /* This is necessary to extract subgraph one by one */
     Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_ELIST, TRUE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_VLIST, TRUE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_STATUS, TRUE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, TRUE);
+
 
     for (int i = 1; i < getEdgeNumber(); i++) {
       if (m_workspace->elist[i] == 0) {
@@ -835,6 +851,9 @@ const std::vector<ZGraph*>& ZGraph::getConnectedSubgraph() const
     }
 
     Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_ELIST, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_VLIST, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_STATUS, FALSE);
+    Graph_Workspace_Set_Readiness(m_workspace, GRAPH_WORKSPACE_CONNECTION, FALSE);
   }
 
   return m_connectedSubgraph;

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <cctype>
 
 #include "tz_error.h"
 #include "tz_utilities.h"
@@ -63,7 +64,25 @@ ZString::~ZString()
   }
 }
 
-int ZString::firstInteger(const string &str)
+bool ZString::isAllDigit() const
+{
+  bool succ = true;
+
+  if (empty()) {
+    succ = false;
+  } else {
+    for (size_type i = 0; i < size(); ++i) {
+      if (!isdigit(at(i))) {
+        succ = false;
+        break;
+      }
+    }
+  }
+
+  return succ;
+}
+
+int ZString::FirstInteger(const string &str)
 {
   return String_First_Integer(str.c_str());
 }
@@ -78,7 +97,7 @@ int ZString::lastInteger()
   return String_Last_Integer(c_str());
 }
 
-int ZString::lastInteger(const string &str)
+int ZString::LastInteger(const string &str)
 {
   return String_Last_Integer(str.c_str());
 }
@@ -128,6 +147,18 @@ uint64_t ZString::firstUint64()
   return v;
 }
 
+uint64_t ZString::lastUint64()
+{
+  uint64_t v = 0;
+  vector<uint64_t> valueArray = toUint64Array();
+  if (!valueArray.empty()) {
+    v = valueArray.back();
+  }
+
+  return v;
+}
+
+
 vector<double> ZString::toDoubleArray()
 {
   int n;
@@ -168,9 +199,15 @@ double ZString::lastDouble()
 
 std::vector<std::string> ZString::toWordArray(const string &delim)
 {
+  return ToWordArray(*this, delim);
+}
+
+std::vector<std::string> ZString::ToWordArray(
+    const std::string &input, const string &delim)
+{
   std::vector<std::string> wordArray;
 
-  char *str = strdup(c_str());
+  char *str = strdup(input.c_str());
 
   char *word = strtok(str, delim.c_str());
 
@@ -184,8 +221,58 @@ std::vector<std::string> ZString::toWordArray(const string &delim)
   return wordArray;
 }
 
+std::string ZString::getLastWord(char c)
+{
+  size_t pos = find_last_of(c);
+
+  return substr(pos + 1, std::string::npos);
+}
+
+std::vector<std::string> ZString::Tokenize(const std::string &str, char c)
+{
+  std::vector<size_t> tokenPos;
+  std::vector<std::string> wordArray;
+
+  if (!str.empty()) {
+#ifdef _DEBUG_2
+    cout << wordArray.size() << endl;
+#endif
+
+    size_t currPos = str.find_first_of(c);
+
+    while (currPos != std::string::npos) {
+      tokenPos.push_back(currPos);
+      currPos = str.find_first_of(c, currPos + 1);
+    }
+
+    if (tokenPos.size() > 0) {
+      if (tokenPos[0] == 0) {
+        wordArray.push_back("");
+      } else {
+        wordArray.push_back(str.substr(0, tokenPos[0]));
+      }
+
+      for (size_t i = 0; i < tokenPos.size() - 1; ++i) {
+  #ifdef _DEBUG_2
+        cout << substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1) << endl;
+  #endif
+        wordArray.push_back(
+              str.substr(tokenPos[i] + 1, tokenPos[i + 1] - tokenPos[i] - 1));
+      }
+      wordArray.push_back(str.substr(tokenPos.back() + 1));
+    } else {
+      wordArray.push_back(str);
+    }
+  }
+
+  return wordArray;
+}
+
 std::vector<std::string> ZString::tokenize(char c)
 {
+  return Tokenize(*this, c);
+
+#if 0
   std::vector<size_t> tokenPos;
   std::vector<std::string> wordArray;
 
@@ -222,11 +309,16 @@ std::vector<std::string> ZString::tokenize(char c)
   }
 
   return wordArray;
+#endif
 }
 
 bool ZString::readLine(FILE *fp)
 {
   bool success = true;
+
+  if (m_workspace == NULL) {
+    m_workspace = New_String_Workspace();
+  }
 
   char *line = Read_Line(fp, m_workspace);
 
@@ -256,7 +348,7 @@ bool ZString::containsDigit()
 }
 
 
-string& ZString::replace(const string &from, const string &to)
+ZString &ZString::replace(const string &from, const string &to)
 {
   if (from.size() == 0) {
     return *this;
@@ -273,7 +365,7 @@ string& ZString::replace(const string &from, const string &to)
   return *this;
 }
 
-string& ZString::replace(int from, const string &to)
+ZString& ZString::replace(int from, const string &to)
 {
   ostringstream stream;
   stream << from;
@@ -296,6 +388,10 @@ string& ZString::replace(int from, const string &to)
 
 bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 {
+  if (empty() ||str.empty()) {
+    return false;
+  }
+
   string str1(c_str());
   string str2(str.c_str());
 
@@ -309,6 +405,10 @@ bool ZString::startsWith(const string &str, ECaseSensitivity cs) const
 
 bool ZString::endsWith(const string &str, ECaseSensitivity cs) const
 {
+  if (empty() ||str.empty()) {
+    return false;
+  }
+
   string str1(c_str());
   string str2(str.c_str());
 
@@ -729,6 +829,14 @@ string ZString::firstQuotedWord()
 }
 
 std::string ZString::num2str(int n)
+{
+  std::ostringstream stream;
+  stream << n;
+
+  return stream.str();
+}
+
+std::string ZString::num2str(uint64_t n)
 {
   std::ostringstream stream;
   stream << n;

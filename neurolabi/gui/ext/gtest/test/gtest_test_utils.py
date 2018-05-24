@@ -175,10 +175,10 @@ def GetTestExecutablePath(executable_name, build_dir=None):
 
   if not os.path.exists(path):
     message = (
-        'Unable to find the test binary. Please make sure to provide path\n'
-        'to the binary via the --build_dir flag or the BUILD_DIR\n'
-        'environment variable.')
-    print >> sys.stderr, message
+        'Unable to find the test binary "%s". Please make sure to provide\n'
+        'a path to the binary via the --build_dir flag or the BUILD_DIR\n'
+        'environment variable.' % path)
+    sys.stdout.write(message)
     sys.exit(1)
 
   return path
@@ -256,7 +256,7 @@ class Subprocess:
         # Changes made by os.environ.clear are not inheritable by child
         # processes until Python 2.6. To produce inheritable changes we have
         # to delete environment items with the del statement.
-        for key in dest.keys():
+        for key in list(dest.keys()):
           del dest[key]
         dest.update(src)
 

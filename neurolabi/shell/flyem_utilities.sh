@@ -1,3 +1,62 @@
+function update_gcc 
+{
+  condaDir=$1
+  CONDA_ROOT=`$condaDir/bin/conda info --root`
+  if [ `uname` != 'Darwin' ]
+  then
+    if [ ! -f $condaDir/envs/dvidenv/bin/gcc ]
+    then
+      source ${CONDA_ROOT}/bin/activate dvidenv
+      $condaDir/bin/conda install -c https://conda.anaconda.org/cgat gcc -y
+    fi
+    #GCCVER=$(gcc --version | grep ^gcc | sed 's/^.* //g')
+    #if [ $GCCVER \> '4.9.0' ] || [ $GCCVER \< '4.8.0' ]
+    #then
+    #  source ${CONDA_ROOT}/bin/activate dvidenv
+    #fi
+  fi
+}
+
+function flyem_build_lowtis {
+  install_dir=$1
+  downloadDir=$install_dir/Download
+  scriptDir=$2
+  condaDir=$downloadDir/miniconda
+  envDir=$condaDir/envs/dvidenv
+
+  if [ `uname` != 'Darwin' ]
+  then
+    if [ -d $downloadDir/lowtis ]
+    then
+      cd $downloadDir/lowtis
+      git pull
+    else
+      git clone https://github.com/janelia-flyem/lowtis.git $downloadDir/lowtis
+    fi
+    #new version is not compatible with libdvidcpp in conda
+    cd $downloadDir/lowtis
+    git checkout f666d30
+
+    update_gcc $condaDir
+    source $condaDir/bin/activate dvidenv
+
+    cp $scriptDir/lowtis_cmakelists.txt $downloadDir/lowtis/CMakeLists.txt
+    mkdir -p build
+    cd build
+    cmake -DCMAKE_PREFIX_PATH=$envDir ..
+    make -j3
+    cd ..
+    mkdir -p build_debug
+    cd build_debug
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$envDir ..
+    make -j3
+    cd ..
+    cp -r lowtis $envDir/include
+    cp build/liblowtis.so $envDir/lib/
+    cp build_debug/liblowtis-g.so $envDir/lib/
+  fi
+}
+
 function flyem_neutu_update {
   if [ $# -ge 1 ]
   then
@@ -12,18 +71,65 @@ function flyem_neutu_update {
     debug_config=$2
   fi
 
-  condaEnv=$install_dir/Download/miniconda/envs/dvidenv
+  qtver=4.8.5
+  if [ `uname` == 'Darwin' ]
+  then
+    qtver=4.8.4
+  fi
+
+  condaDir=$install_dir/Download/miniconda
+  condaEnv=$condaDir/envs/dvidenv
+  CONDA_ROOT=`$condaDir/bin/conda info --root`
+  if [ -d $install_dir/update_dvidcpp ]
+  then
+    if [ -d $condaEnv ]
+    then
+      source ${CONDA_ROOT}/bin/activate root
+      conda update -y conda
+      conda remove -y libdvid-cpp -n dvidenv
+      if [ -d $condaEnv/include/libdvid ]
+      then
+        rm -rf $condaEnv/include/libdvid
+      fi
+      conda install -y -n dvidenv -c flyem libdvid-cpp
+    fi
+  fi
+
+  if [ -d $condaEnv/include/lowtis ]
+  then
+    build_flag="-d _ENABLE_LOWTIS_"
+    ext_qt_flag="CONFIG+=c++11"
+  fi
+
+  if [ -f $condaEnv/bin/gcc ]
+  then
+    export PATH=$condaEnv/bin:$PATH
+  elif [ -f /opt/gcc482/bin/gcc-4.8.2 ]
+  then
+    export PATH=/opt/gcc482/bin:$PATH
+  fi
+
+  if [ `uname` == 'Darwin' ]; then
+    QMAKE_SPEC=$install_dir/Trolltech/Qt$qtver/mkspecs/macx-g++
+  else
+    QMAKE_SPEC=$install_dir/Trolltech/Qt$qtver/mkspecs/linux-g++
+  fi
   if [ -d $install_dir/Download/miniconda/envs/dvidenv/include ]
   then
-    sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q CONDA_ENV=$condaEnv -c $debug_config
+    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q "\"CONDA_ENV=$condaEnv $ext_qt_flag\"" -c $debug_config $build_flag 
   else
-    sh build.sh $install_dir/Trolltech/Qt4.8.5/bin/qmake $install_dir/Trolltech/Qt4.8.5/mkspecs/linux-g++ -e flyem -q BUILDEM_DIR=$install_dir/Download/buildem -c $debug_config
+    sh build.sh $install_dir/Trolltech/Qt$qtver/bin/qmake $QMAKE_SPEC -e flyem -q "BUILDEM_DIR=$install_dir/Download/buildem $ext_qt_flag" -c $debug_config $build_flag 
   fi
 
   build_dir=build
   if [ $debug_config == 'debug' ]
   then
     build_dir=build_debug
+  fi
+
+  if [ $debug_config == 'sanitize' ]
+  then
+    build_dir=build_sanitize
   fi
 
   $install_dir/Download/neutube/neurolabi/shell/flyem_post_install $install_dir/Download/neutube $install_dir/Download/neutube/neurolabi/$build_dir
@@ -53,7 +159,7 @@ function update_neutu {
       /opt/bin/git clone $source_dir/.git $target_dir
     else
       cd $target_dir
-      /usr/bin/git pull
+      /usr/bin/git pull origin $(git rev-parse --abbrev-ref HEAD)
     fi
   fi
 
@@ -62,7 +168,11 @@ function update_neutu {
   flyem_neutu_update $install_dir
   if [ -d $target_dir/neurolabi/build_debug ]
   then
-    flyem_neutu_update $1 debug
+    flyem_neutu_update $install_dir debug
+  fi
+  if [ -d $target_dir/neurolabi/build_sanitize ]
+  then
+    flyem_neutu_update $install_dir sanitize
   fi
 }
 

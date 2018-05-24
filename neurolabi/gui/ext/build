@@ -1,0 +1,18 @@
+#!/bin/bash
+
+currDIR="$( cd -P "$( dirname "$0" )" && pwd )"
+
+if [ ! -d $currDIR/glbinding ]
+then
+  $currDIR/glbinding-build
+fi
+
+if [ ! -d $currDIR/assimp ]
+then
+  $currDIR/assimp-build
+fi
+
+if [ ! -d $currDIR/draco ]
+then
+  $currDIR/draco-build
+fi

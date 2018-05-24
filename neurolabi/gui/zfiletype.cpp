@@ -3,43 +3,47 @@
 //#include <QString>
 #include "zstring.h"
 
+#ifdef _QT_GUI_USED_
+#include "zmesh.h"
+#endif
+
 ZFileType::ZFileType()
 {
 }
 
-ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
+ZFileType::EFileType ZFileType::FileType(const std::string &filePath)
 {
   ZString str(filePath.c_str());
 
   if (str.endsWith(".swc", ZString::CASE_INSENSITIVE)) {
-    return SWC_FILE;
+    return FILE_SWC;
   } else if (str.endsWith(".tif", ZString::CASE_INSENSITIVE) ||
              str.endsWith(".tiff", ZString::CASE_INSENSITIVE)) {
-    return TIFF_FILE;
+    return FILE_TIFF;
   } else if (str.endsWith(".lsm", ZString::CASE_INSENSITIVE)) {
-    return LSM_FILE;
+    return FILE_LSM;
   } else if (str.endsWith(".png", ZString::CASE_INSENSITIVE)) {
-    return PNG_FILE;
+    return FILE_PNG;
   } else if (str.endsWith(".tb", ZString::CASE_INSENSITIVE)) {
-    return LOCSEG_CHAIN_FILE;
+    return FILE_LOCSEG_CHAIN;
   } else if (str.endsWith(".nnt", ZString::CASE_INSENSITIVE)) {
-    return SWC_NETWORK_FILE;
+    return FILE_SWC_NETWORK;
   } else if (str.endsWith(".json", ZString::CASE_INSENSITIVE)) {
-    return JSON_FILE;
+    return FILE_JSON;
   } else if (str.endsWith(".fnt", ZString::CASE_INSENSITIVE) ) {
-    return FLYEM_NETWORK_FILE;
+    return FILE_FLYEM_NETWORK;
   } else if (str.endsWith(".xml", ZString::CASE_INSENSITIVE)) {
-    return XML_FILE;
+    return FILE_XML;
   } else if (str.endsWith(".apo", ZString::CASE_INSENSITIVE)) {
-    return V3D_APO_FILE;
+    return FILE_V3D_APO;
   } else if (str.endsWith(".marker", ZString::CASE_INSENSITIVE)) {
-    return V3D_MARKER_FILE;
+    return FILE_V3D_MARKER;
   } else if (str.endsWith(".raw", ZString::CASE_INSENSITIVE) ||
              str.endsWith(".v3draw", ZString::CASE_INSENSITIVE)) {
-    return V3D_RAW_FILE;
+    return FILE_V3D_RAW;
   } else if (str.endsWith(".v3dpbd", ZString::CASE_INSENSITIVE) ||
              str.endsWith(".pbd", ZString::CASE_INSENSITIVE)) {
-    return V3D_PBD_FILE;
+    return FILE_V3D_PBD;
   } else if (str.endsWith(".txt", ZString::CASE_INSENSITIVE)) {
     FILE *fp = fopen(str.c_str(), "r");
     if (fp != NULL) {
@@ -58,65 +62,74 @@ ZFileType::EFileType ZFileType::fileType(const std::string &filePath)
       fclose(fp);
 
       if (patternCount >= 2) {
-        return RAVELER_BOOKMARK;
+        return FILE_RAVELER_BOOKMARK;
       }
     }
-    return TXT_FILE;
+    return FILE_TXT;
   } else if (str.endsWith(".nsp", ZString::CASE_INSENSITIVE)) {
-    return MYERS_NSP_FILE;
+    return FILE_MYERS_NSP;
   } else if (str.endsWith(".sobj", ZString::CASE_INSENSITIVE)) {
-    return OBJECT_SCAN_FILE;
+    return FILE_OBJECT_SCAN;
   } else if (str.endsWith(".jpg", ZString::CASE_INSENSITIVE)) {
-    return JPG_FILE;
+    return FILE_JPG;
   } else if (str.endsWith(".dvid", ZString::CASE_INSENSITIVE)) {
-    return DVID_OBJECT_FILE;
+    return FILE_DVID_OBJECT;
   } else if (str.endsWith(".hf5", ZString::CASE_INSENSITIVE)) {
-    return HDF5_FILE;
+    return FILE_HDF5;
   } else if (str.endsWith(".mraw", ZString::CASE_INSENSITIVE)) {
-    return MC_STACK_RAW_FILE;
+    return FILE_MC_STACK_RAW;
+  } else if (str.endsWith(".zss", ZString::CASE_INSENSITIVE)) {
+    return FILE_SPARSE_STACK;
   }
+#if _QT_GUI_USED_
+  else if (ZMesh::canReadFile(QString::fromStdString(filePath))) {
+    return FILE_MESH;
+  }
+#endif
 
 
-  return UNIDENTIFIED_FILE;
+  return FILE_UNIDENTIFIED;
 }
 
-std::string ZFileType::typeName(EFileType type)
+std::string ZFileType::TypeName(EFileType type)
 {
   switch (type) {
-  case SWC_FILE:
+  case FILE_SWC:
     return "SWC";
-  case SWC_NETWORK_FILE:
+  case FILE_SWC_NETWORK:
     return "SWC Network";
-  case LOCSEG_CHAIN_FILE:
+  case FILE_LOCSEG_CHAIN:
     return "Locseg Chain";
-  case TIFF_FILE:
+  case FILE_TIFF:
     return "TIFF";
-  case LSM_FILE:
+  case FILE_LSM:
     return "LSM";
-  case PNG_FILE:
+  case FILE_PNG:
     return "PNG";
-  case V3D_RAW_FILE:
+  case FILE_V3D_RAW:
     return "Vaa3D raw";
-  case SYNAPSE_ANNOTATON_FILE:
+  case FILE_SYNAPSE_ANNOTATON:
     return "Synapse Annotation";
-  case FLYEM_NETWORK_FILE:
+  case FILE_FLYEM_NETWORK:
     return "FlyEM Network";
-  case XML_FILE:
+  case FILE_XML:
     return "XML";
-  case JSON_FILE:
+  case FILE_JSON:
     return "Json";
-  case V3D_APO_FILE:
+  case FILE_V3D_APO:
     return "Vaa3d APO";
-  case V3D_PBD_FILE:
+  case FILE_V3D_PBD:
     return "v3dpbd";
-  case V3D_MARKER_FILE:
+  case FILE_V3D_MARKER:
     return "Vaa3d marker";
-  case RAVELER_BOOKMARK:
+  case FILE_RAVELER_BOOKMARK:
     return "Reveler bookmark";
-  case MYERS_NSP_FILE:
+  case FILE_MYERS_NSP:
     return "Neuron segmentation";
-  case HDF5_FILE:
+  case FILE_HDF5:
     return "HDF5";
+  case FILE_MESH:
+    return "Mesh";
   default:
     return "Unknown";
   }
@@ -124,44 +137,46 @@ std::string ZFileType::typeName(EFileType type)
 
 bool ZFileType::isImageFile(EFileType type)
 {
-  return (type == TIFF_FILE) ||
-      (type == LSM_FILE) ||
-      (type == PNG_FILE) ||
-      (type == V3D_RAW_FILE) ||
-      (type == V3D_PBD_FILE) ||
-      (type == MYERS_NSP_FILE) || /*(type == OBJECT_SCAN_FILE) ||*/
-      (type == JPG_FILE) ||
-      (type == DVID_OBJECT_FILE) ||
-      (type == MC_STACK_RAW_FILE);
+  return (type == FILE_TIFF) ||
+      (type == FILE_LSM) ||
+      (type == FILE_PNG) ||
+      (type == FILE_V3D_RAW) ||
+      (type == FILE_V3D_PBD) ||
+      (type == FILE_MYERS_NSP) || /*(type == OBJECT_SCAN_FILE) ||*/
+      (type == FILE_JPG) ||
+      (type == FILE_DVID_OBJECT) ||
+      (type == FILE_MC_STACK_RAW);
 }
 
 bool ZFileType::isImageFile(const std::string &filePath)
 {
-  return isImageFile(fileType(filePath));
+  return isImageFile(FileType(filePath));
 }
 
 bool ZFileType::isObjectFile(EFileType type)
 {
-  return (type == SWC_FILE) ||
-      (type == SWC_NETWORK_FILE) ||
-      (type == LOCSEG_CHAIN_FILE) ||
-      (type == SYNAPSE_ANNOTATON_FILE) ||
-      (type == FLYEM_NETWORK_FILE) ||
-      (type == JSON_FILE) ||
-      (type == V3D_APO_FILE) ||
-      (type == V3D_MARKER_FILE) ||
-      (type == RAVELER_BOOKMARK) ||
-      (type == OBJECT_SCAN_FILE);
+  return (type == FILE_SWC) ||
+      (type == FILE_SWC_NETWORK) ||
+      (type == FILE_LOCSEG_CHAIN) ||
+      (type == FILE_SYNAPSE_ANNOTATON) ||
+      (type == FILE_FLYEM_NETWORK) ||
+      (type == FILE_JSON) ||
+      (type == FILE_V3D_APO) ||
+      (type == FILE_V3D_MARKER) ||
+      (type == FILE_RAVELER_BOOKMARK) ||
+      (type == FILE_OBJECT_SCAN) ||
+      (type == FILE_SPARSE_STACK) ||
+      (type == FILE_MESH);
 }
 
 bool ZFileType::isObjectFile(const std::string &filePath)
 {
-  return isObjectFile(fileType(filePath));
+  return isObjectFile(FileType(filePath));
 }
 
 bool ZFileType::isNeutubeOpenable(const std::string &filePath)
 {
-  return isNeutubeOpenable(fileType(filePath));
+  return isNeutubeOpenable(FileType(filePath));
 }
 
 bool ZFileType::isNeutubeOpenable(EFileType type)

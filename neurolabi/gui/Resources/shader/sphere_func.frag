@@ -33,13 +33,17 @@ vec4 apply_lighting_and_fog(const in vec4 sceneAmbient,
 
 void fragment_func(out vec4 fragColor, out float fragDepth)
 {
-  vec3 rayOrigin = mix(vec3(0.0 ,0.0, 0.0), point, ortho);
+  vec3 rayOrigin = point;
   vec3 rayDirection = mix(normalize(point), vec3(0.0, 0.0, -1.0), ortho);
 
   vec3 sphereVector = sphere_center - rayOrigin;
   float b = dot(sphereVector, rayDirection);
 
   float position = b * b + radius2 - dot(sphereVector, sphereVector);
+#ifdef ANTI_ALIASING
+  float delta = fwidth(position);
+  float edgeAlpha = smoothstep(0.0, delta, position);
+#endif
   if (position < 0.0)
     discard;
 
@@ -60,11 +64,19 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
   vec3 normalDirection = normalize(ipoint - sphere_center);
 
 #ifdef DYNAMIC_MATERIAL_PROPERTY
-  fragColor = apply_lighting_and_fog(scene_ambient, va_material_shininess, material_ambient, va_material_specular,
-                                     normalDirection, ipoint, color, alpha);
+fragColor = apply_lighting_and_fog(scene_ambient, va_material_shininess, material_ambient, va_material_specular,
+#ifdef ANTI_ALIASING
+                                     normalDirection, ipoint, color, alpha * edgeAlpha);
 #else
-  fragColor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
-                                     normalDirection, ipoint, color, alpha);
+                                  normalDirection, ipoint, color, alpha);
+#endif
+#else
+fragColor = apply_lighting_and_fog(scene_ambient, material_shininess, material_ambient, material_specular,
+#ifdef ANTI_ALIASING
+                                   normalDirection, ipoint, color, alpha * edgeAlpha);
+#else
+                                    normalDirection, ipoint, color, alpha);
+#endif
 #endif
 
 }

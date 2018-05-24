@@ -205,6 +205,35 @@ TEST(ZGraph, match)
   }
 }
 
+TEST(ZGraph, subgraph)
+{
+  ZGraph graph;
+  graph.addEdge(0, 1);
+  graph.addEdge(1, 2);
+
+  ASSERT_EQ(1, (int) graph.getConnectedSubgraph().size());
+
+  graph.addEdge(3, 4);
+  graph.addEdge(3, 6);
+  graph.addEdge(5, 6);
+  ASSERT_EQ(2, (int) graph.getConnectedSubgraph().size());
+
+  graph.addEdge(0, 7);
+  graph.addEdge(1, 8);
+  graph.addEdge(9, 10);
+  graph.addEdge(10, 11);
+  graph.addEdge(11, 12);
+  graph.addEdge(9, 11);
+  graph.addEdge(10, 12);
+
+  std::vector<ZGraph*> graphList = graph.getConnectedSubgraph();
+  ASSERT_EQ(3, (int) graphList.size());
+
+  for (size_t i = 0; i < graphList.size(); ++i) {
+    graphList[i]->print();
+  }
+}
+
 #endif
 
 

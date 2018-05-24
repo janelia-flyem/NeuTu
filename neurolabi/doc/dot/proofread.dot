@@ -1,0 +1,97 @@
+digraph {
+ QStackedWidget [label = "QStackedWidget",shape = "box"];
+ FlyEmSplitControlForm [label = "FlyEmSplitControlForm",shape = "box"];
+ FlyEmProofControlForm [label = "FlyEmProofControlForm",shape = "box"];
+ ZStackView [label = "ZStackView",shape = "box"];
+ ZFlyEmProofDoc [label = "ZFlyEmProofDoc",shape = "box"];
+ ZFlyEmProofMvc [label = "ZFlyEmProofMvc",shape = "box"];
+ ZDvidTarget [label = "ZDvidTarget",shape = "box"];
+ ZFlyEmBodySplitProject [label = "ZFlyEmBodySplitProject",shape = "box"];
+ ZStackMvc [label = "ZStackMvc",shape = "box"];
+ ZStackDoc [label = "ZStackDoc",shape = "box"];
+ ZFlyEmBodyMergeProject [label = "ZFlyEmBodyMergeProject",shape = "box"];
+ QMainWindow [label = "QMainWindow",shape = "box"];
+ ZDvidDialog [label = "ZDvidDialog",shape = "box"];
+ ZProofreadWindow [label = "ZProofreadWindow",shape = "box"];
+ ZStackPresenter [label = "ZStackPresenter",shape = "box"];
+ ZDvidTileEnsemble [label = "ZDvidTileEnsemble",shape = "box"];
+ ZFlyEmMessageWidget [label = "ZFlyEmMessageWidget",shape = "box"];
+ ZDvidSparseStack [label = "ZDvidSparseStack",shape = "box"];
+ ZFlyEmBodyMerger [label = "ZFlyEmBodyMerger",shape = "box"];
+ ZDvidLabelSlice [label = "ZDvidLabelSlice",shape = "box"];
+ FlyEmSplitControlForm__quickViewTriggered [label = "quickViewTriggered()",shape = "none"];
+ FlyEmProofControlForm__mergingSelected [label = "mergingSelected()",shape = "none"];
+ ZFlyEmProofMvc__showBodyQuickView [label = "showBodyQuickView",];
+ ZFlyEmProofMvc__mergeSelected [label = "mergeSelected",];
+ ZStackDoc__messageGenerated [label = "messageGenerated()",shape = "none"];
+ ZStackView__setView [label = "setView",];
+ FlyEmSplitControlForm__exitingSplit [label = "exitingSplit()",shape = "none"];
+ FlyEmProofControlForm__edgeModeToggled [label = "edgeModeToggled()",shape = "none"];
+ ZFlyEmProofMvc__exitSplit [label = "exitSplit",];
+ ZFlyEmProofMvc__toggleEdgeMode [label = "toggleEdgeMode",];
+ ZFlyEmProofMvc__splitBodyLoaded [label = "splitBodyLoaded()",shape = "none"];
+ FlyEmProofControlForm__dvidSetTriggered [label = "dvidSetTriggered()",shape = "none"];
+ ZFlyEmProofMvc__messageGenerated [label = "messageGenerated",];
+ ZFlyEmProofMvc__presentBodySplit [label = "presentBodySplit",];
+ ZFlyEmProofMvc__setDvidTarget [label = "setDvidTarget",];
+ ZFlyEmProofMvc__notifySplitTriggered [label = "notifySplitTriggered",];
+ ZStackPresenter__bodySplitTriggered [label = "bodySplitTriggered()",shape = "none"];
+ FlyEmProofControlForm__segmentVisibleChanged [label = "segmentVisibleChanged()",shape = "none"];
+ ZFlyEmProofMvc__launchingSplit [label = "launchingSplit()",shape = "none"];
+ ZFlyEmProofMvc__setSegmentationVisible [label = "setSegmentationVisible",];
+ FlyEmProofControlForm__splitTriggered [label = "splitTriggered",];
+ ZFlyEmBodySplitProject__locating2DViewTriggered [label = "locating2DViewTriggered()",shape = "none"];
+ QMainWindow -> ZProofreadWindow
+ ZStackMvc -> ZFlyEmProofMvc
+ ZStackDoc -> ZFlyEmProofDoc
+ FlyEmSplitControlForm -> FlyEmSplitControlForm__quickViewTriggered [arrowhead = odot];
+ FlyEmProofControlForm -> FlyEmProofControlForm__mergingSelected [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__showBodyQuickView [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__mergeSelected [arrowhead = odot];
+ ZStackDoc -> ZStackDoc__messageGenerated [arrowhead = odot];
+ ZStackView -> ZStackView__setView [arrowhead = odot];
+ FlyEmSplitControlForm -> FlyEmSplitControlForm__exitingSplit [arrowhead = odot];
+ FlyEmProofControlForm -> FlyEmProofControlForm__edgeModeToggled [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__exitSplit [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__toggleEdgeMode [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__splitBodyLoaded [arrowhead = odot];
+ FlyEmProofControlForm -> FlyEmProofControlForm__dvidSetTriggered [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__messageGenerated [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__presentBodySplit [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__setDvidTarget [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__notifySplitTriggered [arrowhead = odot];
+ ZStackPresenter -> ZStackPresenter__bodySplitTriggered [arrowhead = odot];
+ FlyEmProofControlForm -> FlyEmProofControlForm__segmentVisibleChanged [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__launchingSplit [arrowhead = odot];
+ ZFlyEmProofMvc -> ZFlyEmProofMvc__setSegmentationVisible [arrowhead = odot];
+ FlyEmProofControlForm -> FlyEmProofControlForm__splitTriggered [arrowhead = odot];
+ ZFlyEmBodySplitProject -> ZFlyEmBodySplitProject__locating2DViewTriggered [arrowhead = odot];
+ ZStackPresenter__bodySplitTriggered -> ZFlyEmProofMvc__notifySplitTriggered
+ ZFlyEmBodySplitProject__locating2DViewTriggered -> ZStackView__setView
+ ZStackDoc__messageGenerated -> ZFlyEmProofMvc__messageGenerated
+ ZFlyEmProofMvc__splitBodyLoaded -> ZFlyEmProofMvc__presentBodySplit
+ FlyEmProofControlForm__segmentVisibleChanged -> ZFlyEmProofMvc__setSegmentationVisible
+ FlyEmProofControlForm__mergingSelected -> ZFlyEmProofMvc__mergeSelected
+ FlyEmProofControlForm__edgeModeToggled -> ZFlyEmProofMvc__toggleEdgeMode
+ FlyEmProofControlForm__dvidSetTriggered -> ZFlyEmProofMvc__setDvidTarget
+ ZFlyEmProofMvc__launchingSplit -> FlyEmProofControlForm__splitTriggered
+ FlyEmSplitControlForm__quickViewTriggered -> ZFlyEmProofMvc__showBodyQuickView
+ FlyEmSplitControlForm__exitingSplit -> ZFlyEmProofMvc__exitSplit
+ ZProofreadWindow -> ZFlyEmProofMvc [arrowhead = diamond];
+ ZProofreadWindow -> ZFlyEmMessageWidget [arrowhead = diamond];
+ ZProofreadWindow -> QStackedWidget [arrowhead = diamond];
+ QStackedWidget -> FlyEmProofControlForm [arrowhead = diamond];
+ QStackedWidget -> FlyEmSplitControlForm [arrowhead = diamond];
+ ZFlyEmProofMvc -> ZFlyEmBodySplitProject [arrowhead = diamond];
+ ZFlyEmProofMvc -> ZFlyEmBodyMergeProject [arrowhead = diamond];
+ ZFlyEmProofMvc -> ZDvidDialog [arrowhead = diamond];
+ ZStackMvc -> ZStackPresenter [arrowhead = diamond];
+ ZStackMvc -> ZStackView [arrowhead = diamond];
+ ZStackMvc -> ZStackDoc [arrowhead = diamond];
+ ZFlyEmProofMvc -> ZFlyEmProofDoc [arrowhead = diamond];
+ ZFlyEmProofDoc -> ZFlyEmBodyMerger [arrowhead = diamond];
+ ZFlyEmProofDoc -> ZDvidTarget [arrowhead = diamond];
+ ZFlyEmProofDoc -> ZDvidTileEnsemble [arrowhead = diamond];
+ ZFlyEmProofDoc -> ZDvidLabelSlice [arrowhead = diamond];
+ ZFlyEmProofDoc -> ZDvidSparseStack [arrowhead = diamond];
+}

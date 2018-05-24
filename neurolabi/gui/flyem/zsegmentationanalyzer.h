@@ -7,13 +7,14 @@
 #include <string>
 
 #include "zsuperpixelmaparray.h"
-#include "zstack.hxx"
 #include "zintpairmap.h"
 #include "zintmap.h"
 #include "zgraph.h"
 #include "zsegmentationbundle.h"
 
-namespace FlyEm {
+class ZStack;
+
+namespace flyem {
 class ZSegmentationAnalyzer
 {
 public:
@@ -51,9 +52,9 @@ public:
       const ZStack &stack, const ZGraph &bodyGraph);
 
   static std::vector<double> touchFeature(
-      FlyEm::ZSegmentationBundle &bundle, int id1, int id2);
+      flyem::ZSegmentationBundle &bundle, int id1, int id2);
   static std::vector<std::vector<double> > touchFeature(
-      FlyEm::ZSegmentationBundle &bundle);
+      flyem::ZSegmentationBundle &bundle);
 
   static std::vector<double> touchFeature(
       const ZStack &stack, int id1, int id2, const ZStack &mask);
@@ -79,18 +80,18 @@ public:
       const Stack *stack, int seed);
 
   static std::vector<double> computeTouchFeature(
-      FlyEm::ZSegmentationBundle &bundle, int id1, int id2);
+      flyem::ZSegmentationBundle &bundle, int id1, int id2);
   static std::vector<double> computeRayburstTouchFeature(
       ZSegmentationBundle &bundle, int id1, int id2);
 
   static std::vector<double> computeBoundaryGrowFeature(
-      FlyEm::ZSegmentationBundle &bundle, int id1, int id2);
+      flyem::ZSegmentationBundle &bundle, int id1, int id2);
 
   static double computeBorderIntensity(
-      FlyEm::ZSegmentationBundle &bundle, int id1, int id2);
+      flyem::ZSegmentationBundle &bundle, int id1, int id2);
 
   static double computeBodyIntensity(
-      FlyEm::ZSegmentationBundle &bundle, int id);
+      flyem::ZSegmentationBundle &bundle, int id);
 
   enum BcfSet {
     BCF_BODY_GROW, BCF_BOUNDARY_GROW, BCF_RAYBURST, BCF_BORDER_SIZE,
@@ -98,27 +99,27 @@ public:
     BCF_BODY_INTENSITY, BCF_BOUNDARY_PROB, BCF_MITO_PROB, BCF_CYTO_PROB
   };
   static std::vector<double> computeBcf(
-      FlyEm::ZSegmentationBundle &bundle, int id1, int id2,
+      flyem::ZSegmentationBundle &bundle, int id1, int id2,
       BcfSet setName);
 
   static std::vector<double> computeBcf(
-      FlyEm::ZSegmentationBundle &bundle, int id1, int id2,
+      flyem::ZSegmentationBundle &bundle, int id1, int id2,
       const std::vector<BcfSet> &setName);
 
   static std::vector<double> computeBcf(
-      FlyEm::ZSegmentationBundle &bundle, int id1, int id2,
+      flyem::ZSegmentationBundle &bundle, int id1, int id2,
       const std::vector<std::string> &setName);
 
   static std::vector<std::vector<double> > computeBcf(
-      FlyEm::ZSegmentationBundle &bundle, BcfSet setName);
+      flyem::ZSegmentationBundle &bundle, BcfSet setName);
   static std::vector<std::vector<double> > computeBcf(
-      FlyEm::ZSegmentationBundle &bundle, const std::string &setName);
+      flyem::ZSegmentationBundle &bundle, const std::string &setName);
 
   static std::vector<std::vector<double> > computeBcf(
-      FlyEm::ZSegmentationBundle &bundle,
+      flyem::ZSegmentationBundle &bundle,
       const std::vector<std::string> &setName);
 
-  static void generateBcf(FlyEm::ZSegmentationBundle &bundle,
+  static void generateBcf(flyem::ZSegmentationBundle &bundle,
                           const std::string &setName);
 
   ZGraph* loadGalaSegmentation(const std::string filePath);

@@ -11,9 +11,12 @@ ZLabeledSpinBoxWidget::ZLabeledSpinBoxWidget(QWidget *parent) :
 
   m_mainWidget = new ZSpinBox(this);
   m_layout->addWidget(m_mainWidget);
+  m_mainWidget->setFocusPolicy(Qt::ClickFocus);
 
   connect(m_mainWidget, SIGNAL(valueConfirmed(int)),
           this, SIGNAL(valueConfirmed(int)));
+  connect(m_mainWidget, SIGNAL(valueChanged(int)),
+          this, SIGNAL(valueChanged(int)));
 }
 
 void ZLabeledSpinBoxWidget::setRange(int vmin, int vmax)
@@ -42,6 +45,13 @@ int ZLabeledSpinBoxWidget::getSkipValue() const
 int ZLabeledSpinBoxWidget::getValue() const
 {
   return m_mainWidget->value();
+}
+
+void ZLabeledSpinBoxWidget::setValueQuietly(int v)
+{
+  m_mainWidget->blockSignals(true);
+  m_mainWidget->setValue(v);
+  m_mainWidget->blockSignals(false);
 }
 
 void ZLabeledSpinBoxWidget::setValue(int v)

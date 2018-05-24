@@ -71,7 +71,7 @@ FooTest\.
 TypedTest/0\.  # TypeParam = (VeryLo{245}|class VeryLo{239})\.\.\.
   TestA
   TestB
-TypedTest/1\.  # TypeParam = int\s*\*
+TypedTest/1\.  # TypeParam = int\s*\*( __ptr64)?
   TestA
   TestB
 TypedTest/2\.  # TypeParam = .*MyArray<bool,\s*42>
@@ -80,7 +80,7 @@ TypedTest/2\.  # TypeParam = .*MyArray<bool,\s*42>
 My/TypeParamTest/0\.  # TypeParam = (VeryLo{245}|class VeryLo{239})\.\.\.
   TestA
   TestB
-My/TypeParamTest/1\.  # TypeParam = int\s*\*
+My/TypeParamTest/1\.  # TypeParam = int\s*\*( __ptr64)?
   TestA
   TestB
 My/TypeParamTest/2\.  # TypeParam = .*MyArray<bool,\s*42>
@@ -158,14 +158,14 @@ class GTestListTestsUnitTest(gtest_test_utils.TestCase):
     output = Run(args)
 
     if expected_output_re:
-      self.assert_(
+      self.assertTrue(
           expected_output_re.match(output),
           ('when %s is %s, the output of "%s" is "%s",\n'
            'which does not match regex "%s"' %
            (LIST_TESTS_FLAG, flag_expression, ' '.join(args), output,
             expected_output_re.pattern)))
     else:
-      self.assert_(
+      self.assertTrue(
           not EXPECTED_OUTPUT_NO_FILTER_RE.match(output),
           ('when %s is %s, the output of "%s" is "%s"'%
            (LIST_TESTS_FLAG, flag_expression, ' '.join(args), output)))

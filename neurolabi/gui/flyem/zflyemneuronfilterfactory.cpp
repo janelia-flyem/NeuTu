@@ -73,7 +73,7 @@ ZFlyEmNeuronFilter* ZFlyEmNeuronFilterFactory::createFilter(ZJsonObject &jsonObj
   EFilterType type = getType(ZJsonParser::stringValue(jsonObj["type"]));
 
   ZFlyEmNeuronFilter *filter = createFilter(type);
-  ZJsonValue config(jsonObj["config"], false);
+  ZJsonValue config(jsonObj["config"], ZJsonValue::SET_INCREASE_REF_COUNT);
 
   if (type == COMPOSITE) {
     ZFlyEmNeuronCompositeFilter *compositeFilter =
@@ -82,7 +82,7 @@ ZFlyEmNeuronFilter* ZFlyEmNeuronFilterFactory::createFilter(ZJsonObject &jsonObj
       std::vector<ZJsonValue> filterArrayObj = config.toArray();
       for (std::vector<ZJsonValue>::iterator iter = filterArrayObj.begin();
            iter != filterArrayObj.end(); ++iter) {
-        ZJsonObject obj(iter->getValue(), false);
+        ZJsonObject obj(iter->getValue(), ZJsonValue::SET_INCREASE_REF_COUNT);
         if (!obj.isEmpty()) {
           ZFlyEmNeuronFilter *subFilter = createFilter(obj);
           compositeFilter->appendFilter(subFilter);

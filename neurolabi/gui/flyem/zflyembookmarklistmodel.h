@@ -9,6 +9,8 @@
 //#include "flyem/zflyembookmarkarray.h"
 #include "flyem/zflyembookmarkptrarray.h"
 
+class QSortFilterProxyModel;
+
 class ZFlyEmBookmarkListModel : public QAbstractTableModel
 {
   Q_OBJECT
@@ -30,11 +32,27 @@ public:
 
   void clear();
   void append(const ZFlyEmBookmark *bookmark);
+  void append(const QList<ZFlyEmBookmark*> &bookmarkList);
   void update(int row);
 
   const ZFlyEmBookmark* getBookmark(int index) const;
   ZFlyEmBookmark* getBookmark(int index);
   const ZFlyEmBookmarkPtrArray& getBookmarkArray() const;
+
+  void removeBookmark(ZFlyEmBookmark *bookmark);
+
+  QSortFilterProxyModel *getProxy() const {
+    return m_proxy;
+  }
+
+  void sortBookmark();
+
+  bool isUsed() const {
+    return m_isUsed;
+  }
+  void setUsed(bool on) {
+    m_isUsed = on;
+  }
 
 //  void appendBookmark(const ZFlyEmBookmark &bookmark);
 
@@ -45,10 +63,15 @@ signals:
 public slots:
 
 private:
+  void init(QObject *parent);
+
+private:
   ZFlyEmBookmarkPtrArray m_bookmarkArray;
+  QSortFilterProxyModel *m_proxy;
 //  ZFlyEmBookmarkArray m_bookmarkArray;
   ZFlyEmBookmarkPresenter *m_presenter;
   ZFlyEmBookmarkPresenter *m_defaultPresenter;
+  bool m_isUsed;
 };
 
 #endif // ZFLYEMBOOKMARKLISTMODEL_H

@@ -3,11 +3,20 @@
 
 #include "zintpoint.h"
 #include "tz_cuboid_i.h"
+#include "neutube_def.h"
+
+class ZJsonArray;
 
 class ZIntCuboid
 {
 public:
+  /*!
+   * \brief Default constructor
+   *
+   * Construct an empty cuboid
+   */
   ZIntCuboid();
+
   ZIntCuboid(int x1, int y1, int z1, int x2, int y2, int z2);
   ZIntCuboid(const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
   ZIntCuboid(const Cuboid_I &cuboid);
@@ -53,16 +62,28 @@ public:
 
   void translateX(int dx);
 
+  void translate(const ZIntPoint &offset);
+  /*!
+   * \brief Scale the box
+   *
+   * The size of the box will be scaled by \a s.
+   */
+  void scale(const ZIntPoint &s);
+
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
    */
   void setSize(int width, int height, int depth);
+  void setSize(const ZIntPoint &size);
 
   void setWidth(int width);
+  void setHeight(int height);
 
   int getWidth() const;
   int getHeight() const;
   int getDepth() const;
+
+  double getDiagonalLength() const;
 
   /*!
    * \brief Set the depth
@@ -73,14 +94,30 @@ public:
    */
   void setDepth(int depth);
 
-  //union
+
+  /*!
+   * \brief Join two cuboids
+   *
+   * Note that if the object is empty, the result will become the same as \a cuboid.
+   * If \a cuboid is empty, nothing will be done.
+   *
+   * \return The current object after joining.
+   */
   ZIntCuboid& join(const ZIntCuboid &cuboid);
+
+  void join(int x, int y, int z);
+
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);
 
   void expandX(int dx);
   void expandY(int dy);
+  void expandZ(int dz);
+  void expand(int dx, int dy, int dz);
+
+  //intersect
+  ZIntCuboid& intersect(const ZIntCuboid &cuboid);
 
   /*!
    * \brief Get the volume of the cuboid.
@@ -94,6 +131,7 @@ public:
    */
   bool contains(int x, int y, int z) const;
   bool contains(const ZIntPoint &pt) const;
+  bool contains(const ZIntCuboid &box) const;
 
   bool containYZ(int y, int z) const;
 
@@ -109,6 +147,37 @@ public:
   bool hasOverlap(const ZIntCuboid &box) const;
 
   //double distanceTo(const ZIntPoint &pt);
+
+  int computeBlockDistance(const ZIntCuboid &box);
+  double computeDistance(const ZIntCuboid &box);
+
+  void shiftSliceAxis(neutube::EAxis axis);
+  void shiftSliceAxisInverse(neutube::EAxis axis);
+  int getDim(neutube::EAxis axis) const;
+
+  ZIntPoint getCenter() const;
+  void setCenter(const ZIntPoint &center);
+
+
+  /*!
+   * \brief Turn the cuboid into a JSON array
+   *
+   * \return [x1, y1, z1, x2, y2, z2]
+   */
+  ZJsonArray toJsonArray() const;
+
+  /*!
+   * \brief Set corners from a json array
+   *
+   * Array: [x1, y1, z1, x2, y2, z2]. The object is reset to default if the json
+   * array is invalid.
+   */
+  void loadJson(const ZJsonArray &json);
+
+  std::string toString() const;
+
+  bool operator == (const ZIntCuboid &box) const;
+  bool operator != (const ZIntCuboid &box) const;
 
 private:
   ZIntPoint m_firstCorner;

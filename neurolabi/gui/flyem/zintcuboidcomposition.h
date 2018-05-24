@@ -3,15 +3,9 @@
 
 #include "tz_cuboid_i.h"
 #include <utility>
-#ifdef __GLIBCXX__
-#include <tr1/memory>
-using namespace std::tr1;
-#else
-#include <memory>
-using namespace std;
-#endif
+#include "zsharedpointer.h"
 
-namespace FlyEm {
+namespace flyem {
 class ZIntCuboidComposition
 {
 public:
@@ -25,14 +19,14 @@ public:
 
   bool hitTest(int x, int y, int z);
 
-  void setComposition(shared_ptr<ZIntCuboidComposition> firstComponent,
-                      shared_ptr<ZIntCuboidComposition> secondComponent,
+  void setComposition(ZSharedPointer<ZIntCuboidComposition> firstComponent,
+                      ZSharedPointer<ZIntCuboidComposition> secondComponent,
                       EOperator opr);
   void setSingular(int x, int y, int z, int width, int height, int depth);
 
 private:
-  shared_ptr<ZIntCuboidComposition> m_firstComponent;
-  shared_ptr<ZIntCuboidComposition> m_secondComponent;
+  ZSharedPointer<ZIntCuboidComposition> m_firstComponent;
+  ZSharedPointer<ZIntCuboidComposition> m_secondComponent;
   Cuboid_I m_cuboid;
   EOperator m_operator;
 };

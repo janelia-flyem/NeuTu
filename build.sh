@@ -3,11 +3,12 @@
 #Example:
 #sh build.sh /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/bin/qmake /Users/zhaot/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++
 
-set -e
+echo "Build args: $*"
 
 if [ $# -lt 1 ]
 then
-  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
+  echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize]"
+  echo "Usage: sh build.sh <qt_dir> [-d cxx_define] [-e edition] [-c debug|release|sanitize]"
   echo "Example: "
   echo 'sh build.sh $HOME/local/lib/Trolltech/Qt-4.8.5/bin/qmake $HOME/local/lib/Trolltech/Qt-4.8.5/mkspecs/macx-g++'
   exit 1
@@ -21,7 +22,7 @@ then
   shift
   if [ $# -lt 1 ]
   then
-    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release]"
+    echo "Usage: sh build.sh <qmake_path> <qmake_spec_path> [-d cxx_define] [-e edition] [-c debug|release|sanitize] [-q qmake_flags] [-m make_flags]"
     exit 1
   fi
   QMAKE_SPEC=$1
@@ -29,11 +30,22 @@ then
 else
   QMAKE=$1/bin/qmake
   if [ `uname` == 'Darwin' ]; then
-    QMAKE_SPEC=$1/mkspecs/macx-g++
+    if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+    then
+      QMAKE_SPEC=$1/mkspecs/macx-clang
+    else
+      QMAKE_SPEC=$1/mkspecs/macx-g++
+    fi
   else
-    QMAKE_SPEC=$1/mkspecs/linux-g++-64
+    QMAKE_SPEC=$1/mkspecs/linux-g++
   fi
+  shift
 fi
+
+echo $QMAKE
+echo $QMAKE_SPEC
+
+set -e
 
 edition=general
 debug_config=release
@@ -58,33 +70,44 @@ done
 
 if [ -n "$cxx_define" ]
 then
-  if [ $edition = "flyem" ]
-  then
-    cxx_define="_FLYEM_ $cxx_define"
-  fi
-
   if [ $edition = "biocytin" ]
   then
     cxx_define="_BIOCYTIN_ $cxx_define"
   fi
 else
-  if [ $edition = "flyem" ]
-  then
-    cxx_define="_FLYEM_"
-  fi
-
   if [ $edition = "biocytin" ]
   then
     cxx_define="_BIOCYTIN_"
   fi
 fi
 
-if [ ! -z "QMAKE_SPEC" ]
+if [ ! -z "$QMAKE_SPEC" ]
 then
   qmake_args="-spec $QMAKE_SPEC"
 fi
 
+if [ ! -z "$CONDA_ENV" ]
+then
+  qmake_args="$qmake_args 'CONDA_ENV=${CONDA_ENV}'"
+fi
+
+if [ $edition = "flyem" ]
+then
+  qmake_args="$qmake_args CONFIG+=flyem"
+fi
+
+if [ $edition = "neu3" ]
+then
+  qmake_args="$qmake_args CONFIG+=neu3"
+fi
+
 qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
+
+if [ $debug_config = "sanitize" ]
+then
+  qmake_args="$qmake_args CONFIG+=debug"
+fi
+
 if [ -n "$cxx_define" ]
 then
   qmake_args="$qmake_args DEFINES+=\"$cxx_define\""
@@ -92,20 +115,20 @@ fi
 
 if [ -n "$ext_qmake_args" ]
 then
+  ext_qmake_args=`echo "$ext_qmake_args" | sed -e 's/^"//' -e 's/"$//'`
   echo $ext_qmake_args
   qmake_args="$qmake_args $ext_qmake_args"
 fi
 
-#exit 1
-
-echo $qmake_args
-
 cd neurolabi
 
-echo 'Building 3rd-party libraries ...'
-cd lib
-sh build.sh
-cd ..
+if [ -z "$CONDA_ENV" ]
+then
+  echo 'Building 3rd-party libraries ...'
+  cd lib
+  sh build.sh
+  cd ..
+fi
 
 echo 'Building libneurolabi ...'
 build_dir=build
@@ -114,7 +137,13 @@ then
   ./update_library
   build_dir=build_debug
 else
-  ./update_library --release 
+  if [ $debug_config = "sanitize" ]
+  then
+    ./update_library --sanitize
+    build_dir=build_sanitize
+  else
+    ./update_library --release 
+  fi
 fi
 
 if [ ! -d $build_dir ]
@@ -123,14 +152,36 @@ then
 fi
 
 cd $build_dir
+echo "qmake_args: $qmake_args"
 echo $qmake_args > source.qmake
-$QMAKE $qmake_args 
-make -j3
+echo $qmake_args | xargs $QMAKE
+echo "qmake done"
+
+
+THREAD_COUNT=${CPU_COUNT:-3}  # conda-build provides CPU_COUNT
+make -j${THREAD_COUNT}
 
 bin_dir=.
-if [ -d $bin_dir/neuTube.app ]
+app_name=neuTube
+
+if [ $edition = "flyem" ]
 then
-  bin_dir=$bin_dir/neuTube.app/Contents/MacOS
+  app_name=neutu
+fi
+
+if [ $edition = "neu3" ]
+then
+  app_name=neu3
+fi
+
+if [ $debug_config = "debug" ]
+then
+  app_name=${app_name}_d
+fi
+
+if [ -d $bin_dir/$app_name.app ]
+then
+  bin_dir=$bin_dir/$app_name.app/Contents/MacOS
 fi
 
 if [ ! -d $bin_dir/doc ]
@@ -138,7 +189,7 @@ then
   cp -r ../gui/doc $bin_dir/
 fi
 
-if [ $edition = "flyem" ]
+if [ $edition = "flyem" ] || [ $edition = "neu3" ]
 then
   cp ../gui/config_flyem.xml $bin_dir/config.xml
   cp ../gui/doc/flyem_proofread_help.html $bin_dir/doc/shortcut.html

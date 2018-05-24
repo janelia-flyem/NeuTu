@@ -29,6 +29,16 @@ namespace C_Stack {
 */
 ssize_t offset(int x, int y, int z, int width, int height, int depth);
 
+/*!
+ * \brief Neighborhood check.
+ */
+int neighborTest(int conn, int width, int height, int depth, size_t index,
+                 int *isInBound);
+int neighborTest(int conn, int width, int height, int depth,
+                 int x, int y, int z, int *isInBound);
+
+void neighborOffset(int conn, int width, int height, int neighbor[]);
+
 //Functions for Stack
 
 //Stack deallocator, mainly used for constructing a ZStack object
@@ -65,6 +75,7 @@ void systemKill(Stack *stack);
 inline void cppDelete(Stack *stack) { delete stack; }
 
 int stackUsage();
+int McStackUsage();
 
 /** @name Make copies
  */
@@ -139,6 +150,7 @@ inline size_t allByteNumber(const Stack *stack) {
  * \brief Pointer to the raw data
  */
 inline uint8_t* array8(const Stack *stack) { return (uint8_t*) stack->array; }
+uint8_t* array8(const Stack *stack, int x, int y, int z);
 
 uint16_t* guardedArray16(const Stack *stack);
 float* guardedArrayFloat32(const Stack *stack);
@@ -237,8 +249,13 @@ Stack* downsampleMax(const Stack *stack, int xintv, int yintv, int zintv,
                      Stack *result = NULL);
 Stack* downsampleMin(const Stack *stack, int xintv, int yintv, int zintv,
                      Stack *result = NULL);
-
+Stack* downsampleMinIgnoreZero(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
 void print(const Stack *stack);
+
+
+Stack* downsampleMean(const Stack *stack, int xintv, int yintv, int zintv,
+                     Stack *result = NULL);
 
 /*!
  * \brief Print the voxel values of a stack
@@ -252,7 +269,21 @@ double min(const Stack *stack);
 double max(const Stack *stack);
 double sum(const Stack *stack);
 int* hist(const Stack *stack);
+
+/*!
+ * \brief Get the histogram of a stack.
+ *
+ * The function computes the histogram of \a stack. It stores the result in
+ * \a out and returns the same pointer as \a out if it is not NULL. If \a out is
+ * NULL, it returns a new pointer for the result. The caller is responsible to
+ * delete the returned pointer.
+ *
+ * \param stack Input stack.
+ * \param out Output histogram.
+ * \return The object of the output histogram.
+ */
 ZIntHistogram* hist(const Stack *stack, ZIntHistogram *out);
+
 double mean(const Stack *stack);
 double mode(const Stack *stack);
 
@@ -295,7 +326,7 @@ inline size_t elementNumber(const Mc_Stack *stack) {
 }
 
 inline size_t allByteNumber(const Mc_Stack *stack) {
-  return volumeByteNumber(stack);
+  return volumeByteNumber(stack) * channelNumber(stack);
 }
 
 void setAttribute(Mc_Stack *stack, int kind, int width, int height, int depth,
@@ -326,10 +357,6 @@ void view(const Stack *src, Image_Array *dst);
 
 Mc_Stack* translate(const Mc_Stack *stack, int targetKind);
 
-int neighborTest(int conn, int width, int height, int depth, size_t index,
-                 int *isInBound);
-int neighborTest(int conn, int width, int height, int depth,
-                 int x, int y, int z, int *isInBound);
 
 Stack* extractChannel(const Stack *stack, int c);
 
@@ -344,6 +371,13 @@ void setZero(Mc_Stack *stack);
  * \brief Set all voxel values of a stack to 1
  */
 void setOne(Mc_Stack *stack);
+
+/*!
+ * \brief Set all pixels to a constant value.
+ *
+ * The value is reset to the closest bound when it is out of range.
+ */
+void setConstant(Mc_Stack *stack, int value);
 
 std::vector<size_t> getNeighborIndices(
     const Stack *stack, const std::vector<size_t> &indexArray,
@@ -363,7 +397,9 @@ void write(const std::string &filePath, const Mc_Stack *stack,
 Mc_Stack* read(const std::string &filePath, int channel = -1);
 Stack* readSc(const std::string &filePath);
 Mc_Stack* readMrawFromBuffer(const char *buffer, int channel = -1);
+char* toMrawBuffer(const Mc_Stack *stack, size_t *length);
 void readStackOffset(const std::string &filePath, int *x, int *y, int *z);
+void readStackIntv(const std::string &filePath, int *ix, int *iy, int *iz);
 
 Mc_Stack* resize(const Mc_Stack *stack, int width, int height, int depth);
 
@@ -400,6 +436,11 @@ bool isBinary(const Stack *stack);
 Image* makeMinProjZ(const Stack* stack, int minZ, int maxZ);
 Image* makeMaxProjZ(const Stack* stack, int minZ, int maxZ);
 
+
+//Processing functions
+Stack* Bwdist_L_U16P(const Stack *in, Stack *out, int pad);
+Stack* Bwdist(const Stack *in, Stack *out, long *label);
+
 //Paint routines
 void drawPatch(Stack *canvas, const Stack *patch,
                int dx, int dy, int dz, int transparentValue);
@@ -409,11 +450,18 @@ int integerWidth(int n, int interval);
 int drawDigit(Stack *canvas, int n, int dx, int dy, int dz);
 void drawInteger(Stack *canvas, int n, int dx, int dy, int dz, int interval = 10);
 
+//Workspace APIs
+Stack_Watershed_Workspace *MakeStackWatershedWorkspace(const Stack *stack);
+Stack_Watershed_Workspace *MakeStackWatershedWorkspace(size_t volume);
+void KillStackWatershedWorkspace(Stack_Watershed_Workspace *ws);
+
 //Experimenting APIs
 Stack* computeGradient(const Stack *stack);
 void shrinkBorder(const Stack *stack, int r, int nnbr = 6);
-Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws, Stack *out);
+Stack* watershed(const Stack *stack, Stack_Watershed_Workspace *ws);
 
 }
+
+#define MRAW_MAGIC_NUMBER 1836212599
 
 #endif // C_STACK_H

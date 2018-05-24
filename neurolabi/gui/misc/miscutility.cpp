@@ -11,6 +11,11 @@
 #include "zgraph.h"
 #include "tz_stack_neighborhood.h"
 #include "tz_utilities.h"
+#include "zswctree.h"
+#include "zclosedcurve.h"
+#include "zintcuboid.h"
+#include "zstack.hxx"
+#include "zarray.h"
 
 using namespace std;
 
@@ -145,20 +150,21 @@ static void ComputeGradient(
 
 static int ComputeLightIntensity(
     const Stack *stack, const Stack *innerDist, const Stack *outerDist,
-    int x, int y, int z, NeuTube::EAxis axis)
+    int x, int y, int z, neutube::EAxis axis)
 {
   double dx, dy, dz;
   ComputeGradient(stack, innerDist, outerDist, x, y, z, &dx, &dy, &dz);
   double norm = 1.0;
   if (dx != 0.0 || dy != 0.0 || dz != 0.0) {
     switch (axis) {
-    case NeuTube::X_AXIS:
+    case neutube::X_AXIS:
       norm = fabs(dx / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case NeuTube::Y_AXIS:
+    case neutube::Y_AXIS:
       norm = fabs(dy / sqrt(dx * dx + dy * dy + dz * dz));
       break;
-    case NeuTube::Z_AXIS:
+    case neutube::Z_AXIS:
+    case neutube::A_AXIS:
       norm = fabs(dz / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     }
@@ -168,7 +174,7 @@ static int ComputeLightIntensity(
   //return Clip_Value(1.0 / (1.0 + exp((0.5 - norm) * 5.0)) * 255.0, 0, 255);
 }
 
-Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
+Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
 {
   Stack *tmpStack = C_Stack::clone(stack);
   Stack *innerDist = Stack_Bwdist_L_U16P(tmpStack, NULL, 0);
@@ -186,28 +192,29 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
   int outHeight = 0;
 
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     outWidth = height;
     outHeight = depth;
     break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     outWidth = width;
     outHeight = depth;
     break;
-  case NeuTube::Z_AXIS:
-    outWidth = height;
-    outHeight = depth;
+  case neutube::Z_AXIS:
+  case neutube::A_AXIS:
+    outWidth = width;
+    outHeight = height;
     break;
   }
 
-  Stack *out = C_Stack::make(GREY, width, height, 1);
+  Stack *out = C_Stack::make(GREY, outWidth, outHeight, 1);
 
   C_Stack::setZero(out);
   size_t offset = 0;
   size_t offset2 = 0;
 
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int y = 0; y < C_Stack::height(stack); ++y) {
       bool hit = false;
@@ -228,7 +235,7 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
     }
   }
   break;
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
   for (int z = 0; z < C_Stack::depth(stack); ++z) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;
@@ -249,7 +256,8 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
     }
   }
   break;
-  case NeuTube::Z_AXIS:
+  case neutube::A_AXIS:
+  case neutube::Z_AXIS:
   for (int y = 0; y < C_Stack::height(stack); ++y) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
       bool hit = false;
@@ -281,7 +289,7 @@ Stack* misc::computeNormal(const Stack *stack, NeuTube::EAxis axis)
 int misc::computeRavelerHeight(
     const ZIntCuboidArray &blockArray, int margin)
 {
-  FlyEm::SubstackRegionCalbration calbr;
+  flyem::SubstackRegionCalbration calbr;
   calbr.setBounding(true, true, false);
   calbr.setMargin(margin, margin, 0);
 
@@ -327,6 +335,35 @@ bool misc::exportPointList(
   return false;
 }
 
+int misc::GetZoomScale(int zoom)
+{
+  switch (zoom) {
+  case 0:
+    return 1;
+  case 1:
+    return 2;
+  case 2:
+    return 4;
+  case 3:
+    return 8;
+  case 4:
+    return 16;
+  case 5:
+    return 32;
+  case 6:
+    return 64;
+  default:
+    break;
+  }
+
+  int scale = 1;
+  while (zoom--) {
+    scale *= 2;
+  }
+
+  return scale;
+}
+
 double misc::computeConfidence(double v, double median, double p95)
 {
   double alpha = median;
@@ -340,7 +377,7 @@ std::vector<std::string> misc::parseHdf5Path(const string &path)
   std::vector<std::string> tokens = ZString(path).tokenize(':');
   std::vector<std::string> pathArray;
   if (tokens.size() > 0) {
-    if (ZFileType::fileType(tokens[0]) == ZFileType::HDF5_FILE) {
+    if (ZFileType::FileType(tokens[0]) == ZFileType::FILE_HDF5) {
       pathArray = tokens;
     }
   }
@@ -512,6 +549,64 @@ ZIntPoint misc::getDsIntvFor3DVolume(const ZIntCuboid &box)
   return dsIntv;
 }
 
+double misc::GetExpansionScale(size_t currentVol, size_t maxVol)
+{
+  double ratio = (double) maxVol / currentVol;
+
+  return Cube_Root(ratio);
+}
+
+int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
+{
+  if (dsRatio <= 1) {
+    return 0;
+  }
+
+  if (powed) {
+    if (dsRatio <= 8) {
+      return 1;
+    } else if (dsRatio <= 27) {
+      return 2;
+    } else if (dsRatio <= 64) {
+      return 3;
+    }
+  }
+
+  int s = int(std::ceil(Cube_Root(dsRatio))); //upper bound of interval
+
+  if (powed) {
+    int k, m;
+    pow2decomp(s, &k, &m);
+    if (m > 1) {
+      ++k;
+    }
+    s = iround(std::pow((double) 2, k));
+
+    if (s * s * s >= dsRatio * 8) { //Dealing with rounding error
+      s /= 2;
+    }
+  } else {
+    if ((s - 1) * (s - 1) * (s - 1) >= dsRatio) { //Dealing with rounding error
+      --s;
+    }
+  }
+
+  s -= 1;
+
+  return s;
+}
+
+int misc::getIsoDsIntvFor3DVolume(const ZIntCuboid &box, size_t maxVolume, bool powed)
+{
+  if (box.getVolume() <= maxVolume) {
+    return 0;
+  }
+
+  double dsRatio = (double) box.getVolume() / maxVolume;
+
+  return getIsoDsIntvFor3DVolume(dsRatio, powed);
+}
+
 ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
 {
   ZIntPoint dsIntv;
@@ -538,4 +633,153 @@ ZIntPoint misc::getDsIntvFor3DVolume(double dsRatio)
   }
 
   return dsIntv;
+}
+
+ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
+{
+  ZClosedCurve curve;
+  if (!tree.isEmpty()) {
+    Swc_Tree_Node *tn = tree.firstRegularRoot();
+    while (tn != NULL) {
+      curve.append(SwcTreeNode::center(tn));
+      tn = SwcTreeNode::firstChild(tn);
+    }
+  }
+
+  return curve;
+}
+
+ZIntCuboid misc::GetBoundBox(const ZArray *array)
+{
+  ZIntCuboid box;
+  if (array != NULL) {
+    box.setFirstCorner(array->getStartCoordinate(0),
+                       array->getStartCoordinate(1),
+                       array->getStartCoordinate(2));
+    box.setSize(array->getDim(0), array->getDim(1), array->getDim(2));
+  }
+
+  return box;
+}
+
+ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)
+{
+  ZCuboid result;
+
+  result.setFirstCorner(box1.firstCorner().x() - box2.getFirstCorner().getX(),
+                        box1.firstCorner().y() - box2.getFirstCorner().getY(),
+                        box1.firstCorner().z() - box2.getFirstCorner().getZ());
+
+  result.setSize(box2.getWidth(), box2.getHeight(), box2.getDepth());
+
+  return result;
+}
+
+ZCuboid misc::Intersect(const ZCuboid &box1, const ZIntCuboid &box2)
+{
+  ZCuboid result = box1;
+
+  result.setFirstCorner(box2.getFirstCorner().toPoint());
+  result.setLastCorner(box2.getLastCorner().toPoint());
+
+  result.intersect(box1);
+
+  return result;
+}
+
+double misc::SampleStack(
+    const Stack *stack, double x, double y, double z, ESampleStackOption option)
+{
+  if (stack == NULL) {
+    return NAN;
+  }
+
+  if (C_Stack::kind(stack) != GREY) {
+    return NAN;
+  }
+
+  double v = NAN;
+
+  if (IS_IN_CLOSE_RANGE3(x, y, z, 0, C_Stack::width(stack) - 1,
+                         0, C_Stack::height(stack) - 1,
+                         0, C_Stack::depth(stack) - 1)) {
+    double nbr[8];
+
+    if (option == SAMPLE_STACK_AVERAGE) {
+      for (size_t i = 0; i < 8; ++i) {
+        nbr[i] = 0.0;
+      }
+    } else {
+      for (size_t i = 0; i < 8; ++i) {
+        nbr[i] = NAN;
+      }
+    }
+
+
+    double wx = x - std::floor(x);
+    double wy = y - std::floor(y);
+    double wz = z - std::floor(z);
+
+    int width = C_Stack::width(stack);
+
+    uint8_t *stackArray = C_Stack::array8(stack);
+    size_t area = C_Stack::area(stack);
+    size_t offset =
+        area * int(z) + width * int(y) + int(x);
+    nbr[0] = stackArray[offset];
+
+    if (wx > 0.0) {
+      nbr[1] = stackArray[offset + 1];
+    }
+    if (wy > 0.0) {
+      nbr[2] = stackArray[offset + width];
+    }
+    if (wz > 0.0) {
+      nbr[4] = stackArray[offset + area];
+    }
+
+    if (wx > 0.0 && wy > 0.0) {
+      nbr[3] = stackArray[offset + width + 1];
+    }
+
+    if (wx > 0.0 && wz > 0.0) {
+      nbr[5] = stackArray[offset + area + 1];
+    }
+
+    if (wy > 0.0 && wz > 0.0) {
+      nbr[6] = stackArray[offset + area + width];
+    }
+
+    if (wx > 0.0 && wy > 0.0 && wz > 0.0) {
+      nbr[7] = stackArray[offset + area + width + 1];
+    }
+
+    switch (option) {
+    case SAMPLE_STACK_NN:
+    {
+      int index = 4 * (wz > 0.5) + 2 * (wy > 0.5) + (wx > 0.5);
+      v = nbr[index];
+    }
+      break;
+    case SAMPLE_STACK_AVERAGE:
+      v = ((nbr[0] * (1.0 - wx) + nbr[1] * wx) * (1.0 - wy) +
+          (nbr[2] * (1.0 - wx) + nbr[3] * wx) * wy) * (1.0 - wz) +
+          ((nbr[4] * (1.0 - wx) + nbr[5] * wx) * (1.0 - wy) +
+          (nbr[6] * (1.0 - wx) + nbr[7] * wx) * wy) * wz;
+      break;
+    case SAMPLE_STACK_UNIFORM:
+      v = nbr[0];
+      for (size_t i = 1; i < 8; ++i) {
+        if (!std::isnan(nbr[i])) {
+          if (nbr[0] != nbr[i]) {
+            v = NAN;
+            break;
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  return v;
 }

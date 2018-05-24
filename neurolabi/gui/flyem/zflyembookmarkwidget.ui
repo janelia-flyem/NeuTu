@@ -58,6 +58,9 @@
      </widget>
     </widget>
    </item>
+   <item>
+    <widget class="ZFlyEmBookmarkFilter" name="bookmarkFilter" native="true"/>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -65,6 +68,12 @@
    <class>ZFlyEmBookmarkView</class>
    <extends>QTableView</extends>
    <header location="global">flyem/zflyembookmarkview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ZFlyEmBookmarkFilter</class>
+   <extends>QWidget</extends>
+   <header location="global">flyem/zflyembookmarkfilter.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

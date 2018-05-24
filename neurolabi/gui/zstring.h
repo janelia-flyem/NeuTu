@@ -37,36 +37,66 @@ public:
     CASE_SENSITIVE, CASE_INSENSITIVE
   };
 
-  inline void init() { m_workspace = New_String_Workspace(); }
+  inline void init() { m_workspace = NULL; }
 
-  static int firstInteger(const std::string &str);
+  static int FirstInteger(const std::string &str);
   int firstInteger();
   int lastInteger();
+
+  bool isAllDigit() const;
+
   /*!
    * \brief Extract the last integer in a string
    * \param Input string.
    * \return Returns the last integer of \a str. It returns 0 if there is no
    *         integer in the string.
    */
-  static int lastInteger(const std::string &str);
+  static int LastInteger(const std::string &str);
   double firstDouble();
   double lastDouble();
   uint64_t firstUint64();
+  uint64_t lastUint64();
   std::string firstQuotedWord();
 
   std::vector<int> toIntegerArray();
   std::vector<uint64_t> toUint64Array();
   std::vector<double> toDoubleArray();
   std::vector<std::string> toWordArray(const std::string &delim = ", \n");
+  std::string getLastWord(char c);
   std::vector<std::string> tokenize(char c);
+
+  static std::vector<std::string> ToWordArray(
+      const std::string &input, const std::string &delim = ", \n");
+  static std::vector<std::string> Tokenize(const std::string &str, char c);
 
   bool readLine(FILE *fp);
   bool contains(const std::string &str);
   bool containsDigit();
-  std::string& replace(const std::string &from, const std::string &to);
-  std::string& replace(int from, const std::string &to);
+  ZString& replace(const std::string &from, const std::string &to);
+  ZString &replace(int from, const std::string &to);
+
+  /*!
+   * \brief Test if a string starts with another string.
+   *
+   *  Return true if the string starts with \a str; otherwise returns false. If
+   *  either of the strings is empty, it returns false.
+   *
+   * \param str The matching sub-string.
+   * \param cs Use case-senstivtive matching or not.
+   */
   bool startsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
+
+  /*!
+   * \brief Test if a string ends with another string.
+   *
+   *  Return true if the string ends with \a str; otherwise returns false. If
+   *  either of the strings is empty, it returns false.
+   *
+   * \param str The matching sub-string.
+   * \param cs Use case-senstivtive matching or not.
+   */
   bool endsWith(const std::string &str, ECaseSensitivity cs = CASE_SENSITIVE) const;
+
   void trim();
 
   void toLower();
@@ -131,6 +161,7 @@ public:
   }
 
   static std::string num2str(int n);
+  static std::string num2str(uint64_t n);
 
 private:
   String_Workspace *m_workspace;

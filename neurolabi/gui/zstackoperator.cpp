@@ -13,12 +13,23 @@ ZStackOperator::ZStackOperator() :
 {
 }
 
+void ZStackOperator::clear()
+{
+  m_op = OP_NULL;
+  m_hitObject = NULL;
+  m_punctaIndex = -1;
+  m_togglingStrokeLabel = false;
+  m_buttonPressed = Qt::NoButton;
+  m_label = 0;
+  m_shift = false;
+}
+
 bool ZStackOperator::isNull() const
 {
   return getOperation() == OP_NULL;
 }
 
-ZPoint ZStackOperator::getMouseOffset(NeuTube::ECoordinateSystem cs) const
+ZPoint ZStackOperator::getMouseOffset(neutube::ECoordinateSystem cs) const
 {
   ZPoint offset(0, 0, 0);
 
@@ -44,6 +55,11 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
   switch (op) {
   case ZStackOperator::OP_NULL:
     opable = false;
+    break;
+  case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
+    if (!doc->hasSelectedObject()) {
+      opable = false;
+    }
     break;
   case ZStackOperator::OP_SWC_DELETE_NODE:
   case ZStackOperator::OP_SWC_MOVE_NODE_LEFT:
@@ -83,14 +99,17 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
     }
     break;
   case ZStackOperator::OP_SWC_ENTER_ADD_NODE:
-    if (doc->getTag() != NeuTube::Document::NORMAL &&
-        doc->getTag() != NeuTube::Document::BIOCYTIN_STACK &&
-        doc->getTag() != NeuTube::Document::FLYEM_ROI) {
+    if (doc->getTag() != neutube::Document::NORMAL &&
+        doc->getTag() != neutube::Document::BIOCYTIN_STACK &&
+        doc->getTag() != neutube::Document::FLYEM_ROI &&
+        doc->getTag() != neutube::Document::FLYEM_PROOFREAD) {
       opable = false;
     }
     break;
   case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE:
   case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE:
+  case ZStackOperator::OP_SWC_DECREASE_NODE_SIZE_FAST:
+  case ZStackOperator::OP_SWC_INCREASE_NODE_SIZE_FAST:
     if (!doc->hasSelectedSwcNode()) {
       opable = false;
     }
@@ -99,6 +118,7 @@ bool ZStackOperator::IsOperable(EOperation op, const ZStackDoc *doc)
     if (!doc->getRect2dRoi().isValid()) {
       opable = false;
     }
+    break;
   default:
     break;
   }

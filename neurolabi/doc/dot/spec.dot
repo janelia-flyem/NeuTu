@@ -1,0 +1,25 @@
+digraph G {
+  parentClass [shape = box, label = "Parent Class"];
+  class [shape = box, label = "Class"];
+  class2 [shape = box, label = "Class 2"];
+  class3 [shape = box, label = "Class 3"];
+  function [];
+  signal [shape = none, label = "signal()"]
+  statement [shape = none, label = "statement;"]
+  statement1 [shape = none, label = "statement;"]
+  statement2 [shape = none, label = "statement;"]
+  parentClass -> class;
+  class -> function [arrowhead = odot];
+  class -> signal [arrowhead = odot];
+  function -> statement;
+  statement -> function2 [arrowhead = onormal];
+  class2 -> function2 [arrowhead = odot];
+  class2 -> slot [arrowhead = odot];
+  signal -> slot;
+  class -> class3 [arrowhead = diamond];
+  class2 -> class3 [arrowhead = odiamond];
+  condition [shape = record, label = "<f0> no | <f1> condition | <f2> yes"];
+  function2 -> condition : f1 [arrowhead = onormal];
+  condition : f0 -> statement1 [arrowhead = onormal];
+  condition : f2 -> statement2 [arrowhead = onormal];
+}

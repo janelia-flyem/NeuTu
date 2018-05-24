@@ -1,8 +1,17 @@
+//#define _NEUTU_USE_REF_KEY_
 #include "zflyemmisc.h"
 
+#include <unistd.h>
 #include <iostream>
 #include <QString>
+#include <QProcess>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
 
+#include "zjsondef.h"
+#include "neutubeconfig.h"
+#include "zglobal.h"
 #include "zmatrix.h"
 #include "tz_math.h"
 #include "tz_utilities.h"
@@ -22,6 +31,22 @@
 #include "zstackviewparam.h"
 #include "zintcuboidarray.h"
 #include "zobject3dfactory.h"
+#include "tz_stack_bwmorph.h"
+#include "tz_stack_neighborhood.h"
+#include "zstroke2d.h"
+#include "dvid/zdvidsparsestack.h"
+#include "zfileparser.h"
+#include "zjsonfactory.h"
+#include "dvid/zdvidwriter.h"
+#include "zobject3d.h"
+#include "zarbsliceviewparam.h"
+#include "flyem/zmainwindowcontroller.h"
+#include "zswctree.h"
+#include "geometry/zaffinerect.h"
+#include "zarray.h"
+#include "zstack.hxx"
+#include "zstackfactory.h"
+#include "misc/miscutility.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -201,29 +226,537 @@ Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
   return graph;
 }
 
-/*
-void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidInfo &dvidInfo)
+Z3DGraph* ZFlyEmMisc::MakeSliceViewGraph(const ZArbSliceViewParam &param)
 {
-  if (window != NULL) {
-    ZStackDoc *doc = window->getDocument();
-    if (doc != NULL) {
-      doc->addObject(MakeBoundBoxGraph(dvidInfo), true);
-      doc->addObject(MakePlaneGraph(doc, dvidInfo), true);
+  Z3DGraph *graph = NULL;
+  if (param.isValid()) {
+    ZPoint center = param.getCenter().toPoint();
+    int rx = param.getWidth() / 2;
+    int ry = param.getHeight() / 2;
+    ZPoint pt1 = center - param.getPlaneV1() * rx - param.getPlaneV2() * ry;
+    ZPoint pt2 = center + param.getPlaneV1() * rx - param.getPlaneV2() * ry;
+    ZPoint pt3 = center + param.getPlaneV1() * rx + param.getPlaneV2() * ry;
+    ZPoint pt4 = center - param.getPlaneV1() * rx + param.getPlaneV2() * ry;
+
+    graph = Z3DGraphFactory::MakeQuadCross(pt1, pt2, pt3, pt4);
+    graph->setSource(ZStackObjectSourceFactory::MakeSlicViewObjectSource());
+  }
+
+  return graph;
+}
+
+Z3DGraph* ZFlyEmMisc::MakeRoiGraph(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo)
+{
+  int sampleInterval = 1;
+
+//  int intv = 0;
+
+  Z3DGraph *graph = new Z3DGraph;
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = roi.toStackWithMargin(startCoord, 1, 1);
+
+  size_t offset = 0;
+  int i, j, k;
+  int n;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(
+        6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  Z3DGraphFactory factory;
+  factory.setNodeRadiusHint(0);
+  factory.setShapeHint(GRAPH_LINE);
+  factory.setEdgeColorHint(roi.getColor());
+//  factory.setEdgeColorHint(QColor(128, 64, 64));
+
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+        if (k % sampleInterval == 0) {
+          if (array[offset] > 0) {
+            std::vector<int> faceArray;
+            for (n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                faceArray.push_back(n);
+              }
+            }
+            if (!faceArray.empty()) {
+              ZIntCuboid box = dvidInfo.getBlockBox(
+                    i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+              Z3DGraph *subgraph = factory.makeFaceGraph(box, faceArray);
+              graph->append(*subgraph);
+              delete subgraph;
+            }
+          }
+        }
+        offset++;
+      }
     }
   }
-}
 
-void ZFlyEmMisc::Decorate3DWindow(Z3DWindow *window, const ZDvidReader &reader)
-{
-  if (window != NULL) {
-    Decorate3DWindow(window, reader.readGrayScaleInfo());
+  C_Stack::kill(stack);
+
+#if 0
+  Stack *surface = Stack_Perimeter(stack, NULL, 6);
+  C_Stack::kill(stack);
+
+  int width = C_Stack::width(surface);
+  int height = C_Stack::height(surface);
+  int depth = C_Stack::depth(surface);
+  size_t offset = 0;
+
+  C_Stack::write("/Users/zhaot/Work/neutube/neurolabi/data/test.tif", surface);
+
+  Z3DGraphFactory factory;
+  factory.setNodeRadiusHint(0);
+  factory.setShapeHint(GRAPH_LINE);
+  factory.setEdgeColorHint(QColor(128, 64, 64));
+  int sampleInterval = 5;
+  int intv = 0;
+  for (int k = 0; k < depth; ++k) {
+    for (int j = 0; j < height; ++j) {
+      for (int i = 0; i < width; ++i) {
+        if ((intv++) % sampleInterval == 0) {
+          if (surface->array[offset] > 0) {
+            ZIntCuboid box = dvidInfo.getBlockBox(
+                  i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+            Z3DGraph *subgraph = factory.makeBox(box);
+            graph->append(*subgraph);
+            delete subgraph;
+          }
+        }
+        ++offset;
+      }
+    }
   }
-}
-*/
 
-void ZFlyEmMisc::Decorate3dBodyWindowPlane(
-    Z3DWindow *window, const ZDvidInfo &dvidInfo,
-    const ZStackViewParam &viewParam)
+  C_Stack::kill(surface);
+#endif
+
+  return graph;
+}
+
+ZCubeArray* ZFlyEmMisc::MakeRoiCube(
+    const ZObject3dScan &roi, QColor color, int dsIntv)
+{
+  ZCubeArray *cubeArray = new ZCubeArray;
+  ZMesh *mesh = MakeRoiMesh(roi, color, dsIntv);
+  cubeArray->setMesh(mesh);
+
+  return cubeArray;
+#if 0
+  ZObject3dScan dsRoi = roi;
+//  ZDvidInfo dsInfo = dvidInfo;
+
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+//    dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZIntPoint roiDsIntv = dsRoi.getDsIntv();
+//  int sampleInterval = dsIntv;
+
+  ZCubeArray *cubes = new ZCubeArray;
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
+  //Stack *stack = roi.getSlice(49).toStackWithMargin(startCoord, 1, 1); // rendering only one slice of ROIs for test
+
+  size_t offset = 0;
+  int i, j, k;
+  int n;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  //
+  //glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 1.0);
+
+  //
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+//        bool goodCube = (sampleInterval == 0);
+//        if (!goodCube) {
+//          goodCube = (k % sampleInterval == 0);
+//        }
+        bool goodCube = true;
+        if (goodCube) {
+          if (array[offset] > 0) {
+            std::vector<int> faceArray;
+            for (n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                faceArray.push_back(n);
+              }
+            }
+            if (!faceArray.empty()) {
+              ZIntCuboid box;
+              box.setFirstCorner((i + startCoord[0]) * (roiDsIntv.getX() + 1),
+                                 (j + startCoord[1]) * (roiDsIntv.getY() + 1),
+                                 (k + startCoord[2]) * (roiDsIntv.getZ() + 1));
+              box.setSize(
+                    roiDsIntv.getX() + 2, roiDsIntv.getY() + 2, roiDsIntv.getZ() + 2);
+//              ZIntCuboid box = dsInfo.getBlockBox(
+//                    i * dsInt, j + startCoord[1], k + startCoord[2]);
+//              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+
+              qreal r,g,b,a;
+              color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+              Z3DCube *cube = cubes->makeCube(box, glm::vec4(r,g,b,a), faceArray);
+              cubes->append(*cube);
+              delete cube;
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  //
+  return cubes;
+#endif
+}
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(const ZDvidReader &reader, const ZAffineRect &ar)
+{
+  return MakeColorSegmentation(reader, ar, 0, 0);
+}
+
+namespace {
+
+ZStack* LabelToColorStack(const ZArray *array)
+{
+  ZStack *stack = NULL;
+  if (array != NULL) {
+    uint64_t *labelArray = array->getDataPointer<uint64_t>();
+
+    ZObjectColorScheme colorScheme;
+    colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
+
+    stack = ZStackFactory::MakeZeroStack(
+          GREY, misc::GetBoundBox(array), 3);
+    //    ZStack *stack = new ZStack(COLOR, width, height, 1, 1);
+    uint8_t *array1 = stack->array8(0);
+    uint8_t *array2 = stack->array8(1);
+    uint8_t *array3 = stack->array8(2);
+
+    size_t volume = stack->getVoxelNumber();
+    for (size_t i = 0; i < volume; ++i) {
+      QColor color = colorScheme.getColor(labelArray[i]);
+      array1[i] = color.red();
+      array2[i] = color.green();
+      array3[i] = color.blue();
+    }
+
+    delete array;
+  }
+
+  return stack;
+}
+
+} //namespace
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(
+    const ZDvidReader &reader, const ZAffineRect &ar, int ccx, int ccy)
+{
+  ZArray *array = reader.readLabels64Lowtis(ar, 0, ccx, ccy);
+
+  ZStack *stack = LabelToColorStack(array);
+
+  return stack;
+}
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(
+    const ZDvidReader &reader, int x0, int y0, int z0, int width, int height,
+    int zoom, int ccx, int ccy)
+{
+  ZArray *array = reader.readLabels64Lowtis(
+        x0, y0, z0, width, height, zoom, ccx, ccy);
+
+  ZStack *stack = LabelToColorStack(array);
+
+  return stack;
+}
+
+
+ZCubeArray* ZFlyEmMisc::MakeRoiCube(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
+{
+  ZCubeArray *cubeArray = new ZCubeArray;
+  ZMesh *mesh = MakeRoiMesh(roi, dvidInfo, color, dsIntv);
+  cubeArray->setMesh(mesh);
+
+  return cubeArray;
+#if 0
+  ZObject3dScan dsRoi = roi;
+  ZDvidInfo dsInfo = dvidInfo;
+
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+    dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  }
+
+//  int sampleInterval = dsIntv;
+
+  ZCubeArray *cubes = new ZCubeArray;
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
+  //Stack *stack = roi.getSlice(49).toStackWithMargin(startCoord, 1, 1); // rendering only one slice of ROIs for test
+
+  size_t offset = 0;
+  int i, j, k;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  //
+  //glm::vec4 color = glm::vec4(0.5, 0.25, 0.25, 1.0);
+
+  //
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+//        bool goodCube = (sampleInterval == 0);
+//        if (!goodCube) {
+//          goodCube = (k % sampleInterval == 0);
+//        }
+        bool goodCube = true;
+        if (goodCube) {
+          if (array[offset] > 0) {
+            std::vector<int> faceArray;
+            for (int n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                int f = n;
+//                if (f % 2 == 0) { //Remapping to match face defination (temporary fix)
+//                  f += 1;
+//                } else {
+//                  f -= 1;
+//                }
+                faceArray.push_back(f);
+              }
+            }
+            if (!faceArray.empty()) {
+              ZIntCuboid box = dsInfo.getBlockBox(
+                    i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+
+              qreal r,g,b,a;
+              color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+              Z3DCube *cube = cubes->makeCube(box, glm::vec4(r,g,b,a), faceArray);
+              cubes->append(*cube);
+              delete cube;
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  //
+  return cubes;
+#endif
+}
+
+ZMesh* ZFlyEmMisc::MakeRoiMesh(const ZObject3dScan &roi, QColor color, int dsIntv)
+{
+  ZObject3dScan dsRoi = roi;
+
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZMesh *mesh = new ZMesh;
+
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
+
+  size_t offset = 0;
+  int i, j, k;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  std::vector<glm::vec3> coordLlfs;
+  std::vector<glm::vec3> coordUrbs;
+  std::vector<std::vector<bool> > faceVisbility;
+  std::vector<glm::vec4> cubeColors;
+
+  qreal r,g,b,a;
+  color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+  int bw = dsRoi.getDsIntv().getX() + 1;
+  int bh = dsRoi.getDsIntv().getY() + 1;
+  int bd = dsRoi.getDsIntv().getZ() + 1;
+
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+        bool goodCube = true;
+        if (goodCube) {
+          if (array[offset] > 0) {
+            std::vector<bool> fv(6, false);
+            bool visible = false;
+            for (int n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                fv[n] = true;
+                visible = true;
+              }
+            }
+            if (visible) {
+              ZIntCuboid box;
+              box.setFirstCorner(
+                    (i + startCoord[0]) * bw, (j + startCoord[1]) * bh,
+                  (k + startCoord[2]) * bd);
+              box.setLastCorner(box.getFirstCorner() + ZIntPoint(bw, bh, bd));
+
+              coordLlfs.emplace_back(box.getFirstCorner().getX(),
+                                     box.getFirstCorner().getY(),
+                                     box.getFirstCorner().getZ());
+              coordUrbs.emplace_back(box.getLastCorner().getX(),
+                                     box.getLastCorner().getY(),
+                                     box.getLastCorner().getZ());
+              cubeColors.emplace_back(r, g, b, a);
+              faceVisbility.push_back(fv);
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  mesh->createCubesWithNormal(coordLlfs, coordUrbs, faceVisbility, &cubeColors);
+
+
+  return mesh;
+}
+
+ZMesh* ZFlyEmMisc::MakeRoiMesh(
+    const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
+{
+  ZObject3dScan dsRoi = roi;
+  ZDvidInfo dsInfo = dvidInfo;
+
+  if (dsIntv > 0) {
+    dsRoi.downsampleMax(dsIntv, dsIntv, dsIntv);
+    dsInfo.downsampleBlock(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZMesh *mesh = new ZMesh;
+
+  //For each voxel, create a graph
+  int startCoord[3];
+  Stack *stack = dsRoi.toStackWithMargin(startCoord, 1, 1);
+
+  size_t offset = 0;
+  int i, j, k;
+  int neighbor[26];
+  int width = C_Stack::width(stack);
+  int height = C_Stack::height(stack);
+  int depth = C_Stack::depth(stack);
+  int cwidth = width - 1;
+  int cheight = height - 1;
+  int cdepth = depth - 1;
+
+  Stack_Neighbor_Offset(6, C_Stack::width(stack), C_Stack::height(stack), neighbor);
+  uint8_t *array = C_Stack::array8(stack);
+
+  std::vector<glm::vec3> coordLlfs;
+  std::vector<glm::vec3> coordUrbs;
+  std::vector<std::vector<bool> > faceVisbility;
+  std::vector<glm::vec4> cubeColors;
+
+  qreal r,g,b,a;
+  color.getRgbF(&r, &g, &b, &a); // QColor -> glm::vec4
+
+  for (k = 0; k <= cdepth; k ++) {
+    for (j = 0; j <= cheight; j++) {
+      for (i = 0; i <= cwidth; i++) {
+        bool goodCube = true;
+        if (goodCube) {
+          if (array[offset] > 0) {
+            std::vector<bool> fv(6, false);
+            bool visible = false;
+            for (int n = 0; n < 6; n++) {
+              if (array[offset + neighbor[n]] == 0) {
+                fv[n] = true;
+                visible = true;
+              }
+            }
+            if (visible) {
+              ZIntCuboid box = dsInfo.getBlockBox(
+                    i + startCoord[0], j + startCoord[1], k + startCoord[2]);
+              box.setLastCorner(box.getLastCorner() + ZIntPoint(1, 1, 1));
+
+              coordLlfs.emplace_back(box.getFirstCorner().getX(),
+                                     box.getFirstCorner().getY(),
+                                     box.getFirstCorner().getZ());
+              coordUrbs.emplace_back(box.getLastCorner().getX(),
+                                     box.getLastCorner().getY(),
+                                     box.getLastCorner().getZ());
+              cubeColors.emplace_back(r, g, b, a);
+              faceVisbility.push_back(fv);
+            }
+          }
+        }
+        offset++;
+      }
+    }
+  }
+
+  C_Stack::kill(stack);
+
+  mesh->createCubesWithNormal(coordLlfs, coordUrbs, faceVisbility, &cubeColors);
+
+
+  return mesh;
+}
+
+void ZFlyEmMisc::Decorate3dBodyWindowPlane(Z3DWindow *window, const ZDvidInfo &dvidInfo,
+    const ZStackViewParam &viewParam, bool visible)
 {
   if (window != NULL) {
     ZRect2d rect;
@@ -236,20 +769,21 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
     ZCuboid box;
     box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
     box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-    double lineWidth = box.depth() / 2000.0;
-    Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
+//    double lineWidth = box.depth() / 2000.0;
+    double lineWidth = 4.0;
+    Z3DGraph *graph = Z3DGraphFactory::MakeGrid(rect, 50, lineWidth);
 
     if (viewParam.getViewPort().isValid()) {
       Z3DGraphNode node1;
       Z3DGraphNode node2;
 
-      node1.setColor(QColor(255, 0, 0));
-      node2.setColor(QColor(255, 0, 0));
+      node1.setColor(QColor(0, 255, 0));
+      node2.setColor(QColor(0, 255, 0));
 
       double x = viewParam.getViewPort().center().x();
       double y = viewParam.getViewPort().center().y();
 
-      double width = lineWidth * 0.3;
+      double width = lineWidth * 0.5;
       node1.set(x, rect.getFirstY(), rect.getZ(), width);
       node2.set(x, rect.getLastY(), rect.getZ(), width);
 
@@ -257,6 +791,8 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
       graph->addNode(node2);
       graph->addEdge(node1, node2, GRAPH_LINE);
 
+      node1.setColor(QColor(255, 0, 0));
+      node2.setColor(QColor(255, 0, 0));
       node1.set(rect.getFirstX(), y, rect.getZ(), width);
       node2.set(rect.getLastX(), y, rect.getZ(), width);
 
@@ -266,27 +802,175 @@ void ZFlyEmMisc::Decorate3dBodyWindowPlane(
     }
 
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
+    graph->setVisible(visible);
     window->getDocument()->addObject(graph, true);
+#if 0
+    ZStackObject *replaced =
+        window->getDocument()->getObjectGroup().replaceFirstSameSource(graph);
+    if (replaced == NULL) {
+      window->getDocument()->addObject(graph, true);
+    } else {
+      window->getDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+      window->getDocument()->bufferObjectModified(replaced);
+      window->getDocument()->bufferObjectModified(graph);
+      delete replaced;
+      window->getDocument()->endObjectModifiedMode();
+      window->getDocument()->notifyObjectModified();
+    }
+#endif
   }
 }
 
 
 void ZFlyEmMisc::Decorate3dBodyWindow(
     Z3DWindow *window, const ZDvidInfo &dvidInfo,
-    const ZStackViewParam &viewParam)
+    const ZStackViewParam &viewParam, bool visible)
 {
   if (window != NULL) {
-    Decorate3dBodyWindowPlane(window, dvidInfo, viewParam);
+    Decorate3dBodyWindowPlane(window, dvidInfo, viewParam, visible);
     ZCuboid box;
     box.setFirstCorner(dvidInfo.getStartCoordinates().toPoint());
     box.setLastCorner(dvidInfo.getEndCoordinates().toPoint());
-    Z3DGraph *graph = Z3DGraphFactory::MakeBox(
-          box, dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0));
+    double radius =
+        dmax2(1.0, dmax3(box.width(), box.height(), box.depth()) / 1000.0);
+    if (!visible) {
+      radius = 0.0;
+    }
+    Z3DGraph *graph = Z3DGraphFactory::MakeBox(box, radius);
     graph->setSource(ZStackObjectSourceFactory::MakeFlyEmBoundBoxSource());
+//    if (window->getWindowType() == NeuTube3D::TYPE_NEU3) {
+//      graph->setVisible(visible);
+//    }
 
     window->getDocument()->addObject(graph, true);
-    window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+    window->resetCamera();
+    if (window->isBackgroundOn()) {
+      window->setOpacity(neutube3d::LAYER_GRAPH, 0.4);
+    }
   }
+}
+
+void ZFlyEmMisc::Decorate3dBodyWindowRoi(
+    Z3DWindow *window, const ZDvidInfo &dvidInfo, const ZDvidTarget &dvidTarget)
+{
+  if (window != NULL) {
+    const std::vector<std::string> &roiList = dvidTarget.getRoiList();
+    if (!roiList.empty()) {
+      ZDvidReader reader;
+      if (reader.open(dvidTarget)) {
+        ZColorScheme colorScheme;
+        colorScheme.setColorScheme(ZColorScheme::UNIQUE_COLOR);
+        int index = 0;
+        for (std::vector<std::string>::const_iterator iter = roiList.begin();
+             iter != roiList.end(); ++iter, ++index) {
+          ZObject3dScan roi = reader.readRoi(*iter);
+          roi.setColor(colorScheme.getColor(index));
+          if (!roi.isEmpty()) {
+            Z3DGraph *graph = MakeRoiGraph(roi, dvidInfo);
+//            graph->setColor(colorScheme.getColor(index));
+//            graph->syncNodeColor();
+            graph->setSource(
+                  ZStackObjectSourceFactory::MakeFlyEmRoiSource(*iter));
+            window->getDocument()->addObject(graph, true);
+          }
+        }
+      }
+    }
+  }
+}
+
+void ZFlyEmMisc::Decorate3dBodyWindowRoiCube(
+    Z3DWindow *window, const ZDvidInfo &/*dvidInfo*/, const ZDvidTarget &dvidTarget)
+{
+  if (window != NULL) {
+/*
+    ZDvidReader reader;
+    if (reader.open(dvidTarget)) {
+      const std::vector<std::string>& roiList = dvidTarget.getRoiList();
+      for (std::vector<std::string>::const_iterator iter = roiList.begin();
+           iter != roiList.end(); ++iter) {
+        const std::string &roiName = *iter;
+        ZObject3dScan roi = reader.readRoi(roiName);
+        if (!roi.isEmpty()) {
+          ZDvidInfo info = dvidInfo;
+          info.downsampleBlock(1, 1, 1);
+          roi.downsample(1, 1, 1);
+
+          ZCubeArray *cubes = MakeRoiCube(roi, info);
+          cubes->setSource(
+                ZStackObjectSourceFactory::MakeFlyEmRoiSource(roiName));
+          window->getDocument()->addObject(cubes, true);
+        }
+*/
+//    if (!dvidTarget.getRoiName().empty()) {
+      ZDvidReader reader;
+      if (reader.open(dvidTarget)) {
+
+          // test
+          ZJsonObject meta = reader.readInfo();
+//          std::vector<std::string> keys = meta.getAllKey();
+
+//          for(int i=0; i<keys.size(); i++)
+//          {
+//              qDebug()<<keys.at(i);
+//          }
+//          qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~"<<dvidTarget.getRoiName();
+
+
+          ZJsonValue datains = meta.value("DataInstances");
+          qDebug()<<"~~~~~~"<<datains.isObject()<<datains.isArray()<<datains.isString();
+
+          if(datains.isObject())
+          {
+              ZJsonObject insList(datains);
+              std::vector<std::string> keys = insList.getAllKey();
+
+              for(size_t i=0; i<keys.size(); i++)
+              {
+                  //qDebug()<<keys.at(i);
+
+
+                  std::size_t found = keys.at(i).find("roi");
+
+                  if(found!=std::string::npos)
+                  {
+                    qDebug()<<" rois: "<<keys.at(i);
+                  }
+
+
+//                  ZJsonObject submeta(insList.value(keys.at(i).c_str()));
+//                  std::vector<std::string> subkeys = submeta.getAllKey();
+
+//                  for(int j=0; j<subkeys.size(); j++)
+//                  {
+//                      qDebug()<<" ... "<<subkeys.at(i);
+//                  }
+
+
+
+
+
+
+              }
+              qDebug()<<"~~~~~~~~~~~~ test dvid roi reading ~~~~~~~~~~~~~";
+          }
+
+
+
+
+
+
+//       ZObject3dScan roi = reader.readRoi(dvidTarget.getRoiName());
+//        if (!roi.isEmpty()) {
+//          ZCubeArray *cubes = MakeRoiCube(roi, dvidInfo);
+//          cubes->setSource(
+//                ZStackObjectSourceFactory::MakeFlyEmRoiSource(
+//                  dvidTarget.getRoiName()));
+//          window->getDocument()->addObject(cubes, true);
+//        }
+      }
+    }
+//  }
 }
 
 void ZFlyEmMisc::SubtractBodyWithBlock(
@@ -311,3 +995,1009 @@ void ZFlyEmMisc::SubtractBodyWithBlock(
 //    std::cout << "Subtracting time: " << toc() << std::endl;
   }
 }
+
+void ZFlyEmMisc::MakeStar(
+    const QPointF &center, double radius, QPointF *ptArray)
+{
+  const double shapeFactor = 0.25;
+  double sw = radius * shapeFactor;
+  double left = center.x() - radius;
+  double right = center.x() + radius;
+  double top = center.y() - radius;
+  double bottom = center.y() + radius;
+
+  ptArray[0] = QPointF(center.x(), top);
+  ptArray[1] = QPointF(center.x() + sw, center.y() - sw);
+  ptArray[2] = QPointF(right, center.y());
+  ptArray[3] = QPointF(center.x() + sw, center.y() + sw);
+  ptArray[4] = QPointF(center.x(), bottom);
+  ptArray[5] = QPointF(center.x() - sw, center.y() + sw);
+  ptArray[6] = QPointF(left, center.y());
+  ptArray[7] = QPointF(center.x() - sw, center.y() - sw);
+  ptArray[8] = ptArray[0];
+}
+
+void ZFlyEmMisc::MakeStar(const QRectF &rect, QPointF *ptArray)
+{
+  QPointF center = rect.center();
+  double width= rect.width();
+  double height = rect.height();
+  const double shapeFactor = 0.125;
+  double sw = width * shapeFactor;
+  double sh = height * shapeFactor;
+  ptArray[0] = QPointF(center.x(), rect.top());
+  ptArray[1] = QPointF(center.x() + sw, center.y() - sh);
+  ptArray[2] = QPointF(rect.right(), center.y());
+  ptArray[3] = QPointF(center.x() + sw, center.y() + sh);
+  ptArray[4] = QPointF(center.x(), rect.bottom());
+  ptArray[5] = QPointF(center.x() - sw, center.y() + sh);
+  ptArray[6] = QPointF(rect.left(), center.y());
+  ptArray[7] = QPointF(center.x() - sw, center.y() - sh);
+  ptArray[8] = ptArray[0];
+}
+
+void ZFlyEmMisc::PrepareBodyStatus(QComboBox *box)
+{
+  if (box != NULL) {
+    box->clear();
+    box->addItem("---");
+    box->addItem("Not examined");
+    box->addItem("Traced");
+    box->addItem("Traced in ROI");
+    box->addItem("Partially traced");
+    box->addItem("Orphan");
+    box->addItem("Hard to trace");
+    box->addItem("Finalized");
+  }
+}
+
+void ZFlyEmMisc::MakeTriangle(
+    const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
+{
+  switch (direction) {
+  case neutube::CD_EAST:
+    ptArray[0] = QPointF(rect.right(), rect.center().y());
+    ptArray[1] = rect.topLeft();
+    ptArray[2] = rect.bottomLeft();
+    break;
+  case neutube::CD_WEST:
+    ptArray[0] = QPointF(rect.left(), rect.center().y());
+    ptArray[1] = rect.topRight();
+    ptArray[2] = rect.bottomRight();
+    break;
+  case neutube::CD_NORTH:
+    ptArray[0] = QPointF(rect.center().x(), rect.top());
+    ptArray[1] = rect.bottomLeft();
+    ptArray[2] = rect.bottomRight();
+    break;
+  case neutube::CD_SOUTH:
+    ptArray[0] = QPointF(rect.center().x(), rect.bottom());
+    ptArray[1] = rect.topLeft();
+    ptArray[2] = rect.topRight();
+    break;
+  }
+
+  ptArray[3] = ptArray[0];
+}
+
+QString ZFlyEmMisc::GetMemoryUsage()
+{
+  QString memInfo;
+
+#if defined(__APPLE__) || defined(_LINUX_)
+  QProcess p;
+
+#if defined(__APPLE__)
+  p.start(QString("top -l 1 -pid %1").arg(getpid()));
+#else
+  p.start(QString("ps v -p %1").arg(getpid()));
+#endif
+
+  if (p.waitForFinished(1000)) {
+    QString output = p.readAllStandardOutput();
+    QStringList lines = output.split("\n", QString::SkipEmptyParts);
+//    qDebug() << lines;
+    QString fieldLine;
+    QString infoLine;
+    for (int i = 0; i < lines.size(); ++i) {
+      QString line = lines[i].trimmed();
+      if (line.startsWith("PID")) {
+        fieldLine = line;
+        if (i + 1 < lines.size()) {
+          infoLine = lines[i + 1];
+        }
+        break;
+      }
+    }
+
+    QStringList fields = fieldLine.split(" ", QString::SkipEmptyParts);
+//    qDebug() << fields;
+    QStringList infoList = infoLine.split(" ", QString::SkipEmptyParts);
+//    qDebug() << infoList;
+
+
+    for (int i = 0; i < fields.size(); ++i) {
+#if defined(__APPLE__)
+      if (fields[i] == "MEM" || fields[i] == "RPRVT") {
+#else
+      if (fields[i] == "RSS") {
+#endif
+        if (infoList.size() > i) {
+          memInfo = infoList[i];
+        }
+        break;
+      }
+    }
+
+//    qDebug() << "Memory usage:" << memInfo;
+  } else {
+    qDebug() << p.readAllStandardError();
+  }
+
+  p.close();
+#endif
+  return memInfo;
+}
+
+ZStroke2d* ZFlyEmMisc::MakeSplitSeed(const ZObject3dScan &slice, int label)
+{
+  ZVoxel voxel = slice.getMarker();
+  ZStroke2d *stroke = new ZStroke2d;
+  stroke->setWidth(10);
+  stroke->setZ(voxel.z());
+  stroke->append(voxel.x(), voxel.y());
+  stroke->addRole(ZStackObjectRole::ROLE_SEED);
+  stroke->setLabel(label);
+  stroke->setPenetrating(false);
+
+  return stroke;
+}
+
+std::vector<ZStroke2d*> ZFlyEmMisc::MakeSplitSeedList(const ZObject3dScan &obj)
+{
+  std::vector<ZStroke2d*> seedList;
+
+  ZVoxel voxel = obj.getMarker();
+
+  ZObject3dScan slice = obj.getSlice(voxel.z());
+  seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 1));
+
+  slice = obj.getSlice(voxel.z() + 1);
+  seedList.push_back(ZFlyEmMisc::MakeSplitSeed(slice, 2));
+
+  return seedList;
+}
+
+void ZFlyEmMisc::SetSplitTaskSignalUrl(
+    ZJsonObject &taskObj, uint64_t bodyId, const ZDvidTarget &target)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string signalUrl = dvidUrl.getSparsevolUrl(bodyId);
+  if (!signalUrl.empty()) {
+    taskObj.setEntry("signal", signalUrl);
+  }
+}
+
+ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(const ZJsonObject &obj)
+{
+  ZStroke2d stroke;
+  stroke.setLabel(0);
+  if (obj.hasKey("color")) {
+    stroke.setLabel(obj.value("color").toInteger() + 1);
+    stroke.setZ(obj.value("z").toInteger());
+    stroke.append(obj.value("x").toInteger(), obj.value("y").toInteger());
+    stroke.setWidth(30);
+  }
+
+  return stroke;
+}
+
+ZStroke2d ZFlyEmMisc::SyGlassSeedToStroke(
+    const ZJsonObject &obj, const ZIntPoint &offset, const ZIntPoint &dsIntv)
+{
+  ZStroke2d stroke = SyGlassSeedToStroke(obj);
+
+  stroke.translate(offset);
+  stroke.scale(dsIntv.getX() + 1, dsIntv.getY() + 1, dsIntv.getZ() + 1);
+
+  return stroke;
+}
+
+ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZStroke2d &stroke)
+{
+  ZJsonObject json;
+
+  json.setEntry("label", stroke.getLabel());
+  json.setEntry("type", "ZStroke2d");
+  ZJsonObject obj = stroke.toJsonObject();
+  json.setEntry("data", obj);
+
+  return json;
+}
+
+ZJsonObject ZFlyEmMisc::MakeSplitSeedJson(const ZObject3d &seed)
+{
+  ZJsonObject json;
+
+  json.setEntry("label", seed.getLabel());
+  json.setEntry("type", "ZObject3d");
+  ZJsonObject obj = seed.toJsonObject();
+  json.setEntry("data", obj);
+
+  return json;
+}
+
+template<typename T>
+void ZFlyEmMisc::AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj)
+{
+  ZJsonArray array;
+
+  if (!taskObj.hasKey("seeds")) {
+    taskObj.setEntry("seeds", array);
+  } else {
+    array = ZJsonArray(taskObj.value("seeds"));
+  }
+
+  array.append(MakeSplitSeedJson(obj));
+}
+
+void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZStroke2d &stroke)
+{
+  AddSplitTaskSeedG(taskObj, stroke);
+}
+
+void ZFlyEmMisc::AddSplitTaskSeed(ZJsonObject &taskObj, const ZObject3d &obj)
+{
+  AddSplitTaskSeedG(taskObj, obj);
+}
+
+ZJsonArray ZFlyEmMisc::GetSeedJson(ZStackDoc *doc)
+{
+  QList<ZDocPlayer*> playerList =
+      doc->getPlayerList(ZStackObjectRole::ROLE_SEED);
+  ZJsonArray jsonArray;
+  foreach (const ZDocPlayer *player, playerList) {
+    ZJsonObject jsonObj = player->toSeedJson();
+    if (!jsonObj.isEmpty()) {
+      jsonArray.append(jsonObj);
+    }
+  }
+
+  return jsonArray;
+}
+
+void ZFlyEmMisc::UploadSyGlassTask(
+    const std::string &filePath, const ZDvidTarget &target)
+{
+  ZJsonArray rootObj;
+  rootObj.load(filePath);
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+  ZDvidUrl dvidUrl(target);
+
+  for (size_t i = 0; i < rootObj.size(); ++i) {
+    ZJsonObject obj(rootObj.value(i));
+    ZJsonArray markerJson(obj.value("pointMarkers"));
+    if (!markerJson.isEmpty()) {
+      uint64_t bodyId =
+          ZString(obj.value("file").toString()).firstUint64();
+
+      if (bodyId > 0) {
+        ZJsonObject taskJson;
+        ZFlyEmMisc::SetSplitTaskSignalUrl(taskJson, bodyId, target);
+
+        for (size_t i = 0; i < markerJson.size(); ++i) {
+          ZJsonObject markerObj(markerJson.value(i));
+          ZStroke2d stroke =
+              ZFlyEmMisc::SyGlassSeedToStroke(markerObj);
+          ZFlyEmMisc::AddSplitTaskSeed(taskJson, stroke);
+        }
+        std::string location = writer->writeServiceTask("split", taskJson);
+
+        ZJsonObject entryJson;
+        entryJson.setEntry(neutube::json::REF_KEY, location);
+        QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
+        writer->writeSplitTask(taskKey, taskJson);
+      }
+    }
+  }
+}
+
+QString ZFlyEmMisc::ReadLastLines(const QString &filePath, int maxCount)
+{
+  QString str;
+
+  QFile file(filePath);
+
+  if (file.exists()) {
+    file.open(QFile::ReadOnly);
+
+    file.seek(file.size() - 1);
+
+    int count = 0;
+
+    while ((count <= maxCount) && (file.pos() > 0))
+    {
+      char ch;
+      file.getChar(&ch);
+      file.seek(file.pos() - 2);
+      if (ch == '\n') {
+        count++;
+      }
+    }
+
+    str = file.readAll();
+
+    file.close();
+  }
+
+  return str;
+}
+
+ZIntCuboid ZFlyEmMisc::EstimateSplitRoi(const ZIntCuboid &boundBox)
+{
+  ZIntCuboid newBox = boundBox;
+
+  newBox.expandZ(10);
+  size_t v = newBox.getVolume();
+
+  double s = Cube_Root(ZSparseStack::GetMaxStackVolume() / 2 / v);
+  if (s > 1) {
+    double ds = s - 1.0;
+    int dw = iround(newBox.getWidth() * ds);
+    int dh = iround(newBox.getHeight() * ds);
+    int dd = iround(newBox.getDepth() * ds);
+
+    const int xMargin = dw / 2;
+    const int yMargin = dh / 2;
+    const int zMargin = dd / 2;
+    newBox.expandX(xMargin);
+    newBox.expandY(yMargin);
+    newBox.expandZ(zMargin);
+  }
+
+  return newBox;
+}
+
+QString ZFlyEmMisc::GetNeuroglancerPath(
+    const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
+    const QSet<uint64_t> &bodySet)
+{
+  if (GET_FLYEM_CONFIG.getNeuroglancerServer().empty()) {
+    return "";
+  }
+
+
+  QString path = QString("http://%1/neuroglancer/#!{'layers':"
+                         "{'grayscale':{'type':'image'_'source':'dvid://"
+                         "http://%2/%3/%4'}").
+      arg(GET_FLYEM_CONFIG.getNeuroglancerServer().c_str()).
+      arg(target.getGrayScaleSource().getAddressWithPort().c_str()).
+      arg(target.getGrayScaleSource().getUuid().c_str()).
+      arg(target.getGrayScaleName().c_str());
+
+  if (target.hasSegmentation()) {
+    path += QString("_'segmentation':{'type':'segmentation'_"
+                    "'source':'dvid://http://%1/%2/%3'").
+        arg(target.getAddressWithPort().c_str()).
+        arg(target.getUuid().c_str()).
+        arg(target.getSegmentationName().c_str());
+
+    if (!bodySet.empty() && bodySet.size() < 4) {
+      path += "_'segments':[";
+      uint64_t firstId = *(bodySet.begin());
+      path += QString("'%1'").arg(firstId);
+
+      foreach (uint64_t bodyId, bodySet) {
+        if (bodyId != firstId) {
+          path += QString("_'%1'").arg(bodyId);
+        }
+      }
+      path += "]";
+    }
+    path += "}";
+  }
+
+  path += QString("}_'navigation':{'pose':{'position':"
+                  "{'voxelSize':[8_8_8]_'voxelCoordinates':[%1_%2_%3]}_"
+                  "'orientation':[%4_%5_%6_%7]}_"
+                  "'zoomFactor':8}_"
+                  "'perspectiveOrientation':"
+                  "[%4_%5_%6_%7]_"
+                  "'perspectiveZoom':64_'layout':'xy'}").
+      arg(pos.getX()).arg(pos.getY()).arg(pos.getZ()).
+      arg(quat.getX()).arg(quat.getY()).arg(quat.getZ()).arg(quat.weight());
+
+  return path;
+}
+
+
+ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
+{
+  ZDvidTarget target;
+  target.loadJsonObject(ZJsonObject(obj.value("dvid")));
+
+  ZStack *stack = NULL;
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZString bodyStr = ZJsonParser::stringValue(obj["body"]);
+    std::vector<uint64_t> bodyIdArray = bodyStr.toUint64Array();
+    uint64_t bodyId = bodyIdArray.front();
+
+    ZIntCuboid box;
+    if (obj.hasKey("range")) {
+      box.loadJson(ZJsonArray(obj.value("range")));
+    }
+
+    ZDvidSparseStack *spStack = reader.readDvidSparseStack(bodyId, box);
+    spStack->shakeOff();
+    stack = spStack->makeIsoDsStack(MAX_INT32, false);
+
+    delete spStack;
+  }
+
+  return stack;
+}
+
+
+ZStack* ZFlyEmMisc::GenerateExampleStack(
+    const ZDvidTarget &target, uint64_t bodyId, const ZIntCuboid &range)
+{
+  ZStack *stack = NULL;
+
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader(target);
+  if (reader != NULL) {
+    ZDvidSparseStack *spStack = reader->readDvidSparseStack(bodyId, range);
+    spStack->shakeOff();
+    stack = spStack->makeIsoDsStack(MAX_INT32, false);
+
+    delete spStack;
+  }
+
+  return stack;
+}
+
+QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(const ZJsonObject &taskJson)
+{
+  ZJsonArray seedArrayJson(taskJson.value("seeds"));
+  QList<ZStackObject*> seedList;
+  for (size_t i = 0; i < seedArrayJson.size(); ++i) {
+    ZJsonObject seedJson(seedArrayJson.value(i));
+    if (seedJson.hasKey("type")) {
+//      std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
+      std::string type = ZJsonParser::stringValue(seedJson["type"]);
+      if (type == "ZStroke2d") {
+        ZStroke2d *stroke = new ZStroke2d;
+        stroke->loadJsonObject(ZJsonObject(seedJson.value("data")));
+
+        if (!stroke->isEmpty()) {
+          seedList.append(stroke);
+        } else {
+          delete stroke;
+        }
+      } else if (type == "ZObject3d") {
+        ZObject3d *obj = new ZObject3d;
+        obj->loadJsonObject(ZJsonObject(seedJson.value("data")));
+        if (!obj->isEmpty()) {
+          seedList.append(obj);
+        } else {
+          delete obj;
+        }
+      }
+    }
+  }
+  foreach (ZStackObject *seed, seedList) {
+    seed->addRole(ZStackObjectRole::ROLE_SEED |
+                  ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+    ZLabelColorTable colorTable;
+    seed->setColor(colorTable.getColor(seed->getLabel()));
+  }
+
+  return seedList;
+}
+
+QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+  ZJsonObject taskJson =
+      reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
+                                    taskKey.c_str());
+  if (taskJson.hasKey(neutube::json::REF_KEY)) {
+    taskJson =
+        reader->readJsonObject(
+          ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
+  }
+
+  QList<ZStackObject*> seedList = LoadSplitTask(taskJson);
+  foreach (ZStackObject *seed, seedList) {
+    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+  }
+
+  return seedList;
+}
+
+void ZFlyEmMisc::RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriterFromUrl(GET_FLYEM_CONFIG.getTaskServer());
+  writer->deleteKey(ZDvidData::GetTaskName("split"), taskKey);
+}
+
+ZJsonObject ZFlyEmMisc::MakeSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId,
+    ZJsonArray seedJson, ZJsonArray roiJson)
+{
+  ZJsonObject task;
+
+  ZDvidUrl dvidUrl(target);
+  std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
+  task.setEntry("signal", bodyUrl);
+  task.setEntry("seeds", seedJson);
+
+  if (!roiJson.isEmpty()) {
+    task.setEntry("range", roiJson);
+  }
+
+  if (target.hasGrayScaleData()) {
+    ZJsonObject signalInfo;
+    signalInfo.setEntry(
+          ZDvidTarget::m_grayScaleNameKey, target.getGrayScaleName());
+    ZJsonObject sourceConfig = target.getSourceConfigJson();
+    if (!sourceConfig.isEmpty()) {
+      signalInfo.setEntry(ZDvidTarget::m_sourceConfigKey, sourceConfig);
+    }
+    task.setEntry("signal info", signalInfo);
+  }
+
+  return task;
+}
+
+ZDvidReader* ZFlyEmMisc::GetTaskReader()
+{
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+
+  return reader;
+}
+
+ZDvidWriter* ZFlyEmMisc::GetTaskWriter()
+{
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriterFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+
+  return writer;
+}
+
+bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
+{
+  ZDvidReader *reader = GetTaskReader();
+  if (reader != NULL) {
+    if (reader->hasKey("task_test", taskKey)) {
+      if (!reader->hasKey("result_test", taskKey)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/*
+bool ZFlyEmMisc::HasOpenTestTask()
+{
+  ZDvidReader *reader = GetTaskReader();
+  QString taskKey =  QString::fromStdString(ZDvidUrl::GetTaskKey());
+  if (reader->hasKey("task_test", taskKey)) {
+    if (!reader->hasKey("result_test", taskKey)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+*/
+
+#if 0
+void ZFlyEmMisc::StartOpenTestTask()
+{
+  if (HasOpenTestTask()) {
+//    ZJsonObject config = GetTaskReader()->readTestTask();
+    //todo
+    ZMainWindowController::StartTestTask(ZDvidUrl::GetTaskKey());
+  }
+}
+#endif
+
+QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
+{
+  QStringList fileList;
+  fileList << filePath;
+
+  return ReadBodyFromSequencer(fileList);
+}
+
+QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+    const QDir &dir, const QStringList &fileList)
+{
+  QStringList fullFilePathList;
+  foreach (const QString &filePath, fileList) {
+    fullFilePathList << dir.absoluteFilePath(filePath);
+  }
+
+  return ReadBodyFromSequencer(fullFilePathList);
+}
+
+QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+    const QDir &dir, const QString &filePath)
+{
+  return ReadBodyFromSequencer(dir.absoluteFilePath(filePath));
+}
+
+QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(
+    const QStringList &fileList)
+{
+  QSet<uint64_t> bodySet;
+  foreach (const QString &filePath, fileList) {
+    FILE *fp = fopen(filePath.toStdString().c_str(), "r");
+    if (fp != NULL) {
+      ZString str;
+      while (str.readLine(fp)) {
+        if (!str.startsWith("Body")) {
+          std::vector<uint64_t> numArray = str.toUint64Array();
+          if (!numArray.empty()) {
+            bodySet.insert(numArray[0]);
+          }
+        }
+      }
+
+      fclose(fp);
+    }
+  }
+
+  return bodySet;
+}
+
+QString ZFlyEmMisc::FIB19::GetRootDir()
+{
+  return (GET_FLYEM_DATA_DIR + "/FIB/FIB19/movies").c_str();
+}
+
+QString ZFlyEmMisc::FIB19::GetMovieDir(const QString &folder)
+{
+  return QDir(GetRootDir()).absoluteFilePath(folder);
+}
+
+ZDvidTarget ZFlyEmMisc::FIB19::MakeDvidTarget()
+{
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "@FIB19", 7000);
+  target.useDefaultDataSetting(true);
+
+  return target;
+}
+
+QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(
+    const QString &movieDir, const QString &neuronType)
+{
+  QString errMsg;
+
+  ZDvidReader reader;
+  if (reader.open(MakeDvidTarget())) {
+    QDir outDir(movieDir + "/cast");
+
+    ZJsonObject neuronJson;
+    neuronJson.load((movieDir + "/neuron_list.json").toStdString());
+
+    double radius = 30;
+
+    ZJsonArray neuronArrayJson(neuronJson.value(neuronType.toStdString().c_str()));
+    for (size_t i = 0; i < neuronArrayJson.size(); ++i) {
+      ZJsonObject obj(neuronArrayJson.value(i));
+      if (obj.hasKey("pos")) {
+        ZIntPoint pos = ZJsonParser::toIntPoint(obj["pos"]);
+        uint64_t bodyId = reader.readBodyIdAt(pos);
+        QString name = ZJsonParser::stringValue(obj["name"]);
+        std::vector<ZDvidSynapse> synapseArray = reader.readSynapse(
+              bodyId, flyem::LOAD_NO_PARTNER);
+        std::vector<ZVaa3dMarker> preMarkerArray;
+        std::vector<ZVaa3dMarker> postMarkerArray;
+        for (std::vector<ZDvidSynapse>::const_iterator iter = synapseArray.begin();
+             iter != synapseArray.end(); ++iter) {
+          const ZDvidSynapse &synapse = *iter;
+          ZVaa3dMarker marker = synapse.toVaa3dMarker(radius);
+          if (synapse.getKind() == ZDvidAnnotation::KIND_POST_SYN) {
+            marker.setColor(255, 255, 255);
+            postMarkerArray.push_back(marker);
+          } else if (synapse.getKind() == ZDvidAnnotation::KIND_PRE_SYN) {
+            marker.setColor(255, 255, 0);
+            preMarkerArray.push_back(marker);
+          }
+        }
+        flyem::ZFileParser::writeVaa3dMakerFile(
+              outDir.absoluteFilePath(name + ".pre.marker").toStdString(),
+              preMarkerArray);
+        flyem::ZFileParser::writeVaa3dMakerFile(
+              outDir.absoluteFilePath(name + ".post.marker").toStdString(),
+              postMarkerArray);
+      }
+    }
+  }
+
+  return errMsg;
+}
+
+QString ZFlyEmMisc::FIB19::GenerateFIB19VsSynapseCast(const QString &movieDir)
+{
+  QString errMsg = GenerateFIB19VsSynapseCast(movieDir, "VS");
+  errMsg += GenerateFIB19VsSynapseCast(movieDir, "VS_branch");
+  errMsg += GenerateFIB19VsSynapseCast(movieDir, "LPi");
+
+  return errMsg;
+}
+
+QString ZFlyEmMisc::FIB19::GenerateRoiCast(
+    const QVector<QString> &roiList, const QString &movieDir)
+{
+  QString errMsg;
+
+  ZDvidReader reader;
+  if (reader.open(MakeDvidTarget())) {
+    foreach (const QString &roi, roiList) {
+      ZJsonArray roiJson = reader.readRoiJson(roi.toStdString());
+      if (roiJson.isEmpty()) {
+        errMsg += "Failed to read " + roi;
+        return errMsg;
+      }
+      roiJson.dump((movieDir + "/cast/" + roi + ".json").toStdString());
+    }
+  }
+
+  return errMsg;
+}
+
+QString ZFlyEmMisc::FIB19::GenerateFIB19VsCast(const QString &movieDir)
+{
+  QString errMsg;
+  QDir outDir(movieDir + "/cast");
+
+  QString bodyListCsv = movieDir + "/bodylist_michael_170515_coord.csv";
+  QFile file(bodyListCsv);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    errMsg += "Failed to open " + bodyListCsv;
+    return errMsg;
+  }
+
+  QMap<QString, QString> nameTypeMap;
+  QMap<QString, ZIntPoint> namePosMap;
+  QList<QString> nameList;
+
+  QList<QString> typeList =
+      QList<QString>() << "VS" << "VS_branch" << "T4" << "T5" << "LPi";
+
+  QTextStream in(&file);
+  while (!in.atEnd()) {
+    QString line = in.readLine();
+    QStringList entryList = line.split(",");
+    ZIntPoint pos;
+    if (entryList.back() != "Z" && entryList.size() == 6) {
+      pos.setX(entryList[entryList.size() - 3].toInt());
+      pos.setY(entryList[entryList.size() - 2].toInt());
+      pos.setZ(entryList[entryList.size() - 1].toInt());
+      QString originalName = entryList[2];
+      QString name = QString("%1_i%2").arg(entryList[2].replace(" ", "_").
+          replace("-", "_")).arg(nameList.size());
+      nameList.append(name);
+
+      namePosMap[name] = pos;
+
+      if (originalName == "LOP tan VS 01 Lop4") {
+        nameTypeMap[name] = typeList[0];
+      } else if (originalName == "LOP tan VS 01 Lop4 branch") {
+        nameTypeMap[name] = typeList[1];
+      } else {
+        for (int i = 2; i < 5; ++i) {
+          if (originalName.startsWith(typeList[i])) {
+            nameTypeMap[name] = typeList[i];
+            break;
+          }
+        }
+      }
+    }
+  }
+
+
+  ZJsonObject neuronJson;
+
+  foreach(const QString &type, typeList) {
+    ZJsonArray array;
+    neuronJson.setEntry(type.toLocal8Bit(), array);
+  }
+
+  foreach (const QString &name, nameList) {
+    ZJsonArray array(neuronJson.value(nameTypeMap[name].toLocal8Bit()));
+    ZJsonObject infoJson;
+    infoJson.setEntry("name", name.toStdString());
+    ZJsonArray posJson = ZJsonFactory::MakeJsonArray(namePosMap[name]);
+    infoJson.setEntry("pos", posJson);
+    array.append(infoJson);
+  }
+
+  neuronJson.dump((movieDir + "/neuron_list.json").toStdString());
+
+  ZDvidReader reader;
+  if (reader.open(MakeDvidTarget())) {
+    QFile neuronListFile(movieDir + "/neuron_list.json");
+    ZJsonObject neuronJson;
+    if (!neuronJson.load(neuronListFile.fileName().toStdString())) {
+      errMsg += QString("Failed to load %1").arg(neuronListFile.fileName());
+      return errMsg;
+    }
+
+    const char *key;
+    json_t *value;
+    ZJsonObject_foreach(neuronJson, key, value) {
+      ZJsonArray neuronArray(neuronJson.value(key));
+      for (size_t i = 0; i < neuronArray.size(); ++i) {
+        uint64_t bodyId = 0;
+        QString name;
+        if (ZJsonParser::isInteger(neuronArray.at(i))) {
+          bodyId = ZJsonParser::integerValue(neuronArray.getData(), i);
+        } else {
+          ZJsonObject infoJson(neuronArray.value(i));
+          if (infoJson.hasKey("pos")) {
+            ZIntPoint pos = ZJsonParser::toIntPoint(infoJson["pos"]);
+            bodyId = reader.readBodyIdAt(pos);
+            name = ZJsonParser::stringValue(infoJson["name"]);
+          }
+        }
+
+        if (bodyId > 0) {
+          ZSwcTree *tree = reader.readSwc(bodyId);
+          if (tree == NULL) {
+            errMsg += QString("Failed to read skeleton of body %1").arg(bodyId);
+            return errMsg;
+          }
+          QString outFileName = QString("%1.swc").arg(bodyId);
+          if (!name.isEmpty()) {
+            outFileName = name + ".swc";
+          }
+          QString outPath = outDir.absoluteFilePath(outFileName);
+          tree->save(outPath.toStdString());
+          delete tree;
+        }
+      }
+    }
+  }
+
+  errMsg += GenerateRoiCast(
+        QVector<QString>() << "Layer_Lop1" << "Layer_Lop2" << "Layer_Lop3"
+        << "Layer_Lop4", movieDir);
+
+  errMsg += GenerateFIB19VsSynapseCast(movieDir);
+
+  return errMsg;
+}
+
+ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
+{
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "@MB6", 8500);
+  target.setSynapseName("mb6_synapses_10062016");
+  target.setBodyLabelName("bodies3");
+  target.setSegmentationName("labels3");
+  target.setGrayScaleName("grayscale");
+
+  return target;
+}
+
+QString ZFlyEmMisc::MB6Paper::GenerateNeuronCast(
+    const ZDvidTarget &target, const QString &movieDir,
+    QVector<uint64_t> neuronArray)
+{
+  QString errMsg;
+
+  QDir outDir(movieDir + "/cast");
+
+  if (neuronArray.isEmpty()) {
+    QFile neuronListFile(movieDir + "/neuron_list.csv");
+    if (!neuronListFile.open(QIODevice::ReadOnly)) {
+      errMsg = "Failed to read " + neuronListFile.fileName() + ":" +
+          neuronListFile.errorString();
+      return errMsg;
+    }
+
+    while (!neuronListFile.atEnd()) {
+      QString line = QString(neuronListFile.readLine());
+      QStringList wordList = line.split(',');
+
+      if (!wordList.isEmpty()) {
+        ZString str(wordList[0].toStdString());
+        std::vector<uint64_t> idArray = str.toUint64Array();
+        if (!idArray.empty()) {
+          neuronArray.append(idArray.front());
+        }
+      }
+    }
+  }
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    foreach (uint64_t bodyId, neuronArray) {
+      ZSwcTree *tree = reader.readSwc(bodyId);
+
+      QString outFileName = QString("%1.swc").arg(bodyId);
+      QString outPath = outDir.absoluteFilePath(outFileName);
+      tree->save(outPath.toStdString());
+      delete tree;
+    }
+  }
+
+  return errMsg;
+}
+
+std::vector<ZVaa3dMarker> ZFlyEmMisc::MB6Paper::GetLocationMarker(
+    const ZJsonArray &json)
+{
+  std::vector<ZVaa3dMarker> markerArray;
+
+  for (size_t i = 0; i < json.size(); ++i) {
+    ZJsonObject locationJson(json.value(i));
+    ZJsonArray infoJson(locationJson.value("location"));
+    std::string neuron = ZJsonParser::stringValue(infoJson.at(0));
+    if (neuron == "MBON-14-A") {
+      ZVaa3dMarker marker;
+      marker.setCenter(ZJsonParser::integerValue(infoJson.at(1)),
+                       ZJsonParser::integerValue(infoJson.at(2)),
+                       ZJsonParser::integerValue(infoJson.at(3)));
+      marker.setRadius(30.0);
+      markerArray.push_back(marker);
+    }
+  }
+
+  return markerArray;
+}
+
+QString ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
+{
+  ZDvidTarget target = MakeDvidTarget();
+
+  QString errMsg = GenerateNeuronCast(
+        target, movieDir, QVector<uint64_t>() << 54977);
+
+  if (!errMsg.isEmpty()) {
+    return errMsg;
+  }
+
+  QString synapseFile = movieDir + "/Shinya.json";
+
+  ZJsonObject json;
+  json.load(synapseFile.toStdString());
+
+
+  ZJsonArray singleJson(json.value("single"));
+  std::vector<ZVaa3dMarker> singleMarkerArray = GetLocationMarker(singleJson);
+  flyem::ZFileParser::writeVaa3dMakerFile(
+        (movieDir + "/cast/single.marker").toStdString(), singleMarkerArray);
+
+  ZJsonArray multipleJson(json.value("multiple"));
+  std::vector<ZVaa3dMarker> multileMarkerArray = GetLocationMarker(multipleJson);
+  flyem::ZFileParser::writeVaa3dMakerFile(
+        (movieDir + "/cast/multiple.marker").toStdString(), multileMarkerArray);
+
+
+
+  return errMsg;
+}
+
+

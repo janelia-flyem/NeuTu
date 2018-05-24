@@ -8,8 +8,29 @@
 #include "zcuboid.h"
 #include "zintcuboidface.h"
 #include "zsharedpointer.h"
+#include "zintcuboid.h"
 
 #ifdef _USE_GTEST_
+
+TEST(ZIntCuboid, compare)
+{
+  ZIntCuboid box1;
+  box1.setFirstCorner(1, 2, 3);
+  box1.setLastCorner(100, 200, 300);
+
+  ZIntCuboid box2;
+  box2.setFirstCorner(1, 2, 3);
+  box2.setLastCorner(100, 200, 300);
+
+  ASSERT_EQ(box1, box2);
+
+  box2.setFirstX(2);
+  ASSERT_NE(box1, box2);
+  box2.setFirstCorner(1, 2, 3);
+  box2.setLastZ(2);
+  ASSERT_NE(box1, box2);
+
+}
 
 TEST(ZIntCuboidArray, basic)
 {
@@ -23,7 +44,7 @@ TEST(ZIntCuboidArray, basic)
   int index = blockArray.hitTest(1, 1, 1);
   EXPECT_EQ(0, index);
 
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_BENCHMARK_DIR + "/flyem/block.txt");
   EXPECT_EQ(216, (int) blockArray.size());
 
   for (size_t i = 0; i < blockArray.size(); ++i) {
@@ -70,7 +91,7 @@ TEST(ZIntCuboidArray, boundBox)
 TEST(ZIntCuboidArray, exportSwc)
 {
   ZIntCuboidArray blockArray;
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_BENCHMARK_DIR + "/flyem/block.txt");
 
 
   //blockArray.exportSwc(GET_TEST_DATA_DIR + "/test.swc");
@@ -96,7 +117,7 @@ TEST(ZIntCuboidArray, removeInvalidCublid)
 TEST(ZIntCuboidArray, range)
 {
   ZIntCuboidArray blockArray;
-  blockArray.loadSubstackList(GET_TEST_DATA_DIR + "/benchmark/flyem/block.txt");
+  blockArray.loadSubstackList(GET_BENCHMARK_DIR + "/flyem/block.txt");
 
   Cuboid_I boundBox = blockArray.getBoundBox();
   //std::cout << blockArray.size() << std::endl;
@@ -155,7 +176,7 @@ TEST(ZIntCuboidArray, face)
 
 TEST(ZIntCuboidComposition, hitTest)
 {
-  FlyEm::ZIntCuboidComposition cuboid;
+  flyem::ZIntCuboidComposition cuboid;
   cuboid.setSingular(0, 0, 0, 3, 3, 3);
 
   EXPECT_TRUE(cuboid.hitTest(0, 0, 0));
@@ -163,29 +184,29 @@ TEST(ZIntCuboidComposition, hitTest)
   EXPECT_TRUE(cuboid.hitTest(2, 2, 2));
   EXPECT_FALSE(cuboid.hitTest(3, 3, 3));
 
-  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp1(
-        new FlyEm::ZIntCuboidComposition);
+  ZSharedPointer<flyem::ZIntCuboidComposition> comp1(
+        new flyem::ZIntCuboidComposition);
   comp1->setSingular(0, 0, 0, 3, 3, 3);
 
-  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp2(
-        new FlyEm::ZIntCuboidComposition);
+  ZSharedPointer<flyem::ZIntCuboidComposition> comp2(
+        new flyem::ZIntCuboidComposition);
   comp2->setSingular(0, 0, 0, 3, 3, 3);
 
-  ZSharedPointer<FlyEm::ZIntCuboidComposition> comp3(
-        new FlyEm::ZIntCuboidComposition);
-  comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::OR);
+  ZSharedPointer<flyem::ZIntCuboidComposition> comp3(
+        new flyem::ZIntCuboidComposition);
+  comp3->setComposition(comp1, comp2, flyem::ZIntCuboidComposition::OR);
   EXPECT_TRUE(comp3->hitTest(0, 0, 0));
   EXPECT_TRUE(comp3->hitTest(1, 1, 1));
   EXPECT_TRUE(comp3->hitTest(2, 2, 2));
   EXPECT_FALSE(comp3->hitTest(3, 3, 3));
 
-  comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::AND);
+  comp3->setComposition(comp1, comp2, flyem::ZIntCuboidComposition::AND);
   EXPECT_TRUE(comp3->hitTest(0, 0, 0));
   EXPECT_TRUE(comp3->hitTest(1, 1, 1));
   EXPECT_TRUE(comp3->hitTest(2, 2, 2));
   EXPECT_FALSE(comp3->hitTest(3, 3, 3));
 
-  comp3->setComposition(comp1, comp2, FlyEm::ZIntCuboidComposition::XOR);
+  comp3->setComposition(comp1, comp2, flyem::ZIntCuboidComposition::XOR);
   EXPECT_FALSE(comp3->hitTest(0, 0, 0));
   EXPECT_FALSE(comp3->hitTest(1, 1, 1));
   EXPECT_FALSE(comp3->hitTest(2, 2, 2));
@@ -269,7 +290,7 @@ TEST(ZIntCuboidFace, dist)
   ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(0, 10, 10));
   ASSERT_DOUBLE_EQ(sqrt(300.0), face.computeDistance(50, 90, -10));
 
-  face.setNormal(NeuTube::X_AXIS);
+  face.setNormal(neutube::X_AXIS);
   ASSERT_DOUBLE_EQ(0.0, face.computeDistance(0, 10, 20));
   ASSERT_DOUBLE_EQ(10.0, face.computeDistance(10, 10, 20));
   ASSERT_DOUBLE_EQ(10.0, face.computeDistance(0, 10, 10));
@@ -323,6 +344,146 @@ TEST(ZIntCuboidFaceArray, basic)
   faceArray3.print();
 
   ASSERT_EQ(7, (int) faceArray3.size());
+}
+
+TEST(ZIntCuboid, basic)
+{
+  ZIntCuboid box;
+  box.set(1, 2, 3, 10, 20, 30);
+  ASSERT_EQ(1, box.getFirstCorner().getX());
+  ASSERT_EQ(2, box.getFirstCorner().getY());
+  ASSERT_EQ(3, box.getFirstCorner().getZ());
+
+  ASSERT_EQ(10, box.getLastCorner().getX());
+  ASSERT_EQ(20, box.getLastCorner().getY());
+  ASSERT_EQ(30, box.getLastCorner().getZ());
+
+  ASSERT_EQ(10, box.getWidth());
+  ASSERT_EQ(19, box.getHeight());
+  ASSERT_EQ(28, box.getDepth());
+
+  box.setWidth(5);
+  ASSERT_EQ(1, box.getFirstCorner().getX());
+  ASSERT_EQ(5, box.getWidth());
+
+  box.setHeight(10);
+
+#if 0
+  std::cout << box.getFirstCorner().toString() << std::endl;
+  std::cout << box.getLastCorner().toString() << std::endl;
+#endif
+
+  ASSERT_EQ(2, box.getFirstCorner().getY());
+  ASSERT_EQ(10, box.getHeight());
+
+}
+
+TEST(ZIntCuboid, dist)
+{
+  ZIntCuboid box1;
+  box1.set(0, 0, 0, 10, 20, 30);
+  ZIntCuboid box2;
+  box2.set(10, 20, 40, 20, 30, 50);
+
+  ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 10.0);
+  ASSERT_DOUBLE_EQ(box2.computeDistance(box1), 10.0);
+
+  box2.set(10, 20, 30, 20, 30, 50);
+  ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 0.0);
+
+  box1.set(0, 0, 0, 10, 5, 30);
+  box2.set(0, 20, 30, 10, 30, 50);
+  ASSERT_DOUBLE_EQ(box1.computeDistance(box2), 15.0);
+  ASSERT_DOUBLE_EQ(box2.computeDistance(box1), 15.0);
+}
+
+TEST(ZIntCuboid, hasOverlap)
+{
+  ZIntCuboid box;
+  box.setFirstCorner(ZIntPoint(0, 1, 2));
+  box.setLastCorner(ZIntPoint(4, 6, 9));
+
+  ZIntCuboid box2;
+  box2.setFirstCorner(ZIntPoint(0, 1, 2));
+  box2.setLastCorner(ZIntPoint(4, 6, 9));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(0, 1, 2));
+  box2.setLastCorner(ZIntPoint(4, 6, 9));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(0, 1, 2));
+  box2.setLastCorner(ZIntPoint(3, 4, 5));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(0, 0, 0));
+  box2.setLastCorner(ZIntPoint(3, 4, 9));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(1, 0, 0));
+  box2.setLastCorner(ZIntPoint(3, 4, 9));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(-2, -3, -5));
+  box2.setLastCorner(ZIntPoint(-1, 0, 0));
+  ASSERT_FALSE(box.hasOverlap(box2));
+  ASSERT_FALSE(box2.hasOverlap(box));
+
+  box.setFirstCorner(ZIntPoint(5, 6, 7));
+  box.setLastCorner(ZIntPoint(10, 12, 14));
+
+  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(1, 0, 0));
+  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(1, 0, 0));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(10, 0, 0));
+  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(10, 0, 0));
+  ASSERT_FALSE(box.hasOverlap(box2));
+  ASSERT_FALSE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(0, 1, 0));
+  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(0, 1, 0));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(0, 10, 0));
+  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(0, 10, 0));
+  ASSERT_FALSE(box.hasOverlap(box2));
+  ASSERT_FALSE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(5, 6, 8));
+  box2.setLastCorner(ZIntPoint(10, 12, 15));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(5, 6, 17));
+  box2.setLastCorner(ZIntPoint(10, 12, 24));
+  ASSERT_FALSE(box.hasOverlap(box2));
+  ASSERT_FALSE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(1, 1, 1));
+  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(2, 2, 2));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box2.setFirstCorner(ZIntPoint(5, 6, 7) + ZIntPoint(-1, -1, -1));
+  box2.setLastCorner(ZIntPoint(10, 12, 14) + ZIntPoint(2, -2, -2));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
+
+  box.setFirstCorner(ZIntPoint(231, 150, 291));
+  box.setLastCorner(ZIntPoint(246, 158, 291));
+
+  box2.setFirstCorner(ZIntPoint(232, 144, 291));
+  box2.setLastCorner(ZIntPoint(242, 159, 291));
+  ASSERT_TRUE(box.hasOverlap(box2));
+  ASSERT_TRUE(box2.hasOverlap(box));
 }
 
 TEST(ZCuboid, intersectLine)

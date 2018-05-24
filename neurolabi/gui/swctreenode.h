@@ -7,11 +7,12 @@
 #include <map>
 
 #include "tz_swc_tree.h"
-#include "neutube.h"
+#include "neutube_def.h"
 #include "zcuboid.h"
 #include "zpoint.h"
 
 class ZWeightedPointArray;
+class ZStack;
 
 typedef int (*Swc_Tree_Node_Compare) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
 typedef bool (*Swc_Tree_Node_Compare_B) (Swc_Tree_Node* lhs, Swc_Tree_Node *rhs);
@@ -21,7 +22,7 @@ static std::vector<std::string> SwcTreeNodeClipboard;
 //A wrapper for Swc_Tree_Node
 namespace SwcTreeNode {
 
-//Constructors
+using Pair = std::pair<Swc_Tree_Node*, Swc_Tree_Node*>;
 
 /*!
  * \brief Create a regular swc node
@@ -100,6 +101,8 @@ inline int type(const Swc_Tree_Node *tn) { return tn->node.type; }
 int label(const Swc_Tree_Node *tn);
 int index(const Swc_Tree_Node *tn);
 
+void print(const Swc_Tree_Node *tn);
+
 /*!
  * \brief Get the lenght of a node
  *
@@ -107,6 +110,8 @@ int index(const Swc_Tree_Node *tn);
  * It returns 0.0 if it is a root.
  */
 double length(const Swc_Tree_Node *tn);
+
+double length(const Swc_Tree_Node *tn, double sx, double sy, double sz);
 
 /*!
  * \brief Weight of edge between the node and its parent
@@ -223,13 +228,33 @@ bool isLeaf(const Swc_Tree_Node *tn);
 bool isTerminal(const Swc_Tree_Node *tn);
 
 /*!
- * \brief The number of nodes located at the downstream of a node4
+ * \brief The number of nodes located at the downstream of a node
  *
- * \return
+ * \return The number of nodes located at the downstream of \a tn (including
+ *         \a tn)
  */
 int downstreamSize(Swc_Tree_Node *tn);
+
+/*!
+ * \brief Downstream size filtered with a comparison function
+ *
+ * It counts all the downstream nodes that satisfying \a compfunc(x) <= 0.
+ *
+ * \param tn start node.
+ * \param compfunc Comparison function.
+ * \return The number of filtered nodes of the sub-tree with \a tn as its root.
+ */
 int downstreamSize(Swc_Tree_Node *tn, Swc_Tree_Node_Compare compfunc);
+
+/*!
+ * \brief The size of the single tree that hosts a node
+ *
+ * \return The number of nodes of the regular tree that contains \a tn
+ */
 int singleTreeSize(Swc_Tree_Node *tn);
+
+double downstreamLength(Swc_Tree_Node *tn);
+double downstreamLength(Swc_Tree_Node *tn, double sx, double sy, double sz);
 
 inline Swc_Tree_Node *nextSibling(Swc_Tree_Node *tn) {
   return (tn == NULL) ? NULL : tn->next_sibling;
@@ -297,6 +322,9 @@ inline void setZ(Swc_Tree_Node *tn, double z) {
   tn->node.z = z;
 }
 
+void setCenter(Swc_Tree_Node *tn, double x, double y, double z);
+void setCenter(Swc_Tree_Node *tn, const ZPoint &center);
+
 /*!
  * \brief Set radius of the node.
  *
@@ -329,6 +357,7 @@ void translate(Swc_Tree_Node *tn, const ZIntPoint &pt);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, const ZPoint &center,
             bool inverse = false);
 void rotate(Swc_Tree_Node *tn, double theta, double psi, bool inverse = false);
+void rotateAroundZ(Swc_Tree_Node *tn, double theta, double cx, double cy);
 
 /*!
  *
@@ -427,7 +456,7 @@ double pathLength(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 double planePathLength(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
 enum EDistanceType {
-  GEODESIC, EUCLIDEAN, PLANE_EUCLIDEAN, EUCLIDEAN_SURFACE
+  GEODESIC, EUCLIDEAN, EUCLIDEAN_SQUARE, PLANE_EUCLIDEAN, EUCLIDEAN_SURFACE
 };
 
 /*!
@@ -469,6 +498,8 @@ double distance(const Swc_Tree_Node *tn, double x, double y, double z,
  */
 double scaledDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
                 double sx, double sy, double sz);
+double scaledSurfaceDistance(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
+                              double sx, double sy, double sz);
 
 /*!
  * \brief Find the node that is the furthest one to a given node.
@@ -481,13 +512,15 @@ furthestNode(Swc_Tree_Node *tn, EDistanceType distType = EUCLIDEAN);
 int labelDifference(Swc_Tree_Node *lhs, Swc_Tree_Node *rhs);
 ZPoint upStreamDirection(Swc_Tree_Node *tn, int n = 0);
 ZPoint localDirection(const Swc_Tree_Node *tn, int extend = 1);
+ZPoint weightedDirection(const Swc_Tree_Node *tn, int extend = 1);
+ZPoint weightedDirection(const ZWeightedPointArray &ptArray);
 double localRadius(const Swc_Tree_Node *tn, int extend = 1);
 ZWeightedPointArray localSegment(const Swc_Tree_Node *tn, int extend = 1);
 
 double estimateRadius(const Swc_Tree_Node *tn, const Stack *stack,
-                      NeuTube::EImageBackground bg);
+                      neutube::EImageBackground bg);
 bool fitSignal(Swc_Tree_Node *tn, const Stack *stack,
-               NeuTube::EImageBackground bg, int option = 1);
+               neutube::EImageBackground bg, int option = 1);
 
 //Node set
 bool connect(const std::vector<Swc_Tree_Node*> &nodeArray);
@@ -636,6 +669,10 @@ void average(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
              Swc_Tree_Node *out);
 void weightedAverage(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2,
              Swc_Tree_Node *out);
+
+//Paint
+void LabelStack(
+    const Swc_Tree_Node *tn, ZStack *stack, Swc_Tree_Node_Label_Workspace *ws);
 
 /*!
  * \brief interpolate

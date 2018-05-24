@@ -22,7 +22,8 @@ public:
   Local_Neuroseg* toLocalNeuroseg() const;
 
 public:
-  virtual void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               neutube::EAxis sliceAxis) const;
 
 public:
     virtual void fitStack(const Stack *stack, Receptor_Fit_Workspace *ws);

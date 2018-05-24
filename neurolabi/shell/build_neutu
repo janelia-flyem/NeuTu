@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -e 
+
+#export PATH=/usr/bin:/usr/local/bin:/bin
+
+if test $# -eq 0
+then
+  install_dir=/opt
+else
+  install_dir=$1
+fi
+echo "Installing NeuTu under $install_dir"
+if [ ! -d $install_dir ]
+then
+  mkdir -p $install_dir
+fi
+
+if [ ! -d $install_dir/bin ]
+then
+  mkdir $install_dir/bin
+fi
+
+if [ `uname` = 'Darwin' ]; then
+  scriptDir=$(cd $(dirname "$0") && pwd -P)
+else
+  scriptDir=$(dirname `readlink -f "$0"`)
+fi
+
+downloadDir=$install_dir/Download
+if [ ! -d $downloadDir ]
+then
+  mkdir $downloadDir
+fi
+
+cd $downloadDir
+condaDir=$downloadDir/miniconda
+
+if [ $(uname) == 'Darwin' ]; then
+  curl -X GET https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh > Miniconda-latest-MacOSX-x86_64.sh
+  bash Miniconda-latest-MacOSX-x86_64.sh -b -p $condaDir
+else
+  curl -X GET https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh > Miniconda-latest-Linux-x86_64.sh
+  bash Miniconda-latest-Linux-x86_64.sh -b -p $condaDir
+fi
+
+CONDA_ROOT=`$condaDir/bin/conda info --root`
+source $CONDA_ROOT/bin/activate root
+
+conda install conda-build -y
+git clone $scriptDir/../../.git $downloadDir/neutu
+cd $downloadDir/neutu
+conda build recipe-neutu -c flyem
+
+#if [ ! -d $envDir ]
+#then
+#  $condaDir/bin/conda create -n $envname -y -c flyem libdvid-cpp
+#fi
+
+#source $CONDA_ROOT/bin/activate $envname
+
+#if [ $(uname) == 'Linux' ]; then
+#  conda install lowtis -c flyem -y
+#fi
+
+#export PREFIX="$condaDir/envs/$envname"
+#if [ $(uname) == 'Darwin' ]; then
+#  QMAKE_SPEC_PATH=${PREFIX}/mkspecs/macx-g++
+#else
+#  QMAKE_SPEC_PATH=${PREFIX}/mkspecs/linux-g++-64
+#fi
+
+#export CONDA_ENV=${PREFIX}
+
+#cd $scriptDir/../../
+#bash -x -e build.sh ${PREFIX}/bin/qmake ${QMAKE_SPEC_PATH} -e flyem -q "CONDA_ENV=${CONDA_ENV}"

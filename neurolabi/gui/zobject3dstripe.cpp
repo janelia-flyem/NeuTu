@@ -1,7 +1,11 @@
 #include "zobject3dstripe.h"
+
+#include <cstring>
+
 #include "tz_error.h"
 #include "zerror.h"
 #include "tz_math.h"
+#include "geometry/zgeometry.h"
 
 int ZObject3dStripe::getMinX() const
 {
@@ -151,6 +155,33 @@ void ZObject3dStripe::write(FILE *fp) const
   }
 }
 
+void ZObject3dStripe::write(std::ostream &stream) const
+{
+  stream.write((const char*)(&(m_z)), sizeof(int));
+  stream.write((const char*)(&(m_y)), sizeof(int));
+  int n = m_segmentArray.size();
+  stream.write((const char*)(&(n)), sizeof(int));
+  stream.write((const char*)(&(m_segmentArray[0])), sizeof(int) * n);
+}
+
+/*
+std::ostream& operator<<(
+      std::ostream &stream, const ZObject3dStripe &stripe)
+{
+  stripe.write(stream);
+
+  return stream;
+}
+
+std::istream& operator>>(
+    std::istream &stream, ZObject3dStripe &stripe)
+{
+  stripe.read(stream);
+
+  return stream;
+}
+*/
+
 void ZObject3dStripe::read(FILE *fp)
 {
   if (fp != NULL) {
@@ -162,6 +193,18 @@ void ZObject3dStripe::read(FILE *fp)
     m_segmentArray.resize(nseg * 2);
     fread(&(m_segmentArray[0]), sizeof(int), m_segmentArray.size(), fp);
     m_isCanonized = false;
+  }
+}
+
+void ZObject3dStripe::read(std::istream &stream)
+{
+  stream.read((char*)(&m_z), sizeof(int));
+  stream.read((char*)(&m_y), sizeof(int));
+  int n = 0;
+  stream.read((char*)(&n), sizeof(int));
+  if (n > 0) {
+    m_segmentArray.resize(n);
+    stream.read((char*)(&(m_segmentArray[0])), sizeof(int) * m_segmentArray.size());
   }
 }
 
@@ -225,7 +268,30 @@ size_t ZObject3dStripe::countForegroundOverlap(
   return count;
 }
 
-void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
+
+template<typename T>
+void ZObject3dStripe::addArray(
+    T *array, int v, int minV, int maxV, int width, const int *offset) const
+{
+//  v = (v < minV) ? minV : ((v > maxV) ? maxV : v);
+  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    int x0 = m_segmentArray[i];
+    int x1 = m_segmentArray[i + 1];
+    if (offset != NULL) {
+      x0 += offset[0];
+      x1 += offset[0];
+    }
+    if (x0 < width) {
+      x1 = std::min(x1, width - 1);
+      for (int x = x0; x <= x1; ++x) {
+        int tmpV = v + array[x];
+        array[x] = (tmpV < minV) ? minV : ((tmpV > maxV) ? maxV : tmpV);
+      }
+    }
+  }
+}
+
+void ZObject3dStripe::addStackValue(Stack *stack, int v, const int *offset) const
 {
   if (C_Stack::kind(stack) != GREY && C_Stack::kind(stack) != GREY16) {
     RECORD_ERROR(true, "Unsupported kind");
@@ -257,47 +323,188 @@ void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
   switch (C_Stack::kind(stack)) {
   case GREY:
     ima.array8 += arrayOffset;
-    v = (v < 0) ? 0 : ((v > 255) ? 255 : v);
-    for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
-      int x0 = m_segmentArray[i];
-      int x1 = m_segmentArray[i + 1];
-      if (offset != NULL) {
-        x0 += offset[0];
-        x1 += offset[0];
-      }
-      if (x0 < C_Stack::width(stack)) {
-        x1 = std::min(x1, C_Stack::width(stack) - 1);
-        for (int x = x0; x <= x1; ++x) {
-          ima.array8[x] = v;
-        }
-      }
-    }
+    addArray(ima.array8, v, 0, 255, C_Stack::width(stack), offset);
     break;
   case GREY16:
     ima.array16 += arrayOffset;
-    v = (v < 0) ? 0 : ((v > 65535) ? 65535 : v);
-    for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
-      int x0 = m_segmentArray[i];
-      int x1 = m_segmentArray[i + 1];
-      if (offset != NULL) {
-        x0 += offset[0];
-        x1 += offset[0];
-      }
-      if (x0 < C_Stack::width(stack)) {
-        x1 = std::min(x1, C_Stack::width(stack) - 1);
-        for (int x = x0; x <= x1; ++x) {
-          ima.array16[x] = v;
-        }
-      }
-    }
+    addArray(ima.array16, v, 0, 65535, C_Stack::width(stack), offset);
     break;
   default:
     break;
   }
 }
 
+template<typename T>
+void ZObject3dStripe::drawArray(
+    T *array, int v, int minV, int maxV, int width, const int *offset) const
+{
+  v = (v < minV) ? minV : ((v > maxV) ? maxV : v);
+  for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+    int x0 = m_segmentArray[i];
+    int x1 = m_segmentArray[i + 1];
+    if (offset != NULL) {
+      x0 += offset[0];
+      x1 += offset[0];
+    }
+    if (x0 < width) {
+      x1 = std::min(x1, width - 1);
+      for (int x = x0; x <= x1; ++x) {
+        array[x] = v;
+      }
+    }
+  }
+}
+
+
+void ZObject3dStripe::drawStack(Stack *stack, int v, const int *offset) const
+{
+  if (C_Stack::kind(stack) != GREY && C_Stack::kind(stack) != GREY16) {
+    RECORD_ERROR(true, "Unsupported kind");
+    return;
+  }
+
+  Image_Array ima;
+  ima.array = stack->array;
+
+  int y = getY();
+  int z = getZ();
+
+  if (offset != NULL) {
+    y += offset[1];
+    z += offset[2];
+  }
+
+  if (y < 0 || y >= C_Stack::height(stack)) {
+    return;
+  }
+
+  if (z < 0 || z >= C_Stack::depth(stack)) {
+    return;
+  }
+
+  size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+  size_t arrayOffset = area * z + C_Stack::width(stack) * y;
+
+  switch (C_Stack::kind(stack)) {
+  case GREY:
+    ima.array8 += arrayOffset;
+    drawArray(ima.array8, v, 0, 255, C_Stack::width(stack), offset);
+    break;
+  case GREY16:
+    ima.array16 += arrayOffset;
+    drawArray(ima.array16, v, 0, 65535, C_Stack::width(stack), offset);
+    break;
+  default:
+    break;
+  }
+}
+
+void ZObject3dStripe::drawStack(Stack *stack, int v, neutube::EAxis axis,
+                                const int *offset) const
+{
+  switch (axis) {
+  case neutube::Z_AXIS:
+  case neutube::A_AXIS:
+    drawStack(stack, v, offset);
+    break;
+  case neutube::X_AXIS:
+  case neutube::Y_AXIS:
+    if (C_Stack::kind(stack) == GREY || C_Stack::kind(stack) != GREY16) {
+      Image_Array ima;
+      ima.array = stack->array;
+      int dx = 0;
+      int dy = 0;
+      int dz = 0;
+      if (offset != NULL) {
+        dx = offset[0];
+        dy = offset[1];
+        dz = offset[2];
+        zgeom::shiftSliceAxis(dx, dy, dz, axis);
+      }
+
+      int y = getY();
+      int z = getZ();
+
+      if (offset != NULL) {
+        y += dy;
+        z += dz;
+      }
+
+      int shiftedWidth = C_Stack::width(stack);
+      int shiftedHeight = C_Stack::height(stack);
+      int shiftedDepth = C_Stack::depth(stack);
+      zgeom::shiftSliceAxis(shiftedWidth, shiftedHeight, shiftedDepth, axis);
+      if (y >= shiftedHeight) {
+        return;
+      }
+
+      if (z >= shiftedDepth) {
+        return;
+      }
+
+      size_t area = C_Stack::width(stack) * C_Stack::height(stack);
+      size_t arrayOffset = 0;
+
+      int stride = 1;
+      if (axis == neutube::Y_AXIS) {
+        arrayOffset = C_Stack::width(stack) * y + area * z;
+      } else {
+        arrayOffset = area * y + z;
+        stride = C_Stack::width(stack);
+      }
+
+      switch (C_Stack::kind(stack)) {
+      case GREY:
+        ima.array8 += arrayOffset;
+        v = (v < 0) ? 0 : ((v > 255) ? 255 : v);
+        for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+          int x0 = m_segmentArray[i];
+          int x1 = m_segmentArray[i + 1];
+          if (offset != NULL) {
+            x0 += dx;
+            x1 += dx;
+          }
+          if (x0 < shiftedWidth) {
+            x1 = std::min(x1, shiftedWidth - 1);
+            for (int x = x0; x <= x1; ++x) {
+              ima.array8[x * stride] = v;
+            }
+          }
+        }
+        break;
+      case GREY16:
+        ima.array16 += arrayOffset;
+        v = (v < 0) ? 0 : ((v > 65535) ? 65535 : v);
+        for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+          int x0 = m_segmentArray[i];
+          int x1 = m_segmentArray[i + 1];
+          if (offset != NULL) {
+            x0 += dx;
+            x1 += dx;
+          }
+          if (x0 < shiftedWidth) {
+            x1 = std::min(x1, shiftedWidth - 1);
+            for (int x = x0; x <= x1; ++x) {
+              ima.array16[x * stride] = v;
+            }
+          }
+        }
+        break;
+      default:
+        break;
+      }
+    } else {
+      RECORD_ERROR(true, "Unsupported kind");
+      return;
+    }
+
+    break;
+  }
+}
+
 void ZObject3dStripe::drawStack(
-    Stack *stack, uint8_t red, uint8_t green, uint8_t blue, const int *offset) const
+    Stack *stack, uint8_t red, uint8_t green, uint8_t blue,
+    const int *offset) const
 {
   if (C_Stack::kind(stack) != COLOR) {
     RECORD_ERROR(true, "Unsupported kind");
@@ -431,17 +638,16 @@ static int ZObject3dSegmentCompare(const void *e1, const void *e2)
 
 void ZObject3dStripe::sort()
 {
-  if (!m_segmentArray.empty()) {
+  if (!m_segmentArray.empty() && !m_isCanonized) {
     qsort(&m_segmentArray[0], m_segmentArray.size() / 2, sizeof(int) * 2,
         ZObject3dSegmentCompare);
   }
 }
 
-void ZObject3dStripe::canonize()
+void ZObject3dStripe::sortedCanonize()
 {
   if (!m_isCanonized) {
     if (!m_segmentArray.empty()) {
-      sort();
       std::vector<int> newSegmentArray(m_segmentArray.size());
       size_t length = 0;
       //newSegmentArray.reserve(m_segmentArray.size());
@@ -469,6 +675,17 @@ void ZObject3dStripe::canonize()
       m_segmentArray.swap(newSegmentArray);
       //m_segmentArray = newSegmentArray;
     }
+    m_isCanonized = true;
+  }
+}
+
+void ZObject3dStripe::canonize()
+{
+  if (!m_isCanonized) {
+    if (!m_segmentArray.empty()) {
+      sort();
+      sortedCanonize();
+    }
 
     m_isCanonized = true;
   }
@@ -476,25 +693,33 @@ void ZObject3dStripe::canonize()
 
 bool ZObject3dStripe::unify(const ZObject3dStripe &stripe, bool canonizing)
 {
-  if (getY() == stripe.getY() && getZ() == stripe.getZ()) {
-    if (isCanonized() && stripe.isCanonized()) {
-      if (!isEmpty() && !stripe.isEmpty()) {
-        if (m_segmentArray.back() + 1 >= stripe.m_segmentArray.front()) {
-          m_isCanonized = false;
-        }
-      }
-    } else {
-      m_isCanonized = false;
-    }
-
-    m_segmentArray.insert(m_segmentArray.end(), stripe.m_segmentArray.begin(),
-                          stripe.m_segmentArray.end());
-
+  if (isEmpty()) {
+    *this = stripe;
     if (canonizing) {
       canonize();
     }
-
     return true;
+  } else {
+    if (getY() == stripe.getY() && getZ() == stripe.getZ()) {
+      if (isCanonized() && stripe.isCanonized()) {
+        if (!isEmpty() && !stripe.isEmpty()) {
+          if (m_segmentArray.back() + 1 >= stripe.m_segmentArray.front()) {
+            m_isCanonized = false;
+          }
+        }
+      } else {
+        m_isCanonized = false;
+      }
+
+      m_segmentArray.insert(m_segmentArray.end(), stripe.m_segmentArray.begin(),
+                            stripe.m_segmentArray.end());
+
+      if (canonizing) {
+        canonize();
+      }
+
+      return true;
+    }
   }
 
   return false;
@@ -549,6 +774,66 @@ bool ZObject3dStripe::contains(int x, int y, int z) const
   }
 
   return false;
+}
+
+void ZObject3dStripe::remove(int bx0, int bx1)
+{
+  sort();
+
+  if (getMinX() >= bx0 && getMaxX() <= bx1) {
+    m_segmentArray.clear();
+  } else if (getMinX() <= bx1 && getMaxX() >= bx0) {
+    std::vector<int> newSegmentArray;
+    newSegmentArray.resize(m_segmentArray.size() + 2);
+    size_t currentIndex = 0;
+    size_t remainingIndex = 0;
+
+    for (size_t i = 0; i < m_segmentArray.size(); i += 2) {
+      int x0 = m_segmentArray[i];
+      int x1 = m_segmentArray[i + 1];
+      remainingIndex = i;
+      if (bx0 > x1) { //||[]
+        newSegmentArray[currentIndex] = x0;
+        newSegmentArray[currentIndex + 1] = x1;
+        currentIndex += 2;
+        remainingIndex = i + 2;
+      } else {
+        if (bx0 <= x0) { //[|
+          if (bx1 < x0) { // []||
+            break;
+          } else if (bx1 < x1) { // [|]|
+            newSegmentArray[currentIndex] =bx1 + 1;
+            newSegmentArray[currentIndex + 1] = x1;
+            currentIndex += 2;
+            remainingIndex = i + 2;
+            break;
+          } else { // [||]
+            remainingIndex = i + 2;
+          }
+        } else if (bx0 <= x1) { // |[|
+          newSegmentArray[currentIndex] = x0;
+          newSegmentArray[currentIndex + 1] = bx0 - 1;
+          currentIndex += 2;
+          remainingIndex = i + 2;
+          if (bx1 < x1) { //|[]|
+            newSegmentArray[currentIndex] = bx1 + 1;
+            newSegmentArray[currentIndex + 1] = x1;
+            currentIndex += 2;
+          }/* else { //|[|]
+        }*/
+        }
+      }
+    }
+
+
+    for (size_t i = remainingIndex; i < m_segmentArray.size(); i++) {
+      newSegmentArray[currentIndex++] = m_segmentArray[i];
+    }
+
+    newSegmentArray.resize(currentIndex);
+
+    m_segmentArray.swap(newSegmentArray);
+  }
 }
 
 void ZObject3dStripe::dilate()
@@ -655,4 +940,104 @@ void ZObject3dStripe::print(int indent) const
     }
     std::cout << "  " << m_segmentArray[i] << " - " << m_segmentArray[i+1] << std::endl;
   }
+}
+
+ZObject3dStripe ZObject3dStripe::getComplement(int x0, int x1)
+{
+  ZObject3dStripe stripe;
+  stripe.setY(getY());
+  stripe.setZ(getZ());
+
+  stripe.addSegment(x0, x1);
+
+  return stripe - (*this);
+}
+
+
+#define MOVE_SEGMENT(seg, nseg, s, start, end) \
+  ++seg;\
+  if (seg >= nseg) {\
+    break;\
+  }\
+  start = s.getSegmentStart(seg);\
+  end = s.getSegmentEnd(seg);
+
+#define MOVE_FIRST_SEGMENT \
+  ++seg1;\
+  if (seg1 >= nseg1) {\
+    break;\
+  }\
+  s1Start = s1.getSegmentStart(seg1);\
+  s1End = s1.getSegmentEnd(seg1);
+
+#define MOVE_SECOND_SEGMENT \
+  ++seg2;\
+  if (seg2 >= nseg2) {\
+    break;\
+  }\
+  s2Start = s2.getSegmentStart(seg2);\
+  s2End = s2.getSegmentEnd(seg2);
+
+
+ZObject3dStripe operator - (
+    const ZObject3dStripe &s1, const ZObject3dStripe &s2)
+{
+  ZObject3dStripe result;
+
+  if ((s1.getY() == s2.getY()) && (s1.getZ() == s2.getZ()) &&
+      !s1.m_segmentArray.empty() && !s2.m_segmentArray.empty()) {
+    result.setY(s1.getY());
+    result.setZ(s2.getZ());
+
+    const_cast<ZObject3dStripe&>(s1).canonize();
+    const_cast<ZObject3dStripe&>(s2).canonize();
+
+    int seg1 = 0;
+    int seg2 = 0;
+
+    int nseg1 = s1.getSegmentNumber();
+    int nseg2 = s2.getSegmentNumber();
+
+    int s1Start = s1.getSegmentStart(0);
+    int s1End = s1.getSegmentEnd(0);
+    int s2Start = s2.getSegmentStart(0);
+    int s2End = s2.getSegmentEnd(0);
+//    int currentStart = s1Start;
+//    int currentEnd = s1End;
+
+    while (seg1 < nseg1 && seg2 < nseg2) {
+      if (s2End < s1Start) {
+        MOVE_SECOND_SEGMENT;
+      } else if (s2Start <= s1Start) {
+        if (s2End >= s1End) {
+          MOVE_FIRST_SEGMENT;
+        } else {
+          s1Start = s2End + 1;
+          MOVE_SECOND_SEGMENT;
+        }
+      } else if (s2Start <= s1End) {
+        result.addSegment(s1Start, s2Start - 1, false);
+        if (s2End < s1End) {
+          s1Start = s2End + 1;
+          MOVE_SECOND_SEGMENT;
+        } else {
+          MOVE_FIRST_SEGMENT;
+        }
+      } else {
+        result.addSegment(s1Start, s1End, false);
+        MOVE_FIRST_SEGMENT;
+      }
+    }
+
+    while (seg1 < nseg1) {
+      result.addSegment(s1Start, s1End, false);
+      MOVE_FIRST_SEGMENT;
+    }
+
+    result.setCanonized(true);
+  } else {
+    result = s1;
+  }
+
+  return result;
 }

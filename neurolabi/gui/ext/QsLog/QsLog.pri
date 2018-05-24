@@ -16,7 +16,8 @@ HEADERS += $$PWD/QsLogDest.h \
     $$PWD/QsLogLevel.h \
     $$PWD/QsLogDestFile.h \
     $$PWD/QsLogDisableForThisFile.h \
-    $$PWD/QsLogDestFunctor.h
+    $$PWD/QsLogDestFunctor.h \
+    $$PWD/zqslog.h
 
 OTHER_FILES += \
     $$PWD/QsLogChanges.txt \

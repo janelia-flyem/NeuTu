@@ -55,7 +55,7 @@ void ZSegmentationProject::loadStack(const QString &fileName)
   ZTreeNode<ZObject3dScan> *root = new ZTreeNode<ZObject3dScan>;
   m_labelTree.setRoot(root);
 
-  if (ZFileType::fileType(fileName.toStdString()) == ZFileType::JSON_FILE) {
+  if (ZFileType::FileType(fileName.toStdString()) == ZFileType::FILE_JSON) {
     ZJsonObject dataJson;
     dataJson.load(fileName.toStdString());
     if (dataJson.hasKey("segmentation")) {
@@ -71,7 +71,7 @@ void ZSegmentationProject::loadStack(const QString &fileName)
 void ZSegmentationProject::generateTestData()
 {
   m_stack = new ZStack;
-  m_stack->load("/Users/zhaot/Work/neutube/neurolabi/data/benchmark/em_stack_slice.tif");
+  m_stack->load("/Users/zhaot/Work/neutube/neurolabi/data/_benchmark/em_stack_slice.tif");
 
   m_dataFrame->document()->loadStack(m_stack->clone());
 
@@ -308,12 +308,13 @@ void ZSegmentationProject::exportLabelField(const QString &fileName)
   while (iterator.hasNext()) {
     ZTreeNode<ZObject3dScan> *node = iterator.nextNode();
     if (node->isLeaf()) {
-      objArray.push_back(node->data());
+      objArray.append(node->data());
     }
   }
 
   ZStack *stack = objArray.toStackObject();
-  stack->save(fileName.toStdString());
-
-  delete stack;
+  if (stack != NULL) {
+    stack->save(fileName.toStdString());
+    delete stack;
+  }
 }

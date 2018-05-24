@@ -9,12 +9,12 @@
 
 using namespace std;
 
-FlyEm::ZSynapseLocationMatcher::ZSynapseLocationMatcher() :
+flyem::ZSynapseLocationMatcher::ZSynapseLocationMatcher() :
   m_metric(NULL), m_verbose(1)
 {
 }
 
-FlyEm::ZSynapseLocationMatcher::ZSynapseLocationMatcher(
+flyem::ZSynapseLocationMatcher::ZSynapseLocationMatcher(
     const ZSynapseLocationMatcher &matcher) :
   m_matchedPairArray(matcher.m_matchedPairArray),
   m_unmatchedIndices1(matcher.m_unmatchedIndices1),
@@ -27,16 +27,16 @@ FlyEm::ZSynapseLocationMatcher::ZSynapseLocationMatcher(
 {
 }
 
-void FlyEm::ZSynapseLocationMatcher::clearResult()
+void flyem::ZSynapseLocationMatcher::clearResult()
 {
   m_matchedPairArray.clear();
   m_unmatchedIndices1.clear();
   m_unmatchedIndices2.clear();
 }
 
-std::vector<FlyEm::WeightedIntPair> FlyEm::ZSynapseLocationMatcher::
-computePairwiseDistance(const std::vector<FlyEm::SynapseLocation *> &loc1,
-                        const std::vector<FlyEm::SynapseLocation *> &loc2,
+std::vector<flyem::WeightedIntPair> flyem::ZSynapseLocationMatcher::
+computePairwiseDistance(const std::vector<flyem::SynapseLocation *> &loc1,
+                        const std::vector<flyem::SynapseLocation *> &loc2,
                         double maxDist)
 {
   std::vector<WeightedIntPair> distanceArray;
@@ -54,9 +54,9 @@ computePairwiseDistance(const std::vector<FlyEm::SynapseLocation *> &loc1,
   return distanceArray;
 }
 
-void FlyEm::ZSynapseLocationMatcher::match(
-    const std::vector<FlyEm::SynapseLocation*> &loc1,
-    const std::vector<FlyEm::SynapseLocation*> &loc2,
+void flyem::ZSynapseLocationMatcher::match(
+    const std::vector<flyem::SynapseLocation*> &loc1,
+    const std::vector<flyem::SynapseLocation*> &loc2,
     double maxDist)
 {
   clearResult();
@@ -127,9 +127,9 @@ void FlyEm::ZSynapseLocationMatcher::match(
   }
 }
 
-int FlyEm::ZSynapseLocationMatcher::
-getIndex(int i, FlyEm::ZSynapseLocationMatcher::ESide side,
-         FlyEm::ZSynapseLocationMatcher::EResult result) const
+int flyem::ZSynapseLocationMatcher::
+getIndex(int i, flyem::ZSynapseLocationMatcher::ESide side,
+         flyem::ZSynapseLocationMatcher::EResult result) const
 {
   int index = -1;
 
@@ -159,7 +159,7 @@ getIndex(int i, FlyEm::ZSynapseLocationMatcher::ESide side,
   return index;
 }
 
-size_t FlyEm::ZSynapseLocationMatcher::unmatchedSize(ESide side)
+size_t flyem::ZSynapseLocationMatcher::unmatchedSize(ESide side)
 {
   size_t s = 0;
   switch (side) {
@@ -174,7 +174,7 @@ size_t FlyEm::ZSynapseLocationMatcher::unmatchedSize(ESide side)
   return s;
 }
 
-double FlyEm::ZSynapseLocationMatcher::matchCost(const SynapseLocation &loc1,
+double flyem::ZSynapseLocationMatcher::matchCost(const SynapseLocation &loc1,
                                                  const SynapseLocation &loc2)
 {
   if (m_metric == NULL) {
@@ -184,7 +184,7 @@ double FlyEm::ZSynapseLocationMatcher::matchCost(const SynapseLocation &loc1,
   }
 }
 
-Intpair_Map* FlyEm::ZSynapseLocationMatcher::toIntPairMap() const
+Intpair_Map* flyem::ZSynapseLocationMatcher::toIntPairMap() const
 {
   Intpair_Map *intpairMap = NULL;
 
@@ -201,7 +201,7 @@ Intpair_Map* FlyEm::ZSynapseLocationMatcher::toIntPairMap() const
   return intpairMap;
 }
 
-void FlyEm::ZSynapseLocationMatcher::evaluate(
+void flyem::ZSynapseLocationMatcher::evaluate(
     const ZSynapseLocationMatcher &golden)
 {
   m_trueMatchNumber = static_cast<int>(golden.size());
@@ -226,7 +226,7 @@ void FlyEm::ZSynapseLocationMatcher::evaluate(
   }
 }
 
-void FlyEm::ZSynapseLocationMatcher::printPerformance() const
+void flyem::ZSynapseLocationMatcher::printPerformance() const
 {
   int tp = size() - m_falseMatch.size();
 
@@ -239,7 +239,7 @@ void FlyEm::ZSynapseLocationMatcher::printPerformance() const
   cout << "F-Measure: " << fMeasure << endl;
 }
 
-void FlyEm::ZSynapseLocationMatcher::exportPerformance(const string &filePath) const
+void flyem::ZSynapseLocationMatcher::exportPerformance(const string &filePath) const
 {
   ofstream stream(filePath.c_str());
 
@@ -272,7 +272,7 @@ void FlyEm::ZSynapseLocationMatcher::exportPerformance(const string &filePath) c
   stream.close();
 }
 
-void FlyEm::ZSynapseLocationMatcher::load(const ZSynapseAnnotationArray &sa1,
+void flyem::ZSynapseLocationMatcher::load(const ZSynapseAnnotationArray &sa1,
                                           const ZSynapseAnnotationArray &sa2,
                                           const string filePath)
 
@@ -308,16 +308,16 @@ void FlyEm::ZSynapseLocationMatcher::load(const ZSynapseAnnotationArray &sa1,
   fclose(fp);
 }
 
-void FlyEm::ZSynapseLocationMatcher::matchTBar(
-    FlyEm::ZSynapseAnnotationArray &sa1,
-    FlyEm::ZSynapseAnnotationArray &sa2, double maxDist)
+void flyem::ZSynapseLocationMatcher::matchTBar(
+    flyem::ZSynapseAnnotationArray &sa1,
+    flyem::ZSynapseAnnotationArray &sa2, double maxDist)
 {
-  vector<FlyEm::SynapseLocation*> tbarSet1 = sa1.toTBarRefArray();
-  vector<FlyEm::SynapseLocation*> tbarSet2 = sa2.toTBarRefArray();
+  vector<flyem::SynapseLocation*> tbarSet1 = sa1.toTBarRefArray();
+  vector<flyem::SynapseLocation*> tbarSet2 = sa2.toTBarRefArray();
   match(tbarSet1, tbarSet2, maxDist);
 }
 
-void FlyEm::ZSynapseLocationMatcher::addUnmatched(
+void flyem::ZSynapseLocationMatcher::addUnmatched(
     ESide side, const ZSynapseAnnotationArray &sa,
     size_t tbarIndex, size_t psdIndex)
 {
@@ -335,9 +335,9 @@ void FlyEm::ZSynapseLocationMatcher::addUnmatched(
   }
 }
 
-FlyEm::ZSynapseLocationMatcher FlyEm::ZSynapseLocationMatcher::matchPsd(
-    FlyEm::ZSynapseAnnotationArray &sa1,
-    FlyEm::ZSynapseAnnotationArray &sa2,
+flyem::ZSynapseLocationMatcher flyem::ZSynapseLocationMatcher::matchPsd(
+    flyem::ZSynapseAnnotationArray &sa1,
+    flyem::ZSynapseAnnotationArray &sa2,
     double maxDist, double tbarMaxDist)
 {
   clearResult();
@@ -379,7 +379,7 @@ FlyEm::ZSynapseLocationMatcher FlyEm::ZSynapseLocationMatcher::matchPsd(
     tbarIndex[0] = tbarMatcher.getIndex(tbarMatchIndex, LEFT_SIDE);
     tbarIndex[1] = tbarMatcher.getIndex(tbarMatchIndex, RIGHT_SIDE);
 
-    vector<FlyEm::SynapseLocation*> psdSet[2];
+    vector<flyem::SynapseLocation*> psdSet[2];
     psdSet[0] = sa1.toPsdRefArray(tbarIndex[0]);
     psdSet[1] = sa2.toPsdRefArray(tbarIndex[1]);
 

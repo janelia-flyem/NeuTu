@@ -32,6 +32,7 @@ public:
   bool hasNode(const std::string &uuid) const;
 
   std::vector<std::string> getParentList(const std::string &uuid) const;
+  std::vector<std::string> getAncestorList(const std::string &uuid) const;
   std::vector<std::string> getChildList(const std::string &uuid) const;
   std::string getFirstParent(const std::string &uuid) const;
   int getSiblingIndex(const std::string &uuid) const;
@@ -70,6 +71,8 @@ public:
   bool addNode(const std::string &uuid, const std::string &parentUuid);
 
   bool isParent(const std::string &uuid, const std::string &parentUuid) const;
+
+  bool isAncester(const std::string &uuid, const std::string &ancester) const;
 
   void load(const ZJsonObject &obj, const std::string &uuid);
 

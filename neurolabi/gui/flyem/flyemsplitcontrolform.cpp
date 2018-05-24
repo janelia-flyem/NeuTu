@@ -10,6 +10,7 @@
 #include "zstring.h"
 #include "zflyembodysplitproject.h"
 #include "zstackdoc.h"
+#include "neutubeconfig.h"
 
 FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
   QWidget(parent),
@@ -17,8 +18,8 @@ FlyEmSplitControlForm::FlyEmSplitControlForm(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
-  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
+//  getAssignedBookmarkView()->setBookmarkModel(&m_assignedBookmarkList);
+//  getUserBookmarkView()->setBookmarkModel(&m_userBookmarkList);
 
 //  ui->bookmarkView->setModel(&m_bookmarkList);
 //  ui->bookmarkView->resizeColumnsToContents();
@@ -53,8 +54,10 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
           this, SIGNAL(bodyViewTriggered()));
   connect(ui->coarseBodyViewPushButton, SIGNAL(clicked()),
           this, SIGNAL(coarseBodyViewTriggered()));
-  connect(ui->viewSplitPushButton, SIGNAL(clicked()),
-          this, SIGNAL(splitViewTriggered()));
+  connect(ui->meshPushButton, SIGNAL(clicked()),
+          this, SIGNAL(meshViewTriggered()));
+//  connect(ui->viewSplitPushButton, SIGNAL(clicked()),
+//          this, SIGNAL(splitViewTriggered()));
   connect(ui->loadBodyPushButton, SIGNAL(clicked()),
           this, SLOT(changeSplit()));
 //  connect(ui->loadBodyPushButton, SIGNAL(clicked()), this, SLOT(slotTest()));
@@ -68,15 +71,15 @@ void FlyEmSplitControlForm::setupWidgetBehavior()
 //          this, SLOT(loadBookmark()));
   connect(getUserBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
-  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
-          this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
+//          this, SIGNAL(bookmarkChecked(QString, bool)));
+//  connect(getUserBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
 
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
-          this, SIGNAL(bookmarkChecked(QString, bool)));
-  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
-          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(QString,bool)),
+//          this, SIGNAL(bookmarkChecked(QString, bool)));
+//  connect(getAssignedBookmarkView(), SIGNAL(bookmarkChecked(ZFlyEmBookmark*)),
+//          this, SIGNAL(bookmarkChecked(ZFlyEmBookmark*)));
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
 
@@ -107,8 +110,25 @@ void FlyEmSplitControlForm::createMenu()
   ui->menuPushButton->setMenu(m_mainMenu);
 
   QAction *queryPixelAction = new QAction("Go to Position", this);
+  queryPixelAction->setShortcut(Qt::Key_F3);
   m_mainMenu->addAction(queryPixelAction);
   connect(queryPixelAction, SIGNAL(triggered()), this, SLOT(goToPosition()));
+
+  QAction *loadSplitTaskAction = new QAction("Load Split Task", this);
+  m_mainMenu->addAction(loadSplitTaskAction);
+  connect(loadSplitTaskAction, SIGNAL(triggered()), this, SLOT(loadSplitTask()));
+
+  QAction *saveTaskAction = new QAction("Save Split Task", this);
+  m_mainMenu->addAction(saveTaskAction);
+  connect(saveTaskAction, SIGNAL(triggered()), this, SLOT(saveTask()));
+
+  QAction *loadSplitAction = new QAction("Load Split Result", this);
+  m_mainMenu->addAction(loadSplitAction);
+  connect(loadSplitAction, SIGNAL(triggered()), this, SLOT(loadSplitResult()));
+
+  QAction *uploadSplitAction = new QAction("Upload Split Result", this);
+  m_mainMenu->addAction(uploadSplitAction);
+  connect(uploadSplitAction, SIGNAL(triggered()), this, SLOT(uploadSplitResult()));
 
   QMenu *seedMenu = m_mainMenu->addMenu("Seed");
   QAction *recoverSeedAction = new QAction("Recover", this);
@@ -123,6 +143,10 @@ void FlyEmSplitControlForm::createMenu()
   seedMenu->addAction(selectAllSeedAction);
   connect(selectAllSeedAction, SIGNAL(triggered()), this, SLOT(selectAllSeed()));
 
+  QAction *setMainSeedAction = new QAction("Set Main Label", this);
+  seedMenu->addAction(setMainSeedAction);
+  connect(setMainSeedAction, SIGNAL(triggered()), this, SLOT(setMainSeed()));
+
   QAction *exportSeedAction = new QAction("Export", this);
   seedMenu->addAction(exportSeedAction);
   connect(exportSeedAction, SIGNAL(triggered()), this, SLOT(exportSeed()));
@@ -134,10 +158,36 @@ void FlyEmSplitControlForm::createMenu()
   QAction *crop3DAction = new QAction("Coarse Body Crop", this);
   m_mainMenu->addAction(crop3DAction);
   connect(crop3DAction, SIGNAL(triggered()), this, SLOT(cropCoarseBody3D()));
+
+  QAction *body3DAction = new QAction("Show 3D Grayscale", this);
+  m_mainMenu->addAction(body3DAction);
+  connect(body3DAction, SIGNAL(triggered()), this, SLOT(showBodyGrayscale()));
+}
+
+void FlyEmSplitControlForm::saveTask()
+{
+  emit savingTask();
+}
+
+void FlyEmSplitControlForm::loadSplitResult()
+{
+  emit loadingSplitResult();
+}
+
+void FlyEmSplitControlForm::uploadSplitResult()
+{
+  emit uploadingSplitResult();
+}
+
+void FlyEmSplitControlForm::loadSplitTask()
+{
+  emit loadingSplitTask();
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
 {
+  getAssignedBookmarkView()->checkCurrentBookmark(checking);
+  /*
   QItemSelectionModel *sel = getAssignedBookmarkView()->selectionModel();
   QModelIndexList selected = sel->selectedIndexes();
 
@@ -146,6 +196,7 @@ void FlyEmSplitControlForm::checkCurrentBookmark(bool checking)
     bookmark->setChecked(checking);
     m_assignedBookmarkList.update(index.row());
   }
+  */
 }
 
 void FlyEmSplitControlForm::checkCurrentBookmark()
@@ -218,6 +269,11 @@ void FlyEmSplitControlForm::cropCoarseBody3D()
   emit croppingCoarseBody3D();
 }
 
+void FlyEmSplitControlForm::showBodyGrayscale()
+{
+  emit showingBodyGrayscale();
+}
+
 void FlyEmSplitControlForm::selectSeed()
 {
   emit selectingSeed();
@@ -228,11 +284,17 @@ void FlyEmSplitControlForm::selectAllSeed()
   emit selectingAllSeed();
 }
 
+void FlyEmSplitControlForm::setMainSeed()
+{
+  emit settingMainSeed();
+}
+
 void FlyEmSplitControlForm::commitResult()
 {
   emit committingResult();
 }
 
+#if 0
 void FlyEmSplitControlForm::clearBookmarkTable(ZFlyEmBodySplitProject */*project*/)
 {
   m_assignedBookmarkList.clear();
@@ -242,6 +304,7 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
 {
   if (project != NULL) {
     if (project->getDocument() != NULL) {
+      ZOUT(LINFO(), 3) << "Update bookmark table for split project";
       m_assignedBookmarkList.clear();
       m_userBookmarkList.clear();
       const TStackObjectList &objList = project->getDocument()->
@@ -249,19 +312,21 @@ void FlyEmSplitControlForm::updateBookmarkTable(ZFlyEmBodySplitProject *project)
       for (TStackObjectList::const_iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
         const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
-//        if (bookmark->getBodyId() == project->getBodyId()) {
-          if (bookmark->isCustom()) {
-            m_userBookmarkList.append(bookmark);
-          } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
-            if (bookmark->getBodyId() == project->getBodyId()) {
-              m_assignedBookmarkList.append(bookmark);
-            }
+        //        if (bookmark->getBodyId() == project->getBodyId()) {
+        if (bookmark->isCustom()) {
+          m_userBookmarkList.append(bookmark);
+        } else if (bookmark->getBookmarkType() == ZFlyEmBookmark::TYPE_FALSE_MERGE) {
+          if (bookmark->getBodyId() == project->getBodyId()) {
+            m_assignedBookmarkList.append(bookmark);
           }
         }
+      }
+      ZOUT(LINFO(), 3) << "Bookmark updated";
 //      }
     }
   }
 }
+#endif
 
 void FlyEmSplitControlForm::loadBookmark()
 {
@@ -278,13 +343,25 @@ void FlyEmSplitControlForm::updateBodyWidget(uint64_t bodyId)
   if (bodyId == 0) {
     text += "<p>No body loaded.</p>";
   } else {
-    text += QString("<p>Body ID: %2</p>").arg(bodyId);
+    text += QString("<p><i>Body ID</i>: %2</p>").arg(bodyId);
+    text += QString("<p><i>Split workflow</i>: Paint seeds -> Compute splits -> Save splits <p>"
+                    "<p>Instructions: Once seeds are painted, "
+                    "you can use hotkey <b>'Space'</b> (small range), "
+                    "<b>'Shift+Space'</b> (medium range)"
+                    " or <b>Alt+Space</b> (full range) to run the split, "
+                    "which grows regions from the seeds. The red label defines "
+                    "the main region."
+                    "<p><i>Tip</i>: Painting seeds on <font color=green>brighter regions</font> "
+                    "tends to generate better results.</p>");
   }
   ui->infoWidget->setText(text);
 }
 
+#if 0
 void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
 {
+  ZOUT(LINFO(), 3) << "Updating user bookmark table for split control form";
+
   m_userBookmarkList.clear();
   if (doc != NULL) {
     const TStackObjectList &objList =
@@ -293,12 +370,14 @@ void FlyEmSplitControlForm::updateUserBookmarkTable(ZStackDoc *doc)
          iter != objList.end(); ++iter) {
       const ZFlyEmBookmark *bookmark = dynamic_cast<ZFlyEmBookmark*>(*iter);
       if (bookmark != NULL) {
-        if (bookmark->isCustom() &&
-            bookmark->getBodyId() == m_currentBodyId) {
+        if (bookmark->isCustom()) {
           m_userBookmarkList.append(bookmark);
         }
       }
     }
   }
+  ZOUT(LINFO(), 3) << "Sorting bookmark view";
+
   getUserBookmarkView()->sort();
 }
+#endif

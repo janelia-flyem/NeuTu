@@ -6,6 +6,9 @@
 #include "tz_json.h"
 #include "zjsonobject.h"
 #include "zjsonarray.h"
+#include "zjsonvalue.h"
+
+class ZIntPoint;
 
 class ZJsonParser
 {
@@ -38,6 +41,7 @@ public:
   static int64_t integerValue(const json_t *value);
 
   static bool booleanValue(const json_t *value);
+  static bool booleanValue(const json_t *value, bool defaultValue);
 
   static const char* stringValue(const json_t *value, size_t index);
   static double numberValue(const json_t *value, size_t index);
@@ -46,6 +50,8 @@ public:
   static std::vector<int> integerArray(const json_t *value);
 
   static void print(const char *key, json_t *value, int indent);
+
+  static ZIntPoint toIntPoint(const json_t *value);
 
   /*!
    * \brief Decode a json string

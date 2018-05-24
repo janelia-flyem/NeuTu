@@ -8,6 +8,8 @@
 
 class QDialog;
 class QFrame;
+class ZClickableColorLabel;
+class ZColorLabel;
 
 class ZWidgetFactory
 {
@@ -18,13 +20,22 @@ public:
     SPACER_RIGHT, SPACER_NONE
   };
 
-  static ZLabeledEditWidget* makeLabledEditWidget(
+  static ZLabeledEditWidget* MakeLabledEditWidget(
       const QString &label, ESpacerOption spacerOption, QWidget *parentWidget);
   static ZButtonBox* makeButtonBox(ZButtonBox::TRole role, QWidget *parent);
   static ZButtonBox* makeButtonBox(ZButtonBox::TRole role, QDialog *parent);
   static QFrame* MakeHorizontalLine(QWidget *parentWidget);
+  static ZClickableColorLabel* MakeClickableColorLabel(
+      const QColor &color, const QString &text, int width, bool clickable,
+      QWidget *parent);
 
-  static QSpacerItem *makeHSpacerItem();
+  static ZColorLabel* MakeColorLabel(
+      const QColor &color, const QString &text, int width, bool clickable,
+      QWidget *parent);
+
+  static QSpacerItem *MakeHSpacerItem();
+
+  static QString MakeHintString(const QString &text);
 
 };
 

@@ -1,58 +1,60 @@
-# NeuTu [![Picture](https://raw.github.com/janelia-flyem/janelia-flyem.github.com/master/images/gray_janelia_logo.png)](http://janelia.org/)
-NeuTu (a.k.a. neuTube)
+# NeuTu 
 
-[![Build Status](https://drone.io/github.com/janelia-flyem/NeuTu/status.png)](https://drone.io/github.com/janelia-flyem/NeuTu/latest)
+Software for proofreading EM connectomics
 
-Software package for neuron reconstruction and visualization
+## Installation
 
-## Download
+NeuTu can be installed on a Mac or Linux machine.
 
-    git clone -b public https://github.com/janelia-flyem/NeuTu.git NeuTu
+### The Easiest Way
 
-## Build
+1. Download https://raw.githubusercontent.com/janelia-flyem/NeuTu/develop/neurolabi/shell/setup_neutu_dev.sh
 
-### Linux and Mac
+2. Run 'bash setup_neutu_dev.sh <install_dir>', where <install_dir> is the installation directory. 
 
-1. Make sure you have installed Qt 4.8.1+ (Qt 4.8.4 recommended)
+Once the installation is done, you can launch the program by running
 
-    Various versions of Qt can be dowloaded from https://download.qt.io/archive/qt/
+    <install_dir>/bin/neutu
+
+We use conda to manage our package, so you can also install the software in a more manual way with miniconda3.
+
+### Mac (OSX 10.12+ preferred)
+    curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh > Miniconda-latest-MacOSX-x86_64.sh
+    bash Miniconda-latest-MacOSX-x86_64.sh
     
-2. Go to the NeuTu directory and run
-
-####
-
-    sh build.sh <qmake_path> <qmake_spec_path>
-
-by specifying the qmake command path and the corresponding spec path. You can also let the script figure out qt settings by itself:
-
-    sh build.sh <qt_dir>
-
-where \<qt_dir\> is the install directory of the Qt library. This simplification applies to other editions too.
-
-Additional flags are needed to build special editions:
-
-#### FlyEM Edition
+    #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
+    source <CONDA_ROOT>/bin/activate root
+    conda create -n <NAME> -c flyem neutu
     
-    sh build.sh <qmake_path> <qmake_spec_path> -e flyem
+    #For future update, you can run 'conda update -n <NAME> -c flyem neutu' after activating miniconda.
+  
+Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 
-#### FlyEM Edition with DVID support
+After successful installation, you should be able to lauch the application neutu.app in \<CONDA_ROOT\>/envs/\<NAME\>/bin.
+
+### Linux (Tested on Ubuntu 16.04, Fedora 16+ and Scientific Linux 7)
+    curl -X GET https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh > Miniconda-latest-Linux-x86_64.sh
+    bash Miniconda-latest-Linux-x86_64.sh
     
-    sh build.sh <qmake_path> <qmake_spec_path> -e flyem -q "DVIDCPP_PATH=<dvidcpp_apth>"
+    #Assuming miniconda is installed under <CONDA_ROOT>
+    #Note: if the following command fails with some import error, you can unset PYTHONHOME and try again.
+    source <CONDA_ROOT>/bin/activate root
+    conda create -n <NAME> -c flyem neutu
     
-Here \<dvidcpp_path\> is the install path of libdvid-cpp.
+    #For future update, you can run 'conda update -n <NAME> -c flyem neutu' after activating miniconda.
+  
+Here \<NAME\> is the conda environment name. If you don't know what it is, just use neutu-env.
 
-#### Bright Field (Biocytin) Edition
+After successful installation, you can launch the program with the following commands
 
-    sh build.sh <qmake_path> <qmake_spec_path> -e biocytin
-
+    scource <CONDA_ROOT>/bin/activate <NAME>
+    neutu 
+ 
 ### Windows
 
-See neurolabi/Compile_Windows.txt for more details.
+Not supported yet.
 
-## Other information
- 
-The binary version for dark field neuron reconstruction can be downloaded from 
+## Manual
 
-    http://www.neutracing.com
+https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
 
-Contact Ting Zhao: zhaot@janelia.hhmi.org for any questions or comments.

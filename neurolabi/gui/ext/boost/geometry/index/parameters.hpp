@@ -2,7 +2,7 @@
 //
 // R-tree algorithms parameters
 //
-// Copyright (c) 2011-2013 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2011-2017 Adam Wulkiewicz, Lodz, Poland.
 //
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -11,7 +11,13 @@
 #ifndef BOOST_GEOMETRY_INDEX_PARAMETERS_HPP
 #define BOOST_GEOMETRY_INDEX_PARAMETERS_HPP
 
+
 #include <limits>
+
+#include <boost/mpl/assert.hpp>
+
+#include <boost/geometry/index/detail/exception.hpp>
+
 
 namespace boost { namespace geometry { namespace index {
 
@@ -70,8 +76,7 @@ inline size_t default_rstar_reinserted_elements_d_calc(size_t max_elements, size
 \tparam MinElements     Minimum number of elements in nodes. Default: 0.3*Max.
 */
 template <size_t MaxElements,
-          size_t MinElements = detail::default_min_elements_s<MaxElements>::value
->
+          size_t MinElements = detail::default_min_elements_s<MaxElements>::value>
 struct linear
 {
     BOOST_MPL_ASSERT_MSG((0 < MinElements && 2*MinElements <= MaxElements+1),
@@ -157,8 +162,8 @@ public:
     \param max_elements     Maximum number of elements in nodes.
     \param min_elements     Minimum number of elements in nodes. Default: 0.3*Max.
     */
-    dynamic_linear(size_t max_elements,
-                   size_t min_elements = detail::default_min_elements_d())
+    explicit dynamic_linear(size_t max_elements,
+                            size_t min_elements = detail::default_min_elements_d())
         : m_max_elements(max_elements)
         , m_min_elements(detail::default_min_elements_d_calc(max_elements, min_elements))
     {
@@ -186,8 +191,8 @@ public:
     \param max_elements     Maximum number of elements in nodes.
     \param min_elements     Minimum number of elements in nodes. Default: 0.3*Max.
     */
-    dynamic_quadratic(size_t max_elements,
-                      size_t min_elements = detail::default_min_elements_d())
+    explicit dynamic_quadratic(size_t max_elements,
+                               size_t min_elements = detail::default_min_elements_d())
         : m_max_elements(max_elements)
         , m_min_elements(detail::default_min_elements_d_calc(max_elements, min_elements))
     {
@@ -223,10 +228,10 @@ public:
                                     nearly minimum overlap cost, otherwise all leafs are analyzed
                                     and true minimum overlap cost is calculated. Default: 32.
     */
-    dynamic_rstar(size_t max_elements,
-                  size_t min_elements = detail::default_min_elements_d(),
-                  size_t reinserted_elements = detail::default_rstar_reinserted_elements_d(),
-                  size_t overlap_cost_threshold = 32)
+    explicit dynamic_rstar(size_t max_elements,
+                           size_t min_elements = detail::default_min_elements_d(),
+                           size_t reinserted_elements = detail::default_rstar_reinserted_elements_d(),
+                           size_t overlap_cost_threshold = 32)
         : m_max_elements(max_elements)
         , m_min_elements(detail::default_min_elements_d_calc(max_elements, min_elements))
         , m_reinserted_elements(detail::default_rstar_reinserted_elements_d_calc(max_elements, reinserted_elements))

@@ -11,7 +11,7 @@
 
 class ZSwcNetwork;
 
-namespace FlyEm {
+namespace flyem {
 
 class ZNeuronNetwork
 {

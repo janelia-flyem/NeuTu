@@ -6,6 +6,7 @@
 class ZFlyEmBookmarkListModel;
 class ZFlyEmBookmarkView;
 class ZFlyEmBookmark;
+class QSortFilterProxyModel;
 
 namespace Ui {
 class ZFlyEmBookmarkWidget;
@@ -25,7 +26,8 @@ public:
 
   ZFlyEmBookmarkView* getBookmarkView(EBookmarkSource source);
 
-  void setBookmarkModel(ZFlyEmBookmarkListModel *model, EBookmarkSource source);
+  void setBookmarkModel(ZFlyEmBookmarkListModel *model, EBookmarkSource source);  
+  EBookmarkSource getCurrentSource();
 
 signals:
   void locatingBookmark(ZFlyEmBookmark *bookmark);

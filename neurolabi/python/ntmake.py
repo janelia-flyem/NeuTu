@@ -10,10 +10,10 @@ parser.add_option("-f", "--file", dest="filename", help="configuration file",
         metavar="FILE")
 (options, args) = parser.parse_args()
 
-print options.filename
+print(options.filename)
 
 for arg in args:
-    print arg
+    print(arg)
 
 
 json_data = open(config_file);

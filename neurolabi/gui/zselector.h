@@ -57,7 +57,7 @@ public:
    *
    * \param obj an object to be selected
    */
-  void selectObject(T obj);
+  void selectObject(const T &obj);
 
   /*!
    * \brief Deselect an object
@@ -70,9 +70,9 @@ public:
    *
    * \param obj an object to be selected
    */
-  void deselectObject(T obj);
+  void deselectObject(const T &obj);
 
-  void deselectAll();
+  virtual void deselectAll();
 
   /*!
    * \brief The function of selecting or deselecting an object
@@ -91,6 +91,8 @@ public:
 
   const std::set<T>& getSelectedSet() const;
   const std::set<T>& getDeselectedSet() const;
+
+  void removeObject(const T &obj);
 
 protected:
   std::set<T> m_selectedSet;

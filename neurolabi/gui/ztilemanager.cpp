@@ -13,6 +13,7 @@
 #include "zstackpresenter.h"
 #include "zstackview.h"
 #include "zpoint.h"
+#include "ztiledstackframe.h"
 
 #include <QFileInfo>
 
@@ -22,7 +23,7 @@ const QColor ZTileManager::m_selectionColor = QColor(255, 0, 0);
 ZTileManager::ZTileManager(QObject *parent) : QGraphicsScene(parent),
   m_selectedTileItem(NULL), /*m_preselected(NULL),*/ m_highlightRec(NULL), m_view(NULL)/*, m_selectDecoration(NULL)*/
 {
-    scaleFactor = 0.1;
+//    scaleFactor = 1.0;
     getParentFrame()->setTileManager(this);
 }
 
@@ -70,14 +71,14 @@ bool ZTileManager::importJsonFile(const QString &filePath)
     if (obj.hasKey("Tiles")) {
       json_t *value = obj["Tiles"];
       if (ZJsonParser::isArray(value)) {
-        ZJsonArray array(value, false);
+        ZJsonArray array(value, ZJsonValue::SET_INCREASE_REF_COUNT);
         for (size_t i = 0; i < array.size(); ++i) {
-          ZJsonObject tileObj(array.at(i), false);
+          ZJsonObject tileObj(array.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
           if (!tileObj.isEmpty()) {
             ZTileGraphicsItem *tileItem = new ZTileGraphicsItem;
             if (tileItem->loadJsonObject(tileObj,tileFilePath)) {
               //tileItem->setFlag(QGraphicsItem::ItemIsSelectable);
-              tileItem->setScale(scaleFactor);
+//              tileItem->setScale(scaleFactor);
               addItem(tileItem);
               succ = true;
             } else {
@@ -85,6 +86,15 @@ bool ZTileManager::importJsonFile(const QString &filePath)
             }
           }
         }
+      }
+    }
+
+    if (obj.hasKey("Metadata")) {
+      ZJsonObject metaObj(obj.value("Metadata"));
+      if (metaObj.hasKey("Resolution")) {
+        ZJsonObject resObj(metaObj.value("Resolution"));
+
+        m_resolution.loadJsonObject(resObj);
       }
     }
   }
@@ -165,10 +175,17 @@ void ZTileManager::updateTileStack()
       frame->document()->setStackOffset(
             m_selectedTileItem->getTileInfo().getOffset());
 
+      frame->document()->setResolution(m_resolution);
+
       if (GET_APPLICATION_NAME == "Biocytin") {
-        frame->document()->setStackBackground(NeuTube::IMAGE_BACKGROUND_BRIGHT);
+        frame->document()->setStackBackground(neutube::IMAGE_BACKGROUND_BRIGHT);
         frame->autoBcAdjust();
         frame->loadRoi(true);
+
+        ZTiledStackFrame *completeFrame = qobject_cast<ZTiledStackFrame*>(frame);
+        if (completeFrame != NULL) {
+          completeFrame->updateStackBoundBox();
+        }
       }
       frame->setWindowTitle(source.c_str());
       endProgress();
@@ -206,7 +223,7 @@ void ZTileManager::selectItem(ZTileGraphicsItem *item)
     */
     //m_selectDecoration->setRect(m_selectedTileItem->rect());
     //qDebug() << m_selectDecoration->rect();
-    emit(loadingTile());
+//    emit(loadingTile());
     updateTileStack();
   }
 }

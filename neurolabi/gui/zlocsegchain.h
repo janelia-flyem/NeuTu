@@ -31,11 +31,15 @@ public:
   ZLocsegChain(const ZLocsegChain &zlocseg);   // deep copy
   virtual ~ZLocsegChain();
 
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_LOCSEG_CHAIN;
+  }
+
   virtual const std::string& className() const;
 
 public:
-  virtual void display(ZPainter &painter, int z = 0, EDisplayStyle option = NORMAL)
-  const;
+  virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
+                       neutube::EAxis sliceAxis) const;
 
 public: // I/O functions
   virtual void save(const char *filePath);

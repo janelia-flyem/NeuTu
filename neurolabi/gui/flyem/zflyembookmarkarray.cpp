@@ -26,9 +26,10 @@ void ZFlyEmBookmarkArray::importJsonFile(
   ZFlyEmDataInfo dataInfo(FlyEm::DATA_FIB25_7C);
   converter.configure(dataInfo);
 */
-  ZJsonArray bookmarkArrayObj(obj["data"], false);
+  ZJsonArray bookmarkArrayObj(obj["data"], ZJsonValue::SET_INCREASE_REF_COUNT);
   for (size_t i = 0; i < bookmarkArrayObj.size(); ++i) {
-    ZJsonObject bookmarkObj(bookmarkArrayObj.at(i), false);
+    ZJsonObject bookmarkObj(
+          bookmarkArrayObj.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
     ZString text = ZJsonParser::stringValue(bookmarkObj["text"]);
     text.toLower();
     if (bookmarkObj["location"] != NULL) {
@@ -37,7 +38,7 @@ void ZFlyEmBookmarkArray::importJsonFile(
       if (idJson.isInteger()) {
         bodyId = ZJsonParser::integerValue(idJson.getData());
       } else if (idJson.isString()) {
-        bodyId = ZString::firstInteger(ZJsonParser::stringValue(idJson.getData()));
+        bodyId = ZString::FirstInteger(ZJsonParser::stringValue(idJson.getData()));
       }
 
       if (bodyId > 0) {
@@ -121,7 +122,7 @@ QVector<ZPunctum*> ZFlyEmBookmarkArray::toPunctumArray(bool isVisible) const
 //      circle->set(bookmark.getLocation(), 5);
     circle->setColor(255, 0, 0);
     circle->setVisible(isVisible);
-    circle->setHittable(false);
+    circle->setHitProtocal(ZStackObject::HIT_NONE);
     punctumArray.push_back(circle);
   }
 

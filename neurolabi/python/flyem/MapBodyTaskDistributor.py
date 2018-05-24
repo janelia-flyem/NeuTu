@@ -81,4 +81,4 @@ if __name__ == '__main__':
     distr = SkeletonizeTaskDistributor();
     distr.setBodyList([1, 2]);
     distr.setCommandPath(home + '/Work/neutube/neurolabi/cpp/skeletonize-build-Qt_4_8_1_gcc-Debug/skeletonize');
-    print distr.getFullCommand(0);
+    print(distr.getFullCommand(0));

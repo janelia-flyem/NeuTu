@@ -13,19 +13,22 @@
 #if _QT_GUI_USED_
 #include <QDir>
 #include <QSettings>
+#include <QString>
 #endif
 
 class ZXmlNode;
+class ZJsonObject;
 
 class NeutubeConfig
 {
 public:
-  enum Config_Item {
+  enum EConfigItem {
     DATA, FLYEM_BODY_CONN_CLASSIFIER, FLYEM_BODY_CONN_TRAIN_DATA,
     FLYEM_BODY_CONN_TRAIN_TRUTH, FLYEM_BODY_CONN_EVAL_DATA,
     FLYEM_BODY_CONN_EVAL_TRUTH, SWC_REPOSOTARY, AUTO_SAVE,
     CONFIGURE_FILE, SKELETONIZATION_CONFIG, DOCUMENT, TMP_DATA,
-    WORKING_DIR, LOG_DIR, LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR
+    WORKING_DIR, LOG_DIR, LOG_DEST_DIR,
+    LOG_FILE, LOG_APPOUT, LOG_WARN, LOG_ERROR, LOG_TRACE
   };
 
   static NeutubeConfig& getInstance() {
@@ -34,16 +37,120 @@ public:
     return config;
   }
 
+#ifdef _QT_GUI_USED_
+  /*!
+   * \brief Get persistent settings.
+   *
+   * The settings mainly contain information for GUI appearances.
+   */
+  static QSettings& GetSettings() {
+    return getInstance().getSettings();
+  }
+
+  /*!
+   * \brief Get configuration file path for FlyEM applications.
+   */
+  static QString GetFlyEmConfigPath();
+  static void SetFlyEmConfigPath(const QString &path);
+  static void UseDefaultFlyEmConfig(bool on);
+  static bool UsingDefaultFlyemConfig();
+
+  static QString GetNeuTuServer();
+  static void SetNeuTuServer(const QString &path);
+  static QString GetTaskServer();
+  static void SetTaskServer(const QString &path);
+  static bool NamingSynapse();
+  static bool NamingPsd();
+  static void SetNamingSynapse(bool on);
+  static void SetNamingPsd(bool on);
+
+  static void SetDataDir(const QString &dataDir);
+#endif
+
+  void enableProfileLogging(bool on);
+  void setVerboseLevel(int level);
+  int getVerboseLevel() const;
+  bool loggingProfile() const;
+  void configure(const ZJsonObject &obj);
+  void enableAutoStatusCheck(bool on);
+  bool autoStatusCheck() const;
+  bool parallelTileFetching() const;
+  bool lowtisPrefetching() const;
+  void setParallelTileFetching(bool on);
+  void enableLowtisPrefetching(bool on);
+  bool namingSynapse() const;
+  bool namingPsd() const;
+  void setNamingSynapse(bool on);
+  void setNamingPsd(bool on);
+
+  void setAdvancedMode(bool on);
+  bool isAdvancedMode() const;
+
+  void setMeshSplitThreshold(size_t thre);
+  size_t getMeshSplitThreshold() const;
+
+  static void SetMeshSplitThreshold(size_t thre);
+  static size_t GetMeshSplitThreshold();
+
+  static void SetAdvancedMode(bool on);
+  static bool IsAdvancedMode();
+
+  static void EnableProfileLogging(bool on);
+  static bool LoggingProfile();
+
+  /*!
+   * \brief Get the verbose level of the program.
+   *
+   * The higher level, the more verbose is the program. The lowest level is 0.
+   */
+  static int GetVerboseLevel();
+  static void SetVerboseLevel(int level);
+  static bool ParallelTileFetching();
+  static void SetParallelTileFetching(bool on);
+  static void EnableLowtisPrefetching(bool on);
+  static bool LowtisPrefetching();
+
+  /*!
+   * \brief Configure from a json object.
+   */
+  static void Configure(const ZJsonObject &obj);
+
+  static void EnableAutoStatusCheck(bool on);
+  static bool AutoStatusCheck();
+
   inline void setApplicationDir(const std::string &str) {
     m_applicationDir = str;
   }
 
+  static void SetApplicationDir(const std::string &str);
+
   bool load(const std::string &filePath);
   void print();
 
-  std::string getPath(Config_Item item) const;
+  /*!
+   * \brief Get the path of a certain item.
+   *
+   * \a item can be:
+   *   CONFIGURE_FILE: general configuration
+   *   DOCUMENT: documentation
+   *   AUTO_SAVE: autosaving path
+   *   SKELETONIZATION_CONFIG: configuration for skeletonization parameters
+   *   TMP_DATA: folder for saving temporary data
+   *   WORKING_DIR: working directory
+   *   LOG_DIR: logging directory
+   *   LOG_FILE: prefix for logging files
+   *   LOG_TRACE: prefix for tracing files
+   */
+  std::string getPath(EConfigItem item) const;
+
+  /*!
+   * \brief Get the application directory
+   *
+   * It is supposed to be where the executable is located.
+   */
   inline const std::string& getApplicatinDir() const {
     return m_applicationDir; }
+
   inline std::string getConfigPath() const {
     return getApplicatinDir() + "/config.xml"; }
   inline std::string getHelpFilePath() const {
@@ -65,21 +172,42 @@ public:
     return m_softwareName;
   }
 
+  void setDefaultSoftwareName();
+  void setTestSoftwareName();
+
+  static std::string GetSoftwareName();
+  static void SetDefaultSoftwareName();
+  static void SetTestSoftwareName();
+
   inline bool isStereoEnabled() {
     return m_isStereoOn;
   }
+
+  void updateAutoSaveDir();
+  static void UpdateAutoSaveDir();
 
 #ifdef _QT_GUI_USED_
   inline QSettings& getSettings() {
     return m_settings;
   }
+#if 0
+  inline QDebug& getTraceStream() {
+    return *m_traceStream;
+  }
+
+  static QDebug& GetTraceStream() {
+    return NeutubeConfig::getInstance().getTraceStream();
+  }
+#endif
 #endif
 
   class MainWindowConfig {
   public:
     MainWindowConfig();
 
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
+#endif
 
     inline void enableTracing(bool tracingOn) { m_tracingOn = tracingOn; }
     inline void enableMarkPuncta(bool on) { m_isMarkPunctaOn = on; }
@@ -164,9 +292,9 @@ public:
   class Z3DWindowConfig {
   public:
     Z3DWindowConfig();
-
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
-
+#endif
     inline bool isUtilsOn() const { return m_isUtilsOn; }
     inline bool isVolumeOn() const { return m_isVolumeOn; }
     inline bool isGraphOn() const { return m_isGraphOn; }
@@ -192,8 +320,9 @@ public:
     class SwcTabConfig {
     public:
       SwcTabConfig();
+#ifdef _QT_GUI_USED_
       void loadXmlNode(const ZXmlNode *node);
-
+#endif
       inline std::string getPrimitive() const { return m_primitive; }
       inline std::string getColorMode() const { return m_colorMode; }
       inline double getZScale() const { return m_zscale; }
@@ -207,8 +336,9 @@ public:
     class GraphTabConfig {
     public:
       GraphTabConfig();
+#ifdef _QT_GUI_USED_
       void loadXmlNode(const ZXmlNode *node);
-
+#endif
       inline bool isVisible() const { return m_isVisible; }
       inline double getOpacity() const { return m_opacity; }
 
@@ -243,16 +373,19 @@ public:
   class ObjManagerConfig {
   public:
     ObjManagerConfig();
+#ifdef _QT_GUI_USED_
     void loadXmlNode(const ZXmlNode *node);
-
+#endif
     inline bool isSwcOn() const { return m_isSwcOn; }
     inline bool isCategorizedSwcNodeOn() const { return m_isSwcNodeOn; }
     inline bool isPunctaOn() const { return m_isPunctaOn; }
+    inline bool isMeshOn() const { return m_isMeshOn; }
 
   private:
     bool m_isSwcOn;
     bool m_isSwcNodeOn;
     bool m_isPunctaOn;
+    bool m_isMeshOn = true;
   };
 
   inline const MainWindowConfig& getMainWindowConfig() const {
@@ -279,7 +412,7 @@ public:
 
   inline bool usingNativeDialog() const { return m_usingNativeDialog; }
 
-#if defined(_FLYEM_)
+#if 0
   const ZFlyEmConfig &getFlyEmConfig() const { return m_flyemConfig; }
   ZFlyEmConfig &getFlyEmConfig() { return m_flyemConfig; }
 #endif
@@ -290,11 +423,16 @@ private:
   ~NeutubeConfig();
   void operator=(const NeutubeConfig&);
 
+  void init();
+  void updateLogDir();
+
 private:
   std::string m_application;
   std::string m_softwareName;
   std::string m_applicationDir;
   std::string m_docUrl;
+
+  //Obsolete FlyEM config
   std::string m_segmentationClassifierPath;
   std::string m_segmentationTrainingTestPath;
   std::string m_segmentationTrainingTruthPath;
@@ -302,9 +440,12 @@ private:
   std::string m_segmentationEvaluationTruthPath;
   std::string m_swcRepository;
   double m_segmentationClassifThreshold;
+  std::vector<std::string> m_bodyConnectionFeature;
+  //////////////////////
+
   std::string m_dataPath;
   std::string m_developPath;
-  std::vector<std::string> m_bodyConnectionFeature;
+
   MainWindowConfig m_mainWindowConfig;
   Z3DWindowConfig m_z3dWindowConfig;
   ObjManagerConfig m_objManagerConfig;
@@ -313,17 +454,20 @@ private:
   //std::string m_autoSaveDir;
   std::string m_workDir;
   std::string m_logDir;
+  std::string m_logDestDir;
   int m_autoSaveInterval;
+  int m_autoSaveMaxSwcCount;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
+  bool m_loggingProfile;
+  int m_verboseLevel;
+  bool m_advancedMode = false;
+  size_t m_meshSplitThreshold = 5000000;
 
-#if defined(_FLYEM_)
-  ZFlyEmConfig m_flyemConfig;
-#endif
-
-  ZMessageReporter *m_messageReporter;
+  ZMessageReporter *m_messageReporter; //Obsolete
 
 #ifdef _QT_GUI_USED_
+//  QDebug *m_traceStream;
   QSettings m_settings;
 #endif
 };
@@ -337,14 +481,23 @@ private:
 #  define GET_TEST_DATA_DIR GET_DATA_DIR
 #endif
 
+#define GET_BENCHMARK_DIR (GET_TEST_DATA_DIR + "/_benchmark")
+#define GET_FLYEM_DATA_DIR (GET_TEST_DATA_DIR + "/_flyem")
+
 #define GET_MESSAGE_REPORTER (NeutubeConfig::getInstance().getMessageReporter())
 #define GET_APPLICATION_NAME (NeutubeConfig::getInstance().getApplication())
 #define GET_APPLICATION_DIR (NeutubeConfig::getInstance().getApplicatinDir())
 #define GET_SOFTWARE_NAME (NeutubeConfig::getInstance().getSoftwareName())
 #define GET_DOC_DIR (NeutubeConfig::getInstance().getApplicatinDir() + "/doc")
+#define GET_TMP_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA))
 
 #if defined(_FLYEM_)
-#  define GET_FLYEM_CONFIG (NeutubeConfig::getInstance().getFlyEmConfig())
+#  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
+#  define GET_NETU_SERVICE (GET_FLYEM_CONFIG.getNeutuService())
 #endif
+
+#define ZOUT(out, level) \
+  if (NeutubeConfig::GetVerboseLevel() < level) {} \
+  else out
 
 #endif // NEUTUBECONFIG_H

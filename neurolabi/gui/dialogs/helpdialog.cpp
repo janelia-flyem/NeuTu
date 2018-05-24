@@ -1,4 +1,7 @@
 #include "helpdialog.h"
+
+#include<QFileInfo>
+
 #include "ui_helpdialog.h"
 #include "neutubeconfig.h"
 
@@ -8,11 +11,19 @@ HelpDialog::HelpDialog(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  ui->textBrowser->setSource(
-        QUrl(NeutubeConfig::getInstance().getHelpFilePath().c_str()));
+  QFileInfo fileInfo(NeutubeConfig::getInstance().getHelpFilePath().c_str());
+
+  if (fileInfo.exists()) {
+    ui->textBrowser->setSource(QUrl(fileInfo.absoluteFilePath()));
+  }
 }
 
 HelpDialog::~HelpDialog()
 {
   delete ui;
+}
+
+void HelpDialog::setSource(const QString &source)
+{
+  ui->textBrowser->setSource(source);
 }

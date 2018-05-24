@@ -10,6 +10,8 @@ class ZSwcTree;
 class ZStack;
 class ZObject3dScan;
 class ZJsonObject;
+class ZIntPoint;
+class ZStackArray;
 
 class ZStackSkeletonizer : public ZProgressable
 {
@@ -74,11 +76,8 @@ public:
     m_resolution[2] = zRes;
   }
 
-  inline void setDownsampleInterval(int xintv, int yintv, int zintv) {
-    m_downsampleInterval[0] = xintv;
-    m_downsampleInterval[1] = yintv;
-    m_downsampleInterval[2] = zintv;
-  }
+  void setDownsampleInterval(const ZIntPoint &intv);
+  void setDownsampleInterval(int xintv, int yintv, int zintv);
 
   inline void getDownsampleInterval(int *xintv, int *yintv, int *zintv) {
     *xintv = m_downsampleInterval[0];
@@ -93,7 +92,7 @@ public:
   /*!
    * \brief Make a skeleton from an array of masks
    */
-  ZSwcTree* makeSkeleton(const std::vector<ZStack *> &stackArray);
+  ZSwcTree* makeSkeleton(const ZStackArray &stackArray);
 
   void reconnect(ZSwcTree *tree);
   inline void setConnectingBranch(bool conn) {
@@ -106,13 +105,18 @@ public:
     m_usingOriginalSignal = state;
   }
 
+  std::string toSwcComment() const;
+
 private:
   /*!
    * \a stack will be destroyed after the function call.
    */
   ZSwcTree *makeSkeletonWithoutDs(Stack *stack);
+  ZSwcTree *makeSkeletonWithoutDs(Stack *stackData, const int *dsIntv);
 
   ZSwcTree *makeSkeletonWithoutDsTest(Stack *stack);
+  std::string toSwcComment(const int *intv) const;
+  void addSwcComment(ZSwcTree *tree, const int *dsIntv);
 
 
 private:
@@ -132,6 +136,7 @@ private:
   bool m_resampleSwc;
   bool m_autoGrayThreshold;
   int m_grayOp;
+  static const size_t m_sizeLimit;
 };
 
 #endif // ZSTACKSKELETONIZER_H

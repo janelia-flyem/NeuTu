@@ -4,13 +4,18 @@
 #include "zintcuboid.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
+double ZStackObject::m_defaultPenWidth = 0.5;
 
 ZStackObject::ZStackObject() : m_selected(false), m_isSelectable(true),
-  m_isVisible(true), m_isHittable(true), m_projectionVisible(true),
+  m_isVisible(true), m_hitProtocal(HIT_DATA_POS), m_projectionVisible(true),
   m_style(SOLID), m_target(TARGET_WIDGET), m_usingCosmeticPen(false), m_zScale(1.0),
-  m_zOrder(1), m_type(TYPE_UNIDENTIFIED), m_role(ZStackObjectRole::ROLE_NONE),
-  m_visualEffect(NeuTube::Display::VE_NONE)
+  m_zOrder(1), m_role(ZStackObjectRole::ROLE_NONE),
+  m_visualEffect(neutube::display::VE_NONE), m_prevDisplaySlice(-1)
 {
+  m_type = TYPE_UNIDENTIFIED;
+  setSliceAxis(neutube::Z_AXIS);
+  m_basePenWidth = m_defaultPenWidth;
+  m_timeStamp = 0;
 }
 
 ZStackObject::~ZStackObject()
@@ -21,38 +26,59 @@ ZStackObject::~ZStackObject()
 #endif
 }
 
-double ZStackObject::m_defaultPenWidth = 0.5;
-
-bool ZStackObject::display(QPainter */*painter*/, int /*z*/,
-                           EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/) const
+bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,
+                           EDisplayStyle /*option*/, EDisplaySliceMode /*sliceMode*/,
+                           neutube::EAxis /*sliceAxis*/) const
 {
   return false;
 }
 
-void ZStackObject::setColor(int red, int green, int blue) {
-#if defined(_QT_GUI_USED_)
-  m_color.setRed(red);
-  m_color.setGreen(green);
-  m_color.setBlue(blue);
-#else
-  UNUSED_PARAMETER(red);
-  UNUSED_PARAMETER(green);
-  UNUSED_PARAMETER(blue);
-#endif
+void ZStackObject::setLabel(uint64_t label)
+{
+  m_uLabel = label;
 }
 
-void ZStackObject::setColor(int red, int green, int blue, int alpha) {
+void ZStackObject::setSelected(bool selected)
+{
+  m_selected = selected;
+}
+
+void ZStackObject::setColor(int red, int green, int blue)
+{
 #if defined(_QT_GUI_USED_)
-  m_color.setRed(red);
-  m_color.setGreen(green);
-  m_color.setBlue(blue);
-  m_color.setAlpha(alpha);
+  setColor(QColor(red, green, blue, m_color.alpha()));
 #else
   UNUSED_PARAMETER(red);
   UNUSED_PARAMETER(green);
   UNUSED_PARAMETER(blue);
-  UNUSED_PARAMETER(alpha);
 #endif
+
+//#if defined(_QT_GUI_USED_)
+//  m_color.setRed(red);
+//  m_color.setGreen(green);
+//  m_color.setBlue(blue);
+//#else
+//  UNUSED_PARAMETER(red);
+//  UNUSED_PARAMETER(green);
+//  UNUSED_PARAMETER(blue);
+//#endif
+}
+
+void ZStackObject::setColor(int red, int green, int blue, int alpha)
+{
+  setColor(QColor(red, green, blue, alpha));
+
+//#if defined(_QT_GUI_USED_)
+//  m_color.setRed(red);
+//  m_color.setGreen(green);
+//  m_color.setBlue(blue);
+//  m_color.setAlpha(alpha);
+//#else
+//  UNUSED_PARAMETER(red);
+//  UNUSED_PARAMETER(green);
+//  UNUSED_PARAMETER(blue);
+//  UNUSED_PARAMETER(alpha);
+//#endif
 }
 
 void ZStackObject::setColor(const QColor &n) {
@@ -65,7 +91,8 @@ void ZStackObject::setColor(const QColor &n) {
 
 void ZStackObject::setAlpha(int alpha) {
 #if defined(_QT_GUI_USED_)
-  m_color.setAlpha(alpha);
+  setColor(QColor(m_color.red(), m_color.green(), m_color.blue(), alpha));
+//  m_color.setAlpha(alpha);
 #else
   UNUSED_PARAMETER(alpha);
 #endif
@@ -122,21 +149,21 @@ const QColor& ZStackObject::getColor() const
 
 double ZStackObject::getPenWidth() const
 {
-  double width = getDefaultPenWidth();
+  double width = m_basePenWidth;
 
   if (m_usingCosmeticPen) {
-    width += 2.0;
+    width += 1.0;
   }
 
   return width;
 }
 
-bool ZStackObject::isSliceVisible(int /*z*/) const
+bool ZStackObject::isSliceVisible(int /*z*/, neutube::EAxis /*axis*/) const
 {
   return isVisible();
 }
 
-bool ZStackObject::hit(double /*x*/, double /*y*/)
+bool ZStackObject::hit(double /*x*/, double /*y*/, neutube::EAxis /*axis*/)
 {
   return false;
 }
@@ -144,6 +171,37 @@ bool ZStackObject::hit(double /*x*/, double /*y*/)
 bool ZStackObject::hit(double /*x*/, double /*y*/, double /*z*/)
 {
   return false;
+}
+
+bool ZStackObject::hit(const ZIntPoint &pt)
+{
+  return hit(pt.getX(), pt.getY(), pt.getZ());
+}
+
+bool ZStackObject::hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
+                       neutube::EAxis axis)
+{
+  switch (m_hitProtocal) {
+  case HIT_DATA_POS:
+    return hit(dataPos);
+  case HIT_WIDGET_POS:
+    return hitWidgetPos(widgetPos, axis);
+  default:
+    break;
+  }
+
+  return false;
+}
+
+bool ZStackObject::hitWidgetPos(
+    const ZIntPoint &/*widgetPos*/, neutube::EAxis /*axis*/)
+{
+  return false;
+}
+
+void ZStackObject::setHitPoint(const ZIntPoint &pt)
+{
+  m_hitPoint = pt;
 }
 
 bool ZStackObject::fromSameSource(const ZStackObject *obj) const
@@ -161,6 +219,20 @@ bool ZStackObject::fromSameSource(const ZStackObject *obj) const
   return sameSource;
 }
 
+bool ZStackObject::hasSameId(const ZStackObject *obj) const
+{
+  bool same = false;
+  if (obj != NULL) {
+    if (!getObjectId().empty() && !obj->getObjectId().empty()) {
+      if (getObjectId() == obj->getObjectId()) {
+        same = true;
+      }
+    }
+  }
+
+  return same;
+}
+
 bool ZStackObject::fromSameSource(
     const ZStackObject *obj1, const ZStackObject *obj2)
 {
@@ -170,6 +242,16 @@ bool ZStackObject::fromSameSource(
   }
 
   return sameSource;
+}
+
+bool ZStackObject::hasSameId(const ZStackObject *obj1, const ZStackObject *obj2)
+{
+  bool same = false;
+  if (obj1 != NULL) {
+    same = obj1->hasSameId(obj2);
+  }
+
+  return same;
 }
 
 bool ZStackObject::isSameSource(const std::string &s1, const std::string &s2)
@@ -206,29 +288,29 @@ bool ZStackObject::isSelected(const ZStackObject *obj)
   return false;
 }
 
-void ZStackObject::getBoundBox(ZIntCuboid *box) const
+void ZStackObject::boundBox(ZIntCuboid *box) const
 {
   if (box != NULL) {
     *box = ZIntCuboid();
   }
 }
 
-void ZStackObject::addVisualEffect(NeuTube::Display::TVisualEffect ve)
+void ZStackObject::addVisualEffect(neutube::display::TVisualEffect ve)
 {
   m_visualEffect |= ve;
 }
 
-void ZStackObject::removeVisualEffect(NeuTube::Display::TVisualEffect ve)
+void ZStackObject::removeVisualEffect(neutube::display::TVisualEffect ve)
 {
   m_visualEffect &= ~ve;
 }
 
-void ZStackObject::setVisualEffect(NeuTube::Display::TVisualEffect ve)
+void ZStackObject::setVisualEffect(neutube::display::TVisualEffect ve)
 {
   m_visualEffect = ve;
 }
 
-bool ZStackObject::hasVisualEffect(NeuTube::Display::TVisualEffect ve) const
+bool ZStackObject::hasVisualEffect(neutube::display::TVisualEffect ve) const
 {
   return m_visualEffect & ve;
 }

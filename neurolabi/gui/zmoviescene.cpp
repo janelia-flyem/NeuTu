@@ -9,35 +9,31 @@
 #include "z3dinteractionhandler.h"
 #include "zmoviecamera.h"
 #include "zjsonobject.h"
+#include "z3dcompositor.h"
 
 using namespace std;
 
-ZMovieScene::ZMovieScene() : m_duration(0), m_isNewScene(true),
-  m_isBackground(false)
+ZMovieScene::ZMovieScene()
 {
+  init();
 }
-/*
-bool ZMovieScene::toSingleShot(double dt, ZMovieScene *scene)
+
+void ZMovieScene::init()
 {
-  if (dt > m_duration) {
-    return false;
-  }
-
-  if (m_duration > 0.0) {
-    scene->setCameraRotation(m_cameraRotation.getAxis(),
-                            m_cameraRotation.getAngle() / m_duration);
-  }
-
-  scene->setDuration(0);
-
-  *scene = *this;
-
-  return true;
+  m_duration = 0;
+  m_isNewScene = true;
+  m_isBackground = false;
+  m_showingAxis = -1;
 }
-*/
+
 bool ZMovieScene::isDurationTag(const char *tag)
 {
   return strcmp(tag, "duration") == 0 || strcmp(tag, "Duration") == 0;
+}
+
+bool ZMovieScene::isAxisTag(const char *tag)
+{
+  return strcmp(tag, "axis") == 0 || strcmp(tag, "Axis") == 0;
 }
 
 bool ZMovieScene::isBackgroundTag(const char *tag)
@@ -70,6 +66,11 @@ bool ZMovieScene::isFadingTag(const char *tag)
 bool ZMovieScene::isTransitTag(const char *tag)
 {
   return eqstr(tag, "transit") || eqstr(tag, "Transit");
+}
+
+bool ZMovieScene::isRenderSettingTag(const char *tag)
+{
+  return eqstr(tag, "rendering") || eqstr(tag, "rendering");
 }
 
 bool ZMovieScene::isMovingToTag(const char *tag)
@@ -108,24 +109,28 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
 {
   m_actionList.clear();
 
-  map<string, json_t*> entryMap = obj.toEntryMap();
+  map<string, json_t*> entryMap = obj.toEntryMap(false);
   for (map<string, json_t*>::const_iterator iter = entryMap.begin();
        iter != entryMap.end(); ++iter) {
 #ifdef _DEBUG_2
     cout << "Scene key: " << iter->first << endl;
 #endif
+    const char *key = iter->first.c_str();
     if (isDurationTag(iter->first.c_str())) {
       setDuration(ZJsonParser::numberValue(iter->second));
     } else if (isBackgroundTag(iter->first.c_str())) {
       setBackground(ZJsonParser::booleanValue(iter->second));
+    } else if (isAxisTag(key)) {
+      m_showingAxis = ZJsonParser::integerValue(iter->second);
     } else if (isActionListTag(iter->first.c_str())) {
       ZJsonArray actionList;
       TZ_ASSERT(ZJsonParser::isArray(iter->second), "array");
 
       actionList.set(iter->second, false);
       for (size_t index = 0; index < actionList.size(); ++index) {
-        ZJsonObject actionObject(actionList.at(index), false);
-        map<string, json_t*> actionEntry = actionObject.toEntryMap();
+        ZJsonObject actionObject(actionList.at(index),
+                                 ZJsonValue::SET_INCREASE_REF_COUNT);
+        map<string, json_t*> actionEntry = actionObject.toEntryMap(false);
         MovieAction action;
 
         for (std::map<string, json_t*>::const_iterator actionIter = actionEntry.begin();
@@ -166,7 +171,7 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
         addAction(action);
       }
     } else if (isCameraTag(iter->first.c_str())) {
-      ZJsonObject cameraObject(iter->second, false);
+      ZJsonObject cameraObject(iter->second, ZJsonValue::SET_INCREASE_REF_COUNT);
       m_camera.loadJsonObject(cameraObject);
       /*
       json_t *rotationObj = cameraObject["rotate"];
@@ -176,11 +181,16 @@ void ZMovieScene::loadJsonObject(const ZJsonObject &obj)
       */
     } else if (isClipperTag(iter->first.c_str())) {
       for (size_t i = 0; i < ZJsonParser::arraySize(iter->second); ++i) {
-        ZJsonObject clipperObject(ZJsonParser::arrayValue(iter->second, i), false);
+        ZJsonObject clipperObject(
+              ZJsonParser::arrayValue(iter->second, i),
+              ZJsonValue::SET_INCREASE_REF_COUNT);
         ZMovieSceneClipper clipper;
         clipper.loadJsonObject(clipperObject);
         m_clipperArray.push_back(clipper);
       }
+    } else if (isRenderSettingTag(iter->first.c_str())) {
+       m_renderSetting = ZJsonObject(
+             iter->second, ZJsonValue::SET_INCREASE_REF_COUNT);
     }
   }
 }
@@ -202,6 +212,24 @@ void ZMovieScene::print() const
   }
 }
 
+void ZMovieScene::updateStage(Z3DWindow *stage)
+{
+  if (m_showingAxis == 0) {
+    stage->getCompositor()->setShowAxis(false);
+  } else if (m_showingAxis == 1) {
+    stage->getCompositor()->setShowAxis(true);
+  }
+
+  stage->configure(m_renderSetting);
+
+//  for (std::map<Z3DWindow::ERendererLayer, ZJsonObject>::const_iterator
+//       iter = m_renderSetting.begin(); iter != m_renderSetting.end(); ++iter) {
+//    const ZJsonObject &obj = iter->second;
+//    stage->configureLayer(iter->first, obj);
+//  }
+
+}
+
 void ZMovieScene::updateCamera(Z3DWindow *stage, double t)
 {
   if (isNewScene()) {
@@ -215,12 +243,12 @@ void ZMovieScene::updateCamera(Z3DWindow *stage, double t)
     //stage->getInteractionHandler()->getTrackball()->rotate(
     //      axis, rotation.getAngle() * t);
     stage->getCamera()->rotate(rotation.getAngle() * t,
-                               stage->getCamera()->vectorEyeToWorld(
+                               stage->getCamera()->get().vectorEyeToWorld(
                                  glm::normalize(axis)));
   }
 
   //Move eye
-  glm::vec3 direction = stage->getCamera()->getViewVector();
+  glm::vec3 direction = stage->getCamera()->get().viewVector();
   const ZPoint &eyeMovingSpeed = m_camera.getMovingVelocity(ZMovieCamera::EYE);
   glm::vec3 offset;
   if (m_camera.getMovingDirection(ZMovieCamera::EYE) == ZMovieCamera::VIEW_AXIS) {
@@ -232,7 +260,7 @@ void ZMovieScene::updateCamera(Z3DWindow *stage, double t)
                        eyeMovingSpeed.z() * t);
   }
 
-  stage->getCamera()->setEye(stage->getCamera()->getEye() + offset);
+  stage->getCamera()->setEye(stage->getCamera()->get().eye() + offset);
 
   //Move center
   const ZPoint &centerMovingSpeed = m_camera.getMovingVelocity(ZMovieCamera::CENTER);
@@ -245,14 +273,14 @@ void ZMovieScene::updateCamera(Z3DWindow *stage, double t)
                        centerMovingSpeed.z() * t);
   }
 
-  stage->getCamera()->setCenter(stage->getCamera()->getCenter() + offset);
+  stage->getCamera()->setCenter(stage->getCamera()->get().center() + offset);
 
   //Move up_vector
   const ZPoint &uvMovingSpeed = m_camera.getMovingVelocity(ZMovieCamera::UP_VECTOR);
   offset = glm::vec3(uvMovingSpeed.x() * t, uvMovingSpeed.y() * t,
                      uvMovingSpeed.z() * t);
 
-  stage->getCamera()->setUpVector(stage->getCamera()->getUpVector() + offset);
+  stage->getCamera()->setUpVector(stage->getCamera()->get().upVector() + offset);
 }
 
 void ZMovieScene::updateClip(Z3DWindow *stage,

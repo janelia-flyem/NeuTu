@@ -18,7 +18,7 @@
 #include "dialogs/autosaveswclistdialog.h"
 #include "zactionactivator.h"
 #include "dialogs/flyemneuronthumbnaildialog.h"
-#include "zstackdoc.h"
+#include "zstackdocptr.h"
 #include "newprojectmainwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "zmessageprocessor.h"
@@ -28,6 +28,7 @@ class ZStackFrame;
 class QMdiArea;
 class QActionGroup;
 class ZStackDoc;
+class ZStackDocReader;
 class QProgressDialog;
 class BcAdjustDialog;
 class QUndoGroup;
@@ -74,6 +75,10 @@ class ProjectionDialog;
 class ZStackSkeletonizer;
 class FlyEmSkeletonizationDialog;
 class ZWidgetMessage;
+class FlyEmSettingDialog;
+class ZDvidBodyPositionDialog;
+class ZProofreadWindow;
+class ZTestOptionDialog;
 
 namespace Ui {
   class MainWindow;
@@ -127,8 +132,10 @@ public: /* File and message dialogs */
   QString getDirectory(const QString &caption);
 
   void report(const std::string &title, const std::string &msg,
-              NeuTube::EMessageType msgType);
+              neutube::EMessageType msgType);
   bool ask(const std::string &title, const std::string &msg);
+
+  QMenu* getSandboxMenu() const;
 
 public:
   bool initBodySplitProject();
@@ -136,21 +143,26 @@ public:
   static void createWorkDir();
 
   QAction* getBodySplitAction() const;
-
-  //Report the problem when a file cannot be opened correctly.
-  void reportFileOpenProblem(const QString &filePath,
-                             const QString &reason = "");
-
   void runBodySplit();
 
   void processArgument(const QString &arg);
+
+public: //Testing routines
+  void testFlyEmProofread();
+
+public: //Special functions
+  void runNeuTuPaper();
+
 
 signals:
   void dvidRequestCanceled();
   void progressDone();
   void progressAdvanced(double dp);
+  void progressStarted(QString title, int nticks);
   void docReaderReady(ZStackDocReader*);
   void docReady(ZStackDocPtr);
+  void docReady(ZStackDoc*);
+  void fileOpenFailed(QString fileName, QString reason);
 
 public slots:
   void addStackFrame(ZStackFrame *frame, bool isReady = true);
@@ -174,29 +186,35 @@ public slots:
   void on_actionTile_Manager_2_triggered();
   void cancelDvidRequest();
 
+  //Report the problem when a file cannot be opened correctly.
+  void reportFileOpenProblem(const QString &filePath,
+                             const QString &reason = "");
+
+
   ZStackFrame* createEmptyStackFrame(ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      ZStack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      ZStack *stack,neutube::Document::ETag tag = neutube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
-      Stack *stack,NeuTube::Document::ETag tag = NeuTube::Document::NORMAL,
+      Stack *stack,neutube::Document::ETag tag = neutube::Document::NORMAL,
       ZStackFrame *parentFrame = NULL);
 
   ZStackFrame* createStackFrame(
       ZStackDocReader *reader, ZStackFrame *parentFrame = NULL);
-  ZStackFrame* createStackFrame(
-      const ZStackDocReader &reader,
-      NeuTube::Document::ETag tag = NeuTube::Document::NORMAL);
+  ZStackFrame* createStackFrame(ZStackDocReader &reader,
+      neutube::Document::ETag tag = neutube::Document::NORMAL);
 
-  ZStackFrame* createStackFrame(ZStackDocPtr doc);
+  ZStackFrame* showStackDoc(ZStackDocPtr doc);
+  ZStackFrame* showStackDoc(ZStackDoc *doc);
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
   void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
+  ZProofreadWindow * startProofread();
   void launchSplit(const QString &str);
 
 private:
@@ -218,8 +236,9 @@ protected:
 
   void createActionMap();
 
-  ZStackDocReader* openFileFunc(const QString &filePath);
-  void openFileFunc2(const QString &filePath);
+//  ZStackDocReader* openFileFunc(const QString &filePath);
+  void openFileFunc(const QString &filePath);
+  void openFileListFunc(const QStringList fileList);
   void runSplitFunc(ZStackFrame *frame);
 
 private slots:
@@ -310,6 +329,8 @@ private slots:
   // slots for 'Help'
   void about();
   void test();
+  void test(ZTestOptionDialog *dlg);
+
   void test2();
 
   // slots for frame
@@ -352,7 +373,7 @@ private slots:
   void on_actionFlyEmSelect_connection_triggered();
   void on_actionAxon_Export_triggered();
   void on_actionExtract_body_triggered();
-  void on_actionPredict_errors_triggered();
+//  void on_actionPredict_errors_triggered();
   void on_actionCompute_Features_triggered();
   void on_actionMexican_Hat_triggered();
   void on_actionInvert_triggered();
@@ -382,8 +403,8 @@ private slots:
   void on_actionSparse_objects_triggered();
   void on_actionDendrogram_triggered();
   void on_actionPen_Width_for_SWC_Display_triggered();
-  void on_actionDVID_Object_triggered();
-  void on_actionDvid_Object_triggered();
+//  void on_actionDVID_Object_triggered();
+//  void on_actionDvid_Object_triggered();
   void on_actionAssign_Clustering_triggered();
   void on_actionSWC_Rescaling_triggered();
   void on_actionSurface_detection_triggered();
@@ -418,7 +439,7 @@ private slots:
 
   void on_actionCreate_Databundle_triggered();
 
-  void on_actionCreate_Thumbnails_triggered();
+//  void on_actionCreate_Thumbnails_triggered();
   
   void on_actionCreate_ROI_triggered();
 
@@ -459,6 +480,51 @@ private slots:
   void on_actionProof_triggered();
 
   void on_actionSubtract_Background_triggered();
+
+  void on_actionImport_Sparsevol_Json_triggered();
+
+  void on_actionNeuroMorpho_triggered();
+
+  void on_actionRemove_Obsolete_Annotations_triggered();
+
+  void on_actionGenerate_KC_c_Actor_triggered();
+
+  void on_actionMake_Movie_MB_triggered();
+
+  void on_actionGenerate_KC_s_Actor_triggered();
+
+  void on_actionGenerate_MB_Actor_triggered();
+
+  void on_actionGenerate_KC_p_Actor_triggered();
+
+  void on_actionGenerate_All_KC_Actor_triggered();
+
+  void on_actionGenerate_PAM_Actor_triggered();
+
+  void on_actionGenerate_MB_Conn_Actor_triggered();
+
+  void on_actionGet_Body_Positions_triggered();
+
+  void on_actionMake_Movie_2_triggered();
+
+  void tryToClose();
+  void showAndRaise();
+
+  void on_actionTrace_Mask_triggered();
+  void on_actionSeed_Mask_triggered();
+
+
+  void on_actionGenerate_MB_SynapseT_Actor_triggered();
+
+  void on_actionGenerate_MB_SynapseS_Actor_triggered();
+
+  void on_actionGenerate_VS_Cast_triggered();
+
+  void on_actionMake_Movie_3_triggered();
+
+  void on_actionView_Segmentation_Meshes_triggered();
+
+  void on_actionUpdate_Body_Info_triggered();
 
 private:
   void createActions();
@@ -511,17 +577,28 @@ private:
   ZStackDoc* importHdf5BodyM(const std::vector<int> &bodyIdArray,
                              const QString &hdf5Path,
                              const std::vector<int> &downsampleInterval);
-
+#if 0
   ZStackDocReader* readDvidGrayScale(const QString &dvidAddress,
                                        const QString &dvidUuid,
                                        int x, int y, int z,
                                        int width, int height, int depth);
-
+#endif
   void autoTrace(ZStackFrame *frame);
 
   void setSkeletonizer(
       ZStackSkeletonizer &skeletonizer,
       const FlyEmSkeletonizationDialog &dlg);
+
+  void makeMovie();
+
+  void generateMBKcCast(const std::string &movieFolder);
+  void generateMBAllKcCast(const std::string &movieFolder);
+  void generateMBPAMCast(const std::string &movieFolder);
+  void generateMBONCast(const std::string &movieFolder);
+  void generateMBONConnCast(const std::string &movieFolder);
+  void generateMBONPartnerCast(const std::string &movieFolder);
+  void generateMBONConvCast(const std::string &movieFolder);
+  void generateFIB19VsCast(const std::string &movieFolder);
 
 private:
   QMdiArea *mdiArea;
@@ -543,6 +620,7 @@ private:
   // toolbars
   QToolBar *fileToolBar;
   QToolBar *editToolBar;
+  QToolBar *m_toolBar;
 
   // 'File' menu: 'New', 'Open', 'Import', 'Export', 'Save', 'Save As',
   //              'Close', 'Exit'
@@ -678,6 +756,10 @@ private:
   ZAutoTraceDialog *m_autoTraceDlg;
   ProjectionDialog *m_projDlg;
   FlyEmSkeletonizationDialog *m_skeletonDlg;
+  FlyEmSettingDialog *m_flyemSettingDlg;
+  ZDvidBodyPositionDialog *m_bodyPosDlg;
+  ZTestOptionDialog *m_testOptionDlg;
+
 
   ZStackViewManager *m_stackViewManager;
   ZFlyEmProjectManager *m_flyemProjectManager;
@@ -691,13 +773,15 @@ private:
   //QSettings m_settings;
   QString m_version;
 
-  ZProgressManager *m_progressManager;
-  ZQtBarProgressReporter m_specialProgressReporter;
+//  ZProgressManager *m_progressManager;
+//  ZQtBarProgressReporter m_specialProgressReporter;
 
   ZMessageManager *m_messageManager;
   ZTestDialog *m_testDlg;
   ZTestDialog2 *m_testDlg2;
   ZWindowFactory m_3dWindowFactory;
+
+  int m_proofreadWindowCount;
 
   QTimer *m_autoCheckTimer;
   //ZStackDocReader *m_docReader;

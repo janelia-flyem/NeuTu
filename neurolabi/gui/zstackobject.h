@@ -53,6 +53,7 @@ public:
     TYPE_UNIDENTIFIED = 0, //Unidentified type
     TYPE_SWC,
     TYPE_PUNCTUM,
+    TYPE_MESH,
     TYPE_OBJ3D,
     TYPE_STROKE,
     TYPE_LOCSEG_CHAIN,
@@ -76,7 +77,14 @@ public:
     TYPE_FLYEM_BOOKMARK,
     TYPE_INT_CUBOID,
     TYPE_LINE_SEGMENT,
-    TYPE_SLICED_PUNCTA
+    TYPE_SLICED_PUNCTA,
+    TYPE_DVID_SYNAPSE,
+    TYPE_DVID_SYNAPE_ENSEMBLE,
+    TYPE_3D_CUBE,
+    TYPE_DVID_ANNOTATION,
+    TYPE_FLYEM_TODO_ITEM,
+    TYPE_FLYEM_TODO_LIST,
+    TYPE_CROSS_HAIR
   };
 
   enum Palette_Color {
@@ -88,13 +96,18 @@ public:
   };
 
   enum ETarget {
+    TARGET_NULL,
     TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS,
-    TARGET_3D_ONLY
+    TARGET_3D_ONLY, TARGET_DYNAMIC_OBJECT_CANVAS, TARGET_3D_CANVAS
   };
 
   enum EDisplaySliceMode {
     DISPLAY_SLICE_PROJECTION, //Display Z-projection of the object
     DISPLAY_SLICE_SINGLE      //Display a cross section of the object
+  };
+
+  enum EHitProtocal {
+    HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
   };
 
   /*!
@@ -107,8 +120,7 @@ public:
   /*!
    * \brief Set the selection state
    */
-  void setSelected(bool selected) { m_selected = selected; }
-
+  void setSelected(bool selected);
   /*!
    * \brief Get the selection state
    *
@@ -116,6 +128,7 @@ public:
    */
   bool isSelected() const { return m_selected; }
 
+  virtual void deselect(bool /*recursive*/) { setSelected(false); }
 
   /*!
    * \brief Display an object to widget
@@ -130,7 +143,8 @@ public:
    *    current slice -(\a slice + 1).
    */
   virtual void display(
-      ZPainter &painter, int slice, EDisplayStyle option) const = 0;
+      ZPainter &painter, int slice, EDisplayStyle option,
+      neutube::EAxis sliceAxis) const = 0;
 
   /*!
    * For special painting when ZPainter cannot be created
@@ -140,7 +154,7 @@ public:
    */
   virtual bool display(
       QPainter *painter, int z, EDisplayStyle option,
-      EDisplaySliceMode sliceMode) const;
+      EDisplaySliceMode sliceMode, neutube::EAxis sliceAxis) const;
 
   inline bool isVisible() const { return m_isVisible; }
   inline void setVisible(bool visible) { m_isVisible = visible; }
@@ -152,10 +166,15 @@ public:
   inline ETarget getTarget() const { return m_target; }
   inline void setTarget(ETarget target) { m_target = target; }
 
-  virtual bool isSliceVisible(int z) const;
+  virtual bool isSliceVisible(int z, neutube::EAxis axis) const;
 
   virtual bool hit(double x, double y, double z);
-  virtual bool hit(double x, double y);
+  virtual bool hit(const ZIntPoint &pt);
+  virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
+                   neutube::EAxis axis);
+  virtual bool hit(double x, double y, neutube::EAxis axis);
+  virtual bool hitWidgetPos(const ZIntPoint &widgetPos, neutube::EAxis axis);
+
   virtual inline const ZIntPoint& getHitPoint() const { return m_hitPoint; }
 
   /*!
@@ -164,7 +183,7 @@ public:
    * For compability purpose, it is set to take an output parameter instead of
    * returning the result.
    */
-  virtual void getBoundBox(ZIntCuboid *box) const;
+  virtual void boundBox(ZIntCuboid *box) const;
 
   const QColor& getColor() const;
   void setColor(int red, int green, int blue);
@@ -191,11 +210,40 @@ public:
 
   double getPenWidth() const;
 
+  double getBasePenWidth() const {
+    return m_basePenWidth;
+  }
+
+  void setBasePenWidth(double width) {
+    m_basePenWidth = width;
+  }
+
   void useCosmeticPen(bool state) {
     m_usingCosmeticPen = state;
   }
 
-  inline std::string getSource() const { return m_source; }
+  void setTimeStamp(int t){
+    m_timeStamp = t;
+  }
+
+  int getTimeStamp() const {
+    return m_timeStamp;
+  }
+
+  virtual void setLabel(uint64_t label);
+
+  inline uint64_t getLabel() const {
+    return m_uLabel;
+  }
+
+/*
+  virtual void setILabel(int label);
+
+  inline int getILabel() const {
+    return m_label;
+  }
+*/
+  inline const std::string &getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
   /*!
@@ -208,10 +256,13 @@ public:
   static bool fromSameSource(const ZStackObject *obj1, const ZStackObject *obj2);
 
 
-  inline std::string getObjectId() const { return m_objectId; }
+  inline const std::string &getObjectId() const { return m_objectId; }
   inline void setObjectId(const std::string &id) { m_objectId = id; }
 
-  inline std::string getObjectClass() const { return m_objectClass; }
+  bool hasSameId(const ZStackObject *obj) const;
+  static bool hasSameId(const ZStackObject *obj1, const ZStackObject *obj2);
+
+  inline const std::string &getObjectClass() const { return m_objectClass; }
   inline void setObjectClass(const std::string &id) { m_objectClass = id; }
 
 
@@ -288,12 +339,14 @@ public:
   }
 
   inline bool isHittable() const {
-    return m_isHittable && isVisible();
+    return m_hitProtocal != HIT_NONE && isVisible();
   }
 
-  inline void setHittable(bool state) {
-    m_isHittable = state;
+  inline void setHitProtocal(EHitProtocal protocal) {
+    m_hitProtocal = protocal;
   }
+
+  void setHitPoint(const ZIntPoint &pt);
 
   inline bool isProjectionVisible() const {
     return m_projectionVisible;
@@ -303,10 +356,13 @@ public:
     m_projectionVisible = visible;
   }
 
-  virtual void addVisualEffect(NeuTube::Display::TVisualEffect ve);
-  virtual void removeVisualEffect(NeuTube::Display::TVisualEffect ve);
-  virtual void setVisualEffect(NeuTube::Display::TVisualEffect ve);
-  bool hasVisualEffect(NeuTube::Display::TVisualEffect ve) const;
+  virtual void addVisualEffect(neutube::display::TVisualEffect ve);
+  virtual void removeVisualEffect(neutube::display::TVisualEffect ve);
+  virtual void setVisualEffect(neutube::display::TVisualEffect ve);
+  bool hasVisualEffect(neutube::display::TVisualEffect ve) const;
+
+  neutube::EAxis getSliceAxis() const { return m_sliceAxis; }
+  void setSliceAxis(neutube::EAxis axis) { m_sliceAxis = axis; }
 
 public:
   static bool isEmptyTree(const ZStackObject *obj);
@@ -320,28 +376,34 @@ protected:
   bool m_selected;
   bool m_isSelectable;
   bool m_isVisible;
-  bool m_isHittable;
+//  bool m_isHittable;
+  EHitProtocal m_hitProtocal;
   bool m_projectionVisible;
   EDisplayStyle m_style;
   QColor m_color;
   ETarget m_target;
   static double m_defaultPenWidth;
+  double m_basePenWidth;
   bool m_usingCosmeticPen;
   double m_zScale;
   std::string m_source;
   std::string m_objectClass;
   std::string m_objectId;
+  uint64_t m_uLabel = 0;
+//  int m_label = -1;
   int m_zOrder;
+  int m_timeStamp;
   EType m_type;
   ZStackObjectRole m_role;
   ZIntPoint m_hitPoint;
+  neutube::EAxis m_sliceAxis;
 
-  NeuTube::Display::TVisualEffect m_visualEffect;
+  neutube::display::TVisualEffect m_visualEffect;
 
+  mutable int m_prevDisplaySlice;
 //  static const char *m_nodeAdapterId;
 };
 
-typedef ZSharedPointer<ZStackObject> ZStackObjectPtr;
 
 template <typename T>
 T* ZStackObject::CastVoidPointer(void *p)

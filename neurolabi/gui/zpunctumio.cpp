@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "zpunctumio.h"
 
 #include "zpunctum.h"
@@ -20,17 +22,17 @@ ZPunctumIO::ZPunctumIO()
 QList<ZPunctum*> ZPunctumIO::load(const QString &file)
 {
   QList<ZPunctum*> punctaList;
-  switch (ZFileType::fileType(file.toStdString())) {
-  case ZFileType::V3D_APO_FILE:
+  switch (ZFileType::FileType(file.toStdString())) {
+  case ZFileType::FILE_V3D_APO:
     readV3DApoFile(file, punctaList);
     break;
-  case ZFileType::V3D_MARKER_FILE:
+  case ZFileType::FILE_V3D_MARKER:
     readV3DMarkerFile(file, punctaList);
     break;
-  case ZFileType::RAVELER_BOOKMARK:
+  case ZFileType::FILE_RAVELER_BOOKMARK:
     readRavelerBookmarkFile(file, punctaList);
     break;
-  case ZFileType::JSON_FILE:
+  case ZFileType::FILE_JSON:
     readJsonFile(file, punctaList);
   default:
     LWARN() << "Not supported puncta file type:" << file;
@@ -135,7 +137,7 @@ void ZPunctumIO::readV3DApoFile(const QString &file, QList<ZPunctum *> &punctaLi
 void ZPunctumIO::readV3DMarkerFile(const QString &file, QList<ZPunctum *> &punctaList)
 {
   std::vector<ZVaa3dMarker> markerArray =
-      FlyEm::ZFileParser::readVaa3dMarkerFile(file.toStdString());
+      flyem::ZFileParser::readVaa3dMarkerFile(file.toStdString());
   for (size_t i = 0; i < markerArray.size(); ++i) {
     ZPunctum* punctum = new ZPunctum();
     punctum->setName(markerArray[i].name().c_str());
@@ -193,11 +195,11 @@ void ZPunctumIO::readJsonFile(const QString &file, QList<ZPunctum *> &punctaList
 {
   ZJsonObject rootObj;
   rootObj.load(file.toStdString());
-  ZJsonArray pointList(rootObj["point-list"], false);
+  ZJsonArray pointList(rootObj["point-list"], ZJsonValue::SET_INCREASE_REF_COUNT);
 
   if (!pointList.isEmpty()) {
     for (size_t i = 0; i < pointList.size(); ++i) {
-      ZJsonArray pointObj(pointList.at(i), false);
+      ZJsonArray pointObj(pointList.at(i), ZJsonValue::SET_INCREASE_REF_COUNT);
       std::vector<int> coordinates = pointObj.toIntegerArray();
       if (coordinates.size() == 3) {
         ZPunctum* punctum = new ZPunctum();

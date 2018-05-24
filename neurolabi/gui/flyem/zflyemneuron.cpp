@@ -48,7 +48,7 @@ ZFlyEmNeuron::ZFlyEmNeuron() : CONSTRUCTOR_INIT
   }
 }
 
-ZFlyEmNeuron::ZFlyEmNeuron(int id, ZSwcTree *model, ZObject3dScan *body) :
+ZFlyEmNeuron::ZFlyEmNeuron(uint64_t id, ZSwcTree *model, ZObject3dScan *body) :
   CONSTRUCTOR_INIT
 {
   m_id = id;
@@ -159,7 +159,7 @@ ZSwcTree* ZFlyEmNeuron::getResampleBuddyModel(double rs) const
     if (model != NULL) {
       m_buddyModel = model->clone();
       m_buddyModel->resample(rs);
-      m_buddyModel->setLabel(0);
+      m_buddyModel->setNodeLabel(0);
     }
   }
 
@@ -227,16 +227,17 @@ void ZFlyEmNeuron::updateDvidModel(bool forceUpdate) const
           ZStackSkeletonizer skeletonizer;
 
           ZDvidUrl dvidUrl(reader.getDvidTarget());
-          ZJsonObject config = reader.readJsonObject(
-                dvidUrl.getSkeletonConfigUrl(
-                  reader.getDvidTarget().getBodyLabelName()));
+          std::string skeletonUrl = dvidUrl.getSkeletonConfigUrl(
+                reader.getDvidTarget().getBodyLabelName());
+          ZJsonObject config = reader.readJsonObject(skeletonUrl);
 
           if (config.isEmpty()) {
             config.load(NeutubeConfig::getInstance().getApplicatinDir() +
                         "/json/skeletonize_fib25_len40.json");
           }
           skeletonizer.configure(config);
-          ZObject3dScan obj = reader.readBody(getId());
+          ZObject3dScan obj;
+          reader.readBody(getId(), true, &obj);
           if (!obj.isEmpty()) {
             m_unscaledModel = skeletonizer.makeSkeleton(obj);
             if (m_unscaledModel != NULL) {
@@ -315,7 +316,7 @@ ZObject3dScan* ZFlyEmNeuron::getBody() const
       ZDvidReader reader;
       if (reader.open(m_volumePath.c_str())) {
         m_body = new ZObject3dScan;
-        *m_body = reader.readBody(getId());
+        reader.readBody(getId(), true, m_body);
 
 #ifdef _DEBUG_2
         m_body->save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -397,7 +398,7 @@ ZJsonObject ZFlyEmNeuron::makeJsonObject() const
 {
   json_t *obj = C_Json::makeObject();
 
-  ZJsonObject objWrapper(obj, false);
+  ZJsonObject objWrapper(obj, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   objWrapper.setEntry(m_idKey, m_id);
   if (!m_name.empty()) {
@@ -423,7 +424,7 @@ ZJsonObject ZFlyEmNeuron::makeJsonObject(const std::string &bundleDir) const
 {
   json_t *obj = C_Json::makeObject();
 
-  ZJsonObject objWrapper(obj, false);
+  ZJsonObject objWrapper(obj, ZJsonValue::SET_INCREASE_REF_COUNT);
 
   objWrapper.setEntry(m_idKey, m_id);
   if (!m_name.empty()) {
@@ -554,11 +555,11 @@ std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse() const
 }
 
 std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse(
-    int buddyBodyId) const
+    uint64_t buddyBodyId) const
 {
   std::vector<ZPunctum*> synapse;
   if (m_synapseAnnotation != NULL) {
-    FlyEm::SynapseAnnotationConfig config;
+    flyem::SynapseAnnotationConfig config;
     config.startNumber = m_synapseAnnotation->getMetaData().getSourceZOffset();
     config.height = m_synapseAnnotation->getMetaData().getSourceYDim();
     config.xResolution = m_synapseAnnotation->getMetaData().getXResolution();
@@ -568,8 +569,8 @@ std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse(
     config.swcDownsample2 = 1;
     config.sizeScale = m_synapseScale;
 
-    FlyEm::SynapseDisplayConfig displayConfig;
-    displayConfig.mode = FlyEm::SynapseDisplayConfig::HALF_SYNAPSE;
+    flyem::SynapseDisplayConfig displayConfig;
+    displayConfig.mode = flyem::SynapseDisplayConfig::HALF_SYNAPSE;
     displayConfig.tBarColor.red = 255;
     displayConfig.tBarColor.green = 255;
     displayConfig.tBarColor.blue = 0;
@@ -580,7 +581,7 @@ std::vector<ZPunctum*> ZFlyEmNeuron::getSynapse(
     displayConfig.buddyBodyId = buddyBodyId;
 
     return m_synapseAnnotation->toPuncta(
-          config, FlyEm::SynapseLocation::PHYSICAL_SPACE, displayConfig);
+          config, flyem::SynapseLocation::PHYSICAL_SPACE, displayConfig);
   }
 
   return synapse;

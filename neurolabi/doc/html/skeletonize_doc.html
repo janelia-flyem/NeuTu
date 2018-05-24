@@ -1,0 +1,100 @@
+<html>
+<head><title>Skeletonization</title></head>
+
+<body>
+<pre>neuTube --command --skeletonize &lt;input&gt; -o &lt;output&gt; [--config &lt;config_file&gt;] [--verbose]
+</pre>
+
+<p>Arguments:</p>
+
+<ul>
+<li>--command: this argument must be specified to use any command line function of neuTube
+
+<li>--skeletonize: run neuTube as skeletonization command
+
+
+<li>&lt;input&gt;: input file, which must be a TIFF file or a specific sparse object file format (.sobj) defined in neuTube
+
+<li>-o &lt;output&gt;<output>: output SWC file, which usually ends with .swc extension.</output>
+
+<li>--config &lt;config_file&gt;: optional option for specifying a configuration file of skeletonization parameters. Default parameters will be used if this file is not specified.
+
+<li>--verbose: output more message if this option is given
+</ul>
+
+Configuration file:
+
+A skeletonize config file is a json file with the following schema:
+<pre>{
+  "title": "Skeletonization Schema",
+  "type": "object",
+  "properties": {
+    "downsampleInterval": {
+       "description": "Downsampling the stack before running skeletonization",
+       "type": "array",
+       "minItems": 3,
+       "maxItems": 3,
+       "items": {"type": "integer"}
+    },
+    "minimalLength": {
+      "description": "Minimal length of the resulted branches",
+      "type": "integer",
+      "minimum": 0
+    },
+    "keepingSingleObject": {
+      "description": "Keep an isolated object or not even if it is too small or short",
+      "type": "boolean"
+    },
+    "rebase": {
+      "description": "Reset the starting point to a terminal point?",
+      "type": "boolean"
+    },
+    "fillingHole": {
+      "description": "Reset the starting point to a terminal point?",
+      "type": "boolean"
+    },
+    "maximalDistance": {
+      "description": "Maximum distance to connect isolated branches.",
+      "type": "number",
+      "minimum": 0
+    },
+    "minimalObjectSize": {
+      "description": "Minimal size of objects to skeletonize.",
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}
+</pre>
+
+Example config file:
+<pre>{
+  "skeletonize": {
+    "downsampleInterval": [3, 3, 3],
+    "minimalLength": 40,
+    "minimalObjectSize": 100,
+    "keepingSingleObject": true,
+    "rebase": true,
+    "fillingHole": true,
+    "maximalDistance": 100
+  }
+}
+</pre>
+
+<ul>
+<li><em>downsampleInterval</em>: The interval of downsampling a stack (3d image). It is a 3-element integer array aligned as X, Y and Z. Value 0 means no sampling, value 1 means downsampling by merging the next pixel, value 2 means merging the next 2 pixels and value n means merging the next n pixels. The final SWC will be upsampled back to the original resolution.
+
+<li><em>minimalLength</em>: The minimal length of branches to be kept during skeletonization.
+
+<li><em>minimalObjectSize</em>: All objects (connected components) with size smaller than this parameter will be ignored
+
+<li><em>keepingSingleObject</em>: Sometimes even if an object is above the size threshold, the resulted branches might be shorter than the minimal length and thus contribute nothing to the final structure. If this parameter is set to true, those objects will be preserved no matter how short they are.
+
+<li><em>rebase</em>: This sets the starting point of skeletonization. If it is false, skeletonization will start from the thickest point; otherwise it will start from a terminal point.
+
+<li><em>fillingHole</em>: Filling holes or not before skeletonization.
+
+<li><em>maximalDistance</em>: The maximal distance to connect isolated branches in the final result.
+</ul>
+</body>
+</html>

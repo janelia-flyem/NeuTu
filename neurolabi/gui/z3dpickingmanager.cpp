@@ -13,139 +13,179 @@
  * "LICENSE.txt" along with this file. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "zglew.h"
 #include "z3dpickingmanager.h"
 
+#include <QApplication>
+#include <functional>
+#include <memory>
+#include <vector>
+#include <QWidget>
+
+#include "z3dgl.h"
 #include "z3dtexture.h"
 #include "QsLog.h"
-#include "z3drendertarget.h"
-#include <QApplication>
-#include "zsharedpointer.h"
 
-uint qHash(const glm::col4 &col)
+void Z3DPickingManager::setRenderTarget(Z3DRenderTarget& rt)
 {
-  return (uint) (reinterpret_cast<const uint32_t&>(col));
-}
-
-Z3DPickingManager::Z3DPickingManager()
-  : m_renderTarget(NULL)
-  , m_currentColor(0,0,0,128)
-{
+  CHECK(rt.attachment(GL_COLOR_ATTACHMENT0)->internalFormat() == GL_RGBA8);
+  m_renderTarget = &rt;
 }
 
 glm::col4 Z3DPickingManager::registerObject(const void* obj)
 {
   increaseColor();
-  m_colorToObject[Col4ToUint(m_currentColor)] = obj;
+  m_colorToObject[m_currentColor] = obj;
   m_objectToColor[obj] = m_currentColor;
   return m_currentColor;
 }
 
 void Z3DPickingManager::deregisterObject(const void* obj)
 {
-  glm::col4 col = getColorFromObject(obj);
-  m_colorToObject.remove(Col4ToUint(col));
-  //m_objectToColor.erase(obj);
-  m_objectToColor.remove(obj);
+  glm::col4 col = colorOfObject(obj);
+  m_colorToObject.erase(col);
+  m_objectToColor.erase(obj);
 }
+
+/*
+void Z3DPickingManager::deregisterObject(
+    const std::vector<Swc_Tree_Node *> &nodeList)
+{
+  std::vector<glm::col4> colList(nodeList.size());
+  for (size_t i = 0; i < nodeList.size(); ++i) {
+    colList[i] = colorOfObject(nodeList[i]);
+  }
+
+  m_colorToObject.erase(colList.begin(), colList.end());
+  m_objectToColor.erase(nodeList.begin(), nodeList.end());
+}
+*/
 
 void Z3DPickingManager::deregisterObject(const glm::col4& col)
 {
-  const void* obj = getObjectFromColor(col);
-  m_colorToObject.remove(Col4ToUint(col));
-  m_objectToColor.remove(obj);
-  //m_objectToColor.erase(obj);
+  const void* obj = objectOfColor(col);
+  m_colorToObject.erase(col);
+  m_objectToColor.erase(obj);
 }
 
 void Z3DPickingManager::clearRegisteredObjects()
 {
   m_colorToObject.clear();
   m_objectToColor.clear();
-  m_currentColor = glm::col4(0,0,0,128);
+  m_currentColor = glm::col4(0, 0, 0, 128);
 }
 
-glm::col4 Z3DPickingManager::getColorFromObject(const void* obj)
+glm::col4 Z3DPickingManager::colorOfObject(const void* obj)
 {
   if (!obj)
-    return glm::col4(0,0,0,0);
+    return glm::col4(0, 0, 0, 0);
 
   if (isRegistered(obj)) {
     return m_objectToColor[obj];
   } else
-    return glm::col4(0,0,0,0);
+    return glm::col4(0, 0, 0, 0);
 }
 
-const void* Z3DPickingManager::getObjectFromColor(const glm::col4 &col)
+const void* Z3DPickingManager::objectOfColor(const glm::col4& col)
 {
   if (col.a == 0)
-    return NULL;
+    return nullptr;
 
-  if (isRegistered(col))
-    return m_colorToObject[Col4ToUint(col)];
-  else
-    return NULL;
+  if (isRegistered(col)) {
+    return m_colorToObject[col];
+  } else {
+    return nullptr;
+  }
 }
 
-const void* Z3DPickingManager::getObjectAtWidgetPos(glm::ivec2 pos)
+std::vector<const void*> Z3DPickingManager::objectAtWidgetPos(
+    std::vector<glm::ivec2> &posArray)
 {
-#ifdef _QT5_
-  pos[0] = pos[0] * qApp->devicePixelRatio();
-  pos[1] = pos[1] * qApp->devicePixelRatio();
-#endif
-  glm::ivec3 texSize =
-      getRenderTarget()->getAttachment(GL_COLOR_ATTACHMENT0)->getDimensions();
-  pos[1] = texSize[1]- pos[1];
-  return getObjectAtPos(pos);
+  std::vector<const void*> objArray;
+
+  assert(m_devicePixelRatio >= 1);
+  glm::ivec3 texSize = glm::ivec3(
+        m_renderTarget->attachment(GL_COLOR_ATTACHMENT0)->dimension());
+
+  for (glm::ivec2 &pos : posArray) {
+    pos[0] = pos[0] * m_devicePixelRatio;
+    pos[1] = pos[1] * m_devicePixelRatio;
+    pos[1] = texSize[1] - pos[1];
+  }
+
+  std::vector<glm::col4> colorArray = m_renderTarget->colorAtPos(posArray);
+
+  for (const glm::col4 &color : colorArray) {
+    objArray.push_back(objectOfColor(color));
+  }
+
+  return objArray;
 }
 
-const void* Z3DPickingManager::getObjectAtPos(glm::ivec2 pos)
+std::vector<const void*> Z3DPickingManager::objectAtWidgetPos(
+    const std::vector<std::pair<int, int> > &posArray)
 {
-  return getObjectFromColor(m_renderTarget->getColorAtPos(pos));
+  std::vector<glm::ivec2> vecArray;
+  for (const std::pair<int, int> &pos : posArray) {
+    vecArray.emplace_back(pos.first, pos.second);
+  }
+
+  return objectAtWidgetPos(vecArray);
 }
 
-std::vector<const void *> Z3DPickingManager::sortObjectsByDistanceToPos(glm::ivec2 pos, int radius, bool ascend)
+const void* Z3DPickingManager::objectAtWidgetPos(glm::ivec2 pos)
 {
-  std::map<glm::col4, int, colComp> col2dist;
-  const Z3DTexture *tex = m_renderTarget->getAttachment(GL_COLOR_ATTACHMENT0);
+  assert(m_devicePixelRatio >= 1);
+  pos[0] = pos[0] * m_devicePixelRatio;
+  pos[1] = pos[1] * m_devicePixelRatio;
+
+  glm::ivec3 texSize = glm::ivec3(m_renderTarget->attachment(GL_COLOR_ATTACHMENT0)->dimension());
+  pos[1] = texSize[1] - pos[1];
+  return objectOfColor(m_renderTarget->colorAtPos(pos));
+}
+
+std::vector<const void*> Z3DPickingManager::sortObjectsByDistanceToPos(const glm::ivec2& pos, int radius, bool ascend)
+{
+  std::map<glm::col4, int, Col4Compare> col2dist;
+  const Z3DTexture* tex = m_renderTarget->attachment(GL_COLOR_ATTACHMENT0);
   GLenum dataFormat = GL_BGRA;
   GLenum dataType = GL_UNSIGNED_INT_8_8_8_8_REV;
-  ZSharedPointer<glm::col4> buf(new glm::col4[tex->getBypePerPixel(dataFormat, dataType) * tex->getNumPixels() / 4], array_deleter<glm::col4>());
+  auto buf = std::make_unique<glm::col4[]>(tex->bypePerPixel(dataFormat, dataType) * tex->numPixels() / 4);
   tex->downloadTextureToBuffer(dataFormat, dataType, buf.get());
-  glm::ivec2 texSize = m_renderTarget->getSize();
+  glm::ivec2 texSize = glm::ivec2(m_renderTarget->size());
   if (radius < 0)
     radius = std::max(texSize.x, texSize.y);
-  for(int y = std::max(0, pos.y-radius); y <= std::min(texSize.y-1, pos.y+radius); ++y) {
-    for(int x = std::max(0, pos.x-radius); x <= std::min(texSize.x-1, pos.x+radius); ++x) {
-      glm::col4 col = buf.get()[(y*texSize.x) + x];
+  for (int y = std::max(0, pos.y - radius); y <= std::min(texSize.y - 1, pos.y + radius); ++y) {
+    for (int x = std::max(0, pos.x - radius); x <= std::min(texSize.x - 1, pos.x + radius); ++x) {
+      glm::col4 col = buf[(y * texSize.x) + x];
       std::swap(col.r, col.b);
       if (col2dist[col] == 0)
-        col2dist[col] = (x-pos.x)*(x-pos.x) + (y-pos.y)*(y-pos.y);
+        col2dist[col] = (x - pos.x) * (x - pos.x) + (y - pos.y) * (y - pos.y);
       else
-        col2dist[col] = std::min(col2dist[col], (x-pos.x)*(x-pos.x) + (y-pos.y)*(y-pos.y));
+        col2dist[col] = std::min(col2dist[col], (x - pos.x) * (x - pos.x) + (y - pos.y) * (y - pos.y));
     }
   }
-  std::vector<const void *> res;
+  std::vector<const void*> res;
   if (ascend) {
-    std::multimap<int, const void *> dist2obj;
+    std::multimap<int, const void*> dist2obj;
     for (std::map<glm::col4, int>::const_iterator it = col2dist.begin();
          it != col2dist.end(); ++it) {
-      const void *obj = getObjectFromColor(it->first);
+      const void* obj = objectOfColor(it->first);
       if (obj)
-        dist2obj.insert(std::pair<int,const void*>(it->second,obj));
+        dist2obj.emplace(it->second, obj);
     }
-    for (std::multimap<int, const void *>::const_iterator it = dist2obj.begin();
+    for (std::multimap<int, const void*>::const_iterator it = dist2obj.begin();
          it != dist2obj.end(); ++it) {
       res.push_back(it->second);
     }
   } else {
-    std::multimap<int, const void *, std::greater<int> > dist2obj;
+    std::multimap<int, const void*, std::greater<int>> dist2obj;
     for (std::map<glm::col4, int>::const_iterator it = col2dist.begin();
          it != col2dist.end(); ++it) {
-      const void *obj = getObjectFromColor(it->first);
+      const void* obj = objectOfColor(it->first);
       if (obj)
-        dist2obj.insert(std::pair<int,const void*>(it->second,obj));
+        dist2obj.emplace(it->second, obj);
     }
-    for (std::multimap<int, const void *>::const_iterator it = dist2obj.begin();
+    for (std::multimap<int, const void*>::const_iterator it = dist2obj.begin();
          it != dist2obj.end(); ++it) {
       res.push_back(it->second);
     }
@@ -153,43 +193,19 @@ std::vector<const void *> Z3DPickingManager::sortObjectsByDistanceToPos(glm::ive
   return res;
 }
 
-void Z3DPickingManager::bindTarget()
-{
-  if (m_renderTarget) {
-    m_renderTarget->bind();
-  }
-  else
-    LERROR() << "No RenderTarget!";
-}
-
-void Z3DPickingManager::releaseTarget()
-{
-  if (m_renderTarget)
-    m_renderTarget->release();
-  else
-    LERROR() << "No RenderTarget!";
-}
-
 void Z3DPickingManager::clearTarget()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Z3DPickingManager::setRenderTarget(Z3DRenderTarget *rt)
-{
-  if (rt->getAttachment(GL_COLOR_ATTACHMENT0)->getInternalFormat() != GL_RGBA8) {
-    LERROR() << "Render target format should be GL_RGBA8! Picking will fail.";
-    return;
-  }
-  m_renderTarget = rt;
-}
-
 void Z3DPickingManager::increaseColor()
 {
-  if (*reinterpret_cast<uint32_t*>(&m_currentColor[0]) != 0xffffffff)
-    ++(*reinterpret_cast<uint32_t*>(&m_currentColor[0]));
-  else {
-    m_currentColor = glm::col4(0,0,0,128);
-    //LERROR() << "Out of colors...";
+  uint32_t col = bit_cast<uint32_t>(m_currentColor);
+  if (col != 0xffffffff) {
+    ++col;
+    m_currentColor = bit_cast<glm::col4>(col);
+  } else {
+    m_currentColor = glm::col4(0, 0, 0, 128);
+    //LOG(ERROR) << "Out of colors...";
   }
 }

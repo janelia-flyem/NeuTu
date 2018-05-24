@@ -31,7 +31,7 @@
 #include "neutubeconfig.h"
 #include "zswcglobalfeatureanalyzer.h"
 #include "zswcobjsmodel.h"
-#include "zpunctaobjsmodel.h"
+//#include "zpunctaobjsmodel.h"
 #include "zflyemneuronpresenter.h"
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcglobalfeatureanalyzer.h"
@@ -203,9 +203,9 @@ void ZFlyEmDataFrame::addData(ZFlyEmDataBundle *data)
                                    ZFlyEmNeuronImageFactory::SIZE_BOUND_BOX);
       m_imageFactory.setDownsampleInterval(7, 7, 7);
       m_imageFactory.setSourceDimension(
-            m_dataArray[0]->getSourceDimension(NeuTube::X_AXIS),
-          m_dataArray[0]->getSourceDimension(NeuTube::Y_AXIS),
-          m_dataArray[0]->getSourceDimension(NeuTube::Z_AXIS)
+            m_dataArray[0]->getSourceDimension(neutube::X_AXIS),
+          m_dataArray[0]->getSourceDimension(neutube::Y_AXIS),
+          m_dataArray[0]->getSourceDimension(neutube::Z_AXIS)
           );
     }
   }
@@ -251,9 +251,9 @@ static size_t get_index(map<int, size_t> &bodyMap, int bodyId)
 }
 */
 
-FlyEm::ZSynapseAnnotationArray *ZFlyEmDataFrame::getSynapseAnnotation()
+flyem::ZSynapseAnnotationArray *ZFlyEmDataFrame::getSynapseAnnotation()
 {
-  FlyEm::ZSynapseAnnotationArray *annotation = NULL;
+  flyem::ZSynapseAnnotationArray *annotation = NULL;
   foreach (ZFlyEmDataBundle *data, m_dataArray) {
     annotation = data->getSynapseAnnotation();
     if (annotation != NULL) {
@@ -1161,7 +1161,7 @@ void ZFlyEmDataFrame::process()
       doc->addObject(originalTree2);
       doc->addObject(matchingSwc);
       doc->endObjectModifiedMode();
-      doc->notifyObjectModified();
+      doc->processObjectModified();
 
 
       ZWindowFactory factory;
@@ -1307,7 +1307,7 @@ void ZFlyEmDataFrame::showModel() const
         doc->addObject(*iter);
       }
       doc->endObjectModifiedMode();
-      doc->notifyObjectModified();
+      doc->processObjectModified();
 //      doc->blockSignals(false);
 //      doc->swcObjsModel()->updateModelData();
 //      doc->punctaObjsModel()->updateModelData();
@@ -1410,7 +1410,7 @@ void ZFlyEmDataFrame::showConnection() const
       }
 
       doc->endObjectModifiedMode();
-      doc->notifyObjectModified();
+      doc->processObjectModified();
 
 //      doc->blockSignals(false);
 //      doc->swcObjsModel()->updateModelData();
@@ -1922,8 +1922,8 @@ void ZFlyEmDataFrame::test()
   //FILE *fp = fopen((GET_DATA_DIR + "/flyem/TEM/matching/name.txt").c_str(), "r");
   //ZString str;
 
-  ofstream out((GET_DATA_DIR + "/flyem/TEM/matching/class_label.txt").c_str());
-  ofstream nameOut((GET_DATA_DIR + "/flyem/TEM/matching/class_name.txt").c_str());
+  ofstream out((GET_FLYEM_DATA_DIR + "/TEM/matching/class_label.txt").c_str());
+  ofstream nameOut((GET_FLYEM_DATA_DIR + "/TEM/matching/class_name.txt").c_str());
 
   QMap<string, int> classMap;
 
@@ -2140,7 +2140,7 @@ void ZFlyEmDataFrame::showNearbyNeuron(const ZFlyEmNeuron *neuron)
         }
 
         doc->endObjectModifiedMode();
-        doc->notifyObjectModified();
+        doc->processObjectModified();
 //        doc->blockSignals(false);
 
         if (doc->getSwcList().size() > 1) {
@@ -2435,13 +2435,13 @@ void ZFlyEmDataFrame::updateQualityControl()
 #ifdef _DEBUG_
   double resolution[3];
   int imageSize[3];
-  resolution[0] = m_dataArray[0]->getSwcResolution(NeuTube::X_AXIS);
-  resolution[1] = m_dataArray[0]->getSwcResolution(NeuTube::Y_AXIS);
-  resolution[2] = m_dataArray[0]->getSwcResolution(NeuTube::Z_AXIS);
+  resolution[0] = m_dataArray[0]->getSwcResolution(neutube::X_AXIS);
+  resolution[1] = m_dataArray[0]->getSwcResolution(neutube::Y_AXIS);
+  resolution[2] = m_dataArray[0]->getSwcResolution(neutube::Z_AXIS);
 
-  imageSize[0] = m_dataArray[0]->getSourceDimension(NeuTube::X_AXIS);
-  imageSize[1] = m_dataArray[0]->getSourceDimension(NeuTube::Y_AXIS);
-  imageSize[2] = m_dataArray[0]->getSourceDimension(NeuTube::Z_AXIS);
+  imageSize[0] = m_dataArray[0]->getSourceDimension(neutube::X_AXIS);
+  imageSize[1] = m_dataArray[0]->getSourceDimension(neutube::Y_AXIS);
+  imageSize[2] = m_dataArray[0]->getSourceDimension(neutube::Z_AXIS);
 
   m_qualityManager->getHotSpot().exportRavelerBookmark(
         GET_DATA_DIR + "/test.json", resolution, imageSize);
@@ -2521,10 +2521,10 @@ void ZFlyEmDataFrame::exportSideBoundaryAnalysis(
   ZFlyEmDataBundle *dataBundle = getMasterData();
   ZFlyEmNeuronArray &neuronArray = dataBundle->getNeuronArray();
 
-  FlyEm::ZSynapseAnnotationArray synapseArray;
+  flyem::ZSynapseAnnotationArray synapseArray;
   synapseArray.loadJson(synapsePath.toStdString());
 
-  FlyEm::ZSubstackRoi roi;
+  flyem::ZSubstackRoi roi;
   roi.importJsonFile(substackPath.toStdString());
 
   ZIntCuboidFaceArray faceArray = roi.getCuboidArray().getSideBorderFace();

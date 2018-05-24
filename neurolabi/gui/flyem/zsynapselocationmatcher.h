@@ -6,7 +6,7 @@
 #include "zsynapseannotationarray.h"
 #include "tz_intpair_map.h"
 
-namespace FlyEm {
+namespace flyem {
 
 class ZSynapseLocationMetric;
 
@@ -59,8 +59,8 @@ public:
   Intpair_Map* toIntPairMap() const;
 
   std::vector<WeightedIntPair> computePairwiseDistance(
-      const std::vector<FlyEm::SynapseLocation*> &loc1,
-      const std::vector<FlyEm::SynapseLocation*> &loc2,
+      const std::vector<flyem::SynapseLocation*> &loc1,
+      const std::vector<flyem::SynapseLocation*> &loc2,
       double maxDist);
 
   inline const std::vector<std::pair<int, int> >& falseMatch() {

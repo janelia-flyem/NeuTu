@@ -3,6 +3,8 @@
 #if _QT_GUI_USED_
 #include <QPixmap>
 #include <QPainter>
+#include "zpixmap.h"
+#include "zpainter.h"
 #endif
 
 #include <algorithm>
@@ -16,6 +18,11 @@
 #include "math.h"
 #include "tz_color.h"
 #include "zobject3dscanarray.h"
+#include "tz_stack_bwmorph.h"
+#include "c_stack.h"
+#include "zintcuboid.h"
+#include "zswctree.h"
+#include "zstackarray.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -61,7 +68,7 @@ ZStack* ZStackFactory::makeStack(ZStack *stack) const
   return stack;
 }
 
-ZStack* ZStackFactory::makeVirtualStack(int width, int height, int depth)
+ZStack* ZStackFactory::MakeVirtualStack(int width, int height, int depth)
 {
   if (width <= 0 || height <= 0 || depth <= 0) {
     return NULL;
@@ -70,10 +77,10 @@ ZStack* ZStackFactory::makeVirtualStack(int width, int height, int depth)
   return new ZStack(GREY, width, height, depth, 1, true);
 }
 
-ZStack* ZStackFactory::makeVirtualStack(const ZIntCuboid &box)
+ZStack* ZStackFactory::MakeVirtualStack(const ZIntCuboid &box)
 {
   ZStack *stack =
-      makeVirtualStack(box.getWidth(), box.getHeight(), box.getDepth());
+      MakeVirtualStack(box.getWidth(), box.getHeight(), box.getDepth());
   if (stack != NULL) {
     stack->setOffset(box.getFirstCorner());
   }
@@ -81,7 +88,7 @@ ZStack* ZStackFactory::makeVirtualStack(const ZIntCuboid &box)
   return stack;
 }
 
-ZStack* ZStackFactory::makeOneStack(
+ZStack* ZStackFactory::MakeOneStack(
     int width, int height, int depth, int nchannel)
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, nchannel);
@@ -90,7 +97,7 @@ ZStack* ZStackFactory::makeOneStack(
   return stack;
 }
 
-ZStack* ZStackFactory::makeZeroStack(
+ZStack* ZStackFactory::MakeZeroStack(
     int width, int height, int depth, int nchannel)
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, nchannel);
@@ -99,7 +106,7 @@ ZStack* ZStackFactory::makeZeroStack(
   return stack;
 }
 
-ZStack* ZStackFactory::makeZeroStack(
+ZStack* ZStackFactory::MakeZeroStack(
     int kind, int width, int height, int depth, int nchannel)
 {
   ZStack *stack = new ZStack(kind, width, height, depth, nchannel);
@@ -118,7 +125,7 @@ ZStack* ZStackFactory::makeSlice(const ZStack &stack, int z)
     out = new ZStack;
     out->consume(C_Stack::clone(&sliceView));
   } else if (stack.channelNumber() > 1) {
-    out = makeZeroStack(stack.kind(), stack.width(), stack.height(), 1,
+    out = MakeZeroStack(stack.kind(), stack.width(), stack.height(), 1,
                         stack.channelNumber());
     for (int c = 0; c < stack.channelNumber(); ++c) {
       Stack sliceView = C_Stack::sliceView(stack.data(), slice, c);
@@ -133,19 +140,19 @@ ZStack* ZStackFactory::makeSlice(const ZStack &stack, int z)
   return out;
 }
 
-ZStack* ZStackFactory::makeZeroStack(const ZIntCuboid box, int nchannel)
+ZStack* ZStackFactory::MakeZeroStack(const ZIntCuboid box, int nchannel)
 {
-  ZStack *stack = makeZeroStack(
+  ZStack *stack = MakeZeroStack(
         box.getWidth(), box.getHeight(), box.getDepth(), nchannel);
   stack->setOffset(box.getFirstCorner());
 
   return stack;
 }
 
-ZStack* ZStackFactory::makeZeroStack(
+ZStack* ZStackFactory::MakeZeroStack(
     int kind, const ZIntCuboid box, int nchannel)
 {
-  ZStack *stack = makeZeroStack(
+  ZStack *stack = MakeZeroStack(
         kind, box.getWidth(), box.getHeight(), box.getDepth(), nchannel);
   stack->setOffset(box.getFirstCorner());
 
@@ -164,7 +171,7 @@ ZStack* ZStackFactory::makeIndexStack(int width, int height, int depth)
   return stack;
 }
 
-ZStack* ZStackFactory::makeUniformStack(int width, int height, int depth, int v)
+ZStack* ZStackFactory::MakeUniformStack(int width, int height, int depth, int v)
 {
   ZStack *stack = new ZStack(GREY, width, height, depth, 1);
   size_t voxelNumber = stack->getVoxelNumber();
@@ -216,11 +223,11 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
   //delete painter;
 #endif
 
-  stack = new ZStack(GREY, pix->width(), pix->height(), 1, 1);
+  Stack *stackData = C_Stack::make(GREY, pix->width(), pix->height(), 1);
   size_t offset = 0;
-  int height = stack->height();
-  int width = stack->width();
-  uint8_t *array = stack->array8();
+  int height = C_Stack::height(stackData);
+  int width = C_Stack::width(stackData);
+  uint8_t *array = C_Stack::array8(stackData);
 #ifdef _DEBUG_2
   tic();
 #endif
@@ -231,6 +238,17 @@ ZStack* ZStackFactory::makePolygonPicture(const ZStroke2d &curve)
       //array[offset++] = qRed(image.pixel(x, y));
     }
   }
+
+  stack = new ZStack;
+  stack->consume(stackData);
+  /*
+  stack = new ZStack(GREY, pix->width(), pix->height(), 1, 1);
+
+  Stack_Fill_2dhole(stackData, stack->c_stack(), 255, 1);
+
+  C_Stack::kill(stackData);
+  */
+
 #ifdef _DEBUG_2
   ptoc();
 #endif
@@ -266,7 +284,7 @@ ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
   ZStack *stack = NULL;
 
   if (ptArray.size() < 1000) {
-    stack = makeZeroStack(FLOAT64, stackBox);
+    stack = MakeZeroStack(FLOAT64, stackBox);
     ZPointArray tmpPtArray = ptArray;
     std::sort(tmpPtArray.begin(), tmpPtArray.end(), ZPoint::ZCompare());
 
@@ -327,13 +345,13 @@ ZStack* ZStackFactory::makeDensityMap(const ZPointArray &ptArray, double sigma)
       }
     }
   } else {
-    stack = makeZeroStack(GREY, stackBox);
+    stack = MakeZeroStack(GREY, stackBox);
     Filter_3d *filter = Gaussian_Filter_3d(sigma, sigma, sigma);
 
     for (ZPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
       const ZPoint &pt = *iter;
-      stack->setIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0, 1);
+      stack->addIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0, 1);
     }
 
     Stack *stack2 = Filter_Stack(stack->c_stack(), filter);
@@ -367,7 +385,7 @@ ZStack* ZStackFactory::makeDensityMap(
   ZStack *stack = NULL;
 
   if (ptArray.size() < 1000) {
-    stack = makeZeroStack(FLOAT64, stackBox);
+    stack = MakeZeroStack(FLOAT64, stackBox);
     ZWeightedPointArray tmpPtArray = ptArray;
     std::sort(tmpPtArray.begin(), tmpPtArray.end(), ZPoint::ZCompare());
 
@@ -428,12 +446,12 @@ ZStack* ZStackFactory::makeDensityMap(
       }
     }
   } else {
-    stack = makeZeroStack(GREY, stackBox);
+    stack = MakeZeroStack(GREY, stackBox);
 
     for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
          iter != ptArray.end(); ++iter) {
       const ZWeightedPoint &pt = *iter;
-      stack->setIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0,
+      stack->addIntValue(iround(pt.x()), iround(pt.y()), iround(pt.z()), 0,
                          iround(pt.weight()));
     }
 
@@ -468,7 +486,7 @@ ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
   ZPoint pt2 = boundBox.lastCorner();
 
   ZIntCuboid stackBox(pt1.toIntPoint(), pt2.toIntPoint());
-  ZStack *stack = makeZeroStack(GREY, stackBox);
+  ZStack *stack = MakeZeroStack(GREY, stackBox);
 
   for (ZWeightedPointArray::const_iterator iter = ptArray.begin();
        iter != ptArray.end(); ++iter) {
@@ -492,7 +510,7 @@ ZStack* ZStackFactory::makeSeedStack(const ZWeightedPointArray &ptArray)
 
 ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, double h, double s)
 {
-  ZStack *colorStack = makeZeroStack(COLOR, stack.getBoundBox(), 1);
+  ZStack *colorStack = MakeZeroStack(COLOR, stack.getBoundBox(), 1);
 
   Rgb_Color color;
 
@@ -517,7 +535,7 @@ ZStack* ZStackFactory::MakeColorStack(
     const ZStack &stack, const ZStack &mask, double h, double s)
 {
   ZIntCuboid boundBox = stack.getBoundBox();
-  ZStack *colorStack = makeZeroStack(COLOR, boundBox, 1);
+  ZStack *colorStack = MakeZeroStack(COLOR, boundBox, 1);
 
   Rgb_Color color;
 
@@ -562,7 +580,7 @@ ZStack* ZStackFactory::MakeColorStack(
 ZStack* ZStackFactory::MakeColorStack(const ZStack &stack, const ZStack &labelField)
 {
   ZIntCuboid boundBox = stack.getBoundBox();
-  ZStack *colorStack = makeZeroStack(COLOR, boundBox, 1);
+  ZStack *colorStack = MakeZeroStack(COLOR, boundBox, 1);
 
   Rgb_Color color;
 
@@ -636,18 +654,18 @@ ZStack* ZStackFactory::MakeRgbStack(
     return NULL;
   }
 
-  ZStack *output = ZStackFactory::makeZeroStack(COLOR, boundBox, 1);
+  ZStack *output = ZStackFactory::MakeZeroStack(COLOR, boundBox, 1);
 
   ZStack* channels[3];
 
   //Paste all stacks into the bound box
-  channels[0] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  channels[0] = ZStackFactory::MakeZeroStack(GREY, boundBox, 1);
   redStack.paste(channels[0]);
 
-  channels[1] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  channels[1] = ZStackFactory::MakeZeroStack(GREY, boundBox, 1);
   greenStack.paste(channels[1]);
 
-  channels[2] = ZStackFactory::makeZeroStack(GREY, boundBox, 1);
+  channels[2] = ZStackFactory::MakeZeroStack(GREY, boundBox, 1);
   blueStack.paste(channels[2]);
 
   size_t voxelNumber = output->getVoxelNumber();
@@ -663,17 +681,38 @@ ZStack* ZStackFactory::MakeRgbStack(
   return output;
 }
 
+ZStack* ZStackFactory::CompositeForeground(const ZStackArray &stackArray)
+{
+  ZStack *stack = NULL;
+
+  if (!stackArray.empty()) {
+    const ZStackPtr &firstStack = stackArray.front();
+
+    ZIntCuboid boundBox = stackArray.getBoundBox();
+    stack = ZStackFactory::MakeZeroStack(
+          firstStack->kind(), boundBox, firstStack->channelNumber());
+
+    for (const ZStackPtr &substack : stackArray) {
+      substack->paste(stack, 0);
+    }
+  }
+
+  return stack;
+}
+
 ZStack* ZStackFactory::CompositeForeground(
     const ZStack &stack1, const ZStack &stack2)
 {
-  if (stack1.kind() != stack2.kind()) {
+  if (stack1.kind() != stack2.kind() ||
+      stack1.channelNumber() != stack2.channelNumber()) {
     return NULL;
   }
 
   ZIntCuboid boundBox = stack1.getBoundBox();
   boundBox.join(stack2.getBoundBox());
 
-  ZStack *stack = ZStackFactory::makeZeroStack(stack1.kind(), boundBox, 1);
+  ZStack *stack = ZStackFactory::MakeZeroStack(
+        stack1.kind(), boundBox, stack1.channelNumber());
   stack1.paste(stack, 0);
   stack2.paste(stack, 0);
 
@@ -686,7 +725,7 @@ ZStack* ZStackFactory::MakeBinaryStack(
   ZStack *stack = NULL;
   if (!objArray.empty()) {
     ZIntCuboid boundBox = objArray.getBoundBox();
-    stack = makeZeroStack(GREY, boundBox);
+    stack = MakeZeroStack(GREY, boundBox);
 
     int offset[3];
     offset[0] = -stack->getOffset().getX();
@@ -695,13 +734,23 @@ ZStack* ZStackFactory::MakeBinaryStack(
 
     for (ZObject3dScanArray::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
+      const ZObject3dScan &obj = **iter;
       obj.drawStack(stack->c_stack(), v, offset);
     }
   }
 
   return stack;
 }
+
+/*
+ZStack* ZStackFactory::MakeLabelStack(ZSwcTree *obj, int v)
+{
+  ZIntCuboid box = obj->getBoundBox().toIntCuboid();
+
+  return NULL;
+//  ZStack *stack = MakeStack()
+}
+*/
 
 ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 {
@@ -710,7 +759,7 @@ ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 #if defined(_QT_GUI_USED_)
   if (!objArray.empty()) {
     ZIntCuboid boundBox = objArray.getBoundBox();
-    stack = makeZeroStack(GREY, boundBox, 3);
+    stack = MakeZeroStack(GREY, boundBox, 3);
 
     int offset[3];
     offset[0] = -stack->getOffset().getX();
@@ -719,7 +768,7 @@ ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 
     for (ZObject3dScanArray::const_iterator iter = objArray.begin();
          iter != objArray.end(); ++iter) {
-      const ZObject3dScan &obj = *iter;
+      const ZObject3dScan &obj = **iter;
       obj.drawStack(stack->c_stack(0), obj.getColor().red(), offset);
       obj.drawStack(stack->c_stack(1), obj.getColor().green(), offset);
       obj.drawStack(stack->c_stack(2), obj.getColor().blue(), offset);
@@ -729,3 +778,112 @@ ZStack* ZStackFactory::MakeColorStack(const ZObject3dScanArray &objArray)
 
   return stack;
 }
+
+ZStack* ZStackFactory::MakeStrokeMask(const std::vector<ZStroke2d *> strokeList)
+{
+  ZStack *stack = NULL;
+
+#if _QT_GUI_USED_
+  ZIntCuboid box;
+  for (ZStroke2d *stroke : strokeList) {
+    ZIntCuboid subbox;
+    stroke->boundBox(&subbox);
+    box.join(subbox);
+  }
+  if (!box.isEmpty()) {
+    box.expandX(1);
+    box.expandY(1);
+    stack = MakeZeroStack(GREY, box);
+  }
+  for (ZStroke2d *stroke : strokeList) {
+    stroke->labelStack(stack);
+  }
+#endif
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeStrokeProjMask(const std::vector<ZStroke2d *> strokeList)
+{
+  ZStack *stack = NULL;
+
+#if _QT_GUI_USED_
+  ZIntCuboid box;
+  for (ZStroke2d *stroke : strokeList) {
+    ZIntCuboid subbox;
+    stroke->boundBox(&subbox);
+    box.join(subbox);
+  }
+  if (!box.isEmpty()) {
+    box.setFirstZ(0);
+    box.setLastZ(0);
+    box.expandX(1);
+    box.expandY(1);
+    stack = MakeZeroStack(GREY, box);
+  }
+  for (ZStroke2d *stroke : strokeList) {
+    stroke->labelProjStack(stack);
+  }
+#endif
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeStrokeProjMask(
+    const std::vector<ZStroke2d *> strokeList, int value)
+{
+  ZStack *stack = NULL;
+
+#if _QT_GUI_USED_
+  ZIntCuboid box;
+  for (ZStroke2d *stroke : strokeList) {
+    ZIntCuboid subbox;
+    stroke->boundBox(&subbox);
+    box.join(subbox);
+  }
+  if (!box.isEmpty()) {
+    box.setFirstZ(0);
+    box.setLastZ(0);
+    box.expandX(1);
+    box.expandY(1);
+    stack = MakeZeroStack(GREY, box);
+  }
+  for (ZStroke2d *stroke : strokeList) {
+    stroke->labelProjStack(stack, value);
+  }
+#endif
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeStrokeMask(
+    const std::vector<ZStroke2d *> strokeList, int z)
+{
+  ZStack *stack = NULL;
+
+#if _QT_GUI_USED_
+  ZIntCuboid box;
+  for (ZStroke2d *stroke : strokeList) {
+    ZIntCuboid subbox;
+    if (stroke->getZ() == z || stroke->isPenetrating()) {
+      stroke->boundBox(&subbox);
+      box.join(subbox);
+    }
+  }
+  if (!box.isEmpty()) {
+    box.setFirstZ(z);
+    box.setLastZ(z);
+    box.expandX(1);
+    box.expandY(1);
+    stack = MakeZeroStack(GREY, box);
+  }
+  for (ZStroke2d *stroke : strokeList) {
+    if (stroke->getZ() == z || stroke->isPenetrating()) {
+      stroke->labelStack(stack);
+    }
+  }
+#endif
+
+  return stack;
+}
+

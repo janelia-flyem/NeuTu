@@ -78,7 +78,7 @@ double Biocytin::ZStackProjector::colorToValueH(
 }
 
 ZStack* Biocytin::ZStackProjector::project(
-    const ZStack *stack, NeuTube::EImageBackground bg,
+    const ZStack *stack, neutube::EImageBackground bg,
     bool includingDepth, int slabIndex)
 {
 #ifdef _DEBUG_
@@ -91,7 +91,7 @@ ZStack* Biocytin::ZStackProjector::project(
   ZStack *proj = NULL;
 
   if (m_usingExisted) {
-    std::string resultPath = getDefaultResultFilePath(
+    std::string resultPath = GetDefaultResultFilePath(
           stack->sourcePath(), range.first, range.second);
     if (fexist(resultPath.c_str())) {
       ZStackFile stackFile;
@@ -111,7 +111,7 @@ ZStack* Biocytin::ZStackProjector::project(
                           stack->channelNumber());
         for (int channel = 0; channel  < stack->channelNumber(); ++channel) {
           Image *projBuffer = NULL;
-          if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+          if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
             projBuffer = C_Stack::makeMinProjZ(
                   stack->c_stack(channel), range.first, range.second);
           } else {
@@ -119,7 +119,7 @@ ZStack* Biocytin::ZStackProjector::project(
                   stack->c_stack(channel), range.first, range.second);
           }
 
-          proj->loadValue(projBuffer->array,
+          proj->copyValueFrom(projBuffer->array,
                           proj->getByteNumber(ZStack::SINGLE_PLANE), channel);
           Kill_Image(projBuffer);
         }
@@ -199,7 +199,7 @@ ZStack* Biocytin::ZStackProjector::project(
 
                 double v = colorToValueH(
                       red, green, blue, regularizer);
-                if (bg == NeuTube::IMAGE_BACKGROUND_BRIGHT) {
+                if (bg == neutube::IMAGE_BACKGROUND_BRIGHT) {
                   if (projMat->array[projIndex] > v) {
                     projMat->array[projIndex] = v;
                     m_depthArray[projIndex] = z;
@@ -253,13 +253,13 @@ ZStack* Biocytin::ZStackProjector::project(
 
           if (projMat->dim[0] > stack->width() ||
               projMat->dim[1] > stack->height()) {
-            Stack *proj2 = Crop_Stack(
+            Stack *proj2 = C_Stack::crop(
                   projData, (projMat->dim[0] - stack->width()) / 2,
                 (projMat->dim[1] - stack->height()) / 2, 0,
                 stack->width(), stack->height(), 1, NULL);
             C_Stack::kill(projData);
             projData = proj2;
-            Stack *depth2 = Crop_Stack(
+            Stack *depth2 = C_Stack::crop(
                   depthImage, (projMat->dim[0] - stack->width()) / 2,
                 (projMat->dim[1] - stack->height()) / 2, 0,
                 stack->width(), stack->height(), 1, NULL);
@@ -291,7 +291,7 @@ ZStack* Biocytin::ZStackProjector::project(
 
   if (proj != NULL) {
       proj->setOffset(stack->getOffset().getX(), stack->getOffset().getY(), 0);
-      proj->setSource(getDefaultResultFilePath(stack->sourcePath(),
+      proj->setSource(GetDefaultResultFilePath(stack->sourcePath(),
                                                range.first, range.second));
   }
   endProgress();
@@ -351,7 +351,7 @@ FMatrix* Biocytin::ZStackProjector::smoothStackGaussian(Stack *stack)
   return smoothed;
 }
 
-std::string Biocytin::ZStackProjector::getDefaultResultFilePath(
+std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
     const std::string &basePath, int minZ, int maxZ)
 {
   ZString str = ZString::removeFileExt(basePath) +
@@ -361,6 +361,19 @@ std::string Biocytin::ZStackProjector::getDefaultResultFilePath(
   str.appendNumber(minZ);
   str += "_";
   str.appendNumber(maxZ);
+  str += ".tif";
+
+  return str;
+}
+
+std::string Biocytin::ZStackProjector::GetDefaultResultFilePath(
+    const std::string &basePath, int slabCount)
+{
+  ZString str = ZString::removeFileExt(basePath) +
+      ZBiocytinFileNameParser::getSuffix(ZBiocytinFileNameParser::PROJECTION);
+
+  str += "_s";
+  str.appendNumber(slabCount);
   str += ".tif";
 
   return str;
@@ -395,4 +408,41 @@ std::pair<int, int> Biocytin::ZStackProjector::getSlabRange(
   }
 
   return range;
+}
+
+ZStack* Biocytin::ZStackProjector::project(
+    const ZStack *stack, neutube::EImageBackground bg)
+{
+  if (stack == NULL) {
+    return NULL;
+  }
+
+  ZStack *out = NULL;
+
+  if (m_usingExisted) {
+    std::string filePath =
+        GetDefaultResultFilePath(stack->sourcePath(), m_slabCount);
+    if (fexist(filePath.c_str())) {
+      out = new ZStack();
+      out->load(filePath);
+    }
+  }
+
+  if (out == NULL) {
+    out = new ZStack(
+          stack->kind(), stack->width(), stack->height(),
+          getSlabNumber(), stack->channelNumber());
+    for (int slabIndex = 0; slabIndex < m_slabCount; ++slabIndex) {
+      ZStack *proj = project(stack, bg, false, slabIndex);
+      if (proj != NULL) {
+        for (int c = 0; c < proj->channelNumber(); ++c) {
+          C_Stack::copyPlaneValue(
+                out->data(), proj->c_stack(c)->array, c, slabIndex);
+        }
+        delete proj;
+      }
+    }
+  }
+
+  return out;
 }

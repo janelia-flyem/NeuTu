@@ -1,3 +1,7 @@
+if (MSVC)
+  SET (AWK ${CMAKE_CURRENT_LIST_DIR}/../../msvc/awk.exe)
+  message(${AWK})
+else (MSVC)
 FIND_PROGRAM (AWK NAMES awk gawk PATH /usr/bin /bin /local/bin /usr/local/bin)
 MARK_AS_ADVANCED(FORCE AWK)
 if (NOT AWK)
@@ -5,6 +9,7 @@ if (NOT AWK)
   return()
 endif (NOT AWK)
 SET (AWK_FOUND TRUE)
+endif (MSVC)
 
 # Syntax: 
 #   add_p_file(<outputlist> <p file>)

@@ -5,6 +5,6 @@ function assert_succ {
     then
 	echo ':( Mission failed.'
 	echo 'a)<'
-	exit 1;
+	exit 1
     fi
 }

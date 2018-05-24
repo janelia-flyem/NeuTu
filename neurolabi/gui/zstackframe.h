@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QUrl>
 #include <QStatusBar>
+
 #include "tz_image_lib_defs.h"
 #include "plotsettings.h"
 #include "zinteractivecontext.h"
@@ -22,7 +23,6 @@
 #include "zreportable.h"
 #include "neutube.h"
 #include "ztilemanager.h"
-#include "z3dwindow.h"
 #include "zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "zmessageprocessor.h"
@@ -44,6 +44,7 @@ class MainWindow;
 class QMdiArea;
 class ZMessage;
 class ZMessageManager;
+class QTimer;
 
 class ZStackFrame : public QMdiSubWindow, public ZReportable
 {
@@ -58,7 +59,7 @@ public:
 
 public:
   static ZStackFrame* Make(QMdiArea *parent);
-  static ZStackFrame* Make(QMdiArea *parent, NeuTube::Document::ETag docTag);
+  static ZStackFrame* Make(QMdiArea *parent, neutube::Document::ETag docTag);
   static ZStackFrame* Make(QMdiArea *parent, ZSharedPointer<ZStackDoc> doc);
 
   // A frame has three parts: view, document and presenter
@@ -80,7 +81,7 @@ public:
   inline bool hasProject() const { return (m_traceProject != NULL); }
   bool isReadyToSave() const;
   static inline QString defaultTraceProjectFile() { return "project.xml"; }
-  void addDocData(const ZStackDocReader &reader);
+  void addDocData(ZStackDocReader &reader);
 
   inline virtual std::string name() { return "base"; }
 
@@ -120,17 +121,16 @@ public:
   //void exportChainConnection(const QString &filePath);
   //void exportChainConnectionFeat(const QString &filePath);
   void exportObjectMask(const QString &filePath);
-  void exportObjectMask(NeuTube::EColor color, const QString &filePath);
-  ZStack* getObjectMask();
-  ZStack* getObjectMask(NeuTube::EColor color);
+  void exportObjectMask(neutube::EColor color, const QString &filePath);
+//  ZStack* getObjectMask();
+//  ZStack* getObjectMask(neutube::EColor color);
   ZStack* getStrokeMask();
-  ZStack* getStrokeMask(NeuTube::EColor color);
+  ZStack* getStrokeMask(neutube::EColor color);
   ZTileManager* getTileManager() {return m_tile;}
   void setTileManager(ZTileManager *p) {m_tile = p; }
 
   void saveStack(const QString &filePath);
 
-  void showSetting();
   void showManageObjsDialog();
 
   double displayGreyMin(int c=0) const;
@@ -156,7 +156,7 @@ public:
   void hideObject();
   void showObject();
 
-  Z3DWindow* open3DWindow(Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
+//  Z3DWindow* open3DWindow(Z3DWindow::EInitMode mode = Z3DWindow::INIT_NORMAL);
   /*!
    * \brief Get the main window ancestor of the frame.
    */
@@ -195,7 +195,8 @@ public: //frame parameters
   double zReconstructScale();
   char unit();
   int traceEffort();
-  double traceMinScore();
+  double autoTraceMinScore();
+  double manualTraceMinScore();
   bool traceMasked();
   double reconstructDistThre();
   bool crossoverTest();
@@ -223,7 +224,7 @@ public:
   void pushEnhanceLineCommand();
 
   void executeSwcRescaleCommand(const ZRescaleSwcSetting &setting);
-  void executeAutoTraceCommand(int traceLevel, bool doResample);
+  void executeAutoTraceCommand(int traceLevel, bool doResample, int c);
   void executeAutoTraceAxonCommand();
   void executeWatershedCommand();
 
@@ -242,7 +243,7 @@ public:
   void setParentFrame(ZStackFrame *frame);
   inline ZStackFrame* getParentFrame() { return m_parentFrame; }
 
-  void setSizeHintOption(NeuTube::ESizeHintOption option);
+  void setSizeHintOption(neutube::ESizeHintOption option);
   /*!
    * Remove all existing decorations if isExclusive is true.
    */
@@ -259,13 +260,17 @@ public:
   void clearData();
 
   void createMainWindowActions();
+  virtual void processKeyEvent(QKeyEvent *event);
+
+  Z3DWindow* viewSegmentationMesh();
+
+public:
+  virtual void stressTest();
 
 public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");
   void changeWindowTitle(bool clean);
-  //void detach3DWindow();
-//  void close3DWindow();
   void setupDisplay();
   void zoomToSelectedSwcNodes();
   void notifyUser(const QString &message);
@@ -273,9 +278,11 @@ public slots:
   void notifyViewChanged(const ZStackViewParam &param);
   void setView(const ZStackViewParam &param);
   void closeAllChildFrame();
+  void showSetting();
 
 private slots:
   void updateSwcExtensionHint();
+  void testSlot();
 
 signals:
   void infoChanged();
@@ -286,6 +293,7 @@ signals:
   void viewChanged(ZStackViewParam param);
   void splitStarted();
   void keyEventEmitted(QKeyEvent *event);
+  void stackBoundBoxChanged();
 
 protected: // Events
   virtual void keyPressEvent(QKeyEvent *event);
@@ -303,15 +311,10 @@ protected:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
 
-  typedef bool FConnectAction(
-      const QObject*, const char *,
-      const QObject *, const char *);
-
-  static bool connectFunc(const QObject* obj1, const char *signal,
-                          const QObject *obj2, const char *slot);
-
-  void updateDocSignalSlot(FConnectAction connectAction);
-  void updateSignalSlot(FConnectAction connectAction);
+  template <typename T>
+  void updateDocSignalSlot(T connectAction);
+  template <typename T>
+  void updateSignalSlot(T connectAction);
 
 
 private:
@@ -320,6 +323,7 @@ private:
 
 protected:
   static void BaseConstruct(ZStackFrame *frame, ZSharedPointer<ZStackDoc> doc);
+  static void BaseConstruct(ZStackFrame *frame, ZStackDoc *doc);
 
 protected:
   SettingDialog *m_settingDlg;
@@ -338,6 +342,8 @@ protected:
   bool m_isClosing;
 
   //Z3DWindow *m_3dWindow;
+
+  QTimer *m_testTimer;
 
   bool m_isWidgetReady;
 

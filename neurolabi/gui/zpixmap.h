@@ -9,6 +9,8 @@
 #include "zsttransform.h"
 #include "neutube.h"
 
+class ZStack;
+
 class ZPixmap : public QPixmap
 {
 public:
@@ -18,8 +20,13 @@ public:
   ~ZPixmap();
 
   const ZStTransform& getTransform() const;
+  void setTransform(const ZStTransform &transform);
   void setScale(double sx, double sy);
   void setOffset(double dx, double dy);
+
+  const ZStTransform& getProjTransform() const;
+  ZStTransform& getProjTransform();
+  void updateProjTransform(const QRect &viewPort, const QRectF &newProjRegion);
 
   void cleanUp();
   void clean(const QRect &rect);
@@ -33,14 +40,29 @@ public:
     m_isVisible = visible;
   }
 
-  QRectF getActiveArea(NeuTube::ECoordinateSystem coord) const;
+  QRectF getActiveArea(neutube::ECoordinateSystem coord) const;
   bool isFullyActive() const;
+  void matchProj();
+
+  /*!
+   * \brief Convert the foreground of the pixmap to a stack without transformation
+   * \param maskValue Resulted value.
+   */
+  ZStack* toPlainStack(uint8_t maskValue);
+
+  /*!
+   * \brief Convert pixels with a certain color in the pixmap to a stack without transformation
+   * \param color Source color.
+   * \param maskValue Resulted value.
+   */
+  ZStack* toPlainStack(neutube::EColor color, uint8_t maskValue);
 
 private:
   void cleanFunc(QPixmap *pixmap);
 
 private:
-  ZStTransform m_transform; //Transformation from world coordinates to image coordinates
+  ZStTransform m_objTransform; //Transform from world coordinates to image coordinates
+  ZStTransform m_projTransform; //Transform from image coordinates to screen coordinates
   QRectF m_activeArea; //Active area in the world coordiantes
   bool m_isVisible;
 

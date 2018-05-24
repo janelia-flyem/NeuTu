@@ -26,8 +26,14 @@ class ZPunctum : public ZStackBall
 public:
   ZPunctum();
   ZPunctum(double x, double y, double z, double r);
+  ZPunctum(const ZPoint &center, double r);
+  ZPunctum(const ZIntPoint &center, double r);
 //  ZPunctum(const ZIntPoint &center, double r);
   virtual ~ZPunctum();
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_PUNCTUM;
+  }
 
   virtual const std::string& className() const;
 
@@ -64,19 +70,7 @@ public:
   inline const QString& property3() const {return m_property3;}
   inline const QColor& color() const {return m_color;}
   inline double score() const { return m_score; }
-//  inline void setX(double n) {  m_x = n; }
-//  inline void setY(double n) {  m_y = n; }
-//  inline void setZ(double n) {  m_z = n; }
-//  inline void setCenter(double x, double y, double z) {
-//    m_x = x;
-//    m_y = y;
-//    m_z = z;
-//  }
-//  inline void setCenter(const ZPoint &pt) {
-//    m_x = pt.x();
-//    m_y = pt.y();
-//    m_z = pt.z();
-//  }
+
   inline void setSDevOfIntensity(double n) {  m_sDevOfIntensity = n; }
   inline void setMaxIntensity(double n) {  m_maxIntensity = n; }
   inline void setMeanIntensity(double n) {  m_meanIntensity = n;}
@@ -96,10 +90,9 @@ public:
   ZVaa3dMarker toVaa3dMarker() const;
 
   // update radius from volSize
-  inline void updateRadius() { setRadius(Cube_Root(0.75 / M_PI * m_volSize)); }
+  void updateRadius();
   // update volSize from radius
-  inline void updateVolSize() {
-    m_volSize = M_PI * 1.333333333 * getRadius() * getRadius() * getRadius(); }
+  void updateVolSize();
   // update mass
   inline void updateMass() { m_mass = m_volSize * m_meanIntensity; }
 
@@ -116,6 +109,7 @@ public:
   //ZJsonObject toJsonObject() const;
 
 private:
+  void init(double x, double y, double z, double r);
   QColor highlightingColor(const QColor &color) const;
   QColor selectingColor(const QColor &color) const;
 

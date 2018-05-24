@@ -7,6 +7,8 @@
 #include <iostream>
 
 #include "neutube.h"
+#include "neutubeconfig.h"
+#include "flyem/zflyemmisc.h"
 
 DiagnosisDialog::DiagnosisDialog(QWidget *parent) :
   QDialog(parent),
@@ -24,31 +26,32 @@ DiagnosisDialog::~DiagnosisDialog()
   delete ui;
 }
 
+void DiagnosisDialog::LoadFile(
+    const std::string &filePath, QTextBrowser *browser)
+{
+  if (!filePath.empty()) {
+    QFile file(filePath.c_str());
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      browser->setPlainText(ZFlyEmMisc::ReadLastLines(filePath.c_str(), 1000));
+      file.close();
+    }
+  }
+}
+
 void DiagnosisDialog::loadErrorFile()
 {
-  QFile file(NeuTube::getErrorFile().c_str());
-  if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    ui->errorTextBrowser->setPlainText(QTextStream(&file).readAll());
-    file.close();
-  }
+  LoadFile(neutube::getErrorFile(), ui->errorTextBrowser);
 }
 
 void DiagnosisDialog::loadWarnFile()
 {
-  QFile file(NeuTube::getWarnFile().c_str());
-  if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    ui->warnTextBrowser->setPlainText(QTextStream(&file).readAll());
-    file.close();
-  }
+  LoadFile(neutube::getWarnFile(), ui->warnTextBrowser);
 }
 
 void DiagnosisDialog::loadInfoFile()
 {
-  QFile file(NeuTube::getInfoFile().c_str());
-  if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    ui->infoTextBrowser->setPlainText(QTextStream(&file).readAll());
-    file.close();
-  }
+  LoadFile(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE),
+           ui->infoTextBrowser);
 }
 
 void DiagnosisDialog::scrollToBottom(int index)
@@ -81,12 +84,12 @@ void DiagnosisDialog::scrollToBottom()
         ui->infoTextBrowser->verticalScrollBar()->maximum());
 }
 
-void DiagnosisDialog::setVideoCardInfo(const QString &str)
+void DiagnosisDialog::setSystemInfo(const QString &str)
 {
   ui->videoCardInfoTextEdit->setPlainText(str);
 }
 
-void DiagnosisDialog::setVideoCardInfo(const QStringList &info)
+void DiagnosisDialog::setSystemInfo(const QStringList &info)
 {
-  setVideoCardInfo(info.join("\n"));
+  setSystemInfo(info.join("\n"));
 }

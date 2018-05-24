@@ -65,6 +65,12 @@ public:
   ZIntPoint getBlockPosition(const ZIntPoint &blockIndex) const;
   ZIntCuboid getBlockBox(const ZIntPoint &blockIndex) const;
 
+  /*!
+   * \brief getGridBox
+   * \return
+   */
+  ZIntCuboid getGridBox() const;
+
   inline const ZIntPoint& getBlockSize() const { return m_blockSize; }
   inline const ZIntPoint& getGridSize() const { return m_size; }
   inline const ZIntPoint& getMinPoint() const { return m_minPoint; }

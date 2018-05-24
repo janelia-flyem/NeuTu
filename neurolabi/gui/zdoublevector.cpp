@@ -37,6 +37,17 @@ ZDoubleVector::ZDoubleVector(const std::vector<double> &array)
   copy(array.begin(), array.end(), begin());
 }
 
+ZDoubleVector::ZDoubleVector(std::initializer_list<double> init) :
+  std::vector<double>(init)
+{
+
+}
+
+double ZDoubleVector::mean() const
+{
+  return darray_mean(data(), size());
+}
+
 double ZDoubleVector::sum() const
 {
   return darray_sum(dataArray(), size());
@@ -143,19 +154,19 @@ void ZDoubleVector::exportTxtFile(
   stream.close();
 }
 
-void ZDoubleVector::print(const std::vector<std::vector<double> > &data)
+void ZDoubleVector::Print(const std::vector<std::vector<double> > &data)
 {
   for (size_t i = 0; i < data.size(); ++i) {
-    print(data[i]);
+    Print(data[i]);
   }
 }
 
 void ZDoubleVector::print() const
 {
-  print(*this);
+  Print(*this);
 }
 
-void ZDoubleVector::print(const std::vector<double> &vec)
+void ZDoubleVector::Print(const std::vector<double> &vec)
 {
   for (size_t j = 0; j < vec.size(); j++) {
     cout << vec[j] << " ";

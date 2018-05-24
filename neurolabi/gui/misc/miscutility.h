@@ -5,17 +5,22 @@
 #include <string>
 #include <set>
 #include <algorithm>
+#include <iostream>
 
 #include "zhistogram.h"
-#include "zstack.hxx"
 #include "zobject3dscan.h"
-#include "neutube.h"
+#include "neutube_def.h"
 #include "zintcuboidarray.h"
 #include "zpointarray.h"
 #include "ztree.h"
+#include "zarray.h"
 
 class ZGraph;
 class ZIntPoint;
+class ZSwcTree;
+class ZClosedCurve;
+class ZIntCuboid;
+class ZCuboid;
 
 namespace misc {
 
@@ -27,7 +32,7 @@ void paintRadialHistogram2D(const std::vector<ZHistogram> hist,
 /*!
  * \brief Y normal of a binary stack
  */
-Stack* computeNormal(const Stack *stack, NeuTube::EAxis axis);
+Stack* computeNormal(const Stack *stack, neutube::EAxis axis);
 
 int computeRavelerHeight(const ZIntCuboidArray &blockArray, int margin);
 
@@ -38,6 +43,14 @@ ZGraph* makeCoOccurGraph(const Stack *stack, int nnbr);
 ZIntPoint getDsIntvFor3DVolume(const ZIntCuboid &box);
 
 ZIntPoint getDsIntvFor3DVolume(double dsRatio);
+int getIsoDsIntvFor3DVolume(double dsRatio, bool powed);
+int getIsoDsIntvFor3DVolume(
+    const ZIntCuboid &box, size_t maxVolume, bool powed);
+
+int GetZoomScale(int zoom);
+//int GetZoomLevel(int maxLevel, int width, int height, int zoom);
+
+double GetExpansionScale(size_t currentVol, size_t maxVol);
 
 /*!
  * \brief A function for computing confidence
@@ -49,6 +62,20 @@ double computeConfidence(double v, double median, double p95);
 
 ZTree<int> *buildSegmentationTree(const Stack *stack);
 
+ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
+
+ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
+ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
+
+ZIntCuboid GetBoundBox(const ZArray *array);
+
+enum ESampleStackOption {
+  SAMPLE_STACK_NN, SAMPLE_STACK_AVERAGE, SAMPLE_STACK_UNIFORM
+};
+
+double SampleStack(const Stack *stack, double x, double y, double z,
+                   ESampleStackOption option);
+
 /*!
  * \brief Parse hdf5 path
  *
@@ -57,46 +84,6 @@ ZTree<int> *buildSegmentationTree(const Stack *stack);
  * \return empty array if the parsing failed
  */
 std::vector<std::string> parseHdf5Path(const std::string &path);
-
-template<typename T>
-std::set<T> intersect(const std::set<T> &s1, const std::set<T> &s2);
-
-template<typename T>
-std::set<T> setdiff(const std::set<T> &s1, const std::set<T> &s2);
-}
-
-// generic solution
-template <class T>
-int numDigits(T number)
-{
-  int digits = 0;
-  if (number < 0) digits = 1; // remove this line if '-' counts as a digit
-  while (number) {
-    number /= 10;
-    digits++;
-  }
-  return digits;
-}
-
-//template<>
-//int numDigits(int32_t x);
-
-template<typename T>
-std::set<T> misc::intersect(const std::set<T> &s1, const std::set<T> &s2)
-{
-  std::set<T> result;
-  std::set_intersection(s1.begin(), s1.end(), s2.begin(), s2.end(),
-                        std::inserter(result, result.begin()));
-  return result;
-}
-
-template<typename T>
-std::set<T> misc::setdiff(const std::set<T> &s1, const std::set<T> &s2)
-{
-  std::set<T> result;
-  std::set_difference(s1.begin(), s1.end(), s2.begin(), s2.end(),
-                      std::inserter(result, result.begin()));
-  return result;
 }
 
 //// partial-specialization optimization for 8-bit numbers

@@ -1,4 +1,5 @@
-HEADERS +=     test/zswctreetest.h \
+HEADERS += \
+    test/zswctreetest.h \
     test/zsttransformtest.h \
     test/zobject3dscantest.h \
     test/zswcpathtest.h \
@@ -45,4 +46,27 @@ HEADERS +=     test/zswctreetest.h \
     test/zflyembodymergertest.h \
     test/zstackobjectgrouptest.h \
     test/ztestheader.h \
-    test/zvoxelarraytest.h
+    test/zvoxelarraytest.h \
+    test/zdvidannotationtest.h \
+    test/zgradientmagnitudemoduletest.h \
+    test/zflyemproofdoctest.h \
+    test/zflyembodycoloroptiontest.h \
+    test/zresolutiontest.h \
+    test/zdvidroitest.h \
+    test/zflyembody3dtest.h \
+    test/zstackskeletonizertest.h \
+    test/zdvidroitest.h \
+    test/zflyembodyannotationtest.h \
+    test/zviewprojtest.h \
+    test/z3dfiltersettingtest.h \
+    test/zdvidresultservicetest.h \
+    test/zxmltest.h \
+    test/zpointtest.h \
+    test/zwatershedtest.h \
+    test/ztestall.h \
+    test/zstackobjectinfotest.h \
+    test/zglobaltest.h \
+    test/zmouseeventprocessortest.h \
+    $$PWD/zpositionmappertest.h \
+    $$PWD/zstackdochelpertest.h \
+    $$PWD/zgeometrytest.h

@@ -49,6 +49,19 @@ void ZStackObjectSelector::setSelection(ZStackObject *obj, bool selecting)
   }
 }
 
+/*
+void ZStackObjectSelector::deselectAll()
+{
+  for (std::set<const ZStackObject*>::const_iterator iter = m_selectedSet.begin();
+       iter != m_selectedSet.end(); ++iter) {
+    ZStackObject *obj = const_cast<ZStackObject*>(*iter);
+    obj->setSelected(false);
+  }
+  m_deselectedSet.insert(m_selectedSet.begin(), m_selectedSet.end());
+  m_selectedSet.clear();
+}
+*/
+
 void ZStackObjectSelector::print() const
 {
   std::cout << "Selected:" << std::endl;
@@ -66,6 +79,17 @@ void ZStackObjectSelector::print() const
     const ZStackObject *obj = *iter;
     std::cout << obj->className() << ", " << obj->getSource() << std::endl;
   }
+}
+
+void ZStackObjectSelector::deselectAll()
+{
+  for (std::set<const ZStackObject*>::const_iterator iter = m_selectedSet.begin();
+       iter != m_selectedSet.end(); ++iter) {
+    ZStackObject *obj = const_cast<ZStackObject*>(*iter);
+    obj->setSelected(false);
+  }
+  m_deselectedSet.insert(m_selectedSet.begin(), m_selectedSet.end());
+  m_selectedSet.clear();
 }
 
 /*
@@ -117,8 +141,8 @@ std::vector<ZStackObject*> ZStackObjectSelector::getDeselectedList(
   return objList;
 }
 
-std::set<ZStackObject*> ZStackObjectSelector::getSelectedSet(
-    ZStackObject::EType type)
+std::set<ZStackObject*> ZStackObjectSelector::getSelectedObjectSet(
+    ZStackObject::EType type) const
 {
   std::set<ZStackObject*> objList;
   for (std::set<const ZStackObject*>::const_iterator iter = m_selectedSet.begin();
@@ -132,8 +156,8 @@ std::set<ZStackObject*> ZStackObjectSelector::getSelectedSet(
   return objList;
 }
 
-std::set<ZStackObject*> ZStackObjectSelector::getDeselectedSet(
-    ZStackObject::EType type)
+std::set<ZStackObject*> ZStackObjectSelector::getDeselectedObjectSet(
+    ZStackObject::EType type) const
 {
   std::set<ZStackObject*> objList;
   for (std::set<const ZStackObject*>::const_iterator iter = m_deselectedSet.begin();

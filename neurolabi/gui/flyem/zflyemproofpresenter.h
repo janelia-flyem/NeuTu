@@ -1,10 +1,15 @@
 #ifndef ZFLYEMPROOFPRESENTER_H
 #define ZFLYEMPROOFPRESENTER_H
 
+#include <memory>
+
 #include "zstackpresenter.h"
+#include "dvid/zdvidsynapse.h"
 
 class QKeyEvent;
 class ZFlyEmBookmark;
+class ZFlyEmProofDoc;
+class ZFlyEmToDoDelegate;
 
 class ZFlyEmProofPresenter : public ZStackPresenter
 {
@@ -13,6 +18,7 @@ class ZFlyEmProofPresenter : public ZStackPresenter
 protected:
 //  explicit ZFlyEmProofPresenter(ZStackFrame *parent = 0);
   explicit ZFlyEmProofPresenter(QWidget *parent = 0);
+  ~ZFlyEmProofPresenter();
 
 public:
   static ZFlyEmProofPresenter* Make(QWidget *parent);
@@ -24,22 +30,32 @@ public:
   void setHighlightMode(bool hl);
   bool isSplitOn() const;
   bool highTileContrast() const;
+  bool smoothTransform() const;
 
   void setHighTileContrast(bool high);
+  void setSmoothTransform(bool on);
+  void showData(bool on);
+  bool showingData() const;
 
-  void enableSplit();
+  void enableSplit(flyem::EBodySplitMode mode);
   void disableSplit();
   void setSplitEnabled(bool s);
 
   bool processKeyPressEvent(QKeyEvent *event);
-  void processCustomOperator(const ZStackOperator &op);
+  bool processCustomOperator(
+      const ZStackOperator &op, ZInteractionEvent *e = NULL);
 
-  inline bool isSplitWindow() const {
-    return m_splitWindowMode;
+  flyem::EBodySplitMode getSplitMode() const {
+    return m_splitMode;
   }
 
-  void setSplitWindow(bool state) {
-    m_splitWindowMode = state;
+  inline bool isSplitWindow() const {
+    return m_splitMode != flyem::BODY_SPLIT_NONE;
+//    return m_splitWindowMode;
+  }
+
+  void setSplitMode(flyem::EBodySplitMode mode) {
+    m_splitMode = mode;
   }
 
   void processRectRoiUpdate(ZRect2d *rect, bool appending);
@@ -47,32 +63,122 @@ public:
   ZKeyOperationConfig* getKeyConfig();
   void configKeyMap();
 
-private:
-  void tryAddBookmarkMode();
-  void tryAddBookmarkMode(double x, double y);
-  void addActiveStrokeAsBookmark();
-  void init();
+//  void createBodyContextMenu();
+
+  ZStackDocMenuFactory* getMenuFactory();
+
+  ZFlyEmProofDoc* getCompleteDocument() const;
+
+  void createSynapseContextMenu();
+  QMenu* getSynapseContextMenu();
+
+  QMenu* getContextMenu();
+
+//  QAction* makeAction(ZActionFactory::EAction item);
+  bool connectAction(QAction *action, ZActionFactory::EAction item);
+
+  void setTodoDelegate(std::unique_ptr<ZFlyEmToDoDelegate> &&delegate);
+//  void setLabelAlpha(int alpha) {
+//    m_labelAlpha = alpha;
+//  }
+
+//  int getLabelAlpha() const {
+//    return m_labelAlpha;
+//  }
 
 signals:
   void highlightingSelected(bool);
   void selectingBodyAt(int x, int y, int z);
-  void deselectingAllBody();
+  void deselectingAllBody(bool asking);
+  void selectingBodyInRoi();
   void selectingBodyInRoi(bool appending);
   void runningSplit();
+  void runningFullSplit();
+  void runningLocalSplit();
   void goingToBody();
   void selectingBody();
-  void bookmarkAdded(ZFlyEmBookmark*);
+  void goingToPosition();
+  void goingToTBar();
+//  void bookmarkAdded(ZFlyEmBookmark*);
   void annotatingBookmark(ZFlyEmBookmark*);
+  void annotatingSynapse();
   void mergingBody();
+  void uploadingMerge();
   void goingToBodyBottom();
   void goingToBodyTop();
+  void togglingSegmentation();
+  void togglingData();
+  void highlightModeChanged();
 
 public slots:
+  void deleteSelectedSynapse();
+  void verifySelectedSynapse();
+  void unverifySelectedSynapse();
+  void linkSelectedSynapse();
+  void unlinkSelectedSynapse();
+  void repairSelectedSynapse();
+  void highlightPsd(bool on);
+  void tryAddSynapseMode(ZDvidSynapse::EKind kind);
+  void tryAddPreSynapseMode();
+  void tryAddPostSynapseMode();
+  void tryMoveSynapseMode();
+  void tryAddTodoItem();
+  void tryAddDoneItem();
+  void tryAddToSplitItem();
+  void tryAddToMergeItem();
+  void removeTodoItem();
+  void checkTodoItem();
+  void uncheckTodoItem();
+  void setTodoItemToNormal();
+  void setTodoItemToMerge();
+  void setTodoItemToSplit();
+  void selectBodyInRoi();
+  void zoomInRectRoi();
+  void refreshSegmentation();
+
+  void tryAddTodoItem(const ZIntPoint &pt);
+  void tryAddDoneItem(const ZIntPoint &pt);
+  void tryAddToMergeItem(const ZIntPoint &pt);
+  void tryAddToSplitItem(const ZIntPoint &pt);
+
+protected:
+  virtual void tryAddTodoItem(
+      int x, int y, int z, bool checked, neutube::EToDoAction action,
+      uint64_t bodyId);
+  void tryAddTodoItem(
+      const ZIntPoint &pt, bool checked, neutube::EToDoAction action,
+      uint64_t bodyId);
+  void tryAddTodoItem(
+      const ZIntPoint &pt, bool checked, neutube::EToDoAction action);
+
+private:
+//  void connectAction();
+  void tryAddBookmarkMode();
+  void tryAddBookmarkMode(double x, double y);
+  void tryAddTodoItemMode(double x, double y);
+  void addActiveStrokeAsBookmark();
+  void init();
+  void tryAddSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
+                     bool tryingLink);
+  void tryAddSynapse(const ZIntPoint &pt, bool tryingLink);
+  void tryMoveSynapse(const ZIntPoint &pt);
+  void tryTodoItemMode();
+  bool updateActiveObjectForSynapseMove();
+  bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
+  void updateActiveObjectForSynapseAdd();
+  void updateActiveObjectForSynapseAdd(const ZPoint &currentPos);
 
 private:
   bool m_isHightlightMode;
-  bool m_splitWindowMode;
+  flyem::EBodySplitMode m_splitMode;
+//  bool m_splitWindowMode;
   bool m_highTileContrast;
+  bool m_smoothTransform;
+  bool m_showingData;
+
+  std::unique_ptr<ZFlyEmToDoDelegate> m_todoDelegate;
+
+  QMenu *m_synapseContextMenu;
 
   ZKeyOperationMap m_bookmarkKeyOperationMap;
 };

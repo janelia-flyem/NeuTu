@@ -10,9 +10,22 @@
 *~
 *.pro.user*
 .DS_Store
+*.mexmaci64
+*.swp
+*.bk
+*.xcf
+*.pyc
+*.log
+TAGS
+devnull
+doc/doxfiles/
+~*
 
 !/neurolabi/lib/Mingw/*.zip
 /neurolabi/lib/*.tar
+/neurolabi/lib/msvc/*.tar
+!/neurolabi/lib/msvc/*.zip
+!/neurolabi/lib/msvc/*.tar.gz
 
 # qtcreator c project file
 /neurolabi/c/clib.*
@@ -29,11 +42,14 @@ release/
 /neurolabi/lib/genelib/src/*.c
 /neurolabi/c/config.log
 /neurolabi/lib/genelib/src/config.log
+neuTube*/
 *-build-desktop-Qt*/
 gui-build-Desktop-*/
 gui-build-Desktop*-*/
 build-gui-Desktop-*/
 build-gui-Desktop*-*/
+build-gui-*/
+build-*/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
@@ -51,6 +67,14 @@ neurolabi/lib/libxml2-2.9.1/
 neurolabi/lib/png/
 neurolabi/lib/xml/
 neurolabi/lib/Mingw/64/
+neurolabi/lib/msvc/fftw/
+neurolabi/lib/msvc/jansson*/
+neurolabi/lib/msvc/libxml2*/
+neurolabi/lib/msvc/pcre*/
+neurolabi/lib/msvc/zlib*/
+neurolabi/lib/msvc/
+neurolabi/c/lib/
+neutube_win64_*/
 
 /neurolabi/gui/gui.pro.user*
 /neurolabi/c/c_lib.creator.user*
@@ -58,6 +82,7 @@ neurolabi/lib/Mingw/64/
 /neurolabi/c/config.status
 /neurolabi/c/include/neurolabi_config.h
 /neurolabi/lib/genelib/src/config.status
+/neurolabi/c/lib/
 
 # gen file
 /neurolabi/c/tz_darray.c
@@ -156,11 +181,31 @@ neurolabi/lib/Mingw/64/
 #deploy folder
 /neuTube.app/
 /neuTube_win64/
+/neuTube_win64_mingw/
 /neuTube/
 
 # more auto-generated files
 /neurolabi/gui/neuTube_d.app/
+/neurolabi/gui/neutu_d.app/
 /neurolabi/gui/moc_*
 /neurolabi/gui/Makefile
 /neurolabi/gui/ui_*
 /neurolabi/gui/qrc_gui.cpp
+
+#service result folder
+/neurolabi/python/service/surfrecon/result/*
+
+Miniconda-latest-x86_64.sh
+glbinding-*.zip
+__glbinding-build/
+glbinding-*/
+glbinding/
+assimp-*.zip
+__assimp-build/
+assimp-*/
+assimp/
+draco-*.zip
+__draco-build/
+draco-*/
+draco/
+

@@ -19,11 +19,11 @@ if(JANSSON_STATIC_LIBRARY)
 endif(JANSSON_STATIC_LIBRARY)
 
 # additional hints
-if(MINGW)
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/Mingw/64)
-else(MINGW)
+if(MSVC)
+  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR}/../lib/msvc/jansson)
+else(MSVC)
   set(CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR}/../lib/jansson)
-endif(MINGW)
+endif(MSVC)
 
 # Include dir
 find_path(JANSSON_INCLUDE_DIR

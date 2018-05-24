@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 #if defined(_QT_GUI_USED_)
 #include <QPainter>
@@ -16,8 +17,9 @@
 #include <cstdio>
 #include "tz_geo3d_utils.h"
 #include "zintpoint.h"
+#include "geometry/zgeometry.h"
 
-const double ZPoint::m_minimalDistance = 1e-5;
+const double ZPoint::MIN_DIST = 1e-5;
 
 ZPoint::ZPoint()
 {
@@ -79,6 +81,11 @@ double ZPoint::distanceTo(double x, double y, double z) const
 double ZPoint::length() const
 {
   return Geo3d_Orgdist(m_x, m_y, m_z);
+}
+
+double ZPoint::lengthSqure() const
+{
+  return Geo3d_Orgdist_Sqr(m_x, m_y, m_z);
 }
 
 ZPoint& ZPoint::operator +=(const ZPoint &pt)
@@ -172,9 +179,19 @@ ZPoint operator + (const ZPoint &pt1, const ZIntPoint &pt2)
   return ZPoint(pt1) += pt2;
 }
 
+ZPoint operator + (const ZPoint &pt, double offset)
+{
+  return ZPoint(pt.x() + offset, pt.y() + offset, pt.z() + offset);
+}
+
 ZPoint operator - (const ZPoint &pt1, const ZPoint &pt2)
 {
   return ZPoint(pt1) -= pt2;
+}
+
+ZPoint operator - (const ZPoint &pt, double offset)
+{
+  return ZPoint(pt.x() - offset, pt.y() - offset, pt.z() - offset);
 }
 
 ZPoint operator * (const ZPoint &pt1, double scale)
@@ -237,10 +254,16 @@ ZPoint& ZPoint::operator= (const ZPoint &pt)
   return *this;
 }
 
-bool ZPoint::operator ==(const ZPoint &pt)
+bool ZPoint::operator ==(const ZPoint &pt) const
 {
   return this->x() == pt.x() && this->y() == pt.y() && this->z() == pt.z();
 }
+
+bool ZPoint::operator !=(const ZPoint &pt) const
+{
+  return this->x() != pt.x() || this->y() != pt.y() || this->z() != pt.z();
+}
+
 
 double ZPoint::dot(const ZPoint &pt) const
 {
@@ -273,12 +296,28 @@ double ZPoint::cosAngle(const ZPoint &pt) const
 
 bool ZPoint::isApproxOrigin() const
 {
-  return (length() < m_minimalDistance);
+  return (length() < MIN_DIST);
 }
 
 bool ZPoint::approxEquals(const ZPoint &pt) const
 {
-  return (distanceTo(pt) < m_minimalDistance);
+  return (distanceTo(pt) < MIN_DIST);
+}
+
+bool ZPoint::isPendicularTo(const ZPoint &pt) const
+{
+  double len1 = length();
+  double len2 = pt.length();
+
+  if (len1 < MIN_DIST || len2 < MIN_DIST) {
+    return false;
+  }
+
+  if (std::fabs(dot(pt)) < MIN_DIST * len1 * len2) {
+    return true;
+  }
+
+  return false;
 }
 
 std::string ZPoint::toString() const
@@ -312,33 +351,6 @@ ZIntPoint ZPoint::toIntPoint() const
   return ZIntPoint(iround(x()), iround(y()), iround(z()));
 }
 
-ZIntPoint& ZIntPoint::operator +=(const ZIntPoint &pt)
-{
-  m_x += pt.getX();
-  m_y += pt.getY();
-  m_z += pt.getZ();
-
-  return *this;
-}
-
-ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
-{
-  m_x -= pt.getX();
-  m_y -= pt.getY();
-  m_z -= pt.getZ();
-
-  return *this;
-}
-
-ZIntPoint& ZIntPoint::operator *=(const ZIntPoint &pt)
-{
-  m_x *= pt.getX();
-  m_y *= pt.getY();
-  m_z *= pt.getZ();
-
-  return *this;
-}
-
 void ZPoint::rotate(double theta, double psi)
 {
   Geo3d_Rotate_Coordinate(&(m_x), &(m_y), &(m_z),
@@ -370,4 +382,36 @@ bool ZPoint::operator <(const ZPoint &pt) const
   }
 
   return x() < pt.x();
+}
+
+void ZPoint::shiftSliceAxis(neutube::EAxis axis)
+{
+  zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
+}
+
+void ZPoint::shiftSliceAxisInverse(neutube::EAxis axis)
+{
+  zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+}
+
+double ZPoint::getSliceCoord(neutube::EAxis axis) const
+{
+  switch (axis) {
+  case neutube::X_AXIS:
+    return m_x;
+  case neutube::Y_AXIS:
+    return m_y;
+  case neutube::Z_AXIS:
+    return m_z;
+  case neutube::A_AXIS:
+    return 0;
+  }
+
+  return m_z;
+}
+
+std::ostream &operator<<(std::ostream &stream, const ZPoint &pt)
+{
+  stream << "(" << pt.getX() << ", " << pt.getY() << ", " << pt.getZ() << ")";
+  return stream;
 }

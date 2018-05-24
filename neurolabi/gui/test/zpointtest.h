@@ -1,0 +1,158 @@
+#ifndef ZPOINTTEST_H
+#define ZPOINTTEST_H
+
+#include "ztestheader.h"
+#include "zintpoint.h"
+#include "zpoint.h"
+
+#ifdef _USE_GTEST_
+
+TEST(ZIntPoint, Basic)
+{
+  ZIntPoint pt;
+  ASSERT_TRUE(pt.isZero());
+
+  pt.invalidate();
+  ASSERT_FALSE(pt.isValid());
+}
+
+TEST(ZPoint, Basic)
+{
+  ZPoint pt(0, 0, 0);
+  ASSERT_TRUE(pt.isApproxOrigin());
+
+  pt.setX(ZPoint::MIN_DIST * 0.5);
+  ASSERT_TRUE(pt.isApproxOrigin());
+
+  pt.setX(ZPoint::MIN_DIST * 2.0);
+  ASSERT_FALSE(pt.isApproxOrigin());
+}
+
+TEST(ZPoint, Relation)
+{
+  ZPoint pt1(1, 0, 0);
+  ZPoint pt2(0, 1, 0);
+  ASSERT_TRUE(pt1.isPendicularTo(pt2));
+  ASSERT_TRUE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0, 0, 0);
+  ASSERT_FALSE(pt1.isPendicularTo(pt2));
+  ASSERT_FALSE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0.1, 0, 0);
+  ASSERT_TRUE(pt1.isPendicularTo(pt2));
+  ASSERT_TRUE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0.1, 0.1, 0);
+  ASSERT_FALSE(pt1.isPendicularTo(pt2));
+  ASSERT_FALSE(pt2.isPendicularTo(pt1));
+}
+
+TEST(ZIntPoint, Operator)
+{
+  ZIntPoint pt1(0, 1, 2);
+  pt1 = pt1 + 1;
+  ASSERT_EQ(pt1, ZIntPoint(1, 2, 3));
+
+  pt1.invalidate();
+  ASSERT_FALSE((-pt1).isValid());
+
+  ASSERT_FALSE((pt1 + 1).isValid());
+
+  pt1 += ZIntPoint(0, 1, 2);
+  ASSERT_FALSE(pt1.isValid());
+
+  pt1.set(0, 1, 2);
+  ASSERT_TRUE(pt1.isValid());
+
+  ASSERT_FALSE((pt1 + INT_MIN).isValid());
+
+  pt1 += ZIntPoint(10, 20, 30);
+  ASSERT_EQ(pt1, ZIntPoint(10, 21, 32));
+
+
+  pt1 = ZIntPoint(1, 2, 3) + ZIntPoint(10, 20, 30);
+  ASSERT_EQ(pt1, ZIntPoint(11, 22, 33));
+
+
+  pt1.set(0, 1, 2);
+  pt1 = pt1 - 1;
+  ASSERT_EQ(pt1, ZIntPoint(-1, 0, 1));
+  ASSERT_EQ(-pt1, ZIntPoint(1, 0, -1));
+
+  pt1.invalidate();
+  ASSERT_FALSE((pt1 - 1).isValid());
+
+  pt1 -= ZIntPoint(0, 1, 2);
+  ASSERT_FALSE(pt1.isValid());
+
+  pt1.set(0, 1, 2);
+  ASSERT_TRUE(pt1.isValid());
+
+  ASSERT_FALSE((pt1 - INT_MIN).isValid());
+
+  pt1 -= ZIntPoint(10, 20, 30);
+  ASSERT_EQ(pt1, ZIntPoint(-10, -19, -28));
+
+  pt1 = ZIntPoint(1, 2, 3) - ZIntPoint(10, 20, 30);
+  ASSERT_EQ(pt1, ZIntPoint(-9, -18, -27));
+
+  pt1.set(0, 1, 2);
+  pt1 = pt1 * 2;
+  ASSERT_EQ(pt1, ZIntPoint(0, 2, 4));
+
+  pt1.invalidate();
+  ASSERT_FALSE((pt1 * 2).isValid());
+
+  pt1 *= ZIntPoint(1, 2, 3);
+  ASSERT_FALSE(pt1.isValid());
+
+  pt1.set(0, 1, 2);
+  ASSERT_TRUE(pt1.isValid());
+
+  ASSERT_FALSE((pt1 * INT_MIN).isValid());
+
+  pt1 *= ZIntPoint(10, 20, 30);
+  ASSERT_EQ(pt1, ZIntPoint(0, 20, 60));
+
+
+  pt1 = ZIntPoint(1, 2, 3) * ZIntPoint(10, 20, 30);
+  ASSERT_EQ(pt1, ZIntPoint(10, 40, 90));
+
+
+  pt1.set(0, 1, 2);
+  pt1 = pt1 / 2;
+  ASSERT_EQ(pt1, ZIntPoint(0, 0, 1));
+
+  pt1.invalidate();
+  ASSERT_FALSE((pt1 / 2).isValid());
+
+  pt1 /= ZIntPoint(1, 2, 3);
+  ASSERT_FALSE(pt1.isValid());
+
+  pt1.set(0, 1, 2);
+  ASSERT_TRUE(pt1.isValid());
+
+  ASSERT_FALSE((pt1 / INT_MIN).isValid());
+
+  pt1 /= ZIntPoint(10, 20, 30);
+  ASSERT_EQ(pt1, ZIntPoint(0, 0, 0));
+
+
+  pt1 =  ZIntPoint(10, 20, 30) / ZIntPoint(1, 2, 3);
+  ASSERT_EQ(pt1, ZIntPoint(10, 10, 10));
+
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(2, 2, 2)));
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 2, 1)));
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 1, 2)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 1, 1)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 1, 1)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 2, 0)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 1, 2)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 2, 2)));
+}
+
+#endif
+
+
+#endif // ZPOINTTEST_H

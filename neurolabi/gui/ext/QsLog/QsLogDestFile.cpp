@@ -29,7 +29,7 @@
 #include <QtGlobal>
 #include <iostream>
 
-const int QsLogging::SizeRotationStrategy::MaxBackupCount = 10;
+const int QsLogging::SizeRotationStrategy::MaxBackupCount = 100;
 
 QsLogging::RotationStrategy::~RotationStrategy()
 {
@@ -119,8 +119,10 @@ void QsLogging::SizeRotationStrategy::setBackupCount(int backups)
 }
 
 
-QsLogging::FileDestination::FileDestination(const QString& filePath, RotationStrategyPtr rotationStrategy)
-    : mRotationStrategy(rotationStrategy)
+QsLogging::FileDestination::FileDestination(
+    const QString& filePath, RotationStrategyPtr rotationStrategy,
+    Level matchingLevel)
+    : Destination(matchingLevel), mRotationStrategy(rotationStrategy)
 {
     mFile.setFileName(filePath);
     if (!mFile.open(QFile::WriteOnly | QFile::Text | mRotationStrategy->recommendedOpenModeFlag()))

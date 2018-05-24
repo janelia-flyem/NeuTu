@@ -5,6 +5,7 @@
 #include <QVector>
 
 #include "zstackobject.h"
+#include "zstackobjectselector.h"
 //#include "zpunctum.h"
 
 class ZStackBall;
@@ -23,7 +24,8 @@ public:
   void clear();
   void addPunctum(ZStackBall *p, bool ignoreNull = true);
 
-  void display(ZPainter &painter, int slice, EDisplayStyle option) const;
+  void display(ZPainter &painter, int slice, EDisplayStyle option,
+               neutube::EAxis sliceAxis) const;
 
   bool load(const std::string &filePath, double radius = 3.0);
   bool load(const ZJsonObject &obj, double radius = 3.0);
@@ -33,13 +35,15 @@ public:
 
   void pushCosmeticPen(bool state);
   void pushColor(const QColor &color);
-  void pushVisualEffect(NeuTube::Display::TVisualEffect effect);
+  void pushVisualEffect(neutube::display::TVisualEffect effect);
 
   QList<ZStackBall*> getPunctaOnSlice(int z);
 
 private:
   QVector<QList<ZStackBall*> > m_puncta;
   int m_zStart;
+  static const int m_visibleRange;
+  mutable ZStackObjectSelector m_selector;
 };
 
 template<typename InputIterator>

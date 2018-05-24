@@ -1,13 +1,14 @@
 #ifndef NEUTUBE_H
 #define NEUTUBE_H
 
+#include <QFileDialog>
 #include <string>
 #include "neutube_def.h"
 
 class ZMessageReporter;
 class ZLogMessageReporter;
 
-namespace NeuTube {
+namespace neutube {
 
 ZMessageReporter *getMessageReporter();
 ZLogMessageReporter* getLogMessageReporter();
@@ -19,6 +20,13 @@ std::string getInfoFile();
 
 std::string GetCurrentUserName();
 bool IsAdminUser();
+
+QFileDialog::Options GetFileDialogOption();
+QString GetLastFilePath();
+
+void RegisterMetaType();
+
+QString GetFilePath(const QUrl &url);
 }
 
 

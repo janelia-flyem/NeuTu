@@ -3,7 +3,7 @@
 
 #include "flyem/zhotspot.h"
 
-namespace FlyEm {
+namespace flyem {
 
 class ZHotSpotFactory
 {

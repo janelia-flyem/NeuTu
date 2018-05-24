@@ -15,8 +15,8 @@ TEST(Json, basic)
 
   obj.setEntry("test1", 10);
   ASSERT_EQ(10, ZJsonParser::integerValue(obj["test1"]));
-  obj.setEntry("test2", true);
-  ASSERT_EQ(true, ZJsonParser::booleanValue(obj["test2"]));
+  obj.setEntry("test3", true);
+  ASSERT_EQ(true, ZJsonParser::booleanValue(obj["test3"]));
 
   obj.print();
 
@@ -41,6 +41,36 @@ TEST(Json, basic)
   arrayObj.append(3.0);
   ASSERT_EQ(3, (int) arrayObj.size());
   ASSERT_EQ(0, ZJsonParser::integerValue(arrayObj.at(2)));
+
+  ZJsonValue value2;
+  ASSERT_TRUE(value2.isNull());
+
+  value2.denull();
+  ASSERT_FALSE(value2.isNull());
+
+  ZJsonArray array;
+  ASSERT_TRUE(array.isNull());
+
+  array.denull();
+  ASSERT_FALSE(array.isNull());
+
+  ZJsonObject obj4;
+  ASSERT_TRUE(obj4.isNull());
+
+  obj4.denull();
+  ASSERT_FALSE(obj4.isNull());
+}
+
+TEST(ZJsonValue, decode)
+{
+  ZJsonArray array;
+  array.decodeString("[1, 2, 3]");
+  ASSERT_EQ(3, (int) array.size());
+
+  array.decodeString("1, 2, 3");
+  array.decodeString("1, 2, 3", NULL);
+  json_error_t error;
+  array.decodeString("1, 2, 3", &error);
 }
 
 TEST(ZJsonArray, basic)
@@ -66,13 +96,48 @@ TEST(ZJsonArray, basic)
   ZJsonArray arrayObj2;
   ASSERT_EQ(std::string("[]"), arrayObj2.dumpString());
 
+  ZJsonArray myList;
+  obj.setEntry("key", myList);
+
+  ASSERT_TRUE(obj.hasKey("key"));
+
+  myList.append(12345);
+
+  ZJsonArray arrayObj3(obj.value("key"));
+  ASSERT_EQ(12345, ZJsonParser::integerValue(arrayObj3.at(0)));
 }
 
 TEST(ZJsonObject, basic)
 {
   ZJsonObject obj;
   ASSERT_EQ(std::string("{}"), obj.dumpString());
+
+  ZJsonObject entry;
+  obj.setEntry("key", entry);
+  ASSERT_TRUE(obj.hasKey("key"));
+
+  ZJsonObject entry2;
+  obj.addEntry("key2", entry2);
+  ASSERT_TRUE(obj.hasKey("key"));
+
+  obj.addEntry("key3", "test");
+  ASSERT_STREQ("test", ZJsonParser::stringValue(obj["key3"]));
+
+  obj.addEntry("key3", "test2");
+  ASSERT_STREQ("test", ZJsonParser::stringValue(obj["key3"]));
+
+  obj.addEntry("key4", "test2");
+  ASSERT_STREQ("test2", ZJsonParser::stringValue(obj["key4"]));
+
+  ZJsonObject obj2;
+  obj2.setEntry("key5", "test3");
+  obj2.setEntry("key4", "test5");
+
+  obj.addEntryFrom(obj2);
+  ASSERT_STREQ("test3", ZJsonParser::stringValue(obj["key5"]));
+  ASSERT_STREQ("test2", ZJsonParser::stringValue(obj["key4"]));
 }
+
 
 #endif
 

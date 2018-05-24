@@ -32,7 +32,7 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
 	float width = fwidth(texCoord0.x) * softedge_scale;
 	baseColor.a = smoothstep(0.5-width, 0.5+width, distanceFactor);
 #else
-	baseColor.a = baseColor.a >= 0.5 ? 1.0 : 0.0;
+	baseColor.a = distanceFactor >= 0.5 ? 1.0 : 0.0;
 #endif
 
 #ifdef SHOW_GLOW
@@ -69,14 +69,14 @@ void fragment_func(out vec4 fragColor, out float fragDepth)
 
 	// Shadow / glow calculation
 	float glowDistance = texture(tex, texCoord0 + GLOW_UV_OFFSET).a;
-	float glowFactor = smoothstep(0.3, 0.5, glowDistance);
+	float glowFactor1 = smoothstep(0.3, 0.5, glowDistance);
 
-	baseColor = mix(vec4(shadow_color.xyz, glowFactor), baseColor, baseColor.a);
+	baseColor = mix(vec4(shadow_color.xyz, glowFactor1), baseColor, baseColor.a);
 #endif
 
 	baseColor.a = baseColor.a * alpha;
 	baseColor.rgb *= baseColor.a;
 
 	fragColor = baseColor;
-	fragDepth = gl_FragCoord.z;
+	fragDepth = baseColor.a > 0 ? gl_FragCoord.z : 1;
 }

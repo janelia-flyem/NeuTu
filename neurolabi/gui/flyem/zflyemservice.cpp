@@ -8,24 +8,26 @@
 #include "zstring.h"
 #include "flyem/zsynapseannotation.h"
 #include "flyem/zsynapseannotationarray.h"
+#include "zintcuboid.h"
+#include "zstack.hxx"
 
-FlyEm::Service::FaceOrphanOverlap::FaceIndex::FaceIndex() :
+flyem::Service::FaceOrphanOverlap::FaceIndex::FaceIndex() :
   m_cuboidIndex(-1), m_faceIndex(-1)
 {
 }
 
-FlyEm::Service::FaceOrphanOverlap::FaceIndex::FaceIndex(int ci, int fi) :
+flyem::Service::FaceOrphanOverlap::FaceIndex::FaceIndex(int ci, int fi) :
   m_cuboidIndex(ci), m_faceIndex(fi)
 {
 }
 
-FlyEm::Service::FaceOrphanOverlap::FaceOrphanOverlap() :
+flyem::Service::FaceOrphanOverlap::FaceOrphanOverlap() :
   m_overlapGraph(ZGraph::DIRECTED_WITH_WEIGHT),
   m_faceGraph(ZGraph::UNDIRECTED_WITHOUT_WEIGHT)
 {
 }
 
-void FlyEm::Service::FaceOrphanOverlap::clearFaceStackArray()
+void flyem::Service::FaceOrphanOverlap::clearFaceStackArray()
 {
   for (std::vector<ZStack*>::iterator iter = m_faceStackArray.begin();
        iter != m_faceStackArray.end(); ++iter) {
@@ -34,12 +36,12 @@ void FlyEm::Service::FaceOrphanOverlap::clearFaceStackArray()
   m_faceStackArray.clear();
 }
 
-void FlyEm::Service::FaceOrphanOverlap::setDvidTarget(const ZDvidTarget &target)
+void flyem::Service::FaceOrphanOverlap::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
 }
 
-bool FlyEm::Service::FaceOrphanOverlap::hasTouchingFace(
+bool flyem::Service::FaceOrphanOverlap::hasTouchingFace(
     const Cuboid_I &c1, const Cuboid_I &c2)
 {
   Cuboid_I largeBox;
@@ -51,7 +53,7 @@ bool FlyEm::Service::FaceOrphanOverlap::hasTouchingFace(
   return Cuboid_I_Is_Valid(Cuboid_I_Intersect(&largeBox, &c2, &largeBox));
 }
 
-std::pair<int, int> FlyEm::Service::FaceOrphanOverlap::touchTest(
+std::pair<int, int> flyem::Service::FaceOrphanOverlap::touchTest(
     const Cuboid_I &c1, const Cuboid_I &c2)
 {
   std::pair<int, int> touching(-1, -1);
@@ -78,7 +80,7 @@ std::pair<int, int> FlyEm::Service::FaceOrphanOverlap::touchTest(
   return touching;
 }
 
-void FlyEm::Service::FaceOrphanOverlap::loadFace(
+void flyem::Service::FaceOrphanOverlap::loadFace(
     const ZIntCuboidArray &cuboidArray)
 {
   m_cuboidArray = cuboidArray;
@@ -137,7 +139,7 @@ void FlyEm::Service::FaceOrphanOverlap::markBody()
 }
 #endif
 
-void FlyEm::Service::FaceOrphanOverlap::markBodyMock()
+void flyem::Service::FaceOrphanOverlap::markBodyMock()
 {
   clearFaceStackArray();
 
@@ -182,19 +184,19 @@ void FlyEm::Service::FaceOrphanOverlap::markBodyMock()
   }
 }
 
-std::vector<FlyEm::Service::FaceOrphanOverlap::FaceIndex>
-FlyEm::Service::FaceOrphanOverlap::getFaceIndexForBody(int bodyIndex) const
+std::vector<flyem::Service::FaceOrphanOverlap::FaceIndex>
+flyem::Service::FaceOrphanOverlap::getFaceIndexForBody(int bodyIndex) const
 {
   return m_faceIndexArray[bodyIndex];
 }
 
-int FlyEm::Service::FaceOrphanOverlap::getStackIndex(
+int flyem::Service::FaceOrphanOverlap::getStackIndex(
     const FaceIndex &faceIndex) const
 {
   return faceIndex.getCuboidIndex() * 6 + faceIndex.getFaceIndex();
 }
 
-std::vector<ZStack*> FlyEm::Service::FaceOrphanOverlap::getNeighborStackList(
+std::vector<ZStack*> flyem::Service::FaceOrphanOverlap::getNeighborStackList(
     int stackIndex) const
 {
   std::set<int> neighborSet = m_faceGraph.getNeighborSet(stackIndex);
@@ -207,10 +209,11 @@ std::vector<ZStack*> FlyEm::Service::FaceOrphanOverlap::getNeighborStackList(
   return stackArray;
 }
 
-ZStack* FlyEm::Service::FaceOrphanOverlap::transformStack(ZStack *stack)
+ZStack* flyem::Service::FaceOrphanOverlap::transformStack(ZStack *stack)
 {
   Mc_Stack *stackData = (Mc_Stack *) malloc(sizeof(Mc_Stack));
-  ZStack *out = new ZStack(stackData, C_Stack::freePointer);
+  ZStack *out = new ZStack;
+  out->setData(stackData, C_Stack::freePointer);
   *stackData = *(stack->data());
 
   if (stack->width() == 1) {
@@ -230,7 +233,7 @@ ZStack* FlyEm::Service::FaceOrphanOverlap::transformStack(ZStack *stack)
   return out;
 }
 
-void FlyEm::Service::FaceOrphanOverlap::transformCoordinates(
+void flyem::Service::FaceOrphanOverlap::transformCoordinates(
     ZStack *stack, int x, int y, int *cx, int *cy, int *cz)
 {
   if (stack->width() == 1) {
@@ -248,7 +251,7 @@ void FlyEm::Service::FaceOrphanOverlap::transformCoordinates(
   }
 }
 
-void FlyEm::Service::FaceOrphanOverlap::printMarkerBuffer()
+void flyem::Service::FaceOrphanOverlap::printMarkerBuffer()
 {
   std::cout << "Marker buffer: " << std::endl;
   for (std::map<std::pair<int, int>, ZIntPoint>::const_iterator
@@ -261,7 +264,7 @@ void FlyEm::Service::FaceOrphanOverlap::printMarkerBuffer()
   }
 }
 
-ZIntPairMap FlyEm::Service::FaceOrphanOverlap::countVoxelTouch(
+ZIntPairMap flyem::Service::FaceOrphanOverlap::countVoxelTouch(
     ZStack *stack1, ZStack *stack2, int sourceBodyId)
 {
 #ifdef _DEBUG_
@@ -327,7 +330,7 @@ ZIntPairMap FlyEm::Service::FaceOrphanOverlap::countVoxelTouch(
   return crossMap;
 }
 
-ZGraph* FlyEm::Service::FaceOrphanOverlap::computeOverlap()
+ZGraph* flyem::Service::FaceOrphanOverlap::computeOverlap()
 {
   m_overlapGraph.clear();
   m_markerBuffer.clear();
@@ -378,14 +381,14 @@ ZGraph* FlyEm::Service::FaceOrphanOverlap::computeOverlap()
   return &m_overlapGraph;
 }
 
-void FlyEm::Service::FaceOrphanOverlap::loadSynapse(const std::string &filePath)
+void flyem::Service::FaceOrphanOverlap::loadSynapse(const std::string &filePath)
 {
-  FlyEm::ZSynapseAnnotationArray synapseAnnotation;
+  flyem::ZSynapseAnnotationArray synapseAnnotation;
   synapseAnnotation.loadJson(filePath);
   m_synapseCount = synapseAnnotation.countSynapse();
 }
 
-void FlyEm::Service::FaceOrphanOverlap::loadFaceOrphanBody(
+void flyem::Service::FaceOrphanOverlap::loadFaceOrphanBody(
     const std::vector<int> &bodyIdArray)
 {
   m_faceOrphanBody.clear();
@@ -402,7 +405,8 @@ void FlyEm::Service::FaceOrphanOverlap::loadFaceOrphanBody(
   size_t bodyIndex = 0;
   for (std::vector<int>::const_iterator iter = bodyIdArray.begin();
        iter != bodyIdArray.end(); ++iter, ++bodyIndex) {
-    ZObject3dScan obj = reader.readBody(*iter);
+    ZObject3dScan obj;
+    reader.readBody(*iter, true, &obj);
 
     m_bodySizeArray[bodyIndex] = obj.getVoxelNumber();
 
@@ -436,7 +440,7 @@ void FlyEm::Service::FaceOrphanOverlap::loadFaceOrphanBody(
   }
 }
 
-void FlyEm::Service::FaceOrphanOverlap::print() const
+void flyem::Service::FaceOrphanOverlap::print() const
 {
   std::cout << "Face Orphan Overlap Service: " << std::endl;
   m_dvidTarget.print();
@@ -446,29 +450,29 @@ void FlyEm::Service::FaceOrphanOverlap::print() const
   std::cout << m_overlapGraph.getEdgeNumber() << " overlap regions." << std::endl;
 }
 
-void FlyEm::Service::FaceOrphanOverlap::printLabelSet(const ZStack *stack)
+void flyem::Service::FaceOrphanOverlap::printLabelSet(const ZStack *stack)
 {
   std::cout << "Face label: " << std::endl;
   stack->printInfo();
 
-  std::set<FlyEm::TBodyLabel> bodySet;
+  std::set<flyem::TBodyLabel> bodySet;
 
   size_t voxelNumber = stack->getVoxelNumber();
 
-  FlyEm::TBodyLabel *labelArray =
-      (FlyEm::TBodyLabel*) (stack->array8());
+  flyem::TBodyLabel *labelArray =
+      (flyem::TBodyLabel*) (stack->array8());
   for (size_t i = 0; i < voxelNumber; ++i) {
     bodySet.insert(labelArray[i]);
   }
 
   std::cout << bodySet.size() << " labels: " << std::endl;
-  for (std::set<FlyEm::TBodyLabel>::const_iterator iter = bodySet.begin();
+  for (std::set<flyem::TBodyLabel>::const_iterator iter = bodySet.begin();
        iter != bodySet.end(); ++iter) {
     std::cout << *iter << std::endl;
   }
 }
 
-void FlyEm::Service::FaceOrphanOverlap::loadFaceOrphanBodyMock(
+void flyem::Service::FaceOrphanOverlap::loadFaceOrphanBodyMock(
     const std::vector<int> &bodyIdArray)
 {
   m_faceOrphanBody.clear();
@@ -485,8 +489,8 @@ void FlyEm::Service::FaceOrphanOverlap::loadFaceOrphanBodyMock(
        iter != bodyIdArray.end(); ++iter, ++bodyIndex) {
     int bodyId = *iter;
     ZObject3dScan obj;
-    std::string path = GET_TEST_DATA_DIR +
-        "/flyem/FIB/skeletonization/session34/0_100000/stacked.hf5:" +
+    std::string path = GET_FLYEM_DATA_DIR +
+        "/FIB/skeletonization/session34/0_100000/stacked.hf5:" +
         ZString::num2str(bodyId) + ".sobj";
     obj.load(path);
     m_bodySizeArray[bodyIndex] = obj.getVoxelNumber();
@@ -520,18 +524,18 @@ void FlyEm::Service::FaceOrphanOverlap::loadFaceOrphanBodyMock(
   }
 }
 
-void FlyEm::Service::FaceOrphanOverlap::setCoordinateConverter(
+void flyem::Service::FaceOrphanOverlap::setCoordinateConverter(
     const ZFlyEmCoordinateConverter &converter)
 {
   m_coordConverter = converter;
 }
 
-void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
+void flyem::Service::FaceOrphanOverlap::exportJsonFile(
     const std::string filePath) const
 {
-  ZJsonObject obj(json_object(), true);
-  ZJsonArray nodeArray(json_array(), true);
-  ZJsonArray edgeArray(json_array(), true);
+  ZJsonObject obj(json_object(), ZJsonValue::SET_AS_IT_IS);
+  ZJsonArray nodeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
+  ZJsonArray edgeArray(json_array(), ZJsonValue::SET_AS_IT_IS);
 
   obj.setEntry("Bodies", nodeArray);
   obj.setEntry("Overlap", edgeArray);
@@ -554,11 +558,12 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
 
     int bodyId = *iter;
 
-    ZJsonObject obj(json_object(), true);
+    ZJsonObject obj(json_object(), ZJsonValue::SET_AS_IT_IS);
     json_t *value = json_integer(bodyId);
     obj.consumeEntry("id", value);
 
-    ZObject3dScan body = reader.readBody(bodyId);
+    ZObject3dScan body;
+    reader.readBody(bodyId, true, &body);
 
     value = json_integer(body.getVoxelNumber());
     obj.consumeEntry("size", value);
@@ -606,7 +611,7 @@ void FlyEm::Service::FaceOrphanOverlap::exportJsonFile(
 
   //edge property: id1, id2, touching point
   for (int i = 0; i < m_overlapGraph.getEdgeNumber(); ++i) {
-    ZJsonObject obj(json_object(), true);
+    ZJsonObject obj(json_object(), ZJsonValue::SET_AS_IT_IS);
     json_t *value = json_integer(m_overlapGraph.getEdgeBegin(i));
     obj.consumeEntry("id1", value);
     value = json_integer(m_overlapGraph.getEdgeEnd(i));

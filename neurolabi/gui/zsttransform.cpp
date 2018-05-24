@@ -33,34 +33,53 @@ void ZStTransform::setOffset(double dx, double dy)
   m_dy = dy;
 }
 
+void ZStTransform::addOffset(double dx, double dy)
+{
+  m_dx += dx;
+  m_dy += dy;
+}
+
+void ZStTransform::addScaledOffset(double dx, double dy)
+{
+  if (m_sx !=  0.0) {
+    m_dx += dx / m_sx;
+  }
+
+  if (m_sy != 0.0) {
+    m_dy += dy / m_sy;
+  }
+}
+
 void ZStTransform::setScale(double sx, double sy)
 {
   m_sx = sx;
   m_sy = sy;
 }
 
-double ZStTransform::getScale(NeuTube::EAxis axis) const
+double ZStTransform::getScale(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return getSx();
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return getSy();
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     return getSz();
   }
 
   return 1.0;
 }
 
-double ZStTransform::getOffset(NeuTube::EAxis axis) const
+double ZStTransform::getOffset(neutube::EAxis axis) const
 {
   switch (axis) {
-  case NeuTube::X_AXIS:
+  case neutube::X_AXIS:
     return getTx();
-  case NeuTube::Y_AXIS:
+  case neutube::Y_AXIS:
     return getTy();
-  case NeuTube::Z_AXIS:
+  case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     return getTz();
   }
 
@@ -132,6 +151,19 @@ QRectF ZStTransform::transform(const QRectF &rect) const
                 rect.width() * getSx(), rect.height() * getSy());
 }
 
+ZStTransform ZStTransform::transform(const ZStTransform &transform) const
+{
+  ZStTransform t;
+  t.setOffset(getTx() * transform.getSx() + transform.getTx(),
+              getTy() * transform.getSy() + transform.getTy(),
+              getTz() * transform.getSz() + transform.getTz());
+  t.setScale(getSx() * transform.getSx(),
+             getSy() * transform.getSy(),
+             getSz() * transform.getSz());
+
+  return t;
+}
+
 bool ZStTransform::isIdentity() const
 {
   return !hasOffset() && !hasScale();
@@ -153,5 +185,36 @@ void ZStTransform::estimate(const QRectF &input, const QRectF &output)
     m_dy = output.top() - m_sx * input.top();
     m_sz = 1.0;
     m_dz = 0.0;
+  }
+}
+
+void ZStTransform::estimate(
+    double source0, double source1, double target0, double target1,
+    neutube::EAxis axis)
+{
+  double s = 0.0;
+  double t = 0.0;
+  if (source0 == source1) {
+    s = 1.0;
+    t = target0 - source0;
+  } else {
+    s = (target1 - target0) / (source1 - source0);
+    t = target0 - s * source0;
+  }
+
+  switch (axis) {
+  case neutube::X_AXIS:
+    m_sx = s;
+    m_dx = t;
+    break;
+  case neutube::Y_AXIS:
+    m_sy = s;
+    m_dy = t;
+    break;
+  case neutube::Z_AXIS:
+  case neutube::A_AXIS:
+    m_sz = s;
+    m_dz = t;
+    break;
   }
 }

@@ -3,11 +3,14 @@
 
 #include <QUndoCommand>
 #include <QList>
+#include <QMap>
+
 #include "swctreenode.h"
 #include "neutube.h"
 #include "zswcpath.h"
 #include "zdocplayer.h"
-#include <QMap>
+#include "zstackobjectrole.h"
+#include "zglmutils.h"
 
 class ZSwcTree;
 class ZLocsegChain;
@@ -26,15 +29,34 @@ public:
   explicit ZUndoCommand(QUndoCommand *parent = 0);
   explicit ZUndoCommand(const QString &text, QUndoCommand *parent = 0);
 
-  bool isSaved(NeuTube::EDocumentableType type) const;
-  void setSaved(NeuTube::EDocumentableType type, bool state);
+  bool isSaved(neutube::EDocumentableType type) const;
+  void setSaved(neutube::EDocumentableType type, bool state);
+
+  void enableLog(bool on);
+  bool loggingCommand() const;
+  void logCommand(const QString &msg) const;
+  void logCommand() const;
+  void logUndoCommand() const;
+  void setLogMessage(const QString &msg);
+  void setLogMessage(const std::string &msg);
+  void setLogMessage(const char *msg);
+
+  void startUndo();
+
+public: //test funcion
+  virtual bool test() { return true; }
 
 private:
   bool m_isSwcSaved;
+  bool m_loggingCommand;
+  QString m_logMessage;
 };
 
 namespace ZStackDocCommand {
 namespace SwcEdit {
+/*!
+ * \brief The basic command of modifying swc.
+ */
 class ChangeSwcCommand : public ZUndoCommand
 {
 public:
@@ -51,13 +73,60 @@ public:
     ROLE_NONE, ROLE_CHILD, ROLE_PARENT
   };
 
+  bool isSwcModified() const {
+    return m_isSwcModified;
+  }
+
+  void setSwcModified(bool state) {
+    m_isSwcModified = state;
+  }
+
+
 protected:
+  /*!
+   * \brief Backup a node.
+   *
+   * The properties and links of \a tn will be backed up after the function call.
+   * The function has no effect on \a tn if \a tn has already been backed up in
+   * the command.
+   */
   void backup(Swc_Tree_Node *tn);
+
+  /*!
+   * \brief Backup a node and its neighbors.
+   *
+   * Bacup all nodes affected by the operation \a op, which can be setting parent,
+   * setting first child and detaching from parent. \a role specifies the role
+   * of \a tn for the operation.
+   *
+   * \param tn The node to backup.
+   * \param op Operation supposed to be performed after the backup.
+   * \param role Role of \a tn.
+   */
   void backup(Swc_Tree_Node *tn, EOperation op, ERole role = ROLE_NONE);
+
+  /*!
+   * \brief Backup the children of a node.
+   */
   void backupChildren(Swc_Tree_Node *tn);
+
+
+  /*!
+   * \brief Backup childrend of a node according to an operation.
+   */
   void backupChildren(Swc_Tree_Node *tn, EOperation op, ERole role = ROLE_NONE);
 
+  /*!
+   * \brief Record newly created node by the command
+   *
+   * It tracks newly created nodes so that the nodes can be freed in an undone
+   * command when the command is destroyed.
+   */
   void addNewNode(Swc_Tree_Node *tn);
+
+  /*!
+   * \brief Record removed node.
+   */
   void recordRemovedNode(Swc_Tree_Node *tn);
 
   void recover();
@@ -68,6 +137,7 @@ protected:
   std::set<Swc_Tree_Node*> m_newNodeSet;
   std::set<Swc_Tree_Node*> m_removedNodeSet;
   std::set<Swc_Tree_Node*> m_garbageSet;
+  bool m_isSwcModified;
 };
 
 class TranslateRoot : public ZUndoCommand
@@ -168,7 +238,8 @@ private:
 class AddSwcNode : public ZUndoCommand
 {
 public:
-  AddSwcNode(ZStackDoc *doc, Swc_Tree_Node* tn, QUndoCommand *parent = NULL);
+  AddSwcNode(ZStackDoc *doc, Swc_Tree_Node* tn, ZStackObjectRole::TRole role,
+             QUndoCommand *parent = NULL);
   virtual ~AddSwcNode();
   void undo();
   void redo();
@@ -196,12 +267,126 @@ private:
   Swc_Tree_Node *m_parentNode;
   bool m_nodeInDoc;
 };
+/*
+class BreakParentLink : public ChangeSwcCommand
+{
+public:
+  BreakParentLink(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~BreakParentLink();
+
+  void redo();
+  void undo();
+};
+*/
+
+class ChangeSwcNodeType : public ChangeSwcCommand
+{
+public:
+  ChangeSwcNodeType(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ChangeSwcNodeType();
+
+  void setNodeOperation(const std::vector<Swc_Tree_Node*> &nodeArray, int type);
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  int m_newType;
+};
+
+class ChangeSwcNodePosition : public ChangeSwcCommand
+{
+public:
+  ChangeSwcNodePosition(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ChangeSwcNodePosition();
+
+  void setNodeOperation(
+      const std::vector<Swc_Tree_Node*> &nodeArray,
+      const std::vector<ZPoint> &newPosition);
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  std::vector<ZPoint> m_newPosition;
+};
+
+class MoveSwcNode : public ChangeSwcCommand
+{
+public:
+  MoveSwcNode(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~MoveSwcNode();
+
+  void setOffset(const ZPoint &offset);
+  void addNode(const std::vector<Swc_Tree_Node*> &nodeArray);
+  void redo();
+  void undo();
+
+  bool test();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  ZPoint m_offset;
+};
+
+class RotateSwcNodeAroundZ : public ChangeSwcCommand
+{
+public:
+  RotateSwcNodeAroundZ(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~RotateSwcNodeAroundZ();
+
+  void setRotateCenter(double x, double y);
+  void setRotateAngle(double theta);
+  void useNodeCentroid();
+  void addNode(const std::vector<Swc_Tree_Node*> &nodeArray);
+
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  double m_cx = 0.0;
+  double m_cy = 0.0;
+  double m_theta = 0.0;
+};
+
+class ScaleSwcNodeAroundZ : public ChangeSwcCommand
+{
+public:
+  ScaleSwcNodeAroundZ(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ScaleSwcNodeAroundZ();
+
+  void setScale(double sx, double sy);
+  void addNode(const std::vector<Swc_Tree_Node*> &nodeArray);
+
+  void redo();
+  void undo();
+
+private:
+  std::vector<Swc_Tree_Node*> m_nodeArray;
+  double m_scaleX = 1.0;
+  double m_scaleY = 1.0;
+};
 
 class MergeSwcNode : public ChangeSwcCommand
 {
 public:
   MergeSwcNode(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~MergeSwcNode();
+
+  void redo();
+  void undo();
+
+private:
+  std::set<Swc_Tree_Node*> m_selectedNodeSet;
+  Swc_Tree_Node *m_coreNode;
+};
+
+class ResolveCrossover : public ChangeSwcCommand
+{
+public:
+  ResolveCrossover(ZStackDoc *doc, QUndoCommand *parent = NULL);
+  virtual ~ResolveCrossover();
 
   void redo();
   void undo();
@@ -293,12 +478,12 @@ public:
 #endif
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   Swc_Tree_Node *m_node;
   Swc_Tree_Node *m_root;
-  Swc_Tree_Node m_backup;
-  Swc_Tree_Node *m_prevSibling;
-  Swc_Tree_Node *m_lastChild;
+//  Swc_Tree_Node m_backup;
+//  Swc_Tree_Node *m_prevSibling;
+//  Swc_Tree_Node *m_lastChild;
   bool m_nodeInDoc;
 };
 
@@ -309,7 +494,7 @@ public:
                    QUndoCommand *parent = NULL);
   virtual ~DeleteSwcNodeSet();
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   std::set<Swc_Tree_Node*> m_nodeSet;
   bool m_nodeInDoc;
 };
@@ -363,7 +548,7 @@ public:
   virtual ~RemoveSubtree();
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
   Swc_Tree_Node *m_node;
 };
 
@@ -373,12 +558,16 @@ public:
   SwcTreeLabeTraceMask(ZStackDoc *doc, Swc_Tree *tree, QUndoCommand *parent = NULL);
   virtual ~SwcTreeLabeTraceMask();
 
+  void setOffset(const ZPoint &pt);
+  void setOffset(const ZIntPoint &pt);
+
   void undo();
   void redo();
 
 private:
   ZStackDoc *m_doc;
   Swc_Tree *m_tree;
+  ZPoint m_offset;
 };
 
 class SwcPathLabeTraceMask : public ZUndoCommand
@@ -450,7 +639,7 @@ public:
   virtual ~RemoveEmptyTree();
 
 private:
-  ZStackDoc *m_doc;
+//  ZStackDoc *m_doc;
 //  std::set<ZSwcTree*> m_emptyTreeSet;
 };
 
@@ -535,12 +724,15 @@ public:
                QUndoCommand *parent = NULL);
   virtual ~RemoveObject();
 
+  void setRemoval(const QList<ZStackObject*> &objList);
+  void addRemoval(ZStackObject *obj);
+
   void undo();
   void redo();
 
 private:
   ZStackDoc *m_doc;
-  ZStackObject *m_obj;
+  QSet<ZStackObject*> m_objSet;
   bool m_isInDoc;
 };
 
@@ -561,7 +753,7 @@ private:
   QList<ZStackObject*> m_selectedObject;
 };
 
-class MoveSelected : public QUndoCommand
+class MoveSelected : public ZUndoCommand
 {
   ZStackDoc *m_doc;
   QList<ZSwcTree*> m_swcList;
@@ -572,18 +764,14 @@ class MoveSelected : public QUndoCommand
   double m_z;
   bool m_swcMoved;
   bool m_punctaMoved;
-  double m_swcScaleX;
-  double m_swcScaleY;
-  double m_swcScaleZ;
-  double m_punctaScaleX;
-  double m_punctaScaleY;
-  double m_punctaScaleZ;
+  glm::mat3 m_swcTransform;
+  glm::mat3 m_punctaTransform;
 public:
   MoveSelected(ZStackDoc *doc, double x, double y,
                double z, QUndoCommand *parent = NULL);
   virtual ~MoveSelected();
-  void setSwcCoordScale(double x, double y, double z);
-  void setPunctaCoordScale(double x, double y, double z);
+  void setSwcTransform(const glm::mat4& mat) { m_swcTransform = glm::mat3(mat); }
+  void setPunctaTransform(const glm::mat4& mat) { m_punctaTransform = glm::mat3(mat); }
   virtual int id() const { return 1; }
   virtual bool mergeWith(const QUndoCommand *other);
   void undo();
@@ -592,7 +780,7 @@ public:
 }
 
 namespace TubeEdit {
-class RemoveSmall : public QUndoCommand
+class RemoveSmall : public ZUndoCommand
 {
 public:
   RemoveSmall(ZStackDoc *doc, double thre, QUndoCommand *parent = NULL);
@@ -607,7 +795,7 @@ private:
   QList<ZLocsegChain*> m_chainList;
 };
 
-class RemoveSelected : public QUndoCommand
+class RemoveSelected : public ZUndoCommand
 {
 public:
   RemoveSelected(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -621,7 +809,7 @@ private:
   QList<ZLocsegChain*> m_chainList;
 };
 
-class Trace : public QUndoCommand
+class Trace : public ZUndoCommand
 {
 public:
   Trace(ZStackDoc *doc, int x, int y, int z, QUndoCommand *parent = NULL);
@@ -637,7 +825,7 @@ private:
   ZLocsegChain* m_chain;
 };
 
-class CutSegment : public QUndoCommand
+class CutSegment : public ZUndoCommand
 {
 public:
   CutSegment(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -651,7 +839,7 @@ private:
   QList<ZLocsegChain*> m_newChainList;
 };
 
-class BreakChain : public QUndoCommand
+class BreakChain : public ZUndoCommand
 {
 public:
   BreakChain(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -683,10 +871,10 @@ private:
   QList<ZPunctum*> m_punctaList;
 };
 #endif
-class AutoTraceAxon : public QUndoCommand
+class AutoTraceAxon : public ZUndoCommand
 {
 public:
-  AutoTraceAxon(ZStackDoc *m_doc, QUndoCommand *parent = NULL);
+  AutoTraceAxon(ZStackDoc *doc, QUndoCommand *parent = NULL);
   virtual ~AutoTraceAxon();
 
   void undo();
@@ -703,7 +891,7 @@ private:
 }
 
 namespace StrokeEdit {
-class AddStroke : public QUndoCommand
+class AddStroke : public ZUndoCommand
 {
 public:
   AddStroke(ZStackDoc *doc, ZStroke2d *stroke, QUndoCommand *parent = NULL);
@@ -717,7 +905,7 @@ private:
   bool m_isInDoc;
 };
 
-class RemoveTopStroke : public QUndoCommand
+class RemoveTopStroke : public ZUndoCommand
 {
 public:
   RemoveTopStroke(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -731,7 +919,7 @@ private:
   bool m_isInDoc;
 };
 
-class CompositeCommand : public QUndoCommand
+class CompositeCommand : public ZUndoCommand
 {
 public:
   CompositeCommand(ZStackDoc *doc, QUndoCommand *parent = NULL);
@@ -745,7 +933,7 @@ protected:
 }
 
 namespace StackProcess {
-class Binarize : public QUndoCommand
+class Binarize : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -758,7 +946,7 @@ public:
   void redo();
 };
 
-class BwSolid : public QUndoCommand
+class BwSolid : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -770,7 +958,7 @@ public:
   void redo();
 };
 
-class EnhanceLine : public QUndoCommand
+class EnhanceLine : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;
@@ -782,7 +970,7 @@ public:
   void redo();
 };
 
-class Watershed : public QUndoCommand
+class Watershed : public ZUndoCommand
 {
   ZStackDoc *doc;
   ZStack *zstack;

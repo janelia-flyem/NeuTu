@@ -1,68 +1,35 @@
 #include <iostream>
 #include <cstring>
 #include <QApplication>
+#include <QProcess>
 #include <QDir>
+
+#ifdef _QT5_
+#include <QSurfaceFormat>
+#endif
+
 #include "mainwindow.h"
+#include "neu3window.h"
 #include "QsLog/QsLog.h"
 #include "QsLog/QsLogDest.h"
 #include "zcommandline.h"
 #include "zerror.h"
-#include "z3dapplication.h"
 #include "zneurontracer.h"
+#include "zapplication.h"
 
 #include "ztest.h"
 
 #include "tz_utilities.h"
 #include "neutubeconfig.h"
 #include "zneurontracerconfig.h"
+#include "sandbox/zsandboxproject.h"
+#include "sandbox/zsandbox.h"
+#include "flyem/zmainwindowcontroller.h"
+#include "flyem/zglobaldvidrepo.h"
 
+#if 0
 #ifdef _QT5_
 #include <QSurfaceFormat>
-
-#include <QStack>
-#include <QPointer>
-// thanks to Daniel Price for this workaround
-struct MacEventFilter : public QObject
-{
-  QStack<QPointer<QWidget> > m_activationstack; // stack of widgets to re-active on dialog close.
-
-  explicit MacEventFilter(QObject *parent = NULL)
-    : QObject(parent)
-  {}
-
-  virtual bool eventFilter(QObject *anObject, QEvent *anEvent)
-  {
-    switch (anEvent->type()) {
-    case QEvent::Show: {
-      if ((anObject->inherits("QDialog") || anObject->inherits("QDockWidget")) && qApp->activeWindow()) {
-        // Workaround for Qt bug where opened QDialogs do not re-activate previous window
-        // when accepted or rejected. We cannot rely on the parent pointers so push the previous
-        // active window onto a stack before the dialog is shown.
-        // We have to use a stack in case a dialog opens another dialog.
-        // NOTE: It's important to use QPointers so that any widgets deleted by Qt do not lead to
-        // hanging pointers in the stack.
-        m_activationstack.push(qApp->activeWindow());
-      }
-      break;
-    }
-    case QEvent::Hide: {
-      if ((anObject->inherits("QDialog") || anObject->inherits("QDockWidget")) && !m_activationstack.isEmpty()) {
-        QPointer<QWidget> widget = m_activationstack.pop();
-        if (widget) {
-          // Re-acivate widgets in the order as dialogs are closed. See Show case above.
-          widget->activateWindow();
-          widget->raise();
-        }
-      }
-      break;
-    }
-    default:
-      break;
-    }
-
-    return QObject::eventFilter(anObject, anEvent);
-  }
-};
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -79,6 +46,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
   case QtFatalMsg:
     LFATALF(context.file, context.line, context.function) << msg;
     abort();
+  default:
+    break;
   }
 }
 #else
@@ -100,20 +69,115 @@ void myMessageOutput(QtMsgType type, const char *msg)
   }
 }
 #endif    // qt version > 5.0.0
+#endif
 
+static void syncLogDir(const std::string &srcDir, const std::string &destDir)
+{
+  if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
+    QDir dir(srcDir.c_str());
+    dir.setFilter(QDir::Files | QDir::NoSymLinks);
+    QFileInfoList infoList =
+        dir.entryInfoList(QStringList() << "*.txt.*" << "*.txt");
+
+    foreach (const QFileInfo &info, infoList) {
+      QString command =
+          ("rsync -uv " + srcDir + "/" + info.fileName().toStdString() +
+           " " + destDir + "/").c_str();
+      std::cout << command.toStdString() << std::endl;
+      QProcess process;
+      process.start(command);
+      process.waitForFinished(-1);
+      QString errorOutput = process.readAllStandardError();
+      QString standardOutout = process.readAllStandardOutput();
+      std::cout << errorOutput.toStdString() << std::endl;
+      std::cout << standardOutout.toStdString() << std::endl;
+    }
+  }
+}
+
+static void LoadFlyEmConfig(
+    const QString &configPath, NeutubeConfig &config, bool usingConfig)
+{
+#ifdef _FLYEM_
+  ZJsonObject configObj;
+  if (!configPath.isEmpty()) {
+    configObj.load(configPath.toStdString());
+  }
+
+  GET_FLYEM_CONFIG.useDefaultConfig(NeutubeConfig::UsingDefaultFlyemConfig());
+  QString defaultFlyemConfigPath = QFileInfo(
+        QDir((GET_APPLICATION_DIR + "/json").c_str()), "flyem_config.json").
+      absoluteFilePath();
+  GET_FLYEM_CONFIG.setDefaultConfigPath(defaultFlyemConfigPath.toStdString());
+
+  QString flyemConfigPath = NeutubeConfig::GetFlyEmConfigPath();
+  if (flyemConfigPath.isEmpty()) {
+    QFileInfo configFileInfo(configPath);
+
+    flyemConfigPath = ZJsonParser::stringValue(configObj["flyem"]);
+    if (flyemConfigPath.isEmpty()) {
+      flyemConfigPath = defaultFlyemConfigPath;
+    } else {
+      QFileInfo flyemConfigFileInfo(flyemConfigPath);
+      if (!flyemConfigFileInfo.isAbsolute()) {
+        flyemConfigPath =
+            configFileInfo.absoluteDir().absoluteFilePath(flyemConfigPath);
+      }
+    }
+  }
+
+  GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
+  GET_FLYEM_CONFIG.loadConfig();
+  GET_FLYEM_CONFIG.loadUserSettings();
+
+  if (usingConfig) {
+#ifdef _DEBUG_
+    std::cout << "NeuTu server: " << config.GetNeuTuServer().toStdString() << std::endl;
+#endif
+
+    if (config.GetNeuTuServer().isEmpty()) {
+      QString neutuServer = ZJsonParser::stringValue(configObj["neutu_server"]);
+      if (!neutuServer.isEmpty()) {
+        GET_FLYEM_CONFIG.setServer(neutuServer.toStdString());
+      }
+    } else {
+      GET_FLYEM_CONFIG.setServer(config.GetNeuTuServer().toStdString());
+    }
+
+    if (config.GetTaskServer().isEmpty()) {
+      QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
+      if (!taskServer.isEmpty()) {
+        GET_FLYEM_CONFIG.setServer(taskServer.toStdString());
+      }
+    } else {
+      GET_FLYEM_CONFIG.setTaskServer(config.GetTaskServer().toStdString());
+    }
+  } else {
+    QString taskServer = ZJsonParser::stringValue(configObj["task_server"]);
+    if (!taskServer.isEmpty()) {
+      GET_FLYEM_CONFIG.setServer(taskServer.toStdString());
+    }
+  }
+#endif
+}
+
+#ifdef _CLI_VERSION
 int main(int argc, char *argv[])
 {
-#ifdef _QT5_
-  QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
-#endif
-  QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
-
-#ifdef _QT5_
-  QSurfaceFormat format;
-  //format.setStereo(true);
-  QSurfaceFormat::setDefaultFormat(format);
-#endif
-
+  if (argc > 1 && strcmp(argv[1], "--command") == 0)
+  {
+    return ZCommandLine().run(argc,argv);
+  }
+  else
+  {
+    std::cout<<"This is CLI version of neutu,please use --command option."<<std::endl;
+    return 1;
+  }
+}
+#else
+int main(int argc, char *argv[])
+{
+#if 0 //Disable redirect for explicit logging
 #ifndef _FLYEM_
 #ifdef _QT5_
   qInstallMessageHandler(myMessageOutput);
@@ -121,18 +185,25 @@ int main(int argc, char *argv[])
   qInstallMsgHandler(myMessageOutput);
 #endif
 #endif
+#endif
 
   bool debugging = false;
   bool unitTest = false;
   bool runCommandLine = false;
 
-  QStringList fileList;
-
   bool guiEnabled = true;
+  bool advanced = false;
+
+  QString configPath;
+  QStringList fileList;
 
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
+    }
+
+    if (strcmp(argv[1], "a") == 0) {
+      advanced = true;
     }
 
     if (strcmp(argv[1], "--command") == 0) {
@@ -140,11 +211,18 @@ int main(int argc, char *argv[])
     }
 
     if (runCommandLine) {
+#if defined(_FLYEM_)
+      NeutubeConfig &config = NeutubeConfig::getInstance();
+      QFileInfo fileInfo(argv[0]);
+      std::string appDir = fileInfo.absoluteDir().absolutePath().toStdString();
+      config.setApplicationDir(appDir);
+      LoadFlyEmConfig("", config, false);
+#endif
+
       ZCommandLine cmd;
       return cmd.run(argc, argv);
     }
 
-#ifndef QT_NO_DEBUG
     if (strcmp(argv[1], "u") == 0 || QString(argv[1]).startsWith("--gtest")) {
       unitTest = true;
       debugging = true;
@@ -155,36 +233,124 @@ int main(int argc, char *argv[])
         fileList << argv[i];
       }
     }
-#endif
+
+    if (QString(argv[1]).endsWith(".json")) {
+      configPath = argv[1];
+    }
   }
   if (debugging || runCommandLine) {
     guiEnabled = false;
   }
 
+  if (guiEnabled) {
+#ifdef _QT5_
+    QSurfaceFormat format;
+#if defined(__APPLE__) && defined(_USE_CORE_PROFILE_)
+    format.setVersion(3, 2);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+#endif
+    //format.setStereo(true);
+    QSurfaceFormat::setDefaultFormat(format);
+
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts, true);
+#endif
+    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+  }
 
   // call first otherwise it will cause runtime warning: Please instantiate the QApplication object first
   QApplication app(argc, argv, guiEnabled);
 
+  neutube::RegisterMetaType();
+
   //load config
   NeutubeConfig &config = NeutubeConfig::getInstance();
+  config.setAdvancedMode(advanced);
+
   std::cout << QApplication::applicationDirPath().toStdString() << std::endl;
   config.setApplicationDir(QApplication::applicationDirPath().toStdString());
+
   if (config.load(config.getConfigPath()) == false) {
     std::cout << "Unable to load configuration: "
               << config.getConfigPath() << std::endl;
   }
 
-  ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
-  tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+  if (configPath.isEmpty()) {
+    configPath =
+        QFileInfo(QDir((GET_APPLICATION_DIR + "/json").c_str()), "config.json").
+        absoluteFilePath();
+  }
 
+  LINFO() << "Config path: " << configPath;
+
+
+#ifdef _FLYEM_
+  LoadFlyEmConfig(configPath, config, true);
+
+  ZGlobalDvidRepo::GetInstance().init();
+#endif
+
+  if (!runCommandLine) { //Command line mode takes care of configuration independently
+#if !defined(_FLYEM_)
+    ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
+    tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+
+    if (GET_APPLICATION_NAME == "Biocytin") {
+      tracingConfig.load(
+            config.getApplicatinDir() + "/json/trace_config_biocytin.json");
+    } else {
+      tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
+    }
+#endif
+    //Sync log files
+    syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
+               NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
+  }
 
 #ifdef _DEBUG_
   config.print();
 #endif
 
+  // init the logging mechanism
+  QsLogging::Logger& logger = QsLogging::Logger::instance();
+  const QString sLogPath(
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
+  const QString traceLogPath(
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_TRACE).c_str());
+
+#ifdef _FLYEM_
+  int maxLogCount = 100;
+#else
+  int maxLogCount = 10;
+#endif
+
+  QsLogging::DestinationPtr fileDestination(
+        QsLogging::DestinationFactory::MakeFileDestination(
+          sLogPath, QsLogging::EnableLogRotation,
+          QsLogging::MaxSizeBytes(5e7), QsLogging::MaxOldLogCount(maxLogCount)));
+  QsLogging::DestinationPtr traceFileDestination(
+        QsLogging::DestinationFactory::MakeFileDestination(
+          traceLogPath, QsLogging::EnableLogRotation,
+          QsLogging::MaxSizeBytes(2e7), QsLogging::MaxOldLogCount(10),
+          QsLogging::TraceLevel));
+  QsLogging::DestinationPtr debugDestination(
+        QsLogging::DestinationFactory::MakeDebugOutputDestination());
+  logger.addDestination(debugDestination);
+  logger.addDestination(traceFileDestination);
+  logger.addDestination(fileDestination);
+#if defined _DEBUG_
+  logger.setLoggingLevel(QsLogging::DebugLevel);
+#else
+  logger.setLoggingLevel(QsLogging::InfoLevel);
+#endif
+
+  if (NeutubeConfig::GetVerboseLevel() >= 5) {
+    logger.setLoggingLevel(QsLogging::TraceLevel);
+  }
+
   RECORD_INFORMATION("************* Start ******************");
 
-  if (debugging == false && runCommandLine == false) {
+  if (guiEnabled) {
+    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 #if defined __APPLE__        //use macdeployqt
 #else
 #if defined(QT_NO_DEBUG)
@@ -202,42 +368,26 @@ int main(int argc, char *argv[])
 #endif
 
     MainWindow::createWorkDir();
-
-
-    // init the logging mechanism
-    QsLogging::Logger& logger = QsLogging::Logger::instance();
-    const QString sLogPath(
-          NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
-    QsLogging::DestinationPtr fileDestination(
-          QsLogging::DestinationFactory::MakeFileDestination(
-            sLogPath, QsLogging::EnableLogRotation,
-            QsLogging::MaxSizeBytes(1e7), QsLogging::MaxOldLogCount(20)));
-    QsLogging::DestinationPtr debugDestination(
-          QsLogging::DestinationFactory::MakeDebugOutputDestination());
-    logger.addDestination(debugDestination);
-    logger.addDestination(fileDestination);
-#if defined _DEBUG_
-    logger.setLoggingLevel(QsLogging::DebugLevel);
-#else
-    logger.setLoggingLevel(QsLogging::InfoLevel);
-#endif
+    NeutubeConfig::UpdateAutoSaveDir();
 
 #if (defined __APPLE__) && !(defined _QT5_)
     app.setGraphicsSystem("raster");
 #endif
 
-#ifdef _QT5_
-    qApp->installEventFilter(new MacEventFilter(qApp));
-#endif
-
-    LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
+    ZTest::getInstance().setCommandLineArg(argc, argv);
 
     // init 3D
     //std::cout << "Initializing 3D ..." << std::endl;
     RECORD_INFORMATION("Initializing 3D ...");
-    Z3DApplication z3dApp(QCoreApplication::applicationDirPath());
-    z3dApp.initialize();
+#ifdef _NEU3_
+    Neu3Window *mainWin = new Neu3Window();
 
+    if (!mainWin->loadDvidTarget()) {
+      mainWin->close();
+//      delete mainWin;
+      mainWin = NULL;
+    }
+#else
     MainWindow *mainWin = new MainWindow();
     mainWin->configure();
     mainWin->show();
@@ -254,34 +404,57 @@ int main(int argc, char *argv[])
       mainWin->processArgument(QString("test %1: %2").arg(argc).arg(argv[0]));
     }*/
 
-    int result =  app.exec();
+    ZSandbox::SetMainWindow(mainWin);
+    ZSandboxProject::InitSandbox();
+#endif
 
-    delete mainWin;
-    z3dApp.deinitializeGL();
-    z3dApp.deinitialize();
+    int result = 1;
+
+    if (mainWin != NULL) {
+#if defined(_FLYEM_) && !defined(_NEU3_)
+#  if defined(_DEBUG_)
+      ZMainWindowController::StartTestTask(mainWin);
+#  else
+      ZMainWindowController::StartTestTask(mainWin->startProofread());
+#  endif
+#endif
+
+#if defined(_NEU3_2)
+      mainWin->show();
+      mainWin->initialize();
+      mainWin->raise();
+      mainWin->showMaximized();
+#endif
+
+      try {
+        result = app.exec();
+      } catch (std::exception &e) {
+        LERROR() << "Crashed by exception:" << e.what();
+      }
+
+      delete mainWin;
+    }
+
+    if (!runCommandLine) {
+      //Sync log files
+      syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR),
+                 NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR));
+    }
 
     return result;
   } else {
+    /*
     if (runCommandLine) {
       ZCommandLine cmd;
       return cmd.run(argc, argv);
     }
+    */
 
     /********* for debugging *************/
 
 #ifndef QT_NO_DEBUG
-    /*
-    std::cout << "Debugging ..." << std::endl;
-    ZCurve curve;
-    double *array = new double[10];
-    for (int i = 0; i < 10; i++) {
-      array[i] = -i * i;
-    }
-    curve.loadArray(array, 10);
-    std::cout << curve.minY() << std::endl;
-    */
     if (unitTest) {
-      ZTest::runUnitTest(argc, argv);
+      ZTest::RunUnitTest(argc, argv);
     }
 #else
     if (unitTest) {
@@ -296,3 +469,4 @@ int main(int argc, char *argv[])
     return 1;
   }
 }
+#endif

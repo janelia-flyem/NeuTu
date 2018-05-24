@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]
+then
+  echo 'Usage: cpp2dot [--input/-i input --output/-o output | -h]'
+  exit
+fi
+
+if [ $# -eq 1 ]
+then
+  if [ $1 = "-h" ]
+  then
+    echo "Keywords: class, stm, function, cmp, agg, connect, %include"
+    echo "Examples:"
+    echo "  class Class1:ParentClass;"
+    echo '  stm statement1 = "statement1";'
+    echo '  function Class1::function;'
+    echo '  cmp Class1::Class2;'
+    echo '  agg Class3::Class4;'
+    echo '  connect Class1::signal, Class2::slot;'
+    echo '  connect Class1::signal, Class3::@signal;'
+    echo '  connect Class1, signal, Class2, slog;'
+    echo '  connect Class1, SIGNAL(signal()), Class2, SLOT(slot());'
+    echo ''
+  fi
+  exit
+fi
+
+python $NIDIR/python/cpparser.py $*
+ 

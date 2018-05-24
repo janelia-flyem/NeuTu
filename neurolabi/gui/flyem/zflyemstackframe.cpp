@@ -40,7 +40,7 @@ void ZFlyEmStackFrame::createDocument()
 bool ZFlyEmStackFrame::importSegmentationBundle(const std::string &filePath)
 {
   /*
-  FlyEm::ZSegmentationBundle bundle;
+  flyem::ZSegmentationBundle bundle;
   bundle.importJsonFile(filePath);
 
   //bundle.update();
@@ -91,6 +91,7 @@ void ZFlyEmStackFrame::importSegmentation(const string &filePath)
   completeDocument()->importSegmentation(filePath);
 }
 
+/*
 ZStack* ZFlyEmStackFrame::spinoffStackSelection(
     const std::vector<std::vector<double> > &selected,
     bool neighborIncluded)
@@ -103,7 +104,7 @@ ZStack* ZFlyEmStackFrame::spinoffStackSelection(
 
   return spinoffStackSelection(newSelected);
 }
-
+*/
 void ZFlyEmStackFrame::copyDocument(ZStackFrame *frame)
 {
   document()->loadStack(frame->document()->getStack()->clone());
@@ -140,7 +141,7 @@ ZStackFrame* ZFlyEmStackFrame::spinoffSegmentationSelection(
     //frame = new ZStackFrame();
 #ifdef _DEBUG_
     cout << "Color selected: ";
-    ZDoubleVector::print(selected);
+    ZDoubleVector::Print(selected);
 #endif
     ZStack *substack = doc->stackMask()->createSubstack(selected);
 
@@ -226,7 +227,7 @@ void ZFlyEmStackFrame::predictSegmentationError()
 {
 #if defined(_USE_OPENCV_)
   //Calculate connection features
-  FlyEm::ZSegmentationBundle *bundle =
+  flyem::ZSegmentationBundle *bundle =
       completeDocument()->getSegmentationBundle();
 
   ZGraph *bodyGraph = bundle->getBodyGraph();
@@ -236,10 +237,10 @@ void ZFlyEmStackFrame::predictSegmentationError()
 
   for (vector<string>::const_iterator iter = featureSet.begin();
        iter != featureSet.end(); ++iter) {
-    FlyEm::ZSegmentationAnalyzer::generateBcf(*bundle, *iter);
+    flyem::ZSegmentationAnalyzer::generateBcf(*bundle, *iter);
   }
 
-  FlyEm::ZBcfSet bcfSet(bundle->getBcfPath());
+  flyem::ZBcfSet bcfSet(bundle->getBcfPath());
   ZMatrix *matrix = bcfSet.load(featureSet);
 
   cv::Mat featureMatrix(
@@ -290,8 +291,8 @@ void ZFlyEmStackFrame::predictSegmentationError()
 bool ZFlyEmStackFrame::trainBodyConnection()
 {
 #if defined(_USE_OPENCV_)
-  FlyEm::ZSegmentationBundle testSegBundle;
-  FlyEm::ZSegmentationBundle trueSegBundle;
+  flyem::ZSegmentationBundle testSegBundle;
+  flyem::ZSegmentationBundle trueSegBundle;
 
   NeutubeConfig &config = NeutubeConfig::getInstance();
 
@@ -306,11 +307,11 @@ bool ZFlyEmStackFrame::trainBodyConnection()
 
   for (vector<string>::const_iterator iter = featureSet.begin();
        iter != featureSet.end(); ++iter) {
-    FlyEm::ZSegmentationAnalyzer::generateBcf(testSegBundle, *iter);
+    flyem::ZSegmentationAnalyzer::generateBcf(testSegBundle, *iter);
   }
 
 
-  FlyEm::ZBcfSet bcfSet(testSegBundle.getBcfPath());
+  flyem::ZBcfSet bcfSet(testSegBundle.getBcfPath());
   ZMatrix *featureMatrix = bcfSet.load(featureSet);
 
   int featureNumber = featureMatrix->getColumnNumber();
@@ -344,13 +345,13 @@ bool ZFlyEmStackFrame::trainBodyConnection()
     u8array_max2(array1, array2, volume);
 
     ZIntMap testBodySize =
-        FlyEm::ZSegmentationAnalyzer::computeBodySize(testBodyStack,
+        flyem::ZSegmentationAnalyzer::computeBodySize(testBodyStack,
                                                       testSegBundle.getBodyBoundaryStack());
 
-    ZIntPairMap overlap = FlyEm::ZSegmentationAnalyzer::computeOverlap(
+    ZIntPairMap overlap = flyem::ZSegmentationAnalyzer::computeOverlap(
           testBodyStack, trueBodyStack, b1);
     ZIntMap bodyCorrespondence =
-        FlyEm::ZSegmentationAnalyzer::inferBodyCorrespondence(
+        flyem::ZSegmentationAnalyzer::inferBodyCorrespondence(
           overlap, testBodySize);
 
     groundLabel.resize(sampleNumber, 0);
@@ -419,8 +420,8 @@ bool ZFlyEmStackFrame::evaluateBodyConnectionClassifier(
     const std::vector<double> &threshold)
 {
 #if defined(_USE_OPENCV_)
-  FlyEm::ZSegmentationBundle testSegBundle;
-  FlyEm::ZSegmentationBundle trueSegBundle;
+  flyem::ZSegmentationBundle testSegBundle;
+  flyem::ZSegmentationBundle trueSegBundle;
 
   NeutubeConfig &config = NeutubeConfig::getInstance();
 
@@ -436,10 +437,10 @@ bool ZFlyEmStackFrame::evaluateBodyConnectionClassifier(
 
   for (vector<string>::const_iterator iter = featureSet.begin();
        iter != featureSet.end(); ++iter) {
-    FlyEm::ZSegmentationAnalyzer::generateBcf(testSegBundle, *iter);
+    flyem::ZSegmentationAnalyzer::generateBcf(testSegBundle, *iter);
   }
 
-  FlyEm::ZBcfSet bcfSet(testSegBundle.getBcfPath());
+  flyem::ZBcfSet bcfSet(testSegBundle.getBcfPath());
   ZMatrix *matrix = bcfSet.load(featureSet);
 
   cv::Mat featureMatrix(
@@ -477,13 +478,13 @@ bool ZFlyEmStackFrame::evaluateBodyConnectionClassifier(
     u8array_max2(array1, array2, volume);
 
     ZIntMap testBodySize =
-        FlyEm::ZSegmentationAnalyzer::computeBodySize(testBodyStack,
+        flyem::ZSegmentationAnalyzer::computeBodySize(testBodyStack,
                                                       testSegBundle.getBodyBoundaryStack());
 
-    ZIntPairMap overlap = FlyEm::ZSegmentationAnalyzer::computeOverlap(
+    ZIntPairMap overlap = flyem::ZSegmentationAnalyzer::computeOverlap(
           testBodyStack, trueBodyStack, b1);
     ZIntMap bodyCorrespondence =
-        FlyEm::ZSegmentationAnalyzer::inferBodyCorrespondence(
+        flyem::ZSegmentationAnalyzer::inferBodyCorrespondence(
           overlap, testBodySize);
 
     ZGraph *bodyGraph = testSegBundle.getBodyGraph();
@@ -559,9 +560,9 @@ void ZFlyEmStackFrame::computeBodyConnFeature()
   const vector<string> &featureSet = config.getBodyConnectionFeature();
 
   for (size_t i = 0; i < featureSet.size(); ++i) {
-    FlyEm::ZSegmentationBundle *bundle =
+    flyem::ZSegmentationBundle *bundle =
         completeDocument()->getSegmentationBundle();
-    FlyEm::ZSegmentationAnalyzer::generateBcf(*bundle, featureSet[i]);
+    flyem::ZSegmentationAnalyzer::generateBcf(*bundle, featureSet[i]);
   }
 }
 
