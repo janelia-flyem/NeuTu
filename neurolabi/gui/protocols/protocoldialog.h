@@ -39,6 +39,7 @@ signals:
     void requestColorMapChange(ZFlyEmSequencerColorScheme scheme);
     void requestActivateColorMap();
     void requestDeactivateColorMap();
+    void rangeChanged(ZIntPoint firstCorner, ZIntPoint lastCorner);
 
 public slots:
     virtual void loadDataRequested(ZJsonObject data) = 0;

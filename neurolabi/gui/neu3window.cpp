@@ -984,6 +984,7 @@ void Neu3Window::syncBodyListModel()
   // would have triggered for each of the meshes, or else they will not function
   // correctly (e.g., will not be pickable in the 3D view).
 
+  LDEBUG() << "Syncing body list";
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
   std::set<uint64_t> selected;
   for (ZMesh *mesh : meshList) {
