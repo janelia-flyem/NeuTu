@@ -33,7 +33,7 @@ done
 
 for x in neu3-develop neu3-alpha neu3-beta neu3
 do
-  if [ {$NEUTU_TARGET} == "$x" ]
+  if [ ${NEUTU_TARGET} == "$x" ]
   then
     app_name=neu3
     break

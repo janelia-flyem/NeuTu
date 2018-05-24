@@ -1125,6 +1125,8 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
 
 void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
 {
+  LDEBUG() << "onBodyMeshesAdded:" << numMeshes;
+
     m_bodyMeshesAddedReceived++;
     m_bodyMeshLoadedExpected += numMeshes;
     enableButtonsAfterUpdating();

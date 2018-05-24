@@ -889,6 +889,12 @@ void Z3DWindow::createContextMenu()
   connect(m_toggleObjectsAction, SIGNAL(triggered(bool)),
           m_objectsDockWidget->toggleViewAction(), SIGNAL(triggered(bool)));
 
+  m_toggleSettingsAction = new QAction("Settings", this);
+  m_toggleSettingsAction->setCheckable(true);
+  m_toggleSettingsAction->setChecked(m_settingsDockWidget->toggleViewAction());
+  connect(m_toggleSettingsAction, SIGNAL(triggered(bool)),
+          m_settingsDockWidget->toggleViewAction(), SIGNAL(triggered(bool)));
+
   m_contextMenuGroup["empty"] = contextMenu;
 }
 
@@ -927,6 +933,15 @@ void Z3DWindow::hideControlPanel()
 {
   if (m_settingsDockWidget != NULL) {
     m_settingsDockWidget->hide();
+    m_toggleSettingsAction->setChecked(false);
+  }
+}
+
+void Z3DWindow::showControlPanel()
+{
+  if (m_settingsDockWidget != NULL) {
+    m_settingsDockWidget->show();
+    m_toggleSettingsAction->setChecked(true);
   }
 }
 
@@ -2311,13 +2326,18 @@ void Z3DWindow::toogleSmartExtendSelectedSwcNodeMode(bool checked)
   getCanvas()->updateCursor();
 }
 
+QTabWidget* Z3DWindow::getSettingsTabWidget() const
+{
+  return qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
+}
+
 void Z3DWindow::changeBackground()
 {
-  m_settingsDockWidget->show();
+  showControlPanel();
   const auto& grps = m_widgetsGroup->getChildGroups();
   int index = std::find(grps.begin(), grps.end(), m_view->backgroundWidgetsGroup()) - grps.begin();
-  QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
-  tab->setCurrentIndex(index);
+//  QTabWidget *tab = qobject_cast<QTabWidget*>(m_settingsDockWidget->widget());
+  getSettingsTabWidget()->setCurrentIndex(index);
 }
 
 bool Z3DWindow::isBackgroundOn() const
@@ -2655,8 +2675,9 @@ void Z3DWindow::updateContextMenu(const QString &group)
       m_contextMenuGroup["empty"]->addAction(m_toggleMoveSelectedObjectsAction);
     m_contextMenuGroup["empty"]->addAction(m_changeBackgroundAction);
     m_contextMenuGroup["empty"]->addAction(m_toggleObjectsAction);
-
+    m_contextMenuGroup["empty"]->addAction(m_toggleSettingsAction);
   }
+
   if (group == "volume") {
     m_contextMenuGroup["volume"]->clear();
     if (getVolumeFilter()->volumeNeedDownsample()) {

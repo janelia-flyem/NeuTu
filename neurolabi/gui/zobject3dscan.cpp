@@ -1996,6 +1996,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   case ZStackObject::BOUNDARY:
   {
     QColor color = pen.color();
+    pen.setCosmetic(m_usingCosmeticPen);
 //    color.setAlpha(255);
     pen.setColor(color);
     painter.setPen(pen);
