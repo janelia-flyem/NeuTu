@@ -43,6 +43,7 @@ public:
   virtual ~ZObject3dScan();
 
   ZObject3dScan(const ZObject3dScan &obj);
+  ZObject3dScan(const ZObject3dScan &&obj);
 
   static ZStackObject::EType GetType() {
     return ZStackObject::TYPE_OBJECT3D_SCAN;
@@ -120,6 +121,7 @@ public:
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
+  ZObject3dScan& operator=(const ZObject3dScan&& obj);
 
   void copyDataFrom(const ZObject3dScan &obj);
   void copyAttributeFrom(const ZObject3dScan &obj);

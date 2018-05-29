@@ -19110,7 +19110,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   QElapsedTimer timer;
   timer.start();
   ZRandomGenerator::SetSeed(0);
@@ -26604,6 +26604,40 @@ void ZTest::test(MainWindow *host)
   qDebug() << fileInfo.absoluteFilePath();
 
   qDebug() << fileInfo.isFile();
+#endif
+
+#if 1
+  {
+    tic();
+    std::vector<ZObject3dStripe> stripeArray;
+    for (size_t i = 0; i < 100000; ++i) {
+      ZObject3dStripe stripe;
+      stripe.addSegment(0, 1, false);
+      stripe.addSegment(3, 4, false);
+      stripe.addSegment(7, 8, false);
+      stripe.addSegment(11, 12, false);
+
+      stripeArray.push_back(std::move(stripe));
+    }
+    ptoc();
+  }
+
+  {
+    tic();
+    std::vector<ZObject3dStripe> stripeArray;
+    for (size_t i = 0; i < 100000; ++i) {
+      ZObject3dStripe stripe;
+      stripe.addSegment(0, 1, false);
+      stripe.addSegment(3, 4, false);
+      stripe.addSegment(7, 8, false);
+      stripe.addSegment(11, 12, false);
+
+      stripeArray.push_back(stripe);
+    }
+    ptoc();
+  }
+
+
 #endif
 
   std::cout << "Done." << std::endl;
