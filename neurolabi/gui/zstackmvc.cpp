@@ -21,6 +21,8 @@
 #include "zdialogfactory.h"
 #include "dialogs/zstresstestoptiondialog.h"
 #include "zstackdochelper.h"
+#include "concurrent/zworker.h"
+#include "concurrent/zworkthread.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -35,6 +37,12 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 
   m_testTimer = new QTimer(this);
   m_role = ROLE_WIDGET;
+
+//  m_taskQueue = new ZTaskQueue(this);
+  m_worker = new ZWorker;
+  ZWorkThread *workThread = new ZWorkThread(m_worker);
+  connect(workThread, SIGNAL(finished()), workThread, SLOT(deleteLater()));
+  workThread->start();
 
 #ifdef _DEBUG_2
   QShortcut *shortcut = new QShortcut(this);
