@@ -1,8 +1,12 @@
 #include "ztask.h"
 #include <iostream>
 
-ZTask::ZTask(QObject *parent) : QObject(parent) {
+ZTask::ZTask(QObject *parent) : QObject(parent)
+{
   setAutoDelete(false);
+  if (parent == nullptr) {
+    connect(this, &ZTask::finished, this, &ZTask::deleteLater);
+  }
 }
 
 ZTask::~ZTask()

@@ -879,7 +879,10 @@ HEADERS += mainwindow.h \
     zobjsmodelmanager.h \
     zobjsmodelfactory.h \
     flyem/zglobaldvidrepo.h \
-    flyem/flyemdef.h
+    flyem/flyemdef.h \
+    concurrent/zworkthread.h \
+    concurrent/zworker.h \
+    concurrent/ztaskqueue.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1540,7 +1543,10 @@ SOURCES += main.cpp \
     zmenuconfig.cpp \
     zobjsmodelmanager.cpp \
     zobjsmodelfactory.cpp \
-    flyem/zglobaldvidrepo.cpp
+    flyem/zglobaldvidrepo.cpp \
+    concurrent/zworkthread.cpp \
+    concurrent/zworker.cpp \
+    concurrent/ztaskqueue.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
