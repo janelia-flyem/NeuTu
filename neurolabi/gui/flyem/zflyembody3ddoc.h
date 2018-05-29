@@ -152,7 +152,7 @@ public:
   void setBodyType(flyem::EBodyType type);
   flyem::EBodyType getBodyType() const { return m_bodyType; }
 
-  QSet<uint64_t> getBodySet() const { return m_bodySet; }
+//  QSet<uint64_t> getBodySet() const { return m_bodySet; }
   QSet<uint64_t> getUnencodedBodySet() const;
   QSet<uint64_t> getNormalBodySet() const;
 

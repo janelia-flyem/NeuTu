@@ -66,6 +66,12 @@ ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj),
   *this = obj;
 }
 
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &&obj) : ZStackObject(obj),
+  m_zProjection(NULL)
+{
+  *this = obj;
+}
+
 ZObject3dScan::~ZObject3dScan()
 {
   deprecate(COMPONENT_ALL);
@@ -92,6 +98,26 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&>(obj);
 
   m_stripeArray = obj.m_stripeArray;
+  m_isCanonized = obj.m_isCanonized;
+  setLabel(obj.getLabel());
+//  m_label = obj.m_label;
+  m_blockingEvent = false;
+  m_sliceAxis = obj.m_sliceAxis;
+  m_dsIntv = obj.m_dsIntv;
+//  uint64_t m_label;
+
+//  this->m_zProjection = NULL;
+
+  return *this;
+}
+
+ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan&& obj)
+{
+  deprecate(COMPONENT_ALL);
+
+  dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&&>(obj);
+
+  m_stripeArray = std::move(obj.m_stripeArray);
   m_isCanonized = obj.m_isCanonized;
   setLabel(obj.getLabel());
 //  m_label = obj.m_label;
