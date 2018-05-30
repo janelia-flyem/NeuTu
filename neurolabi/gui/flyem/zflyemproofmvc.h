@@ -51,7 +51,6 @@ class FlyEmBodyIdDialog;
 class ZFlyEmMergeUploadDialog;
 class ZFlyEmProofSettingDialog;
 class ZROIWidget;
-class ZWorkThread;
 
 /*!
  * \brief The MVC class for flyem proofreading

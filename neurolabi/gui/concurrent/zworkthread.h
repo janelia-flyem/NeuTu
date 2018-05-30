@@ -9,6 +9,7 @@ class ZWorkThread : public QThread
   Q_OBJECT
 public:
   explicit ZWorkThread(ZWorker *worker, QObject *parent = nullptr);
+  virtual ~ZWorkThread();
 
 signals:
 

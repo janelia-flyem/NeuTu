@@ -1,9 +1,15 @@
 #include "zworkthread.h"
+#include "QsLog.h"
 #include "zworker.h"
 
 ZWorkThread::ZWorkThread(ZWorker *worker, QObject *parent) : QThread(parent)
 {
   setWorker(worker);
+}
+
+ZWorkThread::~ZWorkThread()
+{
+  LDEBUG() << "Work thread destroyed.";
 }
 
 

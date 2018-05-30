@@ -21,7 +21,6 @@ class QMainWindow;
 class ZIntPoint;
 class ZPoint;
 class ZStressTestOptionDialog;
-class ZWorker;
 
 /*!
  * \brief The MVC class for stack operation
@@ -180,8 +179,6 @@ protected:
   ZProgressSignal *m_progressSignal;
   QTimer *m_testTimer;
   ERole m_role;
-
-  ZWorker *m_worker;
 };
 
 #endif // ZSTACKMVC_H

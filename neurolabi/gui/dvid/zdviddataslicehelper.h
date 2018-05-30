@@ -74,6 +74,11 @@ public:
   void setViewParam(const ZStackViewParam &viewParam);
   ZStackViewParam getValidViewParam(const ZStackViewParam &viewParam) const;
   bool hasNewView(const ZStackViewParam &viewParam) const;
+  bool hasNewView(
+      const ZStackViewParam &viewParam, int centerCutX, int centerCutY) const;
+  bool containedIn(
+      const ZStackViewParam &viewParam, int zoom,
+      int centerCutX, int centerCutY) const;
 
   void setMaxSize(int maxW, int maxH);
   void setCenterCut(int width, int height);

@@ -152,7 +152,7 @@ public:
 
   int64_t getReadingTime() const;
 
-  void clearCache();
+//  void clearCache();
   bool refreshReaderBuffer();
 
 //  int getZoom() const;
@@ -161,6 +161,9 @@ public:
   void paintBuffer();
 
   QRect getDataRect(const ZStackViewParam &viewParam) const;
+
+  void consume(ZArray *array, const ZStackViewParam &viewParam,
+               int zoom, int centerCutX, int centerCutY);
 
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
@@ -242,7 +245,7 @@ private:
   bool m_selectionFrozen;
 //  bool m_isFullView;
 
-  mutable QCache<QString, ZArray> m_objCache;
+//  mutable QCache<QString, ZArray> m_objCache;
 //  NeuTube::EAxis m_sliceAxis;
 };
 
