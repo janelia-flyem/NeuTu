@@ -173,7 +173,7 @@ QString TaskBodyMerge::actionString()
 
 QString TaskBodyMerge::targetString()
 {
-  return QString::number(m_bodyId1) + " +<br>" + QString::number(m_bodyId2);
+  return "SV " + QString::number(m_supervoxelId1) + " +<br>SV " + QString::number(m_supervoxelId2);
 }
 
 void TaskBodyMerge::beforeNext()
