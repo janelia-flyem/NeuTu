@@ -17,6 +17,13 @@ public:
 
   ZTask* get();
   bool isEmpty();
+  /*!
+   * \brief Add a task to the queue.
+   *
+   * Note: When \a task is NULL, it can be used to indicate the end of the queue.
+   *
+   * \param task The task to be added.
+   */
   void add(ZTask *task);
 
 signals:

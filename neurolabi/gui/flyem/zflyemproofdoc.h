@@ -414,6 +414,10 @@ public:
 
   ZJsonArray getMergeOperation() const;
 
+  void prepareDvidLabelSlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY);
+
 public:
   virtual void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
@@ -528,6 +532,7 @@ public slots:
   void syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
   void runRoutineCheck();
+  void scheduleRoutineCheck();
 
 
 protected:
@@ -617,6 +622,8 @@ protected:
   ZDvidReader m_grayscaleReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
+
+  ZDvidWriter m_workWriter;
 
   ZFlyEmBodyMergeProject *m_mergeProject;
 

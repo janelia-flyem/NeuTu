@@ -490,6 +490,23 @@ int ZDvidLabelSlice::getCurrentZ() const
   return getHelper()->getZ();
 }
 
+void ZDvidLabelSlice::consume(
+    ZArray *array, const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY)
+{
+  if (array != NULL) {
+    if (getHelper()->containedIn(viewParam, zoom, centerCutX, centerCutY)) {
+      getHelper()->setZoom(zoom);
+      getHelper()->setViewParam(viewParam);
+      getHelper()->setCenterCut(centerCutX, centerCutY);
+      clearLabelData();
+      m_labelArray = array;
+    } else {
+      delete array;
+    }
+  }
+}
+
 #if 0
 bool ZDvidLabelSlice::update(const QRect &dataRect, int zoom, int z)
 {
@@ -1238,10 +1255,12 @@ QColor ZDvidLabelSlice::getCustomColor(uint64_t label) const
   return color;
 }
 
+/*
 void ZDvidLabelSlice::clearCache()
 {
   m_objCache.clear();
 }
+*/
 
 bool ZDvidLabelSlice::refreshReaderBuffer()
 {

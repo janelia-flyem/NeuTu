@@ -184,6 +184,38 @@ bool ZDvidDataSliceHelper::hasNewView(const ZStackViewParam &viewParam) const
       m_currentViewParam.getZoomLevel(maxZoomLevel));
 }
 
+bool ZDvidDataSliceHelper::hasNewView(
+    const ZStackViewParam &viewParam, int centerCutX, int centerCutY) const
+{
+  bool newView = hasNewView(viewParam);
+  if (newView == false) {
+    if (centerCutX < m_centerCutWidth || centerCutY < m_centerCutHeight) {
+      newView = true;
+    }
+  }
+
+  return newView;
+}
+
+bool ZDvidDataSliceHelper::containedIn(
+    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY)
+const
+{
+  bool contained = false;
+
+  if (viewParam.contains(m_currentViewParam)) {
+    if (zoom == m_zoom) {
+      if (centerCutX <= m_centerCutWidth && centerCutY <= m_centerCutHeight) {
+        contained = true;
+      }
+    } else if (zoom < m_zoom) {
+      contained = true;
+    }
+  }
+
+  return contained;
+}
+
 void ZDvidDataSliceHelper::invalidateViewParam()
 {
   m_currentViewParam.invalidate();

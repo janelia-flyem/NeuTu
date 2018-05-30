@@ -11,9 +11,12 @@ class ZWorker : public QObject
   Q_OBJECT
 public:
   explicit ZWorker(QObject *parent = nullptr);
+  virtual ~ZWorker();
 
   void addTask(ZTask *task);
 //  void setTaskQueue(ZTaskQueue *queue);
+
+  void quit();
 
 signals:
   void finished();

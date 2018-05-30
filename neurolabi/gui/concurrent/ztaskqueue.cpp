@@ -9,7 +9,9 @@ ZTaskQueue::ZTaskQueue(QObject *parent) : QObject(parent)
 ZTaskQueue::~ZTaskQueue()
 {
   foreach (ZTask *task, m_queue) {
-    task->deleteLater();
+    if (task != NULL) {
+      task->deleteLater();
+    }
   }
 }
 

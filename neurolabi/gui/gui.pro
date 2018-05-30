@@ -882,7 +882,9 @@ HEADERS += mainwindow.h \
     flyem/flyemdef.h \
     concurrent/zworkthread.h \
     concurrent/zworker.h \
-    concurrent/ztaskqueue.h
+    concurrent/ztaskqueue.h \
+    flyem/zflyemroutinechecktask.h \
+    flyem/zdvidlabelslicehighrestask.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1546,7 +1548,9 @@ SOURCES += main.cpp \
     flyem/zglobaldvidrepo.cpp \
     concurrent/zworkthread.cpp \
     concurrent/zworker.cpp \
-    concurrent/ztaskqueue.cpp
+    concurrent/ztaskqueue.cpp \
+    flyem/zflyemroutinechecktask.cpp \
+    flyem/zdvidlabelslicehighrestask.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
