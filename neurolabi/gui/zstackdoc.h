@@ -1353,6 +1353,7 @@ protected:
   void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();
   void addTask(ZTask *task);
+  void addTaskSlot(ZTask *task);
 
 private:
   void init();

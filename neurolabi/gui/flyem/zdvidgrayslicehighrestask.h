@@ -1,21 +1,22 @@
-#ifndef ZDVIDLABELSLICEHIGHRESTASK_H
-#define ZDVIDLABELSLICEHIGHRESTASK_H
+#ifndef ZDVIDGRAYSLICEHIGHRESTASK_H
+#define ZDVIDGRAYSLICEHIGHRESTASK_H
 
 #include "ztask.h"
 #include "zstackviewparam.h"
 
 class ZStackDoc;
 
-class ZDvidLabelSliceHighresTask : public ZTask
+class ZDvidGraySliceHighresTask : public ZTask
 {
   Q_OBJECT
 public:
-  explicit ZDvidLabelSliceHighresTask(QObject *parent = nullptr);
+  explicit ZDvidGraySliceHighresTask(QObject *parent = nullptr);
 
   void setViewParam(const ZStackViewParam &param);
   void setZoom(int zoom);
   void setCenterCut(int width, int height);
   void setDoc(ZStackDoc *doc);
+  void useCenterCut(bool on);
 
   void execute();
 
@@ -28,7 +29,8 @@ private:
   int m_zoom = 0;
   int m_centerCutWidth = 0;
   int m_centerCutHeight = 0;
+  bool m_usingCenterCut = false;
   ZStackDoc *m_doc = nullptr;
 };
 
-#endif // ZDVIDLABELSLICEHIGHRESTASK_H
+#endif // ZDVIDGRAYSLICEHIGHRESTASK_H

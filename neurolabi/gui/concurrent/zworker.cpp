@@ -4,9 +4,15 @@
 #include "ztask.h"
 #include "ztaskqueue.h"
 
-ZWorker::ZWorker(QObject *parent) : QObject(parent)
+ZWorker::ZWorker(EMode mode, QObject *parent) : QObject(parent),
+  m_mode(mode)
 {
-  m_taskQueue = new ZTaskQueue(this);
+  if (mode == MODE_QUEUE) {
+    m_taskQueue = new ZTaskQueue(this);
+  } else {
+    connect(this, SIGNAL(schedulingTask(ZTask*)),
+            this, SLOT(processTask(ZTask*)), Qt::QueuedConnection);
+  }
 }
 
 ZWorker::~ZWorker()
@@ -43,7 +49,23 @@ void ZWorker::process()
   emit finished();
 }
 
+void ZWorker::processTask(ZTask *task)
+{
+  if (m_quiting) {
+    task->abort();
+  } else {
+    task->run();
+  }
+}
+
 void ZWorker::addTask(ZTask *task)
 {
-  m_taskQueue->add(task);
+  if (m_taskQueue != NULL) {
+    m_taskQueue->add(task);
+  } else {
+    if (task != NULL) {
+      task->moveToThread(thread());
+      emit schedulingTask(task);
+    }
+  }
 }

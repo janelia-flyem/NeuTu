@@ -7456,13 +7456,14 @@ void MainWindow::runRoutineCheck()
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
     }
 #endif
-
+#if 0
     QString memoryUsage = ZFlyEmMisc::GetMemoryUsage();
     if (!memoryUsage.isEmpty()) {
       LINFO() << "Memory usage:" << memoryUsage;
       LINFO() << "Stack usage:" << C_Stack::stackUsage();
       LINFO() << "Mc_Stack usage:" << C_Stack::McStackUsage();
     }
+#endif
   }
 }
 

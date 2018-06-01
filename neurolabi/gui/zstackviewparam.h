@@ -30,7 +30,7 @@ public:
   bool isValid() const;
   void invalidate();
 
-  int getArea() const;
+  size_t getArea() const;
 
   QRect getViewPort() const;
   QRectF getProjRect() const;
@@ -86,6 +86,7 @@ public:
   }
 
   int getZoomLevel(int maxLevel) const;
+  int getZoomLevel() const;
 
   const ZViewProj& getViewProj() const {
     return m_viewProj;

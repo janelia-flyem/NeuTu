@@ -168,9 +168,9 @@ void ZStackViewParam::invalidate()
   m_viewProj.setZoom(0);
 }
 
-int ZStackViewParam::getArea() const
+size_t ZStackViewParam::getArea() const
 {
-  return getViewPort().width() * getViewPort().height();
+  return size_t(getViewPort().width()) * size_t(getViewPort().height());
 }
 
 void ZStackViewParam::setSliceAxis(neutube::EAxis sliceAxis)
@@ -183,7 +183,7 @@ neutube::EAxis ZStackViewParam::getSliceAxis() const
   return m_sliceAxis;
 }
 
-int ZStackViewParam::getZoomLevel(int maxLevel) const
+int ZStackViewParam::getZoomLevel() const
 {
   int zoom = std::round(std::log(1.0 / getZoomRatio()) / std::log(2.0) ) -1;
 
@@ -197,6 +197,12 @@ int ZStackViewParam::getZoomLevel(int maxLevel) const
     zoom += 1;
     scale = pow(2, zoom);
   }
+  return zoom;
+}
+
+int ZStackViewParam::getZoomLevel(int maxLevel) const
+{
+  int zoom = getZoomLevel();
 
   if (zoom > maxLevel) {
     zoom = maxLevel;

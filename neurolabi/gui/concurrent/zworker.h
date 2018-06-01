@@ -10,8 +10,16 @@ class ZWorker : public QObject
 {
   Q_OBJECT
 public:
-  explicit ZWorker(QObject *parent = nullptr);
+  enum EMode {
+    MODE_QUEUE, MODE_SCHEDULE
+  };
+
+  explicit ZWorker(EMode mode, QObject *parent = nullptr);
   virtual ~ZWorker();
+
+  EMode getMode() const {
+    return m_mode;
+  }
 
   void addTask(ZTask *task);
 //  void setTaskQueue(ZTaskQueue *queue);
@@ -20,13 +28,16 @@ public:
 
 signals:
   void finished();
+  void schedulingTask(ZTask *task);
 
 public slots:
   void process();
+  void processTask(ZTask *task);
 
 private:
   ZTaskQueue *m_taskQueue = nullptr;
   bool m_quiting =false;
+  EMode m_mode = MODE_QUEUE;
 };
 
 #endif // ZWORKER_H
