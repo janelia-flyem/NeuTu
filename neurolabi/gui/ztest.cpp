@@ -26638,7 +26638,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "a6dd", 8700);
   target.setSegmentationName("segmentation");
@@ -26648,7 +26648,7 @@ void ZTest::test(MainWindow *host)
   writer.deleteKey(QString("segmentation_meshes"), "0", "z");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.setFromUrl("http://emdata1.int.janelia.org:8900/api/node/3d5d");
   target.setSegmentationName("segmentation");

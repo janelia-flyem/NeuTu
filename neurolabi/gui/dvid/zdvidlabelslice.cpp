@@ -206,6 +206,7 @@ ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc)
     task->setZoom(getHelper()->getZoom() - 1);
     task->setCenterCut(
           getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
+    task->setDelay(100);
     task->setDoc(doc);
   }
 
