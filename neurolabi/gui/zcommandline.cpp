@@ -1058,26 +1058,34 @@ int ZCommandLine::skeletonizeDvid()
   reader.open(target);
 
   ZDvidWriter writer;
-  writer.open(target);
 
-  ZDvidUrl dvidUrl(target);
+  bool savingToFile = false;
+  QDir outputDir(m_output.c_str());
 
-  if (!writer.isSwcWrittable()) {
-    std::cout << "Server return code: " << writer.getStatusCode() << std::endl;
-    std::cout << writer.getStandardOutput().toStdString() << std::endl;
-    std::cout << "Cannot access " << dvidUrl.getSkeletonUrl() << std::endl;
-    std::cout << "Please create the keyvalue data for skeletons first:"
-              << std::endl;
-    std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
-                 "-d '{\"dataname\": \""
-              << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
-                                    ZDvidData::ROLE_BODY_LABEL,
-                                    target.getBodyLabelName())
-              << "\", " << "\"typename\": \"keyvalue\"}' "
-              << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
-              << std::endl;
+  if (!QFileInfo(m_output.c_str()).isDir()) {
+    writer.open(target);
+    ZDvidUrl dvidUrl(target);
 
-    return 1;
+    if (!writer.isSwcWrittable()) {
+      std::cout << "Server return code: " << writer.getStatusCode() << std::endl;
+      std::cout << writer.getStandardOutput().toStdString() << std::endl;
+      std::cout << "Cannot access " << dvidUrl.getSkeletonUrl() << std::endl;
+      std::cout << "Please create the keyvalue data for skeletons first:"
+                << std::endl;
+      std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
+                   "-d '{\"dataname\": \""
+                << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
+                                      ZDvidData::ROLE_BODY_LABEL,
+                                      target.getBodyLabelName())
+                << "\", " << "\"typename\": \"keyvalue\"}' "
+                << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
+                << std::endl;
+
+      return 1;
+    }
+  } else {
+    std::cout << "Output to " << outputDir.absolutePath().toStdString() << std::endl;
+    savingToFile = true;
   }
 
   std::vector<uint64_t> bodyIdArray = getSkeletonBodyList(reader);
@@ -1116,15 +1124,33 @@ int ZCommandLine::skeletonizeDvid()
     uint64_t bodyId = bodyIdArray[rank[i] - 1];
     if (excluded.count(bodyId) == 0) {
       ZSwcTree *tree = NULL;
+      QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
+
       if (!m_forceUpdate) {
-        tree = reader.readSwc(bodyId);
+        if (savingToFile) {
+          if (outputFileInfo.exists()) {
+            tree = new ZSwcTree;
+            tree->load(outputFileInfo.absoluteFilePath().toStdString());
+            if (tree->isEmpty()) {
+              delete tree;
+              tree = NULL;
+            }
+            std::cout << outputFileInfo.absoluteFilePath().toStdString() + " exists." << std::endl;
+          }
+        } else {
+          tree = reader.readSwc(bodyId);
+        }
       }
       if (tree == NULL) {
         ZObject3dScan obj;
         reader.readBody(bodyId, true, &obj);
         tree = skeletonizer.makeSkeleton(obj);
         if (tree != NULL) {
-          writer.writeSwc(bodyId, tree);
+          if (savingToFile) {
+            tree->save(outputFileInfo.absoluteFilePath().toStdString());
+          } else {
+            writer.writeSwc(bodyId, tree);
+          }
         } else {
           std::cout << "WARNING: skeletonization failed for "
                     << bodyId << std::endl;
