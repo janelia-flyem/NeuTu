@@ -434,10 +434,15 @@ void ZStackDoc::updateSwcNodeAction()
 
 void ZStackDoc::addTask(ZTask *task)
 {
+//  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
   if (task->getDelay() > 0) {
-    QTimer::singleShot(task->getDelay(), this, [=]() {
-      this->addTaskSlot(task);
-    });
+    if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
+      QTimer::singleShot(task->getDelay(), this, [=]() {
+        this->addTaskSlot(task);
+      });
+    } else {
+      addTaskSlot(task);
+    }
   } else {
     addTaskSlot(task);
   }

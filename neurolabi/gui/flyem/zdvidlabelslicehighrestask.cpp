@@ -1,5 +1,6 @@
 #include "zdvidlabelslicehighrestask.h"
 //#include "zflyemproofmvc.h"
+#include "QsLog.h"
 #include "zflyemproofdoc.h"
 #include "dvid/zdvidlabelslice.h"
 
@@ -18,6 +19,9 @@ void ZDvidLabelSliceHighresTask::execute()
             m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight)) {
         doc->prepareDvidLabelSlice(
               m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight);
+//        LDEBUG() << "Task executed in thread: " << QThread::currentThreadId();
+      } else {
+//        LDEBUG() << "Task ignored in thread: " << QThread::currentThreadId();
       }
     }
   }

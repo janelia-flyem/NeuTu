@@ -1,5 +1,7 @@
 #include "zworker.h"
 
+#include <QTimer>
+
 #include "QsLog.h"
 #include "ztask.h"
 #include "ztaskqueue.h"
@@ -67,7 +69,13 @@ void ZWorker::addTask(ZTask *task)
       task->moveToThread(thread());
       task->setParent(this);
 //      task->moveToThread(thread());
-      emit schedulingTask(task);
+      if (task->getDelay() > 0) {
+        QTimer::singleShot(task->getDelay(), this, [=]() {
+          processTask(task);
+        });
+      } else {
+        emit schedulingTask(task);
+      }
     }
   }
 }
