@@ -65,6 +65,8 @@ void ZWorker::addTask(ZTask *task)
   } else {
     if (task != NULL) {
       task->moveToThread(thread());
+      task->setParent(this);
+//      task->moveToThread(thread());
       emit schedulingTask(task);
     }
   }

@@ -26606,7 +26606,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << fileInfo.isFile();
 #endif
 
-#if 1
+#if 0
   {
     tic();
     std::vector<ZObject3dStripe> stripeArray;
@@ -26638,6 +26638,17 @@ void ZTest::test(MainWindow *host)
   }
 
 
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.setFromUrl("http://emdata1.int.janelia.org:8900/api/node/3d5d");
+  target.setSegmentationName("segmentation");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.syncAnnotationToLabel("segmentation_todo");
 #endif
 
   std::cout << "Done." << std::endl;
