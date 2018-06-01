@@ -233,8 +233,7 @@ void ZStackDoc::init()
   connect(shortcut, SIGNAL(triggered()), this, SLOT(shortcutTest()));
 #endif
 
-  //  m_taskQueue = new ZTaskQueue(this);
-  m_worker = new ZWorker(ZWorker::MODE_QUEUE);
+  m_worker = new ZWorker(ZWorker::MODE_SCHEDULE);
   m_workThread = new ZWorkThread(m_worker);
   connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
   m_workThread->start();
