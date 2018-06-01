@@ -26636,8 +26636,16 @@ void ZTest::test(MainWindow *host)
     }
     ptoc();
   }
+#endif
 
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "a6dd", 8700);
+  target.setSegmentationName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
 
+  writer.deleteKey(QString("segmentation_meshes"), "0", "z");
 #endif
 
 #if 1
