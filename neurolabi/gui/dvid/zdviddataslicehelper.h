@@ -33,6 +33,8 @@ public:
     return m_zoom;
   }
 
+  int getLowresZoom() const;
+
   const ZStackViewParam& getViewParam() const {
     return m_currentViewParam;
   }
@@ -43,6 +45,13 @@ public:
 
   int getMaxHeight() const {
     return m_maxHeight;
+  }
+
+  void useCenterCut(bool on) {
+    m_usingCenterCut = on;
+  }
+  bool usingCenterCut() const {
+    return m_usingCenterCut;
   }
 
   int getMaxZoom() const;
@@ -58,6 +67,9 @@ public:
   void setZ(int z);
   int getWidth() const;
   int getHeight() const;
+  size_t getViewPortArea() const;
+  size_t getViewDataSize() const;
+  static size_t GetViewDataSize(const ZStackViewParam &viewParam, int zoom);
 
   int getCenterCutWidth() const;
   int getCenterCutHeight() const;
@@ -67,9 +79,7 @@ public:
   void setBoundBox(const ZRect2d &rect);
 
   int getScale() const;
-  void setZoom(int zoom) {
-    m_zoom = zoom;
-  }
+  void setZoom(int zoom);
 
   void setViewParam(const ZStackViewParam &viewParam);
   ZStackViewParam getValidViewParam(const ZStackViewParam &viewParam) const;
@@ -78,7 +88,7 @@ public:
       const ZStackViewParam &viewParam, int centerCutX, int centerCutY) const;
   bool containedIn(
       const ZStackViewParam &viewParam, int zoom,
-      int centerCutX, int centerCutY) const;
+      int centerCutX, int centerCutY, bool centerCut) const;
 
   void setMaxSize(int maxW, int maxH);
   void setCenterCut(int width, int height);
@@ -101,6 +111,7 @@ public:
 
   int m_centerCutWidth = 256;
   int m_centerCutHeight = 256;
+  bool m_usingCenterCut = true;
 
   ZDvidData::ERole m_dataRole;
 

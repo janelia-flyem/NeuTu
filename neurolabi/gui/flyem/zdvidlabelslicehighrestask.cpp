@@ -1,24 +1,45 @@
 #include "zdvidlabelslicehighrestask.h"
-#include "zflyemproofmvc.h"
+//#include "zflyemproofmvc.h"
 #include "zflyemproofdoc.h"
 #include "dvid/zdvidlabelslice.h"
-#include "dvid/zdviddataslicehelper.h"
 
-ZDvidLabelSliceHighresTask::ZDvidLabelSliceHighresTask(QObject *parent) : QObject(parent)
+ZDvidLabelSliceHighresTask::ZDvidLabelSliceHighresTask(QObject *parent) : ZTask(parent)
 {
 }
 
 void ZDvidLabelSliceHighresTask::execute()
 {
-  if (m_mvc != NULL) {
-    ZDvidLabelSlice *slice =
-        m_mvc->getCompleteDocument()->getDvidLabelSlice(m_viewParam.getSliceAxis());
+  ZFlyEmProofDoc *doc = qobject_cast<ZFlyEmProofDoc*>(m_doc);
+  if (doc != NULL) {
+
+    ZDvidLabelSlice *slice = doc->getDvidLabelSlice(m_viewParam.getSliceAxis());
     if (slice != NULL) {
-      if (slice->getHelper()->containedIn(
+      if (slice->containedIn(
             m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight)) {
-        m_mvc->getCompleteDocument()->prepareDvidLabelSlice(
+        doc->prepareDvidLabelSlice(
               m_viewParam, m_zoom, m_centerCutWidth, m_centerCutHeight);
       }
     }
   }
+}
+
+void ZDvidLabelSliceHighresTask::setViewParam(const ZStackViewParam &param)
+{
+  m_viewParam = param;
+}
+
+void ZDvidLabelSliceHighresTask::setZoom(int zoom)
+{
+  m_zoom = zoom;
+}
+
+void ZDvidLabelSliceHighresTask::setCenterCut(int width, int height)
+{
+  m_centerCutWidth = width;
+  m_centerCutHeight = height;
+}
+
+void ZDvidLabelSliceHighresTask::setDoc(ZStackDoc *doc)
+{
+  m_doc = doc;
 }

@@ -72,6 +72,7 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
   ZDvidGraySlice* getDvidGraySlice() const;
+  ZDvidGraySlice* getDvidGraySlice(neutube::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
@@ -417,6 +418,8 @@ public:
   void prepareDvidLabelSlice(
       const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY);
+  void prepareDvidGraySlice(const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
 
 public:
   virtual void executeAddTodoCommand(
@@ -450,6 +453,12 @@ signals:
   void todoModified(uint64_t bodyId);
   void requestingBodyLock(uint64_t bodyId, bool locking);
   void bodyColorUpdated(ZFlyEmProofDoc*);
+
+  void updatingLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                          int zoom, int centerCutX, int centerCutY);
+  void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                         int zoom, int centerCutX, int centerCutY);
+
 
 public slots: //Commands
   void repairSelectedSynapses();
@@ -533,6 +542,11 @@ public slots:
 
   void runRoutineCheck();
   void scheduleRoutineCheck();
+
+  void updateLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                        int zoom, int centerCutX, int centerCutY);
+  void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                       int zoom, int centerCutX, int centerCutY);
 
 
 protected:
@@ -624,6 +638,7 @@ protected:
   ZFlyEmSupervisor *m_supervisor;
 
   ZDvidWriter m_workWriter;
+  ZDvidReader m_grayscaleWorkReader;
 
   ZFlyEmBodyMergeProject *m_mergeProject;
 

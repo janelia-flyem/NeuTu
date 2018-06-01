@@ -124,6 +124,25 @@ int ZDvidDataSliceHelper::getHeight() const
   return getViewPort().height();
 }
 
+size_t ZDvidDataSliceHelper::getViewPortArea() const
+{
+  return size_t(getWidth()) * size_t(getHeight());
+}
+
+size_t ZDvidDataSliceHelper::getViewDataSize() const
+{
+  int scale = getScale();
+  return getViewPortArea() / scale / scale;
+}
+
+size_t ZDvidDataSliceHelper::GetViewDataSize(
+    const ZStackViewParam &viewParam, int zoom)
+{
+  int scale = misc::GetZoomScale(zoom);
+
+  return viewParam.getArea() / scale / scale;
+}
+
 int ZDvidDataSliceHelper::getCenterCutWidth() const
 {
   return m_centerCutWidth;
@@ -137,6 +156,21 @@ int ZDvidDataSliceHelper::getCenterCutHeight() const
 int ZDvidDataSliceHelper::getScale() const
 {
   return misc::GetZoomScale(getZoom());
+}
+
+void ZDvidDataSliceHelper::setZoom(int zoom)
+{
+  m_zoom = std::max(0, std::min(zoom, m_maxZoom));
+}
+
+int ZDvidDataSliceHelper::getLowresZoom() const
+{
+  int zoom = getZoom() + 1;
+  if (zoom > getMaxZoom()) {
+    zoom -= 1;
+  }
+
+  return zoom;
 }
 
 bool ZDvidDataSliceHelper::hasMaxSize(int width, int height) const
@@ -198,15 +232,20 @@ bool ZDvidDataSliceHelper::hasNewView(
 }
 
 bool ZDvidDataSliceHelper::containedIn(
-    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY)
+    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
+    bool centerCut)
 const
 {
   bool contained = false;
 
   if (viewParam.contains(m_currentViewParam)) {
     if (zoom == m_zoom) {
-      if (centerCutX <= m_centerCutWidth && centerCutY <= m_centerCutHeight) {
-        contained = true;
+      if (!centerCut && !usingCenterCut()) {
+        if (centerCutX >= m_centerCutWidth && centerCutY >= m_centerCutHeight) {
+          contained = true;
+        }
+      } else {
+        contained = usingCenterCut();
       }
     } else if (zoom < m_zoom) {
       contained = true;

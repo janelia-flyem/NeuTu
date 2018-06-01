@@ -2763,7 +2763,7 @@ void ZDvidReader::configureLowtis(T *config, const std::string &dataName) const
 
 #if defined(_ENABLE_LOWTIS_)
 ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
-    int width, int height, int zoom, int cx, int cy) const
+    int width, int height, int zoom, int cx, int cy, bool centerCut) const
 {
 #if 0
   if (!getDvidTarget().hasGray()) {
@@ -2825,7 +2825,6 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
       offset[1] = y0;
       offset[2] = z0;
 
-      bool centerCut = true;
       if (zoom == getDvidTarget().getMaxGrayscaleZoom() ||
           width < cx || height < cy) {
         centerCut = false;
@@ -2864,7 +2863,7 @@ ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
 ZStack* ZDvidReader::readGrayScaleLowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
-  return readGrayScaleLowtis(x0, y0, z0, width, height, zoom, 256, 256);
+  return readGrayScaleLowtis(x0, y0, z0, width, height, zoom, 256, 256, true);
 }
 
 namespace {
@@ -3035,7 +3034,7 @@ void ZDvidReader::setLabelCenterCut(int cx, int cy)
 ZStack* ZDvidReader::readGrayScaleLowtis(
     int x0, int y0, int z0, double vx1, double vy1, double vz1,
     double vx2, double vy2, double vz2,
-    int width, int height, int zoom, int cx, int cy) const
+    int width, int height, int zoom, int cx, int cy, bool centerCut) const
 {
   if (getLowtisServiceGray(cx, cy) == NULL) {
     return NULL;
@@ -3058,7 +3057,6 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
     try {
       std::vector<int> offset = GetOffset(x0, y0, z0);
 
-      bool centerCut = true;
       if (zoom == getDvidTarget().getMaxGrayscaleZoom() ||
           box.getWidth() < cx || box.getHeight() < cy) {
         centerCut = false;
@@ -3115,20 +3113,20 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 
 ZStack *ZDvidReader::readGrayScaleLowtis(
     const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
-    int width, int height, int zoom, int cx, int cy) const
+    int width, int height, int zoom, int cx, int cy, bool centerCut) const
 {
   return readGrayScaleLowtis(
         center.getX(), center.getY(), center.getZ(),
         v1.getX(), v1.getY(), v1.getZ(), v2.getX(), v2.getY(), v2.getZ(),
-        width, height, zoom, cx, cy);
+        width, height, zoom, cx, cy, centerCut);
 }
 
 ZStack* ZDvidReader::readGrayScaleLowtis(
-    const ZAffineRect &ar, int zoom, int cx, int cy) const
+    const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const
 {
   return readGrayScaleLowtis(
         ar.getCenter().toIntPoint(), ar.getV1(), ar.getV2(),
-        ar.getWidth(), ar.getHeight(), zoom, cx, cy);
+        ar.getWidth(), ar.getHeight(), zoom, cx, cy, centerCut);
 }
 
 ZArray* ZDvidReader::readLabels64Lowtis(

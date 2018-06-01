@@ -120,6 +120,7 @@
 #include "zobjsmodelmanager.h"
 #include "concurrent/zworker.h"
 #include "concurrent/zworkthread.h"
+#include "ztask.h"
 
 using namespace std;
 
@@ -233,7 +234,7 @@ void ZStackDoc::init()
 #endif
 
   //  m_taskQueue = new ZTaskQueue(this);
-  m_worker = new ZWorker;
+  m_worker = new ZWorker(ZWorker::MODE_QUEUE);
   m_workThread = new ZWorkThread(m_worker);
   connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
   m_workThread->start();
@@ -434,6 +435,18 @@ void ZStackDoc::updateSwcNodeAction()
 
 void ZStackDoc::addTask(ZTask *task)
 {
+  if (task->getDelay() > 0) {
+    QTimer::singleShot(task->getDelay(), this, [=]() {
+      this->addTaskSlot(task);
+    });
+  } else {
+    addTaskSlot(task);
+  }
+}
+
+void ZStackDoc::addTaskSlot(ZTask *task)
+{
+//  task->moveToThread(m_worker->thread());
   m_worker->addTask(task);
 }
 
@@ -10186,6 +10199,10 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
               m_doc->notifyUpdateLatency(labelSlice->getReadingTime());
             }
           }
+        }
+        ZTask *task = player->getFutureTask(m_doc.get());
+        if (task != NULL) {
+          m_doc->addTask(task);
         }
       }
     }

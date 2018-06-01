@@ -54,6 +54,8 @@
 #include "zmeshfactory.h"
 #include "zswctree.h"
 #include "zflyemroutinechecktask.h"
+#include "dvid/zdviddataslicehelper.h"
+#include "zarray.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -72,7 +74,7 @@ void ZFlyEmProofDoc::init()
   m_supervisor = new ZFlyEmSupervisor(this);
   m_mergeProject = new ZFlyEmBodyMergeProject(this);
 
-  m_routineCheck = true;
+  m_routineCheck = false;
 
   initTimer();
   initAutoSave();
@@ -121,28 +123,35 @@ void ZFlyEmProofDoc::initAutoSave()
 
 void ZFlyEmProofDoc::connectSignalSlot()
 {
-    connect(this, SIGNAL(bodyMerged()),
-            this, SLOT(saveMergeOperation()));
-    connect(this, SIGNAL(bodyUnmerged()),
-            this, SLOT(saveMergeOperation()));
-    connect(getMergeProject(), SIGNAL(mergeUploaded()),
-            this, SIGNAL(bodyMergeUploaded()));
-    connect(this, SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
-            getMergeProject(), SIGNAL(selectionChanged(ZStackObjectSelector)));
+  connect(this, SIGNAL(bodyMerged()),
+          this, SLOT(saveMergeOperation()));
+  connect(this, SIGNAL(bodyUnmerged()),
+          this, SLOT(saveMergeOperation()));
+  connect(getMergeProject(), SIGNAL(mergeUploaded()),
+          this, SIGNAL(bodyMergeUploaded()));
+  connect(this, SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
+          getMergeProject(), SIGNAL(selectionChanged(ZStackObjectSelector)));
 
-    m_mergeProject->getProgressSignal()->connectProgress(getProgressSignal());
+  m_mergeProject->getProgressSignal()->connectProgress(getProgressSignal());
 
-//    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
-//            this, SLOT(updateDvidLabelObject()));
-    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, flyem::EBodySplitMode)),
-            this, SLOT(checkInBodyWithMessage(uint64_t, flyem::EBodySplitMode)));
-    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
-            this, SLOT(updateDvidLabelObjectSliently()));
+  //    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
+  //            this, SLOT(updateDvidLabelObject()));
+  connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, flyem::EBodySplitMode)),
+          this, SLOT(checkInBodyWithMessage(uint64_t, flyem::EBodySplitMode)));
+  connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
+          this, SLOT(updateDvidLabelObjectSliently()));
 
-    ZWidgetMessage::ConnectMessagePipe(getMergeProject(), this, false);
+  ZWidgetMessage::ConnectMessagePipe(getMergeProject(), this, false);
 
-    connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(scheduleRoutineCheck()));
+  connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(scheduleRoutineCheck()));
 
+  connect(this, SIGNAL(updatingLabelSlice(ZArray*,ZStackViewParam,int,int,int)),
+          this, SLOT(updateLabelSlice(ZArray*,ZStackViewParam,int,int,int)),
+          Qt::QueuedConnection);
+
+  connect(this, SIGNAL(updatingGraySlice(ZStack*,ZStackViewParam,int,int,int)),
+          this, SLOT(updateGraySlice(ZStack*,ZStackViewParam,int,int,int)),
+          Qt::QueuedConnection);
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
@@ -172,9 +181,11 @@ void ZFlyEmProofDoc::uploadMergeResult()
 
 void ZFlyEmProofDoc::scheduleRoutineCheck()
 {
-  ZFlyEmRoutineCheckTask *task = new ZFlyEmRoutineCheckTask;
-  task->setDoc(this);
-  addTask(task);
+  if (m_routineCheck) {
+    ZFlyEmRoutineCheckTask *task = new ZFlyEmRoutineCheckTask;
+    task->setDoc(this);
+    addTask(task);
+  }
 }
 
 void ZFlyEmProofDoc::runRoutineCheck()
@@ -906,11 +917,17 @@ void ZFlyEmProofDoc::loadRoiFunc()
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 {
+  return getDvidGraySlice(neutube::Z_AXIS);
+}
+
+ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutube::EAxis axis) const
+{
   ZStackObject *obj = getObject(ZStackObject::TYPE_DVID_GRAY_SLICE,
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
 
   return dynamic_cast<ZDvidGraySlice*>(obj);
 }
+
 
 const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
 {
@@ -2044,7 +2061,42 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
     }
   }
 
-  return array;
+  if (array != NULL) {
+    emit updatingLabelSlice(array, viewParam, zoom, centerCutX, centerCutY);
+  }
+}
+
+void ZFlyEmProofDoc::prepareDvidGraySlice(
+    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
+    bool usingCenterCut)
+{
+  if (!m_grayscaleWorkReader.good()) {
+    m_grayscaleWorkReader.open(getDvidTarget().getGrayScaleTarget());
+  }
+
+  ZStack *array = NULL;
+
+  if (m_grayscaleWorkReader.good()) {
+    if (viewParam.getSliceAxis() == neutube::A_AXIS) {
+      ZArbSliceViewParam svp = viewParam.getSliceViewParam();
+      array = m_grayscaleWorkReader.readGrayScaleLowtis(
+            svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
+            svp.getWidth(), svp.getHeight(),
+            zoom, centerCutX, centerCutY, usingCenterCut);
+    } else {
+      ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
+            viewParam.getViewPort(), viewParam.getZ());
+
+      array = m_grayscaleWorkReader.readGrayScaleLowtis(
+            box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+            box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+            zoom, centerCutX, centerCutY, usingCenterCut);
+    }
+  }
+
+  if (array != NULL) {
+    emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY);
+  }
 }
 
 /*
@@ -2056,6 +2108,40 @@ void ZFlyEmProofDoc::downloadBodyMask()
   }
 }
 */
+
+void ZFlyEmProofDoc::updateLabelSlice(
+    ZArray *array, const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY)
+{
+  if (array != NULL) {
+    ZDvidLabelSlice *slice = getDvidLabelSlice(viewParam.getSliceAxis());
+    if (slice != NULL) {
+      if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY)) {
+        bufferObjectModified(slice->getTarget());
+        processObjectModified();
+      }
+    } else {
+      delete array;
+    }
+  }
+}
+
+void ZFlyEmProofDoc::updateGraySlice(
+    ZStack *array, const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY)
+{
+  if (array != NULL) {
+    ZDvidGraySlice *slice = getDvidGraySlice(viewParam.getSliceAxis());
+    if (slice != NULL) {
+      if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY)) {
+        bufferObjectModified(slice->getTarget());
+        processObjectModified();
+      }
+    } else {
+      delete array;
+    }
+  }
+}
 
 QList<uint64_t> ZFlyEmProofDoc::getMergedSource(uint64_t bodyId) const
 {

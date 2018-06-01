@@ -24,6 +24,8 @@ class ZPixmap;
 class ZDvidDataSliceHelper;
 class ZStackViewParam;
 class ZArbSliceViewParam;
+class ZTask;
+class ZStackDoc;
 
 class ZDvidLabelSlice : public ZStackObject
 {
@@ -156,14 +158,17 @@ public:
   bool refreshReaderBuffer();
 
 //  int getZoom() const;
-  int getZoomLevel(const ZStackViewParam &viewParam) const;
+//  int getZoomLevel(const ZStackViewParam &viewParam) const;
 
   void paintBuffer();
 
   QRect getDataRect(const ZStackViewParam &viewParam) const;
 
-  void consume(ZArray *array, const ZStackViewParam &viewParam,
+  bool consume(ZArray *array, const ZStackViewParam &viewParam,
                int zoom, int centerCutX, int centerCutY);
+  bool containedIn(const ZStackViewParam &viewParam, int zoom,
+                   int centerCutX, int centerCutY) const;
+  ZTask* makeFutureTask(ZStackDoc *doc);
 
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
@@ -209,6 +214,8 @@ private:
 
   bool isPaintBufferAllocNeeded(int width, int height) const;
 
+  int getFirstZoom(const ZStackViewParam &viewParam) const;
+
 private:
 //  ZDvidTarget m_dvidTarget;
 //  ZDvidReader m_reader;
@@ -243,6 +250,7 @@ private:
 //  int m_zoom;
 
   bool m_selectionFrozen;
+  bool m_multiResUpdate = true;
 //  bool m_isFullView;
 
 //  mutable QCache<QString, ZArray> m_objCache;
