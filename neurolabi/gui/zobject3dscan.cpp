@@ -115,7 +115,7 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan&& obj)
 {
   deprecate(COMPONENT_ALL);
 
-  dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&&>(obj);
+  dynamic_cast<ZStackObject&>(*this) = obj;
 
   m_stripeArray = std::move(obj.m_stripeArray);
   m_isCanonized = obj.m_isCanonized;
