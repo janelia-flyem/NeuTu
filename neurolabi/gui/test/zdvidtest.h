@@ -73,7 +73,6 @@ TEST(ZDvidTest, ZDvidInfo)
   ASSERT_EQ(2, (int) obj2.getVoxelNumber());
   ASSERT_TRUE(obj2.contains(-1, -1, -1));
   ASSERT_TRUE(obj2.contains(0, -1, -1));
-
 }
 
 TEST(ZDvidTest, Util)
@@ -483,7 +482,7 @@ TEST(ZDvidTest, ZDvidUrl)
 
   target.setSegmentationType(ZDvidData::TYPE_LABELMAP);
   dvidUrl4.setDvidTarget(target, "3456");
-  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/tag/body:123",
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
             dvidUrl4.getAnnotationUrl("test", 123));
 
 }
@@ -536,6 +535,14 @@ TEST(ZDvidTest, ZDvidNode)
   ASSERT_EQ("234", node.getUuid());
   ASSERT_EQ("emdata2.int.janelia.org", node.getAddressWithPort());
 
+  node.clear();
+  node.setServer("http://emdata2.int.janelia.org:9000/api/node/23456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+
+  node.setUuid("23456");
+  ASSERT_EQ("23456", node.getUuid());
+
   node.setServer("emdata2.int.janelia.org:9000");
   ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
   ASSERT_EQ(9000, node.getPort());
@@ -546,6 +553,13 @@ TEST(ZDvidTest, ZDvidNode)
   ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
   ASSERT_EQ(9000, node.getPort());
   ASSERT_EQ("3456", node.getUuid());
+
+  node.clear();
+  node.setFromUrl(
+        "http://emdata2.int.janelia.org:9000/api/node/123456/branches/key/master");
+  ASSERT_EQ("emdata2.int.janelia.org", node.getAddress());
+  ASSERT_EQ(9000, node.getPort());
+  ASSERT_EQ("123456", node.getUuid());
 
   ZJsonObject obj;
   obj.decodeString("{\"address\":\"hackathon.janelia.org\", \"uuid\": \"2a3\"}");
@@ -654,6 +668,9 @@ TEST(ZDvidTest, ZDvidTarget)
   target.setUuid("234");
   ASSERT_EQ("234", target.getUuid());
   ASSERT_EQ("emdata2.int.janelia.org", target.getAddressWithPort());
+
+  target.setUuid("12345");
+  ASSERT_EQ("12345", target.getUuid());
 
   target.setServer("emdata2.int.janelia.org:9000");
   ASSERT_EQ("emdata2.int.janelia.org", target.getAddress());

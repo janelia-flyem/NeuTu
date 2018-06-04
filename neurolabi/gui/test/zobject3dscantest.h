@@ -1147,7 +1147,7 @@ TEST(ZObject3dScan, component)
   ZObject3dScan obj;
   obj.addSegment(0, 0, 1, 1);
 
-  std::map<int, size_t> &vs = obj.getSlicewiseVoxelNumber();
+  auto &vs = obj.getSlicewiseVoxelNumber();
   ASSERT_EQ(1, (int) vs[0]);
   ASSERT_EQ(0, (int) vs.count(2));
 

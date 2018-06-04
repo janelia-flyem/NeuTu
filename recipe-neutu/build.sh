@@ -39,6 +39,7 @@ do
     break
   fi
 done
+echo "app name: $app_name"
 
 build_dir=neurolabi/build
 if [ "$app_name" == 'neutu_d' ] || [ "$app_name" == 'neu3_d' ]

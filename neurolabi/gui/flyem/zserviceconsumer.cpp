@@ -12,6 +12,7 @@
 #include "dvid/zdvidreader.h"
 #include "dvid/zdvidwriter.h"
 #include "zjsonobject.h"
+#include "zobject3dscan.h"
 
 //const char* ZServiceConsumer::REF_KEY = "->";
 
