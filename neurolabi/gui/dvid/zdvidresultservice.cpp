@@ -10,6 +10,7 @@
 #include "zdvidreader.h"
 #include "zdvidwriter.h"
 #include "zjsonobject.h"
+#include "zobject3dscan.h"
 
 ZDvidResultService::ZDvidResultService()
 {
