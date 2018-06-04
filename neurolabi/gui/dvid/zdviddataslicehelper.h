@@ -89,6 +89,11 @@ public:
   bool containedIn(
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool centerCut) const;
+  bool actualContainedIn(
+      const ZStackViewParam &viewParam, int zoom,
+      int centerCutX, int centerCutY, bool centerCut) const;
+
+  bool needHighResUpdate() const;
 
   void setMaxSize(int maxW, int maxH);
   void setCenterCut(int width, int height);
@@ -101,6 +106,25 @@ public:
   void invalidateViewParam();
   void updateCenterCut();
 
+  void setActualQuality(int zoom, int ccw, int cch, bool centerCut);
+  void syncActualQuality();
+
+  int getActualScale() const;
+  int getActualZoom() const;
+
+private:
+  /*!
+   * After canonizing, there is always a combination of lowres and highres areas
+   * when \a centerCut is true.
+   */
+  static void CanonizeQuality(
+      int *zoom, int *centerCutX, int *centerCutY,
+      bool *centerCut, int viewWidth, int viewHeight, int maxZoom);
+  static bool IsResIncreasing(
+      int sourceZoom, int sourceCenterCutX, int sourceCenterCutY, bool sourceCenterCut,
+      int targetZoom, int targetCenterCutX, int targetCenterCutY, bool targetCenterCut,
+      int viewWidth, int viewHeight, int maxZoom);
+
 public:
   ZStackViewParam m_currentViewParam;
   int m_zoom = 0;
@@ -112,6 +136,11 @@ public:
   int m_centerCutWidth = 256;
   int m_centerCutHeight = 256;
   bool m_usingCenterCut = true;
+
+  int m_actualZoom = 0;
+  int m_actualCenterCutWidth = 256;
+  int m_actualCenterCutHeight = 256;
+  bool m_actualUsingCenterCut = true;
 
   ZDvidData::ERole m_dataRole;
 

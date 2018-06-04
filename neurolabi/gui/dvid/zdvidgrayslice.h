@@ -117,7 +117,7 @@ public:
 //  void setArbitraryAxis(const ZPoint &v1, const ZPoint &v2);
 
   bool consume(ZStack *stack, const ZStackViewParam &viewParam,
-               int zoom, int centerCutX, int centerCutY);
+               int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   bool containedIn(const ZStackViewParam &viewParam, int zoom,
                    int centerCutX, int centerCutY, bool centerCut) const;
   ZTask* makeFutureTask(ZStackDoc *doc);

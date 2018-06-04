@@ -145,12 +145,12 @@ void ZFlyEmProofDoc::connectSignalSlot()
 
   connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(scheduleRoutineCheck()));
 
-  connect(this, SIGNAL(updatingLabelSlice(ZArray*,ZStackViewParam,int,int,int)),
-          this, SLOT(updateLabelSlice(ZArray*,ZStackViewParam,int,int,int)),
+  connect(this, SIGNAL(updatingLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
+          this, SLOT(updateLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
           Qt::QueuedConnection);
 
-  connect(this, SIGNAL(updatingGraySlice(ZStack*,ZStackViewParam,int,int,int)),
-          this, SLOT(updateGraySlice(ZStack*,ZStackViewParam,int,int,int)),
+  connect(this, SIGNAL(updatingGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
+          this, SLOT(updateGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
           Qt::QueuedConnection);
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
@@ -2035,7 +2035,8 @@ void ZFlyEmProofDoc::backupMergeOperation()
 }
 
 void ZFlyEmProofDoc::prepareDvidLabelSlice(
-    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY)
+    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
+    bool usingCenterCut)
 {
   if (!m_workWriter.good()) {
     m_workWriter.open(getDvidTarget());
@@ -2049,7 +2050,7 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
       array = m_workWriter.getDvidReader().readLabels64Lowtis(
             svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
             svp.getWidth(), svp.getHeight(),
-            zoom, centerCutX, centerCutY);
+            zoom, centerCutX, centerCutY, usingCenterCut);
     } else {
       ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
             viewParam.getViewPort(), viewParam.getZ());
@@ -2057,12 +2058,13 @@ void ZFlyEmProofDoc::prepareDvidLabelSlice(
       array = m_workWriter.getDvidReader().readLabels64Lowtis(
             box.getFirstCorner().getX(), box.getFirstCorner().getY(),
             box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
-            zoom, centerCutX, centerCutY);
+            zoom, centerCutX, centerCutY, usingCenterCut);
     }
   }
 
   if (array != NULL) {
-    emit updatingLabelSlice(array, viewParam, zoom, centerCutX, centerCutY);
+    emit updatingLabelSlice(array, viewParam, zoom, centerCutX, centerCutY,
+                            usingCenterCut);
   }
 }
 
@@ -2095,7 +2097,8 @@ void ZFlyEmProofDoc::prepareDvidGraySlice(
   }
 
   if (array != NULL) {
-    emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY);
+    emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY,
+                           usingCenterCut);
   }
 }
 
@@ -2111,12 +2114,13 @@ void ZFlyEmProofDoc::downloadBodyMask()
 
 void ZFlyEmProofDoc::updateLabelSlice(
     ZArray *array, const ZStackViewParam &viewParam, int zoom,
-    int centerCutX, int centerCutY)
+    int centerCutX, int centerCutY, bool usingCenterCut)
 {
   if (array != NULL) {
     ZDvidLabelSlice *slice = getDvidLabelSlice(viewParam.getSliceAxis());
     if (slice != NULL) {
-      if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY)) {
+      if (slice->consume(
+            array, viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
         bufferObjectModified(slice->getTarget());
         processObjectModified();
       }
@@ -2128,12 +2132,13 @@ void ZFlyEmProofDoc::updateLabelSlice(
 
 void ZFlyEmProofDoc::updateGraySlice(
     ZStack *array, const ZStackViewParam &viewParam, int zoom,
-    int centerCutX, int centerCutY)
+    int centerCutX, int centerCutY, bool usingCenterCut)
 {
   if (array != NULL) {
     ZDvidGraySlice *slice = getDvidGraySlice(viewParam.getSliceAxis());
     if (slice != NULL) {
-      if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY)) {
+      if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY,
+                         usingCenterCut)) {
         bufferObjectModified(slice->getTarget());
         processObjectModified();
       }

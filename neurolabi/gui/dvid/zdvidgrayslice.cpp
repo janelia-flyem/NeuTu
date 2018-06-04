@@ -23,6 +23,7 @@ ZDvidGraySlice::ZDvidGraySlice()
 //  m_maxHeight = 512;
 
   m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_GRAY_SCALE);
+  getHelper()->useCenterCut(false);
 }
 
 ZDvidGraySlice::~ZDvidGraySlice()
@@ -410,7 +411,7 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
     stack = getDvidReader().readGrayScaleLowtis(
           box.getFirstCorner().getX(), box.getFirstCorner().getY(),
           z, box.getWidth(), box.getHeight(),
-          getZoom(), cx, cy, getHelper()->usingCenterCut());
+          getZoom(), cx, cy, true);
     if (scale > 1) {
       if (remain > 0) {
         //        int z1 = z + scale - remain;
@@ -418,7 +419,7 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
         ZStack *stack2 = getDvidReader().readGrayScaleLowtis(
               box.getFirstCorner().getX(), box.getFirstCorner().getY(),
               z1, box.getWidth(), box.getHeight(), getZoom(), cx, cy,
-              getHelper()->usingCenterCut());
+              true);
         //        double lambda = double(remain) / scale;
         ZStackProcessor::IntepolateFovia(
               stack, stack2, cx, cy, scale, z, z1, z, stack);
@@ -426,24 +427,10 @@ void ZDvidGraySlice::forceUpdate(const QRect &viewPort, int z)
         delete stack2;
       }
     }
-  } /*else if (getSliceAxis() == neutube::A_AXIS) {
-    //Assume no rotation happens
-    ZArbSliceViewParam sliceViewParam = m_sliceViewParam;
 
-    if (m_currentViewParam.isValid()) {
-      QPoint oldCenter = m_currentViewParam.getViewPort().center();
-      QPoint newCenter = viewPort.center();
-      int dz = z - m_currentViewParam.getZ();
-      int dx = newCenter.x() - oldCenter.x();
-      int dy = newCenter.y() - oldCenter.y();
-
-      m_sliceViewParam.move(dx, dy, dz);
-    } else {
-      sliceViewParam.setCenter(box.getCenter());
-      sliceViewParam.setSize(box.getWidth(), box.getHeight());
-    }
-    forceUpdate(sliceViewParam);
-  }*/
+    getHelper()->setActualQuality(
+          getZoom(), cx, cy, true);
+  }
 
   updateImage(stack);
 
@@ -454,18 +441,20 @@ bool ZDvidGraySlice::containedIn(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool centerCut) const
 {
-  return getHelper()->containedIn(viewParam, zoom, centerCutX, centerCutY, centerCut);
+  return getHelper()->actualContainedIn(
+        viewParam, zoom, centerCutX, centerCutY, centerCut);
 }
 
 
 bool ZDvidGraySlice::consume(
     ZStack *stack, const ZStackViewParam &viewParam, int zoom,
-    int centerCutX, int centerCutY)
+    int centerCutX, int centerCutY, bool usingCenterCut)
 {
   bool succ = false;
   if (stack != NULL) {
-    if (getHelper()->containedIn(viewParam, zoom, centerCutX, centerCutY, false)) {
-      getHelper()->setZoom(zoom);
+    if (containedIn(viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
+//      getHelper()->setZoom(zoom);
+      getHelper()->setActualQuality(zoom, centerCutX, centerCutY, usingCenterCut);
       getHelper()->setViewParam(viewParam);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       updateImage(stack);
@@ -481,7 +470,8 @@ ZTask* ZDvidGraySlice::makeFutureTask(ZStackDoc *doc)
 {
   ZDvidGraySliceHighresTask *task = NULL;
   const int maxSize = 1024*1024;
-  if (getHelper()->getViewDataSize() < maxSize) {
+  if (getHelper()->needHighResUpdate()
+      && getHelper()->getViewDataSize() < maxSize) {
     task = new ZDvidGraySliceHighresTask;
     task->setViewParam(getHelper()->getViewParam());
     task->setZoom(getHelper()->getZoom());
@@ -540,7 +530,10 @@ void ZDvidGraySlice::forceUpdate(const ZArbSliceViewParam &viewParam)
           viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
           viewParam.getWidth(), viewParam.getHeight(),
           getZoom(), getHelper()->getCenterCutWidth(),
-          getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
+          getHelper()->getCenterCutHeight(), true);
+    getHelper()->setActualQuality(
+          getZoom(), getHelper()->getCenterCutWidth(),
+          getHelper()->getCenterCutHeight(), true);
     updateImage(stack);
     delete stack;
   } else {
