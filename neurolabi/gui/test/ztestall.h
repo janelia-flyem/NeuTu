@@ -68,5 +68,6 @@
 #include "test/zpositionmappertest.h"
 #include "test/zstackdochelpertest.h"
 #include "test/zgeometrytest.h"
+#include "test/zdviddataslicetest.h"
 
 #endif // ZTESTALL_H

@@ -417,7 +417,7 @@ public:
 
   void prepareDvidLabelSlice(
       const ZStackViewParam &viewParam,
-      int zoom, int centerCutX, int centerCutY);
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   void prepareDvidGraySlice(const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
 
@@ -455,9 +455,11 @@ signals:
   void bodyColorUpdated(ZFlyEmProofDoc*);
 
   void updatingLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
-                          int zoom, int centerCutX, int centerCutY);
+                          int zoom, int centerCutX, int centerCutY,
+                          bool usingCenterCut);
   void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
-                         int zoom, int centerCutX, int centerCutY);
+                         int zoom, int centerCutX, int centerCutY,
+                         bool usingCenterCut);
 
 
 public slots: //Commands
@@ -544,9 +546,11 @@ public slots:
   void scheduleRoutineCheck();
 
   void updateLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
-                        int zoom, int centerCutX, int centerCutY);
+                        int zoom, int centerCutX, int centerCutY,
+                        bool usingCenterCut);
   void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
-                       int zoom, int centerCutX, int centerCutY);
+                       int zoom, int centerCutX, int centerCutY,
+                       bool usingCenterCut);
 
 
 protected:

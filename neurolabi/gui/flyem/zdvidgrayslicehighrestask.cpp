@@ -2,35 +2,9 @@
 #include "zflyemproofdoc.h"
 #include "dvid/zdvidgrayslice.h"
 
-ZDvidGraySliceHighresTask::ZDvidGraySliceHighresTask(QObject *parent) : ZTask(parent)
+ZDvidGraySliceHighresTask::ZDvidGraySliceHighresTask(QObject *parent) :
+  ZDvidDataSliceTask(parent)
 {
-
-}
-
-void ZDvidGraySliceHighresTask::setViewParam(const ZStackViewParam &param)
-{
-  m_viewParam = param;
-}
-
-void ZDvidGraySliceHighresTask::setZoom(int zoom)
-{
-  m_zoom = zoom;
-}
-
-void ZDvidGraySliceHighresTask::setCenterCut(int width, int height)
-{
-  m_centerCutWidth = width;
-  m_centerCutHeight = height;
-}
-
-void ZDvidGraySliceHighresTask::setDoc(ZStackDoc *doc)
-{
-  m_doc = doc;
-}
-
-void ZDvidGraySliceHighresTask::useCenterCut(bool on)
-{
-  m_usingCenterCut = on;
 }
 
 void ZDvidGraySliceHighresTask::execute()

@@ -158,6 +158,16 @@ int ZDvidDataSliceHelper::getScale() const
   return misc::GetZoomScale(getZoom());
 }
 
+int ZDvidDataSliceHelper::getActualScale() const
+{
+  return misc::GetZoomScale(getActualZoom());
+}
+
+int ZDvidDataSliceHelper::getActualZoom() const
+{
+  return m_actualZoom;
+}
+
 void ZDvidDataSliceHelper::setZoom(int zoom)
 {
   m_zoom = std::max(0, std::min(zoom, m_maxZoom));
@@ -231,28 +241,96 @@ bool ZDvidDataSliceHelper::hasNewView(
   return newView;
 }
 
+void ZDvidDataSliceHelper::CanonizeQuality(int *zoom, int *centerCutX, int *centerCutY,
+    bool *centerCut, int viewWidth, int viewHeight, int maxZoom)
+{
+  if (*zoom < 0) { //full resolution
+    *zoom = 0;
+    *centerCut = false;
+  } else if (*zoom >= maxZoom) {
+    *zoom = maxZoom;
+    *centerCut = false;
+  } else {
+    if (*centerCut) {
+      if (*centerCutX == 0 || *centerCutY == 0) { //no center cut area
+        *zoom += 1;
+        *centerCut = false;
+      } else if (*centerCutX >= viewWidth && *centerCutY >= viewHeight) { //full center cut
+        *centerCut = false;
+      }
+    }
+  }
+}
+
+bool ZDvidDataSliceHelper::IsResIncreasing(
+    int sourceZoom, int sourceCenterCutX, int sourceCenterCutY, bool sourceCenterCut,
+    int targetZoom, int targetCenterCutX, int targetCenterCutY, bool targetCenterCut,
+    int viewWidth, int viewHeight, int maxZoom)
+{
+  bool result = false;
+  CanonizeQuality(
+        &sourceZoom, &sourceCenterCutX, &sourceCenterCutY, &sourceCenterCut,
+        viewWidth, viewHeight, maxZoom);
+  CanonizeQuality(
+        &targetZoom, &targetCenterCutX, &targetCenterCutY, &targetCenterCut,
+        viewWidth, viewHeight, maxZoom);
+
+  if (sourceZoom == targetZoom) {
+    if (!targetCenterCut && sourceCenterCut) {
+      result = true;
+    } else if (targetCenterCut) {
+      if (targetCenterCutX > sourceCenterCutX &&
+          targetCenterCutY > sourceCenterCutY) {
+        result = true;
+      }
+    }
+  } else if (sourceZoom > targetZoom) {
+    result = true;
+  }
+
+  return result;
+}
+
 bool ZDvidDataSliceHelper::containedIn(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
-    bool centerCut)
-const
+    bool centerCut) const
 {
   bool contained = false;
 
   if (viewParam.contains(m_currentViewParam)) {
-    if (zoom == m_zoom) {
-      if (!centerCut && !usingCenterCut()) {
-        if (centerCutX >= m_centerCutWidth && centerCutY >= m_centerCutHeight) {
-          contained = true;
-        }
-      } else {
-        contained = usingCenterCut();
-      }
-    } else if (zoom < m_zoom) {
-      contained = true;
-    }
+    contained = ZDvidDataSliceHelper::IsResIncreasing(
+          getZoom(), getCenterCutWidth(), getCenterCutHeight(), usingCenterCut(),
+          zoom, centerCutX, centerCutY, centerCut,
+          getWidth(), getHeight(), getMaxZoom());
   }
 
   return contained;
+}
+
+bool ZDvidDataSliceHelper::actualContainedIn(
+    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
+    bool centerCut) const
+{
+  bool contained = false;
+
+  if (viewParam.contains(m_currentViewParam)) {
+    contained = ZDvidDataSliceHelper::IsResIncreasing(
+          m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
+          m_actualUsingCenterCut,
+          zoom, centerCutX, centerCutY, centerCut,
+          getWidth(), getHeight(), getMaxZoom());
+  }
+
+  return contained;
+}
+
+bool ZDvidDataSliceHelper::needHighResUpdate() const
+{
+  return IsResIncreasing(
+        m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
+        m_actualUsingCenterCut,
+        m_zoom, m_centerCutWidth, m_centerCutHeight, m_usingCenterCut,
+        getWidth(), getHeight(), getMaxZoom());
 }
 
 void ZDvidDataSliceHelper::invalidateViewParam()
@@ -296,4 +374,18 @@ void ZDvidDataSliceHelper::setBoundBox(const ZRect2d &rect)
 {
   m_currentViewParam.setViewPort(
         QRect(rect.getX0(), rect.getY0(), rect.getWidth(), rect.getHeight()));
+}
+
+void ZDvidDataSliceHelper::setActualQuality(
+    int zoom, int ccw, int cch, bool centerCut)
+{
+  m_actualZoom = zoom;
+  m_actualCenterCutWidth = ccw;
+  m_actualCenterCutHeight = cch;
+  m_actualUsingCenterCut = centerCut;
+}
+
+void ZDvidDataSliceHelper::syncActualQuality()
+{
+  setActualQuality(getZoom(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
 }

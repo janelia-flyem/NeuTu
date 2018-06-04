@@ -165,9 +165,9 @@ public:
   QRect getDataRect(const ZStackViewParam &viewParam) const;
 
   bool consume(ZArray *array, const ZStackViewParam &viewParam,
-               int zoom, int centerCutX, int centerCutY);
+               int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   bool containedIn(const ZStackViewParam &viewParam, int zoom,
-                   int centerCutX, int centerCutY) const;
+                   int centerCutX, int centerCutY, bool usingCenterCut) const;
   ZTask* makeFutureTask(ZStackDoc *doc);
 
 private:
@@ -175,8 +175,8 @@ private:
 
   void forceUpdate(
       const ZStackViewParam &viewParam, bool ignoringHidden);
-  void forceUpdate(const QRect &viewPort, int z);
-  void forceUpdate(const ZArbSliceViewParam &viewParam);
+  void forceUpdate(const QRect &viewPort, int z, int zoom);
+  void forceUpdate(const ZArbSliceViewParam &viewParam, int zoom);
 //  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
@@ -217,13 +217,7 @@ private:
   int getFirstZoom(const ZStackViewParam &viewParam) const;
 
 private:
-//  ZDvidTarget m_dvidTarget;
-//  ZDvidReader m_reader;
   ZObject3dScanArray m_objArray;
-//  ZStackViewParam m_currentViewParam;
-//  QRect m_currentDataRect;
-//  int m_currentZ;
-//  int m_currentZoom;
 
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
@@ -243,18 +237,11 @@ private:
   std::set<uint64_t> m_prevSelectedOriginal;
   ZSelector<uint64_t> m_selector; //original labels
 
-//  int m_maxWidth;
-//  int m_maxHeight;
 
   std::unique_ptr<ZDvidDataSliceHelper> m_helper;
-//  int m_zoom;
 
   bool m_selectionFrozen;
   bool m_multiResUpdate = true;
-//  bool m_isFullView;
-
-//  mutable QCache<QString, ZArray> m_objCache;
-//  NeuTube::EAxis m_sliceAxis;
 };
 
 template <typename InputIterator>

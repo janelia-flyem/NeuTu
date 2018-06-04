@@ -3131,25 +3131,25 @@ ZStack* ZDvidReader::readGrayScaleLowtis(
 
 ZArray* ZDvidReader::readLabels64Lowtis(
     const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
-    int width, int height, int zoom, int cx, int cy) const
+    int width, int height, int zoom, int cx, int cy, bool centerCut) const
 {
   return readLabels64Lowtis(center.getX(), center.getY(), center.getZ(),
                             v1.x(), v1.y(), v1.z(), v2.x(), v2.y(), v2.z(),
-                            width, height, zoom, cx, cy);
+                            width, height, zoom, cx, cy, centerCut);
 }
 
 ZArray* ZDvidReader::readLabels64Lowtis(
-    const ZAffineRect &ar, int zoom, int cx, int cy) const
+    const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const
 {
   return readLabels64Lowtis(
         ar.getCenter().toIntPoint(), ar.getV1(), ar.getV2(),
-        ar.getWidth(), ar.getHeight(), zoom, cx, cy);
+        ar.getWidth(), ar.getHeight(), zoom, cx, cy, centerCut);
 }
 
 ZArray* ZDvidReader::readLabels64Lowtis(
     int x0, int y0, int z0, double vx1, double vy1, double vz1,
     double vx2, double vy2, double vz2, int width, int height, int zoom,
-    int cx, int cy) const
+    int cx, int cy, bool centerCut) const
 {
   lowtis::ImageService *service = getLowtisServiceLabel(cx, cy);
   if (service == NULL) {
@@ -3169,7 +3169,6 @@ ZArray* ZDvidReader::readLabels64Lowtis(
     array = MakeArray64(box);
 
     try {
-
       std::vector<int> offset = GetOffset(x0, y0, z0);
       std::vector<double> dim1vec = MakeVec3(vx1, vy1, vz1);
       std::vector<double> dim2vec = MakeVec3(vx2, vy2, vz2);
@@ -3188,7 +3187,6 @@ ZArray* ZDvidReader::readLabels64Lowtis(
                   arg(dim2vec[0]).arg(dim2vec[1]).arg(dim2vec[2]).arg(zoom);
 #endif
 
-      bool centerCut = true;
       if (zoom == getDvidTarget().getMaxLabelZoom() || width < cx || height < cy) {
         centerCut = false;
       }
@@ -3214,7 +3212,8 @@ ZArray* ZDvidReader::readLabels64Lowtis(
 }
 
 ZArray* ZDvidReader::readLabels64Lowtis(
-    int x0, int y0, int z0, int width, int height, int zoom, int cx, int cy) const
+    int x0, int y0, int z0, int width, int height, int zoom, int cx, int cy,
+    bool centerCut) const
 {
   lowtis::ImageService *service = getLowtisServiceLabel(cx, cy);
   if (service == NULL) {
@@ -3260,7 +3259,6 @@ ZArray* ZDvidReader::readLabels64Lowtis(
       offset[1] = y0;
       offset[2] = z0;
 
-      bool centerCut = true;
       if (zoom == getDvidTarget().getMaxLabelZoom() ||
           width < cx || height < cy) {
         centerCut = false;
@@ -3287,7 +3285,7 @@ ZArray* ZDvidReader::readLabels64Lowtis(
 ZArray* ZDvidReader::readLabels64Lowtis(int x0, int y0, int z0,
     int width, int height, int zoom) const
 {
-  return readLabels64Lowtis(x0, y0, z0, width, height, zoom, 256, 256);
+  return readLabels64Lowtis(x0, y0, z0, width, height, zoom, 256, 256, true);
 }
 #endif
 

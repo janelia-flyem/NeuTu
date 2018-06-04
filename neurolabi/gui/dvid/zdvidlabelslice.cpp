@@ -190,20 +190,21 @@ void ZDvidLabelSlice::update()
 }
 
 bool ZDvidLabelSlice::containedIn(
-    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY) const
+    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
+    bool usingCenterCut) const
 {
-  return getHelper()->containedIn(viewParam, zoom, centerCutX, centerCutY, true);
+  return getHelper()->containedIn(viewParam, zoom, centerCutX, centerCutY, usingCenterCut);
 }
 
 ZTask* ZDvidLabelSlice::makeFutureTask(ZStackDoc *doc)
 {
   ZDvidLabelSliceHighresTask *task = NULL;
   const int maxSize = 1024*1024;
-  if (getHelper()->getZoom() > getHelper()->getViewParam().getZoomLevel()
+  if (getHelper()->needHighResUpdate()
       && getHelper()->getViewDataSize() < maxSize) {
     task = new ZDvidLabelSliceHighresTask;
     task->setViewParam(getHelper()->getViewParam());
-    task->setZoom(getHelper()->getZoom() - 1);
+    task->setZoom(getHelper()->getZoom());
     task->setCenterCut(
           getHelper()->getCenterCutWidth(), getHelper()->getCenterCutHeight());
     task->setDelay(100);
@@ -220,7 +221,8 @@ void ZDvidLabelSlice::forceUpdate(bool ignoringHidden)
 }
 #endif
 
-void ZDvidLabelSlice::forceUpdate(const ZArbSliceViewParam &viewParam)
+void ZDvidLabelSlice::forceUpdate(
+    const ZArbSliceViewParam &viewParam, int zoom)
 {
   if (m_sliceAxis != neutube::A_AXIS || !viewParam.isValid()) {
     return;
@@ -231,8 +233,11 @@ void ZDvidLabelSlice::forceUpdate(const ZArbSliceViewParam &viewParam)
     m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
           viewParam.getCenter(), viewParam.getPlaneV1(), viewParam.getPlaneV2(),
           viewParam.getWidth(), viewParam.getHeight(),
-          getHelper()->getZoom(), getHelper()->getCenterCutWidth(),
-          getHelper()->getCenterCutHeight());
+          zoom, getHelper()->getCenterCutWidth(),
+          getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
+    getHelper()->setActualQuality(
+          zoom, getHelper()->getCenterCutWidth(),
+          getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
   }
 }
 
@@ -352,7 +357,7 @@ void ZDvidLabelSlice::clearLabelData()
   m_mappedLabelArray = NULL;
 }
 
-void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z)
+void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z, int zoom)
 {
   ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(viewPort, z);
 
@@ -362,10 +367,12 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z)
       m_labelArray = getHelper()->getDvidReader().readLabels64Lowtis(
             box.getFirstCorner().getX(), box.getFirstCorner().getY(),
             box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
-            getHelper()->getZoom(), getHelper()->getCenterCutWidth(),
-            getHelper()->getCenterCutHeight());
+            zoom, getHelper()->getCenterCutWidth(),
+            getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
+      getHelper()->setActualQuality(
+            zoom, getHelper()->getCenterCutWidth(),
+            getHelper()->getCenterCutHeight(), getHelper()->usingCenterCut());
     } else {
-      int zoom = getHelper()->getZoom();
       int zoomRatio = pow(2, zoom);
       int width = box.getWidth() / zoomRatio;
       int height = box.getHeight() / zoomRatio;
@@ -379,6 +386,7 @@ void ZDvidLabelSlice::forceUpdate(const QRect &viewPort, int z)
 
       m_labelArray = getHelper()->getDvidReader().readLabels64Raw(
             x0, y0, z0, width, height, depth, zoom);
+      getHelper()->setActualQuality(zoom, 0, 0, false);
     }
   }
 }
@@ -409,16 +417,19 @@ void ZDvidLabelSlice::forceUpdate(
   }
 
   if ((!ignoringHidden) || isVisible()) {
-    getHelper()->setZoom(getFirstZoom(viewParam));
+    getHelper()->setZoom(viewParam.getZoomLevel());
+
+    int zoom = getFirstZoom(viewParam);
+//    getHelper()->setZoom(getFirstZoom(viewParam));
 //    m_zoom = viewParam.getZoomLevel(getDvidTarget().getMaxGrayscaleZoom());
     if (m_sliceAxis == neutube::A_AXIS) {
-      forceUpdate(viewParam.getSliceViewParam());
+      forceUpdate(viewParam.getSliceViewParam(), zoom);
       //Align the image with the view port, which is used by the painter
 //      m_paintBuffer->setOffset(viewParam.getViewPort().left(),
 //                               viewParam.getViewPort().top());
     } else {
       QRect viewPort = viewParam.getViewPort();
-      forceUpdate(viewPort, viewParam.getZ());
+      forceUpdate(viewPort, viewParam.getZ(), zoom);
     }
   }
 
@@ -462,7 +473,7 @@ void ZDvidLabelSlice::updatePaintBuffer()
 void ZDvidLabelSlice::setTransform(ZImage *image) const
 {
   ZStTransform transform;
-  double scale = 1.0 / getHelper()->getScale();
+  double scale = 1.0 / getHelper()->getActualScale();
   transform.setScale(scale, scale);
   transform.setOffset(-getHelper()->getX() * scale, -getHelper()->getY() * scale);
   image->setTransform(transform);
@@ -532,13 +543,15 @@ int ZDvidLabelSlice::getCurrentZ() const
 
 bool ZDvidLabelSlice::consume(
     ZArray *array, const ZStackViewParam &viewParam, int zoom,
-    int centerCutX, int centerCutY)
+    int centerCutX, int centerCutY, bool usingCenterCut)
 {
   bool succ = false;
   if (array != NULL) {
-    if (getHelper()->containedIn(viewParam, zoom, centerCutX, centerCutY, true)) {
-      getHelper()->setZoom(zoom);
+    if (getHelper()->containedIn(
+          viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
+//      getHelper()->setZoom(zoom);
       getHelper()->setViewParam(viewParam);
+      getHelper()->setActualQuality(zoom, centerCutX, centerCutY, usingCenterCut);
 //      getHelper()->setCenterCut(centerCutX, centerCutY);
       clearLabelData();
       m_labelArray = array;
