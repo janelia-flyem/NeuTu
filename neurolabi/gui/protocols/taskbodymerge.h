@@ -6,6 +6,7 @@
 #include <QObject>
 
 class ZFlyEmBody3dDoc;
+class QCheckBox;
 class QRadioButton;
 
 class TaskBodyMerge : public TaskProtocolTask
@@ -26,7 +27,9 @@ public:
 
 private slots:
   void onCycleAnswer();
+  void onTriggerShowHiRes();
   void onButtonToggled();
+  void onShowHiResStateChanged(int state);
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
@@ -41,6 +44,7 @@ private:
   QRadioButton *m_mergeButton;
   QRadioButton *m_dontMergeButton;
   QRadioButton *m_dontKnowButton;
+  QCheckBox *m_showHiResCheckBox;
   QMenu *m_menu;
 
   virtual bool loadSpecific(QJsonObject json) override;

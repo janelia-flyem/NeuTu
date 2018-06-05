@@ -731,38 +731,54 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
     // quickly moving between tasks and using controls from the task widget that also change
     // the loaded bodies, then the bodies loaded by one call may not be fully cleared by the
     // next call, due to the way bodies are added and removed asynchronously in a background
-    // thread.  The problem seems worst for meshes loaded from a tar archive, and that is the
-    // case handled by this work-around.  The buttons for moving between tasks, and the whole
-    // task widget, will be disabled until signals connected to the onBodyRecycled,
-    // onBodyMeshesAdded abd onBodyMeshLoaded slots indicate that all the old meshes have been
-    // fully deleted and all the new meshes from the archive have been loaded.
+    // thread. The buttons for moving between tasks, and the whole task widget, will be disabled
+    // until signals connected to the onBodyRecycled, onBodyMeshesAdded and onBodyMeshLoaded
+    // slots indicate that all the old meshes have been fully deleted and all the new meshes
+    // have been loaded.
 
-    m_bodyRecycledExpected = ZStackDocProxy::GetGeneralMeshList(m_body3dDoc).size();
+    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_body3dDoc);
+    m_bodyRecycledExpected = meshes.size();
     m_bodyRecycledReceived = 0;
 
     m_bodyMeshesAddedExpected = 0;
     m_bodyMeshesAddedReceived = 0;
 
-    m_bodyMeshLoadedExpected = 0;
-    m_bodyMeshLoadedReceived = 0;
-
+    bool usingTars = false;
     const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
     foreach (uint64_t bodyID, visible) {
         if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
             m_bodyMeshesAddedExpected++;
-        } else {
-            return;
+            usingTars = true;
         }
     }
 
     const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
     foreach (uint64_t bodyID, selected) {
-      if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
-          m_bodyMeshesAddedExpected++;
-      } else {
-          return;
-      }
+        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+            m_bodyMeshesAddedExpected++;
+            usingTars = true;
+        }
     }
+
+    m_bodiesReused = 0;
+
+    if (usingTars) {
+        m_bodyMeshLoadedExpected = 0;
+    } else {
+        m_bodyMeshLoadedExpected = (visible + selected).size();
+
+        // Bodies reused from the previous task may not generate onBodyRecycled amd
+        // onBodyMeshLoaded signals, which needs to be considered when counting
+        // these signals.
+
+        for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+            ZMesh *mesh = *it;
+            uint64_t id = mesh->getLabel();
+            m_bodiesReused += (visible.contains(id) || selected.contains(id));
+        }
+    }
+
+    m_bodyMeshLoadedReceived = 0;
 
     ui->nextButton->setEnabled(false);
     ui->prevButton->setEnabled(false);
@@ -776,9 +792,12 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
 void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
-    if ((m_bodyRecycledExpected == m_bodyRecycledReceived) &&
+    if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
         (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
-        (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived)) {
+        (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
+
+        bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
+
         updateButtonsEnabled();
         if (m_currentTaskWidget) {
             m_currentTaskWidget->setEnabled(true);
@@ -787,7 +806,11 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
             m_currentTaskMenuAction->setEnabled(true);
         }
 
-        if (m_currentTaskIndex >= 0) {
+        if ((m_currentTaskIndex >= 0) && justEnabled) {
+
+            // Call this function on the task only once, when the task's UI was
+            // just enabled.
+
             m_taskList[m_currentTaskIndex]->onLoaded();
         }
     }

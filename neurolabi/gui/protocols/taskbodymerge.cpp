@@ -10,9 +10,12 @@
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
 
+#include <QCheckBox>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QRadioButton>
+#include <QSet>
+#include <QVBoxLayout>
 
 namespace {
 
@@ -87,6 +90,7 @@ namespace {
   static bool garbageLifetimeLimitEnabled;
   static bool splitTaskLoadingEnabled;
   static bool showingSynapse;
+  static int minResLevel;
   static bool preservingSourceColorEnabled;
   static bool showingSourceColors;
   static bool showingAnnotations;
@@ -108,6 +112,9 @@ namespace {
 
       showingSynapse = bodyDoc->showingSynapse();
       bodyDoc->showSynapse(false);
+
+      minResLevel = bodyDoc->getMinResLevel();
+      bodyDoc->setMinResLevel(bodyDoc->getMaxResLevel());
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
@@ -137,6 +144,7 @@ namespace {
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
       bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
       bodyDoc->showSynapse(showingSynapse);
+      bodyDoc->setMinResLevel(minResLevel);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);
@@ -222,9 +230,31 @@ void TaskBodyMerge::onCycleAnswer()
   }
 }
 
+void TaskBodyMerge::onTriggerShowHiRes()
+{
+  m_showHiResCheckBox->setChecked(true);
+}
+
 void TaskBodyMerge::onButtonToggled()
 {
   updateColors();
+}
+
+void TaskBodyMerge::onShowHiResStateChanged(int state)
+{
+  QSet<uint64_t> visible;
+  if (state) {
+    int level = 0;
+    visible.insert(ZFlyEmBody3dDoc::encode(m_bodyId1, level));
+    visible.insert(ZFlyEmBody3dDoc::encode(m_bodyId2, level));
+
+    // Going back to low resolution is not working for some reason, so disable it for now.
+    m_showHiResCheckBox->setEnabled(false);
+  } else {
+    visible.insert(m_bodyId1);
+    visible.insert(m_bodyId2);
+  }
+  updateBodies(visible, QSet<uint64_t>());
 }
 
 bool TaskBodyMerge::loadSpecific(QJsonObject json)
@@ -255,9 +285,10 @@ bool TaskBodyMerge::loadSpecific(QJsonObject json)
     }
   }
 
-  int level = 0;
-  m_visibleBodies.insert(ZFlyEmBody3dDoc::encode(m_bodyId1, level));
-  m_visibleBodies.insert(ZFlyEmBody3dDoc::encode(m_bodyId2, level));
+  // For fastest task loading, start with the original bodies at low resolution.
+
+  m_visibleBodies.insert(m_bodyId1);
+  m_visibleBodies.insert(m_bodyId2);
 
   return true;
 }
@@ -338,12 +369,19 @@ void TaskBodyMerge::buildTaskWidget()
   m_dontKnowButton = new QRadioButton("Don't Know", m_widget);
   connect(m_dontKnowButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
-  QHBoxLayout *radioLayout = new QHBoxLayout(m_widget);
+  QHBoxLayout *radioLayout = new QHBoxLayout;
   radioLayout->addWidget(m_dontMergeButton);
   radioLayout->addWidget(m_mergeButton);
   radioLayout->addWidget(m_dontKnowButton);
 
-  m_widget->setLayout(radioLayout);
+  m_showHiResCheckBox = new QCheckBox("Show High Resolution", m_widget);
+  connect(m_showHiResCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowHiResStateChanged(int)));
+
+  QVBoxLayout *layout = new QVBoxLayout;
+  layout->addLayout(radioLayout);
+  layout->addWidget(m_showHiResCheckBox);
+
+  m_widget->setLayout(layout);
 
   m_menu = new QMenu("Body Merging", m_widget);
 
@@ -351,13 +389,18 @@ void TaskBodyMerge::buildTaskWidget()
   cycleAnswerAction->setShortcut('`');
   m_menu->addAction(cycleAnswerAction);
   connect(cycleAnswerAction, SIGNAL(triggered()), this, SLOT(onCycleAnswer()));
+
+  QAction *showHiResAction = new QAction("Show High Resolution", m_widget);
+  showHiResAction->setShortcut(Qt::Key_C);
+  m_menu->addAction(showHiResAction);
+  connect(showHiResAction, SIGNAL(triggered()), this, SLOT(onTriggerShowHiRes()));
 }
 
 void TaskBodyMerge::onLoaded()
 {
   applyColorMode(true);
 
-  ZPoint point = mergePosition();
+  zoomToMergePosition();
 
   std::size_t index1 = 1;
   std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
@@ -367,9 +410,10 @@ void TaskBodyMerge::onLoaded()
   glm::vec4 color2 = INDEX_COLORS[index2] * 255.0f;
   idToColor[m_bodyId2] = QColor(color2.x, color2.y, color2.z);
 
-  emit browseGrayscale(point.x(), point.y(), point.z(), idToColor);
-
-  zoomToMergePosition();
+  ZPoint point = mergePosition();
+  QTimer::singleShot(0, this, [=](){
+    emit browseGrayscale(point.x(), point.y(), point.z(), idToColor);
+  });
 }
 
 void TaskBodyMerge::onCompleted()

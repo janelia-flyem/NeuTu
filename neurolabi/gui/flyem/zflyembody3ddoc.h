@@ -270,6 +270,11 @@ public:
   bool fromTar(uint64_t id) const;
   bool isTarMode() const;
 
+  // A lower ResLevel means a higher resolution with more geometric detail.
+  void setMinResLevel(int res) {
+    m_minResLevel = res;
+  }
+  int getMinResLevel() const;
   void setMaxResLevel(int res) {
     m_maxResLevel = res;
   }
@@ -487,7 +492,6 @@ private:
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
   ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
-  int getMinResLevel() const;
 
   void removeDiffBody();
 
@@ -515,6 +519,7 @@ private:
   bool m_syncyingBodySelection = false;
 
   int m_maxResLevel = 0; //Start resolution level; bigger value means lower resolution
+  int m_minResLevel = 0;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 

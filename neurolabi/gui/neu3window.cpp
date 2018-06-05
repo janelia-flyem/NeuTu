@@ -525,11 +525,13 @@ void Neu3Window::trackSliceViewPort() const
 void Neu3Window::updateSliceWidget()
 {
   LDEBUG() << "Updating slice widget";
-  ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
-  m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
-  m_sliceWidget->resetViewParam(viewParam);
+  if (m_sliceWidget != NULL) {
+    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+    m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
+    m_sliceWidget->resetViewParam(viewParam);
 
-  trackSliceViewPort();
+    trackSliceViewPort();
+  }
 }
 
 void Neu3Window::updateSliceBrowser()
