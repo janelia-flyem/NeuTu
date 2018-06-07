@@ -50,6 +50,8 @@ private slots:
   void onShowBodyChanged(int state);
   void onToggleInChosenCleaveBody();
   void onToggleShowChosenCleaveBody();
+  void onHideSelected();
+  void onClearHidden();
 
   void onNetworkReplyFinished(QNetworkReply *reply);
 
@@ -91,6 +93,8 @@ private:
   class CleaveCommand;
 
   std::size_t chosenCleaveIndex() const;
+
+  std::set<uint64_t> m_hiddenIds;
 
   void buildTaskWidget();
   void updateColors();
