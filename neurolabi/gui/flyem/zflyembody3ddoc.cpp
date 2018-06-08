@@ -2014,12 +2014,15 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
     if (removingAnnotation) {
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
+      getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::ACTION_KILL);
+      /*
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
 //        removeObject(*iter, false);
 //        dumpGarbageUnsync(*iter, true);
         getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
       }
+      */
 
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));

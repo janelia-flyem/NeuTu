@@ -69,5 +69,6 @@
 #include "test/zstackdochelpertest.h"
 #include "test/zgeometrytest.h"
 #include "test/zdviddataslicetest.h"
+#include "test/zstackviewparamtest.h"
 
 #endif // ZTESTALL_H

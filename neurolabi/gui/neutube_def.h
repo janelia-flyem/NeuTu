@@ -185,6 +185,10 @@ enum EBodySplitRange {
   RANGE_FULL, RANGE_SEED, RANGE_LOCAL
 };
 
+enum EDataSliceUpdatePolicy {
+  UPDATE_DIRECT, UPDATE_HIDDEN, UPDATE_LOWESTRES, UPDATE_LOWRES, UPDATE_SMALL
+};
+
 static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
 }

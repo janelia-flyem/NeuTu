@@ -67,6 +67,16 @@ void ZStackViewParam::setViewPort(const QRect &rect, int z)
   setZ(z);
 }
 
+void ZStackViewParam::closeViewPort()
+{
+  m_viewProj.closeViewPort();
+}
+
+void ZStackViewParam::openViewPort()
+{
+  m_viewProj.openViewPort();
+}
+
 void ZStackViewParam::setWidgetRect(const QRect &rect)
 {
   m_viewProj.setWidgetRect(rect);
@@ -125,7 +135,11 @@ bool ZStackViewParam::contains(const ZStackViewParam &param) const
     if (getSliceAxis() == neutube::A_AXIS) {
       return getSliceViewParam().contains(param.getSliceViewParam());
     } else if (m_z == param.m_z) {
-      return getViewPort().contains(param.getViewPort());
+      if (param.getViewPort().isEmpty()) {
+        return true;
+      } else {
+        return getViewPort().contains(param.getViewPort());
+      }
     }
   }
 
@@ -254,4 +268,20 @@ void ZStackViewParam::moveSlice(int step)
 double ZStackViewParam::getZoomRatio() const
 {
   return m_viewProj.getZoom();
+}
+
+bool ZStackViewParam::onSamePlane(const ZStackViewParam &param) const
+{
+  bool result = false;
+  if (m_sliceAxis == param.m_sliceAxis) {
+    if (m_sliceAxis == neutube::A_AXIS) {
+      result = zgeom::IsSameAffinePlane(
+            m_center.toPoint(), m_v1, m_v2,
+            param.m_center.toPoint(), param.m_v1, param.m_v2);
+    } else {
+      result = (m_z == param.m_z);
+    }
+  }
+
+  return result;
 }
