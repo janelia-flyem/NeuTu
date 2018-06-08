@@ -188,7 +188,7 @@ public:
   void setSliceAxis(neutube::EAxis axis) { m_sliceAxis = axis; }
 
   inline int getZ() const {
-    return m_sliceIndex + m_stackOffset.getSliceCoord(m_sliceAxis);
+    return m_sliceIndex + m_stackOffset.getZ();//.getSliceCoord(m_sliceAxis);
   }
 
   inline void setDisplayStyle(ZStackObject::EDisplayStyle style) { m_style = style; }
@@ -200,9 +200,11 @@ public:
   inline void setStackOffset(const ZIntPoint &offset) {
     m_stackOffset = offset;
   }
+
   inline const ZIntPoint& getStackOffset() const {
     return m_stackOffset;
   }
+
 
 private:
   template<typename T1, typename T2> friend class impl::drawable_iter;
