@@ -52,6 +52,7 @@ private slots:
   void onToggleShowChosenCleaveBody();
   void onHideSelected();
   void onClearHidden();
+  void onChooseCleaveMethod();
 
   void onNetworkReplyFinished(QNetworkReply *reply);
 
@@ -83,6 +84,8 @@ private:
   std::map<uint64_t, std::size_t> m_meshIdToCleaveIndex;
 
   std::set<size_t> m_hiddenCleaveIndices;
+
+  QString m_cleaveMethod;
 
   QNetworkAccessManager *m_networkManager;
   bool m_cleaveReplyPending = false;

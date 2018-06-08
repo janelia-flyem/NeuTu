@@ -16,6 +16,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QHBoxLayout>
+#include <QInputDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -609,6 +610,18 @@ void TaskBodyCleave::onClearHidden()
   updateVisibility();
 }
 
+void TaskBodyCleave::onChooseCleaveMethod()
+{
+  if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+    bool ok = true;
+    QString text = QInputDialog::getText(window, "Set Cleaving Method", "Cleaving method:",
+                                         QLineEdit::Normal,  m_cleaveMethod, &ok);
+    if (ok) {
+      m_cleaveMethod = text;
+    }
+  }
+}
+
 QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
 {
   taskJson[KEY_BODYID] = static_cast<double>(m_bodyId);
@@ -862,6 +875,13 @@ void TaskBodyCleave::buildTaskWidget()
   m_menu->addAction(clearHiddenAction);
   connect(clearHiddenAction, SIGNAL(triggered()), this, SLOT(onClearHidden()));
 
+  QMenu *advancedMenu = new QMenu("Advanced");
+  m_menu->addMenu(advancedMenu);
+
+  QAction *methodAction = new QAction("Cleaving Method", m_widget);
+  advancedMenu->addAction(methodAction);
+  connect(methodAction, SIGNAL(triggered()), this, SLOT(onChooseCleaveMethod()));
+
   const int NUM_DISTINCT_KEYS = 10;
   int n = std::min(m_cleaveIndexComboBox->count(), 2 * NUM_DISTINCT_KEYS);
   for (int i = 0; i < n; i++) {
@@ -1017,6 +1037,9 @@ void TaskBodyCleave::cleave()
     requestJsonSeeds[QString::number(cleaveIndex)] = requestJsonSeedsForCleaveIndex;
   }
 
+  if (!m_cleaveMethod.isEmpty()) {
+    requestJson["method"] = m_cleaveMethod;
+  }
   requestJson["seeds"] = requestJsonSeeds;
   if (const char* user = std::getenv("USER")) {
     requestJson["user"] = user;
