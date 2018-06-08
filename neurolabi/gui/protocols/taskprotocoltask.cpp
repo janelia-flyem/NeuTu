@@ -61,6 +61,14 @@ void TaskProtocolTask::setCompleted(bool completed)
 
 /*
  * subclasses may optionally implement this method to
+ * disable prefetching (e.g., because the task uses only low resolution bodies)
+ */
+bool TaskProtocolTask::usePrefetching() {
+    return true;
+}
+
+/*
+ * subclasses may optionally implement this method to
  * check internal state and disallow completion of the task
  */
 bool TaskProtocolTask::allowCompletion() {

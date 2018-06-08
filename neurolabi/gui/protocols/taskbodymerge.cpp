@@ -219,6 +219,15 @@ QMenu *TaskBodyMerge::getTaskMenu()
   return m_menu;
 }
 
+bool TaskBodyMerge::usePrefetching()
+{
+  // Prefetching is not necessary for this protocol, which loads only the lowest resolution
+  // meshes until the user explicitly ask for higher resolution.  In fact, prefetcing interferes
+  // in that it will bring in higher resolution meshes for later tasks.
+
+  return false;
+}
+
 void TaskBodyMerge::onCycleAnswer()
 {
   if (m_dontMergeButton->isChecked()) {

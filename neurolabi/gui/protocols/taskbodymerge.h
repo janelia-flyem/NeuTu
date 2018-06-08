@@ -24,6 +24,7 @@ public:
 
   virtual QWidget *getTaskWidget() override;
   virtual QMenu *getTaskMenu() override;
+  virtual bool usePrefetching() override;
 
 private slots:
   void onCycleAnswer();

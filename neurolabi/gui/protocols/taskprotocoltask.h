@@ -41,6 +41,7 @@ public:
     virtual QString targetString() = 0;    
     virtual QWidget * getTaskWidget();
     virtual QMenu * getTaskMenu();
+    virtual bool usePrefetching();
     virtual bool allowCompletion();
 
 signals:
