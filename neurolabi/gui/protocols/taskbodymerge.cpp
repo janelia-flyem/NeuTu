@@ -395,7 +395,7 @@ void TaskBodyMerge::buildTaskWidget()
   m_menu = new QMenu("Body Merging", m_widget);
 
   QAction *cycleAnswerAction = new QAction("Cycle Through Answers", m_widget);
-  cycleAnswerAction->setShortcut('`');
+  cycleAnswerAction->setShortcut(Qt::Key_V);
   m_menu->addAction(cycleAnswerAction);
   connect(cycleAnswerAction, SIGNAL(triggered()), this, SLOT(onCycleAnswer()));
 
