@@ -606,13 +606,15 @@ int TaskProtocolWindow::getNextUncompleted() {
  * prefetch the bodies for a task
  */
 void TaskProtocolWindow::prefetchForTaskIndex(int index) {
-    // each task may have bodies that it wants visible and selected;
-    //  add those, selected first (which are presumably more important?)
-    if (m_taskList[index]->selectedBodies().size() > 0) {
-        prefetch(m_taskList[index]->selectedBodies());
-    }
-    if (m_taskList[index]->visibleBodies().size() > 0) {
-        prefetch(m_taskList[index]->visibleBodies());
+    if (m_taskList[index]->usePrefetching()) {
+        // each task may have bodies that it wants visible and selected;
+        //  add those, selected first (which are presumably more important?)
+        if (m_taskList[index]->selectedBodies().size() > 0) {
+            prefetch(m_taskList[index]->selectedBodies());
+        }
+        if (m_taskList[index]->visibleBodies().size() > 0) {
+            prefetch(m_taskList[index]->visibleBodies());
+        }
     }
 }
 
