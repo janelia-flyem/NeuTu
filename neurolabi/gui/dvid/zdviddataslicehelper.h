@@ -71,6 +71,9 @@ public:
   size_t getViewDataSize() const;
   static size_t GetViewDataSize(const ZStackViewParam &viewParam, int zoom);
 
+  void closeViewPort();
+  void openViewPort();
+
   int getCenterCutWidth() const;
   int getCenterCutHeight() const;
 
@@ -86,9 +89,11 @@ public:
   bool hasNewView(const ZStackViewParam &viewParam) const;
   bool hasNewView(
       const ZStackViewParam &viewParam, int centerCutX, int centerCutY) const;
+  /*
   bool containedIn(
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool centerCut) const;
+      */
   bool actualContainedIn(
       const ZStackViewParam &viewParam, int zoom,
       int centerCutX, int centerCutY, bool centerCut) const;
@@ -111,6 +116,10 @@ public:
 
   int getActualScale() const;
   int getActualZoom() const;
+
+  flyem::EDataSliceUpdatePolicy getUpdatePolicy() const;
+  void setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
+  void inferUpdatePolicy(neutube::EAxis axis);
 
 private:
   /*!
@@ -143,6 +152,7 @@ public:
   bool m_actualUsingCenterCut = true;
 
   ZDvidData::ERole m_dataRole;
+  flyem::EDataSliceUpdatePolicy m_updatePolicy = flyem::UPDATE_DIRECT;
 
   ZDvidReader m_reader;
 };

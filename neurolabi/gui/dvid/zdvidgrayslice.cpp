@@ -1,5 +1,7 @@
 #include "zdvidgrayslice.h"
 
+#include <QElapsedTimer>
+
 #include "zdvidurl.h"
 #include "zdvidbufferreader.h"
 #include "zrect2d.h"
@@ -173,6 +175,9 @@ void ZDvidGraySlice::validatePixmap()
 
 void ZDvidGraySlice::updateImage(const ZStack *stack)
 {
+//  QElapsedTimer timer;
+//  timer.start();
+
   if (stack != NULL) {
     if (stack->width() != m_image.width() ||
         stack->height() != m_image.height()) {
@@ -185,6 +190,8 @@ void ZDvidGraySlice::updateImage(const ZStack *stack)
     m_image.clear();
     invalidatePixmap();
   }
+
+//  std::cout << "Grayscale udpating time: " << timer.elapsed() << std::endl;
 
 #ifdef _DEBUG_2
   m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());

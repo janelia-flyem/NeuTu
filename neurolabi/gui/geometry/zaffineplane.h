@@ -8,6 +8,7 @@ class ZAffinePlane
 public:
   ZAffinePlane();
 
+  void set(const ZPoint &offset, const ZPoint &v1, const ZPoint &v2);
   void setPlane(const ZPoint &v1, const ZPoint &v2);
   void setOffset(const ZPoint &offset);
 
@@ -16,6 +17,11 @@ public:
   ZPoint getOffset() const;
 
   ZPoint getNormal() const;
+
+  ZPlane getPlane() const;
+
+  bool onSamePlane(const ZAffinePlane &ap) const;
+  bool contains(const ZPoint &pt) const;
 
 private:
   ZPoint m_offset;

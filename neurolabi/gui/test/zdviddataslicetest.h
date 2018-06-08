@@ -20,6 +20,28 @@ TEST(ZDvidDataSliceHelper, Basic)
   qDebug() << helper.getViewPort();
   ASSERT_EQ(512, helper.getWidth());
   ASSERT_EQ(512, helper.getHeight());
+
+  ZStackViewParam vp2 = viewParam;
+  vp2.closeViewPort();
+  helper.setViewParam(vp2);
+  ASSERT_TRUE(helper.actualContainedIn(
+                viewParam, helper.getZoom(), helper.getCenterCutWidth(),
+                helper.getCenterCutHeight(), helper.usingCenterCut()));
+
+  viewParam.closeViewPort();
+  ASSERT_FALSE(helper.actualContainedIn(
+                 viewParam, helper.getZoom(), helper.getCenterCutWidth(),
+                 helper.getCenterCutHeight(), helper.usingCenterCut()));
+
+  viewParam.openViewPort();
+  ASSERT_TRUE(helper.actualContainedIn(
+                viewParam, helper.getZoom(), helper.getCenterCutWidth(),
+                helper.getCenterCutHeight(), helper.usingCenterCut()));
+
+  viewParam.setZ(viewParam.getZ() + 1);
+  ASSERT_FALSE(helper.actualContainedIn(
+                 viewParam, helper.getZoom(), helper.getCenterCutWidth(),
+                 helper.getCenterCutHeight(), helper.usingCenterCut()));
 }
 
 TEST(ZDvidDataSliceHelper, Resolution)
@@ -97,6 +119,11 @@ TEST(ZDvidDataSliceHelper, Resolution)
 
   helper.setZoom(6);
   ASSERT_FALSE(helper.needHighResUpdate());
+
+  ZStackViewParam vp = helper.getViewParam();
+  vp.closeViewPort();
+  helper.setViewParam(vp);
+  ASSERT_TRUE(helper.needHighResUpdate());
 }
 
 

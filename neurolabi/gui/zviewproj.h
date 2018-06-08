@@ -78,6 +78,9 @@ public:
   void decreaseZoom();
 
   void setViewPort(const QRect &rect);
+//  void setNullViewPort();
+  void openViewPort();
+  void closeViewPort();
 //  void setViewPortWithZoomFixed(const QRect &rect);
 
   /*!
@@ -128,6 +131,7 @@ private:
   int m_x0;
   int m_y0;
   double m_zoom; //the ratio from view to projection: p/v
+  double m_zoomBackup = 0; //for viewport closing and opening
   QRect m_canvasRect;
   QRect m_widgetRect;
 

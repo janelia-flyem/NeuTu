@@ -2,6 +2,7 @@
 #include "zrect2d.h"
 #include "zintcuboid.h"
 #include "misc/miscutility.h"
+#include "zarbsliceviewparam.h"
 
 ZDvidDataSliceHelper::ZDvidDataSliceHelper(ZDvidData::ERole role) :
   m_dataRole(role)
@@ -39,6 +40,16 @@ int ZDvidDataSliceHelper::getMaxZoom() const
   }
 
   return 0;
+}
+
+flyem::EDataSliceUpdatePolicy ZDvidDataSliceHelper::getUpdatePolicy() const
+{
+  return m_updatePolicy;
+}
+
+void ZDvidDataSliceHelper::setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy)
+{
+  m_updatePolicy = policy;
 }
 
 void ZDvidDataSliceHelper::updateCenterCut()
@@ -116,11 +127,19 @@ void ZDvidDataSliceHelper::setZ(int z)
 
 int ZDvidDataSliceHelper::getWidth() const
 {
+  if (getViewPort().isEmpty()) {
+    return 0;
+  }
+
   return getViewPort().width();
 }
 
 int ZDvidDataSliceHelper::getHeight() const
 {
+  if (getViewPort().isEmpty()) {
+    return 0;
+  }
+
   return getViewPort().height();
 }
 
@@ -141,6 +160,16 @@ size_t ZDvidDataSliceHelper::GetViewDataSize(
   int scale = misc::GetZoomScale(zoom);
 
   return viewParam.getArea() / scale / scale;
+}
+
+void ZDvidDataSliceHelper::closeViewPort()
+{
+  m_currentViewParam.closeViewPort();
+}
+
+void ZDvidDataSliceHelper::openViewPort()
+{
+  m_currentViewParam.openViewPort();
 }
 
 int ZDvidDataSliceHelper::getCenterCutWidth() const
@@ -291,13 +320,17 @@ bool ZDvidDataSliceHelper::IsResIncreasing(
   return result;
 }
 
+/*
 bool ZDvidDataSliceHelper::containedIn(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
     bool centerCut) const
 {
   bool contained = false;
 
-  if (viewParam.contains(m_currentViewParam)) {
+  if (m_currentViewParam.getViewPort().isEmpty() &&
+      !viewParam.getViewPort().isEmpty()) {
+    contained = true;
+  } else if (viewParam.contains(m_currentViewParam)) {
     contained = ZDvidDataSliceHelper::IsResIncreasing(
           getZoom(), getCenterCutWidth(), getCenterCutHeight(), usingCenterCut(),
           zoom, centerCutX, centerCutY, centerCut,
@@ -306,6 +339,7 @@ bool ZDvidDataSliceHelper::containedIn(
 
   return contained;
 }
+*/
 
 bool ZDvidDataSliceHelper::actualContainedIn(
     const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
@@ -313,7 +347,20 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 {
   bool contained = false;
 
-  if (viewParam.contains(m_currentViewParam)) {
+  if (m_currentViewParam.getViewPort().isEmpty() &&
+      !viewParam.getViewPort().isEmpty()) {
+    if (m_currentViewParam.getSliceAxis() == neutube::A_AXIS) {
+      //Must be on the same plane to be contained
+      if (m_currentViewParam.getSliceViewParam().hasSamePlaneCenter(
+            viewParam.getSliceViewParam())) {
+        contained = true;
+      }
+    } else {
+      if (viewParam.getZ() == m_currentViewParam.getZ()) {
+        contained = true;
+      }
+    }
+  } else if (viewParam.contains(m_currentViewParam)) {
     contained = ZDvidDataSliceHelper::IsResIncreasing(
           m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
           m_actualUsingCenterCut,
@@ -326,6 +373,10 @@ bool ZDvidDataSliceHelper::actualContainedIn(
 
 bool ZDvidDataSliceHelper::needHighResUpdate() const
 {
+  if (getViewDataSize() == 0) {
+    return true;
+  }
+
   return IsResIncreasing(
         m_actualZoom, m_actualCenterCutWidth, m_actualCenterCutHeight,
         m_actualUsingCenterCut,
@@ -388,4 +439,17 @@ void ZDvidDataSliceHelper::setActualQuality(
 void ZDvidDataSliceHelper::syncActualQuality()
 {
   setActualQuality(getZoom(), m_centerCutWidth, m_centerCutHeight, m_usingCenterCut);
+}
+
+void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
+{
+  if (getMaxZoom() == 0) {
+    setUpdatePolicy(flyem::UPDATE_DIRECT);
+  } else {
+    if (axis == neutube::A_AXIS) {
+      setUpdatePolicy(flyem::UPDATE_HIDDEN);
+    } else {
+      setUpdatePolicy(flyem::UPDATE_LOWRES);
+    }
+  }
 }

@@ -42,8 +42,10 @@ public:
 
   bool update(const ZStackViewParam &viewParam);
 //  bool update(const QRect &dataRect, int zoom, int z);
-  void update(int z);
-  void update();
+//  void update(int z);
+//  void update();
+
+  void setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
 
   void updateFullView(const ZStackViewParam &viewParam);
 //  void disableFullView();
@@ -154,11 +156,7 @@ public:
 
   int64_t getReadingTime() const;
 
-//  void clearCache();
   bool refreshReaderBuffer();
-
-//  int getZoom() const;
-//  int getZoomLevel(const ZStackViewParam &viewParam) const;
 
   void paintBuffer();
 
@@ -216,6 +214,8 @@ private:
 
   int getFirstZoom(const ZStackViewParam &viewParam) const;
 
+  bool hasValidPaintBuffer() const;
+
 private:
   ZObject3dScanArray m_objArray;
 
@@ -241,7 +241,7 @@ private:
   std::unique_ptr<ZDvidDataSliceHelper> m_helper;
 
   bool m_selectionFrozen;
-  bool m_multiResUpdate = true;
+//  bool m_multiResUpdate = true;
 };
 
 template <typename InputIterator>
