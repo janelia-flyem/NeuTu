@@ -233,8 +233,6 @@ void TaskBodyMerge::onCycleAnswer()
   if (m_dontMergeButton->isChecked()) {
     m_mergeButton->setChecked(true);
   } else if (m_mergeButton->isChecked()) {
-    m_dontKnowButton->setChecked(true);
-  } else {
     m_dontMergeButton->setChecked(true);
   }
 }
@@ -375,19 +373,29 @@ void TaskBodyMerge::buildTaskWidget()
   m_mergeButton = new QRadioButton("Merge", m_widget);
   connect(m_mergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
+  m_mergeWithCaveatsButton = new QRadioButton("Merge with Caveats", m_widget);
+  connect(m_mergeWithCaveatsButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
+
+  m_irrelevantButton = new QRadioButton("Irrelevant", m_widget);
+  connect(m_irrelevantButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
+
   m_dontKnowButton = new QRadioButton("Don't Know", m_widget);
   connect(m_dontKnowButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
-  QHBoxLayout *radioLayout = new QHBoxLayout;
-  radioLayout->addWidget(m_dontMergeButton);
-  radioLayout->addWidget(m_mergeButton);
-  radioLayout->addWidget(m_dontKnowButton);
+  QHBoxLayout *radioTopLayout = new QHBoxLayout;
+  radioTopLayout->addWidget(m_dontMergeButton);
+  radioTopLayout->addWidget(m_mergeButton);
+  QHBoxLayout *radioBottomLayout = new QHBoxLayout;
+  radioBottomLayout->addWidget(m_mergeWithCaveatsButton);
+  radioBottomLayout->addWidget(m_irrelevantButton);
+  radioBottomLayout->addWidget(m_dontKnowButton);
 
   m_showHiResCheckBox = new QCheckBox("Show High Resolution", m_widget);
   connect(m_showHiResCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowHiResStateChanged(int)));
 
   QVBoxLayout *layout = new QVBoxLayout;
-  layout->addLayout(radioLayout);
+  layout->addLayout(radioTopLayout);
+  layout->addLayout(radioBottomLayout);
   layout->addWidget(m_showHiResCheckBox);
 
   m_widget->setLayout(layout);
@@ -450,7 +458,19 @@ void TaskBodyMerge::onCompleted()
     return;
   }
 
-  QString result = m_mergeButton->isChecked() ? "y" : m_dontMergeButton->isChecked() ? "n" : "?";
+  QString result;
+  if (m_mergeButton->isChecked()) {
+    result = "merge";
+  } else if (m_dontMergeButton->isChecked()) {
+    result = "dontMerge";
+  } else if (m_mergeWithCaveatsButton->isChecked()) {
+    result = "mergeBut";
+  } else if (m_irrelevantButton->isChecked()) {
+    result = "irrelevant";
+  } else {
+    result = "?";
+  }
+
   QJsonArray json;
   json.append(result);
   QJsonDocument jsonDoc(json);
