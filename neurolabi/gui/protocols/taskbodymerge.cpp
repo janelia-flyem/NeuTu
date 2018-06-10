@@ -13,6 +13,7 @@
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QRadioButton>
 #include <QSet>
 #include <QVBoxLayout>
@@ -393,10 +394,17 @@ void TaskBodyMerge::buildTaskWidget()
   m_showHiResCheckBox = new QCheckBox("Show High Resolution", m_widget);
   connect(m_showHiResCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowHiResStateChanged(int)));
 
+  QPushButton *zoomToInitialButton = new QPushButton("Zoom to Initial Position", m_widget);
+  connect(zoomToInitialButton, SIGNAL(clicked(bool)), this, SLOT(zoomToMergePosition()));
+
+  QHBoxLayout *bottomLayout = new QHBoxLayout;
+  bottomLayout->addWidget(m_showHiResCheckBox);
+  bottomLayout->addWidget(zoomToInitialButton);
+
   QVBoxLayout *layout = new QVBoxLayout;
   layout->addLayout(radioTopLayout);
   layout->addLayout(radioBottomLayout);
-  layout->addWidget(m_showHiResCheckBox);
+  layout->addLayout(bottomLayout);
 
   m_widget->setLayout(layout);
 
