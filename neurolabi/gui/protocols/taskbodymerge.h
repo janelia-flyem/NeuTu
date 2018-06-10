@@ -31,6 +31,7 @@ private slots:
   void onTriggerShowHiRes();
   void onButtonToggled();
   void onShowHiResStateChanged(int state);
+  void zoomToMergePosition();
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
@@ -61,7 +62,6 @@ private:
   void updateColors();
 
   ZPoint mergePosition() const;
-  void zoomToMergePosition();
 };
 
 #endif // TASKBODYMERGE_H
