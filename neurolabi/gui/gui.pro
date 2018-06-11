@@ -11,12 +11,12 @@ contains(TEMPLATE, app) {
 
 contains(CONFIG, neu3) {
   DEFINES += _NEU3_
-  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
 
 contains(CONFIG, neu3) | contains(CONFIG, flyem) {
   CONFIG *=c++11
   DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
+  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
 
 CONFIG += object_parallel_to_source
