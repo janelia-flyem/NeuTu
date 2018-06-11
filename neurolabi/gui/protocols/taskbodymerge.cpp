@@ -492,8 +492,8 @@ void TaskBodyMerge::applyColorMode(bool merging)
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
     if (merging) {
-      filter->setColorMode("Indexed Color");
       updateColors();
+      filter->setColorMode("Indexed Color");
     } else {
       filter->setColorMode("Mesh Source");
     }
