@@ -5,6 +5,7 @@
 #include <QtConcurrentRun>
 #include <QMutexLocker>
 #include <QElapsedTimer>
+#include <algorithm>
 
 #include "zjsondef.h"
 #include "dvid/zdvidreader.h"
@@ -1430,7 +1431,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     // Meshes loaded from an archive are ready at this point, so emit a signal, which
     // can be used by code that needs to know the IDs of the loaded meshes (instead of
     // the ID of the archive).
-
+    LDEBUG() << "Emitting bodyMeshesAdded";
     emit bodyMeshesAdded(meshes.size());
   }
 }
@@ -1871,34 +1872,34 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
 {
   ZOUT(LTRACE(), 5) << "Update body: " << bodyId;
 
-  QString threadId = QString("updateBody(%1)").arg(bodyId);
-  if (!m_futureMap.isAlive(threadId)) {
+//  QString threadId = QString("updateBody(%1)").arg(bodyId);
+//  if (!m_futureMap.isAlive(threadId)) {
 
-    // The findSameClass() function has performance that is quadratic in the number of meshes,
-    // and is unnecessary for meshes from a tar archive.
+  // The findSameClass() function has performance that is quadratic in the number of meshes,
+  // and is unnecessary for meshes from a tar archive.
 
-    if (!fromTar(bodyId)) {
-        TStackObjectList objList = getObjectGroup().findSameClass(
-              bodyObject->getType(),
-              ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+  if (!fromTar(bodyId)) {
+    TStackObjectList objList = getObjectGroup().findSameClass(
+          bodyObject->getType(),
+          ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
 
-        for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-             ++iter) {
-          getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
-        }
-        getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
     }
-    else {
-
-      // The event name is a bit confusing, but "NONUNIQUE" means that ZStackDoc::addObject()
-      // won't get into a quadratic loop checking that this body is unique, at test that is
-      // not necessary for bodies from tar archives.
-
-      getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
-    }
-    getDataBuffer()->deliver();
-    emit bodyMeshLoaded();
+    getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
   }
+  else {
+
+    // The event name is a bit confusing, but "NONUNIQUE" means that ZStackDoc::addObject()
+    // won't get into a quadratic loop checking that this body is unique, at test that is
+    // not necessary for bodies from tar archives.
+
+    getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+  }
+  getDataBuffer()->deliver();
+  emit bodyMeshLoaded();
+//  }
 
   ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;
 }
@@ -2229,6 +2230,7 @@ QSet<uint64_t> ZFlyEmBody3dDoc::getNormalBodySet() const
     for (const auto &m : m_tarIdToMeshIds) {
       bodySet.insert(decode(m.first));
     }
+
     return bodySet;
   }
 
@@ -2503,7 +2505,8 @@ namespace {
   }
 }
 
-void ZFlyEmBody3dDoc::makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_t, ZMesh*> &result)
+void ZFlyEmBody3dDoc::makeBodyMeshModels(
+    uint64_t id, int zoom, std::map<uint64_t, ZMesh*> &result)
 {
   if ((id == 0) || getCachedMeshes(id, zoom, result)) {
     return;

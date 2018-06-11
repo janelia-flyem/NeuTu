@@ -3,6 +3,8 @@
 #include<vector>
 #include "ztestheader.h"
 #include "sandbox/zgradientmagnitudemodule.h"
+#include "zstack.hxx"
+
 #ifdef _USE_GTEST_
 
 
@@ -163,6 +165,7 @@ TEST(GRADIENTMAGNITUDEMODULE,NORMAL)
 {
   ZStack* in=new ZStack(GREY,3,2,1,1);
   ZStack* out=new ZStack(GREY,3,2,1,1);
+
   uint8_t *pi=in->array8(),*po=out->array8();
   pi[0]=0;
   pi[1]=3;

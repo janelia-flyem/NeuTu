@@ -1,11 +1,11 @@
 #ifndef ZJSONFACTORY_H
 #define ZJSONFACTORY_H
 
+#include <vector>
+
 #if defined(_QT_GUI_USED_)
 #include <QMap>
 #endif
-
-#include <vector>
 
 #include "tz_stdint.h"
 

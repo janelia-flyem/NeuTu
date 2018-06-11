@@ -19111,7 +19111,10 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  while (1) {
+  QElapsedTimer timer;
+  timer.start();
+  ZRandomGenerator::SetSeed(0);
+  for (int i = 0; i < 10; ++i) {
     ZObject3dScan obj = ZObject3dFactory::MakeRandomObject3dScan(
           ZIntCuboid(0, 0, 0, 200, 200, 200));
     obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -19137,20 +19140,21 @@ void ZTest::test(MainWindow *host)
       break;
     }
 
-    for (size_t i = 0; i < objArray.size(); ++i) {
-      for (size_t j = 0; j < objArray.size(); ++j) {
+    for (size_t i = 0; i < objArray.size(); i += 10) {
+      for (size_t j = i + 1; j < objArray.size(); j += 10) {
         if (i != j) {
           ZObject3dScan &obj1 = objArray[i];
           ZObject3dScan &obj2 = objArray[j];
           if (obj1.isAdjacentTo(obj2)) {
             std::cout << "Bug found: Adjacent disjoints." << std::endl;
+            i = objArray.size();
             break;
           }
         }
       }
     }
   }
-
+  std::cout << timer.elapsed() << "ms" << std::endl;
 #endif
 
 #if 0
@@ -26589,6 +26593,59 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   writer.syncData("segmentation_todo", "segmentation", "replace=true");
+#endif
+
+#if 0
+  QDir fileInfo(GET_TEST_DATA_DIR.c_str());
+  fileInfo.setFile(GET_TEST_DATA_DIR, "test.tif");
+  qDebug() << fileInfo.absoluteFilePath();
+
+  fileInfo.setFile("test2.tif");
+  qDebug() << fileInfo.absoluteFilePath();
+
+  qDebug() << fileInfo.isFile();
+#endif
+
+#if 0
+  {
+    tic();
+    std::vector<ZObject3dStripe> stripeArray;
+    for (size_t i = 0; i < 100000; ++i) {
+      ZObject3dStripe stripe;
+      stripe.addSegment(0, 1, false);
+      stripe.addSegment(3, 4, false);
+      stripe.addSegment(7, 8, false);
+      stripe.addSegment(11, 12, false);
+
+      stripeArray.push_back(std::move(stripe));
+    }
+    ptoc();
+  }
+
+  {
+    tic();
+    std::vector<ZObject3dStripe> stripeArray;
+    for (size_t i = 0; i < 100000; ++i) {
+      ZObject3dStripe stripe;
+      stripe.addSegment(0, 1, false);
+      stripe.addSegment(3, 4, false);
+      stripe.addSegment(7, 8, false);
+      stripe.addSegment(11, 12, false);
+
+      stripeArray.push_back(stripe);
+    }
+    ptoc();
+  }
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "a6dd", 8700);
+  target.setSegmentationName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.deleteKey(QString("segmentation_meshes"), "0", "z");
 #endif
 
   std::cout << "Done." << std::endl;
