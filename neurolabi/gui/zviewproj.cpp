@@ -166,12 +166,17 @@ QRectF ZViewProj::getProjRect() const
 void ZViewProj::setViewPort(const QRect &rect)
 {
   if (rect.isValid()) {
-    setZoom(std::min((double) (m_widgetRect.width()) / rect.width(),
-                     (double) (m_widgetRect.height()) / rect.height()));
-    setViewCenter(rect.center());
+    if (m_widgetRect.isValid()) {
+      setZoom(std::min((double) (m_widgetRect.width()) / rect.width(),
+                       (double) (m_widgetRect.height()) / rect.height()));
+      setViewCenter(rect.center());
+    } else {
+      prepareViewPort(rect);
+    }
   }
 }
 
+/*
 void ZViewProj::setViewPortWithZoomFixed(const QRect &rect)
 {
   if (rect.isValid()) {
@@ -180,6 +185,7 @@ void ZViewProj::setViewPortWithZoomFixed(const QRect &rect)
     setViewCenter(rect.center());
   }
 }
+*/
 
 void ZViewProj::prepareViewPort(const QRect &rect)
 {

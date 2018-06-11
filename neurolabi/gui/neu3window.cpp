@@ -925,6 +925,7 @@ namespace {
   static bool zoomToLoadedBody = true;
 }
 
+//Todo: change global zoomToLoadedBody to a member variable
 void Neu3Window::enableZoomToLoadedBody(bool enable)
 {
   zoomToLoadedBody = enable;
@@ -941,7 +942,8 @@ void Neu3Window::zoomToBodyMesh()
     return;
   }
 
-  QList<ZMesh*> meshList = getBodyDocument()->getMeshList();
+  QList<ZMesh*> meshList =
+      ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
   if (meshList.size() == 1) {
     ZMesh *mesh = meshList.front();
     m_3dwin->gotoPosition(mesh->getBoundBox());
@@ -1025,6 +1027,7 @@ void Neu3Window::syncBodyListModel()
   // would have triggered for each of the meshes, or else they will not function
   // correctly (e.g., will not be pickable in the 3D view).
 
+  LDEBUG() << "Syncing body list";
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
   std::set<uint64_t> selected;
   for (ZMesh *mesh : meshList) {

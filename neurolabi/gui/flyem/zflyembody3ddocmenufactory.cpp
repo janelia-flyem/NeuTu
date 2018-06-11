@@ -32,6 +32,10 @@ QMenu* ZFlyEmBody3dDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *men
       actionList.append(ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED);
     }
 
+//    if (doc->getSelectedBodyCount() == 1) {
+
+//    }
+
     addAction(actionList, window, menu);
   }
 

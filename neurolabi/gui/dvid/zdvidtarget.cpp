@@ -762,34 +762,16 @@ bool ZDvidTarget::hasSupervoxel() const
 bool ZDvidTarget::isSegmentationSyncable() const
 {
   if (hasSegmentation()) {
+    return true;
+    /*
     if (getSegmentationType() != ZDvidData::TYPE_LABELMAP) {
       return true;
     }
+    */
   }
 
   return false;
 }
-/*
-bool ZDvidTarget::usingLabelArray() const
-{
-  return m_usingLabelArray;
-}
-
-bool ZDvidTarget::usingLabelMap() const
-{
-  return m_usingLabelMap;
-}
-
-void ZDvidTarget::useLabelArray(bool on)
-{
-  m_usingLabelArray = on;
-}
-
-void ZDvidTarget::useLabelMap(bool on)
-{
-  m_usingLabelArray = on;
-}
-*/
 
 bool ZDvidTarget::segmentationAsBodyLabel() const
 {

@@ -78,7 +78,7 @@ public:
   void decreaseZoom();
 
   void setViewPort(const QRect &rect);
-  void setViewPortWithZoomFixed(const QRect &rect);
+//  void setViewPortWithZoomFixed(const QRect &rect);
 
   /*!
    * \brief Cache a viewport for future setting
@@ -88,7 +88,7 @@ public:
   /*!
    * \brief Store the current viewport into the buffer
    */
-  void backupViewPort();
+//  void backupViewPort();
 
   void zoomTo(int x, int y, int width);
   void zoomTo(const QPoint &pt, int width);

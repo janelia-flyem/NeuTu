@@ -33,12 +33,13 @@ done
 
 for x in neu3-develop neu3-alpha neu3-beta neu3
 do
-  if [ {$NEUTU_TARGET} == "$x" ]
+  if [ ${NEUTU_TARGET} == "$x" ]
   then
     app_name=neu3
     break
   fi
 done
+echo "app name: $app_name"
 
 build_dir=neurolabi/build
 if [ "$app_name" == 'neutu_d' ] || [ "$app_name" == 'neu3_d' ]

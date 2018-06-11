@@ -165,6 +165,7 @@ public:
 public: //controls
   void createToolBar();
   void hideControlPanel();
+  void showControlPanel();
   void hideObjectView();
   void hideStatusBar();
 
@@ -477,6 +478,8 @@ private:
   QTabWidget* createBasicSettingTabWidget();
   QTabWidget* createAdvancedSettingTabWidget();
 
+  QTabWidget* getSettingsTabWidget() const;
+
   // update menu based on context information
   void updateContextMenu(const QString &group);
 
@@ -507,6 +510,7 @@ private:
   QAction *m_toggleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
   QAction *m_toggleObjectsAction;
+  QAction *m_toggleSettingsAction;
   QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;
   QAction *m_toggleSmartExtendSelectedSwcNodeAction;

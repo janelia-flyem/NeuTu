@@ -121,7 +121,8 @@ bool SynapsePredictionProtocol::initialize() {
         }
         QString roiInput = inputDialog.getRoI();
 
-        m_protocolRange = volume;
+        setRange(volume);
+//        m_protocolRange = volume;
 
     } else if (m_variation == VARIATION_BODY) {
 
@@ -170,6 +171,24 @@ bool SynapsePredictionProtocol::initialize() {
     saveState();
 
     return true;
+}
+
+ZIntCuboid SynapsePredictionProtocol::getRange() const
+{
+  return m_protocolRange;
+}
+
+void SynapsePredictionProtocol::setRange(const ZIntCuboid &range)
+{
+  m_protocolRange = range;
+  emit rangeChanged(range.getFirstCorner(), range.getLastCorner());
+}
+
+void SynapsePredictionProtocol::setRange(const ZJsonArray &rangeJson)
+{
+  ZIntCuboid range;
+  range.loadJson(rangeJson);
+  setRange(range);
 }
 
 void SynapsePredictionProtocol::onFirstButton() {
@@ -508,7 +527,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
 
     // variation specific loading:
     if (m_variation == VARIATION_REGION) {
-        m_protocolRange.loadJson(ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
+      setRange(ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
         if (!m_protocolRange.isEmpty()) {
             loadInitialSynapseList();
         } else {

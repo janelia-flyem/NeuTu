@@ -131,6 +131,10 @@ static const TVisualEffect VE_CROSS_CENTER = BIT_FLAG(9);
 static const TVisualEffect VE_FORCE_FILL = BIT_FLAG(10);
 }
 
+namespace Box {
+static const TVisualEffect VE_GRID = BIT_FLAG(1);
+}
+
 namespace SwcTree {
 static const TVisualEffect VE_FULL_SKELETON = 1;
 }
