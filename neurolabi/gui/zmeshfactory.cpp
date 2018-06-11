@@ -57,7 +57,7 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv, int smooth)
   ZMesh *mesh = ZMarchingCube::March(*stack, smooth, NULL);
 
   if (dsIntv > 0 && mesh != NULL) {
-    mesh->setSource("oversize");
+    mesh->setObjectId("oversize");
   }
 
   delete stack;

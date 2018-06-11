@@ -866,6 +866,11 @@ flyem::EBodyLabelType ZFlyEmBody3dDoc::getBodyLabelType() const
   return flyem::LABEL_BODY;
 }
 
+bool ZFlyEmBody3dDoc::IsOverSize(const ZStackObject *obj)
+{
+  return obj->getSource() == "oversize" || obj->getObjectId() == "oversize";
+}
+
 ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
 {
   if (getBodyType() == flyem::BODY_MESH) {
@@ -2351,7 +2356,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
       if (tree != NULL) {
         tree->setTimeStamp(t);
-        if (tree->getSource() == "oversize" || zoom <= 2) {
+        if (IsOverSize(tree) && zoom <= 2) {
           zoom = 0;
         }
         tree->setSource(
@@ -2472,11 +2477,11 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
     if (!loaded) { //Now make mesh from sparse vol
       ZObject3dScan obj;
-      if (zoom == 0) {
-        reader.readMultiscaleBody(bodyId, zoom, true, &obj);
-      } else if (zoom >= getMaxResLevel()){
+      if (zoom >= getMaxResLevel()){
         reader.readCoarseBody(bodyId, &obj);
         obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
+      } else {
+        reader.readMultiscaleBody(bodyId, zoom, true, &obj);
       }
       mesh = ZMeshFactory::MakeMesh(obj);
       if (mesh) {
@@ -2569,6 +2574,11 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(
     ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
     if (mesh == NULL) {
       mesh = readMesh(id, zoom);
+      if (mesh != NULL) {
+        if (IsOverSize(mesh) && zoom <= 2) {
+          zoom = 0;
+        }
+      }
     } else {
       zoom = 0;
     }
