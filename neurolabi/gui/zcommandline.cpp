@@ -8,6 +8,7 @@
 #include <set>
 #include <QApplication>
 
+#include "QsLog.h"
 #include "tz_utilities.h"
 //#include "zargumentprocessor.h"
 #include "ztest.h"
@@ -1093,8 +1094,7 @@ int ZCommandLine::skeletonizeDvid()
     return 1;
   }
 
-  std::cout << "Skeletonizing " << bodyIdArray.size() << " bodies..."
-            << std::endl;
+  LINFO() << "Skeletonizing" << bodyIdArray.size() << "bodies...";
 
   ZRandomGenerator rnd;
   std::vector<int> rank = rnd.randperm(bodyIdArray.size());
@@ -1135,7 +1135,7 @@ int ZCommandLine::skeletonizeDvid()
               delete tree;
               tree = NULL;
             }
-            std::cout << outputFileInfo.absoluteFilePath().toStdString() + " exists." << std::endl;
+            LINFO() << outputFileInfo.absoluteFilePath().toStdString() + " exists.";
           }
         } else {
           tree = reader.readSwc(bodyId);
@@ -1152,8 +1152,7 @@ int ZCommandLine::skeletonizeDvid()
             writer.writeSwc(bodyId, tree);
           }
         } else {
-          std::cout << "WARNING: skeletonization failed for "
-                    << bodyId << std::endl;
+          LWARN() << "Skeletonization failed for" << bodyId;
         }
       }
 
@@ -1167,8 +1166,8 @@ int ZCommandLine::skeletonizeDvid()
         }
       }
       delete tree;
-      std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
-                << bodyIdArray.size() << std::endl;
+      LINFO() << "Output:" << m_output;
+      LINFO() << ">>>>>>>>skeletonized>>>>>>>>>>" << i + 1 << " / " << bodyIdArray.size();
     }
   }
 
