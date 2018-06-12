@@ -49,8 +49,6 @@ NeutubeConfig::~NeutubeConfig()
 #ifdef _QT_GUI_USED_
 //  delete m_traceStream;
 #endif
-
-  LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 }
 
 void NeutubeConfig::init()

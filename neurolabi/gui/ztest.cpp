@@ -26648,9 +26648,26 @@ void ZTest::test(MainWindow *host)
   writer.deleteKey(QString("segmentation_meshes"), "0", "z");
 #endif
 
-#if 1
+#if 0
   ZPythonProcess proc;
   proc.printPythonPath();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "6134", 8900);
+  target.setSegmentationName("segmentation");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj;
+  reader.readBody(853173648, true, &obj);
+
+  std::cout << obj.getBoundBox().toString() << std::endl;
+  obj.downsampleMax(15, 15, 15);
+  std::cout << obj.getBoundBox().toString() << std::endl;
+
 #endif
 
   std::cout << "Done." << std::endl;
