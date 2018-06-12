@@ -75,8 +75,11 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     ui->nextButton->setShortcut(Qt::Key_E);
     ui->prevButton->setShortcut(Qt::Key_Q);
 
-    QShortcut *shortcut = new QShortcut(Qt::SHIFT + Qt::Key_E, this);
-    connect(shortcut, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    // there are two keyboard shortcuts for completed+next, for different hand sizes
+    QShortcut *shortcut1 = new QShortcut(Qt::SHIFT + Qt::Key_E, this);
+    QShortcut *shortcut2 = new QShortcut(Qt::SHIFT + Qt::Key_X, this);
+    connect(shortcut1, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    connect(shortcut2, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
 
     connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshesAdded,
             this, &TaskProtocolWindow::onBodyMeshesAdded);
