@@ -26431,7 +26431,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidReader *reader = ZGlobal::GetDvidReader("labelmap_test");
+  ZDvidReader *reader = ZGlobal::GetDvidReader("test");
   reader->updateMaxLabelZoom();
 //    reader->setLabelCenterCut(256, 256);
   {
@@ -26659,6 +26659,10 @@ void ZTest::test(MainWindow *host)
   writer.syncAnnotationToLabel("segmentation_todo");
 #endif
 
+#if 1
+  ZPythonProcess proc;
+  proc.printPythonPath();
+#endif
 
   std::cout << "Done." << std::endl;
 }
