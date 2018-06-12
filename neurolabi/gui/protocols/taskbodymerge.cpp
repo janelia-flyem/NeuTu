@@ -504,7 +504,8 @@ void TaskBodyMerge::updateColors()
 {
   if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
     std::size_t index1 = 1;
-    std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
+    bool merging = (m_mergeButton->isChecked() || m_mergeWithCaveatsButton->isChecked());
+    std::size_t index2 = merging ? index1 : 2;
 
     filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
       uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
