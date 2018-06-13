@@ -793,6 +793,10 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
     if (m_currentTaskMenuAction) {
         m_currentTaskMenuAction->setEnabled(false);
     }
+
+    // Check for immediate reenabling, in the case of all bodies being reused.
+
+    enableButtonsAfterUpdating();
 }
 
 void TaskProtocolWindow::enableButtonsAfterUpdating()
@@ -990,12 +994,12 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
 
         if (!m_taskList.empty()) {
-          connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
-                  this, SLOT(onBodiesUpdated()));
-          connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
-                  this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
-          connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
-                  this, SIGNAL(updateGrayscaleColor(QHash<uint64_t,QColor>)));
+            connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
+                    this, SLOT(onBodiesUpdated()));
+            connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
+                    this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
+            connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
+                    this, SIGNAL(updateGrayscaleColor(QHash<uint64_t,QColor>)));
         }
     }
 
