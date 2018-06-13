@@ -39,6 +39,7 @@ public:
     virtual QString tasktype() = 0;
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
+    virtual bool skip();
     virtual QWidget * getTaskWidget();
     virtual QMenu * getTaskMenu();
     virtual bool usePrefetching();
