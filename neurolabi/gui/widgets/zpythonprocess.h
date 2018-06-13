@@ -57,6 +57,8 @@ public:
     return m_output;
   }
 
+  void printPythonPath();
+
 public slots:
   void parsePythonOutput();
 

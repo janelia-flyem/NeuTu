@@ -26431,7 +26431,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidReader *reader = ZGlobal::GetDvidReader("labelmap_test");
+  ZDvidReader *reader = ZGlobal::GetDvidReader("test");
   reader->updateMaxLabelZoom();
 //    reader->setLabelCenterCut(256, 256);
   {
@@ -26638,7 +26638,7 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata2.int.janelia.org", "a6dd", 8700);
   target.setSegmentationName("segmentation");
@@ -26646,6 +26646,28 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   writer.deleteKey(QString("segmentation_meshes"), "0", "z");
+#endif
+
+#if 0
+  ZPythonProcess proc;
+  proc.printPythonPath();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "6134", 8900);
+  target.setSegmentationName("segmentation");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj;
+  reader.readBody(853173648, true, &obj);
+
+  std::cout << obj.getBoundBox().toString() << std::endl;
+  obj.downsampleMax(15, 15, 15);
+  std::cout << obj.getBoundBox().toString() << std::endl;
+
 #endif
 
   std::cout << "Done." << std::endl;
