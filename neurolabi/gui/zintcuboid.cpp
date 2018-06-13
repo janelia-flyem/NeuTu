@@ -212,6 +212,20 @@ size_t ZIntCuboid::getVolume() const
   return area * getDepth();
 }
 
+size_t ZIntCuboid::getDsMaxVolume(int xIntv, int yIntv, int zIntv) const
+{
+  if (getWidth() <= 0 || getHeight() <= 0 || getDepth() <= 0) {
+    return 0;
+  }
+
+  ZIntPoint s(xIntv + 1, yIntv + 1, zIntv + 1);
+  ZIntPoint newSize = m_lastCorner / s - m_firstCorner / s + 1;
+
+  size_t area = newSize.getX() * newSize.getY();
+
+  return area * newSize.getZ();
+}
+
 bool ZIntCuboid::contains(int x, int y, int z) const
 {
   return IS_IN_CLOSE_RANGE(x, m_firstCorner.getX(), m_lastCorner.getX()) &&
