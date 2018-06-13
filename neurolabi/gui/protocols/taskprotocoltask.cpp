@@ -119,6 +119,16 @@ void TaskProtocolTask::beforeDone() {
   // nothing
 }
 
+/*
+ * subclasses may optionally implement this method to
+ * inidicate that a particular task instance should be skipped
+ * (e.g., because when the task loaded itself it discovered that
+ * it was redundant in some sense)
+ */
+bool TaskProtocolTask::skip()
+{
+  return false;
+}
 
 /*
  * subclasses may optionally implement this method to

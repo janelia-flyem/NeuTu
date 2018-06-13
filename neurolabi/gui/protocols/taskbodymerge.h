@@ -18,6 +18,7 @@ public:
   QString actionString() override;
   QString targetString() override;
 
+  virtual bool skip() override;
   virtual void beforeNext() override;
   virtual void beforePrev() override;
   virtual void beforeDone() override;

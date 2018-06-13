@@ -144,7 +144,7 @@ private:
     void updateCurrentTaskLabel();
     void updateButtonsEnabled();
     void updateMenu(bool add);
-    int getFirstUncompleted();
+    int getFirst(bool includeCompleted);
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
     void updateBodyWindow();

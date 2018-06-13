@@ -474,11 +474,7 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     }
 
     // load first task; enable UI and go
-    if (ui->showCompletedCheckBox->isChecked()) {
-        m_currentTaskIndex = 0;
-    } else {
-        m_currentTaskIndex = getFirstUncompleted();
-    }
+    m_currentTaskIndex = getFirst(ui->showCompletedCheckBox->isChecked());
     if (m_currentTaskIndex < 0) {
         showInfo("No tasks to do!", "All tasks have been completed!");
     }
@@ -499,15 +495,16 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 }
 
 /*
- * returns index of first uncompleted task, or -1
+ * returns index of first (uncompleted) task, or -1
  */
-int TaskProtocolWindow::getFirstUncompleted() {
-    for (int i=0; i<m_taskList.size(); i++) {
-        if (!m_taskList[i]->completed()) {
-            return i;
-        }
-    }
-    return -1;
+int TaskProtocolWindow::getFirst(bool includeCompleted)
+{
+  for (int i = 0; i < m_taskList.size(); i++) {
+      if ((includeCompleted || !m_taskList[i]->completed()) && (!m_taskList[i]->skip())) {
+          return i;
+      }
+  }
+  return -1;
 }
 
 /*
@@ -562,24 +559,34 @@ int TaskProtocolWindow::getPrevUncompleted() {
 
 int TaskProtocolWindow::getPrevIndex(int currentIndex) const
 {
-  int index = -1;
-  if (currentIndex > 0 && currentIndex < m_taskList.size()) {
-    index = currentIndex - 1;
-  } else if (currentIndex == 0 && m_taskList.size() > 1) {
-    index = m_taskList.size() - 1;
-  }
+  int index = currentIndex;
+
+  do {
+    index--;
+    if (index < 0 && currentIndex >= 0) {
+      index = m_taskList.size() - 1;
+    } else if (index < 0 || index >= m_taskList.size() || index == currentIndex) {
+      index = -1;
+      break;
+    }
+  } while (m_taskList[index]->skip());
 
   return index;
 }
 
 int TaskProtocolWindow::getNextIndex(int currentIndex) const
 {
-  int index =  currentIndex + 1;
-  if (index == m_taskList.size() && currentIndex >= 0) {
-    index = 0;
-  } else if (index <= 0 || index >= m_taskList.size()) {
-    index = -1;
-  }
+  int index = currentIndex;
+
+  do {
+    index++;
+    if (index == m_taskList.size() && currentIndex >= 0) {
+      index = 0;
+    } else if (index < 0 || index >= m_taskList.size() || index == currentIndex) {
+      index = -1;
+      break;
+    }
+  } while (m_taskList[index]->skip());
 
   return index;
 }

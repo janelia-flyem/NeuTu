@@ -185,6 +185,11 @@ QString TaskBodyMerge::targetString()
   return "SV " + QString::number(m_supervoxelId1) + " +<br>SV " + QString::number(m_supervoxelId2);
 }
 
+bool TaskBodyMerge::skip()
+{
+  return (m_bodyId1 == m_bodyId2);
+}
+
 void TaskBodyMerge::beforeNext()
 {
   // Clear the mesh cache when changing tasks so it does not grow without bound
@@ -211,6 +216,18 @@ void TaskBodyMerge::beforeDone()
 
 QWidget *TaskBodyMerge::getTaskWidget()
 {
+  // It's possible that the bodies of the super voxels were merge together via
+  // another pair of super voxels in another user's session.  So get the bodies from
+  // DVID again, to update the result computed by skip().
+
+  setBodiesFromSuperVoxels();
+
+  // Now set the visible vodies.  For fastest task loading, start with the original bodies
+  // at low resolution.
+
+  m_visibleBodies.insert(m_bodyId1);
+  m_visibleBodies.insert(m_bodyId2);
+
   applyColorMode(true);
   return m_widget;
 }
@@ -292,11 +309,6 @@ bool TaskBodyMerge::loadSpecific(QJsonObject json)
                            ", the key \"" + KEY_SUPERVOXEL_POINT2 + "\" cannot be parsed as a 3D point.");
     }
   }
-
-  // For fastest task loading, start with the original bodies at low resolution.
-
-  m_visibleBodies.insert(m_bodyId1);
-  m_visibleBodies.insert(m_bodyId2);
 
   return true;
 }
