@@ -173,7 +173,7 @@ bool ZArbSliceViewParam::isSamePlane(const ZArbSliceViewParam &param) const
   if (m_v1.approxEquals(param.m_v1) && m_v2.approxEquals(param.m_v2)) {
     ZPoint dc = (m_center - param.m_center).toPoint();
     ZPoint normal = m_v1.cross(m_v2);
-    if (dc.isApproxOrigin() || dc.isPendicularTo(normal)) {
+    if (dc.isApproxOrigin() && dc.isPendicularTo(normal)) {
       return true;
     }
   }
