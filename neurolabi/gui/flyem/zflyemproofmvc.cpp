@@ -1661,10 +1661,14 @@ void ZFlyEmProofMvc::startMergeProfile(const uint64_t bodyId, int msec)
   ZFlyEmProofMvcController::GoToBody(this, bodyId);
   ZFlyEmProofMvcController::EnableHighlightMode(this);
 
-  emit messageGenerated(
-        ZWidgetMessage(
-          "Please trace the selected body until the time is up. Ready?",
-          neutube::MSG_INFORMATION, ZWidgetMessage::TARGET_DIALOG));
+  ZWidgetMessage msg = ZWidgetMessageFactory("<p><i>Welcome to NeuTu challenge.</i><p>").
+      to(ZWidgetMessage::TARGET_DIALOG).as(neutube::MSG_INFORMATION);
+  msg.appendMessage("<p><font color=\"#007700\">Please trace the selected body "
+                    "by clicking until the time is up.</font></p>");
+  msg.appendMessage("<p><font color=\"#003300\">Hint: "
+                    "Please ignore trivial fragments or those with really bad false merges.</font></p>");
+  msg.appendMessage("<p><big>Ready?</big></p>");
+  emit messageGenerated(msg);
   m_profileTimer->start(msec);
 }
 
@@ -1677,11 +1681,22 @@ void ZFlyEmProofMvc::endTestTask()
 {
   endMergeProfile();
 
+  std::set<uint64_t> bodySet =
+      getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
+
   //Saving results
-  ZJsonArray array = getCompleteDocument()->getMergeOperation();
+//  ZJsonArray array = getCompleteDocument()->getMergeOperation();
+  ZJsonArray array;
+  for (uint64_t bodyId : bodySet) {
+    array.append(bodyId);
+  }
+
   ZJsonObject config = ZFlyEmMisc::GetTaskReader()->readTestTask(m_taskKey);
-  std::cout << array.toString() << std::endl;
+  LINFO() << array.toString();
   config.setEntry("merge", array);
+  config.setEntry("timestamp", QDateTime::currentDateTime().toString(
+                    "yyyy-MM-ddThh:mm:ss.zzz").toStdString());
+
   std::cout << config.dumpString(2) << std::endl;
 
   ZFlyEmMisc::GetTaskWriter()->writeTestResult(m_taskKey, config);
@@ -1698,7 +1713,7 @@ void ZFlyEmProofMvc::endMergeProfile()
 {
   emit messageGenerated(
         ZWidgetMessage("End merge profiling"));
-  mergeSelected();
+//  mergeSelected();
 
 //  mergeSelected();
 //  getCompleteDocument()->saveMergeOperation();
