@@ -11,6 +11,7 @@
 #include "zstackdocproxy.h"
 
 #include <QCheckBox>
+#include <QDateTime>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QPushButton>
@@ -26,7 +27,14 @@ namespace {
   static const QString KEY_SUPERVOXEL_ID2 = "supervoxel ID 2";
   static const QString KEY_SUPERVOXEL_POINT1 = "supervoxel point 1";
   static const QString KEY_SUPERVOXEL_POINT2 = "supervoxel point 2";
-  static const QString KEY_ASSIGNED_USER = "assigned user";
+
+  // For the result JSON.
+  static const QString KEY_RESULT = "result";
+  static const QString KEY_USER = "user";
+  static const QString KEY_BODY_ID1 = "body ID 1";
+  static const QString KEY_BODY_ID2 = "body ID 2";
+  static const QString KEY_TIMESTAMP = "time";
+  static const QString KEY_TIME_ZONE = "time zone";
 
   // TODO: Duplicated in TaskBodyCleave, so factor out.
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -187,7 +195,15 @@ QString TaskBodyMerge::targetString()
 
 bool TaskBodyMerge::skip()
 {
-  return (m_bodyId1 == m_bodyId2);
+  if (m_bodyId1 == m_bodyId2) {
+
+    // Users do not explicitly choose to skip reudendant tasks, but we still want a record of them
+    // in the results, so write that record here.
+
+    writeResult("autoSkipped");
+    return true;
+  }
+  return false;
 }
 
 void TaskBodyMerge::beforeNext()
@@ -455,29 +471,6 @@ void TaskBodyMerge::onLoaded()
 
 void TaskBodyMerge::onCompleted()
 {
-  ZDvidReader reader;
-  reader.setVerbose(false);
-  if (!reader.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyMerge::onCompleted() could not open DVID target for reading";
-    return;
-  }
-
-  ZDvidWriter writer;
-  if (!writer.open(m_bodyDoc->getDvidTarget())) {
-    LERROR() << "TaskBodyMerge::onCompleted() could not open DVID target for writing";
-    return;
-  }
-
-  std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
-
-  if (!reader.hasData(instance)) {
-    writer.createKeyvalue(instance);
-  }
-  if (!reader.hasData(instance)) {
-    LERROR() << "TaskBodyCleave::onCompleted() could not create DVID instance \"" << instance << "\"";
-    return;
-  }
-
   QString result;
   if (m_mergeButton->isChecked()) {
     result = "merge";
@@ -491,13 +484,7 @@ void TaskBodyMerge::onCompleted()
     result = "?";
   }
 
-  QJsonArray json;
-  json.append(result);
-  QJsonDocument jsonDoc(json);
-  std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
-
-  std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
-  writer.writeJsonString(instance, key, jsonStr);
+  writeResult(result);
 }
 
 void TaskBodyMerge::applyColorMode(bool merging)
@@ -572,4 +559,51 @@ void TaskBodyMerge::zoomToMergePosition()
     double radius = std::min(radii[0], radii[1]) / 3;
     window->gotoPosition(mergePosition(), radius);
   }
+}
+
+void TaskBodyMerge::writeResult(const QString &result)
+{
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (!reader.open(m_bodyDoc->getDvidTarget())) {
+    LERROR() << "TaskBodyMerge::onCompleted() could not open DVID target for reading";
+    return;
+  }
+
+  ZDvidWriter writer;
+  if (!writer.open(m_bodyDoc->getDvidTarget())) {
+    LERROR() << "TaskBodyMerge::onCompleted() could not open DVID target for writing";
+    return;
+  }
+
+  std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
+
+  if (!reader.hasData(instance)) {
+    writer.createKeyvalue(instance);
+  }
+  if (!reader.hasData(instance)) {
+    LERROR() << "TaskBodyCleave::writeResult() could not create DVID instance \"" << instance << "\"";
+    return;
+  }
+
+  QJsonObject json;
+  json[KEY_RESULT] = result;
+  if (const char* user = std::getenv("USER")) {
+    json[KEY_USER] = user;
+  }
+  json[KEY_SUPERVOXEL_ID1] = QJsonValue(qint64(m_supervoxelId1));
+  json[KEY_SUPERVOXEL_ID2] = QJsonValue(qint64(m_supervoxelId2));
+  json[KEY_BODY_ID1] = QJsonValue(qint64(m_bodyId1));
+  json[KEY_BODY_ID2] = QJsonValue(qint64(m_bodyId2));
+  json[KEY_SUPERVOXEL_POINT1] =
+      QJsonArray({ m_supervoxelPoint1.x(), m_supervoxelPoint1.y(), m_supervoxelPoint1.z() });
+  json[KEY_SUPERVOXEL_POINT2] =
+      QJsonArray({ m_supervoxelPoint2.x(), m_supervoxelPoint2.y(), m_supervoxelPoint2.z() });
+  json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
+  json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
+
+  QJsonDocument jsonDoc(json);
+  std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
+  std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
+  writer.writeJsonString(instance, key, jsonStr);
 }

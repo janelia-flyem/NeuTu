@@ -61,8 +61,8 @@ private:
   void buildTaskWidget();
   void applyColorMode(bool merging);
   void updateColors();
-
   ZPoint mergePosition() const;
+  void writeResult(const QString &result);
 };
 
 #endif // TASKBODYMERGE_H
