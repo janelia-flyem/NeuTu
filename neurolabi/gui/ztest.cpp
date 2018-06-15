@@ -26653,7 +26653,7 @@ void ZTest::test(MainWindow *host)
   proc.printPythonPath();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "6134", 8900);
   target.setSegmentationName("segmentation");
@@ -26668,6 +26668,11 @@ void ZTest::test(MainWindow *host)
   obj.downsampleMax(15, 15, 15);
   std::cout << obj.getBoundBox().toString() << std::endl;
 
+#endif
+
+#if 1
+  qDebug() << std::string("user:mock").substr(5);
+  qDebug() << neutube::GetCurrentUserName();
 #endif
 
   std::cout << "Done." << std::endl;
