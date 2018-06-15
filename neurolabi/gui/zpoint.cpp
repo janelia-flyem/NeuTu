@@ -19,7 +19,7 @@
 #include "zintpoint.h"
 #include "geometry/zgeometry.h"
 
-const double ZPoint::MIN_DIST = 1e-10;
+const double ZPoint::MIN_DIST = 1e-5;
 
 ZPoint::ZPoint()
 {
