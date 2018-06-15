@@ -30,6 +30,20 @@ TaskProtocolTask::TaskProtocolTask()
 
 }
 
+namespace {
+static QString s_jsonSource;
+}
+
+void TaskProtocolTask::setJsonSource(const QString &source)
+{
+  s_jsonSource = source;
+}
+
+QString TaskProtocolTask::jsonSource()
+{
+  return s_jsonSource;
+}
+
 // constants
 const QString TaskProtocolTask::KEY_COMPLETED = "completed";
 const QString TaskProtocolTask::KEY_TAGS = "tags";

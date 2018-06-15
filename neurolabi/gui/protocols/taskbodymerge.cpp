@@ -35,6 +35,7 @@ namespace {
   static const QString KEY_BODY_ID2 = "body ID 2";
   static const QString KEY_TIMESTAMP = "time";
   static const QString KEY_TIME_ZONE = "time zone";
+  static const QString KEY_SOURCE = "source";
 
   // TODO: Duplicated in TaskBodyCleave, so factor out.
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -599,6 +600,7 @@ void TaskBodyMerge::writeResult(const QString &result)
       QJsonArray({ m_supervoxelPoint2.x(), m_supervoxelPoint2.y(), m_supervoxelPoint2.z() });
   json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
   json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
+  json[KEY_SOURCE] = jsonSource();
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
