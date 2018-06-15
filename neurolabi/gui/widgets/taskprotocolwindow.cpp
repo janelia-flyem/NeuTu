@@ -881,6 +881,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
         return emptyResult;
     } else {
         LINFO() << "Task protocol: json loaded from file" + filepath;
+        TaskProtocolTask::setJsonSource(filepath);
         return doc.object();
     }
 }

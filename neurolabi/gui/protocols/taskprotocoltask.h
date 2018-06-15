@@ -17,6 +17,10 @@ public:
     TaskProtocolTask();
     virtual ~TaskProtocolTask() {}
 
+    // Where the task JSON was loaded from, for logging purposes only.
+    static void setJsonSource(const QString &source);
+    static QString jsonSource();
+
     bool completed() const;
     void setCompleted(bool completed);
     const QSet<uint64_t> & visibleBodies();
