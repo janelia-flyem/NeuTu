@@ -31,7 +31,6 @@ NeutubeConfig::NeutubeConfig()
     : m_settings(QSettings::UserScope, "NeuTu-be")
   #endif
 {
-  init();
 }
 
 /*
@@ -49,12 +48,12 @@ NeutubeConfig::~NeutubeConfig()
 #ifdef _QT_GUI_USED_
 //  delete m_traceStream;
 #endif
-
-  LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 }
 
-void NeutubeConfig::init()
+void NeutubeConfig::init(const std::string &userName)
 {
+  setUserName(userName);
+
   m_segmentationClassifThreshold = 0.5;
   m_isSettingOn = true;
   m_isStereoOn = true;
@@ -139,6 +138,26 @@ void NeutubeConfig::setWorkDir(const string str)
   updateLogDir();
 }
 
+void NeutubeConfig::setUserName(const string &name)
+{
+  m_userName = name;
+}
+
+void NeutubeConfig::SetUserName(const string &name)
+{
+  getInstance().setUserName(name);
+}
+
+std::string NeutubeConfig::getUserName() const
+{
+  return m_userName;
+}
+
+std::string NeutubeConfig::GetUserName()
+{
+  return getInstance().getUserName();
+}
+
 void NeutubeConfig::SetApplicationDir(const string &str)
 {
   getInstance().setApplicationDir(str);
@@ -153,7 +172,7 @@ void NeutubeConfig::updateLogDir()
 
     //Check local directry
     if (dir.startsWith("/groups/flyem/")) {
-      candidateDir = "/opt/neutu_log/" + neutube::GetCurrentUserName();
+      candidateDir = "/opt/neutu_log/" + getUserName();
       if (QDir(candidateDir.c_str()).exists()) {
         m_logDir = candidateDir;
       }
@@ -162,7 +181,7 @@ void NeutubeConfig::updateLogDir()
     //Checking shared directory
     if (m_logDir.empty()) {
       candidateDir =
-          "/groups/flyem/data/neutu_log/" + neutube::GetCurrentUserName();
+          "/groups/flyem/data/neutu_log/" + getUserName();
       if (QDir(candidateDir.c_str()).exists()) {
         m_logDir = candidateDir;
       }
@@ -417,7 +436,7 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   {
     std::string tmpDir;
 #if defined(_QT_GUI_USED_)
-    std::string user = neutube::GetCurrentUserName();
+    std::string user = getUserName();
     tmpDir = QDir::tempPath().toStdString() + "/.neutube.z." + user;
     QDir tmpDirObj(tmpDir.c_str());
     if (!tmpDirObj.exists()) {
