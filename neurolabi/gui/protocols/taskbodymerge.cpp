@@ -454,19 +454,6 @@ void TaskBodyMerge::onLoaded()
   applyColorMode(true);
 
   zoomToMergePosition();
-
-  std::size_t index1 = 1;
-  std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
-  QHash<uint64_t, QColor> idToColor;
-  glm::vec4 color1 = INDEX_COLORS[index1] * 255.0f;
-  idToColor[m_bodyId1] = QColor(color1.x, color1.y, color1.z);
-  glm::vec4 color2 = INDEX_COLORS[index2] * 255.0f;
-  idToColor[m_bodyId2] = QColor(color2.x, color2.y, color2.z);
-
-  ZPoint point = mergePosition();
-  QTimer::singleShot(0, this, [=](){
-    emit browseGrayscale(point.x(), point.y(), point.z(), idToColor);
-  });
 }
 
 void TaskBodyMerge::onCompleted()
@@ -558,6 +545,18 @@ void TaskBodyMerge::zoomToMergePosition()
 
     double radius = std::min(radii[0], radii[1]) / 3;
     window->gotoPosition(mergePosition(), radius);
+
+    std::size_t index1 = 1;
+    std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
+    QHash<uint64_t, QColor> idToColor;
+    glm::vec4 color1 = INDEX_COLORS[index1] * 255.0f;
+    idToColor[m_bodyId1] = QColor(color1.x, color1.y, color1.z);
+    glm::vec4 color2 = INDEX_COLORS[index2] * 255.0f;
+    idToColor[m_bodyId2] = QColor(color2.x, color2.y, color2.z);
+
+    QTimer::singleShot(0, this, [=](){
+      emit browseGrayscale(center.x(), center.y(), center.z(), idToColor);
+    });
   }
 }
 
