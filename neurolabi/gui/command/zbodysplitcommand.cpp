@@ -32,7 +32,7 @@ ZBodySplitCommand::ZBodySplitCommand()
 }
 
 ZDvidReader *ZBodySplitCommand::ParseInputPath(
-    const std::string inputPath, ZJsonObject &inputJson, std::string &splitTaskKey,
+    const std::string &inputPath, ZJsonObject &inputJson, std::string &splitTaskKey,
     std::string &splitResultKey, std::string &dataDir, bool &isFile)
 {
   QUrl inputUrl(inputPath.c_str());
@@ -159,6 +159,11 @@ int ZBodySplitCommand::run(
     }
   }
 
+  bool preservingGap = true;
+  if (config.hasKey("preserving_gap")) {
+    preservingGap = ZJsonParser::booleanValue(config["preserving_gap"]);
+  }
+
   ZDvidReader *reader = ParseInputPath(
        inputPath, inputJson, splitTaskKey, splitResultKey, dataDir, isFile);
 
@@ -237,7 +242,7 @@ int ZBodySplitCommand::run(
 
   container.setRefiningBorder(true);
   container.setCcaPost(true);
-  container.setPreservingGap(true);
+  container.setPreservingGap(preservingGap);
 
   if (!container.isEmpty()) {
     if (!range.isEmpty()) {
