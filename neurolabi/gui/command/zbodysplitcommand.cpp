@@ -413,14 +413,18 @@ void ZBodySplitCommand::processResult(
         }
         ZJsonObject resultJson;
         resultJson.setEntry("committed", resultArray);
-        QString refPath = ZDvidPath::GetResultKeyPath(
-              ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
-              ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
         resultJson.setEntry(
               "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
-        std::cout << "Writing result summary to " << refPath.toStdString()
-                  << std::endl;
-        writer->writeJson(refPath.toStdString(), resultJson);
+        if (!splitTaskKey.empty()) {
+          QString refPath = ZDvidPath::GetResultKeyPath(
+                ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
+                ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
+          std::cout << "Writing result summary to " << refPath.toStdString()
+                    << std::endl;
+          writer->writeJson(refPath.toStdString(), resultJson);
+        } else {
+          LINFO() << resultJson.dumpString(0);
+        }
       } else {
         for (ZObject3dScanArray::const_iterator iter = result->begin();
              iter != result->end(); ++iter) {
