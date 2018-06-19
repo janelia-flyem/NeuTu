@@ -25339,7 +25339,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
+  ZDvidTarget target("emdata2.int.janelia.org", "fb02", 8900);
   ZDvidWriter writer;
   writer.open(target);
 
@@ -26649,11 +26649,22 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+  ZDvidTarget target;
+  target.setFromUrl("http://emdata1.int.janelia.org:8900/api/node/3d5d");
+  target.setSegmentationName("segmentation");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.syncAnnotationToLabel("segmentation_todo");
+#endif
+
+#if 0
   ZPythonProcess proc;
   proc.printPythonPath();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "6134", 8900);
   target.setSegmentationName("segmentation");
@@ -26668,6 +26679,47 @@ void ZTest::test(MainWindow *host)
   obj.downsampleMax(15, 15, 15);
   std::cout << obj.getBoundBox().toString() << std::endl;
 
+#endif
+
+#if 0
+  qDebug() << std::string("user:mock").substr(5);
+  qDebug() << neutube::GetCurrentUserName();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6d", 9000);
+  target.setSegmentationName("groundtruth");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+  std::vector<uint64_t> bodyArray = {
+    2219, 2515, 2796, 3904, 4376, 7114, 7131, 10319, 19741, 21840, 21894,
+    22045, 22301, 26353, 30155, 30465, 35752, 49079, 53216, 88847, 158346,
+    248553, 262667, 368415, 390989, 436097, 436607, 446884, 516159, 676018};
+
+  for (uint64_t bodyId : bodyArray) {
+    std::ofstream stream(
+          GET_TEST_DATA_DIR + "/_paper/neutu_em/experiment/body_speed/" +
+          std::to_string(bodyId) + ".txt",
+          std::ofstream::out);
+
+    for (int zoom = 0; zoom <= 5; ++zoom) {
+      QElapsedTimer timer;
+      timer.start();
+      ZObject3dScan obj;
+      reader.readMultiscaleBody(bodyId, zoom, true, &obj);
+      ZSwcTree *tree = ZSwcFactory::CreateSurfaceSwc(obj, 1, 3);
+      delete tree;
+      qint64 t = timer.elapsed();
+      uint64_t v = obj.getVoxelNumber();
+      uint64_t bv = obj.getBoundBox().getVolume();
+      std::cout << "Body updating time: " << t << std::endl;
+      std::cout << "Body size: " << v << std::endl;
+      stream << zoom << " " << v << " " << t << " " << bv << std::endl;
+    }
+  }
 #endif
 
   std::cout << "Done." << std::endl;

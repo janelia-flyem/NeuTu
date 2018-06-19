@@ -118,6 +118,9 @@
 #include "zobject3d.h"
 #include "data3d/utilities.h"
 #include "zobjsmodelmanager.h"
+#include "concurrent/zworker.h"
+#include "concurrent/zworkthread.h"
+#include "ztask.h"
 
 using namespace std;
 
@@ -131,6 +134,11 @@ ZStackDoc::~ZStackDoc()
   if (m_futureMap.hasThreadAlive()) {
     m_futureMap.waitForFinished();
   }
+
+  if (m_worker != NULL) {
+    m_worker->quit();
+  }
+  m_workThread->quit();
 
   deprecate(STACK);
   deprecate(SPARSE_STACK);
@@ -224,6 +232,11 @@ void ZStackDoc::init()
 //  shortcut->setEnabled(false);
   connect(shortcut, SIGNAL(triggered()), this, SLOT(shortcutTest()));
 #endif
+
+  m_worker = new ZWorker(ZWorker::MODE_SCHEDULE);
+  m_workThread = new ZWorkThread(m_worker);
+  connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
+  m_workThread->start();
 }
 
 void ZStackDoc::shortcutTest()
@@ -417,6 +430,28 @@ void ZStackDoc::notifyProgressAdvanced(double dp)
 void ZStackDoc::updateSwcNodeAction()
 {
   m_singleSwcNodeActionActivator.update(this);
+}
+
+void ZStackDoc::addTask(ZTask *task)
+{
+//  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
+  if (task->getDelay() > 0) {
+    if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
+      QTimer::singleShot(task->getDelay(), this, [=]() {
+        this->addTaskSlot(task);
+      });
+    } else {
+      addTaskSlot(task);
+    }
+  } else {
+    addTaskSlot(task);
+  }
+}
+
+void ZStackDoc::addTaskSlot(ZTask *task)
+{
+//  task->moveToThread(m_worker->thread());
+  m_worker->addTask(task);
 }
 
 void ZStackDoc::autoSaveSwc()
@@ -10168,6 +10203,10 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
               m_doc->notifyUpdateLatency(labelSlice->getReadingTime());
             }
           }
+        }
+        ZTask *task = player->getFutureTask(m_doc.get());
+        if (task != NULL) {
+          m_doc->addTask(task);
         }
       }
     }

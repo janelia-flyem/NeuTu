@@ -95,6 +95,9 @@ class ZSwcTree;
 class ZObject3d;
 class ZArbSliceViewParam;
 class ZObjsModelManager;
+class ZWorker;
+class ZWorkThread;
+class ZTask;
 
 /*!
  * \brief The class of stack document
@@ -1349,6 +1352,8 @@ protected:
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
   void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();
+  void addTask(ZTask *task);
+  void addTaskSlot(ZTask *task);
 
 private:
   void init();
@@ -1474,6 +1479,9 @@ private:
 
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;
+
+  ZWorker *m_worker = NULL;
+  ZWorkThread *m_workThread = NULL;
 
 protected:
   ZObjectColorScheme m_objColorSheme;

@@ -27,6 +27,8 @@ class ZDvidLabelSlice;
 class ZDvidGraySlice;
 class ZArbSliceViewParam;
 class ZDvidTileEnsemble;
+class ZTask;
+class ZStackDoc;
 
 /*!
  * \brief The basic class of manage roles to a stack object
@@ -81,9 +83,13 @@ public:
 
   virtual ZIntCuboid getBoundBox() const;
 
+  virtual ZTask* getFutureTask() const;
+  virtual ZTask* getFutureTask(ZStackDoc *doc) const;
+
   inline ZStackObject* getData() const {
     return m_data;
   }
+
   /*
   inline TRole getRole() const {
     return m_role;
@@ -338,6 +344,7 @@ public:
   QString getTypeName() const { return "DvidGraySlice"; }
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidGraySlice *getCompleteData() const;
+  ZTask* getFutureTask(ZStackDoc *doc) const;
 };
 
 /**************************************************/
@@ -350,6 +357,7 @@ public:
   QString getTypeName() const { return "DvidLabelSlice"; }
   bool updateData(const ZStackViewParam &viewParam) const;
   ZDvidLabelSlice *getCompleteData() const;
+  ZTask* getFutureTask(ZStackDoc *doc) const;
 };
 
 /**************************************************/

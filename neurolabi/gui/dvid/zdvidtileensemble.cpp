@@ -183,7 +183,7 @@ void ZDvidTileEnsemble::updateTile(libdvid::Slice2D slice,
   task->setData(dataPtr->get_raw(), dataPtr->length());
   task->setHighContrast(m_highContrast);
   task->execute();
-  delete task;
+//  delete task;
 }
 #endif
 
