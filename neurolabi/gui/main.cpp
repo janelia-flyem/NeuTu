@@ -71,6 +71,10 @@ void myMessageOutput(QtMsgType type, const char *msg)
 #endif    // qt version > 5.0.0
 #endif
 
+namespace neutube {
+static std::string UserName;
+}
+
 static void syncLogDir(const std::string &srcDir, const std::string &destDir)
 {
   if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
@@ -236,6 +240,19 @@ int main(int argc, char *argv[])
 
   QString configPath;
   QStringList fileList;
+
+  std::string userName;
+  if (argc > 1) {
+    if (QString(argv[1]).startsWith("user:")) {
+      userName = std::string(argv[1]).substr(5);
+//      std::cout << userName << std::endl;
+//      return 1;
+    }
+  }
+  if (userName.empty()) {
+    userName = qgetenv("USER").toStdString();
+  }
+  NeutubeConfig::getInstance().init(userName);
 
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {

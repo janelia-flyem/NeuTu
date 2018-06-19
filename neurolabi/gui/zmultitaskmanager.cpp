@@ -30,7 +30,7 @@ bool ZMultiTaskManager::clear()
   }
 
   foreach (ZTask *task, m_taskArray) {
-    delete task;
+    task->deleteLater();
   }
   m_taskArray.clear();
 

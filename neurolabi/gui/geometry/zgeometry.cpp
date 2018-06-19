@@ -52,6 +52,11 @@ void zgeom::transform(ZGeo3dScalarField *field,
   transform.transform(field->getRawPointArray(), field->getPointNumber());
 }
 
+bool IsPerpendicular(const ZPoint &p1, const ZPoint &p2)
+{
+  return p1.isPendicularTo(p2);
+}
+
 std::vector<ZPoint> zgeom::LineShpereIntersection(
     const ZPoint &lineStart, const ZPoint &lineNorm,
     const ZPoint &center, double r)
@@ -196,4 +201,19 @@ std::vector<std::pair<int, int> > LineToPixel(int x0, int y0, int x1, int y1)
 //  result.emplace_back(x1, y1);
 
   return result;
+}
+
+bool zgeom::IsSameAffinePlane(
+    const ZPoint &c1, const ZPoint &v1x, const ZPoint &v1y,
+    const ZPoint &c2, const ZPoint &v2x, const ZPoint &v2y)
+{
+  ZAffinePlane ap1;
+  ap1.setOffset(c1);
+  ap1.setPlane(v1x, v1y);
+
+  ZAffinePlane ap2;
+  ap2.setOffset(c2);
+  ap2.setPlane(v2x, v2y);
+
+  return ap1.onSamePlane(ap2);
 }

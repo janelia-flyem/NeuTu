@@ -866,6 +866,11 @@ flyem::EBodyLabelType ZFlyEmBody3dDoc::getBodyLabelType() const
   return flyem::LABEL_BODY;
 }
 
+bool ZFlyEmBody3dDoc::IsOverSize(const ZStackObject *obj)
+{
+  return obj->getSource() == "oversize" || obj->getObjectId() == "oversize";
+}
+
 ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
 {
   if (getBodyType() == flyem::BODY_MESH) {
@@ -1878,6 +1883,8 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
   // The findSameClass() function has performance that is quadratic in the number of meshes,
   // and is unnecessary for meshes from a tar archive.
 
+  bool replacing = false;
+
   if (!fromTar(bodyId)) {
     TStackObjectList objList = getObjectGroup().findSameClass(
           bodyObject->getType(),
@@ -1886,6 +1893,9 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+    }
+    if (!objList.isEmpty()) {
+      replacing = true;
     }
     getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
   }
@@ -1898,7 +1908,10 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
     getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
   }
   getDataBuffer()->deliver();
-  emit bodyMeshLoaded();
+
+  if (!replacing) {
+    emit bodyMeshLoaded();
+  }
 //  }
 
   ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;
@@ -2014,12 +2027,15 @@ void ZFlyEmBody3dDoc::removeBodyFunc(uint64_t bodyId, bool removingAnnotation)
     if (removingAnnotation) {
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId));
+      getDataBuffer()->addUpdate(objList, ZStackDocObjectUpdate::ACTION_KILL);
+      /*
       for (TStackObjectList::iterator iter = objList.begin();
            iter != objList.end(); ++iter) {
 //        removeObject(*iter, false);
 //        dumpGarbageUnsync(*iter, true);
         getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
       }
+      */
 
       objList = getObjectGroup().findSameSource(
             ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId));
@@ -2348,7 +2364,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
       if (tree != NULL) {
         tree->setTimeStamp(t);
-        if (tree->getSource() == "oversize" || zoom <= 2) {
+        if (IsOverSize(tree) && zoom <= 2) {
           zoom = 0;
         }
         tree->setSource(
@@ -2469,11 +2485,11 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
     if (!loaded) { //Now make mesh from sparse vol
       ZObject3dScan obj;
-      if (zoom == 0) {
-        reader.readMultiscaleBody(bodyId, zoom, true, &obj);
-      } else if (zoom >= getMaxResLevel()){
+      if (zoom >= getMaxResLevel()){
         reader.readCoarseBody(bodyId, &obj);
         obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
+      } else {
+        reader.readMultiscaleBody(bodyId, zoom, true, &obj);
       }
       mesh = ZMeshFactory::MakeMesh(obj);
       if (mesh) {
@@ -2566,6 +2582,11 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(
     ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
     if (mesh == NULL) {
       mesh = readMesh(id, zoom);
+      if (mesh != NULL) {
+        if (IsOverSize(mesh) && zoom <= 2) {
+          zoom = 0;
+        }
+      }
     } else {
       zoom = 0;
     }

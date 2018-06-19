@@ -665,7 +665,7 @@ private:
 //  bool m_isLSMFile;
 
 #ifdef _NEUTUBE_
-  bool m_usingChannelColors = true; //Temporary hack.
+  bool m_usingChannelColors = false; //Temporary hack.
   //Need to make channelColors on demand in the future.
   std::vector<ZVec3Parameter*> m_channelColors;
 

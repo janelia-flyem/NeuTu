@@ -20,8 +20,21 @@ public:
     task->execute();
   }
 
+  void setDelay(int delay);
+  int getDelay() const;
+
+  void abort();
+
+public slots:
+  void executeSlot();
+  void slotTest();
+
 signals:
   void finished();
+  void aborted();
+
+private:
+  int m_delay = 0;
 };
 
 /////////////Moc class for testing//////////////
