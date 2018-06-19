@@ -1883,6 +1883,8 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
   // The findSameClass() function has performance that is quadratic in the number of meshes,
   // and is unnecessary for meshes from a tar archive.
 
+  bool replacing = false;
+
   if (!fromTar(bodyId)) {
     TStackObjectList objList = getObjectGroup().findSameClass(
           bodyObject->getType(),
@@ -1891,6 +1893,9 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
     for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
          ++iter) {
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+    }
+    if (!objList.isEmpty()) {
+      replacing = true;
     }
     getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
   }
@@ -1903,7 +1908,10 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
     getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
   }
   getDataBuffer()->deliver();
-  emit bodyMeshLoaded();
+
+  if (!replacing) {
+    emit bodyMeshLoaded();
+  }
 //  }
 
   ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;
