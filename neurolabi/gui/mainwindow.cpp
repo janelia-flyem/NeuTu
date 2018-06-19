@@ -358,6 +358,8 @@ MainWindow::~MainWindow()
 
   delete m_ui;
   delete m_reporter;
+
+    LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 }
 
 void MainWindow::createActionMap()
