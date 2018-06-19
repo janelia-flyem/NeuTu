@@ -20,7 +20,7 @@ requirements:
     - python >=3.6
     - python {{PY_VER}}*
     - swig
-    - libdvid-cpp >=0.3
+    - libdvid-cpp >=0.3.post52
     - fftw    3.3*
     - jansson 2.7
     - libxml2 2.9*
@@ -30,7 +30,7 @@ requirements:
 
   run:
     - python {{PY_VER}}*
-    - libdvid-cpp >=0.3
+    - libdvid-cpp >=0.3.post52
     - fftw    3.3*
     - jansson 2.7
     - libxml2 2.9*
