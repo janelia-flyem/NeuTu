@@ -70,6 +70,8 @@ public:
   static ZSwcTree* CreateSurfaceSwcNoPartition(
       const ZObject3dScan &obj, int sparseLevel, ZSwcTree *tree);
   static ZSwcTree* CreateSurfaceSwc(const ZObject3dScan &obj, int sparseLevel = 1);
+  static ZSwcTree* CreateSurfaceSwc(
+      const ZObject3dScan &obj, int slicePartition, int sparseLevel);
 
   static ZSwcTree* CreateSwc(const ZClosedCurve &curve, double radius);
 
