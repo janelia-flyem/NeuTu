@@ -637,6 +637,50 @@ ZObject3dScan *ZDvidReader::readBody(
   return result;
 }
 
+ZObject3dScan *ZDvidReader::readBody(
+    uint64_t bodyId, flyem::EBodyLabelType labelType, int zoom,
+    const ZIntCuboid &box, bool canonizing,
+    ZObject3dScan *result) const
+{
+  if (result != NULL) {
+    result->clear();
+  }
+
+  if (isReady()) {
+    if (result == NULL) {
+      result = new ZObject3dScan;
+    }
+
+    ZDvidBufferReader &reader = m_bufferReader;
+
+    //  reader.tryCompress(true);
+    ZDvidUrl dvidUrl(getDvidTarget());
+    switch (labelType) {
+    case flyem::LABEL_BODY:
+      reader.read(dvidUrl.getSparsevolUrl(bodyId, zoom, box).c_str(),
+                  isVerbose());
+      break;
+    case flyem::LABEL_SUPERVOXEL:
+      reader.read(dvidUrl.getSupervoxelUrl(bodyId, zoom, box).c_str(),
+                  isVerbose());
+      break;
+    }
+
+    const QByteArray &buffer = reader.getBuffer();
+    result->importDvidObjectBuffer(buffer.data(), buffer.size());
+
+    reader.clearBuffer();
+
+    if (canonizing) {
+      result->canonize();
+    }
+
+    result->setLabel(bodyId);
+  }
+
+  return result;
+}
+
 ZObject3dScan *ZDvidReader::readBodyDs(
     uint64_t bodyId, bool canonizing, ZObject3dScan *result)
 {
