@@ -10,6 +10,8 @@
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
 
+#include <limits>
+
 #include <QCheckBox>
 #include <QDateTime>
 #include <QHBoxLayout>
@@ -426,9 +428,15 @@ void TaskBodyMerge::buildTaskWidget()
   QPushButton *zoomToInitialButton = new QPushButton("Zoom to Initial Position", m_widget);
   connect(zoomToInitialButton, SIGNAL(clicked(bool)), this, SLOT(zoomToMergePosition()));
 
+  QPushButton *zoomOutButton = new QPushButton("Zoom Out to Show All", m_widget);
+  connect(zoomOutButton, SIGNAL(clicked(bool)), this, SLOT(zoomOutToShowAll()));
+
   QHBoxLayout *bottomLayout = new QHBoxLayout;
   bottomLayout->addWidget(m_showHiResCheckBox);
-  bottomLayout->addWidget(zoomToInitialButton);
+  QVBoxLayout *buttonsLayout = new QVBoxLayout;
+  buttonsLayout->addWidget(zoomToInitialButton);
+  buttonsLayout->addWidget(zoomOutButton);
+  bottomLayout->addLayout(buttonsLayout);
 
   QVBoxLayout *layout = new QVBoxLayout;
   layout->addLayout(radioTopLayout);
@@ -519,32 +527,231 @@ ZPoint TaskBodyMerge::mergePosition() const
   return (m_supervoxelPoint1 + m_supervoxelPoint2) / 2.0;
 }
 
-void TaskBodyMerge::zoomToMergePosition()
-{
-  if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
-    ZPoint center = mergePosition();
+namespace {
 
-    double radii[2] = { 0, 0 };
-    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
-    for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-      ZMesh *mesh = *it;
-      uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
-      if ((tarBodyId == m_bodyId1) || (tarBodyId == m_bodyId2)) {
-        int i = tarBodyId == m_bodyId1 ? 0 : 1;
-        for (glm::vec3 vertex : mesh->vertices()) {
-          double r = center.distanceTo(vertex.x, vertex.y, vertex.z);
-          if (r > radii[i]) {
-            radii[i] = r;
-          }
-        }
+// Set the frustum to just enclose the bounding sphere.  The result is a tighter fit than
+// available with Z3DCamera::resetCamera(const ZBBox<glm::dvec3>& bound, ResetOption options),
+// whose input would be a box around the sphere, and which then would put asphere around the box.
+
+void resetCamera(ZPoint pos, double radius, Z3DCamera &camera)
+{
+  glm::vec3 center = glm::vec3(pos.x(), pos.y(), pos.z());
+
+  double angle = camera.fieldOfView();
+  if (camera.aspectRatio() < 1.0) {
+    // use horizontal angle to calculate
+    angle = 2.0 * std::atan(std::tan(angle * 0.5) * camera.aspectRatio());
+  }
+
+  float centerDist = radius / std::sin(angle * 0.5);
+  glm::vec3 eye = center - centerDist * glm::normalize(camera.center() - camera.eye());
+  camera.setCamera(eye, center, camera.upVector());
+
+  double xMin = pos.x() - radius, xMax = pos.x() + radius;
+  double yMin = pos.y() - radius, yMax = pos.y() + radius;
+  double zMin = pos.z() - radius, zMax = pos.z() + radius;
+  camera.resetCameraNearFarPlane(xMin, xMax, yMin, yMax, zMin, zMax);
+}
+
+void projectToViewPlane3D(const std::vector<glm::vec3> &vertices,
+                          const Z3DCamera &camera,
+                          std::vector<glm::vec3> &result)
+{
+  glm::vec3 view = camera.center() - camera.eye();
+  float viewDist = glm::length(view);
+  view /= viewDist;
+
+  // Using a perspective projection for the current camera parameters, project each
+  // vertex onto the plane passing through camera.center() that is normal to the
+  // view vector (from camera.eye() to camera.center()).
+
+  for (const glm::vec3 &vert : vertices) {
+    glm::vec3 eyeToVert = vert - camera.eye();
+    glm::vec3 eyeToVertOnView = glm::dot(eyeToVert, view) * view;
+    float eyeToVertDist = glm::length(eyeToVert);
+    eyeToVert /= eyeToVertDist;
+
+    // By similar triangles, viewDist / glm::length(eyeToVertOnView) = eyeToVertOnPlaneDist / eyeToVertDist
+
+    float eyeToVertOnPlaneDist = viewDist / glm::length(eyeToVertOnView) * eyeToVertDist;
+    glm::vec3 eyeToVertOnPlane = camera.eye() + eyeToVert * eyeToVertOnPlaneDist;
+    result.push_back(eyeToVertOnPlane);
+  }
+}
+
+bool viewPlane3Dto2D(const std::vector<glm::vec3> &vertices,
+                     const Z3DCamera &camera,
+                     std::vector<glm::vec2> &result)
+{
+  // Extend w, the normal to the plane containing the vertices, to a
+  // 3D coordinate frame, with u and v lying on the plane.
+
+  glm::vec3 w = glm::normalize(camera.eye() - camera.center());
+  float dot = std::abs(glm::dot(w, camera.upVector()));
+
+  if (dot > 1e-4) {
+    return false;
+  }
+
+  glm::vec3 u = glm::normalize(glm::cross(camera.upVector(), w));
+  glm::vec3 v = glm::normalize(glm::cross(w, u));
+
+  // Use that frame to generate 2D points on the plane, with camera.center()
+  // as the origin.
+
+  for (const glm::vec3 &vert : vertices) {
+    glm::vec3 centerToVert = vert - camera.center();
+    glm::vec2 p = glm::vec2(glm::dot(centerToVert, u), glm::dot(centerToVert, v));
+    result.push_back(p);
+  }
+
+  return true;
+}
+
+bool resetCameraForViewPlane2D(const ZBBox<glm::vec2> &bbox,
+                               glm::vec3 &eyeValid,
+                               Z3DCamera& camera)
+{
+  if ((camera.right() - std::abs(camera.left()) > 1e-6) ||
+      (camera.top() - std::abs(camera.bottom()) > 1e-6)) {
+
+    // The code is not designed to handle a skewed view frustum (but it is unlikely anyway).
+
+    return false;
+  }
+
+  // Move eye, the tip of the frustum, so the frustum most tightly fits bbox, the 2D bounding box
+  // of the vertices projected onto the plane through camera.center().  First consider the vertical
+  // dimension of bbox.  Use similar triangles to determine the new distance from camera.center()
+  // to eye.
+
+  float height = std::max(bbox.maxCorner().y, std::abs(bbox.minCorner().y));
+  float viewDistY = camera.nearDist() * height / camera.top();
+
+  // Repeat for the horizontal dimension of bbox.
+
+  float width = std::max(bbox.maxCorner().x, std::abs(bbox.minCorner().x));
+  float viewDistX = camera.nearDist() * width / camera.right();
+
+  // Use the larger of the two distances.
+
+  float viewDist = std::max(viewDistX, viewDistY);
+
+  glm::vec3 viewOld = camera.center() - camera.eye();
+  float viewDistOld = glm::length(viewOld);
+  viewOld /= viewDistOld;
+  glm::vec3 eye;
+
+  if (std::abs(viewDist - viewDistOld) < 1) {
+
+    // Stop the iteration (repeatedly calling this routine) if the new eye has barely moved.
+
+    return false;
+  } else if (viewDist < viewDistOld) {
+
+    // If eye has moved closer to camera.center() then we want to use it as camera.eye() for
+    // the next iteration.  And the current camera.eye(), which was used for the projection and
+    // computation of the new eye also is valid, and should be saved in case the next iteration goes
+    // too far and has to be backed out.
+
+    eye = camera.center() - viewDist * viewOld;
+    eyeValid = camera.eye();
+  } else {
+
+    // If eye has moved further from camera.center() then camera.eye() was too close and is not valid.
+    // Back out halfway to the previous valid eye for the next iteration.
+
+    glm::vec3 eyeToEyeValid = eyeValid - camera.eye();
+    float eyeToEyeValidDist = glm::length(eyeToEyeValid);
+    eyeToEyeValid /= eyeToEyeValidDist;
+    eye = camera.eye() + eyeToEyeValidDist / 2 * eyeToEyeValid;
+  }
+
+  camera.setCamera(eye, camera.center(), camera.upVector());
+
+  return true;
+}
+
+void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
+                 Z3DCamera &camera)
+{
+  float closestDistSq = std::numeric_limits<float>::max();
+  size_t iClosestMesh;
+  size_t iClosestVertex;
+
+  // The algorithm iterqtively moves the eye point, and at each iteration it must
+  // make sure that no vertex is in front of the near clipping plane.  Precompute
+  // which vertex is closest to the eye, as it won't change during the iteration.
+
+  for (size_t i = 0; i < vertices.size(); i++) {
+    for (size_t j = 0; j < vertices[i].size(); j++) {
+      glm::vec3 v = vertices[i][j] - camera.eye();
+      float distSq = glm::dot(v, v);
+      if (distSq < closestDistSq) {
+        closestDistSq = distSq;
+        iClosestMesh = i;
+        iClosestVertex = j;
+      }
+    }
+  }
+
+  // Iteratively adjust the eye point.
+
+  glm::vec3 eyeValid = camera.eye();
+  for (size_t iter = 0; iter < 10; iter++) {
+    ZBBox<glm::vec2> bbox;
+
+    for (size_t i = 0; i < vertices.size(); i++) {
+      std::vector<glm::vec3> onViewPlane3D;
+      projectToViewPlane3D(vertices[i], camera, onViewPlane3D);
+
+      std::vector<glm::vec2> onViewPlane2D;
+      if (!viewPlane3Dto2D(onViewPlane3D, camera, onViewPlane2D))
+      {
+        break;
+      }
+
+      for (glm::vec2 point : onViewPlane2D) {
+        bbox.expand(point);
       }
     }
 
-    // When Z3DWindow::gotoPosition() ends up calling Z3DCamera::resetCamera(),
-    // the radius gets inflated, so reducing it gives a better fit.
+    if (!resetCameraForViewPlane2D(bbox, eyeValid, camera)) {
+      break;
+    }
 
-    double radius = std::min(radii[0], radii[1]) / 3;
-    window->gotoPosition(mergePosition(), radius);
+    // Check the closest vertex agains the near clipping plane for the moved eye point.
+
+    glm::vec3 view = glm::normalize(camera.center() - camera.eye());
+    glm::vec3 eyeToVert = vertices[iClosestMesh][iClosestVertex] - camera.eye();
+    float near = glm::dot(eyeToVert, view);
+
+    if (near < camera.nearDist()) {
+
+      // If adjusting the near clipping plane would make it too small relative to the
+      // far clipping plane, then stop the iteration.  The definition of "too small"
+      // matches that in Z3DCamera.
+
+      float nearClippingPlaneTolerance = 0.001;
+      float minNear = nearClippingPlaneTolerance * camera.farDist();
+      if (near < minNear) {
+        glm::vec3 eye = camera.eye() + near * view;
+        eye -= minNear * view;
+        camera.setEye(eye);
+        camera.setNearDist(minNear);
+        break;
+      }
+      camera.setNearDist(near);
+    }
+  }
+}
+
+}
+
+void TaskBodyMerge::zoomToMergePosition()
+{
+  if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+    ZPoint pos = mergePosition();
 
     std::size_t index1 = 1;
     std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
@@ -555,9 +762,74 @@ void TaskBodyMerge::zoomToMergePosition()
     idToColor[m_bodyId2] = QColor(color2.x, color2.y, color2.z);
 
     QTimer::singleShot(0, this, [=](){
-      emit browseGrayscale(center.x(), center.y(), center.z(), idToColor);
+      emit browseGrayscale(pos.x(), pos.y(), pos.z(), idToColor);
     });
+
+    zoomToMeshes(true);
   }
+}
+
+void TaskBodyMerge::zoomOutToShowAll()
+{
+  zoomToMeshes(false);
+}
+
+void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
+{
+  ZPoint pos = mergePosition();
+  Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc);
+
+  std::vector<double> radii{ 0, 0 };
+  std::vector<std::vector<glm::vec3>> vertices{ std::vector<glm::vec3>(), std::vector<glm::vec3>() };
+
+  ZBBox<glm::dvec3> bbox;
+
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
+    if ((tarBodyId == m_bodyId1) || (tarBodyId == m_bodyId2)) {
+      int i = tarBodyId == m_bodyId1 ? 0 : 1;
+      for (glm::vec3 vertex : mesh->vertices()) {
+        double r = pos.distanceTo(vertex.x, vertex.y, vertex.z);
+        if (r > radii[i]) {
+          radii[i] = r;
+        }
+        vertices[i].push_back(vertex);
+      }
+
+      if (onlySmaller) {
+
+        // The code below will tighten the zoom to the body or bodies of interest.  If it is
+        // only the smaller body, then the near clipping plane might be wrong for two bodies together.
+        // So compute their bounding box for use in a final adjustment.
+
+        bbox.expand(mesh->boundBox());
+      }
+    }
+  }
+
+  double radius;
+  if (onlySmaller) {
+    size_t iSmaller = (radii[0] < radii[1]) ? 0 : 1;
+    radius = radii[iSmaller];
+    size_t iOther = (iSmaller == 0) ? 1 : 0;
+    vertices.erase(vertices.begin() + iOther);
+  } else {
+    radius = std::max(radii[0], radii[1]);
+  }
+
+  resetCamera(mergePosition(), radius, filter->camera());
+  tightenZoom(vertices, filter->camera());
+
+  if (onlySmaller) {
+
+    // Adjust the near clipping plane to accomodate both bodies, as mentioned above.
+
+    filter->camera().resetCameraNearFarPlane(bbox);
+  }
+
+  filter->invalidate();
 }
 
 void TaskBodyMerge::writeResult(const QString &result)
