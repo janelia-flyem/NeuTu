@@ -47,7 +47,7 @@ private:
   QWidget *m_widget;
   QRadioButton *m_mergeButton;
   QRadioButton *m_dontMergeButton;
-  QRadioButton *m_mergeWithCaveatsButton;
+  QRadioButton *m_mergeLaterButton;
   QRadioButton *m_irrelevantButton;
   QRadioButton *m_dontKnowButton;
   QCheckBox *m_showHiResCheckBox;

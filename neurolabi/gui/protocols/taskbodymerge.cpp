@@ -405,8 +405,8 @@ void TaskBodyMerge::buildTaskWidget()
   m_mergeButton = new QRadioButton("Merge", m_widget);
   connect(m_mergeButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
-  m_mergeWithCaveatsButton = new QRadioButton("Merge with Caveats", m_widget);
-  connect(m_mergeWithCaveatsButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
+  m_mergeLaterButton = new QRadioButton("Merge Later", m_widget);
+  connect(m_mergeLaterButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
   m_irrelevantButton = new QRadioButton("Irrelevant", m_widget);
   connect(m_irrelevantButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
@@ -418,7 +418,7 @@ void TaskBodyMerge::buildTaskWidget()
   radioTopLayout->addWidget(m_dontMergeButton);
   radioTopLayout->addWidget(m_mergeButton);
   QHBoxLayout *radioBottomLayout = new QHBoxLayout;
-  radioBottomLayout->addWidget(m_mergeWithCaveatsButton);
+  radioBottomLayout->addWidget(m_mergeLaterButton);
   radioBottomLayout->addWidget(m_irrelevantButton);
   radioBottomLayout->addWidget(m_dontKnowButton);
 
@@ -472,8 +472,8 @@ void TaskBodyMerge::onCompleted()
     result = "merge";
   } else if (m_dontMergeButton->isChecked()) {
     result = "dontMerge";
-  } else if (m_mergeWithCaveatsButton->isChecked()) {
-    result = "mergeBut";
+  } else if (m_mergeLaterButton->isChecked()) {
+    result = "mergeLater";
   } else if (m_irrelevantButton->isChecked()) {
     result = "irrelevant";
   } else {
