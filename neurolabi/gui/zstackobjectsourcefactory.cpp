@@ -376,6 +376,11 @@ std::string ZStackObjectSourceFactory::MakeTodoPunctaSource(uint64_t bodyId)
   return source;
 }
 
+std::string ZStackObjectSourceFactory::MakeProtocolRangeSource()
+{
+  return "#.FlyemRoi#Protocol";
+}
+
 std::string
 ZStackObjectSourceFactory::MakeTodoListEnsembleSource(neutube::EAxis axis)
 {

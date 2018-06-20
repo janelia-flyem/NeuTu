@@ -62,6 +62,7 @@ public:
   static std::string MakeTodoPunctaSource();
   static std::string MakeTodoPunctaSource(uint64_t bodyId);
   static std::string MakeCrossHairSource();
+  static std::string MakeProtocolRangeSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

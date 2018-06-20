@@ -24,6 +24,9 @@ public:
   static void RemoveObject(
       ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
       bool deleteObject);
+  static void SetObjectVisible(
+      ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
+      bool on);
 
   static void RemoveObject(
       ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject);

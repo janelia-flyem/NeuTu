@@ -871,6 +871,17 @@ bool ZFlyEmBody3dDoc::IsOverSize(const ZStackObject *obj)
   return obj->getSource() == "oversize" || obj->getObjectId() == "oversize";
 }
 
+int ZFlyEmBody3dDoc::getCoarseBodyZoom() const
+{
+  int s = getDvidInfo().getBlockSize().getX();
+  int zoom = 0;
+  while (s /= 2) {
+    ++zoom;
+  }
+
+  return zoom;
+}
+
 ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
 {
   if (getBodyType() == flyem::BODY_MESH) {
@@ -1183,7 +1194,8 @@ void ZFlyEmBody3dDoc::setBodyType(flyem::EBodyType type)
     break;
   case flyem::BODY_FULL:
     setTag(neutube::Document::FLYEM_BODY_3D);
-    setMaxResLevel(MAX_RES_LEVEL);
+    setMaxResLevel(std::max(MAX_RES_LEVEL, getCoarseBodyZoom()));
+//    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_SKELETON:
     setTag(neutube::Document::FLYEM_SKELETON);
@@ -1191,7 +1203,8 @@ void ZFlyEmBody3dDoc::setBodyType(flyem::EBodyType type)
     break;
   case flyem::BODY_MESH:
     setTag(neutube::Document::FLYEM_MESH);
-    setMaxResLevel(MAX_RES_LEVEL);
+    setMaxResLevel(std::max(MAX_RES_LEVEL, getCoarseBodyZoom()));
+//    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_NULL:
     break;

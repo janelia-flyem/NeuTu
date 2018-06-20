@@ -459,6 +459,8 @@ private:
 
   static bool IsOverSize(const ZStackObject *obj);
 
+  int getCoarseBodyZoom() const;
+
 #if 0
   void runLocalSplitFunc();
   void runSplitFunc();

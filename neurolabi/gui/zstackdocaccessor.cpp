@@ -68,7 +68,6 @@ void ZStackDocAccessor::RemoveObject(
   }
 }
 
-
 void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject)
 {
@@ -90,6 +89,23 @@ void ZStackDocAccessor::RemoveObject(
 void ZStackDocAccessor::RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject)
 {
   RemoveObject(doc, ZStackObject::TYPE_SWC, deleteObject);
+}
+
+void ZStackDocAccessor::SetObjectVisible(
+    ZStackDoc *doc, ZStackObject::EType type, const std::string &source, bool on)
+{
+  if (doc != NULL) {
+    QMutexLocker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList =
+        doc->getObjectGroup().findSameSourceUnsync(type, source);
+    for (ZStackObject *obj : objList) {
+      if (obj->isVisible() != on) {
+        obj->setVisible(on);
+        doc->bufferObjectVisibilityChanged(obj);
+      }
+    }
+    doc->processObjectModified();
+  }
 }
 
 void ZStackDocAccessor::AddObjectUnique(ZStackDoc *doc, ZStackObject *obj)

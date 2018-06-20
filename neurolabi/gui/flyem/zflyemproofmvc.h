@@ -431,6 +431,7 @@ protected:
 private slots:
 //  void updateDvidLabelObject();
   void roiToggled(bool on);
+  void setProtocolRangeVisible(bool on);
 
 private:
   void init();
