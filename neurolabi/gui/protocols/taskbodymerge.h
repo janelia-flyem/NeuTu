@@ -33,6 +33,7 @@ private slots:
   void onButtonToggled();
   void onShowHiResStateChanged(int state);
   void zoomToMergePosition();
+  void zoomOutToShowAll();
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
@@ -62,6 +63,7 @@ private:
   void applyColorMode(bool merging);
   void updateColors();
   ZPoint mergePosition() const;
+  void zoomToMeshes(bool onlySmaller);
   void writeResult(const QString &result);
 };
 
