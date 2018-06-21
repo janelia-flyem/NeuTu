@@ -675,7 +675,7 @@ bool resetCameraForViewPlane2D(const ZBBox<glm::vec2> &bbox,
 void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
                  Z3DCamera &camera)
 {
-  float closestDistSq = std::numeric_limits<float>::max();
+  float closestDist = std::numeric_limits<float>::max();
   size_t iClosestMesh;
   size_t iClosestVertex;
 
@@ -683,12 +683,13 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
   // make sure that no vertex is in front of the near clipping plane.  Precompute
   // which vertex is closest to the eye, as it won't change during the iteration.
 
+  glm::vec3 view = glm::normalize(camera.center() - camera.eye());
   for (size_t i = 0; i < vertices.size(); i++) {
     for (size_t j = 0; j < vertices[i].size(); j++) {
-      glm::vec3 v = vertices[i][j] - camera.eye();
-      float distSq = glm::dot(v, v);
-      if (distSq < closestDistSq) {
-        closestDistSq = distSq;
+      glm::vec3 eyeToVert = vertices[i][j] - camera.eye();
+      float dist = glm::dot(eyeToVert, view);
+      if (dist < closestDist) {
+        closestDist = dist;
         iClosestMesh = i;
         iClosestVertex = j;
       }
@@ -720,7 +721,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
       break;
     }
 
-    // Check the closest vertex agains the near clipping plane for the moved eye point.
+    // Check the closest vertex against the near clipping plane for the moved eye point.
 
     glm::vec3 view = glm::normalize(camera.center() - camera.eye());
     glm::vec3 eyeToVert = vertices[iClosestMesh][iClosestVertex] - camera.eye();
