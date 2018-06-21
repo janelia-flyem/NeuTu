@@ -93,7 +93,7 @@
 #include "sandbox/zbrowseropener.h"
 #include "zwidgetmessage.h"
 #include "core/utilities.h"
-
+#include "zstackdochelper.h"
 
 /*
 class Sleeper : public QThread
@@ -4297,7 +4297,9 @@ ZObject3d *Z3DWindow::createPolyplaneFrom3dPaintForVolume(ZStroke2d *stroke)
       int zIntv = 0;
 
       if (getDocument()->hasSparseStack()) {
-        stack = getDocument()->getSparseStack()->getStack();
+        ZStackDocHelper docHelper;
+        stack = docHelper.getSparseStack(getDocument());
+//        stack = getDocument()->getSparseStack()->getStack();
         ZIntPoint dsIntv = stack->getDsIntv();
         //        ZIntPoint dsIntv = getDocument()->getSparseStack()->getDownsampleInterval();
         xIntv = dsIntv.getX();

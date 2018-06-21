@@ -7,7 +7,7 @@
 #include "dvid/zdvidreader.h"
 
 class ZDvidTile;
-
+#if 0
 class ZDvidTileUpdateTask : public ZTask
 {
 public:
@@ -20,6 +20,7 @@ private:
   ZDvidTile *m_tile;
   int m_z;
 };
+#endif
 
 class ZDvidTileDecodeTask : public ZTask
 {

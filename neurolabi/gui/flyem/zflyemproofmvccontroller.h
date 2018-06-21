@@ -9,6 +9,7 @@ class ZFlyEmProofMvc;
 class ZIntPoint;
 class ZStackDoc;
 class ZIntCuboid;
+class ZDvidLabelSlice;
 
 /*!
  * \brief An experimental class for controlling mvc widgets

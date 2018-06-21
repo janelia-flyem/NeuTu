@@ -462,6 +462,8 @@ private:
 
   flyem::EBodyLabelType getBodyLabelType() const;
 
+  static bool IsOverSize(const ZStackObject *obj);
+
 #if 0
   void runLocalSplitFunc();
   void runSplitFunc();

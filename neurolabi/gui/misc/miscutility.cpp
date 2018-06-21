@@ -783,3 +783,8 @@ double misc::SampleStack(
 
   return v;
 }
+
+size_t misc::CountOverlap(const ZObject3dScan &obj1, const ZObject3dScan &obj2)
+{
+  return obj1.intersect(obj2).getVoxelNumber();
+}
