@@ -59,6 +59,11 @@ public:
 
   bool isValid() const;
 
+  /*!
+   * \brief Check if the affine planes overlap and have the same orientation.
+   */
+  bool isSamePlane(const ZArbSliceViewParam &param) const;
+
 private:
   int m_width = 0;
   int m_height = 0;

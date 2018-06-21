@@ -288,6 +288,16 @@
       </spacer>
      </item>
      <item>
+      <widget class="QCheckBox" name="gridCheckBox">
+       <property name="text">
+        <string>Show grid</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="refreshButton">
        <property name="text">
         <string>Refresh data</string>

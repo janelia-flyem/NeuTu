@@ -480,7 +480,7 @@ ZStack* LabelToColorStack(const ZArray *array)
 ZStack* ZFlyEmMisc::MakeColorSegmentation(
     const ZDvidReader &reader, const ZAffineRect &ar, int ccx, int ccy)
 {
-  ZArray *array = reader.readLabels64Lowtis(ar, 0, ccx, ccy);
+  ZArray *array = reader.readLabels64Lowtis(ar, 0, ccx, ccy, true);
 
   ZStack *stack = LabelToColorStack(array);
 
@@ -492,7 +492,7 @@ ZStack* ZFlyEmMisc::MakeColorSegmentation(
     int zoom, int ccx, int ccy)
 {
   ZArray *array = reader.readLabels64Lowtis(
-        x0, y0, z0, width, height, zoom, ccx, ccy);
+        x0, y0, z0, width, height, zoom, ccx, ccy, true);
 
   ZStack *stack = LabelToColorStack(array);
 

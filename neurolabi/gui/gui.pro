@@ -881,7 +881,14 @@ HEADERS += mainwindow.h \
     zobjsmodelmanager.h \
     zobjsmodelfactory.h \
     flyem/zglobaldvidrepo.h \
-    flyem/flyemdef.h
+    flyem/flyemdef.h \
+    concurrent/zworkthread.h \
+    concurrent/zworker.h \
+    concurrent/ztaskqueue.h \
+    flyem/zflyemroutinechecktask.h \
+    flyem/zdvidlabelslicehighrestask.h \
+    flyem/zdvidgrayslicehighrestask.h \
+    flyem/zdviddataslicetask.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1544,7 +1551,14 @@ SOURCES += main.cpp \
     flyem/zflyembodyidcolorscheme.cpp \
     zobjsmodelmanager.cpp \
     zobjsmodelfactory.cpp \
-    flyem/zglobaldvidrepo.cpp
+    flyem/zglobaldvidrepo.cpp \
+    concurrent/zworkthread.cpp \
+    concurrent/zworker.cpp \
+    concurrent/ztaskqueue.cpp \
+    flyem/zflyemroutinechecktask.cpp \
+    flyem/zdvidlabelslicehighrestask.cpp \
+    flyem/zdvidgrayslicehighrestask.cpp \
+    flyem/zdviddataslicetask.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

@@ -4,8 +4,97 @@
 #include "ztestheader.h"
 #include "geometry/zaffinerect.h"
 #include "geometry/zgeometry.h"
+#include "geometry/zplane.h"
+#include "geometry/zaffineplane.h"
 
 #ifdef _USE_GTEST_
+TEST(ZGeometry, ZPlane)
+{
+  {
+    ZPlane plane;
+    ASSERT_TRUE(plane.isValid());
+  }
+
+  {
+    ZPlane plane(ZPoint(0, 0, 0), ZPoint(0, 0, 0));
+    ASSERT_TRUE(plane.isValid());
+  }
+
+  {
+    ZPlane plane(ZPoint(1, 0, 0), ZPoint(0, 1, 1));
+    ASSERT_TRUE(plane.isValid());
+
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 0, 1));
+    ASSERT_TRUE(plane.isValid());
+
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0.1));
+    ASSERT_TRUE(plane.isValid());
+
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 0, 0));
+    ASSERT_TRUE(plane.isValid());
+    ASSERT_TRUE(plane.getV2().approxEquals(ZPoint(0, 1, 0)));
+
+    plane.set(ZPoint(0, 0, 0), ZPoint(0, 1, 0));
+    ASSERT_TRUE(plane.isValid());
+    ASSERT_TRUE(plane.getV1().approxEquals(ZPoint(1, 0, 0)));
+
+    plane.set(ZPoint(1, 0, 0), ZPoint(1, 0, 0));
+    ASSERT_TRUE(plane.isValid());
+
+    plane.set(ZPoint(1, 1, 0), ZPoint(0, 0, 0));
+    ASSERT_TRUE(plane.isValid());
+
+    plane.set(ZPoint(0, 1, 1), ZPoint(0, 1, 10));
+    ASSERT_TRUE(plane.isValid());
+
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    ASSERT_TRUE(plane.getNormal().approxEquals(ZPoint(0, 0, 1)));
+
+//    ASSERT_TRUE()
+  }
+
+  {
+    ZPlane plane;
+    plane.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    ASSERT_TRUE(plane.getNormal().approxEquals(ZPoint(0, 0, 1)));
+
+    ASSERT_TRUE(plane.contains(ZPoint(0, 0, 0)));
+    ASSERT_TRUE(plane.contains(ZPoint(1, 0, 0)));
+    ASSERT_TRUE(plane.contains(ZPoint(1, 1, 0)));
+
+    plane.set(ZPoint(0, 1, 0), ZPoint(0, 0, 1));
+    ASSERT_TRUE(plane.contains(ZPoint(0, 0, 0)));
+    ASSERT_TRUE(plane.contains(ZPoint(0, 1, 0)));
+    ASSERT_TRUE(plane.contains(ZPoint(0, 1, 1)));
+
+    ZPlane p2;
+    p2.set(ZPoint(0, 1, 1), ZPoint(0, 1, 10));
+    ASSERT_TRUE(plane.onSamePlane(p2));
+  }
+}
+
+TEST(ZGeometry, ZAffinePlane)
+{
+  {
+    ZAffinePlane ap;
+    ap.set(ZPoint(0, 0, 0), ZPoint(1, 0, 0), ZPoint(0, 1, 0));
+    ASSERT_TRUE(ap.contains(ZPoint(0, 0, 0)));
+    ASSERT_FALSE(ap.contains(ZPoint(0, 0, 1)));
+
+    ap.set(ZPoint(1, 0, 0), ZPoint(0, 1, 0), ZPoint(0, 0, 1));
+    ASSERT_TRUE(ap.contains(ZPoint(1, 0, 0)));
+    ASSERT_TRUE(ap.contains(ZPoint(1, 0, 1)));
+    ASSERT_FALSE(ap.contains(ZPoint(0, 0, 1)));
+
+    ZAffinePlane ap2;
+    ap2.set(ZPoint(1, 2, 3), ZPoint(0, 1, 0), ZPoint(0, 0, 1));
+    ASSERT_TRUE(ap.onSamePlane(ap2));
+
+    ap2.setOffset(ZPoint(2, 0, 0));
+    ASSERT_FALSE(ap.onSamePlane(ap2));
+  }
+}
+
 TEST(ZGeometry, ZAffineRect)
 {
   ZAffineRect rect;

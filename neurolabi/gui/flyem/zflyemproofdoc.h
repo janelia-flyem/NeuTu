@@ -72,6 +72,7 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
   ZDvidGraySlice* getDvidGraySlice() const;
+  ZDvidGraySlice* getDvidGraySlice(neutube::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
@@ -418,6 +419,12 @@ public:
 
   ZJsonArray getMergeOperation() const;
 
+  void prepareDvidLabelSlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  void prepareDvidGraySlice(const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+
 public:
   virtual void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
@@ -450,6 +457,14 @@ signals:
   void todoModified(uint64_t bodyId);
   void requestingBodyLock(uint64_t bodyId, bool locking);
   void bodyColorUpdated(ZFlyEmProofDoc*);
+
+  void updatingLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                          int zoom, int centerCutX, int centerCutY,
+                          bool usingCenterCut);
+  void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                         int zoom, int centerCutX, int centerCutY,
+                         bool usingCenterCut);
+
 
 public slots: //Commands
   void repairSelectedSynapses();
@@ -532,6 +547,14 @@ public slots:
   void syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
   void runRoutineCheck();
+  void scheduleRoutineCheck();
+
+  void updateLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                        int zoom, int centerCutX, int centerCutY,
+                        bool usingCenterCut);
+  void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                       int zoom, int centerCutX, int centerCutY,
+                       bool usingCenterCut);
 
 
 protected:
@@ -621,6 +644,9 @@ protected:
   ZDvidReader m_grayscaleReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
+
+  ZDvidWriter m_workWriter;
+  ZDvidReader m_grayscaleWorkReader;
 
   ZFlyEmBodyMergeProject *m_mergeProject;
 

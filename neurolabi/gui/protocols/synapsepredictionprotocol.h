@@ -66,7 +66,8 @@ private slots:
     void onCompleteButton();
     void onRefreshButton();
     void onDoubleClickSitesTable(QModelIndex index);    
-    void onModeChanged(QString item);
+    void onModeChanged(QString item);    
+    void onGridToggled();
 
 private:
     static const std::string KEY_VARIATION;

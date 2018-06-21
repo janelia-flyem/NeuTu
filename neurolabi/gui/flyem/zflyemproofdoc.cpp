@@ -53,6 +53,9 @@
 #include "zstackwatershedcontainer.h"
 #include "zmeshfactory.h"
 #include "zswctree.h"
+#include "zflyemroutinechecktask.h"
+#include "dvid/zdviddataslicehelper.h"
+#include "zarray.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -71,7 +74,7 @@ void ZFlyEmProofDoc::init()
   m_supervisor = new ZFlyEmSupervisor(this);
   m_mergeProject = new ZFlyEmBodyMergeProject(this);
 
-  m_routineCheck = true;
+  m_routineCheck = false;
 
   initTimer();
   initAutoSave();
@@ -99,7 +102,6 @@ void ZFlyEmProofDoc::startTimer()
 void ZFlyEmProofDoc::initAutoSave()
 {
 //  m_isCustomBookmarkSaved = true;
-
   QDir autoSaveDir(NeutubeConfig::getInstance().getPath(
         NeutubeConfig::AUTO_SAVE).c_str());
   QString mergeFolder = "neutu_proofread_backup";
@@ -121,28 +123,35 @@ void ZFlyEmProofDoc::initAutoSave()
 
 void ZFlyEmProofDoc::connectSignalSlot()
 {
-    connect(this, SIGNAL(bodyMerged()),
-            this, SLOT(saveMergeOperation()));
-    connect(this, SIGNAL(bodyUnmerged()),
-            this, SLOT(saveMergeOperation()));
-    connect(getMergeProject(), SIGNAL(mergeUploaded()),
-            this, SIGNAL(bodyMergeUploaded()));
-    connect(this, SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
-            getMergeProject(), SIGNAL(selectionChanged(ZStackObjectSelector)));
+  connect(this, SIGNAL(bodyMerged()),
+          this, SLOT(saveMergeOperation()));
+  connect(this, SIGNAL(bodyUnmerged()),
+          this, SLOT(saveMergeOperation()));
+  connect(getMergeProject(), SIGNAL(mergeUploaded()),
+          this, SIGNAL(bodyMergeUploaded()));
+  connect(this, SIGNAL(objectSelectorChanged(ZStackObjectSelector)),
+          getMergeProject(), SIGNAL(selectionChanged(ZStackObjectSelector)));
 
-    m_mergeProject->getProgressSignal()->connectProgress(getProgressSignal());
+  m_mergeProject->getProgressSignal()->connectProgress(getProgressSignal());
 
-//    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
-//            this, SLOT(updateDvidLabelObject()));
-    connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, flyem::EBodySplitMode)),
-            this, SLOT(checkInBodyWithMessage(uint64_t, flyem::EBodySplitMode)));
-    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
-            this, SLOT(updateDvidLabelObjectSliently()));
+  //    connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
+  //            this, SLOT(updateDvidLabelObject()));
+  connect(getMergeProject(), SIGNAL(checkingInBody(uint64_t, flyem::EBodySplitMode)),
+          this, SLOT(checkInBodyWithMessage(uint64_t, flyem::EBodySplitMode)));
+  connect(getMergeProject(), SIGNAL(dvidLabelChanged()),
+          this, SLOT(updateDvidLabelObjectSliently()));
 
-    ZWidgetMessage::ConnectMessagePipe(getMergeProject(), this, false);
+  ZWidgetMessage::ConnectMessagePipe(getMergeProject(), this, false);
 
-    connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(runRoutineCheck()));
+  connect(m_routineTimer, SIGNAL(timeout()), this, SLOT(scheduleRoutineCheck()));
 
+  connect(this, SIGNAL(updatingLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
+          this, SLOT(updateLabelSlice(ZArray*,ZStackViewParam,int,int,int,bool)),
+          Qt::QueuedConnection);
+
+  connect(this, SIGNAL(updatingGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
+          this, SLOT(updateGraySlice(ZStack*,ZStackViewParam,int,int,int,bool)),
+          Qt::QueuedConnection);
   /*
   connect(m_bookmarkTimer, SIGNAL(timeout()),
           this, SLOT(saveCustomBookmarkSlot()));
@@ -169,6 +178,16 @@ void ZFlyEmProofDoc::uploadMergeResult()
   getMergeProject()->uploadResult();
 }
 */
+
+void ZFlyEmProofDoc::scheduleRoutineCheck()
+{
+  if (m_routineCheck) {
+    ZFlyEmRoutineCheckTask *task = new ZFlyEmRoutineCheckTask;
+    task->setDoc(this);
+    addTask(task);
+  }
+}
+
 void ZFlyEmProofDoc::runRoutineCheck()
 {
   if (m_routineCheck) {
@@ -789,7 +808,7 @@ void ZFlyEmProofDoc::setDvidTarget(const ZDvidTarget &target)
     }
 
     LDEBUG() << flowInfo.str();
-//    startTimer();
+    startTimer();
   } else {
     m_dvidReader.clear();
 //    m_dvidTarget.clear();
@@ -914,11 +933,17 @@ void ZFlyEmProofDoc::loadRoiFunc()
 
 ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice() const
 {
+  return getDvidGraySlice(neutube::Z_AXIS);
+}
+
+ZDvidGraySlice* ZFlyEmProofDoc::getDvidGraySlice(neutube::EAxis axis) const
+{
   ZStackObject *obj = getObject(ZStackObject::TYPE_DVID_GRAY_SLICE,
-            ZStackObjectSourceFactory::MakeDvidGraySliceSource(neutube::Z_AXIS));
+            ZStackObjectSourceFactory::MakeDvidGraySliceSource(axis));
 
   return dynamic_cast<ZDvidGraySlice*>(obj);
 }
+
 
 const ZDvidInfo& ZFlyEmProofDoc::getDvidInfo() const
 {
@@ -2025,6 +2050,74 @@ void ZFlyEmProofDoc::backupMergeOperation()
   }
 }
 
+void ZFlyEmProofDoc::prepareDvidLabelSlice(
+    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
+    bool usingCenterCut)
+{
+  if (!m_workWriter.good()) {
+    m_workWriter.open(getDvidTarget());
+  }
+
+  ZArray *array = NULL;
+
+  if (m_workWriter.good()) {
+    if (viewParam.getSliceAxis() == neutube::A_AXIS) {
+      ZArbSliceViewParam svp = viewParam.getSliceViewParam();
+      array = m_workWriter.getDvidReader().readLabels64Lowtis(
+            svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
+            svp.getWidth(), svp.getHeight(),
+            zoom, centerCutX, centerCutY, usingCenterCut);
+    } else {
+      ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
+            viewParam.getViewPort(), viewParam.getZ());
+
+      array = m_workWriter.getDvidReader().readLabels64Lowtis(
+            box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+            box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+            zoom, centerCutX, centerCutY, usingCenterCut);
+    }
+  }
+
+  if (array != NULL) {
+    emit updatingLabelSlice(array, viewParam, zoom, centerCutX, centerCutY,
+                            usingCenterCut);
+  }
+}
+
+void ZFlyEmProofDoc::prepareDvidGraySlice(
+    const ZStackViewParam &viewParam, int zoom, int centerCutX, int centerCutY,
+    bool usingCenterCut)
+{
+  if (!m_grayscaleWorkReader.good()) {
+    m_grayscaleWorkReader.open(getDvidTarget().getGrayScaleTarget());
+  }
+
+  ZStack *array = NULL;
+
+  if (m_grayscaleWorkReader.good()) {
+    if (viewParam.getSliceAxis() == neutube::A_AXIS) {
+      ZArbSliceViewParam svp = viewParam.getSliceViewParam();
+      array = m_grayscaleWorkReader.readGrayScaleLowtis(
+            svp.getCenter(), svp.getPlaneV1(), svp.getPlaneV2(),
+            svp.getWidth(), svp.getHeight(),
+            zoom, centerCutX, centerCutY, usingCenterCut);
+    } else {
+      ZIntCuboid box = ZDvidDataSliceHelper::GetBoundBox(
+            viewParam.getViewPort(), viewParam.getZ());
+
+      array = m_grayscaleWorkReader.readGrayScaleLowtis(
+            box.getFirstCorner().getX(), box.getFirstCorner().getY(),
+            box.getFirstCorner().getZ(), box.getWidth(), box.getHeight(),
+            zoom, centerCutX, centerCutY, usingCenterCut);
+    }
+  }
+
+  if (array != NULL) {
+    emit updatingGraySlice(array, viewParam, zoom, centerCutX, centerCutY,
+                           usingCenterCut);
+  }
+}
+
 /*
 void ZFlyEmProofDoc::downloadBodyMask()
 {
@@ -2034,6 +2127,42 @@ void ZFlyEmProofDoc::downloadBodyMask()
   }
 }
 */
+
+void ZFlyEmProofDoc::updateLabelSlice(
+    ZArray *array, const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY, bool usingCenterCut)
+{
+  if (array != NULL) {
+    ZDvidLabelSlice *slice = getDvidLabelSlice(viewParam.getSliceAxis());
+    if (slice != NULL) {
+      if (slice->consume(
+            array, viewParam, zoom, centerCutX, centerCutY, usingCenterCut)) {
+        bufferObjectModified(slice->getTarget());
+        processObjectModified();
+      }
+    } else {
+      delete array;
+    }
+  }
+}
+
+void ZFlyEmProofDoc::updateGraySlice(
+    ZStack *array, const ZStackViewParam &viewParam, int zoom,
+    int centerCutX, int centerCutY, bool usingCenterCut)
+{
+  if (array != NULL) {
+    ZDvidGraySlice *slice = getDvidGraySlice(viewParam.getSliceAxis());
+    if (slice != NULL) {
+      if (slice->consume(array, viewParam, zoom, centerCutX, centerCutY,
+                         usingCenterCut)) {
+        bufferObjectModified(slice->getTarget());
+        processObjectModified();
+      }
+    } else {
+      delete array;
+    }
+  }
+}
 
 QList<uint64_t> ZFlyEmProofDoc::getMergedSource(uint64_t bodyId) const
 {
@@ -2096,7 +2225,7 @@ void ZFlyEmProofDoc::updateDvidLabelSlice(neutube::EAxis axis)
        ++iter) {
     ZDvidLabelSlice *obj = dynamic_cast<ZDvidLabelSlice*>(*iter);
     if (obj->getSliceAxis() == axis) {
-      obj->clearCache();
+//      obj->clearCache();
       obj->forceUpdate(false);
       processObjectModified(obj);
     }
@@ -2217,7 +2346,7 @@ void ZFlyEmProofDoc::updateDvidLabelObject(neutube::EAxis axis)
   beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   ZDvidLabelSlice *labelSlice = getDvidLabelSlice(axis);
   if (labelSlice != NULL) {
-    labelSlice->clearCache();
+//    labelSlice->clearCache();
     labelSlice->forceUpdate(false);
   }
 

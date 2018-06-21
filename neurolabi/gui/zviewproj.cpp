@@ -176,6 +176,20 @@ void ZViewProj::setViewPort(const QRect &rect)
   }
 }
 
+void ZViewProj::closeViewPort()
+{
+  m_zoomBackup = m_zoom;
+  m_zoom = 0;
+  m_viewPort = QRect();
+}
+
+void ZViewProj::openViewPort()
+{
+  if (m_zoom == 0.0) {
+    m_zoom = m_zoomBackup;
+  }
+}
+
 /*
 void ZViewProj::setViewPortWithZoomFixed(const QRect &rect)
 {

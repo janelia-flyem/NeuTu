@@ -24,6 +24,8 @@ class ZPixmap;
 class ZDvidDataSliceHelper;
 class ZStackViewParam;
 class ZArbSliceViewParam;
+class ZTask;
+class ZStackDoc;
 
 class ZDvidLabelSlice : public ZStackObject
 {
@@ -40,8 +42,10 @@ public:
 
   bool update(const ZStackViewParam &viewParam);
 //  bool update(const QRect &dataRect, int zoom, int z);
-  void update(int z);
-  void update();
+//  void update(int z);
+//  void update();
+
+  void setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
 
   void updateFullView(const ZStackViewParam &viewParam);
 //  void disableFullView();
@@ -152,23 +156,25 @@ public:
 
   int64_t getReadingTime() const;
 
-  void clearCache();
   bool refreshReaderBuffer();
-
-//  int getZoom() const;
-  int getZoomLevel(const ZStackViewParam &viewParam) const;
 
   void paintBuffer();
 
   QRect getDataRect(const ZStackViewParam &viewParam) const;
+
+  bool consume(ZArray *array, const ZStackViewParam &viewParam,
+               int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  bool containedIn(const ZStackViewParam &viewParam, int zoom,
+                   int centerCutX, int centerCutY, bool usingCenterCut) const;
+  ZTask* makeFutureTask(ZStackDoc *doc);
 
 private:
   const ZDvidTarget& getDvidTarget() const;// { return m_dvidTarget; }
 
   void forceUpdate(
       const ZStackViewParam &viewParam, bool ignoringHidden);
-  void forceUpdate(const QRect &viewPort, int z);
-  void forceUpdate(const ZArbSliceViewParam &viewParam);
+  void forceUpdate(const QRect &viewPort, int z, int zoom);
+  void forceUpdate(const ZArbSliceViewParam &viewParam, int zoom);
 //  void forceUpdate(bool ignoringHidden);
   //void updateLabel(const ZFlyEmBodyMerger &merger);
   void init(int maxWidth, int maxHeight,
@@ -206,14 +212,12 @@ private:
 
   bool isPaintBufferAllocNeeded(int width, int height) const;
 
+  int getFirstZoom(const ZStackViewParam &viewParam) const;
+
+  bool hasValidPaintBuffer() const;
+
 private:
-//  ZDvidTarget m_dvidTarget;
-//  ZDvidReader m_reader;
   ZObject3dScanArray m_objArray;
-//  ZStackViewParam m_currentViewParam;
-//  QRect m_currentDataRect;
-//  int m_currentZ;
-//  int m_currentZoom;
 
   ZObjectColorScheme m_objColorSheme;
   ZSharedPointer<ZFlyEmBodyColorScheme> m_customColorScheme;
@@ -233,17 +237,11 @@ private:
   std::set<uint64_t> m_prevSelectedOriginal;
   ZSelector<uint64_t> m_selector; //original labels
 
-//  int m_maxWidth;
-//  int m_maxHeight;
 
   std::unique_ptr<ZDvidDataSliceHelper> m_helper;
-//  int m_zoom;
 
   bool m_selectionFrozen;
-//  bool m_isFullView;
-
-  mutable QCache<QString, ZArray> m_objCache;
-//  NeuTube::EAxis m_sliceAxis;
+//  bool m_multiResUpdate = true;
 };
 
 template <typename InputIterator>

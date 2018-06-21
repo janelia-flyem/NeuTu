@@ -314,20 +314,19 @@ public:
 
   ZArray* readLabels64Lowtis(
       int x0, int y0, int z0,
-      int width, int height, int zoom, int cx, int cy) const;
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
 
   /*!
    * (\a x0, \a y0, \a z0) is the retrieval center.
    */
-  ZArray *readLabels64Lowtis(
-      int x0, int y0, int z0, double vx1, double vy1, double vz1,
+  ZArray *readLabels64Lowtis(int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
-      int width, int height, int zoom, int cx, int cy) const;
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
   ZArray *readLabels64Lowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
-      int width, int height, int zoom, int cx, int cy) const;
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
   ZArray *readLabels64Lowtis(
-      const ZAffineRect &ar, int zoom, int cx, int cy) const;
+      const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const;
 
 
   //Read grayscale data
@@ -335,7 +334,7 @@ public:
                               int width, int height, int zoom = 0) const;
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0,
-      int width, int height, int zoom, int cx, int cy) const;
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
 
   /*!
    * (\a x0, \a y0, \a z0) is the retrieval center.
@@ -343,14 +342,14 @@ public:
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
-      int width, int height, int zoom, int cx, int cy) const;
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
 
   ZStack *readGrayScaleLowtis(
-      const ZAffineRect &ar, int zoom, int cx, int cy) const;
+      const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const;
 
   ZStack *readGrayScaleLowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
-      int width, int height, int zoom, int cx, int cy) const;
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
 #endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,

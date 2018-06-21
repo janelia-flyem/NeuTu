@@ -586,6 +586,11 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
           reader.getDvidTarget().getBodyAnnotationName().c_str();
       QStringList keyList = reader.readKeys(bodyAnnotationName);
 
+      //Skip for debugging
+#ifdef _DEBUG_
+      keyList.clear();
+#endif
+
         ZJsonArray bodies;
         bool ok;
         qlonglong bodyID;
