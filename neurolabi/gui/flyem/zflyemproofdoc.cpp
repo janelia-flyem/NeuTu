@@ -65,6 +65,12 @@ ZFlyEmProofDoc::ZFlyEmProofDoc(QObject *parent) :
   init();
 }
 
+ZFlyEmProofDoc::~ZFlyEmProofDoc()
+{
+  endWorkThread();
+  LDEBUG() << "ZFlyEmProofDoc destroyed";
+}
+
 void ZFlyEmProofDoc::init()
 {
   setTag(neutube::Document::FLYEM_PROOFREAD);

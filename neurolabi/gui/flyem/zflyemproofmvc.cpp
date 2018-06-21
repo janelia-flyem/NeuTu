@@ -1375,7 +1375,9 @@ void ZFlyEmProofMvc::exitCurrentDoc()
 {
   if (getCompleteDocument() != NULL) {
 //    getCompleteDocument()->saveCustomBookmark();
-    getCompleteDocument()->saveMergeOperation();
+    if (!getDvidTarget().readOnly()) {
+      getCompleteDocument()->saveMergeOperation();
+    }
   }
 }
 

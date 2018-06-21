@@ -429,7 +429,7 @@ void Z3DView::init()
     // get data from doc and add to network
     // volume
     if (m_initMode != INIT_EXCLUDE_VOLUME) {
-      updateVolumeData();
+//      updateVolumeData();
       connect(m_doc, &ZStackDoc::volumeModified, this, &Z3DView::volumeDataChanged);
     }
 

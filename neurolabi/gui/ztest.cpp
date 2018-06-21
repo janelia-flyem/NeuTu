@@ -26686,7 +26686,7 @@ void ZTest::test(MainWindow *host)
   qDebug() << neutube::GetCurrentUserName();
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "2b6d", 9000);
   target.setSegmentationName("groundtruth");
@@ -26720,6 +26720,75 @@ void ZTest::test(MainWindow *host)
       stream << zoom << " " << v << " " << t << " " << bv << std::endl;
     }
   }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6d", 9000);
+  target.setSegmentationName("groundtruth");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+
+  ZIntPoint center(3143, 3569, 4044);
+
+  ZObject3dScan obj;
+  reader.readBody(2515, flyem::LABEL_BODY, 0,
+                  ZIntCuboid(center - 512, center + 512), true, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6d", 9000);
+  target.setSegmentationName("groundtruth");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+  ZObject3dScan obj;
+  reader.readBody(2515, flyem::LABEL_BODY, 5, ZIntCuboid(), true, &obj);
+  obj.setDsIntv(31);
+  std::cout << obj.getDsIntv() << std::endl;
+
+  ZIntPoint center(3143, 3569, 4044);
+  ZIntCuboid box(center - 512, center + 512);
+  box.scaleDown(32);
+  obj.remove(box);
+
+  ZObject3dScanArray objArray;
+  objArray.append(obj);
+
+  ZObject3dScan obj2;
+  reader.readBody(
+        2515, flyem::LABEL_BODY, 0,
+        ZIntCuboid(center - 512, center + 512), true, &obj2);
+  objArray.append(obj2);
+
+  tic();
+  ZMesh *mesh = ZMeshFactory::MakeMesh(objArray);
+  std::cout << "Merging time: " << toc() << std::endl;
+
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+//  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+
+#endif
+
+#if 0
+  ZObject3dScanArray objArray;
+  ZObject3dScan obj;
+  obj.load(GET_BENCHMARK_DIR + "/29.sobj");
+  objArray.append(obj.getSlice(obj.getMinZ(), 391));
+
+  ZObject3dScan obj2 = obj.getSlice(392, obj.getMaxZ());
+  obj2.downsampleMax(3, 3, 3);
+  objArray.append(obj2);
+
+  ZMesh *mesh = ZMeshFactory::MakeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
 #endif
 
   std::cout << "Done." << std::endl;

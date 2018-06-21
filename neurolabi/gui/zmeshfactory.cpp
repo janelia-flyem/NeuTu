@@ -8,6 +8,7 @@
 #include "tz_stack_bwmorph.h"
 #include "misc/zmarchingcube.h"
 #include "ilastik/laplacian_smoothing.h"
+#include "zobject3dscanarray.h"
 
 ZMeshFactory::ZMeshFactory()
 {
@@ -35,6 +36,57 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj)
 {
   return MakeMesh(obj, 0, 3);
 }
+
+ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScanArray &objArray)
+{
+  ZMesh *mesh = NULL;
+
+  std::vector<ZMesh*> meshArray;
+  for (const ZObject3dScan *obj : objArray) {
+    ZMesh *mesh = MakeMesh(*obj);
+    mesh->prepareNormals();
+    meshArray.push_back(mesh);
+  }
+
+  if (!meshArray.empty()) {
+    mesh = new ZMesh;
+    *mesh = ZMesh::Merge(meshArray);
+  }
+
+  return mesh;
+}
+
+#if 0
+ZMesh* ZMeshFactory::MakeMesh(
+    const ZObject3dScan &obj, const ZIntPoint &dsIntv, int smooth)
+{
+  if (obj.isEmpty()) {
+    return NULL;
+  }
+
+  ZObject3dScan dsObj = obj;
+
+  if (!dsIntv.isValid()) {
+    ZIntCuboid box = dsObj.getBoundBox();
+    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutube::ONEGIGA / 2, true);
+  }
+
+  if (dsIntv.semiDefinitePositive()) {
+    dsObj.downsampleMax(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZStack *stack = dsObj.toStackObjectWithMargin(1, 1);
+  ZMesh *mesh = ZMarchingCube::March(*stack, smooth, NULL);
+
+  if (dsIntv.semiDefinitePositive() && mesh != NULL) {
+    mesh->setObjectId("oversize");
+  }
+
+  delete stack;
+
+  return mesh;
+}
+#endif
 
 ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv, int smooth)
 {

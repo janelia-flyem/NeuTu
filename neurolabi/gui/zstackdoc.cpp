@@ -134,11 +134,7 @@ ZStackDoc::~ZStackDoc()
   if (m_futureMap.hasThreadAlive()) {
     m_futureMap.waitForFinished();
   }
-
-  if (m_worker != NULL) {
-    m_worker->quit();
-  }
-  m_workThread->quit();
+  endWorkThread();
 
   deprecate(STACK);
   deprecate(SPARSE_STACK);
@@ -161,6 +157,21 @@ ZStackDoc::~ZStackDoc()
   }
 
   destroyReporter();
+
+  LDEBUG() << "ZStackDoc destroyed";
+}
+
+void ZStackDoc::endWorkThread()
+{
+  if (m_worker != NULL) {
+    m_worker->quit();
+    m_worker = NULL;
+  }
+  if (m_workThread != NULL) {
+    m_workThread->quit();
+    m_workThread->wait();
+    m_workThread = NULL;
+  }
 }
 
 void ZStackDoc::init()

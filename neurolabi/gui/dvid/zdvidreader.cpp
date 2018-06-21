@@ -653,6 +653,16 @@ ZObject3dScan *ZDvidReader::readBody(
 
     ZDvidBufferReader &reader = m_bufferReader;
 
+    /*
+    ZIntCuboid range = box;
+    if (!range.isEmpty()) {
+      if (zoom > 0) {
+        int scale = pow(2, zoom);
+        range.scaleDown(scale);
+      }
+    }
+    */
+
     //  reader.tryCompress(true);
     ZDvidUrl dvidUrl(getDvidTarget());
     switch (labelType) {

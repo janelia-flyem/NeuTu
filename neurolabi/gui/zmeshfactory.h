@@ -3,6 +3,8 @@
 
 class ZMesh;
 class ZObject3dScan;
+class ZIntPoint;
+class ZObject3dScanArray;
 
 class ZMeshFactory
 {
@@ -16,6 +18,8 @@ public:
 
   static ZMesh* MakeMesh(const ZObject3dScan &obj);
   static ZMesh* MakeMesh(const ZObject3dScan &obj, int dsIntv, int smooth);
+  static ZMesh* MakeMesh(const ZObject3dScanArray &objArray);
+//  static ZMesh* MakeMesh(const ZObject3dScan &obj, const ZIntPoint &dsIntv, int smooth);
 
 private:
   int m_dsIntv = 0;
