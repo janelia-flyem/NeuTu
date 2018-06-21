@@ -1354,6 +1354,7 @@ protected:
   virtual void makeKeyProcessor();
   void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);
+  void endWorkThread();
 
 private:
   void init();

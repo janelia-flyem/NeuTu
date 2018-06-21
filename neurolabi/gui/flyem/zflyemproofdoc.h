@@ -39,6 +39,7 @@ class ZFlyEmProofDoc : public ZStackDoc
   Q_OBJECT
 public:
   explicit ZFlyEmProofDoc(QObject *parent = 0);
+  ~ZFlyEmProofDoc();
 
   static ZFlyEmProofDoc* Make();
 
