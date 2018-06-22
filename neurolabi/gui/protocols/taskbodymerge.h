@@ -2,6 +2,7 @@
 #define TASKBODYMERGE_H
 
 #include "protocols/taskprotocoltask.h"
+#include "zglmutils.h"
 #include "zpoint.h"
 #include <QObject>
 
@@ -32,7 +33,7 @@ private slots:
   void onTriggerShowHiRes();
   void onButtonToggled();
   void onShowHiResStateChanged(int state);
-  void zoomToMergePosition();
+  void zoomToMergePosition(bool justLoaded = false);
   void zoomOutToShowAll();
 
 private:
@@ -43,6 +44,8 @@ private:
   uint64_t m_bodyId2;
   ZPoint m_supervoxelPoint1;
   ZPoint m_supervoxelPoint2;
+
+  glm::vec3 m_initialUp;
 
   QWidget *m_widget;
   QRadioButton *m_mergeButton;
@@ -63,6 +66,7 @@ private:
   void applyColorMode(bool merging);
   void updateColors();
   ZPoint mergePosition() const;
+  void initAngleForMergePosition(bool justLoaded);
   void zoomToMeshes(bool onlySmaller);
   void writeResult(const QString &result);
 };
