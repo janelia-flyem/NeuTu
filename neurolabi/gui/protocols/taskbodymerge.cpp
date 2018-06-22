@@ -80,10 +80,7 @@ namespace {
   Z3DMeshFilter *getMeshFilter(ZStackDoc *doc)
   {
     if (Z3DWindow *window = doc->getParent3DWindow()) {
-      if (Z3DMeshFilter *filter =
-          dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
-          return filter;
-       }
+      return window->getMeshFilter();
     }
     return nullptr;
   }
@@ -461,8 +458,7 @@ void TaskBodyMerge::buildTaskWidget()
 void TaskBodyMerge::onLoaded()
 {
   applyColorMode(true);
-
-  zoomToMergePosition();
+  zoomToMergePosition(true);
 }
 
 void TaskBodyMerge::onCompleted()
@@ -527,6 +523,36 @@ ZPoint TaskBodyMerge::mergePosition() const
   return (m_supervoxelPoint1 + m_supervoxelPoint2) / 2.0;
 }
 
+void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
+{
+  if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+    if (Z3DMeshFilter *filter =
+        dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
+
+      glm::vec3 p1(m_supervoxelPoint1.x(), m_supervoxelPoint1.y(), m_supervoxelPoint1.z());
+      glm::vec3 p2(m_supervoxelPoint2.x(), m_supervoxelPoint2.y(), m_supervoxelPoint2.z());
+      glm::vec3 p1ToP2 = glm::normalize(p2 - p1);
+
+      // TODO: Choose an up vector that gives the best view, in some sense.
+      if (justLoaded) {
+        m_initialUp = window->getMeshFilter()->camera().upVector();
+      }
+
+      glm::vec3 toEye = glm::normalize(glm::cross(p1ToP2, m_initialUp));
+      glm::vec3 eye = filter->camera().center() + toEye;
+
+      // Update the camera for the 3D view.
+
+      filter->camera().setEye(eye);
+      filter->camera().setUpVector(m_initialUp);
+
+      // Update the orientaton of the grayscale slice.
+
+      window->getCamera()->setEye(eye);
+    }
+  }
+}
+
 namespace {
 
 // Set the frustum to just enclose the bounding sphere.  The result is a tighter fit than
@@ -579,7 +605,7 @@ void projectToViewPlane3D(const std::vector<glm::vec3> &vertices,
   }
 }
 
-bool viewPlane3Dto2D(const std::vector<glm::vec3> &vertices,
+void viewPlane3Dto2D(const std::vector<glm::vec3> &vertices,
                      const Z3DCamera &camera,
                      std::vector<glm::vec2> &result)
 {
@@ -587,12 +613,6 @@ bool viewPlane3Dto2D(const std::vector<glm::vec3> &vertices,
   // 3D coordinate frame, with u and v lying on the plane.
 
   glm::vec3 w = glm::normalize(camera.eye() - camera.center());
-  float dot = std::abs(glm::dot(w, camera.upVector()));
-
-  if (dot > 1e-4) {
-    return false;
-  }
-
   glm::vec3 u = glm::normalize(glm::cross(camera.upVector(), w));
   glm::vec3 v = glm::normalize(glm::cross(w, u));
 
@@ -604,8 +624,6 @@ bool viewPlane3Dto2D(const std::vector<glm::vec3> &vertices,
     glm::vec2 p = glm::vec2(glm::dot(centerToVert, u), glm::dot(centerToVert, v));
     result.push_back(p);
   }
-
-  return true;
 }
 
 bool resetCameraForViewPlane2D(const ZBBox<glm::vec2> &bbox,
@@ -707,10 +725,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
       projectToViewPlane3D(vertices[i], camera, onViewPlane3D);
 
       std::vector<glm::vec2> onViewPlane2D;
-      if (!viewPlane3Dto2D(onViewPlane3D, camera, onViewPlane2D))
-      {
-        break;
-      }
+      viewPlane3Dto2D(onViewPlane3D, camera, onViewPlane2D);
 
       for (glm::vec2 point : onViewPlane2D) {
         bbox.expand(point);
@@ -749,7 +764,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
 
 }
 
-void TaskBodyMerge::zoomToMergePosition()
+void TaskBodyMerge::zoomToMergePosition(bool justLoaded)
 {
   if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
     ZPoint pos = mergePosition();
@@ -766,6 +781,7 @@ void TaskBodyMerge::zoomToMergePosition()
       emit browseGrayscale(pos.x(), pos.y(), pos.z(), idToColor);
     });
 
+    initAngleForMergePosition(justLoaded);
     zoomToMeshes(true);
   }
 }
