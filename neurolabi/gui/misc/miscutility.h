@@ -55,6 +55,7 @@ double GetExpansionScale(size_t currentVol, size_t maxVol);
 
 size_t CountOverlap(const ZObject3dScan &obj1, const ZObject3dScan &obj2);
 size_t CountNeighbor(const ZObject3dScan &obj1, const ZObject3dScan &obj2);
+size_t CountNeighborOnPlane(const ZObject3dScan &obj1, const ZObject3dScan &obj2);
 
 /*!
  * \brief A function for computing confidence

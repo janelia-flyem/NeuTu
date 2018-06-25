@@ -26739,6 +26739,74 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "25dc", 8900);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+  uint64_t bodyId = 1352434760;
+
+  ZObject3dScan obj;
+  reader.readCoarseBody(bodyId, flyem::LABEL_BODY, &obj);
+
+  ZDvidInfo dvidInfo = reader.readDataInfo(target.getSegmentationName());
+//  reader.readBody(2515, flyem::LABEL_BODY, 5, ZIntCuboid(), true, &obj);
+  obj.setDsIntv(dvidInfo.getBlockSize() - 1);
+  std::cout << obj.getDsIntv() << std::endl;
+
+  ZIntPoint center(19376, 22335, 20896);
+  int radius = 256;
+  ZIntCuboid box(center - radius, center + radius);
+  box.scaleDown(dvidInfo.getBlockSize());
+  box.expand(-1, -1, -1);
+  obj.remove(box);
+
+  ZObject3dScanArray objArray;
+  objArray.append(obj);
+
+  ZObject3dScan obj2;
+  reader.readBody(
+        bodyId, flyem::LABEL_BODY, 0,
+        ZIntCuboid(center - radius, center + radius), true, &obj2);
+  objArray.append(obj2);
+
+  tic();
+  ZMesh *mesh = ZMeshFactory::MakeMesh(objArray);
+  std::cout << "Merging time: " << toc() << std::endl;
+
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+//  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  obj.addSegment(0, 1, 0, 1);
+  obj.addSegment(1, 0, 0, 1);
+  obj.addSegment(1, 1, 0, 1);
+
+  {
+//    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    ZMeshFactory mf;
+    mf.setOffsetAdjust(true);
+    mf.setSmooth(0);
+    ZMesh *mesh = mf.makeMesh(obj);
+    mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+  }
+
+//  obj.setDsIntv(1);
+  {
+    ZMesh *mesh = ZMeshFactory::MakeFaceMesh(obj);
+    mesh->save(GET_TEST_DATA_DIR + "/_test2.obj");
+  }
+
+#endif
+
 #if 1
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "2b6d", 9000);
@@ -26747,14 +26815,116 @@ void ZTest::test(MainWindow *host)
   reader.open(target);
   reader.updateMaxLabelZoom();
 
+  uint64_t bodyId = 2850569;
+
+  {
+    ZObject3dScan obj;
+    reader.readCoarseBody(bodyId, flyem::LABEL_BODY, &obj);
+
+    ZDvidInfo dvidInfo = reader.readDataInfo(target.getSegmentationName());
+    obj.setDsIntv(dvidInfo.getBlockSize() - 1);
+    std::cout << obj.getDsIntv() << std::endl;
+
+    ZMesh *mesh = ZMeshFactory::MakeFaceMesh(obj);
+
+    mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+    delete mesh;
+  }
+
+  if (1) {
+    ZObject3dScan obj;
+    reader.readCoarseBody(bodyId, flyem::LABEL_BODY, &obj);
+
+    ZDvidInfo dvidInfo = reader.readDataInfo(target.getSegmentationName());
+    obj.setDsIntv(dvidInfo.getBlockSize() - 1);
+    std::cout << obj.getDsIntv() << std::endl;
+
+    ZMeshFactory mf;
+    mf.setOffsetAdjust(true);
+    mf.setSmooth(3);
+    ZMesh *mesh = mf.MakeMesh(obj);
+
+    mesh->save(GET_TEST_DATA_DIR + "/_test2.obj");
+    delete mesh;
+  }
+
+  if (0) {
+    ZObject3dScan obj;
+    reader.readCoarseBody(bodyId, flyem::LABEL_BODY, &obj);
+
+    ZDvidInfo dvidInfo = reader.readDataInfo(target.getSegmentationName());
+    obj.setDsIntv(dvidInfo.getBlockSize() - 1);
+    std::cout << obj.getDsIntv() << std::endl;
+
+    ZMeshFactory mf;
+    mf.setOffsetAdjust(false);
+    mf.setSmooth(0);
+    ZMesh *mesh = mf.MakeMesh(obj);
+
+    mesh->save(GET_TEST_DATA_DIR + "/_test2.obj");
+    delete mesh;
+  }
+
+
+#if 0
+  {
+    ZObject3dScan obj;
+    reader.readBody(bodyId, true, &obj);
+//    obj.downsampleMax(15, 15, 15);
+    reader.readMultiscaleBody(bodyId, 6, true, &obj);
+//    obj.setDsIntv(3, 3, 3);
+//    reader.readBody(2515, true, &obj);
+
+    ZMesh *mesh = ZMeshFactory::MakeFaceMesh(obj);
+//    ZMeshFactory mf;
+//    mf.setSmooth(0);
+//    mf.setOffsetAdjust(false);
+//    ZMesh *mesh = mf.makeMesh(obj);
+//    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save(GET_TEST_DATA_DIR + "/_test2.obj");
+    delete mesh;
+  }
+
+  {
+    ZObject3dScan obj;
+    reader.readBody(bodyId, true, &obj);
+//    reader.readMultiscaleBody(bodyId, 2, true, &obj);
+//    obj.setDsIntv(3, 3, 3);
+//    reader.readBody(2515, true, &obj);
+    ZMesh *mesh = ZMeshFactory::MakeFaceMesh(obj);
+
+//    ZMeshFactory mf;
+//    mf.setSmooth(0);
+//    mf.setOffsetAdjust(false);
+//    ZMesh *mesh = mf.MakeMesh(obj);
+//          obj.getSlice(obj.getMinZ() + (obj.getMaxZ() - obj.getMinZ())/5), obj.getMaxZ());
+    mesh->save(GET_TEST_DATA_DIR + "/_test3.obj");
+    delete mesh;
+  }
+#endif
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6d", 9000);
+  target.setSegmentationName("groundtruth");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
   ZObject3dScan obj;
-  reader.readBody(2515, flyem::LABEL_BODY, 5, ZIntCuboid(), true, &obj);
-  obj.setDsIntv(31);
+  reader.readCoarseBody(2515, flyem::LABEL_BODY, &obj);
+
+  ZDvidInfo dvidInfo = reader.readDataInfo(target.getSegmentationName());
+//  reader.readBody(2515, flyem::LABEL_BODY, 5, ZIntCuboid(), true, &obj);
+  obj.setDsIntv(dvidInfo.getBlockSize() - 1);
   std::cout << obj.getDsIntv() << std::endl;
 
   ZIntPoint center(3143, 3569, 4044);
   ZIntCuboid box(center - 512, center + 512);
-  box.scaleDown(32);
+  box.scaleDown(dvidInfo.getBlockSize());
+  box.expand(-1, -1, -1);
   obj.remove(box);
 
   ZObject3dScanArray objArray;
@@ -26786,9 +26956,98 @@ void ZTest::test(MainWindow *host)
   obj2.downsampleMax(3, 3, 3);
   objArray.append(obj2);
 
+  tic();
   ZMesh *mesh = ZMeshFactory::MakeMesh(objArray);
+  std::cout << "Merging time: " << toc() << std::endl;
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
 
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/_paper/neuron_type/data_bundle.json");
+  ZJsonArray neuronArrayJson(obj.value("neuron"));
+  std::cout << neuronArrayJson.size() << std::endl;
+
+  std::ofstream stream(
+        GET_TEST_DATA_DIR + "/_paper/neuron_type/data/type_name.txt");
+  for (size_t i = 0; i < neuronArrayJson.size(); ++i) {
+    ZJsonObject neuronJson(neuronArrayJson.value(i));
+    stream << ZJsonParser::stringValue(neuronJson["type"]) << std::endl;
+  }
+  stream.close();
+#endif
+
+#if 0
+  ZJsonObject obj;
+  obj.load(GET_TEST_DATA_DIR + "/_paper/neuron_type/data_bundle.json");
+  ZJsonArray neuronArrayJson(obj.value("neuron"));
+  std::cout << neuronArrayJson.size() << std::endl;
+
+  ZObject3dScanArray objArray;
+
+  std::vector<ZIntCuboid> boxArray;
+  for (size_t i = 0; i < neuronArrayJson.size(); ++i) {
+    ZJsonObject neuronJson(neuronArrayJson.value(i));
+    std::string volumeFile =
+        GET_TEST_DATA_DIR + "/_paper/neuron_type/" +
+        ZJsonParser::stringValue(neuronJson["volume"]);
+    QFileInfo fileInfo(volumeFile.c_str());
+    if (!fileInfo.exists()) {
+      std::cout << volumeFile << " missing." << std::endl;
+    }
+    ZObject3dScan obj;
+    obj.load(volumeFile);
+    objArray.append(obj);
+    ZIntCuboid box = obj.getBoundBox();
+    box.expand(1, 1, 0);
+    boxArray.push_back(box);
+  }
+
+  std::vector<std::vector<size_t> > adjmat;
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    std::cout << "Processing row " << i << std::endl;
+    std::vector<size_t> row;
+    const ZObject3dScan *obj1 = objArray[i];
+    const ZIntCuboid &box1 = boxArray[i];
+    for (size_t j = 0; j < i; ++j) {
+      const ZIntCuboid &box2 = boxArray[j];
+      if (box1.hasOverlap(box2)) {
+        const ZObject3dScan *obj2 = objArray[j];
+        row.push_back(misc::CountNeighborOnPlane(*obj1, *obj2));
+      } else {
+        row.push_back(0);
+      }
+    }
+    row.push_back(0);
+    adjmat.push_back(row);
+  }
+
+  std::ofstream stream(
+        GET_TEST_DATA_DIR + "/_paper/neuron_type/data/adjmat.txt");
+
+  for (size_t i = 0; i < objArray.size(); ++i) {
+    for (size_t j = 0; j < objArray.size(); ++j) {
+      if (i >= j) {
+        stream << adjmat[i][j] << " ";
+      } else {
+        stream << adjmat[j][i] << " ";
+      }
+    }
+    stream << std::endl;
+  }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscale");
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
+  dvidInfo.print();
 #endif
 
   std::cout << "Done." << std::endl;
