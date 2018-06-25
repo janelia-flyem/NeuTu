@@ -38,6 +38,9 @@ namespace {
   static const QString KEY_TIMESTAMP = "time";
   static const QString KEY_TIME_ZONE = "time zone";
   static const QString KEY_SOURCE = "source";
+  static const QString KEY_USAGE_TIME = "time to complete (ms)";
+  static const QString KEY_RESULT_HISTORY = "result history";
+  static const QString KEY_INITIAL_ANGLE_METHOD = "initial 3D angle method";
 
   // TODO: Duplicated in TaskBodyCleave, so factor out.
   // https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
@@ -457,12 +460,21 @@ void TaskBodyMerge::buildTaskWidget()
 
 void TaskBodyMerge::onLoaded()
 {
+  m_usageTimer.start();
   applyColorMode(true);
   zoomToMergePosition(true);
 }
 
 void TaskBodyMerge::onCompleted()
 {
+  m_usageTimes.push_back(m_usageTimer.elapsed());
+
+  // Restart the timer, to measure the time if the user reconsiders and
+  // reaches a new decision for this task (without moving on and then coming
+  // back to this task).
+
+  m_usageTimer.start();
+
   QString result;
   if (m_mergeButton->isChecked()) {
     result = "merge";
@@ -528,6 +540,8 @@ void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
   if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
     if (Z3DMeshFilter *filter =
         dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
+
+      m_initialAngleMethod = "method 2 (normal to SV pts cross up when loaded)";
 
       glm::vec3 p1(m_supervoxelPoint1.x(), m_supervoxelPoint1.y(), m_supervoxelPoint1.z());
       glm::vec3 p2(m_supervoxelPoint2.x(), m_supervoxelPoint2.y(), m_supervoxelPoint2.z());
@@ -890,6 +904,17 @@ void TaskBodyMerge::writeResult(const QString &result)
   json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
   json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
   json[KEY_SOURCE] = jsonSource();
+
+  QJsonArray jsonTimes;
+  std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
+  json[KEY_USAGE_TIME] = jsonTimes;
+
+  m_resultHistory.push_back(result);
+  QJsonArray jsonResultHistory;
+  std::copy(m_resultHistory.begin(), m_resultHistory.end(), std::back_inserter(jsonResultHistory));
+  json[KEY_RESULT_HISTORY] = jsonResultHistory;
+
+  json[KEY_INITIAL_ANGLE_METHOD] = m_initialAngleMethod;
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());

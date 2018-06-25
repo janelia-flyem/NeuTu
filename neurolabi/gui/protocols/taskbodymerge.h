@@ -5,6 +5,7 @@
 #include "zglmutils.h"
 #include "zpoint.h"
 #include <QObject>
+#include <QTime>
 
 class ZFlyEmBody3dDoc;
 class QCheckBox;
@@ -45,6 +46,11 @@ private:
   ZPoint m_supervoxelPoint1;
   ZPoint m_supervoxelPoint2;
 
+  QTime m_usageTimer;
+  std::vector<int> m_usageTimes;
+  std::vector<QString> m_resultHistory;
+
+  QString m_initialAngleMethod;
   glm::vec3 m_initialUp;
 
   QWidget *m_widget;
