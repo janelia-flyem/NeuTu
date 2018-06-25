@@ -788,3 +788,21 @@ size_t misc::CountOverlap(const ZObject3dScan &obj1, const ZObject3dScan &obj2)
 {
   return obj1.intersect(obj2).getVoxelNumber();
 }
+
+size_t misc::CountNeighbor(const ZObject3dScan &obj1, const ZObject3dScan &obj2)
+{
+  ZObject3dScan obj = obj1;
+  obj.dilate();
+
+  return CountOverlap(obj, obj2);
+}
+
+size_t misc::CountNeighborOnPlane(const ZObject3dScan &obj1, const ZObject3dScan &obj2)
+{
+//  return obj1.getVoxelNumber() + obj2.getVoxelNumber(); //mockup
+
+  ZObject3dScan obj = obj1;
+  obj.dilatePlane();
+
+  return CountOverlap(obj, obj2);
+}

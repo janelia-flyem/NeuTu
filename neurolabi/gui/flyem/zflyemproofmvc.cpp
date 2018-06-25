@@ -4966,7 +4966,10 @@ void ZFlyEmProofMvc::loadRoi(
       ZObject3dScan roi;
       reader.readRoi(key, &roi);
       if (!roi.isEmpty()) {
-        mesh = ZMeshFactory::MakeMesh(roi);
+        ZMeshFactory mf;
+        mf.setOffsetAdjust(true);
+        mesh = mf.makeMesh(roi);
+//        mesh = ZMeshFactory::MakeMesh(roi);
 
         //      m_loadedROIs.push_back(roi);
         //      std::string source =

@@ -10,6 +10,7 @@
 #include "zdoublevector.h"
 #include "zstack.hxx"
 #include "zstackfactory.h"
+#include "misc/miscutility.h"
 
 #ifdef _USE_GTEST_
 
@@ -1228,6 +1229,25 @@ TEST(ZObject3dScan, relation)
   obj2.addStripe(10, 20);
   obj2.addSegment(29, 29);
   ASSERT_FALSE(obj1.hasOverlap(obj2));
+
+  obj1.clear();
+  obj2.clear();
+  obj1.addSegment(0, 0, 0, 1);
+  obj2.addSegment(0, 0, 1, 2);
+  ASSERT_EQ(1, (int) misc::CountOverlap(obj1, obj2));
+
+  obj2.addSegment(0, 0, 2, 3);
+  ASSERT_EQ(0, (int) misc::CountOverlap(obj1, obj2));
+
+  ASSERT_EQ(1, (int) misc::CountNeighbor(obj1, obj2));
+  ASSERT_EQ(1, (int) misc::CountNeighborOnPlane(obj1, obj2));
+
+  obj2.addSegment(1, 0, 1, 2);
+  ASSERT_EQ(2, (int) misc::CountNeighbor(obj1, obj2));
+  ASSERT_EQ(1, (int) misc::CountNeighborOnPlane(obj1, obj2));
+
+  obj1.addSegment(1, 0, 2, 3);
+  ASSERT_EQ(2, (int) misc::CountNeighborOnPlane(obj1, obj2));
 }
 
 TEST(ZObject3dScan, upSample)

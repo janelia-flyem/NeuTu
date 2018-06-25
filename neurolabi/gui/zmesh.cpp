@@ -1550,10 +1550,27 @@ ZMesh ZMesh::Merge(const std::vector<ZMesh*>& meshes)
   return vtkPolyDataToMesh(cleanFilter->GetOutput());
 }
 
+void ZMesh::append(const ZMesh &mesh)
+{
+#ifdef _DEBUG_
+  std::cout << "Appending mesh:" << m_indices.size() << " " << m_vertices.size() << std::endl;
+#endif
+  std::vector<glm::uvec3> indices = mesh.triangleIndices();
+  for (const auto &index : indices) {
+    appendTriangle(mesh, index);
+  }
+}
+
 void ZMesh::appendTriangle(const ZMesh& mesh, const glm::uvec3& triangle)
 {
-  if (!m_indices.empty() || m_ttype != GL_TRIANGLES)
+  if (/*!m_indices.empty() ||*/ m_ttype != GL_TRIANGLES)
     return;
+
+  if (!m_indices.empty()) {
+    m_indices.push_back(m_vertices.size());
+    m_indices.push_back(m_vertices.size() + 1);
+    m_indices.push_back(m_vertices.size() + 2);
+  }
 
   m_vertices.push_back(mesh.m_vertices[triangle[0]]);
   m_vertices.push_back(mesh.m_vertices[triangle[1]]);
