@@ -163,6 +163,12 @@ QRectF ZViewProj::getProjRect() const
   return m_projRegion;
 }
 
+void ZViewProj::alignOffset(int downresRatio)
+{
+  m_x0 = (m_x0 / downresRatio) * downresRatio;
+  m_y0 = (m_y0 / downresRatio) * downresRatio;
+}
+
 void ZViewProj::setViewPort(const QRect &rect)
 {
   if (rect.isValid()) {

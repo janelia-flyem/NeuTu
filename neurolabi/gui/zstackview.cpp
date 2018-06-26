@@ -476,6 +476,10 @@ void ZStackView::setSliceRange(int minSlice, int maxSlice)
   m_sliceStrategy->setRange(minSlice, maxSlice);
 }
 
+void ZStackView::enableOffsetAdjustment(bool on)
+{
+  m_imageWidget->enableOffsetAdjustment(on);
+}
 
 #if 0
 void ZStackView::resetDepthControl()

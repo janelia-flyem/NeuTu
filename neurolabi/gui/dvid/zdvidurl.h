@@ -310,14 +310,15 @@ public:
 
 //  static bool IsSplitTask(const std::string &url);
 
+  static std::string AppendRangeQuery(
+      const std::string &url, const ZIntCuboid &box);
+
 private:
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       const std::string &command) const;
   static std::string GetServiceResultEndPoint();
   static std::string AppendQuery(const std::string &url, const std::string query);
-  static std::string AppendRangeQuery(
-      const std::string &url, const ZIntCuboid &box);
 
 private:
   ZDvidTarget m_dvidTarget;
