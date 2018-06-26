@@ -225,12 +225,19 @@ QString TaskBodyMerge::targetString()
 
 bool TaskBodyMerge::skip()
 {
-  if (m_bodyId1 == m_bodyId2) {
+  if ((m_bodyId1 == 0) || (m_bodyId2 == 0)) {
 
-    // Users do not explicitly choose to skip reudendant tasks, but we still want a record of them
-    // in the results, so write that record here.
+    // Users do not explicitly choose to skip tasks where one or other super voxel does not
+    // map to a body (e.g., because the super voxel was split), but we still want a record
+    // of these tasks in the results, so write that record here.
 
-    writeResult("autoSkipped");
+    writeResult("autoSkippedNoBody");
+    return true;
+  } else if (m_bodyId1 == m_bodyId2) {
+
+    // Likewise for redundant tasks.
+
+    writeResult("autoSkippedSameBody");
     return true;
   }
   return false;
