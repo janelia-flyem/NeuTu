@@ -30,7 +30,7 @@ public:
 private:
   int m_dsIntv = 0;
   int m_smooth = 3;
-  bool m_offsetAdjust = false;
+  bool m_offsetAdjust = true;
 };
 
 #endif // ZMESHFACTORY_H

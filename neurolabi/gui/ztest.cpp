@@ -292,6 +292,7 @@
 #include "flyem/zflyemarbmvc.h"
 #include "zmenuconfig.h"
 #include "flyem/zglobaldvidrepo.h"
+#include  "dvid/zdvidbodyhelper.h"
 
 #include "test/ztestall.h"
 
@@ -25792,6 +25793,52 @@ void ZTest::test(MainWindow *host)
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "a89e", 8600);
   target.setGrayScaleName("grayscalejpeg");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxGrayscaleZoom();
+
+  int x = 17212;
+  int y = 19872;
+  int z = 20704;
+
+  std::vector<std::vector<double> > ds;
+
+
+
+  for (int dy = 0; dy < 1; ++dy) {
+    std::vector<double> sds;
+    for (int dx = 0; dx < 8; ++dx) {
+      ZStack *stack = reader.readGrayScaleLowtis(
+            x + dx, y + dy, z, 1024, 1024, 1, 256, 256, true);
+      ZStack *stack2 = reader.readGrayScaleLowtis(
+            x + dx, y + dy, z, 1024, 1024, 1, 256, 256, false);
+
+      size_t v = stack->getVoxelNumber();
+      double d = 0;
+      for (size_t i = 0; i < v; ++i) {
+        d += std::abs(stack->getIntValue(i) - stack2->getIntValue(i));
+      }
+      delete stack;
+      delete stack2;
+
+      sds.push_back(d);
+    }
+    ds.push_back(sds);
+  }
+
+  for (const auto &sds : ds) {
+    for (double d : sds) {
+      std::cout << d << " ";
+    }
+    std::cout << std::endl;
+  }
+//    stack->save(GET_TEST_DATA_DIR + "/_test2.tif");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleName("grayscalejpeg");
 
   ZFlyEmArbMvc *mvc = ZFlyEmArbMvc::Make(target);
 
@@ -26807,7 +26854,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "2b6d", 9000);
   target.setSegmentationName("groundtruth");
@@ -26903,6 +26950,24 @@ void ZTest::test(MainWindow *host)
   }
 #endif
 
+#endif
+
+#if 0
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6d", 9000);
+  target.setSegmentationName("groundtruth");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+  ZIntPoint center(3143, 3569, 4044);
+  ZIntCuboid box(center - 512, center + 512);
+
+  ZObject3dScan obj;
+  reader.readCoarseBody(2515, flyem::LABEL_BODY, box, &obj);
+
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
 #if 0
@@ -27048,6 +27113,52 @@ void ZTest::test(MainWindow *host)
 
   ZDvidInfo dvidInfo = reader.readGrayScaleInfo();
   dvidInfo.print();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6d", 9000);
+  target.setSegmentationName("groundtruth");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+  ZIntPoint center(3143, 3569, 4044);
+  ZIntCuboid box(center - 512, center + 512);
+
+  ZDvidBodyHelper helper(&reader);
+  helper.setRange(box);
+
+  ZObject3dScan obj;
+  helper.readBody(2515, &obj);
+
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 1
+
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6d", 9000);
+  target.setSegmentationName("groundtruth");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+  ZIntPoint center(3143, 3569, 4044);
+  ZIntCuboid box(center - 512, center + 512);
+
+  ZDvidBodyHelper helper(&reader);
+  helper.setRange(box);
+  helper.setCoarse(true);
+
+//  ZObject3dScan obj;
+  ZObject3dScanArray objArray = helper.readHybridBody(2515);
+
+  ZMeshFactory mf;
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+//  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
   std::cout << "Done." << std::endl;

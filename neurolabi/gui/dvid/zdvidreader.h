@@ -427,6 +427,9 @@ public:
   ZObject3dScan* readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) const;
   ZObject3dScan* readCoarseBody(
       uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *obj) const;
+  ZObject3dScan* readCoarseBody(
+      uint64_t bodyId, flyem::EBodyLabelType labelType, const ZIntCuboid &box,
+      ZObject3dScan *obj) const;
 
   int readCoarseBodySize(uint64_t bodyId) const;
 

@@ -3846,6 +3846,46 @@ ZObject3dScan* ZDvidReader::readCoarseBody(
   return obj;
 }
 
+ZObject3dScan* ZDvidReader::readCoarseBody(
+    uint64_t bodyId, flyem::EBodyLabelType labelType, const ZIntCuboid &box,
+    ZObject3dScan *obj) const
+{
+  ZDvidBufferReader &reader = m_bufferReader;
+  reader.tryCompress(false);
+  ZDvidUrl dvidUrl(m_dvidTarget);
+
+  std::string url;
+  switch (labelType) {
+  case flyem::LABEL_BODY:
+    url = dvidUrl.getCoarseSparsevolUrl(
+          bodyId, m_dvidTarget.getBodyLabelName());
+    break;
+  case flyem::LABEL_SUPERVOXEL:
+    url = dvidUrl.getSupervoxelUrl(
+          bodyId, m_dvidTarget.getBodyLabelName());
+    break;
+  }
+
+  url = ZDvidUrl::AppendRangeQuery(url, box);
+
+  reader.read(url.c_str(), isVerbose());
+  setStatusCode(reader.getStatusCode());
+
+  if (reader.getStatus() == neutube::READ_OK) {
+    if (obj == NULL) {
+      obj = new ZObject3dScan;
+    }
+
+    obj->importDvidObjectBuffer(
+          reader.getBuffer().data(), reader.getBuffer().size());
+    obj->setLabel(bodyId);
+  }
+
+  clearBuffer();
+
+  return obj;
+}
+
 ZObject3dScan ZDvidReader::readCoarseBody(uint64_t bodyId) const
 {
   ZDvidBufferReader &reader = m_bufferReader;
