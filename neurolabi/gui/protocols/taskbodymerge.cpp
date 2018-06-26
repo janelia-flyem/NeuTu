@@ -11,6 +11,7 @@
 #include "zstackdocproxy.h"
 
 #include <limits>
+#include <random>
 
 #include <QCheckBox>
 #include <QDateTime>
@@ -67,6 +68,30 @@ namespace {
     glm::vec4(  0,   0, 128, 255) / 255.0f, // navy
     glm::vec4(128, 128, 128, 255) / 255.0f, // gray
   });
+
+  static const std::vector<QString> INITIAL_ANGLE_METHOD({
+    "method 0 (unchanged from previous task)",
+    "method 1 (normal to acquisition axis Z)",
+    "method 2 (normal to SV pts cross up when loaded)"
+  });
+
+  size_t initialAngleMethod()
+  {
+    if (const char* method = std::getenv("NEU3_INITIAL_ANGLE_METHOD")) {
+      try {
+        size_t i = std::stoul(method);
+        if (i <  INITIAL_ANGLE_METHOD.size()) {
+          return i;
+        }
+      } catch(...) {
+      }
+    }
+
+    static std::random_device r;
+    static std::default_random_engine e(r());
+    static std::uniform_int_distribution<int> uniform(1, INITIAL_ANGLE_METHOD.size() - 1);
+    return uniform(e);
+  }
 
   bool pointFromJSON(const QJsonValue &value, ZPoint &result)
   {
@@ -174,6 +199,8 @@ namespace {
 TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
 {
   m_bodyDoc = bodyDoc;
+
+  m_initialAngleMethod = initialAngleMethod();
 
   applyOverallSettings(m_bodyDoc);
 
@@ -541,24 +568,43 @@ void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
     if (Z3DMeshFilter *filter =
         dynamic_cast<Z3DMeshFilter*>(window->getMeshFilter())) {
 
-      m_initialAngleMethod = "method 2 (normal to SV pts cross up when loaded)";
+      glm::vec3 eye;
+      glm::vec3 up;
 
-      glm::vec3 p1(m_supervoxelPoint1.x(), m_supervoxelPoint1.y(), m_supervoxelPoint1.z());
-      glm::vec3 p2(m_supervoxelPoint2.x(), m_supervoxelPoint2.y(), m_supervoxelPoint2.z());
-      glm::vec3 p1ToP2 = glm::normalize(p2 - p1);
+      switch (m_initialAngleMethod) {
+        case 1: {
+          up = glm::vec3(0, 1, 0);
+          eye = filter->camera().center() + glm::vec3(0, 0, 1);
+          break;
+        }
 
-      // TODO: Choose an up vector that gives the best view, in some sense.
-      if (justLoaded) {
-        m_initialUp = window->getMeshFilter()->camera().upVector();
+        case 2: {
+          glm::vec3 p1(m_supervoxelPoint1.x(), m_supervoxelPoint1.y(), m_supervoxelPoint1.z());
+          glm::vec3 p2(m_supervoxelPoint2.x(), m_supervoxelPoint2.y(), m_supervoxelPoint2.z());
+          glm::vec3 p1ToP2 = glm::normalize(p2 - p1);
+
+          // TODO: Choose an up vector that gives the best view, in some sense.
+          if (justLoaded) {
+            m_initialUp = window->getMeshFilter()->camera().upVector();
+          }
+
+          up = m_initialUp;
+          glm::vec3 toEye = glm::normalize(glm::cross(p1ToP2, up));
+          eye = filter->camera().center() + toEye;
+          break;
+        }
+
+        default: {
+          eye = filter->camera().eye();
+          up = filter->camera().upVector();
+          break;
+        }
       }
-
-      glm::vec3 toEye = glm::normalize(glm::cross(p1ToP2, m_initialUp));
-      glm::vec3 eye = filter->camera().center() + toEye;
 
       // Update the camera for the 3D view.
 
       filter->camera().setEye(eye);
-      filter->camera().setUpVector(m_initialUp);
+      filter->camera().setUpVector(up);
 
       // Update the orientaton of the grayscale slice.
 
@@ -914,7 +960,8 @@ void TaskBodyMerge::writeResult(const QString &result)
   std::copy(m_resultHistory.begin(), m_resultHistory.end(), std::back_inserter(jsonResultHistory));
   json[KEY_RESULT_HISTORY] = jsonResultHistory;
 
-  json[KEY_INITIAL_ANGLE_METHOD] = m_initialAngleMethod;
+  size_t i = (m_initialAngleMethod < INITIAL_ANGLE_METHOD.size()) ? m_initialAngleMethod : 0;
+  json[KEY_INITIAL_ANGLE_METHOD] = INITIAL_ANGLE_METHOD[i];
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
