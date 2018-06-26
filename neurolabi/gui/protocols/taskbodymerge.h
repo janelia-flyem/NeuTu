@@ -50,7 +50,7 @@ private:
   std::vector<int> m_usageTimes;
   std::vector<QString> m_resultHistory;
 
-  QString m_initialAngleMethod;
+  size_t m_initialAngleMethod;
   glm::vec3 m_initialUp;
 
   QWidget *m_widget;
