@@ -182,6 +182,16 @@ std::string ZDvidUrl::getMeshesTarsUrl(uint64_t bodyId)
   return GetFullUrl(GetKeyCommandUrl(dataUrl), key);
 }
 
+std::string ZDvidUrl::getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId2)
+{
+  ZString dataUrl = ZDvidData::GetName(ZDvidData::ROLE_MESHES_TARS,
+                                       ZDvidData::ROLE_BODY_LABEL,
+                                       m_dvidTarget.getBodyLabelName());
+  ZString key1 = GetBodyKey(bodyId1) + ".tar";
+  ZString key2 = GetBodyKey(bodyId2) + ".tar";
+  return getKeyRangeUrl(dataUrl, key1, key2);
+}
+
 std::string ZDvidUrl::getSkeletonUrl() const
 {
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());

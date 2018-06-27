@@ -8,7 +8,9 @@
 #include <QTime>
 
 class ZFlyEmBody3dDoc;
+class QAction;
 class QCheckBox;
+class QNetworkAccessManager;
 class QRadioButton;
 
 class TaskBodyMerge : public TaskProtocolTask
@@ -46,6 +48,9 @@ private:
   ZPoint m_supervoxelPoint1;
   ZPoint m_supervoxelPoint2;
 
+  QNetworkAccessManager *m_networkManager;
+  size_t m_hiResCount;
+
   QTime m_usageTimer;
   std::vector<int> m_usageTimes;
   std::vector<QString> m_resultHistory;
@@ -61,6 +66,7 @@ private:
   QRadioButton *m_dontKnowButton;
   QCheckBox *m_showHiResCheckBox;
   QMenu *m_menu;
+  QAction *m_showHiResAction;
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;
@@ -74,6 +80,7 @@ private:
   ZPoint mergePosition() const;
   void initAngleForMergePosition(bool justLoaded);
   void zoomToMeshes(bool onlySmaller);
+  void configureShowHiRes();
   void writeResult(const QString &result);
 };
 
