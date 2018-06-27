@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 #if defined(_QT_GUI_USED_)
 #include <QPainter>
@@ -18,7 +19,7 @@
 #include "zintpoint.h"
 #include "geometry/zgeometry.h"
 
-const double ZPoint::m_minimalDistance = 1e-5;
+const double ZPoint::MIN_DIST = 1e-5;
 
 ZPoint::ZPoint()
 {
@@ -213,10 +214,28 @@ void ZPoint::toArray(double *pt) const
 
 void ZPoint::normalize()
 {
+  if (!isApproxOrigin() && !isUnitVector()) {
+    double len = length();
+    m_x /= len;
+    m_y /= len;
+    m_z /= len;
+  }
+
+#if 0
   coordinate_3d_t coord;
   toArray(coord);
   Coordinate_3d_Unitize(coord);
   set(coord[0], coord[1], coord[2]);
+#endif
+
+}
+
+ZPoint ZPoint::getNormalized() const
+{
+  ZPoint pt = *this;
+  pt.normalize();
+
+  return pt;
 }
 
 const double& ZPoint::operator [](int index) const
@@ -295,12 +314,42 @@ double ZPoint::cosAngle(const ZPoint &pt) const
 
 bool ZPoint::isApproxOrigin() const
 {
-  return (length() < m_minimalDistance);
+  return (length() < MIN_DIST);
 }
 
 bool ZPoint::approxEquals(const ZPoint &pt) const
 {
-  return (distanceTo(pt) < m_minimalDistance);
+  return (distanceTo(pt) < MIN_DIST);
+}
+
+bool ZPoint::isUnitVector() const
+{
+  return std::fabs(length() - 1.0) < MIN_DIST;
+}
+
+bool ZPoint::isPendicularTo(const ZPoint &pt) const
+{
+  double len1 = length();
+  double len2 = pt.length();
+
+  if (len1 < MIN_DIST || len2 < MIN_DIST) {
+    return false;
+  }
+
+  if (std::fabs(dot(pt)) < MIN_DIST * len1 * len2) {
+    return true;
+  }
+
+  return false;
+}
+
+bool ZPoint::isParallelTo(const ZPoint &pt) const
+{
+  if (isApproxOrigin() || pt.isApproxOrigin()) {
+    return false;
+  }
+
+  return getNormalized().approxEquals(pt.getNormalized());
 }
 
 std::string ZPoint::toString() const
@@ -369,12 +418,12 @@ bool ZPoint::operator <(const ZPoint &pt) const
 
 void ZPoint::shiftSliceAxis(neutube::EAxis axis)
 {
-  ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
+  zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
 void ZPoint::shiftSliceAxisInverse(neutube::EAxis axis)
 {
-  ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+  zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
 double ZPoint::getSliceCoord(neutube::EAxis axis) const
@@ -386,7 +435,15 @@ double ZPoint::getSliceCoord(neutube::EAxis axis) const
     return m_y;
   case neutube::Z_AXIS:
     return m_z;
+  case neutube::A_AXIS:
+    return 0;
   }
 
   return m_z;
+}
+
+std::ostream &operator<<(std::ostream &stream, const ZPoint &pt)
+{
+  stream << "(" << pt.getX() << ", " << pt.getY() << ", " << pt.getZ() << ")";
+  return stream;
 }

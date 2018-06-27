@@ -22,6 +22,7 @@ public:
   const static TRole ROLE_ACTIVE_VIEW;
   const static TRole ROLE_SKELETON_MASK;
   const static TRole ROLE_ROI_MASK;
+  const static TRole ROLE_3DMESH_DECORATOR;
 
   ZStackObjectRole();
   ZStackObjectRole(TRole role);
@@ -44,6 +45,7 @@ public:
     m_role &= ~role;
   }
 
+  bool operator== (const ZStackObjectRole &role) const;
 
   /*!
    * \brief Check if the object has specific roles.

@@ -41,11 +41,11 @@ bool TaskProtocolTask::completed() const
     return m_completed;
 }
 
-QSet<uint64_t> TaskProtocolTask::visibleBodies() {
+const QSet<uint64_t> & TaskProtocolTask::visibleBodies() {
     return m_visibleBodies;
 }
 
-QSet<uint64_t> TaskProtocolTask::selectedBodies() {
+const QSet<uint64_t> & TaskProtocolTask::selectedBodies() {
     return m_selectedBodies;
 }
 
@@ -61,6 +61,14 @@ void TaskProtocolTask::setCompleted(bool completed)
 
 /*
  * subclasses may optionally implement this method to
+ * check internal state and disallow completion of the task
+ */
+bool TaskProtocolTask::allowCompletion() {
+    return true;
+}
+
+/*
+ * subclasses may optionally implement this method to
  * do something when the task is marked "complete"
  */
 void TaskProtocolTask::onCompleted() {
@@ -69,7 +77,7 @@ void TaskProtocolTask::onCompleted() {
 
 /*
  * subclasses may optionally implement this method to
- * do something when the task about to be moved away from
+ * do something when a task is about to be moved away from
  * via "next" button
  */
 void TaskProtocolTask::beforeNext() {
@@ -78,7 +86,7 @@ void TaskProtocolTask::beforeNext() {
 
 /*
  * subclasses may optionally implement this method to
- * do something when the task about to be moved away from
+ * do something when a task is about to be moved away from
  * via "prev" button
  */
 void TaskProtocolTask::beforePrev() {
@@ -87,12 +95,29 @@ void TaskProtocolTask::beforePrev() {
 
 /*
  * subclasses may optionally implement this method to
+ * do something in the task that is active when the "done" button
+ * is pressed
+ */
+void TaskProtocolTask::beforeDone() {
+  // nothing
+}
+
+
+/*
+ * subclasses may optionally implement this method to
  * add UI below the standard UI
  */
 QWidget * TaskProtocolTask::getTaskWidget() {
-    return NULL;
+    return nullptr;
 }
 
+/*
+ * subclasses may optionally implement this method to
+ * add a menu to the main menu bar
+ */
+QMenu * TaskProtocolTask::getTaskMenu() {
+    return nullptr;
+}
 
 // tag methods: standard add, remove, has, get all, clear
 
@@ -213,6 +238,14 @@ QString TaskProtocolTask::objectToString(QJsonObject json) {
     QJsonDocument doc(json);
     QString jsonString(doc.toJson(QJsonDocument::Compact));
     return jsonString;
+}
+
+void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
+                                    const QSet<uint64_t> &selected)
+{
+  m_visibleBodies = visible;
+  m_selectedBodies = selected;
+  emit(bodiesUpdated());
 }
 
 /*

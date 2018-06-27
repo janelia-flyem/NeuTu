@@ -5,8 +5,7 @@
 
 #include <string>
 #include <vector>
-#include "zobject3dscan.h"
-#include "zstack.hxx"
+
 #include "flyem/zflyem.h"
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
@@ -29,12 +28,14 @@ class ZFlyEmBookmark;
 class ZDvidSynapse;
 class ZFlyEmToDoItem;
 class ZArray;
+class ZStack;
+class ZObject3dScan;
 
-class ZDvidWriter : public QObject
+class ZDvidWriter /*: public QObject*/
 {
-  Q_OBJECT
+  /*Q_OBJECT*/
 public:
-  explicit ZDvidWriter(QObject *parent = 0);
+  explicit ZDvidWriter(/*QObject *parent = 0*/);
   ~ZDvidWriter();
 
   bool open(const QString &serverAddress, const QString &uuid,
@@ -57,6 +58,7 @@ public:
   void writeSwc(uint64_t bodyId, ZSwcTree *tree);
   bool isSwcWrittable();
 
+  void writeMesh(const ZMesh &mesh, uint64_t bodyId, int zoom);
 
   void writeThumbnail(uint64_t bodyId, ZStack *stack);
   void writeThumbnail(uint64_t bodyId, Stack *stack);
@@ -77,6 +79,12 @@ public:
                  const std::string &emptyValueString = "");
   void writeBoundBox(const ZIntCuboid &cuboid, int z);
   void writeRoi(const ZObject3dScan &roi, const std::string &roiName);
+  void writeRoiRef(
+      const std::string &roiName, const std::string &key,
+      const std::string &type);
+  void writeRoiRef(
+      const std::string &roiName, const std::vector<std::string> &keyList,
+      const std::string &type);
 
   //void writeSplitLabel(const ZObject3dScan &obj, int label);
 
@@ -123,6 +131,7 @@ public:
                  const QString &minKey, const QString &maxKey);
 
   void deleteSkeleton(uint64_t bodyId);
+  void deleteMesh(uint64_t bodyId);
   void deleteBodyAnnotation(uint64_t bodyId);
 
   void invalidateBody(uint64_t bodyId);
@@ -132,6 +141,13 @@ public:
   std::string createBranch();
 
   uint64_t rewriteBody(uint64_t label);
+
+  //Returns (remainderId, newBodyId)
+  std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
+      const std::string &dataName, const ZObject3dScan &obj,
+      uint64_t oldLabel);
+  std::pair<uint64_t, uint64_t> writeSupervoxelSplit(
+      const ZObject3dScan &obj, uint64_t oldLabel);
 
   uint64_t writeSplit(const std::string &dataName, const ZObject3dScan &obj,
                   uint64_t oldLabel, uint64_t label, uint64_t newBodyId = 0);
@@ -227,6 +243,9 @@ public:
   bool good() const;
 
   void writeData(const std::string &dest, const QByteArray &data);
+  void writeDataToKeyValue(
+      const std::string &dataName, const std::string &key,
+      const QByteArray &data);
 
   std::string writeServiceResult(
       const QString &group, const QByteArray &data, bool head);
@@ -238,6 +257,17 @@ public:
   std::string writeServiceTask(const QString &group, const ZJsonObject &task);
   void writeSplitTask(const QString &key, const ZJsonObject &task);
   void deleteSplitTask(const QString &key);
+  void writeTestResult(const std::string &key, const ZJsonObject &result);
+
+  /*!
+   * \brief Upload a mesh as a ROI
+   *
+   * It will create a reference for the ROI.
+   *
+   * \param meshPath The path of the mesh file.
+   * \param name Name of the ROI
+   */
+  void uploadRoiMesh(const std::string &meshPath, const std::string &name);
 //  std::string transferLocalSplitTaskToServer(const ZJsonObject &task);
 
 public:

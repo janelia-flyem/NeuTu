@@ -17,6 +17,8 @@
 #include "zpainter.h"
 #include "zcuboid.h"
 #include "zintcuboid.h"
+#include "zpoint.h"
+#include "zintpoint.h"
 
 using namespace std;
 
@@ -171,6 +173,10 @@ void ZObject3d::display(
 {  
   UNUSED_PARAMETER(option);
 
+  if (sliceAxis == neutube::A_AXIS) {
+    return;
+  }
+
   if (slice < 0 && !isProjectionVisible()) {
     return;
   }
@@ -216,6 +222,8 @@ void ZObject3d::display(
         }
       }
     }
+    break;
+  case neutube::A_AXIS:
     break;
   }
 
@@ -875,6 +883,20 @@ void ZObject3d::upSample(int xIntv, int yIntv, int zIntv)
     }
   }
 }
+
+void ZObject3d::downsample(int xIntv, int yIntv, int zIntv)
+{
+  int rx = xIntv + 1;
+  int ry = yIntv + 1;
+  int rz = zIntv + 1;
+
+  for (size_t i = 0; i < m_voxelArray.size(); i += 3) {
+    m_voxelArray[i] /= rx;
+    m_voxelArray[i + 1] /= ry;
+    m_voxelArray[i + 2] /= rz;
+  }
+}
+
 
 ZJsonObject ZObject3d::toJsonObject() const
 {

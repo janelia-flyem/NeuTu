@@ -133,7 +133,10 @@ void ZJsonArray::append(json_t *obj)
 
 void ZJsonArray::append(const ZJsonValue &obj)
 {
-  append(obj.getValue());
+  if (obj.getValue() != NULL) {
+//    json_incref(obj.getValue());
+    append(obj.getValue());
+  }
 }
 
 void ZJsonArray::remove(size_t index)
@@ -229,13 +232,13 @@ bool ZJsonArray::decode(const string &str)
   return true;
 }
 
-string ZJsonArray::dumpString(int indent) const
+std::string ZJsonArray::dumpJanssonString(size_t flags) const
 {
   if (isEmpty()) {
     return "[]";
   }
 
-  return ZJsonValue::dumpString(indent);
+  return ZJsonValue::dumpJanssonString(flags);
 }
 
 ZJsonValue ZJsonArray::value(size_t index) const

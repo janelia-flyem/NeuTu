@@ -21,11 +21,12 @@ public:
   static QString GetResultKeyPath(const QString &group, const QString &key);
   static QString GetTaskKeyPath(const QString &group, const QString &key);
 
+  static QString GetHashKey(const QByteArray &data, bool head);
+
 private:
   static QString GetResultPath(const QString &group);
   static QString GetTaskPath(const QString &group);
   static QString GetKeyPath(const QString &start, const QString &key);
-  static QString GetHashKey(const QByteArray &data, bool head);
 };
 
 #endif // ZDVIDPATH_H

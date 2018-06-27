@@ -1,11 +1,10 @@
 #ifndef ZFLYEMPROOFDOCMENUFACTORY_H
 #define ZFLYEMPROOFDOCMENUFACTORY_H
 
-#include <QList>
-#include "zactionfactory.h"
 #include "zstackdocmenufactory.h"
 
-class Z3DWindow;
+class ZFlyEmProofPresenter;
+class ZMenuConfig;
 
 class ZFlyEmProofDocMenuFactory : public ZStackDocMenuFactory
 {
@@ -25,6 +24,9 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 //  QMenu* makeContextMenu(Z3DWindow *window, QMenu *menu);
+
+private:
+  ZMenuConfig getConfig(ZFlyEmProofPresenter *presenter);
 
 };
 

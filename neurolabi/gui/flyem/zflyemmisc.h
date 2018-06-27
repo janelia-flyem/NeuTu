@@ -3,6 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <QList>
+#include <QSet>
+
 #include "zcubearray.h"
 
 #include "dvid/libdvidheader.h"
@@ -25,12 +28,16 @@ class ZStack;
 class ZVaa3dMarker;
 class ZObject3d;
 class ZMesh;
+class ZArbSliceViewParam;
+class ZDvidWriter;
+class ZAffineRect;
 
 namespace ZFlyEmMisc {
 void NormalizeSimmat(ZMatrix &simmat);
 
 Z3DGraph* MakeBoundBoxGraph(const ZDvidInfo &dvidInfo);
 Z3DGraph* MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo);
+Z3DGraph* MakeSliceViewGraph(const ZArbSliceViewParam &param);
 Z3DGraph* MakeRoiGraph(const ZObject3dScan &roi, const ZDvidInfo &dvidInfo);
 ZCubeArray* MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv);
@@ -89,6 +96,30 @@ void AddSplitTaskSeedG(ZJsonObject &taskObj, const T& obj);
 ZJsonArray GetSeedJson(ZStackDoc *doc);
 
 void UploadSyGlassTask(const std::string &filePath, const ZDvidTarget &target);
+
+QList<ZStackObject*> LoadSplitTask(const ZDvidTarget &target, uint64_t bodyId);
+QList<ZStackObject*> LoadSplitTask(const ZJsonObject &taskJson);
+ZJsonObject MakeSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId, ZJsonArray seedJson,
+    ZJsonArray roiJson);
+void RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId);
+
+bool IsTaskOpen(const QString &taskKey);
+//bool HasOpenTestTask();
+//void StartOpenTestTask();
+
+ZDvidReader* GetTaskReader();
+ZDvidWriter* GetTaskWriter();
+
+ZStack* MakeColorSegmentation(const ZDvidReader &reader, const ZAffineRect &ar);
+ZStack* MakeColorSegmentation(
+    const ZDvidReader &reader, const ZAffineRect &ar, int ccx, int ccy);
+ZStack* MakeColorSegmentation(const ZDvidReader &reader, int x0, int y0, int z0,
+                              int width, int height, int zoom, int ccx, int ccy);
+
+QString GetNeuroglancerPath(
+    const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
+    const QSet<uint64_t> &bodySet);
 
 namespace MB6Paper {
 ZDvidTarget MakeDvidTarget();

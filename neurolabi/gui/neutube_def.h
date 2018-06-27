@@ -2,6 +2,7 @@
 #define NEUTUBE_DEF_H
 
 #include <limits>
+#include "functional"
 #include "tz_stdint.h"
 
 #define BIT_FLAG(n) (((n) <= 0) ? 0 : ((uint64_t) 1) << ((n) - 1))
@@ -9,6 +10,7 @@
 namespace neutube {
 
 static const uint64_t ONEGIGA = 1073741824;
+static const uint64_t HALFGIGA = 536870912;
 
 enum ESyncOption {
   SYNC, NO_SYNC
@@ -26,7 +28,7 @@ enum ETag {
   FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON, FLYEM_MESH,
   FLYEM_STACK,
   FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID,
-  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO
+  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO, FLYEM_ARBSLICE
 };
 }
 
@@ -48,7 +50,8 @@ enum ESizeHintOption {
 
 //Must have value X=0, Y=1, Z=2 for indexing
 enum EAxis {
-  X_AXIS = 0, Y_AXIS, Z_AXIS
+  X_AXIS = 0, Y_AXIS = 1, Z_AXIS = 2
+  , A_AXIS //arbitrary axis
 };
 
 enum EPlane {
@@ -60,8 +63,12 @@ enum EAxisSystem {
 };
 
 enum ECoordinateSystem {
-  COORD_WIDGET, COORD_SCREEN, COORD_RAW_STACK, COORD_STACK,
-  COORD_WORLD, COORD_CANVAS
+  COORD_WIDGET,
+  COORD_SCREEN,
+  COORD_RAW_STACK, //Coordiantes relative to the first stack corner
+  COORD_STACK,     //Absolute coordinates in the current stack alignment
+  COORD_ORGDATA,   //Coordinates registered to the original data
+  COORD_WORLD_2D, COORD_CANVAS
 };
 
 enum EColor {
@@ -88,11 +95,14 @@ enum ECardinalDirection {
   CD_NORTH, CD_EAST, CD_SOUTH, CD_WEST
 };
 
-namespace Json {
-namespace {
-const char* REF_KEY = "->";
-}
-}
+enum EReadStatus {
+  READ_NULL, READ_OK, READ_FAILED, READ_TIMEOUT, READ_CANCELED,
+  READ_BAD_RESPONSE
+};
+
+enum EToDoAction {
+  TO_DO, TO_MERGE, TO_SPLIT
+};
 
 namespace display {
 typedef uint64_t TVisualEffect;
@@ -119,6 +129,10 @@ static const TVisualEffect VE_DOT_CENTER = BIT_FLAG(7);
 static const TVisualEffect VE_RECTANGLE_SHAPE = BIT_FLAG(8);
 static const TVisualEffect VE_CROSS_CENTER = BIT_FLAG(9);
 static const TVisualEffect VE_FORCE_FILL = BIT_FLAG(10);
+}
+
+namespace Box {
+static const TVisualEffect VE_GRID = BIT_FLAG(1);
 }
 
 namespace SwcTree {
@@ -159,6 +173,10 @@ enum EBodyType {
   BODY_NULL, BODY_FULL, BODY_COARSE, BODY_SKELETON, BODY_MESH
 };
 
+enum EBodyLabelType {
+  LABEL_BODY, LABEL_SUPERVOXEL
+};
+
 enum EBodySplitMode {
   BODY_SPLIT_NONE, BODY_SPLIT_ONLINE, BODY_SPLIT_OFFLINE
 };
@@ -167,11 +185,17 @@ enum EBodySplitRange {
   RANGE_FULL, RANGE_SEED, RANGE_LOCAL
 };
 
+enum EDataSliceUpdatePolicy {
+  UPDATE_DIRECT, UPDATE_HIDDEN, UPDATE_LOWESTRES, UPDATE_LOWRES, UPDATE_SMALL
+};
+
 static const uint64_t LABEL_ID_SELECTION =
     std::numeric_limits<uint64_t>::max() - 1;
 }
 
-#if defined(_CPP11_)
+using TProgressFunc = std::function<void(size_t, size_t)>;
+
+#if __cplusplus >= 201103L
 #  undef NULL
 #  define NULL nullptr
 #endif

@@ -14,12 +14,15 @@ public:
   explicit ZGraphObjsModel(ZStackDoc *doc, QObject *parent = 0);
   virtual ~ZGraphObjsModel();
 
-  QModelIndex getIndex(Z3DGraph* graph, int col = 0) const;
+  QModelIndex getIndex(const Z3DGraph *graph, int col = 0) const;
   // if index is single punctum, return it, otherwise return NULL
   Z3DGraph* getGraph(const QModelIndex &index) const;
   // if index contains many puncta, return them, otherwise return NULL
   const std::vector<Z3DGraph*> *getGraphList(const QModelIndex &index) const;
-  void updateData(Z3DGraph* graph);
+//  void updateData(Z3DGraph* graph);
+  void updateData(const ZStackObject *obj);
+
+  void processObjectModified(const ZStackObjectInfoSet &infoSet);
 
 public slots:
   void updateModelData();
@@ -36,7 +39,7 @@ protected:
   std::map<QString, ZObjsItem*> m_graphSourceToParent;
   std::map<ZObjsItem*, int> m_graphSourceParentToRow;
   std::map<QString, int> m_graphSourceToCount;
-  std::map<Z3DGraph*, int> m_graphToRow;
+  std::map<const Z3DGraph*, int> m_graphToRow;
   std::vector<std::vector<Z3DGraph*> > m_graphSeparatedByFile;
 
 };

@@ -35,6 +35,7 @@
 #include "zerror.h"
 #include "zclosedcurve.h"
 #include "zintpoint.h"
+#include "zpoint.h"
 #include "zpainter.h"
 #include "zintcuboid.h"
 #include "zstack.hxx"
@@ -109,7 +110,7 @@ void ZSwcTree::setStructrualMode(EStructrualMode mode)
     setColorScheme(COLOR_NORMAL);
   }
 }
-
+/*
 void ZSwcTree::setLabel(uint64_t label)
 {
   m_label = label;
@@ -119,6 +120,7 @@ uint64_t ZSwcTree::getLabel() const
 {
   return m_label;
 }
+*/
 
 void swap(ZSwcTree &first, ZSwcTree &second)
 {
@@ -2129,6 +2131,23 @@ Swc_Tree_Node* ZSwcTree::queryNode(const ZPoint &pt)
   pt.toArray(pos);
 
   return Swc_Tree_Closest_Node(data(), pos);
+}
+
+std::vector<Swc_Tree_Node*> ZSwcTree::getNodeOnPlane(int z)
+{
+  std::vector<Swc_Tree_Node*> nodeList;
+
+  DepthFirstIterator iter(this);
+  while (iter.hasNext()) {
+    Swc_Tree_Node *tn = iter.next();
+    if (SwcTreeNode::isRegular(tn)) {
+      if (std::fabs(SwcTreeNode::z(tn) - z) < 1) {
+        nodeList.push_back(tn);
+      }
+    }
+  }
+
+  return nodeList;
 }
 
 ZPoint ZSwcTree::computeCentroid() const

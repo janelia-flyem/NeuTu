@@ -5,6 +5,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <unordered_map>
 #include <utility>
 #include <fstream>
 
@@ -42,6 +43,7 @@ public:
   virtual ~ZObject3dScan();
 
   ZObject3dScan(const ZObject3dScan &obj);
+  ZObject3dScan(const ZObject3dScan &&obj);
 
   static ZStackObject::EType GetType() {
     return ZStackObject::TYPE_OBJECT3D_SCAN;
@@ -87,13 +89,13 @@ public:
    * \brief Get the voxel number on each slice
    * \return The ith element is the #voxel at slice i.
    */
-  const std::map<int, size_t>& getSlicewiseVoxelNumber() const;
-  std::map<int, size_t>& getSlicewiseVoxelNumber();
+  const std::unordered_map<int, size_t> &getSlicewiseVoxelNumber() const;
+  std::unordered_map<int, size_t>& getSlicewiseVoxelNumber();
 
   const ZObject3dStripe& getStripe(size_t index) const;
   ZObject3dStripe& getStripe(size_t index);
 
-  void addStripe(int z, int y, bool canonizing = true);
+  void addStripe(int z, int y);
   void addStripeFast(int z, int y);
   void addStripeFast(const ZObject3dStripe &stripe);
   void addSegment(int x1, int x2, bool canonizing = true);
@@ -119,6 +121,7 @@ public:
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
+  ZObject3dScan& operator=(const ZObject3dScan&& obj);
 
   void copyDataFrom(const ZObject3dScan &obj);
   void copyAttributeFrom(const ZObject3dScan &obj);
@@ -169,7 +172,7 @@ public:
   bool importDvidObjectBuffer(const char *byteArray, size_t byteNumber,
                               int xIntv, int yIntv, int zIntv);
 
-  bool importDvidRoi(const ZJsonArray &obj);
+  bool importDvidRoi(const ZJsonArray &obj, bool appending = false);
   bool importDvidRoi(const std::string &filePath);
 
   template<class T>
@@ -292,9 +295,16 @@ public:
       int v, neutube::EAxis axis, ZObject3dScan *remain,
       ZObject3dScan *result) const;
 
+  /*!
+   * \brief Remove voxels within a box.
+   */
+  void remove(const ZIntCuboid &box);
+
   void downsample(int xintv, int yintv, int zintv);
   void downsampleMax(int xintv, int yintv, int zintv);
   void downsampleMax(const ZIntPoint &dsIntv);
+  void downsampleMin(int xintv, int yintv, int zintv);
+  ZObject3dScan downsampleBorderMask(int xintv, int yintv, int zintv);
 
   void upSample(int xIntv, int yIntv, int zIntv);
   void upSample(const ZIntPoint &dsIntv);
@@ -353,12 +363,23 @@ public:
 
   const std::vector<size_t> &getStripeNumberAccumulation() const;
 
-  const std::map<std::pair<int, int>, size_t>& getStripeMap() const;
+  const std::map<std::pair<int, int>, size_t> &getStripeMap() const;
 
   std::vector<size_t> getConnectedObjectSize();
   std::vector<ZObject3dScan> getConnectedComponent(EAction ppAction);
 
+  /*!
+   * \brief Check if an object is canonized.
+   *
+   * Note that this property may also determine the actual content of the object.
+   * In the case of empty stripes in an object, the canonized form of the object
+   * will remove all empty stripes if the object is not canonized. Otherwise,
+   * the empty stripe may leave there. This complicates the data structure, but
+   * no better solution has been worked out because an empty stripe is often used
+   * to serve as a place holder.
+   */
   inline bool isCanonized() const { return isEmpty() || m_isCanonized; }
+
   inline void setCanonized(bool canonized) { m_isCanonized = canonized; }
 
   const std::map<size_t, std::pair<size_t, size_t> >&
@@ -413,8 +434,8 @@ public:
 
   ZHistogram getRadialHistogram(int z) const;
 
-  ZObject3dScan makeZProjection() const;
-  ZObject3dScan makeZProjection(int minZ, int maxZ);
+  ZObject3dScan makeZProjection(int destZ = 0) const;
+  ZObject3dScan makeZProjection(int minZ, int maxZ, int destZ = 0);
 
   ZObject3dScan makeYProjection() const;
 
@@ -672,6 +693,7 @@ private:
   int subtractForegroundSlice8(ZStack *stack);
   void displaySolid(ZPainter &painter, int z, bool isProj, int stride = 1) const;
   void makeZProjection(ZObject3dScan *obj) const;
+  void makeZProjection(ZObject3dScan *obj, int z) const;
 
   void pushDsIntv(int xintv, int yintv, int zintv);
   void popDsIntv(int xintv, int yintv, int zintv);
@@ -687,7 +709,7 @@ protected:
 
   //ZIntPoint m_hitPoint;
   mutable std::vector<size_t> m_accNumberArray;
-  mutable std::map<int, size_t> m_slicewiseVoxelNumber;
+  mutable std::unordered_map<int, size_t> m_slicewiseVoxelNumber;
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
   mutable ZObject3dScan *m_zProjection;

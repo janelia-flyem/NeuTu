@@ -22,15 +22,24 @@ then
   app_name=neu3_d
 fi
 
-if [ ${NEUTU_TARGET} == 'neutu-develop' ]
-then
-  app_name=neutu
-fi
+for x in neutu-develop neutu-alpha neutu-beta neutu
+do
+  if [ ${NEUTU_TARGET} == "$x" ]
+  then
+    app_name=neutu
+    break
+  fi
+done
 
-if [ ${NEUTU_TARGET} == 'neu3-develop' ]
-then
-  app_name=neu3
-fi
+for x in neu3-develop neu3-alpha neu3-beta neu3
+do
+  if [ ${NEUTU_TARGET} == "$x" ]
+  then
+    app_name=neu3
+    break
+  fi
+done
+echo "app name: $app_name"
 
 build_dir=neurolabi/build
 if [ "$app_name" == 'neutu_d' ] || [ "$app_name" == 'neu3_d' ]

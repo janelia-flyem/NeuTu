@@ -10,6 +10,7 @@
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskprotocoltask.h"
 
+class ZWidgetMessage;
 
 namespace Ui {
 class TaskProtocolWindow;
@@ -32,21 +33,27 @@ public:
 signals:
     // I'm keeping the names Ting used in ZBodyListWidget (for now)
     void bodyAdded(uint64_t bodyId);
-    void bodyRemoved(uint64_t bodyId);
+    void allBodiesRemoved();
+
     void bodySelectionChanged(QSet<uint64_t> selectedSet);
     void prefetchBody(QSet<uint64_t> bodyIDs);
     void prefetchBody(uint64_t bodyID);
     void unprefetchBody(QSet<uint64_t> bodyIDs);
     void clearBodyQueue();
+    void messageGenerated(const ZWidgetMessage &msg);
 
 private slots:
     void onNextButton();
     void onPrevButton();
     void onDoneButton();
     void onLoadTasksButton();    
+    void onBodiesUpdated();
     void onCompletedStateChanged(int state);
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
+    void onBodyMeshesAdded(int numMeshes);
+    void onBodyMeshLoaded();
+    void onBodyRecycled();
     void applicationQuitting();
 
 private:
@@ -104,12 +111,18 @@ private:
     ZFlyEmBody3dDoc * m_body3dDoc;
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
-    int m_currentTaskIndex;
-    QWidget * m_currentTaskWidget = NULL;
+    int m_currentTaskIndex = -1;
+    QWidget * m_currentTaskWidget = nullptr;
+    QAction * m_currentTaskMenuAction = nullptr;
     bool m_nodeLocked;
     BodyPrefetchQueue * m_prefetchQueue;
     QThread * m_prefetchThread;
-
+    int m_bodyRecycledExpected = 0;
+    int m_bodyRecycledReceived = 0;
+    int m_bodyMeshesAddedExpected = 0;
+    int m_bodyMeshesAddedReceived = 0;
+    int m_bodyMeshLoadedExpected = 0;
+    int m_bodyMeshLoadedReceived = 0;
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
     void showError(QString title, QString message);
@@ -124,10 +137,14 @@ private:
     void startProtocol(QJsonObject json, bool save);
     void updateLabel();
     void updateCurrentTaskLabel();
+    void updateButtonsEnabled();
+    void updateMenu(bool add);
     int getFirstUncompleted();
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
     void updateBodyWindow();
+    void disableButtonsWhileUpdating();
+    void enableButtonsAfterUpdating();
     int getNext();
     int getNextUncompleted();
     int getPrev();

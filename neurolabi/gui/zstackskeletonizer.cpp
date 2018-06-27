@@ -22,6 +22,7 @@
 #include "swc/zswcresampler.h"
 #include "tz_stack_threshold.h"
 #include "zintcuboid.h"
+#include "zstackarray.h"
 
 using namespace std;
 
@@ -51,15 +52,14 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZStack &stack)
   return tree;
 }
 
-ZSwcTree* ZStackSkeletonizer::makeSkeleton(
-    const std::vector<ZStack*> &stackArray)
+ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZStackArray &stackArray)
 {
   ZSwcTree *wholeTree = new ZSwcTree;
 
   int count = 0;
-  for (std::vector<ZStack*>::const_iterator iter = stackArray.begin();
+  for (ZStackArray::const_iterator iter = stackArray.begin();
        iter != stackArray.end(); ++iter) {
-    const ZStack* stack = *iter;
+    const ZStack* stack = iter->get();
     ZSwcTree *tree = makeSkeleton(*stack);
     if (!tree->isEmpty()) {
       wholeTree->merge(tree, true);
@@ -101,8 +101,9 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
     for (int i = 0; i < 3; ++i) {
       dsIntv[i] = m_downsampleInterval[i];
     }
-    while (box.getVolume() / (dsIntv[0] + 1) / (dsIntv[1] + 1) / (dsIntv[2] + 1)
-           > m_sizeLimit) {
+//    while (box.getVolume() / (dsIntv[0] + 1) / (dsIntv[1] + 1) / (dsIntv[2] + 1)
+//           > m_sizeLimit) {
+    while (box.getDsMaxVolume(dsIntv[0], dsIntv[1], dsIntv[2]) > m_sizeLimit) {
       for (int i = 0; i < 3; ++i) {
         dsIntv[i] += 1;
       }

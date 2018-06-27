@@ -32,6 +32,7 @@ signals:
   void coarseBodyViewTriggered();
   void splitQuickViewTriggered();
   void bodyViewTriggered();
+  void meshViewTriggered();
   void splitViewTriggered();
   void changingSplit(uint64_t);
   void savingSeed();

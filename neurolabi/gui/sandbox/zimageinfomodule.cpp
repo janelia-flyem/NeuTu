@@ -7,6 +7,7 @@
 #include"zsandbox.h"
 #include"imgproc/zstackprocessor.h"
 #include"zimageinfomodule.h"
+#include "zstack.hxx"
 
 ZImageShowWindow::ZImageShowWindow(QWidget *parent) : QWidget(parent)
 {

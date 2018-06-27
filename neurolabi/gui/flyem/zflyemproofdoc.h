@@ -42,12 +42,6 @@ public:
 
   static ZFlyEmProofDoc* Make();
 
-  /*
-  enum EBodyColorMap {
-    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER, BODY_COLOR_FOCUSED
-  };
-  */
-
 //  void makeAction(ZActionFactory::EAction item);
 
   const ZDvidVersionDag& getVersionDag() const {
@@ -58,7 +52,7 @@ public:
   void mergeSelectedWithoutConflict(ZFlyEmSupervisor *supervisor);
   void unmergeSelected();
 
-  void setDvidTarget(const ZDvidTarget &target);
+  virtual void setDvidTarget(const ZDvidTarget &target);
 
 //  virtual void updateTileData();
 
@@ -72,9 +66,13 @@ public:
     return m_labelInfo;
   }
 
+  void setGraySliceCenterCut(int width, int height);
+  void setSegmentationCenterCut(int width, int height);
+
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
   ZDvidGraySlice* getDvidGraySlice() const;
+  ZDvidGraySlice* getDvidGraySlice(neutube::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
@@ -83,19 +81,19 @@ public:
   ZDvidSparseStack* getBodyForSplit();
   void clearBodyForSplit();
 
-  const ZSparseStack* getSparseStack() const;
-  ZSparseStack* getSparseStack();
+  const ZSparseStack* getSparseStack() const override;
+  ZSparseStack* getSparseStack() override;
 
   ZStackBlockGrid* getStackGrid();
 
   //bool hasSparseStack() const;
-  bool hasVisibleSparseStack() const;
+  bool hasVisibleSparseStack() const override;
 
   ZFlyEmSupervisor* getSupervisor() const;
 
   void updateBodyObject();
 
-  void clearData();
+  void clearData() override;
 
   /*!
    * \brief Get brief information of the document
@@ -111,6 +109,8 @@ public:
    */
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
+
+  uint64_t getLabelId(int x, int y, int z) override;
 
   bool hasBodySelected() const;
 
@@ -159,9 +159,13 @@ public:
 //    m_isCustomBookmarkSaved = state;
 //  }
 
-  ZDvidSparseStack* getDvidSparseStack() const;
+//  virtual ZDvidSparseStack* getDvidSparseStack() const;
   ZDvidSparseStack* getDvidSparseStack(
       const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
+
+  ZDvidSparseStack* getDvidSparseStack() const override;
+
+  ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
   void enhanceTileContrast(bool highContrast);
 
@@ -225,6 +229,8 @@ public:
 
   const ZDvidInfo& getDvidInfo() const;
 
+  void startTimer();
+
 public:
   //The split mode may affect some data loading behaviors, but the result should
   //be the same.
@@ -236,6 +242,8 @@ public:
   bool isSplitRunning() const;
   void refreshDvidLabelBuffer(unsigned long delay);
 //  void setLabelSliceAlpha(int alpha);
+
+  void updateMeshForSelected();
 
 public:
   void notifyBodyMerged();
@@ -295,7 +303,7 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
-  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
+  void setTodoItemAction(neutube::EToDoAction action);
   void setTodoItemToNormal();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
@@ -405,6 +413,20 @@ public:
   void updateBodyColor(ZFlyEmBodyColorOption::EColorOption type);
   void updateBodyColor(ZSharedPointer<ZFlyEmBodyColorScheme> colorMap);
 
+  ZJsonArray getMergeOperation() const;
+
+  void prepareDvidLabelSlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  void prepareDvidGraySlice(const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+
+public:
+  virtual void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      uint64_t bodyId) override;
+  virtual void executeRemoveTodoCommand() override;
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -432,6 +454,14 @@ signals:
   void requestingBodyLock(uint64_t bodyId, bool locking);
   void bodyColorUpdated(ZFlyEmProofDoc*);
 
+  void updatingLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                          int zoom, int centerCutX, int centerCutY,
+                          bool usingCenterCut);
+  void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                         int zoom, int centerCutX, int centerCutY,
+                         bool usingCenterCut);
+
+
 public slots: //Commands
   void repairSelectedSynapses();
   void executeRemoveSynapseCommand();
@@ -448,13 +478,16 @@ public slots: //Commands
   void executeAddTodoItemCommand(int x, int y, int z, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(
-      int x, int y, int z, ZFlyEmToDoItem::EToDoAction action, uint64_t bodyId = 0);
+      int x, int y, int z, neutube::EToDoAction action, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
   void executeAddToMergeItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToSplitItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
   void executeRemoveTodoItemCommand();
+
+  void executeRotateRoiPlaneCommand(int z, double theta);
+  void executeScaleRoiPlaneCommand(int z, double sx, double sy);
 
 
 public slots:
@@ -482,7 +515,7 @@ public slots:
   void prepareNameBodyMap(const ZJsonValue &bodyInfoObj);
 
   void updateSequencerBodyMap(const ZFlyEmSequencerColorScheme &colorScheme);
-  void updateFocusedColorMap(const ZFlyEmSequencerColorScheme &colorScheme);
+  void updateProtocolColorMap(const ZFlyEmSequencerColorScheme &colorScheme);
 
   void deleteSelectedSynapse();
   void addSynapse(const ZIntPoint &pt, ZDvidSynapse::EKind kind,
@@ -498,6 +531,8 @@ public slots:
 //  bool checkInBody(uint64_t bodyId);
   bool checkInBodyWithMessage(
       uint64_t bodyId, flyem::EBodySplitMode mode);
+
+
   bool checkBodyWithMessage(
       uint64_t bodyId, bool checkingOut, flyem::EBodySplitMode mode);
 
@@ -508,11 +543,19 @@ public slots:
   void syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
   void runRoutineCheck();
+  void scheduleRoutineCheck();
+
+  void updateLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                        int zoom, int centerCutX, int centerCutY,
+                        bool usingCenterCut);
+  void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                       int zoom, int centerCutX, int centerCutY,
+                       bool usingCenterCut);
 
 
 protected:
-  void autoSave();
-  void customNotifyObjectModified(ZStackObject::EType type);
+  void autoSave() override;
+  void customNotifyObjectModified(ZStackObject::EType type) override;
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData();
@@ -522,6 +565,9 @@ protected:
   void setRoutineCheck(bool on);
   uint64_t getBodyIdForSplit() const;
   QColor getSeedColor(int label) const;
+  void readInfo();
+  void prepareGraySlice(ZDvidGraySlice *slice);
+  void prepareLabelSlice();
 
 private:
   void connectSignalSlot();
@@ -538,7 +584,6 @@ private:
   void init();
   void initTimer();
   void initAutoSave();
-  void startTimer();
 
   QString getBodySelectionMessage() const;
 
@@ -551,7 +596,7 @@ private:
   void initTileData();
   void initGrayscaleSlice();
 
-  void readInfo();
+
   void updateMaxLabelZoom();
   void updateMaxGrayscaleZoom();
 
@@ -570,6 +615,7 @@ private:
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
+  std::string getSynapseName(const ZDvidSynapse &synapse) const;
 
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,
@@ -595,6 +641,9 @@ protected:
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
+  ZDvidWriter m_workWriter;
+  ZDvidReader m_grayscaleWorkReader;
+
   ZFlyEmBodyMergeProject *m_mergeProject;
 
   mutable QMutex m_synapseReaderMutex;
@@ -611,6 +660,13 @@ protected:
   QString m_mergeAutoSavePath;
   bool m_loadingAssignedBookmark; //temporary solution for updating bookmark table
   bool m_routineCheck;
+
+  //Data settings
+  int m_graySliceCenterCutWidth = 256;
+  int m_graySliceCenterCutHeight = 256;
+
+  int m_labelSliceCenterCutWidth = 256;
+  int m_labelSliceCenterCutHeight = 256;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<ZFlyEmBodyColorOption::EColorOption,

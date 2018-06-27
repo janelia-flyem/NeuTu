@@ -7,6 +7,10 @@
 #include <QSet>
 #include <QWaitCondition>
 
+#include "dvid/zdvidreader.h"
+
+class ZFlyEmBody3dDoc;
+
 class BodyPrefetchQueue : public QObject
 {
     Q_OBJECT
@@ -15,6 +19,8 @@ public:
 
     uint64_t get();
     bool isEmpty();
+
+    void setDocument(ZFlyEmBody3dDoc *doc);
 
 signals:
     void finished();
@@ -31,6 +37,8 @@ private:
     QMutex m_queueLock;
     QWaitCondition m_queueHasItems;
 
+    ZFlyEmBody3dDoc *m_doc = NULL;
+    ZDvidReader m_reader;
 };
 
 #endif // BODYPREFETCHQUEUE_H

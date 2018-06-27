@@ -1,13 +1,26 @@
 #include "zflyembodylistmodel.h"
 
 #include <QDebug>
+#include <iostream>
 
 #include "zstring.h"
+#include "zflyembodystateaccessor.h"
 
 ZFlyEmBodyListModel::ZFlyEmBodyListModel(QObject *parent) :
   QStringListModel(parent)
 {
   connectSignalSlot();
+}
+
+ZFlyEmBodyListModel::~ZFlyEmBodyListModel()
+{
+  delete m_stateAccessor;
+}
+
+void ZFlyEmBodyListModel::setBodyStateAccessor(ZFlyEmBodyStateAccessor *sa)
+{
+  delete m_stateAccessor;
+  m_stateAccessor = sa;
 }
 
 void ZFlyEmBodyListModel::connectSignalSlot()
@@ -69,8 +82,13 @@ void ZFlyEmBodyListModel::removeBody(uint64_t bodyId)
 {
   int row = getRow(bodyId);
   if (row >= 0) {
-    removeRow(0);
+    removeRow(row);
   }
+}
+
+void ZFlyEmBodyListModel::removeAllBodies()
+{
+  removeRows(0, rowCount(), QModelIndex());
 }
 
 QModelIndex ZFlyEmBodyListModel::getIndex(uint64_t bodyId) const
@@ -97,14 +115,33 @@ void ZFlyEmBodyListModel::addBody(uint64_t bodyId)
   }
 }
 
+void ZFlyEmBodyListModel::addBodySliently(uint64_t bodyId)
+{
+  if (m_bodySet.contains(bodyId)) {
+    insertRow(rowCount());
+    QModelIndex modelIndex = index(rowCount() - 1);
+    setData(modelIndex, QString("%1").arg(bodyId), Qt::DisplayRole);
+  }
+}
+
+bool ZFlyEmBodyListModel::isBodyProtected(uint64_t bodyId) const
+{
+#ifdef _DEBUG_2
+  return bodyId > 0;
+#endif
+
+  bool captured = false;
+  if (m_stateAccessor != NULL) {
+    captured = m_stateAccessor->isProtected(bodyId);
+  }
+
+  return captured;
+}
+
 void ZFlyEmBodyListModel::processChangedRows(
     const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
   QList<int> removingList;
-
-#ifdef _DEBUG_2
-    qDebug() << data(topLeft, Qt::DisplayRole) << data(topLeft, getBackupRole());
-#endif
 
   QSet<uint64_t> newSet; //The set of bodies to be added
 
@@ -117,19 +154,42 @@ void ZFlyEmBodyListModel::processChangedRows(
     } else {
       newSet.insert(bodyId);
       m_bodySet.insert(bodyId);
-      emit bodyAdded(bodyId);
     }
   }
 
+  QSet<uint64_t> protectedSet; //For debugging purpose
   foreach (uint64_t bodyId, m_backupSet) {
-    if (!newSet.contains(bodyId) && m_bodySet.contains(bodyId)) {
-      m_bodySet.remove(bodyId);
-      emit bodyRemoved(bodyId);
+    if (!newSet.contains(bodyId)) {
+      if (isBodyProtected(bodyId)) {
+        protectedSet.insert(bodyId);
+      } else {
+        m_bodySet.remove(bodyId);
+#ifdef _DEBUG_
+        std::cout << "emit bodyRemoved: " << bodyId << std::endl;
+#endif
+        emit bodyRemoved(bodyId);
+      }
     }
   }
+
+  foreach (uint64_t bodyId, newSet) {
+#ifdef _DEBUG_
+      std::cout << "emit bodyAdded: " << bodyId << std::endl;
+#endif
+    emit bodyAdded(bodyId);
+  }
+
   m_backupSet.clear();
 
   removeRowList(removingList);
+
+#if 0
+  m_ignoreDuplicate = true;
+  foreach (uint64_t bodyId, protectedSet) {
+    addBodySliently(bodyId);
+  }
+  m_ignoreDuplicate = false;
+#endif
 }
 
 void ZFlyEmBodyListModel::backupBody(int row, bool appending)
@@ -145,6 +205,7 @@ void ZFlyEmBodyListModel::backupBody(int row, bool appending)
   }
 }
 
+#if 0
 void ZFlyEmBodyListModel::processInsertedRows(
     const QModelIndex &/*modelIndex*/, int first, int last)
 {
@@ -153,27 +214,59 @@ void ZFlyEmBodyListModel::processInsertedRows(
   for (int r = first; r <= last; ++r) {
     uint64_t bodyId = getBodyId(first);
     if (m_bodySet.contains(bodyId) || bodyId <= 0) {
-      removingList.append(r);
+      if (m_ignoreDuplicate == false) {
+        removingList.append(r);
+      }
     } else {
       m_bodySet.insert(bodyId);
+#ifdef _DEBUG_
+      std::cout << "emit bodyRemoved: " << bodyId << std::endl;
+#endif
       emit bodyAdded(bodyId);
     }
   }
 
   removeRowList(removingList);
 }
+#endif
 
 bool ZFlyEmBodyListModel::removeRows(int row, int count, const QModelIndex &parent)
 {
-  for (int i = 0; i < count; ++i) {
-    uint64_t bodyId = getBodyId(row + i);
-    if (m_bodySet.contains(bodyId)) {
-      m_bodySet.remove(bodyId);
+  bool removed = false;
+
+  int currentRow = 0;
+  int currentCount = 0;
+
+  for (int i = count - 1; i >= 0; --i) {
+    currentRow = row + i;
+    uint64_t bodyId = getBodyId(currentRow);
+    if (!isBodyProtected(bodyId)) {
+      if (m_bodySet.contains(bodyId)) {
+        m_bodySet.remove(bodyId);
+      }
+      ++currentCount;
+#ifdef _DEBUG_
+      std::cout << "emit bodyRemoved: " << bodyId << std::endl;
+#endif
       emit bodyRemoved(bodyId);
+    } else {
+      if (currentCount > 0) {
+        removed = removed || QStringListModel::removeRows(
+              currentRow, currentCount, parent);
+      }
+      currentCount = 0;
     }
   }
 
-  return QStringListModel::removeRows(row, count, parent);
+
+  if (currentCount > 0) {
+    removed = removed || QStringListModel::removeRows(
+          currentRow, currentCount, parent);
+  }
+
+//  bool removed = QStringListModel::removeRows(row, count, parent);
+
+  return removed;
 }
 
 bool ZFlyEmBodyListModel::setData(
@@ -193,7 +286,7 @@ bool ZFlyEmBodyListModel::setData(
 
     uint64_t bodyId = bodyIdStr.toULongLong();
 
-    if (oldBodyId == bodyId) {
+    if (oldBodyId == bodyId || isBodyProtected(oldBodyId)) {
       return false;
     }
 
@@ -203,4 +296,9 @@ bool ZFlyEmBodyListModel::setData(
   }
 
   return QStringListModel::setData(index, newValue, role);
+}
+
+QSet<uint64_t> ZFlyEmBodyListModel::getBodySet() const
+{
+  return m_bodySet;
 }

@@ -88,6 +88,7 @@ public:
   void setViewProj(int x0, int y0, double zoom);
   void setViewProj(const QPoint &pt, double zoom);
   void resetViewProj(int x0, int y0, int w, int h);
+  void resetViewProj(int x0, int y0, int w, int h, const QRect &viewPort);
 
   /*!
    * \brief Move viewport.
@@ -216,6 +217,8 @@ public:
     m_smoothDisplay = on;
   }
 
+  void hideZoomHint();
+
   void showCrossHair(bool on);
   void updateCrossHair(int x, int y);
 
@@ -232,6 +235,7 @@ public:
 protected:
   void keyPressEvent(QKeyEvent *event);
   bool event(QEvent *event);
+  void showEvent(QShowEvent *event);
 
 public slots:
   void updateView();
@@ -312,6 +316,7 @@ private:
   bool m_hoverFocus;
   bool m_smoothDisplay;
   bool m_showingCrossHair;
+  bool m_showingZoomHint = true;
   bool m_isReady;
   QPoint m_hairCenter;
 };

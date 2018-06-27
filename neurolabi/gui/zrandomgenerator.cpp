@@ -18,17 +18,17 @@ ZRandomGenerator::ZRandomGenerator(int seed)
   srand(seed);
 }
 
-void ZRandomGenerator::setSeed(int seed)
+void ZRandomGenerator::setSeed(int seed) const
 {
   srand(seed);
 }
 
-int ZRandomGenerator::rndint(int maxValue)
+int ZRandomGenerator::rndint(int maxValue) const
 {
   return rand() % maxValue + 1;
 }
 
-int ZRandomGenerator::rndint(int minValue, int maxValue)
+int ZRandomGenerator::rndint(int minValue, int maxValue) const
 {
   return minValue + rndint(maxValue - minValue + 1) - 1;
 }
@@ -44,7 +44,7 @@ struct IntLessThan {
     }
 };
 
-std::vector<int> ZRandomGenerator::randperm(int n)
+std::vector<int> ZRandomGenerator::randperm(int n) const
 {
   std::vector<std::pair<int, int> > randArray(n);
   for (int i = 0; i < n; i++) {
@@ -60,4 +60,24 @@ std::vector<int> ZRandomGenerator::randperm(int n)
   }
 
   return permArray;
+}
+
+std::vector<int> ZRandomGenerator::Randperm(int n)
+{
+  return GetInstance().randperm(n);
+}
+
+int ZRandomGenerator::Rndint(int maxValue)
+{
+  return GetInstance().rndint(maxValue);
+}
+
+int ZRandomGenerator::Rndint(int minValue, int maxValue)
+{
+  return GetInstance().rndint(minValue, maxValue);
+}
+
+void ZRandomGenerator::SetSeed(int seed)
+{
+  return GetInstance().setSeed(seed);
 }

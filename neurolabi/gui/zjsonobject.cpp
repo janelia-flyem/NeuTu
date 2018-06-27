@@ -294,6 +294,19 @@ void ZJsonObject::setEntry(const string &key, const string &value)
   setEntry(key.c_str(), value.c_str());
 }
 
+void ZJsonObject::setEntry(const char *key, const std::vector<string> &value)
+{
+  if (!value.empty()) {
+    ZJsonArray jsonArray;
+    for (const std::string &v : value) {
+      if (!v.empty()) {
+        jsonArray.append(v);
+      }
+    }
+    setEntry(key, jsonArray);
+  }
+}
+
 void ZJsonObject::setEntry(const char *key, const double *array, size_t n)
 {
   if (!isValidKey(key)) {
@@ -441,11 +454,11 @@ void ZJsonObject::removeKey(const char *key)
   }
 }
 
-std::string ZJsonObject::dumpString(int indent) const
+std::string ZJsonObject::dumpJanssonString(size_t flags) const
 {
   if (isEmpty()) {
     return "{}";
   }
 
-  return ZJsonValue::dumpString(indent);
+  return ZJsonValue::dumpJanssonString(flags);
 }

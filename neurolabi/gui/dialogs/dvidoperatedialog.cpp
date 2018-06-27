@@ -6,6 +6,8 @@
 #include "dvid/zdvidwriter.h"
 #include "dvid/zdvidreader.h"
 #include "dialogs/zcontrastprotocaldialog.h"
+#include "zglobal.h"
+#include "zcontrastprotocol.h"
 
 DvidOperateDialog::DvidOperateDialog(QWidget *parent) :
   QDialog(parent),
@@ -71,10 +73,24 @@ void DvidOperateDialog::setDvidDialog(ZDvidTargetProviderDialog *dlg)
 }
 
 void DvidOperateDialog::on_contrastPushButton_clicked()
-{
-  if (m_contrastDlg->exec()) {
-    ZJsonObject obj = m_contrastDlg->getContrastProtocal();
-    ZDvidReader reader;
+{ 
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter(getDvidTarget());
+
+  if (writer != NULL) {
+    if (writer->good()) {
+      ZJsonObject protocalJson = writer->getDvidReader().readContrastProtocal();
+      m_contrastDlg->setContrastProtocol(protocalJson);
+      if (m_contrastDlg->exec()) {
+        ZJsonObject obj = m_contrastDlg->getContrastProtocal();
+        if (!writer->getDvidReader().hasData("neutu_config")) {
+          writer->createData("keyvalue", "neutu_config", false);
+        }
+
+        writer->writeJson("neutu_config", "contrast", obj);
+      }
+    }
+  }
+/*
     if (reader.open(getDvidTarget())) {
       ZDvidWriter writer;
       writer.open(getDvidTarget());
@@ -86,6 +102,7 @@ void DvidOperateDialog::on_contrastPushButton_clicked()
       writer.writeJson("neutu_config", "contrast", obj);
     }
   }
+  */
 }
 
 void DvidOperateDialog::on_addMasterPushButton_clicked()

@@ -356,6 +356,7 @@ void ZImage::setData(
 
   switch (sliceAxis) {
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
   {
     data += (size_t) area * slice;
     if (isIndexed8()) {
@@ -457,6 +458,7 @@ void ZImage::setData(
 
   switch (sliceAxis) {
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
   {
     data += (size_t) area * slice;
     if (format() == Format_Indexed8) {
@@ -1324,6 +1326,10 @@ void ZImage::enhanceContrast(bool highContrast)
         color.setGreen(v);
         color.setBlue(v);
         setColor(i, color.rgb());
+
+#ifdef _DEBUG_2
+        std::cout << "Gray map: " << i << " -> " << v << std::endl;
+#endif
       }
     } else {
       for (int i = 0; i < 255; ++i) {

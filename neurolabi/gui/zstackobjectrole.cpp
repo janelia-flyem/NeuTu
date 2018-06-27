@@ -15,6 +15,7 @@ const ZStackObjectRole::TRole ZStackObjectRole::ROLE_SEGMENTATION = BIT_FLAG(10)
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_ACTIVE_VIEW = BIT_FLAG(11);
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_SKELETON_MASK = BIT_FLAG(12);
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_ROI_MASK = BIT_FLAG(13);
+const ZStackObjectRole::TRole ZStackObjectRole::ROLE_3DMESH_DECORATOR = BIT_FLAG(14);
 
 ZStackObjectRole::ZStackObjectRole() : m_role(ZStackObjectRole::ROLE_NONE)
 {
@@ -28,4 +29,9 @@ ZStackObjectRole::ZStackObjectRole(TRole role) : m_role(role)
 void ZStackObjectRole::clear()
 {
   m_role = ZStackObjectRole::ROLE_NONE;
+}
+
+bool ZStackObjectRole::operator ==(const ZStackObjectRole &role) const
+{
+  return m_role == role.m_role;
 }

@@ -110,6 +110,17 @@
 #include "zstackdocdatabuffer.h"
 #include "zstackdockeyprocessor.h"
 #include "zmeshobjsmodel.h"
+#include "zroiobjsmodel.h"
+#include "flyem/zstackwatershedcontainer.h"
+#include "zactionlibrary.h"
+#include "z3dwindow.h"
+#include "zswctree.h"
+#include "zobject3d.h"
+#include "data3d/utilities.h"
+#include "zobjsmodelmanager.h"
+#include "concurrent/zworker.h"
+#include "concurrent/zworkthread.h"
+#include "ztask.h"
 
 using namespace std;
 
@@ -123,6 +134,11 @@ ZStackDoc::~ZStackDoc()
   if (m_futureMap.hasThreadAlive()) {
     m_futureMap.waitForFinished();
   }
+
+  if (m_worker != NULL) {
+    m_worker->quit();
+  }
+  m_workThread->quit();
 
   deprecate(STACK);
   deprecate(SPARSE_STACK);
@@ -138,7 +154,7 @@ ZStackDoc::~ZStackDoc()
   delete m_undoStack;
   delete m_labelField;
   delete m_stackFactory;
-  delete m_actionFactory;
+//  delete m_actionFactory;
 
   if (m_resDlg != NULL) {
     delete m_resDlg;
@@ -165,17 +181,21 @@ void ZStackDoc::init()
   m_swcNetwork = NULL;
   m_stackFactory = NULL;
 
-  m_actionFactory = new ZActionFactory;
+
+//  m_actionFactory = new ZActionFactory;
 
   initNeuronTracer();
-  m_swcObjsModel = new ZSwcObjsModel(this, this);
-  m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
-  m_punctaObjsModel = new ZPunctaObjsModel(this, this);
-  m_seedObjsModel = new ZDocPlayerObjsModel(
-        this, ZStackObjectRole::ROLE_SEED, this);
-  m_graphObjsModel = new ZGraphObjsModel(this, this);
-  m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
-  m_meshObjsModel = new ZMeshObjsModel(this, this);
+
+  m_modelManager = new ZObjsModelManager(this);
+//  m_swcObjsModel = new ZSwcObjsModel(this, this);
+//  m_swcNodeObjsModel = new ZSwcNodeObjsModel(this, this);
+//  m_punctaObjsModel = new ZPunctaObjsModel(this, this);
+//  m_seedObjsModel = new ZDocPlayerObjsModel(
+//        this, ZStackObjectRole::ROLE_SEED, this);
+//  m_graphObjsModel = new ZGraphObjsModel(this, this);
+//  m_surfaceObjsModel = new ZSurfaceObjsModel(this, this);
+//  m_meshObjsModel = new ZMeshObjsModel(this, this);
+//  m_roiObjsModel = new ZRoiObjsModel(this, this);
   m_undoStack = new QUndoStack(this);
 
   connectSignalSlot();
@@ -200,6 +220,28 @@ void ZStackDoc::init()
   m_dataBuffer = new ZStackDocDataBuffer(this);
   connect(m_dataBuffer, SIGNAL(delivering()),
           this, SLOT(processDataBuffer()), Qt::QueuedConnection);
+
+  m_actionLibrary = ZSharedPointer<ZActionLibrary>(new ZActionLibrary(this));
+  m_actionLibrary->setUndoStack(m_undoStack);
+
+#ifdef _DEBUG_
+  QAction *shortcut = new QAction(this);
+//  shortcut->setKey(QKeySequence(Qt::Key_T, Qt::Key_R));
+  shortcut->setShortcut(Qt::Key_G);
+//  shortcut->setContext(Qt::WindowShortcut);
+//  shortcut->setEnabled(false);
+  connect(shortcut, SIGNAL(triggered()), this, SLOT(shortcutTest()));
+#endif
+
+  m_worker = new ZWorker(ZWorker::MODE_SCHEDULE);
+  m_workThread = new ZWorkThread(m_worker);
+  connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
+  m_workThread->start();
+}
+
+void ZStackDoc::shortcutTest()
+{
+  std::cout << "Shortcut triggered: ZStackDoc::shortcutTest()" << std::endl;
 }
 
 void ZStackDoc::clearData()
@@ -308,48 +350,38 @@ void ZStackDoc::emptySlot()
   QMessageBox::information(NULL, "empty slot", "To be implemented");
 }
 
-void ZStackDoc::disconnectSwcNodeModelUpdate()
-{
-  disconnect(this, SIGNAL(swcModified()),
-             m_swcNodeObjsModel, SLOT(updateModelData()));
-}
+//void ZStackDoc::disconnectSwcNodeModelUpdate()
+//{
+//  disconnect(this, SIGNAL(swcModified()),
+//             m_swcNodeObjsModel, SLOT(updateModelData()));
+//}
 
 
-void ZStackDoc::disconnectPunctaModelUpdate()
-{
-  disconnect(this, SIGNAL(punctaModified()),
-             m_punctaObjsModel, SLOT(updateModelData()));
-}
+//void ZStackDoc::disconnectPunctaModelUpdate()
+//{
+//  disconnect(this, SIGNAL(punctaModified()),
+//             m_punctaObjsModel, SLOT(updateModelData()));
+//}
 
 void ZStackDoc::connectSignalSlot()
 {
-  connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(meshModified()), m_meshObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
-  connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
+  connect(this, SIGNAL(objectModified(ZStackObjectInfoSet)),
+          m_modelManager, SLOT(processObjectModified(ZStackObjectInfoSet)));
+
+//  connect(this, SIGNAL(swcModified()), m_swcObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(swcModified()), m_swcNodeObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(punctaModified()), m_punctaObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(objectModified(ZStackObjectInfoSet)),
+//          m_roiObjsModel, SLOT(processObjectModified(ZStackObjectInfoSet)));
+//  connect(this, SIGNAL(meshModified()), m_meshObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(seedModified()), m_seedObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(graph3dModified()), m_graphObjsModel, SLOT(updateModelData()));
+//  connect(this, SIGNAL(cube3dModified()), m_surfaceObjsModel, SLOT(updateModelData()));
 
   connect(this, SIGNAL(addingObject(ZStackObject*,bool)),
           this, SLOT(addObject(ZStackObject*,bool)));
   connect(this, SIGNAL(addingObject(ZStackObject*)),
           this, SLOT(addObject(ZStackObject*)));
-  /*
-  connect(this, SIGNAL(chainModified()), this, SIGNAL(objectModified()));
-  connect(this, SIGNAL(punctaModified()), this, SIGNAL(objectModified()));
-  connect(this, SIGNAL(obj3dModified()), this, SIGNAL(objectModified()));
-  connect(this, SIGNAL(object3dScanModified()), this, SIGNAL(objectModified()));
-  connect(this, SIGNAL(stackPatchModified()), this, SIGNAL(objectModified()));
-  connect(this, SIGNAL(sparseObjectModified()), this, SIGNAL(objectModified()));
-  connect(this, SIGNAL(strokeModified()), this, SIGNAL(objectModified()));
-  connect(this, SIGNAL(swcModified()), this, SIGNAL(objectModified()));
-  */
-
-  /*
-  connect(m_undoStack, SIGNAL(cleanChanged(bool)),
-          this, SIGNAL(cleanChanged(bool)));
-          */
 
   connect(&m_reader, SIGNAL(finished()), this, SIGNAL(stackReadDone()));
   connect(this, SIGNAL(stackReadDone()), this, SLOT(loadReaderResult()));
@@ -398,6 +430,28 @@ void ZStackDoc::notifyProgressAdvanced(double dp)
 void ZStackDoc::updateSwcNodeAction()
 {
   m_singleSwcNodeActionActivator.update(this);
+}
+
+void ZStackDoc::addTask(ZTask *task)
+{
+//  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
+  if (task->getDelay() > 0) {
+    if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
+      QTimer::singleShot(task->getDelay(), this, [=]() {
+        this->addTaskSlot(task);
+      });
+    } else {
+      addTaskSlot(task);
+    }
+  } else {
+    addTaskSlot(task);
+  }
+}
+
+void ZStackDoc::addTaskSlot(ZTask *task)
+{
+//  task->moveToThread(m_worker->thread());
+  m_worker->addTask(task);
 }
 
 void ZStackDoc::autoSaveSwc()
@@ -761,6 +815,9 @@ void ZStackDoc::processDataBuffer()
       case ZStackDocObjectUpdate::ACTION_EXPEL:
         removeObject(u->getObject(), false);
         break;
+      case ZStackDocObjectUpdate::ACTION_ADD_BUFFER:
+        addBufferObject(u->getObject());
+        break;
       case ZStackDocObjectUpdate::ACTION_KILL:
         killObject(u->getObject());
         break;
@@ -794,7 +851,7 @@ void ZStackDoc::processDataBuffer()
     delete u;
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   emit objectSelectionChanged(selected, deselected);
 }
@@ -832,7 +889,7 @@ void ZStackDoc::swcTreeTranslateRootTo(double x, double y, double z)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::swcTreeRescale(double scaleX, double scaleY, double scaleZ)
@@ -845,7 +902,7 @@ void ZStackDoc::swcTreeRescale(double scaleX, double scaleY, double scaleZ)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::swcTreeRescale(double srcPixelPerUmXY, double srcPixelPerUmZ,
@@ -860,7 +917,7 @@ void ZStackDoc::swcTreeRescale(double srcPixelPerUmXY, double srcPixelPerUmZ,
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::swcTreeRescaleRadius(double scale, int startdepth, int enddepth)
@@ -873,7 +930,7 @@ void ZStackDoc::swcTreeRescaleRadius(double scale, int startdepth, int enddepth)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::swcTreeReduceNodeNumber(double lengthThre)
@@ -886,7 +943,7 @@ void ZStackDoc::swcTreeReduceNodeNumber(double lengthThre)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::addSizeForSelectedSwcNode(double dr)
@@ -1498,6 +1555,7 @@ const ZStack* ZStackDoc::stackRef() const
 
 void ZStackDoc::loadStack(Stack *stack, bool isOwner)
 {
+  LDEBUG() << "Loading stack";
   if (stack == NULL)
     return;
 
@@ -1528,6 +1586,7 @@ void ZStackDoc::loadStack(ZStack *zstack)
 
     deprecate(STACK);
     mainStack = zstack;
+    mainStack->useChannelColors(true);
     initNeuronTracer();
 
 //    emit stackBoundBoxChanged();
@@ -1561,24 +1620,26 @@ QAction* ZStackDoc::getAction(ZActionFactory::EAction item) const
 {
   const_cast<ZStackDoc&>(*this).makeAction(item);
 
-  return m_actionMap[item];
+  return m_actionLibrary->getAction(item);
 }
 
 void ZStackDoc::makeAction(ZActionFactory::EAction item)
 {
-  if (!m_actionMap.contains(item)) {
-    QAction *action = NULL;
+  if (!m_actionLibrary->contains(item)) {
+    QAction *action = m_actionLibrary->getAction(item);
 
+    /*
     if (item == ZActionFactory::ACTION_UNDO ||
         item == ZActionFactory::ACTION_REDO) {
       action = m_actionFactory->makeAction(item, m_undoStack);
     } else {
       action = m_actionFactory->makeAction(item, this);
     }
+    */
 
     //Additional behaviors
     if (action != NULL) {
-      m_actionMap[item] = action;
+//      m_actionMap[item] = action;
 
       switch (item) {
       case ZActionFactory::ACTION_SELECT_DOWNSTREAM:
@@ -1835,7 +1896,7 @@ void ZStackDoc::loadSwcNetwork(const char *filePath)
     addObject(m_swcNetwork->getTree(i));
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   emit swcNetworkModified();
 }
@@ -1856,7 +1917,7 @@ void ZStackDoc::importFlyEmNetwork(const char *filePath)
     addObject(m_swcNetwork->getTree(i));
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   emit swcNetworkModified();
 }
@@ -2414,7 +2475,7 @@ void ZStackDoc::breakLocsegChain(ZLocsegChain *obj, QList<ZLocsegChain *> *pResu
     delete chain;
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::cutSelectedLocsegChain()
@@ -2558,6 +2619,7 @@ void ZStackDoc::addSwcTreeP(ZSwcTree *obj)
   }
 
   obj->forceVirtualRoot();
+  prepareSwc(obj);
 
   m_objectGroup.add(obj, false);
 
@@ -2640,7 +2702,7 @@ void ZStackDoc::addSwcTree(const QList<ZSwcTree *> &swcList, bool uniqueSource)
   endObjectModifiedMode();
 //  blockSignals(false);
 
-  notifyObjectModified();
+  processObjectModified();
 
   /*
   if (!hasSwc()) {
@@ -2669,7 +2731,7 @@ void ZStackDoc::addPunctum(const QList<ZPunctum *> &punctaList)
     addObject(punctum, false);
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 //  blockSignals(false);
 
   //  notifyPunctumModified();
@@ -2695,7 +2757,7 @@ void ZStackDoc::addMesh(const QList<ZMesh*>& meshList)
     addObject(m, false);
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::addPunctumFast(const QList<ZPunctum *> &punctaList)
@@ -2705,7 +2767,7 @@ void ZStackDoc::addPunctumFast(const QList<ZPunctum *> &punctaList)
     addObjectFast(punctum);
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::addPunctumP(ZPunctum *obj)
@@ -2809,6 +2871,19 @@ DEFINE_GET_OBJECT_LIST(getDvidTileEnsembleList, ZDvidTileEnsemble, TYPE_DVID_TIL
 DEFINE_GET_OBJECT_LIST(getDvidSparsevolSliceList, ZDvidSparsevolSlice, TYPE_DVID_SPARSEVOL_SLICE)
 DEFINE_GET_OBJECT_LIST(getMeshList, ZMesh, TYPE_MESH)
 
+QList<ZSwcTree*> ZStackDoc::getSwcList(ZStackObjectRole::TRole role) const
+{
+  QList<ZSwcTree*> result;
+  QList<ZSwcTree*> swcList = getSwcList();
+  foreach (ZSwcTree *tree, swcList) {
+    if (tree->hasRole(role)) {
+      result.append(tree);
+    }
+  }
+
+  return result;
+}
+
 void ZStackDoc::addSparseObjectP(ZSparseObject *obj)
 {
   if (obj == NULL) {
@@ -2858,7 +2933,7 @@ void ZStackDoc::addLocsegChain(const QList<ZLocsegChain *> &chainList)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::addLocsegChainP(ZLocsegChain *obj)
@@ -3111,7 +3186,7 @@ void ZStackDoc::loadLocsegChain(const QString &filePath)
   addObject(chain);
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::importSwc(QStringList fileList, LoadObjectOption objopt)
@@ -3150,7 +3225,7 @@ void ZStackDoc::importSwc(QStringList fileList, LoadObjectOption objopt)
 
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 bool ZStackDoc::importPuncta(const char *filePath)
@@ -3177,7 +3252,7 @@ bool ZStackDoc::importMesh(const QString& filePath)
 
     addObject(mesh);
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
     return true;
   }
   catch (const ZException& e) {
@@ -3230,7 +3305,7 @@ void ZStackDoc::importPuncta(const QStringList &fileList, LoadObjectOption objop
 
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 //  blockSignals(false);
 //  emit punctaModified();
 }
@@ -3531,7 +3606,7 @@ void ZStackDoc::removeAllObject(bool deleteObject)
   m_playerList.removeAll();
   m_objectGroup.removeAllObject(deleteObject);
 
-  notifyObjectModified();
+  processObjectModified();
 
   /*
   while (!m_objectList.isEmpty()) {
@@ -3557,7 +3632,7 @@ void ZStackDoc::removeSmallLocsegChain(double thre)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 
 //  notifyChainModified();
 }
@@ -3583,7 +3658,7 @@ bool ZStackDoc::removeObject(ZStackObject *obj, bool deleteObject)
       removed = true;
 
       processObjectModified(obj);
-      notifyObjectModified();
+      processObjectModified();
 
       if (deleteObject) {
         delete obj;
@@ -3613,7 +3688,7 @@ void ZStackDoc::removeObject(ZStackObject::EType type, bool deleteObject)
     }
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::removeObject(const QSet<ZStackObject *> &objSet, bool deleteObject)
@@ -3697,7 +3772,7 @@ void ZStackDoc::removeObjectP(
     }
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::removeObject(const string &source, bool deleteObject)
@@ -3717,12 +3792,13 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
 
 //  QSet<ZStackObject::ETarget> targetSet;
 
-  ZStackObjectRole role;
+//  ZStackObjectRole role;
   for (TStackObjectList::iterator iter = objSet.begin(); iter != objSet.end();
        ++iter) {
-    role.addRole(m_playerList.removePlayer(*iter));
+//    role.addRole(m_playerList.removePlayer(*iter));
 
-    bufferObjectModified((*iter)->getRole());
+    bufferObjectModified(*iter);
+//    bufferObjectModified((*iter)->getRole());
 //    targetSet.insert((*iter)->getTarget());
     if (deleteObject) {
       delete *iter;
@@ -3731,11 +3807,14 @@ std::set<ZSwcTree *> ZStackDoc::removeEmptySwcTree(bool deleteObject)
     }
   }
 
-  if (!emptyTreeSet.empty()) {
-    bufferObjectModified(ZStackObject::TYPE_SWC);
-    bufferObjectModified(role);
-    notifyObjectModified();
-  }
+  processObjectModified();
+
+//  if (!emptyTreeSet.empty()) {
+
+////    bufferObjectModified(ZStackObject::TYPE_SWC);
+////    bufferObjectModified(role);
+//    processObjectModified();
+//  }
 
   /*
   if (!emptyTreeSet.empty()) {
@@ -3811,7 +3890,7 @@ void ZStackDoc::removeSelectedObject(bool deleteObject)
     }
   }
 
-  notifyObjectModified();
+  processObjectModified();
 
   /*
   if (!objList.empty()) {
@@ -4089,6 +4168,52 @@ void ZStackDoc::setSwcSelected(ZSwcTree *tree, bool select)
       //emit swcSelectionChanged(selected, deselected);
     }
   }
+}
+
+template <class InputIterator>
+void ZStackDoc::setSwcSelected(InputIterator first, InputIterator last, bool select)
+{
+  QList<ZSwcTree*> selected;
+  QList<ZSwcTree*> deselected;
+
+  QList<Swc_Tree_Node *> tns;
+  for (InputIterator it = first; it != last; ++it) {
+    ZSwcTree *tree = *it;
+    if (tree->isSelected() != select) {
+      m_objectGroup.setSelected(tree, select);
+      if (select) {
+        selected.append(tree);
+
+        // deselect its nodes
+        if (tree->hasSelectedNode()) {
+          for (std::set<Swc_Tree_Node*>::const_iterator
+               iter = tree->getSelectedNode().begin();
+               iter != tree->getSelectedNode().end(); ++iter) {
+            Swc_Tree_Node* tn = const_cast<Swc_Tree_Node*>(*iter);
+            tns.append(tn);
+          }
+          tree->deselectAllNode();
+        }
+        /*
+        for (std::set<Swc_Tree_Node*>::iterator it = m_selectedSwcTreeNodes.begin();
+             it != m_selectedSwcTreeNodes.end(); ++it) {
+          if (tree == nodeToSwcTree(*it))
+            tns.push_back(*it);
+        }
+        */
+      } else {
+        deselected.push_back(tree);
+      }
+    }
+  }
+
+  notifyDeselected(tns);
+  notifySelectionChanged(selected, deselected);
+}
+
+void ZStackDoc::setSwcSelected(const QList<ZSwcTree *> &treeList, bool select)
+{
+  setSwcSelected(treeList.begin(), treeList.end(), select);
 }
 
 void ZStackDoc::deselectAllSwcs()
@@ -4411,7 +4536,9 @@ void ZStackDoc::setMeshVisible(ZMesh* mesh, bool visible)
 {
   if (mesh->isVisible() != visible) {
     mesh->setVisible(visible);
-    emit meshVisibleStateChanged();
+    bufferObjectModified(mesh);
+    processObjectModified();
+//    emit meshVisibleStateChanged();
   }
 }
 
@@ -4427,6 +4554,12 @@ void ZStackDoc::setSwcVisible(ZSwcTree *tree, bool visible)
 {
   if (tree->isVisible() != visible) {
     tree->setVisible(visible);
+    /*
+    ZStackObjectInfo info;
+    info.set(*tree);
+    bufferObjectModified(info, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED);
+    processObjectModified();
+    */
     emit swcVisibleStateChanged(tree, visible);
   }
 }
@@ -4503,7 +4636,7 @@ void ZStackDoc::appendSwcNetwork(ZSwcNetwork &network)
     addObject(network.getTree(i));
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   m_swcNetwork->merge(network);
 
@@ -4643,7 +4776,7 @@ QString ZStackDoc::rawDataInfo(double cx, double cy, int z, neutube::EAxis axis)
   int wy = y;
   int wz = z;
 
-  ZGeometry::shiftSliceAxisInverse(wx, wy, wz, axis);
+  zgeom::shiftSliceAxisInverse(wx, wy, wz, axis);
 
   if (x >= 0 && y >= 0) {
     std::ostringstream stream;
@@ -4903,7 +5036,7 @@ bool ZStackDoc::importSynapseAnnotation(const std::string &filePath,
       addObject(*iter);
     }
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
 //    blockSignals(false);
 
 //    notifyPunctumModified();
@@ -4989,7 +5122,7 @@ void ZStackDoc::loadFileList(const QStringList &fileList)
   }
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   if (networkLoaded) {
     emit swcNetworkModified();
@@ -5573,6 +5706,14 @@ void ZStackDoc::notifyStatusMessageUpdated(const QString &message)
   }
 }
 
+void ZStackDoc::notifyWindowMessageUpdated(const QString &message)
+{
+  emit messageGenerated(
+        ZWidgetMessage(
+          message, neutube::MSG_INFORMATION,
+          ZWidgetMessage::TARGET_CUSTOM_AREA));
+}
+
 void ZStackDoc::notifyPunctumModified()
 {
   emit punctaModified();
@@ -5611,7 +5752,11 @@ void ZStackDoc::notifySparseObjectModified()
 
 void ZStackDoc::notifyStackModified(bool rangeChanged)
 {
-  emit stackModified(rangeChanged);
+  LDEBUG() << "Stack modified";
+  if (rangeChanged) {
+    emit stackRangeChanged();
+  }
+  emit stackModified(false);
 //  emit stackBoundBoxChanged();
 }
 
@@ -5650,67 +5795,23 @@ void ZStackDoc::notifyActiveViewModified()
   emit activeViewModified();
 }
 
-void ZStackDoc::clearObjectModifiedTypeBuffer(bool sync)
+void ZStackDoc::clearObjectModifiedBuffer(bool sync)
 {
   if (sync) {
-    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 6) << "m_objectModifiedTypeBufferMutex locked";
-    m_objectModifiedTypeBuffer.clear();
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+    m_objectModifiedBuffer.clear();
   } else {
-    m_objectModifiedTypeBuffer.clear();
-  }
-}
-
-void ZStackDoc::clearObjectModifiedTargetBuffer(bool sync)
-{
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
-    m_objectModifiedTargetBuffer.clear();
-  } else {
-    m_objectModifiedTargetBuffer.clear();
-  }
-}
-
-void ZStackDoc::clearObjectModifiedRoleBuffer(bool sync)
-{
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedRoleBufferMutex);
-    m_objectModifiedRoleBuffer.clear();
-  } else {
-    m_objectModifiedRoleBuffer.clear();
-  }
-}
-
-void ZStackDoc::notifyObjectModified(bool sync)
-{
-//  emit objectModified();
-
-  if (getObjectModifiedMode() == OBJECT_MODIFIED_SIGNAL) {
-    if (!m_objectModifiedTypeBuffer.empty()) {
-      processObjectModified(m_objectModifiedTypeBuffer, sync);
-      clearObjectModifiedTypeBuffer(sync);
-    }
-
-    if (!m_objectModifiedTargetBuffer.empty()) {
-      processObjectModified(m_objectModifiedTargetBuffer, sync);
-      clearObjectModifiedTypeBuffer(sync);
-    }
-
-    if (!m_objectModifiedRoleBuffer.isNone()) {
-      processObjectModified(m_objectModifiedRoleBuffer.getRole(), sync);
-      clearObjectModifiedRoleBuffer(sync);
-    }
+    m_objectModifiedBuffer.clear();
   }
 }
 
 void ZStackDoc::bufferObjectModified(ZStackObject::EType type, bool sync)
 {
   if (sync) {
-    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 6) << "m_objectModifiedTypeBufferMutex locked";
-    m_objectModifiedTypeBuffer.insert(type);
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+    m_objectModifiedBuffer.add(type);
   } else {
-    m_objectModifiedTypeBuffer.insert(type);
+    m_objectModifiedBuffer.add(type);
   }
 }
 
@@ -5722,22 +5823,56 @@ void ZStackDoc::bufferObjectModified(const ZStackObjectRole &role, bool sync)
 void ZStackDoc::bufferObjectModified(ZStackObject::ETarget target, bool sync)
 {
   if (sync) {
-    QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
-    m_objectModifiedTargetBuffer.insert(target);
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+    m_objectModifiedBuffer.add(target);
   } else {
-    m_objectModifiedTargetBuffer.insert(target);
+    m_objectModifiedBuffer.add(target);
   }
 }
 
 void ZStackDoc::bufferObjectModified(
-    const QSet<ZStackObject::EType> &typeSet, bool sync)
+    ZStackObject *obj, ZStackObjectInfo::TState state, bool sync)
+{
+  ZStackObjectInfo info;
+  info.set(*obj);
+  bufferObjectModified(info, state, sync);
+}
+
+void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
+{
+  ZStackObjectInfo info;
+  info.set(*obj);
+  bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
+  /*
+  bufferObjectModified(obj->getType(), sync);
+  bufferObjectModified(obj->getTarget(), sync);
+  bufferObjectModified(obj->getRole(), sync);
+  */
+}
+
+void ZStackDoc::bufferObjectVisibilityChanged(ZStackObject *obj, bool sync)
+{
+  bufferObjectModified(obj, ZStackObjectInfo::STATE_VISIBITLITY_CHANGED, sync);
+}
+
+void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
 {
   if (sync) {
-    QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-    ZOUT(LTRACE(), 6) << "m_objectModifiedTypeBufferMutex locked";
-    m_objectModifiedTypeBuffer.unite(typeSet);
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+    m_objectModifiedBuffer.add(role);
   } else {
-    m_objectModifiedTypeBuffer.unite(typeSet);
+    m_objectModifiedBuffer.add(role);
+  }
+}
+
+void ZStackDoc::bufferObjectModified(
+    const ZStackObjectInfo &info, ZStackObjectInfo::TState state, bool sync)
+{
+  if (sync) {
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+    m_objectModifiedBuffer.add(info, state);
+  } else {
+    m_objectModifiedBuffer.add(info, state);
   }
 }
 
@@ -5745,35 +5880,39 @@ void ZStackDoc::bufferObjectModified(
     const QSet<ZStackObject::ETarget> &targetSet, bool sync)
 {
   if (sync) {
-    QMutexLocker locker(&m_objectModifiedTargetBufferMutex);
-    m_objectModifiedTargetBuffer.unite(targetSet);
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+    m_objectModifiedBuffer.add(targetSet);
   } else {
-    m_objectModifiedTargetBuffer.unite(targetSet);
-  }
-}
-
-void ZStackDoc::bufferObjectModified(ZStackObject *obj, bool sync)
-{
-  bufferObjectModified(obj->getType(), sync);
-  bufferObjectModified(obj->getTarget(), sync);
-  bufferObjectModified(obj->getRole(), sync);
-}
-
-void ZStackDoc::bufferObjectModified(ZStackObjectRole::TRole role, bool sync)
-{
-  if (sync) {
-    QMutexLocker locker(&m_objectModifiedRoleBufferMutex);
-    m_objectModifiedRoleBuffer.addRole(role);
-  } else {
-    m_objectModifiedRoleBuffer.addRole(role);
+    m_objectModifiedBuffer.add(targetSet);
   }
 }
 
 void ZStackDoc::processObjectModified(ZStackObject *obj, bool sync)
 {
+  ZStackObjectInfo info;
+  info.set(*obj);
+  processObjectModified(info, sync);
+  /*
   processObjectModified(obj->getType(), sync);
   processObjectModified(obj->getTarget(), sync);
   processObjectModified(obj->getRole(), sync);
+  */
+}
+
+void ZStackDoc::processObjectModified(const ZStackObjectInfo &info, bool sync)
+{
+  switch (getObjectModifiedMode()) {
+  case OBJECT_MODIFIED_SIGNAL:
+    notifyObjectModified(info);
+    break;
+  case OBJECT_MODIFIED_CACHE:
+  {
+    bufferObjectModified(info, ZStackObjectInfo::STATE_UNKNOWN, sync);
+  }
+    break;
+  default:
+    break;
+  }
 }
 
 void ZStackDoc::processObjectModified(ZStackObject::ETarget target, bool sync)
@@ -5826,8 +5965,12 @@ void ZStackDoc::processObjectModified(ZStackObject::EType type, bool sync)
 
 void ZStackDoc::processSwcModified()
 {
-  processObjectModified(ZStackObject::TYPE_SWC);
-  processObjectModified(ZSwcTree::GetDefaultTarget());
+  ZStackObjectInfo info;
+  info.setType(ZStackObject::TYPE_SWC);
+  info.setTarget(ZSwcTree::GetDefaultTarget());
+  processObjectModified(info);
+//  processObjectModified(ZStackObject::TYPE_SWC);
+//  processObjectModified(ZSwcTree::GetDefaultTarget());
 }
 
 void ZStackDoc::processObjectModified(const ZStackObjectRole &role, bool sync)
@@ -5848,6 +5991,20 @@ void ZStackDoc::processObjectModified(ZStackObjectRole::TRole role, bool sync)
   default:
     break;
   }
+}
+
+void ZStackDoc::notifyObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  LDEBUG() << "emit signal: objectModified";
+  emit objectModified(infoSet);
+}
+
+void ZStackDoc::notifyObjectModified(const ZStackObjectInfo &info)
+{
+  ZStackObjectInfoSet infoSet;
+  infoSet.add(info);
+
+  emit objectModified(infoSet);
 }
 
 void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
@@ -5895,28 +6052,19 @@ void ZStackDoc::notifyObjectModified(ZStackObject::EType type)
   customNotifyObjectModified(type);
 }
 
-
-void ZStackDoc::processObjectModified(
-    const QSet<ZStackObject::EType> &typeSet, bool sync)
+void ZStackDoc::processObjectModified()
 {
-  if (sync) {
-    QSet<ZStackObject::EType> bufferTypeSet;
-    {
-      QMutexLocker locker(&m_objectModifiedTypeBufferMutex);
-      ZOUT(LTRACE(), 5) << "m_objectModifiedTypeBufferMutex locked";
-      bufferTypeSet = typeSet;
+  if (getObjectModifiedMode() == OBJECT_MODIFIED_SIGNAL) {
+    QMutexLocker locker(&m_objectModifiedBufferMutex);
+
+    QSet<ZStackObject::EType> typeSet = m_objectModifiedBuffer.getType();
+    foreach (ZStackObject::EType type, typeSet) {
+      notifyObjectModified(type);
     }
 
-    for (QSet<ZStackObject::EType>::const_iterator iter = bufferTypeSet.begin();
-         iter != bufferTypeSet.end(); ++iter) {
-      ZStackObject::EType type = *iter;
-      processObjectModified(type, false);
-    }
-  } else {
-    for (QSet<ZStackObject::EType>::const_iterator iter = typeSet.begin();
-         iter != typeSet.end(); ++iter) {
-      ZStackObject::EType type = *iter;
-      processObjectModified(type, false);
+    if (!m_objectModifiedBuffer.isEmpty()) {
+      notifyObjectModified(m_objectModifiedBuffer);
+      m_objectModifiedBuffer.clear();
     }
   }
 }
@@ -5998,7 +6146,7 @@ int ZStackDoc::findLoop(int minLoopSize)
       }
     }
     endObjectModifiedMode();
-    notifyObjectModified();
+//    processObjectModified();
     m_progressReporter->endSubprogress(0.3);
 
     m_progressReporter->advance(0.1);
@@ -6016,7 +6164,7 @@ int ZStackDoc::findLoop(int minLoopSize)
     m_progressReporter->end();
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   return loopNumber;
 }
@@ -6080,7 +6228,7 @@ void ZStackDoc::executeSwcRescaleCommand(const ZRescaleSwcSetting &setting)
   }
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 }
 
 bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center)
@@ -6108,7 +6256,7 @@ bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center)
     succ = true;
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   return succ;
 }
@@ -6139,7 +6287,7 @@ bool ZStackDoc::executeSwcNodeExtendCommand(const ZPoint &center, double radius)
     succ = true;
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   return succ;
 }
@@ -6187,6 +6335,11 @@ void ZStackDoc::notify(const QString &msg)
 void ZStackDoc::notifyUpdateLatency(int64_t t)
 {
   emit updatingLatency((int) t);
+}
+
+void ZStackDoc::processMessage(const ZWidgetMessage &msg)
+{
+  emit messageGenerated(msg);
 }
 
 bool ZStackDoc::executeSwcNodeSmartExtendCommand(
@@ -6363,7 +6516,7 @@ bool ZStackDoc::executeSwcNodeSmartExtendCommand(
     succ = true;
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   return succ;
 }
@@ -6425,7 +6578,7 @@ bool ZStackDoc::executeInterpolateSwcZCommand()
   }
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   notifyStatusMessageUpdated(message);
 
@@ -6499,7 +6652,7 @@ bool ZStackDoc::executeInterpolateSwcPositionCommand()
   }
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   notifyStatusMessageUpdated(message);
 
@@ -6575,7 +6728,7 @@ bool ZStackDoc::executeInterpolateSwcCommand()
   }
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   notifyStatusMessageUpdated(message);
   return succ;
@@ -6635,7 +6788,7 @@ bool ZStackDoc::executeInterpolateSwcRadiusCommand()
 
     succ = true;
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
   }
 
   notifyStatusMessageUpdated(message);
@@ -6671,12 +6824,28 @@ bool ZStackDoc::executeSwcNodeChangeZCommand(double z)
     }
     succ = true;
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
   }
 
   notifyStatusMessageUpdated(message);
 
   return succ;
+}
+
+bool  ZStackDoc::executeMoveSwcNodeCommand(
+    std::vector<Swc_Tree_Node *> &nodeList, double dx, double dy, double dz)
+{
+  if (!nodeList.empty() && (dx != 0 || dy != 0 || dz != 0)) {
+    ZStackDocCommand::SwcEdit::MoveSwcNode *command =
+        new ZStackDocCommand::SwcEdit::MoveSwcNode(this);
+    command->setOffset(ZPoint(dx, dy, dz));
+    command->addNode(nodeList);
+    pushUndoCommand(command);
+
+    return true;
+  }
+
+  return false;
 }
 
 bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
@@ -6711,7 +6880,7 @@ bool ZStackDoc::executeMoveSwcNodeCommand(double dx, double dy, double dz)
 
     succ = true;
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
   }
 
   notifyStatusMessageUpdated(message);
@@ -6796,7 +6965,7 @@ bool ZStackDoc::executeChangeSelectedSwcNodeSize()
       deprecateTraceMask();
 
       endObjectModifiedMode();
-      notifyObjectModified();
+      processObjectModified();
 
       return true;
     }
@@ -6840,7 +7009,7 @@ bool ZStackDoc::executeSwcNodeChangeSizeCommand(double dr)
       delete allCommand;
     }
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
 
     succ = true;
   }
@@ -6957,7 +7126,7 @@ bool ZStackDoc::executeSwcNodeEstimateRadiusCommand()
     endProgress();
 
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
 
     return true;
   }
@@ -7188,6 +7357,16 @@ bool ZStackDoc::executeResolveCrossoverCommand()
   return succ;
 #endif
 }
+void ZStackDoc::executeAddTodoCommand(
+    int /*x*/, int /*y*/, int /*z*/, bool /*checked*/,
+    neutube::EToDoAction /*action*/, uint64_t /*id*/)
+{
+}
+
+void ZStackDoc::executeRemoveTodoCommand()
+{
+}
+
 
 bool ZStackDoc::executeWatershedCommand()
 {
@@ -7329,7 +7508,7 @@ bool ZStackDoc::executeDeleteSwcNodeCommand()
     succ = true;
 
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
   }
 
   notifyStatusMessageUpdated(message);
@@ -7402,7 +7581,7 @@ bool ZStackDoc::executeDeleteUnselectedSwcNodeCommand()
     succ = true;
 
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
   }
 
   notifyStatusMessageUpdated(message);
@@ -7482,7 +7661,7 @@ bool ZStackDoc::executeConnectSwcNodeCommand(
   deprecateTraceMask();
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
 //  processSwcModified();
 
@@ -7613,7 +7792,7 @@ bool ZStackDoc::executeSmartConnectSwcNodeCommand(
   }
 
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   notifyStatusMessageUpdated(message);
 
@@ -7657,7 +7836,7 @@ bool ZStackDoc::executeBreakSwcConnectionCommand()
     }
 
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
   }
 
   notifyStatusMessageUpdated(message);
@@ -7746,7 +7925,7 @@ bool ZStackDoc::executeAddSwcBranchCommand(ZSwcTree *tree, double minConnDist)
       }
 
       endObjectModifiedMode();
-      notifyObjectModified();
+      processObjectModified();
     } else {
       succ = executeAddSwcCommand(tree);
     }
@@ -7805,7 +7984,7 @@ bool ZStackDoc::executeReplaceSwcCommand(ZSwcTree *tree)
     delete command;
   }
   endObjectModifiedMode();
-  notifyObjectModified();
+  processObjectModified();
 
   return succ;
 }
@@ -7905,7 +8084,60 @@ void ZStackDoc::addObjectFast(ZStackObject *obj)
 
   endObjectModifiedMode();
 
-  notifyObjectModified(true);
+  processObjectModified();
+}
+
+void ZStackDoc::addObjectUnsync(ZStackObject *obj, bool uniqueSource)
+{
+  if (obj != NULL) {
+    if (uniqueSource) {
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+    } else {
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    getDataBuffer()->deliver();
+  }
+}
+
+ZStackObject* ZStackDoc::takeObjectFromBuffer(
+    ZStackObject::EType type, const string &source)
+{
+  TStackObjectList objList = m_bufferObjectGroup.takeSameSource(type, source);
+
+  ZStackObject *obj = NULL;
+  if (!objList.isEmpty()) {
+    obj = objList.back();
+  }
+
+  return obj;
+}
+
+void ZStackDoc::addBufferObject(ZStackObject *obj)
+{
+  if (obj == NULL) {
+    return;
+  }
+
+  QMutexLocker locker(m_bufferObjectGroup.getMutex());
+
+  if (m_bufferObjectGroup.containsUnsync(obj)) {
+    return;
+  }
+
+  TStackObjectList objList;
+
+  if (!obj->getSource().empty()) {
+    objList = m_bufferObjectGroup.takeSameSourceUnsync(
+          obj->getType(), obj->getSource());
+    for (TStackObjectList::iterator iter = objList.begin();
+         iter != objList.end(); ++iter) {
+      ZStackObject *oldObj = *iter;
+      if (oldObj != obj) {
+        delete oldObj;
+      }
+    }
+  }
+  m_bufferObjectGroup.addUnsync(obj, true);
 }
 
 void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
@@ -7932,7 +8164,7 @@ void ZStackDoc::addObject(ZStackObject *obj, bool uniqueSource)
         for (TStackObjectList::iterator iter = objList.begin();
              iter != objList.end(); ++iter) {
           ZStackObject *oldObj = *iter;
-          bufferObjectModified(oldObj);
+          bufferObjectModified(oldObj, ZStackObjectInfo::STATE_ADDED);
           //      role.addRole(m_playerList.removePlayer(obj));
           if (oldObj != obj) {
             ZOUT(LTRACE(), 5) << "Deleting object:" <<  oldObj;
@@ -8015,6 +8247,9 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
       case ZStackObject::TYPE_DVID_LABEL_SLICE:
         player = new ZDvidLabelSlicePlayer(obj);
         break;
+      case ZStackObject::TYPE_DVID_TILE_ENSEMBLE:
+        player = new ZDvidTileEnsemblePlayer(obj);
+        break;
       case ZStackObject::TYPE_DVID_GRAY_SLICE:
         player = new ZDvidGraySlicePlayer(obj);
         break;
@@ -8028,7 +8263,8 @@ void ZStackDoc::addPlayer(ZStackObject *obj)
 
       if (player != NULL) {
         m_playerList.add(player);
-        processObjectModified(obj->getRole().getRole());
+//        processObjectModified(obj);
+////        processObjectModified(obj->getRole().getRole());
       }
     }
   }
@@ -8180,7 +8416,8 @@ bool ZStackDoc::executeTraceSwcBranchCommand(
 
 void ZStackDoc::updatePunctaObjsModel(ZPunctum *punctum)
 {
-  punctaObjsModel()->updateData(punctum);
+  m_modelManager->updateData(punctum);
+//  punctaObjsModel()->updateData(punctum);
 }
 
 bool ZStackDoc::executeTraceSwcBranchCommand(
@@ -8657,19 +8894,21 @@ bool ZStackDoc::hasMultipleSelectedSwcNode() const
   return getSelectedSwcNodeNumber() > 1;
 }
 
+/*
 void ZStackDoc::updateModelData(EDocumentDataType type)
 {
   switch (type) {
-  case SWC_DATA:
+  case DATA_SWC:
     swcObjsModel()->updateModelData();
     break;
-  case PUNCTA_DATA:
+  case DATA_PUNCTA:
     punctaObjsModel()->updateModelData();
     break;
   default:
     break;
   }
 }
+*/
 
 void ZStackDoc::showSeletedSwcNodeScaledLength()
 {
@@ -8824,7 +9063,7 @@ bool ZStackDoc::executeInsertSwcNode()
     }
 
     endObjectModifiedMode();
-    notifyObjectModified();
+    processObjectModified();
   }
 
   if (!message.isEmpty()) {
@@ -9356,9 +9595,9 @@ void ZStackDoc::reloadData(ZStackDocReader &reader)
 }
 
 
-std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
+ZStackArray ZStackDoc::createWatershedMask(bool selectedOnly) const
 {
-  std::vector<ZStack*> maskArray;
+  ZStackArray maskArray;
 
   int numberOfSelected = 0;
 
@@ -9426,7 +9665,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
             if (boxDist < 100) {
               ZStack *stack = player->toStack();
               if (stack != NULL) {
-                maskArray.push_back(stack);
+                maskArray.append(stack);
               }
             }
           }
@@ -9441,7 +9680,7 @@ std::vector<ZStack*> ZStackDoc::createWatershedMask(bool selectedOnly) const
           ((numberOfSelected == 0) || player->getData()->isSelected())) {
         ZStack *stack = player->toStack();
         if (stack != NULL) {
-          maskArray.push_back(stack);
+          maskArray.append(stack);
         }
       }
     }
@@ -9463,7 +9702,7 @@ void ZStackDoc::toggleVisibility(ZStackObjectRole::TRole role)
   }
   endObjectModifiedMode();
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::updateWatershedBoundaryObject(ZIntPoint dsIntv)
@@ -9532,6 +9771,31 @@ ZDvidSparseStack* ZStackDoc::getDvidSparseStack() const
 
 void ZStackDoc::localSeededWatershed()
 {
+  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  if (seedList.size() > 1) {
+    ZStackWatershedContainer container(getStack(), getSparseStack());
+    container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
+    container.setCcaPost(false);
+
+
+
+    foreach (ZStackObject *seed, seedList) {
+      container.addSeed(seed);
+    }
+
+    container.run();
+
+    ZObject3dScanArray result;
+    container.makeSplitResult(1, &result);
+    for (ZObject3dScan *obj : result) {
+      getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    result.shallowClear();
+    getDataBuffer()->deliver();
+  }
+
+#if 0
   getProgressSignal()->startProgress("Running local split ...");
   removeObject(ZStackObjectRole::ROLE_TMP_RESULT, true);
 //  m_isSegmentationReady = false;
@@ -9613,10 +9877,30 @@ void ZStackDoc::localSeededWatershed()
   }
   getProgressSignal()->endProgress();
   emit labelFieldModified();
+#endif
 }
 
 void ZStackDoc::seededWatershed()
 {
+  ZStackWatershedContainer container(getStack(), getSparseStack());
+
+  QList<ZStackObject*> seedList = getObjectList(ZStackObjectRole::ROLE_SEED);
+
+  foreach (ZStackObject *seed, seedList) {
+    container.addSeed(seed);
+  }
+
+  container.run();
+
+  ZObject3dScanArray result;
+  container.makeSplitResult(1, &result);
+  for (ZObject3dScan *obj : result) {
+    getDataBuffer()->addUpdate(obj, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+  }
+  result.shallowClear();
+  getDataBuffer()->deliver();
+
+#if 0
   getProgressSignal()->startProgress("Splitting ...");
 
   ZOUT(LINFO(), 3) << "Removing old result ...";
@@ -9685,6 +9969,7 @@ void ZStackDoc::seededWatershed()
   }
   getProgressSignal()->endProgress();
   emit labelFieldModified();
+#endif
 }
 
 void ZStackDoc::runLocalSeededWatershed()
@@ -9695,6 +9980,8 @@ void ZStackDoc::runLocalSeededWatershed()
 //  localSeededWatershed();
 
 //  getProgressSignal()->startProgress();
+
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
 
   const QString threadId = "localSeededWatershed";
   if (!m_futureMap.isAlive(threadId)) {
@@ -9713,6 +10000,8 @@ void ZStackDoc::runLocalSeededWatershed()
 
 void ZStackDoc::runSeededWatershed()
 {
+  removeObject(ZStackObjectRole::ROLE_SEGMENTATION);
+
   QList<ZDocPlayer*> playerList =
       getPlayerList(ZStackObjectRole::ROLE_SEED);
 
@@ -9759,6 +10048,11 @@ const ZStack* ZStackDoc::getLabelField() const
   QMutexLocker locker(&m_labelFieldMutex);
 
   return getLabelFieldUnsync();
+}
+
+uint64_t ZStackDoc::getLabelId(int /*x*/, int /*y*/, int /*z*/)
+{
+  return 0;
 }
 
 ZStack* ZStackDoc::getLabelField()
@@ -9887,7 +10181,42 @@ void ZStackDoc::ActiveViewObjectUpdater::SetUpdateEnabled(
 
 void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
 {
-  m_updatedTarget.clear();
+//  m_updatedTarget.clear();
+  if (m_doc.get() != NULL) {
+    QList<ZDocPlayer *> playerList =
+        m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
+    for (QList<ZDocPlayer *>::iterator iter = playerList.begin();
+         iter != playerList.end(); ++iter) {
+      ZDocPlayer *player = *iter;
+      ZStackObject *obj = player->getData();
+      if (!m_excludeSet.contains(obj->getType()) &&
+          !m_excludeTarget.contains(obj->getTarget()) &&
+          obj->isVisible()) {
+        LDEBUG() << "Updating " << zstackobject::ToString(obj->getTarget())
+                 << obj->getType() << obj->getSource();
+
+        if (player->updateData(param)) {
+          m_updatedTarget.insert(obj->getTarget());
+          if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE) {
+            ZDvidLabelSlice *labelSlice = dynamic_cast<ZDvidLabelSlice*>(obj);
+            if (labelSlice != NULL) {
+              m_doc->notifyUpdateLatency(labelSlice->getReadingTime());
+            }
+          }
+        }
+        ZTask *task = player->getFutureTask(m_doc.get());
+        if (task != NULL) {
+          m_doc->addTask(task);
+        }
+      }
+    }
+  }
+}
+
+/*
+void ZStackDoc::ActiveViewObjectUpdater::update(const ZArbSliceViewParam &param)
+{
+//  m_updatedTarget.clear();
   if (m_doc.get() != NULL) {
     QList<ZDocPlayer *> playerList =
         m_doc->getPlayerList(ZStackObjectRole::ROLE_ACTIVE_VIEW);
@@ -9900,17 +10229,12 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
           obj->isVisible()) {
         if (player->updateData(param)) {
           m_updatedTarget.insert(obj->getTarget());
-          if (obj->getType() == ZStackObject::TYPE_DVID_LABEL_SLICE) {
-            ZDvidLabelSlice *labelSlice = dynamic_cast<ZDvidLabelSlice*>(obj);
-            if (labelSlice != NULL) {
-              m_doc->notifyUpdateLatency(labelSlice->getReadingTime());
-            }
-          }
         }
       }
     }
   }
 }
+*/
 
 /*
 QSet<ZStackObject::ETarget>
@@ -10250,7 +10574,7 @@ void ZStackDoc::setVisible(ZStackObject::EType type, bool visible)
     bufferObjectModified(obj->getTarget());
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
@@ -10265,7 +10589,7 @@ void ZStackDoc::setVisible(ZStackObjectRole::TRole role, bool visible)
     bufferObjectModified(obj->getTarget());
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::setVisible(ZStackObject::EType type, std::string source, bool visible)
@@ -10281,24 +10605,40 @@ void ZStackDoc::setVisible(ZStackObject::EType type, std::string source, bool vi
     bufferObjectModified(obj->getTarget());
   }
 
-  notifyObjectModified();
+  processObjectModified();
+}
+
+void ZStackDoc::setVisible(ZStackObject *obj, bool visible)
+{
+  if (obj->isVisible() != visible) {
+    obj->setVisible(visible);
+    bufferObjectModified(obj);
+    processObjectModified(obj);
+  }
+}
+
+void ZStackDoc::prepareSwc(ZSwcTree *tree)
+{
+  if (m_showingFullSwc) {
+    tree->addVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+  } else {
+    tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
+  }
 }
 
 void ZStackDoc::showSwcFullSkeleton(bool state)
 {
+  m_showingFullSwc = state;
+
   TStackObjectList &objList = getObjectList(ZStackObject::TYPE_SWC);
   for (TStackObjectList::iterator iter = objList.begin();
        iter != objList.end(); ++iter) {
     ZSwcTree *tree = dynamic_cast<ZSwcTree*>(*iter);
-    if (state) {
-      tree->addVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
-    } else {
-      tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
-    }
+    prepareSwc(tree);
     bufferObjectModified(tree->getTarget());
   }
 
-  notifyObjectModified();
+  processObjectModified();
 }
 
 void ZStackDoc::setResolution(double x, double y, double z, char unit)

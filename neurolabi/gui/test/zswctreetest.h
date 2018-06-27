@@ -659,7 +659,7 @@ TEST(SwcTree, Util)
   SwcTreeNode::setNode(tn, 1, 0, 0, 0, 0, 5, -1);
   tree2.addRegularRoot(tn);
 
-  std::vector<Swc_Tree_Node*> nodeArray = ZSwc::FindOverlapNode(tree1, tree2);
+  std::vector<Swc_Tree_Node*> nodeArray = zswc::FindOverlapNode(tree1, tree2);
   ASSERT_EQ(1, (int) nodeArray.size());
   ASSERT_EQ(tn, nodeArray.front());
 }

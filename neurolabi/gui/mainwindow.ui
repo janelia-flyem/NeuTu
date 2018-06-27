@@ -370,6 +370,7 @@
       <addaction name="actionExport_Segmentation_Result"/>
       <addaction name="actionHierarchical_Split"/>
       <addaction name="actionSegmentation_Project"/>
+      <addaction name="actionView_Segmentation_Meshes"/>
      </widget>
      <widget class="QMenu" name="menuNew">
       <property name="title">
@@ -424,6 +425,12 @@
       <addaction name="separator"/>
       <addaction name="actionMake_Movie_3"/>
      </widget>
+     <widget class="QMenu" name="menuNeuTu_Paper">
+      <property name="title">
+       <string>NeuTu Paper</string>
+      </property>
+      <addaction name="actionUpdate_Body_Info"/>
+     </widget>
      <addaction name="menuNew"/>
      <addaction name="menuFlyEmOpen"/>
      <addaction name="menuExport_2"/>
@@ -441,6 +448,7 @@
      <addaction name="menuTEM_Paper"/>
      <addaction name="menuMB_Paper"/>
      <addaction name="menuFIB19"/>
+     <addaction name="menuNeuTu_Paper"/>
      <addaction name="menuSeven_Column"/>
      <addaction name="separator"/>
      <addaction name="actionFlyEmSettings"/>
@@ -1557,6 +1565,16 @@
   <action name="actionMake_Movie_3">
    <property name="text">
     <string>Make Movie</string>
+   </property>
+  </action>
+  <action name="actionView_Segmentation_Meshes">
+   <property name="text">
+    <string>View Segmentation Meshes</string>
+   </property>
+  </action>
+  <action name="actionUpdate_Body_Info">
+   <property name="text">
+    <string>Update Body Info</string>
    </property>
   </action>
  </widget>

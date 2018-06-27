@@ -81,11 +81,15 @@ public slots:
   void exploreBody();
 
   void exportNeuronScreenshot();
+  void exportNeuronMeshScreenshot();
   void exportGrayscale();
   void exportBodyStack();
 
   void stressTestSlot();
   void diagnose();
+  void profile();
+
+  void showSettings();
 
   void showAndRaise();
 

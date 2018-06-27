@@ -3,6 +3,7 @@
 
 #include "ztestheader.h"
 #include "zintpoint.h"
+#include "zpoint.h"
 
 #ifdef _USE_GTEST_
 
@@ -13,6 +14,55 @@ TEST(ZIntPoint, Basic)
 
   pt.invalidate();
   ASSERT_FALSE(pt.isValid());
+}
+
+TEST(ZPoint, Basic)
+{
+  ZPoint pt(0, 0, 0);
+  ASSERT_TRUE(pt.isApproxOrigin());
+
+  pt.setX(ZPoint::MIN_DIST * 0.5);
+  ASSERT_TRUE(pt.isApproxOrigin());
+
+  pt.normalize();
+//  pt.print();
+  ASSERT_FALSE(pt.isUnitVector());
+
+  pt.setX(ZPoint::MIN_DIST * 2.0);
+  ASSERT_FALSE(pt.isApproxOrigin());
+
+  pt.normalize();
+  ASSERT_TRUE(pt.isUnitVector());
+}
+
+TEST(ZPoint, Relation)
+{
+  ZPoint pt1(1, 0, 0);
+  ZPoint pt2(0, 1, 0);
+  ASSERT_TRUE(pt1.isPendicularTo(pt2));
+  ASSERT_TRUE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0, 0, 0);
+  ASSERT_FALSE(pt1.isPendicularTo(pt2));
+  ASSERT_FALSE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0.1, 0, 0);
+  ASSERT_TRUE(pt1.isPendicularTo(pt2));
+  ASSERT_TRUE(pt2.isPendicularTo(pt1));
+
+  pt1.set(0.1, 0.1, 0);
+  ASSERT_FALSE(pt1.isPendicularTo(pt2));
+  ASSERT_FALSE(pt2.isPendicularTo(pt1));
+
+  pt1.set(1, 1, 0);
+  pt2.set(2, 2, 0);
+  ASSERT_TRUE(pt1.isParallelTo(pt2));
+
+  pt2.set(2.1, 2, 0);
+  ASSERT_FALSE(pt1.isParallelTo(pt2));
+
+  pt2.set(0, 0, 0);
+  ASSERT_FALSE(pt1.isParallelTo(pt2));
 }
 
 TEST(ZIntPoint, Operator)
@@ -108,6 +158,15 @@ TEST(ZIntPoint, Operator)
 
   pt1 =  ZIntPoint(10, 20, 30) / ZIntPoint(1, 2, 3);
   ASSERT_EQ(pt1, ZIntPoint(10, 10, 10));
+
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(2, 2, 2)));
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 2, 1)));
+  ASSERT_TRUE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 1, 2)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 1, 1)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 1, 1)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(1, 2, 0)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 1, 2)));
+  ASSERT_FALSE(ZIntPoint(1, 1, 1).definiteLessThan(ZIntPoint(0, 2, 2)));
 }
 
 #endif

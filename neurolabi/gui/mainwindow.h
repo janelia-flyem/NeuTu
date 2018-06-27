@@ -18,7 +18,7 @@
 #include "dialogs/autosaveswclistdialog.h"
 #include "zactionactivator.h"
 #include "dialogs/flyemneuronthumbnaildialog.h"
-#include "zstackdoc.h"
+#include "zstackdocptr.h"
 #include "newprojectmainwindow.h"
 #include "zqtbarprogressreporter.h"
 #include "zmessageprocessor.h"
@@ -28,6 +28,7 @@ class ZStackFrame;
 class QMdiArea;
 class QActionGroup;
 class ZStackDoc;
+class ZStackDocReader;
 class QProgressDialog;
 class BcAdjustDialog;
 class QUndoGroup;
@@ -149,6 +150,9 @@ public:
 public: //Testing routines
   void testFlyEmProofread();
 
+public: //Special functions
+  void runNeuTuPaper();
+
 
 signals:
   void dvidRequestCanceled();
@@ -207,7 +211,7 @@ public slots:
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
-  void createDvidFrame();
+//  void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
   ZProofreadWindow * startProofread();
@@ -518,6 +522,10 @@ private slots:
 
   void on_actionMake_Movie_3_triggered();
 
+  void on_actionView_Segmentation_Meshes_triggered();
+
+  void on_actionUpdate_Body_Info_triggered();
+
 private:
   void createActions();
   void createFileActions();
@@ -727,7 +735,7 @@ private:
 
   QMap<QString, QAction*> m_actionMap;
 
-  ZDvidClient *m_dvidClient;
+//  ZDvidClient *m_dvidClient;
   ZStackFrame *m_dvidFrame;
   //DvidObjectDialog *m_dvidObjectDlg;
   DvidImageDialog *m_dvidImageDlg;
@@ -765,8 +773,8 @@ private:
   //QSettings m_settings;
   QString m_version;
 
-  ZProgressManager *m_progressManager;
-  ZQtBarProgressReporter m_specialProgressReporter;
+//  ZProgressManager *m_progressManager;
+//  ZQtBarProgressReporter m_specialProgressReporter;
 
   ZMessageManager *m_messageManager;
   ZTestDialog *m_testDlg;

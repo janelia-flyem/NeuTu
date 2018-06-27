@@ -32,6 +32,8 @@ public:
   void load(const QString& filename, ZMesh& mesh) const;
   void save(const ZMesh& mesh, const QString& filename, std::string format) const;
 
+  QByteArray writeToMemory(const ZMesh& mesh, std::string format) const;
+
   void loadFromMemory(
       const QByteArray &buffer, ZMesh &mesh, const std::string &format) const;
   ZMesh* loadFromMemory(

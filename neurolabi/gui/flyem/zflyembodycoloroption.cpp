@@ -1,24 +1,11 @@
 #include "zflyembodycoloroption.h"
 
-//QMap<QString, ZFlyEmBodyColorOption::EColorOption>
-//ZFlyEmBodyColorOption::m_colorNameList = ZFlyEmBodyColorOption::InitColorNameList();
-
 QMap<QString, ZFlyEmBodyColorOption::EColorOption>
 ZFlyEmBodyColorOption::m_colorMap = ZFlyEmBodyColorOption::InitColorMap();
 
 ZFlyEmBodyColorOption::ZFlyEmBodyColorOption()
 {
 }
-
-/*
-QList<QString> ZFlyEmBodyColorOption::InitColorNameList()
-{
-  QList<QString> colorNameList;
-  colorNameList << "Normal" << "Name" << "Sequencer" << "Focused";
-
-  return colorNameList;
-}
-*/
 
 QMap<QString, ZFlyEmBodyColorOption::EColorOption>
 ZFlyEmBodyColorOption::InitColorMap()
@@ -27,7 +14,7 @@ ZFlyEmBodyColorOption::InitColorMap()
   colorMap["Normal"] = BODY_COLOR_NORMAL;
   colorMap["Name"] = BODY_COLOR_NAME;
   colorMap["Sequencer"] = BODY_COLOR_SEQUENCER;
-  colorMap["Focused"] = BODY_COLOR_FOCUSED;
+  colorMap["Protocol"] = BODY_COLOR_PROTOCOL;
 
   return colorMap;
 }

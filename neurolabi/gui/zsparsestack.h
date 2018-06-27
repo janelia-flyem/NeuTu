@@ -3,11 +3,11 @@
 
 #include <iostream>
 
-#include "zobject3dscan.h"
 #include "bigdata/zstackblockgrid.h"
 #include "zuncopyable.h"
 
 class ZIntCuboid;
+class ZObject3dScan;
 
 /*!
  * \brief Sparse stack representation
@@ -26,6 +26,21 @@ public:
   void deprecate(EComponent component);
   bool isDeprecated(EComponent component) const;
 
+  ZIntPoint getDsIntv() const {
+    return m_dsIntv;
+  }
+
+  void setDsIntv(int x, int y, int z) {
+    m_dsIntv.set(x, y, z);
+  }
+
+  void setDsIntv(const ZIntPoint &dsIntv) {
+    m_dsIntv = dsIntv;
+  }
+
+  void pushDsIntv(int x, int y, int z);
+  void pushDsIntv(const ZIntPoint &dsIntv);
+
   /*!
    * \brief Get the dense stack representation of the sparse stack.
    *
@@ -34,11 +49,13 @@ public:
   ZStack* getStack();
   const ZStack* getStack() const;
 
-  ZStack *makeStack(const ZIntCuboid &box, ZIntPoint *dsIntv = NULL);
+  ZStack *makeStack(
+      const ZIntCuboid &box, bool preservingGap);
+  ZStack *makeStack(const ZIntCuboid &box, size_t maxVolume, bool preservingGap);
 
 //  Stack* makeRawStack(const ZIntCuboid &box);
 
-  ZStack *makeIsoDsStack(size_t maxVolume);
+  ZStack *makeIsoDsStack(size_t maxVolume, bool preservingGap);
   ZStack* makeDsStack(int xintv, int yintv, int zintv);
 
   static bool DownsampleRequired(const ZIntCuboid &box);
@@ -48,9 +65,7 @@ public:
   /*!
    * \brief Get the downsample interval for producing the dense stack.
    */
-  inline const ZIntPoint& getDownsampleInterval() const {
-    return m_dsIntv;
-  }
+  ZIntPoint getDenseDsIntv() const;
 
   /*!
    * \brief Get a slice of the sparse stack
@@ -58,6 +73,9 @@ public:
    * The caller is responsible for deleting the returned pointer.
    */
   ZStack* getSlice(int z) const;
+
+  double getValue(int x,int y,int z) const ;
+  void getLineValue(int x,int y,int z,int cnt,double* buffer) const ;
 
   /*!
    * \brief Get the maximum intensity projection of the sparse stack
@@ -123,17 +141,25 @@ public:
 
   void printInfo() const;
 
+  ZSparseStack* downsample(int xintv, int yintv, int zintv);
+
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
+                               const ZStackBlockGrid &stackGrid,
+                               const int baseValue);
+
+  static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
+                               const ZObject3dScan &border,
                                const ZStackBlockGrid &stackGrid,
                                const int baseValue);
 
 private:
   ZObject3dScan *m_objectMask;
   ZStackBlockGrid *m_stackGrid;
+  ZIntPoint m_dsIntv;
 
   mutable ZStack *m_stack;
-  mutable ZIntPoint m_dsIntv;
+//  mutable ZIntPoint m_dsIntv;
 
   int m_baseValue;
 };

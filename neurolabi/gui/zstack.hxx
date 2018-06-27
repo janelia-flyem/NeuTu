@@ -564,6 +564,7 @@ public: /* processing routines */
 //  inline const ZResolution& getResolution() const { return m_resolution; }
 
   void pushDsIntv(int dx, int dy, int dz);
+  void pushDsIntv(const ZIntPoint &dsIntv);
 
   ZIntPoint getDsIntv() const {
     return m_dsIntv;
@@ -664,7 +665,7 @@ private:
 //  bool m_isLSMFile;
 
 #ifdef _NEUTUBE_
-  bool m_usingChannelColors = true; //Temporary hack.
+  bool m_usingChannelColors = false; //Temporary hack.
   //Need to make channelColors on demand in the future.
   std::vector<ZVec3Parameter*> m_channelColors;
 

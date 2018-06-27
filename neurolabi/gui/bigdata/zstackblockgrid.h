@@ -33,6 +33,7 @@ public:
 
   ZStack* getStack(const ZIntPoint &blockIndex) const;
 
+  bool  hasStack(int x,int y,int z) const ;
   void clearStack();
 
   ZStack* toStack() const;

@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace NeuTube3D {
+namespace neutube3d {
 
 enum EVolumeRenderingMode {
   VR_AUTO = 0, VR_ALPHA_BLENDING, VR_MIP, VR_MIP_OPAQUE, VR_LOCAL_MIP,
@@ -19,10 +19,15 @@ enum EWindowType {
   TYPE_MESH
 };
 
+enum ERendererLayer {
+  LAYER_SWC, LAYER_PUNCTA, LAYER_GRAPH, LAYER_SURFACE, LAYER_VOLUME,
+  LAYER_TODO, LAYER_MESH, LAYER_ROI, LAYER_DECORATION
+};
+
 const char* GetVolumeName();
 const char* GetVolumeRenderingModeName(EVolumeRenderingMode mode);
 
-std::string GetWindowKeyString(NeuTube3D::EWindowType type);
+std::string GetWindowKeyString(neutube3d::EWindowType type);
 
 }
 

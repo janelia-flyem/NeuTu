@@ -65,9 +65,12 @@ public:
 
   bool isNodePicking() const;
 
-
   void enablePicking(bool picking) {
     m_enablePicking = picking;
+  }
+
+  void setSwcTopologyMutable(bool on) {
+    m_swcTopologyMutable = on;
   }
 
   virtual void configure(const ZJsonObject &obj) override;
@@ -108,8 +111,16 @@ signals:
   void addNewSwcTreeNode(double x, double y, double z, double r);
   void extendSwcTreeNode(double x, double y, double z, double r);
 
-protected:
+protected slots:
   void prepareColor();
+
+protected:
+  void prepareColorForImmutable();
+  void setColorScheme();
+  bool isBranchTypeColor() const;
+  void prepareColorMapper(
+      const std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>> &colorMapper);
+  glm::vec4 getTopologyColor(const Swc_Tree_Node *tn);
 
   void adjustWidgets();
 
@@ -118,12 +129,16 @@ protected:
   virtual void process(Z3DEye /*unused*/) override;
 
   virtual void registerPickingObjects() override;
+  void registerPickingObjectsForImmutable();
+
+  void registerPickingNodes(ZSwcTree *tree);
 
   virtual void deregisterPickingObjects() override;
 
   void renderPicking(Z3DEye eye) override;
 
   void prepareData();
+  void prepareDataForImmutable();
 
   void notTransformedTreeBound(ZSwcTree* tree, ZBBox<glm::dvec3>& result) const;
 
@@ -141,7 +156,14 @@ private:
   void initLabelTypeColor();
   void initSubclassTypeColor();
 
-  void decompseSwcTree();
+  void decomposeSwcTree();
+  void decomposeSwcTreeForImmutable();
+
+  void addSelectionLinesForImmutable();
+  void addSelectionBox(const std::vector<SwcTreeNode::Pair> &nodePairList);
+  void addSelectionBox(const std::vector<Swc_Tree_Node*> &nodeList);
+
+  void prepareNodePairData(const Swc_Tree_Node *tn1, const Swc_Tree_Node *tn2);
 
   glm::vec4 getColorByType(Swc_Tree_Node *n);
 
@@ -164,9 +186,13 @@ private:
   void clearDecorateSwcList();
 
   void updateBiocytinWidget();
-  void updateTreeColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+  bool updateTreeColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
   void updateWidgetGroup();
-  void updateColorParameter(const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+  bool updateColorParameter(
+      const std::map<ZSwcTree*, size_t> &sourceIndexMapper);
+
+  std::shared_ptr<ZVec4Parameter> getIndvidualColorParam(int index);
+  std::shared_ptr<ZVec4Parameter> getRandomColorParam(int index);
 
 private:
   Z3DLineRenderer m_lineRenderer;
@@ -177,8 +203,12 @@ private:
   ZStringIntOptionParameter m_renderingPrimitive;
   ZStringIntOptionParameter m_colorMode;
 
-  std::map<ZSwcTree*, std::unique_ptr<ZVec4Parameter>> m_individualTreeColorMapper;
-  std::map<ZSwcTree*, std::unique_ptr<ZVec4Parameter>> m_randomTreeColorMapper;
+  std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>> m_individualTreeColorMapper;
+  std::vector<std::shared_ptr<ZVec4Parameter> > m_individualTreeColorList;
+
+  std::map<ZSwcTree*, std::shared_ptr<ZVec4Parameter>> m_randomTreeColorMapper;
+  std::vector<std::shared_ptr<ZVec4Parameter> > m_randomTreeColorList;
+
   std::map<int, std::unique_ptr<ZVec4Parameter>> m_biocytinColorMapper;
   std::map<int, size_t> m_subclassTypeColorMapper;
 
@@ -196,6 +226,11 @@ private:
   std::vector<ZSwcTree*> m_registeredSwcList;    // used for picking
   std::vector<ZSwcTree*> m_decorateSwcList;  //For decoration. Self-owned.
   std::vector<Swc_Tree_Node*> m_registeredSwcTreeNodeList;    // used for picking
+
+  std::map<ZSwcTree*, std::vector<Swc_Tree_Node*>>
+      m_registeredSwcTreeNodeMap;
+  std::map<ZSwcTree*, std::vector<SwcTreeNode::Pair>>
+      m_registeredSwcTreeNodePairMap;
 
   ZEventListenerParameter m_selectSwcEvent;
   glm::ivec2 m_startCoord;
@@ -219,6 +254,12 @@ private:
 
   std::vector<std::vector<std::pair<Swc_Tree_Node*, Swc_Tree_Node*>>> m_decompsedNodePairs;
   std::vector<std::vector<Swc_Tree_Node*>> m_decomposedNodes;
+
+  std::map<ZSwcTree*, std::vector<Swc_Tree_Node*>> m_decomposedNodeMap;
+  std::map<ZSwcTree*, std::vector<Swc_Tree_Node*>> m_sortedNodeMap;
+  std::map<ZSwcTree*, std::vector<
+      std::pair<Swc_Tree_Node*, Swc_Tree_Node*>>> m_decomposedNodePairMap;
+
   std::vector<Swc_Tree_Node*> m_sortedNodeList;
 //  std::set<Swc_Tree_Node*> m_allNodesSet;  // for fast search
   std::set<int> m_allNodeType;   // all node type of current opened swc, used for adjust widget (hide irrelavant stuff)
@@ -231,11 +272,14 @@ private:
 
   InteractionMode m_interactionMode = Select;
   ZSwcColorScheme m_colorScheme;
+  ZSwcColorScheme m_individualColorScheme;
+  ZColorScheme m_randomColorScheme;
 
   bool m_enableCutting = true;
   bool m_enablePicking = true;
   bool m_forceNodePicking = false;
   bool m_updatingWidget = true;
+  bool m_swcTopologyMutable = true;
 
   QVector<QString> m_guiNameList;
 

@@ -14,6 +14,8 @@
 #include "zswctree.h"
 #include "zclosedcurve.h"
 #include "zintcuboid.h"
+#include "zstack.hxx"
+#include "zarray.h"
 
 using namespace std;
 
@@ -162,6 +164,7 @@ static int ComputeLightIntensity(
       norm = fabs(dy / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     case neutube::Z_AXIS:
+    case neutube::A_AXIS:
       norm = fabs(dz / sqrt(dx * dx + dy * dy + dz * dz));
       break;
     }
@@ -198,6 +201,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     outHeight = depth;
     break;
   case neutube::Z_AXIS:
+  case neutube::A_AXIS:
     outWidth = width;
     outHeight = height;
     break;
@@ -252,6 +256,7 @@ Stack* misc::computeNormal(const Stack *stack, neutube::EAxis axis)
     }
   }
   break;
+  case neutube::A_AXIS:
   case neutube::Z_AXIS:
   for (int y = 0; y < C_Stack::height(stack); ++y) {
     for (int x = 0; x < C_Stack::width(stack); ++x) {
@@ -557,12 +562,33 @@ int misc::getIsoDsIntvFor3DVolume(double dsRatio, bool powed)
     return 0;
   }
 
-  int s = int(std::ceil(Cube_Root(dsRatio)));
+  if (powed) {
+    if (dsRatio <= 8) {
+      return 1;
+    } else if (dsRatio <= 27) {
+      return 2;
+    } else if (dsRatio <= 64) {
+      return 3;
+    }
+  }
+
+  int s = int(std::ceil(Cube_Root(dsRatio))); //upper bound of interval
 
   if (powed) {
     int k, m;
     pow2decomp(s, &k, &m);
-    s = iround(std::pow((double) 2, k + 1));
+    if (m > 1) {
+      ++k;
+    }
+    s = iround(std::pow((double) 2, k));
+
+    if (s * s * s >= dsRatio * 8) { //Dealing with rounding error
+      s /= 2;
+    }
+  } else {
+    if ((s - 1) * (s - 1) * (s - 1) >= dsRatio) { //Dealing with rounding error
+      --s;
+    }
   }
 
   s -= 1;
@@ -621,6 +647,19 @@ ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
   }
 
   return curve;
+}
+
+ZIntCuboid misc::GetBoundBox(const ZArray *array)
+{
+  ZIntCuboid box;
+  if (array != NULL) {
+    box.setFirstCorner(array->getStartCoordinate(0),
+                       array->getStartCoordinate(1),
+                       array->getStartCoordinate(2));
+    box.setSize(array->getDim(0), array->getDim(1), array->getDim(2));
+  }
+
+  return box;
 }
 
 ZCuboid misc::CutBox(const ZCuboid &box1, const ZIntCuboid &box2)
@@ -743,4 +782,9 @@ double misc::SampleStack(
   }
 
   return v;
+}
+
+size_t misc::CountOverlap(const ZObject3dScan &obj1, const ZObject3dScan &obj2)
+{
+  return obj1.intersect(obj2).getVoxelNumber();
 }

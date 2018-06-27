@@ -21,10 +21,6 @@ public:
   ZFlyEmToDoItem(const ZIntPoint &pos);
   ZFlyEmToDoItem(int x, int y, int z);
 
-  enum EToDoAction {
-    TO_DO, TO_MERGE, TO_SPLIT
-  };
-
   const std::string& className() const;
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutube::EAxis sliceAxis) const;
@@ -39,10 +35,18 @@ public:
   bool isChecked() const;
   void setChecked(bool checked);
 
-  void setAction(EToDoAction action);
-  EToDoAction getAction() const;
+  void setAction(neutube::EToDoAction action);
+  neutube::EToDoAction getAction() const;
 
   QColor getDisplayColor() const;
+
+  void removeActionTag();
+
+public:
+  static const char *ACTION_KEY;
+  static const char *ACTION_SPLIT;
+  static const char *ACTION_MERGE;
+  static const char *ACTION_SPLIT_TAG;
 
 private:
   void init();

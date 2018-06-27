@@ -11,6 +11,7 @@
 ZIntCuboidObj::ZIntCuboidObj()
 {
   m_type = GetType();
+  useCosmeticPen(true);
 }
 
 bool ZIntCuboidObj::isSliceVisible(int /*z*/, neutube::EAxis /*sliceAxis*/) const
@@ -69,6 +70,22 @@ bool ZIntCuboidObj::isOnSlice(int z, neutube::EAxis sliceAxis) const
       z <= getLastCorner().getSliceCoord(sliceAxis);
 }
 
+void ZIntCuboidObj::setGridInterval(int intv)
+{
+  m_gridIntv = intv;
+}
+
+namespace {
+void NextMark(int &x, int intv, int &remain)
+{
+  x += intv;
+  if (remain > 0) {
+    ++x;
+    --remain;
+  }
+}
+}
+
 void ZIntCuboidObj::display(
     ZPainter &painter, int slice, EDisplayStyle /*option*/,
     neutube::EAxis sliceAxis) const
@@ -85,6 +102,8 @@ void ZIntCuboidObj::display(
 
   QColor color = m_color;
   QPen pen(color);
+
+  pen.setWidthF(getPenWidth());
 
   if(isOnSlice(z, sliceAxis) || slice < 0) {
     if (isSelected()) {
@@ -113,6 +132,40 @@ void ZIntCuboidObj::display(
   painter.drawRect(firstCorner.getX(), firstCorner.getY(),
                    lastCorner.getX() - firstCorner.getX() + 1,
                    lastCorner.getY() - firstCorner.getY() + 1);
+
+//  pen.setWidthF(getDefaultPenWidth());
+//  painter.setPen(pen);
+
+  if (hasVisualEffect(neutube::display::Box::VE_GRID)) {
+    const int gridIntervalHint = m_gridIntv;
+
+    int x1 = firstCorner.getX();
+    int y1 = firstCorner.getY();
+    int x2 = lastCorner.getX() + 1;
+    int y2 = lastCorner.getY() + 1;
+
+    int colCount = getWidth() / gridIntervalHint;
+    if (colCount > 1) {
+      int colInterval = getWidth() / colCount;
+      int colRemain = getWidth() % colCount;
+      int x = x1;
+      for (int i = 1; i < colCount; ++i) {
+        NextMark(x, colInterval, colRemain);
+        painter.drawLine(x, y1, x, y2);
+      }
+    }
+
+    int rowCount = getHeight() / gridIntervalHint;
+    if (rowCount > 1) {
+      int rowInterval = getHeight() / rowCount;
+      int rowRemain = getHeight() % rowCount;
+      int y = y1;
+      for (int i = 1; i < rowCount; ++i) {
+        NextMark(y, rowInterval, rowRemain);
+        painter.drawLine(x1, y, x2, y);
+      }
+    }
+  }
 }
 
 bool ZIntCuboidObj::hit(double x, double y, neutube::EAxis axis)
@@ -151,6 +204,13 @@ bool ZIntCuboidObj::isValid() const
 void ZIntCuboidObj::join(const ZIntCuboid &cuboid)
 {
   m_cuboid.join(cuboid);
+}
+
+void ZIntCuboidObj::boundBox(ZIntCuboid *box) const
+{
+  if (box != NULL) {
+    *box = getCuboid();
+  }
 }
 
 ZSTACKOBJECT_DEFINE_CLASS_NAME(ZIntCuboidObj)

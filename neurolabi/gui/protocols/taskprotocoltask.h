@@ -7,6 +7,8 @@
 #include <QJsonObject>
 #include <QSet>
 
+class QMenu;
+
 class TaskProtocolTask: public QObject
 {
     Q_OBJECT
@@ -17,11 +19,12 @@ public:
 
     bool completed() const;
     void setCompleted(bool completed);
-    QSet<uint64_t> visibleBodies();
-    QSet<uint64_t> selectedBodies();
+    const QSet<uint64_t> & visibleBodies();
+    const QSet<uint64_t> & selectedBodies();
 
     virtual void beforeNext();
     virtual void beforePrev();
+    virtual void beforeDone();
 
     bool loadJson(QJsonObject json);
     QJsonObject toJson();
@@ -36,6 +39,11 @@ public:
     virtual QString actionString() = 0;
     virtual QString targetString() = 0;    
     virtual QWidget * getTaskWidget();
+    virtual QMenu * getTaskMenu();
+    virtual bool allowCompletion();
+
+signals:
+    void bodiesUpdated();
 
 protected:
     static const QString KEY_COMPLETED;
@@ -49,6 +57,8 @@ protected:
     QSet<QString> m_tags;
 
     QString objectToString(QJsonObject json);
+
+    void updateBodies(const QSet<uint64_t> &visible, const QSet<uint64_t> &selected);
 
 private:
     bool loadStandard(QJsonObject json);

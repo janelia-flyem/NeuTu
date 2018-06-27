@@ -37,6 +37,8 @@ public:
     return config;
   }
 
+  void init(const std::string &userName);
+
 #ifdef _QT_GUI_USED_
   /*!
    * \brief Get persistent settings.
@@ -59,6 +61,10 @@ public:
   static void SetNeuTuServer(const QString &path);
   static QString GetTaskServer();
   static void SetTaskServer(const QString &path);
+  static bool NamingSynapse();
+  static bool NamingPsd();
+  static void SetNamingSynapse(bool on);
+  static void SetNamingPsd(bool on);
 
   static void SetDataDir(const QString &dataDir);
 #endif
@@ -71,10 +77,22 @@ public:
   void enableAutoStatusCheck(bool on);
   bool autoStatusCheck() const;
   bool parallelTileFetching() const;
+  bool lowtisPrefetching() const;
   void setParallelTileFetching(bool on);
+  void enableLowtisPrefetching(bool on);
+  bool namingSynapse() const;
+  bool namingPsd() const;
+  void setNamingSynapse(bool on);
+  void setNamingPsd(bool on);
 
   void setAdvancedMode(bool on);
   bool isAdvancedMode() const;
+
+  void setMeshSplitThreshold(size_t thre);
+  size_t getMeshSplitThreshold() const;
+
+  static void SetMeshSplitThreshold(size_t thre);
+  static size_t GetMeshSplitThreshold();
 
   static void SetAdvancedMode(bool on);
   static bool IsAdvancedMode();
@@ -91,6 +109,8 @@ public:
   static void SetVerboseLevel(int level);
   static bool ParallelTileFetching();
   static void SetParallelTileFetching(bool on);
+  static void EnableLowtisPrefetching(bool on);
+  static bool LowtisPrefetching();
 
   /*!
    * \brief Configure from a json object.
@@ -160,6 +180,12 @@ public:
   static std::string GetSoftwareName();
   static void SetDefaultSoftwareName();
   static void SetTestSoftwareName();
+
+  std::string getUserName() const;
+  static std::string GetUserName();
+
+  void setUserName(const std::string &name);
+  static void SetUserName(const std::string &name);
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;
@@ -405,7 +431,6 @@ private:
   ~NeutubeConfig();
   void operator=(const NeutubeConfig&);
 
-  void init();
   void updateLogDir();
 
 private:
@@ -427,6 +452,7 @@ private:
 
   std::string m_dataPath;
   std::string m_developPath;
+  std::string m_userName;
 
   MainWindowConfig m_mainWindowConfig;
   Z3DWindowConfig m_z3dWindowConfig;
@@ -444,6 +470,7 @@ private:
   bool m_loggingProfile;
   int m_verboseLevel;
   bool m_advancedMode = false;
+  size_t m_meshSplitThreshold = 5000000;
 
   ZMessageReporter *m_messageReporter; //Obsolete
 

@@ -2353,26 +2353,33 @@ Swc_Tree* Swc_Tree_Parse_String(char *swc_string)
   map[0].tree_node = tree->root;
 
   for (i = 1; i <= max_id + 1; i++) {
-    if (map[i].tree_node != NULL) {
-      map[i].tree_node->parent = 
-	map[map[i].tree_node->node.parent_id + 1].tree_node;
+    Swc_Tree_Node *tn = map[i].tree_node;
+    if (tn != NULL) {
+      BOOL is_id_normal = TRUE;
+      if (tn->node.id == tn->node.parent_id) {
+        printf("WARNING : Node %d has circuilar parent id.\n",
+            tn->node.parent_id);
+        is_id_normal = FALSE;
+      } else if (map[tn->node.parent_id + 1].tree_node == NULL) {
+        printf("WARNING : Node %d does not exist.\n",
+            tn->node.parent_id);
+        is_id_normal = FALSE;
+      }
 
-      if (map[map[i].tree_node->node.parent_id + 1].tree_node == NULL) {
-        printf("WARNING : Node %d does not exist.\n", 
-            map[i].tree_node->node.parent_id);
-        map[i].tree_node->parent = tree->root;
-        map[i].tree_node->node.parent_id = -1;
+      if (is_id_normal == TRUE) {
+        tn->parent = map[tn->node.parent_id + 1].tree_node;
+      } else {
+        tn->parent = tree->root;
+        tn->node.parent_id = -1;
       }
 
       Swc_Tree_Node *sibling = 
-        map[map[i].tree_node->node.parent_id + 1].tree_node->first_child;
+        map[tn->node.parent_id + 1].tree_node->first_child;
       if (sibling == NULL) {
-	map[map[i].tree_node->node.parent_id + 1].tree_node->first_child = 
-	  map[i].tree_node;
+	map[tn->node.parent_id + 1].tree_node->first_child = tn;
       } else {
-        map[i].tree_node->next_sibling = sibling;
-        map[map[i].tree_node->node.parent_id + 1].tree_node->first_child = 
-          map[i].tree_node;
+        tn->next_sibling = sibling;
+        map[tn->node.parent_id + 1].tree_node->first_child = tn;
         
         /*
 	Swc_Tree_Node *sibling = 

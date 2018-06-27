@@ -18,6 +18,8 @@ public:
   QModelIndex getIndex(ZMesh* mesh, int col = 0) const;
   ZMesh* getMesh(const QModelIndex &index) const;
 
+  void processObjectModified(const ZStackObjectInfoSet &infoSet);
+
 public slots:
   void updateModelData();
 

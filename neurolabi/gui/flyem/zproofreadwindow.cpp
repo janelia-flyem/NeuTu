@@ -59,7 +59,7 @@ void ZProofreadWindow::init()
 
   QWidget *widget = new QWidget(this);
 
-  QHBoxLayout *layout = new QHBoxLayout(this);
+  QHBoxLayout *layout = new QHBoxLayout;
   layout->setMargin(1);
   widget->setLayout(layout);
 
@@ -71,13 +71,13 @@ void ZProofreadWindow::init()
 
   layout->addWidget(m_mainMvc);
 
-  QVBoxLayout *controlLayout = new QVBoxLayout(this);
+  QVBoxLayout *controlLayout = new QVBoxLayout;
 
   m_controlGroup = new QStackedWidget(this);
   controlLayout->addWidget(m_controlGroup);
 
 
-  QHBoxLayout *titleLayout = new QHBoxLayout(this);
+  QHBoxLayout *titleLayout = new QHBoxLayout;
   titleLayout->addWidget(ZWidgetFactory::MakeHorizontalLine(this));
   QLabel *titleLabel = new QLabel("<font color=\"Green\">Message</font>", this);
   titleLabel->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
@@ -167,6 +167,7 @@ void ZProofreadWindow::init()
 
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
+  m_mainMvc->configure();
 
   createDialog();
   m_flyemDataLoader = new ZFlyEmDataLoader(this);
@@ -224,6 +225,16 @@ void ZProofreadWindow::diagnose()
   m_mainMvc->diagnose();
 }
 
+void ZProofreadWindow::profile()
+{
+  m_mainMvc->profile();
+}
+
+void ZProofreadWindow::showSettings()
+{
+  m_mainMvc->showSetting();
+}
+
 QProgressDialog* ZProofreadWindow::getProgressDialog()
 {
   if (m_progressDlg == NULL) {
@@ -273,6 +284,12 @@ void ZProofreadWindow::createMenu()
   connect(exportScreenshotAction, SIGNAL(triggered()),
           this, SLOT(exportNeuronScreenshot()));
   exportMenu->addAction(exportScreenshotAction);
+
+  QAction *exportMeshScreenshotAction = new QAction("Neuron Mesh Screenshot", this);
+  connect(exportMeshScreenshotAction, SIGNAL(triggered()),
+          this, SLOT(exportNeuronMeshScreenshot()));
+  exportMenu->addAction(exportMeshScreenshotAction);
+
 
   QAction *exportGrayscaleAction = new QAction("Grayscale", this);
   connect(exportGrayscaleAction, SIGNAL(triggered()),
@@ -429,6 +446,14 @@ void ZProofreadWindow::createMenu()
   QAction *diagnoseAction = new QAction("Diagnose", this);
   connect(diagnoseAction, SIGNAL(triggered()), this, SLOT(diagnose()));
   m_advancedMenu->addAction(diagnoseAction);
+
+  QAction *settingAction = new QAction(" Settings", this);
+  connect(settingAction, SIGNAL(triggered()), this, SLOT(showSettings()));
+  m_advancedMenu->addAction(settingAction);
+
+  QAction *profileAction = new QAction("Profile", this);
+  connect(profileAction, SIGNAL(triggered()), this, SLOT(profile()));
+  m_advancedMenu->addAction(profileAction);
 
 
 //  m_viewMenu->setEnabled(false);
@@ -805,6 +830,17 @@ void ZProofreadWindow::exportNeuronScreenshot()
     bodyIdArray.push_back(134974661);
     */
     m_mainMvc->exportNeuronScreenshot(
+          bodyIdArray, m_bodyScreenshotDlg->getFrameWidth(),
+          m_bodyScreenshotDlg->getFrameHeight(),
+          m_bodyScreenshotDlg->getOutputPath());
+  }
+}
+
+void ZProofreadWindow::exportNeuronMeshScreenshot()
+{
+  if (m_bodyScreenshotDlg->exec()) {
+    std::vector<uint64_t> bodyIdArray = m_bodyScreenshotDlg->getBodyIdArray();
+    m_mainMvc->exportNeuronMeshScreenshot(
           bodyIdArray, m_bodyScreenshotDlg->getFrameWidth(),
           m_bodyScreenshotDlg->getFrameHeight(),
           m_bodyScreenshotDlg->getOutputPath());

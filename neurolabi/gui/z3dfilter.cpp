@@ -18,6 +18,7 @@
 #include <QWidget>
 
 #include "QsLog.h"
+#include "neutubeconfig.h"
 #include "zsysteminfo.h"
 #include "z3dport.h"
 #include "z3dinteractionhandler.h"
@@ -26,7 +27,7 @@
 #include "zparameter.h"
 #include "z3drenderport.h"
 #include "zvertexarrayobject.h"
-#include "z3dview.h"
+//#include "z3dview.h"
 
 Z3DFilter::Z3DFilter(QObject* parent)
   : QObject(parent)
@@ -192,9 +193,9 @@ void Z3DFilter::removePort(Z3DOutputPortBase& port)
 
 void Z3DFilter::addParameter(ZParameter& para, State inv)
 {
-  LINFO() << "Adding" << &para << para.name();
+  ZOUT(LTRACE(), 5) << "Adding" << &para << para.name();
   if (m_parameterNames.find(para.name()) != m_parameterNames.end()) {
-//    LOG(FATAL) << "Duplicated para name " << para.name();
+    LOG(FATAL) << "Duplicated para name " << para.name();
   }
   m_parameters.push_back(&para);
   m_parameterNames.insert(para.name());
@@ -205,14 +206,14 @@ void Z3DFilter::addParameter(ZParameter& para, State inv)
 
 void Z3DFilter::removeParameter(const ZParameter &para)
 {
-  LINFO() << "Removing" << &para << para.name();
+  ZOUT(LTRACE(), 5) << "Removing" << &para << para.name();
   if (!parameter(para.name())) {
     LOG(ERROR) << className() << " parameter " << para.name() << " cannot be removed, it does not exist";
   } else {
     para.disconnect(this);
     m_parameters.erase(std::find(m_parameters.begin(), m_parameters.end(), &para));
     m_parameterNames.erase(para.name());
-    LINFO() << "Removed";
+    ZOUT(LTRACE(), 5) << "Removed";
   }
 }
 

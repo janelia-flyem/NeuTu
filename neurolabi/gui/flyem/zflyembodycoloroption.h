@@ -10,7 +10,7 @@ public:
   ZFlyEmBodyColorOption();
 
   enum EColorOption {
-    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER, BODY_COLOR_FOCUSED
+    BODY_COLOR_NORMAL, BODY_COLOR_NAME, BODY_COLOR_SEQUENCER, BODY_COLOR_PROTOCOL
   };
 
   static QString GetColorMapName(EColorOption option);

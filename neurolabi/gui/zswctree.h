@@ -14,7 +14,7 @@
 
 #include "tz_swc_tree.h"
 #include "zstackobject.h"
-#include "zpoint.h"
+//#include "zpoint.h"
 #include "zswcpath.h"
 #include "zcuboid.h"
 #include "zuncopyable.h"
@@ -28,6 +28,7 @@ class QPointF;
 class ZClosedCurve;
 class ZRect2d;
 class ZJsonObject;
+class ZPoint;
 
 //! SWC tree class
 /*!
@@ -212,8 +213,8 @@ public:
    */
   bool isForest() const;
 
-  void setLabel(uint64_t label);
-  uint64_t getLabel() const;
+//  void setLabel(uint64_t label);
+//  uint64_t getLabel() const;
 
 public:
   virtual void display(ZPainter &painter, int slice, EDisplayStyle option,
@@ -560,6 +561,8 @@ public:
   double getLongestPathLength();
 
   std::vector<Swc_Tree_Node*> extractLeaf(Swc_Tree_Node *start);
+
+  std::vector<Swc_Tree_Node*> getNodeOnPlane(int z);
 
   Swc_Tree_Node* queryNode(int id,
                            int iterOption = SWC_TREE_ITERATOR_DEPTH_FIRST);

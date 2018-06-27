@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 
+#include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zglobal.h"
 #include "zmatrix.h"
@@ -37,7 +38,15 @@
 #include "zfileparser.h"
 #include "zjsonfactory.h"
 #include "dvid/zdvidwriter.h"
-
+#include "zobject3d.h"
+#include "zarbsliceviewparam.h"
+#include "flyem/zmainwindowcontroller.h"
+#include "zswctree.h"
+#include "geometry/zaffinerect.h"
+#include "zarray.h"
+#include "zstack.hxx"
+#include "zstackfactory.h"
+#include "misc/miscutility.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -212,6 +221,25 @@ Z3DGraph* ZFlyEmMisc::MakePlaneGraph(ZStackDoc *doc, const ZDvidInfo &dvidInfo)
       graph = Z3DGraphFactory::MakeGrid(rect, 100, lineWidth);
       graph->setSource(ZStackObjectSourceFactory::MakeFlyEmPlaneObjectSource());
     }
+  }
+
+  return graph;
+}
+
+Z3DGraph* ZFlyEmMisc::MakeSliceViewGraph(const ZArbSliceViewParam &param)
+{
+  Z3DGraph *graph = NULL;
+  if (param.isValid()) {
+    ZPoint center = param.getCenter().toPoint();
+    int rx = param.getWidth() / 2;
+    int ry = param.getHeight() / 2;
+    ZPoint pt1 = center - param.getPlaneV1() * rx - param.getPlaneV2() * ry;
+    ZPoint pt2 = center + param.getPlaneV1() * rx - param.getPlaneV2() * ry;
+    ZPoint pt3 = center + param.getPlaneV1() * rx + param.getPlaneV2() * ry;
+    ZPoint pt4 = center - param.getPlaneV1() * rx + param.getPlaneV2() * ry;
+
+    graph = Z3DGraphFactory::MakeQuadCross(pt1, pt2, pt3, pt4);
+    graph->setSource(ZStackObjectSourceFactory::MakeSlicViewObjectSource());
   }
 
   return graph;
@@ -409,6 +437,68 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   return cubes;
 #endif
 }
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(const ZDvidReader &reader, const ZAffineRect &ar)
+{
+  return MakeColorSegmentation(reader, ar, 0, 0);
+}
+
+namespace {
+
+ZStack* LabelToColorStack(const ZArray *array)
+{
+  ZStack *stack = NULL;
+  if (array != NULL) {
+    uint64_t *labelArray = array->getDataPointer<uint64_t>();
+
+    ZObjectColorScheme colorScheme;
+    colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
+
+    stack = ZStackFactory::MakeZeroStack(
+          GREY, misc::GetBoundBox(array), 3);
+    //    ZStack *stack = new ZStack(COLOR, width, height, 1, 1);
+    uint8_t *array1 = stack->array8(0);
+    uint8_t *array2 = stack->array8(1);
+    uint8_t *array3 = stack->array8(2);
+
+    size_t volume = stack->getVoxelNumber();
+    for (size_t i = 0; i < volume; ++i) {
+      QColor color = colorScheme.getColor(labelArray[i]);
+      array1[i] = color.red();
+      array2[i] = color.green();
+      array3[i] = color.blue();
+    }
+
+    delete array;
+  }
+
+  return stack;
+}
+
+} //namespace
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(
+    const ZDvidReader &reader, const ZAffineRect &ar, int ccx, int ccy)
+{
+  ZArray *array = reader.readLabels64Lowtis(ar, 0, ccx, ccy, true);
+
+  ZStack *stack = LabelToColorStack(array);
+
+  return stack;
+}
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(
+    const ZDvidReader &reader, int x0, int y0, int z0, int width, int height,
+    int zoom, int ccx, int ccy)
+{
+  ZArray *array = reader.readLabels64Lowtis(
+        x0, y0, z0, width, height, zoom, ccx, ccy, true);
+
+  ZStack *stack = LabelToColorStack(array);
+
+  return stack;
+}
+
 
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
@@ -755,7 +845,7 @@ void ZFlyEmMisc::Decorate3dBodyWindow(
     window->getDocument()->addObject(graph, true);
     window->resetCamera();
     if (window->isBackgroundOn()) {
-      window->setOpacity(Z3DWindow::LAYER_GRAPH, 0.4);
+      window->setOpacity(neutube3d::LAYER_GRAPH, 0.4);
     }
   }
 }
@@ -1206,7 +1296,7 @@ void ZFlyEmMisc::UploadSyGlassTask(
         std::string location = writer->writeServiceTask("split", taskJson);
 
         ZJsonObject entryJson;
-        entryJson.setEntry(neutube::Json::REF_KEY, location);
+        entryJson.setEntry(neutube::json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
       }
@@ -1270,6 +1360,59 @@ ZIntCuboid ZFlyEmMisc::EstimateSplitRoi(const ZIntCuboid &boundBox)
   return newBox;
 }
 
+QString ZFlyEmMisc::GetNeuroglancerPath(
+    const ZDvidTarget &target, const ZIntPoint &pos, const ZWeightedPoint &quat,
+    const QSet<uint64_t> &bodySet)
+{
+  if (GET_FLYEM_CONFIG.getNeuroglancerServer().empty()) {
+    return "";
+  }
+
+
+  QString path = QString("http://%1/neuroglancer/#!{'layers':"
+                         "{'grayscale':{'type':'image'_'source':'dvid://"
+                         "http://%2/%3/%4'}").
+      arg(GET_FLYEM_CONFIG.getNeuroglancerServer().c_str()).
+      arg(target.getGrayScaleSource().getAddressWithPort().c_str()).
+      arg(target.getGrayScaleSource().getUuid().c_str()).
+      arg(target.getGrayScaleName().c_str());
+
+  if (target.hasSegmentation()) {
+    path += QString("_'segmentation':{'type':'segmentation'_"
+                    "'source':'dvid://http://%1/%2/%3'").
+        arg(target.getAddressWithPort().c_str()).
+        arg(target.getUuid().c_str()).
+        arg(target.getSegmentationName().c_str());
+
+    if (!bodySet.empty() && bodySet.size() < 4) {
+      path += "_'segments':[";
+      uint64_t firstId = *(bodySet.begin());
+      path += QString("'%1'").arg(firstId);
+
+      foreach (uint64_t bodyId, bodySet) {
+        if (bodyId != firstId) {
+          path += QString("_'%1'").arg(bodyId);
+        }
+      }
+      path += "]";
+    }
+    path += "}";
+  }
+
+  path += QString("}_'navigation':{'pose':{'position':"
+                  "{'voxelSize':[8_8_8]_'voxelCoordinates':[%1_%2_%3]}_"
+                  "'orientation':[%4_%5_%6_%7]}_"
+                  "'zoomFactor':8}_"
+                  "'perspectiveOrientation':"
+                  "[%4_%5_%6_%7]_"
+                  "'perspectiveZoom':64_'layout':'xy'}").
+      arg(pos.getX()).arg(pos.getY()).arg(pos.getZ()).
+      arg(quat.getX()).arg(quat.getY()).arg(quat.getZ()).arg(quat.weight());
+
+  return path;
+}
+
+
 ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 {
   ZDvidTarget target;
@@ -1290,7 +1433,7 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(const ZJsonObject &obj)
 
     ZDvidSparseStack *spStack = reader.readDvidSparseStack(bodyId, box);
     spStack->shakeOff();
-    stack = spStack->makeIsoDsStack(MAX_INT32);
+    stack = spStack->makeIsoDsStack(MAX_INT32, false);
 
     delete spStack;
   }
@@ -1308,7 +1451,7 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(
   if (reader != NULL) {
     ZDvidSparseStack *spStack = reader->readDvidSparseStack(bodyId, range);
     spStack->shakeOff();
-    stack = spStack->makeIsoDsStack(MAX_INT32);
+    stack = spStack->makeIsoDsStack(MAX_INT32, false);
 
     delete spStack;
   }
@@ -1316,6 +1459,165 @@ ZStack* ZFlyEmMisc::GenerateExampleStack(
   return stack;
 }
 
+QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(const ZJsonObject &taskJson)
+{
+  ZJsonArray seedArrayJson(taskJson.value("seeds"));
+  QList<ZStackObject*> seedList;
+  for (size_t i = 0; i < seedArrayJson.size(); ++i) {
+    ZJsonObject seedJson(seedArrayJson.value(i));
+    if (seedJson.hasKey("type")) {
+//      std::string seedUrl = ZJsonParser::stringValue(seedJson["url"]);
+      std::string type = ZJsonParser::stringValue(seedJson["type"]);
+      if (type == "ZStroke2d") {
+        ZStroke2d *stroke = new ZStroke2d;
+        stroke->loadJsonObject(ZJsonObject(seedJson.value("data")));
+
+        if (!stroke->isEmpty()) {
+          seedList.append(stroke);
+        } else {
+          delete stroke;
+        }
+      } else if (type == "ZObject3d") {
+        ZObject3d *obj = new ZObject3d;
+        obj->loadJsonObject(ZJsonObject(seedJson.value("data")));
+        if (!obj->isEmpty()) {
+          seedList.append(obj);
+        } else {
+          delete obj;
+        }
+      }
+    }
+  }
+  foreach (ZStackObject *seed, seedList) {
+    seed->addRole(ZStackObjectRole::ROLE_SEED |
+                  ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+    ZLabelColorTable colorTable;
+    seed->setColor(colorTable.getColor(seed->getLabel()));
+  }
+
+  return seedList;
+}
+
+QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+  ZJsonObject taskJson =
+      reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
+                                    taskKey.c_str());
+  if (taskJson.hasKey(neutube::json::REF_KEY)) {
+    taskJson =
+        reader->readJsonObject(
+          ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
+  }
+
+  QList<ZStackObject*> seedList = LoadSplitTask(taskJson);
+  foreach (ZStackObject *seed, seedList) {
+    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+  }
+
+  return seedList;
+}
+
+void ZFlyEmMisc::RemoveSplitTask(const ZDvidTarget &target, uint64_t bodyId)
+{
+  ZDvidUrl dvidUrl(target);
+  std::string taskKey =dvidUrl.getSplitTaskKey(bodyId);
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriterFromUrl(GET_FLYEM_CONFIG.getTaskServer());
+  writer->deleteKey(ZDvidData::GetTaskName("split"), taskKey);
+}
+
+ZJsonObject ZFlyEmMisc::MakeSplitTask(
+    const ZDvidTarget &target, uint64_t bodyId,
+    ZJsonArray seedJson, ZJsonArray roiJson)
+{
+  ZJsonObject task;
+
+  ZDvidUrl dvidUrl(target);
+  std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
+  task.setEntry("signal", bodyUrl);
+  task.setEntry("seeds", seedJson);
+
+  if (!roiJson.isEmpty()) {
+    task.setEntry("range", roiJson);
+  }
+
+  if (target.hasGrayScaleData()) {
+    ZJsonObject signalInfo;
+    signalInfo.setEntry(
+          ZDvidTarget::m_grayScaleNameKey, target.getGrayScaleName());
+    ZJsonObject sourceConfig = target.getSourceConfigJson();
+    if (!sourceConfig.isEmpty()) {
+      signalInfo.setEntry(ZDvidTarget::m_sourceConfigKey, sourceConfig);
+    }
+    task.setEntry("signal info", signalInfo);
+  }
+
+  return task;
+}
+
+ZDvidReader* ZFlyEmMisc::GetTaskReader()
+{
+  ZDvidReader *reader =
+      ZGlobal::GetInstance().getDvidReaderFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+
+  return reader;
+}
+
+ZDvidWriter* ZFlyEmMisc::GetTaskWriter()
+{
+  ZDvidWriter *writer =
+      ZGlobal::GetInstance().getDvidWriterFromUrl(
+        GET_FLYEM_CONFIG.getTaskServer());
+
+  return writer;
+}
+
+bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
+{
+  ZDvidReader *reader = GetTaskReader();
+  if (reader != NULL) {
+    if (reader->hasKey("task_test", taskKey)) {
+      if (!reader->hasKey("result_test", taskKey)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/*
+bool ZFlyEmMisc::HasOpenTestTask()
+{
+  ZDvidReader *reader = GetTaskReader();
+  QString taskKey =  QString::fromStdString(ZDvidUrl::GetTaskKey());
+  if (reader->hasKey("task_test", taskKey)) {
+    if (!reader->hasKey("result_test", taskKey)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+*/
+
+#if 0
+void ZFlyEmMisc::StartOpenTestTask()
+{
+  if (HasOpenTestTask()) {
+//    ZJsonObject config = GetTaskReader()->readTestTask();
+    //todo
+    ZMainWindowController::StartTestTask(ZDvidUrl::GetTaskKey());
+  }
+}
+#endif
 
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {
@@ -1593,7 +1895,7 @@ ZDvidTarget ZFlyEmMisc::MB6Paper::MakeDvidTarget()
   target.set("emdata1.int.janelia.org", "@MB6", 8500);
   target.setSynapseName("mb6_synapses_10062016");
   target.setBodyLabelName("bodies3");
-  target.setLabelBlockName("labels3");
+  target.setSegmentationName("labels3");
   target.setGrayScaleName("grayscale");
 
   return target;
@@ -1697,3 +1999,5 @@ QString ZFlyEmMisc::MB6Paper::GenerateMBONConvCast(const QString &movieDir)
 
   return errMsg;
 }
+
+

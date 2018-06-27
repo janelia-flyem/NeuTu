@@ -96,8 +96,9 @@ public:
   };
 
   enum ETarget {
+    TARGET_NULL,
     TARGET_STACK_CANVAS, TARGET_OBJECT_CANVAS, TARGET_WIDGET, TARGET_TILE_CANVAS,
-    TARGET_3D_ONLY, TARGET_DYNAMIC_OBJECT_CANVAS
+    TARGET_3D_ONLY, TARGET_DYNAMIC_OBJECT_CANVAS, TARGET_3D_CANVAS
   };
 
   enum EDisplaySliceMode {
@@ -106,7 +107,7 @@ public:
   };
 
   enum EHitProtocal {
-    HIT_NONE, HIT_WIDGET_POS, HIT_STACK_POS
+    HIT_NONE, HIT_WIDGET_POS, HIT_DATA_POS
   };
 
   /*!
@@ -169,8 +170,8 @@ public:
 
   virtual bool hit(double x, double y, double z);
   virtual bool hit(const ZIntPoint &pt);
-  virtual bool hit(
-      const ZIntPoint &stackPos, const ZIntPoint &widgetPos, neutube::EAxis axis);
+  virtual bool hit(const ZIntPoint &dataPos, const ZIntPoint &widgetPos,
+                   neutube::EAxis axis);
   virtual bool hit(double x, double y, neutube::EAxis axis);
   virtual bool hitWidgetPos(const ZIntPoint &widgetPos, neutube::EAxis axis);
 
@@ -242,7 +243,7 @@ public:
     return m_label;
   }
 */
-  inline std::string getSource() const { return m_source; }
+  inline const std::string &getSource() const { return m_source; }
   inline void setSource(const std::string &source) { m_source = source; }
 
   /*!
@@ -255,13 +256,13 @@ public:
   static bool fromSameSource(const ZStackObject *obj1, const ZStackObject *obj2);
 
 
-  inline std::string getObjectId() const { return m_objectId; }
+  inline const std::string &getObjectId() const { return m_objectId; }
   inline void setObjectId(const std::string &id) { m_objectId = id; }
 
   bool hasSameId(const ZStackObject *obj) const;
   static bool hasSameId(const ZStackObject *obj1, const ZStackObject *obj2);
 
-  inline std::string getObjectClass() const { return m_objectClass; }
+  inline const std::string &getObjectClass() const { return m_objectClass; }
   inline void setObjectClass(const std::string &id) { m_objectClass = id; }
 
 
@@ -403,7 +404,6 @@ protected:
 //  static const char *m_nodeAdapterId;
 };
 
-typedef ZSharedPointer<ZStackObject> ZStackObjectPtr;
 
 template <typename T>
 T* ZStackObject::CastVoidPointer(void *p)

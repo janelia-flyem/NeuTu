@@ -50,11 +50,11 @@ void ZMovieMaker::dismissCast()
 
 void ZMovieMaker::prepareStage()
 {
-  Z3DWindow *window = new Z3DWindow(m_academy, Z3DWindow::INIT_NORMAL);
+  Z3DWindow *window = new Z3DWindow(m_academy, Z3DView::INIT_NORMAL);
   m_stage = new ZMovieStage(window);
 
-  window->getDocument()->disconnectPunctaModelUpdate();
-  window->getDocument()->disconnectSwcNodeModelUpdate();
+//  window->getDocument()->disconnectPunctaModelUpdate();
+//  window->getDocument()->disconnectSwcNodeModelUpdate();
 
   m_photographer.setStage(m_stage);
   window->getVolumeFilter()->setData(window->getDocument(), 1024 * 1024 * 512);
@@ -77,7 +77,7 @@ void ZMovieMaker::prepareStage()
 //  window->getAxis()->setVisible(m_showingAxis);
 
 
-  window->getFilter(Z3DWindow::LAYER_SURFACE)->setOpacity(0.85);
+  window->getFilter(neutube3d::LAYER_SURFACE)->setOpacity(0.85);
 
    //stage->getVolumeSource()->setZScale(zScale);
   //m_clipperState.init(window);
@@ -381,7 +381,7 @@ ZStackDoc* ZMovieMaker::getAcademy()
 {
   if (!m_academy) {
     m_academy = ZSharedPointer<ZStackDoc>(new ZStackDoc);
-    m_academy->disconnectSwcNodeModelUpdate();
+//    m_academy->disconnectSwcNodeModelUpdate();
   }
 
   return m_academy.get();

@@ -1,7 +1,8 @@
 {
-  "librarian": "emdata2.int.janelia.org:9100",
+  "librarian": "emdata3.int.janelia.org:9100",
   "mb6_paper": false,
   "task server": "http://zhaot-ws1:9000/api/node/194d",
+  "neuroglancer server": "emdata1.int.janelia.org",
   "dvid root": {
     "@MB6": "99ef",
     "@FIB19": "752d",
@@ -9,6 +10,15 @@
     "@CX": "2a3b"
   },
   "dvid repo": [
+    {
+      "name": "#profile#",
+      "address": "emdata2.int.janelia.org",
+      "port": 7000,
+      "uuid": "7abe",
+      "segmentation": "segmentation2",
+      "multires_tile": "graytiles",
+      "comment": "2d merge"
+    },
     {
       "address": "hackathon.janelia.org",
       "uuid": "2a3",

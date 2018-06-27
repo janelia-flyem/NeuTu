@@ -1,6 +1,6 @@
 #include "zswcutil.h"
 
-std::vector<Swc_Tree_Node*> ZSwc::FindOverlapNode(
+std::vector<Swc_Tree_Node*> zswc::FindOverlapNode(
     const ZSwcTree *tree1, const ZSwcTree *tree2)
 {
   std::vector<Swc_Tree_Node*> result;
@@ -26,17 +26,45 @@ std::vector<Swc_Tree_Node*> ZSwc::FindOverlapNode(
   return result;
 }
 
-std::vector<Swc_Tree_Node*> ZSwc::FindOverlapNode(
+std::vector<Swc_Tree_Node*> zswc::FindOverlapNode(
     const ZSwcTree &tree1, const ZSwcTree &tree2)
 {
   return FindOverlapNode(&tree1, &tree2);
 }
 
-void ZSwc::Subtract(ZSwcTree *tree1, const ZSwcTree *tree2)
+void zswc::Subtract(ZSwcTree *tree1, const ZSwcTree *tree2)
 {
   Swc_Tree_Subtract(tree1->data(), tree2->data());
 }
 
+std::vector<Swc_Tree_Node*> zswc::Decompose(
+    const ZSwcTree *tree,
+    std::vector<Swc_Tree_Node_Pair> *nodePairList)
+{
+  std::vector<Swc_Tree_Node*> nodeList;
+  if (tree != NULL) {
+    nodeList = tree->getSwcTreeNodeArray();
+    if (!nodeList.empty()) {
+      if (SwcTreeNode::isVirtual(nodeList[0])) {
+        nodeList.erase(nodeList.begin());
+      }
+    }
+
+    if (nodePairList != NULL) {
+      nodePairList->clear();
+      if (tree->getStructrualMode() != ZSwcTree::STRUCT_POINT_CLOUD) {
+        for (Swc_Tree_Node *tn : nodeList) {
+          Swc_Tree_Node *parent = SwcTreeNode::parent(tn);
+          if (SwcTreeNode::isRegular(parent)) {
+            nodePairList->emplace_back(tn, parent);
+          }
+        }
+      }
+    }
+  }
+
+  return nodeList;
+}
 
 #ifndef _SWC_SET_TYPE_DEFINED
 void ZSwc::SetType(const std::set<Swc_Tree_Node *> &nodeSet, int type)

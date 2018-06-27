@@ -38,6 +38,8 @@ class ZStackOperator;
 class ZStackMvc;
 class ZKeyOperationConfig;
 class ZStackDocMenuFactory;
+class ZStackObjectInfoSet;
+class ZMenuConfig;
 
 class ZStackPresenter : public QObject {
   Q_OBJECT
@@ -193,6 +195,8 @@ public:
 
   bool isContextMenuOn();
 
+  void setContextMenuFactory(std::unique_ptr<ZStackDocMenuFactory> factory);
+
   void setStackBc(double scale, double offset, int c = 0);
   double getGrayScale(int c = 0) const;
   double getGrayOffset(int c = 0) const;
@@ -298,6 +302,8 @@ public:
 
   virtual ZStackDocMenuFactory* getMenuFactory();
 
+  virtual ZMenuConfig getMenuConfig() const;
+
   bool hasHighContrastProtocal() const;
   ZJsonObject getHighContrastProtocal() const;
 
@@ -387,6 +393,7 @@ public slots:
   void slotTest();
 
   void copyCurrentPosition();
+  void copyLabelId();
 
 
   void notifyUser(const QString &msg);
@@ -418,6 +425,8 @@ public slots:
   const Swc_Tree_Node* getSelectedSwcNode() const;
 
   void updateSwcExtensionHint();
+
+  void processObjectModified(const ZStackObjectInfoSet &objSet);
 
 signals:
   void mousePositionCaptured(double x, double y, double z);
@@ -500,43 +509,6 @@ protected:
   ZInteractiveContext m_interactiveContext;
   int m_cursorRadius;
 
-  //actions
-//  QAction *m_traceAction;
-//  QAction *m_fitsegAction;
-//  QAction *m_fitEllipseAction;
-//  QAction *m_dropsegAction;
-//  QAction *m_markPunctaAction;
-//  QAction *m_deleteSelectedAction;
-//  //QAction *m_deleteAllPunctaAction;
-//  QAction *m_enlargePunctaAction;
-//  QAction *m_narrowPunctaAction;
-//  QAction *m_meanshiftPunctaAction;
-//  QAction *m_meanshiftAllPunctaAction;
-
-//  QAction *m_swcConnectToAction;
-//  QAction *m_swcExtendAction;
-//  //QAction *m_swcSmartExtendAction;
-//  QAction *m_swcMoveSelectedAction;
-//  //QAction *m_swcDeleteAction;
-//  //QAction *m_swcConnectSelectedAction;
-//  QAction *m_swcSelectConnectionAction;
-//  QAction *m_swcLockFocusAction;
-//  QAction *m_swcChangeFocusAction;
-//  QAction *m_swcEstimateRadiusAction;
-//  //QAction *m_swcSelectAllNodeAction;
-//  //QAction *m_swcBreakSelectedAction;
-
-//  QAction *m_selectSwcNodeDownstreamAction;
-//  QAction *m_selectSwcConnectionAction;
-//  QAction *m_selectSwcNodeBranchAction;
-//  QAction *m_selectSwcNodeUpstreamAction;
-//  QAction *m_selectSwcNodeTreeAction;
-//  QAction *m_selectAllConnectedSwcNodeAction;
-//  QAction *m_selectAllSwcNodeAction;
-
-//  QAction *m_paintStrokeAction;
-//  QAction *m_eraseStrokeAction;
-
   //  Action map
   QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 
@@ -544,7 +516,7 @@ protected:
   QMenu *m_strokePaintContextMenu;
   QMenu *m_stackContextMenu;
   QMenu *m_bodyContextMenu;
-  QMenu *m_contextMenu;
+  QMenu *m_contextMenu = NULL;
 
   //recorded information
   int m_mouseMovePosition[3];
@@ -583,7 +555,7 @@ protected:
   ZMouseEventProcessor m_mouseEventProcessor;
 
   ZActionFactory *m_actionFactory;
-  ZStackDocMenuFactory *m_menuFactory;
+  std::unique_ptr<ZStackDocMenuFactory> m_menuFactory;
 
   int m_zOrder;
 

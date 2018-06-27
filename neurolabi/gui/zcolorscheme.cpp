@@ -14,7 +14,7 @@ QColor ZColorScheme::getColor(int index) const
   if (m_colorTable.isEmpty()) {
     color = QColor(0, 0, 0);
   } else {
-    color = m_colorTable[index % m_colorTable.size()];
+    color = m_colorTable[(index + m_startIndex) % m_colorTable.size()];
   }
 
   //qDebug() << color;
@@ -26,13 +26,23 @@ QColor ZColorScheme::getColor(uint64_t index) const
 {
   QColor color;
 
+  int startIndex = m_startIndex;
+  if (startIndex < 0) {
+    startIndex = startIndex % m_colorTable.size();
+  }
+
   if (m_colorTable.isEmpty()) {
     color = QColor(0, 0, 0);
   } else {
-    color = m_colorTable[index % (uint64_t) m_colorTable.size()];
+    color = m_colorTable[(index + startIndex) % (uint64_t) m_colorTable.size()];
   }
 
   return color;
+}
+
+void ZColorScheme::setStartIndex(int startIndex)
+{
+  m_startIndex = startIndex;
 }
 
 void ZColorScheme::setColorScheme(EColorScheme scheme)
@@ -83,6 +93,8 @@ void ZColorScheme::buildLabelColorTable()
 
 void ZColorScheme::buildConvRandomColorTable(int n)
 {
+  m_colorTable.append(Qt::black);
+
   ZRandomGenerator generator(42);
   const int maxInt = 20000;
   for (int i = 1; i < n; ++i) {

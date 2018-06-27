@@ -5,6 +5,7 @@
 #include <typeinfo>
 #include <string.h>
 
+#include "zstack.hxx"
 #include "imgproc/zstackprocessor.h"
 
 

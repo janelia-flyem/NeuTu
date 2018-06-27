@@ -2,6 +2,7 @@
 #define ZSTACKDOCHELPER_H
 
 #include"zintpoint.h"
+#include "neutube_def.h"
 
 class ZStackDoc;
 class ZIntCuboid;
@@ -9,6 +10,21 @@ class ZStack;
 class ZFlyEmProofDoc;
 class QColor;
 
+/*!
+ * \brief The helper class for providing miscellaneous information of a ZStackDoc object
+ *
+ * Example:
+ *
+ * ZStacDocHelper helper;
+ * ...
+ * helper.extractCurrentZ(doc);
+ * if (helper.hasCurrentZ()) {
+ *   std::cout << "Current Z position: " << helper.getCurrentZ() << std::endl
+ * } else {
+ *   std::cout << "No information about the current Z position." << std::endl
+ * }
+ *
+ */
 class ZStackDocHelper
 {
 public:
@@ -25,8 +41,32 @@ public:
     return m_sparseStackDsIntv;
   }
 
-  static ZIntCuboid getVolumeBoundBox(const ZStackDoc *doc);
+  static ZIntCuboid GetVolumeBoundBox(const ZStackDoc *doc);
+
+  /*!
+   * \brief Get the range of the current axis-shifted stack space.
+   */
+  static ZIntCuboid GetStackSpaceRange(
+      const ZStackDoc *doc, neutube::EAxis sliceAxis);
+  static ZIntCuboid GetStackSpaceRange(
+      const ZStackDoc &doc, neutube::EAxis sliceAxis);
+
+  static ZIntCuboid GetDataSpaceRange(const ZStackDoc &doc);
+  static ZIntCuboid GetDataSpaceRange(const ZStackDoc *doc);
+
   static QColor GetBodyColor(const ZFlyEmProofDoc *doc, uint64_t bodyId);
+  static bool HasMultipleBodySelected(
+      const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type);
+  static int CountSelectedBody(
+      const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type);
+  static bool HasBodySelected(const ZFlyEmProofDoc *doc);
+  static void ClearBodySelection(ZFlyEmProofDoc *doc);
+  static std::string SaveStack(const ZStackDoc *doc, const std::string &path);
+
+  static bool AllowingBodySplit(const ZStackDoc *doc);
+  static bool AllowingBodyAnnotation(const ZStackDoc *doc);
+  static bool AllowingBodyMerge(const ZStackDoc *doc);
+  static bool AllowingBodyLock(const ZStackDoc *doc);
 
 private:
   int m_currentZ;

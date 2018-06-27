@@ -63,6 +63,12 @@ public:
   void translateX(int dx);
 
   void translate(const ZIntPoint &offset);
+  /*!
+   * \brief Scale the box
+   *
+   * The size of the box will be scaled by \a s.
+   */
+  void scale(const ZIntPoint &s);
 
   /*!
    * \brief Change the size of the cuboid by fixing the first corner
@@ -99,6 +105,8 @@ public:
    */
   ZIntCuboid& join(const ZIntCuboid &cuboid);
 
+  void join(int x, int y, int z);
+
   void joinX(int x);
   void joinY(int y);
   void joinZ(int z);
@@ -117,6 +125,7 @@ public:
    * It returns 0 if the cuboid is invalid.
    */
   size_t getVolume() const;
+  size_t getDsMaxVolume(int xIntv, int yIntv, int zIntv) const;
 
   /*!
    * \brief Check if a point is in the cuboid.
@@ -140,11 +149,15 @@ public:
 
   //double distanceTo(const ZIntPoint &pt);
 
+  int computeBlockDistance(const ZIntCuboid &box);
+  double computeDistance(const ZIntCuboid &box);
+
   void shiftSliceAxis(neutube::EAxis axis);
   void shiftSliceAxisInverse(neutube::EAxis axis);
   int getDim(neutube::EAxis axis) const;
 
   ZIntPoint getCenter() const;
+  void setCenter(const ZIntPoint &center);
 
 
   /*!
@@ -163,6 +176,9 @@ public:
   void loadJson(const ZJsonArray &json);
 
   std::string toString() const;
+
+  bool operator == (const ZIntCuboid &box) const;
+  bool operator != (const ZIntCuboid &box) const;
 
 private:
   ZIntPoint m_firstCorner;

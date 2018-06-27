@@ -6,7 +6,7 @@
 /*!
  * \brief The class of dvid data
  *
- * An instance of DVID data has a type and a name. It can also have role in the
+ * An instance of DVID data has a type and a name. It can also have a role in the
  * framework of FlyEM reconstruction. This class has built-in correspondence
  * between a role and a name, providing the default name of a given role.
  */
@@ -49,12 +49,18 @@ public:
     ROLE_SPLIT_RESULT_KEY,
     ROLE_SPLIT_TASK_PROPERTY_KEY,
     ROLE_SPLIT_RESULT_PROPERTY_KEY,
-    ROLE_MESH
+    ROLE_MESH,
+    ROLE_MESHES_TARS,
+    ROLE_ROI_KEY,
+    ROLE_ROI_DATA_KEY,
+    ROLE_TEST_TASK_KEY,
+    ROLE_TEST_RESULT_KEY
   };
 
   enum EType {
     TYPE_LABEL_GRAPH, TYPE_ROI, TYPE_GRAYSCALE8, TYPE_RGBA8, TYPE_LABLES64,
-    TYPE_LABELMAP, TYPE_MULTISCALE_2D, TYPE_MULTCHAN16, TYPE_KEY_VALUE
+    TYPE_LABELBLK, TYPE_LABELARRAY, TYPE_LABELMAP, TYPE_MULTISCALE_2D,
+    TYPE_MULTCHAN16, TYPE_KEY_VALUE
   };
 
   static std::string GetName(ERole role);
@@ -114,6 +120,11 @@ private:
   static const char *m_meshName;
   static const char *m_sparsevolSizeName;
   //static const char *m_keyValueTypeName;
+  static const char *m_meshesTarsName;
+  static const char *m_roiKeyName;
+  static const char *m_roiDataKeyName;
+  static const char *m_testTaskKeyName;
+  static const char *m_testResultKeyName;
 
   static const char *m_nullName;
   static const char *m_emptyName;

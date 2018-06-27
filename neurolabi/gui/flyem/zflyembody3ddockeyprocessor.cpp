@@ -55,6 +55,15 @@ bool ZFlyEmBody3dDocKeyProcessor::processKeyEvent(
       processed = true;
     }
     break;
+  case Qt::Key_Space:
+    if (event->modifiers() == Qt::ShiftModifier) {
+      m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY);
+    } else if (event->modifiers() & Qt::AltModifier) {
+      m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY_FULL);
+    } else {
+      m_operator.setOperation(ZStackOperator::OP_FLYEM_SPLIT_BODY_LOCAL);
+    }
+    break;
   case Qt::Key_Escape:
     m_operator.setOperation(ZStackOperator::OP_EXIT_EDIT_MODE);
     break;

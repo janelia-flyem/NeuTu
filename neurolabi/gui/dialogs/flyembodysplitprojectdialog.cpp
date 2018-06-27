@@ -26,6 +26,8 @@
 #include "dvid/zdviddata.h"
 #include "zmessage.h"
 #include "zmessagemanager.h"
+#include "zstack.hxx"
+#include "zobject3dscan.h"
 
 FlyEmBodySplitProjectDialog::FlyEmBodySplitProjectDialog(QWidget *parent) :
   QDialog(parent),
@@ -464,6 +466,7 @@ void FlyEmBodySplitProjectDialog::updateWidget()
     text += QString("<p>Body ID: %2</p>").
           arg(m_project.getBodyId());
   }
+
   ui->infoWidget->setText(text);
 
   updateBookmarkTable();

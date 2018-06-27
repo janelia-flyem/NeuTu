@@ -1,12 +1,15 @@
 #ifndef Z3DVIEW_H
 #define Z3DVIEW_H
 
-#include "z3dglobalparameters.h"
-#include "zbbox.h"
-#include "zstackdoc.h"
 #include <QDir>
 #include <QObject>
 #include <QAction>
+
+#include "z3dglobalparameters.h"
+#include "zbbox.h"
+#include "zstackobjectgroup.h"
+#include "z3ddef.h"
+#include "zstackdoc3dhelper.h"
 
 class QMainWindow;
 
@@ -23,19 +26,56 @@ class Z3DGraphFilter;
 class Z3DSurfaceFilter;
 class ZFlyEmTodoListFilter;
 class Z3DBoundedFilter;
+class Z3DGeometryFilter;
+class ZStackDoc;
+class ZStackObjectInfoSet;
 
 class Z3DView : public QObject
 {
 Q_OBJECT
+
+
 public:
-  enum class InitMode {
-    NORMAL, EXCLUDE_VOLUME, FULL_RES_VOLUME
+  enum EInitMode {
+    INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
   };
 
-  Z3DView(ZStackDoc* doc, InitMode initMode, bool stereo, QMainWindow* parent = nullptr);
+  Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QMainWindow* parent = nullptr);
 
   ~Z3DView();
 
+public: //utilties
+  static std::string GetLayerString(neutube3d::ERendererLayer layer);
+
+public: //properties
+  void setZScale(neutube3d::ERendererLayer layer, double scale);
+  void setScale(neutube3d::ERendererLayer layer, double sx, double sy, double sz);
+  void setZScale(double scale);
+  void setScale(double sx, double sy, double sz);
+  void setOpacity(neutube3d::ERendererLayer layer, double opacity);
+  void setOpacityQuietly(neutube3d::ERendererLayer layer, double opacity);
+//  using QWidget::setVisible; // suppress warning: hides overloaded virtual function [-Woverloaded-virtual]
+  void setLayerVisible(neutube3d::ERendererLayer layer, bool visible);
+  bool isLayerVisible(neutube3d::ERendererLayer layer) const;
+  void setFront(neutube3d::ERendererLayer layer, bool on);
+
+  void configureLayer(neutube3d::ERendererLayer layer, const ZJsonObject &obj);
+  ZJsonObject getConfigJson(neutube3d::ERendererLayer layer) const;
+  void configure(const ZJsonObject &obj);
+
+  const QList<neutube3d::ERendererLayer>& getLayerList() const {
+    return m_layerList;
+  }
+
+public:
+  ZStackDoc* getDocument() const {
+    return m_doc;
+  }
+
+  void updateDocData(neutube3d::ERendererLayer layer);
+  void updateCustomCanvas(const QImage &image);
+
+public:
   inline QAction* zoomInAction()
   { return m_zoomInAction; }
 
@@ -72,26 +112,35 @@ public:
   inline Z3DGlobalParameters& globalParas()
   { return *m_globalParas; }
 
-  inline Z3DVolumeFilter& volumeFilter()
-  { return *m_volumeFilter; }
+  inline Z3DVolumeFilter* getVolumeFilter() const
+  { return m_volumeFilter.get(); }
 
-  inline Z3DPunctaFilter& punctaFilter()
-  { return *m_punctaFilter; }
+  inline Z3DPunctaFilter* getPunctaFilter() const
+  { return m_punctaFilter.get(); }
 
-  inline Z3DSwcFilter& swcFilter()
-  { return *m_swcFilter; }
+  inline Z3DSwcFilter* getSwcFilter() const
+  { return m_swcFilter.get(); }
 
-  inline Z3DMeshFilter& meshFilter()
-  { return *m_meshFilter; }
+  inline Z3DMeshFilter* getMeshFilter() const
+  { return m_meshFilter.get(); }
 
-  inline Z3DGraphFilter& graphFilter()
-  { return *m_graphFilter; }
+  inline Z3DGraphFilter* getGraphFilter() const
+  { return m_graphFilter.get(); }
 
-  inline Z3DSurfaceFilter& surfaceFilter()
-  { return *m_surfaceFilter; }
+  inline Z3DSurfaceFilter* getSurfaceFilter() const
+  { return m_surfaceFilter.get(); }
 
-  inline ZFlyEmTodoListFilter& todoFilter()
-  { return *m_todoFilter; }
+  inline ZFlyEmTodoListFilter* getTodoFilter() const
+  { return m_todoFilter.get(); }
+
+  inline Z3DMeshFilter* getRoiFilter() const
+  { return m_roiFilter.get(); }
+
+  inline Z3DMeshFilter* getDecorationFilter() const
+  { return m_decorationFilter.get(); }
+
+  Z3DGeometryFilter* getFilter(neutube3d::ERendererLayer layer) const;
+  Z3DBoundedFilter* getBoundedFilter(neutube3d::ERendererLayer layer) const;
 
   inline Z3DNetworkEvaluator& getNetworkEvaluator() {
     return *m_networkEvaluator;
@@ -104,6 +153,11 @@ public:
   QWidget* backgroundWidget();
 
   QWidget* axisWidget();
+
+  template <typename T>
+  std::shared_ptr<ZWidgetsGroup> getWidgetsGroup(T *filter);
+
+  std::shared_ptr<ZWidgetsGroup> getWidgetsGroup(neutube3d::ERendererLayer layer);
 
   std::shared_ptr<ZWidgetsGroup> globalParasWidgetsGroup();
 
@@ -123,8 +177,13 @@ public:
   void resetCameraCenter();
   void resetCameraClippingRange(); // Reset the camera clipping range to include this entire bounding box
 
+//  Z3DTransformParameter getTransformPara() const;
+
+  glm::quat getRotation() const;
+
   void gotoPosition(double x, double y, double z, double radius = 64);
   void gotoPosition(const ZBBox<glm::dvec3>& bound, double minRadius = 64);
+  void exploreLocal(std::vector<ZPoint> &ptArray);
 
   void flipView(); //Look from the oppsite side
   void setXZView();
@@ -133,8 +192,24 @@ public:
   const ZBBox<glm::dvec3>& boundBox() const
   { return m_boundBox; }
 
+public:
+  void setCutBox(neutube3d::ERendererLayer layer, const ZIntCuboid &box);
+  void resetCutBox(neutube3d::ERendererLayer layer);
+
+  QPointF getScreenProjection(
+      double x, double y, double z, neutube3d::ERendererLayer layer);
+
+  ZJsonObject getSettings() const;
+
+public slots:
+  void processObjectModified(const ZStackObjectInfoSet &objInfo);
+
+  void dump(const QString &message);
+
 signals:
   void networkConstructed();
+  void cancelingLocalExplore();
+  void exploringLocal(double x, double y, double z);
 
 private:
   void zoomIn();
@@ -153,15 +228,39 @@ private:
   void createActions();
 
   void volumeDataChanged();
-  void punctaDataChanged();
-  void swcDataChanged();
-  void meshDataChanged();
-  void swcNetworkDataChanged();
-  void graph3DDataChanged();
-  void todoDataChanged();
-  void surfaceDataChanged();
+//  void punctaDataChanged();
+//  void swcDataChanged();
+//  void meshDataChanged();
+//  void swcNetworkDataChanged();
+//  void graph3DDataChanged();
+//  void todoDataChanged();
+//  void surfaceDataChanged();
   void objectSelectionChanged(const QList<ZStackObject*>& selected,
                               const QList<ZStackObject*>& deselected);
+
+  void initVolumeFilter();
+  void initPunctaFilter();
+  void initSwcFilter();
+  void initMeshFilter();
+  void initGraphFilter();
+  void initTodoFilter();
+  void initSurfaceFilter();
+  void initRoiFilter();
+  void initDecorationFilter();
+
+  void addFilter(neutube3d::ERendererLayer layer);
+
+  void updateVolumeData();
+
+  /*
+  void updateGraphData();
+  void updateSwcData();
+  void updatePunctaData();
+  void updateSurfaceData();
+  void updateTodoData();
+  void updateMeshData();
+  void updateRoiData();
+  */
 
 private:
   ZStackDoc* m_doc;
@@ -185,15 +284,19 @@ private:
   std::unique_ptr<Z3DGraphFilter> m_graphFilter;
   std::unique_ptr<Z3DSurfaceFilter> m_surfaceFilter;
   std::unique_ptr<ZFlyEmTodoListFilter> m_todoFilter;
-//  std::unique_ptr<Z3DGraphFilter> m_decorationFilter;
+  std::unique_ptr<Z3DMeshFilter> m_roiFilter;
+  std::unique_ptr<Z3DMeshFilter> m_decorationFilter;
 
   std::unique_ptr<Z3DNetworkEvaluator> m_networkEvaluator;
 
   ZBBox<glm::dvec3> m_boundBox;
+  QList<neutube3d::ERendererLayer> m_layerList;
   std::vector<Z3DBoundedFilter*> m_allFilters;
 
+  ZStackDoc3dHelper m_docHelper;
+
   bool m_lock;
-  InitMode m_initMode;
+  EInitMode m_initMode;
 };
 
 #endif // Z3DVIEW_H

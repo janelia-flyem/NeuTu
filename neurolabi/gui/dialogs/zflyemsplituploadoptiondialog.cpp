@@ -4,6 +4,8 @@
 #include <QStatusTipEvent>
 
 #include "ui_zflyemsplituploadoptiondialog.h"
+
+#include "QsLog.h"
 #include "zwidgetfactory.h"
 #include "zflyembodyannotation.h"
 #include "flyem/zflyemmisc.h"
@@ -44,6 +46,7 @@ ZFlyEmSplitUploadOptionDialog::~ZFlyEmSplitUploadOptionDialog()
 
 void ZFlyEmSplitUploadOptionDialog::setDvidTarget(const ZDvidTarget &target)
 {
+  LINFO() << "Setting dvid env in ZFlyEmSplitUploadOptionDialog";
   m_dvidReader.open(target);
 }
 

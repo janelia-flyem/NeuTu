@@ -71,9 +71,10 @@ bool SynapseReviewProtocol::initialize() {
 
     // validate the input and generate the initial synapse list
     std::vector<ZDvidSynapse> synapseList;
-    ZDvidReader reader;
-    reader.setVerbose(false);
-    if (reader.open(m_dvidTarget)) {
+    ZDvidReader &reader = m_dvidReader;
+    ZDvidReader::PauseVerbose pv(&reader);
+//    reader.setVerbose(false);
+    if (reader.good()) {
         SynapseReviewInputDialog::SynapseReviewInputOptions option = inputDialog.getInputOption();
         if (option == SynapseReviewInputDialog::BY_BODYID) {
             // body ID not blank?  exists in dvid?
@@ -240,8 +241,8 @@ void SynapseReviewProtocol::populatePSDTable(std::vector<ZDvidSynapse> synapse) 
 //  for the synapse; returns empty list on errors or if no T-bar at site
 std::vector<ZDvidSynapse> SynapseReviewProtocol::getWholeSynapse(ZIntPoint point) {
     std::vector<ZDvidSynapse> result;
-    ZDvidReader reader;
-    if (reader.open(m_dvidTarget)) {
+    ZDvidReader &reader = m_dvidReader;
+    if (reader.good()) {
         ZDvidSynapse synapse = reader.readSynapse(point, flyem::LOAD_PARTNER_LOCATION);
 
         if (!synapse.isValid()) {

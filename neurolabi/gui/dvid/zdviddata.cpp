@@ -28,6 +28,12 @@ const char* ZDvidData::m_neutuConfigName = "neutu_config";
 const char* ZDvidData::m_labelszName = "labelsz";
 const char* ZDvidData::m_meshName = "meshes";
 const char* ZDvidData::m_sparsevolSizeName = "sparsevol-size";
+const char* ZDvidData::m_meshesTarsName = "meshes_tars";
+const char* ZDvidData::m_roiKeyName = "rois";
+const char* ZDvidData::m_roiDataKeyName = "roi_data";
+const char* ZDvidData::m_testTaskKeyName = "task_test";
+const char* ZDvidData::m_testResultKeyName = "result_test";
+
 
 //const char* ZDvidData::m_keyValueTypeName = "keyvalue";
 
@@ -113,6 +119,16 @@ std::string ZDvidData::GetName(ERole role)
     return GetName(ROLE_SPLIT_TASK_KEY) + "_" + "property";
   case ROLE_MESH:
     return m_meshName;
+  case ROLE_MESHES_TARS:
+    return m_meshesTarsName;
+  case ROLE_ROI_KEY:
+    return m_roiKeyName;
+  case ROLE_ROI_DATA_KEY:
+    return m_roiDataKeyName;
+  case ROLE_TEST_TASK_KEY:
+    return m_testTaskKeyName;
+  case ROLE_TEST_RESULT_KEY:
+    return m_testResultKeyName;
   }
 
   return m_emptyName;

@@ -6,9 +6,10 @@
 #include <QCoreApplication>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QShortcut>
 
 #include "neutubeconfig.h"
-#include "zstackdoc.h"
+//#include "zstackdoc.h"
 #include "zstackview.h"
 #include "zstackpresenter.h"
 #include "zprogresssignal.h"
@@ -19,6 +20,7 @@
 #include "zstackviewlocator.h"
 #include "zdialogfactory.h"
 #include "dialogs/zstresstestoptiondialog.h"
+#include "zstackdochelper.h"
 
 ZStackMvc::ZStackMvc(QWidget *parent) :
   QWidget(parent)
@@ -33,6 +35,15 @@ ZStackMvc::ZStackMvc(QWidget *parent) :
 
   m_testTimer = new QTimer(this);
   m_role = ROLE_WIDGET;
+
+#ifdef _DEBUG_2
+  QShortcut *shortcut = new QShortcut(this);
+//  shortcut->setKey(QKeySequence(Qt::Key_T, Qt::Key_R));
+  shortcut->setKey(Qt::Key_G);
+  shortcut->setContext(Qt::WindowShortcut);
+//  shortcut->setEnabled(false);
+  connect(shortcut, SIGNAL(activated()), this, SLOT(shortcutTest()));
+#endif
 }
 
 ZStackMvc::~ZStackMvc()
@@ -50,7 +61,7 @@ ZStackMvc* ZStackMvc::Make(QWidget *parent, ZSharedPointer<ZStackDoc> doc)
 }
 
 ZStackMvc* ZStackMvc::Make(
-    QWidget *parent, ztr1::shared_ptr<ZStackDoc> doc, neutube::EAxis axis)
+    QWidget *parent, ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
 {
   ZStackMvc *frame = new ZStackMvc(parent);
 
@@ -61,12 +72,12 @@ ZStackMvc* ZStackMvc::Make(
   return frame;
 }
 
-void ZStackMvc::construct(ztr1::shared_ptr<ZStackDoc> doc, neutube::EAxis axis)
+void ZStackMvc::construct(ZSharedPointer<ZStackDoc> doc, neutube::EAxis axis)
 {
   dropDocument(ZSharedPointer<ZStackDoc>(doc));
   createView(axis);
   createPresenter(axis);
-  getPresenter()->createActions();
+//  getPresenter()->createActions();
 
   updateDocument();
 
@@ -127,9 +138,17 @@ void ZStackMvc::attachDocument(ZSharedPointer<ZStackDoc> doc)
 }
 
 bool ZStackMvc::connectFunc(const QObject* obj1, const char *signal,
-                            const QObject *obj2, const char *slot)
+                            const QObject *obj2, const char *slot,
+                            Qt::ConnectionType connetionType)
 {
-  return connect(obj1, signal, obj2, slot);
+  return connect(obj1, signal, obj2, slot, connetionType);
+}
+
+bool ZStackMvc::disconnectFunc(const QObject* obj1, const char *signal,
+                               const QObject *obj2, const char *slot,
+                               Qt::ConnectionType /*connetionType*/)
+{
+  return disconnect(obj1, signal, obj2, slot);
 }
 
 void ZStackMvc::connectSignalSlot()
@@ -140,41 +159,46 @@ void ZStackMvc::connectSignalSlot()
 
 void ZStackMvc::updateDocSignalSlot(FConnectAction connectAction)
 {
+  connectAction(m_doc.get(), SIGNAL(stackRangeChanged()),
+                m_view, SLOT(updateStackRange()), Qt::DirectConnection);
   connectAction(m_doc.get(), SIGNAL(stackModified(bool)),
-          m_view, SLOT(processStackChange(bool)));
-  connectAction(m_doc.get(), SIGNAL(objectModified()),
-                m_view, SLOT(paintObject()));
+                m_view, SLOT(processStackChange(bool)), Qt::QueuedConnection);
   connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObject::ETarget)),
-          m_view, SLOT(paintObject(ZStackObject::ETarget)));
+          m_view, SLOT(paintObject(ZStackObject::ETarget)), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(objectModified(QSet<ZStackObject::ETarget>)),
-          m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)));
+                m_view, SLOT(paintObject(QSet<ZStackObject::ETarget>)),
+                Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(holdSegChanged()),
-                m_view, SLOT(paintObject()));
+                m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(swcTreeNodeSelectionChanged(
                                 QList<Swc_Tree_Node*>,QList<Swc_Tree_Node*>)),
-                m_view, SLOT(paintObject()));
+                m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(
         m_doc.get(), SIGNAL(objectSelectionChanged(
                               QList<ZStackObject*>,QList<ZStackObject*>)),
-        m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)));
+        m_view, SLOT(paintObject(QList<ZStackObject*>,QList<ZStackObject*>)),
+        Qt::AutoConnection);
   connectAction(m_doc.get(),
                 SIGNAL(punctaSelectionChanged(QList<ZPunctum*>,QList<ZPunctum*>)),
-                m_view, SLOT(paintObject()));
+                m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(chainVisibleStateChanged(ZLocsegChain*,bool)),
-          m_view, SLOT(paintObject()));
+                m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(swcVisibleStateChanged(ZSwcTree*,bool)),
-          m_view, SLOT(paintObject()));
+          m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(punctumVisibleStateChanged()),
-          m_view, SLOT(paintObject()));
+          m_view, SLOT(paintObject()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(stackTargetModified()),
-                m_view, SLOT(paintStack()));
+                m_view, SLOT(paintStack()), Qt::AutoConnection);
   connectAction(m_doc.get(), SIGNAL(zoomingTo(int, int, int)),
-                this, SLOT(zoomTo(int,int,int)));
+                this, SLOT(zoomTo(int,int,int)), Qt::AutoConnection);
   connectAction(m_view, SIGNAL(viewChanged(ZStackViewParam)),
-          this, SLOT(processViewChange(ZStackViewParam)));
+          this, SLOT(processViewChange(ZStackViewParam)), Qt::AutoConnection);
 
   connectAction(m_doc.get(), SIGNAL(stackBoundBoxChanged()),
-                m_view, SLOT(updateViewBox()));
+                m_view, SLOT(updateViewBox()), Qt::QueuedConnection);
+  connectAction(m_doc.get(), SIGNAL(objectModified(ZStackObjectInfoSet)),
+                m_presenter, SLOT(processObjectModified(ZStackObjectInfoSet)),
+                Qt::AutoConnection);
 }
 
 void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
@@ -186,14 +210,14 @@ void ZStackMvc::updateSignalSlot(FConnectAction connectAction)
 
 void ZStackMvc::disconnectAll()
 {
-  updateSignalSlot(disconnect);
+  updateSignalSlot(disconnectFunc);
 }
 
 void ZStackMvc::dropDocument(ztr1::shared_ptr<ZStackDoc> doc)
 {
   if (m_doc.get() != doc.get()) {
     if (m_doc.get() != NULL) {
-      updateSignalSlot(disconnect);
+      updateSignalSlot(disconnectFunc);
       m_doc->removeUser(this);
     }
 
@@ -251,10 +275,12 @@ void ZStackMvc::processViewChange()
   processViewChange(getView()->getViewParameter(neutube::COORD_STACK));
 }
 
+/*
 void ZStackMvc::updateActiveViewData()
 {
   processViewChangeCustom(getView()->getViewParameter(neutube::COORD_STACK));
 }
+*/
 
 void ZStackMvc::processViewChange(const ZStackViewParam &viewParam)
 {
@@ -405,7 +431,11 @@ void ZStackMvc::saveStack()
     QString filePath =
         ZDialogFactory::GetSaveFileName("Save Stack", ".tif", this);
     if (!filePath.isEmpty()) {
-      getDocument()->getStack()->save(filePath.toStdString());
+      std::string resultPath =
+          ZStackDocHelper::SaveStack(getDocument().get(), filePath.toStdString());
+      if (!resultPath.empty()) {
+        LINFO() << "Stack saved at" << resultPath;
+      }
     }
   }
 }
@@ -645,6 +675,16 @@ void ZStackMvc::zoomToL1(int x, int y, int z)
   */
 }
 
+void ZStackMvc::setDefaultViewPort(const QRect &rect)
+{
+  getView()->setDefaultViewPort(rect);
+}
+
+QRect ZStackMvc::getViewPort() const
+{
+  return getView()->getViewPort(neutube::COORD_STACK);
+}
+
 ZIntPoint ZStackMvc::getViewCenter() const
 {
   return getView()->getViewCenter();
@@ -663,4 +703,9 @@ double ZStackMvc::getWidthZoomRatio() const
 double ZStackMvc::getHeightZoomRatio() const
 {
   return getView()->getCanvasHeightZoomRatio();
+}
+
+void ZStackMvc::shortcutTest()
+{
+  std::cout << "Shortcut triggered: ZStackMvc::shortcutTest()" << std::endl;
 }

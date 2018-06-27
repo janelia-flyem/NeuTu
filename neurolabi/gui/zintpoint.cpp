@@ -10,7 +10,7 @@
 #include "tz_geo3d_utils.h"
 #include "geometry/zgeometry.h"
 #include "neutube_def.h"
-#include "misc/miscutility.h"
+#include "core/utilities.h"
 
 ZIntPoint::ZIntPoint() : m_x(0), m_y(0), m_z(0)
 {
@@ -65,6 +65,23 @@ void ZIntPoint::set(const std::vector<int> &pt)
   } else {
     RECORD_WARNING_UNCOND("Unexpected array size.");
   }
+}
+
+bool ZIntPoint::definiteLessThan(const ZIntPoint &pt) const
+{
+  if (getX() < pt.getX()) {
+    return (getY() <= pt.getY()) && (getZ() <= pt.getZ());
+  }
+
+  if (getY() < pt.getY()) {
+    return (getX() <= pt.getX()) && (getZ() <= pt.getZ());
+  }
+
+  if (getZ() < pt.getZ()) {
+    return (getY() <= pt.getY()) && (getX() <= pt.getX());
+  }
+
+  return false;
 }
 
 bool ZIntPoint::operator < (const ZIntPoint &pt) const
@@ -314,12 +331,12 @@ ZIntPoint& ZIntPoint::operator -=(const ZIntPoint &pt)
 
 void ZIntPoint::shiftSliceAxis(neutube::EAxis axis)
 {
-  ZGeometry::shiftSliceAxis(m_x, m_y, m_z, axis);
+  zgeom::shiftSliceAxis(m_x, m_y, m_z, axis);
 }
 
 void ZIntPoint::shiftSliceAxisInverse(neutube::EAxis axis)
 {
-  ZGeometry::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
+  zgeom::shiftSliceAxisInverse(m_x, m_y, m_z, axis);
 }
 
 int ZIntPoint::getSliceCoord(neutube::EAxis axis) const
@@ -330,6 +347,8 @@ int ZIntPoint::getSliceCoord(neutube::EAxis axis) const
   case neutube::Y_AXIS:
     return m_y;
   case neutube::Z_AXIS:
+    return m_z;
+  case neutube::A_AXIS:
     return m_z;
   }
 
@@ -353,14 +372,20 @@ bool ZIntPoint::isValid() const
 
 void ZIntPoint::read(std::istream &stream)
 {
-  misc::read(stream, m_x);
-  misc::read(stream, m_y);
-  misc::read(stream, m_z);
+  neutube::read(stream, m_x);
+  neutube::read(stream, m_y);
+  neutube::read(stream, m_z);
 }
 
 void ZIntPoint::write(std::ostream &stream) const
 {
-  misc::write(stream, m_x);
-  misc::write(stream, m_y);
-  misc::write(stream, m_z);
+  neutube::write(stream, m_x);
+  neutube::write(stream, m_y);
+  neutube::write(stream, m_z);
+}
+
+std::ostream &operator<<(std::ostream &stream, const ZIntPoint &pt)
+{
+  stream << "(" << pt.getX() << ", " << pt.getY() << ", " << pt.getZ() << ")";
+  return stream;
 }

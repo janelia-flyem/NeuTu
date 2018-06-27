@@ -15,7 +15,7 @@ public:
     void setDefaultColor(QColor color);
     void setBodyColor(uint64_t bodyId, QColor color);
     void clear();
-    void print();
+    void print() const;
 
     QHash<uint64_t, int> getColorIndexMap() const;
     void buildColorTable();
