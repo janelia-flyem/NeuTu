@@ -17,9 +17,12 @@
 #include <QDateTime>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSet>
+#include <QUrl>
 #include <QVBoxLayout>
 
 namespace {
@@ -206,6 +209,8 @@ TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
 
   loadJson(json);
   buildTaskWidget();
+
+  m_networkManager = new QNetworkAccessManager(m_widget);
 }
 
 QString TaskBodyMerge::tasktype()
@@ -281,6 +286,7 @@ QWidget *TaskBodyMerge::getTaskWidget()
   m_visibleBodies.insert(m_bodyId1);
   m_visibleBodies.insert(m_bodyId2);
 
+  configureShowHiRes();
   applyColorMode(true);
   return m_widget;
 }
@@ -486,10 +492,10 @@ void TaskBodyMerge::buildTaskWidget()
   m_menu->addAction(cycleAnswerAction);
   connect(cycleAnswerAction, SIGNAL(triggered()), this, SLOT(onCycleAnswer()));
 
-  QAction *showHiResAction = new QAction("Show High Resolution", m_widget);
-  showHiResAction->setShortcut(Qt::Key_C);
-  m_menu->addAction(showHiResAction);
-  connect(showHiResAction, SIGNAL(triggered()), this, SLOT(onTriggerShowHiRes()));
+  m_showHiResAction = new QAction("Show High Resolution", m_widget);
+  m_showHiResAction->setShortcut(Qt::Key_C);
+  m_menu->addAction(m_showHiResAction);
+  connect(m_showHiResAction, SIGNAL(triggered()), this, SLOT(onTriggerShowHiRes()));
 }
 
 void TaskBodyMerge::onLoaded()
@@ -914,6 +920,57 @@ void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
   }
 
   filter->invalidate();
+}
+
+void TaskBodyMerge::configureShowHiRes()
+{
+  ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
+
+  // Disable the controls for switching to high resolution until we verify that the
+  // high-resolution tar archives exist.
+
+  m_showHiResCheckBox->setEnabled(false);
+  m_showHiResAction->setEnabled(false);
+  m_hiResCount = 0;
+
+  // If the DVID query, issued below, returns a JSON object containing the key
+  // then the tar archive exists.
+
+  disconnect(m_networkManager, 0, 0, 0);
+  connect(m_networkManager, &QNetworkAccessManager::finished,
+          this, [=](QNetworkReply *reply) {
+    if (reply->error() == QNetworkReply::NoError) {
+      QByteArray replyBytes = reply->readAll();
+      QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
+      if (replyJsonDoc.isArray()) {
+        QJsonArray replyJsonArray = replyJsonDoc.array();
+        if (!replyJsonArray.isEmpty()) {
+
+          // If both tar archives exist, then re-enable the controls.
+
+          m_hiResCount++;
+          if (m_hiResCount == 2) {
+            m_showHiResCheckBox->setEnabled(true);
+            m_showHiResAction->setEnabled(true);
+          }
+        }
+      }
+    }
+  });
+
+  // Issue the DVID queries, each of which is a "range" query for
+  // the range including just the key for one body's tar archive.
+  // As of now, that is the fastest way to check whether a key exists.
+
+  std::vector<uint64_t> ids({ m_bodyId1, m_bodyId2 });
+  for (uint64_t id : ids) {
+    int level = 0;
+    id = ZFlyEmBody3dDoc::encode(id, level);
+    std::string url = dvidUrl.getMeshesTarsKeyRangeUrl(id, id);
+    QUrl requestUrl(url.c_str());
+    QNetworkRequest request(requestUrl);
+    m_networkManager->get(request);
+  }
 }
 
 void TaskBodyMerge::writeResult(const QString &result)
