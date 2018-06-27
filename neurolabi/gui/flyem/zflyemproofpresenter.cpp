@@ -17,6 +17,7 @@
 #include "zstackdocselector.h"
 #include "neutubeconfig.h"
 #include "dvid/zdvidlabelslice.h"
+#include "flyem/zflyemtododelegate.h"
 
 #ifdef _WIN32
 #undef GetUserName
@@ -34,6 +35,11 @@ ZFlyEmProofPresenter::ZFlyEmProofPresenter(QWidget *parent) :
   ZStackPresenter(parent)
 {
   init();
+}
+
+ZFlyEmProofPresenter::~ZFlyEmProofPresenter()
+{
+
 }
 
 void ZFlyEmProofPresenter::init()
@@ -190,12 +196,13 @@ ZFlyEmProofPresenter* ZFlyEmProofPresenter::Make(QWidget *parent)
 
 ZStackDocMenuFactory* ZFlyEmProofPresenter::getMenuFactory()
 {
-  if (m_menuFactory == NULL) {
-    m_menuFactory = new ZFlyEmProofDocMenuFactory;
+  if (!m_menuFactory) {
+    m_menuFactory = std::unique_ptr<ZStackDocMenuFactory>(
+          new ZFlyEmProofDocMenuFactory);
     m_menuFactory->setAdminState(neutube::IsAdminUser());
   }
 
-  return m_menuFactory;
+  return m_menuFactory.get();
 }
 
 ZKeyOperationConfig* ZFlyEmProofPresenter::getKeyConfig()
@@ -243,7 +250,8 @@ bool ZFlyEmProofPresenter::customKeyProcess(QKeyEvent *event)
     break;
   case Qt::Key_C:
     if (!isSplitOn()) {
-      emit deselectingAllBody();
+      bool asking = (event->modifiers() != Qt::ShiftModifier);
+      emit deselectingAllBody(asking);
       processed = true;
     }
     break;
@@ -348,7 +356,7 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
       } else if (event->modifiers() == Qt::NoModifier) {
         emit runningLocalSplit();
         processed = true;
-      } else if (event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
+      } else if (event->modifiers() & Qt::AltModifier) {
         emit runningFullSplit();
         processed = true;
       }
@@ -367,7 +375,8 @@ bool ZFlyEmProofPresenter::processKeyPressEvent(QKeyEvent *event)
 //    processed = true;
 //    break;
   case Qt::Key_D:
-    if (event->modifiers() == Qt::NoModifier) {
+    if (event->modifiers() == Qt::ControlModifier) {
+      LINFO() << "Ctrl+D pressed: Toggling data";
       emit togglingData();
       processed = true;
     }
@@ -482,7 +491,9 @@ QMenu* ZFlyEmProofPresenter::getSynapseContextMenu()
 
 QMenu* ZFlyEmProofPresenter::getContextMenu()
 {
+//  if (m_contextMenu == NULL) {
   m_contextMenu = getMenuFactory()->makeContextMenu(this, NULL, m_contextMenu);
+//  }
 
   return m_contextMenu;
   /*
@@ -584,24 +595,53 @@ void ZFlyEmProofPresenter::tryAddSynapse(
 //  getCompleteDocument()->addSynapse(pt, kind);
 }
 
+void ZFlyEmProofPresenter::tryAddTodoItem(
+    const ZIntPoint &pt, bool checked, neutube::EToDoAction action,
+    uint64_t bodyId)
+{
+  tryAddTodoItem(pt.getX(), pt.getY(), pt.getZ(), checked, action, bodyId);
+}
+
+void ZFlyEmProofPresenter::tryAddTodoItem(
+    int x, int y, int z, bool checked, neutube::EToDoAction action,
+    uint64_t bodyId)
+{
+  if (m_todoDelegate) {
+    m_todoDelegate->add(x, y, z, checked, action, bodyId);
+  } else {
+    getCompleteDocument()->executeAddTodoCommand(
+          x, y, z, checked, action, bodyId);
+  }
+}
+
+void ZFlyEmProofPresenter::tryAddTodoItem(
+    const ZIntPoint &pt, bool checked, neutube::EToDoAction action)
+{
+  tryAddTodoItem(pt, checked, action, 0);
+}
+
 void ZFlyEmProofPresenter::tryAddTodoItem(const ZIntPoint &pt)
 {
-  getCompleteDocument()->executeAddTodoItemCommand(pt, false);
+  tryAddTodoItem(pt, false, neutube::TO_DO);
+//  getCompleteDocument()->executeAddTodoItemCommand(pt, false);
 }
 
 void ZFlyEmProofPresenter::tryAddToMergeItem(const ZIntPoint &pt)
 {
-  getCompleteDocument()->executeAddToMergeItemCommand(pt);
+  tryAddTodoItem(pt, false, neutube::TO_MERGE);
+//  getCompleteDocument()->executeAddToMergeItemCommand(pt);
 }
 
 void ZFlyEmProofPresenter::tryAddToSplitItem(const ZIntPoint &pt)
 {
-  getCompleteDocument()->executeAddToSplitItemCommand(pt);
+  tryAddTodoItem(pt, false, neutube::TO_SPLIT);
+//  getCompleteDocument()->executeAddToSplitItemCommand(pt);
 }
 
 void ZFlyEmProofPresenter::tryAddDoneItem(const ZIntPoint &pt)
 {
-  getCompleteDocument()->executeAddTodoItemCommand(pt, true);
+  tryAddTodoItem(pt, true, neutube::TO_DO);
+//  getCompleteDocument()->executeAddTodoItemCommand(pt, true);
 }
 
 void ZFlyEmProofPresenter::removeTodoItem()
@@ -626,19 +666,25 @@ void ZFlyEmProofPresenter::setTodoItemToNormal()
 
 void ZFlyEmProofPresenter::setTodoItemToMerge()
 {
-  getCompleteDocument()->setTodoItemAction(ZFlyEmToDoItem::TO_MERGE);
+  getCompleteDocument()->setTodoItemAction(neutube::TO_MERGE);
 }
 
 void ZFlyEmProofPresenter::setTodoItemToSplit()
 {
-  getCompleteDocument()->setTodoItemAction(ZFlyEmToDoItem::TO_SPLIT);
+  getCompleteDocument()->setTodoItemAction(neutube::TO_SPLIT);
+}
+
+void ZFlyEmProofPresenter::setTodoDelegate(
+    std::unique_ptr<ZFlyEmToDoDelegate> &&delegate)
+{
+  m_todoDelegate = std::move(delegate);
 }
 
 void ZFlyEmProofPresenter::tryAddTodoItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint pt = event.getStackPosition();
+  ZPoint pt = event.getDataPosition();
   tryAddTodoItem(pt.toIntPoint());
 }
 
@@ -646,7 +692,7 @@ void ZFlyEmProofPresenter::tryAddToMergeItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint pt = event.getStackPosition();
+  ZPoint pt = event.getDataPosition();
   tryAddToMergeItem(pt.toIntPoint());
 }
 
@@ -654,7 +700,7 @@ void ZFlyEmProofPresenter::tryAddToSplitItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint pt = event.getStackPosition();
+  ZPoint pt = event.getDataPosition();
   tryAddToSplitItem(pt.toIntPoint());
 }
 
@@ -662,7 +708,7 @@ void ZFlyEmProofPresenter::tryAddDoneItem()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint pt = event.getStackPosition();
+  ZPoint pt = event.getDataPosition();
   tryAddDoneItem(pt.toIntPoint());
 }
 
@@ -1042,8 +1088,8 @@ void ZFlyEmProofPresenter::processRectRoiUpdate(ZRect2d *rect, bool appending)
     if (!menu->isEmpty()) {
       const ZMouseEvent& event = m_mouseEventProcessor.getMouseEvent(
             Qt::LeftButton, ZMouseEvent::ACTION_RELEASE);
-      QPoint currentWidgetPos(event.getPosition().getX(),
-                 event.getPosition().getY());
+      QPoint currentWidgetPos(event.getWidgetPosition().getX(),
+                              event.getWidgetPosition().getY());
       buddyView()->showContextMenu(menu, currentWidgetPos);
     }
     interactiveContext().setAcceptingRect(false);

@@ -11,6 +11,7 @@ class ZStack;
 class ZObject3dScan;
 class ZJsonObject;
 class ZIntPoint;
+class ZStackArray;
 
 class ZStackSkeletonizer : public ZProgressable
 {
@@ -91,7 +92,7 @@ public:
   /*!
    * \brief Make a skeleton from an array of masks
    */
-  ZSwcTree* makeSkeleton(const std::vector<ZStack *> &stackArray);
+  ZSwcTree* makeSkeleton(const ZStackArray &stackArray);
 
   void reconnect(ZSwcTree *tree);
   inline void setConnectingBranch(bool conn) {

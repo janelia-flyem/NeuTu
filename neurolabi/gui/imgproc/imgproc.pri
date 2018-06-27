@@ -2,12 +2,14 @@
 HEADERS += $${PWD}/zstackprocessor.h \
    $${PWD}/zstackwatershed.h \
     $$PWD/zstackmultiscalewatershed.h \
-    $$PWD/zstackgradient.h
+    $$PWD/zstackgradient.h \
+    $$PWD/zdownsamplefilter.h
 
 SOURCES += $${PWD}/zstackprocessor.cpp \
    $${PWD}/zstackwatershed.cpp \
     $$PWD/zstackmultiscalewatershed.cpp \
-    $$PWD/zstackgradient.cpp
+    $$PWD/zstackgradient.cpp \
+    $$PWD/zdownsamplefilter.cpp
 
 contains(DEFINES, _ENABLE_SURFRECON_) {
   HEADERS +=  \

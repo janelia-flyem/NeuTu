@@ -2,6 +2,7 @@
 #include "neutubeconfig.h"
 #include "zdvidtileensemble.h"
 #include "zstackview.h"
+#include "zstack.hxx"
 
 ZDvidPatchDataFetcher::ZDvidPatchDataFetcher(QObject *parent) :
   ZDvidDataFetcher(parent)
@@ -72,5 +73,5 @@ bool ZDvidPatchDataFetcher::updatePatch(ZDvidTileEnsemble *slice, int z)
 
 bool ZDvidPatchDataFetcher::updatePatch(ZDvidTileEnsemble *slice)
 {
-  return updatePatch(slice, slice->getView()->getCurrentZ());
+  return updatePatch(slice, slice->getCurrentZ());
 }

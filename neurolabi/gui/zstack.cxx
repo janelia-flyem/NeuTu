@@ -32,6 +32,7 @@
 #include "zpoint.h"
 #include "zintcuboid.h"
 #include "misc/miscutility.h"
+#include "core/utilities.h"
 
 using namespace std;
 
@@ -661,9 +662,9 @@ void ZStack::read(std::istream &stream)
   clear();
 
   int kind = GREY;
-  misc::read(stream, kind);
+  neutube::read(stream, kind);
   int channel = 0;
-  misc::read(stream, channel);
+  neutube::read(stream, channel);
 
   m_offset.read(stream);
   ZIntPoint dim;
@@ -675,8 +676,8 @@ void ZStack::read(std::istream &stream)
 
 void ZStack::write(std::ostream &stream) const
 {
-  misc::write(stream, m_stack->kind);
-  misc::write(stream, m_stack->nchannel);
+  neutube::write(stream, m_stack->kind);
+  neutube::write(stream, m_stack->nchannel);
   m_offset.write(stream);
   ZIntPoint dim(width(), height(), depth());
   dim.write(stream);
@@ -805,9 +806,9 @@ int ZStack::getChannelNumber(const string &filepath)
   return nchannel;
 }
 
-string ZStack::save(const string &filepath) const
+std::string ZStack::save(const string &filepath) const
 {
-  string resultFilePath;
+  std::string resultFilePath;
 
   if (!isVirtual()) {
     resultFilePath = filepath;
@@ -2156,6 +2157,11 @@ void ZStack::pushDsIntv(int dx, int dy, int dz)
   m_dsIntv.setZ((m_dsIntv.getZ() + 1) * (dz + 1) - 1);
 }
 
+void ZStack::pushDsIntv(const ZIntPoint &dsIntv)
+{
+  pushDsIntv(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
+}
+
 void ZStack::downsampleMin(int xintv, int yintv, int zintv)
 {
   if (xintv == 0 && yintv == 0 && zintv == 0) {
@@ -2267,16 +2273,6 @@ void ZStack::downsampleMinIgnoreZero(int xintv, int yintv, int zintv)
     setData(result);
   }
 }
-
-
-#define ZSTACK_SWAP(v1, v2, T) \
-{\
-  T tmp;\
-  tmp = v1;\
-  v1 = v2;\
-  v2 = tmp;\
-}
-
 
 void ZStack::swapData(ZStack *stack)
 {

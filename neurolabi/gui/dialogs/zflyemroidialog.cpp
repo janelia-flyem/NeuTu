@@ -28,6 +28,8 @@
 #include "zwindowfactory.h"
 #include "z3dpunctafilter.h"
 #include "z3dvolumefilter.h"
+#include "z3dwindow.h"
+#include "zobject3dscan.h"
 
 ZFlyEmRoiDialog::ZFlyEmRoiDialog(QWidget *parent) :
   QDialog(parent), ZProgressable(),

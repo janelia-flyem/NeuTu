@@ -19,9 +19,9 @@
 #include "z3dtexturecopyrenderer.h"
 #include "z3drenderport.h"
 #include "zlinesegment.h"
-#include "zstackdoc.h"
 
 class ZMesh;
+class ZStackDoc;
 
 class Z3DVolumeFilter : public Z3DBoundedFilter
 {

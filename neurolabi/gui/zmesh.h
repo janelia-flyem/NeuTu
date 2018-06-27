@@ -76,8 +76,8 @@ public:
       neutube::EAxis ) const override
   {}
 
-  void setLabel(uint64_t label) override;
-  uint64_t getLabel() const;
+//  void setLabel(uint64_t label) override;
+//  uint64_t getLabel() const;
 
   // qt style read write name filter for filedialog
   static bool canReadFile(const QString& filename);
@@ -92,6 +92,10 @@ public:
   void load(const QString& filename);
 
   void save(const QString& filename, const std::string& format = "") const;
+  void save(const std::string& filename, const std::string& format = "") const;
+  void save(const char* filename, const std::string& format = "") const;
+
+  QByteArray writeToMemory(const std::string &format) const;
 
   ZBBox<glm::dvec3> boundBox() const;
 
@@ -214,7 +218,7 @@ public:
   ZMeshProperties properties() const;
 
   void logProperties(const QString& str = "") const
-  { logProperties(properties(), str); }
+  { LogProperties(properties(), str); }
 
 
   void createCubesWithNormal(
@@ -229,7 +233,7 @@ public:
       const std::vector<std::vector<bool> > &faceVisbility,
       const std::vector<glm::vec4>* cubeColors = nullptr);
 
-  static void logProperties(const ZMeshProperties& prop, const QString& str = "");
+  static void LogProperties(const ZMeshProperties& prop, const QString& str = "");
 
   // a list of cubes with normal
   static ZMesh CreateCubesWithNormal(
@@ -244,7 +248,7 @@ public:
       const std::vector<glm::vec4>* cubeColors = nullptr);
 
   // a cube with six surfaces
-  static ZMesh createCube(
+  static ZMesh CreateCube(
     const glm::vec3& coordLlf = glm::vec3(0.f, 0.f, 0.f),
     const glm::vec3& coordUrb = glm::vec3(1.f, 1.f, 1.f),
     const glm::vec3& texLlf = glm::vec3(0.f, 0.f, 0.f),
@@ -252,7 +256,7 @@ public:
 
   // one slice from a cube, it is a x slice if alongDim == 0, a y slice if alongDim == 1,
   // a z slice if alongDim == 2
-  static ZMesh createCubeSlice(
+  static ZMesh CreateCubeSlice(
     float coordIn3rdDim,
     float texCoordIn3rdDim,
     int alongDim = 2,     // 0, 1, or 2
@@ -263,7 +267,7 @@ public:
 
   // one slice from a cube, it is a x slice if alongDim == 0, a y slice if alongDim == 1,
   // a z slice if alongDim == 2
-  static ZMesh createCubeSliceWith2DTexture(
+  static ZMesh CreateCubeSliceWith2DTexture(
     float coordIn3rdDim,
     int alongDim = 2,     // 0, 1, or 2
     const glm::vec2& coordlow = glm::vec2(0.f, 0.f),
@@ -272,7 +276,7 @@ public:
     const glm::vec2& texhigh = glm::vec2(1.f, 1.f));
 
   // a 2d image quad with 2d texture coordinates
-  static ZMesh createImageSlice(
+  static ZMesh CreateImageSlice(
     float coordIn3rdDim,
     const glm::vec2& coordlow = glm::vec2(0.f, 0.f),
     const glm::vec2& coordhigh = glm::vec2(1.f, 1.f),
@@ -286,7 +290,7 @@ public:
   // assume that the last slice is nearest to camera, then created triangles will face camera if first
   // coordinate is smaller than last coordinatesin the two fixed dimensions.
   // in cut dimension, last coordinate can be smaller than first coordinate to create inverse order series
-  static ZMesh createCubeSerieSlices(
+  static ZMesh CreateCubeSerieSlices(
     int numSlices,
     int alongDim = 2,     // 0, 1, or 2
     const glm::vec3& coordfirst = glm::vec3(0.f, 0.f, 0.f),
@@ -294,15 +298,15 @@ public:
     const glm::vec3& texfirst = glm::vec3(0.f, 0.f, 0.f),
     const glm::vec3& texlast = glm::vec3(1.f, 1.f, 1.f));
 
-  static ZMesh createSphereMesh(const glm::vec3& center, float radius,
+  static ZMesh CreateSphereMesh(const glm::vec3& center, float radius,
                                 int thetaResolution = 32, int phiResolution = 32,
                                 float startTheta = 0.f, float endTheta = 360.f,
                                 float startPhi = 0.f, float endPhi = 180.f);
 
-  static ZMesh createTubeMesh(const std::vector<glm::vec3>& line, const std::vector<float>& radius,
+  static ZMesh CreateTubeMesh(const std::vector<glm::vec3>& line, const std::vector<float>& radius,
                               int numberOfSides = 32, bool capping = true);
 
-  static ZMesh createConeMesh(glm::vec3 base, float baseRadius, glm::vec3 top, float topRadius,
+  static ZMesh CreateConeMesh(glm::vec3 base, float baseRadius, glm::vec3 top, float topRadius,
                               int numberOfSides = 32, bool capping = true);
 
   // from ZCubeArray
@@ -312,16 +316,17 @@ public:
       const ZIntCuboid &cf, const std::vector<bool> &visible, const QColor &color);
 
   // these functions only deal with meshes with normal, other fields (texture, color) are ignored
-  static ZMesh unite(const ZMesh& mesh1, const ZMesh& mesh2)
+  static ZMesh Unite(const ZMesh& mesh1, const ZMesh& mesh2)
   { return booleanOperation(mesh1, mesh2, BooleanOperationType::Union); }
 
-  static ZMesh intersect(const ZMesh& mesh1, const ZMesh& mesh2)
+  static ZMesh Intersect(const ZMesh& mesh1, const ZMesh& mesh2)
   { return booleanOperation(mesh1, mesh2, BooleanOperationType::Intersection); }
 
-  static ZMesh subtract(const ZMesh& mesh1, const ZMesh& mesh2)
+  static ZMesh Subtract(const ZMesh& mesh1, const ZMesh& mesh2)
   { return booleanOperation(mesh1, mesh2, BooleanOperationType::Difference); }
 
-  static ZMesh merge(const std::vector<ZMesh>& meshes);
+  static ZMesh Merge(const std::vector<ZMesh>& meshes);
+  static ZMesh Merge(const std::vector<ZMesh*>& meshes);
 
   void swapXZ();
   void translate(double x, double y, double z);

@@ -49,6 +49,8 @@ class ZDvidLabelSlice;
 class ZFlyEmGrayscaleDialog;
 class FlyEmBodyIdDialog;
 class ZFlyEmMergeUploadDialog;
+class ZFlyEmProofSettingDialog;
+class ZROIWidget;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -65,6 +67,7 @@ public:
       neutube::EAxis axis = neutube::Z_AXIS, ERole role = ROLE_WIDGET);
   static ZFlyEmProofMvc* Make(
       const ZDvidTarget &target, ERole role = ROLE_WIDGET);
+  static ZFlyEmProofMvc* Make(ERole role = ROLE_WIDGET);
 
   ZFlyEmProofDoc* getCompleteDocument() const;
   ZFlyEmProofPresenter* getCompletePresenter() const;
@@ -105,32 +108,65 @@ public:
   uint64_t getBodyIdForSplit() const;
   void setBodyIdForSplit(uint64_t id);
 
-  /*
-  ZFlyEmBodyMergeProject* getMergeProject() {
-    return &m_mergeProject;
-  }
-  */
+  void updateContrast();
 
-//  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
-//  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
-//  QSortFilterProxyModel* getAssignedBookmarkProxy() const;
-//  QSortFilterProxyModel* getUserBookmarkProxy() const;
-
-  ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
-     flyem::EProofreadingMode mode) const {
-    return m_assignedBookmarkModel[mode];
+  void diagnose();
+  void profile();
+  void startTestTask(const std::string &taskKey);
+  void startTestTask(const ZJsonObject &config);
+  void showSetting();
+  void setExiting(bool exiting) {
+    m_quitting = exiting;
   }
 
-  ZFlyEmBookmarkListModel* getUserBookmarkModel(
-     flyem::EProofreadingMode mode) const {
-    return m_userBookmarkModel[mode];
+  Z3DWindow* makeExternalSkeletonWindow(neutube3d::EWindowType windowType);
+  Z3DWindow* makeExternalMeshWindow(neutube3d::EWindowType windowType);
+  Z3DWindow* makeNeu3Window();
+  Z3DWindow* makeMeshWindow();
+
+  void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
+
+  static void showAnnotations(bool show);
+  static bool showingAnnotations();
+
+  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
+
+  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
+    return m_bodyInfoDlg;
   }
 
-  ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
-  ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
+  bool is3DEnabled() const {
+    return m_3dEnabled;
+  }
 
-  void registerBookmarkView(ZFlyEmBookmarkView *view);
+  void disable3D() {
+    m_3dEnabled = false;
+  }
 
+  void disableSequencer();
+
+  void notifyStateUpdate();
+
+  void configure();
+
+
+public: //bookmark functions
+    ZFlyEmBookmarkListModel* getAssignedBookmarkModel(
+       flyem::EProofreadingMode mode) const {
+      return m_assignedBookmarkModel[mode];
+    }
+
+    ZFlyEmBookmarkListModel* getUserBookmarkModel(
+       flyem::EProofreadingMode mode) const {
+      return m_userBookmarkModel[mode];
+    }
+
+    ZFlyEmBookmarkListModel* getUserBookmarkModel() const;
+    ZFlyEmBookmarkListModel* getAssignedBookmarkModel() const;
+
+    void registerBookmarkView(ZFlyEmBookmarkView *view);
+
+public: //Export functions
   void exportGrayscale();
   void exportGrayscale(const ZIntCuboid &box, int dsIntv, const QString &fileName);
   void exportBodyStack();
@@ -140,16 +176,9 @@ public:
       const std::vector<uint64_t> &bodyIdArray, int width, int height,
       const QString &outDir);
 
-  FlyEmBodyInfoDialog *getBodyInfoDlg() const {
-    return m_bodyInfoDlg;
-  }
-
-  void diagnose();
-
-  Z3DWindow* makeExternalSkeletonWindow(NeuTube3D::EWindowType windowType);
-  Z3DWindow* makeExternalMeshWindow(NeuTube3D::EWindowType windowType);
-  Z3DWindow* makeNeu3Window();
-  Z3DWindow* makeMeshWindow();
+  void exportNeuronMeshScreenshot(
+      const std::vector<uint64_t> &bodyIdArray, int width, int height,
+      const QString &outDir);
 
 signals:
   void launchingSplit(const QString &message);
@@ -172,7 +201,8 @@ signals:
   void highlightModeChanged();
   void roiLoaded();
   void locating2DViewTriggered(int x, int y, int z, int width);
-
+  void dvidReady();
+  void stateUpdated(ZFlyEmProofMvc *mvc);
 
 public slots:
   void mergeSelected();
@@ -184,6 +214,7 @@ public slots:
   void setDvidTarget();
   void launchSplit(uint64_t bodyId, flyem::EBodySplitMode mode);
   void processMessageSlot(const QString &message);
+  void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
   void annotateBody();
   void annotateSynapse();
@@ -210,11 +241,13 @@ public slots:
   bool locateBody(uint64_t bodyId);
 //  void locateBody(QList<uint64_t> bodyIdList); //obsolete function
   void addLocateBody(uint64_t bodyId);
-  void selectBody(uint64_t bodyId);
-  void deselectBody(uint64_t bodyId);
+  void selectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
+  void deselectBody(uint64_t bodyId, bool postponeWindowUpdates = false);
   void selectBodyInRoi(bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
   void notifyBodyMergeEdited();
+  void updateProtocolRangeGlyph(
+      const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
 
   void showBody3d();
   void showSplit3d();
@@ -229,8 +262,10 @@ public slots:
   void showOrthoWindow(double x, double y, double z);
   void showBigOrthoWindow(double x, double y, double z);
 
+  void closeSkeletonWindow();
+
   void setDvidLabelSliceSize(int width, int height);
-  void showFullSegmentation(bool on);
+  void showFullSegmentation();
 
   void enhanceTileContrast(bool state);
   void smoothDisplay(bool state);
@@ -248,7 +283,7 @@ public slots:
   void loadBookmark(const QString &filePath);
   void addSelectionAt(int x, int y, int z);
   void xorSelectionAt(int x, int y, int z);
-  void deselectAllBody();
+  void deselectAllBody(bool asking);
   void selectSeed();
   void setMainSeed();
   void selectAllSeed();
@@ -287,7 +322,13 @@ public slots:
   void loadRoiProject();
   void closeRoiProject();
   void updateRoiGlyph();
+
   void estimateRoi();
+//  void expandPlaneRoi();
+//  void shrinkPlaneRoi();
+  void movePlaneRoi(double dx, double dy);
+  void rotatePlaneRoi(double theta);
+  void scalePlaneRoi(double sx, double sy);
 
   void checkSelectedBookmark(bool checking);
   void recordCheckedBookmark(const QString &key, bool checking);
@@ -320,7 +361,7 @@ public slots:
 
 //  void syncMergeWithDvid();
 
-  void getROIs();
+  void retrieveRois();
   void updateLatencyWidget(int t);
 
   void suppressObjectVisible();
@@ -334,6 +375,8 @@ public slots:
   void testBodyMerge();
   void testBodyVis();
   void testBodySplit();
+
+  void endTestTask();
 
 protected slots:
   void detachCoarseBodyWindow();
@@ -369,6 +412,7 @@ protected slots:
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
+  void updateMeshForSelected();
   void processSynapseVerification(int x, int y, int z, bool verified);
   void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
   void showInfoDialog();
@@ -386,6 +430,7 @@ protected:
 
 private slots:
 //  void updateDvidLabelObject();
+  void roiToggled(bool on);
 
 private:
   void init();
@@ -403,6 +448,16 @@ private:
 //  void syncDvidBookmark();
   void loadBookmarkFunc(const QString &filePath);
   void loadROIFunc();
+  void loadRoi(
+      const ZDvidReader &reader, const std::string &roiName,
+      const std::string &key, const std::string &source);
+  void loadRoi(
+      const ZDvidReader &reader, const std::string &roiName,
+      const std::vector<std::string> &keyList, const std::string &source);
+
+  void loadRoiFromRoiData(const ZDvidReader &reader);
+  void loadRoiFromRefData(const ZDvidReader &reader, const std::string &roiName);
+  void loadRoiMesh(ZMesh *mesh, const std::string &roiName);
 
   void makeCoarseBodyWindow();
   void makeBodyWindow();
@@ -413,7 +468,7 @@ private:
   void makeBigOrthoWindow();
   void makeOrthoWindow(int width, int height, int depth);
 
-  ZWindowFactory makeExternalWindowFactory(NeuTube3D::EWindowType windowType);
+  ZWindowFactory makeExternalWindowFactory(neutube3d::EWindowType windowType);
 
   ZFlyEmBody3dDoc *makeBodyDoc(flyem::EBodyType bodyType);
 
@@ -432,16 +487,19 @@ private:
 
   void clearAssignedBookmarkModel();
   void clearUserBookmarkModel();
-
-  uint64_t getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos = NULL);
-
   void exitHighlightMode();
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId);
   ZDvidSparseStack* updateBodyForSplit(uint64_t bodyId, ZDvidReader &reader);
 
   void prepareTile(ZDvidTileEnsemble *te);
+  void applySettings();
+  void connectSignalSlot();
 //  void prepareBookmarkModel(ZFlyEmBookmarkListModel *model,
 //                            QSortFilterProxyModel *proxy);
+
+  void startMergeProfile();
+  void startMergeProfile(const uint64_t bodyId, int msec);
+  void endMergeProfile();
 
 protected:
   bool m_showSegmentation;
@@ -476,6 +534,7 @@ protected:
   ZFlyEmGrayscaleDialog *m_grayscaleDlg;
   FlyEmBodyIdDialog *m_bodyIdDialog;
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
+  ZFlyEmProofSettingDialog *m_settingDlg;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;
@@ -498,12 +557,19 @@ protected:
   bool m_ROILoaded;
 
   std::vector<std::string> m_roiList;
-  std::vector<ZObject3dScan> m_loadedROIs;
+  std::vector<ZSharedPointer<ZMesh> > m_loadedROIs;
+//  std::vector<ZObject3dScan> m_loadedROIs;
   std::vector<std::string> m_roiSourceList;
 
   //Data fetching
   ZFlyEmSynapseDataFetcher *m_seFetcher;
   ZFlyEmSynapseDataUpdater *m_seUpdater;
+
+  bool m_quitting = false;
+  std::string m_taskKey; //For testing tasks
+  bool m_3dEnabled = true;
+
+  QTimer *m_profileTimer = nullptr;
 //  ZDvidPatchDataFetcher *m_patchFetcher;
 //  ZDvidPatchDataUpdater *m_patchUpdater;
 };
@@ -523,8 +589,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           panel, SIGNAL(splitTriggered(uint64_t)));
   connect(panel, SIGNAL(labelSizeChanged(int, int)),
           this, SLOT(setDvidLabelSliceSize(int, int)));
-  connect(panel, SIGNAL(showingFullSegmentation(bool)),
-          this, SLOT(showFullSegmentation(bool)));
+  connect(panel, SIGNAL(showingFullSegmentation()),
+          this, SLOT(showFullSegmentation()));
   connect(panel, SIGNAL(coarseBodyViewTriggered()),
           this, SLOT(showCoarseBody3d()));
   connect(panel, SIGNAL(bodyViewTriggered()),
@@ -572,9 +638,13 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(exportSelectedBodyStack()));
   connect(panel, SIGNAL(skeletonizingSelectedBody()),
           this, SLOT(skeletonizeSelectedBody()));
+  connect(panel, SIGNAL(updatingMeshForSelectedBody()),
+          this, SLOT(updateMeshForSelected()));
   connect(panel, SIGNAL(reportingBodyCorruption()),
           this, SLOT(reportBodyCorruption()));
   connect(this, SIGNAL(updatingLatency(int)), panel, SLOT(updateLatency(int)));
+  connect(this, SIGNAL(stateUpdated(ZFlyEmProofMvc*)),
+          panel, SLOT(updateWidget(ZFlyEmProofMvc*)));
 }
 
 template <typename T>
@@ -586,6 +656,7 @@ void ZFlyEmProofMvc::connectSplitControlPanel(T *panel)
   connect(panel, SIGNAL(splitQuickViewTriggered()),
           this, SLOT(showSplitQuickView()));
   connect(panel, SIGNAL(bodyViewTriggered()), this, SLOT(showBody3d()));
+  connect(panel, SIGNAL(meshViewTriggered()), this, SLOT(showMeshWindow()));
 //  connect(panel, SIGNAL(splitViewTriggered()), this, SLOT(showSplit3d()));
 
   connect(panel, SIGNAL(exitingSplit()), this, SLOT(exitSplit()));

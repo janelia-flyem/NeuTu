@@ -11,6 +11,8 @@
 #include "zarray.h"
 #include "zrandomgenerator.h"
 #include "zintcuboid.h"
+#include "zstackarray.h"
+#include "zstackutil.h"
 
 #if defined(_QT_GUI_USED_)
 #  include "zstroke2d.h"
@@ -259,9 +261,127 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
         delete obj;
       }
     }
+    delete bodySet;
   }
 
   return objArray;
+}
+
+//Add details from high-res bodies to low-res bodies
+//The bodies have been scaled to the same scale
+//Adjustment: Bl(i) - Bh(j!=i) + Bh(i)
+void ZObject3dFactory::AdjustResolution(
+      std::map<uint64_t, ZObject3dScan*> &lowResSet,
+      std::map<uint64_t, ZObject3dScan*> &highResSet)
+{
+  for (auto &lowResIter : lowResSet) {
+    uint64_t lowResBodyId = lowResIter.first;
+    ZObject3dScan *lowResBody = lowResIter.second;
+    for (auto &highResIter : highResSet) {
+      uint64_t highResBodyId = highResIter.first;
+      ZObject3dScan *highResBody = highResIter.second;
+      if (lowResBodyId != highResBodyId) {
+        lowResBody->subtractSliently(*highResBody);
+      }
+    }
+    for (auto &highResIter : highResSet) {
+      uint64_t highResBodyId = highResIter.first;
+      ZObject3dScan *highResBody = highResIter.second;
+      if (lowResBodyId == highResBodyId) {
+        lowResBody->unify(*highResBody);
+      }
+    }
+  }
+}
+
+std::map<uint64_t, ZObject3dScan*>* ZObject3dFactory::ExtractAllForegroundObject(
+    ZStack &stack, bool upsampling)
+{
+  std::map<uint64_t, ZObject3dScan*> *bodySet =
+      ZObject3dScan::extractAllForegroundObject(
+        stack.array8(), stack.width(), stack.height(), stack.depth(),
+        neutube::Z_AXIS);
+  if (bodySet != NULL) {
+    for (auto &bodyIter : *bodySet) {
+      ZObject3dScan *body = bodyIter.second;
+      body->translate(stack.getOffset());
+      if (upsampling) {
+        body->upSample(stack.getDsIntv());
+      }
+    }
+  }
+
+  return bodySet;
+}
+
+void ZObject3dFactory::DeleteObjectMap(std::map<uint64_t, ZObject3dScan *> *bodySet)
+{
+  if (bodySet != NULL) {
+    for (auto &bodyIter : *bodySet) {
+      ZObject3dScan *body = bodyIter.second;
+      delete body;
+    }
+    delete bodySet;
+  }
+}
+
+//Combine the object map by concatenating objects with the same ID
+void ZObject3dFactory::CombineObjectMap(
+    std::map<uint64_t, ZObject3dScan *> *masterBodySet,
+    std::map<uint64_t, ZObject3dScan *> *bodySet)
+{
+  for (auto &body : *bodySet) {
+    if (masterBodySet->count(body.first) > 0) {
+      (*masterBodySet)[body.first]->concat(*(body.second));
+    } else {
+      (*masterBodySet)[body.first] = body.second;
+    }
+  }
+}
+
+ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
+    ZStackArray &stackArray)
+{
+  ZObject3dScanArray *result = NULL;
+
+  if (!stackArray.empty()) {
+    stackArray.sort(zstack::DsIntvGreaterThan());
+    ZStackPtr stack = stackArray[0];
+
+    std::map<uint64_t, ZObject3dScan*> *bodySet =
+        ExtractAllForegroundObject(*stack, true);
+
+    std::map<uint64_t, ZObject3dScan*> *allHighResBodySet =
+        new std::map<uint64_t, ZObject3dScan*>;
+    for (size_t i = 1; i < stackArray.size(); ++i) {
+      stack = stackArray[i];
+      std::map<uint64_t, ZObject3dScan*> *highResBodySet =
+          ExtractAllForegroundObject(*stack, true);
+      CombineObjectMap(allHighResBodySet, highResBodySet);
+      delete highResBodySet;
+    }
+
+    if (!allHighResBodySet->empty()) {
+      AdjustResolution(*bodySet, *allHighResBodySet);
+    }
+    DeleteObjectMap(allHighResBodySet);
+
+    result = new ZObject3dScanArray;
+    for (std::map<uint64_t, ZObject3dScan*>::const_iterator iter = bodySet->begin();
+         iter != bodySet->end(); ++iter) {
+      ZObject3dScan *obj = iter->second;
+      if (iter->first > 0) {
+        obj->setLabel(iter->first);
+        obj->setDsIntv(0);
+        result->append(obj);
+      } else {
+        delete obj;
+      }
+    }
+    delete bodySet;
+  }
+
+  return result;
 }
 
 ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
@@ -548,7 +668,7 @@ ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZIntCuboid &box)
 
 ZObject3dScan ZObject3dFactory::MakeRandomObject3dScan(const ZIntCuboid &box)
 {
-  ZRandomGenerator rnd;
+  ZRandomGenerator &rnd = ZRandomGenerator::GetInstance();
 
   ZObject3dScan obj;
   int nSeg = rnd.rndint(box.getHeight() * box.getDepth());
@@ -607,6 +727,61 @@ std::vector<ZObject3d*> ZObject3dFactory::MakeObject3dArray(const ZStack &stack)
   }
 
   return objArray;
+}
+
+ZObject3dScan* ZObject3dFactory::MakeBoxObject3dScan(
+    const ZIntCuboid &box, ZObject3dScan *obj)
+{
+  if (obj == NULL) {
+    obj = new ZObject3dScan;
+  } else {
+    obj->clear();
+  }
+
+  int x0 = box.getFirstCorner().getX();
+  int y0 = box.getFirstCorner().getY();
+  int z0 = box.getFirstCorner().getZ();
+
+  int x1 = box.getLastCorner().getX();
+  int y1 = box.getLastCorner().getY();
+  int z1 = box.getLastCorner().getZ();
+
+  for (int z = z0; z <= z1; ++z) {
+    for (int y = y0; y <= y1; ++y) {
+      obj->addSegment(z, y, x0, x1, false);
+    }
+  }
+  obj->setCanonized(true);
+
+  return obj;
+}
+
+ZObject3d* ZObject3dFactory::MakeBoxObject3d(
+    const ZIntCuboid &box, ZObject3d *obj)
+{
+  if (obj == NULL) {
+    obj = new ZObject3d;
+  } else {
+    obj->clear();
+  }
+
+  int x0 = box.getFirstCorner().getX();
+  int y0 = box.getFirstCorner().getY();
+  int z0 = box.getFirstCorner().getZ();
+
+  int x1 = box.getLastCorner().getX();
+  int y1 = box.getLastCorner().getY();
+  int z1 = box.getLastCorner().getZ();
+
+  for (int z = z0; z <= z1; ++z) {
+    for (int y = y0; y <= y1; ++y) {
+      for (int x = x0; x < x1; ++x) {
+        obj->append(x, y, z);
+      }
+    }
+  }
+
+  return obj;
 }
 
 #if defined(_QT_GUI_USED_)

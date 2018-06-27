@@ -7,7 +7,15 @@ class ZStackDoc;
 class QWidget;
 class ZActionActivator;
 class ZStackPresenter;
+class QUndoStack;
 
+/*!
+ * \brief The class of producing Qt actions
+ *
+ * The ZActionFactory class is a factory class of producing actions so that they
+ * can be shown consistently in different widgets or windows. Each action is
+ * associated with a key of \a EAction type.
+ */
 class ZActionFactory
 {
 public:
@@ -15,7 +23,8 @@ public:
   virtual ~ZActionFactory() {}
 
   enum EAction {
-    ACTION_TEST,
+    ACTION_NULL,
+    ACTION_TEST, ACTION_ABOUT,
     ACTION_EXTEND_SWC_NODE, ACTION_SMART_EXTEND_SWC_NODE,
     ACTION_CONNECT_TO_SWC_NODE, ACTION_ADD_SWC_NODE,
     ACTION_TOGGLE_SWC_SKELETON,
@@ -59,15 +68,19 @@ public:
     ACTION_TRACE, ACTION_FITSEG, ACTION_DROPSEG, ACTION_FIT_ELLIPSE,
     ACTION_PUNCTA_MARK, ACTION_PUNCTA_ENLARGE, ACTION_PUNCTA_NARROW,
     ACTION_PUNCTA_MEANSHIFT, ACTION_PUNCTA_MEANSHIFT_ALL,
+    ACTION_PUNCTA_CHANGE_COLOR, ACTION_PUNCTA_HIDE_SELECTED,
+    ACTION_PUNCTA_SHOW_SELECTED,
     ACTION_SHOW_SYNAPSE, ACTION_SHOW_TODO,
     ACTION_SAVE_SPLIT_TASK, ACTION_DELETE_SPLIT_SEED,
     ACTION_DELETE_SELECTED_SPLIT_SEED,
     ACTION_DELETE_SELECTED,
+    ACTION_VIEW_DATA_EXTERNALLY,
     ACTION_UNDO, ACTION_REDO,
     ACTION_SHOW_ORTHO, ACTION_SHOW_ORTHO_BIG,
     ACTION_ADD_TODO_ITEM, ACTION_ADD_TODO_MERGE,
     ACTION_ADD_TODO_SPLIT,
     ACTION_CHECK_TODO_ITEM, ACTION_ACTIVATE_TODO_ITEM,
+    ACTION_ACTIVATE_TOSPLIT_ITEM,
     ACTION_ADD_TODO_ITEM_CHECKED, ACTION_TODO_ITEM_ANNOT_NORMAL,
     ACTION_TODO_ITEM_ANNOT_MERGE, ACTION_TODO_ITEM_ANNOT_SPLIT,
     ACTION_SHOW_NORMAL_TODO,
@@ -78,13 +91,17 @@ public:
     ACTION_REWRITE_SEGMENTATION, ACTION_REFRESH_SEGMENTATION,
     ACTION_FLYEM_UPDATE_BODY,
     ACTION_FLYEM_COMPARE_BODY,
-    ACTION_SAVE_STACK, ACTION_COPY_POSITION,
+    ACTION_SAVE_STACK, ACTION_COPY_POSITION, ACTION_COPY_BODY_ID,
+    ACTION_EXIT_SPLIT, ACTION_START_SPLIT, ACTION_COMMIT_SPLIT,
     ACTION_SEPARATOR
   };
 
+#if 0
   static QAction* makeAction(
       EAction item, const ZStackDoc *doc, QWidget *parent,
       ZActionActivator *activator = NULL, bool positive = true);
+#endif
+
 /*
   static QAction* makeAction(
       EAction item, const ZStackPresenter *presenter, QWidget *parent,
@@ -93,6 +110,13 @@ public:
   static QAction *MakeAction(EAction actionKey, QObject *parent);
 
   virtual QAction* makeAction(EAction actionKey, QObject *parent) const;
+
+  void setUndoStack(QUndoStack *undoStack);
+
+  static bool IsRegularAction(EAction actionKey);
+
+private:
+  QUndoStack *m_undoStack = NULL;
 };
 
 #endif // ZACTIONFACTORY_H

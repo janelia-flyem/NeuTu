@@ -4,7 +4,6 @@
 #include "z3dboundedfilter.h"
 #include "z3drendererbase.h"
 #include "z3dport.h"
-#include "z3dpickingmanager.h"
 
 class Z3DGeometryFilter : public Z3DBoundedFilter
 {
@@ -25,6 +24,14 @@ public:
   virtual void configure(const ZJsonObject &obj);
 
   virtual ZJsonObject getConfigJson() const;
+
+  void enablePicking(bool on) {
+    m_pickingEnabled = on;
+  }
+
+  bool pickingEnabled() const {
+    return m_pickingEnabled;
+  }
 
 protected:
   virtual void process(Z3DEye /*eye*/) override
@@ -54,6 +61,7 @@ protected:
 
   ZBoolParameter m_stayOnTop;
   bool m_pickingObjectsRegistered;
+  bool m_pickingEnabled = true;
 };
 
 #endif // Z3DGEOMETRYFILTER_H

@@ -16,7 +16,11 @@ contains(CONFIG, neu3) {
 contains(CONFIG, neu3) | contains(CONFIG, flyem) {
   CONFIG *=c++11
   DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
+  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
+
+CONFIG += object_parallel_to_source
+message("Objs dir: $${OBJECTS_DIR}")
 
 #DEFINES+=_CLI_VERSION
 win32 {
@@ -97,13 +101,15 @@ unix {
 include(extlib.pri)
 
 CONFIG += rtti exceptions
-
 CONFIG += static_gtest
 
 QT += printsupport
+qtHaveModule(webenginewidgets) {
+  QT += webenginewidgets
+  DEFINES += _USE_WEBENGINE_
+}
 
 DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
-#_USE_CORE_PROFILE_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -120,7 +126,7 @@ contains(GIT, .*git) {
 
 include(add_itk.pri)
 
-#Qt4
+#Qt4 (Obsolete)
 isEqual(QT_MAJOR_VERSION,4) {
   QT += opengl xml network
   message("Qt 4")
@@ -264,7 +270,7 @@ unix {
             RC_FILE = images/app.icns
         }
 
-    }
+    } #macx
 }
 
 win32 {
@@ -281,7 +287,7 @@ include(command/command.pri)
 
 message("Config: $$CONFIG")
 
-message($$QMAKE_MACOSX_DEPLOYMENT_TARGET)
+message("Target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
 # Input
 RESOURCES = gui.qrc
@@ -674,6 +680,7 @@ HEADERS += mainwindow.h \
     flyem/zflyemkeyoperationconfig.h \
     zslicedpuncta.h \
     flyem/zflyembookmarkwidget.h \
+    flyem/zflyembookmarkfilter.h \
     zmultiscalepixmap.h \
     biocytin/zbiocytinprojmaskfactory.h \
     flyem/zflyemproofdocmenufactory.h \
@@ -712,6 +719,7 @@ HEADERS += mainwindow.h \
     protocols/doNthingsprotocol.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
+    protocols/synapsepredictionbodyinputdialog.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
     widgets/zcolorlabel.h \
@@ -825,8 +833,62 @@ HEADERS += mainwindow.h \
     zcontrastprotocol.h \
     dialogs/zflyemmergeuploaddialog.h \
     zmeshfactory.h \
-    flyem/zflyemmeshfactory.h
-    
+    flyem/zflyemmeshfactory.h \
+    protocols/taskbodyhistory.h \
+    protocols/taskbodycleave.h \
+    widgets/zpythonprocess.h \
+    zstackutil.h \
+    zstackptr.h \
+    dialogs/zflyemproofsettingdialog.h \
+    widgets/zroilistview.h \
+    flyem/zflyemroiobjsmodel.h \
+    zstackdocptr.h \
+    z3dstackdocfilter.h \
+    zstackdoc3dhelper.h \
+    zstackobjectinfo.h \
+    zstackobjectptr.h \
+    zstackdocproxy.h \
+    zroiobjsmodel.h \
+    zstackobjectaccessor.h \
+    zgraphptr.h \
+    flyem/zflyembodystateaccessor.h \
+    flyem/zflyemdoc3dbodystateaccessor.h \
+    misc/zmarchingcube.h \
+    ilastik/marching_cubes.h \
+    ilastik/laplacian_smoothing.h \
+    flyem/zflyembodysplitter.h \
+    zarbsliceviewparam.h \
+    flyem/zflyemarbdoc.h \
+    flyem/zflyemarbmvc.h \
+    flyem/zflyemarbpresenter.h \
+    flyem/zarbslicescrollstrategy.h \
+    dialogs/zneu3sliceviewdialog.h \
+    znetbufferreader.h \
+    zstackviewhelper.h \
+    dvid/zdviddataslicehelper.h \
+    flyem/zflyemproofmvccontroller.h \
+    flyem/zmainwindowcontroller.h \
+    zstackdocnullmenufactory.h \
+    mvc/zstackspaceconfig.h \
+    mvc/zviewspaceconfig.h \
+    mvc/zpositionmapper.h \
+    data3d/zstackobjecthelper.h \
+    data3d/utilities.h \
+    core/utilities.h \
+    core/qthelper.h \
+    flyem/zflyemtododelegate.h \
+    zmenuconfig.h \
+    zobjsmodelmanager.h \
+    zobjsmodelfactory.h \
+    flyem/zglobaldvidrepo.h \
+    flyem/flyemdef.h \
+    concurrent/zworkthread.h \
+    concurrent/zworker.h \
+    concurrent/ztaskqueue.h \
+    flyem/zflyemroutinechecktask.h \
+    flyem/zdvidlabelslicehighrestask.h \
+    flyem/zdvidgrayslicehighrestask.h \
+    flyem/zdviddataslicetask.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -899,12 +961,14 @@ FORMS += dialogs/settingdialog.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     flyem/zflyembookmarkwidget.ui \
+    flyem/zflyembookmarkfilter.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/synapsepredictionbodyinputdialog.ui \
     protocols/synapsereviewprotocol.ui \
     protocols/synapsereviewinputdialog.ui \
     protocols/protocoldialog.ui \
@@ -933,7 +997,9 @@ FORMS += dialogs/settingdialog.ui \
     neu3window.ui \
     dialogs/dvidbranchdialog.ui \
     widgets/taskprotocolwindow.ui \
-    dialogs/zflyemmergeuploaddialog.ui
+    dialogs/zflyemmergeuploaddialog.ui \
+    dialogs/zflyemproofsettingdialog.ui \
+    dialogs/zneu3sliceviewdialog.ui
 
 SOURCES += main.cpp \
     mainwindow.cpp \
@@ -1290,6 +1356,7 @@ SOURCES += main.cpp \
     flyem/zflyemkeyoperationconfig.cpp \
     zslicedpuncta.cpp \
     flyem/zflyembookmarkwidget.cpp \
+    flyem/zflyembookmarkfilter.cpp \
     zmultiscalepixmap.cpp \
     biocytin/zbiocytinprojmaskfactory.cpp \
     flyem/zflyemproofdocmenufactory.cpp \
@@ -1329,6 +1396,7 @@ SOURCES += main.cpp \
     protocols/doNthingsprotocol.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsepredictionbodyinputdialog.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
     widgets/zcolorlabel.cpp \
@@ -1439,8 +1507,59 @@ SOURCES += main.cpp \
     zcontrastprotocol.cpp \
     dialogs/zflyemmergeuploaddialog.cpp \
     zmeshfactory.cpp \
-    flyem/zflyemmeshfactory.cpp
-    
+    flyem/zflyemmeshfactory.cpp \
+    protocols/taskbodyhistory.cpp \
+    protocols/taskbodycleave.cpp \
+    widgets/zpythonprocess.cpp \
+    zstackutil.cpp \
+    zstackptr.cpp \
+    dialogs/zflyemproofsettingdialog.cpp \
+    widgets/zroilistview.cpp \
+    flyem/zflyemroiobjsmodel.cpp \
+    z3dstackdocfilter.cpp \
+    zstackdoc3dhelper.cpp \
+    zstackobjectinfo.cpp \
+    zstackdocproxy.cpp \
+    zroiobjsmodel.cpp \
+    zstackobjectaccessor.cpp \
+    zgraphptr.cpp \
+    flyem/zflyembodystateaccessor.cpp \
+    flyem/zflyemdoc3dbodystateaccessor.cpp \
+    misc/zmarchingcube.cpp \
+    ilastik/marching_cubes.cpp \
+    ilastik/laplacian_smoothing.cpp \
+    flyem/zflyembodysplitter.cpp \
+    zarbsliceviewparam.cpp \
+    flyem/zflyemarbdoc.cpp \
+    flyem/zflyemarbmvc.cpp \
+    flyem/zflyemarbpresenter.cpp \
+    flyem/zarbslicescrollstrategy.cpp \
+    dialogs/zneu3sliceviewdialog.cpp \
+    znetbufferreader.cpp \
+    zstackviewhelper.cpp \
+    dvid/zdviddataslicehelper.cpp \
+    flyem/zflyemproofmvccontroller.cpp \
+    flyem/zmainwindowcontroller.cpp \
+    zstackdocnullmenufactory.cpp \
+    mvc/zstackspaceconfig.cpp \
+    mvc/zviewspaceconfig.cpp \
+    mvc/zpositionmapper.cpp \
+    data3d/zstackobjecthelper.cpp \
+    data3d/utilities.cpp \
+    core/utilities.cpp \
+    core/qthelper.cpp \
+    flyem/zflyemtododelegate.cpp \
+    zmenuconfig.cpp \
+    zobjsmodelmanager.cpp \
+    zobjsmodelfactory.cpp \
+    flyem/zglobaldvidrepo.cpp \
+    concurrent/zworkthread.cpp \
+    concurrent/zworker.cpp \
+    concurrent/ztaskqueue.cpp \
+    flyem/zflyemroutinechecktask.cpp \
+    flyem/zdvidlabelslicehighrestask.cpp \
+    flyem/zdvidgrayslicehighrestask.cpp \
+    flyem/zdviddataslicetask.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

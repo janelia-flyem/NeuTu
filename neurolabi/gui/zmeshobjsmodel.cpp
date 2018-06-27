@@ -5,6 +5,7 @@
 #include "zmesh.h"
 #include "QsLog.h"
 #include "neutubeconfig.h"
+#include "zstackdocproxy.h"
 
 ZMeshObjsModel::ZMeshObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -33,7 +34,7 @@ ZMesh* ZMeshObjsModel::getMesh(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() == m_rootItem)
-    return ZStackObject::CastVoidPointer<ZMesh>(item->getActuralData());
+    return ZStackObject::CastVoidPointer<ZMesh>(item->getActualData());
   else
     return NULL;
 }
@@ -57,7 +58,8 @@ void ZMeshObjsModel::setupModelData(ZObjsItem *parent)
   QList<QVariant> data;
 
   m_meshToRow.clear();
-  QList<ZMesh*> meshList = m_doc->getMeshList();
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(m_doc);
+//      m_doc->getMeshList();
   for (int i=0; i<meshList.size(); i++) {
     data.clear();
     ZMesh *mesh = meshList.at(i);
@@ -84,4 +86,11 @@ void ZMeshObjsModel::setModelIndexCheckState(const QModelIndex &index, Qt::Check
 bool ZMeshObjsModel::needCheckbox(const QModelIndex &index) const
 {
   return getMesh(index) != NULL;
+}
+
+void ZMeshObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  if (infoSet.contains(ZStackObject::TYPE_MESH)) {
+    updateModelData();
+  }
 }

@@ -31,15 +31,17 @@ public:
   /*!
    * \brief Set dvid target from source string
    *
-   * The old settings will be cleared no matter what.
+   * The old settings will be cleared after the call.
    *
-   * \param sourceString Format: http:host:port:node:labelblk_name.
+   * \param sourceString Format: http:host:port:node:segmentation_name.
    */
   void setFromSourceString(const std::string &sourceString);
 
 
   /*!
    * \brief Set dvid target from source string
+   *
+   * The old settings will be cleared after the call.
    *
    * \param sourceString Format: http:host:port:node:<dataType>_name.
    */
@@ -141,11 +143,15 @@ public:
    */
   void loadJsonObject(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
+  void updateData(const ZJsonObject &obj);
 
   void loadDvidDataSetting(const ZJsonObject &obj);
   ZJsonObject toDvidDataSetting() const;
 
   void print() const;
+
+  void setMock(bool on);
+  bool isMock() const;
 
   //Special functions
   inline const std::string& getLocalFolder() const {
@@ -178,18 +184,28 @@ public:
   void setNullBodyLabelName();
 
   bool hasBodyLabel() const;
-  bool hasLabelBlock() const;
-  bool usingLabelArray() const;
-  void useLabelArray(bool on);
+  bool hasSegmentation() const;
+  bool hasSupervoxel() const;
+  bool isSegmentationSyncable() const;
+//  bool usingLabelArray() const;
+//  bool usingLabelMap() const;
+  ZDvidData::EType getSegmentationType() const;
+  void setSegmentationType(ZDvidData::EType type);
+  bool segmentationAsBodyLabel() const;
+  bool hasSparsevolSizeApi() const;
+  bool hasMultiscaleSegmentation() const;
+  bool hasCoarseSplit() const;
+//  void useLabelArray(bool on);
+//  void useLabelMap(bool on);
 
   static std::string GetMultiscaleDataName(const std::string &dataName, int zoom);
 
-  std::string getLabelBlockName() const;
-  std::string getLabelBlockName(int zoom) const;
-  std::string getValidLabelBlockName(int zoom) const;
-  void setLabelBlockName(const std::string &name);
+  std::string getSegmentationName() const;
+  std::string getSegmentationName(int zoom) const;
+  std::string getValidSegmentationName(int zoom) const;
+  void setSegmentationName(const std::string &name);
 
-  void setNullLabelBlockName();
+  void setNullSegmentationName();
 
   std::string getBodyInfoName() const;
 
@@ -231,6 +247,8 @@ public:
   std::string getBookmarkName() const;
   std::string getBookmarkKeyName() const;
   std::string getSkeletonName() const;
+  std::string getMeshName() const;
+  std::string getMeshName(int zoom) const;
   std::string getThumbnailName() const;
 
   std::string getTodoListName() const;
@@ -298,6 +316,7 @@ public:
   }
 
   void setSourceConfig(const ZJsonObject &config);
+  ZJsonObject getSourceConfigJson() const;
 
   /*!
    * \brief Set dvid source of grayscale data
@@ -315,46 +334,30 @@ public:
   ZDvidNode getTileSource() const;
   ZDvidTarget getGrayScaleTarget() const;
 
+  static bool Test();
+
 private:
   void init();
   void setSource(const char *key, const ZDvidNode &node);
   ZDvidNode getSource(const char *key) const;
 
-private:
-  ZDvidNode m_node;
-  std::string m_name;
-  std::string m_comment;
-  std::string m_localFolder;
-  std::string m_bodyLabelName;
-  std::string m_labelBlockName;
-  std::string m_multiscale2dName; //default lossless tile name
-  ZJsonObject m_tileConfig; //used when m_multiscale2dName is empty
-  ZJsonObject m_sourceConfig;
-  std::string m_grayScaleName;
-  std::string m_synapseLabelszName;
-  std::string m_roiName;
-  std::string m_todoListName;
-  std::vector<std::string> m_roiList;
-  std::string m_synapseName;
-  std::set<std::string> m_userList;
-  bool m_isSupervised;
-  std::string m_supervisorServer;
-  int m_maxLabelZoom;
-  int m_maxGrayscaleZoom;
-  bool m_usingMultresBodyLabel;
-  bool m_usingDefaultSetting;
-  bool m_usingLabelArray = false;
-  bool m_isDefaultBodyLabel = false;
-//  std::string m_userName;
-//  std::string m_tileName;
+  class TileConfig {
+  public:
+    TileConfig() {}
+    void loadJsonObject(const ZJsonObject &jsonObj);
+    void setLowQuality(bool on) {
+      m_lowQuality = on;
+    }
+    bool isLowQuality() const {
+      return m_lowQuality;
+    }
+    ZJsonObject toJsonObject() const;
 
-  int m_bgValue; //grayscale background
+  private:
+    bool m_lowQuality = false;
+  };
 
-  bool m_isEditable; //if the configuration is editable
-  bool m_readOnly; //if the database is readonly
-  ZDvid::ENodeStatus m_nodeStatus = ZDvid::NODE_OFFLINE; //Status of the node
-  bool m_isInferred = false;
-
+public:
   const static char* m_commentKey;
   const static char* m_nameKey;
   const static char* m_localKey;
@@ -362,7 +365,8 @@ private:
   const static char* m_bgValueKey;
   const static char* m_grayScaleNameKey;
   const static char* m_bodyLabelNameKey;
-  const static char* m_labelBlockNameKey;
+  const static char* m_segmentationNameKey;
+  const static char* m_newSegmentationNameKey;
   const static char* m_multiscale2dNameKey;
   const static char* m_tileConfigKey;
   const static char* m_roiListKey;
@@ -377,6 +381,49 @@ private:
   const static char* m_synapseLabelszKey;
   const static char* m_todoListNameKey;
   const static char* m_sourceConfigKey;
+  const static char* m_proofreadingKey;
+
+private:
+  ZDvidNode m_node;
+  std::string m_name;
+  std::string m_comment;
+  std::string m_localFolder;
+
+  std::string m_bodyLabelName;
+  std::string m_segmentationName;
+  std::string m_multiscale2dName; //default lossless tile name
+  std::string m_grayScaleName;
+  std::string m_synapseLabelszName;
+  std::string m_roiName;
+  std::string m_todoListName;
+  std::vector<std::string> m_roiList;
+  std::string m_synapseName;
+
+  std::map<std::string, TileConfig> m_tileConfig; //used when m_multiscale2dName is empty
+//  ZJsonObject m_tileConfig;
+  std::map<std::string, ZDvidNode> m_sourceConfig;
+//  ZJsonObject m_sourceConfig;
+
+  std::set<std::string> m_userList;
+  bool m_isSupervised;
+  std::string m_supervisorServer;
+  int m_maxLabelZoom;
+  int m_maxGrayscaleZoom;
+  bool m_usingMultresBodyLabel;
+  bool m_usingDefaultSetting;
+  ZDvidData::EType m_segmentationType = ZDvidData::TYPE_LABELBLK;
+//  bool m_usingLabelArray = false;
+//  bool m_usingLabelMap = false;
+  bool m_isDefaultBodyLabel = false;
+//  std::string m_userName;
+//  std::string m_tileName;
+
+  int m_bgValue; //grayscale background
+
+  bool m_isEditable; //if the configuration is editable
+  bool m_readOnly; //if the database is readonly
+  ZDvid::ENodeStatus m_nodeStatus = ZDvid::NODE_OFFLINE; //Status of the node
+  bool m_isInferred = false;
 };
 
 #endif // ZDVIDTARGET_H

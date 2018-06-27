@@ -6,6 +6,8 @@
 #include "zstackframe.h"
 #include "tz_error.h"
 #include "zwindowfactory.h"
+#include "z3dwindow.h"
+#include "zswctree.h"
 
 AutosaveSwcListDialog::AutosaveSwcListDialog(QWidget *parent) :
   QDialog(parent),

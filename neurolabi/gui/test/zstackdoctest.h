@@ -21,13 +21,13 @@ TEST(ZStackDoc, Basic)
 TEST(ZStackDoc, Swc)
 {
   ZStackDoc doc;
-  doc.readSwc((GET_TEST_DATA_DIR + "/benchmark/swc/compare1.swc").c_str());
+  doc.readSwc((GET_BENCHMARK_DIR + "/swc/compare1.swc").c_str());
   doc.saveSwc(GET_TEST_DATA_DIR + "/test1.swc");
   ASSERT_EQ(1, doc.getSwcList().size());
   ASSERT_EQ(GET_TEST_DATA_DIR + "/test1.swc", doc.getSwcList().front()->getSource());
 
   ZSwcTree *tree = new ZSwcTree;
-  tree->load(GET_TEST_DATA_DIR + "/benchmark/swc/compare2.swc");
+  tree->load(GET_BENCHMARK_DIR + "/swc/compare2.swc");
   doc.addObject(tree);
   ASSERT_EQ(2, doc.getSwcList().size());
 
@@ -52,6 +52,7 @@ TEST(ZStackDoc, Player)
   ASSERT_EQ(2, doc.getObjectGroup().size());
 
   doc.removeObject(ZStackObjectRole::ROLE_SEED, false);
+  doc.processDataBuffer();
   ASSERT_EQ(0, doc.getPlayerList().size());
   ASSERT_EQ(1, doc.getObjectGroup().size());
 
@@ -67,6 +68,7 @@ TEST(ZStackDoc, Player)
   ASSERT_EQ(3, doc.getObjectGroup().size());
 
   doc.removeObject(ZStackObjectRole::ROLE_SEED, false);
+  doc.processDataBuffer();
   ASSERT_EQ(0, doc.getPlayerList().size());
   ASSERT_EQ(1, doc.getObjectGroup().size());
 
@@ -75,6 +77,7 @@ TEST(ZStackDoc, Player)
 
   doc.addObject(obj6);
   doc.removeObject(ZStackObjectRole::ROLE_SEED, true);
+  doc.processDataBuffer();
   ASSERT_EQ(0, doc.getObjectGroup().size());
 
   {
@@ -154,6 +157,21 @@ TEST(ZStackDoc, Player)
   graph = doc.get3DGraphDecoration();
   ASSERT_EQ(13, (int) graph.getNodeNumber());
   ASSERT_EQ(0, (int) graph.getEdgeNumber());
+}
+
+TEST(ZStackDoc, Undo)
+{
+  ZStackDoc doc;
+  ZObject3d *obj = new ZObject3d;
+  obj->append(0, 0, 0);
+  obj->setRole(ZStackObjectRole::ROLE_SEED);
+  doc.executeAddObjectCommand(obj);
+  ASSERT_EQ(1, doc.getPlayerList().size());
+  ASSERT_EQ(1, doc.getObjectGroup().size());
+
+  doc.undoStack()->undo();
+  ASSERT_EQ(0, doc.getPlayerList().size());
+  ASSERT_EQ(0, doc.getObjectGroup().size());
 }
 
 #endif

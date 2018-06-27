@@ -93,6 +93,13 @@ public:
   void setCursor(const QCursor& c)
   { viewport()->setCursor(c); }
 
+  void dump(const QString &message);
+
+  void paintCustomRegion(const QImage &image);
+
+  void updateView();
+//  void setCustomWidget(QWidget *widget);
+
 signals:
 
   // w and h is physical size not logical size, opengl works in physical pixel
@@ -103,6 +110,7 @@ signals:
   void strokePainted(ZStroke2d*);
   void shootingTodo(int x, int y);
   void locating(int x, int y);
+  void browsing(int x, int y);
 
   void openGLContextInitialized();
 
@@ -149,6 +157,8 @@ protected:
 
 private:
   //double devicePixelRatio();
+  void drawText(QPainter &painter, const QString &text);
+  void drawText(QPainter &painter, const QStringList &text);
 
 private slots:
   void updateDecoration();
@@ -162,6 +172,10 @@ private:
 
   ZInteractionEngine m_interaction;
   bool m_updatingDecoration = false;
+
+  QPixmap *m_customCanvas = NULL; //Not in use for now
+
+  QString m_message;
 };
 
 #endif // Z3DCANVAS_H

@@ -6,6 +6,7 @@
 #include "zstackdoc.h"
 #include "imgproc/zstackprocessor.h"
 #include "mainwindow.h"
+#include "zstack.hxx"
 
 ZRgb2GrayModule::ZRgb2GrayModule(QObject *parent) :
   ZSandboxModule(parent)

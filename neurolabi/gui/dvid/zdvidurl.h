@@ -54,8 +54,12 @@ public:
   std::string getMeshUrl();
   std::string getMeshUrl(uint64_t bodyId, int zoom);
   std::string getMeshInfoUrl(uint64_t bodyId, int zoom);
+  static std::string GetMeshInfoUrl(const std::string &meshUrl);
 //  std::string getThumbnailUrl(const std::string &bodyLableName) const;
 //  std::string getThumbnailUrl(int bodyId) const;
+
+  std::string getMeshesTarsUrl();
+  std::string getMeshesTarsUrl(uint64_t bodyId);
 
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
@@ -67,6 +71,16 @@ public:
 
 //  std::string getSparsevolUrl() const;
 //  std::string getSparsevolUrl(int bodyId) const;
+
+  std::string getSupervoxelUrl(const std::string &dataName) const;
+  std::string getSupervoxelUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getSupervoxelUrl(uint64_t bodyId) const;
+  std::string getSupervoxelUrl(uint64_t bodyId, int z, neutube::EAxis axis) const;
+  std::string getSupervoxelUrl(
+      uint64_t bodyId, int minZ, int maxZ, neutube::EAxis axis) const;
+  std::string getSupervoxelUrl(uint64_t bodyId, const ZIntCuboid &box) const;
+  std::string getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom);
+//  std::string getSupervoxelSizeUrl(uint64_t bodyId) const;
 
   std::string getSparsevolUrl(const std::string &dataName) const;
   std::string getSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
@@ -82,6 +96,10 @@ public:
 
 //  std::string getCoarseSparsevolUrl() const;
 //  std::string getCoarseSparsevolUrl(int bodyId) const;
+
+  std::string getCoarseSupervoxelUrl(const std::string &dataName) const;
+  std::string getCoarseSupervoxelUrl(uint64_t bodyId, const std::string &dataName) const;
+  std::string getCoarseSupervoxelUrl(uint64_t bodyId) const;
 
   std::string getCoarseSparsevolUrl(const std::string &dataName) const;
   std::string getCoarseSparsevolUrl(uint64_t bodyId, const std::string &dataName) const;
@@ -128,6 +146,8 @@ public:
   std::string getLocalBodyIdUrl(int x, int y, int z) const;
   std::string getLocalBodyIdArrayUrl() const;
 
+  std::string getLocalSupervoxelIdUrl(int x, int y, int z) const;
+
   std::string getBodyLabelUrl() const;
   std::string getBodyLabelUrl(const std::string &dataName) const;
     /*
@@ -149,6 +169,8 @@ public:
   std::string getMergeUrl(const std::string &dataName) const;
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel) const;
+  std::string getSplitSupervoxelUrl(
+      const std::string &dataName, uint64_t originalLabel) const;
   std::string getSplitUrl(
       const std::string &dataName, uint64_t originalLabel,
       uint64_t newLabel) const;
@@ -169,6 +191,12 @@ public:
   std::string getBranchUrl() const;
 
   std::string getRoiUrl(const std::string &dataName) const;
+  std::string getRoiMeshUrl(const std::string &key) const;
+
+  /*!
+   * \brief Get the url for an roi that will be listed in GUI.
+   */
+  std::string getManagedRoiUrl(const std::string &key) const;
 
   std::string getBookmarkKeyUrl() const;
   std::string getBookmarkKeyUrl(int x, int y, int z) const;
@@ -209,6 +237,8 @@ public:
       const std::string &dataName, const std::string &queryString) const;
   std::string getLabelszSyncUrl(const std::string &dataName) const;
 
+  std::string getLabelMappingUrl() const;
+
   std::string getSynapseUrl() const;
   std::string getSynapseUrl(int x, int y, int z) const;
   std::string getSynapseUrl(const ZIntPoint &pos) const;
@@ -235,6 +265,9 @@ public:
 
   static std::string GetBodyKey(uint64_t bodyId);
   static std::string GetSkeletonKey(uint64_t bodyId);
+  static std::string GetMeshKey(uint64_t bodyId);
+  static std::string GetMeshInfoKey(uint64_t bodyId);
+  static std::string GetTaskKey();
 
   void setUuid(const std::string &uuid);
 
@@ -270,6 +303,9 @@ public:
   std::string getSplitTaskKey(const uint64_t bodyId) const;
   std::string getSplitResultKey(const uint64_t bodyId) const;
 
+  std::string getTestTaskUrl(const std::string &key);
+//  std::string getTestTaskUrl() const;
+
 //  static bool IsSplitTask(const std::string &url);
 
 private:
@@ -287,8 +323,11 @@ private:
   static const std::string m_infoCommand;
   static const std::string m_sparsevolCommand;
   static const std::string m_coarseSparsevolCommand;
+  static const std::string m_supervoxelCommand;
+  static const std::string m_coarseSupervoxelCommand;
   static const std::string m_splitCommand;
   static const std::string m_coarseSplitCommand;
+  static const std::string m_splitSupervoxelCommand;
   static const std::string m_labelCommand;
   static const std::string m_labelArrayCommand;
   static const std::string m_roiCommand;
@@ -297,6 +336,7 @@ private:
   static const std::string m_annotationLabelCommand;
   static const std::string m_annotationMoveCommand;
   static const std::string m_annotationTagCommand;
+  static const std::string m_labelMappingCommand;
 };
 
 #endif // ZDVIDURL_H

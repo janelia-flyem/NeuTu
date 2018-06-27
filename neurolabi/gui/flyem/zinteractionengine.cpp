@@ -5,7 +5,7 @@
 #include "zstackdockeyprocessor.h"
 
 ZInteractionEngine::ZInteractionEngine(QObject *parent) :
-  QObject(parent), m_showObject(true), m_objStyle(ZStackObject::NORMAL),
+  QObject(parent), m_objStyle(ZStackObject::NORMAL),
   m_mouseLeftButtonPressed(false), m_mouseRightButtonPressed(false),
   m_cursorRadius(5), m_isStrokeOn(false),
   m_isKeyEventEnabled(true), m_interactionHandler(NULL)
@@ -17,11 +17,13 @@ ZInteractionEngine::ZInteractionEngine(QObject *parent) :
   m_rayMarker.setZ(0);
   m_rayMarker.setFilled(false);
   m_rayMarker.useCosmeticPen(true);
+  m_rayMarker.setColor(Qt::red);
 
   m_exploreMarker.setRadius(5.0);
   m_exploreMarker.setZ(0);
   m_exploreMarker.useCosmeticPen(true);
   m_exploreMarker.addVisualEffect(neutube::display::Sphere::VE_CROSS_CENTER);
+  m_exploreMarker.setColor(Qt::red);
 
   m_namedDecorationList.append(&m_stroke);
   m_namedDecorationList.append(&m_rayMarker);
@@ -82,7 +84,8 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
             ZInteractiveContext::TODO_ADD_ITEM) {
     m_rayMarker.set(event->x(), event->y());
     emit decorationUpdated();
-  } else if (m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_LOCAL) {
+  } else if (m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_LOCAL ||
+             m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_EXTERNALLY) {
     m_exploreMarker.setCenter(event->x(), event->y(), 0);
     emit decorationUpdated();
   }
@@ -118,11 +121,15 @@ bool ZInteractionEngine::processMouseReleaseEvent(
       } else if (isStateOn(STATE_LOCATE)) {
         emit locating(event->x(), event->y());
         processed = true;
+      } else if (isStateOn(STATE_BROWSE)) {
+        emit browsing(event->x(), event->y());
+        processed = true;
       }
     }
     m_mouseLeftButtonPressed = false;
   } else if (event->button() == Qt::RightButton) {
     exitEditMode();
+    emit exitingEdit();
     m_mouseRightButtonPressed = false;
   }
 
@@ -211,6 +218,18 @@ bool ZInteractionEngine::process(const ZStackOperator &op)
       emit croppingSwc();
       processed = true;
     }
+    break;
+  case ZStackOperator::OP_FLYEM_SPLIT_BODY_LOCAL:
+    emit splittingBodyLocal();
+    processed = true;
+    break;
+  case ZStackOperator::OP_FLYEM_SPLIT_BODY:
+    emit splittingBody();
+    processed = true;
+    break;
+  case ZStackOperator::OP_FLYEM_SPLIT_BODY_FULL:
+    emit splittingFullBody();
+    processed = true;
     break;
   case ZStackOperator::OP_OBJECT_DELETE_SELECTED:
     emit deletingSelected();
@@ -381,14 +400,27 @@ void ZInteractionEngine::enterPaintStroke()
   emit decorationUpdated();
 }
 
+void ZInteractionEngine::enableRayMarker()
+{
+  m_rayMarker.set(m_mouseMovePosition[0], m_mouseMovePosition[1]);
+  m_rayMarker.setVisible(true);
+}
+
 void ZInteractionEngine::enterMarkTodo()
 {
   exitEditMode();
 
   m_interactiveContext.setTodoEditMode(ZInteractiveContext::TODO_ADD_ITEM);
-  m_rayMarker.set(m_mouseMovePosition[0], m_mouseMovePosition[1]);
-  m_rayMarker.setVisible(true);
+  enableRayMarker();
+
   emit decorationUpdated();
+}
+
+void ZInteractionEngine::enterMarkBookmark()
+{
+  exitEditMode();
+  m_interactiveContext.setBookmarkEditMode(ZInteractiveContext::BOOKMARK_ADD);
+  enableRayMarker();
 }
 
 void ZInteractionEngine::enterLocateMode()
@@ -398,6 +430,25 @@ void ZInteractionEngine::enterLocateMode()
   m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
   m_exploreMarker.setVisible(true);
   emit decorationUpdated();
+}
+
+void ZInteractionEngine::exitLocateMode()
+{
+  exitExplore();
+}
+
+void ZInteractionEngine::enterBrowseMode()
+{
+  exitEditMode();
+  m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_EXTERNALLY);
+  m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
+  m_exploreMarker.setVisible(true);
+  emit decorationUpdated();
+}
+
+void ZInteractionEngine::exitBrowseMode()
+{
+  exitExplore();
 }
 
 void ZInteractionEngine::enterPaintRect()
@@ -442,6 +493,17 @@ void ZInteractionEngine::exitMarkTodo()
   }
 }
 
+void ZInteractionEngine::exitMarkBookmark()
+{
+  if (m_interactiveContext.bookmarkEditMode() !=
+      ZInteractiveContext::BOOKMARK_EDIT_OFF) {
+    m_interactiveContext.setBookmarkEditMode(
+          ZInteractiveContext::BOOKMARK_EDIT_OFF);
+    m_rayMarker.setVisible(false);
+    emit decorationUpdated();
+  }
+}
+
 void ZInteractionEngine::exitExplore()
 {
   if (m_interactiveContext.exploreMode() != ZInteractiveContext::EXPLORE_OFF) {
@@ -459,9 +521,8 @@ void ZInteractionEngine::exitEditMode()
   exitSwcEdit();
   exitPaintStroke();
   exitMarkTodo();
+  exitMarkBookmark();
   exitExplore();
-
-//  m_interactiveContext.setExitingEdit(true);
 }
 
 QList<ZStackObject*> ZInteractionEngine::getDecorationList() const
@@ -482,6 +543,12 @@ void ZInteractionEngine::saveStroke()
     //m_dataBuffer->addStroke(stroke);
     emit strokePainted(stroke);
   }
+}
+
+void ZInteractionEngine::set3DInteractionHandler(Z3DTrackballInteractionHandler *handler)
+{
+  m_interactionHandler = handler;
+  connect(handler, SIGNAL(cameraRotated()), this, SIGNAL(cameraRotated()));
 }
 
 bool ZInteractionEngine::isStateOn(EState status) const
@@ -524,6 +591,9 @@ bool ZInteractionEngine::isStateOn(EState status) const
   case STATE_LOCATE:
     return m_interactiveContext.exploreMode() ==
         ZInteractiveContext::EXPLORE_LOCAL;
+  case STATE_BROWSE:
+    return m_interactiveContext.exploreMode() ==
+        ZInteractiveContext::EXPLORE_EXTERNALLY;
   }
 
   return false;

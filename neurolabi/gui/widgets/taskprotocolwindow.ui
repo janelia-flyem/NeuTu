@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>550</width>
-    <height>167</height>
+    <width>445</width>
+    <height>179</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -90,14 +90,14 @@
       <item>
        <widget class="QPushButton" name="prevButton">
         <property name="text">
-         <string>Prev</string>
+         <string>Prev (Q)</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="nextButton">
         <property name="text">
-         <string>Next</string>
+         <string>Next (E)</string>
         </property>
        </widget>
       </item>
@@ -120,13 +120,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="doneButton">
-        <property name="text">
-         <string>Done</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
@@ -242,6 +235,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="doneButton">
+        <property name="text">
+         <string>Done</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

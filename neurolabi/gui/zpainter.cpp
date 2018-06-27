@@ -78,11 +78,29 @@ bool ZPainter::begin(ZImage *image)
   return false;
 }
 
+bool ZPainter::restart(ZPixmap *pixmap)
+{
+  end();
+  return begin(pixmap);
+}
+
 bool ZPainter::begin(ZPixmap *image)
 {
   m_isPainted = false;
 
   if (getPainter()->begin(image)) {
+    updateTransform(image);
+    //  qDebug() << this.mapRect(QRectF(100, 100, 200, 200));
+
+    return true;
+  }
+
+  return false;
+}
+
+void ZPainter::updateTransform(ZPixmap *image)
+{
+  if (isActive()) {
     QTransform t;
     const ZStTransform &imageTransform = image->getTransform();
     t.translate(imageTransform.getTx(), imageTransform.getTy());
@@ -93,12 +111,7 @@ bool ZPainter::begin(ZPixmap *image)
 
     ZOUT(LTRACE(), 5) << t;
     ZOUT(LTRACE(), 5) << this->getTransform();
-    //  qDebug() << this.mapRect(QRectF(100, 100, 200, 200));
-
-    return true;
   }
-
-  return false;
 }
 
 void ZPainter::initPainter()
@@ -302,7 +315,7 @@ void ZPainter::drawActivePixmap(
 
   if (!image.isFullyActive()) {
     newSourceRect =
-        newSourceRect.intersected(image.getActiveArea(neutube::COORD_WORLD));
+        newSourceRect.intersected(image.getActiveArea(neutube::COORD_WORLD_2D));
     if (!newSourceRect.isEmpty()) {
       newTargetRect = ZRect2d::CropRect(sourceRect, newSourceRect, targetRect);
     }
@@ -358,7 +371,7 @@ void ZPainter::drawActivePixmap(int x, int y, const ZPixmap &image)
     if (!image.isFullyActive()) {
       QRectF oldSourceRect = sourceRect;
       sourceRect =
-          sourceRect.intersected(image.getActiveArea(neutube::COORD_WORLD));
+          sourceRect.intersected(image.getActiveArea(neutube::COORD_WORLD_2D));
       if (!sourceRect.isEmpty()) {
         targetRect = ZRect2d::CropRect(oldSourceRect, sourceRect, targetRect);
       }

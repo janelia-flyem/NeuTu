@@ -5,6 +5,7 @@
 #include "z3drendertarget.h"
 #include "z3dtexture.h"
 #include "zbenchtimer.h"
+#include "z3dpickingmanager.h"
 
 //#define USE_RECT_TEX
 

@@ -1,6 +1,9 @@
 #ifndef ZSTACKGRADIENT_H
 #define ZSTACKGRADIENT_H
-#include "zstack.hxx"
+
+class ZStack;
+
+#include "tz_stdint.h"
 
 /* GradientStrategy
  * abstract base class of computing gradient
@@ -10,7 +13,7 @@ class GradientStrategy
 {
 public:
   GradientStrategy();
-  //virtual ~GradientStrategy();
+  virtual ~GradientStrategy() {}
   void run(const T* in,T* out,uint width,uint height,uint depth,bool ignore_background);
   void reverse(T* begin,T* end);
   void edgeEnhance(const T* in,T* out,double alpha);

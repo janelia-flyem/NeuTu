@@ -10,8 +10,13 @@
 #include "neutubeconfig.h"
 #include "zlogmessagereporter.h"
 #include "dvid/zdvidtarget.h"
-#include "zstackdoc.h"
+#include "zstackdocptr.h"
 #include "zwidgetmessage.h"
+#include "swctreenode.h"
+#include "zstackobjectrole.h"
+#include "zstackobjectinfo.h"
+#include "zstackviewparam.h"
+#include "zarbsliceviewparam.h"
 
 void neutube::RegisterMetaType()
 {
@@ -25,6 +30,11 @@ void neutube::RegisterMetaType()
   qRegisterMetaType<std::set<uint64_t> >("std::set<uint64_t>");
   qRegisterMetaType<QSet<uint64_t> >("QSet<uint64_t>");
   qRegisterMetaType<flyem::EBodySplitMode>("flyem::EBodySplitMode");
+  qRegisterMetaType<ZStackObjectInfo>("ZStackObjectInfo");
+  qRegisterMetaType<ZStackObjectInfoSet>("ZStackObjectInfoSet");
+  qRegisterMetaType<ZStackViewParam>("ZStackViewParam");
+  qRegisterMetaType<ZArbSliceViewParam>("ZArbSliceViewParam");
+  qRegisterMetaType<ZIntPoint>("ZIntPoint");
 }
 
 ZMessageReporter* neutube::getMessageReporter()
@@ -67,17 +77,15 @@ std::string neutube::getInfoFile()
 
 std::string neutube::GetCurrentUserName()
 {
+//  if (NeutubeConfig::GetUserName().empty()) {
+//    NeutubeConfig::SetUserName(qgetenv("USER").toStdString());
+//  }
+
 #ifdef _DEBUG_
-  std::cout << "User name: " << qgetenv("USER").data() << std::endl;
+  std::cout << "User name: " << NeutubeConfig::GetUserName() << std::endl;
 #endif
-  std::string userName = qgetenv("USER").data();
 
-
-  if (userName == "zhaot") { //temporary hack
-//    userName = "ogundeyio";
-  }
-
-  return userName;
+  return NeutubeConfig::GetUserName();
 }
 
 bool neutube::IsAdminUser()

@@ -12,8 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "zstack.hxx"
-#include "zdvidclient.h"
+//#include "zdvidclient.h"
 #include "flyem/zflyem.h"
 #include "zclosedcurve.h"
 #include "dvid/zdvidinfo.h"
@@ -44,6 +43,10 @@ class ZFlyEmToDoItem;
 class ZDvidRoi;
 class ZObject3dScanArray;
 class ZMesh;
+class ZStack;
+class ZAffineRect;
+
+struct archive;
 
 namespace libdvid{
 class DVIDNodeService;
@@ -57,11 +60,11 @@ class ImageService;
 /*!
  * \brief The class for reading data from DVID
  */
-class ZDvidReader : public QObject
+class ZDvidReader/* : public QObject*/
 {
-  Q_OBJECT
+//  Q_OBJECT
 public:
-  explicit ZDvidReader(QObject *parent = 0);
+  explicit ZDvidReader(/*QObject *parent = 0*/);
   ~ZDvidReader();
 
   /*!
@@ -115,6 +118,10 @@ public:
 
   std::string readNodeInfo() const;
 
+  std::string getErrorMsg() const {
+    return m_errorMsg;
+  }
+
   ZDvid::ENodeStatus getNodeStatus() const;
   void updateNodeStatus();
 
@@ -122,13 +129,20 @@ public:
     return m_bufferReader;
   }
 
+  std::vector<std::string> readDataInstances(const std::string &type);
+
   //ZSwcTree* readSwc(const QString &key);
   ZSwcTree *readSwc(uint64_t bodyId) const;
 //  ZObject3dScan readBody(uint64_t bodyId, bool canonizing);
-  ZObject3dScan* readBody(
-      uint64_t bodyId, bool canonizing, ZObject3dScan *result);
 
-  ZMesh* readMesh(uint64_t bodyId, int zoom);
+
+  uint64_t readParentBodyId(uint64_t spId) const;
+
+  ZObject3dScan* readBody(
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
+  ZObject3dScan* readBody(
+      uint64_t bodyId, flyem::EBodyLabelType labelType,
+      bool canonizing, ZObject3dScan *result) const;
 
   ZObject3dScan* readBodyDs(
       uint64_t bodyId, bool canonizing, ZObject3dScan *result);
@@ -138,18 +152,34 @@ public:
       bool canonizing, ZObject3dScan *result);
 
   ZObject3dScan* readBody(uint64_t bodyId, int z, neutube::EAxis axis,
-                          bool canonizing, ZObject3dScan *result);
+                          bool canonizing, ZObject3dScan *result) const;
+  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                          int z, neutube::EAxis axis,
+                          bool canonizing, ZObject3dScan *result) const;
+
+
   ZObject3dScan* readBody(uint64_t bodyId, int minZ, int maxZ,
                           bool canonizing,
-                          neutube::EAxis axis, ZObject3dScan *result);
+                          neutube::EAxis axis, ZObject3dScan *result) const;
+  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                          int minZ, int maxZ, bool canonizing,
+                          neutube::EAxis axis, ZObject3dScan *result) const;
+
+
   ZObject3dScan* readBody(uint64_t bodyId, const ZIntCuboid &box, bool canonizing,
       ZObject3dScan *result) const;
+  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                          const ZIntCuboid &box, bool canonizing,
+                          ZObject3dScan *result) const;
 
-  ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result);
+  ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
+  ZObject3dScan* readBodyWithPartition(
+      uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *result) const;
+
   ZObject3dScan* readMultiscaleBody(
-      uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result);
+      uint64_t bodyId, int zoom, bool canonizing, ZObject3dScan *result) const;
 
-  ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet);
+  ZObject3dScanArray* readBody(const std::set<uint64_t> &bodySet) const;
 
   /*!
    * \brief Check the number of blocks of a body
@@ -159,12 +189,40 @@ public:
    */
   int readBodyBlockCount(uint64_t bodyId) const;
 
+  ZObject3dScan* readSupervoxel(
+      uint64_t bodyId, bool canonizing, ZObject3dScan *result) const;
+
+  ZMesh* readMesh(uint64_t bodyId, int zoom) const;
+  ZMesh* readMesh(const std::string &data, const std::string &key) const;
+  ZMesh* readMeshFromUrl(const std::string &url) const;
+
+  /*!
+   * \brief Read meshes from a key-value instance whose values are tar archives of
+   * Draco-compressed meshes
+   */
+  struct archive *readMeshArchiveStart(uint64_t bodyId);
+  struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal);
+  ZMesh *readMeshArchiveNext(struct archive *arc);
+  ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead);
+
+  /*!
+   * \brief An alternative to repeated calls to readMeshArchiveNext(), which uses
+   * std::async and std::future to decompress the meshes in parallel.
+   */
+  void readMeshArchiveAsync(struct archive *arc, std::vector<ZMesh*>& results,
+                            const std::function<void(size_t, size_t)>& progress = {});
+
+  void readMeshArchiveEnd(struct archive *arc);
+
   ZStack* readThumbnail(uint64_t bodyId);
 
-  ZSparseStack* readSparseStack(uint64_t bodyId);
-  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId);
-  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range);
-  ZDvidSparseStack* readDvidSparseStackAsync(uint64_t bodyId);
+  ZSparseStack* readSparseStack(uint64_t bodyId) const;
+  ZDvidSparseStack* readDvidSparseStack(
+      uint64_t bodyId, flyem::EBodyLabelType labelType = flyem::LABEL_BODY) const;
+//  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
+  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
+  ZDvidSparseStack* readDvidSparseStackAsync(
+      uint64_t bodyId, flyem::EBodyLabelType labelType = flyem::LABEL_BODY) const;
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(
@@ -178,12 +236,12 @@ public:
   ZStack* readGrayScaleOld(
       int x0, int y0, int z0, int width, int height, int depth) const;
 #endif
-  ZStack* readGrayScale(const ZIntCuboid &cuboid);
+  ZStack* readGrayScale(const ZIntCuboid &cuboid) const;
   ZStack* readGrayScaleBlock(
-      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo);
+      const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo) const;
   std::vector<ZStack*> readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-      int blockNumber, int zoom = 0);
+      int blockNumber, int zoom = 0) const;
 
 //  QString readInfo(const QString &dataName) const;
 
@@ -199,6 +257,7 @@ public:
   std::set<uint64_t> readAnnnotatedBodySet();
 
   bool hasKey(const QString &dataName, const QString &key) const;
+
   QByteArray readKeyValue(const QString &dataName, const QString &key) const;
   QStringList readKeys(const QString &dataName) const;
   QStringList readKeys(const QString &dataName, const QString &minKey);
@@ -249,13 +308,48 @@ public:
       int width, int height, int depth, int zoom = 0) const;
 
 #if defined(_ENABLE_LOWTIS_)
+  //Read label data
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
                              int width, int height, int zoom = 0) const;
+
+  ZArray* readLabels64Lowtis(
+      int x0, int y0, int z0,
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+
+  /*!
+   * (\a x0, \a y0, \a z0) is the retrieval center.
+   */
+  ZArray *readLabels64Lowtis(int x0, int y0, int z0, double vx1, double vy1, double vz1,
+      double vx2, double vy2, double vz2,
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+  ZArray *readLabels64Lowtis(
+      const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+  ZArray *readLabels64Lowtis(
+      const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const;
+
+
+  //Read grayscale data
   ZStack *readGrayScaleLowtis(int x0, int y0, int z0,
                               int width, int height, int zoom = 0) const;
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0,
-      int width, int height, int zoom, int cx, int cy) const;
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+
+  /*!
+   * (\a x0, \a y0, \a z0) is the retrieval center.
+   */
+  ZStack *readGrayScaleLowtis(
+      int x0, int y0, int z0, double vx1, double vy1, double vz1,
+      double vx2, double vy2, double vz2,
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+
+  ZStack *readGrayScaleLowtis(
+      const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const;
+
+  ZStack *readGrayScaleLowtis(
+      const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
+      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
 #endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
@@ -310,6 +404,9 @@ public:
   std::vector<uint64_t> readBodyIdAt(
       const InputIterator &first, const InputIterator &last) const;
 
+  uint64_t readSupervoxelIdAt(int x, int y, int z) const;
+  uint64_t readSupervoxelIdAt(const ZIntPoint &pt) const;
+
   ZDvidTileInfo readTileInfo(const std::string &dataName) const;
 
   //ZDvidTile *readTile(const std::string &dataName, int resLevel,
@@ -320,12 +417,18 @@ public:
   ZDvidVersionDag readVersionDag() const;
 
   ZObject3dScan readCoarseBody(uint64_t bodyId) const;
+  ZObject3dScan readCoarseBody(
+      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
+
   ZObject3dScan* readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) const;
+  ZObject3dScan* readCoarseBody(
+      uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *obj) const;
 
   int readCoarseBodySize(uint64_t bodyId) const;
 
-  ZObject3dScan readRoi(const std::string &dataName);
-  ZObject3dScan* readRoi(const std::string &dataName, ZObject3dScan *result);
+  ZObject3dScan readRoi(const std::string &dataName) const;
+  ZObject3dScan* readRoi(
+      const std::string &dataName, ZObject3dScan *result, bool appending = false) const;
   ZDvidRoi* readRoi(const std::string &dataName, ZDvidRoi *roi);
   ZJsonArray readRoiJson(const std::string &dataName);
 
@@ -336,6 +439,8 @@ public:
 
   ZJsonObject readJsonObject(const std::string &url) const;
   ZJsonArray readJsonArray(const std::string &url) const;
+  ZJsonArray readJsonArray(
+      const std::string &url, const QByteArray &payload) const;
 
   ZJsonArray readAnnotation(
       const std::string &dataName, const std::string &tag) const;
@@ -433,7 +538,7 @@ public:
   QByteArray readDataFromEndpoint(
       const std::string &endPoint, bool tryingCompress = false) const;
 
-  bool refreshLabelBuffer();
+  bool refreshLabelBuffer() const;
 
   void testApiLoad();
 
@@ -449,18 +554,36 @@ public:
   QList<ZStackObject*> readSeedFromSplitTask(
       const ZDvidTarget &target, uint64_t bodyId);
 
+//  ZJsonObject readTestTask() const;
+  ZJsonObject readTestTask(const std::string &key) const;
+
   bool hasSplitTask(const QString &key) const;
 
+  void setGrayCenterCut(int cx, int cy);
+  void setLabelCenterCut(int cx, int cy);
 
-signals:
-  void readingDone();
+  class PauseVerbose {
+  public:
+    PauseVerbose(ZDvidReader *reader) : m_reader(reader) {
+      m_verbose = m_reader->isVerbose();
+      m_reader->setVerbose(false);
+    }
 
-public slots:
+    ~PauseVerbose() {
+      m_reader->setVerbose(m_verbose);
+    }
+
+  private:
+    ZDvidReader *m_reader;
+    bool m_verbose;
+  };
+
+//public slots:
 //  void slotTest();
 //  void startReading();
 //  void endReading();
 
-  std::set<uint64_t> readBodyId(const QString sizeRange);
+//  std::set<uint64_t> readBodyId(const QString sizeRange);
 
 private:
   ZDvidReader(const ZDvidReader&);
@@ -478,7 +601,7 @@ private:
 
   std::vector<ZStack*> readGrayScaleBlockOld(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
-      int blockNumber);
+      int blockNumber) const;
 
   void clearBuffer() const;
 
@@ -493,9 +616,30 @@ private:
 
   bool reportMissingData(const std::string dataName) const;
 
+  static ZIntCuboid GetStackBox(
+      int x0, int y0, int z0, int width, int height, int zoom);
+  static ZIntCuboid GetStackBoxAtCenter(
+      int x0, int y0, int z0, int width, int height, int zoom);
+  static std::vector<int> GetOffset(int x0, int y0, int z0);
+  static std::vector<int> GetOffset(int cx, int cy, int cz, int width, int height);
+
+
+  lowtis::ImageService* getLowtisServiceGray(int cx, int cy) const;
+  lowtis::ImageService* getLowtisServiceLabel(int cx, int cy) const;
+
+  void prepareLowtisService(
+      ZSharedPointer<lowtis::ImageService> &service, const std::string &dataName,
+      lowtis::DVIDConfig &config, int cx, int cy) const;
+
+  template<typename T>
+  void configureLowtis(T *config, const std::string &dataName) const;
+
 protected:
   ZDvidTarget m_dvidTarget;
   bool m_verbose;
+
+  std::string m_errorMsg;
+
   mutable int m_statusCode;
   mutable int64_t m_readingTime;
 

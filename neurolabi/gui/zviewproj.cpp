@@ -54,6 +54,10 @@ void ZViewProj::setCanvasRect(const QRect &canvasRect)
 void ZViewProj::setWidgetRect(const QRect &widgetRect)
 {
   m_widgetRect = widgetRect;
+  if (m_viewPortBuffer.isValid()) {
+    setViewPort(m_viewPortBuffer);
+    m_viewPortBuffer.setSize(QSize(0, 0)); //clear buffer
+  }
   deprecateViewPort();
 }
 
@@ -162,11 +166,44 @@ QRectF ZViewProj::getProjRect() const
 void ZViewProj::setViewPort(const QRect &rect)
 {
   if (rect.isValid()) {
-//    setOffset(rect.topLeft());
-    setZoom(std::min((double) (m_widgetRect.width()) / rect.width(),
-                     (double) (m_widgetRect.height()) / rect.height()));
+    if (m_widgetRect.isValid()) {
+      setZoom(std::min((double) (m_widgetRect.width()) / rect.width(),
+                       (double) (m_widgetRect.height()) / rect.height()));
+      setViewCenter(rect.center());
+    } else {
+      prepareViewPort(rect);
+    }
+  }
+}
+
+void ZViewProj::closeViewPort()
+{
+  m_zoomBackup = m_zoom;
+  m_zoom = 0;
+  m_viewPort = QRect();
+}
+
+void ZViewProj::openViewPort()
+{
+  if (m_zoom == 0.0) {
+    m_zoom = m_zoomBackup;
+  }
+}
+
+/*
+void ZViewProj::setViewPortWithZoomFixed(const QRect &rect)
+{
+  if (rect.isValid()) {
+    m_widgetRect.setWidth(iround(rect.width() * getZoom()));
+    m_widgetRect.setHeight(iround(rect.height() * getZoom()));
     setViewCenter(rect.center());
   }
+}
+*/
+
+void ZViewProj::prepareViewPort(const QRect &rect)
+{
+  m_viewPortBuffer = rect;
 }
 
 void ZViewProj::zoomTo(int x, int y, int width)
@@ -396,7 +433,7 @@ void ZViewProj::setViewCenter(const QPoint &pt)
   setViewCenter(pt.x(), pt.y());
 }
 
-QPointF ZViewProj::mapPoint(const QPoint &p)
+QPointF ZViewProj::mapPoint(const QPoint &p) const
 {
   double x = (p.x() - m_x0) * m_zoom;
   double y = (p.y() - m_y0) * m_zoom;
@@ -404,7 +441,7 @@ QPointF ZViewProj::mapPoint(const QPoint &p)
   return QPointF(x, y);
 }
 
-QPointF ZViewProj::mapPoint(const QPointF &p)
+QPointF ZViewProj::mapPoint(const QPointF &p) const
 {
   double x = (p.x() - m_x0) * m_zoom;
   double y = (p.y() - m_y0) * m_zoom;
@@ -412,7 +449,7 @@ QPointF ZViewProj::mapPoint(const QPointF &p)
   return QPointF(x, y);
 }
 
-void ZViewProj::mapPointBack(double *x, double *y)
+void ZViewProj::mapPointBack(double *x, double *y) const
 {
   if (m_zoom > 0.0) {
     *x = *x / m_zoom + m_x0;
@@ -423,7 +460,7 @@ void ZViewProj::mapPointBack(double *x, double *y)
   }
 }
 
-QPointF ZViewProj::mapPointBackF(const QPointF &p)
+QPointF ZViewProj::mapPointBackF(const QPointF &p) const
 {
   if (m_zoom <= 0) {
     return QPointF(0, 0);
@@ -435,7 +472,7 @@ QPointF ZViewProj::mapPointBackF(const QPointF &p)
   return QPointF(x, y);
 }
 
-QPoint ZViewProj::mapPointBack(const QPointF &p)
+QPoint ZViewProj::mapPointBack(const QPointF &p) const
 {
   if (m_zoom <= 0) {
     return QPoint(0, 0);

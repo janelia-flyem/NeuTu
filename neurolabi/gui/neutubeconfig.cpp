@@ -22,6 +22,7 @@
 #include "zlogmessagereporter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
+#include "tz_utilities.h"
 
 using namespace std;
 
@@ -30,8 +31,8 @@ NeutubeConfig::NeutubeConfig()
     : m_settings(QSettings::UserScope, "NeuTu-be")
   #endif
 {
-  init();
 }
+
 /*
 NeutubeConfig::NeutubeConfig(const NeutubeConfig& config) :
   m_segmentationClassifThreshold(0.5), m_isSettingOn(true)
@@ -49,8 +50,10 @@ NeutubeConfig::~NeutubeConfig()
 #endif
 }
 
-void NeutubeConfig::init()
+void NeutubeConfig::init(const std::string &userName)
 {
+  setUserName(userName);
+
   m_segmentationClassifThreshold = 0.5;
   m_isSettingOn = true;
   m_isStereoOn = true;
@@ -81,6 +84,10 @@ void NeutubeConfig::init()
 
   m_loggingProfile = false;
   m_verboseLevel = 1;
+
+  if (m_settings.contains("mesh_split_thre")) {
+    m_meshSplitThreshold = m_settings.value("mesh_split_thre").toInt();
+  }
 
   updateLogDir();
 
@@ -131,6 +138,26 @@ void NeutubeConfig::setWorkDir(const string str)
   updateLogDir();
 }
 
+void NeutubeConfig::setUserName(const string &name)
+{
+  m_userName = name;
+}
+
+void NeutubeConfig::SetUserName(const string &name)
+{
+  getInstance().setUserName(name);
+}
+
+std::string NeutubeConfig::getUserName() const
+{
+  return m_userName;
+}
+
+std::string NeutubeConfig::GetUserName()
+{
+  return getInstance().getUserName();
+}
+
 void NeutubeConfig::SetApplicationDir(const string &str)
 {
   getInstance().setApplicationDir(str);
@@ -141,12 +168,22 @@ void NeutubeConfig::updateLogDir()
   if (m_logDir.empty()) {
     ZString dir = getPath(WORKING_DIR);
 #if defined(_QT_GUI_USED_) && defined(_FLYEM_)
+    std::string candidateDir = dir;
+
+    //Check local directry
     if (dir.startsWith("/groups/flyem/")) {
-      m_logDir = "/opt/neutu_log/" + neutube::GetCurrentUserName();
-      m_logDestDir = "/groups/flyem/data/neutu_log/" + neutube::GetCurrentUserName();
-      if (!QDir(m_logDir.c_str()).exists()) {
-        m_logDir = m_logDestDir;
-        m_logDestDir = "";
+      candidateDir = "/opt/neutu_log/" + getUserName();
+      if (QDir(candidateDir.c_str()).exists()) {
+        m_logDir = candidateDir;
+      }
+    }
+
+    //Checking shared directory
+    if (m_logDir.empty()) {
+      candidateDir =
+          "/groups/flyem/data/neutu_log/" + getUserName();
+      if (QDir(candidateDir.c_str()).exists()) {
+        m_logDir = candidateDir;
       }
     }
 #endif
@@ -399,7 +436,7 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   {
     std::string tmpDir;
 #if defined(_QT_GUI_USED_)
-    std::string user = neutube::GetCurrentUserName();
+    std::string user = getUserName();
     tmpDir = QDir::tempPath().toStdString() + "/.neutube.z." + user;
     QDir tmpDirObj(tmpDir.c_str());
     if (!tmpDirObj.exists()) {
@@ -428,7 +465,11 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
     return m_logDestDir;
   case LOG_FILE:
 #ifdef _QT_GUI_USED_
-    return QDir(getPath(LOG_DIR).c_str()).filePath("log.txt").toStdString();
+  {
+    QString fileName = QString((GET_SOFTWARE_NAME + "_log.txt").c_str()).toLower();
+
+    return QDir(getPath(LOG_DIR).c_str()).filePath(fileName).toStdString();
+  }
 #else
     return ZString::fullPath(getPath(WORKING_DIR), "log.txt");
 #endif
@@ -763,6 +804,17 @@ bool NeutubeConfig::parallelTileFetching() const
   return true;
 }
 
+bool NeutubeConfig::lowtisPrefetching() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("lowtis_prefetching")) {
+    return m_settings.value("lowtis_prefetching").toBool();
+  }
+#endif
+
+  return false;
+}
+
 void NeutubeConfig::setParallelTileFetching(bool on)
 {
 #ifdef _QT_GUI_USED_
@@ -770,9 +822,62 @@ void NeutubeConfig::setParallelTileFetching(bool on)
 #endif
 }
 
+void NeutubeConfig::enableLowtisPrefetching(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("lowtis_prefetching", on);
+#endif
+}
+
 void NeutubeConfig::SetParallelTileFetching(bool on)
 {
   getInstance().setParallelTileFetching(on);
+}
+
+void NeutubeConfig::EnableLowtisPrefetching(bool on)
+{
+  getInstance().enableLowtisPrefetching(on);
+}
+
+bool NeutubeConfig::LowtisPrefetching()
+{
+  return getInstance().lowtisPrefetching();
+}
+
+bool NeutubeConfig::namingSynapse() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("naming_synapse")) {
+    return m_settings.value("naming_synapse").toBool();
+  }
+#endif
+
+  return false;
+}
+
+bool NeutubeConfig::namingPsd() const
+{
+#ifdef _QT_GUI_USED_
+  if (m_settings.contains("naming_psd")) {
+    return m_settings.value("naming_psd").toBool();
+  }
+#endif
+
+  return false;
+}
+
+void NeutubeConfig::setNamingSynapse(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("naming_synapse", on);
+#endif
+}
+
+void NeutubeConfig::setNamingPsd(bool on)
+{
+#ifdef _QT_GUI_USED_
+  m_settings.setValue("naming_psd", on);
+#endif
 }
 
 bool NeutubeConfig::loggingProfile() const
@@ -844,6 +949,27 @@ bool NeutubeConfig::IsAdvancedMode()
   return getInstance().isAdvancedMode();
 }
 
+void NeutubeConfig::setMeshSplitThreshold(size_t thre)
+{
+  m_meshSplitThreshold = thre;
+  m_settings.setValue("mesh_split_thre", int(thre));
+}
+
+size_t NeutubeConfig::getMeshSplitThreshold() const
+{
+  return m_meshSplitThreshold;
+}
+
+void NeutubeConfig::SetMeshSplitThreshold(size_t thre)
+{
+  getInstance().setMeshSplitThreshold(thre);
+}
+
+size_t NeutubeConfig::GetMeshSplitThreshold()
+{
+  return getInstance().getMeshSplitThreshold();
+}
+
 int NeutubeConfig::GetVerboseLevel()
 {
   return getInstance().getVerboseLevel();
@@ -905,6 +1031,26 @@ bool NeutubeConfig::UsingDefaultFlyemConfig()
   }
 
   return true;
+}
+
+bool NeutubeConfig::NamingSynapse()
+{
+  return getInstance().namingSynapse();
+}
+
+bool NeutubeConfig::NamingPsd()
+{
+  return getInstance().namingPsd();
+}
+
+void NeutubeConfig::SetNamingSynapse(bool on)
+{
+  getInstance().setNamingSynapse(on);
+}
+
+void NeutubeConfig::SetNamingPsd(bool on)
+{
+  getInstance().setNamingPsd(on);
 }
 
 void NeutubeConfig::SetNeuTuServer(const QString &path)

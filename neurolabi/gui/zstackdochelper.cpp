@@ -1,5 +1,6 @@
 #include "zstackdochelper.h"
 
+#include <string>
 #include <QColor>
 
 #include "zstackdoc.h"
@@ -10,6 +11,7 @@
 #include "flyem/zflyemproofdoc.h"
 #include "zintcuboidobj.h"
 #include "dvid/zdvidsparsestack.h"
+#include "zstack.hxx"
 
 ZStackDocHelper::ZStackDocHelper()
 {
@@ -37,7 +39,10 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
     if (cdoc != NULL) {
       ZDvidSparseStack *dvidSparseStack = doc->getDvidSparseStack();
       stack = dvidSparseStack->getStack();
-      m_sparseStackDsIntv = dvidSparseStack->getDownsampleInterval();
+      if (stack != NULL) {
+        m_sparseStackDsIntv = stack->getDsIntv();
+      }
+//      m_sparseStackDsIntv = dvidSparseStack->getDownsampleInterval();
 //      box = cdoc->getSplitRoi()->getCuboid();
 //      stack = doc->getSparseStack()->getStack(box, &m_sparseStackDsIntv);
     }
@@ -46,7 +51,7 @@ ZStack* ZStackDocHelper::getSparseStack(const ZStackDoc *doc)
     if (!spStack->getBoundBox().isEmpty()) {
       stack = const_cast<ZStack*>(spStack->getStack());
     }
-    m_sparseStackDsIntv = spStack->getDownsampleInterval();
+    m_sparseStackDsIntv = spStack->getDenseDsIntv();
   }
 
   return stack;
@@ -63,10 +68,8 @@ void ZStackDocHelper::extractCurrentZ(const ZStackDoc *doc)
         ZDvidTileEnsemble *obj =
             dynamic_cast<ZDvidTileEnsemble*>(objList.first());
         if (obj->isVisible()) {
-          if (obj->getView() != NULL) {
-            m_currentZ = obj->getView()->getCurrentZ();
-            m_hasCurrentZ = true;
-          }
+          m_currentZ = obj->getCurrentZ();
+          m_hasCurrentZ = true;
         }
       }
     }
@@ -95,7 +98,7 @@ bool ZStackDocHelper::hasCurrentZ() const
   return m_hasCurrentZ;
 }
 
-ZIntCuboid ZStackDocHelper::getVolumeBoundBox(const ZStackDoc *doc)
+ZIntCuboid ZStackDocHelper::GetVolumeBoundBox(const ZStackDoc *doc)
 {
   ZIntCuboid box;
   if (doc != NULL) {
@@ -113,6 +116,91 @@ ZIntCuboid ZStackDocHelper::getVolumeBoundBox(const ZStackDoc *doc)
   return box;
 }
 
+ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
+    const ZStackDoc *doc, neutube::EAxis sliceAxis)
+{
+  ZIntCuboid box;
+  if (doc != NULL) {
+    box = GetStackSpaceRange(*doc, sliceAxis);
+  }
+
+  return box;
+}
+
+ZIntCuboid ZStackDocHelper::GetStackSpaceRange(
+    const ZStackDoc &doc, neutube::EAxis sliceAxis)
+{
+  ZIntCuboid box;
+
+  if (doc.hasStack()) {
+    box = doc.getStack()->getBoundBox();
+    if (sliceAxis == neutube::A_AXIS) {
+      ZIntPoint center = box.getCenter();
+      int length = iround(box.getDiagonalLength());
+      box.setSize(length, length, length);
+      box.setCenter(center);
+    } else {
+      box.shiftSliceAxis(sliceAxis);
+    }
+  }
+
+  return box;
+}
+
+ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc *doc)
+{
+  ZIntCuboid box;
+  if (doc != NULL) {
+    box = GetDataSpaceRange(*doc);
+  }
+
+  return box;
+}
+
+ZIntCuboid ZStackDocHelper::GetDataSpaceRange(const ZStackDoc &doc)
+{
+  ZIntCuboid box;
+
+  if (doc.hasStack()) {
+    box = doc.getStack()->getBoundBox();
+  }
+
+  return box;
+}
+
+bool ZStackDocHelper::HasMultipleBodySelected(
+    const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
+{
+  return CountSelectedBody(doc, type) > 1;
+}
+
+int ZStackDocHelper::CountSelectedBody(
+    const ZFlyEmProofDoc *doc, neutube::EBodyLabelType type)
+{
+  return doc->getSelectedBodySet(type).size();
+}
+
+bool ZStackDocHelper::HasBodySelected(const ZFlyEmProofDoc *doc)
+{
+  return CountSelectedBody(doc, neutube::BODY_LABEL_ORIGINAL) > 0;
+}
+
+void ZStackDocHelper::ClearBodySelection(ZFlyEmProofDoc *doc)
+{
+  QList<ZDvidLabelSlice*> sliceList = doc->getDvidLabelSliceList();
+  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+       iter != sliceList.end(); ++iter) {
+    ZDvidLabelSlice *slice = *iter;
+    if (slice != NULL) {
+      slice->recordSelection();
+      slice->deselectAll();
+      slice->processSelection();
+    }
+  }
+  //    updateBodySelection();
+  doc->notifyBodySelectionChanged();
+}
+
 QColor ZStackDocHelper::GetBodyColor(
     const ZFlyEmProofDoc *doc, uint64_t bodyId)
 {
@@ -123,4 +211,38 @@ QColor ZStackDocHelper::GetBodyColor(
   }
 
   return color;
+}
+
+std::string ZStackDocHelper::SaveStack(
+    const ZStackDoc *doc, const std::string &path)
+{
+  std::string  resultPath;
+  if (doc->hasStackData()) {
+    resultPath = doc->getStack()->save(path);
+  }
+
+  return resultPath;
+}
+
+bool ZStackDocHelper::AllowingBodySplit(const ZStackDoc *doc)
+{
+  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD;
+}
+
+bool ZStackDocHelper::AllowingBodyAnnotation(const ZStackDoc *doc)
+{
+  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::FLYEM_ORTHO;
+}
+
+bool ZStackDocHelper::AllowingBodyMerge(const ZStackDoc *doc)
+{
+  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::FLYEM_ORTHO;
+}
+
+bool ZStackDocHelper::AllowingBodyLock(const ZStackDoc *doc)
+{
+  return doc->getTag() == neutube::Document::FLYEM_PROOFREAD ||
+      doc->getTag() == neutube::Document::FLYEM_ORTHO;
 }

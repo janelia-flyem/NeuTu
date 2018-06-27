@@ -4,6 +4,7 @@
 #include "z3dfiltersetting.h"
 #include "zjsonparser.h"
 #include "z3drendertarget.h"
+#include "z3dpickingmanager.h"
 
 Z3DGeometryFilter::Z3DGeometryFilter(Z3DGlobalParameters& globalPara, QObject* parent)
   : Z3DBoundedFilter(globalPara, parent)
@@ -47,5 +48,9 @@ void Z3DGeometryFilter::configure(const ZJsonObject &obj)
 
 const void* Z3DGeometryFilter::pickObject(int x, int y)
 {
-  return pickingManager().objectAtWidgetPos(glm::ivec2(x, y));
+  if (pickingEnabled()) {
+    return pickingManager().objectAtWidgetPos(glm::ivec2(x, y));
+  }
+
+  return NULL;
 }

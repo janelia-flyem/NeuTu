@@ -6,6 +6,7 @@
 #include "zstackdoc.h"
 #include "zneurontracer.h"
 #include "zswcfactory.h"
+#include "zswctree.h"
 
 ZTraceModule::ZTraceModule(QObject *parent) :
   ZSandboxModule(parent)

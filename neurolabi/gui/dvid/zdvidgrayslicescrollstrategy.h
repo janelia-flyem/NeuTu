@@ -8,7 +8,7 @@ class ZDvidGraySlice;
 class ZDvidGraySliceScrollStrategy : public ZScrollSliceStrategy
 {
 public:
-  ZDvidGraySliceScrollStrategy();
+  ZDvidGraySliceScrollStrategy(ZStackView *view);
 
   int scroll(int slice, int step) const;
 

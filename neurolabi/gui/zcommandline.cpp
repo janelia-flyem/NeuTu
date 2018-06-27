@@ -8,6 +8,7 @@
 #include <set>
 #include <QApplication>
 
+#include "QsLog.h"
 #include "tz_utilities.h"
 //#include "zargumentprocessor.h"
 #include "ztest.h"
@@ -38,6 +39,7 @@
 #include "zswcnodebufferfeatureanalyzer.h"
 #include "zswcfactory.h"
 #include "dvid/zdvidneurontracer.h"
+#include "zstack.hxx"
 //#include "mylib/utilities.h"
 
 //Incude your module headers here
@@ -626,7 +628,7 @@ ZSwcTree* ZCommandLine::traceDvid()
   ZDvidTarget target;
   target.setFromSourceString(m_input[0], ZDvid::TYPE_UINT8BLK);
 
-  target.setNullLabelBlockName();
+  target.setNullSegmentationName();
   tracer.setDvidTarget(target);
   tracer.trace(m_position[0], m_position[1], m_position[2], m_scale);
 
@@ -1057,26 +1059,34 @@ int ZCommandLine::skeletonizeDvid()
   reader.open(target);
 
   ZDvidWriter writer;
-  writer.open(target);
 
-  ZDvidUrl dvidUrl(target);
+  bool savingToFile = false;
+  QDir outputDir(m_output.c_str());
 
-  if (!writer.isSwcWrittable()) {
-    std::cout << "Server return code: " << writer.getStatusCode() << std::endl;
-    std::cout << writer.getStandardOutput().toStdString() << std::endl;
-    std::cout << "Cannot access " << dvidUrl.getSkeletonUrl() << std::endl;
-    std::cout << "Please create the keyvalue data for skeletons first:"
-              << std::endl;
-    std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
-                 "-d '{\"dataname\": \""
-              << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
-                                    ZDvidData::ROLE_BODY_LABEL,
-                                    target.getBodyLabelName())
-              << "\", " << "\"typename\": \"keyvalue\"}' "
-              << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
-              << std::endl;
+  if (!QFileInfo(m_output.c_str()).isDir()) {
+    writer.open(target);
+    ZDvidUrl dvidUrl(target);
 
-    return 1;
+    if (!writer.isSwcWrittable()) {
+      std::cout << "Server return code: " << writer.getStatusCode() << std::endl;
+      std::cout << writer.getStandardOutput().toStdString() << std::endl;
+      std::cout << "Cannot access " << dvidUrl.getSkeletonUrl() << std::endl;
+      std::cout << "Please create the keyvalue data for skeletons first:"
+                << std::endl;
+      std::cout << ">> curl -X POST -H \"Content-Type: application/json\" "
+                   "-d '{\"dataname\": \""
+                << ZDvidData::GetName(ZDvidData::ROLE_SKELETON,
+                                      ZDvidData::ROLE_BODY_LABEL,
+                                      target.getBodyLabelName())
+                << "\", " << "\"typename\": \"keyvalue\"}' "
+                << target.getAddressWithPort() + "/api/repo/" + target.getUuid() + "/instance"
+                << std::endl;
+
+      return 1;
+    }
+  } else {
+    std::cout << "Output to " << outputDir.absolutePath().toStdString() << std::endl;
+    savingToFile = true;
   }
 
   std::vector<uint64_t> bodyIdArray = getSkeletonBodyList(reader);
@@ -1084,8 +1094,7 @@ int ZCommandLine::skeletonizeDvid()
     return 1;
   }
 
-  std::cout << "Skeletonizing " << bodyIdArray.size() << " bodies..."
-            << std::endl;
+  LINFO() << "Skeletonizing" << bodyIdArray.size() << "bodies...";
 
   ZRandomGenerator rnd;
   std::vector<int> rank = rnd.randperm(bodyIdArray.size());
@@ -1115,18 +1124,35 @@ int ZCommandLine::skeletonizeDvid()
     uint64_t bodyId = bodyIdArray[rank[i] - 1];
     if (excluded.count(bodyId) == 0) {
       ZSwcTree *tree = NULL;
+      QFileInfo outputFileInfo(outputDir.absoluteFilePath(QString("%1.swc").arg(bodyId)));
+
       if (!m_forceUpdate) {
-        tree = reader.readSwc(bodyId);
+        if (savingToFile) {
+          if (outputFileInfo.exists()) {
+            tree = new ZSwcTree;
+            tree->load(outputFileInfo.absoluteFilePath().toStdString());
+            if (tree->isEmpty()) {
+              delete tree;
+              tree = NULL;
+            }
+            LINFO() << outputFileInfo.absoluteFilePath().toStdString() + " exists.";
+          }
+        } else {
+          tree = reader.readSwc(bodyId);
+        }
       }
       if (tree == NULL) {
         ZObject3dScan obj;
         reader.readBody(bodyId, true, &obj);
         tree = skeletonizer.makeSkeleton(obj);
         if (tree != NULL) {
-          writer.writeSwc(bodyId, tree);
+          if (savingToFile) {
+            tree->save(outputFileInfo.absoluteFilePath().toStdString());
+          } else {
+            writer.writeSwc(bodyId, tree);
+          }
         } else {
-          std::cout << "WARNING: skeletonization failed for "
-                    << bodyId << std::endl;
+          LWARN() << "Skeletonization failed for" << bodyId;
         }
       }
 
@@ -1140,8 +1166,8 @@ int ZCommandLine::skeletonizeDvid()
         }
       }
       delete tree;
-      std::cout << ">>>>>>>>>>>>>>>>>>" << i + 1 << " / "
-                << bodyIdArray.size() << std::endl;
+      LINFO() << "Output:" << m_output;
+      LINFO() << ">>>>>>>>skeletonized>>>>>>>>>>" << i + 1 << " / " << bodyIdArray.size();
     }
   }
 
@@ -1449,8 +1475,25 @@ int ZCommandLine::run(int argc, char *argv[])
     return runGeneral();
     break;
   default:
-    std::cout << "Unknown command" << std::endl;
-    return 1;
+    if (m_input.empty()) {
+      std::cout << "Unknown command" << std::endl;
+      return 1;
+    } else {
+      if (m_input[0] == "version") {
+        std::cout << "Built from: " << _CURRENT_COMMIT_ << std::endl;
+        std::string url = _CURRENT_COMMIT_;
+        url = "https://github.com/janelia-flyem/NeuTu/commit/" +
+            url.substr(0, 20);
+        std::cout << "More information on: " << std::endl << url << std::endl;
+      } else if (m_input[0] == "info") {
+        std::cout << "Working directory:"
+                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::WORKING_DIR)
+                  << std::endl;
+        std::cout << "Log path: "
+                  << NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE)
+                  << std::endl;
+      }
+    }
   }
 
   return 0;

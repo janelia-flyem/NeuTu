@@ -16,6 +16,7 @@
 #include "zflyemproofpresenter.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemorthoviewhelper.h"
+#include "zstackdochelper.h"
 
 ZFlyEmOrthoWidget::ZFlyEmOrthoWidget(const ZDvidTarget &target, QWidget *parent) :
   QWidget(parent)
@@ -198,7 +199,8 @@ void ZFlyEmOrthoWidget::moveTo(const ZIntPoint &center)
 
 void ZFlyEmOrthoWidget::moveUp()
 {
-  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
+//  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
+  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setY(newCenter.getY() - currentBox.getHeight() / 2);
 
@@ -207,7 +209,8 @@ void ZFlyEmOrthoWidget::moveUp()
 
 void ZFlyEmOrthoWidget::moveDown()
 {
-  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
+//  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
+  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setY(newCenter.getY() + currentBox.getHeight() / 2);
 
@@ -216,7 +219,8 @@ void ZFlyEmOrthoWidget::moveDown()
 
 void ZFlyEmOrthoWidget::moveLeft()
 {
-  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
+//  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
+  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setX(newCenter.getX() - currentBox.getWidth() / 2);
 
@@ -225,7 +229,8 @@ void ZFlyEmOrthoWidget::moveLeft()
 
 void ZFlyEmOrthoWidget::moveRight()
 {
-  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
+//  ZIntCuboid currentBox = getDocument()->getStack()->getBoundBox();
+  ZIntCuboid currentBox = ZStackDocHelper::GetDataSpaceRange(getDocument());
   ZIntPoint newCenter = currentBox.getCenter();
   newCenter.setX(newCenter.getX() + currentBox.getWidth() / 2);
 
@@ -302,7 +307,10 @@ void ZFlyEmOrthoWidget::keyPressEvent(QKeyEvent *event)
 {
   switch (event->key()) {
   case Qt::Key_D:
-    toggleData();
+    if (event->modifiers() == Qt::ControlModifier) {
+      LINFO() << "Ctrl+D pressed: Toggling data";
+      toggleData();
+    }
     break;
   }
 }
@@ -387,6 +395,10 @@ void ZFlyEmOrthoWidget::endCrossHairSync()
 
 void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 {
+  if (mvc->getView()->getSliceAxis() == neutube::A_AXIS) {
+    return;
+  }
+
   beginCrossHairSync();
 
   ZFlyEmOrthoViewHelper helper;
@@ -405,6 +417,8 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
     helper.syncCrossHair(m_xyMvc);
     helper.syncCrossHair(m_yzMvc);
     break;
+  case neutube::A_AXIS:
+    break;
   }
 
   endCrossHairSync();
@@ -412,6 +426,10 @@ void ZFlyEmOrthoWidget::syncCrossHairWith(ZFlyEmOrthoMvc *mvc)
 
 void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
 {
+  if (mvc->getView()->getSliceAxis() == neutube::A_AXIS) {
+    return;
+  }
+
   beginViewSync();
 
   ZFlyEmOrthoViewHelper helper;
@@ -436,6 +454,8 @@ void ZFlyEmOrthoWidget::syncViewWith(ZFlyEmOrthoMvc *mvc)
     helper.syncViewPort(m_yzMvc);
 //    m_xyMvc->zoomWithWidthAligned(mvc->getView());
 //    m_yzMvc->zoomWithHeightAligned(m_xyMvc->getView());
+    break;
+  case neutube::A_AXIS:
     break;
   }
 

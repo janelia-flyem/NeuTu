@@ -10,7 +10,7 @@
 TEST(ZVoxelArray, Basic)
 {
   ZVoxelArray array;
-  ASSERT_TRUE(array.empty());
+//  ASSERT_TRUE(array.empty());
   ASSERT_TRUE(array.isEmpty());
 
   array.append(3, 4, 5, 1);

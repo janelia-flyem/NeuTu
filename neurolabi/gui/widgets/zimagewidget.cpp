@@ -4,6 +4,7 @@
 #include <cmath>
 #include <QGraphicsBlurEffect>
 
+#include "QsLog.h"
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"
 #include "zpainter.h"
@@ -35,6 +36,8 @@ ZImageWidget::~ZImageWidget()
 
 void ZImageWidget::init()
 {
+  qDebug() << "ZImageWidget initialization:" << this;
+
   m_isViewHintVisible = true;
   m_freeMoving = true;
   m_hoverFocus = false;
@@ -70,11 +73,14 @@ void ZImageWidget::init()
 
 void ZImageWidget::maximizeViewPort()
 {
+  qDebug() << "ZImageWidget::maximizeViewPort";
   m_viewProj.maximizeViewPort();
 }
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
 {
+  LDEBUG() << "ZImageWidget::paintEvent";
+
   QWidget::paintEvent(event);
 
 #ifdef _DEBUG_2
@@ -83,11 +89,6 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 
   if (!canvasSize().isEmpty() && !isPaintBlocked()) {
     ZPainter painter;
-
-    if (!m_isReady) {
-      m_viewProj.maximizeViewPort();
-      m_isReady = true;
-    }
 
 #ifdef _DEBUG_2
     std::cout << "Axis: " << m_sliceAxis << std::endl;
@@ -121,10 +122,10 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
 
     //tic();
     if (m_tileCanvas != NULL) {
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
       m_tileCanvas->save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 #endif
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       qDebug() << "Paint tile:" << m_viewProj.getViewPort() << m_viewProj.getProjRect();
 #endif
       painter.drawPixmap(m_viewProj, *m_tileCanvas);
@@ -188,7 +189,11 @@ void ZImageWidget::paintEvent(QPaintEvent * event)
     painter.end();
 
     paintObject();
-    paintZoomHint();
+    if (m_showingZoomHint) {
+      paintZoomHint();
+    } else {
+      paintCrossHair();
+    }
     //std::cout << "Screen update time per frame: " << timer.elapsed() << std::endl;
   }
 }
@@ -419,8 +424,8 @@ void ZImageWidget::paintObject()
 //    transform.translate(-m_paintBundle->getStackOffset().getX(),
 //                        -m_paintBundle->getStackOffset().getY());
     painter.setTransform(transform);
-    painter.setZOffset(
-          m_paintBundle->getStackOffset().getSliceCoord(getSliceAxis()));
+    painter.setZOffset(m_paintBundle->getStackOffset().getZ());
+    //.getSliceCoord(getSliceAxis()));
 
 //    painter.setStackOffset(m_paintBundle->getStackOffset());
     std::vector<const ZStackObject*> visibleObject;
@@ -487,6 +492,12 @@ void ZImageWidget::paintObject()
 
 }
 
+void ZImageWidget::hideZoomHint()
+{
+  m_showingZoomHint = false;
+  update();
+}
+
 void ZImageWidget::showCrossHair(bool on)
 {
   m_showingCrossHair = on;
@@ -524,6 +535,25 @@ void ZImageWidget::paintZoomHint()
   }
 }
 
+void ZImageWidget::paintCrossHair()
+{
+  QPainter painter;
+  if (!painter.begin(this)) {
+    std::cout << "......failed to begin painter" << std::endl;
+    return;
+  }
+
+  painter.setRenderHint(QPainter::Antialiasing, true);
+  painter.setPen(QPen(QColor(0, 0, 255, 64)));
+  int x1 = m_viewProj.getWidgetRect().right();
+  int y1 = m_viewProj.getWidgetRect().bottom();
+
+  double cx = x1 * 0.5;
+  double cy = y1 * 0.5;
+
+  painter.drawLine(QPointF(cx, 0), QPointF(cx, y1));
+  painter.drawLine(QPointF(0, cy), QPointF(x1, cy));
+}
 
 QSize ZImageWidget::minimumSizeHint() const
 {
@@ -549,12 +579,30 @@ QSize ZImageWidget::sizeHint() const
 
 void ZImageWidget::resetViewProj(int x0, int y0, int w, int h)
 {
+  resetViewProj(x0, y0, w, h, QRect());
+#if 0
 #ifdef _DEBUG_2
   std::cout << "ZImageWidget::resetViewProj" << std::endl;
 #endif
   setCanvasRegion(x0, y0, w, h);
   m_viewProj.setWidgetRect(rect());
+  m_viewProj.maximizeViewPort();
   m_isReady = false;
+
+  updateView();
+#endif
+}
+
+void ZImageWidget::resetViewProj(int x0, int y0, int w, int h, const QRect &viewPort)
+{
+  setCanvasRegion(x0, y0, w, h);
+  m_viewProj.setWidgetRect(rect());
+  if (viewPort.isValid()) {
+    m_viewProj.setViewPort(viewPort);
+  } else {
+    m_viewProj.maximizeViewPort();
+  }
+//  m_isReady = true;
 
   updateView();
 }
@@ -711,8 +759,21 @@ void ZImageWidget::wheelEvent(QWheelEvent *event)
 
 void ZImageWidget::resizeEvent(QResizeEvent * /*event*/)
 {
+  LDEBUG() << "ZImageWidget::resizeEvent" << size() << isVisible();
+
   m_viewProj.setWidgetRect(QRect(QPoint(0, 0), size()));
+
+  if (!m_isReady && isVisible()) {
+    m_viewProj.maximizeViewPort();
+    m_isReady = true;
+  }
 //  setValidViewPort(m_viewPort);
+}
+
+void ZImageWidget::showEvent(QShowEvent *event)
+{
+  LDEBUG() << "ZImageWidget::showEvent" << size() << isVisible();
+  QWidget::showEvent(event);
 }
 
 void ZImageWidget::keyPressEvent(QKeyEvent *event)

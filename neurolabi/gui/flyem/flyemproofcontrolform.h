@@ -12,6 +12,7 @@ class ZStackDoc;
 class QSortFilterProxyModel;
 class ZFlyEmBookmarkView;
 class ZColorLabel;
+class ZFlyEmProofMvc;
 
 namespace Ui {
 class FlyEmProofControlForm;
@@ -35,7 +36,7 @@ signals:
   void splitTriggered(uint64_t bodyId);
   void splitTriggered();
   void labelSizeChanged(int width, int height);
-  void showingFullSegmentation(bool on);
+  void showingFullSegmentation();
   void coarseBodyViewTriggered();
   void skeletonViewTriggered();
   void meshViewTriggered();
@@ -58,6 +59,7 @@ signals:
   void exportingGrayscale();
   void exportingSelectedBodyStack();
   void skeletonizingSelectedBody();
+  void updatingMeshForSelectedBody();
   void showingInfo();
   void reportingBodyCorruption();
 
@@ -70,6 +72,7 @@ public slots:
 //  void updateUserBookmarkTable(ZStackDoc *doc);
 //  void removeBookmarkFromTable(ZFlyEmBookmark *bookmark);
   void updateLatency(int t);
+  void updateWidget(ZFlyEmProofMvc *mvc);
 
 private slots:
   void setSegmentSize();
@@ -90,6 +93,7 @@ private slots:
   void exportSelectedBodyLevel();
   void exportSelectedBodyStack();
   void skeletonizeSelectedBody();
+  void updateMeshForSelectedBody();
   void exportGrayscale();
 
 private:
@@ -106,7 +110,7 @@ private:
   QAction *m_nameColorAction;
 
 //  QAction *m_sequencerColorAction;
-//  QAction *m_focusedColorAction;
+//  QAction *m_protocolColorAction;
 
   ZColorLabel *m_latencyWidget;
 

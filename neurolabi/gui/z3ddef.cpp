@@ -10,30 +10,30 @@ static const char *VolumeRenderingModeNameArray[] = {
 };
 
 
-const char* NeuTube3D::GetVolumeName()
+const char* neutube3d::GetVolumeName()
 {
   return VolumeName;
 }
 
-const char* NeuTube3D::GetVolumeRenderingModeName(EVolumeRenderingMode mode)
+const char* neutube3d::GetVolumeRenderingModeName(EVolumeRenderingMode mode)
 {
   return VolumeRenderingModeNameArray[mode];
 }
 
-std::string NeuTube3D::GetWindowKeyString(NeuTube3D::EWindowType type)
+std::string neutube3d::GetWindowKeyString(neutube3d::EWindowType type)
 {
   switch (type) {
-  case NeuTube3D::TYPE_GENERAL:
+  case neutube3d::TYPE_GENERAL:
     return "window3d_general";
-  case NeuTube3D::TYPE_COARSE_BODY:
+  case neutube3d::TYPE_COARSE_BODY:
     return "window3d_coarse_body";
-  case NeuTube3D::TYPE_BODY:
+  case neutube3d::TYPE_BODY:
     return "window3d_body";
-  case NeuTube3D::TYPE_SKELETON:
+  case neutube3d::TYPE_SKELETON:
     return "window3d_skeleton";
-  case NeuTube3D::TYPE_NEU3:
+  case neutube3d::TYPE_NEU3:
     return "window3d_neu3_skeleton";
-  case NeuTube3D::TYPE_MESH:
+  case neutube3d::TYPE_MESH:
     return "window3d_mesh";
   }
 

@@ -18,16 +18,29 @@ public:
   ZContrastProtocol();
   ZContrastProtocol(double offset, double scale, ENonlinearMode nonlinear);
 
+  void setOffset(double offset);
+  void setScale(double scale);
+  void setNonlinear(ENonlinearMode mode);
+
+  double getOffset() const;
+  double getScale() const;
+  bool isNonlinear() const;
+
+
   uint8_t mapGrey(uint8_t v);
 //  int mapInt(int v);
   double mapFloat(double v);
 
+  /*!
+   * \brief Set protocal from a json object
+   *
+   * Example: {"offset": -0.2, "scale": 1.8, "nonlinear": true}
+   *
+   * Non-exist fields will be ignored and the corresponding values in the object
+   * will be kept unchanged.
+   */
   void load(const ZJsonObject &obj);
   ZJsonObject toJsonObject() const;
-
-  void setOffset(double offset);
-  void setScale(double scale);
-  void setNonlinear(ENonlinearMode mode);
 
   inline bool hasNoEffect() const {
     return (m_offset == 0.0) && (m_scale == 1.0) &&
@@ -35,6 +48,7 @@ public:
   }
 
   void setDefaultNonLinear();
+
 
 private:
   double m_offset;

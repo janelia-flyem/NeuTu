@@ -9,7 +9,7 @@ class ZStack;
 class QPushButton;
 class QSpinBox;
 class ZStack;
-
+class QComboBox;
 
 class ZWaterShedWindow:public QWidget
 {
@@ -23,6 +23,9 @@ private:
   QPushButton*  ok;
   QPushButton*  cancel;
   QSpinBox*     spin_step;
+  QComboBox*   algorithms;
+  QComboBox*   ds_method;
+
 };
 
 class ZMultiscaleWaterShedModule:public ZSandboxModule

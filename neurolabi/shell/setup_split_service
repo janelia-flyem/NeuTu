@@ -48,7 +48,7 @@ fi
 
 file=$installDir/NeuTu/neurolabi/python/service/_split_config.yaml
 echo "command: $neutu_cmd" > $file
-echo 'task_server:' > $file
+echo 'task_server:' >> $file
 echo '  host: zhaot-ws1' >> $file
 echo '  port: 9000' >> $file
 echo '  uuid: 194d' >> $file

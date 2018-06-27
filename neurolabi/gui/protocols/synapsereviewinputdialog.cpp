@@ -19,6 +19,8 @@ SynapseReviewInputDialog::SynapseReviewInputOptions SynapseReviewInputDialog::ge
     } else if (ui->volumeRadioButton->isChecked()) {
         return BY_VOLUME;
     }
+
+    return BY_BODYID;
 }
 
 QString SynapseReviewInputDialog::getBodyID() {

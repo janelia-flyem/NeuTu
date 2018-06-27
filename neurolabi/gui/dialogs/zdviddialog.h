@@ -26,6 +26,7 @@ public:
 
 
   ZDvidTarget& getDvidTarget();
+  const ZDvidTarget& getDvidTarget(const std::string &name) const;
 
 private slots:
 
@@ -62,6 +63,7 @@ private:
   std::string m_customString;
   StringListDialog *m_roiDlg;
   ZDvidAdvancedDialog *m_advancedDlg;
+  ZDvidTarget m_emptyTarget;
   const static char *m_dvidRepoKey;
 };
 

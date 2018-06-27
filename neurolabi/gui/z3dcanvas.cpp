@@ -49,6 +49,8 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* paren
           this, SIGNAL(shootingTodo(int,int)));
   connect(&m_interaction, SIGNAL(locating(int, int)),
           this, SIGNAL(locating(int, int)));
+  connect(&m_interaction, SIGNAL(browsing(int, int)),
+          this, SIGNAL(browsing(int, int)));
 
   connect(m_glWidget, &ZOpenGLWidget::openGLContextInitialized, this, &Z3DCanvas::openGLContextInitialized);
 }
@@ -90,7 +92,8 @@ bool Z3DCanvas::suppressingContextMenu() const
   if (m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_STROKE) ||
       m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT) ||
       m_interaction.isStateOn(ZInteractionEngine::STATE_MARK) ||
-      m_interaction.isStateOn(ZInteractionEngine::STATE_LOCATE)) {
+      m_interaction.isStateOn(ZInteractionEngine::STATE_LOCATE) ||
+      m_interaction.isStateOn(ZInteractionEngine::STATE_BROWSE)) {
     return true;
   }
 //#endif
@@ -107,6 +110,9 @@ void Z3DCanvas::mousePressEvent(QMouseEvent* e)
 
 void Z3DCanvas::mouseReleaseEvent (QMouseEvent* e)
 {
+#ifdef _DEBUG_
+  std::cout << "Z3DCanvas::mouseReleaseEvent" << std::endl;
+#endif
   if (!m_interaction.processMouseReleaseEvent(e)) {
     broadcastEvent(e, width(), height());
   }
@@ -180,12 +186,61 @@ void Z3DCanvas::updateDecoration()
   m_updatingDecoration = false;
 }
 
+/*
+void Z3DCanvas::setCustomWidget(QWidget *widget)
+{
+  widget->setParent(this);
+//  widget->setGeometry(QRect(0, 512, 512, 512));
+}
+*/
+
+void Z3DCanvas::dump(const QString &message)
+{
+  m_message = message;
+  viewport()->update();
+}
+
+void Z3DCanvas::updateView()
+{
+  viewport()->update();
+}
+
+void Z3DCanvas::paintCustomRegion(const QImage &image)
+{
+  if (m_customCanvas != NULL) {
+    if (m_customCanvas->size() != image.size()) {
+      delete m_customCanvas;
+      m_customCanvas = NULL;
+    }
+  }
+
+  if (m_customCanvas == NULL && !image.isNull()) {
+    m_customCanvas = new QPixmap(image.size());
+  }
+
+  if (m_customCanvas != NULL) {
+    QPainter painter(m_customCanvas);
+    painter.drawImage(m_customCanvas->rect(), image);
+  }
+
+  viewport()->update();
+}
+
 void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
 {
   if (!m_updatingDecoration) {
     QGraphicsView::drawBackground(painter, rect);
   }
   //m_3dScene->drawBackground(painter, rect);
+
+  if (m_customCanvas != NULL) {
+    double projWidth = width() * 0.25;
+    double projHeight =
+        projWidth / m_customCanvas->width() * m_customCanvas->height();
+
+    painter->drawPixmap(QRectF(width() - projWidth, 0, projWidth, projHeight),
+                        *m_customCanvas, m_customCanvas->rect());
+  }
 
 #if 1
   QList<ZStackObject*> drawableList = m_interaction.getDecorationList();
@@ -204,26 +259,70 @@ void Z3DCanvas::drawBackground(QPainter* painter, const QRectF& rect)
   painter->drawRect(QRect(10, 10, 40, 60));
 #endif
 
+  QStringList text;
+  if (!m_message.isEmpty()) {
+    text.append(m_message);
+  }
   if (m_interaction.getKeyMode() == ZInteractionEngine::KM_SWC_SELECTION) {
-    painter->setPen(QColor(255, 255, 255));
-    QFont font("Helvetica [Cronyx]", 24);
-    painter->setFont(font);
-    painter->drawText(
-          QRectF(10, 10, 300, 200),
-          "Selection mode on: \n"
-          "  1: downstream;\n"
-          "  2: upstream;\n"
-          "  3: connected nodes;\n"
-          "  4: inverse selection;\n"
-          "  5: select small trees;");
+    text.append("Selection mode on:");
+    text.append("  1: downstream;");
+    text.append("  2: upstream;");
+    text.append("  3: connected nodes;");
+    text.append("  4: inverse selection;");
+    text.append("  5: select small trees;");
   }
 
-  //painter->drawRect(QRect(10, 10, 40, 60));
+
+  drawText(*painter, text);
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 9, 0) && defined(_USE_CORE_PROFILE_)
   glGetError(); //error from qt
 #endif
 }
+
+void Z3DCanvas::drawText(QPainter &painter, const QStringList &text)
+{
+  if (!text.empty()) {
+    int maxLength = 0;
+    QString compText;
+    foreach (const QString &str, text) {
+      if (str.length() > maxLength) {
+        maxLength = str.length();
+      }
+      compText += str + "\n";
+    }
+
+    maxLength = std::min(maxLength, 80);
+
+    int width = maxLength * 8;
+    int height = text.length() * 20;
+
+    if (width > 0 && height > 0) {
+      QPixmap pixmap(width, height);
+      pixmap.fill(QColor(0, 0, 0, 64));
+
+      QPainter bufferPainter(&pixmap);
+      bufferPainter.setPen(QColor(64, 200, 64));
+
+      //    bufferPainter.fillRect(pixmap.rect(), QColor(0, 0, 0, 0));
+      bufferPainter.drawText(QRectF(10, 1, width, height), compText);
+      painter.save();
+      painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+      painter.drawPixmap(0, 0, pixmap);
+      painter.restore();
+    }
+  }
+}
+
+void Z3DCanvas::drawText(QPainter &painter, const QString &text)
+{
+  if (!text.isEmpty()) {
+    QStringList textList;
+    textList.append(text);
+    drawText(painter, text);
+  }
+}
+
 
 void Z3DCanvas::timerEvent(QTimerEvent* e)
 {
@@ -257,7 +356,13 @@ void Z3DCanvas::clearEventListeners()
 void Z3DCanvas::broadcastEvent(QEvent *e, int w, int h)
 {
   getGLFocus();
+#ifdef _DEBUG_2
+  std::cout << m_listeners.size() << " listeners" << std::endl;
+#endif
   for (size_t i = 0 ; i < m_listeners.size() ; ++i) {
+#ifdef _DEBUG_2
+    std::cout << "  Listener: " << m_listeners[i]->getListnerName() << std::endl;
+#endif
     m_listeners[i]->onEvent(e, w, h);
     if (e->isAccepted()) {
       break;

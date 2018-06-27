@@ -37,7 +37,7 @@ void ZFlyEmSequencerColorScheme::clear() {
 }
 
 // for debugging
-void ZFlyEmSequencerColorScheme::print() {
+void ZFlyEmSequencerColorScheme::print() const {
     QHashIterator<uint64_t, QColor> colorMapIterator(m_colorMap);
     while (colorMapIterator.hasNext()) {
         colorMapIterator.next();

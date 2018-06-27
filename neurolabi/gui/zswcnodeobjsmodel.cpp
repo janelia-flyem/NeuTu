@@ -52,7 +52,7 @@ Swc_Tree_Node *ZSwcNodeObjsModel::getSwcTreeNode(const QModelIndex &index) const
   ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
 
   if (item->parent() && item->parent()->parent() == m_rootItem)
-    return static_cast<Swc_Tree_Node*>(item->getActuralData());
+    return static_cast<Swc_Tree_Node*>(item->getActualData());
   else
     return NULL;
 }
@@ -67,7 +67,7 @@ std::set<Swc_Tree_Node*> ZSwcNodeObjsModel::getSwcTreeNodeSet(
       int childNumber = item->childCount();
       for (int i = 0; i < childNumber; ++i) {
         ZObjsItem *childItem = item->child(i);
-        Swc_Tree_Node *tn = static_cast<Swc_Tree_Node*>(childItem->getActuralData());
+        Swc_Tree_Node *tn = static_cast<Swc_Tree_Node*>(childItem->getActualData());
         if (tn != NULL) {
           nodeSet.insert(tn);
         }

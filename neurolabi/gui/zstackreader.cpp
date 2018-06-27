@@ -1,6 +1,7 @@
 #include "zstackreader.h"
 
 #include "zintcuboid.h"
+#include "zstack.hxx"
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 #include "dvid/zdvidreader.h"
@@ -118,7 +119,7 @@ ZStack* ZStackReader::read(const std::string &path)
 
 
       target.setGrayScaleName(parts[1].toStdString());
-      target.setLabelBlockName("*");
+      target.setSegmentationName("*");
       ZDvidReader reader;
       if (reader.open(target)) {
         stack = reader.readGrayScale(range);

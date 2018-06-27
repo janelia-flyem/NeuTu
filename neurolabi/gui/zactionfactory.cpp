@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QUndoStack>
 #include <QString>
+#include <QUndoStack>
 
 #include "zstackdoc.h"
 #include "zactionactivator.h"
@@ -13,253 +14,44 @@ ZActionFactory::ZActionFactory()
 {
 }
 
-QAction* ZActionFactory::makeAction(
-    EAction item, const ZStackDoc *doc, QWidget *parent,
-    ZActionActivator *activator, bool positive)
+void ZActionFactory::setUndoStack(QUndoStack *undoStack)
 {
-  QAction *action = NULL;
-  switch (item) {
-  case ACTION_SELECT_DOWNSTREAM:
-    action = new QAction("Downstream", parent);
-    action->setStatusTip("Select downstream nodes");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectDownstreamNode()));
-    break;
-  case ACTION_SELECT_UPSTREAM:
-    action = new QAction("Upstream", parent);
-    action->setStatusTip("Select upstream nodes");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectUpstreamNode()));
-    break;
-  case ACTION_SELECT_NEIGHBOR_SWC_NODE:
-    action = new QAction("Neighbors", parent);
-    action->setStatusTip(
-          "Select neighbors (nodes coonected directly) of the currently selected nodes");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectNeighborSwcNode()));
-    break;
-  case ACTION_SELECT_SWC_BRANCH:
-    action = new QAction("Host branch", parent);
-    action->setStatusTip("Select branches containing the currently selected nodes");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectBranchNode()));
-    break;
-  case ACTION_SELECT_CONNECTED_SWC_NODE:
-    action = new QAction("All connected nodes", parent);
-    action->setStatusTip("Select all nodes connected (directly or indirectly) "
-                         "of the currently selected nodes");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectConnectedNode()));
-    break;
-  case ACTION_SELECT_ALL_SWC_NODE:
-    action = new QAction("All nodes", parent);
-    action->setShortcut(QKeySequence::SelectAll);
-    action->setStatusTip("Selet all nodes");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectAllSwcTreeNode()));
-    break;
-  case ACTION_RESOLVE_CROSSOVER:
-    action = new QAction("Resolve crossover", parent);
-    action->setStatusTip("Create a crossover near the selected node if it is detected");
-    doc->connect(action, SIGNAL(triggered()),
-            doc, SLOT(executeResolveCrossoverCommand()));
-    break;
-  case ACTION_REMOVE_TURN:
-    action = new QAction("Remove turn", parent);
-    action->setStatusTip("Remove a nearby sharp turn");
-    doc->connect(action, SIGNAL(triggered()),
-            doc, SLOT(executeRemoveTurnCommand()));
-    break;
-  case ACTION_MEASURE_SWC_NODE_LENGTH:
-    action = new QAction("Path length", parent);
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(showSeletedSwcNodeLength()));
-    break;
-  case ACTION_MEASURE_SCALED_SWC_NODE_LENGTH:
-    action = new QAction("Scaled Path length", parent);
-    doc->connect(action, SIGNAL(triggered()),
-            doc, SLOT(showSeletedSwcNodeScaledLength()));
-    break;
-  case ACTION_MEASURE_SWC_NODE_DIST:
-    action = new QAction("Measure Distance", parent);
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(showSeletedSwcNodeDist()));
-    break;
-  case ACTION_DELETE_SWC_NODE:
-    action = new QAction("Delete", parent);
-    action->setShortcut(Qt::Key_X);
-    action->setStatusTip("Delete selected nodes");
-    action->setIcon(QIcon(":/images/delete.png"));
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeDeleteSwcNodeCommand()));
-    break;
-  case ACTION_DELETE_UNSELECTED_SWC_NODE:
-    action = new QAction("Delete Unselected", parent);
-    action->setStatusTip("Delete unselected nodes");
-//    action->setIcon(QIcon(":/images/delete.png"));
-    doc->connect(action, SIGNAL(triggered()),
-                 doc, SLOT(executeDeleteUnselectedSwcNodeCommand()));
-    break;
-  case ACTION_INSERT_SWC_NODE:
-    action = new QAction("Insert", parent);
-    action->setStatusTip("Insert a node between two adjacent nodes");
-    action->setShortcut(Qt::Key_I);
-    action->setIcon(QIcon(":/images/insert.png"));
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInsertSwcNode()));
-    break;
-  case ACTION_BREAK_SWC_NODE:
-    action = new QAction("Break", parent);
-    action->setStatusTip("Remove connections among the selected nodes");
-    action->setShortcut(Qt::Key_B);
-    doc->connect(action, SIGNAL(triggered()),
-            doc, SLOT(executeBreakSwcConnectionCommand()));
-    action->setIcon(QIcon(":/images/cut.png"));
-    break;
-  case ACTION_CONNECT_SWC_NODE:
-    action = new QAction("Connect", parent);
-    action->setStatusTip("Connect selected nodes");
-    action->setShortcut(Qt::Key_C);
-    action->setIcon(QIcon(":/images/connect.png"));
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeConnectSwcNodeCommand()));
-    break;
-  case ACTION_MERGE_SWC_NODE:
-    action = new QAction("Merge", parent);
-    action->setStatusTip("Merge selected nodes, which should form a single subtree");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeMergeSwcNodeCommand()));
-    action->setIcon(QIcon(":/images/merge.png"));
-    break;
-  case ACTION_TRANSLATE_SWC_NODE:
-    action = new QAction("Translate", parent);
-    doc->connect(action, SIGNAL(triggered()),
-            doc, SLOT(executeTranslateSelectedSwcNode()));
-    break;
-  case ACTION_CHANGE_SWC_SIZE:
-    action = new QAction("Change size", parent);
-    doc->connect(action, SIGNAL(triggered()),
-            doc, SLOT(executeChangeSelectedSwcNodeSize()));
-    break;
-  case ACTION_SET_SWC_ROOT:
-    action = new QAction("Set as a root", parent);
-    action->setStatusTip("Set the selected node as a root");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeSetRootCommand()));
-    break;
-  case ACTION_SET_BRANCH_POINT:
-    action = new QAction("Join isolated branch", parent);
-    action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeSetBranchPoint()));
-    break;
-  case ACTION_CONNECTED_ISOLATED_SWC:
-    action = new QAction("Join isolated brach (across trees)", parent);
-    action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes. "
-                         "The branch can be in another neuron.");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeConnectIsolatedSwc()));
-    break;
-  case ACTION_RESET_BRANCH_POINT:
-    action = new QAction("Reset branch point", parent);
-    action->setStatusTip("Move a neighboring branch point to the selected node");
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeResetBranchPoint()));
-    break;
-  case ACTION_SWC_Z_INTERPOLATION:
-    action = new QAction("Z", parent);
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInterpolateSwcZCommand()));
-    break;
-  case ACTION_SWC_RADIUS_INTERPOLATION:
-    action = new QAction("Radius", parent);
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInterpolateSwcRadiusCommand()));
-    break;
-    //m_singleSwcNodeActionActivator.registerAction(action, false);
-  case ACTION_SWC_POSITION_INTERPOLATION:
-    action = new QAction("Position", parent);
-    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInterpolateSwcPositionCommand()));
-    break;
-    //m_singleSwcNodeActionActivator.registerAction(action, false);
-  case ACTION_SWC_INTERPOLATION:
-    action = new QAction("Position and Radius", parent);
-    doc->connect(action, SIGNAL(triggered()),
-                 doc, SLOT(executeInterpolateSwcCommand()));
-    break;
-  case ACTION_SWC_SUMMARIZE:
-    action = new QAction("Summary", parent);
-    doc->connect(action, SIGNAL(triggered()),
-                 doc, SLOT(showSwcSummary()));
-    break;
-  case ACTION_TRACE:
-    action = new QAction("trace", parent);
-    action->setStatusTip("Trace an individual branch");
-    action->setToolTip("Trace an individual branch");
-    break;
-  case ACTION_FITSEG:
-    action = new QAction("fit", parent);
-    break;
-  case ACTION_DROPSEG:
-    action = new QAction("drop", parent);
-    break;
-  case ACTION_PUNCTA_MARK:
-    action = new QAction("Mark Puncta", parent);
-    break;
-  case ACTION_PUNCTA_ENLARGE:
-    action = new QAction("Enlarge Puncta", parent);
-    break;
-  case ACTION_PUNCTA_NARROW:
-    action = new QAction("Narrow Puncta", parent);
-    break;
-  case ACTION_PUNCTA_MEANSHIFT:
-    action = new QAction("Mean Shift Puncta", parent);
-    break;
-  case ACTION_PUNCTA_MEANSHIFT_ALL:
-    action = new QAction("Mean Shift All Puncta", parent);
-    break;
-  case ACTION_DELETE_SELECTED:
-    action = new QAction("Delete Selected Object", parent);
-    action->setIcon(QIcon(":/images/delete.png"));
-    break;
-  case ACTION_FIT_ELLIPSE:
-    action = new QAction("fit ellipse", parent);
-    break;
-  default:
-    break;
-  }
-
-  if (action != NULL && activator != NULL) {
-    activator->registerAction(action, positive);
-  }
-
-  return action;
+  m_undoStack = undoStack;
 }
-#if 0
-QAction* ZActionFactory::makeAction(
-    EAction item, const ZStackPresenter *presenter, QWidget *parent,
-    ZActionActivator *activator, bool positive)
+
+bool ZActionFactory::IsRegularAction(EAction actionKey)
 {
-  QAction *action = MakeAction(item, parent);
-  switch (item) {
-  case ACTION_ADD_SWC_NODE:
-    presenter->connect(action, SIGNAL(triggered()),
-                       presenter, SLOT(trySwcAddNodeMode()));
-    break;
-  case ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
-    QObject::connect(action, SIGNAL(triggered()),
-                     presenter->getParentFrame(), SLOT(locateSwcNodeIn3DView()));
-    action->setStatusTip("Located selected swc nodes in 3D view.");
-    break;
-  case ACTION_CONNECT_TO_SWC_NODE:
-    presenter->connect(action, SIGNAL(triggered()),
-            presenter, SLOT(enterSwcConnectMode()));
-    break;
-  case ACTION_CHANGE_SWC_NODE_FOCUS:
-    presenter->connect(action, SIGNAL(triggered()),
-                       presenter, SLOT(changeSelectedSwcNodeFocus()));
-    break;
-  case ACTION_ESTIMATE_SWC_NODE_RADIUS:
-    presenter->connect(action, SIGNAL(triggered()),
-                       presenter, SLOT(estimateSelectedSwcRadius()));
-    break;
-  default:
-    break;
-  }
-
-  if (action != NULL && activator != NULL) {
-    activator->registerAction(action, positive);
-  }
-
-  return action;
+  return actionKey != ZActionFactory::ACTION_NULL &&
+      actionKey != ZActionFactory::ACTION_SEPARATOR;
 }
-#endif
 
 QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 {
-  return MakeAction(actionKey, parent);
+  QAction *action = NULL;
+
+  if ((actionKey == ACTION_UNDO || actionKey == ACTION_REDO) &&
+      m_undoStack != NULL) {
+    switch (actionKey) {
+    case ACTION_UNDO:
+      action = m_undoStack->createUndoAction(parent, "&Undo");
+      action->setIcon(QIcon(":/images/undo.png"));
+      action->setShortcuts(QKeySequence::Undo);
+      break;
+    case ACTION_REDO:
+      action = m_undoStack->createRedoAction(parent, "&Redo");
+      action->setIcon(QIcon(":/images/redo.png"));
+      action->setShortcuts(QKeySequence::Redo);
+      break;
+    default:
+      break;
+    }
+  }
+
+  if (action == NULL) {
+    action = MakeAction(actionKey, parent);
+  }
+
+  return action;
 }
 
 QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
@@ -289,6 +81,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_TEST:
     action = new QAction("Test", parent);
     action->setIcon(QIcon(":/images/test.png"));
+    break;
+  case ACTION_ABOUT:
+    action = new QAction("About", parent);
     break;
   case ACTION_ADD_SWC_NODE:
     action = new QAction("Add Neuron Node", parent);
@@ -566,6 +361,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_COPY_POSITION:
     action = new QAction("Copy position", parent);
     break;
+  case ACTION_COPY_BODY_ID:
+    action = new QAction("Copy Body ID", parent);
+    break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
     break;
@@ -583,10 +381,17 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ACTIVATE_TODO_ITEM:
     action = new QAction("Add Todo", parent);
     action->setIcon(QIcon(":/images/add_todo2.png"));
+    action->setCheckable(true);
+    break;
+  case ACTION_ACTIVATE_TOSPLIT_ITEM:
+    action = new QAction("Add To Split", parent);
+    action->setIcon(QIcon(":/images/add_todo2.png"));
+    action->setCheckable(true);
     break;
   case ACTION_ACTIVATE_LOCATE:
     action = new QAction("Locate", parent);
     action->setIcon(QIcon(":/images/locate.png"));
+    action->setCheckable(true);
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
@@ -637,6 +442,15 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setToolTip("Cancel the current rectangle ROI");
     action->setIcon(QIcon(":/images/cancel.png"));
     break;
+  case ACTION_PUNCTA_CHANGE_COLOR:
+    action = new QAction("Change Color of Selected Puncta", parent);
+    break;
+  case ACTION_PUNCTA_HIDE_SELECTED:
+    action = new QAction("Hide Selected Puncta", parent);
+    break;
+  case ACTION_PUNCTA_SHOW_SELECTED:
+    action = new QAction("Show Selected Puncta", parent);
+    break;
   case ACTION_REWRITE_SEGMENTATION:
     action = new QAction("Rewrite segmentation", parent);
     action->setToolTip("Rewrite segmentation in the current ROI. "
@@ -686,8 +500,24 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     action->setIcon(QIcon(":/images/delete_selected_seed.png"));
     action->setToolTip("Delete selected seeds for splitting");
     break;
+  case ACTION_VIEW_DATA_EXTERNALLY:
+    action = new QAction("View data externally", parent);
+    action->setIcon(QIcon(":/images/binoculars.png"));
+    action->setToolTip("View grayscale/segmentation");
+    action->setCheckable(true);
+    break;
+    break;
   case ACTION_MEASURE_SWC_NODE_DIST:
     action = new QAction("Measure Distance", parent);
+    break;
+  case ACTION_EXIT_SPLIT:
+    action = new QAction("Exit Split", parent);
+    break;
+  case ACTION_START_SPLIT:
+    action = new QAction("Start Split", parent);
+    break;
+  case ACTION_COMMIT_SPLIT:
+    action = new QAction("Commit Split", parent);
     break;
   default:
     break;
@@ -695,3 +525,256 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
 
   return action;
 }
+
+#if 0
+QAction* ZActionFactory::makeAction(
+    EAction item, const ZStackDoc *doc, QWidget *parent,
+    ZActionActivator *activator, bool positive)
+{
+  QAction *action = NULL;
+  switch (item) {
+  case ACTION_SELECT_DOWNSTREAM:
+    action = new QAction("Downstream", parent);
+    action->setStatusTip("Select downstream nodes");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectDownstreamNode()));
+    break;
+  case ACTION_SELECT_UPSTREAM:
+    action = new QAction("Upstream", parent);
+    action->setStatusTip("Select upstream nodes");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectUpstreamNode()));
+    break;
+  case ACTION_SELECT_NEIGHBOR_SWC_NODE:
+    action = new QAction("Neighbors", parent);
+    action->setStatusTip(
+          "Select neighbors (nodes coonected directly) of the currently selected nodes");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectNeighborSwcNode()));
+    break;
+  case ACTION_SELECT_SWC_BRANCH:
+    action = new QAction("Host branch", parent);
+    action->setStatusTip("Select branches containing the currently selected nodes");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectBranchNode()));
+    break;
+  case ACTION_SELECT_CONNECTED_SWC_NODE:
+    action = new QAction("All connected nodes", parent);
+    action->setStatusTip("Select all nodes connected (directly or indirectly) "
+                         "of the currently selected nodes");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectConnectedNode()));
+    break;
+  case ACTION_SELECT_ALL_SWC_NODE:
+    action = new QAction("All nodes", parent);
+    action->setShortcut(QKeySequence::SelectAll);
+    action->setStatusTip("Selet all nodes");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(selectAllSwcTreeNode()));
+    break;
+  case ACTION_RESOLVE_CROSSOVER:
+    action = new QAction("Resolve crossover", parent);
+    action->setStatusTip("Create a crossover near the selected node if it is detected");
+    doc->connect(action, SIGNAL(triggered()),
+            doc, SLOT(executeResolveCrossoverCommand()));
+    break;
+  case ACTION_REMOVE_TURN:
+    action = new QAction("Remove turn", parent);
+    action->setStatusTip("Remove a nearby sharp turn");
+    doc->connect(action, SIGNAL(triggered()),
+            doc, SLOT(executeRemoveTurnCommand()));
+    break;
+  case ACTION_MEASURE_SWC_NODE_LENGTH:
+    action = new QAction("Path length", parent);
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(showSeletedSwcNodeLength()));
+    break;
+  case ACTION_MEASURE_SCALED_SWC_NODE_LENGTH:
+    action = new QAction("Scaled Path length", parent);
+    doc->connect(action, SIGNAL(triggered()),
+            doc, SLOT(showSeletedSwcNodeScaledLength()));
+    break;
+  case ACTION_MEASURE_SWC_NODE_DIST:
+    action = new QAction("Measure Distance", parent);
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(showSeletedSwcNodeDist()));
+    break;
+  case ACTION_DELETE_SWC_NODE:
+    action = new QAction("Delete", parent);
+    action->setShortcut(Qt::Key_X);
+    action->setStatusTip("Delete selected nodes");
+    action->setIcon(QIcon(":/images/delete.png"));
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeDeleteSwcNodeCommand()));
+    break;
+  case ACTION_DELETE_UNSELECTED_SWC_NODE:
+    action = new QAction("Delete Unselected", parent);
+    action->setStatusTip("Delete unselected nodes");
+//    action->setIcon(QIcon(":/images/delete.png"));
+    doc->connect(action, SIGNAL(triggered()),
+                 doc, SLOT(executeDeleteUnselectedSwcNodeCommand()));
+    break;
+  case ACTION_INSERT_SWC_NODE:
+    action = new QAction("Insert", parent);
+    action->setStatusTip("Insert a node between two adjacent nodes");
+    action->setShortcut(Qt::Key_I);
+    action->setIcon(QIcon(":/images/insert.png"));
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInsertSwcNode()));
+    break;
+  case ACTION_BREAK_SWC_NODE:
+    action = new QAction("Break", parent);
+    action->setStatusTip("Remove connections among the selected nodes");
+    action->setShortcut(Qt::Key_B);
+    doc->connect(action, SIGNAL(triggered()),
+            doc, SLOT(executeBreakSwcConnectionCommand()));
+    action->setIcon(QIcon(":/images/cut.png"));
+    break;
+  case ACTION_CONNECT_SWC_NODE:
+    action = new QAction("Connect", parent);
+    action->setStatusTip("Connect selected nodes");
+    action->setShortcut(Qt::Key_C);
+    action->setIcon(QIcon(":/images/connect.png"));
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeConnectSwcNodeCommand()));
+    break;
+  case ACTION_MERGE_SWC_NODE:
+    action = new QAction("Merge", parent);
+    action->setStatusTip("Merge selected nodes, which should form a single subtree");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeMergeSwcNodeCommand()));
+    action->setIcon(QIcon(":/images/merge.png"));
+    break;
+  case ACTION_TRANSLATE_SWC_NODE:
+    action = new QAction("Translate", parent);
+    doc->connect(action, SIGNAL(triggered()),
+            doc, SLOT(executeTranslateSelectedSwcNode()));
+    break;
+  case ACTION_CHANGE_SWC_SIZE:
+    action = new QAction("Change size", parent);
+    doc->connect(action, SIGNAL(triggered()),
+            doc, SLOT(executeChangeSelectedSwcNodeSize()));
+    break;
+  case ACTION_SET_SWC_ROOT:
+    action = new QAction("Set as a root", parent);
+    action->setStatusTip("Set the selected node as a root");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeSetRootCommand()));
+    break;
+  case ACTION_SET_BRANCH_POINT:
+    action = new QAction("Join isolated branch", parent);
+    action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeSetBranchPoint()));
+    break;
+  case ACTION_CONNECTED_ISOLATED_SWC:
+    action = new QAction("Join isolated brach (across trees)", parent);
+    action->setStatusTip("Connect to the nearest branch that does not have a path to the selected nodes. "
+                         "The branch can be in another neuron.");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeConnectIsolatedSwc()));
+    break;
+  case ACTION_RESET_BRANCH_POINT:
+    action = new QAction("Reset branch point", parent);
+    action->setStatusTip("Move a neighboring branch point to the selected node");
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeResetBranchPoint()));
+    break;
+  case ACTION_SWC_Z_INTERPOLATION:
+    action = new QAction("Z", parent);
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInterpolateSwcZCommand()));
+    break;
+  case ACTION_SWC_RADIUS_INTERPOLATION:
+    action = new QAction("Radius", parent);
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInterpolateSwcRadiusCommand()));
+    break;
+    //m_singleSwcNodeActionActivator.registerAction(action, false);
+  case ACTION_SWC_POSITION_INTERPOLATION:
+    action = new QAction("Position", parent);
+    doc->connect(action, SIGNAL(triggered()), doc, SLOT(executeInterpolateSwcPositionCommand()));
+    break;
+    //m_singleSwcNodeActionActivator.registerAction(action, false);
+  case ACTION_SWC_INTERPOLATION:
+    action = new QAction("Position and Radius", parent);
+    doc->connect(action, SIGNAL(triggered()),
+                 doc, SLOT(executeInterpolateSwcCommand()));
+    break;
+  case ACTION_SWC_SUMMARIZE:
+    action = new QAction("Summary", parent);
+    doc->connect(action, SIGNAL(triggered()),
+                 doc, SLOT(showSwcSummary()));
+    break;
+  case ACTION_TRACE:
+    action = new QAction("trace", parent);
+    action->setStatusTip("Trace an individual branch");
+    action->setToolTip("Trace an individual branch");
+    break;
+  case ACTION_FITSEG:
+    action = new QAction("fit", parent);
+    break;
+  case ACTION_DROPSEG:
+    action = new QAction("drop", parent);
+    break;
+  case ACTION_PUNCTA_MARK:
+    action = new QAction("Mark Puncta", parent);
+    break;
+  case ACTION_PUNCTA_ENLARGE:
+    action = new QAction("Enlarge Puncta", parent);
+    break;
+  case ACTION_PUNCTA_NARROW:
+    action = new QAction("Narrow Puncta", parent);
+    break;
+  case ACTION_PUNCTA_MEANSHIFT:
+    action = new QAction("Mean Shift Puncta", parent);
+    break;
+  case ACTION_PUNCTA_MEANSHIFT_ALL:
+    action = new QAction("Mean Shift All Puncta", parent);
+    break;
+  case ACTION_PUNCTA_CHANGE_COLOR:
+    action = new QAction("Change Color of Selected Puncta", parent);
+    break;
+  case ACTION_DELETE_SELECTED:
+    action = new QAction("Delete Selected Object", parent);
+    action->setIcon(QIcon(":/images/delete.png"));
+    break;
+  case ACTION_FIT_ELLIPSE:
+    action = new QAction("fit ellipse", parent);
+    break;
+  default:
+    break;
+  }
+
+  if (action != NULL && activator != NULL) {
+    activator->registerAction(action, positive);
+  }
+
+  return action;
+}
+
+#endif
+
+#if 0
+QAction* ZActionFactory::makeAction(
+    EAction item, const ZStackPresenter *presenter, QWidget *parent,
+    ZActionActivator *activator, bool positive)
+{
+  QAction *action = MakeAction(item, parent);
+  switch (item) {
+  case ACTION_ADD_SWC_NODE:
+    presenter->connect(action, SIGNAL(triggered()),
+                       presenter, SLOT(trySwcAddNodeMode()));
+    break;
+  case ACTION_LOCATE_SELECTED_SWC_NODES_IN_3D:
+    QObject::connect(action, SIGNAL(triggered()),
+                     presenter->getParentFrame(), SLOT(locateSwcNodeIn3DView()));
+    action->setStatusTip("Located selected swc nodes in 3D view.");
+    break;
+  case ACTION_CONNECT_TO_SWC_NODE:
+    presenter->connect(action, SIGNAL(triggered()),
+            presenter, SLOT(enterSwcConnectMode()));
+    break;
+  case ACTION_CHANGE_SWC_NODE_FOCUS:
+    presenter->connect(action, SIGNAL(triggered()),
+                       presenter, SLOT(changeSelectedSwcNodeFocus()));
+    break;
+  case ACTION_ESTIMATE_SWC_NODE_RADIUS:
+    presenter->connect(action, SIGNAL(triggered()),
+                       presenter, SLOT(estimateSelectedSwcRadius()));
+    break;
+  default:
+    break;
+  }
+
+  if (action != NULL && activator != NULL) {
+    activator->registerAction(action, positive);
+  }
+
+  return action;
+}
+#endif
+
+

@@ -8,6 +8,7 @@
 #include "zstackpresenter.h"
 #include "zactionfactory.h"
 #include "z3dwindow.h"
+#include "zmenuconfig.h"
 
 ZMenuFactory::ZMenuFactory()
 {
@@ -39,13 +40,13 @@ void ZMenuFactory::addAction(
     const QList<ZActionFactory::EAction> &actionList,
     ZStackPresenter *presenter, QMenu *menu)
 {
-  AddAction(actionList, presenter, menu);
+  ::AddAction(actionList, presenter, menu);
 }
 
 void ZMenuFactory::addAction(
     const QList<ZActionFactory::EAction> &actionList, Z3DWindow *window, QMenu *menu)
 {
-  AddAction(actionList, window, menu);
+  ::AddAction(actionList, window, menu);
 }
 
 QMenu* ZMenuFactory::makeSwcNodeContextMenu(
@@ -200,6 +201,77 @@ QMenu* ZMenuFactory::makeSynapseContextMenu(
 {
   if (menu == NULL) {
     menu = new QMenu(NULL);
+  }
+
+  return menu;
+}
+
+void ZMenuFactory::AddAction(QMenu *menu, ZActionFactory::EAction actionKey)
+{
+  if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
+    menu->addSeparator();
+  } else {
+    QAction *action = ZActionFactory::MakeAction(actionKey, menu);
+    if (action != NULL) {
+      menu->addAction(action);
+    }
+  }
+}
+
+void ZMenuFactory::AddAction(
+    QMenu *menu, QAction *action, ZActionFactory::EAction actionKey)
+{
+  if (actionKey == ZActionFactory::ACTION_SEPARATOR) {
+    menu->addSeparator();
+  } else {
+    if (action != NULL) {
+      menu->addAction(action);
+    }
+  }
+}
+
+QMenu* ZMenuFactory::InitMenu(QMenu *menu)
+{
+  if (menu == NULL) {
+    menu = new QMenu(NULL);
+  } else {
+    menu->clear();
+  }
+
+  return menu;
+}
+
+QMenu* ZMenuFactory::AddSubmenu(QMenu *menu, const QString &name)
+{
+  QMenu *submenu = NULL;
+
+  if (!name.isEmpty()) {
+    submenu = menu->addMenu(name);
+  }
+
+  return submenu;
+}
+
+QMenu* ZMenuFactory::MakeMenu(const ZMenuConfig &config, QMenu *menu)
+{
+  menu = InitMenu(menu);
+
+  QString submenuName;
+  QMenu *submenu = NULL;
+  for (const auto &item : config) {
+    const QString &groupName = item.first;
+    ZActionFactory::EAction actionKey = item.second;
+
+    if (!groupName.isEmpty()) {
+      if (submenuName != groupName) {
+        submenu = new QMenu(groupName, menu);
+        menu->addMenu(submenu);
+        submenuName = groupName;
+      }
+      AddAction(submenu, actionKey);
+    } else {
+      AddAction(menu, actionKey);
+    }
   }
 
   return menu;

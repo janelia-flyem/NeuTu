@@ -50,7 +50,8 @@ Z3DBoundedFilter::Z3DBoundedFilter(Z3DGlobalParameters& globalPara, QObject* par
   m_selectionLineColor.setStyle("COLOR");
   connect(&m_selectionLineColor, &ZVec4Parameter::valueChanged, this, &Z3DBoundedFilter::updateSelectionLineColors);
 
-  connect(&m_visible, &ZBoolParameter::boolChanged, this, &Z3DBoundedFilter::objVisibleChanged);
+  connect(&m_visible, &ZBoolParameter::boolChanged,
+          this, &Z3DBoundedFilter::objVisibleChanged);
 
   addParameter(m_visible);
   addParameter(m_xCut);

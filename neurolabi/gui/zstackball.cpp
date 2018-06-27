@@ -130,7 +130,7 @@ void ZStackBall::display(ZPainter &painter, int slice,
 
   painter.setPen(pen);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   if (m_color.red() < 64 && m_color.green() <64 && m_color.blue() < 64) {
     qDebug() << "Internal color: " << m_color;
   }

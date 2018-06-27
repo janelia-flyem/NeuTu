@@ -16,6 +16,7 @@
 #include "znormcolormap.h"
 #include "flyem/zflyembodycoloroption.h"
 #include "zglobal.h"
+#include "flyem/zflyemproofmvc.h"
 
 FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
   QWidget(parent),
@@ -58,7 +59,7 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SLOT(decSegmentSize()));
   connect(ui->bigRadioButton, SIGNAL(clicked(bool)),
           this, SLOT(incSegmentSize()));
-  connect(ui->fullRadioButton, SIGNAL(clicked(bool)),
+  connect(ui->fullRadioButton, SIGNAL(toggled(bool)),
           this, SLOT(showFullSegmentation(bool)));
 
   /*
@@ -169,13 +170,13 @@ void FlyEmProofControlForm::createColorMenu()
   QAction *sequencerColorAction = CreateColorAction(
         ZFlyEmBodyColorOption::BODY_COLOR_SEQUENCER, this);
 
-  QAction *focusedColorAction = CreateColorAction(
-        ZFlyEmBodyColorOption::BODY_COLOR_FOCUSED, this);
+  QAction *protocolColorAction = CreateColorAction(
+        ZFlyEmBodyColorOption::BODY_COLOR_PROTOCOL, this);
 
   colorActionGroup->addAction(normalColorAction);
   colorActionGroup->addAction(m_nameColorAction);
   colorActionGroup->addAction(sequencerColorAction);
-  colorActionGroup->addAction(focusedColorAction);
+  colorActionGroup->addAction(protocolColorAction);
   colorActionGroup->setExclusive(true);
 
   colorMenu->addActions(colorActionGroup->actions());
@@ -227,6 +228,11 @@ void FlyEmProofControlForm::createMenu()
           this, SLOT(skeletonizeSelectedBody()));
   bodyMenu->addAction(skeletonizeAction);
 
+  QAction *meshAction = new QAction("Update Meshes for Selected", this);
+  connect(meshAction, SIGNAL(triggered()),
+          this, SLOT(updateMeshForSelectedBody()));
+  bodyMenu->addAction(meshAction);
+
   QAction *exportBodyStackAction = new QAction("Export Body Stack", this);
   connect(exportBodyStackAction, SIGNAL(triggered()),
           this, SLOT(exportSelectedBodyStack()));
@@ -273,6 +279,11 @@ void FlyEmProofControlForm::exportSelectedBodyLevel()
 void FlyEmProofControlForm::skeletonizeSelectedBody()
 {
   emit skeletonizingSelectedBody();
+}
+
+void FlyEmProofControlForm::updateMeshForSelectedBody()
+{
+  emit updatingMeshForSelectedBody();
 }
 
 void FlyEmProofControlForm::exportGrayscale()
@@ -325,7 +336,9 @@ void FlyEmProofControlForm::decSegmentSize()
 
 void FlyEmProofControlForm::showFullSegmentation(bool on)
 {
-  emit showingFullSegmentation(on);
+  if (on) {
+    emit showingFullSegmentation();
+  }
 }
 
 void FlyEmProofControlForm::goToBody()
@@ -391,6 +404,15 @@ void FlyEmProofControlForm::updateWidget(const ZDvidTarget &target)
     }
     */
   }
+}
+
+void FlyEmProofControlForm::updateWidget(ZFlyEmProofMvc *mvc)
+{
+  updateWidget(mvc->getDvidTarget());
+  ui->coarseBodyPushButton->setEnabled(mvc->is3DEnabled());
+  ui->bodyViewPushButton->setEnabled(mvc->is3DEnabled());
+  ui->skeletonViewPushButton->setEnabled(mvc->is3DEnabled());
+  ui->meshPushButton->setEnabled(mvc->is3DEnabled());
 }
 
 void FlyEmProofControlForm::setInfo(const QString &info)

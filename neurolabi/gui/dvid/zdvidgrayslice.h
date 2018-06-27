@@ -3,23 +3,33 @@
 
 #include "zstackobject.h"
 #include "zimage.h"
-#include "zdvidreader.h"
+//#include "zdvidreader.h"
 #include "zstackviewparam.h"
+#include "zarbsliceviewparam.h"
 #include "zpixmap.h"
 #include "zcontrastprotocol.h"
+#include "zuncopyable.h"
 
 //#include "zdvidtarget.h"
 
 class ZRect2d;
 class ZDvidReader;
 class ZStack;
+class ZDvidDataSliceHelper;
+class ZDvidTarget;
+class ZTask;
+class ZStackDoc;
 //class ZStackViewParam;
 
-class ZDvidGraySlice : public ZStackObject
+class ZDvidGraySlice : public ZStackObject, ZUncopyable
 {
 public:
   ZDvidGraySlice();
   ~ZDvidGraySlice();
+
+  static ZStackObject::EType GetType() {
+    return ZStackObject::TYPE_DVID_GRAY_SLICE;
+  }
 
   void display(ZPainter &painter, int slice, EDisplayStyle option,
                neutube::EAxis sliceAxis) const;
@@ -27,6 +37,12 @@ public:
 
   void update(int z);
   bool update(const ZStackViewParam &viewParam);
+  /*!
+   * \brief Update an arbitrary cutting plane
+   *
+   * It only takes effect only when the axis is neutube::A_AXIS.
+   */
+//  bool update(const ZArbSliceViewParam &viewParam);
 
 //  void loadDvidSlice(const QByteArray &buffer, int z);
 
@@ -36,6 +52,19 @@ public:
 
   void setDvidTarget(const ZDvidTarget &target);
 
+  const ZDvidReader& getDvidReader() const;
+  const ZDvidTarget& getDvidTarget() const;
+  int getX() const;
+  int getY() const;
+  int getZ() const;
+  void setZ(int z);
+  int getWidth() const;
+  int getHeight() const;
+  int getZoom() const;
+
+  int getScale() const;
+
+  /*
   inline const ZDvidTarget& getDvidTarget() const {
     return m_reader.getDvidTarget();
   }
@@ -52,17 +81,19 @@ public:
   inline void setZ(int z) {
     m_currentViewParam.setZ(z);
   }
+  */
 
-  int getWidth() const { return m_currentViewParam.getViewPort().width(); }
-  int getHeight() const { return m_currentViewParam.getViewPort().height(); }
+//  int getWidth() const { return m_currentViewParam.getViewPort().width(); }
+//  int getHeight() const { return m_currentViewParam.getViewPort().height(); }
 
   ZRect2d getBoundBox() const;
 //  using ZStackObject::getBoundBox; // fix warning -Woverloaded-virtual
 
   void setBoundBox(const ZRect2d &rect);
 
-  int getZoom() const;
-  int getScale() const;
+  QRect getViewPort() const;
+  ZStackViewParam getViewParam() const;
+
 
   void setZoom(int zoom);
   void setContrastProtocol(const ZContrastProtocol &cp);
@@ -74,15 +105,35 @@ public:
    */
   bool hasLowresRegion() const;
 
+  void setCenterCut(int width, int height);
+
+  const ZPixmap& getPixmap() const {
+    return m_pixmap;
+  }
+
+  const ZImage& getImage() const {
+    return m_image;
+  }
+//  void setArbitraryAxis(const ZPoint &v1, const ZPoint &v2);
+
+  bool consume(ZStack *stack, const ZStackViewParam &viewParam,
+               int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  bool containedIn(const ZStackViewParam &viewParam, int zoom,
+                   int centerCutX, int centerCutY, bool centerCut) const;
+  ZTask* makeFutureTask(ZStackDoc *doc);
 
 public: //for testing
   void saveImage(const std::string &path);
   void savePixmap(const std::string &path);
+//  void test();
 
 private:
-  void updateImage();
+//  void updateImage();
   void updateImage(const ZStack *stack);
   void forceUpdate(const ZStackViewParam &viewParam);
+  void forceUpdate(const QRect &viewPort, int z);
+  void forceUpdate(const ZArbSliceViewParam &sliceViewParam);
+
   void updatePixmap();
   void updateContrast();
   void invalidatePixmap();
@@ -90,10 +141,21 @@ private:
   void validatePixmap();
   bool isPixmapValid() const;
 
+//  bool validateSize(int *width, int *height);
+  template<typename T>
+  int updateParam(T *param);
+
   /*!
    * \brief Check if the regions of the image and the slice are consistent.
    */
 //  bool isRegionConsistent() const;
+
+  const ZDvidDataSliceHelper* getHelper() const {
+    return m_helper.get();
+  }
+  ZDvidDataSliceHelper* getHelper() {
+    return m_helper.get();
+  }
 
 private:
   ZImage m_image;
@@ -104,17 +166,20 @@ private:
   ZContrastProtocol m_contrastProtocal;
 
   QMutex m_pixmapMutex;
-  ZStackViewParam m_currentViewParam;
+//  ZStackViewParam m_currentViewParam;
 
-  int m_zoom;
+//  ZArbSliceViewParam m_sliceViewParam; //Only useful for A_AXIS
 
-  int m_maxWidth;
-  int m_maxHeight;
+//  int m_zoom;
 
-  int m_centerCutWidth = 256;
-  int m_centerCutHeight = 256;
+//  int m_maxWidth;
+//  int m_maxHeight;
 
-  ZDvidReader m_reader;
+  std::unique_ptr<ZDvidDataSliceHelper> m_helper;
+//  ZPoint m_v1;
+//  ZPoint m_v2;
+
+//  ZDvidReader m_reader;
 };
 
 #endif // ZDVIDGRAYSLICE_H

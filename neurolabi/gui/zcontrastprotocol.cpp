@@ -16,6 +16,21 @@ ZContrastProtocol::ZContrastProtocol(
 {
 }
 
+double ZContrastProtocol::getOffset() const
+{
+  return m_offset;
+}
+
+double ZContrastProtocol::getScale() const
+{
+  return m_scale;
+}
+
+bool ZContrastProtocol::isNonlinear() const
+{
+  return m_nonlinearMode != NONLINEAR_NONE;
+}
+
 ZJsonObject ZContrastProtocol::toJsonObject() const
 {
   ZJsonObject obj;
@@ -112,7 +127,7 @@ double ZContrastProtocol::mapFloat(double v)
   double nv = (v + m_offset) * s;
   switch (m_nonlinearMode) {
   case NONLINEAR_POWER:
-    nv = (v + m_offset / 255.0) * s;
+    nv = std::max(0.0, (v + m_offset / 255.0) * s);
     nv = sqrt(nv) * v;
     break;
   case NONLINEAR_SIGMOID:
@@ -129,7 +144,7 @@ double ZContrastProtocol::mapFloat(double v)
 
   if (nv < 0.0) {
     nv = 0.0;
-  } else if (v > 1.0) {
+  } else if (nv > 1.0) {
     nv = 1.0;
   }
 

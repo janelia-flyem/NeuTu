@@ -163,9 +163,9 @@ ZDvidTarget &ZDvidDialog::getDvidTarget()
     target.setPort(getPort());
     target.setBodyLabelName(getBodyLabelName());
     if (getSegmentationName().empty()) {
-      target.setNullLabelBlockName();
+      target.setNullSegmentationName();
     } else {
-      target.setLabelBlockName(getSegmentationName());
+      target.setSegmentationName(getSegmentationName());
     }
     target.setGrayScaleName(getGrayscaleName());
 
@@ -197,7 +197,7 @@ void ZDvidDialog::setServer(int index)
   ui->dvidSourceWidget->setUuid(dvidTarget.getUuid());
   ui->infoLabel->setText(dvidTarget.getComment().c_str());
   ui->grayScalelineEdit->setText(dvidTarget.getGrayScaleName().c_str());
-  ui->labelBlockLineEdit->setText(dvidTarget.getLabelBlockName().c_str());
+  ui->labelBlockLineEdit->setText(dvidTarget.getSegmentationName().c_str());
   //ui->maxZoomSpinBox->setValue(dvidTarget.getMaxLabelZoom());
 //  ui->labelszLineEdit->setText(dvidTarget.getLabelszName().c_str());
   ui->tileLineEdit->setText(dvidTarget.getMultiscale2dName().c_str());
@@ -243,6 +243,19 @@ void ZDvidDialog::setServer(int index)
   ui->roiLabel->setText(QString("%1 ROI").arg(dvidTarget.getRoiList().size()));
 
   resetAdvancedDlg(dvidTarget);
+}
+
+const ZDvidTarget& ZDvidDialog::getDvidTarget(const std::string &name) const
+{
+  for (QList<ZDvidTarget>::const_iterator iter = m_dvidRepo.begin();
+       iter != m_dvidRepo.end(); ++iter) {
+    const ZDvidTarget &target = *iter;
+    if (name == target.getName()) {
+      return target;
+    }
+  }
+
+  return m_emptyTarget;
 }
 
 bool ZDvidDialog::hasNameConflict(const std::string &name) const

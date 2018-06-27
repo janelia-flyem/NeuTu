@@ -11,6 +11,7 @@
 #include "zstackfactory.h"
 #include "zlabelcolortable.h"
 #include "zscalablestack.h"
+#include "zswctree.h"
 
 ZFlyEmNeuronListModel::ZFlyEmNeuronListModel(QObject *parent) :
   QAbstractTableModel(parent)
@@ -254,7 +255,7 @@ void ZFlyEmNeuronListModel::retrieveModel(
   }
 
   doc->endObjectModifiedMode();
-  doc->notifyObjectModified();
+  doc->processObjectModified();
 //  doc->blockSignals(false);
 //  doc->swcObjsModel()->updateModelData();
 //  doc->punctaObjsModel()->updateModelData();

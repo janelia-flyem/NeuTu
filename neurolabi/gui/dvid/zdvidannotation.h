@@ -2,6 +2,8 @@
 #define ZDVIDANNOTATION_H
 
 #include <string>
+#include <set>
+
 #include <QStaticText>
 
 #include "zstackobject.h"
@@ -91,8 +93,21 @@ public:
 
   void clearPartner();
   void addPartner(int x, int y, int z);
-  void addTag(const std::string &tag);
   bool hasPartner(const ZIntPoint &pos);
+
+  void addTag(const std::string &tag);
+
+  /*!
+   * \brief Add a body ID tag.
+   *
+   * Mainly used as a temporary solution for unsyncable labelmap.
+   */
+  void addBodyIdTag();
+
+//  static std::string GetBodyIdTag(uint64_t bodyId);
+
+  void removeTag(const std::string &tag);
+  bool hasTag(const std::string &tag) const;
 
   void clear();
 
@@ -208,7 +223,7 @@ protected:
   EStatus m_status;
 
   std::vector<ZIntPoint> m_partnerHint;
-  std::vector<std::string> m_tagArray;
+  std::set<std::string> m_tagSet;
   ZJsonObject m_propertyJson;
   ZJsonArray m_relJson;
 

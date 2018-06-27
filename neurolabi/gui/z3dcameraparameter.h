@@ -194,6 +194,9 @@ public:
     updatePara();
   }
 
+  glm::quat getNeuroglancerRotation() const;
+  std::pair<glm::vec3, glm::vec3> getLowtisVec() const;
+
   void viewportChanged(const glm::uvec2& viewport);
 
   // ZParameter interface

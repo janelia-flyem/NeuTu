@@ -233,7 +233,7 @@ void ZDvidAdvancedDialog::setSupervised(bool supervised)
 
 std::string ZDvidAdvancedDialog::getSupervisorServer() const
 {
-  return ui->librarianLineEdit->text().toStdString();
+  return ui->librarianLineEdit->text().trimmed().toStdString();
 }
 
 void ZDvidAdvancedDialog::setSupervisorServer(const std::string &server)

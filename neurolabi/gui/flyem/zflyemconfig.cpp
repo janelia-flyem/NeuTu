@@ -16,12 +16,18 @@ const char* ZFlyEmConfig::LIBRARIAN_KEY = "librarian";
 const char* ZFlyEmConfig::DVID_ROOT_KEY = "dvid root";
 const char* ZFlyEmConfig::MB6_KEY = "mb6_paper";
 const char* ZFlyEmConfig::TASK_SERVER_KEY = "task server";
+const char* ZFlyEmConfig::NEUROGLANCER_KEY = "neuroglancer server";
+const char* ZFlyEmConfig::CENTERCUT_KEY = "flyem::centercut";
 
 ZFlyEmConfig::ZFlyEmConfig()
 {
   init();
 }
 
+ZFlyEmConfig::~ZFlyEmConfig()
+{
+//  saveSettings();
+}
 
 void ZFlyEmConfig::init()
 {
@@ -111,6 +117,11 @@ void ZFlyEmConfig::loadConfig()
         }
       }
 
+      if (obj.hasKey(NEUROGLANCER_KEY)) {
+        m_neuroglancerServer = ZJsonParser::stringValue(obj[NEUROGLANCER_KEY]);
+      }
+
+
       if (obj.hasKey(DVID_ROOT_KEY)) {
         ZJsonObject rootJson(obj.value(DVID_ROOT_KEY));
 
@@ -146,6 +157,36 @@ void ZFlyEmConfig::loadConfig()
       }
     }
   }
+}
+
+void ZFlyEmConfig::loadUserSettings()
+{
+  //Load local settings
+  if (NeutubeConfig::GetSettings().contains(CENTERCUT_KEY)) {
+    QMap<QString, QVariant> centercutMap =
+        NeutubeConfig::GetSettings().value(CENTERCUT_KEY).toMap();
+
+    for (auto iter = centercutMap.begin(); iter != centercutMap.end();
+         ++iter) {
+      QSize s = iter.value().toSize();
+      m_centerCut[iter.key().toStdString()] =
+          std::pair<int,int>(s.width(), s.height());
+    }
+  }
+}
+
+std::pair<int,int> ZFlyEmConfig::getCenterCut(const std::string &name) const
+{
+  if (m_centerCut.count(name) > 0) {
+    return m_centerCut.at(name);
+  }
+
+  return std::pair<int,int>(256, 256);
+}
+
+void ZFlyEmConfig::setCenterCut(const std::string &name, int cx, int cy)
+{
+  m_centerCut[name] = std::pair<int,int>(cx, cy);
 }
 
 std::string ZFlyEmConfig::mapAddress(const std::string &address) const
@@ -188,6 +229,23 @@ std::string ZFlyEmConfig::getDvidRootNode(const std::string &name) const
   }
 
   return "";
+}
+
+void ZFlyEmConfig::saveSettings() const
+{
+  QMap<QString, QVariant> setting;
+  for (const auto &cc : m_centerCut) {
+    setting[cc.first.c_str()] = QSize(cc.second.first, cc.second.second);
+  }
+  if (!setting.isEmpty()) {
+    NeutubeConfig::GetSettings().setValue(CENTERCUT_KEY, setting);
+  }
+  /*
+  for (const auto &cc : m_centerCut) {
+    NeutubeConfig::GetSettings().setValue(
+          CENTERCUT_KEY + "::" + cc.first,
+          QSize(cc.second.first, cc.second.second));
+ */
 }
 
 /*

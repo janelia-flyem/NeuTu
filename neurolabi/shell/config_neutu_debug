@@ -24,15 +24,15 @@ else
   cd ..
 fi
 
-envName='neutu-env'
-source $condaDir/bin/activate $envName
-conda install neutu-debug -c tingzhao -y
+#envName='neutu-env'
+#source $condaDir/bin/activate $envName
+#conda install neutu-develop -c tingzhao -y
 
 neutu_bin_dir=$condaDir'/envs/neutu-env/bin'
 run_script=$bindir/debug_neutu
 touch $run_script
 echo '#!/bin/bash' > $run_script
 echo "cd $downloadDir/NeuTu/neurolabi/gui" >> $run_script
-echo "gdb $neutu_bin_dir/neutu_d" >> $run_script
+echo "gdb $neutu_bin_dir/neutu" >> $run_script
 chmod a+x $run_script
 

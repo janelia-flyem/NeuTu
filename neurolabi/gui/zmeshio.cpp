@@ -132,9 +132,9 @@ void getDracoVertices(const PointCloud& pc, std::vector<glm::vec3>& vertices)
   const PointAttribute *const att = pc.GetNamedAttribute(GeometryAttribute::POSITION);
   if (att == nullptr || att->size() == 0)
     throw ZIOException("no vertices found in draco file");
-  vertices.resize(att->size());
-  for (AttributeValueIndex i(0); i < att->size(); ++i) {
-    if (!att->ConvertValue<float, 3>(i, &vertices[i.value()][0])) {
+  vertices.resize(pc.num_points());
+  for (PointIndex i(0); i < pc.num_points(); ++i) {
+    if (!att->ConvertValue<float, 3>(att->mapped_index(i), &vertices[i.value()][0])) {
       vertices.clear();
       throw ZIOException("can not decode draco vertices");
     }
@@ -148,9 +148,10 @@ void getDracoNormals(const PointCloud& pc, std::vector<glm::vec3>& normals)
     return; // no normal
   }
   if (att->num_components() == 3) {
-    normals.resize(att->size());
-    for (AttributeValueIndex i(0); i < att->size(); ++i) {
-      if (!att->ConvertValue<float, 3>(i, &normals[i.value()][0])) {
+    PointIndex num_points(pc.num_points());
+    normals.resize(num_points.value());
+    for (PointIndex i(0); i < num_points; ++i) {
+      if (!att->ConvertValue<float, 3>(att->mapped_index(i), &normals[i.value()][0])) {
         normals.clear();
         throw ZIOException("can not decode draco normals");
       }
@@ -167,9 +168,9 @@ void getDracoColors(const PointCloud& pc, std::vector<glm::vec4>& colors)
     return; // no color
   }
   if (att->num_components() == 1) {
-    colors.resize(att->size());
-    for (AttributeValueIndex i(0); i < att->size(); ++i) {
-      if (!att->ConvertValue<float, 1>(i, &colors[i.value()][0])) {
+    colors.resize(pc.num_points());
+    for (PointIndex i(0); i < pc.num_points(); ++i) {
+      if (!att->ConvertValue<float, 1>(att->mapped_index(i), &colors[i.value()][0])) {
         colors.clear();
         throw ZIOException("can not decode draco 1 component colors");
       }
@@ -178,9 +179,9 @@ void getDracoColors(const PointCloud& pc, std::vector<glm::vec4>& colors)
       c.a = 1.f;
     }
   } else if (att->num_components() == 2) {
-    colors.resize(att->size());
-    for (AttributeValueIndex i(0); i < att->size(); ++i) {
-      if (!att->ConvertValue<float, 2>(i, &colors[i.value()][0])) {
+    colors.resize(pc.num_points());
+    for (PointIndex i(0); i < pc.num_points(); ++i) {
+      if (!att->ConvertValue<float, 2>(att->mapped_index(i), &colors[i.value()][0])) {
         colors.clear();
         throw ZIOException("can not decode draco 2 component colors");
       }
@@ -189,9 +190,9 @@ void getDracoColors(const PointCloud& pc, std::vector<glm::vec4>& colors)
       c.a = 1.f;
     }
   } else if (att->num_components() == 3) {
-    colors.resize(att->size());
-    for (AttributeValueIndex i(0); i < att->size(); ++i) {
-      if (!att->ConvertValue<float, 3>(i, &colors[i.value()][0])) {
+    colors.resize(pc.num_points());
+    for (PointIndex i(0); i < pc.num_points(); ++i) {
+      if (!att->ConvertValue<float, 3>(att->mapped_index(i), &colors[i.value()][0])) {
         colors.clear();
         throw ZIOException("can not decode draco 3 component colors");
       }
@@ -200,9 +201,9 @@ void getDracoColors(const PointCloud& pc, std::vector<glm::vec4>& colors)
       c.a = 1.f;
     }
   } else if (att->num_components() == 4) {
-    colors.resize(att->size());
-    for (AttributeValueIndex i(0); i < att->size(); ++i) {
-      if (!att->ConvertValue<float, 4>(i, &colors[i.value()][0])) {
+    colors.resize(pc.num_points());
+    for (PointIndex i(0); i < pc.num_points(); ++i) {
+      if (!att->ConvertValue<float, 4>(att->mapped_index(i), &colors[i.value()][0])) {
         colors.clear();
         throw ZIOException("can not decode draco 4 component colors");
       }
@@ -222,25 +223,25 @@ void getDracoTextureCoordinates(const PointCloud& pc,
     return; // no textureCoordinates2D
   }
   if (att->num_components() == 1) {
-    textureCoordinates1D.resize(att->size());
-    for (AttributeValueIndex i(0); i < att->size(); ++i) {
-      if (!att->ConvertValue<float, 1>(i, &textureCoordinates1D[i.value()])) {
+    textureCoordinates1D.resize(pc.num_points());
+    for (PointIndex i(0); i < pc.num_points(); ++i) {
+      if (!att->ConvertValue<float, 1>(att->mapped_index(i), &textureCoordinates1D[i.value()])) {
         textureCoordinates1D.clear();
         throw ZIOException("can not decode draco textureCoordinates1D");
       }
     }
   } else if (att->num_components() == 2) {
-    textureCoordinates2D.resize(att->size());
-    for (AttributeValueIndex i(0); i < att->size(); ++i) {
-      if (!att->ConvertValue<float, 2>(i, &textureCoordinates2D[i.value()][0])) {
+    textureCoordinates2D.resize(pc.num_points());
+    for (PointIndex i(0); i < pc.num_points(); ++i) {
+      if (!att->ConvertValue<float, 2>(att->mapped_index(i), &textureCoordinates2D[i.value()][0])) {
         textureCoordinates2D.clear();
         throw ZIOException("can not decode draco textureCoordinates2D");
       }
     }
   } else if (att->num_components() == 3) {
-    for (AttributeValueIndex i(0); i < att->size(); ++i) {
-      textureCoordinates3D.resize(att->size());
-      if (!att->ConvertValue<float, 3>(i, &textureCoordinates3D[i.value()][0])) {
+    for (PointIndex i(0); i < pc.num_points(); ++i) {
+      textureCoordinates3D.resize(pc.num_points());
+      if (!att->ConvertValue<float, 3>(att->mapped_index(i), &textureCoordinates3D[i.value()][0])) {
         textureCoordinates3D.clear();
         throw ZIOException("can not decode draco textureCoordinates3D");
       }
@@ -253,11 +254,11 @@ void getDracoTextureCoordinates(const PointCloud& pc,
 void getDracoFaces(const Mesh& msh, std::vector<GLuint>& faces)
 {
   faces.resize(msh.num_faces() * 3);
-  const PointAttribute *const pos_att_ = msh.GetNamedAttribute(GeometryAttribute::POSITION);
+//  const PointAttribute *const pos_att_ = msh.GetNamedAttribute(GeometryAttribute::POSITION);
   for (FaceIndex i(0); i < msh.num_faces(); ++i) {
     for (int j = 0; j < 3; ++j) {
       const PointIndex vert_index = msh.face(i)[j];
-      faces[i.value()*3+j] = pos_att_->mapped_index(vert_index).value();
+      faces[i.value()*3+j] = vert_index.value();
     }
   }
 }
@@ -393,6 +394,7 @@ void ZMeshIO::loadFromMemory(
       mesh.setType(GL_TRIANGLES);
       Assimp::Importer importer;
       initImporter(importer);
+//      qDebug() << "Meshes:" << buffer;
       const aiScene* scene = importer.ReadFileFromMemory(buffer.data(), buffer.size(),                                               aiProcess_GenSmoothNormals |
                                                          aiProcess_JoinIdenticalVertices |
                                                          aiProcess_ImproveCacheLocality |
@@ -513,6 +515,47 @@ void ZMeshIO::save(const ZMesh& mesh, const QString& filename, std::string forma
   }
 }
 
+QByteArray ZMeshIO::writeToMemory(const ZMesh& mesh, std::string format) const
+{
+  QByteArray result;
+
+  try {
+    CHECK(m_writeFormats.contains(format));
+
+    auto sc = std::make_unique<aiScene>();
+    sc->mRootNode = new aiNode;
+    sc->mRootNode->mName.Set("modelName");
+
+    // Create nodes for the whole scene
+    std::vector<aiMesh*> meshArray;
+    createNodes(mesh, sc->mRootNode, sc.get(), meshArray);
+
+    // Create mesh pointer buffer for this scene
+    if (sc->mNumMeshes > 0) {
+      sc->mMeshes = new aiMesh* [meshArray.size()];
+      for (size_t index = 0; index < meshArray.size(); index++) {
+        sc->mMeshes[index] = meshArray[index];
+      }
+    }
+
+    //
+    createMaterials(sc.get());
+
+    Assimp::Exporter exporter;
+    const aiExportDataBlob *blob = exporter.ExportToBlob(sc.get(), format);
+    if (blob == NULL) {
+      throw ZIOException(exporter.GetErrorString());
+    } else {
+      result.append(static_cast<const char*>(blob->data), blob->size);
+    }
+  }
+  catch (const ZException& e) {
+    throw ZIOException(QString("Can not save mesh: %1").arg(e.what()));
+  }
+
+  return result;
+}
+
 void ZMeshIO::readAllenAtlasMesh(const QString& filename, std::vector<glm::vec3>& normals,
                                  std::vector<glm::vec3>& vertices, std::vector<GLuint>& indices) const
 {
@@ -599,6 +642,14 @@ void ZMeshIO::readDracoMeshFromMemory(
     std::unique_ptr<draco::Mesh> in_mesh = std::move(statusor).value();
     if (in_mesh) {
       msh = in_mesh.get();
+
+      // Draco encoding may cause duplication of vertices data.
+      // De-duplicate after decoding.
+      // Note: These functions are not defined unless you build with a special preprocessor definition:
+      //       Make sure NeuTu is built with -D DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED=1
+      msh->DeduplicateAttributeValues();
+      msh->DeduplicatePointIds();
+
       pc = std::move(in_mesh);
     }
   } else if (geom_type == draco::POINT_CLOUD) {

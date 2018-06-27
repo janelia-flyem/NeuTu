@@ -1617,7 +1617,7 @@ void ZNeuronTracer::initTraceWorkspace(Stack *stack)
   }
 
   //m_traceWorkspace->min_score = 0.35;
-  m_traceWorkspace->tune_end = ZNeuronTracerConfig::getInstance().tuningEnd();
+  //m_traceWorkspace->tune_end = ZNeuronTracerConfig::getInstance().tuningEnd();
   m_traceWorkspace->add_hit = TRUE;
 
 

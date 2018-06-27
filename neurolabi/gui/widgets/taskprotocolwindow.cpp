@@ -3,20 +3,28 @@
 
 #include <QDateTime>
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
 #include <QsLog.h>
+
 
 #include "neutube_def.h"
 #include "neutubeconfig.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"
+#include "protocols/taskbodyhistory.h"
+#include "protocols/taskbodycleave.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
+#include "z3dwindow.h"
+#include "zstackdocproxy.h"
+#include "zwidgetmessage.h"
 
 #include "taskprotocolwindow.h"
 #include "ui_taskprotocolwindow.h"
@@ -38,6 +46,7 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     // following https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
     m_prefetchQueue = new BodyPrefetchQueue();
     m_prefetchThread = new QThread();
+    m_prefetchQueue->setDocument(m_body3dDoc);
 
     m_prefetchQueue->moveToThread(m_prefetchThread);
     connect(m_prefetchQueue, SIGNAL(finished()), m_prefetchThread, SLOT(quit()));
@@ -50,8 +59,6 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(this, SIGNAL(unprefetchBody(QSet<uint64_t>)), m_prefetchQueue, SLOT(remove(QSet<uint64_t>)));
     connect(this, SIGNAL(clearBodyQueue()), m_prefetchQueue, SLOT(clear()));
 
-    m_prefetchThread->start();
-
 
     // UI connections
     connect(QApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(applicationQuitting()));
@@ -63,6 +70,15 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
     connect(ui->reviewCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onReviewStateChanged(int)));
     connect(ui->showCompletedCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCompletedStateChanged(int)));
 
+    ui->nextButton->setShortcut(Qt::Key_E);
+    ui->prevButton->setShortcut(Qt::Key_Q);
+
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshesAdded,
+            this, &TaskProtocolWindow::onBodyMeshesAdded, Qt::QueuedConnection);
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded,
+            this, &TaskProtocolWindow::onBodyMeshLoaded, Qt::QueuedConnection);
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyRecycled,
+            this, &TaskProtocolWindow::onBodyRecycled);
 }
 
 // constants
@@ -92,12 +108,15 @@ void TaskProtocolWindow::init() {
         return;
     }
 
-    ZDvidReader reader;
+    const ZDvidReader &reader = m_writer.getDvidReader();
+    /*
     if (!reader.open(m_proofDoc->getDvidTarget())) {
         showError("Couldn't open DVID", "DVID couldn't be opened!  Check your network connections.");
         setWindowConfiguration(LOAD_BUTTON);
         return;
     }
+    */
+
     ZDvid::ENodeStatus status = reader.getNodeStatus();
     if (status == ZDvid::NODE_INVALID || status == ZDvid::NODE_OFFLINE) {
         showError("Couldn't open DVID", "DVID node is invalid or offline!  Check your DVID server or settings.");
@@ -132,7 +151,7 @@ void TaskProtocolWindow::init() {
     } else {
         // otherwise, show the load task file button
         setWindowConfiguration(LOAD_BUTTON);
-    }
+    } 
 }
 
 void TaskProtocolWindow::onPrevButton() {
@@ -260,21 +279,33 @@ void TaskProtocolWindow::onDoneButton() {
         }
     }
     if (!allComplete) {
-        showInfo("Not all tasks complete!", "You have not completed all tasks!");
-        return;
+        QMessageBox messageBox;
+        messageBox.setText("Exit task protocol?");
+        messageBox.setInformativeText("Not all tasks are complete!\n\nDo you want to exit the task protocol with incomplete tasks? If you do, your progress data will be saved, but you will not be able to continue.\n\nExit protocol?");
+        messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        messageBox.setDefaultButton(QMessageBox::Ok);
+        int ret = messageBox.exec();
+        if (ret != QMessageBox::Ok) {
+            return;
+        }
+    } else {
+        QMessageBox messageBox;
+        messageBox.setText("Complete task protocol?");
+        messageBox.setInformativeText("Do you want to complete the task protocol? If you do, your progress data will be stored in DVID, and you will not be able to continue.\n\nComplete protocol?");
+        messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        messageBox.setDefaultButton(QMessageBox::Ok);
+        int ret = messageBox.exec();
+        if (ret != QMessageBox::Ok) {
+            return;
+        }
     }
 
-    QMessageBox messageBox;
-    messageBox.setText("Complete task protocol?");
-    messageBox.setInformativeText("Do you want to complete the task protocol? If you do, your progress data will be stored in DVID, and you will not be able to continue.\n\nComplete protocol?");
-    messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-    messageBox.setDefaultButton(QMessageBox::Ok);
-    int ret = messageBox.exec();
-    if (ret != QMessageBox::Ok) {
-        return;
+    if (m_currentTaskIndex >= 0) {
+      m_taskList[m_currentTaskIndex]->beforeDone();
     }
 
-    // new key is old key + either identifier or datetime stamp
+    // re-save the data, complete or not; the new key is old key + either an identifier
+    //  or datetime stamp
     QString key;
     if (m_ID.size() > 0) {
         key = generateDataKey() + "-" + m_ID;
@@ -287,11 +318,12 @@ void TaskProtocolWindow::onDoneButton() {
     m_writer.writeJsonString(PROTOCOL_INSTANCE.toStdString(), key.toStdString(),
         jsonString.toStdString());
 
-    // delete old key
-    m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
-
     LINFO() << "Task protocol: saved completed protocol data to DVID:" << PROTOCOL_INSTANCE.toStdString()
             << "," << key.toStdString();
+
+    // delete old key in either case
+    m_writer.deleteKey(PROTOCOL_INSTANCE.toStdString(), generateDataKey().toStdString());
+    LINFO() << "Task protocol: deleted working protocol data from DVID";
 
     setWindowConfiguration(LOAD_BUTTON);
 }
@@ -316,11 +348,30 @@ void TaskProtocolWindow::onLoadTasksButton() {
     startProtocol(json, true);
 }
 
-void TaskProtocolWindow::onCompletedStateChanged(int /*state*/) {
+void TaskProtocolWindow::onBodiesUpdated() {
+  updateBodyWindow();
+}
+
+namespace {
+  struct BlockSignals
+  {
+    BlockSignals(QObject *o) : m_o(o) { m_blocked = o->blockSignals(true); }
+    ~BlockSignals() { m_o->blockSignals(m_blocked); }
+    QObject *m_o;
+    bool m_blocked;
+  };
+}
+
+void TaskProtocolWindow::onCompletedStateChanged(int state) {
     if (m_currentTaskIndex >= 0) {
-        m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
-        saveState();
-        updateLabel();
+      if (!state || m_taskList[m_currentTaskIndex]->allowCompletion()) {
+          m_taskList[m_currentTaskIndex]->setCompleted(ui->completedCheckBox->isChecked());
+          saveState();
+          updateLabel();
+      } else {
+        BlockSignals blockCallingThisAgain(ui->completedCheckBox);
+        ui->completedCheckBox->setCheckState(Qt::Unchecked);
+      }
     }
 }
 
@@ -358,6 +409,7 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
         updateBodyWindow();
         updateLabel();
     }
+    updateButtonsEnabled();
 }
 
 /*
@@ -401,8 +453,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 
     // load tasks from json into internal data structures; save to DVID if needed
     loadTasks(json);
-    if (save) {
-        saveState();
+    if (save && (m_currentTaskIndex >= 0)) {
+      saveState();
     }
 
     // load first task; enable UI and go
@@ -426,6 +478,8 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     updateBodyWindow();
     updateLabel();
     setWindowConfiguration(TASK_UI);
+
+    m_prefetchThread->start();
 }
 
 /*
@@ -594,9 +648,42 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             ui->verticalLayout_3->addWidget(m_currentTaskWidget);
             // ui->horizontalLayout->addWidget(m_currentTaskWidget);
             m_currentTaskWidget->setVisible(true);
+            updateButtonsEnabled();
+        }
+
+        updateMenu(true);
+    }
+}
+
+/*
+ * ensures that the "Next" and "Prev" buttons are enabled only when there are
+ * next or previous tasks to go to
+ */
+void TaskProtocolWindow::updateButtonsEnabled() {
+    bool nextPrevEnabled = ((m_taskList.size() > 1) &&
+                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
+    ui->nextButton->setEnabled(nextPrevEnabled);
+    ui->prevButton->setEnabled(nextPrevEnabled);
+}
+
+/*
+ * removes the task menu from the main menu bar, and if "add" is true
+ * also adds a new menu for the current task
+ */
+void TaskProtocolWindow::updateMenu(bool add) {
+    if (Z3DWindow *window = m_body3dDoc->getParent3DWindow()) {
+        if (m_currentTaskMenuAction) {
+            window->menuBar()->removeAction(m_currentTaskMenuAction);
+        }
+        if (add && (m_currentTaskIndex >= 0)) {
+            QMenu *menu = m_taskList[m_currentTaskIndex]->getTaskMenu();
+            if (menu != NULL) {
+              m_currentTaskMenuAction = window->menuBar()->addMenu(menu);
+            }
         }
     }
 }
+
 
 /*
  * update the body view window for current index
@@ -604,15 +691,12 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
 void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
+        disableButtonsWhileUpdating();
 
-        // remove existing bodies; proof doc "selected" corresponds to "visible"
-        //  I'm taking a bit of a guess that I want "MAPPED" (not "ORIGINAL")
-        foreach (uint64_t bodyID, m_proofDoc->getSelectedBodySet(neutube::BODY_LABEL_MAPPED)) {
-            emit bodyRemoved(bodyID);
-        }
+        emit allBodiesRemoved();
 
-        QSet<uint64_t> visible = m_taskList[m_currentTaskIndex]->visibleBodies();
-        QSet<uint64_t> selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+        const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+        const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
 
         // if something is selected, it should be visible, too
         foreach (uint64_t bodyID, visible) {
@@ -626,6 +710,70 @@ void TaskProtocolWindow::updateBodyWindow() {
         }
         emit bodySelectionChanged(selected);
     }
+}
+
+void TaskProtocolWindow::disableButtonsWhileUpdating()
+{
+    // If the user triggers several calls to updateBodyWindow() in rapid succession, by
+    // quickly moving between tasks and using controls from the task widget that also change
+    // the loaded bodies, then the bodies loaded by one call may not be fully cleared by the
+    // next call, due to the way bodies are added and removed asynchronously in a background
+    // thread.  The problem seems worst for meshes loaded from a tar archive, and that is the
+    // case handled by this work-around.  The buttons for moving between tasks, and the whole
+    // task widget, will be disabled until signals connected to the onBodyRecycled,
+    // onBodyMeshesAdded abd onBodyMeshLoaded slots indicate that all the old meshes have been
+    // fully deleted and all the new meshes from the archive have been loaded.
+
+    m_bodyRecycledExpected = ZStackDocProxy::GetGeneralMeshList(m_body3dDoc).size();
+    m_bodyRecycledReceived = 0;
+
+    m_bodyMeshesAddedExpected = 0;
+    m_bodyMeshesAddedReceived = 0;
+
+    m_bodyMeshLoadedExpected = 0;
+    m_bodyMeshLoadedReceived = 0;
+
+    const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+    foreach (uint64_t bodyID, visible) {
+        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+            m_bodyMeshesAddedExpected++;
+        } else {
+            return;
+        }
+    }
+
+    const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+    foreach (uint64_t bodyID, selected) {
+      if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+          m_bodyMeshesAddedExpected++;
+      } else {
+          return;
+      }
+    }
+
+    ui->nextButton->setEnabled(false);
+    ui->prevButton->setEnabled(false);
+    if (m_currentTaskWidget) {
+        m_currentTaskWidget->setEnabled(false);
+    }
+    if (m_currentTaskMenuAction) {
+        m_currentTaskMenuAction->setEnabled(false);
+    }
+}
+
+void TaskProtocolWindow::enableButtonsAfterUpdating()
+{
+  if ((m_bodyRecycledExpected == m_bodyRecycledReceived) &&
+      (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
+      (m_bodyMeshLoadedExpected == m_bodyMeshLoadedReceived)) {
+      updateButtonsEnabled();
+      if (m_currentTaskWidget) {
+          m_currentTaskWidget->setEnabled(true);
+      }
+      if (m_currentTaskMenuAction) {
+          m_currentTaskMenuAction->setEnabled(true);
+      }
+  }
 }
 
 /*
@@ -704,8 +852,17 @@ QJsonObject TaskProtocolWindow::loadJsonFromDVID(QString instance, QString key) 
                 ", " + key + "!");
             return emptyResult;
         } else {
-            LINFO() << "Task protocol: json loaded from DVID:" + instance + "," + key;
-            return doc.object();
+          QString msg =
+              "Task protocol: json loaded from DVID:" + instance + "," + key;
+          LINFO() << msg;
+          emit messageGenerated(ZWidgetMessage(msg));
+#if 0
+          //For testing
+          emit messageGenerated(
+              ZWidgetMessage(
+                "test", msg, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
+#endif
+          return doc.object();
         }
 }
 
@@ -755,6 +912,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         }
 
         // this if-else tree will get more awkward with more types...
+        // TODO: Switch to a factory pattern that produces an instance of the appropriate
+        // TaskProtocolTask subclass given the KEY_TASKTYPE value.
 
         // also, need to collect these keys and values better; hard-code this one
         //  for now
@@ -762,6 +921,12 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         if (taskType == "body review") {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
             m_taskList.append(task);
+        } else if (taskType == "body history") {
+          QSharedPointer<TaskProtocolTask> task(new TaskBodyHistory(taskJson.toObject(), m_body3dDoc));
+          m_taskList.append(task);
+        } else if (taskType == "body cleave") {
+          QSharedPointer<TaskProtocolTask> task(new TaskBodyCleave(taskJson.toObject(), m_body3dDoc));
+          m_taskList.append(task);
         } else if (taskType == "split seeds") {
             // I'm not really fond of this task having a different constructor signature, but
             //  neither do I want to pass in both docs to every task just because a few might
@@ -774,6 +939,11 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         } else {
             // unknown task type; log it and move on
             LWARN() << "Task protocol: found unknown task type " << taskType << " in task json; skipping";
+        }
+
+        if (!m_taskList.empty()) {
+          connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
+                  this, SLOT(onBodiesUpdated()));
         }
     }
 
@@ -919,6 +1089,7 @@ void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {
         ui->taskButtonsWidget->hide();
         ui->taskDetailsWidget->hide();
         ui->tasksProgressWidget->hide();
+        updateMenu(false);
     }
 }
 
@@ -927,12 +1098,16 @@ void TaskProtocolWindow::setWindowConfiguration(WindowConfigurations config) {
  * effect: shows error dialog (convenience function)
  */
 void TaskProtocolWindow::showError(QString title, QString message) {
-    QMessageBox errorBox;
-    errorBox.setText(title);
-    errorBox.setInformativeText(message);
-    errorBox.setStandardButtons(QMessageBox::Ok);
-    errorBox.setIcon(QMessageBox::Warning);
-    errorBox.exec();
+//    QMessageBox errorBox;
+//    errorBox.setText(title);
+//    errorBox.setInformativeText(message);
+//    errorBox.setStandardButtons(QMessageBox::Ok);
+//    errorBox.setIcon(QMessageBox::Warning);
+//    errorBox.exec();
+
+    emit messageGenerated(
+        ZWidgetMessage(
+          title, message, neutube::MSG_WARNING, ZWidgetMessage::TARGET_DIALOG));
 }
 
 /*
@@ -946,6 +1121,27 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
+{
+  LDEBUG() << "onBodyMeshesAdded:" << numMeshes;
+
+    m_bodyMeshesAddedReceived++;
+    m_bodyMeshLoadedExpected += numMeshes;
+    enableButtonsAfterUpdating();
+}
+
+void TaskProtocolWindow::onBodyMeshLoaded()
+{
+    m_bodyMeshLoadedReceived++;
+    enableButtonsAfterUpdating();
+}
+
+void TaskProtocolWindow::onBodyRecycled()
+{
+    m_bodyRecycledReceived++;
+    enableButtonsAfterUpdating();
 }
 
 void TaskProtocolWindow::applicationQuitting() {

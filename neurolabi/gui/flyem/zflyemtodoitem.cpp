@@ -6,6 +6,12 @@
 #include "zpainter.h"
 #include "zjsonparser.h"
 #include "flyem/zflyemmisc.h"
+#include "zstring.h"
+
+const char* ZFlyEmToDoItem::ACTION_KEY = "action";
+const char* ZFlyEmToDoItem::ACTION_SPLIT = "to split";
+const char* ZFlyEmToDoItem::ACTION_SPLIT_TAG = "split";
+const char* ZFlyEmToDoItem::ACTION_MERGE = "to merge";
 
 ZFlyEmToDoItem::ZFlyEmToDoItem()
 {
@@ -68,13 +74,13 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
   QColor color = getColor();
   if (!isChecked()) {
     switch (getAction()) {
-    case ZFlyEmToDoItem::TO_DO:
+    case neutube::TO_DO:
       color.setRgb(255, 0, 0, 192);
       break;
-    case ZFlyEmToDoItem::TO_MERGE:
+    case neutube::TO_MERGE:
       color.setRgb(255, 164, 0, 192);
       break;
-    case ZFlyEmToDoItem::TO_SPLIT:
+    case neutube::TO_SPLIT:
       color.setRgb(200, 0, 255, 192);
       break;
     }
@@ -83,33 +89,46 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
   return color;
 }
 
-ZFlyEmToDoItem::EToDoAction ZFlyEmToDoItem::getAction() const
+neutube::EToDoAction ZFlyEmToDoItem::getAction() const
 {
   const char *key = "action"; //coupled with setAction
   std::string value = getProperty<std::string>(key);
-  EToDoAction action = TO_DO;
-  if (value == "to merge") {
-    action = TO_MERGE;
-  } else if (value == "to split") {
-    action = TO_SPLIT;
+  neutube::EToDoAction action = neutube::TO_DO;
+  if (value == ACTION_MERGE) {
+    action = neutube::TO_MERGE;
+  } else if (value == ACTION_SPLIT) {
+    action = neutube::TO_SPLIT;
   }
 
   return action;
 }
 
-void ZFlyEmToDoItem::setAction(EToDoAction action)
+void ZFlyEmToDoItem::setAction(neutube::EToDoAction action)
 {
-  const char *key = "action";
   switch (action) {
-  case TO_DO:
-    removeProperty(key);
+  case neutube::TO_DO:
+    removeProperty(ACTION_KEY);
+    removeActionTag();
     break;
-  case TO_MERGE:
-    addProperty(key, "to merge");
+  case neutube::TO_MERGE:
+    addProperty(ACTION_KEY, ACTION_MERGE);
     break;
-  case TO_SPLIT:
-    addProperty(key, "to split");
+  case neutube::TO_SPLIT:
+    addProperty(ACTION_KEY, ACTION_SPLIT);
+    addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
     break;
+  }
+}
+
+void ZFlyEmToDoItem::removeActionTag()
+{
+  for (std::set<std::string>::iterator iter = m_tagSet.begin();
+       iter != m_tagSet.end(); ) {
+    if (ZString(*iter).startsWith(std::string(ACTION_KEY) + ":")) {
+      iter = m_tagSet.erase(iter);
+    } else {
+      ++iter;
+    }
   }
 }
 
@@ -243,6 +262,11 @@ void ZFlyEmToDoItem::setChecked(bool checked)
   std::string checkedStr = "0";
   if (checked) {
     checkedStr = "1";
+    removeActionTag();
+  } else {
+    if (getProperty<std::string>(ACTION_KEY) == ACTION_SPLIT) {
+      addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
+    }
   }
 
   m_propertyJson.setEntry("checked", checkedStr);

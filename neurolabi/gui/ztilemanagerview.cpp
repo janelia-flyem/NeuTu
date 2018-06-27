@@ -1,8 +1,10 @@
 #include "ztilemanagerview.h"
-#include "zstackdrawable.h"
-#include "ztilemanager.h"
 #include <QScrollBar>
 #include <QDebug>
+
+#include "zstackdrawable.h"
+#include "ztilemanager.h"
+#include "zswctree.h"
 
 ZTileManagerView::ZTileManagerView(QWidget *parent) :
   QGraphicsView(parent)

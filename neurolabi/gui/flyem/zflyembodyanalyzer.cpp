@@ -11,6 +11,8 @@
 #include "swc/zswcresampler.h"
 #include "zgraphcompressor.h"
 #include "zobject3d.h"
+#include "zpoint.h"
+#include "zobject3dscan.h"
 
 using namespace std;
 

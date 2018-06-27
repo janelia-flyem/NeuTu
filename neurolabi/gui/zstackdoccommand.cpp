@@ -20,6 +20,7 @@
 #include "neutubeconfig.h"
 #include "zstring.h"
 #include "zfiletype.h"
+#include "zobject3d.h"
 
 using namespace std;
 
@@ -150,7 +151,7 @@ void ZStackDocCommand::SwcEdit::ChangeSwcCommand::recover()
   m_doc->deprecateTraceMask();
 
   m_doc->processSwcModified();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 void ZStackDocCommand::SwcEdit::ChangeSwcCommand::undo()
@@ -295,7 +296,7 @@ void ZStackDocCommand::SwcEdit::TranslateRoot::undo()
   m_doc->updateVirtualStackSize();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
 }
@@ -361,7 +362,7 @@ void ZStackDocCommand::SwcEdit::Rescale::undo()
   m_doc->updateVirtualStackSize();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
@@ -385,7 +386,7 @@ void ZStackDocCommand::SwcEdit::Rescale::redo()
   m_doc->updateVirtualStackSize();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
 }
@@ -423,7 +424,7 @@ void ZStackDocCommand::SwcEdit::RescaleRadius::undo()
   m_doc->updateVirtualStackSize();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->blockSignals(false);
 
@@ -472,7 +473,7 @@ void ZStackDocCommand::SwcEdit::ReduceNodeNumber::undo()
   m_swcList.clear();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->blockSignals(false);
 
 //  m_doc->notifySwcModified();
@@ -542,6 +543,9 @@ ZStackDocCommand::SwcEdit::AddSwcNode::AddSwcNode(
     m_tree->setStructrualMode(ZSwcTree::STRUCT_CLOSED_CURVE);
     m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
 //    m_tree->setRole(ZStackObjectRole::ROLE_ROI);
+  } else if (m_doc->getTag() == neutube::Document::FLYEM_PROOFREAD) {
+    m_tree->useCosmeticPen(true);
+    m_tree->removeVisualEffect(neutube::display::SwcTree::VE_FULL_SKELETON);
   }
 
   m_tree->setDataFromNode(m_node);
@@ -572,7 +576,7 @@ void ZStackDocCommand::SwcEdit::AddSwcNode::undo()
   m_treeInDoc = false;
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->notifySwcModified();
 }
 
@@ -752,7 +756,7 @@ void ZStackDocCommand::SwcEdit::MergeSwcNode::redo()
       //m_doc->selectedSwcTreeNodes()->clear();
 
       m_doc->processSwcModified();
-      m_doc->notifyObjectModified();
+      m_doc->processObjectModified();
 
       m_doc->deprecateTraceMask();
     }
@@ -802,11 +806,226 @@ void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::redo()
   }
   if (!m_backupSet.empty()) {
     m_doc->processSwcModified();
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
 }
 
 void ZStackDocCommand::SwcEdit::ChangeSwcNodeType::undo()
+{
+  startUndo();
+  recover();
+}
+
+///////////////////////////////////
+ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::ChangeSwcNodePosition(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Change SWC node position"));
+}
+
+ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::~ChangeSwcNodePosition()
+{
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::setNodeOperation(
+    const std::vector<Swc_Tree_Node*> &nodeArray,
+    const std::vector<ZPoint> &newPosition)
+{
+  m_nodeArray.clear();
+  m_newPosition.clear();
+
+  if (!m_nodeArray.empty() && (m_nodeArray.size() == newPosition.size())) {
+    m_nodeArray = nodeArray;
+    m_newPosition = newPosition;
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::redo()
+{
+  for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+    Swc_Tree_Node *tn = m_nodeArray[i];
+    if (SwcTreeNode::center(tn) != m_newPosition[i]) {
+      backup(tn);
+      SwcTreeNode::setPos(tn, m_newPosition[i]);
+    }
+  }
+  if (!m_backupSet.empty()) {
+    m_doc->processSwcModified();
+    m_doc->processObjectModified();
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ChangeSwcNodePosition::undo()
+{
+  startUndo();
+  recover();
+}
+
+//////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::MoveSwcNode::MoveSwcNode(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Move SWC nodes"));
+}
+
+ZStackDocCommand::SwcEdit::MoveSwcNode::~MoveSwcNode()
+{
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::setOffset(const ZPoint &offset)
+{
+  m_offset = offset;
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::redo()
+{
+  if (m_offset.lengthSqure() != 0) {
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      SwcTreeNode::setPos(tn, SwcTreeNode::center(tn) + m_offset);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->processObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::MoveSwcNode::undo()
+{
+  startUndo();
+  recover();
+}
+
+bool ZStackDocCommand::SwcEdit::MoveSwcNode::test()
+{
+  std::cout << "Testing ZStackDocCommand::SwcEdit::MoveSwcNode ..." << std::endl;
+  m_nodeArray.clear();
+  Swc_Tree_Node *tn = SwcTreeNode::makePointer();
+  setOffset(ZPoint(1, 2, 3));
+  m_nodeArray.push_back(tn);
+  redo();
+  SwcTreeNode::print(tn);
+  undo();
+  SwcTreeNode::print(tn);
+  redo();
+  redo();
+  SwcTreeNode::print(tn);
+  undo();
+  SwcTreeNode::print(tn);
+
+  return true;
+}
+
+///////////////////////////////////////////////
+ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::RotateSwcNodeAroundZ(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Rotate SWC nodes around the Z axis"));
+}
+
+ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::~RotateSwcNodeAroundZ()
+{
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::setRotateCenter(
+    double x, double y)
+{
+  m_cx = x;
+  m_cy = y;
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::setRotateAngle(double theta)
+{
+  m_theta = theta;
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::useNodeCentroid()
+{
+  ZPoint center = SwcTreeNode::centroid(m_nodeArray.begin(), m_nodeArray.end());
+  setRotateCenter(center.x(), center.y());
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::redo()
+{
+  if (m_theta != 0) {
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      SwcTreeNode::rotateAroundZ(tn, m_theta, m_cx, m_cy);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->processObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::RotateSwcNodeAroundZ::undo()
+{
+  startUndo();
+  recover();
+}
+
+
+///////////////////////////////////////////
+ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::ScaleSwcNodeAroundZ(
+    ZStackDoc *doc, QUndoCommand *parent) : ChangeSwcCommand(doc, parent)
+{
+  setText(QObject::tr("Scale SWC nodes around the Z axis"));
+}
+
+ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::~ScaleSwcNodeAroundZ()
+{
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::setScale(
+    double sx, double sy)
+{
+  m_scaleX = sx;
+  m_scaleY = sy;
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::addNode(
+    const std::vector<Swc_Tree_Node *> &nodeArray)
+{
+  m_nodeArray.insert(m_nodeArray.end(), nodeArray.begin(), nodeArray.end());
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::redo()
+{
+  if (m_scaleX != 1.0 || m_scaleY != 1.0) {
+    ZPoint center = SwcTreeNode::centroid(m_nodeArray.begin(), m_nodeArray.end());
+    for (size_t i = 0; i < m_nodeArray.size(); ++i) {
+      Swc_Tree_Node *tn = m_nodeArray[i];
+      backup(tn);
+      ZPoint pos = SwcTreeNode::center(tn);
+      pos.setX((pos.x() - center.x()) * m_scaleX + center.x());
+      pos.setY((pos.y() - center.y()) * m_scaleY + center.y());
+
+      SwcTreeNode::setPos(tn, pos);
+    }
+    if (!m_backupSet.empty()) {
+      m_doc->processSwcModified();
+      m_doc->processObjectModified();
+    }
+  }
+}
+
+void ZStackDocCommand::SwcEdit::ScaleSwcNodeAroundZ::undo()
 {
   startUndo();
   recover();
@@ -890,7 +1109,7 @@ void ZStackDocCommand::SwcEdit::ResolveCrossover::redo()
         m_doc->deprecateTraceMask();
 
         m_doc->processSwcModified();
-        m_doc->notifyObjectModified();
+        m_doc->processObjectModified();
       }
     }
   }
@@ -937,7 +1156,7 @@ void ZStackDocCommand::SwcEdit::ExtendSwcNode::undo()
 //  m_doc->notifySwcModified();
 
   m_doc->processSwcModified();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
   m_doc->notifySwcTreeNodeSelectionChanged();
   m_nodeInDoc = false;
@@ -956,7 +1175,7 @@ void ZStackDocCommand::SwcEdit::ExtendSwcNode::redo()
 //  m_doc->notifySwcModified();
 
   m_doc->processSwcModified();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
   m_doc->notifySwcTreeNodeSelectionChanged();
 
   m_nodeInDoc = true;
@@ -1199,7 +1418,7 @@ void ZStackDocCommand::SwcEdit::CompositeCommand::redo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   QUndoCommand::redo();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
@@ -1216,7 +1435,7 @@ void ZStackDocCommand::SwcEdit::CompositeCommand::undo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->blockSignals(false);
 //  m_doc->notifySwcModified();
@@ -1688,7 +1907,7 @@ void ZStackDocCommand::SwcEdit::RemoveEmptyTreePost::undo()
     }
     m_emptyTreeSet.clear();
     m_doc->endObjectModifiedMode();
-    m_doc->notifyObjectModified();
+    m_doc->processObjectModified();
   }
 }
 
@@ -1782,7 +2001,7 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::undo()
   }
 
   doc->endObjectModifiedMode();
-  doc->notifyObjectModified();
+  doc->processObjectModified();
 //  doc->blockSignals(false);
 
 //  notifyObjectChanged(m_selectedObject);
@@ -1800,7 +2019,7 @@ void ZStackDocCommand::ObjectEdit::RemoveSelected::notifyObjectChanged(
     doc->processObjectModified(*iter);
   }
   doc->endObjectModifiedMode();
-  doc->notifyObjectModified();
+  doc->processObjectModified();
 
   /*
   ZStackObjectRole role;
@@ -1946,6 +2165,7 @@ ZStackDocCommand::TubeEdit::AutoTraceAxon::AutoTraceAxon(
   :ZUndoCommand(parent), m_doc(doc)
 {
   setText(QObject::tr("auto trace axon"));
+  UNUSED_PARAMETER(m_doc);
 }
 
 ZStackDocCommand::TubeEdit::AutoTraceAxon::~AutoTraceAxon()
@@ -1953,9 +2173,12 @@ ZStackDocCommand::TubeEdit::AutoTraceAxon::~AutoTraceAxon()
   for (int i=0; i<m_swcList.size(); i++) {
     delete m_swcList[i];
   }
+  qDeleteAll(m_obj3dList);
+  /*
   for (int i=0; i<m_obj3dList.size(); i++) {
     delete m_obj3dList[i];
   }
+  */
   for (int i=0; i<m_connList.size(); i++) {
     delete m_connList[i];
   }
@@ -2128,7 +2351,7 @@ void ZStackDocCommand::TubeEdit::CutSegment::undo()
 //  m_doc->notifyChainModified();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 
@@ -2158,7 +2381,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::redo()
   }
   m_doc->getSelected(ZStackObject::TYPE_LOCSEG_CHAIN).clear();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
   //m_doc->selectedChains()->clear();
 }
 
@@ -2181,7 +2404,7 @@ void ZStackDocCommand::TubeEdit::BreakChain::undo()
 //  m_doc->notifyChainModified();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 ZStackDocCommand::TubeEdit::RemoveSmall::RemoveSmall(
@@ -2211,7 +2434,7 @@ void ZStackDocCommand::TubeEdit::RemoveSmall::undo()
   m_chainList.clear();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 void ZStackDocCommand::TubeEdit::RemoveSmall::redo()
@@ -2229,7 +2452,7 @@ void ZStackDocCommand::TubeEdit::RemoveSmall::redo()
   }
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  if (!m_chainList.empty())
 //    m_doc->notifyChainModified();
 }
@@ -2259,7 +2482,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::redo()
   }
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  if (!m_chainList.empty()) {
 //    m_doc->notifyChainModified();
@@ -2280,7 +2503,7 @@ void ZStackDocCommand::TubeEdit::RemoveSelected::undo()
   m_chainList.clear();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 }
 
 ZStackDocCommand::ObjectEdit::MoveSelected::MoveSelected(
@@ -2333,7 +2556,7 @@ void ZStackDocCommand::ObjectEdit::AddObject::redo()
   m_doc->addObject(m_obj, false);
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
   m_isInDoc = true;
 }
@@ -2352,7 +2575,7 @@ void ZStackDocCommand::ObjectEdit::AddObject::undo()
   m_uniqueObjectList.clear();
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
   m_isInDoc = false;
 }
@@ -2417,12 +2640,13 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::undo()
   m_doc->blockSignals(true);
   m_doc->deselectAllObject();
   m_doc->setPunctumSelected(m_punctaList.begin(), m_punctaList.end(), true);
-  m_doc->setSwcSelected(m_swcList.begin(), m_swcList.end(), true);
+  m_doc->setSwcSelected(m_swcList, true);
+  //  m_doc->setSwcSelected(m_swcList.begin(), m_swcList.end(), true);
   m_doc->setSwcTreeNodeSelected(m_swcNodeList.begin(), m_swcNodeList.end(), true);
   m_doc->blockSignals(false);
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  if (m_swcMoved)
 //    m_doc->notifySwcModified();
@@ -2480,7 +2704,7 @@ void ZStackDocCommand::ObjectEdit::MoveSelected::redo()
   }
 
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  if (m_swcMoved)
 //    m_doc->notifySwcModified();
@@ -2570,7 +2794,7 @@ void ZStackDocCommand::StrokeEdit::CompositeCommand::redo()
   m_doc->endObjectModifiedMode();
 //  m_doc->blockSignals(false);
 
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 
 //  m_doc->notifyStrokeModified();
 }
@@ -2584,7 +2808,7 @@ void ZStackDocCommand::StrokeEdit::CompositeCommand::undo()
   m_doc->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
   QUndoCommand::undo();
   m_doc->endObjectModifiedMode();
-  m_doc->notifyObjectModified();
+  m_doc->processObjectModified();
 //  m_doc->blockSignals(false);
 //  m_doc->notifyStrokeModified();
 }

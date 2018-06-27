@@ -11,6 +11,7 @@
 #include <QStringList>
 #include <QUrl>
 #include <QStatusBar>
+
 #include "tz_image_lib_defs.h"
 #include "plotsettings.h"
 #include "zinteractivecontext.h"
@@ -25,7 +26,6 @@
 #include "zsharedpointer.h"
 #include "zstackviewparam.h"
 #include "zmessageprocessor.h"
-//#include "z3dwindow.h"
 
 class ZStackView;
 class ZStackPresenter;
@@ -122,8 +122,8 @@ public:
   //void exportChainConnectionFeat(const QString &filePath);
   void exportObjectMask(const QString &filePath);
   void exportObjectMask(neutube::EColor color, const QString &filePath);
-  ZStack* getObjectMask();
-  ZStack* getObjectMask(neutube::EColor color);
+//  ZStack* getObjectMask();
+//  ZStack* getObjectMask(neutube::EColor color);
   ZStack* getStrokeMask();
   ZStack* getStrokeMask(neutube::EColor color);
   ZTileManager* getTileManager() {return m_tile;}
@@ -262,6 +262,8 @@ public:
   void createMainWindowActions();
   virtual void processKeyEvent(QKeyEvent *event);
 
+  Z3DWindow* viewSegmentationMesh();
+
 public:
   virtual void stressTest();
 
@@ -269,8 +271,6 @@ public slots:
   void setLocsegChainInfo(ZLocsegChain *chain, QString prefix = "",
                           QString suffix = "");
   void changeWindowTitle(bool clean);
-  //void detach3DWindow();
-//  void close3DWindow();
   void setupDisplay();
   void zoomToSelectedSwcNodes();
   void notifyUser(const QString &message);
@@ -311,15 +311,10 @@ protected:
   void dropDocument(ZSharedPointer<ZStackDoc> doc);
   void updateDocument();
 
-  typedef bool FConnectAction(
-      const QObject*, const char *,
-      const QObject *, const char *);
-
-  static bool connectFunc(const QObject* obj1, const char *signal,
-                          const QObject *obj2, const char *slot);
-
-  void updateDocSignalSlot(FConnectAction connectAction);
-  void updateSignalSlot(FConnectAction connectAction);
+  template <typename T>
+  void updateDocSignalSlot(T connectAction);
+  template <typename T>
+  void updateSignalSlot(T connectAction);
 
 
 private:

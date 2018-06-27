@@ -9,6 +9,8 @@
 #include "zdebug.h"
 #include "zintcuboid.h"
 #include "zstackfactory.h"
+#include "zstackutil.h"
+#include "zstackarray.h"
 
 #ifdef _USE_GTEST_
 TEST(ZStack, Basic)
@@ -415,6 +417,46 @@ TEST(ZStack, equal)
   stack4.load(GET_TEST_DATA_DIR + "/benchmark/block.tif");
 
   ASSERT_TRUE(stack4.equals(stack4));
+}
+
+TEST(ZStackUtil, Basic)
+{
+  ZStack stack1;
+  stack1.setDsIntv(1, 1, 1);
+
+  ASSERT_EQ(8, zstack::GetDsVolume(stack1));
+
+  ZStack stack2;
+  ASSERT_EQ(1, zstack::GetDsVolume(stack2));
+
+  ASSERT_TRUE(zstack::DsIntvGreaterThan()(stack1, stack2));
+
+  stack2.setDsIntv(2, 1, 1);
+  ASSERT_EQ(12, zstack::GetDsVolume(stack2));
+  ASSERT_FALSE(zstack::DsIntvGreaterThan()(stack1, stack2));
+}
+
+TEST(ZStackArray, Basic)
+{
+  ZStackArray sa;
+
+  ZStack *stack1 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+  stack1->setDsIntv(1, 1, 1);
+
+  ZStack *stack2 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+  stack1->setDsIntv(0, 1, 1);
+
+  ZStack *stack3 = ZStackFactory::MakeVirtualStack(5, 5, 5);
+  stack1->setDsIntv(1, 0, 0);
+
+  sa.append(stack1);
+  sa.append(stack2);
+  sa.append(stack3);
+
+  sa.sort(zstack::DsIntvGreaterThan());
+  ASSERT_EQ(stack3, sa[0].get());
+  ASSERT_EQ(stack2, sa[1].get());
+  ASSERT_EQ(stack1, sa[2].get());
 }
 
 #endif

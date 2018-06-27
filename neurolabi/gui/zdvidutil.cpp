@@ -192,7 +192,7 @@ ZSharedPointer<lowtis::ImageService> ZDvid::MakeLowtisService(const ZDvidTarget 
   config.username = neutube::GetCurrentUserName();
   config.dvid_server = target.getAddressWithPort();
   config.dvid_uuid = target.getUuid();
-  config.datatypename = target.getLabelBlockName();
+  config.datatypename = target.getSegmentationName();
 
 
   return ZSharedPointer<lowtis::ImageService>(new lowtis::ImageService(config));
@@ -204,7 +204,7 @@ lowtis::ImageService* ZDvid::MakeLowtisServicePtr(const ZDvidTarget &target)
   config.username = neutube::GetCurrentUserName();
   config.dvid_server = target.getAddressWithPort();
   config.dvid_uuid = target.getUuid();
-  config.datatypename = target.getLabelBlockName();
+  config.datatypename = target.getSegmentationName();
 
 
   return new lowtis::ImageService(config);
@@ -420,6 +420,14 @@ ZDvid::EDataType ZDvid::GetDataTypeFromInfo(const ZJsonObject &obj)
   return type;
 }
 
+bool ZDvid::IsValidDvidUrl(const std::string &url)
+{
+  ZDvidTarget target;
+  target.setFromUrl(url);
+
+  return target.isValid();
+}
+
 ZDvidTarget ZDvid::MakeTargetFromUrl(const std::string path)
 {
   ZDvidTarget target;
@@ -448,6 +456,14 @@ ZDvidTarget ZDvid::MakeTargetFromUrl(const std::string path)
 #endif
 }
 
+
+std::string ZDvid::GetBodyIdTag(uint64_t bodyId)
+{
+  std::ostringstream stream;
+  stream << "body:" << bodyId;
+
+  return stream.str();
+}
 
 
 

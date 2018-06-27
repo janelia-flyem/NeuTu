@@ -17,7 +17,7 @@ ZFlyEmBodyListModel* ZFlyEmBodyListView::getModel() const
 
 void ZFlyEmBodyListView::processSelectionChange()
 {
-  emit bodySelectionChanged(getSelectedSet());
+  emit bodyItemSelectionChanged(getSelectedSet());
 }
 
 QSet<uint64_t> ZFlyEmBodyListView::getSelectedSet() const
@@ -30,7 +30,10 @@ QSet<uint64_t> ZFlyEmBodyListView::getSelectedSet() const
 
   QModelIndexList indexes = selModel->selectedIndexes();
   foreach (const QModelIndex &index, indexes) {
-    selectedSet.insert(model->getBodyId(index));
+    uint64_t bodyId = model->getBodyId(index);
+    if (bodyId > 0) {
+      selectedSet.insert(bodyId);
+    }
   }
 
   return selectedSet;
@@ -57,7 +60,7 @@ void ZFlyEmBodyListView::setIndexSelection(
     }
   }
 
-  if (silent) {
+  if (!silent) {
     processSelectionChange();
   }
 }

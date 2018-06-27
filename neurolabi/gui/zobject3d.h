@@ -13,8 +13,6 @@
 #include "tz_object_3d.h"
 #include "zstackobject.h"
 #include "tz_fmatrix.h"
-#include "zpoint.h"
-#include "zintpoint.h"
 #include "tz_stack_utils.h"
 
 #ifndef INT_VOXEL_TYPE
@@ -24,6 +22,8 @@
 class ZStack;
 class ZObject3dArray;
 class ZJsonObject;
+class ZPoint;
+class ZIntPoint;
 
 /*!
  * \brief The class of a 3D object
@@ -206,6 +206,8 @@ public:
    * \brief Upsample an object
    */
   void upSample(int xIntv, int yIntv, int zIntv);
+
+  void downsample(int xIntv, int yIntv, int zIntv);
 
   ZJsonObject toJsonObject() const;
   void loadJsonObject(const ZJsonObject &jsonObj);

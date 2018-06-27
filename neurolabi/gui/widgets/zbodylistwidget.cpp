@@ -17,7 +17,7 @@ ZBodyListWidget::ZBodyListWidget(QWidget *parent) :
 
   connect(ui->listView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
           ui->listView, SLOT(processSelectionChange()));
-  connect(ui->listView, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
+  connect(ui->listView, SIGNAL(bodyItemSelectionChanged(QSet<uint64_t>)),
           this, SLOT(processBodySelectionChange(QSet<uint64_t>)));
   connect(ui->addPushButton, SIGNAL(clicked()), this, SLOT(addString()));
   connect(ui->deletePushButton, SIGNAL(clicked()),
@@ -74,28 +74,34 @@ void ZBodyListWidget::removeBody(uint64_t bodyId)
   model->removeBody(bodyId);
 }
 
+void ZBodyListWidget::addBody(uint64_t bodyId)
+{
+  ZFlyEmBodyListModel *model = getModel();
+  model->addBody(bodyId);
+}
+
 void ZBodyListWidget::processBodySelectionChange(
     const QSet<uint64_t> &selectedSet)
 {
-  emit bodySelectionChanged(selectedSet);
+  emit bodyItemSelectionChanged(selectedSet);
 }
 
-void ZBodyListWidget::selectBody(uint64_t bodyId)
+void ZBodyListWidget::selectBodyItem(uint64_t bodyId)
 {
   ui->listView->setBodySelection(bodyId, true);
 }
 
-void ZBodyListWidget::deselectBody(uint64_t bodyId)
+void ZBodyListWidget::deselectBodyItem(uint64_t bodyId)
 {
   ui->listView->setBodySelection(bodyId, false);
 }
 
-void ZBodyListWidget::selectBodySliently(uint64_t bodyId)
+void ZBodyListWidget::selectBodyItemSliently(uint64_t bodyId)
 {
   ui->listView->setBodySelectionSliently(bodyId, true);
 }
 
-void ZBodyListWidget::deselectBodySliently(uint64_t bodyId)
+void ZBodyListWidget::deselectBodyItemSliently(uint64_t bodyId)
 {
   ui->listView->setBodySelectionSliently(bodyId, false);
 }

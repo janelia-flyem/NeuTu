@@ -135,7 +135,7 @@ void ZFlyEmBodyMergeProject::test()
 #if 1
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "b6bc", 8500);
-  target.setLabelBlockName("labels");
+  target.setSegmentationName("labels");
   setDvidTarget(target);
 
   uint64_t targetId = 12532906;
@@ -548,6 +548,9 @@ void ZFlyEmBodyMergeProject::uploadResultFunc(bool mergingToLargest)
             }
 #endif
           }
+
+          //Temporary fix for mesh update, which should be moved the remote service
+          m_writer.deleteMesh(newTargetId);
 
           QList<ZDvidLabelSlice*> labelList =
               getDocument()->getDvidLabelSliceList();

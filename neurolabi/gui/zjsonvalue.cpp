@@ -284,9 +284,14 @@ std::string ZJsonValue::toString() const
 
 std::string ZJsonValue::dumpString(int indent) const
 {
+  return dumpJanssonString(JSON_INDENT(indent));
+}
+
+std::string ZJsonValue::dumpJanssonString(size_t flags) const
+{
   string str;
   if (!isEmpty()) {
-    char *cstr = json_dumps(getValue(), JSON_INDENT(indent));
+    char *cstr = json_dumps(getValue(), flags);
     str = cstr;
     free(cstr);
   }
@@ -338,4 +343,13 @@ void ZJsonValue::denull()
   if (m_data == NULL) {
     m_data = C_Json::makeJsonNull();
   }
+}
+
+int ZJsonValue::getRefCount() const
+{
+  if (m_data == NULL) {
+    return 0;
+  }
+
+  return m_data->refcount;
 }

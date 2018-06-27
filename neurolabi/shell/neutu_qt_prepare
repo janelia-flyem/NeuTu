@@ -14,6 +14,9 @@ ENV_NAME=neutu-env
 ./setup_conda_for_neutu $install_dir $ENV_NAME
 
 CONDA_DIR=$install_dir/miniconda
+cd ..
+./update_library --force-update CONDA_ENV="${CONDA_DIR}/envs/$ENV_NAME"
+
 red=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
@@ -33,28 +36,28 @@ echo "      Qt version: the one added in the last step"
 echo ""
 echo "2. Build settings"
 echo "  * Change the kit to the one just added."
-echo "  * qmake build configuration: ${red}Debug${reset}"
+echo "  * qmake build configuration: ${green}Debug${reset}"
 echo "  * Additional arguments for qmake:" 
-echo "    ${red}CONFIG+=flyem CONDA_ENV=${CONDA_DIR}/envs/$ENV_NAME${reset}"
+echo "    ${green}CONFIG+=flyem CONDA_ENV=${CONDA_DIR}/envs/$ENV_NAME${reset}"
 echo "  * 1st make step arguments:"
-echo "    ${red}neurolabi${reset}"
+echo "    ${green}neurolabi${reset}"
 echo "  * 2nd make step: no/default argument. You can add -j to use multiple processors."
 
 if [ `uname` = 'Darwin' ]
 then
   echo "  * Custom Process Step: "
-  echo "    Command: ${red}cp${reset}"
-  echo "    Arguments: ${red}%{sourceDir}/config_flyem.xml %{buildDir}/neutu_d.app/Contents/MacOS/config.xml${reset}"
+  echo "    Command: ${green}cp${reset}"
+  echo "    Arguments: ${green}%{sourceDir}/config_flyem.xml %{buildDir}/neutu_d.app/Contents/MacOS/config.xml${reset}"
   echo "  * Custom Process Step: "
-  echo "    Command: ${red}cp${reset}"
-  echo "    Arguments: ${red}-r %{sourceDir}/../json %{buildDir}/neutu_d.app/Contents/MacOS/${reset}"
+  echo "    Command: ${green}cp${reset}"
+  echo "    Arguments: ${green}-r %{sourceDir}/../json %{buildDir}/neutu_d.app/Contents/MacOS/${reset}"
 else
   echo "  * Custom Process Step: "
-  echo "    Command: ${red}cp${reset}"
-  echo "    Arguments: ${red}%{sourceDir}/config_flyem.xml %{buildDir}/config.xml${reset}"
+  echo "    Command: ${green}cp${reset}"
+  echo "    Arguments: ${green}%{sourceDir}/config_flyem.xml %{buildDir}/config.xml${reset}"
   echo "  * Custom Process Step: "
-  echo "    Command: ${red}cp${reset}"
-  echo "    Arguments: ${red}-r %{sourceDir}/../json %{buildDir}/${reset}"
+  echo "    Command: ${green}cp${reset}"
+  echo "    Arguments: ${green}-r %{sourceDir}/../json %{buildDir}/${reset}"
 fi
 echo ""
 echo "============================================================="

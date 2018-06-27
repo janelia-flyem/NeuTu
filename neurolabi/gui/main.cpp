@@ -24,6 +24,8 @@
 #include "zneurontracerconfig.h"
 #include "sandbox/zsandboxproject.h"
 #include "sandbox/zsandbox.h"
+#include "flyem/zmainwindowcontroller.h"
+#include "flyem/zglobaldvidrepo.h"
 
 #if 0
 #ifdef _QT5_
@@ -68,6 +70,10 @@ void myMessageOutput(QtMsgType type, const char *msg)
 }
 #endif    // qt version > 5.0.0
 #endif
+
+namespace neutube {
+static std::string UserName;
+}
 
 static void syncLogDir(const std::string &srcDir, const std::string &destDir)
 {
@@ -126,6 +132,7 @@ static void LoadFlyEmConfig(
 
   GET_FLYEM_CONFIG.setConfigPath(flyemConfigPath.toStdString());
   GET_FLYEM_CONFIG.loadConfig();
+  GET_FLYEM_CONFIG.loadUserSettings();
 
   if (usingConfig) {
 #ifdef _DEBUG_
@@ -156,6 +163,46 @@ static void LoadFlyEmConfig(
     }
   }
 #endif
+}
+
+static void InitLog()
+{
+  // init the logging mechanism
+  QsLogging::Logger& logger = QsLogging::Logger::instance();
+  const QString sLogPath(
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
+  const QString traceLogPath(
+        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_TRACE).c_str());
+
+#ifdef _FLYEM_
+  int maxLogCount = 100;
+#else
+  int maxLogCount = 10;
+#endif
+
+  QsLogging::DestinationPtr fileDestination(
+        QsLogging::DestinationFactory::MakeFileDestination(
+          sLogPath, QsLogging::EnableLogRotation,
+          QsLogging::MaxSizeBytes(5e7), QsLogging::MaxOldLogCount(maxLogCount)));
+  QsLogging::DestinationPtr traceFileDestination(
+        QsLogging::DestinationFactory::MakeFileDestination(
+          traceLogPath, QsLogging::EnableLogRotation,
+          QsLogging::MaxSizeBytes(2e7), QsLogging::MaxOldLogCount(10),
+          QsLogging::TraceLevel));
+  QsLogging::DestinationPtr debugDestination(
+        QsLogging::DestinationFactory::MakeDebugOutputDestination());
+  logger.addDestination(debugDestination);
+  logger.addDestination(traceFileDestination);
+  logger.addDestination(fileDestination);
+#if defined _DEBUG_
+  logger.setLoggingLevel(QsLogging::DebugLevel);
+#else
+  logger.setLoggingLevel(QsLogging::InfoLevel);
+#endif
+
+  if (NeutubeConfig::GetVerboseLevel() >= 5) {
+    logger.setLoggingLevel(QsLogging::TraceLevel);
+  }
 }
 
 #ifdef _CLI_VERSION
@@ -194,6 +241,19 @@ int main(int argc, char *argv[])
   QString configPath;
   QStringList fileList;
 
+  std::string userName;
+  if (argc > 1) {
+    if (QString(argv[1]).startsWith("user:")) {
+      userName = std::string(argv[1]).substr(5);
+//      std::cout << userName << std::endl;
+//      return 1;
+    }
+  }
+  if (userName.empty()) {
+    userName = qgetenv("USER").toStdString();
+  }
+  NeutubeConfig::getInstance().init(userName);
+
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
@@ -215,6 +275,8 @@ int main(int argc, char *argv[])
       config.setApplicationDir(appDir);
       LoadFlyEmConfig("", config, false);
 #endif
+
+      InitLog();
 
       ZCommandLine cmd;
       return cmd.run(argc, argv);
@@ -282,15 +344,14 @@ int main(int argc, char *argv[])
 
 #ifdef _FLYEM_
   LoadFlyEmConfig(configPath, config, true);
+
+  ZGlobalDvidRepo::GetInstance().init();
 #endif
 
   if (!runCommandLine) { //Command line mode takes care of configuration independently
+#if !defined(_FLYEM_)
     ZNeuronTracerConfig &tracingConfig = ZNeuronTracerConfig::getInstance();
     tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
-
-    //Sync log files
-    syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
-               NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
 
     if (GET_APPLICATION_NAME == "Biocytin") {
       tracingConfig.load(
@@ -298,6 +359,10 @@ int main(int argc, char *argv[])
     } else {
       tracingConfig.load(config.getApplicatinDir() + "/json/trace_config.json");
     }
+#endif
+    //Sync log files
+    syncLogDir(NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DEST_DIR),
+               NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_DIR));
   }
 
 #ifdef _DEBUG_
@@ -375,8 +440,10 @@ int main(int argc, char *argv[])
     RECORD_INFORMATION("Initializing 3D ...");
 #ifdef _NEU3_
     Neu3Window *mainWin = new Neu3Window();
+
     if (!mainWin->loadDvidTarget()) {
-      delete mainWin;
+      mainWin->close();
+//      delete mainWin;
       mainWin = NULL;
     }
 #else
@@ -403,11 +470,15 @@ int main(int argc, char *argv[])
     int result = 1;
 
     if (mainWin != NULL) {
-#if defined(_FLYEM_) && !defined(_DEBUG_) && !defined(_NEU3_)
-      mainWin->startProofread();
+#if defined(_FLYEM_) && !defined(_NEU3_)
+#  if defined(_DEBUG_)
+      ZMainWindowController::StartTestTask(mainWin);
+#  else
+      ZMainWindowController::StartTestTask(mainWin->startProofread());
+#  endif
 #endif
 
-#if defined(_NEU3_)
+#if defined(_NEU3_2)
       mainWin->show();
       mainWin->initialize();
       mainWin->raise();
@@ -441,16 +512,6 @@ int main(int argc, char *argv[])
     /********* for debugging *************/
 
 #ifndef QT_NO_DEBUG
-    /*
-    std::cout << "Debugging ..." << std::endl;
-    ZCurve curve;
-    double *array = new double[10];
-    for (int i = 0; i < 10; i++) {
-      array[i] = -i * i;
-    }
-    curve.loadArray(array, 10);
-    std::cout << curve.minY() << std::endl;
-    */
     if (unitTest) {
       ZTest::RunUnitTest(argc, argv);
     }
