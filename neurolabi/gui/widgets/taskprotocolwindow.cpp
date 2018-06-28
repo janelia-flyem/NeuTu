@@ -420,7 +420,7 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
     //  we go to "show completed", advance and show something
     if (ui->showCompletedCheckBox->isChecked() &&
         m_currentTaskIndex < 0) {
-        m_currentTaskIndex = 0;
+        m_currentTaskIndex = getFirst(true);
         updateCurrentTaskLabel();
         updateBodyWindow();
         updateLabel();
@@ -565,7 +565,9 @@ int TaskProtocolWindow::getPrevIndex(int currentIndex) const
     index--;
     if (index < 0 && currentIndex >= 0) {
       index = m_taskList.size() - 1;
-    } else if (index < 0 || index >= m_taskList.size() || index == currentIndex) {
+    } else if (index == currentIndex) {
+      break;
+    } else if (index < 0 || index >= m_taskList.size()) {
       index = -1;
       break;
     }
@@ -582,7 +584,9 @@ int TaskProtocolWindow::getNextIndex(int currentIndex) const
     index++;
     if (index == m_taskList.size() && currentIndex >= 0) {
       index = 0;
-    } else if (index < 0 || index >= m_taskList.size() || index == currentIndex) {
+    } else if (index == currentIndex) {
+      break;
+    } else if (index <= 0 || index >= m_taskList.size()) {
       index = -1;
       break;
     }
