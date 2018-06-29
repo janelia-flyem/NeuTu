@@ -15,7 +15,7 @@ public:
     ~ZDvidTargetProviderDialog();
 
     virtual ZDvidTarget& getDvidTarget() = 0;
-
+    virtual const ZDvidTarget& getDvidTarget(const std::string &name) const = 0;
 };
 
 #endif // ZDVIDTARGETPROVIDERDIALOG_H

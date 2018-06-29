@@ -23,6 +23,17 @@
 #include "dialogs/zdviddialog.h"
 #include "neutubeconfig.h"
 
+/*
+ * this class is a drop-in replacement for ZDvidDialog; this version lets you
+ * browse branches in a DVID repo and have default data instance names filled in;
+ * in principle, you wouldn't need to know much of anything
+ *
+ * ZDialogFactory::makeDvidDialog() has a switch for indicating whether you want
+ * the original or this one
+ *
+ * this dialog does delegate to the original dialog for some functions--it's not
+ * fully indepedent
+ */
 DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     ZDvidTargetProviderDialog(parent),
     m_datasetReply(NULL),
@@ -441,7 +452,7 @@ void DvidBranchDialog::loadNode(QString branchName) {
 
     // should make these keys constants?
     if (defaults.contains("segmentation")) {
-        ui->labelsBox->setText(defaults["segmentation"].toString());
+        ui->segmentationBox->setText(defaults["segmentation"].toString());
     }
     if (defaults.contains("grayscale")) {
         ui->grayscaleBox->setText(defaults["grayscale"].toString());
@@ -475,7 +486,7 @@ ZDvidTarget &DvidBranchDialog::getDvidTarget() {
 
     m_dvidTarget.setComment(ui->commentBox->text().toStdString());
 
-    m_dvidTarget.setLabelBlockName(ui->labelsBox->text().toStdString());
+    m_dvidTarget.setSegmentationName(ui->segmentationBox->text().toStdString());
     m_dvidTarget.setGrayScaleName(ui->grayscaleBox->text().toStdString());
     m_dvidTarget.setSynapseName(ui->synapsesBox->text().toStdString());
 
@@ -514,6 +525,16 @@ ZDvidTarget &DvidBranchDialog::getDvidTarget() {
 }
 
 /*
+ * this method gets a predefined constant target from the old dialog
+ */
+const ZDvidTarget& DvidBranchDialog::getDvidTarget(const std::string &name) const {
+    ZDvidDialog * dialog = new ZDvidDialog(NULL);
+    const ZDvidTarget &target = dialog->getDvidTarget(name);
+    delete dialog;
+    return target;
+}
+
+/*
  * clear the info in the third column of the UI
  */
 void DvidBranchDialog::clearNode() {
@@ -523,7 +544,7 @@ void DvidBranchDialog::clearNode() {
 
     ui->commentBox->clear();
 
-    ui->labelsBox->clear();
+    ui->segmentationBox->clear();
     ui->grayscaleBox->clear();
     ui->synapsesBox->clear();
 
@@ -565,7 +586,7 @@ void DvidBranchDialog::launchOldDialog() {
 
         ui->commentBox->setText(QString::fromStdString(target.getComment()));
 
-        ui->labelsBox->setText(QString::fromStdString(target.getLabelBlockName()));
+        ui->segmentationBox->setText(QString::fromStdString(target.getSegmentationName()));
         ui->grayscaleBox->setText(QString::fromStdString(target.getGrayScaleName()));
         ui->synapsesBox->setText(QString::fromStdString(target.getSynapseName()));
 
