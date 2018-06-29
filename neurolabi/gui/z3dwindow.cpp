@@ -4520,6 +4520,11 @@ void Z3DWindow::gotoPosition(const ZCuboid& bound)
   m_view->gotoPosition(bd);
 }
 
+void Z3DWindow::gotoPosition(const ZPoint &position, double radius)
+{
+  m_view->gotoPosition(position.x(), position.y(), position.z(), radius);
+}
+
 bool Z3DWindow::isProjectedInRectRoi(const ZIntPoint &pt) const
 {
   QPointF screenPos = m_view->getScreenProjection(
