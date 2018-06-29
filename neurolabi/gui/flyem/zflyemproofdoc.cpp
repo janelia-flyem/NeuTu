@@ -833,9 +833,25 @@ bool ZFlyEmProofDoc::isDataValid(const std::string &data) const
   return ZDvid::IsDataValid(data, getDvidTarget(), m_infoJson, m_versionDag);
 }
 
+namespace {
+  static bool emitBodySelectionMessage = true;
+}
+
+void ZFlyEmProofDoc::enableBodySelectionMessage(bool enable)
+{
+  emitBodySelectionMessage = enable;
+}
+
+bool ZFlyEmProofDoc::bodySelectionMessageEnabled()
+{
+  return emitBodySelectionMessage;
+}
+
 void ZFlyEmProofDoc::notifyBodySelectionChanged()
 {
-  emit messageGenerated(ZWidgetMessage(getBodySelectionMessage()));
+  if (emitBodySelectionMessage) {
+    emit messageGenerated(ZWidgetMessage(getBodySelectionMessage()));
+  }
   emit bodySelectionChanged();
 }
 
