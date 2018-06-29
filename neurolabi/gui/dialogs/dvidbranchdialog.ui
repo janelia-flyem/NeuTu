@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>900</width>
-    <height>781</height>
+    <height>838</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -191,12 +191,12 @@
           <item>
            <widget class="QLabel" name="label">
             <property name="text">
-             <string>Segmentation/label block:</string>
+             <string>Segmentation:</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="labelsBox"/>
+           <widget class="QLineEdit" name="segmentationBox"/>
           </item>
          </layout>
         </item>

@@ -25,6 +25,7 @@ public:
     ~DvidBranchDialog();
 
     ZDvidTarget& getDvidTarget();
+    const ZDvidTarget& getDvidTarget(const std::string &name) const;
 
 private slots:
     void onRepoClicked(QModelIndex modelIndex);
