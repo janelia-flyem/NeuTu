@@ -46,9 +46,13 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     m_networkManager = new QNetworkAccessManager(this);
 
     // UI configuration
+    // placeholder text for various entry fields:
     ui->todoBox->setPlaceholderText("default");
     ui->bodyLabelBox->setPlaceholderText("default");
     ui->ROIBox->setPlaceholderText("none");
+    ui->UUIDBox->setPlaceholderText("at least 4 characters");
+    ui->grayscaleUUIDBox->setPlaceholderText("at least 4 characters");
+    ui->tileUUIDBox->setPlaceholderText("at least 4 characters");
 
     // UI connections
     connect(ui->repoListView, SIGNAL(clicked(QModelIndex)), this, SLOT(onRepoClicked(QModelIndex)));
