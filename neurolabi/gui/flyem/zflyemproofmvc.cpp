@@ -531,8 +531,8 @@ void ZFlyEmProofMvc::exportNeuronMeshScreenshot(
 
   ZFlyEmBody3dDoc *doc =
       qobject_cast<ZFlyEmBody3dDoc*>(m_meshWindow->getDocument());
-  int oldMaxResLevel = doc->getMaxResLevel();
-  doc->setMaxResLevel(0);
+  int oldMaxResLevel = doc->getMaxDsLevel();
+  doc->setMaxDsLevel(0);
 
   std::vector<uint64_t> skippedBodyIdArray;
   for (std::vector<uint64_t>::const_iterator iter = bodyIdArray.begin();
@@ -568,7 +568,7 @@ void ZFlyEmProofMvc::exportNeuronMeshScreenshot(
       skippedBodyIdArray.push_back(bodyId);
     }
   }
-  doc->setMaxResLevel(oldMaxResLevel);
+  doc->setMaxDsLevel(oldMaxResLevel);
 
   emit messageGenerated(
         ZWidgetMessage(
@@ -759,7 +759,8 @@ void ZFlyEmProofMvc::prepareBodyWindowSignalSlot(
 
 void ZFlyEmProofMvc::makeCoarseBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_COARSE);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_SPHERE);
+  doc->useCoarseOnly();
   m_coarseBodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_coarseBodyWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
   doc->showTodo(m_coarseBodyWindow->isLayerVisible(neutube3d::LAYER_TODO));
@@ -788,7 +789,7 @@ void ZFlyEmProofMvc::makeCoarseBodyWindow()
 
 void ZFlyEmProofMvc::makeBodyWindow()
 {
-  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_FULL);
+  ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_SPHERE);
   m_bodyWindow = m_bodyWindowFactory->make3DWindow(doc);
   doc->showSynapse(m_bodyWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
   doc->showTodo(m_bodyWindow->isLayerVisible(neutube3d::LAYER_TODO));
@@ -945,6 +946,7 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
 Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_MESH);
+  doc->useCoarseOnly(); //for testing
 
 #ifdef _DEBUG_2
   doc->setMaxResLevel(0);

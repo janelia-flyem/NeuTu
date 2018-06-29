@@ -86,6 +86,8 @@ void ZFlyEmProofDoc::init()
   initAutoSave();
 
   connectSignalSlot();
+
+  startWorkThread();
 }
 
 void ZFlyEmProofDoc::initTimer()

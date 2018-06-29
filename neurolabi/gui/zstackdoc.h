@@ -1355,6 +1355,7 @@ protected:
   void addTask(ZTask *task);
   void addTaskSlot(ZTask *task);
   void endWorkThread();
+  void startWorkThread();
 
 private:
   void init();

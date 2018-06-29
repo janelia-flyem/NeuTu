@@ -293,6 +293,7 @@
 #include "zmenuconfig.h"
 #include "flyem/zglobaldvidrepo.h"
 #include  "dvid/zdvidbodyhelper.h"
+#include "zmeshutils.h"
 
 #include "test/ztestall.h"
 
@@ -24689,7 +24690,7 @@ void ZTest::test(MainWindow *host)
    std::cout << "#vertices: " << mesh.numVertices() << std::endl;
    std::cout << "#Indices: " << mesh.indices().size() << std::endl;
 //   ZDebugPrintArrayG(mesh.indices(), 0, 36);
-   mesh.save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+
 #endif
 
 #if 0
@@ -24708,7 +24709,9 @@ void ZTest::test(MainWindow *host)
   std::cout << "#vertices: " << mesh->numVertices() << std::endl;
   std::cout << "#Indices: " << mesh->indices().size() << std::endl;
 
-  mesh->save((GET_TEST_DATA_DIR + "/test.obj").c_str());
+//  mesh->save((GET_TEST_DATA_DIR + "/_test.obj").c_str());
+
+
   delete mesh;
 #endif
 
@@ -26864,7 +26867,7 @@ void ZTest::test(MainWindow *host)
 
   uint64_t bodyId = 2850569;
 
-  {
+  if (0) {
     ZObject3dScan obj;
     reader.readCoarseBody(bodyId, flyem::LABEL_BODY, &obj);
 
@@ -26873,12 +26876,17 @@ void ZTest::test(MainWindow *host)
     std::cout << obj.getDsIntv() << std::endl;
 
     ZMesh *mesh = ZMeshFactory::MakeFaceMesh(obj);
+    mesh->generateNormals();
 
-    mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+//    ZMesh mesh2 = vtkPolyDataToMesh(meshToVtkPolyData(*mesh));
+    ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+
+    mesh2.save((GET_TEST_DATA_DIR + "/_test.obj").c_str());
+//    mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
     delete mesh;
   }
 
-  if (1) {
+  if (0) {
     ZObject3dScan obj;
     reader.readCoarseBody(bodyId, flyem::LABEL_BODY, &obj);
 
@@ -26890,8 +26898,13 @@ void ZTest::test(MainWindow *host)
     mf.setOffsetAdjust(true);
     mf.setSmooth(3);
     ZMesh *mesh = mf.MakeMesh(obj);
+    mesh->generateNormals();
 
-    mesh->save(GET_TEST_DATA_DIR + "/_test2.obj");
+    ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+
+    mesh2.save((GET_TEST_DATA_DIR + "/_test.obj").c_str());
+
+//    mesh->save(GET_TEST_DATA_DIR + "/_test2.obj");
     delete mesh;
   }
 
@@ -26913,8 +26926,8 @@ void ZTest::test(MainWindow *host)
   }
 
 
-#if 0
-  {
+
+  if (0) {
     ZObject3dScan obj;
     reader.readBody(bodyId, true, &obj);
 //    obj.downsampleMax(15, 15, 15);
@@ -26932,7 +26945,7 @@ void ZTest::test(MainWindow *host)
     delete mesh;
   }
 
-  {
+  if (0) {
     ZObject3dScan obj;
     reader.readBody(bodyId, true, &obj);
 //    reader.readMultiscaleBody(bodyId, 2, true, &obj);
@@ -26948,7 +26961,7 @@ void ZTest::test(MainWindow *host)
     mesh->save(GET_TEST_DATA_DIR + "/_test3.obj");
     delete mesh;
   }
-#endif
+
 
 #endif
 
@@ -27022,8 +27035,21 @@ void ZTest::test(MainWindow *host)
   objArray.append(obj2);
 
   tic();
-  ZMesh *mesh = ZMeshFactory::MakeMesh(objArray);
+  ZMeshFactory mf;
+//  ZMesh *mesh = mf.makeMesh(objArray);
+  ZMesh *mesh = mf.makeMesh(*objArray[0]);
+  ZMesh *mesh2 = mf.makeMesh(*objArray[1]);
+  mesh->append(*mesh2);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
   std::cout << "Merging time: " << toc() << std::endl;
+
+  mesh->generateNormals();
+  toc();
+//  ZMesh mesh2 = ZMeshUtils::Decimate(*mesh);
+//  ptoc();
+//  mesh2.save((GET_TEST_DATA_DIR + "/_test.obj").c_str());
+
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
 
 #endif
@@ -27135,7 +27161,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
-#if 1
+#if 0
 
   ZDvidTarget target;
   target.set("emdata1.int.janelia.org", "2b6d", 9000);
@@ -27155,10 +27181,56 @@ void ZTest::test(MainWindow *host)
   ZObject3dScanArray objArray = helper.readHybridBody(2515);
 
   ZMeshFactory mf;
-  ZMesh *mesh = mf.makeMesh(objArray);
+  ZMesh *mesh = mf.makeMesh(*objArray[0]);
+  ZMesh *mesh2 = mf.makeMesh(*objArray[1]);
+  mesh->append(*mesh2);
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
 
 //  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 0
+  ZObject3dScanArray objArray;
+  ZObject3dScan obj1;
+  obj1.addSegment(0, 0, 0, 10);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(5, 5, 0, 10);
+
+  objArray.append(obj1);
+  objArray.append(obj2);
+
+  ZMeshFactory mf;
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZObject3dScan obj1;
+  obj1.addSegment(0, 0, 0, 10);
+  ZMesh *mesh1 = ZMeshFactory::MakeMesh(obj1);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(5, 5, 0, 10);
+  ZMesh *mesh2 = ZMeshFactory::MakeMesh(obj2);
+
+  mesh1->append(*mesh2);
+
+  mesh1->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "5421", 8900);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+  ZObject3dScan obj;
+  reader.readBody(1539193374, true, &obj);
+
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
   std::cout << "Done." << std::endl;

@@ -256,8 +256,7 @@ unix {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
         LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
-#        LIBS += /usr/lib/x86_64-linux-gnu/libGL.so.1.0.0
-#        LIBS += -L/usr/lib/x86_64-linux-gnu
+
         message(Checking arch...)
         contains(QMAKE_HOST.arch, x86_64) {
             message($$QMAKE_HOST.arch)
@@ -887,7 +886,10 @@ HEADERS += mainwindow.h \
     flyem/zdvidlabelslicehighrestask.h \
     flyem/zdvidgrayslicehighrestask.h \
     flyem/zdviddataslicetask.h \
-    dvid/zdvidbodyhelper.h
+    dvid/zdvidbodyhelper.h \
+    flyem/zflyembodyevent.h \
+    flyem/zflyembodyconfig.h \
+    flyem/zflyembodymanager.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1556,7 +1558,10 @@ SOURCES += main.cpp \
     flyem/zdvidlabelslicehighrestask.cpp \
     flyem/zdvidgrayslicehighrestask.cpp \
     flyem/zdviddataslicetask.cpp \
-    dvid/zdvidbodyhelper.cpp
+    dvid/zdvidbodyhelper.cpp \
+    flyem/zflyembodyevent.cpp \
+    flyem/zflyembodyconfig.cpp \
+    flyem/zflyembodymanager.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

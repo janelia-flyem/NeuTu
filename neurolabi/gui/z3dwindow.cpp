@@ -358,6 +358,8 @@ void Z3DWindow::init()
           this, SLOT(locateWithRay(int, int)));
   connect(getCanvas(), SIGNAL(browsing(int,int)),
           this, SLOT(browseWithRay(int, int)));
+  connect(getCanvas(), SIGNAL(viewingDetail(int,int)),
+          this, SLOT(showDetail(int,int)));
 
   m_swcIsolationDlg = new ZSwcIsolationDialog(this);
   if (getDocument() != NULL) {
@@ -2621,6 +2623,16 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
       }
     }
     break;
+  case Qt::Key_H:
+    viewDetail(true);
+    break;
+  case Qt::Key_T:
+    if (event->modifiers() == Qt::NoModifier) {
+      getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE)->trigger();
+    } else if (event->modifiers() == Qt::ShiftModifier) {
+      getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY)->trigger();
+    }
+    break;
   default:
     break;
   }
@@ -3558,6 +3570,15 @@ void Z3DWindow::test()
 
 }
 
+void Z3DWindow::viewDetail(bool on)
+{
+  if (on) {
+    getCanvas()->getInteractionEngine()->enterDetailMode();
+  } else {
+    getCanvas()->getInteractionEngine()->exitDetailMode();
+  }
+}
+
 void Z3DWindow::viewDataExternally(bool on)
 {
 #if 0
@@ -3921,10 +3942,34 @@ void Z3DWindow::browseWithRay(int x, int y)
           ZWidgetMessage(
             QString("Checking (%1, %2, %3)").
             arg(iround(pt.x())).arg(iround(pt.y())).arg(iround(pt.z()))));
-
+#if defined(_NEU3_)
     emit browsing(pt.x(), pt.y(), pt.z());
+#else
+    locate2DView(pt, 300);
+#endif
   }
 }
+
+void Z3DWindow::showDetail(int x, int y)
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    uint64_t bodyId = 0;
+    std::vector<ZPoint> intersection = getRayIntersection(x, y, &bodyId);
+    bodyId = doc->getMappedId(bodyId);
+    if (!intersection.empty()) {
+      ZPoint center = intersection[0];
+      if (intersection.size() > 1) {
+        center += intersection[1];
+        center *= 0.5;
+      }
+
+      ZIntCuboid range = zgeom::MakeSphereBox(center.toIntPoint(), 256);
+      doc->showMoreDetail(bodyId, range);
+    }
+  }
+}
+
 
 void Z3DWindow::shootTodo(int x, int y)
 {

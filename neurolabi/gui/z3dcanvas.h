@@ -111,6 +111,7 @@ signals:
   void shootingTodo(int x, int y);
   void locating(int x, int y);
   void browsing(int x, int y);
+  void viewingDetail(int x, int y);
 
   void openGLContextInitialized();
 

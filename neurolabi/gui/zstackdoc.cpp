@@ -174,6 +174,16 @@ void ZStackDoc::endWorkThread()
   }
 }
 
+void ZStackDoc::startWorkThread()
+{
+  if (m_workThread == NULL) {
+    m_worker = new ZWorker(ZWorker::MODE_SCHEDULE);
+    m_workThread = new ZWorkThread(m_worker);
+    connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
+    m_workThread->start();
+  }
+}
+
 void ZStackDoc::init()
 {
   m_resDlg = NULL;
@@ -244,10 +254,7 @@ void ZStackDoc::init()
   connect(shortcut, SIGNAL(triggered()), this, SLOT(shortcutTest()));
 #endif
 
-  m_worker = new ZWorker(ZWorker::MODE_SCHEDULE);
-  m_workThread = new ZWorkThread(m_worker);
-  connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
-  m_workThread->start();
+//  startWorkThread();
 }
 
 void ZStackDoc::shortcutTest()
@@ -446,23 +453,27 @@ void ZStackDoc::updateSwcNodeAction()
 void ZStackDoc::addTask(ZTask *task)
 {
 //  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
-  if (task->getDelay() > 0) {
-    if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
-      QTimer::singleShot(task->getDelay(), this, [=]() {
-        this->addTaskSlot(task);
-      });
+  if (m_worker != NULL) {
+    if (task->getDelay() > 0) {
+      if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
+        QTimer::singleShot(task->getDelay(), this, [=]() {
+          this->addTaskSlot(task);
+        });
+      } else {
+        addTaskSlot(task);
+      }
     } else {
       addTaskSlot(task);
     }
-  } else {
-    addTaskSlot(task);
   }
 }
 
 void ZStackDoc::addTaskSlot(ZTask *task)
 {
 //  task->moveToThread(m_worker->thread());
-  m_worker->addTask(task);
+  if (m_worker != NULL) {
+    m_worker->addTask(task);
+  }
 }
 
 void ZStackDoc::autoSaveSwc()

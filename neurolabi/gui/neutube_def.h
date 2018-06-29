@@ -170,7 +170,7 @@ enum EProofreadingMode {
 };
 
 enum EBodyType {
-  BODY_NULL, BODY_FULL, BODY_COARSE, BODY_SKELETON, BODY_MESH
+  BODY_DEFAULT, BODY_SPHERE, /*BODY_COARSE,*/ BODY_SKELETON, BODY_MESH
 };
 
 enum EBodyLabelType {

@@ -1506,18 +1506,21 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReaderFromUrl(
         GET_FLYEM_CONFIG.getTaskServer());
-  ZJsonObject taskJson =
-      reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
-                                    taskKey.c_str());
-  if (taskJson.hasKey(neutube::json::REF_KEY)) {
-    taskJson =
-        reader->readJsonObject(
-          ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
-  }
+  QList<ZStackObject*> seedList;
+  if (reader != NULL) {
+    ZJsonObject taskJson =
+        reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
+                                      taskKey.c_str());
+    if (taskJson.hasKey(neutube::json::REF_KEY)) {
+      taskJson =
+          reader->readJsonObject(
+            ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
+    }
 
-  QList<ZStackObject*> seedList = LoadSplitTask(taskJson);
-  foreach (ZStackObject *seed, seedList) {
-    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+    seedList = LoadSplitTask(taskJson);
+    foreach (ZStackObject *seed, seedList) {
+      seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
+    }
   }
 
   return seedList;

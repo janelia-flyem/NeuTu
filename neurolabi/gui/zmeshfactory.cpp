@@ -9,6 +9,7 @@
 #include "misc/zmarchingcube.h"
 #include "ilastik/laplacian_smoothing.h"
 #include "zobject3dscanarray.h"
+#include "data3d/zstackobjecthelper.h"
 
 ZMeshFactory::ZMeshFactory()
 {
@@ -45,10 +46,16 @@ ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
   ZMesh *mesh = NULL;
 
   std::vector<ZMesh*> meshArray;
+  bool isOverSize = false;
   for (const ZObject3dScan *obj : objArray) {
-    ZMesh *mesh = makeMesh(*obj);
+    ZMesh *submesh = makeMesh(*obj);
 //    mesh->prepareNormals();
-    meshArray.push_back(mesh);
+    if (submesh != NULL) {
+      meshArray.push_back(submesh);
+      if (ZStackObjectHelper::IsOverSize(*submesh)) {
+        isOverSize = true;
+      }
+    }
   }
 
   if (!meshArray.empty()) {
@@ -61,6 +68,12 @@ ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
       mesh->append(*currentMesh);
       delete currentMesh;
     }
+
+    if (isOverSize) {
+      ZStackObjectHelper::SetOverSize(mesh);
+    }
+
+//    mesh->prepareNormals();
   }
 
   return mesh;
@@ -146,7 +159,7 @@ ZMesh* ZMeshFactory::MakeMesh(
   ZMesh *mesh = ZMarchingCube::March(*stack, smooth, offsetAdjust, NULL);
 
   if (dsIntv > 0 && mesh != NULL) {
-    mesh->setObjectId("oversize");
+    ZStackObjectHelper::SetOverSize(mesh);
   }
 
   delete stack;
