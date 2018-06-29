@@ -51,6 +51,9 @@
 #include "flyem/zproofreadwindow.h"
 #include "flyem/zflyemproofmvccontroller.h"
 #include "zstackobjectaccessor.h"
+#include "flyem/zflyembodyidcolorscheme.h"
+#include "flyem/zflyemarbdoc.h"
+#include "dvid/zdvidlabelslice.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -153,9 +156,7 @@ void Neu3Window::initGrayscaleWidget()
     m_sliceWidget->setDefaultViewPort(
           getSliceViewParam(m_browsePos).getViewPort());
 
-    ZFlyEmProofMvcController::SelectBody(
-          m_sliceWidget,
-          getBodyDocument()->getNormalBodySet());
+    updateSliceBrowserSelection();
     if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
@@ -181,7 +182,7 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(updateWidget()));
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
-          this, &Neu3Window::zoomToBodyMesh, Qt::QueuedConnection);
+          this, &Neu3Window::zoomToBodyMesh);
 
   connect(getBodyDocument(), SIGNAL(meshArchiveLoadingStarted()),
           this, SLOT(meshArchiveLoadingStarted()));
@@ -197,7 +198,7 @@ void Neu3Window::connectSignalSlot()
   // signals emitted with each mesh.
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
-          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+          this, &Neu3Window::syncBodyListModel);
 
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
@@ -413,6 +414,10 @@ void Neu3Window::createTaskWindow() {
     connect(m_taskProtocolWidget, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
     connect(m_taskProtocolWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
+    connect(m_taskProtocolWidget, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
+            this, SLOT(browse(double,double,double,const QHash<uint64_t, QColor>&)));
+    connect(m_taskProtocolWidget, SIGNAL(updateGrayscaleColor(const QHash<uint64_t,QColor>&)),
+            this, SLOT(updateBrowserColor(const QHash<uint64_t,QColor>&)));
     ZWidgetMessage::ConnectMessagePipe(m_taskProtocolWidget, this);
 
     // make the OpenGL context current in case any task's widget changes any parameters
@@ -520,11 +525,13 @@ void Neu3Window::trackSliceViewPort() const
 void Neu3Window::updateSliceWidget()
 {
   LDEBUG() << "Updating slice widget";
-  ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
-  m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
-  m_sliceWidget->resetViewParam(viewParam);
+  if (m_sliceWidget != NULL) {
+    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+    m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
+    m_sliceWidget->resetViewParam(viewParam);
 
-  trackSliceViewPort();
+    trackSliceViewPort();
+  }
 }
 
 void Neu3Window::updateSliceBrowser()
@@ -546,6 +553,27 @@ void Neu3Window::updateSliceBrowser()
     break;
   default:
     break;
+  }
+}
+
+void Neu3Window::updateSliceBrowserSelection()
+{
+  ZFlyEmProofMvcController::SelectBody(
+        m_sliceWidget,
+        getBodyDocument()->getNormalBodySet());
+}
+
+void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
+{
+  if (m_sliceWidget) {
+    const ZSharedPointer<ZFlyEmBodyColorScheme>
+        colorMap(new ZFlyEmBodyIdColorScheme(idToColor));
+
+    ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
+    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::A_AXIS);
+    slice->setCustomColorMap(colorMap);
+
+     updateSliceBrowserSelection();
   }
 }
 
@@ -634,6 +662,19 @@ void Neu3Window::browse(double x, double y, double z)
   } else {
     updateSliceBrowser();
   }
+}
+
+void Neu3Window::browse(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor)
+{
+  m_browsePos.set(x, y, z);
+
+  if (m_browseMode == BROWSE_NONE) {
+    m_browseMode = BROWSE_NATIVE;
+    initNativeSliceBrowser();
+  }
+
+  updateBrowserColor(idToColor);
+  updateSliceBrowser();
 }
 
 void Neu3Window::startBrowser(EBrowseMode mode)
