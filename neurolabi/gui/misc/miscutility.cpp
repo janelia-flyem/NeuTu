@@ -364,6 +364,35 @@ int misc::GetZoomScale(int zoom)
   return scale;
 }
 
+int misc::GetZoomLevel(int scale)
+{
+  switch (scale) {
+  case 1:
+    return 0;
+  case 2:
+    return 1;
+  case 4:
+    return 2;
+  case 8:
+    return 3;
+  case 16:
+    return 4;
+  case 32:
+    return 5;
+  case 64:
+    return 6;
+  default:
+    break;
+  }
+
+  int zoom = 0;
+  while (scale/2 > 0) {
+    ++zoom;
+  }
+
+  return zoom;
+}
+
 double misc::computeConfidence(double v, double median, double p95)
 {
   double alpha = median;

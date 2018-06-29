@@ -11,9 +11,9 @@ class ZObject3dScanArray;
 class ZDvidBodyHelper
 {
 public:
-  ZDvidBodyHelper(ZDvidReader *reader);
+  ZDvidBodyHelper(const ZDvidReader *reader);
 
-  ZDvidReader* getDvidReader() const;
+  const ZDvidReader* getDvidReader() const;
 
   void setCanonizing(bool on);
   void setLabelType(flyem::EBodyLabelType type);
@@ -28,7 +28,7 @@ public:
   ZDvidBodyHelper fork() const;
 
 private:
-  ZDvidReader *m_reader = nullptr;
+  const ZDvidReader *m_reader = nullptr;
   bool m_canonizing = true;
   flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
   ZIntCuboid m_range;

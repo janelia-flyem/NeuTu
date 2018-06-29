@@ -2,6 +2,8 @@
 #include <cmath>
 #include "zpoint.h"
 #include "geometry/zaffinerect.h"
+#include "zintcuboid.h"
+#include "zintpoint.h"
 
 
 std::vector<ZAffineRect> zgeom::Partition(
@@ -79,7 +81,7 @@ std::vector<ZPoint> zgeom::LineShpereIntersection(
   return result;
 }
 
-std::vector<std::pair<int, int> > LineToPixel(int x0, int y0, int x1, int y1)
+std::vector<std::pair<int, int> > zgeom::LineToPixel(int x0, int y0, int x1, int y1)
 {
   std::vector<std::pair<int, int>> result;
 
@@ -216,4 +218,9 @@ bool zgeom::IsSameAffinePlane(
   ap2.setPlane(v2x, v2y);
 
   return ap1.onSamePlane(ap2);
+}
+
+ZIntCuboid zgeom::MakeSphereBox(const ZIntPoint &center, int radius)
+{
+  return ZIntCuboid(center - radius, center  + radius);
 }

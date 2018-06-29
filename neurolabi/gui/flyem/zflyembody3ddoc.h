@@ -17,6 +17,7 @@
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
 #include "zthreadfuturemap.h"
+#include "zflyembodyevent.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
@@ -30,7 +31,20 @@ class ZFlyEmToDoItem;
 /*!
  * \brief The class of managing body update in 3D.
  *
- * The class has a work thread to process a queue of body update events.
+ * The class has a work thread to process a queue of body update events. Each
+ * instance has an associated visualization mode, which can be flyem::BODY_SPHERE,
+ * flyem::BODY_SKELETON and flyem::BODY_MESH. The body updating process is further
+ * contolled by the minimal and maximal downsampling levels. For example, only
+ * coarse bodies will be shown when both min and max downsampling levels are equal
+ * to the coarse body level defined in the current database.
+ *
+ * Example of creating an instance for showing coarse bodies with sphere surfaces:
+ *
+ *   ZFlyEmBody3dDoc *doc = new ZFlyEmBody3dDoc;
+ *   doc->setDvidTarget(dvidTarget);
+ *   doc->setBodyType(flyem::BODY_SPHERE);
+ *   doc->useCoarseOnly(); //This must be called after setting the DVID environment
+ *
  */
 class ZFlyEmBody3dDoc : public ZStackDoc
 {
@@ -43,92 +57,6 @@ public:
   void setDataDoc(ZSharedPointer<ZStackDoc> doc);
 
 public:
-  class BodyEvent {
-  public:
-    enum EAction {
-      ACTION_NULL, ACTION_REMOVE, ACTION_ADD, ACTION_FORCE_ADD,
-      ACTION_UPDATE, ACTION_CACHE
-    };
-
-    typedef uint64_t TUpdateFlag;
-
-  public:
-    struct ComparePriority {
-      bool operator() (const BodyEvent &e1, const BodyEvent &e2) {
-        return (e1.getPriority() < e2.getPriority());
-      }
-    };
-
-    BodyEvent() : m_action(ACTION_NULL), m_bodyId(0), /*m_refreshing(false),*/
-    m_updateFlag(0), m_resLevel(0) {}
-    BodyEvent(BodyEvent::EAction action, uint64_t bodyId) :
-      m_action(action), m_bodyId(bodyId), m_updateFlag(0), m_resLevel(0) {}
-
-    EAction getAction() const { return m_action; }
-    uint64_t getBodyId() const { return m_bodyId; }
-    const QColor& getBodyColor() const { return m_bodyColor; }
-//    bool isRefreshing() const { return m_refreshing; }
-
-    void setAction(EAction action) { m_action = action; }
-    void setBodyColor(const QColor &color) { m_bodyColor = color; }
-
-    void mergeEvent(const BodyEvent &event, neutube::EBiDirection direction);
-
-//    void syncBodySelection();
-
-    bool updating(TUpdateFlag flag) const {
-      return (m_updateFlag & flag) > 0;
-    }
-
-    void addUpdateFlag(TUpdateFlag flag) {
-      m_updateFlag |= flag;
-    }
-
-    void removeUpdateFlag(TUpdateFlag flag) {
-      m_updateFlag &= ~flag;
-    }
-
-    TUpdateFlag getUpdateFlag() const {
-      return m_updateFlag;
-    }
-
-    bool hasUpdateFlag(TUpdateFlag flag) {
-      return (m_updateFlag & flag) > 0;
-    }
-
-    int getResLevel() const {
-      return m_resLevel;
-    }
-
-    void setResLevel(int level) {
-      m_resLevel = level;
-    }
-
-    void decResLevel() {
-      --m_resLevel;
-    }
-
-    void print() const;
-
-    int getPriority() const { return m_priority; }
-
-  public:
-    static const TUpdateFlag UPDATE_CHANGE_COLOR;
-    static const TUpdateFlag UPDATE_ADD_SYNAPSE;
-    static const TUpdateFlag UPDATE_ADD_TODO_ITEM;
-    static const TUpdateFlag UPDATE_MULTIRES;
-    static const TUpdateFlag UPDATE_SEGMENTATION;
-
-  private:
-    EAction m_action;
-    uint64_t m_bodyId;
-    QColor m_bodyColor;
-//    bool m_refreshing;
-    TUpdateFlag m_updateFlag;
-    int m_resLevel;
-    int m_priority = 0; //lower number means higher priority
-  };
-
   class ObjectStatus {
   public:
     explicit ObjectStatus(int timeStamp = 0);
@@ -158,7 +86,8 @@ public:
 
   uint64_t getMappedId(uint64_t bodyId) const;
 
-  void addBody(uint64_t bodyId, const QColor &color);
+  void addBody(const ZFlyEmBodyConfig &config);
+  void updateBody(const ZFlyEmBodyConfig &config);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
   void updateBody(uint64_t bodyId, const QColor &color, flyem::EBodyType type);
@@ -184,9 +113,9 @@ public:
   void enableSplitTaskLoading(bool enable);
   bool splitTaskLoadingEnabled() const;
 
-  void addEvent(BodyEvent::EAction action, uint64_t bodyId,
-                BodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
-  void addEvent(const BodyEvent &event, QMutex *mutex = NULL);
+  void addEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId,
+                ZFlyEmBodyEvent::TUpdateFlag flag = 0, QMutex *mutex = NULL);
+  void addEvent(const ZFlyEmBodyEvent &event, QMutex *mutex = NULL);
 
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
@@ -254,6 +183,7 @@ public:
   void enableGarbageLifetimeLimit(bool on);
   bool garbageLifetimeLimitEnabled() const;
 
+  ZMesh *readMesh(const ZDvidReader &reader, const ZFlyEmBodyConfig &config);
   ZMesh *readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
@@ -270,10 +200,18 @@ public:
   bool fromTar(uint64_t id) const;
   bool isTarMode() const;
 
-  void setMaxResLevel(int res) {
-    m_maxResLevel = res;
+  void setMinDsLevel(int res) {
+    m_minDsLevel = res;
   }
-  int getMaxResLevel() const;
+  void setMaxDsLevel(int res) {
+    m_maxDsLevel = res;
+  }
+
+  void useCoarseOnly();
+  bool showingCoarseOnly() const;
+  bool isCoarseLevel(int level) const;
+
+  int getMaxDsLevel() const;
 
   void makeAction(ZActionFactory::EAction item) override;
 
@@ -348,6 +286,8 @@ public slots:
   void uncheckSelectedTodoItem();
   void setTodoItemAction(neutube::EToDoAction action);
 
+  void showMoreDetail(uint64_t bodyId, const ZIntCuboid &range);
+
   void recycleObject(ZStackObject *obj) override;
   void killObject(ZStackObject *obj) override;
 
@@ -399,13 +339,14 @@ private:
   ZMesh* getBodyMesh(uint64_t bodyId, int zoom);
   ZMesh* retrieveBodyMesh(uint64_t bodyId, int zoom);
 
-  ZMesh *readMesh(uint64_t bodyId, int zoom);
+  ZMesh *readMesh(const ZFlyEmBodyConfig &config);
 
 //  ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom);
   ZSwcTree* makeBodyModel(uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
 
   bool getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64_t, ZMesh*> &result);
-  void makeBodyMeshModels(uint64_t id, int zoom, std::map<uint64_t, ZMesh*> &result);
+  void makeBodyMeshModels(
+      const ZFlyEmBodyConfig &config, std::map<uint64_t, ZMesh*> &result);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
@@ -418,11 +359,14 @@ private:
   std::vector<ZSwcTree*> makeDiffBodyModel(
       const ZIntPoint &pt, ZDvidReader &diffReader,
       int zoom, flyem::EBodyType bodyType);
+  QColor getBodyColor(uint64_t bodyId);
 
   void updateDvidInfo();
 
-  void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
-  void addBodyMeshFunc(uint64_t bodyId, const QColor &color, int resLevel);
+  void addBodyFunc(const ZFlyEmBodyConfig &config);
+  void addBodyMeshFunc(const ZFlyEmBodyConfig &config);
+//  void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
+//  void addBodyMeshFunc(uint64_t bodyId, const QColor &color, int resLevel);
 
   void removeBodyFunc(uint64_t bodyId, bool removingAnnotation);
   void updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject);
@@ -433,8 +377,8 @@ private:
 
   void processBodySetBuffer();
 
-  QMap<uint64_t, BodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
-  QMap<uint64_t, BodyEvent> makeEventMapUnsync(QSet<uint64_t> &bodySet);
+  QMap<uint64_t, ZFlyEmBodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
+  QMap<uint64_t, ZFlyEmBodyEvent> makeEventMapUnsync(QSet<uint64_t> &bodySet);
 
   bool synapseLoaded(uint64_t bodyId) const;
   void addSynapse(
@@ -446,8 +390,11 @@ private:
   T* recoverFromGarbage(const std::string &source);
 
   ZSwcTree *getBodyQuickly(uint64_t bodyId);
-  BodyEvent makeMultresBodyEvent(
-      uint64_t bodyId, int resLevel, const QColor &color);
+  /*
+  ZFlyEmBodyEvent makeHighResBodyEvent(const ZFlyEmBodyConfig &config);
+  ZFlyEmBodyEvent makeHighResBodyEvent(
+      const ZFlyEmBodyConfig &config, const ZIntCuboid &range);
+      */
 
   ZDvidReader& getBodyReader();
 //  const ZDvidReader& getBodyReader() const;
@@ -472,6 +419,8 @@ private:
    */
   uint64_t getSingleBody() const;
 
+  void registerBody(uint64_t id);
+
 signals:
   void todoVisibleChanged();
   void bodyMeshLoaded();
@@ -484,14 +433,14 @@ signals:
 private slots:
 //  void updateBody();
   void processEvent();
-  void processEvent(const BodyEvent &event);
+  void processEvent(const ZFlyEmBodyEvent &event);
 
 private:
-  void processEventFunc(const BodyEvent &event);
+  void processEventFunc(const ZFlyEmBodyEvent &event);
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
   ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
-  int getMinResLevel() const;
+  int getMinDsLevel() const;
 
   void removeDiffBody();
 
@@ -502,12 +451,15 @@ private:
   void notifyBodyUpdated(uint64_t bodyId, int resLevel);
 
   void initArbGraySlice();
+  bool toBeRemoved(uint64_t bodyId) const;
 
 private:
-  QSet<uint64_t> m_bodySet;
+  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
+  std::map<uint64_t, std::set<uint64_t>> m_tarIdToMeshIds;
+
   mutable QMutex m_BodySetMutex;
 
-  flyem::EBodyType m_bodyType = flyem::BODY_FULL;
+  flyem::EBodyType m_bodyType = flyem::BODY_SPHERE;
   QSet<uint64_t> m_selectedBodySet;
   QSet<uint64_t> m_protectedBodySet;
   mutable QMutex m_protectedBodySetMutex;
@@ -518,7 +470,9 @@ private:
   bool m_nodeSeeding = false;
   bool m_syncyingBodySelection = false;
 
-  int m_maxResLevel = 0; //Start resolution level; bigger value means lower resolution
+  int m_minDsLevel = 0;
+  int m_maxDsLevel = 5; //Start resolution level; bigger value means lower resolution
+//  int m_coarseLevel = 5;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
@@ -547,19 +501,17 @@ private:
 
   bool m_garbageJustDumped = false;
 
-  QQueue<BodyEvent> m_eventQueue;
+  QQueue<ZFlyEmBodyEvent> m_eventQueue;
 
   mutable QMutex m_eventQueueMutex;
   QMutex m_garbageMutex;
-
-  std::map<uint64_t, std::set<uint64_t>> m_tarIdToMeshIds;
 
   bool m_limitGarbageLifetime = true;
   bool m_splitTaskLoadingEnabled = true;
 
   const static int OBJECT_GARBAGE_LIFE;
   const static int OBJECT_ACTIVE_LIFE;
-  const static int MAX_RES_LEVEL;
+//  const static int MAX_RES_LEVEL;
 
   const static char *THREAD_SPLIT_KEY;
 };
@@ -572,7 +524,7 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   QMutexLocker locker(&m_eventQueueMutex);
 
   QSet<uint64_t> bodySet = m_bodySet;
-  QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> actionMap = makeEventMap(
+  QMap<uint64_t, ZFlyEmBodyEvent> actionMap = makeEventMap(
         false, bodySet);
 
 //  m_eventQueue.clear();
@@ -587,19 +539,19 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
        iter != m_bodySet.end(); ++iter) {
     uint64_t bodyId = *iter;
     if (!newBodySet.contains(bodyId)) {
-      addEvent(BodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
+      addEvent(ZFlyEmBodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
     }
   }
 
 //  QList<BodyEvent> oldEventList;
-  for (QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent>::iterator
+  for (QMap<uint64_t, ZFlyEmBodyEvent>::iterator
        iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
     if (newBodySet.contains(iter.key())) {
-      if (iter.value().getAction() != BodyEvent::ACTION_REMOVE) {
+      if (iter.value().getAction() != ZFlyEmBodyEvent::ACTION_REMOVE) {
         //In the new body set had the bodyID and not remove, add event
         addEvent(iter.value());
       } else {
-        addEvent(BodyEvent::ACTION_ADD, iter.key(), 0, NULL);
+        addEvent(ZFlyEmBodyEvent::ACTION_ADD, iter.key(), 0, NULL);
       }
     }
   }
@@ -607,7 +559,7 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
     if (!actionMap.contains(bodyId)) { //If the action map has no such body id
-      addEvent(BodyEvent::ACTION_ADD, bodyId, 0, NULL);
+      addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
     }
   }
 }

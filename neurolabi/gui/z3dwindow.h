@@ -326,6 +326,7 @@ public slots:
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
   void viewDataExternally(bool on);
+  void viewDetail(bool on);
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -399,6 +400,7 @@ public slots:
   void shootTodo(int x, int y);
   void locateWithRay(int x, int y);
   void browseWithRay(int x, int y);
+  void showDetail(int x, int y);
   void checkSelectedTodo();
   void uncheckSelectedTodo();
 

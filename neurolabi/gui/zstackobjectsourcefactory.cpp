@@ -61,12 +61,12 @@ std::string ZStackObjectSourceFactory::GetBodyTypeName(
     flyem::EBodyType bodyType)
 {
   switch (bodyType) {
-  case flyem::BODY_NULL:
+  case flyem::BODY_DEFAULT:
     break;
-  case flyem::BODY_FULL:
-    return "full";
-  case flyem::BODY_COARSE:
-    return "coarse";
+  case flyem::BODY_SPHERE:
+    return "sphere";
+//  case flyem::BODY_COARSE:
+//    return "coarse";
   case flyem::BODY_SKELETON:
     return "skeleton";
   case flyem::BODY_MESH:
@@ -77,10 +77,12 @@ std::string ZStackObjectSourceFactory::GetBodyTypeName(
   return "";
 }
 
+/*
 std::string ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(uint64_t bodyId)
 {
-  return MakeFlyEmBodySource(bodyId, 0, flyem::BODY_COARSE);
+  return MakeFlyEmBodySource(bodyId, 0, flyem::BODY_DEFAULT, true);
 }
+*/
 
 std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
     uint64_t bodyId, int zoom)
@@ -104,8 +106,22 @@ std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
 std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
     uint64_t bodyId, int zoom, flyem::EBodyType bodyType)
 {
-  return MakeFlyEmBodySource(bodyId, zoom, GetBodyTypeName(bodyType));
+  std::string name = GetBodyTypeName(bodyType);
+
+  return MakeFlyEmBodySource(bodyId, zoom, name);
 }
+
+/*
+std::string ZStackObjectSourceFactory::MakeFlyEmBodySource(
+    uint64_t bodyId, int zoom, flyem::EBodyType bodyType, bool coarse)
+{
+  std::string name = GetBodyTypeName(bodyType);
+  if (coarse) {
+    name += ".coarse";
+  }
+  return MakeFlyEmBodySource(bodyId, zoom, name);
+}
+*/
 
 std::string ZStackObjectSourceFactory::ExtractBodyStrFromFlyEmBodySource(
     const std::string &source)
@@ -143,12 +159,12 @@ flyem::EBodyType ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
       const std::string &source)
 {
   ZString str(source);
-  flyem::EBodyType bodyType = flyem::BODY_NULL;
-  if (str.endsWith("#.full")) {
-    bodyType = flyem::BODY_FULL;
-  } else if (str.endsWith("#.coarse")) {
-    bodyType = flyem::BODY_COARSE;
-  } else if (str.endsWith("#.skeleton")) {
+  flyem::EBodyType bodyType = flyem::BODY_DEFAULT;
+  if (str.contains("#." + GetBodyTypeName(flyem::BODY_SPHERE))) {
+    bodyType = flyem::BODY_SPHERE;
+  } else if (str.contains("#." + GetBodyTypeName(flyem::BODY_MESH))) {
+    bodyType = flyem::BODY_MESH;
+  } else if (str.contains("#." + GetBodyTypeName(flyem::BODY_SKELETON))) {
     bodyType = flyem::BODY_SKELETON;
   }
 
@@ -168,6 +184,13 @@ int ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
 
   return zoom;
 }
+
+/*
+bool ZStackObjectSourceFactory::IsCoarseBodySource(const std::string &source)
+{
+  return ZString(source).endsWith(".coarse");
+}
+*/
 
 std::string ZStackObjectSourceFactory::MakeCurrentMsTileSource(int resLevel)
 {

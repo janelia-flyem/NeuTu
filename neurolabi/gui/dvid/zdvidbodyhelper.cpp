@@ -4,11 +4,11 @@
 #include "zobject3dscan.h"
 #include "misc/miscutility.h"
 
-ZDvidBodyHelper::ZDvidBodyHelper(ZDvidReader *reader) : m_reader(reader)
+ZDvidBodyHelper::ZDvidBodyHelper(const ZDvidReader *reader) : m_reader(reader)
 {
 }
 
-ZDvidReader* ZDvidBodyHelper::getDvidReader() const
+const ZDvidReader *ZDvidBodyHelper::getDvidReader() const
 {
   return m_reader;
 }
@@ -36,7 +36,7 @@ void ZDvidBodyHelper::setCoarse(bool on)
 void ZDvidBodyHelper::setZoom(int zoom)
 {
   m_zoom = zoom;
-  m_coarseVol = false;
+//  m_coarseVol = false;
 }
 
 void ZDvidBodyHelper::setLowresZoom(int zoom)
@@ -51,6 +51,7 @@ ZObject3dScan* ZDvidBodyHelper::readBody(uint64_t bodyId, ZObject3dScan *result)
   if (!m_coarseVol) {
     out = getDvidReader()->readBody(
           bodyId, m_labelType, m_zoom, m_range, m_canonizing, result);
+    out->setDsIntv(misc::GetZoomScale(m_zoom) - 1);
   } else {
     out = getDvidReader()->readCoarseBody(bodyId, m_labelType, m_range, result);
     if (m_canonizing) {
@@ -95,7 +96,7 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
       lowResObj->remove(m_range);
       ZIntCuboid box = m_range;
       box.scaleDown(scale);
-      box.expand(-1, -1, -1);
+      box.expand(-2, -2, -2);
       lowResObj->remove(box);
       lowResObj->setDsIntv(scale - 1);
 

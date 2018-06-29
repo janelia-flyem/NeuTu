@@ -49,6 +49,7 @@ int getIsoDsIntvFor3DVolume(
     const ZIntCuboid &box, size_t maxVolume, bool powed);
 
 int GetZoomScale(int zoom);
+int GetZoomLevel(int scale);
 //int GetZoomLevel(int maxLevel, int width, int height, int zoom);
 
 double GetExpansionScale(size_t currentVol, size_t maxVol);
