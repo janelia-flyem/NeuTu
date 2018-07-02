@@ -5,7 +5,10 @@
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
 #include "neu3window.h"
+#include "z3dcamera.h"
+#include "z3dcanvas.h"
 #include "z3dmeshfilter.h"
+#include "z3dview.h"
 #include "z3dwindow.h"
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
@@ -15,10 +18,12 @@
 
 #include <QCheckBox>
 #include <QDateTime>
+#include <QDockWidget>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QPointer>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSet>
@@ -197,6 +202,13 @@ namespace {
     }
   }
 
+  // A separate 3D view that provides a "bird's eye view" zoomed out to show both bodies,
+  // so the user can quickly get a more global context.  The Z3DView take time to initialize,
+  // so there is one such view shared by all the tasks in the assignment.
+
+  QPointer<QDockWidget> s_birdsEyeDockWidget ;
+  QPointer<Z3DView> s_birdsEyeView;
+
 }
 
 TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
@@ -270,6 +282,8 @@ void TaskBodyMerge::beforeDone()
 {
   restoreOverallSettings(m_bodyDoc);
   applyColorMode(false);
+
+  showBirdsEyeView(false);
 }
 
 QWidget *TaskBodyMerge::getTaskWidget()
@@ -501,6 +515,9 @@ void TaskBodyMerge::buildTaskWidget()
 void TaskBodyMerge::onLoaded()
 {
   m_usageTimer.start();
+
+  showBirdsEyeView(true);
+
   applyColorMode(true);
   zoomToMergePosition(true);
 }
@@ -537,6 +554,9 @@ void TaskBodyMerge::applyColorMode(bool merging)
     if (merging) {
       updateColors();
       filter->setColorMode("Indexed Color");
+      if (s_birdsEyeView) {
+        s_birdsEyeView->getMeshFilter()->setColorMode("Indexed Color");
+      }
     } else {
       filter->setColorMode("Mesh Source");
     }
@@ -549,16 +569,22 @@ void TaskBodyMerge::updateColors()
     std::size_t index1 = 1;
     std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
 
-    filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
-      uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
-      if (tarBodyId == m_bodyId1) {
-        return index1;
-      } else if (tarBodyId == m_bodyId2) {
-        return index2;
-      } else {
-        return 0;
-      }
-    });
+    std::vector<Z3DMeshFilter*> filters({ filter });
+    if (s_birdsEyeView) {
+      filters.push_back(s_birdsEyeView->getMeshFilter());
+    }
+    for (Z3DMeshFilter *filt : filters) {
+      filt->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
+        uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
+        if (tarBodyId == m_bodyId1) {
+          return index1;
+        } else if (tarBodyId == m_bodyId2) {
+          return index2;
+        } else {
+          return 0;
+        }
+      });
+    }
 
     QHash<uint64_t, QColor> idToColor;
     glm::vec4 color1 = INDEX_COLORS[index1] * 255.0f;
@@ -618,6 +644,12 @@ void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
 
       filter->camera().setEye(eye);
       filter->camera().setUpVector(up);
+
+      if (s_birdsEyeView) {
+        Z3DMeshFilter *birdsEyeMeshFilter = s_birdsEyeView->getMeshFilter();
+        birdsEyeMeshFilter->camera().setEye(eye);
+        birdsEyeMeshFilter->camera().setUpVector(up);
+      }
 
       // Update the orientaton of the grayscale slice.
 
@@ -899,6 +931,16 @@ void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
     }
   }
 
+  if (s_birdsEyeView) {
+    Z3DMeshFilter *birdsEyeMeshFilter = s_birdsEyeView->getMeshFilter();
+
+    double radius = std::max(radii[0], radii[1]);
+    resetCamera(mergePosition(), radius, birdsEyeMeshFilter->camera());
+    tightenZoom(vertices, birdsEyeMeshFilter->camera());
+
+    birdsEyeMeshFilter->invalidate();
+  }
+
   double radius;
   if (onlySmaller) {
     size_t iSmaller = (radii[0] < radii[1]) ? 0 : 1;
@@ -970,6 +1012,40 @@ void TaskBodyMerge::configureShowHiRes()
     QUrl requestUrl(url.c_str());
     QNetworkRequest request(requestUrl);
     m_networkManager->get(request);
+  }
+}
+
+void TaskBodyMerge::showBirdsEyeView(bool show)
+{
+  if (show) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      if (!s_birdsEyeDockWidget) {
+        s_birdsEyeDockWidget = new QDockWidget("Bird's Eye View", window);
+        window->addDockWidget(Qt::NoDockWidgetArea, s_birdsEyeDockWidget);
+
+        s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::INIT_NORMAL, false, s_birdsEyeDockWidget);
+        s_birdsEyeView->canvas().setMinimumWidth(512);
+        s_birdsEyeView->canvas().setMinimumHeight(512);
+        s_birdsEyeDockWidget->setWidget(&s_birdsEyeView->canvas());
+
+        s_birdsEyeDockWidget->setFeatures(
+              QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+        s_birdsEyeDockWidget->setFloating(true);
+        s_birdsEyeDockWidget->setAllowedAreas(Qt::NoDockWidgetArea);
+        s_birdsEyeDockWidget->setAttribute(Qt::WA_DeleteOnClose);
+      }
+
+      s_birdsEyeDockWidget->show();
+
+      Z3DCamera camera = window->getMeshFilter()->camera();
+      Z3DMeshFilter *birdsEyeMeshFilter = s_birdsEyeView->getMeshFilter();
+      birdsEyeMeshFilter->camera().setCamera(camera.eye(), camera.center(), camera.upVector());
+    }
+  } else {
+    if (s_birdsEyeDockWidget) {
+      QAction *closer = s_birdsEyeDockWidget->toggleViewAction();
+      closer->trigger();
+    }
   }
 }
 
