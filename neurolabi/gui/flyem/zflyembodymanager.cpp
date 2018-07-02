@@ -4,6 +4,11 @@ ZFlyEmBodyManager::ZFlyEmBodyManager()
 {
 }
 
+bool ZFlyEmBodyManager::isEmpty() const
+{
+  return m_bodyMap.isEmpty();
+}
+
 void ZFlyEmBodyManager::registerBody(uint64_t id, const QSet<uint64_t> &comp)
 {
   m_bodyMap[decode(id)] = comp;
@@ -28,11 +33,65 @@ bool ZFlyEmBodyManager::contains(uint64_t id) const
 
 bool ZFlyEmBodyManager::hasMapping(uint64_t id) const
 {
-  if (contains(id)) {
-    return !m_bodyMap[id].isEmpty();
+  uint64_t decodedId = decode(id);
+  if (m_bodyMap.contains(decodedId)) {
+    return !m_bodyMap[decodedId].isEmpty();
   }
 
   return false;
+}
+
+uint64_t ZFlyEmBodyManager::getHostId(uint64_t bodyId) const
+{
+  for (QMap<uint64_t, QSet<uint64_t> >::const_iterator iter = m_bodyMap.begin();
+       iter != m_bodyMap.end(); ++iter) {
+    if (iter.value().contains(bodyId)) {
+      return iter.key();
+    }
+  }
+
+  return bodyId;
+}
+
+QSet<uint64_t> ZFlyEmBodyManager::getMappedSet(uint64_t bodyId) const
+{
+  return m_bodyMap.value(decode(bodyId));
+}
+
+QSet<uint64_t> ZFlyEmBodyManager::getBodySet() const
+{
+  return QSet<uint64_t>::fromList(m_bodyMap.keys());
+}
+
+uint64_t ZFlyEmBodyManager::getSingleBodyId() const
+{
+  uint64_t bodyId = 0;
+  if (m_bodyMap.size() == 1) {
+    bodyId = m_bodyMap.firstKey();
+  }
+
+  return bodyId;
+}
+
+void ZFlyEmBodyManager::erase(uint64_t bodyId)
+{
+  bool removed = false;
+  for (QMap<uint64_t, QSet<uint64_t> >::iterator iter = m_bodyMap.begin();
+       iter != m_bodyMap.end(); ++iter) {
+    if (iter.value().remove(bodyId)) {
+      removed = true;
+      break;
+    }
+  }
+
+  if (!removed) {
+    m_bodyMap.remove(bodyId);
+  }
+}
+
+void ZFlyEmBodyManager::clear()
+{
+  m_bodyMap.clear();
 }
 
 namespace {

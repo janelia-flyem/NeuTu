@@ -9,6 +9,8 @@ class ZFlyEmBodyManager
 public:
   ZFlyEmBodyManager();
 
+  bool isEmpty() const;
+
   /*!
    * \brief Register a body
    *
@@ -17,13 +19,38 @@ public:
   void registerBody(uint64_t id);
 
   void deregisterBody(uint64_t id);
-
-
   void registerBody(uint64_t id, const QSet<uint64_t> &comp);
 
   bool contains(uint64_t id) const;
   bool hasMapping(uint64_t id) const;
+  uint64_t getHostId(uint64_t bodyId) const;
+  QSet<uint64_t> getMappedSet(uint64_t bodyId) const;
 
+  QSet<uint64_t> getBodySet() const;
+
+  /*!
+   * \brief Get the ID when only one body presents.
+   *
+   * \return 0 iff the body count is not 1.
+   */
+  uint64_t getSingleBodyId() const;
+
+
+  /*!
+   * \brief Erase a body.
+   *
+   * It erases the body if it exists in the mapped sets, otherwise it is erased
+   * as a host ID.
+   */
+  void erase(uint64_t bodyId);
+
+  void clear();
+
+  // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
+  // uses the body's identifier in multiple ways: for multiple meshes, at different
+  // levels in the agglomeration history, and as a key whose associated value is a
+  // tar file of meshes.  These distinct identifiers are created by encoding a
+  // raw body identifier.
 
   static uint64_t encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
   static uint64_t decode(uint64_t encodedId);

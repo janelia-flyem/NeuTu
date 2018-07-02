@@ -875,6 +875,8 @@ HEADERS += mainwindow.h \
     core/qthelper.h \
     flyem/zflyemtododelegate.h \
     zmenuconfig.h \
+    protocols/taskbodymerge.h \
+    flyem/zflyembodyidcolorscheme.h \
     zobjsmodelmanager.h \
     zobjsmodelfactory.h \
     flyem/zglobaldvidrepo.h \
@@ -1548,6 +1550,8 @@ SOURCES += main.cpp \
     core/qthelper.cpp \
     flyem/zflyemtododelegate.cpp \
     zmenuconfig.cpp \
+    protocols/taskbodymerge.cpp \
+    flyem/zflyembodyidcolorscheme.cpp \
     zobjsmodelmanager.cpp \
     zobjsmodelfactory.cpp \
     flyem/zglobaldvidrepo.cpp \

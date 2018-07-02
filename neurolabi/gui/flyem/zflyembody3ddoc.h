@@ -18,6 +18,7 @@
 #include "dvid/zdvidwriter.h"
 #include "zthreadfuturemap.h"
 #include "zflyembodyevent.h"
+#include "zflyembodymanager.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
@@ -81,7 +82,7 @@ public:
   flyem::EBodyType getBodyType() const { return m_bodyType; }
 
 //  QSet<uint64_t> getBodySet() const { return m_bodySet; }
-  QSet<uint64_t> getUnencodedBodySet() const;
+//  QSet<uint64_t> getUnencodedBodySet() const;
   QSet<uint64_t> getNormalBodySet() const;
 
   uint64_t getMappedId(uint64_t bodyId) const;
@@ -120,7 +121,7 @@ public:
   template <typename InputIterator>
   void addBodyChangeEvent(const InputIterator &first, const InputIterator &last);
 
-  bool hasBody(uint64_t bodyId, bool encoded) const;
+//  bool hasBody(uint64_t bodyId, bool encoded) const;
 
   inline const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -186,6 +187,7 @@ public:
   ZMesh *readMesh(const ZDvidReader &reader, const ZFlyEmBodyConfig &config);
   ZMesh *readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 
+#if 0
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
   // uses the body's identifier in multiple ways: for multiple meshes, at different
   // levels in the agglomeration history, and as a key whose associated value is a
@@ -196,9 +198,10 @@ public:
   static uint64_t decode(uint64_t encodedId);
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
+#endif
 
   bool fromTar(uint64_t id) const;
-  bool isTarMode() const;
+//  bool isTarMode() const;
 
   void setMinDsLevel(int res) {
     m_minDsLevel = res;
@@ -212,6 +215,7 @@ public:
   bool isCoarseLevel(int level) const;
 
   int getMaxDsLevel() const;
+  int getMinDsLevel() const;
 
   void makeAction(ZActionFactory::EAction item) override;
 
@@ -377,8 +381,8 @@ private:
 
   void processBodySetBuffer();
 
-  QMap<uint64_t, ZFlyEmBodyEvent> makeEventMap(bool synced, QSet<uint64_t> &bodySet);
-  QMap<uint64_t, ZFlyEmBodyEvent> makeEventMapUnsync(QSet<uint64_t> &bodySet);
+  QMap<uint64_t, ZFlyEmBodyEvent> makeEventMap(bool synced, ZFlyEmBodyManager &bm);
+  QMap<uint64_t, ZFlyEmBodyEvent> makeEventMapUnsync(ZFlyEmBodyManager &bm);
 
   bool synapseLoaded(uint64_t bodyId) const;
   void addSynapse(
@@ -421,6 +425,10 @@ private:
 
   void registerBody(uint64_t id);
 
+  const ZFlyEmBodyManager& getBodyManager() const;
+  ZFlyEmBodyManager& getBodyManager();
+
+
 signals:
   void todoVisibleChanged();
   void bodyMeshLoaded();
@@ -440,7 +448,6 @@ private:
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
   ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
-  int getMinDsLevel() const;
 
   void removeDiffBody();
 
@@ -454,8 +461,9 @@ private:
   bool toBeRemoved(uint64_t bodyId) const;
 
 private:
-  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
-  std::map<uint64_t, std::set<uint64_t>> m_tarIdToMeshIds;
+  ZFlyEmBodyManager m_bodyManager;
+//  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
+//  std::map<uint64_t, std::set<uint64_t>> m_tarIdToMeshIds;
 
   mutable QMutex m_BodySetMutex;
 
@@ -472,7 +480,7 @@ private:
 
   int m_minDsLevel = 0;
   int m_maxDsLevel = 5; //Start resolution level; bigger value means lower resolution
-//  int m_coarseLevel = 5;
+
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 
@@ -523,9 +531,10 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   std::cout << "Locking mutex ..." << std::endl;
   QMutexLocker locker(&m_eventQueueMutex);
 
-  QSet<uint64_t> bodySet = m_bodySet;
+  QSet<uint64_t> oldBodySet = getNormalBodySet();
+
   QMap<uint64_t, ZFlyEmBodyEvent> actionMap = makeEventMap(
-        false, bodySet);
+        false, getBodyManager());
 
 //  m_eventQueue.clear();
 
@@ -535,8 +544,8 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
     newBodySet.insert(bodyId);
   }
 
-  for (QSet<uint64_t>::const_iterator iter = m_bodySet.begin();
-       iter != m_bodySet.end(); ++iter) {
+  for (QSet<uint64_t>::const_iterator iter = oldBodySet.begin();
+       iter != oldBodySet.end(); ++iter) {
     uint64_t bodyId = *iter;
     if (!newBodySet.contains(bodyId)) {
       addEvent(ZFlyEmBodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
