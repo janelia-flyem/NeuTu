@@ -81,6 +81,7 @@ private:
   void initAngleForMergePosition(bool justLoaded);
   void zoomToMeshes(bool onlySmaller);
   void configureShowHiRes();
+  void showBirdsEyeView(bool show);
   void writeResult(const QString &result);
 };
 
