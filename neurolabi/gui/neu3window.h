@@ -137,6 +137,10 @@ private slots:
   void updateRoiWidget();
   void browse(double x, double y, double z);
 //  void browseInPlace(double x, double y, double z);
+
+  // Launch a native grayscale browser with a custom color mapping.
+  void browse(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor);
+
   void processKeyPressed(QKeyEvent* event);
   void updateBodyState();
   void setOption();
@@ -150,6 +154,8 @@ private slots:
 //  void updateEmbeddedGrayscale();
   void updateGrayscaleWidget();
   void updateSliceBrowser();
+  void updateSliceBrowserSelection();
+  void updateBrowserColor(const QHash<uint64_t, QColor> &idToColor);
 
   void hideGrayscale();
   void processCameraRotation();
