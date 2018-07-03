@@ -998,6 +998,7 @@ void TaskBodyMerge::configureShowHiRes()
         }
       }
     }
+    reply->deleteLater();
   });
 
   // Issue the DVID queries, each of which is a "range" query for
