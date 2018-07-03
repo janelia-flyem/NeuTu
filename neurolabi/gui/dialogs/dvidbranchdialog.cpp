@@ -77,8 +77,9 @@ DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
 // constants
 const QString DvidBranchDialog::KEY_DATASETS = "primary";
 const QString DvidBranchDialog::KEY_VERSION = "version";
+const QString DvidBranchDialog::KEY_CONFIG = "config";
 const int DvidBranchDialog::SUPPORTED_VERSION = 1;
-const QString DvidBranchDialog::URL_DATASETS = "https://raw.githubusercontent.com/janelia-flyem/DVID-datasets/master/datasets.json";
+const QString DvidBranchDialog::URL_DATASETS = "http://config.int.janelia.org/config/em_datasets";
 const QString DvidBranchDialog::KEY_NAME = "name";
 const QString DvidBranchDialog::KEY_SERVER = "server";
 const QString DvidBranchDialog::KEY_PORT = "port";
@@ -126,8 +127,8 @@ void DvidBranchDialog::loadDatasets() {
     // testing: from file
     // loadDatasetsFromFile();
 
-    // for real: from GitHub:
-    loadDatasetsFromGitHub();
+    // production: from config server
+    loadDatasetsFromConfigServer();
 }
 
 /*
@@ -198,34 +199,34 @@ void DvidBranchDialog::loadDatasetsFromFile() {
 }
 
 /*
- * retrieve the list of datasets from a GitHub repo; this
- * method initiates the network call
+ * retrieve the list of datasets from our config server; this method
+ * initiates the network call
  */
-void DvidBranchDialog::loadDatasetsFromGitHub() {
+void DvidBranchDialog::loadDatasetsFromConfigServer() {
     QUrl requestUrl;
     requestUrl.setUrl(URL_DATASETS);
     m_datasetReply = m_networkManager->get(QNetworkRequest(requestUrl));
-    connect(m_datasetReply, SIGNAL(finished()), this, SLOT(finishLoadingDatasetsFromGitHub()));
+    connect(m_datasetReply, SIGNAL(finished()), this, SLOT(finishLoadingDatasetsFromConfigServer()));
 }
 
-/* finish retrieving the list of datasets from GitHub;
- * this method gets the data from the network call and
- * triggers the last phase of the load
+/*
+ * finish loading from config server
  */
-void DvidBranchDialog::finishLoadingDatasetsFromGitHub(QNetworkReply::NetworkError error) {
+void DvidBranchDialog::finishLoadingDatasetsFromConfigServer(QNetworkReply::NetworkError error) {
     if (error != QNetworkReply::NoError) {
-        displayDatasetError(" Error reading dataset list from GitHub; status code: " +
+        displayDatasetError(" Error reading dataset list from config server; status code: " +
             m_datasetReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toString());
     } else {
         QString stringReply = (QString) m_datasetReply->readAll();
 
-        // check for GitHub returning a "404" string instead of an actual http status:
-        if (stringReply.startsWith("404")) {
-            displayDatasetError(" Dataset file couldn't be found!");
+        // the part we want is in the "config" key:
+        QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
+        QJsonObject temp = jsonResponse.object();
+        if (!temp.contains(KEY_CONFIG)) {
+            displayDatasetError("Error parsing dataset list from config server");
             return;
         }
-        QJsonDocument jsonResponse = QJsonDocument::fromJson(stringReply.toUtf8());
-        emit datasetsFinishedLoading(jsonResponse.object());
+        emit datasetsFinishedLoading(temp[KEY_CONFIG].toObject());
     }
 }
 

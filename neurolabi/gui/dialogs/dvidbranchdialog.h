@@ -33,7 +33,7 @@ private slots:
     void toggleDetailsPanel();
     void launchOldDialog();    
     void finishLoadingDatasets(QJsonObject jsonData);
-    void finishLoadingDatasetsFromGitHub(QNetworkReply::NetworkError error = QNetworkReply::NoError);
+    void finishLoadingDatasetsFromConfigServer(QNetworkReply::NetworkError error = QNetworkReply::NoError);
 
 signals:
     void datasetsFinishedLoading(QJsonObject jsonData);
@@ -41,6 +41,7 @@ signals:
 private:
     static const QString KEY_DATASETS;
     static const QString KEY_VERSION;
+    static const QString KEY_CONFIG;
     static const int SUPPORTED_VERSION;
     static const QString URL_DATASETS;
     static const QString KEY_NAME;
@@ -85,7 +86,7 @@ private:
     void showDetailsPanel();
     void hideDetailsPanel();
     void displayDatasetError(QString errorMessage);
-    void loadDatasetsFromGitHub();
+    void loadDatasetsFromConfigServer();
     void showEvent(QShowEvent *event);
 };
 
