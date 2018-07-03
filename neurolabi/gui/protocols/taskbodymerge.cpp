@@ -238,11 +238,13 @@ namespace {
     }
   }
 
+  QPointer<QNetworkAccessManager> s_networkManager;
+
   // A separate 3D view that provides a "bird's eye view" zoomed out to show both bodies,
   // so the user can quickly get a more global context.  The Z3DView take time to initialize,
   // so there is one such view shared by all the tasks in the assignment.
 
-  QPointer<QDockWidget> s_birdsEyeDockWidget ;
+  QPointer<QDockWidget> s_birdsEyeDockWidget;
   QPointer<Z3DView> s_birdsEyeView;
 
 }
@@ -257,8 +259,6 @@ TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
 
   loadJson(json);
   buildTaskWidget();
-
-  m_networkManager = new QNetworkAccessManager(m_widget);
 }
 
 QString TaskBodyMerge::tasktype()
@@ -1013,11 +1013,15 @@ void TaskBodyMerge::configureShowHiRes()
   m_showHiResAction->setEnabled(false);
   m_hiResCount = 0;
 
+  if (!s_networkManager) {
+    s_networkManager = new QNetworkAccessManager(m_bodyDoc->getParent3DWindow());
+  }
+
   // If the DVID query, issued below, returns a JSON object containing the key
   // then the tar archive exists.
 
-  disconnect(m_networkManager, 0, 0, 0);
-  connect(m_networkManager, &QNetworkAccessManager::finished,
+  disconnect(s_networkManager, 0, 0, 0);
+  connect(s_networkManager, &QNetworkAccessManager::finished,
           this, [=](QNetworkReply *reply) {
     if (reply->error() == QNetworkReply::NoError) {
       QByteArray replyBytes = reply->readAll();
@@ -1050,7 +1054,7 @@ void TaskBodyMerge::configureShowHiRes()
     std::string url = dvidUrl.getMeshesTarsKeyRangeUrl(id, id);
     QUrl requestUrl(url.c_str());
     QNetworkRequest request(requestUrl);
-    m_networkManager->get(request);
+    s_networkManager->get(request);
   }
 }
 

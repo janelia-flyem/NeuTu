@@ -10,7 +10,6 @@
 class ZFlyEmBody3dDoc;
 class QAction;
 class QCheckBox;
-class QNetworkAccessManager;
 class QRadioButton;
 
 class TaskBodyMerge : public TaskProtocolTask
@@ -48,7 +47,6 @@ private:
   ZPoint m_supervoxelPoint1;
   ZPoint m_supervoxelPoint2;
 
-  QNetworkAccessManager *m_networkManager;
   size_t m_hiResCount;
 
   QTime m_usageTimer;
