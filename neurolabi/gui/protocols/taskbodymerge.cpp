@@ -4,6 +4,7 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
+#include "neutubeconfig.h"
 #include "neu3window.h"
 #include "z3dcamera.h"
 #include "z3dcanvas.h"
@@ -15,6 +16,9 @@
 
 #include <limits>
 #include <random>
+
+#include <sys/types.h>
+#include <dirent.h>
 
 #include <QCheckBox>
 #include <QDateTime>
@@ -47,6 +51,7 @@ namespace {
   static const QString KEY_TIMESTAMP = "time";
   static const QString KEY_TIME_ZONE = "time zone";
   static const QString KEY_SOURCE = "source";
+  static const QString KEY_BUILD_VERSION = "build version";
   static const QString KEY_USAGE_TIME = "time to complete (ms)";
   static const QString KEY_RESULT_HISTORY = "result history";
   static const QString KEY_INITIAL_ANGLE_METHOD = "initial 3D angle method";
@@ -124,6 +129,37 @@ namespace {
   std::string getOutputInstanceName(const ZDvidTarget &dvidTarget)
   {
     return dvidTarget.getBodyLabelName() + "_merged";
+  }
+
+  // By convention, our Conda builds create a "conda-meta/neu3_XXX.json" file
+  // where "XXX" has information about the release version and the source version
+  // (Git SHA-1 hash).  Return the base name of that file as the build version.
+
+  std::string getBuildVersion()
+  {
+    std::string result;
+    std::string path = NeutubeConfig::getInstance().getApplicatinDir();
+#if defined(Q_OS_DARWIN)
+    path += "/../../..";
+#endif
+    path += "/../conda-meta";
+    if (DIR *dir = opendir(path.c_str())) {
+      while (struct dirent *ent = readdir(dir)) {
+        std::string filename(ent->d_name);
+        if (filename.substr(0, 4) == "neu3") {
+          std::size_t i = filename.rfind(".");
+          if (i != std::string::npos) {
+            filename = filename.substr(0, i);
+            if (result.empty()) {
+              result = filename;
+            } else {
+              result += "|" + filename;
+            }
+          }
+        }
+      }
+    }
+    return result;
   }
 
   // All the TaskBodyMerge instances loaded from one JSON file need certain changes
@@ -514,6 +550,8 @@ void TaskBodyMerge::buildTaskWidget()
 
 void TaskBodyMerge::onLoaded()
 {
+  LINFO() << "TaskBodyMerge: build version" << getBuildVersion() << ".";
+
   m_usageTimer.start();
 
   showBirdsEyeView(true);
@@ -1091,6 +1129,7 @@ void TaskBodyMerge::writeResult(const QString &result)
   json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
   json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
   json[KEY_SOURCE] = jsonSource();
+  json[KEY_BUILD_VERSION] = getBuildVersion().c_str();
 
   QJsonArray jsonTimes;
   std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
