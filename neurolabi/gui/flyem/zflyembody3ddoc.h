@@ -531,10 +531,11 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   std::cout << "Locking mutex ..." << std::endl;
   QMutexLocker locker(&m_eventQueueMutex);
 
-  QSet<uint64_t> oldBodySet = getNormalBodySet();
 
+  //Update event map and body set; the current event queue is cleared
   QMap<uint64_t, ZFlyEmBodyEvent> actionMap = makeEventMap(
         false, getBodyManager());
+  QSet<uint64_t> oldBodySet = getNormalBodySet();
 
 //  m_eventQueue.clear();
 
@@ -544,33 +545,39 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
     newBodySet.insert(bodyId);
   }
 
-  for (QSet<uint64_t>::const_iterator iter = oldBodySet.begin();
-       iter != oldBodySet.end(); ++iter) {
-    uint64_t bodyId = *iter;
-    if (!newBodySet.contains(bodyId)) {
-      addEvent(ZFlyEmBodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
-    }
+  QSet<uint64_t> addedBodySet = newBodySet - oldBodySet;
+  QSet<uint64_t> removedBodySet = oldBodySet - newBodySet;
+
+  //Remove bodies not in the current set
+  foreach (uint64_t bodyId, removedBodySet) {
+    addEvent(ZFlyEmBodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
   }
 
-//  QList<BodyEvent> oldEventList;
+  //Keep the event of common bodies
   for (QMap<uint64_t, ZFlyEmBodyEvent>::iterator
        iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
-    if (newBodySet.contains(iter.key())) {
+    uint64_t bodyId = iter.key();
+    if (newBodySet.contains(bodyId)) {
       if (iter.value().getAction() != ZFlyEmBodyEvent::ACTION_REMOVE) {
         //In the new body set had the bodyID and not remove, add event
         addEvent(iter.value());
-      } else {
-        addEvent(ZFlyEmBodyEvent::ACTION_ADD, iter.key(), 0, NULL);
       }
     }
   }
 
+  //Add new bodies
+  foreach (uint64_t bodyId, addedBodySet) {
+    addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
+  }
+
+#if 0
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
     if (!actionMap.contains(bodyId)) { //If the action map has no such body id
       addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
     }
   }
+#endif
 }
 
 #endif // ZFLYEMBODY3DDOC_H

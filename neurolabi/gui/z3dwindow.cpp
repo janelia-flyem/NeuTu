@@ -2642,7 +2642,11 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     break;
   case Qt::Key_T:
     if (event->modifiers() == Qt::NoModifier) {
-      getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE)->trigger();
+      if (getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE)->isChecked()) {
+        getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY)->trigger();
+      } else {
+        getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE)->trigger();
+      }
     } else if (event->modifiers() == Qt::ShiftModifier) {
       getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY)->trigger();
     }
