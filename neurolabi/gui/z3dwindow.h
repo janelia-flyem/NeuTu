@@ -558,14 +558,7 @@ private:
   QAction *m_saveAllPunctaAsAction;
   QAction *m_locatePunctumIn2DAction;
 
-//  QAction *m_viewTodoAction = NULL;
-
-  /*
-  QMenu *m_punctaContextMenu;
-  QMenu *m_traceMenu;
-  QMenu *m_volumeContextMenu;
-  QMenu *m_swcContextMenu;
-*/
+  QActionGroup *m_interactActionGroup = nullptr;
 
   ZSingleSwcNodeActionActivator m_singleSwcNodeActionActivator;
 

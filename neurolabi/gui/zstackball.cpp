@@ -282,9 +282,10 @@ void ZStackBall::displayHelper(
                            adjustedRadius, adjustedRadius);
     } else if (hasVisualEffect(neutube::display::Sphere::VE_RECTANGLE_SHAPE)) {
       double rectWidth = adjustedRadius * 2.0;
-      painter->drawRect(
-            QRectF(QPointF(shiftedCenter.x(), shiftedCenter.y()),
-                   QSizeF(rectWidth, rectWidth)));
+      QRectF rect;
+      rect.setSize(QSize(rectWidth, rectWidth));
+      rect.moveCenter(QPointF(shiftedCenter.x(), shiftedCenter.y()));
+      painter->drawRect(rect);
     }
 
     if (isFocused && hasVisualEffect(neutube::display::Sphere::VE_DOT_CENTER)) {

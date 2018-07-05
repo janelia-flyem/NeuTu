@@ -436,6 +436,8 @@ void ZInteractionEngine::enterLocateMode()
   exitEditMode();
   m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_LOCAL);
   m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
+  m_exploreMarker.setColor(Qt::red);
+  m_exploreMarker.setVisualEffect(neutube::display::Sphere::VE_DOT_CENTER);
   m_exploreMarker.setVisible(true);
   emit decorationUpdated();
 }
@@ -450,6 +452,10 @@ void ZInteractionEngine::enterBrowseMode()
   exitEditMode();
   m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_EXTERNALLY);
   m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
+  m_exploreMarker.setColor(Qt::green);
+  m_exploreMarker.setVisualEffect(
+        neutube::display::Sphere::VE_RECTANGLE_SHAPE |
+        neutube::display::Sphere::VE_CROSS_CENTER);
   m_exploreMarker.setVisible(true);
   emit decorationUpdated();
 }

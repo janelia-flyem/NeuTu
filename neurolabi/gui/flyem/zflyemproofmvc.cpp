@@ -952,7 +952,7 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   return window;
 }
 
-Z3DWindow* ZFlyEmProofMvc::makeMeshWindow(bool coarse)
+void ZFlyEmProofMvc::makeMeshWindow(bool coarse)
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_MESH);
   if (coarse) {
@@ -986,22 +986,16 @@ Z3DWindow* ZFlyEmProofMvc::makeMeshWindow(bool coarse)
               m_roiSourceList);
     }
   }
-
-  return window;
 }
 
-Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
+void ZFlyEmProofMvc::makeMeshWindow()
 {
-  m_meshWindow = makeMeshWindow(false);
-
-  return m_meshWindow;
+  makeMeshWindow(false);
 }
 
-Z3DWindow* ZFlyEmProofMvc::makeCoarseMeshWindow()
+void ZFlyEmProofMvc::makeCoarseMeshWindow()
 {
-  m_coarseMeshWindow = makeMeshWindow(true);
-
-  return m_coarseMeshWindow;
+  makeMeshWindow(true);
 }
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
@@ -2400,16 +2394,6 @@ void ZFlyEmProofMvc::runSplit()
 void ZFlyEmProofMvc::updateBodySelection()
 {
   if (getCompleteDocument() != NULL) {
-//    ZDvidLabelSlice *slice =
-//        getCompleteDocument()->getDvidLabelSlice(neutube::Z_AXIS);
-//    const std::set<uint64_t> &selected = slice->getSelectedOriginal();
-//    getCompleteDocument()->getMergeProject()->setSelection(
-//          selected, neutube::BODY_LABEL_ORIGINAL);
-//    updateCoarseBodyWindow();
-//    updateBodyWindow();
-//    updateSkeletonWindow();
-//    updateMeshWindow();
-//    m_mergeProject.update3DBodyView();
     if (!isHidden()) {
       getCompleteDocument()->beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
       ZDvidLabelSlice *tmpSlice = getCompleteDocument()->getDvidLabelSlice(
@@ -2429,17 +2413,6 @@ void ZFlyEmProofMvc::updateBodySelection()
     processLabelSliceSelectionChange();
   }
 }
-
-/*
-bool ZFlyEmProofMvc::checkInBody(uint64_t bodyId)
-{
-  if (getSupervisor() != NULL) {
-    return getSupervisor()->checkIn(bodyId);
-  }
-
-  return true;
-}
-*/
 
 uint64_t ZFlyEmProofMvc::getRandomBodyId(ZRandomGenerator &rand, ZIntPoint *pos)
 {
@@ -2758,22 +2731,6 @@ void ZFlyEmProofMvc::checkOutBody(flyem::EBodySplitMode mode)
   } else {
     emit messageGenerated(QString("Body lock service is not available."));
   }
-#if 0
-  std::set<uint64_t> bodyIdArray =
-      getCurrentSelectedBodyId(neutube::BODY_LABEL_MAPPED);
-  if (bodyIdArray.size() == 1) {
-    uint64_t bodyId = *(bodyIdArray.begin());
-    if (bodyId > 0) {
-      if (getSupervisor() != NULL) {
-        if (getSupervisor()->checkOut(bodyId)) {
-          emit messageGenerated(QString("Body %1 is locked.").arg(bodyId));
-        } else {
-          emit errorGenerated(QString("Failed to check out body %1.").arg(bodyId));
-        }
-      }
-    }
-  }
-#endif
 }
 
 void ZFlyEmProofMvc::annotateBody()
@@ -3534,6 +3491,10 @@ void ZFlyEmProofMvc::closeSkeletonWindow()
 
 void ZFlyEmProofMvc::showSkeletonWindow()
 {
+  showWindow(m_skeletonWindow, [=](){
+    this->makeSkeletonWindow();}, 5, "Skeleton View");
+
+#if 0
 //  m_mergeProject.showBody3d();
   if (m_skeletonWindow == NULL) {
     makeSkeletonWindow();
@@ -3547,14 +3508,15 @@ void ZFlyEmProofMvc::showSkeletonWindow()
   m_bodyViewWindow->setCurrentWidow(m_skeletonWindow);
   m_bodyViewWindow->show();
   m_bodyViewWindow->raise();
+#endif
 }
 
 void ZFlyEmProofMvc::showWindow(
-    Z3DWindow * &window, std::function<Z3DWindow*(void)> _makeWindow, int tab,
+    Z3DWindow * &window, std::function<void(void)> _makeWindow, int tab,
     const QString &title)
 {
   if (window == NULL) {
-    window = _makeWindow();
+    _makeWindow();
     m_bodyViewers->addWindow(tab, window, title);
     updateWindow(window);
     window->setYZView();
@@ -3569,8 +3531,8 @@ void ZFlyEmProofMvc::showWindow(
 
 void ZFlyEmProofMvc::showMeshWindow()
 {
-  showWindow(m_meshWindow, [=]()->Z3DWindow*{return this->makeMeshWindow();},
-             5, "Mesh View");
+  showWindow(m_meshWindow, [=](){this->makeMeshWindow();},
+             4, "Mesh View");
 #if 0
 //  m_mergeProject.showBody3d();
   if (m_meshWindow == NULL) {
@@ -3590,8 +3552,8 @@ void ZFlyEmProofMvc::showMeshWindow()
 
 void ZFlyEmProofMvc::showCoarseMeshWindow()
 {
-  showWindow(m_coarseMeshWindow, [=]()->Z3DWindow*{
-    return this->makeCoarseMeshWindow();}, 4, "Coarse Mesh View");
+  showWindow(m_coarseMeshWindow, [=](){
+    this->makeCoarseMeshWindow();}, 3, "Coarse Mesh View");
 #if 0
 //  m_mergeProject.showBody3d();
   if (m_coarseMeshWindow == NULL) {
