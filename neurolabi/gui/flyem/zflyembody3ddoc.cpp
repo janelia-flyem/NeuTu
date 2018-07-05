@@ -1392,6 +1392,11 @@ void ZFlyEmBody3dDoc::addEvent(const ZFlyEmBodyEvent &event, QMutex *mutex)
       undoStack()->clear();
     }
 
+#ifdef _DEBUG_
+    std::cout << "+++++Adding event" << std::endl;
+    event.print();
+#endif
+
     m_eventQueue.enqueue(event);
   }
 }
