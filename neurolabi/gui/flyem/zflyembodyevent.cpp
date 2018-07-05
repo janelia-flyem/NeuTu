@@ -162,15 +162,21 @@ bool ZFlyEmBodyEvent::isValid() const
   return hasValidBody() && !isNull();
 }
 
-ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(int minDsLevel) const
+ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(
+    const ZFlyEmBodyConfig &config, int minDsLevel) const
 {
   if (!isOneTime()) {
     if (getAction() == ACTION_ADD || getAction() == ACTION_UPDATE) {
-      return MakeHighResEvent(m_config, minDsLevel);
+      return MakeHighResEvent(config, minDsLevel);
     }
   }
 
   return ZFlyEmBodyEvent(ACTION_NULL, 0);
+}
+
+ZFlyEmBodyEvent ZFlyEmBodyEvent::makeHighResEvent(int minDsLevel) const
+{
+  return makeHighResEvent(m_config, minDsLevel);
 }
 
 ZFlyEmBodyEvent ZFlyEmBodyEvent::MakeHighResEvent(

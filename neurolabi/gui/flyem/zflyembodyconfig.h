@@ -6,6 +6,20 @@
 #include "neutube_def.h"
 #include "zintcuboid.h"
 
+/*!
+ * \brief The class of configuring a body, mainly for visualization.
+ *
+ * Each configuration has a body ID and the downsampling level to specifiy what
+ * body data should be obtained. The body can also be a hybrid of parts from
+ * different downsampling levels.
+ *
+ * Example of configuring a hybrid body of ID 1:
+ *
+ *   ZFlyEmBodyConfig config(1);
+ *   config.setRange(ZIntCuboid(ZIntPoint(10, 20, 30), ZIntPoint(100, 200, 300));
+ *   config.setLocalDsLevel(0); //High res in the box (10, 20, 30)->(100, 200, 300)
+ *   config.setDsLevel(5); //Low res for the rest part
+ */
 class ZFlyEmBodyConfig
 {
 public:
@@ -57,8 +71,6 @@ private:
   ZIntCuboid m_range;
   int m_dsLevel = 0;
   int m_localDsLevel = 0;
-//  int m_minDsLevel = 0;
-//  int m_maxDsLevel = 10;
 };
 
 #endif // ZFLYEMBODYCONFIG_H

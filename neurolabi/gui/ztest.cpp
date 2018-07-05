@@ -27219,7 +27219,7 @@ void ZTest::test(MainWindow *host)
   mesh1->save(GET_TEST_DATA_DIR + "/_test.obj");
 #endif
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "5421", 8900);
   target.setSegmentationName("segmentation");
@@ -27231,6 +27231,18 @@ void ZTest::test(MainWindow *host)
   reader.readBody(1539193374, true, &obj);
 
   obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 1
+  std::cout << ZFlyEmBodyManager::encode(3, 1) << std::endl;
+  std::cout << ZFlyEmBodyManager::encode(3, 1, false) << std::endl;
+  std::cout << ZFlyEmBodyManager::encode(3, 2) << std::endl;
+  std::cout << ZFlyEmBodyManager::encode(3, 2, false) << std::endl;
+  std::cout << ZFlyEmBodyManager::encodesTar(10100000000003) << std::endl;
+  std::cout << ZFlyEmBodyManager::encodesTar(100000000003) << std::endl;
+  std::cout << ZFlyEmBodyManager::encodedLevel(10200000000003) << std::endl;
+  std::cout << ZFlyEmBodyManager::encodedLevel(200000000003) << std::endl;
+
 #endif
 
   std::cout << "Done." << std::endl;

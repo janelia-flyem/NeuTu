@@ -81,6 +81,8 @@ public:
   ZFlyEmBodyConfig getBodyConfig() const;
 
   ZFlyEmBodyEvent makeHighResEvent(int minDsLevel) const;
+  ZFlyEmBodyEvent makeHighResEvent(
+      const ZFlyEmBodyConfig &config, int minDsLevel) const;
   static ZFlyEmBodyEvent MakeHighResEvent(
       const ZFlyEmBodyConfig &config, int minDsLevel);
 

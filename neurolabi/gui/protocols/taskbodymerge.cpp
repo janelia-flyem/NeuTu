@@ -839,7 +839,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
 
 void TaskBodyMerge::zoomToMergePosition(bool justLoaded)
 {
-  if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+  if (m_bodyDoc->getParent3DWindow()) {
     ZPoint pos = mergePosition();
 
     std::size_t index1 = 1;

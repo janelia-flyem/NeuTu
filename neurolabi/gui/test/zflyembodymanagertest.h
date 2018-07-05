@@ -50,12 +50,9 @@ TEST(ZFlyEmBodyManager, Basic)
 
   ASSERT_EQ(2, (int) bm.getSingleBodyId());
 
-  bm.erase(300);
+  bm.eraseSubbody(300);
   ASSERT_EQ(300, (int) bm.getHostId(300));
   ASSERT_EQ(2, (int) bm.getSingleBodyId());
-
-  bm.erase(2);
-  ASSERT_TRUE(bm.isEmpty());
 }
 
 #endif
