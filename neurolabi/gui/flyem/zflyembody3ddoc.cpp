@@ -555,8 +555,8 @@ void ZFlyEmBody3dDoc::showMoreDetail(uint64_t bodyId, const ZIntCuboid &range)
   QMutexLocker locker(&m_eventQueueMutex);
   if (m_bodyManager.contains(bodyId)) {
     if (!toBeRemoved(bodyId)) {
-      ZFlyEmBodyEvent bodyEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId);
-//      bodyEvent.addUpdateFlag(ZFlyEmBodyEvent::UPDATE_MULTIRES);
+      ZFlyEmBodyEvent bodyEvent(ZFlyEmBodyEvent::ACTION_UPDATE, bodyId);
+      bodyEvent.addUpdateFlag(ZFlyEmBodyEvent::UPDATE_MULTIRES);
       bodyEvent.setBodyColor(getBodyColor(bodyId));
       bodyEvent.setRange(range);
       bodyEvent.setDsLevel(getMinDsLevel());

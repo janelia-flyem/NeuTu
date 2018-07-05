@@ -211,10 +211,10 @@ void Z3DWindow::createToolBar()
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE));
     m_toolBar->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
 
-    QActionGroup *group = new QActionGroup(this);
-    group->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM));
-    group->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE));
-    group->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
+//    QActionGroup *group = new QActionGroup(this);
+//    group->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM));
+//    group->addAction(getAction(ZActionFactory::ACTION_ACTIVATE_LOCATE));
+//    group->addAction(getAction(ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY));
 
   }
 
@@ -480,12 +480,18 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_ACTIVATE_TODO_ITEM:
     action = m_actionLibrary->getAction(
           item, this, SLOT(activateTodoAction(bool)));
+    if (m_actionLibrary->actionCreatedUponRetrieval()) {
+      m_interactActionGroup->addAction(action);
+    }
     break;
   case ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM:
     action = m_actionLibrary->getAction(
           item, this, SLOT(activateTodoAction(bool)));
     if (action != NULL) {
       action->setShortcut(Qt::Key_B);
+    }
+    if (m_actionLibrary->actionCreatedUponRetrieval()) {
+      m_interactActionGroup->addAction(action);
     }
     break;
   case ZActionFactory::ACTION_ACTIVATE_LOCATE:
@@ -494,12 +500,18 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     if (action != NULL) {
       action->setShortcut(Qt::Key_T);
     }
+    if (m_actionLibrary->actionCreatedUponRetrieval()) {
+      m_interactActionGroup->addAction(action);
+    }
     break;
   case ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY:
     action = m_actionLibrary->getAction(
           item, this, SLOT(viewDataExternally(bool)));
     if (action != NULL) {
       action->setShortcut(Qt::SHIFT + Qt::Key_T);
+    }
+    if (m_actionLibrary->actionCreatedUponRetrieval()) {
+      m_interactActionGroup->addAction(action);
     }
     break;
   case ZActionFactory::ACTION_CHECK_TODO_ITEM:
@@ -563,6 +575,8 @@ void Z3DWindow::createActions()
 
   m_actionLibrary = new ZActionLibrary(this);
   m_menuFactory = new ZStackDocMenuFactory;
+
+  m_interactActionGroup = new QActionGroup(this);
 
 //  m_undoAction = m_doc->getAction(ZActionFactory::ACTION_UNDO);
 //  m_redoAction = m_doc->getAction(ZActionFactory::ACTION_REDO);

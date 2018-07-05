@@ -122,8 +122,6 @@ public:
   Z3DWindow* makeExternalSkeletonWindow(neutube3d::EWindowType windowType);
   Z3DWindow* makeExternalMeshWindow(neutube3d::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
-  Z3DWindow* makeMeshWindow();
-  Z3DWindow* makeCoarseMeshWindow();
 
 
   void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
@@ -470,14 +468,16 @@ private:
   void makeSkeletonWindow();
   void makeSplitWindow();
   void makeExternalNeuronWindow();
+  void makeMeshWindow();
+  void makeCoarseMeshWindow();
   void makeOrthoWindow();
   void makeBigOrthoWindow();
   void makeOrthoWindow(int width, int height, int depth);
 
-  void showWindow(Z3DWindow *&window, std::function<Z3DWindow*(void)> _makeWindow,
+  void showWindow(Z3DWindow *&window, std::function<void(void)> _makeWindow,
                   int tab, const QString &title);
 
-  Z3DWindow* makeMeshWindow(bool coarse);
+  void makeMeshWindow(bool coarse);
 
   void updateWindow(Z3DWindow *window);
 
