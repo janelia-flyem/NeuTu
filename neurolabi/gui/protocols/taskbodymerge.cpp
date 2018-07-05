@@ -333,8 +333,10 @@ QWidget *TaskBodyMerge::getTaskWidget()
   // Now set the visible vodies.  For fastest task loading, start with the original bodies
   // at low resolution.
 
-  m_visibleBodies.insert(m_bodyId1);
-  m_visibleBodies.insert(m_bodyId2);
+  if (m_visibleBodies.isEmpty()) {
+    m_visibleBodies.insert(m_bodyId1);
+    m_visibleBodies.insert(m_bodyId2);
+  }
 
   configureShowHiRes();
   applyColorMode(true);
@@ -383,6 +385,7 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
     visible.insert(ZFlyEmBody3dDoc::encode(m_bodyId2, level));
 
     // Going back to low resolution is not working for some reason, so disable it for now.
+
     m_showHiResCheckBox->setEnabled(false);
   } else {
     visible.insert(m_bodyId1);
@@ -1004,6 +1007,13 @@ void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
 
 void TaskBodyMerge::configureShowHiRes()
 {
+  if (m_showHiResCheckBox->isChecked()) {
+
+    // Going back to low resolution is not working for some reason, so disable it for now.
+
+    return;
+  }
+
   ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
 
   // Disable the controls for switching to high resolution until we verify that the
