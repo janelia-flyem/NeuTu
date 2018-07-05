@@ -39,12 +39,13 @@ public:
   /*!
    * \brief Erase a body.
    *
-   * It erases the body if it exists in the mapped sets, otherwise it is erased
-   * as a host ID.
+   * It erases \a bodyId from the mapped sets.
    */
-  void erase(uint64_t bodyId);
+  void eraseSubbody(uint64_t bodyId);
 
   void clear();
+
+  void print() const;
 
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
   // uses the body's identifier in multiple ways: for multiple meshes, at different

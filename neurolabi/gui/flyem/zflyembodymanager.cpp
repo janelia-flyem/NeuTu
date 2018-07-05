@@ -1,5 +1,7 @@
 #include "zflyembodymanager.h"
 
+#include <iostream>
+
 ZFlyEmBodyManager::ZFlyEmBodyManager()
 {
 }
@@ -12,6 +14,10 @@ bool ZFlyEmBodyManager::isEmpty() const
 void ZFlyEmBodyManager::registerBody(uint64_t id, const QSet<uint64_t> &comp)
 {
   m_bodyMap[decode(id)] = comp;
+
+#ifdef _DEBUG_2
+  print();
+#endif
 }
 
 void ZFlyEmBodyManager::registerBody(uint64_t id)
@@ -73,6 +79,7 @@ uint64_t ZFlyEmBodyManager::getSingleBodyId() const
   return bodyId;
 }
 
+/*
 void ZFlyEmBodyManager::erase(uint64_t bodyId)
 {
   bool removed = false;
@@ -88,10 +95,29 @@ void ZFlyEmBodyManager::erase(uint64_t bodyId)
     m_bodyMap.remove(bodyId);
   }
 }
+*/
+
+void ZFlyEmBodyManager::eraseSubbody(uint64_t bodyId)
+{
+  for (QMap<uint64_t, QSet<uint64_t> >::iterator iter = m_bodyMap.begin();
+       iter != m_bodyMap.end(); ++iter) {
+    if (iter.value().remove(bodyId)) {
+      break;
+    }
+  }
+}
 
 void ZFlyEmBodyManager::clear()
 {
   m_bodyMap.clear();
+}
+
+void ZFlyEmBodyManager::print() const
+{
+  std::cout << "Body manager: " << m_bodyMap.size() << std::endl;
+  for (auto iter = m_bodyMap.begin(); iter != m_bodyMap.end(); ++iter) {
+    std::cout << iter.key() << ": " << iter.value().size() << std::endl;
+  }
 }
 
 namespace {

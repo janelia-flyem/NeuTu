@@ -88,7 +88,7 @@ public:
   uint64_t getMappedId(uint64_t bodyId) const;
 
   void addBody(const ZFlyEmBodyConfig &config);
-  void updateBody(const ZFlyEmBodyConfig &config);
+  void updateBody(ZFlyEmBodyConfig &config);
   void removeBody(uint64_t bodyId);
   void updateBody(uint64_t bodyId, const QColor &color);
   void updateBody(uint64_t bodyId, const QColor &color, flyem::EBodyType type);
@@ -367,8 +367,8 @@ private:
 
   void updateDvidInfo();
 
-  void addBodyFunc(const ZFlyEmBodyConfig &config);
-  void addBodyMeshFunc(const ZFlyEmBodyConfig &config);
+  void addBodyFunc(ZFlyEmBodyConfig &config);
+  void addBodyMeshFunc(ZFlyEmBodyConfig &config);
 //  void addBodyFunc(uint64_t bodyId, const QColor &color, int resLevel);
 //  void addBodyMeshFunc(uint64_t bodyId, const QColor &color, int resLevel);
 

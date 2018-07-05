@@ -123,6 +123,8 @@ public:
   Z3DWindow* makeExternalMeshWindow(neutube3d::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
   Z3DWindow* makeMeshWindow();
+  Z3DWindow* makeCoarseMeshWindow();
+
 
   void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
 
@@ -255,6 +257,7 @@ public slots:
   void showFineBody3d();
   void showSkeletonWindow();
   void showMeshWindow();
+  void showCoarseMeshWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
   void showRoi3dWindow();
@@ -384,6 +387,7 @@ protected slots:
   void detachSplitWindow();
   void detachSkeletonWindow();
   void detachMeshWindow();
+  void detachCoarseMeshWindow();
   void detachObjectWindow();
   void detachRoiWindow();
   void detachExternalNeuronWindow();
@@ -401,6 +405,7 @@ protected slots:
   void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void updateMeshWindow();
+  void updateCoarseMeshWindow();
   void cropCoarseBody3D();
   void showBodyGrayscale();
   void updateSplitBody();
@@ -468,6 +473,13 @@ private:
   void makeOrthoWindow();
   void makeBigOrthoWindow();
   void makeOrthoWindow(int width, int height, int depth);
+
+  void showWindow(Z3DWindow *&window, std::function<Z3DWindow*(void)> _makeWindow,
+                  int tab, const QString &title);
+
+  Z3DWindow* makeMeshWindow(bool coarse);
+
+  void updateWindow(Z3DWindow *window);
 
   ZWindowFactory makeExternalWindowFactory(neutube3d::EWindowType windowType);
 
@@ -543,6 +555,7 @@ protected:
   Z3DWindow *m_bodyWindow;
   Z3DWindow *m_skeletonWindow;
   Z3DWindow *m_meshWindow;
+  Z3DWindow *m_coarseMeshWindow;
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
@@ -600,6 +613,8 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(showSkeletonWindow()));
   connect(panel, SIGNAL(meshViewTriggered()),
           this, SLOT(showMeshWindow()));
+  connect(panel, SIGNAL(coarseMeshViewTriggered()),
+          this, SLOT(showCoarseMeshWindow()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
   connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),

@@ -1,5 +1,6 @@
 #include "zflyemproofmvc.h"
 
+#include <functional>
 #include <QFuture>
 #include <QtConcurrentRun>
 #include <QMessageBox>
@@ -310,6 +311,7 @@ void ZFlyEmProofMvc::initBodyWindow()
   m_bodyWindow = NULL;
   m_skeletonWindow = NULL;
   m_meshWindow = NULL;
+  m_coarseMeshWindow = NULL;
   m_splitWindow = NULL;
 }
 
@@ -404,6 +406,11 @@ void ZFlyEmProofMvc::detachSkeletonWindow()
 void ZFlyEmProofMvc::detachMeshWindow()
 {
   m_meshWindow = NULL;
+}
+
+void ZFlyEmProofMvc::detachCoarseMeshWindow()
+{
+  m_coarseMeshWindow = NULL;
 }
 
 void ZFlyEmProofMvc::detachObjectWindow()
@@ -602,6 +609,8 @@ void ZFlyEmProofMvc::setWindowSignalSlot(Z3DWindow *window)
       connect(window, SIGNAL(destroyed()), this, SLOT(detachRoiWindow()));
     } else if (window == m_meshWindow) {
       connect(window, SIGNAL(destroyed()), this, SLOT(detachMeshWindow()));
+    } else if (window == m_coarseMeshWindow) {
+      connect(window, SIGNAL(destroyed()), this, SLOT(detachCoarseMeshWindow()));
     }
     connect(window, SIGNAL(locating2DViewTriggered(int, int, int, int)),
             this, SLOT(zoomTo(int, int, int, int)));
@@ -943,39 +952,56 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   return window;
 }
 
-Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
+Z3DWindow* ZFlyEmProofMvc::makeMeshWindow(bool coarse)
 {
   ZFlyEmBody3dDoc *doc = makeBodyDoc(flyem::BODY_MESH);
-  doc->useCoarseOnly(); //for testing
+  if (coarse) {
+    doc->useCoarseOnly();
+  }
 
-#ifdef _DEBUG_2
-  doc->setMaxResLevel(0);
-#endif
+  Z3DWindow *window = m_bodyWindowFactory->make3DWindow(doc);
+  if (coarse) {
+    m_coarseMeshWindow = window;
+  } else {
+    m_meshWindow = window;
+  }
 
-  m_meshWindow = m_bodyWindowFactory->make3DWindow(doc);
+  doc->showSynapse(window->isLayerVisible(neutube3d::LAYER_PUNCTA));
 
-  doc->showSynapse(m_meshWindow->isLayerVisible(neutube3d::LAYER_PUNCTA));
-
-  connect(m_meshWindow->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
+  connect(window->getPunctaFilter(), SIGNAL(objVisibleChanged(bool)),
           doc, SLOT(showSynapse(bool)));
-  setWindowSignalSlot(m_meshWindow);
+  setWindowSignalSlot(window);
 
-  m_meshWindow->getMeshFilter()->setColorMode("Mesh Color");
-  m_meshWindow->setWindowType(neutube3d::TYPE_MESH);
-  m_meshWindow->readSettings();
+  window->getMeshFilter()->setColorMode("Mesh Color");
+  window->setWindowType(neutube3d::TYPE_MESH);
+  window->readSettings();
 
   if (m_doc->getParentMvc() != NULL) {
     ZFlyEmMisc::Decorate3dBodyWindow(
-          m_meshWindow, getDvidInfo(),
+          window, getDvidInfo(),
           m_doc->getParentMvc()->getView()->getViewParameter());
     if(m_ROILoaded) {
-        m_meshWindow->getROIsDockWidget()->loadROIs(
-              m_skeletonWindow, m_roiList, m_loadedROIs,
+        window->getROIsDockWidget()->loadROIs(
+              window, m_roiList, m_loadedROIs,
               m_roiSourceList);
     }
   }
 
+  return window;
+}
+
+Z3DWindow* ZFlyEmProofMvc::makeMeshWindow()
+{
+  m_meshWindow = makeMeshWindow(false);
+
   return m_meshWindow;
+}
+
+Z3DWindow* ZFlyEmProofMvc::makeCoarseMeshWindow()
+{
+  m_coarseMeshWindow = makeMeshWindow(true);
+
+  return m_coarseMeshWindow;
 }
 
 void ZFlyEmProofMvc::makeSkeletonWindow()
@@ -1140,29 +1166,32 @@ void ZFlyEmProofMvc::updateBodyWindowDeep()
 
 void ZFlyEmProofMvc::updateSkeletonWindow()
 {
-  if (m_skeletonWindow != NULL) {
+  updateWindow(m_skeletonWindow);
+}
+
+void ZFlyEmProofMvc::updateMeshWindow()
+{
+  updateWindow(m_meshWindow);
+}
+
+void ZFlyEmProofMvc::updateCoarseMeshWindow()
+{
+  updateWindow(m_coarseMeshWindow);
+}
+
+void ZFlyEmProofMvc::updateWindow(Z3DWindow *window)
+{
+  if (window != NULL) {
     std::set<uint64_t> bodySet =
         getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
     ZFlyEmBody3dDoc *doc =
-        qobject_cast<ZFlyEmBody3dDoc*>(m_skeletonWindow->getDocument());
+        qobject_cast<ZFlyEmBody3dDoc*>(window->getDocument());
     if (doc != NULL){
       doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
     }
   }
 }
 
-void ZFlyEmProofMvc::updateMeshWindow()
-{
-  if (m_meshWindow != NULL) {
-    std::set<uint64_t> bodySet =
-        getCompleteDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
-    ZFlyEmBody3dDoc *doc =
-        qobject_cast<ZFlyEmBody3dDoc*>(m_meshWindow->getDocument());
-    if (doc != NULL){
-      doc->addBodyChangeEvent(bodySet.begin(), bodySet.end());
-    }
-  }
-}
 
 void ZFlyEmProofMvc::updateCoarseBodyWindowColor()
 {
@@ -3497,22 +3526,6 @@ void ZFlyEmProofMvc::showBigOrthoWindow(double x, double y, double z)
   m_orthoWindow->updateData(ZPoint(x, y, z).toIntPoint());
 }
 
-void ZFlyEmProofMvc::showMeshWindow()
-{
-//  m_mergeProject.showBody3d();
-  if (m_meshWindow == NULL) {
-    makeMeshWindow();
-    m_bodyViewers->addWindow(4, m_meshWindow, "Mesh View");
-    updateMeshWindow();
-    m_meshWindow->setYZView();
-  } else {
-    m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(4));
-  }
-
-  m_bodyViewWindow->setCurrentWidow(m_meshWindow);
-  m_bodyViewWindow->show();
-  m_bodyViewWindow->raise();
-}
 
 void ZFlyEmProofMvc::closeSkeletonWindow()
 {
@@ -3535,6 +3548,67 @@ void ZFlyEmProofMvc::showSkeletonWindow()
   m_bodyViewWindow->show();
   m_bodyViewWindow->raise();
 }
+
+void ZFlyEmProofMvc::showWindow(
+    Z3DWindow * &window, std::function<Z3DWindow*(void)> _makeWindow, int tab,
+    const QString &title)
+{
+  if (window == NULL) {
+    window = _makeWindow();
+    m_bodyViewers->addWindow(tab, window, title);
+    updateWindow(window);
+    window->setYZView();
+  } else {
+    m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(tab));
+  }
+
+  m_bodyViewWindow->setCurrentWidow(window);
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+}
+
+void ZFlyEmProofMvc::showMeshWindow()
+{
+  showWindow(m_meshWindow, [=]()->Z3DWindow*{return this->makeMeshWindow();},
+             5, "Mesh View");
+#if 0
+//  m_mergeProject.showBody3d();
+  if (m_meshWindow == NULL) {
+    makeMeshWindow();
+    m_bodyViewers->addWindow(4, m_meshWindow, "Mesh View");
+    updateMeshWindow();
+    m_meshWindow->setYZView();
+  } else {
+    m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(4));
+  }
+
+  m_bodyViewWindow->setCurrentWidow(m_meshWindow);
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+#endif
+}
+
+void ZFlyEmProofMvc::showCoarseMeshWindow()
+{
+  showWindow(m_coarseMeshWindow, [=]()->Z3DWindow*{
+    return this->makeCoarseMeshWindow();}, 4, "Coarse Mesh View");
+#if 0
+//  m_mergeProject.showBody3d();
+  if (m_coarseMeshWindow == NULL) {
+    makeCoarseMeshWindow();
+    m_bodyViewers->addWindow(5, m_coarseMeshWindow, "Coarse Mesh View");
+    updateCoarseMeshWindow();
+    m_coarseMeshWindow->setYZView();
+  } else {
+    m_bodyViewers->setCurrentIndex(m_bodyViewers->getTabIndex(5));
+  }
+
+  m_bodyViewWindow->setCurrentWidow(m_coarseMeshWindow);
+  m_bodyViewWindow->show();
+  m_bodyViewWindow->raise();
+#endif
+}
+
 
 /*
 void ZFlyEmProofMvc::closeBodyWindow(int index)
@@ -3582,6 +3656,7 @@ void ZFlyEmProofMvc::closeAllBodyWindow()
   closeBodyWindow(m_splitWindow);
   closeBodyWindow(m_skeletonWindow);
   closeBodyWindow(m_meshWindow);
+  closeBodyWindow(m_coarseMeshWindow);
   closeBodyWindow(m_externalNeuronWindow);
 }
 
@@ -4526,6 +4601,7 @@ void ZFlyEmProofMvc::processViewChangeCustom(const ZStackViewParam &viewParam)
     updateBodyWindowPlane(m_bodyWindow, viewParam);
     updateBodyWindowPlane(m_skeletonWindow, viewParam);
     updateBodyWindowPlane(m_meshWindow, viewParam);
+    updateBodyWindowPlane(m_coarseMeshWindow, viewParam);
     updateBodyWindowPlane(m_externalNeuronWindow, viewParam);
 
     m_currentViewParam = viewParam;
@@ -5204,6 +5280,12 @@ void ZFlyEmProofMvc::updateRoiWidget()
   if (m_meshWindow) {
     m_meshWindow->getROIsDockWidget()->loadROIs(
           m_meshWindow, m_roiList, m_loadedROIs,
+          m_roiSourceList);
+  }
+
+  if (m_coarseMeshWindow) {
+    m_coarseMeshWindow->getROIsDockWidget()->loadROIs(
+          m_coarseMeshWindow, m_roiList, m_loadedROIs,
           m_roiSourceList);
   }
 }

@@ -79,6 +79,8 @@ FlyEmProofControlForm::FlyEmProofControlForm(QWidget *parent) :
           this, SIGNAL(skeletonViewTriggered()));
   connect(ui->meshPushButton, SIGNAL(clicked()),
           this, SIGNAL(meshViewTriggered()));
+  connect(ui->coarseMeshPushButton, SIGNAL(clicked()),
+          this, SIGNAL(coarseMeshViewTriggered()));
 
   connect(getAssignedBookmarkView(), SIGNAL(locatingBookmark(const ZFlyEmBookmark*)),
           this, SLOT(locateBookmark(const ZFlyEmBookmark*)));
