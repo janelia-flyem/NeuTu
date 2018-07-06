@@ -344,9 +344,11 @@ QWidget *TaskBodyMerge::getTaskWidget()
     m_visibleBodies.insert(m_bodyId2);
   }
 
-  QString result = readResult();
-  if (!result.isEmpty()) {
-    restoreResult(result);
+  if (!m_lastSavedButton) {
+    QString result = readResult();
+    if (!result.isEmpty()) {
+      restoreResult(result);
+    }
   }
 
   configureShowHiRes();
@@ -389,7 +391,11 @@ void TaskBodyMerge::onButtonToggled()
 
   if (m_lastSavedButton) {
     if (!m_lastSavedButton->isChecked()) {
+#if defined(Q_OS_DARWIN)
       m_lastSavedButton->setStyleSheet("QRadioButton { color: red }");
+#else
+      m_lastSavedButton->setStyleSheet("QRadioButton { color: red; border: none }");
+#endif
     } else {
       m_lastSavedButton->setStyleSheet("");
     }
@@ -1116,7 +1122,9 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
 
 void TaskBodyMerge::writeResult()
 {
-  m_lastSavedButton->setStyleSheet("");
+  if (m_lastSavedButton) {
+    m_lastSavedButton->setStyleSheet("");
+  }
 
   QString result;
   if (m_mergeButton->isChecked()) {
