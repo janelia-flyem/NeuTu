@@ -62,6 +62,7 @@ private:
   QRadioButton *m_mergeLaterButton;
   QRadioButton *m_irrelevantButton;
   QRadioButton *m_dontKnowButton;
+  QRadioButton *m_lastSavedButton;
   QCheckBox *m_showHiResCheckBox;
   QMenu *m_menu;
   QAction *m_showHiResAction;
@@ -80,7 +81,11 @@ private:
   void zoomToMeshes(bool onlySmaller);
   void configureShowHiRes();
   void showBirdsEyeView(bool show);
+  void writeResult();
   void writeResult(const QString &result);
+  QString readResult();
+  void restoreResult(const QString &result);
+  void suggestWriting();
 };
 
 #endif // TASKBODYMERGE_H
