@@ -285,12 +285,14 @@ bool TaskBodyMerge::skip()
     // of these tasks in the results, so write that record here.
 
     writeResult("autoSkippedNoBody");
+    m_lastSavedButton = nullptr;
     return true;
   } else if (m_bodyId1 == m_bodyId2) {
 
     // Likewise for redundant tasks.
 
     writeResult("autoSkippedSameBody");
+    m_lastSavedButton = nullptr;
     return true;
   }
   return false;
@@ -298,6 +300,8 @@ bool TaskBodyMerge::skip()
 
 void TaskBodyMerge::beforeNext()
 {
+  suggestWriting();
+
   // Clear the mesh cache when changing tasks so it does not grow without bound
   // during an assignment, which causes a performance degradation.  The assumption
   // is that improving performance as a user progresses through an assignment is
@@ -309,6 +313,8 @@ void TaskBodyMerge::beforeNext()
 
 void TaskBodyMerge::beforePrev()
 {
+  suggestWriting();
+
   // See the comment in beforeNext().
 
   m_bodyDoc->clearGarbage(true);
@@ -338,8 +344,14 @@ QWidget *TaskBodyMerge::getTaskWidget()
     m_visibleBodies.insert(m_bodyId2);
   }
 
+  QString result = readResult();
+  if (!result.isEmpty()) {
+    restoreResult(result);
+  }
+
   configureShowHiRes();
   applyColorMode(true);
+
   return m_widget;
 }
 
@@ -374,6 +386,14 @@ void TaskBodyMerge::onTriggerShowHiRes()
 void TaskBodyMerge::onButtonToggled()
 {
   updateColors();
+
+  if (m_lastSavedButton) {
+    if (!m_lastSavedButton->isChecked()) {
+      m_lastSavedButton->setStyleSheet("QRadioButton { color: red }");
+    } else {
+      m_lastSavedButton->setStyleSheet("");
+    }
+  }
 }
 
 void TaskBodyMerge::onShowHiResStateChanged(int state)
@@ -507,6 +527,11 @@ void TaskBodyMerge::buildTaskWidget()
   m_dontKnowButton = new QRadioButton("Don't Know", m_widget);
   connect(m_dontKnowButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
+  // Points to the button corresonding to the result most recently saved to DVID,
+  // to support feedback of the need to save a changed result.
+
+  m_lastSavedButton = nullptr;
+
   QHBoxLayout *radioTopLayout = new QHBoxLayout;
   radioTopLayout->addWidget(m_dontMergeButton);
   radioTopLayout->addWidget(m_mergeButton);
@@ -573,20 +598,7 @@ void TaskBodyMerge::onCompleted()
 
   m_usageTimer.start();
 
-  QString result;
-  if (m_mergeButton->isChecked()) {
-    result = "merge";
-  } else if (m_dontMergeButton->isChecked()) {
-    result = "dontMerge";
-  } else if (m_mergeLaterButton->isChecked()) {
-    result = "mergeLater";
-  } else if (m_irrelevantButton->isChecked()) {
-    result = "irrelevant";
-  } else {
-    result = "?";
-  }
-
-  writeResult(result);
+  writeResult();
 }
 
 void TaskBodyMerge::applyColorMode(bool merging)
@@ -1102,6 +1114,31 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
   }
 }
 
+void TaskBodyMerge::writeResult()
+{
+  m_lastSavedButton->setStyleSheet("");
+
+  QString result;
+  if (m_mergeButton->isChecked()) {
+    result = "merge";
+    m_lastSavedButton = m_mergeButton;
+  } else if (m_dontMergeButton->isChecked()) {
+    result = "dontMerge";
+    m_lastSavedButton = m_dontMergeButton;
+  } else if (m_mergeLaterButton->isChecked()) {
+    result = "mergeLater";
+    m_lastSavedButton = m_mergeLaterButton;
+  } else if (m_irrelevantButton->isChecked()) {
+    result = "irrelevant";
+    m_lastSavedButton = m_irrelevantButton;
+  } else {
+    result = "?";
+    m_lastSavedButton = m_dontKnowButton;
+  }
+
+  writeResult(result);
+}
+
 void TaskBodyMerge::writeResult(const QString &result)
 {
   ZDvidReader reader;
@@ -1161,4 +1198,71 @@ void TaskBodyMerge::writeResult(const QString &result)
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
   std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
   writer.writeJsonString(instance, key, jsonStr);
+}
+
+QString TaskBodyMerge::readResult()
+{
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (reader.open(m_bodyDoc->getDvidTarget())) {
+    std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
+    if (reader.hasData(instance)) {
+      std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
+      ZJsonObject valueObj = reader.readJsonObjectFromKey(instance.c_str(), key.c_str());
+      if (valueObj.isObject()){
+        const char *resultKey = KEY_RESULT.toLatin1().data();
+        if (valueObj.hasKey(resultKey)) {
+          ZJsonValue resultValue = valueObj.value(resultKey);
+          if (resultValue.isString()) {
+            return QString(resultValue.toString().c_str());
+          }
+        }
+      }
+    }
+  }
+  return QString();
+}
+
+void TaskBodyMerge::restoreResult(const QString &result)
+{
+  if (result == "merge") {
+    m_mergeButton->setChecked(true);
+    m_lastSavedButton = m_mergeButton;
+  } else if (result == "dontMerge") {
+    m_dontMergeButton->setChecked(true);
+    m_lastSavedButton = m_dontMergeButton;
+  } else if (result == "mergeLater") {
+    m_mergeLaterButton->setChecked(true);
+    m_lastSavedButton = m_mergeLaterButton;
+  } else if (result == "irrelevant") {
+    m_irrelevantButton->setChecked(true);
+    m_lastSavedButton = m_irrelevantButton;
+  } else if (result == "?") {
+    m_dontKnowButton->setChecked(true);
+    m_lastSavedButton = m_dontKnowButton;
+  } else {
+
+    // If a task saved as being skipped, and then stops being skipped, present it
+    // the way it would be the first time a user would see any task.
+
+    m_dontMergeButton->setChecked(true);
+    m_lastSavedButton = m_dontMergeButton;
+  }
+}
+
+void TaskBodyMerge::suggestWriting()
+{
+  if (completed() && m_lastSavedButton && !m_lastSavedButton->isChecked()) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      QString title = "Warning";
+      QString text = "The chosen result differs from the saved result (indicated in red). "
+                     "Resave?";
+      QMessageBox::StandardButton chosen =
+          QMessageBox::warning(window, title, text, QMessageBox::Save | QMessageBox::No,
+                               QMessageBox::Save);
+      if (chosen == QMessageBox::Save) {
+        writeResult();
+      }
+    }
+  }
 }
