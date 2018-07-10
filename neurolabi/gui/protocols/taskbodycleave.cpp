@@ -212,10 +212,13 @@ private:
 class TaskBodyCleave::CleaveCommand : public QUndoCommand
 {
 public:
-  CleaveCommand(TaskBodyCleave *task, std::map<uint64_t, std::size_t> meshIdToCleaveIndex) :
+  CleaveCommand(TaskBodyCleave *task, std::map<uint64_t, std::size_t> meshIdToCleaveIndex,
+                const QJsonObject &cleaveReply) :
     m_task(task),
     m_meshIdToCleaveResultIndexBefore(task->m_meshIdToCleaveResultIndex),
-    m_meshIdToCleaveResultIndexAfter(meshIdToCleaveIndex)
+    m_meshIdToCleaveResultIndexAfter(meshIdToCleaveIndex),
+    m_cleaveReplyBefore(task->m_cleaveReply),
+    m_cleaveReplyAfter(cleaveReply)
   {
     setText("cleave");
   }
@@ -223,6 +226,7 @@ public:
   virtual void undo() override
   {
     m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexBefore;
+    m_task->m_cleaveReply = m_cleaveReplyBefore;
     m_task->updateColors();
     m_task->updateVisibility();
   }
@@ -230,6 +234,7 @@ public:
   virtual void redo() override
   {
     m_task->m_meshIdToCleaveResultIndex = m_meshIdToCleaveResultIndexAfter;
+    m_task->m_cleaveReply = m_cleaveReplyAfter;
     m_task->updateColors();
     m_task->updateVisibility();
   }
@@ -238,6 +243,8 @@ private:
   TaskBodyCleave *m_task;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexBefore;
   std::map<uint64_t, std::size_t> m_meshIdToCleaveResultIndexAfter;
+  QJsonObject m_cleaveReplyBefore;
+  QJsonObject m_cleaveReplyAfter;
 };
 
 //
@@ -529,7 +536,7 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
       std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
 
-      m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+      m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex, replyJson));
 
       if (showCleaveReplyOmittedMeshes(meshIdToCleaveIndex)) {
         status = CLEAVING_STATUS_SERVER_INCOMPLETE;
@@ -737,6 +744,11 @@ void TaskBodyCleave::onCompleted()
     }
     json.append(jsonForCleaveIndex);
   }
+
+  // For debugging, append verbatin the cleave server response that produced the arrays of super voxels.
+  // It can be distinguished as the only item in the output array that is a JSON object and not an array.
+
+  json.append(m_cleaveReply);
 
   QJsonDocument jsonDoc(json);
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
@@ -1008,7 +1020,7 @@ void TaskBodyCleave::cleave()
                          m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
+  QString server = "http://emdata3.int.janelia.org:5552/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
@@ -1033,7 +1045,7 @@ bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vecto
     // If no cleave indices are in use, just clear the map so all meshes return to the
     // default color.
 
-    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex, QJsonObject()));
     return true;
   } else if (cleaveIndexToMeshIds.size() == 1) {
     // If one cleave index is in use, just use it for all the meshes.
@@ -1048,7 +1060,7 @@ bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vecto
 
     std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
 
-    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex));
+    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex, QJsonObject()));
 
     showHiddenChangeWarning(hiddenChangedIndices);
 
