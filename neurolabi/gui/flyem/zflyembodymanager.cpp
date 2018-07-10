@@ -30,9 +30,11 @@ void ZFlyEmBodyManager::registerBody(uint64_t id)
 
 void ZFlyEmBodyManager::deregisterBody(uint64_t id)
 {
-  m_bodyMap.remove(decode(id));
-  m_todoLoaded.remove(id);
-  m_synapseLoaded.remove(id);
+  uint64_t bodyId = decode(id);
+  m_bodyMap.remove(bodyId);
+  m_todoLoaded.remove(bodyId);
+  m_synapseLoaded.remove(bodyId);
+  m_bodyConfigMap.remove(bodyId);
 }
 
 bool ZFlyEmBodyManager::contains(uint64_t id) const
@@ -117,6 +119,25 @@ bool ZFlyEmBodyManager::isSynapseLoaded(uint64_t bodyId) const
 {
   bodyId = decode(bodyId);
   return m_synapseLoaded.contains(bodyId);
+}
+
+void ZFlyEmBodyManager::addBodyConfig(const ZFlyEmBodyConfig &config)
+{
+  uint64_t bodyId = decode(config.getBodyId());
+
+  if (bodyId > 0) {
+    m_bodyConfigMap[bodyId] = config;
+  }
+}
+
+ZFlyEmBodyConfig ZFlyEmBodyManager::getBodyConfig(uint64_t bodyId) const
+{
+  bodyId = decode(bodyId);
+  if (m_bodyConfigMap.contains(bodyId)) {
+    return m_bodyConfigMap[bodyId];
+  }
+
+  return ZFlyEmBodyConfig();
 }
 
 /*

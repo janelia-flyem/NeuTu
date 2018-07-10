@@ -79,6 +79,7 @@ public:
   int getPriority() const { return m_priority; }
 
   ZFlyEmBodyConfig getBodyConfig() const;
+  void setBodyConfig(const ZFlyEmBodyConfig &config);
 
   ZFlyEmBodyEvent makeHighResEvent(int minDsLevel) const;
   ZFlyEmBodyEvent makeHighResEvent(

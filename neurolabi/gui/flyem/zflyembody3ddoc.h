@@ -281,6 +281,11 @@ public:
   uint64_t getSelectedSingleNormalBodyId() const;
   void startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg);
 
+
+  void registerBody(uint64_t bodyId);
+  void deregisterBody(uint64_t bodyId);
+  void addBodyConfig(const ZFlyEmBodyConfig &config);
+
   void diagnose() const override;
 
 public slots:
@@ -435,8 +440,6 @@ private:
    * \brief A safe way to get the only body in the document.
    */
   uint64_t getSingleBody() const;
-
-  void registerBody(uint64_t id);
 
   const ZFlyEmBodyManager& getBodyManager() const;
   ZFlyEmBodyManager& getBodyManager();
