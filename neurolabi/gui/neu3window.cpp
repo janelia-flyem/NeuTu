@@ -944,10 +944,8 @@ void Neu3Window::zoomToBodyMesh()
 
   QList<ZMesh*> meshList =
       ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
-  if (meshList.size() == 1) {
-    ZMesh *mesh = meshList.front();
-    m_3dwin->gotoPosition(mesh->getBoundBox());
-  }
+  ZMesh *mesh = meshList.front();
+  m_3dwin->gotoPosition(mesh->getBoundBox());
 }
 
 void Neu3Window::processSwcChangeFrom3D(
