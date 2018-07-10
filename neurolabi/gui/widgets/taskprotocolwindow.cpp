@@ -747,8 +747,12 @@ void TaskProtocolWindow::updateBodyWindow() {
 #endif
 
 #ifdef _DEBUG_2
+        m_body3dDoc->setMinDsLevel(5);
         ZFlyEmBodyConfig config(1);
-        config.setDsLevel(0);
+        config.setDsLevel(5);
+        config.setLocalDsLevel(0);
+        config.setRange(ZIntCuboid(ZIntPoint(2775, 6048, 2742),
+                                   ZIntPoint(3287, 6560, 3254)));
         m_body3dDoc->addBodyConfig(config);
 #endif
 
