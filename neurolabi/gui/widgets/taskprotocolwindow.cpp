@@ -746,6 +746,12 @@ void TaskProtocolWindow::updateBodyWindow() {
         std::cout << std::endl;
 #endif
 
+#ifdef _DEBUG_2
+        ZFlyEmBodyConfig config(1);
+        config.setDsLevel(0);
+        m_body3dDoc->addBodyConfig(config);
+#endif
+
         // if something is selected, it should be visible, too
         foreach (uint64_t bodyID, visible) {
             emit bodyAdded(bodyID);

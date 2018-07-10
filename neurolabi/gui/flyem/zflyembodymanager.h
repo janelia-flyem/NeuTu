@@ -4,6 +4,8 @@
 #include <QSet>
 #include <QMap>
 
+#include "zflyembodyconfig.h"
+
 class ZFlyEmBodyManager
 {
 public:
@@ -55,6 +57,17 @@ public:
   bool isTodoLoaded(uint64_t bodyId) const;
   bool isSynapseLoaded(uint64_t bodyId) const;
 
+  /*!
+   * \brief Add configuration for body update
+   *
+   * \a config will be added even if the body specified by \a config has not been
+   * registered, unless the ID is 0. Deregistering a body will remove its config
+   * as well.
+   */
+  void addBodyConfig(const ZFlyEmBodyConfig &config);
+
+  ZFlyEmBodyConfig getBodyConfig(uint64_t bodyId) const;
+
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
   // uses the body's identifier in multiple ways: for multiple meshes, at different
   // levels in the agglomeration history, and as a key whose associated value is a
@@ -68,6 +81,7 @@ public:
 
 private:
   QMap<uint64_t, QSet<uint64_t>> m_bodyMap;
+  QMap<uint64_t, ZFlyEmBodyConfig> m_bodyConfigMap; //Hints for body update
   QSet<uint64_t> m_todoLoaded;
   QSet<uint64_t> m_synapseLoaded;
 

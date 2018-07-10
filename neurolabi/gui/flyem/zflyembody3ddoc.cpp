@@ -992,6 +992,21 @@ uint64_t ZFlyEmBody3dDoc::getSingleBody() const
   */
 }
 
+void ZFlyEmBody3dDoc::registerBody(uint64_t bodyId)
+{
+  getBodyManager().registerBody(bodyId);
+}
+
+void ZFlyEmBody3dDoc::deregisterBody(uint64_t bodyId)
+{
+  getBodyManager().deregisterBody(bodyId);
+}
+
+void ZFlyEmBody3dDoc::addBodyConfig(const ZFlyEmBodyConfig &config)
+{
+  getBodyManager().addBodyConfig(config);
+}
+
 void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId, flyem::EBodyLabelType type)
 {
   if (!isSplitActivated()) {
@@ -1434,16 +1449,21 @@ void ZFlyEmBody3dDoc::addEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId,
 
   ZFlyEmBodyEvent event(action, bodyId);
   event.addUpdateFlag(flag);
-  event.setBodyColor(getBodyColor(bodyId));
-
-  if (event.getAction() == ZFlyEmBodyEvent::ACTION_ADD &&
-      getBodyType() != flyem::BODY_SKELETON) {
-    if (ZFlyEmBodyManager::encodesTar(bodyId)) {
-      event.setDsLevel(0);
-    } else {
-      event.setDsLevel(getMaxDsLevel());
+  ZFlyEmBodyConfig config = getBodyManager().getBodyConfig(bodyId);
+  if (config.getBodyId() > 0) {
+    event.setBodyConfig(config);
+  } else {
+    if (event.getAction() == ZFlyEmBodyEvent::ACTION_ADD &&
+        getBodyType() != flyem::BODY_SKELETON) {
+      if (ZFlyEmBodyManager::encodesTar(bodyId)) {
+        event.setDsLevel(0);
+      } else {
+        event.setDsLevel(getMaxDsLevel());
+      }
     }
   }
+
+  event.setBodyColor(getBodyColor(bodyId));
 
   addEvent(event);
 //  m_eventQueue.enqueue(event);
@@ -2984,13 +3004,14 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
         if (mesh != NULL) {
           if (IsOverSize(mesh) && zoom <= 2) {
             zoom = 0;
-          }
-
-          finalizeMesh(mesh, config.getBodyId(), zoom, t);
-          result.push_back(mesh);
+          }       
         }
       } else {
         zoom = 0;
+      }
+      if (mesh != NULL) {
+        finalizeMesh(mesh, config.getBodyId(), zoom, t);
+        result.push_back(mesh);
       }
     }
   }

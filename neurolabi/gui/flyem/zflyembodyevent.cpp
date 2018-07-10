@@ -147,6 +147,11 @@ ZFlyEmBodyConfig ZFlyEmBodyEvent::getBodyConfig() const
   return m_config;
 }
 
+void ZFlyEmBodyEvent::setBodyConfig(const ZFlyEmBodyConfig &config)
+{
+  m_config = config;
+}
+
 bool ZFlyEmBodyEvent::hasValidBody() const
 {
   return getBodyId() > 0;
