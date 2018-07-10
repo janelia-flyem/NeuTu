@@ -85,6 +85,9 @@ private:
   QNetworkAccessManager *m_networkManager;
   bool m_cleaveReplyPending = false;
 
+  // The latest cleave server reply that was applied is saved for debugging purposes.
+  QJsonObject m_cleaveReply;
+
   std::set<QString> m_warningTextToSuppress;
 
   class SetCleaveIndicesCommand;
