@@ -22,6 +22,7 @@ void ZFlyEmBodyManager::registerBody(uint64_t id, const QSet<uint64_t> &comp)
 
 void ZFlyEmBodyManager::registerBody(uint64_t id)
 {
+  id = decode(id);
   if (!contains(id)) {
     registerBody(id, QSet<uint64_t>());
   }
@@ -30,6 +31,8 @@ void ZFlyEmBodyManager::registerBody(uint64_t id)
 void ZFlyEmBodyManager::deregisterBody(uint64_t id)
 {
   m_bodyMap.remove(decode(id));
+  m_todoLoaded.remove(id);
+  m_synapseLoaded.remove(id);
 }
 
 bool ZFlyEmBodyManager::contains(uint64_t id) const
@@ -39,9 +42,9 @@ bool ZFlyEmBodyManager::contains(uint64_t id) const
 
 bool ZFlyEmBodyManager::hasMapping(uint64_t id) const
 {
-  uint64_t decodedId = decode(id);
-  if (m_bodyMap.contains(decodedId)) {
-    return !m_bodyMap[decodedId].isEmpty();
+  id = decode(id);
+  if (m_bodyMap.contains(id)) {
+    return !m_bodyMap[id].isEmpty();
   }
 
   return false;
@@ -49,6 +52,7 @@ bool ZFlyEmBodyManager::hasMapping(uint64_t id) const
 
 uint64_t ZFlyEmBodyManager::getHostId(uint64_t bodyId) const
 {
+  bodyId = decode(bodyId);
   for (QMap<uint64_t, QSet<uint64_t> >::const_iterator iter = m_bodyMap.begin();
        iter != m_bodyMap.end(); ++iter) {
     if (iter.value().contains(bodyId)) {
@@ -57,6 +61,18 @@ uint64_t ZFlyEmBodyManager::getHostId(uint64_t bodyId) const
   }
 
   return bodyId;
+}
+
+bool ZFlyEmBodyManager::isSubbody(uint64_t bodyId) const
+{
+  for (QMap<uint64_t, QSet<uint64_t> >::const_iterator iter = m_bodyMap.begin();
+       iter != m_bodyMap.end(); ++iter) {
+    if (iter.value().contains(bodyId)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 QSet<uint64_t> ZFlyEmBodyManager::getMappedSet(uint64_t bodyId) const
@@ -77,6 +93,30 @@ uint64_t ZFlyEmBodyManager::getSingleBodyId() const
   }
 
   return bodyId;
+}
+
+void ZFlyEmBodyManager::setTodoLoaded(uint64_t bodyId)
+{
+  bodyId = decode(bodyId);
+  m_todoLoaded.insert(bodyId);
+}
+
+void ZFlyEmBodyManager::setSynapseLoaded(uint64_t bodyId)
+{
+  bodyId = decode(bodyId);
+  m_synapseLoaded.insert(bodyId);
+}
+
+bool ZFlyEmBodyManager::isTodoLoaded(uint64_t bodyId) const
+{
+  bodyId = decode(bodyId);
+  return m_todoLoaded.contains(bodyId);
+}
+
+bool ZFlyEmBodyManager::isSynapseLoaded(uint64_t bodyId) const
+{
+  bodyId = decode(bodyId);
+  return m_synapseLoaded.contains(bodyId);
 }
 
 /*

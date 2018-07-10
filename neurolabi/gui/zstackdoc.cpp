@@ -10396,6 +10396,18 @@ void ZStackDoc::makeKeyProcessor()
   m_keyProcessor = new ZStackDocKeyProcessor(this);
 }
 
+void ZStackDoc::diagnose() const
+{
+  QList<ZStackObject::EType> allTypes = getObjectGroup().getAllType();
+
+  foreach (const auto &type, allTypes) {
+    LDEBUG() << "#Objects of type" <<  ZStackObject::GetTypeName(type)
+             << ":" << getObjectList(type).size();
+  }
+
+//  LINFO() << "#Objects: " << getObjectGroup().getAllType()
+}
+
 
 ZIntCuboid ZStackDoc::getCuboidRoi() const
 {

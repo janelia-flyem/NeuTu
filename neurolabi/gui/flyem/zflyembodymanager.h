@@ -43,9 +43,17 @@ public:
    */
   void eraseSubbody(uint64_t bodyId);
 
+  bool isSubbody(uint64_t bodyId) const;
+
   void clear();
 
   void print() const;
+
+  void setTodoLoaded(uint64_t bodyId);
+  void setSynapseLoaded(uint64_t bodyId);
+
+  bool isTodoLoaded(uint64_t bodyId) const;
+  bool isSynapseLoaded(uint64_t bodyId) const;
 
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
   // uses the body's identifier in multiple ways: for multiple meshes, at different
@@ -60,6 +68,8 @@ public:
 
 private:
   QMap<uint64_t, QSet<uint64_t>> m_bodyMap;
+  QSet<uint64_t> m_todoLoaded;
+  QSet<uint64_t> m_synapseLoaded;
 
 };
 

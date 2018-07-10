@@ -234,6 +234,8 @@ signals:
   void cameraRotated();
   void messageGenerated(const ZWidgetMessage &msg);
 
+  void diagnosing();
+
 public slots:
   void resetCamera()
   { m_view->resetCamera(); }
@@ -391,6 +393,7 @@ public slots:
 
   void markSwcSoma();
   void help();
+  void diagnose();
 
   void selectSwcTreeNodeInRoi(bool appending);
   void selectSwcTreeNodeTreeInRoi(bool appending);
@@ -537,6 +540,7 @@ private:
   QAction *m_translateSwcNodeAction;
   QAction *m_changeSwcNodeSizeAction;
   QAction *m_helpAction;
+  QAction *m_diagnoseAction;
 
   QAction *m_refreshTraceMaskAction;
 

@@ -27233,7 +27233,7 @@ void ZTest::test(MainWindow *host)
   obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
 #endif
 
-#if 1
+#if 0
   std::cout << ZFlyEmBodyManager::encode(3, 1) << std::endl;
   std::cout << ZFlyEmBodyManager::encode(3, 1, false) << std::endl;
   std::cout << ZFlyEmBodyManager::encode(3, 2) << std::endl;
@@ -27242,7 +27242,21 @@ void ZTest::test(MainWindow *host)
   std::cout << ZFlyEmBodyManager::encodesTar(100000000003) << std::endl;
   std::cout << ZFlyEmBodyManager::encodedLevel(10200000000003) << std::endl;
   std::cout << ZFlyEmBodyManager::encodedLevel(200000000003) << std::endl;
+#endif
 
+#if 0
+  std::cout << ZStackObject::GetTypeName(ZStackObject::TYPE_SWC) << std::endl;
+#endif
+
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "69f1", 8700);
+  target.setSegmentationName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncAnnotationToLabel("segmentation_todo", "replace=true");
 #endif
 
   std::cout << "Done." << std::endl;

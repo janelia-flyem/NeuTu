@@ -497,9 +497,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_ACTIVATE_LOCATE:
     action = m_actionLibrary->getAction(
           item, this, SLOT(activateLocateAction(bool)));
-    if (action != NULL) {
-      action->setShortcut(Qt::Key_T);
-    }
+//    if (action != NULL) {
+//      action->setShortcut(Qt::Key_T);
+//    }
     if (m_actionLibrary->actionCreatedUponRetrieval()) {
       m_interactActionGroup->addAction(action);
     }
@@ -507,9 +507,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_VIEW_DATA_EXTERNALLY:
     action = m_actionLibrary->getAction(
           item, this, SLOT(viewDataExternally(bool)));
-    if (action != NULL) {
-      action->setShortcut(Qt::SHIFT + Qt::Key_T);
-    }
+//    if (action != NULL) {
+//      action->setShortcut(Qt::SHIFT + Qt::Key_T);
+//    }
     if (m_actionLibrary->actionCreatedUponRetrieval()) {
       m_interactActionGroup->addAction(action);
     }
@@ -586,6 +586,9 @@ void Z3DWindow::createActions()
 
   m_helpAction = new QAction("Help", this);
   connect(m_helpAction, SIGNAL(triggered()), this, SLOT(help()));
+
+  m_diagnoseAction = new QAction("Diagnose", this);
+  connect(m_diagnoseAction, &QAction::triggered, this, &Z3DWindow::diagnose);
 
   m_removeSelectedObjectsAction = new QAction("Delete", this);
   if (NeutubeConfig::getInstance().getApplication() != "Biocytin") {
@@ -796,6 +799,7 @@ void Z3DWindow::createMenus()
   m_editMenu->addSeparator();
 
   m_helpMenu->addAction(m_helpAction);
+  m_helpMenu->addAction(m_diagnoseAction);
 }
 
 void Z3DWindow::createContextMenu()
@@ -4435,6 +4439,13 @@ void Z3DWindow::help()
   m_helpDlg->setSource((GET_APPLICATION_DIR + "/doc/shortcut_3d.html").c_str());
   m_helpDlg->show();
   m_helpDlg->raise();
+}
+
+void Z3DWindow::diagnose()
+{
+  getDocument()->diagnose();
+
+  emit diagnosing();
 }
 
 void Z3DWindow::markSwcSoma()

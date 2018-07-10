@@ -500,6 +500,8 @@ public:
   void setKeyProcessor(ZStackDocKeyProcessor *processor);
   bool processKeyEvent(QKeyEvent *event);
 
+  virtual void diagnose() const;
+
   /*
   ZNeuronTracer &getNeuronTracer() {
     return m_neuronTracer;

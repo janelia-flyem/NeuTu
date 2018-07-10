@@ -1,5 +1,7 @@
 #include "zflyembodyconfig.h"
 
+#include "zflyembodymanager.h"
+
 ZFlyEmBodyConfig::ZFlyEmBodyConfig()
 {
 
@@ -59,6 +61,26 @@ void ZFlyEmBodyConfig::decDsLevel()
 ZIntCuboid ZFlyEmBodyConfig::getRange() const
 {
   return m_range;
+}
+
+bool ZFlyEmBodyConfig::isTar() const
+{
+  return ZFlyEmBodyManager::encodesTar(getBodyId());
+}
+
+bool ZFlyEmBodyConfig::isBodyTar() const
+{
+  return isTar() && (getBodyEncodeLevel() == 1);
+}
+
+bool ZFlyEmBodyConfig::isSupervoxelTar() const
+{
+  return isTar() && (getBodyEncodeLevel() == 0);
+}
+
+int ZFlyEmBodyConfig::getBodyEncodeLevel() const
+{
+  return ZFlyEmBodyManager::encodedLevel(getBodyId());
 }
 
 /*
