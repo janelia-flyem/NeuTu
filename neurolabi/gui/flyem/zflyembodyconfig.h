@@ -58,6 +58,11 @@ public:
 
   bool isHybrid() const;
 
+  bool isTar() const;
+  bool isBodyTar() const;
+  bool isSupervoxelTar() const;
+  int getBodyEncodeLevel() const;
+
 //  void setMaxDsLevel(int level);
 //  void setMinDsLevel(int level);
 
@@ -67,6 +72,7 @@ private:
   uint64_t m_bodyId = 0;
   QColor m_bodyColor;
   flyem::EBodyType m_bodyType = flyem::BODY_DEFAULT;
+//  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
 
   ZIntCuboid m_range;
   int m_dsLevel = 0;

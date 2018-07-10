@@ -9,6 +9,7 @@
 #include "zactionfactory.h"
 #include "z3dwindow.h"
 #include "zactionactivator.h"
+#include "flyem/zflyembody3ddoc.h"
 
 ZStackDocMenuFactory::ZStackDocMenuFactory()
 {
@@ -216,7 +217,7 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(
 
 QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 {
-  ZStackDoc *doc = window->getDocument();
+  ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
 
   if (doc != NULL) {
     if (menu == NULL) {
@@ -228,7 +229,6 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
     QList<ZActionFactory::EAction> actionList;
 
     if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
-        doc->getTag() == neutube::Document::FLYEM_BODY_3D_COARSE ||
         doc->getTag() == neutube::Document::FLYEM_SKELETON) {
       actionList.append(ZActionFactory::ACTION_SYNAPSE_FILTER);
     } else if (doc->getTag() == neutube::Document::FLYEM_MESH) {
@@ -241,6 +241,10 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
     if (doc->getTag() == neutube::Document::FLYEM_BODY_3D) {
       actionList.append(ZActionFactory::ACTION_SHOW_NORMAL_TODO);
+    }
+
+    if (doc->getSelectedSingleNormalBodyId() > 0) {
+      actionList.append(ZActionFactory::ACTION_BODY_ANNOTATION);
     }
 
     if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||

@@ -944,7 +944,7 @@ Z3DWindow* ZFlyEmProofMvc::makeNeu3Window()
   doc->enableNodeSeeding(true);
 //  connect(m_skeletonWindow, SIGNAL(keyPressed(QKeyEvent*)),
 //          doc->getKeyProcessor(), SLOT(processKeyEvent(QKeyEvent*)));
-  window->skipKeyEvent(true);
+//  window->skipKeyEvent(true);
 
   doc->showSynapse(window->isLayerVisible(neutube3d::LAYER_PUNCTA));
   doc->showTodo(window->isLayerVisible(neutube3d::LAYER_TODO));
@@ -2757,6 +2757,7 @@ void ZFlyEmProofMvc::annotateBody()
         }
 
         checkInBodyWithMessage(bodyId, flyem::BODY_SPLIT_NONE);
+        delete dlg;
       } else {
         if (getSupervisor() != NULL) {
           std::string owner = getSupervisor()->getOwner(bodyId);

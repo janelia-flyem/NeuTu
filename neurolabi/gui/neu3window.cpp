@@ -106,6 +106,7 @@ void Neu3Window::initialize()
   m_3dwin->configureMenuForNeu3();
   connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
   connect(m_3dwin, SIGNAL(neutuTriggered()), this, SLOT(openNeuTu()));
+  connect(m_3dwin, SIGNAL(diagnosing()), this, SLOT(diagnose()));
   ZWidgetMessage::ConnectMessagePipe(m_3dwin, this);
   ZWidgetMessage::ConnectMessagePipe(getBodyDocument(), this);
   ZWidgetMessage::DisconnectMessagePipe(getBodyDocument(), m_3dwin);
@@ -944,6 +945,7 @@ void Neu3Window::zoomToBodyMesh()
 
   QList<ZMesh*> meshList =
       ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+  LDEBUG() << "Mesh list size:" << meshList.size();
   if (meshList.size() == 1) {
     ZMesh *mesh = meshList.front();
     m_3dwin->gotoPosition(mesh->getBoundBox());
@@ -1122,7 +1124,18 @@ void Neu3Window::openNeuTu()
 //  window->showMaximized();
 }
 
+void Neu3Window::diagnose()
+{
+  m_bodyListWidget->diagnose();
+//  getBodyDocument()->logInfo();
+}
+
 void Neu3Window::on_actionNeuTu_Proofread_triggered()
 {
   openNeuTu();
+}
+
+void Neu3Window::on_actionDiagnose_triggered()
+{
+  diagnose();
 }

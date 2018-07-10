@@ -53,6 +53,18 @@ TEST(ZFlyEmBodyManager, Basic)
   bm.eraseSubbody(300);
   ASSERT_EQ(300, (int) bm.getHostId(300));
   ASSERT_EQ(2, (int) bm.getSingleBodyId());
+
+  bm.registerBody(1);
+  ASSERT_FALSE(bm.isTodoLoaded(1));
+  ASSERT_FALSE(bm.isSynapseLoaded(1));
+  bm.setTodoLoaded(1);
+  ASSERT_TRUE(bm.isTodoLoaded(1));
+  bm.setSynapseLoaded(1);
+  ASSERT_TRUE(bm.isSynapseLoaded(1));
+
+  bm.deregisterBody(1);
+  ASSERT_FALSE(bm.isTodoLoaded(1));
+  ASSERT_FALSE(bm.isSynapseLoaded(1));
 }
 
 #endif

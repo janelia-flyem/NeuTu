@@ -426,6 +426,10 @@ public:
   void prepareDvidGraySlice(const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
 
+  ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
+
+  void diagnose() const override;
+
 public:
   virtual void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
