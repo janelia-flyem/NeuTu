@@ -5,7 +5,6 @@
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofmvc.h"
-#include "neu3window.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dmeshfilter.h"
@@ -94,7 +93,7 @@ namespace {
   // changes and restore the changed values when the tasks are done.
 
   static bool applyOverallSettingsNeeded = true;
-  static bool zoomToLoadedBodyEnabled;
+
   static bool garbageLifetimeLimitEnabled;
   static bool splitTaskLoadingEnabled;
   static bool showingSynapse;
@@ -106,8 +105,6 @@ namespace {
   {
     if (applyOverallSettingsNeeded) {
       applyOverallSettingsNeeded = false;
-
-      zoomToLoadedBodyEnabled = Neu3Window::zoomToLoadedBodyEnabled();
 
       garbageLifetimeLimitEnabled = bodyDoc->garbageLifetimeLimitEnabled();
       bodyDoc->enableGarbageLifetimeLimit(false);
@@ -139,8 +136,6 @@ namespace {
   {
     if (!applyOverallSettingsNeeded) {
       applyOverallSettingsNeeded = true;
-
-      Neu3Window::enableZoomToLoadedBody(zoomToLoadedBodyEnabled);
 
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
       bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
@@ -335,27 +330,9 @@ uint64_t TaskBodyCleave::getBodyId() const
   return m_bodyId;
 }
 
-void TaskBodyCleave::updateLevel(int level)
-{
-  bool showingCleaving = m_showCleavingCheckBox->isChecked();
-  enableCleavingUI(showingCleaving && (level == 0));
-
-  // See the comment in applyPerTaskSettings().
-
-  Neu3Window::enableZoomToLoadedBody(false);
-
-  QSet<uint64_t> visible({ ZFlyEmBody3dDoc::encode(m_bodyId, level) });
-  updateBodies(visible, QSet<uint64_t>());
-}
-
 void TaskBodyCleave::onShowCleavingChanged(int state)
 {
   bool show = (state != Qt::Unchecked);
-  if (show) {
-    // Cleaving works on super voxels, which are what are displayed at level 0.
-    m_levelSlider->setValue(0);
-  }
-
   enableCleavingUI(show);
   applyColorMode(show);
 }
@@ -776,18 +753,6 @@ void TaskBodyCleave::buildTaskWidget()
 {
   m_widget = new QWidget();
 
-  QLabel *sliderLabel = new QLabel("History level", m_widget);
-  m_levelSlider = new QSlider(Qt::Horizontal, m_widget);
-  m_levelSlider->setMaximum(m_maxLevel);
-  m_levelSlider->setTickInterval(1);
-  m_levelSlider->setTickPosition(QSlider::TicksBothSides);
-
-  connect(m_levelSlider, SIGNAL(valueChanged(int)), this, SLOT(updateLevel(int)));
-
-  QHBoxLayout *historyLayout = new QHBoxLayout;
-  historyLayout->addWidget(sliderLabel);
-  historyLayout->addWidget(m_levelSlider);
-
   m_showCleavingCheckBox = new QCheckBox("Show cleaving", m_widget);
   connect(m_showCleavingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowCleavingChanged(int)));
 
@@ -833,7 +798,6 @@ void TaskBodyCleave::buildTaskWidget()
   cleaveLayout2->addWidget(m_cleavingStatusLabel);
 
   QVBoxLayout *layout = new QVBoxLayout;
-  layout->addLayout(historyLayout);
   layout->addLayout(cleaveLayout1);
   layout->addLayout(cleaveLayout2);
 
@@ -904,7 +868,7 @@ void TaskBodyCleave::buildTaskWidget()
     m_actionToComboBoxIndex[action] = i;
   }
 
-  m_levelSlider->setValue(m_maxLevel);
+  m_showCleavingCheckBox->setChecked(true);
 }
 
 void TaskBodyCleave::updateColors()
@@ -956,16 +920,6 @@ void TaskBodyCleave::selectBodies(const std::set<uint64_t> &toSelect)
 
 void TaskBodyCleave::applyPerTaskSettings()
 {
-  // When the overall body is first loaded, the user probably wants the view to zoom to it.
-  // But when the user is going back and forth between history levels for the body, the
-  // user may have set the view to an area of interest, and it would be annoying to have
-  // zooming destroy that view.  So try a heuristic solution.  When the a task starts (or
-  // resumes) at the history level of the overall body, enable zooming.  And when the user
-  // changes the level, disable zooming (in the updateLevel() function).
-
-  bool doZoom = (m_levelSlider->value() == m_maxLevel);
-  Neu3Window::enableZoomToLoadedBody(doZoom);
-
   // The SetCleaveIndicesCommand and CleaveCommand instances on the undo stack contain information
   // particular to the task that was current when the commands were issued.  So the undo stack will
   // not make sense when switching to another task, and the easiest solution is to clear it.
@@ -1298,6 +1252,8 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
 
   m_bodyId = json[KEY_BODYID].toDouble();
   m_maxLevel = json[KEY_MAXLEVEL].toDouble();
+
+  m_visibleBodies.insert(ZFlyEmBody3dDoc::encode(m_bodyId, 0));
 
   QString assignedUser = json[KEY_ASSIGNED_USER].toString();
   if (!assignedUser.isEmpty()) {

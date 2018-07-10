@@ -17,8 +17,6 @@ class QNetworkReply;
 class QPushButton;
 class QShortcut;
 
-class QSlider;
-
 class TaskBodyCleave : public TaskProtocolTask
 {
   Q_OBJECT
@@ -38,8 +36,6 @@ public:
   uint64_t getBodyId() const;
 
 private slots:
-  void updateLevel(int level);
-
   void onShowCleavingChanged(int state);
   void onToggleShowCleaving();
   void onShowSeedsOnlyChanged(int state);
@@ -62,7 +58,6 @@ private:
   int m_maxLevel;
 
   QWidget *m_widget;
-  QSlider *m_levelSlider;
   QCheckBox *m_showCleavingCheckBox;
   QComboBox *m_cleaveIndexComboBox;
   QPushButton *m_selectBodyButton;
