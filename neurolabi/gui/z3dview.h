@@ -11,8 +11,6 @@
 #include "z3ddef.h"
 #include "zstackdoc3dhelper.h"
 
-class QMainWindow;
-
 class Z3DCanvas;
 class Z3DCompositor;
 class Z3DCanvasPainter;
@@ -40,7 +38,7 @@ public:
     INIT_NORMAL, INIT_EXCLUDE_VOLUME, INIT_FULL_RES_VOLUME
   };
 
-  Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QMainWindow* parent = nullptr);
+  Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent = nullptr);
 
   ~Z3DView();
 
@@ -265,7 +263,6 @@ private:
 private:
   ZStackDoc* m_doc;
   bool m_isStereoView;
-  QMainWindow* m_mainWin;
 
   //
   QAction* m_zoomInAction;

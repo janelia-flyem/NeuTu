@@ -667,7 +667,7 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
         ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
 
         // make the "completed" checkbox match the current task, but prevent the signal from
-        // being triggere, so that task does not do somehing like save its results an extra time
+        // being triggered, so that task does not do somehing like save its results an extra time
         BlockSignals blockOnCompleted(ui->completedCheckBox);
         ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
 
