@@ -4,8 +4,12 @@
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
+#include "neutubeconfig.h"
 #include "neu3window.h"
+#include "z3dcamera.h"
+#include "z3dcanvas.h"
 #include "z3dmeshfilter.h"
+#include "z3dview.h"
 #include "z3dwindow.h"
 #include "zdvidutil.h"
 #include "zstackdocproxy.h"
@@ -13,12 +17,17 @@
 #include <limits>
 #include <random>
 
+#include <sys/types.h>
+#include <dirent.h>
+
 #include <QCheckBox>
 #include <QDateTime>
+#include <QDockWidget>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QPointer>
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSet>
@@ -42,6 +51,7 @@ namespace {
   static const QString KEY_TIMESTAMP = "time";
   static const QString KEY_TIME_ZONE = "time zone";
   static const QString KEY_SOURCE = "source";
+  static const QString KEY_BUILD_VERSION = "build version";
   static const QString KEY_USAGE_TIME = "time to complete (ms)";
   static const QString KEY_RESULT_HISTORY = "result history";
   static const QString KEY_INITIAL_ANGLE_METHOD = "initial 3D angle method";
@@ -121,6 +131,37 @@ namespace {
     return dvidTarget.getBodyLabelName() + "_merged";
   }
 
+  // By convention, our Conda builds create a "conda-meta/neu3_XXX.json" file
+  // where "XXX" has information about the release version and the source version
+  // (Git SHA-1 hash).  Return the base name of that file as the build version.
+
+  std::string getBuildVersion()
+  {
+    std::string result;
+    std::string path = NeutubeConfig::getInstance().getApplicatinDir();
+#if defined(Q_OS_DARWIN)
+    path += "/../../..";
+#endif
+    path += "/../conda-meta";
+    if (DIR *dir = opendir(path.c_str())) {
+      while (struct dirent *ent = readdir(dir)) {
+        std::string filename(ent->d_name);
+        if (filename.substr(0, 4) == "neu3") {
+          std::size_t i = filename.rfind(".");
+          if (i != std::string::npos) {
+            filename = filename.substr(0, i);
+            if (result.empty()) {
+              result = filename;
+            } else {
+              result += "|" + filename;
+            }
+          }
+        }
+      }
+    }
+    return result;
+  }
+
   // All the TaskBodyMerge instances loaded from one JSON file need certain changes
   // to some settings until all of them are done.  This code manages making those
   // changes and restore the changed values when the tasks are done.
@@ -197,6 +238,15 @@ namespace {
     }
   }
 
+  QPointer<QNetworkAccessManager> s_networkManager;
+
+  // A separate 3D view that provides a "bird's eye view" zoomed out to show both bodies,
+  // so the user can quickly get a more global context.  The Z3DView take time to initialize,
+  // so there is one such view shared by all the tasks in the assignment.
+
+  QPointer<QDockWidget> s_birdsEyeDockWidget;
+  QPointer<Z3DView> s_birdsEyeView;
+
 }
 
 TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
@@ -209,8 +259,6 @@ TaskBodyMerge::TaskBodyMerge(QJsonObject json, ZFlyEmBody3dDoc *bodyDoc)
 
   loadJson(json);
   buildTaskWidget();
-
-  m_networkManager = new QNetworkAccessManager(m_widget);
 }
 
 QString TaskBodyMerge::tasktype()
@@ -237,12 +285,14 @@ bool TaskBodyMerge::skip()
     // of these tasks in the results, so write that record here.
 
     writeResult("autoSkippedNoBody");
+    m_lastSavedButton = nullptr;
     return true;
   } else if (m_bodyId1 == m_bodyId2) {
 
     // Likewise for redundant tasks.
 
     writeResult("autoSkippedSameBody");
+    m_lastSavedButton = nullptr;
     return true;
   }
   return false;
@@ -250,6 +300,8 @@ bool TaskBodyMerge::skip()
 
 void TaskBodyMerge::beforeNext()
 {
+  suggestWriting();
+
   // Clear the mesh cache when changing tasks so it does not grow without bound
   // during an assignment, which causes a performance degradation.  The assumption
   // is that improving performance as a user progresses through an assignment is
@@ -261,6 +313,8 @@ void TaskBodyMerge::beforeNext()
 
 void TaskBodyMerge::beforePrev()
 {
+  suggestWriting();
+
   // See the comment in beforeNext().
 
   m_bodyDoc->clearGarbage(true);
@@ -270,6 +324,8 @@ void TaskBodyMerge::beforeDone()
 {
   restoreOverallSettings(m_bodyDoc);
   applyColorMode(false);
+
+  showBirdsEyeView(false);
 }
 
 QWidget *TaskBodyMerge::getTaskWidget()
@@ -283,11 +339,21 @@ QWidget *TaskBodyMerge::getTaskWidget()
   // Now set the visible vodies.  For fastest task loading, start with the original bodies
   // at low resolution.
 
-  m_visibleBodies.insert(m_bodyId1);
-  m_visibleBodies.insert(m_bodyId2);
+  if (m_visibleBodies.isEmpty()) {
+    m_visibleBodies.insert(m_bodyId1);
+    m_visibleBodies.insert(m_bodyId2);
+  }
+
+  if (!m_lastSavedButton) {
+    QString result = readResult();
+    if (!result.isEmpty()) {
+      restoreResult(result);
+    }
+  }
 
   configureShowHiRes();
   applyColorMode(true);
+
   return m_widget;
 }
 
@@ -322,6 +388,18 @@ void TaskBodyMerge::onTriggerShowHiRes()
 void TaskBodyMerge::onButtonToggled()
 {
   updateColors();
+
+  if (m_lastSavedButton) {
+    if (!m_lastSavedButton->isChecked()) {
+#if defined(Q_OS_DARWIN)
+      m_lastSavedButton->setStyleSheet("QRadioButton { color: red }");
+#else
+      m_lastSavedButton->setStyleSheet("QRadioButton { color: red; border: none }");
+#endif
+    } else {
+      m_lastSavedButton->setStyleSheet("");
+    }
+  }
 }
 
 void TaskBodyMerge::onShowHiResStateChanged(int state)
@@ -333,6 +411,7 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
     visible.insert(ZFlyEmBody3dDoc::encode(m_bodyId2, level));
 
     // Going back to low resolution is not working for some reason, so disable it for now.
+
     m_showHiResCheckBox->setEnabled(false);
   } else {
     visible.insert(m_bodyId1);
@@ -454,6 +533,11 @@ void TaskBodyMerge::buildTaskWidget()
   m_dontKnowButton = new QRadioButton("Don't Know", m_widget);
   connect(m_dontKnowButton, SIGNAL(toggled(bool)), this, SLOT(onButtonToggled()));
 
+  // Points to the button corresonding to the result most recently saved to DVID,
+  // to support feedback of the need to save a changed result.
+
+  m_lastSavedButton = nullptr;
+
   QHBoxLayout *radioTopLayout = new QHBoxLayout;
   radioTopLayout->addWidget(m_dontMergeButton);
   radioTopLayout->addWidget(m_mergeButton);
@@ -500,7 +584,12 @@ void TaskBodyMerge::buildTaskWidget()
 
 void TaskBodyMerge::onLoaded()
 {
+  LINFO() << "TaskBodyMerge: build version" << getBuildVersion() << ".";
+
   m_usageTimer.start();
+
+  showBirdsEyeView(true);
+
   applyColorMode(true);
   zoomToMergePosition(true);
 }
@@ -515,20 +604,7 @@ void TaskBodyMerge::onCompleted()
 
   m_usageTimer.start();
 
-  QString result;
-  if (m_mergeButton->isChecked()) {
-    result = "merge";
-  } else if (m_dontMergeButton->isChecked()) {
-    result = "dontMerge";
-  } else if (m_mergeLaterButton->isChecked()) {
-    result = "mergeLater";
-  } else if (m_irrelevantButton->isChecked()) {
-    result = "irrelevant";
-  } else {
-    result = "?";
-  }
-
-  writeResult(result);
+  writeResult();
 }
 
 void TaskBodyMerge::applyColorMode(bool merging)
@@ -537,6 +613,9 @@ void TaskBodyMerge::applyColorMode(bool merging)
     if (merging) {
       updateColors();
       filter->setColorMode("Indexed Color");
+      if (s_birdsEyeView) {
+        s_birdsEyeView->getMeshFilter()->setColorMode("Indexed Color");
+      }
     } else {
       filter->setColorMode("Mesh Source");
     }
@@ -549,16 +628,22 @@ void TaskBodyMerge::updateColors()
     std::size_t index1 = 1;
     std::size_t index2 = m_mergeButton->isChecked() ? index1 : 2;
 
-    filter->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
-      uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
-      if (tarBodyId == m_bodyId1) {
-        return index1;
-      } else if (tarBodyId == m_bodyId2) {
-        return index2;
-      } else {
-        return 0;
-      }
-    });
+    std::vector<Z3DMeshFilter*> filters({ filter });
+    if (s_birdsEyeView) {
+      filters.push_back(s_birdsEyeView->getMeshFilter());
+    }
+    for (Z3DMeshFilter *filt : filters) {
+      filt->setColorIndexing(INDEX_COLORS, [=](uint64_t id) -> std::size_t {
+        uint64_t tarBodyId = m_bodyDoc->getMappedId(id);
+        if (tarBodyId == m_bodyId1) {
+          return index1;
+        } else if (tarBodyId == m_bodyId2) {
+          return index2;
+        } else {
+          return 0;
+        }
+      });
+    }
 
     QHash<uint64_t, QColor> idToColor;
     glm::vec4 color1 = INDEX_COLORS[index1] * 255.0f;
@@ -618,6 +703,12 @@ void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
 
       filter->camera().setEye(eye);
       filter->camera().setUpVector(up);
+
+      if (s_birdsEyeView) {
+        Z3DMeshFilter *birdsEyeMeshFilter = s_birdsEyeView->getMeshFilter();
+        birdsEyeMeshFilter->camera().setEye(eye);
+        birdsEyeMeshFilter->camera().setUpVector(up);
+      }
 
       // Update the orientaton of the grayscale slice.
 
@@ -899,6 +990,16 @@ void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
     }
   }
 
+  if (s_birdsEyeView) {
+    Z3DMeshFilter *birdsEyeMeshFilter = s_birdsEyeView->getMeshFilter();
+
+    double radius = std::max(radii[0], radii[1]);
+    resetCamera(mergePosition(), radius, birdsEyeMeshFilter->camera());
+    tightenZoom(vertices, birdsEyeMeshFilter->camera());
+
+    birdsEyeMeshFilter->invalidate();
+  }
+
   double radius;
   if (onlySmaller) {
     size_t iSmaller = (radii[0] < radii[1]) ? 0 : 1;
@@ -924,6 +1025,13 @@ void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
 
 void TaskBodyMerge::configureShowHiRes()
 {
+  if (m_showHiResCheckBox->isChecked()) {
+
+    // Going back to low resolution is not working for some reason, so disable it for now.
+
+    return;
+  }
+
   ZDvidUrl dvidUrl(m_bodyDoc->getDvidTarget());
 
   // Disable the controls for switching to high resolution until we verify that the
@@ -933,11 +1041,15 @@ void TaskBodyMerge::configureShowHiRes()
   m_showHiResAction->setEnabled(false);
   m_hiResCount = 0;
 
+  if (!s_networkManager) {
+    s_networkManager = new QNetworkAccessManager(m_bodyDoc->getParent3DWindow());
+  }
+
   // If the DVID query, issued below, returns a JSON object containing the key
   // then the tar archive exists.
 
-  disconnect(m_networkManager, 0, 0, 0);
-  connect(m_networkManager, &QNetworkAccessManager::finished,
+  disconnect(s_networkManager, 0, 0, 0);
+  connect(s_networkManager, &QNetworkAccessManager::finished,
           this, [=](QNetworkReply *reply) {
     if (reply->error() == QNetworkReply::NoError) {
       QByteArray replyBytes = reply->readAll();
@@ -956,6 +1068,7 @@ void TaskBodyMerge::configureShowHiRes()
         }
       }
     }
+    reply->deleteLater();
   });
 
   // Issue the DVID queries, each of which is a "range" query for
@@ -969,8 +1082,69 @@ void TaskBodyMerge::configureShowHiRes()
     std::string url = dvidUrl.getMeshesTarsKeyRangeUrl(id, id);
     QUrl requestUrl(url.c_str());
     QNetworkRequest request(requestUrl);
-    m_networkManager->get(request);
+    s_networkManager->get(request);
   }
+}
+
+void TaskBodyMerge::showBirdsEyeView(bool show)
+{
+  if (show) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      if (!s_birdsEyeDockWidget) {
+        s_birdsEyeDockWidget = new QDockWidget("Bird's Eye View", window);
+        window->addDockWidget(Qt::NoDockWidgetArea, s_birdsEyeDockWidget);
+
+        s_birdsEyeView = new Z3DView(m_bodyDoc, Z3DView::INIT_NORMAL, false, s_birdsEyeDockWidget);
+        s_birdsEyeView->canvas().setMinimumWidth(512);
+        s_birdsEyeView->canvas().setMinimumHeight(512);
+        s_birdsEyeDockWidget->setWidget(&s_birdsEyeView->canvas());
+
+        s_birdsEyeDockWidget->setFeatures(
+              QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+        s_birdsEyeDockWidget->setFloating(true);
+        s_birdsEyeDockWidget->setAllowedAreas(Qt::NoDockWidgetArea);
+        s_birdsEyeDockWidget->setAttribute(Qt::WA_DeleteOnClose);
+      }
+
+      s_birdsEyeDockWidget->show();
+
+      Z3DCamera camera = window->getMeshFilter()->camera();
+      Z3DMeshFilter *birdsEyeMeshFilter = s_birdsEyeView->getMeshFilter();
+      birdsEyeMeshFilter->camera().setCamera(camera.eye(), camera.center(), camera.upVector());
+    }
+  } else {
+    if (s_birdsEyeDockWidget) {
+      QAction *closer = s_birdsEyeDockWidget->toggleViewAction();
+      closer->trigger();
+    }
+  }
+}
+
+void TaskBodyMerge::writeResult()
+{
+  if (m_lastSavedButton) {
+    m_lastSavedButton->setStyleSheet("");
+  }
+
+  QString result;
+  if (m_mergeButton->isChecked()) {
+    result = "merge";
+    m_lastSavedButton = m_mergeButton;
+  } else if (m_dontMergeButton->isChecked()) {
+    result = "dontMerge";
+    m_lastSavedButton = m_dontMergeButton;
+  } else if (m_mergeLaterButton->isChecked()) {
+    result = "mergeLater";
+    m_lastSavedButton = m_mergeLaterButton;
+  } else if (m_irrelevantButton->isChecked()) {
+    result = "irrelevant";
+    m_lastSavedButton = m_irrelevantButton;
+  } else {
+    result = "?";
+    m_lastSavedButton = m_dontKnowButton;
+  }
+
+  writeResult(result);
 }
 
 void TaskBodyMerge::writeResult(const QString &result)
@@ -1014,6 +1188,7 @@ void TaskBodyMerge::writeResult(const QString &result)
   json[KEY_TIMESTAMP] = QDateTime::currentDateTime().toString(Qt::ISODate);
   json[KEY_TIME_ZONE] = QDateTime::currentDateTime().timeZoneAbbreviation();
   json[KEY_SOURCE] = jsonSource();
+  json[KEY_BUILD_VERSION] = getBuildVersion().c_str();
 
   QJsonArray jsonTimes;
   std::copy(m_usageTimes.begin(), m_usageTimes.end(), std::back_inserter(jsonTimes));
@@ -1031,4 +1206,71 @@ void TaskBodyMerge::writeResult(const QString &result)
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
   std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
   writer.writeJsonString(instance, key, jsonStr);
+}
+
+QString TaskBodyMerge::readResult()
+{
+  ZDvidReader reader;
+  reader.setVerbose(false);
+  if (reader.open(m_bodyDoc->getDvidTarget())) {
+    std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
+    if (reader.hasData(instance)) {
+      std::string key = std::to_string(m_supervoxelId1) + "+" + std::to_string(m_supervoxelId2);
+      ZJsonObject valueObj = reader.readJsonObjectFromKey(instance.c_str(), key.c_str());
+      if (valueObj.isObject()){
+        const char *resultKey = KEY_RESULT.toLatin1().data();
+        if (valueObj.hasKey(resultKey)) {
+          ZJsonValue resultValue = valueObj.value(resultKey);
+          if (resultValue.isString()) {
+            return QString(resultValue.toString().c_str());
+          }
+        }
+      }
+    }
+  }
+  return QString();
+}
+
+void TaskBodyMerge::restoreResult(const QString &result)
+{
+  if (result == "merge") {
+    m_mergeButton->setChecked(true);
+    m_lastSavedButton = m_mergeButton;
+  } else if (result == "dontMerge") {
+    m_dontMergeButton->setChecked(true);
+    m_lastSavedButton = m_dontMergeButton;
+  } else if (result == "mergeLater") {
+    m_mergeLaterButton->setChecked(true);
+    m_lastSavedButton = m_mergeLaterButton;
+  } else if (result == "irrelevant") {
+    m_irrelevantButton->setChecked(true);
+    m_lastSavedButton = m_irrelevantButton;
+  } else if (result == "?") {
+    m_dontKnowButton->setChecked(true);
+    m_lastSavedButton = m_dontKnowButton;
+  } else {
+
+    // If a task saved as being skipped, and then stops being skipped, present it
+    // the way it would be the first time a user would see any task.
+
+    m_dontMergeButton->setChecked(true);
+    m_lastSavedButton = m_dontMergeButton;
+  }
+}
+
+void TaskBodyMerge::suggestWriting()
+{
+  if (completed() && m_lastSavedButton && !m_lastSavedButton->isChecked()) {
+    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+      QString title = "Warning";
+      QString text = "The chosen result differs from the saved result (indicated in red). "
+                     "Resave?";
+      QMessageBox::StandardButton chosen =
+          QMessageBox::warning(window, title, text, QMessageBox::Save | QMessageBox::No,
+                               QMessageBox::Save);
+      if (chosen == QMessageBox::Save) {
+        writeResult();
+      }
+    }
+  }
 }
