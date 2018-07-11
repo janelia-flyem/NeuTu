@@ -721,8 +721,7 @@ void TaskBodyCleave::onCompleted()
 
   // The output is JSON, an array of arrays, where each inner array is the super voxels in a cleaved body.
 
-  if (cleaveIndexToMeshIds.size() < 2) {
-    // Fewer than two cleave indices means no actual cleaving, so omit the output.
+  if (cleaveIndexToMeshIds.empty()) {
     return;
   }
 
