@@ -6,6 +6,17 @@
 
 #include "zflyembodyconfig.h"
 
+/*!
+ * \brief The class of managing a set of bodies for 3d display
+ *
+ * The class is mainly used in ZFlyEmBody3dDoc, which needs to load or unload
+ * bodies for exploring neuron segmentations. A body can be registered or
+ * unregistered in a manager object. A body can also be registered as a set of
+ * sub-bodies, which usually correspond to supervoxels in proofreading
+ * applications. Therefore, the entry of each body is stored as a mapping from
+ * a normal body ID, which is always decoded, to a set of supervoxel IDs. Mapping
+ * to an empty set means the body is registered as a normal body.
+ */
 class ZFlyEmBodyManager
 {
 public:
@@ -20,8 +31,22 @@ public:
    */
   void registerBody(uint64_t id);
 
-  void deregisterBody(uint64_t id);
+  /*!
+   * \brief Register a body with its subbody composition.
+   *
+   * \a comp will overwrite the old composition of \a id if it has already been
+   * registered. \a id is registered as a normal body if \a comp is empty.
+   */
   void registerBody(uint64_t id, const QSet<uint64_t> &comp);
+
+  /*!
+   * \brief Deregister a body
+   *
+   * Remove a body from the manager. If \a id has a non-empty mapped set, the set
+   * will be removed as well.
+   */
+  void deregisterBody(uint64_t id);
+
 
   bool contains(uint64_t id) const;
   bool hasMapping(uint64_t id) const;
