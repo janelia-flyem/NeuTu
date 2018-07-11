@@ -709,11 +709,7 @@ void TaskBodyCleave::onCompleted()
   }
 
   std::map<std::size_t, std::vector<uint64_t>> cleaveIndexToMeshIds;
-  std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveResultIndex);
-  for (auto it : m_meshIdToCleaveIndex) {
-    meshIdToCleaveIndex[it.first] = it.second;
-  }
-  for (auto itMesh : meshIdToCleaveIndex) {
+  for (auto itMesh : m_meshIdToCleaveResultIndex) {
     std::size_t cleaveIndex = itMesh.second;
     auto itCleave = cleaveIndexToMeshIds.find(cleaveIndex);
     if (itCleave == cleaveIndexToMeshIds.end()) {
