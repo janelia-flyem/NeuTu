@@ -987,11 +987,6 @@ void TaskBodyCleave::cleave()
     cleaveIndexToMeshIds[cleaveIndex].push_back(id);
   }
 
-  if (cleavedWithoutServer(cleaveIndexToMeshIds)) {
-    m_cleavingStatusLabel->setText(CLEAVING_STATUS_DONE);
-    return;
-  }
-
   QJsonObject requestJsonSeeds;
 
   for (auto it : cleaveIndexToMeshIds) {
@@ -1034,42 +1029,6 @@ void TaskBodyCleave::cleave()
 
   m_cleaveReplyPending = true;
   m_networkManager->post(request, requestData);
-}
-
-bool TaskBodyCleave::cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>&
-                                          cleaveIndexToMeshIds)
-{
-  std::map<uint64_t, std::size_t> meshIdToCleaveIndex;
-
-  if (cleaveIndexToMeshIds.size() == 0) {
-    // If no cleave indices are in use, just clear the map so all meshes return to the
-    // default color.
-
-    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex, QJsonObject()));
-    return true;
-  } else if (cleaveIndexToMeshIds.size() == 1) {
-    // If one cleave index is in use, just use it for all the meshes.
-
-    std::size_t cleaveIndex = cleaveIndexToMeshIds.begin()->first;
-
-    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
-    for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
-      ZMesh *mesh = *it;
-      meshIdToCleaveIndex[mesh->getLabel()] = cleaveIndex;
-    }
-
-    std::set<std::size_t> hiddenChangedIndices = hiddenChanges(meshIdToCleaveIndex);
-
-    m_bodyDoc->pushUndoCommand(new CleaveCommand(this, meshIdToCleaveIndex, QJsonObject()));
-
-    showHiddenChangeWarning(hiddenChangedIndices);
-
-    return true;
-  }
-
-  // Other situations do require the cleave server.
-
-  return false;
 }
 
 void TaskBodyCleave::updateVisibility()

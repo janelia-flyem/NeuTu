@@ -110,7 +110,6 @@ private:
   void enableCleavingUI(bool showingCleaving);
 
   void cleave();
-  bool cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>& cleaveIndexToMeshIds);
 
   void updateVisibility();
 
