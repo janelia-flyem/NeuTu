@@ -2,6 +2,7 @@
 #define TASKBODYCLEAVE_H
 
 #include "protocols/taskprotocoltask.h"
+#include "zpoint.h"
 #include <QObject>
 #include <QVector>
 #include <set>
@@ -55,6 +56,7 @@ private slots:
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
   uint64_t m_bodyId;
+  ZPoint m_bodyPt;
   int m_maxLevel;
 
   QWidget *m_widget;

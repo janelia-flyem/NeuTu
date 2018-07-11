@@ -37,7 +37,8 @@ namespace {
 
   static const QString KEY_TASKTYPE = "task type";
   static const QString VALUE_TASKTYPE = "body cleave";
-  static const QString KEY_BODYID = "body ID";
+  static const QString KEY_BODY_ID = "body ID";
+  static const QString KEY_BODY_POINT = "body point";
   static const QString KEY_MAXLEVEL = "maximum level";
   static const QString KEY_ASSIGNED_USER = "assigned user";
 
@@ -608,7 +609,15 @@ void TaskBodyCleave::onChooseCleaveMethod()
 
 QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
 {
-  taskJson[KEY_BODYID] = static_cast<double>(m_bodyId);
+  if (m_bodyPt.isApproxOrigin()) {
+    taskJson[KEY_BODY_ID] = static_cast<double>(m_bodyId);
+  } else {
+    QJsonArray array;
+    array.append(int(m_bodyPt.x()));
+    array.append(int(m_bodyPt.y()));
+    array.append(int(m_bodyPt.z()));
+    taskJson[KEY_BODY_POINT] = array;
+  }
   taskJson[KEY_TASKTYPE] = VALUE_TASKTYPE;
   taskJson[KEY_MAXLEVEL] = m_maxLevel;
 
@@ -1210,13 +1219,61 @@ void TaskBodyCleave::displayWarning(const QString &title, const QString &text,
   });
 }
 
-bool TaskBodyCleave::loadSpecific(QJsonObject json)
-{
-  if (!json.contains(KEY_BODYID)) {
+namespace {
+
+  bool pointFromJSON(const QJsonValue &value, ZPoint &result)
+  {
+    if (value.isArray()) {
+      QJsonArray array = value.toArray();
+      if (array.size() == 3) {
+        result = ZPoint(array[0].toDouble(), array[1].toDouble(), array[2].toDouble());
+        return true;
+      }
+    }
     return false;
   }
 
-  m_bodyId = json[KEY_BODYID].toDouble();
+}
+
+bool TaskBodyCleave::loadSpecific(QJsonObject json)
+{
+  if (json.contains(KEY_BODY_ID)) {
+    m_bodyId = json[KEY_BODY_ID].toDouble();
+
+    if (json.contains(KEY_BODY_POINT)) {
+      QString title = "Cleaving Task Specification Conflict";
+      QString text = "The cleaving task for body ID " + QString::number(m_bodyId) +
+          " also contains a 3D point, which is being ignored.";
+      displayWarning(title, text);
+    }
+  }
+  else if (json.contains(KEY_BODY_POINT)) {
+    m_bodyId = 0;
+    if (pointFromJSON(json[KEY_BODY_POINT], m_bodyPt)) {
+      ZDvidReader reader;
+      reader.setVerbose(false);
+      if (reader.open(m_bodyDoc->getDvidTarget())) {
+        int x = m_bodyPt.x();
+        int y = m_bodyPt.y();
+        int z = m_bodyPt.z();
+        m_bodyId = reader.readBodyIdAt(x, y, z);
+      }
+      if (m_bodyId == 0) {
+        QString title = "Cleaving Task Specification Error";
+        QString text = KEY_BODY_POINT + " does not correspond to a valid body ID.";
+        displayWarning(title, text);
+        return false;
+      }
+    } else {
+      QString title = "Cleaving Task Specification Error";
+      QString text = "Unparsable " + KEY_BODY_POINT + ".";
+      displayWarning(title, text);
+      return false;
+    }
+  } else {
+    return false;
+  }
+
   m_maxLevel = json[KEY_MAXLEVEL].toDouble();
 
   m_visibleBodies.insert(ZFlyEmBody3dDoc::encode(m_bodyId, 0));
