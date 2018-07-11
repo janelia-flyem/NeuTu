@@ -284,6 +284,13 @@ public:
 
   void registerBody(uint64_t bodyId);
   void deregisterBody(uint64_t bodyId);
+
+  /*!
+   * \brief Specify how a body should be updated.
+   *
+   * Initial update of the body in \a config will follow the specification in
+   * \a config.
+   */
   void addBodyConfig(const ZFlyEmBodyConfig &config);
 
   void diagnose() const override;
