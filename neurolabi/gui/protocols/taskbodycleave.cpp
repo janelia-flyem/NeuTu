@@ -1233,11 +1233,32 @@ namespace {
     return false;
   }
 
+  QString toString(const QJsonValue &value)
+  {
+    if (value.isDouble()) {
+      return QString::number(value.toDouble());
+    } else if (value.isString()) {
+      return value.toString();
+    } else {
+      QJsonDocument doc;
+      if (value.isArray()) {
+        doc = QJsonDocument(value.toArray());
+      } else if (value.isObject()) {
+        doc = QJsonDocument(value.toObject());
+      }
+      return QString(doc.toJson(QJsonDocument::Compact));
+    }
+    return QString("\'\'");
+  }
+
 }
 
 bool TaskBodyCleave::loadSpecific(QJsonObject json)
 {
   if (json.contains(KEY_BODY_ID)) {
+
+    // The task may explicitly mention the ID of the body to be cleaved.
+
     m_bodyId = json[KEY_BODY_ID].toDouble();
 
     if (json.contains(KEY_BODY_POINT)) {
@@ -1248,6 +1269,10 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
     }
   }
   else if (json.contains(KEY_BODY_POINT)) {
+
+    // Or the task may mention a 3D point (e.g., from a "todo" mark), indicating that the
+    // body containing that point is what should be cleaved.
+
     m_bodyId = 0;
     if (pointFromJSON(json[KEY_BODY_POINT], m_bodyPt)) {
       ZDvidReader reader;
@@ -1266,7 +1291,7 @@ bool TaskBodyCleave::loadSpecific(QJsonObject json)
       }
     } else {
       QString title = "Cleaving Task Specification Error";
-      QString text = "Unparsable " + KEY_BODY_POINT + ".";
+      QString text = "Unparsable " + KEY_BODY_POINT + ": " + toString(json[KEY_BODY_POINT]);
       displayWarning(title, text);
       return false;
     }
