@@ -198,10 +198,14 @@ public:
 
   /*!
    * \brief Read meshes from a key-value instance whose values are tar archives of
-   * Draco-compressed meshes
+   * Draco-compressed meshes.  The new "tarsupervoxels" data instance will be used
+   * unless useOldMeshesTars is true, to force use of the old key-value instance
+   * for backwards compatibility.
    */
-  struct archive *readMeshArchiveStart(uint64_t bodyId);
-  struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal);
+  struct archive *readMeshArchiveStart(uint64_t bodyId,
+                                       bool useOldMeshesTars = false);
+  struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal,
+                                       bool useOldMeshesTars = false);
   ZMesh *readMeshArchiveNext(struct archive *arc);
   ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead);
 
