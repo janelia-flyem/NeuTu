@@ -2541,9 +2541,16 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(
     const float PROGRESS_FRACTION_START = 1 / 3.0;
     emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
 
-    size_t bytesTotal;
-//    size_t bytesRead = 0;
-    if (struct archive *arc = m_workDvidReader.readMeshArchiveStart(id, bytesTotal)) {
+    // For now, use the new "tarsupervoxels" data instance for tar archives of meshes
+    // only if an environment variable is set,  When testing is complete, this approach
+    // will become the default.
+
+    bool useOldMeshesTars = !std::getenv("NEU3_USE_TARSUPERVOXELS");
+    if (!useOldMeshesTars) {
+      id = decode(id);
+    }
+
+    if (struct archive *arc = m_workDvidReader.readMeshArchiveStart(id, useOldMeshesTars)) {
       std::vector<ZMesh*> resultVec;
 
       // When reading the meshes, decompress them in parallel to improve performance.

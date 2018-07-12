@@ -62,6 +62,9 @@ public:
   std::string getMeshesTarsUrl(uint64_t bodyId);
   std::string getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId2);
 
+  std::string getTarSupervoxelsUrl();
+  std::string getTarSupervoxelsUrl(uint64_t bodyId);
+
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
   getThumbnailUrl(uint64_t bodyId, const std::string &bodyLabelName) const;
@@ -296,6 +299,8 @@ public:
    */
   static std::string GetKeyCommandUrl(const std::string &dataUrl);
 
+  static std::string GetTarfileCommandUrl(const std::string &dataUrl);
+
   static uint64_t GetBodyId(const std::string &url);
 
   static std::string ExtractSplitTaskKey(const std::string &url);
@@ -338,6 +343,7 @@ private:
   static const std::string m_annotationMoveCommand;
   static const std::string m_annotationTagCommand;
   static const std::string m_labelMappingCommand;
+  static const std::string m_tarfileCommand;
 };
 
 #endif // ZDVIDURL_H

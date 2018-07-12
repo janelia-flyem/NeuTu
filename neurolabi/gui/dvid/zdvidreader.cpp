@@ -998,19 +998,20 @@ const
   return mesh;
 }
 
-struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId)
+struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, bool useOldMeshesTars)
 {
   size_t bytesTotal;
-  return readMeshArchiveStart(bodyId, bytesTotal);
+  return readMeshArchiveStart(bodyId, bytesTotal, useOldMeshesTars);
 }
 
-struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal)
+struct archive *ZDvidReader::readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal, bool useOldMeshesTars)
 {
   bytesTotal = 0;
 
   ZDvidUrl dvidUrl(getDvidTarget());
 
-  std::string tarUrl = dvidUrl.getMeshesTarsUrl(bodyId);
+  std::string tarUrl = useOldMeshesTars ? dvidUrl.getMeshesTarsUrl(bodyId) :
+                                          dvidUrl.getTarSupervoxelsUrl(bodyId);
   if (tarUrl.empty()) {
     LWARN() << "Empty mesh archive url for" << bodyId;
   } else {
