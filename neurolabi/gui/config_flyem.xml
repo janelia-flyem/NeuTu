@@ -19,4 +19,5 @@
   </Z3DWindow>
   <Application>FlyEM</Application>
   <NativeFileDialog status="on"></NativeFileDialog>
+  <DvidBrowseDialog status="on"></DvidBrowseDialog>
 </neutube>
