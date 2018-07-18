@@ -452,7 +452,7 @@ void ZFlyEmBody3dDoc::hideArbGrayslice()
 
 int ZFlyEmBody3dDoc::getMinResLevel() const
 {
-  int resLevel = 0;
+  int resLevel = m_minResLevel;
   switch (getBodyType()) {
   case flyem::BODY_COARSE:
     resLevel = MAX_RES_LEVEL;
@@ -1370,7 +1370,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
             mesh->getSource());
     }
 
-    if (resLevel > getMinResLevel()) {
+    if (resLevel > getMinResLevel() && !fromTar(id)) {
       QMutexLocker locker(&m_eventQueueMutex);
       bool removing = false;
 
@@ -3122,6 +3122,16 @@ void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
 
   m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
   m_garbageMap[obj].setRecycable(recycable);
+
+  //Update data structures used by isTarMode().
+  for (auto& it : m_tarIdToMeshIds) {
+    auto& meshIds = it.second;
+    meshIds.erase(obj->getLabel());
+    if (meshIds.empty()) {
+      m_tarIdToMeshIds.erase(it.first);
+      break;
+    }
+  }
 
   ZOUT(LTRACE(), 5) << obj << "dumped" << obj->getSource();
 

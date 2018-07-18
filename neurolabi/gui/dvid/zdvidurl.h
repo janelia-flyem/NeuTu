@@ -60,6 +60,7 @@ public:
 
   std::string getMeshesTarsUrl();
   std::string getMeshesTarsUrl(uint64_t bodyId);
+  std::string getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId2);
 
   std::string getThumbnailUrl(const std::string &bodyLabelName) const;
   std::string
