@@ -52,6 +52,16 @@ ZDialogFactory::~ZDialogFactory()
 ZDvidTargetProviderDialog* ZDialogFactory::makeDvidDialog(QWidget *parent, ZDvidDialogType dialogType)
 {
   ZDvidTargetProviderDialog *dlg;
+
+  // default = whatever is specified in config file
+  if (dialogType == DEFAULT) {
+    if (NeutubeConfig::getInstance().usingDvidBrowseDialog()) {
+        dialogType = BRANCH_BROWSER;
+    } else {
+        dialogType = ORIGINAL;
+    }
+  }
+
   if (dialogType == ORIGINAL) {
     dlg = new ZDvidDialog(parent);
   } else if (dialogType == BRANCH_BROWSER) {
