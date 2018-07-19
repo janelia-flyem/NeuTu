@@ -56,5 +56,6 @@ Not supported yet.
 
 ## Manual
 
-https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
+Quick Start: https://www.dropbox.com/s/cnewjf7bdm3qbdj/manual.pdf?dl=0
 
+Full Manual: https://www.dropbox.com/s/w9sbry69v04tziu/NeuTu%20Manual%202018.pdf?dl=0
