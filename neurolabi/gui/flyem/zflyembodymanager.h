@@ -12,8 +12,7 @@
  * The class is mainly used in ZFlyEmBody3dDoc, which needs to load or unload
  * bodies for exploring neuron segmentations. A body can be registered or
  * unregistered in a manager object. A body can also be registered as a set of
- * sub-bodies, which usually correspond to supervoxels in proofreading
- * applications. Therefore, the entry of each body is stored as a mapping from
+ * supervoxels. Therefore, the entry of each body is stored as a mapping from
  * a normal body ID, which is always decoded, to a set of supervoxel IDs. Mapping
  * to an empty set means the body is registered as a normal body.
  */
@@ -47,18 +46,30 @@ public:
    */
   void deregisterBody(uint64_t id);
 
+  /*!
+   * \brief Register a supervoxel as an orphan (without agglomeration)
+   *
+   */
+  void registerSupervoxel(uint64_t id);
+  void deregisterSupervoxel(uint64_t id);
 
   bool contains(uint64_t id) const;
   bool hasMapping(uint64_t id) const;
-  uint64_t getHostId(uint64_t bodyId) const;
+  uint64_t getAggloId(uint64_t bodyId) const;
   QSet<uint64_t> getMappedSet(uint64_t bodyId) const;
 
-  QSet<uint64_t> getBodySet() const;
+  QSet<uint64_t> getNormalBodySet() const;
+  QSet<uint64_t> getUnmappedBodySet() const;
+  QSet<uint64_t> getOrphanSupervoxelSet() const;
 
   /*!
-   * \brief Get the ID when only one body presents.
+   * \brief Get the ID when only one body or supervoxel presents.
    *
-   * \return 0 iff the body count is not 1.
+   * The function always returns 0 when there is a mapped body. If there is no
+   * mapped body, the number of bodies is counted as the sum of the number of
+   * unmapped bodies and the number of orphan supervoxels. It returns the ID of
+   * the body or supervoxel if the count is 1. The returned supervoxel ID will be
+   * encoded.
    */
   uint64_t getSingleBodyId() const;
 
@@ -68,9 +79,18 @@ public:
    *
    * It erases \a bodyId from the mapped sets.
    */
-  void eraseSubbody(uint64_t bodyId);
+  void eraseSupervoxel(uint64_t bodyId);
 
-  bool isSubbody(uint64_t bodyId) const;
+  bool isSupervoxel(uint64_t bodyId) const;
+  bool isOrphanSupervoxel(uint64_t bodyId) const;
+
+
+  //Note: IDs in the the returned set are encoded.
+  QSet<uint64_t> getSupervoxelToAdd(
+      const QSet<uint64_t> &bodySet, bool resultEncoded);
+  QSet<uint64_t> getSupervoxelToRemove(
+      const QSet<uint64_t> &bodySet, bool resultEncoded);
+
 
   void clear();
 
@@ -100,8 +120,18 @@ public:
   // raw body identifier.
 
   static uint64_t encode(uint64_t rawId, unsigned int level = 0, bool tar = true);
+
+  /*!
+   * \brief Encode supervoxel
+   *
+   * No tar encoding is applied to a supervoxel. In fact, the whole tar encoding
+   * option might be removed in the future because it seems redundant.
+   */
+  static uint64_t encodeSupervoxel(uint64_t rawId);
+
   static uint64_t decode(uint64_t encodedId);
   static bool encodesTar(uint64_t id);
+  static bool encodingSupervoxel(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 
 private:

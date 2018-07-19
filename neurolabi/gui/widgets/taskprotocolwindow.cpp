@@ -841,6 +841,11 @@ void TaskProtocolWindow::disableButtonsWhileUpdating()
 
 void TaskProtocolWindow::enableButtonsAfterUpdating()
 {
+  LDEBUG() << "m_bodyRecycledExpected =" << m_bodyRecycledExpected << ";"
+           << "m_bodyRecycledReceived =" << m_bodyRecycledReceived << ";"
+           << "m_bodyMeshLoadedExpected =" << m_bodyMeshLoadedExpected << ";"
+           << "m_bodyMeshLoadedReceived =" << m_bodyMeshLoadedReceived << ";"
+           << "m_bodiesReused =" << m_bodiesReused;
     if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
         (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
         (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {

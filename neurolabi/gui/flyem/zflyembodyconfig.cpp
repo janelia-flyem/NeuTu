@@ -7,9 +7,9 @@ ZFlyEmBodyConfig::ZFlyEmBodyConfig()
 
 }
 
-ZFlyEmBodyConfig::ZFlyEmBodyConfig(uint64_t bodyId) : m_bodyId(bodyId)
+ZFlyEmBodyConfig::ZFlyEmBodyConfig(uint64_t bodyId)
 {
-
+  setBodyId(bodyId);
 }
 
 void ZFlyEmBodyConfig::setBodyColor(const QColor &color)
@@ -83,33 +83,20 @@ int ZFlyEmBodyConfig::getBodyEncodeLevel() const
   return ZFlyEmBodyManager::encodedLevel(getBodyId());
 }
 
-/*
-void ZFlyEmBodyConfig::setMaxDsLevel(int level)
+uint64_t ZFlyEmBodyConfig::getDecodedBodyId() const
 {
-  m_maxDsLevel = level;
-  if (m_dsLevel > m_maxDsLevel) {
-    m_dsLevel = m_maxDsLevel;
-  }
+  return ZFlyEmBodyManager::decode(getBodyId());
 }
 
-void ZFlyEmBodyConfig::setMinDsLevel(int level)
+flyem::EBodyLabelType ZFlyEmBodyConfig::getLabelType() const
 {
-  m_minDsLevel = level;
-  if (m_dsLevel < m_minDsLevel) {
-    m_dsLevel = m_minDsLevel;
-  }
+  return m_labelType;
 }
-*/
-
-/*
-bool ZFlyEmBodyConfig::usingCoarseSource() const
-{
-  return (getBodyType() == flyem::BODY_COARSE) ||
-      (getDsLevel() > 0 && getDsLevel() == m_maxDsLevel);
-}
-*/
 
 void ZFlyEmBodyConfig::setBodyId(uint64_t bodyId)
 {
   m_bodyId = bodyId;
+  if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+    m_labelType = flyem::LABEL_SUPERVOXEL;
+  }
 }

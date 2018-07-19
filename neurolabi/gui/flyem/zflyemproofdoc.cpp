@@ -56,6 +56,7 @@
 #include "zflyemroutinechecktask.h"
 #include "dvid/zdviddataslicehelper.h"
 #include "zarray.h"
+#include "zflyembodymanager.h"
 
 const char* ZFlyEmProofDoc::THREAD_SPLIT = "seededWatershed";
 
@@ -1299,6 +1300,11 @@ void ZFlyEmProofDoc::setTodoItemAction(neutube::EToDoAction action)
 void ZFlyEmProofDoc::setTodoItemToNormal()
 {
   setTodoItemAction(neutube::TO_DO);
+}
+
+void ZFlyEmProofDoc::setTodoItemIrrelevant()
+{
+  setTodoItemAction(neutube::TO_DO_IRRELEVANT);
 }
 
 void ZFlyEmProofDoc::setTodoItemToMerge()
@@ -3094,6 +3100,20 @@ uint64_t ZFlyEmProofDoc::getLabelId(int x, int y, int z)
   ZDvidReader &reader = getDvidReader();
   if (reader.good()) {
     bodyId = reader.readBodyIdAt(x, y, z);
+  }
+
+  return bodyId;
+}
+
+uint64_t ZFlyEmProofDoc::getSupervoxelId(int x, int y, int z)
+{
+  uint64_t bodyId = 0;
+  ZDvidReader &reader = getDvidReader();
+  if (reader.good()) {
+    bodyId = reader.readSupervoxelIdAt(x, y, z);
+    if (bodyId > 0) {
+      bodyId = ZFlyEmBodyManager::encodeSupervoxel(bodyId);
+    }
   }
 
   return bodyId;

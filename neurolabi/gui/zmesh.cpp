@@ -1738,7 +1738,7 @@ ZMesh ZMesh::booleanOperation(const ZMesh& mesh1, const ZMesh& mesh2, ZMesh::Boo
 void ZMesh::pushObjectColor()
 {
   m_colors.resize(m_vertices.size());
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   qDebug() << "Push mesh color:" << getColor();
 #endif
   for (size_t i = 0; i < m_colors.size(); ++i) {

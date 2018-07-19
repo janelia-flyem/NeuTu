@@ -85,7 +85,9 @@ void ZFlyEmBodySplitter::runSplit(
         foreach (ZStackObject *seed, seedList) {
           container.addSeed(seed);
         }
+        container.setCcaPost(true);
 
+        ZIntCuboid dataRange;
         switch (rangeOption) {
         case flyem::RANGE_FULL:
           container.setRangeHint(ZStackWatershedContainer::RANGE_FULL);
@@ -95,12 +97,13 @@ void ZFlyEmBodySplitter::runSplit(
           break;
         case flyem::RANGE_LOCAL:
           container.setRangeHint(ZStackWatershedContainer::RANGE_SEED_BOUND);
+          dataRange = container.getRange();
           break;
         }
 
         ZDvidSparseStack *sparseStack =
             doc->getDataDocument()->getDvidSparseStack(
-              container.getRange(), flyem::BODY_SPLIT_ONLINE);
+              dataRange, flyem::BODY_SPLIT_ONLINE);
         if (sparseStack != NULL) {
           container.setData(
                 NULL, sparseStack->getSparseStack(container.getRange()));
@@ -132,7 +135,7 @@ void ZFlyEmBodySplitter::runSplit(
     } else {
       notifyWindowMessageUpdated("Failed to load body data. Split aborted.");
     }
-    doc->releaseBody(getBodyId());
+    doc->releaseBody(getBodyId(), getLabelType());
   }
 }
 

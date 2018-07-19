@@ -20,7 +20,7 @@ TEST(ZFlyEmBodyManager, Basic)
   ASSERT_TRUE(bm.contains(2));
   ASSERT_TRUE(bm.hasMapping(2));
 
-  QSet<uint64_t> bodySet = bm.getBodySet();
+  QSet<uint64_t> bodySet = bm.getNormalBodySet();
   ASSERT_EQ(2, bodySet.size());
   ASSERT_TRUE(bodySet.contains(1));
   ASSERT_TRUE(bodySet.contains(2));
@@ -46,14 +46,17 @@ TEST(ZFlyEmBodyManager, Basic)
 
   bm.registerBody(2, QSet<uint64_t>({200, 300}));
 
-  ASSERT_EQ(2, (int) bm.getHostId(300));
-  ASSERT_EQ(20, (int) bm.getHostId(20));
+  ASSERT_EQ(2, (int) bm.getAggloId(300));
+  ASSERT_EQ(20, (int) bm.getAggloId(20));
 
-  ASSERT_EQ(2, (int) bm.getSingleBodyId());
+//  bm.print();
+  ASSERT_EQ(0, (int) bm.getSingleBodyId());
 
-  bm.eraseSubbody(300);
-  ASSERT_EQ(300, (int) bm.getHostId(300));
-  ASSERT_EQ(2, (int) bm.getSingleBodyId());
+  bm.eraseSupervoxel(300);
+  ASSERT_EQ(300, (int) bm.getAggloId(300));
+  ASSERT_EQ(0, (int) bm.getSingleBodyId());
+  bm.eraseSupervoxel(200);
+  ASSERT_EQ(2, (int)bm.getSingleBodyId());
 
   bm.registerBody(1);
   ASSERT_FALSE(bm.isTodoLoaded(1));
@@ -85,6 +88,28 @@ TEST(ZFlyEmBodyManager, Basic)
 
   bm.deregisterBody(1);
   ASSERT_EQ(0, (int) bm.getBodyConfig(1).getBodyId());
+
+  bm.clear();
+  ASSERT_TRUE(bm.isEmpty());
+
+  bm.registerSupervoxel(1);
+  ASSERT_EQ(ZFlyEmBodyManager::encodeSupervoxel(1), bm.getSingleBodyId());
+  ASSERT_EQ(uint64_t(9900000000001), bm.getSingleBodyId());
+}
+
+TEST(ZFlyEmBodyManager, encode)
+{
+  ASSERT_EQ(uint64_t(1), ZFlyEmBodyManager::encode(1, 0, false));
+  ASSERT_EQ(uint64_t(10100000000003), ZFlyEmBodyManager::encode(3, 1));
+  ASSERT_EQ(uint64_t(100000000003), ZFlyEmBodyManager::encode(3, 1, false));
+  ASSERT_EQ(uint64_t(200000000003), ZFlyEmBodyManager::encode(3, 2, false));
+  ASSERT_EQ(uint64_t(9900000000003),
+            ZFlyEmBodyManager::encodeSupervoxel(3));
+  ASSERT_TRUE(ZFlyEmBodyManager::encodingSupervoxel(9900000000003));
+  ASSERT_TRUE(ZFlyEmBodyManager::encodingSupervoxel(19900000000003));
+  ASSERT_FALSE(ZFlyEmBodyManager::encodingSupervoxel(9800000000003));
+
+
 }
 
 #endif

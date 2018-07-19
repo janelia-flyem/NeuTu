@@ -158,6 +158,7 @@ namespace {
           }
         }
       }
+      closedir(dir);
     }
     return result;
   }

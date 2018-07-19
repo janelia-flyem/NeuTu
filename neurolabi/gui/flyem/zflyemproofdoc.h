@@ -112,6 +112,7 @@ public:
   uint64_t getBodyId(const ZIntPoint &pt);
 
   uint64_t getLabelId(int x, int y, int z) override;
+  uint64_t getSupervoxelId(int x, int y, int z) override;
 
   bool hasBodySelected() const;
 
@@ -306,6 +307,7 @@ public: //Todo list functions
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutube::EToDoAction action);
   void setTodoItemToNormal();
+  void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
 

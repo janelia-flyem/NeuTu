@@ -275,10 +275,11 @@ std::string ZDvidUrl::getMultiscaleSupervoxelUrl(uint64_t bodyId, int zoom) cons
     if (zoom > m_dvidTarget.getMaxLabelZoom()) {
       zoom = m_dvidTarget.getMaxLabelZoom();
     }
-    ZString option = "?scale=";
+    ZString option = "scale=";
     option.appendNumber(zoom);
+    url = AppendQuery(url, option);
 
-    url += option;
+//    url += option;
   } else {
     if (zoom == 0) {
       url = getSupervoxelUrl(bodyId);
@@ -896,6 +897,16 @@ std::string ZDvidUrl::getBodyInfoUrl(uint64_t bodyId, const std::string &bodyNam
 std::string ZDvidUrl::getBodyInfoUrl(uint64_t bodyId) const
 {
   return getBodyInfoUrl(bodyId, m_dvidTarget.getBodyLabelName());
+}
+
+std::string ZDvidUrl::getBodySizeUrl(uint64_t bodyId) const
+{
+  if (m_dvidTarget.getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
+    return GetFullUrl(getDataUrl(m_dvidTarget.getSegmentationName()),
+                      "size/" + std::to_string(bodyId));
+  }
+
+  return "";
 }
 
 std::string ZDvidUrl::getBoundBoxUrl() const

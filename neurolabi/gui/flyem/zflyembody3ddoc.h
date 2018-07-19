@@ -86,6 +86,11 @@ public:
 //  QSet<uint64_t> getUnencodedBodySet() const;
   QSet<uint64_t> getNormalBodySet() const;
 
+  /*!
+   * \brief Get all normal bodies, including those contributing orphan supervoxels.
+   */
+  QSet<uint64_t> getInvolvedNormalBodySet() const;
+
   uint64_t getMappedId(uint64_t bodyId) const;
 
   void addBody(const ZFlyEmBodyConfig &config);
@@ -187,6 +192,7 @@ public:
 
   ZMesh *readMesh(const ZDvidReader &reader, const ZFlyEmBodyConfig &config);
   ZMesh *readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
+//  ZMesh *readSupervoxelMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom);
 
 #if 0
   // The instances referred to by ZDvidUrl::getMeshesTarsUrl() represent data that
@@ -221,6 +227,8 @@ public:
   int getMinDsLevel() const;
 
   void makeAction(ZActionFactory::EAction item) override;
+
+  static void SetObjectClass(ZStackObject *obj, uint64_t bodyId);
 
 public:
   virtual void executeAddTodoCommand(
@@ -270,9 +278,10 @@ public:
   uint64_t protectBodyForSplit();
 
   bool protectBody(uint64_t bodyId);
-  void releaseBody(uint64_t bodyId);
+  void releaseBody(uint64_t bodyId, flyem::EBodyLabelType labelType);
   bool isBodyProtected(uint64_t bodyId) const;
 
+  void activateSplit(uint64_t bodyId);
   void activateSplit(uint64_t bodyId, flyem::EBodyLabelType type);
   void deactivateSplit();
   bool isSplitActivated() const;
@@ -292,6 +301,8 @@ public:
    * \a config.
    */
   void addBodyConfig(const ZFlyEmBodyConfig &config);
+
+  bool isSupervoxel(uint64_t bodyId);
 
   void diagnose() const override;
 
@@ -373,8 +384,10 @@ private:
   std::vector<ZMesh*> getTarCachedMeshes(uint64_t bodyId);
 
   std::vector<ZMesh*> getCachedMeshes(uint64_t bodyId, int zoom);
-  std::vector<ZMesh *> makeBodyMeshModels(const ZFlyEmBodyConfig &config);
+  std::vector<ZMesh *> makeBodyMeshModels(ZFlyEmBodyConfig &config);
   std::vector<ZMesh*> makeTarMeshModels(uint64_t bodyId, int t);
+  std::vector<ZMesh*> makeTarMeshModels(
+      const ZDvidReader &reader, uint64_t bodyId, int t);
 
   std::vector<ZSwcTree*> makeDiffBodyModel(
       uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
@@ -431,7 +444,7 @@ private:
 
   ZStackObject::EType getBodyObjectType() const;
 
-  flyem::EBodyLabelType getBodyLabelType() const;
+  flyem::EBodyLabelType getBodyLabelType(uint64_t bodyId) const;
 
   static bool IsOverSize(const ZStackObject *obj);
 
@@ -450,7 +463,6 @@ private:
 
   const ZFlyEmBodyManager& getBodyManager() const;
   ZFlyEmBodyManager& getBodyManager();
-
 
 signals:
   void todoVisibleChanged();
@@ -485,6 +497,8 @@ private:
 
   bool isSupervoxel(const ZStackObject *obj) const;
   uint64_t getBodyId(const ZStackObject *obj) const;
+
+  flyem::EBodyLabelType getLabelType(uint64_t bodyId) const;
 
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);
@@ -568,11 +582,14 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
 
   QSet<uint64_t> newBodySet;
   QSet<uint64_t> tarSet;
+  QSet<uint64_t> supervoxelSet;
 //  QMap<uint64_t, uint64_t> bodyEncodeMap;
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
     if (ZFlyEmBodyManager::encodesTar(bodyId)) {
       tarSet.insert(bodyId);
+    } else if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+      supervoxelSet.insert(bodyId);
     } else {
       newBodySet.insert(decode(bodyId));
     }
@@ -613,14 +630,14 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
 
   //Add new bodies
   foreach (uint64_t bodyId, addedBodySet) {
-    if (!getBodyManager().isSubbody(bodyId)) {
+    if (!getBodyManager().isSupervoxel(bodyId)) {
       addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
     }
   }
 
   //Process tar set
   foreach (uint64_t bodyId, tarSet) {
-    if (ZFlyEmBodyManager::encodedLevel(bodyId) == 0) { //supervoxel
+    if (ZFlyEmBodyManager::encodedLevel(bodyId) == 0) { //supervoxel tar
       if (!getBodyManager().hasMapping(bodyId)) {
         addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
       }
@@ -630,6 +647,39 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
       }
     }
   }
+
+  /*
+  foreach (uint64_t bodyId, tarSet) {
+    if (!getBodyManager().contains(bodyId)) {
+      addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
+    }
+  }
+  */
+
+  //Process supervoxel set
+  QSet<uint64_t> addedSupervoxelSet =
+      getBodyManager().getSupervoxelToAdd(supervoxelSet, true);
+  foreach (uint64_t bodyId, addedSupervoxelSet) {
+    addEvent(ZFlyEmBodyEvent::ACTION_ADD, bodyId, 0, NULL);
+  }
+
+  QSet<uint64_t> removedSupervoxelSet =
+      getBodyManager().getSupervoxelToRemove(supervoxelSet, true);
+  foreach (uint64_t bodyId, removedSupervoxelSet) {
+    addEvent(ZFlyEmBodyEvent::ACTION_REMOVE, bodyId, 0, NULL);
+  }
+
+  QSet<uint64_t> commonSupervoxelSet = supervoxelSet - addedSupervoxelSet;
+  foreach (uint64_t bodyId, commonSupervoxelSet) {
+    if (actionMap.contains(bodyId)) {
+      const ZFlyEmBodyEvent &bodyEvent = actionMap[bodyId];
+      if (bodyEvent.getAction() != ZFlyEmBodyEvent::ACTION_REMOVE) {
+        addEvent(bodyEvent);
+      }
+    }
+  }
+
+
 
 #if 0
   for (InputIterator iter = first; iter != last; ++iter) {

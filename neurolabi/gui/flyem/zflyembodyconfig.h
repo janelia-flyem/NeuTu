@@ -50,6 +50,7 @@ public:
   uint64_t getBodyId() const {
     return m_bodyId;
   }
+  uint64_t getDecodedBodyId() const;
 
   void setBodyId(uint64_t bodyId);
 
@@ -63,6 +64,8 @@ public:
   bool isSupervoxelTar() const;
   int getBodyEncodeLevel() const;
 
+  flyem::EBodyLabelType getLabelType() const;
+
 //  void setMaxDsLevel(int level);
 //  void setMinDsLevel(int level);
 
@@ -72,7 +75,7 @@ private:
   uint64_t m_bodyId = 0;
   QColor m_bodyColor;
   flyem::EBodyType m_bodyType = flyem::BODY_DEFAULT;
-//  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
+  flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;
 
   ZIntCuboid m_range;
   int m_dsLevel = 0;

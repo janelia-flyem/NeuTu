@@ -438,6 +438,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_BODY_ID:
       connect(action, SIGNAL(triggered()), this, SLOT(copyLabelId()));
       break;
+    case ZActionFactory::ACTION_COPY_SUPERVOXEL_ID:
+      connect(action, SIGNAL(triggered()), this, SLOT(copySupervoxelId()));
+      break;
     default:
       connected = false;
       break;
@@ -2772,6 +2775,20 @@ void ZStackPresenter::copyLabelId()
   buddyDocument()->notify(QString("%1 copied").arg(id));
 }
 
+void ZStackPresenter::copySupervoxelId()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getDataPosition();
+
+  uint64_t id = buddyDocument()->getSupervoxelId(
+        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+
+  ZGlobal::CopyToClipboard(std::to_string(id));
+
+  buddyDocument()->notify(QString("%1 copied").arg(id));
+}
+
 void ZStackPresenter::notifyBodyDecomposeTriggered()
 {
   emit bodyDecomposeTriggered();
@@ -2960,7 +2977,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(neutube::COORD_RAW_STACK);
 
-  buddyDocument()->getObjectGroup().resetSelection();
+  buddyDocument()->getObjectGroup().resetSelector();
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_IMAGE_MOVE_DOWN:
