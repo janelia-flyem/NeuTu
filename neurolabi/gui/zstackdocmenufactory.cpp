@@ -215,6 +215,12 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(
   return menu;
 }
 
+QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow */*window*/, QMenu */*menu*/)
+{
+  return NULL;
+}
+
+#if 0
 QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 {
   ZFlyEmBody3dDoc *doc = window->getDocument<ZFlyEmBody3dDoc>();
@@ -278,6 +284,7 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
       if (swcNodeCount > 0 || doc->hasSelectedSwc()) {
         actionList.append(ZActionFactory::ACTION_DESELECT_BODY);
+        actionList.append(ZActionFactory::ACTION_SAVE_OBJECT_AS);
       }
 
       if (doc->getTag() == neutube::Document::FLYEM_BODY_3D ||
@@ -299,3 +306,4 @@ QMenu* ZStackDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *menu)
 
   return menu;
 }
+#endif

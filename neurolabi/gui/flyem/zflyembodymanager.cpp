@@ -22,23 +22,51 @@ void ZFlyEmBodyManager::registerBody(uint64_t id, const QSet<uint64_t> &comp)
 
 void ZFlyEmBodyManager::registerBody(uint64_t id)
 {
+  if (encodingSupervoxel(id)) {
+    registerSupervoxel(id);
+  } else {
+    id = decode(id);
+    if (!contains(id)) {
+      registerBody(id, QSet<uint64_t>());
+    }
+  }
+}
+
+void ZFlyEmBodyManager::registerSupervoxel(uint64_t id)
+{
   id = decode(id);
-  if (!contains(id)) {
-    registerBody(id, QSet<uint64_t>());
+  if (!m_bodyMap.contains(0)) {
+    m_bodyMap[0] = QSet<uint64_t>();
+  }
+  m_bodyMap[0].insert(id);
+}
+
+void ZFlyEmBodyManager::deregisterSupervoxel(uint64_t id)
+{
+  uint64_t bodyId = decode(id);
+  if (m_bodyMap.contains(0)) {
+    m_bodyMap[0].remove(bodyId);
   }
 }
 
 void ZFlyEmBodyManager::deregisterBody(uint64_t id)
 {
-  uint64_t bodyId = decode(id);
-  m_bodyMap.remove(bodyId);
-  m_todoLoaded.remove(bodyId);
-  m_synapseLoaded.remove(bodyId);
-  m_bodyConfigMap.remove(bodyId);
+  if (encodingSupervoxel(id)) {
+    deregisterSupervoxel(id);
+  } else {
+    uint64_t bodyId = decode(id);
+    m_bodyMap.remove(bodyId);
+    m_todoLoaded.remove(bodyId);
+    m_synapseLoaded.remove(bodyId);
+    m_bodyConfigMap.remove(bodyId);
+  }
 }
 
 bool ZFlyEmBodyManager::contains(uint64_t id) const
 {
+  if (encodingSupervoxel(id)) {
+    return isOrphanSupervoxel(id);
+  }
   return m_bodyMap.contains(decode(id));
 }
 
@@ -52,7 +80,7 @@ bool ZFlyEmBodyManager::hasMapping(uint64_t id) const
   return false;
 }
 
-uint64_t ZFlyEmBodyManager::getHostId(uint64_t bodyId) const
+uint64_t ZFlyEmBodyManager::getAggloId(uint64_t bodyId) const
 {
   bodyId = decode(bodyId);
   for (QMap<uint64_t, QSet<uint64_t> >::const_iterator iter = m_bodyMap.begin();
@@ -65,8 +93,14 @@ uint64_t ZFlyEmBodyManager::getHostId(uint64_t bodyId) const
   return bodyId;
 }
 
-bool ZFlyEmBodyManager::isSubbody(uint64_t bodyId) const
+bool ZFlyEmBodyManager::isOrphanSupervoxel(uint64_t bodyId) const
 {
+  return m_bodyMap.value(0).contains(decode(bodyId));
+}
+
+bool ZFlyEmBodyManager::isSupervoxel(uint64_t bodyId) const
+{
+  bodyId = decode(bodyId);
   for (QMap<uint64_t, QSet<uint64_t> >::const_iterator iter = m_bodyMap.begin();
        iter != m_bodyMap.end(); ++iter) {
     if (iter.value().contains(bodyId)) {
@@ -82,16 +116,58 @@ QSet<uint64_t> ZFlyEmBodyManager::getMappedSet(uint64_t bodyId) const
   return m_bodyMap.value(decode(bodyId));
 }
 
-QSet<uint64_t> ZFlyEmBodyManager::getBodySet() const
+QSet<uint64_t> ZFlyEmBodyManager::getNormalBodySet() const
 {
-  return QSet<uint64_t>::fromList(m_bodyMap.keys());
+  QSet<uint64_t> bodySet = QSet<uint64_t>::fromList(m_bodyMap.keys());
+  bodySet.remove(0);
+
+  return bodySet;
+}
+
+QSet<uint64_t> ZFlyEmBodyManager::getUnmappedBodySet() const
+{
+  QSet<uint64_t> bodySet;
+
+  for (QMap<uint64_t, QSet<uint64_t> >::const_iterator iter = m_bodyMap.begin();
+       iter != m_bodyMap.end(); ++iter) {
+    if (iter.key() > 0) {
+      if (iter.value().empty()) {
+        bodySet.insert(iter.key());
+      }
+    }
+  }
+
+  return bodySet;
+}
+
+QSet<uint64_t> ZFlyEmBodyManager::getOrphanSupervoxelSet() const
+{
+  return m_bodyMap.value(0);
 }
 
 uint64_t ZFlyEmBodyManager::getSingleBodyId() const
 {
   uint64_t bodyId = 0;
-  if (m_bodyMap.size() == 1) {
-    bodyId = m_bodyMap.firstKey();
+
+  QSet<uint64_t> bodySet;
+  for (QMap<uint64_t, QSet<uint64_t> >::const_iterator iter = m_bodyMap.begin();
+       iter != m_bodyMap.end(); ++iter) {
+    if (iter.key() > 0) {
+      if (iter.value().empty()) {
+        bodySet.insert(iter.key());
+      } else {
+        return 0; //Mapped body considered as multiple bodies
+      }
+    }
+  }
+
+  QSet<uint64_t> svSet = getOrphanSupervoxelSet();
+  if (bodySet.size() + svSet.size() == 1) {
+    if (bodySet.isEmpty()) {
+      bodyId = encodeSupervoxel(*svSet.begin());
+    } else {
+      bodyId = *bodySet.begin();
+    }
   }
 
   return bodyId;
@@ -140,6 +216,46 @@ ZFlyEmBodyConfig ZFlyEmBodyManager::getBodyConfig(uint64_t bodyId) const
   return ZFlyEmBodyConfig();
 }
 
+QSet<uint64_t> ZFlyEmBodyManager::getSupervoxelToAdd(
+    const QSet<uint64_t> &bodySet, bool resultEncoded)
+{
+  QSet<uint64_t> newSet;
+  QSet<uint64_t> supervoxelSet = getOrphanSupervoxelSet();
+  foreach (uint64_t bodyId, bodySet) {
+    bodyId = decode(bodyId);
+    if (!supervoxelSet.contains(bodyId)) {
+      if (resultEncoded) {
+        newSet.insert(encodeSupervoxel(bodyId));
+      } else {
+        newSet.insert(bodyId);
+      }
+    }
+  }
+
+  return newSet;
+}
+
+QSet<uint64_t> ZFlyEmBodyManager::getSupervoxelToRemove(
+    const QSet<uint64_t> &bodySet, bool resultEncoded)
+{
+  QSet<uint64_t> supervoxelSet = getOrphanSupervoxelSet();
+  QSet<uint64_t> decodedSet;
+  foreach (uint64_t bodyId, bodySet) {
+    decodedSet.insert(decode(bodyId));
+  }
+
+  QSet<uint64_t> newSet = supervoxelSet - decodedSet;
+  if (resultEncoded) {
+    QSet<uint64_t> encodedSet;
+    for (uint64_t bodyId : newSet) {
+      encodedSet.insert(encodeSupervoxel(bodyId));
+    }
+    newSet = encodedSet;
+  }
+
+  return newSet;
+}
+
 /*
 void ZFlyEmBodyManager::erase(uint64_t bodyId)
 {
@@ -158,7 +274,7 @@ void ZFlyEmBodyManager::erase(uint64_t bodyId)
 }
 */
 
-void ZFlyEmBodyManager::eraseSubbody(uint64_t bodyId)
+void ZFlyEmBodyManager::eraseSupervoxel(uint64_t bodyId)
 {
   for (QMap<uint64_t, QSet<uint64_t> >::iterator iter = m_bodyMap.begin();
        iter != m_bodyMap.end(); ++iter) {
@@ -184,12 +300,18 @@ void ZFlyEmBodyManager::print() const
 namespace {
   const uint64_t ENCODING_BASE = 100000000000;
   const uint64_t ENCODING_TAR = 100;
+  const uint64_t ENCODING_SUPERVOXEL_LEVEL = 99;
 }
 
 uint64_t ZFlyEmBodyManager::encode(uint64_t rawId, unsigned int level, bool tar)
 {
   uint64_t tarEncoding = tar ? ENCODING_TAR : 0;
   return (level + tarEncoding) * ENCODING_BASE + rawId;
+}
+
+uint64_t ZFlyEmBodyManager::encodeSupervoxel(uint64_t rawId)
+{
+  return encode(rawId, ENCODING_SUPERVOXEL_LEVEL, false);
 }
 
 uint64_t ZFlyEmBodyManager::decode(uint64_t encodedId)
@@ -201,6 +323,11 @@ bool ZFlyEmBodyManager::encodesTar(uint64_t id) {
   uint64_t encoded = id / ENCODING_BASE;
   uint64_t encodedTar = encoded / ENCODING_TAR;
   return (encodedTar != 0);
+}
+
+bool ZFlyEmBodyManager::encodingSupervoxel(uint64_t id)
+{
+  return encodedLevel(id) == ENCODING_SUPERVOXEL_LEVEL;
 }
 
 unsigned int ZFlyEmBodyManager::encodedLevel(uint64_t id) {

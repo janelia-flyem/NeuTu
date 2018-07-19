@@ -17,6 +17,8 @@ public:
 
 private:
   ZMenuConfig getConfig(ZFlyEmBody3dDoc *doc);
+  static bool ReadyForAction(
+      ZFlyEmBody3dDoc *doc, ZActionFactory::EAction action);
 };
 
 #endif // ZFLYEMBODY3DDOCMENUFACTORY_H

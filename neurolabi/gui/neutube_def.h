@@ -75,6 +75,10 @@ enum EColor {
   COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_ALL
 };
 
+enum ESelectOption {
+  SELECT_APPEND, SELECT_ALONE, SELECT_ALONE_TYPE
+};
+
 enum EWindowConfig {
   WINDOW_2D, WINDOW_3D
 };
@@ -101,7 +105,7 @@ enum EReadStatus {
 };
 
 enum EToDoAction {
-  TO_DO, TO_MERGE, TO_SPLIT
+  TO_DO, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT
 };
 
 namespace display {
@@ -170,7 +174,7 @@ enum EProofreadingMode {
 };
 
 enum EBodyType {
-  BODY_DEFAULT, BODY_SPHERE, /*BODY_COARSE,*/ BODY_SKELETON, BODY_MESH
+  BODY_DEFAULT, BODY_SPHERE, BODY_SKELETON, BODY_MESH
 };
 
 enum EBodyLabelType {

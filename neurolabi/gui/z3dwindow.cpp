@@ -94,6 +94,7 @@
 #include "zwidgetmessage.h"
 #include "core/utilities.h"
 #include "zstackdochelper.h"
+#include "z3dwindowcontroller.h"
 
 /*
 class Sleeper : public QThread
@@ -273,10 +274,6 @@ void Z3DWindow::init()
           this, SLOT(selectedPunctumChangedFrom3D(ZPunctum*, bool)));
   connect(getMeshFilter(), SIGNAL(meshSelected(ZMesh*, bool)),
           this, SLOT(selectedMeshChangedFrom3D(ZMesh*, bool)));
-  if (getTodoFilter()) {
-    connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
-            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
-  }
   connect(getSwcFilter(), SIGNAL(treeSelected(ZSwcTree*,bool)),
           this, SLOT(selectedSwcChangedFrom3D(ZSwcTree*,bool)));
   connect(getSwcFilter(), SIGNAL(treeNodeSelected(Swc_Tree_Node*,bool)),
@@ -293,9 +290,16 @@ void Z3DWindow::init()
   connect(getSwcFilter(), SIGNAL(connectingSwcTreeNode(Swc_Tree_Node*)), this,
           SLOT(connectSwcTreeNode(Swc_Tree_Node*)));
 
+  if (getTodoFilter()) {
+    connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
+            this, SLOT(selectedTodoChangedFrom3D(ZStackObject*,bool)));
+//    connect(getTodoFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
+//            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
+  }
+
   if (getGraphFilter() != NULL) {
     connect(getGraphFilter(), SIGNAL(objectSelected(ZStackObject*,bool)),
-            this, SLOT(selectedObjectChangedFrom3D(ZStackObject*,bool)));
+            this, SLOT(selectedGraphChangedFrom3D(ZStackObject*,bool)));
   }
 
   connect(m_doc.get(), SIGNAL(statusMessageUpdated(QString)),
@@ -425,6 +429,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
   case ZActionFactory::ACTION_DESELECT_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(deselectBody()));
     break;
+  case ZActionFactory::ACTION_SAVE_OBJECT_AS:
+    action = m_actionLibrary->getAction(item, this, SLOT(saveSelectedSwc()));
+    break;
   case ZActionFactory::ACTION_MEASURE_SWC_NODE_DIST:
     action = m_actionLibrary->getAction(
           item, this, SLOT(showSeletedSwcNodeDist()));
@@ -464,6 +471,9 @@ QAction* Z3DWindow::getAction(ZActionFactory::EAction item)
     break;
   case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL:
     action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemToNormal()));
+    break;
+  case ZActionFactory::ACTION_TODO_ITEM_ANNOT_IRRELEVANT:
+    action = m_actionLibrary->getAction(item, this, SLOT(setTodoItemIrrelevant()));
     break;
   case ZActionFactory::ACTION_FLYEM_UPDATE_BODY:
     action = m_actionLibrary->getAction(item, this, SLOT(updateBody()));
@@ -1364,17 +1374,47 @@ bool Z3DWindow::readyForAction(ZActionFactory::EAction action) const
   return true;
 }
 
+void Z3DWindow::onSelectionChangedFrom3D(Z3DGeometryFilter *filter,
+    ZStackObject *p, ZStackObject::EType type, bool append)
+{
+  if (!append) {
+    m_doc->deselectAllObject(type);
+    if (type == ZStackObject::TYPE_3D_GRAPH) {
+      m_doc->deselectAllObject(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
+    }
+    filter->invalidate();
+  }
+
+  if (p != NULL) {
+    m_doc->selectObject(p, true);
+    filter->invalidate();
+  }
+}
+
+void Z3DWindow::selectedTodoChangedFrom3D(ZStackObject *p, bool append)
+{
+  onSelectionChangedFrom3D(
+        getTodoFilter(), p, ZStackObject::TYPE_FLYEM_TODO_ITEM, append);
+}
+
+void Z3DWindow::selectedGraphChangedFrom3D(ZStackObject *p, bool append)
+{
+  onSelectionChangedFrom3D(
+        getGraphFilter(), p, ZStackObject::TYPE_3D_GRAPH, append);
+}
+
 void Z3DWindow::selectedObjectChangedFrom3D(ZStackObject *p, bool append)
 {
   if (p == NULL) {
     if (!append) {
-      if (getTodoFilter()) { //temporary hack
-        m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
-        getTodoFilter()->invalidate();
-      }
-      if (getGraphFilter()) {
-        getGraphFilter()->deselectAllGraph();
-      }
+      Z3DWindowController::DeselectAllObject(this);
+//      if (getTodoFilter()) { //temporary hack
+//        m_doc->deselectAllObject(ZStackObject::TYPE_FLYEM_TODO_ITEM);
+//        getTodoFilter()->invalidate();
+//      }
+//      if (getGraphFilter()) {
+//        getGraphFilter()->deselectAllGraph();
+//      }
     }
     return;
   }
@@ -1723,9 +1763,11 @@ void Z3DWindow::show3DViewContextMenu(QPoint pt)
   }
 
   m_contextMenu = m_menuFactory->makeContextMenu(this, m_contextMenu);
-  if (!m_contextMenu->isEmpty()) {
-    m_contextMenu->popup(getCanvas()->mapToGlobal(pt));
-    return;
+  if (m_contextMenu != NULL) {
+    if (!m_contextMenu->isEmpty()) {
+      m_contextMenu->popup(getCanvas()->mapToGlobal(pt));
+      return;
+    }
   }
 
   if (getDocument()->getTag() == neutube::Document::FLYEM_SKELETON) {
@@ -2043,6 +2085,12 @@ static void AddTodoMarker(
       case neutube::TO_SPLIT:
         window->emitAddToSplitMarker(pt, bodyId);
         break;
+      case neutube::TO_DO_IRRELEVANT: //todo
+        LWARN() << "TO_DO_IRRELEVANT to be done";
+        break;
+      case neutube::TO_SUPERVOXEL_SPLIT: //Ignored
+        LWARN() << "TO_SUPERVOXEL_SPLIT not available";
+        break;
       }
     }
   }
@@ -2091,6 +2139,14 @@ void Z3DWindow::setTodoItemToNormal()
   ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
   if (doc != NULL) {
     doc->setTodoItemAction(neutube::TO_DO);
+  }
+}
+
+void Z3DWindow::setTodoItemIrrelevant()
+{
+  ZFlyEmBody3dDoc *doc = getDocument<ZFlyEmBody3dDoc>();
+  if (doc != NULL) {
+    doc->setTodoItemAction(neutube::TO_DO_IRRELEVANT);
   }
 }
 
@@ -2642,7 +2698,7 @@ void Z3DWindow::keyPressEvent(QKeyEvent *event)
     }
     break;
   case Qt::Key_H:
-    viewDetail(true);
+    Z3DWindowController::ToggleMeshVisible(this);
     break;
   case Qt::Key_T:
     if (event->modifiers() == Qt::NoModifier) {
@@ -3667,54 +3723,54 @@ void Z3DWindow::saveSelectedSwc()
         fileName = QString((*treeSet.begin())->getSource().c_str());
       }
     }
-  }
 
-  if (fileName.isEmpty()) {
-    ZString stackSource = m_doc->stackSourcePath();
-    if (!stackSource.empty()) {
-      fileName = stackSource.changeExt("Edit.swc").c_str();
+    if (fileName.isEmpty()) {
+      ZString stackSource = m_doc->stackSourcePath();
+      if (!stackSource.empty()) {
+        fileName = stackSource.changeExt("Edit.swc").c_str();
+      }
     }
-  }
 
-  if (fileName.isEmpty()) {
-    fileName = "untitled.swc";
-  }
-
-  if (GET_APPLICATION_NAME == "Biocytin") {
-    ZStackFrame *frame = m_doc->getParentFrame();
-    if (frame != NULL) {
-      fileName = m_doc->getParentFrame()->swcFilename;
+    if (fileName.isEmpty()) {
+      fileName = "untitled.swc";
     }
+
+    if (GET_APPLICATION_NAME == "Biocytin") {
+      ZStackFrame *frame = m_doc->getParentFrame();
+      if (frame != NULL) {
+        fileName = m_doc->getParentFrame()->swcFilename;
+      }
       //fileName =ZBiocytinFileNameParser::getSwcEditPath(fileName.toStdString()).c_str();
-  }
-
-  fileName =
-      QFileDialog::getSaveFileName(this, tr("Save SWC"), fileName,
-                                   tr("SWC File"), 0);
-
-  if (!fileName.isEmpty()) {
-    if (!fileName.endsWith(".swc", Qt::CaseInsensitive)) {
-      fileName += ".swc";
     }
 
-    if (treeSet.size() > 1) {
-      ZSwcTree tree;
+    fileName =
+        QFileDialog::getSaveFileName(this, tr("Save SWC"), fileName,
+                                     tr("SWC File"), 0);
 
-      for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
-           iter != treeSet.end(); ++iter) {
-        tree.merge((*iter)->cloneData(), true);
+    if (!fileName.isEmpty()) {
+      if (!fileName.endsWith(".swc", Qt::CaseInsensitive)) {
+        fileName += ".swc";
       }
 
-      tree.resortId();
-      tree.save(fileName.toStdString().c_str());
-    } else {
-      ZSwcTree *tree = *(treeSet.begin());
-      tree->resortId();
-      tree->save(fileName.toStdString().c_str());
-      tree->setSource(fileName.toStdString().c_str());
-      getDocument()->notifySwcModified();
-    }
-  }
+      if (treeSet.size() > 1) {
+        ZSwcTree tree;
+
+        for (std::set<ZSwcTree*>::iterator iter = treeSet.begin();
+             iter != treeSet.end(); ++iter) {
+          tree.merge((*iter)->cloneData(), true);
+        }
+
+        tree.resortId();
+        tree.save(fileName.toStdString().c_str());
+      } else {
+        ZSwcTree *tree = *(treeSet.begin());
+        tree->resortId();
+        tree->save(fileName.toStdString().c_str());
+        tree->setSource(fileName.toStdString().c_str());
+        getDocument()->notifySwcModified();
+      }
+    } //!fileName.isEmpty()
+  } //!treeSet.empty()
 }
 
 void Z3DWindow::convertSelectedChainToSwc()
@@ -3999,21 +4055,28 @@ void Z3DWindow::shootTodo(int x, int y)
   if (doc != NULL) {
     uint64_t bodyId = 0;
     std::vector<ZPoint> intersection = getRayIntersection(x, y, &bodyId);
-    bodyId = doc->getMappedId(bodyId);
-    if (!intersection.empty()) {
-      ZPoint &pt = intersection.front();
-      int cx = iround(pt.x());
-      int cy = iround(pt.y());
-      int cz = iround(pt.z());
-      QAction *action = getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM);
-      if (action != NULL) {
-        if (action->isChecked()) {
+    uint64_t parentId = doc->getMappedId(bodyId);
+    if (parentId > 0) {
+      if (!intersection.empty()) {
+        ZPoint &pt = intersection.front();
+        int cx = iround(pt.x());
+        int cy = iround(pt.y());
+        int cz = iround(pt.z());
+        QAction *action = getAction(ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM);
+        if (action != NULL) {
+          if (action->isChecked()) {
+            if (doc->isSupervoxel(bodyId)) {
+              doc->executeAddTodoCommand(
+                    cx, cy, cz, false, neutube::TO_SUPERVOXEL_SPLIT, parentId);
+            } else {
+              doc->executeAddTodoCommand(
+                    cx, cy, cz, false, neutube::TO_SPLIT, parentId);
+            }
+          }
+        } else {
           doc->executeAddTodoCommand(
-                cx, cy, cz, false, neutube::TO_SPLIT, bodyId);
+                cx, cy, cz, false, neutube::TO_DO, parentId);
         }
-      } else {
-        doc->executeAddTodoCommand(
-              cx, cy, cz, false, neutube::TO_DO, bodyId);
       }
   //          emitAddTodoMarker(cx, cy, cz, false, bodyId);
     }

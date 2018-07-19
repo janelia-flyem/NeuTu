@@ -701,6 +701,7 @@ public:
   void deselectAllSwcTreeNodes();
   void deselectAllObject(bool recursive = true);
   void deselectAllObject(ZStackObject::EType type);
+  void deselectAllObject(ZStackObjectRole::TRole role);
 
   bool isSwcNodeSelected(const Swc_Tree_Node *tn) const;
 
@@ -804,6 +805,7 @@ public:
   void setSelected(ZStackObject *obj,  bool selecting = true);
   void toggleSelected(ZStackObject *obj);
   void selectObject(ZStackObject *obj, bool appending);
+  void selectObject(ZStackObject *obj, neutube::ESelectOption option);
 
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
@@ -1046,6 +1048,7 @@ public:
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
   virtual uint64_t getLabelId(int x, int y, int z);
+  virtual uint64_t getSupervoxelId(int x, int y, int z);
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);

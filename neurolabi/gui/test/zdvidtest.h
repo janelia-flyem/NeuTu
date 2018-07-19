@@ -485,6 +485,8 @@ TEST(ZDvidTest, ZDvidUrl)
             dvidUrl4.getSparsevolUrl(1, 2, box));
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true",
             dvidUrl4.getSupervoxelUrl(1));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&scale=2",
+            dvidUrl4.getMultiscaleSupervoxelUrl(1, 2));
 
 
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
@@ -510,9 +512,12 @@ TEST(ZDvidTest, ZDvidUrl)
               "http://localhost:8000/api/node/4d3e/split/key/"));
 
   target.setSegmentationType(ZDvidData::TYPE_LABELMAP);
+  std::cout << target.getSegmentationName() << std::endl;
   dvidUrl4.setDvidTarget(target, "3456");
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
             dvidUrl4.getAnnotationUrl("test", 123));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/labelstest/size/123",
+            dvidUrl4.getBodySizeUrl(123));
 
 }
 

@@ -150,6 +150,10 @@ public: //Components
     return dynamic_cast<T*>(m_doc.get());
   }
 
+  inline ZSharedPointer<ZStackDoc> getSharedDocument() const {
+    return m_doc;
+  }
+
 public:
   void setMenuFactory(ZStackDocMenuFactory *factory);
 
@@ -263,6 +267,8 @@ public slots:
 
   void selectedObjectChangedFrom3D(ZStackObject *p, bool append);
   void selectedPunctumChangedFrom3D(ZPunctum* p, bool append);
+  void selectedTodoChangedFrom3D(ZStackObject *p, bool append);
+  void selectedGraphChangedFrom3D(ZStackObject *p, bool append);
   void selectedMeshChangedFrom3D(ZMesh* p, bool append);
   void selectedSwcChangedFrom3D(ZSwcTree* p, bool append);
   void selectedSwcTreeNodeChangedFrom3D(Swc_Tree_Node* p, bool append);
@@ -359,6 +365,7 @@ public slots:
   void addToSplitMarker();
   void setTodoItemToSplit();
   void setTodoItemToNormal();
+  void setTodoItemIrrelevant();
   void addDoneMarker();
   void updateBody();
   void compareBody();
@@ -474,6 +481,9 @@ private:
       std::vector<std::pair<ZIntPointArrayPtr, ZIntPointArrayPtr> > &polylinePairList);
 
   std::vector<ZPoint> shootMesh(const ZMesh *mesh, int x, int y);
+
+  void onSelectionChangedFrom3D(Z3DGeometryFilter *filter,
+      ZStackObject *p, ZStackObject::EType type, bool append);
 
 private:
   ZCuboid getRayBoundbox() const;

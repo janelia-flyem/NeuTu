@@ -38,6 +38,12 @@ public:
   static void ParseWatershedContainer(
       ZStackDoc *doc, ZStackWatershedContainer *container);
 
+  static void RemoveSplitSeed(ZStackDoc *doc, uint64_t label);
+  /*!
+   * \brief Remove seeds except those with the main label
+   */
+  static void RemoveSideSplitSeed(ZStackDoc *doc);
+
 private:
   static ZStackDocObjectUpdate::EAction GetRemoveAction(bool deleteObject);
 };

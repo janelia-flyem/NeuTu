@@ -560,8 +560,8 @@ void Neu3Window::updateSliceBrowser()
 void Neu3Window::updateSliceBrowserSelection()
 {
   ZFlyEmProofMvcController::SelectBody(
-        m_sliceWidget,
-        getBodyDocument()->getNormalBodySet());
+        m_sliceWidget, getBodyDocument()->getInvolvedNormalBodySet());
+//        getBodyDocument()->getNormalBodySet());
 }
 
 void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
@@ -665,7 +665,8 @@ void Neu3Window::browse(double x, double y, double z)
   }
 }
 
-void Neu3Window::browse(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor)
+void Neu3Window::browse(
+    double x, double y, double z, const QHash<uint64_t, QColor> &idToColor)
 {
   m_browsePos.set(x, y, z);
 

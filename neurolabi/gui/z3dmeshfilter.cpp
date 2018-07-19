@@ -408,7 +408,7 @@ void Z3DMeshFilter::registerPickingObjects()
       m_meshPickingColors.clear();
       for (ZMesh* mesh : m_registeredMeshList) {
         glm::col4 pickingColor = pickingManager().colorOfObject(mesh);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Mesh picking color: " << pickingColor << std::endl;
 #endif
         glm::vec4 fPickingColor(

@@ -48,6 +48,42 @@ void ZStackDocAccessor::RemoveObject(
   }
 }
 
+void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc, uint64_t label)
+{
+  if (doc != NULL) {
+    QMutexLocker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
+          ZStackObjectRole::ROLE_SEED);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      if ((*iter)->getLabel() == label) {
+        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(true));
+      }
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
+void ZStackDocAccessor::RemoveSideSplitSeed(ZStackDoc *doc)
+{
+  if (doc != NULL) {
+    QMutexLocker(doc->getObjectGroup().getMutex());
+    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
+          ZStackObjectRole::ROLE_SEED);
+    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+         ++iter) {
+      if ((*iter)->getLabel() != 1) {
+        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(true));
+      }
+    }
+    if (!objList.isEmpty()) {
+      doc->getDataBuffer()->deliver();
+    }
+  }
+}
+
 void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
     bool deleteObject)

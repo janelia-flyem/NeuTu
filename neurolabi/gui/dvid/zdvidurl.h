@@ -143,6 +143,8 @@ public:
   std::string getBodyInfoUrl(uint64_t bodyId, const std::string &dataName) const;
   std::string getBodyInfoUrl(uint64_t bodyId) const;
 
+  std::string getBodySizeUrl(uint64_t bodyId) const;
+
   std::string getBoundBoxUrl() const;
   std::string getBoundBoxUrl(int z) const;
 

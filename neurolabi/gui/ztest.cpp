@@ -22213,6 +22213,20 @@ void ZTest::test(MainWindow *host)
 
   ZDvidReader reader;
   reader.open(target);
+
+  ZObject3dScan newRoiAlpha3 = reader.readRoi("alpha3_roi_0217");
+  newRoiAlpha3.printInfo();
+
+  std::cout << newRoiAlpha3.getVoxelNumber() * (32.0*32*32*8*8*8/1000/1000/1000)
+            << " um^3" << std::endl;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "7abe", 8500);
+
+  ZDvidReader reader;
+  reader.open(target);
   ZObject3dScan roiAlpha = reader.readRoi("kc_alpha_roi");
   roiAlpha.printInfo();
 
@@ -27242,6 +27256,7 @@ void ZTest::test(MainWindow *host)
   std::cout << ZFlyEmBodyManager::encodesTar(100000000003) << std::endl;
   std::cout << ZFlyEmBodyManager::encodedLevel(10200000000003) << std::endl;
   std::cout << ZFlyEmBodyManager::encodedLevel(200000000003) << std::endl;
+  std::cout << ZFlyEmBodyManager::encodeSupervoxel(1665033134) << std::endl;
 #endif
 
 #if 0
@@ -27249,7 +27264,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 
-#if 1
+#if 0
   ZDvidTarget target;
   target.set("emdata3.int.janelia.org", "69f1", 8700);
   target.setSegmentationName("segmentation");
@@ -27257,6 +27272,49 @@ void ZTest::test(MainWindow *host)
   writer.open(target);
 
   writer.syncAnnotationToLabel("segmentation_todo", "replace=true");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "5421", 8900);
+  target.setSegmentationName("segmentation");
+  ZDvidReader reader;
+  reader.open(target);
+
+  tic();
+  std::cout << reader.readBodyBlockCount(1539193374) << std::endl;
+  ptoc();
+
+  tic();
+  std::cout << reader.readBodySize(1) << std::endl;
+  ptoc();
+
+  tic();
+  std::cout << reader.hasBody(1539193374) << std::endl;
+  ptoc();
+#endif
+
+#if 1
+  QRegularExpression regexp("^(supervoxel|sv)[:\\s]*([0-9]+)",
+                            QRegularExpression::CaseInsensitiveOption);
+  {
+  QRegularExpressionMatch match = regexp.match("sv:12345");
+  qDebug() << match.hasMatch();
+  qDebug() << match.captured(2);
+  }
+  {
+    QRegularExpressionMatch match = regexp.match("supervoxel:12345");
+    qDebug() << match.captured(2);
+  }
+  {
+    QRegularExpressionMatch match = regexp.match("sv  12345");
+    qDebug() << match.captured(2);
+  }
+  {
+    QRegularExpressionMatch match = regexp.match("sv  ");
+    qDebug() << match.hasMatch();
+    qDebug() << match.captured(2);
+  }
 #endif
 
   std::cout << "Done." << std::endl;
