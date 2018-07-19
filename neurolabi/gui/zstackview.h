@@ -463,6 +463,8 @@ protected:
 
   bool event(QEvent *event);
 
+  void enableOffsetAdjustment(bool on);
+
 public slots:
   /*!
    * \brief Update view settings from the stack box.

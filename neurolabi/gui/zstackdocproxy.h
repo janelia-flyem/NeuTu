@@ -13,7 +13,7 @@ public:
       ZStackDoc *doc, ZStackDoc::EDocumentDataType dataType);
       */
 
-  static QList<ZMesh*> GetGeneralMeshList(ZStackDoc *doc);
+  static QList<ZMesh*> GetGeneralMeshList(const ZStackDoc *doc);
   static QList<ZMesh*> GetRoiMeshList(ZStackDoc *doc);
 };
 

@@ -24,6 +24,9 @@ public:
   static void RemoveObject(
       ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
       bool deleteObject);
+  static void SetObjectVisible(
+      ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
+      bool on);
 
   static void RemoveObject(
       ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject);
@@ -34,6 +37,12 @@ public:
 
   static void ParseWatershedContainer(
       ZStackDoc *doc, ZStackWatershedContainer *container);
+
+  static void RemoveSplitSeed(ZStackDoc *doc, uint64_t label);
+  /*!
+   * \brief Remove seeds except those with the main label
+   */
+  static void RemoveSideSplitSeed(ZStackDoc *doc);
 
 private:
   static ZStackDocObjectUpdate::EAction GetRemoveAction(bool deleteObject);

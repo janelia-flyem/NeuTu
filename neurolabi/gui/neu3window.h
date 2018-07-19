@@ -181,6 +181,10 @@ private slots:
 
   void on_actionNeuTu_Proofread_triggered();
 
+  void on_actionDiagnose_triggered();
+
+  void diagnose();
+
 private:
   void createDockWidget();
   void initNativeSliceBrowser();

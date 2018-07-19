@@ -27,6 +27,8 @@ public:
   void setX0(int x);
   void setY0(int y);
 
+  void alignOffset(int downresRatio);
+
   QRect getCanvasRect() const;
   QRect getWidgetRect() const;
   QPoint getOffset() const;
