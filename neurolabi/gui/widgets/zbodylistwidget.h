@@ -45,6 +45,8 @@ public slots:
   void removeBody(uint64_t bodyId);
   void addBody(uint64_t bodyId);
 
+  void diagnose();
+
 signals:
   void bodyAdded(uint64_t bodyId);
   void bodyRemoved(uint64_t bodyId);

@@ -158,6 +158,7 @@ namespace {
           }
         }
       }
+      closedir(dir);
     }
     return result;
   }
@@ -194,8 +195,8 @@ namespace {
       showingSynapse = bodyDoc->showingSynapse();
       bodyDoc->showSynapse(false);
 
-      minResLevel = bodyDoc->getMinResLevel();
-      bodyDoc->setMinResLevel(bodyDoc->getMaxResLevel());
+      minResLevel = bodyDoc->getMinDsLevel();
+      bodyDoc->setMinDsLevel(bodyDoc->getMaxDsLevel());
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         preservingSourceColorEnabled = filter->preservingSourceColorsEnabled();
@@ -225,7 +226,7 @@ namespace {
       bodyDoc->enableGarbageLifetimeLimit(garbageLifetimeLimitEnabled);
       bodyDoc->enableSplitTaskLoading(splitTaskLoadingEnabled);
       bodyDoc->showSynapse(showingSynapse);
-      bodyDoc->setMinResLevel(minResLevel);
+      bodyDoc->setMinDsLevel(minResLevel);
 
       if (Z3DMeshFilter *filter = getMeshFilter(bodyDoc)) {
         filter->enablePreservingSourceColors(preservingSourceColorEnabled);
@@ -407,8 +408,8 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
   QSet<uint64_t> visible;
   if (state) {
     int level = 0;
-    visible.insert(ZFlyEmBody3dDoc::encode(m_bodyId1, level));
-    visible.insert(ZFlyEmBody3dDoc::encode(m_bodyId2, level));
+    visible.insert(ZFlyEmBodyManager::encode(m_bodyId1, level));
+    visible.insert(ZFlyEmBodyManager::encode(m_bodyId2, level));
 
     // Going back to low resolution is not working for some reason, so disable it for now.
 
@@ -930,7 +931,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
 
 void TaskBodyMerge::zoomToMergePosition(bool justLoaded)
 {
-  if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
+  if (m_bodyDoc->getParent3DWindow()) {
     ZPoint pos = mergePosition();
 
     std::size_t index1 = 1;
@@ -1078,7 +1079,7 @@ void TaskBodyMerge::configureShowHiRes()
   std::vector<uint64_t> ids({ m_bodyId1, m_bodyId2 });
   for (uint64_t id : ids) {
     int level = 0;
-    id = ZFlyEmBody3dDoc::encode(id, level);
+    id = ZFlyEmBodyManager::encode(id, level);
     std::string url = dvidUrl.getMeshesTarsKeyRangeUrl(id, id);
     QUrl requestUrl(url.c_str());
     QNetworkRequest request(requestUrl);

@@ -28,7 +28,7 @@ QList<ZStackObject*> ZStackDocProxy::GetObjectList(
 }
 #endif
 
-QList<ZMesh*> ZStackDocProxy::GetGeneralMeshList(ZStackDoc *doc)
+QList<ZMesh*> ZStackDocProxy::GetGeneralMeshList(const ZStackDoc *doc)
 {
   QList<ZMesh*> filteredMeshList;
 

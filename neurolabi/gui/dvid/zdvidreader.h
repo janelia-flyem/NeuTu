@@ -172,6 +172,10 @@ public:
                           const ZIntCuboid &box, bool canonizing,
                           ZObject3dScan *result) const;
 
+  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
+                          int zoom, const ZIntCuboid &box, bool canonizing,
+                          ZObject3dScan *result) const;
+
   ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
   ZObject3dScan* readBodyWithPartition(
       uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *result) const;
@@ -200,19 +204,19 @@ public:
    * \brief Read meshes from a key-value instance whose values are tar archives of
    * Draco-compressed meshes
    */
-  struct archive *readMeshArchiveStart(uint64_t bodyId);
-  struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal);
-  ZMesh *readMeshArchiveNext(struct archive *arc);
-  ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead);
+  struct archive *readMeshArchiveStart(uint64_t bodyId) const;
+  struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal) const;
+  ZMesh *readMeshArchiveNext(struct archive *arc) const;
+  ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead) const;
 
   /*!
    * \brief An alternative to repeated calls to readMeshArchiveNext(), which uses
    * std::async and std::future to decompress the meshes in parallel.
    */
   void readMeshArchiveAsync(struct archive *arc, std::vector<ZMesh*>& results,
-                            const std::function<void(size_t, size_t)>& progress = {});
+                            const std::function<void(size_t, size_t)>& progress = {}) const;
 
-  void readMeshArchiveEnd(struct archive *arc);
+  void readMeshArchiveEnd(struct archive *arc) const;
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -368,6 +372,8 @@ public:
   bool hasSparseVolume(uint64_t bodyId) const;
   bool hasBodyInfo(uint64_t bodyId) const;
   bool hasBody(uint64_t bodyId) const;
+//  bool hasSupervoxel(uint64_t bodyId) const;
+  size_t readBodySize(uint64_t bodyId) const;
 
   bool hasGrayscale() const;
 
@@ -423,6 +429,9 @@ public:
   ZObject3dScan* readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) const;
   ZObject3dScan* readCoarseBody(
       uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *obj) const;
+  ZObject3dScan* readCoarseBody(
+      uint64_t bodyId, flyem::EBodyLabelType labelType, const ZIntCuboid &box,
+      ZObject3dScan *obj) const;
 
   int readCoarseBodySize(uint64_t bodyId) const;
 

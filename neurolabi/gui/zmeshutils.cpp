@@ -3,6 +3,10 @@
 #include "zrandom.h"
 #include <limits>
 #include <queue>
+#include <vtkSmoothPolyDataFilter.h>
+#include <vtkDecimatePro.h>
+
+#include "misc/zvtkutil.h"
 #include "zqslog.h"
 
 namespace {
@@ -2501,7 +2505,8 @@ void ClipAndContourPolys(
 
 } // namespace
 
-ZMesh ZMeshUtils::clipClosedSurface(const ZMesh& mesh, std::vector<glm::vec4> clipPlanes, double epsilon)
+ZMesh ZMeshUtils::clipClosedSurface(
+    const ZMesh& mesh, std::vector<glm::vec4> clipPlanes, double epsilon)
 {
   std::vector<glm::dvec3> vertices = mesh.doubleVertices();
   std::vector<glm::uvec3> tris = mesh.triangleIndices();
@@ -2549,4 +2554,30 @@ ZMesh ZMeshUtils::clipClosedSurface(const ZMesh& mesh, std::vector<glm::vec4> cl
     return result;
   } else
     return mesh;
+}
+
+ZMesh ZMeshUtils::Smooth(const ZMesh &mesh)
+{
+  vtkSmartPointer<vtkSmoothPolyDataFilter> smoothFilter =
+          vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
+  smoothFilter->SetInputData(meshToVtkPolyData(mesh));
+  smoothFilter->SetNumberOfIterations(3);
+  smoothFilter->SetRelaxationFactor(0.1);
+  smoothFilter->FeatureEdgeSmoothingOff();
+  smoothFilter->BoundarySmoothingOn();
+  smoothFilter->Update();
+
+  return vtkPolyDataToMesh(smoothFilter->GetOutput());
+}
+
+ZMesh ZMeshUtils::Decimate(const ZMesh &mesh)
+{
+  vtkSmartPointer<vtkDecimatePro> decimate =
+      vtkSmartPointer<vtkDecimatePro>::New();
+  decimate->SetInputData(meshToVtkPolyData(mesh));
+  decimate->SetTargetReduction(.9);
+  decimate->PreserveTopologyOn();
+  decimate->Update();
+
+  return vtkPolyDataToMesh(decimate->GetOutput());
 }

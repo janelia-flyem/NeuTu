@@ -256,8 +256,7 @@ unix {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
         LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
-#        LIBS += /usr/lib/x86_64-linux-gnu/libGL.so.1.0.0
-#        LIBS += -L/usr/lib/x86_64-linux-gnu
+
         message(Checking arch...)
         contains(QMAKE_HOST.arch, x86_64) {
             message($$QMAKE_HOST.arch)
@@ -867,8 +866,6 @@ HEADERS += mainwindow.h \
     flyem/zflyemproofmvccontroller.h \
     flyem/zmainwindowcontroller.h \
     zstackdocnullmenufactory.h \
-    mvc/zstackspaceconfig.h \
-    mvc/zviewspaceconfig.h \
     mvc/zpositionmapper.h \
     data3d/zstackobjecthelper.h \
     data3d/utilities.h \
@@ -888,7 +885,12 @@ HEADERS += mainwindow.h \
     flyem/zflyemroutinechecktask.h \
     flyem/zdvidlabelslicehighrestask.h \
     flyem/zdvidgrayslicehighrestask.h \
-    flyem/zdviddataslicetask.h
+    flyem/zdviddataslicetask.h \
+    dvid/zdvidbodyhelper.h \
+    flyem/zflyembodyevent.h \
+    flyem/zflyembodyconfig.h \
+    flyem/zflyembodymanager.h \
+    z3dwindowcontroller.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1538,8 +1540,6 @@ SOURCES += main.cpp \
     flyem/zflyemproofmvccontroller.cpp \
     flyem/zmainwindowcontroller.cpp \
     zstackdocnullmenufactory.cpp \
-    mvc/zstackspaceconfig.cpp \
-    mvc/zviewspaceconfig.cpp \
     mvc/zpositionmapper.cpp \
     data3d/zstackobjecthelper.cpp \
     data3d/utilities.cpp \
@@ -1558,7 +1558,12 @@ SOURCES += main.cpp \
     flyem/zflyemroutinechecktask.cpp \
     flyem/zdvidlabelslicehighrestask.cpp \
     flyem/zdvidgrayslicehighrestask.cpp \
-    flyem/zdviddataslicetask.cpp
+    flyem/zdviddataslicetask.cpp \
+    dvid/zdvidbodyhelper.cpp \
+    flyem/zflyembodyevent.cpp \
+    flyem/zflyembodyconfig.cpp \
+    flyem/zflyembodymanager.cpp \
+    z3dwindowcontroller.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

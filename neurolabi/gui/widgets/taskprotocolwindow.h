@@ -56,7 +56,7 @@ private slots:
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
     void onBodyMeshesAdded(int numMeshes);
-    void onBodyMeshLoaded();
+    void onBodyMeshLoaded(int numMeshes);
     void onBodyRecycled();
     void applicationQuitting();
 
