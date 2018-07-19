@@ -86,8 +86,16 @@ void Z3DGraphFilter::process(Z3DEye)
   }
 }
 
+void Z3DGraphFilter::updateSelection()
+{
+  for (auto iter = m_objectMap.begin(); iter != m_objectMap.end(); ++iter) {
+    iter.key()->setSelected(iter.value()->isSelected());
+  }
+}
+
 void Z3DGraphFilter::addSelectionLines()
 {
+  updateSelection();
   foreach (const Z3DGraphPtr &graph, m_graphList) {
     if (graph->isVisible() && graph->isSelected()) {
       ZBBox<glm::dvec3> boundBox;
@@ -420,8 +428,9 @@ void Z3DGraphFilter::selectGraph(QMouseEvent* e, int, int)
   // Mouse button pressend
   // can not accept the event in button press, because we don't know if it is a selection or interaction
   if (e->type() == QEvent::MouseButtonPress) {
-    m_startCoord.x = e->x();
-    m_startCoord.y = e->y();
+    recordMousePosition(e);
+//    m_startCoord.x = e->x();
+//    m_startCoord.y = e->y();
     const void* obj = pickingManager().objectAtWidgetPos(glm::ivec2(e->x(), e->y()));
     if (obj == NULL) {
       return;
@@ -437,31 +446,34 @@ void Z3DGraphFilter::selectGraph(QMouseEvent* e, int, int)
     return;
   }
 
-  if (e->type() == QEvent::MouseButtonRelease) {
-    if (std::abs(e->x() - m_startCoord.x) < 2 &&
-        std::abs(m_startCoord.y - e->y()) < 2) {
-      if (m_pressedGraph) {
-        Z3DGraph *graph = m_pressedGraph.get();
-        ZStackObject *selectedObj  = NULL;
-        if (m_objectMap.contains(graph)) {
-          selectedObj = m_objectMap[graph];
-        }
+  if ((e->type() == QEvent::MouseButtonRelease) && stayingMouse(e)) {
+    ZStackObject *selectedObj  = NULL;
+    bool appending = false;
+    if (e->modifiers() == Qt::ControlModifier) {
+      appending = true;
+    }
+
+    if (m_pressedGraph) {
+      Z3DGraph *graph = m_pressedGraph.get();
+
+      if (m_objectMap.contains(graph)) {
+        selectedObj = m_objectMap[graph];
+
+
         if (selectedObj != NULL) {
 #ifdef _DEBUG_
           std::cout << "Graph object selected: " << selectedObj
                     << " " << selectedObj->getSource() << std::endl;
 #endif
-
-          bool appending = false;
-          if (e->modifiers() == Qt::ControlModifier) {
-            appending = true;
-          }
-          emit objectSelected(selectedObj, appending);
-
           graph->setSelected(true);
         }
-        e->accept();
       }
+    }
+
+    emit objectSelected(selectedObj, appending);
+
+    if (m_pressedGraph) {
+      e->accept();
       m_pressedGraph.reset();
     }
   }

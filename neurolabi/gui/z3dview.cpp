@@ -38,16 +38,15 @@
 #include "zstackdoc3dhelper.h"
 #include "core/utilities.h"
 
-Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QMainWindow* parent)
+Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* parent)
   : QObject(parent)
   , m_doc(doc)
   , m_isStereoView(stereo)
-  , m_mainWin(parent)
   , m_lock(false)
   , m_initMode(initMode)
 {
   CHECK(m_doc);
-  m_canvas = new Z3DCanvas("", 512, 512, m_mainWin);
+  m_canvas = new Z3DCanvas("", 512, 512, parent);
   m_docHelper.attach(this);
 
   createActions();
@@ -232,7 +231,7 @@ bool Z3DView::takeFixedSizeScreenShot(const QString& filename, int width, int he
   m_lock = true;
   if (!m_canvasPainter->renderToImage(filename, width, height, sst, compositor())) {
     res = false;
-    QMessageBox::critical(m_mainWin, qApp->applicationName(), m_canvasPainter->renderToImageError());
+    QMessageBox::critical(m_canvas->parentWidget(), qApp->applicationName(), m_canvasPainter->renderToImageError());
   }
   m_lock = false;
   return res;
@@ -256,7 +255,7 @@ bool Z3DView::takeScreenShot(const QString& filename, Z3DScreenShotType sst)
   bool res = true;
   if (!m_canvasPainter->renderToImage(filename, sst)) {
     res = false;
-    QMessageBox::critical(m_mainWin, qApp->applicationName(), m_canvasPainter->renderToImageError());
+    QMessageBox::critical(m_canvas->parentWidget(), qApp->applicationName(), m_canvasPainter->renderToImageError());
   }
   return res;
 }
@@ -318,7 +317,7 @@ bool Z3DView::takeFixedSizeSeriesScreenShot(const QDir& dir, const QString& name
   } else if (sst == Z3DScreenShotType::FullSideBySideStereoView) {
     title = "Capturing Full Side-By-Side Stereo Images...";
   }
-  QProgressDialog progress(title, "Cancel", 0, numFrame, m_mainWin);
+  QProgressDialog progress(title, "Cancel", 0, numFrame, m_canvas->parentWidget());
   progress.setWindowModality(Qt::WindowModal);
   progress.show();
   double rAngle = two_pi / numFrame;
@@ -355,7 +354,7 @@ bool Z3DView::takeSeriesScreenShot(const QDir& dir, const QString& namePrefix, c
   } else if (sst == Z3DScreenShotType::FullSideBySideStereoView) {
     title = "Capturing Full Side-By-Side Stereo Images...";
   }
-  QProgressDialog progress(title, "Cancel", 0, numFrame, m_mainWin);
+  QProgressDialog progress(title, "Cancel", 0, numFrame, m_canvas->parentWidget());
   progress.setWindowModality(Qt::WindowModal);
   progress.show();
   double rAngle = two_pi / numFrame;
@@ -429,7 +428,7 @@ void Z3DView::init()
     // get data from doc and add to network
     // volume
     if (m_initMode != INIT_EXCLUDE_VOLUME) {
-      updateVolumeData();
+//      updateVolumeData();
       connect(m_doc, &ZStackDoc::volumeModified, this, &Z3DView::volumeDataChanged);
     }
 

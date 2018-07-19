@@ -38,10 +38,15 @@
 #include "zactionlibrary.h"
 #include "dvid/zdvidgrayslice.h"
 #include "flyem/zflyemtodoitem.h"
+#include "misc/miscutility.h"
+#include "dvid/zdvidbodyhelper.h"
+#include "data3d/zstackobjecthelper.h"
+#include "zstackdocproxy.h"
+#include "zflyembodyannotationdialog.h"
 
 const int ZFlyEmBody3dDoc::OBJECT_GARBAGE_LIFE = 30000;
 const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
-const int ZFlyEmBody3dDoc::MAX_RES_LEVEL = 5;
+//const int ZFlyEmBody3dDoc::MAX_RES_LEVEL = 5;
 const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
@@ -181,6 +186,25 @@ T* ZFlyEmBody3dDoc::recoverFromGarbage(const std::string &source)
   return obj;
 }
 
+void ZFlyEmBody3dDoc::useCoarseOnly()
+{
+  int coarseLevel = getCoarseBodyZoom();
+  setMinDsLevel(coarseLevel);
+  setMaxDsLevel(coarseLevel);
+}
+
+bool ZFlyEmBody3dDoc::showingCoarseOnly() const
+{
+  int coarseLevel = getCoarseBodyZoom();
+  return (coarseLevel == getMinDsLevel()) &&
+      (coarseLevel == getMaxDsLevel()) && (coarseLevel > 0);
+}
+
+bool ZFlyEmBody3dDoc::isCoarseLevel(int level) const
+{
+  return (level > 0) && (level == getCoarseBodyZoom());
+}
+
 void ZFlyEmBody3dDoc::setUnrecycable(const QSet<uint64_t> &bodySet)
 {
   QMutexLocker locker(&m_garbageMutex);
@@ -287,6 +311,7 @@ void ZFlyEmBody3dDoc::processBodySetBuffer()
 //  m_bodySetBuffer.clear();
 }
 
+#if 0
 const ZFlyEmBody3dDoc::BodyEvent::TUpdateFlag
 ZFlyEmBody3dDoc::BodyEvent::UPDATE_CHANGE_COLOR = 1;
 
@@ -383,6 +408,7 @@ void ZFlyEmBody3dDoc::BodyEvent::mergeEvent(
     break;
   }
 }
+#endif
 
 void ZFlyEmBody3dDoc::setDataDoc(ZSharedPointer<ZStackDoc> doc)
 {
@@ -450,23 +476,14 @@ void ZFlyEmBody3dDoc::hideArbGrayslice()
   setArbGraySliceVisible(false);
 }
 
-int ZFlyEmBody3dDoc::getMinResLevel() const
+int ZFlyEmBody3dDoc::getMinDsLevel() const
 {
-  int resLevel = 0;
-  switch (getBodyType()) {
-  case flyem::BODY_COARSE:
-    resLevel = MAX_RES_LEVEL;
-    break;
-  default:
-    break;
-  }
-
-  return resLevel;
+  return m_minDsLevel;
 }
 
-int ZFlyEmBody3dDoc::getMaxResLevel() const
+int ZFlyEmBody3dDoc::getMaxDsLevel() const
 {
-  return m_maxResLevel;
+  return m_maxDsLevel;
 }
 
 void ZFlyEmBody3dDoc::removeDiffBody()
@@ -493,55 +510,81 @@ ZStackObject* ZFlyEmBody3dDoc::takeObjectFromCache(
   return NULL;
 }
 
-void ZFlyEmBody3dDoc::processEventFunc(const BodyEvent &event)
+void ZFlyEmBody3dDoc::processEventFunc(const ZFlyEmBodyEvent &event)
 {
+  ZFlyEmBodyConfig config = event.getBodyConfig();
+
   switch (event.getAction()) {
-  case BodyEvent::ACTION_REMOVE:
+  case ZFlyEmBodyEvent::ACTION_REMOVE:
     removeBodyFunc(event.getBodyId(), true);
     break;
-  case BodyEvent::ACTION_ADD:
-    addBodyFunc(event.getBodyId(), event.getBodyColor(), event.getResLevel());
+  case ZFlyEmBodyEvent::ACTION_ADD:
+    addBodyFunc(config);
     break;
-  case BodyEvent::ACTION_UPDATE:
+  case ZFlyEmBodyEvent::ACTION_UPDATE:
 //    if (event.updating(BodyEvent::UPDATE_CHANGE_COLOR)) {
-    if (event.updating(BodyEvent::UPDATE_MULTIRES)) {
-      addBodyFunc(event.getBodyId(), event.getBodyColor(), event.getResLevel());
+    if (event.updating(ZFlyEmBodyEvent::UPDATE_MULTIRES)) {
+      addBodyFunc(config);
     } else {
       updateBody(event.getBodyId(), event.getBodyColor(), getBodyType());
     }
 //    }
-    if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
+    if (event.updating(ZFlyEmBodyEvent::UPDATE_ADD_SYNAPSE)) {
       addSynapse(event.getBodyId());
     }
-    if (event.updating(BodyEvent::UPDATE_ADD_TODO_ITEM)) {
+    if (event.updating(ZFlyEmBodyEvent::UPDATE_ADD_TODO_ITEM)) {
       addTodo(event.getBodyId());
     }
-    if (event.updating(BodyEvent::UPDATE_SEGMENTATION)) {
+    if (event.updating(ZFlyEmBodyEvent::UPDATE_SEGMENTATION)) {
       updateSegmentation();
     }
     break;
   default:
     break;
   }
+
+  QMutexLocker locker(&m_eventQueueMutex);
+  if (!toBeRemoved(event.getBodyId())) {
+    ZFlyEmBodyEvent nextEvent = event.makeHighResEvent(config, getMinDsLevel());
+    if (nextEvent.isValid()) {
+      m_eventQueue.enqueue(nextEvent);
+    }
+  }
 }
 
-void ZFlyEmBody3dDoc::processEvent(const BodyEvent &event)
+void ZFlyEmBody3dDoc::showMoreDetail(uint64_t bodyId, const ZIntCuboid &range)
+{
+  QMutexLocker locker(&m_eventQueueMutex);
+  if (m_bodyManager.contains(bodyId)) {
+    if (!toBeRemoved(bodyId)) {
+      ZFlyEmBodyEvent bodyEvent(ZFlyEmBodyEvent::ACTION_UPDATE, bodyId);
+      bodyEvent.addUpdateFlag(ZFlyEmBodyEvent::UPDATE_MULTIRES);
+      bodyEvent.setBodyColor(getBodyColor(bodyId));
+      bodyEvent.setRange(range);
+      bodyEvent.setDsLevel(getMinDsLevel());
+      bodyEvent.setLocalDsLevel(0);
+      m_eventQueue.enqueue(bodyEvent);
+    }
+  }
+}
+
+void ZFlyEmBody3dDoc::processEvent(const ZFlyEmBodyEvent &event)
 {
   switch (event.getAction()) {
-  case BodyEvent::ACTION_REMOVE:
+  case ZFlyEmBodyEvent::ACTION_REMOVE:
     removeBody(event.getBodyId());
     break;
-  case BodyEvent::ACTION_ADD:
-    addBody(event.getBodyId(), event.getBodyColor());
+  case ZFlyEmBodyEvent::ACTION_ADD:
+    addBody(event.getBodyConfig());
     break;
-  case BodyEvent::ACTION_UPDATE:
-    if (event.updating(BodyEvent::UPDATE_CHANGE_COLOR)) {
+  case ZFlyEmBodyEvent::ACTION_UPDATE:
+    if (event.updating(ZFlyEmBodyEvent::UPDATE_CHANGE_COLOR)) {
       updateBody(event.getBodyId(), event.getBodyColor());
     }
-    if (event.updating(BodyEvent::UPDATE_ADD_SYNAPSE)) {
+    if (event.updating(ZFlyEmBodyEvent::UPDATE_ADD_SYNAPSE)) {
       addSynapse(event.getBodyId());
     }
-    if (event.updating(BodyEvent::UPDATE_ADD_TODO_ITEM)) {
+    if (event.updating(ZFlyEmBodyEvent::UPDATE_ADD_TODO_ITEM)) {
       addTodo(event.getBodyId());
     }
     break;
@@ -679,52 +722,58 @@ void ZFlyEmBody3dDoc::processObjectModifiedFromDataDoc(
     const ZStackObjectInfoSet &objInfo)
 {
   if (objInfo.contains(ZStackObjectRole::ROLE_SEGMENTATION)) {
-    //Update the segmentation only when one body is selected
+    //Update the segmentation (splits) only when one body is selected
     //Todo: association between bodies and segmentations
+    uint64_t bodyId = m_bodyManager.getSingleBodyId();
+    if (bodyId > 0) {
+      addEvent(ZFlyEmBodyEvent::ACTION_UPDATE, bodyId,
+               ZFlyEmBodyEvent::UPDATE_SEGMENTATION);
+    }
+
+    /*
     if (m_bodySet.size() == 1) {
       uint64_t bodyId = *m_bodySet.begin();
-      addEvent(BodyEvent::ACTION_UPDATE, bodyId, BodyEvent::UPDATE_SEGMENTATION);
+      addEvent(ZFlyEmBodyEvent::ACTION_UPDATE, bodyId, ZFlyEmBodyEvent::UPDATE_SEGMENTATION);
     }
+    */
   }
 }
 
 void ZFlyEmBody3dDoc::saveSplitTask()
 {
-  if (m_bodySet.size() == 1) {
-    uint64_t bodyId = *m_bodySet.begin();
-    if (bodyId > 0) {
-      ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
-            GET_FLYEM_CONFIG.getTaskServer());
-      if (writer != NULL) {
-        ZJsonArray seedJson = ZFlyEmMisc::GetSeedJson(this);
+  uint64_t bodyId = getBodyManager().getSingleBodyId();
+  if (bodyId > 0) {
+    ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriterFromUrl(
+          GET_FLYEM_CONFIG.getTaskServer());
+    if (writer != NULL) {
+      ZJsonArray seedJson = ZFlyEmMisc::GetSeedJson(this);
 
-        ZDvidUrl dvidUrl(getDvidTarget());
-        QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
-        if (seedJson.isEmpty()) {
-          if (writer->getDvidReader().hasSplitTask(taskKey)) {
-            writer->deleteSplitTask(taskKey);
-            std::cout << "Split task deleted: " << taskKey.toStdString() << std::endl;
-          }
-        } else {
-          ZJsonArray roiJson;
-          ZJsonObject task = ZFlyEmMisc::MakeSplitTask(
-                getDvidTarget(), bodyId, seedJson, roiJson);
-
-//          std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
-//          task.setEntry("signal", bodyUrl);
-
-//          task.setEntry("seeds", seedJson);
-
-          std::string location = writer->writeServiceTask("split", task);
-
-          //Save the entry point
-          ZJsonObject taskJson;
-          taskJson.setEntry(neutube::json::REF_KEY, location);
-          taskJson.setEntry("user", neutube::GetCurrentUserName());
-          writer->writeSplitTask(taskKey, taskJson);
-
-          std::cout << "Split task saved @" << taskKey.toStdString() << std::endl;
+      ZDvidUrl dvidUrl(getDvidTarget());
+      QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
+      if (seedJson.isEmpty()) {
+        if (writer->getDvidReader().hasSplitTask(taskKey)) {
+          writer->deleteSplitTask(taskKey);
+          std::cout << "Split task deleted: " << taskKey.toStdString() << std::endl;
         }
+      } else {
+        ZJsonArray roiJson;
+        ZJsonObject task = ZFlyEmMisc::MakeSplitTask(
+              getDvidTarget(), bodyId, seedJson, roiJson);
+
+        //          std::string bodyUrl = dvidUrl.getSparsevolUrl(bodyId);
+        //          task.setEntry("signal", bodyUrl);
+
+        //          task.setEntry("seeds", seedJson);
+
+        std::string location = writer->writeServiceTask("split", task);
+
+        //Save the entry point
+        ZJsonObject taskJson;
+        taskJson.setEntry(neutube::json::REF_KEY, location);
+        taskJson.setEntry("user", neutube::GetCurrentUserName());
+        writer->writeSplitTask(taskKey, taskJson);
+
+        std::cout << "Split task saved @" << taskKey.toStdString() << std::endl;
       }
     }
   }
@@ -744,14 +793,14 @@ ZFlyEmToDoItem* ZFlyEmBody3dDoc::getOneSelectedTodoItem() const
   return item;
 }
 
-QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMapUnsync(
-    QSet<uint64_t> &bodySet)
+QMap<uint64_t, ZFlyEmBodyEvent> ZFlyEmBody3dDoc::makeEventMapUnsync(
+    ZFlyEmBodyManager *bm)
 {
 //  QSet<uint64_t> bodySet = m_bodySet;
-  QMap<uint64_t, BodyEvent> actionMap;
-  for (QQueue<BodyEvent>::const_iterator iter = m_eventQueue.begin();
+  QMap<uint64_t, ZFlyEmBodyEvent> actionMap;
+  for (QQueue<ZFlyEmBodyEvent>::const_iterator iter = m_eventQueue.begin();
        iter != m_eventQueue.end(); ++iter) {
-    const BodyEvent &event = *iter;
+    const ZFlyEmBodyEvent &event = *iter;
     uint64_t bodyId = event.getBodyId();
     if (actionMap.contains(bodyId)) {
       actionMap[bodyId].mergeEvent(event, neutube::DIRECTION_BACKWARD);
@@ -760,26 +809,35 @@ QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMapUnsync(
     }
   }
 
-  for (QMap<uint64_t, BodyEvent>::iterator iter = actionMap.begin();
+  for (QMap<uint64_t, ZFlyEmBodyEvent>::iterator iter = actionMap.begin();
        iter != actionMap.end(); ++iter) {
-    BodyEvent &event = iter.value();
+    ZFlyEmBodyEvent &event = iter.value();
     switch (event.getAction()) {
-    case BodyEvent::ACTION_ADD:
-      if (bodySet.contains(event.getBodyId())) {
-        event.setAction(BodyEvent::ACTION_UPDATE);
+    case ZFlyEmBodyEvent::ACTION_ADD:
+      if (getBodyManager().contains(event.getBodyId())) {
+        event.setAction(ZFlyEmBodyEvent::ACTION_UPDATE);
       } else {
-        bodySet.insert(event.getBodyId());
+        if (bm != NULL) {
+          bm->registerBody(event.getBodyId());
+        }
+//        bodySet.insert(event.getBodyId());
       }
       break;
-    case BodyEvent::ACTION_FORCE_ADD:
-      event.setAction(BodyEvent::ACTION_UPDATE);
-      bodySet.insert(event.getBodyId());
+    case ZFlyEmBodyEvent::ACTION_FORCE_ADD:
+      event.setAction(ZFlyEmBodyEvent::ACTION_UPDATE);
+      if (bm != NULL) {
+        bm->registerBody(event.getBodyId());
+      }
+//      bodySet.insert(event.getBodyId());
       break;
-    case BodyEvent::ACTION_REMOVE:
-      if (bodySet.contains(event.getBodyId())) {
-        bodySet.remove(event.getBodyId());
+    case ZFlyEmBodyEvent::ACTION_REMOVE:
+      if (getBodyManager().contains(event.getBodyId())) {
+//        bodySet.remove(event.getBodyId());
+        if (bm != NULL) {
+          bm->deregisterBody(event.getBodyId());
+        }
       } else {
-        event.setAction(BodyEvent::ACTION_NULL);
+        event.setAction(ZFlyEmBodyEvent::ACTION_NULL);
       }
       break;
     default:
@@ -793,18 +851,18 @@ QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMapUnsync(
 }
 
 
-QMap<uint64_t, ZFlyEmBody3dDoc::BodyEvent> ZFlyEmBody3dDoc::makeEventMap(
-    bool synced, QSet<uint64_t> &bodySet)
+QMap<uint64_t, ZFlyEmBodyEvent> ZFlyEmBody3dDoc::makeEventMap(
+    bool synced, ZFlyEmBodyManager *bm)
 {
   if (synced) {
     std::cout << "Locking process event" << std::endl;
     QMutexLocker locker(&m_eventQueueMutex);
 
     std::cout << "Making event map" << std::endl;
-    return makeEventMapUnsync(bodySet);
+    return makeEventMapUnsync(bm);
   }
 
-  return makeEventMapUnsync(bodySet);
+  return makeEventMapUnsync(bm);
 }
 
 void ZFlyEmBody3dDoc::cancelEventThread()
@@ -816,21 +874,22 @@ void ZFlyEmBody3dDoc::cancelEventThread()
 
 void ZFlyEmBody3dDoc::processEventFunc()
 {
-  QMap<uint64_t, BodyEvent> actionMap = makeEventMap(true, m_bodySet);
+  QMap<uint64_t, ZFlyEmBodyEvent> actionMap = makeEventMap(
+        true, &getBodyManager());
   if (!actionMap.isEmpty()) {
     std::cout << "====Processing Event====" << std::endl;
-    for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
+    for (QMap<uint64_t, ZFlyEmBodyEvent>::const_iterator iter = actionMap.begin();
          iter != actionMap.end(); ++iter) {
-      const BodyEvent &event = iter.value();
+      const ZFlyEmBodyEvent &event = iter.value();
       event.print();
     }
   }
 
   //Process removing events first
-  for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
+  for (QMap<uint64_t, ZFlyEmBodyEvent>::const_iterator iter = actionMap.begin();
        iter != actionMap.end(); ++iter) {
-    const BodyEvent &event = iter.value();
-    if (event.getAction() == BodyEvent::ACTION_REMOVE) {
+    const ZFlyEmBodyEvent &event = iter.value();
+    if (event.getAction() == ZFlyEmBodyEvent::ACTION_REMOVE) {
       processEventFunc(event);
     }
     if (m_quitting) {
@@ -839,10 +898,10 @@ void ZFlyEmBody3dDoc::processEventFunc()
   }
 
   //Process other events
-  for (QMap<uint64_t, BodyEvent>::const_iterator iter = actionMap.begin();
+  for (QMap<uint64_t, ZFlyEmBodyEvent>::const_iterator iter = actionMap.begin();
        iter != actionMap.end(); ++iter) {
-    const BodyEvent &event = iter.value();
-    if (event.getAction() != BodyEvent::ACTION_REMOVE) {
+    const ZFlyEmBodyEvent &event = iter.value();
+    if (event.getAction() != ZFlyEmBodyEvent::ACTION_REMOVE) {
       processEventFunc(event);
     }
     if (m_quitting) {
@@ -855,20 +914,33 @@ void ZFlyEmBody3dDoc::processEventFunc()
   std::cout << "====Processing done====" << std::endl;
 }
 
-flyem::EBodyLabelType ZFlyEmBody3dDoc::getBodyLabelType() const
+flyem::EBodyLabelType ZFlyEmBody3dDoc::getBodyLabelType(uint64_t bodyId) const
 {
-  /*
-  if (getDvidTarget().hasSupervoxel()) {
+  if (getDvidTarget().hasSupervoxel() &&
+      ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
     return flyem::LABEL_SUPERVOXEL;
   }
-  */
 
   return flyem::LABEL_BODY;
 }
 
 bool ZFlyEmBody3dDoc::IsOverSize(const ZStackObject *obj)
 {
-  return obj->getSource() == "oversize" || obj->getObjectId() == "oversize";
+  return ZStackObjectHelper::IsOverSize(*obj);
+}
+
+int ZFlyEmBody3dDoc::getCoarseBodyZoom() const
+{
+  return misc::GetZoomLevel(getDvidInfo().getBlockSize().getX());
+  /*
+  int s = getDvidInfo().getBlockSize().getX();
+  int zoom = 0;
+  while (s /= 2) {
+    ++zoom;
+  }
+
+  return zoom;
+  */
 }
 
 ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
@@ -880,21 +952,86 @@ ZStackObject::EType ZFlyEmBody3dDoc::getBodyObjectType() const
   return ZStackObject::TYPE_SWC;
 }
 
+const ZFlyEmBodyManager& ZFlyEmBody3dDoc::getBodyManager() const
+{
+  return m_bodyManager;
+}
+
+ZFlyEmBodyManager& ZFlyEmBody3dDoc::getBodyManager()
+{
+  return m_bodyManager;
+}
+
+uint64_t ZFlyEmBody3dDoc::getSelectedSingleNormalBodyId() const
+{
+  uint64_t bodyId = 0;
+  auto selectedObjectList = getSelectedObjectList<ZMesh>(
+        ZStackObject::TYPE_MESH);
+  if (selectedObjectList.size() == 1) {
+    ZMesh *mesh = selectedObjectList[0];
+    if (!isSupervoxel(mesh)) {
+      bodyId = getBodyId(mesh);
+    }
+  }
+
+  return bodyId;
+}
+
 uint64_t ZFlyEmBody3dDoc::getSingleBody() const
 {
   QMutexLocker locker(&m_BodySetMutex);
 
+  return getBodyManager().getSingleBodyId();
+/*
   uint64_t bodyId = 0;
   if (m_bodySet.size() == 1) {
     bodyId = *(m_bodySet.begin());
   }
 
   return bodyId;
+  */
+}
+
+void ZFlyEmBody3dDoc::SetObjectClass(ZStackObject *obj, uint64_t bodyId)
+{
+  if (obj != NULL) {
+    obj->setObjectClass(ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+  }
+}
+
+void ZFlyEmBody3dDoc::registerBody(uint64_t bodyId)
+{
+  getBodyManager().registerBody(bodyId);
+}
+
+void ZFlyEmBody3dDoc::deregisterBody(uint64_t bodyId)
+{
+  getBodyManager().deregisterBody(bodyId);
+}
+
+void ZFlyEmBody3dDoc::addBodyConfig(const ZFlyEmBodyConfig &config)
+{
+  getBodyManager().addBodyConfig(config);
+}
+
+flyem::EBodyLabelType ZFlyEmBody3dDoc::getLabelType(uint64_t bodyId) const
+{
+  if (getBodyManager().isSupervoxel(bodyId)) {
+    return flyem::LABEL_SUPERVOXEL;
+  }
+
+  return flyem::LABEL_BODY;
+}
+
+void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId)
+{
+  activateSplit(bodyId, getLabelType(bodyId));
 }
 
 void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId, flyem::EBodyLabelType type)
 {
   if (!isSplitActivated()) {
+    bodyId = decode(bodyId);
     uint64_t parentId = bodyId;
     if (type == flyem::LABEL_SUPERVOXEL) {
       parentId = m_workDvidReader.readParentBodyId(bodyId);
@@ -923,14 +1060,16 @@ void ZFlyEmBody3dDoc::activateSplitForSelected()
   TStackObjectSet objSet = getSelected(ZStackObject::TYPE_MESH);
   if (objSet.size() == 1) {
     ZStackObject *obj = *(objSet.begin());
+    /*
     flyem::EBodyLabelType labelType = flyem::LABEL_BODY;
     if (getDvidTarget().hasSupervoxel()) {
       if (getMappedId(obj->getLabel()) != obj->getLabel()) {
         labelType = flyem::LABEL_SUPERVOXEL;
       }
     }
+    */
 
-    activateSplit(obj->getLabel(), labelType);
+    activateSplit(obj->getLabel());
   }
 }
 
@@ -966,6 +1105,10 @@ void ZFlyEmBody3dDoc::makeAction(ZActionFactory::EAction item)
         connect(action, SIGNAL(triggered()),
                 this, SLOT(commitSplitResult()));
         break;
+      case ZActionFactory::ACTION_BODY_ANNOTATION:
+        connect(action, SIGNAL(triggered()),
+                this, SLOT(startBodyAnnotation()));
+        break;
       default:
         break;
       }
@@ -982,16 +1125,17 @@ bool ZFlyEmBody3dDoc::isSplitActivated() const
 
 bool ZFlyEmBody3dDoc::isSplitFinished() const
 {
-  return m_splitter->getState() == ZFlyEmBodySplitter::STATE_FULL_SPLIT;
+  return m_splitter->getState() == ZFlyEmBodySplitter::STATE_FULL_SPLIT ||
+      m_splitter->getState() == ZFlyEmBodySplitter::STATE_SPLIT;
 }
 
 bool ZFlyEmBody3dDoc::protectBody(uint64_t bodyId)
 {
   if (bodyId > 0) {
     QMutexLocker locker(&m_eventQueueMutex);
-    QMap<uint64_t, BodyEvent> actionMap = makeEventMap(false, m_bodySet);
+    QMap<uint64_t, ZFlyEmBodyEvent> actionMap = makeEventMap(false, NULL);
     if (actionMap.contains(bodyId)) {
-      if (actionMap[bodyId].getAction() == BodyEvent::ACTION_REMOVE) {
+      if (actionMap[bodyId].getAction() == ZFlyEmBodyEvent::ACTION_REMOVE) {
         //Cannot protected a body to be removed
         return false;
       }
@@ -1003,10 +1147,14 @@ bool ZFlyEmBody3dDoc::protectBody(uint64_t bodyId)
   return true;
 }
 
-void ZFlyEmBody3dDoc::releaseBody(uint64_t bodyId)
+void ZFlyEmBody3dDoc::releaseBody(
+    uint64_t bodyId, flyem::EBodyLabelType labelType)
 {
   QMutexLocker locker(&m_eventQueueMutex);
 
+  if (labelType == flyem::LABEL_SUPERVOXEL) {
+    bodyId = ZFlyEmBodyManager::encodeSupervoxel(bodyId);
+  }
   m_protectedBodySet.remove(bodyId);
 
   emit interactionStateChanged();
@@ -1026,9 +1174,7 @@ uint64_t ZFlyEmBody3dDoc::protectBodyForSplit()
 
   QMutexLocker locker(&m_BodySetMutex);
   if (bodyId == 0) {
-    if (m_bodySet.size() == 1) {
-      bodyId = *(m_bodySet.begin());
-    }
+    bodyId = getBodyManager().getSingleBodyId();
   }
 
   if (!protectBody(bodyId)) {
@@ -1149,6 +1295,7 @@ void ZFlyEmBody3dDoc::processEvent()
   }
 }
 
+/*
 bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId, bool encoded) const
 {
   QMutexLocker locker(&m_BodySetMutex);
@@ -1157,19 +1304,65 @@ bool ZFlyEmBody3dDoc::hasBody(uint64_t bodyId, bool encoded) const
     return getUnencodedBodySet().contains(bodyId);
   }
 
-  return m_bodySet.contains(bodyId);
+  return getBodyManager().contains(bodyId);
 }
+*/
 
-void ZFlyEmBody3dDoc::addBody(uint64_t bodyId, const QColor &color)
+void ZFlyEmBody3dDoc::addBody(const ZFlyEmBodyConfig &config)
 {
   QMutexLocker locker(&m_BodySetMutex);
-  if (!m_bodySet.contains(bodyId)) {
-    m_bodySet.insert(bodyId);
+  uint64_t bodyId = config.getBodyId();
+  if (!getBodyManager().contains(bodyId)) {
+    getBodyManager().registerBody(bodyId);
+    ZFlyEmBodyConfig newConfig;
+
     if (getBodyType() == flyem::BODY_SKELETON) {
-      addBodyFunc(bodyId, color, -1);
+      newConfig.setDsLevel(-1);
     } else {
-      addBodyFunc(bodyId, color, m_maxResLevel);
+      newConfig.setDsLevel(m_maxDsLevel);
     }
+    addBodyFunc(newConfig);
+  }
+}
+
+void ZFlyEmBody3dDoc::updateBody(ZFlyEmBodyConfig &config)
+{
+  bool updated = false;
+
+  uint64_t bodyId = config.getBodyId();
+
+  beginObjectModifiedMode(ZStackDoc::OBJECT_MODIFIED_CACHE);
+  if (config.getBodyType() != flyem::BODY_MESH) {
+    ZSwcTree *tree = getBodyModel(
+          bodyId, config.getDsLevel(), config.getBodyType());
+    if (tree != NULL) {
+      if (tree->getColor() != config.getBodyColor()) {
+        tree->setColor(config.getBodyColor());
+        processObjectModified(tree);
+        updated = true;
+      }
+    }
+  } else {
+    // A mesh from a tar archive is never needs its color updated, and checking
+    // for it is a slow loop that is quadratic in the number of meshes.
+
+    if (!fromTar(bodyId)) {
+      ZMesh *mesh = getBodyMesh(bodyId, config.getDsLevel());
+      if (mesh != NULL) {
+        if (mesh->getColor() != config.getBodyColor()) {
+          mesh->setColor(config.getBodyColor());
+          mesh->pushObjectColor();
+          processObjectModified(mesh);
+          updated = true;
+        }
+      }
+    }
+  }
+  endObjectModifiedMode();
+  processObjectModified();
+
+  if (!updated) {
+    addBodyFunc(config);
   }
 }
 
@@ -1177,23 +1370,32 @@ void ZFlyEmBody3dDoc::setBodyType(flyem::EBodyType type)
 {
   m_bodyType = type;
   switch (m_bodyType) {
+  /*
   case flyem::BODY_COARSE:
     setTag(neutube::Document::FLYEM_BODY_3D_COARSE);
-    setMaxResLevel(MAX_RES_LEVEL);
+    setMaxDsLevel(MAX_RES_LEVEL);
     break;
-  case flyem::BODY_FULL:
-    setTag(neutube::Document::FLYEM_BODY_3D);
-    setMaxResLevel(MAX_RES_LEVEL);
+    */
+  case flyem::BODY_SPHERE:
+    if (showingCoarseOnly()) {
+      setTag(neutube::Document::FLYEM_BODY_3D_COARSE);
+    } else {
+      setTag(neutube::Document::FLYEM_BODY_3D);
+//      setMaxDsLevel(m_coarseLevel);
+//      setMaxDsLevel(std::max(MAX_RES_LEVEL, getCoarseBodyZoom()));
+    }
+//    setMaxResLevel(MAX_RES_LEVEL);
     break;
   case flyem::BODY_SKELETON:
     setTag(neutube::Document::FLYEM_SKELETON);
-    setMaxResLevel(0);
+    setMaxDsLevel(0);
     break;
   case flyem::BODY_MESH:
     setTag(neutube::Document::FLYEM_MESH);
-    setMaxResLevel(MAX_RES_LEVEL);
+//    setMaxDsLevel(std::max(MAX_RES_LEVEL, getCoarseBodyZoom()));
+//    setMaxResLevel(MAX_RES_LEVEL);
     break;
-  case flyem::BODY_NULL:
+  case flyem::BODY_DEFAULT:
     break;
   }
 }
@@ -1201,8 +1403,8 @@ void ZFlyEmBody3dDoc::setBodyType(flyem::EBodyType type)
 void ZFlyEmBody3dDoc::updateBody(
     uint64_t bodyId, const QColor &color)
 {
-  updateBody(bodyId, color, flyem::BODY_COARSE);
-  updateBody(bodyId, color, flyem::BODY_FULL);
+//  updateBody(bodyId, color, flyem::BODY_COARSE);
+  updateBody(bodyId, color, flyem::BODY_SPHERE);
   updateBody(bodyId, color, flyem::BODY_SKELETON);
   updateBody(bodyId, color, flyem::BODY_MESH);
 }
@@ -1249,51 +1451,48 @@ ZMesh* ZFlyEmBody3dDoc::getBodyMesh(uint64_t bodyId, int zoom)
   return retrieveBodyMesh(bodyId, zoom);
 }
 
-void ZFlyEmBody3dDoc::addEvent(const BodyEvent &event, QMutex *mutex)
+void ZFlyEmBody3dDoc::addEvent(const ZFlyEmBodyEvent &event, QMutex *mutex)
 {
-  QMutexLocker locker(mutex);
+  if (event.isValid()) {
+    QMutexLocker locker(mutex);
 
-  if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-    //When a body is removed, its associated objects will be removed as well.
-    //Clear the undo queue to avoid potential crash
-    undoStack()->clear();
+    if (event.getAction() == ZFlyEmBodyEvent::ACTION_REMOVE) {
+      //When a body is removed, its associated objects will be removed as well.
+      //Clear the undo queue to avoid potential crash
+      undoStack()->clear();
+    }
+
+#ifdef _DEBUG_
+    std::cout << "+++++Adding event" << std::endl;
+    event.print();
+#endif
+
+    m_eventQueue.enqueue(event);
   }
-
-  m_eventQueue.enqueue(event);
 }
 
-void ZFlyEmBody3dDoc::addEvent(BodyEvent::EAction action, uint64_t bodyId,
-                               BodyEvent::TUpdateFlag flag, QMutex *mutex)
+void ZFlyEmBody3dDoc::addEvent(ZFlyEmBodyEvent::EAction action, uint64_t bodyId,
+                               ZFlyEmBodyEvent::TUpdateFlag flag, QMutex *mutex)
 {
   QMutexLocker locker(mutex);
 
-  BodyEvent event(action, bodyId);
+  ZFlyEmBodyEvent event(action, bodyId);
   event.addUpdateFlag(flag);
-  if (getDataDocument() != NULL) {
-    ZDvidLabelSlice *labelSlice =
-        getDataDocument()->getDvidLabelSlice(neutube::Z_AXIS);
-
-    if (labelSlice != NULL) {
-      QColor color;
-
-      if (getBodyType() == flyem::BODY_FULL) { //using the original color
-        color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_MAPPED);
+  ZFlyEmBodyConfig config = getBodyManager().getBodyConfig(bodyId);
+  if (config.getBodyId() > 0) {
+    event.setBodyConfig(config);
+  } else {
+    if (event.getAction() == ZFlyEmBodyEvent::ACTION_ADD &&
+        getBodyType() != flyem::BODY_SKELETON) {
+      if (ZFlyEmBodyManager::encodesTar(bodyId)) {
+        event.setDsLevel(0);
       } else {
-        color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_ORIGINAL);
+        event.setDsLevel(getMaxDsLevel());
       }
-      color.setAlpha(255);
-      event.setBodyColor(color);
     }
   }
 
-#if defined(_NEU3_)
-  event.setBodyColor(Qt::white);
-#endif
-
-  if (event.getAction() == BodyEvent::ACTION_ADD &&
-      getBodyType() != flyem::BODY_SKELETON) {
-    event.setResLevel(getMaxResLevel());
-  }
+  event.setBodyColor(getBodyColor(bodyId));
 
   addEvent(event);
 //  m_eventQueue.enqueue(event);
@@ -1303,30 +1502,46 @@ ZSwcTree* ZFlyEmBody3dDoc::getBodyQuickly(uint64_t bodyId)
 {
   ZSwcTree *tree = NULL;
 
-  if (getBodyType() == flyem::BODY_FULL) {
-    tree = recoverFullBodyFromGarbage(bodyId, getMaxResLevel());
+  if (getBodyType() == flyem::BODY_SPHERE) {
+    tree = recoverFullBodyFromGarbage(bodyId, getMaxDsLevel());
   }
 
   if (tree == NULL) {
-    tree = makeBodyModel(bodyId, 0, flyem::BODY_COARSE);
+    tree = makeBodyModel(bodyId, getCoarseBodyZoom(), getBodyType());
   }
 
   return tree;
 }
 
-ZFlyEmBody3dDoc::BodyEvent ZFlyEmBody3dDoc::makeMultresBodyEvent(
-    uint64_t bodyId, int resLevel, const QColor &color)
+#if 0
+ZFlyEmBodyEvent ZFlyEmBody3dDoc::makeHighResBodyEvent(
+    const ZFlyEmBodyConfig &config)
 {
-  BodyEvent bodyEvent(BodyEvent::ACTION_ADD, bodyId);
-  bodyEvent.setBodyColor(color);
-  if (resLevel > getDvidTarget().getMaxLabelZoom()) {
-    resLevel = getDvidTarget().getMaxLabelZoom();
-  }
-  bodyEvent.setResLevel(resLevel);
-  bodyEvent.addUpdateFlag(BodyEvent::UPDATE_MULTIRES);
+  ZFlyEmBodyEvent bodyEvent =
+      ZFlyEmBodyEvent::MakeHighResEvent(config, getMinDsLevel());
+  bodyEvent.addUpdateFlag(ZFlyEmBodyEvent::UPDATE_MULTIRES);
+
+  return bodyEvent;
+
+  /*
+  ZFlyEmBodyEvent bodyEvent(ZFlyEmBodyEvent::ACTION_ADD, config);
+
+//  bodyEvent.setMaxDsLevel(getDvidTarget().getMaxLabelZoom());
+  bodyEvent.addUpdateFlag(ZFlyEmBodyEvent::UPDATE_MULTIRES);
+
+  return bodyEvent;
+  */
+}
+
+ZFlyEmBodyEvent ZFlyEmBody3dDoc::makeHighResBodyEvent(
+    const ZFlyEmBodyConfig &config, const ZIntCuboid &range)
+{
+  ZFlyEmBodyEvent bodyEvent = makeHighResBodyEvent(config);
+  bodyEvent.setRange(range);
 
   return bodyEvent;
 }
+#endif
 
 void ZFlyEmBody3dDoc::notifyBodyUpdate(uint64_t bodyId, int resLevel)
 {
@@ -1345,20 +1560,63 @@ void ZFlyEmBody3dDoc::notifyBodyUpdated(uint64_t bodyId, int resLevel)
   }
 }
 
-void ZFlyEmBody3dDoc::addBodyMeshFunc(
-    uint64_t id, const QColor &color, int resLevel)
+void ZFlyEmBody3dDoc::addBodyMeshFunc(ZFlyEmBodyConfig &config)
 {
-  notifyBodyUpdate(id, resLevel);
+  uint64_t bodyId = config.getBodyId();
 
-  std::map<uint64_t, ZMesh*> meshes;
-  makeBodyMeshModels(id, resLevel, meshes);
+  notifyBodyUpdate(bodyId, config.getDsLevel());
 
-  if (!meshes.empty()) {
-    addSynapse(decode(id));
-    //      addTodo(bodyId);
-    updateTodo(decode(id));
+//  std::map<uint64_t, ZMesh*> meshes;
+  std::vector<ZMesh *> meshes = makeBodyMeshModels(config);
+
+//  bool loaded =
+//      !(getObjectGroup().findSameClass(
+//          ZStackObject::TYPE_SWC,
+//          ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId())).
+//        isEmpty());
+
+  if (config.getLabelType() == flyem::LABEL_BODY) {
+    loadSynapseFresh(bodyId);
+    loadTodoFresh(bodyId);
+  }
+  /*
+  if (!loaded) {
+    addSynapse(ZFlyEmBodyManager::decode(id));
+    updateTodo(ZFlyEmBodyManager::decode(id));
+  }
+  */
+
+  for (ZMesh *mesh : meshes) {
+    mesh->setColor(config.getBodyColor());
+    mesh->pushObjectColor();
   }
 
+  updateMeshFunc(config, meshes);
+
+  if (config.isTar()) {
+    QSet<uint64_t> subbodySet;
+    for (const ZMesh *mesh : meshes) {
+      if (ZFlyEmBodyManager::decode(mesh->getLabel()) !=
+          ZFlyEmBodyManager::decode(config.getBodyId())) {
+        subbodySet.insert(mesh->getLabel());
+      }
+    }
+    getBodyManager().registerBody(config.getBodyId(), subbodySet);
+  } else {
+    getBodyManager().registerBody(config.getBodyId());
+  }
+
+  notifyBodyUpdated(config.getBodyId(), config.getDsLevel());
+
+  if (config.isTar()) {
+    // Meshes loaded from an archive are ready at this point, so emit a signal, which
+    // can be used by code that needs to know the IDs of the loaded meshes (instead of
+    // the ID of the archive).
+    LDEBUG() << "Emitting bodyMeshesAdded";
+    emit bodyMeshesAdded(meshes.size());
+  }
+
+#if 0
   for (auto it : meshes) {
 //    emit messageGenerated(ZWidgetMessage("3D Body view synced"));
 
@@ -1368,27 +1626,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     if (mesh != NULL) {
       resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
             mesh->getSource());
-    }
-
-    if (resLevel > getMinResLevel()) {
-      QMutexLocker locker(&m_eventQueueMutex);
-      bool removing = false;
-
-      for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
-           iter != m_eventQueue.end(); ++iter) {
-        BodyEvent &event = *iter;
-        if (event.getBodyId() == bodyId) {
-          if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-            removing = true;
-          } else {
-            removing = false;
-          }
-        }
-      }
-      if (!removing) {
-        BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel - 1, color);
-        m_eventQueue.enqueue(bodyEvent);
-      }
+      config.setDsLevel(resLevel);
     }
 
     if (mesh != NULL) {
@@ -1397,7 +1635,7 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
       std::cout << "Color count: " << mesh->colors().size() << std::endl;
       std::cout << "Vertex count: " << mesh->vertices().size() << std::endl;
   #endif
-      mesh->setColor(color);
+      mesh->setColor(config.getBodyColor());
       mesh->pushObjectColor();
 
       // The findSameClass() function has performance that iis quadratic in the number of meshes,
@@ -1412,26 +1650,28 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
             isEmpty());
       }
 
-      updateBodyFunc(bodyId, mesh);
+//      updateBodyFunc(bodyId, mesh);
 
+#if defined(_NEU3_)
       if (!loaded) {
         // TODO: As of December, 2017, the following is slow due to access of a desktop server,
         // http://zhaot-ws1:9000.  This server should be replaced with a faster one.
         // The problem is most noticeable for the functionality of taskbodyhistory.cpp.
         loadSplitTask(bodyId);
       }
+#endif
 
       // If the argument ID loads an archive, then makeBodyMeshModels() can create
       // multiple meshes whose IDs need to be recorded, to make operations like
       // selection work correctly.
 
-      m_bodySet.insert(mesh->getLabel());
+      getBodyManager().registerBody(mesh->getLabel());
     }
   }
 
   notifyBodyUpdated(id, resLevel);
 
-  if (encodesTar(id)) {
+  if (ZFlyEmBodyManager::encodesTar(id)) {
 
     // Meshes loaded from an archive are ready at this point, so emit a signal, which
     // can be used by code that needs to know the IDs of the loaded meshes (instead of
@@ -1439,61 +1679,122 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(
     LDEBUG() << "Emitting bodyMeshesAdded";
     emit bodyMeshesAdded(meshes.size());
   }
+#endif
 }
 
-void ZFlyEmBody3dDoc::addBodyFunc(
-    uint64_t bodyId, const QColor &color, int resLevel)
+bool ZFlyEmBody3dDoc::toBeRemoved(uint64_t bodyId) const
 {
-  if (getBodyType() == flyem::BODY_MESH) {
-    addBodyMeshFunc(bodyId, color, resLevel);
+  bool removing = false;
+
+  for (QQueue<ZFlyEmBodyEvent>::const_iterator iter = m_eventQueue.begin();
+       iter != m_eventQueue.end(); ++iter) {
+    const ZFlyEmBodyEvent &event = *iter;
+    if (event.getBodyId() == bodyId) {
+      if (event.getAction() == ZFlyEmBodyEvent::ACTION_REMOVE) {
+        removing = true;
+      } else {
+        removing = false;
+      }
+    }
+  }
+
+  return removing;
+}
+
+bool ZFlyEmBody3dDoc::isSupervoxel(const ZStackObject *obj) const
+{
+  if (obj != NULL) {
+    if (getBodyManager().isSupervoxel(getBodyId(obj))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool ZFlyEmBody3dDoc::isSupervoxel(uint64_t bodyId)
+{
+  return getBodyManager().isSupervoxel(bodyId);
+}
+
+uint64_t ZFlyEmBody3dDoc::getBodyId(const ZStackObject *obj) const
+{
+  if (obj->getType() == ZStackObject::TYPE_MESH ||
+      obj->getType() == ZStackObject::TYPE_SWC ||
+      obj->getType() == ZStackObject::TYPE_OBJECT3D_SCAN) {
+    return obj->getLabel();
+  }
+
+  return 0;
+}
+
+void ZFlyEmBody3dDoc::loadSynapseFresh(uint64_t bodyId)
+{
+  if (!getBodyManager().isSynapseLoaded(bodyId)) {
+    addSynapse(bodyId);
+    getBodyManager().setSynapseLoaded(bodyId);
+  }
+}
+
+void ZFlyEmBody3dDoc::loadTodoFresh(uint64_t bodyId)
+{
+  if (!getBodyManager().isTodoLoaded(bodyId)) {
+    updateTodo(bodyId);
+    getBodyManager().setTodoLoaded(bodyId);
+  }
+}
+
+void ZFlyEmBody3dDoc::addBodyFunc(ZFlyEmBodyConfig &config)
+{
+  flyem::EBodyType bodyType = config.getBodyType();
+  if (bodyType == flyem::BODY_DEFAULT) {
+    bodyType = getBodyType();
+  }
+
+  if (bodyType == flyem::BODY_MESH) {
+    addBodyMeshFunc(config);
   } else {
     removeDiffBody();
 
-    bool loaded =
-        !(getObjectGroup().findSameClass(
-            ZStackObject::TYPE_SWC,
-            ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
-          isEmpty());
+    uint64_t bodyId = config.getBodyId();
+
+//    bool loaded =
+//        !(getObjectGroup().findSameClass(
+//            ZStackObject::TYPE_SWC,
+//            ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId)).
+//          isEmpty());
 
     ZSwcTree *tree = NULL;
-    if (resLevel == getMaxResLevel() && resLevel > 0) {
-      notifyBodyUpdate(bodyId, getMaxResLevel());
+    if (isCoarseLevel(config.getDsLevel())) { //Coarse body
+      notifyBodyUpdate(bodyId, getMaxDsLevel());
       tree = getBodyQuickly(bodyId);
-      notifyBodyUpdated(bodyId, getMaxResLevel());
+      notifyBodyUpdated(bodyId, getMaxDsLevel());
     } else {
-      notifyBodyUpdate(bodyId, resLevel);
-      tree = makeBodyModel(bodyId, resLevel, getBodyType());
-      notifyBodyUpdated(bodyId, resLevel);
+      notifyBodyUpdate(bodyId, config.getDsLevel());
+      tree = makeBodyModel(bodyId, config.getDsLevel(), bodyType);
+      notifyBodyUpdated(bodyId, config.getDsLevel());
     }
+
+//    int resLevel = config.getDsLevel();
 
     if (tree != NULL) {
       if (ZStackObjectSourceFactory::ExtractBodyTypeFromFlyEmBodySource(
-            tree->getSource()) == flyem::BODY_FULL) {
-        resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+            tree->getSource()) == flyem::BODY_SPHERE) {
+        int resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
               tree->getSource());
+        config.setDsLevel(resLevel);
       }
     }
 
-    if (resLevel > getMinResLevel()) {
+#if 0
+    if (resLevel > getMinDsLevel()) {
       QMutexLocker locker(&m_eventQueueMutex);
-      bool removing = false;
-
-      for (QQueue<BodyEvent>::iterator iter = m_eventQueue.begin();
-           iter != m_eventQueue.end(); ++iter) {
-        BodyEvent &event = *iter;
-        if (event.getBodyId() == bodyId) {
-          if (event.getAction() == BodyEvent::ACTION_REMOVE) {
-            removing = true;
-          } else {
-            removing = false;
-          }
-        }
-      }
-      if (!removing) {
-        BodyEvent bodyEvent = makeMultresBodyEvent(bodyId, resLevel - 1, color);
+      if (!toBeRemoved(bodyId)) {
+        ZFlyEmBodyEvent bodyEvent = makeHighResBodyEvent(config);
         m_eventQueue.enqueue(bodyEvent);
       }
     }
+#endif
 
     if (tree != NULL) {
       tree->setStructrualMode(ZSwcTree::STRUCT_POINT_CLOUD);
@@ -1504,15 +1805,17 @@ void ZFlyEmBody3dDoc::addBodyFunc(
 #ifdef _DEBUG_
       std::cout << "Adding object: " << dynamic_cast<ZStackObject*>(tree) << std::endl;
 #endif
-      tree->setColor(color);
+      tree->setColor(config.getBodyColor());
 
       updateBodyFunc(bodyId, tree);
 
-      if (!loaded) {
-        addSynapse(bodyId);
-        //      addTodo(bodyId);
-        updateTodo(bodyId);
-      }
+      loadSynapseFresh(bodyId);
+      loadTodoFresh(bodyId);
+//      if (!loaded) {
+//        addSynapse(bodyId);
+//        //      addTodo(bodyId);
+//        updateTodo(bodyId);
+//      }
     }
   }
 }
@@ -1521,7 +1824,7 @@ void ZFlyEmBody3dDoc::addSynapse(bool on)
 {
   if (on) {
     for (uint64_t bodyId : getNormalBodySet()) {
-      addEvent(BodyEvent::ACTION_UPDATE, bodyId, BodyEvent::UPDATE_ADD_SYNAPSE);
+      addEvent(ZFlyEmBodyEvent::ACTION_UPDATE, bodyId, ZFlyEmBodyEvent::UPDATE_ADD_SYNAPSE);
     }
   }
 }
@@ -1530,7 +1833,7 @@ void ZFlyEmBody3dDoc::addTodo(bool on)
 {
   if (on) {
     for (uint64_t bodyId : getNormalBodySet()) {
-      addEvent(BodyEvent::ACTION_UPDATE, bodyId, BodyEvent::UPDATE_ADD_TODO_ITEM);
+      addEvent(ZFlyEmBodyEvent::ACTION_UPDATE, bodyId, ZFlyEmBodyEvent::UPDATE_ADD_TODO_ITEM);
     }
   }
 }
@@ -1567,9 +1870,12 @@ bool ZFlyEmBody3dDoc::showingTodo() const
 
 bool ZFlyEmBody3dDoc::synapseLoaded(uint64_t bodyId) const
 {
+  return getBodyManager().isSynapseLoaded(bodyId);
+  /*
   return getObjectGroup().findFirstSameSource(
         ZStackObject::TYPE_PUNCTUM,
         ZStackObjectSourceFactory::MakeFlyEmTBarSource(bodyId)) != NULL;
+        */
 }
 
 void ZFlyEmBody3dDoc::addSynapse(
@@ -1585,7 +1891,9 @@ void ZFlyEmBody3dDoc::addSynapse(
     if (punctum->name().isEmpty()) {
       punctum->setName(QString("%1").arg(bodyId));
     }
-    getDataBuffer()->addUpdate(punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    getDataBuffer()->addUpdate(
+          punctum, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    getDataBuffer()->deliver();
   }
 }
 
@@ -1604,6 +1912,7 @@ void ZFlyEmBody3dDoc::addSynapse(uint64_t bodyId)
             30, QColor(128, 128, 128));
 
       getDataBuffer()->deliver();
+      getBodyManager().setSynapseLoaded(bodyId);
       //      endObjectModifiedMode();
       //      notifyObjectModified();
   }
@@ -1619,6 +1928,8 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
   if (m_showingTodo) {
     ZOUT(LTRACE(), 5) << "Update todo";
 
+    bodyId = decode(bodyId);
+
     std::string source = ZStackObjectSourceFactory::MakeTodoPunctaSource(bodyId);
 
     TStackObjectList objList = getObjectGroup().findSameSource(source);
@@ -1627,7 +1938,7 @@ void ZFlyEmBody3dDoc::updateTodo(uint64_t bodyId)
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_KILL);
     }
 
-    if (getNormalBodySet().contains(bodyId)) {
+    if (getBodyManager().contains(bodyId)) {
       std::vector<ZFlyEmToDoItem*> itemList =
           getDataDocument()->getTodoItem(bodyId);
 
@@ -1786,7 +2097,7 @@ bool ZFlyEmBody3dDoc::addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId)
                                QString("Supervoxel ID: %1").arg(svId)));
       }
 
-      if (getNormalBodySet().contains(bodyId)) {
+      if (getBodyManager().contains(bodyId)) {
         updateTodo(bodyId);
       }
       succ = true;
@@ -1869,8 +2180,45 @@ void ZFlyEmBody3dDoc::addTosplit(int x, int y, int z, bool checked, uint64_t bod
 void ZFlyEmBody3dDoc::removeBody(uint64_t bodyId)
 {
   QMutexLocker locker(&m_BodySetMutex);
-  m_bodySet.remove(bodyId);
+  getBodyManager().deregisterBody(bodyId);
   removeBodyFunc(bodyId, true);
+}
+
+void ZFlyEmBody3dDoc::updateMeshFunc(
+    ZFlyEmBodyConfig &config, const std::vector<ZMesh *> meshes)
+{
+  int numMeshes = 0;
+  if (config.isTar()) {
+    for (ZMesh *mesh : meshes) {
+      getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE);
+    }
+    config.setDsLevel(0);
+    numMeshes = meshes.size();
+  } else {
+    if (meshes.size() == 1) {
+      ZMesh *mesh = meshes[0];
+      TStackObjectList objList = getObjectGroup().findSameClass(
+            mesh->getType(),
+            ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId()));
+
+      for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
+           ++iter) {
+        getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
+      }
+
+      getDataBuffer()->addUpdate(mesh, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
+      int resLevel = ZStackObjectSourceFactory::ExtractZoomFromFlyEmBodySource(
+            mesh->getSource());
+      config.setDsLevel(resLevel);
+
+      if (objList.isEmpty()) {
+        numMeshes = 1;
+      }
+    }
+  }
+  getDataBuffer()->deliver();
+
+  emit bodyMeshLoaded(numMeshes);
 }
 
 void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
@@ -1894,13 +2242,12 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
          ++iter) {
       getDataBuffer()->addUpdate(*iter, ZStackDocObjectUpdate::ACTION_RECYCLE);
     }
+
     if (!objList.isEmpty()) {
       replacing = true;
     }
     getDataBuffer()->addUpdate(bodyObject, ZStackDocObjectUpdate::ACTION_ADD_UNIQUE);
-  }
-  else {
-
+  } else {
     // The event name is a bit confusing, but "NONUNIQUE" means that ZStackDoc::addObject()
     // won't get into a quadratic loop checking that this body is unique, at test that is
     // not necessary for bodies from tar archives.
@@ -1909,9 +2256,9 @@ void ZFlyEmBody3dDoc::updateBodyFunc(uint64_t bodyId, ZStackObject *bodyObject)
   }
   getDataBuffer()->deliver();
 
-  if (!replacing) {
-    emit bodyMeshLoaded();
-  }
+//  if (!replacing) {
+//    emit bodyMeshLoaded();
+//  }
 //  }
 
   ZOUT(LTRACE(), 5) << "Body updated: " << bodyId;
@@ -1928,7 +2275,7 @@ void ZFlyEmBody3dDoc::executeAddTodoCommand(
     bodyId = getMainDvidReader().readBodyIdAt(x, y, z);
   }
 
-  if (getNormalBodySet().contains(bodyId)) {
+  if (getBodyManager().contains(bodyId)) {
     command->setTodoItem(x, y, z, checked, action, bodyId);
     if (command->hasValidItem()) {
       pushUndoCommand(command);
@@ -2134,10 +2481,10 @@ ZSwcTree* ZFlyEmBody3dDoc::recoverFullBodyFromGarbage(uint64_t bodyId, int resLe
   ZSwcTree *tree = NULL;
 
 //  int maxZoom = getDvidTarget().getMaxLabelZoom();
-  for (int zoom = 0; zoom <= resLevel; ++zoom) {
+  for (int zoom = m_minDsLevel; zoom <= resLevel; ++zoom) {
     tree = recoverFromGarbage<ZSwcTree>(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
-            bodyId, zoom, flyem::BODY_FULL));
+            bodyId, zoom, flyem::BODY_SPHERE));
     if (tree != NULL) {
       break;
     }
@@ -2220,6 +2567,8 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
 
 uint64_t ZFlyEmBody3dDoc::getMappedId(uint64_t bodyId) const
 {
+  return getBodyManager().getAggloId(bodyId);
+  /*
   for (const auto &m : m_tarIdToMeshIds) {
     if (m.second.count(bodyId) > 0) {
       bodyId = m.first;
@@ -2228,8 +2577,10 @@ uint64_t ZFlyEmBody3dDoc::getMappedId(uint64_t bodyId) const
   }
 
   return decode(bodyId);
+  */
 }
 
+/*
 QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
 {
   QSet<uint64_t> bodySet;
@@ -2238,9 +2589,15 @@ QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
   }
   return bodySet;
 }
+*/
 
 QSet<uint64_t> ZFlyEmBody3dDoc::getNormalBodySet() const
 {
+#ifdef _DEBUG_2
+  getBodyManager().print();
+#endif
+  return getBodyManager().getNormalBodySet();
+  /*
   if (isTarMode()) {
     QSet<uint64_t> bodySet;
     for (const auto &m : m_tarIdToMeshIds) {
@@ -2251,6 +2608,22 @@ QSet<uint64_t> ZFlyEmBody3dDoc::getNormalBodySet() const
   }
 
   return getUnencodedBodySet();
+  */
+}
+
+QSet<uint64_t> ZFlyEmBody3dDoc::getInvolvedNormalBodySet() const
+{
+  QSet<uint64_t> bodySet = getBodyManager().getNormalBodySet();
+
+  QSet<uint64_t> orphanSet = getBodyManager().getOrphanSupervoxelSet();
+  for (uint64_t spId : orphanSet) {
+    uint64_t bodyId = getMainDvidReader().readParentBodyId(decode(spId));
+    if (bodyId > 0) {
+      bodySet.insert(bodyId);
+    }
+  }
+
+  return bodySet;
 }
 
 ZDvidReader& ZFlyEmBody3dDoc::getBodyReader()
@@ -2269,11 +2642,11 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
   std::vector<ZSwcTree*> treeArray;
 
   if (bodyId1 > 0 && bodyId2 > 0) {
-    if (bodyType == flyem::BODY_COARSE || bodyType == flyem::BODY_SKELETON) {
+    if (bodyType == flyem::BODY_SKELETON) {
       zoom = 0;
     }
 
-    if (bodyType == flyem::BODY_COARSE) {
+    if (bodyType == flyem::BODY_SPHERE && isCoarseLevel(zoom)) {
       ZObject3dScan obj1 = getBodyReader().readCoarseBody(bodyId1);
       ZObject3dScan obj2 = diffReader.readCoarseBody(bodyId2);
       treeArray = ZSwcFactory::CreateDiffSurfaceSwc(obj1, obj2);
@@ -2306,18 +2679,15 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 {
   ZSwcTree *tree = NULL;
 
-  if (bodyType == flyem::BODY_COARSE || bodyType == flyem::BODY_SKELETON) {
+  if (bodyType == flyem::BODY_SKELETON) {
     zoom = 0;
   }
 
-  if (bodyType == flyem::BODY_COARSE) {
-    tree = recoverFromGarbage<ZSwcTree>(
-          ZStackObjectSourceFactory::MakeFlyEmCoarseBodySource(bodyId));
-  } else if (bodyType == flyem::BODY_SKELETON) {
+  if (bodyType == flyem::BODY_SKELETON) {
     tree = recoverFromGarbage<ZSwcTree>(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
             bodyId, 0, bodyType));
-  } else if (bodyType == flyem::BODY_FULL) {
+  } else if (bodyType == flyem::BODY_SPHERE) {
     tree = recoverFullBodyFromGarbage(bodyId, zoom);
   }
 
@@ -2326,7 +2696,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
       int t = m_objectTime.elapsed();
       if (bodyType == flyem::BODY_SKELETON) {
         tree = m_workDvidReader.readSwc(bodyId);
-      } else if (bodyType == flyem::BODY_COARSE) {
+      } else if (isCoarseLevel(zoom)) {
         ZObject3dScan obj = m_workDvidReader.readCoarseBody(bodyId);
         if (!obj.isEmpty()) {
           tree = ZSwcFactory::CreateSurfaceSwc(obj);
@@ -2370,8 +2740,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
         tree->setSource(
               ZStackObjectSourceFactory::MakeFlyEmBodySource(
                 bodyId, zoom, bodyType));
-        tree->setObjectClass(
-              ZStackObjectSourceFactory::MakeFlyEmBodySource(bodyId));
+        SetObjectClass(tree, bodyId);
         tree->setLabel(bodyId);
       }
     }
@@ -2380,6 +2749,12 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
   return tree;
 }
 
+uint64_t ZFlyEmBody3dDoc::decode(uint64_t encodedId)
+{
+  return ZFlyEmBodyManager::decode(encodedId);
+}
+
+#if 0
 namespace {
   const uint64_t ENCODING_BASE = 100000000000;
   const uint64_t ENCODING_TAR = 100;
@@ -2427,14 +2802,53 @@ bool ZFlyEmBody3dDoc::isTarMode() const
 {
   return !m_tarIdToMeshIds.empty();
 }
+#endif
 
-
-bool ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64_t, ZMesh *> &result)
+bool ZFlyEmBody3dDoc::fromTar(uint64_t id) const
 {
-  if (encodesTar(bodyId)) {
-    auto it = m_tarIdToMeshIds.find(bodyId);
-    if (it != m_tarIdToMeshIds.end()) {
-      auto& meshIds = it->second;
+  if (ZFlyEmBodyManager::encodesTar(id)) {
+    return true;
+  } else {
+    return getBodyManager().isSupervoxel(id);
+  }
+//  return getBodyManager().hasMapping(id);
+}
+
+std::vector<ZMesh*> ZFlyEmBody3dDoc::getTarCachedMeshes(uint64_t bodyId)
+{
+  std::vector<ZMesh*> recoveredMeshes;
+
+  QSet<uint64_t> meshIds = getBodyManager().getMappedSet(bodyId);
+  if (!meshIds.isEmpty()) {
+//      auto& meshIds = it->second;
+//    std::vector<ZMesh *> recoveredMeshes;
+
+    for (uint64_t meshId : meshIds) {
+      if (ZMesh *mesh = recoverMeshFromGarbage(meshId, 0)) {
+        recoveredMeshes.push_back(mesh);
+      }
+    }
+
+    if ((int) recoveredMeshes.size() != meshIds.size()) {
+      recoveredMeshes.clear();
+    }
+  }
+
+  return recoveredMeshes;
+}
+
+std::vector<ZMesh*>  ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom)
+{
+  std::vector<ZMesh *> recoveredMeshes;
+
+  if (ZFlyEmBodyManager::encodesTar(bodyId)) {
+    recoveredMeshes = getTarCachedMeshes(bodyId);
+#if 0
+//    auto it = m_tarIdToMeshIds.find(bodyId);
+//    if (it != m_tarIdToMeshIds.end()) {
+    QSet<uint64_t> meshIds = getBodyManager().getMappedSet(bodyId);
+    if (!meshIds.isEmpty()) {
+//      auto& meshIds = it->second;
       std::vector<ZMesh *> recoveredMeshes;
 
       for (uint64_t meshId : meshIds) {
@@ -2443,7 +2857,7 @@ bool ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64
         }
       }
 
-      if (recoveredMeshes.size() == meshIds.size()) {
+      if ((int) recoveredMeshes.size() == meshIds.size()) {
         for (ZMesh *mesh : recoveredMeshes) {
           result[mesh->getLabel()] = mesh;
         }
@@ -2451,6 +2865,7 @@ bool ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64
       }
     }
     return false;
+#endif
   } else {
     ZMesh *mesh = recoverMeshFromGarbage(bodyId, zoom);
   #if 0 //todo
@@ -2462,20 +2877,27 @@ bool ZFlyEmBody3dDoc::getCachedMeshes(uint64_t bodyId, int zoom, std::map<uint64
     }
   #endif
     if (mesh) {
-      result[bodyId] = mesh;
+      recoveredMeshes.push_back(mesh);
     }
-    return (mesh != nullptr);
   }
+
+  return recoveredMeshes;
+//  if (!recoveredMeshes.empty()) {
+//    result[bodyId] = recoveredMeshes;
+//    return true;
+//  }
+
+//  return false;
 }
 
-ZMesh *ZFlyEmBody3dDoc::readMesh(
+#if 0
+ZMesh* ZFlyEmBody3dDoc::readSupervoxelMesh(
     const ZDvidReader &reader, uint64_t bodyId, int zoom)
 {
-  ZMesh *mesh = reader.readMesh(bodyId, zoom);
-
-  if (mesh == NULL) {
+  ZMesh *mesh = NULL;
+  if (getDvidTarget().hasSupervoxel()) {
     bool loaded = false;
-    if (zoom > getMaxResLevel()) {
+    if (zoom > getMaxDsLevel()) {
       //For zooming level beyond the range, ignore it if the mesh at any level exists.
       loaded = !(getObjectGroup().findSameClass(
                    ZStackObject::TYPE_MESH,
@@ -2485,13 +2907,31 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
     if (!loaded) { //Now make mesh from sparse vol
       ZObject3dScan obj;
-      if (zoom >= getMaxResLevel()){
-        reader.readCoarseBody(bodyId, &obj);
+      if (isCoarseLevel(zoom) && !config.isHybrid()){
+        reader.readCoarseBody(config.getBodyId(), &obj);
         obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
+        mesh = ZMeshFactory::MakeMesh(obj);
       } else {
-        reader.readMultiscaleBody(bodyId, zoom, true, &obj);
+        ZDvidBodyHelper helper(&reader);
+        helper.setLabelType(flyem::LABEL_SUPERVOXEL);
+
+        if (isCoarseLevel(zoom)) {
+          helper.setCoarse(true);
+        }
+         helper.setZoom(config.getDsLevel());
+        if (config.isHybrid()) {
+          helper.setRange(config.getRange());
+          helper.setLowresZoom(config.getDsLevel());
+          helper.setZoom(config.getLocalDsLevel());
+        }
+//        helper.setLowresZoom(config.getLocalDsLevel());
+//        helper.setCoarse(true);
+        ZObject3dScanArray objArray = helper.readHybridBody(config.getBodyId());
+        ZMeshFactory mf;
+        mesh = mf.makeMesh(objArray);
+//        reader.readMultiscaleBody(config, zoom, true, &obj);
       }
-      mesh = ZMeshFactory::MakeMesh(obj);
+
       if (mesh) {
         mesh->setLabel(bodyId);
       }
@@ -2500,38 +2940,224 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
   return mesh;
 }
+#endif
 
-ZMesh *ZFlyEmBody3dDoc::readMesh(uint64_t bodyId, int zoom)
+ZMesh *ZFlyEmBody3dDoc::readMesh(
+    const ZDvidReader &reader, const ZFlyEmBodyConfig &config)
 {
-  return readMesh(m_workDvidReader, bodyId, zoom);
+  int zoom = config.getDsLevel();
+
+  ZMesh *mesh = NULL;
+
+  if (ZFlyEmBodyManager::encodesTar(config.getBodyId())) {
+    if (ZFlyEmBodyManager::encodedLevel(config.getBodyId()) == 1) {
+      std::vector<ZMesh*> meshArray = makeTarMeshModels(
+            reader, config.getBodyId(), m_objectTime.elapsed());
+      if (meshArray.size() == 1) {
+        mesh = meshArray[0];
+      } else {
+        for (ZMesh *m : meshArray) {
+          delete m;
+        }
+      }
+    }
+
+    return mesh;
+  }
+
+  mesh = reader.readMesh(config.getBodyId(), zoom);
+
+  if (mesh == NULL) {
+    bool loaded = false;
+    if (zoom > getMaxDsLevel()) {
+      //For zooming level beyond the range, ignore it if the mesh at any level exists.
+      loaded = !(getObjectGroup().findSameClass(
+                   ZStackObject::TYPE_MESH,
+                   ZStackObjectSourceFactory::MakeFlyEmBodySource(config.getBodyId())).
+                 isEmpty());
+    }
+
+    if (!loaded) { //Now make mesh from sparse vol
+      ZObject3dScan obj;
+      if (isCoarseLevel(zoom) && !config.isHybrid()){
+        reader.readCoarseBody(config.getDecodedBodyId(),
+              config.getLabelType(), &obj);
+        obj.setDsIntv(getDvidInfo().getBlockSize() - 1);
+        mesh = ZMeshFactory::MakeMesh(obj);
+      } else {
+        ZDvidBodyHelper helper(&reader);
+        helper.setLabelType(config.getLabelType());
+
+        if (isCoarseLevel(zoom)) {
+          helper.setCoarse(true);
+        }
+         helper.setZoom(config.getDsLevel());
+        if (config.isHybrid()) {
+          helper.setRange(config.getRange());
+          helper.setLowresZoom(config.getDsLevel());
+          helper.setZoom(config.getLocalDsLevel());
+        }
+//        helper.setLowresZoom(config.getLocalDsLevel());
+//        helper.setCoarse(true);
+        ZObject3dScanArray objArray = helper.readHybridBody(
+              config.getDecodedBodyId());
+        ZMeshFactory mf;
+        mesh = mf.makeMesh(objArray);
+//        reader.readMultiscaleBody(config, zoom, true, &obj);
+      }
+
+      if (mesh) {
+        mesh->setLabel(config.getBodyId());
+      }
+    }
+  }
+
+  return mesh;
+}
+
+ZMesh *ZFlyEmBody3dDoc::readMesh(const ZFlyEmBodyConfig &config)
+{
+  return readMesh(m_workDvidReader, config);
+}
+
+ZMesh *ZFlyEmBody3dDoc::readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom)
+{
+  ZFlyEmBodyConfig config(bodyId);
+  config.setDsLevel(zoom);
+  return readMesh(reader, config);
 }
 
 namespace {
-  void finalizeMesh(ZMesh *mesh, int zoom, int t)
+  void finalizeMesh(ZMesh *mesh, uint64_t parentId, int zoom, int t)
   {
     if (mesh) {
       uint64_t id = mesh->getLabel();
       mesh->prepareNormals();
       mesh->setTimeStamp(t);
-      auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(id, zoom, flyem::BODY_MESH);
+      auto source = ZStackObjectSourceFactory::MakeFlyEmBodySource(
+            id, zoom, flyem::BODY_MESH);
       mesh->setSource(source);
-      auto objClass = ZStackObjectSourceFactory::MakeFlyEmBodySource(id);
-      mesh->setObjectClass(objClass);
+      ZFlyEmBody3dDoc::SetObjectClass(mesh, parentId);
     }
   }
 }
 
-void ZFlyEmBody3dDoc::makeBodyMeshModels(
-    uint64_t id, int zoom, std::map<uint64_t, ZMesh*> &result)
+std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
+    const ZDvidReader &reader, uint64_t bodyId, int t)
 {
-  if ((id == 0) || getCachedMeshes(id, zoom, result)) {
-    return;
+  std::vector<ZMesh*> resultVec;
+
+  emit meshArchiveLoadingStarted();
+
+  // It is challenging to emit progress updates as m_dvidReader reads the data for the
+  // tar archive, so just initialize the progress meter to show ani ntermediate status.
+
+  const float PROGRESS_FRACTION_START = 1 / 3.0;
+  emit meshArchiveLoadingProgress(PROGRESS_FRACTION_START);
+
+  size_t bytesTotal;
+  //    size_t bytesRead = 0;
+  if (struct archive *arc = reader.readMeshArchiveStart(bodyId, bytesTotal)) {
+
+
+    // When reading the meshes, decompress them in parallel to improve performance.
+    // The following lambda function updates the progress dialog during the decompression.
+
+    auto progress = [=](size_t i, size_t n) {
+      float fraction = float(i) / n;
+      float progressFraction = PROGRESS_FRACTION_START + (1 - PROGRESS_FRACTION_START) * fraction;
+      emit meshArchiveLoadingProgress(progressFraction);
+    };
+
+    reader.readMeshArchiveAsync(arc, resultVec, progress);
+    //      QSet<uint64_t> mappedSet;
+    uint64_t decodedBodyId = decode(bodyId);
+    for (ZMesh *mesh : resultVec) {
+      finalizeMesh(mesh, decodedBodyId, 0, t);
+      //        result[mesh->getLabel()] = mesh;
+      //        mappedSet.insert(mesh->getLabel());
+    }
+//    result[bodyId] = resultVec;
+    //      getBodyManager().registerBody(id, mappedSet);
+
+    reader.readMeshArchiveEnd(arc);
+
+    emit meshArchiveLoadingEnded();
+  } else {
+    QString title = "Mesh Loading Failed";
+    uint64_t idUnencoded = ZFlyEmBodyManager::decode(bodyId);
+    QString text = "DVID mesh archive does not contain ID " +
+        QString::number(idUnencoded) + " (encoded as " + QString::number(bodyId) + ")";
+    ZWidgetMessage msg(title, text, neutube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG);
+    emit messageGenerated(msg);
+    emit meshArchiveLoadingEnded();
   }
 
-  int t = m_objectTime.elapsed();
+  return resultVec;
+}
 
-  if (encodesTar(id)) {
-    m_tarIdToMeshIds[id].clear();
+std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
+    uint64_t bodyId, int t)
+{
+  return makeTarMeshModels(m_workDvidReader, bodyId, t);
+}
+
+std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
+    ZFlyEmBodyConfig &config)
+{
+  std::vector<ZMesh*> result;
+
+  int zoom = config.getDsLevel();
+
+  if (!config.isHybrid() && config.getBodyId() > 0) {
+    result = getCachedMeshes(config.getBodyId(), config.getDsLevel());
+  }
+
+  if (result.empty()) {
+    int t = m_objectTime.elapsed();
+    if (config.isTar()) {
+      result = makeTarMeshModels(config.getBodyId(), t);
+    } else {
+      ZMesh *mesh = NULL;
+
+      if (!config.isHybrid()) {
+        ZStackObject *obj = takeObjectFromBuffer(
+              ZStackObject::TYPE_MESH,
+              ZStackObjectSourceFactory::MakeFlyEmBodySource(
+                config.getBodyId(), 0, flyem::BODY_MESH));
+        mesh = dynamic_cast<ZMesh*>(obj);
+      }
+      if (mesh == NULL) {
+        mesh = readMesh(config);
+        if (mesh != NULL) {
+          if (IsOverSize(mesh) && zoom <= 2) {
+            zoom = 0;
+          }       
+        }
+      } else {
+        zoom = 0;
+      }
+      if (mesh != NULL) {
+        uint64_t parentId = config.getBodyId();
+        if (config.getLabelType() != flyem::LABEL_SUPERVOXEL) {
+          parentId = decode(parentId);
+        }
+        finalizeMesh(mesh, parentId, zoom, t);
+        result.push_back(mesh);
+      }
+    }
+  }
+
+  return result;
+
+#if 0
+  if (ZFlyEmBodyManager::encodesTar(id)) {
+    std::vector<ZMesh*> resultVec = makeTarMeshModels(id, t);
+    result[id] = resultVec;
+
+#if 0
+//    getBodyManager().registerBody(id, QSet<uint64_t>());
+//    m_tarIdToMeshIds[id].clear();
 
     emit meshArchiveLoadingStarted();
 
@@ -2556,32 +3182,40 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(
       };
 
       m_workDvidReader.readMeshArchiveAsync(arc, resultVec, progress);
+//      QSet<uint64_t> mappedSet;
       for (ZMesh *mesh : resultVec) {
         finalizeMesh(mesh, 0, t);
-        result[mesh->getLabel()] = mesh;
-        m_tarIdToMeshIds[id].insert(mesh->getLabel());
+//        result[mesh->getLabel()] = mesh;
+//        mappedSet.insert(mesh->getLabel());
       }
+      result[id] = resultVec;
+//      getBodyManager().registerBody(id, mappedSet);
 
       m_workDvidReader.readMeshArchiveEnd(arc);
 
       emit meshArchiveLoadingEnded();
+
     } else {
       QString title = "Mesh Loading Failed";
-      uint64_t idUnencoded = decode(id);
+      uint64_t idUnencoded = ZFlyEmBodyManager::decode(id);
       QString text = "DVID mesh archive does not contain ID " +
           QString::number(idUnencoded) + " (encoded as " + QString::number(id) + ")";
       ZWidgetMessage msg(title, text, neutube::MSG_ERROR, ZWidgetMessage::TARGET_DIALOG);
       emit messageGenerated(msg);
       emit meshArchiveLoadingEnded();
     }
-
+#endif
   } else {
-    ZStackObject *obj = takeObjectFromBuffer(
-          ZStackObject::TYPE_MESH,
-          ZStackObjectSourceFactory::MakeFlyEmBodySource(id, 0, flyem::BODY_MESH));
-    ZMesh *mesh = dynamic_cast<ZMesh*>(obj);
+    ZMesh *mesh = NULL;
+
+    if (!config.isHybrid()) {
+      ZStackObject *obj = takeObjectFromBuffer(
+            ZStackObject::TYPE_MESH,
+            ZStackObjectSourceFactory::MakeFlyEmBodySource(id, 0, flyem::BODY_MESH));
+      mesh = dynamic_cast<ZMesh*>(obj);
+    }
     if (mesh == NULL) {
-      mesh = readMesh(id, zoom);
+      mesh = readMesh(config);
       if (mesh != NULL) {
         if (IsOverSize(mesh) && zoom <= 2) {
           zoom = 0;
@@ -2593,6 +3227,7 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(
     finalizeMesh(mesh, zoom, t);
     result[id] = mesh;
   }
+#endif
 }
 
 const ZDvidInfo& ZFlyEmBody3dDoc::getDvidInfo() const
@@ -2623,6 +3258,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
 
   if (m_workDvidReader.isReady()) {
     m_dvidInfo = m_workDvidReader.readLabelInfo();
+    setMaxDsLevel(misc::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
     ZDvidGraySlice *slice = getArbGraySlice();
     if (slice != NULL) {
       slice->setDvidTarget(m_workDvidReader.getDvidTarget());
@@ -2636,6 +3272,32 @@ void ZFlyEmBody3dDoc::processBodySelectionChange()
       getDataDocument()->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
 
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
+}
+
+QColor ZFlyEmBody3dDoc::getBodyColor(uint64_t bodyId)
+{
+  QColor color(Qt::white);
+
+#ifndef _NEU3_
+  if (getDataDocument() != NULL) {
+    ZDvidLabelSlice *labelSlice =
+        getDataDocument()->getDvidLabelSlice(neutube::Z_AXIS);
+
+    if (labelSlice != NULL) {
+
+      if (getBodyType() == flyem::BODY_SPHERE) { //using the original color
+        color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_MAPPED);
+      } else {
+        color = labelSlice->getLabelColor(bodyId, neutube::BODY_LABEL_ORIGINAL);
+      }
+      color.setAlpha(255);
+    }
+  }
+#else
+  Q_UNUSED(bodyId);
+#endif
+
+  return color;
 }
 
 #if 0
@@ -2767,7 +3429,7 @@ void ZFlyEmBody3dDoc::runLocalSplit()
   uint64_t bodyId = protectBodyForSplit();
 
   if (bodyId > 0) {
-    activateSplit(bodyId, getBodyLabelType());
+    activateSplit(bodyId, getBodyLabelType(bodyId));
     if (isSplitActivated()) {
       if (!m_futureMap.isAlive(THREAD_SPLIT_KEY)) {
         removeObject(ZStackObjectRole::ROLE_SEGMENTATION, true);
@@ -2837,12 +3499,17 @@ void ZFlyEmBody3dDoc::commitSplitResult()
           newBodyId = idPair.second;
 
           notifyWindowMessageUpdated(QString("Updating mesh ..."));
-          ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
-          m_mainDvidWriter.writeMesh(*mesh, newBodyId, 0);
-          delete mesh;
-          emit addingBody(newBodyId);
+//          ZMesh* mesh = ZMeshFactory::MakeMesh(*seg);
+//          m_mainDvidWriter.writeMesh(*mesh, newBodyId, 0);
+//          delete mesh;
+
+//          emit addingBody(newBodyId);
         }
 //        addEvent(BodyEvent::ACTION_ADD, newBodyId);
+
+        if (remainderId > 0) {
+          remainderId = ZFlyEmBodyManager::encodeSupervoxel(remainderId);
+        }
 
         summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
             arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
@@ -2852,18 +3519,23 @@ void ZFlyEmBody3dDoc::commitSplitResult()
     }
   }
 
-  m_mainDvidWriter.deleteMesh(oldId);
-  ZMesh* mesh = ZMeshFactory::MakeMesh(*remainObj);
-  m_mainDvidWriter.writeMesh(*mesh, remainderId, 0);
+  if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
+    oldId = ZFlyEmBodyManager::encodeSupervoxel(oldId);
+  }
+
+//  m_mainDvidWriter.deleteMesh(oldId);
+//  ZMesh* mesh = ZMeshFactory::MakeMesh(*remainObj);
+//  m_mainDvidWriter.writeMesh(*mesh, remainderId, 0);
 //  delete mesh;
 
   if (remainderId == oldId) { //Update the body if the main ID remain unchanged
+    ZMesh* mesh = ZMeshFactory::MakeMesh(*remainObj);
+    m_mainDvidWriter.writeMesh(*mesh, remainderId, 0);
     mesh->setLabel(oldId);
     mesh->setSource(
           ZStackObjectSourceFactory::MakeFlyEmBodySource(
             oldId, 0, flyem::BODY_MESH));
-    mesh->setObjectClass(
-          ZStackObjectSourceFactory::MakeFlyEmBodySource(oldId));
+    SetObjectClass(mesh, oldId);
     mesh->setColor(Qt::white);
     mesh->pushObjectColor();
 
@@ -2871,13 +3543,14 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   } else {
     emit removingBody(oldId);
     emit addingBody(remainderId);
-    delete mesh;
+//    delete mesh;
   }
 //  addEvent(BodyEvent::ACTION_REMOVE, oldId);
   ZStackDocAccessor::RemoveObject(
         this, ZStackObjectRole::ROLE_SEGMENTATION, true);
+  ZStackDocAccessor::RemoveSideSplitSeed(this);
 
-  m_splitter->setBodyId(remainderId);
+  m_splitter->setBodyId(decode(remainderId));
 
   ZDvidSparseStack *sparseStack = getDataDocument()->getDvidSparseStack();
   if (sparseStack != NULL) {
@@ -2890,6 +3563,37 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 void ZFlyEmBody3dDoc::waitForSplitToBeDone()
 {
   m_futureMap.waitForFinished(THREAD_SPLIT_KEY);
+}
+
+void ZFlyEmBody3dDoc::startBodyAnnotation()
+{
+  ZFlyEmBodyAnnotationDialog *dlg =
+      new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
+  startBodyAnnotation(dlg);
+}
+
+void ZFlyEmBody3dDoc::startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg)
+{
+  uint64_t bodyId = getSelectedSingleNormalBodyId();
+  if (bodyId > 0 && getDataDocument() != NULL) {
+    dlg->setBodyId(bodyId);
+    const ZDvidReader &reader = getMainDvidReader();
+    if (reader.isReady()) {
+      ZFlyEmBodyAnnotation annotation = reader.readBodyAnnotation(bodyId);
+
+      if (!annotation.isEmpty()) {
+        dlg->loadBodyAnnotation(annotation);
+      }
+
+      if (dlg->exec() && dlg->getBodyId() == bodyId) {
+        getDataDocument()->annotateBody(bodyId, dlg->getBodyAnnotation());
+      }
+      getDataDocument()->checkInBodyWithMessage(bodyId, flyem::BODY_SPLIT_NONE);
+    } else {
+      emit messageGenerated(
+            getDataDocument()->getAnnotationFailureMessage(bodyId));
+    }
+  }
 }
 
 /*
@@ -2908,16 +3612,16 @@ void ZFlyEmBody3dDoc::updateFrame()
 
 void ZFlyEmBody3dDoc::printEventQueue() const
 {
-  for (QQueue<BodyEvent>::const_iterator iter = m_eventQueue.begin();
+  for (QQueue<ZFlyEmBodyEvent>::const_iterator iter = m_eventQueue.begin();
        iter != m_eventQueue.end(); ++iter) {
-    const BodyEvent &event  = *iter;
+    const ZFlyEmBodyEvent &event  = *iter;
     event.print();
   }
 }
 
 void ZFlyEmBody3dDoc::forceBodyUpdate()
 {
-  QSet<uint64_t> bodySet = m_bodySet;
+  QSet<uint64_t> bodySet = getNormalBodySet();
   dumpAllBody(false);
   addBodyChangeEvent(bodySet.begin(), bodySet.end());
 }
@@ -3123,10 +3827,35 @@ void ZFlyEmBody3dDoc::dumpGarbageUnsync(ZStackObject *obj, bool recycable)
   m_garbageMap[obj].setTimeStamp(m_objectTime.elapsed());
   m_garbageMap[obj].setRecycable(recycable);
 
+  //Update data structures used by isTarMode().
+//  for (auto& it : m_tarIdToMeshIds) {
+//    auto& meshIds = it.second;
+//    meshIds.erase(obj->getLabel());
+//    if (meshIds.empty()) {
+//      m_tarIdToMeshIds.erase(it.first);
+//      break;
+//    }
+//  }
+
+  getBodyManager().eraseSupervoxel(obj->getLabel());
+
   ZOUT(LTRACE(), 5) << obj << "dumped" << obj->getSource();
 
   m_garbageJustDumped = true;
 }
+
+void ZFlyEmBody3dDoc::diagnose() const
+{
+  ZStackDoc::diagnose();
+
+  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(this);
+  LDEBUG() << "#General meshes" << meshList.size();
+
+  if (getDataDocument() != NULL) {
+    getDataDocument()->diagnose();
+  }
+}
+
 
 void ZFlyEmBody3dDoc::dumpGarbage(ZStackObject *obj, bool recycable)
 {
@@ -3169,7 +3898,8 @@ void ZFlyEmBody3dDoc::dumpAllBody(bool recycable)
     removeObject(tree, false);
     dumpGarbage(tree, recycable);
   }
-  m_bodySet.clear();
+  getBodyManager().clear();
+//  m_bodySet.clear();
   endObjectModifiedMode();
   processObjectModified();
 }

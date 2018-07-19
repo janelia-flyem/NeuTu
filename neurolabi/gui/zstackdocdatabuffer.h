@@ -63,6 +63,10 @@ public:
   QList<ZStackDocObjectUpdate *> take();
   void deliver();
 
+  int getActionCount(ZStackDocObjectUpdate::EAction action) const;
+
+  void print() const;
+
 signals:
   void delivering();
 

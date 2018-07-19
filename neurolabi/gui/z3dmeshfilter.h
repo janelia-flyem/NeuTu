@@ -66,6 +66,10 @@ public:
   void setColorIndexing(const std::vector<glm::vec4> &indexedColors,
                         const std::map<uint64_t, std::size_t> &meshIdToColorIndex);
 
+  // The function (which can be a lambda) returns the color index to used for the mesh ID.
+  void setColorIndexing(const std::vector<glm::vec4> &indexedColors,
+                        std::function<std::size_t(uint64_t)> meshIdToColorIndexFunc);
+
   void emitDumpParaGarbage();
 
 public slots:
@@ -150,6 +154,7 @@ private:
 
   std::vector<glm::vec4> m_indexedColors;
   std::map<uint64_t, std::size_t> m_meshIDToColorIndex;
+  std::function<std::size_t(uint64_t)> m_meshIDToColorIndexFunc = nullptr;
 };
 
 #endif // Z3DMESHFILTER_H
