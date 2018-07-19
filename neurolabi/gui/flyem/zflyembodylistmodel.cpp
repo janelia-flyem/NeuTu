@@ -60,7 +60,7 @@ QVariant ZFlyEmBodyListModel::data(const QModelIndex &index, int role) const
                ZFlyEmBodyManager::encodedLevel(bodyId) == 0) {
       return QString("%1 (c)").arg(decodedBodyId);
     } else {
-      return decodedBodyId;
+      return QString("%1").arg(decodedBodyId);
     }
   }
     break;
