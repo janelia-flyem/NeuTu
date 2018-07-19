@@ -72,6 +72,8 @@ SynapsePredictionProtocol::SynapsePredictionProtocol(QWidget *parent, std::strin
     connect(ui->sitesTableView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(onDoubleClickSitesTable(QModelIndex)));
 
+    connect(ui->gridCheckBox, SIGNAL(clicked(bool)), this, SLOT(onGridToggled()));
+
     // misc UI setup
     setupColorList();
 
@@ -107,6 +109,8 @@ const QString SynapsePredictionProtocol::MODE_PSD = "PSDs only";
 bool SynapsePredictionProtocol::initialize() {
 
     if (m_variation == VARIATION_REGION) {
+        ui->gridCheckBox->show();
+
         SynapsePredictionInputDialog inputDialog;
 
         inputDialog.setRoI("(RoI is ignored for now)");
@@ -125,6 +129,9 @@ bool SynapsePredictionProtocol::initialize() {
 //        m_protocolRange = volume;
 
     } else if (m_variation == VARIATION_BODY) {
+
+        // grid isn't used in this variation
+        ui->gridCheckBox->hide();
 
         SynapsePredictionBodyInputDialog inputDialog;
 
@@ -401,6 +408,17 @@ void SynapsePredictionProtocol::onModeChanged(QString item) {
     saveState();
 }
 
+void SynapsePredictionProtocol::onGridToggled() {
+    // note that we use emit rangeChanged(), which triggers the visual
+    //  grid update, and not setRange(), which also changes our local data;
+    //  when we hide the grid, we're not actually changing the protocol range
+    if (ui->gridCheckBox->isChecked()) {
+        emit rangeChanged(m_protocolRange.getFirstCorner(), m_protocolRange.getLastCorner());
+    } else {
+        emit rangeChanged(ZIntPoint(0, 0, 0), ZIntPoint(-1, -1, -1));
+    }
+}
+
 /*
  * is the synapse at the input point finished being reviewed under the current mode?
  */
@@ -527,7 +545,8 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
 
     // variation specific loading:
     if (m_variation == VARIATION_REGION) {
-      setRange(ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
+        ui->gridCheckBox->show();
+        setRange(ZJsonArray(data.value(KEY_PROTOCOL_RANGE.c_str())));
         if (!m_protocolRange.isEmpty()) {
             loadInitialSynapseList();
         } else {
@@ -535,6 +554,7 @@ void SynapsePredictionProtocol::loadDataRequested(ZJsonObject data) {
             return;
         }
     } else if (m_variation == VARIATION_BODY) {
+        ui->gridCheckBox->hide();
         m_subvariation = ZJsonParser::stringValue(data[KEY_SUBVARIATION.c_str()]);
         m_bodyID = ZJsonParser::integerValue(data[KEY_BODYID.c_str()]);
         loadInitialSynapseList();
@@ -658,7 +678,6 @@ void SynapsePredictionProtocol::processSynapseVerification(
 {
   processSynapseVerification(pt.getX(), pt.getY(), pt.getZ(), verified);
 }
-
 
 void SynapsePredictionProtocol::moveSynapse(
     const ZIntPoint &src, const ZIntPoint &dst)

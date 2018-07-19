@@ -29,6 +29,7 @@
     </property>
     <addaction name="actionSettings"/>
     <addaction name="actionNeuTu_Proofread"/>
+    <addaction name="actionDiagnose"/>
    </widget>
    <addaction name="menuAdvanced"/>
   </widget>
@@ -41,6 +42,11 @@
   <action name="actionNeuTu_Proofread">
    <property name="text">
     <string>NeuTu</string>
+   </property>
+  </action>
+  <action name="actionDiagnose">
+   <property name="text">
+    <string>Diagnose</string>
    </property>
   </action>
  </widget>

@@ -39,6 +39,7 @@ class ZFlyEmProofDoc : public ZStackDoc
   Q_OBJECT
 public:
   explicit ZFlyEmProofDoc(QObject *parent = 0);
+  ~ZFlyEmProofDoc();
 
   static ZFlyEmProofDoc* Make();
 
@@ -111,6 +112,7 @@ public:
   uint64_t getBodyId(const ZIntPoint &pt);
 
   uint64_t getLabelId(int x, int y, int z) override;
+  uint64_t getSupervoxelId(int x, int y, int z) override;
 
   bool hasBodySelected() const;
 
@@ -305,6 +307,7 @@ public: //Todo list functions
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutube::EToDoAction action);
   void setTodoItemToNormal();
+  void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
 
@@ -342,6 +345,10 @@ public: //Bookmark functions
 
 public:
   bool isDataValid(const std::string &data) const;
+
+  static void enableBodySelectionMessage(bool enable = true);
+  static bool bodySelectionMessageEnabled();
+
   void notifyBodySelectionChanged();
 
   /*!
@@ -420,6 +427,10 @@ public:
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
   void prepareDvidGraySlice(const ZStackViewParam &viewParam,
       int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+
+  ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
+
+  void diagnose() const override;
 
 public:
   virtual void executeAddTodoCommand(

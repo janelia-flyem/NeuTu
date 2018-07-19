@@ -408,7 +408,7 @@ void Z3DMeshFilter::registerPickingObjects()
       m_meshPickingColors.clear();
       for (ZMesh* mesh : m_registeredMeshList) {
         glm::col4 pickingColor = pickingManager().colorOfObject(mesh);
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
         std::cout << "Mesh picking color: " << pickingColor << std::endl;
 #endif
         glm::vec4 fPickingColor(
@@ -489,12 +489,18 @@ void Z3DMeshFilter::prepareColor()
     glm::vec4 defaultColor =
         m_indexedColors.size() > 1 ? m_indexedColors[0] : glm::vec4(1, 1, 1, 1);
     for (size_t i = 0; i < m_meshList.size(); ++i) {
-      auto it = m_meshIDToColorIndex.find(m_meshList[i]->getLabel());
       glm::vec4 color = defaultColor;
-      if (it != m_meshIDToColorIndex.end()) {
-        if (m_indexedColors.size() > it->second) {
-          color = m_indexedColors[it->second];
+      size_t index = m_indexedColors.size();
+      if (m_meshIDToColorIndexFunc != nullptr) {
+        index = m_meshIDToColorIndexFunc(m_meshList[i]->getLabel());
+      } else {
+        auto it = m_meshIDToColorIndex.find(m_meshList[i]->getLabel());
+        if (it != m_meshIDToColorIndex.end()) {
+          index = it->second;
         }
+      }
+      if (m_indexedColors.size() > index) {
+        color = m_indexedColors[index];
       }
       m_meshColors.push_back(color);
     }
@@ -547,6 +553,14 @@ void Z3DMeshFilter::setColorIndexing(const std::vector<glm::vec4> &indexedColors
 {
   m_indexedColors = indexedColors;
   m_meshIDToColorIndex = meshIdToColorIndex;
+  updateMeshVisibleState();
+}
+
+void Z3DMeshFilter::setColorIndexing(const std::vector<glm::vec4> &indexedColors,
+                                     std::function<std::size_t(uint64_t)> meshIdToColorIndexFunc)
+{
+  m_indexedColors = indexedColors;
+  m_meshIDToColorIndexFunc = meshIdToColorIndexFunc;
   updateMeshVisibleState();
 }
 

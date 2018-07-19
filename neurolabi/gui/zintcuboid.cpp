@@ -111,6 +111,22 @@ void ZIntCuboid::scale(const ZIntPoint &s)
   m_lastCorner = m_firstCorner + dim * s - 1;
 }
 
+void ZIntCuboid::scaleDown(const ZIntPoint &s)
+{
+  if (s.definitePositive()) {
+    m_firstCorner /= s;
+    m_lastCorner /= s;
+  }
+}
+
+void ZIntCuboid::scaleDown(int s)
+{
+  if (s > 0) {
+    m_firstCorner /= s;
+    m_lastCorner /= s;
+  }
+}
+
 ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
   if (!cuboid.isEmpty()) {

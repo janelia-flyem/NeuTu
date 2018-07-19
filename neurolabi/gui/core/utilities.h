@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <iostream>
 
+#define NT_STR(s) #s
+#define NT_XSTR(s) NT_STR(s)
+
 namespace neutube
 {
 template<typename T>
