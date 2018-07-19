@@ -938,9 +938,9 @@ bool Neu3Window::zoomToLoadedBodyEnabled()
   return zoomToLoadedBody;
 }
 
-void Neu3Window::zoomToBodyMesh()
+void Neu3Window::zoomToBodyMesh(int numMeshLoaded)
 {
-  if (!zoomToLoadedBodyEnabled()) {
+  if (!zoomToLoadedBodyEnabled() || numMeshLoaded != 1) {
     return;
   }
 
