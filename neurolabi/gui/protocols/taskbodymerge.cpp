@@ -683,12 +683,23 @@ void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
           glm::vec3 p1ToP2 = glm::normalize(p2 - p1);
 
           // TODO: Choose an up vector that gives the best view, in some sense.
+
           if (justLoaded) {
             m_initialUp = window->getMeshFilter()->camera().upVector();
           }
 
           up = m_initialUp;
-          glm::vec3 toEye = glm::normalize(glm::cross(p1ToP2, up));
+          glm::vec3 toEye = glm::cross(p1ToP2, up);
+          float toEyeLength = glm::length(toEye);
+          if (toEyeLength > 1e-5) {
+            toEye /= toEyeLength;
+          } else {
+
+            // The vector between the two supervoxel points is parellel to the up vector.
+            // So the camera is already giving a good view of the supervoxel points.
+
+            toEye = glm::normalize(filter->camera().eye() - filter->camera().center());
+          }
           eye = filter->camera().center() + toEye;
           break;
         }
@@ -861,6 +872,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
   float closestDist = std::numeric_limits<float>::max();
   size_t iClosestMesh;
   size_t iClosestVertex;
+  bool found = false;
 
   // The algorithm iterqtively moves the eye point, and at each iteration it must
   // make sure that no vertex is in front of the near clipping plane.  Precompute
@@ -875,8 +887,13 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
         closestDist = dist;
         iClosestMesh = i;
         iClosestVertex = j;
+        found = true;
       }
     }
+  }
+
+  if (!found) {
+    return;
   }
 
   // Iteratively adjust the eye point.
