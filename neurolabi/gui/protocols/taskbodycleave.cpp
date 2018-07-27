@@ -265,8 +265,12 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   // any such meshes should be filtered out to avoid problems.
 
   auto clean = [](QSet<uint64_t>& s) {
-    for (auto it = s.begin(); it != s.end(); it++) {
-      if (ZFlyEmBody3dDoc::encodedLevel(*it) > 0) s.erase(it);
+    QList<uint64_t> r;
+    foreach (uint64_t id, s) {
+      if (ZFlyEmBody3dDoc::encodedLevel(id) > 0) r.append(id);
+    }
+    foreach (uint64_t id, r) {
+      s.erase(s.find(id));
     }
   };
   clean(m_visibleBodies);
