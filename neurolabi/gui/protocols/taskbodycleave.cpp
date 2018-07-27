@@ -257,6 +257,21 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
   applyOverallSettings(bodyDoc);
 
   loadJson(json);
+
+  // Backwards compatibility: If this task was started with an earlier version of
+  // the cleaving tool, the JSON may have saved state that includes a "level 1" mesh,
+  // for the overall body (as opposed go the "level 0" meshes for the super voxels).
+  // This tool no longer has the "history" slider that could create this mesh, and
+  // any such meshes should be filtered out to avoid problems.
+
+  auto clean = [](QSet<uint64_t>& s) {
+    for (auto it = s.begin(); it != s.end(); it++) {
+      if (ZFlyEmBody3dDoc::encodedLevel(*it) > 0) s.erase(it);
+    }
+  };
+  clean(m_visibleBodies);
+  clean(m_selectedBodies);
+
   buildTaskWidget();
 
   m_networkManager = new QNetworkAccessManager(m_widget);
