@@ -273,8 +273,8 @@ unix {
 }
 
 win32 {
-    DEFINES += _NEUTUBE_WINDOWS_
-    RC_FILE = images/app.rc
+  DEFINES += _NEUTUBE_WINDOWS_
+  RC_FILE = images/app.rc
 }
 
 include(ext/QsLog/QsLog.pri)
@@ -890,7 +890,9 @@ HEADERS += mainwindow.h \
     flyem/zflyembodyevent.h \
     flyem/zflyembodyconfig.h \
     flyem/zflyembodymanager.h \
-    z3dwindowcontroller.h
+    z3dwindowcontroller.h \
+    z3d2dslicerenderer.h \
+    z3d2dslicefilter.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1563,7 +1565,9 @@ SOURCES += main.cpp \
     flyem/zflyembodyevent.cpp \
     flyem/zflyembodyconfig.cpp \
     flyem/zflyembodymanager.cpp \
-    z3dwindowcontroller.cpp
+    z3dwindowcontroller.cpp \
+    z3d2dslicerenderer.cpp \
+    z3d2dslicefilter.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \
