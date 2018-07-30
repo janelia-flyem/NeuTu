@@ -49,6 +49,27 @@ const int ZFlyEmBody3dDoc::OBJECT_ACTIVE_LIFE = 15000;
 //const int ZFlyEmBody3dDoc::MAX_RES_LEVEL = 5;
 const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
 
+/* Implementation details
+ *
+ * ZFlyEmBody3dDoc uses an event queue to coordiante body updates asynchronously.
+ * The processEvent() function will be triggered every 200ms to process events
+ * in the current event queue on background. The processing function (processEventFunc)
+ * first goes through all the events available and generate a new event for each
+ * body by merging multiple events of the same body. The priority of an event has
+ * not been used yet.
+ *
+ * To allow fast toggling, a body recycled into the garbage object (m_garbageMap)
+ * can be recovered later if it does not get obsolete. The garbage object was
+ * also initially designed for improving cocurrency safety, but no longer
+ * serving that purpose because of the introduction of thread-safe object update
+ * in ZStackDoc.
+ *
+ * ZFlyEmBody3dDoc also supports splitting with the help of ZFlyEmBodySplitter.
+ * Splitting is also run on background, but in a different thread than the event
+ * processing thread. ZThreadFutureMap is used to manage the splitting thread,
+ * which uses THREAD_SPLIT_KEY as its key.
+ */
+
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
   ZStackDoc(parent)
 {
@@ -2615,9 +2636,9 @@ QSet<uint64_t> ZFlyEmBody3dDoc::getInvolvedNormalBodySet() const
 {
   QSet<uint64_t> bodySet = getBodyManager().getNormalBodySet();
 
-  QSet<uint64_t> orphanSet = getBodyManager().getOrphanSupervoxelSet();
+  QSet<uint64_t> orphanSet = getBodyManager().getOrphanSupervoxelSet(false);
   for (uint64_t spId : orphanSet) {
-    uint64_t bodyId = getMainDvidReader().readParentBodyId(decode(spId));
+    uint64_t bodyId = getMainDvidReader().readParentBodyId(spId);
     if (bodyId > 0) {
       bodySet.insert(bodyId);
     }

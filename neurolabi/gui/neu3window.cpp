@@ -55,6 +55,13 @@
 #include "flyem/zflyemarbdoc.h"
 #include "dvid/zdvidlabelslice.h"
 
+/* Implementation details:
+ *
+ * Neu3Window is a main window class to provide UI for neu3. It consists of
+ * several control panels and a 3D window instantiated from the Z3DWindow class.
+ *
+ *
+ */
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::Neu3Window)
