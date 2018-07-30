@@ -2,8 +2,10 @@
 
 #include "dvid/zdvidtarget.h"
 #include "flyem/zflyembody3ddoc.h"
+#include "flyem/zflyembodyconfig.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyemproofmvc.h"
+#include "misc/miscutility.h"
 #include "neutubeconfig.h"
 #include "neu3window.h"
 #include "z3dcamera.h"
@@ -12,7 +14,9 @@
 #include "z3dview.h"
 #include "z3dwindow.h"
 #include "zdvidutil.h"
+#include "zintcuboid.h"
 #include "zstackdocproxy.h"
+#include "zintpoint.h"
 
 #include <limits>
 #include <random>
@@ -90,6 +94,11 @@ namespace {
 
   size_t initialAngleMethod()
   {
+#if 1
+    // FOR DEBUGGING: Force the prefered initial angle method.
+    return 2;
+#endif
+
     if (const char* method = std::getenv("NEU3_INITIAL_ANGLE_METHOD")) {
       try {
         size_t i = std::stoul(method);
@@ -337,7 +346,7 @@ QWidget *TaskBodyMerge::getTaskWidget()
 
   setBodiesFromSuperVoxels();
 
-  // Now set the visible vodies.  For fastest task loading, start with the original bodies
+  // Now set the visible bodies.  For fastest task loading, start with the original bodies
   // at low resolution.
 
   if (m_visibleBodies.isEmpty()) {
@@ -593,6 +602,12 @@ void TaskBodyMerge::onLoaded()
 
   applyColorMode(true);
   zoomToMergePosition(true);
+
+  if (const char* showHybrid = std::getenv("NEU3_SHOW_HYBRID_MESHES")) {
+    if (std::string(showHybrid) == "yes") {
+      showHybridMeshes();
+    }
+  }
 }
 
 void TaskBodyMerge::onCompleted()
@@ -688,7 +703,17 @@ void TaskBodyMerge::initAngleForMergePosition(bool justLoaded)
           }
 
           up = m_initialUp;
-          glm::vec3 toEye = glm::normalize(glm::cross(p1ToP2, up));
+          glm::vec3 toEye = glm::cross(p1ToP2, up);
+          float toEyeLength = glm::length(toEye);
+          if (toEyeLength > 1e-5) {
+            toEye /= toEyeLength;
+          } else {
+
+            // The vector between the two supervoxel points is parellel to the up vector.
+            // So the camera is already giving a good view of the supervoxel points.
+
+            toEye = glm::normalize(filter->camera().eye() - filter->camera().center());
+          }
           eye = filter->camera().center() + toEye;
           break;
         }
@@ -861,6 +886,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
   float closestDist = std::numeric_limits<float>::max();
   size_t iClosestMesh;
   size_t iClosestVertex;
+  bool found = false;
 
   // The algorithm iterqtively moves the eye point, and at each iteration it must
   // make sure that no vertex is in front of the near clipping plane.  Precompute
@@ -875,8 +901,13 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
         closestDist = dist;
         iClosestMesh = i;
         iClosestVertex = j;
+        found = true;
       }
     }
+  }
+
+  if (!found) {
+    return;
   }
 
   // Iteratively adjust the eye point.
@@ -1042,6 +1073,10 @@ void TaskBodyMerge::configureShowHiRes()
   m_showHiResAction->setEnabled(false);
   m_hiResCount = 0;
 
+  // TODO: Until this issue is fixed, always disable high resolution.
+  // https://github.com/janelia-flyem/NeuTu/issues/185
+  return;
+
   if (!s_networkManager) {
     s_networkManager = new QNetworkAccessManager(m_bodyDoc->getParent3DWindow());
   }
@@ -1119,6 +1154,61 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
       closer->trigger();
     }
   }
+}
+
+void TaskBodyMerge::showHybridMeshes()
+{
+  // The high-res region of the hybrid meshes will go all the way through both bodies in the dimension
+  // closest to the viewing direction.  So first compute overall boudning box of the two bodies.
+
+  ZBBox<glm::dvec3> bbox;
+  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+  for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+    ZMesh *mesh = *it;
+    uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
+    if ((tarBodyId == m_bodyId1) || (tarBodyId == m_bodyId2)) {
+      bbox.expand(mesh->boundBox());
+    }
+  }
+
+  // In the other two dimensions, the high-res region will have a fixed, smallish size.
+
+  int halfWidth = 256 / 2;
+
+  glm::vec3 view(0, 0, -1);
+  if (Z3DMeshFilter *filter = getMeshFilter(m_bodyDoc)) {
+    view = filter->camera().center() - filter->camera().eye();
+  }
+
+  // Compute the two corners of the high-res region.
+
+  ZIntPoint p1, p2;
+  glm::vec3 viewAbs(std::abs(view.x), std::abs(view.y), std::abs(view.z));
+  size_t iMax = (viewAbs[0] > viewAbs[1]) ?
+        (viewAbs[0] > viewAbs[2] ? 0 : 2) :
+    (viewAbs[1] > viewAbs[2] ? 1 : 2);
+  ZPoint p = mergePosition();
+  int s = misc::GetZoomScale(m_bodyDoc->getMaxDsLevel());
+  for (size_t i = 0; i < 3; i++) {
+    if (i == iMax) {
+      p1[i] = bbox.minCorner()[i];
+      p2[i] = bbox.maxCorner()[i];
+    } else {
+      p1[i] = p[i] - halfWidth;
+      p2[i] = p[i] + halfWidth;
+    }
+
+    // Snap the region to low-res voxel boundaries.
+
+    p1[i] -= p1[i] % s;
+    p2[i] += 64 - p2[i] % s;
+  }
+
+  // Trigger asynchronous generation of hybrid meshes for the region.
+
+  ZIntCuboid range(p1, p2);
+  m_bodyDoc->showMoreDetail(m_bodyId1, range);
+  m_bodyDoc->showMoreDetail(m_bodyId2, range);
 }
 
 void TaskBodyMerge::writeResult()

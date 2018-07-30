@@ -81,6 +81,7 @@ private:
   void zoomToMeshes(bool onlySmaller);
   void configureShowHiRes();
   void showBirdsEyeView(bool show);
+  void showHybridMeshes();
   void writeResult();
   void writeResult(const QString &result);
   QString readResult();
