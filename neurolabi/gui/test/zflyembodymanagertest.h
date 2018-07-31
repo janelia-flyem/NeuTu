@@ -95,6 +95,23 @@ TEST(ZFlyEmBodyManager, Basic)
   bm.registerSupervoxel(1);
   ASSERT_EQ(ZFlyEmBodyManager::encodeSupervoxel(1), bm.getSingleBodyId());
   ASSERT_EQ(uint64_t(9900000000001), bm.getSingleBodyId());
+
+  bm.clear();
+  bm.registerBody(ZFlyEmBodyManager::encodeSupervoxel(1));
+
+  bodySet = bm.getOrphanSupervoxelSet(false);
+  ASSERT_EQ(1, bodySet.size());
+  ASSERT_EQ(uint64_t(1), *bodySet.begin());
+
+  bodySet = bm.getOrphanSupervoxelSet(true);
+  ASSERT_EQ(1, bodySet.size());
+  ASSERT_EQ(uint64_t(9900000000001), *bodySet.begin());
+
+  bm.deregisterBody(uint64_t(9900000000001));
+  ASSERT_TRUE(bm.isEmpty());
+
+  bm.registerBody(ZFlyEmBodyManager::encodeSupervoxel(1));
+  ASSERT_TRUE(bm.isSupervoxel(1));
 }
 
 TEST(ZFlyEmBodyManager, encode)

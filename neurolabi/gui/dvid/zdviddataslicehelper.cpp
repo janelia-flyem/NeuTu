@@ -444,10 +444,14 @@ void ZDvidDataSliceHelper::syncActualQuality()
 void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
 {
   if (getMaxZoom() == 0) {
-    setUpdatePolicy(flyem::UPDATE_DIRECT);
-  } else {
     if (axis == neutube::A_AXIS) {
       setUpdatePolicy(flyem::UPDATE_HIDDEN);
+    } else {
+      setUpdatePolicy(flyem::UPDATE_SMALL);
+    }
+  } else {
+    if (axis == neutube::A_AXIS) {
+      setUpdatePolicy(flyem::UPDATE_LOWRES);
     } else {
       setUpdatePolicy(flyem::UPDATE_LOWRES);
     }
