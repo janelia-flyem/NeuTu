@@ -35,6 +35,7 @@
 #include "zwindowfactory.h"
 #include "z3ddef.h"
 #include "z3dwindow.h"
+#include "zobject3dscan.h"
 
 FlyEmDataForm::FlyEmDataForm(QWidget *parent) :
   QWidget(parent),

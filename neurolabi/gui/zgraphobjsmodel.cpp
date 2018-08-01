@@ -2,10 +2,12 @@
 
 #include <QFileInfo>
 
+#include "neutubeconfig.h"
+#include "QsLog.h"
 #include "zstackdoc.h"
 #include "z3dgraph.h"
 #include "zobjsitem.h"
-#include "neutubeconfig.h"
+#include "core/utilities.h"
 
 ZGraphObjsModel::ZGraphObjsModel(ZStackDoc *doc, QObject *parent) :
   ZObjsModel(parent), m_doc(doc)
@@ -18,9 +20,9 @@ ZGraphObjsModel::~ZGraphObjsModel()
 
 }
 
-QModelIndex ZGraphObjsModel::getIndex(Z3DGraph *graph, int col) const
+QModelIndex ZGraphObjsModel::getIndex(const Z3DGraph *graph, int col) const
 {
-  std::map<Z3DGraph*, int>::const_iterator pun2rIt = m_graphToRow.find(graph);
+  auto pun2rIt = m_graphToRow.find(graph);
   if (pun2rIt != m_graphToRow.end()) {
     std::map<QString, ZObjsItem*>::const_iterator s2pIt =
         m_graphSourceToParent.find(graph->getSource().c_str());
@@ -65,19 +67,22 @@ const std::vector<Z3DGraph *> *ZGraphObjsModel::getGraphList(
   return NULL;
 }
 
-void ZGraphObjsModel::updateData(Z3DGraph *graph)
+void ZGraphObjsModel::updateData(const ZStackObject *obj)
 {
-  QModelIndex index = getIndex(graph);
-  if (!index.isValid())
-    return;
-  ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
-  QList<QVariant> &data = item->getItemData();
-  Z3DGraph *p = graph;
-  QList<QVariant>::iterator beginit = data.begin();
-  beginit++;
-  data.erase(beginit, data.end());
-  data << p->getSource().c_str();
-  emit dataChanged(index, getIndex(graph, item->parent()->columnCount()-1));
+  const Z3DGraph *graph = dynamic_cast<const Z3DGraph*>(obj);
+  if (graph != NULL) {
+    QModelIndex index = getIndex(graph);
+    if (!index.isValid())
+      return;
+    ZObjsItem *item = static_cast<ZObjsItem*>(index.internalPointer());
+    QList<QVariant> &data = item->getItemData();
+    const Z3DGraph *p = graph;
+    QList<QVariant>::iterator beginit = data.begin();
+    beginit++;
+    data.erase(beginit, data.end());
+    data << p->getSource().c_str();
+    emit dataChanged(index, getIndex(graph, item->parent()->columnCount()-1));
+  }
 }
 
 void ZGraphObjsModel::updateModelData()
@@ -107,7 +112,7 @@ void ZGraphObjsModel::setupModelData(ZObjsItem *parent)
   ZOUT(LTRACE(), 5) << "Setup graph model";
   QList<ZStackObject*> graphList =
       m_doc->getObjectList(ZStackObject::TYPE_3D_GRAPH);
-  int numDigit = numDigits(graphList.size()+1);
+  int numDigit = neutube::numDigits(graphList.size()+1);
   for (int i=0; i<graphList.size(); i++) {
     data.clear();
     Z3DGraph *p = dynamic_cast<Z3DGraph*>(graphList.at(i));
@@ -172,5 +177,11 @@ bool ZGraphObjsModel::needCheckbox(const QModelIndex &index) const
   return getGraph(index) != NULL;
 }
 
+void ZGraphObjsModel::processObjectModified(const ZStackObjectInfoSet &infoSet)
+{
+  if (infoSet.contains(ZStackObject::TYPE_3D_GRAPH)) {
+    updateModelData();
+  }
+}
 
 

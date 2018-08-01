@@ -7,11 +7,12 @@
 #include <string>
 
 #include "zsuperpixelmaparray.h"
-#include "zstack.hxx"
 #include "zintpairmap.h"
 #include "zintmap.h"
 #include "zgraph.h"
 #include "zsegmentationbundle.h"
+
+class ZStack;
 
 namespace flyem {
 class ZSegmentationAnalyzer

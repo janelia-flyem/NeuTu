@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QFrame>
 #include <QLayout>
+#include <QThread>
 
 #include "zsharedpointer.h"
 #include "neutube_def.h"
@@ -96,7 +97,7 @@ signals:
   void viewChanged();
 
 public slots:
-  void updateActiveViewData();
+//  void updateActiveViewData();
   void processViewChange(const ZStackViewParam &viewParam);
   void processViewChange();
 

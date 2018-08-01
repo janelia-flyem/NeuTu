@@ -17,15 +17,17 @@
 #include "flyem/zflyemmisc.h"
 #include "zdvidutil.h"
 #include "zdvidpatchdatafetcher.h"
+#include "zdviddataslicehelper.h"
 
 ZDvidTileEnsemble::ZDvidTileEnsemble()
 {
   setTarget(ZStackObject::TARGET_TILE_CANVAS);
   m_type = GetType();
   m_highContrast = false;
-  m_view = NULL;
+//  m_view = NULL;
   m_patch = NULL;
   m_dataFetcher = NULL;
+   m_helper = std::make_unique<ZDvidDataSliceHelper>(ZDvidData::ROLE_MULTISCALE_2D);
 //  m_patch = new ZImage(256, 256, QImage::Format_Indexed8);
 }
 
@@ -44,10 +46,22 @@ void ZDvidTileEnsemble::clear()
     }
   }
   m_tileGroup.clear();
+  getHelper()->clear();
 
   delete m_patch;
   m_patch = NULL;
 }
+
+const ZDvidReader& ZDvidTileEnsemble::getDvidReader() const
+{
+  return getHelper()->getDvidReader();
+}
+
+const ZDvidTarget& ZDvidTileEnsemble::getDvidTarget() const
+{
+  return getDvidReader().getDvidTarget();
+}
+
 
 void ZDvidTileEnsemble::setDataFetcher(ZDvidPatchDataFetcher *fetcher)
 {
@@ -91,6 +105,10 @@ void ZDvidTileEnsemble::updatePatch(
 
 void ZDvidTileEnsemble::updateContrast()
 {
+  if (m_highContrast == false) {
+    forceUpdate();
+  }
+
   for (std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> >::iterator
        iter = m_tileGroup.begin(); iter != m_tileGroup.end(); ++iter) {
     std::map<ZDvidTileInfo::TIndex, ZDvidTile*>& tileMap = *iter;
@@ -98,11 +116,12 @@ void ZDvidTileEnsemble::updateContrast()
          tileMap.begin(); tileIter != tileMap.end(); ++tileIter) {
       ZDvidTile *tile = tileIter->second;
       if (tile != NULL) {
-        if (m_highContrast) {
-          tile->addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
-        } else {
-          tile->removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
-        }
+        tile->enhanceContrast(m_highContrast, true);
+//        if (m_highContrast) {
+//          tile->addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+//        } else {
+//          tile->removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+//        }
       }
     }
   }
@@ -119,11 +138,11 @@ ZDvidTile* ZDvidTileEnsemble::getTile(
   std::map<ZDvidTileInfo::TIndex, ZDvidTile*> &tileMap = m_tileGroup[resLevel];
   if (tileMap.count(index) == 0) {
     ZDvidTile *tile = new ZDvidTile;
-    tile->setTarget(m_target);
-    tile->setDvidTarget(m_dvidTarget, m_tilingInfo);
+    tile->setTarget(getTarget());
+    tile->setDvidTarget(getDvidTarget(), m_tilingInfo);
     tile->setResolutionLevel(resLevel);
     tile->setTileIndex(index.first, index.second);
-    tile->attachView(m_view);
+//    tile->attachView(m_view);
     tileMap[index] = tile;
   }
 
@@ -164,14 +183,14 @@ void ZDvidTileEnsemble::updateTile(libdvid::Slice2D slice,
   task->setData(dataPtr->get_raw(), dataPtr->length());
   task->setHighContrast(m_highContrast);
   task->execute();
-  delete task;
+//  delete task;
 }
 #endif
 
 bool ZDvidTileEnsemble::update(
     const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z)
 {
-  if (!m_reader.good()) {
+  if (!getDvidReader().good()) {
     return false;
   }
 
@@ -238,8 +257,9 @@ bool ZDvidTileEnsemble::update(
 #else
 //    ZMultiTaskManager taskManager;
     if (!tile_locs_array.empty()) {
-      std::cout << "Reading tiles from " << m_reader.getDvidTarget().getSourceString(false)
-                << "..." << std::endl;
+      LDEBUG() << "Reading tiles from"
+               << getDvidTarget().getSourceString(false)
+               << "...";
       QElapsedTimer timer;
       timer.start();
 //      libdvid::DVIDNodeService service(getDvidTarget().getAddressWithPort(),
@@ -255,19 +275,19 @@ bool ZDvidTileEnsemble::update(
 //        if (tile_locs_array.size() < 5) {
 //          tileName = m_dvidTarget.getLosslessTileName();
 //        } else {
-          tileName = m_dvidTarget.getMultiscale2dName();
+          tileName = getDvidTarget().getMultiscale2dName();
 //        }
 
         if (NeutubeConfig::ParallelTileFetching()) {
           data = get_tile_array_binary(
-                *(m_reader.getService()), tileName,
+                *(getDvidReader().getService()), tileName,
                 libdvid::XY, resLevel, tile_locs_array);
         } else {
           //#else
           data.resize(tile_locs_array.size());
           //        std::vector<libdvid::BinaryDataPtr> data(tile_locs_array.size());
           for (size_t i = 0; i < tile_locs_array.size(); ++i) {
-            data[i] = m_reader.getService()->get_tile_slice_binary(
+            data[i] = getDvidReader().getService()->get_tile_slice_binary(
                   tileName, libdvid::XY, resLevel, tile_locs_array[i]);
           }
         }
@@ -321,15 +341,6 @@ bool ZDvidTileEnsemble::update(
         LWARN() << "Tile decoding hickup.";
       }
 
-
-#if 0
-      for (QList<ZDvidTile*>::iterator iter = tileList.begin();
-           iter != tileList.end(); ++iter) {
-        ZDvidTile *tile = *iter;
-        tile->updatePixmap();
-      }
-#endif
-
       for (QList<ZDvidTileDecodeTask*>::iterator iter = taskList.begin();
            iter != taskList.end(); ++iter) {
         delete *iter;
@@ -337,11 +348,10 @@ bool ZDvidTileEnsemble::update(
 
       updated = true;
 
-      if (m_dataFetcher != NULL && m_dvidTarget.isTileLowQuality()) {
-        QRect highresViewPort =
-            m_view->getViewParameter(neutube::COORD_STACK).getViewPort();
+      if (m_dataFetcher != NULL && getDvidTarget().isTileLowQuality()) {
+        QRect highresViewPort = getHelper()->getViewPort();
         if (highresViewPort.width() < 1024 || highresViewPort.height() < 1024) {
-          int z = m_view->getZ(neutube::COORD_STACK);
+          int z = getHelper()->getZ();
           QPoint center = highresViewPort.center();
           int width = 512;
           int height = 512;
@@ -354,47 +364,6 @@ bool ZDvidTileEnsemble::update(
           m_dataFetcher->submit(region);
         }
       }
-
-#if 0
-//      QThreadFutureMap futureMap;
-      QList<QFuture<void> > futureList;
-
-      for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
-           iter != tileIndices.end(); ++iter) {
-        const ZDvidTileInfo::TIndex &index = *iter;
-        ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(
-              resLevel, index);
-        if (tile != NULL) {
-          libdvid::BinaryDataPtr dataPtr= data[dataIndex++];
-
-          ZDvidTileDecodeTask *task = new ZDvidTileDecodeTask(NULL, tile);
-          task->setZ(z);
-          task->setData(dataPtr->get_raw(), dataPtr->length());
-          task->setHighContrast(m_highContrast);
-          taskManager.addTask(task);
-
-          QFuture<void> future = QtConcurrent::run(task, &ZDvidTileDecodeTask::execute);
-          futureList.append(future);
-            //      tile->display(painter, slice, option);
-
-//          tile->loadDvidSlice(dataPtr->get_raw(), dataPtr->length(), z);
-          /*
-          tile->setImageData(
-                data[dataIndex++]->get_raw(), m_tilingInfo.getWidth(),
-              m_tilingInfo.getHeight());
-          tile->setZ(z);
-          */
-        }
-      }
-
-      for (QList<QFuture<void> >::iterator iter = futureList.begin();
-           iter != futureList.end(); ++iter) {
-        iter->waitForFinished();
-      }
-
-#endif
-//      taskManager.start();
-//      taskManager.waitForDone();
     }
 #endif
 
@@ -428,10 +397,44 @@ bool ZDvidTileEnsemble::update(
   return updated;
 }
 
+bool ZDvidTileEnsemble::update(const ZStackViewParam &viewParam)
+{
+  bool updated = false;
+
+  if (viewParam.isValid()) {
+    QRect fov = viewParam.getViewPort();
+    int resLevel = viewParam.getZoomLevel(m_tilingInfo.getMaxLevel());
+    ZStackViewParam newViewParam = getHelper()->getValidViewParam(viewParam);
+    if (getHelper()->hasNewView(newViewParam)) {
+      std::vector<ZDvidTileInfo::TIndex> tileIndices =
+          m_tilingInfo.getCoverIndex(resLevel, fov);
+
+      if (tileIndices.size() > 16) {
+        if (resLevel < m_tilingInfo.getMaxLevel()) {
+          ++resLevel;
+          tileIndices = m_tilingInfo.getCoverIndex(resLevel, fov);
+        }
+      }
+      updated = update(tileIndices, resLevel, viewParam.getZ());
+      getHelper()->setViewParam(viewParam);
+    }
+  }
+
+  return updated;
+}
+
+void ZDvidTileEnsemble::forceUpdate()
+{
+  ZStackViewParam param = getHelper()->getViewParam();
+  getHelper()->invalidateViewParam();
+  update(param);
+}
+
 void ZDvidTileEnsemble::display(
     ZPainter &painter, int slice, EDisplayStyle option,
     neutube::EAxis sliceAxis) const
 {
+  /*
   if (m_view == NULL) {
     return;
   }
@@ -439,9 +442,10 @@ void ZDvidTileEnsemble::display(
   if (m_view->imageWidget() == NULL) {
     return;
   }
-
+*/
   QMutexLocker locker(&m_updateMutex);
 
+#if 0
   QRect fov = m_view->imageWidget()->viewPort();
   QSize screenSize = m_view->imageWidget()->size();
 
@@ -461,11 +465,12 @@ void ZDvidTileEnsemble::display(
   }
 
 
-
-
-
   int resLevel = std::min(m_tilingInfo.getMaxLevel(), level);
+#endif
 
+  QRect fov = getHelper()->getViewPort();
+  int resLevel = getHelper()->getViewParam().getZoomLevel(
+        m_tilingInfo.getMaxLevel());
   std::vector<ZDvidTileInfo::TIndex> tileIndices =
       m_tilingInfo.getCoverIndex(resLevel, fov);
 
@@ -476,24 +481,15 @@ void ZDvidTileEnsemble::display(
     }
   }
 
-  /*
-  QRect highresViewPort =
-      m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
-      */
-//  if (highresViewPort.width() > 256 || highresViewPort.height() > 256) {
-    const_cast<ZDvidTileEnsemble&>(*this).update(
-          tileIndices, resLevel, painter.getZ(slice));
-    //  const_cast<ZDvidTileEnsemble&>(*this).updateContrast();
-
-    for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
-         iter != tileIndices.end(); ++iter) {
-      const ZDvidTileInfo::TIndex &index = *iter;
-      ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
-      if (tile != NULL) {
-        //      tile->enhanceContrast(m_highContrast, true);
-        tile->display(painter, slice, option, sliceAxis);
-      }
+  for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+       iter != tileIndices.end(); ++iter) {
+    const ZDvidTileInfo::TIndex &index = *iter;
+    ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
+    if (tile != NULL) {
+      //      tile->enhanceContrast(m_highContrast, true);
+      tile->display(painter, slice, option, sliceAxis);
     }
+  }
 //  } else {
 #if 0
   if (highresViewPort.width() < 512 || highresViewPort.height() < 512) {
@@ -547,50 +543,44 @@ void ZDvidTileEnsemble::display(
 
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 {
-  m_dvidTarget = dvidTarget;
-  m_dvidTarget.prepareTile();
-  if (m_reader.open(m_dvidTarget)) {
-    m_tilingInfo = m_reader.readTileInfo(dvidTarget.getMultiscale2dName());
+  getHelper()->setDvidTarget(dvidTarget);
+//  m_dvidTarget = dvidTarget;
+  getHelper()->getDvidTarget().prepareTile();
+  if (getDvidReader().good()) {
+    m_tilingInfo = getDvidReader().readTileInfo(dvidTarget.getMultiscale2dName());
 
-    ZJsonObject obj = m_reader.readContrastProtocal();
+    getHelper()->setMaxZoom(m_tilingInfo.getMaxLevel());
+    ZJsonObject obj = getDvidReader().readContrastProtocal();
     setContrastProtocal(obj);
-
-#if defined(_ENABLE_LIBDVIDCPP_) && defined(_SERVICE_ARRAY_)
-    m_serviceArray.resize(36);
-    try {
-      std::vector<ZSharedPointer<libdvid::DVIDNodeService> >::iterator
-          iter = m_serviceArray.begin();
-      *iter = ZDvid::MakeDvidNodeService(m_reader.getDvidTarget());
-      libdvid::DVIDNodeService *firstService = (*iter).get();
-      for (++iter; iter != m_serviceArray.end(); ++iter) {
-        *iter = ZDvid::MakeDvidNodeService(firstService);
-      }
-    } catch (libdvid::DVIDException &e) {
-      LWARN() << e.what();
-    }
-#endif
   }
 }
 
+/*
 void ZDvidTileEnsemble::attachView(ZStackView *view)
 {
   m_view = view;
 }
+*/
 
 int ZDvidTileEnsemble::getCurrentZ() const
 {
+  return getHelper()->getZ();
+  /*
   int z = 0;
   if (m_view != NULL) {
     return m_view->getCurrentZ();
   }
 
   return z;
+  */
 }
 
+/*
 ZStackView* ZDvidTileEnsemble::getView() const
 {
   return m_view;
 }
+*/
 
 bool ZDvidTileEnsemble::isEmpty() const
 {

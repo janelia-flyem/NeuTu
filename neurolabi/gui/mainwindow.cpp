@@ -107,8 +107,8 @@
 #include "swc/zswcresampler.h"
 #include "biocytin/zbiocytinfilenameparser.h"
 #include "dialogs/penwidthdialog.h"
-#include "dvid/zdvidclient.h"
-#include "dvid/zdvidbuffer.h"
+//#include "dvid/zdvidclient.h"
+//#include "dvid/zdvidbuffer.h"
 #include "dialogs/dvidobjectdialog.h"
 #include "dialogs/resolutiondialog.h"
 #include "zswcglobalfeatureanalyzer.h"
@@ -277,11 +277,11 @@ MainWindow::MainWindow(QWidget *parent) :
   //m_actionActivatorList.append(&m_swcActionActivator); //Need to monitor swc modification signal
   updateAction();
 
-  m_dvidClient = new ZDvidClient(this);
+//  m_dvidClient = new ZDvidClient(this);
   //m_dvidClient->setServer("http://emdata1.int.janelia.org");
   m_dvidFrame = NULL;
-  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(createDvidFrame()));
-  connect(this, SIGNAL(dvidRequestCanceled()), m_dvidClient, SLOT(cancelRequest()));
+//  connect(m_dvidClient, SIGNAL(noRequestLeft()), this, SLOT(createDvidFrame()));
+//  connect(this, SIGNAL(dvidRequestCanceled()), m_dvidClient, SLOT(cancelRequest()));
   /*
   connect(m_dvidClient, SIGNAL(swcRetrieved()), this, SLOT(createDvidFrame()));
   connect(m_dvidClient, SIGNAL(objectRetrieved()),
@@ -358,6 +358,8 @@ MainWindow::~MainWindow()
 
   delete m_ui;
   delete m_reporter;
+
+  LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 }
 
 void MainWindow::createActionMap()
@@ -2457,6 +2459,7 @@ void MainWindow::setOption()
 #if defined(_FLYEM_)
   m_flyemSettingDlg->loadSetting();
   m_flyemSettingDlg->exec();
+  GET_FLYEM_CONFIG.saveSettings();
 #else
   if (activeStackFrame() != NULL) {
     activeStackFrame()->showSetting();
@@ -3024,7 +3027,7 @@ void MainWindow::on_actionCanny_Edge_triggered()
     ZStackProcessor proc;
     CannyEdgeDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      proc.cannyEdge(currentStackFrame()->document()->stack(),
+      proc.cannyEdge(currentStackFrame()->document()->getStack(),
                      dlg.variance(), dlg.lowerThreshold(),
                      dlg.upperThreshold());
       currentStackFrame()->updateView();
@@ -3042,7 +3045,7 @@ void MainWindow::connectedThreshold(int x, int y, int z)
   ConnectedThresholdDialog dlg;
   if (dlg.exec() == QDialog::Accepted) {
 
-    proc.connectedThreshold(currentStackFrame()->document()->stack(),
+    proc.connectedThreshold(currentStackFrame()->document()->getStack(),
                             x, y, z,
                             dlg.lowerThreshold(), dlg.upperThreshold());
     currentStackFrame()->updateView();
@@ -3079,7 +3082,7 @@ void MainWindow::on_actionMedian_Filter_triggered()
 
     MedianFilterDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-      proc.medianFilter(currentStackFrame()->document()->stack(), dlg.radius());
+      proc.medianFilter(currentStackFrame()->document()->getStack(), dlg.radius());
       currentStackFrame()->updateView();
     }
   }
@@ -5429,6 +5432,7 @@ void MainWindow::on_actionPen_Width_for_SWC_Display_triggered()
   }
 }
 
+#if 0
 void MainWindow::createDvidFrame()
 {
   QProgressDialog *progressDlg = getProgressDialog();
@@ -5566,6 +5570,7 @@ void MainWindow::createDvidFrame()
   }
 #endif
 }
+#endif
 
 #if 0
 void MainWindow::on_actionDVID_Object_triggered()
@@ -7453,13 +7458,14 @@ void MainWindow::runRoutineCheck()
       GET_FLYEM_CONFIG.getNeutuService().updateStatus();
     }
 #endif
-
+#if 0
     QString memoryUsage = ZFlyEmMisc::GetMemoryUsage();
     if (!memoryUsage.isEmpty()) {
       LINFO() << "Memory usage:" << memoryUsage;
       LINFO() << "Stack usage:" << C_Stack::stackUsage();
       LINFO() << "Mc_Stack usage:" << C_Stack::McStackUsage();
     }
+#endif
   }
 }
 

@@ -30,6 +30,20 @@ TaskProtocolTask::TaskProtocolTask()
 
 }
 
+namespace {
+static QString s_jsonSource;
+}
+
+void TaskProtocolTask::setJsonSource(const QString &source)
+{
+  s_jsonSource = source;
+}
+
+QString TaskProtocolTask::jsonSource()
+{
+  return s_jsonSource;
+}
+
 // constants
 const QString TaskProtocolTask::KEY_COMPLETED = "completed";
 const QString TaskProtocolTask::KEY_TAGS = "tags";
@@ -41,11 +55,11 @@ bool TaskProtocolTask::completed() const
     return m_completed;
 }
 
-QSet<uint64_t> TaskProtocolTask::visibleBodies() {
+const QSet<uint64_t> & TaskProtocolTask::visibleBodies() {
     return m_visibleBodies;
 }
 
-QSet<uint64_t> TaskProtocolTask::selectedBodies() {
+const QSet<uint64_t> & TaskProtocolTask::selectedBodies() {
     return m_selectedBodies;
 }
 
@@ -57,6 +71,14 @@ void TaskProtocolTask::setCompleted(bool completed)
     if (completed) {
         onCompleted();
     }
+}
+
+/*
+ * subclasses may optionally implement this method to
+ * disable prefetching (e.g., because the task uses only low resolution bodies)
+ */
+bool TaskProtocolTask::usePrefetching() {
+    return true;
 }
 
 /*
@@ -95,6 +117,15 @@ void TaskProtocolTask::beforePrev() {
 
 /*
  * subclasses may optionally implement this method to
+ * do something when the bodies from the previous task have been unloaded
+ * and the bodies from this task have been loaded
+ */
+void TaskProtocolTask::onLoaded() {
+    // nothing
+}
+
+/*
+ * subclasses may optionally implement this method to
  * do something in the task that is active when the "done" button
  * is pressed
  */
@@ -102,6 +133,16 @@ void TaskProtocolTask::beforeDone() {
   // nothing
 }
 
+/*
+ * subclasses may optionally implement this method to
+ * inidicate that a particular task instance should be skipped
+ * (e.g., because when the task loaded itself it discovered that
+ * it was redundant in some sense)
+ */
+bool TaskProtocolTask::skip()
+{
+  return false;
+}
 
 /*
  * subclasses may optionally implement this method to

@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 
+#include "zjsondef.h"
 #include "neutubeconfig.h"
 #include "zglobal.h"
 #include "zmatrix.h"
@@ -40,6 +41,12 @@
 #include "zobject3d.h"
 #include "zarbsliceviewparam.h"
 #include "flyem/zmainwindowcontroller.h"
+#include "zswctree.h"
+#include "geometry/zaffinerect.h"
+#include "zarray.h"
+#include "zstack.hxx"
+#include "zstackfactory.h"
+#include "misc/miscutility.h"
 
 void ZFlyEmMisc::NormalizeSimmat(ZMatrix &simmat)
 {
@@ -430,6 +437,68 @@ ZCubeArray* ZFlyEmMisc::MakeRoiCube(
   return cubes;
 #endif
 }
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(const ZDvidReader &reader, const ZAffineRect &ar)
+{
+  return MakeColorSegmentation(reader, ar, 0, 0);
+}
+
+namespace {
+
+ZStack* LabelToColorStack(const ZArray *array)
+{
+  ZStack *stack = NULL;
+  if (array != NULL) {
+    uint64_t *labelArray = array->getDataPointer<uint64_t>();
+
+    ZObjectColorScheme colorScheme;
+    colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
+
+    stack = ZStackFactory::MakeZeroStack(
+          GREY, misc::GetBoundBox(array), 3);
+    //    ZStack *stack = new ZStack(COLOR, width, height, 1, 1);
+    uint8_t *array1 = stack->array8(0);
+    uint8_t *array2 = stack->array8(1);
+    uint8_t *array3 = stack->array8(2);
+
+    size_t volume = stack->getVoxelNumber();
+    for (size_t i = 0; i < volume; ++i) {
+      QColor color = colorScheme.getColor(labelArray[i]);
+      array1[i] = color.red();
+      array2[i] = color.green();
+      array3[i] = color.blue();
+    }
+
+    delete array;
+  }
+
+  return stack;
+}
+
+} //namespace
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(
+    const ZDvidReader &reader, const ZAffineRect &ar, int ccx, int ccy)
+{
+  ZArray *array = reader.readLabels64Lowtis(ar, 0, ccx, ccy, true);
+
+  ZStack *stack = LabelToColorStack(array);
+
+  return stack;
+}
+
+ZStack* ZFlyEmMisc::MakeColorSegmentation(
+    const ZDvidReader &reader, int x0, int y0, int z0, int width, int height,
+    int zoom, int ccx, int ccy)
+{
+  ZArray *array = reader.readLabels64Lowtis(
+        x0, y0, z0, width, height, zoom, ccx, ccy, true);
+
+  ZStack *stack = LabelToColorStack(array);
+
+  return stack;
+}
+
 
 ZCubeArray* ZFlyEmMisc::MakeRoiCube(
     const ZObject3dScan &roi, const ZDvidInfo &dvidInfo, QColor color, int dsIntv)
@@ -1227,7 +1296,7 @@ void ZFlyEmMisc::UploadSyGlassTask(
         std::string location = writer->writeServiceTask("split", taskJson);
 
         ZJsonObject entryJson;
-        entryJson.setEntry(neutube::Json::REF_KEY, location);
+        entryJson.setEntry(neutube::json::REF_KEY, location);
         QString taskKey = dvidUrl.getSplitTaskKey(bodyId).c_str();
         writer->writeSplitTask(taskKey, taskJson);
       }
@@ -1440,10 +1509,10 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   ZJsonObject taskJson =
       reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
                                     taskKey.c_str());
-  if (taskJson.hasKey(neutube::Json::REF_KEY)) {
+  if (taskJson.hasKey(neutube::json::REF_KEY)) {
     taskJson =
         reader->readJsonObject(
-          ZJsonParser::stringValue(taskJson[neutube::Json::REF_KEY]));
+          ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
   }
 
   QList<ZStackObject*> seedList = LoadSplitTask(taskJson);
@@ -1513,9 +1582,11 @@ ZDvidWriter* ZFlyEmMisc::GetTaskWriter()
 bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
 {
   ZDvidReader *reader = GetTaskReader();
-  if (reader->hasKey("task_test", taskKey)) {
-    if (!reader->hasKey("result_test", taskKey)) {
-      return true;
+  if (reader != NULL) {
+    if (reader->hasKey("task_test", taskKey)) {
+      if (!reader->hasKey("result_test", taskKey)) {
+        return true;
+      }
     }
   }
 

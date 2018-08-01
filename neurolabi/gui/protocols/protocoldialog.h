@@ -6,7 +6,7 @@
 #include "flyem/zflyemsequencercolorscheme.h"
 
 #include "zjsonobject.h"
-#include "dvid/zdvidtarget.h"
+#include "dvid/zdvidreader.h"
 
 class ZIntPoint;
 
@@ -23,6 +23,7 @@ public:
     virtual ~ProtocolDialog();
     virtual bool initialize() = 0;
     void setDvidTarget(ZDvidTarget target);
+    const ZDvidTarget& getDvidTarget() const;
 
 public:
     //Special behaviors
@@ -38,12 +39,13 @@ signals:
     void requestColorMapChange(ZFlyEmSequencerColorScheme scheme);
     void requestActivateColorMap();
     void requestDeactivateColorMap();
+    void rangeChanged(ZIntPoint firstCorner, ZIntPoint lastCorner);
 
 public slots:
     virtual void loadDataRequested(ZJsonObject data) = 0;
 
 protected:
-    ZDvidTarget m_dvidTarget;
+    ZDvidReader m_dvidReader;
 
 private:
     Ui::ProtocolDialog *ui;

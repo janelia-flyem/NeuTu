@@ -64,5 +64,11 @@
 #include "test/zdvidresultservicetest.h"
 #include "test/zstackobjectinfotest.h"
 #include "test/zglobaltest.h"
+#include "test/zmouseeventprocessortest.h"
+#include "test/zpositionmappertest.h"
+#include "test/zstackdochelpertest.h"
+#include "test/zgeometrytest.h"
+#include "test/zdviddataslicetest.h"
+#include "test/zstackviewparamtest.h"
 
 #endif // ZTESTALL_H

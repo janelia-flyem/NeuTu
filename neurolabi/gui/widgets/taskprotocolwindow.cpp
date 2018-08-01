@@ -10,6 +10,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QsLog.h>
+#include <QShortcut>
 
 
 #include "neutube_def.h"
@@ -19,10 +20,12 @@
 #include "protocols/bodyprefetchqueue.h"
 #include "protocols/taskbodyhistory.h"
 #include "protocols/taskbodycleave.h"
+#include "protocols/taskbodymerge.h"
 #include "protocols/taskbodyreview.h"
 #include "protocols/tasksplitseeds.h"
 #include "protocols/tasktesttask.h"
 #include "z3dwindow.h"
+#include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 
 #include "taskprotocolwindow.h"
@@ -71,6 +74,19 @@ TaskProtocolWindow::TaskProtocolWindow(ZFlyEmProofDoc *doc, ZFlyEmBody3dDoc *bod
 
     ui->nextButton->setShortcut(Qt::Key_E);
     ui->prevButton->setShortcut(Qt::Key_Q);
+
+    // there are two keyboard shortcuts for completed+next, for different hand sizes
+    QShortcut *shortcut1 = new QShortcut(Qt::SHIFT + Qt::Key_E, this);
+    QShortcut *shortcut2 = new QShortcut(Qt::SHIFT + Qt::Key_X, this);
+    connect(shortcut1, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+    connect(shortcut2, SIGNAL(activated()), this, SLOT(onCompletedAndNext()));
+
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshesAdded,
+            this, &TaskProtocolWindow::onBodyMeshesAdded);
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded,
+            this, &TaskProtocolWindow::onBodyMeshLoaded);
+    connect(m_body3dDoc, &ZFlyEmBody3dDoc::bodyRecycled,
+            this, &TaskProtocolWindow::onBodyRecycled);
 }
 
 // constants
@@ -367,6 +383,14 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
     }
 }
 
+void TaskProtocolWindow::onCompletedAndNext()
+{
+  ui->completedCheckBox->setCheckState(Qt::Checked);
+  if (ui->nextButton->isEnabled()) {
+    onNextButton();
+  }
+}
+
 void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
     if (m_currentTaskIndex >= 0) {
         if (ui->reviewCheckBox->isChecked()) {
@@ -396,7 +420,7 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
     //  we go to "show completed", advance and show something
     if (ui->showCompletedCheckBox->isChecked() &&
         m_currentTaskIndex < 0) {
-        m_currentTaskIndex = 0;
+        m_currentTaskIndex = getFirst(true);
         updateCurrentTaskLabel();
         updateBodyWindow();
         updateLabel();
@@ -450,11 +474,7 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
     }
 
     // load first task; enable UI and go
-    if (ui->showCompletedCheckBox->isChecked()) {
-        m_currentTaskIndex = 0;
-    } else {
-        m_currentTaskIndex = getFirstUncompleted();
-    }
+    m_currentTaskIndex = getFirst(ui->showCompletedCheckBox->isChecked());
     if (m_currentTaskIndex < 0) {
         showInfo("No tasks to do!", "All tasks have been completed!");
     }
@@ -475,15 +495,16 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 }
 
 /*
- * returns index of first uncompleted task, or -1
+ * returns index of first (uncompleted) task, or -1
  */
-int TaskProtocolWindow::getFirstUncompleted() {
-    for (int i=0; i<m_taskList.size(); i++) {
-        if (!m_taskList[i]->completed()) {
-            return i;
-        }
-    }
-    return -1;
+int TaskProtocolWindow::getFirst(bool includeCompleted)
+{
+  for (int i = 0; i < m_taskList.size(); i++) {
+      if ((includeCompleted || !m_taskList[i]->completed()) && (!m_taskList[i]->skip())) {
+          return i;
+      }
+  }
+  return -1;
 }
 
 /*
@@ -538,24 +559,38 @@ int TaskProtocolWindow::getPrevUncompleted() {
 
 int TaskProtocolWindow::getPrevIndex(int currentIndex) const
 {
-  int index = -1;
-  if (currentIndex > 0 && currentIndex < m_taskList.size()) {
-    index = currentIndex - 1;
-  } else if (currentIndex == 0 && m_taskList.size() > 1) {
-    index = m_taskList.size() - 1;
-  }
+  int index = currentIndex;
+
+  do {
+    index--;
+    if (index < 0 && currentIndex >= 0) {
+      index = m_taskList.size() - 1;
+    } else if (index == currentIndex) {
+      break;
+    } else if (index < 0 || index >= m_taskList.size()) {
+      index = -1;
+      break;
+    }
+  } while (m_taskList[index]->skip());
 
   return index;
 }
 
 int TaskProtocolWindow::getNextIndex(int currentIndex) const
 {
-  int index =  currentIndex + 1;
-  if (index == m_taskList.size() && currentIndex >= 0) {
-    index = 0;
-  } else if (index <= 0 || index >= m_taskList.size()) {
-    index = -1;
-  }
+  int index = currentIndex;
+
+  do {
+    index++;
+    if (index == m_taskList.size() && currentIndex >= 0) {
+      index = 0;
+    } else if (index == currentIndex) {
+      break;
+    } else if (index <= 0 || index >= m_taskList.size()) {
+      index = -1;
+      break;
+    }
+  } while (m_taskList[index]->skip());
 
   return index;
 }
@@ -585,13 +620,15 @@ int TaskProtocolWindow::getNextUncompleted() {
  * prefetch the bodies for a task
  */
 void TaskProtocolWindow::prefetchForTaskIndex(int index) {
-    // each task may have bodies that it wants visible and selected;
-    //  add those, selected first (which are presumably more important?)
-    if (m_taskList[index]->selectedBodies().size() > 0) {
-        prefetch(m_taskList[index]->selectedBodies());
-    }
-    if (m_taskList[index]->visibleBodies().size() > 0) {
-        prefetch(m_taskList[index]->visibleBodies());
+    if (m_taskList[index]->usePrefetching()) {
+        // each task may have bodies that it wants visible and selected;
+        //  add those, selected first (which are presumably more important?)
+        if (m_taskList[index]->selectedBodies().size() > 0) {
+            prefetch(m_taskList[index]->selectedBodies());
+        }
+        if (m_taskList[index]->visibleBodies().size() > 0) {
+            prefetch(m_taskList[index]->visibleBodies());
+        }
     }
 }
 
@@ -628,7 +665,12 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
     } else {
         ui->taskActionLabel->setText(m_taskList[m_currentTaskIndex]->actionString());
         ui->taskTargetLabel->setText(m_taskList[m_currentTaskIndex]->targetString());
+
+        // make the "completed" checkbox match the current task, but prevent the signal from
+        // being triggere, so that task does not do somehing like save its results an extra time
+        BlockSignals blockOnCompleted(ui->completedCheckBox);
         ui->completedCheckBox->setChecked(m_taskList[m_currentTaskIndex]->completed());
+
         if (m_taskList[m_currentTaskIndex]->hasTag(TAG_NEEDS_REVIEW)) {
             ui->reviewCheckBox->setChecked(true);
         } else {
@@ -683,10 +725,12 @@ void TaskProtocolWindow::updateMenu(bool add) {
 void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
+        disableButtonsWhileUpdating();
+
         emit allBodiesRemoved();
 
-        QSet<uint64_t> visible = m_taskList[m_currentTaskIndex]->visibleBodies();
-        QSet<uint64_t> selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+        const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+        const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
 
         // if something is selected, it should be visible, too
         foreach (uint64_t bodyID, visible) {
@@ -699,6 +743,101 @@ void TaskProtocolWindow::updateBodyWindow() {
             }
         }
         emit bodySelectionChanged(selected);
+    }
+}
+
+void TaskProtocolWindow::disableButtonsWhileUpdating()
+{
+    // If the user triggers several calls to updateBodyWindow() in rapid succession, by
+    // quickly moving between tasks and using controls from the task widget that also change
+    // the loaded bodies, then the bodies loaded by one call may not be fully cleared by the
+    // next call, due to the way bodies are added and removed asynchronously in a background
+    // thread. The buttons for moving between tasks, and the whole task widget, will be disabled
+    // until signals connected to the onBodyRecycled, onBodyMeshesAdded and onBodyMeshLoaded
+    // slots indicate that all the old meshes have been fully deleted and all the new meshes
+    // have been loaded.
+
+    QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_body3dDoc);
+    m_bodyRecycledExpected = meshes.size();
+    m_bodyRecycledReceived = 0;
+
+    m_bodyMeshesAddedExpected = 0;
+    m_bodyMeshesAddedReceived = 0;
+
+    bool usingTars = false;
+    const QSet<uint64_t> &visible = m_taskList[m_currentTaskIndex]->visibleBodies();
+    foreach (uint64_t bodyID, visible) {
+        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+            m_bodyMeshesAddedExpected++;
+            usingTars = true;
+        }
+    }
+
+    const QSet<uint64_t> &selected = m_taskList[m_currentTaskIndex]->selectedBodies();
+    foreach (uint64_t bodyID, selected) {
+        if (ZFlyEmBody3dDoc::encodesTar(bodyID)) {
+            m_bodyMeshesAddedExpected++;
+            usingTars = true;
+        }
+    }
+
+    m_bodiesReused = 0;
+
+    if (usingTars) {
+        m_bodyMeshLoadedExpected = 0;
+    } else {
+        m_bodyMeshLoadedExpected = (visible + selected).size();
+
+        // Bodies reused from the previous task may not generate onBodyRecycled amd
+        // onBodyMeshLoaded signals, which needs to be considered when counting
+        // these signals.
+
+        for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
+            ZMesh *mesh = *it;
+            uint64_t id = mesh->getLabel();
+            m_bodiesReused += (visible.contains(id) || selected.contains(id));
+        }
+    }
+
+    m_bodyMeshLoadedReceived = 0;
+
+    ui->nextButton->setEnabled(false);
+    ui->prevButton->setEnabled(false);
+    if (m_currentTaskWidget) {
+        m_currentTaskWidget->setEnabled(false);
+    }
+    if (m_currentTaskMenuAction) {
+        m_currentTaskMenuAction->setEnabled(false);
+    }
+
+    // Check for immediate reenabling, in the case of all bodies being reused.
+
+    enableButtonsAfterUpdating();
+}
+
+void TaskProtocolWindow::enableButtonsAfterUpdating()
+{
+    if ((m_bodyRecycledExpected - m_bodiesReused <= m_bodyRecycledReceived) &&
+        (m_bodyMeshesAddedExpected == m_bodyMeshesAddedReceived) &&
+        (m_bodyMeshLoadedExpected - m_bodiesReused <= m_bodyMeshLoadedReceived)) {
+
+        bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
+
+        updateButtonsEnabled();
+        if (m_currentTaskWidget) {
+            m_currentTaskWidget->setEnabled(true);
+        }
+        if (m_currentTaskMenuAction) {
+            m_currentTaskMenuAction->setEnabled(true);
+        }
+
+        if ((m_currentTaskIndex >= 0) && justEnabled) {
+
+            // Call this function on the task only once, when the task's UI was
+            // just enabled.
+
+            m_taskList[m_currentTaskIndex]->onLoaded();
+        }
     }
 }
 
@@ -751,6 +890,7 @@ QJsonObject TaskProtocolWindow::loadJsonFromFile(QString filepath) {
         return emptyResult;
     } else {
         LINFO() << "Task protocol: json loaded from file" + filepath;
+        TaskProtocolTask::setJsonSource(filepath);
         return doc.object();
     }
 }
@@ -848,11 +988,14 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
             QSharedPointer<TaskProtocolTask> task(new TaskBodyReview(taskJson.toObject()));
             m_taskList.append(task);
         } else if (taskType == "body history") {
-          QSharedPointer<TaskProtocolTask> task(new TaskBodyHistory(taskJson.toObject(), m_body3dDoc));
-          m_taskList.append(task);
+            QSharedPointer<TaskProtocolTask> task(new TaskBodyHistory(taskJson.toObject(), m_body3dDoc));
+            m_taskList.append(task);
         } else if (taskType == "body cleave") {
-          QSharedPointer<TaskProtocolTask> task(new TaskBodyCleave(taskJson.toObject(), m_body3dDoc));
-          m_taskList.append(task);
+            QSharedPointer<TaskProtocolTask> task(new TaskBodyCleave(taskJson.toObject(), m_body3dDoc));
+            m_taskList.append(task);
+        } else if (taskType == "body merge") {
+            QSharedPointer<TaskProtocolTask> task(new TaskBodyMerge(taskJson.toObject(), m_body3dDoc));
+            m_taskList.append(task);
         } else if (taskType == "split seeds") {
             // I'm not really fond of this task having a different constructor signature, but
             //  neither do I want to pass in both docs to every task just because a few might
@@ -872,6 +1015,10 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
                   this, SLOT(onBodiesUpdated()));
           connect(m_taskList.back().data(), SIGNAL(messageGenerated(const ZWidgetMessage&)),
                   this, SIGNAL(messageGenerated(const ZWidgetMessage&)));
+          connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
+                  this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
+          connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
+                  this, SIGNAL(updateGrayscaleColor(QHash<uint64_t,QColor>)));
         }
     }
 
@@ -1049,6 +1196,27 @@ void TaskProtocolWindow::showInfo(QString title, QString message) {
     infoBox.setStandardButtons(QMessageBox::Ok);
     infoBox.setIcon(QMessageBox::Information);
     infoBox.exec();
+}
+
+void TaskProtocolWindow::onBodyMeshesAdded(int numMeshes)
+{
+  LDEBUG() << "onBodyMeshesAdded:" << numMeshes;
+
+    m_bodyMeshesAddedReceived++;
+    m_bodyMeshLoadedExpected += numMeshes;
+    enableButtonsAfterUpdating();
+}
+
+void TaskProtocolWindow::onBodyMeshLoaded()
+{
+    m_bodyMeshLoadedReceived++;
+    enableButtonsAfterUpdating();
+}
+
+void TaskProtocolWindow::onBodyRecycled()
+{
+    m_bodyRecycledReceived++;
+    enableButtonsAfterUpdating();
 }
 
 void TaskProtocolWindow::applicationQuitting() {

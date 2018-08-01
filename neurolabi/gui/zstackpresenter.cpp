@@ -36,6 +36,8 @@
 #include "zstackdockeyprocessor.h"
 #include "zstackobjectinfo.h"
 #include "zobject3d.h"
+#include "zmenuconfig.h"
+#include "zmenufactory.h"
 
 /*
 ZStackPresenter::ZStackPresenter(ZStackFrame *parent) : QObject(parent)
@@ -198,6 +200,27 @@ ZKeyOperationConfig* ZStackPresenter::getKeyConfig()
   }
 
   return m_keyConfig;
+}
+
+ZMenuConfig ZStackPresenter::getMenuConfig() const
+{
+  ZMenuConfig config;
+  switch (buddyDocument()->getTag()) {
+  case neutube::Document::FLYEM_SPLIT:
+  case neutube::Document::SEGMENTATION_TARGET:
+    config << ZActionFactory::ACTION_SPLIT_DATA
+           << ZActionFactory::ACTION_ADD_SPLIT_SEED;
+    break;
+  case neutube::Document::NORMAL:
+  case neutube::Document::BIOCYTIN_STACK:
+    config << ZActionFactory::ACTION_ADD_SWC_NODE
+           << ZActionFactory::ACTION_TOGGLE_SWC_SKELETON;
+    break;
+  default:
+    break;
+  }
+
+  return config;
 }
 
 ZStackDocMenuFactory* ZStackPresenter::getMenuFactory()
@@ -412,6 +435,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_POSITION:
       connect(action, SIGNAL(triggered()), this, SLOT(copyCurrentPosition()));
       break;
+    case ZActionFactory::ACTION_COPY_BODY_ID:
+      connect(action, SIGNAL(triggered()), this, SLOT(copyLabelId()));
+      break;
     default:
       connected = false;
       break;
@@ -425,55 +451,19 @@ QAction* ZStackPresenter::makeAction(ZActionFactory::EAction item)
 {
   QAction *action = NULL;
 
-  if (!m_actionMap.contains(item)) {
-    action = m_actionFactory->makeAction(item, this);
-    m_actionMap[item] = action;
+  if (ZActionFactory::IsRegularAction(item)) {
+    if (!m_actionMap.contains(item)) {
+      action = m_actionFactory->makeAction(item, this);
+      if (action != NULL) {
+        m_actionMap[item] = action;
 
-    if (!connectAction(action, item)) {
-      LWARN() << "Failed to connect action: " << action->text();
-#if 0
-        //Body actions
-      case ZActionFactory::ACTION_BODY_ANNOTATION:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyAnnotationTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_SPLIT_START:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodySplitTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_CHECKIN:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyCheckinTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_FORCE_CHECKIN:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyForceCheckinTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_CHECKOUT:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyCheckoutTriggered()));
-        break;
-      case ZActionFactory::ACTION_BODY_DECOMPOSE:
-        connect(action, SIGNAL(triggered()),
-                this, SLOT(notifyBodyDecomposeTriggered()));
-        break;
-      case ZActionFactory::ACTION_BOOKMARK_CHECK:
-        connect(action, SIGNAL(triggered()), this, SLOT(checkingBookmark()));
-        break;
-      case ZActionFactory::ACTION_BOOKMARK_UNCHECK:
-        connect(action, SIGNAL(triggered()), this, SLOT(uncheckingBookmark()));
-        break;
-      case ZActionFactory::ACTION_SELECT_ALL_SWC_NODE:
-        connect(action, SIGNAL(triggered()),
-                buddyDocument(), SLOT(selectAllSwcTreeNode()));
-        break;
-      default:
-        break;
+        if (!connectAction(action, item)) {
+          LWARN() << "Failed to connect action: " << action->text();
+        }
       }
-#endif
+    } else {
+      action = m_actionMap[item];
     }
-  } else {
-    action = m_actionMap[item];
   }
 
   return action;
@@ -952,6 +942,7 @@ QMenu* ZStackPresenter::getStackContextMenu()
 
 QMenu* ZStackPresenter::getContextMenu()
 {
+
   return getStackContextMenu();
 }
 
@@ -992,7 +983,7 @@ void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
     if (stroke != NULL) {
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
       ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
-      currentStackPos.shiftSliceAxis(getSliceAxis());
+//      currentStackPos.shiftSliceAxis(getSliceAxis());
 
       stroke->setLast(currentStackPos.x(), currentStackPos.y());
     }
@@ -1112,7 +1103,9 @@ void ZStackPresenter::prepareView()
   buddyView()->rightMenu()->clear();
   //m_interactiveContext.setView(buddyView()->imageWidget()->projectRegion(),
   //                             buddyView()->imageWidget()->viewPort());
-  m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
+//  m_mouseEventProcessor.setImageWidget(buddyView()->imageWidget());
+  m_mouseEventProcessor.setSliceAxis(buddyView()->getSliceAxis());
+  m_mouseEventProcessor.setArbSlice(buddyView()->getAffinePlane());
   m_mouseEventProcessor.setDocument(getSharedBuddyDocument());
 
   setSliceAxis(buddyView()->getSliceAxis());
@@ -1257,6 +1250,10 @@ int ZStackPresenter::getSliceIndex() const {
     sliceIndex = buddyView()->sliceIndex();
   }
 
+#ifdef _DEBUG_2
+  std::cout << "Slice index: " << sliceIndex << std::endl;
+#endif
+
   return sliceIndex;
 }
 
@@ -1288,7 +1285,8 @@ void ZStackPresenter::processMouseReleaseEvent(QMouseEvent *event)
 
   const ZMouseEvent& mouseEvent =
       m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_RELEASE, getSliceIndex());
+        event, ZMouseEvent::ACTION_RELEASE, buddyView()->getViewProj(),
+        getSliceIndex());
 
   if (mouseEvent.isNull()) {
     return;
@@ -1395,7 +1393,8 @@ void ZStackPresenter::processMouseMoveEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_MOVE, getSliceIndex());
+        event, ZMouseEvent::ACTION_MOVE, buddyView()->getViewProj(),
+        getSliceIndex());
 
   if (mouseEvent.isNull()) {
     return;
@@ -1460,7 +1459,8 @@ void ZStackPresenter::processMousePressEvent(QMouseEvent *event)
 #endif
 
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_PRESS, buddyView()->sliceIndex());
+        event, ZMouseEvent::ACTION_PRESS, buddyView()->getViewProj(),
+        getSliceIndex());
   if (mouseEvent.isNull()) {
     return;
   }
@@ -1940,7 +1940,8 @@ bool ZStackPresenter::customKeyProcess(QKeyEvent * /*event*/)
 void ZStackPresenter::processMouseDoubleClickEvent(QMouseEvent *event)
 {
   const ZMouseEvent &mouseEvent = m_mouseEventProcessor.process(
-        event, ZMouseEvent::ACTION_DOUBLE_CLICK, getSliceIndex());
+        event, ZMouseEvent::ACTION_DOUBLE_CLICK,  buddyView()->getViewProj(),
+        getSliceIndex());
 
   if (mouseEvent.isNull()) {
     return;
@@ -2748,12 +2749,27 @@ void ZStackPresenter::copyCurrentPosition()
 {
   const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
         Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
-  ZPoint pt = event.getStackPosition();
+  ZPoint pt = event.getDataPosition();
 
-  ZGlobal::GetInstance().setStackPosition(pt.x(), pt.y(), pt.z());
+  ZGlobal::GetInstance().setDataPosition(pt.x(), pt.y(), pt.z());
+  ZGlobal::CopyToClipboard(pt.toIntPoint().toString());
 
   buddyDocument()->notify(
         QString("%1 copied").arg(pt.toIntPoint().toString().c_str()));
+}
+
+void ZStackPresenter::copyLabelId()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getDataPosition();
+
+  uint64_t id = buddyDocument()->getLabelId(
+        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+
+  ZGlobal::CopyToClipboard(std::to_string(id));
+
+  buddyDocument()->notify(QString("%1 copied").arg(id));
 }
 
 void ZStackPresenter::notifyBodyDecomposeTriggered()
@@ -2939,7 +2955,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
 
   ZInteractionEvent interactionEvent;
   const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
-  ZIntPoint widgetPos = event.getPosition();
+  ZIntPoint widgetPos = event.getWidgetPosition();
   QPoint currentWidgetPos(widgetPos.getX(), widgetPos.getY());
   ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(neutube::COORD_RAW_STACK);
@@ -3452,7 +3468,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           grabButton, ZMouseEvent::ACTION_PRESS, neutube::COORD_STACK);
-    grabPosition.shiftSliceAxis(getSliceAxis());
+//    grabPosition.shiftSliceAxis(getSliceAxis());
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
           currentWidgetPos.x(), currentWidgetPos.y());
@@ -3548,9 +3564,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     if (rect != NULL) {
       ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
             Qt::LeftButton, ZMouseEvent::ACTION_PRESS, neutube::COORD_STACK);
-      grabPosition.shiftSliceAxis(getSliceAxis());
+//      grabPosition.shiftSliceAxis(getSliceAxis());
       ZPoint shiftedStackPos = currentStackPos;
-      shiftedStackPos.shiftSliceAxis(getSliceAxis());
+//      shiftedStackPos.shiftSliceAxis(getSliceAxis());
 
       int x0 = std::min(grabPosition.x(), shiftedStackPos.x());
       int y0 = std::min(grabPosition.y(), shiftedStackPos.y());
@@ -3593,12 +3609,15 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     break;
   case ZStackOperator::OP_TRACK_MOUSE_MOVE:
+    buddyView()->updateDataInfo(currentWidgetPos);
+    /*
     buddyView()->setInfo(
           buddyDocument()->rawDataInfo(
             currentRawStackPos.getX(),
             currentRawStackPos.getY(),
             currentRawStackPos.getZ(),
             buddyView()->getSliceAxis()));
+            */
 
     if (m_interactiveContext.synapseEditMode() ==
         ZInteractiveContext::SYNAPSE_EDIT_OFF) {
@@ -3606,7 +3625,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
       //    if (isStrokeOn()) {
       if (stroke != NULL) {
         ZPoint pt = currentStackPos;
-        pt.shiftSliceAxis(getSliceAxis());
+//        pt.shiftSliceAxis(getSliceAxis());
         if (m_interactiveContext.swcEditMode() ==
             ZInteractiveContext::SWC_EDIT_EXTEND ||
             m_interactiveContext.swcEditMode() ==

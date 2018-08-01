@@ -9,9 +9,13 @@
 #include "neutube_def.h"
 
 class ZPoint;
+class ZAffineRect;
 
-namespace ZGeometry
+namespace zgeom
 {
+
+std::vector<ZAffineRect> Partition(const ZAffineRect &rect, int row, int col);
+
 /*!
  * \brief Transform a 3D field
  */
@@ -24,12 +28,17 @@ void shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis);
 std::vector<ZPoint> LineShpereIntersection(
     const ZPoint &lineStart, const ZPoint &lineNorm,
     const ZPoint &center, double r);
+
+bool IsPerpendicular(const ZPoint &p1, const ZPoint &p2);
+
+bool IsSameAffinePlane(const ZPoint &c1, const ZPoint &v1x, const ZPoint &v1y,
+                       const ZPoint &c2, const ZPoint &v2x, const ZPoint &v2y);
 }
 
 std::vector<std::pair<int, int> > LineToPixel(int x0, int y0, int x1, int y1);
 
 template <typename T>
-void ZGeometry::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
+void zgeom::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
 {
   switch (axis) {
   case neutube::X_AXIS:
@@ -47,7 +56,7 @@ void ZGeometry::shiftSliceAxis(T &x, T &y, T &z, neutube::EAxis axis)
 }
 
 template <typename T>
-void ZGeometry::shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis)
+void zgeom::shiftSliceAxisInverse(T &x, T &y, T &z, neutube::EAxis axis)
 {
   switch (axis) {
   case neutube::X_AXIS:

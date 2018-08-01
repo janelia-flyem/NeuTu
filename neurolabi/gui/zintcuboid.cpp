@@ -212,6 +212,20 @@ size_t ZIntCuboid::getVolume() const
   return area * getDepth();
 }
 
+size_t ZIntCuboid::getDsMaxVolume(int xIntv, int yIntv, int zIntv) const
+{
+  if (getWidth() <= 0 || getHeight() <= 0 || getDepth() <= 0) {
+    return 0;
+  }
+
+  ZIntPoint s(xIntv + 1, yIntv + 1, zIntv + 1);
+  ZIntPoint newSize = m_lastCorner / s - m_firstCorner / s + 1;
+
+  size_t area = newSize.getX() * newSize.getY();
+
+  return area * newSize.getZ();
+}
+
 bool ZIntCuboid::contains(int x, int y, int z) const
 {
   return IS_IN_CLOSE_RANGE(x, m_firstCorner.getX(), m_lastCorner.getX()) &&
@@ -417,6 +431,16 @@ ZIntPoint ZIntCuboid::getCenter() const
       ZIntPoint(getWidth() / 2, getHeight() / 2, getDepth() / 2);
 }
 
+void ZIntCuboid::setCenter(const ZIntPoint &center)
+{
+  int width = getWidth();
+  int height = getHeight();
+  int depth = getDepth();
+
+  setFirstCorner(center - ZIntPoint(width, height, depth) / 2);
+  setSize(width, height, depth);
+}
+
 ZJsonArray ZIntCuboid::toJsonArray() const
 {
   ZJsonArray json;
@@ -455,6 +479,18 @@ std::string ZIntCuboid::toString() const
   stream << getFirstCorner().toString() << "->" << getLastCorner().toString();
   return stream.str();
 }
+
+bool ZIntCuboid::operator ==(const ZIntCuboid &box) const
+{
+  return m_firstCorner == box.m_firstCorner && m_lastCorner == box.m_lastCorner;
+}
+
+bool ZIntCuboid::operator !=(const ZIntCuboid &box) const
+{
+  return m_firstCorner != box.m_firstCorner ||
+      m_lastCorner != box.m_lastCorner;
+}
+
 /*
 double ZIntCuboid::distanceTo(const ZIntPoint &pt)
 {

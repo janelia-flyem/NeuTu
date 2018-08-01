@@ -167,6 +167,7 @@ void ZProofreadWindow::init()
 
 
   m_mainMvc->enhanceTileContrast(m_contrastAction->isChecked());
+  m_mainMvc->configure();
 
   createDialog();
   m_flyemDataLoader = new ZFlyEmDataLoader(this);

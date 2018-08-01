@@ -2,6 +2,7 @@
 #define TASKBODYCLEAVE_H
 
 #include "protocols/taskprotocoltask.h"
+#include "zpoint.h"
 #include <QObject>
 #include <QVector>
 #include <set>
@@ -18,8 +19,6 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QPushButton;
 class QShortcut;
-
-class QSlider;
 
 class TaskBodyCleave : public TaskProtocolTask
 {
@@ -40,8 +39,6 @@ public:
   uint64_t getBodyId() const;
 
 private slots:
-  void updateLevel(int level);
-
   void onShowCleavingChanged(int state);
   void onToggleShowCleaving();
   void onShowSeedsOnlyChanged(int state);
@@ -52,16 +49,19 @@ private slots:
   void onShowBodyChanged(int state);
   void onToggleInChosenCleaveBody();
   void onToggleShowChosenCleaveBody();
+  void onHideSelected();
+  void onClearHidden();
+  void onChooseCleaveMethod();
 
   void onNetworkReplyFinished(QNetworkReply *reply);
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
   uint64_t m_bodyId;
+  ZPoint m_bodyPt;
   int m_maxLevel;
 
   QWidget *m_widget;
-  QSlider *m_levelSlider;
   QCheckBox *m_showCleavingCheckBox;
   QComboBox *m_cleaveIndexComboBox;
   QPushButton *m_selectBodyButton;
@@ -84,8 +84,13 @@ private:
 
   std::set<size_t> m_hiddenCleaveIndices;
 
+  QString m_cleaveMethod;
+
   QNetworkAccessManager *m_networkManager;
   bool m_cleaveReplyPending = false;
+
+  // The latest cleave server reply that was applied is saved for debugging purposes.
+  QJsonObject m_cleaveReply;
 
   std::set<QString> m_warningTextToSuppress;
 
@@ -93,6 +98,8 @@ private:
   class CleaveCommand;
 
   std::size_t chosenCleaveIndex() const;
+
+  std::set<uint64_t> m_hiddenIds;
 
   void buildTaskWidget();
   void updateColors();
@@ -107,12 +114,6 @@ private:
   void enableCleavingUI(bool showingCleaving);
 
   void cleave();
-  bool cleavedWithoutServer(const std::map<std::size_t, std::vector<uint64_t>>& cleaveIndexToMeshIds);
-
-  void writeOutput(const ZDvidReader &reader, ZDvidWriter &writer,
-                   const std::map<unsigned int, std::vector<uint64_t>> &cleaveIndexToMeshIds);
-  void writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
-                            const std::map<unsigned int, std::vector<uint64_t>> &cleaveIndexToMeshIds);
 
   void updateVisibility();
 
@@ -124,6 +125,11 @@ private:
   void displayWarning(const QString& title, const QString& text,
                       const QString& details = "",
                       bool allowSuppression = false);
+
+  void writeOutput(ZDvidWriter &writer,
+                   const std::map<std::size_t, std::vector<uint64_t>> &cleaveIndexToMeshIds);
+  void writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter &writer,
+                            const std::map<std::size_t, std::vector<uint64_t>> &cleaveIndexToMeshIds);
 
   virtual bool loadSpecific(QJsonObject json) override;
   virtual QJsonObject addToJson(QJsonObject json) override;

@@ -93,6 +93,8 @@ void ZColorScheme::buildLabelColorTable()
 
 void ZColorScheme::buildConvRandomColorTable(int n)
 {
+  m_colorTable.append(Qt::black);
+
   ZRandomGenerator generator(42);
   const int maxInt = 20000;
   for (int i = 1; i < n; ++i) {

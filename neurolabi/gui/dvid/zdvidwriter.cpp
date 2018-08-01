@@ -7,7 +7,9 @@
 #include <QElapsedTimer>
 #include <QUrl>
 
+#include "zjsondef.h"
 #include "neutubeconfig.h"
+#include "zstack.hxx"
 #include "flyem/zflyemneuron.h"
 #include "zclosedcurve.h"
 #include "zswctree.h"
@@ -27,6 +29,7 @@
 #include "zdvidutil.h"
 #include "dvid/zdvidpath.h"
 #include "zmesh.h"
+#include "zobject3dscan.h"
 
 ZDvidWriter::ZDvidWriter(/*QObject *parent*/)   /*:
 QObject(parent)*/
@@ -1087,7 +1090,7 @@ void ZDvidWriter::writeRoiRef(
 {
   ZJsonObject refJson;
   ZJsonObject roiJson;
-  roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+  roiJson.setEntry(neutube::json::REF_KEY, refJson);
   refJson.setEntry("key", key);
   refJson.setEntry("type", type);
 
@@ -1105,7 +1108,7 @@ void ZDvidWriter::writeRoiRef(
 {
   ZJsonObject refJson;
   ZJsonObject roiJson;
-  roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+  roiJson.setEntry(neutube::json::REF_KEY, refJson);
   refJson.setEntry("type", type);
   refJson.setEntry("key", keyList);
 
@@ -1150,7 +1153,7 @@ void ZDvidWriter::uploadRoiMesh(
     //Write reference
     ZJsonObject refJson;
     ZJsonObject roiJson;
-    roiJson.setEntry(neutube::Json::REF_KEY, refJson);
+    roiJson.setEntry(neutube::json::REF_KEY, refJson);
     refJson.setEntry("key", key.toStdString());
     writeJson(ZDvidData::GetName(ZDvidData::ROLE_ROI_KEY), name, roiJson);
   } else {
@@ -1240,9 +1243,8 @@ std::pair<uint64_t, uint64_t> ZDvidWriter::writeSupervoxelSplit(
   uint64_t remainderId = oldLabel;
 
   if (!response.empty()) {
-#ifdef _DEBUG_
     std::cout << response << std::endl;
-#endif
+
     ZJsonObject obj;
     obj.decodeString(response.c_str());
     if (obj.hasKey("label")) {

@@ -74,13 +74,13 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
   QColor color = getColor();
   if (!isChecked()) {
     switch (getAction()) {
-    case ZFlyEmToDoItem::TO_DO:
+    case neutube::TO_DO:
       color.setRgb(255, 0, 0, 192);
       break;
-    case ZFlyEmToDoItem::TO_MERGE:
+    case neutube::TO_MERGE:
       color.setRgb(255, 164, 0, 192);
       break;
-    case ZFlyEmToDoItem::TO_SPLIT:
+    case neutube::TO_SPLIT:
       color.setRgb(200, 0, 255, 192);
       break;
     }
@@ -89,31 +89,31 @@ QColor ZFlyEmToDoItem::getDisplayColor() const
   return color;
 }
 
-ZFlyEmToDoItem::EToDoAction ZFlyEmToDoItem::getAction() const
+neutube::EToDoAction ZFlyEmToDoItem::getAction() const
 {
   const char *key = "action"; //coupled with setAction
   std::string value = getProperty<std::string>(key);
-  EToDoAction action = TO_DO;
+  neutube::EToDoAction action = neutube::TO_DO;
   if (value == ACTION_MERGE) {
-    action = TO_MERGE;
+    action = neutube::TO_MERGE;
   } else if (value == ACTION_SPLIT) {
-    action = TO_SPLIT;
+    action = neutube::TO_SPLIT;
   }
 
   return action;
 }
 
-void ZFlyEmToDoItem::setAction(EToDoAction action)
+void ZFlyEmToDoItem::setAction(neutube::EToDoAction action)
 {
   switch (action) {
-  case TO_DO:
+  case neutube::TO_DO:
     removeProperty(ACTION_KEY);
     removeActionTag();
     break;
-  case TO_MERGE:
+  case neutube::TO_MERGE:
     addProperty(ACTION_KEY, ACTION_MERGE);
     break;
-  case TO_SPLIT:
+  case neutube::TO_SPLIT:
     addProperty(ACTION_KEY, ACTION_SPLIT);
     addTag(std::string(ACTION_KEY) + ":" + ACTION_SPLIT_TAG);
     break;

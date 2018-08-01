@@ -30,6 +30,8 @@ const std::string ZDvidUrl::m_annotationElementsCommand = "elements";
 const std::string ZDvidUrl::m_annotationLabelCommand = "label";
 const std::string ZDvidUrl::m_annotationMoveCommand = "move";
 const std::string ZDvidUrl::m_annotationTagCommand = "tag";
+const std::string ZDvidUrl::m_labelMappingCommand = "mapping";
+const std::string ZDvidUrl::m_tarfileCommand = "tarfile";
 
 ZDvidUrl::ZDvidUrl()
 {
@@ -181,6 +183,31 @@ std::string ZDvidUrl::getMeshesTarsUrl(uint64_t bodyId)
   return GetFullUrl(GetKeyCommandUrl(dataUrl), key);
 }
 
+std::string ZDvidUrl::getMeshesTarsKeyRangeUrl(uint64_t bodyId1, uint64_t bodyId2)
+{
+  ZString dataUrl = ZDvidData::GetName(ZDvidData::ROLE_MESHES_TARS,
+                                       ZDvidData::ROLE_BODY_LABEL,
+                                       m_dvidTarget.getBodyLabelName());
+  ZString key1 = GetBodyKey(bodyId1) + ".tar";
+  ZString key2 = GetBodyKey(bodyId2) + ".tar";
+  return getKeyRangeUrl(dataUrl, key1, key2);
+}
+
+std::string ZDvidUrl::getTarSupervoxelsUrl()
+{
+  return getDataUrl(
+        ZDvidData::GetName(ZDvidData::ROLE_TAR_SUPERVOXELS,
+                           ZDvidData::ROLE_BODY_LABEL,
+                           m_dvidTarget.getBodyLabelName()));
+}
+
+std::string ZDvidUrl::getTarSupervoxelsUrl(uint64_t bodyId)
+{
+  ZString dataUrl = getTarSupervoxelsUrl();
+  ZString key = GetBodyKey(bodyId);
+  return GetFullUrl(GetTarfileCommandUrl(dataUrl), key);
+}
+
 std::string ZDvidUrl::getSkeletonUrl() const
 {
   return getSkeletonUrl(m_dvidTarget.getBodyLabelName());
@@ -214,6 +241,11 @@ std::string ZDvidUrl::getSkeletonConfigUrl(const std::string &bodyLabelName)
 std::string ZDvidUrl::GetKeyCommandUrl(const std::string &dataUrl)
 {
   return GetFullUrl(dataUrl, m_keyCommand);
+}
+
+std::string ZDvidUrl::GetTarfileCommandUrl(const std::string &dataUrl)
+{
+  return GetFullUrl(dataUrl, m_tarfileCommand);
 }
 
 std::string ZDvidUrl::getSupervoxelUrl(const std::string &dataName) const
@@ -1134,6 +1166,16 @@ std::string ZDvidUrl::getLocalBodyIdUrl(int x, int y, int z) const
   return url;
 }
 
+std::string ZDvidUrl::getLocalSupervoxelIdUrl(int x, int y, int z) const
+{
+  std::string url = getLocalBodyIdUrl(x, y, z);
+  if (!url.empty()) {
+    url += "?supervoxels=true";
+  }
+
+  return url;
+}
+
 std::string ZDvidUrl::getLocalBodyIdArrayUrl() const
 {
   return GetFullUrl(getLabels64Url(), m_labelArrayCommand);
@@ -1193,6 +1235,12 @@ std::string ZDvidUrl::getLabelszSyncUrl(const std::string &dataName) const
   return GetFullUrl(getDataUrl(dataName), "sync");
 }
 
+std::string ZDvidUrl::getLabelMappingUrl() const
+{
+  return GetFullUrl(
+        getDataUrl(m_dvidTarget.getSegmentationName()), m_labelMappingCommand);
+}
+
 std::string ZDvidUrl::getAnnotationUrl(
     const std::string &dataName, const std::string tag) const
 {  
@@ -1206,12 +1254,13 @@ std::string ZDvidUrl::getAnnotationUrl(
   std::string url = getAnnotationUrl(dataName);
 
   if (!url.empty()) {
-    if (m_dvidTarget.getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
-      url = getAnnotationUrl(dataName, ZDvid::GetBodyIdTag(label));
-    } else {
+    if (m_dvidTarget.isSegmentationSyncable()) {
       std::ostringstream stream;
       stream << label;
       url += "/" + m_annotationLabelCommand + "/" + stream.str();
+    } else {
+      //A workaround for syncing to labelmap (temporary solution)
+      url = getAnnotationUrl(dataName, ZDvid::GetBodyIdTag(label));
     }
   }
 

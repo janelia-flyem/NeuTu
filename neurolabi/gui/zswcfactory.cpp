@@ -556,6 +556,75 @@ ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
   return tree;
 }
 
+ZSwcTree* ZSwcFactory::CreateSurfaceSwc(
+    const ZObject3dScan &obj, int slicePartition, int sparseLevel)
+{
+  ZSwcTree *tree = NULL;
+  if (slicePartition == 0) {
+    tree = CreateSurfaceSwc(obj, sparseLevel);
+  } else {
+    if (tree == NULL) {
+      tree = new ZSwcTree();
+    }
+    tree->forceVirtualRoot();
+    Swc_Tree_Node *root = tree->root();
+
+    int minZ = obj.getMinZ();
+    int maxZ = obj.getMaxZ();
+    for (int z = minZ; z < maxZ; ++z) {
+      ZObject3dScan slice = obj.getSlice(z - slicePartition, z + slicePartition);
+      ZStack *stack = slice.toStackObjectWithMargin(1, 1);
+      if (stack != NULL) {
+        size_t area = stack->width() * stack->height();
+        const uint8_t* in_array =
+            stack->array8() + area * (z - stack->getOffset().getZ());
+
+        int conn = 6;
+        size_t offset = 0;
+        int neighbor[26];
+        int n_in_bound = conn;
+        int count = 0;
+        double radius = sparseLevel;
+        int width = stack->width();
+        int height = stack->height();
+
+        Stack_Neighbor_Offset(conn, width, height, neighbor);
+
+        int cwidth = width - 1;
+        int cheight = height - 1;
+
+        for (int j = 0; j <= cheight; j++) {
+          for (int i = 0; i <= cwidth; i++) {
+            uint8_t in_value = in_array[offset];
+            if (in_value > 0) {
+              bool isSurface = false;
+              for (int n = 0; n < n_in_bound; n++) {
+                if (in_array[offset + neighbor[n]] != in_value) {
+                  isSurface = true;
+                  break;
+                }
+              }
+
+              if (isSurface) {
+                if ((count++ % sparseLevel == 0) /*|| nbrCount < 3*/) {
+                  SwcTreeNode::makePointer(
+                        i + stack->getOffset().getX(),
+                        j + stack->getOffset().getY(),
+                        z, radius, root);
+                }
+              }
+            }
+            offset++;
+          }
+        }
+        delete stack;
+      }
+    }
+  }
+
+  return tree;
+}
+
 ZSwcTree* ZSwcFactory::CreateSurfaceSwcNoPartition(
     const ZObject3dScan &obj, int sparseLevel, ZSwcTree *tree)
 {

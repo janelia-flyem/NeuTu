@@ -1,4 +1,19 @@
 #!/bin/bash
 
-ls *_*
- 
+function get_package_name()
+{
+  name=$1
+  for x in neutu-develop neutu-alpha neutu-beta neutu
+  do
+    if [ "$1" == "$x" ]
+    then
+      name=neutu
+      break
+    fi
+  done
+
+  echo $name 
+}
+
+test_neutu=$( get_neutu_name $1 )
+echo $test_neutu

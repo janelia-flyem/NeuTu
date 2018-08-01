@@ -15,6 +15,10 @@
 
 class ZStackView;
 class ZDvidPatchDataFetcher;
+class ZStackViewParam;
+class ZDvidDataSliceHelper;
+class ZDvidTarget;
+class ZDvidReader;
 
 class ZDvidTileEnsemble : public ZStackObject
 {
@@ -35,17 +39,16 @@ public:
   ZDvidTile* getTile(int resLevel, const ZDvidTileInfo::TIndex &index);
 
   void setDvidTarget(const ZDvidTarget &dvidTarget);
-  void attachView(ZStackView *view);
+//  void attachView(ZStackView *view);
 
   virtual const std::string& className() const;
 
   int getCurrentZ() const;
 
-  ZStackView* getView() const;
+//  ZStackView* getView() const;
 
-  const ZDvidTarget& getDvidTarget() const {
-    return m_dvidTarget;
-  }
+  const ZDvidTarget& getDvidTarget() const;
+  const ZDvidReader& getDvidReader() const;
 
   void enhanceContrast(bool high);
   void setContrastProtocal(const ZJsonObject &obj);
@@ -58,6 +61,7 @@ public:
 public:
   bool update(
       const std::vector<ZDvidTileInfo::TIndex>& tileIndices, int resLevel, int z);
+  bool update(const ZStackViewParam &viewParam);
   void updateContrast();
   void updatePatch(const ZImage *patch, const ZIntCuboid &region);
 //#if defined(_ENABLE_LIBDVIDCPP_)
@@ -67,11 +71,21 @@ public:
 //#endif
 
 private:
+  const ZDvidDataSliceHelper* getHelper() const {
+    return m_helper.get();
+  }
+  ZDvidDataSliceHelper* getHelper() {
+    return m_helper.get();
+  }
+
+  void forceUpdate();
+
+private:
   std::vector<std::map<ZDvidTileInfo::TIndex, ZDvidTile*> > m_tileGroup;
   ZDvidTileInfo m_tilingInfo;
-  ZDvidTarget m_dvidTarget;
-  ZDvidReader m_reader;
-  ZStackView *m_view;
+//  ZDvidTarget m_dvidTarget;
+//  ZDvidReader m_reader;
+//  ZStackView *m_view;
   mutable ZImage *m_patch;
   mutable ZIntCuboid m_patchRange;
   bool m_highContrast;
@@ -79,9 +93,10 @@ private:
 
   ZDvidPatchDataFetcher *m_dataFetcher;
 
+  std::unique_ptr<ZDvidDataSliceHelper> m_helper;
   mutable QMutex m_updateMutex;
 
-#if defined(_ENABLE_LIBDVIDCPP_)
+#if defined(_ENABLE_LIBDVIDCPP_2)
   std::vector<ZSharedPointer<libdvid::DVIDNodeService> > m_serviceArray;
 #endif
 };

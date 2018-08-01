@@ -5,6 +5,7 @@
 #include "zpoint.h"
 
 class QRect;
+class ZAffinePlane;
 
 /*!
  * \brief The class of managing parameters of viewing an arbitrarily cut slice.
@@ -39,6 +40,8 @@ public:
   int getWidth() const;
   int getHeight() const;
 
+  ZAffinePlane getAffinePlane() const;
+
   /*!
    * \brief Move in the slicing coordinate system.
    *
@@ -55,6 +58,11 @@ public:
   bool hasSamePlaneCenter(const ZArbSliceViewParam &param) const;
 
   bool isValid() const;
+
+  /*!
+   * \brief Check if the affine planes overlap and have the same orientation.
+   */
+  bool isSamePlane(const ZArbSliceViewParam &param) const;
 
 private:
   int m_width = 0;

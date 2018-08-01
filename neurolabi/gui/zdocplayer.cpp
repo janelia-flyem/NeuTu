@@ -11,6 +11,7 @@
 #include "dvid/zdvidlabelslice.h"
 #include "dvid/zdvidsparsevolslice.h"
 #include "dvid/zdvidgrayslice.h"
+#include "dvid/zdvidtileensemble.h"
 #include "flyem/zflyemmisc.h"
 
 ZDocPlayer::~ZDocPlayer()
@@ -65,6 +66,16 @@ ZIntCuboid ZDocPlayer::getBoundBox() const
   }
 
   return box;
+}
+
+ZTask* ZDocPlayer::getFutureTask() const
+{
+  return NULL;
+}
+
+ZTask* ZDocPlayer::getFutureTask(ZStackDoc */*doc*/) const
+{
+  return NULL;
 }
 
 /*************************************/
@@ -703,6 +714,16 @@ bool ZDvidGraySlicePlayer::updateData(const ZStackViewParam &viewParam) const
   return updated;
 }
 
+ZTask* ZDvidGraySlicePlayer::getFutureTask(ZStackDoc *doc) const
+{
+  ZDvidGraySlice *obj = getCompleteData();
+  if (obj != NULL) {
+    return obj->makeFutureTask(doc);
+  }
+
+  return NULL;
+}
+
 /////////////////////////////
 
 
@@ -732,6 +753,44 @@ bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
 
   return updated;
 }
+
+ZTask* ZDvidLabelSlicePlayer::getFutureTask(ZStackDoc *doc) const
+{
+  ZDvidLabelSlice *obj = getCompleteData();
+  if (obj != NULL) {
+    return obj->makeFutureTask(doc);
+  }
+
+  return NULL;
+}
+
+
+/////////////////////////////
+ZDvidTileEnsemblePlayer::ZDvidTileEnsemblePlayer(ZStackObject *data) :
+  ZDocPlayer(data)
+{
+}
+
+ZDvidTileEnsemble* ZDvidTileEnsemblePlayer::getCompleteData() const
+{
+  return dynamic_cast<ZDvidTileEnsemble*>(m_data);
+}
+
+bool ZDvidTileEnsemblePlayer::updateData(const ZStackViewParam &viewParam) const
+{
+  bool updated = false;
+  if (m_enableUpdate) {
+    ZDvidTileEnsemble *obj = getCompleteData();
+    if (obj != NULL) {
+      if (obj->isVisible()) {
+        updated = obj->update(viewParam);
+      }
+    }
+  }
+
+  return updated;
+}
+
 
 /////////////////////////////
 
