@@ -2855,7 +2855,7 @@ ZDvidSparseStack* ZFlyEmProofMvc::updateBodyForSplit(
     uint64_t bodyId, ZDvidReader &reader)
 {
   ZOUT(LINFO(), 3) << "Reading sparse stack async:" << bodyId;
-  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId);
+  ZDvidSparseStack *body = reader.readDvidSparseStackAsync(bodyId, flyem::LABEL_BODY);
 
   body->setTarget(ZStackObject::TARGET_DYNAMIC_OBJECT_CANVAS);
   body->setZOrder(0);
@@ -3016,7 +3016,7 @@ void ZFlyEmProofMvc::exportBodyStack()
           uint64_t bodyId = *iter;
           if (bodyId > 0) {
             ZDvidSparseStack *sparseStack = NULL;
-            sparseStack = reader.readDvidSparseStack(bodyId);
+            sparseStack = reader.readDvidSparseStack(bodyId, flyem::LABEL_BODY);
             ZStackWriter stackWriter;
             ZStack *stack = sparseStack->makeIsoDsStack(neutube::ONEGIGA, true);
             QString fileName = dirName + QString("/%1.tif").arg(bodyId);
@@ -3046,11 +3046,12 @@ void ZFlyEmProofMvc::exportSelectedBodyStack()
         ZDvidSparseStack *sparseStack = NULL;
         if (reader.isReady() && !idSet.empty()) {
           std::set<uint64_t>::const_iterator iter = idSet.begin();
-          sparseStack = reader.readDvidSparseStack(*iter);
+          sparseStack = reader.readDvidSparseStack(*iter, flyem::LABEL_BODY);
 
           ++iter;
           for (; iter != idSet.end(); ++iter) {
-            ZDvidSparseStack *sparseStack2 = reader.readDvidSparseStack(*iter);
+            ZDvidSparseStack *sparseStack2 =
+                reader.readDvidSparseStack(*iter, flyem::LABEL_BODY);
             sparseStack->getSparseStack()->merge(*(sparseStack2->getSparseStack()));
 
             delete sparseStack2;

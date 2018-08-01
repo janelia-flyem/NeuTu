@@ -1224,7 +1224,7 @@ ZDvidSparseStack* ZFlyEmBody3dDoc::loadDvidSparseStack(
 #ifdef _DEBUG_
     std::cout << "Reading body " << bodyId << " ..." << std::endl;
 #endif
-    body = getBodyReader().readDvidSparseStackAsync(bodyId);
+    body = getBodyReader().readDvidSparseStackAsync(bodyId, type);
     body->setSource(ZStackObjectSourceFactory::MakeSplitObjectSource());
     getDataDocument()->addObject(body, true);
   } else {

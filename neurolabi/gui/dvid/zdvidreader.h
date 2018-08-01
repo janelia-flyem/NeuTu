@@ -222,11 +222,11 @@ public:
 
   ZSparseStack* readSparseStack(uint64_t bodyId) const;
   ZDvidSparseStack* readDvidSparseStack(
-      uint64_t bodyId, flyem::EBodyLabelType labelType = flyem::LABEL_BODY) const;
+      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
 //  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
   ZDvidSparseStack* readDvidSparseStackAsync(
-      uint64_t bodyId, flyem::EBodyLabelType labelType = flyem::LABEL_BODY) const;
+      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(
