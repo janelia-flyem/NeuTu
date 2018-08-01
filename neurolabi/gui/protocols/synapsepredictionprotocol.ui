@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>459</width>
-    <height>514</height>
+    <height>582</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,11 +15,69 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="QLabel" name="siteListLabel">
+       <property name="text">
+        <string>Site list:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="siteListLabel2">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_6">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Review: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="modeMenu"/>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="toReviewLabel">
        <property name="text">
-        <string>Sites to review:</string>
+        <string>Sites to be reviewed:</string>
        </property>
       </widget>
      </item>
@@ -230,6 +288,16 @@
       </spacer>
      </item>
      <item>
+      <widget class="QCheckBox" name="gridCheckBox">
+       <property name="text">
+        <string>Show grid</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="refreshButton">
        <property name="text">
         <string>Refresh data</string>
@@ -252,13 +320,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="detailsButton">
-       <property name="text">
-        <string>Protocol details...</string>
-       </property>
-      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="exitButton">
@@ -297,8 +358,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>260</x>
+     <y>577</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -313,8 +374,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>328</x>
+     <y>577</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

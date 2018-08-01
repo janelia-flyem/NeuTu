@@ -1,6 +1,7 @@
 #include "zstackreader.h"
 
 #include "zintcuboid.h"
+#include "zstack.hxx"
 
 #if defined(_ENABLE_LIBDVIDCPP_)
 #include "dvid/zdvidreader.h"

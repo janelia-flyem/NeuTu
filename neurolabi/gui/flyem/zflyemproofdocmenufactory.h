@@ -3,6 +3,9 @@
 
 #include "zstackdocmenufactory.h"
 
+class ZFlyEmProofPresenter;
+class ZMenuConfig;
+
 class ZFlyEmProofDocMenuFactory : public ZStackDocMenuFactory
 {
 public:
@@ -21,6 +24,9 @@ public:
       ZStackPresenter *presenter, QWidget *parentWidget, QMenu *menu);
 
 //  QMenu* makeContextMenu(Z3DWindow *window, QMenu *menu);
+
+private:
+  ZMenuConfig getConfig(ZFlyEmProofPresenter *presenter);
 
 };
 

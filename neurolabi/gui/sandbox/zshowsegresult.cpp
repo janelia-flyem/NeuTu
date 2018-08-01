@@ -10,6 +10,8 @@
 #include "zsandbox.h"
 #include "mainwindow.h"
 #include "zstackdocdatabuffer.h"
+#include "zstack.hxx"
+#include "zobject3dscan.h"
 
 ZShowSegResultModule::ZShowSegResultModule(QObject *parent) :
   ZSandboxModule(parent)

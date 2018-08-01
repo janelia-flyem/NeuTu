@@ -27,7 +27,7 @@
 #include "zparameter.h"
 #include "z3drenderport.h"
 #include "zvertexarrayobject.h"
-#include "z3dview.h"
+//#include "z3dview.h"
 
 Z3DFilter::Z3DFilter(QObject* parent)
   : QObject(parent)

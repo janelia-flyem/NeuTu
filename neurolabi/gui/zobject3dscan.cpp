@@ -66,6 +66,12 @@ ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj),
   *this = obj;
 }
 
+ZObject3dScan::ZObject3dScan(const ZObject3dScan &&obj) : ZStackObject(obj),
+  m_zProjection(NULL)
+{
+  *this = obj;
+}
+
 ZObject3dScan::~ZObject3dScan()
 {
   deprecate(COMPONENT_ALL);
@@ -92,6 +98,26 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&>(obj);
 
   m_stripeArray = obj.m_stripeArray;
+  m_isCanonized = obj.m_isCanonized;
+  setLabel(obj.getLabel());
+//  m_label = obj.m_label;
+  m_blockingEvent = false;
+  m_sliceAxis = obj.m_sliceAxis;
+  m_dsIntv = obj.m_dsIntv;
+//  uint64_t m_label;
+
+//  this->m_zProjection = NULL;
+
+  return *this;
+}
+
+ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan&& obj)
+{
+  deprecate(COMPONENT_ALL);
+
+  dynamic_cast<ZStackObject&>(*this) = obj;
+
+  m_stripeArray = std::move(obj.m_stripeArray);
   m_isCanonized = obj.m_isCanonized;
   setLabel(obj.getLabel());
 //  m_label = obj.m_label;
@@ -242,7 +268,7 @@ size_t ZObject3dScan::getVoxelNumber(int z) const
   return voxelNumber;
 }
 
-const std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
+const std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
 {
   if (isDeprecated(COMPONENT_SLICEWISE_VOXEL_NUMBER)) {
     //std::vector<size_t> voxelNumber;
@@ -260,9 +286,9 @@ const std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
   return m_slicewiseVoxelNumber;
 }
 
-std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber()
+std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber()
 {
-  return const_cast<std::map<int, size_t>&>(
+  return const_cast<std::unordered_map<int, size_t>&>(
         static_cast<const ZObject3dScan&>(*this).getSlicewiseVoxelNumber());
 }
 
@@ -460,8 +486,7 @@ ZObject3d* ZObject3dScan::toObject3d() const
   return obj;
 }
 
-const std::map<size_t, std::pair<size_t, size_t> >&
-ZObject3dScan::getIndexSegmentMap() const
+const std::map<size_t, std::pair<size_t, size_t> > &ZObject3dScan::getIndexSegmentMap() const
 {
   if (isDeprecated(COMPONENT_INDEX_SEGMENT_MAP)) {
     m_indexSegmentMap.clear();
@@ -480,8 +505,7 @@ ZObject3dScan::getIndexSegmentMap() const
 
 bool ZObject3dScan::getSegment(size_t index, int *z, int *y, int *x1, int *x2)
 {
-  const std::map<size_t, std::pair<size_t, size_t> >&segMap =
-      getIndexSegmentMap();
+  const auto& segMap = getIndexSegmentMap();
   if (segMap.count(index) > 0) {
     std::pair<size_t, size_t> location = segMap.at(index);
     *z = m_stripeArray[location.first].getZ();
@@ -515,7 +539,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   int sw = width;
   int sh = height;
   int sd = depth;
-  ZGeometry::shiftSliceAxis(sw, sh, sd, m_sliceAxis);
+  zgeom::shiftSliceAxis(sw, sh, sd, m_sliceAxis);
 
   uint8_t *array = stack->array;
   uint8_t *arrayOrigin = array;
@@ -525,7 +549,7 @@ void ZObject3dScan::loadStack(const Stack *stack)
   size_t yStride = width;
   size_t zStride = area;
 
-  ZGeometry::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
+  zgeom::shiftSliceAxis(xStride, yStride, zStride, m_sliceAxis);
 
   switch (m_sliceAxis) {
   case neutube::Z_AXIS: //XY plane
@@ -1628,8 +1652,7 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
   if (graph != NULL) {
     const std::vector<ZGraph*> &subGraph = graph->getConnectedSubgraph();
 
-    const std::map<size_t, std::pair<size_t, size_t> >&segMap =
-        getIndexSegmentMap();
+    const auto& segMap = getIndexSegmentMap();
 
     std::vector<bool> isAdded(segMap.size(), false);
 
@@ -1733,7 +1756,7 @@ size_t ZObject3dScan::getSegmentNumber() const
 
 void ZObject3dScan::translate(int dx, int dy, int dz)
 {
-  ZGeometry::shiftSliceAxis(dx, dy, dz, m_sliceAxis);
+  zgeom::shiftSliceAxis(dx, dy, dz, m_sliceAxis);
 
   for (size_t i = 0; i < getStripeNumber(); ++i) {
     m_stripeArray[i].translate(dx, dy, dz);
@@ -1996,6 +2019,7 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   case ZStackObject::BOUNDARY:
   {
     QColor color = pen.color();
+    pen.setCosmetic(m_usingCosmeticPen);
 //    color.setAlpha(255);
     pen.setColor(color);
     painter.setPen(pen);
@@ -2478,7 +2502,7 @@ bool ZObject3dScan::hit(double x, double y, double z)
   int tx = iround(x);
   int ty = iround(y);
   int tz = iround(z);
-  ZGeometry::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
+  zgeom::shiftSliceAxis(tx, ty, tz, m_sliceAxis);
   tx /= m_dsIntv.getX() + 1;
   ty /= m_dsIntv.getY() + 1;
   tz /= m_dsIntv.getZ() + 1;
@@ -3256,7 +3280,7 @@ bool ZObject3dScan::importDvidObjectBuffer(
 
 //    addStripeFast(coord[2], coord[1]);
 //    addSegmentFast(coord[0], coord[0] + runLength - 1);
-    ZGeometry::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
+    zgeom::shiftSliceAxis(coord[0], coord[1], coord[2], getSliceAxis());
 
     if (getSliceAxis() == neutube::X_AXIS) {
       for (int i = 0; i < runLength; ++i) {
@@ -3581,7 +3605,7 @@ void ZObject3dScan::addForeground(ZStack *stack)
     int z = seg.getZ();
     int y = seg.getY();
     for (int x = seg.getStart(); x <= seg.getEnd(); ++x) {
-      ZGeometry::shiftSliceAxis(x, y, z, m_sliceAxis);
+      zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
       if (stack->getIntValue(x, y, z) > 0) {
         stack->addIntValue(x, y, z, 0, 1);
       }
@@ -4118,7 +4142,7 @@ std::vector<double> ZObject3dScan::getPlaneCov() const
     cov[2] = (xyCorr - xMean * yMean) * factor;
   }
 
-  ZGeometry::shiftSliceAxis(cov[0], cov[1], cov[2], m_sliceAxis);
+  zgeom::shiftSliceAxis(cov[0], cov[1], cov[2], m_sliceAxis);
 
   return cov;
 }
@@ -4143,7 +4167,7 @@ bool ZObject3dScan::contains(const ZIntPoint &pt)
 
 bool ZObject3dScan::contains(int x, int y, int z)
 {
-  ZGeometry::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
 
   canonize();
 

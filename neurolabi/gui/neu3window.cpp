@@ -50,6 +50,10 @@
 #include "zwidgetmessage.h"
 #include "flyem/zproofreadwindow.h"
 #include "flyem/zflyemproofmvccontroller.h"
+#include "zstackobjectaccessor.h"
+#include "flyem/zflyembodyidcolorscheme.h"
+#include "flyem/zflyemarbdoc.h"
+#include "dvid/zdvidlabelslice.h"
 
 Neu3Window::Neu3Window(QWidget *parent) :
   QMainWindow(parent),
@@ -61,6 +65,8 @@ Neu3Window::Neu3Window(QWidget *parent) :
   m_testTimer = new QTimer(this);
 //  m_testTimer->setInterval(1000);
   connect(m_testTimer, SIGNAL(timeout()), this, SLOT(testBodyChange()));
+  connect(this, &Neu3Window::updatingSliceWidget, this, &Neu3Window::updateSliceWidget,
+          Qt::QueuedConnection);
 //  initialize();
 }
 
@@ -101,6 +107,9 @@ void Neu3Window::initialize()
   connect(m_3dwin, SIGNAL(settingTriggered()), this, SLOT(setOption()));
   connect(m_3dwin, SIGNAL(neutuTriggered()), this, SLOT(openNeuTu()));
   ZWidgetMessage::ConnectMessagePipe(m_3dwin, this);
+  ZWidgetMessage::ConnectMessagePipe(getBodyDocument(), this);
+  ZWidgetMessage::DisconnectMessagePipe(getBodyDocument(), m_3dwin);
+
   setCentralWidget(m_3dwin);
 
   createDialogs();
@@ -136,8 +145,9 @@ QAction* Neu3Window::getAction(ZActionFactory::EAction key)
 void Neu3Window::initGrayscaleWidget()
 {
   if (m_sliceWidget == NULL) {
+    LDEBUG() << "Init grayscale widget";
     m_sliceWidget = ZFlyEmArbMvc::Make(getDataDocument()->getDvidTarget());
-    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
+//    ZFlyEmProofMvcController::DisableContextMenu(m_sliceWidget);
     ZFlyEmProofMvcController::Disable3DVisualization(m_sliceWidget);
 
     connect(m_sliceWidget, SIGNAL(sliceViewChanged(ZArbSliceViewParam)),
@@ -146,12 +156,11 @@ void Neu3Window::initGrayscaleWidget()
     m_sliceWidget->setDefaultViewPort(
           getSliceViewParam(m_browsePos).getViewPort());
 
-    ZFlyEmProofMvcController::SelectBody(
-          m_sliceWidget,
-          getBodyDocument()->getUnencodedBodySet());
+    updateSliceBrowserSelection();
     if (getDataDocument()->getDvidTarget().hasMultiscaleSegmentation()) {
       ZFlyEmProofMvcController::EnableHighlightMode(m_sliceWidget);
     }
+    ZFlyEmProofMvcController::SetTodoDelegate(m_sliceWidget, getBodyDocument());
   }
 }
 
@@ -173,7 +182,7 @@ void Neu3Window::connectSignalSlot()
           this, SLOT(updateWidget()));
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshLoaded,
-          this, &Neu3Window::zoomToBodyMesh, Qt::QueuedConnection);
+          this, &Neu3Window::zoomToBodyMesh);
 
   connect(getBodyDocument(), SIGNAL(meshArchiveLoadingStarted()),
           this, SLOT(meshArchiveLoadingStarted()));
@@ -189,7 +198,7 @@ void Neu3Window::connectSignalSlot()
   // signals emitted with each mesh.
 
   connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
-          this, &Neu3Window::syncBodyListModel, Qt::QueuedConnection);
+          this, &Neu3Window::syncBodyListModel);
 
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
@@ -223,6 +232,8 @@ void Neu3Window::start()
   initialize();
   raise();
   showMaximized();
+
+//  initNativeSliceBrowser();
 }
 
 void Neu3Window::initOpenglContext()
@@ -275,6 +286,7 @@ void Neu3Window::setOption()
 {
   m_flyemSettingDlg->loadSetting();
   m_flyemSettingDlg->exec();
+  GET_FLYEM_CONFIG.saveSettings();
 }
 
 void Neu3Window::createDockWidget()
@@ -402,6 +414,10 @@ void Neu3Window::createTaskWindow() {
     connect(m_taskProtocolWidget, SIGNAL(allBodiesRemoved()), this, SLOT(removeAllBodies()));
     connect(m_taskProtocolWidget, SIGNAL(bodySelectionChanged(QSet<uint64_t>)),
             this, SLOT(setBodyItemSelection(QSet<uint64_t>)));
+    connect(m_taskProtocolWidget, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
+            this, SLOT(browse(double,double,double,const QHash<uint64_t, QColor>&)));
+    connect(m_taskProtocolWidget, SIGNAL(updateGrayscaleColor(const QHash<uint64_t,QColor>&)),
+            this, SLOT(updateBrowserColor(const QHash<uint64_t,QColor>&)));
     ZWidgetMessage::ConnectMessagePipe(m_taskProtocolWidget, this);
 
     // make the OpenGL context current in case any task's widget changes any parameters
@@ -464,6 +480,10 @@ void Neu3Window::updateSliceViewGraph(const ZArbSliceViewParam &param)
     ZStackDocAccessor::AddObjectUnique(getBodyDocument(), graph);
 
     m_browsePos = param.getCenter().toPoint();
+
+#ifdef _DEBUG_
+    std::cout << "Browse pos: " << m_browsePos.toString() << std::endl;
+#endif
   }
 }
 
@@ -487,11 +507,31 @@ void Neu3Window::updateBrowseSize()
 
 void Neu3Window::processCameraRotation()
 {
+  trackSliceViewPort();
   updateBrowseSize();
   updateSliceBrowser();
 //  updateBrowser();
 //  updateEmbeddedGrayscale();
 //  updateGrayscaleWidget();
+}
+
+void Neu3Window::trackSliceViewPort() const
+{
+  if (m_sliceWidget != NULL) {
+    LDEBUG() << "Slice viewport:" << m_sliceWidget->getViewPort();
+  }
+}
+
+void Neu3Window::updateSliceWidget()
+{
+  LDEBUG() << "Updating slice widget";
+  if (m_sliceWidget != NULL) {
+    ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
+    m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
+    m_sliceWidget->resetViewParam(viewParam);
+
+    trackSliceViewPort();
+  }
 }
 
 void Neu3Window::updateSliceBrowser()
@@ -500,9 +540,9 @@ void Neu3Window::updateSliceBrowser()
   case BROWSE_NATIVE:
     if (m_nativeSliceDock != NULL) {
       m_nativeSliceDock->show();
-      ZArbSliceViewParam viewParam = getSliceViewParam(m_browsePos);
-      m_sliceWidget->setDefaultViewPort(viewParam.getViewPort());
-      m_sliceWidget->resetViewParam(viewParam);
+      LDEBUG() << "m_nativeSliceDock->show called";
+      updateSliceWidget();
+//      QTimer::singleShot(3000, this, &Neu3Window::updateSliceWidget);
     }
     break;
   case BROWSE_NEUROGLANCER:
@@ -513,6 +553,27 @@ void Neu3Window::updateSliceBrowser()
     break;
   default:
     break;
+  }
+}
+
+void Neu3Window::updateSliceBrowserSelection()
+{
+  ZFlyEmProofMvcController::SelectBody(
+        m_sliceWidget,
+        getBodyDocument()->getNormalBodySet());
+}
+
+void Neu3Window::updateBrowserColor(const QHash<uint64_t, QColor> &idToColor)
+{
+  if (m_sliceWidget) {
+    const ZSharedPointer<ZFlyEmBodyColorScheme>
+        colorMap(new ZFlyEmBodyIdColorScheme(idToColor));
+
+    ZFlyEmArbDoc* doc = m_sliceWidget->getCompleteDocument();
+    ZDvidLabelSlice* slice = doc->getDvidLabelSlice(neutube::A_AXIS);
+    slice->setCustomColorMap(colorMap);
+
+     updateSliceBrowserSelection();
   }
 }
 
@@ -527,7 +588,7 @@ void Neu3Window::updateWebView()
 
     QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
                m_dataContainer->getDvidTarget(), m_browsePos.toIntPoint(),
-               rotation, getBodyDocument()->getUnencodedBodySet()));
+               rotation, getBodyDocument()->getNormalBodySet()));
 
 
     m_webView->setUrl(url);
@@ -601,41 +662,19 @@ void Neu3Window::browse(double x, double y, double z)
   } else {
     updateSliceBrowser();
   }
+}
 
-#if 0
-#if 1
-//  initGrayscaleWidget();
-  createGrayscaleWidget();
-  m_grayscaleWidget->show();
-  m_grayscaleWidget->resetViewParam(getSliceViewParam(x, y, z));
-  m_grayscaleWidget->raise();
-#else
-  glm::quat r = m_3dwin->getCamera()->getNeuroglancerRotation();
-  ZWeightedPoint rotation;
-  rotation.set(r.x, r.y, r.z);
-  rotation.setWeight(r.w);
-
-#if defined(_USE_WEBENGINE_)
-  initWebView();
-  QUrl url(ZFlyEmMisc::GetNeuroglancerPath(
-             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
-             rotation, m_bodyListWidget->getModel()->getBodySet()));
-
-
-  m_webView->setUrl(url);
-  m_webView->show();
-  m_webView->raise();
-#else
-  ZBrowserOpener *bo = ZGlobal::GetInstance().getBrowserOpener();
-
-  bo->open(ZFlyEmMisc::GetNeuroglancerPath(
-             m_dataContainer->getDvidTarget(), ZIntPoint(x, y, z),
-             rotation, m_bodyListWidget->getModel()->getBodySet()));
-#endif
-#endif
-
+void Neu3Window::browse(double x, double y, double z, const QHash<uint64_t, QColor> &idToColor)
+{
   m_browsePos.set(x, y, z);
-#endif
+
+  if (m_browseMode == BROWSE_NONE) {
+    m_browseMode = BROWSE_NATIVE;
+    initNativeSliceBrowser();
+  }
+
+  updateBrowserColor(idToColor);
+  updateSliceBrowser();
 }
 
 void Neu3Window::startBrowser(EBrowseMode mode)
@@ -886,6 +925,7 @@ namespace {
   static bool zoomToLoadedBody = true;
 }
 
+//Todo: change global zoomToLoadedBody to a member variable
 void Neu3Window::enableZoomToLoadedBody(bool enable)
 {
   zoomToLoadedBody = enable;
@@ -902,25 +942,30 @@ void Neu3Window::zoomToBodyMesh()
     return;
   }
 
-  QList<ZMesh*> meshList = getBodyDocument()->getMeshList();
-  if (meshList.size() == 1) {
-    ZMesh *mesh = meshList.front();
-    m_3dwin->gotoPosition(mesh->getBoundBox());
-  }
+  QList<ZMesh*> meshList =
+      ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+  ZMesh *mesh = meshList.front();
+  m_3dwin->gotoPosition(mesh->getBoundBox());
 }
 
 void Neu3Window::processSwcChangeFrom3D(
     QList<ZSwcTree *> selected, QList<ZSwcTree *> deselected)
 {
-  foreach (ZSwcTree *tree, selected) {
-    if (tree->getLabel() > 0) {
-      emit bodySelected(tree->getLabel());
+  {
+    QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(selected);
+    foreach (uint64_t label, labelSet) {
+      if (label > 0) {
+        emit bodySelected(label);
+      }
     }
   }
 
-  foreach (ZSwcTree *tree, deselected) {
-    if (tree->getLabel() > 0) {
-      emit bodyDeselected(tree->getLabel());
+  {
+    QSet<uint64_t> labelSet = ZStackObjectAccessor::GetLabelSet(deselected);
+    foreach (uint64_t label, labelSet) {
+      if (label > 0) {
+        emit bodySelected(label);
+      }
     }
   }
 }
@@ -980,6 +1025,7 @@ void Neu3Window::syncBodyListModel()
   // would have triggered for each of the meshes, or else they will not function
   // correctly (e.g., will not be pickable in the 3D view).
 
+  LDEBUG() << "Syncing body list";
   QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
   std::set<uint64_t> selected;
   for (ZMesh *mesh : meshList) {

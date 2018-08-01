@@ -16,7 +16,11 @@ contains(CONFIG, neu3) {
 contains(CONFIG, neu3) | contains(CONFIG, flyem) {
   CONFIG *=c++11
   DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
+  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
+
+CONFIG += object_parallel_to_source
+message("Objs dir: $${OBJECTS_DIR}")
 
 #DEFINES+=_CLI_VERSION
 win32 {
@@ -283,7 +287,7 @@ include(command/command.pri)
 
 message("Config: $$CONFIG")
 
-message($$QMAKE_MACOSX_DEPLOYMENT_TARGET)
+message("Target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
 # Input
 RESOURCES = gui.qrc
@@ -675,6 +679,7 @@ HEADERS += mainwindow.h \
     flyem/zflyemkeyoperationconfig.h \
     zslicedpuncta.h \
     flyem/zflyembookmarkwidget.h \
+    flyem/zflyembookmarkfilter.h \
     zmultiscalepixmap.h \
     biocytin/zbiocytinprojmaskfactory.h \
     flyem/zflyemproofdocmenufactory.h \
@@ -713,6 +718,7 @@ HEADERS += mainwindow.h \
     protocols/doNthingsprotocol.h \
     protocols/synapsepredictionprotocol.h \
     protocols/synapsepredictioninputdialog.h \
+    protocols/synapsepredictionbodyinputdialog.h \
     protocols/synapsereviewprotocol.h \
     protocols/synapsereviewinputdialog.h \
     widgets/zcolorlabel.h \
@@ -862,7 +868,27 @@ HEADERS += mainwindow.h \
     flyem/zmainwindowcontroller.h \
     zstackdocnullmenufactory.h \
     mvc/zstackspaceconfig.h \
-    mvc/zviewspaceconfig.h
+    mvc/zviewspaceconfig.h \
+    mvc/zpositionmapper.h \
+    data3d/zstackobjecthelper.h \
+    data3d/utilities.h \
+    core/utilities.h \
+    core/qthelper.h \
+    flyem/zflyemtododelegate.h \
+    zmenuconfig.h \
+    protocols/taskbodymerge.h \
+    flyem/zflyembodyidcolorscheme.h \
+    zobjsmodelmanager.h \
+    zobjsmodelfactory.h \
+    flyem/zglobaldvidrepo.h \
+    flyem/flyemdef.h \
+    concurrent/zworkthread.h \
+    concurrent/zworker.h \
+    concurrent/ztaskqueue.h \
+    flyem/zflyemroutinechecktask.h \
+    flyem/zdvidlabelslicehighrestask.h \
+    flyem/zdvidgrayslicehighrestask.h \
+    flyem/zdviddataslicetask.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -935,12 +961,14 @@ FORMS += dialogs/settingdialog.ui \
     flyem/zflyembookmarkannotationdialog.ui \
     dialogs/zflyemsplitcommitdialog.ui \
     flyem/zflyembookmarkwidget.ui \
+    flyem/zflyembookmarkfilter.ui \
     flyem/flyemorthocontrolform.ui \
     dialogs/stringlistdialog.ui \
     dialogs/flyemtododialog.ui \
     protocols/doNthingsprotocol.ui \
     protocols/synapsepredictionprotocol.ui \
     protocols/synapsepredictioninputdialog.ui \
+    protocols/synapsepredictionbodyinputdialog.ui \
     protocols/synapsereviewprotocol.ui \
     protocols/synapsereviewinputdialog.ui \
     protocols/protocoldialog.ui \
@@ -1326,6 +1354,7 @@ SOURCES += main.cpp \
     flyem/zflyemkeyoperationconfig.cpp \
     zslicedpuncta.cpp \
     flyem/zflyembookmarkwidget.cpp \
+    flyem/zflyembookmarkfilter.cpp \
     zmultiscalepixmap.cpp \
     biocytin/zbiocytinprojmaskfactory.cpp \
     flyem/zflyemproofdocmenufactory.cpp \
@@ -1365,6 +1394,7 @@ SOURCES += main.cpp \
     protocols/doNthingsprotocol.cpp \
     protocols/synapsepredictionprotocol.cpp \
     protocols/synapsepredictioninputdialog.cpp \
+    protocols/synapsepredictionbodyinputdialog.cpp \
     protocols/synapsereviewprotocol.cpp \
     protocols/synapsereviewinputdialog.cpp \
     widgets/zcolorlabel.cpp \
@@ -1509,7 +1539,26 @@ SOURCES += main.cpp \
     flyem/zmainwindowcontroller.cpp \
     zstackdocnullmenufactory.cpp \
     mvc/zstackspaceconfig.cpp \
-    mvc/zviewspaceconfig.cpp
+    mvc/zviewspaceconfig.cpp \
+    mvc/zpositionmapper.cpp \
+    data3d/zstackobjecthelper.cpp \
+    data3d/utilities.cpp \
+    core/utilities.cpp \
+    core/qthelper.cpp \
+    flyem/zflyemtododelegate.cpp \
+    zmenuconfig.cpp \
+    protocols/taskbodymerge.cpp \
+    flyem/zflyembodyidcolorscheme.cpp \
+    zobjsmodelmanager.cpp \
+    zobjsmodelfactory.cpp \
+    flyem/zglobaldvidrepo.cpp \
+    concurrent/zworkthread.cpp \
+    concurrent/zworker.cpp \
+    concurrent/ztaskqueue.cpp \
+    flyem/zflyemroutinechecktask.cpp \
+    flyem/zdvidlabelslicehighrestask.cpp \
+    flyem/zdvidgrayslicehighrestask.cpp \
+    flyem/zdviddataslicetask.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

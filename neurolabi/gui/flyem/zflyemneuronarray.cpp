@@ -5,6 +5,7 @@
 #include "zhdf5writer.h"
 #include "zhdf5reader.h"
 #include "misc/miscutility.h"
+#include "zjsonparser.h"
 
 ZFlyEmNeuronArray::ZFlyEmNeuronArray()
 {

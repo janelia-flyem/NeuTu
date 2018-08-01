@@ -67,6 +67,16 @@ void ZStackViewParam::setViewPort(const QRect &rect, int z)
   setZ(z);
 }
 
+void ZStackViewParam::closeViewPort()
+{
+  m_viewProj.closeViewPort();
+}
+
+void ZStackViewParam::openViewPort()
+{
+  m_viewProj.openViewPort();
+}
+
 void ZStackViewParam::setWidgetRect(const QRect &rect)
 {
   m_viewProj.setWidgetRect(rect);
@@ -125,7 +135,11 @@ bool ZStackViewParam::contains(const ZStackViewParam &param) const
     if (getSliceAxis() == neutube::A_AXIS) {
       return getSliceViewParam().contains(param.getSliceViewParam());
     } else if (m_z == param.m_z) {
-      return getViewPort().contains(param.getViewPort());
+      if (param.getViewPort().isEmpty()) {
+        return true;
+      } else {
+        return getViewPort().contains(param.getViewPort());
+      }
     }
   }
 
@@ -139,7 +153,7 @@ bool ZStackViewParam::containsViewport(const ZStackViewParam &param) const
 
 bool ZStackViewParam::contains(int x, int y, int z)
 {
-  ZGeometry::shiftSliceAxis(x, y, z, getSliceAxis());
+  zgeom::shiftSliceAxis(x, y, z, getSliceAxis());
 
   if (z == m_z) {
     return getViewPort().contains(x, y);
@@ -163,9 +177,14 @@ bool ZStackViewParam::isValid() const
   return m_viewProj.isValid();
 }
 
-int ZStackViewParam::getArea() const
+void ZStackViewParam::invalidate()
 {
-  return getViewPort().width() * getViewPort().height();
+  m_viewProj.setZoom(0);
+}
+
+size_t ZStackViewParam::getArea() const
+{
+  return size_t(getViewPort().width()) * size_t(getViewPort().height());
 }
 
 void ZStackViewParam::setSliceAxis(neutube::EAxis sliceAxis)
@@ -178,7 +197,7 @@ neutube::EAxis ZStackViewParam::getSliceAxis() const
   return m_sliceAxis;
 }
 
-int ZStackViewParam::getZoomLevel(int maxLevel) const
+int ZStackViewParam::getZoomLevel() const
 {
   int zoom = std::round(std::log(1.0 / getZoomRatio()) / std::log(2.0) ) -1;
 
@@ -192,6 +211,12 @@ int ZStackViewParam::getZoomLevel(int maxLevel) const
     zoom += 1;
     scale = pow(2, zoom);
   }
+  return zoom;
+}
+
+int ZStackViewParam::getZoomLevel(int maxLevel) const
+{
+  int zoom = getZoomLevel();
 
   if (zoom > maxLevel) {
     zoom = maxLevel;
@@ -243,4 +268,20 @@ void ZStackViewParam::moveSlice(int step)
 double ZStackViewParam::getZoomRatio() const
 {
   return m_viewProj.getZoom();
+}
+
+bool ZStackViewParam::onSamePlane(const ZStackViewParam &param) const
+{
+  bool result = false;
+  if (m_sliceAxis == param.m_sliceAxis) {
+    if (m_sliceAxis == neutube::A_AXIS) {
+      result = zgeom::IsSameAffinePlane(
+            m_center.toPoint(), m_v1, m_v2,
+            param.m_center.toPoint(), param.m_v1, param.m_v2);
+    } else {
+      result = (m_z == param.m_z);
+    }
+  }
+
+  return result;
 }

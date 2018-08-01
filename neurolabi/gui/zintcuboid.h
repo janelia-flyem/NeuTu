@@ -125,6 +125,7 @@ public:
    * It returns 0 if the cuboid is invalid.
    */
   size_t getVolume() const;
+  size_t getDsMaxVolume(int xIntv, int yIntv, int zIntv) const;
 
   /*!
    * \brief Check if a point is in the cuboid.
@@ -156,6 +157,7 @@ public:
   int getDim(neutube::EAxis axis) const;
 
   ZIntPoint getCenter() const;
+  void setCenter(const ZIntPoint &center);
 
 
   /*!
@@ -174,6 +176,9 @@ public:
   void loadJson(const ZJsonArray &json);
 
   std::string toString() const;
+
+  bool operator == (const ZIntCuboid &box) const;
+  bool operator != (const ZIntCuboid &box) const;
 
 private:
   ZIntPoint m_firstCorner;

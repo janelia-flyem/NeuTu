@@ -28,7 +28,13 @@ QMenu* ZFlyEmBody3dDocMenuFactory::makeContextMenu(Z3DWindow *window, QMenu *men
 
     if (doc->hasSelectedPuncta()) {
       actionList.append(ZActionFactory::ACTION_PUNCTA_CHANGE_COLOR);
+      actionList.append(ZActionFactory::ACTION_PUNCTA_HIDE_SELECTED);
+      actionList.append(ZActionFactory::ACTION_PUNCTA_SHOW_SELECTED);
     }
+
+//    if (doc->getSelectedBodyCount() == 1) {
+
+//    }
 
     addAction(actionList, window, menu);
   }

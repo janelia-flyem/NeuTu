@@ -5,8 +5,7 @@
 
 #include <string>
 #include <vector>
-#include "zobject3dscan.h"
-#include "zstack.hxx"
+
 #include "flyem/zflyem.h"
 #include "zsparsestack.h"
 #include "dvid/zdvidtarget.h"
@@ -29,6 +28,8 @@ class ZFlyEmBookmark;
 class ZDvidSynapse;
 class ZFlyEmToDoItem;
 class ZArray;
+class ZStack;
+class ZObject3dScan;
 
 class ZDvidWriter /*: public QObject*/
 {

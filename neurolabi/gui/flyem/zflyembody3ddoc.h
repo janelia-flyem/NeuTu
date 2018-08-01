@@ -17,9 +17,6 @@
 #include "dvid/zdvidinfo.h"
 #include "dvid/zdvidwriter.h"
 #include "zthreadfuturemap.h"
-//#include "zsharedpointer.h"
-//#include "flyem/zflyembodysplitter.h"
-//#include "flyem/zflyemtodoitem.h"
 
 class ZFlyEmProofDoc;
 class ZFlyEmBodyMerger;
@@ -28,7 +25,7 @@ class ZFlyEmBody3dDocKeyProcessor;
 class ZMesh;
 class ZFlyEmBodySplitter;
 class ZArbSliceViewParam;
-//class ZFlyEmToDoItem;
+class ZFlyEmToDoItem;
 
 /*!
  * \brief The class of managing body update in 3D.
@@ -155,8 +152,9 @@ public:
   void setBodyType(flyem::EBodyType type);
   flyem::EBodyType getBodyType() const { return m_bodyType; }
 
-  QSet<uint64_t> getBodySet() const { return m_bodySet; }
+//  QSet<uint64_t> getBodySet() const { return m_bodySet; }
   QSet<uint64_t> getUnencodedBodySet() const;
+  QSet<uint64_t> getNormalBodySet() const;
 
   uint64_t getMappedId(uint64_t bodyId) const;
 
@@ -168,7 +166,8 @@ public:
   void addSynapse(uint64_t bodyId);
   void addTodo(uint64_t bodyId);
   void addTodo(int x, int y, int z, bool checked, uint64_t bodyId);
-  void addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
+  void addTosplit(int x, int y, int z, bool checked, uint64_t bodyId);
+  bool addTodo(const ZFlyEmToDoItem &item, uint64_t bodyId);
   void addTodoSliently(const ZFlyEmToDoItem &item);
   void addTodo(const QList<ZFlyEmToDoItem> &itemList);
   void updateSegmentation();
@@ -269,7 +268,13 @@ public:
   static unsigned int encodedLevel(uint64_t id);
 
   bool fromTar(uint64_t id) const;
+  bool isTarMode() const;
 
+  // A lower ResLevel means a higher resolution with more geometric detail.
+  void setMinResLevel(int res) {
+    m_minResLevel = res;
+  }
+  int getMinResLevel() const;
   void setMaxResLevel(int res) {
     m_maxResLevel = res;
   }
@@ -278,8 +283,41 @@ public:
   void makeAction(ZActionFactory::EAction item) override;
 
 public:
-  void executeAddTodoCommand(int x, int y, int z, bool checked, uint64_t bodyId);
-  void executeRemoveTodoCommand();
+  virtual void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      uint64_t bodyId) override;
+  virtual void executeRemoveTodoCommand() override;
+
+  //override to disable the swc commands
+  virtual bool executeDeleteSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeDeleteUnselectedSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand(Swc_Tree_Node */*tn*/) override {
+    return false;
+  }
+  virtual bool executeConnectSwcNodeCommand(
+      Swc_Tree_Node */*tn1*/, Swc_Tree_Node */*tn2*/) override {
+    return false;
+  }
+  virtual bool executeSmartConnectSwcNodeCommand(
+      Swc_Tree_Node */*tn1*/, Swc_Tree_Node */*tn2*/) override {
+    return false;
+  }
+  virtual bool executeSmartConnectSwcNodeCommand() override {
+    return false;
+  }
+  virtual bool executeBreakSwcConnectionCommand() override {
+    return false;
+  }
+  virtual bool executeMergeSwcNodeCommand() override {
+    return false;
+  }
 
 public:
 //  ZDvidSparseStack* loadDvidSparseStack();
@@ -313,7 +351,7 @@ public slots:
   void setSelectedTodoItemChecked(bool on);
   void checkSelectedTodoItem();
   void uncheckSelectedTodoItem();
-  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
+  void setTodoItemAction(neutube::EToDoAction action);
 
   void recycleObject(ZStackObject *obj) override;
   void killObject(ZStackObject *obj) override;
@@ -345,6 +383,7 @@ public slots:
 
 signals:
   void bodyRemoved(uint64_t bodyId);
+  void bodyRecycled(uint64_t bodyId);
   void interactionStateChanged();
 
   //Signals for triggering external body control
@@ -421,9 +460,9 @@ private:
 
   ZStackObject::EType getBodyObjectType() const;
 
-  flyem::EBodyLabelType getBodyLabelType() const {
-    return flyem::LABEL_SUPERVOXEL;
-  }
+  flyem::EBodyLabelType getBodyLabelType() const;
+
+  static bool IsOverSize(const ZStackObject *obj);
 
 #if 0
   void runLocalSplitFunc();
@@ -439,7 +478,7 @@ private:
 signals:
   void todoVisibleChanged();
   void bodyMeshLoaded();
-  void bodyMeshesAdded();
+  void bodyMeshesAdded(int);
 
   void meshArchiveLoadingStarted();
   void meshArchiveLoadingProgress(float fraction);
@@ -455,7 +494,6 @@ private:
   ZSwcTree* recoverFullBodyFromGarbage(
       uint64_t bodyId, int resLevel);
   ZMesh* recoverMeshFromGarbage(uint64_t bodyId, int resLevel);
-  int getMinResLevel() const;
 
   void removeDiffBody();
 
@@ -483,6 +521,7 @@ private:
   bool m_syncyingBodySelection = false;
 
   int m_maxResLevel = 0; //Start resolution level; bigger value means lower resolution
+  int m_minResLevel = 0;
 //  QSet<uint64_t> m_bodySetBuffer;
 //  bool m_isBodySetBufferProcessed;
 

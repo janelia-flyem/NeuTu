@@ -23,6 +23,7 @@ public:
   static const TState STATE_COLOR_CHANGED = BIT_FLAG(5);
   static const TState STATE_ROLE_CHANGED = BIT_FLAG(6);
   static const TState STATE_SOURCE_CHANGED = BIT_FLAG(7);
+  static const TState STATE_VE_CHANGED = BIT_FLAG(8);
 
   void setType(ZStackObject::EType type) {
     m_type = type;
@@ -84,6 +85,8 @@ public:
    */
   bool hasObjectModified(
       ZStackObject::EType type, ZStackObjectInfo::TState flag) const;
+  bool hasObjectModified(
+      ZStackObject::EType type) const;
 
   bool onlyVisibilityChanged(ZStackObject::EType type) const;
 

@@ -15,15 +15,19 @@ public:
       ZPainter &painter, int slice, ZStackObject::EDisplayStyle option,
       neutube::EAxis sliceAxis) const;
 
+  void paint(const ZStackObject *obj, ZPainter &painter, int slice);
+
   void setRestoringPainter(bool on) {
     m_painterConst = on;
   }
 
-private:
-  void init();
+  void setSliceAxis(neutube::EAxis sliceAxis);
+  void setDisplayStyle(ZStackObject::EDisplayStyle style);
 
 private:
-  bool m_painterConst;
+  bool m_painterConst = true;
+  ZStackObject::EDisplayStyle m_style = ZStackObject::NORMAL;
+  neutube::EAxis m_axis = neutube::Z_AXIS;
 };
 
 #endif // ZSTACKOBJECTPAINTER_H

@@ -4,10 +4,10 @@
 #include <QObject>
 #include <QStringList>
 #include "zobject3dscan.h"
-#include "zstack.hxx"
 
 class ZSwcTree;
 class ZDvidClient;
+class ZStack;
 
 class ZDvidBuffer : public QObject
 {

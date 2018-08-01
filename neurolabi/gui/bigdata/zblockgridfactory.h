@@ -1,9 +1,8 @@
 #ifndef ZBLOCKGRIDFACTORY_H
 #define ZBLOCKGRIDFACTORY_H
 
-#include "bigdata/zblockgrid.h"
-#include "bigdata/zstackblockgrid.h"
-#include "zobject3dscan.h"
+class ZObject3dScan;
+class ZStackBlockGrid;
 
 class ZBlockGridFactory
 {

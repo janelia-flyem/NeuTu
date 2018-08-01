@@ -233,6 +233,10 @@ HEADERS += $${PWD}/zstack.hxx \
    $${PWD}/dvid/zdvidnode.h \
    $$PWD/zstackwriter.h \
    $$PWD/zswcdirectionfeatureanalyzer.h \
+    $$PWD/geometry/zplane.h \
+    $$PWD/geometry/zaffineplane.h \
+    $$PWD/geometry/zaffinerect.h \
+    $$PWD/zjsondef.h
 
 SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zlocalneuroseg.cpp \
@@ -444,5 +448,8 @@ SOURCES += $${PWD}/zstack.cxx \
    $${PWD}/zswcutil.cpp \
    $${PWD}/dvid/zdvidnode.cpp \
    $$PWD/zstackwriter.cpp \
-   $$PWD/zswcdirectionfeatureanalyzer.cpp
+   $$PWD/zswcdirectionfeatureanalyzer.cpp \
+    $$PWD/geometry/zplane.cpp \
+    $$PWD/geometry/zaffineplane.cpp \
+    $$PWD/geometry/zaffinerect.cpp
 

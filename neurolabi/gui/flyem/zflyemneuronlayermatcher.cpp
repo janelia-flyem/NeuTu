@@ -155,9 +155,8 @@ ZFlyEmLayerFeatureSequence ZFlyEmNeuronLayerMatcher::computeLayerFeature(
   ZObject3dScan *body = neuron->getBody();
 
   if (body != NULL) {
-    std::map<int, size_t> &slicewiseVoxelNumber =
-        body->getSlicewiseVoxelNumber();
-    for (std::map<int, size_t>::const_iterator iter = slicewiseVoxelNumber.begin();
+    auto &slicewiseVoxelNumber = body->getSlicewiseVoxelNumber();
+    for (auto iter = slicewiseVoxelNumber.begin();
          iter != slicewiseVoxelNumber.end(); ++iter) {
       if (iter->second > 0) {
         feature.append(iter->first, iter->second);

@@ -290,6 +290,8 @@
 #include "sandbox/zbrowseropener.h"
 #include "widgets/zpythonprocess.h"
 #include "flyem/zflyemarbmvc.h"
+#include "zmenuconfig.h"
+#include "flyem/zglobaldvidrepo.h"
 
 #include "test/ztestall.h"
 
@@ -19109,7 +19111,10 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  while (1) {
+  QElapsedTimer timer;
+  timer.start();
+  ZRandomGenerator::SetSeed(0);
+  for (int i = 0; i < 10; ++i) {
     ZObject3dScan obj = ZObject3dFactory::MakeRandomObject3dScan(
           ZIntCuboid(0, 0, 0, 200, 200, 200));
     obj.save(GET_TEST_DATA_DIR + "/test.sobj");
@@ -19135,20 +19140,21 @@ void ZTest::test(MainWindow *host)
       break;
     }
 
-    for (size_t i = 0; i < objArray.size(); ++i) {
-      for (size_t j = 0; j < objArray.size(); ++j) {
+    for (size_t i = 0; i < objArray.size(); i += 10) {
+      for (size_t j = i + 1; j < objArray.size(); j += 10) {
         if (i != j) {
           ZObject3dScan &obj1 = objArray[i];
           ZObject3dScan &obj2 = objArray[j];
           if (obj1.isAdjacentTo(obj2)) {
             std::cout << "Bug found: Adjacent disjoints." << std::endl;
+            i = objArray.size();
             break;
           }
         }
       }
     }
   }
-
+  std::cout << timer.elapsed() << "ms" << std::endl;
 #endif
 
 #if 0
@@ -25333,7 +25339,7 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
-  ZDvidTarget target("emdata3.int.janelia.org", "877d", 8300);
+  ZDvidTarget target("emdata2.int.janelia.org", "fb02", 8900);
   ZDvidWriter writer;
   writer.open(target);
 
@@ -25731,8 +25737,9 @@ void ZTest::test(MainWindow *host)
 
   ZDvidReader reader;
   reader.open(target);
+#endif
 
-#if 1
+#if 0
   ZArray *array = reader.readLabels64Lowtis(
         17152, 22592, 19328, 1024, 1024, 1);
   array->printInfo();
@@ -25756,8 +25763,6 @@ void ZTest::test(MainWindow *host)
   mesh->save(GET_TEST_DATA_DIR + "/test.obj");
 
   std::cout << reader.getDvidTarget().hasCoarseSplit() << std::endl;
-#endif
-
 #endif
 
 #if 0
@@ -26071,6 +26076,22 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 0
+
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "fb02", 8900);
+
+  ZJsonObject jsonObj;
+  jsonObj.decodeString("{\"Pos\":[23620,30590,20736],\"Kind\":\"Note\","
+                       "\"Tags\":[\"user:taggl\"],"
+                       "\"Prop\":{\"body ID\":\"1144018233\","
+                       "\"comment\":\"Interesting Contralateral Neuron \","
+                       "\"custom\":\"1\",\"status\":\"\",\"time\":\"\","
+                       "\"type\":\"Other\",\"user\":\"taggl\"},\"Supervoxel\":0}");
+  ZDvidWriter *writer = ZGlobal::GetDvidWriter(target);
+  writer->writePointAnnotation("bookmark_annotations", jsonObj);
+#endif
+
+#if 0
   ZDvidReader *reader = ZGlobal::GetDvidReader("MB_Test");
   ZDvidSparseStack stack;
   stack.setDvidTarget(reader->getDvidTarget());
@@ -26115,6 +26136,589 @@ void ZTest::test(MainWindow *host)
       reader.readDvidSparseStack(987648131, flyem::LABEL_SUPERVOXEL);
   ZSparseStack *ss = stack->getSparseStack();
   ss->save(GET_TEST_DATA_DIR + "/test.zss");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "9524", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidNode node;
+  node.set("emdata3.int.janelia.org", "a89e", 8600);
+  target.setGrayScaleSource(node);
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  std::vector<uint64_t> bodyList = {
+    5812980779, 5812980781, 5812980782
+  };
+
+  for (uint64_t bodyId : bodyList) {
+    ZObject3dScan obj;
+    reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+    if (!obj.isEmpty()) {
+      ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+      mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+      delete mesh;
+    }
+  }
+#endif
+
+#if 0
+  {
+    ZDvidTarget target;
+    target.set("emdata2.int.janelia.org", "9524", 8700);
+    target.setSegmentationName("segmentation");
+    target.setGrayScaleName("grayscalejpeg");
+
+    ZDvidNode node;
+    node.set("emdata3.int.janelia.org", "a89e", 8600);
+    target.setGrayScaleSource(node);
+
+    ZDvidReader reader;
+    reader.open(target);
+
+    std::vector<uint64_t> bodyList = {
+      5812980925, 5812980927, 5812980928
+    };
+
+    for (uint64_t bodyId : bodyList) {
+      ZObject3dScan obj;
+      reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+      if (!obj.isEmpty()) {
+        ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+        mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+        delete mesh;
+      }
+    }
+  }
+
+  {
+    ZDvidTarget target;
+    target.set("emdata2.int.janelia.org", "f5bc", 8700);
+    target.setSegmentationName("segmentation");
+    target.setGrayScaleName("grayscalejpeg");
+
+    ZDvidReader reader;
+    reader.open(target);
+    ZObject3dScan obj;
+    uint64_t bodyId = 1388969101;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "f5bc", 8700);
+  target.setSegmentationName("segmentation");
+  target.setGrayScaleName("grayscalejpeg");
+
+  ZDvidReader reader;
+  reader.open(target);
+  ZObject3dScan obj;
+  uint64_t bodyId = 1233492629;
+  reader.readBody(bodyId, flyem::LABEL_SUPERVOXEL, true, &obj);
+  if (!obj.isEmpty()) {
+    ZMesh *mesh = ZMeshFactory::MakeMesh(obj);
+    mesh->save(GET_TEST_DATA_DIR + "/tmp/sp/" + std::to_string(bodyId) + ".obj");
+    delete mesh;
+  }
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "0667", 8700);
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "a89e", 8600));
+  target.setGrayScaleName("grayscalejpeg");
+  target.setSegmentationName("segmentation");
+
+  ZDvidReader reader;
+  if (reader.open(target.getGrayScaleTarget())) {
+    ZPoint center;
+    center.set(25940, 24740, 20389);
+    ZPoint v1(1, 0, 0);
+    ZPoint v2(0, 1, 2);
+    v2.normalize();
+
+    int width = 25200 / 10;
+    int height = 17400 / 10;
+
+    ZAffineRect rect = ZAffineRectBuilder(width, height).at(center).on(v1, v2);
+
+    int row = 10;
+    int col = 10;
+    std::vector<ZAffineRect> rectArray = zgeom::Partition(rect, row, col);
+
+    ZStackArray stackArray;
+
+    int index = 0;
+    int dy = 0;
+    for (int i = 0; i < row; ++i) {
+      int dx = 0;
+      int height = rectArray[index].getHeight();
+      for (int j = 0; j < col; ++j) {
+        const ZAffineRect &rect = rectArray[index];
+        ZStack *stack = reader.readGrayScaleLowtis(rect, 0, 0, 0);
+//            ZFlyEmMisc::MakeColorSegmentation(reader, rect);
+        std::cout << "Offset: " << dx << " " << dy << std::endl;
+        stack->setOffset(dx, dy, 0);
+        stackArray.append(stack);
+        dx += rect.getWidth();
+        ++index;
+      }
+      dy += height;
+    }
+
+    ZStack *stack = ZStackFactory::CompositeForeground(stackArray);
+
+    stack->save(GET_TEST_DATA_DIR + "/_flyem/art/gray_small.tif");
+  }
+#endif
+
+#if 0
+  ZStack grayscale;
+  grayscale.load(GET_TEST_DATA_DIR + "/_flyem/art/gray.tif");
+
+  ZStack segmentation;
+  segmentation.load(GET_TEST_DATA_DIR + "/_flyem/art/seg.tif");
+
+  ZStack *cgray = ZStackFactory::MakeZeroStack(GREY, grayscale.getBoundBox(), 3);
+  for (int c = 0; c < 3; ++c) {
+    cgray->copyValueFrom(grayscale.array8(), grayscale.getVoxelNumber(), c);
+  }
+
+  ZStackBlender blender;
+  blender.setBlendingMode(ZStackBlender::BLEND_NO_BLACK);
+  ZStack *out = blender.blend(*cgray, segmentation, 0.5);
+
+  out->save(GET_TEST_DATA_DIR + "/_flyem/art/blend.tif");
+
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "0667", 8700);
+  target.setGrayScaleSource(ZDvidNode("emdata3.int.janelia.org", "a89e", 8600));
+  target.setGrayScaleName("grayscalejpeg");
+  target.setSegmentationName("segmentation");
+
+  ZDvidReader reader;
+  if (reader.open(target)) {
+    ZPoint center;
+    center.set(25940, 24740, 20389);
+    ZPoint v1(1, 0, 0);
+    ZPoint v2(0, 1, 2);
+    v2.normalize();
+
+    int width = 25200 / 10;
+    int height = 17400 / 10;
+
+    ZAffineRect rect = ZAffineRectBuilder(width, height).at(center).on(v1, v2);
+
+    int row = 10;
+    int col = 10;
+    std::vector<ZAffineRect> rectArray = zgeom::Partition(rect, row, col);
+
+    ZStackArray stackArray;
+
+    int index = 0;
+    int dy = 0;
+    for (int i = 0; i < row; ++i) {
+      int dx = 0;
+      int height = rectArray[index].getHeight();
+      for (int j = 0; j < col; ++j) {
+        const ZAffineRect &rect = rectArray[index];
+        ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(reader, rect);
+        std::cout << "Offset: " << dx << " " << dy << std::endl;
+        stack->setOffset(dx, dy, 0);
+        stackArray.append(stack);
+        dx += rect.getWidth();
+        ++index;
+      }
+      dy += height;
+    }
+
+    ZStack *stack = ZStackFactory::CompositeForeground(stackArray);
+
+#if 0
+    ZObjectColorScheme colorScheme;
+    colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
+    ZArray *array = reader.readLabels64Lowtis(center, v1, v2, width, height, 0);
+    uint64_t *labelArray = array->getDataPointer<uint64_t>();
+
+    ZStack *stack = ZStackFactory::MakeZeroStack(
+          GREY, misc::GetBoundBox(array), 3);
+//    ZStack *stack = new ZStack(COLOR, width, height, 1, 1);
+    uint8_t *array1 = stack->array8(0);
+    uint8_t *array2 = stack->array8(1);
+    uint8_t *array3 = stack->array8(2);
+
+    size_t area = width * height;
+    for (size_t i = 0; i < area; ++i) {
+      QColor color = colorScheme.getColor(labelArray[i]);
+      array1[i] = color.red();
+      array2[i] = color.green();
+      array3[i] = color.blue();
+    }
+#endif
+    stack->save(GET_TEST_DATA_DIR + "/_flyem/art/seg_small.tif");
+
+//    ZDvidReader reader2;
+//    reader2.open(target.getGrayScaleTarget());
+//    ZStack *stack =
+//        reader2.readGrayScaleLowtis(center, v1, v2, width/2, height/2, 0, 0, 0);
+//    stack->save(GET_TEST_DATA_DIR + "/test.tif");
+  }
+#endif
+
+#if 0
+  ZMenuConfig config;
+  config << "test" << ZActionFactory::ACTION_ABOUT
+         << ZActionFactory::ACTION_ACTIVATE_LOCATE;
+  config << "test2" << ZActionFactory::ACTION_ACTIVATE_TODO_ITEM
+         << ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM;
+  config << ZActionFactory::ACTION_ADD_SPLIT_SEED
+         << ZActionFactory::ACTION_ADD_SWC_NODE;
+  config << "test3" << ZActionFactory::ACTION_ACTIVATE_TODO_ITEM
+         << ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM;
+  config << "" << ZActionFactory::ACTION_ACTIVATE_TODO_ITEM
+         << ZActionFactory::ACTION_ACTIVATE_TOSPLIT_ITEM;
+  std::cout << config << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("labelmap_test");
+  reader->updateMaxLabelZoom();
+  reader->setVerbose(false);
+  QElapsedTimer timer;
+  timer.start();
+
+  int z = 10256;
+  for (size_t i = 0; i < 100; ++i) {
+      ZArray *array = reader->readLabels64Lowtis(
+            10300, 20351, z + i, 1024, 1024, 0);
+      delete array;
+  }
+
+  std::cout << "Time elapsed: " << timer.elapsed() << "ms" << std::endl;
+#endif
+
+#if 0
+  ZGlobalDvidRepo &repo = ZGlobalDvidRepo::GetInstance();
+//  repo.init();
+
+  for (auto e : repo) {
+    std::cout << e.first << ": " << e.second.getSourceString() << std::endl;
+//    e.second.print();
+  }
+
+#endif
+
+#if 0
+  std::pair<int,int> centerCut = GET_FLYEM_CONFIG.getCenterCut("grayscale");
+  std::cout << "Center cut: " << centerCut.first << " " << centerCut.second << std::endl;
+
+  GET_FLYEM_CONFIG.setCenterCut("grayscale", 512, 512);
+  centerCut = GET_FLYEM_CONFIG.getCenterCut("grayscale");
+  std::cout << "Center cut: " << centerCut.first << " " << centerCut.second << std::endl;
+
+  centerCut = GET_FLYEM_CONFIG.getCenterCut("segmentation");
+  std::cout << "Center cut: " << centerCut.first << " " << centerCut.second << std::endl;
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetDvidReader("test");
+  reader->updateMaxLabelZoom();
+//    reader->setLabelCenterCut(256, 256);
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 256, 256);
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  }
+
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 0, 0);
+    stack->save(GET_TEST_DATA_DIR + "/_test2.tif");
+  }
+
+  {
+    ZStack *stack = ZFlyEmMisc::MakeColorSegmentation(
+          *reader, 10300, 20351, 10256, 1024, 1024, 0, 1024, 1024);
+    stack->save(GET_TEST_DATA_DIR + "/_test3.tif");
+  }
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "017a", 8900);
+  target.setSegmentationName("segmentation");
+
+  if (reader.open(target)) {
+    QByteArray payload("[1166130438]");
+    ZJsonArray jsonArray = reader.readJsonArray(
+          "http://emdata2.int.janelia.org:8700/api/node/0667/segmentation/mapping",
+          payload);
+    jsonArray.print();
+
+    uint64_t bodyId = reader.readBodyIdAt(15994, 23934, 20696);
+    std::cout << bodyId << std::endl;
+
+    uint64_t spId = reader.readSupervoxelIdAt(15994, 23934, 20696);
+    std::cout << spId << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "017a", 8900);
+  target.setSegmentationName("segmentation");
+
+  if (reader.open(target)) {
+    std::cout << "parent id:" << reader.readParentBodyId(1166130438) << std::endl;
+  }
+#endif
+
+#if 0
+  ZDvidReader reader;
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "f", 7000);
+  target.setSegmentationName("segmentation");
+  reader.open(target);
+#endif
+
+#if 0
+  ZDvidReader reader;
+  reader.open("emdata2.int.janelia.org", "059e", 7000);
+  ZObject3dScan obj = reader.readRoi("seven_column_roi");
+  std::cout << "Voxel count: " << obj.getVoxelNumber() << std::endl;
+  std::cout << "Volume: " << obj.getVoxelNumber() * 0.32 * 0.32 * 0.32 << "um^3" << std::endl;
+#endif
+
+#if 0
+  ZDvidReader reader;
+  reader.open("emdata1.int.janelia.org", "babd", 8500);
+
+  ZObject3dScan obj1 = reader.readRoi("ventral_roi");
+  ZObject3dScan obj2 = reader.readRoi("ventral_roi_patch");
+
+  ZObject3dScan obj3;
+  obj3.load(GET_TEST_DATA_DIR + "/_flyem/MB/large_outside_block_fixed.sobj");
+
+  obj1.concat(obj2);
+  obj1.concat(obj3);
+  obj1.canonize();
+
+  obj1.save(GET_TEST_DATA_DIR + "/test.sobj");
+  std::cout << "Volume: " << obj1.getVoxelNumber() * 0.032 * 0.032 * 0.032 * 8 * 8 * 8
+            << "um^3" << std::endl;
+
+
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_BENCHMARK_DIR + "/em_slice.tif");
+  ZStackWatershedContainer container(&stack);
+  ZObject3dScan obj;
+  obj.addSegment(3201, 4102, 2900, 2905);
+  obj.setLabel(1);
+
+  ZObject3dScan obj2;
+  obj2.addSegment(3201, 4114, 3010, 3015);
+  obj2.setLabel(2);
+
+  container.addSeed(obj);
+  container.addSeed(obj2);
+
+  container.setFloodFillingZero(true);
+  container.run();
+
+  container.exportMask(GET_BENCHMARK_DIR + "/em_slice_seed.tif");
+  //    result->save(GET_TEST_DATA_DIR + "/test.tif");
+
+//  delete result;
+
+
+#endif
+
+#if 0
+  ZStack stack;
+  stack.load(GET_DATA_DIR + "/_system/emstack2.tif");
+  ZStackWatershedContainer container(&stack);
+  container.setFloodFillingZero(true);
+
+  ZStroke2d stroke;
+  stroke.setWidth(5);
+  stroke.setZ(105);
+  stroke.append(90, 125);
+  stroke.setLabel(1);
+  container.addSeed(stroke);
+
+  ZStroke2d stroke2;
+  stroke2.setWidth(5);
+  stroke2.setZ(105);
+  stroke2.append(103, 57);
+  stroke2.setLabel(2);
+  container.addSeed(stroke2);
+
+  container.run();
+  container.exportMask(GET_DATA_DIR + "/_system/emstack2_seed.tif");
+#endif
+
+#if 0
+  ZStack signal;
+  ZStack label;
+  signal.load(GET_DATA_DIR + "/_system/emstack2.tif");
+  label.load(GET_DATA_DIR + "/_system/emstack2_seed.tif");
+
+  ZStack *result = ZStackProcessor::SeededWatershed(&signal, &label);
+  result->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+  delete result;
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "0397", 8900);
+  target.setSegmentationName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.syncData("segmentation_todo", "segmentation", "replace=true");
+#endif
+
+#if 0
+  QDir fileInfo(GET_TEST_DATA_DIR.c_str());
+  fileInfo.setFile(GET_TEST_DATA_DIR, "test.tif");
+  qDebug() << fileInfo.absoluteFilePath();
+
+  fileInfo.setFile("test2.tif");
+  qDebug() << fileInfo.absoluteFilePath();
+
+  qDebug() << fileInfo.isFile();
+#endif
+
+#if 0
+  {
+    tic();
+    std::vector<ZObject3dStripe> stripeArray;
+    for (size_t i = 0; i < 100000; ++i) {
+      ZObject3dStripe stripe;
+      stripe.addSegment(0, 1, false);
+      stripe.addSegment(3, 4, false);
+      stripe.addSegment(7, 8, false);
+      stripe.addSegment(11, 12, false);
+
+      stripeArray.push_back(std::move(stripe));
+    }
+    ptoc();
+  }
+
+  {
+    tic();
+    std::vector<ZObject3dStripe> stripeArray;
+    for (size_t i = 0; i < 100000; ++i) {
+      ZObject3dStripe stripe;
+      stripe.addSegment(0, 1, false);
+      stripe.addSegment(3, 4, false);
+      stripe.addSegment(7, 8, false);
+      stripe.addSegment(11, 12, false);
+
+      stripeArray.push_back(stripe);
+    }
+    ptoc();
+  }
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata2.int.janelia.org", "a6dd", 8700);
+  target.setSegmentationName("segmentation");
+  ZDvidWriter writer;
+  writer.open(target);
+
+  writer.deleteKey(QString("segmentation_meshes"), "0", "z");
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.setFromUrl("http://emdata1.int.janelia.org:8900/api/node/3d5d");
+  target.setSegmentationName("segmentation");
+  target.print();
+
+  ZDvidWriter writer;
+  writer.open(target);
+  writer.syncAnnotationToLabel("segmentation_todo");
+#endif
+
+#if 0
+  ZPythonProcess proc;
+  proc.printPythonPath();
+#endif
+
+#if 0
+  ZDvidTarget target;
+  target.set("emdata3.int.janelia.org", "6134", 8900);
+  target.setSegmentationName("segmentation");
+
+  ZDvidReader reader;
+  reader.open(target);
+
+  ZObject3dScan obj;
+  reader.readBody(853173648, true, &obj);
+
+  std::cout << obj.getBoundBox().toString() << std::endl;
+  obj.downsampleMax(15, 15, 15);
+  std::cout << obj.getBoundBox().toString() << std::endl;
+
+#endif
+
+#if 0
+  qDebug() << std::string("user:mock").substr(5);
+  qDebug() << neutube::GetCurrentUserName();
+#endif
+
+#if 1
+  ZDvidTarget target;
+  target.set("emdata1.int.janelia.org", "2b6d", 9000);
+  target.setSegmentationName("groundtruth");
+  ZDvidReader reader;
+  reader.open(target);
+  reader.updateMaxLabelZoom();
+
+  std::vector<uint64_t> bodyArray = {
+    2219, 2515, 2796, 3904, 4376, 7114, 7131, 10319, 19741, 21840, 21894,
+    22045, 22301, 26353, 30155, 30465, 35752, 49079, 53216, 88847, 158346,
+    248553, 262667, 368415, 390989, 436097, 436607, 446884, 516159, 676018};
+
+  for (uint64_t bodyId : bodyArray) {
+    std::ofstream stream(
+          GET_TEST_DATA_DIR + "/_paper/neutu_em/experiment/body_speed/" +
+          std::to_string(bodyId) + ".txt",
+          std::ofstream::out);
+
+    for (int zoom = 0; zoom <= 5; ++zoom) {
+      QElapsedTimer timer;
+      timer.start();
+      ZObject3dScan obj;
+      reader.readMultiscaleBody(bodyId, zoom, true, &obj);
+      ZSwcTree *tree = ZSwcFactory::CreateSurfaceSwc(obj, 1, 3);
+      delete tree;
+      qint64 t = timer.elapsed();
+      uint64_t v = obj.getVoxelNumber();
+      uint64_t bv = obj.getBoundBox().getVolume();
+      std::cout << "Body updating time: " << t << std::endl;
+      std::cout << "Body size: " << v << std::endl;
+      stream << zoom << " " << v << " " << t << " " << bv << std::endl;
+    }
+  }
 #endif
 
   std::cout << "Done." << std::endl;

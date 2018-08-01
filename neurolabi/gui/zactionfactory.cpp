@@ -19,6 +19,12 @@ void ZActionFactory::setUndoStack(QUndoStack *undoStack)
   m_undoStack = undoStack;
 }
 
+bool ZActionFactory::IsRegularAction(EAction actionKey)
+{
+  return actionKey != ZActionFactory::ACTION_NULL &&
+      actionKey != ZActionFactory::ACTION_SEPARATOR;
+}
+
 QAction* ZActionFactory::makeAction(EAction actionKey, QObject *parent) const
 {
   QAction *action = NULL;
@@ -355,6 +361,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_COPY_POSITION:
     action = new QAction("Copy position", parent);
     break;
+  case ACTION_COPY_BODY_ID:
+    action = new QAction("Copy Body ID", parent);
+    break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
     break;
@@ -372,10 +381,17 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_ACTIVATE_TODO_ITEM:
     action = new QAction("Add Todo", parent);
     action->setIcon(QIcon(":/images/add_todo2.png"));
+    action->setCheckable(true);
+    break;
+  case ACTION_ACTIVATE_TOSPLIT_ITEM:
+    action = new QAction("Add To Split", parent);
+    action->setIcon(QIcon(":/images/add_todo2.png"));
+    action->setCheckable(true);
     break;
   case ACTION_ACTIVATE_LOCATE:
     action = new QAction("Locate", parent);
     action->setIcon(QIcon(":/images/locate.png"));
+    action->setCheckable(true);
     break;
   case ACTION_ADD_TODO_ITEM_CHECKED:
     action = new QAction("Done here", parent);
@@ -429,6 +445,12 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_PUNCTA_CHANGE_COLOR:
     action = new QAction("Change Color of Selected Puncta", parent);
     break;
+  case ACTION_PUNCTA_HIDE_SELECTED:
+    action = new QAction("Hide Selected Puncta", parent);
+    break;
+  case ACTION_PUNCTA_SHOW_SELECTED:
+    action = new QAction("Show Selected Puncta", parent);
+    break;
   case ACTION_REWRITE_SEGMENTATION:
     action = new QAction("Rewrite segmentation", parent);
     action->setToolTip("Rewrite segmentation in the current ROI. "
@@ -481,7 +503,8 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_VIEW_DATA_EXTERNALLY:
     action = new QAction("View data externally", parent);
     action->setIcon(QIcon(":/images/binoculars.png"));
-    action->setToolTip("View grayscale/segmentation in an external browser (default in Chrome) ");
+    action->setToolTip("View grayscale/segmentation");
+    action->setCheckable(true);
     break;
     break;
   case ACTION_MEASURE_SWC_NODE_DIST:

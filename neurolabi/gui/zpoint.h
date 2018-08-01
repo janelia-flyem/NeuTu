@@ -78,6 +78,7 @@ public:
   void toArray(double *pt) const;
 
   void normalize();
+  ZPoint getNormalized() const;
   double dot(const ZPoint &pt) const;
   double cosAngle(const ZPoint &pt) const;
   ZPoint cross(const ZPoint &pt) const;
@@ -88,12 +89,21 @@ public:
   bool isApproxOrigin() const;
   bool approxEquals(const ZPoint &pt) const;
 
+  bool isUnitVector() const;
+
   /*!
    * \brief Check if two points (vector to the origin) are perpendicular.
    *
    * An approximate origin point is not perpendicular to any other point.
    */
   bool isPendicularTo(const ZPoint &pt) const;
+
+  /*!
+   * \brief Check if two points (vector to the origin) have the same direction.
+   *
+   * An approximate origin point is not parallel to any other point.
+   */
+  bool isParallelTo(const ZPoint &pt) const;
 
   std::string toString() const;
   std::string toJsonString() const;
@@ -111,6 +121,8 @@ public:
   void rotate(double theta, double psi, const ZPoint &center);
 
   ZIntPoint toIntPoint() const;
+
+  friend std::ostream& operator<<(std::ostream& stream, const ZPoint &pt);
 
 public:
   //virtual void display(ZPainter &painter, int n = 0, Display_Style style = NORMAL) const;

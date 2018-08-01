@@ -185,6 +185,8 @@ public:
 
   bool hasBodyLabel() const;
   bool hasSegmentation() const;
+  bool hasSupervoxel() const;
+  bool isSegmentationSyncable() const;
 //  bool usingLabelArray() const;
 //  bool usingLabelMap() const;
   ZDvidData::EType getSegmentationType() const;

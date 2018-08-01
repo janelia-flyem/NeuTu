@@ -3,11 +3,12 @@
 
 #include "zstackobject.h"
 #include "zimage.h"
-#include "zdvidreader.h"
+//#include "zdvidreader.h"
 #include "zstackviewparam.h"
 #include "zarbsliceviewparam.h"
 #include "zpixmap.h"
 #include "zcontrastprotocol.h"
+#include "zuncopyable.h"
 
 //#include "zdvidtarget.h"
 
@@ -15,6 +16,9 @@ class ZRect2d;
 class ZDvidReader;
 class ZStack;
 class ZDvidDataSliceHelper;
+class ZDvidTarget;
+class ZTask;
+class ZStackDoc;
 //class ZStackViewParam;
 
 class ZDvidGraySlice : public ZStackObject, ZUncopyable
@@ -112,6 +116,12 @@ public:
   }
 //  void setArbitraryAxis(const ZPoint &v1, const ZPoint &v2);
 
+  bool consume(ZStack *stack, const ZStackViewParam &viewParam,
+               int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  bool containedIn(const ZStackViewParam &viewParam, int zoom,
+                   int centerCutX, int centerCutY, bool centerCut) const;
+  ZTask* makeFutureTask(ZStackDoc *doc);
+
 public: //for testing
   void saveImage(const std::string &path);
   void savePixmap(const std::string &path);
@@ -164,9 +174,6 @@ private:
 
 //  int m_maxWidth;
 //  int m_maxHeight;
-
-  int m_centerCutWidth = 256;
-  int m_centerCutHeight = 256;
 
   std::unique_ptr<ZDvidDataSliceHelper> m_helper;
 //  ZPoint m_v1;

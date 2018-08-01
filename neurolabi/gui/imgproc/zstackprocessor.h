@@ -71,6 +71,8 @@ public:
 
   static void ShrinkSkeleton(Stack *stack, int level);
 
+  static ZStack* SeededWatershed(ZStack *signal, ZStack *label);
+
 
 //private:
   static void convertStack(ZStack *stack, Uint8Image3DType *image);

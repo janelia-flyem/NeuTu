@@ -1,12 +1,15 @@
 #ifndef ZFLYEMPROOFPRESENTER_H
 #define ZFLYEMPROOFPRESENTER_H
 
+#include <memory>
+
 #include "zstackpresenter.h"
 #include "dvid/zdvidsynapse.h"
 
 class QKeyEvent;
 class ZFlyEmBookmark;
 class ZFlyEmProofDoc;
+class ZFlyEmToDoDelegate;
 
 class ZFlyEmProofPresenter : public ZStackPresenter
 {
@@ -15,6 +18,7 @@ class ZFlyEmProofPresenter : public ZStackPresenter
 protected:
 //  explicit ZFlyEmProofPresenter(ZStackFrame *parent = 0);
   explicit ZFlyEmProofPresenter(QWidget *parent = 0);
+  ~ZFlyEmProofPresenter();
 
 public:
   static ZFlyEmProofPresenter* Make(QWidget *parent);
@@ -73,6 +77,7 @@ public:
 //  QAction* makeAction(ZActionFactory::EAction item);
   bool connectAction(QAction *action, ZActionFactory::EAction item);
 
+  void setTodoDelegate(std::unique_ptr<ZFlyEmToDoDelegate> &&delegate);
 //  void setLabelAlpha(int alpha) {
 //    m_labelAlpha = alpha;
 //  }
@@ -131,6 +136,21 @@ public slots:
   void zoomInRectRoi();
   void refreshSegmentation();
 
+  void tryAddTodoItem(const ZIntPoint &pt);
+  void tryAddDoneItem(const ZIntPoint &pt);
+  void tryAddToMergeItem(const ZIntPoint &pt);
+  void tryAddToSplitItem(const ZIntPoint &pt);
+
+protected:
+  virtual void tryAddTodoItem(
+      int x, int y, int z, bool checked, neutube::EToDoAction action,
+      uint64_t bodyId);
+  void tryAddTodoItem(
+      const ZIntPoint &pt, bool checked, neutube::EToDoAction action,
+      uint64_t bodyId);
+  void tryAddTodoItem(
+      const ZIntPoint &pt, bool checked, neutube::EToDoAction action);
+
 private:
 //  void connectAction();
   void tryAddBookmarkMode();
@@ -143,10 +163,6 @@ private:
   void tryAddSynapse(const ZIntPoint &pt, bool tryingLink);
   void tryMoveSynapse(const ZIntPoint &pt);
   void tryTodoItemMode();
-  void tryAddTodoItem(const ZIntPoint &pt);
-  void tryAddDoneItem(const ZIntPoint &pt);
-  void tryAddToMergeItem(const ZIntPoint &pt);
-  void tryAddToSplitItem(const ZIntPoint &pt);
   bool updateActiveObjectForSynapseMove();
   bool updateActiveObjectForSynapseMove(const ZPoint &currentPos);
   void updateActiveObjectForSynapseAdd();
@@ -159,7 +175,8 @@ private:
   bool m_highTileContrast;
   bool m_smoothTransform;
   bool m_showingData;
-//  int m_labelAlpha;
+
+  std::unique_ptr<ZFlyEmToDoDelegate> m_todoDelegate;
 
   QMenu *m_synapseContextMenu;
 

@@ -67,10 +67,12 @@ public:
   }
 
   void setGraySliceCenterCut(int width, int height);
+  void setSegmentationCenterCut(int width, int height);
 
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
   ZDvidGraySlice* getDvidGraySlice() const;
+  ZDvidGraySlice* getDvidGraySlice(neutube::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
@@ -79,19 +81,19 @@ public:
   ZDvidSparseStack* getBodyForSplit();
   void clearBodyForSplit();
 
-  const ZSparseStack* getSparseStack() const;
-  ZSparseStack* getSparseStack();
+  const ZSparseStack* getSparseStack() const override;
+  ZSparseStack* getSparseStack() override;
 
   ZStackBlockGrid* getStackGrid();
 
   //bool hasSparseStack() const;
-  bool hasVisibleSparseStack() const;
+  bool hasVisibleSparseStack() const override;
 
   ZFlyEmSupervisor* getSupervisor() const;
 
   void updateBodyObject();
 
-  void clearData();
+  void clearData() override;
 
   /*!
    * \brief Get brief information of the document
@@ -107,6 +109,8 @@ public:
    */
   uint64_t getBodyId(int x, int y, int z);
   uint64_t getBodyId(const ZIntPoint &pt);
+
+  uint64_t getLabelId(int x, int y, int z) override;
 
   bool hasBodySelected() const;
 
@@ -159,7 +163,7 @@ public:
   ZDvidSparseStack* getDvidSparseStack(
       const ZIntCuboid &roi, flyem::EBodySplitMode mode) const;
 
-  ZDvidSparseStack* getDvidSparseStack() const;
+  ZDvidSparseStack* getDvidSparseStack() const override;
 
   ZDvidSparseStack* getCachedBodyForSplit(uint64_t bodyId) const;
 
@@ -299,7 +303,7 @@ public: //Todo list functions
   void addTodoItem(const ZFlyEmToDoItem &item, ZFlyEmToDoList::EDataScope scope);
   bool hasTodoItemSelected() const;
   void checkTodoItem(bool checking);
-  void setTodoItemAction(ZFlyEmToDoItem::EToDoAction action);
+  void setTodoItemAction(neutube::EToDoAction action);
   void setTodoItemToNormal();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
@@ -338,6 +342,10 @@ public: //Bookmark functions
 
 public:
   bool isDataValid(const std::string &data) const;
+
+  static void enableBodySelectionMessage(bool enable = true);
+  static bool bodySelectionMessageEnabled();
+
   void notifyBodySelectionChanged();
 
   /*!
@@ -411,6 +419,18 @@ public:
 
   ZJsonArray getMergeOperation() const;
 
+  void prepareDvidLabelSlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  void prepareDvidGraySlice(const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+
+public:
+  virtual void executeAddTodoCommand(
+      int x, int y, int z, bool checked,  neutube::EToDoAction action,
+      uint64_t bodyId) override;
+  virtual void executeRemoveTodoCommand() override;
+
 signals:
   void bodyMerged();
   void bodyUnmerged();
@@ -438,6 +458,14 @@ signals:
   void requestingBodyLock(uint64_t bodyId, bool locking);
   void bodyColorUpdated(ZFlyEmProofDoc*);
 
+  void updatingLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                          int zoom, int centerCutX, int centerCutY,
+                          bool usingCenterCut);
+  void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                         int zoom, int centerCutX, int centerCutY,
+                         bool usingCenterCut);
+
+
 public slots: //Commands
   void repairSelectedSynapses();
   void executeRemoveSynapseCommand();
@@ -454,7 +482,7 @@ public slots: //Commands
   void executeAddTodoItemCommand(int x, int y, int z, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(const ZIntPoint &pt, bool checked, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(
-      int x, int y, int z, ZFlyEmToDoItem::EToDoAction action, uint64_t bodyId = 0);
+      int x, int y, int z, neutube::EToDoAction action, uint64_t bodyId = 0);
   void executeAddTodoItemCommand(ZFlyEmToDoItem &item);
   void executeAddToMergeItemCommand(int x, int y, int z, uint64_t bodyId = 0);
   void executeAddToMergeItemCommand(const ZIntPoint &pt, uint64_t bodyId = 0);
@@ -519,11 +547,19 @@ public slots:
   void syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
   void runRoutineCheck();
+  void scheduleRoutineCheck();
+
+  void updateLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                        int zoom, int centerCutX, int centerCutY,
+                        bool usingCenterCut);
+  void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                       int zoom, int centerCutX, int centerCutY,
+                       bool usingCenterCut);
 
 
 protected:
-  void autoSave();
-  void customNotifyObjectModified(ZStackObject::EType type);
+  void autoSave() override;
+  void customNotifyObjectModified(ZStackObject::EType type) override;
   void updateDvidTargetForObject();
   void updateDvidInfoForObject();
   virtual void prepareDvidData();
@@ -535,6 +571,7 @@ protected:
   QColor getSeedColor(int label) const;
   void readInfo();
   void prepareGraySlice(ZDvidGraySlice *slice);
+  void prepareLabelSlice();
 
 private:
   void connectSignalSlot();
@@ -582,6 +619,7 @@ private:
 
   void readBookmarkBodyId(QList<ZFlyEmBookmark*> &bookmarkArray);
 
+  std::string getSynapseName(const ZDvidSynapse &synapse) const;
 
   void updateSequencerBodyMap(
       const ZFlyEmSequencerColorScheme &colorScheme,
@@ -607,6 +645,9 @@ protected:
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
 
+  ZDvidWriter m_workWriter;
+  ZDvidReader m_grayscaleWorkReader;
+
   ZFlyEmBodyMergeProject *m_mergeProject;
 
   mutable QMutex m_synapseReaderMutex;
@@ -627,6 +668,9 @@ protected:
   //Data settings
   int m_graySliceCenterCutWidth = 256;
   int m_graySliceCenterCutHeight = 256;
+
+  int m_labelSliceCenterCutWidth = 256;
+  int m_labelSliceCenterCutHeight = 256;
 
   ZSharedPointer<ZFlyEmBodyColorScheme> m_activeBodyColorMap;
   QMap<ZFlyEmBodyColorOption::EColorOption,

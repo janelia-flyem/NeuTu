@@ -28,7 +28,7 @@ enum ETag {
   FLYEM_BODY_3D, FLYEM_BODY_3D_COARSE, FLYEM_SKELETON, FLYEM_MESH,
   FLYEM_STACK,
   FLYEM_SPLIT, FLYEM_ROI, FLYEM_MERGE, SEGMENTATION_TARGET, FLYEM_DVID,
-  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO
+  FLYEM_BODY_DISPLAY, FLYEM_PROOFREAD, FLYEM_ORTHO, FLYEM_ARBSLICE
 };
 }
 
@@ -100,11 +100,9 @@ enum EReadStatus {
   READ_BAD_RESPONSE
 };
 
-namespace Json {
-namespace {
-const char* REF_KEY = "->";
-}
-}
+enum EToDoAction {
+  TO_DO, TO_MERGE, TO_SPLIT
+};
 
 namespace display {
 typedef uint64_t TVisualEffect;
@@ -131,6 +129,10 @@ static const TVisualEffect VE_DOT_CENTER = BIT_FLAG(7);
 static const TVisualEffect VE_RECTANGLE_SHAPE = BIT_FLAG(8);
 static const TVisualEffect VE_CROSS_CENTER = BIT_FLAG(9);
 static const TVisualEffect VE_FORCE_FILL = BIT_FLAG(10);
+}
+
+namespace Box {
+static const TVisualEffect VE_GRID = BIT_FLAG(1);
 }
 
 namespace SwcTree {
@@ -181,6 +183,10 @@ enum EBodySplitMode {
 
 enum EBodySplitRange {
   RANGE_FULL, RANGE_SEED, RANGE_LOCAL
+};
+
+enum EDataSliceUpdatePolicy {
+  UPDATE_DIRECT, UPDATE_HIDDEN, UPDATE_LOWESTRES, UPDATE_LOWRES, UPDATE_SMALL
 };
 
 static const uint64_t LABEL_ID_SELECTION =

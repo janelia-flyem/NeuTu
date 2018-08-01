@@ -117,6 +117,7 @@ public:
 
 public: //Camera adjustment
   void gotoPosition(const ZCuboid& bound);
+  void gotoPosition(const ZPoint& position, double radius);
   void zoomToSelectedSwcNodes();
 
 public: //Components
@@ -164,6 +165,7 @@ public:
 public: //controls
   void createToolBar();
   void hideControlPanel();
+  void showControlPanel();
   void hideObjectView();
   void hideStatusBar();
 
@@ -173,6 +175,7 @@ public: //controls
   bool getButtonStatus(int index);
 
   QAction* getAction(ZActionFactory::EAction item);
+  void setActionChecked(ZActionFactory::EAction item, bool on);
 
   QDockWidget * getSettingsDockWidget();
   QDockWidget * getObjectsDockWidget();
@@ -252,6 +255,7 @@ public slots:
 
   void zoomToSelectedMeshes();
   void selectMeshByID();
+  void selectAllMeshes();
 
 //  void updateDecorationDisplay();
 
@@ -292,9 +296,12 @@ public slots:
 
   void showPuncta(bool on);
   void showTodo(bool on);
-  void activateTodoAction();
-  void activateBookmarkAction();
-  void activateLocateAction();
+  void activateTodoAction(bool on);
+//  void activateTosplitAction(bool on);
+  void activateBookmarkAction(bool on);
+  void activateLocateAction(bool on);
+
+  void syncActionToNormalMode();
 
   void saveSelectedSwc();
   void changeSelectedSwcType();
@@ -312,11 +319,14 @@ public slots:
   void transformAllPuncta();
   void convertPunctaToSwc();
   void changeSelectedPunctaColor();
+  void hideSelectedPuncta();
+  void showSelectedPuncta();
+  void setSelectPunctaVisible(bool on);
 
   void saveSplitTask();
   void deleteSplitSeed();
   void deleteSelectedSplitSeed();
-  void viewDataExternally();
+  void viewDataExternally(bool on);
   //
   void show3DViewContextMenu(QPoint pt);
 
@@ -468,6 +478,8 @@ private:
   QTabWidget* createBasicSettingTabWidget();
   QTabWidget* createAdvancedSettingTabWidget();
 
+  QTabWidget* getSettingsTabWidget() const;
+
   // update menu based on context information
   void updateContextMenu(const QString &group);
 
@@ -497,6 +509,8 @@ private:
   QAction *m_markPunctumAction;
   QAction *m_toggleAddSwcNodeModeAction;
   QAction *m_changeBackgroundAction;
+  QAction *m_toggleObjectsAction;
+  QAction *m_toggleSettingsAction;
   QAction *m_toggleMoveSelectedObjectsAction;
   //QAction *m_toogleExtendSelectedSwcNodeAction;
   QAction *m_toggleSmartExtendSelectedSwcNodeAction;

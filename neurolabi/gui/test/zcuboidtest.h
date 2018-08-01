@@ -8,8 +8,47 @@
 #include "zcuboid.h"
 #include "zintcuboidface.h"
 #include "zsharedpointer.h"
+#include "zintcuboid.h"
 
 #ifdef _USE_GTEST_
+
+TEST(ZIntCuboid, compare)
+{
+  ZIntCuboid box1;
+  box1.setFirstCorner(1, 2, 3);
+  box1.setLastCorner(100, 200, 300);
+
+  ZIntCuboid box2;
+  box2.setFirstCorner(1, 2, 3);
+  box2.setLastCorner(100, 200, 300);
+
+  ASSERT_EQ(box1, box2);
+
+  box2.setFirstX(2);
+  ASSERT_NE(box1, box2);
+  box2.setFirstCorner(1, 2, 3);
+  box2.setLastZ(2);
+  ASSERT_NE(box1, box2);
+}
+
+TEST(ZIntCuboid, size)
+{
+  ZIntCuboid box;
+  box.setFirstCorner(0, 0, 0);
+  box.setLastCorner(0, 0, 0);
+  ASSERT_EQ(1, int(box.getVolume()));
+
+  box.setLastCorner(1, 0, 0);
+  ASSERT_EQ(2, int(box.getVolume()));
+
+  box.setLastCorner(-1, 0, 0);
+  ASSERT_EQ(0, int(box.getVolume()));
+
+  box.setLastCorner(1, 2, 3);
+  ASSERT_EQ(24, int(box.getVolume()));
+
+  ASSERT_EQ(4, int(box.getDsMaxVolume(1, 1, 1)));
+}
 
 TEST(ZIntCuboidArray, basic)
 {

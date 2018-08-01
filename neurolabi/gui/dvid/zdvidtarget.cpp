@@ -748,27 +748,30 @@ bool ZDvidTarget::hasSegmentation() const
   return !getSegmentationName().empty();
 }
 
-/*
-bool ZDvidTarget::usingLabelArray() const
+bool ZDvidTarget::hasSupervoxel() const
 {
-  return m_usingLabelArray;
+  if (hasSegmentation()) {
+    if (getSegmentationType() == ZDvidData::TYPE_LABELMAP) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
-bool ZDvidTarget::usingLabelMap() const
+bool ZDvidTarget::isSegmentationSyncable() const
 {
-  return m_usingLabelMap;
-}
+  if (hasSegmentation()) {
+    return true;
+    /*
+    if (getSegmentationType() != ZDvidData::TYPE_LABELMAP) {
+      return true;
+    }
+    */
+  }
 
-void ZDvidTarget::useLabelArray(bool on)
-{
-  m_usingLabelArray = on;
+  return false;
 }
-
-void ZDvidTarget::useLabelMap(bool on)
-{
-  m_usingLabelArray = on;
-}
-*/
 
 bool ZDvidTarget::segmentationAsBodyLabel() const
 {

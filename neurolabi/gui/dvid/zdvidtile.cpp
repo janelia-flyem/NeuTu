@@ -15,12 +15,11 @@
 #include "zdvidurl.h"
 #include "zdvidtileinfo.h"
 #include "zdvidreader.h"
-#include "zstackview.h"
+//#include "zstackview.h"
 #include "zrect2d.h"
 #include "libdvidheader.h"
 
-ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0),
-  m_view(NULL)
+ZDvidTile::ZDvidTile() : m_ix(0), m_iy(0), m_z(0)
 {
   setTarget(ZStackObject::TARGET_OBJECT_CANVAS);
   m_type = GetType();
@@ -53,11 +52,6 @@ void ZDvidTile::loadDvidSlice(
     const uchar *buf, int length, int z, bool highContrast)
 {
   bool loading = true;
-  if (m_view != NULL) {
-    if (m_view->getZ(neutube::COORD_STACK) != z) {
-      loading = false;
-    }
-  }
 
   bool modified = false;
   if (loading) {
@@ -110,29 +104,6 @@ void ZDvidTile::loadDvidSlice(
 
 void ZDvidTile::updatePixmap()
 {
-//  QMutexLocker locker(&m_pixmapMutex);
-#if 0
-#if 1
-//  m_pixmap.cleanUp();
-  if (m_pixmap != NULL) {
-#ifdef _DEBUG_2
-    std::cout << "Deleting " << m_pixmap << std::endl;
-#endif
-    delete m_pixmap;
-  }
-  m_pixmap = new ZPixmap();
-#else
-  if (m_pixmap == NULL) {
-    m_pixmap = new ZPixmap();
-  }
-  m_pixmap->cleanUp();
-#endif
-#endif
-//  m_pixmap.setPixmap(QPixmap::fromImage(*m_image, Qt::ColorOnly);
-//  m_pixmap->
-//  if (m_pixmap.width() != m_image->width()) {
-//    m_pixmap.fill(Qt::white);
-//  }
   m_pixmap.detach(); //must be called before convertFromImage. Probably a bug in Qt.
 //  qDebug() << "Tile pixel type: " << m_image->format();
   m_pixmap.convertFromImage(*m_image);
@@ -151,6 +122,9 @@ void ZDvidTile::enhanceContrast(bool high, bool updatingPixmap)
       addVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
     } else {
       removeVisualEffect(neutube::display::image::VE_HIGH_CONTRAST);
+//      delete m_image;
+//      m_image = NULL;
+//      update(getZ());
     }
 
     if (m_image != NULL) {
@@ -195,26 +169,6 @@ void ZDvidTile::setImageData(const uint8_t *data, int width, int height)
 void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z, bool highConstrast)
 {
   loadDvidSlice((const uchar *) buffer.data(), buffer.length(), z, highConstrast);
-#if 0
-  bool loading = true;
-  if (m_view != NULL) {
-    if (m_view->getZ(NeuTube::COORD_STACK) != z) {
-      loading = false;
-    }
-  }
-  if (loading) {
-#ifdef _DEBUG_2
-      std::cout << z << " Loaded." << std::endl;
-#endif
-
-
-    m_image.loadFromData(buffer);
-//    m_image.enhanceContrast();
-
-//    m_image.setOffset();
-    m_z = z;
-  }
-#endif
 
 //  m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 }
@@ -240,7 +194,7 @@ void ZDvidTile::display(
   m_latestZ = z;
 
 //  tic();
-  const_cast<ZDvidTile&>(*this).update(z);
+//  const_cast<ZDvidTile&>(*this).update(z);
       //  std::cout << "tile update time: " << toc() << std::endl;
 
   if ((z == m_z)  && (m_image != NULL)) {
@@ -267,6 +221,7 @@ void ZDvidTile::display(
 //    tic();
 //    QMutexLocker locker(const_cast<QMutex*>(&m_pixmapMutex));
 
+    LDEBUG() << "Painting tile:" << m_pixmap.size();
     painter.drawPixmap(getX(), getY(), m_pixmap);
 //    painter.drawImage(getX(), getY(), *m_image);
 //    std::cout << "Draw image time: " << toc() << std::endl;
@@ -418,11 +373,12 @@ int ZDvidTile::getZ() const
   return m_z;
 }
 
+/*
 void ZDvidTile::attachView(ZStackView *view)
 {
   m_view = view;
 }
-
+*/
 ZRect2d ZDvidTile::getBoundBox() const
 {
   ZRect2d rect;

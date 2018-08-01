@@ -37,6 +37,8 @@ public:
     return config;
   }
 
+  void init(const std::string &userName);
+
 #ifdef _QT_GUI_USED_
   /*!
    * \brief Get persistent settings.
@@ -60,7 +62,9 @@ public:
   static QString GetTaskServer();
   static void SetTaskServer(const QString &path);
   static bool NamingSynapse();
+  static bool NamingPsd();
   static void SetNamingSynapse(bool on);
+  static void SetNamingPsd(bool on);
 
   static void SetDataDir(const QString &dataDir);
 #endif
@@ -77,7 +81,9 @@ public:
   void setParallelTileFetching(bool on);
   void enableLowtisPrefetching(bool on);
   bool namingSynapse() const;
+  bool namingPsd() const;
   void setNamingSynapse(bool on);
+  void setNamingPsd(bool on);
 
   void setAdvancedMode(bool on);
   bool isAdvancedMode() const;
@@ -174,6 +180,12 @@ public:
   static std::string GetSoftwareName();
   static void SetDefaultSoftwareName();
   static void SetTestSoftwareName();
+
+  std::string getUserName() const;
+  static std::string GetUserName();
+
+  void setUserName(const std::string &name);
+  static void SetUserName(const std::string &name);
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;
@@ -419,7 +431,6 @@ private:
   ~NeutubeConfig();
   void operator=(const NeutubeConfig&);
 
-  void init();
   void updateLogDir();
 
 private:
@@ -441,6 +452,7 @@ private:
 
   std::string m_dataPath;
   std::string m_developPath;
+  std::string m_userName;
 
   MainWindowConfig m_mainWindowConfig;
   Z3DWindowConfig m_z3dWindowConfig;

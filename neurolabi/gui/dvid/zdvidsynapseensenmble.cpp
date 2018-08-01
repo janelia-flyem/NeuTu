@@ -12,6 +12,7 @@
 #include "dvid/zdvidwriter.h"
 #include "zstackview.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
+#include "geometry/zgeometry.h"
 
 ZDvidSynapseEnsemble::SynapseSlice
 ZDvidSynapseEnsemble::m_emptySlice(ZDvidSynapseEnsemble::STATUS_NULL);
@@ -443,7 +444,7 @@ int ZDvidSynapseEnsemble::getMaxZUnsync() const
 
 bool ZDvidSynapseEnsemble::hasLocalSynapseUnsync(int x, int y, int z) const
 {
-  ZGeometry::shiftSliceAxis(x, y, z, m_sliceAxis);
+  zgeom::shiftSliceAxis(x, y, z, m_sliceAxis);
 
   int zIndex = z - m_startZ;
 
@@ -486,7 +487,7 @@ bool ZDvidSynapseEnsemble::removeSynapseUnsync(int x, int y, int z, EDataScope s
       int sx = x;
       int sy = y;
       int sz = z;
-      ZGeometry::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+      zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
       getSynapseMapUnsync(sy, sz).remove(sx);
       getSelector().deselectObject(ZIntPoint(x, y, z));
 
@@ -873,7 +874,7 @@ ZDvidSynapse& ZDvidSynapseEnsemble::getSynapseUnsync(
     int sx = x;
     int sy = y;
     int sz = z;
-    ZGeometry::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
+    zgeom::shiftSliceAxis(sx, sy, sz, m_sliceAxis);
 
     return getSliceUnsync(sz).getMap(sy)[sx];
   } else {
