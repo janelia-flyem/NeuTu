@@ -174,7 +174,7 @@ public:
   void annotateBody(uint64_t bodyId, const ZFlyEmBodyAnnotation &annotation);
 //  void useBodyNameMap(bool on);
 
-  void selectBody(uint64_t bodyId);
+  bool selectBody(uint64_t bodyId);
   template <typename InputIterator>
   void selectBody(const InputIterator &first, const InputIterator &last);
 
