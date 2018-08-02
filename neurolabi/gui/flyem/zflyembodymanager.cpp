@@ -378,6 +378,11 @@ bool ZFlyEmBodyManager::encodingSupervoxel(uint64_t id)
   return encodedLevel(id) == ENCODING_SUPERVOXEL_LEVEL;
 }
 
+bool ZFlyEmBodyManager::encodingSupervoxelTar(uint64_t id)
+{
+  return encodesTar(id) && (encodedLevel(id) == 0);
+}
+
 unsigned int ZFlyEmBodyManager::encodedLevel(uint64_t id) {
   uint64_t encoded = id / ENCODING_BASE;
   uint64_t encodedLevel = encoded % ENCODING_TAR;

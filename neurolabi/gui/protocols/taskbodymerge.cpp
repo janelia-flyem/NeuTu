@@ -1055,6 +1055,32 @@ void TaskBodyMerge::zoomToMeshes(bool onlySmaller)
   filter->invalidate();
 }
 
+//Replace lambda with function for easier debuggging
+void TaskBodyMerge::updateHighResWidget(QNetworkReply *reply)
+{
+  if (reply->error() == QNetworkReply::NoError) {
+    QByteArray replyBytes = reply->readAll();
+    qDebug() << "Reply:" << replyBytes;
+    QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
+    if (replyJsonDoc.isArray()) {
+      QJsonArray replyJsonArray = replyJsonDoc.array();
+      if (!replyJsonArray.isEmpty()) {
+
+        // If both tar archives exist, then re-enable the controls.
+
+        m_hiResCount++;
+        if (m_hiResCount == 2) {
+          m_showHiResCheckBox->setEnabled(true);
+          m_showHiResAction->setEnabled(true);
+        }
+      }
+    }
+  } else {
+    qDebug() << "Reading error:" << reply->errorString();
+  }
+  reply->deleteLater();
+}
+
 void TaskBodyMerge::configureShowHiRes()
 {
   if (m_showHiResCheckBox->isChecked()) {
@@ -1075,7 +1101,7 @@ void TaskBodyMerge::configureShowHiRes()
 
   // TODO: Until this issue is fixed, always disable high resolution.
   // https://github.com/janelia-flyem/NeuTu/issues/185
-  return;
+//  return;
 
   if (!s_networkManager) {
     s_networkManager = new QNetworkAccessManager(m_bodyDoc->getParent3DWindow());
@@ -1086,26 +1112,7 @@ void TaskBodyMerge::configureShowHiRes()
 
   disconnect(s_networkManager, 0, 0, 0);
   connect(s_networkManager, &QNetworkAccessManager::finished,
-          this, [=](QNetworkReply *reply) {
-    if (reply->error() == QNetworkReply::NoError) {
-      QByteArray replyBytes = reply->readAll();
-      QJsonDocument replyJsonDoc = QJsonDocument::fromJson(replyBytes);
-      if (replyJsonDoc.isArray()) {
-        QJsonArray replyJsonArray = replyJsonDoc.array();
-        if (!replyJsonArray.isEmpty()) {
-
-          // If both tar archives exist, then re-enable the controls.
-
-          m_hiResCount++;
-          if (m_hiResCount == 2) {
-            m_showHiResCheckBox->setEnabled(true);
-            m_showHiResAction->setEnabled(true);
-          }
-        }
-      }
-    }
-    reply->deleteLater();
-  });
+          this, &TaskBodyMerge::updateHighResWidget);
 
   // Issue the DVID queries, each of which is a "range" query for
   // the range including just the key for one body's tar archive.
@@ -1116,9 +1123,10 @@ void TaskBodyMerge::configureShowHiRes()
     int level = 0;
     id = ZFlyEmBodyManager::encode(id, level);
     std::string url = dvidUrl.getMeshesTarsKeyRangeUrl(id, id);
+    qDebug() << "Mesh tar:" << url;
     QUrl requestUrl(url.c_str());
     QNetworkRequest request(requestUrl);
-    s_networkManager->get(request);
+    s_networkManager->get(request); //No waiting?
   }
 }
 
