@@ -28,6 +28,9 @@ public:
   ZDvidBodyHelper fork() const;
 
 private:
+  ZIntCuboid getAdjustedRange() const;
+
+private:
   const ZDvidReader *m_reader = nullptr;
   bool m_canonizing = true;
   flyem::EBodyLabelType m_labelType = flyem::LABEL_BODY;

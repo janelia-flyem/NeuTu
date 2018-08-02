@@ -1617,10 +1617,12 @@ void ZFlyEmBody3dDoc::addBodyMeshFunc(ZFlyEmBodyConfig &config)
   if (config.isTar()) {
     QSet<uint64_t> subbodySet;
     for (const ZMesh *mesh : meshes) {
-      if (ZFlyEmBodyManager::decode(mesh->getLabel()) !=
-          ZFlyEmBodyManager::decode(config.getBodyId())) {
+//      if (ZFlyEmBodyManager::decode(mesh->getLabel()) !=
+//          ZFlyEmBodyManager::decode(config.getBodyId())) {
+      if (mesh->hasRole(ZStackObjectRole::ROLE_SUPERVOXEL)) {
         subbodySet.insert(mesh->getLabel());
       }
+//      }
     }
     getBodyManager().registerBody(config.getBodyId(), subbodySet);
   } else {
@@ -2534,11 +2536,11 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
     uint64_t bodyId1, ZDvidReader &diffReader, int zoom,
     flyem::EBodyType bodyType)
 {
-  if (!m_bodyReader.isReady()) {
-    m_bodyReader.open(m_workDvidReader.getDvidTarget());
-  }
+//  if (!m_bodyReader.isReady()) {
+//    m_bodyReader.open(m_workDvidReader.getDvidTarget());
+//  }
 
-  ZIntPoint pt = m_bodyReader.readBodyPosition(bodyId1);
+  ZIntPoint pt = getBodyReader().readBodyPosition(bodyId1);
   uint64_t bodyId2 = diffReader.readBodyIdAt(pt);
 
   std::vector<ZSwcTree*> treeArray =
@@ -2562,11 +2564,11 @@ std::vector<ZSwcTree*> ZFlyEmBody3dDoc::makeDiffBodyModel(
     const ZIntPoint &pt, ZDvidReader &diffReader, int zoom,
     flyem::EBodyType bodyType)
 {
-  if (!m_bodyReader.isReady()) {
-    m_bodyReader.open(m_workDvidReader.getDvidTarget());
-  }
+//  if (!m_bodyReader.isReady()) {
+//    m_bodyReader.open(m_workDvidReader.getDvidTarget());
+//  }
 
-  uint64_t bodyId1 = m_bodyReader.readBodyIdAt(pt);
+  uint64_t bodyId1 = getBodyReader().readBodyIdAt(pt);
   uint64_t bodyId2 = diffReader.readBodyIdAt(pt);
 
   std::vector<ZSwcTree*> treeArray =
@@ -3012,7 +3014,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
         if (isCoarseLevel(zoom)) {
           helper.setCoarse(true);
         }
-         helper.setZoom(config.getDsLevel());
+        helper.setZoom(config.getDsLevel());
         if (config.isHybrid()) {
           helper.setRange(config.getRange());
           helper.setLowresZoom(config.getDsLevel());
@@ -3093,8 +3095,12 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
     reader.readMeshArchiveAsync(arc, resultVec, progress);
     //      QSet<uint64_t> mappedSet;
     uint64_t decodedBodyId = decode(bodyId);
+    bool isSupervoxelTar = ZFlyEmBodyManager::encodingSupervoxelTar(bodyId);
     for (ZMesh *mesh : resultVec) {
       finalizeMesh(mesh, decodedBodyId, 0, t);
+      if (isSupervoxelTar) {
+        mesh->addRole(ZStackObjectRole::ROLE_SUPERVOXEL);
+      }
       //        result[mesh->getLabel()] = mesh;
       //        mappedSet.insert(mesh->getLabel());
     }
