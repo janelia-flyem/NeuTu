@@ -35,6 +35,7 @@ private slots:
   void onTriggerShowHiRes();
   void onButtonToggled();
   void onShowHiResStateChanged(int state);
+  void onShowHybridStateChanged(int state);
   void zoomToMergePosition(bool justLoaded = false);
   void zoomOutToShowAll();
 
@@ -64,6 +65,7 @@ private:
   QRadioButton *m_dontKnowButton;
   QRadioButton *m_lastSavedButton;
   QCheckBox *m_showHiResCheckBox;
+  QCheckBox *m_showHybridCheckBox;
   QMenu *m_menu;
   QAction *m_showHiResAction;
 
@@ -81,7 +83,7 @@ private:
   void zoomToMeshes(bool onlySmaller);
   void configureShowHiRes();
   void showBirdsEyeView(bool show);
-  void showHybridMeshes();
+  void showHybridMeshes(bool show);
   void writeResult();
   void writeResult(const QString &result);
   QString readResult();

@@ -172,6 +172,8 @@ namespace {
     return result;
   }
 
+  static bool s_showHybridMeshes = true;
+
   // All the TaskBodyMerge instances loaded from one JSON file need certain changes
   // to some settings until all of them are done.  This code manages making those
   // changes and restore the changed values when the tasks are done.
@@ -338,6 +340,16 @@ void TaskBodyMerge::beforeDone()
   showBirdsEyeView(false);
 }
 
+namespace {
+  struct BlockSignals
+  {
+    BlockSignals(QObject *o) : m_o(o) { m_blocked = o->blockSignals(true); }
+    ~BlockSignals() { m_o->blockSignals(m_blocked); }
+    QObject *m_o;
+    bool m_blocked;
+  };
+}
+
 QWidget *TaskBodyMerge::getTaskWidget()
 {
   // It's possible that the bodies of the super voxels were merge together via
@@ -359,6 +371,14 @@ QWidget *TaskBodyMerge::getTaskWidget()
     if (!result.isEmpty()) {
       restoreResult(result);
     }
+  }
+
+  {
+    // Set the checkbox to reflect the persistent state, but block the action of the checkbox.
+    // That action will be done in onLoaded() instead.
+
+    BlockSignals blockStateChanged(m_showHybridCheckBox);
+    m_showHybridCheckBox->setChecked(s_showHybridMeshes);
   }
 
   configureShowHiRes();
@@ -428,6 +448,12 @@ void TaskBodyMerge::onShowHiResStateChanged(int state)
     visible.insert(m_bodyId2);
   }
   updateBodies(visible, QSet<uint64_t>());
+}
+
+void TaskBodyMerge::onShowHybridStateChanged(int state)
+{
+  s_showHybridMeshes = state;
+  showHybridMeshes(s_showHybridMeshes);
 }
 
 bool TaskBodyMerge::loadSpecific(QJsonObject json)
@@ -559,6 +585,9 @@ void TaskBodyMerge::buildTaskWidget()
   m_showHiResCheckBox = new QCheckBox("Show High Resolution", m_widget);
   connect(m_showHiResCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowHiResStateChanged(int)));
 
+  m_showHybridCheckBox = new QCheckBox("Show Hybrid Meshes", m_widget);
+  connect(m_showHybridCheckBox, SIGNAL(stateChanged(int)), this, SLOT(onShowHybridStateChanged(int)));
+
   QPushButton *zoomToInitialButton = new QPushButton("Zoom to Initial Position", m_widget);
   connect(zoomToInitialButton, SIGNAL(clicked(bool)), this, SLOT(zoomToMergePosition()));
 
@@ -566,7 +595,10 @@ void TaskBodyMerge::buildTaskWidget()
   connect(zoomOutButton, SIGNAL(clicked(bool)), this, SLOT(zoomOutToShowAll()));
 
   QHBoxLayout *bottomLayout = new QHBoxLayout;
-  bottomLayout->addWidget(m_showHiResCheckBox);
+  QVBoxLayout *checkboxLayout = new QVBoxLayout;
+  checkboxLayout->addWidget(m_showHiResCheckBox);
+  checkboxLayout->addWidget(m_showHybridCheckBox);
+  bottomLayout->addLayout(checkboxLayout);
   QVBoxLayout *buttonsLayout = new QVBoxLayout;
   buttonsLayout->addWidget(zoomToInitialButton);
   buttonsLayout->addWidget(zoomOutButton);
@@ -603,10 +635,8 @@ void TaskBodyMerge::onLoaded()
   applyColorMode(true);
   zoomToMergePosition(true);
 
-  if (const char* showHybrid = std::getenv("NEU3_SHOW_HYBRID_MESHES")) {
-    if (std::string(showHybrid) == "yes") {
-      showHybridMeshes();
-    }
+  if (s_showHybridMeshes) {
+    showHybridMeshes(s_showHybridMeshes);
   }
 }
 
@@ -907,6 +937,7 @@ void tightenZoom(const std::vector<std::vector<glm::vec3>> &vertices,
   }
 
   if (!found) {
+    LWARN() << "closest not found, tightening aborted";
     return;
   }
 
@@ -1156,7 +1187,7 @@ void TaskBodyMerge::showBirdsEyeView(bool show)
   }
 }
 
-void TaskBodyMerge::showHybridMeshes()
+void TaskBodyMerge::showHybridMeshes(bool show)
 {
   // The high-res region of the hybrid meshes will go all the way through both bodies in the dimension
   // closest to the viewing direction.  So first compute overall boudning box of the two bodies.
@@ -1180,28 +1211,26 @@ void TaskBodyMerge::showHybridMeshes()
     view = filter->camera().center() - filter->camera().eye();
   }
 
-  // Compute the two corners of the high-res region.
+  // Compute the two corners of the high-res region.  An empty region reverts to non-hybrid
+  // (fully low-resolution) meshes.
 
   ZIntPoint p1, p2;
-  glm::vec3 viewAbs(std::abs(view.x), std::abs(view.y), std::abs(view.z));
-  size_t iMax = (viewAbs[0] > viewAbs[1]) ?
-        (viewAbs[0] > viewAbs[2] ? 0 : 2) :
-    (viewAbs[1] > viewAbs[2] ? 1 : 2);
-  ZPoint p = mergePosition();
-  int s = misc::GetZoomScale(m_bodyDoc->getMaxDsLevel());
-  for (size_t i = 0; i < 3; i++) {
-    if (i == iMax) {
-      p1[i] = bbox.minCorner()[i];
-      p2[i] = bbox.maxCorner()[i];
-    } else {
-      p1[i] = p[i] - halfWidth;
-      p2[i] = p[i] + halfWidth;
+  if (show) {
+    glm::vec3 viewAbs(std::abs(view.x), std::abs(view.y), std::abs(view.z));
+    size_t iMax = (viewAbs[0] > viewAbs[1]) ?
+          (viewAbs[0] > viewAbs[2] ? 0 : 2) :
+      (viewAbs[1] > viewAbs[2] ? 1 : 2);
+    ZPoint p = mergePosition();
+    int s = misc::GetZoomScale(m_bodyDoc->getMaxDsLevel());
+    for (size_t i = 0; i < 3; i++) {
+      if (i == iMax) {
+        p1[i] = bbox.minCorner()[i];
+        p2[i] = bbox.maxCorner()[i];
+      } else {
+        p1[i] = p[i] - halfWidth;
+        p2[i] = p[i] + halfWidth;
+      }
     }
-
-    // Snap the region to low-res voxel boundaries.
-
-    p1[i] -= p1[i] % s;
-    p2[i] += 64 - p2[i] % s;
   }
 
   // Trigger asynchronous generation of hybrid meshes for the region.
