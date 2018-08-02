@@ -217,6 +217,7 @@ public slots:
   void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
   void annotateBody();
+  void showBodyConnection();
   void annotateSynapse();
   void checkInSelectedBody(flyem::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
@@ -514,6 +515,8 @@ private:
   void startMergeProfile(const uint64_t bodyId, int msec);
   void endMergeProfile();
 
+  FlyEmBodyInfoDialog* getBodyQueryDlg();
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
@@ -536,6 +539,7 @@ protected:
 
   ZDvidDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
+  FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
   ProtocolSwitcher *m_protocolSwitcher;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;

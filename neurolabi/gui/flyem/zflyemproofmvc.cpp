@@ -124,7 +124,8 @@ void ZFlyEmProofMvc::init()
   setFocusPolicy(Qt::ClickFocus);
 
   m_dvidDlg = NULL;
-  m_bodyInfoDlg = new FlyEmBodyInfoDialog(this);
+  m_bodyInfoDlg = new FlyEmBodyInfoDialog(
+        FlyEmBodyInfoDialog::MODE_SEQUENCER, this);
 
   m_protocolSwitcher = new ProtocolSwitcher(this);
 //  m_supervisor = new ZFlyEmSupervisor(this);
@@ -199,6 +200,29 @@ void ZFlyEmProofMvc::setDvidDialog(ZDvidDialog *dlg)
 ZDvidDialog* ZFlyEmProofMvc::getDvidDialog() const
 {
   return m_dvidDlg;
+}
+
+FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
+{
+  if (m_bodyQueryDlg == nullptr) {
+    m_bodyQueryDlg = new FlyEmBodyInfoDialog(
+          FlyEmBodyInfoDialog::MODE_QUERY, this);
+    m_bodyQueryDlg->dvidTargetChanged(getDvidTarget());
+    connect(this, SIGNAL(dvidTargetChanged(ZDvidTarget)),
+            m_bodyQueryDlg, SLOT(dvidTargetChanged(ZDvidTarget)));
+    connect(m_bodyQueryDlg, SIGNAL(bodyActivated(uint64_t)),
+            this, SLOT(locateBody(uint64_t)));
+    connect(m_bodyQueryDlg, SIGNAL(addBodyActivated(uint64_t)),
+            this, SLOT(addLocateBody(uint64_t)));
+    connect(m_bodyQueryDlg, SIGNAL(bodiesActivated(QList<uint64_t>)),
+            this, SLOT(selectBody(QList<uint64_t>)));
+    connect(m_bodyQueryDlg, SIGNAL(pointDisplayRequested(int,int,int)),
+            this, SLOT(zoomTo(int,int,int)));
+    connect(m_bodyQueryDlg, SIGNAL(refreshing()),
+            this, SLOT(showBodyConnection()));
+  }
+
+  return m_bodyQueryDlg;
 }
 
 void ZFlyEmProofMvc::initBodyWindow()
@@ -1834,6 +1858,8 @@ void ZFlyEmProofMvc::customInit()
           this, SLOT(notifySplitTriggered()));
   connect(getPresenter(), SIGNAL(bodyAnnotationTriggered()),
           this, SLOT(annotateBody()));
+  connect(getPresenter(), SIGNAL(bodyConnectionTriggered()),
+          this, SLOT(showBodyConnection()));
   connect(getPresenter(), SIGNAL(bodyCheckinTriggered(flyem::EBodySplitMode)),
           this, SLOT(checkInSelectedBody(flyem::EBodySplitMode)));
   connect(getPresenter(), SIGNAL(bodyForceCheckinTriggered()),
@@ -2731,6 +2757,16 @@ void ZFlyEmProofMvc::checkOutBody(flyem::EBodySplitMode mode)
   } else {
     emit messageGenerated(QString("Body lock service is not available."));
   }
+}
+
+void ZFlyEmProofMvc::showBodyConnection()
+{
+  std::set<uint64_t> bodyIdArray =
+      getCurrentSelectedBodyId(neutube::BODY_LABEL_ORIGINAL);
+
+  getBodyQueryDlg()->setBodyList(bodyIdArray);
+  getBodyQueryDlg()->show();
+  getBodyQueryDlg()->raise();
 }
 
 void ZFlyEmProofMvc::annotateBody()

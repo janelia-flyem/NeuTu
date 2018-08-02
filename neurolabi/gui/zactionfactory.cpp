@@ -324,6 +324,9 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_BODY_ANNOTATION:
     action = new QAction("Annotate", parent);
     break;
+  case ACTION_BODY_CONNECTION:
+    action = new QAction("Connection", parent);
+    break;
   case ACTION_BODY_CHECKIN:
     action = new QAction("Unlock", parent);
     break;
