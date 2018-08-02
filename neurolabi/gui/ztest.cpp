@@ -27294,7 +27294,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
   QRegularExpression regexp("^(supervoxel|sv)[:\\s]*([0-9]+)",
                             QRegularExpression::CaseInsensitiveOption);
   {
@@ -27315,6 +27315,57 @@ void ZTest::test(MainWindow *host)
     qDebug() << match.hasMatch();
     qDebug() << match.captured(2);
   }
+#endif
+
+#if 0
+  ZObject3dScan *obj = ZObject3dFactory::MakeBoxObject3dScan(
+        ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(10, 10, 10)), NULL);
+  obj->setDsIntv(31, 31, 31);
+  ZObject3dScanArray objArray;
+  objArray.append(obj);
+
+  ZIntCuboid range(ZIntPoint(30, 30, 30), ZIntPoint(100, 100, 100));
+  range.scaleDown(32);
+  range.expand(-1, -1, -1);
+  obj->remove(range);
+
+  obj = ZObject3dFactory::MakeBoxObject3dScan(
+          ZIntCuboid(ZIntPoint(30, 30, 30), ZIntPoint(100, 100, 200)), NULL);
+  objArray.append(obj);
+
+  ZMeshFactory mf;
+
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  ZMeshFactory mf;
+  mf.setSmooth(0);
+  ZObject3dScanArray objArray;
+  objArray.append(obj);
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZDvidBodyHelper helper(reader);
+  helper.setCoarse(true);
+  helper.setZoom(0);
+  ZIntCuboid range;
+  range.setSize(256, 256, 256);
+  range.setCenter(ZIntPoint(16710, 31679, 32100));
+  helper.setRange(range);
+  ZObject3dScanArray objArray = helper.readHybridBody(2229212992);
+  ZMeshFactory mf;
+//  mf.setSmooth(0);
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
 #endif
 
   std::cout << "Done." << std::endl;

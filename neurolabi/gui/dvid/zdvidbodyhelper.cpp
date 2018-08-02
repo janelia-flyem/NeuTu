@@ -62,18 +62,64 @@ ZObject3dScan* ZDvidBodyHelper::readBody(uint64_t bodyId, ZObject3dScan *result)
   return out;
 }
 
+namespace {
+int AdjustMinCorner(int x, int s)
+{
+  if (x % s >= s / 2) {
+    x = (x / s) * s + s / 2;
+  } else {
+    x = (x / s) * s - s / 2;
+  }
+
+  return x;
+}
+
+int AdjustMaxCorner(int x, int s)
+{
+  if (x % s <= s / 2) {
+    x = (x / s) * s + s / 2;
+  } else {
+    x = (x / s + 1) * s + s / 2;
+  }
+
+  return x;
+}
+}
+
+ZIntCuboid ZDvidBodyHelper::getAdjustedRange() const
+{
+  ZIntCuboid range = m_range;
+  if (!m_range.isEmpty() && (m_coarseVol || (m_lowresZoom < m_zoom))) { //hybrid
+    ZDvidInfo dvidInfo = getDvidReader()->readLabelInfo();
+    ZIntPoint scale = dvidInfo.getBlockSize();
+
+    range.set(
+          ZIntPoint(AdjustMinCorner(range.getFirstCorner().getX(), scale.getX()),
+                    AdjustMinCorner(range.getFirstCorner().getY(), scale.getY()),
+                    AdjustMinCorner(range.getFirstCorner().getZ(), scale.getZ())),
+          ZIntPoint(AdjustMaxCorner(range.getLastCorner().getX(), scale.getX()),
+                    AdjustMaxCorner(range.getLastCorner().getY(), scale.getY()),
+                    AdjustMaxCorner(range.getLastCorner().getZ(), scale.getZ())));
+  }
+
+  return range;
+}
+
 std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
 {
   std::vector<ZObject3dScan*> result;
 
+  ZIntCuboid range = getAdjustedRange();
+
   ZDvidBodyHelper highResHelper = fork();
   highResHelper.setCoarse(false);
+  highResHelper.setRange(range);
   ZObject3dScan *highResObj = highResHelper.readBody(bodyId);
   if (highResObj != NULL) {
     result.push_back(highResObj);
   }
 
-  if (!m_range.isEmpty()) { //load low res parts
+  if (!range.isEmpty()) { //load low res parts
     ZDvidBodyHelper lowResHelper = fork();
     lowResHelper.setRange(ZIntCuboid());
     ZObject3dScan *lowResObj = nullptr;
@@ -93,10 +139,10 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
     }
 
     if (lowResObj != nullptr) {
-      lowResObj->remove(m_range);
-      ZIntCuboid box = m_range;
+      lowResObj->remove(range);
+      ZIntCuboid box = range;
       box.scaleDown(scale);
-      box.expand(-2, -2, -2);
+      box.expand(-1, -1, -1);
       lowResObj->remove(box);
       lowResObj->setDsIntv(scale - 1);
 

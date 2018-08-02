@@ -44,6 +44,7 @@ public:
   void updateMeshData();
   void updateDecorationData();
   void updateRoiData();
+  void updateSliceData();
   void updateData(neutube3d::ERendererLayer layer);
 
   void updateCustomCanvas(ZFlyEmBody3dDoc *doc);

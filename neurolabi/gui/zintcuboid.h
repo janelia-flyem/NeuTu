@@ -80,6 +80,12 @@ public:
   void scaleDown(int s);
 
   /*!
+   * \brief Downsize the box in a way of filling blocks
+   */
+  void scaleDownBlock(int s);
+  void scaleDownBlock(const ZIntPoint &s);
+
+  /*!
    * \brief Change the size of the cuboid by fixing the first corner
    */
   void setSize(int width, int height, int depth);

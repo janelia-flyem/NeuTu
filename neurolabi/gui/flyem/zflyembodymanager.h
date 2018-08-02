@@ -141,6 +141,7 @@ public:
   static bool encodesTar(uint64_t id);
   static bool encodingSupervoxel(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
+  static bool encodingSupervoxelTar(uint64_t id);
 
 private:
   static bool couldBeSupervoxelLevel(uint64_t id);
