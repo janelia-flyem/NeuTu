@@ -3848,15 +3848,21 @@ void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
   updateBodyColor(colorMap);
 }
 
-void ZFlyEmProofDoc::selectBody(uint64_t bodyId)
+bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 {
-  QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
-//  ZDvidLabelSlice *slice = getDvidLabelSlice();
-  for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
-       iter != sliceList.end(); ++iter) {
-    ZDvidLabelSlice *slice = *iter;
-    slice->addSelection(bodyId, neutube::BODY_LABEL_MAPPED);
+  if (getDvidReader().hasBody(bodyId)) {
+    QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
+    //  ZDvidLabelSlice *slice = getDvidLabelSlice();
+    for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();
+         iter != sliceList.end(); ++iter) {
+      ZDvidLabelSlice *slice = *iter;
+      slice->addSelection(bodyId, neutube::BODY_LABEL_MAPPED);
+    }
+
+    return true;
   }
+
+  return false;
 }
 
 void ZFlyEmProofDoc::deselectBody(uint64_t bodyId)

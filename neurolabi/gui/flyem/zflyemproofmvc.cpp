@@ -2160,11 +2160,30 @@ void ZFlyEmProofMvc::selectBody()
     if (!text.isEmpty()) {
       ZString str = text.toStdString();
       std::vector<uint64_t> bodyArray = str.toUint64Array();
+      std::set<uint64_t> bodySet(bodyArray.begin(), bodyArray.end());
+      std::vector<uint64_t> invalidBodyArray;
+
       if (!bodyArray.empty()) {
         getCompleteDocument()->recordBodySelection();
-        getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+//        getCompleteDocument()->selectBody(bodyArray.begin(), bodyArray.end());
+        for (uint64_t bodyId : bodySet) {
+          if (getCompleteDocument()->selectBody(bodyId) == false) {
+            invalidBodyArray.push_back(bodyId);
+          }
+        }
         getCompleteDocument()->processBodySelection();
         getCompleteDocument()->notifyBodySelectionChanged();
+
+        if (!invalidBodyArray.empty()) {
+          QString msg = "Failed to select";
+          for (uint64_t bodyId : invalidBodyArray) {
+            msg += QString(" %1").arg(bodyId);
+          }
+          msg += QString(". The ") +
+              (invalidBodyArray.size() > 1 ? "bodies" : "body") +
+              " may not exist";
+          emit messageGenerated(ZWidgetMessage(msg, neutube::MSG_ERROR));
+        }
 //        updateBodySelection();
       }
 #if 0
