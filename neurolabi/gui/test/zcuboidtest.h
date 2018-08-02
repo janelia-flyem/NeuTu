@@ -50,6 +50,13 @@ TEST(ZIntCuboid, size)
   ASSERT_EQ(4, int(box.getDsMaxVolume(1, 1, 1)));
 }
 
+TEST(ZIntCuboid, scale)
+{
+  ZIntCuboid box(ZIntPoint(0, 0, 0), ZIntPoint(1, 1, 1));
+  box.scaleDownBlock(2);
+
+}
+
 TEST(ZIntCuboidArray, basic)
 {
   ZIntCuboidArray blockArray;

@@ -16,6 +16,7 @@ const ZStackObjectRole::TRole ZStackObjectRole::ROLE_ACTIVE_VIEW = BIT_FLAG(11);
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_SKELETON_MASK = BIT_FLAG(12);
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_ROI_MASK = BIT_FLAG(13);
 const ZStackObjectRole::TRole ZStackObjectRole::ROLE_3DMESH_DECORATOR = BIT_FLAG(14);
+const ZStackObjectRole::TRole ZStackObjectRole::ROLE_SUPERVOXEL = BIT_FLAG(15);
 
 ZStackObjectRole::ZStackObjectRole() : m_role(ZStackObjectRole::ROLE_NONE)
 {
