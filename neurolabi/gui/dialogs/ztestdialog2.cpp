@@ -16,7 +16,8 @@ ZTestDialog2::ZTestDialog2(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    m_flyEmBodyInfoDialog = new FlyEmBodyInfoDialog(this);
+    m_flyEmBodyInfoDialog = new FlyEmBodyInfoDialog(
+          FlyEmBodyInfoDialog::MODE_SEQUENCER, this);
 
 
 
