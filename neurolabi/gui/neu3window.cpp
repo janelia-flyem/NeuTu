@@ -266,7 +266,8 @@ bool Neu3Window::loadDvidTarget()
 
 //  ZProgressReporter reporter;
 
-  ZDvidDialog *dlg = new ZDvidDialog(NULL);
+  ZDvidTargetProviderDialog *dlg = ZDialogFactory::makeDvidDialog(NULL);
+
   if (dlg->exec()) {
     m_dataContainer = ZFlyEmProofMvc::Make(ZStackMvc::ROLE_DOCUMENT);
     m_dataContainer->getProgressSignal()->connectSlot(this);

@@ -8,7 +8,7 @@
 #include "zprogressable.h"
 
 class MainWindow;
-class ZDvidDialog;
+class ZDvidTargetProviderDialog;
 class QMenu;
 class ZStackFrame;
 class ZProgressReporter;
@@ -33,7 +33,7 @@ public:
     m_docTag = tag;
   }
 
-  void setDvidDialog(ZDvidDialog *dvidDlg);
+  void setDvidDialog(ZDvidTargetProviderDialog *dvidDlg);
   void setDvidTargetD(const ZDvidTarget &dvidTarget);
 
   inline const ZDvidTarget& getDvidTarget() const {
@@ -63,7 +63,7 @@ public slots:
 protected:
   ZDvidTarget m_dvidTarget;
   //ZStackDocReader m_docReader;
-  ZDvidDialog *m_dvidDlg;
+  ZDvidTargetProviderDialog *m_dvidDlg;
   QMenu *m_mainMenu;
   neutube::Document::ETag m_docTag;
   ZProgressReporter *m_progressReporter;

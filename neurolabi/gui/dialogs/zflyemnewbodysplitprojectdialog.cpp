@@ -1,6 +1,6 @@
 #include "zflyemnewbodysplitprojectdialog.h"
 #include "ui_zflyemnewbodysplitprojectdialog.h"
-#include "zdviddialog.h"
+#include "zdvidtargetproviderdialog.h"
 #include "zstring.h"
 
 ZFlyEmNewBodySplitProjectDialog::ZFlyEmNewBodySplitProjectDialog(QWidget *parent) :
@@ -35,7 +35,7 @@ void ZFlyEmNewBodySplitProjectDialog::setDvidTarget(const ZDvidTarget &target)
   ui->dvidServerEdit->setText(m_dvidTarget.getSourceString(false).c_str());
 }
 
-void ZFlyEmNewBodySplitProjectDialog::setDvidDialog(ZDvidDialog *dlg)
+void ZFlyEmNewBodySplitProjectDialog::setDvidDialog(ZDvidTargetProviderDialog *dlg)
 {
   m_dvidDlg = dlg;
   setDvidTarget(m_dvidDlg->getDvidTarget());
