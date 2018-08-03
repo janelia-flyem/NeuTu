@@ -1767,6 +1767,28 @@ void ZFlyEmBody3dDoc::loadTodoFresh(uint64_t bodyId)
   }
 }
 
+ZFlyEmBodyAnnotationDialog* ZFlyEmBody3dDoc::getBodyAnnotationDlg()
+{
+  if (m_annotationDlg == nullptr) {
+    m_annotationDlg = new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
+    ZJsonArray statusJson = getMainDvidReader().readBodyStatusList();
+    QList<QString> statusList;
+    for (size_t i = 0; i < statusJson.size(); ++i) {
+      std::string status = ZJsonParser::stringValue(statusJson.at(i));
+      if (!status.empty()) {
+        statusList.append(status.c_str());
+      }
+    }
+    if (!statusList.empty()) {
+      m_annotationDlg->setDefaultStatusList(statusList);
+    } else {
+      m_annotationDlg->setDefaultStatusList(ZFlyEmMisc::GetDefaultBodyStatus());
+    }
+  }
+
+  return m_annotationDlg;
+}
+
 void ZFlyEmBody3dDoc::addBodyFunc(ZFlyEmBodyConfig &config)
 {
   flyem::EBodyType bodyType = config.getBodyType();
@@ -3594,13 +3616,16 @@ void ZFlyEmBody3dDoc::waitForSplitToBeDone()
 
 void ZFlyEmBody3dDoc::startBodyAnnotation()
 {
-  ZFlyEmBodyAnnotationDialog *dlg =
-      new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
-  startBodyAnnotation(dlg);
+
+//  ZFlyEmBodyAnnotationDialog *dlg =
+//      new ZFlyEmBodyAnnotationDialog(getParent3DWindow());
+  startBodyAnnotation(getBodyAnnotationDlg());
 }
 
 void ZFlyEmBody3dDoc::startBodyAnnotation(ZFlyEmBodyAnnotationDialog *dlg)
 {
+  dlg->updateStatusBox();
+
   uint64_t bodyId = getSelectedSingleNormalBodyId();
   if (bodyId > 0 && getDataDocument() != NULL) {
     dlg->setBodyId(bodyId);

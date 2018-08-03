@@ -501,6 +501,7 @@ public:
   ZJsonObject readToDoItemJson(const ZIntPoint &pt);
 
   ZJsonObject readContrastProtocal() const;
+  ZJsonArray readBodyStatusList() const;
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

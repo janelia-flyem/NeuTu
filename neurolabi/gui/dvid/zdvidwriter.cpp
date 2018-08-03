@@ -1076,6 +1076,16 @@ void ZDvidWriter::writeTestResult(
   writeJson(ZDvidData::GetName(ZDvidData::ROLE_TEST_RESULT_KEY), key, result);
 }
 
+void ZDvidWriter::writeBodyStatusList(const std::vector<std::string> &statusList)
+{
+  ZJsonArray statusJson;
+  for (const std::string &status : statusList) {
+    statusJson.append(status);
+  }
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_NEUTU_CONFIG),
+            "body_status", statusJson);
+}
+
 void ZDvidWriter::deleteSplitTask(const QString &key)
 {
   deleteKey(ZDvidData::GetName(ZDvidData::ROLE_SPLIT_TASK_KEY),

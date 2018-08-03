@@ -40,6 +40,10 @@ public:
   void showFinalizedStatus();
   void freezeFinalizedStatus();
   void freezeUnknownStatus(const std::string &status);
+  void processUnknownStatus(const std::string &status);
+
+  void setDefaultStatusList(const QList<QString> statusList);
+  void updateStatusBox();
 
 public slots:
   void setNameEdit(const QString &name);
@@ -51,7 +55,9 @@ private:
   Ui::ZFlyEmBodyAnnotationDialog *ui;
   uint64_t m_bodyId;
 
-  static const std::string m_finalizedText;
+  QList<QString> m_defaultStatusList;
+
+  static const QString FINALIZED_TEXT;
 };
 
 #endif // ZFLYEMBODYANNOTATIONDIALOG_H

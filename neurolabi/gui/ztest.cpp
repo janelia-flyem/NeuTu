@@ -27351,7 +27351,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
 
   ZDvidBodyHelper helper(reader);
@@ -27366,6 +27366,27 @@ void ZTest::test(MainWindow *host)
 //  mf.setSmooth(0);
   ZMesh *mesh = mf.makeMesh(objArray);
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+//  reader->getDvidTarget().setUuid("7e52");
+  std::cout << "Block count: " << reader->readBodyBlockCount(770606927) << std::endl;
+  std::cout << "Block count: " << reader->readBodyBlockCount(1882009576) << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test");
+  std::vector<std::string> statusList({"Putative 0.5",
+                                       "Traced",
+                                       "Hard to trace"});
+  writer->writeBodyStatusList(statusList);
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+  ZJsonArray statusJson = reader->readBodyStatusList();
+  std::cout << statusJson.dumpString(2) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

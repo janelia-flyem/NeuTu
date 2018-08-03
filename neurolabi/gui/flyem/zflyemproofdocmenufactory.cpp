@@ -129,6 +129,11 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
           doc->getSelectedBodySet(neutube::BODY_LABEL_ORIGINAL);
 
       if (!selectedOriginal.empty()) {
+        if (!doc->getDvidTarget().getSynapseName().empty()) {
+          config.append(ZActionFactory::ACTION_BODY_CONNECTION);
+          config.appendSeparator();
+        }
+
         if (!doc->getDvidTarget().readOnly()) {
           if (selectedOriginal.size() == 1) {
             if (ZStackDocHelper::AllowingBodySplit(doc)) {
@@ -159,8 +164,6 @@ ZMenuConfig ZFlyEmProofDocMenuFactory::getConfig(ZFlyEmProofPresenter *presenter
             }
           }
         }
-
-        config.append(ZActionFactory::ACTION_BODY_CONNECTION);
       }
     }
   }

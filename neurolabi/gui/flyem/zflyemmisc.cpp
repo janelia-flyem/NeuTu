@@ -1051,6 +1051,13 @@ void ZFlyEmMisc::PrepareBodyStatus(QComboBox *box)
   }
 }
 
+QList<QString> ZFlyEmMisc::GetDefaultBodyStatus()
+{
+  return QList<QString>() << "Not examined" << "Traced" << "Traced in ROI"
+                          << "Partially traced" << "Orphan" << "Hard to trace"
+                          << "Finalized";
+}
+
 void ZFlyEmMisc::MakeTriangle(
     const QRectF &rect, QPointF *ptArray, neutube::ECardinalDirection direction)
 {
