@@ -69,4 +69,7 @@ HEADERS += \
     test/zmouseeventprocessortest.h \
     $$PWD/zpositionmappertest.h \
     $$PWD/zstackdochelpertest.h \
-    $$PWD/zgeometrytest.h
+    $$PWD/zgeometrytest.h \
+    $$PWD/zdviddataslicetest.h \
+    $$PWD/zstackviewparamtest.h \
+    $$PWD/zflyembodymanagertest.h

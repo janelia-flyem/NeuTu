@@ -5,6 +5,7 @@
 #include "tz_math.h"
 #include "dvid/zdvidwriter.h"
 #include "zstackview.h"
+#include "geometry/zgeometry.h"
 
 ZFlyEmToDoList::ItemSlice
 ZFlyEmToDoList::m_emptySlice(ZFlyEmToDoList::STATUS_NULL);

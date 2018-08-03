@@ -476,6 +476,10 @@ void ZStackView::setSliceRange(int minSlice, int maxSlice)
   m_sliceStrategy->setRange(minSlice, maxSlice);
 }
 
+void ZStackView::enableOffsetAdjustment(bool on)
+{
+  m_imageWidget->enableOffsetAdjustment(on);
+}
 
 #if 0
 void ZStackView::resetDepthControl()
@@ -2282,9 +2286,13 @@ void ZStackView::paintActiveDecorationBuffer()
 //      pt.shiftSliceAxis(getSliceAxis());
 //      painter.setStackOffset(pt);
 
+      ZStackObjectPainter paintHelper;
+
       foreach (ZStackObject *obj, drawableList) {
         if (obj->getTarget() == ZStackObject::TARGET_OBJECT_CANVAS) {
-          obj->display(painter, sliceIndex(), ZStackObject::NORMAL, m_sliceAxis);
+          paintHelper.paint(
+                obj, painter, sliceIndex(), ZStackObject::NORMAL, getSliceAxis());
+//          obj->display(painter, sliceIndex(), ZStackObject::NORMAL, m_sliceAxis);
 //          painted = true;
         }
       }
@@ -2476,6 +2484,13 @@ void ZStackView::exportObjectMask(
       delete stack;
     }
   }
+}
+
+void ZStackView::configurePainter(ZStackObjectPainter &painter)
+{
+  painter.setRestoringPainter(true);
+  painter.setSliceAxis(getSliceAxis());
+  painter.setDisplayStyle(buddyPresenter()->objectStyle());
 }
 
 void ZStackView::printViewParam() const

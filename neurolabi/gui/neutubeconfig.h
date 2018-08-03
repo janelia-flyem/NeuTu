@@ -37,6 +37,8 @@ public:
     return config;
   }
 
+  void init(const std::string &userName);
+
 #ifdef _QT_GUI_USED_
   /*!
    * \brief Get persistent settings.
@@ -178,6 +180,12 @@ public:
   static std::string GetSoftwareName();
   static void SetDefaultSoftwareName();
   static void SetTestSoftwareName();
+
+  std::string getUserName() const;
+  static std::string GetUserName();
+
+  void setUserName(const std::string &name);
+  static void SetUserName(const std::string &name);
 
   inline bool isStereoEnabled() {
     return m_isStereoOn;
@@ -411,6 +419,7 @@ public:
   bool isAutoSaveEnabled() const { return m_autoSaveEnabled; }
 
   inline bool usingNativeDialog() const { return m_usingNativeDialog; }
+  inline bool usingDvidBrowseDialog() const { return m_usingDvidBrowseDialog; }
 
 #if 0
   const ZFlyEmConfig &getFlyEmConfig() const { return m_flyemConfig; }
@@ -423,7 +432,6 @@ private:
   ~NeutubeConfig();
   void operator=(const NeutubeConfig&);
 
-  void init();
   void updateLogDir();
 
 private:
@@ -445,6 +453,7 @@ private:
 
   std::string m_dataPath;
   std::string m_developPath;
+  std::string m_userName;
 
   MainWindowConfig m_mainWindowConfig;
   Z3DWindowConfig m_z3dWindowConfig;
@@ -459,6 +468,7 @@ private:
   int m_autoSaveMaxSwcCount;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
+  bool m_usingDvidBrowseDialog;
   bool m_loggingProfile;
   int m_verboseLevel;
   bool m_advancedMode = false;

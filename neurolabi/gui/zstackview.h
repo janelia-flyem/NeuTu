@@ -50,6 +50,7 @@ class ZWidgetMessage;
 class ZStTransform;
 class ZScrollSliceStrategy;
 class ZStackViewParam;
+class ZStackObjectPainter;
 
 /*!
  * \brief The ZStackView class shows 3D data slice by slice
@@ -462,6 +463,8 @@ protected:
 
   bool event(QEvent *event);
 
+  void enableOffsetAdjustment(bool on);
+
 public slots:
   /*!
    * \brief Update view settings from the stack box.
@@ -576,6 +579,7 @@ private:
    */
   ZStack* getObjectMask(neutube::EColor color, uint8_t maskValue);
 
+  void configurePainter(ZStackObjectPainter &painter);
 //  void setCentralView(int width, int height);
 
   class ViewParamRecordOnce {

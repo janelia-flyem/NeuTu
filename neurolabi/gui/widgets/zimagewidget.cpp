@@ -13,6 +13,7 @@
 #include "zimage.h"
 #include "zpixmap.h"
 #include "zstackobjectpainter.h"
+#include "misc/miscutility.h"
 
 ZImageWidget::ZImageWidget(QWidget *parent) : QWidget(parent)
 {
@@ -75,6 +76,11 @@ void ZImageWidget::maximizeViewPort()
 {
   qDebug() << "ZImageWidget::maximizeViewPort";
   m_viewProj.maximizeViewPort();
+}
+
+void ZImageWidget::enableOffsetAdjustment(bool on)
+{
+  m_offsetAdjustment = on;
 }
 
 void ZImageWidget::paintEvent(QPaintEvent * event)
@@ -424,8 +430,8 @@ void ZImageWidget::paintObject()
 //    transform.translate(-m_paintBundle->getStackOffset().getX(),
 //                        -m_paintBundle->getStackOffset().getY());
     painter.setTransform(transform);
-    painter.setZOffset(
-          m_paintBundle->getStackOffset().getSliceCoord(getSliceAxis()));
+    painter.setZOffset(m_paintBundle->getStackOffset().getZ());
+    //.getSliceCoord(getSliceAxis()));
 
 //    painter.setStackOffset(m_paintBundle->getStackOffset());
     std::vector<const ZStackObject*> visibleObject;
@@ -820,6 +826,14 @@ double ZImageWidget::getAcutalZoomRatioY() const
 
 void ZImageWidget::updateView()
 {
+  //View port adjustment
+  if (m_offsetAdjustment) {
+    int zoom = iround(std::log2(getViewProj().getZoom())) + 1;
+    if (zoom > 0) {
+      m_viewProj.alignOffset(misc::GetZoomScale(zoom));
+    }
+  }
+
   if (!isPaintBlocked()) {
     update();
   }

@@ -26,6 +26,8 @@ signals:
     void requestDisplayPoint(int x, int y, int z);
     void colorMapChanged(ZFlyEmSequencerColorScheme scheme);
     void activateColorMap(QString colorMapName);
+    void rangeChanged(ZIntPoint firstCorner, ZIntPoint lastCorner);
+    void rangeGridToggled(bool on);
 
 public slots:
     void openProtocolDialogRequested();

@@ -39,6 +39,7 @@ class ZFlyEmProofDoc : public ZStackDoc
   Q_OBJECT
 public:
   explicit ZFlyEmProofDoc(QObject *parent = 0);
+  ~ZFlyEmProofDoc();
 
   static ZFlyEmProofDoc* Make();
 
@@ -72,6 +73,7 @@ public:
   ZDvidTileEnsemble* getDvidTileEnsemble() const;
   ZDvidLabelSlice* getDvidLabelSlice(neutube::EAxis axis) const;
   ZDvidGraySlice* getDvidGraySlice() const;
+  ZDvidGraySlice* getDvidGraySlice(neutube::EAxis axis) const;
 //  QList<ZDvidLabelSlice*> getDvidLabelSlice() const;
   QList<ZDvidSynapseEnsemble*> getDvidSynapseEnsembleList() const;
   ZDvidSynapseEnsemble* getDvidSynapseEnsemble(neutube::EAxis axis) const;
@@ -110,6 +112,7 @@ public:
   uint64_t getBodyId(const ZIntPoint &pt);
 
   uint64_t getLabelId(int x, int y, int z) override;
+  uint64_t getSupervoxelId(int x, int y, int z) override;
 
   bool hasBodySelected() const;
 
@@ -304,6 +307,7 @@ public: //Todo list functions
   void checkTodoItem(bool checking);
   void setTodoItemAction(neutube::EToDoAction action);
   void setTodoItemToNormal();
+  void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
 
@@ -341,6 +345,10 @@ public: //Bookmark functions
 
 public:
   bool isDataValid(const std::string &data) const;
+
+  static void enableBodySelectionMessage(bool enable = true);
+  static bool bodySelectionMessageEnabled();
+
   void notifyBodySelectionChanged();
 
   /*!
@@ -414,6 +422,16 @@ public:
 
   ZJsonArray getMergeOperation() const;
 
+  void prepareDvidLabelSlice(
+      const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+  void prepareDvidGraySlice(const ZStackViewParam &viewParam,
+      int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
+
+  ZWidgetMessage getAnnotationFailureMessage(uint64_t bodyId) const;
+
+  void diagnose() const override;
+
 public:
   virtual void executeAddTodoCommand(
       int x, int y, int z, bool checked,  neutube::EToDoAction action,
@@ -446,6 +464,14 @@ signals:
   void todoModified(uint64_t bodyId);
   void requestingBodyLock(uint64_t bodyId, bool locking);
   void bodyColorUpdated(ZFlyEmProofDoc*);
+
+  void updatingLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                          int zoom, int centerCutX, int centerCutY,
+                          bool usingCenterCut);
+  void updatingGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                         int zoom, int centerCutX, int centerCutY,
+                         bool usingCenterCut);
+
 
 public slots: //Commands
   void repairSelectedSynapses();
@@ -528,6 +554,14 @@ public slots:
   void syncMoveSynapse(const ZIntPoint &from, const ZIntPoint &to);
 
   void runRoutineCheck();
+  void scheduleRoutineCheck();
+
+  void updateLabelSlice(ZArray *array, const ZStackViewParam &viewParam,
+                        int zoom, int centerCutX, int centerCutY,
+                        bool usingCenterCut);
+  void updateGraySlice(ZStack *array, const ZStackViewParam &viewParam,
+                       int zoom, int centerCutX, int centerCutY,
+                       bool usingCenterCut);
 
 
 protected:
@@ -617,6 +651,9 @@ protected:
   ZDvidReader m_grayscaleReader;
   ZDvidWriter m_dvidWriter;
   ZFlyEmSupervisor *m_supervisor;
+
+  ZDvidWriter m_workWriter;
+  ZDvidReader m_grayscaleWorkReader;
 
   ZFlyEmBodyMergeProject *m_mergeProject;
 

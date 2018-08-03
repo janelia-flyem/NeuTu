@@ -214,10 +214,28 @@ void ZPoint::toArray(double *pt) const
 
 void ZPoint::normalize()
 {
+  if (!isApproxOrigin() && !isUnitVector()) {
+    double len = length();
+    m_x /= len;
+    m_y /= len;
+    m_z /= len;
+  }
+
+#if 0
   coordinate_3d_t coord;
   toArray(coord);
   Coordinate_3d_Unitize(coord);
   set(coord[0], coord[1], coord[2]);
+#endif
+
+}
+
+ZPoint ZPoint::getNormalized() const
+{
+  ZPoint pt = *this;
+  pt.normalize();
+
+  return pt;
 }
 
 const double& ZPoint::operator [](int index) const
@@ -304,6 +322,11 @@ bool ZPoint::approxEquals(const ZPoint &pt) const
   return (distanceTo(pt) < MIN_DIST);
 }
 
+bool ZPoint::isUnitVector() const
+{
+  return std::fabs(length() - 1.0) < MIN_DIST;
+}
+
 bool ZPoint::isPendicularTo(const ZPoint &pt) const
 {
   double len1 = length();
@@ -318,6 +341,15 @@ bool ZPoint::isPendicularTo(const ZPoint &pt) const
   }
 
   return false;
+}
+
+bool ZPoint::isParallelTo(const ZPoint &pt) const
+{
+  if (isApproxOrigin() || pt.isApproxOrigin()) {
+    return false;
+  }
+
+  return getNormalized().approxEquals(pt.getNormalized());
 }
 
 std::string ZPoint::toString() const

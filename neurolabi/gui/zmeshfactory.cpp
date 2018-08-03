@@ -8,6 +8,8 @@
 #include "tz_stack_bwmorph.h"
 #include "misc/zmarchingcube.h"
 #include "ilastik/laplacian_smoothing.h"
+#include "zobject3dscanarray.h"
+#include "data3d/zstackobjecthelper.h"
 
 ZMeshFactory::ZMeshFactory()
 {
@@ -24,19 +26,119 @@ void ZMeshFactory::setSmooth(int smooth)
   m_smooth = smooth;
 }
 
-ZMesh* ZMeshFactory::makeMesh(const ZObject3dScan &obj)
+void ZMeshFactory::setOffsetAdjust(bool on)
 {
-  ZMesh *mesh = MakeMesh(obj, m_dsIntv, m_smooth);
-
-  return mesh;
+  m_offsetAdjust = on;
 }
 
 ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj)
 {
-  return MakeMesh(obj, 0, 3);
+  return MakeMesh(obj, 0, 3, true);
 }
 
-ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv, int smooth)
+ZMesh* ZMeshFactory::makeMesh(const ZObject3dScan &obj)
+{
+  return MakeMesh(obj, m_dsIntv, m_smooth, m_offsetAdjust);
+}
+
+ZMesh* ZMeshFactory::makeMesh(const ZObject3dScanArray &objArray)
+{
+  ZMesh *mesh = NULL;
+
+  std::vector<ZMesh*> meshArray;
+  bool isOverSize = false;
+  for (const ZObject3dScan *obj : objArray) {
+    ZMesh *submesh = makeMesh(*obj);
+//    mesh->prepareNormals();
+    if (submesh != NULL) {
+      meshArray.push_back(submesh);
+      if (ZStackObjectHelper::IsOverSize(*submesh)) {
+        isOverSize = true;
+      }
+    }
+  }
+
+  if (!meshArray.empty()) {
+    mesh = meshArray[0];
+    for (size_t i = 1; i < meshArray.size(); ++i) {
+      ZMesh *currentMesh = meshArray[i];
+      if (mesh->numTriangles() < currentMesh->numTriangles()) {
+        std::swap(mesh, currentMesh);
+      }
+      mesh->append(*currentMesh);
+      delete currentMesh;
+    }
+
+    if (isOverSize) {
+      ZStackObjectHelper::SetOverSize(mesh);
+    }
+
+//    mesh->prepareNormals();
+  }
+
+  return mesh;
+}
+/*
+ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScanArray &objArray)
+{
+  ZMesh *mesh = NULL;
+
+  std::vector<ZMesh*> meshArray;
+  for (const ZObject3dScan *obj : objArray) {
+    ZMesh *mesh = MakeMesh(*obj);
+//    mesh->prepareNormals();
+    meshArray.push_back(mesh);
+  }
+
+  if (!meshArray.empty()) {
+    mesh = meshArray[0];
+    for (size_t i = 1; i < meshArray.size(); ++i) {
+      ZMesh *currentMesh = meshArray[i];
+      if (mesh->numTriangles() < currentMesh->numTriangles()) {
+        std::swap(mesh, currentMesh);
+      }
+      mesh->append(*currentMesh);
+      delete currentMesh;
+    }
+  }
+
+  return mesh;
+}
+*/
+#if 0
+ZMesh* ZMeshFactory::MakeMesh(
+    const ZObject3dScan &obj, const ZIntPoint &dsIntv, int smooth)
+{
+  if (obj.isEmpty()) {
+    return NULL;
+  }
+
+  ZObject3dScan dsObj = obj;
+
+  if (!dsIntv.isValid()) {
+    ZIntCuboid box = dsObj.getBoundBox();
+    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutube::ONEGIGA / 2, true);
+  }
+
+  if (dsIntv.semiDefinitePositive()) {
+    dsObj.downsampleMax(dsIntv, dsIntv, dsIntv);
+  }
+
+  ZStack *stack = dsObj.toStackObjectWithMargin(1, 1);
+  ZMesh *mesh = ZMarchingCube::March(*stack, smooth, NULL);
+
+  if (dsIntv.semiDefinitePositive() && mesh != NULL) {
+    mesh->setObjectId("oversize");
+  }
+
+  delete stack;
+
+  return mesh;
+}
+#endif
+
+ZMesh* ZMeshFactory::MakeMesh(
+    const ZObject3dScan &obj, int dsIntv, int smooth, bool offsetAdjust)
 {
   if (obj.isEmpty()) {
     return NULL;
@@ -54,20 +156,36 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv, int smooth)
   }
 
   ZStack *stack = dsObj.toStackObjectWithMargin(1, 1);
-  ZMesh *mesh = ZMarchingCube::March(*stack, smooth, NULL);
+  ZMesh *mesh = ZMarchingCube::March(*stack, smooth, offsetAdjust, NULL);
 
   if (dsIntv > 0 && mesh != NULL) {
-    mesh->setSource("oversize");
+    ZStackObjectHelper::SetOverSize(mesh);
   }
 
   delete stack;
 
   return mesh;
+}
 
-#if 0
-//  dsObj.fillHole();
+
+ZMesh* ZMeshFactory::MakeFaceMesh(const ZObject3dScan &obj, int dsIntv)
+{
+  if (obj.isEmpty()) {
+    return NULL;
+  }
 
   ZMesh *mesh = new ZMesh;
+
+  ZObject3dScan dsObj = obj;
+
+  if (dsIntv == 0) {
+    ZIntCuboid box = dsObj.getBoundBox();
+    dsIntv = misc::getIsoDsIntvFor3DVolume(box, neutube::ONEGIGA / 2, true);
+  }
+
+  if (dsIntv > 0) {
+    dsObj.downsampleMax(dsIntv, dsIntv, dsIntv);
+  }
 
   //For each voxel, create a graph
   int startCoord[3];
@@ -165,5 +283,4 @@ ZMesh* ZMeshFactory::MakeMesh(const ZObject3dScan &obj, int dsIntv, int smooth)
   mesh->createCubesWithoutNormal(coordLlfs, coordUrbs, faceVisbility, NULL);
 
   return mesh;
-#endif
 }

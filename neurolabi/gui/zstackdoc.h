@@ -95,6 +95,9 @@ class ZSwcTree;
 class ZObject3d;
 class ZArbSliceViewParam;
 class ZObjsModelManager;
+class ZWorker;
+class ZWorkThread;
+class ZTask;
 
 /*!
  * \brief The class of stack document
@@ -497,6 +500,8 @@ public:
   void setKeyProcessor(ZStackDocKeyProcessor *processor);
   bool processKeyEvent(QKeyEvent *event);
 
+  virtual void diagnose() const;
+
   /*
   ZNeuronTracer &getNeuronTracer() {
     return m_neuronTracer;
@@ -696,6 +701,7 @@ public:
   void deselectAllSwcTreeNodes();
   void deselectAllObject(bool recursive = true);
   void deselectAllObject(ZStackObject::EType type);
+  void deselectAllObject(ZStackObjectRole::TRole role);
 
   bool isSwcNodeSelected(const Swc_Tree_Node *tn) const;
 
@@ -799,6 +805,7 @@ public:
   void setSelected(ZStackObject *obj,  bool selecting = true);
   void toggleSelected(ZStackObject *obj);
   void selectObject(ZStackObject *obj, bool appending);
+  void selectObject(ZStackObject *obj, neutube::ESelectOption option);
 
   const TStackObjectSet& getSelected(ZStackObject::EType type) const;
   TStackObjectSet &getSelected(ZStackObject::EType type);
@@ -1041,6 +1048,7 @@ public:
   ZStack* makeLabelStack(ZStack *stack = NULL) const;
 
   virtual uint64_t getLabelId(int x, int y, int z);
+  virtual uint64_t getSupervoxelId(int x, int y, int z);
 
   void notifyPlayerChanged(const ZStackObjectRole &role);
   void notifyPlayerChanged(ZStackObjectRole::TRole role);
@@ -1349,6 +1357,10 @@ protected:
   void updateWatershedBoundaryObject(ZStack *out, ZIntPoint dsIntv);
   void updateWatershedBoundaryObject(ZIntPoint dsIntv);
   virtual void makeKeyProcessor();
+  void addTask(ZTask *task);
+  void addTaskSlot(ZTask *task);
+  void endWorkThread();
+  void startWorkThread();
 
 private:
   void init();
@@ -1474,6 +1486,9 @@ private:
 
   QSet<ZStackObject::EType> m_unsavedSet;
   bool m_changingSaveState;
+
+  ZWorker *m_worker = NULL;
+  ZWorkThread *m_workThread = NULL;
 
 protected:
   ZObjectColorScheme m_objColorSheme;

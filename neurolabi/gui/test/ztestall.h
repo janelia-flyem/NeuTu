@@ -68,5 +68,8 @@
 #include "test/zpositionmappertest.h"
 #include "test/zstackdochelpertest.h"
 #include "test/zgeometrytest.h"
+#include "test/zdviddataslicetest.h"
+#include "test/zstackviewparamtest.h"
+#include "test/zflyembodymanagertest.h"
 
 #endif // ZTESTALL_H

@@ -438,6 +438,9 @@ bool ZStackPresenter::connectAction(
     case ZActionFactory::ACTION_COPY_BODY_ID:
       connect(action, SIGNAL(triggered()), this, SLOT(copyLabelId()));
       break;
+    case ZActionFactory::ACTION_COPY_SUPERVOXEL_ID:
+      connect(action, SIGNAL(triggered()), this, SLOT(copySupervoxelId()));
+      break;
     default:
       connected = false;
       break;
@@ -983,7 +986,7 @@ void ZStackPresenter::turnOnActiveObject(EObjectRole role, bool refreshing)
     if (stroke != NULL) {
       const ZMouseEvent& event = m_mouseEventProcessor.getLatestMouseEvent();
       ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
-      currentStackPos.shiftSliceAxis(getSliceAxis());
+//      currentStackPos.shiftSliceAxis(getSliceAxis());
 
       stroke->setLast(currentStackPos.x(), currentStackPos.y());
     }
@@ -2772,6 +2775,20 @@ void ZStackPresenter::copyLabelId()
   buddyDocument()->notify(QString("%1 copied").arg(id));
 }
 
+void ZStackPresenter::copySupervoxelId()
+{
+  const ZMouseEvent &event = m_mouseEventProcessor.getMouseEvent(
+        Qt::RightButton, ZMouseEvent::ACTION_RELEASE);
+  ZPoint pt = event.getDataPosition();
+
+  uint64_t id = buddyDocument()->getSupervoxelId(
+        iround(pt.x()), iround(pt.y()), iround(pt.z()));
+
+  ZGlobal::CopyToClipboard(std::to_string(id));
+
+  buddyDocument()->notify(QString("%1 copied").arg(id));
+}
+
 void ZStackPresenter::notifyBodyDecomposeTriggered()
 {
   emit bodyDecomposeTriggered();
@@ -2960,7 +2977,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
   ZPoint currentStackPos = event.getPosition(neutube::COORD_STACK);
   ZPoint currentRawStackPos = event.getPosition(neutube::COORD_RAW_STACK);
 
-  buddyDocument()->getObjectGroup().resetSelection();
+  buddyDocument()->getObjectGroup().resetSelector();
 
   switch (op.getOperation()) {
   case ZStackOperator::OP_IMAGE_MOVE_DOWN:
@@ -3468,7 +3485,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
     }
     ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
           grabButton, ZMouseEvent::ACTION_PRESS, neutube::COORD_STACK);
-    grabPosition.shiftSliceAxis(getSliceAxis());
+//    grabPosition.shiftSliceAxis(getSliceAxis());
     moveImageToMouse(
           grabPosition.x(), grabPosition.y(),
           currentWidgetPos.x(), currentWidgetPos.y());
@@ -3564,9 +3581,9 @@ bool ZStackPresenter::process(ZStackOperator &op)
     if (rect != NULL) {
       ZPoint grabPosition = op.getMouseEventRecorder()->getPosition(
             Qt::LeftButton, ZMouseEvent::ACTION_PRESS, neutube::COORD_STACK);
-      grabPosition.shiftSliceAxis(getSliceAxis());
+//      grabPosition.shiftSliceAxis(getSliceAxis());
       ZPoint shiftedStackPos = currentStackPos;
-      shiftedStackPos.shiftSliceAxis(getSliceAxis());
+//      shiftedStackPos.shiftSliceAxis(getSliceAxis());
 
       int x0 = std::min(grabPosition.x(), shiftedStackPos.x());
       int y0 = std::min(grabPosition.y(), shiftedStackPos.y());
@@ -3625,7 +3642,7 @@ bool ZStackPresenter::process(ZStackOperator &op)
       //    if (isStrokeOn()) {
       if (stroke != NULL) {
         ZPoint pt = currentStackPos;
-        pt.shiftSliceAxis(getSliceAxis());
+//        pt.shiftSliceAxis(getSliceAxis());
         if (m_interactiveContext.swcEditMode() ==
             ZInteractiveContext::SWC_EDIT_EXTEND ||
             m_interactiveContext.swcEditMode() ==

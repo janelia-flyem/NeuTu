@@ -42,6 +42,9 @@ signals:
     void clearBodyQueue();
     void messageGenerated(const ZWidgetMessage &msg);
 
+    void browseGrayscale(double x, double y, double z, const QHash<uint64_t, QColor>& idToColor);
+    void updateGrayscaleColor(const QHash<uint64_t, QColor>& idToColor);
+
 private slots:
     void onNextButton();
     void onPrevButton();
@@ -49,10 +52,11 @@ private slots:
     void onLoadTasksButton();    
     void onBodiesUpdated();
     void onCompletedStateChanged(int state);
+    void onCompletedAndNext();
     void onReviewStateChanged(int state);
     void onShowCompletedStateChanged(int state);
     void onBodyMeshesAdded(int numMeshes);
-    void onBodyMeshLoaded();
+    void onBodyMeshLoaded(int numMeshes);
     void onBodyRecycled();
     void applicationQuitting();
 
@@ -123,6 +127,7 @@ private:
     int m_bodyMeshesAddedReceived = 0;
     int m_bodyMeshLoadedExpected = 0;
     int m_bodyMeshLoadedReceived = 0;
+    int m_bodiesReused = 0;
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
     void showError(QString title, QString message);
@@ -139,7 +144,7 @@ private:
     void updateCurrentTaskLabel();
     void updateButtonsEnabled();
     void updateMenu(bool add);
-    int getFirstUncompleted();
+    int getFirst(bool includeCompleted);
     void showInfo(QString title, QString message);
     void gotoCurrentTask();
     void updateBodyWindow();

@@ -668,7 +668,7 @@ ZObject3dScan ZObject3dFactory::MakeObject3dScan(const ZIntCuboid &box)
 
 ZObject3dScan ZObject3dFactory::MakeRandomObject3dScan(const ZIntCuboid &box)
 {
-  ZRandomGenerator rnd;
+  ZRandomGenerator &rnd = ZRandomGenerator::GetInstance();
 
   ZObject3dScan obj;
   int nSeg = rnd.rndint(box.getHeight() * box.getDepth());

@@ -34,6 +34,7 @@ void neutube::RegisterMetaType()
   qRegisterMetaType<ZStackObjectInfoSet>("ZStackObjectInfoSet");
   qRegisterMetaType<ZStackViewParam>("ZStackViewParam");
   qRegisterMetaType<ZArbSliceViewParam>("ZArbSliceViewParam");
+  qRegisterMetaType<ZIntPoint>("ZIntPoint");
 }
 
 ZMessageReporter* neutube::getMessageReporter()
@@ -76,17 +77,15 @@ std::string neutube::getInfoFile()
 
 std::string neutube::GetCurrentUserName()
 {
+//  if (NeutubeConfig::GetUserName().empty()) {
+//    NeutubeConfig::SetUserName(qgetenv("USER").toStdString());
+//  }
+
 #ifdef _DEBUG_
-  std::cout << "User name: " << qgetenv("USER").data() << std::endl;
+  std::cout << "User name: " << NeutubeConfig::GetUserName() << std::endl;
 #endif
-  std::string userName = qgetenv("USER").data();
 
-
-  if (userName == "zhaot") { //temporary hack
-//    userName = "ogundeyio";
-  }
-
-  return userName;
+  return NeutubeConfig::GetUserName();
 }
 
 bool neutube::IsAdminUser()
