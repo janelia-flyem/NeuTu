@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QFileDialog>
 
-#include "flyembodyinfodialog.h"
+#include "dvidbranchdialog.h"
 
 namespace Ui {
 class ZTestDialog2;
@@ -18,14 +18,13 @@ public:
     explicit ZTestDialog2(QWidget *parent = 0);
     ~ZTestDialog2();
 
-private slots:
-    void onBrowseButton();
-    void onBodyInfoButton();
+private slots:    
+    void onOpenDvidButton();
 
 private:
     Ui::ZTestDialog2 *ui;
 
-    FlyEmBodyInfoDialog *m_flyEmBodyInfoDialog;
+    DvidBranchDialog * m_dialog;
 
 };
 
