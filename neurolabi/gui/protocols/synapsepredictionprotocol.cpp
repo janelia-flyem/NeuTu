@@ -679,7 +679,6 @@ void SynapsePredictionProtocol::processSynapseVerification(
   processSynapseVerification(pt.getX(), pt.getY(), pt.getZ(), verified);
 }
 
-
 void SynapsePredictionProtocol::moveSynapse(
     const ZIntPoint &src, const ZIntPoint &dst)
 {

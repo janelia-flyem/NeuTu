@@ -50,7 +50,9 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
     splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
-    inputJson.load(inputPath);
+    if (ZFileType::FileType(inputPath) == ZFileType::FILE_JSON) {
+      inputJson.load(inputPath);
+    }
   }
 
   if (isFile) {

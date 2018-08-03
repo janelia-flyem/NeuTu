@@ -14,12 +14,16 @@ public:
   static std::string MakeWatershedBoundarySource(int label);
   static std::string MakeRectRoiSource(const std::string &suffix = "");
   static std::string MakeFlyEmBodyMaskSource(uint64_t bodyId);
-  static std::string MakeFlyEmCoarseBodySource(uint64_t bodyId);
+//  static std::string MakeFlyEmCoarseBodySource(uint64_t bodyId);
   static std::string MakeFlyEmBodySource(uint64_t bodyId, int zoom = 0);
   static std::string MakeFlyEmBodySource(
       uint64_t bodyId, int zoom, const std::string &tag);
   static std::string MakeFlyEmBodySource(
       uint64_t bodyId, int zoom, flyem::EBodyType bodyType);
+  /*
+  static std::string MakeFlyEmBodySource(
+      uint64_t bodyId, int zoom, flyem::EBodyType bodyType, bool coarse);
+      */
   static std::string GetBodyTypeName(flyem::EBodyType bodyType);
   static std::string MakeFlyEmBodyDiffSource();
   static bool IsBodyDiffSource(const std::string &source);
@@ -31,6 +35,7 @@ public:
   static int ExtractZoomFromFlyEmBodySource(const std::string &source);
   static flyem::EBodyType ExtractBodyTypeFromFlyEmBodySource(
       const std::string &source);
+//  static bool IsCoarseBodySource(const std::string &source);
 
   static std::string MakeCurrentMsTileSource(int resLevel);
   static std::string MakeDvidTileSource();
@@ -62,6 +67,7 @@ public:
   static std::string MakeTodoPunctaSource();
   static std::string MakeTodoPunctaSource(uint64_t bodyId);
   static std::string MakeCrossHairSource();
+  static std::string MakeProtocolRangeSource();
 };
 
 #endif // ZSTACKOBJECTSOURCEFACTORY_H

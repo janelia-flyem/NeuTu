@@ -13,6 +13,8 @@ public:
   explicit ZFlyEmBodyListModel(QObject *parent = 0);
   ~ZFlyEmBodyListModel();
 
+  QVariant data( const QModelIndex & index, int role = Qt::DisplayRole) const;
+
   uint64_t getBodyId(int row) const;
   uint64_t getBodyId(const QModelIndex &index) const;
   int getRow(uint64_t bodyId) const;
@@ -50,6 +52,7 @@ private:
   void connectSignalSlot();
   bool isBodyProtected(uint64_t bodyId) const;
   void addBodySliently(uint64_t bodyId);
+  static uint64_t GetBodyId(const QString &str);
 //  static Qt::ItemDataRole getBackupRole();
 
 private:

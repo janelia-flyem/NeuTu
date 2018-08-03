@@ -458,6 +458,37 @@ TEST(ZDvidTest, ZDvidUrl)
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol-size/1",
             dvidUrl4.getSparsevolSizeUrl(1));
 
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1",
+            dvidUrl4.getSparsevolUrl(1));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?minx=2&maxx=2&exact=false",
+            dvidUrl4.getSparsevolUrl(1, 2, neutube::X_AXIS));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?miny=2&maxy=2&exact=false",
+            dvidUrl4.getSparsevolUrl(1, 2, neutube::Y_AXIS));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?minz=2&maxz=2&exact=false",
+            dvidUrl4.getSparsevolUrl(1, 2, neutube::Z_AXIS));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?minx=2&maxx=3",
+            dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::X_AXIS));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?miny=2&maxy=3",
+            dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::Y_AXIS));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?minz=2&maxz=3",
+            dvidUrl4.getSparsevolUrl(1, 2, 3, neutube::Z_AXIS));
+  ZIntCuboid box(10, 20, 30, 40, 50, 60);
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?minx=10&maxx=40&miny=20&maxy=50&minz=30&maxz=60",
+            dvidUrl4.getSparsevolUrl(1, box));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?scale=2",
+            dvidUrl4.getMultiscaleSparsevolUrl(1, 2));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?scale=2",
+            dvidUrl4.getMultiscaleSparsevolUrl(1, 2));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1"
+            "?scale=2&minx=10&maxx=40&miny=20&maxy=50&minz=30&maxz=60",
+            dvidUrl4.getSparsevolUrl(1, 2, box));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true",
+            dvidUrl4.getSupervoxelUrl(1));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/bodies2/sparsevol/1?supervoxels=true&scale=2",
+            dvidUrl4.getMultiscaleSupervoxelUrl(1, 2));
+
+
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
             dvidUrl4.getAnnotationUrl("test", 123));
 
@@ -481,9 +512,12 @@ TEST(ZDvidTest, ZDvidUrl)
               "http://localhost:8000/api/node/4d3e/split/key/"));
 
   target.setSegmentationType(ZDvidData::TYPE_LABELMAP);
+  std::cout << target.getSegmentationName() << std::endl;
   dvidUrl4.setDvidTarget(target, "3456");
   ASSERT_EQ("http://emdata.janelia.org/api/node/3456/test/label/123",
             dvidUrl4.getAnnotationUrl("test", 123));
+  ASSERT_EQ("http://emdata.janelia.org/api/node/3456/labelstest/size/123",
+            dvidUrl4.getBodySizeUrl(123));
 
 }
 

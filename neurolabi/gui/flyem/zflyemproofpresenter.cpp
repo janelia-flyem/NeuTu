@@ -116,6 +116,9 @@ bool ZFlyEmProofPresenter::connectAction(
     case ZActionFactory::ACTION_TODO_ITEM_ANNOT_NORMAL:
       connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToNormal()));
       break;
+    case ZActionFactory::ACTION_TODO_ITEM_ANNOT_IRRELEVANT:
+      connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemIrrelevant()));
+      break;
     case ZActionFactory::ACTION_TODO_ITEM_ANNOT_MERGE:
       connect(action, SIGNAL(triggered()), this, SLOT(setTodoItemToMerge()));
       break;
@@ -662,6 +665,11 @@ void ZFlyEmProofPresenter::uncheckTodoItem()
 void ZFlyEmProofPresenter::setTodoItemToNormal()
 {
   getCompleteDocument()->setTodoItemToNormal();
+}
+
+void ZFlyEmProofPresenter::setTodoItemIrrelevant()
+{
+  getCompleteDocument()->setTodoItemIrrelevant();
 }
 
 void ZFlyEmProofPresenter::setTodoItemToMerge()
