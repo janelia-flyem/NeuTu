@@ -49,7 +49,7 @@ class TileManager;
 class ZTiledStackFrame;
 class FlyEmBodyIdDialog;
 class FlyEmHotSpotDialog;
-class ZDvidTargetProviderDialog;
+class ZDvidDialog;
 class FlyEmBodyFilterDialog;
 class FlyEmBodySplitProjectDialog;
 class ZFlyEmNewBodySplitProjectDialog;
@@ -211,7 +211,7 @@ public slots:
 
   void showStackFrame(
       const QStringList &fileList, bool opening3DWindow = false);
-//  void createDvidFrame();
+  void createDvidFrame();
   void createStackFrameFromDocReader(ZStackDocReader *reader);
 
   ZProofreadWindow * startProofread();
@@ -735,14 +735,14 @@ private:
 
   QMap<QString, QAction*> m_actionMap;
 
-//  ZDvidClient *m_dvidClient;
+  ZDvidClient *m_dvidClient;
   ZStackFrame *m_dvidFrame;
   //DvidObjectDialog *m_dvidObjectDlg;
   DvidImageDialog *m_dvidImageDlg;
   TileManager *m_tileDlg;
   FlyEmBodyIdDialog *m_bodyDlg;
   FlyEmHotSpotDialog *m_hotSpotDlg;
-  ZDvidTargetProviderDialog *m_dvidDlg;
+  ZDvidDialog *m_dvidDlg;
   FlyEmBodyFilterDialog *m_bodyFilterDlg;
   FlyEmBodySplitProjectDialog *m_bodySplitProjectDialog;
   ZFlyEmNewBodySplitProjectDialog *m_newBsProjectDialog;

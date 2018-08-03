@@ -71,10 +71,6 @@ void myMessageOutput(QtMsgType type, const char *msg)
 #endif    // qt version > 5.0.0
 #endif
 
-namespace neutube {
-static std::string UserName;
-}
-
 static void syncLogDir(const std::string &srcDir, const std::string &destDir)
 {
   if (!srcDir.empty() && !destDir.empty() && srcDir != destDir) {
@@ -165,46 +161,6 @@ static void LoadFlyEmConfig(
 #endif
 }
 
-static void InitLog()
-{
-  // init the logging mechanism
-  QsLogging::Logger& logger = QsLogging::Logger::instance();
-  const QString sLogPath(
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_FILE).c_str());
-  const QString traceLogPath(
-        NeutubeConfig::getInstance().getPath(NeutubeConfig::LOG_TRACE).c_str());
-
-#ifdef _FLYEM_
-  int maxLogCount = 100;
-#else
-  int maxLogCount = 10;
-#endif
-
-  QsLogging::DestinationPtr fileDestination(
-        QsLogging::DestinationFactory::MakeFileDestination(
-          sLogPath, QsLogging::EnableLogRotation,
-          QsLogging::MaxSizeBytes(5e7), QsLogging::MaxOldLogCount(maxLogCount)));
-  QsLogging::DestinationPtr traceFileDestination(
-        QsLogging::DestinationFactory::MakeFileDestination(
-          traceLogPath, QsLogging::EnableLogRotation,
-          QsLogging::MaxSizeBytes(2e7), QsLogging::MaxOldLogCount(10),
-          QsLogging::TraceLevel));
-  QsLogging::DestinationPtr debugDestination(
-        QsLogging::DestinationFactory::MakeDebugOutputDestination());
-  logger.addDestination(debugDestination);
-  logger.addDestination(traceFileDestination);
-  logger.addDestination(fileDestination);
-#if defined _DEBUG_
-  logger.setLoggingLevel(QsLogging::DebugLevel);
-#else
-  logger.setLoggingLevel(QsLogging::InfoLevel);
-#endif
-
-  if (NeutubeConfig::GetVerboseLevel() >= 5) {
-    logger.setLoggingLevel(QsLogging::TraceLevel);
-  }
-}
-
 #ifdef _CLI_VERSION
 int main(int argc, char *argv[])
 {
@@ -241,19 +197,6 @@ int main(int argc, char *argv[])
   QString configPath;
   QStringList fileList;
 
-  std::string userName;
-  if (argc > 1) {
-    if (QString(argv[1]).startsWith("user:")) {
-      userName = std::string(argv[1]).substr(5);
-//      std::cout << userName << std::endl;
-//      return 1;
-    }
-  }
-  if (userName.empty()) {
-    userName = qgetenv("USER").toStdString();
-  }
-  NeutubeConfig::getInstance().init(userName);
-
   if (argc > 1) {
     if (strcmp(argv[1], "d") == 0) {
       debugging = true;
@@ -275,8 +218,6 @@ int main(int argc, char *argv[])
       config.setApplicationDir(appDir);
       LoadFlyEmConfig("", config, false);
 #endif
-
-      InitLog();
 
       ZCommandLine cmd;
       return cmd.run(argc, argv);

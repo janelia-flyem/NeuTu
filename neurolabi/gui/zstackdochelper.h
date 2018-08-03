@@ -9,7 +9,6 @@ class ZIntCuboid;
 class ZStack;
 class ZFlyEmProofDoc;
 class QColor;
-class ZFlyEmBody3dDoc;
 
 /*!
  * \brief The helper class for providing miscellaneous information of a ZStackDoc object
@@ -68,8 +67,6 @@ public:
   static bool AllowingBodyAnnotation(const ZStackDoc *doc);
   static bool AllowingBodyMerge(const ZStackDoc *doc);
   static bool AllowingBodyLock(const ZStackDoc *doc);
-
-//  static QList<ZMesh*> GetSupervoxelMeshList();
 
 private:
   int m_currentZ;

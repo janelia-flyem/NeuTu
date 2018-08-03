@@ -4,7 +4,6 @@
 #include "zpoint.h"
 #include "zintpoint.h"
 #include "geometry/zaffineplane.h"
-#include "geometry/zgeometry.h"
 
 ZPositionMapper::ZPositionMapper()
 {

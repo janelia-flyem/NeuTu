@@ -72,9 +72,6 @@ protected:
   void graphBound(const Z3DGraphPtr &p, ZBBox<glm::dvec3> &result);
 
 private:
-  void updateSelection();
-
-private:
 //  Z3DGraph m_graph;
   QList<Z3DGraphPtr> m_graphList;
   QList<Z3DGraphPtr> m_registeredGraphList;
@@ -108,7 +105,7 @@ private:
   QStringList m_textList;
 
   std::vector<glm::vec4> m_graphPickingColors;
-//  glm::ivec2 m_startCoord;
+  glm::ivec2 m_startCoord;
   ZEventListenerParameter m_selectGraphEvent;
 
   bool m_dataIsInvalid = false;

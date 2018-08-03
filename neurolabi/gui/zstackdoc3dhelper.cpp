@@ -16,7 +16,6 @@
 #include "zmeshfactory.h"
 #include "zstackdocproxy.h"
 #include "dvid/zdvidgrayslice.h"
-#include "zobject3dscan.h"
 
 ZStackDoc3dHelper::ZStackDoc3dHelper()
 {

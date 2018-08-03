@@ -32,7 +32,7 @@ ZBodySplitCommand::ZBodySplitCommand()
 }
 
 ZDvidReader *ZBodySplitCommand::ParseInputPath(
-    const std::string &inputPath, ZJsonObject &inputJson, std::string &splitTaskKey,
+    const std::string inputPath, ZJsonObject &inputJson, std::string &splitTaskKey,
     std::string &splitResultKey, std::string &dataDir, bool &isFile)
 {
   QUrl inputUrl(inputPath.c_str());
@@ -50,9 +50,7 @@ ZDvidReader *ZBodySplitCommand::ParseInputPath(
     splitTaskKey = ZDvidUrl::ExtractSplitTaskKey(inputPath);
     splitResultKey = ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey);
   } else {
-    if (ZFileType::FileType(inputPath) == ZFileType::FILE_JSON) {
-      inputJson.load(inputPath);
-    }
+    inputJson.load(inputPath);
   }
 
   if (isFile) {
@@ -161,11 +159,6 @@ int ZBodySplitCommand::run(
     }
   }
 
-  bool preservingGap = true;
-  if (config.hasKey("preserving_gap")) {
-    preservingGap = ZJsonParser::booleanValue(config["preserving_gap"]);
-  }
-
   ZDvidReader *reader = ParseInputPath(
        inputPath, inputJson, splitTaskKey, splitResultKey, dataDir, isFile);
 
@@ -244,7 +237,7 @@ int ZBodySplitCommand::run(
 
   container.setRefiningBorder(true);
   container.setCcaPost(true);
-  container.setPreservingGap(preservingGap);
+  container.setPreservingGap(true);
 
   if (!container.isEmpty()) {
     if (!range.isEmpty()) {
@@ -415,18 +408,14 @@ void ZBodySplitCommand::processResult(
         }
         ZJsonObject resultJson;
         resultJson.setEntry("committed", resultArray);
+        QString refPath = ZDvidPath::GetResultKeyPath(
+              ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
+              ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
         resultJson.setEntry(
               "timestamp", (int64_t)(QDateTime::currentMSecsSinceEpoch() / 1000));
-        if (!splitTaskKey.empty()) {
-          QString refPath = ZDvidPath::GetResultKeyPath(
-                ZDvidData::GetName<QString>(ZDvidData::ROLE_SPLIT_GROUP),
-                ZDvidUrl::GetResultKeyFromTaskKey(splitTaskKey).c_str());
-          std::cout << "Writing result summary to " << refPath.toStdString()
-                    << std::endl;
-          writer->writeJson(refPath.toStdString(), resultJson);
-        } else {
-          LINFO() << resultJson.dumpString(0);
-        }
+        std::cout << "Writing result summary to " << refPath.toStdString()
+                  << std::endl;
+        writer->writeJson(refPath.toStdString(), resultJson);
       } else {
         for (ZObject3dScanArray::const_iterator iter = result->begin();
              iter != result->end(); ++iter) {

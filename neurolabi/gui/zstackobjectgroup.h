@@ -42,7 +42,6 @@ public:
   void setSelected(bool selected);
 
   void setSelected(ZStackObject::EType type, bool selected);
-  void setSelected(ZStackObjectRole::TRole role, bool selected);
 
   void deselectAll();
   void deselectAllUnsync();
@@ -52,7 +51,7 @@ public:
   /*!
    * \brief Reset selection recorder
    */
-  void resetSelector();
+  void resetSelection();
 
   inline ZStackObjectSelector* getSelector() {
     return &m_selector;
@@ -196,8 +195,6 @@ public:
   void setSelectedUnsync(bool selected);
   void setSelectedUnsync(ZStackObject::EType type, bool selected);
 
-  void setSelectedUnsync(ZStackObjectRole::TRole role, bool selected);
-
   const ZStackObject *getLastObjectUnsync(ZStackObject::EType type) const;
   ZStackObject* findFirstSameSourceUnsync(const ZStackObject *obj) const;
   TStackObjectList findSameSourceUnsync(const std::string &str) const;
@@ -287,8 +284,6 @@ private:
   static bool remove_p(TStackObjectSet &objSet, ZStackObject *obj);
   ZStackObjectGroup(const ZStackObjectGroup &group);
   ZStackObjectGroup& operator= (const ZStackObjectGroup &group);
-  void setSelected(TStackObjectList &objList, TStackObjectSet &selectedSet,
-                   bool selected);
 
 private:
   QList<ZStackObject*> m_objectList;

@@ -13,21 +13,10 @@ public:
   /*!
    * \brief Permute 1...n randomly
    */
-  std::vector<int> randperm(int n) const;
-  int rndint(int maxValue) const;
-  int rndint(int minValue, int maxValue) const;
-  void setSeed(int seed) const;
-
-public:
-  static ZRandomGenerator& GetInstance() {
-    static ZRandomGenerator g;
-    return g;
-  }
-
-  static std::vector<int> Randperm(int n);
-  static int Rndint(int maxValue);
-  static int Rndint(int minValue, int maxValue);
-  static void SetSeed(int seed);
+  std::vector<int> randperm(int n);
+  int rndint(int maxValue);
+  int rndint(int minValue, int maxValue);
+  void setSeed(int seed);
 
   static int count;
 };

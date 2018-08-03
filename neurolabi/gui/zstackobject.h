@@ -87,8 +87,6 @@ public:
     TYPE_CROSS_HAIR
   };
 
-  static std::string GetTypeName(EType type);
-
   enum Palette_Color {
     BLUE = 0, GREEN, RED, ALPHA
   };

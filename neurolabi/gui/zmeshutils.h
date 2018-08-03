@@ -46,9 +46,6 @@ public:
 
   // from VTK
   static ZMesh clipClosedSurface(const ZMesh& mesh, std::vector<glm::vec4> clipPlanes, double epsilon = 1e-6);
-
-  static ZMesh Smooth(const ZMesh &mesh);
-  static ZMesh Decimate(const ZMesh &mesh);
 };
 
 

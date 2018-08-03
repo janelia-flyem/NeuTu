@@ -185,13 +185,11 @@ void ZDvidNode::setUuid(const std::string &uuid)
   } else {
     m_uuid = uuid;
   }
-  /*
   if (m_uuid.size() > 4) {
     if (m_uuid[0] != '@') { //skip reference
       m_uuid = m_uuid.substr(0, 4);
     }
   }
-  */
 }
 
 void ZDvidNode::setPort(int port)

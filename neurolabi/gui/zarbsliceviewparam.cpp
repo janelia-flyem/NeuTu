@@ -143,38 +143,11 @@ bool ZArbSliceViewParam::hasSamePlaneCenter(const ZArbSliceViewParam &param) con
 
 bool ZArbSliceViewParam::contains(const ZArbSliceViewParam &param)
 {
-  if (isSamePlane(param)) {
-    if (param.getViewPort().isEmpty()) {
-      return true;
-    } else {
-      return getViewPort().contains(param.getViewPort());
-    }
-  }
-
-  /*
   if (m_v1.approxEquals(param.m_v1) && m_v2.approxEquals(param.m_v2)) {
     ZPoint dc = (m_center - param.m_center).toPoint();
     ZPoint normal = m_v1.cross(m_v2);
     if (std::fabs(dc.dot(normal)) <= ZPoint::MIN_DIST) {
-      if (param.getViewPort().isEmpty()) {
-        return true;
-      } else {
-        return getViewPort().contains(param.getViewPort());
-      }
-    }
-  }
-  */
-
-  return false;
-}
-
-bool ZArbSliceViewParam::isSamePlane(const ZArbSliceViewParam &param) const
-{
-  if (m_v1.approxEquals(param.m_v1) && m_v2.approxEquals(param.m_v2)) {
-    ZPoint dc = (m_center - param.m_center).toPoint();
-    ZPoint normal = m_v1.cross(m_v2);
-    if (dc.isApproxOrigin() && dc.isPendicularTo(normal)) {
-      return true;
+      return getViewPort().contains(param.getViewPort());
     }
   }
 

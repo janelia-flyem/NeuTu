@@ -5,7 +5,6 @@
 #include "neutubeconfig.h"
 #include "neutube.h"
 #include "ui_zdviddialog.h"
-#include "zdvidtargetproviderdialog.h"
 #include "dvid/zdvidtarget.h"
 #include "zjsonarray.h"
 #include "zjsonobject.h"
@@ -17,7 +16,7 @@
 const char* ZDvidDialog::m_dvidRepoKey = "dvid repo";
 
 ZDvidDialog::ZDvidDialog(QWidget *parent) :
-  ZDvidTargetProviderDialog(parent),
+  QDialog(parent),
   ui(new Ui::ZDvidDialog)
 {
   ui->setupUi(this);

@@ -22,7 +22,6 @@
 #include "zlogmessagereporter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
-#include "tz_utilities.h"
 
 using namespace std;
 
@@ -31,6 +30,7 @@ NeutubeConfig::NeutubeConfig()
     : m_settings(QSettings::UserScope, "NeuTu-be")
   #endif
 {
+  init();
 }
 
 /*
@@ -48,19 +48,18 @@ NeutubeConfig::~NeutubeConfig()
 #ifdef _QT_GUI_USED_
 //  delete m_traceStream;
 #endif
+
+  LINFO() << "Exit " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;
 }
 
-void NeutubeConfig::init(const std::string &userName)
+void NeutubeConfig::init()
 {
-  setUserName(userName);
-
   m_segmentationClassifThreshold = 0.5;
   m_isSettingOn = true;
   m_isStereoOn = true;
   m_autoSaveInterval = 600000;
   m_autoSaveEnabled =true;
   m_usingNativeDialog = true;
-  m_usingDvidBrowseDialog = true;
   m_autoSaveMaxSwcCount = 50;
 
   m_messageReporter = new ZLogMessageReporter;
@@ -139,26 +138,6 @@ void NeutubeConfig::setWorkDir(const string str)
   updateLogDir();
 }
 
-void NeutubeConfig::setUserName(const string &name)
-{
-  m_userName = name;
-}
-
-void NeutubeConfig::SetUserName(const string &name)
-{
-  getInstance().setUserName(name);
-}
-
-std::string NeutubeConfig::getUserName() const
-{
-  return m_userName;
-}
-
-std::string NeutubeConfig::GetUserName()
-{
-  return getInstance().getUserName();
-}
-
 void NeutubeConfig::SetApplicationDir(const string &str)
 {
   getInstance().setApplicationDir(str);
@@ -173,7 +152,7 @@ void NeutubeConfig::updateLogDir()
 
     //Check local directry
     if (dir.startsWith("/groups/flyem/")) {
-      candidateDir = "/opt/neutu_log/" + getUserName();
+      candidateDir = "/opt/neutu_log/" + neutube::GetCurrentUserName();
       if (QDir(candidateDir.c_str()).exists()) {
         m_logDir = candidateDir;
       }
@@ -182,7 +161,7 @@ void NeutubeConfig::updateLogDir()
     //Checking shared directory
     if (m_logDir.empty()) {
       candidateDir =
-          "/groups/flyem/data/neutu_log/" + getUserName();
+          "/groups/flyem/data/neutu_log/" + neutube::GetCurrentUserName();
       if (QDir(candidateDir.c_str()).exists()) {
         m_logDir = candidateDir;
       }
@@ -305,16 +284,6 @@ bool NeutubeConfig::load(const std::string &filePath)
         m_usingNativeDialog = false;
       }
     }
-
-    node = doc.getRootElement().queryNode("DvidBrowseDialog");
-    if (!node.empty()) {
-      if (node.getAttribute("status") == "off") {
-        m_usingDvidBrowseDialog = false;
-      }
-    }
-
-
-
 
     node = doc.getRootElement().queryNode("MainWindow");
     if (!node.empty()) {
@@ -447,7 +416,7 @@ std::string NeutubeConfig::getPath(EConfigItem item) const
   {
     std::string tmpDir;
 #if defined(_QT_GUI_USED_)
-    std::string user = getUserName();
+    std::string user = neutube::GetCurrentUserName();
     tmpDir = QDir::tempPath().toStdString() + "/.neutube.z." + user;
     QDir tmpDirObj(tmpDir.c_str());
     if (!tmpDirObj.exists()) {

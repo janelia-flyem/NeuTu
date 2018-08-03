@@ -92,11 +92,3 @@ bool ZPythonProcess::findPython()
 {
   return false;
 }
-
-void ZPythonProcess::printPythonPath()
-{
-  m_process.start("which", QStringList() << "python");
-  m_process.waitForFinished();
-  QString output = m_process.readAllStandardOutput();
-  std::cout << "Python path: " << output.toStdString() << std::endl;
-}

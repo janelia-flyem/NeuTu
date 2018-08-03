@@ -17,7 +17,6 @@ QAction* ZActionLibrary::getAction(
 
   if (m_actionMap.contains(item)) {
     action = m_actionMap[item];
-    m_actionCreated = false;
   } else {
     action = m_actionFactory.makeAction(item, m_actionParent);
     if (receiver != NULL && slot != NULL) {
@@ -29,7 +28,6 @@ QAction* ZActionLibrary::getAction(
     }
 
     m_actionMap[item] = action;
-    m_actionCreated = true;
   }
 
   return action;
@@ -43,9 +41,4 @@ void ZActionLibrary::setUndoStack(QUndoStack *undoStack)
 bool ZActionLibrary::contains(ZActionFactory::EAction item) const
 {
   return m_actionMap.contains(item);
-}
-
-bool ZActionLibrary::actionCreatedUponRetrieval() const
-{
-  return m_actionCreated;
 }

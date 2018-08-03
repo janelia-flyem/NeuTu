@@ -20,7 +20,7 @@ class QWidget;
 class ZFlyEmProofDoc;
 class ZDvidTileEnsemble;
 class ZDvidTarget;
-class ZDvidTargetProviderDialog;
+class ZDvidDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 class ZPaintLabelWidget;
@@ -102,8 +102,8 @@ public:
 
   virtual ZDvidTarget getDvidTarget() const;
 
-  void setDvidDialog(ZDvidTargetProviderDialog *dlg);
-  ZDvidTargetProviderDialog* getDvidDialog() const;
+  void setDvidDialog(ZDvidDialog *dlg);
+  ZDvidDialog* getDvidDialog() const;
 
   uint64_t getBodyIdForSplit() const;
   void setBodyIdForSplit(uint64_t id);
@@ -122,7 +122,7 @@ public:
   Z3DWindow* makeExternalSkeletonWindow(neutube3d::EWindowType windowType);
   Z3DWindow* makeExternalMeshWindow(neutube3d::EWindowType windowType);
   Z3DWindow* makeNeu3Window();
-
+  Z3DWindow* makeMeshWindow();
 
   void updateRoiWidget(ZROIWidget *widget, Z3DWindow *win) const;
 
@@ -246,8 +246,6 @@ public slots:
   void selectBodyInRoi(bool appending = true);
   void selectBody(QList<uint64_t> bodyIdList);
   void notifyBodyMergeEdited();
-  void updateProtocolRangeGlyph(
-      const ZIntPoint &firstCorner, const ZIntPoint &lastCorner);
 
   void showBody3d();
   void showSplit3d();
@@ -255,7 +253,6 @@ public slots:
   void showFineBody3d();
   void showSkeletonWindow();
   void showMeshWindow();
-  void showCoarseMeshWindow();
   void showExternalNeuronWindow();
   void showObjectWindow();
   void showRoi3dWindow();
@@ -385,7 +382,6 @@ protected slots:
   void detachSplitWindow();
   void detachSkeletonWindow();
   void detachMeshWindow();
-  void detachCoarseMeshWindow();
   void detachObjectWindow();
   void detachRoiWindow();
   void detachExternalNeuronWindow();
@@ -403,7 +399,6 @@ protected slots:
   void updateBodyWindowDeep();
   void updateSkeletonWindow();
   void updateMeshWindow();
-  void updateCoarseMeshWindow();
   void cropCoarseBody3D();
   void showBodyGrayscale();
   void updateSplitBody();
@@ -434,7 +429,6 @@ protected:
 private slots:
 //  void updateDvidLabelObject();
   void roiToggled(bool on);
-  void setProtocolRangeVisible(bool on);
 
 private:
   void init();
@@ -468,18 +462,9 @@ private:
   void makeSkeletonWindow();
   void makeSplitWindow();
   void makeExternalNeuronWindow();
-  void makeMeshWindow();
-  void makeCoarseMeshWindow();
   void makeOrthoWindow();
   void makeBigOrthoWindow();
   void makeOrthoWindow(int width, int height, int depth);
-
-  void showWindow(Z3DWindow *&window, std::function<void(void)> _makeWindow,
-                  int tab, const QString &title);
-
-  void makeMeshWindow(bool coarse);
-
-  void updateWindow(Z3DWindow *window);
 
   ZWindowFactory makeExternalWindowFactory(neutube3d::EWindowType windowType);
 
@@ -534,7 +519,7 @@ protected:
 //  ZColorLabel *m_latencyLabelWidget;
   ZPaintLabelWidget *m_paintLabelWidget;
 
-  ZDvidTargetProviderDialog *m_dvidDlg;
+  ZDvidDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ProtocolSwitcher *m_protocolSwitcher;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
@@ -555,7 +540,6 @@ protected:
   Z3DWindow *m_bodyWindow;
   Z3DWindow *m_skeletonWindow;
   Z3DWindow *m_meshWindow;
-  Z3DWindow *m_coarseMeshWindow;
   Z3DWindow *m_externalNeuronWindow;
   Z3DWindow *m_splitWindow;
   Z3DWindow *m_objectWindow;
@@ -613,8 +597,6 @@ void ZFlyEmProofMvc::connectControlPanel(T *panel)
           this, SLOT(showSkeletonWindow()));
   connect(panel, SIGNAL(meshViewTriggered()),
           this, SLOT(showMeshWindow()));
-  connect(panel, SIGNAL(coarseMeshViewTriggered()),
-          this, SLOT(showCoarseMeshWindow()));
   connect(panel, SIGNAL(savingMerge()), this, SLOT(saveMergeOperation()));
   connect(panel, SIGNAL(committingMerge()), this, SLOT(commitMerge()));
   connect(panel, SIGNAL(zoomingTo(int, int, int)),

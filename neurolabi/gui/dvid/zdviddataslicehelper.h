@@ -33,8 +33,6 @@ public:
     return m_zoom;
   }
 
-  int getLowresZoom() const;
-
   const ZStackViewParam& getViewParam() const {
     return m_currentViewParam;
   }
@@ -45,13 +43,6 @@ public:
 
   int getMaxHeight() const {
     return m_maxHeight;
-  }
-
-  void useCenterCut(bool on) {
-    m_usingCenterCut = on;
-  }
-  bool usingCenterCut() const {
-    return m_usingCenterCut;
   }
 
   int getMaxZoom() const;
@@ -67,12 +58,6 @@ public:
   void setZ(int z);
   int getWidth() const;
   int getHeight() const;
-  size_t getViewPortArea() const;
-  size_t getViewDataSize() const;
-  static size_t GetViewDataSize(const ZStackViewParam &viewParam, int zoom);
-
-  void closeViewPort();
-  void openViewPort();
 
   int getCenterCutWidth() const;
   int getCenterCutHeight() const;
@@ -82,23 +67,13 @@ public:
   void setBoundBox(const ZRect2d &rect);
 
   int getScale() const;
-  void setZoom(int zoom);
+  void setZoom(int zoom) {
+    m_zoom = zoom;
+  }
 
   void setViewParam(const ZStackViewParam &viewParam);
   ZStackViewParam getValidViewParam(const ZStackViewParam &viewParam) const;
   bool hasNewView(const ZStackViewParam &viewParam) const;
-  bool hasNewView(
-      const ZStackViewParam &viewParam, int centerCutX, int centerCutY) const;
-  /*
-  bool containedIn(
-      const ZStackViewParam &viewParam, int zoom,
-      int centerCutX, int centerCutY, bool centerCut) const;
-      */
-  bool actualContainedIn(
-      const ZStackViewParam &viewParam, int zoom,
-      int centerCutX, int centerCutY, bool centerCut) const;
-
-  bool needHighResUpdate() const;
 
   void setMaxSize(int maxW, int maxH);
   void setCenterCut(int width, int height);
@@ -111,29 +86,6 @@ public:
   void invalidateViewParam();
   void updateCenterCut();
 
-  void setActualQuality(int zoom, int ccw, int cch, bool centerCut);
-  void syncActualQuality();
-
-  int getActualScale() const;
-  int getActualZoom() const;
-
-  flyem::EDataSliceUpdatePolicy getUpdatePolicy() const;
-  void setUpdatePolicy(flyem::EDataSliceUpdatePolicy policy);
-  void inferUpdatePolicy(neutube::EAxis axis);
-
-private:
-  /*!
-   * After canonizing, there is always a combination of lowres and highres areas
-   * when \a centerCut is true.
-   */
-  static void CanonizeQuality(
-      int *zoom, int *centerCutX, int *centerCutY,
-      bool *centerCut, int viewWidth, int viewHeight, int maxZoom);
-  static bool IsResIncreasing(
-      int sourceZoom, int sourceCenterCutX, int sourceCenterCutY, bool sourceCenterCut,
-      int targetZoom, int targetCenterCutX, int targetCenterCutY, bool targetCenterCut,
-      int viewWidth, int viewHeight, int maxZoom);
-
 public:
   ZStackViewParam m_currentViewParam;
   int m_zoom = 0;
@@ -144,15 +96,8 @@ public:
 
   int m_centerCutWidth = 256;
   int m_centerCutHeight = 256;
-  bool m_usingCenterCut = true;
-
-  int m_actualZoom = 0;
-  int m_actualCenterCutWidth = 256;
-  int m_actualCenterCutHeight = 256;
-  bool m_actualUsingCenterCut = true;
 
   ZDvidData::ERole m_dataRole;
-  flyem::EDataSliceUpdatePolicy m_updatePolicy = flyem::UPDATE_DIRECT;
 
   ZDvidReader m_reader;
 };

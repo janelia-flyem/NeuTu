@@ -48,42 +48,6 @@ void ZStackDocAccessor::RemoveObject(
   }
 }
 
-void ZStackDocAccessor::RemoveSplitSeed(ZStackDoc *doc, uint64_t label)
-{
-  if (doc != NULL) {
-    QMutexLocker(doc->getObjectGroup().getMutex());
-    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
-          ZStackObjectRole::ROLE_SEED);
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      if ((*iter)->getLabel() == label) {
-        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(true));
-      }
-    }
-    if (!objList.isEmpty()) {
-      doc->getDataBuffer()->deliver();
-    }
-  }
-}
-
-void ZStackDocAccessor::RemoveSideSplitSeed(ZStackDoc *doc)
-{
-  if (doc != NULL) {
-    QMutexLocker(doc->getObjectGroup().getMutex());
-    TStackObjectList objList = doc->getObjectGroup().getObjectListUnsync(
-          ZStackObjectRole::ROLE_SEED);
-    for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-         ++iter) {
-      if ((*iter)->getLabel() != 1) {
-        doc->getDataBuffer()->addUpdate(*iter, GetRemoveAction(true));
-      }
-    }
-    if (!objList.isEmpty()) {
-      doc->getDataBuffer()->deliver();
-    }
-  }
-}
-
 void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObject::EType type, const std::string &source,
     bool deleteObject)
@@ -103,6 +67,7 @@ void ZStackDocAccessor::RemoveObject(
     }
   }
 }
+
 
 void ZStackDocAccessor::RemoveObject(
     ZStackDoc *doc, ZStackObjectRole::TRole role, bool deleteObject)
@@ -125,23 +90,6 @@ void ZStackDocAccessor::RemoveObject(
 void ZStackDocAccessor::RemoveAllSwcTree(ZStackDoc *doc, bool deleteObject)
 {
   RemoveObject(doc, ZStackObject::TYPE_SWC, deleteObject);
-}
-
-void ZStackDocAccessor::SetObjectVisible(
-    ZStackDoc *doc, ZStackObject::EType type, const std::string &source, bool on)
-{
-  if (doc != NULL) {
-    QMutexLocker(doc->getObjectGroup().getMutex());
-    TStackObjectList objList =
-        doc->getObjectGroup().findSameSourceUnsync(type, source);
-    for (ZStackObject *obj : objList) {
-      if (obj->isVisible() != on) {
-        obj->setVisible(on);
-        doc->bufferObjectVisibilityChanged(obj);
-      }
-    }
-    doc->processObjectModified();
-  }
 }
 
 void ZStackDocAccessor::AddObjectUnique(ZStackDoc *doc, ZStackObject *obj)

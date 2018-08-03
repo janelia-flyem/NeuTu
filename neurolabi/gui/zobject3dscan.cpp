@@ -66,12 +66,6 @@ ZObject3dScan::ZObject3dScan(const ZObject3dScan &obj) : ZStackObject(obj),
   *this = obj;
 }
 
-ZObject3dScan::ZObject3dScan(const ZObject3dScan &&obj) : ZStackObject(obj),
-  m_zProjection(NULL)
-{
-  *this = obj;
-}
-
 ZObject3dScan::~ZObject3dScan()
 {
   deprecate(COMPONENT_ALL);
@@ -98,26 +92,6 @@ ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan& obj)
   dynamic_cast<ZStackObject&>(*this) = dynamic_cast<const ZStackObject&>(obj);
 
   m_stripeArray = obj.m_stripeArray;
-  m_isCanonized = obj.m_isCanonized;
-  setLabel(obj.getLabel());
-//  m_label = obj.m_label;
-  m_blockingEvent = false;
-  m_sliceAxis = obj.m_sliceAxis;
-  m_dsIntv = obj.m_dsIntv;
-//  uint64_t m_label;
-
-//  this->m_zProjection = NULL;
-
-  return *this;
-}
-
-ZObject3dScan& ZObject3dScan::operator=(const ZObject3dScan&& obj)
-{
-  deprecate(COMPONENT_ALL);
-
-  dynamic_cast<ZStackObject&>(*this) = obj;
-
-  m_stripeArray = std::move(obj.m_stripeArray);
   m_isCanonized = obj.m_isCanonized;
   setLabel(obj.getLabel());
 //  m_label = obj.m_label;
@@ -268,7 +242,7 @@ size_t ZObject3dScan::getVoxelNumber(int z) const
   return voxelNumber;
 }
 
-const std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
+const std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() const
 {
   if (isDeprecated(COMPONENT_SLICEWISE_VOXEL_NUMBER)) {
     //std::vector<size_t> voxelNumber;
@@ -286,9 +260,9 @@ const std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber() 
   return m_slicewiseVoxelNumber;
 }
 
-std::unordered_map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber()
+std::map<int, size_t> &ZObject3dScan::getSlicewiseVoxelNumber()
 {
-  return const_cast<std::unordered_map<int, size_t>&>(
+  return const_cast<std::map<int, size_t>&>(
         static_cast<const ZObject3dScan&>(*this).getSlicewiseVoxelNumber());
 }
 
@@ -486,7 +460,8 @@ ZObject3d* ZObject3dScan::toObject3d() const
   return obj;
 }
 
-const std::map<size_t, std::pair<size_t, size_t> > &ZObject3dScan::getIndexSegmentMap() const
+const std::map<size_t, std::pair<size_t, size_t> >&
+ZObject3dScan::getIndexSegmentMap() const
 {
   if (isDeprecated(COMPONENT_INDEX_SEGMENT_MAP)) {
     m_indexSegmentMap.clear();
@@ -505,7 +480,8 @@ const std::map<size_t, std::pair<size_t, size_t> > &ZObject3dScan::getIndexSegme
 
 bool ZObject3dScan::getSegment(size_t index, int *z, int *y, int *x1, int *x2)
 {
-  const auto& segMap = getIndexSegmentMap();
+  const std::map<size_t, std::pair<size_t, size_t> >&segMap =
+      getIndexSegmentMap();
   if (segMap.count(index) > 0) {
     std::pair<size_t, size_t> location = segMap.at(index);
     *z = m_stripeArray[location.first].getZ();
@@ -1652,7 +1628,8 @@ std::vector<ZObject3dScan> ZObject3dScan::getConnectedComponent(
   if (graph != NULL) {
     const std::vector<ZGraph*> &subGraph = graph->getConnectedSubgraph();
 
-    const auto& segMap = getIndexSegmentMap();
+    const std::map<size_t, std::pair<size_t, size_t> >&segMap =
+        getIndexSegmentMap();
 
     std::vector<bool> isAdded(segMap.size(), false);
 
@@ -2019,7 +1996,6 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
   case ZStackObject::BOUNDARY:
   {
     QColor color = pen.color();
-    pen.setCosmetic(m_usingCosmeticPen);
 //    color.setAlpha(255);
     pen.setColor(color);
     painter.setPen(pen);

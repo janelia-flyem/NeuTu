@@ -30,7 +30,7 @@ public:
   bool isValid() const;
   void invalidate();
 
-  size_t getArea() const;
+  int getArea() const;
 
   QRect getViewPort() const;
   QRectF getProjRect() const;
@@ -60,9 +60,6 @@ public:
   void setViewPort(double x0, double y0, double x1, double y1);
   void setViewPort(const QRect &rect);
   void setViewPort(const QRect &rect, int z);
-  void closeViewPort();
-  void openViewPort();
-
   void setExploreAction(neutube::View::EExploreAction action);
   void setSliceAxis(neutube::EAxis sliceAxis);
   neutube::EAxis getSliceAxis() const;
@@ -89,7 +86,6 @@ public:
   }
 
   int getZoomLevel(int maxLevel) const;
-  int getZoomLevel() const;
 
   const ZViewProj& getViewProj() const {
     return m_viewProj;
@@ -101,8 +97,6 @@ public:
   void setArbSlicePlane(const ZPoint &v1, const ZPoint &v2);
   void setArbSliceView(const ZArbSliceViewParam &param);
   void moveSlice(int step);
-
-  bool onSamePlane(const ZStackViewParam &param) const;
 
 private:
   void init(neutube::ECoordinateSystem coordSys);

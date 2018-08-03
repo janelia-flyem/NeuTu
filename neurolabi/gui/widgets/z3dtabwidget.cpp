@@ -214,36 +214,18 @@ bool Z3DTabWidget::windowExists(int rank)
   return m_windowAdded[rank];
 }
 
-void Z3DTabWidget::incIndexFrom(int startRank)
-{
-  for (int i = startRank; i < WINDOW3D_COUNT; ++i) {
-    if (m_rankToIndex[i] >= 0) {
-      ++m_rankToIndex[i];
-    }
-  }
-}
-
-void Z3DTabWidget::decIndexFrom(int startRank)
-{
-  for (int i = startRank; i < WINDOW3D_COUNT; ++i) {
-    if (m_rankToIndex[i] > 0) {
-      --m_rankToIndex[i];
-    }
-  }
-}
-
 void Z3DTabWidget::addWindow(int rank, Z3DWindow *window, const QString &title)
 {
   if (window != NULL) {
 
     bool added = false;
-    //Check if there is any window with a bigger rank
-    for (int i = rank + 1; i < WINDOW3D_COUNT; ++i) {
+    for (int i = 0; i < WINDOW3D_COUNT; ++i) {
       if (m_windowAdded[i]) {
-        m_rankToIndex[rank] = insertTab(getTabIndex(i), window, title);
-        added = true;
-        incIndexFrom(i);
-        break;
+        if (rank < i) { //Smaller rank should take the place
+          m_rankToIndex[rank] = insertTab(getTabIndex(i), window, title);
+          added = true;
+          break;
+        }
       }
     }
 
@@ -256,6 +238,12 @@ void Z3DTabWidget::addWindow(int rank, Z3DWindow *window, const QString &title)
 #endif
 
     setCurrentIndex(m_rankToIndex[rank]);
+
+    for(int i=rank+1; i<WINDOW3D_COUNT; i++) { //Update the indices behind the new one
+      if(m_rankToIndex[i] >= 0) {
+        m_rankToIndex[i]++;
+      }
+    }
 
     m_windowAdded[rank] = true;
 
@@ -458,13 +446,17 @@ Z3DWindow *Z3DTabWidget::removeWindow(int index)
 
     m_rankToIndex[rank] = -1;
     //Update indices for bigger ranks
-    decIndexFrom(rank + 1);
+    for (int i = index + 1; i < WINDOW3D_COUNT; ++i) {
+      if (m_rankToIndex[i] > 0) {
+        --m_rankToIndex[i];
+      }
+    }
 
 #ifdef _DEBUG_
     std::cout << "Current index: ";
     for (int i = 0; i < WINDOW3D_COUNT; ++i) {
       if (m_rankToIndex[i] >= 0) {
-        std::cout << i << "->" << m_rankToIndex[i] << "; ";
+        std::cout << "[" << i << "]" << " " << m_rankToIndex[i] << "; ";
       }
     }
     std::cout << std::endl;
@@ -477,8 +469,7 @@ Z3DWindow *Z3DTabWidget::removeWindow(int index)
 void Z3DTabWidget::closeWindow(int index)
 {
   if (NeutubeConfig::GetVerboseLevel() >= 2) {
-    qDebug()<<"####closeWindow"<< m_preRank << "index=" << index
-           << "rank=" << getWindowRank(index);
+    qDebug()<<"####closeWindow"<<m_preRank<<index<<getWindowRank(index);
   }
 
   Z3DWindow *w = removeWindow(index);

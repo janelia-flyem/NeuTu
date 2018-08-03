@@ -68,8 +68,6 @@ signals:
     Z3DWindow* getWindowFromIndex(int index) const;
     void resetButtonStatus(int rank);
     Z3DWindow* removeWindow(int index);
-    void incIndexFrom(int startRank);
-    void decIndexFrom(int startRank);
 
 private:
     bool m_buttonStatus[WINDOW3D_COUNT][4]; // 0-coarsebody 1-body 2-skeleton 3-synapse 0-showgraph 1-settings 2-objects 3-rois

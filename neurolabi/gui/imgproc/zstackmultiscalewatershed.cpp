@@ -92,7 +92,7 @@ ZStack* ZStackMultiScaleWatershed::upSample(int width,int height,int depth,ZStac
 ZStack* ZStackMultiScaleWatershed::getBoundaryMap(const ZStack& stack)
 {
   int index=1;
-  unsigned char index_map[256][256] = {{0}};
+  unsigned char index_map[256][256]={0};
   const Stack *originalStack = stack.c_stack();
   ZStack *mask = ZStackFactory::MakeZeroStack(stack.width(), stack.height(), stack.depth());
   Stack *maskStack = mask->c_stack();

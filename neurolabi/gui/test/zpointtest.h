@@ -24,15 +24,8 @@ TEST(ZPoint, Basic)
   pt.setX(ZPoint::MIN_DIST * 0.5);
   ASSERT_TRUE(pt.isApproxOrigin());
 
-  pt.normalize();
-//  pt.print();
-  ASSERT_FALSE(pt.isUnitVector());
-
   pt.setX(ZPoint::MIN_DIST * 2.0);
   ASSERT_FALSE(pt.isApproxOrigin());
-
-  pt.normalize();
-  ASSERT_TRUE(pt.isUnitVector());
 }
 
 TEST(ZPoint, Relation)
@@ -53,16 +46,6 @@ TEST(ZPoint, Relation)
   pt1.set(0.1, 0.1, 0);
   ASSERT_FALSE(pt1.isPendicularTo(pt2));
   ASSERT_FALSE(pt2.isPendicularTo(pt1));
-
-  pt1.set(1, 1, 0);
-  pt2.set(2, 2, 0);
-  ASSERT_TRUE(pt1.isParallelTo(pt2));
-
-  pt2.set(2.1, 2, 0);
-  ASSERT_FALSE(pt1.isParallelTo(pt2));
-
-  pt2.set(0, 0, 0);
-  ASSERT_FALSE(pt1.isParallelTo(pt2));
 }
 
 TEST(ZIntPoint, Operator)

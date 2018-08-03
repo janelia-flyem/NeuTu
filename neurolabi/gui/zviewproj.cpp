@@ -163,40 +163,15 @@ QRectF ZViewProj::getProjRect() const
   return m_projRegion;
 }
 
-void ZViewProj::alignOffset(int downresRatio)
-{
-  m_x0 = (m_x0 / downresRatio) * downresRatio;
-  m_y0 = (m_y0 / downresRatio) * downresRatio;
-}
-
 void ZViewProj::setViewPort(const QRect &rect)
 {
   if (rect.isValid()) {
-    if (m_widgetRect.isValid()) {
-      setZoom(std::min((double) (m_widgetRect.width()) / rect.width(),
-                       (double) (m_widgetRect.height()) / rect.height()));
-      setViewCenter(rect.center());
-    } else {
-      prepareViewPort(rect);
-    }
+    setZoom(std::min((double) (m_widgetRect.width()) / rect.width(),
+                     (double) (m_widgetRect.height()) / rect.height()));
+    setViewCenter(rect.center());
   }
 }
 
-void ZViewProj::closeViewPort()
-{
-  m_zoomBackup = m_zoom;
-  m_zoom = 0;
-  m_viewPort = QRect();
-}
-
-void ZViewProj::openViewPort()
-{
-  if (m_zoom == 0.0) {
-    m_zoom = m_zoomBackup;
-  }
-}
-
-/*
 void ZViewProj::setViewPortWithZoomFixed(const QRect &rect)
 {
   if (rect.isValid()) {
@@ -205,7 +180,6 @@ void ZViewProj::setViewPortWithZoomFixed(const QRect &rect)
     setViewCenter(rect.center());
   }
 }
-*/
 
 void ZViewProj::prepareViewPort(const QRect &rect)
 {

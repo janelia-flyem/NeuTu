@@ -16,22 +16,32 @@ ZTestDialog2::ZTestDialog2(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    m_flyEmBodyInfoDialog = new FlyEmBodyInfoDialog(this);
 
-    m_dialog = new DvidBranchDialog(this);
 
-    connect(ui->openDvidButton, SIGNAL(clicked(bool)), this, SLOT(onOpenDvidButton()));
 
-}
+    connect(ui->browseButton, SIGNAL(clicked()), this, SLOT(onBrowseButton()));
 
-void ZTestDialog2::onOpenDvidButton() {
-    m_dialog->show();
-
+    connect(ui->bodyInfoButton, SIGNAL(clicked()), this, SLOT(onBodyInfoButton()));
 
 }
-
 
 ZTestDialog2::~ZTestDialog2()
 {
     delete ui;
 }
 
+void ZTestDialog2::onBrowseButton() {
+
+    QString filename = QFileDialog::getOpenFileName(this, "Open bookmarks");
+    if (!filename.isEmpty()) {
+        std::cout << "path chosen: " + filename.toStdString() << std::endl;
+    }
+
+}
+
+void ZTestDialog2::onBodyInfoButton() {
+
+    m_flyEmBodyInfoDialog->show();
+
+}

@@ -480,7 +480,7 @@ ZStack* LabelToColorStack(const ZArray *array)
 ZStack* ZFlyEmMisc::MakeColorSegmentation(
     const ZDvidReader &reader, const ZAffineRect &ar, int ccx, int ccy)
 {
-  ZArray *array = reader.readLabels64Lowtis(ar, 0, ccx, ccy, true);
+  ZArray *array = reader.readLabels64Lowtis(ar, 0, ccx, ccy);
 
   ZStack *stack = LabelToColorStack(array);
 
@@ -492,7 +492,7 @@ ZStack* ZFlyEmMisc::MakeColorSegmentation(
     int zoom, int ccx, int ccy)
 {
   ZArray *array = reader.readLabels64Lowtis(
-        x0, y0, z0, width, height, zoom, ccx, ccy, true);
+        x0, y0, z0, width, height, zoom, ccx, ccy);
 
   ZStack *stack = LabelToColorStack(array);
 
@@ -1506,21 +1506,18 @@ QList<ZStackObject*> ZFlyEmMisc::LoadSplitTask(
   ZDvidReader *reader =
       ZGlobal::GetInstance().getDvidReaderFromUrl(
         GET_FLYEM_CONFIG.getTaskServer());
-  QList<ZStackObject*> seedList;
-  if (reader != NULL) {
-    ZJsonObject taskJson =
-        reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
-                                      taskKey.c_str());
-    if (taskJson.hasKey(neutube::json::REF_KEY)) {
-      taskJson =
-          reader->readJsonObject(
-            ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
-    }
+  ZJsonObject taskJson =
+      reader->readJsonObjectFromKey(ZDvidData::GetTaskName("split").c_str(),
+                                    taskKey.c_str());
+  if (taskJson.hasKey(neutube::json::REF_KEY)) {
+    taskJson =
+        reader->readJsonObject(
+          ZJsonParser::stringValue(taskJson[neutube::json::REF_KEY]));
+  }
 
-    seedList = LoadSplitTask(taskJson);
-    foreach (ZStackObject *seed, seedList) {
-      seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
-    }
+  QList<ZStackObject*> seedList = LoadSplitTask(taskJson);
+  foreach (ZStackObject *seed, seedList) {
+    seed->setSource(ZStackObjectSourceFactory::MakeFlyEmSeedSource(bodyId));
   }
 
   return seedList;

@@ -101,9 +101,8 @@ ZSwcTree* ZStackSkeletonizer::makeSkeleton(const ZObject3dScan &obj)
     for (int i = 0; i < 3; ++i) {
       dsIntv[i] = m_downsampleInterval[i];
     }
-//    while (box.getVolume() / (dsIntv[0] + 1) / (dsIntv[1] + 1) / (dsIntv[2] + 1)
-//           > m_sizeLimit) {
-    while (box.getDsMaxVolume(dsIntv[0], dsIntv[1], dsIntv[2]) > m_sizeLimit) {
+    while (box.getVolume() / (dsIntv[0] + 1) / (dsIntv[1] + 1) / (dsIntv[2] + 1)
+           > m_sizeLimit) {
       for (int i = 0; i < 3; ++i) {
         dsIntv[i] += 1;
       }

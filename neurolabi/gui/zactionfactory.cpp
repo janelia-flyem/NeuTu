@@ -352,9 +352,6 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
   case ACTION_DESELECT_BODY:
     action = new QAction("Deselect Body", parent);
     break;
-  case ACTION_SAVE_OBJECT_AS:
-    action = new QAction("Save as", parent);
-    break;
   case ACTION_SHOW_ORTHO:
     action = new QAction("Show orthogonal view", parent);
     break;
@@ -366,9 +363,6 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_COPY_BODY_ID:
     action = new QAction("Copy Body ID", parent);
-    break;
-  case ACTION_COPY_SUPERVOXEL_ID:
-    action = new QAction("Copy Supervoxel ID", parent);
     break;
   case ACTION_BOOKMARK_CHECK:
     action = new QAction("Set Checked", parent);
@@ -424,9 +418,6 @@ QAction* ZActionFactory::MakeAction(EAction actionKey, QObject *parent)
     break;
   case ACTION_TODO_ITEM_ANNOT_NORMAL:
     action = new QAction("Normal todo", parent);
-    break;
-  case ACTION_TODO_ITEM_ANNOT_IRRELEVANT:
-    action = new QAction("Irrelevant todo", parent);
     break;
   case ACTION_TODO_ITEM_ANNOT_MERGE:
     action = new QAction("To merge", parent);

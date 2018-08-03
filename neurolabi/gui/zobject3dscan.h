@@ -5,7 +5,6 @@
 #include <string>
 #include <set>
 #include <map>
-#include <unordered_map>
 #include <utility>
 #include <fstream>
 
@@ -43,7 +42,6 @@ public:
   virtual ~ZObject3dScan();
 
   ZObject3dScan(const ZObject3dScan &obj);
-  ZObject3dScan(const ZObject3dScan &&obj);
 
   static ZStackObject::EType GetType() {
     return ZStackObject::TYPE_OBJECT3D_SCAN;
@@ -89,8 +87,8 @@ public:
    * \brief Get the voxel number on each slice
    * \return The ith element is the #voxel at slice i.
    */
-  const std::unordered_map<int, size_t> &getSlicewiseVoxelNumber() const;
-  std::unordered_map<int, size_t>& getSlicewiseVoxelNumber();
+  const std::map<int, size_t>& getSlicewiseVoxelNumber() const;
+  std::map<int, size_t>& getSlicewiseVoxelNumber();
 
   const ZObject3dStripe& getStripe(size_t index) const;
   ZObject3dStripe& getStripe(size_t index);
@@ -121,7 +119,6 @@ public:
   //ZIntPoint getHitPoint() const;
 
   ZObject3dScan& operator=(const ZObject3dScan& obj);// { return *this; }
-  ZObject3dScan& operator=(const ZObject3dScan&& obj);
 
   void copyDataFrom(const ZObject3dScan &obj);
   void copyAttributeFrom(const ZObject3dScan &obj);
@@ -363,7 +360,7 @@ public:
 
   const std::vector<size_t> &getStripeNumberAccumulation() const;
 
-  const std::map<std::pair<int, int>, size_t> &getStripeMap() const;
+  const std::map<std::pair<int, int>, size_t>& getStripeMap() const;
 
   std::vector<size_t> getConnectedObjectSize();
   std::vector<ZObject3dScan> getConnectedComponent(EAction ppAction);
@@ -709,7 +706,7 @@ protected:
 
   //ZIntPoint m_hitPoint;
   mutable std::vector<size_t> m_accNumberArray;
-  mutable std::unordered_map<int, size_t> m_slicewiseVoxelNumber;
+  mutable std::map<int, size_t> m_slicewiseVoxelNumber;
   mutable std::map<std::pair<int, int>, size_t> m_stripeMap;
   mutable std::map<size_t, std::pair<size_t, size_t> > m_indexSegmentMap;
   mutable ZObject3dScan *m_zProjection;

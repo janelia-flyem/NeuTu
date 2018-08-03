@@ -30,12 +30,9 @@ public:
 
   void setUndoStack(QUndoStack *undoStack);
 
-  bool actionCreatedUponRetrieval() const;
-
 private:
   QObject *m_actionParent;
   ZActionFactory m_actionFactory;
-  bool m_actionCreated = false;
 
   QMap<ZActionFactory::EAction, QAction*> m_actionMap;
 };

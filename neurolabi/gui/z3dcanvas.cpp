@@ -51,8 +51,6 @@ Z3DCanvas::Z3DCanvas(const QString &title, int width, int height, QWidget* paren
           this, SIGNAL(locating(int, int)));
   connect(&m_interaction, SIGNAL(browsing(int, int)),
           this, SIGNAL(browsing(int, int)));
-  connect(&m_interaction, SIGNAL(showingDetail(int,int)),
-          this, SIGNAL(viewingDetail(int,int)));
 
   connect(m_glWidget, &ZOpenGLWidget::openGLContextInitialized, this, &Z3DCanvas::openGLContextInitialized);
 }
@@ -95,8 +93,7 @@ bool Z3DCanvas::suppressingContextMenu() const
       m_interaction.isStateOn(ZInteractionEngine::STATE_DRAW_RECT) ||
       m_interaction.isStateOn(ZInteractionEngine::STATE_MARK) ||
       m_interaction.isStateOn(ZInteractionEngine::STATE_LOCATE) ||
-      m_interaction.isStateOn(ZInteractionEngine::STATE_BROWSE) ||
-      m_interaction.isStateOn(ZInteractionEngine::STATE_SHOW_DETAIL)) {
+      m_interaction.isStateOn(ZInteractionEngine::STATE_BROWSE)) {
     return true;
   }
 //#endif

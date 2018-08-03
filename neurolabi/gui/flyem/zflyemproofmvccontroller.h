@@ -8,8 +8,6 @@
 class ZFlyEmProofMvc;
 class ZIntPoint;
 class ZStackDoc;
-class ZIntCuboid;
-class ZDvidLabelSlice;
 
 /*!
  * \brief An experimental class for controlling mvc widgets
@@ -30,9 +28,6 @@ public:
   static void DisableSequencer(ZFlyEmProofMvc *mvc);
   static void DisableContextMenu(ZFlyEmProofMvc *mvc);
   static void SetTodoDelegate(ZFlyEmProofMvc *mvc, ZStackDoc *todoDoc);
-  static void UpdateProtocolRangeGlyph(
-      ZFlyEmProofMvc *mvc, const ZIntCuboid &range);
-  static void SetProtocolRangeGlyphVisible(ZFlyEmProofMvc *mvc, bool visible);
 };
 
 #endif // ZFLYEMPROOFMVCCONTROLLER_H

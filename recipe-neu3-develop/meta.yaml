@@ -23,13 +23,13 @@ requirements:
   build:
     - python >=3.6
     - qt      5*
-    - libdvid-cpp >=0.3.post52
+    - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.7
     - libpng  1.6*
     - hdf5    1.8*
     - pango   1.40* # [linux64]
-    - lowtis  >=0.1.0.post58
+    - lowtis  >=0.1.0.p
     - cmake
     - ninja
     - tbb
@@ -41,13 +41,13 @@ requirements:
   run:
     - python >=3.6
     - qt      5*
-    - libdvid-cpp >=0.3.post52
+    - libdvid-cpp >=0.2.post55
     - fftw    3.3*
     - jansson 2.7
     - libpng  1.6*
     - hdf5    1.8*
     - pango   1.40* # [linux64]
-    - lowtis  >=0.1.0.post58
+    - lowtis  >=0.1.0.p
     - ninja
     - tbb
     - vtk 7.1*

@@ -97,20 +97,6 @@ void ZStackDocDataBuffer::deliver()
   emit delivering();
 }
 
-int ZStackDocDataBuffer::getActionCount(
-    ZStackDocObjectUpdate::EAction action) const
-{
-  QMutexLocker locker(&m_mutex);
-  int count = 0;
-  for (const auto &u : m_updateList) {
-    if (u->getAction() == action) {
-      ++count;
-    }
-  }
-
-  return count;
-}
-
 QList<ZStackDocObjectUpdate*> ZStackDocDataBuffer::take()
 {
   QMutexLocker locker(&m_mutex);
@@ -141,20 +127,11 @@ void ZStackDocDataBuffer::clearList()
   m_updateList.clear();
 }
 
-void ZStackDocDataBuffer::print() const
-{
-  QMutexLocker locker(&m_mutex);
-  std::cout << m_updateList.size() << " objects to update" << std::endl;
-  for (const auto &u : m_updateList) {
-    u->print();
-  }
-}
-
 QMap<ZStackObject*, ZStackDocObjectUpdate::EAction>
 ZStackDocObjectUpdate::MakeActionMap(QList<ZStackDocObjectUpdate *> updateList)
 {
   //Rules for processing actions of the same object:
-  //  If the last action is delete, then all the other actions will be invalidated
+  //  If the last action is delete, then all the other actions
   QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap;
   for (QList<ZStackDocObjectUpdate*>::reverse_iterator iter = updateList.rbegin();
        iter != updateList.rend(); ++iter) {

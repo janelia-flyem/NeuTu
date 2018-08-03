@@ -7,7 +7,6 @@
 #include "misc/miscutility.h"
 #include "zhdf5reader.h"
 #include "zhdf5writer.h"
-#include "zobject3dscan.h"
 
 //#define MAX_STACK_VOLUME 1847483647
 #define MAX_STACK_VOLUME 923741823

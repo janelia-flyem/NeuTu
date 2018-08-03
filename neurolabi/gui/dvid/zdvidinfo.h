@@ -5,11 +5,10 @@
 #include <string>
 #include "zintpoint.h"
 #include "zintpointarray.h"
+#include "zobject3dscan.h"
 #include "zresolution.h"
 
 class ZIntCuboidArray;
-class ZObject3dScan;
-class ZIntCuboid;
 
 class ZDvidInfo
 {

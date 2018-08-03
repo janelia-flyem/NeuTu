@@ -9,7 +9,6 @@
 #include "zobject3dfactory.h"
 #include "zintcuboidarray.h"
 #include "zintcuboid.h"
-#include "zobject3dscan.h"
 
 const int ZDvidInfo::m_defaultBlockSize = 32;
 

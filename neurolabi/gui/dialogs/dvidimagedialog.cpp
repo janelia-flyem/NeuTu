@@ -53,7 +53,7 @@ int DvidImageDialog::getHeight() const
   return ui->heightSpinBox->value();
 }
 
-void DvidImageDialog::setDvidDialog(ZDvidTargetProviderDialog *dlg)
+void DvidImageDialog::setDvidDialog(ZDvidDialog *dlg)
 {
   m_dvidDlg = dlg;
 

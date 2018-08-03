@@ -1,7 +1,6 @@
 #include "zbodylistwidget.h"
 #include <QDebug>
 
-#include "QsLog.h"
 #include "ui_zbodylistwidget.h"
 #include "flyem/zflyembodylistmodel.h"
 
@@ -107,8 +106,3 @@ void ZBodyListWidget::deselectBodyItemSliently(uint64_t bodyId)
   ui->listView->setBodySelectionSliently(bodyId, false);
 }
 
-void ZBodyListWidget::diagnose()
-{
-  LDEBUG() << "#Bodies in the list:" << getModel()->getBodySet().size();
-  LDEBUG() << "#Selected:" << ui->listView->getSelectedSet().size();
-}

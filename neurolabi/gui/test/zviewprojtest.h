@@ -153,32 +153,6 @@ TEST(ZViewProj, basic)
   ASSERT_DOUBLE_EQ(50.0, pt2.x());
   ASSERT_DOUBLE_EQ(80.0, pt2.y());
   ASSERT_EQ(QPoint(10, 20), pt);
-}
-
-TEST(ZViewProj, viewport)
-{
-  {
-    ZViewProj vp;
-    vp.setViewPort(QRect(10, 20, 30, 40));
-    ASSERT_FALSE(vp.isValid());
-    ASSERT_TRUE(vp.getViewPort().isEmpty());
-    vp.setWidgetRect(QRect(0, 0, 30, 40));
-    ASSERT_TRUE(vp.getViewPort().isEmpty());
-
-    vp.setCanvasRect(QRect(10, 20, 30, 40));
-    ASSERT_EQ(10, vp.getViewPort().left());
-    ASSERT_EQ(30, vp.getViewPort().width());
-  }
-
-  {
-    ZViewProj vp;
-    vp.setWidgetRect(QRect(0, 0, 30, 40));
-    vp.setViewPort(QRect(10, 20, 30, 40));
-
-    vp.setCanvasRect(QRect(10, 20, 30, 40));
-    ASSERT_EQ(10, vp.getViewPort().left());
-    ASSERT_EQ(30, vp.getViewPort().width());
-  }
 
 }
 

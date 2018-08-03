@@ -16,7 +16,6 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QHBoxLayout>
-#include <QInputDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -294,8 +293,6 @@ void TaskBodyCleave::beforeNext()
 
   m_hiddenCleaveIndices.clear();
   m_showBodyCheckBox->setChecked(true);
-
-  m_hiddenIds.clear();
 }
 
 void TaskBodyCleave::beforePrev()
@@ -310,8 +307,6 @@ void TaskBodyCleave::beforePrev()
 
   m_hiddenCleaveIndices.clear();
   m_showBodyCheckBox->setChecked(true);
-
-  m_hiddenIds.clear();
 }
 
 void TaskBodyCleave::beforeDone()
@@ -344,7 +339,7 @@ void TaskBodyCleave::updateLevel(int level)
 
   Neu3Window::enableZoomToLoadedBody(false);
 
-  QSet<uint64_t> visible({ ZFlyEmBodyManager::encode(m_bodyId, level) });
+  QSet<uint64_t> visible({ ZFlyEmBody3dDoc::encode(m_bodyId, level) });
   updateBodies(visible, QSet<uint64_t>());
 }
 
@@ -423,10 +418,6 @@ void TaskBodyCleave::onShowBodyChanged(int state)
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
     if (bodiesForIndex.find(mesh->getLabel()) != bodiesForIndex.end()) {
-      if (m_hiddenIds.find(mesh->getLabel()) != m_hiddenIds.end()) {
-        continue;
-      }
-
       m_bodyDoc->setVisible(mesh, state);
     }
   }
@@ -593,35 +584,6 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
   reply->deleteLater();
 }
 
-void TaskBodyCleave::onHideSelected()
-{
-  const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
-  for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
-    ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
-    m_hiddenIds.insert(mesh->getLabel());
-  }
-  updateVisibility();
-}
-
-void TaskBodyCleave::onClearHidden()
-{
-  selectBodies(m_hiddenIds);
-  m_hiddenIds.clear();
-  updateVisibility();
-}
-
-void TaskBodyCleave::onChooseCleaveMethod()
-{
-  if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
-    bool ok = true;
-    QString text = QInputDialog::getText(window, "Set Cleaving Method", "Cleaving method:",
-                                         QLineEdit::Normal,  m_cleaveMethod, &ok);
-    if (ok) {
-      m_cleaveMethod = text;
-    }
-  }
-}
-
 QJsonObject TaskBodyCleave::addToJson(QJsonObject taskJson)
 {
   taskJson[KEY_BODYID] = static_cast<double>(m_bodyId);
@@ -670,27 +632,6 @@ bool TaskBodyCleave::allowCompletion()
         m_showBodyCheckBox->setChecked(true);
         m_showSeedsOnlyCheckBox->setChecked(false);
         updateVisibility();
-
-        allow = false;
-      }
-    }
-  }
-
-  if (!m_hiddenIds.empty()) {
-    if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
-      QString title = "Warning";
-      QString text = (m_hiddenIds.size() == 1) ? "A mesh is hidden. " : "Some meshes are hidden. ";
-      text += "Really save now without checking what is hidden?";
-
-      QMessageBox msgBox(QMessageBox::Warning, title, text, QMessageBox::Save,
-                         window);
-      QPushButton *cancelAndShow = msgBox.addButton("Cancel and Show All", QMessageBox::RejectRole);
-      msgBox.setDefaultButton(cancelAndShow);
-
-      msgBox.exec();
-
-      if (msgBox.clickedButton() == cancelAndShow) {
-        onClearHidden();
 
         allow = false;
       }
@@ -865,23 +806,6 @@ void TaskBodyCleave::buildTaskWidget()
   QMenu *setChosenCleaveIndexMenu = new QMenu("Set Current  Body To");
   m_menu->addMenu(setChosenCleaveIndexMenu);
 
-  QAction *hideSelectedAction = new QAction("Hide Selected Meshes", m_widget);
-  hideSelectedAction->setShortcut(Qt::Key_F1);
-  m_menu->addAction(hideSelectedAction);
-  connect(hideSelectedAction, SIGNAL(triggered()), this, SLOT(onHideSelected()));
-
-  QAction *clearHiddenAction = new QAction("Clear Hidden Selected Meshes", m_widget);
-  clearHiddenAction->setShortcut(Qt::Key_F2);
-  m_menu->addAction(clearHiddenAction);
-  connect(clearHiddenAction, SIGNAL(triggered()), this, SLOT(onClearHidden()));
-
-  QMenu *advancedMenu = new QMenu("Advanced");
-  m_menu->addMenu(advancedMenu);
-
-  QAction *methodAction = new QAction("Cleaving Method", m_widget);
-  advancedMenu->addAction(methodAction);
-  connect(methodAction, SIGNAL(triggered()), this, SLOT(onChooseCleaveMethod()));
-
   const int NUM_DISTINCT_KEYS = 10;
   int n = std::min(m_cleaveIndexComboBox->count(), 2 * NUM_DISTINCT_KEYS);
   for (int i = 0; i < n; i++) {
@@ -1037,9 +961,6 @@ void TaskBodyCleave::cleave()
     requestJsonSeeds[QString::number(cleaveIndex)] = requestJsonSeedsForCleaveIndex;
   }
 
-  if (!m_cleaveMethod.isEmpty()) {
-    requestJson["method"] = m_cleaveMethod;
-  }
   requestJson["seeds"] = requestJsonSeeds;
   if (const char* user = std::getenv("USER")) {
     requestJson["user"] = user;
@@ -1054,7 +975,7 @@ void TaskBodyCleave::cleave()
                          m_bodyDoc->getDvidTarget().getBodyLabelName()).c_str();
 
   // TODO: Teporary cleaving sevrver URL.
-  QString server = "http://emdata1.int.janelia.org:5551/compute-cleave";
+  QString server = "http://bergs-ws1.int.janelia.org:5556/compute-cleave";
   if (const char* serverOverride = std::getenv("NEU3_CLEAVE_SERVER")) {
     server = serverOverride;
   }
@@ -1130,10 +1051,6 @@ void TaskBodyCleave::updateVisibility()
         std::size_t index = itCleaveResult->second;
         toBeVisible = (m_hiddenCleaveIndices.find(index) == m_hiddenCleaveIndices.end());
       }
-    }
-
-    if (toBeVisible) {
-      toBeVisible = (m_hiddenIds.find(id) == m_hiddenIds.end());
     }
 
     m_bodyDoc->setVisible(mesh, toBeVisible);

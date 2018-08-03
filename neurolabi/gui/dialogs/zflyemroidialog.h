@@ -183,7 +183,7 @@ private:
 
 private:
   Ui::ZFlyEmRoiDialog *ui;
-  ZDvidTargetProviderDialog *m_dvidDlg;
+  ZDvidDialog *m_dvidDlg;
   ZSpinBoxDialog *m_zDlg;
   ZSpinBoxGroupDialog *m_dsDlg;
   QList<ZFlyEmRoiProject*> m_projectList;

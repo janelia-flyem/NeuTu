@@ -111,22 +111,6 @@ void ZIntCuboid::scale(const ZIntPoint &s)
   m_lastCorner = m_firstCorner + dim * s - 1;
 }
 
-void ZIntCuboid::scaleDown(const ZIntPoint &s)
-{
-  if (s.definitePositive()) {
-    m_firstCorner /= s;
-    m_lastCorner /= s;
-  }
-}
-
-void ZIntCuboid::scaleDown(int s)
-{
-  if (s > 0) {
-    m_firstCorner /= s;
-    m_lastCorner /= s;
-  }
-}
-
 ZIntCuboid &ZIntCuboid::join(const ZIntCuboid &cuboid)
 {
   if (!cuboid.isEmpty()) {
@@ -226,20 +210,6 @@ size_t ZIntCuboid::getVolume() const
   size_t area = getWidth() * getHeight();
 
   return area * getDepth();
-}
-
-size_t ZIntCuboid::getDsMaxVolume(int xIntv, int yIntv, int zIntv) const
-{
-  if (getWidth() <= 0 || getHeight() <= 0 || getDepth() <= 0) {
-    return 0;
-  }
-
-  ZIntPoint s(xIntv + 1, yIntv + 1, zIntv + 1);
-  ZIntPoint newSize = m_lastCorner / s - m_firstCorner / s + 1;
-
-  size_t area = newSize.getX() * newSize.getY();
-
-  return area * newSize.getZ();
 }
 
 bool ZIntCuboid::contains(int x, int y, int z) const

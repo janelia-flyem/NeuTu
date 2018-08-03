@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "zstackobject.h"
+
 ZStackObjectSelector::ZStackObjectSelector()
 {
 }

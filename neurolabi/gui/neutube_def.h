@@ -75,10 +75,6 @@ enum EColor {
   COLOR_RED, COLOR_GREEN, COLOR_BLUE, COLOR_ALL
 };
 
-enum ESelectOption {
-  SELECT_APPEND, SELECT_ALONE, SELECT_ALONE_TYPE
-};
-
 enum EWindowConfig {
   WINDOW_2D, WINDOW_3D
 };
@@ -105,7 +101,7 @@ enum EReadStatus {
 };
 
 enum EToDoAction {
-  TO_DO, TO_MERGE, TO_SPLIT, TO_SUPERVOXEL_SPLIT, TO_DO_IRRELEVANT
+  TO_DO, TO_MERGE, TO_SPLIT
 };
 
 namespace display {
@@ -133,10 +129,6 @@ static const TVisualEffect VE_DOT_CENTER = BIT_FLAG(7);
 static const TVisualEffect VE_RECTANGLE_SHAPE = BIT_FLAG(8);
 static const TVisualEffect VE_CROSS_CENTER = BIT_FLAG(9);
 static const TVisualEffect VE_FORCE_FILL = BIT_FLAG(10);
-}
-
-namespace Box {
-static const TVisualEffect VE_GRID = BIT_FLAG(1);
 }
 
 namespace SwcTree {
@@ -174,7 +166,7 @@ enum EProofreadingMode {
 };
 
 enum EBodyType {
-  BODY_DEFAULT, BODY_SPHERE, BODY_SKELETON, BODY_MESH
+  BODY_NULL, BODY_FULL, BODY_COARSE, BODY_SKELETON, BODY_MESH
 };
 
 enum EBodyLabelType {
@@ -187,10 +179,6 @@ enum EBodySplitMode {
 
 enum EBodySplitRange {
   RANGE_FULL, RANGE_SEED, RANGE_LOCAL
-};
-
-enum EDataSliceUpdatePolicy {
-  UPDATE_DIRECT, UPDATE_HIDDEN, UPDATE_LOWESTRES, UPDATE_LOWRES, UPDATE_SMALL
 };
 
 static const uint64_t LABEL_ID_SELECTION =

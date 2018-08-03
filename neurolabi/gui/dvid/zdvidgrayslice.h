@@ -17,8 +17,6 @@ class ZDvidReader;
 class ZStack;
 class ZDvidDataSliceHelper;
 class ZDvidTarget;
-class ZTask;
-class ZStackDoc;
 //class ZStackViewParam;
 
 class ZDvidGraySlice : public ZStackObject, ZUncopyable
@@ -115,12 +113,6 @@ public:
     return m_image;
   }
 //  void setArbitraryAxis(const ZPoint &v1, const ZPoint &v2);
-
-  bool consume(ZStack *stack, const ZStackViewParam &viewParam,
-               int zoom, int centerCutX, int centerCutY, bool usingCenterCut);
-  bool containedIn(const ZStackViewParam &viewParam, int zoom,
-                   int centerCutX, int centerCutY, bool centerCut) const;
-  ZTask* makeFutureTask(ZStackDoc *doc);
 
 public: //for testing
   void saveImage(const std::string &path);

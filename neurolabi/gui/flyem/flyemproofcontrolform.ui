@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>547</width>
+    <width>479</width>
     <height>748</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">
+  <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>
     <layout class="QHBoxLayout" name="topHorizontalLayout">
      <item>
@@ -207,7 +207,7 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_10">
       <item>
-       <widget class="QGroupBox" name="groupBox_5">
+       <widget class="QGroupBox" name="groupBox_4">
         <property name="toolTip">
          <string>A body is rendered as a set of balls resembling its surface</string>
         </property>
@@ -220,7 +220,7 @@
         <property name="flat">
          <bool>false</bool>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_11">
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
          <property name="leftMargin">
           <number>5</number>
          </property>
@@ -233,6 +233,16 @@
          <property name="bottomMargin">
           <number>5</number>
          </property>
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {  border: 1px solid gray; border-radius: 3px; margin-top: 2ex;}</string>
+           </property>
+           <property name="text">
+            <string>Quality:</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QPushButton" name="coarseBodyPushButton">
            <property name="toolTip">
@@ -257,56 +267,19 @@
        </widget>
       </item>
       <item>
-       <widget class="QGroupBox" name="groupBox_4">
-        <property name="toolTip">
-         <string>A body is rendered as a set of balls resembling its surface</string>
-        </property>
-        <property name="title">
-         <string>Mesh</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_7">
-         <property name="leftMargin">
-          <number>5</number>
-         </property>
-         <property name="topMargin">
-          <number>12</number>
-         </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
-         <property name="bottomMargin">
-          <number>5</number>
-         </property>
-         <item>
-          <widget class="QPushButton" name="coarseMeshPushButton">
-           <property name="text">
-            <string>LowRes</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="meshPushButton">
-           <property name="text">
-            <string>highRes</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="skeletonViewPushButton">
         <property name="toolTip">
          <string>3D skeleton visualization</string>
         </property>
         <property name="text">
          <string>Skeleton</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="meshPushButton">
+        <property name="text">
+         <string>Mesh</string>
         </property>
        </widget>
       </item>
@@ -382,7 +355,7 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Select multiple bodies</string>
+           <string>Select &gt;1 bodies</string>
           </property>
          </widget>
         </item>
@@ -458,7 +431,7 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>Select a single body</string>
+           <string>Select 1 body</string>
           </property>
          </widget>
         </item>

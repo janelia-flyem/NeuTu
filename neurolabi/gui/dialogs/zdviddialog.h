@@ -3,8 +3,6 @@
 
 #include <QDialog>
 #include <string>
-
-#include "zdvidtargetproviderdialog.h"
 #include "dvid/zdvidtarget.h"
 
 namespace Ui {
@@ -16,7 +14,7 @@ class ZDvidAdvancedDialog;
 class QLabel;
 class QLineEdit;
 
-class ZDvidDialog : public ZDvidTargetProviderDialog
+class ZDvidDialog : public QDialog
 {
   Q_OBJECT
 
@@ -24,12 +22,21 @@ public:
   explicit ZDvidDialog(QWidget *parent = 0);
   ~ZDvidDialog();
 
+ //void loadConfig(const std::string &filePath);
+
+  int getPort() const;
+  QString getAddress() const;
+  QString getUuid() const;
 
   ZDvidTarget& getDvidTarget();
   const ZDvidTarget& getDvidTarget(const std::string &name) const;
 
-private slots:
+  void addDvidTarget(ZDvidTarget &target);
 
+  bool hasNameConflict(const std::string &name) const;
+  void saveCurrentTarget(bool cloning);
+
+public slots:
   void setServer(int index);
   void saveCurrentTarget();
   void saveCurrentTargetAs();
@@ -48,14 +55,6 @@ private:
   std::string getSynapseName() const;
   std::string getRoiName() const;
 
-  int getPort() const;
-  QString getAddress() const;
-  QString getUuid() const;
-
-  void addDvidTarget(ZDvidTarget &target);
-
-  bool hasNameConflict(const std::string &name) const;
-  void saveCurrentTarget(bool cloning);
 
 private:
   Ui::ZDvidDialog *ui;

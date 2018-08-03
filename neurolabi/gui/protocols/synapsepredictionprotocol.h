@@ -34,10 +34,6 @@ public:
     void processSynapseVerification(const ZIntPoint &pt, bool verified);
     void processSynapseMoving(const ZIntPoint &from, const ZIntPoint &to);
 
-    ZIntCuboid getRange() const;
-    void setRange(const ZIntCuboid &range);
-    void setRange(const ZJsonArray &rangeJson);
-
 signals:
     void protocolCompleting();
     void protocolExiting();
@@ -66,8 +62,7 @@ private slots:
     void onCompleteButton();
     void onRefreshButton();
     void onDoubleClickSitesTable(QModelIndex index);    
-    void onModeChanged(QString item);    
-    void onGridToggled();
+    void onModeChanged(QString item);
 
 private:
     static const std::string KEY_VARIATION;

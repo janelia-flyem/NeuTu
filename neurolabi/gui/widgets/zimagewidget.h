@@ -224,8 +224,6 @@ public:
 
   void maximizeViewPort();
 
-  void enableOffsetAdjustment(bool on);
-
 public:
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void mouseMoveEvent(QMouseEvent *event);
@@ -320,7 +318,6 @@ private:
   bool m_showingCrossHair;
   bool m_showingZoomHint = true;
   bool m_isReady;
-  bool m_offsetAdjustment = false;
   QPoint m_hairCenter;
 };
 

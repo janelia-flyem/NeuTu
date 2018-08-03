@@ -1800,19 +1800,16 @@ void Z3DVolumeFilter::readSparseVolume(const ZStackDoc* doc, std::vector<std::un
   ZSparseObject obj = *(doc->getSparseObjectList().front());
   QColor color = obj.getColor();
   int nchannel = 1;
-//  if (color.red() != color.green() || color.green() != color.blue()) {
-//    if (color.green() > 0) {
-//      nchannel = 2;
-//    }
-//    if (color.blue() > 0) {
-//      nchannel = 3;
-//    }
-//  }
+  if (color.green() > 0) {
+    nchannel = 2;
+  }
+  if (color.blue() > 0) {
+    nchannel = 3;
+  }
 
 
-  ZIntCuboid dataBox = obj.getBoundBox();
-  ZIntPoint dsIntv = misc::getDsIntvFor3DVolume(dataBox);
-//      misc::getDsIntvFor3DVolume(doc->getStack()->getBoundBox());
+  ZIntPoint dsIntv =
+      misc::getDsIntvFor3DVolume(doc->getStack()->getBoundBox());
 
 
   int xIntv = dsIntv.getX();
@@ -1834,9 +1831,9 @@ void Z3DVolumeFilter::readSparseVolume(const ZStackDoc* doc, std::vector<std::un
     zIntv = 2;
   }
 */
-  int height = dataBox.getWidth();
-  int width = dataBox.getHeight();
-  int depth = dataBox.getDepth();
+  int height = doc->getStack()->width();
+  int width = doc->getStack()->height();
+  int depth = doc->getStack()->depth();
 
   int maxTextureSize = 100;
   if (depth > 1) {
@@ -1859,13 +1856,13 @@ void Z3DVolumeFilter::readSparseVolume(const ZStackDoc* doc, std::vector<std::un
   obj.downsampleMax(xIntv, yIntv, zIntv);
   int offset[3];
 
-//  int rgb[3];
-//  rgb[0] = color.red();
-//  rgb[1] = color.green();
-//  rgb[2] = color.blue();
+  int rgb[3];
+  rgb[0] = color.red();
+  rgb[1] = color.green();
+  rgb[2] = color.blue();
 
   for (int i = 0; i < nchannel; ++i) {
-    Stack *stack2 = obj.toStack(offset, 255);
+    Stack *stack2 = obj.toStack(offset, rgb[i]);
 
     ZPoint finalOffset;
     finalOffset.set(offset[0] * (xIntv + 1),
@@ -1884,15 +1881,14 @@ void Z3DVolumeFilter::readSparseVolume(const ZStackDoc* doc, std::vector<std::un
     vols.emplace_back(vh);
   }
 
-  vols[0]->setVolColor(glm::vec3(color.redF(), color.greenF(), color.blueF()));
 
-//  vols[0]->setVolColor(glm::vec3(1.f,0.f,0.f));
-//  if (vols.size() > 1) {
-//    vols[1]->setVolColor(glm::vec3(0.f,1.f,0.f));
-//  }
-//  if (vols.size() > 2) {
-//    vols[2]->setVolColor(glm::vec3(0.f,0.f,1.f));
-//  }
+  vols[0]->setVolColor(glm::vec3(1.f,0.f,0.f));
+  if (vols.size() > 1) {
+    vols[1]->setVolColor(glm::vec3(0.f,1.f,0.f));
+  }
+  if (vols.size() > 2) {
+    vols[2]->setVolColor(glm::vec3(0.f,0.f,1.f));
+  }
 }
 
 void Z3DVolumeFilter::readSparseVolumeWithObject(const ZStackDoc* doc, std::vector<std::unique_ptr<Z3DVolume> >& vols)

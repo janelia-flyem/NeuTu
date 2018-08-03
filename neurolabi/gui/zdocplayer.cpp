@@ -68,16 +68,6 @@ ZIntCuboid ZDocPlayer::getBoundBox() const
   return box;
 }
 
-ZTask* ZDocPlayer::getFutureTask() const
-{
-  return NULL;
-}
-
-ZTask* ZDocPlayer::getFutureTask(ZStackDoc */*doc*/) const
-{
-  return NULL;
-}
-
 /*************************************/
 ZDocPlayerList::~ZDocPlayerList()
 {
@@ -714,16 +704,6 @@ bool ZDvidGraySlicePlayer::updateData(const ZStackViewParam &viewParam) const
   return updated;
 }
 
-ZTask* ZDvidGraySlicePlayer::getFutureTask(ZStackDoc *doc) const
-{
-  ZDvidGraySlice *obj = getCompleteData();
-  if (obj != NULL) {
-    return obj->makeFutureTask(doc);
-  }
-
-  return NULL;
-}
-
 /////////////////////////////
 
 
@@ -752,16 +732,6 @@ bool ZDvidLabelSlicePlayer::updateData(const ZStackViewParam &viewParam) const
   }
 
   return updated;
-}
-
-ZTask* ZDvidLabelSlicePlayer::getFutureTask(ZStackDoc *doc) const
-{
-  ZDvidLabelSlice *obj = getCompleteData();
-  if (obj != NULL) {
-    return obj->makeFutureTask(doc);
-  }
-
-  return NULL;
 }
 
 

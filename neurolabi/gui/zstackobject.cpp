@@ -2,7 +2,6 @@
 #include "tz_cdefs.h"
 #include "zswctree.h"
 #include "zintcuboid.h"
-#include "core/utilities.h"
 
 //const char* ZStackObject::m_nodeAdapterId = "!NodeAdapter";
 double ZStackObject::m_defaultPenWidth = 0.5;
@@ -25,52 +24,6 @@ ZStackObject::~ZStackObject()
   std::cout << "Deconstructing " << this << ": " << getType() << ", "
             << getSource() << std::endl;
 #endif
-}
-
-#define GET_TYPE_NAME(v, t) \
-  if (v == t) { \
-    return NT_STR(t); \
-  }
-
-std::string ZStackObject::GetTypeName(EType type)
-{
-  GET_TYPE_NAME(type, TYPE_UNIDENTIFIED);
-  GET_TYPE_NAME(type, TYPE_SWC);
-  GET_TYPE_NAME(type, TYPE_PUNCTUM);
-  GET_TYPE_NAME(type, TYPE_MESH);
-  GET_TYPE_NAME(type, TYPE_OBJ3D);
-  GET_TYPE_NAME(type, TYPE_STROKE);
-  GET_TYPE_NAME(type, TYPE_LOCSEG_CHAIN);
-  GET_TYPE_NAME(type, TYPE_CONN);
-  GET_TYPE_NAME(type, TYPE_OBJECT3D_SCAN);
-  GET_TYPE_NAME(type, TYPE_SPARSE_OBJECT);
-  GET_TYPE_NAME(type, TYPE_CIRCLE);
-  GET_TYPE_NAME(type, TYPE_STACK_BALL);
-  GET_TYPE_NAME(type, TYPE_STACK_PATCH);
-  GET_TYPE_NAME(type, TYPE_RECT2D);
-  GET_TYPE_NAME(type, TYPE_DVID_TILE);
-  GET_TYPE_NAME(type, TYPE_DVID_GRAY_SLICE);
-  GET_TYPE_NAME(type, TYPE_DVID_TILE_ENSEMBLE);
-  GET_TYPE_NAME(type, TYPE_DVID_LABEL_SLICE);
-  GET_TYPE_NAME(type, TYPE_DVID_SPARSE_STACK);
-  GET_TYPE_NAME(type, TYPE_DVID_SPARSEVOL_SLICE);
-  GET_TYPE_NAME(type, TYPE_STACK);
-  GET_TYPE_NAME(type, TYPE_SWC_NODE);
-  GET_TYPE_NAME(type, TYPE_3D_GRAPH);
-  GET_TYPE_NAME(type, TYPE_PUNCTA);
-  GET_TYPE_NAME(type, TYPE_FLYEM_BOOKMARK);
-  GET_TYPE_NAME(type, TYPE_INT_CUBOID);
-  GET_TYPE_NAME(type, TYPE_LINE_SEGMENT);
-  GET_TYPE_NAME(type, TYPE_SLICED_PUNCTA);
-  GET_TYPE_NAME(type, TYPE_DVID_SYNAPSE);
-  GET_TYPE_NAME(type, TYPE_DVID_SYNAPE_ENSEMBLE);
-  GET_TYPE_NAME(type, TYPE_3D_CUBE);
-  GET_TYPE_NAME(type, TYPE_DVID_ANNOTATION);
-  GET_TYPE_NAME(type, TYPE_FLYEM_TODO_ITEM);
-  GET_TYPE_NAME(type, TYPE_FLYEM_TODO_LIST);
-  GET_TYPE_NAME(type, TYPE_CROSS_HAIR);
-
-  return std::to_string(type);
 }
 
 bool ZStackObject::display(QPainter * /*painter*/, int /*z*/,

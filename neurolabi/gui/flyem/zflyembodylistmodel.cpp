@@ -1,12 +1,10 @@
 #include "zflyembodylistmodel.h"
 
 #include <QDebug>
-#include <QRegularExpression>
 #include <iostream>
 
 #include "zstring.h"
 #include "zflyembodystateaccessor.h"
-#include "zflyembodymanager.h"
 
 ZFlyEmBodyListModel::ZFlyEmBodyListModel(QObject *parent) :
   QStringListModel(parent)
@@ -42,35 +40,6 @@ Qt::ItemDataRole ZFlyEmBodyListModel::getBackupRole()
 }
 #endif
 
-QVariant ZFlyEmBodyListModel::data(const QModelIndex &index, int role) const
-{
-  switch (role) {
-  case Qt::ForegroundRole:
-    if (ZFlyEmBodyManager::encodingSupervoxel(getBodyId(index))) {
-      return QColor(0, 128, 0);
-    }
-    break;
-  case Qt::DisplayRole:
-  {
-    uint64_t bodyId = getBodyId(index);
-    uint64_t decodedBodyId = ZFlyEmBodyManager::decode(bodyId);
-    if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
-      return QString("%1 (sv)").arg(decodedBodyId);
-    } else if (ZFlyEmBodyManager::encodesTar(bodyId) &&
-               ZFlyEmBodyManager::encodedLevel(bodyId) == 0) {
-      return QString("%1 (c)").arg(decodedBodyId);
-    } else {
-      return QString("%1").arg(decodedBodyId);
-    }
-  }
-    break;
-  default:
-    break;
-  }
-
-  return QStringListModel::data(index, role);
-}
-
 uint64_t ZFlyEmBodyListModel::getBodyId(int row) const
 {
   QModelIndex modelIndex = index(row);
@@ -82,36 +51,15 @@ uint64_t ZFlyEmBodyListModel::getBodyId(int row) const
   return getBodyId(modelIndex);
 }
 
-uint64_t ZFlyEmBodyListModel::GetBodyId(const QString &str)
-{
-  uint64_t bodyId = str.toULongLong();
-  if (bodyId == 0) {
-    QRegularExpression regexp("^(supervoxel|sv)[:\\s]*([0-9]+)",
-                              QRegularExpression::CaseInsensitiveOption);
-    qDebug() << "Input body str:" << str;
-    QRegularExpressionMatch match = regexp.match(str);
-    if (match.hasMatch()) {
-      bodyId = match.captured(2).toULongLong();
-      if (bodyId > 0) {
-        bodyId = ZFlyEmBodyManager::encodeSupervoxel(bodyId);
-      }
-    }
-  }
-
-  return bodyId;
-}
-
 uint64_t ZFlyEmBodyListModel::getBodyId(const QModelIndex &index) const
 {
   if (!index.isValid()) {
     return 0;
   }
 
-  QString bodyIdStr = this->data(index, Qt::EditRole).toString();
+  QString bodyIdStr = this->data(index, Qt::DisplayRole).toString();
 
-//  if (bodyIdStr.startsWith())
-
-  uint64_t bodyId = GetBodyId(bodyIdStr);
+  uint64_t bodyId = bodyIdStr.toULongLong();
 
   return bodyId;
 }
@@ -163,7 +111,7 @@ void ZFlyEmBodyListModel::addBody(uint64_t bodyId)
   if (!m_bodySet.contains(bodyId)) {
     insertRow(rowCount());
     QModelIndex modelIndex = index(rowCount() - 1);
-    setData(modelIndex, QString("%1").arg(bodyId), Qt::EditRole);
+    setData(modelIndex, QString("%1").arg(bodyId), Qt::DisplayRole);
   }
 }
 
@@ -172,7 +120,7 @@ void ZFlyEmBodyListModel::addBodySliently(uint64_t bodyId)
   if (m_bodySet.contains(bodyId)) {
     insertRow(rowCount());
     QModelIndex modelIndex = index(rowCount() - 1);
-    setData(modelIndex, QString("%1").arg(bodyId), Qt::EditRole);
+    setData(modelIndex, QString("%1").arg(bodyId), Qt::DisplayRole);
   }
 }
 
@@ -326,31 +274,24 @@ bool ZFlyEmBodyListModel::setData(
 {
   QVariant newValue = value;
 
-  qDebug() << "Item value:" << value;
-
-  if(role == Qt::EditRole) {
+  if(role == Qt::DisplayRole || role == Qt::EditRole) {
     //Backup the old body ID so that it can be removed later if necessary
     uint64_t oldBodyId = getBodyId(index.row());
-    uint64_t bodyId = GetBodyId(value.toString());
-
-    if (oldBodyId == bodyId || isBodyProtected(oldBodyId)) {
-      return false;
-    }
-
     if (oldBodyId > 0) {
       m_backupSet.insert(oldBodyId);
     }
 
     //Set the value to empty if it's a duplication
-//    QString bodyIdStr = value.toString();
+    QString bodyIdStr = value.toString();
 
-//    uint64_t bodyId = bodyIdStr.toULongLong();
+    uint64_t bodyId = bodyIdStr.toULongLong();
 
+    if (oldBodyId == bodyId || isBodyProtected(oldBodyId)) {
+      return false;
+    }
 
     if (m_bodySet.contains(bodyId)) {
       newValue.setValue(QString());
-    } else {
-      newValue.setValue(QString("%1").arg(bodyId));
     }
   }
 

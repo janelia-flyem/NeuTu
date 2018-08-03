@@ -4,11 +4,8 @@
 #include "zflyemproofmvc.h"
 #include "zintpoint.h"
 #include "zflyemproofpresenter.h"
-#include "zstackdocaccessor.h"
 #include "zstackdocnullmenufactory.h"
 #include "flyem/zflyemtododelegate.h"
-#include "zintcuboidobj.h"
-#include "zstackobjectsourcefactory.h"
 
 ZFlyEmProofMvcController::ZFlyEmProofMvcController()
 {
@@ -77,34 +74,4 @@ void ZFlyEmProofMvcController::SetTodoDelegate(
           std::unique_ptr<ZFlyEmToDoDelegate>(new ZFlyEmToDoDelegate(todoDoc)));
   }
 }
-
-void ZFlyEmProofMvcController::UpdateProtocolRangeGlyph(
-    ZFlyEmProofMvc *mvc, const ZIntCuboid &range)
-{
-  std::string source = ZStackObjectSourceFactory::MakeProtocolRangeSource();
-
-  if (range.isEmpty()) {
-    ZStackDocAccessor::RemoveObject(
-          mvc->getDocument().get(), ZStackObject::TYPE_INT_CUBOID, source, true);
-  } else {
-    ZIntCuboidObj *obj = new ZIntCuboidObj;
-    obj->setColor(QColor(255, 255, 255, 164));
-    obj->setGridInterval(64);
-    obj->addVisualEffect(neutube::display::Box::VE_GRID);
-    obj->setSelectable(false);
-    obj->setCuboid(range);
-    obj->setSource(source);
-    ZStackDocAccessor::AddObjectUnique(mvc->getDocument().get(), obj);
-  }
-}
-
-void ZFlyEmProofMvcController::SetProtocolRangeGlyphVisible(
-    ZFlyEmProofMvc *mvc, bool visible)
-{
-  std::string source = ZStackObjectSourceFactory::MakeProtocolRangeSource();
-
-  ZStackDocAccessor::SetObjectVisible(
-        mvc->getDocument().get(), ZStackObject::TYPE_INT_CUBOID, source, visible);
-}
-
 

@@ -1550,55 +1550,10 @@ ZMesh ZMesh::Merge(const std::vector<ZMesh*>& meshes)
   return vtkPolyDataToMesh(cleanFilter->GetOutput());
 }
 
-void ZMesh::append(const ZMesh &mesh)
-{
-#ifdef _DEBUG_
-  std::cout << "Appending mesh:" << m_indices.size() << " " << mesh.m_indices.size() << std::endl;
-#endif
-
-  if (m_ttype == GL_TRIANGLES && mesh.m_ttype == GL_TRIANGLES) {
-    size_t count = m_vertices.size();
-
-    m_vertices.insert(
-          m_vertices.end(), mesh.m_vertices.begin(), mesh.m_vertices.end());
-    std::vector<GLuint> newIndices = mesh.m_indices;
-    for (auto &index : newIndices) {
-      index += count;
-    }
-    m_indices.insert(m_indices.end(), newIndices.begin(), newIndices.end());
-
-    m_1DTextureCoordinates.insert(
-          m_1DTextureCoordinates.end(), mesh.m_1DTextureCoordinates.begin(),
-          mesh.m_1DTextureCoordinates.end());
-    m_2DTextureCoordinates.insert(
-          m_2DTextureCoordinates.end(), mesh.m_2DTextureCoordinates.begin(),
-          mesh.m_2DTextureCoordinates.end());
-    m_3DTextureCoordinates.insert(
-          m_3DTextureCoordinates.end(), mesh.m_3DTextureCoordinates.begin(),
-          mesh.m_3DTextureCoordinates.end());
-    m_normals.insert(
-          m_normals.end(), mesh.m_normals.begin(), mesh.m_normals.end());
-    m_colors.insert(
-          m_colors.end(), mesh.m_colors.begin(), mesh.m_colors.end());
-
-  } else {
-    std::vector<glm::uvec3> indices = mesh.triangleIndices();
-    for (const auto &index : indices) {
-      appendTriangle(mesh, index);
-    }
-  }
-}
-
 void ZMesh::appendTriangle(const ZMesh& mesh, const glm::uvec3& triangle)
 {
-  if (/*!m_indices.empty() ||*/ m_ttype != GL_TRIANGLES)
+  if (!m_indices.empty() || m_ttype != GL_TRIANGLES)
     return;
-
-  if (!m_indices.empty()) {
-    m_indices.push_back(m_vertices.size());
-    m_indices.push_back(m_vertices.size() + 1);
-    m_indices.push_back(m_vertices.size() + 2);
-  }
 
   m_vertices.push_back(mesh.m_vertices[triangle[0]]);
   m_vertices.push_back(mesh.m_vertices[triangle[1]]);
@@ -1738,7 +1693,7 @@ ZMesh ZMesh::booleanOperation(const ZMesh& mesh1, const ZMesh& mesh2, ZMesh::Boo
 void ZMesh::pushObjectColor()
 {
   m_colors.resize(m_vertices.size());
-#ifdef _DEBUG_2
+#ifdef _DEBUG_
   qDebug() << "Push mesh color:" << getColor();
 #endif
   for (size_t i = 0; i < m_colors.size(); ++i) {

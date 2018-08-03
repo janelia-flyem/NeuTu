@@ -9,11 +9,6 @@ ZObject3dScanArray::ZObject3dScanArray()
 {
 }
 
-ZObject3dScanArray::ZObject3dScanArray(const std::vector<ZObject3dScan *> &objArray)
-{
-  insert(end(), objArray.begin(), objArray.end());
-}
-
 ZObject3dScanArray::~ZObject3dScanArray()
 {
   clearAll();

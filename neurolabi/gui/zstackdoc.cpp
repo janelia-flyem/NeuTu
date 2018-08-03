@@ -118,9 +118,6 @@
 #include "zobject3d.h"
 #include "data3d/utilities.h"
 #include "zobjsmodelmanager.h"
-#include "concurrent/zworker.h"
-#include "concurrent/zworkthread.h"
-#include "ztask.h"
 
 using namespace std;
 
@@ -134,7 +131,6 @@ ZStackDoc::~ZStackDoc()
   if (m_futureMap.hasThreadAlive()) {
     m_futureMap.waitForFinished();
   }
-  endWorkThread();
 
   deprecate(STACK);
   deprecate(SPARSE_STACK);
@@ -157,31 +153,6 @@ ZStackDoc::~ZStackDoc()
   }
 
   destroyReporter();
-
-  LDEBUG() << "ZStackDoc destroyed";
-}
-
-void ZStackDoc::endWorkThread()
-{
-  if (m_worker != NULL) {
-    m_worker->quit();
-    m_worker = NULL;
-  }
-  if (m_workThread != NULL) {
-    m_workThread->quit();
-    m_workThread->wait();
-    m_workThread = NULL;
-  }
-}
-
-void ZStackDoc::startWorkThread()
-{
-  if (m_workThread == NULL) {
-    m_worker = new ZWorker(ZWorker::MODE_SCHEDULE);
-    m_workThread = new ZWorkThread(m_worker);
-    connect(m_workThread, SIGNAL(finished()), m_workThread, SLOT(deleteLater()));
-    m_workThread->start();
-  }
 }
 
 void ZStackDoc::init()
@@ -253,8 +224,6 @@ void ZStackDoc::init()
 //  shortcut->setEnabled(false);
   connect(shortcut, SIGNAL(triggered()), this, SLOT(shortcutTest()));
 #endif
-
-//  startWorkThread();
 }
 
 void ZStackDoc::shortcutTest()
@@ -448,32 +417,6 @@ void ZStackDoc::notifyProgressAdvanced(double dp)
 void ZStackDoc::updateSwcNodeAction()
 {
   m_singleSwcNodeActionActivator.update(this);
-}
-
-void ZStackDoc::addTask(ZTask *task)
-{
-//  LDEBUG() << "Task added in thread: " << QThread::currentThreadId();
-  if (m_worker != NULL) {
-    if (task->getDelay() > 0) {
-      if (m_worker->getMode() == ZWorker::MODE_QUEUE) {
-        QTimer::singleShot(task->getDelay(), this, [=]() {
-          this->addTaskSlot(task);
-        });
-      } else {
-        addTaskSlot(task);
-      }
-    } else {
-      addTaskSlot(task);
-    }
-  }
-}
-
-void ZStackDoc::addTaskSlot(ZTask *task)
-{
-//  task->moveToThread(m_worker->thread());
-  if (m_worker != NULL) {
-    m_worker->addTask(task);
-  }
 }
 
 void ZStackDoc::autoSaveSwc()
@@ -816,56 +759,52 @@ void ZStackDoc::processDataBuffer()
 
   QList<ZStackObject*> selected;
   QList<ZStackObject*> deselected;
-  QMap<ZStackObject*, ZStackDocObjectUpdate::EAction> actionMap =
-      ZStackDocObjectUpdate::MakeActionMap(updateList);
+  ZStackDocObjectUpdate::MakeActionMap(updateList);
 
   beginObjectModifiedMode(OBJECT_MODIFIED_CACHE);
-//  for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
-//       iter != updateList.end(); ++iter) {
-  for (auto iter = actionMap.begin(); iter != actionMap.end(); ++iter) {
-//    ZStackDocObjectUpdate *u = *iter;
+  for (QList<ZStackDocObjectUpdate*>::iterator iter = updateList.begin();
+       iter != updateList.end(); ++iter) {
+    ZStackDocObjectUpdate *u = *iter;
 
 //    std::cout << "Doc update: ";
 //    u->print();
 
-    ZStackObject *obj = iter.key();
-    ZStackDocObjectUpdate::EAction action = iter.value();
-    if (obj != NULL) {
-      switch (action) {
+    if (u->getObject() != NULL) {
+      switch (u->getAction()) {
       case ZStackDocObjectUpdate::ACTION_ADD_NONUNIQUE:
-        addObject(obj, false);
+        addObject(u->getObject(), false);
         break;
       case ZStackDocObjectUpdate::ACTION_ADD_UNIQUE:
-        addObject(obj, true);
+        addObject(u->getObject(), true);
         break;
       case ZStackDocObjectUpdate::ACTION_EXPEL:
-        removeObject(obj, false);
+        removeObject(u->getObject(), false);
         break;
       case ZStackDocObjectUpdate::ACTION_ADD_BUFFER:
-        addBufferObject(obj);
+        addBufferObject(u->getObject());
         break;
       case ZStackDocObjectUpdate::ACTION_KILL:
-        killObject(obj);
+        killObject(u->getObject());
         break;
       case ZStackDocObjectUpdate::ACTION_RECYCLE:
-        recycleObject(obj);
+        recycleObject(u->getObject());
         break;
       case ZStackDocObjectUpdate::ACTION_UPDATE:
-        processObjectModified(obj);
+        processObjectModified(u->getObject());
         break;
       case ZStackDocObjectUpdate::ACTION_SELECT:
-        if (hasObject(obj)) {
-          if (!obj->isSelected()) {
-            setSelected(obj, true);
-            selected.append(obj);
+        if (hasObject(u->getObject())) {
+          if (!u->getObject()->isSelected()) {
+            setSelected(u->getObject(), true);
+            selected.append(u->getObject());
           }
         }
         break;
       case ZStackDocObjectUpdate::ACTION_DESELECT:
-        if (hasObject(obj)) {
-          if (obj->isSelected()) {
-            setSelected(obj, false);
-            deselected.append(obj);
+        if (hasObject(u->getObject())) {
+          if (u->getObject()->isSelected()) {
+            setSelected(u->getObject(), false);
+            deselected.append(u->getObject());
           }
         }
         break;
@@ -873,15 +812,9 @@ void ZStackDoc::processDataBuffer()
         break;
       }
     }
-//    u->reset();
-//    delete u;
-  }
-
-  foreach (ZStackDocObjectUpdate *u, updateList) {
     u->reset();
     delete u;
   }
-
   endObjectModifiedMode();
   processObjectModified();
 
@@ -4486,27 +4419,9 @@ void ZStackDoc::deselectAllObject(bool recursive)
   m_objectGroup.setSelected(false);
 }
 
-void ZStackDoc::deselectAllObject(ZStackObjectRole::TRole role)
-{
-  getObjectGroup().setSelected(role, false);
-  notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(),
-                         m_objectGroup.getSelector()->getDeselectedSet());
-}
-
 void ZStackDoc::deselectAllObject(ZStackObject::EType type)
 {
   ZOUT(LTRACE(), 5) << "Deselect all object";
-
-  if (type ==ZStackObject::TYPE_SWC_NODE) {
-    deselectAllSwcTreeNodes();
-  } else {
-    getObjectGroup().setSelected(type, false);
-  }
-
-  notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(),
-                         m_objectGroup.getSelector()->getDeselectedSet());
-
-#if 0
   switch (type) {
   case ZStackObject::TYPE_SWC_NODE:
     deselectAllSwcTreeNodes();
@@ -4554,7 +4469,6 @@ void ZStackDoc::deselectAllObject(ZStackObject::EType type)
     notifyDeselected(getSelectedObjectList<ZLocsegChain>(
                        ZStackObject::TYPE_LOCSEG_CHAIN));
   }
-#endif
 
 //  m_objectGroup.setSelected(false);
 }
@@ -4951,33 +4865,11 @@ void ZStackDoc::selectObject(ZStackObject *obj, bool appending)
     getObjectGroup().deselectAll();
 //    m_objectGroup.getSelector()->deselectAll();
   }
-  if (obj != NULL) {
-    m_objectGroup.setSelected(obj, true);
-  }
+  m_objectGroup.setSelected(obj, true);
 
 //  m_objectGroup.getSelector()->selectObject(obj);
   notifySelectionChanged(m_objectGroup.getSelector()->getSelectedSet(),
                          m_objectGroup.getSelector()->getDeselectedSet());
-}
-
-void ZStackDoc::selectObject(ZStackObject *obj, neutube::ESelectOption option)
-{
-  switch (option) {
-  case neutube::SELECT_ALONE:
-    getObjectGroup().deselectAll();
-    break;
-  case neutube::SELECT_ALONE_TYPE:
-    if (obj != NULL) {
-      getObjectGroup().setSelected(obj->getType(), false);
-    } else {
-      getObjectGroup().deselectAll();
-    }
-    break;
-  default:
-    break;
-  }
-
-  selectObject(obj, true);
 }
 
 bool ZStackDoc::hasSelectedObject() const
@@ -10128,11 +10020,6 @@ uint64_t ZStackDoc::getLabelId(int /*x*/, int /*y*/, int /*z*/)
   return 0;
 }
 
-uint64_t ZStackDoc::getSupervoxelId(int x, int y, int z)
-{
-  return getLabelId(x, y, z);
-}
-
 ZStack* ZStackDoc::getLabelField()
 {
   return const_cast<ZStack*>(
@@ -10281,10 +10168,6 @@ void ZStackDoc::ActiveViewObjectUpdater::update(const ZStackViewParam &param)
               m_doc->notifyUpdateLatency(labelSlice->getReadingTime());
             }
           }
-        }
-        ZTask *task = player->getFutureTask(m_doc.get());
-        if (task != NULL) {
-          m_doc->addTask(task);
         }
       }
     }
@@ -10450,19 +10333,6 @@ ZStackDocKeyProcessor* ZStackDoc::getKeyProcessor()
 void ZStackDoc::makeKeyProcessor()
 {
   m_keyProcessor = new ZStackDocKeyProcessor(this);
-}
-
-void ZStackDoc::diagnose() const
-{
-  QList<ZStackObject::EType> allTypes = getObjectGroup().getAllType();
-
-  foreach (const auto &type, allTypes) {
-    LDEBUG() << "#Objects of type" <<  ZStackObject::GetTypeName(type)
-             << ":" << getObjectList(type).size() << "; selected:"
-             << getSelected(type).size();
-  }
-
-//  LINFO() << "#Objects: " << getObjectGroup().getAllType()
 }
 
 

@@ -14,7 +14,6 @@
 #include "zdialogfactory.h"
 #include "zmessage.h"
 #include "zmessagemanager.h"
-#include "zobject3dscan.h"
 
 FlyEmBodyMergeProjectDialog::FlyEmBodyMergeProjectDialog(QWidget *parent) :
   FlyEmProjectDialog(parent),

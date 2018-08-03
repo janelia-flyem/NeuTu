@@ -163,8 +163,6 @@ ZInteractiveContext::EUniqueMode ZInteractiveContext::getUniqueMode() const
         mode = INTERACT_EXPLORE_LOCAL;
       } else if (exploreMode() == EXPLORE_EXTERNALLY) {
         mode = INTERACT_EXPLORE_EXTERNALLY;
-      } else if (exploreMode() == EXPLORE_DETAIL) {
-        mode = INTERACT_EXPLORE_DETAIL;
       }
     }
 

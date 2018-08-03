@@ -12,7 +12,6 @@
 #include "dvid/zdvidwriter.h"
 #include "zstackview.h"
 #include "flyem/zflyemsynapsedatafetcher.h"
-#include "geometry/zgeometry.h"
 
 ZDvidSynapseEnsemble::SynapseSlice
 ZDvidSynapseEnsemble::m_emptySlice(ZDvidSynapseEnsemble::STATUS_NULL);

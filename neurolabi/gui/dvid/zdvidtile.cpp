@@ -52,6 +52,13 @@ void ZDvidTile::loadDvidSlice(
     const uchar *buf, int length, int z, bool highContrast)
 {
   bool loading = true;
+  /*
+  if (m_view != NULL) {
+    if (m_view->getZ(neutube::COORD_STACK) != z) {
+      loading = false;
+    }
+  }
+  */
 
   bool modified = false;
   if (loading) {
@@ -169,6 +176,26 @@ void ZDvidTile::setImageData(const uint8_t *data, int width, int height)
 void ZDvidTile::loadDvidSlice(const QByteArray &buffer, int z, bool highConstrast)
 {
   loadDvidSlice((const uchar *) buffer.data(), buffer.length(), z, highConstrast);
+#if 0
+  bool loading = true;
+  if (m_view != NULL) {
+    if (m_view->getZ(NeuTube::COORD_STACK) != z) {
+      loading = false;
+    }
+  }
+  if (loading) {
+#ifdef _DEBUG_2
+      std::cout << z << " Loaded." << std::endl;
+#endif
+
+
+    m_image.loadFromData(buffer);
+//    m_image.enhanceContrast();
+
+//    m_image.setOffset();
+    m_z = z;
+  }
+#endif
 
 //  m_image.save((GET_TEST_DATA_DIR + "/test.tif").c_str());
 }

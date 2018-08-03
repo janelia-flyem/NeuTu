@@ -5,7 +5,6 @@
 #include "neutubeconfig.h"
 #include "zstackobjectgroup.h"
 #include "zobject3d.h"
-#include "zobject3dscan.h"
 #include "zswctree.h"
 
 #ifdef _USE_GTEST_
@@ -387,7 +386,7 @@ TEST(ZStackObjectGroup, Selection) {
   objectGroup.add(obj2, true);
   obj2->setSource("2");
 
-  objectGroup.resetSelector();
+  objectGroup.resetSelection();
   objectGroup.setSelected(obj, true);
   ASSERT_TRUE(objectGroup.getSelector()->isInSelectedSet(obj));
   ASSERT_FALSE(objectGroup.getSelector()->isInDeselectedSet(obj));
@@ -410,20 +409,6 @@ TEST(ZStackObjectGroup, Selection) {
   ASSERT_FALSE(objectGroup.getSelector()->isInDeselectedSet(obj));
   ASSERT_TRUE(objectGroup.getSelector()->isInSelectedSet(obj2));
 
-//  objectGroup.getSelector()->print();
-
-  objectGroup.deselectAll();
-  ZObject3dScan *obj3 = new ZObject3dScan;
-  obj3->setSource("3");
-  obj3->setRole(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR);
-  objectGroup.add(obj3, true);
-
-  objectGroup.setSelected(ZStackObjectRole::ROLE_3DGRAPH_DECORATOR, true);
-  ASSERT_EQ(true, obj3->isSelected());
-
-  ASSERT_EQ(1, objectGroup.getSelectedSet(ZStackObject::TYPE_OBJECT3D_SCAN).size());
-
-  objectGroup.resetSelector();
   objectGroup.getSelector()->print();
 }
 

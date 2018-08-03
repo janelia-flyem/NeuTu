@@ -172,10 +172,6 @@ public:
                           const ZIntCuboid &box, bool canonizing,
                           ZObject3dScan *result) const;
 
-  ZObject3dScan* readBody(uint64_t bodyId, flyem::EBodyLabelType labelType,
-                          int zoom, const ZIntCuboid &box, bool canonizing,
-                          ZObject3dScan *result) const;
-
   ZObject3dScan* readBodyWithPartition(uint64_t bodyId, ZObject3dScan *result) const;
   ZObject3dScan* readBodyWithPartition(
       uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *result) const;
@@ -204,19 +200,19 @@ public:
    * \brief Read meshes from a key-value instance whose values are tar archives of
    * Draco-compressed meshes
    */
-  struct archive *readMeshArchiveStart(uint64_t bodyId) const;
-  struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal) const;
-  ZMesh *readMeshArchiveNext(struct archive *arc) const;
-  ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead) const;
+  struct archive *readMeshArchiveStart(uint64_t bodyId);
+  struct archive *readMeshArchiveStart(uint64_t bodyId, size_t &bytesTotal);
+  ZMesh *readMeshArchiveNext(struct archive *arc);
+  ZMesh *readMeshArchiveNext(struct archive *arc, size_t &bytesJustRead);
 
   /*!
    * \brief An alternative to repeated calls to readMeshArchiveNext(), which uses
    * std::async and std::future to decompress the meshes in parallel.
    */
   void readMeshArchiveAsync(struct archive *arc, std::vector<ZMesh*>& results,
-                            const std::function<void(size_t, size_t)>& progress = {}) const;
+                            const std::function<void(size_t, size_t)>& progress = {});
 
-  void readMeshArchiveEnd(struct archive *arc) const;
+  void readMeshArchiveEnd(struct archive *arc);
 
   ZStack* readThumbnail(uint64_t bodyId);
 
@@ -318,19 +314,20 @@ public:
 
   ZArray* readLabels64Lowtis(
       int x0, int y0, int z0,
-      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+      int width, int height, int zoom, int cx, int cy) const;
 
   /*!
    * (\a x0, \a y0, \a z0) is the retrieval center.
    */
-  ZArray *readLabels64Lowtis(int x0, int y0, int z0, double vx1, double vy1, double vz1,
+  ZArray *readLabels64Lowtis(
+      int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
-      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+      int width, int height, int zoom, int cx, int cy) const;
   ZArray *readLabels64Lowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
-      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+      int width, int height, int zoom, int cx, int cy) const;
   ZArray *readLabels64Lowtis(
-      const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const;
+      const ZAffineRect &ar, int zoom, int cx, int cy) const;
 
 
   //Read grayscale data
@@ -338,7 +335,7 @@ public:
                               int width, int height, int zoom = 0) const;
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0,
-      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+      int width, int height, int zoom, int cx, int cy) const;
 
   /*!
    * (\a x0, \a y0, \a z0) is the retrieval center.
@@ -346,14 +343,14 @@ public:
   ZStack *readGrayScaleLowtis(
       int x0, int y0, int z0, double vx1, double vy1, double vz1,
       double vx2, double vy2, double vz2,
-      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+      int width, int height, int zoom, int cx, int cy) const;
 
   ZStack *readGrayScaleLowtis(
-      const ZAffineRect &ar, int zoom, int cx, int cy, bool centerCut) const;
+      const ZAffineRect &ar, int zoom, int cx, int cy) const;
 
   ZStack *readGrayScaleLowtis(
       const ZIntPoint &center, const ZPoint &v1, const ZPoint &v2,
-      int width, int height, int zoom, int cx, int cy, bool centerCut) const;
+      int width, int height, int zoom, int cx, int cy) const;
 #endif
   /*
   ZArray* readLabelSlice(const std::string &dataName, int x0, int y0, int z0,
@@ -372,8 +369,6 @@ public:
   bool hasSparseVolume(uint64_t bodyId) const;
   bool hasBodyInfo(uint64_t bodyId) const;
   bool hasBody(uint64_t bodyId) const;
-//  bool hasSupervoxel(uint64_t bodyId) const;
-  size_t readBodySize(uint64_t bodyId) const;
 
   bool hasGrayscale() const;
 
@@ -429,9 +424,6 @@ public:
   ZObject3dScan* readCoarseBody(uint64_t bodyId, ZObject3dScan *obj) const;
   ZObject3dScan* readCoarseBody(
       uint64_t bodyId, flyem::EBodyLabelType labelType, ZObject3dScan *obj) const;
-  ZObject3dScan* readCoarseBody(
-      uint64_t bodyId, flyem::EBodyLabelType labelType, const ZIntCuboid &box,
-      ZObject3dScan *obj) const;
 
   int readCoarseBodySize(uint64_t bodyId) const;
 

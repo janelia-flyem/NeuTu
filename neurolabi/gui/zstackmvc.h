@@ -5,7 +5,6 @@
 #include <QWidget>
 #include <QFrame>
 #include <QLayout>
-#include <QThread>
 
 #include "zsharedpointer.h"
 #include "neutube_def.h"

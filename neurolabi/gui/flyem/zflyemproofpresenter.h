@@ -130,7 +130,6 @@ public slots:
   void checkTodoItem();
   void uncheckTodoItem();
   void setTodoItemToNormal();
-  void setTodoItemIrrelevant();
   void setTodoItemToMerge();
   void setTodoItemToSplit();
   void selectBodyInRoi();

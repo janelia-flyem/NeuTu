@@ -75,7 +75,7 @@ void TaskBodyHistory::updateLevel(int level)
   Neu3Window::enableZoomToLoadedBody(false);
   m_bodyDoc->enableGarbageLifetimeLimit(false);
 
-  QSet<uint64_t> visible({ ZFlyEmBodyManager::encode(m_bodyId, level) });
+  QSet<uint64_t> visible({ ZFlyEmBody3dDoc::encode(m_bodyId, level) });
 
   updateBodies(visible, QSet<uint64_t>());
 }

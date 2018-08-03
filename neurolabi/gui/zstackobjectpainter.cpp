@@ -3,16 +3,12 @@
 
 ZStackObjectPainter::ZStackObjectPainter()
 {
+  init();
 }
 
-void ZStackObjectPainter::setDisplayStyle(ZStackObject::EDisplayStyle style)
+void ZStackObjectPainter::init()
 {
-  m_style = style;
-}
-
-void ZStackObjectPainter::setSliceAxis(neutube::EAxis sliceAxis)
-{
-  m_axis = sliceAxis;
+  m_painterConst = true;
 }
 
 void ZStackObjectPainter::paint(
@@ -30,10 +26,4 @@ void ZStackObjectPainter::paint(
       painter.restore();
     }
   }
-}
-
-void ZStackObjectPainter::paint(
-    const ZStackObject *obj, ZPainter &painter, int slice)
-{
-  paint(obj, painter, slice, m_style, m_axis);
 }

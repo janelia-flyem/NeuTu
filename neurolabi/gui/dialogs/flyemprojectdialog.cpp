@@ -3,7 +3,7 @@
 #include <QMenu>
 
 #include "mainwindow.h"
-#include "zdvidtargetproviderdialog.h"
+#include "zdviddialog.h"
 #include "zdialogfactory.h"
 #include "zstackframe.h"
 #include "zframefactory.h"
@@ -58,7 +58,7 @@ void FlyEmProjectDialog::showInfo(const QString &/*str*/, bool /*appending*/)
 
 }
 
-void FlyEmProjectDialog::setDvidDialog(ZDvidTargetProviderDialog *dvidDlg)
+void FlyEmProjectDialog::setDvidDialog(ZDvidDialog *dvidDlg)
 {
   m_dvidDlg = dvidDlg;
 }

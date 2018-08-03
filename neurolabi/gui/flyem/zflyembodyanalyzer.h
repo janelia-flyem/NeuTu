@@ -2,8 +2,7 @@
 #define ZFLYEMBODYANALYZER_H
 
 #include "zpointarray.h"
-
-class ZObject3dScan;
+#include "zobject3dscan.h"
 
 class ZFlyEmBodyAnalyzer
 {

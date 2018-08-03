@@ -337,8 +337,6 @@ public:
   std::vector<ZPoint> intersectLineSeg(
       const ZPoint &start, const ZPoint &end) const;
 
-  void append(const ZMesh &mesh);
-
 private:
   enum class BooleanOperationType
   {

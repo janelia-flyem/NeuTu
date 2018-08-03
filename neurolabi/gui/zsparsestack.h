@@ -3,11 +3,11 @@
 
 #include <iostream>
 
+#include "zobject3dscan.h"
 #include "bigdata/zstackblockgrid.h"
 #include "zuncopyable.h"
 
 class ZIntCuboid;
-class ZObject3dScan;
 
 /*!
  * \brief Sparse stack representation

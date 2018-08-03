@@ -10,7 +10,6 @@
 #include "neutubeconfig.h"
 #include "c_stack.h"
 #include "zstack.hxx"
-#include "zobject3dscan.h"
 
 ZDvidSparseStack::ZDvidSparseStack()
 {

@@ -6,7 +6,6 @@
 #include <QVector>
 #include <QPointer>
 #include "dialogs/zdviddialog.h"
-#include "dialogs/zdvidtargetproviderdialog.h"
 #include "dialogs/dvidimagedialog.h"
 #include "dialogs/zspinboxdialog.h"
 #include "zparameter.h"
@@ -27,17 +26,11 @@ public:
   ZDialogFactory(QWidget *parentWidget);
   ~ZDialogFactory();
 
-  enum ZDvidDialogType {
-      DEFAULT,
-      ORIGINAL,
-      BRANCH_BROWSER
-  };
-
-  static ZDvidTargetProviderDialog* makeDvidDialog(QWidget *parent = 0, ZDvidDialogType type = DEFAULT);
+  static ZDvidDialog* makeDvidDialog(QWidget *parent = 0);
   static QDialog* makeTestDialog(QWidget *parent = 0);
   static QDialog* makeStackDialog(QWidget *parent = 0);
   static DvidImageDialog *makeDvidImageDialog(
-      ZDvidTargetProviderDialog *dvidDlg, QWidget *parent = 0);
+      ZDvidDialog *dvidDlg, QWidget *parent = 0);
   static ZSpinBoxDialog *makeSpinBoxDialog(QWidget *parent = 0);
   static ZSpinBoxGroupDialog *makeDownsampleDialog(QWidget *parent);
   static QDialog* makeParameterDialog(
@@ -60,7 +53,6 @@ public:
   static void PromptMessage(const ZWidgetMessage &msg, QWidget *parent);
 
 private:
-
   QWidget *m_parentWidget;
   static QString m_currentOpenFileName;
   static QString m_currentSaveFileName;

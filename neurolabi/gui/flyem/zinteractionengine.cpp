@@ -85,8 +85,7 @@ void ZInteractionEngine::processMouseMoveEvent(QMouseEvent *event)
     m_rayMarker.set(event->x(), event->y());
     emit decorationUpdated();
   } else if (m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_LOCAL ||
-             m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_EXTERNALLY ||
-             m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_DETAIL) {
+             m_interactiveContext.exploreMode() == ZInteractiveContext::EXPLORE_EXTERNALLY) {
     m_exploreMarker.setCenter(event->x(), event->y(), 0);
     emit decorationUpdated();
   }
@@ -120,17 +119,10 @@ bool ZInteractionEngine::processMouseReleaseEvent(
         emit shootingTodo(event->x(), event->y());
         processed = true;
       } else if (isStateOn(STATE_LOCATE)) {
-        if (event->modifiers() == Qt::NoModifier) {
-          emit locating(event->x(), event->y());
-        } else if (event->modifiers() == Qt::ShiftModifier) {
-          emit showingDetail(event->x(), event->y());
-        }
+        emit locating(event->x(), event->y());
         processed = true;
       } else if (isStateOn(STATE_BROWSE)) {
         emit browsing(event->x(), event->y());
-        processed = true;
-      } else if (isStateOn(STATE_SHOW_DETAIL)) {
-        emit showingDetail(event->x(), event->y());
         processed = true;
       }
     }
@@ -436,8 +428,6 @@ void ZInteractionEngine::enterLocateMode()
   exitEditMode();
   m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_LOCAL);
   m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
-  m_exploreMarker.setColor(Qt::red);
-  m_exploreMarker.setVisualEffect(neutube::display::Sphere::VE_DOT_CENTER);
   m_exploreMarker.setVisible(true);
   emit decorationUpdated();
 }
@@ -452,29 +442,11 @@ void ZInteractionEngine::enterBrowseMode()
   exitEditMode();
   m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_EXTERNALLY);
   m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
-  m_exploreMarker.setColor(Qt::blue);
-  m_exploreMarker.setVisualEffect(
-        neutube::display::Sphere::VE_RECTANGLE_SHAPE |
-        neutube::display::Sphere::VE_CROSS_CENTER);
-  m_exploreMarker.setVisible(true);
-  emit decorationUpdated();
-}
-
-void ZInteractionEngine::enterDetailMode()
-{
-  exitEditMode();
-  m_interactiveContext.setExploreMode(ZInteractiveContext::EXPLORE_DETAIL);
-  m_exploreMarker.setCenter(m_mouseMovePosition[0], m_mouseMovePosition[1], 0);
   m_exploreMarker.setVisible(true);
   emit decorationUpdated();
 }
 
 void ZInteractionEngine::exitBrowseMode()
-{
-  exitExplore();
-}
-
-void ZInteractionEngine::exitDetailMode()
 {
   exitExplore();
 }
@@ -622,9 +594,6 @@ bool ZInteractionEngine::isStateOn(EState status) const
   case STATE_BROWSE:
     return m_interactiveContext.exploreMode() ==
         ZInteractiveContext::EXPLORE_EXTERNALLY;
-  case STATE_SHOW_DETAIL:
-    return m_interactiveContext.exploreMode() ==
-        ZInteractiveContext::EXPLORE_DETAIL;
   }
 
   return false;

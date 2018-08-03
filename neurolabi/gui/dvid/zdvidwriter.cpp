@@ -29,7 +29,6 @@
 #include "zdvidutil.h"
 #include "dvid/zdvidpath.h"
 #include "zmesh.h"
-#include "zobject3dscan.h"
 
 ZDvidWriter::ZDvidWriter(/*QObject *parent*/)   /*:
 QObject(parent)*/

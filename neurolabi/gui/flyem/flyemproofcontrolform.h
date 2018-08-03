@@ -40,7 +40,6 @@ signals:
   void coarseBodyViewTriggered();
   void skeletonViewTriggered();
   void meshViewTriggered();
-  void coarseMeshViewTriggered();
   void bodyViewTriggered();
   void savingMerge();
   void committingMerge();

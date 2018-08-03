@@ -51,13 +51,9 @@ public:
 
   void join(const ZIntCuboid &cuboid);
 
-public:
-  //For display settings
-  void setGridInterval(int intv);
 
 public:
   ZIntCuboid m_cuboid;
-  int m_gridIntv = 32;
 };
 
 #endif // ZINTCUBOIDOBJ_H

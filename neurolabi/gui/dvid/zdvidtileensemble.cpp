@@ -183,7 +183,7 @@ void ZDvidTileEnsemble::updateTile(libdvid::Slice2D slice,
   task->setData(dataPtr->get_raw(), dataPtr->length());
   task->setHighContrast(m_highContrast);
   task->execute();
-//  delete task;
+  delete task;
 }
 #endif
 
@@ -350,8 +350,11 @@ bool ZDvidTileEnsemble::update(
 
       if (m_dataFetcher != NULL && getDvidTarget().isTileLowQuality()) {
         QRect highresViewPort = getHelper()->getViewPort();
+//        QRect highresViewPort =
+//            m_view->getViewParameter(neutube::COORD_STACK).getViewPort();
         if (highresViewPort.width() < 1024 || highresViewPort.height() < 1024) {
           int z = getHelper()->getZ();
+//          int z = m_view->getZ(neutube::COORD_STACK);
           QPoint center = highresViewPort.center();
           int width = 512;
           int height = 512;
@@ -481,15 +484,24 @@ void ZDvidTileEnsemble::display(
     }
   }
 
-  for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
-       iter != tileIndices.end(); ++iter) {
-    const ZDvidTileInfo::TIndex &index = *iter;
-    ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
-    if (tile != NULL) {
-      //      tile->enhanceContrast(m_highContrast, true);
-      tile->display(painter, slice, option, sliceAxis);
+  /*
+  QRect highresViewPort =
+      m_view->getViewParameter(NeuTube::COORD_STACK).getViewPort();
+      */
+//  if (highresViewPort.width() > 256 || highresViewPort.height() > 256) {
+//    const_cast<ZDvidTileEnsemble&>(*this).update(
+//          tileIndices, resLevel, painter.getZ(slice));
+    //  const_cast<ZDvidTileEnsemble&>(*this).updateContrast();
+
+    for (std::vector<ZDvidTileInfo::TIndex>::const_iterator iter = tileIndices.begin();
+         iter != tileIndices.end(); ++iter) {
+      const ZDvidTileInfo::TIndex &index = *iter;
+      ZDvidTile *tile = const_cast<ZDvidTileEnsemble*>(this)->getTile(resLevel, index);
+      if (tile != NULL) {
+        //      tile->enhanceContrast(m_highContrast, true);
+        tile->display(painter, slice, option, sliceAxis);
+      }
     }
-  }
 //  } else {
 #if 0
   if (highresViewPort.width() < 512 || highresViewPort.height() < 512) {

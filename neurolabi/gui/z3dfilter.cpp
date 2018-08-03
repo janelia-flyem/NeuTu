@@ -27,7 +27,7 @@
 #include "zparameter.h"
 #include "z3drenderport.h"
 #include "zvertexarrayobject.h"
-//#include "z3dview.h"
+#include "z3dview.h"
 
 Z3DFilter::Z3DFilter(QObject* parent)
   : QObject(parent)
@@ -333,15 +333,4 @@ void Z3DFilter::updateSize()
   }
 
   invalidate();
-}
-
-void Z3DFilter::recordMousePosition(QMouseEvent *e)
-{
-  m_mouseX = e->x();
-  m_mouseY = e->y();
-}
-
-bool Z3DFilter::stayingMouse(QMouseEvent *e) const
-{
-  return std::abs(e->x() - m_mouseX) < 2 && std::abs(e->y() - m_mouseY) < 2;
 }

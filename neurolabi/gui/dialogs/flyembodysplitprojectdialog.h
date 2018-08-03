@@ -10,7 +10,7 @@
 class MainWindow;
 class ZFlyEmNewBodySplitProjectDialog;
 class QProgressDialog;
-class ZDvidTargetProviderDialog;
+class ZDvidDialog;
 class QMenu;
 class QAction;
 class ZMessage;
@@ -161,7 +161,7 @@ private:
   ZFlyEmBodySplitProject m_project;
   ZFlyEmBookmarkListModel m_bookmarkList;
   QGraphicsScene *m_sideViewScene;
-  ZDvidTargetProviderDialog *m_dvidDlg;
+  ZDvidDialog *m_dvidDlg;
   QMenu *m_mainMenu;
   QAction *m_showBodyMaskAction;
 

@@ -84,17 +84,6 @@ bool ZIntPoint::definiteLessThan(const ZIntPoint &pt) const
   return false;
 }
 
-bool ZIntPoint::definitePositive() const
-{
-  return getX() > 0 && getY() > 0 && getZ() > 0;
-}
-
-bool ZIntPoint::semiDefinitePositive() const
-{
-  return (getX() > 0 || getY() > 0 || getZ() > 0) &&
-      (getX() >= 0 && getY() >= 0 && getZ() >= 0);
-}
-
 bool ZIntPoint::operator < (const ZIntPoint &pt) const
 {
   if (getZ() < pt.getZ()) {
@@ -302,23 +291,6 @@ ZIntPoint& ZIntPoint::operator /=(const ZIntPoint &pt)
   m_x /= pt.m_x;
   m_y /= pt.m_y;
   m_z /= pt.m_z;
-
-  return *this;
-}
-
-ZIntPoint& ZIntPoint::operator /=(int v)
-{
-  if (v == 0) {
-    invalidate();
-  }
-
-  if (!isValid()) {
-    return *this;
-  }
-
-  m_x /= v;
-  m_y /= v;
-  m_z /= v;
 
   return *this;
 }

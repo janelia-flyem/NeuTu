@@ -97,8 +97,7 @@ void ProtocolSwitcher::openProtocolDialogRequested() {
     } else {
         // PROTOCOL_INACTIVE: show the protocol chooser; tell it
         //  to display saved keys for this user
-        emit requestDisplaySavedProtocols(
-            getUserProtocolKeys(QString::fromStdString(neutube::GetCurrentUserName()), false));
+        emit requestDisplaySavedProtocols(getUserProtocolKeys(QString::fromStdString(neutube::GetCurrentUserName()), false));
 
         m_chooser->show();
         m_chooser->raise();
@@ -117,9 +116,6 @@ void ProtocolSwitcher::exitProtocolRequested() {
 
     // hide now, delete later
     m_activeProtocol->hide();
-
-    //Emit empty range to clear range glyph
-    emit rangeChanged(ZIntPoint(0, 0, 0), ZIntPoint(-1, -1, -1));
 }
 
 void ProtocolSwitcher::completeProtocolRequested() {
@@ -214,10 +210,8 @@ void ProtocolSwitcher::startProtocolRequested(QString protocolName) {
     instantiateProtocol(protocolName);
     if (m_activeProtocol == NULL) {
         // instantiation failed!
-        QMessageBox::warning(
-              m_parent, "Protocol not started!",
-              "The protocol could not be started!  Please report this error.",
-              QMessageBox::Ok);
+        QMessageBox::warning(m_parent, "Protocol not started!",
+            "The protocol could not be started!  Please report this error.", QMessageBox::Ok);
         m_protocolStatus = PROTOCOL_INACTIVE;
         return;
     }
@@ -346,19 +340,16 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
     if (protocolName == "doNthings") {
         m_activeProtocol = new DoNThingsProtocol(m_parent);
     } else if (protocolName == "synapse_prediction_region") {
-        m_activeProtocol = new SynapsePredictionProtocol(
-              m_parent, SynapsePredictionProtocol::VARIATION_REGION);
+        m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else if (protocolName == "synapse_prediction_body") {
-        m_activeProtocol = new SynapsePredictionProtocol(
-              m_parent, SynapsePredictionProtocol::VARIATION_BODY);
+        m_activeProtocol = new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_BODY);
     // implemented, basically works, but never used
     // } else if (protocolName == "synapse_review") {
     //     m_activeProtocol = new SynapseReviewProtocol(m_parent);
     // below here: old protocols (renamed, deleted, etc.)
     // old synapse_prediction is always region:
     } else if (protocolName == "synapse_prediction") {
-        m_activeProtocol =new SynapsePredictionProtocol(
-              m_parent, SynapsePredictionProtocol::VARIATION_REGION);
+        m_activeProtocol =new SynapsePredictionProtocol(m_parent, SynapsePredictionProtocol::VARIATION_REGION);
     } else {
         // should never happen; the null will cause errors later
         m_activeProtocol = NULL;
@@ -366,8 +357,6 @@ void ProtocolSwitcher::instantiateProtocol(QString protocolName) {
 
     if (m_activeProtocol != NULL) {
       m_activeProtocol->setDvidTarget(m_currentDvidTarget);
-      connect(m_activeProtocol, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)),
-              this, SIGNAL(rangeChanged(ZIntPoint,ZIntPoint)));
     }
 }
 

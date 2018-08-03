@@ -8,7 +8,7 @@ namespace Ui {
 class ZDvidBodyPositionDialog;
 }
 
-class ZDvidTargetProviderDialog;
+class ZDvidDialog;
 
 class ZDvidBodyPositionDialog : public QDialog
 {
@@ -18,7 +18,7 @@ public:
   explicit ZDvidBodyPositionDialog(QWidget *parent = 0);
   ~ZDvidBodyPositionDialog();
 
-  void setDvidDialog(ZDvidTargetProviderDialog *dlg);
+  void setDvidDialog(ZDvidDialog *dlg);
 
 private slots:
   void loadInputFile();
@@ -28,7 +28,7 @@ private slots:
 private:
   Ui::ZDvidBodyPositionDialog *ui;
 
-  ZDvidTargetProviderDialog *m_dvidDlg;
+  ZDvidDialog *m_dvidDlg;
 };
 
 #endif // ZDVIDBODYPOSITIONDIALOG_H

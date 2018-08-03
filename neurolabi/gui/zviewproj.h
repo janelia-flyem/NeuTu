@@ -27,8 +27,6 @@ public:
   void setX0(int x);
   void setY0(int y);
 
-  void alignOffset(int downresRatio);
-
   QRect getCanvasRect() const;
   QRect getWidgetRect() const;
   QPoint getOffset() const;
@@ -80,10 +78,7 @@ public:
   void decreaseZoom();
 
   void setViewPort(const QRect &rect);
-//  void setNullViewPort();
-  void openViewPort();
-  void closeViewPort();
-//  void setViewPortWithZoomFixed(const QRect &rect);
+  void setViewPortWithZoomFixed(const QRect &rect);
 
   /*!
    * \brief Cache a viewport for future setting
@@ -93,7 +88,7 @@ public:
   /*!
    * \brief Store the current viewport into the buffer
    */
-//  void backupViewPort();
+  void backupViewPort();
 
   void zoomTo(int x, int y, int width);
   void zoomTo(const QPoint &pt, int width);
@@ -133,7 +128,6 @@ private:
   int m_x0;
   int m_y0;
   double m_zoom; //the ratio from view to projection: p/v
-  double m_zoomBackup = 0; //for viewport closing and opening
   QRect m_canvasRect;
   QRect m_widgetRect;
 

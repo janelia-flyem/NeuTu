@@ -1,56 +1,22 @@
 #include "ztask.h"
 #include <iostream>
-#include <QTimer>
 
-#include "QsLog.h"
-
-ZTask::ZTask(QObject *parent) : QObject(parent)
-{
+ZTask::ZTask(QObject *parent) : QObject(parent) {
   setAutoDelete(false);
-  if (parent == nullptr) {
-    connect(this, &ZTask::finished, this, &ZTask::deleteLater);
-    connect(this, &ZTask::aborted, this, &ZTask::deleteLater);
-//    connect(this, &ZTask::finished, this, &ZTask::slotTest);
-  }
 }
 
 ZTask::~ZTask()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "ZTask destroyed." << std::endl;
 #endif
 }
 
 void ZTask::run()
 {
-  executeSlot();
-}
-
-void ZTask::abort()
-{
-  emit aborted();
-}
-
-void ZTask::executeSlot()
-{
   execute();
 
   emit finished();
-}
-
-void ZTask::setDelay(int delay)
-{
-  m_delay = delay;
-}
-
-int ZTask::getDelay() const
-{
-  return m_delay;
-}
-
-void ZTask::slotTest()
-{
-  LDEBUG() << "slot test";
 }
 
 /////////////Moc class for testing//////////////

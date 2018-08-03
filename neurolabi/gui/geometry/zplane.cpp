@@ -1,14 +1,8 @@
 #include "zplane.h"
-#include <cmath>
 
 ZPlane::ZPlane()
 {
 
-}
-
-ZPlane::ZPlane(const ZPoint &v1, const ZPoint &v2)
-{
-  set(v1, v2);
 }
 
 ZPoint ZPlane::getV1() const
@@ -25,77 +19,9 @@ void ZPlane::set(const ZPoint &v1, const ZPoint &v2)
 {
   m_v1 = v1;
   m_v2 = v2;
-
-  if (m_v1.isApproxOrigin() && m_v2.isApproxOrigin()) {
-    m_v1.set(1, 0, 0);
-    m_v2.set(0, 1, 0);
-  } else if (m_v1.isApproxOrigin() || m_v2.isApproxOrigin() ||
-             m_v1.isParallelTo(m_v2)) {
-    double z = 1.0;
-    if (m_v1.isApproxOrigin()) {
-      m_v2.normalize();
-      z = m_v2.getZ();
-    } else {
-      m_v1.normalize();
-      z = m_v1.getZ();
-    }
-
-    if ((z > 1.0) || (std::fabs(z - 1.0) < ZPoint::MIN_DIST)) {
-      //Make sure the value is valid
-      z = 1.0;
-    }
-    double cosTheta = (z == 1.0) ? 0.0 : std::sqrt(1 - z * z);
-
-    if (m_v1.isApproxOrigin()) {
-      double sinPsi = (z == 1.0) ? 0.0 : -m_v2.getX() / cosTheta;
-      double cosPsi = (z == 1.0) ? 1.0 : m_v2.getY() / cosTheta;
-      m_v1.set(cosPsi, sinPsi, 0);
-    } else {
-      //    double sinTheta = -z;
-      double sinPsi = (z == 1.0) ? 0.0 : m_v1.getY() / cosTheta;
-      double cosPsi = (z == 1.0) ? 1.0 : m_v1.getX() / cosTheta;
-
-      //Compute v2 based on rotation of (0, 1, 0)
-      m_v2.set(-sinPsi, cosPsi, 0);
-    }
-  } else {
-    m_v1.normalize();
-    m_v2.normalize();
-    if (!m_v1.isPendicularTo(m_v2)) {
-      ZPoint normal = m_v1.cross(m_v2);
-      m_v2 = normal.cross(m_v1);
-      m_v2.normalize();
-    }
-  }
 }
 
 ZPoint ZPlane::getNormal() const
 {
   return getV1().cross(getV2());
-}
-
-bool ZPlane::isValid() const
-{
-  return m_v1.isUnitVector() && m_v2.isUnitVector() && m_v1.isPendicularTo(m_v2);
-}
-
-bool ZPlane::onSamePlane(const ZPlane &p) const
-{
-  if (isValid() && p.isValid()) {
-    ZPoint normal = p.getNormal();
-    if (normal.isPendicularTo(m_v1) && normal.isPendicularTo(m_v2)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool ZPlane::contains(const ZPoint &pt) const
-{
-  if (pt.isApproxOrigin()) {
-    return true;
-  }
-
-  return getNormal().isPendicularTo(pt);
 }

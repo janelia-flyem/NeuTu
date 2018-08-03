@@ -25,7 +25,7 @@ public:
 
 private:
   static ZDvidReader* ParseInputPath(
-      const std::string &inputPath, ZJsonObject &inputJson,
+      const std::string inputPath, ZJsonObject &inputJson,
       std::string &splitTaskKey, std::string &splitResultKey,
       std::string &dataDir, bool &isFile);
   static void LoadSeeds(

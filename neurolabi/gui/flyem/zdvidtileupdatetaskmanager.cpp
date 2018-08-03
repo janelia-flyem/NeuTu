@@ -1,7 +1,6 @@
 #include "zdvidtileupdatetaskmanager.h"
 #include "dvid/zdvidtile.h"
 
-#if 0
 ZDvidTileUpdateTask::ZDvidTileUpdateTask(QObject *parent, ZDvidTile *tile) :
   ZTask(parent), m_tile(tile), m_z(0)
 {
@@ -14,7 +13,6 @@ void ZDvidTileUpdateTask::execute()
     m_tile->update(m_z);
   }
 }
-#endif
 //////////////////////////////////////
 ZDvidTileDecodeTask::ZDvidTileDecodeTask(QObject *parent, ZDvidTile *tile) :
   ZTask(parent), m_tile(tile), m_z(0)

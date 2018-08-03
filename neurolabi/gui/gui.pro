@@ -11,12 +11,12 @@ contains(TEMPLATE, app) {
 
 contains(CONFIG, neu3) {
   DEFINES += _NEU3_
+  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
 
 contains(CONFIG, neu3) | contains(CONFIG, flyem) {
   CONFIG *=c++11
   DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
-  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 }
 
 CONFIG += object_parallel_to_source
@@ -256,7 +256,8 @@ unix {
         DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
         LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
-
+#        LIBS += /usr/lib/x86_64-linux-gnu/libGL.so.1.0.0
+#        LIBS += -L/usr/lib/x86_64-linux-gnu
         message(Checking arch...)
         contains(QMAKE_HOST.arch, x86_64) {
             message($$QMAKE_HOST.arch)
@@ -515,7 +516,6 @@ HEADERS += mainwindow.h \
     dvid/zdvidreader.h \
     dialogs/flyembodyiddialog.h \
     dialogs/zdviddialog.h \
-    dialogs/zdvidtargetproviderdialog.h \
     dialogs/flyembodyfilterdialog.h \
     flyem/zskeletonizeservice.h \
     zflyemdvidreader.h \
@@ -820,7 +820,6 @@ HEADERS += mainwindow.h \
     widgets/taskprotocolwindow.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
-    dialogs/dvidbranchdialog.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
     protocols/bodyprefetchqueue.h \
@@ -868,6 +867,8 @@ HEADERS += mainwindow.h \
     flyem/zflyemproofmvccontroller.h \
     flyem/zmainwindowcontroller.h \
     zstackdocnullmenufactory.h \
+    mvc/zstackspaceconfig.h \
+    mvc/zviewspaceconfig.h \
     mvc/zpositionmapper.h \
     data3d/zstackobjecthelper.h \
     data3d/utilities.h \
@@ -875,24 +876,10 @@ HEADERS += mainwindow.h \
     core/qthelper.h \
     flyem/zflyemtododelegate.h \
     zmenuconfig.h \
-    protocols/taskbodymerge.h \
-    flyem/zflyembodyidcolorscheme.h \
     zobjsmodelmanager.h \
     zobjsmodelfactory.h \
     flyem/zglobaldvidrepo.h \
-    flyem/flyemdef.h \
-    concurrent/zworkthread.h \
-    concurrent/zworker.h \
-    concurrent/ztaskqueue.h \
-    flyem/zflyemroutinechecktask.h \
-    flyem/zdvidlabelslicehighrestask.h \
-    flyem/zdvidgrayslicehighrestask.h \
-    flyem/zdviddataslicetask.h \
-    dvid/zdvidbodyhelper.h \
-    flyem/zflyembodyevent.h \
-    flyem/zflyembodyconfig.h \
-    flyem/zflyembodymanager.h \
-    z3dwindowcontroller.h
+    flyem/flyemdef.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -999,7 +986,6 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zbodylistwidget.ui \
     widgets/flyembodyinfowidget.ui \
     neu3window.ui \
-    dialogs/dvidbranchdialog.ui \
     widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \
     dialogs/zflyemproofsettingdialog.ui \
@@ -1197,7 +1183,6 @@ SOURCES += main.cpp \
     dvid/zdvidreader.cpp \
     dialogs/flyembodyiddialog.cpp \
     dialogs/zdviddialog.cpp \
-    dialogs/zdvidtargetproviderdialog.cpp \
     dialogs/flyembodyfilterdialog.cpp \
     flyem/zskeletonizeservice.cpp \
     zflyemdvidreader.cpp \
@@ -1497,7 +1482,6 @@ SOURCES += main.cpp \
     widgets/taskprotocolwindow.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
-    dialogs/dvidbranchdialog.cpp \
     protocols/tasktesttask.cpp \
     protocols/tasksplitseeds.cpp \
     protocols/bodyprefetchqueue.cpp \
@@ -1545,6 +1529,8 @@ SOURCES += main.cpp \
     flyem/zflyemproofmvccontroller.cpp \
     flyem/zmainwindowcontroller.cpp \
     zstackdocnullmenufactory.cpp \
+    mvc/zstackspaceconfig.cpp \
+    mvc/zviewspaceconfig.cpp \
     mvc/zpositionmapper.cpp \
     data3d/zstackobjecthelper.cpp \
     data3d/utilities.cpp \
@@ -1552,23 +1538,9 @@ SOURCES += main.cpp \
     core/qthelper.cpp \
     flyem/zflyemtododelegate.cpp \
     zmenuconfig.cpp \
-    protocols/taskbodymerge.cpp \
-    flyem/zflyembodyidcolorscheme.cpp \
     zobjsmodelmanager.cpp \
     zobjsmodelfactory.cpp \
-    flyem/zglobaldvidrepo.cpp \
-    concurrent/zworkthread.cpp \
-    concurrent/zworker.cpp \
-    concurrent/ztaskqueue.cpp \
-    flyem/zflyemroutinechecktask.cpp \
-    flyem/zdvidlabelslicehighrestask.cpp \
-    flyem/zdvidgrayslicehighrestask.cpp \
-    flyem/zdviddataslicetask.cpp \
-    dvid/zdvidbodyhelper.cpp \
-    flyem/zflyembodyevent.cpp \
-    flyem/zflyembodyconfig.cpp \
-    flyem/zflyembodymanager.cpp \
-    z3dwindowcontroller.cpp
+    flyem/zglobaldvidrepo.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

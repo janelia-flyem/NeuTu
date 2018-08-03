@@ -159,26 +159,6 @@ void ZStackObjectGroup::setSelectedUnsync(bool selected)
   }
 }
 
-void ZStackObjectGroup::setSelected(
-    TStackObjectList &objList, TStackObjectSet &selectedSet, bool selected)
-{
-  for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
-       ++iter) {
-    ZStackObject *obj = *iter;
-    if (obj->isSelected() != selected) {
-      getSelector()->setSelection(obj, selected);
-      //obj->setSelected(selected);
-      if (selected) {
-        selectedSet.insert(obj);
-      }
-    }
-  }
-
-  if (!selected) {
-    selectedSet.clear();
-  }
-}
-
 void ZStackObjectGroup::setSelectedUnsync(ZStackObject::EType type, bool selected)
 {
   ZOUT(LTRACE(), 6) << "Select object by type";
@@ -186,9 +166,6 @@ void ZStackObjectGroup::setSelectedUnsync(ZStackObject::EType type, bool selecte
   TStackObjectList &objList = getObjectListUnsync(type);
   TStackObjectSet &selectedSet = getSelectedSetUnsync(type);
 
-  setSelected(objList, selectedSet, selected);
-
-  /*
   for (TStackObjectList::iterator iter = objList.begin(); iter != objList.end();
        ++iter) {
     ZStackObject *obj = *iter;
@@ -203,38 +180,6 @@ void ZStackObjectGroup::setSelectedUnsync(ZStackObject::EType type, bool selecte
 
   if (!selected) {
     selectedSet.clear();
-  }
-  */
-}
-
-/*
-const TStackObjectSet& ZStackObjectGroup::getSelectedSet(
-    ZStackObject::EType type) const
-{
-  return dynamic_cast<const TStackObjectSet&>(
-        const_cast<ZStackObjectGroup&>(*this).getSelectedSet(type));
-}
-*/
-
-void ZStackObjectGroup::setSelectedUnsync(
-    ZStackObjectRole::TRole role, bool selected)
-{
-  ZOUT(LTRACE(), 6) << "Select object by role";
-
-  QList<ZStackObject*> objList = getObjectListUnsync(role);
-  for (ZStackObject *obj : objList) {
-    if (obj->isSelected() != selected) {
-      setSelected(obj, selected);
-//      getSelector()->setSelection(obj, selected);
-    }
-    /*
-    TStackObjectSet &selectedSet = getSelectedSetUnsync(obj->getType());
-    if (selected) {
-      selectedSet.insert(obj);
-    } else {
-      selectedSet.remove(obj);
-    }
-    */
   }
 }
 
@@ -243,13 +188,6 @@ void ZStackObjectGroup::setSelected(ZStackObject::EType type, bool selected)
   QMutexLocker locker(&m_mutex);
 
   setSelectedUnsync(type, selected);
-}
-
-void ZStackObjectGroup::setSelected(ZStackObjectRole::TRole role, bool selected)
-{
-  QMutexLocker locker(&m_mutex);
-
-  setSelectedUnsync(role, selected);
 }
 
 void ZStackObjectGroup::deselectAll()
@@ -1119,7 +1057,7 @@ TStackObjectList ZStackObjectGroup::getObjectList(
   return getObjectListUnsync(type, testFunc);
 }
 
-void ZStackObjectGroup::resetSelector()
+void ZStackObjectGroup::resetSelection()
 {
   m_selector.reset();
 }

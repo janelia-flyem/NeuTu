@@ -8,7 +8,7 @@ namespace Ui {
 class DvidImageDialog;
 }
 
-class ZDvidTargetProviderDialog;
+class ZDvidDialog;
 class ZSpinBoxDialog;
 
 class DvidImageDialog : public QDialog
@@ -27,7 +27,7 @@ public:
   int getDepth() const;
   //QString getAddress() const;
   void setAddress(const QString address);
-  void setDvidDialog(ZDvidTargetProviderDialog *dlg);
+  void setDvidDialog(ZDvidDialog *dlg);
   inline const ZDvidTarget& getDvidTarget() {
     return m_dvidTarget;
   }
@@ -41,7 +41,7 @@ private:
 
 private:
   Ui::DvidImageDialog *ui;
-  ZDvidTargetProviderDialog *m_dvidDlg;
+  ZDvidDialog *m_dvidDlg;
   ZDvidTarget m_dvidTarget;
   ZSpinBoxDialog *m_singlePlaneDialog;
 };
