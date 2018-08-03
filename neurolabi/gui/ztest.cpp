@@ -27384,9 +27384,14 @@ void ZTest::test(MainWindow *host)
 #endif
 
 #if 1
-  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
-  ZJsonArray statusJson = reader->readBodyStatusList();
-  std::cout << statusJson.dumpString(2) << std::endl;
+//  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test_merge");
+//  ZJsonArray statusJson = reader->readBodyStatusList();
+//  std::cout << statusJson.dumpString(2) << std::endl;
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test_merge");
+  writer->mergeBody(writer->getDvidTarget().getSegmentationName(),
+                    std::vector<uint64_t>({770606927, 1537922823, 1537931903, 5813022814, 1538600496, 1537927379, 1567960688, 1882009576}), true);
+
 #endif
 
   std::cout << "Done." << std::endl;
