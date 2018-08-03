@@ -587,7 +587,7 @@ void FlyEmBodyInfoDialog::importBodiesDvid()
       QStringList keyList = reader.readKeys(bodyAnnotationName);
 
       //Skip for debugging
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
       keyList.clear();
 #endif
 

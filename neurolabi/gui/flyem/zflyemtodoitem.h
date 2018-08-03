@@ -45,8 +45,12 @@ public:
 public:
   static const char *ACTION_KEY;
   static const char *ACTION_SPLIT;
+  static const char *ACTION_SUPERVOXEL_SPLIT;
+  static const char *ACTION_IRRELEVANT;
   static const char *ACTION_MERGE;
   static const char *ACTION_SPLIT_TAG;
+  static const char *ACTION_SUPERVOXEL_SPLIT_TAG;
+  static const char *ACTION_IRRELEVANT_TAG;
 
 private:
   void init();

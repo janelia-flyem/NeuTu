@@ -26,24 +26,16 @@
 #include <QString>
 
 class Z3DInputPortBase;
-
 class Z3DOutputPortBase;
-
 class Z3DInteractionHandler;
-
 class ZParameter;
-
 class ZEventListenerParameter;
-
 class Z3DRenderOutputPort;
-
 class Z3DRenderTarget;
-
 class Z3DTexture;
-
 class Z3DShaderProgram;
-
 class ZVertexArrayObject;
+class QMouseEvent;
 
 class Z3DFilter : public QObject, public Z3DCanvasEventListener
 {
@@ -183,6 +175,11 @@ protected:
   // reimplement this if you want different behavior
   virtual void updateSize();
 
+  void recordMousePosition(QMouseEvent *e);
+  bool stayingMouse(QMouseEvent* e) const;
+
+//  static bool StayingMouse(QMouseEvent* e, int x, int y) const;
+
 protected:
   // used for the detection of duplicate port names.
   std::map<QString, Z3DInputPortBase*> m_inputPortMap;
@@ -207,6 +204,9 @@ protected:
 
   std::vector<ZEventListenerParameter*> m_eventListeners;
   std::vector<Z3DInteractionHandler*> m_interactionHandlers;
+
+  int m_mouseX = 0;
+  int m_mouseY = 0;
 
   // used for cycle prevention during invalidation propagation
   bool m_invalidationVisited;

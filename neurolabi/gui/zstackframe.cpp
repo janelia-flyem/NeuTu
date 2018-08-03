@@ -629,7 +629,7 @@ Z3DWindow* ZStackFrame::viewSegmentationMesh()
     foreach (ZStackObject *obj, objList) {
       ZObject3dScan *region = dynamic_cast<ZObject3dScan*>(obj);
       if (region != NULL) {
-        ZMesh *mesh = ZMeshFactory::MakeMesh(*region, 0, 3);
+        ZMesh *mesh = ZMeshFactory::MakeMesh(*region, 0, 3, false);
         if (mesh != NULL) {
           if (!mesh->empty()) {
             mesh->setColor(region->getColor());

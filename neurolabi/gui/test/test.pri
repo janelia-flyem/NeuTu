@@ -71,4 +71,5 @@ HEADERS += \
     $$PWD/zstackdochelpertest.h \
     $$PWD/zgeometrytest.h \
     $$PWD/zdviddataslicetest.h \
-    $$PWD/zstackviewparamtest.h
+    $$PWD/zstackviewparamtest.h \
+    $$PWD/zflyembodymanagertest.h

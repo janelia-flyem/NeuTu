@@ -12,6 +12,7 @@ class ZObject3dScanArray : public std::vector<ZObject3dScan*>
 {
 public:
   ZObject3dScanArray();
+  ZObject3dScanArray(const std::vector<ZObject3dScan*> &objArray);
   ~ZObject3dScanArray();
 
   void clearAll();
