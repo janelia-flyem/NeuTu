@@ -24,6 +24,7 @@ public:
   const static TRole ROLE_ROI_MASK;
   const static TRole ROLE_3DMESH_DECORATOR;
   const static TRole ROLE_SUPERVOXEL;
+  const static TRole ROLE_BODY_MODEL;
 
   ZStackObjectRole();
   ZStackObjectRole(TRole role);
