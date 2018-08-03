@@ -61,13 +61,20 @@ const char* ZFlyEmBody3dDoc::THREAD_SPLIT_KEY = "split";
  * To allow fast toggling, a body recycled into the garbage object (m_garbageMap)
  * can be recovered later if it does not get obsolete. The garbage object was
  * also initially designed for improving cocurrency safety, but no longer
- * serving that purpose because of the introduction of thread-safe object update
+ * serving that purpose since the introduction of thread-safe object update
  * in ZStackDoc.
  *
  * ZFlyEmBody3dDoc also supports splitting with the help of ZFlyEmBodySplitter.
  * Splitting is also run on background, but in a different thread than the event
  * processing thread. ZThreadFutureMap is used to manage the splitting thread,
  * which uses THREAD_SPLIT_KEY as its key.
+ *
+ * A geometrical model created ZFlyEmBody3dDoc for a body can be:
+ *   > Surface spheres
+ *   > Mesh
+ *   > Skeleton
+ *
+ * The choice is controlled by m_bodyType.
  */
 
 ZFlyEmBody3dDoc::ZFlyEmBody3dDoc(QObject *parent) :
