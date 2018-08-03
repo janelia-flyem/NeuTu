@@ -503,6 +503,8 @@ private:
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);
 
+  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+
 private:
   ZFlyEmBodyManager m_bodyManager;
 //  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
@@ -548,6 +550,8 @@ private:
   QMap<uint64_t, int> m_bodyUpdateMap;
 
   ZFlyEmBodySplitter *m_splitter;
+
+  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;

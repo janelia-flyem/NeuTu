@@ -51,6 +51,7 @@ class FlyEmBodyIdDialog;
 class ZFlyEmMergeUploadDialog;
 class ZFlyEmProofSettingDialog;
 class ZROIWidget;
+class ZFlyEmBodyAnnotationDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -516,6 +517,7 @@ private:
   void endMergeProfile();
 
   FlyEmBodyInfoDialog* getBodyQueryDlg();
+  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
 
 protected:
   bool m_showSegmentation;
@@ -552,6 +554,7 @@ protected:
   FlyEmBodyIdDialog *m_bodyIdDialog;
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
   ZFlyEmProofSettingDialog *m_settingDlg;
+  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

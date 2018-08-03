@@ -259,6 +259,8 @@ public:
   void deleteSplitTask(const QString &key);
   void writeTestResult(const std::string &key, const ZJsonObject &result);
 
+  void writeBodyStatusList(const std::vector<std::string> &statusList);
+
   /*!
    * \brief Upload a mesh as a ROI
    *

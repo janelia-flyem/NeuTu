@@ -225,6 +225,29 @@ FlyEmBodyInfoDialog* ZFlyEmProofMvc::getBodyQueryDlg()
   return m_bodyQueryDlg;
 }
 
+ZFlyEmBodyAnnotationDialog* ZFlyEmProofMvc::getBodyAnnotationDlg()
+{
+  if (m_annotationDlg == nullptr) {
+    m_annotationDlg = new ZFlyEmBodyAnnotationDialog(this);
+    ZJsonArray statusJson =
+        getCompleteDocument()->getDvidReader().readBodyStatusList();
+    QList<QString> statusList;
+    for (size_t i = 0; i < statusJson.size(); ++i) {
+      std::string status = ZJsonParser::stringValue(statusJson.at(i));
+      if (!status.empty()) {
+        statusList.append(status.c_str());
+      }
+    }
+    if (!statusList.empty()) {
+      m_annotationDlg->setDefaultStatusList(statusList);
+    } else {
+      m_annotationDlg->setDefaultStatusList(ZFlyEmMisc::GetDefaultBodyStatus());
+    }
+  }
+
+  return m_annotationDlg;
+}
+
 void ZFlyEmProofMvc::initBodyWindow()
 {
   m_bodyViewWindow = new Z3DMainWindow(NULL);
@@ -2796,7 +2819,8 @@ void ZFlyEmProofMvc::annotateBody()
     uint64_t bodyId = *(bodyIdArray.begin());
     if (bodyId > 0) {
       if (checkOutBody(bodyId, flyem::BODY_SPLIT_NONE)) {
-        ZFlyEmBodyAnnotationDialog *dlg = new ZFlyEmBodyAnnotationDialog(this);
+        ZFlyEmBodyAnnotationDialog *dlg = getBodyAnnotationDlg();
+        dlg->updateStatusBox();
         dlg->setBodyId(bodyId);
         ZDvidReader &reader = getCompleteDocument()->getDvidReader();
         if (reader.isReady()) {
@@ -2812,7 +2836,7 @@ void ZFlyEmProofMvc::annotateBody()
         }
 
         checkInBodyWithMessage(bodyId, flyem::BODY_SPLIT_NONE);
-        delete dlg;
+//        delete dlg;
       } else {
         if (getSupervisor() != NULL) {
           std::string owner = getSupervisor()->getOwner(bodyId);
