@@ -398,7 +398,7 @@ void ZDvidWriter::mergeBody(
     if (mergingToLargest) {
       int maxSize = 0;
       for (uint64_t id : bodyId) {
-        int bodySize = m_reader.readBodyBlockCount(id);
+        const int bodySize = m_reader.readBodyBlockCount(id);
         if (bodySize > maxSize) {
           maxSize = bodySize;
           target = id;

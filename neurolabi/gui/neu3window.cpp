@@ -205,8 +205,8 @@ void Neu3Window::connectSignalSlot()
   // signal emitted after all the meshes are loaded, not on the multiple bodyMeshLoaded
   // signals emitted with each mesh.
 
-  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
-          this, &Neu3Window::syncBodyListModel);
+//  connect(getBodyDocument(), &ZFlyEmBody3dDoc::bodyMeshesAdded,
+//          this, &Neu3Window::syncBodyListModel);
 
   connect(m_dataContainer, SIGNAL(roiLoaded()), this, SLOT(updateRoiWidget()));
   connect(m_dataContainer->getCompleteDocument(), SIGNAL(bodySelectionChanged()),
@@ -1039,13 +1039,23 @@ void Neu3Window::syncBodyListModel()
   // correctly (e.g., will not be pickable in the 3D view).
 
   LDEBUG() << "Syncing body list";
-  QList<ZMesh*> meshList = ZStackDocProxy::GetGeneralMeshList(getBodyDocument());
+  QList<ZMesh*> meshList = ZStackDocProxy::GetBodyMeshList(getBodyDocument());
   std::set<uint64_t> selected;
   for (ZMesh *mesh : meshList) {
     selected.insert(mesh->getLabel());
   }
 
+  QSet<uint64_t> currentBodySet = getBodyDocument()->getNormalBodySet();
+  selected.insert(currentBodySet.begin(), currentBodySet.end());
+
   ZFlyEmProofDoc *dataDoc = getBodyDocument()->getDataDocument();
+#ifdef _DEBUG_
+  std::string bodyStr;
+  for (uint64_t bodyId : selected) {
+    bodyStr += std::to_string(bodyId) + " ";
+  }
+  LDEBUG() << "Syncing" << bodyStr;
+#endif
   dataDoc->setSelectedBody(selected, neutube::BODY_LABEL_MAPPED);
 }
 

@@ -9,7 +9,7 @@
 #include <string>
 #include <iostream>
 
-#ifdef _NEUTUBE_
+#ifdef _QT_GUI_USED_
 #include "zglmutils.h"
 #include "znumericparameter.h"
 #endif
@@ -617,7 +617,7 @@ public:
   };
 
   // read lsm file, fill Cz_Lsminfo, Lsm_Channel_Colors and channel names and colors
-#ifdef _NEUTUBE_
+#ifdef _QT_GUI_USED_
   std::vector<ZVec3Parameter*>& channelColors() {
     initChannelColors(); return m_channelColors; }
   glm::vec3 getChannelColor(size_t ch) {
@@ -664,7 +664,7 @@ private:
 
 //  bool m_isLSMFile;
 
-#ifdef _NEUTUBE_
+#ifdef _QT_GUI_USED_
   bool m_usingChannelColors = false; //Temporary hack.
   //Need to make channelColors on demand in the future.
   std::vector<ZVec3Parameter*> m_channelColors;

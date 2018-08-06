@@ -6531,7 +6531,7 @@ void MainWindow::runBodySplit()
       m_progress->setLabelText("Splitting ...");
       m_progress->open();
 
-#if defined(_NEUTUBE_MAC_)
+#if defined(__APPLE__)
       runSplitFunc(frame); //Avoid potential bug in QtConcurrent
 #else
       QtConcurrent::run(this, &MainWindow::runSplitFunc, frame);

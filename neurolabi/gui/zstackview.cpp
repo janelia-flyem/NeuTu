@@ -930,7 +930,7 @@ void ZStackView::mouseRolledInImageWidget(QWheelEvent *event)
   std::cout << "Time to event: " << QDateTime::currentMSecsSinceEpoch() << std::endl;
 #endif
 
-#if defined(_NEUTUBE_MAC_)
+#if defined(__APPLE__)
   switch (QSysInfo::MacintoshVersion) {
   case QSysInfo::MV_10_5:
   case QSysInfo::MV_10_6:
