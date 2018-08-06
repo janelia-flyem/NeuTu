@@ -3850,7 +3850,7 @@ void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
 
 bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 {
-  if (getDvidReader().hasBody(bodyId)) {
+  if (getDvidReader().hasBody(ZFlyEmBodyManager::decode(bodyId))) {
     QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
     //  ZDvidLabelSlice *slice = getDvidLabelSlice();
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();

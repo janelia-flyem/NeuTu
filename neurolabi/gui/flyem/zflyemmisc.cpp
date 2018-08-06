@@ -1603,31 +1603,6 @@ bool ZFlyEmMisc::IsTaskOpen(const QString &taskKey)
   return false;
 }
 
-/*
-bool ZFlyEmMisc::HasOpenTestTask()
-{
-  ZDvidReader *reader = GetTaskReader();
-  QString taskKey =  QString::fromStdString(ZDvidUrl::GetTaskKey());
-  if (reader->hasKey("task_test", taskKey)) {
-    if (!reader->hasKey("result_test", taskKey)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-*/
-
-#if 0
-void ZFlyEmMisc::StartOpenTestTask()
-{
-  if (HasOpenTestTask()) {
-//    ZJsonObject config = GetTaskReader()->readTestTask();
-    //todo
-    ZMainWindowController::StartTestTask(ZDvidUrl::GetTaskKey());
-  }
-}
-#endif
 
 QSet<uint64_t> ZFlyEmMisc::MB6Paper::ReadBodyFromSequencer(const QString &filePath)
 {

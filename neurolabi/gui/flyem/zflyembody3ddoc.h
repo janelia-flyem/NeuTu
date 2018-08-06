@@ -11,6 +11,10 @@
 #include <QList>
 #include <QTime>
 
+#ifdef _DEBUG_
+#include "QsLog.h"
+#endif
+
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
@@ -92,6 +96,7 @@ public:
   QSet<uint64_t> getInvolvedNormalBodySet() const;
 
   uint64_t getMappedId(uint64_t bodyId) const;
+  bool isAgglo(uint64_t bodyId) const;
 
   void addBody(const ZFlyEmBodyConfig &config);
   void updateBody(ZFlyEmBodyConfig &config);
@@ -588,6 +593,15 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   QSet<uint64_t> tarSet;
   QSet<uint64_t> supervoxelSet;
 //  QMap<uint64_t, uint64_t> bodyEncodeMap;
+
+#ifdef _DEBUG_
+  std::string bodyStr;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    bodyStr += std::to_string(*iter) + " ";
+  }
+  LDEBUG() << "Selection recieved:" << bodyStr;
+#endif
+
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
     if (ZFlyEmBodyManager::encodesTar(bodyId)) {

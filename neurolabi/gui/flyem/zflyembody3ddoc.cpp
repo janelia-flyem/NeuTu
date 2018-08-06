@@ -2632,6 +2632,11 @@ uint64_t ZFlyEmBody3dDoc::getMappedId(uint64_t bodyId) const
   */
 }
 
+bool ZFlyEmBody3dDoc::isAgglo(uint64_t bodyId) const
+{
+  return getBodyManager().hasMapping(bodyId);
+}
+
 /*
 QSet<uint64_t> ZFlyEmBody3dDoc::getUnencodedBodySet() const
 {

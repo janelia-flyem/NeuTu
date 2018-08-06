@@ -14,10 +14,13 @@ contains(CONFIG, neu3) {
 }
 
 contains(CONFIG, neu3) | contains(CONFIG, flyem) {
-  CONFIG *=c++11
-  DEFINES *= _FLYEM_ _ENABLE_LOWTIS_
-  DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
+  DEFINES *= _FLYEM_
+} else {
+  DEFINES += _NEUTUBE_
 }
+
+DEFINES *= _ENABLE_LOWTIS_
+DEFINES += DRACO_ATTRIBUTE_DEDUPLICATION_SUPPORTED
 
 CONFIG += object_parallel_to_source
 message("Objs dir: $${OBJECTS_DIR}")
@@ -109,7 +112,7 @@ qtHaveModule(webenginewidgets) {
   DEFINES += _USE_WEBENGINE_
 }
 
-DEFINES += _QT_GUI_USED_ _NEUTUBE_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
+DEFINES += _QT_GUI_USED_ HAVE_CONFIG_H _ENABLE_DDP_ _ENABLE_WAVG_
 
 #Machine information
 HOSTNAME = $$system(echo $HOSTNAME)
@@ -176,6 +179,7 @@ win32 {
       $$PWD/ext/sys/VidMemViaDDraw.cpp \
       $$PWD/ext/sys/VidMemViaDxDiag.cpp
 }
+
 unix {
     macx {
         SOURCES += $$PWD/ext/sys/VideoMemoryMac.cpp
@@ -192,7 +196,7 @@ unix {
     QMAKE_CXXFLAGS += -Wno-deprecated
 
     macx {
-        DEFINES += _NEUTUBE_MAC_
+#        DEFINES += _NEUTUBE_MAC_
         LIBS += -framework AppKit -framework IOKit \
             -framework ApplicationServices \
             -framework CoreFoundation
@@ -253,7 +257,7 @@ unix {
 #        config.path = Contents/MacOS
 #        QMAKE_BUNDLE_DATA += config
     } else {
-        DEFINES += _NEUTUBE_LINUX_
+#        DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
         LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
 
@@ -273,7 +277,6 @@ unix {
 }
 
 win32 {
-  DEFINES += _NEUTUBE_WINDOWS_
   RC_FILE = images/app.rc
 }
 

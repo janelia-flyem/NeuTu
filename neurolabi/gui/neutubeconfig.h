@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "zmessagereporter.h"
-#if defined(_FLYEM_)
+#if defined(_QT_GUI_USED_)
 #include "flyem/zflyemconfig.h"
 #endif
 
@@ -501,7 +501,7 @@ private:
 #define GET_DOC_DIR (NeutubeConfig::getInstance().getApplicatinDir() + "/doc")
 #define GET_TMP_DIR (NeutubeConfig::getInstance().getPath(NeutubeConfig::TMP_DATA))
 
-#if defined(_FLYEM_)
+#if defined(_QT_GUI_USED_)
 #  define GET_FLYEM_CONFIG (ZFlyEmConfig::getInstance())
 #  define GET_NETU_SERVICE (GET_FLYEM_CONFIG.getNeutuService())
 #endif

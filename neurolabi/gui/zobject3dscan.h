@@ -34,7 +34,18 @@ class ZJsonArray;
  * A RLE object is the run-length encoded representatino of a 3D object, which
  * is defined as a set of voxels. This class encodes an object along the X,
  * direction, i.e. a contiguous list of voxels (x_1, y, z), ..., (x_n, y, z) are
- * encoded as ((x_1, x_n), y, z).
+ * encoded as ((x_1, x_n), y, z). A contiguous run of voxels is call a segment,
+ * and segments with the same (y,z) form a stripe. ZObject3dScan does not
+ * guarantee that the represetation of an object is unique. It allows duplicate
+ * segmenents and mulitple segments for a single contiguous run. The canonical
+ * RLE of an object is defined as a RLE consists of ZY sorted stripes, each has
+ * sorted segments that are not adjacent to each other.
+ *
+ * Example of voxel set {(0, 0, 0), (1, 0, 0), (1, 5, 2), (2, 5, 2), (3, 5, 2)}:
+ *
+ * ZObject3dScan obj;
+ * obj.addSegment(0, 0, 0, 1);
+ * obj.addSegment(5, 2, 1, 3);
  */
 class ZObject3dScan : public ZStackObject
 {
@@ -49,31 +60,26 @@ public:
     return ZStackObject::TYPE_OBJECT3D_SCAN;
   }
 
-
-  enum EComponent {
-    COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
-    COMPONENT_ACCUMULATED_STRIPE_NUMBER,
-    COMPONENT_SLICEWISE_VOXEL_NUMBER,
-    COMPONENT_Z_PROJECTION,
-    COMPONENT_ALL
-  };
-
-  enum EAction {
-    ACTION_NONE, ACTION_CANONIZE, ACTION_SORT_YZ
-  };
-
-  static const int MAX_SPAN_HINT;
-
-  bool isDeprecated(EComponent comp) const;
-  void deprecate(EComponent comp);
-  void deprecateDependent(EComponent comp);
-
-  void clear();
-
-  ZObject3d* toObject3d() const;
-
+  /*!
+   * \brief Check if the object is empty.
+   */
   bool isEmpty() const;
+
+  /*!
+   * \brief Get the number of stripes.
+   *
+   * \return The number of stripes of the current representation, not necessarily
+   * the object itself.
+   */
   size_t getStripeNumber() const;
+
+
+  /*!
+   * \brief Get the number of voxels.
+   *
+   * \return The number of voxels of the current representation, not necessarily
+   * the object itself.
+   */
   size_t getVoxelNumber() const;
 
   /*!
@@ -95,6 +101,8 @@ public:
   const ZObject3dStripe& getStripe(size_t index) const;
   ZObject3dStripe& getStripe(size_t index);
 
+  void clear();
+
   void addStripe(int z, int y);
   void addStripeFast(int z, int y);
   void addStripeFast(const ZObject3dStripe &stripe);
@@ -102,6 +110,26 @@ public:
   void addSegmentFast(int x1, int x2);
   void addSegment(int z, int y, int x1, int x2, bool canonizing = true);
   void addStripe(const ZObject3dStripe &stripe, bool canonizing = true);
+
+  ZObject3d* toObject3d() const;
+
+  enum EComponent {
+    COMPONENT_STRIPE_INDEX_MAP, COMPONENT_INDEX_SEGMENT_MAP,
+    COMPONENT_ACCUMULATED_STRIPE_NUMBER,
+    COMPONENT_SLICEWISE_VOXEL_NUMBER,
+    COMPONENT_Z_PROJECTION,
+    COMPONENT_ALL
+  };
+
+  enum EAction {
+    ACTION_NONE, ACTION_CANONIZE, ACTION_SORT_YZ
+  };
+
+  static const int MAX_SPAN_HINT;
+
+  bool isDeprecated(EComponent comp) const;
+  void deprecate(EComponent comp);
+  void deprecateDependent(EComponent comp);
 
   //Turn a binary stack into scanlines
   void loadStack(const Stack *stack);

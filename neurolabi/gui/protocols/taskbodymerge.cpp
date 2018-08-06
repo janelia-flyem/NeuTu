@@ -605,7 +605,11 @@ void TaskBodyMerge::onLoaded()
 
   if (const char* showHybrid = std::getenv("NEU3_SHOW_HYBRID_MESHES")) {
     if (std::string(showHybrid) == "yes") {
-      showHybridMeshes();
+      //Do not show hybrid meshes if either of the body is shown as agglomeration
+      //of supervoxels.
+      if (!m_bodyDoc->isAgglo(m_bodyId1) && !m_bodyDoc->isAgglo(m_bodyId2)) {
+        showHybridMeshes();
+      }
     }
   }
 }
@@ -1170,7 +1174,7 @@ void TaskBodyMerge::showHybridMeshes()
   // closest to the viewing direction.  So first compute overall boudning box of the two bodies.
 
   ZBBox<glm::dvec3> bbox;
-  QList<ZMesh*> meshes = ZStackDocProxy::GetGeneralMeshList(m_bodyDoc);
+  QList<ZMesh*> meshes = ZStackDocProxy::GetBodyMeshList(m_bodyDoc);
   for (auto it = meshes.cbegin(); it != meshes.cend(); it++) {
     ZMesh *mesh = *it;
     uint64_t tarBodyId = m_bodyDoc->getMappedId(mesh->getLabel());
