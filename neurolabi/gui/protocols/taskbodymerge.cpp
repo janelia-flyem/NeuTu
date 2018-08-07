@@ -1116,7 +1116,7 @@ void TaskBodyMerge::configureShowHiRes()
   // then the tar archive exists.
 
   disconnect(s_networkManager, 0, 0, 0);
-  connect(s_networkManager, &QNetworkAccessManager::finished,
+  connect(s_networkManager.data(), &QNetworkAccessManager::finished,
           this, [=](QNetworkReply *reply) {
     if (reply->error() == QNetworkReply::NoError) {
       QByteArray replyBytes = reply->readAll();
@@ -1221,7 +1221,6 @@ void TaskBodyMerge::showHybridMeshes(bool show)
           (viewAbs[0] > viewAbs[2] ? 0 : 2) :
       (viewAbs[1] > viewAbs[2] ? 1 : 2);
     ZPoint p = mergePosition();
-    int s = misc::GetZoomScale(m_bodyDoc->getMaxDsLevel());
     for (size_t i = 0; i < 3; i++) {
       if (i == iMax) {
         p1[i] = bbox.minCorner()[i];
