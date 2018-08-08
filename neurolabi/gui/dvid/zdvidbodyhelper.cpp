@@ -51,7 +51,7 @@ ZObject3dScan* ZDvidBodyHelper::readBody(uint64_t bodyId, ZObject3dScan *result)
   if (!m_coarseVol) {
     out = getDvidReader()->readBody(
           bodyId, m_labelType, m_zoom, m_range, m_canonizing, result);
-    out->setDsIntv(misc::GetZoomScale(m_zoom) - 1);
+    out->setDsIntv(zgeom::GetZoomScale(m_zoom) - 1);
   } else {
     out = getDvidReader()->readCoarseBody(bodyId, m_labelType, m_range, result);
     if (m_canonizing) {
@@ -114,6 +114,7 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
   ZDvidBodyHelper highResHelper = fork();
   highResHelper.setCoarse(false);
   highResHelper.setRange(range);
+  highResHelper.setZoom(1);
   ZObject3dScan *highResObj = highResHelper.readBody(bodyId);
   if (highResObj != NULL) {
     result.push_back(highResObj);
@@ -133,7 +134,7 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
       if (m_lowresZoom > m_zoom) {
         lowResHelper.setZoom(m_lowresZoom);
         lowResObj = lowResHelper.readBody(bodyId);
-        int s = misc::GetZoomScale(m_lowresZoom);
+        int s = zgeom::GetZoomScale(m_lowresZoom);
         scale = ZIntPoint(s, s, s);
       }
     }

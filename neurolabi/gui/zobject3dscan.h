@@ -215,6 +215,8 @@ public:
   int scanArrayShift(
       const T *array, int start, int y, int z, int stride, int dim);
 
+  template<class T>
+  int scanArrayV(const T *array, int x, int y, int z, int width, T v);
 
   void addStack(Stack *stack, int v, const int *offset = NULL) const;
   void addStack(ZStack *stack, int v) const;
@@ -700,7 +702,7 @@ public:
   class ConstVoxelIterator {
   public:
     ConstVoxelIterator(const ZObject3dScan *obj = NULL);
-    const ZIntPoint next();
+    ZIntPoint next();
     bool hasNext() const;
     void advance();
 

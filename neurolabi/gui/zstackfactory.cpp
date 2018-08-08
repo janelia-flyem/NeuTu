@@ -3,6 +3,8 @@
 #if _QT_GUI_USED_
 #include <QPixmap>
 #include <QPainter>
+#include <QColor>
+#include "zcolorscheme.h"
 #include "zpixmap.h"
 #include "zpainter.h"
 #endif
@@ -23,6 +25,8 @@
 #include "zintcuboid.h"
 #include "zswctree.h"
 #include "zstackarray.h"
+#include "zarray.h"
+#include "misc/miscutility.h"
 
 ZStackFactory::ZStackFactory()
 {
@@ -880,6 +884,119 @@ ZStack* ZStackFactory::MakeStrokeMask(
   for (ZStroke2d *stroke : strokeList) {
     if (stroke->getZ() == z || stroke->isPenetrating()) {
       stroke->labelStack(stack);
+    }
+  }
+#endif
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeLabelBinaryStack(
+    const std::vector<ZArray*> &labelArray, uint64_t v)
+{
+  ZIntCuboid box;
+  for (ZArray *array : labelArray) {
+    if (array) {
+      box.join(misc::GetBoundBox(array));
+    }
+  }
+
+  ZStack *stack = nullptr;
+  if (!box.isEmpty()) {
+    stack = MakeZeroStack(GREY, box);
+    int stackWidth = stack->width();
+    int stackHeight = stack->height();
+    int stackArea = stackWidth * stackHeight;
+
+    uint8_t *out = stack->array8();
+
+    for (ZArray *array : labelArray) {
+      if (array) {
+        uint64_t *label = array->getDataPointer<uint64_t>();
+        size_t arrayOffset = 0;
+        size_t stackOffset = 0;
+        int x0 = array->getStartCoordinate(0);
+        int y0 = array->getStartCoordinate(1);
+        int z0 = array->getStartCoordinate(2);
+        int width = array->getDim(0);
+        int height = array->getDim(1);
+        int depth = array->getDim(2);
+        int dz = z0 - stack->getOffset().getZ();
+        int dy = y0 - stack->getOffset().getY();
+        int dx = x0 - stack->getOffset().getX();
+
+        for (int z = 0; z < depth; ++z) {
+          stackOffset = (dz + z) * stackArea + dy * stackWidth + dx;
+          for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+              if (label[arrayOffset++] == v) {
+                out[stackOffset] = 1;
+              }
+              ++stackOffset;
+            }
+            stackOffset += stackWidth - width;
+          }
+        }
+      }
+    }
+  }
+
+  return stack;
+}
+
+ZStack* ZStackFactory::MakeLabelColorStack(
+    const std::vector<ZArray*> &labelArray)
+{
+  ZStack *stack = nullptr;
+
+#if defined(_QT_APPLICATION_)
+  ZIntCuboid box;
+  for (ZArray *array : labelArray) {
+    if (array) {
+      box.join(misc::GetBoundBox(array));
+    }
+  }
+
+  if (!box.isEmpty()) {
+    stack = MakeZeroStack(COLOR, box);
+    int stackWidth = stack->width();
+    int stackHeight = stack->height();
+    int stackArea = stackWidth * stackHeight;
+
+    color_t *out = stack->arrayc();
+
+    ZColorScheme colorScheme;
+    colorScheme.setColorScheme(ZColorScheme::CONV_RANDOM_COLOR);
+
+    for (ZArray *array : labelArray) {
+      if (array) {
+        uint64_t *label = array->getDataPointer<uint64_t>();
+        size_t arrayOffset = 0;
+        size_t stackOffset = 0;
+        int x0 = array->getStartCoordinate(0);
+        int y0 = array->getStartCoordinate(1);
+        int z0 = array->getStartCoordinate(2);
+        int width = array->getDim(0);
+        int height = array->getDim(1);
+        int depth = array->getDim(2);
+        int dz = z0 - stack->getOffset().getZ();
+        int dy = y0 - stack->getOffset().getY();
+        int dx = x0 - stack->getOffset().getX();
+
+        for (int z = 0; z < depth; ++z) {
+          stackOffset = (dz + z) * stackArea + dy * stackWidth + dx;
+          for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+              QColor color = colorScheme.getColor(label[arrayOffset++]);
+              out[stackOffset][0] = color.red();
+              out[stackOffset][1] = color.green();
+              out[stackOffset][2] = color.blue();
+              ++stackOffset;
+            }
+            stackOffset += stackWidth - width;
+          }
+        }
+      }
     }
   }
 #endif
