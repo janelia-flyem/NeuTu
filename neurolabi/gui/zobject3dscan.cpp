@@ -1295,7 +1295,7 @@ bool ZObject3dScan::hasOverlap(ZObject3dScan &obj)
 
 Stack* ZObject3dScan::toStack(int *offset, int v) const
 {
-  if (isEmpty()) {
+  if (getVoxelNumber() == 0) {
     return NULL;
   }
 
@@ -1314,6 +1314,10 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
   Stack *stack = C_Stack::make(GREY, boundBox.getWidth(),
                                boundBox.getHeight(),
                                boundBox.getDepth());
+#ifdef _DEBUG_
+  std::cout << "Array pointer: " << (void*) C_Stack::array8(stack) << std::endl;
+#endif
+
   C_Stack::setZero(stack);
 
 
@@ -1324,12 +1328,17 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
 
   drawStack(stack, v, drawingOffet);
 
+#ifdef _DEBUG_
+          std::cout << "Array pointer: " << (void*) C_Stack::array8(stack) << std::endl;
+#endif
+
+
   return stack;
 }
 
 Stack* ZObject3dScan::toStackWithMargin(int *offset, int v, int margin) const
 {
-  if (isEmpty()) {
+  if (getVoxelNumber() == 0) {
     return NULL;
   }
 
@@ -1368,17 +1377,17 @@ ZStack* ZObject3dScan::toStackObject(int v, ZStack *result) const
 
   ZStack *stackObject = result;
 
-  if (stackObject == NULL) {
-    stackObject = new ZStack;
-  }
-
   if (stack != NULL) {
+    if (stackObject == NULL) {
+      stackObject = new ZStack;
+    }
+
     stackObject->useChannelColors(false);
     stackObject->load(stack);
     stackObject->setOffset(offset[0], offset[1], offset[2]);
-  }
 
-  stackObject->setDsIntv(getDsIntv());
+    stackObject->setDsIntv(getDsIntv());
+  }
 
   return stackObject;
 }
@@ -2051,12 +2060,14 @@ void ZObject3dScan::display(ZPainter &painter, int slice, EDisplayStyle style,
         std::vector<QPoint> ptArray;
         ZObject3dScan slice = getSlice(z);
 
-        if (!slice.isEmpty()) {
-          ZStack *stack = slice.toStackObject();
+        ZStack *stack = slice.toStackObject();
+        if (stack != NULL) {
           int width = stack->width();
           int height = stack->height();
           int conn = 4;
+
           Stack *pre = Stack_Perimeter(stack->c_stack(), NULL, conn);
+
           size_t offset = 0;
           for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
@@ -4527,7 +4538,7 @@ ZObject3dScan::ConstVoxelIterator::ConstVoxelIterator(
   }
 }
 
-const ZIntPoint ZObject3dScan::ConstVoxelIterator::next()
+ZIntPoint ZObject3dScan::ConstVoxelIterator::next()
 { //Assuming there is no empty entry
 
   ZIntPoint pt;

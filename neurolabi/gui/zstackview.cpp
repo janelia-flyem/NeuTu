@@ -1053,7 +1053,8 @@ void ZStackView::resizeEvent(QResizeEvent *event)
 
 void ZStackView::showEvent(QShowEvent */*event*/)
 {
-  LDEBUG() << "ZStackView::showEvent:" << size();
+  LDEBUG() << "ZStackView::showEvent:" << size() << isVisible();
+//  resetViewProj();
 }
 
 void ZStackView::updateStackRange()

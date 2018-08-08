@@ -311,6 +311,9 @@ public:
       int x0, int y0, int z0,
       int width, int height, int depth, int zoom = 0) const;
 
+  std::vector<ZArray*> readLabelBlock(const ZObject3dScan &blockObj, int zoom) const;
+  ZArray* readLabelBlock(int bx, int by, int bz, int zoom) const;
+
 #if defined(_ENABLE_LOWTIS_)
   //Read label data
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,

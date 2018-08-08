@@ -52,6 +52,8 @@
 #include "zobject3d.h"
 #include "znetbufferreader.h"
 #include "geometry/zaffinerect.h"
+#include "zarrayfactory.h"
+#include "zobject3dfactory.h"
 
 ZDvidReader::ZDvidReader(/*QObject *parent*/) :
   /*QObject(parent),*/ m_verbose(true)
@@ -663,12 +665,30 @@ ZObject3dScan *ZDvidReader::readBody(
     }
     */
 
+    bool buffered = true;
+
     //  reader.tryCompress(true);
     ZDvidUrl dvidUrl(getDvidTarget());
     switch (labelType) {
     case flyem::LABEL_BODY:
-      reader.read(dvidUrl.getSparsevolUrl(bodyId, zoom, box).c_str(),
-                  isVerbose());
+      if (zoom == 0) {
+        reader.read(dvidUrl.getSparsevolUrl(bodyId, zoom, box).c_str(),
+                    isVerbose());
+      } else {
+        ZObject3dScan coarseBody;
+        readCoarseBody(bodyId, labelType, box, &coarseBody);
+        int scale = zgeom::GetZoomScale(zoom);
+        coarseBody.downsampleMax(scale - 1, scale -1, scale -1);
+        std::vector<ZArray*> blockArray = readLabelBlock(coarseBody, zoom);
+
+        ZIntCuboid range = box;
+        range.scaleDown(scale);
+        ZObject3dFactory::MakeObject3dScan(blockArray, bodyId, range, result);
+        for (ZArray *array : blockArray) {
+          delete array;
+        }
+        buffered = false;
+      }
       break;
     case flyem::LABEL_SUPERVOXEL:
       reader.read(dvidUrl.getSupervoxelUrl(bodyId, zoom, box).c_str(),
@@ -676,8 +696,10 @@ ZObject3dScan *ZDvidReader::readBody(
       break;
     }
 
-    const QByteArray &buffer = reader.getBuffer();
-    result->importDvidObjectBuffer(buffer.data(), buffer.size());
+    if (buffered) {
+      const QByteArray &buffer = reader.getBuffer();
+      result->importDvidObjectBuffer(buffer.data(), buffer.size());
+    }
 
     reader.clearBuffer();
 
@@ -2788,6 +2810,82 @@ ZArray* ZDvidReader::readLabels64(
 #endif
 
 
+
+  return array;
+}
+
+std::vector<ZArray*> ZDvidReader::readLabelBlock(
+    const ZObject3dScan &blockObj, int zoom) const
+{
+  std::vector<ZArray*> result;
+
+  std::vector<libdvid::DVIDCompressedBlock> c_blocks;
+
+  std::vector<int> blockcoords;
+  ZObject3dScan::ConstVoxelIterator objIter(&blockObj);
+  while (objIter.hasNext()) {
+    ZIntPoint pt = objIter.next();
+    blockcoords.push_back(pt.getX());
+    blockcoords.push_back(pt.getY());
+    blockcoords.push_back(pt.getZ());
+  }
+
+  try {
+    m_service->get_specificblocks3D(
+          getDvidTarget().getSegmentationName(), blockcoords, false, c_blocks, zoom);
+
+    ZDvidInfo info = readLabelInfo();
+    for (libdvid::DVIDCompressedBlock &block : c_blocks) {
+      libdvid::BinaryDataPtr data = block.get_uncompressed_data();
+
+      std::vector<int> offset = block.get_offset();
+
+      mylib::Dimn_Type arrayDims[3];
+      arrayDims[0] = info.getBlockSize().getX();
+      arrayDims[1] = info.getBlockSize().getY();
+      arrayDims[2] = info.getBlockSize().getZ();
+      ZArray *array = new ZArray(mylib::UINT64_TYPE, 3, arrayDims);
+      array->copyDataFrom(data->get_raw());
+      array->setStartCoordinate(offset);
+
+      result.push_back(array);
+    }
+  } catch(libdvid::DVIDException &e) {
+    LERROR() << e.what();
+    m_statusCode = e.getStatus();
+  } catch (std::exception &e) {
+    LERROR() << e.what();
+    m_statusCode = 0;
+  }
+
+  return result;
+}
+
+ZArray* ZDvidReader::readLabelBlock(int bx, int by, int bz, int zoom) const
+{
+  std::vector<int> blockcoords;
+  blockcoords.push_back(bx);
+  blockcoords.push_back(by);
+  blockcoords.push_back(bz);
+
+  std::vector<libdvid::DVIDCompressedBlock> c_blocks;
+  m_service->get_specificblocks3D(
+        getDvidTarget().getSegmentationName(), blockcoords, false, c_blocks, zoom);
+
+  ZArray *array = NULL;
+  if (c_blocks.size() == 1) {
+    libdvid::DVIDCompressedBlock &block = c_blocks[0];
+    libdvid::BinaryDataPtr data = block.get_uncompressed_data();
+    std::vector<int> offset = block.get_offset();
+
+    ZDvidInfo info = readLabelInfo();
+
+    ZIntCuboid box;
+    box.setFirstCorner(offset[0], offset[1], offset[2]);
+    box.setSize(info.getBlockSize());
+    array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+    array->copyDataFrom(data->get_raw());
+  }
 
   return array;
 }

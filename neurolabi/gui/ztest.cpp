@@ -190,6 +190,7 @@
 #include "flyem/zflyembodywindowfactory.h"
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
+#include "imgproc/zstackprinter.h"
 
 #include "swc/zswcterminalsurfacemetric.h"
 
@@ -294,6 +295,7 @@
 #include "flyem/zglobaldvidrepo.h"
 #include  "dvid/zdvidbodyhelper.h"
 #include "zmeshutils.h"
+#include "zarrayfactory.h"
 
 #include "test/ztestall.h"
 
@@ -27351,7 +27353,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 0
+#if 1
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
 
   ZDvidBodyHelper helper(reader);
@@ -27361,11 +27363,13 @@ void ZTest::test(MainWindow *host)
   range.setSize(256, 256, 256);
   range.setCenter(ZIntPoint(16710, 31679, 32100));
   helper.setRange(range);
+  tic();
   ZObject3dScanArray objArray = helper.readHybridBody(2229212992);
   ZMeshFactory mf;
 //  mf.setSmooth(0);
   ZMesh *mesh = mf.makeMesh(objArray);
   mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+  ptoc();
 #endif
 
 #if 0
@@ -27383,7 +27387,7 @@ void ZTest::test(MainWindow *host)
   writer->writeBodyStatusList(statusList);
 #endif
 
-#if 1
+#if 0
 //  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test_merge");
 //  ZJsonArray statusJson = reader->readBodyStatusList();
 //  std::cout << statusJson.dumpString(2) << std::endl;
@@ -27392,6 +27396,100 @@ void ZTest::test(MainWindow *host)
   writer->mergeBody(writer->getDvidTarget().getSegmentationName(),
                     std::vector<uint64_t>({770606927, 1537922823, 1537931903, 5813022814, 1538600496, 1537927379, 1567960688, 1882009576}), true);
 
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+  ZObject3dScan obj;
+  ZIntPoint center(9988*2, 11001*2, 10361*2);
+  reader->readBody(1167969164, flyem::LABEL_BODY, 1,
+                   ZIntCuboid(center - 128, center + 128), true, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZObject3dScan obj;
+//  obj.addSegment(300, 300, 300, 305);
+  ZIntPoint center(9988*2, 11001*2, 10361*2);
+
+  ZIntCuboid box = ZIntCuboid(center - 128, center + 128);
+  reader->readCoarseBody(1167969164, flyem::LABEL_BODY, box, &obj);
+
+//  obj->save(GET_TEST_DATA_DIR + "/_test.sobj");
+
+//  obj.downsampleMax(1, 1, 1);
+
+
+  tic();
+  std::vector<ZArray*> blockArray = reader->readLabelBlock(obj, 0);
+  std::cout << "Block count: " << blockArray.size() << std::endl;
+  ptoc();
+
+
+//  blockArray.resize(1);
+  ZObject3dScan* body = ZObject3dFactory::MakeObject3dScan(
+        blockArray, 1167969164, box, NULL);
+  body->canonize();
+  body->save(GET_TEST_DATA_DIR + "/_test.sobj");
+//  body->print();
+
+  ZStack *stack = ZStackFactory::MakeLabelBinaryStack(blockArray, 1167969164);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZArray *array = reader->readLabelBlock(300, 300, 300, 0);
+
+  std::vector<ZArray*> blockArray;
+  blockArray.push_back(array);
+
+  ZStack *stack = ZStackFactory::MakeLabelColorStack(blockArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  ZIntCuboid box(1, 2, 3, 2, 3, 4);
+  ZArray *array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(1, 1ull);
+  array->setValue(2, 1ull);
+
+  std::vector<ZArray*> labelArray;
+  labelArray.push_back(array);
+
+  ZIntCuboid range(5, 5, 5, 3, 4, 5);
+
+  ZObject3dScan obj;
+  ZObject3dFactory::MakeObject3dScan(labelArray, 1, range, &obj);
+  obj.print();
+#endif
+
+#if 0
+  ZIntCuboid box(1, 2, 3, 2, 3, 4);
+  ZArray *array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(2, 1ull);
+
+  std::vector<ZArray*> labelArray;
+  labelArray.push_back(array);
+
+  box.set(ZIntPoint(2, 3, 4), ZIntPoint(3, 4, 4));
+  array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(2, 1ull);
+  labelArray.push_back(array);
+
+  ZStack *stack = ZStackFactory::MakeLabelBinaryStack(labelArray, 1);
+  ZStackPrinter printer;
+  printer.setDetailLevel(1);
+  printer.print(stack);
+
+//  stack->printInfo();
 #endif
 
   std::cout << "Done." << std::endl;

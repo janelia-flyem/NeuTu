@@ -157,7 +157,7 @@ size_t ZDvidDataSliceHelper::getViewDataSize() const
 size_t ZDvidDataSliceHelper::GetViewDataSize(
     const ZStackViewParam &viewParam, int zoom)
 {
-  int scale = misc::GetZoomScale(zoom);
+  int scale = zgeom::GetZoomScale(zoom);
 
   return viewParam.getArea() / scale / scale;
 }
@@ -184,12 +184,12 @@ int ZDvidDataSliceHelper::getCenterCutHeight() const
 
 int ZDvidDataSliceHelper::getScale() const
 {
-  return misc::GetZoomScale(getZoom());
+  return zgeom::GetZoomScale(getZoom());
 }
 
 int ZDvidDataSliceHelper::getActualScale() const
 {
-  return misc::GetZoomScale(getActualZoom());
+  return zgeom::GetZoomScale(getActualZoom());
 }
 
 int ZDvidDataSliceHelper::getActualZoom() const

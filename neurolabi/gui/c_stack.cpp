@@ -756,6 +756,10 @@ Mc_Stack* C_Stack::make(int kind, int width, int height, int depth, int channelN
 {
   STACK_MUTEX_GUARD
 
+  if (width <= 0 || height <= 0 || depth <= 0 || channelNumber <= 0) {
+    return NULL;
+  }
+
   return Make_Mc_Stack(kind, width,height, depth, channelNumber);
 }
 

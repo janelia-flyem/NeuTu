@@ -48,8 +48,6 @@ int getIsoDsIntvFor3DVolume(double dsRatio, bool powed);
 int getIsoDsIntvFor3DVolume(
     const ZIntCuboid &box, size_t maxVolume, bool powed);
 
-int GetZoomScale(int zoom);
-int GetZoomLevel(int scale);
 //int GetZoomLevel(int maxLevel, int width, int height, int zoom);
 
 double GetExpansionScale(size_t currentVol, size_t maxVol);
@@ -73,6 +71,7 @@ ZClosedCurve convertSwcToClosedCurve(const ZSwcTree &tree);
 ZCuboid Intersect(const ZCuboid &box1, const ZIntCuboid &box2);
 ZCuboid CutBox(const ZCuboid &box1, const ZIntCuboid &box2);
 
+ZIntPoint GetFirstCorner(const ZArray *array);
 ZIntCuboid GetBoundBox(const ZArray *array);
 
 enum ESampleStackOption {

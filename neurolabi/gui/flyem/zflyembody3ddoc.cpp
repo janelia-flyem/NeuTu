@@ -959,7 +959,7 @@ bool ZFlyEmBody3dDoc::IsOverSize(const ZStackObject *obj)
 
 int ZFlyEmBody3dDoc::getCoarseBodyZoom() const
 {
-  return misc::GetZoomLevel(getDvidInfo().getBlockSize().getX());
+  return zgeom::GetZoomLevel(getDvidInfo().getBlockSize().getX());
   /*
   int s = getDvidInfo().getBlockSize().getX();
   int zoom = 0;
@@ -3319,7 +3319,7 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
 
   if (m_workDvidReader.isReady()) {
     m_dvidInfo = m_workDvidReader.readLabelInfo();
-    setMaxDsLevel(misc::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
+    setMaxDsLevel(zgeom::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
     ZDvidGraySlice *slice = getArbGraySlice();
     if (slice != NULL) {
       slice->setDvidTarget(m_workDvidReader.getDvidTarget());

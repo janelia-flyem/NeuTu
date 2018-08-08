@@ -36,7 +36,6 @@
  */
 DvidBranchDialog::DvidBranchDialog(QWidget *parent) :
     ZDvidTargetProviderDialog(parent),
-    m_datasetReply(NULL),
     ui(new Ui::DvidBranchDialog)
 {
     ui->setupUi(this);
