@@ -2408,6 +2408,11 @@ unsigned int ZFlyEmBody3dDoc::encodedLevel(uint64_t id) {
   return encodedLevel;
 }
 
+bool ZFlyEmBody3dDoc::usingOldMeshesTars() const
+{
+  return !std::getenv("NEU3_USE_TARSUPERVOXELS");
+}
+
 bool ZFlyEmBody3dDoc::fromTar(uint64_t id) const
 {
   if (encodesTar(id)) {
@@ -2545,7 +2550,7 @@ void ZFlyEmBody3dDoc::makeBodyMeshModels(
     // only if an environment variable is set,  When testing is complete, this approach
     // will become the default.
 
-    bool useOldMeshesTars = !std::getenv("NEU3_USE_TARSUPERVOXELS");
+    bool useOldMeshesTars = usingOldMeshesTars();
     if (!useOldMeshesTars) {
       id = decode(id);
     }

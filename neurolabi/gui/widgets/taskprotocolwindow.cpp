@@ -725,6 +725,8 @@ void TaskProtocolWindow::updateMenu(bool add) {
 void TaskProtocolWindow::updateBodyWindow() {
     // update the body window so the required bodies are visible and/or selected
     if (m_currentTaskIndex >= 0) {
+        m_taskList[m_currentTaskIndex]->beforeLoading();
+
         disableButtonsWhileUpdating();
 
         emit allBodiesRemoved();

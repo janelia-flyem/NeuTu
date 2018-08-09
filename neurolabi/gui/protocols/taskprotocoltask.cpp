@@ -117,6 +117,15 @@ void TaskProtocolTask::beforePrev() {
 
 /*
  * subclasses may optionally implement this method to
+ * do something when a task is about to be loaded as the current task
+ * via the "next" or "prev" button
+ */
+void TaskProtocolTask::beforeLoading() {
+    // nothing
+}
+
+/*
+ * subclasses may optionally implement this method to
  * do something when the bodies from the previous task have been unloaded
  * and the bodies from this task have been loaded
  */
