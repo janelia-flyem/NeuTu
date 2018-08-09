@@ -23,6 +23,7 @@ typedef struct _Swc_Tree_Node {
   Swc_Node node;                       /**< node for swc file */
   double weight;                       /**< weight to connect to its parent */
   double feature;                      /**< feature of the node */
+  double confidence;                   /**< confidence of the node */
   struct _Swc_Tree_Node *parent;       /**< parent */
   struct _Swc_Tree_Node *first_child;  /**< first child */
   struct _Swc_Tree_Node *next_sibling; /**< next sibling */

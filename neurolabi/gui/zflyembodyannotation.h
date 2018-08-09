@@ -20,6 +20,7 @@ public:
   inline const std::string& getName() const { return m_name; }
   inline const std::string& getType() const { return m_type; }
   inline const std::string& getUser() const { return m_userName; }
+  inline const std::string& getNamingUser() const { return m_namingUser; }
 
   inline void setBodyId(uint64_t bodyId) { m_bodyId = bodyId; }
   inline void setStatus(const std::string &status) {
@@ -29,6 +30,7 @@ public:
   inline void setType(const std::string &c) { m_type = c; }
   inline void setComment(const std::string &comment) { m_comment = comment; }
   inline void setUser(const std::string &user) { m_userName = user; }
+  inline void setNamingUser(const std::string &user) { m_namingUser = user; }
 
   /*!
    * \brief Load the data from a json string
@@ -75,13 +77,15 @@ private:
   std::string m_name;
   std::string m_type;
   std::string m_userName;
+  std::string m_namingUser;
 
-  static const char *m_bodyIdKey;
-  static const char *m_statusKey;
-  static const char *m_nameKey;
-  static const char *m_typeKey;
-  static const char *m_commentKey;
-  static const char *m_userKey;
+  static const char *KEY_BODY_ID;
+  static const char *KEY_STATUS;
+  static const char *KEY_NAME;
+  static const char *KEY_TYPE;
+  static const char *KEY_COMMENT;
+  static const char *KEY_USER;
+  static const char *KEY_NAMING_USER;
 };
 
 #endif // ZFLYEMBODYANNOTATION_H

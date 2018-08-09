@@ -114,7 +114,7 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
   ZDvidBodyHelper highResHelper = fork();
   highResHelper.setCoarse(false);
   highResHelper.setRange(range);
-  highResHelper.setZoom(1);
+  highResHelper.setZoom(m_zoom);
   ZObject3dScan *highResObj = highResHelper.readBody(bodyId);
   if (highResObj != NULL) {
     result.push_back(highResObj);
