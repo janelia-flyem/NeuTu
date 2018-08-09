@@ -27353,7 +27353,7 @@ void ZTest::test(MainWindow *host)
 
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
 
   ZDvidBodyHelper helper(reader);
@@ -27490,6 +27490,14 @@ void ZTest::test(MainWindow *host)
   printer.print(stack);
 
 //  stack->printInfo();
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  std::cout << reader->hasBody(913831721, flyem::LABEL_SUPERVOXEL) << std::endl;
+  std::cout << reader->hasBody(913831721, flyem::LABEL_BODY) << std::endl;
+  std::cout << reader->hasBody(701742479, flyem::LABEL_BODY) << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

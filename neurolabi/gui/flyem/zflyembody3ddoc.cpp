@@ -3568,10 +3568,6 @@ void ZFlyEmBody3dDoc::commitSplitResult()
         }
 //        addEvent(BodyEvent::ACTION_ADD, newBodyId);
 
-        if (remainderId > 0) {
-          remainderId = ZFlyEmBodyManager::encodeSupervoxel(remainderId);
-        }
-
         summary += QString("Labe %1 uploaded as %2 (%3 voxels)\n").
             arg(seg->getLabel()).arg(newBodyId).arg(seg->getVoxelNumber());
       } else {
@@ -3581,6 +3577,10 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   }
 
   if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
+    if (remainderId > 0) {
+      remainderId = ZFlyEmBodyManager::encodeSupervoxel(remainderId);
+    }
+
     oldId = ZFlyEmBodyManager::encodeSupervoxel(oldId);
   }
 

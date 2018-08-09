@@ -3481,13 +3481,40 @@ bool ZDvidReader::hasBody(uint64_t bodyId) const
       return m_service->body_exists(m_dvidTarget.getBodyLabelName(), bodyId);
     } catch (libdvid::DVIDException &e) {
 //      m_statusCode = e.getStatus();
+#ifdef _DEBUG_
       std::cout << e.what() << std::endl;
+#endif
       return false;
     }
   }
 #else
   return hasCoarseSparseVolume(bodyId);
 #endif
+
+  return false;
+}
+
+bool ZDvidReader::hasBody(uint64_t bodyId, flyem::EBodyLabelType type) const
+{
+  if (type == flyem::LABEL_BODY) {
+    return hasBody(bodyId);
+  } else if (type == flyem::LABEL_SUPERVOXEL) {
+    if (getDvidTarget().hasSupervoxel()) {
+      try {
+        ZString endpoint = getDvidTarget().getSegmentationName() + "/sparsevol/";
+        endpoint.appendNumber(bodyId);
+        endpoint += "?supervoxels=true";
+        m_service->custom_request(
+              endpoint, libdvid::BinaryDataPtr(), libdvid::HEAD);
+        return true;
+      } catch (libdvid::DVIDException &e) {
+#ifdef _DEBUG_
+        std::cout << e.what() << std::endl;
+#endif
+        return false;
+      }
+    }
+  }
 
   return false;
 }
