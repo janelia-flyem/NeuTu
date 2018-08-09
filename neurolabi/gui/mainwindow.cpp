@@ -2200,6 +2200,9 @@ void MainWindow::openRecentFile()
 
 void MainWindow::about()
 {
+  ZDialogFactory::About(this);
+
+#if 0
   QString title = QString("<h2>%1</h2>").arg(GET_SOFTWARE_NAME.c_str());
 #if defined(_CURRENT_COMMIT_)
   if (!NeutubeConfig::getInstance().getApplication().empty()) {
@@ -2208,6 +2211,18 @@ void MainWindow::about()
         " (" + _CURRENT_COMMIT_ + ")</p>";
   }
 #endif
+
+  QString version;
+#if defined(PKG_VERSION)
+  version = ""
+      PKG_VERSION;
+#endif
+
+  if (!version.isEmpty()) {
+    title += QString("<p>Version: %1</p>").arg(version);
+  }
+
+
   QString thirdPartyLib = QString(
         "<p><a href=\"file:///%1/doc/ThirdPartyLibraries.txt\">Third-Party Credits</a></p>")
       .arg(QApplication::applicationDirPath());
@@ -2240,6 +2255,7 @@ void MainWindow::about()
                      "https://github.com/janelia-flyem/NeuTu</a></p>" + thirdPartyLib
 
                      );
+#endif
 }
 
 void MainWindow::writeSettings()

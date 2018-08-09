@@ -90,7 +90,6 @@ CONFIG(debug, debug|release) {
 }
 
 message("Target: $$TARGET")
-message("Defines: $$DEFINES")
 
 unix {
   include(extratarget.pri)
@@ -127,12 +126,14 @@ contains(GIT, .*git) {
   message($$COMMIT_HASH)
 }
 
+message("Defines: $${DEFINES}")
+
 include(add_itk.pri)
 
 #Qt4 (Obsolete)
 isEqual(QT_MAJOR_VERSION,4) {
   QT += opengl xml network
-  message("Qt 4")
+  message("Obsolete setting: Qt 4")
 }
 
 #Qt5
@@ -194,7 +195,6 @@ contains(CONFIG, static_gtest) { # gtest from ext folder
 
 unix {
     QMAKE_CXXFLAGS += -Wno-deprecated
-
     macx {
 #        DEFINES += _NEUTUBE_MAC_
         LIBS += -framework AppKit -framework IOKit \
@@ -257,7 +257,6 @@ unix {
 #        config.path = Contents/MacOS
 #        QMAKE_BUNDLE_DATA += config
     } else {
-#        DEFINES += _NEUTUBE_LINUX_
         DEFINES += _LINUX_
         LIBS += -lX11 -lm -lpthread -lrt -lGLU -lstdc++
 
@@ -1583,4 +1582,5 @@ DISTFILES += \
     Resources/shader/wblended_init.frag
 
 
-
+#debugging
+message("DEFINE: $${DEFINES}")
