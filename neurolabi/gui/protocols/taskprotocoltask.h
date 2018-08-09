@@ -29,6 +29,7 @@ public:
 
     virtual void beforeNext();
     virtual void beforePrev();
+    virtual void beforeLoading();
     virtual void onLoaded();
     virtual void beforeDone();
 

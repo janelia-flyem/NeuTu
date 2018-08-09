@@ -267,6 +267,14 @@ public:
   static bool encodesTar(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
 
+  // The old way of storing tar archives of meshes using ZDvidUrl::getMeshesTarsUrl()
+  // is being replaced with the new "tarsupervoxels" data instance using
+  // ZDvidUrl::getTarSupervoxelsUrl(). During the transition, the new approach is used
+  // only if the NEU3_USE_TARSUPERVOXELS environment variable is set.  This function returns
+  // true if we are NOT using that new approach.
+
+  bool usingOldMeshesTars() const;
+
   bool fromTar(uint64_t id) const;
   bool isTarMode() const;
 

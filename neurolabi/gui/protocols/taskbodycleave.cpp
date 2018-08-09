@@ -5,6 +5,7 @@
 #include "dvid/zdvidwriter.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "flyem/zflyemproofmvc.h"
+#include "flyem/zflyemsupervisor.h"
 #include "zstackdocproxy.h"
 #include "zwidgetmessage.h"
 #include "z3dmeshfilter.h"
@@ -274,9 +275,19 @@ TaskBodyCleave::TaskBodyCleave(QJsonObject json, ZFlyEmBody3dDoc* bodyDoc)
 
   buildTaskWidget();
 
+  m_supervisor = new ZFlyEmSupervisor(m_widget);
+  m_supervisor->setDvidTarget(m_bodyDoc->getDvidTarget());
+
   m_networkManager = new QNetworkAccessManager(m_widget);
   connect(m_networkManager, SIGNAL(finished(QNetworkReply*)),
           this, SLOT(onNetworkReplyFinished(QNetworkReply*)));
+}
+
+TaskBodyCleave::~TaskBodyCleave()
+{
+  if (m_checkedOut) {
+    m_supervisor->checkIn(m_bodyId, flyem::BODY_SPLIT_NONE);
+  }
 }
 
 QString TaskBodyCleave::tasktype()
@@ -296,6 +307,10 @@ QString TaskBodyCleave::targetString()
 
 void TaskBodyCleave::beforeNext()
 {
+  if (m_checkedOut) {
+    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::BODY_SPLIT_NONE);
+  }
+
   applyPerTaskSettings();
 
   // Clear the mesh cache when changing tasks so it does not grow without bound
@@ -318,6 +333,10 @@ void TaskBodyCleave::beforeNext()
 
 void TaskBodyCleave::beforePrev()
 {
+  if (m_checkedOut) {
+    m_checkedOut = !m_supervisor->checkIn(m_bodyId, flyem::BODY_SPLIT_NONE);
+  }
+
   applyPerTaskSettings();
 
   // See the comment in beforeNext().
@@ -330,6 +349,61 @@ void TaskBodyCleave::beforePrev()
   m_showBodyCheckBox->setChecked(true);
 
   m_hiddenIds.clear();
+}
+
+void TaskBodyCleave::beforeLoading()
+{
+  m_checkedOut = m_supervisor->checkOut(m_bodyId, flyem::BODY_SPLIT_NONE);
+}
+
+namespace {
+  std::string getOutputServerResponseValue(const ZJsonArray &output, const char *key)
+  {
+    std::string result;
+    ZJsonValue last = ZJsonValue(output.at(output.size() - 1), ZJsonValue::SET_INCREASE_REF_COUNT);
+    if (last.isObject()) {
+      ZJsonObject obj(last);
+      result = obj.value(key).toString();
+    }
+    return result;
+  }
+}
+
+void TaskBodyCleave::onLoaded()
+{
+  if (!m_checkedOut) {
+    m_widget->setEnabled(false);
+    m_menu->menuAction()->setEnabled(false);
+
+    std::string owner = m_supervisor->getOwner(m_bodyId);
+    std::string msg = "Cannot cleave ";
+    msg += !owner.empty() ? "body<br>locked by " + owner : " locked body";
+    m_cleavingStatusLabel->setText(msg.c_str());
+  } else if (m_bodyDoc->usingOldMeshesTars()) {
+
+    // The new "tarsupervoxels" DVID data type for storing tar archives of super voxel meshes
+    // gets updated automatically whenever a DVID cleaving command is issued.  But if we are
+    // using the old key-value for storing the archives of meshes, then the archives may not
+    // have been updated when we revisit an already cleaved body.  So issue a warning.
+
+    ZDvidReader reader;
+    reader.setVerbose(false);
+    if (reader.open(m_bodyDoc->getDvidTarget())) {
+      ZJsonArray output = readAuxiliaryOutput(reader);
+      if (output.size() > 0) {
+        QString info;
+        std::string user = getOutputServerResponseValue(output, "user");
+        std::string timestamp = getOutputServerResponseValue(output, "request-timestamp");
+        if (!user.empty() && !timestamp.empty()) {
+          info = "(by " + QString::fromStdString(user) + " at " + QString::fromStdString(timestamp) + ") ";
+        }
+        QString text = "Warning: Body " + QString::number(m_bodyId) + " has been cleaved " + info +
+            "so its supervoxels may be out of date.";
+        ZWidgetMessage msg(text);
+        m_bodyDoc->notify(msg);
+      }
+    }
+  }
 }
 
 void TaskBodyCleave::beforeDone()
@@ -355,6 +429,10 @@ uint64_t TaskBodyCleave::getBodyId() const
 
 void TaskBodyCleave::onShowCleavingChanged(int state)
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   bool show = (state != Qt::Unchecked);
   enableCleavingUI(show);
   applyColorMode(show);
@@ -362,32 +440,37 @@ void TaskBodyCleave::onShowCleavingChanged(int state)
 
 void TaskBodyCleave::onToggleShowCleaving()
 {
-  // For some reason, Qt will call this slot even when the source of the signal is disabled.
-  // The source is a QAction on m_menu, and TaskProtocolWindow disables it and m_widget while
-  // waiting for meshes from the previous task to e deleted and meshes for the next task to be
-  // loaded.  In this case, going ahead and loading more meshes for cleaving can cause problems
-  // due to way meshes are deleted and loaded asynchronously.  Since this disabling does not
-  // prevent this slot from being called, we must explicitly abort this slot when there is
-  // disabling.
-
-  if (!m_menu->isEnabled() || !m_widget->isEnabled()) {
+  if (!uiIsEnabled()) {
     return;
   }
+
   m_showCleavingCheckBox->setChecked(!m_showCleavingCheckBox->isChecked());
 }
 
 void TaskBodyCleave::onShowSeedsOnlyChanged(int)
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   updateColors();
 }
 
 void TaskBodyCleave::onToggleShowSeedsOnly()
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   m_showSeedsOnlyCheckBox->setChecked(!m_showSeedsOnlyCheckBox->isChecked());
 }
 
 void TaskBodyCleave::onCleaveIndexShortcut()
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   if (QAction* action = dynamic_cast<QAction*>(QObject::sender())) {
     int i = m_actionToComboBoxIndex[action];
     m_cleaveIndexComboBox->setCurrentIndex(i);
@@ -396,6 +479,10 @@ void TaskBodyCleave::onCleaveIndexShortcut()
 
 void TaskBodyCleave::onCleaveIndexChanged(int)
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   bool visible = (m_hiddenCleaveIndices.find(chosenCleaveIndex()) ==
                   m_hiddenCleaveIndices.end());
   m_showBodyCheckBox->setChecked(visible);
@@ -403,6 +490,10 @@ void TaskBodyCleave::onCleaveIndexChanged(int)
 
 void TaskBodyCleave::onSelectBody()
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   std::set<uint64_t> toSelect;
   bodiesForCleaveIndex(toSelect, chosenCleaveIndex());
   selectBodies(toSelect);
@@ -410,6 +501,10 @@ void TaskBodyCleave::onSelectBody()
 
 void TaskBodyCleave::onShowBodyChanged(int state)
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   if (state) {
     m_hiddenCleaveIndices.erase(chosenCleaveIndex());
   } else {
@@ -434,6 +529,10 @@ void TaskBodyCleave::onShowBodyChanged(int state)
 
 void TaskBodyCleave::onToggleInChosenCleaveBody()
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
   std::map<uint64_t, std::size_t> meshIdToCleaveIndex(m_meshIdToCleaveIndex);
 
@@ -509,6 +608,10 @@ void TaskBodyCleave::onToggleInChosenCleaveBody()
 
 void TaskBodyCleave::onToggleShowChosenCleaveBody()
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   m_showBodyCheckBox->setChecked(!m_showBodyCheckBox->isChecked());
 }
 
@@ -595,6 +698,10 @@ void TaskBodyCleave::onNetworkReplyFinished(QNetworkReply *reply)
 
 void TaskBodyCleave::onHideSelected()
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   const TStackObjectSet &selectedMeshes = m_bodyDoc->getSelected(ZStackObject::TYPE_MESH);
   for (auto itSelected = selectedMeshes.cbegin(); itSelected != selectedMeshes.cend(); itSelected++) {
     ZMesh *mesh = static_cast<ZMesh*>(*itSelected);
@@ -605,6 +712,10 @@ void TaskBodyCleave::onHideSelected()
 
 void TaskBodyCleave::onClearHidden()
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   selectBodies(m_hiddenIds);
   m_hiddenIds.clear();
   updateVisibility();
@@ -612,6 +723,10 @@ void TaskBodyCleave::onClearHidden()
 
 void TaskBodyCleave::onChooseCleaveMethod()
 {
+  if (!uiIsEnabled()) {
+    return;
+  }
+
   if (Z3DWindow *window = m_bodyDoc->getParent3DWindow()) {
     bool ok = true;
     QString text = QInputDialog::getText(window, "Set Cleaving Method", "Cleaving method:",
@@ -873,6 +988,19 @@ void TaskBodyCleave::buildTaskWidget()
   }
 
   m_showCleavingCheckBox->setChecked(true);
+}
+
+bool TaskBodyCleave::uiIsEnabled() const
+{
+  // For some reason, Qt will call the slot connected to a menu action even when the menu
+  // is disabled.  That can cause problems in this task, where all parts of the user interface
+  // have keyboard shortcuts implemented with menu actions, and the user interface needs to
+  // be inactive in certain cases (e.g., when the TaskProtocolWindow is waiting for the
+  // meshes from the previous task to be deleted and the meshes from the current task to be
+  // loaded, or when a tasks cannot check out and lock a body).  So every slot associated
+  // with a menu action needs to return immediately if this function returns false.
+
+  return (m_menu->isEnabled() && m_widget->isEnabled());
 }
 
 void TaskBodyCleave::updateColors()
@@ -1221,17 +1349,17 @@ void TaskBodyCleave::writeOutput(ZDvidWriter &writer,
   for (const auto &pair : cleaveIndexToMeshIds) {
     const std::vector<uint64_t> &ids = pair.second;
 
-    // Skip the cleave index whose super voxels contain the one with the same ID as the overall body.
-    // Those super voxels will stay with the overall body, while the super voxels for other cleave indices
-    // will be cleaved off into new bodies.  Note that the vector of super voxel IDs is sorted in ascending
-    // order, and by convention, the ID of the overall body is the lowest of the IDs of its super voxels.
-    // So we need check only the first super voxel ID in the vector.
+    // Do not cleave the first group of super voxels off of the original body.  By convention,
+    // those super voxels define the new version of the original body.
 
-    if (ids[0] != m_bodyId) {
+    bool cleaveOff = (i != 0);
+    if (cleaveOff) {
       ZJsonArray jsonBody;
       for (uint64_t id : ids) {
         jsonBody.append(id);
       }
+
+      // For error reporting.
 
       QString frac = QString::number(i++) + " of " + QString::number(cleaveIndexToMeshIds.size());
 
@@ -1322,6 +1450,20 @@ void TaskBodyCleave::writeAuxiliaryOutput(const ZDvidReader &reader, ZDvidWriter
   std::string jsonStr(jsonDoc.toJson(QJsonDocument::Compact).toStdString());
   std::string key(std::to_string(m_bodyId));
   writer.writeJsonString(instance, key, jsonStr);
+}
+
+ZJsonArray TaskBodyCleave::readAuxiliaryOutput(const ZDvidReader &reader) const
+{
+  ZJsonArray result;
+
+  std::string instance = getOutputInstanceName(m_bodyDoc->getDvidTarget());
+  if (reader.hasData(instance)) {
+    std::string key(std::to_string(m_bodyId));
+    std::string url = ZDvidUrl(m_bodyDoc->getDvidTarget()).getKeyUrl(instance, key);
+    result = reader.readJsonArray(url);
+  }
+
+  return result;
 }
 
 namespace {
