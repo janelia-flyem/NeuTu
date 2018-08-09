@@ -29,6 +29,7 @@ void ZFlyEmBodyAnnotation::clear()
   m_name.clear();
   m_type.clear();
   m_userName.clear();
+  m_namingUser.clear();
 }
 
 void ZFlyEmBodyAnnotation::loadJsonString(const std::string &str)

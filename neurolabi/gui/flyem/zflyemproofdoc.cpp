@@ -3850,7 +3850,11 @@ void ZFlyEmProofDoc::updateBodyColor(ZFlyEmBodyColorOption::EColorOption type)
 
 bool ZFlyEmProofDoc::selectBody(uint64_t bodyId)
 {
-  if (getDvidReader().hasBody(ZFlyEmBodyManager::decode(bodyId))) {
+  flyem::EBodyLabelType bodyType = flyem::LABEL_BODY;
+  if (ZFlyEmBodyManager::encodingSupervoxel(bodyId)) {
+    bodyType = flyem::LABEL_SUPERVOXEL;
+  }
+  if (getDvidReader().hasBody(ZFlyEmBodyManager::decode(bodyId), bodyType)) {
     QList<ZDvidLabelSlice*> sliceList = getDvidLabelSliceList();
     //  ZDvidLabelSlice *slice = getDvidLabelSlice();
     for (QList<ZDvidLabelSlice*>::iterator iter = sliceList.begin();

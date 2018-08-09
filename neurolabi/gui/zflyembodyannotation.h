@@ -39,9 +39,10 @@ public:
    *   "status": string,
    *   "comment": string,
    *   "body ID": int,
-   *   "name": string
-   *   "class": string
-   *   "user": string
+   *   "name": string,
+   *   "class": string,
+   *   "user": string,
+   *   "naming user": string
    * }
    *
    * A property is cleared if the corresponding field does not exist.
