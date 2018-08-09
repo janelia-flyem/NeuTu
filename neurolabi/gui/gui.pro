@@ -286,6 +286,7 @@ include (gui_free.pri)
 include(test/test.pri)
 include(sandbox/sandbox.pri)
 include(command/command.pri)
+include(trace/trace.pri)
 
 message("Config: $$CONFIG")
 

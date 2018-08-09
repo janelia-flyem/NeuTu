@@ -590,7 +590,7 @@ void ZFlyEmBody3dDoc::showMoreDetail(uint64_t bodyId, const ZIntCuboid &range)
       bodyEvent.setBodyColor(getBodyColor(bodyId));
       bodyEvent.setRange(range);
       bodyEvent.setDsLevel(getMinDsLevel());
-      bodyEvent.setLocalDsLevel(0);
+      bodyEvent.setLocalDsLevel(1); //need configuration
       m_eventQueue.enqueue(bodyEvent);
     }
   }

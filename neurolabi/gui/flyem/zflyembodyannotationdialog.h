@@ -24,6 +24,7 @@ public:
 
   void setBodyId(uint64_t bodyId);
   void setPrevUser(const std::string &name);
+  void setPrevNamingUser(const std::string &name);
 
   uint64_t getBodyId() const;
   QString getComment() const;
@@ -50,10 +51,13 @@ public slots:
 
 private:
   void connectSignalSlot();
+  bool isNameChanged() const;
 
 private:
   Ui::ZFlyEmBodyAnnotationDialog *ui;
   uint64_t m_bodyId;
+
+  std::string m_oldName;
 
   QList<QString> m_defaultStatusList;
 

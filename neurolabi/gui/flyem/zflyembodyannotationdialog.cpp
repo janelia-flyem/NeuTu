@@ -41,12 +41,26 @@ void ZFlyEmBodyAnnotationDialog::connectSignalSlot()
           this, SLOT(setNameEdit(QString)));
 }
 
+bool ZFlyEmBodyAnnotationDialog::isNameChanged() const
+{
+  return ui->nameLineEdit->text().toStdString() != m_oldName;
+}
+
 void ZFlyEmBodyAnnotationDialog::setPrevUser(const std::string &name)
 {
   if (!name.empty()) {
-    ui->userLabel->setText(QString("Previously annotated by %1").arg(name.c_str()));
+    ui->userLabel->setText(QString("Previously annotated by %1.").arg(name.c_str()));
   } else {
     ui->userLabel->setText("");
+  }
+}
+
+void ZFlyEmBodyAnnotationDialog::setPrevNamingUser(const std::string &name)
+{
+  if (!name.empty()) {
+    ui->namingUserLabel->setText(QString("Named by %1.").arg(name.c_str()));
+  } else {
+    ui->namingUserLabel->setText("");
   }
 }
 
@@ -112,6 +126,9 @@ ZFlyEmBodyAnnotation ZFlyEmBodyAnnotationDialog::getBodyAnnotation() const
   annotation.setName(getName().toStdString());
   annotation.setType(getType().toStdString());
   annotation.setUser(neutube::GetCurrentUserName());
+  if (isNameChanged()) {
+    annotation.setNamingUser(neutube::GetCurrentUserName());
+  }
 
   return annotation;
 }
@@ -145,6 +162,7 @@ void ZFlyEmBodyAnnotationDialog::setStatus(const std::string &status)
 
 void ZFlyEmBodyAnnotationDialog::setName(const std::string &name)
 {
+  m_oldName = name;
   ui->nameLineEdit->setText(name.c_str());
 }
 
@@ -157,6 +175,7 @@ void ZFlyEmBodyAnnotationDialog::loadBodyAnnotation(
 {
   setBodyId(annotation.getBodyId());
   setPrevUser(annotation.getUser());
+  setPrevNamingUser(annotation.getNamingUser());
 
   setComment(annotation.getComment());
   setStatus(annotation.getStatus());

@@ -245,8 +245,6 @@ int main(int argc, char *argv[])
   if (argc > 1) {
     if (QString(argv[1]).startsWith("user:")) {
       userName = std::string(argv[1]).substr(5);
-//      std::cout << userName << std::endl;
-//      return 1;
     }
   }
   if (userName.empty()) {
