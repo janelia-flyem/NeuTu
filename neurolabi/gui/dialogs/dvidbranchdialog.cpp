@@ -455,6 +455,13 @@ void DvidBranchDialog::loadNode(QString branchName) {
     QJsonDocument doc = QJsonDocument::fromJson(QString::fromStdString(defaultsJson.dumpString()).toUtf8());
     QJsonObject defaults = doc.object();
 
+    // populate dialog from default values; note that some
+    //  stored default values are ignored, and the user can't 
+    //  alter them in the dialog; usually those are generated in
+    //  NeuTu internally based on other input values; eg the 
+    //  synapse labelsz value is just the synapse value + "_labelsz",
+    //  regardless of what is in default_instances
+
     // should make these keys constants?
     if (defaults.contains("segmentation")) {
         ui->segmentationBox->setText(defaults["segmentation"].toString());
