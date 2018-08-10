@@ -167,6 +167,8 @@ contains(CONFIG, sanitize) {
     macx {
       QMAKE_CXXFLAGS += -fsanitize=address
       QMAKE_LFLAGS += -fsanitize=address
+      QMAKE_CXXFLAGS += -fsanitize=thread
+      QMAKE_LFLAGS += -fsanitize=thread
     } else {
       QMAKE_CXXFLAGS += -fsanitize=address
       QMAKE_LFLAGS += -fsanitize=address
