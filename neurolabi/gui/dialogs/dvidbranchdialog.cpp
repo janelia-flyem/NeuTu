@@ -15,13 +15,13 @@
 #include <QStandardItem>
 #include <QStringList>
 #include <QStringListModel>
-#include <QsLog.h>
 #include <QUrl>
 
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidnode.h"
 #include "dialogs/zdviddialog.h"
 #include "neutubeconfig.h"
+#include "zqslog.h"
 
 /*
  * this class is a drop-in replacement for ZDvidDialog; this version lets you

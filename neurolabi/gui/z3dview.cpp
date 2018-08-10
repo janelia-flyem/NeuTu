@@ -8,6 +8,7 @@
 
 #include <boost/math/constants/constants.hpp>
 
+#include "zqslog.h"
 #include "z3dcanvas.h"
 #include "z3dcompositor.h"
 #include "z3dcanvaspainter.h"
