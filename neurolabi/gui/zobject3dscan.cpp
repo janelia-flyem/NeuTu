@@ -1314,7 +1314,7 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
   Stack *stack = C_Stack::make(GREY, boundBox.getWidth(),
                                boundBox.getHeight(),
                                boundBox.getDepth());
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Array pointer: " << (void*) C_Stack::array8(stack) << std::endl;
 #endif
 
@@ -1328,7 +1328,7 @@ Stack* ZObject3dScan::toStack(int *offset, int v) const
 
   drawStack(stack, v, drawingOffet);
 
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
           std::cout << "Array pointer: " << (void*) C_Stack::array8(stack) << std::endl;
 #endif
 

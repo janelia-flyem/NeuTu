@@ -140,7 +140,7 @@ std::vector<ZObject3dScan*> ZDvidBodyHelper::readHybridBody(uint64_t bodyId)
     }
 
     if (lowResObj != nullptr) {
-      lowResObj->remove(range);
+//      lowResObj->remove(range);
       ZIntCuboid box = range;
       box.scaleDown(scale);
       box.expand(-1, -1, -1);

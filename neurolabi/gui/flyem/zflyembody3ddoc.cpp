@@ -1062,7 +1062,7 @@ void ZFlyEmBody3dDoc::activateSplit(uint64_t bodyId, flyem::EBodyLabelType type)
     bodyId = decode(bodyId);
     uint64_t parentId = bodyId;
     if (type == flyem::LABEL_SUPERVOXEL) {
-      parentId = m_workDvidReader.readParentBodyId(bodyId);
+      parentId = getMainDvidReader().readParentBodyId(bodyId);
     }
 
     if (getDataDocument()->checkOutBody(parentId, flyem::BODY_SPLIT_ONLINE)) {
@@ -1109,7 +1109,7 @@ void ZFlyEmBody3dDoc::deactivateSplit()
     uint64_t parentId = m_splitter->getBodyId();
 
     if (m_splitter->getLabelType() == flyem::LABEL_SUPERVOXEL) {
-      parentId = m_workDvidReader.readParentBodyId(m_splitter->getBodyId());
+      parentId = getMainDvidReader().readParentBodyId(m_splitter->getBodyId());
     }
     getDataDocument()->checkInBodyWithMessage(
           parentId, flyem::BODY_SPLIT_ONLINE);
@@ -2686,7 +2686,7 @@ QSet<uint64_t> ZFlyEmBody3dDoc::getInvolvedNormalBodySet() const
 ZDvidReader& ZFlyEmBody3dDoc::getBodyReader()
 {
   if (!m_bodyReader.isReady()) {
-    m_bodyReader.open(m_workDvidReader.getDvidTarget());
+    m_bodyReader.open(getMainDvidReader().getDvidTarget());
   }
 
   return m_bodyReader;
@@ -2749,12 +2749,13 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
   }
 
   if (tree == NULL) {
+    const ZDvidReader &reader = getWorkDvidReader();
     if (bodyId > 0) {
       int t = m_objectTime.elapsed();
       if (bodyType == flyem::BODY_SKELETON) {
-        tree = m_workDvidReader.readSwc(bodyId);
+        tree = reader.readSwc(bodyId);
       } else if (isCoarseLevel(zoom)) {
-        ZObject3dScan obj = m_workDvidReader.readCoarseBody(bodyId);
+        ZObject3dScan obj = reader.readCoarseBody(bodyId);
         if (!obj.isEmpty()) {
           tree = ZSwcFactory::CreateSurfaceSwc(obj);
 //          tree->translate(-getDvidInfo().getStartBlockIndex());
@@ -2777,7 +2778,7 @@ ZSwcTree* ZFlyEmBody3dDoc::makeBodyModel(
 
         if (cachedBody == NULL) {
           ZObject3dScan obj;
-          m_workDvidReader.readMultiscaleBody(bodyId, zoom, true, &obj);
+          reader.readMultiscaleBody(bodyId, zoom, true, &obj);
 #ifdef _DEBUG_2
           m_dvidReader.readBodyDs(bodyId, true, &obj);
 #endif
@@ -3074,7 +3075,7 @@ ZMesh *ZFlyEmBody3dDoc::readMesh(
 
 ZMesh *ZFlyEmBody3dDoc::readMesh(const ZFlyEmBodyConfig &config)
 {
-  return readMesh(m_workDvidReader, config);
+  return readMesh(getWorkDvidReader(), config);
 }
 
 ZMesh *ZFlyEmBody3dDoc::readMesh(const ZDvidReader &reader, uint64_t bodyId, int zoom)
@@ -3160,7 +3161,7 @@ std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
 std::vector<ZMesh*> ZFlyEmBody3dDoc::makeTarMeshModels(
     uint64_t bodyId, int t)
 {
-  return makeTarMeshModels(m_workDvidReader, bodyId, t);
+  return makeTarMeshModels(getWorkDvidReader(), bodyId, t);
 }
 
 std::vector<ZMesh*> ZFlyEmBody3dDoc::makeBodyMeshModels(
@@ -3300,12 +3301,19 @@ void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
 {
   m_dvidTarget = target;
   m_workDvidReader.clear();
+  m_mainDvidWriter.clear();
+  m_bodyReader.clear();
   updateDvidInfo();
 }
 
 const ZDvidReader& ZFlyEmBody3dDoc::getMainDvidReader() const
 {
   return m_mainDvidWriter.getDvidReader();
+}
+
+const ZDvidReader& ZFlyEmBody3dDoc::getWorkDvidReader() const
+{
+  return m_workDvidReader;
 }
 
 void ZFlyEmBody3dDoc::updateDvidInfo()
@@ -3317,12 +3325,12 @@ void ZFlyEmBody3dDoc::updateDvidInfo()
     m_mainDvidWriter.open(m_workDvidReader.getDvidTarget());
   }
 
-  if (m_workDvidReader.isReady()) {
-    m_dvidInfo = m_workDvidReader.readLabelInfo();
+  if (getMainDvidReader().isReady()) {
+    m_dvidInfo = getMainDvidReader().readLabelInfo();
     setMaxDsLevel(zgeom::GetZoomLevel(m_dvidInfo.getBlockSize().getX()));
     ZDvidGraySlice *slice = getArbGraySlice();
     if (slice != NULL) {
-      slice->setDvidTarget(m_workDvidReader.getDvidTarget());
+      slice->setDvidTarget(getMainDvidReader().getDvidTarget());
     }
   }
 }
@@ -3754,7 +3762,7 @@ std::vector<std::string> ZFlyEmBody3dDoc::getParentUuidList() const
 
   ZFlyEmProofDoc *doc = getDataDocument();
   if (doc != NULL) {
-    ZDvidTarget target = m_workDvidReader.getDvidTarget();
+    ZDvidTarget target = getMainDvidReader().getDvidTarget();
     const ZDvidVersionDag &dag = doc->getVersionDag();
 
     versionList = dag.getParentList(target.getUuid());
@@ -3769,7 +3777,7 @@ std::vector<std::string> ZFlyEmBody3dDoc::getAncestorUuidList() const
 
   ZFlyEmProofDoc *doc = getDataDocument();
   if (doc != NULL) {
-    ZDvidTarget target = m_workDvidReader.getDvidTarget();
+    ZDvidTarget target = getMainDvidReader().getDvidTarget();
     const ZDvidVersionDag &dag = doc->getVersionDag();
 
     versionList = dag.getAncestorList(target.getUuid());
