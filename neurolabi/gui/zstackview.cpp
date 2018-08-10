@@ -1868,7 +1868,7 @@ void ZStackView::updateActiveDecorationCanvas()
 
 void ZStackView::updateTileCanvas()
 {
-#ifdef _DEBUG_
+#ifdef _DEBUG_2
   std::cout << "Updating tile canvas." << std::endl;
 #endif
 

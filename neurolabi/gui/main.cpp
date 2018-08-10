@@ -337,9 +337,6 @@ int main(int argc, char *argv[])
         absoluteFilePath();
   }
 
-  LINFO() << "Config path: " << configPath;
-
-
 #ifdef _FLYEM_
   LoadFlyEmConfig(configPath, config, true);
 
@@ -404,7 +401,9 @@ int main(int argc, char *argv[])
     logger.setLoggingLevel(QsLogging::TraceLevel);
   }
 
-  RECORD_INFORMATION("************* Start ******************");
+//  RECORD_INFORMATION("************* Start ******************");
+
+  LINFO() << "Config path: " << configPath;
 
   if (guiEnabled) {
     LINFO() << "Start " + GET_SOFTWARE_NAME + " - " + GET_APPLICATION_NAME;

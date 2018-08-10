@@ -9,11 +9,11 @@ contains(TEMPLATE, app) {
   CONFIG += staticlib
 }
 
-contains(CONFIG, neu3) {
+CONFIG(neu3) {
   DEFINES += _NEU3_
 }
 
-contains(CONFIG, neu3) | contains(CONFIG, flyem) {
+CONFIG(neu3) | CONFIG(flyem) {
   DEFINES *= _FLYEM_
 } else {
   DEFINES += _NEUTUBE_
@@ -69,7 +69,7 @@ unix {
 
 CONFIG(debug, debug|release) {
     TARGET = neuTube_d
-    contains(CONFIG, neu3) {
+    CONFIG(neu3) {
         TARGET = neu3_d
     } else {
       contains(DEFINES, _FLYEM_) {
@@ -80,10 +80,10 @@ CONFIG(debug, debug|release) {
 } else {
     QMAKE_CXXFLAGS += -g
     TARGET = neuTube
-    contains(CONFIG, neu3) {
+    CONFIG(neu3) {
       TARGET = neu3
     } else {
-      contains(DEFINES, _FLYEM_) {
+      CONFIG(_FLYEM_) {
           TARGET = neutu
       }
     }
@@ -133,7 +133,7 @@ include(add_itk.pri)
 #Qt4 (Obsolete)
 isEqual(QT_MAJOR_VERSION,4) {
   QT += opengl xml network
-  message("Obsolete setting: Qt 4")
+  warning("Obsolete setting: Qt 4")
 }
 
 #Qt5
@@ -150,7 +150,7 @@ isEqual(QT_MAJOR_VERSION,5) | greaterThan(QT_MAJOR_VERSION,5) {
     CONFIG *= c++11
 }
 
-contains(CONFIG, c++11) {
+CONFIG(c++11) {
   message(Using C++11)
   DEFINES += _CPP11_
   unix {
@@ -161,19 +161,28 @@ contains(CONFIG, c++11) {
   }
 }
 
-contains(CONFIG, sanitize) {
-  message(Using sanitize)
-  unix {
-    macx {
-      QMAKE_CXXFLAGS += -fsanitize=address
-      QMAKE_LFLAGS += -fsanitize=address
-      QMAKE_CXXFLAGS += -fsanitize=thread
-      QMAKE_LFLAGS += -fsanitize=thread
-    } else {
-      QMAKE_CXXFLAGS += -fsanitize=address
-      QMAKE_LFLAGS += -fsanitize=address
-    }
-  }
+#contains(CONFIG, sanitize) {
+#  message(Using sanitize)
+#  unix {
+#    macx {
+#      QMAKE_CXXFLAGS += -fsanitize=address
+#      QMAKE_LFLAGS += -fsanitize=address
+#    } else {
+#      QMAKE_CXXFLAGS += -fsanitize=address
+#      QMAKE_LFLAGS += -fsanitize=address
+#    }
+#  }
+#}
+
+equals(SANITIZE_BUILD, "thread") {
+  QMAKE_CXXFLAGS += -fsanitize=thread
+  QMAKE_LFLAGS += -fsanitize=thread
+  DEFINES += SANITIZE_THREAD
+}
+
+equals(SANITIZE_BUILD, "address") {
+  QMAKE_CXXFLAGS += -fsanitize=address
+  QMAKE_LFLAGS += -fsanitize=address
 }
 
 win32 {
@@ -191,7 +200,7 @@ unix {
     }
 }
 
-contains(CONFIG, static_gtest) { # gtest from ext folder
+CONFIG(static_gtest) { # gtest from ext folder
   include($$PWD/ext/gtest.pri)
 }
 
@@ -211,7 +220,7 @@ unix {
         QMAKE_INFO_PLIST = images/Info.plist
         QMAKE_CXXFLAGS += -m64
 
-        contains(CONFIG, autotarget) {
+        CONFIG(autotarget) {
           OSX_VERSION = $$system(sw_vers -productVersion)
           message("Mac OS X $$OSX_VERSION")
           MAC_VERSION_NUMBER = $$split(OSX_VERSION, .)
@@ -226,7 +235,7 @@ unix {
           message("Deployment target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
 
           greaterThan(OSX_MINOR_VERSION, 8) {
-            contains(CONFIG, libstdc++) {
+            CONFIG(libstdc++) {
               message("Using libstdc++")
             } else {
               LIBS -= -lstdc++
@@ -238,7 +247,7 @@ unix {
           }
         } else {
           message("No auto mac version check")
-          contains(CONFIG, c++11) {
+          CONFIG(c++11) {
             isEqual(QT_MAJOR_VERSION,4) {
               message("Forcing deployment target: ")
               QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
@@ -1585,4 +1594,8 @@ DISTFILES += \
 
 
 #debugging
-message("DEFINE: $${DEFINES}")
+message("[[ DEFINE ]]: $${DEFINES}")
+message("[[ QMAKE_CXXFLAGS ]]: $${QMAKE_CXXFLAGS}")
+message("[[ CONDA_ENV ]]: $${CONDA_ENV}")
+message("[[ LIBS ]]: $${LIBS}")
+message("[[ TARGET ]]: $${TARGET}")

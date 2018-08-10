@@ -12,7 +12,7 @@
 #include <QTime>
 
 #ifdef _DEBUG_
-#include "QsLog.h"
+#include "zqslog.h"
 #endif
 
 #include "neutube_def.h"

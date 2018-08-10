@@ -2,7 +2,7 @@
 #include <QtCore>
 #include <QPen>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zpainter.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"

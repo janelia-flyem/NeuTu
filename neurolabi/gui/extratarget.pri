@@ -2,7 +2,7 @@
 #Build neurolabi
 NEUROLABI_DIR = $${PWD}/..
 CONFIG(debug, debug|release) {
-    contains(CONFIG, sanitize) {
+    equals(SANITIZE_BUILD, "address") {
       TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_sanitize.a
     } else {
       TargetFile = $${NEUROLABI_DIR}/c/lib/libneurolabi_debug.a
@@ -19,7 +19,7 @@ message("Config: " $${CONDA_CONFIG})
 
 neurolabi.target = neurolabi
 CONFIG(debug, debug|release) {
-    contains(CONFIG, sanitize) {
+    equals(SANITIZE_BUILD, "address") {
       neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library --sanitize "'$${CONDA_CONFIG}'"
     } else {
       neurolabi.commands = echo "building neurolabi"; cd $${PWD}/../; ./update_library "'$${CONDA_CONFIG}'"
