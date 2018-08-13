@@ -419,6 +419,7 @@ public:
   bool isAutoSaveEnabled() const { return m_autoSaveEnabled; }
 
   inline bool usingNativeDialog() const { return m_usingNativeDialog; }
+  inline bool usingDvidBrowseDialog() const { return m_usingDvidBrowseDialog; }
 
 #if 0
   const ZFlyEmConfig &getFlyEmConfig() const { return m_flyemConfig; }
@@ -467,6 +468,7 @@ private:
   int m_autoSaveMaxSwcCount;
   bool m_autoSaveEnabled;
   bool m_usingNativeDialog;
+  bool m_usingDvidBrowseDialog;
   bool m_loggingProfile;
   int m_verboseLevel;
   bool m_advancedMode = false;
