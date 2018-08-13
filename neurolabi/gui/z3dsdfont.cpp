@@ -1,9 +1,10 @@
 #include "z3dsdfont.h"
 
-#include "QsLog.h"
 #include <QFile>
 #include <QTextStream>
 #include <QStringList>
+
+#include "zqslog.h"
 
 Z3DSDFont::Z3DSDFont(const QString& imageFileName, const QString& txtFileName)
   : m_imageFileName(imageFileName)

@@ -10,7 +10,7 @@
 
 #include "mainwindow.h"
 #include "neu3window.h"
-#include "QsLog/QsLog.h"
+#include "zqslog.h"
 #include "QsLog/QsLogDest.h"
 #include "zcommandline.h"
 #include "zerror.h"

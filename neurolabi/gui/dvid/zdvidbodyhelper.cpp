@@ -93,6 +93,10 @@ ZIntCuboid ZDvidBodyHelper::getAdjustedRange() const
     ZDvidInfo dvidInfo = getDvidReader()->readLabelInfo();
     ZIntPoint scale = dvidInfo.getBlockSize();
 
+    int s = zgeom::GetZoomScale(m_zoom);
+    range.scaleDown(s);
+    range.scale(s);
+
     range.set(
           ZIntPoint(AdjustMinCorner(range.getFirstCorner().getX(), scale.getX()),
                     AdjustMinCorner(range.getFirstCorner().getY(), scale.getY()),

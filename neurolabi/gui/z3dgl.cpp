@@ -1,9 +1,10 @@
 #include "z3dgl.h"
 
-#include "QsLog.h"
 #include <glbinding/ContextInfo.h>
 #include <glbinding/Version.h>
 #include <glbinding/Meta.h>
+
+#include "zqslog.h"
 
 bool GLVersionGE(int majorVersion, int minorVersion)
 {

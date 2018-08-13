@@ -47,7 +47,7 @@ Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* paren
   , m_lock(false)
   , m_initMode(initMode)
 {
-  CHECK(m_doc);
+//  CHECK(m_doc);
   m_canvas = new Z3DCanvas("", 512, 512, parent);
   m_docHelper.attach(this);
 

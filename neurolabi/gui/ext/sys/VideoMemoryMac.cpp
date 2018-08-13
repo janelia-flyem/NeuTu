@@ -3,7 +3,7 @@
 #include <CGLCurrent.h>
 #include <OpenGL.h>
 #include <iostream>
-#include "QsLog.h"
+#include "zqslog.h"
 
 uint64_t getDedicatedVideoMemoryMB()
 {

@@ -298,10 +298,6 @@ include(sandbox/sandbox.pri)
 include(command/command.pri)
 include(trace/trace.pri)
 
-message("Config: $$CONFIG")
-
-message("Target: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
-
 # Input
 RESOURCES = gui.qrc
 HEADERS += mainwindow.h \
@@ -1599,3 +1595,7 @@ message("[[ QMAKE_CXXFLAGS ]]: $${QMAKE_CXXFLAGS}")
 message("[[ CONDA_ENV ]]: $${CONDA_ENV}")
 message("[[ LIBS ]]: $${LIBS}")
 message("[[ TARGET ]]: $${TARGET}")
+message("[[ OUT_PWD ]]: $${OUT_PWD}")
+macx {
+  message("[[ Mac Target ]]: $$QMAKE_MACOSX_DEPLOYMENT_TARGET")
+}

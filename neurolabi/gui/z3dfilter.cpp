@@ -17,7 +17,7 @@
 
 #include <QWidget>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "neutubeconfig.h"
 #include "zsysteminfo.h"
 #include "z3dport.h"

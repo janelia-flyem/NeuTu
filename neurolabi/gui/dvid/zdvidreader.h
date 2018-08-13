@@ -221,6 +221,9 @@ public:
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId) const;
+
+  ZSparseStack* readSparseStack(uint64_t bodyId, int zoom) const;
+
   ZDvidSparseStack* readDvidSparseStack(
       uint64_t bodyId, flyem::EBodyLabelType labelType) const;
 //  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
@@ -246,6 +249,12 @@ public:
   std::vector<ZStack*> readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber, int zoom = 0) const;
+
+  std::vector<ZStack*> readGrayScaleBlock(
+      const ZObject3dScan &blockObj, const ZDvidInfo &info, int zoom) const;
+  std::vector<ZStack*> readGrayScaleBlock(
+      const ZObject3dScan &blockObj, int zoom) const;
+//  ZStack* readGrayScaleBlock(int bx, int by, int bz, int zoom) const;
 
 //  QString readInfo(const QString &dataName) const;
 

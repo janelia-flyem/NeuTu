@@ -1,6 +1,8 @@
 #ifndef ZQSLOG_H
 #define ZQSLOG_H
 
+#if !defined(QSLOG_H)
+
 #if defined(VLOG)
 # undef VLOG
 #endif
@@ -70,5 +72,6 @@
 #endif
 
 #include "QsLog.h"
+#endif
 
 #endif // ZQSLOG_H

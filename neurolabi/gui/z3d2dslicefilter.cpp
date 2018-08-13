@@ -5,7 +5,7 @@
 
 #include "z3dgpuinfo.h"
 #include "zmesh.h"
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zbenchtimer.h"
 #include "zmeshutils.h"
 #include "zstackdoc.h"
