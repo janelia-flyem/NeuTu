@@ -11,6 +11,7 @@ class ZJsonObject;
 class ZDvidVersionDag;
 class ZDvidInfo;
 class ZIntCuboid;
+class ZDvidReader;
 
 #define DVID_UUID_COMMON_LENGTH 4
 
@@ -106,6 +107,10 @@ ZIntCuboid GetZoomBox(const ZIntCuboid &box, int zoom);
 #if defined(_ENABLE_LIBDVIDCPP_)
 ZIntCuboid GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo);
 #endif
+
+std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
+    const ZDvidReader &reader, const std::vector<uint64_t> &bodyId,
+    bool mergingToLargest);
 }
 
 #endif // ZDVIDUTIL_H

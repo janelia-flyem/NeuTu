@@ -27452,7 +27452,7 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
 
   ZDvidReader grayReader;
@@ -27516,6 +27516,22 @@ void ZTest::test(MainWindow *host)
   std::cout << reader->hasBody(913831721, flyem::LABEL_SUPERVOXEL) << std::endl;
   std::cout << reader->hasBody(913831721, flyem::LABEL_BODY) << std::endl;
   std::cout << reader->hasBody(701742479, flyem::LABEL_BODY) << std::endl;
+#endif
+
+#if 1
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test_merge");
+  std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = ZDvid::GetMergeConfig(
+        *reader,
+        std::vector<uint64_t>({770606927, 1537922823, 1537931903, 5813022814,
+                               1538600496, 1537927379, 1567960688, 1882009576}),
+        true);
+
+  std::cout << "Merge: " << mergeConfig.first << std::endl;
+  std::cout << " <- ";
+  for (uint64_t bodyId : mergeConfig.second) {
+    std::cout << bodyId << " ";
+  }
+  std::cout << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;
