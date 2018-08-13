@@ -1361,7 +1361,7 @@ void TaskBodyCleave::writeOutput(ZDvidWriter &writer,
 
       // For error reporting.
 
-      QString frac = QString::number(i++) + " of " + QString::number(cleaveIndexToMeshIds.size());
+      QString frac = QString::number(i) + " of " + QString::number(cleaveIndexToMeshIds.size());
 
       std::string response = writer.post(urlCleave, jsonBody);
       QString labelStr;
@@ -1389,6 +1389,8 @@ void TaskBodyCleave::writeOutput(ZDvidWriter &writer,
         return;
       }
     }
+
+    i++;
   }
 
   // It can be useful to know the new bodies created by cleaving, so display that information.
