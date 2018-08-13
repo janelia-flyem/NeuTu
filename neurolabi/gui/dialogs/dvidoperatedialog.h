@@ -2,7 +2,7 @@
 #define DVIDOPERATEDIALOG_H
 
 #include <QDialog>
-#include "zdviddialog.h"
+#include "zdvidtargetproviderdialog.h"
 
 namespace Ui {
 class DvidOperateDialog;
@@ -18,7 +18,7 @@ public:
   explicit DvidOperateDialog(QWidget *parent = 0);
   ~DvidOperateDialog();
 
-  void setDvidDialog(ZDvidDialog *dlg);
+  void setDvidDialog(ZDvidTargetProviderDialog *dlg);
 
   const ZDvidTarget& getDvidTarget() const {
     return m_dvidTarget;
@@ -41,7 +41,7 @@ private:
 
   ZDvidTarget m_dvidTarget;
 
-  ZDvidDialog *m_dvidDlg;
+  ZDvidTargetProviderDialog *m_dvidDlg;
   ZContrastProtocalDialog *m_contrastDlg;
 };
 

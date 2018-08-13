@@ -20,7 +20,7 @@ class QWidget;
 class ZFlyEmProofDoc;
 class ZDvidTileEnsemble;
 class ZDvidTarget;
-class ZDvidDialog;
+class ZDvidTargetProviderDialog;
 class ZFlyEmProofPresenter;
 class ZFlyEmSupervisor;
 class ZPaintLabelWidget;
@@ -102,8 +102,8 @@ public:
 
   virtual ZDvidTarget getDvidTarget() const;
 
-  void setDvidDialog(ZDvidDialog *dlg);
-  ZDvidDialog* getDvidDialog() const;
+  void setDvidDialog(ZDvidTargetProviderDialog *dlg);
+  ZDvidTargetProviderDialog* getDvidDialog() const;
 
   uint64_t getBodyIdForSplit() const;
   void setBodyIdForSplit(uint64_t id);
@@ -534,7 +534,7 @@ protected:
 //  ZColorLabel *m_latencyLabelWidget;
   ZPaintLabelWidget *m_paintLabelWidget;
 
-  ZDvidDialog *m_dvidDlg;
+  ZDvidTargetProviderDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
   ProtocolSwitcher *m_protocolSwitcher;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
