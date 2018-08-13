@@ -467,7 +467,7 @@ uint64_t ZFlyEmBodyMergeProject::getTargetId(
     for (uint64_t id : bodyId) {
       int bodySize = m_reader.readBodyBlockCount(id);
       if (bodySize > maxSize) {
-        bodySize = maxSize;
+        maxSize = bodySize;
         targetId = id;
       }
     }
