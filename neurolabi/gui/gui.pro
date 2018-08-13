@@ -83,7 +83,7 @@ CONFIG(debug, debug|release) {
     CONFIG(neu3) {
       TARGET = neu3
     } else {
-      CONFIG(_FLYEM_) {
+      CONFIG(flyem) {
           TARGET = neutu
       }
     }

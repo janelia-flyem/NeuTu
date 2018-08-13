@@ -108,9 +108,10 @@ public:
 
   void mergeBody(const std::string &dataName, uint64_t targetId,
                  const std::vector<uint64_t> &bodyId);
-  void mergeBody(const std::string &dataName,
-                 const std::vector<uint64_t> &bodyId,
-                 bool mergingToLargest);
+  std::pair<uint64_t, std::vector<uint64_t>> mergeBody(
+      const std::string &dataName,
+      const std::vector<uint64_t> &bodyId,
+      bool mergingToLargest);
 
   /*!
    * \brief Create a new keyvalue data in DVID.
