@@ -4,7 +4,7 @@
 #include <cmath>
 #include <QGraphicsBlurEffect>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "tz_rastergeom.h"
 #include "widgets/zimagewidget.h"
 #include "zpainter.h"

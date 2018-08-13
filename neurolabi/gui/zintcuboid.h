@@ -69,6 +69,7 @@ public:
    * The size of the box will be scaled by \a s.
    */
   void scale(const ZIntPoint &s);
+  void scale(int s);
 
   /*!
    * \brief Downsize the box

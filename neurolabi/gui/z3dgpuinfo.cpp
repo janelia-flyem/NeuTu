@@ -1,9 +1,11 @@
 #include "z3dgpuinfo.h"
 
 #include "z3dgl.h"
-#include "QsLog.h"
+
 #include <QStringList>
 #include <QProcess>
+
+#include "zqslog.h"
 
 uint64_t getDedicatedVideoMemoryMB();
 

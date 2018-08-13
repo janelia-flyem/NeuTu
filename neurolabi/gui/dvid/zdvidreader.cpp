@@ -1523,6 +1523,115 @@ ZStack* ZDvidReader::readGrayScaleBlock(
   return stack;
 }
 
+#if 0
+ZStack* ZDvidReader::readGrayScaleBlock(int bx, int by, int bz, int zoom) const
+{
+  std::vector<int> blockcoords;
+  blockcoords.push_back(bx);
+  blockcoords.push_back(by);
+  blockcoords.push_back(bz);
+
+  ZStack *stack = NULL;
+
+  std::vector<libdvid::DVIDCompressedBlock> c_blocks;
+  try {
+    m_service->get_specificblocks3D(
+          getDvidTarget().getGrayScaleName(), blockcoords, false, c_blocks, zoom);
+
+    if (c_blocks.size() == 1) {
+      libdvid::DVIDCompressedBlock &block = c_blocks[0];
+      libdvid::BinaryDataPtr data = block.get_uncompressed_data();
+      std::vector<int> offset = block.get_offset();
+
+      ZDvidInfo info = readLabelInfo();
+
+      ZIntCuboid box;
+      box.setFirstCorner(offset[0], offset[1], offset[2]);
+      box.setSize(info.getBlockSize());
+      stack = ZStackFactory::MakeZeroStack(box, mylib::UINT64_TYPE);
+      stack->copyValueFrom(data->get_raw(), data->length());
+    }
+  } catch(libdvid::DVIDException &e) {
+    LERROR() << e.what();
+    m_statusCode = e.getStatus();
+  } catch (std::exception &e) {
+    LERROR() << e.what();
+    m_statusCode = 0;
+  }
+
+  return stack;
+}
+
+std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
+    const ZObject3dScan &blockObj, int zoom) const
+{
+  std::vector<ZStack*> result;
+
+  std::vector<libdvid::DVIDCompressedBlock> c_blocks;
+
+  std::vector<int> blockcoords;
+  ZObject3dScan::ConstVoxelIterator objIter(&blockObj);
+  while (objIter.hasNext()) {
+    ZIntPoint pt = objIter.next();
+    blockcoords.push_back(pt.getX());
+    blockcoords.push_back(pt.getY());
+    blockcoords.push_back(pt.getZ());
+  }
+
+  try {
+    m_service->get_specificblocks3D(
+          getDvidTarget().getGrayScaleName(), blockcoords, false, c_blocks, zoom);
+
+    ZDvidInfo info = readLabelInfo();
+    for (libdvid::DVIDCompressedBlock &block : c_blocks) {
+      libdvid::BinaryDataPtr data = block.get_uncompressed_data();
+
+      std::vector<int> offset = block.get_offset();
+      ZIntPoint startCoord(offset[0], offset[1], offset[2]);
+      ZStack *stack = ZStackFactory::MakeZeroStack(
+            GREY, ZIntCuboid(startCoord, startCoord + info.getBlockSize() - 1));
+      stack->copyValueFrom(data->get_raw(), data->length());
+
+      result.push_back(stack);
+    }
+  } catch(libdvid::DVIDException &e) {
+    LERROR() << e.what();
+    m_statusCode = e.getStatus();
+  } catch (std::exception &e) {
+    LERROR() << e.what();
+    m_statusCode = 0;
+  }
+
+  return result;
+}
+#endif
+
+std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
+    const ZObject3dScan &blockObj, const ZDvidInfo &info, int zoom) const
+{
+  std::vector<ZStack*> result;
+
+  ZObject3dScan::ConstSegmentIterator segIter(&blockObj);
+  while (segIter.hasNext()) {
+    const ZObject3dScan::Segment &seg = segIter.next();
+    if (!seg.isEmpty()) {
+      ZIntPoint blockIndex(seg.getStart(), seg.getY(), seg.getZ());
+      int blockCount = seg.getEnd() - seg.getStart() + 1;
+      std::vector<ZStack*> stackArray =
+          readGrayScaleBlock(blockIndex, info, blockCount, zoom);
+      result.insert(result.end(), stackArray.begin(), stackArray.end());
+    }
+  }
+
+  return result;
+}
+
+std::vector<ZStack*> ZDvidReader::readGrayScaleBlock(
+    const ZObject3dScan &blockObj, int zoom) const
+{
+  return readGrayScaleBlock(blockObj, readGrayScaleInfo(), zoom);
+}
+
 ZDvidSparseStack* ZDvidReader::readDvidSparseStack(
     uint64_t bodyId, flyem::EBodyLabelType labelType) const
 {
@@ -1571,6 +1680,78 @@ ZDvidSparseStack* ZDvidReader::readDvidSparseStackAsync(
   spStack->setDvidTarget(getDvidTarget());
   spStack->loadBodyAsync(bodyId);
   m_statusCode = spStack->getReadStatusCode();
+
+  return spStack;
+}
+
+ZSparseStack* ZDvidReader::readSparseStack(uint64_t bodyId, int zoom) const
+{
+  ZSparseStack *spStack = NULL;
+
+  ZObject3dScan *body = readMultiscaleBody(bodyId, zoom, true, NULL);
+
+  //ZSparseObject *body = new ZSparseObject;
+  //body->append(reader.readBody(bodyId));
+  //body->canonize();
+#ifdef _DEBUG_2
+  tic();
+#endif
+
+  if (!body->isEmpty()) {
+    spStack = new ZSparseStack;
+    spStack->setObjectMask(body);
+
+    ZDvidInfo dvidInfo = readDataInfo(getDvidTarget().getGrayScaleName());
+    ZObject3dScan blockObj = dvidInfo.getBlockIndex(*body);;
+    ZStackBlockGrid *grid = new ZStackBlockGrid;
+    spStack->setGreyScale(grid);
+//    grid->setMinPoint(dvidInfo.getStartCoordinates());
+    grid->setBlockSize(dvidInfo.getBlockSize());
+    grid->setGridSize(dvidInfo.getGridSize());
+
+    /*
+    for (ZIntPointArray::const_iterator iter = blockArray.begin();
+         iter != blockArray.end(); ++iter) {
+         */
+    size_t stripeNumber = blockObj.getStripeNumber();
+    for (size_t s = 0; s < stripeNumber; ++s) {
+      const ZObject3dStripe &stripe = blockObj.getStripe(s);
+      int segmentNumber = stripe.getSegmentNumber();
+      int y = stripe.getY();
+      int z = stripe.getZ();
+      for (int i = 0; i < segmentNumber; ++i) {
+        int x0 = stripe.getSegmentStart(i);
+        int x1 = stripe.getSegmentEnd(i);
+        //tic();
+#if 0
+        const ZIntPoint blockIndex =
+            ZIntPoint(x0, y, z) - dvidInfo.getStartBlockIndex();
+        std::vector<ZStack*> stackArray =
+            readGrayScaleBlock(blockIndex, dvidInfo, x1 - x0 + 1);
+        grid->consumeStack(blockIndex, stackArray);
+#else
+
+        for (int x = x0; x <= x1; ++x) {
+          const ZIntPoint blockIndex =
+              ZIntPoint(x, y, z);// - dvidInfo.getStartBlockIndex();
+          //ZStack *stack = readGrayScaleBlock(blockIndex, dvidInfo);
+          //const ZIntPoint blockIndex = *iter - dvidInfo.getStartBlockIndex();
+          ZIntCuboid box = grid->getBlockBox(blockIndex);
+          ZStack *stack = readGrayScale(box);
+          grid->consumeStack(blockIndex, stack);
+        }
+#endif
+        //ptoc();
+      }
+    }
+    //}
+  } else {
+    delete body;
+  }
+
+#ifdef _DEBUG_2
+  ptoc();
+#endif
 
   return spStack;
 }
@@ -2813,6 +2994,7 @@ ZArray* ZDvidReader::readLabels64(
 
   return array;
 }
+
 
 std::vector<ZArray*> ZDvidReader::readLabelBlock(
     const ZObject3dScan &blockObj, int zoom) const

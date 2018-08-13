@@ -27452,6 +27452,24 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZDvidReader grayReader;
+  grayReader.open(reader->getDvidTarget().getGrayScaleTarget());
+
+  ZObject3dScan blockObj;
+  blockObj.addSegment(300, 300, 300, 300);
+  blockObj.downsample(1, 1, 1);
+  std::vector<ZStack*> stack = grayReader.readGrayScaleBlock(blockObj,  1);
+
+//  std::vector<ZStack*> blockArray;
+//  blockArray.push_back(array);
+
+//  ZStack *stack = ZStackFactory::MakeLabelColorStack(blockArray);
+  stack[0]->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
 #if 0
   ZIntCuboid box(1, 2, 3, 2, 3, 4);
   ZArray *array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);

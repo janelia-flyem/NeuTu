@@ -10,7 +10,7 @@
 TEST(ZFlyEmBodyAnnotation, Basic)
 {
   ZFlyEmBodyAnnotation annot;
-  ASSERT_EQ(0, annot.getBodyId());
+  ASSERT_EQ(uint64_t(0), annot.getBodyId());
 
   ZJsonObject json;
   json.setEntry("status", "Hard to trace");
@@ -23,7 +23,7 @@ TEST(ZFlyEmBodyAnnotation, Basic)
 
   annot.loadJsonObject(json);
 
-  ASSERT_EQ(123, annot.getBodyId());
+  ASSERT_EQ(uint64_t(123), annot.getBodyId());
   ASSERT_EQ("Hard to trace", annot.getStatus());
   ASSERT_EQ("test", annot.getComment());
   ASSERT_EQ("KC", annot.getName());
@@ -32,7 +32,7 @@ TEST(ZFlyEmBodyAnnotation, Basic)
   ASSERT_EQ("mock", annot.getNamingUser());
 
   annot.clear();
-  ASSERT_EQ(0, annot.getBodyId());
+  ASSERT_EQ(uint64_t(0), annot.getBodyId());
   ASSERT_EQ("", annot.getStatus());
   ASSERT_EQ("", annot.getComment());
   ASSERT_EQ("", annot.getName());

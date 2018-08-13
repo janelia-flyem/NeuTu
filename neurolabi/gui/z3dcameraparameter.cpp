@@ -1,15 +1,16 @@
 #include "z3dcameraparameter.h"
 
+#include <QWidget>
+#include <QGroupBox>
+
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include "zqslog.h"
 #include "zwidgetsgroup.h"
-#include "QsLog.h"
 #include "zjsonobject.h"
 #include "zjsonparser.h"
 #include "zjsonarray.h"
-#include <QWidget>
-#include <QGroupBox>
 
 Z3DCameraParameter::Z3DCameraParameter(const QString& name, QObject* parent)
   : ZSingleValueParameter<Z3DCamera>(name, parent)
