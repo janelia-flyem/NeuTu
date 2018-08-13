@@ -515,6 +515,7 @@ HEADERS += mainwindow.h \
     dvid/zdvidreader.h \
     dialogs/flyembodyiddialog.h \
     dialogs/zdviddialog.h \
+    dialogs/zdvidtargetproviderdialog.h \
     dialogs/flyembodyfilterdialog.h \
     flyem/zskeletonizeservice.h \
     zflyemdvidreader.h \
@@ -819,6 +820,7 @@ HEADERS += mainwindow.h \
     widgets/taskprotocolwindow.h \
     protocols/taskprotocoltask.h \
     protocols/taskbodyreview.h \
+    dialogs/dvidbranchdialog.h \
     protocols/tasktesttask.h \
     protocols/tasksplitseeds.h \
     protocols/bodyprefetchqueue.h \
@@ -997,6 +999,7 @@ FORMS += dialogs/settingdialog.ui \
     widgets/zbodylistwidget.ui \
     widgets/flyembodyinfowidget.ui \
     neu3window.ui \
+    dialogs/dvidbranchdialog.ui \
     widgets/taskprotocolwindow.ui \
     dialogs/zflyemmergeuploaddialog.ui \
     dialogs/zflyemproofsettingdialog.ui \
@@ -1194,6 +1197,7 @@ SOURCES += main.cpp \
     dvid/zdvidreader.cpp \
     dialogs/flyembodyiddialog.cpp \
     dialogs/zdviddialog.cpp \
+    dialogs/zdvidtargetproviderdialog.cpp \
     dialogs/flyembodyfilterdialog.cpp \
     flyem/zskeletonizeservice.cpp \
     zflyemdvidreader.cpp \
@@ -1493,6 +1497,7 @@ SOURCES += main.cpp \
     widgets/taskprotocolwindow.cpp \
     protocols/taskprotocoltask.cpp \
     protocols/taskbodyreview.cpp \
+    dialogs/dvidbranchdialog.cpp \
     protocols/tasktesttask.cpp \
     protocols/tasksplitseeds.cpp \
     protocols/bodyprefetchqueue.cpp \
