@@ -8,6 +8,7 @@
 
 #include <boost/math/constants/constants.hpp>
 
+#include "zqslog.h"
 #include "z3dcanvas.h"
 #include "z3dcompositor.h"
 #include "z3dcanvaspainter.h"
@@ -22,6 +23,7 @@
 #include "z3dgraphfilter.h"
 #include "z3dsurfacefilter.h"
 #include "flyem/zflyemtodolistfilter.h"
+#include "z3d2dslicefilter.h"
 
 #include "zfiletype.h"
 #include "flyem/zflyembody3ddoc.h"
@@ -45,7 +47,7 @@ Z3DView::Z3DView(ZStackDoc* doc, EInitMode initMode, bool stereo, QWidget* paren
   , m_lock(false)
   , m_initMode(initMode)
 {
-  CHECK(m_doc);
+//  CHECK(m_doc);
   m_canvas = new Z3DCanvas("", 512, 512, parent);
   m_docHelper.attach(this);
 
@@ -125,6 +127,9 @@ std::shared_ptr<ZWidgetsGroup> Z3DView::getWidgetsGroup(
     return getWidgetsGroup(getVolumeFilter());
   case neutube3d::LAYER_DECORATION:
     return getWidgetsGroup(getDecorationFilter());
+    break;
+  case neutube3d::LAYER_SLICE:
+    return getWidgetsGroup(getSliceFilter());
     break;
   }
 
@@ -527,6 +532,9 @@ void Z3DView::addFilter(neutube3d::ERendererLayer layer)
   case neutube3d::LAYER_DECORATION:
     initDecorationFilter();
     break;
+  case neutube3d::LAYER_SLICE:
+    initSliceFilter();
+    break;
   }
 }
 
@@ -546,11 +554,27 @@ void Z3DView::initVolumeFilter()
   m_layerList.append(neutube3d::LAYER_VOLUME);
 }
 
+void Z3DView::initSliceFilter()
+{
+  m_sliceFilter.reset(new Z3D2DSliceFilter(*m_globalParas));
+  m_sliceFilter->outputPort("Image")->connect(m_compositor->inputPort("Image"));
+  m_sliceFilter->outputPort("VolumeFilter")->connect(
+        m_compositor->inputPort("VolumeFilters"));
+  connect(m_sliceFilter.get(), &Z3D2DSliceFilter::boundBoxChanged,
+          this, &Z3DView::updateBoundBox);
+  connect(m_sliceFilter.get(), &Z3D2DSliceFilter::objVisibleChanged,
+          this, &Z3DView::updateBoundBox);
+  m_canvas->addEventListenerToBack(*m_sliceFilter);
+  m_allFilters.push_back(m_sliceFilter.get());
+  m_layerList.append(neutube3d::LAYER_SLICE);
+}
+
 void Z3DView::initPunctaFilter()
 {
   m_punctaFilter.reset(new Z3DPunctaFilter(*m_globalParas));
   m_punctaFilter->setListenerName("Puncta filter");
-  m_punctaFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
+  m_punctaFilter->outputPort("GeometryFilter")->connect(
+        m_compositor->inputPort("GeometryFilters"));
   connect(m_punctaFilter.get(), &Z3DPunctaFilter::boundBoxChanged,
           this, &Z3DView::updateBoundBox);
   connect(m_punctaFilter.get(), &Z3DPunctaFilter::objVisibleChanged,
@@ -569,7 +593,8 @@ void Z3DView::initSwcFilter()
 {
   m_swcFilter.reset(new Z3DSwcFilter(*m_globalParas));
   m_swcFilter->setListenerName("SWC filter");
-  m_swcFilter->outputPort("GeometryFilter")->connect(m_compositor->inputPort("GeometryFilters"));
+  m_swcFilter->outputPort("GeometryFilter")->connect(
+        m_compositor->inputPort("GeometryFilters"));
   connect(m_swcFilter.get(), &Z3DSwcFilter::boundBoxChanged,
           this, &Z3DView::updateBoundBox);
   connect(m_swcFilter.get(), &Z3DSwcFilter::objVisibleChanged,
@@ -799,37 +824,6 @@ void Z3DView::volumeDataChanged()
 {
   updateVolumeData();
 }
-#if 0
-void Z3DView::punctaDataChanged()
-{
-  m_docHelper.updatePunctaData();
-}
-
-void Z3DView::swcDataChanged()
-{
-  m_docHelper.updateSwcData();
-}
-
-void Z3DView::meshDataChanged()
-{
-  m_docHelper.updateMeshData();
-}
-
-void Z3DView::swcNetworkDataChanged()
-{
-  m_docHelper.updateGraphData();
-}
-
-void Z3DView::graph3DDataChanged()
-{
-  m_docHelper.updateGraphData();
-}
-
-void Z3DView::todoDataChanged()
-{
-  m_docHelper.updateTodoData();
-}
-#endif
 
 Z3DGeometryFilter* Z3DView::getFilter(neutube3d::ERendererLayer layer) const
 {
@@ -966,6 +960,8 @@ std::string Z3DView::GetLayerString(neutube3d::ERendererLayer layer)
     return "ROI";
   case neutube3d::LAYER_DECORATION:
     return "Decoration";
+  case neutube3d::LAYER_SLICE:
+    return "Slice";
   }
 
   return "";
@@ -1144,6 +1140,14 @@ void Z3DView::updateSurfaceData()
   }
 }
 #endif
+
+
+/*
+void Z3DView::updateSliceData()
+{
+  //todo
+}
+*/
 
 void Z3DView::updateVolumeData()
 {

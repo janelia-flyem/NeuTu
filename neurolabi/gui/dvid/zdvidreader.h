@@ -221,12 +221,15 @@ public:
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId) const;
+
+  ZSparseStack* readSparseStack(uint64_t bodyId, int zoom) const;
+
   ZDvidSparseStack* readDvidSparseStack(
-      uint64_t bodyId, flyem::EBodyLabelType labelType = flyem::LABEL_BODY) const;
+      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
 //  ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId) const;
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
   ZDvidSparseStack* readDvidSparseStackAsync(
-      uint64_t bodyId, flyem::EBodyLabelType labelType = flyem::LABEL_BODY) const;
+      uint64_t bodyId, flyem::EBodyLabelType labelType) const;
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(
@@ -246,6 +249,12 @@ public:
   std::vector<ZStack*> readGrayScaleBlock(
       const ZIntPoint &blockIndex, const ZDvidInfo &dvidInfo,
       int blockNumber, int zoom = 0) const;
+
+  std::vector<ZStack*> readGrayScaleBlock(
+      const ZObject3dScan &blockObj, const ZDvidInfo &info, int zoom) const;
+  std::vector<ZStack*> readGrayScaleBlock(
+      const ZObject3dScan &blockObj, int zoom) const;
+//  ZStack* readGrayScaleBlock(int bx, int by, int bz, int zoom) const;
 
 //  QString readInfo(const QString &dataName) const;
 
@@ -311,6 +320,9 @@ public:
       int x0, int y0, int z0,
       int width, int height, int depth, int zoom = 0) const;
 
+  std::vector<ZArray*> readLabelBlock(const ZObject3dScan &blockObj, int zoom) const;
+  ZArray* readLabelBlock(int bx, int by, int bz, int zoom) const;
+
 #if defined(_ENABLE_LOWTIS_)
   //Read label data
   ZArray* readLabels64Lowtis(int x0, int y0, int z0,
@@ -372,6 +384,7 @@ public:
   bool hasSparseVolume(uint64_t bodyId) const;
   bool hasBodyInfo(uint64_t bodyId) const;
   bool hasBody(uint64_t bodyId) const;
+  bool hasBody(uint64_t bodyId, flyem::EBodyLabelType type) const;
 //  bool hasSupervoxel(uint64_t bodyId) const;
   size_t readBodySize(uint64_t bodyId) const;
 
@@ -501,6 +514,7 @@ public:
   ZJsonObject readToDoItemJson(const ZIntPoint &pt);
 
   ZJsonObject readContrastProtocal() const;
+  ZJsonArray readBodyStatusList() const;
 
   void setVerbose(bool verbose) { m_verbose = verbose; }
   bool isVerbose() const { return m_verbose; }

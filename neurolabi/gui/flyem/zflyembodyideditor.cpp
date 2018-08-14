@@ -11,5 +11,5 @@ ZFlyEmBodyIdEditor::ZFlyEmBodyIdEditor(QWidget *parent) : QLineEdit(parent)
   setValidator(validator);
 #endif
 
-  setPlaceholderText("Input Body ID");
+  setPlaceholderText("Input Body ID (sv:<ID> for supervoxel)");
 }

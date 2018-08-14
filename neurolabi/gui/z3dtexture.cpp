@@ -1,9 +1,10 @@
 #include "z3dtexture.h"
 
-#include "QsLog.h"
-#include "z3dgpuinfo.h"
 #include <QImage>
 #include <QImageWriter>
+
+#include "zqslog.h"
+#include "z3dgpuinfo.h"
 
 Z3DTexture::Z3DTexture(GLenum textureTarget, GLint internalFormat, const glm::uvec3& dimension,
                        GLenum dataFormat, GLenum dataType)

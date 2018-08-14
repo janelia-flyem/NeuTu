@@ -27,6 +27,7 @@ class Z3DBoundedFilter;
 class Z3DGeometryFilter;
 class ZStackDoc;
 class ZStackObjectInfoSet;
+class Z3D2DSliceFilter;
 
 class Z3DView : public QObject
 {
@@ -137,6 +138,11 @@ public:
   inline Z3DMeshFilter* getDecorationFilter() const
   { return m_decorationFilter.get(); }
 
+  inline Z3D2DSliceFilter* getSliceFilter() const
+  {
+    return m_sliceFilter.get();
+  }
+
   Z3DGeometryFilter* getFilter(neutube3d::ERendererLayer layer) const;
   Z3DBoundedFilter* getBoundedFilter(neutube3d::ERendererLayer layer) const;
 
@@ -245,10 +251,12 @@ private:
   void initSurfaceFilter();
   void initRoiFilter();
   void initDecorationFilter();
+  void initSliceFilter();
 
   void addFilter(neutube3d::ERendererLayer layer);
 
   void updateVolumeData();
+//  void updateSliceData();
 
   /*
   void updateGraphData();
@@ -283,6 +291,7 @@ private:
   std::unique_ptr<ZFlyEmTodoListFilter> m_todoFilter;
   std::unique_ptr<Z3DMeshFilter> m_roiFilter;
   std::unique_ptr<Z3DMeshFilter> m_decorationFilter;
+  std::unique_ptr<Z3D2DSliceFilter> m_sliceFilter;
 
   std::unique_ptr<Z3DNetworkEvaluator> m_networkEvaluator;
 

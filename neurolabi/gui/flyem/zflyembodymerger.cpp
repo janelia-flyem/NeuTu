@@ -8,7 +8,7 @@
 #include "zjsonparser.h"
 #include "zjsonfactory.h"
 #include "neutubeconfig.h"
-#include "QsLog/QsLog.h"
+#include "zqslog.h"
 
 ZFlyEmBodyMerger::ZFlyEmBodyMerger()
 {

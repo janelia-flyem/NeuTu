@@ -239,7 +239,14 @@ void ZDvidSparseStack::loadBody(uint64_t bodyId, bool canonizing)
 
   ZObject3dScan *obj = new ZObject3dScan;
 
-  getMaskReader().readBody(bodyId, getLabelType(), canonizing, obj);
+  flyem::EBodyLabelType labelType = getLabelType();
+#ifdef _DEBUG_
+  std::cout << "Label type: " << m_labelType << std::endl;
+  std::cout << "Label type: " << getLabelType() << std::endl;
+  std::cout << "Label type: " << labelType << std::endl;
+#endif
+
+  getMaskReader().readBody(bodyId, labelType, canonizing, obj);
 
   m_sparseStack.setObjectMask(obj);
   setLabel(bodyId);

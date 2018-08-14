@@ -68,6 +68,7 @@ void MakeStar(const QRectF &rect, QPointF *ptArray);
 void MakeStar(const QPointF &center, double radius, QPointF *ptArray);
 
 void PrepareBodyStatus(QComboBox *box);
+QList<QString> GetDefaultBodyStatus();
 
 QString GetMemoryUsage();
 

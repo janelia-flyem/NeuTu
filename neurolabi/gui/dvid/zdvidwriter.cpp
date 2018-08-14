@@ -388,17 +388,20 @@ void ZDvidWriter::mergeBody(const std::string &dataName,
   writeJson(dvidUrl.getMergeUrl(dataName), jsonArray, "[]");
 }
 
+#if 0
 void ZDvidWriter::mergeBody(
     const std::string &dataName, const std::vector<uint64_t> &bodyId,
     bool mergingToLargest)
-{
+{  
+  std::vector<uint64_t> merged;
+  uint64_t target = 0;
   if (bodyId.size() > 1) {
-    uint64_t target = bodyId[0];
-    std::vector<uint64_t> merged;
+    target = bodyId[0];
+
     if (mergingToLargest) {
       int maxSize = 0;
       for (uint64_t id : bodyId) {
-        int bodySize = m_reader.readBodyBlockCount(id);
+        const int bodySize = m_reader.readBodyBlockCount(id);
         if (bodySize > maxSize) {
           maxSize = bodySize;
           target = id;
@@ -416,7 +419,10 @@ void ZDvidWriter::mergeBody(
     }
     mergeBody(dataName, target, merged);
   }
+
+  return std::pair<uint64_t, std::vector<uint64_t>>(target, merged);
 }
+#endif
 
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
 {
@@ -1074,6 +1080,16 @@ void ZDvidWriter::writeTestResult(
     const std::string &key, const ZJsonObject &result)
 {
   writeJson(ZDvidData::GetName(ZDvidData::ROLE_TEST_RESULT_KEY), key, result);
+}
+
+void ZDvidWriter::writeBodyStatusList(const std::vector<std::string> &statusList)
+{
+  ZJsonArray statusJson;
+  for (const std::string &status : statusList) {
+    statusJson.append(status);
+  }
+  writeJson(ZDvidData::GetName(ZDvidData::ROLE_NEUTU_CONFIG),
+            "body_status", statusJson);
 }
 
 void ZDvidWriter::deleteSplitTask(const QString &key)

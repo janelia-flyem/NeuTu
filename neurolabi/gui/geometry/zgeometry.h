@@ -38,6 +38,9 @@ bool IsSameAffinePlane(const ZPoint &c1, const ZPoint &v1x, const ZPoint &v1y,
 std::vector<std::pair<int, int> > LineToPixel(int x0, int y0, int x1, int y1);
 
 ZIntCuboid MakeSphereBox(const ZIntPoint &center, int radius);
+
+int GetZoomScale(int zoom);
+int GetZoomLevel(int scale);
 }
 
 

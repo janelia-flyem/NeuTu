@@ -16,7 +16,6 @@ ZTestDialog2::ZTestDialog2(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
     m_dialog = new DvidBranchDialog(this);
 
     connect(ui->openDvidButton, SIGNAL(clicked(bool)), this, SLOT(onOpenDvidButton()));
