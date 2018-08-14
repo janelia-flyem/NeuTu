@@ -69,7 +69,7 @@ private:
      *         index if \a currentIndex is 0 and there are more than one tasks.
      *         It returns -1 in other cases.
      */
-    int getPrevIndex(int currentIndex) const;
+    int getPrevIndex(int currentIndex);
 
     /*!
      * \brief Get the next index.
@@ -79,7 +79,7 @@ private:
      *         \a currentIndex is the last index and not 0. It returns -1 in
      *          other cases.
      */
-    int getNextIndex(int currentIndex) const;
+    int getNextIndex(int currentIndex);
 
 private:
     static const QString KEY_DESCRIPTION;
@@ -128,6 +128,7 @@ private:
     int m_bodyMeshLoadedExpected = 0;
     int m_bodyMeshLoadedReceived = 0;
     int m_bodiesReused = 0;
+    std::set<int> m_skippedTaskIndices;
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
     void showError(QString title, QString message);
@@ -154,6 +155,7 @@ private:
     int getNextUncompleted();
     int getPrev();
     int getPrevUncompleted();
+    bool skip(int taskIndex);
     void prefetch(uint64_t bodyID);
     void prefetch(QSet<uint64_t> bodyIDs);
     void prefetchForTaskIndex(int index);

@@ -500,9 +500,9 @@ void TaskProtocolWindow::startProtocol(QJsonObject json, bool save) {
 int TaskProtocolWindow::getFirst(bool includeCompleted)
 {
   for (int i = 0; i < m_taskList.size(); i++) {
-      if ((includeCompleted || !m_taskList[i]->completed()) && (!m_taskList[i]->skip())) {
-          return i;
-      }
+    if ((includeCompleted || !m_taskList[i]->completed()) && (!skip(i))) {
+        return i;
+    }
   }
   return -1;
 }
@@ -557,7 +557,7 @@ int TaskProtocolWindow::getPrevUncompleted() {
     return index;
 }
 
-int TaskProtocolWindow::getPrevIndex(int currentIndex) const
+int TaskProtocolWindow::getPrevIndex(int currentIndex)
 {
   int index = currentIndex;
 
@@ -571,12 +571,12 @@ int TaskProtocolWindow::getPrevIndex(int currentIndex) const
       index = -1;
       break;
     }
-  } while (m_taskList[index]->skip());
+  } while (skip(index));
 
   return index;
 }
 
-int TaskProtocolWindow::getNextIndex(int currentIndex) const
+int TaskProtocolWindow::getNextIndex(int currentIndex)
 {
   int index = currentIndex;
 
@@ -590,7 +590,7 @@ int TaskProtocolWindow::getNextIndex(int currentIndex) const
       index = -1;
       break;
     }
-  } while (m_taskList[index]->skip());
+  } while (skip(index));
 
   return index;
 }
@@ -614,6 +614,29 @@ int TaskProtocolWindow::getNextUncompleted() {
   }
 
   return index;
+}
+
+bool TaskProtocolWindow::skip(int taskIndex)
+{
+  if ((taskIndex < 0) || (taskIndex >= m_taskList.size())) {
+      return false;
+  }
+
+  // In addition to calling the task's skip() function, keep track of the tasks whose
+  // skip() has returned true.  The "progress" indicator that shows the fraction of
+  // tasks that have been completed needs to decrease the total number of tasks by this
+  // number of tasks.  This approach does a reasonable job of accomodating the dynamic
+  // nature of a task's skip()  (e.g., a task that should not be skipped originally
+  // might later need to be skipped if it becomes redundant based on the completion of
+  // another task).
+
+  if (m_taskList[taskIndex]->skip()) {
+      m_skippedTaskIndices.insert(taskIndex);
+      return true;
+  } else {
+      m_skippedTaskIndices.erase(taskIndex);
+      return false;
+  }
 }
 
 /*
@@ -880,7 +903,10 @@ void TaskProtocolWindow::updateLabel() {
             ncomplete++;
         }
     }
-    int ntasks = m_taskList.size();
+
+    // the total task count should not include tasks known to be skipped
+    int ntasks = m_taskList.size() - m_skippedTaskIndices.size();
+
     float percent = (100.0 * ncomplete) / ntasks;
     ui->progressLabel->setText(QString("%1 / %2 (%3%)").arg(ncomplete).arg(ntasks).arg(percent));
 
