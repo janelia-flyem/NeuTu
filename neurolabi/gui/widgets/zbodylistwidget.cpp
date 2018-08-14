@@ -1,7 +1,7 @@
 #include "zbodylistwidget.h"
 #include <QDebug>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "ui_zbodylistwidget.h"
 #include "flyem/zflyembodylistmodel.h"
 

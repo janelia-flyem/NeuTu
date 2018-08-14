@@ -13,6 +13,7 @@
 #include "zintcuboid.h"
 #include "zstackarray.h"
 #include "zstackutil.h"
+#include "misc/miscutility.h"
 
 #if defined(_QT_GUI_USED_)
 #  include "zstroke2d.h"
@@ -611,6 +612,86 @@ ZObject3dScanArray* ZObject3dFactory::MakeObject3dScanArray(
     delete bodySet;
   } else {
     out = NULL;
+  }
+
+  return out;
+}
+
+ZObject3dScan* ZObject3dFactory::MakeObject3dScan(
+      const std::vector<ZArray*> labelArray, uint64_t v, ZObject3dScan *out)
+{
+  if (out == NULL) {
+    out = new ZObject3dScan;
+  }
+
+  for (ZArray *array : labelArray) {
+    ZIntCuboid box = misc::GetBoundBox(array);
+    int x0 = box.getFirstCorner().getX();
+    int y0 = box.getFirstCorner().getY();
+    int z0 = box.getFirstCorner().getZ();
+    int y1 = box.getLastCorner().getY();
+    int z1 = box.getLastCorner().getZ();
+//    int area = box.getWidth() * box.getHeight();
+    size_t offset = 0;
+    for (int z = z0; z <= z1; ++z) {
+      for (int y = y0; y <= y1; ++y) {
+        out->scanArrayV(
+              array->getDataPointer<uint64_t>() + offset,
+              x0, y, z, box.getWidth(), v);
+        offset+= box.getWidth();
+      }
+    }
+  }
+
+  return out;
+}
+
+ZObject3dScan* ZObject3dFactory::MakeObject3dScan(
+    const std::vector<ZArray*> labelArray, uint64_t v,
+    const ZIntCuboid &range, ZObject3dScan *out)
+{
+  if (out == NULL) {
+    out = new ZObject3dScan;
+  }
+
+  for (ZArray *array : labelArray) {
+    const ZIntCuboid box = misc::GetBoundBox(array);
+    int x0 = box.getFirstCorner().getX();
+    int y0 = box.getFirstCorner().getY();
+    int z0 = box.getFirstCorner().getZ();
+    int y1 = box.getLastCorner().getY();
+    int z1 = box.getLastCorner().getZ();
+    size_t offset = 0;
+    if (range.hasOverlap(box)) {
+      if (range.contains(box)) {
+        for (int z = z0; z <= z1; ++z) {
+          for (int y = y0; y <= y1; ++y) {
+            out->scanArrayV(
+                  array->getDataPointer<uint64_t>() + offset,
+                  x0, y, z, box.getWidth(), v);
+            offset+= box.getWidth();
+          }
+        }
+      } else {
+        ZIntCuboid newBox = box;
+        newBox.intersect(range);
+        int nx0 = newBox.getFirstCorner().getX();
+        int ny0 = newBox.getFirstCorner().getY();
+        int nz0 = newBox.getFirstCorner().getZ();
+        int ny1 = newBox.getLastCorner().getY();
+        int nz1 = newBox.getLastCorner().getZ();
+        int area = box.getWidth() * box.getHeight();
+        int dx = nx0 - x0;
+        for (int z = nz0; z <= nz1; ++z) {
+          for (int y = ny0; y <= ny1; ++y) {
+            out->scanArrayV(
+                  array->getDataPointer<uint64_t>() + area * (z - z0) +
+                  box.getWidth() * (y - y0) + dx,
+                  nx0, y, z, newBox.getWidth(), v);
+          }
+        }
+      }
+    }
   }
 
   return out;

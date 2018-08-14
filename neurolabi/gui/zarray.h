@@ -5,6 +5,9 @@
 #include <vector>
 #include "tz_stdint.h"
 
+class ZIntCuboid;
+class ZIntPoint;
+
 class ZArray
 {
 public:
@@ -83,6 +86,7 @@ public:
   int getStartCoordinate(int index) const;
 
   void setStartCoordinate(int index, int x);
+  void setStartCoordinate(const std::vector<int> &coord);
 
 private:
   mylib::Array *m_data;

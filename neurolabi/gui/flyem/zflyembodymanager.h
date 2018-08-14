@@ -26,7 +26,8 @@ public:
   /*!
    * \brief Register a body
    *
-   * Nothing will be done if a body has already been registered.
+   * Nothing will be done if a body has already been registered. It can also be
+   * used to register an orphan supervoxel whhen \a id is encoded as a supervoxel.
    */
   void registerBody(uint64_t id);
 
@@ -60,7 +61,7 @@ public:
 
   QSet<uint64_t> getNormalBodySet() const;
   QSet<uint64_t> getUnmappedBodySet() const;
-  QSet<uint64_t> getOrphanSupervoxelSet() const;
+  QSet<uint64_t> getOrphanSupervoxelSet(bool resultEncoded) const;
 
   /*!
    * \brief Get the ID when only one body or supervoxel presents.
@@ -81,11 +82,18 @@ public:
    */
   void eraseSupervoxel(uint64_t bodyId);
 
+  /*!
+   * \brief Check if an ID is a supervoxel
+   *
+   * It returns true iff \a bodyId is not encoded as a tar or non-supervoxel
+   * level and stored as a supervoxel in the body manager.
+   *
+   */
   bool isSupervoxel(uint64_t bodyId) const;
+
   bool isOrphanSupervoxel(uint64_t bodyId) const;
 
 
-  //Note: IDs in the the returned set are encoded.
   QSet<uint64_t> getSupervoxelToAdd(
       const QSet<uint64_t> &bodySet, bool resultEncoded);
   QSet<uint64_t> getSupervoxelToRemove(
@@ -133,6 +141,11 @@ public:
   static bool encodesTar(uint64_t id);
   static bool encodingSupervoxel(uint64_t id);
   static unsigned int encodedLevel(uint64_t id);
+  static bool encodingSupervoxelTar(uint64_t id);
+
+private:
+  static bool couldBeSupervoxelLevel(uint64_t id);
+  static bool couldBeSupervoxel(uint64_t id);
 
 private:
   QMap<uint64_t, QSet<uint64_t>> m_bodyMap;

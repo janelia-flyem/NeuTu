@@ -157,7 +157,7 @@ size_t ZDvidDataSliceHelper::getViewDataSize() const
 size_t ZDvidDataSliceHelper::GetViewDataSize(
     const ZStackViewParam &viewParam, int zoom)
 {
-  int scale = misc::GetZoomScale(zoom);
+  int scale = zgeom::GetZoomScale(zoom);
 
   return viewParam.getArea() / scale / scale;
 }
@@ -184,12 +184,12 @@ int ZDvidDataSliceHelper::getCenterCutHeight() const
 
 int ZDvidDataSliceHelper::getScale() const
 {
-  return misc::GetZoomScale(getZoom());
+  return zgeom::GetZoomScale(getZoom());
 }
 
 int ZDvidDataSliceHelper::getActualScale() const
 {
-  return misc::GetZoomScale(getActualZoom());
+  return zgeom::GetZoomScale(getActualZoom());
 }
 
 int ZDvidDataSliceHelper::getActualZoom() const
@@ -444,10 +444,14 @@ void ZDvidDataSliceHelper::syncActualQuality()
 void ZDvidDataSliceHelper::inferUpdatePolicy(neutube::EAxis axis)
 {
   if (getMaxZoom() == 0) {
-    setUpdatePolicy(flyem::UPDATE_DIRECT);
-  } else {
     if (axis == neutube::A_AXIS) {
       setUpdatePolicy(flyem::UPDATE_HIDDEN);
+    } else {
+      setUpdatePolicy(flyem::UPDATE_SMALL);
+    }
+  } else {
+    if (axis == neutube::A_AXIS) {
+      setUpdatePolicy(flyem::UPDATE_LOWRES);
     } else {
       setUpdatePolicy(flyem::UPDATE_LOWRES);
     }

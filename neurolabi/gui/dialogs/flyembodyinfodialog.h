@@ -23,10 +23,16 @@ class FlyEmBodyInfoDialog : public QDialog
     Q_OBJECT
 
 public:
-  explicit FlyEmBodyInfoDialog(QWidget *parent = 0);
+  enum EMode {
+    MODE_SEQUENCER, MODE_QUERY
+  };
+
+  explicit FlyEmBodyInfoDialog(EMode mode, QWidget *parent = 0);
   ~FlyEmBodyInfoDialog();
 
   void simplify();
+
+  void setBodyList(const std::set<uint64_t> &bodyList);
 
 public slots:
   void dvidTargetChanged(ZDvidTarget target);
@@ -53,6 +59,8 @@ signals:
    * \param state 0: first batch; -1: last batch
    */
   void appendingData(ZJsonValue object, int state);
+
+  void refreshing();
 
 private slots:
     void onCloseButton();
@@ -125,6 +133,8 @@ private:
         EXPORT_BODIES,
         EXPORT_CONNECTIONS
     };
+
+    EMode m_mode = MODE_SEQUENCER;
     Ui::FlyEmBodyInfoDialog *ui;
     QStandardItemModel* m_bodyModel;
     QStandardItemModel* m_filterModel;
@@ -166,6 +176,11 @@ private:
     bool labelszPresent();
     void importBodiesDvid();
     void importBodiesDvid2();
+    /*!
+     * \brief Set status label
+     *
+     * \param label It should be plain text.
+     */
     void setStatusLabel(QString label);
     void clearStatusLabel();
     void init();
@@ -187,6 +202,7 @@ private:
     void updateRoi(const std::vector<std::string> &roiList);
     ZDvidRoi* getRoi(const QString &name);
     QList<QStandardItem*> getBodyItemList(const ZJsonObject &bkmk);
+    void prepareWidget();
 };
 
 #endif // FLYEMBODYINFODIALOG_H

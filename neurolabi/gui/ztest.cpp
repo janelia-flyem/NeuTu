@@ -190,6 +190,7 @@
 #include "flyem/zflyembodywindowfactory.h"
 #include "dvid/zdvidbufferreader.h"
 #include "misc/miscutility.h"
+#include "imgproc/zstackprinter.h"
 
 #include "swc/zswcterminalsurfacemetric.h"
 
@@ -294,6 +295,7 @@
 #include "flyem/zglobaldvidrepo.h"
 #include  "dvid/zdvidbodyhelper.h"
 #include "zmeshutils.h"
+#include "zarrayfactory.h"
 
 #include "test/ztestall.h"
 
@@ -27294,7 +27296,7 @@ void ZTest::test(MainWindow *host)
   ptoc();
 #endif
 
-#if 1
+#if 0
   QRegularExpression regexp("^(supervoxel|sv)[:\\s]*([0-9]+)",
                             QRegularExpression::CaseInsensitiveOption);
   {
@@ -27315,6 +27317,239 @@ void ZTest::test(MainWindow *host)
     qDebug() << match.hasMatch();
     qDebug() << match.captured(2);
   }
+#endif
+
+#if 0
+  ZObject3dScan *obj = ZObject3dFactory::MakeBoxObject3dScan(
+        ZIntCuboid(ZIntPoint(0, 0, 0), ZIntPoint(10, 10, 10)), NULL);
+  obj->setDsIntv(31, 31, 31);
+  ZObject3dScanArray objArray;
+  objArray.append(obj);
+
+  ZIntCuboid range(ZIntPoint(30, 30, 30), ZIntPoint(100, 100, 100));
+  range.scaleDown(32);
+  range.expand(-1, -1, -1);
+  obj->remove(range);
+
+  obj = ZObject3dFactory::MakeBoxObject3dScan(
+          ZIntCuboid(ZIntPoint(30, 30, 30), ZIntPoint(100, 100, 200)), NULL);
+  objArray.append(obj);
+
+  ZMeshFactory mf;
+
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+#endif
+
+#if 0
+  ZObject3dScan obj;
+  obj.addSegment(0, 0, 0, 1);
+  ZMeshFactory mf;
+  mf.setSmooth(0);
+  ZObject3dScanArray objArray;
+  objArray.append(obj);
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZDvidBodyHelper helper(reader);
+  helper.setCoarse(true);
+  helper.setZoom(0);
+  ZIntCuboid range;
+  range.setSize(256, 256, 256);
+  range.setCenter(ZIntPoint(16710, 31679, 32100));
+  helper.setRange(range);
+  tic();
+  ZObject3dScanArray objArray = helper.readHybridBody(2229212992);
+  ZMeshFactory mf;
+//  mf.setSmooth(0);
+  ZMesh *mesh = mf.makeMesh(objArray);
+  mesh->save(GET_TEST_DATA_DIR + "/_test.obj");
+  ptoc();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+//  reader->getDvidTarget().setUuid("7e52");
+  std::cout << "Block count: " << reader->readBodyBlockCount(770606927) << std::endl;
+  std::cout << "Block count: " << reader->readBodyBlockCount(1882009576) << std::endl;
+#endif
+
+#if 0
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test");
+  std::vector<std::string> statusList({"Putative 0.5",
+                                       "Traced",
+                                       "Hard to trace"});
+  writer->writeBodyStatusList(statusList);
+#endif
+
+#if 0
+//  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test_merge");
+//  ZJsonArray statusJson = reader->readBodyStatusList();
+//  std::cout << statusJson.dumpString(2) << std::endl;
+
+  ZDvidWriter *writer = ZGlobal::GetInstance().getDvidWriter("test_merge");
+  writer->mergeBody(writer->getDvidTarget().getSegmentationName(),
+                    std::vector<uint64_t>({770606927, 1537922823, 1537931903, 5813022814, 1538600496, 1537927379, 1567960688, 1882009576}), true);
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+  ZObject3dScan obj;
+  ZIntPoint center(9988*2, 11001*2, 10361*2);
+  reader->readBody(1167969164, flyem::LABEL_BODY, 1,
+                   ZIntCuboid(center - 128, center + 128), true, &obj);
+  obj.save(GET_TEST_DATA_DIR + "/_test.sobj");
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZObject3dScan obj;
+//  obj.addSegment(300, 300, 300, 305);
+  ZIntPoint center(9988*2, 11001*2, 10361*2);
+
+  ZIntCuboid box = ZIntCuboid(center - 128, center + 128);
+  reader->readCoarseBody(1167969164, flyem::LABEL_BODY, box, &obj);
+
+//  obj->save(GET_TEST_DATA_DIR + "/_test.sobj");
+
+//  obj.downsampleMax(1, 1, 1);
+
+
+  tic();
+  std::vector<ZArray*> blockArray = reader->readLabelBlock(obj, 0);
+  std::cout << "Block count: " << blockArray.size() << std::endl;
+  ptoc();
+
+
+//  blockArray.resize(1);
+  ZObject3dScan* body = ZObject3dFactory::MakeObject3dScan(
+        blockArray, 1167969164, box, NULL);
+  body->canonize();
+  body->save(GET_TEST_DATA_DIR + "/_test.sobj");
+//  body->print();
+
+  ZStack *stack = ZStackFactory::MakeLabelBinaryStack(blockArray, 1167969164);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZArray *array = reader->readLabelBlock(300, 300, 300, 0);
+
+  std::vector<ZArray*> blockArray;
+  blockArray.push_back(array);
+
+  ZStack *stack = ZStackFactory::MakeLabelColorStack(blockArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 1
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  ZDvidReader grayReader;
+  grayReader.open(reader->getDvidTarget().getGrayScaleTarget());
+
+  ZObject3dScan blockObj;
+  blockObj.addSegment(300, 300, 300, 301);
+  blockObj.addSegment(300, 301, 302, 303);
+  blockObj.downsampleMax(1, 1, 1);
+  blockObj.print();
+  std::vector<ZStack*> stackArray = grayReader.readGrayScaleBlock(blockObj,  1);
+
+//  std::vector<ZStack*> blockArray;
+//  blockArray.push_back(array);
+
+  ZStack *stack = ZStackFactory::Compose(stackArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 0
+  ZIntCuboid box(1, 2, 3, 2, 3, 4);
+  ZArray *array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(1, 1ull);
+  array->setValue(2, 1ull);
+
+  std::vector<ZArray*> labelArray;
+  labelArray.push_back(array);
+
+  ZIntCuboid range(5, 5, 5, 3, 4, 5);
+
+  ZObject3dScan obj;
+  ZObject3dFactory::MakeObject3dScan(labelArray, 1, range, &obj);
+  obj.print();
+#endif
+
+#if 0
+  ZIntCuboid box(1, 2, 3, 2, 3, 4);
+  ZArray *array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(2, 1ull);
+
+  std::vector<ZArray*> labelArray;
+  labelArray.push_back(array);
+
+  box.set(ZIntPoint(2, 3, 4), ZIntPoint(3, 4, 4));
+  array = ZArrayFactory::MakeArray(box, mylib::UINT64_TYPE);
+  array->setValue(0, 1ull);
+  array->setValue(2, 1ull);
+  labelArray.push_back(array);
+
+  ZStack *stack = ZStackFactory::MakeLabelBinaryStack(labelArray, 1);
+  ZStackPrinter printer;
+  printer.setDetailLevel(1);
+  printer.print(stack);
+
+//  stack->printInfo();
+#endif
+
+#if 0
+  ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
+
+  std::cout << reader->hasBody(913831721, flyem::LABEL_SUPERVOXEL) << std::endl;
+  std::cout << reader->hasBody(913831721, flyem::LABEL_BODY) << std::endl;
+  std::cout << reader->hasBody(701742479, flyem::LABEL_BODY) << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test_merge");
+  std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = ZDvid::GetMergeConfig(
+        *reader,
+        std::vector<uint64_t>({770606927, 1537922823, 1537931903, 5813022814,
+                               1538600496, 1537927379, 1567960688, 1882009576}),
+        true);
+
+  std::cout << "Merge: " << mergeConfig.first;
+  std::cout << " <- ";
+  for (uint64_t bodyId : mergeConfig.second) {
+    std::cout << bodyId << " ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test_merge");
+  std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = ZDvid::GetMergeConfig(
+        *reader, 770606927,
+        std::vector<uint64_t>({1537922823, 1537931903, 5813022814,
+                               1538600496, 1537927379, 1567960688, 1882009576}),
+        false);
+
+  std::cout << "Merge: " << mergeConfig.first;
+  std::cout << " <- ";
+  for (uint64_t bodyId : mergeConfig.second) {
+    std::cout << bodyId << " ";
+  }
+  std::cout << std::endl;
 #endif
 
   std::cout << "Done." << std::endl;

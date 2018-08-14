@@ -11,6 +11,7 @@ class ZFlyEmBody3dDoc;
 class QAction;
 class QCheckBox;
 class QRadioButton;
+class QNetworkReply;
 
 class TaskBodyMerge : public TaskProtocolTask
 {
@@ -37,6 +38,7 @@ private slots:
   void onShowHiResStateChanged(int state);
   void zoomToMergePosition(bool justLoaded = false);
   void zoomOutToShowAll();
+  void updateHighResWidget(QNetworkReply *reply);
 
 private:
   ZFlyEmBody3dDoc *m_bodyDoc;
@@ -81,6 +83,7 @@ private:
   void zoomToMeshes(bool onlySmaller);
   void configureShowHiRes();
   void showBirdsEyeView(bool show);
+  void showHybridMeshes();
   void writeResult();
   void writeResult(const QString &result);
   QString readResult();

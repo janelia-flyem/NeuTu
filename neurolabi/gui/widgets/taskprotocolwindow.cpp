@@ -9,12 +9,12 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QsLog.h>
 #include <QShortcut>
 
 
 #include "neutube_def.h"
 #include "neutubeconfig.h"
+#include "zqslog.h"
 #include "flyem/zflyemproofdoc.h"
 #include "flyem/zflyembody3ddoc.h"
 #include "protocols/bodyprefetchqueue.h"

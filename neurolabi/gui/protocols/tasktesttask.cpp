@@ -6,12 +6,12 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QsLog.h>
 
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 
+#include "zqslog.h"
 
 TaskTestTask::TaskTestTask(QJsonObject json)
 {

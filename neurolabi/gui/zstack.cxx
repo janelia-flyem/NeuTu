@@ -24,7 +24,7 @@
 #include "zjsonparser.h"
 #include "zfiletype.h"
 #include "tz_math.h"
-#ifdef _NEUTUBE_
+#ifdef _QT_GUI_USED_
 #include "QsLog.h"
 #endif
 #include "zstring.h"
@@ -500,7 +500,7 @@ void ZStack::clear()
 
 void ZStack::clearChannelColors()
 {
-#ifdef _NEUTUBE_
+#ifdef _QT_GUI_USED_
   for (size_t i=0; i<m_channelColors.size(); ++i)
     delete m_channelColors[i];
   m_channelColors.clear();
@@ -519,7 +519,7 @@ void ZStack::useChannelColors(bool on)
 
 void ZStack::initChannelColors()
 {
-#ifdef _NEUTUBE_
+#ifdef _QT_GUI_USED_
   if (m_usingChannelColors) {
     if (m_channelColors.size() == (size_t)channelNumber()) {
       return;
@@ -1633,7 +1633,7 @@ void ZStack::copyValueFrom(const void *buffer, size_t length, void *loc)
   deprecateDependent(MC_STACK);
 }
 
-#ifdef _NEUTUBE_
+#ifdef _QT_GUI_USED_
 void ZStack::setChannelColor(int ch, double r, double g, double b)
 {
   m_channelColors[ch]->set(glm::vec3(r, g, b));
@@ -2026,6 +2026,15 @@ void ZStack::setBlockValue(int x0, int y0, int z0, const ZStack *stack)
     const Stack *src = stack->c_stack(c);
     Stack *dst = c_stack(c);
     C_Stack::setBlockValue(dst, src, x0, y0, z0);
+  }
+}
+
+void ZStack::setBlockValue(const ZStack *stack)
+{
+  if (stack) {
+    setBlockValue(
+          stack->getOffset().getX(), stack->getOffset().getY(),
+          stack->getOffset().getZ(), stack);
   }
 }
 

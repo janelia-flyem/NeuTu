@@ -65,6 +65,12 @@ public:
       const ZArray &array, neutube::EAxis axis, bool foreground,
       ZObject3dScanArray *out);
 
+  static ZObject3dScan* MakeObject3dScan(
+      const std::vector<ZArray*> labelArray, uint64_t v, ZObject3dScan *out);
+  static ZObject3dScan* MakeObject3dScan(
+      const std::vector<ZArray*> labelArray, uint64_t v,
+      const ZIntCuboid &range, ZObject3dScan *out);
+
   static ZObject3dScan* MakeFilledMask(const ZClosedCurve &curve, int z,
                                        ZObject3dScan *result = NULL);
 

@@ -11,6 +11,10 @@
 #include <QList>
 #include <QTime>
 
+#ifdef _DEBUG_
+#include "zqslog.h"
+#endif
+
 #include "neutube_def.h"
 #include "dvid/zdvidtarget.h"
 #include "dvid/zdvidreader.h"
@@ -92,6 +96,7 @@ public:
   QSet<uint64_t> getInvolvedNormalBodySet() const;
 
   uint64_t getMappedId(uint64_t bodyId) const;
+  bool isAgglo(uint64_t bodyId) const;
 
   void addBody(const ZFlyEmBodyConfig &config);
   void updateBody(ZFlyEmBodyConfig &config);
@@ -134,6 +139,7 @@ public:
   }
 
   const ZDvidReader& getMainDvidReader() const;
+  const ZDvidReader& getWorkDvidReader() const;
 
   void setDvidTarget(const ZDvidTarget &target);
 
@@ -503,6 +509,8 @@ private:
   void loadSynapseFresh(uint64_t bodyId);
   void loadTodoFresh(uint64_t bodyId);
 
+  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+
 private:
   ZFlyEmBodyManager m_bodyManager;
 //  QSet<uint64_t> m_bodySet; //Normal body set. All the IDs are unencoded.
@@ -548,6 +556,8 @@ private:
   QMap<uint64_t, int> m_bodyUpdateMap;
 
   ZFlyEmBodySplitter *m_splitter;
+
+  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 //  QSet<uint64_t> m_unrecycableSet;
 
   bool m_garbageJustDumped = false;
@@ -584,6 +594,15 @@ void ZFlyEmBody3dDoc::addBodyChangeEvent(
   QSet<uint64_t> tarSet;
   QSet<uint64_t> supervoxelSet;
 //  QMap<uint64_t, uint64_t> bodyEncodeMap;
+
+#ifdef _DEBUG_
+  std::string bodyStr;
+  for (InputIterator iter = first; iter != last; ++iter) {
+    bodyStr += std::to_string(*iter) + " ";
+  }
+  LDEBUG() << "Selection recieved:" << bodyStr;
+#endif
+
   for (InputIterator iter = first; iter != last; ++iter) {
     uint64_t bodyId = *iter;
     if (ZFlyEmBodyManager::encodesTar(bodyId)) {

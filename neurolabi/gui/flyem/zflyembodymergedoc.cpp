@@ -2,7 +2,7 @@
 #include <QMap>
 #include <QColor>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "zobject3dscan.h"
 #include "zarray.h"
 #include "zarrayfactory.h"

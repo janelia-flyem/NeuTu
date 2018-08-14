@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "neutubeconfig.h"
 
 #include "zjsonobject.h"

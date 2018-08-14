@@ -1,7 +1,8 @@
 #include "bodyprefetchqueue.h"
 
-#include <QsLog.h>
 #include <QMutexLocker>
+
+#include "zqslog.h"
 #include "flyem/zflyembody3ddoc.h"
 
 #include "zstackdocdatabuffer.h"

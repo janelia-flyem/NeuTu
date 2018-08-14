@@ -335,64 +335,6 @@ bool misc::exportPointList(
   return false;
 }
 
-int misc::GetZoomScale(int zoom)
-{
-  switch (zoom) {
-  case 0:
-    return 1;
-  case 1:
-    return 2;
-  case 2:
-    return 4;
-  case 3:
-    return 8;
-  case 4:
-    return 16;
-  case 5:
-    return 32;
-  case 6:
-    return 64;
-  default:
-    break;
-  }
-
-  int scale = 1;
-  while (zoom--) {
-    scale *= 2;
-  }
-
-  return scale;
-}
-
-int misc::GetZoomLevel(int scale)
-{
-  switch (scale) {
-  case 1:
-    return 0;
-  case 2:
-    return 1;
-  case 4:
-    return 2;
-  case 8:
-    return 3;
-  case 16:
-    return 4;
-  case 32:
-    return 5;
-  case 64:
-    return 6;
-  default:
-    break;
-  }
-
-  int zoom = 0;
-  while (scale/2 > 0) {
-    ++zoom;
-  }
-
-  return zoom;
-}
-
 double misc::computeConfidence(double v, double median, double p95)
 {
   double alpha = median;
@@ -676,6 +618,18 @@ ZClosedCurve misc::convertSwcToClosedCurve(const ZSwcTree &tree)
   }
 
   return curve;
+}
+
+ZIntPoint misc::GetFirstCorner(const ZArray *array)
+{
+  ZIntPoint pt;
+  if (array != NULL) {
+    pt.set(array->getStartCoordinate(0),
+           array->getStartCoordinate(1),
+           array->getStartCoordinate(2));
+  }
+
+  return pt;
 }
 
 ZIntCuboid misc::GetBoundBox(const ZArray *array)
