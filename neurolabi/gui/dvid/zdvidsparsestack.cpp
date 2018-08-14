@@ -588,7 +588,7 @@ ZStack* ZDvidSparseStack::makeDsStack(int xintv, int yintv, int zintv)
   runFillValueFunc(ZIntCuboid(), true, false);
   m_sparseStack.deprecate(ZSparseStack::STACK);
 
-  return m_sparseStack.makeDsStack(xintv, yintv, zintv);
+  return m_sparseStack.makeDsStack(xintv, yintv, zintv, false);
 }
 
 ZStack* ZDvidSparseStack::makeIsoDsStack(size_t maxVolume, bool preservingGap)
