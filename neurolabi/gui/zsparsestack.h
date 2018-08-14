@@ -56,7 +56,7 @@ public:
 //  Stack* makeRawStack(const ZIntCuboid &box);
 
   ZStack *makeIsoDsStack(size_t maxVolume, bool preservingGap);
-  ZStack* makeDsStack(int xintv, int yintv, int zintv);
+  ZStack* makeDsStack(int xintv, int yintv, int zintv, bool preservingGap);
 
   static bool DownsampleRequired(const ZIntCuboid &box);
   static size_t GetMaxStackVolume();
@@ -102,13 +102,11 @@ public:
     return m_objectMask;
   }
 
-  inline const ZStackBlockGrid* getStackGrid() const {
-    return m_stackGrid;
-  }
+  const ZStackBlockGrid* getStackGrid() const;
+  ZStackBlockGrid* getStackGrid();
 
-  inline ZStackBlockGrid* getStackGrid() {
-    return m_stackGrid;
-  }
+  const ZStackBlockGrid* getStackGrid(int zoom) const;
+  ZStackBlockGrid* getStackGrid(int zoom);
 
   /*!
    * \brief Count foreground voxels.
@@ -152,10 +150,12 @@ private:
                                const ZObject3dScan &border,
                                const ZStackBlockGrid &stackGrid,
                                const int baseValue);
+  ZStackBlockGrid* makeDownsampleGrid(int xintv, int yintv, int zintv) const;
 
 private:
   ZObject3dScan *m_objectMask;
-  ZStackBlockGrid *m_stackGrid;
+  std::vector<ZStackBlockGrid*> m_stackGrid;
+//  ZStackBlockGrid *m_stackGrid;
   ZIntPoint m_dsIntv;
 
   mutable ZStack *m_stack;
