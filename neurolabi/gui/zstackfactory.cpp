@@ -891,6 +891,26 @@ ZStack* ZStackFactory::MakeStrokeMask(
   return stack;
 }
 
+ZStack* ZStackFactory::Compose(const std::vector<ZStack *> &stackArray)
+{
+  ZIntCuboid box;
+  for (const ZStack *stack : stackArray) {
+    if (stack) {
+      box.join(stack->getBoundBox());
+    }
+  }
+
+  ZStack *stack = nullptr;
+  if (!box.isEmpty()) {
+    stack = MakeZeroStack(GREY, box);
+    for (const ZStack *block : stackArray) {
+      stack->setBlockValue(block);
+    }
+  }
+
+  return stack;
+}
+
 ZStack* ZStackFactory::MakeLabelBinaryStack(
     const std::vector<ZArray*> &labelArray, uint64_t v)
 {

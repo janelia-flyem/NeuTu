@@ -185,9 +185,9 @@ private:
   void mergeBodyAnnotation(
       uint64_t targetId, const std::vector<uint64_t> &bodyId);
 
-  uint64_t getTargetId(
-      uint64_t targetId, const std::vector<uint64_t> &bodyId,
-      bool mergingToLargest);
+//  uint64_t getTargetId(
+//      uint64_t targetId, const std::vector<uint64_t> &bodyId,
+//      bool mergingToLargest);
 
   //void updateSelection();
 

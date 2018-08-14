@@ -27452,22 +27452,24 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 0
+#if 1
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
 
   ZDvidReader grayReader;
   grayReader.open(reader->getDvidTarget().getGrayScaleTarget());
 
   ZObject3dScan blockObj;
-  blockObj.addSegment(300, 300, 300, 300);
-  blockObj.downsample(1, 1, 1);
-  std::vector<ZStack*> stack = grayReader.readGrayScaleBlock(blockObj,  1);
+  blockObj.addSegment(300, 300, 300, 301);
+  blockObj.addSegment(300, 301, 302, 303);
+  blockObj.downsampleMax(1, 1, 1);
+  blockObj.print();
+  std::vector<ZStack*> stackArray = grayReader.readGrayScaleBlock(blockObj,  1);
 
 //  std::vector<ZStack*> blockArray;
 //  blockArray.push_back(array);
 
-//  ZStack *stack = ZStackFactory::MakeLabelColorStack(blockArray);
-  stack[0]->save(GET_TEST_DATA_DIR + "/_test.tif");
+  ZStack *stack = ZStackFactory::Compose(stackArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
 #if 0
@@ -27518,7 +27520,7 @@ void ZTest::test(MainWindow *host)
   std::cout << reader->hasBody(701742479, flyem::LABEL_BODY) << std::endl;
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test_merge");
   std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = ZDvid::GetMergeConfig(
         *reader,
@@ -27526,7 +27528,23 @@ void ZTest::test(MainWindow *host)
                                1538600496, 1537927379, 1567960688, 1882009576}),
         true);
 
-  std::cout << "Merge: " << mergeConfig.first << std::endl;
+  std::cout << "Merge: " << mergeConfig.first;
+  std::cout << " <- ";
+  for (uint64_t bodyId : mergeConfig.second) {
+    std::cout << bodyId << " ";
+  }
+  std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test_merge");
+  std::pair<uint64_t, std::vector<uint64_t>> mergeConfig = ZDvid::GetMergeConfig(
+        *reader, 770606927,
+        std::vector<uint64_t>({1537922823, 1537931903, 5813022814,
+                               1538600496, 1537927379, 1567960688, 1882009576}),
+        false);
+
+  std::cout << "Merge: " << mergeConfig.first;
   std::cout << " <- ";
   for (uint64_t bodyId : mergeConfig.second) {
     std::cout << bodyId << " ";

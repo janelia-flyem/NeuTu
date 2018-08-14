@@ -108,9 +108,12 @@ ZIntCuboid GetZoomBox(const ZIntCuboid &box, int zoom);
 ZIntCuboid GetAlignedBox(const ZIntCuboid &box, const ZDvidInfo &dvidInfo);
 #endif
 
-std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
-    const ZDvidReader &reader, const std::vector<uint64_t> &bodyId,
+std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(const ZDvidReader &reader, const std::vector<uint64_t> &bodyIdArray,
     bool mergingToLargest);
+
+std::pair<uint64_t, std::vector<uint64_t>> GetMergeConfig(
+    const ZDvidReader &reader, uint64_t defaultTargetId,
+    const std::vector<uint64_t> &bodyId, bool mergingToLargest);
 }
 
 #endif // ZDVIDUTIL_H

@@ -94,6 +94,8 @@ public:
       const std::vector<ZStroke2d*> strokeList, int value);
   static ZStack* MakeStrokeMask(const std::vector<ZStroke2d*> strokeList, int z);
 
+  static ZStack* Compose(const std::vector<ZStack*> &stackArray);
+
   static ZStack* MakeLabelBinaryStack(
       const std::vector<ZArray*> &labelArray, uint64_t v);
   static ZStack* MakeLabelColorStack(const std::vector<ZArray*> &labelArray);

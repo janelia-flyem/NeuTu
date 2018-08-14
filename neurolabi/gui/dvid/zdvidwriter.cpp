@@ -388,10 +388,11 @@ void ZDvidWriter::mergeBody(const std::string &dataName,
   writeJson(dvidUrl.getMergeUrl(dataName), jsonArray, "[]");
 }
 
-std::pair<uint64_t, std::vector<uint64_t>> ZDvidWriter::mergeBody(
+#if 0
+void ZDvidWriter::mergeBody(
     const std::string &dataName, const std::vector<uint64_t> &bodyId,
     bool mergingToLargest)
-{
+{  
   std::vector<uint64_t> merged;
   uint64_t target = 0;
   if (bodyId.size() > 1) {
@@ -421,6 +422,7 @@ std::pair<uint64_t, std::vector<uint64_t>> ZDvidWriter::mergeBody(
 
   return std::pair<uint64_t, std::vector<uint64_t>>(target, merged);
 }
+#endif
 
 void ZDvidWriter::writeBoundBox(const ZIntCuboid &cuboid, int z)
 {
