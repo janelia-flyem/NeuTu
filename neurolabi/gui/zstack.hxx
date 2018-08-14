@@ -552,6 +552,7 @@ public: /* operations */
   ZIntCuboid getBoundBox() const;
 
   void setBlockValue(int x0, int y0, int z0, const ZStack *stack);
+  void setBlockValue(const ZStack *stack);
 
 public: /* processing routines */
   bool binarize(int threshold = 0);

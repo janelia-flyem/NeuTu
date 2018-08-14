@@ -468,31 +468,33 @@ std::string ZDvid::GetBodyIdTag(uint64_t bodyId)
 
 std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
     const ZDvidReader &reader,
-    const std::vector<uint64_t> &bodyId, bool mergingToLargest)
+    const std::vector<uint64_t> &bodyIdArray, bool mergingToLargest)
 {
   std::vector<uint64_t> merged;
   uint64_t target = 0;
-  if (bodyId.size() > 1) {
-    target = bodyId[0];
+  if (bodyIdArray.size() > 1) {
+    target = bodyIdArray[0];
 
     if (mergingToLargest) {
       int maxSize = 0;
-      for (uint64_t id : bodyId) {
-        const int bodySize = reader.readBodyBlockCount(id);
+      for (uint64_t bodyId : bodyIdArray) {
+        const int bodySize = reader.readBodyBlockCount(bodyId);
+
+        DEBUG_OUT << bodyId << ": " << bodySize << std::endl;
+
         if (bodySize > maxSize) {
           maxSize = bodySize;
-          target = id;
+          target = bodyId;
         }
       }
-      for (uint64_t id : bodyId) {
-        if (id != target) {
-          merged.push_back(id);
+
+      for (uint64_t bodyId : bodyIdArray) {
+        if (bodyId != target) {
+          merged.push_back(bodyId);
         }
       }
     } else {
-      for (size_t i = 1; i < bodyId.size(); ++i) {
-        merged.push_back(bodyId[i]);
-      }
+      merged.insert(merged.begin(), bodyIdArray.begin() + 1, bodyIdArray.end());
     }
   }
 
@@ -500,7 +502,19 @@ std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
 }
 
 
+std::pair<uint64_t, std::vector<uint64_t>> ZDvid::GetMergeConfig(
+    const ZDvidReader &reader, uint64_t defaultTargetId,
+    const std::vector<uint64_t> &bodyId, bool mergingToLargest)
+{
+  std::vector<uint64_t> bodyArray;
 
+  if (!bodyId.empty()) {
+    bodyArray.push_back(defaultTargetId);
+    bodyArray.insert(bodyArray.end(), bodyId.begin(), bodyId.end());
+  }
+
+  return GetMergeConfig(reader, bodyArray, mergingToLargest);
+}
 
 
 

@@ -2029,6 +2029,15 @@ void ZStack::setBlockValue(int x0, int y0, int z0, const ZStack *stack)
   }
 }
 
+void ZStack::setBlockValue(const ZStack *stack)
+{
+  if (stack) {
+    setBlockValue(
+          stack->getOffset().getX(), stack->getOffset().getY(),
+          stack->getOffset().getZ(), stack);
+  }
+}
+
 ZStack* ZStack::makeCrop(const ZIntCuboid &cuboid) const
 {
   if (isEmpty()) {
