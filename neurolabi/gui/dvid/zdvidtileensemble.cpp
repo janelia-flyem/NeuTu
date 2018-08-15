@@ -543,15 +543,17 @@ void ZDvidTileEnsemble::display(
 
 void ZDvidTileEnsemble::setDvidTarget(const ZDvidTarget &dvidTarget)
 {
+  LINFO() << "Tile DVID env:" << dvidTarget.getSourceString();
+
   getHelper()->setDvidTarget(dvidTarget);
 //  m_dvidTarget = dvidTarget;
-  getHelper()->getDvidTarget().prepareTile();
+//  getHelper()->getDvidTarget().prepareTile();
   if (getDvidReader().good()) {
     m_tilingInfo = getDvidReader().readTileInfo(dvidTarget.getMultiscale2dName());
 
     getHelper()->setMaxZoom(m_tilingInfo.getMaxLevel());
-    ZJsonObject obj = getDvidReader().readContrastProtocal();
-    setContrastProtocal(obj);
+//    ZJsonObject obj = getDvidReader().readContrastProtocal();
+//    setContrastProtocal(obj);
   }
 }
 
