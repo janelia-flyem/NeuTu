@@ -999,7 +999,9 @@ void ZFlyEmProofDoc::initTileData()
   ZDvidTileEnsemble *ensemble = new ZDvidTileEnsemble;
   ensemble->addRole(ZStackObjectRole::ROLE_ACTIVE_VIEW);
   ensemble->setSource(ZStackObjectSourceFactory::MakeDvidTileSource());
-  ensemble->setDvidTarget(getDvidTarget());
+  ensemble->setDvidTarget(getDvidTarget().getTileTarget());
+  ZJsonObject obj = m_dvidReader.readContrastProtocal();
+  ensemble->setContrastProtocal(obj);
   addObject(ensemble, true);
 }
 
