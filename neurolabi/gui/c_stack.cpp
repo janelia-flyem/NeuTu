@@ -756,6 +756,10 @@ Mc_Stack* C_Stack::make(int kind, int width, int height, int depth, int channelN
 {
   STACK_MUTEX_GUARD
 
+  if (width <= 0 || height <= 0 || depth <= 0 || channelNumber <= 0) {
+    return NULL;
+  }
+
   return Make_Mc_Stack(kind, width,height, depth, channelNumber);
 }
 
@@ -1584,7 +1588,7 @@ void C_Stack::drawPatch(Stack *canvas, const Stack *patch,
 int C_Stack::digitWidth(int n)
 {
   ostringstream stream;
-#if defined(_NEUTUBE_)
+#if defined(_QT_GUI_USED_)
   const NeutubeConfig &config = NeutubeConfig::getInstance();
   stream << config.getPath(NeutubeConfig::DATA) << "/benchmark/digit" << n
          << ".tif";
@@ -1627,7 +1631,7 @@ int C_Stack::integerWidth(int n, int interval)
 int C_Stack::drawDigit(Stack *canvas, int n, int dx, int dy, int dz)
 {
   ostringstream stream;
-#if defined(_NEUTUBE_)
+#if defined(_QT_GUI_USED_)
   const NeutubeConfig &config = NeutubeConfig::getInstance();
   stream << config.getPath(NeutubeConfig::DATA) << "/benchmark/digit" << n
          << ".tif";

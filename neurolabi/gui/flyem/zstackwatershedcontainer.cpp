@@ -762,8 +762,8 @@ void ZStackWatershedContainer::run()
   //Todo: unified processing for dense and sparse stacks
   if(m_stack && m_stack->hasData() && m_scale > 1){//for normal stack
     ZStackMultiScaleWatershed watershed;
-    ZStackPtr stack = ZStackPtr(
-          watershed.run(getSourceStack(),m_seedArray,m_scale,m_algorithm,m_dsMethod));
+    ZStackPtr stack(watershed.run(getSourceStack(),
+                                  m_seedArray,m_scale,m_algorithm,m_dsMethod));
     stack->setOffset(getSourceOffset());
     m_result.push_back(stack);
   } else {

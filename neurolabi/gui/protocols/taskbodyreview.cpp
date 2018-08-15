@@ -6,7 +6,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QsLog.h>
+#include "zqslog.h"
 
 TaskBodyReview::TaskBodyReview(QJsonObject json)
 {

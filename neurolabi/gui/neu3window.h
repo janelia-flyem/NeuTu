@@ -102,7 +102,7 @@ public slots:
    */
   void setBodyItemSelection(const QSet<uint64_t> &bodySet);
 
-  void zoomToBodyMesh();
+  void zoomToBodyMesh(int numMeshLoaded);
 
   /*!
    * \brief Start Neu3Window

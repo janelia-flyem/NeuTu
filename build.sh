@@ -29,10 +29,15 @@ then
   shift
 else
   QMAKE=$1/bin/qmake
-  if [ `uname` == 'Darwin' ]; then
-    if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+  if [ `uname` = 'Darwin' ]; then
+    if [ -n "$edition" ]
     then
-      QMAKE_SPEC=$1/mkspecs/macx-clang
+      if [ $edition = "flyem" ] || [ $edition = "neu3" ]
+      then
+        QMAKE_SPEC=$1/mkspecs/macx-clang
+      else
+        QMAKE_SPEC=$1/mkspecs/macx-g++
+      fi
     else
       QMAKE_SPEC=$1/mkspecs/macx-g++
     fi
@@ -91,14 +96,17 @@ then
   qmake_args="$qmake_args 'CONDA_ENV=${CONDA_ENV}'"
 fi
 
-if [ $edition = "flyem" ]
+if [ -n "$edition" ]
 then
-  qmake_args="$qmake_args CONFIG+=flyem"
-fi
+  if [ $edition = "flyem" ]
+  then
+    qmake_args="$qmake_args CONFIG+=flyem"
+  fi
 
-if [ $edition = "neu3" ]
-then
-  qmake_args="$qmake_args CONFIG+=neu3"
+  if [ $edition = "neu3" ]
+  then
+    qmake_args="$qmake_args CONFIG+=neu3"
+  fi
 fi
 
 qmake_args="$qmake_args CONFIG+=$debug_config CONFIG+=x86_64 -o Makefile ../gui/gui.pro"
@@ -113,12 +121,20 @@ then
   qmake_args="$qmake_args DEFINES+=\"$cxx_define\""
 fi
 
+if [ -n "$PKG_VERSION" ]
+then
+  qmake_args="$qmake_args DEFINES+=PKG_VERSION=\"$PKG_VERSION\""
+fi
+
 if [ -n "$ext_qmake_args" ]
 then
   ext_qmake_args=`echo "$ext_qmake_args" | sed -e 's/^"//' -e 's/"$//'`
   echo $ext_qmake_args
   qmake_args="$qmake_args $ext_qmake_args"
 fi
+
+#echo $qmake_args
+#exit
 
 cd neurolabi
 

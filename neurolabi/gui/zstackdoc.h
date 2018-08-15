@@ -1407,21 +1407,11 @@ private:
   ZStackObjectGroup m_bufferObjectGroup;
   //Swc_Tree_Node *m_lastAddedSwcNode;
 
-  //model-view structure for obj list and edit
-//  ZSwcObjsModel *m_swcObjsModel;
-//  ZSwcNodeObjsModel *m_swcNodeObjsModel;
-//  ZPunctaObjsModel *m_punctaObjsModel;
-//  ZDocPlayerObjsModel *m_seedObjsModel;
-//  ZGraphObjsModel *m_graphObjsModel;
-//  ZSurfaceObjsModel *m_surfaceObjsModel;
-//  ZMeshObjsModel *m_meshObjsModel;
-//  ZRoiObjsModel *m_roiObjsModel;
-
   ZObjsModelManager *m_modelManager = NULL;
 
 
   //Parent frame
-  ZStackFrame *m_parentFrame;
+//  ZStackFrame *m_parentFrame;
   ZStack *m_labelField;
 
   /* workspaces */

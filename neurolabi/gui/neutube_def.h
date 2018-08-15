@@ -204,4 +204,16 @@ using TProgressFunc = std::function<void(size_t, size_t)>;
 #  define NULL nullptr
 #endif
 
+#if defined(SANITIZE_THREAD)
+#  define STD_COUT if (1) {} else std::cout
+#else
+#  define STD_COUT std::cout
+#endif
+
+#if defined(_DEBUG_) && !defined(SANITIZE_THREAD)
+#  define DEBUG_OUT std::cout
+#else
+#  define DEBUG_OUT if (1) {} else std::cout
+#endif
+
 #endif // NEUTUBE_DEF_H

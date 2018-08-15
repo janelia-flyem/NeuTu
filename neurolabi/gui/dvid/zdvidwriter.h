@@ -108,9 +108,10 @@ public:
 
   void mergeBody(const std::string &dataName, uint64_t targetId,
                  const std::vector<uint64_t> &bodyId);
-  void mergeBody(const std::string &dataName,
-                 const std::vector<uint64_t> &bodyId,
-                 bool mergingToLargest);
+//  void mergeBody(
+//      const std::string &dataName,
+//      const std::vector<uint64_t> &bodyId,
+//      bool mergingToLargest);
 
   /*!
    * \brief Create a new keyvalue data in DVID.
@@ -258,6 +259,8 @@ public:
   void writeSplitTask(const QString &key, const ZJsonObject &task);
   void deleteSplitTask(const QString &key);
   void writeTestResult(const std::string &key, const ZJsonObject &result);
+
+  void writeBodyStatusList(const std::vector<std::string> &statusList);
 
   /*!
    * \brief Upload a mesh as a ROI
