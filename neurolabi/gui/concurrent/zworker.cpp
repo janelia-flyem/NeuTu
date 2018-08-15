@@ -2,7 +2,7 @@
 
 #include <QTimer>
 
-#include "QsLog.h"
+#include "zqslog.h"
 #include "ztask.h"
 #include "ztaskqueue.h"
 

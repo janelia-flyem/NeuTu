@@ -23,7 +23,7 @@
 
 #include "z3dgl.h"
 #include "z3dtexture.h"
-#include "QsLog.h"
+#include "zqslog.h"
 
 void Z3DPickingManager::setRenderTarget(Z3DRenderTarget& rt)
 {

@@ -1,11 +1,13 @@
 #include "z3drendertarget.h"
 
-#include "z3dtexture.h"
-#include "QsLog.h"
-#include "zbenchtimer.h"
-#include "z3dgpuinfo.h"
 #include <QImage>
 #include <QImageWriter>
+
+#include "z3dtexture.h"
+#include "zqslog.h"
+#include "zbenchtimer.h"
+#include "z3dgpuinfo.h"
+
 
 Z3DRenderTarget::Z3DRenderTarget(GLint internalColorFormat, GLint internalDepthFormat, glm::uvec2 size,
                                  bool multisample, int sample)

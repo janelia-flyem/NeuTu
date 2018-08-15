@@ -3,7 +3,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 
-#include "QsLog/QsLog.h"
+#include "zqslog.h"
 #include "ui_tilemanager.h"
 #include "ztilemanager.h"
 #include "zqtbarprogressreporter.h"

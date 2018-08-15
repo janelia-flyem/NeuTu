@@ -1,9 +1,11 @@
 #include "z3dgpuinfo.h"
 
 #include "z3dgl.h"
-#include "QsLog.h"
+
 #include <QStringList>
 #include <QProcess>
+
+#include "zqslog.h"
 
 uint64_t getDedicatedVideoMemoryMB();
 
@@ -193,7 +195,7 @@ QStringList Z3DGpuInfo::gpuInfo() const
     return info;
   }
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(SANITIZE_THREAD)
   QProcess dispInfo;
   dispInfo.start("system_profiler", QStringList() << "SPDisplaysDataType");
 

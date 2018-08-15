@@ -73,7 +73,7 @@ private:
     QMap<QString, QJsonObject> m_branchMap;
     bool m_detailsVisible;
     QNetworkAccessManager * m_networkManager;
-    QNetworkReply * m_datasetReply;
+    QNetworkReply * m_datasetReply = nullptr;
 
     void loadDatasets();
     void loadDatasetsFromFile();

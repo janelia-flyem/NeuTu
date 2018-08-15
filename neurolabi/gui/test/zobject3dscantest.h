@@ -837,6 +837,35 @@ TEST(ZObject3dScan, TestScanArray) {
     ASSERT_EQ(1, (int) obj->getVoxelNumber());
   }
 
+  {
+    uint64_t array[10] = {0, 0, 1, 1, 0, 1, 1, 0, 0, 1};
+    ZObject3dScan obj;
+    obj.scanArrayV(array, 10, 20, 30, 10, uint64_t(1));
+    ASSERT_EQ(5, (int) obj.getVoxelNumber());
+    ZObject3dScan obj2;
+    obj2.addSegment(30, 20, 12, 13);
+    obj2.addSegment(30, 20, 15, 16);
+    obj2.addSegment(30, 20, 19, 19);
+
+    obj.equalsLiterally(obj2);
+  }
+
+  {
+    uint64_t array[10] = {1, 0, 1, 1, 0, 1, 1, 0, 0, 1};
+    ZObject3dScan obj;
+    obj.scanArrayV(array, 10, 20, 30, 10, uint64_t(1));
+
+    ZObject3dScan obj2;
+    obj2.addSegment(30, 20, 10, 10);
+    obj2.addSegment(30, 20, 12, 13);
+    obj2.addSegment(30, 20, 15, 16);
+    obj2.addSegment(30, 20, 19, 19);
+
+//    obj.print();
+
+    obj.equalsLiterally(obj2);
+  }
+
   //obj.scanArray(array, )
 }
 

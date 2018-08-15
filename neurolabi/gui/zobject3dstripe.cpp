@@ -189,10 +189,14 @@ void ZObject3dStripe::read(FILE *fp)
     fread(&(m_y), sizeof(int), 1, fp);
     int nseg = 0;
     fread(&(nseg), sizeof(int), 1, fp);
-    TZ_ASSERT(nseg > 0, "Invalid segment number");
-    m_segmentArray.resize(nseg * 2);
-    fread(&(m_segmentArray[0]), sizeof(int), m_segmentArray.size(), fp);
-    m_isCanonized = false;
+
+    if (nseg > 0) {
+      m_segmentArray.resize(nseg * 2);
+      fread(&(m_segmentArray[0]), sizeof(int), m_segmentArray.size(), fp);
+      m_isCanonized = false;
+    } else {
+      m_segmentArray.clear();
+    }
   }
 }
 

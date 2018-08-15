@@ -51,6 +51,7 @@ class FlyEmBodyIdDialog;
 class ZFlyEmMergeUploadDialog;
 class ZFlyEmProofSettingDialog;
 class ZROIWidget;
+class ZFlyEmBodyAnnotationDialog;
 
 /*!
  * \brief The MVC class for flyem proofreading
@@ -217,6 +218,7 @@ public slots:
   void processMessage(const ZWidgetMessage &msg);
   void notifySplitTriggered();
   void annotateBody();
+  void showBodyConnection();
   void annotateSynapse();
   void checkInSelectedBody(flyem::EBodySplitMode mode);
   void checkInSelectedBodyAdmin();
@@ -514,6 +516,9 @@ private:
   void startMergeProfile(const uint64_t bodyId, int msec);
   void endMergeProfile();
 
+  FlyEmBodyInfoDialog* getBodyQueryDlg();
+  ZFlyEmBodyAnnotationDialog* getBodyAnnotationDlg();
+
 protected:
   bool m_showSegmentation;
   ZFlyEmBodySplitProject m_splitProject;
@@ -536,6 +541,7 @@ protected:
 
   ZDvidTargetProviderDialog *m_dvidDlg;
   FlyEmBodyInfoDialog *m_bodyInfoDlg;
+  FlyEmBodyInfoDialog *m_bodyQueryDlg = nullptr;
   ProtocolSwitcher *m_protocolSwitcher;
   ZFlyEmSplitCommitDialog *m_splitCommitDlg;
   FlyEmTodoDialog *m_todoDlg;
@@ -548,6 +554,7 @@ protected:
   FlyEmBodyIdDialog *m_bodyIdDialog;
   ZFlyEmMergeUploadDialog *m_mergeUploadDlg;
   ZFlyEmProofSettingDialog *m_settingDlg;
+  ZFlyEmBodyAnnotationDialog *m_annotationDlg = nullptr;
 
   Z3DMainWindow *m_bodyViewWindow;
   Z3DTabWidget *m_bodyViewers;

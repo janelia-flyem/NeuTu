@@ -1,12 +1,13 @@
 #include "z3dfontrenderer.h"
 
+#include <QDir>
+
 #include "z3dgl.h"
 #include "zsysteminfo.h"
 #include "z3dgpuinfo.h"
 #include "z3dsdfont.h"
 #include "z3dshaderprogram.h"
-#include "QsLog.h"
-#include <QDir>
+#include "zqslog.h"
 
 Z3DFontRenderer::Z3DFontRenderer(Z3DRendererBase& rendererBase)
   : Z3DPrimitiveRenderer(rendererBase)

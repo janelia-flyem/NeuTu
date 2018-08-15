@@ -1,7 +1,7 @@
 #include "zflyembodysplitter.h"
 
-#include <QsLog.h>
 #include "neutubeconfig.h"
+#include "zqslog.h"
 #include "zstackdoc.h"
 #include "zflyembody3ddoc.h"
 #include "zwidgetmessage.h"
