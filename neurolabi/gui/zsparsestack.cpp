@@ -355,8 +355,11 @@ ZStackBlockGrid* ZSparseStack::makeDownsampleGrid(
   }
 
   const ZStackBlockGrid *stackGrid = getStackGrid(zoom);
-  ZStackBlockGrid *dsGrid =
-      stackGrid->makeDownsample((ZIntPoint(xintv, yintv, zintv) + 1) / scale - 1);
+  ZStackBlockGrid *dsGrid = NULL;
+
+  if (stackGrid) {
+    stackGrid->makeDownsample((ZIntPoint(xintv, yintv, zintv) + 1) / scale - 1);
+  }
 
   return dsGrid;
 }
@@ -573,9 +576,21 @@ void ZSparseStack::setGreyScale(ZStackBlockGrid *stackGrid)
   if (m_stackGrid.empty()) {
     m_stackGrid.push_back(stackGrid);
   } else if (m_stackGrid[0] != stackGrid) {
-    deprecate(GREY_SCALE);
+    delete m_stackGrid[0];
+    deprecateDependent(GREY_SCALE);
     m_stackGrid[0] = stackGrid;
   }
+}
+
+void ZSparseStack::setGreyScale(int zoom, ZStackBlockGrid *stackGrid)
+{
+  if (int(m_stackGrid.size()) <= zoom) {
+    m_stackGrid.resize(zoom + 1);
+  }
+
+  delete m_stackGrid[zoom];
+  m_stackGrid[zoom] = stackGrid;
+  deprecateDependent(GREY_SCALE);
 }
 
 const ZStackBlockGrid* ZSparseStack::getStackGrid() const

@@ -331,8 +331,11 @@ public:
   void remove(const ZIntCuboid &box);
 
   void downsample(int xintv, int yintv, int zintv);
+
   void downsampleMax(int xintv, int yintv, int zintv);
   void downsampleMax(const ZIntPoint &dsIntv);
+  void downsampleMax(int intv);
+
   void downsampleMin(int xintv, int yintv, int zintv);
   ZObject3dScan downsampleBorderMask(int xintv, int yintv, int zintv);
 

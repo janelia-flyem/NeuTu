@@ -94,6 +94,8 @@ public:
    */
   void setGreyScale(ZStackBlockGrid *stackGrid);
 
+  void setGreyScale(int zoom, ZStackBlockGrid *stackGrid);
+
   inline const ZObject3dScan* getObjectMask() const {
     return m_objectMask;
   }
