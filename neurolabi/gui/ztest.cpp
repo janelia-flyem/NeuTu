@@ -27452,7 +27452,7 @@ void ZTest::test(MainWindow *host)
   stack->save(GET_TEST_DATA_DIR + "/_test.tif");
 #endif
 
-#if 1
+#if 0
   ZDvidReader *reader = ZGlobal::GetInstance().getDvidReader("test");
 
   ZDvidReader grayReader;

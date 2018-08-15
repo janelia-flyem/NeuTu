@@ -1134,6 +1134,11 @@ void ZObject3dScan::downsampleMax(const ZIntPoint &dsIntv)
   downsampleMax(dsIntv.getX(), dsIntv.getY(), dsIntv.getZ());
 }
 
+void ZObject3dScan::downsampleMax(int intv)
+{
+  downsampleMax(intv, intv, intv);
+}
+
 void ZObject3dScan::downsampleMax(int xintv, int yintv, int zintv)
 {
   if (xintv == 0 && yintv == 0 && zintv == 0) {
