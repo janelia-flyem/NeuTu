@@ -386,7 +386,13 @@ void TaskProtocolWindow::onLoadTasksButton() {
 }
 
 void TaskProtocolWindow::onBodiesUpdated() {
-  updateBodyWindow();
+    updateBodyWindow();
+}
+
+void TaskProtocolWindow::onNextPrevAllowed(bool allowed)
+{
+    m_nextPrevAllowed = allowed;
+    updateButtonsEnabled();
 }
 
 namespace {
@@ -406,18 +412,18 @@ void TaskProtocolWindow::onCompletedStateChanged(int state) {
           saveState();
           updateLabel();
       } else {
-        BlockSignals blockCallingThisAgain(ui->completedCheckBox);
-        ui->completedCheckBox->setCheckState(Qt::Unchecked);
+          BlockSignals blockCallingThisAgain(ui->completedCheckBox);
+          ui->completedCheckBox->setCheckState(Qt::Unchecked);
       }
     }
 }
 
 void TaskProtocolWindow::onCompletedAndNext()
 {
-  ui->completedCheckBox->setCheckState(Qt::Checked);
-  if (ui->nextButton->isEnabled()) {
-    onNextButton();
-  }
+    ui->completedCheckBox->setCheckState(Qt::Checked);
+    if (ui->nextButton->isEnabled()) {
+       onNextButton();
+    }
 }
 
 void TaskProtocolWindow::onReviewStateChanged(int /*state*/) {
@@ -746,8 +752,9 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * next or previous tasks to go to
  */
 void TaskProtocolWindow::updateButtonsEnabled() {
-  bool nextPrevEnabled = ((m_taskList.size() > 1) && (!m_changingTask) &&
-                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
+  bool nextPrevEnabled = ((m_taskList.size() > 1) && !m_changingTask &&
+                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
+                          m_nextPrevAllowed);
     ui->nextButton->setEnabled(nextPrevEnabled);
     ui->prevButton->setEnabled(nextPrevEnabled);
 }
@@ -1097,6 +1104,8 @@ void TaskProtocolWindow::loadTasks(QJsonObject json) {
         if (!m_taskList.empty()) {
             connect(m_taskList.back().data(), SIGNAL(bodiesUpdated()),
                     this, SLOT(onBodiesUpdated()));
+            connect(m_taskList.back().data(), SIGNAL(nextPrevAllowed(bool)),
+                    this, SLOT(onNextPrevAllowed(bool)));
             connect(m_taskList.back().data(), SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)),
                     this, SIGNAL(browseGrayscale(double,double,double,const QHash<uint64_t, QColor>&)));
             connect(m_taskList.back().data(), SIGNAL(updateGrayscaleColor(const QHash<uint64_t, QColor>&)),
