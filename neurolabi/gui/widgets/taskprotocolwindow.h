@@ -116,6 +116,8 @@ private:
     ZDvidWriter m_writer;
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex = -1;
+    bool m_changingTask = false;
+    struct ChangingTask;
     QWidget * m_currentTaskWidget = nullptr;
     QAction * m_currentTaskMenuAction = nullptr;
     bool m_nodeLocked;
