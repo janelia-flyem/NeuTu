@@ -59,6 +59,8 @@ private:
   size_t m_initialAngleMethod;
   glm::vec3 m_initialUp;
 
+  size_t m_hybridLoadedCount;
+
   QWidget *m_widget;
   QRadioButton *m_mergeButton;
   QRadioButton *m_dontMergeButton;

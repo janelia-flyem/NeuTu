@@ -51,6 +51,7 @@ private slots:
     void onDoneButton();
     void onLoadTasksButton();    
     void onBodiesUpdated();
+    void onNextPrevAllowed(bool allowed);
     void onCompletedStateChanged(int state);
     void onCompletedAndNext();
     void onReviewStateChanged(int state);
@@ -131,6 +132,8 @@ private:
     int m_bodyMeshLoadedReceived = 0;
     int m_bodiesReused = 0;
     std::set<int> m_skippedTaskIndices;
+    bool m_nextPrevAllowed = true;
+
     void setWindowConfiguration(WindowConfigurations config);
     QJsonObject loadJsonFromFile(QString filepath);
     void showError(QString title, QString message);

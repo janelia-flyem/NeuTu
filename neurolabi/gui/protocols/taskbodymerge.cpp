@@ -1238,7 +1238,22 @@ void TaskBodyMerge::showHybridMeshes(bool show)
     }
   }
 
-  // Trigger asynchronous generation of hybrid meshes for the region.
+  // The asynchronous creation of the hybrid meshes can cause problems if the user
+  // is able to move to another task before the creation is finished.  So disable the
+  // user interface that allows changing of the task until signals indicate the
+  // hybrid meshes are complete.
+
+  allowNextPrev(false);
+
+  m_hybridLoadedCount = 0;
+  connect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, [=](int) {
+    if (++m_hybridLoadedCount == 2) {
+      disconnect(m_bodyDoc, &ZFlyEmBody3dDoc::bodyMeshLoaded, this, 0);
+      allowNextPrev(true);
+    }
+  });
+
+  // Trigger asynchronous creation of hybrid meshes for the region.
 
   ZIntCuboid range(p1, p2);
   m_bodyDoc->showMoreDetail(m_bodyId1, range);

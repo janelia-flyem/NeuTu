@@ -289,6 +289,11 @@ void TaskProtocolTask::updateBodies(const QSet<uint64_t> &visible,
   emit(bodiesUpdated());
 }
 
+void TaskProtocolTask::allowNextPrev(bool allow)
+{
+  emit(nextPrevAllowed(allow));
+}
+
 /*
  * produce the json that holds all the task data
  */
