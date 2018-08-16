@@ -162,7 +162,31 @@ void TaskProtocolWindow::init() {
     } 
 }
 
+// A helper class to make certain the "Next" and "Prev" buttons (and their keyboard shortcuts)
+// are disabled while they do their work to change the current task, to prevent odd race conditions.
+
+struct TaskProtocolWindow::ChangingTask
+{
+  ChangingTask(TaskProtocolWindow *window)
+    : m_window(window)
+  {
+      m_window->m_changingTask = true;
+      m_window->updateButtonsEnabled();
+  }
+  ~ChangingTask()
+  {
+      m_window->m_changingTask = false;
+      m_window->updateButtonsEnabled();
+  }
+  TaskProtocolWindow *m_window;
+};
+
 void TaskProtocolWindow::onPrevButton() {
+    if (!ui->prevButton->isEnabled()) {
+        return;
+    }
+    ChangingTask changing(this);
+
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforePrev();
@@ -245,6 +269,11 @@ void TaskProtocolWindow::test()
 }
 
 void TaskProtocolWindow::onNextButton() {
+    if (!ui->nextButton->isEnabled()) {
+        return;
+    }
+    ChangingTask changing(this);
+
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
         m_taskList[m_currentTaskIndex]->beforeNext();
@@ -717,8 +746,8 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * next or previous tasks to go to
  */
 void TaskProtocolWindow::updateButtonsEnabled() {
-    bool nextPrevEnabled = ((m_taskList.size() > 1) &&
-                            ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
+  bool nextPrevEnabled = ((m_taskList.size() > 1) && (!m_changingTask) &&
+                          ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()));
     ui->nextButton->setEnabled(nextPrevEnabled);
     ui->prevButton->setEnabled(nextPrevEnabled);
 }
