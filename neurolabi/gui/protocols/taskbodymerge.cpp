@@ -1140,7 +1140,7 @@ void TaskBodyMerge::configureShowHiRes()
   // then the tar archive exists.
 
   disconnect(s_networkManager, 0, 0, 0);
-  connect(s_networkManager, &QNetworkAccessManager::finished,
+  connect(s_networkManager.data(), &QNetworkAccessManager::finished,
           this, &TaskBodyMerge::updateHiResWidget);
 
   // Issue the DVID queries, each of which is a "range" query for
