@@ -296,6 +296,8 @@
 #include  "dvid/zdvidbodyhelper.h"
 #include "zmeshutils.h"
 #include "zarrayfactory.h"
+#include "dvid/zdvidstackblockfactory.h"
+#include "zstackblocksource.h"
 
 #include "test/ztestall.h"
 
@@ -27550,6 +27552,51 @@ void ZTest::test(MainWindow *host)
     std::cout << bodyId << " ";
   }
   std::cout << std::endl;
+#endif
+
+#if 0
+  ZDvidStackBlockFactory blockFactory;
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  blockFactory.setDvidTarget(reader->getDvidTarget());
+
+  ZIntPoint blockIndex(300, 300, 300);
+  std::vector<ZStack*> stackArray = blockFactory.make(blockIndex, 3, 0);
+
+  ZStack *stack = ZStackFactory::Compose(stackArray);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+
+#endif
+
+#if 0
+  ZDvidStackBlockFactory *blockFactory = new ZDvidStackBlockFactory;
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  blockFactory->setDvidTarget(reader->getDvidTarget());
+
+  ZStackBlockSource blockSource;
+  blockSource.setBlockFactory(blockFactory);
+  blockSource.setBlockSize(blockFactory->getDvidInfo().getBlockSize());
+  blockSource.setGridSize(blockFactory->getDvidInfo().getEndBlockIndex() + 1);
+
+  ZStack *stack = blockSource.getStack(150, 150, 150, 1);
+  stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+#endif
+
+#if 1
+  ZDvidReader *reader =  ZGlobal::GetInstance().getDvidReader("test");
+  ZIntPoint center(18587, 19713, 20696);
+  ZSparseStack *spStack = reader->readSparseStackOnDemand(
+        915520244, flyem::LABEL_BODY, NULL);
+//  ZStack *stack = spStack->getStack();
+  QElapsedTimer timer;
+  timer.start();
+  ZStack *stack = spStack->makeStack(ZIntCuboid(center - 1024, center + 1024), false);
+  std::cout << timer.elapsed() << "ms" << std::endl;
+  if (stack) {
+    stack->save(GET_TEST_DATA_DIR + "/_test.tif");
+  } else {
+    std::cout << "Null stack" << std::endl;
+  }
+
 #endif
 
   std::cout << "Done." << std::endl;

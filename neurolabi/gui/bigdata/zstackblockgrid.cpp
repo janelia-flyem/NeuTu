@@ -234,6 +234,7 @@ ZStackBlockGrid* ZStackBlockGrid::makeDownsample(
     grid->m_stackArray.resize(m_stackArray.size(), NULL);
     for (size_t i = 0; i < m_stackArray.size(); ++i) {
       ZStack *stack = m_stackArray[i];
+
       if (stack != NULL) {
         ZStack *dsStack = stack->clone();
         dsStack->downsampleMin(xintv, yintv, zintv);

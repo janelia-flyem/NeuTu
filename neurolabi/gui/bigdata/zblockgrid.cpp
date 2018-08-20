@@ -1,5 +1,6 @@
 #include "zblockgrid.h"
 #include "tz_utilities.h"
+#include "geometry/zgeometry.h"
 
 ZBlockGrid::ZBlockGrid()
 {
@@ -33,6 +34,17 @@ void ZBlockGrid::setBlockSize(int x, int y, int z)
 void ZBlockGrid::setBlockSize(const ZIntPoint &s)
 {
   setBlockSize(s.getX(), s.getY(), s.getZ());
+}
+
+void ZBlockGrid::configure(const ZBlockGrid &grid, int zoom)
+{
+  int scale = zgeom::GetZoomScale(zoom);
+  m_minPoint = grid.m_minPoint / scale;
+  m_blockSize = grid.m_blockSize;
+  m_size = grid.m_size / scale;
+  if (scale > 1) {
+    m_size = m_size + 1;
+  }
 }
 
 ZIntPoint ZBlockGrid::getBlockPosition(const ZIntPoint &blockIndex) const

@@ -221,8 +221,10 @@ public:
   ZStack* readThumbnail(uint64_t bodyId);
 
   ZSparseStack* readSparseStack(uint64_t bodyId) const;
-
   ZSparseStack* readSparseStack(uint64_t bodyId, int zoom) const;
+
+  ZSparseStack* readSparseStackOnDemand(
+      uint64_t bodyId, flyem::EBodyLabelType type, ZSparseStack *out) const;
 
   ZDvidSparseStack* readDvidSparseStack(
       uint64_t bodyId, flyem::EBodyLabelType labelType) const;
@@ -230,6 +232,7 @@ public:
   ZDvidSparseStack* readDvidSparseStack(uint64_t bodyId, const ZIntCuboid &range) const;
   ZDvidSparseStack* readDvidSparseStackAsync(
       uint64_t bodyId, flyem::EBodyLabelType labelType) const;
+
   ZStack* readGrayScale(
       int x0, int y0, int z0, int width, int height, int depth) const;
   ZStack* readGrayScale(

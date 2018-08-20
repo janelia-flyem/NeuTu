@@ -904,7 +904,10 @@ HEADERS += mainwindow.h \
     flyem/zflyembodymanager.h \
     z3dwindowcontroller.h \
     z3d2dslicerenderer.h \
-    z3d2dslicefilter.h
+    z3d2dslicefilter.h \
+    zstackblockfactory.h \
+    dvid/zdvidstackblockfactory.h \
+    zstackblocksource.h
 
 FORMS += dialogs/settingdialog.ui \
     dialogs/frameinfodialog.ui \
@@ -1582,7 +1585,10 @@ SOURCES += main.cpp \
     flyem/zflyembodymanager.cpp \
     z3dwindowcontroller.cpp \
     z3d2dslicerenderer.cpp \
-    z3d2dslicefilter.cpp
+    z3d2dslicefilter.cpp \
+    zstackblockfactory.cpp \
+    dvid/zdvidstackblockfactory.cpp \
+    zstackblocksource.cpp
 
 DISTFILES += \
     Resources/shader/wblended_final.frag \

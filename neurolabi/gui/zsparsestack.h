@@ -5,6 +5,7 @@
 
 #include "bigdata/zstackblockgrid.h"
 #include "zuncopyable.h"
+#include "zstackblocksource.h"
 
 class ZIntCuboid;
 class ZObject3dScan;
@@ -19,7 +20,7 @@ public:
   ~ZSparseStack();
 
   enum EComponent {
-    STACK, GREY_SCALE, OBJECT_MASK, ALL_COMPONET
+    STACK, GREY_SCALE, OBJECT_MASK, BLOCK_MASK, ALL_COMPONET
   };
 
   void deprecateDependent(EComponent component);
@@ -89,6 +90,8 @@ public:
    */
   void setObjectMask(ZObject3dScan *obj);
 
+  void setBlockMask(ZObject3dScan *obj);
+
   /*!
    * \brief Set greyscale data of the sparse stack
    */
@@ -103,6 +106,8 @@ public:
   inline ZObject3dScan* getObjectMask() {
     return m_objectMask;
   }
+
+  ZObject3dScan* getBlockMask();
 
   const ZStackBlockGrid* getStackGrid() const;
   ZStackBlockGrid* getStackGrid();
@@ -143,6 +148,12 @@ public:
 
   ZSparseStack* downsample(int xintv, int yintv, int zintv);
 
+  void setBlockFactory(ZStackBlockFactory *factory);
+  void setBlockSize(const ZIntPoint size);
+
+  void cacheStackSource(int zoom);
+  void cacheStackSource(const ZIntCuboid blockRange, int zoom);
+
 private:
   static void assignStackValue(ZStack *stack, const ZObject3dScan &obj,
                                const ZStackBlockGrid &stackGrid,
@@ -152,18 +163,23 @@ private:
                                const ZObject3dScan &border,
                                const ZStackBlockGrid &stackGrid,
                                const int baseValue);
-  ZStackBlockGrid* makeDownsampleGrid(int xintv, int yintv, int zintv) const;
+  ZStackBlockGrid* makeDownsampleGrid(int xintv, int yintv, int zintv);
+  ZStackBlockGrid* makeDownsampleGrid(
+      int xintv, int yintv, int zintv, const ZIntCuboid &range);
+  int getOptimalZoom(int xintv, int yintv, int zintv) const;
 
 private:
-  ZObject3dScan *m_objectMask;
-  std::vector<ZStackBlockGrid*> m_stackGrid;
+  ZObject3dScan *m_objectMask = nullptr;
+  ZObject3dScan *m_blockMask = nullptr;
+  ZStackBlockSource m_stackSource;
+//  std::vector<ZStackBlockGrid*> m_stackGrid;
 //  ZStackBlockGrid *m_stackGrid;
   ZIntPoint m_dsIntv;
 
-  mutable ZStack *m_stack;
+  mutable ZStack *m_stack = nullptr;
 //  mutable ZIntPoint m_dsIntv;
 
-  int m_baseValue;
+  int m_baseValue = 1;
 };
 
 #endif // ZSPARSESTACK_H
