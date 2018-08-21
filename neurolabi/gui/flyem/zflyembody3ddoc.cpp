@@ -3308,6 +3308,8 @@ void ZFlyEmBody3dDoc::setDvidTarget(const ZDvidTarget &target)
   m_mainDvidWriter.clear();
   m_bodyReader.clear();
   updateDvidInfo();
+
+  m_splitter->setDvidTarget(target);
 }
 
 const ZDvidReader& ZFlyEmBody3dDoc::getMainDvidReader() const
@@ -3616,7 +3618,6 @@ void ZFlyEmBody3dDoc::commitSplitResult()
   } else {
     emit removingBody(oldId);
     emit addingBody(remainderId);
-//    delete mesh;
   }
 //  addEvent(BodyEvent::ACTION_REMOVE, oldId);
   ZStackDocAccessor::RemoveObject(
@@ -3625,10 +3626,13 @@ void ZFlyEmBody3dDoc::commitSplitResult()
 
   m_splitter->setBodyId(decode(remainderId));
 
+  m_splitter->updateCachedMask(remainObj);
+  /*
   ZDvidSparseStack *sparseStack = getDataDocument()->getDvidSparseStack();
   if (sparseStack != NULL) {
     sparseStack->setObjectMask(remainObj);
   }
+  */
 
   notifyWindowMessageUpdated(summary);
 }
