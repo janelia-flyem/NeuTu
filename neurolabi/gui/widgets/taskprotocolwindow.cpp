@@ -162,30 +162,11 @@ void TaskProtocolWindow::init() {
     } 
 }
 
-// A helper class to make certain the "Next" and "Prev" buttons (and their keyboard shortcuts)
-// are disabled while they do their work to change the current task, to prevent odd race conditions.
-
-struct TaskProtocolWindow::ChangingTask
-{
-  ChangingTask(TaskProtocolWindow *window)
-    : m_window(window)
-  {
-      m_window->m_changingTask = true;
-      m_window->updateButtonsEnabled();
-  }
-  ~ChangingTask()
-  {
-      m_window->m_changingTask = false;
-      m_window->updateButtonsEnabled();
-  }
-  TaskProtocolWindow *m_window;
-};
-
 void TaskProtocolWindow::onPrevButton() {
     if (!ui->prevButton->isEnabled()) {
         return;
     }
-    ChangingTask changing(this);
+    m_changingTask = true;
 
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
@@ -272,7 +253,7 @@ void TaskProtocolWindow::onNextButton() {
     if (!ui->nextButton->isEnabled()) {
         return;
     }
-    ChangingTask changing(this);
+    m_changingTask = true;
 
     // warn the task we're about to move away
     if (m_currentTaskIndex >= 0) {
@@ -392,7 +373,7 @@ void TaskProtocolWindow::onBodiesUpdated() {
 void TaskProtocolWindow::onNextPrevAllowed(bool allowed)
 {
     m_nextPrevAllowed = allowed;
-    updateButtonsEnabled();
+    updateNextPrevButtonsEnabled();
 }
 
 namespace {
@@ -460,7 +441,7 @@ void TaskProtocolWindow::onShowCompletedStateChanged(int /*state*/) {
         updateBodyWindow();
         updateLabel();
     }
-    updateButtonsEnabled();
+    updateNextPrevButtonsEnabled();
 }
 
 /*
@@ -740,7 +721,7 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
             ui->verticalLayout_3->addWidget(m_currentTaskWidget);
             // ui->horizontalLayout->addWidget(m_currentTaskWidget);
             m_currentTaskWidget->setVisible(true);
-            updateButtonsEnabled();
+            updateNextPrevButtonsEnabled();
         }
 
         updateMenu(true);
@@ -751,7 +732,7 @@ void TaskProtocolWindow::updateCurrentTaskLabel() {
  * ensures that the "Next" and "Prev" buttons are enabled only when there are
  * next or previous tasks to go to
  */
-void TaskProtocolWindow::updateButtonsEnabled() {
+void TaskProtocolWindow::updateNextPrevButtonsEnabled() {
   bool nextPrevEnabled = ((m_taskList.size() > 1) && !m_changingTask &&
                           ((getNextUncompleted() != -1) || ui->showCompletedCheckBox->isChecked()) &&
                           m_nextPrevAllowed);
@@ -911,7 +892,6 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 
         bool justEnabled = (m_currentTaskWidget && !m_currentTaskWidget->isEnabled());
 
-        updateButtonsEnabled();
         if (m_currentTaskWidget) {
             m_currentTaskWidget->setEnabled(true);
         }
@@ -926,6 +906,9 @@ void TaskProtocolWindow::enableButtonsAfterUpdating()
 
             m_taskList[m_currentTaskIndex]->onLoaded();
         }
+
+        m_changingTask = false;
+        updateNextPrevButtonsEnabled();
     }
 }
 

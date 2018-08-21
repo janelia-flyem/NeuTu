@@ -118,7 +118,6 @@ private:
     ProtocolInstanceStatus m_protocolInstanceStatus;
     int m_currentTaskIndex = -1;
     bool m_changingTask = false;
-    struct ChangingTask;
     QWidget * m_currentTaskWidget = nullptr;
     QAction * m_currentTaskMenuAction = nullptr;
     bool m_nodeLocked;
@@ -148,7 +147,7 @@ private:
     void startProtocol(QJsonObject json, bool save);
     void updateLabel();
     void updateCurrentTaskLabel();
-    void updateButtonsEnabled();
+    void updateNextPrevButtonsEnabled();
     void updateMenu(bool add);
     int getFirst(bool includeCompleted);
     void showInfo(QString title, QString message);
