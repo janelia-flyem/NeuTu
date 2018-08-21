@@ -105,23 +105,6 @@ ZBodySplitCommand::parseSignalPath(
         }
       }
     }
-
-//    ZDvidReader *reader =
-//        ZGlobal::GetInstance().getDvidReaderFromUrl(signalPath);
-//    if (read) {
-//      if (!signalInfo.isEmpty()) {
-//        if (signalInfo.hasKey(ZDvidTarget::m_sourceConfigKey)) {
-//          reader->getDvidTarget();
-//        }
-//      }
-
-//      ZDvidSparseStack *dvidStack =
-//          dvidStack = reader->readDvidSparseStack(m_bodyId);
-//      spStack = dvidStack->getSparseStack(range);
-//      gc.registerObject(dvidStack);
-//      spStack = reader->readSparseStack(ZDvidUrl::GetBodyId(signalPath));
-//      gc.registerObject(spStack);
-//    }
   } else {
     if (isFile) {
       signalPath = ZString(signalPath).absolutePath(dataDir);
