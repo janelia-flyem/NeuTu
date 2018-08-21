@@ -672,7 +672,7 @@ ZObject3dScan *ZDvidReader::readBody(
     ZDvidUrl dvidUrl(getDvidTarget());
     switch (labelType) {
     case flyem::LABEL_BODY:
-      if (zoom == 0) {
+      if (zoom == 0 || box.isEmpty()) {
         reader.read(dvidUrl.getSparsevolUrl(bodyId, zoom, box).c_str(),
                     isVerbose());
       } else {
